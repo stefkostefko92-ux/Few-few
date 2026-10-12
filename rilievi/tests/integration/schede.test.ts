@@ -239,8 +239,11 @@ describe('sheets', () => {
       'attachment; filename="scheda-104552-2026-10-12.pdf"',
     );
     assert.equal(pdf.bytes.subarray(0, 5).toString(), '%PDF-');
-    const bg = await browser.get(`/schede/${id}/pdf?lang=bg`);
-    assert.equal(bg.status, 303, 'the language switch redirects to the clean address first');
+    const dark = await browser.get(`/schede/${id}/pdf?tema=scuro`);
+    assert.equal(dark.status, 303, 'the theme switch redirects to the clean address first');
+    const oldLink = await browser.get(`/schede/${id}/pdf?lang=bg`);
+    assert.equal(oldLink.status, 200, 'an old language link is ignored: Italian only');
+    assert.equal(oldLink.headers.get('content-type'), 'application/pdf');
   });
 
   it('answers 404 for sheets that do not exist, whatever the id looks like', async () => {

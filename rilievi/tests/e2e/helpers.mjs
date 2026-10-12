@@ -28,6 +28,12 @@ export async function audit(page, name) {
   }
 }
 
+// The public pages speak Italian only: no Cyrillic anywhere in what the server sent, comments included.
+export async function italianOnly(page, name) {
+  const html = await page.content();
+  if (/[\u0400-\u04FF]/.test(html)) fail(`${name}: Cyrillic text in the page`);
+}
+
 export async function signIn(page, base, who, secret) {
   await page.goto(`${base}/accesso`);
   await page.fill('#email', who);

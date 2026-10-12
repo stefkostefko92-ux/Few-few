@@ -19,7 +19,6 @@ import {
   type PasswordProblem,
 } from '../auth/password.js';
 import { destroyAllSessions } from '../auth/sessions.js';
-import { accountLocale } from '../i18n.js';
 import { resetMail } from '../mail/templates.js';
 import { sendMail } from '../mail/mailer.js';
 import { HOUR } from '../time.js';
@@ -118,7 +117,7 @@ export async function requestReset(emailRaw: string): Promise<void> {
     }),
   ]);
   await sendMail(
-    resetMail(accountLocale(user), {
+    resetMail({
       to: user.email,
       link: resetLink(token),
       hours: SELF_RESET_HOURS,

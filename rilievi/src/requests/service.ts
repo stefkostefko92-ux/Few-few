@@ -4,7 +4,6 @@ import { outranks } from '../auth/roles.js';
 import { insertAzienda, isUniqueViolation, nameTaken } from '../aziende/service.js';
 import { config, mailEnabled } from '../config.js';
 import { prisma } from '../db.js';
-import { accountLocale, type Locale } from '../i18n.js';
 import { errorMessage, logger } from '../logger.js';
 import { sendMail, type MailResult } from '../mail/mailer.js';
 import { accessRequestMail } from '../mail/templates.js';
@@ -36,10 +35,7 @@ export type SubmitResult = { ok: true; id: string } | { ok: false; error: 'busy'
  * Нова заявка — или обновена, ако от същия имейл вече чака една (без дубли в списъка). Отговорът към
  * посетителя е един и същ и в двата случая; MASTER получава писмо само за новата.
  */
-export async function submitAccessRequest(
-  input: RequestInput,
-  locale: Locale,
-): Promise<SubmitResult> {
+export async function submitAccessRequest(input: RequestInput): Promise<SubmitResult> {
   const lastDay = await prisma.accessRequest.count({
     where: { createdAt: { gte: new Date(Date.now() - DAY) } },
   });
@@ -51,10 +47,13 @@ export async function submitAccessRequest(
       where: { email: input.email, status: 'NEW' },
       select: { id: true },
     });
-    const data = { ...input, locale };
     const row = pending
-      ? await tx.accessRequest.update({ where: { id: pending.id }, data, select: { id: true } })
-      : await tx.accessRequest.create({ data, select: { id: true } });
+      ? await tx.accessRequest.update({
+          where: { id: pending.id },
+          data: input,
+          select: { id: true },
+        })
+      : await tx.accessRequest.create({ data: input, select: { id: true } });
     await writeAudit(
       {
         actorId: null,
@@ -80,11 +79,11 @@ async function notifyMasters(id: string, company: string): Promise<void> {
   if (!mailEnabled()) return;
   const masters = await prisma.user.findMany({
     where: { role: 'MASTER', deactivatedAt: null },
-    select: { email: true, locale: true },
+    select: { email: true },
   });
   const link = `${config().PUBLIC_BASE_URL}/richieste/${id}`;
   for (const master of masters) {
-    await sendMail(accessRequestMail(accountLocale(master), { to: master.email, company, link }));
+    await sendMail(accessRequestMail({ to: master.email, company, link }));
   }
 }
 
@@ -153,7 +152,6 @@ export interface AcceptInput {
   email: string;
   name: string;
   role: Role;
-  locale: Locale;
 }
 
 export type AcceptError =
@@ -212,7 +210,6 @@ export async function acceptAccessRequest(
         email: input.email,
         name: input.name,
         role: input.role,
-        locale: input.locale,
         aziendaId: azienda.id,
       });
       await tx.accessRequest.update({

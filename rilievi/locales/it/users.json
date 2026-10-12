@@ -28,7 +28,6 @@
     "inviteTitle": "Invita un utente",
     "inviteIntro": "L'invito arriva per email (se attiva) e il link vale {days} giorni. La persona conferma il nome e sceglie la password.",
     "roleHint": "Puoi assegnare solo ruoli inferiori al tuo. «Cliente» vede tutte le schede dell'azienda ma non può modificarle.",
-    "inviteLanguage": "Lingua dell'invito",
     "inviteSubmit": "Crea invito",
     "inviteCreated": "Invito creato",
     "inviteFor": "Per {email}. Il link vale {days} giorni e si usa una volta sola.",

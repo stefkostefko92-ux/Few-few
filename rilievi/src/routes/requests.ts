@@ -5,7 +5,6 @@ import { principalOf, requireCapability, requireCsrf, sendError } from '../auth/
 import { assignableRoles, isRole } from '../auth/roles.js';
 import { activeAziende, isAziendaId } from '../aziende/service.js';
 import { setFlash } from '../http/flash.js';
-import { DEFAULT_LOCALE, isLocale, LOCALES } from '../i18n.js';
 import {
   acceptAccessRequest,
   type AcceptError,
@@ -48,7 +47,6 @@ interface AcceptForm {
   email: string;
   name: string;
   role: string;
-  locale: string;
 }
 
 async function renderShow(
@@ -70,11 +68,9 @@ async function renderShow(
       email: request.email,
       name: request.name,
       role: roles.includes('ADMIN') ? 'ADMIN' : (roles[0] ?? ''),
-      locale: request.locale,
     },
     error,
     roles,
-    locales: LOCALES,
     aziende: request.status === 'NEW' ? await activeAziende() : [],
     retentionDays: REQUEST_RETENTION_DAYS,
     inviteDays: INVITE_DAYS,
@@ -117,7 +113,6 @@ requestsRouter.post('/richieste/:id/accetta', manage, requireCsrf, async (req, r
     email: text(body, 'email', 254),
     name: text(body, 'name', 120),
     role: text(body, 'role', 20),
-    locale: text(body, 'locale', 5),
   };
   const fail = (status: number, error: string) => renderShow(req, res, status, form, error);
   const email = emailSchema.safeParse(form.email);
@@ -125,8 +120,6 @@ requestsRouter.post('/richieste/:id/accetta', manage, requireCsrf, async (req, r
   const name = nameSchema.safeParse(form.name);
   if (!name.success) return fail(400, 'requests.error.name');
   if (!isRole(form.role)) return fail(400, 'requests.error.roleNotAllowed');
-  // Изборът е от списъка на страницата; подправена стойност взима италианския.
-  const locale = isLocale(form.locale) ? form.locale : DEFAULT_LOCALE;
   let aziendaId: string | null = null;
   let aziendaName = '';
   if (form.mode === 'existing') {
@@ -143,7 +136,6 @@ requestsRouter.post('/richieste/:id/accetta', manage, requireCsrf, async (req, r
     email: email.data,
     name: name.data,
     role: form.role,
-    locale,
   });
   if (!result.ok) {
     if (result.error === 'notFound') return notFound(req, res);

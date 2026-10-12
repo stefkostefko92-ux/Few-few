@@ -1,16 +1,13 @@
-// The public side in a real Chromium: the landing page and the privacy policy in three languages (light
-// and dark, desktop and phone, axe-core WCAG 2.1 AA, no horizontal scroll), the drawing in its final
-// state, then an access request sent from the form and accepted by the MASTER: a new company and the
-// invitation of its administrator.
+// The public side in a real Chromium: the landing page and the privacy policy, in Italian only (light
+// and dark, desktop and phone, axe-core WCAG 2.1 AA, no horizontal scroll, no Cyrillic), the drawing in
+// its final state, then an access request sent from the form and accepted by the MASTER: a new company
+// and the invitation of its administrator.
 import { join } from 'node:path';
-import { audit, fail, signIn } from './helpers.mjs';
+import { audit, fail, italianOnly, signIn } from './helpers.mjs';
 
 const PAGES = [
-  ['home-it', '/'],
-  ['home-bg', '/bg/'],
-  ['home-en', '/en/'],
-  ['privacy-it', '/privacy'],
-  ['privacy-en', '/en/privacy'],
+  ['home', '/'],
+  ['privacy', '/privacy'],
 ];
 
 export async function checkSite(browser, { base, shots, email, password }) {
@@ -26,8 +23,9 @@ export async function checkSite(browser, { base, shots, email, password }) {
         const reply = await page.goto(base + path);
         if (reply?.status() !== 200) fail(`site ${path}: ${reply?.status()}`);
         // The car rises once on load (2.6 s); the audit and the picture want the final state.
-        await page.waitForTimeout(path.endsWith('/') ? 3800 : 0);
+        await page.waitForTimeout(path === '/' ? 3800 : 0);
         await audit(page, `site ${scheme} ${device} ${name}`);
+        await italianOnly(page, `site ${scheme} ${device} ${name}`);
         const overflow = await page.evaluate(
           () => document.documentElement.scrollWidth > window.innerWidth,
         );
@@ -45,15 +43,16 @@ export async function checkSite(browser, { base, shots, email, password }) {
   const stamp = Date.now().toString(36);
   const visitor = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const form = await visitor.newPage();
-  await form.goto(`${base}/en/#richiesta`);
+  await form.goto(`${base}/#richiesta`);
   await form.fill('#r-name', 'Giulia Verdi');
   await form.fill('#r-company', `Ascensori Richiesta ${stamp}`);
   await form.fill('#r-email', `richiesta.${stamp}@rilievi.test`);
   await form.selectOption('#r-teamSize', 'S6_20');
   await form.locator('#r-privacy').evaluate((input) => input.click());
   await form.click('.request__form button[type=submit]');
-  await form.waitForURL(/\/en\/richiesta-inviata/);
+  await form.waitForURL(/\/richiesta-inviata(#richiesta)?$/);
   await audit(form, 'site request sent');
+  await italianOnly(form, 'site request sent');
   await visitor.close();
 
   const owner = await browser.newContext({ viewport: { width: 1280, height: 900 } });

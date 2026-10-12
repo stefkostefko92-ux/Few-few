@@ -36,8 +36,8 @@
     </div>
   </div>
   <div class="sitefoot__base">
-    <% if (switchUrl('tema', 'auto')) { %><nav class="switch" aria-label="<%= t('switch.theme') %>">
-      <% for (const item of themes) { %><a href="<%= switchUrl('tema', item.value) %>" rel="nofollow"<% if (item.on) { %> aria-current="true"<% } %>><%- include('../partials/icon', { name: item.icon }) %><%= t(item.key) %></a>
+    <% if (themeUrl('auto')) { %><nav class="switch" aria-label="<%= t('switch.theme') %>">
+      <% for (const item of themes) { %><a href="<%= themeUrl(item.value) %>" rel="nofollow"<% if (item.on) { %> aria-current="true"<% } %>><%- include('../partials/icon', { name: item.icon }) %><%= t(item.key) %></a>
       <% } %>
     </nav><% } else { %><span></span><% } %>
     <p class="credit">Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></p>

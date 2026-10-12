@@ -17,7 +17,6 @@ async function makeRequest(overrides: Partial<{ company: string; email: string }
       email: overrides.email ?? `richiesta.${counter}@example.it`,
       phone: '+39 02 1234 5678',
       teamSize: 'S6_20',
-      locale: 'en',
     },
   });
 }
@@ -40,7 +39,6 @@ describe('access requests for the portal owner', () => {
       email: 'forged@example.it',
       name: 'Forged',
       role: 'ADMIN',
-      locale: 'it',
     });
     assert.equal(forged.status, 403);
   });
@@ -57,7 +55,6 @@ describe('access requests for the portal owner', () => {
         email: 'Admin.Nuovo@Example.IT',
         name: 'Giulia Verdi',
         role: 'ADMIN',
-        locale: 'en',
       },
     );
     assert.equal(reply.status, 200);
@@ -72,7 +69,6 @@ describe('access requests for the portal owner', () => {
     assert.equal(row.invite?.email, 'admin.nuovo@example.it');
     assert.equal(row.invite?.role, 'ADMIN');
     assert.equal(row.invite?.aziendaId, row.aziendaId);
-    assert.equal(row.invite?.locale, 'en');
     const actions = await prisma.auditLog.findMany({
       where: { OR: [{ targetId: request.id }, { targetId: row.aziendaId ?? '' }] },
     });
@@ -91,7 +87,6 @@ describe('access requests for the portal owner', () => {
         email: 'other@example.it',
         name: 'Other',
         role: 'ADMIN',
-        locale: 'it',
       },
     );
     assert.equal(twice.status, 409);
@@ -111,7 +106,6 @@ describe('access requests for the portal owner', () => {
         email: request.email,
         name: request.name,
         role: 'DIREZIONE',
-        locale: 'it',
       },
     );
     assert.equal(reply.status, 200);
@@ -133,7 +127,6 @@ describe('access requests for the portal owner', () => {
       email: first.email,
       name: first.name,
       role: 'ADMIN',
-      locale: 'it',
     });
     assert.equal(clash.status, 409);
     assert.match(clash.body, /already exists|esiste già|вече има/i);
@@ -152,7 +145,6 @@ describe('access requests for the portal owner', () => {
         email: existing.email,
         name: 'Someone',
         role: 'ADMIN',
-        locale: 'it',
       },
     );
     assert.equal(exists.status, 409);
@@ -175,7 +167,6 @@ describe('access requests for the portal owner', () => {
         email: 'falso@example.it',
         name: 'Falso',
         role: 'MASTER',
-        locale: 'it',
       },
     );
     assert.equal(reply.status, 403);
@@ -195,7 +186,6 @@ describe('access requests for the portal owner', () => {
       email: request.email,
       name: request.name,
       role: 'ADMIN',
-      locale: 'it',
     });
     const [tokenA, tokenB] = await Promise.all([
       first.csrf(`/richieste/${request.id}`),
@@ -235,7 +225,6 @@ describe('access requests for the portal owner', () => {
         email: request.email,
         name: request.name,
         role: 'ADMIN',
-        locale: 'it',
       },
     );
     assert.equal(late.status, 409);

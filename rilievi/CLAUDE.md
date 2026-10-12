@@ -17,7 +17,7 @@ PII и токени) · Argon2id · JWT (jose, HS256) в HttpOnly бисквит
 pdfkit + DejaVu Sans (PDF с кирилица) · pdf-lib + @pdf-lib/fontkit (модулите на доставчиците, попълнени
 с DejaVu) · multer + sharp (логото на фирмата, прекодирано) · Fira Sans /
 Fira Sans Condensed от @fontsource (без CDN).
-UI: италиански (източник) + български + английски.
+UI: **само италиански** (решение на собственика) — един речник в `locales/it/`, без избор на език.
 
 ## Команди (гейтът)
 
@@ -56,7 +56,7 @@ assets/moduli/       официалните празни PDF-и на Pelazza и 
 views/               EJS: partials/ (горна и долна лента, табелата, филтърът по фирма), site/ (витрината,
                      чертежът на шахтата, политиката), requests/, auth/, schede/, users/, aziende/,
                      account/, audit/
-locales/<език>/      common · auth · schede · users · aziende · mail (.json); it е източникът, bg/en — огледала
+locales/it/          common · auth · schede · users · aziende · requests · site · mail (.json) — единственият
 public/              css/ (портал: base, buttons, shell, layout, plate, forms, pages, data, sheet, misure,
                      moduli, print; витрина: site, shaft, site-hero, site-parts, site-request), js/app.js,
                      img/ (og.png и apple-touch-icon.png — `npm run brand:images`), indexnow-key.txt
@@ -98,7 +98,7 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   едно заключване (5 опита → 15 мин, `auth/lockout.ts`; непознатите се броят в паметта).
 - **Полетата са в `schede/fields.ts`** — формата, проверката, страницата, печатът и PDF-ът се строят
   оттам; редът е дословно от заданието. Ново поле = ред там + колона в схемата (миграция) + ключове в
-  трите речника (тестът хваща липсващите). Идентификаторите (matricola, n° impianto) са низове само от
+  речника (тестът хваща липсващите). Идентификаторите (matricola, n° impianto) са низове само от
   цифри — водещата нула се пази. Десетичните приемат „6,5“ и „6.5“, пазят се като Decimal.
 - **Поле с условие** (`when`: „при автоматични врати“, „при Sì“) се показва, чете и пази само когато
   условието е изпълнено — иначе е null и не дава грешка (скритото не се проверява). Условието сочи
@@ -125,10 +125,10 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   (`audit.ts`, само добавяне, без съдържание на схемите и без IP).
 - **PDF:** DejaVu Sans от `PDF_FONT_DIR` (в образа: `fonts-dejavu-core`); без шрифта процесът не тръгва.
   Никога Helvetica/Times — нямат кирилица.
-- **Индексира се само витрината:** `/`, `/bg/`, `/en/` и политиката (`seo/paths.ts`) — `index, follow`,
-  canonical, hreflang + x-default, Open Graph/Twitter, geo, JSON-LD (Organization+LocalBusiness,
-  WebSite, WebPage със speakable, BreadcrumbList, SoftwareApplication, HowTo, FAQPage — текстовете
-  дума по дума от екрана), sitemap.xml, llms.txt, ключ за IndexNow. Порталът (вход, карти, хора…) остава
+- **Индексира се само витрината:** `/` и `/privacy` (`seo/paths.ts`, един език — без hreflang) —
+  `index, follow`, canonical, Open Graph/Twitter, geo, JSON-LD (Organization+LocalBusiness, WebSite,
+  WebPage със speakable, BreadcrumbList, SoftwareApplication, HowTo, FAQPage — текстовете дума по дума
+  от екрана), sitemap.xml, llms.txt, ключ за IndexNow. Порталът (вход, карти, хора…) остава
   `noindex, nofollow`; robots.txt разрешава точно публичните адреси (`$`), входа (за да се види
   noindex) и статиката, а забранява всичко друго. Разделите и ролите на витрината идват от `fields.ts`
   и `roles.ts` — тя не може да обещае поле или право, което порталът няма. Данните на фирмата
@@ -139,7 +139,9 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   грешки. Единственото изображение е чертежът на шахтата (`views/site/_shaft.ejs`): маркерите 1–11 са
   номерата на разделите на картата; единственото движение — кабината се качва веднъж във витрината
   (кадрите в `shaft.css` са сметнати от координатите на чертежа), неподвижно при reduced motion.
-- Коментарите в `src/`, `views/`, `deploy/` — на български; тестовете и `scripts/` — на английски.
+- Коментарите в `src/`, `views/`, `deploy/` — на български; тестовете и `scripts/` — на английски. В
+  изгледите коментарите са EJS (`<%# … %>`), никога HTML (`<!-- … -->`): страницата е само на италиански и
+  няма кирилица дори в изходния код (пазят го тестовете — unit, integration и e2e).
 - Файл над 300 реда се разделя преди да се добавя.
 - Миграциите се пишат на ръка (`prisma migrate diff`) и се прилагат само с `migrate deploy`; никога
   `db push` в продукция. `pg_trgm` е в първата миграция.

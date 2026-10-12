@@ -13,8 +13,7 @@ import { can, type Capability } from './auth/roles.js';
 import { attachSession } from './auth/sessions.js';
 import { readFlash } from './http/flash.js';
 import { writeLimiter } from './http/limits.js';
-import { applyPrefs, attachPrefs, prefUrl, THEME_PARAM } from './http/prefs.js';
-import { DEFAULT_LOCALE, LOCALE_LABEL, LOCALES, isLocale, type Locale } from './i18n.js';
+import { applyPrefs, attachPrefs, themeUrl } from './http/prefs.js';
 import { PASSWORD_MIN_LENGTH } from './auth/password.js';
 import { accountRouter } from './routes/account.js';
 import { auditRouter } from './routes/audit.js';
@@ -28,7 +27,7 @@ import { schedeRouter } from './routes/schede.js';
 import { siteRouter } from './routes/site.js';
 import { usersRouter } from './routes/users.js';
 import { countNewRequests } from './requests/service.js';
-import { publicPath } from './seo/paths.js';
+import { HOME_PATH } from './seo/paths.js';
 
 /** Кратък отпечатък на статичните файлове — сменя адреса на CSS/JS при всяка промяна (кешът е дълъг). */
 function assetVersion(): string {
@@ -57,20 +56,14 @@ function errorStatus(error: unknown): number {
 function baseLocals(req: Request, res: Response): void {
   const user = req.principal?.user ?? null;
   res.locals.can = (capability: Capability): boolean => (user ? can(user.role, capability) : false);
-  res.locals.locales = LOCALES;
-  res.locals.localeLabel = LOCALE_LABEL;
-  res.locals.themeParam = THEME_PARAM;
   res.locals.mailEnabled = mailEnabled();
   res.locals.passwordMin = PASSWORD_MIN_LENGTH;
   res.locals.path = req.path;
-  // Витрината на езика на страницата — входът и празните страници водят към заявката за достъп.
-  res.locals.landingPath = (locale: Locale): string => publicPath(locale, 'home');
-  // Страница след POST (връзката на поканата) не се отваря пак с GET — там превключватели няма.
-  res.locals.switchUrl = (key: 'lang' | 'tema', value: string): string | null => {
-    if (req.method !== 'GET' && req.method !== 'HEAD') return null;
-    if (key === 'lang' && !isLocale(value)) return null;
-    return prefUrl(req, key, value);
-  };
+  // Витрината — входът води към заявката за достъп.
+  res.locals.landingPath = HOME_PATH;
+  // Страница след POST (връзката на поканата) не се отваря пак с GET — там превключвател няма.
+  res.locals.themeUrl = (value: string): string | null =>
+    req.method === 'GET' || req.method === 'HEAD' ? themeUrl(req, value) : null;
 }
 
 /** Страница за грешка и когато заявката е паднала преди езика (твърде голямо тяло на формата). */
@@ -82,10 +75,10 @@ function failRequest(
   messageKey: string,
 ): void {
   if (res.headersSent) return;
-  if (!Object.hasOwn(res.locals, 't')) applyPrefs(res, DEFAULT_LOCALE);
+  if (!Object.hasOwn(res.locals, 't')) applyPrefs(res);
   if (!Object.hasOwn(res.locals, 'currentUser')) res.locals.currentUser = null;
   if (!Object.hasOwn(res.locals, 'flash')) res.locals.flash = null;
-  if (!Object.hasOwn(res.locals, 'switchUrl')) baseLocals(req, res);
+  if (!Object.hasOwn(res.locals, 'themeUrl')) baseLocals(req, res);
   renderError(res, status, titleKey, messageKey);
 }
 
@@ -160,7 +153,7 @@ export function createServer(): Express {
   );
   app.use(healthRouter);
 
-  // Всичко отвъд статиката: сесия → език и тема → еднократно съобщение → общото за шаблоните.
+  // Всичко отвъд статиката: сесия → речник и тема → еднократно съобщение → общото за шаблоните.
   app.use(attachSession);
   app.use(attachPrefs);
   app.use(readFlash);

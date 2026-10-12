@@ -43,8 +43,7 @@
       "phone": "Telefono",
       "city": "Città",
       "teamSize": "Persone che useranno il portale",
-      "message": "Messaggio",
-      "locale": "Lingua della pagina"
+      "message": "Messaggio"
     },
     "accept": {
       "title": "Accetta e invita l'amministratore",
@@ -54,7 +53,6 @@
       "existing": "Azienda già esistente",
       "existingNone": "Nessuna azienda attiva",
       "role": "Ruolo",
-      "locale": "Lingua dell'invito",
       "submit": "Crea e invita"
     },
     "reject": {

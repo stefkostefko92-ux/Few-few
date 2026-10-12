@@ -82,22 +82,20 @@ const scheda = {
 } as unknown as SchedaFull;
 
 describe('the sheet PDF', { skip: !fontsHere && 'DejaVu fonts are not installed here' }, () => {
-  for (const locale of ['it', 'bg', 'en'] as const) {
-    it(`renders a valid A4 PDF in ${locale}, Cyrillic notes included`, async () => {
-      const pdf = await renderSchedaPdf(scheda, {
-        t: translatorFor(locale),
-        fmt: viewHelpers(locale),
-        generatedBy: 'Prova',
-        fontDir,
-        logo: null,
-      });
-      assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
-      assert.ok(pdf.subarray(-6).toString().includes('%%EOF'));
-      assert.ok(pdf.length > 5_000);
-      // The long work order spills onto a second page with its own footer.
-      assert.ok((pdf.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length >= 2);
+  it('renders a valid A4 PDF, Cyrillic notes included', async () => {
+    const pdf = await renderSchedaPdf(scheda, {
+      t: translatorFor('it'),
+      fmt: viewHelpers('it'),
+      generatedBy: 'Prova',
+      fontDir,
+      logo: null,
     });
-  }
+    assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
+    assert.ok(pdf.subarray(-6).toString().includes('%%EOF'));
+    assert.ok(pdf.length > 5_000);
+    // The long work order spills onto a second page with its own footer.
+    assert.ok((pdf.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length >= 2);
+  });
 });
 
 const pages = (pdf: Buffer) => (pdf.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length;

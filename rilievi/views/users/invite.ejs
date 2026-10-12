@@ -44,13 +44,6 @@
     </select>
     <p class="field__hint" id="role-hint"><%= t('users.roleHint') %></p>
   </div>
-  <div class="field">
-    <label class="field__label" for="locale"><%= t('users.inviteLanguage') %></label>
-    <select class="select" id="locale" name="locale">
-      <% for (const code of locales) { %><option value="<%= code %>"<% if (form.locale === code) { %> selected<% } %>><%= localeLabel[code] %></option>
-      <% } %>
-    </select>
-  </div>
   <div class="toolbar">
     <button class="btn btn--primary" type="submit"><%= t('users.inviteSubmit') %></button>
     <a class="btn btn--ghost" href="/utenti"><%= t('common.cancel') %></a>

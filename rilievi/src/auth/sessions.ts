@@ -135,7 +135,6 @@ export async function resolveSession(token: string | undefined): Promise<Princip
           email: true,
           name: true,
           role: true,
-          locale: true,
           theme: true,
           mustChangePassword: true,
           deactivatedAt: true,

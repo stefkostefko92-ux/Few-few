@@ -1,15 +1,18 @@
 import { COMPANY, CONTENT_UPDATED } from '../company.js';
 import { config } from '../config.js';
 import { jsonForScript } from '../http/json-script.js';
-import { LOCALE_TAG, LOCALES, type Locale, type Translator } from '../i18n.js';
+import { DEFAULT_LOCALE, LOCALE_TAG, type Translator } from '../i18n.js';
 import { INVITE_DAYS } from '../services/invites.js';
 import { FAQ_IDS, FEATURES, STEPS } from '../site/landing.js';
-import { publicPath } from './paths.js';
+import { HOME_PATH } from './paths.js';
 
 /**
- * JSON-LD за публичните страници. Текстовете идват от същите преводи, които страницата показва —
+ * JSON-LD за публичните страници. Текстовете идват от същия речник, който страницата показва —
  * въпросите и отговорите във FAQPage и стъпките в HowTo са дума по дума тези от екрана.
  */
+
+/** Езикът на сайта — само италиански. */
+const IN_LANGUAGE = LOCALE_TAG[DEFAULT_LOCALE];
 
 /** Фирмата — един възел за Organization и LocalBusiness (едно `@id`). Работно време не е обявено. */
 function organization(t: Translator) {
@@ -19,7 +22,6 @@ function organization(t: Translator) {
     '@id': `${COMPANY.url}/#org`,
     name: COMPANY.name,
     legalName: COMPANY.name,
-    alternateName: COMPANY.nameBg,
     url: COMPANY.url,
     email,
     telephone: COMPANY.phone,
@@ -28,7 +30,7 @@ function organization(t: Translator) {
       contactType: 'customer support',
       email,
       telephone: COMPANY.phone,
-      availableLanguage: [...LOCALES],
+      availableLanguage: IN_LANGUAGE,
     },
     taxID: COMPANY.eik,
     vatID: COMPANY.vat,
@@ -55,7 +57,7 @@ function website(base: string) {
     '@id': `${base}/#website`,
     url: `${base}/`,
     name: 'Rilievi Impianti',
-    inLanguage: [...LOCALES],
+    inLanguage: IN_LANGUAGE,
     publisher: { '@id': `${COMPANY.url}/#org` },
   };
 }
@@ -73,7 +75,7 @@ function breadcrumb(canonical: string, items: Array<{ name: string; url: string 
   };
 }
 
-export function landingStructuredData(locale: Locale, t: Translator, canonical: string): string {
+export function landingStructuredData(t: Translator, canonical: string): string {
   const base = config().PUBLIC_BASE_URL;
   const graph = [
     organization(t),
@@ -84,7 +86,7 @@ export function landingStructuredData(locale: Locale, t: Translator, canonical: 
       url: canonical,
       name: t('site.meta.title'),
       description: t('site.meta.description'),
-      inLanguage: LOCALE_TAG[locale],
+      inLanguage: IN_LANGUAGE,
       isPartOf: { '@id': `${base}/#website` },
       about: { '@id': `${base}/#app` },
       dateModified: CONTENT_UPDATED,
@@ -103,7 +105,7 @@ export function landingStructuredData(locale: Locale, t: Translator, canonical: 
       browserRequirements: t('site.meta.browser'),
       url: canonical,
       description: t('site.meta.description'),
-      inLanguage: [...LOCALES],
+      inLanguage: IN_LANGUAGE,
       publisher: { '@id': `${COMPANY.url}/#org` },
       featureList: FEATURES.map((id) => t(`site.features.${id}.title`)),
     },
@@ -112,7 +114,7 @@ export function landingStructuredData(locale: Locale, t: Translator, canonical: 
       '@type': 'HowTo',
       '@id': `${canonical}#accesso`,
       name: t('site.steps.title'),
-      inLanguage: LOCALE_TAG[locale],
+      inLanguage: IN_LANGUAGE,
       step: STEPS.map((n) => ({
         '@type': 'HowToStep',
         position: n,
@@ -124,7 +126,7 @@ export function landingStructuredData(locale: Locale, t: Translator, canonical: 
     {
       '@type': 'FAQPage',
       '@id': `${canonical}#faq`,
-      inLanguage: LOCALE_TAG[locale],
+      inLanguage: IN_LANGUAGE,
       mainEntity: FAQ_IDS.map((id) => ({
         '@type': 'Question',
         name: t(`site.faq.${id}.q`),
@@ -135,12 +137,7 @@ export function landingStructuredData(locale: Locale, t: Translator, canonical: 
   return jsonForScript({ '@context': 'https://schema.org', '@graph': graph });
 }
 
-export function privacyStructuredData(
-  locale: Locale,
-  t: Translator,
-  canonical: string,
-  updated: string,
-): string {
+export function privacyStructuredData(t: Translator, canonical: string, updated: string): string {
   const base = config().PUBLIC_BASE_URL;
   const title = t('privacy.title');
   return jsonForScript({
@@ -154,13 +151,13 @@ export function privacyStructuredData(
         url: canonical,
         name: title,
         description: t('privacy.metaDescription'),
-        inLanguage: LOCALE_TAG[locale],
+        inLanguage: IN_LANGUAGE,
         isPartOf: { '@id': `${base}/#website` },
         dateModified: updated,
         breadcrumb: { '@id': `${canonical}#breadcrumb` },
       },
       breadcrumb(canonical, [
-        { name: 'Rilievi Impianti', url: `${base}${publicPath(locale, 'home')}` },
+        { name: 'Rilievi Impianti', url: `${base}${HOME_PATH}` },
         { name: title, url: canonical },
       ]),
     ],

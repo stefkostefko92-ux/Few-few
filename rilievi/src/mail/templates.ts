@@ -1,20 +1,17 @@
-import { translatorFor, type Locale } from '../i18n.js';
+import { DEFAULT_LOCALE, translatorFor } from '../i18n.js';
 import type { MailMessage } from './mailer.js';
 
-/** Писмата са само текст: без HTML, без проследяващи пиксели, без външни картинки. */
+/** Писмата са само текст (на италиански): без HTML, без проследяващи пиксели, без външни картинки. */
+const t = translatorFor(DEFAULT_LOCALE);
 
-export function inviteMail(
-  locale: Locale,
-  params: {
-    to: string;
-    inviter: string;
-    azienda: string;
-    role: string;
-    link: string;
-    days: number;
-  },
-): MailMessage {
-  const t = translatorFor(locale);
+export function inviteMail(params: {
+  to: string;
+  inviter: string;
+  azienda: string;
+  role: string;
+  link: string;
+  days: number;
+}): MailMessage {
   return {
     to: params.to,
     subject: t('mail.invite.subject'),
@@ -28,11 +25,7 @@ export function inviteMail(
   };
 }
 
-export function resetMail(
-  locale: Locale,
-  params: { to: string; link: string; hours: number },
-): MailMessage {
-  const t = translatorFor(locale);
+export function resetMail(params: { to: string; link: string; hours: number }): MailMessage {
   return {
     to: params.to,
     subject: t('mail.reset.subject'),
@@ -44,14 +37,14 @@ export function resetMail(
 }
 
 /**
- * Нова заявка за достъп — до всеки активен MASTER, на неговия език. В писмото е само името на фирмата и
- * връзката към заявката (зад вход): имейлът и телефонът на заявителя не пътуват по пощата.
+ * Нова заявка за достъп — до всеки активен MASTER. В писмото е само името на фирмата и връзката към
+ * заявката (зад вход): имейлът и телефонът на заявителя не пътуват по пощата.
  */
-export function accessRequestMail(
-  locale: Locale,
-  params: { to: string; company: string; link: string },
-): MailMessage {
-  const t = translatorFor(locale);
+export function accessRequestMail(params: {
+  to: string;
+  company: string;
+  link: string;
+}): MailMessage {
   return {
     to: params.to,
     subject: t('mail.request.subject'),

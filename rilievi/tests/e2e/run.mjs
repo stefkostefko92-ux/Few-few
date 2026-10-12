@@ -14,7 +14,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import sharp from 'sharp';
-import { audit, fail, failures, signIn as signInAt, tick } from './helpers.mjs';
+import { audit, fail, failures, italianOnly, signIn as signInAt, tick } from './helpers.mjs';
 import { checkSite } from './site.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -57,8 +57,8 @@ async function acceptInvite(context, link, name) {
   return page;
 }
 try {
-  // The public side first: the landing pages in three languages and an access request, accepted by
-  // the MASTER as a new company with its administrator invited.
+  // The public side first: the landing page and the policy, in Italian only, and an access request,
+  // accepted by the MASTER as a new company with its administrator invited.
   await checkSite(browser, { base, shots, email, password });
   for (const scheme of ['light', 'dark']) {
     const context = await browser.newContext({
@@ -69,6 +69,7 @@ try {
     page.on('pageerror', (error) => fail(`${scheme}: page error ${error.message}`));
     await page.goto(`${base}/accesso`);
     await audit(page, `${scheme} login`);
+    await italianOnly(page, `${scheme} login`);
     await page.screenshot({ path: join(shots, `${scheme}-login.png`), fullPage: true });
     await signIn(page, email, password);
 

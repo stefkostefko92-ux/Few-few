@@ -1,12 +1,10 @@
 <%
-  // Главата на публичните страници: пълният SEO набор (canonical, hreflang, Open Graph, Twitter, geo,
-  // JSON-LD) и черната лента с марката, езиците, „Accedi“ и „Richiedi l'accesso“.
+  // Главата на публичните страници: пълният SEO набор (canonical, Open Graph, Twitter, geo, JSON-LD) и
+  // черната лента с марката, „Accedi“ и „Richiedi l'accesso“. Езикът е един — италиански.
   // Страницата след заявка е `noindex` — достига се само след формата.
   const indexable = !(typeof noindex !== 'undefined' && noindex);
   const sheets = ['base', 'buttons', 'forms', 'site', 'shaft', 'site-hero', 'site-parts', 'site-request'];
-  const ogLocale = { it: 'it_IT', bg: 'bg_BG', en: 'en_GB' };
   const showNav = typeof sectionNav !== 'undefined' && sectionNav;
-  const pathOf = (href) => href.slice(publicBase.length);
 %><!doctype html>
 <html lang="<%= locale %>"<% if (theme === 'LIGHT') { %> data-theme="light"<% } else if (theme === 'DARK') { %> data-theme="dark"<% } %>>
 <head>
@@ -20,16 +18,13 @@
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#000000">
 <% if (canonical) { %><link rel="canonical" href="<%= canonical %>">
-<% for (const alt of alternates) { %><link rel="alternate" hreflang="<%= alt.locale %>" href="<%= alt.href %>">
-<% } %><link rel="alternate" hreflang="x-default" href="<%= alternates[0].href %>">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Rilievi Impianti">
 <meta property="og:title" content="<%= pageTitle %>">
 <meta property="og:description" content="<%= description %>">
 <meta property="og:url" content="<%= canonical %>">
-<meta property="og:locale" content="<%= ogLocale[locale] %>">
-<% for (const alt of alternates.filter((a) => a.locale !== locale)) { %><meta property="og:locale:alternate" content="<%= ogLocale[alt.locale] %>">
-<% } %><meta property="og:image" content="<%= publicBase %>/static/img/og.png">
+<meta property="og:locale" content="it_IT">
+<meta property="og:image" content="<%= publicBase %>/static/img/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="<%= t('site.meta.imageAlt') %>">
@@ -62,10 +57,6 @@
       <a href="#faq"><%= t('site.nav.faq') %></a>
     </nav><% } %>
     <div class="sitebar__end">
-      <nav class="langs" aria-label="<%= t('switch.language') %>">
-        <% for (const alt of alternates) { %><a href="<%= pathOf(alt.href) %>" hreflang="<%= alt.locale %>" lang="<%= alt.locale %>"<% if (alt.locale === locale) { %> aria-current="true"<% } %>><span aria-hidden="true"><%= alt.locale.toUpperCase() %></span><span class="visually-hidden"><%= localeLabel[alt.locale] %></span></a>
-        <% } %>
-      </nav>
       <a class="btn btn--sm btn--bar" href="<%= signedIn ? '/schede' : loginUrl %>"><%= t(signedIn ? 'site.nav.app' : 'site.nav.login') %></a>
       <% if (!signedIn) { %><a class="btn btn--sm btn--inverse sitebar__cta" href="<%= homePath %>#richiesta"><%= t('site.nav.request') %></a><% } %>
     </div>

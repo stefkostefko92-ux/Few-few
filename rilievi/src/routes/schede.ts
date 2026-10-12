@@ -1,6 +1,5 @@
 import { Router, type Request, type Response } from 'express';
 import { config } from '../config.js';
-import { translate } from '../i18n.js';
 import { can } from '../auth/roles.js';
 import { isPartial, principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
 import { activeAzienda, activeAziende, allAziendeNames, aziendaLogo } from '../aziende/service.js';
@@ -83,8 +82,7 @@ function renderForm(req: Request, res: Response, status: number, view: FormView)
   const values = withPrefill(view.values, {
     azienda: view.scheda?.azienda.name ?? user.aziendaName ?? '',
     utente: user.name,
-    // Модулите са на италиански — ролята също, на какъвто и език да е екранът.
-    ruolo: translate('it', `role.${user.role}`),
+    ruolo: res.locals.t(`role.${user.role}`),
     email: user.email,
   });
   res.status(status).render('schede/form', {

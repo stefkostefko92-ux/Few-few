@@ -3,21 +3,15 @@ import { join } from 'node:path';
 import { ROOT } from './paths.js';
 
 /**
- * Езиците на продукта. **Италианският е източникът на истината** — полетата са дословно от заданието
- * на клиента (Италия); българският и английският са пълни огледала (тестът гейтва паритета на ключовете).
+ * Езикът на продукта: **само италиански** (решение на собственика) — полетата са дословно от заданието
+ * на клиента (Италия). Текстовете стоят в `locales/it/`, не в кода.
  */
-export const LOCALES = ['it', 'bg', 'en'] as const;
+export const LOCALES = ['it'] as const;
 export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = 'it';
 
-export const LOCALE_LABEL: Record<Locale, string> = {
-  it: 'Italiano',
-  bg: 'Български',
-  en: 'English',
-};
-
 /** BCP-47 за Intl форматиране. */
-export const LOCALE_TAG: Record<Locale, string> = { it: 'it-IT', bg: 'bg-BG', en: 'en-GB' };
+export const LOCALE_TAG: Record<Locale, string> = { it: 'it-IT' };
 
 type Dictionary = Record<string, string>;
 
@@ -65,15 +59,6 @@ function dictionaries(): Record<Locale, Dictionary> {
   return cache;
 }
 
-export function isLocale(value: unknown): value is Locale {
-  return typeof value === 'string' && (LOCALES as readonly string[]).includes(value);
-}
-
-/** Езикът на акаунта; непознат запис — подразбиращият се език. */
-export function accountLocale(user: { locale: string }): Locale {
-  return isLocale(user.locale) ? user.locale : DEFAULT_LOCALE;
-}
-
 export function keysOf(locale: Locale): string[] {
   return Object.keys(dictionaries()[locale]).sort();
 }
@@ -95,20 +80,20 @@ function pluralKey(locale: Locale, key: string, count: number): [string, string]
 }
 
 /**
- * Превежда `key`. Ако ключът има форми за брой (`.one`/`.other`), формата се избира по `params.n`.
- * Липсващ превод пада към италианския, после към самия ключ — екранът не остава празен, а липсата
- * се вижда (и се хваща от теста). `{име}` се замества от `params`.
+ * Текстът на `key`. Ако ключът има форми за брой (`.one`/`.other`), формата се избира по `params.n`.
+ * Липсващ ключ връща самия ключ — екранът не остава празен, а липсата се вижда (и се хваща от теста).
+ * `{име}` се замества от `params`.
  */
 export function translate(
   locale: Locale,
   key: string,
   params: Record<string, string | number> = {},
 ): string {
-  const dicts = dictionaries();
-  let template = dicts[locale][key] ?? dicts[DEFAULT_LOCALE][key];
+  const dict = dictionaries()[locale];
+  let template = dict[key];
   if (template === undefined && typeof params.n === 'number') {
     const [exact, other] = pluralKey(locale, key, params.n);
-    template = dicts[locale][exact] ?? dicts[locale][other] ?? dicts[DEFAULT_LOCALE][other];
+    template = dict[exact] ?? dict[other];
   }
   return (template ?? key).replace(/\{(\w+)\}/g, (match, name: string) =>
     name in params ? String(params[name]) : match,
@@ -119,27 +104,4 @@ export type Translator = (key: string, params?: Record<string, string | number>)
 
 export function translatorFor(locale: Locale): Translator {
   return (key, params) => translate(locale, key, params);
-}
-
-/** Езикът на браузъра — първият познат от `Accept-Language`, иначе италианският. */
-export function localeFromHeader(header: string | undefined): Locale {
-  if (!header) return DEFAULT_LOCALE;
-  const ranked = header
-    .split(',')
-    .map((part) => {
-      const [tag = '', ...rest] = part.trim().split(';');
-      const quality = Number(
-        rest
-          .find((item) => item.trim().startsWith('q='))
-          ?.trim()
-          .slice(2) ?? '1',
-      );
-      return {
-        tag: tag.toLowerCase().split('-')[0] ?? '',
-        quality: Number.isNaN(quality) ? 0 : quality,
-      };
-    })
-    .sort((a, b) => b.quality - a.quality);
-  const found = ranked.find((item) => isLocale(item.tag));
-  return found && isLocale(found.tag) ? found.tag : DEFAULT_LOCALE;
 }

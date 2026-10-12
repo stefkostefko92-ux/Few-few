@@ -10,7 +10,7 @@ export function toNumber(value: NumberLike): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-/** Форматиране за шаблоните, наточено за езика на заявката. Всичко е за показ. */
+/** Форматиране за шаблоните (италиански: дати, десетична запетая). Всичко е за показ. */
 function buildViewHelpers(locale: Locale) {
   const tag = LOCALE_TAG[locale];
   // Колоните `@db.Date` са полунощ UTC — датата се чете в UTC, иначе би се изместила с часовата зона.

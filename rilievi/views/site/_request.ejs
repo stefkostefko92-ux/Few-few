@@ -14,7 +14,6 @@
   const aria = (key) => errors[key] ? ' aria-invalid="true" aria-describedby="err-r-' + key + '"' : '';
 %><form class="request__form" method="post" action="/richiesta-accesso#richiesta" novalidate>
   <input type="hidden" name="_csrf" value="<%= preCsrf %>">
-  <input type="hidden" name="lang" value="<%= locale %>">
   <% if (formError) { %><div class="errors" role="alert"><h3><%= t('site.request.error.' + formError, { email: contactEmail }) %></h3></div><% } %>
   <% if (shown.length) { %><div class="errors" role="alert" id="request-errors" tabindex="-1">
     <h3><%= t('site.request.errorSummary', { n: shown.length }) %></h3>

@@ -5,7 +5,6 @@ import { outranks, ROLE_LEVEL } from '../auth/roles.js';
 import { aziendaWhere, inScope, scopeOf } from '../auth/scope.js';
 import { destroyAllSessions } from '../auth/sessions.js';
 import { activeAzienda } from '../aziende/service.js';
-import { accountLocale } from '../i18n.js';
 import { resetMail } from '../mail/templates.js';
 import { sendMail, type MailResult } from '../mail/mailer.js';
 import { HOUR } from '../time.js';
@@ -156,9 +155,7 @@ export async function createResetLink(
     );
   });
   const link = resetLink(token);
-  const mail = await sendMail(
-    resetMail(accountLocale(target), { to: target.email, link, hours: ADMIN_RESET_HOURS }),
-  );
+  const mail = await sendMail(resetMail({ to: target.email, link, hours: ADMIN_RESET_HOURS }));
   return { link, mail };
 }
 

@@ -10,7 +10,7 @@ import { SECTIONS } from '../schede/fields.js';
  */
 
 /** Въпросите в „Domande frequenti“ — страницата и FAQPage в JSON-LD ги вземат оттук. */
-export const FAQ_IDS = ['selfSignup', 'visibility', 'app', 'print', 'data', 'languages'] as const;
+export const FAQ_IDS = ['selfSignup', 'visibility', 'app', 'print', 'data'] as const;
 export type FaqId = (typeof FAQ_IDS)[number];
 
 /** Стъпките на „Come si ottiene l'accesso“ (`site.steps.s1…s4`) — за страницата и за HowTo. */

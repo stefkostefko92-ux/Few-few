@@ -7,8 +7,6 @@ import { issuePreCsrf, PRE_CSRF_MAX_AGE_MS, requirePreAuthCsrf } from '../auth/g
 import { LOCK_MINUTES, MAX_FAILED_LOGINS } from '../auth/lockout.js';
 import { SESSION_LIMITS } from '../auth/sessions.js';
 import { requestLimiter } from '../http/limits.js';
-import { applyPrefs } from '../http/prefs.js';
-import { DEFAULT_LOCALE, isLocale, LOCALES, type Locale } from '../i18n.js';
 import { ROOT } from '../paths.js';
 import {
   emptyRequestValues,
@@ -22,7 +20,7 @@ import {
 } from '../requests/form.js';
 import { REQUEST_RETENTION_DAYS, submitAccessRequest } from '../requests/service.js';
 import { llmsTxt, robotsTxt, sitemapXml } from '../seo/files.js';
-import { alternatesOf, publicPath, sentPath, type PublicPage } from '../seo/paths.js';
+import { HOME_PATH, PRIVACY_PATH, SENT_PATH } from '../seo/paths.js';
 import { landingStructuredData, privacyStructuredData } from '../seo/structured-data.js';
 import { INVITE_DAYS } from '../services/invites.js';
 import {
@@ -37,8 +35,8 @@ import {
 import { DAY, HOUR } from '../time.js';
 
 /**
- * Публичната страница: витрината на трите езика (`/`, `/bg/`, `/en/`), политиката за поверителност и
- * заявката за достъп. Регистрация няма — заявката само се записва, решава MASTER (routes/requests.ts).
+ * Публичната страница: витрината (`/`, само на италиански), политиката за поверителност и заявката за
+ * достъп. Регистрация няма — заявката само се записва, решава MASTER (routes/requests.ts).
  * Тук са и robots.txt, sitemap.xml, llms.txt и ключът за IndexNow.
  */
 export const siteRouter: Router = Router();
@@ -72,17 +70,15 @@ siteRouter.get(['/indexnow-key.txt', `/${INDEXNOW_KEY}.txt`], (_req, res) => {
   res.type('text/plain').set('Cache-Control', 'public, max-age=86400').send(INDEXNOW_KEY);
 });
 
-/** Общото за публичните страници: езикът е този на адреса, не на бисквитката. */
-function siteLocals(req: Request, res: Response, locale: Locale, page: PublicPage | null) {
-  applyPrefs(res, locale, res.locals.theme);
+/** Общото за публичните страници; `path` е каноничният адрес (null — страница извън индекса). */
+function siteLocals(req: Request, path: string | null) {
   const base = config().PUBLIC_BASE_URL;
   return {
     publicBase: base,
-    canonical: page ? `${base}${publicPath(locale, page)}` : null,
-    alternates: alternatesOf(base, page ?? 'home'),
-    homePath: publicPath(locale, 'home'),
-    privacyPath: publicPath(locale, 'privacy'),
-    loginUrl: `/accesso?lang=${locale}`,
+    canonical: path ? `${base}${path}` : null,
+    homePath: HOME_PATH,
+    privacyPath: PRIVACY_PATH,
+    loginUrl: '/accesso',
     signedIn: Boolean(req.principal),
     company: COMPANY,
     contactEmail: config().CONTACT_EMAIL,
@@ -95,18 +91,12 @@ interface RequestForm {
   formError: 'busy' | null;
 }
 
-function renderLanding(
-  req: Request,
-  res: Response,
-  locale: Locale,
-  status: number,
-  form: RequestForm,
-): void {
-  const locals = siteLocals(req, res, locale, 'home');
+function renderLanding(req: Request, res: Response, status: number, form: RequestForm): void {
+  const locals = siteLocals(req, HOME_PATH);
   const t = res.locals.t;
   res.status(status).render('site/landing', {
     ...locals,
-    jsonLd: landingStructuredData(locale, t, locals.canonical ?? ''),
+    jsonLd: landingStructuredData(t, locals.canonical ?? ''),
     legend: sheetLegend(t),
     counts: sheetCounts(),
     roles: roleMatrix(),
@@ -125,73 +115,61 @@ function renderLanding(
   });
 }
 
-for (const locale of LOCALES) {
-  siteRouter.get(publicPath(locale, 'home'), (req, res) => {
-    // Вписаният, който отваря адреса на портала, отива направо на картите (както досега).
-    if (locale === DEFAULT_LOCALE && req.principal) {
-      res.redirect('/schede');
-      return;
-    }
-    if (req.path !== publicPath(locale, 'home')) {
-      res.redirect(301, publicPath(locale, 'home'));
-      return;
-    }
-    renderLanding(req, res, locale, 200, {
-      values: emptyRequestValues(),
-      errors: {},
-      formError: null,
-    });
-  });
+siteRouter.get(HOME_PATH, (req, res) => {
+  // Вписаният, който отваря адреса на портала, отива направо на картите (както досега).
+  if (req.principal) {
+    res.redirect('/schede');
+    return;
+  }
+  renderLanding(req, res, 200, { values: emptyRequestValues(), errors: {}, formError: null });
+});
 
-  siteRouter.get(publicPath(locale, 'privacy'), (req, res) => {
-    const locals = siteLocals(req, res, locale, 'privacy');
-    res.render('site/privacy', {
-      ...locals,
-      jsonLd: privacyStructuredData(locale, res.locals.t, locals.canonical ?? '', PRIVACY_UPDATED),
-      updated: PRIVACY_UPDATED,
-      privacyEmail: config().PRIVACY_EMAIL,
-      retentionDays: REQUEST_RETENTION_DAYS,
-      auditDays: config().AUDIT_RETENTION_DAYS,
-      sessionDays: SESSION_LIMITS.standard.absoluteMs / DAY,
-      adminSessionDays: SESSION_LIMITS.privileged.absoluteMs / DAY,
-      preCsrfHours: PRE_CSRF_MAX_AGE_MS / HOUR,
-      attempts: MAX_FAILED_LOGINS,
-      minutes: LOCK_MINUTES,
-    });
+siteRouter.get(PRIVACY_PATH, (req, res) => {
+  const locals = siteLocals(req, PRIVACY_PATH);
+  res.render('site/privacy', {
+    ...locals,
+    jsonLd: privacyStructuredData(res.locals.t, locals.canonical ?? '', PRIVACY_UPDATED),
+    updated: PRIVACY_UPDATED,
+    privacyEmail: config().PRIVACY_EMAIL,
+    retentionDays: REQUEST_RETENTION_DAYS,
+    auditDays: config().AUDIT_RETENTION_DAYS,
+    sessionDays: SESSION_LIMITS.standard.absoluteMs / DAY,
+    adminSessionDays: SESSION_LIMITS.privileged.absoluteMs / DAY,
+    preCsrfHours: PRE_CSRF_MAX_AGE_MS / HOUR,
+    attempts: MAX_FAILED_LOGINS,
+    minutes: LOCK_MINUTES,
   });
+});
 
-  siteRouter.get(sentPath(locale), (req, res) => {
-    res.render('site/sent', siteLocals(req, res, locale, null));
-  });
-}
+siteRouter.get(SENT_PATH, (req, res) => {
+  res.render('site/sent', siteLocals(req, null));
+});
 
 siteRouter.post('/richiesta-accesso', requestLimiter, requirePreAuthCsrf, async (req, res) => {
-  const body = req.body as Record<string, unknown>;
-  const locale = isLocale(body.lang) ? body.lang : DEFAULT_LOCALE;
-  const parsed = parseAccessRequest(body);
+  const parsed = parseAccessRequest(req.body as Record<string, unknown>);
   // Ботът получава същия отговор като човека — нищо не се пази, нищо не му подсказва капана.
   if (parsed.kind === 'spam') {
-    res.redirect(303, sentPath(locale));
+    res.redirect(303, SENT_PATH);
     return;
   }
   if (parsed.kind === 'invalid') {
-    renderLanding(req, res, locale, 422, {
+    renderLanding(req, res, 422, {
       values: parsed.values,
       errors: parsed.errors,
       formError: null,
     });
     return;
   }
-  const result = await submitAccessRequest(parsed.data, locale);
+  const result = await submitAccessRequest(parsed.data);
   if (!result.ok) {
-    renderLanding(req, res, locale, 429, {
+    renderLanding(req, res, 429, {
       values: { ...emptyRequestValues(), ...requestValuesOf(parsed.data) },
       errors: {},
       formError: 'busy',
     });
     return;
   }
-  res.redirect(303, sentPath(locale));
+  res.redirect(303, SENT_PATH);
 });
 
 /** Проверените стойности обратно във вида на формата (при „заето“ въведеното остава на екрана). */

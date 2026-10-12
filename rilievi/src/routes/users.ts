@@ -6,7 +6,6 @@ import { assignableRoles, isRole } from '../auth/roles.js';
 import { scopeOf } from '../auth/scope.js';
 import { activeAziende, allAziendeNames, isAziendaId } from '../aziende/service.js';
 import { setFlash } from '../http/flash.js';
-import { isLocale, LOCALES } from '../i18n.js';
 import { ADMIN_RESET_HOURS } from '../services/auth.js';
 import { createInvite, pendingInvites, revokeInvite, INVITE_DAYS } from '../services/invites.js';
 import {
@@ -57,7 +56,6 @@ interface InviteForm {
   email: string;
   name: string;
   role: string;
-  locale: string;
   azienda: string;
 }
 
@@ -73,7 +71,6 @@ async function renderInviteForm(
     form,
     error,
     roles: assignableRoles(actor.role),
-    locales: LOCALES,
     days: INVITE_DAYS,
     // MASTER избира фирмата; администраторът кани в своята (показва се само името ѝ).
     aziende: scopeOf(actor).all ? await activeAziende() : [],
@@ -91,7 +88,6 @@ usersRouter.get('/utenti/invita', manage, async (req, res) => {
       email: '',
       name: '',
       role: roles.includes('TECNICO') ? 'TECNICO' : (roles[0] ?? ''),
-      locale: res.locals.locale,
       azienda: typeof req.query.azienda === 'string' ? req.query.azienda : '',
     },
     null,
@@ -105,7 +101,6 @@ const inviteSchema = z.object({
     .transform((value) => value.replace(/\p{Cc}/gu, ' ').trim())
     .pipe(z.string().min(2).max(120)),
   role: z.string().refine(isRole),
-  locale: z.string().refine(isLocale),
 });
 
 /** Първото поле с грешка → ключът на съобщението. */
@@ -113,7 +108,6 @@ const INVITE_FIELD_ERROR: Record<string, string> = {
   email: 'users.error.email',
   name: 'users.error.name',
   role: 'users.error.role',
-  locale: 'users.error.role',
 };
 
 usersRouter.post('/utenti/invita', manage, requireCsrf, async (req, res) => {
@@ -123,7 +117,6 @@ usersRouter.post('/utenti/invita', manage, requireCsrf, async (req, res) => {
     email: typeof body.email === 'string' ? body.email.slice(0, 254) : '',
     name: typeof body.name === 'string' ? body.name.slice(0, 120) : '',
     role: typeof body.role === 'string' ? body.role : '',
-    locale: typeof body.locale === 'string' ? body.locale : res.locals.locale,
     azienda: typeof body.azienda === 'string' ? body.azienda.slice(0, 40) : '',
   };
   const parsed = inviteSchema.safeParse(body);
@@ -132,12 +125,12 @@ usersRouter.post('/utenti/invita', manage, requireCsrf, async (req, res) => {
     await renderInviteForm(req, res, 400, form, INVITE_FIELD_ERROR[field] ?? 'users.error.email');
     return;
   }
-  const { email, name, role, locale } = parsed.data;
-  if (!isRole(role) || !isLocale(locale)) {
+  const { email, name, role } = parsed.data;
+  if (!isRole(role)) {
     await renderInviteForm(req, res, 400, form, 'users.error.role');
     return;
   }
-  const result = await createInvite(actor, { email, name, role, locale, aziendaId: body.azienda });
+  const result = await createInvite(actor, { email, name, role, aziendaId: body.azienda });
   if (!result.ok) {
     const status = { userExists: 409, roleNotAllowed: 403, azienda: 400 }[result.error];
     await renderInviteForm(req, res, status, form, `users.error.${result.error}`);

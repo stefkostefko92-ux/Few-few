@@ -112,6 +112,7 @@ model User {
   name               String
   passwordHash       String
   role               Role
+  /// Не се ползва — порталът е само на италиански. Колоната остава („it“), за да не се трие с миграция.
   locale             String    @default("it")
   theme              Theme     @default(AUTO)
   /// Деактивиран акаунт не влиза; сесиите му падат при деактивирането.
@@ -167,6 +168,7 @@ model Invite {
   email          String
   name           String?
   role           Role
+  /// Не се ползва — порталът е само на италиански. Колоната остава („it“), за да не се трие с миграция.
   locale         String         @default("it")
   /// Фирмата, в която влиза поканеният — избрана от MASTER или фирмата на администратора, който кани.
   aziendaId      String
@@ -201,7 +203,7 @@ model AccessRequest {
   city        String?             @db.VarChar(120)
   teamSize    TeamSize?
   message     String?             @db.VarChar(2000)
-  /// Езикът на страницата, от която е пратена — на него тръгва и поканата.
+  /// Не се ползва — порталът е само на италиански. Колоната остава („it“), за да не се трие с миграция.
   locale      String              @default("it") @db.VarChar(5)
   status      AccessRequestStatus @default(NEW)
   /// При приемане: фирмата, в която е поканен администраторът, и самата покана.

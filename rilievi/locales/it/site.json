@@ -131,10 +131,6 @@
       "data": {
         "q": "Dove sono conservati i dati?",
         "a": "Su un server nell'Unione europea, in un database con un backup ogni giorno."
-      },
-      "languages": {
-        "q": "In quali lingue funziona?",
-        "a": "In italiano, bulgaro e inglese. Ognuno sceglie la propria lingua e il tema chiaro o scuro."
       }
     },
     "request": {
@@ -214,13 +210,13 @@
       "basis": "Base giuridica",
       "kept": "Conservazione",
       "request": {
-        "data": "Nome, azienda, email, telefono, città, numero di persone, messaggio e lingua della richiesta di accesso",
+        "data": "Nome, azienda, email, telefono, città, numero di persone e messaggio della richiesta di accesso",
         "why": "Valutare la richiesta, rispondervi e, se accettata, creare lo spazio della vostra azienda e invitare il suo amministratore",
         "basis": "Misure precontrattuali su vostra richiesta, art. 6, par. 1, lett. b) GDPR",
         "kept": "{days} giorni dall'ultima modifica della richiesta, poi cancellati automaticamente; prima, se ce lo chiedete"
       },
       "account": {
-        "data": "Email, nome, ruolo, azienda, lingua e tema, hash della password (Argon2id), data dell'ultimo accesso, numero di password errate e sessioni attive",
+        "data": "Email, nome, ruolo, azienda, tema, hash della password (Argon2id), data dell'ultimo accesso, numero di password errate e sessioni attive",
         "why": "L'account e l'accesso al portale per conto dell'azienda",
         "basis": "Per conto dell'azienda titolare (art. 28 GDPR)",
         "kept": "Finché l'account esiste; le sessioni fino all'uscita o alla scadenza"
@@ -249,7 +245,6 @@
       "sessionKept": "Fino all'uscita; al massimo {days} giorni ({adminDays} per gli amministratori)",
       "pre": "Proteggere i moduli prima dell'accesso (accesso, richiesta di accesso, password) da richieste contraffatte",
       "preKept": "{hours} ore",
-      "lang": "La lingua scelta",
       "theme": "Il tema scelto (chiaro, scuro o automatico)",
       "prefKept": "1 anno",
       "flash": "Un messaggio una tantum dopo un'azione, per esempio «Salvato»",

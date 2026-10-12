@@ -27,7 +27,6 @@ function linkFrom(body: string): string {
 
 async function invite(manager: Browser, form: Record<string, string>) {
   return manager.submit('/utenti/invita', '/utenti/invita', {
-    locale: 'it',
     name: 'Persona Invitata',
     ...form,
   });

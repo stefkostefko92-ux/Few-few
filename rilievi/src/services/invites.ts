@@ -5,7 +5,7 @@ import { hashPassword, passwordProblem, type PasswordProblem } from '../auth/pas
 import { outranks } from '../auth/roles.js';
 import { aziendaWhere, inScope, scopeOf } from '../auth/scope.js';
 import { activeAzienda } from '../aziende/service.js';
-import { translatorFor, type Locale } from '../i18n.js';
+import { DEFAULT_LOCALE, translatorFor } from '../i18n.js';
 import { inviteMail } from '../mail/templates.js';
 import { sendMail, type MailResult } from '../mail/mailer.js';
 import { DAY } from '../time.js';
@@ -26,7 +26,7 @@ export type CreateInviteResult =
  */
 export async function createInvite(
   actor: SessionUser,
-  input: { email: string; name: string; role: Role; locale: Locale; aziendaId: unknown },
+  input: { email: string; name: string; role: Role; aziendaId: unknown },
 ): Promise<CreateInviteResult> {
   if (!outranks(actor.role, input.role)) return { ok: false, error: 'roleNotAllowed' };
   const scope = scopeOf(actor);
@@ -49,7 +49,7 @@ export async function createInvite(
 export async function insertInvite(
   tx: Prisma.TransactionClient,
   actor: SessionUser,
-  input: { email: string; name: string; role: Role; locale: Locale; aziendaId: string },
+  input: { email: string; name: string; role: Role; aziendaId: string },
 ): Promise<{ invite: Invite; token: string }> {
   const { token, hash } = newToken();
   await tx.invite.updateMany({
@@ -61,7 +61,6 @@ export async function insertInvite(
       email: input.email,
       name: input.name,
       role: input.role,
-      locale: input.locale,
       aziendaId: input.aziendaId,
       tokenHash: hash,
       invitedById: actor.id,
@@ -85,14 +84,14 @@ export async function insertInvite(
 /** Връзката и писмото с нея — след като поканата е в базата (без SMTP връзката само се показва). */
 export async function sendInviteMail(
   actor: SessionUser,
-  input: { email: string; role: Role; locale: Locale },
+  input: { email: string; role: Role },
   aziendaName: string,
   token: string,
 ): Promise<{ link: string; mail: MailResult }> {
   const link = inviteLink(token);
-  const t = translatorFor(input.locale);
+  const t = translatorFor(DEFAULT_LOCALE);
   const mail = await sendMail(
-    inviteMail(input.locale, {
+    inviteMail({
       to: input.email,
       inviter: actor.name,
       azienda: aziendaName,
@@ -191,7 +190,6 @@ export async function acceptInvite(
           email: invite.email,
           name: input.name,
           role: invite.role,
-          locale: invite.locale,
           aziendaId: invite.aziendaId,
           passwordHash,
           invitedById: invite.invitedById,

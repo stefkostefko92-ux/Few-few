@@ -15,7 +15,7 @@ export function isPartial(req: Request): boolean {
   return req.get('x-partial') === '1';
 }
 
-/** Страница за грешка на езика на заявката. Текстът е ключ от речника, никога суров. */
+/** Страница за грешка. Текстът е ключ от речника, никога суров. */
 export function renderError(
   res: Response,
   status: number,

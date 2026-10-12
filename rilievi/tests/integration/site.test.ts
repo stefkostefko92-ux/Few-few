@@ -6,53 +6,49 @@ before(startApp);
 after(stopApp);
 
 const REQUEST = {
-  lang: 'en',
   name: 'Giulia Verdi',
   company: 'Ascensori Verdi Srl',
   email: 'Giulia.Verdi@Example.IT',
   phone: '+39 02 1234 5678',
   city: 'Milano',
   teamSize: 'S6_20',
-  message: 'We maintain 140 lifts.',
+  message: 'Gestiamo 140 impianti.',
   privacy: 'si',
 };
 
 /** Submits the access request form of the page `from`, as a browser would (pre-sign-in CSRF). */
-async function sendRequest(browser: Browser, form: Record<string, string>, from = '/en/') {
+async function sendRequest(browser: Browser, form: Record<string, string>, from = '/') {
   const _csrf = await browser.csrf(from);
   return browser.post('/richiesta-accesso', { _csrf, website: '', ...form });
 }
 
 describe('the public pages', () => {
-  it('are indexable, canonical, in three languages, with the full SEO set and no app links', async () => {
+  it('are indexable, canonical, in Italian only, with the full SEO set and no app links', async () => {
     const browser = new Browser();
-    for (const [path, lang] of [
-      ['/', 'it'],
-      ['/bg/', 'bg'],
-      ['/en/', 'en'],
-    ] as const) {
-      const page = await browser.get(path);
-      assert.equal(page.status, 200, path);
-      assert.match(page.body, new RegExp(`<html lang="${lang}"`));
-      assert.match(page.body, /<meta name="robots" content="index, follow">/);
-      assert.match(page.body, new RegExp(`<link rel="canonical" href="${BASE}${path}">`));
-      assert.match(page.body, new RegExp(`hreflang="x-default" href="${BASE}/"`));
-      assert.match(page.body, /<meta property="og:image" content="[^"]+\/static\/img\/og\.png">/);
-      assert.match(page.body, /<meta name="twitter:card" content="summary_large_image">/);
-      assert.match(page.body, /<meta name="geo\.region" content="BG-10">/);
-      assert.match(page.body, /<script type="application\/ld\+json" nonce="[^"]+">/);
-      assert.match(page.body, /"@type":"FAQPage"/);
-      assert.equal(page.body.match(/<h1[ >]/g)?.length, 1, `${path}: one h1`);
-      assert.match(page.body, /<meta name="keywords" content="Carbon Stealth, /);
-      assert.match(
-        page.body,
-        /Created and Designed by <a href="https:\/\/carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC<\/a>/,
-      );
-      assert.match(page.body, new RegExp(`href="/accesso\\?lang=${lang}"`));
+    const page = await browser.get('/');
+    assert.equal(page.status, 200);
+    assert.match(page.body, /<html lang="it"/);
+    assert.match(page.body, /<meta name="robots" content="index, follow">/);
+    assert.match(page.body, new RegExp(`<link rel="canonical" href="${BASE}/">`));
+    assert.match(page.body, /<meta property="og:locale" content="it_IT">/);
+    assert.match(page.body, /<meta property="og:image" content="[^"]+\/static\/img\/og\.png">/);
+    assert.match(page.body, /<meta name="twitter:card" content="summary_large_image">/);
+    assert.match(page.body, /<meta name="geo\.region" content="BG-10">/);
+    assert.match(page.body, /<script type="application\/ld\+json" nonce="[^"]+">/);
+    assert.match(page.body, /"@type":"FAQPage"/);
+    assert.equal(page.body.match(/<h1[ >]/g)?.length, 1, 'one h1');
+    assert.match(page.body, /<meta name="keywords" content="Carbon Stealth, /);
+    assert.match(
+      page.body,
+      /Created and Designed by <a href="https:\/\/carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC<\/a>/,
+    );
+    assert.match(page.body, /href="\/accesso"/);
+    // No other language: no alternates, no switch, no Bulgarian or English pages, no Cyrillic.
+    assert.doesNotMatch(page.body, /hreflang|og:locale:alternate|\?lang=/);
+    assert.doesNotMatch(page.body, /[\u0400-\u04FF]/);
+    for (const path of ['/bg/', '/en/', '/bg/privacy', '/en/richiesta-inviata']) {
+      assert.equal((await browser.get(path)).status, 404, path);
     }
-    const noSlash = await browser.get('/bg');
-    assert.equal(noSlash.status, 301);
-    assert.equal(noSlash.location, '/bg/');
   });
 
   it('send a signed-in person from the root straight to the sheets, as before', async () => {
@@ -60,9 +56,9 @@ describe('the public pages', () => {
     const root = await browser.get('/');
     assert.equal(root.status, 302);
     assert.equal(root.location, '/schede');
-    const en = await browser.get('/en/');
-    assert.equal(en.status, 200);
-    assert.match(en.body, /href="\/schede"/);
+    const privacy = await browser.get('/privacy');
+    assert.equal(privacy.status, 200);
+    assert.match(privacy.body, /href="\/schede"/);
   });
 
   it('publish the privacy policy with the controller and the real retention times', async () => {
@@ -72,6 +68,8 @@ describe('the public pages', () => {
     assert.match(page.body, /208725180/);
     assert.match(page.body, /180 giorni dall(&#39;|')ultima modifica/);
     assert.match(page.body, /__Host-rilievi_pre/);
+    assert.doesNotMatch(page.body, /rilievi_lang/, 'no language cookie any more');
+    assert.doesNotMatch(page.body, /[\u0400-\u04FF]/);
     assert.match(page.body, /mailto:privacy@carbonstealth\.eu/);
   });
 
@@ -82,9 +80,11 @@ describe('the public pages', () => {
     assert.match(robots.body, /\nDisallow: \/\n/);
     const sitemap = await browser.get('/sitemap.xml');
     assert.equal(sitemap.headers.get('content-type'), 'application/xml; charset=utf-8');
-    assert.match(sitemap.body, new RegExp(`<loc>${BASE}/en/</loc>`));
+    assert.match(sitemap.body, new RegExp(`<loc>${BASE}/</loc>`));
+    assert.doesNotMatch(sitemap.body, /hreflang/);
     const llms = await browser.get('/llms.txt');
     assert.match(llms.body, /^# Rilievi Impianti by Carbon Stealth/);
+    assert.match(llms.body, /è un portale web/);
     const key = (await browser.get('/indexnow-key.txt')).body;
     assert.match(key, /^[a-f0-9]{32}$/);
     assert.equal((await browser.get(`/${key}.txt`)).body, key);
@@ -99,21 +99,23 @@ describe('the public pages', () => {
 });
 
 describe('the access request', () => {
-  it('is saved once per waiting email, with the page language, and the visitor sees "sent"', async () => {
+  it('is saved once per waiting email and the visitor sees "sent"', async () => {
     const browser = new Browser();
     const reply = await sendRequest(browser, REQUEST);
     assert.equal(reply.status, 303);
-    assert.equal(reply.location, '/en/richiesta-inviata');
-    const again = await sendRequest(new Browser(), { ...REQUEST, message: 'Second try.' }, '/');
+    assert.equal(reply.location, '/richiesta-inviata');
+    const sent = await browser.get('/richiesta-inviata');
+    assert.equal(sent.status, 200);
+    assert.doesNotMatch(sent.body, /[\u0400-\u04FF]/);
+    const again = await sendRequest(new Browser(), { ...REQUEST, message: 'Secondo tentativo.' });
     assert.equal(again.status, 303);
     const rows = await prisma.accessRequest.findMany({
       where: { email: 'giulia.verdi@example.it' },
     });
     assert.equal(rows.length, 1, 'the second request updates the waiting one');
     assert.equal(rows[0]?.status, 'NEW');
-    assert.equal(rows[0]?.message, 'Second try.');
+    assert.equal(rows[0]?.message, 'Secondo tentativo.');
     assert.equal(rows[0]?.teamSize, 'S6_20');
-    assert.equal(rows[0]?.locale, 'en');
     const audit = await prisma.auditLog.findMany({ where: { targetId: rows[0]?.id } });
     assert.deepEqual(audit.map((entry) => entry.action).sort(), [
       'ACCESS_REQUEST',
@@ -124,7 +126,7 @@ describe('the access request', () => {
 
   it('keeps one waiting request when the same email is sent twice at once (double click)', async () => {
     const browser = new Browser();
-    const _csrf = await browser.csrf('/en/');
+    const _csrf = await browser.csrf('/');
     const form = { _csrf, website: '', ...REQUEST, email: 'double.click@example.it' };
     const replies = await Promise.all([
       browser.post('/richiesta-accesso', form),
@@ -143,7 +145,6 @@ describe('the access request', () => {
   it('comes back on the same page with every error and what was typed', async () => {
     const browser = new Browser();
     const reply = await sendRequest(browser, {
-      lang: 'it',
       name: 'Giulia',
       company: '',
       email: 'not-an-email',
@@ -172,7 +173,7 @@ describe('the access request', () => {
   it('answers a bot that fills the trap as if it worked, and keeps nothing', async () => {
     const before = await prisma.accessRequest.count();
     const browser = new Browser();
-    const _csrf = await browser.csrf('/en/');
+    const _csrf = await browser.csrf('/');
     const reply = await browser.post('/richiesta-accesso', {
       _csrf,
       ...REQUEST,
@@ -180,7 +181,7 @@ describe('the access request', () => {
       website: 'https://spam.example',
     });
     assert.equal(reply.status, 303);
-    assert.equal(reply.location, '/en/richiesta-inviata');
+    assert.equal(reply.location, '/richiesta-inviata');
     assert.equal(await prisma.accessRequest.count(), before);
   });
 
@@ -203,7 +204,7 @@ describe('the access request', () => {
     });
     const reply = await sendRequest(new Browser(), { ...REQUEST, email: 'late@example.it' });
     assert.equal(reply.status, 429);
-    assert.match(reply.body, /too many requests today/);
+    assert.match(reply.body, /Oggi abbiamo ricevuto troppe richieste/);
     assert.match(reply.body, /name="email"[^>]*value="late@example.it"/);
     await prisma.accessRequest.deleteMany({ where: { name: 'Spam' } });
   });

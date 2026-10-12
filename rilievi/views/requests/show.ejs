@@ -13,7 +13,7 @@
   const items = [
     ['name', r.name], ['company', r.company], ['email', r.email], ['phone', r.phone],
     ['city', r.city], ['teamSize', r.teamSize ? t('site.request.team.' + r.teamSize) : null],
-    ['locale', localeLabel[r.locale] || r.locale], ['message', r.message],
+    ['message', r.message],
   ];
   const title = r.company.length > 40 ? r.company.slice(0, 39) + '…' : r.company;
 %><%- include('../partials/top', { title, narrowMain: true }) %>
@@ -77,13 +77,6 @@
           <label class="field__label" for="role"><%= t('requests.accept.role') %></label>
           <select class="select" id="role" name="role">
             <% for (const role of roles) { %><option value="<%= role %>"<% if (form.role === role) { %> selected<% } %>><%= t('role.' + role) %></option>
-            <% } %>
-          </select>
-        </div>
-        <div class="field">
-          <label class="field__label" for="locale"><%= t('requests.accept.locale') %></label>
-          <select class="select" id="locale" name="locale">
-            <% for (const code of locales) { %><option value="<%= code %>"<% if (form.locale === code) { %> selected<% } %>><%= localeLabel[code] %></option>
             <% } %>
           </select>
         </div>

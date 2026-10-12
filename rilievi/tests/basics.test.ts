@@ -43,12 +43,10 @@ describe('logging', () => {
 });
 
 describe('dates and numbers', () => {
-  it('keeps @db.Date values on their day in every language', () => {
+  it('keeps @db.Date values on their day', () => {
     const day = dateFromDay('2026-10-12');
     assert.equal(dayFromDate(day), '2026-10-12');
     assert.equal(viewHelpers('it').day(day), '12/10/2026');
-    assert.equal(viewHelpers('bg').day(day), '12.10.2026 г.');
-    assert.equal(viewHelpers('en').day(day), '12/10/2026');
   });
 
   it('gives today in Rome, not in UTC', () => {
@@ -56,9 +54,8 @@ describe('dates and numbers', () => {
     assert.equal(businessDay(new Date('2026-10-11T23:30:00Z')), '2026-10-12');
   });
 
-  it('formats decimals with the language separator, and form values without grouping', () => {
+  it('formats decimals with the Italian comma, and form values without grouping', () => {
     assert.equal(viewHelpers('it').num(10.5), '10,5');
-    assert.equal(viewHelpers('en').num(10.5), '10.5');
     assert.equal(viewHelpers('it').inputNum({ toString: () => '1250.50' }), '1250,5');
   });
 });
