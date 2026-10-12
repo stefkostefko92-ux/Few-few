@@ -236,6 +236,7 @@ const SECTIONS = [
   { id: 'products', img: 'nav-products', ico: '❤', label: 'Продукти', render: renderProducts },
   { id: 'slo', img: 'nav-slo', ico: '◑', label: 'Надеждност', render: renderSlo },
   { id: 'alerts', img: 'nav-alerts', ico: '🔔', label: 'Аларми', render: renderAlerts },
+  { id: 'approvals', img: 'act-scales', ico: '⚖', label: 'Одобрения', render: renderApprovals },
   { id: 'diagnostics', img: 'nav-diagnostics', ico: '⚕', label: 'Диагностика', render: renderDiagnostics },
   { id: 'investigate', img: 'act-search', ico: '🔍', label: 'Разследване', render: renderInvestigate },
   { id: 'services', img: 'nav-services', ico: '⚙', label: 'Услуги', render: renderServices },
@@ -275,7 +276,7 @@ const SECTIONS = [
 // тук, не изчезва: отива в последната група (по-добре на грешно място, отколкото
 // невидима — същият урок като с трите липсващи секции в README).
 const NAV_GROUPS = [
-  ['Наблюдение', ['overview', 'products', 'slo', 'alerts', 'diagnostics', 'investigate']],
+  ['Наблюдение', ['overview', 'products', 'slo', 'alerts', 'approvals', 'diagnostics', 'investigate']],
   ['Работа', ['services', 'docker', 'compose', 'databases', 'redis', 'processes', 'logs', 'traffic']],
   ['Издаване', ['deploy', 'updates']],
   ['Защита', ['security', 'ports', 'firewall', 'integrity', 'fail2ban', 'access', 'domains']],
@@ -5583,6 +5584,146 @@ async function renderTerminal() {
 }
 
 // ── Агенти ────────────────────────────────────────────────────────────────────────
+// ── Одобрения: агентът предлага, човекът натиска ─────────────────────────────
+// Агентският ключ може само да чете състоянието и да подава предложения. Нищо
+// не се изпълнява, преди собственикът да натисне „Одобри" тук — с парола (sudo)
+// и потвърждение. Текстът от агента се показва като ДАННИ (raw), никога html.
+const PROPOSAL_STATUS = {
+  pending: ['warn', 'чака'],
+  running: ['dim', 'изпълнява се'],
+  started: ['ok', 'пусната задача'],
+  done: ['ok', 'изпълнено'],
+  failed: ['bad', 'провал'],
+  rejected: ['dim', 'отказано'],
+  expired: ['dim', 'изтекло'],
+};
+
+async function renderApprovals() {
+  const view = document.getElementById('view');
+  if (state.node !== 'local') {
+    view.innerHTML = '';
+    view.appendChild(el('div', { class: 'empty', text: 'Одобренията се правят на самия възел — съсед не одобрява поправки по чужда машина.' }));
+    return;
+  }
+  const [keyInfo, list, catalog] = await Promise.all([api('/agent/key'), api('/agent/proposals'), api('/agent/actions')]);
+  const titles = Object.fromEntries((catalog.actions || []).map((a) => [a.type, a]));
+  view.innerHTML = '';
+  view.appendChild(el('p', { class: 'section-desc', text: 'Агентите диагностицират сървъра и ПРЕДЛАГАТ поправка от затворен списък действия. Claude преглежда всяко предложение, преди да го подаде. Нищо не се изпълнява, преди ти да натиснеш „Одобри" — с парола. Всяко решение влиза в одита.' }));
+
+  // Ключът на агентите.
+  const keyOut = el('div');
+  const keyCard = el('div', { class: 'card' }, [
+    el('div', { class: 'card-head' }, [
+      el('h3', { text: 'Ключ на агентите' }),
+      keyInfo.enabled ? pill('ok', 'включен') : pill('dim', 'изключен'),
+    ]),
+    el('div', { class: 'metric-sub', text: 'С ключа агентът чете състоянието и подава предложения. Изпълнение с него няма. Слага се като тайна CSD_AGENT_KEY в средата на Claude Code — никога в чата.' }),
+    el('div', { class: 'toolbar' }, [
+      el('button', {
+        class: 'btn btn-sm', text: '🔑 Създай нов ключ',
+        onclick: async () => {
+          if (keyInfo.enabled && !confirm(t('Старият ключ спира да работи веднага. Продължи?'))) return;
+          try {
+            const r2 = await api('/agent/key', { method: 'POST', body: { action: 'rotate' } });
+            keyOut.innerHTML = '';
+            keyOut.append(
+              el('div', { class: 'metric-sub', text: 'Ключът се показва САМО сега. Копирай го в тайните на средата (CSD_AGENT_KEY) и затвори секцията.' }),
+              el('input', { type: 'text', readonly: 'readonly', value: r2.key, class: 'mono grow', 'aria-label': 'Нов ключ на агентите', onclick: (e) => e.target.select() })
+            );
+            keyInfo.enabled = true;
+          } catch (e) { toast(e.message, 'bad'); }
+        },
+      }),
+      keyInfo.enabled
+        ? el('button', {
+            class: 'btn btn-sm btn-danger', text: 'Изключи ключа',
+            onclick: async () => {
+              if (!confirm(t('Агентите губят достъп веднага. Продължи?'))) return;
+              try { await api('/agent/key', { method: 'POST', body: { action: 'disable' } }); go('approvals'); } catch (e) { toast(e.message, 'bad'); }
+            },
+          })
+        : null,
+    ]),
+    keyOut,
+  ]);
+  view.appendChild(keyCard);
+
+  const all = list.proposals || [];
+  const pending = all.filter((p) => p.status === 'pending');
+  const head = el('h3', { text: 'Чакат решение', style: 'margin:22px 0 10px' });
+  view.appendChild(head);
+  if (!pending.length) view.appendChild(el('div', { class: 'empty', text: 'Няма чакащи предложения.' }));
+  for (const p of pending) {
+    const spec = titles[p.action.type] || { title: p.action.type, cls: '?' };
+    const params = Object.entries(p.action.params || {}).map(([k, v]) => `${k}=${Array.isArray(v) ? v.join(',') : v}`).join('  ');
+    const card = el('div', { class: 'card proposal' + (spec.cls === 'A' ? ' proposal-a' : ''), style: 'margin-bottom:12px' }, [
+      el('div', { class: 'card-head' }, [
+        el('h3', { raw: p.title }),
+        pill(spec.cls === 'A' ? 'bad' : 'warn', 'клас ' + spec.cls),
+      ]),
+      el('div', { class: 'metric-sub' }, [el('span', { raw: p.agent }), ' · ', el('span', { raw: fmtWhen(new Date(p.createdAt).toISOString()) })]),
+      el('div', { class: 'proposal-action' }, [el('b', { text: spec.title }), ' ', el('span', { class: 'mono', raw: params })]),
+      el('div', { class: 'proposal-field' }, [el('div', { class: 'muted', text: 'Защо' }), el('div', { class: 'proposal-text', raw: p.why })]),
+      p.evidence ? el('div', { class: 'proposal-field' }, [el('div', { class: 'muted', text: 'Доказателства' }), el('pre', { class: 'term-out', raw: p.evidence })]) : null,
+      el('div', { class: 'proposal-field' }, [el('div', { class: 'muted', text: 'Преглед от Claude' }), el('div', { class: 'proposal-text', raw: p.review })]),
+      p.rollback ? el('div', { class: 'proposal-field' }, [el('div', { class: 'muted', text: 'Как се връща' }), el('div', { class: 'proposal-text', raw: p.rollback })]) : null,
+      el('div', { class: 'toolbar', style: 'margin:6px 0 0' }, [
+        el('button', {
+          class: 'btn btn-primary btn-sm', text: '✔ Одобри и изпълни',
+          onclick: async () => {
+            const ok = await confirmDanger({
+              title: t('Одобрение на предложение от агент'),
+              what: [`${p.agent}: ${p.title}`, `${t(spec.title)} ${params}`, p.rollback ? `${t('Връщане:')} ${p.rollback}` : t('Без описан откат.')],
+              expect: 'одобри',
+              confirmLabel: 'Одобри и изпълни',
+              delayMs: 600,
+            });
+            if (!ok) return;
+            try {
+              const r3 = await api(`/proposals/${p.id}/approve`, { method: 'POST' });
+              if (r3.job) streamJob(r3.job.id, p.title);
+              else toast(t('Изпълнено'));
+              go('approvals');
+            } catch (e) { toast(e.message, 'bad'); go('approvals'); }
+          },
+        }),
+        el('button', {
+          class: 'btn btn-sm', text: 'Откажи',
+          onclick: async () => {
+            const note = prompt(t('Защо отказваш? (по избор — агентът ще го види)')) ?? null;
+            if (note === null) return;
+            try { await api(`/proposals/${p.id}/reject`, { method: 'POST', body: { note } }); go('approvals'); } catch (e) { toast(e.message, 'bad'); }
+          },
+        }),
+      ]),
+    ]);
+    view.appendChild(card);
+  }
+
+  const done = all.filter((p) => p.status !== 'pending').slice(0, 50);
+  view.appendChild(el('h3', { text: 'История', style: 'margin:22px 0 10px' }));
+  if (!done.length) {
+    view.appendChild(el('div', { class: 'empty', text: 'Още няма решени предложения.' }));
+    return;
+  }
+  view.appendChild(el('div', { class: 'table-wrap' }, [
+    tableEl(
+      ['Кога', 'Агент', 'Предложение', 'Действие', 'Статус', 'Решил'],
+      done.map((p) => {
+        const [kind, label] = PROPOSAL_STATUS[p.status] || ['dim', p.status];
+        return el('tr', {}, [
+          el('td', { raw: fmtWhen(new Date(p.createdAt).toISOString()) }),
+          el('td', { raw: p.agent }),
+          el('td', { raw: p.title }),
+          el('td', { class: 'mono', raw: p.action.type }),
+          el('td', {}, [pill(kind, label), p.jobId ? el('button', { class: 'btn btn-sm', text: '👁 Изход', style: 'margin-left:6px', onclick: () => streamJob(p.jobId, p.title) }) : null]),
+          el('td', { raw: p.decidedBy || '—' }),
+        ]);
+      })
+    ),
+  ]));
+}
+
 async function renderAgents() {
   const view = document.getElementById('view');
   const [fleet, tools, mem] = await Promise.all([api('/agents/fleet'), api('/agents/tools'), api('/agents/memories').catch(() => ({ memories: [] }))]);

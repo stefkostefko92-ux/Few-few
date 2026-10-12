@@ -438,6 +438,14 @@ td .bar { min-width: 110px; }
 .modal-actions { display: flex; align-items: center; gap: 8px; }
 .modal .term-out { margin: 0; border: none; border-radius: 0; flex: 1; max-height: 78vh; }
 
+/* ── Одобрения (предложения от агентите) ─────────────────────────────────── */
+.proposal { border-left: 4px solid var(--warn); }
+.proposal-a { border-left-color: var(--danger); }
+.proposal-action { padding: 8px 10px; background: #000; border: 1px dashed var(--line); }
+.proposal-field { display: grid; gap: 3px; }
+.proposal-text { font-family: var(--sans); white-space: pre-wrap; overflow-wrap: anywhere; }
+.proposal .term-out { max-height: 220px; margin: 0; }
+
 /* ── Агенти ─────────────────────────────────────────────── */
 .agents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
 .agent-card { background: var(--panel); border: 1px solid var(--line); border-radius: 0; padding: 14px; }
