@@ -101,6 +101,8 @@ export function mountBookmarkCard(host, { compact = false, onProgress } = {}) {
     const state = enabled ? status?.state || 'running' : 'off';
     host.dataset.state = state;
     actions.hidden = state !== 'off';
+    // компактната покана („паметта ти още е млада…“) остарява след ученето
+    text.hidden = compact && state === 'done';
     progress.hidden = state !== 'running';
     if (state === 'running') {
       const pct = status?.total ? Math.round((status.done / status.total) * 100) : 4;
