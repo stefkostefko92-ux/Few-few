@@ -44,3 +44,20 @@ test('solo il titolare gestisce i colleghi, con i tre ruoli; mai titolare o piat
   assert.deepEqual(assignableRoles('ENGINEER'), []);
   assert.ok(isRole('OWNER') && isRole('SALES') && !isRole('VIEWER') && !isRole('ADMIN') && !isRole(7));
 });
+
+test('Rilievi: tutti leggono e compilano le schede; cestino al Progettista e al titolare, gestione del cestino al titolare', () => {
+  // rilievi: every role but the client writes (the supplier modules included) — LiftPilot has no client role
+  for (const r of ['ENGINEER', 'SALES', 'TECHNICIAN', 'OWNER', 'SUPERADMIN'] as const) assert.ok(can(r, 'rilievi:view') && can(r, 'rilievi:edit'), r);
+  // rilievi: RESPONSABILE and above move a sheet to the trash
+  assert.ok(can('ENGINEER', 'rilievi:trash') && can('OWNER', 'rilievi:trash') && can('SUPERADMIN', 'rilievi:trash'));
+  assert.ok(!can('SALES', 'rilievi:trash') && !can('TECHNICIAN', 'rilievi:trash'));
+  // rilievi: ADMIN and above see the trash, open a trashed sheet, restore it or delete it for good
+  assert.ok(can('OWNER', 'rilievi:trash-manage') && can('SUPERADMIN', 'rilievi:trash-manage'));
+  for (const r of MEMBER_ROLES) assert.ok(!can(r, 'rilievi:trash-manage'), r);
+  // read-only: view only
+  for (const r of ['OWNER', 'ENGINEER', 'TECHNICIAN'] as const) {
+    const ro = { role: r, readOnly: true };
+    assert.ok(can(ro, 'rilievi:view'), r);
+    assert.ok(!can(ro, 'rilievi:edit') && !can(ro, 'rilievi:trash') && !can(ro, 'rilievi:trash-manage'), r);
+  }
+});

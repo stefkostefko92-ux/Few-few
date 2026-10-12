@@ -77,6 +77,7 @@ model Company {
   liftDesigns          LiftDesign[]
   formDrafts           FormDraft[]
   invites              Invite[]
+  schede               Scheda[]
 }
 
 /// A logo uploaded by a company, immutable: a drawing set keeps the one it was issued with. PNG or JPEG, checked by
@@ -154,6 +155,9 @@ model User {
   roomDesigns        RoomDesign[]
   authTokens         AuthToken[]
   sessions           Session[]
+  schedeCreated      Scheda[]            @relation("SchedeCreated")
+  schedeUpdated      Scheda[]            @relation("SchedeUpdated")
+  schedeDeleted      Scheda[]            @relation("SchedeDeleted")
 
   @@index([companyId])
 }
@@ -603,4 +607,146 @@ model CustomPriceItem {
   updatedAt   DateTime   @updatedAt
 
   @@index([companyId, position])
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Rilievi (round 41): the survey sheets of an existing lift (schede di rilievo), ported 1:1 from the standalone rilievi
+// portal (commit 174a1e3aa). The field list is src/lib/rilievi/fields.ts; every column mirrors rilievi's Scheda (type,
+// nullability, precision); the company, the authors and the trash are LiftPilot's. Not immutable records: a sheet is
+// edited in place, guarded by updatedAt (optimistic concurrency, src/server/rilievi/service.ts).
+
+enum RilievoUbicazioneMacchina {
+  ALTO
+  BASSO
+}
+
+enum RilievoTipoImpianto {
+  ELETTRICO
+  IDRAULICO
+  GEARLESS
+}
+
+enum RilievoTipoPorte {
+  AUTOMATICHE
+  SEMIAUTOMATICHE
+  MANUALI
+}
+
+enum RilievoTelesoccorsoStato {
+  COMPLETO
+  MANCA_PERIFERICA
+}
+
+enum RilievoQuadroMarca {
+  PELAZZA
+  MOVILIFT
+  DMG
+  MASTECH
+  ALTRO
+}
+
+enum RilievoArganoMarca {
+  MONTANARI
+  ALTRO
+}
+
+/// A survey sheet of a company. `searchText` is written only by src/server/rilievi/service.ts (the searchable fields,
+/// normalised); the supplier modules are JSON {modulo, valori} or a real SQL NULL; deletedAt set = in the trash.
+model Scheda {
+  id                      String                      @id @default(cuid())
+  data                    DateTime                    @db.Date
+  indirizzo               String?                     @db.VarChar(200)
+  marca                   String?                     @db.VarChar(120)
+  matricola               String?                     @db.VarChar(20)
+  numeroImpianto          String?                     @db.VarChar(20)
+  buonoLavoro             String?                     @db.VarChar(60)
+  portataKg               Int?
+  capienzaPersone         Int?
+  fermate                 Int?
+  ubicazioneMacchina      RilievoUbicazioneMacchina[]
+  ubicazioneCassettina    Int?
+  parcheggio              String?                     @db.VarChar(300)
+  tipoImpianto            RilievoTipoImpianto[]
+  tipoPorte               RilievoTipoPorte[]
+  operatoreMarca          String?                     @db.VarChar(120)
+  lucePorte               String?                     @db.VarChar(60)
+  operatoreTensione       String?                     @db.VarChar(60)
+  doppioAccesso           Boolean?
+  bloccaPortine           Boolean?
+  autolivellamento        Boolean?
+  pattinoRetrattile       Boolean?
+  pattinoRetrattileNumero Int?
+  serrature               Boolean?
+  serratureNumero         Int?
+  serratureTipo           String?                     @db.VarChar(120)
+  luceVanoSostituire      Boolean?
+  funiDiametroMm          Decimal?                    @db.Decimal(6, 2)
+  funiTrefoli             Int?
+  funiNumero              Int?
+  funiLunghezzaM          Decimal?                    @db.Decimal(8, 2)
+  limitatoreTipo          String?                     @db.VarChar(120)
+  funicellaDiametroMm     Decimal?                    @db.Decimal(6, 2)
+  funicellaLunghezzaM     Decimal?                    @db.Decimal(8, 2)
+  tenditore               String?                     @db.VarChar(120)
+  caviNumero              Int?
+  caviConduttori          Int?
+  caviLunghezzaM          Decimal?                    @db.Decimal(8, 2)
+  telesoccorso            Boolean?
+  telesoccorsoStato       RilievoTelesoccorsoStato?
+  allarmePortineria       Boolean?
+  displayPortineria       Boolean?
+  noteQuadretto           String?
+  noteImpianto            String?
+  noteBottoniere          String?
+  bottoniereMisure        Boolean?
+  misureBottoniere        MisuraBottoniera[]
+  lavoriExtra             String?
+  quadroMarca             RilievoQuadroMarca?
+  quadroMarcaAltro        String?                     @db.VarChar(120)
+  quadroOrdine            Boolean?
+  /// the Pelazza order form {modulo, valori} (src/lib/rilievi/ordini/), or SQL NULL
+  ordineQuadro            Json?
+  arganoMarca             RilievoArganoMarca?
+  arganoMarcaAltro        String?                     @db.VarChar(120)
+  arganoPreventivo        Boolean?
+  /// the Montanari quotation request {modulo, valori}, or SQL NULL
+  preventivoArgano        Json?
+  searchText              String                      @default("")
+  companyId               String
+  company                 Company                     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdById             String?
+  createdBy               User?                       @relation("SchedeCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById             String?
+  updatedBy               User?                       @relation("SchedeUpdated", fields: [updatedById], references: [id], onDelete: SetNull)
+  deletedAt               DateTime?
+  deletedById             String?
+  deletedBy               User?                       @relation("SchedeDeleted", fields: [deletedById], references: [id], onDelete: SetNull)
+  createdAt               DateTime                    @default(now())
+  updatedAt               DateTime                    @updatedAt
+
+  @@index([companyId, deletedAt, updatedAt])
+  @@index([data])
+  @@index([matricola])
+  @@index([numeroImpianto])
+  @@index([deletedAt])
+  @@index([createdById])
+  @@index([updatedById])
+  @@index([deletedById])
+  @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin)
+}
+
+/// The measurements of an old push-button panel at one stop (1..300) of a sheet; `piano` null = the stop's number.
+model MisuraBottoniera {
+  id                 String   @id @default(cuid())
+  schedaId           String
+  scheda             Scheda   @relation(fields: [schedaId], references: [id], onDelete: Cascade)
+  fermata            Int
+  piano              String?  @db.VarChar(20)
+  lunghezzaMm        Decimal? @db.Decimal(7, 2)
+  larghezzaMm        Decimal? @db.Decimal(7, 2)
+  interasseSuperiore String?  @db.VarChar(60)
+  interasseInferiore String?  @db.VarChar(60)
+  display            Boolean?
+
+  @@unique([schedaId, fermata])
 }

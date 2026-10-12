@@ -1,0 +1,35 @@
+import { env } from '@/lib/env';
+import { log } from '@/lib/log';
+import { moduloFileName } from '@/lib/rilievi/form-help';
+import { slotByPath } from '@/lib/rilievi/ordini/registry';
+import { storedValori } from '@/lib/rilievi/ordini/valori';
+import { attachment, downloader, text } from '@/server/download';
+import { renderModulo } from '@/server/rilievi/modulo-pdf';
+import { sheetToShow } from '@/server/rilievi/pages';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+// A supplier's module filled in on a survey sheet (rilievi's GET /schede/:id/ordine-quadro and /preventivo-argano): the
+// official PDF with the stored values on it, apart from the sheet's PDF. The same rights as the sheet; a sheet of
+// another company, unknown, or without the module answered «Sì» and stored is 404. A blank module whose SHA-256 is not
+// its map's pin makes no PDF (500). `?inline=1` opens it in the browser (to print), otherwise it is saved.
+export async function GET(req: Request, { params }: { params: Promise<{ id: string; modulo: string }> }): Promise<Response> {
+  try {
+    const d = await downloader('rilievi-pdf', 30, 'rilievi:view');
+    if ('refused' in d) return d.refused;
+    const { user } = d;
+    const p = await params, slot = slotByPath(p.modulo);
+    if (!slot) return text(404, 'Not found');
+    const scheda = await sheetToShow(user, p.id);
+    if (!scheda || scheda[slot.question] !== true) return text(404, 'Not found');
+    const valori = storedValori(slot.modulo, scheda[slot.column]);
+    if (!valori) return text(404, 'Not found');
+    const pdf = await renderModulo(slot.modulo, valori, env().REPORT_FONT_DIR);
+    const inline = new URL(req.url).searchParams.get('inline') === '1';
+    return attachment(new Uint8Array(pdf), 'application/pdf', moduloFileName(slot.path, scheda), inline ? 'inline' : 'attachment');
+  } catch (err) {
+    log.error({ err }, 'rilievi module pdf failed');
+    return text(500, 'Module PDF generation failed');
+  }
+}

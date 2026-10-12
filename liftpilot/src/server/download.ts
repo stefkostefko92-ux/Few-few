@@ -13,9 +13,9 @@ export const text = (status: number, body: string): Response =>
 export const slug = (s: string, fallback = 'impianto'): string =>
   s.normalize('NFKD').replace(/[^\w\s-]/g, '').trim().replace(/[\s_]+/g, '-').toLowerCase().slice(0, 60) || fallback;
 
-/** A file to save, private to the user who asked for it. */
-export const attachment = (body: BodyInit, mime: string, name: string): Response => new Response(body, {
-  headers: { 'Content-Type': mime, 'Content-Disposition': `attachment; filename="${name}"`, 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' },
+/** A file to save, private to the user who asked for it; `inline` opens it in the browser instead (to print it). */
+export const attachment = (body: BodyInit, mime: string, name: string, disposition: 'attachment' | 'inline' = 'attachment'): Response => new Response(body, {
+  headers: { 'Content-Type': mime, 'Content-Disposition': `${disposition}; filename="${name}"`, 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' },
 });
 
 /** The user allowed to download (`capability`) at most `max` times in 10 minutes per `key`, or the answer refusing. */

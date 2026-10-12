@@ -99,7 +99,8 @@
     "search": "Cerca impianti",
     "searchPlaceholder": "Nome, indirizzo, matricola…",
     "beta": "Beta gratuita",
-    "profile": "Profilo normativo"
+    "profile": "Profilo normativo",
+    "rilievi": "Rilievi"
   },
   "roles": {
     "ENGINEER": "Progettista",
@@ -515,7 +516,12 @@
       "PRICES_UPDATED": "Listino prezzi aggiornato",
       "TERMS_ACCEPTED": "Condizioni accettate",
       "DATA_EXPORTED": "Dati dell’azienda esportati",
-      "ROOM_DESIGN_SAVED": "Rilievo del locale macchina salvato"
+      "ROOM_DESIGN_SAVED": "Rilievo del locale macchina salvato",
+      "SCHEDA_CREATED": "Scheda creata",
+      "SCHEDA_UPDATED": "Scheda modificata",
+      "SCHEDA_TRASHED": "Scheda nel cestino",
+      "SCHEDA_RESTORED": "Scheda ripristinata",
+      "SCHEDA_PURGED": "Scheda eliminata definitivamente"
     },
     "entities": {
       "User": "Utente",
@@ -524,7 +530,8 @@
       "Company": "Azienda",
       "ShaftDesign": "Progetto del vano",
       "DrawingSet": "Tavole",
-      "LiftDesign": "Progetto dell’impianto"
+      "LiftDesign": "Progetto dell’impianto",
+      "Scheda": "Scheda di rilievo"
     }
   },
   "shaft": {
@@ -2170,5 +2177,267 @@
     "note_mismatch": "Esito salvato da una versione precedente del software: contava {failCount} non superate e {warnCount} con attenzione, i dati salvati ne danno {fails} e {warns}. Aggiornalo per rifare l’esito.",
     "note_outdated": "Record da aggiornare: questo è l’elenco salvato con il record; la sua pagina mostra le verifiche ricalcolate dal software attuale, che possono essere diverse. Aggiornalo per rifare l’esito.",
     "note_unreadable": "I dati salvati non si leggono con il software attuale: apri il record e aggiornalo per vedere le verifiche."
+  },
+  "rilievi": {
+    "schede": {
+      "title": "Schede",
+      "subtitle": "Cerca per n° impianto, matricola, indirizzo, marca, buono di lavoro o note.",
+      "new": "Nuova scheda",
+      "count": "{n, plural, one {1 scheda} other {{n} schede}}",
+      "empty": "Ancora nessuna scheda.",
+      "createFirst": "Crea la prima scheda",
+      "openRow": "Apri la scheda {id}",
+      "back": "Tutte le schede",
+      "unsaved": "Modifiche non salvate",
+      "search": {
+        "label": "Cerca nelle schede",
+        "placeholder": "N° impianto, matricola, indirizzo…",
+        "found": "{n, plural, one {1 scheda per «{q}»} other {{n} schede per «{q}»}}",
+        "none": "Nessuna scheda per «{q}».",
+        "tip": "Prova con una parte del numero, della matricola o della via: maiuscole e accenti non contano."
+      },
+      "create": {
+        "title": "Nuova scheda",
+        "sub": "La data è quella di oggi: cambiala se il rilievo è di un altro giorno.",
+        "submit": "Salva scheda"
+      },
+      "edit": {
+        "title": "Modifica scheda",
+        "submit": "Salva modifiche"
+      },
+      "delete": {
+        "title": "Spostare la scheda nel cestino?",
+        "text": "Un amministratore potrà ripristinarla dal cestino.",
+        "confirm": "Sposta nel cestino"
+      },
+      "conflict": {
+        "title": "Qualcuno ha modificato questa scheda mentre la stavi compilando.",
+        "text": "I tuoi dati sono ancora qui sotto. Apri la versione attuale in un'altra scheda del browser e confronta: se salvi ora, sostituisci le modifiche dell'altra persona.",
+        "open": "Apri la versione attuale"
+      }
+    },
+    "scheda": {
+      "title": "Scheda rilievo impianto",
+      "titleImpianto": "Impianto n° {n}",
+      "titleMatricola": "Matricola {n}",
+      "dateLine": "Rilievo del {date}",
+      "noAddress": "Indirizzo non indicato",
+      "plateLabel": "Dati di targa",
+      "identifiers": "Identificazione",
+      "identifiersHint": "Compila almeno uno tra indirizzo, matricola e n° impianto: servono per ritrovare la scheda.",
+      "errorSummary": "{n, plural, one {Correggi 1 campo} other {Correggi {n} campi}}",
+      "meta": {
+        "created": "Creata da {name} il {at}",
+        "updated": "Ultima modifica di {name} il {at}"
+      },
+      "actions": {
+        "edit": "Modifica",
+        "print": "Stampa",
+        "pdf": "Scarica PDF",
+        "delete": "Elimina"
+      },
+      "section": {
+        "impianto": "Impianto",
+        "targa": "Dati di targa",
+        "ubicazione": "Ubicazione e accesso",
+        "tipologia": "Tipologia",
+        "funi": "Funi",
+        "limitatore": "Limitatore",
+        "cavi": "Cavi",
+        "allarme": "Allarme e telesoccorso",
+        "note": "Note e lavori",
+        "quadro": "Quadro",
+        "argano": "Argano"
+      },
+      "field": {
+        "data": "Data",
+        "indirizzo": "Indirizzo",
+        "marca": "Marca impianto",
+        "matricola": "Matricola",
+        "numeroImpianto": "N° impianto",
+        "buonoLavoro": "Buono di lavoro di riferimento",
+        "portataKg": "Portata",
+        "capienzaPersone": "Capienza",
+        "fermate": "Fermate",
+        "ubicazioneMacchina": "Ubicazione macchina",
+        "ubicazioneCassettina": "Ubicazione cassettina",
+        "parcheggio": "Parcheggio",
+        "tipoImpianto": "Tipo impianto",
+        "tipoPorte": "Tipo porte",
+        "operatoreMarca": "Marca operatore",
+        "lucePorte": "Luce porte",
+        "operatoreTensione": "Tensione operatore",
+        "doppioAccesso": "Doppio accesso",
+        "bloccaPortine": "Blocca portine",
+        "autolivellamento": "Autolivellamento",
+        "pattinoRetrattile": "Pattino retrattile",
+        "pattinoRetrattileNumero": "Numero pattini retrattili",
+        "serrature": "Serrature/sospensioni",
+        "serratureNumero": "Numero serrature/sospensioni",
+        "serratureTipo": "Tipo serrature/sospensioni",
+        "luceVanoSostituire": "Luce vano da sostituire",
+        "funiDiametroMm": "Diametro funi",
+        "funiTrefoli": "Trefoli funi",
+        "funiNumero": "Numero funi",
+        "funiLunghezzaM": "Lunghezza funi",
+        "limitatoreTipo": "Tipo limitatore",
+        "funicellaDiametroMm": "Diametro funicella",
+        "funicellaLunghezzaM": "Lunghezza funicella",
+        "tenditore": "Tenditore",
+        "caviNumero": "Numero cavi",
+        "caviConduttori": "Conduttori cavi",
+        "caviLunghezzaM": "Lunghezza cavi",
+        "telesoccorso": "Telesoccorso esistente",
+        "telesoccorsoStato": "Stato telesoccorso",
+        "allarmePortineria": "Allarme in portineria",
+        "displayPortineria": "Display in portineria",
+        "noteQuadretto": "Note quadretto elettrico",
+        "noteImpianto": "Note impianto",
+        "noteBottoniere": "Note bottoniere in opera",
+        "bottoniereMisure": "Misure bottoniere vecchie",
+        "lavoriExtra": "Lavori extra (buono di lavoro)",
+        "quadroMarca": "Marca quadro",
+        "quadroMarcaAltro": "Altra marca quadro",
+        "quadroOrdine": "Scheda per l'ordine quadro",
+        "arganoMarca": "Marca argano",
+        "arganoMarcaAltro": "Altra marca argano",
+        "arganoPreventivo": "Richiesta di preventivo argano"
+      },
+      "question": {
+        "bottoniereMisure": "Vuoi inserire le misure delle bottoniere vecchie?",
+        "quadroOrdine": "Vuoi compilare la scheda per l'ordine quadro?",
+        "arganoPreventivo": "Vuoi compilare la richiesta di preventivo argano?"
+      },
+      "option": {
+        "ubicazioneMacchina": {
+          "ALTO": "Alto",
+          "BASSO": "Basso"
+        },
+        "tipoImpianto": {
+          "ELETTRICO": "Elettrico",
+          "IDRAULICO": "Idraulico",
+          "GEARLESS": "Gearless"
+        },
+        "tipoPorte": {
+          "AUTOMATICHE": "Automatiche",
+          "SEMIAUTOMATICHE": "Semiautomatiche",
+          "MANUALI": "Manuali"
+        },
+        "telesoccorsoStato": {
+          "COMPLETO": "Completo",
+          "MANCA_PERIFERICA": "Manca periferica"
+        },
+        "quadroMarca": {
+          "PELAZZA": "Pelazza",
+          "MOVILIFT": "Movilift",
+          "DMG": "DMG",
+          "MASTECH": "Mastech",
+          "ALTRO": "Altro"
+        },
+        "arganoMarca": {
+          "MONTANARI": "Montanari",
+          "ALTRO": "Altro"
+        }
+      },
+      "unit": {
+        "kg": "kg",
+        "persone": "{n, plural, one {persona} other {persone}}",
+        "mm": "mm",
+        "m": "m"
+      },
+      "misure": {
+        "row": "Fermata {n}",
+        "fermata": "Fermata",
+        "needFermate": "Indica prima le fermate in «Dati di targa»: qui compare una riga per ogni fermata.",
+        "errorLabel": "{col}, fermata {n}",
+        "col": {
+          "piano": "Piano",
+          "lunghezzaMm": "Lunghezza",
+          "larghezzaMm": "Larghezza",
+          "interasseSuperiore": "Interasse foro superiore",
+          "interasseInferiore": "Interasse foro inferiore",
+          "display": "Display"
+        }
+      },
+      "error": {
+        "invalid": "Valore non valido.",
+        "required": "Indica la data del rilievo.",
+        "invalidDate": "Data non valida.",
+        "tooLong": "Massimo {maxLength} caratteri.",
+        "digitsOnly": "Solo cifre, senza lettere o simboli.",
+        "integer": "Inserisci un numero intero.",
+        "decimal": "Inserisci un numero, ad esempio 6,5.",
+        "decimalPlaces": "Al massimo 2 decimali.",
+        "range": "Inserisci un valore tra {min} e {max}.",
+        "option": "Scelta non valida.",
+        "identifierNeeded": "Compila almeno indirizzo, matricola o n° impianto."
+      },
+      "compiledBy": "Compilata da",
+      "index": "Sezioni della scheda"
+    },
+    "trash": {
+      "title": "Cestino",
+      "subtitle": "Schede eliminate: ripristinale o eliminale definitivamente.",
+      "empty": "Il cestino è vuoto.",
+      "deletedAt": "Eliminata il",
+      "restore": "Ripristina",
+      "purge": "Elimina definitivamente",
+      "banner": "Nel cestino dal {at} (eliminata da {name}).",
+      "purgeTitle": "Eliminare definitivamente la scheda?",
+      "purgeText": "L'operazione non si può annullare: la scheda sparirà dal portale.",
+      "purgeConfirm": "Elimina definitivamente"
+    },
+    "print": {
+      "back": "Torna alla scheda"
+    },
+    "pdf": {
+      "generated": "Generato il {at} da {name}",
+      "page": "Pagina {page} di {pages}"
+    },
+    "ordini": {
+      "hint": "Il modulo originale del fornitore, con gli stessi campi nello stesso ordine. Esce in un PDF a parte, identico all'originale: non entra nel PDF della scheda.",
+      "download": "Scarica PDF",
+      "print": "Stampa",
+      "errorLabel": "{label} ({fornitore})"
+    },
+    "common": {
+      "yes": "Sì",
+      "no": "No",
+      "cancel": "Annulla",
+      "actions": "Azioni"
+    },
+    "pager": {
+      "label": "Pagine",
+      "prev": "Precedente",
+      "next": "Successiva",
+      "status": "Pagina {page} di {pages}"
+    },
+    "nav": {
+      "schede": "Schede",
+      "cestino": "Cestino"
+    },
+    "error": {
+      "badInput": "I dati inviati non sono leggibili. Ricarica la pagina e riprova.",
+      "tooLarge": "Il testo inviato è troppo lungo. Accorcia le note e riprova.",
+      "forbiddenTitle": "Accesso negato",
+      "forbidden": "Il tuo ruolo non permette questa operazione. Se ti serve, chiedi a chi ti ha invitato.",
+      "notFoundTitle": "Pagina non trovata",
+      "notFound": "Questa pagina non esiste o la scheda è stata eliminata.",
+      "tooManyTitle": "Troppe richieste",
+      "tooMany": "Troppe richieste in poco tempo. Attendi un minuto e riprova.",
+      "loginNeeded": "Sessione scaduta: accedi di nuovo.",
+      "toSchede": "Torna alle schede"
+    },
+    "flash": {
+      "schedaCreated": "Scheda salvata.",
+      "schedaSaved": "Modifiche salvate.",
+      "schedaTrashed": "Scheda spostata nel cestino.",
+      "schedaRestored": "Scheda ripristinata.",
+      "schedaPurged": "Scheda eliminata definitivamente.",
+      "notAllowed": "Operazione non consentita per il tuo ruolo."
+    },
+    "audit": {
+      "openScheda": "Apri scheda"
+    }
   }
 }

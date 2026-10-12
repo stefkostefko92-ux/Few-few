@@ -364,7 +364,26 @@ prisma/              schema + migrations/0_init (тригер: без UPDATE н�
                      на шахтата или от машинно — CHECK точно едно; CustomPriceItem — свободните редове с PriceBasis/PriceScope),
                      10_sessions_pending_registrations (Session — сесиите в базата; PendingRegistration — чакащите регистрации),
                      11_drawing_set_pdf (DrawingSetPdf — PDF-ът на издадения комплект, какъвто е издаден; тригер: не се мени),
-                     12_form_drafts (FormDraft — черновата на формуляр по проект и обхват; не е запис: без хеш и тригер).
+                     12_form_drafts (FormDraft — черновата на формуляр по проект и обхват; не е запис: без хеш и тригер),
+                     15_rilievi (Scheda + MisuraBottoniera с енумите Rilievo*, pg_trgm и GIN индексът на searchText,
+                     CHECK на спирките 1..300 и на JSON на модулите; адитивна).
+src/lib/rilievi/     Rilievi (кръг 41) — картите за оглед, чисто (и в браузъра): fields + field-types (ЕДИНСТВЕНИЯТ списък на
+                     полетата, условията `when`, activeFields), field-parsers + validation (zod по вида, parseScheda,
+                     formValuesFromBody), misure (бутониерите по спирки, mb-<спирка>-<колона>), format (displaySections,
+                     formValuesFromScheda, schedaTitle, emptyFormValues), search (нормализаторът, думите, highlight), fmt
+                     (датите и числата на rilievi с фиксирани разделители), time (денят в Рим), inputs (bodyOf — формата
+                     като urlencoded на rilievi; id, base, търсене, страница), form-help (етикетите и текстовете на грешките,
+                     имената на PDF-ите, флаш ключовете), prefill-client (правилата на браузъра за модулите), action-state
+                     (отговорите на действията), t + i18n (преводачът на `rilievi` през use-intl/core); ordini/ — moduli
+                     (картите на полетата на Pelazza и Montanari, zod), registry (SLOTS), valori, prefill, form (withPrefill,
+                     moduloSpec за формата).
+src/server/rilievi/  queries (списък и търсене със SQL параметри, getScheda — по фирма, логото на фирмата), service (запис с
+                     мерките и одита в една транзакция, base → конфликт, кошче, окончателно), pages (каквото страниците
+                     искат: картата по правата, стойностите на формата с предварителното попълване, списъкът и кошчето),
+                     actions ('use server': създаване, промяна, кошче, възстановяване, окончателно), pdf + pdf-layout +
+                     pdf-table (PDF-ът на картата, pdfkit + DejaVu), moduli-pdf (празните PDF-и, SHA-256), modulo-pdf
+                     (попълнените модули, pdf-lib). Маршрутите: src/app/api/rilievi/[id]/pdf и [id]/[modulo]
+                     (ordine-quadro, preventivo-argano). assets/moduli/ — празните формуляри на доставчиците + картите им.
 deploy/              deploy.sh (сървърът: тайни, поща, бекъп, compose, health, nginx), nginx/liftpilot.conf. Dockerfile,
                      docker-compose.yml, docker-entrypoint.sh.
 brand/premium/       Изходниците на облика LiftPilot Premium: wordmark, емблема, иконата на приложението, favicon,

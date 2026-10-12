@@ -8,8 +8,9 @@ const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   // native or Node-only packages stay outside the server bundle; acad-ts looks classes up by name, which the
-  // minifier would rename (see src/lib/cad/acad.ts for the browser)
-  serverExternalPackages: ['argon2', 'pino', '@node-projects/acad-ts'],
+  // minifier would rename (see src/lib/cad/acad.ts for the browser); pdfkit reads its font data files next to its own
+  // code at run time (the survey sheet's PDF, src/server/rilievi/pdf.ts)
+  serverExternalPackages: ['argon2', 'pino', '@node-projects/acad-ts', 'pdfkit'],
   async headers() {
     return [
       {

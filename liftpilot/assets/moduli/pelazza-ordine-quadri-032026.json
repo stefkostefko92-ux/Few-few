@@ -1,0 +1,1352 @@
+{
+  "id": "pelazza-ordine-quadri-032026",
+  "fornitore": "Pelazza Peppino",
+  "titolo": "Modulo d'ordine quadri",
+  "fonte": "https://www.pelazza.com/wp-content/uploads/2026/03/Modulo_Ordine_Quadri_032026.pdf",
+  "file": "pelazza-ordine-quadri-032026.pdf",
+  "sha256": "974721c0160453193bb54ee4966cf91602eb2916080235675d56ff66cbc62598",
+  "tipo": "overlay",
+  "gruppi": [
+    {
+      "titolo": "Intestazione",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "offerta",
+              "kind": "check",
+              "label": "OFFERTA",
+              "box": [195.6, 34.68, 204.72, 45.84]
+            },
+            {
+              "key": "ordine",
+              "kind": "check",
+              "label": "ORDINE",
+              "box": [321.0, 34.68, 330.96, 45.84]
+            },
+            {
+              "key": "data",
+              "kind": "text",
+              "label": "Data:",
+              "maxLength": 43,
+              "prefill": "data",
+              "line": [446.72, 581.34, 46.32]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "cliente",
+              "kind": "text",
+              "label": "Cliente:",
+              "maxLength": 77,
+              "prefill": "azienda",
+              "line": [79.16, 318.66, 80.4]
+            },
+            {
+              "key": "rifImpianto",
+              "kind": "text",
+              "label": "Rif. Impianto:",
+              "maxLength": 58,
+              "prefill": "rif",
+              "line": [399.32, 581.34, 80.4]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "quantita",
+              "kind": "text",
+              "label": "Quantità:",
+              "maxLength": 5,
+              "line": [79.16, 95.46, 97.68]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Tipo di Quadro",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "tq1Velocita",
+              "kind": "check",
+              "label": "1 Velocità",
+              "box": [195.6, 90.48, 204.72, 97.2]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "tq2Velocita",
+              "kind": "check",
+              "label": "2 Velocità",
+              "box": [195.6, 99.12, 204.72, 105.84]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "tqIdraulico",
+              "kind": "check",
+              "label": "Idraulico",
+              "prefill": "tipoImpianto=IDRAULICO",
+              "box": [195.6, 107.76, 204.72, 114.48]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "tqPiattaforma",
+              "kind": "check",
+              "label": "Piattaforma elevatrice",
+              "box": [195.6, 116.4, 204.72, 123.12]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "tqVvvfAperto",
+              "kind": "check",
+              "label": "VVVF solo anello aperto",
+              "box": [195.6, 125.04, 204.72, 131.76]
+            },
+            {
+              "key": "invDelta",
+              "kind": "check",
+              "label": "DELTA MS300",
+              "box": [321.0, 125.04, 330.96, 131.76]
+            },
+            {
+              "key": "invMitsubishi",
+              "kind": "check",
+              "label": "MITSUBISHI FRD-700",
+              "box": [398.28, 125.04, 408.24, 131.76]
+            },
+            {
+              "key": "invFujiAce",
+              "kind": "check",
+              "label": "FUJI ACE",
+              "box": [497.76, 125.04, 505.32, 131.76]
+            }
+          ],
+          "freccia": 1
+        },
+        {
+          "campi": [
+            {
+              "key": "tqVvvfChiuso",
+              "kind": "check",
+              "label": "VVVF anello aperto/chiuso",
+              "box": [195.6, 133.68, 204.72, 140.4]
+            },
+            {
+              "key": "invOmron",
+              "kind": "check",
+              "label": "OMRON L1000A",
+              "box": [321.0, 133.68, 330.96, 140.4]
+            },
+            {
+              "key": "invFujiLm2a",
+              "kind": "check",
+              "label": "FUJI LM2A",
+              "box": [398.28, 133.68, 408.24, 140.4]
+            },
+            {
+              "key": "invZiehl",
+              "kind": "check",
+              "label": "ZIEHL-ABEGG",
+              "box": [497.76, 133.68, 505.32, 140.4]
+            }
+          ],
+          "freccia": 1
+        }
+      ]
+    },
+    {
+      "titolo": "Porte",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "porteManuali",
+              "kind": "check",
+              "label": "Manuali",
+              "prefill": "tipoPorte=MANUALI",
+              "box": [321.0, 90.48, 330.96, 97.2]
+            },
+            {
+              "key": "porteAutomatiche",
+              "kind": "check",
+              "label": "Automatiche",
+              "prefill": "tipoPorte=AUTOMATICHE",
+              "box": [321.0, 99.12, 330.96, 105.84]
+            },
+            {
+              "key": "porteSemiautomatiche",
+              "kind": "check",
+              "label": "Semiautomatiche",
+              "prefill": "tipoPorte=SEMIAUTOMATICHE",
+              "box": [321.0, 107.76, 330.96, 114.48]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "corsa",
+              "kind": "text",
+              "label": "Corsa Mt.",
+              "maxLength": 26,
+              "line": [498.8, 581.34, 97.68]
+            },
+            {
+              "key": "hMinPiano",
+              "kind": "text",
+              "label": "H min. piano",
+              "maxLength": 26,
+              "line": [498.8, 581.34, 106.32]
+            },
+            {
+              "key": "velocita",
+              "kind": "text",
+              "label": "Velocità m/s",
+              "maxLength": 26,
+              "line": [498.8, 581.34, 114.96]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "nFermate",
+              "kind": "text",
+              "label": "N° Fermate:",
+              "maxLength": 27,
+              "prefill": "fermate",
+              "line": [79.16, 164.82, 161.88]
+            },
+            {
+              "key": "nAccessi",
+              "kind": "text",
+              "label": "N° Accessi:",
+              "maxLength": 23,
+              "prefill": "accessi",
+              "line": [258.2, 330.54, 161.88]
+            },
+            {
+              "key": "nServizi",
+              "kind": "text",
+              "label": "N° Servizi:",
+              "maxLength": 18,
+              "line": [446.72, 504.9, 161.88]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Quadro",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "quadroPlc",
+              "kind": "check",
+              "label": "Quadro a PLC",
+              "box": [97.8, 175.68, 106.08, 182.4]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "quadroMicroprocessore",
+              "kind": "check",
+              "label": "Quadro a Microprocessore",
+              "box": [97.8, 184.32, 106.08, 191.04]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Manovra",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "manUniversale",
+              "kind": "check",
+              "label": "Universale",
+              "box": [97.8, 199.56, 106.08, 206.28]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "manSimplex",
+              "kind": "check",
+              "label": "Simplex",
+              "box": [97.8, 208.2, 106.08, 214.92]
+            },
+            {
+              "key": "simplexSoloDiscesa",
+              "kind": "check",
+              "label": "Prenotazione solo discesa",
+              "box": [195.6, 208.2, 204.72, 214.92]
+            },
+            {
+              "key": "simplexSalitaDiscesa",
+              "kind": "check",
+              "label": "Prenotazione salita e discesa",
+              "box": [321.0, 208.2, 330.96, 214.92]
+            }
+          ],
+          "freccia": 1
+        },
+        {
+          "campi": [
+            {
+              "key": "manDuplex",
+              "kind": "check",
+              "label": "Duplex",
+              "box": [97.8, 216.84, 106.08, 223.56]
+            },
+            {
+              "key": "duplexSoloDiscesa",
+              "kind": "check",
+              "label": "Prenotazione solo discesa",
+              "box": [195.6, 216.84, 204.72, 223.56]
+            },
+            {
+              "key": "duplexSalitaDiscesa",
+              "kind": "check",
+              "label": "Prenotazione salita e discesa",
+              "box": [321.0, 216.84, 330.96, 223.56]
+            }
+          ],
+          "freccia": 1
+        },
+        {
+          "campi": [
+            {
+              "key": "manTriplex",
+              "kind": "check",
+              "label": "Triplex",
+              "box": [97.8, 225.48, 106.08, 232.2]
+            },
+            {
+              "key": "triplexSoloDiscesa",
+              "kind": "check",
+              "label": "Prenotazione solo discesa",
+              "box": [195.6, 225.48, 204.72, 232.2]
+            },
+            {
+              "key": "triplexSalitaDiscesa",
+              "kind": "check",
+              "label": "Prenotazione salita e discesa",
+              "box": [321.0, 225.48, 330.96, 232.2]
+            }
+          ],
+          "freccia": 1
+        },
+        {
+          "campi": [
+            {
+              "key": "manCoppia",
+              "kind": "check",
+              "label": "Imp. in coppia",
+              "box": [97.8, 234.12, 106.08, 240.84]
+            },
+            {
+              "key": "coppiaPiuVicino",
+              "kind": "check",
+              "label": "Con arrivo del più vicino",
+              "box": [195.6, 234.12, 204.72, 240.84]
+            },
+            {
+              "key": "coppiaInterferenza",
+              "kind": "check",
+              "label": "Con interferenza delle chiamate",
+              "box": [321.0, 234.12, 330.96, 240.84]
+            }
+          ],
+          "freccia": 1
+        }
+      ]
+    },
+    {
+      "titolo": "Circuiti",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "circuitoFrenoVcc",
+              "kind": "text",
+              "label": "Circuito del Freno Vcc:",
+              "maxLength": 47,
+              "line": [109.04, 254.82, 267.36]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "circuitoPattiniN",
+              "kind": "text",
+              "label": "Circuito per N°",
+              "maxLength": 8,
+              "prefill": "pattinoRetrattileNumero",
+              "line": [79.16, 105.66, 286.2]
+            },
+            {
+              "key": "pattiniRetrattiliVcc",
+              "kind": "text",
+              "label": "Pattini Retrattili Vcc:",
+              "maxLength": 18,
+              "line": [196.64, 254.82, 286.2]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "elettrovalvoleVcc",
+              "kind": "text",
+              "label": "Circuito Elettrovalvole Vcc:",
+              "maxLength": 14,
+              "line": [399.32, 443.34, 286.2]
+            },
+            {
+              "key": "valvolaEmergenzaVcc",
+              "kind": "text",
+              "label": "Valvola emergenza Vcc:",
+              "maxLength": 23,
+              "line": [508.28, 581.34, 286.2]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Emergenza",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "emSoloDiscesa",
+              "kind": "check",
+              "label": "solo discesa",
+              "box": [97.8, 299.88, 106.08, 306.6]
+            },
+            {
+              "key": "emDiscesaPorte",
+              "kind": "check",
+              "label": "per discesa ed apertura porte automatiche",
+              "box": [97.8, 308.52, 106.08, 315.24]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "emRiportoMrl",
+              "kind": "check",
+              "label": "Riporto al piano e apertura porte per sbilanciamento MRL",
+              "box": [321.0, 299.88, 330.96, 306.6]
+            },
+            {
+              "key": "emArd",
+              "kind": "check",
+              "label": "Dispositivo di emergenza ARD",
+              "box": [321.0, 308.52, 330.96, 315.24]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Operatore Porte",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "opVca",
+              "kind": "check",
+              "label": "Vca",
+              "box": [97.8, 323.64, 106.08, 333.36]
+            },
+            {
+              "key": "opVcaValore",
+              "kind": "text",
+              "label": "Vca (valore)",
+              "labelNascosta": true,
+              "maxLength": 25,
+              "line": [125.5, 204.3, 333.84]
+            },
+            {
+              "key": "opTrifase",
+              "kind": "check",
+              "label": "trifase",
+              "box": [257.16, 323.64, 267.84, 333.36]
+            },
+            {
+              "key": "opMonofase",
+              "kind": "check",
+              "label": "monofase",
+              "box": [321.0, 323.64, 330.96, 333.36]
+            }
+          ],
+          "freccia": 2
+        },
+        {
+          "campi": [
+            {
+              "key": "opRallentamento",
+              "kind": "check",
+              "label": "con rallentamento Vcc",
+              "box": [398.28, 323.64, 408.24, 333.36]
+            },
+            {
+              "key": "opRallentamentoVcc",
+              "kind": "text",
+              "label": "con rallentamento Vcc (valore)",
+              "labelNascosta": true,
+              "maxLength": 23,
+              "line": [508.28, 581.7, 333.84]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "opVcc",
+              "kind": "check",
+              "label": "Vcc",
+              "box": [97.8, 346.2, 106.08, 355.92]
+            },
+            {
+              "key": "opVccValore",
+              "kind": "text",
+              "label": "Vcc (valore)",
+              "labelNascosta": true,
+              "maxLength": 25,
+              "line": [125.0, 204.3, 356.4]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "opModello",
+              "kind": "text",
+              "label": "Modello",
+              "maxLength": 44,
+              "prefill": "operatoreMarca",
+              "line": [258.2, 394.86, 356.4]
+            },
+            {
+              "key": "opSottoTensione",
+              "kind": "check",
+              "label": "sotto tensione in marcia",
+              "box": [398.28, 346.2, 408.24, 355.92]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "op1Piani",
+              "kind": "text",
+              "label": "Operatore 1 apre ai piani",
+              "maxLength": 30,
+              "line": [172.5, 266.5, 373.68]
+            },
+            {
+              "key": "op2Piani",
+              "kind": "text",
+              "label": "Operatore 2 apre ai piani",
+              "maxLength": 25,
+              "line": [364.0, 443.34, 373.68]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "aperturaSelettiva",
+              "kind": "check",
+              "label": "Apertura selettiva",
+              "box": [497.76, 357.84, 505.32, 364.56]
+            },
+            {
+              "key": "aperturaContemporanea",
+              "kind": "check",
+              "label": "Apertura contemporanea",
+              "box": [497.76, 366.48, 505.32, 373.2]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Centralina",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "centOmar",
+              "kind": "check",
+              "label": "OMAR",
+              "box": [97.8, 380.88, 106.08, 387.6]
+            },
+            {
+              "key": "centGmv",
+              "kind": "check",
+              "label": "GMV",
+              "box": [97.8, 389.52, 106.08, 396.24]
+            },
+            {
+              "key": "centMoris",
+              "kind": "check",
+              "label": "MORIS",
+              "box": [97.8, 398.16, 106.08, 404.88]
+            },
+            {
+              "key": "cent2mc",
+              "kind": "check",
+              "label": "2MC",
+              "box": [97.8, 406.8, 106.08, 413.52]
+            },
+            {
+              "key": "centTulfer",
+              "kind": "check",
+              "label": "TULFER",
+              "box": [97.8, 415.44, 106.08, 422.16]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "centAltro",
+              "kind": "check",
+              "label": "ALTRO:",
+              "box": [97.8, 424.08, 106.08, 430.8]
+            },
+            {
+              "key": "centAltroNome",
+              "kind": "text",
+              "label": "ALTRO: (quale)",
+              "labelNascosta": true,
+              "maxLength": 27,
+              "line": [168.2, 254.82, 431.28]
+            }
+          ],
+          "freccia": 1
+        },
+        {
+          "campi": [
+            {
+              "key": "avvDiretto",
+              "kind": "check",
+              "label": "Avviamento: diretto",
+              "box": [398.28, 380.88, 408.24, 387.6]
+            },
+            {
+              "key": "avvValvolaMotorizzata",
+              "kind": "check",
+              "label": "Avviamento: diretto con valvola motorizzata",
+              "box": [398.28, 389.52, 408.24, 396.24]
+            },
+            {
+              "key": "avvStellaTriangolo",
+              "kind": "check",
+              "label": "Avviamento: stella-triangolo",
+              "box": [398.28, 398.16, 408.24, 404.88]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "avvSoftStarter",
+              "kind": "check",
+              "label": "Avviamento: con Soft Starter",
+              "box": [398.28, 406.8, 408.24, 413.52]
+            },
+            {
+              "key": "avvSoftStarterElettrovalvola",
+              "kind": "check",
+              "label": "Avviamento: con Soft Starter ed elettrovalvola di avviamento",
+              "box": [398.28, 415.44, 408.24, 422.16]
+            },
+            {
+              "key": "avvSoftStop",
+              "kind": "check",
+              "label": "Fermata Soft Stop",
+              "box": [398.28, 424.08, 408.24, 430.8]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Motore",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "motHp",
+              "kind": "text",
+              "label": "Hp",
+              "maxLength": 17,
+              "line": [109.04, 164.82, 449.4]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "motVca",
+              "kind": "text",
+              "label": "Vca",
+              "maxLength": 17,
+              "line": [109.04, 164.82, 461.04]
+            },
+            {
+              "key": "motTrifase",
+              "kind": "check",
+              "label": "Trifase",
+              "box": [195.6, 450.84, 204.72, 460.56]
+            },
+            {
+              "key": "motMonofase",
+              "kind": "check",
+              "label": "Monofase",
+              "box": [257.16, 450.84, 267.84, 460.56]
+            }
+          ],
+          "freccia": 1
+        },
+        {
+          "campi": [
+            {
+              "key": "motIn",
+              "kind": "text",
+              "label": "In (A)",
+              "maxLength": 15,
+              "line": [109.04, 156.5, 472.68]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "salvaTermistori",
+              "kind": "check",
+              "label": "Salvamotori: Motore principale con termistori",
+              "box": [398.28, 450.84, 408.24, 460.56]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "salvaTermico",
+              "kind": "check",
+              "label": "Salvamotori: Termico",
+              "box": [398.28, 462.48, 408.24, 472.2]
+            },
+            {
+              "key": "salvaTermicoAmpere",
+              "kind": "text",
+              "label": "Termico — Ampere Motore princ",
+              "labelNascosta": true,
+              "maxLength": 15,
+              "line": [446.72, 495.42, 472.68]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "salvaMotorePorte",
+              "kind": "check",
+              "label": "Salvamotori: Protezione Motore Porte",
+              "box": [398.28, 474.12, 408.24, 483.84]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Segnalazioni in cabina com +",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "cabVolt",
+              "kind": "text",
+              "label": "Volt",
+              "maxLength": 21,
+              "line": [98.84, 164.82, 524.64]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "cabPosizione",
+              "kind": "check",
+              "label": "posizione",
+              "box": [195.6, 491.52, 204.72, 498.24]
+            },
+            {
+              "key": "cabPrenotato",
+              "kind": "check",
+              "label": "prenotato",
+              "box": [195.6, 500.16, 204.72, 506.88]
+            },
+            {
+              "key": "cabDirezione",
+              "kind": "check",
+              "label": "direzione",
+              "box": [195.6, 508.8, 204.72, 515.52]
+            },
+            {
+              "key": "cabSovraccarico",
+              "kind": "check",
+              "label": "sovraccarico",
+              "box": [195.6, 517.44, 204.72, 524.16]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "cabGong",
+              "kind": "check",
+              "label": "gong",
+              "box": [195.6, 526.08, 204.72, 532.8]
+            },
+            {
+              "key": "cabAttendente",
+              "kind": "check",
+              "label": "attendente - lift",
+              "box": [195.6, 534.72, 204.72, 541.44]
+            },
+            {
+              "key": "cabLuceEmergenza",
+              "kind": "check",
+              "label": "luce emergenza",
+              "box": [195.6, 543.36, 204.72, 550.08]
+            },
+            {
+              "key": "cabSintesiVocale",
+              "kind": "check",
+              "label": "sintesi vocale",
+              "box": [195.6, 552.0, 204.72, 558.72]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "encoderDisplayTipo",
+              "kind": "text",
+              "label": "Encoder display: Tipo",
+              "maxLength": 21,
+              "line": [98.84, 164.82, 550.56]
+            },
+            {
+              "key": "fotocellulaVolt",
+              "kind": "text",
+              "label": "Fotocellula: Volt",
+              "maxLength": 21,
+              "line": [98.84, 164.82, 567.84]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Segnalazioni ai piani",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "pianiPresente",
+              "kind": "check",
+              "label": "presente",
+              "box": [321.0, 491.52, 330.96, 498.24]
+            },
+            {
+              "key": "pianiDalleSerrature",
+              "kind": "check",
+              "label": "dalle serrature",
+              "box": [398.28, 491.52, 408.24, 498.24]
+            },
+            {
+              "key": "pianiDalQuadro",
+              "kind": "check",
+              "label": "dal quadro",
+              "box": [497.76, 491.52, 505.32, 498.24]
+            }
+          ],
+          "freccia": 1
+        },
+        {
+          "campi": [
+            {
+              "key": "pianiOccupato",
+              "kind": "check",
+              "label": "occupato",
+              "box": [321.0, 500.16, 330.96, 506.88]
+            },
+            {
+              "key": "pianiFisso",
+              "kind": "check",
+              "label": "fisso",
+              "box": [398.28, 500.16, 408.24, 506.88]
+            },
+            {
+              "key": "pianiLampeggiante",
+              "kind": "check",
+              "label": "lampeggiante",
+              "box": [497.76, 500.16, 505.32, 506.88]
+            }
+          ],
+          "freccia": 1
+        },
+        {
+          "campi": [
+            {
+              "key": "pianiInArrivo",
+              "kind": "check",
+              "label": "in arrivo",
+              "box": [321.0, 508.8, 330.96, 515.52]
+            },
+            {
+              "key": "pianiFuoriServizio",
+              "kind": "check",
+              "label": "fuori servizio",
+              "box": [321.0, 517.44, 330.96, 524.16]
+            },
+            {
+              "key": "pianiPrenotato",
+              "kind": "check",
+              "label": "prenotato",
+              "box": [321.0, 526.08, 330.96, 532.8]
+            },
+            {
+              "key": "pianiDirezione",
+              "kind": "check",
+              "label": "direzione",
+              "box": [321.0, 534.72, 330.96, 541.44]
+            },
+            {
+              "key": "pianiGong",
+              "kind": "check",
+              "label": "gong",
+              "box": [321.0, 543.36, 330.96, 550.08]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "pianiPosizionePrincipale",
+              "kind": "check",
+              "label": "posizione al piano principale",
+              "box": [321.0, 552.0, 330.96, 558.72]
+            },
+            {
+              "key": "pianiPosizioneTutti",
+              "kind": "check",
+              "label": "posizione a tutti i piani",
+              "box": [321.0, 560.64, 330.96, 567.36]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Manovra pompieri con chiave in cabina",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "pompieriRitorno",
+              "kind": "check",
+              "label": "con ritorno alla fermata",
+              "box": [97.8, 580.8, 106.08, 587.52]
+            },
+            {
+              "key": "pompieriFermata",
+              "kind": "text",
+              "label": "con ritorno alla fermata (quale)",
+              "labelNascosta": true,
+              "maxLength": 18,
+              "line": [196.64, 254.82, 588.0]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "manovraOspedaliera",
+              "kind": "check",
+              "label": "Manovra ospedaliera",
+              "box": [321.0, 580.8, 330.96, 587.52]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Norme",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "normaEn8120",
+              "kind": "check",
+              "label": "EN 81-20/50",
+              "box": [497.76, 580.8, 505.32, 587.52]
+            },
+            {
+              "key": "norma10411",
+              "kind": "check",
+              "label": "10411:2024",
+              "box": [497.76, 589.44, 505.32, 596.16]
+            },
+            {
+              "key": "normaLegge13",
+              "kind": "check",
+              "label": "Legge 13",
+              "box": [497.76, 598.08, 505.32, 604.8]
+            },
+            {
+              "key": "normaEn8170",
+              "kind": "check",
+              "label": "EN 81-70",
+              "box": [497.76, 606.72, 505.32, 613.44]
+            },
+            {
+              "key": "normaEn8172",
+              "kind": "check",
+              "label": "EN 81-72",
+              "box": [497.76, 615.36, 505.32, 622.08]
+            },
+            {
+              "key": "normaEn8173",
+              "kind": "check",
+              "label": "EN 81-73",
+              "box": [497.76, 624.0, 505.32, 630.72]
+            },
+            {
+              "key": "normaEmendA3",
+              "kind": "check",
+              "label": "Emend. A3",
+              "box": [497.76, 632.64, 505.32, 639.36]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Stazionamento porte",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "stazAperte",
+              "kind": "check",
+              "label": "Aperte",
+              "box": [97.8, 606.72, 106.08, 613.44]
+            },
+            {
+              "key": "stazChiuse",
+              "kind": "check",
+              "label": "Chiuse",
+              "box": [97.8, 615.36, 106.08, 622.08]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "parcheggioAutomatico",
+              "kind": "check",
+              "label": "Ritorno automatico per parcheggio alla fermata:",
+              "box": [97.8, 632.64, 106.08, 639.36]
+            },
+            {
+              "key": "parcheggioFermata",
+              "kind": "text",
+              "label": "Ritorno automatico per parcheggio alla fermata (quale)",
+              "labelNascosta": true,
+              "maxLength": 23,
+              "line": [322.04, 395.94, 639.84]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Ventilazione Forzata Vca",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "ventVca",
+              "kind": "text",
+              "label": "Ventilazione Forzata Vca",
+              "maxLength": 17,
+              "line": [109.04, 164.82, 657.12]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "ventMonofase",
+              "kind": "check",
+              "label": "monofase",
+              "box": [195.6, 649.92, 204.72, 656.64]
+            },
+            {
+              "key": "ventTrifase",
+              "kind": "check",
+              "label": "trifase",
+              "box": [257.16, 649.92, 267.84, 656.64]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "ventAutonomo",
+              "kind": "check",
+              "label": "autonomo",
+              "box": [195.6, 658.56, 204.72, 665.28]
+            },
+            {
+              "key": "ventTeleruttore",
+              "kind": "check",
+              "label": "con teleruttore nel quadro",
+              "box": [257.16, 658.56, 267.84, 665.28]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Dimensioni quadro",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "dimLocaleMacchina",
+              "kind": "check",
+              "label": "per locale macchina",
+              "box": [497.76, 649.92, 505.32, 656.64]
+            },
+            {
+              "key": "dimArmadioCentralina",
+              "kind": "check",
+              "label": "per armadio centralina",
+              "box": [497.76, 658.56, 505.32, 665.28]
+            },
+            {
+              "key": "dimMrl",
+              "kind": "check",
+              "label": "per MRL 400 x 2220",
+              "box": [497.76, 667.2, 505.32, 673.92]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Accessori",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "managerlift",
+              "kind": "check",
+              "label": "MANAGERLIFT controllo da remoto",
+              "box": [97.8, 675.84, 106.08, 682.56]
+            },
+            {
+              "key": "bluetooth",
+              "kind": "check",
+              "label": "Modulo Bluetooth per APP",
+              "box": [97.8, 684.48, 106.08, 691.2]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "combTelFisso",
+              "kind": "check",
+              "label": "Combin. Telefonico linea fissa EN 81-28",
+              "box": [257.16, 675.84, 267.84, 682.56]
+            },
+            {
+              "key": "combTelGsm",
+              "kind": "check",
+              "label": "Combin. Telefonico GSM EN 81-28",
+              "box": [257.16, 684.48, 267.84, 691.2]
+            },
+            {
+              "key": "soloFiltroAllarme",
+              "kind": "check",
+              "label": "Solo filtro allarme",
+              "box": [398.28, 684.48, 408.24, 691.2]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "sensoriMagnetici",
+              "kind": "check",
+              "label": "sensori magnetici",
+              "box": [497.76, 693.12, 505.32, 699.84]
+            },
+            {
+              "key": "encoderLimax",
+              "kind": "check",
+              "label": "encoder LIMAX",
+              "box": [497.76, 701.76, 505.32, 708.48]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "predispEncoder",
+              "kind": "check",
+              "label": "predisp. encoder",
+              "box": [97.8, 701.76, 106.08, 708.48]
+            },
+            {
+              "key": "encoder1024",
+              "kind": "check",
+              "label": "encoder 1024 imp/giro",
+              "box": [195.6, 701.76, 204.72, 708.48]
+            },
+            {
+              "key": "termostatoAmbiente",
+              "kind": "check",
+              "label": "termostato ambiente",
+              "box": [321.0, 701.76, 330.96, 708.48]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "fondoMobile",
+              "kind": "check",
+              "label": "Fondo mobile",
+              "box": [97.8, 719.04, 106.08, 725.76]
+            },
+            {
+              "key": "fondoPienoCarico",
+              "kind": "check",
+              "label": "Pieno carico",
+              "box": [195.6, 719.04, 204.72, 725.76]
+            },
+            {
+              "key": "fondo30Kg",
+              "kind": "check",
+              "label": "30 Kg",
+              "box": [257.16, 719.04, 267.84, 725.76]
+            }
+          ],
+          "freccia": 1
+        },
+        {
+          "campi": [
+            {
+              "key": "precablato",
+              "kind": "check",
+              "label": "Precablato",
+              "box": [321.0, 719.04, 330.96, 725.76]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "portaschemi",
+              "kind": "check",
+              "label": "Portaschemi",
+              "box": [97.8, 736.32, 106.08, 743.04]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "cavoSchermato",
+              "kind": "check",
+              "label": "Cavo schermato",
+              "box": [195.6, 736.32, 204.72, 743.04]
+            },
+            {
+              "key": "cavoSchermatoMt",
+              "kind": "text",
+              "label": "Cavo schermato Mt",
+              "labelNascosta": true,
+              "maxLength": 12,
+              "line": [291.0, 330.54, 743.52]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Consegna e note",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "consegnaRichiesta",
+              "kind": "text",
+              "label": "CONSEGNA RICHIESTA :",
+              "maxLength": 92,
+              "line": [109.04, 396.3, 761.64]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "note",
+              "kind": "textarea",
+              "label": "NOTE:",
+              "maxLength": 600,
+              "area": [64.0, 775.6, 580.0, 810.4]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -35,19 +35,28 @@ export type Capability =
   | 'billing:manage'
   | 'company:edit'
   | 'company:export'
-  | 'platform:admin';
+  | 'platform:admin'
+  | 'rilievi:view'
+  | 'rilievi:edit'
+  | 'rilievi:trash'
+  | 'rilievi:trash-manage';
 
-const READ: readonly Capability[] = ['projects:view', 'calc:view', 'report:download'];
+// The survey sheets (Rilievi, src/lib/rilievi/): every role reads them and fills them in, the supplier modules included
+// (in the rilievi portal every role but the client wrote; LiftPilot has no client role); the Progettista and the owner
+// move a sheet to the trash (rilievi: RESPONSABILE and above); only the owner sees the trash, opens a trashed sheet,
+// restores it or deletes it for good (rilievi: ADMIN and above).
+const RILIEVI: readonly Capability[] = ['rilievi:view', 'rilievi:edit'];
+const READ: readonly Capability[] = ['projects:view', 'calc:view', 'report:download', ...RILIEVI];
 const WORK: readonly Capability[] = [...READ, 'projects:edit', 'calc:create', 'records:refresh'];
 const OWNER: readonly Capability[] = [...WORK, 'calc:review', 'projects:archive', 'prices:view', 'prices:edit', 'audit:view', 'users:manage',
-  'billing:manage', 'company:edit', 'company:export'];
+  'billing:manage', 'company:edit', 'company:export', 'rilievi:trash', 'rilievi:trash-manage'];
 
 /** What each role may do: the Commerciale sees, downloads and sees the prices; the Tecnico also edits the projects and
  *  makes the calculations; the Progettista also reviews them and archives projects; the owner everything of the company. */
 const CAPS: Readonly<Record<Role, ReadonlySet<Capability>>> = {
   SALES: new Set([...READ, 'prices:view']),
   TECHNICIAN: new Set(WORK),
-  ENGINEER: new Set([...WORK, 'calc:review', 'projects:archive']),
+  ENGINEER: new Set([...WORK, 'calc:review', 'projects:archive', 'rilievi:trash']),
   OWNER: new Set(OWNER),
   SUPERADMIN: new Set([...OWNER, 'platform:admin']),
 };
@@ -56,7 +65,9 @@ const CAPS: Readonly<Record<Role, ReadonlySet<Capability>>> = {
  *  may not do: it keeps reading, downloading, exporting its data, managing its colleagues and paying or cancelling. It
  *  also keeps making a record again with the running engines from what was entered ('records:refresh'): no new work, but
  *  the only way to the documents of a record the engines no longer reproduce (terms art. 10, Data Act art. 25). */
-const WRITES: ReadonlySet<Capability> = new Set(['projects:edit', 'calc:create', 'calc:review', 'projects:archive', 'prices:edit', 'company:edit']);
+const WRITES: ReadonlySet<Capability> = new Set(['projects:edit', 'calc:create', 'calc:review', 'projects:archive', 'prices:edit', 'company:edit',
+  // the survey sheets: read-only is view only — not even the trash, which exists to restore or delete
+  'rilievi:edit', 'rilievi:trash', 'rilievi:trash-manage']);
 
 /** Who asks: a role, or a signed-in user with the company's state (read only without a subscription). */
 export interface Principal {

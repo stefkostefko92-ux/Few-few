@@ -28,6 +28,8 @@ COPY --from=build --chown=node:node /app/.next ./.next
 COPY --from=build /app/public ./public
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/report ./report
+# the suppliers' blank order forms of Rilievi, pinned by SHA-256 (src/server/rilievi/moduli-pdf.ts)
+COPY --from=build /app/assets ./assets
 COPY --from=build /app/docs ./docs
 COPY --from=build /app/scripts ./scripts
 COPY --from=build /app/src ./src

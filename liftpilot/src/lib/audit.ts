@@ -1,5 +1,5 @@
 import 'server-only';
-import type { Prisma } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client';
 import { prisma } from './db';
 import { log } from './log';
 
@@ -15,7 +15,8 @@ export type AuditAction =
   | 'COMPANY_CREATED' | 'COMPANY_UPDATED' | 'COMPANY_DELETED' | 'INACTIVE_NOTICE_SENT'
   | 'SUBSCRIPTION_CHECKOUT' | 'SUBSCRIPTION_UPDATED' | 'SUBSCRIPTION_PACK_CHANGED' | 'SEATS_ENFORCED' | 'PRICES_UPDATED'
   | 'TERMS_ACCEPTED' | 'TERMS_NOTICE_SENT'
-  | 'DATA_EXPORTED';
+  | 'DATA_EXPORTED'
+  | 'SCHEDA_CREATED' | 'SCHEDA_UPDATED' | 'SCHEDA_TRASHED' | 'SCHEDA_RESTORED' | 'SCHEDA_PURGED';
 
 interface AuditInput {
   companyId: string | null;
@@ -35,4 +36,12 @@ export async function audit(input: AuditInput): Promise<void> {
   } catch (err) {
     log.error({ err, action: input.action }, 'audit write failed');
   }
+}
+
+/** The same record written inside a transaction (the survey sheets, src/server/rilievi/service.ts): the change and its
+ *  audit entry commit together or not at all, as in rilievi. Throws with the transaction. */
+export async function auditTx(tx: Prisma.TransactionClient | PrismaClient, input: AuditInput): Promise<void> {
+  await tx.auditLog.create({
+    data: { companyId: input.companyId, userId: input.userId, action: input.action, entity: input.entity, entityId: input.entityId ?? null, meta: input.meta },
+  });
 }
