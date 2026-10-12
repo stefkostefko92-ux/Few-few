@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — तुमच्या ब्राउझरची स्मृती"
+  },
+  "extDesc": {
+    "message": "तुम्ही वाचलेल्या पेजमध्ये अर्थानुसार शोध. सर्व काही स्थानिक पातळीवर होते — काहीही कधीही तुमच्या डिव्हाइसबाहेर जात नाही."
+  },
+  "cmdOpenSearch": {
+    "message": "Déjà शोध उघडा"
+  },
+  "searchTitle": {
+    "message": "Déjà — जे वाचले आहे ते शोधा"
+  },
+  "tagline": {
+    "message": "तुम्ही हे पाहिले आहे. Déjà ते शोधून देतो."
+  },
+  "searchPlaceholder": {
+    "message": "तुम्हाला जे आठवते त्याचे वर्णन करा… उदा. “सोडियम-आधारित बॅटऱ्यांवरील लेख”"
+  },
+  "searchButton": {
+    "message": "शोधा"
+  },
+  "statusSearching": {
+    "message": "स्मृतीत शोधत आहे… (पहिला शोध मॉडेल लोड करतो, ~10-30 सेकंद)"
+  },
+  "statusEmpty": {
+    "message": "काहीच सापडले नाही. एकतर तुम्ही ते कधी वाचलेच नाही, किंवा Déjà ने ते अजून लक्षात ठेवलेले नाही."
+  },
+  "statusResults": {
+    "message": "$COUNT$ आठवणी:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 आठवण:"
+  },
+  "errNoResponse": {
+    "message": "स्मृतीने उत्तर दिले नाही — पुन्हा प्रयत्न करा"
+  },
+  "recallVivid": {
+    "message": "स्पष्ट आठवण"
+  },
+  "recallHazy": {
+    "message": "धूसर आठवण"
+  },
+  "recallFaint": {
+    "message": "दूरची आठवण"
+  },
+  "statusError": {
+    "message": "शोध अयशस्वी: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "स्मृतीत: $COUNT$ पेज.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "स्मृतीत: 1 पेज."
+  },
+  "similarity": {
+    "message": "साम्य $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "$DATE$ रोजी वाचले",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "स्मृतीत $COUNT$ पेज",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "स्मृतीत 1 पेज"
+  },
+  "popupSleeping": {
+    "message": "स्मृती झोपली आहे"
+  },
+  "popupWaking": {
+    "message": "स्मृती जागी होत आहे…"
+  },
+  "popupOpenSearch": {
+    "message": "शोध उघडा"
+  },
+  "popupPause": {
+    "message": "लक्षात ठेवणे थांबवा"
+  },
+  "popupClear": {
+    "message": "स्मृती साफ करा"
+  },
+  "popupClearConfirm": {
+    "message": "लक्षात ठेवलेले सर्व काही हटवायचे? परत आणता येणार नाही."
+  },
+  "popupOptions": {
+    "message": "सेटिंग्ज"
+  },
+  "optionsTitle": {
+    "message": "Déjà — सेटिंग्ज"
+  },
+  "optRetentionLabel": {
+    "message": "पेज लक्षात ठेवा"
+  },
+  "optRetentionForever": {
+    "message": "कायमचे"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ महिने",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "जुनी पेज दिवसातून एकदा आपोआप हटवली जातात."
+  },
+  "optDenylistLabel": {
+    "message": "असे पत्ते कधीही लक्षात ठेवू नका ज्यांत हे असेल"
+  },
+  "optDenylistHelp": {
+    "message": "प्रत्येक ओळीत एक पॅटर्न. पत्त्याच्या कोणत्याही भागाशी जुळतो, उदा. “example.com” किंवा “/private”."
+  },
+  "optBuiltinLabel": {
+    "message": "अंगभूत संरक्षण (नेहमी सक्रिय)"
+  },
+  "optModelHostLabel": {
+    "message": "मॉडेलचा स्वतःचा मिरर (प्रगत)"
+  },
+  "optModelHostHelp": {
+    "message": "रिकामे = huggingface.co. ऑफलाइन/कॉर्पोरेट वातावरणासाठी तुमचा स्वतःचा सर्व्हर सेट करा."
+  },
+  "filterAll": {
+    "message": "सर्व"
+  },
+  "filterWeek": {
+    "message": "मागील आठवडा"
+  },
+  "filterMonth": {
+    "message": "मागील महिना"
+  },
+  "filterYear": {
+    "message": "मागील वर्ष"
+  },
+  "relatedLink": {
+    "message": "संबंधित आठवणी"
+  },
+  "relatedNone": {
+    "message": "जवळच्या आठवणी नाहीत"
+  },
+  "omniboxDefault": {
+    "message": "तुमच्या स्मृतीला विचारा — Déjà अर्थानुसार शोधतो"
+  },
+  "popupMemory": {
+    "message": "माझी स्मृती"
+  },
+  "memoryTitle": {
+    "message": "माझी स्मृती"
+  },
+  "memoryEmpty": {
+    "message": "स्मृती रिकामी आहे — काही पेज पाहा आणि परत या."
+  },
+  "memoryForget": {
+    "message": "विसरा"
+  },
+  "memoryExport": {
+    "message": "संग्रह डाउनलोड करा"
+  },
+  "memoryImport": {
+    "message": "संग्रहातून पुनर्संचयित करा"
+  },
+  "memoryImportConfirm": {
+    "message": "संग्रहातून पुनर्संचयित करायचे? जुळणारी पेज ओव्हरराइट होतील."
+  },
+  "optSave": {
+    "message": "सेव्ह करा"
+  },
+  "optSaved": {
+    "message": "सेव्ह झाले ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "मिरर https:// पत्ता असला पाहिजे"
+  },
+  "welcomeHeading": {
+    "message": "नमस्कार. मी तुमच्या ब्राउझरची स्मृती आहे."
+  },
+  "welcomeIntro": {
+    "message": "या क्षणापासून तुम्ही जे वाचाल ते मी लक्षात ठेवतो, म्हणजे नंतर तुम्हाला ते अर्थानुसार सापडेल — तुमच्या स्वतःच्या शब्दांत, नेमक्या शीर्षकाने नव्हे."
+  },
+  "welcomePoint1": {
+    "message": "सर्व काही तुमच्या डिव्हाइसवरच होते. ना सर्व्हर, ना क्लाउड, ना कोणताही डेटा पाठवला जातो — कुठेही नाही, कधीही नाही."
+  },
+  "welcomePoint2": {
+    "message": "मेल, चॅट, लॉगिन आणि बँकिंग कधीच लक्षात ठेवले जात नाहीत. लक्षात घ्या: संवेदनशील विषय मी पत्त्यावरून ओळखू शकत नाही — त्यांच्यासाठी विराम किंवा सेटिंग्जमधील तुमची स्वतःची यादी वापरा."
+  },
+  "welcomePoint3": {
+    "message": "नियंत्रण तुमच्या हातात: एका क्लिकमध्ये विराम, “स्मृती साफ करा” सर्व काही हटवते, आणि हवे असल्यास काही महिन्यांनंतर मी आपोआप विसरतो."
+  },
+  "welcomeCta": {
+    "message": "शोध उघडा"
+  },
+  "welcomeOptions": {
+    "message": "सेटिंग्ज"
+  },
+  "memoryFilter": {
+    "message": "तुमच्या स्मृतीत शोधा…"
+  },
+  "supportLink": {
+    "message": "Déjà ला साथ द्या"
+  },
+  "panelTitle": {
+    "message": "Déjà — सोबती"
+  },
+  "panelOnThisPage": {
+    "message": "या पेजच्या विषयावर"
+  },
+  "panelRecent": {
+    "message": "अलीकडील आठवणी"
+  },
+  "panelNoPage": {
+    "message": "एखादे वेब पेज उघडा आणि Déjà दाखवेल की तुम्ही त्याच्या विषयावर काय वाचले आहे."
+  },
+  "popupOpenPanel": {
+    "message": "साइड पॅनल"
+  },
+  "popupForgetPage": {
+    "message": "हे पेज विसरा"
+  },
+  "popupForgotten": {
+    "message": "विसरले ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: निवडलेला मजकूर लक्षात ठेवा"
+  },
+  "menuForget": {
+    "message": "Déjà: हे पेज विसरा"
+  },
+  "recentTitle": {
+    "message": "अलीकडील आठवणी"
+  },
+  "cmdOpenPanel": {
+    "message": "Déjà चे साइड पॅनल उघडा"
+  },
+  "welcomePoint4": {
+    "message": "तुम्ही पाहत असलेल्या पेजचा पत्ता आणि शीर्षक साइड पॅनलला दिसतात, जेणेकरून तुम्ही त्याच्या विषयावर काय वाचले आहे ते दाखवता येईल — फक्त सेशन मेमरीत. तुम्ही मुद्दाम सेव्ह केलेले उतारेही फक्त तुमच्याकडेच राहतात."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà अपडेट झाले आहे. नवीन: आता तुमचे बुकमार्कही अर्थानुसार शोधता येऊ शकतात — तुम्हाला हवे असल्यास. मी तुमच्या डेटाचे काय करतो ते हे आहे — काहीही तुमच्या डिव्हाइसबाहेर गेलेले नाही."
+  },
+  "optAmbientLabel": {
+    "message": "जिवंत पार्श्वभूमी"
+  },
+  "optAmbientHelp": {
+    "message": "काचेमागचे आठवणींचे जाळे हळूहळू वाहत असते. हालचालीमुळे लक्ष विचलित होत असेल तर ते बंद करा."
+  },
+  "bmTitle": {
+    "message": "तुमचे बुकमार्क शोधण्याजोगे करा — आत्ताच"
+  },
+  "bmText": {
+    "message": "Déjà पेज न उघडता तुमच्या बुकमार्कची शीर्षके आणि फोल्डर शिकतो. पहिल्याच मिनिटापासून ते अर्थानुसार शोधा — सर्व काही तुमच्या डिव्हाइसवरच राहते."
+  },
+  "bmTextShort": {
+    "message": "तुमची स्मृती अजून नवी आहे. मला तुमचे बुकमार्क शिकवा आणि आजच त्यांत अर्थानुसार शोधा."
+  },
+  "bmButton": {
+    "message": "माझे बुकमार्क शिका"
+  },
+  "bmNote": {
+    "message": "तुमचा ब्राउझर परवानगी मागेल. सेटिंग्जमधून तुम्ही ते कधीही बंद करू शकता."
+  },
+  "bmTitleRunning": {
+    "message": "तुमचे बुकमार्क शिकत आहे…"
+  },
+  "bmTitleDone": {
+    "message": "तुमचे बुकमार्क शोधता येतात"
+  },
+  "bmPreparing": {
+    "message": "तयारी करत आहे…"
+  },
+  "bmLearning": {
+    "message": "$TOTAL$ पैकी $DONE$ शिकून झाले",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà ला विराम दिला आहे — तुम्ही पुन्हा सुरू करताच मी पुढे चालू ठेवेन."
+  },
+  "bmError": {
+    "message": "शिकताना काहीतरी चुकले. पुढील बदलाच्या वेळी मी पुन्हा प्रयत्न करेन."
+  },
+  "bmDone": {
+    "message": "झाले — $COUNT$ बुकमार्क अर्थानुसार शोधता येतात आणि आपोआप सिंक राहतात.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "झाले — 1 बुकमार्क अर्थानुसार शोधता येतो आणि आपोआप सिंक राहतो."
+  },
+  "bmDenied": {
+    "message": "परवानगीशिवाय मला तुमचे बुकमार्क दिसू शकत नाहीत. तुम्ही कधीही पुन्हा प्रयत्न करू शकता."
+  },
+  "bmTry": {
+    "message": "करून पाहा:"
+  },
+  "bmBadge": {
+    "message": "बुकमार्क"
+  },
+  "bmAddedOn": {
+    "message": "$DATE$ रोजी बुकमार्क केले",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "स्मृतीतील बुकमार्क"
+  },
+  "optBookmarksHelp": {
+    "message": "मी तुमच्या बुकमार्कची शीर्षके आणि फोल्डर शिकतो (पेज न उघडता) आणि तुम्ही ते जोडता किंवा हटवता तसे अद्ययावत ठेवतो. बंद केल्यास ते स्मृतीतून काढले जातात — तुम्ही वाचलेली पेज राहतात."
+  },
+  "memoryFilterAll": {
+    "message": "सर्व"
+  },
+  "memoryFilterRead": {
+    "message": "वाचलेले"
+  },
+  "memoryFilterBookmarks": {
+    "message": "बुकमार्क"
+  },
+  "welcomePoint5": {
+    "message": "बुकमार्क — फक्त तुम्ही सुरू केल्यास: तेव्हा मी पेज न उघडता त्यांची शीर्षके आणि फोल्डर शिकतो. एका क्लिकमध्ये बंद होते."
+  },
+  "rateTitle": {
+    "message": "Déjà ने तुम्हाला काहीतरी शोधायला मदत केली — आतापर्यंत $COUNT$ वेळा",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "उपयोगी वाटत असेल तर स्टोअरमधील एक रेटिंग इतर लोकांना ते शोधायला मदत करते — 10 सेकंद लागतात. आणि काही खटकत असेल तर आम्हाला सांगा."
+  },
+  "rateButton": {
+    "message": "Déjà ला रेटिंग द्या"
+  },
+  "rateFeedback": {
+    "message": "काही काम करत नाही?"
+  },
+  "rateLater": {
+    "message": "आता नाही"
+  },
+  "rateThanks": {
+    "message": "धन्यवाद! याची खरोखर मदत होते."
+  },
+  "rateFeedbackThanks": {
+    "message": "धन्यवाद — आम्ही प्रत्येक संदेश वाचतो."
+  },
+  "rateFeedbackSubject": {
+    "message": "अभिप्राय"
+  },
+  "answerTitle": {
+    "message": "तुमच्या स्मृतीतून उत्तर"
+  },
+  "answerAsk": {
+    "message": "माझ्या स्मृतीतून उत्तर द्या"
+  },
+  "answerEnableTitle": {
+    "message": "Chrome च्या अंगभूत AI कडून उत्तरे"
+  },
+  "answerEnableText": {
+    "message": "Déjà तुम्ही वाचलेल्या मजकुरातून स्रोतांसह प्रश्नांची उत्तरे देऊ शकतो. Chrome त्याचे ऑन-डिव्हाइस मॉडेल (Gemini Nano) एकदाच डाउनलोड करतो — तुमचे प्रश्न आणि पेज कधीही तुमच्या कॉम्प्युटरबाहेर जात नाहीत."
+  },
+  "answerEnableButton": {
+    "message": "उत्तरे सुरू करा"
+  },
+  "answerNoThanks": {
+    "message": "नको, धन्यवाद"
+  },
+  "answerDownloading": {
+    "message": "Chrome मॉडेल डाउनलोड करत आहे… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "तुमच्या आठवणी वाचत आहे…"
+  },
+  "answerStop": {
+    "message": "थांबवा"
+  },
+  "answerFoot": {
+    "message": "Chrome च्या अंगभूत AI ने तुमच्या डिव्हाइसवर तुमच्या $COUNT$ आठवणींमधून लिहिले. स्रोत तपासून पाहा.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "या वेळी मला उत्तर तयार करता आले नाही."
+  },
+  "optAnswersLabel": {
+    "message": "Chrome च्या अंगभूत AI कडून उत्तरे"
+  },
+  "optAnswersHelp": {
+    "message": "“मी … बद्दल काय वाचले होते?” अशा प्रश्नांसाठी मी तुमच्या पेजमधील स्रोतांसह छोटे उत्तर लिहितो — पूर्णपणे तुमच्या डिव्हाइसवर, Chrome मधील Gemini Nano वापरून. यासाठी समर्थित कॉम्प्युटर आणि भाषा लागते (इंग्रजी, स्पॅनिश, जर्मन, फ्रेंच, जपानी)."
+  },
+  "optAnswersAvailable": {
+    "message": "या डिव्हाइसवर वापरण्यासाठी तयार."
+  },
+  "optAnswersDownloadable": {
+    "message": "समर्थित — तुमच्या पहिल्या प्रश्नावेळी Chrome मॉडेल डाउनलोड करेल."
+  },
+  "optAnswersUnavailable": {
+    "message": "हे डिव्हाइस किंवा इंटरफेसची भाषा Chrome च्या अंगभूत AI द्वारे समर्थित नाही."
+  },
+  "optAnswersUnsupported": {
+    "message": "या ब्राउझरमध्ये अंगभूत AI नाही — Déjà मधील बाकी सर्व नेहमीप्रमाणे काम करते."
+  }
+}

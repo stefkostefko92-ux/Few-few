@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — ਤੁਹਾਡੇ ਬ੍ਰਾਊਜ਼ਰ ਦੀ ਯਾਦਦਾਸ਼ਤ"
+  },
+  "extDesc": {
+    "message": "ਤੁਹਾਡੇ ਪੜ੍ਹੇ ਪੰਨਿਆਂ ਵਿੱਚ ਅਰਥ-ਆਧਾਰਿਤ ਖੋਜ। ਸਭ ਕੁਝ ਸਥਾਨਕ ਤੌਰ 'ਤੇ ਹੁੰਦਾ ਹੈ — ਕੁਝ ਵੀ ਕਦੇ ਤੁਹਾਡੇ ਡਿਵਾਈਸ ਤੋਂ ਬਾਹਰ ਨਹੀਂ ਜਾਂਦਾ।"
+  },
+  "cmdOpenSearch": {
+    "message": "Déjà ਖੋਜ ਖੋਲ੍ਹੋ"
+  },
+  "searchTitle": {
+    "message": "Déjà — ਜੋ ਪੜ੍ਹਿਆ ਹੈ, ਉਹ ਖੋਜੋ"
+  },
+  "tagline": {
+    "message": "ਤੁਸੀਂ ਇਹ ਦੇਖਿਆ ਹੈ। Déjà ਇਸਨੂੰ ਲੱਭ ਲੈਂਦਾ ਹੈ।"
+  },
+  "searchPlaceholder": {
+    "message": "ਜੋ ਯਾਦ ਹੈ ਉਸਦਾ ਵਰਣਨ ਕਰੋ… ਜਿਵੇਂ “ਸੋਡੀਅਮ-ਅਧਾਰਿਤ ਬੈਟਰੀਆਂ ਬਾਰੇ ਲੇਖ”"
+  },
+  "searchButton": {
+    "message": "ਖੋਜੋ"
+  },
+  "statusSearching": {
+    "message": "ਯਾਦਦਾਸ਼ਤ ਵਿੱਚ ਲੱਭ ਰਿਹਾ ਹਾਂ… (ਪਹਿਲੀ ਖੋਜ ਮਾਡਲ ਲੋਡ ਕਰਦੀ ਹੈ, ~10-30 ਸਕਿੰਟ)"
+  },
+  "statusEmpty": {
+    "message": "ਕੁਝ ਨਹੀਂ ਮਿਲਿਆ। ਜਾਂ ਤਾਂ ਤੁਸੀਂ ਇਸਨੂੰ ਕਦੇ ਪੜ੍ਹਿਆ ਹੀ ਨਹੀਂ, ਜਾਂ Déjà ਨੇ ਇਸਨੂੰ ਅਜੇ ਯਾਦ ਨਹੀਂ ਕੀਤਾ।"
+  },
+  "statusResults": {
+    "message": "$COUNT$ ਯਾਦਾਂ:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 ਯਾਦ:"
+  },
+  "errNoResponse": {
+    "message": "ਯਾਦਦਾਸ਼ਤ ਨੇ ਜਵਾਬ ਨਹੀਂ ਦਿੱਤਾ — ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ"
+  },
+  "recallVivid": {
+    "message": "ਸਾਫ਼ ਯਾਦ"
+  },
+  "recallHazy": {
+    "message": "ਧੁੰਦਲੀ ਯਾਦ"
+  },
+  "recallFaint": {
+    "message": "ਦੂਰ ਦੀ ਯਾਦ"
+  },
+  "statusError": {
+    "message": "ਖੋਜ ਅਸਫਲ ਰਹੀ: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "ਯਾਦਦਾਸ਼ਤ ਵਿੱਚ: $COUNT$ ਪੰਨੇ।",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "ਯਾਦਦਾਸ਼ਤ ਵਿੱਚ: 1 ਪੰਨਾ।"
+  },
+  "similarity": {
+    "message": "ਸਮਾਨਤਾ $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "$DATE$ ਨੂੰ ਪੜ੍ਹਿਆ",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "ਯਾਦਦਾਸ਼ਤ ਵਿੱਚ $COUNT$ ਪੰਨੇ",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "ਯਾਦਦਾਸ਼ਤ ਵਿੱਚ 1 ਪੰਨਾ"
+  },
+  "popupSleeping": {
+    "message": "ਯਾਦਦਾਸ਼ਤ ਸੌਂ ਰਹੀ ਹੈ"
+  },
+  "popupWaking": {
+    "message": "ਯਾਦਦਾਸ਼ਤ ਜਾਗ ਰਹੀ ਹੈ…"
+  },
+  "popupOpenSearch": {
+    "message": "ਖੋਜ ਖੋਲ੍ਹੋ"
+  },
+  "popupPause": {
+    "message": "ਯਾਦ ਰੱਖਣਾ ਰੋਕੋ"
+  },
+  "popupClear": {
+    "message": "ਯਾਦਦਾਸ਼ਤ ਸਾਫ਼ ਕਰੋ"
+  },
+  "popupClearConfirm": {
+    "message": "ਯਾਦ ਰੱਖਿਆ ਸਭ ਕੁਝ ਮਿਟਾਉਣਾ ਹੈ? ਵਾਪਸ ਨਹੀਂ ਲਿਆਂਦਾ ਜਾ ਸਕਦਾ।"
+  },
+  "popupOptions": {
+    "message": "ਸੈਟਿੰਗਾਂ"
+  },
+  "optionsTitle": {
+    "message": "Déjà — ਸੈਟਿੰਗਾਂ"
+  },
+  "optRetentionLabel": {
+    "message": "ਪੰਨੇ ਯਾਦ ਰੱਖੋ"
+  },
+  "optRetentionForever": {
+    "message": "ਹਮੇਸ਼ਾ ਲਈ"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ ਮਹੀਨੇ",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "ਪੁਰਾਣੇ ਪੰਨੇ ਦਿਨ ਵਿੱਚ ਇੱਕ ਵਾਰ ਆਪਣੇ-ਆਪ ਮਿਟਾ ਦਿੱਤੇ ਜਾਂਦੇ ਹਨ।"
+  },
+  "optDenylistLabel": {
+    "message": "ਅਜਿਹੇ ਪਤੇ ਕਦੇ ਯਾਦ ਨਾ ਰੱਖੋ ਜਿਨ੍ਹਾਂ ਵਿੱਚ ਇਹ ਹੋਵੇ"
+  },
+  "optDenylistHelp": {
+    "message": "ਹਰ ਲਾਈਨ ਵਿੱਚ ਇੱਕ ਪੈਟਰਨ। ਪਤੇ ਦੇ ਕਿਸੇ ਹਿੱਸੇ ਨਾਲ ਮੇਲ ਖਾਂਦਾ ਹੈ, ਜਿਵੇਂ “example.com” ਜਾਂ “/private”।"
+  },
+  "optBuiltinLabel": {
+    "message": "ਬਿਲਟ-ਇਨ ਸੁਰੱਖਿਆ (ਹਮੇਸ਼ਾ ਚਾਲੂ)"
+  },
+  "optModelHostLabel": {
+    "message": "ਮਾਡਲ ਦਾ ਆਪਣਾ ਮਿਰਰ (ਉੱਨਤ)"
+  },
+  "optModelHostHelp": {
+    "message": "ਖਾਲੀ = huggingface.co। ਆਫ਼ਲਾਈਨ/ਕਾਰਪੋਰੇਟ ਮਾਹੌਲ ਲਈ ਆਪਣਾ ਸਰਵਰ ਸੈੱਟ ਕਰੋ।"
+  },
+  "filterAll": {
+    "message": "ਸਾਰੇ"
+  },
+  "filterWeek": {
+    "message": "ਪਿਛਲਾ ਹਫ਼ਤਾ"
+  },
+  "filterMonth": {
+    "message": "ਪਿਛਲਾ ਮਹੀਨਾ"
+  },
+  "filterYear": {
+    "message": "ਪਿਛਲਾ ਸਾਲ"
+  },
+  "relatedLink": {
+    "message": "ਸੰਬੰਧਿਤ ਯਾਦਾਂ"
+  },
+  "relatedNone": {
+    "message": "ਕੋਈ ਨੇੜਲੀ ਯਾਦ ਨਹੀਂ"
+  },
+  "omniboxDefault": {
+    "message": "ਆਪਣੀ ਯਾਦਦਾਸ਼ਤ ਨੂੰ ਪੁੱਛੋ — Déjà ਅਰਥ ਦੇ ਆਧਾਰ 'ਤੇ ਖੋਜਦਾ ਹੈ"
+  },
+  "popupMemory": {
+    "message": "ਮੇਰੀ ਯਾਦਦਾਸ਼ਤ"
+  },
+  "memoryTitle": {
+    "message": "ਮੇਰੀ ਯਾਦਦਾਸ਼ਤ"
+  },
+  "memoryEmpty": {
+    "message": "ਯਾਦਦਾਸ਼ਤ ਖਾਲੀ ਹੈ — ਕੁਝ ਪੰਨੇ ਦੇਖੋ ਅਤੇ ਵਾਪਸ ਆਓ।"
+  },
+  "memoryForget": {
+    "message": "ਭੁੱਲ ਜਾਓ"
+  },
+  "memoryExport": {
+    "message": "ਪੁਰਾਲੇਖ ਡਾਊਨਲੋਡ ਕਰੋ"
+  },
+  "memoryImport": {
+    "message": "ਪੁਰਾਲੇਖ ਤੋਂ ਬਹਾਲ ਕਰੋ"
+  },
+  "memoryImportConfirm": {
+    "message": "ਪੁਰਾਲੇਖ ਤੋਂ ਬਹਾਲ ਕਰਨਾ ਹੈ? ਮੇਲ ਖਾਂਦੇ ਪੰਨੇ ਓਵਰਰਾਈਟ ਹੋ ਜਾਣਗੇ।"
+  },
+  "optSave": {
+    "message": "ਰੱਖਿਅਤ ਕਰੋ"
+  },
+  "optSaved": {
+    "message": "ਰੱਖਿਅਤ ਹੋ ਗਿਆ ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "ਮਿਰਰ ਇੱਕ https:// ਪਤਾ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ"
+  },
+  "welcomeHeading": {
+    "message": "ਹੈਲੋ। ਮੈਂ ਤੁਹਾਡੇ ਬ੍ਰਾਊਜ਼ਰ ਦੀ ਯਾਦਦਾਸ਼ਤ ਹਾਂ।"
+  },
+  "welcomeIntro": {
+    "message": "ਇਸ ਪਲ ਤੋਂ ਤੁਸੀਂ ਜੋ ਪੜ੍ਹਦੇ ਹੋ, ਮੈਂ ਉਹ ਯਾਦ ਰੱਖਦਾ ਹਾਂ, ਤਾਂ ਜੋ ਬਾਅਦ ਵਿੱਚ ਤੁਸੀਂ ਉਸਨੂੰ ਅਰਥ ਦੇ ਆਧਾਰ 'ਤੇ ਲੱਭ ਸਕੋ — ਆਪਣੇ ਸ਼ਬਦਾਂ ਵਿੱਚ, ਸਹੀ ਸਿਰਲੇਖ ਨਾਲ ਨਹੀਂ।"
+  },
+  "welcomePoint1": {
+    "message": "ਸਭ ਕੁਝ ਤੁਹਾਡੇ ਡਿਵਾਈਸ 'ਤੇ ਹੀ ਹੁੰਦਾ ਹੈ। ਨਾ ਸਰਵਰ, ਨਾ ਕਲਾਊਡ, ਨਾ ਕੋਈ ਡਾਟਾ ਭੇਜਿਆ ਜਾਂਦਾ — ਕਿਤੇ ਵੀ ਨਹੀਂ, ਕਦੇ ਵੀ ਨਹੀਂ।"
+  },
+  "welcomePoint2": {
+    "message": "ਮੇਲ, ਚੈਟ, ਲੌਗ-ਇਨ ਅਤੇ ਬੈਂਕਿੰਗ ਕਦੇ ਯਾਦ ਨਹੀਂ ਰੱਖੇ ਜਾਂਦੇ। ਧਿਆਨ ਦਿਓ: ਮੈਂ ਸੰਵੇਦਨਸ਼ੀਲ ਵਿਸ਼ਿਆਂ ਨੂੰ ਪਤੇ ਤੋਂ ਨਹੀਂ ਪਛਾਣ ਸਕਦਾ — ਉਨ੍ਹਾਂ ਲਈ ਵਿਰਾਮ ਜਾਂ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਆਪਣੀ ਸੂਚੀ ਵਰਤੋ।"
+  },
+  "welcomePoint3": {
+    "message": "ਕੰਟਰੋਲ ਤੁਹਾਡੇ ਹੱਥ ਵਿੱਚ ਹੈ: ਇੱਕ ਕਲਿੱਕ ਨਾਲ ਵਿਰਾਮ, “ਯਾਦਦਾਸ਼ਤ ਸਾਫ਼ ਕਰੋ” ਸਭ ਕੁਝ ਮਿਟਾ ਦਿੰਦਾ ਹੈ, ਅਤੇ ਜੇ ਤੁਸੀਂ ਚਾਹੋ ਤਾਂ ਮੈਂ ਕੁਝ ਮਹੀਨਿਆਂ ਬਾਅਦ ਆਪਣੇ-ਆਪ ਭੁੱਲ ਜਾਂਦਾ ਹਾਂ।"
+  },
+  "welcomeCta": {
+    "message": "ਖੋਜ ਖੋਲ੍ਹੋ"
+  },
+  "welcomeOptions": {
+    "message": "ਸੈਟਿੰਗਾਂ"
+  },
+  "memoryFilter": {
+    "message": "ਆਪਣੀ ਯਾਦਦਾਸ਼ਤ ਵਿੱਚ ਖੋਜੋ…"
+  },
+  "supportLink": {
+    "message": "Déjà ਦਾ ਸਾਥ ਦਿਓ"
+  },
+  "panelTitle": {
+    "message": "Déjà — ਸਾਥੀ"
+  },
+  "panelOnThisPage": {
+    "message": "ਇਸ ਪੰਨੇ ਦੇ ਵਿਸ਼ੇ 'ਤੇ"
+  },
+  "panelRecent": {
+    "message": "ਹਾਲੀਆ ਯਾਦਾਂ"
+  },
+  "panelNoPage": {
+    "message": "ਕੋਈ ਵੈੱਬ ਪੰਨਾ ਖੋਲ੍ਹੋ ਅਤੇ Déjà ਦਿਖਾਏਗਾ ਕਿ ਤੁਸੀਂ ਉਸਦੇ ਵਿਸ਼ੇ 'ਤੇ ਕੀ ਪੜ੍ਹਿਆ ਹੈ।"
+  },
+  "popupOpenPanel": {
+    "message": "ਸਾਈਡ ਪੈਨਲ"
+  },
+  "popupForgetPage": {
+    "message": "ਇਹ ਪੰਨਾ ਭੁੱਲ ਜਾਓ"
+  },
+  "popupForgotten": {
+    "message": "ਭੁਲਾ ਦਿੱਤਾ ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: ਚੁਣਿਆ ਟੈਕਸਟ ਯਾਦ ਰੱਖੋ"
+  },
+  "menuForget": {
+    "message": "Déjà: ਇਹ ਪੰਨਾ ਭੁੱਲ ਜਾਓ"
+  },
+  "recentTitle": {
+    "message": "ਹਾਲੀਆ ਯਾਦਾਂ"
+  },
+  "cmdOpenPanel": {
+    "message": "Déjà ਦਾ ਸਾਈਡ ਪੈਨਲ ਖੋਲ੍ਹੋ"
+  },
+  "welcomePoint4": {
+    "message": "ਸਾਈਡ ਪੈਨਲ ਉਸ ਪੰਨੇ ਦਾ ਪਤਾ ਅਤੇ ਸਿਰਲੇਖ ਦੇਖਦਾ ਹੈ ਜੋ ਤੁਸੀਂ ਦੇਖ ਰਹੇ ਹੋ, ਤਾਂ ਜੋ ਦਿਖਾ ਸਕੇ ਕਿ ਤੁਸੀਂ ਉਸਦੇ ਵਿਸ਼ੇ 'ਤੇ ਕੀ ਪੜ੍ਹਿਆ ਹੈ — ਸਿਰਫ਼ ਸੈਸ਼ਨ ਦੀ ਯਾਦਦਾਸ਼ਤ ਵਿੱਚ। ਜੋ ਅੰਸ਼ ਤੁਸੀਂ ਜਾਣ-ਬੁੱਝ ਕੇ ਸੰਭਾਲਦੇ ਹੋ, ਉਹ ਵੀ ਸਿਰਫ਼ ਤੁਹਾਡੇ ਕੋਲ ਹੀ ਰਹਿੰਦੇ ਹਨ।"
+  },
+  "welcomeUpdated": {
+    "message": "Déjà ਅੱਪਡੇਟ ਹੋ ਗਿਆ ਹੈ। ਨਵਾਂ: ਹੁਣ ਤੁਹਾਡੇ ਬੁੱਕਮਾਰਕ ਵੀ ਅਰਥ ਦੇ ਆਧਾਰ 'ਤੇ ਖੋਜੇ ਜਾ ਸਕਦੇ ਹਨ — ਜੇ ਤੁਸੀਂ ਚਾਹੋ। ਇਹ ਰਿਹਾ ਕਿ ਮੈਂ ਤੁਹਾਡੇ ਡਾਟੇ ਨਾਲ ਕੀ ਕਰਦਾ ਹਾਂ — ਕੁਝ ਵੀ ਤੁਹਾਡੇ ਡਿਵਾਈਸ ਤੋਂ ਬਾਹਰ ਨਹੀਂ ਗਿਆ।"
+  },
+  "optAmbientLabel": {
+    "message": "ਜੀਵੰਤ ਪਿਛੋਕੜ"
+  },
+  "optAmbientHelp": {
+    "message": "ਸ਼ੀਸ਼ੇ ਪਿੱਛੇ ਯਾਦਾਂ ਦਾ ਜਾਲ ਹੌਲੀ-ਹੌਲੀ ਤੈਰਦਾ ਹੈ। ਜੇ ਹਿਲਜੁਲ ਨਾਲ ਧਿਆਨ ਭਟਕਦਾ ਹੈ, ਤਾਂ ਇਸਨੂੰ ਬੰਦ ਕਰ ਦਿਓ।"
+  },
+  "bmTitle": {
+    "message": "ਆਪਣੇ ਬੁੱਕਮਾਰਕ ਖੋਜਣਯੋਗ ਬਣਾਓ — ਹੁਣੇ"
+  },
+  "bmText": {
+    "message": "Déjà ਪੰਨੇ ਖੋਲ੍ਹੇ ਬਿਨਾਂ ਤੁਹਾਡੇ ਬੁੱਕਮਾਰਕਾਂ ਦੇ ਸਿਰਲੇਖ ਅਤੇ ਫੋਲਡਰ ਸਿੱਖਦਾ ਹੈ। ਪਹਿਲੇ ਮਿੰਟ ਤੋਂ ਹੀ ਉਨ੍ਹਾਂ ਨੂੰ ਅਰਥ ਦੇ ਆਧਾਰ 'ਤੇ ਲੱਭੋ — ਸਭ ਕੁਝ ਤੁਹਾਡੇ ਡਿਵਾਈਸ 'ਤੇ ਹੀ ਰਹਿੰਦਾ ਹੈ।"
+  },
+  "bmTextShort": {
+    "message": "ਤੁਹਾਡੀ ਯਾਦਦਾਸ਼ਤ ਅਜੇ ਨਵੀਂ ਹੈ। ਮੈਨੂੰ ਆਪਣੇ ਬੁੱਕਮਾਰਕ ਸਿਖਾਓ ਅਤੇ ਅੱਜ ਹੀ ਉਨ੍ਹਾਂ ਵਿੱਚ ਅਰਥ ਦੇ ਆਧਾਰ 'ਤੇ ਖੋਜੋ।"
+  },
+  "bmButton": {
+    "message": "ਮੇਰੇ ਬੁੱਕਮਾਰਕ ਸਿੱਖੋ"
+  },
+  "bmNote": {
+    "message": "ਤੁਹਾਡਾ ਬ੍ਰਾਊਜ਼ਰ ਇਜਾਜ਼ਤ ਮੰਗੇਗਾ। ਤੁਸੀਂ ਇਸਨੂੰ ਕਦੇ ਵੀ ਸੈਟਿੰਗਾਂ ਵਿੱਚੋਂ ਬੰਦ ਕਰ ਸਕਦੇ ਹੋ।"
+  },
+  "bmTitleRunning": {
+    "message": "ਤੁਹਾਡੇ ਬੁੱਕਮਾਰਕ ਸਿੱਖ ਰਿਹਾ ਹਾਂ…"
+  },
+  "bmTitleDone": {
+    "message": "ਤੁਹਾਡੇ ਬੁੱਕਮਾਰਕ ਖੋਜਣਯੋਗ ਹਨ"
+  },
+  "bmPreparing": {
+    "message": "ਤਿਆਰੀ ਹੋ ਰਹੀ ਹੈ…"
+  },
+  "bmLearning": {
+    "message": "$TOTAL$ ਵਿੱਚੋਂ $DONE$ ਸਿੱਖ ਲਏ",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà ਰੁਕਿਆ ਹੋਇਆ ਹੈ — ਜਿਵੇਂ ਹੀ ਤੁਸੀਂ ਮੁੜ ਚਾਲੂ ਕਰੋਗੇ, ਮੈਂ ਜਾਰੀ ਰੱਖਾਂਗਾ।"
+  },
+  "bmError": {
+    "message": "ਸਿੱਖਦੇ ਸਮੇਂ ਕੁਝ ਗੜਬੜ ਹੋ ਗਈ। ਅਗਲੀ ਤਬਦੀਲੀ 'ਤੇ ਮੈਂ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰਾਂਗਾ।"
+  },
+  "bmDone": {
+    "message": "ਹੋ ਗਿਆ — $COUNT$ ਬੁੱਕਮਾਰਕ ਅਰਥ ਦੇ ਆਧਾਰ 'ਤੇ ਖੋਜਣਯੋਗ ਹਨ ਅਤੇ ਆਪਣੇ-ਆਪ ਸਿੰਕ ਰਹਿੰਦੇ ਹਨ।",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "ਹੋ ਗਿਆ — 1 ਬੁੱਕਮਾਰਕ ਅਰਥ ਦੇ ਆਧਾਰ 'ਤੇ ਖੋਜਣਯੋਗ ਹੈ ਅਤੇ ਆਪਣੇ-ਆਪ ਸਿੰਕ ਰਹਿੰਦਾ ਹੈ।"
+  },
+  "bmDenied": {
+    "message": "ਇਜਾਜ਼ਤ ਤੋਂ ਬਿਨਾਂ ਮੈਂ ਤੁਹਾਡੇ ਬੁੱਕਮਾਰਕ ਨਹੀਂ ਦੇਖ ਸਕਦਾ। ਤੁਸੀਂ ਕਦੇ ਵੀ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰ ਸਕਦੇ ਹੋ।"
+  },
+  "bmTry": {
+    "message": "ਅਜ਼ਮਾਓ:"
+  },
+  "bmBadge": {
+    "message": "ਬੁੱਕਮਾਰਕ"
+  },
+  "bmAddedOn": {
+    "message": "$DATE$ ਨੂੰ ਬੁੱਕਮਾਰਕ ਕੀਤਾ",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "ਯਾਦਦਾਸ਼ਤ ਵਿੱਚ ਬੁੱਕਮਾਰਕ"
+  },
+  "optBookmarksHelp": {
+    "message": "ਮੈਂ ਤੁਹਾਡੇ ਬੁੱਕਮਾਰਕਾਂ ਦੇ ਸਿਰਲੇਖ ਅਤੇ ਫੋਲਡਰ ਸਿੱਖਦਾ ਹਾਂ (ਪੰਨੇ ਖੋਲ੍ਹੇ ਬਿਨਾਂ) ਅਤੇ ਜਦੋਂ ਤੁਸੀਂ ਉਨ੍ਹਾਂ ਨੂੰ ਜੋੜਦੇ ਜਾਂ ਮਿਟਾਉਂਦੇ ਹੋ, ਨਾਲ-ਨਾਲ ਅੱਪਡੇਟ ਰੱਖਦਾ ਹਾਂ। ਬੰਦ ਕਰਨ ਨਾਲ ਉਹ ਯਾਦਦਾਸ਼ਤ ਵਿੱਚੋਂ ਹਟ ਜਾਂਦੇ ਹਨ — ਤੁਹਾਡੇ ਪੜ੍ਹੇ ਪੰਨੇ ਬਣੇ ਰਹਿੰਦੇ ਹਨ।"
+  },
+  "memoryFilterAll": {
+    "message": "ਸਾਰੇ"
+  },
+  "memoryFilterRead": {
+    "message": "ਪੜ੍ਹੇ"
+  },
+  "memoryFilterBookmarks": {
+    "message": "ਬੁੱਕਮਾਰਕ"
+  },
+  "welcomePoint5": {
+    "message": "ਬੁੱਕਮਾਰਕ — ਸਿਰਫ਼ ਜੇ ਤੁਸੀਂ ਇਨ੍ਹਾਂ ਨੂੰ ਚਾਲੂ ਕਰੋ: ਤਦ ਮੈਂ ਪੰਨੇ ਖੋਲ੍ਹੇ ਬਿਨਾਂ ਇਨ੍ਹਾਂ ਦੇ ਸਿਰਲੇਖ ਅਤੇ ਫੋਲਡਰ ਸਿੱਖਦਾ ਹਾਂ। ਇੱਕ ਕਲਿੱਕ ਨਾਲ ਬੰਦ ਹੋ ਜਾਂਦਾ ਹੈ।"
+  },
+  "rateTitle": {
+    "message": "Déjà ਨੇ ਤੁਹਾਨੂੰ ਕੁਝ ਲੱਭਣ ਵਿੱਚ ਮਦਦ ਕੀਤੀ — ਹੁਣ ਤੱਕ $COUNT$ ਵਾਰ",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "ਜੇ ਇਹ ਲਾਭਦਾਇਕ ਹੈ, ਤਾਂ ਸਟੋਰ ਵਿੱਚ ਇੱਕ ਰੇਟਿੰਗ ਹੋਰ ਲੋਕਾਂ ਨੂੰ ਇਸਨੂੰ ਲੱਭਣ ਵਿੱਚ ਮਦਦ ਕਰਦੀ ਹੈ — ਇਸ ਵਿੱਚ 10 ਸਕਿੰਟ ਲੱਗਦੇ ਹਨ। ਅਤੇ ਜੇ ਕੁਝ ਪਰੇਸ਼ਾਨ ਕਰੇ, ਤਾਂ ਸਾਨੂੰ ਦੱਸੋ।"
+  },
+  "rateButton": {
+    "message": "Déjà ਨੂੰ ਰੇਟ ਕਰੋ"
+  },
+  "rateFeedback": {
+    "message": "ਕੁਝ ਕੰਮ ਨਹੀਂ ਕਰ ਰਿਹਾ?"
+  },
+  "rateLater": {
+    "message": "ਹੁਣ ਨਹੀਂ"
+  },
+  "rateThanks": {
+    "message": "ਧੰਨਵਾਦ! ਇਸ ਨਾਲ ਸੱਚਮੁੱਚ ਮਦਦ ਮਿਲਦੀ ਹੈ।"
+  },
+  "rateFeedbackThanks": {
+    "message": "ਧੰਨਵਾਦ — ਅਸੀਂ ਹਰ ਸੁਨੇਹਾ ਪੜ੍ਹਦੇ ਹਾਂ।"
+  },
+  "rateFeedbackSubject": {
+    "message": "ਫੀਡਬੈਕ"
+  },
+  "answerTitle": {
+    "message": "ਤੁਹਾਡੀ ਯਾਦਦਾਸ਼ਤ ਤੋਂ ਜਵਾਬ"
+  },
+  "answerAsk": {
+    "message": "ਮੇਰੀ ਯਾਦਦਾਸ਼ਤ ਤੋਂ ਜਵਾਬ ਦਿਓ"
+  },
+  "answerEnableTitle": {
+    "message": "Chrome ਦੇ ਬਿਲਟ-ਇਨ AI ਤੋਂ ਜਵਾਬ"
+  },
+  "answerEnableText": {
+    "message": "Déjà ਤੁਹਾਡੇ ਪੜ੍ਹੇ ਹੋਏ ਤੋਂ ਸਰੋਤਾਂ ਸਮੇਤ ਸਵਾਲਾਂ ਦੇ ਜਵਾਬ ਦੇ ਸਕਦਾ ਹੈ। Chrome ਆਪਣਾ ਔਨ-ਡਿਵਾਈਸ ਮਾਡਲ (Gemini Nano) ਇੱਕ ਵਾਰ ਡਾਊਨਲੋਡ ਕਰਦਾ ਹੈ — ਤੁਹਾਡੇ ਸਵਾਲ ਅਤੇ ਪੰਨੇ ਕਦੇ ਵੀ ਤੁਹਾਡੇ ਕੰਪਿਊਟਰ ਤੋਂ ਬਾਹਰ ਨਹੀਂ ਜਾਂਦੇ।"
+  },
+  "answerEnableButton": {
+    "message": "ਜਵਾਬ ਚਾਲੂ ਕਰੋ"
+  },
+  "answerNoThanks": {
+    "message": "ਨਹੀਂ, ਧੰਨਵਾਦ"
+  },
+  "answerDownloading": {
+    "message": "Chrome ਮਾਡਲ ਡਾਊਨਲੋਡ ਕਰ ਰਿਹਾ ਹੈ… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "ਤੁਹਾਡੀਆਂ ਯਾਦਾਂ ਪੜ੍ਹ ਰਿਹਾ ਹਾਂ…"
+  },
+  "answerStop": {
+    "message": "ਰੋਕੋ"
+  },
+  "answerFoot": {
+    "message": "Chrome ਦੇ ਬਿਲਟ-ਇਨ AI ਨੇ ਤੁਹਾਡੇ ਡਿਵਾਈਸ 'ਤੇ ਤੁਹਾਡੀਆਂ $COUNT$ ਯਾਦਾਂ ਤੋਂ ਲਿਖਿਆ। ਸਰੋਤ ਜਾਂਚ ਲਓ।",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "ਇਸ ਵਾਰ ਮੈਂ ਜਵਾਬ ਤਿਆਰ ਨਹੀਂ ਕਰ ਸਕਿਆ।"
+  },
+  "optAnswersLabel": {
+    "message": "Chrome ਦੇ ਬਿਲਟ-ਇਨ AI ਤੋਂ ਜਵਾਬ"
+  },
+  "optAnswersHelp": {
+    "message": "“ਮੈਂ … ਬਾਰੇ ਕੀ ਪੜ੍ਹਿਆ ਸੀ?” ਵਰਗੇ ਸਵਾਲਾਂ ਲਈ ਮੈਂ ਤੁਹਾਡੇ ਪੰਨਿਆਂ ਤੋਂ ਸਰੋਤਾਂ ਸਮੇਤ ਇੱਕ ਛੋਟਾ ਜਵਾਬ ਲਿਖਦਾ ਹਾਂ — ਪੂਰੀ ਤਰ੍ਹਾਂ ਤੁਹਾਡੇ ਡਿਵਾਈਸ 'ਤੇ, Chrome ਵਿੱਚ Gemini Nano ਨਾਲ। ਇਸ ਲਈ ਸਮਰਥਿਤ ਕੰਪਿਊਟਰ ਅਤੇ ਭਾਸ਼ਾ ਚਾਹੀਦੀ ਹੈ (ਅੰਗਰੇਜ਼ੀ, ਸਪੇਨੀ, ਜਰਮਨ, ਫ੍ਰੈਂਚ, ਜਪਾਨੀ)।"
+  },
+  "optAnswersAvailable": {
+    "message": "ਇਸ ਡਿਵਾਈਸ 'ਤੇ ਵਰਤਣ ਲਈ ਤਿਆਰ।"
+  },
+  "optAnswersDownloadable": {
+    "message": "ਸਮਰਥਿਤ — ਤੁਹਾਡੇ ਪਹਿਲੇ ਸਵਾਲ 'ਤੇ Chrome ਮਾਡਲ ਡਾਊਨਲੋਡ ਕਰੇਗਾ।"
+  },
+  "optAnswersUnavailable": {
+    "message": "ਇਹ ਡਿਵਾਈਸ ਜਾਂ ਇੰਟਰਫੇਸ ਦੀ ਭਾਸ਼ਾ Chrome ਦੇ ਬਿਲਟ-ਇਨ AI ਵੱਲੋਂ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ।"
+  },
+  "optAnswersUnsupported": {
+    "message": "ਇਸ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਬਿਲਟ-ਇਨ AI ਨਹੀਂ ਹੈ — Déjà ਵਿੱਚ ਬਾਕੀ ਸਭ ਕੁਝ ਹਮੇਸ਼ਾ ਵਾਂਗ ਕੰਮ ਕਰਦਾ ਹੈ।"
+  }
+}
