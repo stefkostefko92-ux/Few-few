@@ -119,5 +119,5 @@ export async function companyLogo(companyId: string): Promise<{ data: Uint8Array
 
 /** The names of the company's sheets for the activity log (`entity: 'Scheda'`): their title data, trashed ones too. */
 export function schedeForAudit(companyId: string, ids: readonly string[]) {
-  return prisma.scheda.findMany({ where: { id: { in: [...ids] }, companyId }, select: { id: true, numeroImpianto: true, matricola: true, indirizzo: true } });
+  return prisma.scheda.findMany({ where: { id: { in: [...ids] }, companyId }, select: { id: true, numeroImpianto: true, matricola: true, indirizzo: true, deletedAt: true } });
 }

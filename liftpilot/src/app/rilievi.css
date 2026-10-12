@@ -1,0 +1,129 @@
+/* Rilievi (round 41): the survey sheets ported from the rilievi portal, drawn in the Premium identity. The lists, the
+   sheet on the screen and its plate; the form is rilievi-form.css, the A4 paper rilievi-print.css. Everything is
+   prefixed `rv-` (the app's own .field, .grid and .section mean other things); only the tokens of globals.css give the
+   colours. The one memorable element is rilievi's: the plate — the lift's nameplate with its four screws, engraved
+   steel on the dark desk, black on white on paper; the rest stays the app's quiet panels. */
+
+/* ---- the head of a page: the area (Rilievi) over the title, the actions on the right -------------------------- */
+.rv-head { align-items: flex-end; }
+.rv-head .titles { gap: 10px; flex: 1 1 28rem; }
+.rv-head .lead { margin: 0; }
+.rv-back { width: fit-content; font-size: 14px; color: var(--muted); text-decoration: none; }
+.rv-back:hover { color: var(--accent); text-decoration: underline; }
+
+/* ---- the list: the search first, its count, the table and the pager -------------------------------------------- */
+.rv-search { display: flex; align-items: center; gap: 10px; max-width: 760px; min-height: 52px; padding: 0 14px; margin: 0;
+  border: 1px solid var(--rule-input); border-radius: var(--radius-sm); background: var(--bg-2); }
+.rv-search:hover { border-color: var(--rule-input-hover); }
+.rv-search:focus-within { border-color: var(--accent); box-shadow: var(--focus-halo); outline: 2px solid var(--accent); outline-offset: 2px; }
+.rv-search input { flex: 1 1 auto; min-width: 0; height: 50px; padding: 0; border: 0; outline: 0; background: transparent; color: var(--ink);
+  font: 500 16px/1.2 var(--font-body); }
+.rv-search input:focus-visible { outline: 0; }
+.rv-search input::placeholder { color: var(--dim); opacity: 1; }
+.rv-search input::-webkit-search-cancel-button { filter: grayscale(1) brightness(1.6); }
+.rv-search kbd { flex: none; padding: 3px 7px; border: 1px solid var(--rule-strong); border-radius: 4px; font: 500 12px/1 var(--font-mono); color: var(--muted); }
+@media (hover: none) { .rv-search kbd { display: none; } }
+.rv-status { margin: -6px 0 0; font-size: 14px; color: var(--muted); }
+.rv-results { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.rv-results[aria-busy="true"] { opacity: .65; transition: opacity .15s; }
+/* a searched word: tinted and underlined (not by its colour alone) */
+.rv-results mark { padding: 0 1px; border-radius: 2px; color: var(--accent-2); background: var(--accent-soft); box-shadow: inset 0 -1.5px 0 var(--accent); }
+.rv-results td.ident { font-family: var(--font-mono); white-space: nowrap; }
+.rv-results td.row-title a { font-weight: 700; }
+.rv-results td.date { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rv-results td.acts .rv-acts { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (min-width: 720px) { .rv-results td.acts .rv-acts { flex-wrap: nowrap; } }
+.rv-muted { color: var(--dim); }
+.rv-empty { align-items: flex-start; gap: 10px; }
+.rv-empty strong { font-size: 16px; }
+.rv-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.rv-pager > span { font-size: 14px; color: var(--muted); }
+
+/* ---- one-time notice after an action (?ok=…) ------------------------------------------------------------------- */
+.rv-flash { display: flex; align-items: center; gap: 10px; }
+
+/* ---- the sheet on the screen: an index of its sections beside it on wide screens --------------------------------- */
+.rv-with-index { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; align-items: start; }
+.rv-index { display: none; }
+@media screen and (min-width: 1280px) {
+  .rv-with-index { grid-template-columns: 200px minmax(0, 1fr); }
+  .rv-index { position: sticky; top: 20px; display: block; max-height: calc(100vh - 40px); overflow-y: auto; }
+}
+.rv-index-title { margin: 0 0 8px 8px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.rv-index ol { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.rv-index a { display: flex; align-items: center; gap: 10px; min-height: 38px; padding: 4px 8px; border-radius: var(--radius-sm);
+  color: var(--muted); font-size: 14px; text-decoration: none; }
+.rv-index a:hover { color: var(--ink); background: var(--surface2); }
+.rv-index a[aria-current="true"] { color: var(--ink); font-weight: 700; background: var(--surface2); }
+.rv-index a[aria-current="true"] .rv-secnum { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }
+
+/* the section's number: the same on the form, the sheet and the index (the paper form's order) */
+.rv-secnum { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 26px; height: 26px;
+  border: 1.5px solid var(--accent-line); border-radius: 50%; color: var(--accent-2); font: 500 12.5px/1 var(--font-mono); }
+
+.rv-sheet { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.rv-sec { min-width: 0; background: var(--panel-grad); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--panel-hi);
+  scroll-margin-top: 16px; }
+.rv-sec-title { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--rule);
+  border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0; background: var(--surface2); font: var(--panel-title);
+  letter-spacing: var(--panel-title-track); font-size: 16.5px; }
+.rv-kv { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 16px 24px; margin: 0; padding: 18px; }
+.rv-kv > div { min-width: 0; }
+.rv-kv .wide { grid-column: 1 / -1; }
+.rv-kv dt { font-size: 13px; color: var(--muted); }
+.rv-kv dd { margin: 3px 0 0; color: var(--ink); font-weight: 600; overflow-wrap: anywhere; white-space: pre-line; }
+.rv-kv dd.empty { color: var(--dim); font-weight: 400; }
+.rv-meta { display: flex; flex-wrap: wrap; gap: 4px 24px; font-size: 13.5px; color: var(--muted); }
+.rv-trashed { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.rv-trashed .rv-acts { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* a filled supplier's module under its question: its name, the download and the print of its own PDF */
+.rv-modulo-links { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; white-space: normal; }
+.rv-modulo-links > span { flex-basis: 100%; font-weight: 400; color: var(--ink-2); }
+
+/* ---- the measurements per stop: a table on the sheet, a card per stop on a phone ------------------------------- */
+.rv-mtable { width: 100%; margin-top: 10px; border-collapse: collapse; font-weight: 400; white-space: normal; font-size: 14px; }
+.rv-mtable th, .rv-mtable td { padding: 8px 10px; border-bottom: 1px solid var(--rule-soft); text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+/* the heads wrap between words only («Interasse foro superiore»), never inside one */
+.rv-mtable thead th { border-bottom: 1px solid var(--rule-strong); font: 600 12.5px/1.3 var(--font-body); color: var(--muted); background: var(--surface2);
+  overflow-wrap: normal; }
+.rv-mtable tbody th { color: var(--ink); font-family: var(--font-mono); font-weight: 500; }
+.rv-mtable td { color: var(--ink-2); }
+.rv-mtable .empty { color: var(--dim); }
+@media (max-width: 759px) {
+  .rv-mtable thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .rv-mtable tr { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; padding: 10px 0; border-bottom: 1px solid var(--rule-soft); }
+  .rv-mtable th, .rv-mtable td { display: block; padding: 0; border: 0; }
+  .rv-mtable tbody th { grid-column: 1 / -1; }
+  .rv-mtable tbody th::before, .rv-mtable td::before { content: attr(data-label); display: block; font: 400 12.5px/1.4 var(--font-body); color: var(--muted); }
+}
+
+/* ---- the plate: the lift's nameplate, engraved steel with four screws ------------------------------------------- */
+.rv-plate { position: relative; isolation: isolate; padding: 24px 30px 20px; border: 2px solid var(--steel); border-radius: 12px;
+  outline: 1px solid var(--rule-strong); outline-offset: -9px; color: var(--ink);
+  background: repeating-linear-gradient(0deg, rgb(255 255 255 / .014) 0 1px, transparent 1px 3px), linear-gradient(160deg, #11293a 0%, #091823 55%, #0d2231 100%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .06), var(--shadow); }
+.rv-screw { position: absolute; width: 10px; height: 10px; border: 1.5px solid var(--steel); border-radius: 50%; }
+.rv-screw::after { content: ""; position: absolute; left: 1px; right: 1px; top: 50%; border-top: 1.5px solid var(--steel); transform: translateY(-50%) rotate(-35deg); }
+.rv-screw.tl { top: 13px; left: 13px; } .rv-screw.tr { top: 13px; right: 13px; }
+.rv-screw.bl { bottom: 13px; left: 13px; } .rv-screw.br { bottom: 13px; right: 13px; }
+.rv-plate-label { display: block; font: 600 11.5px/1.3 var(--font-body); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.rv-plate-ids { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; padding: 0 8px; }
+.rv-plate-ids .end { text-align: right; }
+.rv-plate-big { display: block; margin-top: 2px; font: 500 clamp(28px, 1.2rem + 1.9vw, 44px)/1.05 var(--font-mono); letter-spacing: .02em;
+  font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.rv-plate-big.none { color: var(--dim); }
+.rv-plate-address { margin: 12px 8px 0; font-size: 17px; font-weight: 600; color: var(--ink-2); overflow-wrap: anywhere; }
+.rv-plate-specs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 16px 8px 0; padding-top: 14px; border-top: 1px solid var(--rule-strong); }
+.rv-plate-specs > div { min-width: 0; }
+.rv-plate-specs dd { margin: 3px 0 0; font: 500 19px/1.25 var(--font-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 599px) {
+  .rv-plate { padding: 24px 18px 18px; }
+  .rv-plate-specs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rv-plate-ids .end { text-align: left; }
+}
+
+/* ---- the confirmations (to the trash, for good) ----------------------------------------------------------------- */
+.rv-confirm { max-width: 720px; }
+.rv-confirm .rv-ident { font-size: 17px; font-weight: 700; color: var(--ink); }
+.rv-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }

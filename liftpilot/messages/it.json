@@ -2388,7 +2388,8 @@
       "purgeConfirm": "Elimina definitivamente"
     },
     "print": {
-      "back": "Torna alla scheda"
+      "back": "Torna alla scheda",
+      "logoAlt": "Logo di {name}"
     },
     "pdf": {
       "generated": "Generato il {at} da {name}",

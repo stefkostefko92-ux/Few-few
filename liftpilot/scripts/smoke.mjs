@@ -9,8 +9,9 @@
 //   that calculation (sheets, PDF) and its revision → the installation in one form with its live 3D simulation and a SICOR
 //   machine from the catalogue (drawn as it is), saved
 //   in one go (shaft design and calculation together), with its documents → the dashboard's result pill opens the checks
-//   behind its number (scripts/smoke-verdict.mjs) → new user who must change the password → a
-//   second company that cannot open the first company's calculation, shaft design, DXF, drawing set or lift design →
+//   behind its number (scripts/smoke-verdict.mjs) → the survey sheets: a sheet with its conditions, stops, modules,
+//   search, PDFs, print, conflict, trash (scripts/smoke-rilievi.mjs) → new user who must change the password → a
+//   second company that cannot open the first company's calculation, shaft design, DXF, drawing set, lift design or survey sheet →
 //   with MAILBOX_PORT: self-registration, confirmation, forgotten password (scripts/smoke-accounts.mjs), the server
 //   sending its mail to scripts/mail-sink.mjs on that port (SMTP_HOST=127.0.0.1, SMTP_PORT=<port>, MAIL_FROM set).
 // Usage: BASE_URL=http://localhost:3100 ADMIN_EMAIL=… ADMIN_PASSWORD=… [MAILBOX_PORT=2526] node scripts/smoke.mjs
@@ -23,7 +24,10 @@ import { secondCompany } from './smoke-isolation.mjs';
 import { loadPlaywright, smokeKit, step } from './smoke-kit.mjs';
 import { blankCalc, projectData } from './smoke-blank.mjs';
 import { priceList } from './smoke-prices.mjs';
+import { publicPages } from './smoke-public.mjs';
 import { replacementRoom } from './smoke-replacement.mjs';
+import { rilieviFlow } from './smoke-rilievi.mjs';
+import { archivedReadOnly, technician } from './smoke-roles.mjs';
 import { verdictPopover } from './smoke-verdict.mjs';
 
 const { chromium } = loadPlaywright();
@@ -42,69 +46,7 @@ const sink = MAILBOX ? startMailSink(MAILBOX) : null;
 if (sink) await sink.ready;
 const browser = await chromium.launch();
 try {
-  step('health');
-  const health = await (await fetch(`${BASE}/api/health`)).json();
-  assert.equal(health.status, 'ok');
-  assert.equal(health.app, 'liftpilot');
-
-  step('public page');
-  const { page, errors } = await newPage(browser);
-  const res = await page.goto(`${BASE}/it`);
-  assert.equal(res.status(), 200);
-  assert.ok((res.headers()['content-security-policy'] ?? '').includes("'nonce-"), 'CSP with nonce');
-  assert.equal(await page.locator('h1').count(), 1);
-  // Italian only: the page's language, no language switch, no alternates in other languages, the Italian preview
-  assert.equal(await page.getAttribute('html', 'lang'), 'it');
-  assert.equal(await page.locator('.langs, a[hreflang], link[rel="alternate"][hreflang]').count(), 0, 'no other language');
-  assert.equal(await page.getAttribute('meta[property="og:locale"]', 'content'), 'it_IT');
-  assert.match(await page.getAttribute('meta[property="og:image"]', 'content') ?? '', /\/img\/og-it\.png$/);
-  // the sign-in family's header keeps its sign-up button on a phone
-  {
-    const size = page.viewportSize();
-    await page.setViewportSize({ width: 390, height: 844 });
-    for (const path of ['/it/login', '/it/register']) {
-      await page.goto(`${BASE}${path}`);
-      const over = await page.evaluate(() => globalThis.document.documentElement.scrollWidth - globalThis.innerWidth);
-      assert.ok(over <= 0, `${path} at 390 px scrolls sideways by ${over} px`);
-      assert.ok(await page.locator('.nav-drawer > summary').isVisible(), `${path} at 390 px: the menu button`);
-    }
-    if (size) await page.setViewportSize(size);
-  }
-
-  step('the former languages: a permanent redirect to the same page in Italian, the query kept; no language cookie');
-  for (const [from, to] of [['/en', '/it'], ['/bg', '/it'], ['/en/login', '/it/login'], ['/bg/pricing?x=1', '/it/pricing?x=1'],
-    ['/bg/app/projects/abc', '/it/app/projects/abc'], ['/en/privacy?y=2#terms', '/it/privacy?y=2'], ['/EN/pricing', '/it/pricing']]) {
-    const r = await fetch(`${BASE}${from}`, { redirect: 'manual' });
-    assert.equal(r.status, 301, `${from}: ${r.status}`);
-    const at = new URL(r.headers.get('location') ?? '', BASE);
-    assert.equal(`${at.pathname}${at.search}`, to, `${from} → ${at.href}`);
-  }
-  // and the page it leads to is there (one hop)
-  assert.equal((await fetch(`${BASE}/bg/pricing?x=1`)).status, 200);
-  // no language cookie any more (the privacy page still names NEXT_LOCALE until the next terms version): none set, with or
-  // without a language asked, and the one a browser kept from the time with three languages removed
-  for (const al of ['', 'bg-BG,bg;q=0.9', 'it-IT']) {
-    const r = await fetch(`${BASE}/it`, { headers: { 'accept-language': al }, redirect: 'manual' });
-    assert.ok(!/NEXT_LOCALE=[^;]/.test(r.headers.get('set-cookie') ?? ''), `no language cookie (accept-language «${al}»)`);
-  }
-  const kept = (await fetch(`${BASE}/it`, { headers: { cookie: 'NEXT_LOCALE=en' }, redirect: 'manual' })).headers.get('set-cookie') ?? '';
-  assert.match(kept, /NEXT_LOCALE=;[^,]*Expires=Thu, 01 Jan 1970/i, `the old language cookie removed: ${kept}`);
-  step('an unknown address: the 404 drawn in Italian, also from a former-language address');
-  // Next 15 sends its error shell for a notFound() (no lang, noindex) and the browser draws the localized page — in
-  // Italian, with the page's language (docs/rules.md)
-  {
-    const { page: lost } = await newPage(browser);
-    for (const path of ['/it/pagina-inesistente', '/en/pagina-inesistente']) {
-      assert.equal((await lost.goto(`${BASE}${path}`)).status(), 404, path);
-      assert.equal(new URL(lost.url()).pathname, '/it/pagina-inesistente', `${path}: the address in Italian`);
-      await lost.waitForSelector('main h1');
-      assert.equal(await lost.getAttribute('html', 'lang'), 'it', `${path}: the 404 drawn in Italian`);
-      assert.equal((await lost.textContent('main h1'))?.trim(), 'Pagina non trovata', path);
-      const robots = await lost.locator('meta[name="robots"]').evaluateAll((ms) => ms.map((m) => m.getAttribute('content') ?? ''));
-      assert.ok(robots.some((r) => /noindex/.test(r)), `${path}: noindex (${robots.join(' | ')})`);
-    }
-    await lost.close();
-  }
+  const { page, errors } = await publicPages({ BASE, browser, newPage });
 
   step('sign-in and installation');
   await login(page, ADMIN.email, ADMIN.password);
@@ -331,52 +273,18 @@ try {
   await page.waitForSelector('.lift-home .lift-facts');
 
   assert.deepEqual(errors, [], 'browser errors');
-  step('an archived installation is read only');
-  await page.goto(projectUrl);
-  await hydrated(page, 'main form:has(input[name="archive"][value="1"]) button');
-  await Promise.all([page.waitForLoadState('networkidle'), page.click('main form:has(input[name="archive"][value="1"]) button')]);
-  await page.waitForSelector('main form:has(input[name="archive"][value="0"])');
-  assert.equal((await page.goto(`${projectUrl}/edit`)).status(), 404, 'edit of an archived installation');
-  assert.equal((await page.goto(`${projectUrl}/calc`)).status(), 404, 'new calculation on an archived installation');
-  await page.goto(projectUrl);
-  await hydrated(page, 'main form:has(input[name="archive"][value="0"]) button');
-  await page.click('main form:has(input[name="archive"][value="0"]) button');
-  await page.waitForSelector('main form:has(input[name="archive"][value="1"])');
-  errors.length = 0; // the two 404 above were provoked on purpose
+  await archivedReadOnly({ page, hydrated, projectUrl, errors });
 
   await priceList({ BASE, page, hydrated, stamp, liftUrl, roomUrl });
+  const rilievo = await rilieviFlow({ BASE, page, hydrated });
+  assert.deepEqual(errors, [], 'browser errors');
 
-  step('new user with a temporary password');
-  await page.goto(`${BASE}/it/app/team`);
-  const userEmail = `tecnico.${stamp}@example.com`;
-  await page.fill('main form input[name="name"]', 'Tecnico di prova');
-  await page.fill('main form input[name="email"]', userEmail);
-  await page.click('main form:has(input[name="email"]) button[type="submit"]');
-  const temp = (await page.locator('.secret').first().textContent())?.trim() ?? '';
-  assert.equal(temp.length, 16);
-  await logout(page);
-  await login(page, userEmail, temp);
-  assert.match(page.url(), /account\?first=1/, 'must change the password first');
-  const next = `Nuova${stamp}Password9`;
-  await page.fill('input[name="current"]', temp);
-  await page.fill('input[name="next"]', next);
-  await page.fill('input[name="confirm"]', next);
-  await page.click('main form button[type="submit"]');
-  await page.waitForSelector('.alert-ok');
-  await page.goto(`${BASE}/it/app`);
-  assert.match(page.url(), /\/it\/app$/);
-  // a Tecnico sees no prices and manages nobody
-  assert.equal((await page.goto(`${BASE}/it/app/prices`)).status(), 404, 'price list of a Tecnico');
-  assert.equal((await page.goto(`${BASE}/it/app/team`)).status(), 404, 'team page of a Tecnico');
-  assert.equal((await page.request.get(`${BASE}/api/company/export`)).status(), 403, 'company export by a Tecnico');
-  errors.length = 0; // provoked on purpose
-  await page.goto(`${BASE}/it/app`);
-  await logout(page);
+  await technician({ BASE, page, errors, stamp, login, logout, rilievoUrl: rilievo.sheetUrl });
 
   // the isolation check below provokes a 404 on purpose: the console must be clean up to here
   assert.deepEqual(errors, [], 'browser errors');
   await secondCompany({ BASE, page, kit: { login, logout, hydrated }, ADMIN, stamp,
-    urls: { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref, roomUrl, roomId } });
+    urls: { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref, roomUrl, roomId, rilievoUrl: rilievo.sheetUrl, rilievoId: rilievo.id } });
 
   if (sink) await accountFlows({ BASE, stamp, step, sink, newPage: () => newPage(browser), ADMIN_EMAIL: ADMIN.email });
   else step('accounts without an administrator: skipped (no MAILBOX_PORT)');

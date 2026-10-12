@@ -46,6 +46,9 @@ test('barra laterale: la voce della pagina', () => {
   assert.equal(at('/app/team/invite'), '/app/team');
   assert.equal(at('/app/teams'), null);
   assert.equal(at('/app/prices'), null);
+  // the survey sheets: their list, a sheet, its edit and print pages, the trash — all under «Rilievi»
+  const R = (p: string) => shellSection(p, { archived: false, kind: null }, [...S, '/app/rilievi']);
+  for (const p of ['/app/rilievi', '/app/rilievi/nuovo', '/app/rilievi/abc/modifica', '/app/rilievi/abc/stampa', '/app/rilievi/cestino']) assert.equal(R(p), '/app/rilievi', p);
 });
 
 test('ricerca: % e _ sono testo, non caratteri jolly del LIKE', () => {
@@ -64,4 +67,6 @@ test('barra laterale: «pagina» solo sulla pagina della voce, altrimenti «true
   assert.equal(navCurrent('/app/norme', '/app/norme'), 'page');
   assert.equal(navCurrent('/app/norme', '/app/norme/en-81-20'), 'true');
   assert.equal(navCurrent('new-full', '/app/projects/new'), 'page');
+  assert.equal(navCurrent('/app/rilievi', '/app/rilievi'), 'page');
+  assert.equal(navCurrent('/app/rilievi', '/app/rilievi/abc'), 'true');
 });

@@ -35,6 +35,8 @@ export default async function AppShell({ user, banners, footer, children }: { us
       { key: 'new-full', href: '/app/projects/new?kind=full', label: tp('module_FULL_new'), icon: 'elevator' } as const,
     ] : []),
     { key: 'archived', href: '/app?archived=1', label: tp('archivedTitle'), icon: 'archive' },
+    // the survey sheets of existing lifts and the suppliers' modules (Rilievi, round 41)
+    ...(can(user, 'rilievi:view') ? [{ key: '/app/rilievi', href: '/app/rilievi', label: t('rilievi'), icon: 'clipboard-list' } as const] : []),
   ];
   const library: NavItem[] = [
     { key: '/app/norme', href: '/app/norme', label: t('norms'), icon: 'shield-check' },

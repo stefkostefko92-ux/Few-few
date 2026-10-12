@@ -1,0 +1,103 @@
+/* Rilievi: the sheet's form (src/components/rilievi/SchedaForm.tsx) — rilievi's forms.css, misure.css and moduli.css in
+   the Premium identity. Fields 48 px high and 16 px text (a gloved finger in a machine room, no zoom on a phone), the
+   unit inside the field, ticks drawn as the paper form's boxes, the error next to its field and summed up on top; a
+   section is a panel with its number and name on a bar; the old push-button panels' measurements a frame per stop;
+   a supplier's module a frame like its paper, its boxes as groups and its rows in the paper's order. */
+
+.rv-form { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.rv-form .input { min-height: 48px; font-size: 16px; }
+.rv-form textarea.input { min-height: 112px; line-height: 1.45; }
+
+/* a section: a panel, its legend floated so that it is a bar inside the frame, not on the frame's line */
+.rv-section { margin: 0; padding: 0 22px 22px; min-width: 0; background: var(--panel-grad); border: 1px solid var(--rule); border-radius: var(--radius);
+  box-shadow: var(--panel-hi), var(--shadow); scroll-margin-top: 16px; }
+.rv-section > legend { float: left; display: flex; align-items: center; gap: 12px; width: calc(100% + 44px); margin: 0 -22px 18px; padding: 13px 22px;
+  border-bottom: 1px solid var(--rule); border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0; background: var(--surface2);
+  font: var(--panel-title); letter-spacing: var(--panel-title-track); font-size: 16.5px; color: var(--ink); }
+.rv-section > legend + * { clear: both; }
+@media (max-width: 479px) {
+  .rv-section { padding: 0 14px 18px; }
+  .rv-section > legend { width: calc(100% + 28px); margin: 0 -14px 16px; padding: 12px 14px; }
+}
+.rv-section > .rv-hint { margin: -4px 0 14px; }
+
+/* the fields line up by their box, not their label: a label on two lines does not push its field down */
+.rv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); align-items: end; gap: 16px 14px; }
+@media (min-width: 720px) { .rv-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 18px 20px; } }
+/* the ticks are a row of the paper form («Tipo impianto: ☐ Elettrico ☐ Idraulico ☐ Gearless»); Sì/No sits in a column */
+.rv-grid .rv-choice:not(.compact), .rv-grid .rv-wide { grid-column: 1 / -1; }
+
+.rv-field { display: grid; gap: 7px; align-content: start; min-width: 0; }
+.rv-label, .rv-choice > legend { padding: 0; font-size: 14px; font-weight: 600; line-height: 1.35; color: var(--ink-2); }
+.rv-hint { font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+.rv-hint.bad, .rv-error { color: var(--fail); font-weight: 600; }
+.rv-error { font-size: 14px; line-height: 1.4; }
+
+/* the unit inside the field, on its right («630 | kg») */
+.rv-unit { position: relative; display: flex; }
+.rv-unit .input { padding-right: calc(var(--rv-unit-w, 3ch) + 28px); }
+.rv-unit-text { position: absolute; top: 1px; right: 1px; bottom: 1px; display: flex; align-items: center; padding: 0 12px; pointer-events: none;
+  border-left: 1px solid var(--rule); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; color: var(--muted); font: 500 14px/1 var(--font-mono); }
+.rv-unit.long { --rv-unit-w: 7ch; }
+.rv-misura .rv-unit .input { padding-right: 46px; }
+
+/* ticks and Sì/No: the paper's square boxes, the whole label is the target */
+.rv-choice { margin: 0; padding: 0; border: 0; min-width: 0; }
+.rv-choice > legend { margin-bottom: 7px; }
+.rv-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.rv-tick { position: relative; display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 16px 0 12px; cursor: pointer; user-select: none;
+  border: 1px solid var(--rule-input); border-radius: var(--radius-sm); background: var(--bg-2); color: var(--ink-2); font-size: 15px; }
+.rv-tick:hover { border-color: var(--rule-input-hover); color: var(--ink); }
+.rv-tick input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.rv-box { position: relative; flex: none; width: 20px; height: 20px; border: 2px solid var(--ink-2); border-radius: 4px; }
+.rv-tick input:checked + .rv-box { background: var(--accent); border-color: var(--accent); }
+.rv-tick input:checked + .rv-box::after { content: ""; position: absolute; left: 5px; top: 1px; width: 6px; height: 11px;
+  border: solid var(--accent-ink); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
+.rv-tick:has(input:checked) { color: var(--ink); font-weight: 700; border-color: var(--accent-line); background: var(--accent-soft); }
+.rv-tick input:focus-visible + .rv-box { outline: 2px solid var(--accent); outline-offset: 3px; }
+.rv-choice[aria-describedby] .rv-tick { border-color: var(--fail-line); }
+
+/* a field with a condition (fields.ts `when`): hidden while it does not hold; the wrapper is no box of its own, so the
+   field stays an item of the section's grid. Without JavaScript every field shows (the noscript style in the form). */
+.rv-cond { display: contents; }
+.rv-cond[data-off] { display: none; }
+
+/* the error summary over the form, its lines linking to the fields */
+.rv-errors { padding: 16px 18px; border: 2px solid var(--fail); border-radius: var(--radius); background: var(--fail-bg); color: var(--fail); }
+.rv-errors:focus { outline: 2px solid var(--fail); outline-offset: 3px; }
+.rv-errors h2 { font-size: 17px; color: var(--fail); }
+.rv-errors ul { margin: 8px 0 0; padding-left: 20px; }
+.rv-errors a { color: var(--fail); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+
+/* the save bar: the main action, cancel, the unsaved hint */
+.rv-form .savebar { margin: 0 -2px; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+.rv-dirty { font-size: 13.5px; color: var(--warn); }
+
+/* ---- the measurements of the old push-button panels: a frame per stop ------------------------------------------ */
+.rv-misure { display: grid; gap: 12px; container-type: inline-size; }
+.rv-misure-rows { display: grid; gap: 12px; }
+.rv-misura { margin: 0; padding: 8px 16px 16px; min-width: 0; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); background: var(--bg-2); }
+.rv-misura > legend { padding: 0 6px; font-size: 14px; font-weight: 700; color: var(--accent-2); }
+.rv-misura-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); align-items: end; gap: 12px 14px; }
+.rv-misura-grid > .rv-choice { grid-column: 1 / -1; }
+/* room for a whole stop on one line: the columns under one another as in a table */
+@container (min-width: 760px) {
+  .rv-misura-grid { grid-template-columns: minmax(56px, .5fr) repeat(2, minmax(124px, 1fr)) repeat(2, minmax(118px, 1.2fr)) auto; }
+  .rv-misura-grid > .rv-choice { grid-column: auto; }
+}
+
+/* ---- a supplier's module: a frame like its paper ------------------------------------------------------------- */
+.rv-modulo { display: grid; gap: 14px; padding: 18px; border: 1.5px solid var(--accent-line); border-radius: var(--radius); background: var(--bg-2); }
+.rv-modulo-head { display: grid; gap: 4px; }
+.rv-modulo-title { font-size: 17px; color: var(--ink-2); }
+.rv-modulo-title strong { color: var(--ink); }
+.rv-mgroup { display: grid; gap: 10px; margin: 0; padding: 8px 14px 14px; min-width: 0; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+.rv-mgroup > legend { padding: 0 6px; font-size: 14px; font-weight: 700; color: var(--ink); }
+.rv-mrow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; }
+.rv-arrow { align-self: center; font-size: 20px; line-height: 1; color: var(--accent-2); }
+.rv-mtext { display: grid; gap: 5px; flex: 1 1 180px; max-width: 340px; min-width: 0; }
+.rv-mtext.wide { flex-basis: 100%; max-width: none; }
+/* the module has over a hundred boxes: lower than the sheet's, still over 24 px for a finger */
+.rv-tick.sm { min-height: 40px; padding: 0 12px 0 9px; gap: 8px; font-size: 14.5px; }
+.rv-tick.sm .rv-box { width: 18px; height: 18px; }
+.rv-tick.sm input:checked + .rv-box::after { left: 4.5px; top: 1px; width: 5px; height: 9px; }

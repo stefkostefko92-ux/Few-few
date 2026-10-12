@@ -1,14 +1,14 @@
 // The smoke test's second company: made by the platform's administrator, its owner changes the password, accepts the
 // terms and downloads the company's data (no secrets in it), and opens nothing of the first company (404 everywhere),
-// its replacement's machine room and documents included. On the way, the workspace of the administrator (8 sections) and
-// of the owner (7) fits the window from a phone to a laptop (smoke-topbar.mjs).
+// its replacement's machine room and documents included. On the way, the workspace of the administrator (9 sections) and
+// of the owner (8) fits the window from a phone to a laptop (smoke-topbar.mjs).
 import assert from 'node:assert/strict';
 import { step } from './smoke-kit.mjs';
 import { headerFits } from './smoke-topbar.mjs';
 
 export async function secondCompany({ BASE, page, kit, ADMIN, stamp, urls }) {
   const { login, logout, hydrated } = kit;
-  const { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref, roomUrl, roomId } = urls;
+  const { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref, roomUrl, roomId, rilievoUrl, rilievoId } = urls;
   step('second company cannot see the first one');
   await login(page, ADMIN.email, ADMIN.password);
   await headerFits({ page, url: `${BASE}/it/app`, who: 'the platform’s administrator' });
@@ -53,4 +53,7 @@ export async function secondCompany({ BASE, page, kit, ADMIN, stamp, urls }) {
   for (const format of ['pdf', 'dxf', 'dwg']) assert.equal((await page.request.get(`${BASE}${new URL(liftUrl).pathname.replace(/^\/it\/app/, '/api')}/${format}`)).status(), 404, `${format} export of another company`);
   assert.equal((await page.goto(roomUrl)).status(), 404, 'machine room of another company');
   for (const format of ['relazione', 'pdf', 'dxf', 'dwg']) assert.equal((await page.request.get(`${BASE}/api/room-designs/${roomId}/${format}`)).status(), 404, `machine room ${format} of another company`);
+  // the survey sheet: its page, its edit and print pages, its PDF and its modules' PDFs (Rilievi)
+  for (const sub of ['', '/modifica', '/stampa', '/elimina']) assert.equal((await page.goto(`${rilievoUrl}${sub}`)).status(), 404, `survey sheet${sub} of another company`);
+  for (const pdf of ['pdf', 'ordine-quadro', 'preventivo-argano']) assert.equal((await page.request.get(`${BASE}/api/rilievi/${rilievoId}/${pdf}`)).status(), 404, `survey sheet ${pdf} of another company`);
 }

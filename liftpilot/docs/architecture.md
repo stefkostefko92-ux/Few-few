@@ -384,6 +384,14 @@ src/server/rilievi/  queries (списък и търсене със SQL пара
                      pdf-table (PDF-ът на картата, pdfkit + DejaVu), moduli-pdf (празните PDF-и, SHA-256), modulo-pdf
                      (попълнените модули, pdf-lib). Маршрутите: src/app/api/rilievi/[id]/pdf и [id]/[modulo]
                      (ordine-quadro, preventivo-argano). assets/moduli/ — празните формуляри на доставчиците + картите им.
+src/app/[locale]/app/rilievi/  Екраните на Rilievi: списък и търсене (page), nuovo, [id] (картата), [id]/modifica, [id]/stampa
+                     (листът A4), [id]/elimina (към кошчето), cestino и cestino/[id]/elimina; layout.tsx носи rilievi.css,
+                     rilievi-form.css и rilievi-print.css. Пунктът „Rilievi“ е в AppShell (Workspace).
+src/components/rilievi/  SchedaForm (формата: отговорите на действията, обобщението на грешките, конфликтът) + FieldInput,
+                     MisureBlock, ModuloBlock, use-scheda-form (правилата на app.js на rilievi върху формата), SectionIndex,
+                     LiveSearch (търсенето по адреса), Results (таблицата/картите и празните състояния), parts (табелата, таблицата
+                     на мерките, маркираните думи, страниците), ActionButton (кошче/възстановяване/окончателно), Confirm,
+                     Flash (`?ok=`), PrintTools, RilieviHead.
 deploy/              deploy.sh (сървърът: тайни, поща, бекъп, compose, health, nginx), nginx/liftpilot.conf. Dockerfile,
                      docker-compose.yml, docker-entrypoint.sh.
 brand/premium/       Изходниците на облика LiftPilot Premium: wordmark, емблема, иконата на приложението, favicon,
