@@ -634,6 +634,7 @@ PHOTO_CREDITS = {
     'grad-panorama.jpg': 'Снимка: Clj · обществено достояние · Уикимедия Общомедия',
     'vagoni.jpg': 'Снимка: DemieK07 · CC BY-SA 4.0 · Уикимедия Общомедия',
     'minyor-match.jpg': 'Снимка: Biso · CC BY 3.0 · Уикимедия Общомедия',
+    'bean-pods.jpg': 'Снимка: Rasbak · CC BY-SA 3.0 · Уикимедия Общомедия',
 }
 
 # изрязване (л, г, д, дъно) като дялове от размера, и мека корекция
@@ -644,6 +645,7 @@ PHOTO_SPEC = {
     'paraklis.jpg': {},
     'tec.jpg': {},
     'minyor-match.jpg': {'crop': (0.0, 0.10, 1.0, 1.0)},
+    'bean-pods.jpg': {'crop': (0.04, 0.14, 0.97, 0.80)},
 }
 
 
@@ -661,7 +663,7 @@ class Photo(Flowable):
             l, t, r, b = spec['crop']
             iw, ih = im.size
             im = im.crop((int(l * iw), int(t * ih), int(r * iw), int(b * ih)))
-        im = ImageOps.autocontrast(im, cutoff=0.4)
+        im = ImageOps.autocontrast(im, cutoff=0.4, preserve_tone=True)   # без изкривяване на цветовете
         if spec.get('contrast'):
             im = ImageEnhance.Contrast(im).enhance(spec['contrast'])
         im = im.filter(ImageFilter.UnsharpMask(radius=1.1, percent=55, threshold=3))
