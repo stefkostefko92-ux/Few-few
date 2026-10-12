@@ -12,8 +12,9 @@ export default async function Refreshed({ before, now, kind, locale }: { before:
   const t = await getTranslations('refresh'), date = dateFormat(locale).dateTime(before.createdAt);
   const same = before.verdict === now.verdict && before.failCount === now.failCount && before.warnCount === now.warnCount;
   return (
-    <div className={`alert ${same ? 'alert-ok' : 'alert-warn'}`} role="status">
-      {t(same ? 'same' : 'changed', { date })}
+    // the live region is the sentence alone: the pills are controls, and the panel a pill opens is not a status to read out
+    <div className={`alert ${same ? 'alert-ok' : 'alert-warn'}`}>
+      <span role="status">{t(same ? 'same' : 'changed', { date })}</span>
       {same ? null : (
         <> <VerdictPill verdict={before.verdict} fails={before.failCount} warns={before.warnCount} record={{ kind, id: before.id }} /> → <VerdictPill verdict={now.verdict} fails={now.failCount} warns={now.warnCount} record={{ kind, id: now.id }} /></>
       )}

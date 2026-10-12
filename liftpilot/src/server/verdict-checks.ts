@@ -20,11 +20,11 @@ import { shaftInputsReadSchema } from '@/lib/shaft-input';
 import {
   agrees, calcList, isCalcCheckId, isShaftCheckId, liftListDerived, liftListStored, roomList, shaftList, type CheckList, type ListedCheck, type VerdictDetail, type VerdictKind, type VerdictRow,
 } from '@/lib/verdict-checks';
-import { isUpperLimit, layout, mergeChecks, shaftSnapshot, shownValue } from '@/shaft';
+import { isUpperLimit, layout, mergeChecks, shownValue } from '@/shaft';
 import type { ShaftCheck } from '@/shaft/types';
-import { storedCollaudo } from './records';
+import { outdated, storedCollaudo } from './records';
 
-const COUNTS = { failCount: true, warnCount: true } as const;
+const COUNTS = { failCount: true, warnCount: true, engineVersion: true } as const, VERSION = { engineVersion: true } as const;
 
 /** The machine of a stored calculation (results.inputs.N) as far as a check's value and limit need it. */
 const storedMachine = z.object({ inputs: z.object({ N: z.object({ n: z.number(), d: z.number(), groove: z.object({ type: z.enum(['U', 'UU', 'VH', 'VN']), beta: z.number(), gamma: z.number() }) }) }) });
@@ -51,49 +51,53 @@ interface Listed {
   machine: ShownMachine | null;
   /** the label key of a shaft check (messages shaft): the machine room names two of them by what it surveyed */
   key?: (id: string) => string;
+  /** «da aggiornare» (by the versions stored): the list is the stored one, the record's page shows the checks the running
+   *  engines derive again, which may differ */
+  old: boolean;
 }
 
 async function listOf(user: SessionUser, kind: VerdictKind, id: string): Promise<Listed | null> {
   const where = { id, companyId: user.companyId };
   if (kind === 'calc') {
     const c = await prisma.calculation.findFirst({ where, select: { results: true, ...COUNTS } });
-    return c ? { list: calcList(c.results), counts: c, machine: machineOf(c.results) } : null;
+    return c ? { list: calcList(c.results), counts: c, machine: machineOf(c.results), old: outdated.calc(c) } : null;
   }
   if (kind === 'shaft') {
     const d = await prisma.shaftDesign.findFirst({ where, select: { inputs: true, results: true, ...COUNTS } });
     if (!d) return null;
     // the decimals and the unit of each check: its definition in the running engine (the snapshot keeps neither)
     const inputs = shaftInputsReadSchema.safeParse(d.inputs), defs = inputs.success ? attempt(() => layout(inputs.data).checks) : null;
-    return { list: shaftList(d.results, defs ?? []), counts: d, machine: null };
+    return { list: shaftList(d.results, defs ?? []), counts: d, machine: null, old: outdated.shaft(d) };
   }
   if (kind === 'room') {
-    const r = await prisma.roomDesign.findFirst({ where, select: { inputs: true, results: true, ...COUNTS, calculation: { select: { inputs: true, collaudo: true } } } });
+    const r = await prisma.roomDesign.findFirst({ where, select: { inputs: true, results: true, ...COUNTS, calculation: { select: { inputs: true, collaudo: true, ...VERSION } } } });
     if (!r) return null;
     const values = formValuesSchema.safeParse(r.calculation.inputs), survey = surveySchema.safeParse(r.inputs);
     const derived: RoomDerived | null = values.success && survey.success ? attempt(() => deriveRoom(values.data, survey.data)) : null;
     return {
       list: roomList(r.results, collaudoOf(r.calculation.inputs, r.calculation.collaudo), derived?.checks ?? []), counts: r, machine: null,
-      key: (k) => (derived ? roomCheckKey(k, derived) : `c_${k}`),
+      key: (k) => (derived ? roomCheckKey(k, derived) : `c_${k}`), old: outdated.room(r),
     };
   }
   const d = await prisma.liftDesign.findFirst({
     where,
     select: {
-      inputs: true, engineVersion: true, ...COUNTS,
+      inputs: true, ...COUNTS,
       calculation: { select: { inputs: true, results: true, sha256: true, collaudo: true } }, shaftDesign: { select: { results: true, sha256: true } },
     },
   });
   if (!d) return null;
   const rec = attempt(() => liftRecord(d, d.shaftDesign.sha256, d.calculation.sha256));
-  if (rec?.same) {
-    // reproduced: the save's own derivation (save.ts createLiftDesign), the beams under the machine included
-    const dv = rec.dv, shaft = shaftSnapshot(dv.shaft).layout.checks;
-    return { list: liftListDerived(dv.collaudo, dv.analysis.res.checks, shaft, dv.supportChecks), counts: d, machine: dv.analysis.ctx.N };
+  if (rec?.same && rec.shaftLayout) {
+    // reproduced: the save's own derivation (save.ts createLiftDesign), the beams under the machine included — the shaft
+    // design's layout the one the record's comparison has just made
+    const dv = rec.dv;
+    return { list: liftListDerived(dv.collaudo, dv.analysis.res.checks, rec.shaftLayout.checks, dv.supportChecks), counts: d, machine: dv.analysis.ctx.N, old: false };
   }
   const defs: readonly ShaftCheck[] = rec ? mergeChecks(rec.dv.layout.checks, rec.dv.supportChecks) : [];
   return {
     list: liftListStored(d.calculation.results, d.shaftDesign.results, collaudoOf(d.calculation.inputs, d.calculation.collaudo), defs), counts: d,
-    machine: machineOf(d.calculation.results),
+    machine: machineOf(d.calculation.results), old: true,
   };
 }
 
@@ -105,7 +109,7 @@ export async function verdictDetail(user: SessionUser, kind: VerdictKind, id: st
   const fmt = makeFmt(INTL_LOCALE[locale]), X = textsFor(makePres(asCalcDict(messages.calc), INTL_LOCALE[locale]));
   // a number whose decimals and unit are not known: as it is, to two decimals at most
   const plain = (x: number | null): string => (x === null ? '—' : fmt(x, Number.isInteger(x) ? 0 : 2));
-  const { list, counts, machine, key = (k: string) => `c_${k}` } = got;
+  const { list, counts, machine, old, key = (k: string) => `c_${k}` } = got;
   const row = (c: ListedCheck): VerdictRow => {
     if (c.src === 'calc') {
       if (!isCalcCheckId(c.id)) return { name: c.id, value: plain(c.value), limit: '' };
@@ -125,6 +129,6 @@ export async function verdictDetail(user: SessionUser, kind: VerdictKind, id: st
   const n = { fails: list.fails.length, warns: list.warns.length, failCount: counts.failCount, warnCount: counts.warnCount }, same = agrees(list, counts);
   const note = list.basis === 'unreadable' ? t('note_unreadable')
     : list.basis === 'partial' ? (same ? t('note_partial') : t('note_partial_diff', n))
-      : same ? null : t('note_mismatch', n);
+      : !same ? t('note_mismatch', n) : old ? t('note_outdated') : null;
   return { fails: list.fails.map(row), warns: list.warns.map(row), failCount: counts.failCount, warnCount: counts.warnCount, note };
 }

@@ -164,8 +164,16 @@ test('da aggiornare o contato altrimenti: l’elenco dice perché non torna', as
   assert.equal(old.note, old.fails.length === L.failCount && old.warns.length === L.warnCount ? it.verdictChecks.note_partial
     : it.verdictChecks.note_partial_diff.replace('{fails}', String(old.fails.length)).replace('{warns}', String(old.warns.length))
       .replace('{failCount}', String(L.failCount)).replace('{warnCount}', String(L.warnCount)));
+  assert.ok(old.note.includes('ricalcolate dal software attuale'), 'the note says the page shows the running software\'s checks');
+  // a calculation of an earlier engine whose counts its data still give: the stored list, said to be the stored one
+  const C = row('calculation', String(L.calculationId)), engine = C.engineVersion;
+  C.engineVersion = '0.0.0';
+  const kept = await verdictDetail(user, 'calc', String(C.id), 'bg');
+  assert.equal(kept?.fails.length, C.failCount);
+  assert.equal(kept?.note, bg.verdictChecks.note_outdated);
+  C.engineVersion = engine;
+  assert.equal((await verdictDetail(user, 'calc', String(C.id), 'it'))?.note, null, 'a calculation of the running engine: nothing to explain');
   // a count the stored data no longer give (an earlier version counted otherwise): both numbers, and the way out
-  const C = row('calculation', String(L.calculationId));
   C.failCount = Number(C.failCount) + 1;
   const off = await verdictDetail(user, 'calc', String(C.id), 'en');
   assert.ok(off?.note && off.note.includes(String(C.failCount)) && off.note.includes(String(off.fails.length)), off?.note ?? 'no note');

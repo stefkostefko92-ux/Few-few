@@ -6,7 +6,7 @@
   border-bottom: 1px solid var(--rule); white-space: nowrap; background: var(--surface2); }
 .data-table td { padding: 12px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
 .data-table tbody tr:last-child td { border-bottom: 0; }
-.data-table tbody tr:hover td { background: var(--row-hover); }
+.data-table tbody tr:hover:not(:has(.vc-panel:hover)) td { background: var(--row-hover); }
 /* a record's summary (what it is: machine, sheave, ropes…) wraps in its column; a short figure (.short) stays on one line */
 .data-table .spec { font-variant-numeric: tabular-nums; }
 .data-table .spec.short { white-space: nowrap; }

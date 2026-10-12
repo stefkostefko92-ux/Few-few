@@ -2166,9 +2166,10 @@
     "open": "Open the checks",
     "close": "Close",
     "none": "No check to list.",
-    "note_partial": "Design to update: the current software no longer reproduces it. The list comes from the checks saved with the calculation and the shaft; those the design derives from the machine in its place (beams under the machine, refuge on the car roof, car frame) are kept by no record. Update it for the full list.",
-    "note_partial_diff": "Design to update: the current software no longer reproduces it. Here are the checks saved with the calculation and the shaft ({fails} not passed, {warns} with a warning); the saved result ({failCount} and {warnCount}) also counted those the design derives from the machine in its place (beams under the machine, refuge on the car roof, car frame), which no record keeps. Update it for the full list.",
+    "note_partial": "Design to update: the current software no longer reproduces it. The list comes from the checks saved with the calculation and the shaft; those the design derives from the machine in its place (beams under the machine, refuge on the car roof, car frame) are kept by no record. The design’s page shows the checks recomputed by the current software. Update it for the full list.",
+    "note_partial_diff": "Design to update: the current software no longer reproduces it. Here are the checks saved with the calculation and the shaft ({fails} not passed, {warns} with a warning); the saved result ({failCount} and {warnCount}) also counted those the design derives from the machine in its place (beams under the machine, refuge on the car roof, car frame), which no record keeps. The design’s page shows the checks recomputed by the current software. Update it for the full list.",
     "note_mismatch": "Result saved by an earlier version of the software: it counted {failCount} not passed and {warnCount} with a warning, the saved data give {fails} and {warns}. Update it to redo the result.",
+    "note_outdated": "Record to update: this is the list saved with the record; its page shows the checks recomputed by the current software, which may differ. Update it to redo the result.",
     "note_unreadable": "The saved data cannot be read by the current software: open the record and update it to see the checks."
   }
 }

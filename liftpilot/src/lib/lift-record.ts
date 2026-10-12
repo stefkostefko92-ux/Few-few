@@ -5,7 +5,7 @@ import 'server-only';
 // direct pull needs, the order with the room drawn — never the calculator's values alone.
 import { snapshotOf } from '@/calc/snapshot';
 import { LIFT_ENGINE_VERSION, deriveLift, type LiftDerived, type LiftInputs } from '@/lib/lift';
-import { shaftSnapshot } from '@/shaft';
+import { shaftSnapshot, type Layout } from '@/shaft';
 import { liftInputsReadSchema } from './lift-input';
 import { shaftHash } from './shaft-hash';
 import { snapshotHash } from './snapshot-hash';
@@ -15,6 +15,9 @@ export interface LiftRecord {
   dv: LiftDerived;
   /** the running engines give the same records, none with a part beyond the shaft's walls: its documents may be made */
   same: boolean;
+  /** the shaft design's layout as the save makes its record (shaftSnapshot(dv.shaft)): made to compare the hashes, so
+   *  only when the derivation's version is the running one; null otherwise */
+  shaftLayout: Layout | null;
 }
 
 export function liftRecord(d: { inputs: unknown; engineVersion: string }, shaftSha256: string | null | undefined, calcSha256: string): LiftRecord | null {
@@ -23,7 +26,8 @@ export function liftRecord(d: { inputs: unknown; engineVersion: string }, shaftS
   const dv = deriveLift(p.data);
   // a distance of the plan set by hand beyond the shaft's walls (saved before the save refused it): its documents wait,
   // the refresh leads to the form, which names the distance (derive-types.ts PlanIssue)
-  const same = d.engineVersion === LIFT_ENGINE_VERSION && shaftHash(shaftSnapshot(dv.shaft).snapshot) === shaftSha256
+  const shaft = d.engineVersion === LIFT_ENGINE_VERSION ? shaftSnapshot(dv.shaft) : null;
+  const same = shaft !== null && shaftHash(shaft.snapshot) === shaftSha256
     && snapshotHash(snapshotOf(dv.values)) === calcSha256 && !dv.issues.some((k) => k.startsWith('shaft.plan.'));
-  return { inputs: p.data, dv, same };
+  return { inputs: p.data, dv, same, shaftLayout: shaft?.layout ?? null };
 }

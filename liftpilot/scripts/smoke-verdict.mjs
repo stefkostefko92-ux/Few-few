@@ -1,7 +1,8 @@
 // The smoke test's step for the result pill (src/components/VerdictChecks.tsx): on the dashboard the first result that
 // does not pass (else the first that passes with warnings) opens, with a click, the panel of the checks behind its
 // count; the panel lists exactly as many as the pill's number — a record the engines no longer reproduce may list
-// what its stored records keep, and then says why —; Esc closes it and leaves the focus on the pill.
+// what its stored records keep, and then says why —; Esc closes it and leaves the focus on the pill, where Enter opens and
+// closes it again.
 import assert from 'node:assert/strict';
 import { step } from './smoke-kit.mjs';
 
@@ -45,4 +46,11 @@ export async function verdictPopover({ BASE, page, hydrated }) {
   await panel.waitFor({ state: 'detached' });
   assert.equal(await pill.getAttribute('aria-expanded'), 'false');
   assert.ok(await pill.evaluate((el) => el === globalThis.document.activeElement), 'the focus stays on the pill');
+  // the keyboard toggles it as the click does: Enter opens, Enter closes (aria-expanded says which)
+  await page.keyboard.press('Enter');
+  await panel.waitFor();
+  assert.equal(await pill.getAttribute('aria-expanded'), 'true', 'Enter opens the panel');
+  await page.keyboard.press('Enter');
+  await panel.waitFor({ state: 'detached' });
+  assert.equal(await pill.getAttribute('aria-expanded'), 'false', 'Enter closes the panel');
 }

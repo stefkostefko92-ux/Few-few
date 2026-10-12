@@ -7,7 +7,8 @@ import { verdictClass, verdictStatus, worstTraction, type Texts } from '@/lib/pr
 import type { Pres } from '@/lib/present/tr';
 import { Pill } from './ui';
 
-export default function Verdict({ P, X, a, badCount }: { P: Pres; X: Texts; a: Analysis; badCount: number }) {
+/** `id`: the anchor of the checks it names (a saved calculation's: the result pill's panel leads there). */
+export default function Verdict({ id, P, X, a, badCount }: { id?: string; P: Pres; X: Texts; a: Analysis; badCount: number }) {
   const { t, fmt } = P;
   const { res, old, sizing, sens } = a;
   const warns = res.checks.filter((c) => c.status === 'warn');
@@ -23,7 +24,7 @@ export default function Verdict({ P, X, a, badCount }: { P: Pres; X: Texts; a: A
     </div>
   );
   return (
-    <div className="verdict">
+    <div id={id} className="verdict">
       <div className="propline">
         <div className="eyebrow">{t('v_prop')}</div>
         <div className="v">{sizing.pick ? X.proposalShort(sizing.pick) : X.noneText(sizing)}</div>

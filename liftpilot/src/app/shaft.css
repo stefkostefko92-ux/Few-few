@@ -2,8 +2,10 @@
 .shaft { display: flex; flex-direction: column; gap: 16px; }
 .shaft-layout { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 18px; align-items: start; }
 @media (max-width: 1080px) { .shaft-layout { grid-template-columns: minmax(0, 1fr); } }
-.shaft-output { position: sticky; top: 76px; }
-@media (max-width: 1080px) { .shaft-output { position: static; } }
+/* the output beside the form stays in sight; alone (a saved design's page) it scrolls with the page — sticky there, a panel
+   taller than the window slid under the scroll and a jump to its checks (#checks) landed hundreds of px low */
+.shaft-layout > .shaft-output { position: sticky; top: 76px; }
+@media (max-width: 1080px) { .shaft-layout > .shaft-output { position: static; } }
 
 /* fieldsets styled as the other fields; segmented choices */
 fieldset.field { border: 0; margin: 0; padding: 0; min-width: 0; }

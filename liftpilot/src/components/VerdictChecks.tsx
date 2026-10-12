@@ -3,12 +3,14 @@
 // A record's result pill that does not pass, or passes with warnings, as a button: it opens a panel with every check
 // behind the count — the ones not passed, then those with a warning —, each with its value against its limit, and the
 // way to the record's checks. Read from the server on the first opening (the dashboard lists up to 500 records: nothing
-// is read before), kept for the page's life. A click or a tap opens and closes it; with a mouse, resting on the pill or
-// focusing it from the keyboard opens it too, and it stays while the pointer is over the pill or the panel. Esc closes it
-// and gives the focus back to the pill, a click outside closes it, one panel at a time. The panel lives in the top layer
-// (popover), so no frame of the page clips it; below the pill, above it near the bottom edge, the window's width less
-// 16 px each side on a phone.
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type FocusEvent, type PointerEvent } from 'react';
+// is read before), kept for the page's life. A click, a tap, Enter or Space opens and closes it (aria-expanded says
+// which); with a mouse, resting on the pill or focusing it from the keyboard opens it too: resting, it stays while the
+// pointer is over the pill or the panel (a click just after it opened keeps it, pinned); focused, it is a preview the Tab
+// key passes by (its controls out of the Tab order) — Enter closes it, ArrowDown enters it. Esc closes it and gives the
+// focus back to the pill; a click outside, or the focus going on to another control of the page, closes it; one panel at
+// a time. The panel lives in the top layer (popover), so no frame of the page clips it; below the pill, above it near the
+// bottom edge, the window's width less 16 px each side on a phone.
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type FocusEvent, type KeyboardEvent, type PointerEvent } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import type { VerdictDetail, VerdictKind, VerdictRow } from '@/lib/verdict-checks';
@@ -21,7 +23,9 @@ const PAGE: Readonly<Record<VerdictKind, { path: string; anchor: string }>> = {
   lift: { path: '/app/lift-designs', anchor: 'checks' },
 };
 
-const DELAY = 150, GAP = 8, EDGE = 16, WIDTH = 400, MAX_H = 440, NARROW = 600;
+// the hover's delay; a click this soon after a hover's opening meant to open it; the live region's words wait for it to
+// be in the page
+const DELAY = 150, PIN = 400, SAY = 120, GAP = 8, EDGE = 16, WIDTH = 400, MAX_H = 440, NARROW = 600;
 
 // one read per record and language for the page's life (a failed one is read again on the next opening)
 const reads = new Map<string, Promise<VerdictDetail>>();
@@ -55,30 +59,49 @@ export default function VerdictChecks({ kind, id, verdict, label }: { kind: Verd
   const uid = useId(), panelId = `vc${uid}`, titleId = `${panelId}t`;
   const [mode, setMode] = useState<Mode | null>(null);
   const [load, setLoad] = useState<Load>({ s: 'idle' });
-  const wrap = useRef<HTMLSpanElement>(null), btn = useRef<HTMLButtonElement>(null), panel = useRef<HTMLDivElement>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // the focus given back to the pill by Esc does not open it again
-  const quiet = useRef(false);
+  // the panel's live region: in the page empty with the panel, then the words a screen reader is told (the list being
+  // read, then what it holds) — a region that comes with its words already in it is not heard
+  const [said, setSaid] = useState('');
+  const wrap = useRef<HTMLDivElement>(null), btn = useRef<HTMLButtonElement>(null), panel = useRef<HTMLDivElement>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null), sayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // when the panel opened (a click just after a hover's opening pins it); the focus given back to the pill by Esc does
+  // not open it again; ArrowDown enters the panel once it is drawn
+  const openedAt = useRef(0), quiet = useRef(false), enter = useRef(false);
   const cls = verdict === 'FAIL' ? 'fail' : 'warn';
 
   const later = useCallback((f: (() => void) | null) => {
     if (timer.current) clearTimeout(timer.current);
     timer.current = f ? setTimeout(f, DELAY) : null;
   }, []);
-  const close = useCallback(() => { later(null); setMode(null); }, [later]);
+  const say = useCallback((s: string, wait = SAY) => {
+    if (sayTimer.current) clearTimeout(sayTimer.current);
+    sayTimer.current = wait ? setTimeout(() => setSaid(s), wait) : null;
+    if (!wait) setSaid(s);
+  }, []);
+  const close = useCallback(() => { later(null); say('', 0); setMode(null); }, [later, say]);
   const fetchIt = useCallback(() => {
     setLoad({ s: 'loading' });
-    read(kind, id, locale).then((d) => setLoad({ s: 'ok', d }), () => setLoad({ s: 'error' }));
-  }, [kind, id, locale]);
+    say(t('loading'));
+    read(kind, id, locale).then((d) => {
+      setLoad({ s: 'ok', d });
+      const heads = [d.fails.length ? t('fails', { n: d.fails.length }) : '', d.warns.length ? t('warns', { n: d.warns.length }) : ''].filter(Boolean);
+      say(heads.length ? heads.join('. ') : t('none'));
+    }, () => { setLoad({ s: 'error' }); say('', 0); });
+  }, [kind, id, locale, say, t]);
   // the read starts with the first opening (and again after a failure)
   const open = useCallback((m: Mode) => {
     later(null);
     if (openNow && openNow !== close) openNow();
     openNow = close;
+    openedAt.current = performance.now();
     setMode(m);
     if (load.s === 'idle' || load.s === 'error') fetchIt();
   }, [close, later, load.s, fetchIt]);
-  useEffect(() => () => { later(null); if (openNow === close) openNow = null; }, [close, later]);
+  useEffect(() => () => {
+    later(null);
+    if (sayTimer.current) clearTimeout(sayTimer.current);
+    if (openNow === close) openNow = null;
+  }, [close, later]);
 
   // placed by the pill: below it, above it when below has no room, inside the window; re-placed while the page scrolls
   const place = useCallback(() => {
@@ -96,12 +119,25 @@ export default function VerdictChecks({ kind, id, verdict, label }: { kind: Verd
     p.style.top = `${Math.round(down ? r.bottom + GAP : r.top - GAP - h)}px`;
     p.style.left = `${Math.round(narrow ? EDGE : Math.min(Math.max(EDGE, r.left), vw - EDGE - width))}px`;
     p.dataset.side = down ? 'below' : 'above';
+    if (!body) return;
+    // a list that scrolls is a named stop of its own, so the keyboard scrolls it (WCAG 2.1.1) — out of the Tab order
+    // while the panel is the focus's preview, like its other controls
+    if (body.scrollHeight > body.clientHeight + 1) {
+      body.setAttribute('role', 'region');
+      body.setAttribute('aria-labelledby', p.getAttribute('aria-labelledby') ?? '');
+      body.tabIndex = p.dataset.mode === 'focus' ? -1 : 0;
+    } else {
+      body.removeAttribute('role');
+      body.removeAttribute('aria-labelledby');
+      body.removeAttribute('tabindex');
+    }
   }, []);
   useLayoutEffect(() => {
     const p = panel.current;
     if (!mode || !p) return;
     if (typeof p.showPopover === 'function' && !p.matches(':popover-open')) p.showPopover();
     place();
+    if (enter.current) { enter.current = false; p.focus(); }
   }, [mode, load, place]);
   useEffect(() => {
     if (!mode) return;
@@ -112,11 +148,13 @@ export default function VerdictChecks({ kind, id, verdict, label }: { kind: Verd
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(place);
     };
-    const key = (e: KeyboardEvent) => {
+    const key = (e: globalThis.KeyboardEvent) => {
       if (e.key !== 'Escape') return;
-      const inside = !!wrap.current?.contains(document.activeElement);
+      // back to the pill from its panel, or from nowhere when the panel was opened to stay (a click on the page's
+      // background, a browser that does not focus a clicked button)
+      const back = !!wrap.current?.contains(document.activeElement) || mode === 'pinned';
       close();
-      if (inside && document.activeElement !== btn.current) { quiet.current = true; btn.current?.focus(); }
+      if (back && document.activeElement !== btn.current) { quiet.current = true; btn.current?.focus(); }
     };
     const down = (e: globalThis.PointerEvent) => { if (!wrap.current?.contains(e.target as Node)) close(); };
     globalThis.addEventListener('scroll', again, { capture: true, passive: true });
@@ -132,12 +170,12 @@ export default function VerdictChecks({ kind, id, verdict, label }: { kind: Verd
     };
   }, [mode, close, place]);
 
-  const enter = (e: PointerEvent) => {
+  const pointerIn = (e: PointerEvent) => {
     if (e.pointerType !== 'mouse' || !canHover()) return;
     if (mode) later(null);
     else later(() => open('hover'));
   };
-  const leave = (e: PointerEvent) => {
+  const pointerOut = (e: PointerEvent) => {
     if (e.pointerType !== 'mouse') return;
     if (mode === 'hover') later(close);
     else if (!mode) later(null);
@@ -147,11 +185,30 @@ export default function VerdictChecks({ kind, id, verdict, label }: { kind: Verd
     if (!mode && canHover() && btn.current?.matches(':focus-visible')) later(() => open('focus'));
   };
   const blur = (e: FocusEvent) => {
-    if (wrap.current?.contains(e.relatedTarget as Node | null)) return;
+    const to = e.relatedTarget as Node | null;
+    if (to && wrap.current?.contains(to)) return;
     quiet.current = false;
-    if (mode === 'focus') close();
+    // the focus went on to another control of the page (Tab, a click): the panel would cover it, it closes; gone nowhere
+    // (another window, the page's background), a panel opened to stay stays
+    if (mode === 'focus' || (mode && to)) close();
     else if (!mode) later(null);
   };
+  // the pill's button: what is shut opens to stay; what is open shuts — but a hover's opening the click came just after
+  const toggle = () => {
+    if (!mode || (mode === 'hover' && performance.now() - openedAt.current < PIN)) open('pinned');
+    else close();
+  };
+  const arrow = (e: KeyboardEvent) => {
+    if (e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    if (mode !== 'pinned') open('pinned');
+    if (mode && panel.current) panel.current.focus();
+    else enter.current = true;
+  };
+  // a fresh read keeps the focus in the panel (the retry button goes while it reads)
+  const retry = () => { panel.current?.focus(); fetchIt(); };
+  // the preview of the focus: seen and read, not a stop of the Tab key
+  const skip = mode === 'focus' ? -1 : undefined;
 
   const list = (rows: readonly VerdictRow[], head: string, tone: 'fail' | 'warn') => rows.length ? (
     <div className={`vc-group ${tone}`}>
@@ -173,20 +230,22 @@ export default function VerdictChecks({ kind, id, verdict, label }: { kind: Verd
   const title = t(verdict === 'FAIL' ? 'titleFail' : 'titleWarn');
   const { path, anchor } = PAGE[kind];
   return (
-    <span ref={wrap} className="vc" onPointerEnter={enter} onPointerLeave={leave} onBlur={blur}>
+    <div ref={wrap} className="vc" onPointerEnter={pointerIn} onPointerLeave={pointerOut} onBlur={blur}>
       <button ref={btn} type="button" className={`status-pill ${cls} vc-pill`} aria-expanded={mode !== null} aria-controls={mode ? panelId : undefined}
-        aria-label={`${label}, ${t(verdict === 'FAIL' ? 'showFail' : 'showWarn')}`} onFocus={focus}
-        onClick={() => (mode === 'pinned' ? close() : open('pinned'))}>
+        aria-label={`${label}, ${t(verdict === 'FAIL' ? 'showFail' : 'showWarn')}`} onFocus={focus} onClick={toggle} onKeyDown={arrow}>
         {label}<span className="vc-caret" aria-hidden="true" />
       </button>
       {mode ? (
-        <div ref={panel} id={panelId} className={`vc-panel ${cls}`} role="dialog" aria-labelledby={titleId} popover="manual">
+        // tabIndex -1: a click on its text keeps the focus in it (Esc then gives it back to the pill); a press in it keeps it
+        <div ref={panel} id={panelId} className={`vc-panel ${cls}`} role="dialog" aria-labelledby={titleId} popover="manual" tabIndex={-1}
+          data-mode={mode} onPointerDown={() => { if (mode !== 'pinned') setMode('pinned'); }}>
           <div className="vc-head">
             <p id={titleId} className="vc-title">{title}</p>
-            <button type="button" className="vc-close" aria-label={t('close')} onClick={() => { close(); quiet.current = true; btn.current?.focus(); }}>
+            <button type="button" className="vc-close" aria-label={t('close')} tabIndex={skip} onClick={() => { close(); quiet.current = true; btn.current?.focus(); }}>
               <span aria-hidden="true">×</span>
             </button>
           </div>
+          <p className="sr-only" role="status">{said}</p>
           <div className="vc-body">
             {load.s === 'ok' ? (
               <>
@@ -196,14 +255,14 @@ export default function VerdictChecks({ kind, id, verdict, label }: { kind: Verd
                 {load.d.note ? <p className="vc-note" role="note">{load.d.note}</p> : null}
               </>
             ) : load.s === 'error' ? (
-              <p className="vc-state" role="alert">{t('error')} <button type="button" className="vc-retry" onClick={fetchIt}>{t('retry')}</button></p>
-            ) : <p className="vc-state" role="status">{t('loading')}</p>}
+              <p className="vc-state" role="alert">{t('error')} <button type="button" className="vc-retry" tabIndex={skip} onClick={retry}>{t('retry')}</button></p>
+            ) : <p className="vc-state">{t('loading')}</p>}
           </div>
           <div className="vc-foot">
-            <Link href={`${path}/${id}#${anchor}`} className="vc-open" onClick={close}>{t('open')}</Link>
+            <Link href={`${path}/${id}#${anchor}`} className="vc-open" tabIndex={skip} onClick={close}>{t('open')}</Link>
           </div>
         </div>
       ) : null}
-    </span>
+    </div>
   );
 }

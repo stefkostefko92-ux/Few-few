@@ -2166,9 +2166,10 @@
     "open": "Apri le verifiche",
     "close": "Chiudi",
     "none": "Nessuna verifica da elencare.",
-    "note_partial": "Progetto da aggiornare: il software attuale non lo riproduce. L’elenco viene dalle verifiche salvate con il calcolo e il vano; quelle che il progetto ricava dall’argano al suo posto (putrelle sotto l’argano, rifugio sul tetto di cabina, arcata) non le conserva nessun record. Aggiornalo per l’elenco completo.",
-    "note_partial_diff": "Progetto da aggiornare: il software attuale non lo riproduce. Qui ci sono le verifiche salvate con il calcolo e il vano ({fails} non superate, {warns} con attenzione); l’esito salvato ({failCount} e {warnCount}) contava anche quelle che il progetto ricava dall’argano al suo posto (putrelle sotto l’argano, rifugio sul tetto di cabina, arcata), che nessun record conserva. Aggiornalo per l’elenco completo.",
+    "note_partial": "Progetto da aggiornare: il software attuale non lo riproduce. L’elenco viene dalle verifiche salvate con il calcolo e il vano; quelle che il progetto ricava dall’argano al suo posto (putrelle sotto l’argano, rifugio sul tetto di cabina, arcata) non le conserva nessun record. La pagina del progetto mostra le verifiche ricalcolate dal software attuale. Aggiornalo per l’elenco completo.",
+    "note_partial_diff": "Progetto da aggiornare: il software attuale non lo riproduce. Qui ci sono le verifiche salvate con il calcolo e il vano ({fails} non superate, {warns} con attenzione); l’esito salvato ({failCount} e {warnCount}) contava anche quelle che il progetto ricava dall’argano al suo posto (putrelle sotto l’argano, rifugio sul tetto di cabina, arcata), che nessun record conserva. La pagina del progetto mostra le verifiche ricalcolate dal software attuale. Aggiornalo per l’elenco completo.",
     "note_mismatch": "Esito salvato da una versione precedente del software: contava {failCount} non superate e {warnCount} con attenzione, i dati salvati ne danno {fails} e {warns}. Aggiornalo per rifare l’esito.",
+    "note_outdated": "Record da aggiornare: questo è l’elenco salvato con il record; la sua pagina mostra le verifiche ricalcolate dal software attuale, che possono essere diverse. Aggiornalo per rifare l’esito.",
     "note_unreadable": "I dati salvati non si leggono con il software attuale: apri il record e aggiornalo per vedere le verifiche."
   }
 }

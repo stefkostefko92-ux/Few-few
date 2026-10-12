@@ -18,7 +18,8 @@ import Verdict from './Verdict';
 import Results from './Results';
 import LegalNotice from './LegalNotice';
 
-/** `id`: the anchor of its checks (the result pill's panel leads there). */
+/** `id`: the anchor of its checks — the verdict that names those not passed and those with a warning (the result pill's
+ *  panel leads there). */
 export default function CalculationView({ id, values, brand, collaudo, design = false }: { id?: string; values: FormValues; brand: string; collaudo: Collaudo; design?: boolean }) {
   const locale = useLocale(), messages = useMessages();
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
@@ -27,7 +28,7 @@ export default function CalculationView({ id, values, brand, collaudo, design = 
   const [mode, setMode] = useState<'simple' | 'expert'>('simple');
   const { t } = P;
   return (
-    <div id={id} className={`calc${mode === 'simple' ? ' simple' : ''}`}>
+    <div className={`calc${mode === 'simple' ? ' simple' : ''}`}>
       <div className="flex justify-end">
         <div className="seg" role="radiogroup" aria-label={t('aria_mode')}>
           <input type="radio" name="mode" id="v-simple" checked={mode === 'simple'} onChange={() => setMode('simple')} />
@@ -40,7 +41,7 @@ export default function CalculationView({ id, values, brand, collaudo, design = 
       <div className="layout readonly">
         <section className="summary">
           <Diagram P={P} I={a.ctx.I} N={a.ctx.N} res={a.res} />
-          <Verdict P={P} X={X} a={a} badCount={0} />
+          <Verdict id={id} P={P} X={X} a={a} badCount={0} />
         </section>
         <Results P={P} X={X} a={a} mode={mode} badCount={0} brand={brand} collaudo={collaudo} />
       </div>
