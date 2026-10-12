@@ -412,6 +412,16 @@ td .bar { min-width: 110px; }
   /* Палец-зона: лентата да е достъпна с една ръка. */
   .keycap { min-width: 52px; min-height: 44px; font-size: 13px; }
 }
+/* Скритото поле, което носи въвеждането (виж renderPty). Не е display:none и
+   не е извън екрана — тогава iOS отказва фокуса или скролва страницата. Стои в
+   долния ляв ъгъл на екрана, прозрачно; 16px шрифт, иначе iOS приближава. */
+.term-wrap { position: relative; }
+.term-kbd {
+  position: absolute; left: 0; bottom: 0; width: 1px; height: 1px;
+  opacity: 0; border: 0; padding: 0; margin: 0; resize: none; overflow: hidden;
+  font-size: 16px; color: transparent; background: transparent; caret-color: transparent;
+}
+.term-wrap:focus-within .term-screen { border-color: var(--accent); box-shadow: var(--glow); }
 .term-in {
   display: flex; gap: 8px; margin-top: 10px;
 }
@@ -662,8 +672,17 @@ tr.row-before td { background: rgba(255, 176, 0, 0.07); }
   #menu-toggle { display: inline-flex; margin-left: -8px; }
   .topbar { padding: 0 12px; gap: 8px; min-height: 52px; }
   .topbar h1 { font-size: 16px; }
-  /* Името на възела остава видимо винаги — „къде съм" не се жертва за място. */
-  .where { flex-direction: column; align-items: flex-start; gap: 0; flex: 1; }
+  /* Името на възела остава видимо винаги — „къде съм" не се жертва за място.
+     `overflow: hidden` + `max-width` на децата: без тях дългото заглавие излиза
+     ИЗВЪН колоната и се застъпва с бутоните вдясно (видяно на живо при отключен
+     sudo — значката покриваше „Терминал"). */
+  .where { flex-direction: column; align-items: flex-start; gap: 0; flex: 1; min-width: 0; overflow: hidden; }
+  .where > * { max-width: 100%; }
+  .topbar-right { flex: none; }
+  /* sudo на телефон: лампа + оставащо време + „Заключи". Думата пада. */
+  .sudo-badge { padding: 2px 3px 2px 7px; gap: 5px; }
+  .sudo-word { display: none; }
+  .sudo-lock { padding: 2px 7px; }
   .node-chip { font-size: 11.5px; }
   .node-chip::after { display: none; }
   body[data-remote] .node-chip { padding: 1px 7px; }

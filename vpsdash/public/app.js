@@ -136,7 +136,14 @@ function startSudoCountdown(until) {
       return;
     }
     const s = Math.ceil(ms / 1000);
-    left.textContent = `${t('отключено')} ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    // Думата и часовникът са отделни възли: на телефон думата се скрива (CSS),
+    // а остават лампата, оставащото време и „Заключи" — иначе значката изяжда
+    // горната лента и застъпва заглавието.
+    left.innerHTML = '';
+    left.append(
+      el('span', { class: 'sudo-word', text: 'отключено' }),
+      document.createTextNode(` ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`)
+    );
     badge.classList.remove('hidden');
   };
   tick();
@@ -3165,9 +3172,21 @@ async function renderPty() {
     role: 'log', 'aria-live': 'polite', 'aria-label': 'Екран на терминала',
   });
   const status = el('span', { class: 'muted', text: 'няма сесия' });
+  // Входът минава през СКРИТО текстово поле, не през екрана. Телефонът отваря
+  // клавиатура само за истинско поле за въвеждане — `<pre>` с tabindex получава
+  // фокус, но клавиатура не се появява НИКОГА (видяно на живо: терминалът беше
+  // напълно неизползваем от телефон). Освен това мобилната клавиатура не праща
+  // нормални keydown: буквите идват като `input` (keydown е „Unidentified"/229),
+  // често в композиция (Gboard). Полето хваща и двата пътя.
+  // 16px шрифт: под това iOS приближава страницата при фокус.
+  const kb = el('textarea', {
+    class: 'term-kbd', rows: '1', autocapitalize: 'off', autocomplete: 'off', autocorrect: 'off',
+    spellcheck: 'false', enterkeyhint: 'send', 'aria-label': 'Вход към терминала',
+  });
+  const wrap = el('div', { class: 'term-wrap' }, [screen, kb]);
   // Броят колони се МЕРИ, а не се гадае: сгрешена ширина значи, че всяка TUI
   // програма рисува в грешни колони и изгледът се разпада.
-  view.appendChild(screen);
+  view.appendChild(wrap);
   let cols = measureCols(screen);
   let rows = measureRows(screen);
   const term = new Terminal(cols, rows);
@@ -3191,7 +3210,7 @@ async function renderPty() {
     state.sectionEs = es;
     es.addEventListener('data', (ev) => { term.write(JSON.parse(ev.data)); paint(); });
     es.addEventListener('end', () => { status.textContent = 'сесията приключи'; es.close(); session = null; });
-    screen.focus();
+    focusKb();
   };
 
   const close = async () => {
@@ -3227,6 +3246,69 @@ async function renderPty() {
     flush();
   };
 
+  // ── Входът от клавиатурата (и физическа, и екранна) ──────────────────────────
+  // В полето стои един невидим знак-пазач: без него Backspace в празно поле на
+  // Android не ражда НИКАКВО събитие и изтриването не стига до терминала.
+  const GUARD = '\u00a0';
+  let composing = false;
+  const resetKb = () => {
+    kb.value = GUARD;
+    try { kb.setSelectionRange(1, 1); } catch { /* полето още не е в документа */ }
+  };
+  const focusKb = () => {
+    resetKb();
+    kb.focus({ preventScroll: true });
+  };
+  const flushKb = () => {
+    const v = kb.value;
+    if (!v.startsWith(GUARD)) {
+      // Пазачът е изтрит → това е Backspace (плюс каквото е написано на мястото му).
+      send('\x7f');
+      if (v) send(v.replace(/\n/g, '\r'));
+    } else {
+      const text = v.slice(GUARD.length);
+      if (text) send(text.replace(/\n/g, '\r'));
+    }
+    resetKb();
+  };
+  kb.addEventListener('compositionstart', () => { composing = true; });
+  kb.addEventListener('compositionend', () => {
+    composing = false;
+    if (session) flushKb();
+    else resetKb();
+  });
+  kb.addEventListener('input', (e) => {
+    if (!session) { resetKb(); return; }
+    if (e.inputType === 'insertLineBreak' || e.inputType === 'insertParagraph') { if (!composing) { flushKb(); } return; }
+    if (composing) return; // думата още се сглобява — тръгва при compositionend
+    flushKb();
+  });
+  kb.addEventListener('keydown', (e) => {
+    if (!session) return;
+    // Мобилна клавиатура / композиция: текстът идва през `input`, не оттук.
+    if (e.isComposing || e.keyCode === 229 || e.key === 'Unidentified') return;
+    // Обикновен знак без модификатор също минава през `input` — едно място за текста.
+    if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) return;
+    const seq = keyToSequence(e);
+    if (seq === null) return;
+    e.preventDefault();
+    send(seq);
+  });
+  kb.addEventListener('paste', (e) => {
+    if (!session) return;
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text');
+    if (text) send(text);
+  });
+  // Докосване/щракване по екрана → фокус в полето (в рамките на жеста — иначе
+  // телефонът не отваря клавиатурата). Ако човек маркира текст, за да го
+  // копира, НЕ местим фокуса: маркировката би изчезнала.
+  screen.addEventListener('click', () => {
+    if (window.getSelection().toString()) return;
+    focusKb();
+  });
+  resetKb();
+
   screen.addEventListener('keydown', (e) => {
     if (!session) return;
     // Пускаме браузърните комбинации за копиране/поставяне.
@@ -3251,7 +3333,7 @@ async function renderPty() {
       el('button', { class: 'btn btn-sm btn-danger', text: '✕ Затвори', onclick: async () => { await close(); paint(); } }),
       status,
     ]),
-    screen
+    wrap
   );
   // Лента с модификатори — виртуалната клавиатура на телефона НЯМА Ctrl, Esc,
   // Tab и стрелки. Без тези бутони терминалът на телефон е неизползваем.
@@ -3263,7 +3345,8 @@ async function renderPty() {
       onclick: (e) => {
         e.preventDefault();
         if (session) send(seq);
-        screen.focus();
+        // Обратно в полето — клавиатурата на телефона остава отворена.
+        focusKb();
       },
     });
   view.appendChild(
@@ -3286,7 +3369,7 @@ async function renderPty() {
       keyBtn('Enter', '\r'),
     ])
   );
-  view.appendChild(el('div', { class: 'metric-sub', text: 'Щракни в терминала и пиши. Ctrl+C прекъсва, Ctrl+D излиза. Сесия без активност 30 мин се затваря сама.' }));
+  view.appendChild(el('div', { class: 'metric-sub', text: 'Докосни или щракни в терминала и пиши. Ctrl+C прекъсва, Ctrl+D излиза. Сесия без активност 30 мин се затваря сама.' }));
 
   // Смяна на размера на прозореца → ПРЕОРАЗМЕРЯВАМЕ и живия TTY.
   //
