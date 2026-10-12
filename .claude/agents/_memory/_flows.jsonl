@@ -27,3 +27,5 @@
 {"t":"handoff","ts":"2026-09-10T05:52:59.724Z","id":"auto","from":"kachestveniyat","to":"izpitatelya","status":"има бележки"}
 {"t":"handoff","ts":"2026-09-13T09:05:11.294Z","id":"auto","from":"kodadjiyata","to":"човек","status":"блокер"}
 {"t":"handoff","ts":"2026-09-18T11:47:40.624Z","id":"auto","from":"tayniyat-agent","to":"hromadjiyata","status":"блокер"}
+{"t":"handoff","ts":"2026-10-12T08:40:47.707Z","id":"auto","from":"prevodach","to":"ai-djiyata","status":"има бележки"}
+{"t":"handoff","ts":"2026-10-12T08:41:04.995Z","id":"auto","from":"prevodach","to":"ai-djiyata","status":"има бележки"}
