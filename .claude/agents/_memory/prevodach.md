@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-10-12:** В блока ПРЕДАВАНЕ полето Към трябва да е id на агента (напр. ai-djiyata), не показното име (AI-джията) — dod-check.mjs отхвърля непознат адресат. _(агентски слой; verified; agents-dashboard/agents.json:13204)_
 - **2026-10-12:** Déjà test/i18n.mjs проверява TITLE в store/listing/<локал>.txt да е точно равно на extName, SHORT ≤132 знака (JS .length) и броя ✓ в листинга да е равен на en.txt (14). _(deja; verified; deja/test/i18n.mjs:84)_
 - **2026-10-12:** Déjà test/i18n.mjs проверява марката като подниз: ако en съобщението съдържа Déjà/Chrome/Gemini Nano/Hugging Face/huggingface.co/✓/https://, преводът трябва да го съдържа поне веднъж; затова формите с окончания (Déjà-ს, Chrome-ის) минават, но транслитерация (Дежа) пада. _(deja; verified; deja/test/i18n.mjs:41)_
 - **2026-10-12:** Déjà листинг гейт: TITLE === extName, SHORT ≤132 (JS .length), брой ✓ === en (14); extName ≤75 и започва с „Déjà — “. _(deja; verified; "deja/test/i18n.mjs:72-89")_
