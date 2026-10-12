@@ -160,6 +160,8 @@ try {
         () => document.documentElement.scrollWidth > window.innerWidth,
       );
       if (overflow) fail(`${scheme} mobile ${name}: horizontal scroll`);
+      // The phone layout hides labels behind icons: check that every control keeps its name.
+      await audit(mobile, `${scheme} mobile ${name}`);
       await mobile.screenshot({
         path: join(shots, `${scheme}-mobile-${name}.png`),
         fullPage: true,

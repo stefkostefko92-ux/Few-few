@@ -127,8 +127,15 @@
     display: none;
   }
 
+  /* На телефон бутонът е само иконата, но името му остава за екранния четец (display: none би го
+     оставил безименен). */
   .topbar__new .btn__label {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 }
 
