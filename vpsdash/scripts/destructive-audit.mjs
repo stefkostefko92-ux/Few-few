@@ -54,6 +54,7 @@ const CLASS = new Map(Object.entries({
   '/api/firewall/rule/delete': 'A · маха защита',
   '/api/firewall/enabled': 'A · вдига/сваля цялата защитна стена',
   '/api/settings/access': 'S · списъкът с адреси е втора врата ПРЕД паролата',
+  '/api/settings/peer': 'S · „пълен“ обхват дава на съседа root на тази машина',
   '/api/deploy/archive/delete': 'B · трие качен архив',
   '/api/backups/schedule': 'S · изключването маха последната предпазна мрежа, тихо',
   '/api/ports/change/apply': 'A · пипа .env, vhost-а и рестартира — три необратими в едно',

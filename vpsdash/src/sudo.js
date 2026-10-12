@@ -98,6 +98,8 @@ export const SUDO_ON_WRITE = [
   /^\/api\/proposals\/[^/]+\/approve$/,
   // Ключът на агентите е врата към четене на състоянието и към опашката.
   /^\/api\/agent\/key$/,
+  // „Пълен" обхват на съседа = root на тази машина за всеки, който държи другата.
+  /^\/api\/settings\/peer$/,
 ];
 
 export function needsSudo(pathname, cfg, { mutating = false } = {}) {

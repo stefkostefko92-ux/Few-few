@@ -85,7 +85,10 @@ function askSudo() {
       btn.disabled = true;
       err.textContent = '';
       try {
-        const res = await fetch(apiBase() + '/sudo', {
+        // ВИНАГИ към ТОЗИ панел, и при избран съсед: паролата за действие на
+        // съседа се иска от нашето прокси (съседът няма браузърна сесия, която
+        // да отключи — вярва на жетона и на нашата проверка).
+        const res = await fetch('/api/sudo', {
           method: 'POST',
           headers: { 'content-type': 'application/json', 'x-csd': '1' },
           body: JSON.stringify({ password: pass.value, code: code.value }),
@@ -155,7 +158,9 @@ function wireSudoLock() {
   if (!btn) return;
   btn.onclick = async () => {
     try {
-      await api('/sudo/revoke', { method: 'POST' });
+      // Към ТОЗИ панел — там живее разрешението (виж askSudo).
+      const res = await fetch('/api/sudo/revoke', { method: 'POST', headers: { 'x-csd': '1' } });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       clearInterval(sudoTimer);
       sudoTimer = null;
       document.getElementById('sudo-badge')?.classList.add('hidden');
@@ -2485,6 +2490,13 @@ async function restoreDialog(dump, db) {
 // не подробност от интерфейса.
 async function renderDesktop() {
   const view = document.getElementById('view');
+  // Рамката сочи `/desktop/` на ТОЗИ произход — при избран съсед тя би показала
+  // НАШИЯ десктоп под неговото име. „Къде съм" не се жертва.
+  if (state.node !== 'local') {
+    view.innerHTML = '';
+    view.appendChild(el('div', { class: 'empty', text: 'Десктопът на съседа се отваря от неговия собствен панел — рамката тук винаги е на този възел.' }));
+    return;
+  }
   const d = await api('/desktop');
   view.innerHTML = '';
 
@@ -5133,6 +5145,52 @@ async function renderAccess() {
       ]),
     ])
   );
+
+  // Обхватът на доверието е решение на човека НА ТОЗИ възел — съседът не може
+  // да го пипне (сървърът го отказва), затова картата я няма при избран съсед.
+  if (state.node !== 'local') return;
+  const p = await api('/settings/peer');
+  const scopeSel = el('select', { 'aria-label': 'Достъп на съседа' }, [
+    el('option', { value: 'read', text: 'само четене' }),
+    el('option', { value: 'full', text: 'пълен контрол' }),
+  ]);
+  scopeSel.value = p.scope;
+  view.appendChild(
+    el('div', { class: 'card' }, [
+      el('div', { class: 'card-head' }, [
+        el('h3', { text: 'Достъп на съседа' }),
+        p.scope === 'full' ? pill('warn', 'пълен контрол') : pill('ok', 'само четене'),
+      ]),
+      el('div', { class: 'metric-sub', text: p.tokenSet
+        ? 'Колко може другият VPS, когато го управляваш ОТТАМ. „Само четене": вижда състоянието и не пипа нищо опасно. „Пълен контрол": терминал, деплой, файлове, firewall, одобрения — всичко като тук. Паролата и 2FA за опасните действия се искат от ДРУГИЯ панел, а в одита тук стои кой човек оттам е действал.'
+        : 'Няма зададен peerToken — никой съсед не може да вика този панел.' }),
+      el('div', { class: 'metric-sub', style: 'color:var(--warn)', text: 'Цената на „пълен контрол": който вземе другия панел, взема и този сървър. Включвай го само ако 2FA е включено и на двата възела.' }),
+      el('div', { class: 'toolbar', style: 'margin-top:12px' }, [
+        scopeSel,
+        el('button', {
+          class: 'btn btn-primary', text: 'Запази',
+          onclick: async (e) => {
+            if (scopeSel.value === p.scope) return;
+            if (scopeSel.value === 'full') {
+              const ok = await confirmDanger({
+                title: 'Пълен контрол за съседа',
+                what: ['Другият VPS ще може всичко тук: терминал, деплой, файлове, firewall.', 'Компрометиран съсед = root и на тази машина.'],
+                expect: 'пълен',
+              });
+              if (!ok) return;
+            }
+            e.target.disabled = true;
+            try {
+              const r = await api('/settings/peer', { method: 'POST', body: { scope: scopeSel.value } });
+              toast(r.scope === 'full' ? 'Съседът вече има пълен контрол' : 'Съседът вече само чете', 'ok');
+              go('access');
+            } catch (err) { toast(err.message, 'bad'); }
+            e.target.disabled = false;
+          },
+        }),
+      ]),
+    ])
+  );
 }
 
 // ── Променливи на средата (.env) ──────────────────────────────────────────────────
@@ -5600,12 +5658,16 @@ const PROPOSAL_STATUS = {
 
 async function renderApprovals() {
   const view = document.getElementById('view');
-  if (state.node !== 'local') {
+  let keyInfo, list, catalog;
+  try {
+    [keyInfo, list, catalog] = await Promise.all([api('/agent/key'), api('/agent/proposals'), api('/agent/actions')]);
+  } catch (e) {
+    // При съсед в режим „само четене" това е очакван отказ, не счупена секция.
+    if (state.node === 'local') throw e;
     view.innerHTML = '';
-    view.appendChild(el('div', { class: 'empty', text: 'Одобренията се правят на самия възел — съсед не одобрява поправки по чужда машина.' }));
+    view.appendChild(el('div', { class: 'empty', text: e.message }));
     return;
   }
-  const [keyInfo, list, catalog] = await Promise.all([api('/agent/key'), api('/agent/proposals'), api('/agent/actions')]);
   const titles = Object.fromEntries((catalog.actions || []).map((a) => [a.type, a]));
   view.innerHTML = '';
   view.appendChild(el('p', { class: 'section-desc', text: 'Агентите диагностицират сървъра и ПРЕДЛАГАТ поправка от затворен списък действия. Claude преглежда всяко предложение, преди да го подаде. Нищо не се изпълнява, преди ти да натиснеш „Одобри" — с парола. Всяко решение влиза в одита.' }));

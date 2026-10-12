@@ -83,7 +83,7 @@ const cookieName = (c) => (c?.trustProxy ? COOKIE_HOST : COOKIE_BASE);
 // Версията се показва в подножието на панела и се праща на съседа при `/api/ping`.
 // 1.0.0: всичките 37 секции работят, гейтът е 14 проверки, а шестте кръга одит
 // (числа · необратими действия · известия · съсед · обеми · документи) са затворени.
-export const VERSION = '1.13.0';
+export const VERSION = '1.14.0';
 
 // Маршрути, които peer НИКОГА не пипа при обхват „read" (дори с GET) — това са
 // входовете, които биха дали контрол над машината на компрометиран съсед.
@@ -173,6 +173,18 @@ export const AGENT_ALLOW = [
 ];
 
 export const PEER_ALLOW = [/^\/api\/audit\/mirror$/, /^\/api\/backups\/offsite\/receive$/];
+
+// Затворено за съседа ВИНАГИ, дори при „peerScope": "full". Пълният обхват дава
+// контрол над ТАЗИ машина, не право да я ползваш като прокси към трети възел с
+// НЕГОВИЯ жетон (confused deputy, верижи /api/nodes/B/api/nodes/C/…), нито да
+// решаваш колко ти се доверява тя — обхватът е решение на човека ТУК.
+export const PEER_NEVER = [/^\/api\/nodes(\/|$)/, /^\/api\/settings\/peer$/];
+
+// Кой човек стои зад заявка от съседа. Проксито на другия възел го слага като
+// `потребител@възел`, след като е проверило НЕГОВАТА сесия и sudo; тук само го
+// вписваме в одита. Заглавката се приема единствено с верен peerToken — иначе
+// всеки би си написал чуждо име.
+const ACTOR_RX = /^[A-Za-z0-9._-]{1,64}@[A-Za-z0-9._-]{1,64}$/;
 
 // Единственото изключение от списъка с разрешени адреси: GitHub чука отвън и
 // адресите му не са наши. Маршрутът носи защитата си сам (HMAC подпис).
@@ -281,7 +293,10 @@ export function buildRouter(ctx) {
     const m = /^Bearer\s+(.+)$/i.exec(req.headers.authorization || '');
     const bearer = m ? m[1].trim() : '';
     if (bearer && cfg.peerToken) {
-      if (tokenEqual(bearer, cfg.peerToken)) return { user: 'peer', peer: true };
+      if (tokenEqual(bearer, cfg.peerToken)) {
+        const actor = String(req.headers['x-csd-actor'] || '');
+        return { user: ACTOR_RX.test(actor) ? `peer:${actor}` : 'peer', peer: true };
+      }
       // Грешен Bearer беше безплатен опит: без брояч, без ред в одита, без
       // аларма — тоест налучкването на токена, който дава пълен достъп, беше
       // не просто възможно, а НЕВИДИМО.
@@ -353,6 +368,7 @@ export function buildRouter(ctx) {
   // втори VPS иначе получава root shell на първия през /api/nodes/<id>/…
   // Разрешава се изрично с "peerScope": "full" в конфига.
   const peerAllowed = (req, url) => {
+    if (PEER_NEVER.some((rx) => rx.test(url.pathname))) return false;
     if (PEER_ALLOW.some((rx) => rx.test(url.pathname))) return true;
     if ((cfg.peerScope || 'read') === 'full') return true;
     if (req.method !== 'GET') return false;
@@ -389,8 +405,11 @@ export function buildRouter(ctx) {
       }
       if (mutating && !csrfOk(req, who)) return sendError(res, 403, 'Отхвърлена заявка (CSRF).');
       if (who.peer && !peerAllowed(req, url)) {
-        audit.log({ action: 'peer.denied', path: url.pathname, method: req.method });
-        return sendError(res, 403, 'Peer-ът има само достъп за четене (peerScope).');
+        audit.log({ action: 'peer.denied', path: url.pathname, method: req.method, user: who.user });
+        if (PEER_NEVER.some((rx) => rx.test(url.pathname))) {
+          return sendError(res, 403, 'Това съседът не прави дори при пълен достъп (верига към трети възел или обхвата на доверието).');
+        }
+        return sendError(res, 403, 'Съседът има само достъп за четене. За пълен контрол: в панела на ТОЗИ възел „Достъп по IP“ → „Достъп на съседа“ → „пълен контрол“.');
       }
       // Режим „sudo": повторна автентикация точно преди необратимото. Открадната
       // сесия вече не е достатъчна за изтрит продукт или изключен сървър.
@@ -2415,6 +2434,35 @@ export function buildRouter(ctx) {
     )
   );
 
+  // ── Колко се доверява ТОЗИ възел на съседа ─────────────────────────────────
+  // „read" (подразбиране): съседът чете и не пипа нищо опасно. „full": съседът
+  // прави всичко, което можеш тук — терминал, деплой, файлове, одобрения. Тогава
+  // паролата и 2FA се искат от ДРУГИЯ панел (проксито), а в одита тук стои
+  // `peer:<човек>@<възел>`. Цената: компрометиран съсед = root и тук. Затова е
+  // решение на човека НА ТОЗИ възел, зад sudo, и съседът не може да го пипне
+  // (`PEER_NEVER`).
+  r.get('/api/settings/peer', guard(J(() => ({
+    scope: cfg.peerScope === 'full' ? 'full' : 'read',
+    peers: (cfg.peers || []).map((p) => ({ id: p.id, name: p.name })),
+    tokenSet: Boolean(cfg.peerToken),
+  }))));
+  r.post(
+    '/api/settings/peer',
+    guard(
+      J(async (req) => {
+        humanOnly(req);
+        const b = await readJson(req);
+        if (b.scope !== 'read' && b.scope !== 'full') {
+          throw Object.assign(new Error('Обхватът е „read" или „full".'), { status: 400 });
+        }
+        saveConfig(cfg, { peerScope: b.scope });
+        audit.log({ action: 'settings.peerScope', scope: b.scope, user: req.user });
+        return { ok: true, scope: b.scope };
+      }),
+      { mutating: true }
+    )
+  );
+
   // ── Webhook от GitHub (БЕЗ сесия — носи защитата си сам) ────────────────────
   // Единственият маршрут без guard(). Подписът е автентикацията; тялото е ДАННИ.
   r.post('/api/webhook/github', async (req, res) => {
@@ -2514,9 +2562,29 @@ export function buildRouter(ctx) {
       (req, res, params, url) => {
         const peer = nodes.findPeer(cfg, params.id);
         if (!peer) return sendError(res, 404, 'Непознат възел');
+        const mutating = req.method !== 'GET';
         // Мутациите към peer също изискват CSRF маркера локално.
-        if (req.method !== 'GET' && !csrfOk(req, null)) return sendError(res, 403, 'Отхвърлена заявка (CSRF).');
-        nodes.proxyToPeer(peer, req, res, params.rest, url.search);
+        if (mutating && !csrfOk(req, null)) return sendError(res, 403, 'Отхвърлена заявка (CSRF).');
+        // Пътят ОТ ДРУГАТА СТРАНА. Съседът пропуска sudo за заявки с жетон (няма
+        // браузър, който да покаже диалога), значи паролата се иска ТУК, срещу
+        // НЕГОВИЯ път. Без това `/api/nodes/vps2/terminal/run` минаваше покрай
+        // `needsSudo` (той вижда `/api/nodes/…`, не `/api/terminal/…`) — при
+        // пълен обхват на съседа това е root shell там с открадната сесия тук.
+        const rest = String(params.rest || '');
+        if (!rest || rest.startsWith('/') || rest.includes('//') || rest.includes('\\')) {
+          return sendError(res, 400, 'Невалиден път към съседа.');
+        }
+        const inner = `/api/${rest}`;
+        if (PEER_NEVER.some((rx) => rx.test(inner)) || /^\/api\/(sudo|login|logout)(\/|$)/.test(inner)) {
+          return sendError(res, 403, 'Това се прави на ТОЗИ възел, не през съседа.');
+        }
+        if (needsSudo(inner, cfg, { mutating }) && !sudo.has(req.jti)) {
+          audit.log({ action: 'sudo.required', path: url.pathname, user: req.user });
+          return sendError(res, 428, 'Това действие иска повторно потвърждаване с парола.');
+        }
+        // Следа и ТУК: одитът на съседа е негов, а откраднатата сесия е наша.
+        if (mutating) audit.log({ action: 'peer.proxy', node: peer.id, method: req.method, path: inner, user: req.user });
+        nodes.proxyToPeer(peer, req, res, rest, url.search, { actor: `${req.user}@${cfg.nodeId || 'local'}` });
       }
     )
   );
