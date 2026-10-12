@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — քո դիտարկչի հիշողությունը"
+  },
+  "extDesc": {
+    "message": "Որոնիր կարդացած էջերն ըստ իմաստի։ Ամեն ինչ կատարվում է տեղում — ոչինչ չի լքում քո սարքը։"
+  },
+  "cmdOpenSearch": {
+    "message": "Բացել Déjà-ի որոնումը"
+  },
+  "searchTitle": {
+    "message": "Déjà — որոնիր կարդացածդ"
+  },
+  "tagline": {
+    "message": "Դու դա տեսել ես։ Déjà-ն կգտնի։"
+  },
+  "searchPlaceholder": {
+    "message": "Նկարագրիր, թե ինչ ես հիշում… օր.՝ «հոդված նատրիումային մարտկոցների մասին»"
+  },
+  "searchButton": {
+    "message": "Որոնել"
+  },
+  "statusSearching": {
+    "message": "Փորփրում եմ հիշողությունը… (առաջին որոնումը բեռնում է մոդելը, ~10-30 վ)"
+  },
+  "statusEmpty": {
+    "message": "Ոչինչ չհայտնվեց։ Կամ դու դա երբեք չես կարդացել, կամ Déjà-ն դեռ չի հիշել։"
+  },
+  "statusResults": {
+    "message": "Հուշեր՝ $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 հուշ"
+  },
+  "errNoResponse": {
+    "message": "հիշողությունը չպատասխանեց — փորձիր կրկին"
+  },
+  "recallVivid": {
+    "message": "վառ հուշ"
+  },
+  "recallHazy": {
+    "message": "մշուշոտ հուշ"
+  },
+  "recallFaint": {
+    "message": "հեռավոր հուշ"
+  },
+  "statusError": {
+    "message": "Որոնումը ձախողվեց՝ $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Հիշողության մեջ՝ $COUNT$ էջ։",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Հիշողության մեջ՝ 1 էջ։"
+  },
+  "similarity": {
+    "message": "նմանություն $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "կարդացվել է $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ էջ հիշողության մեջ",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 էջ հիշողության մեջ"
+  },
+  "popupSleeping": {
+    "message": "հիշողությունը քնած է"
+  },
+  "popupWaking": {
+    "message": "հիշողությունն արթնանում է…"
+  },
+  "popupOpenSearch": {
+    "message": "Բացել որոնումը"
+  },
+  "popupPause": {
+    "message": "Դադարեցնել հիշելը"
+  },
+  "popupClear": {
+    "message": "Մաքրել հիշողությունը"
+  },
+  "popupClearConfirm": {
+    "message": "Ջնջե՞լ ամբողջ հիշվածը։ Հետդարձ չկա։"
+  },
+  "popupOptions": {
+    "message": "Կարգավորումներ"
+  },
+  "optionsTitle": {
+    "message": "Déjà — կարգավորումներ"
+  },
+  "optRetentionLabel": {
+    "message": "Հիշել էջերը"
+  },
+  "optRetentionForever": {
+    "message": "ընդմիշտ"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ ամիս",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Ավելի հին էջերը ջնջվում են ավտոմատ՝ օրը մեկ անգամ։"
+  },
+  "optDenylistLabel": {
+    "message": "Երբեք չհիշել հասցեներ, որոնք պարունակում են"
+  },
+  "optDenylistHelp": {
+    "message": "Մեկ նմուշ յուրաքանչյուր տողում։ Համընկնում է հասցեի մի մասի հետ, օր.՝ «example.com» կամ «/private»։"
+  },
+  "optBuiltinLabel": {
+    "message": "Ներկառուցված պաշտպանություն (միշտ ակտիվ)"
+  },
+  "optModelHostLabel": {
+    "message": "Մոդելի սեփական հայելի (ընդլայնված)"
+  },
+  "optModelHostHelp": {
+    "message": "Դատարկ = huggingface.co։ Նշիր քո սեփական սերվերը անցանց/կորպորատիվ միջավայրերի համար։"
+  },
+  "filterAll": {
+    "message": "բոլորը"
+  },
+  "filterWeek": {
+    "message": "վերջին շաբաթ"
+  },
+  "filterMonth": {
+    "message": "վերջին ամիս"
+  },
+  "filterYear": {
+    "message": "վերջին տարի"
+  },
+  "relatedLink": {
+    "message": "առնչվող հուշեր"
+  },
+  "relatedNone": {
+    "message": "մոտ հուշեր չկան"
+  },
+  "omniboxDefault": {
+    "message": "Հարցրու քո հիշողությանը — Déjà-ն որոնում է ըստ իմաստի"
+  },
+  "popupMemory": {
+    "message": "Իմ հիշողությունը"
+  },
+  "memoryTitle": {
+    "message": "Իմ հիշողությունը"
+  },
+  "memoryEmpty": {
+    "message": "Հիշողությունը դատարկ է — թերթիր մի քանի էջ և վերադարձիր։"
+  },
+  "memoryForget": {
+    "message": "Մոռանալ"
+  },
+  "memoryExport": {
+    "message": "Ներբեռնել արխիվը"
+  },
+  "memoryImport": {
+    "message": "Վերականգնել արխիվից"
+  },
+  "memoryImportConfirm": {
+    "message": "Վերականգնե՞լ արխիվից։ Համընկնող էջերը կվերագրվեն։"
+  },
+  "optSave": {
+    "message": "Պահել"
+  },
+  "optSaved": {
+    "message": "Պահված է ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Հայելին պետք է լինի https:// հասցե"
+  },
+  "welcomeHeading": {
+    "message": "Բարև։ Ես քո դիտարկչի հիշողությունն եմ։"
+  },
+  "welcomeIntro": {
+    "message": "Այս պահից ես հիշում եմ այն, ինչ կարդում ես, որպեսզի հետո գտնես այն ըստ իմաստի — քո բառերով, ոչ թե ճշգրիտ վերնագրով։"
+  },
+  "welcomePoint1": {
+    "message": "Ամեն ինչ կատարվում է քո սարքում։ Ոչ սերվերներ, ոչ ամպ, ոչ մի տվյալ չի ուղարկվում — ոչ մի տեղ, երբեք։"
+  },
+  "welcomePoint2": {
+    "message": "Փոստը, զրույցները, մուտքի և բանկային էջերը երբեք չեն հիշվում։ Ուշադրություն՝ զգայուն թեմաներն ըստ հասցեի չեմ կարող ճանաչել — դրանց համար օգտագործիր դադարը կամ քո սեփական ցուցակը կարգավորումներում։"
+  },
+  "welcomePoint3": {
+    "message": "Դու ես կառավարում՝ դադար մեկ սեղմումով, «Մաքրել հիշողությունը»-ն ջնջում է ամեն ինչ, իսկ ցանկության դեպքում մի քանի ամիս անց ես ավտոմատ մոռանում եմ։"
+  },
+  "welcomeCta": {
+    "message": "Բացել որոնումը"
+  },
+  "welcomeOptions": {
+    "message": "Կարգավորումներ"
+  },
+  "memoryFilter": {
+    "message": "Որոնիր հիշողությանդ մեջ…"
+  },
+  "supportLink": {
+    "message": "Աջակցել Déjà-ին"
+  },
+  "panelTitle": {
+    "message": "Déjà — ուղեկից"
+  },
+  "panelOnThisPage": {
+    "message": "Այս էջի թեմայով"
+  },
+  "panelRecent": {
+    "message": "Վերջին հուշեր"
+  },
+  "panelNoPage": {
+    "message": "Բացիր վեբ էջ, և Déjà-ն ցույց կտա, թե ինչ ես կարդացել դրա թեմայով։"
+  },
+  "popupOpenPanel": {
+    "message": "Կողային վահանակ"
+  },
+  "popupForgetPage": {
+    "message": "Մոռանալ այս էջը"
+  },
+  "popupForgotten": {
+    "message": "Մոռացված է ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: հիշել ընտրված տեքստը"
+  },
+  "menuForget": {
+    "message": "Déjà: մոռանալ այս էջը"
+  },
+  "recentTitle": {
+    "message": "Վերջին հուշեր"
+  },
+  "cmdOpenPanel": {
+    "message": "Բացել Déjà-ի կողային վահանակը"
+  },
+  "welcomePoint4": {
+    "message": "Կողային վահանակը տեսնում է քո դիտած էջի հասցեն և վերնագիրը, որպեսզի ցույց տա, թե ինչ ես կարդացել դրա թեմայով — միայն սեանսի հիշողության մեջ։ Այն հատվածները, որոնք դիտմամբ պահում ես, նույնպես մնում են միայն քեզ մոտ։"
+  },
+  "welcomeUpdated": {
+    "message": "Déjà-ն թարմացվել է։ Նորություն՝ ցանկության դեպքում այժմ քո էջանիշները նույնպես կարելի է որոնել ըստ իմաստի։ Ահա, թե ինչ եմ անում քո տվյալների հետ — ոչինչ չի լքել քո սարքը։"
+  },
+  "optAmbientLabel": {
+    "message": "Կենդանի ֆոն"
+  },
+  "optAmbientHelp": {
+    "message": "Ապակու հետևում հուշերի ցանցը դանդաղ լողում է։ Անջատիր, եթե շարժումը շեղում է ուշադրությունդ։"
+  },
+  "bmTitle": {
+    "message": "Դարձրու էջանիշներդ որոնելի — հենց հիմա"
+  },
+  "bmText": {
+    "message": "Déjà-ն սովորում է քո էջանիշների վերնագրերն ու թղթապանակները՝ առանց էջերը բացելու։ Գտիր դրանք ըստ իմաստի առաջին րոպեից — ամեն ինչ մնում է քո սարքում։"
+  },
+  "bmTextShort": {
+    "message": "Քո հիշողությունը դեռ երիտասարդ է։ Սովորեցրու ինձ քո էջանիշները և որոնիր դրանք ըստ իմաստի հենց այսօր։"
+  },
+  "bmButton": {
+    "message": "Սովորել իմ էջանիշները"
+  },
+  "bmNote": {
+    "message": "Դիտարկիչը թույլտվություն կխնդրի։ Կարող ես անջատել ցանկացած պահի՝ կարգավորումներում։"
+  },
+  "bmTitleRunning": {
+    "message": "Սովորում եմ քո էջանիշները…"
+  },
+  "bmTitleDone": {
+    "message": "Քո էջանիշները որոնելի են"
+  },
+  "bmPreparing": {
+    "message": "Պատրաստվում եմ…"
+  },
+  "bmLearning": {
+    "message": "Սովորված է՝ $DONE$ / $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà-ն դադարի մեջ է — կշարունակեմ, հենց վերսկսես։"
+  },
+  "bmError": {
+    "message": "Սովորելիս ինչ-որ բան սխալ գնաց։ Կփորձեմ կրկին հաջորդ փոփոխության ժամանակ։"
+  },
+  "bmDone": {
+    "message": "Պատրաստ է — $COUNT$ էջանիշ որոնելի է ըստ իմաստի և համաժամացվում է ավտոմատ։",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Պատրաստ է — 1 էջանիշ որոնելի է ըստ իմաստի և համաժամացվում է ավտոմատ։"
+  },
+  "bmDenied": {
+    "message": "Առանց թույլտվության չեմ կարող տեսնել քո էջանիշները։ Կարող ես կրկին փորձել ցանկացած պահի։"
+  },
+  "bmTry": {
+    "message": "Փորձիր՝"
+  },
+  "bmBadge": {
+    "message": "Էջանիշ"
+  },
+  "bmAddedOn": {
+    "message": "էջանշվել է $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Էջանիշները հիշողության մեջ"
+  },
+  "optBookmarksHelp": {
+    "message": "Սովորում եմ քո էջանիշների վերնագրերն ու թղթապանակները (առանց էջերը բացելու) և հետևում եմ, երբ ավելացնում կամ ջնջում ես։ Անջատելիս դրանք հեռացվում են հիշողությունից — կարդացած էջերը մնում են։"
+  },
+  "memoryFilterAll": {
+    "message": "Բոլորը"
+  },
+  "memoryFilterRead": {
+    "message": "Կարդացած"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Էջանիշներ"
+  },
+  "welcomePoint5": {
+    "message": "Էջանիշներ — միայն եթե միացնես՝ այդ դեպքում սովորում եմ դրանց վերնագրերն ու թղթապանակները՝ առանց էջերը բացելու։ Մեկ սեղմումով անջատվում է։"
+  },
+  "rateTitle": {
+    "message": "Déjà-ն արդեն $COUNT$ անգամ օգնել է քեզ ինչ-որ բան գտնել",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Եթե օգտակար է, խանութում գնահատականն օգնում է ուրիշներին գտնել այն — դա 10 վայրկյան է տևում։ Իսկ եթե ինչ-որ բան նյարդայնացնում է, գրիր մեզ։"
+  },
+  "rateButton": {
+    "message": "Գնահատել Déjà-ն"
+  },
+  "rateFeedback": {
+    "message": "Ինչ-որ բան չի՞ աշխատում"
+  },
+  "rateLater": {
+    "message": "Ոչ հիմա"
+  },
+  "rateThanks": {
+    "message": "Շնորհակալություն։ Դա իսկապես օգնում է։"
+  },
+  "rateFeedbackThanks": {
+    "message": "Շնորհակալություն — կարդում ենք յուրաքանչյուր նամակ։"
+  },
+  "rateFeedbackSubject": {
+    "message": "հետադարձ կապ"
+  },
+  "answerTitle": {
+    "message": "Պատասխան քո հիշողությունից"
+  },
+  "answerAsk": {
+    "message": "Պատասխանել իմ հիշողությունից"
+  },
+  "answerEnableTitle": {
+    "message": "Պատասխաններ Chrome-ի ներկառուցված AI-ից"
+  },
+  "answerEnableText": {
+    "message": "Déjà-ն կարող է պատասխանել հարցերին՝ հիմնվելով քո կարդացածի վրա, աղբյուրներով։ Chrome-ը մեկ անգամ ներբեռնում է իր սարքային մոդելը (Gemini Nano) — քո հարցերն ու էջերը երբեք չեն լքում քո համակարգիչը։"
+  },
+  "answerEnableButton": {
+    "message": "Միացնել պատասխանները"
+  },
+  "answerNoThanks": {
+    "message": "Ոչ, շնորհակալություն"
+  },
+  "answerDownloading": {
+    "message": "Chrome-ը ներբեռնում է մոդելը… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Կարդում եմ քո հուշերը…"
+  },
+  "answerStop": {
+    "message": "Կանգնեցնել"
+  },
+  "answerFoot": {
+    "message": "Գրված է քո սարքում Chrome-ի ներկառուցված AI-ի կողմից՝ քո $COUNT$ հուշի հիման վրա։ Ստուգիր աղբյուրները։",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Այս անգամ չկարողացա պատասխան կազմել։"
+  },
+  "optAnswersLabel": {
+    "message": "Պատասխաններ Chrome-ի ներկառուցված AI-ից"
+  },
+  "optAnswersHelp": {
+    "message": "«Ի՞նչ եմ կարդացել … մասին» տիպի հարցերի համար գրում եմ կարճ պատասխան՝ քո էջերից աղբյուրներով — ամբողջությամբ քո սարքում, Chrome-ի Gemini Nano-ով։ Պահանջվում է աջակցվող համակարգիչ և լեզու (անգլերեն, իսպաներեն, գերմաներեն, ֆրանսերեն, ճապոներեն)։"
+  },
+  "optAnswersAvailable": {
+    "message": "Պատրաստ է օգտագործման այս սարքում։"
+  },
+  "optAnswersDownloadable": {
+    "message": "Աջակցվում է — Chrome-ը կներբեռնի մոդելը քո առաջին հարցի ժամանակ։"
+  },
+  "optAnswersUnavailable": {
+    "message": "Այս սարքը կամ միջերեսի լեզուն չի աջակցվում Chrome-ի ներկառուցված AI-ի կողմից։"
+  },
+  "optAnswersUnsupported": {
+    "message": "Այս դիտարկիչը ներկառուցված AI չունի — Déjà-ի մնացած ամեն ինչ աշխատում է ինչպես միշտ։"
+  }
+}

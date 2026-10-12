@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — ingatan browser-mu"
+  },
+  "extDesc": {
+    "message": "Cari halaman yang pernah kamu baca berdasarkan makna. Semua diproses secara lokal — tak ada yang keluar dari perangkatmu."
+  },
+  "cmdOpenSearch": {
+    "message": "Buka pencarian Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — cari yang pernah kamu baca"
+  },
+  "tagline": {
+    "message": "Kamu pernah melihatnya. Déjà menemukannya."
+  },
+  "searchPlaceholder": {
+    "message": "Jelaskan yang kamu ingat… mis. “artikel tentang baterai berbasis natrium”"
+  },
+  "searchButton": {
+    "message": "Cari"
+  },
+  "statusSearching": {
+    "message": "Menggali ingatan… (pencarian pertama memuat model, ~10-30 dtk)"
+  },
+  "statusEmpty": {
+    "message": "Tidak ada yang muncul. Mungkin kamu belum pernah membacanya, atau Déjà belum mengingatnya."
+  },
+  "statusResults": {
+    "message": "$COUNT$ ingatan:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 ingatan:"
+  },
+  "errNoResponse": {
+    "message": "ingatan tidak menjawab — coba lagi"
+  },
+  "recallVivid": {
+    "message": "ingatan jelas"
+  },
+  "recallHazy": {
+    "message": "ingatan samar"
+  },
+  "recallFaint": {
+    "message": "ingatan jauh"
+  },
+  "statusError": {
+    "message": "Pencarian gagal: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Dalam ingatan: $COUNT$ halaman.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Dalam ingatan: 1 halaman."
+  },
+  "similarity": {
+    "message": "kemiripan $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "dibaca pada $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ halaman dalam ingatan",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 halaman dalam ingatan"
+  },
+  "popupSleeping": {
+    "message": "ingatan sedang tidur"
+  },
+  "popupWaking": {
+    "message": "ingatan sedang bangun…"
+  },
+  "popupOpenSearch": {
+    "message": "Buka pencarian"
+  },
+  "popupPause": {
+    "message": "Jeda mengingat"
+  },
+  "popupClear": {
+    "message": "Hapus ingatan"
+  },
+  "popupClearConfirm": {
+    "message": "Hapus semua yang diingat? Tidak bisa dibatalkan."
+  },
+  "popupOptions": {
+    "message": "Setelan"
+  },
+  "optionsTitle": {
+    "message": "Déjà — setelan"
+  },
+  "optRetentionLabel": {
+    "message": "Ingat halaman"
+  },
+  "optRetentionForever": {
+    "message": "selamanya"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ bulan",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Halaman yang lebih lama dihapus otomatis sekali sehari."
+  },
+  "optDenylistLabel": {
+    "message": "Jangan pernah mengingat alamat yang mengandung"
+  },
+  "optDenylistHelp": {
+    "message": "Satu pola per baris. Cocok dengan sebagian alamat, mis. “example.com” atau “/private”."
+  },
+  "optBuiltinLabel": {
+    "message": "Perlindungan bawaan (selalu aktif)"
+  },
+  "optModelHostLabel": {
+    "message": "Mirror model kustom (lanjutan)"
+  },
+  "optModelHostHelp": {
+    "message": "Kosong = huggingface.co. Atur server sendiri untuk lingkungan offline/perusahaan."
+  },
+  "filterAll": {
+    "message": "semua"
+  },
+  "filterWeek": {
+    "message": "seminggu terakhir"
+  },
+  "filterMonth": {
+    "message": "sebulan terakhir"
+  },
+  "filterYear": {
+    "message": "setahun terakhir"
+  },
+  "relatedLink": {
+    "message": "ingatan terkait"
+  },
+  "relatedNone": {
+    "message": "tidak ada ingatan yang dekat"
+  },
+  "omniboxDefault": {
+    "message": "Tanya ingatanmu — Déjà mencari berdasarkan makna"
+  },
+  "popupMemory": {
+    "message": "Ingatanku"
+  },
+  "memoryTitle": {
+    "message": "Ingatanku"
+  },
+  "memoryEmpty": {
+    "message": "Ingatan masih kosong — jelajahi beberapa halaman lalu kembali lagi."
+  },
+  "memoryForget": {
+    "message": "Lupakan"
+  },
+  "memoryExport": {
+    "message": "Unduh arsip"
+  },
+  "memoryImport": {
+    "message": "Pulihkan dari arsip"
+  },
+  "memoryImportConfirm": {
+    "message": "Pulihkan dari arsip? Halaman yang cocok akan ditimpa."
+  },
+  "optSave": {
+    "message": "Simpan"
+  },
+  "optSaved": {
+    "message": "Tersimpan ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Mirror harus berupa alamat https://"
+  },
+  "welcomeHeading": {
+    "message": "Hai. Aku ingatan browser-mu."
+  },
+  "welcomeIntro": {
+    "message": "Mulai saat ini aku mengingat apa yang kamu baca, supaya nanti kamu bisa menemukannya berdasarkan makna — dengan kata-katamu sendiri, bukan judul persisnya."
+  },
+  "welcomePoint1": {
+    "message": "Semuanya terjadi di perangkatmu. Tanpa server, tanpa cloud, tanpa data yang dikirim — ke mana pun, kapan pun."
+  },
+  "welcomePoint2": {
+    "message": "Email, chat, halaman login, dan perbankan tidak pernah diingat. Perhatian: aku tidak bisa mengenali topik sensitif dari alamatnya — untuk halaman seperti itu, gunakan jeda atau daftarmu sendiri di setelan."
+  },
+  "welcomePoint3": {
+    "message": "Kamu yang memegang kendali: jeda dengan satu klik, “Hapus ingatan” menghapus semuanya, dan jika mau, aku otomatis melupakan setelah beberapa bulan."
+  },
+  "welcomeCta": {
+    "message": "Buka pencarian"
+  },
+  "welcomeOptions": {
+    "message": "Setelan"
+  },
+  "memoryFilter": {
+    "message": "Cari di ingatanmu…"
+  },
+  "supportLink": {
+    "message": "Dukung Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — pendamping"
+  },
+  "panelOnThisPage": {
+    "message": "Seputar topik halaman ini"
+  },
+  "panelRecent": {
+    "message": "Ingatan terbaru"
+  },
+  "panelNoPage": {
+    "message": "Buka halaman web dan Déjà akan menunjukkan apa yang pernah kamu baca tentang topiknya."
+  },
+  "popupOpenPanel": {
+    "message": "Panel samping"
+  },
+  "popupForgetPage": {
+    "message": "Lupakan halaman ini"
+  },
+  "popupForgotten": {
+    "message": "Dilupakan ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: ingat teks yang dipilih"
+  },
+  "menuForget": {
+    "message": "Déjà: lupakan halaman ini"
+  },
+  "recentTitle": {
+    "message": "Ingatan terbaru"
+  },
+  "cmdOpenPanel": {
+    "message": "Buka panel samping Déjà"
+  },
+  "welcomePoint4": {
+    "message": "Panel samping melihat alamat dan judul halaman yang sedang kamu buka agar bisa menunjukkan apa yang pernah kamu baca tentang topiknya — hanya di memori sesi. Kutipan yang sengaja kamu simpan juga hanya tetap ada padamu."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà telah diperbarui. Baru: kini bookmark-mu juga bisa dicari berdasarkan makna — jika kamu mau. Inilah yang kulakukan dengan datamu — tak ada yang keluar dari perangkatmu."
+  },
+  "optAmbientLabel": {
+    "message": "Latar hidup"
+  },
+  "optAmbientHelp": {
+    "message": "Jaringan ingatan di balik kaca bergerak perlahan. Matikan jika gerakannya mengganggumu."
+  },
+  "bmTitle": {
+    "message": "Buat bookmark-mu bisa dicari — sekarang juga"
+  },
+  "bmText": {
+    "message": "Déjà mempelajari judul dan folder bookmark-mu tanpa membuka halamannya. Temukan berdasarkan makna sejak menit pertama — semuanya tetap di perangkatmu."
+  },
+  "bmTextShort": {
+    "message": "Ingatanmu masih muda. Ajari aku bookmark-mu dan cari berdasarkan makna mulai hari ini."
+  },
+  "bmButton": {
+    "message": "Pelajari bookmark-ku"
+  },
+  "bmNote": {
+    "message": "Browser-mu akan meminta izin. Matikan kapan saja di setelan."
+  },
+  "bmTitleRunning": {
+    "message": "Mempelajari bookmark-mu…"
+  },
+  "bmTitleDone": {
+    "message": "Bookmark-mu bisa dicari"
+  },
+  "bmPreparing": {
+    "message": "Bersiap…"
+  },
+  "bmLearning": {
+    "message": "Dipelajari $DONE$ dari $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà sedang dijeda — aku lanjut begitu kamu melanjutkannya."
+  },
+  "bmError": {
+    "message": "Ada yang salah saat belajar. Aku akan mencoba lagi pada perubahan berikutnya."
+  },
+  "bmDone": {
+    "message": "Selesai — $COUNT$ bookmark bisa dicari berdasarkan makna dan disinkronkan otomatis.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Selesai — 1 bookmark bisa dicari berdasarkan makna dan disinkronkan otomatis."
+  },
+  "bmDenied": {
+    "message": "Tanpa izin, aku tidak bisa melihat bookmark-mu. Kamu bisa mencoba lagi kapan saja."
+  },
+  "bmTry": {
+    "message": "Coba:"
+  },
+  "bmBadge": {
+    "message": "Bookmark"
+  },
+  "bmAddedOn": {
+    "message": "di-bookmark pada $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Bookmark dalam ingatan"
+  },
+  "optBookmarksHelp": {
+    "message": "Aku mempelajari judul dan folder bookmark-mu (tanpa membuka halamannya) dan mengikuti saat kamu menambah atau menghapusnya. Jika dimatikan, bookmark dihapus dari ingatan — halaman yang sudah kamu baca tetap ada."
+  },
+  "memoryFilterAll": {
+    "message": "Semua"
+  },
+  "memoryFilterRead": {
+    "message": "Dibaca"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Bookmark"
+  },
+  "welcomePoint5": {
+    "message": "Bookmark — hanya jika kamu mengaktifkannya: lalu aku mempelajari judul dan foldernya, tanpa membuka halamannya. Satu klik untuk mematikannya."
+  },
+  "rateTitle": {
+    "message": "Déjà sudah membantumu menemukan sesuatu — sudah $COUNT$ kali",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Jika bermanfaat, rating di toko membantu orang lain menemukannya — hanya 10 detik. Dan jika ada yang mengganggu, beri tahu kami."
+  },
+  "rateButton": {
+    "message": "Beri rating Déjà"
+  },
+  "rateFeedback": {
+    "message": "Ada yang tidak berfungsi?"
+  },
+  "rateLater": {
+    "message": "Nanti saja"
+  },
+  "rateThanks": {
+    "message": "Terima kasih! Ini sungguh membantu."
+  },
+  "rateFeedbackThanks": {
+    "message": "Terima kasih — kami membaca setiap pesan."
+  },
+  "rateFeedbackSubject": {
+    "message": "masukan"
+  },
+  "answerTitle": {
+    "message": "Jawaban dari ingatanmu"
+  },
+  "answerAsk": {
+    "message": "Jawab dari ingatanku"
+  },
+  "answerEnableTitle": {
+    "message": "Jawaban dari AI bawaan Chrome"
+  },
+  "answerEnableText": {
+    "message": "Déjà bisa menjawab pertanyaan dari apa yang pernah kamu baca, lengkap dengan sumbernya. Chrome mengunduh model di perangkatnya (Gemini Nano) satu kali — pertanyaan dan halamanmu tidak pernah keluar dari komputermu."
+  },
+  "answerEnableButton": {
+    "message": "Aktifkan jawaban"
+  },
+  "answerNoThanks": {
+    "message": "Tidak, terima kasih"
+  },
+  "answerDownloading": {
+    "message": "Chrome sedang mengunduh model… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Membaca ingatanmu…"
+  },
+  "answerStop": {
+    "message": "Berhenti"
+  },
+  "answerFoot": {
+    "message": "Ditulis di perangkatmu oleh AI bawaan Chrome dari $COUNT$ ingatanmu. Periksa sumbernya.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Kali ini aku tidak berhasil menyusun jawaban."
+  },
+  "optAnswersLabel": {
+    "message": "Jawaban dari AI bawaan Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "Untuk pertanyaan seperti “apa yang pernah kubaca tentang…?” aku menulis jawaban singkat dengan sumber dari halaman-halamanmu — sepenuhnya di perangkatmu, dengan Gemini Nano di Chrome. Memerlukan komputer dan bahasa yang didukung (Inggris, Spanyol, Jerman, Prancis, Jepang)."
+  },
+  "optAnswersAvailable": {
+    "message": "Siap digunakan di perangkat ini."
+  },
+  "optAnswersDownloadable": {
+    "message": "Didukung — Chrome akan mengunduh model saat kamu bertanya pertama kali."
+  },
+  "optAnswersUnavailable": {
+    "message": "Perangkat atau bahasa antarmuka ini tidak didukung oleh AI bawaan Chrome."
+  },
+  "optAnswersUnsupported": {
+    "message": "Browser ini tidak memiliki AI bawaan — fitur Déjà lainnya tetap berfungsi seperti biasa."
+  }
+}

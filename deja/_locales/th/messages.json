@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — ความทรงจำของเบราว์เซอร์คุณ"
+  },
+  "extDesc": {
+    "message": "ค้นหาหน้าเว็บที่คุณเคยอ่านตามความหมาย ทุกอย่างทำงานบนเครื่อง — ไม่มีข้อมูลใดออกจากอุปกรณ์ของคุณ"
+  },
+  "cmdOpenSearch": {
+    "message": "เปิดการค้นหาของ Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — ค้นหาสิ่งที่คุณเคยอ่าน"
+  },
+  "tagline": {
+    "message": "คุณเคยเห็นมันแล้ว Déjà จะหาให้เจอ"
+  },
+  "searchPlaceholder": {
+    "message": "อธิบายสิ่งที่คุณจำได้… เช่น “บทความเกี่ยวกับแบตเตอรี่ที่ใช้โซเดียม”"
+  },
+  "searchButton": {
+    "message": "ค้นหา"
+  },
+  "statusSearching": {
+    "message": "กำลังค้นในความทรงจำ… (การค้นหาครั้งแรกจะโหลดโมเดล ประมาณ 10-30 วินาที)"
+  },
+  "statusEmpty": {
+    "message": "ไม่มีอะไรผุดขึ้นมาเลย คุณอาจไม่เคยอ่าน หรือ Déjà ยังไม่ได้จดจำไว้"
+  },
+  "statusResults": {
+    "message": "ความทรงจำ $COUNT$ รายการ:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "ความทรงจำ 1 รายการ:"
+  },
+  "errNoResponse": {
+    "message": "ความทรงจำไม่ตอบสนอง — ลองอีกครั้ง"
+  },
+  "recallVivid": {
+    "message": "ความทรงจำชัดเจน"
+  },
+  "recallHazy": {
+    "message": "ความทรงจำเลือนราง"
+  },
+  "recallFaint": {
+    "message": "ความทรงจำที่ห่างไกล"
+  },
+  "statusError": {
+    "message": "ค้นหาไม่สำเร็จ: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "ในความทรงจำ: $COUNT$ หน้า",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "ในความทรงจำ: 1 หน้า"
+  },
+  "similarity": {
+    "message": "ความคล้ายคลึง $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "อ่านเมื่อ $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ หน้าในความทรงจำ",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 หน้าในความทรงจำ"
+  },
+  "popupSleeping": {
+    "message": "ความทรงจำกำลังหลับ"
+  },
+  "popupWaking": {
+    "message": "ความทรงจำกำลังตื่น…"
+  },
+  "popupOpenSearch": {
+    "message": "เปิดการค้นหา"
+  },
+  "popupPause": {
+    "message": "หยุดจดจำชั่วคราว"
+  },
+  "popupClear": {
+    "message": "ล้างความทรงจำ"
+  },
+  "popupClearConfirm": {
+    "message": "ลบทุกสิ่งที่จดจำไว้ใช่ไหม ย้อนกลับไม่ได้"
+  },
+  "popupOptions": {
+    "message": "การตั้งค่า"
+  },
+  "optionsTitle": {
+    "message": "Déjà — การตั้งค่า"
+  },
+  "optRetentionLabel": {
+    "message": "จดจำหน้าเว็บ"
+  },
+  "optRetentionForever": {
+    "message": "ตลอดไป"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ เดือน",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "หน้าเว็บที่เก่ากว่าจะถูกลบโดยอัตโนมัติวันละครั้ง"
+  },
+  "optDenylistLabel": {
+    "message": "ไม่จดจำที่อยู่ที่มีข้อความต่อไปนี้"
+  },
+  "optDenylistHelp": {
+    "message": "หนึ่งรูปแบบต่อบรรทัด ตรงกับบางส่วนของที่อยู่ เช่น “example.com” หรือ “/private”"
+  },
+  "optBuiltinLabel": {
+    "message": "การป้องกันในตัว (เปิดใช้งานเสมอ)"
+  },
+  "optModelHostLabel": {
+    "message": "มิเรอร์โมเดลที่กำหนดเอง (ขั้นสูง)"
+  },
+  "optModelHostHelp": {
+    "message": "เว้นว่าง = huggingface.co ตั้งเซิร์ฟเวอร์ของคุณเองสำหรับสภาพแวดล้อมออฟไลน์/องค์กร"
+  },
+  "filterAll": {
+    "message": "ทั้งหมด"
+  },
+  "filterWeek": {
+    "message": "สัปดาห์ที่ผ่านมา"
+  },
+  "filterMonth": {
+    "message": "เดือนที่ผ่านมา"
+  },
+  "filterYear": {
+    "message": "ปีที่ผ่านมา"
+  },
+  "relatedLink": {
+    "message": "ความทรงจำที่เกี่ยวข้อง"
+  },
+  "relatedNone": {
+    "message": "ไม่มีความทรงจำที่ใกล้เคียง"
+  },
+  "omniboxDefault": {
+    "message": "ถามความทรงจำของคุณ — Déjà ค้นหาตามความหมาย"
+  },
+  "popupMemory": {
+    "message": "ความทรงจำของฉัน"
+  },
+  "memoryTitle": {
+    "message": "ความทรงจำของฉัน"
+  },
+  "memoryEmpty": {
+    "message": "ความทรงจำยังว่างเปล่า — เปิดดูหน้าเว็บสักสองสามหน้าแล้วกลับมาใหม่"
+  },
+  "memoryForget": {
+    "message": "ลืม"
+  },
+  "memoryExport": {
+    "message": "ดาวน์โหลดไฟล์เก็บถาวร"
+  },
+  "memoryImport": {
+    "message": "กู้คืนจากไฟล์เก็บถาวร"
+  },
+  "memoryImportConfirm": {
+    "message": "กู้คืนจากไฟล์เก็บถาวรใช่ไหม หน้าเว็บที่ตรงกันจะถูกเขียนทับ"
+  },
+  "optSave": {
+    "message": "บันทึก"
+  },
+  "optSaved": {
+    "message": "บันทึกแล้ว ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "มิเรอร์ต้องเป็นที่อยู่ https://"
+  },
+  "welcomeHeading": {
+    "message": "สวัสดี ฉันคือความทรงจำของเบราว์เซอร์คุณ"
+  },
+  "welcomeIntro": {
+    "message": "นับจากนี้ ฉันจะจดจำสิ่งที่คุณอ่าน เพื่อให้คุณค้นหาเจอในภายหลังตามความหมาย — ด้วยคำพูดของคุณเอง ไม่ต้องใช้ชื่อเรื่องที่ตรงเป๊ะ"
+  },
+  "welcomePoint1": {
+    "message": "ทุกอย่างเกิดขึ้นบนอุปกรณ์ของคุณ ไม่มีเซิร์ฟเวอร์ ไม่มีคลาวด์ ไม่มีการส่งข้อมูล — ไม่ว่าที่ไหน ไม่ว่าเมื่อไร"
+  },
+  "welcomePoint2": {
+    "message": "อีเมล แชท หน้าเข้าสู่ระบบ และธนาคาร จะไม่ถูกจดจำเด็ดขาด โปรดทราบ: ฉันไม่สามารถระบุหัวข้อที่ละเอียดอ่อนจากที่อยู่ได้ — สำหรับหน้าแบบนั้น ให้ใช้การหยุดชั่วคราวหรือรายการของคุณเองในการตั้งค่า"
+  },
+  "welcomePoint3": {
+    "message": "คุณเป็นผู้ควบคุม: หยุดชั่วคราวได้ในคลิกเดียว “ล้างความทรงจำ” จะลบทุกอย่าง และเลือกให้ฉันลืมโดยอัตโนมัติหลังผ่านไปไม่กี่เดือนก็ได้"
+  },
+  "welcomeCta": {
+    "message": "เปิดการค้นหา"
+  },
+  "welcomeOptions": {
+    "message": "การตั้งค่า"
+  },
+  "memoryFilter": {
+    "message": "ค้นหาในความทรงจำ…"
+  },
+  "supportLink": {
+    "message": "สนับสนุน Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — เพื่อนคู่ใจ"
+  },
+  "panelOnThisPage": {
+    "message": "เกี่ยวกับหัวข้อของหน้านี้"
+  },
+  "panelRecent": {
+    "message": "ความทรงจำล่าสุด"
+  },
+  "panelNoPage": {
+    "message": "เปิดหน้าเว็บ แล้ว Déjà จะแสดงสิ่งที่คุณเคยอ่านในหัวข้อนั้น"
+  },
+  "popupOpenPanel": {
+    "message": "แผงด้านข้าง"
+  },
+  "popupForgetPage": {
+    "message": "ลืมหน้านี้"
+  },
+  "popupForgotten": {
+    "message": "ลืมแล้ว ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: จดจำข้อความที่เลือก"
+  },
+  "menuForget": {
+    "message": "Déjà: ลืมหน้านี้"
+  },
+  "recentTitle": {
+    "message": "ความทรงจำล่าสุด"
+  },
+  "cmdOpenPanel": {
+    "message": "เปิดแผงด้านข้างของ Déjà"
+  },
+  "welcomePoint4": {
+    "message": "แผงด้านข้างจะเห็นที่อยู่และชื่อของหน้าที่คุณกำลังดู เพื่อแสดงสิ่งที่คุณเคยอ่านในหัวข้อนั้น — เก็บไว้ในหน่วยความจำของเซสชันเท่านั้น ข้อความที่คุณตั้งใจบันทึกไว้ก็อยู่กับคุณเท่านั้นเช่นกัน"
+  },
+  "welcomeUpdated": {
+    "message": "Déjà อัปเดตแล้ว ใหม่: ตอนนี้บุ๊กมาร์กของคุณก็ค้นหาตามความหมายได้ด้วย — หากคุณต้องการ นี่คือสิ่งที่ฉันทำกับข้อมูลของคุณ — ไม่มีสิ่งใดออกจากอุปกรณ์ของคุณเลย"
+  },
+  "optAmbientLabel": {
+    "message": "พื้นหลังเคลื่อนไหว"
+  },
+  "optAmbientHelp": {
+    "message": "เครือข่ายความทรงจำหลังกระจกจะลอยไปอย่างช้าๆ ปิดได้หากการเคลื่อนไหวรบกวนสมาธิของคุณ"
+  },
+  "bmTitle": {
+    "message": "ทำให้บุ๊กมาร์กของคุณค้นหาได้ — ตอนนี้เลย"
+  },
+  "bmText": {
+    "message": "Déjà เรียนรู้ชื่อและโฟลเดอร์ของบุ๊กมาร์กโดยไม่เปิดหน้าเว็บ ค้นหาตามความหมายได้ตั้งแต่นาทีแรก — ทุกอย่างอยู่บนอุปกรณ์ของคุณ"
+  },
+  "bmTextShort": {
+    "message": "ความทรงจำของคุณยังใหม่อยู่ สอนบุ๊กมาร์กของคุณให้ฉัน แล้วค้นหาตามความหมายได้ตั้งแต่วันนี้"
+  },
+  "bmButton": {
+    "message": "เรียนรู้บุ๊กมาร์กของฉัน"
+  },
+  "bmNote": {
+    "message": "เบราว์เซอร์จะขอสิทธิ์ ปิดได้ทุกเมื่อในการตั้งค่า"
+  },
+  "bmTitleRunning": {
+    "message": "กำลังเรียนรู้บุ๊กมาร์กของคุณ…"
+  },
+  "bmTitleDone": {
+    "message": "บุ๊กมาร์กของคุณค้นหาได้แล้ว"
+  },
+  "bmPreparing": {
+    "message": "กำลังเตรียมพร้อม…"
+  },
+  "bmLearning": {
+    "message": "เรียนรู้แล้ว $DONE$ จาก $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà หยุดชั่วคราวอยู่ — ฉันจะทำต่อทันทีที่คุณกลับมาเปิดใช้"
+  },
+  "bmError": {
+    "message": "เกิดข้อผิดพลาดระหว่างเรียนรู้ ฉันจะลองอีกครั้งเมื่อมีการเปลี่ยนแปลงครั้งถัดไป"
+  },
+  "bmDone": {
+    "message": "เสร็จแล้ว — บุ๊กมาร์ก $COUNT$ รายการค้นหาตามความหมายได้และซิงค์โดยอัตโนมัติ",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "เสร็จแล้ว — บุ๊กมาร์ก 1 รายการค้นหาตามความหมายได้และซิงค์โดยอัตโนมัติ"
+  },
+  "bmDenied": {
+    "message": "หากไม่มีสิทธิ์ ฉันจะมองไม่เห็นบุ๊กมาร์กของคุณ ลองใหม่ได้ทุกเมื่อ"
+  },
+  "bmTry": {
+    "message": "ลองดู:"
+  },
+  "bmBadge": {
+    "message": "บุ๊กมาร์ก"
+  },
+  "bmAddedOn": {
+    "message": "บุ๊กมาร์กเมื่อ $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "บุ๊กมาร์กในความทรงจำ"
+  },
+  "optBookmarksHelp": {
+    "message": "ฉันเรียนรู้ชื่อและโฟลเดอร์ของบุ๊กมาร์ก (โดยไม่เปิดหน้าเว็บ) และติดตามเมื่อคุณเพิ่มหรือลบ การปิดจะนำบุ๊กมาร์กออกจากความทรงจำ — หน้าที่คุณอ่านแล้วยังคงอยู่"
+  },
+  "memoryFilterAll": {
+    "message": "ทั้งหมด"
+  },
+  "memoryFilterRead": {
+    "message": "อ่านแล้ว"
+  },
+  "memoryFilterBookmarks": {
+    "message": "บุ๊กมาร์ก"
+  },
+  "welcomePoint5": {
+    "message": "บุ๊กมาร์ก — เฉพาะเมื่อคุณเปิดใช้: จากนั้นฉันจะเรียนรู้ชื่อและโฟลเดอร์ โดยไม่เปิดหน้าเว็บ ปิดได้ในคลิกเดียว"
+  },
+  "rateTitle": {
+    "message": "Déjà ช่วยให้คุณหาสิ่งที่ต้องการเจอแล้ว $COUNT$ ครั้ง",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "หากมีประโยชน์ การให้คะแนนในสโตร์จะช่วยให้คนอื่นค้นพบได้ — ใช้เวลาแค่ 10 วินาที และหากมีอะไรกวนใจ บอกเราได้เลย"
+  },
+  "rateButton": {
+    "message": "ให้คะแนน Déjà"
+  },
+  "rateFeedback": {
+    "message": "มีอะไรใช้งานไม่ได้ไหม"
+  },
+  "rateLater": {
+    "message": "ไว้ทีหลัง"
+  },
+  "rateThanks": {
+    "message": "ขอบคุณ! ช่วยได้มากจริงๆ"
+  },
+  "rateFeedbackThanks": {
+    "message": "ขอบคุณ — เราอ่านทุกข้อความ"
+  },
+  "rateFeedbackSubject": {
+    "message": "ความคิดเห็น"
+  },
+  "answerTitle": {
+    "message": "คำตอบจากความทรงจำของคุณ"
+  },
+  "answerAsk": {
+    "message": "ตอบจากความทรงจำของฉัน"
+  },
+  "answerEnableTitle": {
+    "message": "คำตอบจาก AI ในตัวของ Chrome"
+  },
+  "answerEnableText": {
+    "message": "Déjà ตอบคำถามจากสิ่งที่คุณเคยอ่านได้ พร้อมแหล่งที่มา Chrome จะดาวน์โหลดโมเดลบนอุปกรณ์ (Gemini Nano) เพียงครั้งเดียว — คำถามและหน้าเว็บของคุณจะไม่ออกจากคอมพิวเตอร์ของคุณ"
+  },
+  "answerEnableButton": {
+    "message": "เปิดใช้คำตอบ"
+  },
+  "answerNoThanks": {
+    "message": "ไม่ ขอบคุณ"
+  },
+  "answerDownloading": {
+    "message": "Chrome กำลังดาวน์โหลดโมเดล… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "กำลังอ่านความทรงจำของคุณ…"
+  },
+  "answerStop": {
+    "message": "หยุด"
+  },
+  "answerFoot": {
+    "message": "เขียนบนอุปกรณ์ของคุณโดย AI ในตัวของ Chrome จากความทรงจำ $COUNT$ รายการของคุณ โปรดตรวจสอบแหล่งที่มา",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "ครั้งนี้ฉันเรียบเรียงคำตอบไม่ได้"
+  },
+  "optAnswersLabel": {
+    "message": "คำตอบจาก AI ในตัวของ Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "สำหรับคำถามอย่าง “ฉันเคยอ่านอะไรเกี่ยวกับ…?” ฉันจะเขียนคำตอบสั้นๆ พร้อมแหล่งที่มาจากหน้าเว็บของคุณ — บนอุปกรณ์ของคุณทั้งหมด ด้วย Gemini Nano ใน Chrome ต้องใช้คอมพิวเตอร์และภาษาที่รองรับ (อังกฤษ สเปน เยอรมัน ฝรั่งเศส ญี่ปุ่น)"
+  },
+  "optAnswersAvailable": {
+    "message": "พร้อมใช้งานบนอุปกรณ์นี้"
+  },
+  "optAnswersDownloadable": {
+    "message": "รองรับ — Chrome จะดาวน์โหลดโมเดลเมื่อคุณถามคำถามแรก"
+  },
+  "optAnswersUnavailable": {
+    "message": "AI ในตัวของ Chrome ไม่รองรับอุปกรณ์นี้หรือภาษาของอินเทอร์เฟซนี้"
+  },
+  "optAnswersUnsupported": {
+    "message": "เบราว์เซอร์นี้ไม่มี AI ในตัว — ส่วนอื่นๆ ของ Déjà ยังทำงานได้ตามปกติ"
+  }
+}

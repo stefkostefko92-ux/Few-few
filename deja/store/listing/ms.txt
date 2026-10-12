@@ -1,0 +1,47 @@
+TITLE: Déjà — ingatan penyemak imbas anda
+SHORT: Cari halaman yang anda baca mengikut makna, dalam 50+ bahasa. Semuanya pada peranti anda — tiada data keluar dari penyemak imbas.
+
+Anda pernah melihatnya. Déjà menemuinya.
+
+Sejarah penyemak imbas anda hanya mengingati tajuk dan URL. Déjà mengingati
+KANDUNGANNYA. Huraikan apa yang anda ingat dengan kata-kata anda sendiri — “artikel
+tentang bateri berasaskan natrium itu” — dan Déjà akan menimbulkan halaman itu,
+walaupun anda tidak ingat tajuknya, laman webnya atau perkataan yang tepat. Malah
+ia terus melompat ke perenggan yang tepat.
+
+APA YANG ANDA DAPAT
+✓ Penanda halaman anda, boleh dicari mengikut makna dari minit pertama — pilihan,
+  satu klik. Déjà mempelajari tajuk dan foldernya (tanpa membuka halaman) dan
+  memastikannya segerak apabila anda menambah, mengalih atau memadam penanda halaman.
+✓ Jawapan daripada ingatan anda — pada komputer yang menyokong AI terbina dalam
+  Chrome (Gemini Nano), tanya soalan dan dapatkan jawapan ringkas yang ditulis pada
+  peranti anda daripada halaman yang telah anda baca, beserta sumber yang boleh
+  diklik. (Jawapan dalam bahasa Inggeris, Sepanyol, Jerman, Perancis dan Jepun.)
+✓ Carian mengikut makna — tanya dengan kata-kata anda sendiri, dalam 50+ bahasa;
+  tanya dalam satu bahasa, temui halaman yang anda baca dalam bahasa lain.
+✓ Teman di panel sisi — bukanya di sebelah mana-mana halaman dan lihat apa yang telah
+  anda baca tentang topik halaman itu, serta ingatan terkini anda.
+✓ Taip “dj” dalam bar alamat — cari dalam ingatan anda terus dari bar alamat
+  dengan cadangan langsung.
+✓ Ingat satu petikan — klik kanan pada mana-mana teks yang dipilih: “Déjà: ingat
+  teks yang dipilih”. Ia menjadi ingatan tersendiri yang boleh dicari.
+✓ Lompat ke perenggan yang tepat — hasil carian membuka halaman dengan petikan yang
+  sepadan diserlahkan.
+✓ Penapis tarikh, ingatan berkaitan, ingatan terkini pada halaman carian kosong.
+✓ Ingatan saya — lihat semua yang diingati Déjà, lupakan mana-mana halaman dengan
+  satu klik, eksport/import keseluruhan indeks anda sebagai fail.
+
+PERSENDIRIAN SEJAK REKA BENTUK
+✓ Pemprosesan 100% setempat — model benaman AI berjalan di dalam penyemak imbas anda
+  dan data anda disimpan dalam IndexedDB. Tiada pelayan, tiada awan, tiada
+  telemetri, tiada akaun.
+✓ Halaman e-mel, sembang, log masuk dan perbankan dilangkau secara automatik
+  (senarai alamat terbina dalam; tambah corak anda sendiri).
+✓ Jeda dengan satu klik. “Lupakan halaman ini” dan “Kosongkan ingatan” sentiasa ada.
+✓ Lupa secara automatik — secara pilihan, padam halaman yang lebih lama daripada
+  3/6/12/24 bulan.
+✓ Tema cerah dan gelap mengikut sistem anda.
+
+Satu-satunya permintaan rangkaian yang pernah dibuat oleh sambungan ini ialah muat
+turun sekali sahaja model benaman daripada Hugging Face (selepas itu dicache secara
+setempat; anda juga boleh menghalakannya ke cermin anda sendiri).

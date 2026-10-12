@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — ingatan penyemak imbas anda"
+  },
+  "extDesc": {
+    "message": "Cari halaman yang anda baca mengikut makna. Semuanya diproses secara setempat — tiada data keluar dari peranti anda."
+  },
+  "cmdOpenSearch": {
+    "message": "Buka carian Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — cari apa yang anda baca"
+  },
+  "tagline": {
+    "message": "Anda pernah melihatnya. Déjà menemuinya."
+  },
+  "searchPlaceholder": {
+    "message": "Huraikan apa yang anda ingat… cth. “artikel tentang bateri berasaskan natrium”"
+  },
+  "searchButton": {
+    "message": "Cari"
+  },
+  "statusSearching": {
+    "message": "Menyelongkar ingatan… (carian pertama memuatkan model, ~10-30 saat)"
+  },
+  "statusEmpty": {
+    "message": "Tiada apa yang timbul. Sama ada anda tidak pernah membacanya, atau Déjà belum mengingatnya."
+  },
+  "statusResults": {
+    "message": "$COUNT$ ingatan:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 ingatan:"
+  },
+  "errNoResponse": {
+    "message": "ingatan tidak menjawab — cuba lagi"
+  },
+  "recallVivid": {
+    "message": "ingatan jelas"
+  },
+  "recallHazy": {
+    "message": "ingatan samar"
+  },
+  "recallFaint": {
+    "message": "ingatan jauh"
+  },
+  "statusError": {
+    "message": "Carian gagal: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Dalam ingatan: $COUNT$ halaman.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Dalam ingatan: 1 halaman."
+  },
+  "similarity": {
+    "message": "keserupaan $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "dibaca pada $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ halaman dalam ingatan",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 halaman dalam ingatan"
+  },
+  "popupSleeping": {
+    "message": "ingatan sedang tidur"
+  },
+  "popupWaking": {
+    "message": "ingatan sedang terjaga…"
+  },
+  "popupOpenSearch": {
+    "message": "Buka carian"
+  },
+  "popupPause": {
+    "message": "Jeda mengingat"
+  },
+  "popupClear": {
+    "message": "Kosongkan ingatan"
+  },
+  "popupClearConfirm": {
+    "message": "Padam semua yang diingat? Tindakan ini tidak boleh dibuat asal."
+  },
+  "popupOptions": {
+    "message": "Tetapan"
+  },
+  "optionsTitle": {
+    "message": "Déjà — tetapan"
+  },
+  "optRetentionLabel": {
+    "message": "Ingat halaman"
+  },
+  "optRetentionForever": {
+    "message": "selama-lamanya"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ bulan",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Halaman yang lebih lama dipadam secara automatik sekali sehari."
+  },
+  "optDenylistLabel": {
+    "message": "Jangan sekali-kali ingat alamat yang mengandungi"
+  },
+  "optDenylistHelp": {
+    "message": "Satu corak bagi setiap baris. Sepadan dengan sebahagian alamat, cth. “example.com” atau “/private”."
+  },
+  "optBuiltinLabel": {
+    "message": "Perlindungan terbina dalam (sentiasa aktif)"
+  },
+  "optModelHostLabel": {
+    "message": "Cermin model tersuai (lanjutan)"
+  },
+  "optModelHostHelp": {
+    "message": "Kosong = huggingface.co. Tetapkan pelayan anda sendiri untuk persekitaran luar talian/korporat."
+  },
+  "filterAll": {
+    "message": "semua"
+  },
+  "filterWeek": {
+    "message": "minggu lalu"
+  },
+  "filterMonth": {
+    "message": "bulan lalu"
+  },
+  "filterYear": {
+    "message": "tahun lalu"
+  },
+  "relatedLink": {
+    "message": "ingatan berkaitan"
+  },
+  "relatedNone": {
+    "message": "tiada ingatan berdekatan"
+  },
+  "omniboxDefault": {
+    "message": "Tanya ingatan anda — Déjà mencari mengikut makna"
+  },
+  "popupMemory": {
+    "message": "Ingatan saya"
+  },
+  "memoryTitle": {
+    "message": "Ingatan saya"
+  },
+  "memoryEmpty": {
+    "message": "Ingatan kosong — layari beberapa halaman dan kembali semula."
+  },
+  "memoryForget": {
+    "message": "Lupakan"
+  },
+  "memoryExport": {
+    "message": "Muat turun arkib"
+  },
+  "memoryImport": {
+    "message": "Pulihkan daripada arkib"
+  },
+  "memoryImportConfirm": {
+    "message": "Pulihkan daripada arkib? Halaman yang sepadan akan ditulis ganti."
+  },
+  "optSave": {
+    "message": "Simpan"
+  },
+  "optSaved": {
+    "message": "Disimpan ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Cermin mestilah alamat https://"
+  },
+  "welcomeHeading": {
+    "message": "Hai. Saya ingatan penyemak imbas anda."
+  },
+  "welcomeIntro": {
+    "message": "Mulai saat ini saya mengingat apa yang anda baca, supaya anda boleh menemuinya kemudian mengikut makna — dengan kata-kata anda sendiri, bukan tajuk yang tepat."
+  },
+  "welcomePoint1": {
+    "message": "Semuanya berlaku pada peranti anda. Tiada pelayan, tiada awan, tiada data dihantar — ke mana-mana, sampai bila-bila."
+  },
+  "welcomePoint2": {
+    "message": "E-mel, sembang, log masuk dan perbankan tidak sekali-kali diingat. Perhatian: saya tidak dapat mengenal pasti topik sensitif melalui alamat — untuk halaman sebegitu, gunakan jeda atau senarai anda sendiri dalam tetapan."
+  },
+  "welcomePoint3": {
+    "message": "Anda yang mengawal: jeda dengan satu klik, “Kosongkan ingatan” memadam semuanya, dan jika anda mahu, saya melupakan secara automatik selepas beberapa bulan."
+  },
+  "welcomeCta": {
+    "message": "Buka carian"
+  },
+  "welcomeOptions": {
+    "message": "Tetapan"
+  },
+  "memoryFilter": {
+    "message": "Cari dalam ingatan anda…"
+  },
+  "supportLink": {
+    "message": "Sokong Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — teman"
+  },
+  "panelOnThisPage": {
+    "message": "Berkenaan topik halaman ini"
+  },
+  "panelRecent": {
+    "message": "Ingatan terkini"
+  },
+  "panelNoPage": {
+    "message": "Buka halaman web dan Déjà akan menunjukkan apa yang telah anda baca tentang topiknya."
+  },
+  "popupOpenPanel": {
+    "message": "Panel sisi"
+  },
+  "popupForgetPage": {
+    "message": "Lupakan halaman ini"
+  },
+  "popupForgotten": {
+    "message": "Dilupakan ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: ingat teks yang dipilih"
+  },
+  "menuForget": {
+    "message": "Déjà: lupakan halaman ini"
+  },
+  "recentTitle": {
+    "message": "Ingatan terkini"
+  },
+  "cmdOpenPanel": {
+    "message": "Buka panel sisi Déjà"
+  },
+  "welcomePoint4": {
+    "message": "Panel sisi melihat alamat dan tajuk halaman yang sedang anda lihat supaya dapat menunjukkan apa yang telah anda baca tentang topiknya — dalam memori sesi sahaja. Petikan yang anda simpan dengan sengaja juga kekal dengan anda sahaja."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà telah dikemas kini. Baharu: penanda halaman anda kini juga boleh dicari mengikut makna — jika anda mahu. Inilah yang saya lakukan dengan data anda — tiada apa yang telah meninggalkan peranti anda."
+  },
+  "optAmbientLabel": {
+    "message": "Latar hidup"
+  },
+  "optAmbientHelp": {
+    "message": "Jaringan ingatan di sebalik kaca bergerak perlahan. Matikan jika pergerakan itu mengganggu anda."
+  },
+  "bmTitle": {
+    "message": "Jadikan penanda halaman anda boleh dicari — sekarang juga"
+  },
+  "bmText": {
+    "message": "Déjà mempelajari tajuk dan folder penanda halaman anda tanpa membuka halaman. Temuinya mengikut makna dari minit pertama — semuanya kekal pada peranti anda."
+  },
+  "bmTextShort": {
+    "message": "Ingatan anda masih muda. Ajar saya penanda halaman anda dan cari mengikut makna hari ini."
+  },
+  "bmButton": {
+    "message": "Pelajari penanda halaman saya"
+  },
+  "bmNote": {
+    "message": "Penyemak imbas anda akan meminta kebenaran. Matikan bila-bila masa dalam tetapan."
+  },
+  "bmTitleRunning": {
+    "message": "Mempelajari penanda halaman anda…"
+  },
+  "bmTitleDone": {
+    "message": "Penanda halaman anda boleh dicari"
+  },
+  "bmPreparing": {
+    "message": "Bersedia…"
+  },
+  "bmLearning": {
+    "message": "Dipelajari $DONE$ daripada $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà sedang dijeda — saya akan sambung sebaik sahaja anda teruskan."
+  },
+  "bmError": {
+    "message": "Ada masalah semasa belajar. Saya akan cuba lagi pada perubahan seterusnya."
+  },
+  "bmDone": {
+    "message": "Selesai — $COUNT$ penanda halaman boleh dicari mengikut makna dan disegerakkan secara automatik.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Selesai — 1 penanda halaman boleh dicari mengikut makna dan disegerakkan secara automatik."
+  },
+  "bmDenied": {
+    "message": "Tanpa kebenaran, saya tidak dapat melihat penanda halaman anda. Anda boleh cuba lagi bila-bila masa."
+  },
+  "bmTry": {
+    "message": "Cuba:"
+  },
+  "bmBadge": {
+    "message": "Penanda"
+  },
+  "bmAddedOn": {
+    "message": "ditanda pada $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Penanda halaman dalam ingatan"
+  },
+  "optBookmarksHelp": {
+    "message": "Saya mempelajari tajuk dan folder penanda halaman anda (tanpa membuka halaman) dan mengikutinya apabila anda menambah atau memadamnya. Jika dimatikan, penanda halaman dikeluarkan daripada ingatan — halaman yang telah anda baca kekal."
+  },
+  "memoryFilterAll": {
+    "message": "Semua"
+  },
+  "memoryFilterRead": {
+    "message": "Dibaca"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Penanda"
+  },
+  "welcomePoint5": {
+    "message": "Penanda halaman — hanya jika anda menghidupkannya: barulah saya mempelajari tajuk dan foldernya, tanpa membuka halaman. Satu klik untuk mematikannya."
+  },
+  "rateTitle": {
+    "message": "Déjà telah membantu anda menemui sesuatu — sudah $COUNT$ kali",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Jika ia berguna, penilaian di kedai membantu orang lain menemuinya — hanya 10 saat. Dan jika ada yang mengganggu anda, beritahu kami."
+  },
+  "rateButton": {
+    "message": "Nilai Déjà"
+  },
+  "rateFeedback": {
+    "message": "Ada yang tidak berfungsi?"
+  },
+  "rateLater": {
+    "message": "Bukan sekarang"
+  },
+  "rateThanks": {
+    "message": "Terima kasih! Ia benar-benar membantu."
+  },
+  "rateFeedbackThanks": {
+    "message": "Terima kasih — kami membaca setiap mesej."
+  },
+  "rateFeedbackSubject": {
+    "message": "maklum balas"
+  },
+  "answerTitle": {
+    "message": "Jawapan daripada ingatan anda"
+  },
+  "answerAsk": {
+    "message": "Jawab daripada ingatan saya"
+  },
+  "answerEnableTitle": {
+    "message": "Jawapan daripada AI terbina dalam Chrome"
+  },
+  "answerEnableText": {
+    "message": "Déjà boleh menjawab soalan berdasarkan apa yang anda baca, beserta sumber. Chrome memuat turun model pada perantinya (Gemini Nano) sekali sahaja — soalan dan halaman anda tidak pernah meninggalkan komputer anda."
+  },
+  "answerEnableButton": {
+    "message": "Hidupkan jawapan"
+  },
+  "answerNoThanks": {
+    "message": "Tidak, terima kasih"
+  },
+  "answerDownloading": {
+    "message": "Chrome sedang memuat turun model… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Membaca ingatan anda…"
+  },
+  "answerStop": {
+    "message": "Henti"
+  },
+  "answerFoot": {
+    "message": "Ditulis pada peranti anda oleh AI terbina dalam Chrome daripada $COUNT$ ingatan anda. Semak sumbernya.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Kali ini saya tidak dapat menyusun jawapan."
+  },
+  "optAnswersLabel": {
+    "message": "Jawapan daripada AI terbina dalam Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "Untuk soalan seperti “apa yang saya baca tentang…?” saya menulis jawapan ringkas beserta sumber daripada halaman anda — sepenuhnya pada peranti anda, dengan Gemini Nano dalam Chrome. Memerlukan komputer dan bahasa yang disokong (Inggeris, Sepanyol, Jerman, Perancis, Jepun)."
+  },
+  "optAnswersAvailable": {
+    "message": "Sedia untuk digunakan pada peranti ini."
+  },
+  "optAnswersDownloadable": {
+    "message": "Disokong — Chrome akan memuat turun model semasa soalan pertama anda."
+  },
+  "optAnswersUnavailable": {
+    "message": "Peranti atau bahasa antara muka ini tidak disokong oleh AI terbina dalam Chrome."
+  },
+  "optAnswersUnsupported": {
+    "message": "Penyemak imbas ini tiada AI terbina dalam — semua yang lain dalam Déjà berfungsi seperti biasa."
+  }
+}

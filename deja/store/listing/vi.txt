@@ -1,0 +1,44 @@
+TITLE: Déjà — trí nhớ của trình duyệt bạn
+SHORT: Tìm trang đã đọc theo ý nghĩa, bằng hơn 50 ngôn ngữ. Chạy hoàn toàn trên thiết bị — không gì rời khỏi trình duyệt của bạn.
+
+Bạn đã từng thấy. Déjà sẽ tìm ra.
+
+Lịch sử trình duyệt chỉ nhớ tiêu đề và URL. Déjà nhớ NỘI DUNG. Hãy mô tả điều
+bạn nhớ bằng lời của chính bạn — “bài viết về pin gốc natri ấy” — và Déjà
+sẽ đưa trang đó lên, kể cả khi bạn không nhớ tiêu đề, trang web hay chính xác
+từ ngữ. Nó còn đưa bạn đến đúng đoạn văn.
+
+BẠN NHẬN ĐƯỢC GÌ
+✓ Dấu trang của bạn, tìm được theo ý nghĩa ngay từ phút đầu — tùy chọn, một cú nhấp.
+  Déjà học tiêu đề và thư mục của chúng (mà không mở các trang) và giữ đồng bộ
+  khi bạn thêm, di chuyển hoặc xóa dấu trang.
+✓ Câu trả lời từ trí nhớ của bạn — trên máy tính hỗ trợ AI tích hợp của Chrome
+  (Gemini Nano), hãy đặt câu hỏi và nhận một câu trả lời ngắn được viết trên thiết
+  bị của bạn từ các trang bạn đã đọc, kèm nguồn có thể nhấp. (Trả lời bằng tiếng
+  Anh, Tây Ban Nha, Đức, Pháp và Nhật.)
+✓ Tìm theo ý nghĩa — hỏi bằng lời của bạn, bằng hơn 50 ngôn ngữ; hỏi bằng một ngôn
+  ngữ, tìm thấy trang bạn đã đọc bằng ngôn ngữ khác.
+✓ Người bạn đồng hành ở bảng điều khiển bên — mở cạnh bất kỳ trang nào để xem những
+  gì bạn đã đọc về chủ đề của trang đó, cùng các ký ức gần đây.
+✓ Gõ “dj” vào thanh địa chỉ — tìm trong trí nhớ ngay từ thanh địa chỉ với gợi ý
+  trực tiếp.
+✓ Ghi nhớ một đoạn — nhấp chuột phải vào văn bản đã chọn: “Déjà: ghi nhớ văn bản
+  đã chọn”. Đoạn đó trở thành một ký ức riêng có thể tìm kiếm.
+✓ Đến đúng đoạn văn — kết quả mở trang với đoạn khớp được tô sáng.
+✓ Bộ lọc ngày, ký ức liên quan, ký ức gần đây trên trang tìm kiếm trống.
+✓ Trí nhớ của tôi — xem mọi thứ Déjà ghi nhớ, quên bất kỳ trang nào chỉ bằng một
+  cú nhấp, xuất/nhập toàn bộ chỉ mục dưới dạng tệp.
+
+RIÊNG TƯ TỪ THIẾT KẾ
+✓ Xử lý cục bộ 100% — mô hình AI nhúng (embedding) chạy trong trình duyệt của bạn
+  và dữ liệu nằm trong IndexedDB. Không máy chủ, không đám mây, không thu thập dữ
+  liệu sử dụng, không tài khoản.
+✓ Các trang thư, trò chuyện, đăng nhập và ngân hàng được tự động bỏ qua (danh sách
+  địa chỉ tích hợp; bạn có thể thêm mẫu riêng).
+✓ Tạm dừng bằng một cú nhấp. “Quên trang này” và “Xóa trí nhớ” luôn sẵn có.
+✓ Tự động quên — tùy chọn xóa các trang cũ hơn 3/6/12/24 tháng.
+✓ Giao diện sáng và tối theo hệ thống của bạn.
+
+Yêu cầu mạng duy nhất mà tiện ích từng gửi đi là tải mô hình nhúng từ Hugging Face
+một lần (sau đó được lưu đệm cục bộ; bạn cũng có thể trỏ đến máy chủ gương của
+riêng mình).

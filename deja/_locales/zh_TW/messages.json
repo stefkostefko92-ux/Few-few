@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — 你的瀏覽器記憶"
+  },
+  "extDesc": {
+    "message": "依含義搜尋你讀過的網頁。一切都在本機完成——任何資料都不會離開你的裝置。"
+  },
+  "cmdOpenSearch": {
+    "message": "開啟 Déjà 搜尋"
+  },
+  "searchTitle": {
+    "message": "Déjà — 搜尋你讀過的內容"
+  },
+  "tagline": {
+    "message": "你看過的，Déjà 幫你找到。"
+  },
+  "searchPlaceholder": {
+    "message": "描述你記得的內容……例如「關於鈉基電池的文章」"
+  },
+  "searchButton": {
+    "message": "搜尋"
+  },
+  "statusSearching": {
+    "message": "正在翻找記憶……（第一次搜尋會載入模型，約 10–30 秒）"
+  },
+  "statusEmpty": {
+    "message": "什麼也沒浮現。可能你沒讀過，或是 Déjà 還沒記住它。"
+  },
+  "statusResults": {
+    "message": "記憶 $COUNT$ 則：",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "記憶 1 則："
+  },
+  "errNoResponse": {
+    "message": "記憶沒有回應——請再試一次"
+  },
+  "recallVivid": {
+    "message": "鮮明的記憶"
+  },
+  "recallHazy": {
+    "message": "模糊的記憶"
+  },
+  "recallFaint": {
+    "message": "遙遠的記憶"
+  },
+  "statusError": {
+    "message": "搜尋失敗：$ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "記憶中：$COUNT$ 個網頁。",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "記憶中：1 個網頁。"
+  },
+  "similarity": {
+    "message": "相似度 $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "閱讀於 $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "記憶中有 $COUNT$ 個網頁",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "記憶中有 1 個網頁"
+  },
+  "popupSleeping": {
+    "message": "記憶正在休眠"
+  },
+  "popupWaking": {
+    "message": "記憶正在甦醒……"
+  },
+  "popupOpenSearch": {
+    "message": "開啟搜尋"
+  },
+  "popupPause": {
+    "message": "暫停記憶"
+  },
+  "popupClear": {
+    "message": "清除記憶"
+  },
+  "popupClearConfirm": {
+    "message": "要刪除所有記住的內容嗎？此操作無法復原。"
+  },
+  "popupOptions": {
+    "message": "設定"
+  },
+  "optionsTitle": {
+    "message": "Déjà — 設定"
+  },
+  "optRetentionLabel": {
+    "message": "記住網頁"
+  },
+  "optRetentionForever": {
+    "message": "永久"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ 個月",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "較舊的網頁每天會自動刪除一次。"
+  },
+  "optDenylistLabel": {
+    "message": "一律不記住含有以下內容的網址"
+  },
+  "optDenylistHelp": {
+    "message": "每行一條規則。比對網址的一部分，例如「example.com」或「/private」。"
+  },
+  "optBuiltinLabel": {
+    "message": "內建防護（一律啟用）"
+  },
+  "optModelHostLabel": {
+    "message": "自訂模型鏡像站（進階）"
+  },
+  "optModelHostHelp": {
+    "message": "留空 = huggingface.co。在離線/企業環境中，可指定你自己的伺服器。"
+  },
+  "filterAll": {
+    "message": "全部"
+  },
+  "filterWeek": {
+    "message": "過去一週"
+  },
+  "filterMonth": {
+    "message": "過去一個月"
+  },
+  "filterYear": {
+    "message": "過去一年"
+  },
+  "relatedLink": {
+    "message": "相關記憶"
+  },
+  "relatedNone": {
+    "message": "沒有相近的記憶"
+  },
+  "omniboxDefault": {
+    "message": "問問你的記憶——Déjà 依含義搜尋"
+  },
+  "popupMemory": {
+    "message": "我的記憶"
+  },
+  "memoryTitle": {
+    "message": "我的記憶"
+  },
+  "memoryEmpty": {
+    "message": "記憶還是空的——瀏覽幾個網頁後再回來吧。"
+  },
+  "memoryForget": {
+    "message": "忘記"
+  },
+  "memoryExport": {
+    "message": "下載封存檔"
+  },
+  "memoryImport": {
+    "message": "從封存檔還原"
+  },
+  "memoryImportConfirm": {
+    "message": "要從封存檔還原嗎？相符的網頁將被覆寫。"
+  },
+  "optSave": {
+    "message": "儲存"
+  },
+  "optSaved": {
+    "message": "已儲存 ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "鏡像站必須是 https:// 網址"
+  },
+  "welcomeHeading": {
+    "message": "你好。我是你瀏覽器的記憶。"
+  },
+  "welcomeIntro": {
+    "message": "從現在起，我會記住你讀過的內容，讓你日後能依含義找到它——用你自己的話，而不必記得確切的標題。"
+  },
+  "welcomePoint1": {
+    "message": "一切都在你的裝置上進行。沒有伺服器，沒有雲端，不傳送任何資料——無論何處，永遠如此。"
+  },
+  "welcomePoint2": {
+    "message": "郵件、聊天、登入和網路銀行頁面永遠不會被記住。請注意：我無法從網址辨識敏感話題——這類頁面請使用暫停功能，或在設定中加入你自己的清單。"
+  },
+  "welcomePoint3": {
+    "message": "一切由你掌控：一鍵暫停，「清除記憶」會刪除所有內容，你也可以選擇讓我在幾個月後自動遺忘。"
+  },
+  "welcomeCta": {
+    "message": "開啟搜尋"
+  },
+  "welcomeOptions": {
+    "message": "設定"
+  },
+  "memoryFilter": {
+    "message": "搜尋你的記憶……"
+  },
+  "supportLink": {
+    "message": "支持 Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — 夥伴"
+  },
+  "panelOnThisPage": {
+    "message": "關於本頁主題"
+  },
+  "panelRecent": {
+    "message": "最近的記憶"
+  },
+  "panelNoPage": {
+    "message": "開啟一個網頁，Déjà 就會顯示你讀過的同主題內容。"
+  },
+  "popupOpenPanel": {
+    "message": "側邊面板"
+  },
+  "popupForgetPage": {
+    "message": "忘記這個網頁"
+  },
+  "popupForgotten": {
+    "message": "已忘記 ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: 記住選取的文字"
+  },
+  "menuForget": {
+    "message": "Déjà: 忘記這個網頁"
+  },
+  "recentTitle": {
+    "message": "最近的記憶"
+  },
+  "cmdOpenPanel": {
+    "message": "開啟 Déjà 側邊面板"
+  },
+  "welcomePoint4": {
+    "message": "側邊面板會看到你正在瀏覽的網頁網址和標題，以便顯示你讀過的同主題內容——只保存在工作階段記憶體中。你刻意儲存的段落也只會留在你這裡。"
+  },
+  "welcomeUpdated": {
+    "message": "Déjà 已更新。新功能：只要你願意，現在書籤也能依含義搜尋了。以下是我如何處理你的資料——沒有任何內容離開過你的裝置。"
+  },
+  "optAmbientLabel": {
+    "message": "動態背景"
+  },
+  "optAmbientHelp": {
+    "message": "玻璃後方的記憶之網會緩緩飄移。如果動畫讓你分心，請將它關閉。"
+  },
+  "bmTitle": {
+    "message": "讓你的書籤可以搜尋——就是現在"
+  },
+  "bmText": {
+    "message": "Déjà 會學習你書籤的標題和資料夾，不必開啟網頁。從第一分鐘起就能依含義找到它們——一切都留在你的裝置上。"
+  },
+  "bmTextShort": {
+    "message": "你的記憶還很年輕。把你的書籤教給我，今天就能依含義搜尋它們。"
+  },
+  "bmButton": {
+    "message": "學習我的書籤"
+  },
+  "bmNote": {
+    "message": "瀏覽器會要求權限。你隨時可以在設定中關閉。"
+  },
+  "bmTitleRunning": {
+    "message": "正在學習你的書籤……"
+  },
+  "bmTitleDone": {
+    "message": "你的書籤已可搜尋"
+  },
+  "bmPreparing": {
+    "message": "正在準備……"
+  },
+  "bmLearning": {
+    "message": "已學習 $DONE$ / $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà 已暫停——你一恢復，我就繼續。"
+  },
+  "bmError": {
+    "message": "學習時發生問題。下次有變更時我會再試一次。"
+  },
+  "bmDone": {
+    "message": "完成——$COUNT$ 個書籤可依含義搜尋，並會自動保持同步。",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "完成——1 個書籤可依含義搜尋，並會自動保持同步。"
+  },
+  "bmDenied": {
+    "message": "沒有權限，我就看不到你的書籤。你隨時可以再試一次。"
+  },
+  "bmTry": {
+    "message": "試試看："
+  },
+  "bmBadge": {
+    "message": "書籤"
+  },
+  "bmAddedOn": {
+    "message": "加入書籤於 $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "記憶中的書籤"
+  },
+  "optBookmarksHelp": {
+    "message": "我會學習你書籤的標題和資料夾（不開啟網頁），並在你新增或刪除書籤時隨之更新。關閉後，書籤會從記憶中移除——你讀過的網頁仍會保留。"
+  },
+  "memoryFilterAll": {
+    "message": "全部"
+  },
+  "memoryFilterRead": {
+    "message": "已讀"
+  },
+  "memoryFilterBookmarks": {
+    "message": "書籤"
+  },
+  "welcomePoint5": {
+    "message": "書籤——只在你開啟時：我會學習它們的標題和資料夾，不開啟網頁。一鍵即可關閉。"
+  },
+  "rateTitle": {
+    "message": "Déjà 已經幫你找到東西 $COUNT$ 次了",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "如果它對你有幫助，在商店留下評分能讓更多人發現它——只要 10 秒。如果有什麼讓你不滿意，請告訴我們。"
+  },
+  "rateButton": {
+    "message": "為 Déjà 評分"
+  },
+  "rateFeedback": {
+    "message": "遇到問題了嗎？"
+  },
+  "rateLater": {
+    "message": "以後再說"
+  },
+  "rateThanks": {
+    "message": "謝謝！這真的很有幫助。"
+  },
+  "rateFeedbackThanks": {
+    "message": "謝謝——每則訊息我們都會認真閱讀。"
+  },
+  "rateFeedbackSubject": {
+    "message": "意見回饋"
+  },
+  "answerTitle": {
+    "message": "來自你記憶的回答"
+  },
+  "answerAsk": {
+    "message": "從我的記憶中回答"
+  },
+  "answerEnableTitle": {
+    "message": "Chrome 內建 AI 的回答"
+  },
+  "answerEnableText": {
+    "message": "Déjà 可以根據你讀過的內容回答問題，並附上來源。Chrome 會一次性下載它的裝置端模型（Gemini Nano）——你的問題和網頁絕不會離開你的電腦。"
+  },
+  "answerEnableButton": {
+    "message": "開啟回答功能"
+  },
+  "answerNoThanks": {
+    "message": "不用了"
+  },
+  "answerDownloading": {
+    "message": "Chrome 正在下載模型…… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "正在閱讀你的記憶……"
+  },
+  "answerStop": {
+    "message": "停止"
+  },
+  "answerFoot": {
+    "message": "由 Chrome 內建 AI 根據你的 $COUNT$ 則記憶在你的裝置上撰寫。請核對來源。",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "這次沒能整理出回答。"
+  },
+  "optAnswersLabel": {
+    "message": "Chrome 內建 AI 的回答"
+  },
+  "optAnswersHelp": {
+    "message": "對於「我讀過關於……的什麼？」這類問題，我會根據你的網頁寫出附來源的簡短回答——完全在你的裝置上，由 Chrome 中的 Gemini Nano 完成。需要支援的電腦和語言（英文、西班牙文、德文、法文、日文）。"
+  },
+  "optAnswersAvailable": {
+    "message": "可在這部裝置上使用。"
+  },
+  "optAnswersDownloadable": {
+    "message": "支援——Chrome 會在你第一次提問時下載模型。"
+  },
+  "optAnswersUnavailable": {
+    "message": "Chrome 內建 AI 不支援這部裝置或介面語言。"
+  },
+  "optAnswersUnsupported": {
+    "message": "這個瀏覽器沒有內建 AI——Déjà 的其他功能照常運作。"
+  }
+}

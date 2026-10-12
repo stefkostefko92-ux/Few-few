@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — 你的浏览器记忆"
+  },
+  "extDesc": {
+    "message": "按含义搜索你读过的网页。一切都在本地完成——任何数据都不会离开你的设备。"
+  },
+  "cmdOpenSearch": {
+    "message": "打开 Déjà 搜索"
+  },
+  "searchTitle": {
+    "message": "Déjà — 搜索你读过的内容"
+  },
+  "tagline": {
+    "message": "你见过的，Déjà 帮你找到。"
+  },
+  "searchPlaceholder": {
+    "message": "描述你记得的内容……例如“关于钠基电池的文章”"
+  },
+  "searchButton": {
+    "message": "搜索"
+  },
+  "statusSearching": {
+    "message": "正在翻找记忆……（首次搜索会加载模型，约 10–30 秒）"
+  },
+  "statusEmpty": {
+    "message": "什么也没浮现。要么你没读过，要么 Déjà 还没记住它。"
+  },
+  "statusResults": {
+    "message": "记忆 $COUNT$ 条：",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "记忆 1 条："
+  },
+  "errNoResponse": {
+    "message": "记忆没有回应——请再试一次"
+  },
+  "recallVivid": {
+    "message": "清晰的记忆"
+  },
+  "recallHazy": {
+    "message": "模糊的记忆"
+  },
+  "recallFaint": {
+    "message": "遥远的记忆"
+  },
+  "statusError": {
+    "message": "搜索失败：$ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "记忆中：$COUNT$ 个网页。",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "记忆中：1 个网页。"
+  },
+  "similarity": {
+    "message": "相似度 $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "阅读于 $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "记忆中有 $COUNT$ 个网页",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "记忆中有 1 个网页"
+  },
+  "popupSleeping": {
+    "message": "记忆正在休眠"
+  },
+  "popupWaking": {
+    "message": "记忆正在苏醒……"
+  },
+  "popupOpenSearch": {
+    "message": "打开搜索"
+  },
+  "popupPause": {
+    "message": "暂停记忆"
+  },
+  "popupClear": {
+    "message": "清除记忆"
+  },
+  "popupClearConfirm": {
+    "message": "要删除所有已记住的内容吗？此操作无法撤消。"
+  },
+  "popupOptions": {
+    "message": "设置"
+  },
+  "optionsTitle": {
+    "message": "Déjà — 设置"
+  },
+  "optRetentionLabel": {
+    "message": "记住网页"
+  },
+  "optRetentionForever": {
+    "message": "永久"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ 个月",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "较旧的网页每天自动删除一次。"
+  },
+  "optDenylistLabel": {
+    "message": "永不记住包含以下内容的网址"
+  },
+  "optDenylistHelp": {
+    "message": "每行一条规则。匹配网址的一部分，例如“example.com”或“/private”。"
+  },
+  "optBuiltinLabel": {
+    "message": "内置保护（始终启用）"
+  },
+  "optModelHostLabel": {
+    "message": "自定义模型镜像（高级）"
+  },
+  "optModelHostHelp": {
+    "message": "留空 = huggingface.co。在离线/企业环境中，可设置你自己的服务器。"
+  },
+  "filterAll": {
+    "message": "全部"
+  },
+  "filterWeek": {
+    "message": "过去一周"
+  },
+  "filterMonth": {
+    "message": "过去一个月"
+  },
+  "filterYear": {
+    "message": "过去一年"
+  },
+  "relatedLink": {
+    "message": "相关记忆"
+  },
+  "relatedNone": {
+    "message": "没有相近的记忆"
+  },
+  "omniboxDefault": {
+    "message": "问问你的记忆——Déjà 按含义搜索"
+  },
+  "popupMemory": {
+    "message": "我的记忆"
+  },
+  "memoryTitle": {
+    "message": "我的记忆"
+  },
+  "memoryEmpty": {
+    "message": "记忆还是空的——浏览几个网页后再回来吧。"
+  },
+  "memoryForget": {
+    "message": "忘记"
+  },
+  "memoryExport": {
+    "message": "下载存档"
+  },
+  "memoryImport": {
+    "message": "从存档恢复"
+  },
+  "memoryImportConfirm": {
+    "message": "要从存档恢复吗？匹配的网页将被覆盖。"
+  },
+  "optSave": {
+    "message": "保存"
+  },
+  "optSaved": {
+    "message": "已保存 ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "镜像必须是 https:// 地址"
+  },
+  "welcomeHeading": {
+    "message": "你好。我是你浏览器的记忆。"
+  },
+  "welcomeIntro": {
+    "message": "从现在起，我会记住你读过的内容，方便你以后按含义找到它——用你自己的话，而不是确切的标题。"
+  },
+  "welcomePoint1": {
+    "message": "一切都在你的设备上进行。没有服务器，没有云端，不发送任何数据——无论何处，永远如此。"
+  },
+  "welcomePoint2": {
+    "message": "邮件、聊天、登录和网上银行页面永远不会被记住。请注意：我无法通过网址识别敏感话题——对于这类页面，请使用暂停功能，或在设置中添加你自己的列表。"
+  },
+  "welcomePoint3": {
+    "message": "一切由你掌控：一键暂停，“清除记忆”会删除所有内容，你还可以选择让我在几个月后自动遗忘。"
+  },
+  "welcomeCta": {
+    "message": "打开搜索"
+  },
+  "welcomeOptions": {
+    "message": "设置"
+  },
+  "memoryFilter": {
+    "message": "搜索你的记忆……"
+  },
+  "supportLink": {
+    "message": "支持 Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — 伙伴"
+  },
+  "panelOnThisPage": {
+    "message": "关于本页主题"
+  },
+  "panelRecent": {
+    "message": "最近的记忆"
+  },
+  "panelNoPage": {
+    "message": "打开一个网页，Déjà 就会显示你读过的同主题内容。"
+  },
+  "popupOpenPanel": {
+    "message": "侧边栏"
+  },
+  "popupForgetPage": {
+    "message": "忘记此网页"
+  },
+  "popupForgotten": {
+    "message": "已忘记 ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: 记住所选文字"
+  },
+  "menuForget": {
+    "message": "Déjà: 忘记此网页"
+  },
+  "recentTitle": {
+    "message": "最近的记忆"
+  },
+  "cmdOpenPanel": {
+    "message": "打开 Déjà 侧边栏"
+  },
+  "welcomePoint4": {
+    "message": "侧边栏会看到你正在浏览的网页的网址和标题，以便显示你读过的同主题内容——仅保存在会话内存中。你特意保存的段落也只留在你这里。"
+  },
+  "welcomeUpdated": {
+    "message": "Déjà 已更新。新功能：只要你愿意，现在书签也能按含义搜索了。以下是我如何处理你的数据——没有任何内容离开过你的设备。"
+  },
+  "optAmbientLabel": {
+    "message": "动态背景"
+  },
+  "optAmbientHelp": {
+    "message": "玻璃后面的记忆之网会缓缓漂移。如果动画让你分心，请将其关闭。"
+  },
+  "bmTitle": {
+    "message": "让你的书签可被搜索——就现在"
+  },
+  "bmText": {
+    "message": "Déjà 会学习你书签的标题和文件夹，无需打开网页。从第一分钟起就能按含义找到它们——一切都留在你的设备上。"
+  },
+  "bmTextShort": {
+    "message": "你的记忆还很年轻。把你的书签教给我，今天就能按含义搜索它们。"
+  },
+  "bmButton": {
+    "message": "学习我的书签"
+  },
+  "bmNote": {
+    "message": "浏览器会请求权限。你可以随时在设置中关闭。"
+  },
+  "bmTitleRunning": {
+    "message": "正在学习你的书签……"
+  },
+  "bmTitleDone": {
+    "message": "你的书签已可搜索"
+  },
+  "bmPreparing": {
+    "message": "正在准备……"
+  },
+  "bmLearning": {
+    "message": "已学习 $DONE$ / $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà 已暂停——你一恢复，我就继续。"
+  },
+  "bmError": {
+    "message": "学习时出了点问题。下次有变化时我会再试一次。"
+  },
+  "bmDone": {
+    "message": "完成——$COUNT$ 个书签可按含义搜索，并会自动保持同步。",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "完成——1 个书签可按含义搜索，并会自动保持同步。"
+  },
+  "bmDenied": {
+    "message": "没有权限，我就看不到你的书签。你可以随时再试一次。"
+  },
+  "bmTry": {
+    "message": "试试："
+  },
+  "bmBadge": {
+    "message": "书签"
+  },
+  "bmAddedOn": {
+    "message": "加入书签于 $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "记忆中的书签"
+  },
+  "optBookmarksHelp": {
+    "message": "我会学习你书签的标题和文件夹（不打开网页），并在你添加或删除书签时随之更新。关闭后，书签会从记忆中移除——你读过的网页仍会保留。"
+  },
+  "memoryFilterAll": {
+    "message": "全部"
+  },
+  "memoryFilterRead": {
+    "message": "已读"
+  },
+  "memoryFilterBookmarks": {
+    "message": "书签"
+  },
+  "welcomePoint5": {
+    "message": "书签——仅在你开启时：我会学习它们的标题和文件夹，不打开网页。一键即可关闭。"
+  },
+  "rateTitle": {
+    "message": "Déjà 已经帮你找到东西 $COUNT$ 次了",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "如果它对你有用，在商店里打个分能帮助更多人发现它——只需 10 秒。如果有什么让你不满意，请告诉我们。"
+  },
+  "rateButton": {
+    "message": "为 Déjà 评分"
+  },
+  "rateFeedback": {
+    "message": "遇到问题了？"
+  },
+  "rateLater": {
+    "message": "以后再说"
+  },
+  "rateThanks": {
+    "message": "谢谢！这真的很有帮助。"
+  },
+  "rateFeedbackThanks": {
+    "message": "谢谢——每条消息我们都会认真阅读。"
+  },
+  "rateFeedbackSubject": {
+    "message": "反馈"
+  },
+  "answerTitle": {
+    "message": "来自你记忆的回答"
+  },
+  "answerAsk": {
+    "message": "从我的记忆中回答"
+  },
+  "answerEnableTitle": {
+    "message": "Chrome 内置 AI 的回答"
+  },
+  "answerEnableText": {
+    "message": "Déjà 可以根据你读过的内容回答问题，并附上来源。Chrome 会一次性下载其设备端模型（Gemini Nano）——你的问题和网页绝不会离开你的电脑。"
+  },
+  "answerEnableButton": {
+    "message": "开启回答"
+  },
+  "answerNoThanks": {
+    "message": "不用了"
+  },
+  "answerDownloading": {
+    "message": "Chrome 正在下载模型…… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "正在阅读你的记忆……"
+  },
+  "answerStop": {
+    "message": "停止"
+  },
+  "answerFoot": {
+    "message": "由 Chrome 内置 AI 根据你的 $COUNT$ 条记忆在你的设备上撰写。请核对来源。",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "这次没能整理出回答。"
+  },
+  "optAnswersLabel": {
+    "message": "Chrome 内置 AI 的回答"
+  },
+  "optAnswersHelp": {
+    "message": "对于“我读过关于……的什么？”这类问题，我会根据你的网页写出带来源的简短回答——完全在你的设备上，由 Chrome 中的 Gemini Nano 完成。需要受支持的电脑和语言（英语、西班牙语、德语、法语、日语）。"
+  },
+  "optAnswersAvailable": {
+    "message": "可在此设备上使用。"
+  },
+  "optAnswersDownloadable": {
+    "message": "受支持——Chrome 会在你第一次提问时下载模型。"
+  },
+  "optAnswersUnavailable": {
+    "message": "Chrome 内置 AI 不支持此设备或界面语言。"
+  },
+  "optAnswersUnsupported": {
+    "message": "此浏览器没有内置 AI——Déjà 的其他功能照常运行。"
+  }
+}

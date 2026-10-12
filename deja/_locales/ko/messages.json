@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — 브라우저의 기억"
+  },
+  "extDesc": {
+    "message": "읽은 페이지를 의미로 검색하세요. 모든 처리는 로컬에서 이루어지며, 어떤 데이터도 기기 밖으로 나가지 않아요."
+  },
+  "cmdOpenSearch": {
+    "message": "Déjà 검색 열기"
+  },
+  "searchTitle": {
+    "message": "Déjà — 읽은 내용 검색"
+  },
+  "tagline": {
+    "message": "본 적 있다면, Déjà가 찾아 드려요."
+  },
+  "searchPlaceholder": {
+    "message": "기억나는 내용을 설명해 보세요… 예: “나트륨 기반 배터리에 관한 기사”"
+  },
+  "searchButton": {
+    "message": "검색"
+  },
+  "statusSearching": {
+    "message": "기억을 뒤지는 중… (첫 검색에서는 모델을 불러와요, 약 10~30초)"
+  },
+  "statusEmpty": {
+    "message": "떠오르는 게 없어요. 읽은 적이 없거나, Déjà가 아직 기억하지 못했어요."
+  },
+  "statusResults": {
+    "message": "기억 $COUNT$개:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "기억 1개:"
+  },
+  "errNoResponse": {
+    "message": "기억이 응답하지 않았어요 — 다시 시도해 보세요"
+  },
+  "recallVivid": {
+    "message": "선명한 기억"
+  },
+  "recallHazy": {
+    "message": "흐릿한 기억"
+  },
+  "recallFaint": {
+    "message": "먼 기억"
+  },
+  "statusError": {
+    "message": "검색 실패: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "기억 속 페이지: $COUNT$개",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "기억 속 페이지: 1개"
+  },
+  "similarity": {
+    "message": "유사도 $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "$DATE$에 읽음",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "기억 속 페이지 $COUNT$개",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "기억 속 페이지 1개"
+  },
+  "popupSleeping": {
+    "message": "기억이 잠들어 있어요"
+  },
+  "popupWaking": {
+    "message": "기억이 깨어나는 중…"
+  },
+  "popupOpenSearch": {
+    "message": "검색 열기"
+  },
+  "popupPause": {
+    "message": "기억 일시중지"
+  },
+  "popupClear": {
+    "message": "기억 지우기"
+  },
+  "popupClearConfirm": {
+    "message": "기억한 모든 것을 삭제할까요? 되돌릴 수 없어요."
+  },
+  "popupOptions": {
+    "message": "설정"
+  },
+  "optionsTitle": {
+    "message": "Déjà — 설정"
+  },
+  "optRetentionLabel": {
+    "message": "페이지 기억 기간"
+  },
+  "optRetentionForever": {
+    "message": "영구"
+  },
+  "optRetentionMonths": {
+    "message": "$N$개월",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "오래된 페이지는 하루에 한 번 자동으로 삭제돼요."
+  },
+  "optDenylistLabel": {
+    "message": "다음을 포함한 주소는 절대 기억하지 않기"
+  },
+  "optDenylistHelp": {
+    "message": "한 줄에 패턴 하나. 주소의 일부와 일치해요. 예: “example.com” 또는 “/private”"
+  },
+  "optBuiltinLabel": {
+    "message": "기본 제공 보호 (항상 사용)"
+  },
+  "optModelHostLabel": {
+    "message": "사용자 지정 모델 미러 (고급)"
+  },
+  "optModelHostHelp": {
+    "message": "비워 두면 = huggingface.co. 오프라인/기업 환경에서는 자체 서버를 지정하세요."
+  },
+  "filterAll": {
+    "message": "전체"
+  },
+  "filterWeek": {
+    "message": "최근 1주"
+  },
+  "filterMonth": {
+    "message": "최근 1개월"
+  },
+  "filterYear": {
+    "message": "최근 1년"
+  },
+  "relatedLink": {
+    "message": "관련 기억"
+  },
+  "relatedNone": {
+    "message": "가까운 기억 없음"
+  },
+  "omniboxDefault": {
+    "message": "기억에게 물어보세요 — Déjà는 의미로 검색해요"
+  },
+  "popupMemory": {
+    "message": "내 기억"
+  },
+  "memoryTitle": {
+    "message": "내 기억"
+  },
+  "memoryEmpty": {
+    "message": "기억이 비어 있어요 — 페이지를 몇 개 둘러본 뒤 다시 오세요."
+  },
+  "memoryForget": {
+    "message": "잊기"
+  },
+  "memoryExport": {
+    "message": "아카이브 다운로드"
+  },
+  "memoryImport": {
+    "message": "아카이브에서 복원"
+  },
+  "memoryImportConfirm": {
+    "message": "아카이브에서 복원할까요? 일치하는 페이지는 덮어써져요."
+  },
+  "optSave": {
+    "message": "저장"
+  },
+  "optSaved": {
+    "message": "저장됨 ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "미러는 https:// 주소여야 해요"
+  },
+  "welcomeHeading": {
+    "message": "안녕하세요. 저는 브라우저의 기억이에요."
+  },
+  "welcomeIntro": {
+    "message": "지금부터 읽는 내용을 기억해 둘게요. 나중에 정확한 제목이 아니라 내 말로, 의미로 찾을 수 있도록요."
+  },
+  "welcomePoint1": {
+    "message": "모든 것이 기기에서 이루어져요. 서버도, 클라우드도, 데이터 전송도 없어요 — 어디로도, 절대로."
+  },
+  "welcomePoint2": {
+    "message": "메일, 채팅, 로그인, 은행 페이지는 절대 기억하지 않아요. 참고하세요: 민감한 주제는 주소만으로 알아볼 수 없어요 — 그런 페이지에는 일시중지를 사용하거나 설정에서 나만의 목록을 추가하세요."
+  },
+  "welcomePoint3": {
+    "message": "결정은 내가 해요: 클릭 한 번으로 일시중지, “기억 지우기”로 전부 삭제, 원하면 몇 개월 뒤 자동으로 잊게 할 수도 있어요."
+  },
+  "welcomeCta": {
+    "message": "검색 열기"
+  },
+  "welcomeOptions": {
+    "message": "설정"
+  },
+  "memoryFilter": {
+    "message": "기억에서 검색…"
+  },
+  "supportLink": {
+    "message": "Déjà 후원하기"
+  },
+  "panelTitle": {
+    "message": "Déjà — 컴패니언"
+  },
+  "panelOnThisPage": {
+    "message": "이 페이지의 주제에 관해"
+  },
+  "panelRecent": {
+    "message": "최근 기억"
+  },
+  "panelNoPage": {
+    "message": "웹페이지를 열면 Déjà가 그 주제에 관해 읽은 내용을 보여 드려요."
+  },
+  "popupOpenPanel": {
+    "message": "사이드 패널"
+  },
+  "popupForgetPage": {
+    "message": "이 페이지 잊기"
+  },
+  "popupForgotten": {
+    "message": "잊었어요 ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: 선택한 텍스트 기억하기"
+  },
+  "menuForget": {
+    "message": "Déjà: 이 페이지 잊기"
+  },
+  "recentTitle": {
+    "message": "최근 기억"
+  },
+  "cmdOpenPanel": {
+    "message": "Déjà 사이드 패널 열기"
+  },
+  "welcomePoint4": {
+    "message": "사이드 패널은 보고 있는 페이지의 주소와 제목을 확인해 그 주제에 관해 읽은 내용을 보여 줘요 — 세션 메모리에만 보관돼요. 직접 저장한 구절도 오직 내 기기에만 남아요."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà가 업데이트되었어요. 새 기능: 원하면 이제 북마크도 의미로 검색할 수 있어요. 데이터를 어떻게 다루는지 알려 드릴게요 — 기기 밖으로 나간 것은 아무것도 없어요."
+  },
+  "optAmbientLabel": {
+    "message": "움직이는 배경"
+  },
+  "optAmbientHelp": {
+    "message": "유리 너머 기억의 그물이 천천히 떠다녀요. 움직임이 방해되면 꺼 주세요."
+  },
+  "bmTitle": {
+    "message": "북마크를 검색할 수 있게 하세요 — 지금 바로"
+  },
+  "bmText": {
+    "message": "Déjà는 페이지를 열지 않고 북마크의 제목과 폴더를 학습해요. 첫 1분부터 의미로 찾을 수 있고, 모든 것은 기기에 남아요."
+  },
+  "bmTextShort": {
+    "message": "기억이 아직 어려요. 북마크를 알려 주면 오늘부터 의미로 검색할 수 있어요."
+  },
+  "bmButton": {
+    "message": "내 북마크 학습하기"
+  },
+  "bmNote": {
+    "message": "브라우저가 권한을 요청해요. 설정에서 언제든 끌 수 있어요."
+  },
+  "bmTitleRunning": {
+    "message": "북마크 학습 중…"
+  },
+  "bmTitleDone": {
+    "message": "이제 북마크를 검색할 수 있어요"
+  },
+  "bmPreparing": {
+    "message": "준비 중…"
+  },
+  "bmLearning": {
+    "message": "$TOTAL$개 중 $DONE$개 학습함",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà가 일시중지되었어요 — 다시 시작하면 바로 이어서 할게요."
+  },
+  "bmError": {
+    "message": "학습 중 문제가 생겼어요. 다음 변경 때 다시 시도할게요."
+  },
+  "bmDone": {
+    "message": "완료 — 북마크 $COUNT$개를 의미로 검색할 수 있고 자동으로 동기화돼요.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "완료 — 북마크 1개를 의미로 검색할 수 있고 자동으로 동기화돼요."
+  },
+  "bmDenied": {
+    "message": "권한이 없으면 북마크를 볼 수 없어요. 언제든 다시 시도할 수 있어요."
+  },
+  "bmTry": {
+    "message": "예시:"
+  },
+  "bmBadge": {
+    "message": "북마크"
+  },
+  "bmAddedOn": {
+    "message": "$DATE$에 북마크함",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "기억 속 북마크"
+  },
+  "optBookmarksHelp": {
+    "message": "북마크의 제목과 폴더를 (페이지를 열지 않고) 학습하고, 추가하거나 삭제할 때 함께 반영해요. 끄면 기억에서 제거돼요 — 읽은 페이지는 그대로 남아요."
+  },
+  "memoryFilterAll": {
+    "message": "전체"
+  },
+  "memoryFilterRead": {
+    "message": "읽음"
+  },
+  "memoryFilterBookmarks": {
+    "message": "북마크"
+  },
+  "welcomePoint5": {
+    "message": "북마크 — 켠 경우에만: 그때 페이지를 열지 않고 제목과 폴더를 학습해요. 클릭 한 번으로 끌 수 있어요."
+  },
+  "rateTitle": {
+    "message": "Déjà가 무언가를 찾는 데 도움이 됐어요 — 벌써 $COUNT$번째예요",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "유용하다면 스토어에 남긴 평가가 다른 사람들이 발견하는 데 도움이 돼요 — 10초면 충분해요. 불편한 점이 있다면 알려 주세요."
+  },
+  "rateButton": {
+    "message": "Déjà 평가하기"
+  },
+  "rateFeedback": {
+    "message": "제대로 작동하지 않나요?"
+  },
+  "rateLater": {
+    "message": "나중에"
+  },
+  "rateThanks": {
+    "message": "감사해요! 정말 큰 도움이 돼요."
+  },
+  "rateFeedbackThanks": {
+    "message": "감사해요 — 모든 메시지를 읽고 있어요."
+  },
+  "rateFeedbackSubject": {
+    "message": "의견"
+  },
+  "answerTitle": {
+    "message": "내 기억에서 찾은 답변"
+  },
+  "answerAsk": {
+    "message": "내 기억에서 답하기"
+  },
+  "answerEnableTitle": {
+    "message": "Chrome 내장 AI의 답변"
+  },
+  "answerEnableText": {
+    "message": "Déjà는 읽은 내용을 바탕으로 출처와 함께 질문에 답할 수 있어요. Chrome이 기기 내 모델(Gemini Nano)을 한 번만 다운로드해요 — 질문과 페이지는 컴퓨터 밖으로 나가지 않아요."
+  },
+  "answerEnableButton": {
+    "message": "답변 켜기"
+  },
+  "answerNoThanks": {
+    "message": "괜찮아요"
+  },
+  "answerDownloading": {
+    "message": "Chrome이 모델을 다운로드하는 중… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "기억을 읽는 중…"
+  },
+  "answerStop": {
+    "message": "중지"
+  },
+  "answerFoot": {
+    "message": "Chrome 내장 AI가 내 기억 $COUNT$개를 바탕으로 기기에서 작성했어요. 출처를 확인하세요.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "이번에는 답변을 만들지 못했어요."
+  },
+  "optAnswersLabel": {
+    "message": "Chrome 내장 AI의 답변"
+  },
+  "optAnswersHelp": {
+    "message": "“…에 관해 뭘 읽었지?” 같은 질문에 내 페이지의 출처와 함께 짧은 답변을 작성해요 — Chrome의 Gemini Nano로 모두 기기에서 처리돼요. 지원되는 컴퓨터와 언어(영어, 스페인어, 독일어, 프랑스어, 일본어)가 필요해요."
+  },
+  "optAnswersAvailable": {
+    "message": "이 기기에서 사용할 수 있어요."
+  },
+  "optAnswersDownloadable": {
+    "message": "지원됨 — 첫 질문 때 Chrome이 모델을 다운로드해요."
+  },
+  "optAnswersUnavailable": {
+    "message": "이 기기 또는 인터페이스 언어는 Chrome 내장 AI에서 지원되지 않아요."
+  },
+  "optAnswersUnsupported": {
+    "message": "이 브라우저에는 내장 AI가 없어요 — Déjà의 나머지 기능은 평소처럼 작동해요."
+  }
+}

@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — trí nhớ của trình duyệt bạn"
+  },
+  "extDesc": {
+    "message": "Tìm kiếm theo ý nghĩa trong các trang bạn đã đọc. Mọi thứ diễn ra cục bộ — không gì rời khỏi thiết bị của bạn."
+  },
+  "cmdOpenSearch": {
+    "message": "Mở tìm kiếm Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — tìm những gì bạn đã đọc"
+  },
+  "tagline": {
+    "message": "Bạn đã từng thấy. Déjà sẽ tìm ra."
+  },
+  "searchPlaceholder": {
+    "message": "Mô tả điều bạn nhớ… ví dụ “bài viết về pin gốc natri”"
+  },
+  "searchButton": {
+    "message": "Tìm"
+  },
+  "statusSearching": {
+    "message": "Đang lục lại trí nhớ… (lần tìm đầu tiên sẽ tải mô hình, ~10-30 giây)"
+  },
+  "statusEmpty": {
+    "message": "Không có gì hiện lên. Hoặc bạn chưa từng đọc, hoặc Déjà chưa ghi nhớ nó."
+  },
+  "statusResults": {
+    "message": "$COUNT$ ký ức:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 ký ức:"
+  },
+  "errNoResponse": {
+    "message": "trí nhớ không phản hồi — hãy thử lại"
+  },
+  "recallVivid": {
+    "message": "ký ức rõ nét"
+  },
+  "recallHazy": {
+    "message": "ký ức mơ hồ"
+  },
+  "recallFaint": {
+    "message": "ký ức xa xăm"
+  },
+  "statusError": {
+    "message": "Tìm kiếm thất bại: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Trong trí nhớ: $COUNT$ trang.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Trong trí nhớ: 1 trang."
+  },
+  "similarity": {
+    "message": "độ tương đồng $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "đã đọc ngày $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ trang trong trí nhớ",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 trang trong trí nhớ"
+  },
+  "popupSleeping": {
+    "message": "trí nhớ đang ngủ"
+  },
+  "popupWaking": {
+    "message": "trí nhớ đang thức dậy…"
+  },
+  "popupOpenSearch": {
+    "message": "Mở tìm kiếm"
+  },
+  "popupPause": {
+    "message": "Tạm dừng ghi nhớ"
+  },
+  "popupClear": {
+    "message": "Xóa trí nhớ"
+  },
+  "popupClearConfirm": {
+    "message": "Xóa mọi thứ đã ghi nhớ? Không thể hoàn tác."
+  },
+  "popupOptions": {
+    "message": "Cài đặt"
+  },
+  "optionsTitle": {
+    "message": "Déjà — cài đặt"
+  },
+  "optRetentionLabel": {
+    "message": "Ghi nhớ các trang"
+  },
+  "optRetentionForever": {
+    "message": "mãi mãi"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ tháng",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Các trang cũ hơn sẽ tự động bị xóa mỗi ngày một lần."
+  },
+  "optDenylistLabel": {
+    "message": "Không bao giờ ghi nhớ địa chỉ chứa"
+  },
+  "optDenylistHelp": {
+    "message": "Mỗi dòng một mẫu. Khớp với một phần của địa chỉ, ví dụ “example.com” hoặc “/private”."
+  },
+  "optBuiltinLabel": {
+    "message": "Bảo vệ tích hợp (luôn bật)"
+  },
+  "optModelHostLabel": {
+    "message": "Máy chủ gương tùy chỉnh cho mô hình (nâng cao)"
+  },
+  "optModelHostHelp": {
+    "message": "Để trống = huggingface.co. Đặt máy chủ riêng của bạn cho môi trường ngoại tuyến/doanh nghiệp."
+  },
+  "filterAll": {
+    "message": "tất cả"
+  },
+  "filterWeek": {
+    "message": "tuần qua"
+  },
+  "filterMonth": {
+    "message": "tháng qua"
+  },
+  "filterYear": {
+    "message": "năm qua"
+  },
+  "relatedLink": {
+    "message": "ký ức liên quan"
+  },
+  "relatedNone": {
+    "message": "không có ký ức nào gần"
+  },
+  "omniboxDefault": {
+    "message": "Hỏi trí nhớ của bạn — Déjà tìm theo ý nghĩa"
+  },
+  "popupMemory": {
+    "message": "Trí nhớ của tôi"
+  },
+  "memoryTitle": {
+    "message": "Trí nhớ của tôi"
+  },
+  "memoryEmpty": {
+    "message": "Trí nhớ đang trống — hãy xem vài trang rồi quay lại."
+  },
+  "memoryForget": {
+    "message": "Quên"
+  },
+  "memoryExport": {
+    "message": "Tải xuống bản lưu trữ"
+  },
+  "memoryImport": {
+    "message": "Khôi phục từ bản lưu trữ"
+  },
+  "memoryImportConfirm": {
+    "message": "Khôi phục từ bản lưu trữ? Các trang trùng khớp sẽ bị ghi đè."
+  },
+  "optSave": {
+    "message": "Lưu"
+  },
+  "optSaved": {
+    "message": "Đã lưu ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Máy chủ gương phải là địa chỉ https://"
+  },
+  "welcomeHeading": {
+    "message": "Xin chào. Mình là trí nhớ của trình duyệt bạn."
+  },
+  "welcomeIntro": {
+    "message": "Từ giờ, mình ghi nhớ những gì bạn đọc để sau này bạn tìm lại theo ý nghĩa — bằng lời của chính bạn, không cần đúng tiêu đề."
+  },
+  "welcomePoint1": {
+    "message": "Mọi thứ diễn ra trên thiết bị của bạn. Không máy chủ, không đám mây, không gửi dữ liệu — đi đâu cả, không bao giờ."
+  },
+  "welcomePoint2": {
+    "message": "Thư, trò chuyện, trang đăng nhập và ngân hàng không bao giờ được ghi nhớ. Lưu ý: mình không thể nhận ra chủ đề nhạy cảm qua địa chỉ — với những trang đó, hãy dùng tạm dừng hoặc danh sách riêng của bạn trong cài đặt."
+  },
+  "welcomePoint3": {
+    "message": "Bạn nắm quyền: tạm dừng chỉ bằng một cú nhấp, “Xóa trí nhớ” xóa mọi thứ, và nếu muốn, mình sẽ tự động quên sau vài tháng."
+  },
+  "welcomeCta": {
+    "message": "Mở tìm kiếm"
+  },
+  "welcomeOptions": {
+    "message": "Cài đặt"
+  },
+  "memoryFilter": {
+    "message": "Tìm trong trí nhớ…"
+  },
+  "supportLink": {
+    "message": "Ủng hộ Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — người bạn đồng hành"
+  },
+  "panelOnThisPage": {
+    "message": "Về chủ đề của trang này"
+  },
+  "panelRecent": {
+    "message": "Ký ức gần đây"
+  },
+  "panelNoPage": {
+    "message": "Mở một trang web và Déjà sẽ cho thấy những gì bạn đã đọc về chủ đề đó."
+  },
+  "popupOpenPanel": {
+    "message": "Bảng điều khiển bên"
+  },
+  "popupForgetPage": {
+    "message": "Quên trang này"
+  },
+  "popupForgotten": {
+    "message": "Đã quên ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: ghi nhớ văn bản đã chọn"
+  },
+  "menuForget": {
+    "message": "Déjà: quên trang này"
+  },
+  "recentTitle": {
+    "message": "Ký ức gần đây"
+  },
+  "cmdOpenPanel": {
+    "message": "Mở bảng điều khiển bên của Déjà"
+  },
+  "welcomePoint4": {
+    "message": "Bảng điều khiển bên thấy địa chỉ và tiêu đề của trang bạn đang xem để cho biết bạn đã đọc gì về chủ đề đó — chỉ trong bộ nhớ của phiên. Những đoạn bạn chủ động lưu cũng chỉ ở lại với bạn."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà đã được cập nhật. Mới: giờ đây dấu trang của bạn cũng có thể tìm theo ý nghĩa — nếu bạn muốn. Đây là những gì mình làm với dữ liệu của bạn — không gì rời khỏi thiết bị của bạn."
+  },
+  "optAmbientLabel": {
+    "message": "Nền sống động"
+  },
+  "optAmbientHelp": {
+    "message": "Mạng lưới ký ức sau lớp kính trôi chầm chậm. Hãy tắt nếu chuyển động làm bạn mất tập trung."
+  },
+  "bmTitle": {
+    "message": "Giúp dấu trang của bạn tìm được — ngay bây giờ"
+  },
+  "bmText": {
+    "message": "Déjà học tiêu đề và thư mục của dấu trang mà không mở các trang. Tìm chúng theo ý nghĩa ngay từ phút đầu — mọi thứ ở lại trên thiết bị của bạn."
+  },
+  "bmTextShort": {
+    "message": "Trí nhớ của bạn còn non trẻ. Hãy dạy mình dấu trang của bạn và tìm chúng theo ý nghĩa ngay hôm nay."
+  },
+  "bmButton": {
+    "message": "Học dấu trang của tôi"
+  },
+  "bmNote": {
+    "message": "Trình duyệt sẽ xin quyền. Bạn có thể tắt bất cứ lúc nào trong cài đặt."
+  },
+  "bmTitleRunning": {
+    "message": "Đang học dấu trang của bạn…"
+  },
+  "bmTitleDone": {
+    "message": "Dấu trang của bạn đã tìm được"
+  },
+  "bmPreparing": {
+    "message": "Đang chuẩn bị…"
+  },
+  "bmLearning": {
+    "message": "Đã học $DONE$/$TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà đang tạm dừng — mình sẽ tiếp tục ngay khi bạn bật lại."
+  },
+  "bmError": {
+    "message": "Đã xảy ra lỗi khi học. Mình sẽ thử lại ở lần thay đổi tiếp theo."
+  },
+  "bmDone": {
+    "message": "Xong — $COUNT$ dấu trang đã tìm được theo ý nghĩa và được tự động đồng bộ.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Xong — 1 dấu trang đã tìm được theo ý nghĩa và được tự động đồng bộ."
+  },
+  "bmDenied": {
+    "message": "Không có quyền, mình không thể thấy dấu trang của bạn. Bạn có thể thử lại bất cứ lúc nào."
+  },
+  "bmTry": {
+    "message": "Thử:"
+  },
+  "bmBadge": {
+    "message": "Dấu trang"
+  },
+  "bmAddedOn": {
+    "message": "đánh dấu ngày $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Dấu trang trong trí nhớ"
+  },
+  "optBookmarksHelp": {
+    "message": "Mình học tiêu đề và thư mục của dấu trang (mà không mở các trang) và theo dõi khi bạn thêm hoặc xóa. Tắt đi sẽ xóa chúng khỏi trí nhớ — các trang bạn đã đọc vẫn được giữ."
+  },
+  "memoryFilterAll": {
+    "message": "Tất cả"
+  },
+  "memoryFilterRead": {
+    "message": "Đã đọc"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Dấu trang"
+  },
+  "welcomePoint5": {
+    "message": "Dấu trang — chỉ khi bạn bật: khi đó mình học tiêu đề và thư mục của chúng mà không mở các trang. Một cú nhấp là tắt."
+  },
+  "rateTitle": {
+    "message": "Déjà đã giúp bạn tìm ra thứ cần tìm — đã $COUNT$ lần rồi",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Nếu thấy hữu ích, một lượt đánh giá trên cửa hàng giúp người khác tìm thấy nó — chỉ mất 10 giây. Còn nếu có gì làm bạn khó chịu, hãy cho chúng tôi biết."
+  },
+  "rateButton": {
+    "message": "Đánh giá Déjà"
+  },
+  "rateFeedback": {
+    "message": "Có gì không hoạt động?"
+  },
+  "rateLater": {
+    "message": "Để sau"
+  },
+  "rateThanks": {
+    "message": "Cảm ơn bạn! Điều đó thực sự có ích."
+  },
+  "rateFeedbackThanks": {
+    "message": "Cảm ơn — chúng tôi đọc mọi tin nhắn."
+  },
+  "rateFeedbackSubject": {
+    "message": "góp ý"
+  },
+  "answerTitle": {
+    "message": "Câu trả lời từ trí nhớ của bạn"
+  },
+  "answerAsk": {
+    "message": "Trả lời từ trí nhớ của tôi"
+  },
+  "answerEnableTitle": {
+    "message": "Câu trả lời từ AI tích hợp của Chrome"
+  },
+  "answerEnableText": {
+    "message": "Déjà có thể trả lời câu hỏi dựa trên những gì bạn đã đọc, kèm nguồn. Chrome tải mô hình trên thiết bị của mình (Gemini Nano) một lần — câu hỏi và các trang của bạn không bao giờ rời khỏi máy tính."
+  },
+  "answerEnableButton": {
+    "message": "Bật câu trả lời"
+  },
+  "answerNoThanks": {
+    "message": "Không, cảm ơn"
+  },
+  "answerDownloading": {
+    "message": "Chrome đang tải mô hình… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Đang đọc ký ức của bạn…"
+  },
+  "answerStop": {
+    "message": "Dừng"
+  },
+  "answerFoot": {
+    "message": "Được AI tích hợp của Chrome viết trên thiết bị của bạn từ $COUNT$ ký ức của bạn. Hãy kiểm tra nguồn.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Lần này mình không soạn được câu trả lời."
+  },
+  "optAnswersLabel": {
+    "message": "Câu trả lời từ AI tích hợp của Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "Với những câu hỏi như “tôi đã đọc gì về…?”, mình viết một câu trả lời ngắn kèm nguồn từ các trang của bạn — hoàn toàn trên thiết bị của bạn, với Gemini Nano trong Chrome. Cần máy tính và ngôn ngữ được hỗ trợ (tiếng Anh, Tây Ban Nha, Đức, Pháp, Nhật)."
+  },
+  "optAnswersAvailable": {
+    "message": "Sẵn sàng sử dụng trên thiết bị này."
+  },
+  "optAnswersDownloadable": {
+    "message": "Được hỗ trợ — Chrome sẽ tải mô hình khi bạn hỏi câu đầu tiên."
+  },
+  "optAnswersUnavailable": {
+    "message": "AI tích hợp của Chrome không hỗ trợ thiết bị này hoặc ngôn ngữ giao diện này."
+  },
+  "optAnswersUnsupported": {
+    "message": "Trình duyệt này không có AI tích hợp — mọi tính năng khác của Déjà vẫn hoạt động như thường."
+  }
+}

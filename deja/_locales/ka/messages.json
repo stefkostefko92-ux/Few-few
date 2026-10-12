@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — შენი ბრაუზერის მეხსიერება"
+  },
+  "extDesc": {
+    "message": "მოძებნე წაკითხული გვერდები აზრის მიხედვით. ყველაფერი ლოკალურად ხდება — არაფერი ტოვებს შენს მოწყობილობას."
+  },
+  "cmdOpenSearch": {
+    "message": "Déjà-ს ძიების გახსნა"
+  },
+  "searchTitle": {
+    "message": "Déjà — მოძებნე წაკითხული"
+  },
+  "tagline": {
+    "message": "შენ ეს უკვე გინახავს. Déjà იპოვის."
+  },
+  "searchPlaceholder": {
+    "message": "აღწერე, რაც გახსოვს… მაგ. „სტატია ნატრიუმზე დაფუძნებულ ბატარეებზე“"
+  },
+  "searchButton": {
+    "message": "ძიება"
+  },
+  "statusSearching": {
+    "message": "მეხსიერებაში ვიქექები… (პირველი ძიება მოდელს ტვირთავს, ~10-30 წმ)"
+  },
+  "statusEmpty": {
+    "message": "ვერაფერი ამოტივტივდა. ან არასდროს წაგიკითხავს, ან Déjà-ს ჯერ არ დაუმახსოვრებია."
+  },
+  "statusResults": {
+    "message": "$COUNT$ მოგონება:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 მოგონება:"
+  },
+  "errNoResponse": {
+    "message": "მეხსიერებამ არ უპასუხა — სცადე ხელახლა"
+  },
+  "recallVivid": {
+    "message": "ნათელი მოგონება"
+  },
+  "recallHazy": {
+    "message": "ბუნდოვანი მოგონება"
+  },
+  "recallFaint": {
+    "message": "შორეული მოგონება"
+  },
+  "statusError": {
+    "message": "ძიება ვერ მოხერხდა: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "მეხსიერებაში: $COUNT$ გვერდი.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "მეხსიერებაში: 1 გვერდი."
+  },
+  "similarity": {
+    "message": "მსგავსება $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "წაკითხულია $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ გვერდი მეხსიერებაში",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 გვერდი მეხსიერებაში"
+  },
+  "popupSleeping": {
+    "message": "მეხსიერებას სძინავს"
+  },
+  "popupWaking": {
+    "message": "მეხსიერება იღვიძებს…"
+  },
+  "popupOpenSearch": {
+    "message": "ძიების გახსნა"
+  },
+  "popupPause": {
+    "message": "დამახსოვრების პაუზა"
+  },
+  "popupClear": {
+    "message": "მეხსიერების გასუფთავება"
+  },
+  "popupClearConfirm": {
+    "message": "წაიშალოს ყველაფერი დამახსოვრებული? უკან დაბრუნება შეუძლებელია."
+  },
+  "popupOptions": {
+    "message": "პარამეტრები"
+  },
+  "optionsTitle": {
+    "message": "Déjà — პარამეტრები"
+  },
+  "optRetentionLabel": {
+    "message": "გვერდების დამახსოვრება"
+  },
+  "optRetentionForever": {
+    "message": "სამუდამოდ"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ თვე",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "ძველი გვერდები ავტომატურად იშლება დღეში ერთხელ."
+  },
+  "optDenylistLabel": {
+    "message": "არასდროს დაიმახსოვრო მისამართები, რომლებიც შეიცავს"
+  },
+  "optDenylistHelp": {
+    "message": "თითო შაბლონი თითო ხაზზე. ემთხვევა მისამართის ნაწილს, მაგ. „example.com“ ან „/private“."
+  },
+  "optBuiltinLabel": {
+    "message": "ჩაშენებული დაცვა (ყოველთვის აქტიური)"
+  },
+  "optModelHostLabel": {
+    "message": "მოდელის საკუთარი სარკე (გაფართოებული)"
+  },
+  "optModelHostHelp": {
+    "message": "ცარიელი = huggingface.co. მიუთითე საკუთარი სერვერი ოფლაინ/კორპორაციული გარემოსთვის."
+  },
+  "filterAll": {
+    "message": "ყველა"
+  },
+  "filterWeek": {
+    "message": "ბოლო კვირა"
+  },
+  "filterMonth": {
+    "message": "ბოლო თვე"
+  },
+  "filterYear": {
+    "message": "ბოლო წელი"
+  },
+  "relatedLink": {
+    "message": "დაკავშირებული მოგონებები"
+  },
+  "relatedNone": {
+    "message": "ახლო მოგონებები არ არის"
+  },
+  "omniboxDefault": {
+    "message": "ჰკითხე შენს მეხსიერებას — Déjà აზრის მიხედვით ეძებს"
+  },
+  "popupMemory": {
+    "message": "ჩემი მეხსიერება"
+  },
+  "memoryTitle": {
+    "message": "ჩემი მეხსიერება"
+  },
+  "memoryEmpty": {
+    "message": "მეხსიერება ცარიელია — დაათვალიერე რამდენიმე გვერდი და დაბრუნდი."
+  },
+  "memoryForget": {
+    "message": "დავიწყება"
+  },
+  "memoryExport": {
+    "message": "არქივის ჩამოტვირთვა"
+  },
+  "memoryImport": {
+    "message": "არქივიდან აღდგენა"
+  },
+  "memoryImportConfirm": {
+    "message": "აღდგეს არქივიდან? დამთხვეული გვერდები გადაიწერება."
+  },
+  "optSave": {
+    "message": "შენახვა"
+  },
+  "optSaved": {
+    "message": "შენახულია ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "სარკე უნდა იყოს https:// მისამართი"
+  },
+  "welcomeHeading": {
+    "message": "გამარჯობა. მე შენი ბრაუზერის მეხსიერება ვარ."
+  },
+  "welcomeIntro": {
+    "message": "ამ წუთიდან ვიმახსოვრებ, რასაც კითხულობ, რომ მოგვიანებით აზრის მიხედვით იპოვო — შენი სიტყვებით და არა ზუსტი სათაურით."
+  },
+  "welcomePoint1": {
+    "message": "ყველაფერი შენს მოწყობილობაზე ხდება. არც სერვერები, არც ღრუბელი, არც მონაცემების გაგზავნა — არსად და არასდროს."
+  },
+  "welcomePoint2": {
+    "message": "ფოსტა, ჩატები, შესვლის გვერდები და ბანკინგი არასდროს მახსოვრდება. ყურადღება: სენსიტიურ თემებს მისამართით ვერ ვცნობ — ასეთი გვერდებისთვის გამოიყენე პაუზა ან საკუთარი სია პარამეტრებში."
+  },
+  "welcomePoint3": {
+    "message": "შენ მართავ: პაუზა ერთი დაწკაპუნებით, „მეხსიერების გასუფთავება“ ყველაფერს შლის, და სურვილისამებრ რამდენიმე თვის შემდეგ ავტომატურად ვივიწყებ."
+  },
+  "welcomeCta": {
+    "message": "ძიების გახსნა"
+  },
+  "welcomeOptions": {
+    "message": "პარამეტრები"
+  },
+  "memoryFilter": {
+    "message": "მოძებნე მეხსიერებაში…"
+  },
+  "supportLink": {
+    "message": "Déjà-ს მხარდაჭერა"
+  },
+  "panelTitle": {
+    "message": "Déjà — თანამგზავრი"
+  },
+  "panelOnThisPage": {
+    "message": "ამ გვერდის თემაზე"
+  },
+  "panelRecent": {
+    "message": "ბოლო მოგონებები"
+  },
+  "panelNoPage": {
+    "message": "გახსენი ვებგვერდი და Déjà გაჩვენებს, რა წაგიკითხავს მის თემაზე."
+  },
+  "popupOpenPanel": {
+    "message": "გვერდითი პანელი"
+  },
+  "popupForgetPage": {
+    "message": "ამ გვერდის დავიწყება"
+  },
+  "popupForgotten": {
+    "message": "დავიწყებულია ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: მონიშნული ტექსტის დამახსოვრება"
+  },
+  "menuForget": {
+    "message": "Déjà: ამ გვერდის დავიწყება"
+  },
+  "recentTitle": {
+    "message": "ბოლო მოგონებები"
+  },
+  "cmdOpenPanel": {
+    "message": "Déjà-ს გვერდითი პანელის გახსნა"
+  },
+  "welcomePoint4": {
+    "message": "გვერდითი პანელი ხედავს იმ გვერდის მისამართსა და სათაურს, რომელსაც ათვალიერებ, რათა გაჩვენოს, რა წაგიკითხავს მის თემაზე — მხოლოდ სესიის მეხსიერებაში. შენ მიერ განზრახ შენახული ფრაგმენტებიც მხოლოდ შენთან რჩება."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà განახლდა. სიახლე: სურვილის შემთხვევაში, ახლა შენი სანიშნეებიც მოიძებნება აზრის მიხედვით. აი, რას ვაკეთებ შენს მონაცემებთან — შენი მოწყობილობიდან არაფერი გასულა."
+  },
+  "optAmbientLabel": {
+    "message": "ცოცხალი ფონი"
+  },
+  "optAmbientHelp": {
+    "message": "მოგონებების ქსელი მინის მიღმა ნელა დაცურავს. გამორთე, თუ მოძრაობა ყურადღებას გიფანტავს."
+  },
+  "bmTitle": {
+    "message": "გახადე სანიშნეები მოძებნადი — ახლავე"
+  },
+  "bmText": {
+    "message": "Déjà სწავლობს შენი სანიშნეების სათაურებსა და საქაღალდეებს გვერდების გახსნის გარეშე. იპოვე ისინი აზრის მიხედვით პირველივე წუთიდან — ყველაფერი შენს მოწყობილობაზე რჩება."
+  },
+  "bmTextShort": {
+    "message": "შენი მეხსიერება ჯერ ახალგაზრდაა. მასწავლე შენი სანიშნეები და დღესვე მოძებნე ისინი აზრის მიხედვით."
+  },
+  "bmButton": {
+    "message": "ისწავლე ჩემი სანიშნეები"
+  },
+  "bmNote": {
+    "message": "ბრაუზერი ნებართვას მოგთხოვს. გამორთვა ნებისმიერ დროს შეგიძლია პარამეტრებში."
+  },
+  "bmTitleRunning": {
+    "message": "ვსწავლობ შენს სანიშნეებს…"
+  },
+  "bmTitleDone": {
+    "message": "შენი სანიშნეები მოძებნადია"
+  },
+  "bmPreparing": {
+    "message": "ვემზადები…"
+  },
+  "bmLearning": {
+    "message": "ნასწავლია $DONE$ / $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà პაუზაზეა — გავაგრძელებ, როგორც კი განაახლებ."
+  },
+  "bmError": {
+    "message": "სწავლისას რაღაც შეფერხდა. შემდეგი ცვლილებისას ხელახლა ვცდი."
+  },
+  "bmDone": {
+    "message": "მზადაა — $COUNT$ სანიშნე მოიძებნება აზრის მიხედვით და ავტომატურად სინქრონიზდება.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "მზადაა — 1 სანიშნე მოიძებნება აზრის მიხედვით და ავტომატურად სინქრონიზდება."
+  },
+  "bmDenied": {
+    "message": "ნებართვის გარეშე შენს სანიშნეებს ვერ ვხედავ. ხელახლა ცდა ნებისმიერ დროს შეგიძლია."
+  },
+  "bmTry": {
+    "message": "სცადე:"
+  },
+  "bmBadge": {
+    "message": "სანიშნე"
+  },
+  "bmAddedOn": {
+    "message": "სანიშნედ დაემატა $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "სანიშნეები მეხსიერებაში"
+  },
+  "optBookmarksHelp": {
+    "message": "ვსწავლობ შენი სანიშნეების სათაურებსა და საქაღალდეებს (გვერდების გახსნის გარეშე) და თვალს ვადევნებ, როცა ამატებ ან შლი. გამორთვისას ისინი მეხსიერებიდან იშლება — წაკითხული გვერდები რჩება."
+  },
+  "memoryFilterAll": {
+    "message": "ყველა"
+  },
+  "memoryFilterRead": {
+    "message": "წაკითხული"
+  },
+  "memoryFilterBookmarks": {
+    "message": "სანიშნეები"
+  },
+  "welcomePoint5": {
+    "message": "სანიშნეები — მხოლოდ თუ ჩართავ: მაშინ ვსწავლობ მათ სათაურებსა და საქაღალდეებს, გვერდების გახსნის გარეშე. გამორთვა ერთი დაწკაპუნებით შეიძლება."
+  },
+  "rateTitle": {
+    "message": "Déjà-მ რაღაცის პოვნაში უკვე $COUNT$-ჯერ დაგეხმარა",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "თუ სასარგებლოა, მაღაზიაში შეფასება სხვებს დაეხმარება მის აღმოჩენაში — ამას 10 წამი სჭირდება. და თუ რამე გაღიზიანებს, მოგვწერე."
+  },
+  "rateButton": {
+    "message": "შეაფასე Déjà"
+  },
+  "rateFeedback": {
+    "message": "რამე არ მუშაობს?"
+  },
+  "rateLater": {
+    "message": "ახლა არა"
+  },
+  "rateThanks": {
+    "message": "მადლობა! ეს ნამდვილად გვეხმარება."
+  },
+  "rateFeedbackThanks": {
+    "message": "მადლობა — ყველა წერილს ვკითხულობთ."
+  },
+  "rateFeedbackSubject": {
+    "message": "უკუკავშირი"
+  },
+  "answerTitle": {
+    "message": "პასუხი შენი მეხსიერებიდან"
+  },
+  "answerAsk": {
+    "message": "მიპასუხე ჩემი მეხსიერებიდან"
+  },
+  "answerEnableTitle": {
+    "message": "პასუხები Chrome-ის ჩაშენებული AI-სგან"
+  },
+  "answerEnableText": {
+    "message": "Déjà-ს შეუძლია უპასუხოს კითხვებს შენ მიერ წაკითხულის მიხედვით, წყაროების მითითებით. Chrome ერთხელ ჩამოტვირთავს თავის მოწყობილობაზე მომუშავე მოდელს (Gemini Nano) — შენი კითხვები და გვერდები არასდროს ტოვებს შენს კომპიუტერს."
+  },
+  "answerEnableButton": {
+    "message": "პასუხების ჩართვა"
+  },
+  "answerNoThanks": {
+    "message": "არა, მადლობა"
+  },
+  "answerDownloading": {
+    "message": "Chrome მოდელს ჩამოტვირთავს… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "ვკითხულობ შენს მოგონებებს…"
+  },
+  "answerStop": {
+    "message": "შეჩერება"
+  },
+  "answerFoot": {
+    "message": "დაწერილია შენს მოწყობილობაზე Chrome-ის ჩაშენებული AI-ის მიერ, შენი $COUNT$ მოგონების საფუძველზე. გადაამოწმე წყაროები.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "ამჯერად პასუხის შედგენა ვერ მოვახერხე."
+  },
+  "optAnswersLabel": {
+    "message": "პასუხები Chrome-ის ჩაშენებული AI-სგან"
+  },
+  "optAnswersHelp": {
+    "message": "ისეთ კითხვებზე, როგორიცაა „რა წავიკითხე … შესახებ?“, ვწერ მოკლე პასუხს შენი გვერდების წყაროებით — სრულად შენს მოწყობილობაზე, Gemini Nano-თი Chrome-ში. საჭიროა მხარდაჭერილი კომპიუტერი და ენა (ინგლისური, ესპანური, გერმანული, ფრანგული, იაპონური)."
+  },
+  "optAnswersAvailable": {
+    "message": "მზადაა გამოსაყენებლად ამ მოწყობილობაზე."
+  },
+  "optAnswersDownloadable": {
+    "message": "მხარდაჭერილია — Chrome მოდელს პირველი კითხვისას ჩამოტვირთავს."
+  },
+  "optAnswersUnavailable": {
+    "message": "ეს მოწყობილობა ან ინტერფეისის ენა Chrome-ის ჩაშენებული AI-ის მიერ არ არის მხარდაჭერილი."
+  },
+  "optAnswersUnsupported": {
+    "message": "ამ ბრაუზერს ჩაშენებული AI არ აქვს — Déjà-ს დანარჩენი ყველაფერი ჩვეულებრივ მუშაობს."
+  }
+}

@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — ブラウザの記憶"
+  },
+  "extDesc": {
+    "message": "読んだページを意味で検索。すべてローカルで処理され、データがデバイスの外に出ることはありません。"
+  },
+  "cmdOpenSearch": {
+    "message": "Déjà の検索を開く"
+  },
+  "searchTitle": {
+    "message": "Déjà — 読んだものを検索"
+  },
+  "tagline": {
+    "message": "見たことがあるなら、Déjà が見つけます。"
+  },
+  "searchPlaceholder": {
+    "message": "覚えていることを書いてください… 例：「ナトリウム系電池についての記事」"
+  },
+  "searchButton": {
+    "message": "検索"
+  },
+  "statusSearching": {
+    "message": "記憶をたどっています…（初回の検索ではモデルを読み込みます。約 10～30 秒）"
+  },
+  "statusEmpty": {
+    "message": "何も浮かび上がりませんでした。読んだことがないか、Déjà がまだ記憶していないようです。"
+  },
+  "statusResults": {
+    "message": "記憶 $COUNT$ 件：",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "記憶 1 件："
+  },
+  "errNoResponse": {
+    "message": "記憶から応答がありません — もう一度お試しください"
+  },
+  "recallVivid": {
+    "message": "鮮明な記憶"
+  },
+  "recallHazy": {
+    "message": "おぼろげな記憶"
+  },
+  "recallFaint": {
+    "message": "遠い記憶"
+  },
+  "statusError": {
+    "message": "検索に失敗しました：$ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "記憶内のページ：$COUNT$ 件",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "記憶内のページ：1 件"
+  },
+  "similarity": {
+    "message": "類似度 $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "$DATE$ に閲覧",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "記憶内のページ $COUNT$ 件",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "記憶内のページ 1 件"
+  },
+  "popupSleeping": {
+    "message": "記憶は休止中です"
+  },
+  "popupWaking": {
+    "message": "記憶が目覚めています…"
+  },
+  "popupOpenSearch": {
+    "message": "検索を開く"
+  },
+  "popupPause": {
+    "message": "記憶を一時停止"
+  },
+  "popupClear": {
+    "message": "記憶を消去"
+  },
+  "popupClearConfirm": {
+    "message": "記憶したものをすべて削除しますか？元に戻すことはできません。"
+  },
+  "popupOptions": {
+    "message": "設定"
+  },
+  "optionsTitle": {
+    "message": "Déjà — 設定"
+  },
+  "optRetentionLabel": {
+    "message": "ページを記憶する期間"
+  },
+  "optRetentionForever": {
+    "message": "無期限"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ か月",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "古いページは 1 日 1 回、自動的に削除されます。"
+  },
+  "optDenylistLabel": {
+    "message": "次を含むアドレスは記憶しない"
+  },
+  "optDenylistHelp": {
+    "message": "1 行に 1 パターン。アドレスの一部と一致します。例：「example.com」や「/private」"
+  },
+  "optBuiltinLabel": {
+    "message": "組み込みの保護（常に有効）"
+  },
+  "optModelHostLabel": {
+    "message": "モデルのカスタムミラー（上級者向け）"
+  },
+  "optModelHostHelp": {
+    "message": "空欄 = huggingface.co。オフライン環境や企業環境では独自のサーバーを指定してください。"
+  },
+  "filterAll": {
+    "message": "すべて"
+  },
+  "filterWeek": {
+    "message": "過去 1 週間"
+  },
+  "filterMonth": {
+    "message": "過去 1 か月"
+  },
+  "filterYear": {
+    "message": "過去 1 年"
+  },
+  "relatedLink": {
+    "message": "関連する記憶"
+  },
+  "relatedNone": {
+    "message": "近い記憶はありません"
+  },
+  "omniboxDefault": {
+    "message": "記憶に尋ねる — Déjà は意味で検索します"
+  },
+  "popupMemory": {
+    "message": "私の記憶"
+  },
+  "memoryTitle": {
+    "message": "私の記憶"
+  },
+  "memoryEmpty": {
+    "message": "記憶は空です — いくつかページを見てから、また来てください。"
+  },
+  "memoryForget": {
+    "message": "忘れる"
+  },
+  "memoryExport": {
+    "message": "アーカイブをダウンロード"
+  },
+  "memoryImport": {
+    "message": "アーカイブから復元"
+  },
+  "memoryImportConfirm": {
+    "message": "アーカイブから復元しますか？一致するページは上書きされます。"
+  },
+  "optSave": {
+    "message": "保存"
+  },
+  "optSaved": {
+    "message": "保存しました ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "ミラーは https:// で始まるアドレスにしてください"
+  },
+  "welcomeHeading": {
+    "message": "こんにちは。私はあなたのブラウザの記憶です。"
+  },
+  "welcomeIntro": {
+    "message": "今この瞬間から、あなたが読んだものを記憶します。正確なタイトルではなく自分の言葉で、意味から後で見つけられるように。"
+  },
+  "welcomePoint1": {
+    "message": "すべてはあなたのデバイス上で行われます。サーバーもクラウドも使わず、データはどこにも、決して送信されません。"
+  },
+  "welcomePoint2": {
+    "message": "メール、チャット、ログイン、銀行のページは記憶しません。ご注意ください：デリケートな話題のページはアドレスからは判別できません。そうしたページには一時停止を使うか、設定で独自のリストを追加してください。"
+  },
+  "welcomePoint3": {
+    "message": "主導権はあなたにあります。ワンクリックで一時停止、「記憶を消去」ですべて削除、さらに数か月後に自動で忘れるよう設定することもできます。"
+  },
+  "welcomeCta": {
+    "message": "検索を開く"
+  },
+  "welcomeOptions": {
+    "message": "設定"
+  },
+  "memoryFilter": {
+    "message": "記憶を検索…"
+  },
+  "supportLink": {
+    "message": "Déjà を支援"
+  },
+  "panelTitle": {
+    "message": "Déjà — コンパニオン"
+  },
+  "panelOnThisPage": {
+    "message": "このページのトピックについて"
+  },
+  "panelRecent": {
+    "message": "最近の記憶"
+  },
+  "panelNoPage": {
+    "message": "ウェブページを開くと、そのトピックについてあなたが読んだものを Déjà が表示します。"
+  },
+  "popupOpenPanel": {
+    "message": "サイドパネル"
+  },
+  "popupForgetPage": {
+    "message": "このページを忘れる"
+  },
+  "popupForgotten": {
+    "message": "忘れました ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: 選択したテキストを記憶"
+  },
+  "menuForget": {
+    "message": "Déjà: このページを忘れる"
+  },
+  "recentTitle": {
+    "message": "最近の記憶"
+  },
+  "cmdOpenPanel": {
+    "message": "Déjà のサイドパネルを開く"
+  },
+  "welcomePoint4": {
+    "message": "サイドパネルは、表示中のページのアドレスとタイトルを参照して、そのトピックについてあなたが読んだものを表示します — 保持するのはセッション中のメモリだけです。意図的に保存した文章も、あなたの手元にだけ残ります。"
+  },
+  "welcomeUpdated": {
+    "message": "Déjà が更新されました。新機能：ご希望なら、ブックマークも意味で検索できるようになりました。あなたのデータの扱いは以下のとおりです — デバイスの外に出たものは何もありません。"
+  },
+  "optAmbientLabel": {
+    "message": "動く背景"
+  },
+  "optAmbientHelp": {
+    "message": "ガラスの向こうの記憶のネットワークがゆっくり漂います。動きが気になる場合はオフにしてください。"
+  },
+  "bmTitle": {
+    "message": "ブックマークを検索できるようにしましょう — 今すぐ"
+  },
+  "bmText": {
+    "message": "Déjà はページを開かずに、ブックマークのタイトルとフォルダを学習します。最初の 1 分から意味で見つけられ、すべてはデバイス上に残ります。"
+  },
+  "bmTextShort": {
+    "message": "あなたの記憶はまだ始まったばかりです。ブックマークを教えてもらえれば、今日から意味で検索できます。"
+  },
+  "bmButton": {
+    "message": "ブックマークを学習"
+  },
+  "bmNote": {
+    "message": "ブラウザが許可を求めます。設定からいつでもオフにできます。"
+  },
+  "bmTitleRunning": {
+    "message": "ブックマークを学習中…"
+  },
+  "bmTitleDone": {
+    "message": "ブックマークを検索できます"
+  },
+  "bmPreparing": {
+    "message": "準備しています…"
+  },
+  "bmLearning": {
+    "message": "$TOTAL$ 件中 $DONE$ 件を学習済み",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà は一時停止中です — 再開されたらすぐに続けます。"
+  },
+  "bmError": {
+    "message": "学習中に問題が発生しました。次の変更時にもう一度試します。"
+  },
+  "bmDone": {
+    "message": "完了 — $COUNT$ 件のブックマークを意味で検索でき、自動的に同期されます。",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "完了 — 1 件のブックマークを意味で検索でき、自動的に同期されます。"
+  },
+  "bmDenied": {
+    "message": "許可がないとブックマークを見ることができません。いつでも再試行できます。"
+  },
+  "bmTry": {
+    "message": "お試し："
+  },
+  "bmBadge": {
+    "message": "ブックマーク"
+  },
+  "bmAddedOn": {
+    "message": "$DATE$ にブックマーク",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "記憶内のブックマーク"
+  },
+  "optBookmarksHelp": {
+    "message": "ブックマークのタイトルとフォルダを（ページを開かずに）学習し、追加や削除にも追従します。オフにすると記憶から削除されます — 読んだページは残ります。"
+  },
+  "memoryFilterAll": {
+    "message": "すべて"
+  },
+  "memoryFilterRead": {
+    "message": "既読"
+  },
+  "memoryFilterBookmarks": {
+    "message": "ブックマーク"
+  },
+  "welcomePoint5": {
+    "message": "ブックマーク — オンにした場合のみ：そのタイトルとフォルダを、ページを開かずに学習します。ワンクリックでオフにできます。"
+  },
+  "rateTitle": {
+    "message": "Déjà が探し物の役に立ちました — これで $COUNT$ 回目です",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "役に立っているなら、ストアでの評価がほかの人に見つけてもらう助けになります — 10 秒で済みます。気になることがあれば、ぜひお知らせください。"
+  },
+  "rateButton": {
+    "message": "Déjà を評価"
+  },
+  "rateFeedback": {
+    "message": "うまく動かないことがありますか？"
+  },
+  "rateLater": {
+    "message": "後で"
+  },
+  "rateThanks": {
+    "message": "ありがとうございます！本当に助かります。"
+  },
+  "rateFeedbackThanks": {
+    "message": "ありがとうございます — すべてのメッセージに目を通しています。"
+  },
+  "rateFeedbackSubject": {
+    "message": "フィードバック"
+  },
+  "answerTitle": {
+    "message": "あなたの記憶からの回答"
+  },
+  "answerAsk": {
+    "message": "記憶から回答"
+  },
+  "answerEnableTitle": {
+    "message": "Chrome の組み込み AI による回答"
+  },
+  "answerEnableText": {
+    "message": "Déjà は、あなたが読んだものをもとに、出典付きで質問に答えられます。Chrome がデバイス上で動くモデル（Gemini Nano）を一度だけダウンロードします — 質問やページがパソコンの外に出ることはありません。"
+  },
+  "answerEnableButton": {
+    "message": "回答をオンにする"
+  },
+  "answerNoThanks": {
+    "message": "結構です"
+  },
+  "answerDownloading": {
+    "message": "Chrome がモデルをダウンロード中… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "記憶を読んでいます…"
+  },
+  "answerStop": {
+    "message": "停止"
+  },
+  "answerFoot": {
+    "message": "Chrome の組み込み AI が、あなたの記憶 $COUNT$ 件をもとにデバイス上で作成しました。出典を確認してください。",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "今回は回答をまとめられませんでした。"
+  },
+  "optAnswersLabel": {
+    "message": "Chrome の組み込み AI による回答"
+  },
+  "optAnswersHelp": {
+    "message": "「…について何を読んだっけ？」のような質問に、あなたのページから出典付きの短い回答を作成します — Chrome の Gemini Nano を使い、すべてデバイス上で処理します。対応するパソコンと言語（英語、スペイン語、ドイツ語、フランス語、日本語）が必要です。"
+  },
+  "optAnswersAvailable": {
+    "message": "このデバイスで使用できます。"
+  },
+  "optAnswersDownloadable": {
+    "message": "対応しています — 最初の質問時に Chrome がモデルをダウンロードします。"
+  },
+  "optAnswersUnavailable": {
+    "message": "このデバイスまたは表示言語は、Chrome の組み込み AI に対応していません。"
+  },
+  "optAnswersUnsupported": {
+    "message": "このブラウザには組み込み AI がありません — Déjà のその他の機能はいつもどおり使えます。"
+  }
+}

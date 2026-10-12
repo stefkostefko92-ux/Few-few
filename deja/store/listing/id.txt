@@ -1,0 +1,45 @@
+TITLE: Déjà — ingatan browser-mu
+SHORT: Cari halaman yang kamu baca berdasarkan makna, dalam 50+ bahasa. Semuanya di perangkatmu — tak ada yang keluar dari browser-mu.
+
+Kamu pernah melihatnya. Déjà menemukannya.
+
+Histori browser hanya mengingat judul dan URL. Déjà mengingat ISINYA. Jelaskan
+apa yang kamu ingat dengan kata-katamu sendiri — “artikel tentang baterai berbasis
+natrium itu” — dan Déjà memunculkan halamannya, bahkan jika kamu tidak ingat
+judulnya, situsnya, atau kata-kata persisnya. Bahkan langsung melompat ke paragraf
+yang tepat.
+
+YANG KAMU DAPATKAN
+✓ Bookmark-mu, bisa dicari berdasarkan makna sejak menit pertama — opsional, satu klik.
+  Déjà mempelajari judul dan foldernya (tanpa membuka halamannya) dan menjaganya
+  tetap sinkron saat kamu menambah, memindahkan, atau menghapus bookmark.
+✓ Jawaban dari ingatanmu — di komputer yang mendukung AI bawaan Chrome
+  (Gemini Nano), ajukan pertanyaan dan dapatkan jawaban singkat yang ditulis di
+  perangkatmu dari halaman yang pernah kamu baca, dengan sumber yang bisa diklik.
+  (Jawaban dalam bahasa Inggris, Spanyol, Jerman, Prancis, dan Jepang.)
+✓ Pencarian berdasarkan makna — bertanya dengan kata-katamu sendiri, dalam 50+
+  bahasa; bertanya dalam satu bahasa, temukan halaman yang kamu baca dalam bahasa lain.
+✓ Pendamping di panel samping — buka di samping halaman mana pun dan lihat apa yang
+  sudah kamu baca tentang topik halaman itu, plus ingatan terbarumu.
+✓ Ketik “dj” di kolom alamat — cari di ingatanmu langsung dari kolom alamat
+  dengan saran langsung.
+✓ Ingat sebuah kutipan — klik kanan teks yang dipilih: “Déjà: ingat teks yang
+  dipilih”. Kutipan itu menjadi ingatan tersendiri yang bisa dicari.
+✓ Lompat ke paragraf yang tepat — hasil membuka halaman dengan kutipan yang cocok
+  disorot.
+✓ Filter tanggal, ingatan terkait, ingatan terbaru di halaman pencarian kosong.
+✓ Ingatanku — lihat semua yang diingat Déjà, lupakan halaman mana pun dengan satu
+  klik, ekspor/impor seluruh indeksmu sebagai file.
+
+PRIVAT SEJAK RANCANGAN
+✓ Pemrosesan 100% lokal — model embedding AI berjalan di dalam browser-mu dan
+  datamu tersimpan di IndexedDB. Tanpa server, tanpa cloud, tanpa telemetri, tanpa akun.
+✓ Halaman email, chat, login, dan perbankan dilewati otomatis (daftar alamat
+  bawaan; tambahkan pola milikmu sendiri).
+✓ Jeda dengan satu klik. “Lupakan halaman ini” dan “Hapus ingatan” selalu tersedia.
+✓ Lupa otomatis — opsional, hapus halaman yang lebih lama dari 3/6/12/24 bulan.
+✓ Tema terang dan gelap mengikuti sistemmu.
+
+Satu-satunya permintaan jaringan yang pernah dibuat ekstensi ini adalah unduhan
+model embedding satu kali dari Hugging Face (setelah itu disimpan di cache lokal;
+kamu juga bisa mengarahkannya ke mirror milikmu sendiri).
