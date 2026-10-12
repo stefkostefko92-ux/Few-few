@@ -131,6 +131,11 @@ try {
       const bAfter = await send({ type: 'GET_SETTINGS', heroKey: B });
       const defAfter = await send({ type: 'GET_SETTINGS' });
       const list = await send({ type: 'LIST_HEROES' });
+      // A profile saved on a hero's page is a snapshot of HIS settings.
+      await send({ type: 'SAVE_PROFILE', name: 'ragnar-preset', heroKey: A });
+      const prof = await send({ type: 'LOAD_PROFILE', name: 'ragnar-preset', heroKey: B });
+      const bProf = await send({ type: 'GET_SETTINGS', heroKey: B });
+      await send({ type: 'DELETE_PROFILE', name: 'ragnar-preset' });
       const bad = await send({ type: 'BIND_HERO', heroKey: '__proto__', name: 'x' });
       await send({ type: 'FORGET_HERO', heroKey: B });
       const list2 = await send({ type: 'LIST_HEROES' });
@@ -141,12 +146,14 @@ try {
         defaultsUntouched: defAfter.general.actionIntervalSec === defaults.general.actionIntervalSec,
         listed: list.map((h) => h.key).sort().join('|'),
         badRejected: bad && bad.ok === false,
-        forgotten: list2.map((h) => h.key).join('|')
+        forgotten: list2.map((h) => h.key).join('|'),
+        profileOfHero: prof.ok && bProf.general.actionIntervalSec === 45 && bProf.dungeon.enabled === true
       };
     });
     check('heroes: first visit creates settings from the defaults', r.newHero, JSON.stringify(r));
     check('heroes: a hero keeps his own saved settings', r.aSaved, JSON.stringify(r));
     check('heroes: another hero and the defaults are untouched', r.bUntouched && r.defaultsUntouched, JSON.stringify(r));
+    check('heroes: a profile saved on a hero\'s page holds his settings', r.profileOfHero, JSON.stringify(r));
     check('heroes: listed, junk key rejected, forget removes', r.listed === 's1-us:Ragnar|s2-bg:Lagertha' && r.badRejected && r.forgotten === 's1-us:Ragnar', JSON.stringify(r));
     // The picker shows the heroes and switches the edited settings.
     await page.reload(); await page.waitForTimeout(600);

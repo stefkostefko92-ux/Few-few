@@ -182,6 +182,7 @@ let heroKey = new URLSearchParams(location.search).get('hero') || null;
 // elsewhere (in-game panel chips, another settings tab) instead of showing,
 // and later saving back, a stale copy.
 let dirty = false;
+let heroDropped = false;
 
 const navEl = document.getElementById('nav');
 const formEl = document.getElementById('form');
@@ -420,7 +421,9 @@ async function load() {
 // at once in different tabs). "Default" is what a hero gets on his first visit.
 async function renderHeroPicker() {
   const heroes = (await chrome.runtime.sendMessage({ type: 'LIST_HEROES' })) || [];
-  if (heroKey && !heroes.some((h) => h.key === heroKey)) heroKey = null;
+  // The edited hero was forgotten (here or in another tab): fall back to the
+  // defaults, and say so in the URL too.
+  if (heroKey && !heroes.some((h) => h.key === heroKey)) { heroKey = null; setHeroUrl(); heroDropped = true; }
   let box = document.getElementById('hero-box');
   if (!box) {
     box = document.createElement('div');
@@ -474,7 +477,9 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return;
   const h = changes.tanothBotHeroes;
   if (h && Object.keys(h.newValue || {}).sort().join('|') !== Object.keys(h.oldValue || {}).sort().join('|')) {
-    renderHeroPicker().then(() => { if (!heroKey) load(); });   // hero added / forgotten
+    // Reload the form only if THIS page's hero was the one forgotten.
+    heroDropped = false;
+    renderHeroPicker().then(() => { if (heroDropped) { heroDropped = false; load(); } });
   }
   if (dirty) return;
   const nv = heroKey ? h && h.newValue && h.newValue[heroKey] && h.newValue[heroKey].settings : changes.tanothBotSettings && changes.tanothBotSettings.newValue;
@@ -641,7 +646,7 @@ document.getElementById('profile-save').addEventListener('click', async () => {
   const name = document.getElementById('profile-name').value.trim();
   if (!name) return flashTool(t('toolProfileNeedName'), false);
   await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', settings, heroKey });
-  await chrome.runtime.sendMessage({ type: 'SAVE_PROFILE', name });
+  await chrome.runtime.sendMessage({ type: 'SAVE_PROFILE', name, heroKey });
   await refreshProfiles(); flashTool(t('toolProfileSaved', [name]));
 });
 document.getElementById('profile-load').addEventListener('click', async () => {

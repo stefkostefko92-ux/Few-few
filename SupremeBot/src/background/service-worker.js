@@ -158,7 +158,7 @@ async function handleMessage(msg, sender) {
     case 'LIST_PROFILES':
       return Object.keys((await chrome.storage.local.get(PROFILES_KEY))[PROFILES_KEY] || {});
 
-    case 'SAVE_PROFILE':   return saveProfile(msg.name);
+    case 'SAVE_PROFILE':   return saveProfile(msg.name, heroKeyOf(msg.heroKey));
     case 'LOAD_PROFILE':   return loadProfile(msg.name, heroKeyOf(msg.heroKey));
     case 'DELETE_PROFILE': return deleteProfile(msg.name);
 
@@ -429,9 +429,11 @@ async function sendWebhooks(title, message, level, fields, override) {
 /* ---- Settings profiles (multi-account) ---- */
 // Own-property checks everywhere: a profile named "constructor" or "__proto__"
 // must not hit Object.prototype (it would silently reset settings / no-op).
-async function saveProfile(name) {
+// Профилът се снима от настройките на героя, чиято страница е отворена
+// (без герой — от тези по подразбиране).
+async function saveProfile(name, heroKey) {
   if (!name || typeof name !== 'string') return { ok: false, error: 'NO_NAME' };
-  const settings = mergeSettings((await chrome.storage.local.get(STORAGE_KEY))[STORAGE_KEY]);
+  const settings = await getSettingsFor(heroKey);
   const profiles = (await chrome.storage.local.get(PROFILES_KEY))[PROFILES_KEY] || {};
   const clean = Object.assign(Object.create(null), profiles);
   clean[name] = settings;
