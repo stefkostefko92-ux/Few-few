@@ -1,6 +1,6 @@
 // End-to-end smoke test against a running LiftPilot (local or staging), with a real browser:
 //   health → public page (no console or CSP errors, in Italian, the only language) → /en and /bg sent for good to /it →
-//   sign-in → the two modules → a machine replacement → its
+//   an unknown address: the 404 drawn in Italian → sign-in → the two modules → a machine replacement → its
 //   calculation, which starts empty (its draft kept, resumed, discarded; smoke-blank.mjs) → saved snapshot with reproduced hash → calculation report (PDF) → its machine room surveyed, the
 //   relazione tecnica and the drawing set (scripts/smoke-replacement.mjs) → the replacement becomes a whole
 //   project, its data entered (a draft taken up again) → shaft design by hand (a distance changed on its plan, the landing door
@@ -89,6 +89,22 @@ try {
   }
   const kept = (await fetch(`${BASE}/it`, { headers: { cookie: 'NEXT_LOCALE=en' }, redirect: 'manual' })).headers.get('set-cookie') ?? '';
   assert.match(kept, /NEXT_LOCALE=;[^,]*Expires=Thu, 01 Jan 1970/i, `the old language cookie removed: ${kept}`);
+  step('an unknown address: the 404 drawn in Italian, also from a former-language address');
+  // Next 15 sends its error shell for a notFound() (no lang, noindex) and the browser draws the localized page — in
+  // Italian, with the page's language (docs/rules.md)
+  {
+    const { page: lost } = await newPage(browser);
+    for (const path of ['/it/pagina-inesistente', '/en/pagina-inesistente']) {
+      assert.equal((await lost.goto(`${BASE}${path}`)).status(), 404, path);
+      assert.equal(new URL(lost.url()).pathname, '/it/pagina-inesistente', `${path}: the address in Italian`);
+      await lost.waitForSelector('main h1');
+      assert.equal(await lost.getAttribute('html', 'lang'), 'it', `${path}: the 404 drawn in Italian`);
+      assert.equal((await lost.textContent('main h1'))?.trim(), 'Pagina non trovata', path);
+      const robots = await lost.locator('meta[name="robots"]').evaluateAll((ms) => ms.map((m) => m.getAttribute('content') ?? ''));
+      assert.ok(robots.some((r) => /noindex/.test(r)), `${path}: noindex (${robots.join(' | ')})`);
+    }
+    await lost.close();
+  }
 
   step('sign-in and installation');
   await login(page, ADMIN.email, ADMIN.password);

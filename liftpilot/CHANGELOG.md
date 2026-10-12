@@ -1485,6 +1485,11 @@ le verifiche che non passa in un hover“.
   потребителя е пак вдясно, както с превключвателя; `llms.txt` свързва заглавие и абзац с тире (без главна буква след
   двоеточие); JSON-LD `applicationSubCategory` — думите на началната страница („Software di progettazione ascensori“)
   вместо английски; панелът с проверките не праща вече `?locale=`; коментарите — „на италиански“.
+- Втори кръг: страницата 404 (непознат адрес под `/it`, стар адрес `/en/…`, запис, който го няма) — Next 15 праща
+  обвивката си `<html id="__next_error__">` без `lang` и с `noindex`, браузърът рисува страницата на италиански с
+  `lang="it"`; така е било и с трите езика, записано в `docs/rules.md`, а smoke вече го проверява (404, адресът под
+  `/it`, `lang="it"`, „Pagina non trovata“, `noindex`). Ключът `aria_lang` в `messages/calc/it.json` остава като
+  останалите ключове на прототипа, които кодът не чете — никъде не се показва.
 - **Отворено (за собственика):** версия 4 на условията (показва се на `/it/privacy`, приема се при регистрация) още казва
   „Lingua: le condizioni sono in italiano, inglese e bulgaro“ и описва бисквитката `NEXT_LOCALE`, която вече не се слага.
   Текстът не се пипа без нова `TERMS_VERSION` (`legal:archive`, писмо 30 дни преди — `docs/terms-changes.md`) и без
@@ -1721,6 +1726,13 @@ le verifiche che non passa in un hover“.
   hreflang, ≥5 ключови думи с „Carbon Stealth“, един H1; sitemap само `/it`, robots.txt — същият, `llms.txt` на
   италиански. Снимки на началната, входа, таблото и проект при 1440 и 390 px — без хоризонтален скрол и без
   превключвател; `og-it.png` — същите байтове.
+- [x] Кръг 40, втори кръг: гейт — lint, typecheck, 783 + 97 теста, build, `npm run artifact`; smoke — „all good“ с
+  новата стъпка за 404 (`/it/pagina-inesistente` и `/en/pagina-inesistente` → 404 под `/it`, `lang="it"`, „Pagina non
+  trovata“, `noindex`). Обхождане на 150 страници (10 публични, 140 в приложението): всяка с 200 има `lang="it"`, нула
+  hreflang, нула връзки към `/en` или `/bg`, никакъв избор на език; кирилицата е само в името на дружеството и ЕИК.
+  `/EN/pricing`, `/Bg`, `/BG/app/projects/abc?x=1` → 301 под `/it`; `/en/` и `/bg/pricing/` — 308, после 301;
+  бисквитка за езика — никаква, старата `NEXT_LOCALE` се трие; sitemap (с `ALLOW_INDEXING=true`) — само 5-те адреса под
+  `/it`.
 - [x] `node tools/design/motion-a11y.mjs liftpilot/src`: проверката за reduced motion в базата — да; 6 евристични
   находки `webgl-no-rm-check` в модули на 3D, които се зареждат само през `boot.ts` (същите и преди кръг 24).
 - [x] Живата 3D сцена на началната страница е проверена в headless Chromium (WebGL 2) на двете нива на качество, без грешки в конзолата. При reduced motion three.js не се зарежда.
