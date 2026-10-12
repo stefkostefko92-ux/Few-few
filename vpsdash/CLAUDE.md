@@ -1092,7 +1092,10 @@ test/                    unit · level1 · level2 · ansi · hardening · sessio
 - **Уеб конфигът се валидира преди reload** и се връща при провал — същият патърн
   като `autodeploy.sh`. Никога не презареждай без `nginx -t` / `caddy validate`.
 - **Rollback** ползва `RELEASE_DIR` в `deploy/autodeploy.sh` (разгръща съществуващ
-  release без разопаковане). Чистенето на стари releases пази текущия.
+  release без разопаковане). Чистенето на стари releases пази текущия, release-а на
+  `current` и ВСЕКИ, от който контейнер монтира файлове (инцидент 11.10.2026: изтрит
+  release под жив zabobovdol стек → nginx/backup не тръгнаха след рестарт → 502). Docker
+  не отговаря → категорията не се предлага (fail closed). Същото пази `prune_releases`.
 
 ## Проверка в браузър (задължителна за промени по `public/`)
 ```bash
