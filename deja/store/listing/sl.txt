@@ -1,0 +1,50 @@
+TITLE: Déjà — spomin tvojega brskalnika
+SHORT: Išči po prebranih straneh po pomenu, v 50+ jezikih. Vse teče na tvoji napravi — nič ne zapusti tvojega brskalnika.
+
+Nekje je to že bilo. Déjà to najde.
+
+Zgodovina brskalnika si zapomni le naslove in URL-je. Déjà si zapomni
+VSEBINO. Opiši s svojimi besedami, česar se spomniš — „tisti članek o
+baterijah na osnovi natrija“ — in Déjà najde stran, tudi če se ne spomniš
+naslova, spletnega mesta ali natančnih besed. Skoči celo naravnost na pravi
+odstavek.
+
+KAJ DOBIŠ
+✓ Tvoji zaznamki, iskalni po pomenu od prve minute — po želji, z enim klikom.
+  Déjà se nauči njihovih naslovov in map (brez odpiranja strani) in jih
+  sproti sinhronizira, ko zaznamke dodajaš, premikaš ali brišeš.
+✓ Odgovori iz tvojega spomina — na računalnikih, ki podpirajo vgrajeno umetno
+  inteligenco v Chromu (Gemini Nano), postavi vprašanje in dobi kratek
+  odgovor, sestavljen na tvoji napravi iz prebranih strani, z viri, na katere
+  lahko klikneš. (Odgovori v angleščini, španščini, nemščini, francoščini in
+  japonščini.)
+✓ Iskanje po pomenu — sprašuj s svojimi besedami v 50+ jezikih; vprašaj v
+  enem jeziku in najdi strani, prebrane v drugem.
+✓ Stranska plošča kot spremljevalec — odpri jo ob kateri koli strani in
+  pokaže ti prebrano na njeno temo ter nedavne spomine.
+✓ V naslovno vrstico vpiši „dj“ — išči po spominu kar od tam, s predlogi v
+  živo.
+✓ Zapomni si odlomek — z desno tipko klikni izbrano besedilo: „Déjà: zapomni
+  si izbrano besedilo“. Postane samostojen spomin, po katerem lahko iščeš.
+✓ Skok na pravi odstavek — rezultati odprejo stran z označenim ujemajočim se
+  odlomkom.
+✓ Filtri po datumu, povezani spomini, nedavni spomini na prazni strani za
+  iskanje.
+✓ Moj spomin — oglej si vse, kar si Déjà zapomni, pozabi katero koli stran z
+  enim klikom, izvozi in uvozi celoten indeks kot datoteko.
+
+ZASEBNOST ŽE PO ZASNOVI
+✓ 100-odstotno lokalna obdelava — model umetne inteligence za vložitve
+  (embeddings) teče v tvojem brskalniku, podatki pa so shranjeni v IndexedDB.
+  Brez strežnikov, brez oblaka, brez telemetrije, brez računa.
+✓ Strani za pošto, klepete, prijavo in bančništvo se samodejno preskočijo
+  (vgrajen seznam naslovov; dodaš lahko lastne vzorce).
+✓ Premor z enim klikom. „Pozabi to stran“ in „Počisti spomin“ sta vedno pri
+  roki.
+✓ Samodejno pozabljanje — po želji briši strani, starejše od 3/6/12/24
+  mesecev.
+✓ Svetla in temna tema sledita nastavitvam sistema.
+
+Edina omrežna zahteva, ki jo razširitev kdaj koli izvede, je enkraten prenos
+modela za vložitve s Hugging Face (nato je shranjen lokalno; namesto tega
+lahko nastaviš lastno zrcalo).

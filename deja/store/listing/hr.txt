@@ -1,0 +1,48 @@
+TITLE: Déjà — pamćenje tvojeg preglednika
+SHORT: Pretražuj pročitane stranice po značenju, na 50+ jezika. Sve radi na tvom uređaju — ništa ne napušta preglednik.
+
+Negdje je to već bilo. Déjà će to pronaći.
+
+Povijest preglednika pamti samo naslove i URL-ove. Déjà pamti
+SADRŽAJ. Opiši svojim riječima čega se sjećaš — „onaj članak o baterijama na
+bazi natrija“ — i Déjà će izvući stranicu, čak i ako se ne sjećaš naslova,
+web-mjesta ni točnih riječi. Čak skače ravno na pravi odlomak.
+
+ŠTO DOBIVAŠ
+✓ Tvoje oznake, pretražive po značenju od prve minute — po želji, jednim
+  klikom. Déjà uči njihove naslove i mape (bez otvaranja stranica) i drži ih
+  usklađenima dok dodaješ, premještaš ili brišeš oznake.
+✓ Odgovori iz tvojeg pamćenja — na računalima koja podržavaju ugrađenu
+  umjetnu inteligenciju u Chromeu (Gemini Nano) postavi pitanje i dobij kratak
+  odgovor sastavljen na tvojem uređaju iz pročitanih stranica, s izvorima na
+  koje možeš kliknuti. (Odgovori na engleskom, španjolskom, njemačkom,
+  francuskom i japanskom.)
+✓ Pretraživanje po značenju — pitaj svojim riječima, na 50+ jezika; pitaj na
+  jednom jeziku, pronađi stranice pročitane na drugom.
+✓ Bočna ploča kao suputnik — otvori je pokraj bilo koje stranice i vidi
+  pročitano na njezinu temu, kao i nedavna sjećanja.
+✓ Upiši „dj“ u adresnu traku — pretražuj pamćenje izravno odande, uz
+  prijedloge uživo.
+✓ Zapamti isječak — desnom tipkom klikni bilo koji odabrani tekst: „Déjà:
+  zapamti odabrani tekst“. Postaje zasebno sjećanje koje se može pretraživati.
+✓ Skok na pravi odlomak — rezultati otvaraju stranicu s istaknutim
+  podudarnim isječkom.
+✓ Filtri po datumu, povezana sjećanja, nedavna sjećanja na praznoj stranici
+  pretraživanja.
+✓ Moje pamćenje — pogledaj sve što Déjà pamti, zaboravi bilo koju stranicu
+  jednim klikom, izvezi i uvezi cijeli indeks kao datoteku.
+
+PRIVATNOST PO DIZAJNU
+✓ 100 % lokalna obrada — AI model za ugrađivanje (embeddings) radi u tvojem
+  pregledniku, a podaci su u IndexedDB-u. Bez poslužitelja, bez oblaka, bez
+  telemetrije, bez računa.
+✓ Stranice pošte, chatova, prijave i bankarstva automatski se preskaču
+  (ugrađeni popis adresa; dodaj vlastite uzorke).
+✓ Pauza jednim klikom. „Zaboravi ovu stranicu“ i „Očisti pamćenje“ uvijek su
+  pri ruci.
+✓ Automatsko zaboravljanje — po želji briši stranice starije od 3/6/12/24 mj.
+✓ Svijetla i tamna tema prate postavke sustava.
+
+Jedini mrežni zahtjev koji proširenje ikad šalje jest jednokratno preuzimanje
+modela za ugrađivanje s Hugging Facea (nakon toga je lokalno spremljen; umjesto
+toga možeš ga usmjeriti na vlastito zrcalo).

@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — память твоего браузера"
+  },
+  "extDesc": {
+    "message": "Семантический поиск по прочитанным страницам. Всё работает локально — ничто не покидает твоё устройство."
+  },
+  "cmdOpenSearch": {
+    "message": "Открыть поиск Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — поиск по прочитанному"
+  },
+  "tagline": {
+    "message": "Где-то это уже было. Déjà найдёт."
+  },
+  "searchPlaceholder": {
+    "message": "Опиши, что помнишь… например, «статья про аккумуляторы на основе натрия»"
+  },
+  "searchButton": {
+    "message": "Найти"
+  },
+  "statusSearching": {
+    "message": "Ищу в памяти… (первый поиск загружает модель, ~10-30 сек)"
+  },
+  "statusEmpty": {
+    "message": "Ничего не всплыло. Либо этого не было среди прочитанного, либо этого пока нет в памяти Déjà."
+  },
+  "statusResults": {
+    "message": "Найдено воспоминаний: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 воспоминание:"
+  },
+  "errNoResponse": {
+    "message": "память не ответила — попробуй ещё раз"
+  },
+  "recallVivid": {
+    "message": "ярко помню"
+  },
+  "recallHazy": {
+    "message": "смутно помню"
+  },
+  "recallFaint": {
+    "message": "едва помню"
+  },
+  "statusError": {
+    "message": "Ошибка поиска: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Страниц в памяти: $COUNT$.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "В памяти: 1 страница."
+  },
+  "similarity": {
+    "message": "сходство $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "прочитано $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "Страниц в памяти: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 страница в памяти"
+  },
+  "popupSleeping": {
+    "message": "память спит"
+  },
+  "popupWaking": {
+    "message": "память просыпается…"
+  },
+  "popupOpenSearch": {
+    "message": "Открыть поиск"
+  },
+  "popupPause": {
+    "message": "Пауза запоминания"
+  },
+  "popupClear": {
+    "message": "Очистить память"
+  },
+  "popupClearConfirm": {
+    "message": "Удалить всё запомненное? Восстановить будет нельзя."
+  },
+  "popupOptions": {
+    "message": "Настройки"
+  },
+  "optionsTitle": {
+    "message": "Déjà — настройки"
+  },
+  "optRetentionLabel": {
+    "message": "Хранить страницы"
+  },
+  "optRetentionForever": {
+    "message": "всегда"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ мес.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Более старые страницы удаляются автоматически раз в день."
+  },
+  "optDenylistLabel": {
+    "message": "Никогда не запоминать адреса, содержащие"
+  },
+  "optDenylistHelp": {
+    "message": "По одному шаблону на строку. Совпадение по части адреса, например «example.com» или «/private»."
+  },
+  "optBuiltinLabel": {
+    "message": "Встроенная защита (всегда включена)"
+  },
+  "optModelHostLabel": {
+    "message": "Своё зеркало модели (для опытных)"
+  },
+  "optModelHostHelp": {
+    "message": "Пусто = huggingface.co. Укажи свой сервер для офлайн- или корпоративной среды."
+  },
+  "filterAll": {
+    "message": "все"
+  },
+  "filterWeek": {
+    "message": "за неделю"
+  },
+  "filterMonth": {
+    "message": "за месяц"
+  },
+  "filterYear": {
+    "message": "за год"
+  },
+  "relatedLink": {
+    "message": "похожие воспоминания"
+  },
+  "relatedNone": {
+    "message": "нет близких воспоминаний"
+  },
+  "omniboxDefault": {
+    "message": "Спроси свою память — Déjà ищет по смыслу"
+  },
+  "popupMemory": {
+    "message": "Моя память"
+  },
+  "memoryTitle": {
+    "message": "Моя память"
+  },
+  "memoryEmpty": {
+    "message": "Память пуста — открой несколько страниц и возвращайся."
+  },
+  "memoryForget": {
+    "message": "Забыть"
+  },
+  "memoryExport": {
+    "message": "Скачать архив"
+  },
+  "memoryImport": {
+    "message": "Восстановить из архива"
+  },
+  "memoryImportConfirm": {
+    "message": "Восстановить из архива? Совпадающие страницы будут перезаписаны."
+  },
+  "optSave": {
+    "message": "Сохранить"
+  },
+  "optSaved": {
+    "message": "Сохранено ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Зеркало должно быть адресом https://"
+  },
+  "welcomeHeading": {
+    "message": "Привет. Я — память твоего браузера."
+  },
+  "welcomeIntro": {
+    "message": "С этой минуты я запоминаю то, что ты читаешь, чтобы потом это можно было найти по смыслу — своими словами, а не по точному заголовку."
+  },
+  "welcomePoint1": {
+    "message": "Всё происходит на твоём устройстве. Никаких серверов, никакого облака, никакой отправки данных — никуда и никогда."
+  },
+  "welcomePoint2": {
+    "message": "Почта, чаты, входы в аккаунты и банкинг никогда не запоминаются. Внимание: страницы на деликатные темы я не могу распознать по адресу — для них используй паузу или свой список в настройках."
+  },
+  "welcomePoint3": {
+    "message": "Всё под твоим контролем: пауза в один клик, «Очистить память» удаляет всё, а по желанию я автоматически забываю через несколько месяцев."
+  },
+  "welcomeCta": {
+    "message": "Открыть поиск"
+  },
+  "welcomeOptions": {
+    "message": "Настройки"
+  },
+  "memoryFilter": {
+    "message": "Поиск в памяти…"
+  },
+  "supportLink": {
+    "message": "Поддержать Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — компаньон"
+  },
+  "panelOnThisPage": {
+    "message": "По теме этой страницы"
+  },
+  "panelRecent": {
+    "message": "Недавние воспоминания"
+  },
+  "panelNoPage": {
+    "message": "Открой веб-страницу, и Déjà покажет прочитанное по её теме."
+  },
+  "popupOpenPanel": {
+    "message": "Боковая панель"
+  },
+  "popupForgetPage": {
+    "message": "Забыть эту страницу"
+  },
+  "popupForgotten": {
+    "message": "Забыто ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: запомнить выделенный текст"
+  },
+  "menuForget": {
+    "message": "Déjà: забыть эту страницу"
+  },
+  "recentTitle": {
+    "message": "Недавние воспоминания"
+  },
+  "cmdOpenPanel": {
+    "message": "Открыть боковую панель Déjà"
+  },
+  "welcomePoint4": {
+    "message": "Боковая панель видит адрес и заголовок открытой страницы, чтобы показать прочитанное по её теме, — только в памяти сеанса. Фрагменты, которые ты сохраняешь намеренно, тоже остаются только у тебя."
+  },
+  "welcomeUpdated": {
+    "message": "Вышло обновление Déjà. Новое: по желанию твои закладки тоже станут доступны для поиска по смыслу. Вот что я делаю с твоими данными — ничто не покинуло твоё устройство."
+  },
+  "optAmbientLabel": {
+    "message": "Живой фон"
+  },
+  "optAmbientHelp": {
+    "message": "Сеть воспоминаний за стеклом медленно движется. Выключи, если движение отвлекает."
+  },
+  "bmTitle": {
+    "message": "Сделай закладки доступными для поиска — прямо сейчас"
+  },
+  "bmText": {
+    "message": "Déjà изучает названия и папки твоих закладок, не открывая сами страницы. Находи их по смыслу с первой минуты — всё остаётся на твоём устройстве."
+  },
+  "bmTextShort": {
+    "message": "Твоя память ещё молода. Дай мне изучить твои закладки — и ищи по ним по смыслу уже сегодня."
+  },
+  "bmButton": {
+    "message": "Изучить мои закладки"
+  },
+  "bmNote": {
+    "message": "Браузер попросит разрешение. Отключить можно в любой момент в настройках."
+  },
+  "bmTitleRunning": {
+    "message": "Изучаю твои закладки…"
+  },
+  "bmTitleDone": {
+    "message": "Закладки доступны для поиска"
+  },
+  "bmPreparing": {
+    "message": "Готовлюсь…"
+  },
+  "bmLearning": {
+    "message": "Изучено: $DONE$ из $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà на паузе — продолжу, как только ты её снимешь."
+  },
+  "bmError": {
+    "message": "При изучении что-то пошло не так. Попробую снова при следующем изменении."
+  },
+  "bmDone": {
+    "message": "Готово — закладок с поиском по смыслу: $COUNT$. Они синхронизируются автоматически.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Готово — 1 закладка доступна для поиска по смыслу и синхронизируется автоматически."
+  },
+  "bmDenied": {
+    "message": "Без разрешения я не вижу твои закладки. Попробовать снова можно в любой момент."
+  },
+  "bmTry": {
+    "message": "Попробуй:"
+  },
+  "bmBadge": {
+    "message": "Закладка"
+  },
+  "bmAddedOn": {
+    "message": "закладка от $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Закладки в памяти"
+  },
+  "optBookmarksHelp": {
+    "message": "Я изучаю названия и папки твоих закладок (не открывая страницы) и слежу за изменениями, когда ты их добавляешь или удаляешь. Если выключить, они удалятся из памяти — прочитанные страницы останутся."
+  },
+  "memoryFilterAll": {
+    "message": "Все"
+  },
+  "memoryFilterRead": {
+    "message": "Прочитанные"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Закладки"
+  },
+  "welcomePoint5": {
+    "message": "Закладки — только если ты их включишь: тогда я изучаю их названия и папки, не открывая страницы. Отключаются одним кликом."
+  },
+  "rateTitle": {
+    "message": "Находок с помощью Déjà: уже $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Если от Déjà есть польза, оценка в магазине поможет другим людям узнать о Déjà — это займёт 10 секунд. А если что-то раздражает, напиши нам."
+  },
+  "rateButton": {
+    "message": "Оценить Déjà"
+  },
+  "rateFeedback": {
+    "message": "Что-то не работает?"
+  },
+  "rateLater": {
+    "message": "Не сейчас"
+  },
+  "rateThanks": {
+    "message": "Спасибо! Это правда помогает."
+  },
+  "rateFeedbackThanks": {
+    "message": "Спасибо — мы читаем каждое письмо."
+  },
+  "rateFeedbackSubject": {
+    "message": "обратная связь"
+  },
+  "answerTitle": {
+    "message": "Ответ из твоей памяти"
+  },
+  "answerAsk": {
+    "message": "Ответить из моей памяти"
+  },
+  "answerEnableTitle": {
+    "message": "Ответы встроенного ИИ Chrome"
+  },
+  "answerEnableText": {
+    "message": "Déjà может отвечать на вопросы по прочитанному, с источниками. Chrome один раз скачивает свою модель для работы на устройстве (Gemini Nano) — твои вопросы и страницы никогда не покидают компьютер."
+  },
+  "answerEnableButton": {
+    "message": "Включить ответы"
+  },
+  "answerNoThanks": {
+    "message": "Нет, спасибо"
+  },
+  "answerDownloading": {
+    "message": "Chrome скачивает модель… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Читаю твои воспоминания…"
+  },
+  "answerStop": {
+    "message": "Стоп"
+  },
+  "answerFoot": {
+    "message": "Составлено на твоём устройстве встроенным ИИ Chrome на основе твоих воспоминаний (всего: $COUNT$). Проверь источники.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "На этот раз не получилось составить ответ."
+  },
+  "optAnswersLabel": {
+    "message": "Ответы встроенного ИИ Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "На вопросы вроде «что мне попадалось о…?» я пишу короткий ответ с источниками из твоих страниц — полностью на устройстве, с помощью Gemini Nano в Chrome. Нужны поддерживаемый компьютер и язык (английский, испанский, немецкий, французский, японский)."
+  },
+  "optAnswersAvailable": {
+    "message": "Готово к использованию на этом устройстве."
+  },
+  "optAnswersDownloadable": {
+    "message": "Поддерживается — Chrome скачает модель при первом вопросе."
+  },
+  "optAnswersUnavailable": {
+    "message": "Это устройство или язык интерфейса не поддерживается встроенным ИИ Chrome."
+  },
+  "optAnswersUnsupported": {
+    "message": "В этом браузере нет встроенного ИИ — всё остальное в Déjà работает как обычно."
+  }
+}

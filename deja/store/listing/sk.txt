@@ -1,0 +1,49 @@
+TITLE: Déjà — pamäť tvojho prehliadača
+SHORT: Hľadaj v prečítaných stránkach podľa významu, vo 50+ jazykoch. Všetko beží v zariadení — nič neopustí tvoj prehliadač.
+
+Niekde to už bolo. Déjà to nájde.
+
+História prehliadača si pamätá len názvy a adresy. Déjà si pamätá
+OBSAH. Opíš vlastnými slovami, čo si pamätáš — „ten článok o batériách na báze
+sodíka“ — a Déjà stránku vyloví, aj keď si nepamätáš názov, web ani presné
+slová. Dokonca skočí priamo na správny odsek.
+
+ČO ZÍSKAŠ
+✓ Tvoje záložky, prehľadávateľné podľa významu od prvej minúty — voliteľne,
+  jedným kliknutím. Déjà sa učí ich názvy a priečinky (bez otvárania stránok)
+  a synchronizuje ich, keď záložky pridávaš, presúvaš alebo mažeš.
+✓ Odpovede z tvojej pamäte — na počítačoch s podporou vstavanej AI v Chrome
+  (Gemini Nano) polož otázku a dostaneš krátku odpoveď zostavenú v tvojom
+  zariadení z prečítaných stránok, s klikateľnými zdrojmi. (Odpovede v
+  angličtine, španielčine, nemčine, francúzštine a japončine.)
+✓ Hľadanie podľa významu — pýtaj sa vlastnými slovami vo 50+ jazykoch; opýtaj
+  sa v jednom jazyku a nájdi stránky prečítané v inom.
+✓ Bočný panel ako spoločník — otvor ho vedľa ľubovoľnej stránky a uvidíš, čo
+  máš prečítané k jej téme, plus nedávne spomienky.
+✓ Napíš „dj“ do panela s adresou — prehľadávaj pamäť priamo odtiaľ so živými
+  návrhmi.
+✓ Zapamätaj si úryvok — klikni pravým tlačidlom na vybraný text: „Déjà:
+  zapamätať vybraný text“. Stane sa samostatnou spomienkou, ktorú možno
+  vyhľadať.
+✓ Skok na správny odsek — výsledky otvoria stránku so zvýrazneným
+  zodpovedajúcim úryvkom.
+✓ Filtre podľa dátumu, súvisiace spomienky, nedávne spomienky na prázdnej
+  stránke hľadania.
+✓ Moja pamäť — pozri si všetko, čo si Déjà pamätá, zabudni ľubovoľnú stránku
+  jedným kliknutím, exportuj a importuj celý index ako súbor.
+
+SÚKROMIE OD ZÁKLADU
+✓ 100 % lokálne spracovanie — AI model pre embeddingy beží v tvojom
+  prehliadači a údaje sú uložené v IndexedDB. Žiadne servery, žiadny cloud,
+  žiadna telemetria, žiadny účet.
+✓ Stránky pošty, četov, prihlasovania a bankovníctva sa automaticky preskakujú
+  (vstavaný zoznam adries; môžeš pridať vlastné vzory).
+✓ Pozastavenie jedným kliknutím. „Zabudnúť túto stránku“ a „Vymazať pamäť“ sú
+  vždy poruke.
+✓ Automatické zabúdanie — voliteľne odstraňuj stránky staršie ako 3/6/12/24
+  mes.
+✓ Svetlý a tmavý motív sa riadi nastavením systému.
+
+Jediná sieťová požiadavka, ktorú rozšírenie kedy urobí, je jednorazové
+stiahnutie modelu pre embeddingy z Hugging Face (potom sa uloží do lokálnej
+vyrovnávacej pamäte; namiesto toho môžeš nastaviť vlastné zrkadlo).

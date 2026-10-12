@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — памћење твог прегледача"
+  },
+  "extDesc": {
+    "message": "Семантичка претрага прочитаних страница. Све се одвија локално — ништа никада не напушта твој уређај."
+  },
+  "cmdOpenSearch": {
+    "message": "Отвори претрагу Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — претражи прочитано"
+  },
+  "tagline": {
+    "message": "Негде је то већ било. Déjà ће то пронаћи."
+  },
+  "searchPlaceholder": {
+    "message": "Опиши чега се сећаш… нпр. „чланак о батеријама на бази натријума“"
+  },
+  "searchButton": {
+    "message": "Тражи"
+  },
+  "statusSearching": {
+    "message": "Претражујем памћење… (прва претрага учитава модел, ~10-30 с)"
+  },
+  "statusEmpty": {
+    "message": "Ништа није испливало. Или тога није било међу прочитаним страницама или то Déjà још нема у памћењу."
+  },
+  "statusResults": {
+    "message": "Пронађена сећања: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 сећање:"
+  },
+  "errNoResponse": {
+    "message": "памћење није одговорило — покушај поново"
+  },
+  "recallVivid": {
+    "message": "живо сећање"
+  },
+  "recallHazy": {
+    "message": "магловито сећање"
+  },
+  "recallFaint": {
+    "message": "далеко сећање"
+  },
+  "statusError": {
+    "message": "Претрага није успела: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Странице у памћењу: $COUNT$.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "У памћењу: 1 страница."
+  },
+  "similarity": {
+    "message": "сличност $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "прочитано $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "Странице у памћењу: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 страница у памћењу"
+  },
+  "popupSleeping": {
+    "message": "памћење спава"
+  },
+  "popupWaking": {
+    "message": "памћење се буди…"
+  },
+  "popupOpenSearch": {
+    "message": "Отвори претрагу"
+  },
+  "popupPause": {
+    "message": "Паузирај памћење"
+  },
+  "popupClear": {
+    "message": "Обриши памћење"
+  },
+  "popupClearConfirm": {
+    "message": "Обрисати све запамћено? Нема повратка."
+  },
+  "popupOptions": {
+    "message": "Подешавања"
+  },
+  "optionsTitle": {
+    "message": "Déjà — подешавања"
+  },
+  "optRetentionLabel": {
+    "message": "Памти странице"
+  },
+  "optRetentionForever": {
+    "message": "заувек"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ мес.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Старије странице се аутоматски бришу једном дневно."
+  },
+  "optDenylistLabel": {
+    "message": "Никада не памти адресе које садрже"
+  },
+  "optDenylistHelp": {
+    "message": "Један образац по реду. Подудара се са делом адресе, нпр. „example.com“ или „/private“."
+  },
+  "optBuiltinLabel": {
+    "message": "Уграђена заштита (увек активна)"
+  },
+  "optModelHostLabel": {
+    "message": "Сопствено огледало модела (напредно)"
+  },
+  "optModelHostHelp": {
+    "message": "Празно = huggingface.co. Подеси сопствени сервер за офлајн или корпоративна окружења."
+  },
+  "filterAll": {
+    "message": "све"
+  },
+  "filterWeek": {
+    "message": "последња недеља"
+  },
+  "filterMonth": {
+    "message": "последњи месец"
+  },
+  "filterYear": {
+    "message": "последња година"
+  },
+  "relatedLink": {
+    "message": "повезана сећања"
+  },
+  "relatedNone": {
+    "message": "нема блиских сећања"
+  },
+  "omniboxDefault": {
+    "message": "Питај своје памћење — Déjà тражи по значењу"
+  },
+  "popupMemory": {
+    "message": "Моје памћење"
+  },
+  "memoryTitle": {
+    "message": "Моје памћење"
+  },
+  "memoryEmpty": {
+    "message": "Памћење је празно — прегледај неколико страница и врати се."
+  },
+  "memoryForget": {
+    "message": "Заборави"
+  },
+  "memoryExport": {
+    "message": "Преузми архиву"
+  },
+  "memoryImport": {
+    "message": "Врати из архиве"
+  },
+  "memoryImportConfirm": {
+    "message": "Вратити из архиве? Подударне странице ће бити замењене."
+  },
+  "optSave": {
+    "message": "Сачувај"
+  },
+  "optSaved": {
+    "message": "Сачувано ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Огледало мора бити https:// адреса"
+  },
+  "welcomeHeading": {
+    "message": "Здраво. Ја сам памћење твог прегледача."
+  },
+  "welcomeIntro": {
+    "message": "Од овог тренутка памтим шта читаш, како би се то касније могло пронаћи по значењу — твојим речима, а не тачним насловом."
+  },
+  "welcomePoint1": {
+    "message": "Све се дешава на твом уређају. Без сервера, без облака, без слања података — нигде и никада."
+  },
+  "welcomePoint2": {
+    "message": "Пошта, ћаскања, пријаве и банкарство се никада не памте. Пази: странице са осетљивим темама не могу да препознам по адреси — за њих користи паузу или сопствену листу у подешавањима."
+  },
+  "welcomePoint3": {
+    "message": "Ти имаш контролу: пауза једним кликом, „Обриши памћење“ брише све, а по жељи аутоматски заборављам после неколико месеци."
+  },
+  "welcomeCta": {
+    "message": "Отвори претрагу"
+  },
+  "welcomeOptions": {
+    "message": "Подешавања"
+  },
+  "memoryFilter": {
+    "message": "Претражи памћење…"
+  },
+  "supportLink": {
+    "message": "Подржи Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — пратилац"
+  },
+  "panelOnThisPage": {
+    "message": "На тему ове странице"
+  },
+  "panelRecent": {
+    "message": "Недавна сећања"
+  },
+  "panelNoPage": {
+    "message": "Отвори веб-страницу и Déjà ће показати прочитано на њену тему."
+  },
+  "popupOpenPanel": {
+    "message": "Бочна табла"
+  },
+  "popupForgetPage": {
+    "message": "Заборави ову страницу"
+  },
+  "popupForgotten": {
+    "message": "Заборављено ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: запамти изабрани текст"
+  },
+  "menuForget": {
+    "message": "Déjà: заборави ову страницу"
+  },
+  "recentTitle": {
+    "message": "Недавна сећања"
+  },
+  "cmdOpenPanel": {
+    "message": "Отвори бочну таблу Déjà"
+  },
+  "welcomePoint4": {
+    "message": "Бочна табла види адресу и наслов странице коју гледаш, како би показала прочитано на њену тему — само у меморији сесије. Исечци које намерно сачуваш такође остају само код тебе."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà има нову верзију. Ново: ако желиш, и твоји обележивачи сада могу да се претражују по значењу. Ево шта радим са твојим подацима — ништа није напустило твој уређај."
+  },
+  "optAmbientLabel": {
+    "message": "Жива позадина"
+  },
+  "optAmbientHelp": {
+    "message": "Мрежа сећања иза стакла полако се помера. Искључи је ако те покрет омета."
+  },
+  "bmTitle": {
+    "message": "Учини обележиваче претраживим — одмах"
+  },
+  "bmText": {
+    "message": "Déjà учи наслове и фасцикле твојих обележивача без отварања страница. Пронађи их по значењу од првог минута — све остаје на твом уређају."
+  },
+  "bmTextShort": {
+    "message": "Твоје памћење је још младо. Дозволи ми да научим твоје обележиваче и претражуј их по значењу већ данас."
+  },
+  "bmButton": {
+    "message": "Научи моје обележиваче"
+  },
+  "bmNote": {
+    "message": "Прегледач ће затражити дозволу. Искључи то кад год желиш у подешавањима."
+  },
+  "bmTitleRunning": {
+    "message": "Учим твоје обележиваче…"
+  },
+  "bmTitleDone": {
+    "message": "Твоји обележивачи су претраживи"
+  },
+  "bmPreparing": {
+    "message": "Припремам се…"
+  },
+  "bmLearning": {
+    "message": "Научено: $DONE$ од $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà је на паузи — настављам чим је уклониш."
+  },
+  "bmError": {
+    "message": "Нешто је пошло наопако током учења. Покушаћу поново при следећој промени."
+  },
+  "bmDone": {
+    "message": "Готово — обележивачи претраживи по значењу: $COUNT$. Аутоматски се синхронизују.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Готово — 1 обележивач је претражив по значењу и аутоматски се синхронизује."
+  },
+  "bmDenied": {
+    "message": "Без дозволе не могу да видим твоје обележиваче. Можеш да покушаш поново кад год желиш."
+  },
+  "bmTry": {
+    "message": "Пробај:"
+  },
+  "bmBadge": {
+    "message": "Обележивач"
+  },
+  "bmAddedOn": {
+    "message": "обележено $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Обележивачи у памћењу"
+  },
+  "optBookmarksHelp": {
+    "message": "Учим наслове и фасцикле твојих обележивача (без отварања страница) и пратим промене кад их додајеш или бришеш. Искључивање их уклања из памћења — прочитане странице остају."
+  },
+  "memoryFilterAll": {
+    "message": "Све"
+  },
+  "memoryFilterRead": {
+    "message": "Прочитано"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Обележивачи"
+  },
+  "welcomePoint5": {
+    "message": "Обележивачи — само ако их укључиш: тада учим њихове наслове и фасцикле без отварања страница. Искључујеш их једним кликом."
+  },
+  "rateTitle": {
+    "message": "Проналасци уз Déjà: већ $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Ако ти Déjà помаже, оцена у продавници помаже другим људима да открију Déjà — траје 10 секунди. А ако ти нешто смета, јави нам."
+  },
+  "rateButton": {
+    "message": "Оцени Déjà"
+  },
+  "rateFeedback": {
+    "message": "Нешто не ради?"
+  },
+  "rateLater": {
+    "message": "Не сада"
+  },
+  "rateThanks": {
+    "message": "Хвала! То заиста помаже."
+  },
+  "rateFeedbackThanks": {
+    "message": "Хвала — читамо сваку поруку."
+  },
+  "rateFeedbackSubject": {
+    "message": "повратне информације"
+  },
+  "answerTitle": {
+    "message": "Одговор из твог памћења"
+  },
+  "answerAsk": {
+    "message": "Одговори из мог памћења"
+  },
+  "answerEnableTitle": {
+    "message": "Одговори уграђене вештачке интелигенције у Chrome-у"
+  },
+  "answerEnableText": {
+    "message": "Déjà може да одговара на питања из прочитаног, са изворима. Chrome једном преузима свој модел за уређај (Gemini Nano) — твоја питања и странице никада не напуштају рачунар."
+  },
+  "answerEnableButton": {
+    "message": "Укључи одговоре"
+  },
+  "answerNoThanks": {
+    "message": "Не, хвала"
+  },
+  "answerDownloading": {
+    "message": "Chrome преузима модел… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Читам твоја сећања…"
+  },
+  "answerStop": {
+    "message": "Стоп"
+  },
+  "answerFoot": {
+    "message": "Саставила уграђена вештачка интелигенција у Chrome-у на твом уређају из твојих сећања (број: $COUNT$). Провери изворе.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Овај пут није било могуће саставити одговор."
+  },
+  "optAnswersLabel": {
+    "message": "Одговори уграђене вештачке интелигенције у Chrome-у"
+  },
+  "optAnswersHelp": {
+    "message": "На питања попут „шта знам из прочитаних страница о…?“ пишем кратак одговор са изворима из твојих страница — у потпуности на уређају, уз Gemini Nano у Chrome-у. Потребни су подржани рачунар и језик (енглески, шпански, немачки, француски, јапански)."
+  },
+  "optAnswersAvailable": {
+    "message": "Спремно за употребу на овом уређају."
+  },
+  "optAnswersDownloadable": {
+    "message": "Подржано — Chrome ће преузети модел при првом питању."
+  },
+  "optAnswersUnavailable": {
+    "message": "Уграђена вештачка интелигенција у Chrome-у не подржава овај уређај или језик интерфејса."
+  },
+  "optAnswersUnsupported": {
+    "message": "Овај прегледач нема уграђену вештачку интелигенцију — све остало у Déjà ради као и увек."
+  }
+}

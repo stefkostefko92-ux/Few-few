@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — pamäť tvojho prehliadača"
+  },
+  "extDesc": {
+    "message": "Sémantické vyhľadávanie v prečítaných stránkach. Všetko prebieha lokálne — nič nikdy neopustí tvoje zariadenie."
+  },
+  "cmdOpenSearch": {
+    "message": "Otvoriť vyhľadávanie Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — vyhľadávanie v prečítaných stránkach"
+  },
+  "tagline": {
+    "message": "Niekde to už bolo. Déjà to nájde."
+  },
+  "searchPlaceholder": {
+    "message": "Opíš, čo si pamätáš… napr. „článok o batériách na báze sodíka“"
+  },
+  "searchButton": {
+    "message": "Hľadať"
+  },
+  "statusSearching": {
+    "message": "Prehľadávam pamäť… (prvé hľadanie načítava model, ~10-30 s)"
+  },
+  "statusEmpty": {
+    "message": "Nič sa nevynorilo. Buď to medzi prečítanými stránkami nebolo, alebo to Déjà ešte nemá v pamäti."
+  },
+  "statusResults": {
+    "message": "Nájdené spomienky: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 spomienka:"
+  },
+  "errNoResponse": {
+    "message": "pamäť neodpovedala — skús to znova"
+  },
+  "recallVivid": {
+    "message": "jasná spomienka"
+  },
+  "recallHazy": {
+    "message": "hmlistá spomienka"
+  },
+  "recallFaint": {
+    "message": "vzdialená spomienka"
+  },
+  "statusError": {
+    "message": "Hľadanie zlyhalo: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Stránky v pamäti: $COUNT$.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "V pamäti: 1 stránka."
+  },
+  "similarity": {
+    "message": "podobnosť $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "prečítané $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "Stránky v pamäti: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 stránka v pamäti"
+  },
+  "popupSleeping": {
+    "message": "pamäť spí"
+  },
+  "popupWaking": {
+    "message": "pamäť sa prebúdza…"
+  },
+  "popupOpenSearch": {
+    "message": "Otvoriť vyhľadávanie"
+  },
+  "popupPause": {
+    "message": "Pozastaviť zapamätávanie"
+  },
+  "popupClear": {
+    "message": "Vymazať pamäť"
+  },
+  "popupClearConfirm": {
+    "message": "Odstrániť všetko zapamätané? Nedá sa to vrátiť."
+  },
+  "popupOptions": {
+    "message": "Nastavenia"
+  },
+  "optionsTitle": {
+    "message": "Déjà — nastavenia"
+  },
+  "optRetentionLabel": {
+    "message": "Pamätať si stránky"
+  },
+  "optRetentionForever": {
+    "message": "navždy"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ mes.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Staršie stránky sa automaticky odstraňujú raz denne."
+  },
+  "optDenylistLabel": {
+    "message": "Nikdy si nepamätať adresy obsahujúce"
+  },
+  "optDenylistHelp": {
+    "message": "Jeden vzor na riadok. Zhoda s časťou adresy, napr. „example.com“ alebo „/private“."
+  },
+  "optBuiltinLabel": {
+    "message": "Vstavaná ochrana (vždy aktívna)"
+  },
+  "optModelHostLabel": {
+    "message": "Vlastné zrkadlo modelu (pokročilé)"
+  },
+  "optModelHostHelp": {
+    "message": "Prázdne = huggingface.co. Nastav vlastný server pre offline alebo firemné prostredie."
+  },
+  "filterAll": {
+    "message": "všetko"
+  },
+  "filterWeek": {
+    "message": "posledný týždeň"
+  },
+  "filterMonth": {
+    "message": "posledný mesiac"
+  },
+  "filterYear": {
+    "message": "posledný rok"
+  },
+  "relatedLink": {
+    "message": "súvisiace spomienky"
+  },
+  "relatedNone": {
+    "message": "žiadne blízke spomienky"
+  },
+  "omniboxDefault": {
+    "message": "Opýtaj sa svojej pamäte — Déjà hľadá podľa významu"
+  },
+  "popupMemory": {
+    "message": "Moja pamäť"
+  },
+  "memoryTitle": {
+    "message": "Moja pamäť"
+  },
+  "memoryEmpty": {
+    "message": "Pamäť je prázdna — prezri si pár stránok a vráť sa."
+  },
+  "memoryForget": {
+    "message": "Zabudnúť"
+  },
+  "memoryExport": {
+    "message": "Stiahnuť archív"
+  },
+  "memoryImport": {
+    "message": "Obnoviť z archívu"
+  },
+  "memoryImportConfirm": {
+    "message": "Obnoviť z archívu? Zhodné stránky budú prepísané."
+  },
+  "optSave": {
+    "message": "Uložiť"
+  },
+  "optSaved": {
+    "message": "Uložené ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Zrkadlo musí byť adresa https://"
+  },
+  "welcomeHeading": {
+    "message": "Ahoj. Som pamäť tvojho prehliadača."
+  },
+  "welcomeIntro": {
+    "message": "Odteraz si pamätám, čo čítaš, aby sa to dalo neskôr nájsť podľa významu — vlastnými slovami, nie presným názvom."
+  },
+  "welcomePoint1": {
+    "message": "Všetko sa deje na tvojom zariadení. Žiadne servery, žiadny cloud, žiadne odosielanie údajov — nikam a nikdy."
+  },
+  "welcomePoint2": {
+    "message": "Poštu, čety, prihlasovanie a bankovníctvo si nikdy nepamätám. Pozor: stránky s citlivými témami podľa adresy nerozpoznám — na ne použi pozastavenie alebo vlastný zoznam v nastaveniach."
+  },
+  "welcomePoint3": {
+    "message": "Máš to pod kontrolou: pozastavenie jedným kliknutím, „Vymazať pamäť“ odstráni všetko a voliteľne automaticky zabúdam po niekoľkých mesiacoch."
+  },
+  "welcomeCta": {
+    "message": "Otvoriť vyhľadávanie"
+  },
+  "welcomeOptions": {
+    "message": "Nastavenia"
+  },
+  "memoryFilter": {
+    "message": "Hľadať v pamäti…"
+  },
+  "supportLink": {
+    "message": "Podporiť Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — spoločník"
+  },
+  "panelOnThisPage": {
+    "message": "K téme tejto stránky"
+  },
+  "panelRecent": {
+    "message": "Nedávne spomienky"
+  },
+  "panelNoPage": {
+    "message": "Otvor webovú stránku a Déjà ukáže, čo máš prečítané k jej téme."
+  },
+  "popupOpenPanel": {
+    "message": "Bočný panel"
+  },
+  "popupForgetPage": {
+    "message": "Zabudnúť túto stránku"
+  },
+  "popupForgotten": {
+    "message": "Zabudnuté ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: zapamätať vybraný text"
+  },
+  "menuForget": {
+    "message": "Déjà: zabudnúť túto stránku"
+  },
+  "recentTitle": {
+    "message": "Nedávne spomienky"
+  },
+  "cmdOpenPanel": {
+    "message": "Otvoriť bočný panel Déjà"
+  },
+  "welcomePoint4": {
+    "message": "Bočný panel vidí adresu a názov stránky, ktorú si prezeráš, aby mohol ukázať, čo máš prečítané k jej téme — iba v pamäti relácie. Úryvky, ktoré si zámerne uložíš, tiež zostávajú iba u teba."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà má novú verziu. Novinka: ak chceš, aj tvoje záložky sa dajú prehľadávať podľa významu. Tu je, čo robím s tvojimi údajmi — nič neopustilo tvoje zariadenie."
+  },
+  "optAmbientLabel": {
+    "message": "Živé pozadie"
+  },
+  "optAmbientHelp": {
+    "message": "Sieť spomienok za sklom sa pomaly pohybuje. Vypni ju, ak ťa pohyb rozptyľuje."
+  },
+  "bmTitle": {
+    "message": "Sprav záložky prehľadávateľné — hneď teraz"
+  },
+  "bmText": {
+    "message": "Déjà sa učí názvy a priečinky tvojich záložiek bez otvárania stránok. Nájdeš ich podľa významu od prvej minúty — všetko zostáva na tvojom zariadení."
+  },
+  "bmTextShort": {
+    "message": "Tvoja pamäť je ešte mladá. Nauč ma svoje záložky a prehľadávaj ich podľa významu už dnes."
+  },
+  "bmButton": {
+    "message": "Naučiť sa moje záložky"
+  },
+  "bmNote": {
+    "message": "Prehliadač požiada o povolenie. Kedykoľvek to vypneš v nastaveniach."
+  },
+  "bmTitleRunning": {
+    "message": "Učím sa tvoje záložky…"
+  },
+  "bmTitleDone": {
+    "message": "Tvoje záložky sa dajú prehľadávať"
+  },
+  "bmPreparing": {
+    "message": "Pripravujem sa…"
+  },
+  "bmLearning": {
+    "message": "Naučené: $DONE$ z $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà má pauzu — pokračujem, hneď ako ju zrušíš."
+  },
+  "bmError": {
+    "message": "Pri učení sa niečo pokazilo. Skúsim to znova pri ďalšej zmene."
+  },
+  "bmDone": {
+    "message": "Hotovo — záložky prehľadávateľné podľa významu: $COUNT$. Synchronizujú sa automaticky.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Hotovo — 1 záložka je prehľadávateľná podľa významu a synchronizuje sa automaticky."
+  },
+  "bmDenied": {
+    "message": "Bez povolenia tvoje záložky nevidím. Skúsiť to môžeš kedykoľvek znova."
+  },
+  "bmTry": {
+    "message": "Skús:"
+  },
+  "bmBadge": {
+    "message": "Záložka"
+  },
+  "bmAddedOn": {
+    "message": "záložka z $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Záložky v pamäti"
+  },
+  "optBookmarksHelp": {
+    "message": "Učím sa názvy a priečinky tvojich záložiek (bez otvárania stránok) a sledujem zmeny, keď ich pridávaš alebo mažeš. Vypnutím ich z pamäte odstrániš — prečítané stránky zostanú."
+  },
+  "memoryFilterAll": {
+    "message": "Všetko"
+  },
+  "memoryFilterRead": {
+    "message": "Prečítané"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Záložky"
+  },
+  "welcomePoint5": {
+    "message": "Záložky — iba ak ich zapneš: vtedy sa učím ich názvy a priečinky bez otvárania stránok. Vypneš to jedným kliknutím."
+  },
+  "rateTitle": {
+    "message": "S Déjà sa ti už $COUNT$-krát podarilo niečo nájsť",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Ak ti Déjà pomáha, hodnotenie v obchode pomôže ďalším ľuďom Déjà objaviť — zaberie to 10 sekúnd. A ak ťa niečo hnevá, napíš nám."
+  },
+  "rateButton": {
+    "message": "Ohodnotiť Déjà"
+  },
+  "rateFeedback": {
+    "message": "Niečo nefunguje?"
+  },
+  "rateLater": {
+    "message": "Teraz nie"
+  },
+  "rateThanks": {
+    "message": "Ďakujeme! Naozaj to pomáha."
+  },
+  "rateFeedbackThanks": {
+    "message": "Ďakujeme — čítame každú správu."
+  },
+  "rateFeedbackSubject": {
+    "message": "spätná väzba"
+  },
+  "answerTitle": {
+    "message": "Odpoveď z tvojej pamäte"
+  },
+  "answerAsk": {
+    "message": "Odpovedať z mojej pamäte"
+  },
+  "answerEnableTitle": {
+    "message": "Odpovede od vstavanej AI v Chrome"
+  },
+  "answerEnableText": {
+    "message": "Déjà vie odpovedať na otázky z prečítaných stránok, so zdrojmi. Chrome raz stiahne svoj model pre zariadenie (Gemini Nano) — tvoje otázky a stránky nikdy neopustia počítač."
+  },
+  "answerEnableButton": {
+    "message": "Zapnúť odpovede"
+  },
+  "answerNoThanks": {
+    "message": "Nie, vďaka"
+  },
+  "answerDownloading": {
+    "message": "Chrome sťahuje model… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Čítam tvoje spomienky…"
+  },
+  "answerStop": {
+    "message": "Stop"
+  },
+  "answerFoot": {
+    "message": "Zostavené na tvojom zariadení vstavanou AI v Chrome z tvojich spomienok (počet: $COUNT$). Skontroluj zdroje.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Tentoraz sa odpoveď nepodarilo zostaviť."
+  },
+  "optAnswersLabel": {
+    "message": "Odpovede od vstavanej AI v Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "Na otázky typu „čo viem z prečítaných stránok o…?“ napíšem krátku odpoveď so zdrojmi z tvojich stránok — úplne na zariadení, s Gemini Nano v Chrome. Vyžaduje podporovaný počítač a jazyk (angličtina, španielčina, nemčina, francúzština, japončina)."
+  },
+  "optAnswersAvailable": {
+    "message": "Pripravené na použitie v tomto zariadení."
+  },
+  "optAnswersDownloadable": {
+    "message": "Podporované — Chrome stiahne model pri prvej otázke."
+  },
+  "optAnswersUnavailable": {
+    "message": "Toto zariadenie alebo jazyk rozhrania vstavaná AI v Chrome nepodporuje."
+  },
+  "optAnswersUnsupported": {
+    "message": "Tento prehliadač nemá vstavanú AI — všetko ostatné v Déjà funguje ako vždy."
+  }
+}

@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — pamięć twojej przeglądarki"
+  },
+  "extDesc": {
+    "message": "Wyszukiwanie semantyczne w przeczytanych stronach. Wszystko działa lokalnie — nic nie opuszcza twojego urządzenia."
+  },
+  "cmdOpenSearch": {
+    "message": "Otwórz wyszukiwanie Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — przeszukuj przeczytane strony"
+  },
+  "tagline": {
+    "message": "Gdzieś to już było. Déjà to znajdzie."
+  },
+  "searchPlaceholder": {
+    "message": "Opisz, co pamiętasz… np. „artykuł o akumulatorach na bazie sodu”"
+  },
+  "searchButton": {
+    "message": "Szukaj"
+  },
+  "statusSearching": {
+    "message": "Przeszukuję pamięć… (pierwsze wyszukiwanie wczytuje model, ~10-30 s)"
+  },
+  "statusEmpty": {
+    "message": "Nic nie wypłynęło. Albo tego nie było wśród przeczytanych stron, albo jeszcze nie ma tego w pamięci Déjà."
+  },
+  "statusResults": {
+    "message": "Znalezione wspomnienia: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 wspomnienie:"
+  },
+  "errNoResponse": {
+    "message": "pamięć nie odpowiedziała — spróbuj ponownie"
+  },
+  "recallVivid": {
+    "message": "pamiętam dobrze"
+  },
+  "recallHazy": {
+    "message": "pamiętam mgliście"
+  },
+  "recallFaint": {
+    "message": "ledwo pamiętam"
+  },
+  "statusError": {
+    "message": "Wyszukiwanie nie powiodło się: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Strony w pamięci: $COUNT$.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "W pamięci: 1 strona."
+  },
+  "similarity": {
+    "message": "podobieństwo $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "przeczytano $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "Strony w pamięci: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 strona w pamięci"
+  },
+  "popupSleeping": {
+    "message": "pamięć śpi"
+  },
+  "popupWaking": {
+    "message": "pamięć się budzi…"
+  },
+  "popupOpenSearch": {
+    "message": "Otwórz wyszukiwanie"
+  },
+  "popupPause": {
+    "message": "Wstrzymaj zapamiętywanie"
+  },
+  "popupClear": {
+    "message": "Wyczyść pamięć"
+  },
+  "popupClearConfirm": {
+    "message": "Usunąć wszystko, co zapamiętane? Nie da się tego cofnąć."
+  },
+  "popupOptions": {
+    "message": "Ustawienia"
+  },
+  "optionsTitle": {
+    "message": "Déjà — ustawienia"
+  },
+  "optRetentionLabel": {
+    "message": "Pamiętaj strony"
+  },
+  "optRetentionForever": {
+    "message": "zawsze"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ mies.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Starsze strony są usuwane automatycznie raz dziennie."
+  },
+  "optDenylistLabel": {
+    "message": "Nigdy nie zapamiętuj adresów zawierających"
+  },
+  "optDenylistHelp": {
+    "message": "Jeden wzorzec w wierszu. Dopasowanie do części adresu, np. „example.com” lub „/private”."
+  },
+  "optBuiltinLabel": {
+    "message": "Wbudowana ochrona (zawsze aktywna)"
+  },
+  "optModelHostLabel": {
+    "message": "Własny serwer lustrzany modelu (zaawansowane)"
+  },
+  "optModelHostHelp": {
+    "message": "Puste = huggingface.co. Ustaw własny serwer dla środowisk offline lub firmowych."
+  },
+  "filterAll": {
+    "message": "wszystko"
+  },
+  "filterWeek": {
+    "message": "ostatni tydzień"
+  },
+  "filterMonth": {
+    "message": "ostatni miesiąc"
+  },
+  "filterYear": {
+    "message": "ostatni rok"
+  },
+  "relatedLink": {
+    "message": "powiązane wspomnienia"
+  },
+  "relatedNone": {
+    "message": "brak bliskich wspomnień"
+  },
+  "omniboxDefault": {
+    "message": "Zapytaj swoją pamięć — Déjà szuka według znaczenia"
+  },
+  "popupMemory": {
+    "message": "Moja pamięć"
+  },
+  "memoryTitle": {
+    "message": "Moja pamięć"
+  },
+  "memoryEmpty": {
+    "message": "Pamięć jest pusta — przejrzyj kilka stron i wróć."
+  },
+  "memoryForget": {
+    "message": "Zapomnij"
+  },
+  "memoryExport": {
+    "message": "Pobierz archiwum"
+  },
+  "memoryImport": {
+    "message": "Przywróć z archiwum"
+  },
+  "memoryImportConfirm": {
+    "message": "Przywrócić z archiwum? Pasujące strony zostaną nadpisane."
+  },
+  "optSave": {
+    "message": "Zapisz"
+  },
+  "optSaved": {
+    "message": "Zapisano ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Serwer lustrzany musi mieć adres https://"
+  },
+  "welcomeHeading": {
+    "message": "Cześć. Jestem pamięcią twojej przeglądarki."
+  },
+  "welcomeIntro": {
+    "message": "Od tej chwili zapamiętuję to, co czytasz, żeby można to było później znaleźć według znaczenia — własnymi słowami, a nie dokładnym tytułem."
+  },
+  "welcomePoint1": {
+    "message": "Wszystko dzieje się na twoim urządzeniu. Bez serwerów, bez chmury, bez wysyłania danych — nigdzie i nigdy."
+  },
+  "welcomePoint2": {
+    "message": "Poczta, czaty, logowanie i bankowość nigdy nie są zapamiętywane. Uwaga: stron o wrażliwej tematyce nie potrafię rozpoznać po adresie — dla nich użyj pauzy albo własnej listy w ustawieniach."
+  },
+  "welcomePoint3": {
+    "message": "Ty decydujesz: pauza jednym kliknięciem, „Wyczyść pamięć” usuwa wszystko, a opcjonalnie zapominam automatycznie po kilku miesiącach."
+  },
+  "welcomeCta": {
+    "message": "Otwórz wyszukiwanie"
+  },
+  "welcomeOptions": {
+    "message": "Ustawienia"
+  },
+  "memoryFilter": {
+    "message": "Szukaj w pamięci…"
+  },
+  "supportLink": {
+    "message": "Wesprzyj Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — towarzysz"
+  },
+  "panelOnThisPage": {
+    "message": "Na temat tej strony"
+  },
+  "panelRecent": {
+    "message": "Ostatnie wspomnienia"
+  },
+  "panelNoPage": {
+    "message": "Otwórz stronę internetową, a Déjà pokaże przeczytane strony na jej temat."
+  },
+  "popupOpenPanel": {
+    "message": "Panel boczny"
+  },
+  "popupForgetPage": {
+    "message": "Zapomnij tę stronę"
+  },
+  "popupForgotten": {
+    "message": "Zapomniano ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: zapamiętaj zaznaczony tekst"
+  },
+  "menuForget": {
+    "message": "Déjà: zapomnij tę stronę"
+  },
+  "recentTitle": {
+    "message": "Ostatnie wspomnienia"
+  },
+  "cmdOpenPanel": {
+    "message": "Otwórz panel boczny Déjà"
+  },
+  "welcomePoint4": {
+    "message": "Panel boczny widzi adres i tytuł oglądanej strony, aby pokazać przeczytane treści na jej temat — tylko w pamięci sesji. Fragmenty, które celowo zapisujesz, również zostają tylko u ciebie."
+  },
+  "welcomeUpdated": {
+    "message": "Nowa wersja Déjà. Nowość: jeśli chcesz, twoje zakładki też mogą być przeszukiwane według znaczenia. Oto co robię z twoimi danymi — nic nie opuściło twojego urządzenia."
+  },
+  "optAmbientLabel": {
+    "message": "Żywe tło"
+  },
+  "optAmbientHelp": {
+    "message": "Sieć wspomnień za szkłem powoli dryfuje. Wyłącz, jeśli ruch cię rozprasza."
+  },
+  "bmTitle": {
+    "message": "Spraw, by zakładki dało się przeszukiwać — już teraz"
+  },
+  "bmText": {
+    "message": "Déjà poznaje tytuły i foldery twoich zakładek bez otwierania stron. Znajdziesz je według znaczenia od pierwszej minuty — wszystko zostaje na twoim urządzeniu."
+  },
+  "bmTextShort": {
+    "message": "Twoja pamięć jest jeszcze młoda. Pozwól mi poznać twoje zakładki i przeszukuj je według znaczenia już dziś."
+  },
+  "bmButton": {
+    "message": "Poznaj moje zakładki"
+  },
+  "bmNote": {
+    "message": "Przeglądarka poprosi o pozwolenie. Możesz to wyłączyć w każdej chwili w ustawieniach."
+  },
+  "bmTitleRunning": {
+    "message": "Poznaję twoje zakładki…"
+  },
+  "bmTitleDone": {
+    "message": "Twoje zakładki można przeszukiwać"
+  },
+  "bmPreparing": {
+    "message": "Przygotowuję się…"
+  },
+  "bmLearning": {
+    "message": "Poznane: $DONE$ z $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà jest na pauzie — będę kontynuować, gdy tylko ją wyłączysz."
+  },
+  "bmError": {
+    "message": "Coś poszło nie tak podczas nauki. Spróbuję ponownie przy następnej zmianie."
+  },
+  "bmDone": {
+    "message": "Gotowe — zakładki przeszukiwalne według znaczenia: $COUNT$. Synchronizują się automatycznie.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Gotowe — 1 zakładkę można przeszukiwać według znaczenia; synchronizuje się automatycznie."
+  },
+  "bmDenied": {
+    "message": "Bez pozwolenia nie widzę twoich zakładek. Możesz spróbować ponownie w każdej chwili."
+  },
+  "bmTry": {
+    "message": "Spróbuj:"
+  },
+  "bmBadge": {
+    "message": "Zakładka"
+  },
+  "bmAddedOn": {
+    "message": "dodano do zakładek $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Zakładki w pamięci"
+  },
+  "optBookmarksHelp": {
+    "message": "Poznaję tytuły i foldery twoich zakładek (bez otwierania stron) i śledzę zmiany, gdy je dodajesz lub usuwasz. Wyłączenie usuwa je z pamięci — przeczytane strony zostają."
+  },
+  "memoryFilterAll": {
+    "message": "Wszystko"
+  },
+  "memoryFilterRead": {
+    "message": "Przeczytane"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Zakładki"
+  },
+  "welcomePoint5": {
+    "message": "Zakładki — tylko jeśli je włączysz: wtedy poznaję ich tytuły i foldery bez otwierania stron. Wyłączasz to jednym kliknięciem."
+  },
+  "rateTitle": {
+    "message": "Z Déjà udało ci się coś znaleźć już $COUNT$ razy",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Jeśli Déjà ci się przydaje, ocena w sklepie pomaga innym ludziom odkryć Déjà — zajmuje to 10 sekund. A jeśli coś cię irytuje, napisz do nas."
+  },
+  "rateButton": {
+    "message": "Oceń Déjà"
+  },
+  "rateFeedback": {
+    "message": "Coś nie działa?"
+  },
+  "rateLater": {
+    "message": "Nie teraz"
+  },
+  "rateThanks": {
+    "message": "Dziękujemy! To naprawdę pomaga."
+  },
+  "rateFeedbackThanks": {
+    "message": "Dziękujemy — czytamy każdą wiadomość."
+  },
+  "rateFeedbackSubject": {
+    "message": "opinia"
+  },
+  "answerTitle": {
+    "message": "Odpowiedź z twojej pamięci"
+  },
+  "answerAsk": {
+    "message": "Odpowiedz z mojej pamięci"
+  },
+  "answerEnableTitle": {
+    "message": "Odpowiedzi od wbudowanej AI w Chrome"
+  },
+  "answerEnableText": {
+    "message": "Déjà może odpowiadać na pytania na podstawie przeczytanych stron, ze źródłami. Chrome jednorazowo pobiera swój model działający na urządzeniu (Gemini Nano) — twoje pytania i strony nigdy nie opuszczają komputera."
+  },
+  "answerEnableButton": {
+    "message": "Włącz odpowiedzi"
+  },
+  "answerNoThanks": {
+    "message": "Nie, dziękuję"
+  },
+  "answerDownloading": {
+    "message": "Chrome pobiera model… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Czytam twoje wspomnienia…"
+  },
+  "answerStop": {
+    "message": "Stop"
+  },
+  "answerFoot": {
+    "message": "Napisane na twoim urządzeniu przez wbudowaną AI w Chrome na podstawie twoich wspomnień (liczba: $COUNT$). Sprawdź źródła.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Tym razem nie udało się złożyć odpowiedzi."
+  },
+  "optAnswersLabel": {
+    "message": "Odpowiedzi od wbudowanej AI w Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "Na pytania typu „co wiem z przeczytanych stron o…?” piszę krótką odpowiedź ze źródłami z twoich stron — w całości na urządzeniu, z Gemini Nano w Chrome. Wymaga obsługiwanego komputera i języka (angielski, hiszpański, niemiecki, francuski, japoński)."
+  },
+  "optAnswersAvailable": {
+    "message": "Gotowe do użycia na tym urządzeniu."
+  },
+  "optAnswersDownloadable": {
+    "message": "Obsługiwane — Chrome pobierze model przy pierwszym pytaniu."
+  },
+  "optAnswersUnavailable": {
+    "message": "To urządzenie lub język interfejsu nie jest obsługiwany przez wbudowaną AI w Chrome."
+  },
+  "optAnswersUnsupported": {
+    "message": "Ta przeglądarka nie ma wbudowanej AI — wszystko inne w Déjà działa jak zawsze."
+  }
+}

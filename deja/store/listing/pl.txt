@@ -1,0 +1,50 @@
+TITLE: Déjà — pamięć twojej przeglądarki
+SHORT: Szukaj w przeczytanych stronach według znaczenia, w 50+ językach. Działa na urządzeniu — nic nie opuszcza przeglądarki.
+
+Gdzieś to już było. Déjà to znajdzie.
+
+Historia przeglądarki pamięta tylko tytuły i adresy. Déjà pamięta
+TREŚĆ. Opisz własnymi słowami, co pamiętasz — „ten artykuł o akumulatorach na
+bazie sodu” — a Déjà wyłowi stronę, nawet jeśli nie pamiętasz tytułu, witryny
+ani dokładnych słów. Przeniesie cię nawet od razu do właściwego akapitu.
+
+CO ZYSKUJESZ
+✓ Twoje zakładki, przeszukiwalne według znaczenia od pierwszej minuty —
+  opcjonalnie, jednym kliknięciem. Déjà poznaje ich tytuły i foldery (bez
+  otwierania stron) i synchronizuje je, gdy dodajesz, przenosisz lub usuwasz
+  zakładki.
+✓ Odpowiedzi z twojej pamięci — na komputerach obsługujących wbudowaną AI w
+  Chrome (Gemini Nano) zadaj pytanie i otrzymaj krótką odpowiedź napisaną na
+  twoim urządzeniu na podstawie przeczytanych stron, z klikalnymi źródłami.
+  (Odpowiedzi po angielsku, hiszpańsku, niemiecku, francusku i japońsku.)
+✓ Wyszukiwanie według znaczenia — pytaj własnymi słowami, w 50+ językach;
+  zapytaj w jednym języku, znajdź strony przeczytane w innym.
+✓ Panel boczny jako towarzysz — otwórz go obok dowolnej strony i zobacz
+  przeczytane treści na jej temat oraz ostatnie wspomnienia.
+✓ Wpisz „dj” w pasku adresu — przeszukuj pamięć prosto z paska adresu, z
+  podpowiedziami na żywo.
+✓ Zapamiętaj fragment — kliknij prawym przyciskiem zaznaczony tekst: „Déjà:
+  zapamiętaj zaznaczony tekst”. Staje się osobnym wspomnieniem do
+  wyszukiwania.
+✓ Skok do właściwego akapitu — wyniki otwierają stronę z wyróżnionym
+  pasującym fragmentem.
+✓ Filtry dat, powiązane wspomnienia, ostatnie wspomnienia na pustej stronie
+  wyszukiwania.
+✓ Moja pamięć — zobacz wszystko, co pamięta Déjà, zapomnij dowolną stronę
+  jednym kliknięciem, eksportuj i importuj cały indeks jako plik.
+
+PRYWATNOŚĆ W ZAŁOŻENIU
+✓ 100% lokalnego przetwarzania — model AI do embeddingów działa w twojej
+  przeglądarce, a dane są przechowywane w IndexedDB. Bez serwerów, bez chmury,
+  bez telemetrii, bez konta.
+✓ Strony poczty, czatów, logowania i bankowości są pomijane automatycznie
+  (wbudowana lista adresów; możesz dodać własne wzorce).
+✓ Pauza jednym kliknięciem. „Zapomnij tę stronę” i „Wyczyść pamięć” są zawsze
+  pod ręką.
+✓ Automatyczne zapominanie — opcjonalnie usuwaj strony starsze niż 3/6/12/24
+  mies.
+✓ Jasny i ciemny motyw podążają za ustawieniami systemu.
+
+Jedyne żądanie sieciowe, jakie kiedykolwiek wykonuje rozszerzenie, to
+jednorazowe pobranie modelu embeddingów z Hugging Face (potem jest
+przechowywany lokalnie; zamiast tego możesz wskazać własny serwer lustrzany).

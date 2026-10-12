@@ -1,0 +1,48 @@
+TITLE: Déjà — paměť tvého prohlížeče
+SHORT: Hledej v přečtených stránkách podle významu, ve 50+ jazycích. Vše běží na zařízení — nic neopustí tvůj prohlížeč.
+
+Někde to už bylo. Déjà to najde.
+
+Historie prohlížeče si pamatuje jen názvy a adresy. Déjà si pamatuje
+OBSAH. Popiš vlastními slovy, co si pamatuješ — „ten článek o bateriích na
+bázi sodíku“ — a Déjà stránku vyloví, i když si nepamatuješ název, web ani
+přesná slova. Dokonce skočí přímo na správný odstavec.
+
+CO ZÍSKÁŠ
+✓ Tvé záložky, prohledávatelné podle významu od první minuty — volitelně,
+  jedním kliknutím. Déjà se učí jejich názvy a složky (bez otevírání stránek)
+  a synchronizuje je, když záložky přidáváš, přesouváš nebo mažeš.
+✓ Odpovědi z tvé paměti — na počítačích s podporou vestavěné AI v Chromu
+  (Gemini Nano) polož otázku a dostaneš krátkou odpověď sestavenou na tvém
+  zařízení z přečtených stránek, s klikatelnými zdroji. (Odpovědi v
+  angličtině, španělštině, němčině, francouzštině a japonštině.)
+✓ Hledání podle významu — ptej se vlastními slovy ve 50+ jazycích; zeptej se
+  v jednom jazyce a najdi stránky přečtené v jiném.
+✓ Postranní panel jako společník — otevři ho vedle libovolné stránky a uvidíš,
+  co máš přečtené k jejímu tématu, plus nedávné vzpomínky.
+✓ Napiš „dj“ do adresního řádku — prohledávej paměť přímo odtud s živými
+  návrhy.
+✓ Zapamatuj si úryvek — klikni pravým tlačítkem na vybraný text: „Déjà:
+  zapamatovat vybraný text“. Stane se samostatnou vzpomínkou, kterou lze
+  vyhledat.
+✓ Skok na správný odstavec — výsledky otevřou stránku se zvýrazněným
+  odpovídajícím úryvkem.
+✓ Filtry podle data, související vzpomínky, nedávné vzpomínky na prázdné
+  stránce hledání.
+✓ Moje paměť — prohlédni si vše, co si Déjà pamatuje, zapomeň libovolnou
+  stránku jedním kliknutím, exportuj a importuj celý index jako soubor.
+
+SOUKROMÍ OD ZÁKLADU
+✓ 100% místní zpracování — AI model pro embeddingy běží v tvém prohlížeči a
+  data jsou uložena v IndexedDB. Žádné servery, žádný cloud, žádná telemetrie,
+  žádný účet.
+✓ Stránky pošty, chatů, přihlašování a bankovnictví se automaticky přeskakují
+  (vestavěný seznam adres; můžeš přidat vlastní vzory).
+✓ Pozastavení jedním kliknutím. „Zapomenout tuto stránku“ a „Vymazat paměť“
+  jsou vždy po ruce.
+✓ Automatické zapomínání — volitelně maž stránky starší než 3/6/12/24 měs.
+✓ Světlý a tmavý motiv se řídí nastavením systému.
+
+Jediný síťový požadavek, který rozšíření kdy provede, je jednorázové stažení
+modelu pro embeddingy z Hugging Face (poté je uložen v mezipaměti; místo toho
+můžeš nastavit vlastní zrcadlo).
