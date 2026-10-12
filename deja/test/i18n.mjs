@@ -66,7 +66,11 @@ for (const l of locales) {
       problems.push(`${l}: ${k} placeholders блокът се различава`);
     }
     for (const keep of KEEP) {
-      if (count(en[k].message, keep) && !count(m, keep)) problems.push(`${l}: ${k} без „${keep}“`);
+      // „Chrome“ се склонява в много езици (cs „v Chromu“, fi „Chromessa“, pl „w Chrome'ie“)
+      // — пазим основата, не буквалната форма
+      const needle = keep === 'Chrome' ? 'Chrom' : keep;
+      if (count(en[k].message, keep) && !count(m, needle))
+        problems.push(`${l}: ${k} без „${keep}“`);
     }
   }
   const name = d.extName?.message || '';
