@@ -26,6 +26,7 @@ import { join, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
 import { addLessons, sectionLessons, countVerifiedText, lessonIndex, lessonText, summarize, applyUpdate, norm, bodyKey } from "./memory-core.mjs";
 import { parseFallback, replaceFallback } from "./dashboard-fallback.mjs";
+import { assertCleanFiles, treeProblems, ConflictContentError } from "./conflict-guard.mjs";
 
 export const MEMORY_BRANCH = "agents/memory";
 export const LOCAL_REF = `refs/heads/${MEMORY_BRANCH}`;
@@ -39,6 +40,10 @@ export const APPEND_ONLY = ["tools/agents/evals/usage.jsonl"];
 const PENDING_USAGE = "agents-usage.pending.jsonl"; // в .git — локално, не се комитва
 const DASH_HTML = "agents-dashboard/index.html";
 const AGENT_FILE = /^[\w-]+\.md$/;
+// Пътищата, които този конвейер пише и пренася — пазени от конфликтни маркери (tools/lib/conflict-guard.mjs).
+// Само те, не целият монорепо: сгъването пренася продуктовото дърво на main непокътнато, а чужд файл
+// не бива да спира ученето на целия флот.
+export const GUARDED_PATHS = [MEM_PATH, DASH_JSON, DASH_HTML, ...APPEND_ONLY];
 const NOT_AGENT = /^(_shared|SECURITY|PROCEDURE|PROTOCOL|README)\.md$/;
 const IDENTITY = { GIT_AUTHOR_NAME: "Claude", GIT_AUTHOR_EMAIL: "noreply@anthropic.com", GIT_COMMITTER_NAME: "Claude", GIT_COMMITTER_EMAIL: "noreply@anthropic.com" };
 
@@ -76,7 +81,11 @@ export function withRepoLock(cwd, fn, { waitMs = 15000 } = {}) {
 }
 
 /** Commit с дадени файлове върху дървото на `baseCommit` — БЕЗ да пипа HEAD, индекса или работното дърво. */
+// Fail-closed (инцидент 2026-09-25): ред `<<<<<<< `/`>>>>>>> ` или неразчитаем `.json` — в записваните
+// файлове ИЛИ в пазените пътища на полученото дърво (замърсена основа: main/отдалечения клон) → хвърля
+// ConflictContentError ПРЕДИ commit-tree. Няма commit, няма update-ref, временният индекс се трие.
 function commitFiles(cwd, baseCommit, files, parents, message) {
+  assertCleanFiles(files);
   const idx = gitPath(cwd, `agents-memory-index-${process.pid}-${Date.now()}`);
   const env = { GIT_INDEX_FILE: idx, ...IDENTITY };
   try {
@@ -88,6 +97,8 @@ function commitFiles(cwd, baseCommit, files, parents, message) {
     }
     const tree = git(cwd, ["write-tree"], { env });
     if (!tree.ok) throw new Error("write-tree");
+    const bad = treeProblems(cwd, tree.out, GUARDED_PATHS, [DASH_JSON]);
+    if (bad.length) throw new ConflictContentError(bad);
     const c = git(cwd, ["commit-tree", tree.out, ...parents.flatMap((p) => ["-p", p]), "-m", message], { env });
     if (!c.ok) throw new Error("commit-tree");
     return c.out;
@@ -154,7 +165,7 @@ function publishBase(cwd) {
  */
 export function publishLessons(cwd, perAgent, { date = new Date().toISOString().slice(0, 10), message } = {}) {
   if (!isGitRepo(cwd)) return { ok: false, reason: "не е git репо" };
-  return withRepoLock(cwd, () => {
+  return refuseOnConflict(() => withRepoLock(cwd, () => {
     const base = publishBase(cwd);
     if (!base) return { ok: false, reason: "няма основа (нито agents/memory, нито main)" };
     const { files, added, skipped, changed } = applyLessons(cwd, base, perAgent, date);
@@ -165,7 +176,15 @@ export function publishLessons(cwd, perAgent, { date = new Date().toISOString().
     const old = rev(cwd, LOCAL_REF);
     if (!git(cwd, ["update-ref", LOCAL_REF, commit, ...(old ? [old] : [])]).ok) return { ok: false, reason: "update-ref" };
     return { ok: true, commit, added, skipped };
-  });
+  }));
+}
+
+/** Замърсено съдържание → {ok:false, reason:"conflict"} вместо изключение (куката решава да НЕ пише другаде). */
+function refuseOnConflict(fn) {
+  try { return fn(); } catch (e) {
+    if (e instanceof ConflictContentError) return { ok: false, reason: "conflict", problems: e.problems, message: e.message };
+    throw e;
+  }
 }
 
 /** Поуките (по раздели), добавени в `tip` спрямо `since`, за всеки агент. */
@@ -252,7 +271,7 @@ export function flushUsage(cwd, { message } = {}) {
   if (!isGitRepo(cwd)) return { ok: false, reason: "не е git репо" };
   const p = pendingUsagePath(cwd);
   if (!p || !existsSync(p)) return { ok: true, flushed: 0 };
-  return withRepoLock(cwd, () => {
+  return refuseOnConflict(() => withRepoLock(cwd, () => {
     let pending = "";
     try { pending = readFileSync(p, "utf8"); } catch { return { ok: true, flushed: 0 }; }
     const lines = pending.split("\n").filter(Boolean);
@@ -275,7 +294,26 @@ export function flushUsage(cwd, { message } = {}) {
     if (!git(cwd, ["update-ref", LOCAL_REF, commit, ...(old ? [old] : [])]).ok) return { ok: false, reason: "update-ref" };
     rmSync(p, { force: true });
     return { ok: true, flushed: add.length, commit };
-  });
+  }));
+}
+
+/** Под лока: обединява локален ↔ отдалечен и сгъва main; мести LOCAL_REF. Хвърля ConflictContentError. */
+function foldTip(cwd, steps, date) {
+  const local = rev(cwd, LOCAL_REF);
+  const remote = rev(cwd, REMOTE_REF), main = rev(cwd, MAIN_REF);
+  let t = local || remote;
+  if (local && remote && !isAncestor(cwd, remote, local)) {
+    if (isAncestor(cwd, local, remote)) t = remote;
+    else { t = unionCommit(cwd, remote, local, "памет: обединяване на agents/memory (локален ↔ отдалечен)", date); steps.push("обединен с отдалечения"); }
+  }
+  if (main && t && isAncestor(cwd, t, main)) { t = main; steps.push("догонен main (PR-ът е слят)"); }
+  else if (main && t && !isAncestor(cwd, main, t)) {
+    t = unionCommit(cwd, main, t, "памет: сгъване на main в agents/memory", date);
+    steps.push("сгънат main");
+  }
+  if (!t) return null;
+  if (t !== local) git(cwd, ["update-ref", LOCAL_REF, t, ...(local ? [local] : [])]);
+  return t;
 }
 
 /**
@@ -290,26 +328,18 @@ export function syncMemoryBranch(cwd, { fetch = true, push = true, date = new Da
       git(cwd, ["fetch", "-q", "origin", "+refs/heads/main:" + MAIN_REF], { timeout: 60000 });
       git(cwd, ["fetch", "-q", "origin", `+${LOCAL_REF}:${REMOTE_REF}`], { timeout: 60000 }); // може да липсва — не е грешка
     }
-    const tip = withRepoLock(cwd, () => {
-      let local = rev(cwd, LOCAL_REF);
-      const remote = rev(cwd, REMOTE_REF), main = rev(cwd, MAIN_REF);
-      let t = local || remote;
-      if (local && remote && !isAncestor(cwd, remote, local)) {
-        if (isAncestor(cwd, local, remote)) t = remote;
-        else { t = unionCommit(cwd, remote, local, "памет: обединяване на agents/memory (локален ↔ отдалечен)", date); steps.push("обединен с отдалечения"); }
-      }
-      if (main && t && isAncestor(cwd, t, main)) { t = main; steps.push("догонен main (PR-ът е слят)"); }
-      else if (main && t && !isAncestor(cwd, main, t)) {
-        t = unionCommit(cwd, main, t, "памет: сгъване на main в agents/memory", date);
-        steps.push("сгънат main");
-      }
-      if (!t) return null;
-      if (t !== local) git(cwd, ["update-ref", LOCAL_REF, t, ...(local ? [local] : [])]);
-      return t;
-    });
+    let tip;
+    try { tip = withRepoLock(cwd, () => foldTip(cwd, steps, date)); } catch (e) {
+      if (!(e instanceof ConflictContentError)) throw e;
+      return { ok: false, conflict: true, problems: e.problems, steps: [...steps, `ОТКАЗ — ${e.message}; нищо не е комитнато/пуснато — поправи източника (main или origin/agents/memory)`] };
+    }
     if (!tip) return { ok: true, steps: [...steps, "няма клон на паметта"] };
     if (!push) return { ok: true, tip, pushed: false, steps };
     if (rev(cwd, REMOTE_REF) === tip) return { ok: true, tip, pushed: false, steps: [...steps, "вече е актуален"] };
+    // Последна врата преди push: върхът може да е дошъл без наш commit (догонен main, бърз ход към
+    // отдалечения) — пак не пускаме замърсено дърво.
+    const bad = treeProblems(cwd, tip, GUARDED_PATHS, [DASH_JSON]);
+    if (bad.length) return { ok: false, conflict: true, problems: bad, tip, steps: [...steps, `ОТКАЗ на push — конфликтни маркери/невалиден JSON: ${bad.join("; ")}`] };
     const p = git(cwd, ["push", "-q", "origin", `${tip}:${LOCAL_REF}`], { timeout: 60000 });
     if (p.ok) { git(cwd, ["update-ref", REMOTE_REF, tip]); return { ok: true, tip, pushed: true, steps: [...steps, "пуснат"] }; }
     steps.push(`push отказан (опит ${attempt + 1}) — нов fetch и обединяване`);
