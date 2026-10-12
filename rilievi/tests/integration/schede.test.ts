@@ -228,6 +228,9 @@ describe('sheets', () => {
       /class="opt opt--on"><span class="opt__box" aria-hidden="true"><\/span>Elettrico/,
     );
     assert.match(print.body, /Lavori extra \(buono di lavoro\)/);
+    // The printed sheet names who filled it in and the company it belongs to.
+    assert.match(print.body, /Compilata da<\/span><strong>TECNICO \d+<\/strong>/);
+    assert.match(print.body, /class="paper__azienda">Ascensori Prova</);
     const pdf = await browser.get(`/schede/${id}/pdf`);
     assert.equal(pdf.status, 200);
     assert.equal(pdf.headers.get('content-type'), 'application/pdf');

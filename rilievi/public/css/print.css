@@ -67,10 +67,35 @@
   margin-bottom: 12px;
 }
 
-.paper__brand {
-  font-weight: 700;
+.paper__id {
+  min-width: 0;
+}
+
+/* Логото на фирмата — най-горе вляво на всеки лист (до 60 × 18 мм, без да се разтегля). */
+.paper__logo {
+  display: block;
+  width: auto;
+  max-width: 60mm;
+  height: auto;
+  max-height: 18mm;
+  margin-bottom: 3mm;
+}
+
+.paper__azienda {
+  margin-top: 1px;
   font-size: 8.5pt;
-  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+/* Кой е попълнил картата — с едър шрифт, вижда се на всеки отпечатан лист. */
+.paper__by {
+  display: grid;
+  margin: 4px 0 2px;
+}
+
+.paper__by strong {
+  font-size: 12pt;
+  color: #000000;
 }
 
 .paper__title {

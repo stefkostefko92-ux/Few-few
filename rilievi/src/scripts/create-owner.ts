@@ -41,10 +41,11 @@ async function main(): Promise<void> {
   await writeAudit({
     actorId: null,
     action: 'OWNER_CREATE',
+    aziendaId: null,
     targetType: 'user',
     targetId: user.id,
   });
-  logger.info('MASTER е създаден — влез в портала и покани екипа от „Utenti“');
+  logger.info('MASTER е създаден — влез в портала, създай фирмите от „Aziende“ и покани хората им');
 }
 
 main()

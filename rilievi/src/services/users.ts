@@ -2,7 +2,9 @@ import type { Role } from '@prisma/client';
 import { prisma } from '../db.js';
 import { writeAudit } from '../audit.js';
 import { outranks, ROLE_LEVEL } from '../auth/roles.js';
+import { aziendaWhere, inScope, scopeOf } from '../auth/scope.js';
 import { destroyAllSessions } from '../auth/sessions.js';
+import { activeAzienda } from '../aziende/service.js';
 import { accountLocale } from '../i18n.js';
 import { resetMail } from '../mail/templates.js';
 import { sendMail, type MailResult } from '../mail/mailer.js';
@@ -19,28 +21,47 @@ const USER_SELECT = {
   deactivatedAt: true,
   lastLoginAt: true,
   createdAt: true,
+  aziendaId: true,
+  azienda: { select: { name: true } },
   invitedBy: { select: { name: true } },
 } as const;
 
-/** Всички акаунти: първо по ранг (MASTER горе), после по име. */
-export async function listUsers() {
-  const users = await prisma.user.findMany({ select: USER_SELECT });
+/**
+ * Акаунтите в обхвата: администраторът на фирма вижда своята фирма, MASTER — всички (или избраната
+ * с филтъра). Първо по ранг (MASTER горе), после по име.
+ */
+export async function listUsers(actor: SessionUser, filter?: string | null) {
+  const users = await prisma.user.findMany({
+    where: aziendaWhere(scopeOf(actor), filter),
+    select: USER_SELECT,
+  });
   return users.sort(
     (a, b) => ROLE_LEVEL[a.role] - ROLE_LEVEL[b.role] || a.name.localeCompare(b.name),
   );
 }
 
-export function getUser(id: string) {
+/** Акаунт по id — само в обхвата: чужда фирма е „няма такъв“, не „забранено“. */
+export function getUser(actor: SessionUser, id: string) {
   if (!/^[a-z0-9]{20,40}$/.test(id)) return Promise.resolve(null);
-  return prisma.user.findUnique({ where: { id }, select: USER_SELECT });
+  return prisma.user.findFirst({
+    where: { id, ...aziendaWhere(scopeOf(actor)) },
+    select: USER_SELECT,
+  });
 }
 
 /**
- * Кой управлява кой акаунт е ЕДНА проверка: само по-висок ранг, никога себе си. Ново действие над
- * чужд акаунт минава оттук.
+ * Кой управлява кой акаунт е ЕДНА проверка: само по-висок ранг, само в своята фирма (MASTER — във
+ * всяка), никога себе си. Ново действие над чужд акаунт минава оттук.
  */
-export function canManage(actor: SessionUser, target: { id: string; role: Role }): boolean {
-  return actor.id !== target.id && outranks(actor.role, target.role);
+export function canManage(
+  actor: SessionUser,
+  target: { id: string; role: Role; aziendaId: string | null },
+): boolean {
+  return (
+    actor.id !== target.id &&
+    outranks(actor.role, target.role) &&
+    inScope(scopeOf(actor), target.aziendaId)
+  );
 }
 
 export async function changeRole(
@@ -57,6 +78,7 @@ export async function changeRole(
       {
         actorId: actor.id,
         action: 'USER_ROLE',
+        aziendaId: target.aziendaId,
         targetType: 'user',
         targetId: target.id,
         meta: { from: target.role, to: role },
@@ -88,6 +110,7 @@ export async function setActive(
       {
         actorId: actor.id,
         action: active ? 'USER_REACTIVATE' : 'USER_DEACTIVATE',
+        aziendaId: target.aziendaId,
         targetType: 'user',
         targetId: target.id,
       },
@@ -122,7 +145,13 @@ export async function createResetLink(
       },
     });
     await writeAudit(
-      { actorId: actor.id, action: 'PASSWORD_RESET_LINK', targetType: 'user', targetId: target.id },
+      {
+        actorId: actor.id,
+        action: 'PASSWORD_RESET_LINK',
+        aziendaId: target.aziendaId,
+        targetType: 'user',
+        targetId: target.id,
+      },
       tx,
     );
   });
@@ -131,4 +160,37 @@ export async function createResetLink(
     resetMail(accountLocale(target), { to: target.email, link, hours: ADMIN_RESET_HOURS }),
   );
   return { link, mail };
+}
+
+/**
+ * Преместване в друга фирма — само MASTER (маршрутът го проверява), само за акаунт под MASTER.
+ * Картите остават във фирмата, в която са създадени; човекът вижда вече картите на новата фирма.
+ */
+export async function changeAzienda(
+  actor: SessionUser,
+  targetId: string,
+  aziendaId: unknown,
+): Promise<boolean> {
+  if (actor.role !== 'MASTER') return false;
+  const [target, azienda] = await Promise.all([
+    prisma.user.findUnique({ where: { id: targetId } }),
+    activeAzienda(aziendaId),
+  ]);
+  if (!target || !azienda || !canManage(actor, target)) return false;
+  if (target.aziendaId === azienda.id) return true;
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({ where: { id: target.id }, data: { aziendaId: azienda.id } });
+    await writeAudit(
+      {
+        actorId: actor.id,
+        action: 'USER_AZIENDA',
+        aziendaId: azienda.id,
+        targetType: 'user',
+        targetId: target.id,
+        meta: { from: target.aziendaId ?? '' },
+      },
+      tx,
+    );
+  });
+  return true;
 }

@@ -139,6 +139,8 @@ export async function resolveSession(token: string | undefined): Promise<Princip
           theme: true,
           mustChangePassword: true,
           deactivatedAt: true,
+          aziendaId: true,
+          azienda: { select: { name: true, deactivatedAt: true } },
         },
       },
     },
@@ -148,8 +150,10 @@ export async function resolveSession(token: string | undefined): Promise<Princip
   const now = Date.now();
   const { idleMs, absoluteMs } = sessionLimits(session.user.role);
   const deadline = session.createdAt.getTime() + absoluteMs;
-  // Деактивирането важи веднага: сесията пада при следващата заявка, не когато изтече.
-  if (session.expiresAt.getTime() <= now || now >= deadline || session.user.deactivatedAt) {
+  // Деактивирането (на човека или на фирмата му) важи веднага: сесията пада при следващата заявка.
+  const inactive =
+    session.user.deactivatedAt !== null || Boolean(session.user.azienda?.deactivatedAt);
+  if (session.expiresAt.getTime() <= now || now >= deadline || inactive) {
     await prisma.session.deleteMany({ where: { id: session.id } });
     return null;
   }
@@ -163,7 +167,8 @@ export async function resolveSession(token: string | undefined): Promise<Princip
     if (slid.count === 0) return null;
   }
 
-  const { deactivatedAt: _deactivatedAt, ...user } = session.user;
+  const { deactivatedAt: _deactivatedAt, azienda, ...rest } = session.user;
+  const user = { ...rest, aziendaName: azienda?.name ?? null };
   return { user, session: { id: session.id, csrfToken: session.csrfToken } };
 }
 

@@ -82,6 +82,7 @@ authRouter.post('/esci', requireCsrf, async (req, res) => {
     await writeAudit({
       actorId: principal.user.id,
       action: 'LOGOUT',
+      aziendaId: principal.user.aziendaId,
       targetType: 'user',
       targetId: principal.user.id,
     });

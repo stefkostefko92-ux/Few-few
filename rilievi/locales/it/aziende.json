@@ -1,0 +1,40 @@
+{
+  "aziende": {
+    "title": "Aziende",
+    "subtitle": "Ogni azienda vede solo le sue schede e le sue persone. Il logo va in cima a ogni scheda stampata.",
+    "new": "Nuova azienda",
+    "empty": "Ancora nessuna azienda. Crea la prima, poi invita il suo amministratore.",
+    "name": "Nome dell'azienda",
+    "logo": "Logo",
+    "logoHint": "PNG, JPEG o WebP, al massimo {kb} KB. Sfondo trasparente o bianco: va in cima alla scheda stampata e al PDF.",
+    "logoNone": "Nessun logo: sulla scheda stampata compare il nome dell'azienda.",
+    "logoAlt": "Logo di {name}",
+    "logoUpload": "Carica logo",
+    "logoReplace": "Sostituisci logo",
+    "logoRemove": "Rimuovi logo",
+    "create": "Crea azienda",
+    "rename": "Salva nome",
+    "users": "Persone",
+    "schede": "Schede",
+    "status": "Stato",
+    "active": "Attiva",
+    "deactivated": "Disattivata",
+    "back": "Tutte le aziende",
+    "inviteHere": "Invita una persona",
+    "usersHere": "Persone dell'azienda",
+    "schedeHere": "Schede dell'azienda",
+    "accessTitle": "Accesso",
+    "deactivateText": "Le persone dell'azienda non potranno più accedere e le loro sessioni si chiudono subito. Le schede restano.",
+    "reactivateText": "Le persone dell'azienda potranno accedere di nuovo.",
+    "deactivate": "Disattiva azienda",
+    "reactivate": "Riattiva azienda",
+    "error": {
+      "name": "Inserisci il nome dell'azienda (da 2 a 120 caratteri).",
+      "nameTaken": "Esiste già un'azienda con questo nome.",
+      "logoType": "Il logo deve essere un'immagine PNG, JPEG o WebP.",
+      "logoTooLarge": "Il logo supera 1 MB: riducilo e riprova.",
+      "logoCorrupt": "Non riesco a leggere questa immagine. Salvala di nuovo come PNG o JPEG e riprova.",
+      "logoMissing": "Scegli un file per il logo."
+    }
+  }
+}

@@ -1,7 +1,7 @@
 {
   "users": {
     "title": "Utenti",
-    "subtitle": "Al portale si accede solo su invito. Puoi invitare e gestire le persone con un ruolo inferiore al tuo.",
+    "subtitle": "Al portale si accede solo su invito. Inviti e gestisci le persone della tua azienda con un ruolo inferiore al tuo.",
     "invite": "Invita utente",
     "accounts": {
       "one": "1 account",
@@ -26,9 +26,8 @@
     "revoke": "Revoca",
     "back": "Torna agli utenti",
     "inviteTitle": "Invita un utente",
-    "inviteIntro": "L'invito arriva per email (se attiva) e il link vale {days} giorni. La persona sceglie da sola nome e password.",
-    "nameOptional": "Nome (facoltativo)",
-    "roleHint": "Puoi assegnare solo ruoli inferiori al tuo. «Cliente» vede tutte le schede ma non può modificarle.",
+    "inviteIntro": "L'invito arriva per email (se attiva) e il link vale {days} giorni. La persona conferma il nome e sceglie la password.",
+    "roleHint": "Puoi assegnare solo ruoli inferiori al tuo. «Cliente» vede tutte le schede dell'azienda ma non può modificarle.",
     "inviteLanguage": "Lingua dell'invito",
     "inviteSubmit": "Crea invito",
     "inviteCreated": "Invito creato",
@@ -54,13 +53,23 @@
     "reactivateText": "L'account potrà accedere di nuovo con la sua password.",
     "deactivate": "Disattiva account",
     "reactivate": "Riattiva account",
-    "notManageable": "Puoi gestire solo account con un ruolo inferiore al tuo.",
+    "notManageable": "Puoi gestire solo account della tua azienda con un ruolo inferiore al tuo.",
     "error": {
       "email": "Inserisci un'email valida.",
       "role": "Scegli un ruolo valido.",
       "roleNotAllowed": "Non puoi assegnare questo ruolo.",
-      "userExists": "Esiste già un account con questa email."
-    }
+      "userExists": "Esiste già un account con questa email.",
+      "name": "Inserisci nome e cognome (da 2 a 120 caratteri).",
+      "azienda": "Scegli un'azienda attiva."
+    },
+    "subtitleMaster": "Al portale si accede solo su invito. Come Master inviti e gestisci le persone di tutte le aziende.",
+    "fullName": "Nome e cognome",
+    "azienda": "Azienda",
+    "aziendaFixed": "La persona entra in {azienda}.",
+    "aziendaHint": "La persona vedrà solo le schede di questa azienda.",
+    "noAziende": "Prima crea un'azienda, poi invita le sue persone.",
+    "saveAzienda": "Sposta in questa azienda",
+    "aziendaMoveText": "Le schede già compilate restano all'azienda in cui sono state create."
   },
   "audit": {
     "title": "Registro",
@@ -91,7 +100,16 @@
       "SCHEDA_UPDATE": "Scheda modificata",
       "SCHEDA_DELETE": "Scheda nel cestino",
       "SCHEDA_RESTORE": "Scheda ripristinata",
-      "SCHEDA_PURGE": "Scheda eliminata definitivamente"
-    }
+      "SCHEDA_PURGE": "Scheda eliminata definitivamente",
+      "AZIENDA_CREATE": "Azienda creata",
+      "AZIENDA_UPDATE": "Nome dell'azienda cambiato",
+      "AZIENDA_LOGO": "Logo dell'azienda cambiato",
+      "AZIENDA_DEACTIVATE": "Azienda disattivata",
+      "AZIENDA_REACTIVATE": "Azienda riattivata",
+      "USER_AZIENDA": "Account spostato in un'altra azienda"
+    },
+    "azienda": "Azienda",
+    "platform": "Portale",
+    "openAzienda": "Apri azienda"
   }
 }

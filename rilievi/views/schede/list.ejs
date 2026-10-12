@@ -5,7 +5,9 @@
     <p class="page-head__sub"><%= t('schede.subtitle') %></p>
   </div>
 </div>
+<% if (aziende.length > 0) { %><%- include('../partials/azienda-filter', { action: '/schede' }) %><% } %>
 <form class="search" role="search" method="get" action="/schede" data-live-search>
+  <% if (aziendaFilter) { %><input type="hidden" name="azienda" value="<%= aziendaFilter %>"><% } %>
   <label class="visually-hidden" for="q"><%= t('schede.search.label') %></label>
   <%- include('../partials/icon', { name: 'search' }) %>
   <input class="search__input" id="q" name="q" type="search" value="<%= query %>" placeholder="<%= t('schede.search.placeholder') %>" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="100" enterkeyhint="search" aria-describedby="search-status" aria-controls="results">

@@ -30,7 +30,9 @@ export type FieldErrorCode =
   | 'decimalPlaces'
   | 'range'
   | 'option'
-  | 'identifierNeeded';
+  | 'identifierNeeded'
+  /** Само MASTER: не е избрана (активна) фирма за новата карта. */
+  | 'azienda';
 
 /** Ключът на формата за грешката „поне едно от адрес / матрикула / номер“. */
 export const IDENTIFIERS_ERROR_KEY = 'identifiers';

@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from 'express';
 import { config } from '../config.js';
 import { can } from '../auth/roles.js';
+import { scopeOf, type Scope } from '../auth/scope.js';
 import {
   isPartial,
   principalOf,
@@ -8,6 +9,13 @@ import {
   requireCsrf,
   sendError,
 } from '../auth/guards.js';
+import {
+  activeAzienda,
+  activeAziende,
+  allAziendeNames,
+  aziendaLogo,
+  isAziendaId,
+} from '../aziende/service.js';
 import { setFlash } from '../http/flash.js';
 import { pdfLimiter } from '../http/limits.js';
 import { businessDay } from '../time.js';
@@ -45,15 +53,32 @@ const write = requireCapability('schede:write');
 const remove = requireCapability('schede:delete');
 const trash = requireCapability('schede:trash');
 
+/** Ключът на грешката „избери фирма“ във формата на MASTER. */
+const AZIENDA_ERROR_KEY = 'azienda';
+
+function scope(req: Request): Scope {
+  return scopeOf(principalOf(req).user);
+}
+
 function queryOf(req: Request): string {
   const q = req.query.q;
   return typeof q === 'string' ? q.slice(0, MAX_QUERY_LENGTH) : '';
 }
 
+/** Филтърът по фирма — само за MASTER; за останалите обхватът вече е тяхната фирма. */
+function aziendaFilterOf(req: Request): string | null {
+  const value = req.query.azienda;
+  return scope(req).all && isAziendaId(value) ? value : null;
+}
+
 schedeRouter.get('/schede', read, async (req, res) => {
   const query = queryOf(req);
-  const page = await listSchede({ query, page: req.query.p });
-  const view = { page, query, highlight };
+  const azienda = aziendaFilterOf(req);
+  const [page, aziende] = await Promise.all([
+    listSchede({ scope: scope(req), azienda, query, page: req.query.p }),
+    scope(req).all ? allAziendeNames() : Promise.resolve([]),
+  ]);
+  const view = { page, query, highlight, aziende, aziendaFilter: azienda ?? '' };
   if (isPartial(req)) {
     res.render('schede/_results', view);
     return;
@@ -65,10 +90,10 @@ function notFound(req: Request, res: Response): void {
   sendError(req, res, 404, 'error.notFoundTitle', 'error.notFound');
 }
 
-/** Схемата от адреса; изтритата — само за тези, които виждат кошчето. */
+/** Картата от адреса, в обхвата; изтритата — само за тези, които виждат кошчето. */
 async function loadScheda(req: Request): Promise<SchedaFull | null> {
   const canTrash = can(principalOf(req).user.role, 'schede:trash');
-  return getScheda(String(req.params.id), canTrash);
+  return getScheda(scope(req), String(req.params.id), canTrash);
 }
 
 interface FormView {
@@ -77,6 +102,9 @@ interface FormView {
   errors: FieldErrors;
   base: string;
   conflict: boolean;
+  /** Само за MASTER при нова карта: фирмите за избор и избраната. */
+  aziende: Array<{ id: string; name: string }>;
+  azienda: string;
 }
 
 function renderForm(res: Response, status: number, view: FormView): void {
@@ -84,32 +112,50 @@ function renderForm(res: Response, status: number, view: FormView): void {
     ...view,
     sections: SECTIONS,
     identifiersErrorKey: IDENTIFIERS_ERROR_KEY,
+    aziendaErrorKey: AZIENDA_ERROR_KEY,
   });
 }
 
-schedeRouter.get('/schede/nuova', write, (_req, res) => {
+schedeRouter.get('/schede/nuova', write, async (req, res) => {
+  const aziende = scope(req).all ? await activeAziende() : [];
+  const preset = typeof req.query.azienda === 'string' ? req.query.azienda : '';
   renderForm(res, 200, {
     scheda: null,
     values: emptyFormValues(businessDay()),
     errors: {},
     base: '',
     conflict: false,
+    aziende,
+    azienda: aziende.some((a) => a.id === preset)
+      ? preset
+      : aziende.length === 1
+        ? aziende[0]!.id
+        : '',
   });
 });
 
 schedeRouter.post('/schede', write, requireCsrf, async (req, res) => {
-  const parsed = parseScheda(req.body);
-  if (!parsed.ok) {
+  const user = principalOf(req).user;
+  const userScope = scope(req);
+  const body = req.body as Record<string, unknown>;
+  const parsed = parseScheda(body);
+  // MASTER избира фирмата (активна); всеки друг пише в своята, каквото и да е пратил.
+  const azienda = userScope.all ? await activeAzienda(body.azienda) : { id: userScope.aziendaId };
+  if (!parsed.ok || !azienda) {
+    const aziende = userScope.all ? await activeAziende() : [];
+    const errors: FieldErrors = azienda ? {} : { [AZIENDA_ERROR_KEY]: 'azienda' };
     renderForm(res, 422, {
       scheda: null,
-      values: formValuesFromBody(req.body),
-      errors: parsed.errors,
+      values: formValuesFromBody(body),
+      errors: { ...errors, ...(parsed.ok ? {} : parsed.errors) },
       base: '',
       conflict: false,
+      aziende,
+      azienda: typeof body.azienda === 'string' ? body.azienda : '',
     });
     return;
   }
-  const scheda = await createScheda(parsed.data, principalOf(req).user.id);
+  const scheda = await createScheda(parsed.data, user.id, azienda.id);
   setFlash(res, 'ok', 'flash.schedaCreated');
   res.redirect(303, `/schede/${scheda.id}`);
 });
@@ -125,7 +171,7 @@ schedeRouter.get('/schede/:id', read, async (req, res) => {
 });
 
 schedeRouter.get('/schede/:id/modifica', write, async (req, res) => {
-  const scheda = await getScheda(String(req.params.id));
+  const scheda = await getScheda(scope(req), String(req.params.id));
   if (!scheda) return notFound(req, res);
   renderForm(res, 200, {
     scheda,
@@ -133,34 +179,41 @@ schedeRouter.get('/schede/:id/modifica', write, async (req, res) => {
     errors: {},
     base: scheda.updatedAt.toISOString(),
     conflict: false,
+    aziende: [],
+    azienda: scheda.aziendaId,
   });
 });
 
 schedeRouter.post('/schede/:id', write, requireCsrf, async (req, res) => {
-  const scheda = await getScheda(String(req.params.id));
+  const scheda = await getScheda(scope(req), String(req.params.id));
   if (!scheda) return notFound(req, res);
   const body = req.body as Record<string, unknown>;
   const base = typeof body.base === 'string' ? body.base : '';
   const parsed = parseScheda(body);
+  const formView = { scheda, base, aziende: [], azienda: scheda.aziendaId };
   if (!parsed.ok) {
     renderForm(res, 422, {
-      scheda,
+      ...formView,
       values: formValuesFromBody(body),
       errors: parsed.errors,
-      base,
       conflict: false,
     });
     return;
   }
-  const outcome = await updateScheda(scheda.id, base, parsed.data, principalOf(req).user.id);
+  const outcome = await updateScheda(
+    scope(req),
+    scheda.id,
+    base,
+    parsed.data,
+    principalOf(req).user.id,
+  );
   if (outcome === 'missing') return notFound(req, res);
   if (outcome === 'conflict') {
     // Въведеното остава на екрана; човекът решава след като види новата версия.
     renderForm(res, 409, {
-      scheda,
+      ...formView,
       values: formValuesFromBody(body),
       errors: {},
-      base,
       conflict: true,
     });
     return;
@@ -183,11 +236,13 @@ schedeRouter.get('/schede/:id/stampa', read, async (req, res) => {
 schedeRouter.get('/schede/:id/pdf', read, pdfLimiter, async (req, res) => {
   const scheda = await loadScheda(req);
   if (!scheda) return notFound(req, res);
+  const logo = scheda.azienda.logoType ? await aziendaLogo(scheda.aziendaId) : null;
   const pdf = await renderSchedaPdf(scheda, {
     t: res.locals.t,
     fmt: res.locals.fmt,
     generatedBy: principalOf(req).user.name,
     fontDir: config().PDF_FONT_DIR,
+    logo: logo?.data ?? null,
   });
   const name = pdfFileName(scheda);
   res
@@ -202,13 +257,13 @@ schedeRouter.get('/schede/:id/pdf', read, pdfLimiter, async (req, res) => {
 });
 
 schedeRouter.get('/schede/:id/elimina', remove, async (req, res) => {
-  const scheda = await getScheda(String(req.params.id));
+  const scheda = await getScheda(scope(req), String(req.params.id));
   if (!scheda) return notFound(req, res);
   res.render('schede/confirm', { scheda, ident: schedaTitle(scheda, res.locals.t), mode: 'trash' });
 });
 
 schedeRouter.post('/schede/:id/elimina', remove, requireCsrf, async (req, res) => {
-  const ok = await trashScheda(String(req.params.id), principalOf(req).user.id);
+  const ok = await trashScheda(scope(req), String(req.params.id), principalOf(req).user.id);
   if (!ok) return notFound(req, res);
   setFlash(res, 'ok', 'flash.schedaTrashed');
   res.redirect(303, '/schede');
@@ -216,25 +271,29 @@ schedeRouter.post('/schede/:id/elimina', remove, requireCsrf, async (req, res) =
 
 schedeRouter.get('/cestino', trash, async (req, res) => {
   const query = queryOf(req);
-  const page = await listSchede({ query, page: req.query.p, trash: true });
-  res.render('schede/trash', { page, query, highlight });
+  const azienda = aziendaFilterOf(req);
+  const [page, aziende] = await Promise.all([
+    listSchede({ scope: scope(req), azienda, query, page: req.query.p, trash: true }),
+    scope(req).all ? allAziendeNames() : Promise.resolve([]),
+  ]);
+  res.render('schede/trash', { page, query, highlight, aziende, aziendaFilter: azienda ?? '' });
 });
 
 schedeRouter.post('/cestino/:id/ripristina', trash, requireCsrf, async (req, res) => {
-  const ok = await restoreScheda(String(req.params.id), principalOf(req).user.id);
+  const ok = await restoreScheda(scope(req), String(req.params.id), principalOf(req).user.id);
   if (!ok) return notFound(req, res);
   setFlash(res, 'ok', 'flash.schedaRestored');
   res.redirect(303, `/schede/${encodeURIComponent(String(req.params.id))}`);
 });
 
 schedeRouter.get('/cestino/:id/elimina', trash, async (req, res) => {
-  const scheda = await getScheda(String(req.params.id), true);
+  const scheda = await getScheda(scope(req), String(req.params.id), true);
   if (!scheda || !scheda.deletedAt) return notFound(req, res);
   res.render('schede/confirm', { scheda, ident: schedaTitle(scheda, res.locals.t), mode: 'purge' });
 });
 
 schedeRouter.post('/cestino/:id/elimina', trash, requireCsrf, async (req, res) => {
-  const ok = await purgeScheda(String(req.params.id), principalOf(req).user.id);
+  const ok = await purgeScheda(scope(req), String(req.params.id), principalOf(req).user.id);
   if (!ok) return notFound(req, res);
   setFlash(res, 'ok', 'flash.schedaPurged');
   res.redirect(303, '/cestino');

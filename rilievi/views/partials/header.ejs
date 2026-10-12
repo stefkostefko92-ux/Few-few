@@ -2,6 +2,7 @@
   const navItems = [
     { href: '/schede', key: 'nav.schede', show: can('schede:read') },
     { href: '/utenti', key: 'nav.utenti', show: can('users:manage') },
+    { href: '/aziende', key: 'nav.aziende', show: can('aziende:manage') },
     { href: '/cestino', key: 'nav.cestino', show: can('schede:trash') },
     { href: '/registro', key: 'nav.registro', show: can('audit:view') },
   ].filter((item) => item.show);
@@ -18,7 +19,7 @@
     </nav>
     <div class="topbar__end">
       <% if (can('schede:write')) { %><a class="btn btn--primary btn--sm topbar__new" href="/schede/nuova"><%- include('icon', { name: 'plus' }) %><span class="btn__label"><%= t('schede.new') %></span></a><% } %>
-      <a class="who" href="/account"><span class="who__name"><%= currentUser.name %></span><span class="who__role"><%= t('role.' + currentUser.role) %></span></a>
+      <a class="who" href="/account"><span class="who__name"><%= currentUser.name %></span><span class="who__role"><%= t('role.' + currentUser.role) %><% if (currentUser.aziendaName) { %>, <%= currentUser.aziendaName %><% } %></span></a>
       <a class="btn btn--ghost btn--sm topbar__account" href="/account" aria-label="<%= t('nav.account') %>"><%- include('icon', { name: 'user' }) %></a>
     </div>
   </div>

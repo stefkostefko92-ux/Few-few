@@ -110,6 +110,73 @@ export function drawSectionTitle(ctx: PdfContext, title: string): void {
   doc.y = lineY + 7;
 }
 
+/** Какво стои в заглавната лента — текстовете идват готови от pdf.ts. */
+export interface HeaderInfo {
+  /** Логото на фирмата (прекодирано PNG/JPEG) и размерите му в пиксели; null — няма лого. */
+  logo: Buffer | null;
+  logoSize: { width: number; height: number } | null;
+  aziendaName: string;
+  title: string;
+  dateLine: string;
+  creatorLabel: string;
+  creator: string;
+  updatedLine: string;
+}
+
+const LOGO_BOX = { width: 170, height: 52 };
+const HEADER_RIGHT = 220;
+
+/**
+ * Заглавната лента: най-горе вляво логото на фирмата (заглавието и името на фирмата под него), вдясно
+ * датата и кой е попълнил картата — с едър шрифт, за да се вижда на всеки отпечатан лист.
+ */
+export function drawHeader(ctx: PdfContext, info: HeaderInfo): void {
+  const { doc } = ctx;
+  const top = MARGIN;
+  const leftWidth = CONTENT_WIDTH - HEADER_RIGHT - GAP;
+  let leftY = top;
+  if (info.logo) {
+    const size = info.logoSize;
+    const scale = size ? Math.min(LOGO_BOX.width / size.width, LOGO_BOX.height / size.height) : 1;
+    const drawn = size ? size.height * scale : LOGO_BOX.height;
+    doc.image(info.logo, MARGIN, top, { fit: [LOGO_BOX.width, LOGO_BOX.height] });
+    leftY = top + drawn + 8;
+  }
+  doc
+    .font('Sans-Bold')
+    .fontSize(15)
+    .fillColor(INK)
+    .text(info.title, MARGIN, leftY, { width: leftWidth });
+  doc
+    .font('Sans')
+    .fontSize(9)
+    .fillColor(MUTED)
+    .text(info.aziendaName, MARGIN, doc.y + 1, { width: leftWidth });
+  const leftBottom = doc.y;
+
+  const x = MARGIN + CONTENT_WIDTH - HEADER_RIGHT;
+  const right = { width: HEADER_RIGHT, align: 'right' } as const;
+  doc.font('Sans-Bold').fontSize(9).fillColor(INK).text(info.dateLine, x, top, right);
+  doc
+    .font('Sans')
+    .fontSize(8)
+    .fillColor(MUTED)
+    .text(info.creatorLabel, x, doc.y + 6, right);
+  doc
+    .font('Sans-Bold')
+    .fontSize(12)
+    .fillColor(INK)
+    .text(info.creator, x, doc.y + 1, right);
+  if (info.updatedLine) {
+    doc
+      .font('Sans')
+      .fontSize(7.5)
+      .fillColor(MUTED)
+      .text(info.updatedLine, x, doc.y + 4, right);
+  }
+  doc.y = Math.max(leftBottom, doc.y) + 12;
+}
+
 /** Табелата на асансьора: номер и матрикула, адрес, портата/лица/спирки — като в кабината. */
 export function drawPlate(
   ctx: PdfContext,

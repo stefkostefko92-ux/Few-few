@@ -40,7 +40,12 @@
       "title": "Someone changed this sheet while you were editing it.",
       "text": "Your input is still below. Open the current version in another browser tab and compare: if you save now, you replace the other person's changes.",
       "open": "Open the current version"
-    }
+    },
+    "filter": {
+      "all": "All companies",
+      "apply": "Filter"
+    },
+    "noAziende": "Create a company first: every sheet belongs to a company."
   },
   "scheda": {
     "title": "Lift survey sheet",
@@ -106,7 +111,8 @@
       "noteQuadretto": "Electrical panel notes",
       "noteImpianto": "Lift notes",
       "noteBottoniere": "Installed push-button panel notes",
-      "lavoriExtra": "Extra work (work order)"
+      "lavoriExtra": "Extra work (work order)",
+      "azienda": "Company"
     },
     "option": {
       "ubicazioneMacchina": {
@@ -144,8 +150,10 @@
       "decimalPlaces": "At most 2 decimals.",
       "range": "Enter a value from {min} to {max}.",
       "option": "Invalid choice.",
-      "identifierNeeded": "Fill in at least address, registration no. or lift no."
-    }
+      "identifierNeeded": "Fill in at least address, registration no. or lift no.",
+      "azienda": "Choose the sheet's company."
+    },
+    "compiledBy": "Filled in by"
   },
   "trash": {
     "title": "Bin",

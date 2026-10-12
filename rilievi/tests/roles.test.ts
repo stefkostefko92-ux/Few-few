@@ -34,13 +34,28 @@ describe('the seven levels', () => {
     assert.equal(can('DIREZIONE', 'audit:view'), false);
   });
 
-  it('lets only RESPONSABILE and above invite, and only below their own rank', () => {
-    assert.equal(can('TECNICO', 'users:manage'), false);
-    assert.deepEqual(assignableRoles('RESPONSABILE'), ['TECNICO', 'OPERATORE', 'CLIENTE']);
+  it('lets only the company ADMIN and the MASTER invite, and only below their own rank', () => {
+    assert.equal(can('ADMIN', 'users:manage'), true);
+    assert.equal(can('DIREZIONE', 'users:manage'), false);
+    assert.equal(can('RESPONSABILE', 'users:manage'), false);
+    assert.deepEqual(assignableRoles('ADMIN'), [
+      'DIREZIONE',
+      'RESPONSABILE',
+      'TECNICO',
+      'OPERATORE',
+      'CLIENTE',
+    ]);
     assert.deepEqual(assignableRoles('MASTER'), ALL_ROLES.slice(1));
     assert.deepEqual(assignableRoles('CLIENTE'), []);
     assert.equal(outranks('ADMIN', 'ADMIN'), false);
     assert.equal(outranks('ADMIN', 'MASTER'), false);
+  });
+
+  it('keeps the companies to the MASTER, the owner of the portal', () => {
+    assert.deepEqual(
+      ALL_ROLES.filter((role) => can(role, 'aziende:manage')),
+      ['MASTER'],
+    );
   });
 
   it('treats only MASTER and ADMIN as privileged (shorter sessions)', () => {

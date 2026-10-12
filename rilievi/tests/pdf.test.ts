@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { describe, it } from 'node:test';
 import { Prisma } from '@prisma/client';
+import sharp from 'sharp';
 import { viewHelpers } from '../src/http/view.js';
 import { translatorFor } from '../src/i18n.js';
 import { pdfFileName, pdfFontPaths, renderSchedaPdf } from '../src/schede/pdf.js';
@@ -50,9 +51,18 @@ const scheda = {
   deletedById: null,
   createdAt: new Date('2026-10-12T09:00:00.000Z'),
   updatedAt: new Date('2026-10-12T09:30:00.000Z'),
+  aziendaId: 'cm0000000000000000000a01',
   createdBy: { name: 'Tecnico Uno' },
   updatedBy: { name: 'Tecnico Due' },
   deletedBy: null,
+  azienda: {
+    id: 'cm0000000000000000000a01',
+    name: 'Ascensori Rossi Srl',
+    logoType: null,
+    logoWidth: null,
+    logoHeight: null,
+    logoUpdatedAt: null,
+  },
 } as unknown as SchedaFull;
 
 describe('the sheet PDF', { skip: !fontsHere && 'DejaVu fonts are not installed here' }, () => {
@@ -63,6 +73,7 @@ describe('the sheet PDF', { skip: !fontsHere && 'DejaVu fonts are not installed 
         fmt: viewHelpers(locale),
         generatedBy: 'Prova',
         fontDir,
+        logo: null,
       });
       assert.equal(pdf.subarray(0, 5).toString(), '%PDF-');
       assert.ok(pdf.subarray(-6).toString().includes('%%EOF'));
@@ -72,6 +83,45 @@ describe('the sheet PDF', { skip: !fontsHere && 'DejaVu fonts are not installed 
     });
   }
 });
+
+describe(
+  'the company logo on the PDF',
+  { skip: !fontsHere && 'DejaVu fonts are not installed here' },
+  () => {
+    for (const kind of ['png', 'jpeg'] as const) {
+      it(`embeds a ${kind} logo at the top of the sheet`, async () => {
+        // The logo as stored after an upload: re-encoded by sharp (PNG with transparency, or JPEG).
+        const base = sharp({
+          create: {
+            width: 600,
+            height: 180,
+            channels: 4,
+            background: { r: 0, g: 60, b: 140, alpha: 0.7 },
+          },
+        });
+        const logo = await (
+          kind === 'png' ? base.png() : base.flatten({ background: '#ffffff' }).jpeg()
+        ).toBuffer();
+        const pdf = await renderSchedaPdf(
+          {
+            ...scheda,
+            azienda: {
+              ...scheda.azienda,
+              logoType: `image/${kind}`,
+              logoWidth: 600,
+              logoHeight: 180,
+              logoUpdatedAt: new Date(),
+            },
+          },
+          { t: translatorFor('it'), fmt: viewHelpers('it'), generatedBy: 'Prova', fontDir, logo },
+        );
+        const text = pdf.toString('latin1');
+        assert.match(text, /\/Subtype \/Image/);
+        assert.match(text, kind === 'png' ? /\/SMask/ : /\/DCTDecode/);
+      });
+    }
+  },
+);
 
 describe('the PDF file name', () => {
   it('uses the lift number (or the matricola) and the date, safe characters only', () => {

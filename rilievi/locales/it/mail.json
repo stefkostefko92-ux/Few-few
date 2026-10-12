@@ -12,7 +12,7 @@
     },
     "invite": {
       "subject": "Invito a Rilievi Impianti — Carbon Stealth VCC",
-      "body": "Ciao,\n\n{inviter} ti ha invitato al portale Rilievi Impianti con il ruolo {role}.\n\nApri questo link per scegliere la tua password e attivare l'account:\n{link}\n\nIl link vale {validity} e si usa una volta sola. Se non aspettavi questo invito, ignora l'email: senza il link nessun account viene creato.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+      "body": "Ciao,\n\n{inviter} ti ha invitato al portale Rilievi Impianti, nell'azienda {azienda}, con il ruolo {role}.\n\nApri questo link per scegliere la tua password e attivare l'account:\n{link}\n\nIl link vale {validity} e si usa una volta sola. Se non aspettavi questo invito, ignora l'email: senza il link nessun account viene creato.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
     },
     "reset": {
       "subject": "Nuova password — Rilievi Impianti",

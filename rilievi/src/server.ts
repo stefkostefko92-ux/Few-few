@@ -19,6 +19,7 @@ import { PASSWORD_MIN_LENGTH } from './auth/password.js';
 import { accountRouter } from './routes/account.js';
 import { auditRouter } from './routes/audit.js';
 import { authRouter } from './routes/auth.js';
+import { aziendeRouter } from './routes/aziende.js';
 import { healthRouter } from './routes/health.js';
 import { schedeRouter } from './routes/schede.js';
 import { usersRouter } from './routes/users.js';
@@ -165,6 +166,7 @@ export function createServer(): Express {
   app.use(accountRouter);
   app.use(schedeRouter);
   app.use(usersRouter);
+  app.use(aziendeRouter);
   app.use(auditRouter);
 
   app.use((req: Request, res: Response) => {

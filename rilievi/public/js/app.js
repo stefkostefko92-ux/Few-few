@@ -15,6 +15,9 @@
       const url = new URL(searchForm.action, location.href);
       const q = input.value.trim();
       if (q) url.searchParams.set('q', q);
+      // The Master's company filter rides along (a hidden field of the search form).
+      const azienda = searchForm.querySelector('input[name="azienda"]');
+      if (azienda && azienda.value) url.searchParams.set('azienda', azienda.value);
       if (controller) controller.abort();
       controller = new AbortController();
       try {

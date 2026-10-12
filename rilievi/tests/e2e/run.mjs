@@ -1,23 +1,25 @@
-// End-to-end check of a running portal in a real Chromium: sign-in, a full sheet, search, print, PDF,
-// an invitation accepted by a new technician, and accessibility (axe-core, WCAG 2.1 AA) on every page,
-// in the light and the dark theme. Screenshots land in tests/e2e/shots/ (git-ignored).
+// End-to-end check of a running portal in a real Chromium: sign-in, a company with its logo, a full
+// sheet, search, print, PDF, the company ADMIN invited by the MASTER, a technician invited by that
+// ADMIN who sees the company's sheets, and accessibility (axe-core, WCAG 2.1 AA) on every page, in the
+// light and the dark theme. Screenshots land in tests/e2e/shots/ (git-ignored).
 //
 //   RILIEVI_URL=http://127.0.0.1:4330 E2E_EMAIL=… E2E_PASSWORD=… npm run test:e2e
 //
-// The account needs users:manage (MASTER or ADMIN). It creates real records — run it against a local
-// or staging portal, never production.
+// The account must be a MASTER (companies are theirs). It creates real records — run it against a
+// local or staging portal, never production.
 import { mkdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import sharp from 'sharp';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const base = (process.env.RILIEVI_URL ?? 'http://127.0.0.1:4330').replace(/\/+$/, '');
 const email = process.env.E2E_EMAIL;
 const password = process.env.E2E_PASSWORD;
 if (!email || !password) {
-  console.error('Set E2E_EMAIL and E2E_PASSWORD (an account with users:manage).');
+  console.error('Set E2E_EMAIL and E2E_PASSWORD (a MASTER account).');
   process.exit(2);
 }
 const shots = join(here, 'shots');
@@ -64,6 +66,32 @@ const tick = (page, name, value) =>
 
 const browser = await chromium.launch();
 let sheetUrl = '';
+let aziendaPath = '';
+const aziendaName = `Ascensori E2E ${Date.now()}`;
+// A logo with transparency, as a company would upload it.
+const logoFile = join(shots, 'logo-e2e.png');
+await sharp({
+  create: {
+    width: 900,
+    height: 260,
+    channels: 4,
+    background: { r: 15, g: 50, b: 120, alpha: 0.85 },
+  },
+})
+  .png()
+  .toFile(logoFile);
+
+async function acceptInvite(context, link, name) {
+  const page = await context.newPage();
+  await page.goto(link.replace(/^https?:\/\/[^/]+/, base));
+  await audit(page, `invite ${name}`);
+  await page.fill('#name', name);
+  await page.fill('#password', 'Fune-Trefolo-Tenditore-7');
+  await page.fill('#confirm', 'Fune-Trefolo-Tenditore-7');
+  await page.click('form button[type=submit]');
+  await page.waitForURL(/\/schede/);
+  return page;
+}
 try {
   for (const scheme of ['light', 'dark']) {
     const context = await browser.newContext({
@@ -78,7 +106,17 @@ try {
     await signIn(page, email, password);
 
     if (scheme === 'light') {
+      // The company first: name and logo, by the MASTER.
+      await page.goto(`${base}/aziende/nuova`);
+      await page.fill('#name', aziendaName);
+      await page.setInputFiles('#logo', logoFile);
+      await page.click('form button[type=submit]');
+      await page.waitForURL(/\/aziende\/[a-z0-9]+$/);
+      aziendaPath = new URL(page.url()).pathname;
+      if (!(await page.locator('.logo-paper img').count())) fail('company page without its logo');
+
       await page.goto(`${base}/schede/nuova`);
+      await page.selectOption('#f-azienda', { label: aziendaName });
       const fields = {
         indirizzo: 'Via Giuseppe Verdi 14, 20121 Milano',
         marca: 'Schindler',
@@ -126,6 +164,11 @@ try {
       const pdf = await page.request.get(`${sheetUrl}/pdf`);
       const body = await pdf.body();
       if (pdf.status() !== 200 || body.subarray(0, 5).toString() !== '%PDF-') fail('PDF download');
+      if (!body.toString('latin1').includes('/Subtype /Image'))
+        fail('PDF without the company logo');
+      await page.goto(`${sheetUrl}/stampa`);
+      if (!(await page.locator('.paper__logo').count())) fail('print without the company logo');
+      if (!(await page.textContent('.paper__by')).trim()) fail('print without the author');
     }
 
     for (const [name, path] of [
@@ -133,6 +176,11 @@ try {
       ['new', '/schede/nuova'],
       ['sheet', new URL(sheetUrl).pathname],
       ['users', '/utenti'],
+      ['invite', '/utenti/invita'],
+      ['companies', '/aziende'],
+      ['company', aziendaPath],
+      ['new-company', '/aziende/nuova'],
+      ['log', '/registro'],
       ['account', '/account'],
     ]) {
       await page.goto(base + path);
@@ -171,27 +219,36 @@ try {
     await context.close();
   }
 
-  // An invitation, accepted in a fresh browser: the technician signs in and cannot manage users.
-  const admin = await browser.newContext();
-  const adminPage = await admin.newPage();
-  await signIn(adminPage, email, password);
+  // The MASTER invites the company's ADMIN; the ADMIN invites a technician into the same company.
+  const master = await browser.newContext();
+  const masterPage = await master.newPage();
+  await signIn(masterPage, email, password);
+  await masterPage.goto(`${base}/utenti/invita`);
+  const stamp = Date.now();
+  await masterPage.fill('#email', `admin.e2e.${stamp}@rilievi.test`);
+  await masterPage.fill('#name', 'Amministratore E2E');
+  await masterPage.selectOption('#azienda', { label: aziendaName });
+  await masterPage.selectOption('#role', 'ADMIN');
+  await masterPage.click('form button[type=submit]');
+  const adminLink = await masterPage.inputValue('#link');
+  const adminContext = await browser.newContext();
+  const adminPage = await acceptInvite(adminContext, adminLink, 'Amministratore E2E');
   await adminPage.goto(`${base}/utenti/invita`);
-  const invited = `tecnico.e2e.${Date.now()}@rilievi.test`;
-  await adminPage.fill('#email', invited);
+  if (await adminPage.locator('#azienda').count()) fail('a company ADMIN can pick another company');
+  await adminPage.fill('#email', `tecnico.e2e.${stamp}@rilievi.test`);
+  await adminPage.fill('#name', 'Tecnico E2E');
   await adminPage.selectOption('#role', 'TECNICO');
   await adminPage.click('form button[type=submit]');
-  const link = await adminPage.inputValue('#link');
-  const guest = await browser.newContext();
-  const guestPage = await guest.newPage();
-  await guestPage.goto(link.replace(/^https?:\/\/[^/]+/, base));
-  await audit(guestPage, 'invite');
-  await guestPage.fill('#name', 'Tecnico E2E');
-  await guestPage.fill('#password', 'Fune-Trefolo-Tenditore-7');
-  await guestPage.fill('#confirm', 'Fune-Trefolo-Tenditore-7');
-  await guestPage.click('form button[type=submit]');
-  await guestPage.waitForURL(/\/schede/);
-  const users = await guestPage.goto(`${base}/utenti`);
+  const techLink = await adminPage.inputValue('#link');
+  const techContext = await browser.newContext();
+  const techPage = await acceptInvite(techContext, techLink, 'Tecnico E2E');
+  const users = await techPage.goto(`${base}/utenti`);
   if (users?.status() !== 403) fail(`technician sees /utenti (${users?.status()})`);
+  const companies = await techPage.goto(`${base}/aziende`);
+  if (companies?.status() !== 403) fail(`technician sees /aziende (${companies?.status()})`);
+  const sheet = await techPage.goto(sheetUrl);
+  if (sheet?.status() !== 200)
+    fail(`technician cannot open the company's sheet (${sheet?.status()})`);
 } finally {
   await browser.close();
 }

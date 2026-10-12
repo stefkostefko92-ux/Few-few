@@ -13,7 +13,8 @@
     "utenti": "Utenti",
     "cestino": "Cestino",
     "registro": "Registro",
-    "account": "Il tuo account"
+    "account": "Il tuo account",
+    "aziende": "Aziende"
   },
   "common": {
     "yes": "Sì",
@@ -78,6 +79,13 @@
     "schedaSaved": "Modifiche salvate.",
     "schedaTrashed": "Scheda spostata nel cestino.",
     "schedaRestored": "Scheda ripristinata.",
-    "schedaPurged": "Scheda eliminata definitivamente."
+    "schedaPurged": "Scheda eliminata definitivamente.",
+    "aziendaCreated": "Azienda creata.",
+    "aziendaSaved": "Nome dell'azienda aggiornato.",
+    "logoSaved": "Logo aggiornato.",
+    "logoRemoved": "Logo rimosso.",
+    "aziendaDeactivated": "Azienda disattivata: le sue persone non possono più accedere.",
+    "aziendaReactivated": "Azienda riattivata.",
+    "aziendaChanged": "Azienda dell'account aggiornata."
   }
 }

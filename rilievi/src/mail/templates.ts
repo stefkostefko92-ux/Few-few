@@ -5,7 +5,14 @@ import type { MailMessage } from './mailer.js';
 
 export function inviteMail(
   locale: Locale,
-  params: { to: string; inviter: string; role: string; link: string; days: number },
+  params: {
+    to: string;
+    inviter: string;
+    azienda: string;
+    role: string;
+    link: string;
+    days: number;
+  },
 ): MailMessage {
   const t = translatorFor(locale);
   return {
@@ -13,6 +20,7 @@ export function inviteMail(
     subject: t('mail.invite.subject'),
     text: t('mail.invite.body', {
       inviter: params.inviter,
+      azienda: params.azienda,
       role: params.role,
       link: params.link,
       validity: t('mail.duration.days', { n: params.days }),

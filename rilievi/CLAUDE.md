@@ -2,6 +2,7 @@
 
 Портал само с покана за схемите за оглед на асансьорни уредби („scheda rilievo impianto“): попълване на
 29-те полета от заданието, търсене (№ на асансьора, матрикула, адрес, марка, бележки), печат A4 и PDF.
+Многофирмен: всяка фирма (клиент на портала) има свои хора, свои карти и свое лого на листа.
 Бранд Carbon Stealth VCC, монохромен (бяло/черно, светла и тъмна тема). Самостоятелен продукт —
 `cd rilievi/` за всичко. Домейн: rilievi.carbonstealth.eu (порт 4330).
 
@@ -10,7 +11,8 @@
 Node ≥22 · TypeScript strict (ESM, `NodeNext`) · Express 5 · EJS (сървърно рендиране, строг CSP с nonce,
 `style-src-attr 'none'`) · Prisma 6 + PostgreSQL 16 (`pg_trgm`) · zod на всеки външен вход · pino (без
 PII и токени) · Argon2id · JWT (jose, HS256) в HttpOnly бисквитка, проверяван срещу сесия в базата ·
-pdfkit + DejaVu Sans (PDF с кирилица) · Fira Sans / Fira Sans Condensed от @fontsource (без CDN).
+pdfkit + DejaVu Sans (PDF с кирилица) · multer + sharp (логото на фирмата, прекодирано) · Fira Sans /
+Fira Sans Condensed от @fontsource (без CDN).
 UI: италиански (източник) + български + английски.
 
 ## Команди (гейтът)
@@ -21,7 +23,7 @@ npm run check            # prisma generate, format:check, typecheck, test, build
 npm test                 # unit (node:test през tsx) — без база
 npm run test:integration # реален PostgreSQL: TEST_DATABASE_URL (името съдържа _test/_ci — таблиците се трият)
 npm run test:e2e         # Chromium + axe (WCAG 2.1 AA) срещу работещ портал: RILIEVI_URL, E2E_EMAIL, E2E_PASSWORD
-                         # (акаунт с users:manage); създава записи — само локално/staging
+                         # (MASTER акаунт); създава фирма, карти и покани — само локално/staging
 npm run dev              # локално на :4330, чете .env (README, „Локално“)
 npm run build            # prisma generate + tsc + шрифтовете в public/fonts (scripts/fonts.mjs)
 npm run owner:create     # първият MASTER от OWNER_EMAIL/OWNER_NAME/OWNER_PASSWORD (на сървъра: deploy/create-master.sh)
@@ -33,13 +35,15 @@ npm run owner:create     # първият MASTER от OWNER_EMAIL/OWNER_NAME/OWN
 src/
   config.ts          zod схема на средата (процесът не тръгва с полуготов конфиг)
   server.ts          helmet/CSP, редът на middleware-ите и рутерите, грешките
-  auth/              роли (7 нива), пароли, JWT сесии, заключване, CSRF guards
+  auth/              роли (7 нива), scope.ts (обхватът по фирма), пароли, JWT сесии, заключване, CSRF
+  aziende/           service.ts (фирмите) · logo.ts (проверка по байтове + прекодиране през sharp)
   services/          вход, покани, потребители, токени (в базата само SHA-256)
   schede/            fields.ts (ЕДИНСТВЕНИЯТ списък полета) · validation.ts · search.ts · service.ts ·
                      format.ts · pdf.ts + pdf-layout.ts
   routes/            тънки рутери: проверка → услуга → изглед
-views/               EJS: partials/ (горна и долна лента, табелата), auth/, schede/, users/, account/, audit/
-locales/<език>/      common · auth · schede · users · mail (.json); it е източникът, bg/en — огледала
+views/               EJS: partials/ (горна и долна лента, табелата, филтърът по фирма), auth/, schede/,
+                     users/, aziende/, account/, audit/
+locales/<език>/      common · auth · schede · users · aziende · mail (.json); it е източникът, bg/en — огледала
 public/              css/ (base, layout, plate, forms, pages, data, print), js/app.js (прогресивно), img/
 tests/               unit · integration/ (реален Postgres) · e2e/run.mjs (Playwright + axe)
 deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh · nginx/ · systemd/
@@ -51,9 +55,20 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   `owner:create` за първия MASTER. Имейлът и ролята идват от поканата, не от формата. Токенът на
   поканата/новата парола е 32 случайни байта; в базата е само SHA-256; връзката се показва веднъж.
 - **Роли — 7 нива като ERP Ascensori** (`auth/roles.ts`): MASTER(1) > ADMIN > DIREZIONE > RESPONSABILE >
-  TECNICO > OPERATORE > CLIENTE(7). Проверката е по способност и винаги на сървъра. Кани и управлява
-  `users:manage` (RESPONSABILE+), само роли ПОД своята, никога себе си (`services/users.ts`, `canManage`).
-  CLIENTE е само четене; кошчето и одитът — ADMIN+.
+  TECNICO > OPERATORE > CLIENTE(7). Проверката е по способност и винаги на сървъра. MASTER е
+  собственикът на портала (Carbon Stealth): без фирма, вижда всички, само той създава фирми
+  (`aziende:manage`). ADMIN е най-високата роля във фирмата. Кани и управлява хора (`users:manage`) САМО
+  ADMIN — в своята фирма — и MASTER — във всяка фирма, която избира при поканата; винаги роли ПОД своята,
+  никога себе си (`services/users.ts`, `canManage`). CLIENTE е само четене; кошчето и одитът — ADMIN+.
+- **Фирмите са изолирани** (`auth/scope.ts`). Всяка заявка към карти, хора, покани, одит и лого минава
+  през `scopeOf(user)`: фирмата вижда само своето, MASTER — всичко (с филтър по фирма). Чужд запис е 404,
+  не 403. В базата: `User_azienda_role_check` (MASTER ⇔ без фирма), `aziendaId` NOT NULL на карта и покана.
+  Новата карта влиза във фирмата на автора (MASTER я избира). Деактивирана фирма спира хората си веднага.
+- **Логото** се проверява по байтовете (PNG/JPEG/WebP, никога SVG), до 1 MB, и се ПРЕКОДИРА през sharp
+  (`aziende/logo.ts`): до 1200×600, без EXIF. Прекодирането пази и процеса — pdfkit декодира PNG с
+  прозрачност асинхронно и при повреден файл хвърля извън всеки try/catch. Пази се в базата (bytea —
+  влиза в бекъпа), показва се само на фирмата и на MASTER. Стои най-горе вляво на листа и на PDF-а; вдясно
+  — кой е попълнил картата („Compilata da“).
 - **Сесия = JWT + ред в базата.** JWT-то носи само `sid`; изход, деактивиране и смяна на паролата
   прекратяват сесията веднага. Бисквитките са `__Host-` в продукция, HttpOnly, SameSite=Lax; записите
   пазят synchronizer CSRF токен + проверка на Origin. Формите преди вход — двойна бисквитка.

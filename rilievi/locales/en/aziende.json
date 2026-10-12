@@ -1,0 +1,40 @@
+{
+  "aziende": {
+    "title": "Companies",
+    "subtitle": "Each company sees only its own sheets and people. The logo goes at the top of every printed sheet.",
+    "new": "New company",
+    "empty": "No companies yet. Create the first one, then invite its administrator.",
+    "name": "Company name",
+    "logo": "Logo",
+    "logoHint": "PNG, JPEG or WebP, up to {kb} KB. Transparent or white background: it goes at the top of the printed sheet and the PDF.",
+    "logoNone": "No logo: the printed sheet shows the company name.",
+    "logoAlt": "{name} logo",
+    "logoUpload": "Upload logo",
+    "logoReplace": "Replace logo",
+    "logoRemove": "Remove logo",
+    "create": "Create company",
+    "rename": "Save name",
+    "users": "People",
+    "schede": "Sheets",
+    "status": "Status",
+    "active": "Active",
+    "deactivated": "Deactivated",
+    "back": "All companies",
+    "inviteHere": "Invite a person",
+    "usersHere": "The company's people",
+    "schedeHere": "The company's sheets",
+    "accessTitle": "Access",
+    "deactivateText": "The company's people will no longer be able to sign in and their sessions end at once. The sheets stay.",
+    "reactivateText": "The company's people will be able to sign in again.",
+    "deactivate": "Deactivate company",
+    "reactivate": "Reactivate company",
+    "error": {
+      "name": "Enter the company name (2 to 120 characters).",
+      "nameTaken": "A company with this name already exists.",
+      "logoType": "The logo must be a PNG, JPEG or WebP image.",
+      "logoTooLarge": "The logo is larger than 1 MB: make it smaller and try again.",
+      "logoCorrupt": "This image cannot be read. Save it again as PNG or JPEG and try again.",
+      "logoMissing": "Choose a file for the logo."
+    }
+  }
+}

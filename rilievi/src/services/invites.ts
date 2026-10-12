@@ -3,6 +3,8 @@ import { prisma } from '../db.js';
 import { writeAudit } from '../audit.js';
 import { hashPassword, passwordProblem, type PasswordProblem } from '../auth/password.js';
 import { outranks } from '../auth/roles.js';
+import { aziendaWhere, inScope, scopeOf } from '../auth/scope.js';
+import { activeAzienda } from '../aziende/service.js';
 import { translatorFor, type Locale } from '../i18n.js';
 import { inviteMail } from '../mail/templates.js';
 import { sendMail, type MailResult } from '../mail/mailer.js';
@@ -15,23 +17,28 @@ export const INVITE_DAYS = 7;
 
 export type CreateInviteResult =
   | { ok: true; link: string; mail: MailResult; invite: Invite }
-  | { ok: false; error: 'roleNotAllowed' | 'userExists' };
+  | { ok: false; error: 'roleNotAllowed' | 'userExists' | 'azienda' };
 
 /**
- * Покана от човек със `users:manage` — само за роля ПОД неговата. Нова покана за същия имейл
- * обезсилва старите (връзката от старото писмо спира да работи).
+ * Покана от човек със `users:manage` — само за роля ПОД неговата и само в своята фирма; MASTER
+ * избира фирмата (активна). Нова покана за същия имейл в същата фирма обезсилва старите (връзката
+ * от старото писмо спира да работи).
  */
 export async function createInvite(
   actor: SessionUser,
-  input: { email: string; name: string | null; role: Role; locale: Locale },
+  input: { email: string; name: string; role: Role; locale: Locale; aziendaId: unknown },
 ): Promise<CreateInviteResult> {
   if (!outranks(actor.role, input.role)) return { ok: false, error: 'roleNotAllowed' };
+  const scope = scopeOf(actor);
+  // Администраторът кани само в своята фирма — каквото и да е дошло от формата.
+  const azienda = await activeAzienda(scope.all ? input.aziendaId : scope.aziendaId);
+  if (!azienda) return { ok: false, error: 'azienda' };
   const existing = await prisma.user.findUnique({ where: { email: input.email } });
   if (existing) return { ok: false, error: 'userExists' };
   const { token, hash } = newToken();
   const invite = await prisma.$transaction(async (tx) => {
     await tx.invite.updateMany({
-      where: { email: input.email, acceptedAt: null, revokedAt: null },
+      where: { email: input.email, aziendaId: azienda.id, acceptedAt: null, revokedAt: null },
       data: { revokedAt: new Date() },
     });
     const created = await tx.invite.create({
@@ -40,6 +47,7 @@ export async function createInvite(
         name: input.name,
         role: input.role,
         locale: input.locale,
+        aziendaId: azienda.id,
         tokenHash: hash,
         invitedById: actor.id,
         expiresAt: new Date(Date.now() + INVITE_DAYS * DAY),
@@ -49,6 +57,7 @@ export async function createInvite(
       {
         actorId: actor.id,
         action: 'INVITE_CREATE',
+        aziendaId: azienda.id,
         targetType: 'invite',
         targetId: created.id,
         meta: { role: input.role },
@@ -63,6 +72,7 @@ export async function createInvite(
     inviteMail(input.locale, {
       to: input.email,
       inviter: actor.name,
+      azienda: azienda.name,
       role: t(`role.${input.role}`),
       link,
       days: INVITE_DAYS,
@@ -71,20 +81,26 @@ export async function createInvite(
   return { ok: true, link, mail, invite };
 }
 
-/** Чакащите покани (неприети, неотменени, неизтекли) — за страницата „Utenti“. */
-export function pendingInvites() {
+/** Чакащите покани в обхвата (неприети, неотменени, неизтекли) — за страницата „Utenti“. */
+export function pendingInvites(actor: SessionUser, filter?: string | null) {
   return prisma.invite.findMany({
-    where: { acceptedAt: null, revokedAt: null, expiresAt: { gt: new Date() } },
-    include: { invitedBy: { select: { name: true } } },
+    where: {
+      acceptedAt: null,
+      revokedAt: null,
+      expiresAt: { gt: new Date() },
+      ...aziendaWhere(scopeOf(actor), filter),
+    },
+    include: { invitedBy: { select: { name: true } }, azienda: { select: { name: true } } },
     orderBy: { createdAt: 'desc' },
   });
 }
 
-/** Отмяна: от човек над ролята на поканата. */
+/** Отмяна: от човек над ролята на поканата, в своята фирма (MASTER — във всяка). */
 export async function revokeInvite(actor: SessionUser, inviteId: string): Promise<boolean> {
   const invite = await prisma.invite.findUnique({ where: { id: inviteId } });
   if (!invite || invite.acceptedAt || invite.revokedAt) return false;
-  if (!outranks(actor.role, invite.role)) return false;
+  if (!outranks(actor.role, invite.role) || !inScope(scopeOf(actor), invite.aziendaId))
+    return false;
   return prisma.$transaction(async (tx) => {
     const revoked = await tx.invite.updateMany({
       where: { id: invite.id, acceptedAt: null, revokedAt: null },
@@ -92,20 +108,32 @@ export async function revokeInvite(actor: SessionUser, inviteId: string): Promis
     });
     if (revoked.count === 0) return false;
     await writeAudit(
-      { actorId: actor.id, action: 'INVITE_REVOKE', targetType: 'invite', targetId: invite.id },
+      {
+        actorId: actor.id,
+        action: 'INVITE_REVOKE',
+        aziendaId: invite.aziendaId,
+        targetType: 'invite',
+        targetId: invite.id,
+      },
       tx,
     );
     return true;
   });
 }
 
-/** Поканата по токена от връзката, ако още важи. */
-export async function findValidInvite(token: unknown): Promise<Invite | null> {
+export type ValidInvite = Invite & { azienda: { name: string } };
+
+/** Поканата по токена от връзката, ако още важи (и фирмата ѝ не е деактивирана). */
+export async function findValidInvite(token: unknown): Promise<ValidInvite | null> {
   const hash = tokenHash(token);
   if (!hash) return null;
-  const invite = await prisma.invite.findUnique({ where: { tokenHash: hash } });
-  if (!invite || invite.acceptedAt || invite.revokedAt) return null;
-  return invite.expiresAt.getTime() > Date.now() ? invite : null;
+  const invite = await prisma.invite.findUnique({
+    where: { tokenHash: hash },
+    include: { azienda: { select: { name: true, deactivatedAt: true } } },
+  });
+  if (!invite || invite.acceptedAt || invite.revokedAt || invite.azienda.deactivatedAt) return null;
+  if (invite.expiresAt.getTime() <= Date.now()) return null;
+  return { ...invite, azienda: { name: invite.azienda.name } };
 }
 
 export type AcceptResult =
@@ -141,6 +169,7 @@ export async function acceptInvite(
           name: input.name,
           role: invite.role,
           locale: invite.locale,
+          aziendaId: invite.aziendaId,
           passwordHash,
           invitedById: invite.invitedById,
           lastLoginAt: new Date(),
@@ -151,6 +180,7 @@ export async function acceptInvite(
         {
           actorId: user.id,
           action: 'INVITE_ACCEPT',
+          aziendaId: invite.aziendaId,
           targetType: 'invite',
           targetId: invite.id,
           meta: { role: invite.role },

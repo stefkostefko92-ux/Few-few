@@ -38,6 +38,7 @@
   </section>
   <% } %>
   <p class="sheet__meta">
+    <% if (can('aziende:manage')) { %><span><%= t('scheda.field.azienda') %>: <%= scheda.azienda.name %></span><% } %>
     <span><%= t('scheda.meta.created', { name: scheda.createdBy ? scheda.createdBy.name : '—', at: fmt.dateTime(scheda.createdAt) }) %></span>
     <span><%= t('scheda.meta.updated', { name: scheda.updatedBy ? scheda.updatedBy.name : '—', at: fmt.dateTime(scheda.updatedAt) }) %></span>
   </p>

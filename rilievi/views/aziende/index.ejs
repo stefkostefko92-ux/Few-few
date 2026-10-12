@@ -1,0 +1,35 @@
+<%- include('../partials/top', { titleKey: 'aziende.title' }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('aziende.title') %></h1>
+    <p class="page-head__sub"><%= t('aziende.subtitle') %></p>
+  </div>
+  <a class="btn btn--primary" href="/aziende/nuova"><%- include('../partials/icon', { name: 'plus' }) %><%= t('aziende.new') %></a>
+</div>
+<% if (aziende.length === 0) { %>
+<div class="empty">
+  <p><strong><%= t('aziende.empty') %></strong></p>
+  <a class="btn btn--primary" href="/aziende/nuova"><%- include('../partials/icon', { name: 'plus' }) %><%= t('aziende.new') %></a>
+</div>
+<% } else { %>
+<table class="table table--stack">
+  <thead><tr>
+    <th scope="col"><%= t('aziende.name') %></th>
+    <th scope="col"><%= t('aziende.logo') %></th>
+    <th scope="col"><%= t('aziende.users') %></th>
+    <th scope="col"><%= t('aziende.schede') %></th>
+    <th scope="col"><%= t('aziende.status') %></th>
+  </tr></thead>
+  <tbody>
+    <% for (const azienda of aziende) { %><tr>
+      <td class="wide" data-label="<%= t('aziende.name') %>"><a class="row-link" href="/aziende/<%= azienda.id %>"><%= azienda.name %></a></td>
+      <td data-label="<%= t('aziende.logo') %>"><% if (azienda.logoType) { %><span class="logo-paper logo-paper--thumb"><img src="/aziende/<%= azienda.id %>/logo?v=<%= azienda.logoUpdatedAt ? azienda.logoUpdatedAt.getTime() : 0 %>" alt="<%= t('aziende.logoAlt', { name: azienda.name }) %>" width="<%= azienda.logoWidth %>" height="<%= azienda.logoHeight %>" loading="lazy"></span><% } else { %><span class="muted">—</span><% } %></td>
+      <td class="num" data-label="<%= t('aziende.users') %>"><%= azienda._count.users %></td>
+      <td class="num" data-label="<%= t('aziende.schede') %>"><%= azienda._count.schede %></td>
+      <td data-label="<%= t('aziende.status') %>"><% if (azienda.deactivatedAt) { %><span class="badge badge--off"><%= t('aziende.deactivated') %></span><% } else { %><span class="badge"><%= t('aziende.active') %></span><% } %></td>
+    </tr>
+    <% } %>
+  </tbody>
+</table>
+<% } %>
+<%- include('../partials/bottom') %>

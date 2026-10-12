@@ -55,6 +55,7 @@ export async function startApp(): Promise<void> {
       `TRUNCATE ${tables.map((t) => `"${t.tablename}"`).join(', ')} RESTART IDENTITY CASCADE`,
     );
   }
+  defaultAzienda = null;
   await new Promise<void>((resolve, reject) => {
     const app = createServer().listen(PORT, '127.0.0.1', () => resolve());
     app.once('error', (error) =>
@@ -71,12 +72,33 @@ export async function stopApp(): Promise<void> {
 
 let hashed: Promise<string> | null = null;
 let userCounter = 0;
+let aziendaCounter = 0;
+let defaultAzienda: Promise<string> | null = null;
 
-/** An account straight in the database (the invite flow has its own tests). */
-export async function makeUser(role: Role, name = `${role} ${++userCounter}`) {
+/** A company straight in the database (the companies page has its own tests). */
+export async function makeAzienda(
+  name = `Azienda ${++aziendaCounter} ${randomBytes(2).toString('hex')}`,
+) {
+  return prisma.azienda.create({ data: { name } });
+}
+
+/** The company every account of a test file lands in unless the test says otherwise. */
+function defaultAziendaId(): Promise<string> {
+  defaultAzienda ??= makeAzienda('Ascensori Prova').then((azienda) => azienda.id);
+  return defaultAzienda;
+}
+
+/**
+ * An account straight in the database (the invite flow has its own tests). MASTER has no company;
+ * everyone else is in `aziendaId` or in the file's default company.
+ */
+export async function makeUser(role: Role, name = `${role} ${++userCounter}`, aziendaId?: string) {
   hashed ??= hashPassword(PASSWORD);
   const email = `${role.toLowerCase()}.${userCounter}.${randomBytes(3).toString('hex')}@rilievi.test`;
-  return prisma.user.create({ data: { email, name, role, passwordHash: await hashed } });
+  const azienda = role === 'MASTER' ? null : (aziendaId ?? (await defaultAziendaId()));
+  return prisma.user.create({
+    data: { email, name, role, passwordHash: await hashed, aziendaId: azienda },
+  });
 }
 
 export interface Reply {
@@ -146,6 +168,35 @@ export class Browser {
     };
   }
 
+  /** POST a multipart form (a file upload), with the session's CSRF token taken from `formPage`. */
+  async upload(
+    formPage: string,
+    action: string,
+    fields: Record<string, string>,
+    file?: { field: string; name: string; type: string; bytes: Uint8Array },
+  ): Promise<Reply> {
+    const _csrf = await this.csrf(formPage);
+    const form = new FormData();
+    form.append('_csrf', _csrf);
+    for (const [key, value] of Object.entries(fields)) form.append(key, value);
+    if (file) form.append(file.field, new Blob([file.bytes], { type: file.type }), file.name);
+    const response = await fetch(BASE + action, {
+      method: 'POST',
+      headers: { 'x-forwarded-for': this.ip, cookie: this.cookieHeader(), origin: BASE },
+      body: form,
+      redirect: 'manual',
+    });
+    this.remember(response.headers);
+    const bytes = Buffer.from(await response.arrayBuffer());
+    return {
+      status: response.status,
+      location: response.headers.get('location') ?? '',
+      body: bytes.toString('utf8'),
+      bytes,
+      headers: response.headers,
+    };
+  }
+
   get(path: string, headers?: Record<string, string>): Promise<Reply> {
     return this.request('GET', path, { headers });
   }
@@ -174,9 +225,9 @@ export class Browser {
   }
 }
 
-/** A signed-in browser for a fresh account of the role. */
-export async function signedIn(role: Role) {
-  const user = await makeUser(role);
+/** A signed-in browser for a fresh account of the role (in `aziendaId` or the default company). */
+export async function signedIn(role: Role, aziendaId?: string) {
+  const user = await makeUser(role, undefined, aziendaId);
   const browser = new Browser();
   const reply = await browser.login(user.email);
   assert.equal(reply.status, 302, `login of ${role} failed with ${reply.status}`);

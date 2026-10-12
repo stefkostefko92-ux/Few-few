@@ -24,6 +24,12 @@ export const AUDIT_ACTIONS = [
   'SCHEDA_DELETE',
   'SCHEDA_RESTORE',
   'SCHEDA_PURGE',
+  'AZIENDA_CREATE',
+  'AZIENDA_UPDATE',
+  'AZIENDA_LOGO',
+  'AZIENDA_DEACTIVATE',
+  'AZIENDA_REACTIVATE',
+  'USER_AZIENDA',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
@@ -31,7 +37,12 @@ export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 export interface AuditEntry {
   actorId: string | null;
   action: AuditAction;
-  targetType?: 'user' | 'invite' | 'scheda';
+  /**
+   * Фирмата, за която е събитието — нейният администратор вижда само тези записи. null (или липса)
+   * — събитие на самия портал, видимо само за MASTER.
+   */
+  aziendaId: string | null;
+  targetType?: 'user' | 'invite' | 'scheda' | 'azienda';
   targetId?: string;
   /** Малки неличностни подробности (роля, брой). Никога пароли, токени, имейли или текст от схема. */
   meta?: Prisma.InputJsonObject;
@@ -46,6 +57,7 @@ export async function writeAudit(
     data: {
       actorId: entry.actorId,
       action: entry.action,
+      aziendaId: entry.aziendaId,
       targetType: entry.targetType ?? null,
       targetId: entry.targetId ?? null,
       ...(entry.meta ? { meta: entry.meta } : {}),

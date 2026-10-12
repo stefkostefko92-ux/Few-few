@@ -66,3 +66,56 @@
 .copy .input {
   font-size: 0.9375rem;
 }
+
+/* Логото на фирмата: на бял „лист“ и в тъмната тема — то е за отпечатване върху бяла хартия, а
+   прозрачно черно лого върху черен фон би изчезнало. */
+.logo-paper {
+  display: inline-flex;
+  align-items: center;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #ffffff;
+}
+
+.logo-paper img {
+  display: block;
+  width: auto;
+  max-width: min(320px, 100%);
+  height: auto;
+  max-height: 96px;
+}
+
+.logo-paper--thumb {
+  padding: 4px 8px;
+}
+
+.logo-paper--thumb img {
+  max-width: 120px;
+  max-height: 32px;
+}
+
+.file-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px dashed var(--field-line);
+  border-radius: var(--radius);
+  background: var(--field);
+  color: var(--fg);
+  font: inherit;
+}
+
+.file-input:hover {
+  border-color: var(--fg);
+}
+
+.file-input:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 1px;
+}
+
+.form--tight {
+  gap: 14px;
+  margin-top: 16px;
+}

@@ -4,7 +4,11 @@
     : t('schede.count', { n: page.total });
   const tipo = (row) => row.tipoImpianto.map((v) => t('scheda.option.tipoImpianto.' + v)).join(', ');
   const ident = (row) => row.numeroImpianto || row.matricola || row.indirizzo || fmt.day(row.data);
-  const base = (typeof listBase !== 'undefined' ? listBase : '/schede') + (query ? '?q=' + encodeURIComponent(query) : '');
+  const params = new URLSearchParams();
+  if (query) params.set('q', query);
+  if (typeof aziendaFilter !== 'undefined' && aziendaFilter) params.set('azienda', aziendaFilter);
+  const base = (typeof listBase !== 'undefined' ? listBase : '/schede') + (params.size ? '?' + params.toString() : '');
+  const showAzienda = typeof aziende !== 'undefined' && aziende.length > 0;
   const inTrash = typeof trashMode !== 'undefined' && trashMode;
 %><div data-status="<%= statusText %>">
 <% if (page.rows.length === 0) { %>
@@ -29,6 +33,7 @@
         <th scope="col"><%= t('scheda.field.indirizzo') %></th>
         <th scope="col"><%= t('scheda.field.marca') %></th>
         <th scope="col"><%= t('scheda.field.tipoImpianto') %></th>
+        <% if (showAzienda) { %><th scope="col"><%= t('scheda.field.azienda') %></th><% } %>
         <th scope="col"><%= inTrash ? t('trash.deletedAt') : t('scheda.field.data') %></th>
         <% if (inTrash) { %><th scope="col"><span class="visually-hidden"><%= t('common.actions') %></span></th><% } %>
       </tr>
@@ -40,6 +45,7 @@
         <td class="wide" data-label="<%= t('scheda.field.indirizzo') %>"><%- include('_hl', { text: row.indirizzo, tokens: page.tokens }) %></td>
         <td data-label="<%= t('scheda.field.marca') %>"><%- include('_hl', { text: row.marca, tokens: page.tokens }) %></td>
         <td data-label="<%= t('scheda.field.tipoImpianto') %>"><%= tipo(row) || '—' %></td>
+        <% if (showAzienda) { %><td data-label="<%= t('scheda.field.azienda') %>"><%= row.azienda.name %></td><% } %>
         <td data-label="<%= inTrash ? t('trash.deletedAt') : t('scheda.field.data') %>"><%= inTrash ? fmt.dateTime(row.deletedAt) : fmt.day(row.data) %></td>
         <% if (inTrash) { %><td class="actions-cell" data-label="<%= t('common.actions') %>">
           <form class="inline-form" method="post" action="/cestino/<%= row.id %>/ripristina"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--sm" type="submit"><%- include('../partials/icon', { name: 'restore' }) %><%= t('trash.restore') %></button></form>

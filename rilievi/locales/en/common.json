@@ -13,7 +13,8 @@
     "utenti": "Users",
     "cestino": "Bin",
     "registro": "Log",
-    "account": "Your account"
+    "account": "Your account",
+    "aziende": "Companies"
   },
   "common": {
     "yes": "Yes",
@@ -78,6 +79,13 @@
     "schedaSaved": "Changes saved.",
     "schedaTrashed": "Sheet moved to the bin.",
     "schedaRestored": "Sheet restored.",
-    "schedaPurged": "Sheet deleted for good."
+    "schedaPurged": "Sheet deleted for good.",
+    "aziendaCreated": "Company created.",
+    "aziendaSaved": "Company name updated.",
+    "logoSaved": "Logo updated.",
+    "logoRemoved": "Logo removed.",
+    "aziendaDeactivated": "Company deactivated: its people can no longer sign in.",
+    "aziendaReactivated": "Company reactivated.",
+    "aziendaChanged": "The account's company has been changed."
   }
 }

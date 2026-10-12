@@ -2,10 +2,11 @@
 <div class="page-head">
   <div>
     <h1><%= t('users.title') %></h1>
-    <p class="page-head__sub"><%= t('users.subtitle') %></p>
+    <p class="page-head__sub"><%= t(showAzienda ? 'users.subtitleMaster' : 'users.subtitle') %></p>
   </div>
-  <a class="btn btn--primary" href="/utenti/invita"><%- include('../partials/icon', { name: 'plus' }) %><%= t('users.invite') %></a>
+  <a class="btn btn--primary" href="/utenti/invita<%= aziendaFilter ? '?azienda=' + aziendaFilter : '' %>"><%- include('../partials/icon', { name: 'plus' }) %><%= t('users.invite') %></a>
 </div>
+<% if (showAzienda) { %><%- include('../partials/azienda-filter', { action: '/utenti' }) %><% } %>
 <div class="stack-gap">
   <section aria-labelledby="h-users">
     <h2 class="section__title" id="h-users"><%= t('users.accounts', { n: users.length }) %></h2>
@@ -14,6 +15,7 @@
         <th scope="col"><%= t('users.name') %></th>
         <th scope="col"><%= t('auth.email') %></th>
         <th scope="col"><%= t('users.role') %></th>
+        <% if (showAzienda) { %><th scope="col"><%= t('users.azienda') %></th><% } %>
         <th scope="col"><%= t('users.lastLogin') %></th>
         <th scope="col"><%= t('users.status') %></th>
       </tr></thead>
@@ -22,6 +24,7 @@
           <td data-label="<%= t('users.name') %>"><% if (user.manageable) { %><a class="row-link" href="/utenti/<%= user.id %>"><%= user.name %></a><% } else { %><strong><%= user.name %></strong><% } %><% if (currentUser.id === user.id) { %> <span class="badge"><%= t('users.you') %></span><% } %></td>
           <td class="wide" data-label="<%= t('auth.email') %>"><%= user.email %></td>
           <td data-label="<%= t('users.role') %>"><%= t('role.' + user.role) %></td>
+          <% if (showAzienda) { %><td data-label="<%= t('users.azienda') %>"><%= user.azienda ? user.azienda.name : '—' %></td><% } %>
           <td data-label="<%= t('users.lastLogin') %>"><%= user.lastLoginAt ? fmt.dateTime(user.lastLoginAt) : t('users.never') %></td>
           <td data-label="<%= t('users.status') %>"><% if (user.deactivatedAt) { %><span class="badge badge--off"><%= t('users.deactivated') %></span><% } else { %><span class="badge"><%= t('users.active') %></span><% } %></td>
         </tr>
@@ -38,6 +41,7 @@
       <thead><tr>
         <th scope="col"><%= t('auth.email') %></th>
         <th scope="col"><%= t('users.role') %></th>
+        <% if (showAzienda) { %><th scope="col"><%= t('users.azienda') %></th><% } %>
         <th scope="col"><%= t('users.invitedBy') %></th>
         <th scope="col"><%= t('users.expires') %></th>
         <th scope="col"><span class="visually-hidden"><%= t('common.actions') %></span></th>
@@ -46,6 +50,7 @@
         <% for (const invite of invites) { %><tr>
           <td class="wide" data-label="<%= t('auth.email') %>"><strong><%= invite.email %></strong><% if (invite.name) { %><br><span class="muted"><%= invite.name %></span><% } %></td>
           <td data-label="<%= t('users.role') %>"><%= t('role.' + invite.role) %></td>
+          <% if (showAzienda) { %><td data-label="<%= t('users.azienda') %>"><%= invite.azienda.name %></td><% } %>
           <td data-label="<%= t('users.invitedBy') %>"><%= invite.invitedBy.name %></td>
           <td data-label="<%= t('users.expires') %>"><%= fmt.dateTime(invite.expiresAt) %></td>
           <td class="actions-cell" data-label="<%= t('common.actions') %>"><% if (invite.revocable) { %><form class="inline-form" method="post" action="/utenti/inviti/<%= invite.id %>/revoca"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--sm btn--ghost" type="submit"><%= t('users.revoke') %></button></form><% } %></td>

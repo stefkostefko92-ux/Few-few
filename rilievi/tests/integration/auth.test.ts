@@ -1,6 +1,15 @@
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
-import { Browser, makeUser, prisma, signedIn, startApp, stopApp, PASSWORD } from './harness.js';
+import {
+  Browser,
+  makeAzienda,
+  makeUser,
+  prisma,
+  signedIn,
+  startApp,
+  stopApp,
+  PASSWORD,
+} from './harness.js';
 
 before(startApp);
 after(stopApp);
@@ -101,7 +110,7 @@ describe('sign-in', () => {
 
   it('cuts a deactivated account off at its next request', async () => {
     const { user, browser } = await signedIn('TECNICO');
-    const { browser: manager } = await signedIn('RESPONSABILE');
+    const { browser: manager } = await signedIn('ADMIN');
     const reply = await manager.submit(`/utenti/${user.id}`, `/utenti/${user.id}/stato`, {
       active: '0',
     });
@@ -110,6 +119,21 @@ describe('sign-in', () => {
     assert.equal(await prisma.session.count({ where: { userId: user.id } }), 0);
     const again = await new Browser().login(user.email);
     assert.equal(again.status, 403);
+  });
+
+  it('cuts off every person of a deactivated company, and lets them back when it returns', async () => {
+    const azienda = await makeAzienda('Azienda Sospesa');
+    const { user, browser } = await signedIn('TECNICO', azienda.id);
+    const { browser: master } = await signedIn('MASTER');
+    const off = await master.submit(`/aziende/${azienda.id}`, `/aziende/${azienda.id}/stato`, {
+      active: '0',
+    });
+    assert.equal(off.status, 303);
+    assert.equal((await browser.get('/schede')).status, 302, 'the open session ends');
+    assert.equal(await prisma.session.count({ where: { userId: user.id } }), 0);
+    assert.equal((await new Browser().login(user.email)).status, 403);
+    await master.submit(`/aziende/${azienda.id}`, `/aziende/${azienda.id}/stato`, { active: '1' });
+    assert.equal((await new Browser().login(user.email)).status, 302);
   });
 
   it('forces the first MASTER to change a temporary password before anything else', async () => {

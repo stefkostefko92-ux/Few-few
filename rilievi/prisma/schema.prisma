@@ -44,7 +44,30 @@ enum TipoPorte {
   MANUALI
 }
 
+/// Фирма — клиент на портала: свои хора, свои карти, свое лого на листа. Създава я само MASTER
+/// (собственикът на портала); всяка фирма вижда само своето (src/auth/scope.ts).
+model Azienda {
+  id            String    @id @default(cuid())
+  name          String    @unique @db.VarChar(120)
+  /// Логото за листа и PDF-а — вече прекодирано от src/aziende/logo.ts (PNG или JPEG, без метаданни).
+  logo          Bytes?
+  logoType      String?   @db.VarChar(20)
+  logoWidth     Int?
+  logoHeight    Int?
+  logoUpdatedAt DateTime?
+  /// Деактивирана фирма: хората ѝ не влизат и сесиите им падат; картите ѝ остават.
+  deactivatedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  users   User[]
+  invites Invite[]
+  schede  Scheda[]
+  audit   AuditLog[]
+}
+
 /// Акаунт. Създава се САМО от приета покана (или от `owner:create` за първия MASTER) — регистрация няма.
+/// MASTER е без фирма (вижда всички); всеки друг е в точно една фирма — проверява го и CHECK в базата.
 model User {
   id                 String    @id @default(cuid())
   /// Винаги с малки букви (src/auth/email.ts).
@@ -62,6 +85,8 @@ model User {
   lockedUntil        DateTime?
   lastLoginAt        DateTime?
   passwordChangedAt  DateTime  @default(now())
+  aziendaId          String?
+  azienda            Azienda?  @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
   invitedById        String?
   invitedBy          User?     @relation("InvitedUsers", fields: [invitedById], references: [id], onDelete: SetNull)
   createdAt          DateTime  @default(now())
@@ -79,6 +104,7 @@ model User {
 
   @@index([invitedById])
   @@index([role])
+  @@index([aziendaId])
 }
 
 /// Сесия зад бисквитката: JWT-то носи само `sid`, а редът тук решава дали сесията е жива —
@@ -104,6 +130,9 @@ model Invite {
   name           String?
   role           Role
   locale         String    @default("it")
+  /// Фирмата, в която влиза поканеният — избрана от MASTER или фирмата на администратора, който кани.
+  aziendaId      String
+  azienda        Azienda   @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
   tokenHash      String    @unique
   invitedById    String
   invitedBy      User      @relation("InvitesSent", fields: [invitedById], references: [id], onDelete: Cascade)
@@ -116,6 +145,7 @@ model Invite {
   @@index([email])
   @@index([invitedById])
   @@index([expiresAt])
+  @@index([aziendaId])
 }
 
 /// Връзка за нова парола: от самия човек („забравена парола“, ако има SMTP) или от по-висок ранг.
@@ -173,6 +203,9 @@ model Scheda {
   lavoriExtra          String?
   /// Нормализиран текст за търсачката (малки букви, без ударения) — пише го САМО src/schede/service.ts.
   searchText           String               @default("")
+  /// Фирмата на картата — тази на създателя (или избраната от MASTER). Вижда я само тази фирма и MASTER.
+  aziendaId            String
+  azienda              Azienda              @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
   createdById          String?
   createdBy            User?                @relation("SchedeCreated", fields: [createdById], references: [id], onDelete: SetNull)
   updatedById          String?
@@ -184,6 +217,7 @@ model Scheda {
   createdAt            DateTime             @default(now())
   updatedAt            DateTime             @updatedAt
 
+  @@index([aziendaId, deletedAt])
   @@index([data])
   @@index([matricola])
   @@index([numeroImpianto])
@@ -201,6 +235,9 @@ model AuditLog {
   actorId    String?
   actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
   action     String
+  /// Фирмата, за която е събитието — администраторът ѝ вижда само тях; null — събитие на портала.
+  aziendaId  String?
+  azienda    Azienda? @relation(fields: [aziendaId], references: [id], onDelete: SetNull)
   targetType String?
   targetId   String?
   /// Малки неличностни подробности (напр. стара/нова роля). Никога пароли, токени или текст от схема.
@@ -209,4 +246,5 @@ model AuditLog {
   @@index([at])
   @@index([actorId])
   @@index([targetType, targetId])
+  @@index([aziendaId, at])
 }

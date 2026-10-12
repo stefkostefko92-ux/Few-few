@@ -245,3 +245,21 @@
 .row-form .field {
   flex: 1 1 220px;
 }
+
+/* Филтърът по фирма (само за Master) над списъците. */
+.filter {
+  display: grid;
+  gap: 6px;
+  max-width: 520px;
+  margin-bottom: 20px;
+}
+
+.filter__row {
+  display: flex;
+  gap: 8px;
+}
+
+.filter__row .select {
+  flex: 1;
+  min-width: 0;
+}

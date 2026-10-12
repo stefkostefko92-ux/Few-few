@@ -251,3 +251,7 @@
   color: var(--danger);
   font-weight: 600;
 }
+
+.field--azienda {
+  max-width: 520px;
+}

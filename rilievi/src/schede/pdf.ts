@@ -5,14 +5,12 @@ import type { Translator } from '../i18n.js';
 import type { ViewHelpers } from '../http/view.js';
 import { displaySections } from './format.js';
 import {
-  CONTENT_WIDTH,
   drawFields,
   drawFooters,
+  drawHeader,
   drawPlate,
   drawSectionTitle,
-  INK,
   MARGIN,
-  MUTED,
   type PdfContext,
 } from './pdf-layout.js';
 import type { SchedaFull } from './service.js';
@@ -44,6 +42,8 @@ export interface PdfOptions {
   generatedBy: string;
   /** Папката с DejaVu Sans (PDF_FONT_DIR). */
   fontDir: string;
+  /** Логото на фирмата на картата (вече прекодирано при качването) или null. */
+  logo: Buffer | null;
 }
 
 export function renderSchedaPdf(scheda: SchedaFull, options: PdfOptions): Promise<Buffer> {
@@ -72,33 +72,28 @@ export function renderSchedaPdf(scheda: SchedaFull, options: PdfOptions): Promis
   const sections = displaySections(scheda, t, fmt);
   const byKey = new Map(sections.flatMap((s) => s.fields).map((f) => [f.key, f]));
 
-  // Заглавна лента: марката вляво, видът документ и датата вдясно.
-  doc.font('Sans-Bold').fontSize(9).fillColor(INK).text('CARBON STEALTH VCC', MARGIN, MARGIN);
-  doc
-    .font('Sans-Bold')
-    .fontSize(15)
-    .text(t('scheda.title'), MARGIN, MARGIN + 14);
-  doc.font('Sans').fontSize(9).fillColor(MUTED);
-  doc.text(`${t('scheda.field.data')}: ${fmt.day(scheda.data)}`, MARGIN, MARGIN + 2, {
-    width: CONTENT_WIDTH,
-    align: 'right',
+  // Заглавна лента: логото на фирмата най-горе вляво, вдясно датата и кой е попълнил картата.
+  const { azienda } = scheda;
+  drawHeader(ctx, {
+    logo: options.logo,
+    logoSize:
+      azienda.logoWidth && azienda.logoHeight
+        ? { width: azienda.logoWidth, height: azienda.logoHeight }
+        : null,
+    aziendaName: azienda.name,
+    title: t('scheda.title'),
+    dateLine: `${t('scheda.field.data')}: ${fmt.day(scheda.data)}`,
+    creatorLabel: t('scheda.compiledBy'),
+    creator: scheda.createdBy?.name ?? '—',
+    // Промяна след създаването (не секундите между двата реда при самото създаване).
+    updatedLine:
+      scheda.updatedBy && scheda.updatedAt.getTime() - scheda.createdAt.getTime() > 1000
+        ? t('scheda.meta.updated', {
+            name: scheda.updatedBy.name,
+            at: fmt.dateTime(scheda.updatedAt),
+          })
+        : '',
   });
-  const people = [
-    scheda.createdBy
-      ? t('scheda.meta.created', {
-          name: scheda.createdBy.name,
-          at: fmt.dateTime(scheda.createdAt),
-        })
-      : '',
-    scheda.updatedBy
-      ? t('scheda.meta.updated', {
-          name: scheda.updatedBy.name,
-          at: fmt.dateTime(scheda.updatedAt),
-        })
-      : '',
-  ].filter(Boolean);
-  doc.text(people.join('\n'), MARGIN, MARGIN + 16, { width: CONTENT_WIDTH, align: 'right' });
-  doc.y = MARGIN + 48;
 
   drawPlate(ctx, scheda, byKey);
   for (const section of sections) {

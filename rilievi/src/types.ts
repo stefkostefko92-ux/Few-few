@@ -9,6 +9,9 @@ export interface SessionUser {
   locale: string;
   theme: Theme;
   mustChangePassword: boolean;
+  /** Фирмата на човека; null само за MASTER (собственика на портала), който вижда всички фирми. */
+  aziendaId: string | null;
+  aziendaName: string | null;
 }
 
 export interface Principal {

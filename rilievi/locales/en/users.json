@@ -1,7 +1,7 @@
 {
   "users": {
     "title": "Users",
-    "subtitle": "The portal is invitation only. You can invite and manage people with a role below yours.",
+    "subtitle": "The portal is invitation only. You invite and manage the people of your company with a role below yours.",
     "invite": "Invite user",
     "accounts": {
       "one": "1 account",
@@ -26,9 +26,8 @@
     "revoke": "Revoke",
     "back": "Back to users",
     "inviteTitle": "Invite a user",
-    "inviteIntro": "The invite arrives by email (if enabled) and the link is valid for {days} days. The person chooses their own name and password.",
-    "nameOptional": "Name (optional)",
-    "roleHint": "You can only give roles below yours. “Client” sees every sheet but cannot change them.",
+    "inviteIntro": "The invite arrives by email (if enabled) and the link is valid for {days} days. The person confirms their name and chooses a password.",
+    "roleHint": "You can only give roles below yours. “Client” sees every sheet of the company but cannot change them.",
     "inviteLanguage": "Invite language",
     "inviteSubmit": "Create invite",
     "inviteCreated": "Invite created",
@@ -54,13 +53,23 @@
     "reactivateText": "The account will be able to sign in again with its password.",
     "deactivate": "Deactivate account",
     "reactivate": "Reactivate account",
-    "notManageable": "You can only manage accounts with a role below yours.",
+    "notManageable": "You can only manage accounts of your company with a role below yours.",
     "error": {
       "email": "Enter a valid email.",
       "role": "Choose a valid role.",
       "roleNotAllowed": "You cannot give this role.",
-      "userExists": "An account with this email already exists."
-    }
+      "userExists": "An account with this email already exists.",
+      "name": "Enter the full name (2 to 120 characters).",
+      "azienda": "Choose an active company."
+    },
+    "subtitleMaster": "The portal is invitation only. As Master you invite and manage the people of every company.",
+    "fullName": "Full name",
+    "azienda": "Company",
+    "aziendaFixed": "The person joins {azienda}.",
+    "aziendaHint": "The person will see only this company's sheets.",
+    "noAziende": "Create a company first, then invite its people.",
+    "saveAzienda": "Move to this company",
+    "aziendaMoveText": "Sheets already filled in stay with the company they were created in."
   },
   "audit": {
     "title": "Log",
@@ -91,7 +100,16 @@
       "SCHEDA_UPDATE": "Sheet changed",
       "SCHEDA_DELETE": "Sheet moved to bin",
       "SCHEDA_RESTORE": "Sheet restored",
-      "SCHEDA_PURGE": "Sheet deleted for good"
-    }
+      "SCHEDA_PURGE": "Sheet deleted for good",
+      "AZIENDA_CREATE": "Company created",
+      "AZIENDA_UPDATE": "Company renamed",
+      "AZIENDA_LOGO": "Company logo changed",
+      "AZIENDA_DEACTIVATE": "Company deactivated",
+      "AZIENDA_REACTIVATE": "Company reactivated",
+      "USER_AZIENDA": "Account moved to another company"
+    },
+    "azienda": "Company",
+    "platform": "Portal",
+    "openAzienda": "Open company"
   }
 }

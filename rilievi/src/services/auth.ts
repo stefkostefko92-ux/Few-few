@@ -37,7 +37,10 @@ export type LoginOutcome =
  */
 export async function login(emailRaw: string, password: string): Promise<LoginOutcome> {
   const email = normalizeEmail(emailRaw);
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({
+    where: { email },
+    include: { azienda: { select: { deactivatedAt: true } } },
+  });
   if (!user) {
     await verifyPassword(password, await dummyHash());
     if (ghostLocked(email)) return { kind: 'locked' };
@@ -53,6 +56,7 @@ export async function login(emailRaw: string, password: string): Promise<LoginOu
       await writeAudit({
         actorId: null,
         action: 'LOGIN_LOCKED',
+        aziendaId: user.aziendaId,
         targetType: 'user',
         targetId: user.id,
       });
@@ -60,7 +64,8 @@ export async function login(emailRaw: string, password: string): Promise<LoginOu
     }
     return { kind: 'invalid' };
   }
-  if (user.deactivatedAt) return { kind: 'deactivated' };
+  // Деактивирана фирма спира всичките си хора, както деактивиран акаунт — себе си.
+  if (user.deactivatedAt || user.azienda?.deactivatedAt) return { kind: 'deactivated' };
   await prisma.user.update({
     where: { id: user.id },
     data: {
@@ -70,7 +75,13 @@ export async function login(emailRaw: string, password: string): Promise<LoginOu
       ...(needsRehash(user.passwordHash) ? { passwordHash: await hashPassword(password) } : {}),
     },
   });
-  await writeAudit({ actorId: user.id, action: 'LOGIN', targetType: 'user', targetId: user.id });
+  await writeAudit({
+    actorId: user.id,
+    action: 'LOGIN',
+    aziendaId: user.aziendaId,
+    targetType: 'user',
+    targetId: user.id,
+  });
   return {
     kind: 'ok',
     user: { id: user.id, role: user.role, mustChangePassword: user.mustChangePassword },
@@ -87,8 +98,11 @@ export const ADMIN_RESET_HOURS = 24;
  */
 export async function requestReset(emailRaw: string): Promise<void> {
   if (!mailEnabled()) return;
-  const user = await prisma.user.findUnique({ where: { email: normalizeEmail(emailRaw) } });
-  if (!user || user.deactivatedAt) return;
+  const user = await prisma.user.findUnique({
+    where: { email: normalizeEmail(emailRaw) },
+    include: { azienda: { select: { deactivatedAt: true } } },
+  });
+  if (!user || user.deactivatedAt || user.azienda?.deactivatedAt) return;
   const { token, hash } = newToken();
   await prisma.$transaction([
     prisma.passwordReset.updateMany({
@@ -118,10 +132,21 @@ export async function findValidReset(token: unknown) {
   if (!hash) return null;
   const reset = await prisma.passwordReset.findUnique({
     where: { tokenHash: hash },
-    include: { user: { select: { id: true, email: true, name: true, deactivatedAt: true } } },
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          deactivatedAt: true,
+          aziendaId: true,
+          azienda: { select: { deactivatedAt: true } },
+        },
+      },
+    },
   });
   if (!reset || reset.usedAt || reset.expiresAt.getTime() <= Date.now()) return null;
-  if (reset.user.deactivatedAt) return null;
+  if (reset.user.deactivatedAt || reset.user.azienda?.deactivatedAt) return null;
   return reset;
 }
 
@@ -155,6 +180,7 @@ export async function resetPassword(token: unknown, password: string): Promise<R
       {
         actorId: reset.userId,
         action: 'PASSWORD_RESET',
+        aziendaId: reset.user.aziendaId,
         targetType: 'user',
         targetId: reset.userId,
       },
@@ -188,7 +214,13 @@ export async function changePassword(
     });
     await destroyAllSessions(user.id, principal.sessionId, tx);
     await writeAudit(
-      { actorId: user.id, action: 'PASSWORD_CHANGE', targetType: 'user', targetId: user.id },
+      {
+        actorId: user.id,
+        action: 'PASSWORD_CHANGE',
+        aziendaId: user.aziendaId,
+        targetType: 'user',
+        targetId: user.id,
+      },
       tx,
     );
   });

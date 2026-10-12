@@ -16,7 +16,13 @@ export const ROLE_LEVEL: Readonly<Record<Role, number>> = {
 };
 
 export type Capability =
-  'schede:read' | 'schede:write' | 'schede:delete' | 'schede:trash' | 'users:manage' | 'audit:view';
+  | 'schede:read'
+  | 'schede:write'
+  | 'schede:delete'
+  | 'schede:trash'
+  | 'users:manage'
+  | 'audit:view'
+  | 'aziende:manage';
 
 /** Най-ниската роля (най-голямото число), която още има способността. */
 const REQUIRED: Readonly<Record<Capability, Role>> = {
@@ -24,9 +30,12 @@ const REQUIRED: Readonly<Record<Capability, Role>> = {
   'schede:write': 'OPERATORE',
   'schede:delete': 'RESPONSABILE',
   'schede:trash': 'ADMIN',
-  // Канят и управляват само хора под своя ранг (outranks) — RESPONSABILE кани техници и оператори.
-  'users:manage': 'RESPONSABILE',
+  // Кани и управлява хората само най-високата роля във фирмата (ADMIN — в своята фирма, роли под
+  // своята) и собственикът на портала (MASTER — във всяка фирма). Така е поискал собственикът.
+  'users:manage': 'ADMIN',
   'audit:view': 'ADMIN',
+  // Фирмите (създаване, лого, деактивиране) — само собственикът на портала.
+  'aziende:manage': 'MASTER',
 };
 
 export function can(role: Role, capability: Capability): boolean {
