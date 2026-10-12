@@ -253,7 +253,7 @@ export function getLiftDesign(user: SessionUser, id: string) {
   });
 }
 
-const OUTCOME = { createdAt: true, verdict: true, failCount: true, warnCount: true } as const;
+const OUTCOME = { id: true, createdAt: true, verdict: true, failCount: true, warnCount: true } as const;
 
 /** The result of the record a newer one was made again from (?da=<id>, «Aggiorna con il software attuale»), on the same
  *  installation of the company: for the banner that says whether the result changed. */

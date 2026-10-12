@@ -12,6 +12,9 @@ import type {
 import type { CalcKey, Pres } from './tr';
 
 export type Verdict = 'ok' | 'warn' | 'fail';
+/** What the value and the limit of a check are written from: the check as a record stores it, its machine's ropes and groove. */
+export type ShownCheck = Pick<Check, 'id' | 'status' | 'value' | 'limit' | 'dec'>;
+export type ShownMachine = Pick<Machine, 'n' | 'd' | 'groove'>;
 export type Row2 = [string, string];
 export type Row3 = [string, string, string];
 
@@ -150,15 +153,17 @@ export function textsFor(P: Pres) {
   const checkText = (c: Check): string => `${checkLabel(c.id)}${c.cs ? ` — ${caseText(c.cs, c.id !== 'b_amax')}` : ''}`;
   // a check's value and limit with their unit; the ropes as number × diameter (machine N), both are checked
   const unitOf = (id: CheckId): string => (CHECK_UNIT[id] ? `\u00a0${CHECK_UNIT[id]}` : '');
-  // a value that does not meet its limit never reads as meeting it: more decimals when it would round onto it
-  const checkValue = (c: Check, N: Machine): string => {
+  // a value that does not meet its limit never reads as meeting it: more decimals when it would round onto it (what a
+  // record stores of a check and of its machine is enough: verdict-checks.ts reads them from the snapshot; without the
+  // machine, the ropes as their figure and the groove without its limits)
+  const checkValue = (c: ShownCheck, N: ShownMachine | null): string => {
     if (c.value == null) return '—';
-    if (c.id === 'r_nd') return `${N.n} × Ø${dText(N.d)}\u00a0mm`;
+    if (c.id === 'r_nd' && N) return `${N.n} × Ø${dText(N.d)}\u00a0mm`;
     const dec = c.limit == null || c.id === 'g_geom' ? c.dec : decimalsShown(c.value, c.limit, !AT_LEAST.has(c.id), c.status === 'ok', c.dec) ?? c.dec;
     return `${fmt(c.value, dec)}${unitOf(c.id)}`;
   };
-  const checkLimit = (c: Check, N: Machine): string => {
-    if (c.id === 'g_geom') return grooveLimit(N.groove);
+  const checkLimit = (c: ShownCheck, N: ShownMachine | null): string => {
+    if (c.id === 'g_geom') return N ? grooveLimit(N.groove) : '';
     // the retainer is a condition, not a limit the wrap must stay under
     if (c.id === 'g_retain') return t('g_retain_lim', { below: fmt(K.retainBelow, 0), wrap: fmt(K.retainWrap, 0) });
     if (c.limit == null) return '';

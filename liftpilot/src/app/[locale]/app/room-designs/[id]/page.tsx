@@ -79,7 +79,7 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
           {editable && replacement ? <Link className="btn" href={`/app/calculations/${r.calculationId}/locale?from=${r.id}`}>{t('newFrom')}</Link> : null}
         </div>
       </div>
-      {before ? <Refreshed before={before} now={r} locale={locale} /> : null}
+      {before ? <Refreshed before={before} now={r} kind="room" locale={locale} /> : null}
       {d ? null : (
         <div className="alert alert-warn flex flex-col items-start gap-2" role="status">
           <p className="m-0">{tf(replacement ? 'room' : 'archive')}</p>
@@ -87,7 +87,7 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
         </div>
       )}
       <dl className="cartiglio">
-        <div><dt>{tc('col_result')}</dt><dd><VerdictPill verdict={r.verdict} fails={r.failCount} warns={r.warnCount} /></dd></div>
+        <div><dt>{tc('col_result')}</dt><dd><VerdictPill verdict={r.verdict} fails={r.failCount} warns={r.warnCount} record={{ kind: 'room', id: r.id }} /></dd></div>
         <div><dt>{tc('col_date')}</dt><dd>{fd.dateTime(r.createdAt)}</dd></div>
         <div><dt>{tc('col_author')}</dt><dd>{r.user?.name ?? '—'}</dd></div>
         <div><dt>{tc('col_machine')}</dt><dd className="num"><Link href={`/app/calculations/${r.calculationId}`}>{r.calculation.summary}</Link></dd></div>

@@ -11,11 +11,13 @@ import ModuleCards, { MODULES } from './ModuleCards';
 
 export type ListedProject = Awaited<ReturnType<typeof listProjects>>[number];
 
-/** An installation's result: its latest lift design's for a whole project, else its latest calculation's; and whether
- *  the running engines no longer reproduce it («da aggiornare», by the versions stored). */
+/** An installation's result: its latest lift design's for a whole project, else its latest calculation's (the record its
+ *  pill shows the checks of); and whether the running engines no longer reproduce it («da aggiornare», by the versions
+ *  stored). */
 export function latestOf(p: ListedProject) {
   const design = p.liftDesigns[0] ?? null, calc = p.calculations[0] ?? null;
-  return { last: design ?? calc, design, old: design ? outdated.lift(design) : calc ? outdated.calc(calc) : false };
+  const record = design ? { kind: 'lift' as const, id: design.id } : calc ? { kind: 'calc' as const, id: calc.id } : undefined;
+  return { last: design ?? calc, design, record, old: design ? outdated.lift(design) : calc ? outdated.calc(calc) : false };
 }
 
 interface Props {
@@ -85,7 +87,7 @@ export default async function ProjectList({ projects, total, all, archived, kind
       ) : (
         <ul className="dash-rows" role="list">
           {projects.map((p) => {
-            const { last, old } = latestOf(p);
+            const { last, old, record } = latestOf(p);
             const place = [p.address, p.city, p.province].filter(Boolean).join(', ');
             return (
               <li key={p.id} className="dash-row">
@@ -101,10 +103,11 @@ export default async function ProjectList({ projects, total, all, archived, kind
                 <div className="dash-row-result">
                   {last ? (
                     <>
-                      <span className="dash-pills">
-                        <VerdictPill verdict={last.verdict} fails={last.failCount} warns={last.warnCount} />
+                      {/* a sibling of the row's link (never inside it): its button sits over the link's box */}
+                      <div className="dash-pills">
+                        <VerdictPill verdict={last.verdict} fails={last.failCount} warns={last.warnCount} record={record} />
                         {old ? <span className="chip old">{tf('outdated')}</span> : null}
-                      </span>
+                      </div>
                       {/* the result's date before its machine line, as the list had it before the redesign */}
                       <span className="dash-row-sum">
                         <time className="dash-row-at" dateTime={last.createdAt.toISOString()}><span className="sr-only">{t('col_last')} </span>{fd.dateTime(last.createdAt)}</time>

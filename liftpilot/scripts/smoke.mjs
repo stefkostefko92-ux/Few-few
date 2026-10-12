@@ -7,7 +7,8 @@
 //   client and company logos, drawing set issued from
 //   that calculation (sheets, PDF) and its revision → the installation in one form with its live 3D simulation and a SICOR
 //   machine from the catalogue (drawn as it is), saved
-//   in one go (shaft design and calculation together), with its documents → new user who must change the password → a
+//   in one go (shaft design and calculation together), with its documents → the dashboard's result pill opens the checks
+//   behind its number (scripts/smoke-verdict.mjs) → new user who must change the password → a
 //   second company that cannot open the first company's calculation, shaft design, DXF, drawing set or lift design →
 //   with MAILBOX_PORT: self-registration, confirmation, forgotten password (scripts/smoke-accounts.mjs), the server
 //   sending its mail to scripts/mail-sink.mjs on that port (SMTP_HOST=127.0.0.1, SMTP_PORT=<port>, MAIL_FROM set).
@@ -22,6 +23,7 @@ import { loadPlaywright, smokeKit, step } from './smoke-kit.mjs';
 import { blankCalc, projectData } from './smoke-blank.mjs';
 import { priceList } from './smoke-prices.mjs';
 import { replacementRoom } from './smoke-replacement.mjs';
+import { verdictPopover } from './smoke-verdict.mjs';
 
 const { chromium } = loadPlaywright();
 
@@ -232,6 +234,8 @@ try {
     assert.equal(res.status(), 200, format);
     assert.equal((await res.body()).subarray(0, magic.length).toString('latin1'), magic, format);
   }
+
+  await verdictPopover({ BASE, page, hydrated });
 
   step('data of the installation, company logo, drawing set and its revision');
   await page.goto(`${projectUrl}/impianto`);

@@ -2151,5 +2151,24 @@
     "inc2": "The register of the standards, with the source and status of every value",
     "inc3": "The company’s data, always downloadable as one JSON file",
     "inc4": "Drafts to be checked and signed by a qualified technician"
+  },
+  "verdictChecks": {
+    "showFail": "show the checks not passed",
+    "showWarn": "show the checks with a warning",
+    "titleFail": "Checks not passed",
+    "titleWarn": "Checks with a warning",
+    "fails": "Not passed · {n}",
+    "warns": "With a warning · {n}",
+    "limit": "limit",
+    "loading": "Reading the checks…",
+    "error": "The checks could not be loaded.",
+    "retry": "Try again",
+    "open": "Open the checks",
+    "close": "Close",
+    "none": "No check to list.",
+    "note_partial": "Design to update: the current software no longer reproduces it. The list comes from the checks saved with the calculation and the shaft; those the design derives from the machine in its place (beams under the machine, refuge on the car roof, car frame) are kept by no record. Update it for the full list.",
+    "note_partial_diff": "Design to update: the current software no longer reproduces it. Here are the checks saved with the calculation and the shaft ({fails} not passed, {warns} with a warning); the saved result ({failCount} and {warnCount}) also counted those the design derives from the machine in its place (beams under the machine, refuge on the car roof, car frame), which no record keeps. Update it for the full list.",
+    "note_mismatch": "Result saved by an earlier version of the software: it counted {failCount} not passed and {warnCount} with a warning, the saved data give {fails} and {warns}. Update it to redo the result.",
+    "note_unreadable": "The saved data cannot be read by the current software: open the record and update it to see the checks."
   }
 }

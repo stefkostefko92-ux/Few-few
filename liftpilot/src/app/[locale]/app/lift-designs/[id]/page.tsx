@@ -77,13 +77,13 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
       <div className="page-head">
         <div className="titles">
           <h1>{d.label || t('designTitle')}</h1>
-          <p className="lead">{fd.dateTime(d.createdAt)} · {d.user?.name ?? '—'} · <VerdictPill verdict={d.verdict} fails={d.failCount} warns={d.warnCount} /></p>
+          <div className="lead">{fd.dateTime(d.createdAt)} · {d.user?.name ?? '—'} · <VerdictPill verdict={d.verdict} fails={d.failCount} warns={d.warnCount} record={{ kind: 'lift', id: d.id }} /></div>
         </div>
         <div className="actions">
           {editable ? <Link className="btn btn-primary" href={`/app/projects/${d.project.id}/progetto?from=${d.id}`}>{t('edit')}</Link> : null}
         </div>
       </div>
-      {before ? <Refreshed before={before} now={d} locale={locale} /> : null}
+      {before ? <Refreshed before={before} now={d} kind="lift" locale={locale} /> : null}
       {same ? null : (
         <div className="alert alert-warn flex flex-col items-start gap-2" role="status">
           <p className="m-0">{tf('design')}</p>

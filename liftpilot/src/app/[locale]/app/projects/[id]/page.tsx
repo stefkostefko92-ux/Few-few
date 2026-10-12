@@ -58,7 +58,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
     </ul>
   ) : null;
   const calcTable = (
-    <RecordTable rows={calcRows} href={(x) => `/app/calculations/${x}`} what={tc('col_machine')} locale={locale}
+    <RecordTable rows={calcRows} kind="calc" href={(x) => `/app/calculations/${x}`} what={tc('col_machine')} locale={locale}
       under={(r) => { const n = calcs.find((c) => c.id === r.id)?._count.reviews ?? 0; return n ? <span className="note">{tc('reviewed', { n })}</span> : null; }} />
   );
   return (
@@ -115,7 +115,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
               </div>
             )}
             {liftRows.length > 1 ? <SectionTitle level={3} icon="history">{tl('history')}</SectionTitle> : null}
-            {liftRows.length > 1 ? <RecordTable rows={liftRows} href={(x) => `/app/lift-designs/${x}`} what={tl('col_design')} locale={locale} /> : null}
+            {liftRows.length > 1 ? <RecordTable rows={liftRows} kind="lift" href={(x) => `/app/lift-designs/${x}`} what={tl('col_design')} locale={locale} /> : null}
           </section>
 
           <section className="flex flex-col gap-3">
@@ -132,13 +132,13 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
               <p className="note">{t('archiveLead')}</p>
               {shaftRows.length ? <h3>{ts('sectionTitle')}</h3> : null}
               {shaftRows.length ? (
-                <RecordTable rows={shaftRows} href={(x) => `/app/shaft-designs/${x}`} what={ts('col_design')} locale={locale}
+                <RecordTable rows={shaftRows} kind="shaft" href={(x) => `/app/shaft-designs/${x}`} what={ts('col_design')} locale={locale}
                   extra={{ label: ts('source'), cell: (r) => (designs.find((d) => d.id === r.id)?.source ? 'DXF/DWG' : ts('sourceHand')) }} />
               ) : null}
               {calcRows.length ? <h3>{tc('title')}</h3> : null}
               {calcRows.length ? calcTable : null}
               {roomRows.length ? <h3>{tm('projectTitle')}</h3> : null}
-              {roomRows.length ? <RecordTable rows={roomRows} href={(x) => `/app/room-designs/${x}`} what={tm('col_room')} locale={locale} /> : null}
+              {roomRows.length ? <RecordTable rows={roomRows} kind="room" href={(x) => `/app/room-designs/${x}`} what={tm('col_room')} locale={locale} /> : null}
             </details>
           ) : null}
         </>
@@ -162,7 +162,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
         <section className="flex flex-col gap-3" aria-labelledby="project-rooms">
           <SectionTitle id="project-rooms" icon="building-gear">{tm('projectTitle')}</SectionTitle>
           {roomRows.length === 0 ? <p className="note">{tm('projectEmpty')}</p>
-            : <RecordTable rows={roomRows} href={(x) => `/app/room-designs/${x}`} what={tm('col_room')} locale={locale} />}
+            : <RecordTable rows={roomRows} kind="room" href={(x) => `/app/room-designs/${x}`} what={tm('col_room')} locale={locale} />}
           {setList}
           <div><Link className="btn" href={`/app/projects/${p.id}/impianto`}>{tt('plantTitle')}</Link></div>
         </section>

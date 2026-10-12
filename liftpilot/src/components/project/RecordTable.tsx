@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { dateFormat } from '@/lib/dates';
 import VerdictPill from '@/components/VerdictPill';
+import type { VerdictKind } from '@/lib/verdict-checks';
 
 export interface RecordRow {
   id: string;
@@ -18,10 +19,11 @@ export interface RecordRow {
   old: boolean;
 }
 
-/** The saved records of one kind on an installation's page: the date (the link) with the label, the result with the
- *  mark of a record to update, what it is, who saved it; `extra` adds a column, `under` a line under the result. */
-export default async function RecordTable({ rows, href, what, locale, extra, under }: {
-  rows: RecordRow[]; href: (id: string) => string; what: string; locale: string;
+/** The saved records of one kind on an installation's page: the date (the link) with the label, the result (its checks
+ *  behind the pill: `kind`) with the mark of a record to update, what it is, who saved it; `extra` adds a column, `under`
+ *  a line under the result. */
+export default async function RecordTable({ rows, kind, href, what, locale, extra, under }: {
+  rows: RecordRow[]; kind: VerdictKind; href: (id: string) => string; what: string; locale: string;
   extra?: { label: string; cell: (r: RecordRow) => ReactNode }; under?: (r: RecordRow) => ReactNode;
 }) {
   const [tc, tf] = await Promise.all([getTranslations('calculations'), getTranslations('refresh')]);
@@ -41,7 +43,7 @@ export default async function RecordTable({ rows, href, what, locale, extra, und
               </td>
               <td data-label={tc('col_result')}>
                 <div className="cell-stack">
-                  <VerdictPill verdict={r.verdict} fails={r.failCount} warns={r.warnCount} />
+                  <VerdictPill verdict={r.verdict} fails={r.failCount} warns={r.warnCount} record={{ kind, id: r.id }} />
                   {r.old ? <span className="chip old">{tf('outdated')}</span> : null}
                   {under ? under(r) : null}
                 </div>

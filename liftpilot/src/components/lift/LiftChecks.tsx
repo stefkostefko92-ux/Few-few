@@ -34,7 +34,7 @@ export default function LiftChecks({ derived, X, fmt, onSimulate }: Props) {
     ? <span className="ambito" title={t('ambito_note', { norma: NORMA_SIGLA[C.norma], status: text })}><span className="status-pill existing">{t('ambito_existing')}</span><span className={`ambito-calc ${status}`}>{text}</span></span>
     : <span className={`status-pill ${status}`}>{text}</span>);
   return (
-    <section className="lift-checks">
+    <section id="checks" className="lift-checks">
       <SectionTitle icon="list-checks" eyebrow={NORMA_BREVE[C.norma]}>{t('checks_title')}</SectionTitle>
       <div className="table-panel">
         <table className="data-table stack">

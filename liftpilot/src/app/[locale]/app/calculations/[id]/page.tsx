@@ -105,7 +105,7 @@ export default async function CalculationPage({ params, searchParams }: {
             : replacement && open ? <Link className="btn" href={`/app/projects/${c.projectId}/calc?from=${c.id}`}>{t('newFrom')}</Link> : null}
         </div>
       </div>
-      {before ? <Refreshed before={before} now={c} locale={locale} /> : null}
+      {before ? <Refreshed before={before} now={c} kind="calc" locale={locale} /> : null}
       {lost ? (
         <p className="alert alert-warn" role="status">{tf('roomRedo')} <Link href={`/app/calculations/${c.id}/locale?from=${lost.id}`}>{tf('roomOpen')}</Link></p>
       ) : null}
@@ -117,7 +117,7 @@ export default async function CalculationPage({ params, searchParams }: {
         </div>
       )}
       <dl className="cartiglio">
-        <div><dt>{t('col_result')}</dt><dd><VerdictPill verdict={c.verdict} fails={c.failCount} warns={c.warnCount} /></dd></div>
+        <div><dt>{t('col_result')}</dt><dd><VerdictPill verdict={c.verdict} fails={c.failCount} warns={c.warnCount} record={{ kind: 'calc', id: c.id }} /></dd></div>
         <div><dt>{t('col_date')}</dt><dd>{fd.dateTime(c.createdAt)}</dd></div>
         <div><dt>{t('col_author')}</dt><dd>{c.user?.name ?? '—'}</dd></div>
         <div><dt>{t('col_machine')}</dt><dd className="num">{c.summary}</dd></div>
@@ -190,7 +190,7 @@ export default async function CalculationPage({ params, searchParams }: {
         {replacement ? null : !c.shaftDesign ? <p className="note">{tt('needDesign')}</p>
           : rec.ok && open ? <IssueForm calculationId={c.id} initials={initialsOf(user.name)} checks={checks} projectId={c.projectId} /> : null}
       </section>
-      <CalculationView values={V} brand={user.companyName} collaudo={C} design={!!c.shaftDesign} />
+      <CalculationView id="checks" values={V} brand={user.companyName} collaudo={C} design={!!c.shaftDesign} />
     </main>
   );
 }

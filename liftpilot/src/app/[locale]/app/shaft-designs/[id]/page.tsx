@@ -51,7 +51,7 @@ export default async function ShaftDesignPage({ params }: { params: Promise<{ lo
       </div>
       {same ? null : <p className="alert alert-warn">{t('engineChangedLift', { stored: d.engineVersion, current: SHAFT_ENGINE_VERSION })}</p>}
       <dl className="cartiglio">
-        <div><dt>{tc('col_result')}</dt><dd><VerdictPill verdict={d.verdict} fails={d.failCount} warns={d.warnCount} /></dd></div>
+        <div><dt>{tc('col_result')}</dt><dd><VerdictPill verdict={d.verdict} fails={d.failCount} warns={d.warnCount} record={{ kind: 'shaft', id: d.id }} /></dd></div>
         <div><dt>{tc('col_date')}</dt><dd>{fd.dateTime(d.createdAt)}</dd></div>
         <div><dt>{tc('col_author')}</dt><dd>{d.user?.name ?? '—'}</dd></div>
         <div><dt>{t('source')}</dt><dd>{source?.success ? t('sourceCad', { file: source.data.file, format: source.data.format.toUpperCase() }) : t('sourceHand')}</dd></div>
@@ -62,7 +62,7 @@ export default async function ShaftDesignPage({ params }: { params: Promise<{ lo
       </dl>
       <section className="panel shaft-output">
         <ShaftViews L={L} id={d.id} planLabel={t('planLabel', { W: L.inputs.W, D: L.inputs.D, A: L.A, B: L.B })} sectionLabel={t('sectionLabel')} scaleText={(n) => t('scale', { n })} />
-        <ShaftResults L={L} texts={{ t: (k, v) => t(k, v), fmt }} />
+        <ShaftResults id="checks" L={L} texts={{ t: (k, v) => t(k, v), fmt }} />
         <p className="note">{t('limits')}</p>
       </section>
       <PanevBom L={L} prices={await visiblePrices(user)} C={null} />

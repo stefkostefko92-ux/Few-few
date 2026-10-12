@@ -8,11 +8,12 @@ export interface ResultTexts {
   fmt(x: number, dec?: number): string;
 }
 
-export default function ShaftResults({ L, texts }: { L: Layout; texts: ResultTexts }) {
+/** `id`: the anchor of its checks (the result pill's panel leads there). */
+export default function ShaftResults({ id, L, texts }: { id?: string; L: Layout; texts: ResultTexts }) {
   const { t, fmt } = texts;
   const term = (key: string, icon: IconName) => <dt><span>{t(key)}</span><span className="icon-tile sm"><Icon name={icon} size={18} /></span></dt>;
   return (
-    <div className="shaft-results">
+    <div id={id} className="shaft-results">
       <dl className="shaft-figures">
         <div>{term('car', 'elevator')}<dd className="num">{fmt(L.A, 0)} × {fmt(L.B, 0)} <small>mm</small></dd></div>
         <div>{term('load', 'weight')}<dd className="num">{fmt(L.Q, 0)} <small>kg</small></dd></div>

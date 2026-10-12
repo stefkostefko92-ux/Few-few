@@ -11,7 +11,7 @@ import { latestOf, type ListedProject } from './ProjectList';
 // saved yet, its data alone. Its module, plant number, latest result and machine line, and the way to it.
 export default async function ProjectPreview({ project: p, plan }: { project: ListedProject; plan: LatestPlan | null }) {
   const [t, tf, ts] = await Promise.all([getTranslations('projects'), getTranslations('refresh'), getTranslations('shaft')]);
-  const { last, old } = latestOf(p);
+  const { last, old, record } = latestOf(p);
   const planLabel = plan ? ts('planLabel', { W: plan.W, D: plan.D, A: plan.A, B: plan.B }) : '';
   return (
     <aside className="panel dash-preview" aria-labelledby="dash-preview-title">
@@ -47,7 +47,7 @@ export default async function ProjectPreview({ project: p, plan }: { project: Li
         <div className="wide">
           <dt>{t('col_last')}</dt>
           <dd className="dash-pills">
-            {last ? <VerdictPill verdict={last.verdict} fails={last.failCount} warns={last.warnCount} /> : t('noCalculations')}
+            {last ? <VerdictPill verdict={last.verdict} fails={last.failCount} warns={last.warnCount} record={record} /> : t('noCalculations')}
             {old ? <span className="chip old">{tf('outdated')}</span> : null}
           </dd>
         </div>

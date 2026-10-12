@@ -13,6 +13,7 @@
 @import './lift.css';
 @import './advice.css';
 @import './blank.css';
+@import './verdict.css';
 
 @tailwind base;
 @tailwind components;
