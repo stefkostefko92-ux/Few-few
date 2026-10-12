@@ -1,10 +1,8 @@
-/* The standalone page (artifact/main.tsx): the header carries the two tools and the languages; nothing is saved
-   here, so the save bars of the tools step aside. */
+/* The standalone page (artifact/main.tsx): the header carries the two tools; nothing is saved here, so the save bars
+   of the tools step aside. */
 .ar-top { top: env(safe-area-inset-top, 0px); }
 .ar-top .inner { flex-wrap: wrap; }
 .ar-top .ar-tabs { flex: 1 1 auto; min-width: 0; }
-.ar-top .langs { margin-left: auto; }
-.ar-top .langs a { cursor: pointer; }
 @media (max-width: 860px) {
   .ar-top .inner { gap: 8px 12px; padding-block: 8px; }
   .ar-top .brand span { display: none; }

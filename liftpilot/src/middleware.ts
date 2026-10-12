@@ -1,6 +1,7 @@
 import createMiddleware from 'next-intl/middleware';
-import { NextRequest, type NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { routing } from './i18n/routing';
+import { legacyRedirect } from './i18n/legacy';
 
 const intl = createMiddleware(routing);
 
@@ -24,6 +25,9 @@ function policy(nonce: string): string {
 }
 
 export default function middleware(request: NextRequest): NextResponse {
+  // /en/… and /bg/… (the former languages): the same page in Italian, for good, before anything else
+  const moved = legacyRedirect(request.nextUrl);
+  if (moved) return NextResponse.redirect(moved, 301);
   const nonce = btoa(crypto.randomUUID());
   const csp = policy(nonce);
   const headers = new Headers(request.headers);

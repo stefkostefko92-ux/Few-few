@@ -14,10 +14,6 @@ body > main { flex: 1 0 auto; }
 .brand img { height: 36px; width: auto; flex: none; display: block; }
 .brand span { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 10px; border-left: 1px solid var(--rule); }
 .bar-end { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-.langs { display: inline-flex; border: 1px solid var(--rule); border-radius: var(--radius-sm); overflow: hidden; flex: none; }
-.langs a { text-decoration: none; color: var(--ink-2); font: 500 12.5px/1 var(--font-body); padding: 8px 9px; }
-.langs a:hover { color: var(--ink); background: var(--surface3); }
-.langs a[aria-current="true"] { background: var(--accent); color: var(--accent-ink); }
 @media (max-width: 479px) {
   .topbar .inner { gap: 10px; }
   .brand img { height: 30px; }

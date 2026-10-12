@@ -9,7 +9,6 @@ import { EMBLEM } from '@/lib/brand';
 import { initials } from '@/lib/dashboard';
 import { logoutAction } from '@/server/auth-actions';
 import Icon from './Icon';
-import LangSwitch from './LangSwitch';
 import NavLinks, { ShellLink, type NavGroup, type NavItem } from './NavLinks';
 import { DrawerPanel, DrawerRoot, DrawerToggle } from './shell/Drawer';
 import ShellCrumbs from './shell/ShellCrumbs';
@@ -21,7 +20,7 @@ function Emblem() {
 }
 
 // The application's workspace (the template's workspace.html): a fixed sidebar with the brand, the sections in groups
-// by the user's rights (can), the user's card with the account, the language and sign-out, and the beta and the
+// by the user's rights (can), the user's card with the account and sign-out, and the beta and the
 // standards profile; a top bar with the path, the search of the installations and the user. Below 1024 px the sidebar
 // is a drawer the top bar's button opens (shell/Drawer). The page, the banners and the footer are the main column.
 // No bell: the application has no notifications to show.
@@ -74,7 +73,6 @@ export default async function AppShell({ user, banners, footer, children }: { us
               <Icon name="user-cog" size={18} />
             </ShellLink>
             <div className="ws-user-actions">
-              <LangSwitch />
               <form action={logoutAction} className="ws-logout">
                 <input type="hidden" name="locale" value={locale} />
                 <button type="submit" className="btn btn-sm btn-ghost"><Icon name="log-out" size={16} />{t('logout')}</button>

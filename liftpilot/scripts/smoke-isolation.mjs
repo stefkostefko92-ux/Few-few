@@ -11,7 +11,7 @@ export async function secondCompany({ BASE, page, kit, ADMIN, stamp, urls }) {
   const { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref, roomUrl, roomId } = urls;
   step('second company cannot see the first one');
   await login(page, ADMIN.email, ADMIN.password);
-  await headerFits({ page, url: (l) => `${BASE}/${l}/app`, who: 'the platform’s administrator' });
+  await headerFits({ page, url: `${BASE}/it/app`, who: 'the platform’s administrator' });
   await page.goto(`${BASE}/it/app/admin`);
   const ownerEmail = `titolare.${stamp}@example.com`;
   await page.fill('input[name="name"]', `Ditta ${stamp}`);
@@ -33,7 +33,7 @@ export async function secondCompany({ BASE, page, kit, ADMIN, stamp, urls }) {
   for (const k of ['accept', 'business', 'drafts', 'clauses']) await page.check(`main input[name="${k}"]`);
   await page.click('main form:has(input[name="clauses"]) button');
   await page.waitForSelector('main form:has(input[name="clauses"])', { state: 'detached' });
-  await headerFits({ page, url: (l) => `${BASE}/${l}/app`, who: 'an owner' });
+  await headerFits({ page, url: `${BASE}/it/app`, who: 'an owner' });
   // the company's data, all of it, without secrets (terms of use, «exit»)
   const exported = await page.request.get(`${BASE}/api/company/export`);
   assert.equal(exported.status(), 200, 'company export');

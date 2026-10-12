@@ -1,11 +1,10 @@
-// The e-mails of the accounts in the person's language: plain text and its HTML twin (tables and inline styles, what
-// mail clients render). Nothing typed in a form goes into them, only the links made here: a registration with someone
+// The e-mails of the accounts, in Italian (the only language of the interface; an account that kept 'en' or 'bg' from
+// before reads Italian too: the callers fall back with isLocale): plain text and its HTML twin (tables and inline
+// styles, what mail clients render). Nothing typed in a form goes into them, only the links made here: a registration with someone
 // else's address cannot carry a message to that person.
 import { createTranslator } from 'next-intl';
 import type { Locale } from '@/i18n/locales';
 import it from '../../messages/it.json';
-import en from '../../messages/en.json';
-import bg from '../../messages/bg.json';
 import { MAIL_LOGO } from './brand';
 import { TOKEN_TTL_MS } from './token-shape';
 import { INACTIVE_MONTHS, TERMS_VERSION, dateText, legalValues, termsDateText } from './legal';
@@ -31,9 +30,8 @@ export type AccountMailKind =
   /** to the owner of a company inactive without a subscription: the day it will be deleted unless someone signs in */
   | { kind: 'inactive'; deletion: Date };
 
-// the three files have the same keys (the parity test in present.test.ts): the Italian one types them all
-const MESSAGES = { it, en, bg } as const;
-const translatorFor = (locale: Locale) => createTranslator({ locale, messages: MESSAGES[locale] as typeof it, namespace: 'mail' });
+const MESSAGES: Record<Locale, typeof it> = { it };
+const translatorFor = (locale: Locale) => createTranslator({ locale, messages: MESSAGES[locale], namespace: 'mail' });
 type Translate = ReturnType<typeof translatorFor>;
 
 const hours = (k: keyof typeof TOKEN_TTL_MS): number => TOKEN_TTL_MS[k] / 3600_000;

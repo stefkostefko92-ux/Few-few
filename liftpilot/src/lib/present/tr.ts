@@ -27,14 +27,12 @@ export function makeTr(dict: CalcDict): Tr {
 // Separators written out instead of taken from the runtime's CLDR data: the server (Node) and the browser must
 // print the same text or React hydration fails, and they do not agree (Node 22 with ICU 78 prints 2500 in it-IT,
 // Chromium 141 prints 2.500). minGroup is CLDR's minimum grouping digits: with 2, a 4-digit number is not grouped.
-const SEPARATORS: Readonly<Record<string, { dec: string; group: string; minGroup: number }>> = {
-  it: { dec: ',', group: '.', minGroup: 2 },
-  bg: { dec: ',', group: ' ', minGroup: 2 },
-  en: { dec: '.', group: ',', minGroup: 1 },
-};
+// Italian is the only language of the interface and of the documents.
+const IT = { dec: ',', group: '.', minGroup: 2 } as const;
+const SEPARATORS: Readonly<Record<string, typeof IT>> = { it: IT };
 
 export function makeFmt(intlLocale: string): Fmt {
-  const sep = SEPARATORS[intlLocale.slice(0, 2)] ?? SEPARATORS.en;
+  const sep = SEPARATORS[intlLocale.slice(0, 2)] ?? IT;
   const formats = new Map<number, Intl.NumberFormat>();
   return (x, dec = 2) => {
     if (x === Infinity) return '∞';

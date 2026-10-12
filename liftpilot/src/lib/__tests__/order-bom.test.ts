@@ -36,8 +36,6 @@ import { govSize } from '@/shaft/governor';
 import { motorSide } from '@/shaft/machine-shape';
 import type { FormValues } from '@/calc/types';
 import it from '../../../messages/it.json';
-import en from '../../../messages/en.json';
-import bg from '../../../messages/bg.json';
 
 const fmt = makeFmt('it-IT');
 const below = (L: LiftInputs, scheme: 'head' | 'room' | 'under'): LiftInputs => ({ ...L, calc: { ...L.calc, layout: 'bottom' }, shaft: { ...L.shaft, room: null }, bottom: scheme });
@@ -235,8 +233,8 @@ test('macchina in basso accanto al vano: solo varianti ad albero lungo o con sup
   assert.ok(['M75S', 'M75AL'].every((m) => wallVariants('Montanari', 'M75').includes(m)) && !wallVariants('Montanari', 'M75').includes('M93AL'));
   assert.ok(wallVariants('Montanari', 'M65').length > 2 && wallVariants('Montanari', 'M65').every((m) => mountOf({ brand: 'Montanari', model: m })));
   assert.deepEqual(wallVariants('Sassi'), []);
-  for (const m of [it, en, bg]) {
-    const lift = (m as unknown as { lift: Record<string, string> }).lift;
+  {
+    const lift = (it as unknown as { lift: Record<string, string> }).lift;
     assert.ok(lift.cat_miss_wall.includes('{brand}') && lift.cat_miss_wall.includes('{variants}') && lift.cat_miss_wall_none.includes('{brand}'));
   }
   // the calculator's values with the advice's machine through the wall: recognised in the saved calculation

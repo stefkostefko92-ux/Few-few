@@ -48,17 +48,15 @@ export function costOf(bom: readonly BomLine[], prices: PriceMap): Cost {
 export const MAX_CENTS = 1_000_000_000;
 
 /**
- * A price as typed [cents]: digits with up to two decimals, the decimal comma or point, thousands grouped by the
- * language's separator (Italian and Bulgarian "1.234,50" or "1 234,50", English "1,234.50"), an optional euro sign.
- * Empty: null (no price). Anything else, or above MAX_CENTS: undefined.
+ * A price as typed [cents]: digits with up to two decimals, the decimal comma (or point), thousands grouped the Italian
+ * way ("1.234,50"; spaces are ignored, so "1 234,50" too), an optional euro sign. Empty: null (no price). Anything
+ * else, or above MAX_CENTS: undefined.
  */
-export function parseCents(raw: string, locale: string): number | null | undefined {
+export function parseCents(raw: string): number | null | undefined {
   const s = raw.replace(/[\s\u00a0\u202f€]/g, '');
   if (!s) return null;
-  const en = locale.startsWith('en');
   let x: string | null = null;
-  if (en && /^\d{1,3}(,\d{3})+(\.\d{1,2})?$/.test(s)) x = s.replace(/,/g, '');
-  else if (!en && /^\d{1,3}(\.\d{3})+(,\d{1,2})?$/.test(s)) x = s.replace(/\./g, '').replace(',', '.');
+  if (/^\d{1,3}(\.\d{3})+(,\d{1,2})?$/.test(s)) x = s.replace(/\./g, '').replace(',', '.');
   else if (/^\d+([.,]\d{1,2})?$/.test(s)) x = s.replace(',', '.');
   if (x === null) return undefined;
   const cents = Math.round(Number(x) * 100);

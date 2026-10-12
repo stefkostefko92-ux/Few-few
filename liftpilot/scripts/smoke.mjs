@@ -1,5 +1,6 @@
 // End-to-end smoke test against a running LiftPilot (local or staging), with a real browser:
-//   health → public page (no console or CSP errors) → sign-in → the two modules → a machine replacement → its
+//   health → public page (no console or CSP errors, in Italian, the only language) → /en and /bg sent for good to /it →
+//   sign-in → the two modules → a machine replacement → its
 //   calculation, which starts empty (its draft kept, resumed, discarded; smoke-blank.mjs) → saved snapshot with reproduced hash → calculation report (PDF) → its machine room surveyed, the
 //   relazione tecnica and the drawing set (scripts/smoke-replacement.mjs) → the replacement becomes a whole
 //   project, its data entered (a draft taken up again) → shaft design by hand (a distance changed on its plan, the landing door
@@ -52,11 +53,16 @@ try {
   assert.equal(res.status(), 200);
   assert.ok((res.headers()['content-security-policy'] ?? '').includes("'nonce-"), 'CSP with nonce');
   assert.equal(await page.locator('h1').count(), 1);
-  // the sign-in family's header keeps its sign-up button on a phone: the Bulgarian one must not push the menu off it
+  // Italian only: the page's language, no language switch, no alternates in other languages, the Italian preview
+  assert.equal(await page.getAttribute('html', 'lang'), 'it');
+  assert.equal(await page.locator('.langs, a[hreflang], link[rel="alternate"][hreflang]').count(), 0, 'no other language');
+  assert.equal(await page.getAttribute('meta[property="og:locale"]', 'content'), 'it_IT');
+  assert.match(await page.getAttribute('meta[property="og:image"]', 'content') ?? '', /\/img\/og-it\.png$/);
+  // the sign-in family's header keeps its sign-up button on a phone
   {
     const size = page.viewportSize();
     await page.setViewportSize({ width: 390, height: 844 });
-    for (const path of ['/bg/login', '/bg/register']) {
+    for (const path of ['/it/login', '/it/register']) {
       await page.goto(`${BASE}${path}`);
       const over = await page.evaluate(() => globalThis.document.documentElement.scrollWidth - globalThis.innerWidth);
       assert.ok(over <= 0, `${path} at 390 px scrolls sideways by ${over} px`);
@@ -64,6 +70,17 @@ try {
     }
     if (size) await page.setViewportSize(size);
   }
+
+  step('the former languages: a permanent redirect to the same page in Italian, the query kept');
+  for (const [from, to] of [['/en', '/it'], ['/bg', '/it'], ['/en/login', '/it/login'], ['/bg/pricing?x=1', '/it/pricing?x=1'],
+    ['/bg/app/projects/abc', '/it/app/projects/abc'], ['/en/privacy?y=2#terms', '/it/privacy?y=2']]) {
+    const r = await fetch(`${BASE}${from}`, { redirect: 'manual' });
+    assert.equal(r.status, 301, `${from}: ${r.status}`);
+    const at = new URL(r.headers.get('location') ?? '', BASE);
+    assert.equal(`${at.pathname}${at.search}`, to, `${from} → ${at.href}`);
+  }
+  // and the page it leads to is there (one hop)
+  assert.equal((await fetch(`${BASE}/bg/pricing?x=1`)).status, 200);
 
   step('sign-in and installation');
   await login(page, ADMIN.email, ADMIN.password);

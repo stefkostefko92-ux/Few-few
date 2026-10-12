@@ -1,21 +1,17 @@
 // The legal texts' promises against what makes them true: the day a new version binds a company, the periods the
-// texts state against the server's scripts that keep them, the provider's data in the three languages and the register
-// of the export's format (round 30).
+// texts state against the server's scripts that keep them, the provider's data and the register of the export's format
+// (round 30). Italian is the only language.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createTranslator } from 'next-intl';
-import { LOCALES } from '@/i18n/locales';
 import it from '../../../messages/it.json';
-import en from '../../../messages/en.json';
-import bg from '../../../messages/bg.json';
 import { BACKUP_DAYS, LOG_DAYS, NOTICE_DAYS, TERMS_DATE, TERMS_EFFECTIVE, TERMS_VERSION, legalValues, termsBinding, termsStateOf } from '../legal';
 import { legalText } from '../legal-text';
 import { PROVIDER } from '../provider';
 import { EXPORT_DATA, EXPORT_ENVELOPE, EXPORT_FORMAT_HISTORY, EXPORT_FORMAT_VERSION, EXPORT_PROJECT } from '../export-format';
 
-const MESSAGES = { it, en, bg } as const;
 const DAY = 24 * 3600_000;
 const day = (s: string): Date => new Date(`${s}T00:00:00Z`);
 
@@ -49,34 +45,27 @@ test('i periodi dei testi sono quelli degli script del server', () => {
   assert.match(deploy, new RegExp(`maxage ${LOG_DAYS}\\b`), 'deploy/deploy.sh deletes the web logs after LOG_DAYS');
   assert.match(deploy, /\/etc\/cron\.d\/liftpilot-backup/, 'deploy/deploy.sh installs the nightly copy');
   assert.match(deploy, /command -v cron[^\n]*\|\| die /, 'deploy/deploy.sh stops without cron: no copy would be made or deleted');
-  for (const l of LOCALES) {
-    const text = legalText(l);
-    for (const n of [BACKUP_DAYS, LOG_DAYS, NOTICE_DAYS]) assert.ok(text.includes(String(n)), `${l}: ${n}`);
-  }
+  const text = legalText('it');
+  for (const n of [BACKUP_DAYS, LOG_DAYS, NOTICE_DAYS]) assert.ok(text.includes(String(n)), String(n));
 });
 
-test('il fornitore è lo stesso nelle tre lingue: nome bulgaro, codici, telefoni, e-mail, rappresentante', () => {
-  for (const l of LOCALES) {
-    const t = createTranslator({ locale: l, messages: MESSAGES[l] as typeof it });
-    const footer = t('common.provider'), v = legalValues();
-    for (const k of ['legal.controllerText', 'legal.contactText'] as const) {
-      const s = t(k, v);
-      for (const x of [PROVIDER.nameBg, PROVIDER.eik, PROVIDER.vat, PROVIDER.email, ...PROVIDER.phones]) assert.ok(s.includes(x), `${l} ${k}: ${x}`);
-    }
-    for (const x of [PROVIDER.name, PROVIDER.nameBg, PROVIDER.eik, PROVIDER.vat, PROVIDER.email, ...PROVIDER.phones]) assert.ok(footer.includes(x), `${l} footer: ${x}`);
-    // the representative's name in the language's own script
-    assert.ok(t('legal.contactText', v).includes(l === 'bg' ? 'Стефан Костадинов' : PROVIDER.representative), `${l} representative`);
+test('il fornitore è lo stesso nel piè di pagina e nei testi legali: nome bulgaro, codici, telefoni, e-mail, rappresentante', () => {
+  const t = createTranslator({ locale: 'it', messages: it });
+  const footer = t('common.provider'), v = legalValues();
+  for (const k of ['legal.controllerText', 'legal.contactText'] as const) {
+    const s = t(k, v);
+    for (const x of [PROVIDER.nameBg, PROVIDER.eik, PROVIDER.vat, PROVIDER.email, ...PROVIDER.phones]) assert.ok(s.includes(x), `${k}: ${x}`);
   }
+  for (const x of [PROVIDER.name, PROVIDER.nameBg, PROVIDER.eik, PROVIDER.vat, PROVIDER.email, ...PROVIDER.phones]) assert.ok(footer.includes(x), `footer: ${x}`);
+  assert.ok(t('legal.contactText', v).includes(PROVIDER.representative), 'representative');
 });
 
-test('il registro del formato descrive ogni chiave dell’esportazione, in tre lingue', () => {
-  for (const l of LOCALES) {
-    const t = createTranslator({ locale: l, messages: MESSAGES[l] as typeof it, namespace: 'dataPage' });
-    for (const k of [...EXPORT_ENVELOPE, ...EXPORT_DATA]) assert.ok(t(`keys.${k}`, { format: 'f', version: 1 }).length > 5, `${l} keys.${k}`);
-    for (const k of EXPORT_PROJECT) assert.ok(t(`project.${k}`).length > 5, `${l} project.${k}`);
-    assert.ok(t('keywords').split(',').length >= 5 && t('keywords').includes('Carbon Stealth'), `${l} keywords`);
-    // every version of the format has its line, the last one is the version the export writes
-    for (const h of EXPORT_FORMAT_HISTORY) assert.ok(t(`history.v${h.version}`, { date: h.since ?? '' }).startsWith(`${h.version} — `), `${l} history.v${h.version}`);
-  }
+test('il registro del formato descrive ogni chiave dell’esportazione', () => {
+  const t = createTranslator({ locale: 'it', messages: it, namespace: 'dataPage' });
+  for (const k of [...EXPORT_ENVELOPE, ...EXPORT_DATA]) assert.ok(t(`keys.${k}`, { format: 'f', version: 1 }).length > 5, `keys.${k}`);
+  for (const k of EXPORT_PROJECT) assert.ok(t(`project.${k}`).length > 5, `project.${k}`);
+  assert.ok(t('keywords').split(',').length >= 5 && t('keywords').includes('Carbon Stealth'), 'keywords');
+  // every version of the format has its line, the last one is the version the export writes
+  for (const h of EXPORT_FORMAT_HISTORY) assert.ok(t(`history.v${h.version}`, { date: h.since ?? '' }).startsWith(`${h.version} — `), `history.v${h.version}`);
   assert.deepEqual(EXPORT_FORMAT_HISTORY.map((h): number => h.version), Array.from({ length: EXPORT_FORMAT_VERSION }, (_, i) => i + 1));
 });

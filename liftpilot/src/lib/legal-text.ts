@@ -4,17 +4,16 @@ import { createHash } from 'node:crypto';
 import { createTranslator } from 'next-intl';
 import type { Locale } from '@/i18n/locales';
 import it from '../../messages/it.json';
-import en from '../../messages/en.json';
-import bg from '../../messages/bg.json';
 import { PRIVACY, TERMS, TERMS_VERSION, article, legalValues, termsDateText } from './legal';
 
-// the three files have the same keys (the parity test in present.test.ts): the Italian one types them all
-const MESSAGES = { it, en, bg } as const;
+// Italian, the only language served; the English and Bulgarian texts kept in legal/terms/<version>/ stay as the record
+// of what was accepted in those languages, no longer shown
+const MESSAGES: Record<Locale, typeof it> = { it };
 
 const paragraphs = (s: string): string[] => s.split('\n\n');
 
 export function legalText(locale: Locale): string {
-  const t = createTranslator({ locale, messages: MESSAGES[locale] as typeof it, namespace: 'legal' });
+  const t = createTranslator({ locale, messages: MESSAGES[locale], namespace: 'legal' });
   const v = legalValues();
   const out = [t('title'), t('updated', { version: TERMS_VERSION, date: termsDateText(locale) }), '', t('privacyTitle'), ''];
   for (const k of PRIVACY) out.push(t(`${k}Title`), ...paragraphs(t(`${k}Text`, v)), '');

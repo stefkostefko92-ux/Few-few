@@ -3,8 +3,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import calcIt from '../../../messages/calc/it.json';
-import calcEn from '../../../messages/calc/en.json';
-import calcBg from '../../../messages/calc/bg.json';
 import { PRESETS } from '@/calc/presets';
 import { adeguamentiDovuti, collaudoOf, type Collaudo } from '@/lib/lift';
 import { ADAPT } from '../present/adapt';
@@ -13,10 +11,10 @@ import { buildReport } from '../report/build';
 import { adaptSection } from '../report/collaudo';
 import type { ReportDoc } from '../report/model';
 
-const LANGS = [['it', calcIt], ['en', calcEn], ['bg', calcBg]] as const;
+const LANGS = [['it', calcIt]] as const;
 const REPL: Collaudo = collaudoOf({ context: 'repl' });
 
-test('ogni voce di ADAPT esiste in tutte e tre le lingue, non è vuota e non ha segnaposto', () => {
+test('ogni voce di ADAPT esiste, non è vuota e non ha segnaposto', () => {
   assert.ok(ADAPT.length > 0);
   for (const [lang, dict] of LANGS) {
     for (const k of ADAPT) {
@@ -33,7 +31,7 @@ test('ADAPT: nessuna voce due volte, e nessuna dei testi delle altre norme', () 
   for (const other of ['a_src', 'a_en81', 'a_11', 'a_other']) assert.ok(!(ADAPT as readonly string[]).includes(other), other);
 });
 
-test('la sezione del documento ha esattamente le voci di ADAPT, nel loro ordine, in ogni lingua', () => {
+test('la sezione del documento ha esattamente le voci di ADAPT, nel loro ordine', () => {
   assert.equal(adeguamentiDovuti(REPL), true, 'la sostituzione della macchina sotto UNI 10411-1 le deve');
   for (const [lang, dict] of LANGS) {
     const t = makeTr(dict as CalcDict);

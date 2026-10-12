@@ -3,8 +3,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import calcIt from '../../../messages/calc/it.json';
-import calcEn from '../../../messages/calc/en.json';
-import calcBg from '../../../messages/calc/bg.json';
 import { PRESETS } from '@/calc/presets';
 import { analyse } from '../present/analysis';
 import { techTables, type Cell } from '../present/tables';
@@ -25,16 +23,6 @@ test('i due casi di aderenza bloccata: in alto il contrappeso, in basso la cabin
   assert.match(top?.sub ?? '', /in alto$/);
   assert.equal(low?.text, 'Cabina sugli ammortizzatori');
   assert.match(low?.sub ?? '', /in basso$/);
-});
-
-test('lo stesso in inglese e in bulgaro', () => {
-  for (const [dict, loc, cw, car] of [
-    [calcEn, 'en-GB', 'Counterweight on its buffers', 'Car on its buffers'],
-    [calcBg, 'bg-BG', 'Противотежестта на буферите', 'Кабината на буферите'],
-  ] as const) {
-    const P = makePres(dict as CalcDict, loc), trac = techTables(P, textsFor(P), analyse(PRESETS.C)).find((tb) => tb.key === 'trac');
-    assert.deepEqual(trac?.rows.slice(-2).map((r) => cell(r[0]).text), [cw, car], loc);
-  }
 });
 
 test('la relazione ha le stesse etichette: contrappeso in alto, cabina in basso', () => {

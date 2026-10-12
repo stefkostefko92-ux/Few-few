@@ -5,8 +5,6 @@
 // surveyed), and the anchors in tension of the bearings pulled up on sheet 1, in section B-B and in the relazioni.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import appBg from '../../../messages/bg.json';
-import appEn from '../../../messages/en.json';
 import appIt from '../../../messages/it.json';
 import { PRESETS } from '@/calc/presets';
 import type { FormValues } from '@/calc/types';
@@ -124,7 +122,7 @@ test('verifica delle calate: l’etichetta dice da che cosa vengono le calate de
     const s = reviewed(V), d = deriveRoom(V, s), label = appIt.shaft[key as keyof typeof appIt.shaft];
     assert.equal(roomCheckKey('m_calata', d), key, name);
     assert.equal(roomCheckKey('m_door', d), 'c_m_door');
-    for (const M of [appIt.shaft, appEn.shaft, appBg.shaft]) assert.ok(typeof M[key as keyof typeof M] === 'string', `${name}: ${key}`);
+    assert.ok(typeof appIt.shaft[key as keyof typeof appIt.shaft] === 'string', `${name}: ${key}`);
     // (a label longer than its column at the least lettering wraps on two lines: survey-sheet.ts)
     const t = pageTexts(buildSurveyTavole(input(V, s)).doc.pages, 0);
     assert.ok(t.includes(label) || t.join(' ').includes(label), `${name}: ${label}`);
@@ -185,7 +183,7 @@ test('basamento esistente che resta: punto 5 applicabile, nessun basamento nuovo
   const dA = deriveRoom(A, sA), nA = surveySheetData(input(A, sA), dA, 3).notes.find((n) => n.tag === 'NOTA 2')?.text ?? '';
   assert.ok(dA.site.kept && dA.M.rinvio?.on === 'frame', 'telaio con rinvio');
   assert.ok(nA.endsWith('Il telaio con rinvio disegnato è la proposta del software, da adattare a quello fornito dal costruttore; poggia sul basamento esistente riusato, da rilevare.'), nA);
-  for (const M of [appIt.shaft, appEn.shaft, appBg.shaft]) assert.equal(typeof M.c_m_holes_kept, 'string');
+  assert.equal(typeof appIt.shaft.c_m_holes_kept, 'string');
 });
 
 test('appoggio in trazione: ancoraggio a trazione con il suo valore sul foglio 1, nella sezione B-B e nella relazione (W2-G4-09)', () => {

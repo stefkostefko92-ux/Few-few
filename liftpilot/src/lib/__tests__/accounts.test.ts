@@ -1,8 +1,8 @@
-// Accounts without an administrator: the forms' rules, the links' tokens and the e-mails in the three languages.
+// Accounts without an administrator: the forms' rules, the links' tokens and the e-mails, in Italian.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
-import { LOCALES } from '@/i18n/locales';
+import { DEFAULT_LOCALE, LOCALES, isLocale } from '@/i18n/locales';
 import { accountMail } from '../mail-templates';
 import { forgotSchema, registerSchema, resetSchema, verifySchema } from '../schemas';
 import { CONSENTS } from '../consents';
@@ -44,7 +44,7 @@ test('link: 32 byte casuali in base64url, solo l’hash nel database, vite di 48
   assert.ok(codes(resetSchema.safeParse({ token: 'abc', next: 'Ascensore2026sicuro', confirm: 'Ascensore2026sicuro' })).includes('invalidLink'));
 });
 
-test('e-mail in tre lingue: il link nel frammento, la durata dal codice, l’HTML con i caratteri protetti', () => {
+test('e-mail in italiano: il link nel frammento, la durata dal codice, l’HTML con i caratteri protetti', () => {
   const token = randomBytes(32).toString('base64url'), base = 'https://liftpilot.example';
   for (const l of LOCALES) {
     const v = accountMail({ kind: 'verify', token }, l, base), r = accountMail({ kind: 'reset', token }, l, base), e = accountMail({ kind: 'exists' }, l, base);
@@ -62,4 +62,16 @@ test('e-mail in tre lingue: il link nel frammento, la durata dal codice, l’HTM
   // what goes into the HTML is escaped: a quote in a translation cannot close an attribute
   const it = accountMail({ kind: 'verify', token }, 'it', 'https://x.example/"><b>');
   assert.ok(!it.html.includes('"><b>') && it.html.includes('&quot;&gt;&lt;b&gt;'));
+});
+
+test('una lingua salvata che non è più dell’interfaccia (en, bg) dà le e-mail in italiano', () => {
+  const base = 'https://liftpilot.example', it = accountMail({ kind: 'inactive', deletion: new Date('2027-01-31T00:00:00Z') }, 'it', base);
+  for (const stored of ['en', 'bg', '', null]) {
+    // what every caller does with the stored language (inactive.ts, legal-notice.ts, user-actions.ts)
+    const l = isLocale(stored) ? stored : DEFAULT_LOCALE;
+    assert.equal(l, 'it', String(stored));
+    const m = accountMail({ kind: 'inactive', deletion: new Date('2027-01-31T00:00:00Z') }, l, base);
+    assert.deepEqual(m, it);
+    assert.ok(m.html.startsWith('<!doctype html>\n<html lang="it">') && m.text.includes(`${base}/it/login`), String(stored));
+  }
 });

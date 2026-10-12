@@ -7,7 +7,6 @@
   "common": {
     "footerNote": "LiftPilot · profilo normativo italiano IT-2026.1 · risultati da verificare e firmare da un tecnico abilitato",
     "login": "Accedi",
-    "language": "Lingua",
     "legal": "Privacy e condizioni",
     "provider": "Carbon Stealth VCC (Карбон Стелт ЕДПК), società a capitale variabile di diritto bulgaro · ul. Samuil 3, 2670 Bobov Dol, Bulgaria · UIC (ЕИК) 208725180 · P. IVA BG208725180 · tel. +359 877 414 874, +39 379 296 9699 · info@carbonstealth.eu",
     "dataLink": "Dati e formati",
@@ -169,7 +168,7 @@
     "faq7q": "Dove sono conservati i dati?",
     "faq7a": "Su server nell’Unione europea. I progetti di un’azienda sono visibili solo agli utenti della stessa azienda.",
     "faq8q": "In quali lingue è disponibile?",
-    "faq8a": "Interfaccia in italiano, inglese e bulgaro; la relazione di calcolo e le tavole sono in italiano.",
+    "faq8a": "In italiano: l’interfaccia, la relazione di calcolo e le tavole.",
     "endTitle": "Porta il prossimo impianto su LiftPilot",
     "endText": "Registra la tua azienda e conferma l’indirizzo email: puoi creare subito il primo progetto e invitare i colleghi.",
     "skip": "Vai al contenuto",

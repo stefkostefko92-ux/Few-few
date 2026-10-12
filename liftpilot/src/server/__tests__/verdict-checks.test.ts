@@ -1,6 +1,6 @@
 // The checks behind a record's result pill (src/server/verdict-checks.ts): for records made by the save path itself
 // (src/server/save.ts, against a database in memory), the panel lists as many checks not passed and with a warning as
-// the record's stored counts — the pill's number — for the four kinds, in the three languages; a record of another
+// the record's stored counts — the pill's number — for the four kinds, in Italian; a record of another
 // company is not found; a record the engines no longer reproduce, or whose counts the data no longer give, says why.
 import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,11 +10,7 @@ import type { SessionUser } from '@/lib/auth';
 import { defaultLift, newLift, type LiftInputs } from '@/lib/lift';
 import { startSurvey } from '@/lib/room/survey';
 import it from '../../../messages/it.json';
-import en from '../../../messages/en.json';
-import bg from '../../../messages/bg.json';
 import calcIt from '../../../messages/calc/it.json';
-import calcEn from '../../../messages/calc/en.json';
-import calcBg from '../../../messages/calc/bg.json';
 
 const src = (p: string) => new URL(`../../${p}`, import.meta.url).href;
 type Row = Record<string, unknown>;
@@ -48,7 +44,7 @@ mock.module(src('lib/db.ts'), { namedExports: { prisma } });
 mock.module(src('lib/log.ts'), { namedExports: { log: { info: () => {}, warn: () => {}, error: () => {} } } });
 
 // ---- next-intl's translations from the real messages, `{name}` replaced
-const MESSAGES = { it, en, bg } as const, CALC = { it: calcIt, en: calcEn, bg: calcBg } as const;
+const MESSAGES = { it } as const, CALC = { it: calcIt } as const;
 type Loc = keyof typeof MESSAGES;
 const fill = (s: string, v?: Record<string, unknown>) => s.replace(/\{(\w+)\}/g, (_, k: string) => String(v?.[k] ?? `{${k}}`));
 mock.module(import.meta.resolve('next-intl/server'), { namedExports: {
@@ -98,13 +94,13 @@ test('calcolo salvato: tante non superate e attenzioni quante l’esito, con val
   assert.ok(d.fails.some((x) => /Aderenza/.test(x.name) && /^[≤≥]/.test(x.limit)), JSON.stringify(d.fails));
 });
 
-test('progetto dell’impianto nuovo (vano stretto): il progetto, il suo vano e il suo calcolo, in tre lingue', async () => {
+test('progetto dell’impianto nuovo (vano stretto): il progetto, il suo vano e il suo calcolo', async () => {
   const { createLiftDesign } = await save();
   const made = await createLiftDesign(user, 'p1', NEW_SMALL, null, null);
   assert.ok(made.ok);
   const L = row('liftDesign', made.id);
   assert.ok(Number(L.failCount) >= 5 && Number(L.warnCount) >= 1, `${L.failCount}/${L.warnCount}`);
-  for (const loc of ['it', 'en', 'bg'] as const) await matches('lift', 'liftDesign', made.id, loc);
+  await matches('lift', 'liftDesign', made.id);
   await matches('shaft', 'shaftDesign', String(L.shaftDesignId));
   await matches('calc', 'calculation', String(L.calculationId));
   // a shaft check with its unit, from the check's definition
@@ -168,13 +164,13 @@ test('da aggiornare o contato altrimenti: l’elenco dice perché non torna', as
   // a calculation of an earlier engine whose counts its data still give: the stored list, said to be the stored one
   const C = row('calculation', String(L.calculationId)), engine = C.engineVersion;
   C.engineVersion = '0.0.0';
-  const kept = await verdictDetail(user, 'calc', String(C.id), 'bg');
+  const kept = await verdictDetail(user, 'calc', String(C.id), 'it');
   assert.equal(kept?.fails.length, C.failCount);
-  assert.equal(kept?.note, bg.verdictChecks.note_outdated);
+  assert.equal(kept?.note, it.verdictChecks.note_outdated);
   C.engineVersion = engine;
   assert.equal((await verdictDetail(user, 'calc', String(C.id), 'it'))?.note, null, 'a calculation of the running engine: nothing to explain');
   // a count the stored data no longer give (an earlier version counted otherwise): both numbers, and the way out
   C.failCount = Number(C.failCount) + 1;
-  const off = await verdictDetail(user, 'calc', String(C.id), 'en');
+  const off = await verdictDetail(user, 'calc', String(C.id), 'it');
   assert.ok(off?.note && off.note.includes(String(C.failCount)) && off.note.includes(String(off.fails.length)), off?.note ?? 'no note');
 });

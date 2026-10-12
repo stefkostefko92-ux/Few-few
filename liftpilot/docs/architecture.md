@@ -223,11 +223,11 @@ src/lib/             auth (JWT в httpOnly бисквитка, именува с
                      в текстовете), legal-text (страницата като текст: архивът и SHA-256 при приемане), consents (четирите
                      потвърждения); акаунтите: tokens
                      (линковете по имейл: SHA-256 в базата, еднократни) + token-shape/token-hash (чисти), mail
-                     (nodemailer към Brevo, само кодове на грешки в лога), mail-templates (писмата: текст + HTML, три
-                     езика, без въведеното от формуляра), account-mail.
+                     (nodemailer към Brevo, само кодове на грешки в лога), mail-templates (писмата: текст + HTML, на
+                     италиански, без въведеното от формуляра), account-mail.
                      Кръг 37: prices/parts (`panevPart`, `keptPart`: към коя част на изпитването е редът на спецификацията и дали
-                     изменението я брои), room/summary + server/room-summary (редът на записа на машинното — данни, пишат се в езика на
-                     читателя), refresh-form (знакът, с който «Aggiorna» отваря формуляра, когато въведеното вече не се записва).
+                     изменението я брои), room/summary + server/room-summary (редът на записа на машинното — данни, пишат се при
+                     показване), refresh-form (знакът, с който «Aggiorna» отваря формуляра, когато въведеното вече не се записва).
 src/server/          Server actions ('use server') и заявки, винаги ограничени до фирмата на потребителя (queries.ts);
                      billing (синхрон на абонамента от Stripe, местата и тяхното налагане), billing-actions (Checkout, смяна на
                      пакета, порталът на Stripe), prices + price-actions (листата на фирмата), terms-actions (приемането),
@@ -247,7 +247,7 @@ src/server/          Server actions ('use server') и заявки, винаги
                      издаден комплект: R0, номерът), plant-machine (машината от каталога на съоръжението за следващия комплект);
                      verdict-checks (проверките зад резултата на запис — неминалите, после тези с внимание — за панела на
                      хапчето, `GET /api/verdict-checks/<calc|shaft|room|lift>/<id>?locale=`: записът на фирмата, прочетен
-                     както save.ts е броил запазените броеве — src/lib/verdict-checks.ts, чисто —, в езика на читателя;
+                     както save.ts е броил запазените броеве — src/lib/verdict-checks.ts, чисто —, на италиански;
                      проектът на асансьора се извежда наново само докато се възпроизвежда, иначе списъкът е от запазеното и
                      панелът казва защо може да не съвпада с числото).
 src/components/calc/ Калкулаторът в React (форма, схема, присъда, карти), портнат от прототипа.
@@ -270,7 +270,7 @@ src/components/VerdictPill + VerdictChecks — резултатът на зап�
                      спирка с име. Записът „da aggiornare“ показва запазения списък и казва, че страницата е преизчислена.
 src/components/RefreshNotice (кръг 37: върхът на формуляра след «Aggiorna» — какво е останало за поправяне, с линк към полето),
                      lift/save-blockers (какво би отказал записът на формуляра, назовано като във формуляра); scripts/smoke-topbar.mjs —
-                     обвивката (странична лента и чекмедже) при 390–1440 px на три езика.
+                     обвивката (странична лента и чекмедже) при 390–1440 px.
 src/components/tavole/ Данните на съоръжението, логото на фирмата и на възложителя, издаване и ревизия на комплект
                      (от изчисление или от записано машинно).
 src/components/room/ Заснемането на машинното на подмяната: RoomSurvey (полетата — RoomFields, общи с проекта на шахтата —,
@@ -342,7 +342,9 @@ src/app/             [locale]/… страниците, api/ (health, billing/we
                      чернова на поръчка на машината, room-designs/<id>/relazione|pdf|dxf|dwg — документите на подмяната), robots,
                      sitemap, llms.txt; [locale]/pricing — цената от Stripe (`monthlyPrice`, отговорът се пази 10 минути;
                      след грешка — „su richiesta“ за минута), пакетите места и FAQ с JSON-LD.
-messages/            it|en|bg.json — приложението; messages/calc/ — речникът на прототипа v12 (410 ключа × 3 езика).
+messages/            it.json — приложението; messages/calc/it.json — речникът на прототипа v12 (410 ключа). Само италиански
+                     (от 2026-10-12): src/i18n/locales.ts (LOCALES = ['it']), legacy.ts (/en и /bg → 301 към /it,
+                     в src/middleware.ts преди next-intl), request.ts (статичните it.json), routing.ts (без hreflang).
 report/relazione.py  PDF с ReportLab + DejaVu (никога Helvetica/Times); само подрежда подаден модел.
 report/raster.py     Чертежите на модела като PNG 300 dpi (Pillow, същият модел на щрихите, шрифтовете DejaVu) за DOCX.
 report/stamp.py      Датата на записа в PDF (CreationDate/ModDate, /ID от `SOURCE_DATE_EPOCH`) и `/Lang it-IT` — сваляният на запис е
@@ -368,7 +370,7 @@ brand/premium/       Изходниците на облика LiftPilot Premium:
                      icons/ (188 рисувани PNG + icon-manifest.json), images/ (илюстрациите). scripts/brand-assets.py прави
                      public/favicon.ico, apple-touch-icon.png, public/img/liftpilot-logo-*.webp|png (пълното лого),
                      liftpilot-lockup-* (емблема + име за горните ленти, <Brand> по подразбиране), liftpilot-emblem-*,
-                     icon-192/512 (с --og и og-<език>.png); scripts/icons-build.py — public/icons/ и icon-names.ts;
+                     icon-192/512 (с --og и og-it.png); scripts/icons-build.py — public/icons/ и icon-names.ts;
                      scripts/premium-images.py — public/img/premium/. Обликът: токените в src/app/globals.css (една тъмна
                      тема), градивните класове в src/app/ui.css и ui-forms.css, шрифтовете Manrope + DM Mono (fonts.css).
 artifact/            Самостоятелната страница: калкулаторът и проектът със 3D симулацията и листовете на чертежите, изцяло в

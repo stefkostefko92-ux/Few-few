@@ -9,12 +9,12 @@
 /* the sections under the first screen are laid out when they come near the viewport: the first layout and every font
    that arrives after it touch only the hero (the landing's main-thread time); the sizes are estimates, then remembered */
 .lp-section:not(.hero) { content-visibility: auto; contain-intrinsic-size: auto 760px; }
-/* the footer under the landing too: its small print names the provider in Cyrillic as well, and on the Italian and
-   English pages that face would be fetched with the first screen and lay the laid-out text out again after the first
-   paint (main-thread time inside the window of the blocking time) */
+/* the footer under the landing too: its small print names the provider in Cyrillic as well, and that face would be
+   fetched with the first screen and lay the laid-out text out again after the first paint (main-thread time inside the
+   window of the blocking time) */
 .lp + .site-footer { content-visibility: auto; contain-intrinsic-size: auto 300px; }
 /* the landing's beta mark in the mono face the first screen already has (DM Mono 400; the template's mono labels are
-   all 400): at 500 it fetched one more face (and IBM Plex Mono 500 for «Бета») after the first paint, for one word */
+   all 400): at 500 it fetched one more face after the first paint, for one word */
 .lp .badge { font-weight: 400; }
 .lp h2 { font-size: clamp(32px, 3.4vw, 46px); line-height: 1.07; letter-spacing: -0.045em; font-weight: 800; margin-top: 15px; }
 .lp h2 > span, .lp h2 > em, .lp h1 > span, .lp h1 > em { display: block; }
@@ -40,8 +40,6 @@
   padding: 0 24px 72px var(--hero-left); }
 .hero h1 { margin: 26px 0 20px; font-size: clamp(40px, 3.9vw, 64px); line-height: .99; letter-spacing: -0.052em; font-weight: 800; max-width: 12.5em; }
 .hero h1 em { text-shadow: 0 0 28px rgb(0 216 237 / .15); }
-/* Cyrillic sets wider: the third line («и проверка на машината») keeps to one line from 1024 px */
-.hero h1:lang(bg) { font-size: clamp(36px, 3.5vw, 58px); letter-spacing: -0.04em; }
 .hero-lead { max-width: 36em; font-size: 16px; line-height: 1.7; color: var(--ink-2); }
 .hero-buttons { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
 .hero-beta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 20px; font-size: 15px; line-height: 1.5; color: var(--ink-2); }
@@ -336,11 +334,6 @@
 @media (max-width: 420px) {
   .feature-grid { grid-template-columns: minmax(0, 1fr); }
   .hero-art { min-height: 440px; }
-}
-/* Cyrillic sets wider: the tiles' longest words («автоматични», «симулацията») do not fit a quarter of the row on a
-   small phone, nor beside the narrower picture of a tablet; there the Bulgarian tiles stand two by two */
-@media (max-width: 460px), (min-width: 721px) and (max-width: 980px) {
-  .hero-benefits:lang(bg) { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .faq-section .faq-list summary .icon { transition: none; }

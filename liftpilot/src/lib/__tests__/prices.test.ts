@@ -1,5 +1,5 @@
-// The company's price list: every article once, Panev's starting from the 2026 list, prices typed in each language's
-// way, the cost of a design's articles with the quantities the design has, the plant counted from the design, the
+// The company's price list: every article once, Panev's starting from the 2026 list, prices typed the Italian way, the
+// cost of a design's articles with the quantities the design has, the plant counted from the design, the
 // replacement's parts, the company's free lines.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -38,22 +38,21 @@ test('the list: one row per article, every machine of the catalogues, Panev from
   assert.ok(PRICE_ARTICLES.filter((a) => a.start).every((a) => a.group === 'panev'));
 });
 
-test('prices typed as each language writes them', () => {
-  assert.equal(parseCents('', 'it'), null);
-  assert.equal(parseCents('  ', 'it'), null);
-  assert.equal(parseCents('1.250,50', 'it'), 125050);
-  assert.equal(parseCents('1250,5', 'it'), 125050);
-  assert.equal(parseCents('12.50', 'it'), 1250); // a point with two decimals is the decimal point
-  assert.equal(parseCents('12.345', 'it'), 1234500); // grouped thousands
-  assert.equal(parseCents('€ 99', 'it'), 9900);
-  assert.equal(parseCents('1 250,50', 'bg'), 125050);
-  assert.equal(parseCents('1,250.50', 'en'), 125050);
-  assert.equal(parseCents('1250.5', 'en'), 125050);
-  assert.equal(parseCents('12.345', 'en'), undefined); // three decimals
-  assert.equal(parseCents('-5', 'it'), undefined);
-  assert.equal(parseCents('1e3', 'it'), undefined);
-  assert.equal(parseCents('abc', 'it'), undefined);
-  assert.equal(parseCents(String(MAX_CENTS / 100 + 1), 'it'), undefined);
+test('prices typed the Italian way', () => {
+  assert.equal(parseCents(''), null);
+  assert.equal(parseCents('  '), null);
+  assert.equal(parseCents('1.250,50'), 125050);
+  assert.equal(parseCents('1250,5'), 125050);
+  assert.equal(parseCents('1250.5'), 125050); // a point with one or two decimals is the decimal point
+  assert.equal(parseCents('12.50'), 1250);
+  assert.equal(parseCents('12.345'), 1234500); // grouped thousands
+  assert.equal(parseCents('1 250,50'), 125050); // spaces are ignored
+  assert.equal(parseCents('€ 99'), 9900);
+  assert.equal(parseCents('1,250.50'), undefined); // the English grouping is not Italian
+  assert.equal(parseCents('-5'), undefined);
+  assert.equal(parseCents('1e3'), undefined);
+  assert.equal(parseCents('abc'), undefined);
+  assert.equal(parseCents(String(MAX_CENTS / 100 + 1)), undefined);
 });
 
 test('the company’s prices over the start; the cost counts only priced lines', () => {

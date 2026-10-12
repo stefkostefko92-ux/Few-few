@@ -23,7 +23,7 @@ export async function savePricesAction(_prev: FormState, fd: FormData): Promise<
   for (const a of PRICE_ARTICLES) {
     const raw = entry(fd, `p:${a.key}`);
     if (typeof raw !== 'string') continue;
-    const cents = parseCents(raw.slice(0, 32), locale);
+    const cents = parseCents(raw.slice(0, 32));
     if (cents === undefined) bad.push(a.key);
     // the start typed again, or nothing: no price of the company's own
     else typed.set(a.key, cents === null || cents === a.start?.cents ? null : cents);
@@ -35,7 +35,7 @@ export async function savePricesAction(_prev: FormState, fd: FormData): Promise<
   for (let i = 0; i < count; i++) {
     const text = str(fd, `c:${i}:text`).slice(0, 200), price = str(fd, `c:${i}:price`).slice(0, 32);
     if (!text.trim() && !price.trim()) continue;
-    const cents = parseCents(price, locale), row = customRowSchema.safeParse({ text, cents, basis: str(fd, `c:${i}:basis`), scope: str(fd, `c:${i}:scope`) });
+    const cents = parseCents(price), row = customRowSchema.safeParse({ text, cents, basis: str(fd, `c:${i}:basis`), scope: str(fd, `c:${i}:scope`) });
     if (!row.success || cents == null) bad.push(`c:${i}`); else rows.push(row.data);
   }
   if (bad.length) return { error: 'invalidPrices', fields: bad };

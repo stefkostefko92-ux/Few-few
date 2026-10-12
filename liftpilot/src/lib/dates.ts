@@ -1,5 +1,5 @@
-// Dates on the pages, always rendered on the server: the formatting locale of the interface language (English is
-// en-GB, with the 24-hour clock of the rest of the interface) and the time of Italy, where the installations are.
+// Dates on the pages, always rendered on the server: the formatting locale of the interface language (Italian, it-IT)
+// and the time of Italy, where the installations are.
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 
 export interface DateFormat {

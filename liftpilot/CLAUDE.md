@@ -7,7 +7,9 @@ B2B софтуер за монтажници в Италия (марка LiftPil
 чертежи. Съветът между моделите на SICOR и Montanari е само по данни (без цени), с чернова на поръчка (DOCX/PDF).
 Нормативен профил: DPR 162/1999 (с DPR 23/2017), UNI EN 81-20/50:2020, UNI 10411-1/-11:2024. Изследването е в
 `../research/argano-geared/` (в корена на монорепото; на италиански). Фирмите се регистрират сами (Brevo); собственик + колеги в местата на
-абонамента (Stripe); ценова листа на фирмата. Root правилата са в кореновия `CLAUDE.md`.
+абонамента (Stripe); ценова листа на фирмата. **Интерфейсът е само на италиански** (решение на собственика от
+2026-10-12): адресите пазят `/it`, `/en/…` и `/bg/…` пренасочват с 301 към същата страница на `/it`. Root правилата са в
+кореновия `CLAUDE.md`.
 
 **Подробностите:** структурата на кода — `docs/architecture.md`; правилата по модули (3D, симулация, подмяна, проект на
 асансьора, изпитване, чертежи и коти, каталози, машините каквито са, Panev, буфери, ролка, съвет и поръчка, акаунти,
@@ -20,13 +22,13 @@ B2B софтуер за монтажници в Италия (марка LiftPil
 npm install
 npm run lint          # ESLint 10 + typescript-eslint strict + react-hooks + next
 npm run typecheck     # tsc --noEmit
-npm test              # node:test през tsx: golden, ръчни проверки, свойства, предложение, регистър, роли, вход, snapshot, отчет, преводи, шахта, CAD, симулация, формуляр, празен старт и чернови, 3D (хлабини, ход, планки, кабели), записи
+npm test              # node:test през tsx: golden, ръчни проверки, свойства, предложение, регистър, роли, вход, snapshot, отчет, ключовете на текстовете, шахта, CAD, симулация, формуляр, празен старт и чернови, 3D (хлабини, ход, планки, кабели), записи
 npm run build         # prisma generate + next build
 npm run dev           # нужни: PostgreSQL и .env (AUTH_SECRET, PUBLIC_BASE_URL — виж .env.example; DATABASE_URL НЕ е там — сглобява се в docker-compose.yml, локално го задай ръчно)
 ADMIN_PASSWORD=… npm run admin:create                 # администратор на платформата (SUPERADMIN), идемпотентно
 BASE_URL=… ADMIN_PASSWORD=… npm run smoke             # e2e в браузъра срещу пуснат сървър (Playwright не е в package.json — трябва локален или глобален)
 MAILBOX_PORT=2526 … npm run smoke                     # + регистрация, потвърждение, нова парола: сървърът с SMTP_HOST=127.0.0.1 SMTP_PORT=2526 MAIL_FROM=…
-python3 -I scripts/brand-assets.py [--og]             # логото, емблемата, favicon/иконите (и с --og OG изображенията) от brand/premium/
+python3 -I scripts/brand-assets.py [--og]             # логото, емблемата, favicon/иконите (и с --og og-it.png) от brand/premium/
 python3 -I scripts/icons-build.py                     # рисуваните икони → public/icons/*-48|96.webp + src/components/icon-names.ts
 python3 -I scripts/premium-images.py                  # илюстрациите на шаблона → public/img/premium/ (AVIF + WebP)
 npm run lista         # docs/lista-verifica-normativa.md + .json от регистъра
@@ -106,9 +108,12 @@ npx tsx --conditions=react-server scripts/landing-docs.ts   # страницит
   5 +50 %, 10 +80 %, неограничено +100 % от месечната цена.
 - **Условията:** текстът се мени само с нова `TERMS_VERSION` + `npm run legal:archive` (`legal.test.ts` пада иначе) и
   писмо 30 дни преди (`docs/terms-changes.md`).
-- **Текстове:** UI на три езика (паритетът се проверява от тест); relazione и поръчката са само на италиански. Текстовете
-  на калкулатора са от прототипа — промяна в трите езика наведнъж. Безопасно-критичните и правните текстове не се
-  превеждат машинно. Бележките в документите са наш текст с номера на клаузи — никога текст на чужд комплект.
+- **Текстове:** UI само на италиански (`messages/it.json`, `messages/calc/it.json`; друг език няма — нито превключвател,
+  нито hreflang); всеки ключ, който кодът иска, е там (`public-messages.test.ts`). `/en` и `/bg` — 301 към `/it`
+  (`src/i18n/legacy.ts`); записаните в базата `en`/`bg` се четат като `it` (`isLocale`), без миграция, и всяко писмо е на
+  италиански. relazione, листовете, DXF/DWG и поръчката — на италиански. Текстовете на калкулатора са от прототипа.
+  Безопасно-критичните и правните текстове не се превеждат машинно; `en.txt`/`bg.txt` на условията до версия 4 остават
+  в `legal/terms/` като запис, без да се показват. Бележките в документите са наш текст с номера на клаузи — никога текст на чужд комплект.
 - **CSP с nonce** (`src/middleware.ts`): никакви inline скриптове; единственият `dangerouslySetInnerHTML` е JSON-LD с
   екраниран `<`.
 - **Числата на екрана** минават през `makeFmt` (фиксирани разделители, не ICU на средата): Node и браузърът трябва да

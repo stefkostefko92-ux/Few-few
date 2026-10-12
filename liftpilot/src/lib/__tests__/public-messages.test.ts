@@ -1,22 +1,32 @@
-// The public pages read their texts on the server through getTranslations, and next-intl does not fail on a missing key:
-// it prints «namespace.key» on the page and logs an error. tsc does not see it either. So every key the landing and the
-// public pages ask for literally must exist in the three languages, and every key built from a template (`faq${n}q`)
-// must match at least one key of its namespace.
+// The pages read their texts through getTranslations / useTranslations, and next-intl does not fail on a missing key: it
+// prints «namespace.key» on the page and logs an error. tsc does not see it either. So every key the code asks for
+// literally must exist in messages/it.json (Italian is the only language), and every key built from a template
+// (`faq${n}q`) must match at least one key of its namespace. The landing and the public pages are named apart: there a
+// missing key is what every visitor sees first.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import it from '../../../messages/it.json';
-import en from '../../../messages/en.json';
-import bg from '../../../messages/bg.json';
+import calc from '../../../messages/calc/it.json';
 
 const root = path.resolve(new URL('../../..', import.meta.url).pathname);
+const MESSAGES: Record<string, unknown> = { ...it, calc };
+
+/** Every source file of the application and of the standalone page (not the tests, not the built page). */
+function sources(dir: string): string[] {
+  return readdirSync(dir).flatMap((f) => {
+    const p = path.join(dir, f);
+    if (statSync(p).isDirectory()) return f === '__tests__' || f === 'dist' ? [] : sources(p);
+    return /\.tsx?$/.test(f) ? [path.relative(root, p)] : [];
+  });
+}
+const ALL = [...sources(path.join(root, 'src')), ...sources(path.join(root, 'artifact'))];
 const LANDING = readdirSync(path.join(root, 'src/components/landing')).filter((f) => f.endsWith('.tsx')).map((f) => `src/components/landing/${f}`);
 const PUBLIC = [
   'src/app/[locale]/page.tsx', 'src/app/[locale]/pricing/page.tsx', 'src/app/[locale]/data/page.tsx', 'src/app/[locale]/not-found.tsx',
   'src/components/SiteHeader.tsx', 'src/components/Footer.tsx', 'src/components/AuthPage.tsx',
 ];
-const MESSAGES: Record<string, unknown> = { it, en, bg };
 
 /** Splits the text of an array literal at its top-level commas. */
 function items(s: string): string[] {
@@ -32,19 +42,22 @@ function items(s: string): string[] {
   return out.map((x) => x.trim()).filter(Boolean);
 }
 
-const nsOf = (call: string): string | undefined => /getTranslations\(\s*(?:'([^']+)'|\{[^}]*namespace:\s*'([^']+)'[^}]*\})\s*\)/.exec(call)?.slice(1).find(Boolean);
+const nsOf = (call: string): string | undefined =>
+  /(?:getTranslations|useTranslations)\(\s*(?:'([^']+)'|\{[^}]*namespace:\s*'([^']+)'[^}]*\})\s*\)/.exec(call)?.slice(1).find(Boolean);
 
-/** The translators a file declares, by name: `const t = await getTranslations('landing')` and the destructured
- *  `const [t, tp] = await Promise.all([getTranslations('landing'), getTranslations('pricing')])`. */
-function translators(src: string): Map<string, string> {
-  const map = new Map<string, string>();
-  for (const m of src.matchAll(/const\s+(\w+)\s*=\s*await\s+(getTranslations\([^)]*\))/g)) {
+/** The translators a file declares, by name, with their namespaces (a name declared in two functions of one file may
+ *  have two): `const t = await getTranslations('landing')`, `t = useTranslations('shaft'), tl = useTranslations('lift')`
+ *  and the destructured `const [t, tp] = await Promise.all([getTranslations('landing'), getTranslations('pricing')])`. */
+function translators(src: string): Map<string, Set<string>> {
+  const map = new Map<string, Set<string>>();
+  const add = (name: string, ns: string): void => { map.set(name, (map.get(name) ?? new Set<string>()).add(ns)); };
+  for (const m of src.matchAll(/(?<![\w.])(\w+)\s*=\s*(?:await\s+)?((?:getTranslations|useTranslations)\([^)]*\))/g)) {
     const ns = nsOf(m[2] ?? '');
-    if (m[1] && ns) map.set(m[1], ns);
+    if (m[1] && ns) add(m[1], ns);
   }
   for (const m of src.matchAll(/const\s+\[([^\]]+)\]\s*=\s*await\s+Promise\.all\(\[([\s\S]*?)\]\)/g)) {
     const names = items(m[1] ?? ''), calls = items(m[2] ?? '');
-    names.forEach((n, i) => { const ns = nsOf(calls[i] ?? ''); if (ns) map.set(n, ns); });
+    names.forEach((n, i) => { const ns = nsOf(calls[i] ?? ''); if (ns) add(n, ns); });
   }
   return map;
 }
@@ -63,43 +76,57 @@ function keysOf(src: string, name: string): { literal: string[]; pattern: RegExp
   return { literal, pattern };
 }
 
-const lookup = (messages: unknown, ns: string, key: string): unknown =>
-  [ns, ...key.split('.')].reduce<unknown>((o, k) => (o && typeof o === 'object' ? (o as Record<string, unknown>)[k] : undefined), messages);
+const at = (path: readonly string[]): unknown =>
+  path.reduce<unknown>((o, k) => (o && typeof o === 'object' ? (o as Record<string, unknown>)[k] : undefined), MESSAGES);
 
-/** Every dotted key under a namespace. */
+/** Every dotted key under a node. */
 function allKeys(o: unknown, prefix = ''): string[] {
   if (!o || typeof o !== 'object') return [prefix];
   return Object.entries(o as Record<string, unknown>).flatMap(([k, v]) => allKeys(v, prefix ? `${prefix}.${k}` : k));
 }
 
-test('public messages: the parser sees the translators and their keys', () => {
-  const src = "const [t, tp, tb] = await Promise.all([getTranslations('landing'), getTranslations('pricing'), getTranslations('billing')]);\n"
-    + "const m = await getTranslations({ locale, namespace: 'meta' });\n tp('priceOnRequest'); t.rich('x', { a }); tb(`pack.${p}`); m('keywords'); xt('no');";
-  const tr = translators(src);
-  assert.deepEqual([...tr], [['m', 'meta'], ['t', 'landing'], ['tp', 'pricing'], ['tb', 'billing']]);
-  assert.deepEqual(keysOf(src, 'tp').literal, ['priceOnRequest']);
-  assert.deepEqual(keysOf(src, 't').literal, ['x']);
-  assert.ok(keysOf(src, 'tb').pattern[0]?.test('pack.FIVE'));
-});
-
-test('public messages: every key the landing and the public pages ask for exists in it, en and bg', () => {
+/** The keys of `files` missing in it.json, and how many were checked. */
+function check(files: readonly string[]): { missing: string[]; checked: number } {
+  const missing: string[] = [];
   let checked = 0;
-  for (const file of [...LANDING, ...PUBLIC]) {
+  for (const file of files) {
     const src = readFileSync(path.join(root, file), 'utf8');
-    for (const [name, ns] of translators(src)) {
-      const { literal, pattern } = keysOf(src, name);
-      for (const [lang, messages] of Object.entries(MESSAGES)) {
-        for (const key of literal) {
-          assert.equal(typeof lookup(messages, ns, key), 'string', `${file}: ${name}('${key}') → «${ns}.${key}» is missing in ${lang}.json`);
-          checked++;
-        }
-        const keys = allKeys((messages as Record<string, unknown>)[ns]);
-        for (const re of pattern) {
-          assert.ok(keys.some((k) => re.test(k)), `${file}: ${name}(\`…\`) ${re} matches no key of «${ns}» in ${lang}.json`);
-          checked++;
-        }
+    for (const [name, spaces] of translators(src)) {
+      const { literal, pattern } = keysOf(src, name), nss = [...spaces];
+      for (const key of literal) {
+        checked++;
+        // a key that names a namespace's branch (t.raw('items')) is a node, not a string
+        if (!nss.some((ns) => at([...ns.split('.'), ...key.split('.')]) !== undefined)) missing.push(`${file}: ${name}('${key}') → «${nss.join('|')}.${key}»`);
+      }
+      for (const re of pattern) {
+        checked++;
+        if (!nss.some((ns) => allKeys(at(ns.split('.'))).some((k) => re.test(k)))) missing.push(`${file}: ${name}(\`…\`) ${re} matches no key of «${nss.join('|')}»`);
       }
     }
   }
-  assert.ok(checked > 300, `only ${checked} keys checked: the parser lost the translators`);
+  return { missing, checked };
+}
+
+test('messages: the parser sees the translators and their keys', () => {
+  const src = "const [t, tp, tb] = await Promise.all([getTranslations('landing'), getTranslations('pricing'), getTranslations('billing')]);\n"
+    + "const m = await getTranslations({ locale, namespace: 'meta' });\n tp('priceOnRequest'); t.rich('x', { a }); tb(`pack.${p}`); m('keywords'); xt('no');\n"
+    + "const u = useTranslations('shaft'), v = useTranslations('lift'); u('a'); v('b');";
+  const tr = translators(src);
+  assert.deepEqual([...tr].map(([n, s]) => [n, [...s]]), [['m', ['meta']], ['u', ['shaft']], ['v', ['lift']], ['t', ['landing']], ['tp', ['pricing']], ['tb', ['billing']]]);
+  assert.deepEqual(keysOf(src, 'tp').literal, ['priceOnRequest']);
+  assert.deepEqual(keysOf(src, 't').literal, ['x']);
+  assert.deepEqual(keysOf(src, 'u').literal, ['a']);
+  assert.ok(keysOf(src, 'tb').pattern[0]?.test('pack.FIVE'));
+});
+
+test('messages: every key the landing and the public pages ask for exists in it.json', () => {
+  const { missing, checked } = check([...LANDING, ...PUBLIC]);
+  assert.deepEqual(missing, []);
+  assert.ok(checked > 150, `only ${checked} keys checked: the parser lost the translators`);
+});
+
+test('messages: every key the application asks for exists in it.json', () => {
+  const { missing, checked } = check(ALL);
+  assert.deepEqual(missing, []);
+  assert.ok(checked > 1200, `only ${checked} keys checked: the parser lost the translators`);
 });

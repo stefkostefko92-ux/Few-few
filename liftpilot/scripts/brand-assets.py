@@ -2,8 +2,9 @@
 # (the wordmark with its emblem and "ELEVATOR DESIGN SOFTWARE") at 1x/2x/3x, the compact lockup for the headers (emblem
 # and name without that line, which under 40 px of height is a smudge), the e-mail logo (PNG: every mail client shows
 # it), the emblem alone for the application's sidebar, the favicon (16/32/48), the Apple touch icon and the
-# 192/512 icons. With --og it also draws the social preview of each language (1200x630) with the landing page's
-# headline in Manrope; the previews belong to the landing page, run it when the headline or the look changes.
+# 192/512 icons. With --og it also draws the social preview (1200x630, og-it.png: Italian is the only language) with the
+# landing page's headline in Manrope; the preview belongs to the landing page, run it when the headline or the look
+# changes.
 # Run from liftpilot/: python3 -I scripts/brand-assets.py [--og]
 # Needs Pillow with WebP, and for --og fontTools with brotli (to read the site's WOFF2 fonts).
 import io
@@ -93,7 +94,7 @@ def font(weight, subset, size):
 
 
 def runs(text, fonts):
-    """Splits the text by the first font whose subset has each character (Latin, then Cyrillic)."""
+    """Splits the text by the first font whose subset has each character."""
     out = []
     for ch in text:
         f = next((ft for ft, cmap in fonts if ord(ch) in cmap), fonts[0][0])
@@ -123,7 +124,7 @@ def draw_line(d, x, y, text, fonts, fill):
         x += f.getlength(s)
 
 
-def social(locale):
+def social():
     W, H = 1200, 630
     im = Image.new("RGBA", (W, H), BG + (255,))
     grid = ImageDraw.Draw(im)
@@ -136,12 +137,12 @@ def social(locale):
     im.alpha_composite(glow.filter(ImageFilter.GaussianBlur(120)))
     lg = width(wordmark, 470)
     im.alpha_composite(lg, (72, 64))
-    msgs = json.load(open(os.path.join(ROOT, "messages", f"{locale}.json"), encoding="utf-8"))
+    msgs = json.load(open(os.path.join(ROOT, "messages", "it.json"), encoding="utf-8"))
     # the landing's title, set there in three lines (h1a, h1b, h1c)
     head = " ".join(msgs["landing"][k] for k in ("h1a", "h1b", "h1c")).split(":", 1)[-1].strip()
     head = head[:1].upper() + head[1:]
-    big = [font(700, "latin", 58), font(700, "cyrillic", 58)]
-    small = [font(500, "latin", 24), font(500, "cyrillic", 24)]
+    big = [font(700, "latin", 58)]
+    small = [font(500, "latin", 24)]
     d = ImageDraw.Draw(im)
     y = 120 + lg.height
     for line in wrap(head, big, 1040):
@@ -154,6 +155,5 @@ def social(locale):
 
 write_site_files()
 if "--og" in sys.argv[1:]:
-    for loc in ("it", "en", "bg"):
-        social(loc).save(os.path.join(IMG, f"og-{loc}.png"), optimize=True)
-    print("social previews written to public/img/og-*.png")
+    social().save(os.path.join(IMG, "og-it.png"), optimize=True)
+    print("social preview written to public/img/og-it.png")

@@ -1,19 +1,16 @@
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { LOGO, LOGO_COMPACT } from '@/lib/brand';
-import LangSwitch from './LangSwitch';
 import MobileNav from './MobileNav';
 
 /** The landing's sections the header leads to, in the page's order: the id of each and the key of its name. */
 const NAV = [['funzionalita', 'navFeatures'], ['prodotto', 'navProduct'], ['prezzi', 'navPricing'], ['norme', 'navNorms'], ['faq', 'navFaq']] as const;
 
-// Header of the public pages, after the Premium template's landing: the full logo, the landing's sections, the language,
-// the way in (sign in, sign up). Sticky; under 1080 px the sections move into a drawer (MobileNav) and under 720 px the
-// logo loses its tagline and only one way in stays beside the menu (sign in, as in the template; sign up on the sign-in
-// page itself), the other one in the drawer; under 375 px the languages move into the drawer too. Without the sign-in
-// button (`lean`: the sign-in family, the 404) sign-up stays beside the menu, and the languages go into the drawer
-// already under 421 px, where the longer Bulgarian label would push the menu off the screen (landing.css). The skip
-// link comes first: every public page's <main> carries id="main".
+// Header of the public pages, after the Premium template's landing: the full logo, the landing's sections, the way in
+// (sign in, sign up). Sticky; under 1080 px the sections move into a drawer (MobileNav) and under 720 px the logo loses
+// its tagline and only one way in stays beside the menu (sign in, as in the template; sign up on the sign-in page
+// itself), the other one in the drawer. Without the sign-in button (`lean`: the sign-in family, the 404) sign-up stays
+// beside the menu. The skip link comes first: every public page's <main> carries id="main".
 // `at` names the page the header stands on: on the landing the sections are anchors on the page; elsewhere "Prices"
 // leads to /pricing, which marks it as the current page; on the registration its own button is the current page.
 export default async function SiteHeader({ showLogin = true, at }: { showLogin?: boolean; at?: 'home' | 'pricing' | 'register' }) {
@@ -35,12 +32,10 @@ export default async function SiteHeader({ showLogin = true, at }: { showLogin?:
           </Link>
           <nav className="main-nav" aria-label={t('navLabel')}>{sections}</nav>
           <div className="header-actions">
-            <div className="header-langs"><LangSwitch /></div>
             {showLogin ? <Link className="btn btn-sm" href="/login">{tc('login')}</Link> : null}
             <Link className={`btn btn-primary btn-sm${showLogin ? ' header-wide' : ''}`} href="/register" aria-current={here}>{t('ctaStart')}</Link>
             <MobileNav label={t('navMenu')}>
               <nav className="drawer-nav" aria-label={t('navLabel')}>{sections}</nav>
-              <div className="drawer-langs"><LangSwitch /></div>
               <div className="drawer-actions">
                 {showLogin ? <Link className="btn" href="/login">{tc('login')}</Link> : null}
                 <Link className="btn btn-primary" href="/register" aria-current={here}>{t('ctaStart')}</Link>

@@ -8,8 +8,6 @@ import assert from 'node:assert/strict';
 import { PRESETS } from '@/calc/presets';
 import { textWidth } from '@/drawing';
 import it from '../../../messages/it.json';
-import en from '../../../messages/en.json';
-import bg from '../../../messages/bg.json';
 import { GAP, laidOut, toDwg, toDxf, type CadView } from '../cad/export';
 import { draftCaption, inputViews, surveyViews } from '../cad/project';
 import { readCad } from '../cad/read';
@@ -92,9 +90,7 @@ test('locale macchina della sostituzione in DXF/DWG (BOZZA): sotto la pianta il 
   draftNamesItsPdf(surveyViews(r.derived, {}), r.sheets, 'R · locale macchina r1 · 2026-10-08');
 });
 
-test('la pagina della serie emessa descrive i file CAD come sono: tutti i fogli del PDF, con le verifiche, in IT/EN/BG', () => {
-  const lead = { it: it.tavole.cadLead, en: en.tavole.cadLead, bg: bg.tavole.cadLead };
-  assert.ok(lead.it.startsWith('Tutti i fogli del PDF') && lead.it.includes('verifiche') && lead.it.includes('legende'));
-  assert.ok(lead.en.startsWith('Every sheet of the PDF') && lead.en.includes('checks') && lead.en.includes('legends'));
-  assert.ok(lead.bg.startsWith('Всички листове на PDF') && lead.bg.includes('проверките') && lead.bg.includes('легендите'));
+test('la pagina della serie emessa descrive i file CAD come sono: tutti i fogli del PDF, con le verifiche', () => {
+  const lead = it.tavole.cadLead;
+  assert.ok(lead.startsWith('Tutti i fogli del PDF') && lead.includes('verifiche') && lead.includes('legende'));
 });

@@ -3,7 +3,7 @@
    is in home.css; the secondary pages' frames are in public.css. */
 .lp, .site-header, .site-footer { --gutter: clamp(20px, 4.4vw, 64px); --page: 1312px; --hdr: 82px; }
 
-/* ── header: logo, the landing's sections, language, the way in; a drawer under 1080 px ─────────────────────────── */
+/* ── header: logo, the landing's sections, the way in; a drawer under 1080 px ─────────────────────────────────────── */
 .site-header { position: sticky; top: 0; z-index: 50; background: color-mix(in srgb, var(--bg) 96%, transparent); border-bottom: 1px solid var(--rule-soft); }
 .site-header-inner { display: flex; align-items: center; gap: 34px; height: var(--hdr); width: 100%; max-width: calc(var(--page) + 2 * var(--gutter));
   margin-inline: auto; padding-inline: var(--gutter); }
@@ -13,11 +13,6 @@
 .main-nav a, .drawer-nav a { color: var(--ink-2); font: 700 14px/1.2 var(--font-body); text-decoration: none; }
 .main-nav a:hover, .drawer-nav a:hover { color: var(--accent); }
 .header-actions { display: flex; align-items: center; gap: 12px; margin-left: auto; }
-.header-langs { display: flex; }
-.site-header .langs { border: 0; border-radius: 0; gap: 2px; }
-.site-header .langs a { padding: 8px 6px; font: 400 12px/1 var(--font-mono); letter-spacing: .08em; color: var(--muted); background: none; border-bottom: 1px solid transparent; }
-.site-header .langs a:hover { color: var(--ink); }
-.site-header .langs a[aria-current="true"] { color: var(--accent); background: none; border-bottom-color: var(--accent); }
 .nav-drawer { display: none; }
 .nav-drawer > summary { list-style: none; }
 .nav-drawer > summary::-webkit-details-marker { display: none; }
@@ -28,7 +23,6 @@
   padding: 8px var(--gutter) 22px; background: var(--surface); border-bottom: 1px solid var(--rule); box-shadow: var(--shadow-lg); }
 .drawer-nav { display: flex; flex-direction: column; }
 .drawer-nav a { padding: 15px 4px; border-bottom: 1px solid var(--rule-soft); font-size: 15px; }
-.drawer-langs { display: none; }
 .drawer-actions { display: flex; gap: 10px; margin-top: 18px; }
 .drawer-actions .btn { flex: 1; }
 @media (max-width: 1080px) {
@@ -41,18 +35,6 @@
   .site-logo img { height: 34px; }
   .header-actions { gap: 8px; }
   .header-wide { display: none; }
-}
-@media (max-width: 374px) {
-  .header-langs { display: none; }
-  .drawer-langs { display: flex; margin-top: 12px; }
-  .drawer-langs .langs a { padding: 10px 8px; font-size: 13px; }
-}
-/* without the sign-in button (the sign-in family, the 404) sign-up stays beside the menu: the languages go into the
-   drawer earlier, or the Bulgarian label would push the menu off a 375–420 px screen */
-@media (max-width: 420px) {
-  .site-header.lean .header-langs { display: none; }
-  .site-header.lean .drawer-langs { display: flex; margin-top: 12px; }
-  .site-header.lean .drawer-langs .langs a { padding: 10px 8px; font-size: 13px; }
 }
 
 /* ── footer: logo, year and note, links, the credit, the provider in small print ─────────────────────────────────── */

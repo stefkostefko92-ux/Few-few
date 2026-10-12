@@ -1,12 +1,14 @@
 // Metadata and structured data of the public pages. Indexing stays off until the owner approves the public
 // release (ALLOW_INDEXING=true); the application pages under /app are never indexed.
 import type { Metadata } from 'next';
-import { LOCALES, type Locale } from '@/i18n/locales';
+import type { Locale } from '@/i18n/locales';
 import { indexingAllowed, publicBaseUrl } from './env';
 import { PROVIDER } from './provider';
 
 export const SITE_NAME = 'LiftPilot';
-const OG_LOCALE: Record<Locale, string> = { it: 'it_IT', en: 'en_GB', bg: 'bg_BG' };
+const OG_LOCALE: Record<Locale, string> = { it: 'it_IT' };
+/** The language of the pages for the structured data (BCP 47): Italian, the only language of the interface. */
+const IN_LANGUAGE: Record<Locale, string> = { it: 'it-IT' };
 
 interface PageMeta {
   locale: Locale;
@@ -26,14 +28,11 @@ export function pageMetadata(p: PageMeta): Metadata {
     title: p.title.startsWith(SITE_NAME) ? { absolute: p.title } : p.title,
     description: p.description,
     keywords: [...p.keywords],
-    alternates: {
-      canonical: url(p.locale),
-      languages: { ...Object.fromEntries(LOCALES.map((l) => [l, url(l)])), 'x-default': url('it') },
-    },
+    // one language: the canonical address and no hreflang alternates
+    alternates: { canonical: url(p.locale) },
     robots: index ? { index: true, follow: true } : { index: false, follow: false },
     openGraph: {
       type: 'website', siteName: SITE_NAME, title: p.title, description: p.description, url: url(p.locale), locale: OG_LOCALE[p.locale],
-      alternateLocale: LOCALES.filter((l) => l !== p.locale).map((l) => OG_LOCALE[l]),
       images: [{ url: `${base}/img/og-${p.locale}.png`, width: 1200, height: 630, alt: p.title }],
     },
     twitter: { card: 'summary_large_image', title: p.title, description: p.description, images: [`${base}/img/og-${p.locale}.png`] },
@@ -50,20 +49,21 @@ export function organizationLd(): JsonLd {
     telephone: p.phones[0], vatID: p.vat, taxID: p.eik, identifier: { '@type': 'PropertyValue', propertyID: 'EIK', value: p.eik },
     address: { '@type': 'PostalAddress', streetAddress: p.address.street, postalCode: p.address.postalCode, addressLocality: p.address.locality,
       addressRegion: p.address.region, addressCountry: p.address.country },
+    // the languages the provider answers in (legal.contactText: Italian, English or Bulgarian), not the site's
     contactPoint: p.phones.map((telephone, i) => ({ '@type': 'ContactPoint', contactType: 'customer support', telephone, email: p.email,
       areaServed: i === 0 ? 'BG' : 'IT', availableLanguage: ['it', 'en', 'bg'] })),
   };
 }
 
 export function websiteLd(locale: Locale): JsonLd {
-  return { '@type': 'WebSite', '@id': `${publicBaseUrl()}/${locale}/#website`, name: SITE_NAME, url: `${publicBaseUrl()}/${locale}`, inLanguage: locale, publisher: { '@id': 'https://carbonstealth.eu/#org' } };
+  return { '@type': 'WebSite', '@id': `${publicBaseUrl()}/${locale}/#website`, name: SITE_NAME, url: `${publicBaseUrl()}/${locale}`, inLanguage: IN_LANGUAGE[locale], publisher: { '@id': 'https://carbonstealth.eu/#org' } };
 }
 
 export function softwareLd(locale: Locale, description: string, features: readonly string[] = []): JsonLd {
   const base = publicBaseUrl();
   return {
     '@type': 'SoftwareApplication', '@id': `${base}/#app`, name: SITE_NAME, applicationCategory: 'BusinessApplication',
-    applicationSubCategory: 'Lift design and engineering calculation', operatingSystem: 'Web', inLanguage: ['it', 'en', 'bg'], description,
+    applicationSubCategory: 'Lift design and engineering calculation', operatingSystem: 'Web', inLanguage: IN_LANGUAGE[locale], description,
     url: `${base}/${locale}`, image: `${base}/img/og-${locale}.png`, ...(features.length ? { featureList: [...features] } : {}),
     publisher: { '@id': 'https://carbonstealth.eu/#org' }, countriesSupported: 'IT',
   };

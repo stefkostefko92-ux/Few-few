@@ -1,11 +1,12 @@
 import type { MetadataRoute } from 'next';
-import { LOCALES } from '@/i18n/locales';
+import { LEGACY_LOCALES, LOCALES } from '@/i18n/locales';
 import { indexingAllowed, publicBaseUrl } from '@/lib/env';
 
 export const dynamic = 'force-dynamic';
 
-/** What no crawler needs: the API, the application and the pages opened from an e-mail's link. */
-const PRIVATE = ['/api/', ...LOCALES.flatMap((l) => ['app', 'invite', 'reset-password', 'verify-email'].map((p) => `/${l}/${p}`))];
+/** What no crawler needs: the API, the application and the pages opened from an e-mail's link (also under the former
+ *  languages' prefixes, which redirect to Italian: a crawler need not even ask). */
+const PRIVATE = ['/api/', ...[...LOCALES, ...LEGACY_LOCALES].flatMap((l) => ['app', 'invite', 'reset-password', 'verify-email'].map((p) => `/${l}/${p}`))];
 
 /** Crawlers that gather pages to train models: kept out (the owner's choice). Google-Extended also keeps the pages out of
  *  Gemini's grounding; Google Search, its AI Overviews included, use Googlebot and stay open. */

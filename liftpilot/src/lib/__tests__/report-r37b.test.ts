@@ -4,8 +4,6 @@
 // sentence for the sling and the missing loads in the relazione and on sheet 1.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import appBg from '../../../messages/bg.json';
-import appEn from '../../../messages/en.json';
 import appIt from '../../../messages/it.json';
 import { PRESETS } from '@/calc/presets';
 import { VOCI } from '@/calc/norme';
@@ -55,10 +53,10 @@ test('arcata esistente: la verifica dice carichi oltre i limiti, T* o la portata
   assert.ok(v.dQ > 0.05 && v.dT < 0, JSON.stringify(v));
   assert.equal(tStarOf({ ...RIF1, documentato: doc }, ora), 'aumento');
   assert.equal(slingCheck({ ...RIF1, documentato: doc }, ora)?.status, 'warn');
-  // the label names both ways in every language, and never an increased T* alone
+  // the label names both ways, and never an increased T* alone
   assert.ok(appIt.shaft.c_sl_frame.includes('carichi oltre i limiti (T* o portata) o non documentati'), appIt.shaft.c_sl_frame);
-  for (const s of [appIt.shaft.c_sl_frame, appEn.shaft.c_sl_frame, appBg.shaft.c_sl_frame]) {
-    assert.ok(!/T\* aumentato|T\* increased|увеличено/.test(s), s);
+  for (const s of [appIt.shaft.c_sl_frame]) {
+    assert.ok(!/T\* aumentato/.test(s), s);
     assert.ok(s.includes('T*') && s.endsWith('(UNI 10411, 6.9)'), s);
   }
   // the relazione of such a design: the variation beyond the limits and the sling's row, without «T* aumentato»
@@ -94,7 +92,7 @@ test('freno di una macchina secondo la UNI EN 81-1: la sua clausola e la 14.1 b)
 
 test('foglio 1: l’altezza del locale esistente e il pilastro per la parte della UNI 10411 del collaudo (rev. A, 4 e 7)', () => {
   // the existing room's height: 9.2 of both parts, no clause of the other part nor of UNI EN 81-21 in the label
-  for (const s of [appIt.shaft.c_m_hexist, appEn.shaft.c_m_hexist, appBg.shaft.c_m_hexist]) assert.ok(s.endsWith('(UNI 10411, 9.2)'), s);
+  for (const s of [appIt.shaft.c_m_hexist]) assert.ok(s.endsWith('(UNI 10411, 9.2)'), s);
   const row = sheet1(repl(defaultLift(), { norma: '10411-11', parti: ['machine'] })).checks.find((c) => c[0]?.startsWith(appIt.shaft.c_m_hexist.split(' (')[0] ?? '-'));
   assert.ok(row, 'la verifica nel foglio 1');
   assert.ok(!row[0]?.includes('10411-1') && !row[0]?.includes('81-21'), row[0]);
@@ -113,8 +111,7 @@ test('foglio 1: l’altezza del locale esistente e il pilastro per la parte dell
 });
 
 test('suggerimenti del pilastro: la via della UNI 10411-1 e quella della UNI 10411-11 (rev. A, 5)', () => {
-  for (const s of [appIt.tavole.f_cwGearHint, appIt.lift.hint_bottom_under, appEn.tavole.f_cwGearHint, appEn.lift.hint_bottom_under,
-    appBg.tavole.f_cwGearHint, appBg.lift.hint_bottom_under]) {
+  for (const s of [appIt.tavole.f_cwGearHint, appIt.lift.hint_bottom_under]) {
     assert.ok(s.includes('UNI 10411-1, 6.14; ') && s.includes('UNI 10411-11') && s.includes('UNI EN 81-1') && s.includes('5.5 a)'), s);
   }
 });

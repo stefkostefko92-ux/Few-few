@@ -24,8 +24,8 @@ Ricerca: `../research/argano-geared/` (nella radice del monorepo). Storia dello 
 - **Account senza amministratore:** l'azienda si registra da sola (il titolare conferma l'indirizzo con
   il link dell'e-mail e la sua password) e chi dimentica la password ne sceglie una nuova con un link.
   E-mail tramite Brevo; informativa privacy e condizioni d'uso in `/privacy`.
-- Interfaccia in italiano, inglese e bulgaro; pagina pubblica senza indicizzazione fino
-  all'approvazione. Indirizzo: https://liftpilot.carbonstealth.eu.
+- Interfaccia solo in italiano (gli indirizzi `/en/…` e `/bg/…` portano, con un 301, alla stessa pagina in `/it/…`);
+  pagina pubblica senza indicizzazione fino all'approvazione. Indirizzo: https://liftpilot.carbonstealth.eu.
 
 ## Verifica normativa
 
@@ -44,7 +44,7 @@ npm run dev                                   # sviluppo (serve un PostgreSQL e 
 ADMIN_PASSWORD=… npm run admin:create         # amministratore della piattaforma
 BASE_URL=… ADMIN_PASSWORD=… npm run smoke     # prova completa nel browser contro un'istanza avviata
                                               # (MAILBOX_PORT=…: anche registrazione e nuova password, vedi scripts/mail-sink.mjs)
-python3 -I scripts/brand-assets.py [--og]    # logo, emblema, favicon (e con --og le anteprime social) da brand/premium/
+python3 -I scripts/brand-assets.py [--og]    # logo, emblema, favicon (e con --og l'anteprima social og-it.png) da brand/premium/
 python3 -I scripts/icons-build.py            # icone dipinte → public/icons/ e src/components/icon-names.ts
 python3 -I scripts/premium-images.py         # illustrazioni del template → public/img/premium/ (AVIF + WebP)
 npm run lista                                 # lista di verifica (.md/.json) dal registro

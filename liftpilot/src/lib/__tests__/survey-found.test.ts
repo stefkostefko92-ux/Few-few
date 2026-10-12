@@ -16,8 +16,6 @@ import { roomSectionOn } from '@/shaft/room-section-view';
 import { roomPlanOn } from '@/shaft/room-view';
 import { governorFree, machineParts } from '@/shaft/support-check';
 import it from '../../../messages/it.json';
-import en from '../../../messages/en.json';
-import bg from '../../../messages/bg.json';
 import { ambitoOf } from '../lift/collaudo';
 import { deriveRoom } from '../room/derive';
 import { startSurvey, surveySaveSchema, type Survey } from '../room/survey';
@@ -152,11 +150,11 @@ test('m_govdrop: le funi del limitatore esistente attraverso la soletta scendono
   assert.ok((inside?.value ?? -1) >= 0);
   assert.equal(check(V, withGov({ x: 2100, y: 1000, W: 400, D: 300, ropes: true }), 'm_govdrop')?.status, 'warn');
   assert.equal(check(V, withGov({ x: 2450, y: 900, W: 300, D: 250, ropes: false }), 'm_govdrop'), undefined);
-  // a check of the survey's data: it applies whatever the test replaces; its entry in the registry, its label in three languages
+  // a check of the survey's data: it applies whatever the test replaces; its entry in the registry, its label
   assert.equal(ambitoOf({ norma: '10411-1', parti: ['ropes'] }, 'm_govdrop'), 'applies');
   assert.equal(ambitoOf({ norma: '10411-11', parti: ['machine'] }, 'm_govdrop'), 'applies');
   assert.ok(VOCI_VANO.find((v) => v.id === 'limitatore.posto')?.verifiche?.includes('m_govdrop'));
-  for (const m of [it, en, bg]) assert.ok((m.shaft as Record<string, string>).c_m_govdrop?.trim());
+  assert.ok((it.shaft as Record<string, string>).c_m_govdrop?.trim());
 });
 
 test('sezione B-B: la soletta aperta dove il taglio attraversa un’apertura esistente, con il suo nome', () => {

@@ -1,5 +1,6 @@
-// The text of the terms in force, kept for good: legal/terms/<TERMS_VERSION>/<locale>.txt, written once and never
-// overwritten (a changed text needs a new TERMS_VERSION; src/lib/__tests__/legal.test.ts fails until it has one).
+// The text of the terms in force, kept for good: legal/terms/<TERMS_VERSION>/it.txt (Italian, the only language; the
+// en.txt and bg.txt of the versions up to 4 stay as they are), written once and never overwritten (a changed text needs
+// a new TERMS_VERSION; src/lib/__tests__/legal.test.ts fails until it has one).
 //   npm run legal:archive
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';

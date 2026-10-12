@@ -29,8 +29,6 @@ import { govSize } from '@/shaft/governor';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { N1_PER_SG } from '@/shaft/staffe';
 import it from '../../../messages/it.json';
-import en from '../../../messages/en.json';
-import bg from '../../../messages/bg.json';
 
 const qty = (bom: readonly BomLine[], key: string): number => bom.find((l) => l.key === key)?.qty ?? 0;
 const panevKeys = (bom: readonly BomLine[]): Map<string, number> => new Map(bom.filter((l) => l.key?.startsWith('panev:')).map((l) => [l.key ?? '', l.qty]));
@@ -83,8 +81,8 @@ test('W2-G7-05: the Panev table counts with the acceptance test, as the bill', (
   // brackets of the parts a modification keeps; a shaft design alone passes null
   const required: Record<string, never> extends Pick<Parameters<typeof PanevBom>[0], 'C'> ? false : true = true;
   assert.equal(required, true);
-  // the table's note on the rows left out, in the three languages
-  for (const m of [it, en, bg]) assert.ok(m.bom.kept.includes('UNI 10411'));
+  // the table's note on the rows left out
+  assert.ok(it.bom.kept.includes('UNI 10411'));
 });
 
 test('W2-G7-06: two N1 clips on every SG of the counterweight rails, with the rails; anchors said to be left out', () => {
@@ -101,9 +99,7 @@ test('W2-G7-06: two N1 clips on every SG of the counterweight rails, with the ra
   assert.equal(qty(designBom(modification(dv, ['machine', 'landingDoors'])), N1_KEY), 0);
   // the cost's note says the clips are counted and the anchors and bolts are not: a new lift's and a modification's
   // (a lift design tested to UNI 10411 shows costNoteModification)
-  for (const [m, w] of [[it, 'tasselli'], [en, 'anchors'], [bg, 'анкерите']] as const) {
-    for (const note of [m.prices.costNoteDesign, m.prices.costNoteModification]) assert.ok(note.includes('N1') && note.includes(w), `${w}: ${note}`);
-  }
+  for (const note of [it.prices.costNoteDesign, it.prices.costNoteModification]) assert.ok(note.includes('N1') && note.includes('tasselli'), note);
 });
 
 test('W2-L1b-05: the bearing plate under each end of the HEB beams, in the design’s bill and in the replacement’s', () => {
@@ -172,11 +168,11 @@ test('W2-G3-02: with the machine under the pit, the counterweight’s safety gea
   assert.equal(qty(kept, 'safety-gear-cw:progressive'), 1);
   assert.equal(qty(kept, 'tension'), 0);
   assert.equal(qty(designBom(modification(d, ['machine', 'governor']), byGov), 'tension'), 2);
-  // every article the bill takes is in the price list, in the three languages
+  // every article the bill takes is in the price list
   for (const k of ['safety-gear-cw:progressive', 'safety-gear-cw:roller', 'safety-gear-cw:instantaneous', 'cw-trip:rupture', 'cw-trip:rope']) {
     const a = priceArticle(k);
     assert.ok(a, k);
-    for (const m of [it, en, bg]) assert.ok((m.prices.items as Record<string, string>)[a.label.item], `${k}: ${a.label.item}`);
+    assert.ok((it.prices.items as Record<string, string>)[a.label.item], `${k}: ${a.label.item}`);
   }
 });
 
@@ -195,13 +191,11 @@ test('W2-G7-04: a machine replacement names the replaced parts it cannot count',
   const fresh = calcUncounted(collaudoOf({ ...V, context: 'new' }));
   assert.deepEqual(fresh, { parts: ['car', 'sling', 'cw', 'rails', 'landingDoors', 'carDoors', 'buffers', 'governor'], newLift: true });
   assert.equal(calcUncounted({ norma: 'en81', parti: ['machine', 'ropes', 'controller'] }).newLift, true);
-  // the cost's warning names them with the acceptance test's words, in the three languages, a new lift's in words of
-  // its own that never call them replaced
-  for (const [m, w] of [[it, 'sostitu'], [en, 'replaced'], [bg, 'смен']] as const) {
-    assert.ok(m.prices.uncounted.includes('{list}') && m.prices.uncountedNew.includes('{list}'));
-    assert.ok(m.prices.uncounted.includes(w) && !m.prices.uncountedNew.includes(w), w);
-    for (const p of PARTI) assert.ok((m.lift as Record<string, string>)[`parte_${p}`], p);
-  }
+  // the cost's warning names them with the acceptance test's words, a new lift's in words of its own that never call
+  // them replaced
+  assert.ok(it.prices.uncounted.includes('{list}') && it.prices.uncountedNew.includes('{list}'));
+  assert.ok(it.prices.uncounted.includes('sostitu') && !it.prices.uncountedNew.includes('sostitu'));
+  for (const p of PARTI) assert.ok((it.lift as Record<string, string>)[`parte_${p}`], p);
 });
 
 test('the new articles once each in the list, none with a price of its own', () => {
