@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — хөтчийн чинь ой санамж"
+  },
+  "extDesc": {
+    "message": "Уншсан хуудсуудаасаа утгаар нь хай. Бүх зүйл дотооддоо явагдана — юу ч төхөөрөмжөөс чинь хэзээ ч гарахгүй."
+  },
+  "cmdOpenSearch": {
+    "message": "Déjà хайлтыг нээх"
+  },
+  "searchTitle": {
+    "message": "Déjà — уншсан зүйлээ хай"
+  },
+  "tagline": {
+    "message": "Чи үүнийг харсан. Déjà олж өгнө."
+  },
+  "searchPlaceholder": {
+    "message": "Санаж байгаа зүйлээ тайлбарла… ж.нь «натрид суурилсан батерейн тухай нийтлэл»"
+  },
+  "searchButton": {
+    "message": "Хайх"
+  },
+  "statusSearching": {
+    "message": "Ой санамжаа ухаж байна… (эхний хайлт загварыг ачаална, ~10-30 сек)"
+  },
+  "statusEmpty": {
+    "message": "Юу ч гарч ирсэнгүй. Чи үүнийг уншаагүй, эсвэл Déjà үүнийг хараахан санаагүй байна."
+  },
+  "statusResults": {
+    "message": "$COUNT$ дурсамж:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 дурсамж:"
+  },
+  "errNoResponse": {
+    "message": "ой санамж хариу өгсөнгүй — дахин оролдоорой"
+  },
+  "recallVivid": {
+    "message": "тод дурсамж"
+  },
+  "recallHazy": {
+    "message": "бүүдгэр дурсамж"
+  },
+  "recallFaint": {
+    "message": "алс дурсамж"
+  },
+  "statusError": {
+    "message": "Хайлт амжилтгүй боллоо: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Ой санамжид: $COUNT$ хуудас.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Ой санамжид: 1 хуудас."
+  },
+  "similarity": {
+    "message": "төстэй байдал $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "уншсан: $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "Ой санамжид $COUNT$ хуудас",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "Ой санамжид 1 хуудас"
+  },
+  "popupSleeping": {
+    "message": "ой санамж унтаж байна"
+  },
+  "popupWaking": {
+    "message": "ой санамж сэрж байна…"
+  },
+  "popupOpenSearch": {
+    "message": "Хайлт нээх"
+  },
+  "popupPause": {
+    "message": "Санахыг түр зогсоох"
+  },
+  "popupClear": {
+    "message": "Ой санамжийг цэвэрлэх"
+  },
+  "popupClearConfirm": {
+    "message": "Санасан бүхнийг устгах уу? Буцаах боломжгүй."
+  },
+  "popupOptions": {
+    "message": "Тохиргоо"
+  },
+  "optionsTitle": {
+    "message": "Déjà — тохиргоо"
+  },
+  "optRetentionLabel": {
+    "message": "Хуудсуудыг санах хугацаа"
+  },
+  "optRetentionForever": {
+    "message": "үүрд"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ сар",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Хуучин хуудсууд өдөрт нэг удаа автоматаар устгагдана."
+  },
+  "optDenylistLabel": {
+    "message": "Дараахыг агуулсан хаягийг хэзээ ч бүү сана"
+  },
+  "optDenylistHelp": {
+    "message": "Мөр бүрт нэг хэв. Хаягийн аль нэг хэсэгтэй тохирно, ж.нь «example.com» эсвэл «/private»."
+  },
+  "optBuiltinLabel": {
+    "message": "Суулгасан хамгаалалт (үргэлж идэвхтэй)"
+  },
+  "optModelHostLabel": {
+    "message": "Загварын өөрийн толин сервер (нарийвчилсан)"
+  },
+  "optModelHostHelp": {
+    "message": "Хоосон = huggingface.co. Офлайн/байгууллагын орчинд өөрийн серверээ тохируул."
+  },
+  "filterAll": {
+    "message": "бүгд"
+  },
+  "filterWeek": {
+    "message": "сүүлийн долоо хоног"
+  },
+  "filterMonth": {
+    "message": "сүүлийн сар"
+  },
+  "filterYear": {
+    "message": "сүүлийн жил"
+  },
+  "relatedLink": {
+    "message": "холбоотой дурсамжууд"
+  },
+  "relatedNone": {
+    "message": "ойролцоо дурсамж алга"
+  },
+  "omniboxDefault": {
+    "message": "Ой санамжаасаа асуу — Déjà утгаар нь хайна"
+  },
+  "popupMemory": {
+    "message": "Миний ой санамж"
+  },
+  "memoryTitle": {
+    "message": "Миний ой санамж"
+  },
+  "memoryEmpty": {
+    "message": "Ой санамж хоосон байна — хэдэн хуудас үзээд эргэж ирээрэй."
+  },
+  "memoryForget": {
+    "message": "Мартах"
+  },
+  "memoryExport": {
+    "message": "Архив татах"
+  },
+  "memoryImport": {
+    "message": "Архиваас сэргээх"
+  },
+  "memoryImportConfirm": {
+    "message": "Архиваас сэргээх үү? Тохирох хуудсууд дарж бичигдэнэ."
+  },
+  "optSave": {
+    "message": "Хадгалах"
+  },
+  "optSaved": {
+    "message": "Хадгалсан ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Толин сервер https:// хаяг байх ёстой"
+  },
+  "welcomeHeading": {
+    "message": "Сайн уу. Би чиний хөтчийн ой санамж."
+  },
+  "welcomeIntro": {
+    "message": "Одоо цагаас эхлэн би чиний уншсан зүйлийг санана, ингэснээр чи дараа нь утгаар нь олох боломжтой — яг гарчгаар нь биш, өөрийнхөө үгээр."
+  },
+  "welcomePoint1": {
+    "message": "Бүх зүйл чиний төхөөрөмж дээр явагдана. Сервер ч үгүй, үүл ч үгүй, ямар ч өгөгдөл илгээгдэхгүй — хаашаа ч, хэзээ ч."
+  },
+  "welcomePoint2": {
+    "message": "Имэйл, чат, нэвтрэлт болон банкны хуудсыг хэзээ ч санахгүй. Анхаар: эмзэг сэдвүүдийг би хаягаар нь таньж чадахгүй — тэдгээрийн хувьд түр зогсоохыг эсвэл тохиргоонд өөрийн жагсаалтаа ашигла."
+  },
+  "welcomePoint3": {
+    "message": "Удирдлага чиний гарт: нэг товшилтоор түр зогсоо, «Ой санамжийг цэвэрлэх» бүгдийг устгана, хүсвэл хэдэн сарын дараа би автоматаар мартана."
+  },
+  "welcomeCta": {
+    "message": "Хайлт нээх"
+  },
+  "welcomeOptions": {
+    "message": "Тохиргоо"
+  },
+  "memoryFilter": {
+    "message": "Ой санамжаасаа хай…"
+  },
+  "supportLink": {
+    "message": "Déjà-г дэмжих"
+  },
+  "panelTitle": {
+    "message": "Déjà — хамтрагч"
+  },
+  "panelOnThisPage": {
+    "message": "Энэ хуудасны сэдвээр"
+  },
+  "panelRecent": {
+    "message": "Сүүлийн дурсамжууд"
+  },
+  "panelNoPage": {
+    "message": "Вэб хуудас нээгээрэй, Déjà түүний сэдвээр чиний юу уншсаныг харуулна."
+  },
+  "popupOpenPanel": {
+    "message": "Хажуугийн самбар"
+  },
+  "popupForgetPage": {
+    "message": "Энэ хуудсыг мартах"
+  },
+  "popupForgotten": {
+    "message": "Мартагдлаа ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: сонгосон текстийг санах"
+  },
+  "menuForget": {
+    "message": "Déjà: энэ хуудсыг мартах"
+  },
+  "recentTitle": {
+    "message": "Сүүлийн дурсамжууд"
+  },
+  "cmdOpenPanel": {
+    "message": "Déjà-гийн хажуугийн самбарыг нээх"
+  },
+  "welcomePoint4": {
+    "message": "Хажуугийн самбар чиний үзэж буй хуудасны хаяг ба гарчгийг хардаг, ингэснээр түүний сэдвээр юу уншсаныг чинь харуулна — зөвхөн сессийн санах ойд. Чиний зориуд хадгалсан хэсгүүд ч мөн зөвхөн чамд үлдэнэ."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà шинэчлэгдлээ. Шинэ: хүсвэл одоо хавчуургуудаасаа ч утгаар нь хайж болно. Чиний өгөгдлөөр би юу хийдгийг энд харуулав — юу ч төхөөрөмжөөс чинь гараагүй."
+  },
+  "optAmbientLabel": {
+    "message": "Амьд дэвсгэр"
+  },
+  "optAmbientHelp": {
+    "message": "Шилний цаадах дурсамжийн сүлжээ аажуухан хөвнө. Хөдөлгөөн анхаарлыг чинь сарниулбал үүнийг унтраа."
+  },
+  "bmTitle": {
+    "message": "Хавчуургуудаа хайх боломжтой болго — яг одоо"
+  },
+  "bmText": {
+    "message": "Déjà хуудсуудыг нээлгүйгээр хавчуургуудын чинь гарчиг, хавтсыг сурдаг. Эхний минутаас нь утгаар нь ол — бүх зүйл төхөөрөмж дээр чинь үлдэнэ."
+  },
+  "bmTextShort": {
+    "message": "Ой санамж чинь хараахан залуу байна. Хавчуургуудаа надад зааж өгөөд өнөөдрөөс утгаар нь хай."
+  },
+  "bmButton": {
+    "message": "Миний хавчуургуудыг сур"
+  },
+  "bmNote": {
+    "message": "Хөтөч чинь зөвшөөрөл хүснэ. Тохиргооноос хүссэн үедээ унтрааж болно."
+  },
+  "bmTitleRunning": {
+    "message": "Хавчуургуудыг чинь сурч байна…"
+  },
+  "bmTitleDone": {
+    "message": "Хавчуургуудаа одоо хайж болно"
+  },
+  "bmPreparing": {
+    "message": "Бэлтгэж байна…"
+  },
+  "bmLearning": {
+    "message": "Сурсан: $DONE$ / $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà түр зогссон — чи үргэлжлүүлмэгц би үргэлжлүүлнэ."
+  },
+  "bmError": {
+    "message": "Сурах явцад алдаа гарлаа. Дараагийн өөрчлөлт дээр дахин оролдоно."
+  },
+  "bmDone": {
+    "message": "Боллоо — $COUNT$ хавчуургыг утгаар нь хайж болно, тэдгээр автоматаар синк хийгдэнэ.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Боллоо — 1 хавчуургыг утгаар нь хайж болно, автоматаар синк хийгдэнэ."
+  },
+  "bmDenied": {
+    "message": "Зөвшөөрөлгүйгээр би хавчуургуудыг чинь харж чадахгүй. Хүссэн үедээ дахин оролдож болно."
+  },
+  "bmTry": {
+    "message": "Туршаад үз:"
+  },
+  "bmBadge": {
+    "message": "Хавчуурга"
+  },
+  "bmAddedOn": {
+    "message": "хавчуурга нэмсэн: $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Ой санамж дахь хавчуурга"
+  },
+  "optBookmarksHelp": {
+    "message": "Би хавчуургуудын чинь гарчиг, хавтсыг (хуудсыг нээлгүйгээр) сурч, чамайг нэмэх эсвэл устгах үед дагаж шинэчилнэ. Унтраавал тэдгээр ой санамжаас хасагдана — уншсан хуудсууд чинь үлдэнэ."
+  },
+  "memoryFilterAll": {
+    "message": "Бүгд"
+  },
+  "memoryFilterRead": {
+    "message": "Уншсан"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Хавчуурга"
+  },
+  "welcomePoint5": {
+    "message": "Хавчуурга — зөвхөн чи асаавал: тэгвэл би хуудсыг нээлгүйгээр гарчиг, хавтсыг нь сурна. Нэг товшилтоор унтарна."
+  },
+  "rateTitle": {
+    "message": "Déjà чамд ямар нэг зүйл олоход тусалсан — нийт $COUNT$ удаа",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Хэрэгтэй санагдвал дэлгүүрт өгсөн үнэлгээ бусад хүмүүст үүнийг олоход тусална — 10 секунд л зарцуулна. Ямар нэг зүйл төвөг удвал бидэнд хэлээрэй."
+  },
+  "rateButton": {
+    "message": "Déjà-г үнэлэх"
+  },
+  "rateFeedback": {
+    "message": "Ямар нэг зүйл ажиллахгүй байна уу?"
+  },
+  "rateLater": {
+    "message": "Одоо биш"
+  },
+  "rateThanks": {
+    "message": "Баярлалаа! Энэ үнэхээр тусалдаг."
+  },
+  "rateFeedbackThanks": {
+    "message": "Баярлалаа — бид захидал бүрийг уншдаг."
+  },
+  "rateFeedbackSubject": {
+    "message": "санал хүсэлт"
+  },
+  "answerTitle": {
+    "message": "Ой санамжаас чинь өгөх хариулт"
+  },
+  "answerAsk": {
+    "message": "Миний ой санамжаас хариул"
+  },
+  "answerEnableTitle": {
+    "message": "Chrome-ийн суулгасан AI-ийн хариултууд"
+  },
+  "answerEnableText": {
+    "message": "Déjà чиний уншсан зүйлсээс асуултад эх сурвалжтайгаар хариулж чадна. Chrome төхөөрөмж дээр ажилладаг загвараа (Gemini Nano) нэг удаа татна — асуулт, хуудсууд чинь компьютероос чинь хэзээ ч гарахгүй."
+  },
+  "answerEnableButton": {
+    "message": "Хариултуудыг асаах"
+  },
+  "answerNoThanks": {
+    "message": "Үгүй, баярлалаа"
+  },
+  "answerDownloading": {
+    "message": "Chrome загварыг татаж байна… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Дурсамжуудыг чинь уншиж байна…"
+  },
+  "answerStop": {
+    "message": "Зогсоох"
+  },
+  "answerFoot": {
+    "message": "Chrome-ийн суулгасан AI чиний $COUNT$ дурсамжаас төхөөрөмж дээр чинь бичив. Эх сурвалжуудыг шалгаарай.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Энэ удаа хариулт бүрдүүлж чадсангүй."
+  },
+  "optAnswersLabel": {
+    "message": "Chrome-ийн суулгасан AI-ийн хариултууд"
+  },
+  "optAnswersHelp": {
+    "message": "«Би юуны тухай уншсан билээ…?» гэх мэт асуултад чиний хуудсуудаас эх сурвалжтай товч хариулт бичнэ — бүхэлдээ төхөөрөмж дээр чинь, Chrome дахь Gemini Nano-гоор. Дэмжигдсэн компьютер, хэл шаардлагатай (англи, испани, герман, франц, япон)."
+  },
+  "optAnswersAvailable": {
+    "message": "Энэ төхөөрөмж дээр ашиглахад бэлэн."
+  },
+  "optAnswersDownloadable": {
+    "message": "Дэмжигдсэн — эхний асуулт дээр чинь Chrome загварыг татна."
+  },
+  "optAnswersUnavailable": {
+    "message": "Энэ төхөөрөмж эсвэл интерфейсийн хэлийг Chrome-ийн суулгасан AI дэмждэггүй."
+  },
+  "optAnswersUnsupported": {
+    "message": "Энэ хөтөчид суулгасан AI алга — Déjà-гийн бусад бүх зүйл урьдын адил ажиллана."
+  }
+}

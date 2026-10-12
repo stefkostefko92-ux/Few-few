@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — kumbukumbu ya kivinjari chako"
+  },
+  "extDesc": {
+    "message": "Utafutaji kwa maana katika kurasa ulizosoma. Kila kitu hufanyika ndani ya kifaa — hakuna kinachotoka kwenye kifaa chako kamwe."
+  },
+  "cmdOpenSearch": {
+    "message": "Fungua utafutaji wa Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — tafuta ulichosoma"
+  },
+  "tagline": {
+    "message": "Uliwahi kukiona. Déjà inakipata."
+  },
+  "searchPlaceholder": {
+    "message": "Eleza unachokumbuka… k.m. “makala kuhusu betri zinazotumia sodiamu”"
+  },
+  "searchButton": {
+    "message": "Tafuta"
+  },
+  "statusSearching": {
+    "message": "Ninachimba kumbukumbu… (utafutaji wa kwanza hupakia modeli, ~sekunde 10-30)"
+  },
+  "statusEmpty": {
+    "message": "Hakuna kilichojitokeza. Ama hukuwahi kukisoma, au Déjà bado haijakikumbuka."
+  },
+  "statusResults": {
+    "message": "Kumbukumbu $COUNT$:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "Kumbukumbu 1:"
+  },
+  "errNoResponse": {
+    "message": "kumbukumbu haikujibu — jaribu tena"
+  },
+  "recallVivid": {
+    "message": "kumbukumbu angavu"
+  },
+  "recallHazy": {
+    "message": "kumbukumbu yenye ukungu"
+  },
+  "recallFaint": {
+    "message": "kumbukumbu ya mbali"
+  },
+  "statusError": {
+    "message": "Utafutaji umeshindikana: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Kwenye kumbukumbu: kurasa $COUNT$.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Kwenye kumbukumbu: ukurasa 1."
+  },
+  "similarity": {
+    "message": "ufanano $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "ulisomwa $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "kurasa $COUNT$ kwenye kumbukumbu",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "ukurasa 1 kwenye kumbukumbu"
+  },
+  "popupSleeping": {
+    "message": "kumbukumbu imelala"
+  },
+  "popupWaking": {
+    "message": "kumbukumbu inaamka…"
+  },
+  "popupOpenSearch": {
+    "message": "Fungua utafutaji"
+  },
+  "popupPause": {
+    "message": "Sitisha kukumbuka"
+  },
+  "popupClear": {
+    "message": "Futa kumbukumbu"
+  },
+  "popupClearConfirm": {
+    "message": "Futa kila kitu kilichokumbukwa? Haiwezi kutenduliwa."
+  },
+  "popupOptions": {
+    "message": "Mipangilio"
+  },
+  "optionsTitle": {
+    "message": "Déjà — mipangilio"
+  },
+  "optRetentionLabel": {
+    "message": "Kumbuka kurasa kwa muda wa"
+  },
+  "optRetentionForever": {
+    "message": "milele"
+  },
+  "optRetentionMonths": {
+    "message": "miezi $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Kurasa za zamani hufutwa kiotomatiki mara moja kwa siku."
+  },
+  "optDenylistLabel": {
+    "message": "Usikumbuke kamwe anwani zenye"
+  },
+  "optDenylistHelp": {
+    "message": "Mchoro mmoja kwa kila mstari. Hulingana na sehemu ya anwani, k.m. “example.com” au “/private”."
+  },
+  "optBuiltinLabel": {
+    "message": "Ulinzi uliojengewa ndani (unatumika kila wakati)"
+  },
+  "optModelHostLabel": {
+    "message": "Seva kioo maalum ya modeli (ya kina)"
+  },
+  "optModelHostHelp": {
+    "message": "Tupu = huggingface.co. Weka seva yako mwenyewe kwa mazingira yasiyo na mtandao/ya kampuni."
+  },
+  "filterAll": {
+    "message": "zote"
+  },
+  "filterWeek": {
+    "message": "wiki iliyopita"
+  },
+  "filterMonth": {
+    "message": "mwezi uliopita"
+  },
+  "filterYear": {
+    "message": "mwaka uliopita"
+  },
+  "relatedLink": {
+    "message": "kumbukumbu zinazohusiana"
+  },
+  "relatedNone": {
+    "message": "hakuna kumbukumbu za karibu"
+  },
+  "omniboxDefault": {
+    "message": "Uliza kumbukumbu yako — Déjà hutafuta kwa maana"
+  },
+  "popupMemory": {
+    "message": "Kumbukumbu yangu"
+  },
+  "memoryTitle": {
+    "message": "Kumbukumbu yangu"
+  },
+  "memoryEmpty": {
+    "message": "Kumbukumbu ni tupu — vinjari kurasa chache kisha urudi."
+  },
+  "memoryForget": {
+    "message": "Sahau"
+  },
+  "memoryExport": {
+    "message": "Pakua nakala"
+  },
+  "memoryImport": {
+    "message": "Rejesha kutoka nakala"
+  },
+  "memoryImportConfirm": {
+    "message": "Rejesha kutoka nakala? Kurasa zinazolingana zitabadilishwa."
+  },
+  "optSave": {
+    "message": "Hifadhi"
+  },
+  "optSaved": {
+    "message": "Imehifadhiwa ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Seva kioo lazima iwe anwani ya https://"
+  },
+  "welcomeHeading": {
+    "message": "Habari. Mimi ni kumbukumbu ya kivinjari chako."
+  },
+  "welcomeIntro": {
+    "message": "Kuanzia sasa ninakumbuka unachosoma, ili uweze kukipata baadaye kwa maana — kwa maneno yako mwenyewe, si kwa kichwa kamili."
+  },
+  "welcomePoint1": {
+    "message": "Kila kitu hufanyika kwenye kifaa chako. Hakuna seva, hakuna wingu, hakuna data inayotumwa — popote, kamwe."
+  },
+  "welcomePoint2": {
+    "message": "Barua pepe, gumzo, kuingia katika akaunti na huduma za benki havikumbukwi kamwe. Zingatia: siwezi kutambua mada nyeti kwa anwani — kwa hizo, tumia kusitisha au orodha yako mwenyewe kwenye mipangilio."
+  },
+  "welcomePoint3": {
+    "message": "Wewe ndiye mwenye udhibiti: sitisha kwa mbofyo mmoja, “Futa kumbukumbu” hufuta kila kitu, na ukipenda, ninasahau kiotomatiki baada ya miezi michache."
+  },
+  "welcomeCta": {
+    "message": "Fungua utafutaji"
+  },
+  "welcomeOptions": {
+    "message": "Mipangilio"
+  },
+  "memoryFilter": {
+    "message": "Tafuta kwenye kumbukumbu yako…"
+  },
+  "supportLink": {
+    "message": "Saidia Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — mwandani"
+  },
+  "panelOnThisPage": {
+    "message": "Kuhusu mada ya ukurasa huu"
+  },
+  "panelRecent": {
+    "message": "Kumbukumbu za hivi karibuni"
+  },
+  "panelNoPage": {
+    "message": "Fungua ukurasa wa wavuti na Déjà itaonyesha ulichosoma kuhusu mada yake."
+  },
+  "popupOpenPanel": {
+    "message": "Kidirisha cha pembeni"
+  },
+  "popupForgetPage": {
+    "message": "Sahau ukurasa huu"
+  },
+  "popupForgotten": {
+    "message": "Umesahauliwa ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: kumbuka maandishi uliyochagua"
+  },
+  "menuForget": {
+    "message": "Déjà: sahau ukurasa huu"
+  },
+  "recentTitle": {
+    "message": "Kumbukumbu za hivi karibuni"
+  },
+  "cmdOpenPanel": {
+    "message": "Fungua kidirisha cha pembeni cha Déjà"
+  },
+  "welcomePoint4": {
+    "message": "Kidirisha cha pembeni huona anwani na kichwa cha ukurasa unaoutazama ili kuonyesha ulichosoma kuhusu mada yake — kwenye kumbukumbu ya kipindi pekee. Vifungu unavyohifadhi kwa makusudi pia hubaki kwako pekee."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà imesasishwa. Mpya: ukipenda, sasa alamisho zako pia zinaweza kutafutwa kwa maana. Hivi ndivyo ninavyoshughulikia data yako — hakuna kilichotoka kwenye kifaa chako."
+  },
+  "optAmbientLabel": {
+    "message": "Mandharinyuma hai"
+  },
+  "optAmbientHelp": {
+    "message": "Mtandao wa kumbukumbu nyuma ya kioo huelea polepole. Uzime ikiwa mwendo unakusumbua."
+  },
+  "bmTitle": {
+    "message": "Fanya alamisho zako ziweze kutafutwa — sasa hivi"
+  },
+  "bmText": {
+    "message": "Déjà hujifunza vichwa na folda za alamisho zako bila kufungua kurasa. Zipate kwa maana tangu dakika ya kwanza — kila kitu kinabaki kwenye kifaa chako."
+  },
+  "bmTextShort": {
+    "message": "Kumbukumbu yako bado ni changa. Nifundishe alamisho zako na uzitafute kwa maana leo hii."
+  },
+  "bmButton": {
+    "message": "Jifunze alamisho zangu"
+  },
+  "bmNote": {
+    "message": "Kivinjari chako kitaomba ruhusa. Unaweza kuizima wakati wowote kwenye mipangilio."
+  },
+  "bmTitleRunning": {
+    "message": "Ninajifunza alamisho zako…"
+  },
+  "bmTitleDone": {
+    "message": "Alamisho zako zinaweza kutafutwa"
+  },
+  "bmPreparing": {
+    "message": "Ninajiandaa…"
+  },
+  "bmLearning": {
+    "message": "Nimejifunza $DONE$ kati ya $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà imesitishwa — nitaendelea mara tu utakapoirejesha."
+  },
+  "bmError": {
+    "message": "Hitilafu fulani imetokea wakati wa kujifunza. Nitajaribu tena kwenye badiliko lijalo."
+  },
+  "bmDone": {
+    "message": "Imekamilika — alamisho $COUNT$ zinaweza kutafutwa kwa maana na zinasawazishwa kiotomatiki.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Imekamilika — alamisho 1 inaweza kutafutwa kwa maana na inasawazishwa kiotomatiki."
+  },
+  "bmDenied": {
+    "message": "Bila ruhusa siwezi kuona alamisho zako. Unaweza kujaribu tena wakati wowote."
+  },
+  "bmTry": {
+    "message": "Jaribu:"
+  },
+  "bmBadge": {
+    "message": "Alamisho"
+  },
+  "bmAddedOn": {
+    "message": "iliwekwa alamisho $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Alamisho kwenye kumbukumbu"
+  },
+  "optBookmarksHelp": {
+    "message": "Ninajifunza vichwa na folda za alamisho zako (bila kufungua kurasa) na kufuatilia unapoziongeza au kuzifuta. Ukiizima, zinaondolewa kwenye kumbukumbu — kurasa ulizosoma zinabaki."
+  },
+  "memoryFilterAll": {
+    "message": "Zote"
+  },
+  "memoryFilterRead": {
+    "message": "Zilizosomwa"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Alamisho"
+  },
+  "welcomePoint5": {
+    "message": "Alamisho — ukiziwasha tu: hapo ninajifunza vichwa na folda zake, bila kufungua kurasa. Mbofyo mmoja unazizima."
+  },
+  "rateTitle": {
+    "message": "Déjà imekusaidia kupata kitu — mara $COUNT$ sasa",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Ikiwa ni muhimu, ukadiriaji kwenye duka huwasaidia watu wengine kuigundua — huchukua sekunde 10. Na kitu kikikusumbua, tuambie."
+  },
+  "rateButton": {
+    "message": "Kadiria Déjà"
+  },
+  "rateFeedback": {
+    "message": "Kuna kitu hakifanyi kazi?"
+  },
+  "rateLater": {
+    "message": "Si sasa"
+  },
+  "rateThanks": {
+    "message": "Asante! Inasaidia kwa kweli."
+  },
+  "rateFeedbackThanks": {
+    "message": "Asante — tunasoma kila ujumbe."
+  },
+  "rateFeedbackSubject": {
+    "message": "maoni"
+  },
+  "answerTitle": {
+    "message": "Jibu kutoka kwenye kumbukumbu yako"
+  },
+  "answerAsk": {
+    "message": "Jibu kutoka kwenye kumbukumbu yangu"
+  },
+  "answerEnableTitle": {
+    "message": "Majibu kutoka AI iliyojengewa ndani ya Chrome"
+  },
+  "answerEnableText": {
+    "message": "Déjà inaweza kujibu maswali kutokana na ulichosoma, pamoja na vyanzo. Chrome hupakua modeli yake ya kwenye kifaa (Gemini Nano) mara moja — maswali na kurasa zako haziondoki kamwe kwenye kompyuta yako."
+  },
+  "answerEnableButton": {
+    "message": "Washa majibu"
+  },
+  "answerNoThanks": {
+    "message": "Hapana, asante"
+  },
+  "answerDownloading": {
+    "message": "Chrome inapakua modeli… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Ninasoma kumbukumbu zako…"
+  },
+  "answerStop": {
+    "message": "Simamisha"
+  },
+  "answerFoot": {
+    "message": "Limeandikwa kwenye kifaa chako na AI iliyojengewa ndani ya Chrome kutokana na kumbukumbu zako $COUNT$. Kagua vyanzo.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Sikuweza kuandaa jibu safari hii."
+  },
+  "optAnswersLabel": {
+    "message": "Majibu kutoka AI iliyojengewa ndani ya Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "Kwa maswali kama “nilisoma nini kuhusu…?” ninaandika jibu fupi lenye vyanzo kutoka kwenye kurasa zako — kikamilifu kwenye kifaa chako, kwa Gemini Nano ndani ya Chrome. Inahitaji kompyuta na lugha inayotumika (Kiingereza, Kihispania, Kijerumani, Kifaransa, Kijapani)."
+  },
+  "optAnswersAvailable": {
+    "message": "Iko tayari kutumika kwenye kifaa hiki."
+  },
+  "optAnswersDownloadable": {
+    "message": "Inatumika — Chrome itapakua modeli kwenye swali lako la kwanza."
+  },
+  "optAnswersUnavailable": {
+    "message": "Kifaa hiki au lugha ya kiolesura haitumiki na AI iliyojengewa ndani ya Chrome."
+  },
+  "optAnswersUnsupported": {
+    "message": "Kivinjari hiki hakina AI iliyojengewa ndani — kila kitu kingine kwenye Déjà kinafanya kazi kama kawaida."
+  }
+}

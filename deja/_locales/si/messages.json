@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — ඔබේ බ්‍රව්සරයේ මතකය"
+  },
+  "extDesc": {
+    "message": "ඔබ කියවූ පිටු අතර අර්ථය අනුව සෙවීම. සියල්ල දේශීයව සිදු වේ — කිසිවක් කිසිදා ඔබේ උපාංගයෙන් පිට නොවේ."
+  },
+  "cmdOpenSearch": {
+    "message": "Déjà සෙවීම විවෘත කරන්න"
+  },
+  "searchTitle": {
+    "message": "Déjà — ඔබ කියවූ දේ සොයන්න"
+  },
+  "tagline": {
+    "message": "ඔබ එය දැක ඇත. Déjà එය සොයා දෙයි."
+  },
+  "searchPlaceholder": {
+    "message": "ඔබට මතක දේ විස්තර කරන්න… උදා. “සෝඩියම් පදනම් කරගත් බැටරි ගැන ලිපිය”"
+  },
+  "searchButton": {
+    "message": "සොයන්න"
+  },
+  "statusSearching": {
+    "message": "මතකය හාරමින්… (පළමු සෙවීම මාදිලිය පූරණය කරයි, ~තත්පර 10-30)"
+  },
+  "statusEmpty": {
+    "message": "කිසිවක් මතු නොවීය. ඔබ එය කිසිදා කියවා නැත, නැතහොත් Déjà තවම එය මතක තබාගෙන නැත."
+  },
+  "statusResults": {
+    "message": "මතක: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "මතක 1:"
+  },
+  "errNoResponse": {
+    "message": "මතකය පිළිතුරු දුන්නේ නැත — නැවත උත්සාහ කරන්න"
+  },
+  "recallVivid": {
+    "message": "පැහැදිලි මතකය"
+  },
+  "recallHazy": {
+    "message": "බොඳ වූ මතකය"
+  },
+  "recallFaint": {
+    "message": "ඈත මතකය"
+  },
+  "statusError": {
+    "message": "සෙවීම අසාර්ථක විය: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "මතකයේ: පිටු $COUNT$.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "මතකයේ: පිටු 1."
+  },
+  "similarity": {
+    "message": "සමානකම $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "කියවූයේ: $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "මතකයේ පිටු $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "මතකයේ පිටු 1"
+  },
+  "popupSleeping": {
+    "message": "මතකය නිදයි"
+  },
+  "popupWaking": {
+    "message": "මතකය අවදි වෙමින්…"
+  },
+  "popupOpenSearch": {
+    "message": "සෙවීම විවෘත කරන්න"
+  },
+  "popupPause": {
+    "message": "මතක තබාගැනීම විරාම කරන්න"
+  },
+  "popupClear": {
+    "message": "මතකය හිස් කරන්න"
+  },
+  "popupClearConfirm": {
+    "message": "මතක තබාගත් සියල්ල මකන්නද? ආපසු ගත නොහැක."
+  },
+  "popupOptions": {
+    "message": "සැකසීම්"
+  },
+  "optionsTitle": {
+    "message": "Déjà — සැකසීම්"
+  },
+  "optRetentionLabel": {
+    "message": "පිටු මතක තබාගන්නා කාලය"
+  },
+  "optRetentionForever": {
+    "message": "සදහටම"
+  },
+  "optRetentionMonths": {
+    "message": "මාස $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "පැරණි පිටු දිනකට වරක් ස්වයංක්‍රීයව මකා දමනු ලැබේ."
+  },
+  "optDenylistLabel": {
+    "message": "මේවා අඩංගු ලිපින කිසිදා මතක තබා නොගන්න"
+  },
+  "optDenylistHelp": {
+    "message": "පේළියකට එක් රටාවක්. ලිපිනයේ කොටසකට ගැළපේ, උදා. “example.com” හෝ “/private”."
+  },
+  "optBuiltinLabel": {
+    "message": "ගොඩනංවන ලද ආරක්ෂාව (සැමවිටම සක්‍රිය)"
+  },
+  "optModelHostLabel": {
+    "message": "අභිරුචි මාදිලි දර්පණය (උසස්)"
+  },
+  "optModelHostHelp": {
+    "message": "හිස් = huggingface.co. නොබැඳි/ආයතනික පරිසර සඳහා ඔබේම සේවාදායකය සකසන්න."
+  },
+  "filterAll": {
+    "message": "සියල්ල"
+  },
+  "filterWeek": {
+    "message": "පසුගිය සතිය"
+  },
+  "filterMonth": {
+    "message": "පසුගිය මාසය"
+  },
+  "filterYear": {
+    "message": "පසුගිය වසර"
+  },
+  "relatedLink": {
+    "message": "ආශ්‍රිත මතකයන්"
+  },
+  "relatedNone": {
+    "message": "ආසන්න මතකයන් නැත"
+  },
+  "omniboxDefault": {
+    "message": "ඔබේ මතකයෙන් අසන්න — Déjà අර්ථය අනුව සොයයි"
+  },
+  "popupMemory": {
+    "message": "මගේ මතකය"
+  },
+  "memoryTitle": {
+    "message": "මගේ මතකය"
+  },
+  "memoryEmpty": {
+    "message": "මතකය හිස් ය — පිටු කිහිපයක් පිරික්සා නැවත එන්න."
+  },
+  "memoryForget": {
+    "message": "අමතක කරන්න"
+  },
+  "memoryExport": {
+    "message": "සංරක්ෂිතය බාගන්න"
+  },
+  "memoryImport": {
+    "message": "සංරක්ෂිතයෙන් ප්‍රතිසාධනය කරන්න"
+  },
+  "memoryImportConfirm": {
+    "message": "සංරක්ෂිතයෙන් ප්‍රතිසාධනය කරන්නද? ගැළපෙන පිටු උඩින් ලියැවේ."
+  },
+  "optSave": {
+    "message": "සුරකින්න"
+  },
+  "optSaved": {
+    "message": "සුරැකිණි ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "දර්පණය https:// ලිපිනයක් විය යුතුය"
+  },
+  "welcomeHeading": {
+    "message": "ආයුබෝවන්. මම ඔබේ බ්‍රව්සරයේ මතකයයි."
+  },
+  "welcomeIntro": {
+    "message": "මේ මොහොතේ සිට ඔබ කියවන දේ මම මතක තබාගන්නෙමි, එවිට ඔබට පසුව එය අර්ථය අනුව සොයාගත හැක — නිවැරදි මාතෘකාවෙන් නොව, ඔබේම වචනවලින්."
+  },
+  "welcomePoint1": {
+    "message": "සියල්ල සිදු වන්නේ ඔබේ උපාංගය මතය. සේවාදායක නැත, වලාකුළක් නැත, දත්ත කිසිවක් යවන්නේ නැත — කොහේවත්, කිසිදා."
+  },
+  "welcomePoint2": {
+    "message": "තැපැල්, කතාබස්, පිවිසුම් සහ බැංකු කටයුතු කිසිදා මතක තබා නොගනී. සැලකිලිමත් වන්න: සංවේදී මාතෘකා ලිපිනය අනුව මට හඳුනාගත නොහැක — ඒවා සඳහා විරාමය හෝ සැකසීම්හි ඔබේම ලැයිස්තුව භාවිත කරන්න."
+  },
+  "welcomePoint3": {
+    "message": "පාලනය ඔබ සතුයි: එක් ක්ලික් කිරීමකින් විරාමය, “මතකය හිස් කරන්න” සියල්ල මකයි, ඔබට අවශ්‍ය නම් මාස කිහිපයකට පසු මම ස්වයංක්‍රීයව අමතක කරන්නෙමි."
+  },
+  "welcomeCta": {
+    "message": "සෙවීම විවෘත කරන්න"
+  },
+  "welcomeOptions": {
+    "message": "සැකසීම්"
+  },
+  "memoryFilter": {
+    "message": "ඔබේ මතකයේ සොයන්න…"
+  },
+  "supportLink": {
+    "message": "Déjà ට සහාය දෙන්න"
+  },
+  "panelTitle": {
+    "message": "Déjà — සහකරු"
+  },
+  "panelOnThisPage": {
+    "message": "මෙම පිටුවේ මාතෘකාව ගැන"
+  },
+  "panelRecent": {
+    "message": "මෑත මතකයන්"
+  },
+  "panelNoPage": {
+    "message": "වෙබ් පිටුවක් විවෘත කරන්න, එහි මාතෘකාව ගැන ඔබ කියවූ දේ Déjà පෙන්වයි."
+  },
+  "popupOpenPanel": {
+    "message": "පැති පැනලය"
+  },
+  "popupForgetPage": {
+    "message": "මෙම පිටුව අමතක කරන්න"
+  },
+  "popupForgotten": {
+    "message": "අමතක කළා ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: තෝරාගත් පෙළ මතක තබාගන්න"
+  },
+  "menuForget": {
+    "message": "Déjà: මෙම පිටුව අමතක කරන්න"
+  },
+  "recentTitle": {
+    "message": "මෑත මතකයන්"
+  },
+  "cmdOpenPanel": {
+    "message": "Déjà පැති පැනලය විවෘත කරන්න"
+  },
+  "welcomePoint4": {
+    "message": "ඔබ බලන පිටුවේ මාතෘකාව ගැන ඔබ කියවූ දේ පෙන්වීමට, පැති පැනලය එම පිටුවේ ලිපිනය සහ මාතෘකාව දකී — සැසි මතකයේ පමණි. ඔබ හිතාමතා සුරකින කොටස් ද ඔබ ළඟ පමණක් රැඳේ."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà යාවත්කාලීන විය. අලුත්: ඔබට අවශ්‍ය නම්, දැන් ඔබේ පිටු සලකුණු ද අර්ථය අනුව සෙවිය හැක. ඔබේ දත්ත සමඟ මා කරන්නේ මෙයයි — කිසිවක් ඔබේ උපාංගයෙන් පිට වී නැත."
+  },
+  "optAmbientLabel": {
+    "message": "සජීවී පසුබිම"
+  },
+  "optAmbientHelp": {
+    "message": "වීදුරුවට පිටුපසින් ඇති මතක දැල සෙමින් පාවෙයි. චලනය ඔබේ අවධානය වෙනතකට යොමු කරයි නම් එය අක්‍රිය කරන්න."
+  },
+  "bmTitle": {
+    "message": "ඔබේ පිටු සලකුණු සෙවිය හැකි කරන්න — දැන්ම"
+  },
+  "bmText": {
+    "message": "Déjà පිටු විවෘත නොකර ඔබේ පිටු සලකුණුවල මාතෘකා සහ ෆෝල්ඩර ඉගෙන ගනී. පළමු මිනිත්තුවේ සිටම ඒවා අර්ථය අනුව සොයාගන්න — සියල්ල ඔබේ උපාංගයේම රැඳේ."
+  },
+  "bmTextShort": {
+    "message": "ඔබේ මතකය තවම ළාබාලයි. ඔබේ පිටු සලකුණු මට උගන්වා අදම ඒවා අර්ථය අනුව සොයන්න."
+  },
+  "bmButton": {
+    "message": "මගේ පිටු සලකුණු ඉගෙන ගන්න"
+  },
+  "bmNote": {
+    "message": "ඔබේ බ්‍රව්සරය අවසරය ඉල්ලනු ඇත. ඕනෑම වේලාවක සැකසීම්හි එය අක්‍රිය කළ හැක."
+  },
+  "bmTitleRunning": {
+    "message": "ඔබේ පිටු සලකුණු ඉගෙන ගනිමින්…"
+  },
+  "bmTitleDone": {
+    "message": "ඔබේ පිටු සලකුණු සෙවිය හැක"
+  },
+  "bmPreparing": {
+    "message": "සූදානම් වෙමින්…"
+  },
+  "bmLearning": {
+    "message": "ඉගෙන ගත්: $DONE$ / $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà විරාම කර ඇත — ඔබ නැවත ආරම්භ කළ විගස මම දිගටම කරගෙන යන්නෙමි."
+  },
+  "bmError": {
+    "message": "ඉගෙනීමේදී යමක් වැරදුණා. ඊළඟ වෙනස් කිරීමේදී මම නැවත උත්සාහ කරන්නෙමි."
+  },
+  "bmDone": {
+    "message": "නිමයි — පිටු සලකුණු $COUNT$ ක් අර්ථය අනුව සෙවිය හැකි අතර ඒවා ස්වයංක්‍රීයව සමමුහුර්ත වේ.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "නිමයි — පිටු සලකුණු 1 ක් අර්ථය අනුව සෙවිය හැකි අතර එය ස්වයංක්‍රීයව සමමුහුර්ත වේ."
+  },
+  "bmDenied": {
+    "message": "අවසරය නොමැතිව මට ඔබේ පිටු සලකුණු දැකිය නොහැක. ඕනෑම වේලාවක නැවත උත්සාහ කළ හැක."
+  },
+  "bmTry": {
+    "message": "උත්සාහ කරන්න:"
+  },
+  "bmBadge": {
+    "message": "පිටු සලකුණ"
+  },
+  "bmAddedOn": {
+    "message": "සලකුණු කළේ: $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "මතකයේ පිටු සලකුණු"
+  },
+  "optBookmarksHelp": {
+    "message": "මම ඔබේ පිටු සලකුණුවල මාතෘකා සහ ෆෝල්ඩර (පිටු විවෘත නොකර) ඉගෙන ගන්නා අතර, ඔබ ඒවා එක් කරන විට හෝ මකන විට අනුගමනය කරමි. එය අක්‍රිය කළහොත් ඒවා මතකයෙන් ඉවත් වේ — ඔබ කියවූ පිටු එලෙසම රැඳේ."
+  },
+  "memoryFilterAll": {
+    "message": "සියල්ල"
+  },
+  "memoryFilterRead": {
+    "message": "කියවූ"
+  },
+  "memoryFilterBookmarks": {
+    "message": "පිටු සලකුණු"
+  },
+  "welcomePoint5": {
+    "message": "පිටු සලකුණු — ඔබ ක්‍රියාත්මක කළහොත් පමණි: එවිට මම පිටු විවෘත නොකර ඒවායේ මාතෘකා සහ ෆෝල්ඩර ඉගෙන ගනිමි. එක් ක්ලික් කිරීමකින් එය අක්‍රිය වේ."
+  },
+  "rateTitle": {
+    "message": "Déjà ඔබට යමක් සොයාගැනීමට උදව් කර ඇත — මේ වන විට වාර $COUNT$ ක්",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "එය ප්‍රයෝජනවත් නම්, ගබඩාවේ ශ්‍රේණිගත කිරීමක් අන් අයට එය සොයාගැනීමට උදව් වේ — තත්පර 10 ක් ගත වේ. යමක් ඔබට කරදරයක් නම්, අපට කියන්න."
+  },
+  "rateButton": {
+    "message": "Déjà ශ්‍රේණිගත කරන්න"
+  },
+  "rateFeedback": {
+    "message": "යමක් ක්‍රියා නොකරනවාද?"
+  },
+  "rateLater": {
+    "message": "දැන් නොවේ"
+  },
+  "rateThanks": {
+    "message": "ස්තූතියි! එය සැබවින්ම උදව් වේ."
+  },
+  "rateFeedbackThanks": {
+    "message": "ස්තූතියි — අපි සෑම පණිවිඩයක්ම කියවමු."
+  },
+  "rateFeedbackSubject": {
+    "message": "ප්‍රතිපෝෂණ"
+  },
+  "answerTitle": {
+    "message": "ඔබේ මතකයෙන් පිළිතුර"
+  },
+  "answerAsk": {
+    "message": "මගේ මතකයෙන් පිළිතුරු දෙන්න"
+  },
+  "answerEnableTitle": {
+    "message": "Chrome හි ගොඩනංවන ලද AI වෙතින් පිළිතුරු"
+  },
+  "answerEnableText": {
+    "message": "ඔබ කියවූ දේ ඇසුරින්, මූලාශ්‍ර සමඟ, Déjà ප්‍රශ්නවලට පිළිතුරු දිය හැක. Chrome තම උපාංගය මත ක්‍රියාත්මක වන මාදිලිය (Gemini Nano) එක් වරක් බාගනී — ඔබේ ප්‍රශ්න සහ පිටු කිසිදා ඔබේ පරිගණකයෙන් පිට නොවේ."
+  },
+  "answerEnableButton": {
+    "message": "පිළිතුරු ක්‍රියාත්මක කරන්න"
+  },
+  "answerNoThanks": {
+    "message": "එපා, ස්තූතියි"
+  },
+  "answerDownloading": {
+    "message": "Chrome මාදිලිය බාගනිමින්… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "ඔබේ මතකයන් කියවමින්…"
+  },
+  "answerStop": {
+    "message": "නවත්වන්න"
+  },
+  "answerFoot": {
+    "message": "ඔබේ මතකයන් $COUNT$ ක් ඇසුරින් Chrome හි ගොඩනංවන ලද AI මගින් ඔබේ උපාංගය මතම ලියන ලදී. මූලාශ්‍ර පරීක්ෂා කරන්න.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "මෙවර මට පිළිතුරක් සකස් කිරීමට නොහැකි විය."
+  },
+  "optAnswersLabel": {
+    "message": "Chrome හි ගොඩනංවන ලද AI වෙතින් පිළිතුරු"
+  },
+  "optAnswersHelp": {
+    "message": "“මම කියවූයේ මොනවා ගැනද…?” වැනි ප්‍රශ්න සඳහා, ඔබේ පිටුවලින් මූලාශ්‍ර සහිත කෙටි පිළිතුරක් මම ලියමි — සම්පූර්ණයෙන්ම ඔබේ උපාංගය මත, Chrome හි Gemini Nano සමඟ. සහාය දක්වන පරිගණකයක් සහ භාෂාවක් අවශ්‍යයි (ඉංග්‍රීසි, ස්පාඤ්ඤ, ජර්මන්, ප්‍රංශ, ජපන්)."
+  },
+  "optAnswersAvailable": {
+    "message": "මෙම උපාංගයේ භාවිතයට සූදානම්."
+  },
+  "optAnswersDownloadable": {
+    "message": "සහාය දක්වයි — ඔබේ පළමු ප්‍රශ්නයේදී Chrome මාදිලිය බාගනු ඇත."
+  },
+  "optAnswersUnavailable": {
+    "message": "මෙම උපාංගයට හෝ අතුරු මුහුණත් භාෂාවට Chrome හි ගොඩනංවන ලද AI සහාය නොදක්වයි."
+  },
+  "optAnswersUnsupported": {
+    "message": "මෙම බ්‍රව්සරයේ ගොඩනංවන ලද AI නැත — Déjà හි අනෙක් සියල්ල සුපුරුදු පරිදි ක්‍රියා කරයි."
+  }
+}

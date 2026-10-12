@@ -1,0 +1,48 @@
+TITLE: Déjà — ang alaala ng iyong browser
+SHORT: Hanapin ayon sa kahulugan ang mga page na nabasa mo, sa 50+ wika. Tumatakbo nang buo sa iyong device — walang umaalis sa browser mo.
+
+Nakita mo na ito. Hahanapin ito ng Déjà.
+
+Mga pamagat at URL lang ang natatandaan ng history ng iyong browser. Ang NILALAMAN ang
+tinatandaan ng Déjà. Ilarawan ang naaalala mo sa sarili mong mga salita — “yung artikulo
+tungkol sa mga bateryang gawa sa sodium” — at ilalabas ng Déjà ang page, kahit hindi mo
+naaalala ang pamagat, ang site, o ang eksaktong mga salita. Dinadala ka pa nito mismo sa
+eksaktong talata.
+
+ANG MAKUKUHA MO
+✓ Ang iyong mga bookmark, mahahanap ayon sa kahulugan mula sa unang minuto — opsyonal, isang
+  click. Pinag-aaralan ng Déjà ang mga pamagat at folder ng mga ito (nang hindi binubuksan ang
+  mga page) at pinananatili itong naka-sync habang nagdadagdag, naglilipat o nagbubura ka ng
+  mga bookmark.
+✓ Mga sagot mula sa iyong alaala — sa mga computer na sumusuporta sa built-in na AI ng Chrome
+  (Gemini Nano), magtanong at makakuha ng maikling sagot na isinulat sa iyong device mula sa
+  mga page na nabasa mo, may mga source na puwedeng i-click. (Mga sagot sa Ingles, Espanyol,
+  Aleman, Pranses at Hapon.)
+✓ Paghahanap ayon sa kahulugan — magtanong sa sarili mong mga salita, sa 50+ wika; magtanong
+  sa isang wika, makahanap ng mga page na nabasa mo sa ibang wika.
+✓ Kasama sa side panel — buksan ito sa tabi ng anumang page at makita ang nabasa mo na tungkol
+  sa paksa ng page na iyon, pati ang iyong mga kamakailang alaala.
+✓ I-type ang “dj” sa address bar — maghanap sa iyong alaala mismo mula roon, may live na mga
+  suhestiyon.
+✓ Tandaan ang isang sipi — i-right click ang anumang napiling text: “Déjà: tandaan ang
+  napiling text”. Nagiging sarili itong alaala na mahahanap.
+✓ Tumalon sa eksaktong talata — binubuksan ng mga resulta ang page na naka-highlight ang
+  katugmang sipi.
+✓ Mga filter ng petsa, kaugnay na mga alaala, mga kamakailang alaala sa walang lamang page ng
+  paghahanap.
+✓ Alaala ko — makita ang lahat ng natatandaan ng Déjà, kalimutan ang anumang page sa isang
+  click, i-export/i-import ang buo mong index bilang file.
+
+PRIBADO MULA SA DISENYO
+✓ 100% lokal na pagproseso — tumatakbo ang AI embedding model sa loob ng iyong browser at nasa
+  IndexedDB ang iyong data. Walang server, walang cloud, walang telemetry, walang account.
+✓ Awtomatikong nilalaktawan ang mga page ng mail, chat, login at banking (built-in na listahan
+  ng address; magdagdag ng sarili mong mga pattern).
+✓ I-pause sa isang click. Laging nariyan ang “Kalimutan ang page na ito” at “I-clear ang
+  alaala”.
+✓ Awtomatikong paglimot — kung gusto mo, burahin ang mga page na mas luma sa 3/6/12/24 buwan.
+✓ Sinusunod ng light at dark na tema ang iyong system.
+
+Ang tanging network request na ginagawa ng extension ay ang isang beses na pag-download ng
+embedding model mula sa Hugging Face (naka-cache nang lokal pagkatapos; puwede mo itong ituro
+sa sarili mong mirror sa halip).

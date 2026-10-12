@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — የአሳሽዎ ትውስታ"
+  },
+  "extDesc": {
+    "message": "ያነበቧቸውን ገጾች በትርጉም ይፈልጉ። ሁሉም ነገር በአካባቢው ይከናወናል — ምንም ነገር በፍጹም ከመሣሪያዎ አይወጣም።"
+  },
+  "cmdOpenSearch": {
+    "message": "የDéjà ፍለጋን ክፈት"
+  },
+  "searchTitle": {
+    "message": "Déjà — ያነበቡትን ይፈልጉ"
+  },
+  "tagline": {
+    "message": "አይተውታል። Déjà ያገኘዋል።"
+  },
+  "searchPlaceholder": {
+    "message": "የሚያስታውሱትን ይግለጹ… ለምሳሌ «በሶዲየም ላይ ስለተመሠረቱ ባትሪዎች የሚያወራ ጽሑፍ»"
+  },
+  "searchButton": {
+    "message": "ፈልግ"
+  },
+  "statusSearching": {
+    "message": "ትውስታውን እየቆፈርኩ ነው… (የመጀመሪያው ፍለጋ ሞዴሉን ይጭናል፣ ~10-30 ሰከንድ)"
+  },
+  "statusEmpty": {
+    "message": "ምንም አልወጣም። ወይ አላነበቡትም፣ ወይም Déjà እስካሁን በትውስታው አላስቀመጠውም።"
+  },
+  "statusResults": {
+    "message": "$COUNT$ ትውስታዎች፦",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 ትውስታ፦"
+  },
+  "errNoResponse": {
+    "message": "ትውስታው ምላሽ አልሰጠም — እንደገና ይሞክሩ"
+  },
+  "recallVivid": {
+    "message": "ግልጽ ትውስታ"
+  },
+  "recallHazy": {
+    "message": "ብዥ ያለ ትውስታ"
+  },
+  "recallFaint": {
+    "message": "የራቀ ትውስታ"
+  },
+  "statusError": {
+    "message": "ፍለጋው አልተሳካም፦ $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "በትውስታ ውስጥ፦ $COUNT$ ገጾች።",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "በትውስታ ውስጥ፦ 1 ገጽ።"
+  },
+  "similarity": {
+    "message": "ተመሳሳይነት $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "የተነበበው፦ $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "በትውስታ ውስጥ $COUNT$ ገጾች",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "በትውስታ ውስጥ 1 ገጽ"
+  },
+  "popupSleeping": {
+    "message": "ትውስታው ተኝቷል"
+  },
+  "popupWaking": {
+    "message": "ትውስታው እየነቃ ነው…"
+  },
+  "popupOpenSearch": {
+    "message": "ፍለጋን ክፈት"
+  },
+  "popupPause": {
+    "message": "ማስታወስን ለአፍታ አቁም"
+  },
+  "popupClear": {
+    "message": "ትውስታን አጽዳ"
+  },
+  "popupClearConfirm": {
+    "message": "ያስታወስኩትን ሁሉ ልሰርዝ? መመለስ አይቻልም።"
+  },
+  "popupOptions": {
+    "message": "ቅንብሮች"
+  },
+  "optionsTitle": {
+    "message": "Déjà — ቅንብሮች"
+  },
+  "optRetentionLabel": {
+    "message": "ገጾችን የማስታውስበት ጊዜ"
+  },
+  "optRetentionForever": {
+    "message": "ለዘለዓለም"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ ወራት",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "የቆዩ ገጾች በቀን አንድ ጊዜ በራስ-ሰር ይሰረዛሉ።"
+  },
+  "optDenylistLabel": {
+    "message": "እነዚህን የያዙ አድራሻዎች በፍጹም አይታወሱ"
+  },
+  "optDenylistHelp": {
+    "message": "በአንድ መስመር አንድ ስርዓተ-ጥለት። ከአድራሻው ክፍል ጋር ይዛመዳል፣ ለምሳሌ «example.com» ወይም «/private»።"
+  },
+  "optBuiltinLabel": {
+    "message": "አብሮ የተሰራ ጥበቃ (ሁልጊዜ ንቁ)"
+  },
+  "optModelHostLabel": {
+    "message": "ብጁ የሞዴል ምንጭ አገልጋይ (የላቀ)"
+  },
+  "optModelHostHelp": {
+    "message": "ባዶ = huggingface.co። ከመስመር ውጭ ለሆኑ/ለድርጅት አካባቢዎች የራስዎን አገልጋይ ያዘጋጁ።"
+  },
+  "filterAll": {
+    "message": "ሁሉም"
+  },
+  "filterWeek": {
+    "message": "ያለፈው ሳምንት"
+  },
+  "filterMonth": {
+    "message": "ያለፈው ወር"
+  },
+  "filterYear": {
+    "message": "ያለፈው ዓመት"
+  },
+  "relatedLink": {
+    "message": "ተዛማጅ ትውስታዎች"
+  },
+  "relatedNone": {
+    "message": "ቅርብ ትውስታዎች የሉም"
+  },
+  "omniboxDefault": {
+    "message": "ትውስታዎን ይጠይቁ — Déjà በትርጉም ይፈልጋል"
+  },
+  "popupMemory": {
+    "message": "የእኔ ትውስታ"
+  },
+  "memoryTitle": {
+    "message": "የእኔ ትውስታ"
+  },
+  "memoryEmpty": {
+    "message": "ትውስታው ባዶ ነው — ጥቂት ገጾችን ያስሱና ይመለሱ።"
+  },
+  "memoryForget": {
+    "message": "እርሳ"
+  },
+  "memoryExport": {
+    "message": "ማህደር አውርድ"
+  },
+  "memoryImport": {
+    "message": "ከማህደር ወደነበረበት መልስ"
+  },
+  "memoryImportConfirm": {
+    "message": "ከማህደር ወደነበረበት ይመለስ? ተዛማጅ ገጾች ይተካሉ።"
+  },
+  "optSave": {
+    "message": "አስቀምጥ"
+  },
+  "optSaved": {
+    "message": "ተቀምጧል ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "የምንጭ አገልጋዩ https:// አድራሻ መሆን አለበት"
+  },
+  "welcomeHeading": {
+    "message": "ሰላም። እኔ የአሳሽዎ ትውስታ ነኝ።"
+  },
+  "welcomeIntro": {
+    "message": "ከዚህ ቅጽበት ጀምሮ የሚያነቡትን አስታውሳለሁ፣ በኋላ በትርጉሙ እንዲያገኙት — በትክክለኛው ርዕስ ሳይሆን በራስዎ ቃላት።"
+  },
+  "welcomePoint1": {
+    "message": "ሁሉም ነገር በመሣሪያዎ ላይ ይከናወናል። አገልጋዮች የሉም፣ ደመና የለም፣ ምንም ውሂብ አይላክም — የትም፣ መቼም።"
+  },
+  "welcomePoint2": {
+    "message": "ኢሜይል፣ ውይይቶች፣ መግቢያዎች እና የባንክ አገልግሎቶች በፍጹም አይታወሱም። ልብ ይበሉ፦ ስሱ ርዕሶችን በአድራሻ መለየት አልችልም — ለእነዚያ ለአፍታ ማቆምን ወይም በቅንብሮች ውስጥ የራስዎን ዝርዝር ይጠቀሙ።"
+  },
+  "welcomePoint3": {
+    "message": "ቁጥጥሩ በእርስዎ እጅ ነው፦ በአንድ ጠቅታ ለአፍታ ማቆም፣ «ትውስታን አጽዳ» ሁሉንም ይሰርዛል፣ ከፈለጉ ደግሞ ከጥቂት ወራት በኋላ በራስ-ሰር እረሳለሁ።"
+  },
+  "welcomeCta": {
+    "message": "ፍለጋን ክፈት"
+  },
+  "welcomeOptions": {
+    "message": "ቅንብሮች"
+  },
+  "memoryFilter": {
+    "message": "በትውስታዎ ውስጥ ይፈልጉ…"
+  },
+  "supportLink": {
+    "message": "Déjàን ይደግፉ"
+  },
+  "panelTitle": {
+    "message": "Déjà — አጋር"
+  },
+  "panelOnThisPage": {
+    "message": "በዚህ ገጽ ርዕስ ላይ"
+  },
+  "panelRecent": {
+    "message": "የቅርብ ጊዜ ትውስታዎች"
+  },
+  "panelNoPage": {
+    "message": "አንድ ድረ-ገጽ ይክፈቱ፤ Déjà በርዕሱ ላይ ያነበቡትን ያሳያል።"
+  },
+  "popupOpenPanel": {
+    "message": "የጎን ፓነል"
+  },
+  "popupForgetPage": {
+    "message": "ይህን ገጽ እርሳ"
+  },
+  "popupForgotten": {
+    "message": "ተረስቷል ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: የተመረጠውን ጽሑፍ አስታውስ"
+  },
+  "menuForget": {
+    "message": "Déjà: ይህን ገጽ እርሳ"
+  },
+  "recentTitle": {
+    "message": "የቅርብ ጊዜ ትውስታዎች"
+  },
+  "cmdOpenPanel": {
+    "message": "የDéjà የጎን ፓነልን ክፈት"
+  },
+  "welcomePoint4": {
+    "message": "የጎን ፓነሉ በሚመለከቱት ገጽ ርዕስ ላይ ያነበቡትን ለማሳየት የገጹን አድራሻ እና ርዕስ ያያል — በክፍለ-ጊዜ ማህደረ ትውስታ ውስጥ ብቻ። ሆን ብለው የሚያስቀምጧቸው ምንባቦችም ከእርስዎ ጋር ብቻ ይቆያሉ።"
+  },
+  "welcomeUpdated": {
+    "message": "Déjà ተዘምኗል። አዲስ፦ ከፈለጉ አሁን ዕልባቶችዎንም በትርጉም መፈለግ ይችላሉ። በውሂብዎ ምን እንደማደርግ እነሆ — ምንም ነገር ከመሣሪያዎ አልወጣም።"
+  },
+  "optAmbientLabel": {
+    "message": "ሕያው ዳራ"
+  },
+  "optAmbientHelp": {
+    "message": "ከመስታወቱ በስተጀርባ ያለው የትውስታዎች መረብ በዝግታ ይንሳፈፋል። እንቅስቃሴው የሚረብሽዎ ከሆነ ያጥፉት።"
+  },
+  "bmTitle": {
+    "message": "ዕልባቶችዎን ሊፈለጉ የሚችሉ ያድርጉ — አሁኑኑ"
+  },
+  "bmText": {
+    "message": "Déjà ገጾቹን ሳይከፍት የዕልባቶችዎን ርዕሶች እና አቃፊዎች ይማራል። ከመጀመሪያው ደቂቃ ጀምሮ በትርጉም ያግኟቸው — ሁሉም ነገር በመሣሪያዎ ላይ ይቆያል።"
+  },
+  "bmTextShort": {
+    "message": "ትውስታዎ ገና ለጋ ነው። ዕልባቶችዎን ያስተምሩኝ እና ዛሬውኑ በትርጉም ይፈልጉባቸው።"
+  },
+  "bmButton": {
+    "message": "ዕልባቶቼን ተማር"
+  },
+  "bmNote": {
+    "message": "አሳሽዎ ፈቃድ ይጠይቃል። በማንኛውም ጊዜ በቅንብሮች ውስጥ ሊያጠፉት ይችላሉ።"
+  },
+  "bmTitleRunning": {
+    "message": "ዕልባቶችዎን እየተማርኩ ነው…"
+  },
+  "bmTitleDone": {
+    "message": "ዕልባቶችዎ አሁን ሊፈለጉ ይችላሉ"
+  },
+  "bmPreparing": {
+    "message": "እየተዘጋጀሁ ነው…"
+  },
+  "bmLearning": {
+    "message": "የተማርኩት፦ $DONE$ / $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà ለአፍታ ቆሟል — እንደገና እንዳስጀመሩት ወዲያውኑ እቀጥላለሁ።"
+  },
+  "bmError": {
+    "message": "በመማር ላይ እያለሁ የሆነ ችግር ተፈጥሯል። በሚቀጥለው ለውጥ ጊዜ እንደገና እሞክራለሁ።"
+  },
+  "bmDone": {
+    "message": "ተጠናቋል — $COUNT$ ዕልባቶች በትርጉም ሊፈለጉ ይችላሉ፣ በራስ-ሰርም ይመሳሰላሉ።",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "ተጠናቋል — 1 ዕልባት በትርጉም ሊፈለግ ይችላል፣ በራስ-ሰርም ይመሳሰላል።"
+  },
+  "bmDenied": {
+    "message": "ያለ ፈቃድ ዕልባቶችዎን ማየት አልችልም። በማንኛውም ጊዜ እንደገና መሞከር ይችላሉ።"
+  },
+  "bmTry": {
+    "message": "ይሞክሩ፦"
+  },
+  "bmBadge": {
+    "message": "ዕልባት"
+  },
+  "bmAddedOn": {
+    "message": "ዕልባት የተደረገው፦ $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "ዕልባቶች በትውስታ ውስጥ"
+  },
+  "optBookmarksHelp": {
+    "message": "የዕልባቶችዎን ርዕሶች እና አቃፊዎች (ገጾቹን ሳልከፍት) እማራለሁ፣ ሲያክሉ ወይም ሲሰርዙም እከታተላለሁ። ማጥፋቱ ዕልባቶቹን ከትውስታ ያስወግዳል — ያነበቧቸው ገጾች ይቆያሉ።"
+  },
+  "memoryFilterAll": {
+    "message": "ሁሉም"
+  },
+  "memoryFilterRead": {
+    "message": "የተነበቡ"
+  },
+  "memoryFilterBookmarks": {
+    "message": "ዕልባቶች"
+  },
+  "welcomePoint5": {
+    "message": "ዕልባቶች — ካበሩት ብቻ፦ ያኔ ገጾቹን ሳልከፍት ርዕሶቻቸውን እና አቃፊዎቻቸውን እማራለሁ። በአንድ ጠቅታ ይጠፋል።"
+  },
+  "rateTitle": {
+    "message": "Déjà የሆነ ነገር እንዲያገኙ ረድቶዎታል — እስካሁን $COUNT$ ጊዜ",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "ጠቃሚ ከሆነ፣ በመደብሩ ውስጥ የሚሰጡት ደረጃ ሌሎች ሰዎች እንዲያገኙት ይረዳል — 10 ሰከንድ ብቻ ይወስዳል። የሚያስቸግርዎ ነገር ካለ ደግሞ ይንገሩን።"
+  },
+  "rateButton": {
+    "message": "Déjàን ደረጃ ይስጡ"
+  },
+  "rateFeedback": {
+    "message": "የማይሰራ ነገር አለ?"
+  },
+  "rateLater": {
+    "message": "አሁን አይደለም"
+  },
+  "rateThanks": {
+    "message": "እናመሰግናለን! በእርግጥ ይረዳል።"
+  },
+  "rateFeedbackThanks": {
+    "message": "እናመሰግናለን — እያንዳንዱን መልእክት እናነባለን።"
+  },
+  "rateFeedbackSubject": {
+    "message": "አስተያየት"
+  },
+  "answerTitle": {
+    "message": "ከትውስታዎ የተገኘ መልስ"
+  },
+  "answerAsk": {
+    "message": "ከትውስታዬ መልስ ስጥ"
+  },
+  "answerEnableTitle": {
+    "message": "ከChrome አብሮ የተሰራ AI የሚመጡ መልሶች"
+  },
+  "answerEnableText": {
+    "message": "Déjà ካነበቡት ነገር ተነስቶ ጥያቄዎችን ከምንጮች ጋር መመለስ ይችላል። Chrome በመሣሪያ ላይ የሚሰራውን ሞዴሉን (Gemini Nano) አንድ ጊዜ ያወርዳል — ጥያቄዎችዎ እና ገጾችዎ በፍጹም ከኮምፒውተርዎ አይወጡም።"
+  },
+  "answerEnableButton": {
+    "message": "መልሶችን አብራ"
+  },
+  "answerNoThanks": {
+    "message": "አይ፣ አመሰግናለሁ"
+  },
+  "answerDownloading": {
+    "message": "Chrome ሞዴሉን እያወረደ ነው… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "ትውስታዎችዎን እያነበብኩ ነው…"
+  },
+  "answerStop": {
+    "message": "አቁም"
+  },
+  "answerFoot": {
+    "message": "በChrome አብሮ የተሰራ AI ከ$COUNT$ ትውስታዎችዎ በመሣሪያዎ ላይ የተጻፈ። ምንጮቹን ያረጋግጡ።",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "በዚህ ጊዜ መልስ ማዘጋጀት አልቻልኩም።"
+  },
+  "optAnswersLabel": {
+    "message": "ከChrome አብሮ የተሰራ AI የሚመጡ መልሶች"
+  },
+  "optAnswersHelp": {
+    "message": "እንደ «ስለ ምን አነበብኩ…?» ላሉ ጥያቄዎች ከገጾችዎ ምንጮችን የያዘ አጭር መልስ እጽፋለሁ — ሙሉ በሙሉ በመሣሪያዎ ላይ፣ በChrome ውስጥ ባለው Gemini Nano አማካኝነት። የሚደገፍ ኮምፒውተር እና ቋንቋ ያስፈልጋል (እንግሊዝኛ፣ ስፓንኛ፣ ጀርመንኛ፣ ፈረንሳይኛ፣ ጃፓንኛ)።"
+  },
+  "optAnswersAvailable": {
+    "message": "በዚህ መሣሪያ ላይ ለአገልግሎት ዝግጁ ነው።"
+  },
+  "optAnswersDownloadable": {
+    "message": "ይደገፋል — በመጀመሪያው ጥያቄዎ ጊዜ Chrome ሞዴሉን ያወርዳል።"
+  },
+  "optAnswersUnavailable": {
+    "message": "ይህ መሣሪያ ወይም የበይነገጽ ቋንቋ በChrome አብሮ የተሰራ AI አይደገፍም።"
+  },
+  "optAnswersUnsupported": {
+    "message": "ይህ አሳሽ አብሮ የተሰራ AI የለውም — በDéjà ውስጥ ያለው ሌላው ሁሉ እንደወትሮው ይሰራል።"
+  }
+}

@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-10-12:** Лимитите за дължина в CWS (extDesc/SHORT ≤132) могат да се проверят без Bash с Grep regex по code points: multiline `\"extDesc\": \\{\\n    \"message\": \"[^\"]{133,}\"` и `^SHORT: .{133,}$`; нула съвпадения = в лимита. _(deja-i18n; verified; "Grep при локализацията на deja за ar/he/fa/ur/hi/bn/mr/ne/pa/gu, 2026-10-12")_
 - **2026-10-12:** Без Bash паритетът на chrome.i18n локал се проверява с Grep: count на `\"message\": ` (=128), multiline `\"extDesc\": \\{\\n    \"message\": \"[^\"]{1,132}\"` за лимита (rg брои code points), `^  \\},$` (=127) срещу en за структурата, `,\\n\\s*\\}` за висящи запетаи. _("deja i18n, всеки chrome _locales"; verified; "Grep runs over deja/_locales/{ta..mn}/messages.json vs en, 2026-10-12")_
 - **2026-10-12:** В блока ПРЕДАВАНЕ полето Към трябва да е id на агента (напр. ai-djiyata), не показното име (AI-джията) — dod-check.mjs отхвърля непознат адресат. _(агентски слой; verified; agents-dashboard/agents.json:13204)_
 - **2026-10-12:** Déjà test/i18n.mjs проверява TITLE в store/listing/<локал>.txt да е точно равно на extName, SHORT ≤132 знака (JS .length) и броя ✓ в листинга да е равен на en.txt (14). _(deja; verified; deja/test/i18n.mjs:84)_

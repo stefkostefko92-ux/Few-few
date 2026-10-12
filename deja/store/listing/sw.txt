@@ -1,0 +1,46 @@
+TITLE: Déjà — kumbukumbu ya kivinjari chako
+SHORT: Tafuta kurasa ulizosoma kwa maana, katika lugha 50+. Inafanya kazi kikamilifu kwenye kifaa chako — hakuna kinachotoka kivinjarini.
+
+Uliwahi kukiona. Déjà inakipata.
+
+Historia ya kivinjari chako hukumbuka vichwa na URL pekee. Déjà hukumbuka MAUDHUI.
+Eleza unachokumbuka kwa maneno yako mwenyewe — “ile makala kuhusu betri zinazotumia
+sodiamu” — na Déjà italeta ukurasa huo, hata kama hukumbuki kichwa, tovuti, wala maneno
+kamili. Inakupeleka hata moja kwa moja kwenye aya husika.
+
+UNACHOPATA
+✓ Alamisho zako, zinazotafutika kwa maana tangu dakika ya kwanza — hiari, mbofyo mmoja.
+  Déjà hujifunza vichwa na folda zake (bila kufungua kurasa) na huziweka sawa unapoongeza,
+  kuhamisha au kufuta alamisho.
+✓ Majibu kutoka kwenye kumbukumbu yako — kwenye kompyuta zinazotumia AI iliyojengewa ndani
+  ya Chrome (Gemini Nano), uliza swali na upate jibu fupi lililoandikwa kwenye kifaa chako
+  kutokana na kurasa ulizosoma, pamoja na vyanzo vinavyobofyeka. (Majibu kwa Kiingereza,
+  Kihispania, Kijerumani, Kifaransa na Kijapani.)
+✓ Utafutaji kwa maana — uliza kwa maneno yako mwenyewe, katika lugha 50+; uliza kwa lugha
+  moja, upate kurasa ulizosoma kwa lugha nyingine.
+✓ Mwandani wa kidirisha cha pembeni — kifungue kando ya ukurasa wowote na uone ulichokwisha
+  kusoma kuhusu mada ya ukurasa huo, pamoja na kumbukumbu zako za hivi karibuni.
+✓ Andika “dj” kwenye upau wa anwani — tafuta kwenye kumbukumbu yako moja kwa moja kutoka hapo,
+  ukiwa na mapendekezo ya papo hapo.
+✓ Kumbuka kifungu — bofya kulia maandishi yoyote uliyochagua: “Déjà: kumbuka maandishi
+  uliyochagua”. Yanakuwa kumbukumbu yake yenyewe inayotafutika.
+✓ Ruka hadi aya kamili — matokeo hufungua ukurasa huku kifungu kinacholingana kikiwa
+  kimeangaziwa.
+✓ Vichujio vya tarehe, kumbukumbu zinazohusiana, kumbukumbu za hivi karibuni kwenye ukurasa
+  tupu wa utafutaji.
+✓ Kumbukumbu yangu — ona kila kitu ambacho Déjà inakumbuka, sahau ukurasa wowote kwa mbofyo
+  mmoja, hamisha/leta faharasa yako yote kama faili.
+
+FARAGHA KWA MUUNDO
+✓ Uchakataji wa ndani 100% — modeli ya AI ya embedding inafanya kazi ndani ya kivinjari chako
+  na data yako inakaa kwenye IndexedDB. Hakuna seva, hakuna wingu, hakuna telemetry, hakuna
+  akaunti.
+✓ Kurasa za barua pepe, gumzo, kuingia katika akaunti na benki zinarukwa kiotomatiki (orodha
+  ya anwani iliyojengewa ndani; ongeza michoro yako mwenyewe).
+✓ Sitisha kwa mbofyo mmoja. “Sahau ukurasa huu” na “Futa kumbukumbu” vipo kila wakati.
+✓ Kusahau kiotomatiki — ukipenda, futa kurasa zilizozidi miezi 3/6/12/24.
+✓ Mandhari meupe na meusi hufuata mfumo wako.
+
+Ombi pekee la mtandao ambalo kiendelezi hufanya ni kupakua mara moja modeli ya embedding
+kutoka Hugging Face (huhifadhiwa ndani baada ya hapo; unaweza badala yake kuielekeza kwenye
+seva kioo yako mwenyewe).

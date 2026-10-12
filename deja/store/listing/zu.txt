@@ -1,0 +1,45 @@
+TITLE: Déjà — inkumbulo yesiphequluli sakho
+SHORT: Sesha amakhasi owafundile ngencazelo, ngezilimi ezingu-50+. Konke kusebenza kudivayisi yakho — akukho okushiya isiphequluli.
+
+Ukubonile. I-Déjà iyakuthola.
+
+Umlando wesiphequluli sakho ukhumbula izihloko nama-URL kuphela. I-Déjà ikhumbula
+OKUQUKETHWE. Chaza lokho okukhumbulayo ngamagama akho — “leya athikili ekhuluma ngamabhethri
+asebenzisa i-sodium” — futhi i-Déjà izoveza ikhasi, ngisho noma ungasikhumbuli isihloko,
+isayithi, noma amagama aqondile. Ikuyisa ngqo nasesigabeni esiqondile.
+
+OKUTHOLAYO
+✓ Amabhukhimakhi akho, aseshekayo ngencazelo kusukela emzuzwini wokuqala — ngokuzikhethela,
+  ngokuchofoza kanye. I-Déjà ifunda izihloko namafolda awo (ngaphandle kokuvula amakhasi)
+  futhi iwagcina evumelanisiwe njengoba wengeza, uhambisa noma ususa amabhukhimakhi.
+✓ Izimpendulo ezivela enkumbulweni yakho — kumakhompyutha asekela i-AI eyakhelwe ngaphakathi
+  ku-Chrome (Gemini Nano), buza umbuzo bese uthola impendulo emfushane ebhalwe kudivayisi yakho
+  isuka emakhasini owafundile, inemithombo ongayichofoza. (Izimpendulo ngesiNgisi,
+  isiSpeyini, isiJalimane, isiFulentshi nesiJapane.)
+✓ Usesho ngencazelo — buza ngamagama akho, ngezilimi ezingaphezu kuka-50; buza ngolimi
+  olulodwa, uthole amakhasi owafunda ngolunye.
+✓ Umngane wephaneli eseceleni — yivule eduze kwanoma yiliphi ikhasi ubone lokho osuvele
+  ukufundile ngesihloko saleso khasi, kanye nezinkumbulo zakho zakamuva.
+✓ Thayipha “dj” kubha yekheli — sesha enkumbulweni yakho khona lapho, ngeziphakamiso
+  ezibukhoma.
+✓ Khumbula isiqephu — chofoza kwesokudla kunoma yimuphi umbhalo okhethiwe: “Déjà: khumbula
+  umbhalo okhethiwe”. Uba yinkumbulo yawo eseshekayo.
+✓ Yeqa uye esigabeni esiqondile — imiphumela ivula ikhasi isiqephu esifanayo sigqanyisiwe.
+✓ Izihlungi zosuku, izinkumbulo ezihlobene, izinkumbulo zakamuva ekhasini losesho elingenalutho.
+✓ Inkumbulo yami — bona konke i-Déjà ekukhumbulayo, khohlwa noma yiliphi ikhasi ngokuchofoza
+  kanye, thumela/ngenisa yonke inkomba yakho njengefayela.
+
+UBUMFIHLO KUSUKELA EKWAKHIWENI
+✓ Ukucubungula kwasendaweni okungu-100% — imodeli ye-AI ye-embedding isebenza ngaphakathi
+  esipheqululini sakho futhi idatha yakho ihlala ku-IndexedDB. Awekho amaseva, alikho ifu,
+  ayikho i-telemetry, ayikho i-akhawunti.
+✓ Amakhasi emeyili, ezingxoxo, okungena ngemvume namabhange ayeqiwa ngokuzenzakalela (uhlu
+  lwamakheli olwakhelwe ngaphakathi; engeza amaphethini akho).
+✓ Misa okwesikhashana ngokuchofoza kanye. “Khohlwa leli khasi” kanye no-“Sula inkumbulo”
+  zihlala zikhona.
+✓ Ukukhohlwa okuzenzakalelayo — uma uthanda, susa amakhasi amadala kunezinyanga ezingu-3/6/12/24.
+✓ Izindikimba ezikhanyayo nezimnyama zilandela isistimu yakho.
+
+Ukuphela kwesicelo senethiwekhi esenziwa yisandiso ukulanda kanye imodeli ye-embedding
+ku-Hugging Face (bese igcinwa endaweni ngemva kwalokho; ungayiqondisa eseveni yakho
+esikhundleni salokho).

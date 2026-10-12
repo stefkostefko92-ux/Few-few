@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — ang alaala ng iyong browser"
+  },
+  "extDesc": {
+    "message": "Paghahanap ayon sa kahulugan sa mga page na nabasa mo. Lokal ang lahat — walang anumang umaalis sa iyong device."
+  },
+  "cmdOpenSearch": {
+    "message": "Buksan ang paghahanap ng Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — hanapin ang nabasa mo"
+  },
+  "tagline": {
+    "message": "Nakita mo na ito. Hahanapin ito ng Déjà."
+  },
+  "searchPlaceholder": {
+    "message": "Ilarawan ang naaalala mo… hal. “artikulo tungkol sa mga bateryang gawa sa sodium”"
+  },
+  "searchButton": {
+    "message": "Maghanap"
+  },
+  "statusSearching": {
+    "message": "Hinahalughog ang alaala… (nilo-load ng unang paghahanap ang model, ~10-30 seg)"
+  },
+  "statusEmpty": {
+    "message": "Walang lumitaw. Maaaring hindi mo ito nabasa, o hindi pa ito natatandaan ng Déjà."
+  },
+  "statusResults": {
+    "message": "Mga alaala: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 alaala:"
+  },
+  "errNoResponse": {
+    "message": "hindi sumagot ang alaala — subukan ulit"
+  },
+  "recallVivid": {
+    "message": "malinaw na alaala"
+  },
+  "recallHazy": {
+    "message": "malabong alaala"
+  },
+  "recallFaint": {
+    "message": "malayong alaala"
+  },
+  "statusError": {
+    "message": "Nabigo ang paghahanap: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Nasa alaala: $COUNT$ page.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Nasa alaala: 1 page."
+  },
+  "similarity": {
+    "message": "pagkakatulad $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "nabasa noong $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "Mga page sa alaala: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 page sa alaala"
+  },
+  "popupSleeping": {
+    "message": "natutulog ang alaala"
+  },
+  "popupWaking": {
+    "message": "nagigising ang alaala…"
+  },
+  "popupOpenSearch": {
+    "message": "Buksan ang paghahanap"
+  },
+  "popupPause": {
+    "message": "I-pause ang pag-alala"
+  },
+  "popupClear": {
+    "message": "I-clear ang alaala"
+  },
+  "popupClearConfirm": {
+    "message": "Burahin ang lahat ng natandaan? Hindi na ito maibabalik."
+  },
+  "popupOptions": {
+    "message": "Mga Setting"
+  },
+  "optionsTitle": {
+    "message": "Déjà — mga setting"
+  },
+  "optRetentionLabel": {
+    "message": "Tandaan ang mga page nang"
+  },
+  "optRetentionForever": {
+    "message": "habambuhay"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ buwan",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Awtomatikong binubura ang mas lumang mga page isang beses sa isang araw."
+  },
+  "optDenylistLabel": {
+    "message": "Huwag kailanman tandaan ang mga address na naglalaman ng"
+  },
+  "optDenylistHelp": {
+    "message": "Isang pattern bawat linya. Tumutugma sa bahagi ng address, hal. “example.com” o “/private”."
+  },
+  "optBuiltinLabel": {
+    "message": "Built-in na proteksyon (laging aktibo)"
+  },
+  "optModelHostLabel": {
+    "message": "Sariling mirror ng model (advanced)"
+  },
+  "optModelHostHelp": {
+    "message": "Walang laman = huggingface.co. Magtakda ng sarili mong server para sa offline/corporate na kapaligiran."
+  },
+  "filterAll": {
+    "message": "lahat"
+  },
+  "filterWeek": {
+    "message": "nakaraang linggo"
+  },
+  "filterMonth": {
+    "message": "nakaraang buwan"
+  },
+  "filterYear": {
+    "message": "nakaraang taon"
+  },
+  "relatedLink": {
+    "message": "kaugnay na mga alaala"
+  },
+  "relatedNone": {
+    "message": "walang malapit na alaala"
+  },
+  "omniboxDefault": {
+    "message": "Tanungin ang iyong alaala — naghahanap ang Déjà ayon sa kahulugan"
+  },
+  "popupMemory": {
+    "message": "Alaala ko"
+  },
+  "memoryTitle": {
+    "message": "Alaala ko"
+  },
+  "memoryEmpty": {
+    "message": "Walang laman ang alaala — mag-browse ng ilang page at bumalik."
+  },
+  "memoryForget": {
+    "message": "Kalimutan"
+  },
+  "memoryExport": {
+    "message": "I-download ang archive"
+  },
+  "memoryImport": {
+    "message": "I-restore mula sa archive"
+  },
+  "memoryImportConfirm": {
+    "message": "I-restore mula sa archive? Mapapatungan ang mga katugmang page."
+  },
+  "optSave": {
+    "message": "I-save"
+  },
+  "optSaved": {
+    "message": "Na-save ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Dapat na https:// address ang mirror"
+  },
+  "welcomeHeading": {
+    "message": "Kumusta. Ako ang alaala ng iyong browser."
+  },
+  "welcomeIntro": {
+    "message": "Mula ngayon, tinatandaan ko ang binabasa mo, para mahanap mo ito sa ibang pagkakataon ayon sa kahulugan — sa sarili mong mga salita, hindi sa eksaktong pamagat."
+  },
+  "welcomePoint1": {
+    "message": "Nangyayari ang lahat sa iyong device. Walang server, walang cloud, walang data na ipinapadala — saanman, kailanman."
+  },
+  "welcomePoint2": {
+    "message": "Hindi kailanman tinatandaan ang mail, mga chat, mga login at banking. Paalala: hindi ko makikilala ang mga sensitibong paksa batay sa address — para sa mga iyon, gamitin ang pause o ang sarili mong listahan sa mga setting."
+  },
+  "welcomePoint3": {
+    "message": "Ikaw ang may kontrol: i-pause sa isang click, binubura ng “I-clear ang alaala” ang lahat, at kung gusto mo, awtomatiko akong nakakalimot pagkalipas ng ilang buwan."
+  },
+  "welcomeCta": {
+    "message": "Buksan ang paghahanap"
+  },
+  "welcomeOptions": {
+    "message": "Mga Setting"
+  },
+  "memoryFilter": {
+    "message": "Maghanap sa iyong alaala…"
+  },
+  "supportLink": {
+    "message": "Suportahan ang Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — kasama"
+  },
+  "panelOnThisPage": {
+    "message": "Tungkol sa paksa ng page na ito"
+  },
+  "panelRecent": {
+    "message": "Mga kamakailang alaala"
+  },
+  "panelNoPage": {
+    "message": "Magbukas ng web page at ipapakita ng Déjà ang mga nabasa mo tungkol sa paksa nito."
+  },
+  "popupOpenPanel": {
+    "message": "Side panel"
+  },
+  "popupForgetPage": {
+    "message": "Kalimutan ang page na ito"
+  },
+  "popupForgotten": {
+    "message": "Nakalimutan na ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: tandaan ang napiling text"
+  },
+  "menuForget": {
+    "message": "Déjà: kalimutan ang page na ito"
+  },
+  "recentTitle": {
+    "message": "Mga kamakailang alaala"
+  },
+  "cmdOpenPanel": {
+    "message": "Buksan ang side panel ng Déjà"
+  },
+  "welcomePoint4": {
+    "message": "Nakikita ng side panel ang address at pamagat ng page na tinitingnan mo para maipakita ang mga nabasa mo tungkol sa paksa nito — sa memorya ng session lang. Ang mga sipi na sadya mong sine-save ay nananatili rin sa iyo lang."
+  },
+  "welcomeUpdated": {
+    "message": "Na-update ang Déjà. Bago: kung gusto mo, puwede na ring hanapin ayon sa kahulugan ang iyong mga bookmark. Narito ang ginagawa ko sa iyong data — walang umalis sa iyong device."
+  },
+  "optAmbientLabel": {
+    "message": "Buhay na background"
+  },
+  "optAmbientHelp": {
+    "message": "Dahan-dahang gumagalaw ang sapot ng mga alaala sa likod ng salamin. I-off ito kung nakakagambala sa iyo ang galaw."
+  },
+  "bmTitle": {
+    "message": "Gawing mahahanap ang iyong mga bookmark — ngayon na"
+  },
+  "bmText": {
+    "message": "Natututunan ng Déjà ang mga pamagat at folder ng iyong mga bookmark nang hindi binubuksan ang mga page. Hanapin ang mga ito ayon sa kahulugan mula sa unang minuto — nananatili ang lahat sa iyong device."
+  },
+  "bmTextShort": {
+    "message": "Bata pa ang iyong alaala. Ituro mo sa akin ang iyong mga bookmark at hanapin ang mga ito ayon sa kahulugan ngayon din."
+  },
+  "bmButton": {
+    "message": "Pag-aralan ang aking mga bookmark"
+  },
+  "bmNote": {
+    "message": "Hihingi ng pahintulot ang iyong browser. Puwede mo itong i-off anumang oras sa mga setting."
+  },
+  "bmTitleRunning": {
+    "message": "Pinag-aaralan ang iyong mga bookmark…"
+  },
+  "bmTitleDone": {
+    "message": "Mahahanap na ang iyong mga bookmark"
+  },
+  "bmPreparing": {
+    "message": "Naghahanda…"
+  },
+  "bmLearning": {
+    "message": "Natutunan: $DONE$ sa $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Naka-pause ang Déjà — magpapatuloy ako sa sandaling ituloy mo."
+  },
+  "bmError": {
+    "message": "May nangyaring mali habang nag-aaral. Susubukan ko ulit sa susunod na pagbabago."
+  },
+  "bmDone": {
+    "message": "Tapos na — mahahanap na ayon sa kahulugan ang mga bookmark ($COUNT$) at awtomatikong naka-sync.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Tapos na — mahahanap na ayon sa kahulugan ang 1 bookmark at awtomatikong naka-sync."
+  },
+  "bmDenied": {
+    "message": "Kung walang pahintulot, hindi ko makikita ang iyong mga bookmark. Puwede mong subukan ulit anumang oras."
+  },
+  "bmTry": {
+    "message": "Subukan:"
+  },
+  "bmBadge": {
+    "message": "Bookmark"
+  },
+  "bmAddedOn": {
+    "message": "na-bookmark noong $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Mga bookmark sa alaala"
+  },
+  "optBookmarksHelp": {
+    "message": "Pinag-aaralan ko ang mga pamagat at folder ng iyong mga bookmark (nang hindi binubuksan ang mga page) at sinusubaybayan ko habang nagdadagdag o nagbubura ka. Kapag in-off ito, aalisin ang mga ito sa alaala — mananatili ang mga page na nabasa mo."
+  },
+  "memoryFilterAll": {
+    "message": "Lahat"
+  },
+  "memoryFilterRead": {
+    "message": "Nabasa"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Mga Bookmark"
+  },
+  "welcomePoint5": {
+    "message": "Mga bookmark — kung io-on mo lang: saka ko pag-aaralan ang mga pamagat at folder ng mga ito, nang hindi binubuksan ang mga page. Isang click lang para i-off."
+  },
+  "rateTitle": {
+    "message": "Natulungan ka ng Déjà na makahanap ng isang bagay — $COUNT$ beses na",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Kung kapaki-pakinabang ito, nakakatulong ang isang rating sa store para matuklasan ito ng ibang tao — 10 segundo lang. At kung may nakakainis sa iyo, sabihin mo sa amin."
+  },
+  "rateButton": {
+    "message": "I-rate ang Déjà"
+  },
+  "rateFeedback": {
+    "message": "May hindi gumagana?"
+  },
+  "rateLater": {
+    "message": "Hindi ngayon"
+  },
+  "rateThanks": {
+    "message": "Salamat! Talagang nakakatulong ito."
+  },
+  "rateFeedbackThanks": {
+    "message": "Salamat — binabasa namin ang bawat mensahe."
+  },
+  "rateFeedbackSubject": {
+    "message": "feedback"
+  },
+  "answerTitle": {
+    "message": "Sagot mula sa iyong alaala"
+  },
+  "answerAsk": {
+    "message": "Sumagot mula sa aking alaala"
+  },
+  "answerEnableTitle": {
+    "message": "Mga sagot mula sa built-in na AI ng Chrome"
+  },
+  "answerEnableText": {
+    "message": "Kayang sagutin ng Déjà ang mga tanong mula sa mga nabasa mo, may kasamang mga source. Ida-download ng Chrome nang isang beses ang on-device model nito (Gemini Nano) — hindi kailanman aalis sa iyong computer ang iyong mga tanong at page."
+  },
+  "answerEnableButton": {
+    "message": "I-on ang mga sagot"
+  },
+  "answerNoThanks": {
+    "message": "Huwag na, salamat"
+  },
+  "answerDownloading": {
+    "message": "Dina-download ng Chrome ang model… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Binabasa ang iyong mga alaala…"
+  },
+  "answerStop": {
+    "message": "Ihinto"
+  },
+  "answerFoot": {
+    "message": "Isinulat sa iyong device ng built-in na AI ng Chrome mula sa $COUNT$ sa iyong mga alaala. Suriin ang mga source.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Hindi ako nakabuo ng sagot sa pagkakataong ito."
+  },
+  "optAnswersLabel": {
+    "message": "Mga sagot mula sa built-in na AI ng Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "Para sa mga tanong gaya ng “ano ang nabasa ko tungkol sa…?” sumusulat ako ng maikling sagot na may mga source mula sa iyong mga page — buong-buo sa iyong device, gamit ang Gemini Nano sa Chrome. Kailangan ng sinusuportahang computer at wika (Ingles, Espanyol, Aleman, Pranses, Hapon)."
+  },
+  "optAnswersAvailable": {
+    "message": "Handa nang gamitin sa device na ito."
+  },
+  "optAnswersDownloadable": {
+    "message": "Sinusuportahan — ida-download ng Chrome ang model sa una mong tanong."
+  },
+  "optAnswersUnavailable": {
+    "message": "Hindi sinusuportahan ng built-in na AI ng Chrome ang device na ito o ang wika ng interface."
+  },
+  "optAnswersUnsupported": {
+    "message": "Walang built-in na AI ang browser na ito — gumagana pa rin gaya ng dati ang lahat ng iba pa sa Déjà."
+  }
+}

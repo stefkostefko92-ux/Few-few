@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — inkumbulo yesiphequluli sakho"
+  },
+  "extDesc": {
+    "message": "Sesha ngencazelo emakhasini owafundile. Konke kwenzeka endaweni — akukho nakancane okushiya idivayisi yakho."
+  },
+  "cmdOpenSearch": {
+    "message": "Vula usesho lwe-Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — sesha lokho okufundile"
+  },
+  "tagline": {
+    "message": "Ukubonile. I-Déjà iyakuthola."
+  },
+  "searchPlaceholder": {
+    "message": "Chaza lokho okukhumbulayo… isb. “i-athikili ekhuluma ngamabhethri asebenzisa i-sodium”"
+  },
+  "searchButton": {
+    "message": "Sesha"
+  },
+  "statusSearching": {
+    "message": "Ngimba enkumbulweni… (usesho lokuqala lulayisha imodeli, ~imizuzwana engu-10-30)"
+  },
+  "statusEmpty": {
+    "message": "Akukho okuvelile. Kungenzeka awuzange ukufunde, noma i-Déjà ayikakukhumbuli."
+  },
+  "statusResults": {
+    "message": "Izinkumbulo: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "Inkumbulo engu-1:"
+  },
+  "errNoResponse": {
+    "message": "inkumbulo ayiphendulanga — zama futhi"
+  },
+  "recallVivid": {
+    "message": "inkumbulo ecacile"
+  },
+  "recallHazy": {
+    "message": "inkumbulo efiphele"
+  },
+  "recallFaint": {
+    "message": "inkumbulo ekude"
+  },
+  "statusError": {
+    "message": "Usesho luhlulekile: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Enkumbulweni: amakhasi angu-$COUNT$.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Enkumbulweni: ikhasi eli-1."
+  },
+  "similarity": {
+    "message": "ukufana $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "lifundwe ngo-$DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "amakhasi angu-$COUNT$ enkumbulweni",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "ikhasi eli-1 enkumbulweni"
+  },
+  "popupSleeping": {
+    "message": "inkumbulo ilele"
+  },
+  "popupWaking": {
+    "message": "inkumbulo iyavuka…"
+  },
+  "popupOpenSearch": {
+    "message": "Vula usesho"
+  },
+  "popupPause": {
+    "message": "Misa ukukhumbula okwesikhashana"
+  },
+  "popupClear": {
+    "message": "Sula inkumbulo"
+  },
+  "popupClearConfirm": {
+    "message": "Susa konke okukhunjuliwe? Ngeke kubuyiswe."
+  },
+  "popupOptions": {
+    "message": "Izilungiselelo"
+  },
+  "optionsTitle": {
+    "message": "Déjà — izilungiselelo"
+  },
+  "optRetentionLabel": {
+    "message": "Khumbula amakhasi"
+  },
+  "optRetentionForever": {
+    "message": "unomphela"
+  },
+  "optRetentionMonths": {
+    "message": "izinyanga ezingu-$N$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Amakhasi amadala asuswa ngokuzenzakalela kanye ngosuku."
+  },
+  "optDenylistLabel": {
+    "message": "Ungalokothi ukhumbule amakheli aqukethe"
+  },
+  "optDenylistHelp": {
+    "message": "Iphethini eyodwa emugqeni ngamunye. Ifana nengxenye yekheli, isb. “example.com” noma “/private”."
+  },
+  "optBuiltinLabel": {
+    "message": "Isivikelo esakhelwe ngaphakathi (sihlala sisebenza)"
+  },
+  "optModelHostLabel": {
+    "message": "Iseva yemodeli yangokwezifiso (okuthuthukile)"
+  },
+  "optModelHostHelp": {
+    "message": "Akunalutho = huggingface.co. Setha iseva yakho yezindawo ezingaxhunyiwe ku-inthanethi/zezinkampani."
+  },
+  "filterAll": {
+    "message": "konke"
+  },
+  "filterWeek": {
+    "message": "isonto eledlule"
+  },
+  "filterMonth": {
+    "message": "inyanga edlule"
+  },
+  "filterYear": {
+    "message": "unyaka odlule"
+  },
+  "relatedLink": {
+    "message": "izinkumbulo ezihlobene"
+  },
+  "relatedNone": {
+    "message": "azikho izinkumbulo eziseduze"
+  },
+  "omniboxDefault": {
+    "message": "Buza inkumbulo yakho — i-Déjà isesha ngencazelo"
+  },
+  "popupMemory": {
+    "message": "Inkumbulo yami"
+  },
+  "memoryTitle": {
+    "message": "Inkumbulo yami"
+  },
+  "memoryEmpty": {
+    "message": "Inkumbulo ayinalutho — phequlula amakhasi ambalwa bese ubuya."
+  },
+  "memoryForget": {
+    "message": "Khohlwa"
+  },
+  "memoryExport": {
+    "message": "Landa ingobo yomlando"
+  },
+  "memoryImport": {
+    "message": "Buyisela engobweni yomlando"
+  },
+  "memoryImportConfirm": {
+    "message": "Buyisela engobweni yomlando? Amakhasi afanayo azobhalwa phezu kwawo."
+  },
+  "optSave": {
+    "message": "Londoloza"
+  },
+  "optSaved": {
+    "message": "Kulondoloziwe ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Iseva kufanele ibe ikheli le-https://"
+  },
+  "welcomeHeading": {
+    "message": "Sawubona. Ngiyinkumbulo yesiphequluli sakho."
+  },
+  "welcomeIntro": {
+    "message": "Kusukela manje ngikhumbula lokho okufundayo, ukuze ukuthole kamuva ngencazelo — ngamagama akho, hhayi ngesihloko esiqondile."
+  },
+  "welcomePoint1": {
+    "message": "Konke kwenzeka kudivayisi yakho. Awekho amaseva, alikho ifu, ayikho idatha ethunyelwayo — noma kuphi, noma nini."
+  },
+  "welcomePoint2": {
+    "message": "Imeyili, izingxoxo, ukungena ngemvume kanye namabhange akukaze kukhunjulwe. Qaphela: angikwazi ukubona izihloko ezibucayi ngekheli — kuzo, sebenzisa ukumisa okwesikhashana noma uhlu lwakho ezilungiselelweni."
+  },
+  "welcomePoint3": {
+    "message": "Nguwe ophethe: misa okwesikhashana ngokuchofoza kanye, “Sula inkumbulo” isusa konke, futhi uma uthanda ngikhohlwa ngokuzenzakalela ngemva kwezinyanga ezimbalwa."
+  },
+  "welcomeCta": {
+    "message": "Vula usesho"
+  },
+  "welcomeOptions": {
+    "message": "Izilungiselelo"
+  },
+  "memoryFilter": {
+    "message": "Sesha enkumbulweni yakho…"
+  },
+  "supportLink": {
+    "message": "Seseka i-Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — umngane"
+  },
+  "panelOnThisPage": {
+    "message": "Ngesihloko saleli khasi"
+  },
+  "panelRecent": {
+    "message": "Izinkumbulo zakamuva"
+  },
+  "panelNoPage": {
+    "message": "Vula ikhasi lewebhu futhi i-Déjà izokukhombisa lokho okufundile ngesihloko salo."
+  },
+  "popupOpenPanel": {
+    "message": "Iphaneli eseceleni"
+  },
+  "popupForgetPage": {
+    "message": "Khohlwa leli khasi"
+  },
+  "popupForgotten": {
+    "message": "Kukhohliwe ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: khumbula umbhalo okhethiwe"
+  },
+  "menuForget": {
+    "message": "Déjà: khohlwa leli khasi"
+  },
+  "recentTitle": {
+    "message": "Izinkumbulo zakamuva"
+  },
+  "cmdOpenPanel": {
+    "message": "Vula iphaneli eseceleni ye-Déjà"
+  },
+  "welcomePoint4": {
+    "message": "Iphaneli eseceleni ibona ikheli nesihloko sekhasi olibukayo ukuze ikhombise lokho okufundile ngesihloko salo — enkumbulweni yeseshini kuphela. Iziqephu ozigcina ngamabomu nazo zihlala kuwe kuphela."
+  },
+  "welcomeUpdated": {
+    "message": "I-Déjà ibuyekeziwe. Okusha: uma uthanda, manje namabhukhimakhi akho angaseshwa ngencazelo. Nakhu engikwenzayo ngedatha yakho — akukho okushiye idivayisi yakho."
+  },
+  "optAmbientLabel": {
+    "message": "Ingemuva eliphilayo"
+  },
+  "optAmbientHelp": {
+    "message": "Inethi yezinkumbulo ngemuva kwengilazi intanta kancane. Yivale uma ukunyakaza kukuphazamisa."
+  },
+  "bmTitle": {
+    "message": "Yenza amabhukhimakhi akho aseshekayo — manje"
+  },
+  "bmText": {
+    "message": "I-Déjà ifunda izihloko namafolda wamabhukhimakhi akho ngaphandle kokuvula amakhasi. Wathole ngencazelo kusukela emzuzwini wokuqala — konke kuhlala kudivayisi yakho."
+  },
+  "bmTextShort": {
+    "message": "Inkumbulo yakho isencane. Ngifundise amabhukhimakhi akho bese uwasesha ngencazelo namuhla."
+  },
+  "bmButton": {
+    "message": "Funda amabhukhimakhi ami"
+  },
+  "bmNote": {
+    "message": "Isiphequluli sakho sizocela imvume. Ungakuvala noma nini ezilungiselelweni."
+  },
+  "bmTitleRunning": {
+    "message": "Ngifunda amabhukhimakhi akho…"
+  },
+  "bmTitleDone": {
+    "message": "Amabhukhimakhi akho ayaseshwa"
+  },
+  "bmPreparing": {
+    "message": "Ngiyalungiselela…"
+  },
+  "bmLearning": {
+    "message": "Kufundiwe: $DONE$ / $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "I-Déjà imisiwe okwesikhashana — ngizoqhubeka nje lapho uqalisa kabusha."
+  },
+  "bmError": {
+    "message": "Kukhona okungahambanga kahle ngesikhathi ngifunda. Ngizozama futhi ngoshintsho olulandelayo."
+  },
+  "bmDone": {
+    "message": "Kuqediwe — amabhukhimakhi angu-$COUNT$ ayaseshwa ngencazelo futhi avumelaniswa ngokuzenzakalela.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Kuqediwe — ibhukhimakhi eli-1 liyaseshwa ngencazelo futhi livumelaniswa ngokuzenzakalela."
+  },
+  "bmDenied": {
+    "message": "Ngaphandle kwemvume angikwazi ukubona amabhukhimakhi akho. Ungazama futhi noma nini."
+  },
+  "bmTry": {
+    "message": "Zama:"
+  },
+  "bmBadge": {
+    "message": "Ibhukhimakhi"
+  },
+  "bmAddedOn": {
+    "message": "libhukhimakhwe ngo-$DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Amabhukhimakhi enkumbulweni"
+  },
+  "optBookmarksHelp": {
+    "message": "Ngifunda izihloko namafolda wamabhukhimakhi akho (ngaphandle kokuvula amakhasi) futhi ngilandela njengoba uwengeza noma uwasusa. Ukukuvala kuwasusa enkumbulweni — amakhasi owafundile ayasala."
+  },
+  "memoryFilterAll": {
+    "message": "Konke"
+  },
+  "memoryFilterRead": {
+    "message": "Okufundiwe"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Amabhukhimakhi"
+  },
+  "welcomePoint5": {
+    "message": "Amabhukhimakhi — kuphela uma ukuvula: lapho ngifunda izihloko namafolda awo, ngaphandle kokuvula amakhasi. Ukuchofoza kanye kuyakuvala."
+  },
+  "rateTitle": {
+    "message": "I-Déjà ikusizile ukuthola okuthile — izikhathi ezingu-$COUNT$ manje",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Uma iwusizo, isilinganiso esitolo sisiza abanye abantu ukuthi bayithole — kuthatha imizuzwana eyi-10. Futhi uma kukhona okukucasulayo, sitshele."
+  },
+  "rateButton": {
+    "message": "Linganisa i-Déjà"
+  },
+  "rateFeedback": {
+    "message": "Kukhona okungasebenzi?"
+  },
+  "rateLater": {
+    "message": "Hhayi manje"
+  },
+  "rateThanks": {
+    "message": "Siyabonga! Kusiza ngempela."
+  },
+  "rateFeedbackThanks": {
+    "message": "Siyabonga — sifunda wonke umlayezo."
+  },
+  "rateFeedbackSubject": {
+    "message": "impendulo"
+  },
+  "answerTitle": {
+    "message": "Impendulo evela enkumbulweni yakho"
+  },
+  "answerAsk": {
+    "message": "Phendula ngenkumbulo yami"
+  },
+  "answerEnableTitle": {
+    "message": "Izimpendulo ezivela ku-AI eyakhelwe ngaphakathi ku-Chrome"
+  },
+  "answerEnableText": {
+    "message": "I-Déjà ingaphendula imibuzo isuka kulokho okufundile, inemithombo. I-Chrome ilanda imodeli yayo esebenza kudivayisi (Gemini Nano) kanye kuphela — imibuzo namakhasi akho akaze ashiye ikhompyutha yakho."
+  },
+  "answerEnableButton": {
+    "message": "Vula izimpendulo"
+  },
+  "answerNoThanks": {
+    "message": "Cha ngiyabonga"
+  },
+  "answerDownloading": {
+    "message": "I-Chrome ilanda imodeli… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Ngifunda izinkumbulo zakho…"
+  },
+  "answerStop": {
+    "message": "Misa"
+  },
+  "answerFoot": {
+    "message": "Ibhalwe kudivayisi yakho yi-AI eyakhelwe ngaphakathi ku-Chrome isuka ezinkumbulweni zakho ezingu-$COUNT$. Hlola imithombo.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Angikwazanga ukuhlanganisa impendulo kulokhu."
+  },
+  "optAnswersLabel": {
+    "message": "Izimpendulo ezivela ku-AI eyakhelwe ngaphakathi ku-Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "Emibuzweni efana nethi “bengifundani nge…?” ngibhala impendulo emfushane enemithombo evela emakhasini akho — ngokuphelele kudivayisi yakho, nge-Gemini Nano ku-Chrome. Idinga ikhompyutha nolimi olusekelwayo (isiNgisi, isiSpeyini, isiJalimane, isiFulentshi, isiJapane)."
+  },
+  "optAnswersAvailable": {
+    "message": "Isilungele ukusetshenziswa kule divayisi."
+  },
+  "optAnswersDownloadable": {
+    "message": "Iyasekelwa — i-Chrome izolanda imodeli embuzweni wakho wokuqala."
+  },
+  "optAnswersUnavailable": {
+    "message": "Le divayisi noma ulimi lokusebenzisana akusekelwa yi-AI eyakhelwe ngaphakathi ku-Chrome."
+  },
+  "optAnswersUnsupported": {
+    "message": "Lesi siphequluli asinayo i-AI eyakhelwe ngaphakathi — konke okunye ku-Déjà kusebenza njengenjwayelo."
+  }
+}
