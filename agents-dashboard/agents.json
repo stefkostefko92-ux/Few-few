@@ -4653,7 +4653,7 @@
           "Италиански типографски конвенции (caporali, Lei, формати)",
           "i18n паритет на ключове — best practice"
         ],
-        "lessons": 156
+        "lessons": 158
       },
       "evolution": [
         {
@@ -5069,9 +5069,20 @@
           "date": "2026-10-12",
           "event": "v17.7 — учене",
           "detail": "Научи: Без Bash паритетът на chrome.i18n локали се проверява с Grep: count на '\\\"message\\\":' (…"
+        },
+        {
+          "version": "17.9.0",
+          "date": "2026-10-12",
+          "event": "v17.9 — учене",
+          "detail": "Научи: Déjà test/i18n.mjs брои марката с подниз (count(m,'Gemini Nano')) — граматично окончани… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-12",
+          "type": "learning",
+          "summary": "Научи: „Déjà test/i18n.mjs брои марката с подниз (count(m,'Gemini Nano')) — граматично окончани…\" (+1 още)"
+        },
         {
           "date": "2026-10-12",
           "type": "quarantine",

@@ -6,6 +6,8 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-10-12:** Déjà листинг гейт: TITLE === extName, SHORT ≤132 (JS .length), брой ✓ === en (14); extName ≤75 и започва с „Déjà — “. _(deja; verified; "deja/test/i18n.mjs:72-89")_
+- **2026-10-12:** Déjà test/i18n.mjs брои марката с подниз (count(m,'Gemini Nano')) — граматично окончание върху марката (hu „Gemini Nanóval“) чупи гейта; преформулирай („Gemini Nano modellel“). Déjà с окончание („Déjà'yı“, „Déjàga“) минава, защото подниза остава. _(deja; verified; "deja/test/i18n.mjs:41-70")_
 - **2026-10-12:** Без Bash паритетът на chrome.i18n локали се проверява с Grep: count на '\"message\":' (=128), -o '\\$[A-Z]+\\$' с номера редове срещу en, multiline '\"extDesc\": \\{\\n    \"message\": \"[^\"\\n]{133,}\"' за лимита на CWS (контролна проба с по-нисък праг, за да се докаже, че шаблонът хваща). _(i18n tooling; verified; "Grep проверки в тази сесия върху deja/_locales/*/messages.json")_
 - **2026-10-12:** Без Bash паритетът на chrome.i18n локали се проверява с Grep: count на '\"message\":' (=128), -o '\\$[A-Z]+\\$' с номера редове срещу en, multiline '\"extDesc\": \\{\\n    \"message\": \"[^\"\\n]{133,}\"' за лимита на CWS. _(i18n tooling; verified; "Grep проверки в тази сесия върху deja/_locales/*/messages.json")_
 - **2026-10-12:** Адресатът в ПРЕДАВАНЕ трябва да е id на агент (напр. ai-djiyata), не показно име (AI-джията) — dod-check.mjs го отхвърля. _(всички агенти; verified; .claude/hooks/dod-check.mjs (Stop hook feedback))_
