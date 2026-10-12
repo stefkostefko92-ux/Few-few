@@ -201,7 +201,8 @@ $C up -d && curl -fsS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:4330/up
 | `install.sh`: „порт … е зает“ | `ss -tlnp 'sport = :<порт>'` — друг продукт; смени `PANEL_PORT`/`WINGS_PORT` |
 | „DNS … сочи …“ | A записите от т. 0; `getent ahostsv4 mc.carbonstealth.eu` |
 | Панелът не тръгва | `docker compose --project-name pelican -f /opt/pelican/compose.yml logs panel` |
-| Нодът е червен в панела | `journalctl -u wings -n 80`; `curl -s -o /dev/null -w '%{http_code}' https://node-mc.carbonstealth.eu/api/system` → трябва 401 |
+| Нодът е червен в панела | `journalctl -u wings -n 80`; `curl -s https://node-mc.carbonstealth.eu/healthz` → трябва `ok` (502 = Wings е спрян) |
+| vpsdash: „Продукт не отговаря: node-mc… → статус 401“ | проверката сочи `/` (там Wings винаги отговаря 401); в vpsdash → healthChecks адресът да е `https://node-mc.carbonstealth.eu/healthz` |
 | Конзолата не се свързва | същото — WebSocket минава през `node-mc` (nginx `Upgrade`) |
 | Сървърът спира с OOM | Build → RAM нагоре (JVM взима 95 % от лимита) |
 | Играчите не влизат | клиентът трябва да е 26.3; порт 25565/tcp отворен в Hetzner Firewall |
