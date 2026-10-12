@@ -1,0 +1,545 @@
+// ChatChat — данни. Спецификация v1.1, §13 (модел на данните), §7.2 (задължителни метаданни),
+// §11 (Safety Gate), §13.3 (версия на знанието). Всеки ред на клиентски данни носи tenantId —
+// изолацията между клиенти е и в заявките, не само в UI (NFR-03, §15.1).
+//
+// Извън тази първа стъпка (по пътната карта §18): прикачени файлове и снимки (F2, иска антивирус),
+// семантично търсене с pgvector, канали/директни съобщения/присъствие/обаждания (§12.3).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Достъп ─────────────────────────────────────────────────────────────────────────────────
+
+/// Матрицата на достъп (§12.4). Ролите НЕ са строго йерархични — правата идват от src/auth/rbac.ts.
+enum Role {
+  PORTAL_TECHNICIAN // техник на клиент/портал: само своите случаи и публикуваните документи за портала
+  INTERNAL_TECHNICIAN // вътрешен поддръжник: сервизните документи за своя периметър
+  SUPPORT // техническа поддръжка: триаж, ескалация, тикети
+  ENGINEERING // инженеринг: технически ревизии, бюлетини, вътрешни документи
+  KNOWLEDGE_OWNER // отговорник за знанието: качване, преглед, публикуване, отписване
+  TENANT_ADMIN // администратор на клиента: потребители, роли, срокове
+  PLATFORM_ADMIN // администратор на платформата (Carbon Stealth)
+}
+
+enum AccountKind {
+  INTERNAL
+  PORTAL
+}
+
+/// Клиентът на платформата (производителят на таблата). Всичко живее под него.
+model Tenant {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+
+  companies Company[]
+  users     User[]
+  products  Product[]
+  devices   Device[]
+  documents Document[]
+  cases     Case[]
+}
+
+/// Фирма в рамките на клиента (монтажник, дистрибутор, сервиз) — разделя портала.
+model Company {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  createdAt DateTime @default(now())
+
+  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  users   User[]
+  devices Device[]
+  cases   Case[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model User {
+  id           String      @id @default(cuid())
+  tenantId     String
+  companyId    String?
+  /// Малки букви, без интервали — уникален в цялата платформа (входът е по имейл).
+  email        String      @unique
+  name         String
+  role         Role
+  kind         AccountKind
+  passwordHash String
+  active       Boolean     @default(true)
+  /// Срок на акаунта (§12.4) — след него входът е отказан.
+  expiresAt    DateTime?
+  locale       String      @default("it")
+  lastLoginAt  DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  company  Company?  @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  sessions Session[]
+
+  @@index([tenantId])
+  @@index([companyId])
+}
+
+/// Сесия в базата (не JWT): отнема се веднага при изход, деактивиране или смяна на роля (AC-16).
+model Session {
+  id         String    @id @default(cuid())
+  userId     String
+  /// SHA-256 на токена от бисквитката — самият токен не се пази.
+  tokenHash  String    @unique
+  csrfToken  String
+  createdAt  DateTime  @default(now())
+  expiresAt  DateTime
+  lastSeenAt DateTime  @default(now())
+  revokedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// ─── Продукт ────────────────────────────────────────────────────────────────────────────────
+
+model Product {
+  id          String   @id @default(cuid())
+  tenantId    String
+  family      String
+  model       String
+  description String   @default("")
+  createdAt   DateTime @default(now())
+
+  tenant        Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  revisions     ProductRevision[]
+  applicability DocumentApplicability[]
+  errors        ErrorCode[]
+
+  @@unique([tenantId, model])
+  @@index([tenantId, family])
+}
+
+/// Хардуерна ревизия с поддържания обхват на фърмуера (§13.1 product_revisions).
+model ProductRevision {
+  id         String  @id @default(cuid())
+  productId  String
+  hwRevision String
+  fwMin      String
+  /// null = без горна граница.
+  fwMax      String?
+
+  product Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  devices Device[]
+
+  @@unique([productId, hwRevision])
+  @@index([productId])
+}
+
+/// Физическото табло на обекта (§13.1 devices).
+model Device {
+  id                String   @id @default(cuid())
+  tenantId          String
+  companyId         String?
+  serial            String
+  productRevisionId String
+  /// Инсталираният фърмуер — може да се различава от началото на обхвата на ревизията.
+  firmware          String
+  /// Опции/конфигурация (инвертор, брой спирки…) — само технически данни, без лични.
+  options           Json     @default("{}")
+  /// SHA-256 на токена в QR етикета (FR-13); самият токен не се пази.
+  qrTokenHash       String?  @unique
+  createdAt         DateTime @default(now())
+
+  tenant   Tenant          @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  company  Company?        @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  revision ProductRevision @relation(fields: [productRevisionId], references: [id], onDelete: Restrict)
+  cases    Case[]
+
+  @@unique([tenantId, serial])
+  @@index([companyId])
+  @@index([productRevisionId])
+}
+
+// ─── Знание ─────────────────────────────────────────────────────────────────────────────────
+
+enum DocumentType {
+  MANUAL
+  SCHEMATIC
+  ERROR_LIST
+  FAQ
+  BULLETIN
+  PROCEDURE
+  SOLVED_CASE
+}
+
+/// Работният поток Draft → Review → Published → Deprecated (§4.1). AI вижда САМО Published (§7.3).
+enum KnowledgeStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  DEPRECATED
+}
+
+/// Кой може да вижда документа (§12.4): портал ⊂ вътрешни ⊂ инженеринг.
+enum Audience {
+  PORTAL
+  INTERNAL
+  ENGINEERING
+}
+
+model Document {
+  id             String          @id @default(cuid())
+  tenantId       String
+  /// Стабилният код на документа (напр. „DOC-0042“, „LTX500-ELEC-042“) — един и същ през ревизиите.
+  code           String
+  title          String
+  type           DocumentType
+  language       String
+  revision       String
+  status         KnowledgeStatus @default(DRAFT)
+  audience       Audience        @default(INTERNAL)
+  safetyRelevant Boolean         @default(false)
+  subsystem      String?
+  sourceFilename String
+  /// SHA-256 на оригиналния файл (§7.2, §17.3) — неизменим.
+  checksum       String
+  effectiveFrom  DateTime?
+  effectiveTo    DateTime?
+  uploadedById   String
+  reviewedById   String?
+  approvedById   String?
+  approvedAt     DateTime?
+  publishedAt    DateTime?
+  deprecatedAt   DateTime?
+  supersedesId   String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  tenant        Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  supersedes    Document?               @relation("Supersedes", fields: [supersedesId], references: [id], onDelete: Restrict)
+  supersededBy  Document[]              @relation("Supersedes")
+  applicability DocumentApplicability[]
+  chunks        DocumentChunk[]
+  errors        ErrorCode[]
+
+  @@unique([tenantId, code, revision])
+  @@index([tenantId, status])
+  @@index([supersedesId])
+}
+
+/// Правило за съвместимост (§13.1 document_applicability): модел + по избор HW ревизия и обхват на FW.
+model DocumentApplicability {
+  id         String  @id @default(cuid())
+  documentId String
+  productId  String
+  /// null = всички хардуерни ревизии на модела.
+  hwRevision String?
+  fwMin      String?
+  fwMax      String?
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([documentId])
+  @@index([productId])
+}
+
+/// Индексът за търсене (§7.3): парче текст със страница и раздел — основата на всеки цитат.
+model DocumentChunk {
+  id            String                   @id @default(cuid())
+  documentId    String
+  ordinal       Int
+  page          Int
+  section       String?
+  text          String
+  /// Референции на компоненти, намерени в парчето (K1, X3, S12…) — точно съвпадение (§8.2).
+  componentRefs String[]
+  /// Кодове за грешка, споменати в парчето — точно съвпадение (§8.2).
+  errorCodes    String[]
+  /// to_tsvector('simple', section || text) — попълва се от src/store/prisma.ts при запис.
+  tsv           Unsupported("tsvector")?
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, ordinal])
+  @@index([documentId, page])
+  @@index([tsv], type: Gin)
+  @@index([componentRefs], type: Gin)
+  @@index([errorCodes], type: Gin)
+}
+
+enum Severity {
+  INFO
+  WARNING
+  FAULT
+  CRITICAL
+}
+
+/// Класовете действия (§11.1). Редът е по риск — Safety Gate взима по-строгия от двата класа
+/// (обявения от модела и откритият от речника).
+enum ActionClass {
+  INFORMATIVE
+  DIAGNOSTIC
+  CONFIGURATIVE
+  SAFETY_RELEVANT
+  DIRECT_COMMAND
+}
+
+/// Код за грешка (§13.1 errors) — версиониран като документите: един код може да значи
+/// различно нещо в различен фърмуер (§16.3 „грешна версия, същото име“).
+model ErrorCode {
+  id               String          @id @default(cuid())
+  tenantId         String
+  productId        String
+  code             String
+  title            String
+  description      String
+  subsystem        String?
+  severity         Severity
+  safetyRelevant   Boolean         @default(false)
+  hwRevision       String?
+  fwMin            String?
+  fwMax            String?
+  status           KnowledgeStatus @default(DRAFT)
+  version          Int             @default(1)
+  sourceDocumentId String?
+  sourcePage       Int?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  product        Product         @relation(fields: [productId], references: [id], onDelete: Restrict)
+  sourceDocument Document?       @relation(fields: [sourceDocumentId], references: [id], onDelete: Restrict)
+  relations      ErrorRelation[]
+
+  @@index([tenantId, code])
+  @@index([productId, code])
+  @@index([sourceDocumentId])
+}
+
+enum ErrorRelationKind {
+  SYMPTOM
+  CAUSE
+  CHECK
+  FIX
+}
+
+/// Диагностичното знание за кода (§13.1 error_relations): симптоми, причини, проверки, поправки.
+model ErrorRelation {
+  id               String            @id @default(cuid())
+  errorId          String
+  kind             ErrorRelationKind
+  ordinal          Int
+  text             String
+  /// За CHECK: какво трябва да види техникът (§10.2 „Risultato atteso“).
+  expected         String?
+  actionClass      ActionClass       @default(INFORMATIVE)
+  sourceDocumentId String?
+  sourcePage       Int?
+
+  error ErrorCode @relation(fields: [errorId], references: [id], onDelete: Cascade)
+
+  @@index([errorId])
+}
+
+/// Кои документи (с ревизия и checksum) са били публикувани в момента на отговора (§13.3).
+/// id = SHA-256 на подредения списък — същото знание дава същия снимков идентификатор.
+model KnowledgeSnapshot {
+  id        String   @id
+  tenantId  String
+  /// [{ id, code, revision, checksum }] + [{ errorId, version }]
+  manifest  Json
+  createdAt DateTime @default(now())
+
+  messages CaseMessage[]
+
+  @@index([tenantId])
+}
+
+// ─── Случаи ─────────────────────────────────────────────────────────────────────────────────
+
+/// Моделът на състоянието на разговора (§12.4).
+enum CaseStatus {
+  OPEN
+  AI_IN_PROGRESS
+  WAITING_TECHNICIAN
+  IN_PROGRESS
+  WAITING_CUSTOMER
+  RESOLVED
+}
+
+enum CaseOutcome {
+  RESOLVED
+  NOT_RESOLVED
+  ESCALATED
+}
+
+model Case {
+  id           String       @id @default(cuid())
+  tenantId     String
+  /// Човешкият номер, напр. „CASE-2026-004821“.
+  number       String       @unique
+  companyId    String?
+  deviceId     String?
+  /// Случай, отворен от портален акаунт: AI търси САМО в портални документи, който и да пита
+  /// (AC-18 — портален разговор не излага вътрешни източници).
+  portal       Boolean      @default(false)
+  /// Техническият контекст (§10.1) — винаги видим и редактируем (FR-02); снимка при всяка промяна.
+  context      Json
+  status       CaseStatus   @default(OPEN)
+  outcome      CaseOutcome?
+  createdById  String
+  assignedToId String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  closedAt     DateTime?
+
+  tenant   Tenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  company  Company?            @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  device   Device?             @relation(fields: [deviceId], references: [id], onDelete: Restrict)
+  messages CaseMessage[]
+  evidence CaseEvidence[]
+  timeline CaseTimelineEvent[]
+  ticket   Ticket?
+
+  @@index([tenantId, status])
+  @@index([companyId])
+  @@index([deviceId])
+  @@index([createdById])
+}
+
+enum MessageKind {
+  HUMAN
+  AI
+  SYSTEM
+}
+
+model CaseMessage {
+  id                  String      @id @default(cuid())
+  caseId              String
+  kind                MessageKind
+  authorId            String?
+  body                String
+  /// Структурираният диагностичен отговор (§14.3) — само за kind = AI, след Safety Gate.
+  payload             Json?
+  knowledgeSnapshotId String?
+  /// Версията на промпта/правилата, дала отговора (NFR-04, AC-09).
+  promptVersion       String?
+  /// Идентификатор от клиента за идемпотентно изпращане (NFR-12): повтор не дублира съобщението.
+  clientMessageId     String?
+  /// Аудиториите, с които е търсено за този AI отговор. Читател без всички тях не вижда
+  /// съдържанието (цитати от вътрешни/инженерни документи не изтичат към по-тесни роли).
+  audiences           Audience[]  @default([])
+  createdAt           DateTime    @default(now())
+
+  case              Case               @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  knowledgeSnapshot KnowledgeSnapshot? @relation(fields: [knowledgeSnapshotId], references: [id], onDelete: Restrict)
+  evidence          CaseEvidence[]
+  feedback          Feedback[]
+
+  @@unique([caseId, clientMessageId])
+  @@index([caseId, createdAt])
+  @@index([knowledgeSnapshotId])
+}
+
+/// Проследимост (§13.1 case_evidence): кое парче/код е подкрепило кой отговор.
+model CaseEvidence {
+  id         String  @id @default(cuid())
+  caseId     String
+  messageId  String
+  documentId String?
+  chunkId    String?
+  errorId    String?
+  page       Int?
+  quote      String?
+
+  case    Case        @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  message CaseMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([caseId])
+  @@index([messageId])
+  @@index([documentId])
+}
+
+/// Единната хронология на случая (§13.1 case_timeline_events, AC-19).
+model CaseTimelineEvent {
+  id      String   @id @default(cuid())
+  caseId  String
+  type    String
+  actorId String?
+  payload Json     @default("{}")
+  at      DateTime @default(now())
+
+  case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId, at])
+}
+
+enum TicketStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  WAITING
+  CLOSED
+}
+
+/// Ескалация (§13.1 tickets): CASE 0..1 TICKET. Обобщението се сглобява от сървъра (AC-08).
+model Ticket {
+  id          String       @id @default(cuid())
+  caseId      String       @unique
+  number      String       @unique
+  status      TicketStatus @default(OPEN)
+  ownerId     String?
+  reason      String
+  summary     Json
+  createdById String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  /// Cascade: ретенцията изтрива затворения случай заедно с тикета (GDPR чл. 5(1)(e)).
+  case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+}
+
+enum FeedbackRating {
+  USEFUL
+  NOT_USEFUL
+  TECHNICAL_ERROR
+}
+
+model Feedback {
+  id        String         @id @default(cuid())
+  messageId String
+  userId    String
+  rating    FeedbackRating
+  comment   String?
+  createdAt DateTime       @default(now())
+
+  message CaseMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+}
+
+/// Неизменим одит (§15.1, FR-12): верига hash = SHA-256(prevHash | at | action | tenant | actor | object | detail).
+model AuditEvent {
+  id         Int      @id @default(autoincrement())
+  tenantId   String?
+  actorId    String?
+  action     String
+  objectType String?
+  objectId   String?
+  detail     Json?
+  at         DateTime @default(now())
+  prevHash   String
+  hash       String   @unique
+
+  @@index([tenantId, at])
+  @@index([actorId])
+}
