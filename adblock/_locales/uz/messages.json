@@ -118,6 +118,27 @@
   "support": {
     "message": "Homiylik"
   },
+  "rate": {
+    "message": "Baholash"
+  },
+  "rateTitle": {
+    "message": "Supreme AdBlock’ni Chrome veb-doʻkonida baholang"
+  },
+  "reviewBlocked": {
+    "message": "Hozirgacha bloklangan soʻrovlar: $1"
+  },
+  "reviewAsk": {
+    "message": "Agar Supreme AdBlock sizga foydali boʻlsa, Chrome veb-doʻkonidagi qisqa sharh boshqalarga uni topishga yordam beradi."
+  },
+  "reviewLeave": {
+    "message": "Sharh yozish"
+  },
+  "reviewLater": {
+    "message": "Hozir emas"
+  },
+  "reviewNever": {
+    "message": "Boshqa soʻramaslik"
+  },
   "filtersCount": {
     "message": "$1+ filtr",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut orqali xayriya qilish"
+  },
+  "opt_review": {
+    "message": "Sharh eslatmalari"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock oynasining pastida kichik ★ havola va koʻpi bilan ikki marta oʻsha yerda uni Chrome veb-doʻkonida baholash haqida qisqa iltimos. Hech qachon saytlarda emas, hech qachon bildirishnoma sifatida emas."
   },
   "opt_made_by": {
     "message": "Carbon Stealth tomonidan yaratilgan"

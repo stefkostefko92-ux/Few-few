@@ -118,6 +118,27 @@
   "support": {
     "message": "Падтрымаць"
   },
+  "rate": {
+    "message": "Ацаніць"
+  },
+  "rateTitle": {
+    "message": "Ацаніце Supreme AdBlock у Інтэрнэт-краме Chrome"
+  },
+  "reviewBlocked": {
+    "message": "Ужо заблакавана запытаў: $1"
+  },
+  "reviewAsk": {
+    "message": "Калі Supreme AdBlock вам карысны, кароткі водгук у Інтэрнэт-краме Chrome дапаможа іншым яго знайсці."
+  },
+  "reviewLeave": {
+    "message": "Пакінуць водгук"
+  },
+  "reviewLater": {
+    "message": "Не зараз"
+  },
+  "reviewNever": {
+    "message": "Больш не пытаць"
+  },
   "filtersCount": {
     "message": "$1+ фільтраў",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Ахвяраваць праз Revolut"
+  },
+  "opt_review": {
+    "message": "Нагадванні пра водгук"
+  },
+  "opt_review_sub": {
+    "message": "Маленькая спасылка ★ унізе акна Supreme AdBlock і, не больш за два разы, кароткая просьба там ацаніць яго ў Інтэрнэт-краме Chrome. Ніколі на сайтах, ніколі як апавяшчэнне."
   },
   "opt_made_by": {
     "message": "створана Carbon Stealth"

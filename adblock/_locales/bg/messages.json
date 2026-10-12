@@ -120,6 +120,27 @@
   "support": {
     "message": "Подкрепи"
   },
+  "rate": {
+    "message": "Оцени"
+  },
+  "rateTitle": {
+    "message": "Оценете Supreme AdBlock в Уеб магазина на Chrome"
+  },
+  "reviewBlocked": {
+    "message": "Досега блокирани заявки: $1"
+  },
+  "reviewAsk": {
+    "message": "Ако Supreme AdBlock ви е полезно, кратък отзив в Уеб магазина на Chrome помага и на други да го открият."
+  },
+  "reviewLeave": {
+    "message": "Напишете отзив"
+  },
+  "reviewLater": {
+    "message": "Не сега"
+  },
+  "reviewNever": {
+    "message": "Не питай повече"
+  },
   "filtersCount": {
     "message": "$1+ филтъра",
     "placeholders": {
@@ -316,6 +337,12 @@
   },
   "opt_donate": {
     "message": "Дарение през Revolut"
+  },
+  "opt_review": {
+    "message": "Напомняне за отзив"
+  },
+  "opt_review_sub": {
+    "message": "Малък линк ★ в долната част на прозореца на Supreme AdBlock и най-много два пъти кратка молба там да го оцените в Уеб магазина на Chrome. Никога по сайтовете, никога като известие."
   },
   "opt_made_by": {
     "message": "създадено от Carbon Stealth"

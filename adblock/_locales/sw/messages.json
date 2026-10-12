@@ -118,6 +118,27 @@
   "support": {
     "message": "Changia"
   },
+  "rate": {
+    "message": "Kadiria"
+  },
+  "rateTitle": {
+    "message": "Kadiria Supreme AdBlock kwenye Duka la Chrome kwenye Wavuti"
+  },
+  "reviewBlocked": {
+    "message": "Maombi $1 yamezuiwa hadi sasa"
+  },
+  "reviewAsk": {
+    "message": "Ikiwa Supreme AdBlock inakusaidia, maoni mafupi kwenye Duka la Chrome kwenye Wavuti huwasaidia wengine kuipata."
+  },
+  "reviewLeave": {
+    "message": "Andika maoni"
+  },
+  "reviewLater": {
+    "message": "Si sasa"
+  },
+  "reviewNever": {
+    "message": "Usiulize tena"
+  },
   "filtersCount": {
     "message": "Vichujio $1+",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Changia kupitia Revolut"
+  },
+  "opt_review": {
+    "message": "Vikumbusho vya maoni"
+  },
+  "opt_review_sub": {
+    "message": "Kiungo kidogo cha ★ chini ya dirisha la Supreme AdBlock na, si zaidi ya mara mbili, ombi fupi hapo la kuikadiria kwenye Duka la Chrome kwenye Wavuti. Kamwe kwenye tovuti, kamwe kama arifa."
   },
   "opt_made_by": {
     "message": "imetengenezwa na Carbon Stealth"

@@ -118,6 +118,27 @@
   "support": {
     "message": "Tue"
   },
+  "rate": {
+    "message": "Arvioi"
+  },
+  "rateTitle": {
+    "message": "Arvioi Supreme AdBlock Chrome Web Storessa"
+  },
+  "reviewBlocked": {
+    "message": "Tähän mennessä estetty $1 pyyntöä"
+  },
+  "reviewAsk": {
+    "message": "Jos Supreme AdBlock on sinulle hyödyllinen, lyhyt arvio Chrome Web Storessa auttaa muita löytämään sen."
+  },
+  "reviewLeave": {
+    "message": "Kirjoita arvio"
+  },
+  "reviewLater": {
+    "message": "Ei nyt"
+  },
+  "reviewNever": {
+    "message": "Älä kysy uudelleen"
+  },
   "filtersCount": {
     "message": "$1+ suodatinta",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Lahjoita Revolutilla"
+  },
+  "opt_review": {
+    "message": "Arviomuistutukset"
+  },
+  "opt_review_sub": {
+    "message": "Pieni ★-linkki Supreme AdBlock -ikkunan alareunassa ja enintään kahdesti lyhyt pyyntö arvioida se Chrome Web Storessa. Ei koskaan verkkosivustoilla, ei koskaan ilmoituksena."
   },
   "opt_made_by": {
     "message": "tekijä: Carbon Stealth"

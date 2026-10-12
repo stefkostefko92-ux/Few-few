@@ -118,6 +118,27 @@
   "support": {
     "message": "Col·labora"
   },
+  "rate": {
+    "message": "Valora"
+  },
+  "rateTitle": {
+    "message": "Valoreu Supreme AdBlock a la Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "$1 sol·licituds bloquejades fins ara"
+  },
+  "reviewAsk": {
+    "message": "Si Supreme AdBlock us és útil, una ressenya breu a la Chrome Web Store ajuda altres persones a trobar-lo."
+  },
+  "reviewLeave": {
+    "message": "Escriviu una ressenya"
+  },
+  "reviewLater": {
+    "message": "Ara no"
+  },
+  "reviewNever": {
+    "message": "No ho tornis a preguntar"
+  },
   "filtersCount": {
     "message": "$1+ filtres",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Feu un donatiu amb Revolut"
+  },
+  "opt_review": {
+    "message": "Recordatoris de ressenya"
+  },
+  "opt_review_sub": {
+    "message": "Un petit enllaç ★ a la part inferior de la finestra de Supreme AdBlock i, com a màxim dues vegades, una breu petició per valorar-lo a la Chrome Web Store. Mai als llocs web, mai com a notificació."
   },
   "opt_made_by": {
     "message": "fet per Carbon Stealth"

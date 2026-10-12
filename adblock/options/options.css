@@ -404,3 +404,6 @@ html[data-theme="light"] .badge-lang {
 
 [hidden] { display: none !important; }
 [dir="rtl"] input:checked + .slider::before { transform: translateX(-20px); }
+
+/* the review-reminder switch sits under the donate button, set off by the usual rule */
+.donate .row { margin-top: 14px; border-top: 1px solid var(--line); }

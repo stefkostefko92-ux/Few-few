@@ -118,6 +118,27 @@
   "support": {
     "message": "Podporiť"
   },
+  "rate": {
+    "message": "Ohodnotiť"
+  },
+  "rateTitle": {
+    "message": "Ohodnoťte Supreme AdBlock v Internetovom obchode Chrome"
+  },
+  "reviewBlocked": {
+    "message": "Doteraz zablokované požiadavky: $1"
+  },
+  "reviewAsk": {
+    "message": "Ak je pre vás Supreme AdBlock užitočný, krátka recenzia v Internetovom obchode Chrome pomôže ostatným ho nájsť."
+  },
+  "reviewLeave": {
+    "message": "Napísať recenziu"
+  },
+  "reviewLater": {
+    "message": "Teraz nie"
+  },
+  "reviewNever": {
+    "message": "Už sa nepýtať"
+  },
   "filtersCount": {
     "message": "$1+ filtrov",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Prispieť cez Revolut"
+  },
+  "opt_review": {
+    "message": "Pripomenutia recenzie"
+  },
+  "opt_review_sub": {
+    "message": "Malý odkaz ★ dole v okne Supreme AdBlock a najviac dvakrát krátka prosba o hodnotenie v Internetovom obchode Chrome. Nikdy na weboch, nikdy ako upozornenie."
   },
   "opt_made_by": {
     "message": "vytvorila spoločnosť Carbon Stealth"

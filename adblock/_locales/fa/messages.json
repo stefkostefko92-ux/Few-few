@@ -118,6 +118,27 @@
   "support": {
     "message": "حمایت"
   },
+  "rate": {
+    "message": "امتیاز دهید"
+  },
+  "rateTitle": {
+    "message": "به Supreme AdBlock در فروشگاه وب Chrome امتیاز دهید"
+  },
+  "reviewBlocked": {
+    "message": "تاکنون $1 درخواست مسدود شده است"
+  },
+  "reviewAsk": {
+    "message": "اگر Supreme AdBlock برایتان مفید است، یک نقد کوتاه در فروشگاه وب Chrome به دیگران کمک می‌کند آن را پیدا کنند."
+  },
+  "reviewLeave": {
+    "message": "نوشتن نقد"
+  },
+  "reviewLater": {
+    "message": "الان نه"
+  },
+  "reviewNever": {
+    "message": "دیگر نپرس"
+  },
   "filtersCount": {
     "message": "$1+ فیلتر",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "کمک مالی از طریق Revolut"
+  },
+  "opt_review": {
+    "message": "یادآوری نقد"
+  },
+  "opt_review_sub": {
+    "message": "یک پیوند کوچک ★ در پایین پنجرهٔ Supreme AdBlock و حداکثر دو بار، درخواستی کوتاه در همان‌جا برای امتیاز دادن به آن در فروشگاه وب Chrome. هرگز روی وب‌سایت‌ها و هرگز به‌صورت اعلان نیست."
   },
   "opt_made_by": {
     "message": "ساخته‌شده توسط Carbon Stealth"

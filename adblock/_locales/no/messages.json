@@ -118,6 +118,27 @@
   "support": {
     "message": "Støtt"
   },
+  "rate": {
+    "message": "Vurder"
+  },
+  "rateTitle": {
+    "message": "Vurder Supreme AdBlock i Chrome Nettmarked"
+  },
+  "reviewBlocked": {
+    "message": "$1 forespørsler blokkert så langt"
+  },
+  "reviewAsk": {
+    "message": "Hvis Supreme AdBlock er nyttig for deg, hjelper en kort anmeldelse i Chrome Nettmarked andre med å finne det."
+  },
+  "reviewLeave": {
+    "message": "Skriv en anmeldelse"
+  },
+  "reviewLater": {
+    "message": "Ikke nå"
+  },
+  "reviewNever": {
+    "message": "Ikke spør igjen"
+  },
   "filtersCount": {
     "message": "$1+ filtre",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Doner via Revolut"
+  },
+  "opt_review": {
+    "message": "Påminnelser om anmeldelse"
+  },
+  "opt_review_sub": {
+    "message": "En liten ★-lenke nederst i Supreme AdBlock-vinduet og høyst to ganger en kort forespørsel der om å vurdere det i Chrome Nettmarked. Aldri på nettsteder, aldri som varsel."
   },
   "opt_made_by": {
     "message": "laget av Carbon Stealth"

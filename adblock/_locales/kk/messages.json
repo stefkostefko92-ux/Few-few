@@ -118,6 +118,27 @@
   "support": {
     "message": "Қолдау"
   },
+  "rate": {
+    "message": "Бағалау"
+  },
+  "rateTitle": {
+    "message": "Supreme AdBlock-ты Chrome веб-дүкенінде бағалаңыз"
+  },
+  "reviewBlocked": {
+    "message": "Осы уақытқа дейін бұғатталған сұраулар: $1"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock сізге пайдалы болса, Chrome веб-дүкеніндегі қысқа пікір басқаларға оны табуға көмектеседі."
+  },
+  "reviewLeave": {
+    "message": "Пікір жазу"
+  },
+  "reviewLater": {
+    "message": "Қазір емес"
+  },
+  "reviewNever": {
+    "message": "Қайта сұрамау"
+  },
   "filtersCount": {
     "message": "$1+ сүзгі",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut арқылы қайырымдылық жасау"
+  },
+  "opt_review": {
+    "message": "Пікір туралы еске салғыштар"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock терезесінің төменгі жағындағы шағын ★ сілтемесі және ең көбі екі рет сол жерде оны Chrome веб-дүкенінде бағалау туралы қысқа өтініш. Ешқашан сайттарда емес, ешқашан хабарландыру ретінде емес."
   },
   "opt_made_by": {
     "message": "Carbon Stealth жасаған"

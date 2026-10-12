@@ -118,6 +118,27 @@
   "support": {
     "message": "Ủng hộ"
   },
+  "rate": {
+    "message": "Đánh giá"
+  },
+  "rateTitle": {
+    "message": "Đánh giá Supreme AdBlock trên Cửa hàng Chrome trực tuyến"
+  },
+  "reviewBlocked": {
+    "message": "Đã chặn $1 yêu cầu cho đến nay"
+  },
+  "reviewAsk": {
+    "message": "Nếu Supreme AdBlock hữu ích với bạn, một bài đánh giá ngắn trên Cửa hàng Chrome trực tuyến sẽ giúp người khác tìm thấy tiện ích."
+  },
+  "reviewLeave": {
+    "message": "Viết đánh giá"
+  },
+  "reviewLater": {
+    "message": "Để sau"
+  },
+  "reviewNever": {
+    "message": "Không hỏi lại"
+  },
   "filtersCount": {
     "message": "$1+ bộ lọc",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Ủng hộ qua Revolut"
+  },
+  "opt_review": {
+    "message": "Lời nhắc đánh giá"
+  },
+  "opt_review_sub": {
+    "message": "Một liên kết ★ nhỏ ở cuối cửa sổ Supreme AdBlock và tối đa hai lần, một lời đề nghị ngắn ngay tại đó để đánh giá tiện ích trên Cửa hàng Chrome trực tuyến. Không bao giờ trên trang web, không bao giờ dưới dạng thông báo."
   },
   "opt_made_by": {
     "message": "made by Carbon Stealth"

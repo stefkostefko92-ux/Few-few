@@ -118,6 +118,27 @@
   "support": {
     "message": "Támogatás"
   },
+  "rate": {
+    "message": "Értékelés"
+  },
+  "rateTitle": {
+    "message": "Értékelje a Supreme AdBlockot a Chrome Internetes áruházban"
+  },
+  "reviewBlocked": {
+    "message": "Eddig blokkolt kérések: $1"
+  },
+  "reviewAsk": {
+    "message": "Ha a Supreme AdBlock hasznos Önnek, egy rövid értékelés a Chrome Internetes áruházban segít másoknak megtalálni."
+  },
+  "reviewLeave": {
+    "message": "Értékelés írása"
+  },
+  "reviewLater": {
+    "message": "Most nem"
+  },
+  "reviewNever": {
+    "message": "Ne kérdezze újra"
+  },
   "filtersCount": {
     "message": "$1+ szűrő",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Adományozás Revoluttal"
+  },
+  "opt_review": {
+    "message": "Értékelési emlékeztetők"
+  },
+  "opt_review_sub": {
+    "message": "Egy kis ★ hivatkozás a Supreme AdBlock ablakának alján, és legfeljebb kétszer egy rövid kérés ugyanott, hogy értékelje a Chrome Internetes áruházban. Soha nem webhelyeken, soha nem értesítésként."
   },
   "opt_made_by": {
     "message": "készítette: Carbon Stealth"

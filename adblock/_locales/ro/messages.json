@@ -118,6 +118,27 @@
   "support": {
     "message": "Susțineți"
   },
+  "rate": {
+    "message": "Evaluați"
+  },
+  "rateTitle": {
+    "message": "Evaluați Supreme AdBlock în Magazinul Chrome Web"
+  },
+  "reviewBlocked": {
+    "message": "Solicitări blocate până acum: $1"
+  },
+  "reviewAsk": {
+    "message": "Dacă Supreme AdBlock vă este util, o scurtă recenzie în Magazinul Chrome Web îi ajută pe alții să-l găsească."
+  },
+  "reviewLeave": {
+    "message": "Scrieți o recenzie"
+  },
+  "reviewLater": {
+    "message": "Nu acum"
+  },
+  "reviewNever": {
+    "message": "Nu mai întreba"
+  },
   "filtersCount": {
     "message": "$1+ filtre",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Donați prin Revolut"
+  },
+  "opt_review": {
+    "message": "Mementouri pentru recenzie"
+  },
+  "opt_review_sub": {
+    "message": "Un mic link ★ în partea de jos a ferestrei Supreme AdBlock și, de cel mult două ori, o scurtă rugăminte acolo să-l evaluați în Magazinul Chrome Web. Niciodată pe site-uri, niciodată ca notificare."
   },
   "opt_made_by": {
     "message": "creat de Carbon Stealth"

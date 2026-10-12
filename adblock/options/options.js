@@ -59,6 +59,9 @@ function load() {
     $("featPrivacy").checked = res.features.privacy !== false;
     $("smartCount").textContent = (res.smartBlocked || 0).toLocaleString(UI_LANG);
     $("autoUpdate").checked = res.autoUpdate !== false;
+    // молбата за отзив — само където има наша страница в магазина (не в Edge Add-ons/Firefox)
+    $("reviewRow").hidden = !(res.review && res.review.url);
+    $("reviewAsk").checked = !!(res.review && res.review.on);
     renderUpdateStatus(res.liveVersion || 0, res.liveUpdated || 0);
     renderHealth();
     renderSubs();
@@ -353,6 +356,9 @@ $("featPrivacy").addEventListener("change", saveFeatures);
 $("autoUpdate").addEventListener("change", () =>
   chrome.runtime.sendMessage({ type: "setAutoUpdate", on: $("autoUpdate").checked })
 );
+$("reviewAsk").addEventListener("change", () =>
+  chrome.runtime.sendMessage({ type: "setReviewAsk", on: $("reviewAsk").checked })
+);
 
 $("updateNow").addEventListener("click", () => {
   const hint = $("updateHint");
@@ -445,7 +451,7 @@ $("resetStats").addEventListener("click", () => {
 });
 
 // ---- Backup ----
-const EXPORT_KEYS = ["enabled", "allowlist", "features", "customHidden", "theme", "subscriptions", "noCosmetics", "userFilters"];
+const EXPORT_KEYS = ["enabled", "allowlist", "features", "customHidden", "theme", "subscriptions", "noCosmetics", "userFilters", "reviewAsk"];
 
 $("exportBtn").addEventListener("click", () => {
   chrome.storage.local.get(EXPORT_KEYS, (data) => {

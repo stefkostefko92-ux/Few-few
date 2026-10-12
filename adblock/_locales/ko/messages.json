@@ -118,6 +118,27 @@
   "support": {
     "message": "후원"
   },
+  "rate": {
+    "message": "평가"
+  },
+  "rateTitle": {
+    "message": "Chrome 웹 스토어에서 Supreme AdBlock 평가하기"
+  },
+  "reviewBlocked": {
+    "message": "지금까지 요청 $1개 차단"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock이 유용하다면 Chrome 웹 스토어의 짧은 리뷰가 다른 사람들이 찾는 데 도움이 됩니다."
+  },
+  "reviewLeave": {
+    "message": "리뷰 작성"
+  },
+  "reviewLater": {
+    "message": "나중에"
+  },
+  "reviewNever": {
+    "message": "다시 묻지 않기"
+  },
   "filtersCount": {
     "message": "필터 $1개 이상",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut로 후원하기"
+  },
+  "opt_review": {
+    "message": "리뷰 알림"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock 창 하단의 작은 ★ 링크, 그리고 최대 두 번까지 그곳에 표시되는 Chrome 웹 스토어 평가 요청입니다. 웹사이트에는 절대 표시되지 않으며 알림으로도 표시되지 않습니다."
   },
   "opt_made_by": {
     "message": "made by Carbon Stealth"

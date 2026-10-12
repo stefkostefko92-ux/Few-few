@@ -118,6 +118,27 @@
   "support": {
     "message": "គាំទ្រ"
   },
+  "rate": {
+    "message": "វាយតម្លៃ"
+  },
+  "rateTitle": {
+    "message": "វាយតម្លៃ Supreme AdBlock នៅលើ Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "បានទប់ស្កាត់សំណើ $1 រហូតមកដល់ពេលនេះ"
+  },
+  "reviewAsk": {
+    "message": "ប្រសិនបើ Supreme AdBlock មានប្រយោជន៍សម្រាប់អ្នក ការវាយតម្លៃខ្លីមួយនៅលើ Chrome Web Store ជួយឱ្យអ្នកដទៃរកឃើញវា។"
+  },
+  "reviewLeave": {
+    "message": "សរសេរការវាយតម្លៃ"
+  },
+  "reviewLater": {
+    "message": "មិនមែនឥឡូវនេះទេ"
+  },
+  "reviewNever": {
+    "message": "កុំសួរម្ដងទៀត"
+  },
   "filtersCount": {
     "message": "តម្រង $1+",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "បរិច្ចាគតាម Revolut"
+  },
+  "opt_review": {
+    "message": "ការរំលឹកអំពីការវាយតម្លៃ"
+  },
+  "opt_review_sub": {
+    "message": "តំណ ★ តូចមួយនៅផ្នែកខាងក្រោមនៃផ្ទាំង Supreme AdBlock ហើយយ៉ាងច្រើនពីរដង សំណើខ្លីមួយនៅទីនោះ ដើម្បីវាយតម្លៃវានៅលើ Chrome Web Store។ មិនដែលនៅលើគេហទំព័រ មិនដែលជាការជូនដំណឹងឡើយ។"
   },
   "opt_made_by": {
     "message": "បង្កើតដោយ Carbon Stealth"

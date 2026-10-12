@@ -118,6 +118,27 @@
   "support": {
     "message": "ਸਹਿਯੋਗ ਦਿਓ"
   },
+  "rate": {
+    "message": "ਰੇਟਿੰਗ ਦਿਓ"
+  },
+  "rateTitle": {
+    "message": "Chrome ਵੈੱਬ ਸਟੋਰ 'ਤੇ Supreme AdBlock ਨੂੰ ਰੇਟਿੰਗ ਦਿਓ"
+  },
+  "reviewBlocked": {
+    "message": "ਹੁਣ ਤੱਕ $1 ਬੇਨਤੀਆਂ ਬਲੌਕ ਕੀਤੀਆਂ ਗਈਆਂ"
+  },
+  "reviewAsk": {
+    "message": "ਜੇ Supreme AdBlock ਤੁਹਾਡੇ ਕੰਮ ਆਉਂਦਾ ਹੈ, ਤਾਂ Chrome ਵੈੱਬ ਸਟੋਰ 'ਤੇ ਇੱਕ ਛੋਟੀ ਸਮੀਖਿਆ ਹੋਰਾਂ ਨੂੰ ਇਸਨੂੰ ਲੱਭਣ ਵਿੱਚ ਮਦਦ ਕਰਦੀ ਹੈ।"
+  },
+  "reviewLeave": {
+    "message": "ਸਮੀਖਿਆ ਲਿਖੋ"
+  },
+  "reviewLater": {
+    "message": "ਹੁਣ ਨਹੀਂ"
+  },
+  "reviewNever": {
+    "message": "ਦੁਬਾਰਾ ਨਾ ਪੁੱਛੋ"
+  },
   "filtersCount": {
     "message": "$1+ ਫਿਲਟਰ",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut ਰਾਹੀਂ ਦਾਨ ਕਰੋ"
+  },
+  "opt_review": {
+    "message": "ਸਮੀਖਿਆ ਰਿਮਾਈਂਡਰ"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock ਵਿੰਡੋ ਦੇ ਹੇਠਾਂ ਇੱਕ ਛੋਟਾ ★ ਲਿੰਕ, ਅਤੇ ਵੱਧ ਤੋਂ ਵੱਧ ਦੋ ਵਾਰ ਉੱਥੇ ਹੀ Chrome ਵੈੱਬ ਸਟੋਰ 'ਤੇ ਇਸਨੂੰ ਰੇਟਿੰਗ ਦੇਣ ਦੀ ਛੋਟੀ ਬੇਨਤੀ। ਵੈੱਬਸਾਈਟਾਂ 'ਤੇ ਕਦੇ ਨਹੀਂ, ਸੂਚਨਾ ਵਜੋਂ ਕਦੇ ਨਹੀਂ।"
   },
   "opt_made_by": {
     "message": "Carbon Stealth ਵੱਲੋਂ ਬਣਾਇਆ ਗਿਆ"

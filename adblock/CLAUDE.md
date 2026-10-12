@@ -42,6 +42,14 @@ popup/ · options/       UI (popup + настройки; карти „Филт�
                         Liquid Glass: стъклото е само CSS (backdrop-filter + маскиран ръб ::after + --mx/--my
                         от popup.js), сиянието е body::before; prefers-reduced-transparency → плътни панели.
                         НЕ ползвай localStorage в popup-а (първият достъп ~40 ms) и не връщай three.js в пакета.
+                        **Таван 600 px** (Chrome): fitPopup() стяга отстоянията (`html.tight`) само ако съдържанието
+                        го мине, а долната лента остава само с икони (`.foot.compact`); всичките 73 езика — гейт в
+                        tests/browser/popup-fit.browser.mjs. Нещо ново в popup-а → провери там, не само на английски.
+                        **Отзив в CWS (5.1.8):** ★ в долната лента + карта (лист отдолу, покритото — inert), най-много
+                        2 пъти през ≥ 60 дни, след ≥ 7 дни и ≥ 1000 блокирани, само при работеща защита. Решава SW
+                        (`reviewDue`/`reviewUrl` — линк само при инсталация от CWS), popup-ът рисува; ключът
+                        `reviewAsk` в Настройки маха всичко. БЕЗ стимули, без филтър по мнение, никога по сайтовете
+                        или като известие (CWS Program Policies) — не добавяй „оцени с 5 звезди“ или награди.
 report/                 „Сайтът е счупен?" — бързи поправки + mailto доклад (нищо не се праща само)
 icons/ · _locales/      икони · локализация
 tools/                  build_filters.mjs (EasyList→DNR + каталога tools/lists.json → rules/list_<id>.json,
@@ -74,8 +82,9 @@ node -c *.js popup/*.js options/*.js tools/*.mjs   # syntax на всички с
 python3 -c "import json; json.load(...)"     # валиден manifest/rules/locale
 npm test                                      # tests/: engine + билд + DNR правила + YouTube + cookies
 PW_ROOT=$(npm root -g) npm run test:browser   # реален Chromium: cookies.js фикстури + истинското разширение + YouTube + back/forward
-                                              # cache + axe (WCAG 2.2 AA, popup/настройки/welcome/report, двете теми; axe-core през
-                                              # AXE_PATH или до Playwright) — не е в CI
+                                              # cache + axe (WCAG 2.2 AA, popup (и с картата за отзив)/настройки/welcome/report, двете
+                                              # теми; axe-core през AXE_PATH или до Playwright) + молбата за отзив + popup ≤ 600 px на
+                                              # 73 езика — не е в CI
 PW_ROOT=$(npm root -g) npm run landing:assets # server/*.webp: бранд щитът + РЕАЛНИЯТ popup (след промяна на popup/версия)
 PW_ROOT=$(npm root -g) node tools/perf_speedtest.mjs [--old <разархивиран zip>]  # цена на главната нишка (Speedtest-подобно); след промяна в content scripts/CSS
 node tools/build_scriptlets.mjs --check       # scriptlets/main.js свеж спрямо list.txt
@@ -136,6 +145,6 @@ bash tools/package.sh                         # билд + самопровер�
   потребителя, конвертира се локално като данни (динамични правила ≥ 200000). Един
   невалиден `urlFilter` проваля ЦЕЛИЯ ruleset в Chrome — `tests/rules.test.mjs` и
   реалното зареждане в browser теста го пазят.
-- **Езици:** ≥54 (днес 70), всеки с пълни ключове и същите `$1` плейсхолдъри
+- **Езици:** ≥54 (днес 73), всеки с пълни ключове и същите `$1` плейсхолдъри
   (`tests/i18n.test.mjs`). Нов ключ → във ВСИЧКИ `_locales`. CSS — логически свойства
   (`margin-inline-start`, `inset-inline-*`), за да работи RTL.

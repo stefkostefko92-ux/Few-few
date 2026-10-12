@@ -118,6 +118,27 @@
   "support": {
     "message": "Dəstək ol"
   },
+  "rate": {
+    "message": "Qiymətləndir"
+  },
+  "rateTitle": {
+    "message": "Supreme AdBlock-u Chrome Veb Mağazasında qiymətləndirin"
+  },
+  "reviewBlocked": {
+    "message": "İndiyədək $1 sorğu bloklanıb"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock sizə faydalıdırsa, Chrome Veb Mağazasında qısa rəy başqalarının onu tapmasına kömək edir."
+  },
+  "reviewLeave": {
+    "message": "Rəy yazın"
+  },
+  "reviewLater": {
+    "message": "İndi yox"
+  },
+  "reviewNever": {
+    "message": "Bir daha soruşma"
+  },
   "filtersCount": {
     "message": "$1+ filtr",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut ilə ianə et"
+  },
+  "opt_review": {
+    "message": "Rəy xatırlatmaları"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock pəncərəsinin aşağısında kiçik ★ keçidi və ən çoxu iki dəfə orada onu Chrome Veb Mağazasında qiymətləndirmək üçün qısa xahiş. Heç vaxt saytlarda, heç vaxt bildiriş kimi deyil."
   },
   "opt_made_by": {
     "message": "Carbon Stealth tərəfindən hazırlanıb"

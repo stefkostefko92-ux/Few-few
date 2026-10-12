@@ -118,6 +118,27 @@
   "support": {
     "message": "Աջակցել"
   },
+  "rate": {
+    "message": "Գնահատել"
+  },
+  "rateTitle": {
+    "message": "Գնահատեք Supreme AdBlock-ը Chrome վեբ խանութում"
+  },
+  "reviewBlocked": {
+    "message": "Մինչ այժմ արգելափակված հարցումներ՝ $1"
+  },
+  "reviewAsk": {
+    "message": "Եթե Supreme AdBlock-ն օգտակար է ձեզ, Chrome վեբ խանութում կարճ կարծիքն օգնում է ուրիշներին գտնել այն։"
+  },
+  "reviewLeave": {
+    "message": "Թողնել կարծիք"
+  },
+  "reviewLater": {
+    "message": "Ոչ հիմա"
+  },
+  "reviewNever": {
+    "message": "Այլևս չհարցնել"
+  },
   "filtersCount": {
     "message": "$1+ զտիչ",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Նվիրաբերել Revolut-ով"
+  },
+  "opt_review": {
+    "message": "Կարծիքի հիշեցումներ"
+  },
+  "opt_review_sub": {
+    "message": "Փոքրիկ ★ հղում Supreme AdBlock-ի պատուհանի ներքևում և առավելագույնը երկու անգամ այնտեղ կարճ խնդրանք՝ գնահատելու այն Chrome վեբ խանութում։ Երբեք կայքերում, երբեք որպես ծանուցում։"
   },
   "opt_made_by": {
     "message": "ստեղծել է Carbon Stealth-ը"

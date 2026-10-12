@@ -118,6 +118,27 @@
   "support": {
     "message": "പിന്തുണയ്ക്കുക"
   },
+  "rate": {
+    "message": "റേറ്റ് ചെയ്യുക"
+  },
+  "rateTitle": {
+    "message": "Chrome വെബ് സ്റ്റോറിൽ Supreme AdBlock റേറ്റ് ചെയ്യുക"
+  },
+  "reviewBlocked": {
+    "message": "ഇതുവരെ $1 അഭ്യർത്ഥനകൾ തടഞ്ഞു"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock നിങ്ങൾക്ക് ഉപകാരപ്പെടുന്നുണ്ടെങ്കിൽ, Chrome വെബ് സ്റ്റോറിലെ ഒരു ചെറിയ റിവ്യൂ മറ്റുള്ളവർക്ക് ഇത് കണ്ടെത്താൻ സഹായിക്കും."
+  },
+  "reviewLeave": {
+    "message": "റിവ്യൂ എഴുതുക"
+  },
+  "reviewLater": {
+    "message": "ഇപ്പോൾ വേണ്ട"
+  },
+  "reviewNever": {
+    "message": "വീണ്ടും ചോദിക്കരുത്"
+  },
   "filtersCount": {
     "message": "$1+ ഫിൽട്ടറുകൾ",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut വഴി സംഭാവന നൽകുക"
+  },
+  "opt_review": {
+    "message": "റിവ്യൂ ഓർമ്മപ്പെടുത്തലുകൾ"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock വിൻഡോയുടെ താഴെ ഒരു ചെറിയ ★ ലിങ്ക്, പരമാവധി രണ്ടു തവണ അവിടെത്തന്നെ Chrome വെബ് സ്റ്റോറിൽ ഇത് റേറ്റ് ചെയ്യാനുള്ള ചെറിയൊരു അഭ്യർത്ഥന. വെബ്‌സൈറ്റുകളിൽ ഒരിക്കലുമില്ല, അറിയിപ്പായി ഒരിക്കലുമില്ല."
   },
   "opt_made_by": {
     "message": "Carbon Stealth നിർമ്മിച്ചത്"

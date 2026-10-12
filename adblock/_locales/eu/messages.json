@@ -118,6 +118,27 @@
   "support": {
     "message": "Lagundu"
   },
+  "rate": {
+    "message": "Baloratu"
+  },
+  "rateTitle": {
+    "message": "Baloratu Supreme AdBlock Chrome Web Store-n"
+  },
+  "reviewBlocked": {
+    "message": "Orain arte blokeatutako eskaerak: $1"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock baliagarria bazaizu, Chrome Web Store-ko iruzkin labur batek beste batzuei aurkitzen laguntzen die."
+  },
+  "reviewLeave": {
+    "message": "Idatzi iruzkina"
+  },
+  "reviewLater": {
+    "message": "Orain ez"
+  },
+  "reviewNever": {
+    "message": "Ez galdetu berriro"
+  },
   "filtersCount": {
     "message": "$1+ iragazki",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Egin dohaintza Revolut bidez"
+  },
+  "opt_review": {
+    "message": "Iruzkinen gogorarazpenak"
+  },
+  "opt_review_sub": {
+    "message": "★ esteka txiki bat Supreme AdBlock leihoaren behealdean eta, gehienez bi aldiz, eskaera labur bat bertan Chrome Web Store-n baloratzeko. Inoiz ez webguneetan, inoiz ez jakinarazpen gisa."
   },
   "opt_made_by": {
     "message": "Carbon Stealth-ek egina"

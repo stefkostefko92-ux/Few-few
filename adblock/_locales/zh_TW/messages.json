@@ -118,6 +118,27 @@
   "support": {
     "message": "支持"
   },
+  "rate": {
+    "message": "評分"
+  },
+  "rateTitle": {
+    "message": "在 Chrome 線上應用程式商店為 Supreme AdBlock 評分"
+  },
+  "reviewBlocked": {
+    "message": "至今已封鎖 $1 個要求"
+  },
+  "reviewAsk": {
+    "message": "如果 Supreme AdBlock 對您有幫助，在 Chrome 線上應用程式商店留下簡短評論，就能幫助更多人找到它。"
+  },
+  "reviewLeave": {
+    "message": "撰寫評論"
+  },
+  "reviewLater": {
+    "message": "以後再說"
+  },
+  "reviewNever": {
+    "message": "不要再詢問"
+  },
   "filtersCount": {
     "message": "$1+ 條過濾規則",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "透過 Revolut 捐款"
+  },
+  "opt_review": {
+    "message": "評論提醒"
+  },
+  "opt_review_sub": {
+    "message": "在 Supreme AdBlock 視窗底部顯示一個小小的 ★ 連結，並最多兩次在那裡簡短地請您到 Chrome 線上應用程式商店評分。絕不會出現在網站上，也絕不會以通知形式出現。"
   },
   "opt_made_by": {
     "message": "made by Carbon Stealth"

@@ -21,7 +21,7 @@
     </label>
   </header>
 
-  <main>
+  <main tabindex="-1">
   <section class="hero" id="hero" data-state="protected">
     <!-- Щитът: статичен 3D кадър (два слоя WebP, пререндерирани от tools/popup_shield3d.mjs) —
          видим веднага; popup/shield3d.js (зарежда го popup.js СЛЕД първото рисуване) го заменя с жив
@@ -120,12 +120,32 @@
   </main>
 
   <footer class="bar foot">
-    <a id="donate" href="https://revolut.me/vycanismajoris" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3.2 1.2 4 2.4.8-1.2 2-2.4 4-2.4 3.5 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21Z"/></svg>
-      <span data-i18n="support">Support</span>
-    </a>
-    <span class="meta"><i id="listDot">filters</i><i class="v">v5.1.7</i></span>
+    <span class="links">
+      <a id="donate" href="https://revolut.me/vycanismajoris" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5.5 6 5.5c2 0 3.2 1.2 4 2.4.8-1.2 2-2.4 4-2.4 3.5 0 5 3.5 3.5 6.5C19 16.5 12 21 12 21Z"/></svg>
+        <span data-i18n="support">Support</span>
+      </a>
+      <!-- тихата ★: href идва от service worker-а (само при инсталация от Chrome Web Store); Настройки я махат -->
+      <a id="rate" class="rate" target="_blank" rel="noopener" data-i18n-title="rateTitle" title="Rate Supreme AdBlock on the Chrome Web Store" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.8 6.3.8-4.6 4.4 1.2 6.3L12 17l-5.7 3.1 1.2-6.3-4.6-4.4 6.3-.8Z"/></svg>
+        <span data-i18n="rate">Rate</span>
+      </a>
+    </span>
+    <span class="meta"><i id="listDot">filters</i><i class="v">v5.1.8</i></span>
   </footer>
+
+  <!-- Картата след успех: най-много два пъти, решава service worker-ът (reviewDue). Лист отдолу над
+       клавишите — popup-ът е на тавана си от 600 px, затова не го удължава; покритото става inert. -->
+  <aside class="review" id="review" aria-labelledby="reviewTitle" aria-describedby="reviewText" hidden>
+    <span class="review-star" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.8 6.3.8-4.6 4.4 1.2 6.3L12 17l-5.7 3.1 1.2-6.3-4.6-4.4 6.3-.8Z"/></svg></span>
+    <h2 id="reviewTitle">Requests blocked so far</h2>
+    <p id="reviewText" data-i18n="reviewAsk">If Supreme AdBlock is useful to you, a short review on the Chrome Web Store helps others find it.</p>
+    <div class="review-actions">
+      <a id="reviewGo" class="review-go" target="_blank" rel="noopener" data-i18n="reviewLeave">Leave a review</a>
+      <button id="reviewLater" class="review-later" type="button" data-i18n="reviewLater">Not now</button>
+    </div>
+    <button id="reviewNever" class="review-never" type="button" data-i18n="reviewNever">Don't ask again</button>
+  </aside>
 
   <script src="popup.js"></script>
 </body>

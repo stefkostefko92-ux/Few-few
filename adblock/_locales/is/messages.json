@@ -118,6 +118,27 @@
   "support": {
     "message": "Styrkja"
   },
+  "rate": {
+    "message": "Gefa einkunn"
+  },
+  "rateTitle": {
+    "message": "Gefðu Supreme AdBlock einkunn í Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "Útilokaðar beiðnir hingað til: $1"
+  },
+  "reviewAsk": {
+    "message": "Ef Supreme AdBlock gagnast þér hjálpar stutt umsögn í Chrome Web Store öðrum að finna það."
+  },
+  "reviewLeave": {
+    "message": "Skrifa umsögn"
+  },
+  "reviewLater": {
+    "message": "Ekki núna"
+  },
+  "reviewNever": {
+    "message": "Ekki spyrja aftur"
+  },
   "filtersCount": {
     "message": "$1+ síur",
     "placeholders": {
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Styrkja með Revolut"
+  },
+  "opt_review": {
+    "message": "Áminningar um umsögn"
+  },
+  "opt_review_sub": {
+    "message": "Lítill ★-tengill neðst í glugga Supreme AdBlock og, í mesta lagi tvisvar, stutt beiðni þar um að gefa því einkunn í Chrome Web Store. Aldrei á vefsvæðum, aldrei sem tilkynning."
   },
   "opt_made_by": {
     "message": "gert af Carbon Stealth"
