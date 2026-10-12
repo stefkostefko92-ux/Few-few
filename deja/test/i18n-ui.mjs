@@ -71,6 +71,15 @@ for (const locale of locales) {
         .filter((el) => !el.hidden && el.offsetParent)
         .filter((el) => el.scrollWidth > el.clientWidth + 1)
         .map((el) => el.id || el.className || el.tagName);
+      // излиза ли нещо извън popup-а (прелял ред не е „отрязан“ в собствената си кутия)
+      const outside = [...document.querySelectorAll('.pop *')]
+        .filter((el) => el.offsetParent && !el.closest('svg'))
+        .filter((el) => {
+          const r = el.getBoundingClientRect();
+          return r.width && (r.left < -1 || r.right > innerWidth + 1);
+        })
+        .map((el) => el.id || el.className || el.tagName);
+      clipped.push(...outside.map((x) => `извън:${x}`));
       const tall = [...document.querySelectorAll('button')]
         .filter((b) => b.offsetParent && b.getBoundingClientRect().height > 64)
         .map((b) => b.id);
