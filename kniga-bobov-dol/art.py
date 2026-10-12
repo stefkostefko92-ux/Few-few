@@ -635,6 +635,8 @@ PHOTO_CREDITS = {
     'vagoni.jpg': 'Снимка: DemieK07 · CC BY-SA 4.0 · Уикимедия Общомедия',
     'minyor-match.jpg': 'Снимка: Biso · CC BY 3.0 · Уикимедия Общомедия',
     'bean-pods.jpg': 'Снимка: Rasbak · CC BY-SA 3.0 · Уикимедия Общомедия',
+    'defter-1455.jpg': 'Снимка: Crocodile2020 · CC0 · Уикимедия Общомедия',
+    'minna-direktsiya-pernik.jpg': 'Снимка: Felix O · CC BY-SA 2.0 · Уикимедия Общомедия',
 }
 
 # изрязване (л, г, д, дъно) като дялове от размера, и мека корекция
@@ -646,6 +648,8 @@ PHOTO_SPEC = {
     'tec.jpg': {},
     'minyor-match.jpg': {'crop': (0.0, 0.10, 1.0, 1.0)},
     'bean-pods.jpg': {'crop': (0.04, 0.14, 0.97, 0.80)},
+    'defter-1455.jpg': {},
+    'minna-direktsiya-pernik.jpg': {},
 }
 
 
@@ -936,10 +940,22 @@ def _engraved(c, text, x, y, size, tracking, fill, stroke, font='Book-Medium'):
     c.restoreState()
 
 
+COVER_PHOTO = os.path.join(PHOTO_DIR, 'cover-bobov-dol.jpg')
+COVER_PHOTO_BACK = os.path.join(PHOTO_DIR, 'cover-bobov-dol-back.jpg')
+
+
+def _photo_scene(c, path, front=True):
+    """Корица от реална снимка на цяла страница (затъмняването е вече в снимката — prep_cover.py)."""
+    c.drawImage(ImageReader(path), 0, 0, W, H)
+
+
 def cover_page(canvas, doc):
     c = canvas
     c.saveState()
-    _scene(c, 'front')
+    if os.path.exists(COVER_PHOTO):
+        _photo_scene(c, COVER_PHOTO, True)
+    else:
+        _scene(c, 'front')
     _frame(c)
     # герб, заглавие, подзаглавие
     _gerb(c, W / 2, H * 0.800, 88)
@@ -963,7 +979,10 @@ def cover_page(canvas, doc):
 def back_cover_page(canvas, doc):
     c = canvas
     c.saveState()
-    _scene(c, 'back')
+    if os.path.exists(COVER_PHOTO_BACK):
+        _photo_scene(c, COVER_PHOTO_BACK, False)
+    else:
+        _scene(c, 'back')
     _frame(c)
     _orn(c, H * 0.935, 80)
     _gerb(c, W / 2, H * 0.800, 66)
