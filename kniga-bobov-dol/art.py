@@ -1,0 +1,1024 @@
+# -*- coding: utf-8 -*-
+"""Илюстрации, корица и снимки за книгата (векторно, без външни картинки).
+
+Картата е по реални данни на OpenStreetMap (виж geo_data.py); всичко останало е
+рисувано в код. Използват се градиенти и прозрачност на ReportLab.
+"""
+
+import math
+import os
+
+from reportlab.lib import colors
+from reportlab.lib.utils import ImageReader
+from reportlab.platypus import Flowable
+
+from typo import (W, H, GOLD, GOLD_L, DARKRED, INK, INK2, PARCH, PARCH2, BROWN, NIGHT1,
+                  NIGHT2, MOUNT, CREAM, draw_tracked)
+
+HEX = colors.HexColor
+
+
+# ── Помощни за рисуване ────────────────────────────────────────────────────
+def lin_grad(c, x0, y0, x1, y1, stops):
+    c.linearGradient(x0, y0, x1, y1, [HEX(s[1]) for s in stops], [s[0] for s in stops],
+                     extend=True)
+
+
+def clip_rect(c, x, y, w, h):
+    p = c.beginPath()
+    p.rect(x, y, w, h)
+    c.clipPath(p, stroke=0, fill=0)
+
+
+def smooth_path(c, pts, close=False, tension=0.5):
+    """Гладка крива (Catmull–Rom → Безие) през точките; връща path."""
+    p = c.beginPath()
+    n = len(pts)
+    p.moveTo(*pts[0])
+    rng = range(n) if close else range(n - 1)
+    for i in rng:
+        p0 = pts[(i - 1) % n] if (close or i > 0) else pts[0]
+        p1 = pts[i]
+        p2 = pts[(i + 1) % n]
+        p3 = pts[(i + 2) % n] if (close or i + 2 < n) else pts[-1]
+        c1 = (p1[0] + (p2[0] - p0[0]) * tension / 3.0 * 2, p1[1] + (p2[1] - p0[1]) * tension / 3.0 * 2)
+        c2 = (p2[0] - (p3[0] - p1[0]) * tension / 3.0 * 2, p2[1] - (p3[1] - p1[1]) * tension / 3.0 * 2)
+        p.curveTo(c1[0], c1[1], c2[0], c2[1], p2[0], p2[1])
+    if close:
+        p.close()
+    return p
+
+
+def diamond(c, x, y, d, fill=1):
+    p = c.beginPath()
+    p.moveTo(x, y - d)
+    p.lineTo(x + d, y)
+    p.lineTo(x, y + d)
+    p.lineTo(x - d, y)
+    p.close()
+    c.drawPath(p, fill=fill, stroke=0)
+
+
+def card(c, x, y, w, h, inset=4.5):
+    """Пергаментна карта: нежен градиент, двоен кант, ъглови ромбове."""
+    c.saveState()
+    clip_rect(c, x, y, w, h)
+    lin_grad(c, x, y + h, x, y, [(0, '#f4ecd6'), (0.55, '#eee3c6'), (1, '#e5d7b3')])
+    c.restoreState()
+    c.setStrokeColor(BROWN)
+    c.setLineWidth(0.9)
+    c.rect(x, y, w, h, fill=0, stroke=1)
+    c.setLineWidth(0.35)
+    c.setStrokeColor(GOLD)
+    c.rect(x + inset, y + inset, w - 2 * inset, h - 2 * inset, fill=0, stroke=1)
+    c.setFillColor(GOLD)
+    for (px, py) in ((x + inset, y + inset), (x + w - inset, y + inset),
+                     (x + inset, y + h - inset), (x + w - inset, y + h - inset)):
+        diamond(c, px, py, 2.0)
+
+
+class Illustration(Flowable):
+    def __init__(self, name, width=300, height=200):
+        super().__init__()
+        self.name = name
+        self.width, self.height = width, height
+
+    def wrap(self, aw, ah):
+        self._aw = aw
+        return aw, self.height
+
+    def draw(self):
+        c = self.canv
+        x0 = (self._aw - self.width) / 2.0
+        c.saveState()
+        c.translate(x0, 0)
+        getattr(self, 'd_' + self.name)(c, self.width, self.height)
+        c.restoreState()
+
+    # ── етимология: бобова шушулка → бобовидна долина ──────────────────────
+    def d_etymology(self, c, w, h):
+        card(c, 0, 0, w, h)
+        draw_tracked(c, w / 2, h - 21, 'ПРОИЗХОД НА ИМЕТО', 'Book-Medium', 9.4, 2.4, BROWN)
+        c.setFont('Book-Italic', 8.6)
+        c.setFillColor(INK2)
+        c.drawCentredString(w / 2, h - 33, 'Бобов дол — долина с форма на бобово зърно')
+
+        # шушулка (вляво)
+        cx, cy = w * 0.25, h * 0.46
+        pod = [(cx - 62, cy - 8), (cx - 34, cy + 14), (cx + 8, cy + 18), (cx + 46, cy + 9),
+               (cx + 66, cy - 6), (cx + 44, cy - 15), (cx + 4, cy - 17), (cx - 36, cy - 12)]
+        c.saveState()
+        c.setFillColor(HEX('#4a6b3a'))
+        c.setStrokeColor(HEX('#2c421f'))
+        c.setLineWidth(0.9)
+        c.drawPath(smooth_path(c, pod, close=True), fill=1, stroke=1)
+        c.setFillColor(HEX('#6e8f55'))
+        c.setStrokeColor(HEX('#3b5a2b'))
+        inner = [(cx - 50, cy - 7), (cx - 28, cy + 8), (cx + 6, cy + 11), (cx + 40, cy + 5),
+                 (cx + 54, cy - 5), (cx + 38, cy - 9), (cx + 4, cy - 10), (cx - 30, cy - 8)]
+        c.drawPath(smooth_path(c, inner, close=True), fill=1, stroke=0)
+        for i, bx in enumerate((cx - 32, cx - 10, cx + 12, cx + 34)):
+            by = cy + 1.5 - 0.1 * (bx - cx) * 0.2
+            c.setFillColor(HEX('#2f4a22'))
+            c.ellipse(bx - 8.2, by - 6.6, bx + 8.2, by + 6.6, fill=1, stroke=0)
+            c.setFillColor(HEX('#d8c98e'))
+            c.setStrokeColor(HEX('#8c7a3e'))
+            c.setLineWidth(0.5)
+            c.ellipse(bx - 7, by - 5.6, bx + 7, by + 5.6, fill=1, stroke=1)
+            c.setFillColor(HEX('#f1e6b4'))
+            c.ellipse(bx - 4.6, by + 0.6, bx + 1.2, by + 4.2, fill=1, stroke=0)
+            c.setFillColor(HEX('#7a6a30'))
+            c.ellipse(bx + 3.2, by - 1.0, bx + 5.4, by + 0.9, fill=1, stroke=0)
+        # стръкче
+        c.setStrokeColor(HEX('#2c421f'))
+        c.setLineWidth(1.2)
+        c.line(cx + 66, cy - 6, cx + 76, cy - 12)
+        c.restoreState()
+
+        # знак „=“
+        c.setFillColor(GOLD)
+        c.setFont('Book-Medium', 22)
+        c.drawCentredString(w * 0.5, h * 0.46 - 6, '≈')
+
+        # долина: контури на релефа с форма на боб (вдясно)
+        vx, vy = w * 0.75, h * 0.46
+
+        def bean(scale, sx=1.0, sy=1.0):
+            pts = []
+            for k in range(0, 72):
+                t = 2 * math.pi * k / 72.0
+                notch = 1 - 0.20 * math.exp(-((t - math.pi / 2) / 0.55) ** 2)
+                pts.append((vx + math.cos(t) * 56 * scale * sx, vy + math.sin(t) * 25 * scale * sy * notch))
+            return pts
+        shades = ['#aebf8f', '#b9c99b', '#c6d3a8', '#d2dcb5', '#dde4c4']
+        for i, sc in enumerate((1.0, 0.82, 0.64, 0.46, 0.30)):
+            c.setFillColor(HEX(shades[i]))
+            c.setStrokeColor(HEX('#6f8556'))
+            c.setLineWidth(0.5 if i else 0.9)
+            p = c.beginPath()
+            pts = bean(sc)
+            p.moveTo(*pts[0])
+            for q in pts[1:]:
+                p.lineTo(*q)
+            p.close()
+            c.drawPath(p, fill=1, stroke=1)
+        # къщи на града в долината
+        c.setFillColor(DARKRED)
+        for dx, dy in ((-9, 2), (-3, -3), (4, 3), (10, -1), (0, 7), (-13, -2)):
+            c.rect(vx + dx, vy + dy, 3.2, 3.2, fill=1, stroke=0)
+        # подписи
+        c.setFillColor(BROWN)
+        c.setFont('Book-Italic', 8.8)
+        c.drawCentredString(cx + 2, cy - 36, 'Бобова шушулка със зърна')
+        c.drawCentredString(vx, cy - 36, 'Долината на Бобов дол')
+        c.setFont('Book', 7.4)
+        c.setFillColor(INK2)
+        c.drawCentredString(w / 2, 14, '„Името на града идва от долината с форма на бобово зърно.“ — Българска енциклопедия')
+
+    # ── дефтерът от 1576 г. ───────────────────────────────────────────────
+    def d_defter(self, c, w, h):
+        card(c, 0, 0, w, h)
+        # шарка по горния и долния кант
+        c.setFillColor(GOLD_L)
+        for xx in range(16, int(w) - 12, 9):
+            diamond(c, xx, h - 11, 1.5)
+            diamond(c, xx, 11, 1.5)
+        c.setFont('Book-Italic', 8.2)
+        c.setFillColor(INK2)
+        c.drawCentredString(w / 2, h - 27, 'Стилизирана художествена възстановка — османски данъчен дефтер')
+        c.setFillColor(BROWN)
+        c.setFont('Book-Medium', 11.2)
+        c.drawCentredString(w / 2, h - 43, 'Кюстендилски санджак · 984 г. по Хиджра (≈ 1576)')
+        c.setStrokeColor(GOLD)
+        c.setLineWidth(0.6)
+        c.line(w * 0.2, h - 50, w * 0.8, h - 50)
+        # таблица
+        rows = [('Санджак', 'Кюстендил'), ('Еялет', 'Румелия'), ('Име на село', 'БОБОДОЛ'),
+                ('Ханета (домакинства)', 'няколко десетки'), ('Земя', 'зърно, тютюн и ливади'),
+                ('Годишен данък (харач)', '≈ 1 300 акчета')]
+        x0, x1 = 24, w - 24
+        lw = 116
+        rh = 16.5
+        ty = h - 58
+        for i, (k, v) in enumerate(rows):
+            top = ty - i * rh
+            c.setFillColor(HEX('#e8dcba') if i % 2 == 0 else HEX('#f1e8cf'))
+            c.rect(x0, top - rh, x1 - x0, rh, fill=1, stroke=0)
+            c.setFillColor(BROWN)
+            c.setFont('Book-BoldItalic', 8.6)
+            c.drawString(x0 + 6, top - rh + 5.2, k)
+            c.setFont('Book-Bold' if v == 'БОБОДОЛ' else 'Book', 9.4)
+            c.drawString(x0 + lw + 6, top - rh + 5.2, v)
+        c.setStrokeColor(HEX('#a89868'))
+        c.setLineWidth(0.4)
+        c.rect(x0, ty - len(rows) * rh, x1 - x0, len(rows) * rh, fill=0, stroke=1)
+        c.line(x0 + lw, ty, x0 + lw, ty - len(rows) * rh)
+        for i in range(1, len(rows)):
+            c.line(x0, ty - i * rh, x1, ty - i * rh)
+        # червен печат
+        sx, sy = w - 52, 40
+        c.setFillColor(HEX('#8c2f24'))
+        c.setStrokeColor(HEX('#8c2f24'))
+        c.circle(sx, sy, 17, fill=0, stroke=1)
+        c.setLineWidth(0.4)
+        c.circle(sx, sy, 14, fill=0, stroke=1)
+        for k in range(8):
+            a = math.pi * k / 4
+            c.line(sx + math.cos(a) * 5, sy + math.sin(a) * 5, sx + math.cos(a) * 12.5, sy + math.sin(a) * 12.5)
+        c.circle(sx, sy, 3.4, fill=1, stroke=0)
+        c.setFont('Book-Italic', 7.6)
+        c.setFillColor(INK2)
+        c.drawString(24, 26, 'Оригиналните дефтери се съхраняват')
+        c.drawString(24, 17, 'в Османския архив в Истанбул.')
+
+    # ── подземен разрез ────────────────────────────────────────────────────
+    def d_mine_section(self, c, w, h):
+        c.saveState()
+        clip_rect(c, 0, 0, w, h)
+        horizon = h * 0.76
+        c.saveState()
+        clip_rect(c, 0, horizon, w, h - horizon)
+        lin_grad(c, 0, h, 0, horizon, [(0, '#8aa4b8'), (1, '#e6dcc0')])
+        c.restoreState()
+        # далечен хълм
+        c.setFillColor(HEX('#9aa88a'))
+        c.drawPath(smooth_path(c, [(-10, horizon - 2), (w * 0.2, horizon + 16), (w * 0.45, horizon + 7),
+                                   (w * 0.75, horizon + 22), (w + 10, horizon + 6),
+                                   (w + 10, horizon - 2), (-10, horizon - 2)]), fill=1, stroke=0)
+        # пластове
+        layers = [(0.76, 0.66, '#8a6f4b', 'почвен слой'), (0.66, 0.52, '#a58a5b', 'пясъчник'),
+                  (0.52, 0.38, '#7d6a50', 'глинест шист'), (0.38, 0.0, '#4f4332', 'скална основа')]
+        for top, bot, col, lbl in layers:
+            c.saveState()
+            clip_rect(c, 0, h * bot, w, h * (top - bot))
+            base = HEX(col)
+            lighter = colors.Color(min(1, base.red * 1.12), min(1, base.green * 1.12), min(1, base.blue * 1.12))
+            c.linearGradient(0, h * top, 0, h * bot, [lighter, base], [0, 1], extend=True)
+            c.restoreState()
+        # текстура: точки и щрихи
+        import random
+        rnd = random.Random(11)
+        c.setFillColor(HEX('#ffffff'))
+        c.setFillAlpha(0.10)
+        for _ in range(260):
+            c.circle(rnd.uniform(0, w), rnd.uniform(0, h * 0.74), rnd.uniform(0.3, 0.9), fill=1, stroke=0)
+        c.setFillAlpha(0.07)
+        c.setFillColor(HEX('#000000'))
+        for _ in range(110):
+            c.circle(rnd.uniform(0, w), rnd.uniform(0, h * 0.74), rnd.uniform(0.3, 0.8), fill=1, stroke=0)
+        c.setFillAlpha(1)
+        # въглищни пластове
+        seams = [(0.30, 6.5, 'пласт „Гребикал“'), (0.17, 6.5, 'Чеганска синклинала')]
+        for fy, th, lbl in seams:
+            y = h * fy
+            c.setFillColor(HEX('#15110d'))
+            c.drawPath(smooth_path(c, [(-4, y + 3), (w * 0.3, y - 2), (w * 0.62, y + 4), (w + 4, y)]), fill=0, stroke=0)
+            c.rect(0, y - th / 2, w, th, fill=1, stroke=0)
+            c.setFillColor(HEX('#3a3226'))
+            c.rect(0, y + th / 2 - 1.4, w, 1.2, fill=1, stroke=0)
+            c.setFillColor(HEX('#f1e2b8'))
+            c.setFont('Book-Italic', 8)
+            c.drawString(w * 0.62, y + th / 2 + 3.2, lbl)
+        # етикети на пластовете
+        c.setFillColor(HEX('#f3ead0'))
+        c.setFont('Book-Italic', 8)
+        c.drawString(w * 0.62, h * 0.69, 'почвен слой')
+        c.drawString(w * 0.62, h * 0.575, 'пясъчник')
+        c.drawString(w * 0.62, h * 0.435, 'глинест шист')
+        c.restoreState()
+        # шахта + надшахтна кула
+        sx = w * 0.30
+        c.setStrokeColor(HEX('#1a1410'))
+        c.setLineWidth(2.4)
+        c.line(sx, h * 0.12, sx, h * 0.80)
+        # врати на галерии, греди
+        c.setStrokeColor(HEX('#3d2e1c'))
+        c.setLineWidth(1.3)
+        for fy in (0.30, 0.17):
+            y = h * fy
+            for xx in (w * 0.12, w * 0.50, w * 0.80):
+                c.line(xx - 5, y - 4, xx - 5, y + 4)
+                c.line(xx + 5, y - 4, xx + 5, y + 4)
+                c.line(xx - 6, y + 4, xx + 6, y + 4)
+            # вагонетка
+            c.setFillColor(HEX('#6b5a3c'))
+            c.setStrokeColor(HEX('#1a1410'))
+            c.setLineWidth(0.6)
+            c.rect(sx + 22, y + 3.6, 15, 6, fill=1, stroke=1)
+            c.setFillColor(HEX('#1a1410'))
+            c.circle(sx + 25, y + 3.4, 1.7, fill=1, stroke=0)
+            c.circle(sx + 34, y + 3.4, 1.7, fill=1, stroke=0)
+        # копер
+        c.setStrokeColor(HEX('#2b2218'))
+        c.setLineWidth(1.5)
+        base = h * 0.76
+        tip = h * 0.965
+        c.line(sx - 15, base, sx, tip)
+        c.line(sx + 15, base, sx, tip)
+        c.setLineWidth(0.7)
+        for t in (0.25, 0.5, 0.75):
+            yy = base + (tip - base) * t
+            hw = 15 * (1 - t)
+            c.line(sx - hw, yy, sx + hw, yy)
+        c.line(sx - 15, base, sx + 7.5, base + (tip - base) * 0.5)
+        c.line(sx + 15, base, sx - 7.5, base + (tip - base) * 0.5)
+        c.setLineWidth(1.4)
+        c.setFillColor(HEX('#d9c27a'))
+        c.circle(sx, tip + 1, 4.6, fill=1, stroke=1)
+        c.setLineWidth(0.5)
+        for k in range(6):
+            a = math.pi * k / 3
+            c.line(sx, tip + 1, sx + math.cos(a) * 4.6, tip + 1 + math.sin(a) * 4.6)
+        c.setFillColor(HEX('#4a3a28'))
+        c.rect(sx - 24, base - 8, 14, 8, fill=1, stroke=0)
+        c.rect(sx + 14, base - 6, 10, 6, fill=1, stroke=0)
+        # заглавие
+        c.setFillColor(HEX('#1f2a38'))
+        c.setFont('Book-Medium', 9.6)
+        c.drawString(12, h - 17, 'Подземен разрез')
+        c.setFont('Book-Italic', 8.2)
+        c.drawString(12, h - 28, 'на миньорски забой')
+        c.setStrokeColor(BROWN)
+        c.setLineWidth(0.9)
+        c.rect(0, 0, w, h, fill=0, stroke=1)
+        c.setStrokeColor(GOLD)
+        c.setLineWidth(0.35)
+        c.rect(3.5, 3.5, w - 7, h - 7, fill=0, stroke=1)
+
+    # — герб: оригиналният герб на Бобов дол (виж gerb.py) —
+    def d_gerb(self, c, w, h):
+        from gerb import draw_gerb, ASPECT
+        height = h * 0.94
+        draw_gerb(c, (w - height * ASPECT) / 2.0, (h - height) / 2.0, height)
+
+    # ── карта на общината: сенчест релеф от реални данни за височина (SRTM) ──
+    def d_map(self, c, w, h):
+        from geo_data import BOUNDARY, SETTLEMENTS, KOLOSH, NEIGHBOURS
+        card(c, 0, 0, w, h)
+        draw_tracked(c, w / 2, h - 23, 'КАРТА НА ОБЩИНА БОБОВ ДОЛ', 'Book-Medium', 10.2, 2.4, BROWN)
+        c.setFont('Book-Italic', 8.6)
+        c.setFillColor(INK2)
+        c.drawCentredString(w / 2, h - 35, '18 населени места в полите на Конявската планина')
+
+        fr = RELIEF_FRAME
+        ah = h - 34 - 52
+        aw = ah * fr['w'] / float(fr['h'])
+        ax, ay = (w - aw) / 2.0, 34.0
+        lat_span, lon_span = fr['lat1'] - fr['lat0'], fr['lon1'] - fr['lon0']
+
+        def P(lat, lon):
+            return (ax + (lon - fr['lon0']) / lon_span * aw, ay + (lat - fr['lat0']) / lat_span * ah)
+
+        # релефът
+        c.drawImage(ImageReader(os.path.join(PHOTO_DIR, 'relief-bobov-dol.jpg')), ax, ay, aw, ah)
+        pts = [P(la, lo) for lo, la in BOUNDARY]
+        # извън общината — мек воал (even-odd: правоъгълник минус граница)
+        veil = c.beginPath()
+        veil.rect(ax, ay, aw, ah)
+        veil.moveTo(*pts[0])
+        for q in pts[1:]:
+            veil.lineTo(*q)
+        veil.close()
+        c.saveState()
+        c.setFillColor(HEX('#f3ecd8'))
+        c.setFillAlpha(0.62)
+        c.drawPath(veil, fill=1, stroke=0, fillMode=0)
+        c.restoreState()
+        # граница на общината
+        bp = c.beginPath()
+        bp.moveTo(*pts[0])
+        for q in pts[1:]:
+            bp.lineTo(*q)
+        bp.close()
+        c.setStrokeColor(HEX('#fffdf5'))
+        c.setLineWidth(2.6)
+        c.drawPath(bp, fill=0, stroke=1)
+        c.setStrokeColor(HEX('#5b1a14'))
+        c.setLineWidth(1.0)
+        c.setDash(4.5, 2.2)
+        c.drawPath(bp, fill=0, stroke=1)
+        c.setDash()
+
+        def halo_text(x, y, text, font, size, anchor='l', fill='#1d1408', halo='#fffdf3'):
+            """Текст със светъл ореол: първо контурът (широк, полупрозрачен), после запълването."""
+            tw = c.stringWidth(text, font, size)
+            if anchor == 'r':
+                x -= tw
+            elif anchor == 'm':
+                x -= tw / 2.0
+            c.saveState()
+            c.setLineJoin(1)
+            c.setLineCap(1)
+            t = c.beginText()
+            t.setTextOrigin(x, y)
+            t.setFont(font, size)
+            t.setTextRenderMode(1)              # само контур
+            c.setStrokeColor(HEX(halo))
+            c.setStrokeAlpha(0.88)
+            c.setLineWidth(size * 0.22)
+            t.textOut(text)
+            c.drawText(t)
+            c.restoreState()
+            c.saveState()
+            c.setFillColor(HEX(fill))
+            c.setFont(font, size)
+            c.drawString(x, y, text)
+            c.restoreState()
+
+        # връх Колош
+        kx_, ky_ = P(*KOLOSH)
+        c.setFillColor(HEX('#fffdf3'))
+        c.setStrokeColor(HEX('#3b2a14'))
+        c.setLineWidth(0.6)
+        t = c.beginPath()
+        t.moveTo(kx_ - 4.6, ky_ - 3.2)
+        t.lineTo(kx_, ky_ + 4.8)
+        t.lineTo(kx_ + 4.6, ky_ - 3.2)
+        t.close()
+        c.drawPath(t, fill=1, stroke=1)
+        halo_text(kx_ + 7, ky_ - 2, 'в. Колош · 1314 м', 'Book-Italic', 7.6)
+
+        # селища
+        placed = []
+
+        def box(x, y, text, size, anchor, font):
+            tw = c.stringWidth(text, font, size)
+            if anchor == 'l':
+                return (x, y - 1.5, x + tw, y + size * 0.8)
+            if anchor == 'r':
+                return (x - tw, y - 1.5, x, y + size * 0.8)
+            return (x - tw / 2, y - 1.5, x + tw / 2, y + size * 0.8)
+
+        def overlaps(a, b):
+            m = 1.4
+            return not (a[2] + m < b[0] or b[2] + m < a[0] or a[3] + m < b[1] or b[3] + m < a[1])
+
+        dots = {n: P(*ll) for n, ll in SETTLEMENTS.items()}
+        for x, y in dots.values():
+            placed.append((x - 3.5, y - 3.5, x + 3.5, y + 3.5))
+        placed.append((kx_ - 5, ky_ - 4, kx_ + 72, ky_ + 6))
+        order = ['Бобов дол'] + sorted([n for n in SETTLEMENTS if n != 'Бобов дол'])
+        for n in order:
+            x, y = dots[n]
+            town = n == 'Бобов дол'
+            size = 9.6 if town else 7.7
+            font = 'Book-Bold' if town else 'Book'
+            text = n.upper() if town else n
+            cands = [('l', 5, -2.4), ('r', -5, -2.4), ('l', 4, 4.5), ('l', 4, -9), ('r', -4, 4.5),
+                     ('r', -4, -9), ('m', 0, 6), ('m', 0, -10), ('l', 9, 8), ('r', -9, -12)]
+            for anchor, dx, dy in cands:
+                b = box(x + dx, y + dy, text, size, anchor, font)
+                if (b[0] < ax + 2 or b[2] > ax + aw - 2 or b[1] < ay + 2 or b[3] > ay + ah - 2):
+                    continue
+                if any(overlaps(b, q) for q in placed):
+                    continue
+                placed.append(b)
+                halo_text(x + dx, y + dy, text, font, size, anchor, fill='#7b1414' if town else '#1d1408')
+                break
+            if town:
+                c.setFillColor(colors.white)
+                c.rect(x - 4.8, y - 4.8, 9.6, 9.6, fill=1, stroke=0)
+                c.setFillColor(DARKRED)
+                c.rect(x - 3.7, y - 3.7, 7.4, 7.4, fill=1, stroke=0)
+            else:
+                c.setFillColor(colors.white)
+                c.circle(x, y, 3.3, fill=1, stroke=0)
+                c.setFillColor(HEX('#3b2a14'))
+                c.circle(x, y, 2.1, fill=1, stroke=0)
+
+        # съседни градове — стрелки по посоката (от Бобов дол)
+        tx, ty = dots['Бобов дол']
+        lat_t, lon_t = SETTLEMENTS['Бобов дол']
+        kx = math.cos(math.radians((fr['lat0'] + fr['lat1']) / 2))
+        names = {'Дупница': ('Дупница · 20 км', 'below'), 'Перник': ('Перник · 38 км', 'right'),
+                 'Кюстендил': ('Кюстендил', 'below'), 'Радомир': ('Радомир', 'left')}
+        c.setStrokeColor(HEX('#7b1414'))
+        c.setFillColor(HEX('#7b1414'))
+        c.setLineWidth(1.0)
+        for name, (la, lo) in NEIGHBOURS.items():
+            ang = math.atan2(la - lat_t, (lo - lon_t) * kx)
+            ex, ey = math.cos(ang), math.sin(ang)
+            tmax = 1e9
+            for lim, comp, o in ((ax + 3, ex, tx), (ax + aw - 3, ex, tx), (ay + 3, ey, ty), (ay + ah - 3, ey, ty)):
+                if abs(comp) > 1e-6:
+                    tt = (lim - o) / comp
+                    if tt > 0:
+                        tmax = min(tmax, tt)
+            bx, by = tx + ex * tmax, ty + ey * tmax
+            sx_, sy_ = bx - ex * 15, by - ey * 15
+            c.setLineWidth(2.4)
+            c.setStrokeColor(HEX('#fffdf3'))
+            c.line(sx_, sy_, bx, by)
+            c.setLineWidth(1.0)
+            c.setStrokeColor(HEX('#7b1414'))
+            c.line(sx_, sy_, bx, by)
+            hd = 3.6
+            hp = c.beginPath()
+            hp.moveTo(bx, by)
+            hp.lineTo(bx - ex * hd * 1.7 + ey * hd, by - ey * hd * 1.7 - ex * hd)
+            hp.lineTo(bx - ex * hd * 1.7 - ey * hd, by - ey * hd * 1.7 + ex * hd)
+            hp.close()
+            c.drawPath(hp, fill=1, stroke=0)
+            lbl, side = names[name]
+            tw = c.stringWidth(lbl, 'Book-Italic', 8)
+            if name == 'Перник':
+                halo_text(min(bx + 6, ax + aw - tw - 4), by - 9, lbl, 'Book-Italic', 8, fill='#5b1a14')
+            elif name == 'Радомир':
+                halo_text(max(bx - 6 - tw, ax + 4), by - 9, lbl, 'Book-Italic', 8, fill='#5b1a14')
+            elif name == 'Дупница':
+                halo_text(ax + aw - tw - 5, by - 15, lbl, 'Book-Italic', 8, fill='#5b1a14')
+            else:
+                halo_text(ax + 5, by + 6, lbl, 'Book-Italic', 8, fill='#5b1a14')
+            c.setFillColor(HEX('#7b1414'))
+
+        # мащаб, север и източници — върху светъл панел
+        km = aw / ((lon_span * 111.32 * kx))
+        px0, py0 = ax + 7, ay + 7
+        c.saveState()
+        c.setFillColor(HEX('#fffdf3'))
+        c.setFillAlpha(0.82)
+        c.roundRect(px0 - 4, py0 - 4, 5 * km + 26, 21, 3, fill=1, stroke=0)
+        c.roundRect(ax + aw - 29, ay + 5, 24, 31, 3, fill=1, stroke=0)
+        c.restoreState()
+        c.setStrokeColor(BROWN)
+        c.setLineWidth(1.0)
+        c.line(px0, py0 + 3, px0 + 5 * km, py0 + 3)
+        c.line(px0, py0 + 0.5, px0, py0 + 5.5)
+        c.line(px0 + 5 * km, py0 + 0.5, px0 + 5 * km, py0 + 5.5)
+        c.setFillColor(BROWN)
+        c.setFont('Book', 7.4)
+        c.drawString(px0, py0 + 8, '0')
+        c.drawString(px0 + 5 * km - 7, py0 + 8, '5 км')
+        nx, ny = ax + aw - 17, ay + 12
+        c.setLineWidth(0.9)
+        c.line(nx, ny - 2, nx, ny + 12)
+        hp = c.beginPath()
+        hp.moveTo(nx, ny + 16)
+        hp.lineTo(nx - 3.2, ny + 9)
+        hp.lineTo(nx + 3.2, ny + 9)
+        hp.close()
+        c.drawPath(hp, fill=1, stroke=0)
+        c.setFont('Book-Bold', 8)
+        c.drawCentredString(nx, ny + 19, 'С')
+        c.setFont('Book', 6.6)
+        c.setFillColor(INK2)
+        c.drawCentredString(w / 2, 22.5, 'Релеф: NASA SRTM · граница и селища: © участници в OpenStreetMap (ODbL)')
+        c.drawCentredString(w / 2, 13.5, 'Ширината на изображението е ≈ 20 км; височините са преувеличени 2,3 пъти.')
+
+    # ── времева линия ────────────────────────────────────────────────────
+    def d_timeline(self, c, w, h):
+        card(c, 0, 0, w, h)
+        draw_tracked(c, w / 2, h - 24, 'ВРЕМЕВА ЛИНИЯ НА БОБОВ ДОЛ', 'Book-Medium', 10.2, 2.4, BROWN)
+        c.setFont('Book-Italic', 8.6)
+        c.setFillColor(INK2)
+        c.drawCentredString(w / 2, h - 36, 'основни събития от праисторията до днес')
+        events = [
+            ('II хил. пр. Хр.', 'Траките', 'скални ниши в Дуралинко'),
+            ('987 г.', 'Разметаница', 'Самуил погубва брат си Арон'),
+            ('XII в.', 'Византия', 'укреплението на връх Колош'),
+            ('1576 г.', 'Първото име', '„Бободол“ в османски дефтер'),
+            ('1822 г.', 'Свети Никола', 'възрожденската църква'),
+            ('1836 г.', 'Ами Буе', 'открива въглищния басейн'),
+            ('1881 г.', 'Училище', 'първото училище в селото'),
+            ('1891 г.', 'Първата мина', '1 530 тона през първата година'),
+            ('1917 г.', 'Теснолинейката', 'жп линия Дупница — Бобов дол'),
+            ('1967 г.', 'Град', 'Указ № 788; празник — 27 октомври'),
+            ('1969–1975', 'ТЕЦ „Бобов дол“', '630 MW; 200-метров комин'),
+            ('1980-те', 'Златни години', '7 300 миньори; 2 млн. т годишно'),
+            ('1989 г.', 'Преходът', 'разграбване и масова миграция'),
+            ('2018 г.', 'Край под земята', 'спира последният подземен рудник'),
+            ('2024 г.', 'Днес', '4 023 жители; 18 населени места'),
+        ]
+        top = h - 56
+        bot = 22
+        pitch = (top - bot) / float(len(events))
+        sx = 98
+        c.setStrokeColor(GOLD)
+        c.setLineWidth(1.1)
+        c.line(sx, top + 6, sx, bot - 2)
+        for i, (d, t, n) in enumerate(events):
+            y = top - i * pitch - pitch / 2 + 2
+            c.setFillColor(HEX('#f4ecd6'))
+            c.setStrokeColor(DARKRED)
+            c.setLineWidth(1.2)
+            c.circle(sx, y, 3.6, fill=1, stroke=1)
+            c.setFillColor(DARKRED)
+            c.circle(sx, y, 1.3, fill=1, stroke=0)
+            c.setFont('Book-Medium', 9.6)
+            c.drawRightString(sx - 10, y - 3, d)
+            c.setFillColor(INK)
+            c.setFont('Book-Bold', 9.6)
+            c.drawString(sx + 10, y + 1.6, t)
+            c.setFillColor(INK2)
+            c.setFont('Book-Italic', 8.6)
+            c.drawString(sx + 10, y - 8.2, n)
+            if i < len(events) - 1:
+                c.setStrokeColor(HEX('#d8caa4'))
+                c.setLineWidth(0.3)
+                c.line(sx + 10, y - pitch / 2 - 1.2, w - 18, y - pitch / 2 - 1.2)
+
+
+# ── Снимки ─────────────────────────────────────────────────────────────────
+PHOTO_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'photos')
+
+# кадър на релефната карта (виж photos/relief-bobov-dol.jpg); равнопромеждутъчна проекция
+RELIEF_FRAME = {'lat0': 42.1873, 'lat1': 42.4193, 'lon0': 22.85363, 'lon1': 23.10457, 'w': 1280, 'h': 1600}
+
+
+# Кредити под снимките (CC BY / CC BY-SA изискват посочване на автора и лиценза).
+# Всички файлове са от Уикимедия Общомедия.
+PHOTO_CREDITS = {
+    'razmetanitsa.jpg': 'Снимка: Ivano Giambattista · CC0 · Уикимедия Общомедия',
+    'paraklis.jpg': 'Снимка: Kiak · CC BY-SA 3.0 · Уикимедия Общомедия',
+    'tec.jpg': 'Снимка: Boby Dimitrov · CC BY-SA 2.0 · Уикимедия Общомедия',
+    'grad-panorama.jpg': 'Снимка: Clj · обществено достояние · Уикимедия Общомедия',
+    'vagoni.jpg': 'Снимка: DemieK07 · CC BY-SA 4.0 · Уикимедия Общомедия',
+    'minyor-match.jpg': 'Снимка: Biso · CC BY 3.0 · Уикимедия Общомедия',
+    'bean-pods.jpg': 'Снимка: Rasbak · CC BY-SA 3.0 · Уикимедия Общомедия',
+    'defter-1455.jpg': 'Снимка: Crocodile2020 · CC0 · Уикимедия Общомедия',
+    'minna-direktsiya-pernik.jpg': 'Снимка: Felix O · CC BY-SA 2.0 · Уикимедия Общомедия',
+}
+
+# изрязване (л, г, д, дъно) като дялове от размера, и мека корекция
+PHOTO_SPEC = {
+    'razmetanitsa.jpg': {'crop': (0.0, 0.10, 1.0, 0.92)},
+    'grad-panorama.jpg': {'crop': (0.0, 0.22, 1.0, 0.98)},
+    'vagoni.jpg': {'crop': (0.0, 0.18, 1.0, 0.86), 'contrast': 1.12},
+    'paraklis.jpg': {},
+    'tec.jpg': {},
+    'minyor-match.jpg': {'crop': (0.0, 0.10, 1.0, 1.0)},
+    'bean-pods.jpg': {'crop': (0.04, 0.14, 0.97, 0.80)},
+    'defter-1455.jpg': {},
+    'minna-direktsiya-pernik.jpg': {},
+}
+
+
+class Photo(Flowable):
+    """Снимка с бяло паспарту, златен кант и лека сянка."""
+
+    MAT = 3.5
+
+    def __init__(self, filename, width=300):
+        super().__init__()
+        from PIL import Image, ImageEnhance, ImageFilter, ImageOps
+        spec = PHOTO_SPEC.get(filename, {})
+        im = Image.open(os.path.join(PHOTO_DIR, filename)).convert('RGB')
+        if spec.get('crop'):
+            l, t, r, b = spec['crop']
+            iw, ih = im.size
+            im = im.crop((int(l * iw), int(t * ih), int(r * iw), int(b * ih)))
+        im = ImageOps.autocontrast(im, cutoff=0.4, preserve_tone=True)   # без изкривяване на цветовете
+        if spec.get('contrast'):
+            im = ImageEnhance.Contrast(im).enhance(spec['contrast'])
+        im = im.filter(ImageFilter.UnsharpMask(radius=1.1, percent=55, threshold=3))
+        import io
+        buf = io.BytesIO()
+        im.save(buf, 'JPEG', quality=88, optimize=True, subsampling=0)   # JPEG → малък PDF
+        buf.seek(0)
+        self._img = ImageReader(buf)
+        iw, ih = im.size
+        self.width = width
+        self.img_w = width - 2 * self.MAT
+        self.img_h = self.img_w * ih / float(iw)
+        self.height = self.img_h + 2 * self.MAT + 3
+
+    def wrap(self, aw, ah):
+        self._aw = aw
+        return aw, self.height
+
+    def draw(self):
+        c = self.canv
+        x0 = (self._aw - self.width) / 2.0
+        y0 = 3
+        bh = self.img_h + 2 * self.MAT
+        c.saveState()
+        c.setFillColor(colors.black)
+        for i, a in enumerate((0.05, 0.05, 0.04)):      # мека сянка
+            c.setFillAlpha(a)
+            c.rect(x0 + 1.5 + i, y0 - 1.5 - i, self.width, bh, fill=1, stroke=0)
+        c.setFillAlpha(1)
+        c.setFillColor(colors.white)
+        c.setStrokeColor(GOLD)
+        c.setLineWidth(0.7)
+        c.rect(x0, y0, self.width, bh, fill=1, stroke=1)
+        c.drawImage(self._img, x0 + self.MAT, y0 + self.MAT, self.img_w, self.img_h)
+        c.setStrokeColor(HEX('#3a2e18'))
+        c.setLineWidth(0.3)
+        c.rect(x0 + self.MAT, y0 + self.MAT, self.img_w, self.img_h, fill=0, stroke=1)
+        c.restoreState()
+
+
+# ── Корица: нощен пейзаж над долината ─────────────────────────────────────
+def _rng(seed):
+    state = [seed]
+
+    def r():
+        state[0] = (state[0] * 48271) % 2147483647
+        return state[0] / 2147483647.0
+    return r
+
+
+def _gerb(c, cx, y_bottom, height, outline=None):
+    """Оригиналният герб (gerb.py) с долна средна точка (cx, y_bottom) и дадена височина."""
+    from gerb import draw_gerb, ASPECT
+    draw_gerb(c, cx - height * ASPECT / 2.0, y_bottom, height, outline=outline)
+
+
+def _ridge(c, pts, color, base=0):
+    p = smooth_path(c, pts)
+    p.lineTo(pts[-1][0], base)
+    p.lineTo(pts[0][0], base)
+    p.close()
+    c.setFillColor(HEX(color))
+    c.drawPath(p, fill=1, stroke=0)
+
+
+def _glow(c, x, y, r, color, a0=0.20, steps=44):
+    """Мек отблясък: много тънки концентрични кръгове (без видим ръб)."""
+    c.setFillColor(HEX(color))
+    for i in range(steps):
+        t = i / float(steps)
+        c.setFillAlpha(a0 * 2.0 * t / steps)
+        c.circle(x, y, r * (1 - t), fill=1, stroke=0)
+    c.setFillAlpha(1)
+
+
+def _tower(c, x, base, wb, wt, wwaist, h, color):
+    """Хиперболична охладителна кула."""
+    pts = [(x - wb / 2, base), (x - wwaist / 2, base + h * 0.62), (x - wt / 2, base + h)]
+    pr = [(x + wt / 2, base + h), (x + wwaist / 2, base + h * 0.62), (x + wb / 2, base)]
+    p = smooth_path(c, pts + pr)
+    p.close()
+    c.setFillColor(HEX(color))
+    c.drawPath(p, fill=1, stroke=0)
+
+
+def _scene(c, variant):
+    front = variant == 'front'
+    horizon = H * (0.325 if front else 0.20)
+    # небе: от тъмносиньо към топъл здрач при хоризонта
+    c.saveState()
+    clip_rect(c, 0, 0, W, H)
+    if front:
+        lin_grad(c, 0, H, 0, horizon, [(0, '#04060d'), (0.40, '#0a1022'), (0.64, '#141e43'),
+                                         (0.80, '#323561'), (0.90, '#6e5062'), (0.96, '#b9805a'),
+                                         (1.0, '#e0a859')])
+    else:
+        lin_grad(c, 0, H, 0, horizon, [(0, '#04060d'), (0.55, '#0b1226'), (0.85, '#18214a'),
+                                         (1.0, '#3b3a62')])
+    c.restoreState()
+    # звезди
+    r = _rng(7 if front else 23)
+    c.setFillColor(HEX('#e4e9f7'))
+    keep_out = ((W * 0.08, H * 0.62, W * 0.92, H * 0.965) if front
+                else (W * 0.08, H * 0.27, W * 0.92, H * 0.955))
+    for i in range(210):
+        sx = r() * W
+        sy = horizon + (H - horizon) * (r() ** 0.8)
+        if keep_out[0] < sx < keep_out[2] and keep_out[1] < sy < keep_out[3]:
+            r(); r()
+            continue
+        fade = 0.25 + 0.75 * min(1.0, (sy - horizon) / (H - horizon))
+        rad = 0.25 + r() * 0.75
+        c.setFillAlpha(fade * (0.4 + 0.6 * r()))
+        c.circle(sx, sy, rad, fill=1, stroke=0)
+        if rad > 0.9 and r() > 0.55:
+            c.setStrokeColor(HEX('#e4e9f7'))
+            c.setLineWidth(0.25)
+            c.line(sx - 2.4, sy, sx + 2.4, sy)
+            c.line(sx, sy - 2.4, sx, sy + 2.4)
+    c.setFillAlpha(1)
+    if front:
+        # луна с ореол
+        mx, my = W * 0.80, H * 0.595
+        _glow(c, mx, my, 54, '#cdd8ff', 0.30)
+        c.setFillColor(HEX('#f2e7bd'))
+        c.circle(mx, my, 14.5, fill=1, stroke=0)
+        c.setFillColor(HEX('#e2d39c'))
+        c.setFillAlpha(0.55)
+        for dx, dy, rr in ((-4, 3, 3.2), (4, -3, 2.4), (-1, -5, 1.8), (5, 5, 1.6)):
+            c.circle(mx + dx, my + dy, rr, fill=1, stroke=0)
+        c.setFillAlpha(1)
+        # топъл отблясък зад билата
+        _glow(c, W * 0.5, horizon, 230, '#e09a4a', 0.34)
+    # гребени
+    k = 0.0 if front else -0.12
+    _ridge(c, [(-10, horizon + 22), (W * 0.10, horizon + 40), (W * 0.24, horizon + 24), (W * 0.41, horizon + 52),
+               (W * 0.56, horizon + 30), (W * 0.72, horizon + 46), (W * 0.88, horizon + 28), (W + 10, horizon + 42)],
+           '#2e3659' if front else '#1b2342')
+    _ridge(c, [(-10, horizon + 6), (W * 0.15, horizon + 26), (W * 0.30, horizon + 8), (W * 0.46, horizon + 30),
+               (W * 0.62, horizon + 10), (W * 0.80, horizon + 28), (W + 10, horizon + 8)],
+           '#1b2446' if front else '#121933')
+    _ridge(c, [(-10, horizon - 6), (W * 0.2, horizon + 8), (W * 0.42, horizon - 2), (W * 0.66, horizon + 10),
+               (W * 0.86, horizon - 2), (W + 10, horizon + 4)],
+           '#0f1631' if front else '#0c1228')
+    # долината: земя (градиентът се изрязва — иначе „extend“ заля цялата страница)
+    c.saveState()
+    clip_rect(c, 0, 0, W, horizon - 8)
+    lin_grad(c, 0, horizon - 8, 0, 0, [(0, '#0e1530'), (1, '#04060d')])
+    c.restoreState()
+    gy = horizon - 24
+    # ТЕЦ: три охладителни кули + комин
+    tx = W * 0.745
+    base = gy - 4
+    steam = '#aab6d8'
+    for i, (dx, hh) in enumerate(((-36, 54), (0, 60), (36, 54))):
+        _tower(c, tx + dx, base, 38, 27, 21, hh, '#070b17')
+        # топла светлина по ръба
+        c.setStrokeColor(HEX('#c98b4a'))
+        c.setStrokeAlpha(0.35 if front else 0.12)
+        c.setLineWidth(0.6)
+        c.line(tx + dx - 19, base, tx + dx - 10.5, base + hh * 0.62)
+        c.setStrokeAlpha(1)
+        # пара
+        for j in range(6):
+            c.setFillColor(HEX(steam))
+            c.setFillAlpha(0.15 - j * 0.022)
+            c.circle(tx + dx - 4 - j * 6.5, base + hh + 8 + j * 10, 5 + j * 2.7, fill=1, stroke=0)
+    c.setFillAlpha(1)
+    cx_ = tx + 66
+    c.setFillColor(HEX('#070b17'))
+    c.rect(cx_ - 3.4, base, 6.8, 118, fill=1, stroke=0)
+    c.setFillColor(HEX('#c8cbd6'))
+    c.setFillAlpha(0.55)
+    for k_ in range(4):
+        c.rect(cx_ - 3.4, base + 118 - 5 - k_ * 10, 6.8, 4.2, fill=1, stroke=0)
+    c.setFillAlpha(1)
+    c.setFillColor(HEX('#ff4d3a'))
+    c.circle(cx_, base + 120, 1.9, fill=1, stroke=0)
+    _glow(c, cx_, base + 120, 12, '#ff6a4a', 0.6, 8)
+    c.setFillColor(HEX('#070b17'))
+    c.rect(tx - 58, base - 2, 128, 13, fill=1, stroke=0)
+    # копер на миньорска шахта (вляво)
+    hx = W * 0.16
+    c.setStrokeColor(HEX('#070b17'))
+    c.setLineWidth(2.2)
+    c.line(hx - 17, gy - 4, hx, gy + 52)
+    c.line(hx + 17, gy - 4, hx, gy + 52)
+    c.setLineWidth(1.0)
+    for t in (0.3, 0.55, 0.8):
+        yy = gy - 4 + 56 * t
+        hw = 17 * (1 - t)
+        c.line(hx - hw, yy, hx + hw, yy)
+    c.setFillColor(HEX('#070b17'))
+    c.circle(hx, gy + 53, 6.8, fill=1, stroke=0)
+    c.setStrokeColor(HEX('#c98b4a'))
+    c.setStrokeAlpha(0.5 if front else 0.15)
+    c.setLineWidth(0.5)
+    c.circle(hx, gy + 53, 6.8, fill=0, stroke=1)
+    c.setStrokeAlpha(1)
+    c.setFillColor(HEX('#070b17'))
+    c.rect(hx - 34, gy - 6, 26, 12, fill=1, stroke=0)
+    c.rect(hx + 12, gy - 6, 20, 9, fill=1, stroke=0)
+    # градът: покриви и светещи прозорци
+    r2 = _rng(41)
+    for i in range(54):
+        bx = W * 0.20 + r2() * W * 0.50
+        by = gy - 18 + r2() * 14 - abs(bx - W * 0.45) * 0.03
+        bw, bh = 5 + r2() * 8, 4 + r2() * 8
+        c.setFillColor(HEX('#060a15'))
+        c.rect(bx, by, bw, bh, fill=1, stroke=0)
+        if r2() > 0.35:
+            c.setFillColor(HEX('#f1b952'))
+            c.setFillAlpha(0.55 + r2() * 0.45)
+            c.rect(bx + 1.2, by + 1.4, 1.4, 1.4, fill=1, stroke=0)
+            if bw > 8 and r2() > 0.4:
+                c.rect(bx + bw - 3, by + bh - 3.2, 1.4, 1.4, fill=1, stroke=0)
+            c.setFillAlpha(1)
+    _glow(c, W * 0.46, gy - 10, 70, '#e8a64a', 0.32 if front else 0.12, 12)
+    # улични светлини
+    r3 = _rng(5)
+    c.setFillColor(HEX('#ffd27a'))
+    for i in range(34):
+        c.setFillAlpha(0.5 + r3() * 0.5)
+        c.rect(W * 0.18 + r3() * W * 0.56, gy - 24 - r3() * 8, 1.2, 1.2, fill=1, stroke=0)
+    c.setFillAlpha(1)
+    # преден план: тъмен склон
+    p = smooth_path(c, [(-10, 52), (W * 0.25, 40), (W * 0.55, 56), (W * 0.82, 38), (W + 10, 50)])
+    p.lineTo(W + 10, -10)
+    p.lineTo(-10, -10)
+    p.close()
+    c.setFillColor(HEX('#04060d'))
+    c.drawPath(p, fill=1, stroke=0)
+
+
+def _frame(c):
+    c.setStrokeColor(GOLD_L)
+    c.setLineWidth(0.9)
+    c.rect(17, 17, W - 34, H - 34, fill=0, stroke=1)
+    c.setLineWidth(0.35)
+    c.rect(21, 21, W - 42, H - 42, fill=0, stroke=1)
+    c.setFillColor(GOLD_L)
+    for (x, y) in ((17, 17), (W - 17, 17), (17, H - 17), (W - 17, H - 17)):
+        diamond(c, x, y, 3.4)
+
+
+def _orn(c, y, half=62, color=GOLD_L):
+    c.setStrokeColor(color)
+    c.setFillColor(color)
+    c.setLineWidth(0.6)
+    c.line(W / 2 - half, y, W / 2 - 9, y)
+    c.line(W / 2 + 9, y, W / 2 + half, y)
+    diamond(c, W / 2, y, 2.8)
+    c.circle(W / 2 - 15, y, 0.9, fill=1, stroke=0)
+    c.circle(W / 2 + 15, y, 0.9, fill=1, stroke=0)
+
+
+def _engraved(c, text, x, y, size, tracking, fill, stroke, font='Book-Medium'):
+    from reportlab.pdfbase.pdfmetrics import stringWidth
+    tw = stringWidth(text, font, size) + tracking * (len(text) - 1)
+    c.saveState()
+    t = c.beginText(x - tw / 2.0, y)
+    t.setFont(font, size)
+    t.setCharSpace(tracking)
+    t.setTextRenderMode(2)
+    c.setFillColor(HEX(fill))
+    c.setStrokeColor(HEX(stroke))
+    c.setLineWidth(0.45)
+    t.textOut(text)
+    c.drawText(t)
+    c.restoreState()
+
+
+COVER_PHOTO = os.path.join(PHOTO_DIR, 'cover-bobov-dol.jpg')
+COVER_PHOTO_BACK = os.path.join(PHOTO_DIR, 'cover-bobov-dol-back.jpg')
+
+
+def _photo_scene(c, path, front=True):
+    """Корица от реална снимка на цяла страница (затъмняването е вече в снимката — prep_cover.py)."""
+    c.drawImage(ImageReader(path), 0, 0, W, H)
+
+
+def cover_page(canvas, doc):
+    c = canvas
+    c.saveState()
+    if os.path.exists(COVER_PHOTO):
+        _photo_scene(c, COVER_PHOTO, True)
+    else:
+        _scene(c, 'front')
+    _frame(c)
+    # герб, заглавие, подзаглавие
+    _gerb(c, W / 2, H * 0.800, 88)
+    _engraved(c, 'БОБОВ ДОЛ', W / 2, H * 0.755, 41, 7.5, '#f3e6bb', '#c9a255')
+    _orn(c, H * 0.722)
+    c.setFillColor(HEX('#eadcab'))
+    c.setFont('Book-Italic', 17.5)
+    c.drawCentredString(W / 2, H * 0.685, 'Хроника на един град')
+    draw_tracked(c, W / 2, H * 0.652, 'ОТ ТРАКИТЕ ДО НАШЕТО ВРЕМЕ', 'Book-Medium', 8.2, 2.6,
+                 HEX('#b9c0da'))
+    # автор
+    draw_tracked(c, W / 2, H * 0.098, 'СТЕФАН Л. КОСТАДИНОВ', 'Book-Medium', 10.6, 3.4,
+                 HEX('#efe3b8'))
+    _orn(c, H * 0.074, 38)
+    c.setFillColor(GOLD_L)
+    c.setFont('Book-Italic', 9.4)
+    c.drawCentredString(W / 2, H * 0.052, 'MMXXVI')
+    c.restoreState()
+
+
+def back_cover_page(canvas, doc):
+    c = canvas
+    c.saveState()
+    if os.path.exists(COVER_PHOTO_BACK):
+        _photo_scene(c, COVER_PHOTO_BACK, False)
+    else:
+        _scene(c, 'back')
+    _frame(c)
+    _orn(c, H * 0.935, 80)
+    _gerb(c, W / 2, H * 0.800, 66)
+    lines = [
+        ('Тази книга е за едно място.', 'Book-Italic', 12.6, '#efe3b8'),
+        None,
+        ('За долината с форма на бобово зърно,', 'Book-Italic', 11.2, '#d3d9ec'),
+        ('където траки са издълбали скални ниши,', 'Book-Italic', 11.2, '#d3d9ec'),
+        ('цар Самуил е пролял братска кръв,', 'Book-Italic', 11.2, '#d3d9ec'),
+        ('а хиляди миньори са слизали под земята', 'Book-Italic', 11.2, '#d3d9ec'),
+        ('всеки ден — за хляба на децата си.', 'Book-Italic', 11.2, '#d3d9ec'),
+        None,
+        ('От първото записване на името', 'Book-Italic', 11.2, '#d3d9ec'),
+        ('„Бободол“ в османски дефтер от 1576 г.', 'Book-Italic', 11.2, '#d3d9ec'),
+        ('до днешните 4 023 жители —', 'Book-Italic', 11.2, '#d3d9ec'),
+        ('това е хрониката на Бобов дол:', 'Book-Italic', 11.2, '#d3d9ec'),
+        ('град, който не се предава.', 'Book-Medium', 12.6, '#efe3b8'),
+    ]
+    y = H * 0.775
+    for ln in lines:
+        if ln is None:
+            y -= 11
+            continue
+        text, font, size, col = ln
+        c.setFillColor(HEX(col))
+        c.setFont(font, size)
+        c.drawCentredString(W / 2, y, text)
+        y -= 17
+    y -= 12
+    _engraved(c, '„Помни ме, както аз помня теб.“', W / 2, y, 14.6, 0.5, '#eddca4', '#b78e47',
+              font='Book-Medium')
+    c.setFillColor(HEX('#aeb6ca'))
+    c.setFont('Book-Italic', 9.4)
+    c.drawCentredString(W / 2, y - 18, '— Стефан Л. Костадинов')
+    draw_tracked(c, W / 2, H * 0.082, 'CARBON STEALTH VCC', 'Book-Medium', 8.4, 2.6, GOLD_L)
+    c.setFillColor(HEX('#aeb6ca'))
+    c.setFont('Book-Italic', 8.4)
+    c.drawCentredString(W / 2, H * 0.064, 'Бобов дол · Милано · 2026')
+    c.restoreState()
