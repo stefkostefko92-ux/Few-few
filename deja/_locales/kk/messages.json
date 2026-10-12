@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — браузеріңнің жады"
+  },
+  "extDesc": {
+    "message": "Сен оқыған беттер бойынша мағыналық іздеу. Бәрі жергілікті түрде орындалады — ештеңе құрылғыңнан шықпайды."
+  },
+  "cmdOpenSearch": {
+    "message": "Déjà іздеуін ашу"
+  },
+  "searchTitle": {
+    "message": "Déjà — оқығаныңды ізде"
+  },
+  "tagline": {
+    "message": "Сен оны көргенсің. Déjà оны табады."
+  },
+  "searchPlaceholder": {
+    "message": "Есіңде қалғанын сипатта… мысалы, «натрий негізіндегі батареялар туралы мақала»"
+  },
+  "searchButton": {
+    "message": "Іздеу"
+  },
+  "statusSearching": {
+    "message": "Жадты ақтарып жатырмын… (алғашқы іздеу модельді жүктейді, ~10-30 сек)"
+  },
+  "statusEmpty": {
+    "message": "Ештеңе табылмады. Не сен оны ешқашан оқымағансың, не Déjà оны әлі есте сақтамаған."
+  },
+  "statusResults": {
+    "message": "$COUNT$ естелік:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 естелік:"
+  },
+  "errNoResponse": {
+    "message": "жад жауап бермеді — қайталап көр"
+  },
+  "recallVivid": {
+    "message": "айқын естелік"
+  },
+  "recallHazy": {
+    "message": "бұлыңғыр естелік"
+  },
+  "recallFaint": {
+    "message": "алыс естелік"
+  },
+  "statusError": {
+    "message": "Іздеу сәтсіз аяқталды: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Жадта: $COUNT$ бет.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Жадта: 1 бет."
+  },
+  "similarity": {
+    "message": "ұқсастық $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "оқылған күні: $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "Жадта $COUNT$ бет",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "Жадта 1 бет"
+  },
+  "popupSleeping": {
+    "message": "жад ұйықтап жатыр"
+  },
+  "popupWaking": {
+    "message": "жад оянып жатыр…"
+  },
+  "popupOpenSearch": {
+    "message": "Іздеуді ашу"
+  },
+  "popupPause": {
+    "message": "Есте сақтауды кідірту"
+  },
+  "popupClear": {
+    "message": "Жадты тазалау"
+  },
+  "popupClearConfirm": {
+    "message": "Есте сақталғанның бәрі жойылсын ба? Кері қайтару мүмкін емес."
+  },
+  "popupOptions": {
+    "message": "Параметрлер"
+  },
+  "optionsTitle": {
+    "message": "Déjà — параметрлер"
+  },
+  "optRetentionLabel": {
+    "message": "Беттерді сақтау"
+  },
+  "optRetentionForever": {
+    "message": "мәңгі"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ ай",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Ескі беттер күніне бір рет автоматты түрде жойылады."
+  },
+  "optDenylistLabel": {
+    "message": "Мыналарды қамтитын мекенжайларды ешқашан есте сақтама"
+  },
+  "optDenylistHelp": {
+    "message": "Әр жолға бір үлгі. Мекенжайдың бір бөлігімен сәйкес келеді, мысалы, «example.com» немесе «/private»."
+  },
+  "optBuiltinLabel": {
+    "message": "Кірістірілген қорғаныс (әрқашан қосулы)"
+  },
+  "optModelHostLabel": {
+    "message": "Модельдің жеке айнасы (кеңейтілген)"
+  },
+  "optModelHostHelp": {
+    "message": "Бос = huggingface.co. Офлайн/корпоративтік орта үшін өз серверіңді көрсет."
+  },
+  "filterAll": {
+    "message": "барлығы"
+  },
+  "filterWeek": {
+    "message": "соңғы апта"
+  },
+  "filterMonth": {
+    "message": "соңғы ай"
+  },
+  "filterYear": {
+    "message": "соңғы жыл"
+  },
+  "relatedLink": {
+    "message": "байланысты естеліктер"
+  },
+  "relatedNone": {
+    "message": "жақын естеліктер жоқ"
+  },
+  "omniboxDefault": {
+    "message": "Жадыңнан сұра — Déjà мағынасы бойынша іздейді"
+  },
+  "popupMemory": {
+    "message": "Менің жадым"
+  },
+  "memoryTitle": {
+    "message": "Менің жадым"
+  },
+  "memoryEmpty": {
+    "message": "Жад бос — бірнеше бетті қарап шығып, қайта орал."
+  },
+  "memoryForget": {
+    "message": "Ұмыту"
+  },
+  "memoryExport": {
+    "message": "Мұрағатты жүктеп алу"
+  },
+  "memoryImport": {
+    "message": "Мұрағаттан қалпына келтіру"
+  },
+  "memoryImportConfirm": {
+    "message": "Мұрағаттан қалпына келтіру керек пе? Сәйкес беттер қайта жазылады."
+  },
+  "optSave": {
+    "message": "Сақтау"
+  },
+  "optSaved": {
+    "message": "Сақталды ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Айна https:// мекенжайы болуы керек"
+  },
+  "welcomeHeading": {
+    "message": "Сәлем. Мен — браузеріңнің жадымын."
+  },
+  "welcomeIntro": {
+    "message": "Осы сәттен бастап не оқитыныңды есте сақтаймын, кейін оны мағынасы бойынша таба алуың үшін — нақты атауымен емес, өз сөздеріңмен."
+  },
+  "welcomePoint1": {
+    "message": "Бәрі сенің құрылғыңда орындалады. Серверлер жоқ, бұлт жоқ, деректер жіберілмейді — ешқайда, ешқашан."
+  },
+  "welcomePoint2": {
+    "message": "Пошта, чаттар, кіру беттері және банкинг ешқашан есте сақталмайды. Назар аудар: сезімтал тақырыптарды мекенжай бойынша тани алмаймын — олар үшін кідіртуді немесе параметрлердегі өз тізіміңді пайдалан."
+  },
+  "welcomePoint3": {
+    "message": "Басқару сенің қолыңда: бір басумен кідірту, «Жадты тазалау» бәрін жояды, ал қаласаң, бірнеше айдан кейін автоматты түрде ұмытамын."
+  },
+  "welcomeCta": {
+    "message": "Іздеуді ашу"
+  },
+  "welcomeOptions": {
+    "message": "Параметрлер"
+  },
+  "memoryFilter": {
+    "message": "Жадыңнан ізде…"
+  },
+  "supportLink": {
+    "message": "Déjà-ға қолдау"
+  },
+  "panelTitle": {
+    "message": "Déjà — серік"
+  },
+  "panelOnThisPage": {
+    "message": "Осы беттің тақырыбы бойынша"
+  },
+  "panelRecent": {
+    "message": "Соңғы естеліктер"
+  },
+  "panelNoPage": {
+    "message": "Веб-бетті аш, сонда Déjà оның тақырыбы бойынша не оқығаныңды көрсетеді."
+  },
+  "popupOpenPanel": {
+    "message": "Бүйірлік панель"
+  },
+  "popupForgetPage": {
+    "message": "Осы бетті ұмыту"
+  },
+  "popupForgotten": {
+    "message": "Ұмытылды ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: таңдалған мәтінді есте сақтау"
+  },
+  "menuForget": {
+    "message": "Déjà: осы бетті ұмыту"
+  },
+  "recentTitle": {
+    "message": "Соңғы естеліктер"
+  },
+  "cmdOpenPanel": {
+    "message": "Déjà бүйірлік панелін ашу"
+  },
+  "welcomePoint4": {
+    "message": "Бүйірлік панель сен қарап отырған беттің мекенжайы мен атауын көреді, сол арқылы оның тақырыбы бойынша не оқығаныңды көрсете алады — тек сеанс жадында. Әдейі сақтаған үзінділерің де тек сенде қалады."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà жаңартылды. Жаңалық: қаласаң, енді бетбелгілеріңді де мағынасы бойынша іздеуге болады. Деректеріңмен не істейтінім міне — ештеңе құрылғыңнан шыққан жоқ."
+  },
+  "optAmbientLabel": {
+    "message": "Тірі фон"
+  },
+  "optAmbientHelp": {
+    "message": "Әйнектің арғы жағындағы естеліктер торы баяу қалқиды. Қозғалыс алаңдатса, өшір."
+  },
+  "bmTitle": {
+    "message": "Бетбелгілеріңді іздеуге болатын ет — дәл қазір"
+  },
+  "bmText": {
+    "message": "Déjà беттерді ашпай-ақ бетбелгілеріңнің атаулары мен қалталарын үйренеді. Оларды алғашқы минуттан мағынасы бойынша тап — бәрі құрылғыңда қалады."
+  },
+  "bmTextShort": {
+    "message": "Жадың әлі жас. Маған бетбелгілеріңді үйрет те, бүгіннен бастап оларды мағынасы бойынша ізде."
+  },
+  "bmButton": {
+    "message": "Бетбелгілерімді үйрен"
+  },
+  "bmNote": {
+    "message": "Браузер рұқсат сұрайды. Кез келген уақытта параметрлерден өшіре аласың."
+  },
+  "bmTitleRunning": {
+    "message": "Бетбелгілеріңді үйреніп жатырмын…"
+  },
+  "bmTitleDone": {
+    "message": "Бетбелгілеріңді іздеуге болады"
+  },
+  "bmPreparing": {
+    "message": "Дайындалып жатырмын…"
+  },
+  "bmLearning": {
+    "message": "$TOTAL$ ішінен $DONE$ үйренілді",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà кідіртілген — қайта жалғастырған бойда мен де жалғастырамын."
+  },
+  "bmError": {
+    "message": "Үйрену кезінде бірдеңе дұрыс болмады. Келесі өзгерісте қайталап көремін."
+  },
+  "bmDone": {
+    "message": "Дайын — $COUNT$ бетбелгіні мағынасы бойынша іздеуге болады, олар автоматты түрде синхрондалады.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Дайын — 1 бетбелгіні мағынасы бойынша іздеуге болады, ол автоматты түрде синхрондалады."
+  },
+  "bmDenied": {
+    "message": "Рұқсатсыз бетбелгілеріңді көре алмаймын. Кез келген уақытта қайталап көре аласың."
+  },
+  "bmTry": {
+    "message": "Байқап көр:"
+  },
+  "bmBadge": {
+    "message": "Бетбелгі"
+  },
+  "bmAddedOn": {
+    "message": "қосылған күні: $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Жадтағы бетбелгілер"
+  },
+  "optBookmarksHelp": {
+    "message": "Бетбелгілеріңнің атаулары мен қалталарын (беттерді ашпай) үйренемін және сен қосқан не жойған сайын бақылап отырамын. Өшірсең, олар жадтан алынып тасталады — оқылған беттер қалады."
+  },
+  "memoryFilterAll": {
+    "message": "Барлығы"
+  },
+  "memoryFilterRead": {
+    "message": "Оқылғандар"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Бетбелгілер"
+  },
+  "welcomePoint5": {
+    "message": "Бетбелгілер — тек өзің қоссаң ғана: сонда беттерді ашпай-ақ олардың атаулары мен қалталарын үйренемін. Бір басумен өшіріледі."
+  },
+  "rateTitle": {
+    "message": "Déjà саған бірдеңе табуға көмектесті — қазірдің өзінде $COUNT$ рет",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Пайдалы болса, дүкендегі баға басқаларға оны табуға көмектеседі — бар болғаны 10 секунд. Ал бірдеңе мазаласа, бізге жаз."
+  },
+  "rateButton": {
+    "message": "Déjà-ны бағалау"
+  },
+  "rateFeedback": {
+    "message": "Бірдеңе істемей тұр ма?"
+  },
+  "rateLater": {
+    "message": "Қазір емес"
+  },
+  "rateThanks": {
+    "message": "Рақмет! Бұл шынымен көмектеседі."
+  },
+  "rateFeedbackThanks": {
+    "message": "Рақмет — әр хатты оқимыз."
+  },
+  "rateFeedbackSubject": {
+    "message": "кері байланыс"
+  },
+  "answerTitle": {
+    "message": "Жадыңнан жауап"
+  },
+  "answerAsk": {
+    "message": "Жадымнан жауап бер"
+  },
+  "answerEnableTitle": {
+    "message": "Chrome-ның кірістірілген жасанды интеллектінен жауаптар"
+  },
+  "answerEnableText": {
+    "message": "Déjà оқығандарың бойынша сұрақтарға дереккөздерімен жауап бере алады. Chrome құрылғыдағы өз моделін (Gemini Nano) бір рет жүктеп алады — сұрақтарың мен беттерің компьютеріңнен ешқашан шықпайды."
+  },
+  "answerEnableButton": {
+    "message": "Жауаптарды қосу"
+  },
+  "answerNoThanks": {
+    "message": "Жоқ, рақмет"
+  },
+  "answerDownloading": {
+    "message": "Chrome модельді жүктеп алуда… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Естеліктеріңді оқып жатырмын…"
+  },
+  "answerStop": {
+    "message": "Тоқтату"
+  },
+  "answerFoot": {
+    "message": "Chrome-ның кірістірілген жасанды интеллекті сенің $COUNT$ естелігің негізінде құрылғыңда жазды. Дереккөздерді тексер.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Бұл жолы жауап құрастыра алмадым."
+  },
+  "optAnswersLabel": {
+    "message": "Chrome-ның кірістірілген жасанды интеллектінен жауаптар"
+  },
+  "optAnswersHelp": {
+    "message": "«…туралы не оқыдым?» сияқты сұрақтарға беттеріңнен алынған дереккөздермен қысқа жауап жазамын — толығымен құрылғыңда, Chrome ішіндегі Gemini Nano арқылы. Қолдау көрсетілетін компьютер мен тіл қажет (ағылшын, испан, неміс, француз, жапон)."
+  },
+  "optAnswersAvailable": {
+    "message": "Осы құрылғыда пайдалануға дайын."
+  },
+  "optAnswersDownloadable": {
+    "message": "Қолдау көрсетіледі — Chrome модельді алғашқы сұрағыңда жүктеп алады."
+  },
+  "optAnswersUnavailable": {
+    "message": "Бұл құрылғыға немесе интерфейс тіліне Chrome-ның кірістірілген жасанды интеллекті қолдау көрсетпейді."
+  },
+  "optAnswersUnsupported": {
+    "message": "Бұл браузерде кірістірілген жасанды интеллект жоқ — Déjà-ның қалған мүмкіндіктерінің бәрі әдеттегідей жұмыс істейді."
+  }
+}

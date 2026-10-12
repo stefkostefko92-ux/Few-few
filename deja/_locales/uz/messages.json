@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — brauzering xotirasi"
+  },
+  "extDesc": {
+    "message": "Oʻqigan sahifalaring boʻyicha semantik qidiruv. Hammasi lokal bajariladi — hech narsa qurilmangdan hech qachon chiqmaydi."
+  },
+  "cmdOpenSearch": {
+    "message": "Déjà qidiruvini ochish"
+  },
+  "searchTitle": {
+    "message": "Déjà — oʻqiganlaringdan qidir"
+  },
+  "tagline": {
+    "message": "Sen buni koʻrgansan. Déjà topadi."
+  },
+  "searchPlaceholder": {
+    "message": "Eslaganingni tasvirla… masalan, «natriy asosidagi batareyalar haqidagi maqola»"
+  },
+  "searchButton": {
+    "message": "Qidirish"
+  },
+  "statusSearching": {
+    "message": "Xotirani titkilayapman… (birinchi qidiruv modelni yuklaydi, ~10-30 soniya)"
+  },
+  "statusEmpty": {
+    "message": "Hech narsa chiqmadi. Yo buni hech qachon oʻqimagansan, yo Déjà uni hali eslab qolmagan."
+  },
+  "statusResults": {
+    "message": "$COUNT$ ta xotira:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 ta xotira:"
+  },
+  "errNoResponse": {
+    "message": "xotira javob bermadi — qayta urinib koʻr"
+  },
+  "recallVivid": {
+    "message": "yorqin xotira"
+  },
+  "recallHazy": {
+    "message": "xira xotira"
+  },
+  "recallFaint": {
+    "message": "uzoq xotira"
+  },
+  "statusError": {
+    "message": "Qidiruv amalga oshmadi: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Xotirada: $COUNT$ ta sahifa.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Xotirada: 1 ta sahifa."
+  },
+  "similarity": {
+    "message": "oʻxshashlik $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "oʻqilgan sana: $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "Xotirada $COUNT$ ta sahifa",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "Xotirada 1 ta sahifa"
+  },
+  "popupSleeping": {
+    "message": "xotira uxlayapti"
+  },
+  "popupWaking": {
+    "message": "xotira uygʻonmoqda…"
+  },
+  "popupOpenSearch": {
+    "message": "Qidiruvni ochish"
+  },
+  "popupPause": {
+    "message": "Eslab qolishni toʻxtatib turish"
+  },
+  "popupClear": {
+    "message": "Xotirani tozalash"
+  },
+  "popupClearConfirm": {
+    "message": "Eslab qolingan hamma narsa oʻchirilsinmi? Ortga qaytarib boʻlmaydi."
+  },
+  "popupOptions": {
+    "message": "Sozlamalar"
+  },
+  "optionsTitle": {
+    "message": "Déjà — sozlamalar"
+  },
+  "optRetentionLabel": {
+    "message": "Sahifalarni saqlash"
+  },
+  "optRetentionForever": {
+    "message": "doimiy"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ oy",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Eskiroq sahifalar kuniga bir marta avtomatik oʻchiriladi."
+  },
+  "optDenylistLabel": {
+    "message": "Quyidagilarni oʻz ichiga olgan manzillarni hech qachon eslab qolma"
+  },
+  "optDenylistHelp": {
+    "message": "Har bir qatorda bitta andoza. Manzilning bir qismiga mos keladi, masalan, «example.com» yoki «/private»."
+  },
+  "optBuiltinLabel": {
+    "message": "Ichki himoya (doim faol)"
+  },
+  "optModelHostLabel": {
+    "message": "Modelning maxsus koʻzgusi (kengaytirilgan)"
+  },
+  "optModelHostHelp": {
+    "message": "Boʻsh = huggingface.co. Oflayn/korporativ muhitlar uchun oʻz serveringni koʻrsat."
+  },
+  "filterAll": {
+    "message": "hammasi"
+  },
+  "filterWeek": {
+    "message": "oxirgi hafta"
+  },
+  "filterMonth": {
+    "message": "oxirgi oy"
+  },
+  "filterYear": {
+    "message": "oxirgi yil"
+  },
+  "relatedLink": {
+    "message": "bogʻliq xotiralar"
+  },
+  "relatedNone": {
+    "message": "yaqin xotiralar yoʻq"
+  },
+  "omniboxDefault": {
+    "message": "Xotirangdan soʻra — Déjà maʼno boʻyicha qidiradi"
+  },
+  "popupMemory": {
+    "message": "Mening xotiram"
+  },
+  "memoryTitle": {
+    "message": "Mening xotiram"
+  },
+  "memoryEmpty": {
+    "message": "Xotira boʻsh — bir nechta sahifani koʻrib chiq va qaytib kel."
+  },
+  "memoryForget": {
+    "message": "Unutish"
+  },
+  "memoryExport": {
+    "message": "Arxivni yuklab olish"
+  },
+  "memoryImport": {
+    "message": "Arxivdan tiklash"
+  },
+  "memoryImportConfirm": {
+    "message": "Arxivdan tiklansinmi? Mos keladigan sahifalar qayta yoziladi."
+  },
+  "optSave": {
+    "message": "Saqlash"
+  },
+  "optSaved": {
+    "message": "Saqlandi ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Koʻzgu https:// manzili boʻlishi kerak"
+  },
+  "welcomeHeading": {
+    "message": "Salom. Men brauzeringning xotirasiman."
+  },
+  "welcomeIntro": {
+    "message": "Shu daqiqadan boshlab nima oʻqiyotganingni eslab qolaman, keyinroq uni maʼnosi boʻyicha topa olishing uchun — aniq sarlavha bilan emas, oʻz soʻzlaring bilan."
+  },
+  "welcomePoint1": {
+    "message": "Hammasi sening qurilmangda bajariladi. Serverlar yoʻq, bulut yoʻq, maʼlumot yuborish yoʻq — hech qayerga, hech qachon."
+  },
+  "welcomePoint2": {
+    "message": "Pochta, chatlar, kirish sahifalari va bank xizmatlari hech qachon eslab qolinmaydi. Diqqat: nozik mavzularni manzil orqali taniy olmayman — ular uchun pauzadan yoki sozlamalardagi oʻz roʻyxatingdan foydalan."
+  },
+  "welcomePoint3": {
+    "message": "Boshqaruv senda: bir bosishda pauza, «Xotirani tozalash» hammasini oʻchiradi, xohlasang esa bir necha oydan keyin avtomatik unutaman."
+  },
+  "welcomeCta": {
+    "message": "Qidiruvni ochish"
+  },
+  "welcomeOptions": {
+    "message": "Sozlamalar"
+  },
+  "memoryFilter": {
+    "message": "Xotirangdan qidir…"
+  },
+  "supportLink": {
+    "message": "Déjàga yordam"
+  },
+  "panelTitle": {
+    "message": "Déjà — hamroh"
+  },
+  "panelOnThisPage": {
+    "message": "Ushbu sahifa mavzusida"
+  },
+  "panelRecent": {
+    "message": "Soʻnggi xotiralar"
+  },
+  "panelNoPage": {
+    "message": "Veb-sahifani och — Déjà uning mavzusida nimalarni oʻqiganingni koʻrsatadi."
+  },
+  "popupOpenPanel": {
+    "message": "Yon panel"
+  },
+  "popupForgetPage": {
+    "message": "Bu sahifani unutish"
+  },
+  "popupForgotten": {
+    "message": "Unutildi ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: tanlangan matnni eslab qolish"
+  },
+  "menuForget": {
+    "message": "Déjà: bu sahifani unutish"
+  },
+  "recentTitle": {
+    "message": "Soʻnggi xotiralar"
+  },
+  "cmdOpenPanel": {
+    "message": "Déjà yon panelini ochish"
+  },
+  "welcomePoint4": {
+    "message": "Yon panel sen koʻrayotgan sahifaning manzili va sarlavhasini koʻradi, shunda uning mavzusida nima oʻqiganingni koʻrsata oladi — faqat seans xotirasida. Ataylab saqlagan parchalaring ham faqat senda qoladi."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà yangilandi. Yangilik: xohlasang, endi xatchoʻplaringda ham maʼno boʻyicha qidirish mumkin. Maʼlumotlaring bilan nima qilishim mana — hech narsa qurilmangdan chiqmagan."
+  },
+  "optAmbientLabel": {
+    "message": "Jonli fon"
+  },
+  "optAmbientHelp": {
+    "message": "Oyna ortidagi xotiralar toʻri sekin suzib yuradi. Harakat chalgʻitsa, oʻchirib qoʻy."
+  },
+  "bmTitle": {
+    "message": "Xatchoʻplaringni qidiriladigan qil — hoziroq"
+  },
+  "bmText": {
+    "message": "Déjà sahifalarni ochmasdan xatchoʻplaringning sarlavhalari va jildlarini oʻrganadi. Ularni birinchi daqiqadan maʼnosi boʻyicha top — hammasi qurilmangda qoladi."
+  },
+  "bmTextShort": {
+    "message": "Xotirang hali yosh. Menga xatchoʻplaringni oʻrgat va bugunoq ularda maʼno boʻyicha qidir."
+  },
+  "bmButton": {
+    "message": "Xatchoʻplarimni oʻrgan"
+  },
+  "bmNote": {
+    "message": "Brauzer ruxsat soʻraydi. Istalgan vaqtda sozlamalardan oʻchirib qoʻyishing mumkin."
+  },
+  "bmTitleRunning": {
+    "message": "Xatchoʻplaringni oʻrganyapman…"
+  },
+  "bmTitleDone": {
+    "message": "Xatchoʻplaringda qidirish mumkin"
+  },
+  "bmPreparing": {
+    "message": "Tayyorlanyapman…"
+  },
+  "bmLearning": {
+    "message": "$TOTAL$ tadan $DONE$ tasi oʻrganildi",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà pauzada — davom ettirishing bilan men ham davom etaman."
+  },
+  "bmError": {
+    "message": "Oʻrganish vaqtida nimadir xato ketdi. Keyingi oʻzgarishda yana urinib koʻraman."
+  },
+  "bmDone": {
+    "message": "Tayyor — $COUNT$ ta xatchoʻpda maʼno boʻyicha qidirish mumkin, ular avtomatik sinxronlanadi.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Tayyor — 1 ta xatchoʻpda maʼno boʻyicha qidirish mumkin, u avtomatik sinxronlanadi."
+  },
+  "bmDenied": {
+    "message": "Ruxsatsiz xatchoʻplaringni koʻra olmayman. Istalgan vaqtda qayta urinib koʻrishing mumkin."
+  },
+  "bmTry": {
+    "message": "Sinab koʻr:"
+  },
+  "bmBadge": {
+    "message": "Xatchoʻp"
+  },
+  "bmAddedOn": {
+    "message": "qoʻshilgan sana: $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Xotiradagi xatchoʻplar"
+  },
+  "optBookmarksHelp": {
+    "message": "Xatchoʻplaringning sarlavhalari va jildlarini (sahifalarni ochmasdan) oʻrganaman va sen qoʻshganingda yoki oʻchirganingda kuzatib boraman. Oʻchirib qoʻyilsa, ular xotiradan olib tashlanadi — oʻqilgan sahifalar qoladi."
+  },
+  "memoryFilterAll": {
+    "message": "Hammasi"
+  },
+  "memoryFilterRead": {
+    "message": "Oʻqilganlar"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Xatchoʻplar"
+  },
+  "welcomePoint5": {
+    "message": "Xatchoʻplar — faqat oʻzing yoqsang: unda sahifalarni ochmasdan ularning sarlavhalari va jildlarini oʻrganaman. Bir bosishda oʻchiriladi."
+  },
+  "rateTitle": {
+    "message": "Déjà senga nimanidir topishga yordam berdi — allaqachon $COUNT$ marta",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Agar foydali boʻlsa, doʻkondagi baho boshqalarga ham uni topishga yordam beradi — bor-yoʻgʻi 10 soniya. Biror narsa bezovta qilsa, bizga yoz."
+  },
+  "rateButton": {
+    "message": "Déjàni baholash"
+  },
+  "rateFeedback": {
+    "message": "Nimadir ishlamayaptimi?"
+  },
+  "rateLater": {
+    "message": "Hozir emas"
+  },
+  "rateThanks": {
+    "message": "Rahmat! Bu haqiqatan yordam beradi."
+  },
+  "rateFeedbackThanks": {
+    "message": "Rahmat — har bir xabarni oʻqiymiz."
+  },
+  "rateFeedbackSubject": {
+    "message": "fikr-mulohaza"
+  },
+  "answerTitle": {
+    "message": "Xotirangdan javob"
+  },
+  "answerAsk": {
+    "message": "Xotiramdan javob ber"
+  },
+  "answerEnableTitle": {
+    "message": "Chrome ichidagi sunʼiy intellektdan javoblar"
+  },
+  "answerEnableText": {
+    "message": "Déjà oʻqiganlaringga asoslanib savollaringga manbalar bilan javob bera oladi. Chrome qurilmadagi modelini (Gemini Nano) bir marta yuklab oladi — savollaring va sahifalaring kompyuteringdan hech qachon chiqmaydi."
+  },
+  "answerEnableButton": {
+    "message": "Javoblarni yoqish"
+  },
+  "answerNoThanks": {
+    "message": "Yoʻq, rahmat"
+  },
+  "answerDownloading": {
+    "message": "Chrome modelni yuklab olmoqda… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Xotiralaringni oʻqiyapman…"
+  },
+  "answerStop": {
+    "message": "Toʻxtatish"
+  },
+  "answerFoot": {
+    "message": "Chrome ichidagi sunʼiy intellekt tomonidan $COUNT$ ta xotirang asosida qurilmangda yozildi. Manbalarni tekshir.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Bu safar javob tuza olmadim."
+  },
+  "optAnswersLabel": {
+    "message": "Chrome ichidagi sunʼiy intellektdan javoblar"
+  },
+  "optAnswersHelp": {
+    "message": "«…haqida nima oʻqigan edim?» kabi savollarga sahifalaringdagi manbalar bilan qisqa javob yozaman — toʻliq qurilmangda, Chrome ichidagi Gemini Nano yordamida. Qoʻllab-quvvatlanadigan kompyuter va til kerak (ingliz, ispan, nemis, fransuz, yapon)."
+  },
+  "optAnswersAvailable": {
+    "message": "Bu qurilmada foydalanishga tayyor."
+  },
+  "optAnswersDownloadable": {
+    "message": "Qoʻllab-quvvatlanadi — Chrome modelni birinchi savolingda yuklab oladi."
+  },
+  "optAnswersUnavailable": {
+    "message": "Bu qurilma yoki interfeys tili Chrome ichidagi sunʼiy intellekt tomonidan qoʻllab-quvvatlanmaydi."
+  },
+  "optAnswersUnsupported": {
+    "message": "Bu brauzerda ichki sunʼiy intellekt yoʻq — Déjàdagi qolgan hamma narsa odatdagidek ishlaydi."
+  }
+}

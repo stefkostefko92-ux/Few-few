@@ -1,0 +1,48 @@
+TITLE: Déjà — tarayıcının hafızası
+SHORT: Okuduğun sayfalarda anlama göre ara, 50'den fazla dilde. Tamamen cihazında çalışır — hiçbir şey tarayıcından dışarı çıkmaz.
+
+Görmüştün. Déjà bulur.
+
+Tarayıcı geçmişin yalnızca başlıkları ve URL'leri hatırlar. Déjà ise İÇERİĞİ
+hatırlar. Hatırladığını kendi kelimelerinle anlat — “sodyum bazlı piller
+hakkındaki o makale” — ve Déjà, başlığı, siteyi ya da tam kelimeleri
+hatırlamasan bile sayfayı karşına çıkarır. Hatta doğrudan ilgili paragrafa
+atlar.
+
+NELER SUNUYOR
+✓ Yer işaretlerin, ilk dakikadan itibaren anlama göre aranabilir — isteğe
+  bağlı, tek tıkla. Déjà başlıklarını ve klasörlerini öğrenir (sayfaları
+  açmadan) ve sen yer işareti ekledikçe, taşıdıkça veya sildikçe onları
+  senkronize tutar.
+✓ Hafızandan yanıtlar — Chrome'un yerleşik yapay zekâsını (Gemini Nano)
+  destekleyen bilgisayarlarda bir soru sor; okuduğun sayfalardan cihazında
+  yazılmış, tıklanabilir kaynaklar içeren kısa bir yanıt al. (Yanıtlar
+  İngilizce, İspanyolca, Almanca, Fransızca ve Japonca.)
+✓ Anlama göre arama — kendi kelimelerinle, 50'den fazla dilde sor; bir dilde
+  sor, başka bir dilde okuduğun sayfaları bul.
+✓ Yol arkadaşı yan panel — herhangi bir sayfanın yanında aç ve o sayfanın
+  konusunda daha önce okuduklarını, ayrıca son anılarını gör.
+✓ Adres çubuğuna “dj” yaz — canlı önerilerle doğrudan omnibox'tan hafızanda
+  ara.
+✓ Bir pasajı hatırla — seçili herhangi bir metne sağ tıkla: “Déjà: seçili
+  metni hatırla”. Kendi başına aranabilir bir anıya dönüşür.
+✓ Tam paragrafa atla — sonuçlar sayfayı, eşleşen pasaj vurgulanmış şekilde
+  açar.
+✓ Tarih filtreleri, ilgili anılar, boş arama sayfasında son anılar.
+✓ Hafızam — Déjà'nın hatırladığı her şeyi gör, herhangi bir sayfayı tek tıkla
+  unut, tüm dizini dosya olarak dışa/içe aktar.
+
+TASARIMDAN GELEN GİZLİLİK
+✓ %100 yerel işleme — yapay zekâ gömme (embedding) modeli tarayıcının içinde
+  çalışır ve verilerin IndexedDB'de durur. Sunucu yok, bulut yok, telemetri
+  yok, hesap yok.
+✓ E-posta, sohbet, oturum açma ve bankacılık sayfaları otomatik olarak atlanır
+  (yerleşik adres listesi; kendi kalıplarını da ekleyebilirsin).
+✓ Tek tıkla duraklat. “Bu sayfayı unut” ve “Hafızayı temizle” her zaman
+  elinin altında.
+✓ Otomatik unutma — isteğe bağlı olarak 3/6/12/24 aydan eski sayfaları sil.
+✓ Açık ve koyu tema sistemini takip eder.
+
+Uzantının yaptığı tek ağ isteği, gömme modelinin Hugging Face'ten tek seferlik
+indirilmesidir (sonrasında yerel olarak önbelleğe alınır; bunun yerine kendi
+yansına da yönlendirebilirsin).

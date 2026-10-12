@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — brauzerinin yaddaşı"
+  },
+  "extDesc": {
+    "message": "Oxuduğun səhifələrdə semantik axtarış. Hər şey lokal olaraq baş verir — heç nə heç vaxt cihazını tərk etmir."
+  },
+  "cmdOpenSearch": {
+    "message": "Déjà axtarışını aç"
+  },
+  "searchTitle": {
+    "message": "Déjà — oxuduqlarında axtar"
+  },
+  "tagline": {
+    "message": "Sən onu görmüsən. Déjà tapır."
+  },
+  "searchPlaceholder": {
+    "message": "Xatırladığını təsvir et… məs. «natrium əsaslı batareyalar haqqında məqalə»"
+  },
+  "searchButton": {
+    "message": "Axtar"
+  },
+  "statusSearching": {
+    "message": "Yaddaşı eşələyirəm… (ilk axtarış modeli yükləyir, ~10-30 san)"
+  },
+  "statusEmpty": {
+    "message": "Heç nə tapılmadı. Ya heç vaxt oxumamısan, ya da Déjà hələ yadda saxlamayıb."
+  },
+  "statusResults": {
+    "message": "$COUNT$ xatirə:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 xatirə:"
+  },
+  "errNoResponse": {
+    "message": "yaddaş cavab vermədi — yenidən cəhd et"
+  },
+  "recallVivid": {
+    "message": "parlaq xatirə"
+  },
+  "recallHazy": {
+    "message": "dumanlı xatirə"
+  },
+  "recallFaint": {
+    "message": "uzaq xatirə"
+  },
+  "statusError": {
+    "message": "Axtarış alınmadı: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Yaddaşda: $COUNT$ səhifə.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Yaddaşda: 1 səhifə."
+  },
+  "similarity": {
+    "message": "oxşarlıq $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "$DATE$ tarixində oxunub",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "Yaddaşda $COUNT$ səhifə",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "Yaddaşda 1 səhifə"
+  },
+  "popupSleeping": {
+    "message": "yaddaş yatır"
+  },
+  "popupWaking": {
+    "message": "yaddaş oyanır…"
+  },
+  "popupOpenSearch": {
+    "message": "Axtarışı aç"
+  },
+  "popupPause": {
+    "message": "Yadda saxlamağa fasilə ver"
+  },
+  "popupClear": {
+    "message": "Yaddaşı təmizlə"
+  },
+  "popupClearConfirm": {
+    "message": "Yadda saxlanan hər şey silinsin? Geri dönüş yoxdur."
+  },
+  "popupOptions": {
+    "message": "Ayarlar"
+  },
+  "optionsTitle": {
+    "message": "Déjà — ayarlar"
+  },
+  "optRetentionLabel": {
+    "message": "Səhifələri saxla"
+  },
+  "optRetentionForever": {
+    "message": "həmişəlik"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ ay",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Köhnə səhifələr gündə bir dəfə avtomatik silinir."
+  },
+  "optDenylistLabel": {
+    "message": "Bunları ehtiva edən ünvanları heç vaxt yadda saxlama"
+  },
+  "optDenylistHelp": {
+    "message": "Hər sətirdə bir şablon. Ünvanın bir hissəsi ilə uyğunlaşır, məs. «example.com» və ya «/private»."
+  },
+  "optBuiltinLabel": {
+    "message": "Daxili qoruma (həmişə aktiv)"
+  },
+  "optModelHostLabel": {
+    "message": "Fərdi model güzgüsü (təkmil)"
+  },
+  "optModelHostHelp": {
+    "message": "Boş = huggingface.co. Oflayn/korporativ mühitlər üçün öz serverini təyin et."
+  },
+  "filterAll": {
+    "message": "hamısı"
+  },
+  "filterWeek": {
+    "message": "son həftə"
+  },
+  "filterMonth": {
+    "message": "son ay"
+  },
+  "filterYear": {
+    "message": "son il"
+  },
+  "relatedLink": {
+    "message": "əlaqəli xatirələr"
+  },
+  "relatedNone": {
+    "message": "yaxın xatirə yoxdur"
+  },
+  "omniboxDefault": {
+    "message": "Yaddaşından soruş — Déjà məna üzrə axtarır"
+  },
+  "popupMemory": {
+    "message": "Yaddaşım"
+  },
+  "memoryTitle": {
+    "message": "Yaddaşım"
+  },
+  "memoryEmpty": {
+    "message": "Yaddaş boşdur — bir neçə səhifəyə bax və geri qayıt."
+  },
+  "memoryForget": {
+    "message": "Unut"
+  },
+  "memoryExport": {
+    "message": "Arxivi endir"
+  },
+  "memoryImport": {
+    "message": "Arxivdən bərpa et"
+  },
+  "memoryImportConfirm": {
+    "message": "Arxivdən bərpa edilsin? Uyğun gələn səhifələrin üzərinə yazılacaq."
+  },
+  "optSave": {
+    "message": "Yadda saxla"
+  },
+  "optSaved": {
+    "message": "Yadda saxlanıldı ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Güzgü https:// ünvanı olmalıdır"
+  },
+  "welcomeHeading": {
+    "message": "Salam. Mən brauzerinin yaddaşıyam."
+  },
+  "welcomeIntro": {
+    "message": "Bu andan etibarən oxuduqlarını yadda saxlayıram ki, sonra onları məna üzrə tapa biləsən — dəqiq başlıqla yox, öz sözlərinlə."
+  },
+  "welcomePoint1": {
+    "message": "Hər şey sənin cihazında baş verir. Server yox, bulud yox, məlumat göndərilməsi yox — heç yerə, heç vaxt."
+  },
+  "welcomePoint2": {
+    "message": "Poçt, çatlar, giriş və bank səhifələri heç vaxt yadda saxlanılmır. Diqqət: həssas mövzuları ünvana görə tanıya bilmirəm — onlar üçün fasilədən və ya ayarlardakı öz siyahından istifadə et."
+  },
+  "welcomePoint3": {
+    "message": "İdarə səndədir: bir kliklə fasilə, «Yaddaşı təmizlə» hər şeyi silir, istəsən isə bir neçə aydan sonra avtomatik unuduram."
+  },
+  "welcomeCta": {
+    "message": "Axtarışı aç"
+  },
+  "welcomeOptions": {
+    "message": "Ayarlar"
+  },
+  "memoryFilter": {
+    "message": "Yaddaşında axtar…"
+  },
+  "supportLink": {
+    "message": "Déjà-ya dəstək"
+  },
+  "panelTitle": {
+    "message": "Déjà — yoldaş"
+  },
+  "panelOnThisPage": {
+    "message": "Bu səhifənin mövzusunda"
+  },
+  "panelRecent": {
+    "message": "Son xatirələr"
+  },
+  "panelNoPage": {
+    "message": "Veb səhifə aç və Déjà onun mövzusunda nə oxuduğunu göstərəcək."
+  },
+  "popupOpenPanel": {
+    "message": "Yan panel"
+  },
+  "popupForgetPage": {
+    "message": "Bu səhifəni unut"
+  },
+  "popupForgotten": {
+    "message": "Unuduldu ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: seçilmiş mətni yadda saxla"
+  },
+  "menuForget": {
+    "message": "Déjà: bu səhifəni unut"
+  },
+  "recentTitle": {
+    "message": "Son xatirələr"
+  },
+  "cmdOpenPanel": {
+    "message": "Déjà yan panelini aç"
+  },
+  "welcomePoint4": {
+    "message": "Yan panel baxdığın səhifənin ünvanını və başlığını görür ki, onun mövzusunda nə oxuduğunu göstərə bilsin — yalnız sessiya yaddaşında. Qəsdən yadda saxladığın fraqmentlər də yalnız səndə qalır."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà yeniləndi. Yenilik: istəsən, indi əlfəcinlərində də məna üzrə axtarış etmək olar. Məlumatlarınla nə etdiyim budur — heç nə cihazını tərk etməyib."
+  },
+  "optAmbientLabel": {
+    "message": "Canlı fon"
+  },
+  "optAmbientHelp": {
+    "message": "Şüşənin arxasındakı xatirələr şəbəkəsi yavaş-yavaş üzür. Hərəkət diqqətini yayındırırsa, söndür."
+  },
+  "bmTitle": {
+    "message": "Əlfəcinlərini axtarıla bilən et — elə indi"
+  },
+  "bmText": {
+    "message": "Déjà səhifələri açmadan əlfəcinlərinin başlıqlarını və qovluqlarını öyrənir. Onları ilk dəqiqədən məna üzrə tap — hər şey cihazında qalır."
+  },
+  "bmTextShort": {
+    "message": "Yaddaşın hələ gəncdir. Mənə əlfəcinlərini öyrət və elə bu gündən onlarda məna üzrə axtar."
+  },
+  "bmButton": {
+    "message": "Əlfəcinlərimi öyrən"
+  },
+  "bmNote": {
+    "message": "Brauzer icazə istəyəcək. İstədiyin vaxt ayarlarda söndürə bilərsən."
+  },
+  "bmTitleRunning": {
+    "message": "Əlfəcinlərini öyrənirəm…"
+  },
+  "bmTitleDone": {
+    "message": "Əlfəcinlərində axtarış mümkündür"
+  },
+  "bmPreparing": {
+    "message": "Hazırlaşıram…"
+  },
+  "bmLearning": {
+    "message": "Öyrənildi: $DONE$ / $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà fasilədədir — davam etdirən kimi mən də davam edəcəyəm."
+  },
+  "bmError": {
+    "message": "Öyrənmə zamanı nəsə səhv getdi. Növbəti dəyişiklikdə yenidən cəhd edəcəyəm."
+  },
+  "bmDone": {
+    "message": "Hazırdır — $COUNT$ əlfəcin məna üzrə axtarıla biləndir və avtomatik sinxronlaşdırılır.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Hazırdır — 1 əlfəcin məna üzrə axtarıla biləndir və avtomatik sinxronlaşdırılır."
+  },
+  "bmDenied": {
+    "message": "İcazə olmadan əlfəcinlərini görə bilmirəm. İstədiyin vaxt yenidən cəhd edə bilərsən."
+  },
+  "bmTry": {
+    "message": "Sına:"
+  },
+  "bmBadge": {
+    "message": "Əlfəcin"
+  },
+  "bmAddedOn": {
+    "message": "$DATE$ tarixində əlavə edilib",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Yaddaşdakı əlfəcinlər"
+  },
+  "optBookmarksHelp": {
+    "message": "Əlfəcinlərinin başlıqlarını və qovluqlarını (səhifələri açmadan) öyrənirəm və sən əlavə etdikcə və ya sildikcə izləyirəm. Söndürmək onları yaddaşdan silir — oxuduğun səhifələr qalır."
+  },
+  "memoryFilterAll": {
+    "message": "Hamısı"
+  },
+  "memoryFilterRead": {
+    "message": "Oxunanlar"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Əlfəcinlər"
+  },
+  "welcomePoint5": {
+    "message": "Əlfəcinlər — yalnız sən aktiv etsən: o zaman səhifələri açmadan onların başlıqlarını və qovluqlarını öyrənirəm. Bir kliklə söndürülür."
+  },
+  "rateTitle": {
+    "message": "Déjà nəyisə tapmağına kömək etdi — artıq $COUNT$ dəfə",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Faydalıdırsa, mağazada bir qiymətləndirmə başqalarının da onu kəşf etməsinə kömək edir — cəmi 10 saniyə çəkir. Nəsə səni narahat edirsə, bizə yaz."
+  },
+  "rateButton": {
+    "message": "Déjà-nı qiymətləndir"
+  },
+  "rateFeedback": {
+    "message": "Nəsə işləmir?"
+  },
+  "rateLater": {
+    "message": "İndi yox"
+  },
+  "rateThanks": {
+    "message": "Təşəkkürlər! Bu, həqiqətən kömək edir."
+  },
+  "rateFeedbackThanks": {
+    "message": "Təşəkkürlər — hər mesajı oxuyuruq."
+  },
+  "rateFeedbackSubject": {
+    "message": "rəy"
+  },
+  "answerTitle": {
+    "message": "Yaddaşından cavab"
+  },
+  "answerAsk": {
+    "message": "Yaddaşımdan cavab ver"
+  },
+  "answerEnableTitle": {
+    "message": "Chrome-un daxili süni intellektindən cavablar"
+  },
+  "answerEnableText": {
+    "message": "Déjà oxuduqlarına əsasən suallarına mənbələrlə cavab verə bilər. Chrome cihazdakı modelini (Gemini Nano) bir dəfə endirir — sualların və səhifələrin heç vaxt kompüterini tərk etmir."
+  },
+  "answerEnableButton": {
+    "message": "Cavabları aktiv et"
+  },
+  "answerNoThanks": {
+    "message": "Yox, sağ ol"
+  },
+  "answerDownloading": {
+    "message": "Chrome modeli endirir… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Xatirələrini oxuyuram…"
+  },
+  "answerStop": {
+    "message": "Dayandır"
+  },
+  "answerFoot": {
+    "message": "Chrome-un daxili süni intellekti tərəfindən $COUNT$ xatirənə əsasən cihazında yazılıb. Mənbələri yoxla.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Bu dəfə cavab tərtib edə bilmədim."
+  },
+  "optAnswersLabel": {
+    "message": "Chrome-un daxili süni intellektindən cavablar"
+  },
+  "optAnswersHelp": {
+    "message": "«…haqqında nə oxumuşdum?» kimi suallar üçün səhifələrindən mənbələrlə qısa cavab yazıram — tamamilə cihazında, Chrome-dakı Gemini Nano ilə. Dəstəklənən kompüter və dil tələb olunur (ingilis, ispan, alman, fransız, yapon)."
+  },
+  "optAnswersAvailable": {
+    "message": "Bu cihazda istifadəyə hazırdır."
+  },
+  "optAnswersDownloadable": {
+    "message": "Dəstəklənir — Chrome modeli ilk sualında endirəcək."
+  },
+  "optAnswersUnavailable": {
+    "message": "Bu cihaz və ya interfeys dili Chrome-un daxili süni intellekti tərəfindən dəstəklənmir."
+  },
+  "optAnswersUnsupported": {
+    "message": "Bu brauzerdə daxili süni intellekt yoxdur — Déjà-da qalan hər şey həmişəki kimi işləyir."
+  }
+}

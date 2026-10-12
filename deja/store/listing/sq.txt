@@ -1,0 +1,52 @@
+TITLE: Déjà — kujtesa e shfletuesit tënd
+SHORT: Kërko faqet që ke lexuar sipas kuptimit, në mbi 50 gjuhë. Funksionon tërësisht në pajisjen tënde — asgjë nuk del nga shfletuesi.
+
+E ke parë. Déjà e gjen.
+
+Historiku i shfletuesit mban mend vetëm tituj dhe URL. Déjà mban mend
+PËRMBAJTJEN. Përshkruaj me fjalët e tua atë që kujton — „ai artikulli për
+bateritë me bazë natriumi“ — dhe Déjà e nxjerr në pah faqen, edhe nëse nuk
+e mban mend titullin, faqen e internetit apo fjalët e sakta. Madje të çon
+drejt e te paragrafi i saktë.
+
+ÇFARË MERR
+✓ Faqeshënuesit e tu, të kërkueshëm sipas kuptimit që nga minuta e parë —
+  opsionale, me një klik. Déjà mëson titujt dhe dosjet e tyre (pa i hapur
+  faqet) dhe i mban të sinkronizuar ndërsa shton, zhvendos ose fshin
+  faqeshënues.
+✓ Përgjigje nga kujtesa jote — në kompjuterët që mbështetin AI-në e integruar
+  të Chrome (Gemini Nano), bëj një pyetje dhe merr një përgjigje të shkurtër,
+  të shkruar në pajisjen tënde nga faqet që ke lexuar, me burime të
+  klikueshme. (Përgjigjet në anglisht, spanjisht, gjermanisht, frëngjisht dhe
+  japonisht.)
+✓ Kërkim sipas kuptimit — pyet me fjalët e tua, në mbi 50 gjuhë; pyet në një
+  gjuhë dhe gjej faqe që i ke lexuar në një tjetër.
+✓ Paneli anësor shoqërues — hape pranë çdo faqeje dhe shiko çfarë ke lexuar
+  tashmë për temën e saj, si dhe kujtimet e tua të fundit.
+✓ Shkruaj „dj“ në shiritin e adresës — kërko në kujtesën tënde drejt nga
+  omnibox-i, me sugjerime të menjëhershme.
+✓ Mbaj mend një pasazh — kliko me të djathtën mbi çdo tekst të përzgjedhur:
+  „Déjà: mbaj mend tekstin e përzgjedhur“. Ai bëhet një kujtim më vete, i
+  kërkueshëm.
+✓ Kalim te paragrafi i saktë — rezultatet e hapin faqen me pasazhin përkatës
+  të theksuar.
+✓ Filtra sipas datës, kujtime të lidhura, kujtime të fundit në faqen bosh të
+  kërkimit.
+✓ Kujtesa ime — shiko gjithçka që mban mend Déjà, harro çdo faqe me një klik,
+  eksporto/importo gjithë indeksin si skedar.
+
+PRIVATËSI QË NGA PROJEKTIMI
+✓ Përpunim 100% lokal — modeli AI i embedding-ut punon brenda shfletuesit tënd
+  dhe të dhënat ruhen në IndexedDB. Pa serverë, pa re, pa telemetri, pa
+  llogari.
+✓ Faqet e postës, bisedave, hyrjes dhe bankave anashkalohen automatikisht
+  (listë e integruar adresash; shto edhe modelet e tua).
+✓ Pauzë me një klik. „Harroje këtë faqe“ dhe „Pastro kujtesën“ janë gjithmonë
+  aty.
+✓ Harresë automatike — sipas dëshirës, fshi faqet më të vjetra se 3/6/12/24
+  muaj.
+✓ Temat e çelët dhe të errët ndjekin sistemin tënd.
+
+Kërkesa e vetme në rrjet që bën ndonjëherë shtesa është një shkarkim i vetëm
+i modelit të embedding-ut nga Hugging Face (më pas ruhet në memorien lokale;
+mund ta drejtosh edhe te pasqyra jote).

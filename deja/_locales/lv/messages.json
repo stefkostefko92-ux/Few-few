@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — tava pārlūka atmiņa"
+  },
+  "extDesc": {
+    "message": "Semantiskā meklēšana tevis lasītajās lapās. Viss notiek lokāli — nekas nekad nepamet tavu ierīci."
+  },
+  "cmdOpenSearch": {
+    "message": "Atvērt Déjà meklēšanu"
+  },
+  "searchTitle": {
+    "message": "Déjà — meklē izlasīto"
+  },
+  "tagline": {
+    "message": "Tu to redzēji. Déjà to atrod."
+  },
+  "searchPlaceholder": {
+    "message": "Apraksti, ko atceries… piem., „raksts par nātrija akumulatoriem“"
+  },
+  "searchButton": {
+    "message": "Meklēt"
+  },
+  "statusSearching": {
+    "message": "Rokos pa atmiņu… (pirmā meklēšana ielādē modeli, ~10-30 s)"
+  },
+  "statusEmpty": {
+    "message": "Nekas neuzpeldēja. Vai nu tas nekad nav lasīts, vai arī vēl nav nonācis Déjà atmiņā."
+  },
+  "statusResults": {
+    "message": "Atmiņas: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 atmiņa:"
+  },
+  "errNoResponse": {
+    "message": "atmiņa neatbildēja — mēģini vēlreiz"
+  },
+  "recallVivid": {
+    "message": "spilgta atmiņa"
+  },
+  "recallHazy": {
+    "message": "miglaina atmiņa"
+  },
+  "recallFaint": {
+    "message": "tāla atmiņa"
+  },
+  "statusError": {
+    "message": "Meklēšana neizdevās: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Lapas atmiņā: $COUNT$.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Atmiņā: 1 lapa."
+  },
+  "similarity": {
+    "message": "līdzība $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "lasīts $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "Lapas atmiņā: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 lapa atmiņā"
+  },
+  "popupSleeping": {
+    "message": "atmiņa guļ"
+  },
+  "popupWaking": {
+    "message": "atmiņa mostas…"
+  },
+  "popupOpenSearch": {
+    "message": "Atvērt meklēšanu"
+  },
+  "popupPause": {
+    "message": "Pauzēt iegaumēšanu"
+  },
+  "popupClear": {
+    "message": "Notīrīt atmiņu"
+  },
+  "popupClearConfirm": {
+    "message": "Dzēst visu iegaumēto? Ceļa atpakaļ nav."
+  },
+  "popupOptions": {
+    "message": "Iestatījumi"
+  },
+  "optionsTitle": {
+    "message": "Déjà — iestatījumi"
+  },
+  "optRetentionLabel": {
+    "message": "Glabāt lapas"
+  },
+  "optRetentionForever": {
+    "message": "uz visiem laikiem"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ mēn.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Vecākas lapas tiek automātiski dzēstas reizi dienā."
+  },
+  "optDenylistLabel": {
+    "message": "Nekad neiegaumē adreses, kas satur"
+  },
+  "optDenylistHelp": {
+    "message": "Viens šablons katrā rindā. Atbilst adreses daļai, piem., „example.com“ vai „/private“."
+  },
+  "optBuiltinLabel": {
+    "message": "Iebūvētā aizsardzība (vienmēr aktīva)"
+  },
+  "optModelHostLabel": {
+    "message": "Pielāgots modeļa spogulis (papildu)"
+  },
+  "optModelHostHelp": {
+    "message": "Tukšs = huggingface.co. Norādi savu serveri bezsaistes/uzņēmumu vidēm."
+  },
+  "filterAll": {
+    "message": "visi"
+  },
+  "filterWeek": {
+    "message": "pēdējā nedēļa"
+  },
+  "filterMonth": {
+    "message": "pēdējais mēnesis"
+  },
+  "filterYear": {
+    "message": "pēdējais gads"
+  },
+  "relatedLink": {
+    "message": "saistītās atmiņas"
+  },
+  "relatedNone": {
+    "message": "nav tuvu atmiņu"
+  },
+  "omniboxDefault": {
+    "message": "Jautā savai atmiņai — Déjà meklē pēc nozīmes"
+  },
+  "popupMemory": {
+    "message": "Mana atmiņa"
+  },
+  "memoryTitle": {
+    "message": "Mana atmiņa"
+  },
+  "memoryEmpty": {
+    "message": "Atmiņa ir tukša — apskati dažas lapas un atgriezies."
+  },
+  "memoryForget": {
+    "message": "Aizmirst"
+  },
+  "memoryExport": {
+    "message": "Lejupielādēt arhīvu"
+  },
+  "memoryImport": {
+    "message": "Atjaunot no arhīva"
+  },
+  "memoryImportConfirm": {
+    "message": "Atjaunot no arhīva? Atbilstošās lapas tiks pārrakstītas."
+  },
+  "optSave": {
+    "message": "Saglabāt"
+  },
+  "optSaved": {
+    "message": "Saglabāts ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Spogulim jābūt https:// adresei"
+  },
+  "welcomeHeading": {
+    "message": "Sveiki! Es esmu tava pārlūka atmiņa."
+  },
+  "welcomeIntro": {
+    "message": "No šī brīža es atceros, ko tu lasi, lai vēlāk to varētu atrast pēc nozīmes — saviem vārdiem, nevis pēc precīza virsraksta."
+  },
+  "welcomePoint1": {
+    "message": "Viss notiek tavā ierīcē. Bez serveriem, bez mākoņa, bez datu sūtīšanas — nekur, nekad."
+  },
+  "welcomePoint2": {
+    "message": "E-pasts, tērzēšana, pieteikšanās un internetbanka nekad netiek iegaumēti. Uzmanību: sensitīvas tēmas pēc adreses atpazīt nevaru — tām izmanto pauzi vai savu sarakstu iestatījumos."
+  },
+  "welcomePoint3": {
+    "message": "Tu noteic: pauze ar vienu klikšķi, „Notīrīt atmiņu“ izdzēš visu, un pēc izvēles es pēc dažiem mēnešiem aizmirstu automātiski."
+  },
+  "welcomeCta": {
+    "message": "Atvērt meklēšanu"
+  },
+  "welcomeOptions": {
+    "message": "Iestatījumi"
+  },
+  "memoryFilter": {
+    "message": "Meklē savā atmiņā…"
+  },
+  "supportLink": {
+    "message": "Atbalsti Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — pavadonis"
+  },
+  "panelOnThisPage": {
+    "message": "Par šīs lapas tēmu"
+  },
+  "panelRecent": {
+    "message": "Nesenās atmiņas"
+  },
+  "panelNoPage": {
+    "message": "Atver tīmekļa lapu, un Déjà parādīs tevis lasīto par tās tēmu."
+  },
+  "popupOpenPanel": {
+    "message": "Sānu panelis"
+  },
+  "popupForgetPage": {
+    "message": "Aizmirst šo lapu"
+  },
+  "popupForgotten": {
+    "message": "Aizmirsts ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: iegaumēt atlasīto tekstu"
+  },
+  "menuForget": {
+    "message": "Déjà: aizmirst šo lapu"
+  },
+  "recentTitle": {
+    "message": "Nesenās atmiņas"
+  },
+  "cmdOpenPanel": {
+    "message": "Atvērt Déjà sānu paneli"
+  },
+  "welcomePoint4": {
+    "message": "Sānu panelis redz skatītās lapas adresi un virsrakstu, lai varētu parādīt tevis lasīto par tās tēmu — tikai sesijas atmiņā. Fragmenti, ko apzināti saglabā, arī paliek tikai pie tevis."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà saņēma atjauninājumu. Jaunums: ja vēlies, tagad arī tavās grāmatzīmēs var meklēt pēc nozīmes. Lūk, ko es daru ar taviem datiem — nekas nav pametis tavu ierīci."
+  },
+  "optAmbientLabel": {
+    "message": "Dzīvs fons"
+  },
+  "optAmbientHelp": {
+    "message": "Atmiņu tīkls aiz stikla lēnām dreifē. Izslēdz to, ja kustība novērš uzmanību."
+  },
+  "bmTitle": {
+    "message": "Padari grāmatzīmes meklējamas — jau tagad"
+  },
+  "bmText": {
+    "message": "Déjà apgūst tavu grāmatzīmju nosaukumus un mapes, neatverot lapas. Atrodi tās pēc nozīmes jau no pirmās minūtes — viss paliek tavā ierīcē."
+  },
+  "bmTextShort": {
+    "message": "Tava atmiņa vēl ir jauna. Iemāci man savas grāmatzīmes un meklē tajās pēc nozīmes jau šodien."
+  },
+  "bmButton": {
+    "message": "Apgūsti manas grāmatzīmes"
+  },
+  "bmNote": {
+    "message": "Pārlūks lūgs atļauju. Iestatījumos to vari izslēgt jebkurā laikā."
+  },
+  "bmTitleRunning": {
+    "message": "Apgūstu tavas grāmatzīmes…"
+  },
+  "bmTitleDone": {
+    "message": "Tavās grāmatzīmēs var meklēt"
+  },
+  "bmPreparing": {
+    "message": "Gatavojos…"
+  },
+  "bmLearning": {
+    "message": "Apgūtas $DONE$ no $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà iegaumēšana ir pauzēta — turpināšu, tiklīdz to atsāksi."
+  },
+  "bmError": {
+    "message": "Apgūšanas laikā kaut kas nogāja greizi. Mēģināšu vēlreiz pie nākamās izmaiņas."
+  },
+  "bmDone": {
+    "message": "Gatavs — grāmatzīmes, kurās var meklēt pēc nozīmes: $COUNT$. Tās tiek sinhronizētas automātiski.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Gatavs — 1 grāmatzīmē var meklēt pēc nozīmes, un tā tiek sinhronizēta automātiski."
+  },
+  "bmDenied": {
+    "message": "Bez atļaujas es neredzu tavas grāmatzīmes. Vari mēģināt vēlreiz jebkurā laikā."
+  },
+  "bmTry": {
+    "message": "Izmēģini:"
+  },
+  "bmBadge": {
+    "message": "Grāmatzīme"
+  },
+  "bmAddedOn": {
+    "message": "pievienota $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Grāmatzīmes atmiņā"
+  },
+  "optBookmarksHelp": {
+    "message": "Es apgūstu tavu grāmatzīmju nosaukumus un mapes (neatverot lapas) un sekoju līdzi, kad tu tās pievieno vai dzēs. Izslēdzot tās tiek izņemtas no atmiņas — lasītās lapas paliek."
+  },
+  "memoryFilterAll": {
+    "message": "Visi"
+  },
+  "memoryFilterRead": {
+    "message": "Lasītās"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Grāmatzīmes"
+  },
+  "welcomePoint5": {
+    "message": "Grāmatzīmes — tikai tad, ja tās ieslēdz: tad es apgūstu to nosaukumus un mapes, neatverot lapas. Izslēdz ar vienu klikšķi."
+  },
+  "rateTitle": {
+    "message": "Déjà jau palīdzēja tev atrast meklēto (reizes: $COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Ja tas tev noder, vērtējums veikalā palīdz citiem to atklāt — tas aizņem 10 sekundes. Un ja kaut kas kaitina, pastāsti mums."
+  },
+  "rateButton": {
+    "message": "Novērtē Déjà"
+  },
+  "rateFeedback": {
+    "message": "Kaut kas nedarbojas?"
+  },
+  "rateLater": {
+    "message": "Ne tagad"
+  },
+  "rateThanks": {
+    "message": "Paldies! Tas tiešām palīdz."
+  },
+  "rateFeedbackThanks": {
+    "message": "Paldies — mēs izlasām katru ziņu."
+  },
+  "rateFeedbackSubject": {
+    "message": "atsauksmes"
+  },
+  "answerTitle": {
+    "message": "Atbilde no tavas atmiņas"
+  },
+  "answerAsk": {
+    "message": "Atbildi no manas atmiņas"
+  },
+  "answerEnableTitle": {
+    "message": "Atbildes no Chrome iebūvētā mākslīgā intelekta"
+  },
+  "answerEnableText": {
+    "message": "Déjà var atbildēt uz jautājumiem par tevis lasīto, norādot avotus. Chrome vienreiz lejupielādē savu ierīcē darbināmo modeli (Gemini Nano) — tavi jautājumi un lapas nekad nepamet tavu datoru."
+  },
+  "answerEnableButton": {
+    "message": "Ieslēgt atbildes"
+  },
+  "answerNoThanks": {
+    "message": "Nē, paldies"
+  },
+  "answerDownloading": {
+    "message": "Chrome lejupielādē modeli… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Lasu tavas atmiņas…"
+  },
+  "answerStop": {
+    "message": "Apturēt"
+  },
+  "answerFoot": {
+    "message": "Sagatavots tavā ierīcē ar Chrome iebūvēto mākslīgo intelektu, izmantojot tavas atmiņas (skaits: $COUNT$). Pārbaudi avotus.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Šoreiz neizdevās sagatavot atbildi."
+  },
+  "optAnswersLabel": {
+    "message": "Atbildes no Chrome iebūvētā mākslīgā intelekta"
+  },
+  "optAnswersHelp": {
+    "message": "Uz jautājumiem, piemēram, „ko es lasīju par…?“, uzrakstu īsu atbildi ar avotiem no tavām lapām — pilnībā tavā ierīcē, ar Gemini Nano pārlūkā Chrome. Nepieciešams atbalstīts dators un valoda (angļu, spāņu, vācu, franču, japāņu)."
+  },
+  "optAnswersAvailable": {
+    "message": "Gatavs lietošanai šajā ierīcē."
+  },
+  "optAnswersDownloadable": {
+    "message": "Atbalstīts — Chrome lejupielādēs modeli, kad uzdosi pirmo jautājumu."
+  },
+  "optAnswersUnavailable": {
+    "message": "Chrome iebūvētais mākslīgais intelekts neatbalsta šo ierīci vai saskarnes valodu."
+  },
+  "optAnswersUnsupported": {
+    "message": "Šajā pārlūkā nav iebūvēta mākslīgā intelekta — viss pārējais Déjà darbojas kā vienmēr."
+  }
+}

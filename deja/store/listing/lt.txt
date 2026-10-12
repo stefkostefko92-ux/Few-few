@@ -1,0 +1,51 @@
+TITLE: Déjà — tavo naršyklės atmintis
+SHORT: Ieškok perskaitytuose puslapiuose pagal prasmę, 50+ kalbų. Veikia tik tavo įrenginyje — niekas nepalieka naršyklės.
+
+Tu tai matei. Déjà tai suranda.
+
+Naršyklės istorija prisimena tik pavadinimus ir URL. Déjà prisimena TURINĮ.
+Savais žodžiais apibūdink, ką prisimeni — „tas straipsnis apie natrio
+pagrindo baterijas“ — ir Déjà iškels tą puslapį, net jei neprisimeni nei
+pavadinimo, nei svetainės, nei tikslių žodžių. Netgi nušoka tiesiai prie
+reikiamos pastraipos.
+
+KĄ GAUNI
+✓ Tavo žymės — paieška pagal prasmę nuo pirmos minutės; pasirinktinai, vienu
+  paspaudimu. Déjà išmoksta jų pavadinimus ir aplankus (neatidarant puslapių)
+  ir sinchronizuoja, kai pridedi, perkeli ar ištrini žymes.
+✓ Atsakymai iš tavo atminties — kompiuteriuose, kurie palaiko integruotą
+  Chrome dirbtinį intelektą (Gemini Nano), užduok klausimą ir gauk trumpą
+  atsakymą, sukurtą tavo įrenginyje iš perskaitytų puslapių, su šaltiniais,
+  kuriuos galima spustelėti. (Atsakymai anglų, ispanų, vokiečių, prancūzų ir
+  japonų kalbomis.)
+✓ Paieška pagal prasmę — klausk savais žodžiais, 50+ kalbų; klausk viena
+  kalba, rask puslapius, kuriuos skaitei kita.
+✓ Šoninis skydelis-palydovas — atidaryk jį šalia bet kurio puslapio ir pamatyk,
+  ką jau skaitei to puslapio tema, bei naujausius savo prisiminimus.
+✓ Adreso juostoje įvesk „dj“ — ieškok savo atmintyje tiesiai iš omnibox su
+  tiesioginiais pasiūlymais.
+✓ Įsimink ištrauką — dešiniuoju pelės mygtuku spustelėk bet kurį pažymėtą
+  tekstą: „Déjà: įsiminti pažymėtą tekstą“. Jis tampa atskiru prisiminimu,
+  kuriame galima ieškoti.
+✓ Šuolis prie tikslios pastraipos — rezultatai atidaro puslapį su paryškinta
+  atitinkama ištrauka.
+✓ Datos filtrai, susiję prisiminimai, naujausi prisiminimai tuščiame paieškos
+  puslapyje.
+✓ Mano atmintis — matyk viską, ką prisimena Déjà, pamiršk bet kurį puslapį
+  vienu paspaudimu, eksportuok/importuok visą indeksą kaip failą.
+
+PRIVATUS IŠ PRIGIMTIES
+✓ 100 % vietinis apdorojimas — DI įterčių (embedding) modelis veikia tavo
+  naršyklėje, o duomenys saugomi IndexedDB. Jokių serverių, jokio debesies,
+  jokios telemetrijos, jokios paskyros.
+✓ El. pašto, pokalbių, prisijungimo ir bankininkystės puslapiai praleidžiami
+  automatiškai (integruotas adresų sąrašas; pridėk ir savų šablonų).
+✓ Pristabdymas vienu paspaudimu. „Pamiršti šį puslapį“ ir „Išvalyti atmintį“
+  visada po ranka.
+✓ Automatinis pamiršimas — pasirinktinai trink puslapius, senesnius nei
+  3/6/12/24 mėn.
+✓ Šviesi ir tamsi temos prisitaiko prie tavo sistemos.
+
+Vienintelė tinklo užklausa, kurią plėtinys kada nors atlieka, yra vienkartinis
+įterčių modelio atsisiuntimas iš Hugging Face (vėliau jis saugomas vietinėje
+talpykloje; vietoj to gali nurodyti savo veidrodį).

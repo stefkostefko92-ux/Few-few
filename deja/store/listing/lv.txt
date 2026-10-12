@@ -1,0 +1,48 @@
+TITLE: Déjà — tava pārlūka atmiņa
+SHORT: Meklē izlasītajās lapās pēc nozīmes, vairāk nekā 50 valodās. Darbojas tikai tavā ierīcē — nekas nepamet pārlūku.
+
+Tu to redzēji. Déjà to atrod.
+
+Pārlūka vēsture atceras tikai virsrakstus un URL. Déjà atceras SATURU.
+Apraksti saviem vārdiem, ko atceries — „tas raksts par nātrija
+akumulatoriem“ —, un Déjà izcels šo lapu, pat ja neatceries ne virsrakstu,
+ne vietni, ne precīzus vārdus. Tā pat aizved tieši līdz vajadzīgajai rindkopai.
+
+KO TU IEGŪSTI
+✓ Tavās grāmatzīmēs var meklēt pēc nozīmes jau no pirmās minūtes — pēc
+  izvēles, ar vienu klikšķi. Déjà apgūst to nosaukumus un mapes (neatverot
+  lapas) un sinhronizē tās, kad tu pievieno, pārvieto vai dzēs grāmatzīmes.
+✓ Atbildes no tavas atmiņas — datoros, kas atbalsta Chrome iebūvēto mākslīgo
+  intelektu (Gemini Nano), uzdod jautājumu un saņem īsu atbildi, kas tavā
+  ierīcē sagatavota no izlasītajām lapām, ar noklikšķināmiem avotiem.
+  (Atbildes angļu, spāņu, vācu, franču un japāņu valodā.)
+✓ Meklēšana pēc nozīmes — jautā saviem vārdiem vairāk nekā 50 valodās; jautā
+  vienā valodā un atrodi lapas, ko lasīji citā.
+✓ Sānu panelis-pavadonis — atver to blakus jebkurai lapai un redzi jau
+  lasīto par tās tēmu, kā arī savas nesenās atmiņas.
+✓ Ieraksti „dj“ adreses joslā — meklē savā atmiņā tieši no omnibox ar
+  tūlītējiem ieteikumiem.
+✓ Iegaumē fragmentu — ar peles labo pogu noklikšķini uz jebkura atlasīta
+  teksta: „Déjà: iegaumēt atlasīto tekstu“. Tas kļūst par atsevišķu atmiņu,
+  kurā var meklēt.
+✓ Pāreja uz precīzo rindkopu — rezultāti atver lapu ar izceltu atbilstošo
+  fragmentu.
+✓ Datuma filtri, saistītās atmiņas, nesenās atmiņas tukšajā meklēšanas lapā.
+✓ Mana atmiņa — redzi visu, ko Déjà atceras, aizmirsti jebkuru lapu ar vienu
+  klikšķi, eksportē/importē visu indeksu kā failu.
+
+PRIVĀTUMS JAU PĒC BŪTĪBAS
+✓ 100 % lokāla apstrāde — mākslīgā intelekta iegulšanas (embedding) modelis
+  darbojas tavā pārlūkā, un dati glabājas IndexedDB. Bez serveriem, bez
+  mākoņa, bez telemetrijas, bez konta.
+✓ E-pasta, tērzēšanas, pieteikšanās un internetbankas lapas tiek automātiski
+  izlaistas (iebūvēts adrešu saraksts; pievieno arī savus šablonus).
+✓ Pauze ar vienu klikšķi. „Aizmirst šo lapu“ un „Notīrīt atmiņu“ vienmēr ir
+  pa rokai.
+✓ Automātiska aizmiršana — pēc izvēles dzēs lapas, kas vecākas par
+  3/6/12/24 mēnešiem.
+✓ Gaišā un tumšā tēma seko tavai sistēmai.
+
+Vienīgais tīkla pieprasījums, ko paplašinājums jebkad veic, ir vienreizēja
+iegulšanas modeļa lejupielāde no Hugging Face (pēc tam tas tiek saglabāts
+lokālajā kešatmiņā; tā vietā vari norādīt savu spoguli).

@@ -1,0 +1,48 @@
+TITLE: Déjà — brauzerinin yaddaşı
+SHORT: Oxuduğun səhifələrdə məna üzrə axtar, 50-dən çox dildə. Tamamilə cihazında işləyir — heç nə brauzerini tərk etmir.
+
+Sən onu görmüsən. Déjà tapır.
+
+Brauzer tarixçəsi yalnız başlıqları və URL-ləri xatırlayır. Déjà isə
+MƏZMUNU xatırlayır. Xatırladığını öz sözlərinlə təsvir et — «natrium əsaslı
+batareyalar haqqında o məqalə» — və Déjà başlığı, saytı və ya dəqiq sözləri
+xatırlamasan belə, səhifəni üzə çıxarır. Hətta birbaşa lazımi abzasa keçir.
+
+NƏ ƏLDƏ EDİRSƏN
+✓ Əlfəcinlərin ilk dəqiqədən məna üzrə axtarıla bilir — istəyə görə, bir
+  kliklə. Déjà onların başlıqlarını və qovluqlarını öyrənir (səhifələri
+  açmadan) və sən əlfəcin əlavə etdikcə, köçürdükcə və ya sildikcə onları
+  sinxron saxlayır.
+✓ Yaddaşından cavablar — Chrome-un daxili süni intellektini (Gemini Nano)
+  dəstəkləyən kompüterlərdə sual ver və oxuduğun səhifələrdən cihazında
+  yazılmış, kliklənə bilən mənbələri olan qısa cavab al. (Cavablar ingilis,
+  ispan, alman, fransız və yapon dillərində.)
+✓ Məna üzrə axtarış — öz sözlərinlə, 50-dən çox dildə soruş; bir dildə
+  soruş, başqa dildə oxuduğun səhifələri tap.
+✓ Yan panel-yoldaş — onu istənilən səhifənin yanında aç və həmin səhifənin
+  mövzusunda artıq nə oxuduğunu, həmçinin son xatirələrini gör.
+✓ Ünvan sətrinə «dj» yaz — canlı təkliflərlə birbaşa omnibox-dan yaddaşında
+  axtar.
+✓ Fraqmenti yadda saxla — istənilən seçilmiş mətnin üzərində sağ klik et:
+  «Déjà: seçilmiş mətni yadda saxla». O, ayrıca axtarıla bilən xatirəyə
+  çevrilir.
+✓ Dəqiq abzasa keçid — nəticələr səhifəni uyğun fraqment vurğulanmış halda
+  açır.
+✓ Tarix filtrləri, əlaqəli xatirələr, boş axtarış səhifəsində son xatirələr.
+✓ Yaddaşım — Déjà-nın xatırladığı hər şeyi gör, istənilən səhifəni bir kliklə
+  unut, bütün indeksi fayl kimi ixrac/idxal et.
+
+DİZAYNDAN GƏLƏN MƏXFİLİK
+✓ 100% lokal emal — süni intellektin embedding modeli brauzerinin içində
+  işləyir, məlumatların isə IndexedDB-də saxlanılır. Server yox, bulud yox,
+  telemetriya yox, hesab yox.
+✓ Poçt, çat, giriş və bank səhifələri avtomatik ötürülür (daxili ünvan
+  siyahısı; öz şablonlarını da əlavə et).
+✓ Bir kliklə fasilə. «Bu səhifəni unut» və «Yaddaşı təmizlə» həmişə əl
+  altındadır.
+✓ Avtomatik unutma — istəyə görə 3/6/12/24 aydan köhnə səhifələri sil.
+✓ İşıqlı və qaranlıq mövzu sisteminə uyğunlaşır.
+
+Genişləndirmənin etdiyi yeganə şəbəkə sorğusu embedding modelinin
+Hugging Face-dən birdəfəlik endirilməsidir (sonra lokal keşdə saxlanılır;
+əvəzinə onu öz güzgünə yönləndirə bilərsən).

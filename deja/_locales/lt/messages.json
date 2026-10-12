@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — tavo naršyklės atmintis"
+  },
+  "extDesc": {
+    "message": "Semantinė paieška puslapiuose, kuriuos skaitei. Viskas vyksta vietoje — niekas niekada nepalieka tavo įrenginio."
+  },
+  "cmdOpenSearch": {
+    "message": "Atidaryti Déjà paiešką"
+  },
+  "searchTitle": {
+    "message": "Déjà — ieškok to, ką skaitei"
+  },
+  "tagline": {
+    "message": "Tu tai matei. Déjà tai suranda."
+  },
+  "searchPlaceholder": {
+    "message": "Apibūdink, ką prisimeni… pvz., „straipsnis apie natrio pagrindo baterijas“"
+  },
+  "searchButton": {
+    "message": "Ieškoti"
+  },
+  "statusSearching": {
+    "message": "Raustausi atmintyje… (pirmoji paieška įkelia modelį, ~10-30 s)"
+  },
+  "statusEmpty": {
+    "message": "Nieko neiškilo. Arba niekada to neskaitei, arba Déjà to dar neįsiminė."
+  },
+  "statusResults": {
+    "message": "Prisiminimai: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 prisiminimas:"
+  },
+  "errNoResponse": {
+    "message": "atmintis neatsakė — bandyk dar kartą"
+  },
+  "recallVivid": {
+    "message": "ryškus prisiminimas"
+  },
+  "recallHazy": {
+    "message": "miglotas prisiminimas"
+  },
+  "recallFaint": {
+    "message": "tolimas prisiminimas"
+  },
+  "statusError": {
+    "message": "Paieška nepavyko: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Puslapių atmintyje: $COUNT$.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Atmintyje: 1 puslapis."
+  },
+  "similarity": {
+    "message": "panašumas $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "skaityta $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "Puslapių atmintyje: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 puslapis atmintyje"
+  },
+  "popupSleeping": {
+    "message": "atmintis miega"
+  },
+  "popupWaking": {
+    "message": "atmintis bunda…"
+  },
+  "popupOpenSearch": {
+    "message": "Atidaryti paiešką"
+  },
+  "popupPause": {
+    "message": "Pristabdyti įsiminimą"
+  },
+  "popupClear": {
+    "message": "Išvalyti atmintį"
+  },
+  "popupClearConfirm": {
+    "message": "Ištrinti viską, kas įsiminta? Atgal kelio nebus."
+  },
+  "popupOptions": {
+    "message": "Nustatymai"
+  },
+  "optionsTitle": {
+    "message": "Déjà — nustatymai"
+  },
+  "optRetentionLabel": {
+    "message": "Saugoti puslapius"
+  },
+  "optRetentionForever": {
+    "message": "visam laikui"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ mėn.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Senesni puslapiai automatiškai ištrinami kartą per dieną."
+  },
+  "optDenylistLabel": {
+    "message": "Niekada neįsimink adresų, kuriuose yra"
+  },
+  "optDenylistHelp": {
+    "message": "Vienas šablonas eilutėje. Atitinka adreso dalį, pvz., „example.com“ arba „/private“."
+  },
+  "optBuiltinLabel": {
+    "message": "Integruota apsauga (visada įjungta)"
+  },
+  "optModelHostLabel": {
+    "message": "Pasirinktinis modelio veidrodis (išplėstinis)"
+  },
+  "optModelHostHelp": {
+    "message": "Tuščia = huggingface.co. Nurodyk savo serverį darbui neprisijungus / įmonės aplinkoms."
+  },
+  "filterAll": {
+    "message": "visi"
+  },
+  "filterWeek": {
+    "message": "pastaroji savaitė"
+  },
+  "filterMonth": {
+    "message": "pastarasis mėnuo"
+  },
+  "filterYear": {
+    "message": "pastarieji metai"
+  },
+  "relatedLink": {
+    "message": "susiję prisiminimai"
+  },
+  "relatedNone": {
+    "message": "artimų prisiminimų nėra"
+  },
+  "omniboxDefault": {
+    "message": "Klausk savo atminties — Déjà ieško pagal prasmę"
+  },
+  "popupMemory": {
+    "message": "Mano atmintis"
+  },
+  "memoryTitle": {
+    "message": "Mano atmintis"
+  },
+  "memoryEmpty": {
+    "message": "Atmintis tuščia — aplankyk kelis puslapius ir sugrįžk."
+  },
+  "memoryForget": {
+    "message": "Pamiršti"
+  },
+  "memoryExport": {
+    "message": "Atsisiųsti archyvą"
+  },
+  "memoryImport": {
+    "message": "Atkurti iš archyvo"
+  },
+  "memoryImportConfirm": {
+    "message": "Atkurti iš archyvo? Sutampantys puslapiai bus perrašyti."
+  },
+  "optSave": {
+    "message": "Išsaugoti"
+  },
+  "optSaved": {
+    "message": "Išsaugota ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Veidrodis turi būti https:// adresas"
+  },
+  "welcomeHeading": {
+    "message": "Labas. Aš esu tavo naršyklės atmintis."
+  },
+  "welcomeIntro": {
+    "message": "Nuo šios akimirkos įsimenu, ką skaitai, kad vėliau galėtum tai rasti pagal prasmę — savais žodžiais, o ne tiksliu pavadinimu."
+  },
+  "welcomePoint1": {
+    "message": "Viskas vyksta tavo įrenginyje. Jokių serverių, jokio debesies, jokio duomenų siuntimo — niekur ir niekada."
+  },
+  "welcomePoint2": {
+    "message": "El. paštas, pokalbiai, prisijungimai ir bankininkystė niekada neįsimenami. Atkreipk dėmesį: jautrių temų pagal adresą atpažinti negaliu — joms naudok pristabdymą arba savo sąrašą nustatymuose."
+  },
+  "welcomePoint3": {
+    "message": "Tu valdai: pristabdymas vienu paspaudimu, „Išvalyti atmintį“ ištrina viską, o jei nori, po kelių mėnesių pamirštu automatiškai."
+  },
+  "welcomeCta": {
+    "message": "Atidaryti paiešką"
+  },
+  "welcomeOptions": {
+    "message": "Nustatymai"
+  },
+  "memoryFilter": {
+    "message": "Ieškok savo atmintyje…"
+  },
+  "supportLink": {
+    "message": "Paremk Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — palydovas"
+  },
+  "panelOnThisPage": {
+    "message": "Šio puslapio tema"
+  },
+  "panelRecent": {
+    "message": "Naujausi prisiminimai"
+  },
+  "panelNoPage": {
+    "message": "Atidaryk tinklalapį ir Déjà parodys, ką skaitei ta tema."
+  },
+  "popupOpenPanel": {
+    "message": "Šoninis skydelis"
+  },
+  "popupForgetPage": {
+    "message": "Pamiršti šį puslapį"
+  },
+  "popupForgotten": {
+    "message": "Pamiršta ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: įsiminti pažymėtą tekstą"
+  },
+  "menuForget": {
+    "message": "Déjà: pamiršti šį puslapį"
+  },
+  "recentTitle": {
+    "message": "Naujausi prisiminimai"
+  },
+  "cmdOpenPanel": {
+    "message": "Atidaryti Déjà šoninį skydelį"
+  },
+  "welcomePoint4": {
+    "message": "Šoninis skydelis mato peržiūrimo puslapio adresą ir pavadinimą, kad galėtų parodyti, ką skaitei ta tema — tik seanso atmintyje. Ištraukos, kurias sąmoningai išsaugai, taip pat lieka tik pas tave."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà gavo atnaujinimą. Naujiena: jei nori, dabar pagal prasmę galima ieškoti ir tavo žymėse. Štai ką darau su tavo duomenimis — niekas nepaliko tavo įrenginio."
+  },
+  "optAmbientLabel": {
+    "message": "Gyvas fonas"
+  },
+  "optAmbientHelp": {
+    "message": "Prisiminimų tinklas už stiklo lėtai dreifuoja. Išjunk, jei judėjimas blaško."
+  },
+  "bmTitle": {
+    "message": "Padaryk savo žymes ieškomas — dabar pat"
+  },
+  "bmText": {
+    "message": "Déjà išmoksta tavo žymių pavadinimus ir aplankus neatidarant puslapių. Rask jas pagal prasmę nuo pirmos minutės — viskas lieka tavo įrenginyje."
+  },
+  "bmTextShort": {
+    "message": "Tavo atmintis dar jauna. Išmokyk mane savo žymių ir ieškok jose pagal prasmę jau šiandien."
+  },
+  "bmButton": {
+    "message": "Išmok mano žymes"
+  },
+  "bmNote": {
+    "message": "Naršyklė paprašys leidimo. Bet kada gali tai išjungti nustatymuose."
+  },
+  "bmTitleRunning": {
+    "message": "Mokausi tavo žymių…"
+  },
+  "bmTitleDone": {
+    "message": "Tavo žymėse galima ieškoti"
+  },
+  "bmPreparing": {
+    "message": "Ruošiuosi…"
+  },
+  "bmLearning": {
+    "message": "Išmokta $DONE$ iš $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà įsiminimas pristabdytas — tęsiu, kai tik jį atnaujinsi."
+  },
+  "bmError": {
+    "message": "Mokantis kažkas nepavyko. Bandysiu dar kartą per kitą pakeitimą."
+  },
+  "bmDone": {
+    "message": "Atlikta — žymių, paruoštų paieškai pagal prasmę: $COUNT$. Jos sinchronizuojamos automatiškai.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Atlikta — 1 žymė paruošta paieškai pagal prasmę ir sinchronizuojama automatiškai."
+  },
+  "bmDenied": {
+    "message": "Be leidimo negaliu matyti tavo žymių. Gali bandyti dar kartą bet kada."
+  },
+  "bmTry": {
+    "message": "Išbandyk:"
+  },
+  "bmBadge": {
+    "message": "Žymė"
+  },
+  "bmAddedOn": {
+    "message": "pažymėta $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Žymės atmintyje"
+  },
+  "optBookmarksHelp": {
+    "message": "Išmokstu tavo žymių pavadinimus ir aplankus (neatidarant puslapių) ir sekiu, kai jas pridedi ar ištrini. Išjungus jos pašalinamos iš atminties — perskaityti puslapiai lieka."
+  },
+  "memoryFilterAll": {
+    "message": "Visi"
+  },
+  "memoryFilterRead": {
+    "message": "Skaityti"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Žymės"
+  },
+  "welcomePoint5": {
+    "message": "Žymės — tik jei jas įjungsi: tada išmokstu jų pavadinimus ir aplankus, neatidarant puslapių. Išjungiama vienu paspaudimu."
+  },
+  "rateTitle": {
+    "message": "Déjà tau jau padėjo rasti, ko ieškojai — kartų: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Jei tau tai naudinga, įvertinimas parduotuvėje padeda kitiems atrasti šį plėtinį — tai užtrunka 10 sekundžių. O jei kas nors erzina, parašyk mums."
+  },
+  "rateButton": {
+    "message": "Įvertink Déjà"
+  },
+  "rateFeedback": {
+    "message": "Kažkas neveikia?"
+  },
+  "rateLater": {
+    "message": "Ne dabar"
+  },
+  "rateThanks": {
+    "message": "Ačiū! Tai tikrai padeda."
+  },
+  "rateFeedbackThanks": {
+    "message": "Ačiū — skaitome kiekvieną laišką."
+  },
+  "rateFeedbackSubject": {
+    "message": "atsiliepimas"
+  },
+  "answerTitle": {
+    "message": "Atsakymas iš tavo atminties"
+  },
+  "answerAsk": {
+    "message": "Atsakyk iš mano atminties"
+  },
+  "answerEnableTitle": {
+    "message": "Atsakymai iš integruoto Chrome dirbtinio intelekto"
+  },
+  "answerEnableText": {
+    "message": "Déjà gali atsakyti į klausimus pagal tai, ką skaitei, su šaltiniais. Chrome vieną kartą atsisiunčia savo įrenginyje veikiantį modelį (Gemini Nano) — tavo klausimai ir puslapiai niekada nepalieka kompiuterio."
+  },
+  "answerEnableButton": {
+    "message": "Įjungti atsakymus"
+  },
+  "answerNoThanks": {
+    "message": "Ne, ačiū"
+  },
+  "answerDownloading": {
+    "message": "Chrome atsisiunčia modelį… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Skaitau tavo prisiminimus…"
+  },
+  "answerStop": {
+    "message": "Stabdyti"
+  },
+  "answerFoot": {
+    "message": "Sukurta tavo įrenginyje integruoto Chrome dirbtinio intelekto pagal tavo prisiminimus (panaudota: $COUNT$). Patikrink šaltinius.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Šįkart nepavyko sudaryti atsakymo."
+  },
+  "optAnswersLabel": {
+    "message": "Atsakymai iš integruoto Chrome dirbtinio intelekto"
+  },
+  "optAnswersHelp": {
+    "message": "Į klausimus, pvz., „ką skaičiau apie…?“, parašau trumpą atsakymą su šaltiniais iš tavo puslapių — visiškai tavo įrenginyje, naudojant Gemini Nano Chrome naršyklėje. Reikia palaikomo kompiuterio ir kalbos (anglų, ispanų, vokiečių, prancūzų, japonų)."
+  },
+  "optAnswersAvailable": {
+    "message": "Paruošta naudoti šiame įrenginyje."
+  },
+  "optAnswersDownloadable": {
+    "message": "Palaikoma — Chrome atsisiųs modelį, kai užduosi pirmą klausimą."
+  },
+  "optAnswersUnavailable": {
+    "message": "Integruotas Chrome dirbtinis intelektas nepalaiko šio įrenginio arba sąsajos kalbos."
+  },
+  "optAnswersUnsupported": {
+    "message": "Šioje naršyklėje nėra integruoto dirbtinio intelekto — visa kita Déjà veikia kaip visada."
+  }
+}

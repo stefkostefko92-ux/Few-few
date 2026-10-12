@@ -1,0 +1,50 @@
+TITLE: Déjà — a böngésződ memóriája
+SHORT: Keress jelentés alapján az olvasott oldalak között, 50+ nyelven. Teljesen az eszközödön fut — semmi sem hagyja el a böngészőt.
+
+Láttad már. A Déjà megtalálja.
+
+A böngészési előzmények csak címeket és URL-eket jegyeznek meg. A Déjà a
+TARTALMAT jegyzi meg. Írd le a saját szavaiddal, mire emlékszel — „az a cikk a
+nátriumalapú akkumulátorokról” —, és a Déjà előhozza az oldalt, még ha nem is
+emlékszel a címére, a webhelyre vagy a pontos szavakra. Ráadásul egyenesen a
+megfelelő bekezdéshez ugrik.
+
+AMIT KAPSZ
+✓ A könyvjelzőid az első perctől jelentés alapján kereshetők — opcionálisan,
+  egy kattintással. A Déjà megtanulja a címüket és a mappáikat (az oldalak
+  megnyitása nélkül), és szinkronban tartja őket, ahogy könyvjelzőket adsz
+  hozzá, helyezel át vagy törölsz.
+✓ Válaszok a memóriádból — a Chrome beépített mesterséges intelligenciáját
+  (Gemini Nano) támogató számítógépeken tegyél fel egy kérdést, és rövid
+  választ kapsz, amelyet az eszközöd az olvasott oldalakból ír meg, kattintható
+  forrásokkal. (Válaszok angolul, spanyolul, németül, franciául és japánul.)
+✓ Keresés jelentés alapján — kérdezz a saját szavaiddal, 50+ nyelven; kérdezz
+  az egyik nyelven, és találd meg a másikon olvasott oldalakat.
+✓ Kísérő oldalsó panel — nyisd meg bármelyik oldal mellett, és nézd meg, mit
+  olvastál már az oldal témájában, valamint a legutóbbi emlékeidet.
+✓ Írd be a „dj” szót a címsorba — keress a memóriádban közvetlenül az
+  omniboxból, élő javaslatokkal.
+✓ Jegyezz meg egy részletet — kattints jobb gombbal bármelyik kijelölt
+  szövegre: „Déjà: a kijelölt szöveg megjegyzése”. Önálló, kereshető emlék
+  lesz belőle.
+✓ Ugrás a pontos bekezdéshez — a találatok úgy nyitják meg az oldalt, hogy a
+  megfelelő részlet ki van emelve.
+✓ Dátumszűrők, kapcsolódó emlékek, legutóbbi emlékek az üres keresőoldalon.
+✓ Memóriám — lásd mindazt, amire a Déjà emlékszik, felejts el bármelyik oldalt
+  egy kattintással, exportáld/importáld a teljes indexet fájlként.
+
+BEÉPÍTETT ADATVÉDELEM
+✓ 100%-ban helyi feldolgozás — az AI-alapú beágyazási modell a böngésződben
+  fut, az adataid pedig az IndexedDB-ben vannak. Nincsenek szerverek, nincs
+  felhő, nincs telemetria, nincs fiók.
+✓ A levelezési, csevegő-, bejelentkezési és banki oldalakat automatikusan
+  kihagyja (beépített címlista; saját mintákat is hozzáadhatsz).
+✓ Szüneteltetés egy kattintással. Az „Oldal elfelejtése” és a „Memória
+  törlése” mindig kéznél van.
+✓ Automatikus felejtés — ha szeretnéd, a 3/6/12/24 hónapnál régebbi oldalak
+  törlődnek.
+✓ A világos és a sötét téma a rendszeredet követi.
+
+A bővítmény egyetlen hálózati kérése a beágyazási modell egyszeri letöltése a
+Hugging Face-ről (utána helyben gyorsítótárazza; helyette a saját tükrödre is
+irányíthatod).

@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — tarayıcının hafızası"
+  },
+  "extDesc": {
+    "message": "Okuduğun sayfalarda anlamsal arama. Her şey yerel olarak gerçekleşir — hiçbir şey cihazından asla çıkmaz."
+  },
+  "cmdOpenSearch": {
+    "message": "Déjà aramasını aç"
+  },
+  "searchTitle": {
+    "message": "Déjà — okuduklarında ara"
+  },
+  "tagline": {
+    "message": "Görmüştün. Déjà bulur."
+  },
+  "searchPlaceholder": {
+    "message": "Hatırladığını anlat… örn. “sodyum bazlı piller hakkında makale”"
+  },
+  "searchButton": {
+    "message": "Ara"
+  },
+  "statusSearching": {
+    "message": "Hafızayı karıştırıyorum… (ilk arama modeli yükler, ~10-30 sn)"
+  },
+  "statusEmpty": {
+    "message": "Hiçbir şey çıkmadı. Ya hiç okumadın ya da Déjà henüz hafızasına almadı."
+  },
+  "statusResults": {
+    "message": "$COUNT$ anı:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 anı:"
+  },
+  "errNoResponse": {
+    "message": "hafıza yanıt vermedi — tekrar dene"
+  },
+  "recallVivid": {
+    "message": "canlı anı"
+  },
+  "recallHazy": {
+    "message": "bulanık anı"
+  },
+  "recallFaint": {
+    "message": "uzak anı"
+  },
+  "statusError": {
+    "message": "Arama başarısız: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Hafızada: $COUNT$ sayfa.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Hafızada: 1 sayfa."
+  },
+  "similarity": {
+    "message": "benzerlik $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "$DATE$ tarihinde okundu",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "Hafızada $COUNT$ sayfa",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "Hafızada 1 sayfa"
+  },
+  "popupSleeping": {
+    "message": "hafıza uyuyor"
+  },
+  "popupWaking": {
+    "message": "hafıza uyanıyor…"
+  },
+  "popupOpenSearch": {
+    "message": "Aramayı aç"
+  },
+  "popupPause": {
+    "message": "Hatırlamayı duraklat"
+  },
+  "popupClear": {
+    "message": "Hafızayı temizle"
+  },
+  "popupClearConfirm": {
+    "message": "Hatırlanan her şey silinsin mi? Geri dönüşü yok."
+  },
+  "popupOptions": {
+    "message": "Ayarlar"
+  },
+  "optionsTitle": {
+    "message": "Déjà — ayarlar"
+  },
+  "optRetentionLabel": {
+    "message": "Sayfaları sakla"
+  },
+  "optRetentionForever": {
+    "message": "süresiz"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ ay",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Daha eski sayfalar günde bir kez otomatik olarak silinir."
+  },
+  "optDenylistLabel": {
+    "message": "Şunları içeren adresleri asla hatırlama"
+  },
+  "optDenylistHelp": {
+    "message": "Her satıra bir kalıp. Adresin bir kısmıyla eşleşir, örn. “example.com” veya “/private”."
+  },
+  "optBuiltinLabel": {
+    "message": "Yerleşik koruma (her zaman etkin)"
+  },
+  "optModelHostLabel": {
+    "message": "Özel model yansısı (gelişmiş)"
+  },
+  "optModelHostHelp": {
+    "message": "Boş = huggingface.co. Çevrimdışı/kurumsal ortamlar için kendi sunucunu ayarla."
+  },
+  "filterAll": {
+    "message": "tümü"
+  },
+  "filterWeek": {
+    "message": "son hafta"
+  },
+  "filterMonth": {
+    "message": "son ay"
+  },
+  "filterYear": {
+    "message": "son yıl"
+  },
+  "relatedLink": {
+    "message": "ilgili anılar"
+  },
+  "relatedNone": {
+    "message": "yakın anı yok"
+  },
+  "omniboxDefault": {
+    "message": "Hafızana sor — Déjà anlama göre arar"
+  },
+  "popupMemory": {
+    "message": "Hafızam"
+  },
+  "memoryTitle": {
+    "message": "Hafızam"
+  },
+  "memoryEmpty": {
+    "message": "Hafıza boş — birkaç sayfaya göz at ve geri gel."
+  },
+  "memoryForget": {
+    "message": "Unut"
+  },
+  "memoryExport": {
+    "message": "Arşivi indir"
+  },
+  "memoryImport": {
+    "message": "Arşivden geri yükle"
+  },
+  "memoryImportConfirm": {
+    "message": "Arşivden geri yüklensin mi? Eşleşen sayfaların üzerine yazılacak."
+  },
+  "optSave": {
+    "message": "Kaydet"
+  },
+  "optSaved": {
+    "message": "Kaydedildi ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Yansı bir https:// adresi olmalıdır"
+  },
+  "welcomeHeading": {
+    "message": "Merhaba. Ben tarayıcının hafızasıyım."
+  },
+  "welcomeIntro": {
+    "message": "Bu andan itibaren okuduklarını hatırlıyorum; böylece onları daha sonra anlamına göre bulabilirsin — tam başlıkla değil, kendi kelimelerinle."
+  },
+  "welcomePoint1": {
+    "message": "Her şey senin cihazında gerçekleşir. Sunucu yok, bulut yok, veri gönderimi yok — hiçbir yere, hiçbir zaman."
+  },
+  "welcomePoint2": {
+    "message": "E-posta, sohbetler, oturum açma ve bankacılık asla hatırlanmaz. Dikkat: hassas konuları adresten tanıyamam — bunlar için duraklatmayı veya ayarlardaki kendi listeni kullan."
+  },
+  "welcomePoint3": {
+    "message": "Kontrol sende: tek tıkla duraklat, “Hafızayı temizle” her şeyi siler ve istersen birkaç ay sonra otomatik olarak unuturum."
+  },
+  "welcomeCta": {
+    "message": "Aramayı aç"
+  },
+  "welcomeOptions": {
+    "message": "Ayarlar"
+  },
+  "memoryFilter": {
+    "message": "Hafızanda ara…"
+  },
+  "supportLink": {
+    "message": "Déjà'ya destek"
+  },
+  "panelTitle": {
+    "message": "Déjà — yol arkadaşı"
+  },
+  "panelOnThisPage": {
+    "message": "Bu sayfanın konusunda"
+  },
+  "panelRecent": {
+    "message": "Son anılar"
+  },
+  "panelNoPage": {
+    "message": "Bir web sayfası aç; Déjà, konusuyla ilgili daha önce okuduklarını gösterecek."
+  },
+  "popupOpenPanel": {
+    "message": "Yan panel"
+  },
+  "popupForgetPage": {
+    "message": "Bu sayfayı unut"
+  },
+  "popupForgotten": {
+    "message": "Unutuldu ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: seçili metni hatırla"
+  },
+  "menuForget": {
+    "message": "Déjà: bu sayfayı unut"
+  },
+  "recentTitle": {
+    "message": "Son anılar"
+  },
+  "cmdOpenPanel": {
+    "message": "Déjà yan panelini aç"
+  },
+  "welcomePoint4": {
+    "message": "Yan panel, konusuyla ilgili okuduklarını gösterebilmek için görüntülediğin sayfanın adresini ve başlığını görür — yalnızca oturum hafızasında. Bilerek kaydettiğin pasajlar da yalnızca sende kalır."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà güncellendi. Yeni: istersen artık yer işaretlerinde de anlama göre arama yapabilirsin. İşte verilerinle ne yaptığım — hiçbir şey cihazından çıkmadı."
+  },
+  "optAmbientLabel": {
+    "message": "Canlı arka plan"
+  },
+  "optAmbientHelp": {
+    "message": "Camın ardındaki anı ağı yavaşça süzülür. Hareket dikkatini dağıtıyorsa kapat."
+  },
+  "bmTitle": {
+    "message": "Yer işaretlerini aranabilir yap — hemen şimdi"
+  },
+  "bmText": {
+    "message": "Déjà, sayfaları açmadan yer işaretlerinin başlıklarını ve klasörlerini öğrenir. Onları ilk dakikadan itibaren anlamına göre bul — her şey cihazında kalır."
+  },
+  "bmTextShort": {
+    "message": "Hafızan henüz genç. Bana yer işaretlerini öğret ve bugünden itibaren onlarda anlama göre ara."
+  },
+  "bmButton": {
+    "message": "Yer işaretlerimi öğren"
+  },
+  "bmNote": {
+    "message": "Tarayıcın izin isteyecek. İstediğin zaman ayarlardan kapatabilirsin."
+  },
+  "bmTitleRunning": {
+    "message": "Yer işaretlerini öğreniyorum…"
+  },
+  "bmTitleDone": {
+    "message": "Yer işaretlerin aranabilir"
+  },
+  "bmPreparing": {
+    "message": "Hazırlanıyorum…"
+  },
+  "bmLearning": {
+    "message": "$TOTAL$ içinden $DONE$ öğrenildi",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà duraklatıldı — sen devam ettirir ettirmez sürdüreceğim."
+  },
+  "bmError": {
+    "message": "Öğrenirken bir şeyler ters gitti. Bir sonraki değişiklikte tekrar deneyeceğim."
+  },
+  "bmDone": {
+    "message": "Tamam — $COUNT$ yer işareti anlama göre aranabilir ve otomatik olarak senkronize ediliyor.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Tamam — 1 yer işareti anlama göre aranabilir ve otomatik olarak senkronize ediliyor."
+  },
+  "bmDenied": {
+    "message": "İzin olmadan yer işaretlerini göremem. İstediğin zaman tekrar deneyebilirsin."
+  },
+  "bmTry": {
+    "message": "Dene:"
+  },
+  "bmBadge": {
+    "message": "Yer işareti"
+  },
+  "bmAddedOn": {
+    "message": "$DATE$ tarihinde eklendi",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Hafızadaki yer işaretleri"
+  },
+  "optBookmarksHelp": {
+    "message": "Yer işaretlerinin başlıklarını ve klasörlerini (sayfaları açmadan) öğrenirim ve sen ekledikçe ya da sildikçe takip ederim. Kapatmak onları hafızadan kaldırır — okuduğun sayfalar kalır."
+  },
+  "memoryFilterAll": {
+    "message": "Tümü"
+  },
+  "memoryFilterRead": {
+    "message": "Okunanlar"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Yer işaretleri"
+  },
+  "welcomePoint5": {
+    "message": "Yer işaretleri — yalnızca açarsan: o zaman sayfaları açmadan başlıklarını ve klasörlerini öğrenirim. Tek tıkla kapatılır."
+  },
+  "rateTitle": {
+    "message": "Déjà bir şey bulmana yardım etti — şimdiye kadar $COUNT$ kez",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "İşine yarıyorsa, mağazada vereceğin bir puan başkalarının da onu keşfetmesine yardımcı olur — 10 saniye sürer. Bir şey canını sıkıyorsa da bize yaz."
+  },
+  "rateButton": {
+    "message": "Déjà'yı puanla"
+  },
+  "rateFeedback": {
+    "message": "Bir şey çalışmıyor mu?"
+  },
+  "rateLater": {
+    "message": "Şimdi değil"
+  },
+  "rateThanks": {
+    "message": "Teşekkürler! Gerçekten işe yarıyor."
+  },
+  "rateFeedbackThanks": {
+    "message": "Teşekkürler — her mesajı okuyoruz."
+  },
+  "rateFeedbackSubject": {
+    "message": "geri bildirim"
+  },
+  "answerTitle": {
+    "message": "Hafızandan yanıt"
+  },
+  "answerAsk": {
+    "message": "Hafızamdan yanıtla"
+  },
+  "answerEnableTitle": {
+    "message": "Chrome'un yerleşik yapay zekâsından yanıtlar"
+  },
+  "answerEnableText": {
+    "message": "Déjà, okuduklarından yola çıkarak sorularını kaynaklarıyla yanıtlayabilir. Chrome cihaz üzerindeki modelini (Gemini Nano) bir kez indirir — soruların ve sayfaların bilgisayarından asla çıkmaz."
+  },
+  "answerEnableButton": {
+    "message": "Yanıtları aç"
+  },
+  "answerNoThanks": {
+    "message": "Hayır, teşekkürler"
+  },
+  "answerDownloading": {
+    "message": "Chrome modeli indiriyor… %$PCT$",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Anılarını okuyorum…"
+  },
+  "answerStop": {
+    "message": "Durdur"
+  },
+  "answerFoot": {
+    "message": "Chrome'un yerleşik yapay zekâsı tarafından, $COUNT$ anından yararlanarak cihazında yazıldı. Kaynakları kontrol et.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Bu sefer bir yanıt oluşturamadım."
+  },
+  "optAnswersLabel": {
+    "message": "Chrome'un yerleşik yapay zekâsından yanıtlar"
+  },
+  "optAnswersHelp": {
+    "message": "“…hakkında ne okumuştum?” gibi sorular için sayfalarından kaynaklarla kısa bir yanıt yazarım — tamamen cihazında, Chrome'daki Gemini Nano ile. Desteklenen bir bilgisayar ve dil gerekir (İngilizce, İspanyolca, Almanca, Fransızca, Japonca)."
+  },
+  "optAnswersAvailable": {
+    "message": "Bu cihazda kullanıma hazır."
+  },
+  "optAnswersDownloadable": {
+    "message": "Destekleniyor — Chrome modeli ilk sorunda indirecek."
+  },
+  "optAnswersUnavailable": {
+    "message": "Bu cihaz veya arayüz dili, Chrome'un yerleşik yapay zekâsı tarafından desteklenmiyor."
+  },
+  "optAnswersUnsupported": {
+    "message": "Bu tarayıcıda yerleşik yapay zekâ yok — Déjà'daki diğer her şey her zamanki gibi çalışır."
+  }
+}

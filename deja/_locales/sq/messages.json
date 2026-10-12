@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — kujtesa e shfletuesit tënd"
+  },
+  "extDesc": {
+    "message": "Kërkim semantik në faqet që ke lexuar. Gjithçka ndodh në nivel lokal — asgjë nuk largohet kurrë nga pajisja jote."
+  },
+  "cmdOpenSearch": {
+    "message": "Hap kërkimin e Déjà"
+  },
+  "searchTitle": {
+    "message": "Déjà — kërko atë që ke lexuar"
+  },
+  "tagline": {
+    "message": "E ke parë. Déjà e gjen."
+  },
+  "searchPlaceholder": {
+    "message": "Përshkruaj çfarë mban mend… p.sh. „artikull për bateritë me bazë natriumi“"
+  },
+  "searchButton": {
+    "message": "Kërko"
+  },
+  "statusSearching": {
+    "message": "Po gërmoj në kujtesë… (kërkimi i parë ngarkon modelin, ~10-30 s)"
+  },
+  "statusEmpty": {
+    "message": "Nuk doli asgjë. Ose nuk e ke lexuar kurrë, ose Déjà nuk e ka mbajtur mend ende."
+  },
+  "statusResults": {
+    "message": "$COUNT$ kujtime:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 kujtim:"
+  },
+  "errNoResponse": {
+    "message": "kujtesa nuk u përgjigj — provo përsëri"
+  },
+  "recallVivid": {
+    "message": "kujtim i gjallë"
+  },
+  "recallHazy": {
+    "message": "kujtim i turbullt"
+  },
+  "recallFaint": {
+    "message": "kujtim i largët"
+  },
+  "statusError": {
+    "message": "Kërkimi dështoi: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "Në kujtesë: $COUNT$ faqe.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "Në kujtesë: 1 faqe."
+  },
+  "similarity": {
+    "message": "ngjashmëria $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "lexuar më $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ faqe në kujtesë",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 faqe në kujtesë"
+  },
+  "popupSleeping": {
+    "message": "kujtesa po fle"
+  },
+  "popupWaking": {
+    "message": "kujtesa po zgjohet…"
+  },
+  "popupOpenSearch": {
+    "message": "Hap kërkimin"
+  },
+  "popupPause": {
+    "message": "Pezullo memorizimin"
+  },
+  "popupClear": {
+    "message": "Pastro kujtesën"
+  },
+  "popupClearConfirm": {
+    "message": "Të fshihet gjithçka e memorizuar? Nuk ka kthim pas."
+  },
+  "popupOptions": {
+    "message": "Cilësimet"
+  },
+  "optionsTitle": {
+    "message": "Déjà — cilësimet"
+  },
+  "optRetentionLabel": {
+    "message": "Mbaj mend faqet"
+  },
+  "optRetentionForever": {
+    "message": "përgjithmonë"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ muaj",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "Faqet më të vjetra fshihen automatikisht një herë në ditë."
+  },
+  "optDenylistLabel": {
+    "message": "Mos memorizo kurrë adresa që përmbajnë"
+  },
+  "optDenylistHelp": {
+    "message": "Një model për rresht. Përputhet me një pjesë të adresës, p.sh. „example.com“ ose „/private“."
+  },
+  "optBuiltinLabel": {
+    "message": "Mbrojtje e integruar (gjithmonë aktive)"
+  },
+  "optModelHostLabel": {
+    "message": "Pasqyrë e personalizuar e modelit (e avancuar)"
+  },
+  "optModelHostHelp": {
+    "message": "Bosh = huggingface.co. Cakto serverin tënd për mjedise jashtë linje/të korporatave."
+  },
+  "filterAll": {
+    "message": "të gjitha"
+  },
+  "filterWeek": {
+    "message": "java e fundit"
+  },
+  "filterMonth": {
+    "message": "muaji i fundit"
+  },
+  "filterYear": {
+    "message": "viti i fundit"
+  },
+  "relatedLink": {
+    "message": "kujtime të lidhura"
+  },
+  "relatedNone": {
+    "message": "asnjë kujtim i afërt"
+  },
+  "omniboxDefault": {
+    "message": "Pyet kujtesën tënde — Déjà kërkon sipas kuptimit"
+  },
+  "popupMemory": {
+    "message": "Kujtesa ime"
+  },
+  "memoryTitle": {
+    "message": "Kujtesa ime"
+  },
+  "memoryEmpty": {
+    "message": "Kujtesa është bosh — shfleto disa faqe dhe kthehu."
+  },
+  "memoryForget": {
+    "message": "Harroje"
+  },
+  "memoryExport": {
+    "message": "Shkarko arkivin"
+  },
+  "memoryImport": {
+    "message": "Rikthe nga arkivi"
+  },
+  "memoryImportConfirm": {
+    "message": "Të rikthehet nga arkivi? Faqet që përputhen do të mbishkruhen."
+  },
+  "optSave": {
+    "message": "Ruaj"
+  },
+  "optSaved": {
+    "message": "U ruajt ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "Pasqyra duhet të jetë një adresë https://"
+  },
+  "welcomeHeading": {
+    "message": "Përshëndetje. Unë jam kujtesa e shfletuesit tënd."
+  },
+  "welcomeIntro": {
+    "message": "Që nga ky moment mbaj mend çfarë lexon, që ta gjesh më vonë sipas kuptimit — me fjalët e tua, jo me titullin e saktë."
+  },
+  "welcomePoint1": {
+    "message": "Gjithçka ndodh në pajisjen tënde. Pa serverë, pa re, pa dërgim të dhënash — askund, kurrë."
+  },
+  "welcomePoint2": {
+    "message": "Posta, bisedat, hyrjet dhe bankat nuk memorizohen kurrë. Kujdes: temat e ndjeshme nuk mund t'i njoh nga adresa — për to përdor pauzën ose listën tënde te cilësimet."
+  },
+  "welcomePoint3": {
+    "message": "Ti vendos: pauzë me një klik, „Pastro kujtesën“ fshin gjithçka dhe, nëse do, harroj automatikisht pas disa muajsh."
+  },
+  "welcomeCta": {
+    "message": "Hap kërkimin"
+  },
+  "welcomeOptions": {
+    "message": "Cilësimet"
+  },
+  "memoryFilter": {
+    "message": "Kërko në kujtesën tënde…"
+  },
+  "supportLink": {
+    "message": "Mbështet Déjà"
+  },
+  "panelTitle": {
+    "message": "Déjà — shoqërues"
+  },
+  "panelOnThisPage": {
+    "message": "Për temën e kësaj faqeje"
+  },
+  "panelRecent": {
+    "message": "Kujtime të fundit"
+  },
+  "panelNoPage": {
+    "message": "Hap një faqe uebi dhe Déjà do të tregojë çfarë ke lexuar për temën e saj."
+  },
+  "popupOpenPanel": {
+    "message": "Paneli anësor"
+  },
+  "popupForgetPage": {
+    "message": "Harroje këtë faqe"
+  },
+  "popupForgotten": {
+    "message": "U harrua ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: mbaj mend tekstin e përzgjedhur"
+  },
+  "menuForget": {
+    "message": "Déjà: harroje këtë faqe"
+  },
+  "recentTitle": {
+    "message": "Kujtime të fundit"
+  },
+  "cmdOpenPanel": {
+    "message": "Hap panelin anësor të Déjà"
+  },
+  "welcomePoint4": {
+    "message": "Paneli anësor sheh adresën dhe titullin e faqes që po shikon, që të tregojë çfarë ke lexuar për temën e saj — vetëm në kujtesën e seancës. Pasazhet që ruan qëllimisht mbeten gjithashtu vetëm te ti."
+  },
+  "welcomeUpdated": {
+    "message": "Déjà u përditësua. E re: tani edhe faqeshënuesit e tu mund të kërkohen sipas kuptimit — nëse do. Ja çfarë bëj me të dhënat e tua — asgjë nuk është larguar nga pajisja jote."
+  },
+  "optAmbientLabel": {
+    "message": "Sfond i gjallë"
+  },
+  "optAmbientHelp": {
+    "message": "Rrjeti i kujtimeve pas xhamit lëviz ngadalë. Çaktivizoje nëse lëvizja të shpërqendron."
+  },
+  "bmTitle": {
+    "message": "Bëji faqeshënuesit të kërkueshëm — tani"
+  },
+  "bmText": {
+    "message": "Déjà mëson titujt dhe dosjet e faqeshënuesve të tu pa i hapur faqet. Gjeji sipas kuptimit që nga minuta e parë — gjithçka mbetet në pajisjen tënde."
+  },
+  "bmTextShort": {
+    "message": "Kujtesa jote është ende e re. Më mëso faqeshënuesit e tu dhe kërko në to sipas kuptimit që sot."
+  },
+  "bmButton": {
+    "message": "Mëso faqeshënuesit e mi"
+  },
+  "bmNote": {
+    "message": "Shfletuesi do të kërkojë leje. Mund ta çaktivizosh kurdo te cilësimet."
+  },
+  "bmTitleRunning": {
+    "message": "Po mësoj faqeshënuesit e tu…"
+  },
+  "bmTitleDone": {
+    "message": "Faqeshënuesit e tu janë të kërkueshëm"
+  },
+  "bmPreparing": {
+    "message": "Po përgatitem…"
+  },
+  "bmLearning": {
+    "message": "U mësuan $DONE$ nga $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "Déjà është në pauzë — do të vazhdoj sapo ta rinisësh."
+  },
+  "bmError": {
+    "message": "Diçka shkoi keq gjatë mësimit. Do të provoj përsëri në ndryshimin e radhës."
+  },
+  "bmDone": {
+    "message": "Gati — $COUNT$ faqeshënues janë të kërkueshëm sipas kuptimit dhe sinkronizohen automatikisht.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Gati — 1 faqeshënues është i kërkueshëm sipas kuptimit dhe sinkronizohet automatikisht."
+  },
+  "bmDenied": {
+    "message": "Pa leje nuk mund t'i shoh faqeshënuesit e tu. Mund të provosh përsëri kurdo."
+  },
+  "bmTry": {
+    "message": "Provo:"
+  },
+  "bmBadge": {
+    "message": "Faqeshënues"
+  },
+  "bmAddedOn": {
+    "message": "shënuar më $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Faqeshënuesit në kujtesë"
+  },
+  "optBookmarksHelp": {
+    "message": "Mësoj titujt dhe dosjet e faqeshënuesve të tu (pa i hapur faqet) dhe i ndjek ndërsa shton ose fshin. Çaktivizimi i heq nga kujtesa — faqet që ke lexuar mbeten."
+  },
+  "memoryFilterAll": {
+    "message": "Të gjitha"
+  },
+  "memoryFilterRead": {
+    "message": "Të lexuara"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Faqeshënuesit"
+  },
+  "welcomePoint5": {
+    "message": "Faqeshënuesit — vetëm nëse i aktivizon: atëherë mësoj titujt dhe dosjet e tyre, pa i hapur faqet. Një klik i çaktivizon."
+  },
+  "rateTitle": {
+    "message": "Déjà të ka ndihmuar të gjesh diçka — tashmë $COUNT$ herë",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Nëse të duket i dobishëm, një vlerësim në dyqan i ndihmon njerëzit e tjerë ta zbulojnë — zgjat 10 sekonda. Dhe nëse diçka të bezdis, na trego."
+  },
+  "rateButton": {
+    "message": "Vlerëso Déjà"
+  },
+  "rateFeedback": {
+    "message": "Diçka nuk funksionon?"
+  },
+  "rateLater": {
+    "message": "Jo tani"
+  },
+  "rateThanks": {
+    "message": "Faleminderit! Vërtet ndihmon."
+  },
+  "rateFeedbackThanks": {
+    "message": "Faleminderit — e lexojmë çdo mesazh."
+  },
+  "rateFeedbackSubject": {
+    "message": "komente"
+  },
+  "answerTitle": {
+    "message": "Përgjigje nga kujtesa jote"
+  },
+  "answerAsk": {
+    "message": "Përgjigju nga kujtesa ime"
+  },
+  "answerEnableTitle": {
+    "message": "Përgjigje nga AI i integruar i Chrome"
+  },
+  "answerEnableText": {
+    "message": "Déjà mund t'u përgjigjet pyetjeve nga ajo që ke lexuar, me burime. Chrome e shkarkon një herë modelin e tij në pajisje (Gemini Nano) — pyetjet dhe faqet e tua nuk largohen kurrë nga kompjuteri yt."
+  },
+  "answerEnableButton": {
+    "message": "Aktivizo përgjigjet"
+  },
+  "answerNoThanks": {
+    "message": "Jo, faleminderit"
+  },
+  "answerDownloading": {
+    "message": "Chrome po shkarkon modelin… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Po lexoj kujtimet e tua…"
+  },
+  "answerStop": {
+    "message": "Ndalo"
+  },
+  "answerFoot": {
+    "message": "Shkruar në pajisjen tënde nga AI i integruar i Chrome, nga $COUNT$ prej kujtimeve të tua. Kontrollo burimet.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Këtë herë nuk arrita të formuloj një përgjigje."
+  },
+  "optAnswersLabel": {
+    "message": "Përgjigje nga AI i integruar i Chrome"
+  },
+  "optAnswersHelp": {
+    "message": "Për pyetje si „çfarë lexova për…?“ shkruaj një përgjigje të shkurtër me burime nga faqet e tua — plotësisht në pajisjen tënde, me Gemini Nano në Chrome. Kërkon kompjuter dhe gjuhë të mbështetur (anglisht, spanjisht, gjermanisht, frëngjisht, japonisht)."
+  },
+  "optAnswersAvailable": {
+    "message": "Gati për përdorim në këtë pajisje."
+  },
+  "optAnswersDownloadable": {
+    "message": "Mbështetet — Chrome do ta shkarkojë modelin në pyetjen tënde të parë."
+  },
+  "optAnswersUnavailable": {
+    "message": "Kjo pajisje ose gjuha e ndërfaqes nuk mbështetet nga AI i integruar i Chrome."
+  },
+  "optAnswersUnsupported": {
+    "message": "Ky shfletues nuk ka AI të integruar — gjithçka tjetër në Déjà funksionon si gjithmonë."
+  }
+}

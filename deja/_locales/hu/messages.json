@@ -1,0 +1,454 @@
+{
+  "extName": {
+    "message": "Déjà — a böngésződ memóriája"
+  },
+  "extDesc": {
+    "message": "Szemantikus keresés az általad olvasott oldalakban. Minden helyben történik — semmi sem hagyja el az eszközödet."
+  },
+  "cmdOpenSearch": {
+    "message": "Déjà keresés megnyitása"
+  },
+  "searchTitle": {
+    "message": "Déjà — keresd meg, amit olvastál"
+  },
+  "tagline": {
+    "message": "Láttad már. A Déjà megtalálja."
+  },
+  "searchPlaceholder": {
+    "message": "Írd le, mire emlékszel… pl. „cikk a nátriumalapú akkumulátorokról”"
+  },
+  "searchButton": {
+    "message": "Keresés"
+  },
+  "statusSearching": {
+    "message": "Kutatok a memóriában… (az első keresés betölti a modellt, ~10-30 mp)"
+  },
+  "statusEmpty": {
+    "message": "Semmi sem bukkant fel. Vagy sosem olvastad, vagy a Déjà még nem jegyezte meg."
+  },
+  "statusResults": {
+    "message": "$COUNT$ emlék:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusResultsOne": {
+    "message": "1 emlék:"
+  },
+  "errNoResponse": {
+    "message": "a memória nem válaszolt — próbáld újra"
+  },
+  "recallVivid": {
+    "message": "élénk emlék"
+  },
+  "recallHazy": {
+    "message": "homályos emlék"
+  },
+  "recallFaint": {
+    "message": "távoli emlék"
+  },
+  "statusError": {
+    "message": "Sikertelen keresés: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemory": {
+    "message": "A memóriában: $COUNT$ oldal.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "pagesInMemoryOne": {
+    "message": "A memóriában: 1 oldal."
+  },
+  "similarity": {
+    "message": "hasonlóság: $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "readOn": {
+    "message": "olvasva: $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPages": {
+    "message": "$COUNT$ oldal a memóriában",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popupPagesOne": {
+    "message": "1 oldal a memóriában"
+  },
+  "popupSleeping": {
+    "message": "a memória alszik"
+  },
+  "popupWaking": {
+    "message": "a memória ébredezik…"
+  },
+  "popupOpenSearch": {
+    "message": "Keresés megnyitása"
+  },
+  "popupPause": {
+    "message": "Emlékezés szüneteltetése"
+  },
+  "popupClear": {
+    "message": "Memória törlése"
+  },
+  "popupClearConfirm": {
+    "message": "Törlöd az összes megjegyzett tartalmat? Nincs visszaút."
+  },
+  "popupOptions": {
+    "message": "Beállítások"
+  },
+  "optionsTitle": {
+    "message": "Déjà — beállítások"
+  },
+  "optRetentionLabel": {
+    "message": "Oldalak megőrzése"
+  },
+  "optRetentionForever": {
+    "message": "örökre"
+  },
+  "optRetentionMonths": {
+    "message": "$N$ hónap",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRetentionHelp": {
+    "message": "A régebbi oldalak naponta egyszer automatikusan törlődnek."
+  },
+  "optDenylistLabel": {
+    "message": "Soha ne jegyezz meg olyan címet, amely tartalmazza:"
+  },
+  "optDenylistHelp": {
+    "message": "Soronként egy minta. A cím egy részére illeszkedik, pl. „example.com” vagy „/private”."
+  },
+  "optBuiltinLabel": {
+    "message": "Beépített védelem (mindig aktív)"
+  },
+  "optModelHostLabel": {
+    "message": "Egyéni modelltükör (haladó)"
+  },
+  "optModelHostHelp": {
+    "message": "Üres = huggingface.co. Adj meg saját szervert offline/vállalati környezethez."
+  },
+  "filterAll": {
+    "message": "mind"
+  },
+  "filterWeek": {
+    "message": "elmúlt hét"
+  },
+  "filterMonth": {
+    "message": "elmúlt hónap"
+  },
+  "filterYear": {
+    "message": "elmúlt év"
+  },
+  "relatedLink": {
+    "message": "kapcsolódó emlékek"
+  },
+  "relatedNone": {
+    "message": "nincsenek közeli emlékek"
+  },
+  "omniboxDefault": {
+    "message": "Kérdezd a memóriádat — a Déjà jelentés szerint keres"
+  },
+  "popupMemory": {
+    "message": "Memóriám"
+  },
+  "memoryTitle": {
+    "message": "Memóriám"
+  },
+  "memoryEmpty": {
+    "message": "A memória üres — nézz meg néhány oldalt, aztán gyere vissza."
+  },
+  "memoryForget": {
+    "message": "Elfelejtés"
+  },
+  "memoryExport": {
+    "message": "Archívum letöltése"
+  },
+  "memoryImport": {
+    "message": "Visszaállítás archívumból"
+  },
+  "memoryImportConfirm": {
+    "message": "Visszaállítod az archívumból? Az egyező oldalak felülíródnak."
+  },
+  "optSave": {
+    "message": "Mentés"
+  },
+  "optSaved": {
+    "message": "Mentve ✓"
+  },
+  "optModelHostInvalid": {
+    "message": "A tükörnek https:// címnek kell lennie"
+  },
+  "welcomeHeading": {
+    "message": "Szia! Én vagyok a böngésződ memóriája."
+  },
+  "welcomeIntro": {
+    "message": "Mostantól megjegyzem, amit olvasol, hogy később jelentés alapján megtaláld — a saját szavaiddal, nem a pontos címmel."
+  },
+  "welcomePoint1": {
+    "message": "Minden az eszközödön történik. Nincsenek szerverek, nincs felhő, nincs adatküldés — sehová, soha."
+  },
+  "welcomePoint2": {
+    "message": "A leveleket, csevegéseket, bejelentkezéseket és banki oldalakat sosem jegyzem meg. Figyelem: az érzékeny témákat nem ismerem fel a cím alapján — ezekhez használd a szüneteltetést vagy a saját listádat a beállításokban."
+  },
+  "welcomePoint3": {
+    "message": "Te irányítasz: szüneteltetés egy kattintással, a „Memória törlése” mindent töröl, és ha szeretnéd, néhány hónap után automatikusan felejtek."
+  },
+  "welcomeCta": {
+    "message": "Keresés megnyitása"
+  },
+  "welcomeOptions": {
+    "message": "Beállítások"
+  },
+  "memoryFilter": {
+    "message": "Keresés a memóriádban…"
+  },
+  "supportLink": {
+    "message": "Déjà támogatása"
+  },
+  "panelTitle": {
+    "message": "Déjà — kísérő"
+  },
+  "panelOnThisPage": {
+    "message": "Az oldal témájában"
+  },
+  "panelRecent": {
+    "message": "Legutóbbi emlékek"
+  },
+  "panelNoPage": {
+    "message": "Nyiss meg egy weboldalt, és a Déjà megmutatja, mit olvastál már a témájában."
+  },
+  "popupOpenPanel": {
+    "message": "Oldalsó panel"
+  },
+  "popupForgetPage": {
+    "message": "Oldal elfelejtése"
+  },
+  "popupForgotten": {
+    "message": "Elfelejtve ✓"
+  },
+  "menuClip": {
+    "message": "Déjà: a kijelölt szöveg megjegyzése"
+  },
+  "menuForget": {
+    "message": "Déjà: az oldal elfelejtése"
+  },
+  "recentTitle": {
+    "message": "Legutóbbi emlékek"
+  },
+  "cmdOpenPanel": {
+    "message": "A Déjà oldalsó paneljének megnyitása"
+  },
+  "welcomePoint4": {
+    "message": "Az oldalsó panel látja az éppen nézett oldal webcímét és címét, hogy megmutassa, mit olvastál a témájában — csak a munkamenet memóriájában. A szándékosan mentett részletek szintén csak nálad maradnak."
+  },
+  "welcomeUpdated": {
+    "message": "A Déjà frissült. Újdonság: ha szeretnéd, mostantól a könyvjelzőid is kereshetők jelentés alapján. Íme, mit csinálok az adataiddal — semmi sem hagyta el az eszközödet."
+  },
+  "optAmbientLabel": {
+    "message": "Élő háttér"
+  },
+  "optAmbientHelp": {
+    "message": "Az üveg mögötti emlékháló lassan sodródik. Kapcsold ki, ha a mozgás zavar."
+  },
+  "bmTitle": {
+    "message": "Tedd kereshetővé a könyvjelzőidet — most"
+  },
+  "bmText": {
+    "message": "A Déjà megtanulja a könyvjelzőid címét és mappáit az oldalak megnyitása nélkül. Az első perctől jelentés alapján megtalálod őket — minden az eszközödön marad."
+  },
+  "bmTextShort": {
+    "message": "A memóriád még fiatal. Tanítsd meg nekem a könyvjelzőidet, és keress bennük jelentés alapján már ma."
+  },
+  "bmButton": {
+    "message": "Tanuld meg a könyvjelzőimet"
+  },
+  "bmNote": {
+    "message": "A böngésző engedélyt fog kérni. Bármikor kikapcsolhatod a beállításokban."
+  },
+  "bmTitleRunning": {
+    "message": "Tanulom a könyvjelzőidet…"
+  },
+  "bmTitleDone": {
+    "message": "A könyvjelzőid kereshetők"
+  },
+  "bmPreparing": {
+    "message": "Előkészülök…"
+  },
+  "bmLearning": {
+    "message": "Megtanulva: $DONE$ / $TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bmPaused": {
+    "message": "A Déjà szünetel — amint folytatod, én is folytatom."
+  },
+  "bmError": {
+    "message": "Hiba történt a tanulás közben. A következő változáskor újra megpróbálom."
+  },
+  "bmDone": {
+    "message": "Kész — $COUNT$ könyvjelző kereshető jelentés alapján, és automatikusan szinkronban marad.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bmDoneOne": {
+    "message": "Kész — 1 könyvjelző kereshető jelentés alapján, és automatikusan szinkronban marad."
+  },
+  "bmDenied": {
+    "message": "Engedély nélkül nem látom a könyvjelzőidet. Bármikor újra megpróbálhatod."
+  },
+  "bmTry": {
+    "message": "Próbáld:"
+  },
+  "bmBadge": {
+    "message": "Könyvjelző"
+  },
+  "bmAddedOn": {
+    "message": "hozzáadva: $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "optBookmarksLabel": {
+    "message": "Könyvjelzők a memóriában"
+  },
+  "optBookmarksHelp": {
+    "message": "Megtanulom a könyvjelzőid címét és mappáit (az oldalak megnyitása nélkül), és követem, ahogy hozzáadod vagy törlöd őket. Kikapcsoláskor eltávolítom őket a memóriából — az olvasott oldalak megmaradnak."
+  },
+  "memoryFilterAll": {
+    "message": "Mind"
+  },
+  "memoryFilterRead": {
+    "message": "Olvasott"
+  },
+  "memoryFilterBookmarks": {
+    "message": "Könyvjelzők"
+  },
+  "welcomePoint5": {
+    "message": "Könyvjelzők — csak ha bekapcsolod: ekkor megtanulom a címüket és a mappáikat, az oldalak megnyitása nélkül. Egy kattintással kikapcsolhatod."
+  },
+  "rateTitle": {
+    "message": "A Déjà már $COUNT$ alkalommal segített megtalálni valamit",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "rateText": {
+    "message": "Ha hasznosnak találod, egy értékelés az áruházban segít másoknak is rátalálni — 10 másodperc az egész. Ha pedig valami zavar, szólj nekünk."
+  },
+  "rateButton": {
+    "message": "Déjà értékelése"
+  },
+  "rateFeedback": {
+    "message": "Valami nem működik?"
+  },
+  "rateLater": {
+    "message": "Most nem"
+  },
+  "rateThanks": {
+    "message": "Köszönjük! Tényleg sokat segít."
+  },
+  "rateFeedbackThanks": {
+    "message": "Köszönjük — minden üzenetet elolvasunk."
+  },
+  "rateFeedbackSubject": {
+    "message": "visszajelzés"
+  },
+  "answerTitle": {
+    "message": "Válasz a memóriádból"
+  },
+  "answerAsk": {
+    "message": "Válasz a memóriámból"
+  },
+  "answerEnableTitle": {
+    "message": "Válaszok a Chrome beépített mesterséges intelligenciájával"
+  },
+  "answerEnableText": {
+    "message": "A Déjà forrásokkal együtt tud válaszolni a kérdéseidre abból, amit olvastál. A Chrome egyszer letölti az eszközön futó modelljét (Gemini Nano) — a kérdéseid és az oldalaid sosem hagyják el a számítógépedet."
+  },
+  "answerEnableButton": {
+    "message": "Válaszok bekapcsolása"
+  },
+  "answerNoThanks": {
+    "message": "Köszönöm, nem"
+  },
+  "answerDownloading": {
+    "message": "A Chrome letölti a modellt… $PCT$%",
+    "placeholders": {
+      "pct": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerThinking": {
+    "message": "Olvasom az emlékeidet…"
+  },
+  "answerStop": {
+    "message": "Leállítás"
+  },
+  "answerFoot": {
+    "message": "Az eszközödön írta a Chrome beépített mesterséges intelligenciája $COUNT$ emléked alapján. Ellenőrizd a forrásokat.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "answerError": {
+    "message": "Ezúttal nem sikerült választ összeállítanom."
+  },
+  "optAnswersLabel": {
+    "message": "Válaszok a Chrome beépített mesterséges intelligenciájával"
+  },
+  "optAnswersHelp": {
+    "message": "Az olyan kérdésekre, mint „mit olvastam erről…?”, rövid választ írok forrásokkal az oldalaidból — teljesen az eszközödön, a Chrome-ban futó Gemini Nano modellel. Támogatott számítógép és nyelv szükséges (angol, spanyol, német, francia, japán)."
+  },
+  "optAnswersAvailable": {
+    "message": "Használatra kész ezen az eszközön."
+  },
+  "optAnswersDownloadable": {
+    "message": "Támogatott — a Chrome az első kérdésednél letölti a modellt."
+  },
+  "optAnswersUnavailable": {
+    "message": "Ezt az eszközt vagy a felület nyelvét a Chrome beépített mesterséges intelligenciája nem támogatja."
+  },
+  "optAnswersUnsupported": {
+    "message": "Ebben a böngészőben nincs beépített mesterséges intelligencia — a Déjà minden más funkciója a megszokott módon működik."
+  }
+}

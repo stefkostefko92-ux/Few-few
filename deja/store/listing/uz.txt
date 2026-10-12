@@ -1,0 +1,50 @@
+TITLE: Déjà — brauzering xotirasi
+SHORT: Oʻqigan sahifalaringni maʼnosi boʻyicha qidir, 50 dan ortiq tilda. Toʻliq qurilmangda ishlaydi — hech narsa brauzerdan chiqmaydi.
+
+Sen buni koʻrgansan. Déjà topadi.
+
+Brauzer tarixi faqat sarlavhalar va URL manzillarni eslab qoladi. Déjà esa
+MAZMUNNI eslab qoladi. Eslaganingni oʻz soʻzlaring bilan tasvirla — «natriy
+asosidagi batareyalar haqidagi oʻsha maqola» — va Déjà sarlavhani, saytni
+yoki aniq soʻzlarni eslay olmasang ham, oʻsha sahifani topib beradi. Hatto
+toʻgʻridan-toʻgʻri kerakli xatboshiga olib boradi.
+
+NIMALARGA EGA BOʻLASAN
+✓ Xatchoʻplaringda birinchi daqiqadan maʼno boʻyicha qidirish mumkin —
+  ixtiyoriy, bir bosishda. Déjà ularning sarlavhalari va jildlarini
+  oʻrganadi (sahifalarni ochmasdan) va sen xatchoʻp qoʻshganingda,
+  koʻchirganingda yoki oʻchirganingda ularni sinxron saqlaydi.
+✓ Xotirangdan javoblar — Chrome ichidagi sunʼiy intellektni (Gemini Nano)
+  qoʻllab-quvvatlaydigan kompyuterlarda savol ber va oʻqigan sahifalaringdan
+  qurilmangda yozilgan, bosib ochiladigan manbalari bor qisqa javob ol.
+  (Javoblar ingliz, ispan, nemis, fransuz va yapon tillarida.)
+✓ Maʼno boʻyicha qidiruv — oʻz soʻzlaring bilan, 50 dan ortiq tilda soʻra;
+  bir tilda soʻrab, boshqa tilda oʻqigan sahifalaringni top.
+✓ Hamroh yon panel — uni istalgan sahifa yonida och va shu sahifa mavzusida
+  oldin nimalarni oʻqiganingni hamda soʻnggi xotiralaringni koʻr.
+✓ Manzil satriga «dj» deb yoz — jonli takliflar bilan bevosita omnibox’dan
+  xotirangdan qidir.
+✓ Parchani eslab qol — istalgan tanlangan matnni sichqonchaning oʻng tugmasi
+  bilan bos: «Déjà: tanlangan matnni eslab qolish». U alohida, qidirsa
+  boʻladigan xotiraga aylanadi.
+✓ Aniq xatboshiga oʻtish — natijalar sahifani mos parcha ajratib koʻrsatilgan
+  holda ochadi.
+✓ Sana filtrlari, bogʻliq xotiralar, boʻsh qidiruv sahifasida soʻnggi
+  xotiralar.
+✓ Mening xotiram — Déjà eslab qolgan hamma narsani koʻr, istalgan sahifani
+  bir bosishda unut, butun indeksni fayl sifatida eksport/import qil.
+
+MAXFIYLIK — LOYIHANING ASOSIDA
+✓ 100% lokal ishlov berish — sunʼiy intellektning embedding modeli
+  brauzering ichida ishlaydi, maʼlumotlaring esa IndexedDB’da saqlanadi.
+  Serverlar yoʻq, bulut yoʻq, telemetriya yoʻq, akkaunt yoʻq.
+✓ Pochta, chat, kirish va bank sahifalari avtomatik oʻtkazib yuboriladi
+  (ichki manzillar roʻyxati; oʻz andozalaringni ham qoʻsh).
+✓ Bir bosishda pauza. «Bu sahifani unutish» va «Xotirani tozalash» doim
+  qoʻl ostida.
+✓ Avtomatik unutish — xohlasang, 3/6/12/24 oydan eski sahifalarni oʻchir.
+✓ Yorugʻ va qorongʻi mavzu tizimingga moslashadi.
+
+Kengaytma amalga oshiradigan yagona tarmoq soʻrovi — embedding modelini
+Hugging Face’dan bir martalik yuklab olish (keyin u lokal keshda saqlanadi;
+buning oʻrniga oʻz koʻzgungni koʻrsatishing mumkin).
