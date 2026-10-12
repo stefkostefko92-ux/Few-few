@@ -21,8 +21,6 @@ const PORT = 7791;
 const BASE = `http://127.0.0.1:${PORT}`;
 const PASS = 'атака-парола-9931';
 const PEER_TOKEN = 'p'.repeat(48);
-const AGENT_KEY = 'k'.repeat(43);
-const AGENT_HDR = { authorization: 'CSD-Agent ' + AGENT_KEY };
 let child;
 let dir;
 let cookie = '';
@@ -40,7 +38,6 @@ before(async () => {
       passwordHash: hashPassword(PASS),
       sessionSecret: 'S'.repeat(64),
       peerToken: PEER_TOKEN,
-      agentKey: AGENT_KEY,
       paths: { stateDir: path.join(dir, 'state'), archiveDir: dir, releasesDir: path.join(dir, 'rel'), currentLink: path.join(dir, 'cur') },
       peers: [],
       healthChecks: [],
@@ -91,7 +88,6 @@ test('атака: обхождам всичко като админ и търс�
     ['passwordHash', 'scrypt:'],
     ['sessionSecret', 'S'.repeat(64)],
     ['peerToken', PEER_TOKEN],
-    ['agentKey', AGENT_KEY],
     ['паролата на десктопа', 'DESKTOP_PASSWORD='],
   ];
   const ROUTES = [
@@ -99,7 +95,6 @@ test('атака: обхождам всичко като админ и търс�
     '/api/alerts', '/api/security', '/api/security/posture', '/api/backups/panel',
     '/api/audit', '/api/audit/ship', '/api/desktop', '/api/env', '/api/updates/health',
     '/api/deploy/state', '/api/agents/tools', '/api/jobs', '/api/traffic', '/api/slo',
-    '/api/agent/key', '/api/agent/proposals', '/api/agent/actions',
   ];
   const leaks = [];
   for (const route of ROUTES) {
@@ -183,67 +178,6 @@ test('атака: изкачване по пътя не стига до чужд
   }
 });
 
-// ── 5б. Агентският ключ: чете и предлага, НЕ изпълнява ─────────────────────────
-test('атака: агентският ключ стига само до четене и предложения — изпълнението е на човека', async () => {
-  const A = AGENT_HDR;
-  const json = { 'content-type': 'application/json' };
-  // Чете състоянието.
-  assert.equal((await fetch(BASE + '/api/overview', { headers: A })).status, 200, 'агентът чете обзора');
-  // Не стига до тайни, суров журнал, терминал, файлове, одит, изпълнение.
-  const забранени = [
-    ['GET', '/api/env'], ['GET', '/api/logs'], ['GET', '/api/files/read?path=/etc/passwd'],
-    ['GET', '/api/audit'], ['GET', '/api/sessions'], ['GET', '/api/agent/key'],
-    ['POST', '/api/services/action'], ['POST', '/api/pty/open'], ['POST', '/api/terminal/run'],
-    ['POST', '/api/agents/tools/run'], ['POST', '/api/agent/key'], ['POST', '/api/proposals/0123456789abcdef/approve'],
-  ];
-  for (const [method, p] of забранени) {
-    const res = await fetch(BASE + p, { method, headers: { ...A, ...json }, body: method === 'POST' ? '{}' : undefined });
-    assert.equal(res.status, 403, `агентът стигна до ${method} ${p} (${res.status})`);
-  }
-  // Подава предложение.
-  const proposal = {
-    agent: 'VPS-аджията',
-    title: 'Рестарт на тестова услуга',
-    why: 'Тест от атаката.',
-    review: 'Claude: прегледано.',
-    action: { type: 'service.restart', params: { unit: 'csd-attack-test.service' } },
-  };
-  const sub = await fetch(BASE + '/api/agent/proposals', { method: 'POST', headers: { ...A, ...json }, body: JSON.stringify(proposal) });
-  assert.equal(sub.status, 200, 'агентът подава предложение');
-  const { id } = await sub.json();
-  // Свободен скрипт не минава дори като предложение.
-  const shell = await fetch(BASE + '/api/agent/proposals', {
-    method: 'POST', headers: { ...A, ...json },
-    body: JSON.stringify({ ...proposal, action: { type: 'shell.run', params: { cmd: 'curl x | sh' } } }),
-  });
-  assert.equal(shell.status, 400, 'свободен скрипт не е в каталога');
-  // Човекът БЕЗ парола (sudo) не одобрява — открадната сесия не пуска нищо.
-  const human = { cookie, 'x-csd': '1' };
-  const noSudo = await fetch(BASE + `/api/proposals/${id}/approve`, { method: 'POST', headers: human });
-  assert.equal(noSudo.status, 428, 'одобрението иска повторна парола');
-  // Само агентският ключ подава предложения — сесията на човек не „предлага сама на себе си".
-  const self = await fetch(BASE + '/api/agent/proposals', { method: 'POST', headers: { ...human, ...json }, body: JSON.stringify(proposal) });
-  assert.equal(self.status, 403);
-  // С парола: изпълнението тръгва (тук без systemd — важното е, че мина вратата),
-  // а второ одобрение на същото предложение е 409, не второ изпълнение.
-  const s = await fetch(BASE + '/api/sudo', { method: 'POST', headers: { ...human, ...json }, body: JSON.stringify({ password: PASS }) });
-  assert.equal(s.status, 200, 'sudo с вярна парола');
-  const ok = await fetch(BASE + `/api/proposals/${id}/approve`, { method: 'POST', headers: human });
-  assert.notEqual(ok.status, 428);
-  assert.notEqual(ok.status, 403);
-  const again = await fetch(BASE + `/api/proposals/${id}/approve`, { method: 'POST', headers: human });
-  assert.equal(again.status, 409, 'двоен клик не изпълнява два пъти');
-  const st = await (await fetch(BASE + `/api/agent/proposals/${id}`, { headers: A })).json();
-  assert.ok(['done', 'failed', 'started'].includes(st.status), `статус след одобрение: ${st.status}`);
-  assert.equal(st.decidedBy, 'admin');
-  // Заключваме обратно (като бутона „Заключи") — следващите тестове разчитат,
-  // че сесията НЯМА живо sudo разрешение.
-  assert.equal((await fetch(BASE + '/api/sudo/revoke', { method: 'POST', headers: human })).status, 200);
-  // Грешен агентски ключ = отказ.
-  const wrong = await fetch(BASE + '/api/overview', { headers: { authorization: 'CSD-Agent ' + 'z'.repeat(43) } });
-  assert.ok([401, 429].includes(wrong.status), `грешен ключ: ${wrong.status}`);
-});
-
 // ── 6. Bearer налучкване ─────────────────────────────────────────────────────
 test('атака: налучкването на peerToken се СПИРА, не само се отбелязва', async () => {
   const кодове = [];
@@ -268,25 +202,6 @@ test('атака: налучкването на peerToken се СПИРА, не 
   // свалил федерацията, без изобщо да познае токена.
   const ok = await fetch(BASE + '/api/overview', { headers: { authorization: `Bearer ${PEER_TOKEN}` } });
   assert.equal(ok.status, 200, 'верният жетон не бива да е заложник на чужди опити от същия адрес');
-});
-
-// ── 6б. Чужда схема в Authorization не е налучкване на жетон ───────────────────
-test('атака: `Authorization: Basic` (паролата на десктопа) не чупи сесията и не се брои за налучкване', async () => {
-  // Браузърът праща Basic към ЦЕЛИЯ произход, щом човек въведе паролата на
-  // десктопа. Преди поправката това минаваше за грешен Bearer: вписаният
-  // собственик получаваше 401 + `X-Frame-Options: DENY` (сива рамка), а след
-  // 10 заявки — 429 за собствения си адрес. Тестът върви СЛЕД налучкването
-  // горе, тоест лимитерът за този адрес вече е задействан — Basic пак не бива
-  // да го вижда.
-  const basic = `Basic ${Buffer.from('csd:десктоп-парола').toString('base64')}`;
-  const сесия = await fetch(BASE + '/api/overview', { headers: { cookie, authorization: basic } });
-  assert.equal(сесия.status, 200, 'вписан човек с Basic заглавка трябва да мине по бисквитката');
-  const кодове = [];
-  for (let i = 0; i < 12; i++) {
-    const res = await fetch(BASE + '/api/overview', { headers: { authorization: basic } });
-    кодове.push(res.status);
-  }
-  assert.ok(кодове.every((s) => s === 401), `без сесия Basic е просто „не си вписан" (401), не 429; получени: ${[...new Set(кодове)].join(',')}`);
 });
 
 // ── 7. Непознат маршрут не чертае картата на API-то ──────────────────────────

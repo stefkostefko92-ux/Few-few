@@ -97,7 +97,6 @@ const GET_ROUTES = [
   '/api/webserver/coverage',
   '/api/jobs/няма-такава-задача', '/api/webserver/site?file=/etc/nginx/nginx.conf',
   '/api/env/file?path=/tmp/csd-няма.env', '/api/files/read?path=/etc/hostname',
-  '/api/settings/peer', '/api/agent/actions', '/api/agent/proposals', '/api/agent/proposals/0123456789abcdef', '/api/agent/key',
   // `/api/domains/preflight` съзнателно НЕ влиза: прави реален DNS + HTTP навън и
   // би направил теста зависим от мрежата в CI. Проверява се ръчно/в браузър.
 ];

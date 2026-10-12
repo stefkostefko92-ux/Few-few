@@ -24,8 +24,6 @@ const DEFAULTS = {
   trustProxy: false,
   // Входящ federation токен — с него другият VPS вика нашето API. Празно = изключено.
   peerToken: '',
-  // Ключът на агентите (предложения → одобрение в панела). Празен = изключено.
-  agentKey: '',
   // Другите VPS-и: [{ id, name, url, token }]
   peers: [],
   paths: {

@@ -2,7 +2,7 @@
 // зареди обвивката офлайн. НИКОГА не кешира /api/ — данните за сървъра трябва да
 // са живи, а кеширан отговор от контролен панел е опасно подвеждащ.
 const CACHE = 'csd-shell-v1';
-const SHELL = ['/', '/index.html', '/style.css', '/app.js', '/ui.js', '/ansi.js', '/terrain.js', '/favicon.svg', '/manifest.json'];
+const SHELL = ['/', '/index.html', '/style.css', '/app.js', '/ui.js', '/ansi.js', '/favicon.svg', '/manifest.json'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

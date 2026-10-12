@@ -30,7 +30,7 @@ export function findPeer(cfg, id) {
   return (cfg.peers || []).find((p) => p.id === id) || null;
 }
 
-export function proxyToPeer(peer, req, res, restPath, search, { actor } = {}) {
+export function proxyToPeer(peer, req, res, restPath, search) {
   let target;
   try {
     target = new URL(peer.url);
@@ -55,10 +55,6 @@ export function proxyToPeer(peer, req, res, restPath, search, { actor } = {}) {
     return;
   }
   headers['x-csd'] = '1'; // proxy заявките носят CSRF маркера — оригиналът вече е проверен локално
-  // Кой човек стои зад заявката — за одита на съседа. Задава се ВИНАГИ от нас
-  // (или се маха): заглавка със същото име от браузъра не бива да мине нагоре.
-  delete headers['x-csd-actor'];
-  if (actor && /^[A-Za-z0-9._-]{1,64}@[A-Za-z0-9._-]{1,64}$/.test(actor)) headers['x-csd-actor'] = actor;
 
   const upstream = reqFn(
     {
