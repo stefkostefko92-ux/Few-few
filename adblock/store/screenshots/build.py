@@ -12,8 +12,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 import json
 VERSION = json.load(open(os.path.join(HERE, "..", "..", "manifest.json")))["version"]  # popup shows the real version
 COUNTS = json.load(open(os.path.join(HERE, "..", "..", "rules", "counts.json")))  # real rule counts, never typed by hand
-# languages, not folders: 73 _locales folders = 70 languages (es/es_419, pt_BR/pt_PT, zh_CN/zh_TW are variants)
-LANGS = len({d.split("_")[0] for d in os.listdir(os.path.join(HERE, "..", "..", "_locales")) if not d.startswith(".")})
+LANGS = len([d for d in os.listdir(os.path.join(HERE, "..", "..", "_locales")) if not d.startswith(".")])
 
 CSS = """
 *{margin:0;padding:0;box-sizing:border-box}

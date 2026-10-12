@@ -28,7 +28,7 @@
 - Smart Detection: a list-free heuristic that hides cross-origin frames sized like ad slots.
 - Broken site? A repair page offers one-click fixes (turn off element hiding for the site, allow the site, pause) and prepares a report e-mail the user reviews and sends themselves — the extension never sends it.
 - Controls: per-site allowlist, per-site switch for element hiding, element picker, procedural selectors, filter-list subscriptions by URL, a per-page breakdown of what each list blocked, an engine health card, a count of cookie banners rejected.
-- Interface: 70 languages, including right-to-left Arabic, Hebrew, Persian and Urdu; translations other than English, Bulgarian, Italian and German are machine-assisted.
+- Interface: 73 languages, including right-to-left Arabic, Hebrew, Persian and Urdu; translations other than English, Bulgarian, Italian and German are machine-assisted.
 
 ## Privacy
 

@@ -7,10 +7,6 @@ from pathlib import Path
 A = Path(__file__).resolve().parent.parent  # adblock/
 KIT = A / "dist" / "store-kit"
 ver = json.loads((A / "manifest.json").read_text())["version"]
-LOCALES = sorted(p.name for p in (A / "_locales").iterdir() if p.is_dir())
-LANGS = len({l.split("_")[0] for l in LOCALES})  # езиците, не папките (es/es_419, pt_BR/pt_PT, zh_CN/zh_TW)
-# Chrome Web Store не показва тези в листинга си (живата страница, 2026-10-12: 63 от 73) — Chrome пак ги ползва
-CWS_UNLISTED = ["af", "be", "bs", "cy", "gl", "is", "kk", "km", "mn", "zu"]
 listing = (A / "docs" / "STORE_LISTING.md").read_text()
 sub = (A / "docs" / "SUBMISSION.md").read_text()
 
@@ -95,11 +91,11 @@ md = f"""# Supreme AdBlock {ver} — Chrome Web Store: всичко за copy/pa
 
 ## 2b. Store listing → Promo video (YouTube)
 
-По избор. В листинга вече има клип („Supreme Adblock presentation video“, YouTube `uFfqFO_j1OM`, към 2026-10-12). Ако е нашият промо клип отпреди 5.1.8, в третата сцена пише „73 languages“ — верното е 70 (73 са папките в `_locales`); новият рендер казва 70. Само версията за магазина (без сравнение и без „free“) — никога пълната или вертикалната за социалните мрежи (там има „Free“ и сравнение → отново „Red Nickel“). По-добре без клип, отколкото с грешния. Ако в листинга вече е клипът за магазина, остави го — не се сменя с всяка версия. Нов клип: `node tools/promo/render.mjs --cut store` → качи в YouTube `supreme-adblock-promo-<версия>-store-web.mp4` (идва отделно от кита; версията БЕЗ сравнение с други блокери и без „free“ — правилото на CWS за текст в медиите) като Public или Unlisted, заглавие „Supreme AdBlock — ad blocker for Chrome · Carbon Stealth“, миниатюра `{thumb}` (от последния клип за магазина). После постави адреса на видеото в полето **YouTube video** на листинга. Клипът е 35 s, 1080p, със звук. Пълната версия (43 s, със сравнението) е за сайта и YouTube канала — НЕ я слагай в листинга.
+По избор. Листингът в момента е без клип. Само версията за магазина (без сравнение и без „free“) — никога пълната или вертикалната за социалните мрежи (там има „Free“ и сравнение → отново „Red Nickel“). По-добре без клип, отколкото с грешния. Ако в листинга вече е клипът за магазина, остави го — не се сменя с всяка версия. Нов клип: `node tools/promo/render.mjs --cut store` → качи в YouTube `supreme-adblock-promo-<версия>-store-web.mp4` (идва отделно от кита; версията БЕЗ сравнение с други блокери и без „free“ — правилото на CWS за текст в медиите) като Public или Unlisted, заглавие „Supreme AdBlock — ad blocker for Chrome · Carbon Stealth“, миниатюра `{thumb}` (от последния клип за магазина). После постави адреса на видеото в полето **YouTube video** на листинга. Клипът е 35 s, 1080p, със звук. Пълната версия (43 s, със сравнението) е за сайта и YouTube канала — НЕ я слагай в листинга.
 
 ## 3. Store listing → Additional languages
 
-Готово описание за всеки от {len(LOCALES)}-те локала ({LANGS} езика — es/es_419, pt_BR/pt_PT и zh_CN/zh_TW са варианти) е в `listing/<код>.txt` (кодът = папката в `_locales`). В dashboard-а: **Add language** → избери езика → постави съдържанието на файла в Description. Магазинът показва {len(LOCALES) - len(CWS_UNLISTED)} от тях („{len(LOCALES) - len(CWS_UNLISTED)} languages“ в Details): {", ".join(CWS_UNLISTED)} не са в неговия списък — ако ги няма в Add language, пропусни ги; разширението пак е на тези езици за хората с Chrome на тях. Title остава „Supreme AdBlock“; Summary идва от manifest-а (`extDescription` е преведен). Преводите извън en/bg/it/de са машинно подпомогнати — ако имаш носител на езика, дай му ги да ги прегледа преди да ги поставиш.
+Готово описание за ВСЕКИ от {len(list((A / "_locales").iterdir()))}-те езика е в `listing/<код>.txt` (кодът = папката в `_locales`). В dashboard-а: **Add language** → избери езика → постави съдържанието на файла в Description. Title остава „Supreme AdBlock“; Summary идва от manifest-а (`extDescription` е преведен). Преводите извън en/bg/it/de са машинно подпомогнати — ако имаш носител на езика, дай му ги да ги прегледа преди да ги поставиш.
 
 Пълните bg/it/de описания (от `docs/STORE_LISTING.md`):
 
