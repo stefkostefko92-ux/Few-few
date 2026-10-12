@@ -1,0 +1,8 @@
+[Unit]
+Description=Самолечение на TLS сертификатите (подновяване + презареждане на nginx)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/cert-watch

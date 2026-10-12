@@ -185,6 +185,19 @@ ZIP отпреди месец.
   `/opt/few-few/shared/SupremeDiscordBot/` (реален инцидент, 17.09.2026 — гейт
   `tools/vps/autodeploy-env.test.mjs`). Нов продукт с `.env` в release папката трябва да
   следва същия модел, не да пренася само от `current`.
+- **TLS сертификатите се самолекуват** (`deploy/cert-watch/`, инсталира се от всеки деплой).
+  Реален инцидент 10.10.2026: сертификатът на vizitka-bg.com изтече и сайтът падна, макар
+  `certbot.timer` да подновяваше другите сертификати на машината. Причината: `--webroot`
+  подновяване зад nginx блок, който пренасочва и `/.well-known/acme-challenge/` към https,
+  плюс `certonly` не презарежда nginx. Сега:
+  - ежедневният `cert-watch.timer` подновява всеки сертификат с ≤30 дни. При провал
+    повтаря с nginx плъгина, който работи и зад пренасочване и запомня метода;
+  - презарежда nginx, ако той държи стар сертификат;
+  - при ≤7 дни отчита провал (`systemctl --failed`, таблото);
+  - deploy hookът `/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh` презарежда
+    nginx след всяко подновяване.
+
+  Ръчна проверка: `systemctl start cert-watch && journalctl -u cert-watch -n 20`.
 - Скриптът е **идемпотентен** и прави бекъп преди презапис на medqr.
 - Първоначалната настройка на сървъра (юзъри, `ufw`, systemd unit, Nginx/Caddy, TLS) се
   прави веднъж — виж `zabobovdol/DEPLOY.md` и `medqr/deploy/DEPLOY.md`.

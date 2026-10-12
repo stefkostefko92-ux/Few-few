@@ -1714,6 +1714,29 @@ for p in $PROJECTS; do
   esac
 done
 
+# ── 3z) Самолечение на TLS сертификатите (всички продукти на машината) ───────────
+# При всеки деплой (идемпотентно): cert-watch таймер + deploy hook за nginx. Без тях
+# сертификатът на vizitka-bg.com изтече на 10.10.2026 — webroot подновяването падаше
+# зад http→https пренасочването, а успешно подновен сертификат и без това не стигаше
+# до nginx без reload. Подробно: deploy/cert-watch/cert-watch.sh. Не пипа сертификати
+# сам — само инсталира; самото подновяване е работа на таймера.
+install_cert_watch() {
+  local cw="$SRC/deploy/cert-watch"
+  [ -d "$cw" ] || return 0
+  command -v certbot >/dev/null || return 0
+  command -v systemctl >/dev/null || return 0
+  install -m 755 "$cw/cert-watch.sh" /usr/local/sbin/cert-watch
+  install -D -m 755 "$cw/reload-nginx.sh" /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
+  install -m 644 "$cw/cert-watch.service" /etc/systemd/system/cert-watch.service
+  install -m 644 "$cw/cert-watch.timer" /etc/systemd/system/cert-watch.timer
+  systemctl daemon-reload
+  systemctl enable --now cert-watch.timer >/dev/null 2>&1 || warn "cert-watch.timer не тръгна"
+  # Таймерът на самия certbot (от пакета) — ако по някаква причина е изключен.
+  systemctl enable --now certbot.timer >/dev/null 2>&1 || true
+  ok "cert-watch: ежедневно самолечение на сертификатите е активно"
+}
+install_cert_watch || warn "cert-watch не се инсталира — сертификатите се подновяват само от certbot.timer"
+
 # ── 4) Маркирай текущия release + почисти старите ─────────────────────────────
 # Само УСПЕШЕН пробег става `current`.
 #
