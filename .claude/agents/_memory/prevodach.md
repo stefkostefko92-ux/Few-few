@@ -6,6 +6,7 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-10-12:** Адресатът в ПРЕДАВАНЕ трябва да е id на агент (напр. ai-djiyata), не показно име (AI-джията) — dod-check.mjs го отхвърля. _(всички агенти; verified; .claude/hooks/dod-check.mjs (Stop hook feedback))_
 - **2026-10-12:** Déjà test/i18n.mjs сравнява placeholders с JSON.stringify и маркерите като сортиран списък; extName трябва да започва с 'Déjà — ' и да е ≤75, extDesc ≤132, листингът SHORT ≤132 и TITLE == extName, броят ✓ = този в en.txt (14). _(deja i18n; verified; deja/test/i18n.mjs:62-89)_
 - **2026-10-12:** Déjà test/i18n.mjs KEEP check: ако en съобщението съдържа Déjà/Chrome/Gemini Nano/Hugging Face/huggingface.co/✓/https://, преводът трябва да ги съдържа като подниз — изпускане на марката в кратък линк (supportLink) чупи теста; склонени форми (Déjàn, Chromen, Gemini Nanolla) минават. _(deja i18n; verified; deja/test/i18n.mjs:41-70)_
 - **2026-07-16:** Каноничните таглайни на Déjà живеят в _locales: EN 'You've seen it. Déjà finds it.', IT «L'hai visto. Déjà lo ritrova.» — използвай ги дословно, не превеждай наново. _("deja glossary"; verified; "/home/user/Few-few/deja/_locales/{en,it}/messages.json:9")_
