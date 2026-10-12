@@ -337,7 +337,8 @@ src/components/lift/ Екранът: LiftWorkspace (състоянието — �
                      (проверява моделите на части в браузъра, „Usa questo argano“ — и в калкулатора на подмяната) + AdviceView
                      (картите, причината, таблицата с всички и отпадналите, алтернативата с ролка; само за четене на записаните
                      проект и изчисление).
-src/app/             [locale]/… страниците, api/ (health, billing/webhook — Stripe с проверен подпис, relazione PDF, DXF на проект, PDF на комплект, lista-verifica,
+src/app/             [locale]/… страниците, api/ (health, logout — „Esci“ като обикновен POST само от страниците на приложението
+                     (`lib/same-origin.ts`), billing/webhook — Stripe с проверен подпис, relazione PDF, DXF на проект, PDF на комплект, lista-verifica,
                      lift-designs/<id>/pdf|dxf|dwg — износ на записания проект, lift-designs|calculations/<id>/order/docx|pdf —
                      чернова на поръчка на машината, room-designs/<id>/relazione|pdf|dxf|dwg — документите на подмяната), robots,
                      sitemap, llms.txt; [locale]/pricing — цената от Stripe (`monthlyPrice`, отговорът се пази 10 минути;
@@ -396,7 +397,8 @@ src/components/rilievi/  SchedaForm (формата: отговорите на �
                      отговора; модулите като спецификации от страницата) + EditLead (редът „Ultima modifica“ в главата на
                      промяната, обновен при конфликт) + FieldInput,
                      MisureBlock, ModuloBlock, use-scheda-form (правилата на app.js на rilievi върху формата; връзките на
-                     приложението при непазени промени — пълно зареждане, за да пита браузърът), SectionIndex,
+                     приложението и другите формуляри при непазени промени — пълно зареждане, за да пита браузърът;
+                     `lib/rilievi/leave.ts`), SectionIndex,
                      LiveSearch (търсенето по адреса), Results (таблицата/картите и празните състояния), parts (табелата, таблицата
                      на мерките, маркираните думи, страниците), ActionButton (кошче/възстановяване/окончателно), Confirm,
                      Flash (`?ok=`), PrintTools, RilieviHead.

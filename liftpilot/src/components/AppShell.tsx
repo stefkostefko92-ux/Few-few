@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { getLocale, getTranslations } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { PROFILO } from '@/calc/norme';
 import { can } from '@/lib/rbac';
@@ -7,7 +7,6 @@ import type { SessionUser } from '@/lib/auth';
 import { billingConfigured } from '@/lib/billing-config';
 import { EMBLEM } from '@/lib/brand';
 import { initials } from '@/lib/dashboard';
-import { logoutAction } from '@/server/auth-actions';
 import Icon from './Icon';
 import NavLinks, { ShellLink, type NavGroup, type NavItem } from './NavLinks';
 import { DrawerPanel, DrawerRoot, DrawerToggle } from './shell/Drawer';
@@ -25,8 +24,8 @@ function Emblem() {
 // is a drawer the top bar's button opens (shell/Drawer). The page, the banners and the footer are the main column.
 // No bell: the application has no notifications to show.
 export default async function AppShell({ user, banners, footer, children }: { user: SessionUser; banners: ReactNode; footer: ReactNode; children: ReactNode }) {
-  const [t, tp, tr, ta, tl, locale] = await Promise.all([
-    getTranslations('nav'), getTranslations('projects'), getTranslations('roles'), getTranslations('account'), getTranslations('legal'), getLocale(),
+  const [t, tp, tr, ta, tl] = await Promise.all([
+    getTranslations('nav'), getTranslations('projects'), getTranslations('roles'), getTranslations('account'), getTranslations('legal'),
   ]);
   const work: NavItem[] = [
     { key: 'dashboard', href: '/app', label: t('dashboard'), icon: 'layout-dashboard' },
@@ -75,8 +74,8 @@ export default async function AppShell({ user, banners, footer, children }: { us
               <Icon name="user-cog" size={18} />
             </ShellLink>
             <div className="ws-user-actions">
-              <form action={logoutAction} className="ws-logout">
-                <input type="hidden" name="locale" value={locale} />
+              {/* a plain POST, a real page load: with unsaved changes (the Rilievi form) the browser asks first */}
+              <form method="post" action="/api/logout" className="ws-logout">
                 <button type="submit" className="btn btn-sm btn-ghost"><Icon name="log-out" size={16} />{t('logout')}</button>
               </form>
             </div>

@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { DEFAULT_LOCALE, isLocale, type Locale } from '@/i18n/locales';
 import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
-import { endSession, getSessionUser, startSession } from '@/lib/auth';
+import { getSessionUser, startSession } from '@/lib/auth';
 import { TERMS_VERSION } from '@/lib/legal';
 import { mailAccount } from '@/lib/account-mail';
 import { mailConfigured } from '@/lib/mail';
@@ -70,14 +70,6 @@ async function signInPending(email: string, password: string, locale: Locale): P
     if (token) mailAccount(email, locale, { kind: 'verify', token, terms: p.termsVersion === TERMS_VERSION });
   }
   return { error: 'unverified' };
-}
-
-export async function logoutAction(fd: FormData): Promise<void> {
-  const locale = localeOf(fd);
-  const user = await getSessionUser();
-  await endSession();
-  if (user) await audit({ companyId: user.companyId, userId: user.id, action: 'LOGOUT', entity: 'User', entityId: user.id });
-  redirect(`/${locale}/login`);
 }
 
 // Own password: the current one is required; every session ends (a new tokenVersion, the sessions deleted), this one

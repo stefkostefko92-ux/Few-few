@@ -86,7 +86,9 @@
   се спира, за да не блокира страницата.
 - **Заглавки:** CSP с nonce на всяка заявка (без inline скриптове), `frame-ancestors 'none'`,
   `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`; HSTS от nginx.
-  Server actions проверяват Origin (Next.js); бисквитката е `SameSite=Lax`.
+  Server actions проверяват Origin (Next.js); единственият route handler, който приема формуляр — изходът
+  (`POST /api/logout`) — прави същата проверка сам (`src/lib/same-origin.ts`: Origin = X-Forwarded-Host/Host,
+  Sec-Fetch-Site same-origin; иначе 403); бисквитката е `SameSite=Lax`.
 - **PDF рендер:** `python3 report/relazione.py` и `report/tavole.py` без shell, с фиксирани аргументи,
   минимална среда (без тайни), таймаут 30 s и таван 25 MB; получават само готовия модел като JSON. Най-много
   2 наведнъж и 8 на опашка (до 20 s), иначе 503 с `Retry-After` — заявки наведнъж не изчерпват паметта.

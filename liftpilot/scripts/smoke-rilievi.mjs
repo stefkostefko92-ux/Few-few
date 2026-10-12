@@ -4,7 +4,7 @@
 // matricola with the live search; its PDF and the two modules' PDFs; the A4 print page; a field refused with its error
 // and the input kept; two windows saving the same sheet (the second sees the conflict, keeps its input, saves
 // knowingly, the notice focused); leaving a form with unsaved changes through
-// the app's links asks first; the page after a save opens at its top; the whole row of the list opens the sheet; the
+// the app's links, «Esci» or the top bar's search asks first; the page after a save opens at its top; the whole row of the list opens the sheet; the
 // tab named after the sheet; the activity log; to the trash and back. Returns the sheet's address for the isolation
 // check.
 import assert from 'node:assert/strict';
@@ -110,16 +110,21 @@ export async function rilieviFlow({ BASE, page, hydrated }) {
   assert.equal(await page.inputValue('#f-portataKg'), '63O', 'the input kept');
   assert.equal(await page.evaluate(() => globalThis.document.activeElement?.id), 'error-summary', 'the summary focused');
   await page.fill('#f-portataKg', '630');
-  // unsaved changes: the breadcrumb asks before leaving (the browser's own question), «Annulla» too; staying keeps the input
+  // unsaved changes: the breadcrumb asks before leaving (the browser's own question), «Annulla», «Esci» and the top
+  // bar's search too; staying keeps the input (and the session)
   const asked = [];
   const onDialog = (d) => { asked.push(d.type()); void d.dismiss(); };
   page.on('dialog', onDialog);
   await page.click('main nav.crumbs-nav a[href$="/app/rilievi"]');
   await page.click('form[data-scheda-form] .savebar a');
+  await page.click('.ws-logout button[type="submit"]');
+  await page.fill('#ws-q', matricola);
+  await page.press('#ws-q', 'Enter');
   await page.waitForTimeout(500);
   page.off('dialog', onDialog);
-  assert.deepEqual(asked, ['beforeunload', 'beforeunload'], 'leaving with unsaved changes asks first');
+  assert.deepEqual(asked, ['beforeunload', 'beforeunload', 'beforeunload', 'beforeunload'], 'leaving with unsaved changes asks first');
   assert.ok(page.url().endsWith('/modifica') && (await page.inputValue('#f-portataKg')) === '630', 'stayed, the input kept');
+  assert.equal((await page.request.get(`${sheetUrl}/modifica`, { maxRedirects: 0 })).status(), 200, 'still signed in');
   // a second window of the same person (a new context with the session's cookie: newPage() pages own their context)
   const second = await page.context().browser().newContext({ viewport: { width: 1360, height: 900 } });
   await second.addCookies(await page.context().cookies());

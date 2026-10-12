@@ -8,9 +8,11 @@
 // Leaving: in rilievi every link was a page load, so the browser's own «leave the page?» covered them all. Here the
 // app's links (the sidebar, the breadcrumb, «Annulla») move inside the page; while the form is dirty such a click is
 // turned into a real page load, so the same browser question comes up (a new tab, a modified click, a link within the
-// page stay as they are).
+// page stay as they are). Another form sent meanwhile (the top bar's search) is sent by the browser itself, a page
+// load with the same question (lib/rilievi/leave.ts); «Esci» is a plain POST already (api/logout).
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import type { FormValues } from '@/lib/rilievi/field-parsers';
+import { browserSendable } from '@/lib/rilievi/leave';
 import { misureCount } from '@/lib/rilievi/misure';
 import { misureRowsFor, prefillInput, valuesOfForm } from '@/lib/rilievi/prefill-client';
 
@@ -112,6 +114,15 @@ export function useSchedaForm(form: RefObject<HTMLFormElement | null>, initial: 
       e.stopPropagation();
       window.location.assign(to.href);
     };
+    // another form sent while dirty (capture, on the document, before the app's own handler): the browser sends it
+    const onOtherSubmit = (e: SubmitEvent): void => {
+      const other = e.target;
+      if (!isDirty || e.defaultPrevented || !(other instanceof HTMLFormElement) || other === el) return;
+      const by = e.submitter;
+      const action = by?.hasAttribute('formaction') ? by.getAttribute('formaction') : other.getAttribute('action');
+      const names = [...Array.from(other.elements, (c) => c.getAttribute('name') ?? ''), by?.getAttribute('name') ?? ''];
+      if (browserSendable(action, names)) e.stopPropagation();
+    };
     el.addEventListener('input', onInput);
     el.addEventListener('change', onChange);
     el.addEventListener('pointerdown', onPointerDown);
@@ -119,6 +130,7 @@ export function useSchedaForm(form: RefObject<HTMLFormElement | null>, initial: 
     el.addEventListener('submit', onSubmit);
     window.addEventListener('beforeunload', onLeave);
     document.addEventListener('click', onLinkClick, true);
+    document.addEventListener('submit', onOtherSubmit, true);
     return () => {
       el.removeEventListener('input', onInput);
       el.removeEventListener('change', onChange);
@@ -127,6 +139,7 @@ export function useSchedaForm(form: RefObject<HTMLFormElement | null>, initial: 
       el.removeEventListener('submit', onSubmit);
       window.removeEventListener('beforeunload', onLeave);
       document.removeEventListener('click', onLinkClick, true);
+      document.removeEventListener('submit', onOtherSubmit, true);
     };
   }, [form]);
 

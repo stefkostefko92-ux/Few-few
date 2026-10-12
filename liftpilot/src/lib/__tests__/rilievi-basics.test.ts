@@ -10,6 +10,7 @@ import { errorAnchorOf, errorLabelOf, errorParamsOf, errorTextOf, flashOf, input
 import { moduloLookup, moduloSpecs } from '@/lib/rilievi/ordini/form';
 import { rilieviTranslator } from '@/lib/rilievi/i18n';
 import { bodyOf, listParamsSchema, MAX_FORM_FIELDS, schedaIdSchema } from '@/lib/rilievi/inputs';
+import { browserSendable } from '@/lib/rilievi/leave';
 import { MISURA_COLUMNS } from '@/lib/rilievi/misure';
 import { misureRowsFor, prefillInput, surveyText } from '@/lib/rilievi/prefill-client';
 import { businessDay, dateFromDay, dayFromDate } from '@/lib/rilievi/time';
@@ -144,5 +145,19 @@ describe('the browser’s rules', () => {
 
   it('show a row of measurements per stop typed, 1..300', () => {
     assert.deepEqual(['6', ' 8 ', '0', '301', 'tre', '', '-1'].map((v) => misureRowsFor(v)), [6, 8, 0, 0, 0, 0, 0]);
+  });
+});
+
+describe('leaving the form with unsaved changes: another form the browser sends itself', () => {
+  it('sends a form whose action is an address (the top bar\'s search, «Esci»)', () => {
+    assert.equal(browserSendable('/it/app', ['q']), true);
+    assert.equal(browserSendable('/api/logout', ['']), true);
+    assert.equal(browserSendable(null, ['q']), true);
+  });
+  it('leaves to the app a form whose action is its function (drawn in the browser or on the server)', () => {
+    assert.equal(browserSendable("javascript:throw new Error('A React form was unexpectedly submitted.')", ['id']), false);
+    assert.equal(browserSendable(' JavaScript:void 0', []), false);
+    assert.equal(browserSendable(null, ['$ACTION_REF_1', '$ACTION_1:0', 'id']), false);
+    assert.equal(browserSendable(null, ['$ACTION_ID_7f3a']), false);
   });
 });
