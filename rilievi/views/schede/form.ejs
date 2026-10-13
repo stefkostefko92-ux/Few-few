@@ -8,7 +8,7 @@
     if (key === identifiersErrorKey) return t('scheda.identifiers');
     if (key === 'riepilogoOrdini') return t('riepilogo.title');
     const moduloField = moduloFieldOf(key);
-    if (moduloField) return t('ordini.errorLabel', { label: moduloField.field.label, fornitore: moduloField.slot.modulo.fornitore });
+    if (moduloField) return t('ordini.errorLabel', { label: moduloField.field.label, fornitore: moduloField.slot.modulo.fornitore || moduloField.slot.modulo.titolo });
     const misura = misuraOf(key);
     if (misura) return t('scheda.misure.errorLabel', { col: t('scheda.misure.col.' + misura.column.key), n: misura.n });
     return t('scheda.field.' + key);
@@ -77,8 +77,9 @@
     <div class="grid">
       <% for (const field of section.fields) { %><%- include('_field', { field, value: values[field.key], error: errors[field.key] }) %>
       <% if (field.misure) { %><%- include('_misure') %><% } %>
-      <% for (const slot of moduli.filter((s) => s.column === field.modulo)) { %><%- include('_modulo', { slot }) %><% } %>
       <% } %>
+      <%# Модулите на доставчиците — в края на раздела си, след полетата на въпроса им (брой окачвания). %>
+      <% for (const field of section.fields) { for (const slot of moduli.filter((s) => s.column === field.modulo)) { %><%- include('_modulo', { slot }) %><% } } %>
     </div>
   </fieldset>
   <% }) %>

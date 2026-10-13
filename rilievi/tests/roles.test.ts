@@ -58,6 +58,13 @@ describe('the seven levels', () => {
     );
   });
 
+  it('lets the company ADMIN and the MASTER set the order of the sheet sections', () => {
+    assert.deepEqual(
+      ALL_ROLES.filter((role) => can(role, 'aziende:settings')),
+      ['MASTER', 'ADMIN'],
+    );
+  });
+
   it('treats only MASTER and ADMIN as privileged (shorter sessions)', () => {
     assert.deepEqual(ALL_ROLES.filter(isPrivileged), ['MASTER', 'ADMIN']);
   });

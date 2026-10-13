@@ -7,6 +7,7 @@ import { moduloFieldOf, withPrefill } from '../ordini/form.js';
 import { SLOTS } from '../ordini/registry.js';
 import { activeFields, SECTIONS } from '../schede/fields.js';
 import { MAX_MISURE, misuraOf, misuraTemplateRow, misureFormRows } from '../schede/misure.js';
+import { sezioniOrdinate } from '../schede/ordine.js';
 import type { SchedaFull } from '../schede/service.js';
 import {
   formValuesFromBody,
@@ -30,6 +31,8 @@ export interface FormView {
   azienda: string;
   /** Записът спря заради разминавания между картата и модулите — показва се списъкът им с „Salva comunque“. */
   conferma?: boolean;
+  /** Редът на разделите на фирмата за нова карта (при редакция — този на картата, `scheda.azienda`). */
+  ordineSezioni?: readonly string[];
 }
 
 export function renderForm(req: Request, res: Response, status: number, view: FormView): void {
@@ -54,7 +57,10 @@ export function renderForm(req: Request, res: Response, status: number, view: Fo
     ...view,
     showAzienda: spansAziende(scope(req, 'schede:read')),
     values,
-    sections: SECTIONS,
+    sections: sezioniOrdinate(
+      SECTIONS,
+      view.scheda?.azienda.ordineSezioni ?? view.ordineSezioni ?? [],
+    ),
     identifiersErrorKey: IDENTIFIERS_ERROR_KEY,
     aziendaErrorKey: AZIENDA_ERROR_KEY,
     // Кои полета с условие се виждат при отварянето (app.js ги следи после, докато се пише).

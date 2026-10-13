@@ -55,7 +55,8 @@ function textToken(token: PrefillToken, ctx: PrefillContext): string {
     case 'email':
       return ctx.email;
     case 'tipoImpianto':
-    case 'tipoPorte': {
+    case 'tipoPorte':
+    case 'ubicazioneMacchina': {
       const list = ctx.values[token];
       return Array.isArray(list) ? list.map((v) => ctx.etichetta(token, v)).join(', ') : '';
     }

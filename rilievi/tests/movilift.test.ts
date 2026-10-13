@@ -98,7 +98,11 @@ describe('the MoviLift order form', () => {
   it('opens under the question of the panel order only for its own make', () => {
     assert.deepEqual(marcheOf('quadroOrdine'), ['PELAZZA', 'MOVILIFT']);
     assert.deepEqual(fieldByKey('quadroOrdine')?.when?.values, marcheOf('quadroOrdine'));
-    assert.deepEqual(fieldByKey('arganoPreventivo')?.when?.values, marcheOf('arganoPreventivo'));
+    // The argano sheet and the 2SG sheet are for every make: their questions have no condition.
+    for (const question of ['arganoPreventivo', 'sospensioni'] as const) {
+      assert.deepEqual(marcheOf(question), [], question);
+      assert.equal(fieldByKey(question)?.when, undefined, question);
+    }
   });
 });
 
@@ -111,7 +115,7 @@ describe('prefilling the MoviLift order', () => {
       portataKg: '630',
       capienzaPersone: '8',
       fermate: '6',
-      tipoImpianto: ['ELETTRICO', 'GEARLESS'],
+      tipoImpianto: ['ELETTRICO', 'MRL'],
       tipoPorte: ['AUTOMATICHE'],
       operatoreMarca: 'Selcom',
       operatoreTensione: '24 V DC',
@@ -144,7 +148,7 @@ describe('prefilling the MoviLift order', () => {
       riferimento: 'N° 104552 — Via Verdi 14, Milano',
       ragioneSociale: 'Ascensori Rossi Srl',
       email: 'mario@example.it',
-      tipologia: 'Elettrico, Gearless',
+      tipologia: 'Elettrico, MRL',
       tipoPorte: 'Automatiche',
       marcaOpA: 'SELCOM',
       voltA: '24Vcc',
@@ -233,7 +237,7 @@ describe('the MoviLift order among the linked data', () => {
       {
         key: 'ingressi',
         voci: [
-          { luogo: 'scheda', valore: 'Sì' },
+          { luogo: 'scheda', valore: '2' },
           { luogo: 'om', valore: 'Operatore Unico' },
         ],
       },
@@ -320,14 +324,14 @@ describe('saving the MoviLift order', () => {
           pianoB1: '-',
         },
       },
-      arganoMarca: null,
       arganoPreventivo: null,
       preventivoArgano: null,
+      sospensioni: null,
+      ordineSospensioni: null,
     };
     assert.deepEqual(riepilogoModuli(scheda), [
       {
-        titolo: MOVILIFT.titolo,
-        fornitore: 'MoviLift',
+        nome: 'Modulo ordine quadro (Scelta v2.6) · MoviLift',
         gruppi: [
           {
             titolo: 'Impianto',

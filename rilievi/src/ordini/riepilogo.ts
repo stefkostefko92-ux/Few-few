@@ -1,5 +1,5 @@
 import type { Scheda } from '@prisma/client';
-import type { ModuloField } from './moduli.js';
+import { nomeModulo, type ModuloField } from './moduli.js';
 import { SLOTS } from './registry.js';
 import { storedValori } from './valori.js';
 
@@ -18,8 +18,8 @@ export interface RiepilogoGruppo {
 }
 
 export interface RiepilogoModulo {
-  titolo: string;
-  fornitore: string;
+  /** „Modulo d'ordine quadri · Pelazza Peppino“; листът за аргано — само заглавието. */
+  nome: string;
   gruppi: RiepilogoGruppo[];
 }
 
@@ -47,16 +47,18 @@ type SchedaModuli = Pick<
   | 'quadroMarca'
   | 'quadroOrdine'
   | 'ordineQuadro'
-  | 'arganoMarca'
   | 'arganoPreventivo'
   | 'preventivoArgano'
+  | 'sospensioni'
+  | 'ordineSospensioni'
 >;
 
 export function riepilogoModuli(scheda: SchedaModuli): RiepilogoModulo[] {
   if (!scheda.riepilogoOrdini) return [];
   const out: RiepilogoModulo[] = [];
   for (const slot of SLOTS) {
-    if (scheda[slot.question] !== true || scheda[slot.marca.field] !== slot.marca.value) continue;
+    if (scheda[slot.question] !== true) continue;
+    if (slot.marca && scheda[slot.marca.field] !== slot.marca.value) continue;
     const valori = storedValori(slot.modulo, scheda[slot.column]);
     if (!valori) continue;
     const groups: readonly Gruppo[] = slot.modulo.gruppi;
@@ -74,7 +76,7 @@ export function riepilogoModuli(scheda: SchedaModuli): RiepilogoModulo[] {
       })
       .filter((gruppo) => gruppo.spunte.length > 0 || gruppo.testi.length > 0);
     if (gruppi.length > 0) {
-      out.push({ titolo: slot.modulo.titolo, fornitore: slot.modulo.fornitore, gruppi });
+      out.push({ nome: nomeModulo(slot.modulo), gruppi });
     }
   }
   return out;

@@ -10,14 +10,14 @@ import {
   stessoValore,
 } from '../src/ordini/collegati.js';
 import { withPrefill } from '../src/ordini/form.js';
-import { MONTANARI, PELAZZA } from '../src/ordini/moduli.js';
+import { ARGANI, nomeModulo, PELAZZA, SG } from '../src/ordini/moduli.js';
 import { riepilogoModuli } from '../src/ordini/riepilogo.js';
 
 const t = translatorFor('it');
 
 /**
- * A sheet with the Pelazza and Montanari forms open, as the browser sends it: the MoviLift form is on
- * the page too, hidden, and it has been filled when the page was first served.
+ * A sheet with the Pelazza order and the argano sheet open, as the browser sends it: the MoviLift form
+ * is on the page too, hidden, and it has been filled when the page was first served.
  */
 const open = {
   data: '2026-10-12',
@@ -26,7 +26,6 @@ const open = {
   quadroOrdine: 'si',
   'oq-_': '1',
   'om-_': '1',
-  arganoMarca: 'MONTANARI',
   arganoPreventivo: 'si',
   'pa-_': '1',
 };
@@ -55,10 +54,7 @@ describe('numbers in the data the sheet and the orders share', () => {
 
 describe('what disagrees between the sheet and the two forms', () => {
   it('lists the stops when the sheet and an order say different numbers, every place in order', () => {
-    const found = discrepanzeDi(
-      { ...open, fermate: '5', 'oq-nFermate': '6', 'pa-fermate': '5' },
-      t,
-    );
+    const found = discrepanzeDi({ ...open, fermate: '5', 'oq-nFermate': '6', 'pa-piani': '5' }, t);
     assert.deepEqual(found, [
       {
         key: 'fermate',
@@ -98,38 +94,28 @@ describe('what disagrees between the sheet and the two forms', () => {
   });
 
   it('calls the boxes different only when they have nothing in common', () => {
-    assert.deepEqual(discrepanzeDi({ ...open, 'oq-tq2Velocita': 'si', 'pa-vvvf': 'si' }, t), [
-      {
-        key: 'tipoVelocita',
-        voci: [
-          { luogo: 'oq', valore: '2 Velocità' },
-          { luogo: 'pa', valore: 'VVVF' },
-        ],
-      },
-    ]);
-    assert.deepEqual(discrepanzeDi({ ...open, 'oq-tqVvvfChiuso': 'si', 'pa-vvvf': 'si' }, t), []);
-    // EN 81-1 exists only on the Montanari form: against EN 81-20 it is another standard.
-    const norme = discrepanzeDi({ ...open, 'oq-normaEn8120': 'si', 'pa-normaEn811': 'si' }, t);
     assert.deepEqual(
-      norme.map((d) => d.key),
-      ['norma'],
+      discrepanzeDi({ ...open, 'oq-tq2Velocita': 'si', 'pa-motoreInverter': 'si' }, t),
+      [
+        {
+          key: 'tipoVelocita',
+          voci: [
+            { luogo: 'oq', valore: '2 Velocità' },
+            { luogo: 'pa', valore: 'Inverter' },
+          ],
+        },
+      ],
     );
-    // "Laterale" is only on the Montanari form: it says nothing about high or low.
-    const side = { ...open, ubicazioneMacchina: ['ALTO'], 'pa-macchinaLaterale': 'si' };
-    assert.deepEqual(discrepanzeDi(side, t), []);
-    const low = discrepanzeDi({ ...side, 'pa-macchinaBasso': 'si' }, t);
-    assert.deepEqual(low, [
-      {
-        key: 'macchina',
-        voci: [
-          { luogo: 'scheda', valore: t('scheda.option.ubicazioneMacchina.ALTO') },
-          { luogo: 'pa', valore: 'IN BASSO' },
-        ],
-      },
-    ]);
+    assert.deepEqual(
+      discrepanzeDi({ ...open, 'oq-tqVvvfChiuso': 'si', 'pa-motoreInverter': 'si' }, t),
+      [],
+    );
+    // The argano sheet writes the machine room as words: filled from the survey, never compared.
+    const words = { ...open, ubicazioneMacchina: ['ALTO'], 'pa-macchina': 'Basso' };
+    assert.deepEqual(discrepanzeDi(words, t), []);
   });
 
-  it('compares the speed, the travel and the motor and brake voltages of the two orders', () => {
+  it('compares the speed, the travel and the brake voltage of the order and the argano sheet', () => {
     const found = discrepanzeDi(
       {
         ...open,
@@ -137,10 +123,8 @@ describe('what disagrees between the sheet and the two forms', () => {
         'pa-velocita': '1.6',
         'oq-corsa': '12',
         'pa-corsa': '12,0',
-        'oq-motVca': '400',
-        'pa-motoreVoltaggio': '400 V',
         'oq-circuitoFrenoVcc': '48',
-        'pa-frenoVoltaggio': '180',
+        'pa-tensioneFreno': '180',
       },
       t,
     );
@@ -183,23 +167,25 @@ describe('filling a form from the sheet and from the other form', () => {
       'oq-motVca': '400',
       'oq-circuitoFrenoVcc': '48',
       'oq-tq2Velocita': 'si',
-      'oq-normaEn8120': 'si',
+      funiTrefoli: '8',
     });
+    // The motor voltage of the panel is not on the argano sheet: it stays where it is.
     assert.deepEqual(valori, {
-      fermate: '5',
+      piani: '5',
       velocita: '1,0',
-      ac2: true,
+      motoreAc2: true,
       corsa: '12',
       portata: '630',
-      normaEn8120: true,
-      motoreVoltaggio: '400',
-      frenoVoltaggio: '48',
+      tensioneFreno: '48',
+      trefoli: '8',
     });
   });
 
   it('ticks a box only when exactly one box means it', () => {
-    assert.deepEqual(prefillCollegati('oq', { ...open, 'pa-vvvf': 'si' }), {});
-    assert.deepEqual(prefillCollegati('oq', { ...open, 'pa-ac1': 'si' }), { tq1Velocita: true });
+    assert.deepEqual(prefillCollegati('oq', { ...open, 'pa-motoreInverter': 'si' }), {});
+    assert.deepEqual(prefillCollegati('oq', { ...open, 'pa-motoreAc1': 'si' }), {
+      tq1Velocita: true,
+    });
   });
 
   it('takes nothing from a closed form or a hidden field', () => {
@@ -221,10 +207,10 @@ describe('a form that comes back (an error, the confirmation)', () => {
       etichetta: (campo: string, valore: string) => t(`scheda.option.${campo}.${valore}`),
     };
     const { auto } = withPrefill(
-      { ...open, [AUTO_KEY]: 'oq-nFermate pa-ac2 oq-cliente oq-nonEsiste fermate' },
+      { ...open, [AUTO_KEY]: 'oq-nFermate pa-motoreAc2 oq-cliente oq-nonEsiste fermate' },
       ctx,
     );
-    assert.deepEqual([...auto].sort(), ['oq-nFermate', 'pa-ac2']);
+    assert.deepEqual([...auto].sort(), ['oq-nFermate', 'pa-motoreAc2']);
   });
 });
 
@@ -239,7 +225,7 @@ describe('the linked data themselves', () => {
   });
 
   it('put the list of differences under the group of the form where the field is', () => {
-    const groupOf = (titolo: string, modulo: typeof PELAZZA | typeof MONTANARI) => {
+    const groupOf = (titolo: string, modulo: typeof PELAZZA | typeof ARGANI) => {
       const group = modulo.gruppi.find((g) => g.titolo === titolo);
       assert.ok(group, titolo);
       return group.righe.flatMap((row) => row.campi.map((field) => field.key));
@@ -251,10 +237,14 @@ describe('the linked data themselves', () => {
       'porte',
       'accessi',
     ]);
-    assert.deepEqual(collegatiDelGruppo('pa', groupOf('Motore & freno', MONTANARI)), [
+    assert.deepEqual(collegatiDelGruppo('pa', groupOf('Motore', ARGANI)), [
       'tipoVelocita',
-      'tensioneMotore',
       'tensioneFreno',
+    ]);
+    assert.deepEqual(collegatiDelGruppo('pa', groupOf('Trazione e funi', ARGANI)), [
+      'funiNumero',
+      'funiDiametro',
+      'funiTrefoli',
     ]);
     assert.deepEqual(collegatiDelGruppo('oq', groupOf('Accessori', PELAZZA)), []);
   });
@@ -270,17 +260,17 @@ describe('the orders in the sheet print', () => {
     quadroMarca: 'PELAZZA' as const,
     quadroOrdine: true,
     ordineQuadro: ordine,
-    arganoMarca: 'MONTANARI' as const,
     arganoPreventivo: false,
-    preventivoArgano: { modulo: MONTANARI.id, valori: { mrl: true } },
+    preventivoArgano: { modulo: ARGANI.id, valori: { taglia12: true } },
+    sospensioni: null,
+    ordineSospensioni: null,
   };
 
   it('come in only when the sheet asks for them, with what is filled in', () => {
     assert.deepEqual(riepilogoModuli({ ...scheda, riepilogoOrdini: false }), []);
     assert.deepEqual(riepilogoModuli(scheda), [
       {
-        titolo: PELAZZA.titolo,
-        fornitore: PELAZZA.fornitore,
+        nome: nomeModulo(PELAZZA),
         gruppi: [
           { titolo: 'Intestazione', spunte: ['ORDINE'], testi: [] },
           {
@@ -296,6 +286,29 @@ describe('the orders in the sheet print', () => {
             spunte: [],
             testi: [{ label: 'NOTE', value: 'Consegna in cantiere' }],
           },
+        ],
+      },
+    ]);
+  });
+
+  it('bring the argano sheet by its title alone and the 2SG sheet with its supplier', () => {
+    const tutti = {
+      ...scheda,
+      quadroOrdine: false,
+      arganoPreventivo: true,
+      sospensioni: true,
+      ordineSospensioni: { modulo: SG.id, valori: { automatico: true, ordNo: '77' } },
+    };
+    assert.deepEqual(riepilogoModuli(tutti), [
+      {
+        nome: 'Modulo rilievi dati argani',
+        gruppi: [{ titolo: 'Cabina e corsa', spunte: ['Taglia 1:2'], testi: [] }],
+      },
+      {
+        nome: 'Modulo ordine operatori e sospensioni · 2SG S.r.l.',
+        gruppi: [
+          { titolo: 'Intestazione', spunte: [], testi: [{ label: 'ORD No', value: '77' }] },
+          { titolo: 'Porte di cabina (operatore)', spunte: ['AUTOMATICO'], testi: [] },
         ],
       },
     ]);

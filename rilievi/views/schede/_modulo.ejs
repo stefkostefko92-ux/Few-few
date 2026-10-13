@@ -7,14 +7,15 @@
   // си, докато човекът не пише в него (collegati.js). Под всяка група — разминаванията на нейните
   // свързани данни.
   const name = (key) => slot.prefix + '-' + key;
-  const marcaOn = values[slot.marca.field] === slot.marca.value;
+  // Модул без марка (листът за аргано, 2SG) е отворен при всяка марка — обвивката е без условие.
+  const marcaOn = !slot.marca || values[slot.marca.field] === slot.marca.value;
   // Отворен само ако и въпросът се вижда — иначе „Sì“ е остатък от друга марка.
   const on = active.has(slot.question) && values[slot.question] === 'si';
-%><div class="field--wide" data-when="<%= slot.marca.field %>" data-when-values="<%= slot.marca.value %>"<% if (!marcaOn) { %> data-off<% } %>>
+%><div class="field--wide"<% if (slot.marca) { %> data-when="<%= slot.marca.field %>" data-when-values="<%= slot.marca.value %>"<% } %><% if (!marcaOn) { %> data-off<% } %>>
 <div class="modulo" id="f-<%= slot.prefix %>" data-when="<%= slot.question %>" data-when-values="si"<% if (!on) { %> data-off<% } %> data-modulo>
   <input type="hidden" name="<%= slot.prefix %>-_" value="1">
   <div class="modulo__head">
-    <p class="modulo__title"><strong><%= slot.modulo.titolo %></strong> · <%= slot.modulo.fornitore %></p>
+    <p class="modulo__title"><strong><%= slot.modulo.titolo %></strong><% if (slot.modulo.fornitore) { %> · <%= slot.modulo.fornitore %><% } %></p>
     <p class="field__hint"><%= t('ordini.hint') %></p>
   </div>
   <% for (const group of slot.modulo.gruppi) { %>

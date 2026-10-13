@@ -35,7 +35,8 @@ enum UbicazioneMacchina {
 enum TipoImpianto {
   ELETTRICO
   IDRAULICO
-  GEARLESS
+  /// До октомври 2026 — GEARLESS (собственикът го смени с MRL; миграцията преименува стойността).
+  MRL
 }
 
 enum TipoPorte {
@@ -59,7 +60,8 @@ enum QuadroMarca {
   ALTRO
 }
 
-/// Марката на аргано (машината); при Montanari — тяхното запитване за оферта.
+/// Марката на аргано (машината). От октомври 2026 не се пита (листът с данни е за всеки вид аргано);
+/// колоната остава със старите отговори.
 enum ArganoMarca {
   MONTANARI
   ALTRO
@@ -93,6 +95,9 @@ model Azienda {
   logoUpdatedAt DateTime?
   /// Деактивирана фирма: хората ѝ не влизат и сесиите им падат; картите ѝ остават.
   deactivatedAt DateTime?
+  /// Редът на разделите на картата във фирмата (ключовете от src/schede/fields.ts); празно — редът по
+  /// подразбиране. Подрежда го администраторът ѝ (src/aziende/sezioni.ts).
+  ordineSezioni String[]  @default([])
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -278,16 +283,24 @@ model Scheda {
   operatoreMarca          String?              @db.VarChar(120)
   lucePorte               String?              @db.VarChar(60)
   operatoreTensione       String?              @db.VarChar(60)
+  /// „Accessi: 1 / 2“ на листа — true е 2 достъпа (двоен достъп), false — един.
   doppioAccesso           Boolean?
-  /// Само при ръчни врати; шейната — при ръчни и полуавтоматични, броят — при true.
+  /// Блокировката на вратичките, донивелирането и броят шейни не се питат от октомври 2026 (собственикът
+  /// ги махна от листа); колоните остават със старите отговори.
   bloccaPortine           Boolean?
   autolivellamento        Boolean?
+  /// „Pattino retrattile da cambiare“ — при ръчни и полуавтоматични врати.
   pattinoRetrattile       Boolean?
   pattinoRetrattileNumero Int?
-  /// „Serrature/sospensioni“. null — не е отбелязано; numero/tipo имат смисъл само при true.
+  /// „Serrature da cambiare“ (до октомври 2026 — „Serrature/sospensioni“). numero/tipo — само при true.
   serrature               Boolean?
   serratureNumero         Int?
   serratureTipo           String?              @db.VarChar(120)
+  /// „Sospensioni da cambiare“ — при true броят и листът 2SG (окачванията и операторът на кабината).
+  sospensioni             Boolean?
+  sospensioniNumero       Int?
+  /// Листът 2SG: {modulo, valori}. Има свой PDF.
+  ordineSospensioni       Json?
   /// Осветлението на шахтата е за смяна.
   luceVanoSostituire      Boolean?
   funiDiametroMm          Decimal?             @db.Decimal(6, 2)
@@ -321,9 +334,10 @@ model Scheda {
   ordineQuadro            Json?
   arganoMarca             ArganoMarca?
   arganoMarcaAltro        String?              @db.VarChar(120)
-  /// „Да попълня ли запитването за аргано?“ — само при Montanari.
+  /// „Argano da sostituire?“ (до октомври 2026 — запитването към Montanari).
   arganoPreventivo        Boolean?
-  /// Запитването за оферта на Montanari: {modulo, valori}. Има свой PDF.
+  /// Листът с данните на аргано (за всеки вид): {modulo, valori}. Има свой PDF. Записите с модула на
+  /// Montanari не се четат повече (друг `modulo`).
   preventivoArgano        Json?
   /// Печатът и PDF-ът на картата включват и попълненото в двата модула — изборът се пази в картата.
   riepilogoOrdini         Boolean              @default(false)

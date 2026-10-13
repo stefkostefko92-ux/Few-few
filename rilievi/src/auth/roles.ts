@@ -23,6 +23,7 @@ export type Capability =
   | 'users:manage'
   | 'audit:view'
   | 'aziende:manage'
+  | 'aziende:settings'
   | 'requests:manage';
 
 /** Най-ниската роля (най-голямото число), която още има способността. */
@@ -37,6 +38,8 @@ const REQUIRED: Readonly<Record<Capability, Role>> = {
   'audit:view': 'ADMIN',
   // Фирмите (създаване, лого, деактивиране) — само собственикът на портала.
   'aziende:manage': 'MASTER',
+  // Настройките на фирмата (редът на разделите на картата) — администраторът ѝ и собственикът.
+  'aziende:settings': 'ADMIN',
   // Заявките за достъп от публичната страница: от тях се раждат нови фирми — също само собственикът.
   'requests:manage': 'MASTER',
 };

@@ -87,6 +87,7 @@
 
 /* Когато мястото не стига за икони и имена (най-много точки има MASTER), иконите отпадат първи. */
 @container topnav (max-width: 720px) {
+  .nav[data-count='7'] .icon,
   .nav[data-count='6'] .icon,
   .nav[data-count='5'] .icon {
     display: none;

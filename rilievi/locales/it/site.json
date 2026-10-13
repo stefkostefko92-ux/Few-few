@@ -62,8 +62,8 @@
         "text": "La scheda esce in A4 o in PDF, con il logo della tua azienda in alto e il nome di chi l'ha compilata."
       },
       "orders": {
-        "title": "Ordini quadro e argano dal rilievo",
-        "text": "Con un quadro Pelazza o Movilift, o con un argano Montanari, la scheda compila il modulo originale del fornitore e lo prepara come PDF a parte. Pelazza, Movilift e Montanari sono marchi dei rispettivi titolari."
+        "title": "Moduli d'ordine dal rilievo",
+        "text": "Con un quadro Pelazza o Movilift la scheda compila il modulo d'ordine originale; con l'argano da sostituire, la scheda dati dell'argano; con le sospensioni da cambiare, il modulo 2SG per operatori e sospensioni. Ogni modulo esce come PDF a parte, identico all'originale. Pelazza, Movilift e 2SG sono marchi dei rispettivi titolari."
       },
       "misure": {
         "title": "Misuri le bottoniere piano per piano",

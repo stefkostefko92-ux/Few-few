@@ -247,3 +247,53 @@
   gap: 14px;
   margin-top: 16px;
 }
+
+/* Настройките: редът на разделите — номерът, името, „нагоре/надолу“. */
+.order {
+  display: grid;
+  gap: 6px;
+  margin: 16px 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.order__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 6px 8px 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.order__item--fixed {
+  color: var(--muted);
+}
+
+.order__name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+}
+
+.order__fixed,
+.order__dirty {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.order__moves {
+  display: flex;
+  gap: 6px;
+}
+
+.order__move {
+  width: 44px;
+  padding: 0;
+}
+
+.order-form .toolbar,
+.order-reset {
+  margin-top: 14px;
+}

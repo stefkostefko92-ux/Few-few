@@ -9,9 +9,9 @@ import { getScheda } from '../schede/service.js';
 import { notFound, scope } from './schede-shared.js';
 
 /**
- * PDF-ите на модулите на доставчиците (поръчка на табло Pelazza или MoviLift, запитване за аргано
- * Montanari) — отделно от PDF-а на картата. Същият обхват като картата: чужда, непопълнена или с друга
- * марка — 404.
+ * PDF-ите на модулите (поръчка на табло Pelazza или MoviLift, листът с данни за аргано, листът на 2SG за
+ * окачванията) — отделно от PDF-а на картата. Същият обхват като картата: чужда, непопълнена или с
+ * друга марка — 404.
  * `?inline=1` го отваря в браузъра (за печат), иначе се тегли.
  */
 export const ordiniRouter: Router = Router();
@@ -28,7 +28,7 @@ for (const slot of SLOTS) {
     if (
       !scheda ||
       scheda[slot.question] !== true ||
-      scheda[slot.marca.field] !== slot.marca.value
+      (slot.marca && scheda[slot.marca.field] !== slot.marca.value)
     ) {
       return notFound(req, res);
     }

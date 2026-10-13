@@ -23,6 +23,7 @@ import { aziendeRouter } from './routes/aziende.js';
 import { cestinoRouter } from './routes/cestino.js';
 import { ordiniRouter } from './routes/ordini.js';
 import { healthRouter } from './routes/health.js';
+import { impostazioniRouter } from './routes/impostazioni.js';
 import { requestsRouter } from './routes/requests.js';
 import { schedeRouter } from './routes/schede.js';
 import { siteRouter } from './routes/site.js';
@@ -198,6 +199,7 @@ export function createServer(): Express {
   // След usersRouter: `/utenti/invita` е преди `/utenti/:id`.
   app.use(usersManageRouter);
   app.use(aziendeRouter);
+  app.use(impostazioniRouter);
   app.use(requestsRouter);
   app.use(auditRouter);
 

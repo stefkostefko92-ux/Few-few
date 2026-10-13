@@ -13,7 +13,7 @@ const SURVEY = {
   portataKg: '480',
 };
 
-/** Both supplier forms open, the panel order with speed and travel, as the browser sends them. */
+/** The panel order and the argano sheet open, with speed and travel, as the browser sends them. */
 const ORDERS = {
   quadroMarca: 'PELAZZA',
   quadroOrdine: 'si',
@@ -23,13 +23,12 @@ const ORDERS = {
   'oq-velocita': '1,0',
   'oq-corsa': '12',
   'oq-note': 'Consegna in cantiere',
-  arganoMarca: 'MONTANARI',
   arganoPreventivo: 'si',
   'pa-_': '1',
-  'pa-fermate': '5',
+  'pa-piani': '5',
   'pa-portata': '480',
   'pa-velocita': '1,0',
-  'pa-mrl': 'si',
+  'pa-motoreInverter': 'si',
 };
 
 const fingerprintOf = (body: string): string => {
@@ -55,11 +54,11 @@ describe('data the sheet and the orders share', () => {
     assert.match(asked.body, /2 dati non coincidono tra scheda e ordini/);
     assert.match(
       asked.body,
-      /<strong>Fermate<\/strong> — Scheda: 5 · Ordine quadro: 6 · Richiesta argano: 5/,
+      /<strong>Fermate<\/strong> — Scheda: 5 · Ordine quadro: 6 · Dati argano: 5/,
     );
     assert.match(
       asked.body,
-      /<strong>Velocità \(m\/s\)<\/strong> — Ordine quadro: 1,0 · Richiesta argano: 1,6/,
+      /<strong>Velocità \(m\/s\)<\/strong> — Ordine quadro: 1,0 · Dati argano: 1,6/,
     );
     assert.match(asked.body, /name="oq-nFermate"[^>]*value="6"/, 'what was typed stays on screen');
 
@@ -126,7 +125,7 @@ describe('data the sheet and the orders share', () => {
     // The difference itself changes: asked again.
     const again = await edit({ 'pa-velocita': '1,8' });
     assert.equal(again.status, 422);
-    assert.match(again.body, /Richiesta argano: 1,8/);
+    assert.match(again.body, /Dati argano: 1,8/);
     // Once they agree, nothing is left to confirm.
     assert.equal((await edit({ 'pa-velocita': '1,0' })).status, 303);
     const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
@@ -157,9 +156,9 @@ describe('data the sheet and the orders share', () => {
     await create(browser, { ...SURVEY, ...ORDERS, 'pa-velocita': '1', 'pa-corsa': '12,0' });
   });
 
-  it('opens the argano request with what the panel order already says', async () => {
+  it('opens the argano sheet with what the panel order already says', async () => {
     const { browser } = await signedIn('TECNICO');
-    // The panel order alone: the argano request has never been on screen.
+    // The panel order alone: the argano sheet has never been on screen.
     const panel = Object.fromEntries(
       Object.entries(ORDERS).filter(([key]) => !key.startsWith('pa-') && !key.startsWith('argano')),
     );
@@ -167,8 +166,8 @@ describe('data the sheet and the orders share', () => {
     const form = await browser.get(`/schede/${id}/modifica`);
     assert.match(form.body, /name="pa-velocita"[^>]*value="1,0" data-auto="1,0"/);
     assert.match(form.body, /name="pa-corsa"[^>]*value="12" data-auto="12"/);
-    assert.match(form.body, /name="pa-fermate"[^>]*value="5" data-auto="5"/);
-    assert.match(form.body, /name="pa-ac2" value="si" checked data-auto="si"/);
+    assert.match(form.body, /name="pa-piani"[^>]*value="5" data-auto="5"/);
+    assert.match(form.body, /name="pa-motoreAc2" value="si" checked data-auto="si"/);
     // The panel order was already on screen: nothing there is refilled.
     assert.doesNotMatch(form.body, /name="oq-velocita"[^>]*data-auto/);
     assert.match(form.body, /<script type="application\/json" id="collegati-dati"/);
@@ -182,8 +181,8 @@ describe('data the sheet and the orders share', () => {
     assert.match(print.body, /Modulo d&#39;ordine quadri · Pelazza Peppino/);
     assert.match(print.body, /Velocità m\/s: <strong>1,0<\/strong>/);
     assert.match(print.body, /Consegna in cantiere/);
-    assert.match(print.body, /Richiesta preventivo argani · Montanari Group/);
-    assert.match(print.body, /MRL/);
+    assert.match(print.body, /<h2>Modulo rilievi dati argani<\/h2>/);
+    assert.match(print.body, /Inverter/);
     const pdf = await browser.get(`/schede/${id}/pdf`);
     assert.equal(pdf.status, 200);
     assert.equal(pdf.bytes.subarray(0, 5).toString(), '%PDF-');
@@ -199,7 +198,7 @@ describe('data the sheet and the orders share', () => {
     });
     assert.equal(saved.status, 303);
     const plain = await browser.get(`/schede/${id}/stampa`);
-    assert.doesNotMatch(plain.body, /Consegna in cantiere|Montanari Group/);
+    assert.doesNotMatch(plain.body, /Consegna in cantiere|Modulo rilievi dati argani/);
     assert.equal((await browser.get(`/schede/${id}/ordine-quadro`)).status, 200);
   });
 

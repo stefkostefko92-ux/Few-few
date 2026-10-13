@@ -23,6 +23,7 @@ export type SectionKey =
   | 'funi'
   | 'limitatore'
   | 'cavi'
+  | 'serrature'
   | 'allarme'
   | 'note'
   | 'quadro'
@@ -48,7 +49,7 @@ interface BaseField {
   /** При „Sì“ носи таблицата с мерките на старите бутониери — ред за всяка спирка (misure.ts). */
   misure?: boolean;
   /** При „Sì“ отваря модула на доставчика (src/ordini/) — свой PDF, отделно от картата. */
-  modulo?: 'ordineQuadro' | 'preventivoArgano';
+  modulo?: 'ordineQuadro' | 'preventivoArgano' | 'ordineSospensioni';
 }
 
 export interface TextField extends BaseField {
@@ -70,6 +71,11 @@ export interface OptionsField extends BaseField {
 
 export interface PlainField extends BaseField {
   kind: 'date' | 'yesno';
+  /**
+   * Sì/No със свои думи и в този ред (`scheda.option.<key>.no|si`): „Accessi: 1 / 2“ е „Doppio accesso:
+   * No / Sì“. Записът и свързаните данни остават Sì/No.
+   */
+  risposte?: readonly ['no', 'si'];
 }
 
 export type FieldDef = TextField | NumberField | OptionsField | PlainField;

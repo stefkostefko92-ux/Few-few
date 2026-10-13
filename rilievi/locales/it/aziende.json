@@ -36,5 +36,20 @@
       "logoCorrupt": "Non riesco a leggere questa immagine. Salvala di nuovo come PNG o JPEG e riprova.",
       "logoMissing": "Scegli un file per il logo."
     }
+  },
+  "impostazioni": {
+    "title": "Impostazioni",
+    "choose": "Apri",
+    "error": "L'ordine inviato non è valido. Ecco quello salvato: riprova.",
+    "sezioni": {
+      "title": "Ordine delle sezioni della scheda",
+      "text": "Vale per tutte le schede dell'azienda: modulo, pagina della scheda, stampa e PDF.",
+      "fixed": "Sempre in cima",
+      "hint": "Sposta una sezione con le frecce, poi salva. Impianto e dati di targa restano in cima: identificano l'impianto.",
+      "up": "Sposta su «{name}»",
+      "down": "Sposta giù «{name}»",
+      "save": "Salva ordine",
+      "reset": "Ripristina l'ordine predefinito"
+    }
   }
 }

@@ -5,6 +5,8 @@ import { dayFromDate } from '../time.js';
 import { activeFields, SECTIONS, type FieldDef, type SectionKey } from './fields.js';
 import type { FormValues } from './field-parsers.js';
 import { misureFromRows, misureTable, type TableView } from './misure.js';
+import { sezioniOrdinate } from './ordine.js';
+import { nomeModulo } from '../ordini/moduli.js';
 import { slotAperto, SLOTS } from '../ordini/registry.js';
 import { moduloFormValues, storedValori } from '../ordini/valori.js';
 
@@ -32,7 +34,7 @@ export interface DisplayField {
   /** Мерките на старите бутониери по спирки — таблица под полето (при „Sì“ и брой спирки). */
   table?: TableView;
   /** Попълненият модул на доставчика — свой PDF (`/schede/:id/<path>`), никога в PDF-а на картата. */
-  modulo?: { path: string; titolo: string; fornitore: string };
+  modulo?: { path: string; nome: string };
 }
 
 export interface DisplaySection {
@@ -51,12 +53,18 @@ function optionLabels(field: FieldDef, t: Translator): Array<{ value: string; la
     }));
   }
   if (field.kind === 'yesno') {
-    return [
-      { value: 'si', label: t('common.yes') },
-      { value: 'no', label: t('common.no') },
-    ];
+    return (field.risposte ?? (['si', 'no'] as const)).map((value) => ({
+      value,
+      label: rispostaLabel(field, value, t),
+    }));
   }
   return [];
+}
+
+/** Думата за отговор Sì/No: своята на полето (`risposte`, „Accessi: 2“), иначе Sì / No. */
+export function rispostaLabel(field: FieldDef, value: 'si' | 'no', t: Translator): string {
+  if (field.kind === 'yesno' && field.risposte) return t(`scheda.option.${field.key}.${value}`);
+  return t(value === 'si' ? 'common.yes' : 'common.no');
 }
 
 export function unitLabel(field: FieldDef, value: number, t: Translator): string {
@@ -89,7 +97,11 @@ function displayValue(field: FieldDef, raw: unknown, t: Translator, fmt: ViewHel
     case 'choice':
       return optionLabels(field, t).find((option) => option.value === raw)?.label ?? '';
     case 'yesno':
-      return raw === true ? t('common.yes') : raw === false ? t('common.no') : '';
+      return raw === true
+        ? rispostaLabel(field, 'si', t)
+        : raw === false
+          ? rispostaLabel(field, 'no', t)
+          : '';
   }
 }
 
@@ -111,17 +123,19 @@ function optionsView(field: FieldDef, raw: unknown, t: Translator): OptionView[]
 }
 
 /**
- * Разделите със стойностите за страницата, печата и PDF-а. Полетата с условие (fields.ts, `when`) се
- * показват само когато то е изпълнено — „Numero serrature“ при „Serrature: No“ не съществува.
+ * Разделите със стойностите за страницата, печата и PDF-а — в реда на фирмата (`ordine`, настройките;
+ * празно — по подразбиране). Полетата с условие (fields.ts, `when`) се показват само когато то е
+ * изпълнено — „Numero serrature“ при „Serrature: No“ не съществува.
  */
 export function displaySections(
   scheda: SchedaShown,
   t: Translator,
   fmt: ViewHelpers,
+  ordine: readonly string[] = [],
 ): DisplaySection[] {
   const values = scheda as unknown as Values;
   const active = activeFields((key) => values[key]);
-  return SECTIONS.map((section) => ({
+  return sezioniOrdinate(SECTIONS, ordine).map((section) => ({
     key: section.key,
     title: t(`scheda.section.${section.key}`),
     fields: (section.fields as readonly FieldDef[])
@@ -142,10 +156,7 @@ export function displaySections(
             slotAperto(s, active, (key) => values[key]) &&
             storedValori(s.modulo, values[s.column]),
         );
-        if (slot) {
-          const { titolo, fornitore } = slot.modulo;
-          view.modulo = { path: slot.path, titolo, fornitore };
-        }
+        if (slot) view.modulo = { path: slot.path, nome: nomeModulo(slot.modulo) };
         if (field.misure && values[field.key] === true) {
           const table = misureTable(scheda.fermate, scheda.misureBottoniere, t, fmt);
           if (table) view.table = table;

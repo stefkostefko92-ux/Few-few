@@ -12,7 +12,24 @@ function parsedOrFail(body: Record<string, unknown>) {
 }
 
 describe('the field list', () => {
-  it('keeps the fields of the brief in its order, the later briefs next to what they belong to', () => {
+  it('keeps the sections in the order of the printed sheet the owner marked up (October 2026)', () => {
+    assert.deepEqual(
+      SECTIONS.map((section) => section.key),
+      [
+        'impianto',
+        'targa',
+        'ubicazione',
+        'tipologia',
+        'quadro',
+        'argano',
+        'funi',
+        'limitatore',
+        'cavi',
+        'serrature',
+        'allarme',
+        'note',
+      ],
+    );
     assert.deepEqual(
       FIELDS.map((field) => field.key),
       [
@@ -34,14 +51,11 @@ describe('the field list', () => {
         'lucePorte',
         'operatoreTensione',
         'doppioAccesso',
-        'bloccaPortine',
-        'autolivellamento',
         'pattinoRetrattile',
-        'pattinoRetrattileNumero',
-        'serrature',
-        'serratureNumero',
-        'serratureTipo',
-        'luceVanoSostituire',
+        'quadroMarca',
+        'quadroMarcaAltro',
+        'quadroOrdine',
+        'arganoPreventivo',
         'funiDiametroMm',
         'funiTrefoli',
         'funiNumero',
@@ -53,24 +67,23 @@ describe('the field list', () => {
         'caviNumero',
         'caviConduttori',
         'caviLunghezzaM',
+        'serrature',
+        'serratureNumero',
+        'serratureTipo',
+        'sospensioni',
+        'sospensioniNumero',
         'telesoccorso',
         'telesoccorsoStato',
         'allarmePortineria',
         'displayPortineria',
         'noteQuadretto',
         'noteImpianto',
+        'luceVanoSostituire',
         'noteBottoniere',
         'bottoniereMisure',
         'lavoriExtra',
-        'quadroMarca',
-        'quadroMarcaAltro',
-        'quadroOrdine',
-        'arganoMarca',
-        'arganoMarcaAltro',
-        'arganoPreventivo',
       ],
     );
-    assert.equal(SECTIONS.length, 11);
   });
 
   it('gives every number a kind the brief asked for: the identifiers are digits, never numbers', () => {

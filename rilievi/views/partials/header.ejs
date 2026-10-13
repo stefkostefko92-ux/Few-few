@@ -7,6 +7,7 @@
     { href: '/richieste', key: 'requests.nav', icon: 'inbox', show: can('requests:manage'), count: pending },
     { href: '/cestino', key: 'nav.cestino', icon: 'trash', show: can('schede:trash') },
     { href: '/registro', key: 'nav.registro', icon: 'log', show: can('audit:view') },
+    { href: '/impostazioni', key: 'nav.impostazioni', icon: 'settings', show: can('aziende:settings') },
   ].filter((item) => item.show);
   const current = (href) => path === href || path.startsWith(href + '/');
   // Под името: Master; ролята и фирмата при една фирма; броят на фирмите при няколко.

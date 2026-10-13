@@ -1,13 +1,15 @@
 <%
-  // Табелата на схемата: номер и матрикула, адрес, после портата / лица / спирки / марка.
+  // Табелата на схемата: матрикулата вляво, номерът вдясно, адресът, после портата / лица / спирки /
+  // марка. На листа за печат адресът е в заглавната лента (`withAddress: false`).
   const specs = ['portataKg', 'capienzaPersone', 'fermate', 'marca'].map((key) => byKey[key]);
+  const showAddress = typeof withAddress === 'undefined' || withAddress;
 %><section class="plate" aria-label="<%= t('scheda.plateLabel') %>">
   <span class="plate__screw plate__screw--tl" aria-hidden="true"></span><span class="plate__screw plate__screw--tr" aria-hidden="true"></span><span class="plate__screw plate__screw--bl" aria-hidden="true"></span><span class="plate__screw plate__screw--br" aria-hidden="true"></span>
   <div class="plate__ids">
-    <div class="plate__id"><span class="plate__label"><%= t('scheda.field.numeroImpianto') %></span><span class="plate__big<%= scheda.numeroImpianto ? '' : ' plate__big--empty' %>"><%= scheda.numeroImpianto || '—' %></span></div>
-    <div class="plate__id plate__id--end"><span class="plate__label"><%= t('scheda.field.matricola') %></span><span class="plate__big<%= scheda.matricola ? '' : ' plate__big--empty' %>"><%= scheda.matricola || '—' %></span></div>
+    <div class="plate__id"><span class="plate__label"><%= t('scheda.field.matricola') %></span><span class="plate__big<%= scheda.matricola ? '' : ' plate__big--empty' %>"><%= scheda.matricola || '—' %></span></div>
+    <div class="plate__id plate__id--end"><span class="plate__label"><%= t('scheda.field.numeroImpianto') %></span><span class="plate__big<%= scheda.numeroImpianto ? '' : ' plate__big--empty' %>"><%= scheda.numeroImpianto || '—' %></span></div>
   </div>
-  <p class="plate__address"><%= scheda.indirizzo || t('scheda.noAddress') %></p>
+  <% if (showAddress) { %><p class="plate__address"><%= scheda.indirizzo || t('scheda.noAddress') %></p><% } %>
   <dl class="plate__specs">
     <% for (const spec of specs) { %><div><dt class="plate__label"><%= spec.label %></dt><dd><%= spec.value || '—' %></dd></div>
     <% } %>

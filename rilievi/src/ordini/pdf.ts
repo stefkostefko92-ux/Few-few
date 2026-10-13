@@ -1,14 +1,14 @@
 import { rgb, type PDFPage } from 'pdf-lib';
 import { fieldsOf, type Modulo, type ModuloOverlay } from './moduli.js';
 import { renderAcroform } from './pdf-form.js';
-import { apriModulo, fitBlock, fitLine } from './pdf-testo.js';
+import { apriModulo, fitBlock, fitLine, fitRighe } from './pdf-testo.js';
 import type { Valori } from './valori.js';
 
 /**
- * PDF-ът на модул на доставчик: самият официален модул с нашите стойности — нищо друго не се пипа.
- * Pelazza (плосък PDF): кръстчета в кутийките и текст върху редовете, по координатите от картата —
- * тук. Montanari и MoviLift (формуляри) — pdf-form.ts; общото (шрифтът, мястото на текста) —
- * pdf-testo.ts.
+ * PDF-ът на модул: самият официален модул с нашите стойности — нищо друго не се пипа. Плоските листове
+ * (Pelazza, листът с данни за аргано, 2SG): кръстчета в кутийките и текст върху редовете, по
+ * координатите от картата — тук. MoviLift (формуляр) — pdf-form.ts; общото (шрифтът, мястото на
+ * текста, изправянето на обърнатия лист) — pdf-testo.ts.
  */
 
 const INK = rgb(0, 0, 0);
@@ -36,6 +36,9 @@ export async function renderOverlay(
   const { doc, font } = await apriModulo(modulo, fontDir);
   const page = doc.getPage(0);
   const height = page.getHeight();
+  // Размерът на написаното и колко над линията стои — по листа (Word-ът е с едри букви).
+  const size = modulo.dimensione ?? 8;
+  const lift = modulo.sopraLinea ?? 1.6;
   for (const field of fieldsOf(modulo)) {
     const value = valori[field.key];
     if (field.kind === 'check') {
@@ -45,8 +48,18 @@ export async function renderOverlay(
     if (typeof value !== 'string' || !value) continue;
     if ('line' in field) {
       const [x0, x1, y] = field.line;
-      const fit = fitLine(font, value, x1 - x0, 8);
-      page.drawText(fit.text, { x: x0, y: height - y + 1.6, size: fit.size, font, color: INK });
+      const fit = fitLine(font, value, x1 - x0, size);
+      page.drawText(fit.text, { x: x0, y: height - y + lift, size: fit.size, font, color: INK });
+    } else if ('area' in field && field.righe) {
+      // Кутия с редове на листа (NOTE на 2SG): по ред на линия, не по-едро от другия текст.
+      const [x0, , x1] = field.area;
+      const { righe } = field;
+      const block = fitRighe(font, value, x1 - x0, righe.length, size);
+      righe.forEach((y, i) => {
+        const line = block.lines[i];
+        if (line)
+          page.drawText(line, { x: x0, y: height - y + lift, size: block.size, font, color: INK });
+      });
     } else if ('area' in field) {
       const [x0, top, x1, bottom] = field.area;
       const block = fitBlock(font, value, x1 - x0 - 4, bottom - top - 4, 9);

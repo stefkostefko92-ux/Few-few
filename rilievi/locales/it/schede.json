@@ -53,6 +53,7 @@
     "titleMatricola": "Matricola {n}",
     "dateLine": "Rilievo del {date}",
     "noAddress": "Indirizzo non indicato",
+    "buonoRiferimento": "Buono di riferimento",
     "plateLabel": "Dati di targa",
     "identifiers": "Identificazione",
     "identifiersHint": "Compila almeno uno tra indirizzo, matricola e n° impianto: servono per ritrovare la scheda.",
@@ -78,6 +79,7 @@
       "funi": "Funi",
       "limitatore": "Limitatore",
       "cavi": "Cavi",
+      "serrature": "Serrature o sospensioni",
       "allarme": "Allarme e telesoccorso",
       "note": "Note e lavori",
       "quadro": "Quadro",
@@ -101,14 +103,13 @@
       "operatoreMarca": "Marca operatore",
       "lucePorte": "Luce porte",
       "operatoreTensione": "Tensione operatore",
-      "doppioAccesso": "Doppio accesso",
-      "bloccaPortine": "Blocca portine",
-      "autolivellamento": "Autolivellamento",
+      "doppioAccesso": "Accessi",
       "pattinoRetrattile": "Pattino retrattile da cambiare",
-      "pattinoRetrattileNumero": "Numero pattini retrattili",
-      "serrature": "Serrature o sospensioni da cambiare",
-      "serratureNumero": "Numero serrature/sospensioni",
-      "serratureTipo": "Tipo serrature/sospensioni",
+      "serrature": "Serrature da cambiare",
+      "serratureNumero": "Numero serrature",
+      "serratureTipo": "Tipo serrature",
+      "sospensioni": "Sospensioni da cambiare",
+      "sospensioniNumero": "Numero sospensioni",
       "luceVanoSostituire": "Luce vano da sostituire",
       "funiDiametroMm": "Diametro funi",
       "funiTrefoli": "Trefoli funi",
@@ -134,14 +135,13 @@
       "quadroMarca": "Marca quadro",
       "quadroMarcaAltro": "Altra marca quadro",
       "quadroOrdine": "Scheda per l'ordine quadro",
-      "arganoMarca": "Marca argano",
-      "arganoMarcaAltro": "Altra marca argano",
-      "arganoPreventivo": "Richiesta di preventivo argano"
+      "arganoPreventivo": "Argano da sostituire"
     },
     "question": {
       "bottoniereMisure": "Vuoi inserire le misure delle bottoniere vecchie?",
       "quadroOrdine": "Vuoi compilare la scheda per l'ordine quadro?",
-      "arganoPreventivo": "Vuoi compilare la richiesta di preventivo argano?"
+      "arganoPreventivo": "Argano da sostituire?",
+      "sospensioni": "Sospensioni da cambiare?"
     },
     "option": {
       "ubicazioneMacchina": {
@@ -151,12 +151,16 @@
       "tipoImpianto": {
         "ELETTRICO": "Elettrico",
         "IDRAULICO": "Idraulico",
-        "GEARLESS": "Gearless"
+        "MRL": "MRL"
       },
       "tipoPorte": {
         "AUTOMATICHE": "Automatiche",
         "SEMIAUTOMATICHE": "Semiautomatiche",
         "MANUALI": "Manuali"
+      },
+      "doppioAccesso": {
+        "no": "1",
+        "si": "2"
       },
       "telesoccorsoStato": {
         "COMPLETO": "Completo",
@@ -167,10 +171,6 @@
         "MOVILIFT": "Movilift",
         "DMG": "DMG",
         "MASTECH": "Mastech",
-        "ALTRO": "Altro"
-      },
-      "arganoMarca": {
-        "MONTANARI": "Montanari",
         "ALTRO": "Altro"
       }
     },
@@ -234,7 +234,7 @@
     "page": "Pagina {page} di {pages}"
   },
   "ordini": {
-    "hint": "Il modulo originale del fornitore, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o nell'altro ordine si compilano da soli. Esce in un PDF a parte, identico all'originale.",
+    "hint": "Il modulo originale, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte, identico all'originale.",
     "download": "Scarica PDF",
     "print": "Stampa",
     "errorLabel": "{label} ({fornitore})"
@@ -244,7 +244,7 @@
       "scheda": "Scheda",
       "oq": "Ordine quadro",
       "om": "Ordine quadro",
-      "pa": "Richiesta argano"
+      "pa": "Dati argano"
     },
     "fermate": "Fermate",
     "velocita": "Velocità (m/s)",
@@ -253,16 +253,15 @@
     "portata": "Portata (kg)",
     "capienza": "Capienza (persone)",
     "numeroImpianto": "N° impianto",
-    "norma": "Norma",
     "tensioneMotore": "Tensione motore",
     "tensioneFreno": "Tensione freno",
     "porte": "Porte",
     "accessi": "Accessi",
-    "ingressi": "Doppio accesso",
-    "pattini": "Pattini retrattili",
+    "ingressi": "Accessi",
     "macchina": "Posizione macchina",
     "funiNumero": "Numero funi",
     "funiDiametro": "Diametro funi (mm)",
+    "funiTrefoli": "Trefoli funi",
     "diversi": "Dati diversi tra scheda e ordini",
     "conferma": {
       "title": {
@@ -276,7 +275,7 @@
   },
   "riepilogo": {
     "title": "Stampa e PDF",
-    "label": "Includi i dati di quadro e argano nella stampa e nel PDF della scheda",
-    "hint": "Entra solo quello che è compilato negli ordini. Gli ordini restano anche come PDF a parte."
+    "label": "Includi i dati dei moduli (quadro, argano, 2SG) nella stampa e nel PDF della scheda",
+    "hint": "Entra solo quello che è compilato nei moduli. I moduli restano anche come PDF a parte."
   }
 }

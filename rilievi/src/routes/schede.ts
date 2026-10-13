@@ -2,6 +2,8 @@ import { Router, type Request } from 'express';
 import { config } from '../config.js';
 import { isPartial, principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
 import { spansAziende } from '../auth/scope.js';
+import { ordineSezioniDi } from '../aziende/sezioni.js';
+import { FISSE } from '../schede/ordine.js';
 import { aziendaLogo } from '../aziende/service.js';
 import { setFlash } from '../http/flash.js';
 import { pdfLimiter } from '../http/limits.js';
@@ -15,11 +17,11 @@ import {
   schedaTitle,
 } from '../schede/format.js';
 import { pdfFileName, renderSchedaPdf } from '../schede/pdf.js';
+import { listSchede } from '../schede/list.js';
 import { highlight } from '../schede/search.js';
 import {
   createScheda,
   getScheda,
-  listSchede,
   trashScheda,
   updateScheda,
   type SchedaFull,
@@ -63,6 +65,9 @@ async function loadScheda(req: Request): Promise<SchedaFull | null> {
 schedeRouter.get('/schede/nuova', write, async (req, res) => {
   const { choices, only } = await aziendeForNew(req);
   const preset = typeof req.query.azienda === 'string' ? req.query.azienda : '';
+  const azienda =
+    only?.id ??
+    (choices.some((a) => a.id === preset) ? preset : choices.length === 1 ? choices[0]!.id : '');
   renderForm(req, res, 200, {
     scheda: null,
     values: emptyFormValues(businessDay()),
@@ -70,9 +75,8 @@ schedeRouter.get('/schede/nuova', write, async (req, res) => {
     base: '',
     conflict: false,
     aziende: choices,
-    azienda:
-      only?.id ??
-      (choices.some((a) => a.id === preset) ? preset : choices.length === 1 ? choices[0]!.id : ''),
+    azienda,
+    ordineSezioni: await ordineSezioniDi(azienda || null),
   });
 });
 
@@ -83,6 +87,8 @@ schedeRouter.post('/schede', write, requireCsrf, async (req, res) => {
   // Само фирма, в която човекът пише (MASTER — всяка активна); с една — винаги тя, каквото и да е пратил.
   const { choices, only } = await aziendeForNew(req);
   const azienda = only ?? choices.find((a) => a.id === body.azienda) ?? null;
+  // Редът на разделите — на избраната фирма, само ако е измежду позволените.
+  const ordineSezioni = await ordineSezioniDi(azienda?.id ?? null);
   if (!parsed.ok || !azienda) {
     const errors: FieldErrors = azienda ? {} : { [AZIENDA_ERROR_KEY]: 'azienda' };
     renderForm(req, res, 422, {
@@ -93,6 +99,7 @@ schedeRouter.post('/schede', write, requireCsrf, async (req, res) => {
       conflict: false,
       aziende: choices,
       azienda: only?.id ?? (typeof body.azienda === 'string' ? body.azienda : ''),
+      ordineSezioni,
     });
     return;
   }
@@ -108,6 +115,7 @@ schedeRouter.post('/schede', write, requireCsrf, async (req, res) => {
       aziende: choices,
       azienda: azienda.id,
       conferma: true,
+      ordineSezioni,
     });
     return;
   }
@@ -127,7 +135,7 @@ schedeRouter.get('/schede/:id', read, async (req, res) => {
     scheda,
     showAzienda: spansAziende(scope(req, 'schede:read')),
     ident: schedaTitle(scheda, res.locals.t),
-    sections: displaySections(scheda, res.locals.t, res.locals.fmt),
+    sections: displaySections(scheda, res.locals.t, res.locals.fmt, scheda.azienda.ordineSezioni),
     // Записани с потвърждение (или отпреди проверката) — да се виждат и след записа.
     discrepanze: discrepanzeDi(formValuesFromScheda(scheda, res.locals.fmt), res.locals.t),
   });
@@ -200,10 +208,18 @@ schedeRouter.post('/schede/:id', write, requireCsrf, async (req, res) => {
 schedeRouter.get('/schede/:id/stampa', read, async (req, res) => {
   const scheda = await loadScheda(req);
   if (!scheda) return notFound(req, res);
+  const sections = displaySections(
+    scheda,
+    res.locals.t,
+    res.locals.fmt,
+    scheda.azienda.ordineSezioni,
+  );
   res.render('schede/print', {
     scheda,
     ident: schedaTitle(scheda, res.locals.t),
-    sections: displaySections(scheda, res.locals.t, res.locals.fmt),
+    sections,
+    // „Impianto“ и „Dati di targa“ са в заглавната лента и в табелата — не се печатат втори път.
+    printed: sections.filter((section) => !FISSE.includes(section.key)),
     // Попълненото в модулите — само ако картата го иска (`riepilogoOrdini`).
     riepilogo: riepilogoModuli(scheda),
     autoPrint: req.query.auto === '1',

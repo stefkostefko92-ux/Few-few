@@ -18,7 +18,8 @@
     "aziendeCount": {
       "one": "{n} azienda",
       "other": "{n} aziende"
-    }
+    },
+    "impostazioni": "Impostazioni"
   },
   "common": {
     "yes": "Sì",
@@ -94,6 +95,8 @@
     "membershipExists": "L'account è già in questa azienda.",
     "membershipAzienda": "Scegli un'azienda attiva.",
     "membershipRemoved": "Account tolto dall'azienda.",
-    "membershipLast": "È l'unica azienda dell'account e non si può togliere: per togliere l'accesso, disattivalo."
+    "membershipLast": "È l'unica azienda dell'account e non si può togliere: per togliere l'accesso, disattivalo.",
+    "sezioniSaved": "Ordine delle sezioni salvato.",
+    "sezioniReset": "Ripristinato l'ordine predefinito delle sezioni."
   }
 }

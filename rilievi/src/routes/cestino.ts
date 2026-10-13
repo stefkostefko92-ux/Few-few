@@ -3,7 +3,8 @@ import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
 import { setFlash } from '../http/flash.js';
 import { schedaTitle } from '../schede/format.js';
 import { highlight } from '../schede/search.js';
-import { getScheda, listSchede, purgeScheda, restoreScheda } from '../schede/service.js';
+import { listSchede } from '../schede/list.js';
+import { getScheda, purgeScheda, restoreScheda } from '../schede/service.js';
 import { aziendaFilterOf, aziendeOf, notFound, queryOf, scope } from './schede-shared.js';
 
 /**

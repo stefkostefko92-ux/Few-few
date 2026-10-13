@@ -1,10 +1,10 @@
 /**
  * Полетата на схемата — ЕДИНСТВЕНИЯТ източник: формата, проверката, страницата, печатът и PDF-ът се
- * строят оттук. Редът е дословно от заданието на клиента; разделите само групират, без да разместват.
- * Полетата от второто задание (врати, аларма, работна поръчка, мерки на бутониерите) стоят до тези,
- * към които се отнасят; третото (табло и аргано за поръчка) е накрая — модулите на доставчиците им са в
- * src/ordini/. Етикетите са в речника: `scheda.field.<key>`, `scheda.section.<key>`,
- * `scheda.option.<key>.<СТОЙНОСТ>`, `scheda.question.<key>`.
+ * строят оттук. Редът на разделите е този от отпечатаната карта, номериран от собственика (октомври
+ * 2026): табелата, място, вид, табло, аргано, въжета, ограничител, кабели, брави и окачвания, аларма,
+ * бележки — фирмата може да го смени (src/aziende/sezioni.ts); полетата в раздела остават в този ред.
+ * Модулите на доставчиците са в src/ordini/. Етикетите са в речника: `scheda.field.<key>`,
+ * `scheda.section.<key>`, `scheda.option.<key>.<СТОЙНОСТ>`, `scheda.question.<key>`.
  */
 
 import type { Condition, FieldDef, SectionDef } from './field-types.js';
@@ -12,11 +12,10 @@ import type { Condition, FieldDef, SectionDef } from './field-types.js';
 export * from './field-types.js';
 
 export const UBICAZIONE_MACCHINA = ['ALTO', 'BASSO'] as const;
-export const TIPO_IMPIANTO = ['ELETTRICO', 'IDRAULICO', 'GEARLESS'] as const;
+export const TIPO_IMPIANTO = ['ELETTRICO', 'IDRAULICO', 'MRL'] as const;
 export const TIPO_PORTE = ['AUTOMATICHE', 'SEMIAUTOMATICHE', 'MANUALI'] as const;
 export const TELESOCCORSO_STATO = ['COMPLETO', 'MANCA_PERIFERICA'] as const;
 export const QUADRO_MARCA = ['PELAZZA', 'MOVILIFT', 'DMG', 'MASTECH', 'ALTRO'] as const;
-export const ARGANO_MARCA = ['MONTANARI', 'ALTRO'] as const;
 
 const yes = (field: string): Condition => ({ field, values: ['si'] });
 /** Операторът на вратите има смисъл при автоматични и полуавтоматични врати. */
@@ -24,7 +23,6 @@ const PORTE_CON_OPERATORE: Condition = {
   field: 'tipoPorte',
   values: ['AUTOMATICHE', 'SEMIAUTOMATICHE'],
 };
-const PORTE_MANUALI: Condition = { field: 'tipoPorte', values: ['MANUALI'] };
 /** Двойният достъп — при всеки вид врати, и при ръчните (решение на собственика, октомври 2026). */
 const PORTE_SCELTE: Condition = { field: 'tipoPorte', values: TIPO_PORTE };
 /** Прибиращата се шейна — при ръчни и при полуавтоматични врати. */
@@ -71,23 +69,40 @@ export const SECTIONS = [
       // Светлият отвор и напрежението — свободен текст („800 x 2000“, „24 V DC“).
       { key: 'lucePorte', kind: 'text', maxLength: 60, when: PORTE_CON_OPERATORE },
       { key: 'operatoreTensione', kind: 'text', maxLength: 60, when: PORTE_CON_OPERATORE },
-      { key: 'doppioAccesso', kind: 'yesno', when: PORTE_SCELTE },
-      { key: 'bloccaPortine', kind: 'yesno', when: PORTE_MANUALI },
-      { key: 'autolivellamento', kind: 'yesno', when: PORTE_MANUALI },
+      // „Accessi: 1 / 2“ — двойният достъп като брой достъпи.
+      { key: 'doppioAccesso', kind: 'yesno', risposte: ['no', 'si'], when: PORTE_SCELTE },
+      // „Pattino retrattile da cambiare“. Блокировката, донивелирането и броят шейни — махнати (2026).
       { key: 'pattinoRetrattile', kind: 'yesno', when: PORTE_CON_PATTINO },
+    ],
+  },
+  {
+    // Таблото за поръчка: марката; при Pelazza и MoviLift — модулът им за поръчка (src/ordini/).
+    key: 'quadro',
+    fields: [
+      { key: 'quadroMarca', kind: 'choice', options: QUADRO_MARCA },
+      { key: 'quadroMarcaAltro', kind: 'text', maxLength: 120, when: ALTRA('quadroMarca') },
       {
-        key: 'pattinoRetrattileNumero',
-        kind: 'int',
-        min: 0,
-        max: 99,
-        when: yes('pattinoRetrattile'),
+        key: 'quadroOrdine',
+        kind: 'yesno',
+        wide: true,
+        question: true,
+        modulo: 'ordineQuadro',
+        // Марките с модул за поръчка (src/ordini/registry.ts — тестът пази съвпадението).
+        when: { field: 'quadroMarca', values: ['PELAZZA', 'MOVILIFT'] },
       },
-      // „Serrature o sospensioni da cambiare“ — брави и окачвания на вратите за смяна (Sì → брой и вид);
-      // „Pattino retrattile da cambiare“ по-горе — същото за шейните.
-      { key: 'serrature', kind: 'yesno' },
-      { key: 'serratureNumero', kind: 'int', min: 0, max: 999, when: yes('serrature') },
-      { key: 'serratureTipo', kind: 'text', maxLength: 120, when: yes('serrature') },
-      { key: 'luceVanoSostituire', kind: 'yesno' },
+    ],
+  },
+  {
+    // „Argano da sostituire?“ — при Sì листът с данните на машината, за всеки вид аргано (src/ordini/).
+    key: 'argano',
+    fields: [
+      {
+        key: 'arganoPreventivo',
+        kind: 'yesno',
+        wide: true,
+        question: true,
+        modulo: 'preventivoArgano',
+      },
     ],
   },
   {
@@ -117,6 +132,24 @@ export const SECTIONS = [
     ],
   },
   {
+    // Брави и окачвания на вратите за смяна: бравите — брой и вид; окачванията — брой и листът 2SG,
+    // в който е и операторът на кабината (src/ordini/).
+    key: 'serrature',
+    fields: [
+      { key: 'serrature', kind: 'yesno' },
+      { key: 'serratureNumero', kind: 'int', min: 0, max: 999, when: yes('serrature') },
+      { key: 'serratureTipo', kind: 'text', maxLength: 120, when: yes('serrature') },
+      {
+        key: 'sospensioni',
+        kind: 'yesno',
+        wide: true,
+        question: true,
+        modulo: 'ordineSospensioni',
+      },
+      { key: 'sospensioniNumero', kind: 'int', min: 0, max: 999, when: yes('sospensioni') },
+    ],
+  },
+  {
     key: 'allarme',
     fields: [
       { key: 'telesoccorso', kind: 'yesno' },
@@ -135,42 +168,11 @@ export const SECTIONS = [
     fields: [
       { key: 'noteQuadretto', kind: 'textarea', maxLength: 4000, wide: true },
       { key: 'noteImpianto', kind: 'textarea', maxLength: 4000, wide: true },
+      // „Luce vano da sostituire“ — в бележките (собственикът го премести от „Tipologia“).
+      { key: 'luceVanoSostituire', kind: 'yesno' },
       { key: 'noteBottoniere', kind: 'textarea', maxLength: 4000, wide: true },
       { key: 'bottoniereMisure', kind: 'yesno', wide: true, question: true, misure: true },
       { key: 'lavoriExtra', kind: 'textarea', maxLength: 4000, wide: true },
-    ],
-  },
-  {
-    // Таблото за поръчка: марката; при Pelazza и MoviLift — модулът им за поръчка (src/ordini/).
-    key: 'quadro',
-    fields: [
-      { key: 'quadroMarca', kind: 'choice', options: QUADRO_MARCA },
-      { key: 'quadroMarcaAltro', kind: 'text', maxLength: 120, when: ALTRA('quadroMarca') },
-      {
-        key: 'quadroOrdine',
-        kind: 'yesno',
-        wide: true,
-        question: true,
-        modulo: 'ordineQuadro',
-        // Марките с модул за поръчка (src/ordini/registry.ts — тестът пази съвпадението).
-        when: { field: 'quadroMarca', values: ['PELAZZA', 'MOVILIFT'] },
-      },
-    ],
-  },
-  {
-    // Аргано (машината): марката; при Montanari — тяхното запитване за оферта (src/ordini/).
-    key: 'argano',
-    fields: [
-      { key: 'arganoMarca', kind: 'choice', options: ARGANO_MARCA },
-      { key: 'arganoMarcaAltro', kind: 'text', maxLength: 120, when: ALTRA('arganoMarca') },
-      {
-        key: 'arganoPreventivo',
-        kind: 'yesno',
-        wide: true,
-        question: true,
-        modulo: 'preventivoArgano',
-        when: { field: 'arganoMarca', values: ['MONTANARI'] },
-      },
     ],
   },
 ] as const satisfies readonly SectionDef[];

@@ -37,7 +37,8 @@
       const select = document.getElementById('f-azienda');
       return select && select.value ? select.options[select.selectedIndex].text.trim() : '';
     }
-    if (token === 'tipoImpianto' || token === 'tipoPorte') return surveyTicks(token);
+    if (['tipoImpianto', 'tipoPorte', 'ubicazioneMacchina'].includes(token))
+      return surveyTicks(token);
     return surveyValue(token);
   };
 

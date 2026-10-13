@@ -13,8 +13,9 @@
   const when = field.when ? ' data-when="' + field.when.field + '" data-when-values="' + field.when.values.join(' ') + '"' + (active.has(field.key) ? '' : ' data-off') : '';
   const list = Array.isArray(value) ? value : [];
   const text = typeof value === 'string' ? value : '';
-  const radios = field.kind === 'yesno' ? ['si', 'no'] : field.kind === 'choice' ? field.options : [];
-  const radioLabel = (option) => field.kind === 'yesno' ? t(option === 'si' ? 'common.yes' : 'common.no') : t('scheda.option.' + field.key + '.' + option);
+  // Sì/No със свои думи и ред (`risposte`, „Accessi: 1 / 2“) — иначе Sì, No.
+  const radios = field.kind === 'yesno' ? (field.risposte || ['si', 'no']) : field.kind === 'choice' ? field.options : [];
+  const radioLabel = (option) => field.kind === 'yesno' && !field.risposte ? t(option === 'si' ? 'common.yes' : 'common.no') : t('scheda.option.' + field.key + '.' + option);
 %><% if (field.kind === 'checks' || radios.length) { %>
 <fieldset class="choice <%= classes %>" id="<%= id %>"<%- when %><% if (errText) { %> aria-describedby="<%= errId %>"<% } %>>
   <legend><%= label %></legend>

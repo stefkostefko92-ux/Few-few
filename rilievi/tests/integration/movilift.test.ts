@@ -107,7 +107,7 @@ describe('the MoviLift panel order', () => {
     assert.match(reply.body, /<strong>Fermate<\/strong> — Scheda: 5 · Ordine quadro: 6/);
     assert.match(
       reply.body,
-      /<strong>Doppio accesso<\/strong> — Scheda: Sì · Ordine quadro: Operatore Unico/,
+      /<strong>Accessi<\/strong> — Scheda: 2 · Ordine quadro: Operatore Unico/,
     );
     assert.doesNotMatch(
       reply.body,

@@ -4,12 +4,11 @@ import { z } from 'zod';
 
 /**
  * Модулите на доставчиците — официалните им празни PDF-и (assets/moduli/) и картата на полетата им
- * (JSON до всеки PDF): кутийките и редовете на Pelazza в точки, имената на полетата във формулярите на
- * Montanari и MoviLift. Изходният PDF е самият оригинал с нашите данни върху него — затова PDF-ът е
- * закрепен по SHA-256: друга версия на модула значи други координати, и процесът отказва да тръгне.
- * Формулярът на MoviLift идва шифрован (RC4, без парола за отваряне): авторът разрешава попълване на
- * полетата, а pdf-lib не чете шифровани файлове — в assets/ е копието без шифъра (pypdf), същото до
- * пиксел (виж `fonte` в картата му).
+ * (JSON до всеки PDF): кутийките и редовете на плоските листове в точки (Pelazza, листът с данни за
+ * аргано, 2SG), имената на полетата във формуляра на MoviLift. Изходният PDF е самият оригинал с нашите
+ * данни върху него — затова PDF-ът е закрепен по SHA-256: друга версия на модула значи други
+ * координати, и процесът отказва да тръгне. Откъде е всеки празен модул — `fonte` в картата му
+ * (MoviLift — копието без шифъра; листът за аргано — Word, конвертиран в PDF; 2SG — сканиран).
  */
 
 const ASSETS = new URL('../../assets/moduli/', import.meta.url);
@@ -26,16 +25,23 @@ export const PREFILL_TOKENS = [
   'utente',
   'ruolo',
   'email',
+  'indirizzo',
+  'matricola',
+  'marca',
   'operatoreMarca',
   'operatoreTensione',
-  // Отметките на картата като думи („Automatiche, Manuali“) — за текстово поле на модул.
+  // Отметките на картата като думи („Automatiche, Manuali“, „Alto“) — за текстово поле на модул.
   'tipoImpianto',
   'tipoPorte',
+  'ubicazioneMacchina',
 ] as const;
 export type PrefillToken = (typeof PREFILL_TOKENS)[number];
 
-/** Отметка от огледа: „поле=СТОЙНОСТ“ (хидравличен → „Idraulico“; шейна: Sì → „Elettr. Pattino“). */
-const CHECK_PREFILL = /^(tipoImpianto=[A-Z]+|pattinoRetrattile=si)$/;
+/**
+ * Отметка от огледа: „поле=СТОЙНОСТ“ (хидравличен → „Idraulico“; шейна: Sì → „Elettr. Pattino“;
+ * автоматични врати → „Automatico“ на 2SG).
+ */
+const CHECK_PREFILL = /^(tipoImpianto=[A-Z]+|tipoPorte=[A-Z]+|pattinoRetrattile=si)$/;
 
 const num = z.number().finite();
 const base = {
@@ -70,6 +76,8 @@ const overlayField = z.discriminatedUnion('kind', [
     prefill: textPrefill,
     maxLength,
     area: z.tuple([num, num, num, num]),
+    /** Листът има свои редове (пунктир) в кутията: текстът се пише върху тях — височините им. */
+    righe: z.array(num).min(2).optional(),
   }),
 ]);
 
@@ -134,13 +142,19 @@ const acroField = z.discriminatedUnion('kind', [
 function moduloSchema<F extends z.ZodTypeAny, T extends string>(field: F, tipo: T) {
   return z.object({
     id: z.string().regex(/^[a-z0-9-]{3,80}$/),
-    fornitore: z.string().min(1),
+    /** Доставчикът („Pelazza Peppino“); листът за аргано е за всеки вид — без доставчик. */
+    fornitore: z.string().min(1).optional(),
     titolo: z.string().min(1),
     /** Откъде е празният модул: адресът при доставчика или как е дошъл (качен от собственика). */
     fonte: z.string().min(1),
     file: z.string().regex(/^[a-z0-9-]+\.pdf$/),
     sha256: z.string().regex(/^[0-9a-f]{64}$/),
     tipo: z.literal(tipo),
+    /** Плоските листове: размерът на написаното (по подразбиране 8 pt) и колко над линията стои. */
+    dimensione: z.number().min(5).max(20).optional(),
+    sopraLinea: z.number().min(0).max(5).optional(),
+    /** Сканираният лист е обърнат: страницата се завърта, за да излезе изправена (2SG). */
+    ruota: z.literal(180).optional(),
     gruppi: z.array(
       z.object({
         titolo: z.string().min(1),
@@ -197,13 +211,17 @@ export const PELAZZA: ModuloOverlay = load(
   'pelazza-ordine-quadri-032026.json',
   moduloSchema(overlayField, 'overlay'),
 );
-export const MONTANARI: ModuloAcro = load(
-  'montanari-richiesta-preventivo-argani-ita.json',
-  moduloSchema(acroField, 'acroform'),
+export const ARGANI: ModuloOverlay = load(
+  'rilievo-dati-argani.json',
+  moduloSchema(overlayField, 'overlay'),
 );
 export const MOVILIFT: ModuloAcro = load(
   'movilift-modulo-ordine-scelta-v2-6.json',
   moduloSchema(acroField, 'acroform'),
+);
+export const SG: ModuloOverlay = load(
+  '2sg-ordine-porte.json',
+  moduloSchema(overlayField, 'overlay'),
 );
 
 const bytes = new Map<string, Uint8Array>();
@@ -222,7 +240,12 @@ export function moduloPdf(modulo: Modulo): Uint8Array {
   return copy;
 }
 
-/** Проверка при старт: двата модула са на мястото си и са точно версията на картите. */
+/** Проверка при старт: модулите са на мястото си и са точно версията на картите. */
 export function assertModuli(): void {
-  for (const modulo of [PELAZZA, MONTANARI, MOVILIFT]) moduloPdf(modulo);
+  for (const modulo of [PELAZZA, MOVILIFT, ARGANI, SG]) moduloPdf(modulo);
+}
+
+/** „Modulo ordine quadro (Scelta v2.6) · MoviLift“ — без доставчик само заглавието. */
+export function nomeModulo(modulo: Pick<Modulo, 'titolo' | 'fornitore'>): string {
+  return modulo.fornitore ? `${modulo.titolo} · ${modulo.fornitore}` : modulo.titolo;
 }

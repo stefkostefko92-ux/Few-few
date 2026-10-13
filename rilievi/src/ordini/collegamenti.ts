@@ -6,9 +6,8 @@ import { nameOf } from './valori.js';
 /**
  * Свързаните данни — СПИСЪКЪТ: едно и също нещо от уредбата, записано на повече от едно място — в
  * картата, в поръчката за таблото (Pelazza `oq` или MoviLift `om` — според марката, никога двете) и в
- * запитването за аргано (Montanari, `pa`). Правилата върху него (попълване, разминавания) са в
- * collegati.ts; същият списък стига до браузъра като JSON и public/js/collegati.js прави същото,
- * докато се пише.
+ * листа с данни за аргано (`pa`). Правилата върху него (попълване, разминавания) са в collegati.ts;
+ * същият списък стига до браузъра като JSON и public/js/collegati.js прави същото, докато се пише.
  */
 
 export type Luogo = 'scheda' | Prefisso;
@@ -32,19 +31,20 @@ export type Collegamento =
 
 /**
  * Редът на местата е и редът на попълването: първо картата, после таблото, после аргано. Решено със
- * собственика (октомври 2026): спирките, скоростта и нейният вид, ходът, товарът, нормата, напрежението
- * на мотора и на спирачката — плюс досегашното попълване от картата (врати, достъпи, шейни, място на
- * машината, въжета). MoviLift пише и капацитета, № на асансьора и входовете на кабината.
+ * собственика (октомври 2026): спирките, скоростта и нейният вид, ходът, товарът, напрежението на мотора
+ * и на спирачката — плюс досегашното попълване от картата (врати, достъпи, място на машината, въжета).
+ * MoviLift и листът за аргано пишат и капацитета и № на асансьора; MoviLift — и входовете на кабината.
  */
 export const COLLEGAMENTI: readonly Collegamento[] = [
   {
+    // „Piani n°“ на листа за аргано са спирките.
     key: 'fermate',
     tipo: 'numero',
     membri: [
       { luogo: 'scheda', campo: 'fermate' },
       { luogo: 'oq', campo: 'nFermate' },
       { luogo: 'om', campo: 'fermate' },
-      { luogo: 'pa', campo: 'fermate' },
+      { luogo: 'pa', campo: 'piani' },
     ],
   },
   {
@@ -57,7 +57,7 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     ],
   },
   {
-    // Табло „1/2 Velocità, VVVF“ ↔ двигател на аргано AC1/AC2/VVVF.
+    // Табло „1/2 Velocità, VVVF“ ↔ двигател на аргано AC1/AC2/Inverter.
     key: 'tipoVelocita',
     tipo: 'scelta',
     membri: [
@@ -65,7 +65,7 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
         luogo: 'oq',
         voci: { tq1Velocita: '1V', tq2Velocita: '2V', tqVvvfAperto: 'VVVF', tqVvvfChiuso: 'VVVF' },
       },
-      { luogo: 'pa', voci: { ac1: '1V', ac2: '2V', vvvf: 'VVVF' } },
+      { luogo: 'pa', voci: { motoreAc1: '1V', motoreAc2: '2V', motoreInverter: 'VVVF' } },
     ],
   },
   {
@@ -92,6 +92,7 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'capienzaPersone' },
       { luogo: 'om', campo: 'capienza' },
+      { luogo: 'pa', campo: 'persone' },
     ],
   },
   {
@@ -100,15 +101,7 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'numeroImpianto' },
       { luogo: 'om', campo: 'nImpianto' },
-    ],
-  },
-  {
-    // EN 81-1 е само при Montanari: таблото по EN 81-20 и аргано по EN 81-1 са разминаване.
-    key: 'norma',
-    tipo: 'scelta',
-    membri: [
-      { luogo: 'oq', voci: { normaEn8120: 'EN81-20' } },
-      { luogo: 'pa', voci: { normaEn8120: 'EN81-20', normaEn811: 'EN81-1' } },
+      { luogo: 'pa', campo: 'nImpianto' },
     ],
   },
   {
@@ -118,7 +111,6 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     membri: [
       { luogo: 'oq', campo: 'motVca' },
       { luogo: 'om', campo: 'tensFune' },
-      { luogo: 'pa', campo: 'motoreVoltaggio' },
     ],
   },
   {
@@ -126,7 +118,7 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     tipo: 'numero',
     membri: [
       { luogo: 'oq', campo: 'circuitoFrenoVcc' },
-      { luogo: 'pa', campo: 'frenoVoltaggio' },
+      { luogo: 'pa', campo: 'tensioneFreno' },
     ],
   },
   {
@@ -153,7 +145,7 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     ],
   },
   {
-    // Двоен достъп в картата = 2 достъпа в поръчката.
+    // „Accessi: 2“ в картата = 2 достъпа в поръчката.
     key: 'accessi',
     tipo: 'numero',
     membri: [
@@ -175,21 +167,13 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     ],
   },
   {
-    key: 'pattini',
-    tipo: 'numero',
-    membri: [
-      { luogo: 'scheda', campo: 'pattinoRetrattileNumero' },
-      { luogo: 'oq', campo: 'circuitoPattiniN' },
-    ],
-  },
-  {
-    // „Laterale“ го има само Montanari — не се сравнява.
+    // На листа за аргано мястото на машината е текст („Macchina basso/alto“) — попълва се от
+    // огледа (`prefill`), не се сравнява.
     key: 'macchina',
     tipo: 'scelta',
     membri: [
       { luogo: 'scheda', campo: 'ubicazioneMacchina', voci: { ALTO: 'ALTO', BASSO: 'BASSO' } },
       { luogo: 'om', campo: 'locMacc', voci: { alto: 'ALTO', basso: 'BASSO' } },
-      { luogo: 'pa', voci: { macchinaAlto: 'ALTO', macchinaBasso: 'BASSO' } },
     ],
   },
   {
@@ -205,7 +189,15 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     tipo: 'numero',
     membri: [
       { luogo: 'scheda', campo: 'funiDiametroMm' },
-      { luogo: 'pa', campo: 'funiDiam' },
+      { luogo: 'pa', campo: 'funiDiametro' },
+    ],
+  },
+  {
+    key: 'funiTrefoli',
+    tipo: 'numero',
+    membri: [
+      { luogo: 'scheda', campo: 'funiTrefoli' },
+      { luogo: 'pa', campo: 'trefoli' },
     ],
   },
 ];

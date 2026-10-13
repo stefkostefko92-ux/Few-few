@@ -1,9 +1,17 @@
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { describe, it } from 'node:test';
-import { PDFCheckBox, PDFDocument, PDFTextField } from 'pdf-lib';
+import { PDFDict, PDFDocument, PDFName, type PDFPage } from 'pdf-lib';
 import { translatorFor } from '../src/i18n.js';
-import { assertModuli, fieldsOf, moduloPdf, MONTANARI, PELAZZA } from '../src/ordini/moduli.js';
+import {
+  ARGANI,
+  assertModuli,
+  fieldsOf,
+  moduloPdf,
+  nomeModulo,
+  PELAZZA,
+  SG,
+} from '../src/ordini/moduli.js';
 import { renderModulo } from '../src/ordini/pdf.js';
 import { prefillValori, rifImpianto } from '../src/ordini/prefill.js';
 import { parseModulo, storedValori } from '../src/ordini/valori.js';
@@ -15,11 +23,18 @@ const fontDir = process.env.PDF_FONT_DIR ?? '/usr/share/fonts/truetype/dejavu';
 const fontsHere = existsSync(pdfFontPaths(fontDir).regular);
 const A4 = { width: 595.32, height: 841.92 };
 
+/** The distinct objects of a page resource dictionary (Font, XObject): what is drawn on the page. */
+function resources(page: PDFPage, kind: 'Font' | 'XObject'): string[] {
+  const dict = page.node.Resources()?.lookupMaybe(PDFName.of(kind), PDFDict);
+  return dict ? [...new Set(dict.values().map(String))] : [];
+}
+
 describe('the supplier forms', () => {
   it('are the exact official PDFs their maps were measured on', () => {
     assert.doesNotThrow(() => assertModuli());
     assert.equal(fieldsOf(PELAZZA).length, 152);
-    assert.equal(fieldsOf(MONTANARI).length, 75);
+    assert.equal(fieldsOf(ARGANI).length, 36);
+    assert.equal(fieldsOf(SG).length, 89);
   });
 
   it('place every Pelazza box and line on the page, boxes at the size of the printed squares', () => {
@@ -36,21 +51,33 @@ describe('the supplier forms', () => {
     }
   });
 
-  it('map every Montanari field to the form field of the right type, and nothing is left out', async () => {
-    const form = (await PDFDocument.load(moduloPdf(MONTANARI))).getForm();
-    const mapped = new Set<string>();
-    for (const field of fieldsOf(MONTANARI)) {
-      if (!('acro' in field)) continue;
-      const target = form.getField(field.acro);
-      if (field.kind === 'check') assert.ok(target instanceof PDFCheckBox, field.acro);
-      else assert.ok(target instanceof PDFTextField, field.acro);
-      mapped.add(field.acro);
+  it('place every box and line of the argano sheet and of the 2SG sheet on the page', () => {
+    for (const modulo of [ARGANI, SG]) {
+      for (const field of fieldsOf(modulo)) {
+        const where = `${modulo.id} ${field.key}`;
+        if ('box' in field) {
+          const [x0, y0, x1, y1] = field.box;
+          assert.ok(x1 - x0 > 5 && x1 - x0 < 14 && y1 - y0 > 4 && y1 - y0 < 18, where);
+          assert.ok(x0 > 0 && x1 < A4.width && y0 > 0 && y1 < A4.height, where);
+        } else if ('line' in field) {
+          const [x0, x1, y] = field.line;
+          assert.ok(x1 - x0 >= 25 && x0 > 0 && x1 < A4.width && y > 0 && y < A4.height, where);
+        } else if ('area' in field) {
+          const [x0, top, x1, bottom] = field.area;
+          assert.ok(x0 < x1 && top < bottom && x1 < A4.width && bottom < A4.height, where);
+          // The written lines of a box with lines of its own (NOTE of 2SG) are inside it, top down.
+          for (const [i, y] of (field.righe ?? []).entries()) {
+            assert.ok(y > top && y < bottom && (i === 0 || y > field.righe![i - 1]!), where);
+          }
+        }
+      }
     }
-    const unmapped = form
-      .getFields()
-      .map((f) => f.getName())
-      .filter((name) => !mapped.has(name));
-    assert.deepEqual(unmapped, ['invia modulo '], 'only the send button stays as it is');
+  });
+
+  it('are named with the supplier, or by the title alone when the sheet has none', () => {
+    assert.equal(nomeModulo(SG), 'Modulo ordine operatori e sospensioni · 2SG S.r.l.');
+    assert.equal(nomeModulo(ARGANI), 'Modulo rilievi dati argani');
+    assert.equal(SG.ruota, 180, 'the scanned 2SG sheet is upside down');
   });
 });
 
@@ -116,19 +143,30 @@ describe('prefilling from the survey', () => {
     });
   });
 
-  it('fills the Montanari request with the company, the person, the load and the ropes', () => {
-    const valori = prefillValori(MONTANARI, ctx);
-    assert.equal(valori.ragioneSociale, 'Ascensori Rossi Srl');
-    assert.equal(valori.nomeCognome, 'Mario Bianchi');
-    assert.equal(valori.ruolo, 'Tecnico');
-    assert.equal(valori.email, 'mario@example.it');
-    assert.equal(valori.portata, '630');
-    assert.equal(valori.fermate, '6');
-    assert.equal(valori.macchinaAlto, true);
-    assert.equal(valori.macchinaBasso, undefined);
-    assert.equal(valori.funiN, '4');
-    assert.equal(valori.funiDiam, '10,5');
-    assert.ok(String(valori.riferimentoImpianto).length <= 37, 'cut to the width of the field');
+  it('fills the argano sheet with the address, the plate, the machine room and the ropes', () => {
+    assert.deepEqual(
+      prefillValori(ARGANI, { ...ctx, values: { ...ctx.values, marca: 'Schindler' } }),
+      {
+        indirizzo: 'Via Verdi 14, Milano',
+        marca: 'Schindler',
+        macchina: 'Alto',
+        piani: '6',
+        portata: '630',
+        nImpianto: '104552',
+        funiN: '4',
+        funiDiametro: '10,5',
+      },
+    );
+  });
+
+  it('fills the 2SG sheet with the sender, the date, the reference and the doors', () => {
+    const valori = prefillValori(SG, ctx);
+    assert.deepEqual(valori, {
+      mittente: 'Ascensori Rossi Srl',
+      data: '12/10/2026',
+      riferimento: 'N° 104552 — Via Verdi 14, Milano',
+      automatico: true,
+    });
   });
 });
 
@@ -148,20 +186,52 @@ describe('the questions that open the supplier forms', () => {
     assert.equal(no.ok && no.data.ordineQuadro, null);
   });
 
-  it('keep the other make only with "Altro", and report errors in a form under its own name', () => {
-    const altro = parseScheda({ ...minimal, arganoMarca: 'ALTRO', arganoMarcaAltro: 'Sassi' });
-    assert.equal(altro.ok && altro.data.arganoMarcaAltro, 'Sassi');
-    const montanari = parseScheda({
-      ...minimal,
-      arganoMarca: 'MONTANARI',
-      arganoMarcaAltro: 'Sassi',
-      arganoPreventivo: 'si',
-      'pa-cap': 'x'.repeat(40),
+  it('open the argano sheet for every machine and the 2SG sheet with the suspensions to change', () => {
+    const argano = { 'pa-_': '1', 'pa-pesoCabina': '650', 'pa-taglia12': 'si' };
+    const yes = parseScheda({ ...minimal, arganoPreventivo: 'si', ...argano });
+    assert.ok(yes.ok);
+    assert.deepEqual(yes.ok && yes.data.preventivoArgano, {
+      modulo: ARGANI.id,
+      valori: { pesoCabina: '650', taglia12: true },
     });
-    assert.equal(montanari.ok, false);
-    assert.equal(!montanari.ok && montanari.errors['pa-cap'], 'tooLong');
-    const valid = parseScheda({ ...minimal, arganoMarca: 'MONTANARI', arganoMarcaAltro: 'Sassi' });
-    assert.equal(valid.ok && valid.data.arganoMarcaAltro, null);
+    const no = parseScheda({ ...minimal, arganoPreventivo: 'no', ...argano });
+    assert.equal(no.ok && no.data.preventivoArgano, null);
+
+    const sg = { 'sg-_': '1', 'sg-ordNo': '77', 'sg-sogliaH90': 'si' };
+    const sospensioni = parseScheda({
+      ...minimal,
+      sospensioni: 'si',
+      sospensioniNumero: '6',
+      ...sg,
+    });
+    assert.ok(sospensioni.ok);
+    assert.equal(sospensioni.ok && sospensioni.data.sospensioniNumero, 6);
+    assert.deepEqual(sospensioni.ok && sospensioni.data.ordineSospensioni, {
+      modulo: SG.id,
+      valori: { ordNo: '77', sogliaH90: true },
+    });
+    const none = parseScheda({ ...minimal, sospensioni: 'no', sospensioniNumero: '6', ...sg });
+    assert.equal(none.ok && none.data.sospensioniNumero, null, 'the number goes with "si"');
+    assert.equal(none.ok && none.data.ordineSospensioni, null);
+  });
+
+  it('report the errors of a sheet under its own names', () => {
+    const long = parseScheda({
+      ...minimal,
+      arganoPreventivo: 'si',
+      'pa-_': '1',
+      'pa-pesoCabina': 'x'.repeat(40),
+    });
+    assert.equal(long.ok, false);
+    assert.equal(!long.ok && long.errors['pa-pesoCabina'], 'tooLong');
+  });
+
+  it('never read the old Montanari request as the argano sheet', () => {
+    const montanari = {
+      modulo: 'montanari-richiesta-preventivo-argani-ita',
+      valori: { mrl: true },
+    };
+    assert.equal(storedValori(ARGANI, montanari), null);
   });
 });
 
@@ -177,14 +247,34 @@ describe('the supplier PDFs', { skip: !fontsHere && 'DejaVu fonts are not instal
     assert.ok(pelazza.length > moduloPdf(PELAZZA).length, 'the values are drawn on the original');
   });
 
-  it('fill and lock the Montanari form: no fillable field is left in the PDF', async () => {
+  it('write the argano sheet on the converted Word document, one A4 page', async () => {
     const out = await renderModulo(
-      MONTANARI,
-      { ragioneSociale: 'Ascensori Rossi', mrl: true, informazioni: 'Testo. '.repeat(120) },
+      ARGANI,
+      { indirizzo: 'Via Verdi 14, Milano', taglia12: true, motoreInverter: true, giri: '1440' },
       fontDir,
     );
     const doc = await PDFDocument.load(out);
     assert.equal(doc.getPageCount(), 1);
-    assert.equal(doc.getForm().getFields().length, 0);
+    const blank = (await PDFDocument.load(moduloPdf(ARGANI))).getPage(0);
+    assert.equal(
+      resources(doc.getPage(0), 'Font').length,
+      resources(blank, 'Font').length + 1,
+      'our font is added to the fonts of the Word sheet',
+    );
+  });
+
+  it('turn the upside-down 2SG scan upright, keep its size and write the notes on its lines', async () => {
+    const out = await renderModulo(
+      SG,
+      { automatico: true, ordNo: '77', note: 'Operatore da sostituire. '.repeat(20) },
+      fontDir,
+    );
+    const doc = await PDFDocument.load(out);
+    assert.equal(doc.getPageCount(), 1);
+    const page = doc.getPage(0);
+    assert.equal(page.getRotation().angle, 0, 'upright on the page, not by a viewer rotation');
+    assert.deepEqual(page.getSize(), A4);
+    assert.equal(resources(page, 'XObject').length, 1, 'the scan, drawn turned on the new page');
+    assert.equal(resources(page, 'Font').length, 1);
   });
 });

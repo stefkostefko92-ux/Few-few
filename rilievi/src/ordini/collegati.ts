@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import type { Translator } from '../i18n.js';
 import type { FormValues } from '../schede/field-parsers.js';
 import { activeFields, fieldByKey } from '../schede/fields.js';
+import { rispostaLabel } from '../schede/format.js';
 import {
   COLLEGAMENTI,
   moduloFields,
@@ -108,7 +109,8 @@ export interface Discrepanza {
 
 function etichetta(m: MembroScelta, voce: string, t: Translator): string {
   if (m.luogo === 'scheda') {
-    if (fieldByKey(m.campo)?.kind === 'yesno') return t(voce === 'si' ? 'common.yes' : 'common.no');
+    const field = fieldByKey(m.campo);
+    if (field?.kind === 'yesno') return rispostaLabel(field, voce === 'si' ? 'si' : 'no', t);
     return t(`scheda.option.${m.campo}.${voce}`);
   }
   const field = moduloFields(m.luogo).find((f) => f.key === (m.campo ?? voce));

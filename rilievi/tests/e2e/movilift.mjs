@@ -53,9 +53,9 @@ export async function checkMovilift(page, scheme) {
 
   // A selected double entrance is still a double entrance; a single one is a difference.
   await tick(page, 'om-ingressi', 'doppioSelezionato');
-  if (await listed(page, 'Doppio accesso')) fail(`${scheme}: selected double entrance listed`);
+  if (await listed(page, 'Accessi')) fail(`${scheme}: selected double entrance listed`);
   await tick(page, 'om-ingressi', 'unico');
-  if (!(await listed(page, 'Doppio accesso')))
+  if (!(await listed(page, 'Accessi')))
     fail(`${scheme}: single entrance against a double access not listed`);
   await tick(page, 'om-ingressi', 'doppio');
 }

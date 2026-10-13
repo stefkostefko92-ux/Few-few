@@ -17,13 +17,12 @@ const SECOND = {
   lucePorte: '800 x 2000',
   operatoreTensione: '24 V DC',
   doppioAccesso: 'no',
-  bloccaPortine: 'si',
-  autolivellamento: 'no',
   pattinoRetrattile: 'si',
-  pattinoRetrattileNumero: '2',
   serrature: 'si',
   serratureNumero: '3',
   serratureTipo: 'A gancio',
+  sospensioni: 'si',
+  sospensioniNumero: '4',
   luceVanoSostituire: 'si',
   telesoccorso: 'si',
   telesoccorsoStato: 'MANCA_PERIFERICA',
@@ -67,8 +66,15 @@ describe('the second brief', () => {
     assert.equal(row.operatoreMarca, 'Selcom');
     assert.equal(row.lucePorte, '800 x 2000');
     assert.equal(row.doppioAccesso, false);
-    assert.equal(row.bloccaPortine, true);
-    assert.equal(row.pattinoRetrattileNumero, 2);
+    assert.equal(row.pattinoRetrattile, true);
+    assert.equal(row.serratureTipo, 'A gancio');
+    assert.equal(row.sospensioni, true);
+    assert.equal(row.sospensioniNumero, 4);
+    assert.deepEqual(
+      row.ordineSospensioni,
+      { modulo: '2sg-ordine-porte', valori: {} },
+      '"Sì" opens the 2SG sheet, empty when nothing is written in it',
+    );
     assert.equal(row.luceVanoSostituire, true);
     assert.equal(row.telesoccorsoStato, 'MANCA_PERIFERICA');
     assert.equal(row.displayPortineria, false);
@@ -117,9 +123,29 @@ describe('the second brief', () => {
     assert.equal(auto.status, 303);
     const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
     assert.equal(row.operatoreMarca, 'Selcom');
-    assert.equal(row.bloccaPortine, null);
     assert.equal(row.pattinoRetrattile, null);
-    assert.equal(row.pattinoRetrattileNumero, null);
+  });
+
+  it('keeps the old answers of the fields taken off the sheet when the sheet is saved again', async () => {
+    const { browser } = await signedIn('TECNICO');
+    const id = await create(browser, SECOND);
+    await prisma.scheda.update({
+      where: { id },
+      data: {
+        bloccaPortine: true,
+        autolivellamento: false,
+        pattinoRetrattileNumero: 2,
+        arganoMarca: 'MONTANARI',
+      },
+    });
+    assert.equal((await edit(browser, id, SECOND)).status, 303);
+    const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
+    assert.deepEqual(
+      [row.bloccaPortine, row.autolivellamento, row.pattinoRetrattileNumero, row.arganoMarca],
+      [true, false, 2, 'MONTANARI'],
+    );
+    const page = await browser.get(`/schede/${id}`);
+    assert.doesNotMatch(page.body, /Blocca portine|Autolivellamento|Montanari/);
   });
 
   it('brings a wrong cell back next to it, with what was typed, and saves nothing', async () => {
@@ -140,11 +166,13 @@ describe('the second brief', () => {
     assert.equal(await prisma.misuraBottoniera.count(), before);
   });
 
-  it('prints the locks and the skates to change, the alarm and the measurements table; the PDF carries them too', async () => {
+  it('prints the locks, suspensions and skates to change, the alarm and the measurements table; the PDF carries them too', async () => {
     const { browser } = await signedIn('TECNICO');
     const id = await create(browser, SECOND);
     const print = await browser.get(`/schede/${id}/stampa`);
-    assert.match(print.body, /Serrature o sospensioni da cambiare/);
+    assert.match(print.body, /<h2>Serrature o sospensioni<\/h2>/);
+    assert.match(print.body, /<dt>Serrature da cambiare<\/dt>/);
+    assert.match(print.body, /<dt>Numero sospensioni<\/dt>\s*<dd>4<\/dd>/);
     assert.match(print.body, /Pattino retrattile da cambiare/);
     assert.match(print.body, /Allarme e telesoccorso/);
     assert.match(

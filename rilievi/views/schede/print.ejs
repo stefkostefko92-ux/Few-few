@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="/static/css/buttons.css?v=<%= v %>">
 <link rel="stylesheet" href="/static/css/plate.css?v=<%= v %>">
 <link rel="stylesheet" href="/static/css/print.css?v=<%= v %>">
+<link rel="stylesheet" href="/static/css/print-head.css?v=<%= v %>">
 <script src="/static/js/app.js?v=<%= v %>" defer></script>
 </head>
 <body class="print-body"<% if (autoPrint) { %> data-auto-print<% } %>>
@@ -22,20 +23,28 @@
   <a class="btn btn--sm" href="/schede/<%= scheda.id %>"><%- include('../partials/icon', { name: 'back' }) %><%= t('print.back') %></a>
 </div>
 <article class="paper">
+  <%# Горе: логото (без лого — името на фирмата) и кой е попълнил; заглавието в средата; под него вляво
+      адресът (удебелен, колкото заглавието), вдясно бонът. „Impianto“ и „Dati di targa“ не се печатат
+      отделно — всичко от тях е в лентата и в табелата. %>
   <header class="paper__head">
-    <div class="paper__id">
-      <% if (scheda.azienda.logoType) { %><img class="paper__logo" src="/aziende/<%= scheda.azienda.id %>/logo?v=<%= scheda.azienda.logoUpdatedAt ? scheda.azienda.logoUpdatedAt.getTime() : 0 %>" alt="<%= t('aziende.logoAlt', { name: scheda.azienda.name }) %>"<% if (scheda.azienda.logoWidth && scheda.azienda.logoHeight) { %> width="<%= scheda.azienda.logoWidth %>" height="<%= scheda.azienda.logoHeight %>"<% } %>><% } %>
-      <h1 class="paper__title"><%= t('scheda.title') %></h1>
-      <div class="paper__azienda"><%= scheda.azienda.name %></div>
+    <div class="paper__top">
+      <div class="paper__brand">
+        <% if (scheda.azienda.logoType) { %><img class="paper__logo" src="/aziende/<%= scheda.azienda.id %>/logo?v=<%= scheda.azienda.logoUpdatedAt ? scheda.azienda.logoUpdatedAt.getTime() : 0 %>" alt="<%= t('aziende.logoAlt', { name: scheda.azienda.name }) %>"<% if (scheda.azienda.logoWidth && scheda.azienda.logoHeight) { %> width="<%= scheda.azienda.logoWidth %>" height="<%= scheda.azienda.logoHeight %>"<% } %>><% } else { %><span class="paper__azienda"><%= scheda.azienda.name %></span><% } %>
+      </div>
+      <div class="paper__meta">
+        <div><strong><%= t('scheda.field.data') %>: <%= fmt.day(scheda.data) %></strong></div>
+        <div class="paper__by"><span><%= t('scheda.compiledBy') %></span><strong><%= scheda.createdBy ? scheda.createdBy.name : '—' %></strong></div>
+        <% if (scheda.updatedBy && scheda.updatedAt.getTime() - scheda.createdAt.getTime() > 1000) { %><div><%= t('scheda.meta.updated', { name: scheda.updatedBy.name, at: fmt.dateTime(scheda.updatedAt) }) %></div><% } %>
+      </div>
     </div>
-    <div class="paper__meta">
-      <div><strong><%= t('scheda.field.data') %>: <%= fmt.day(scheda.data) %></strong></div>
-      <div class="paper__by"><span><%= t('scheda.compiledBy') %></span><strong><%= scheda.createdBy ? scheda.createdBy.name : '—' %></strong></div>
-      <% if (scheda.updatedBy && scheda.updatedAt.getTime() - scheda.createdAt.getTime() > 1000) { %><div><%= t('scheda.meta.updated', { name: scheda.updatedBy.name, at: fmt.dateTime(scheda.updatedAt) }) %></div><% } %>
+    <h1 class="paper__title"><%= t('scheda.title') %></h1>
+    <div class="paper__sub">
+      <p class="paper__address<%= scheda.indirizzo ? '' : ' paper__address--empty' %>"><%= scheda.indirizzo || t('scheda.noAddress') %></p>
+      <p class="paper__buono"><span><%= t('scheda.buonoRiferimento') %></span><strong><%= scheda.buonoLavoro || '—' %></strong></p>
     </div>
   </header>
-  <%- include('../partials/plate', { byKey }) %>
-  <% for (const section of sections) { %>
+  <%- include('../partials/plate', { byKey, withAddress: false }) %>
+  <% for (const section of printed) { %>
   <section class="paper__section">
     <h2><%= section.title %></h2>
     <dl class="paper__grid">
@@ -51,7 +60,7 @@
   <%# Попълненото в модулите на доставчиците — само ако картата го иска (riepilogoOrdini). %>
   <% for (const modulo of riepilogo) { %>
   <section class="paper__section">
-    <h2><%= modulo.titolo %> · <%= modulo.fornitore %></h2>
+    <h2><%= modulo.nome %></h2>
     <dl class="paper__grid">
       <% for (const gruppo of modulo.gruppi) { %><div class="paper__cell paper__cell--wide">
         <dt><%= gruppo.titolo %></dt>

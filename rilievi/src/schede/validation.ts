@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import type {
-  ArganoMarca,
   QuadroMarca,
   TelesoccorsoStato,
   TipoImpianto,
@@ -58,13 +57,12 @@ export const schedaSchema = z
     lucePorte: textOf('lucePorte'),
     operatoreTensione: textOf('operatoreTensione'),
     doppioAccesso: yesNoOf('doppioAccesso'),
-    bloccaPortine: yesNoOf('bloccaPortine'),
-    autolivellamento: yesNoOf('autolivellamento'),
     pattinoRetrattile: yesNoOf('pattinoRetrattile'),
-    pattinoRetrattileNumero: intOf('pattinoRetrattileNumero'),
     serrature: yesNoOf('serrature'),
     serratureNumero: intOf('serratureNumero'),
     serratureTipo: textOf('serratureTipo'),
+    sospensioni: yesNoOf('sospensioni'),
+    sospensioniNumero: intOf('sospensioniNumero'),
     luceVanoSostituire: yesNoOf('luceVanoSostituire'),
     funiDiametroMm: decimalOf('funiDiametroMm'),
     funiTrefoli: intOf('funiTrefoli'),
@@ -89,8 +87,6 @@ export const schedaSchema = z
     quadroMarca: choiceOf<QuadroMarca>('quadroMarca'),
     quadroMarcaAltro: textOf('quadroMarcaAltro'),
     quadroOrdine: yesNoOf('quadroOrdine'),
-    arganoMarca: choiceOf<ArganoMarca>('arganoMarca'),
-    arganoMarcaAltro: textOf('arganoMarcaAltro'),
     arganoPreventivo: yesNoOf('arganoPreventivo'),
   })
   .superRefine((value, ctx) => {
@@ -112,6 +108,7 @@ export type SchedaData = z.output<typeof schedaSchema> & {
   misureBottoniere: MisuraData[];
   ordineQuadro: ModuloDati | null;
   preventivoArgano: ModuloDati | null;
+  ordineSospensioni: ModuloDati | null;
   riepilogoOrdini: boolean;
   /** Отпечатъкът на потвърдените разминавания — слага го маршрутът при запис (schede-form.ts). */
   discrepanzeConfermate: string | null;
@@ -164,6 +161,7 @@ export function parseScheda(
         misureBottoniere: misure?.rows ?? [],
         ordineQuadro: dati('ordineQuadro') ?? null,
         preventivoArgano: dati('preventivoArgano') ?? null,
+        ordineSospensioni: dati('ordineSospensioni') ?? null,
         riepilogoOrdini: riepilogo.data,
         discrepanzeConfermate: null,
       },

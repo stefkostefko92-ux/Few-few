@@ -6,6 +6,7 @@ import {
   MARGIN,
   MUTED,
   RULE,
+  SIZE,
   type PdfContext,
 } from './pdf-layout.js';
 
@@ -41,12 +42,12 @@ export function drawTable(ctx: PdfContext, table: TableView): void {
   };
 
   const drawHead = () => {
-    const height = rowHeight(table.head, 7);
+    const height = rowHeight(table.head, SIZE.tableHead);
     const y = doc.y;
     table.head.forEach((head, i) => {
       doc
         .font('Sans')
-        .fontSize(7)
+        .fontSize(SIZE.tableHead)
         .fillColor(MUTED)
         .text(head, (lefts[i] ?? MARGIN) + PAD, y + PAD, { width: inner(i) });
     });
@@ -54,19 +55,19 @@ export function drawTable(ctx: PdfContext, table: TableView): void {
     doc.y = y + height;
   };
 
-  const headHeight = rowHeight(table.head, 7);
-  const firstRow = table.rows[0] ? rowHeight(table.rows[0], 9) : 0;
+  const headHeight = rowHeight(table.head, SIZE.tableHead);
+  const firstRow = table.rows[0] ? rowHeight(table.rows[0], SIZE.tableCell) : 0;
   ensureSpace(ctx, headHeight + firstRow + 4);
   doc.y += 2;
   drawHead();
   for (const row of table.rows) {
-    const height = rowHeight(row, 9);
+    const height = rowHeight(row, SIZE.tableCell);
     if (ensureSpace(ctx, height)) drawHead();
     const y = doc.y;
     row.forEach((cell, i) => {
       doc
         .font(i === 0 ? 'Sans-Bold' : 'Sans')
-        .fontSize(9)
+        .fontSize(SIZE.tableCell)
         .fillColor(cell ? INK : MUTED)
         .text(cell || '—', (lefts[i] ?? MARGIN) + PAD, y + PAD, { width: inner(i) });
     });

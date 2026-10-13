@@ -5,11 +5,11 @@ import type { Translator } from '../i18n.js';
 import type { ViewHelpers } from '../http/view.js';
 import { riepilogoModuli, type RiepilogoGruppo } from '../ordini/riepilogo.js';
 import { displaySections, type DisplayField } from './format.js';
+import { FISSE } from './ordine.js';
+import { drawHeader, drawPlate } from './pdf-head.js';
 import {
   drawFields,
   drawFooters,
-  drawHeader,
-  drawPlate,
   drawSectionTitle,
   MARGIN,
   type PdfContext,
@@ -71,10 +71,10 @@ export function renderSchedaPdf(scheda: SchedaFull, options: PdfOptions): Promis
     doc.on('error', reject);
   });
 
-  const sections = displaySections(scheda, t, fmt);
+  const sections = displaySections(scheda, t, fmt, scheda.azienda.ordineSezioni);
   const byKey = new Map(sections.flatMap((s) => s.fields).map((f) => [f.key, f]));
 
-  // Заглавна лента: логото на фирмата най-горе вляво, вдясно датата и кой е попълнил картата.
+  // Заглавна лента: логото на фирмата, датата и кой е попълнил картата; заглавието, адресът и бонът.
   const { azienda } = scheda;
   drawHeader(ctx, {
     logo: options.logo,
@@ -95,10 +95,15 @@ export function renderSchedaPdf(scheda: SchedaFull, options: PdfOptions): Promis
             at: fmt.dateTime(scheda.updatedAt),
           })
         : '',
+    address: scheda.indirizzo,
+    noAddress: t('scheda.noAddress'),
+    buonoLabel: t('scheda.buonoRiferimento'),
+    buono: scheda.buonoLavoro,
   });
 
   drawPlate(ctx, scheda, byKey);
-  for (const section of sections) {
+  // „Impianto“ и „Dati di targa“ са вече в заглавната лента и в табелата.
+  for (const section of sections.filter((s) => !FISSE.includes(s.key))) {
     drawSectionTitle(ctx, section.title);
     // Таблицата с мерките стои веднага под своето поле: полетата се рисуват на парчета около нея.
     let chunk: DisplayField[] = [];
@@ -114,7 +119,7 @@ export function renderSchedaPdf(scheda: SchedaFull, options: PdfOptions): Promis
   }
   // Попълненото в модулите на доставчиците — само ако картата го иска (`riepilogoOrdini`).
   for (const modulo of riepilogoModuli(scheda)) {
-    drawSectionTitle(ctx, `${modulo.titolo} · ${modulo.fornitore}`);
+    drawSectionTitle(ctx, modulo.nome);
     drawFields(ctx, modulo.gruppi.map(gruppoField));
   }
   drawFooters(ctx, t('pdf.generated', { at: fmt.dateTime(new Date()), name: options.generatedBy }));

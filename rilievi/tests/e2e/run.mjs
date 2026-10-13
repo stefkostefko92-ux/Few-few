@@ -1,9 +1,10 @@
 // End-to-end check of a running portal in a real Chromium: the public pages and an access request
 // accepted by the MASTER (site.mjs), sign-in, a company with its logo, a full sheet (the fields that
 // appear with the door type, the alarm, one measurement row per stop that follows "Fermate" while it
-// is typed), search, print, PDF, the company ADMIN invited by the MASTER, a technician invited by that
-// ADMIN who sees the company's sheets, and accessibility (axe-core, WCAG 2.1 AA) on every page, in the
-// light and the dark theme. Screenshots land in tests/e2e/shots/ (git-ignored).
+// is typed, the order forms and data sheets), search, print, PDF, the order of the sections in the
+// company settings (impostazioni.mjs), the company ADMIN invited by the MASTER, a technician invited by
+// that ADMIN who sees the company's sheets, and accessibility (axe-core, WCAG 2.1 AA) on every page, in
+// the light and the dark theme. Screenshots land in tests/e2e/shots/ (git-ignored).
 //
 //   RILIEVI_URL=http://127.0.0.1:4330 E2E_EMAIL=… E2E_PASSWORD=… npm run test:e2e
 //
@@ -19,6 +20,7 @@ import { checkSite } from './site.mjs';
 import { checkPeople } from './people.mjs';
 import { checkLinkedData, confirmDifferences } from './collegati.mjs';
 import { checkMovilift } from './movilift.mjs';
+import { checkSettings } from './impostazioni.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const base = (process.env.RILIEVI_URL ?? 'http://127.0.0.1:4330').replace(/\/+$/, '');
@@ -149,8 +151,8 @@ try {
       await page.fill('#f-mb-1-interasseSuperiore', '60 mm');
       await page.fill('#f-mb-1-interasseInferiore', '58 mm');
       await tick(page, 'mb-1-display', 'si');
-      // The supplier forms: the MoviLift order first, then the Pelazza order (the same question, the
-      // other make) and the Montanari quote request, prefilled from the survey.
+      // The forms: the MoviLift order first, then the Pelazza order (the same question, the other
+      // make), the argano data sheet and the 2SG sheet, prefilled from the survey.
       await checkMovilift(page, scheme);
       await tick(page, 'quadroMarca', 'PELAZZA');
       if (await page.locator('#f-om').isVisible()) fail('MoviLift order shown for Pelazza');
@@ -161,10 +163,19 @@ try {
         fail('Pelazza order without the doors');
       await tick(page, 'oq-ordine', 'si');
       await page.fill('#f-oq-quantita', '1');
-      await tick(page, 'arganoMarca', 'MONTANARI');
       await tick(page, 'arganoPreventivo', 'si');
-      if ((await page.inputValue('#f-pa-portata')) !== '630')
-        fail('Montanari request without the load');
+      if ((await page.inputValue('#f-pa-portata')) !== '630') fail('argano sheet without the load');
+      if ((await page.inputValue('#f-pa-indirizzo')) !== fields.indirizzo)
+        fail('argano sheet without the address');
+      if ((await page.inputValue('#f-pa-macchina')) !== 'Alto')
+        fail('argano sheet without the machine room');
+      await tick(page, 'sospensioni', 'si');
+      await page.fill('#f-sospensioniNumero', '6');
+      if (!(await page.isChecked('#f-sg-automatico')))
+        fail('2SG sheet without the automatic doors');
+      if (!(await page.inputValue('#f-sg-riferimento')).includes(fields.numeroImpianto))
+        fail('2SG sheet without the reference of the lift');
+      await page.fill('#f-sg-antePianoNr', '12');
       await checkLinkedData(page, scheme);
       await page.click('.actions button[type=submit]');
       await confirmDifferences(page, scheme);
@@ -179,7 +190,7 @@ try {
       await page.waitForFunction(
         () => document.querySelectorAll('[data-results] .row-link').length > 0,
       );
-      for (const path of ['ordine-quadro', 'preventivo-argano']) {
+      for (const path of ['ordine-quadro', 'dati-argano', 'sospensioni-2sg']) {
         const order = await page.request.get(`${sheetUrl}/${path}`);
         const bytes = await order.body();
         if (order.status() !== 200 || bytes.subarray(0, 5).toString() !== '%PDF-')
@@ -196,6 +207,19 @@ try {
       if ((await page.locator('.ptable tbody tr').count()) !== 6) fail('print without 6 stop rows');
       if (!(await page.textContent('.paper')).includes("Modulo d'ordine quadri"))
         fail('print without the panel order');
+      // The head: the address and the work order under the title; the identification is not repeated.
+      if (!(await page.textContent('.paper__address')).includes('Via Giuseppe Verdi'))
+        fail('print without the address in the head');
+      if (!(await page.textContent('.paper__buono')).includes(fields.buonoLavoro))
+        fail('print without the work order in the head');
+      if (await page.locator('.paper__section h2', { hasText: 'Dati di targa' }).count())
+        fail('print repeats the plate data as a section');
+
+      await checkSettings(page, {
+        base,
+        aziendaId: aziendaPath.split('/').pop(),
+        sheetPath: new URL(sheetUrl).pathname,
+      });
     }
 
     for (const [name, path] of [
@@ -209,6 +233,7 @@ try {
       ['company', aziendaPath],
       ['new-company', '/aziende/nuova'],
       ['log', '/registro'],
+      ['settings', `/impostazioni?azienda=${aziendaPath.split('/').pop()}`],
       ['requests', '/richieste?stato=ALL'],
       ['account', '/account'],
     ]) {
