@@ -78,6 +78,7 @@ describe('the field list', () => {
     assert.equal(kind('matricola'), 'digits');
     assert.equal(kind('numeroImpianto'), 'digits');
     assert.equal(kind('indirizzo'), 'text');
+    assert.equal(kind('ubicazioneCassettina'), 'text', 'where the box is, in words');
     for (const key of ['ubicazioneMacchina', 'tipoImpianto', 'tipoPorte']) {
       assert.equal(kind(key), 'checks');
     }
@@ -128,9 +129,8 @@ describe('parseScheda', () => {
     assert.equal(!thousands.ok && thousands.errors.funiLunghezzaM, 'decimal');
   });
 
-  it('checks whole numbers and their range, negative only where the field allows it', () => {
+  it('checks whole numbers and their range, never below zero', () => {
     assert.equal(parsedOrFail({ ...minimal, portataKg: '630' }).portataKg, 630);
-    assert.equal(parsedOrFail({ ...minimal, ubicazioneCassettina: '-1' }).ubicazioneCassettina, -1);
     const letter = parseScheda({ ...minimal, portataKg: '63O' });
     assert.equal(!letter.ok && letter.errors.portataKg, 'integer');
     const negative = parseScheda({ ...minimal, fermate: '-2' });
@@ -182,9 +182,11 @@ describe('parseScheda', () => {
     const data = parsedOrFail({
       ...minimal,
       indirizzo: '  Via   Roma\t12 ',
+      ubicazioneCassettina: ' Piano -1,  vano contatori ',
       noteImpianto: 'Riga uno\r\nRiga due\u0007  ',
     });
     assert.equal(data.indirizzo, 'Via Roma 12');
+    assert.equal(data.ubicazioneCassettina, 'Piano -1, vano contatori');
     assert.equal(data.noteImpianto, 'Riga uno\nRiga due');
   });
 

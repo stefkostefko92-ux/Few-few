@@ -73,7 +73,7 @@ describe('supplier forms', () => {
     assert.match(page.body, new RegExp(`href="/schede/${id}/preventivo-argano\\?inline=1"`));
   });
 
-  it('never go into the sheet print or its PDF', async () => {
+  it('stay out of the sheet print unless the sheet asks for them (collegati.test.ts)', async () => {
     const { browser } = await signedIn('TECNICO');
     const id = await create(browser, { ...SURVEY, ...ORDERS });
     const print = await browser.get(`/schede/${id}/stampa`);

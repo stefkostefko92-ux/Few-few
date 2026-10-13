@@ -23,7 +23,7 @@ const scheda = {
   capienzaPersone: 8,
   fermate: 6,
   ubicazioneMacchina: ['ALTO'],
-  ubicazioneCassettina: -1,
+  ubicazioneCassettina: 'Piano -1, vano contatori',
   parcheggio: null,
   tipoImpianto: ['ELETTRICO'],
   tipoPorte: ['AUTOMATICHE', 'MANUALI'],
@@ -95,6 +95,29 @@ describe('the sheet PDF', { skip: !fontsHere && 'DejaVu fonts are not installed 
     assert.ok(pdf.length > 5_000);
     // The long work order spills onto a second page with its own footer.
     assert.ok((pdf.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length >= 2);
+  });
+
+  it('adds what the orders hold at the end only when the sheet asks for it', async () => {
+    const options = {
+      t: translatorFor('it'),
+      fmt: viewHelpers('it'),
+      generatedBy: 'Prova',
+      fontDir,
+      logo: null,
+    };
+    const ordine: SchedaFull = {
+      ...scheda,
+      quadroMarca: 'PELAZZA',
+      quadroOrdine: true,
+      ordineQuadro: {
+        modulo: 'pelazza-ordine-quadri-032026',
+        valori: { ordine: true, velocita: '1,0', note: 'Consegna in cantiere' },
+      },
+    };
+    const without = await renderSchedaPdf({ ...ordine, riepilogoOrdini: false }, options);
+    const withOrders = await renderSchedaPdf({ ...ordine, riepilogoOrdini: true }, options);
+    assert.equal(withOrders.subarray(0, 5).toString(), '%PDF-');
+    assert.ok(withOrders.length > without.length, 'the order adds its own section');
   });
 });
 

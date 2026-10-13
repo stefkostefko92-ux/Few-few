@@ -48,7 +48,8 @@ src/
                      вид) · validation.ts · misure.ts (мерките по спирки) · search.ts · service.ts ·
                      format.ts · pdf.ts + pdf-layout.ts + pdf-table.ts
   ordini/            модулите на доставчиците: moduli.ts (картите от assets/moduli, SHA-256) · registry.ts
-                     (колона ↔ въпрос ↔ модул) · valori.ts · prefill.ts · form.ts · pdf.ts (pdf-lib)
+                     (колона ↔ въпрос ↔ модул) · valori.ts · prefill.ts · collegati.ts (свързаните данни)
+                     · riepilogo.ts (модулите в печата на картата) · form.ts · pdf.ts (pdf-lib)
   routes/            тънки рутери: проверка → услуга → изглед (витрината · заявките · картите ·
                      кошчето · модулите · хора · фирми · одит)
   requests/          заявките за достъп: form.ts (публичната форма) · service.ts (запис, решение, срок)
@@ -60,7 +61,8 @@ views/               EJS: partials/ (горна и долна лента, таб
                      account/, audit/
 locales/it/          common · auth · schede · users · aziende · requests · site · mail (.json) — единственият
 public/              css/ (портал: base, buttons, shell, layout, plate, forms, pages, data, sheet, misure,
-                     moduli, print; витрина: site, shaft, site-hero, site-parts, site-request), js/app.js,
+                     moduli, print; витрина: site, shaft, site-hero, site-parts, site-request), js/app.js +
+                     js/collegati.js (само във формата на картата),
                      img/ (og.png и apple-touch-icon.png — `npm run brand:images`), indexnow-key.txt
 tests/               unit · integration/ (реален Postgres) · e2e/run.mjs (Playwright + axe)
 deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh · nginx/ · systemd/
@@ -124,12 +126,24 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
 - **Модулите на доставчиците** (`src/ordini/`, `assets/moduli/`): „Marca quadro“ Pelazza + „Sì“ →
   техният „Modulo d'ordine quadri“; „Marca argano“ Montanari + „Sì“ → тяхната „Richiesta preventivo
   argani“. Полетата и редът им са дословно от модула (италиански, не се превеждат). Пазят се като JSON
-  (`ordineQuadro`, `preventivoArgano`: `{modulo, valori}`) и излизат САМО като свой PDF
-  (`/schede/:id/ordine-quadro`, `/preventivo-argano`) — никога в печата или PDF-а на картата. PDF-ът е
-  самият официален модул: Pelazza — кръстчета и текст по координатите от картата; Montanari —
-  попълнен и „заключен“ формуляр. PDF-ите са закрепени по SHA-256: нова версия от доставчика = нова
-  карта (координати/имена), иначе процесът не тръгва. При първото отваряне модулът идва попълнен от
-  огледа (`prefill.ts` на сървъра, същите правила в app.js).
+  (`ordineQuadro`, `preventivoArgano`: `{modulo, valori}`) и излизат като свой PDF
+  (`/schede/:id/ordine-quadro`, `/preventivo-argano`). В печата и PDF-а на картата влизат САМО когато
+  картата го иска (отметката `riepilogoOrdini`, пази се в картата) — само попълненото, по групите на
+  модула (`ordini/riepilogo.ts`). PDF-ът на модула е самият официален модул: Pelazza — кръстчета и текст
+  по координатите от картата; Montanari — попълнен и „заключен“ формуляр. PDF-ите са закрепени по
+  SHA-256: нова версия от доставчика = нова карта (координати/имена), иначе процесът не тръгва. При
+  първото отваряне модулът идва попълнен от огледа (`prefill.ts` на сървъра, същите правила в app.js).
+- **Свързаните данни** (`ordini/collegati.ts` — ЕДИНСТВЕНИЯТ списък, решен със собственика): спирки,
+  скорост m/s и видът ѝ (табло 1V/2V/VVVF ↔ аргано AC1/AC2/VVVF), ход, товар, EN 81-20/50 (срещу EN 81-1),
+  напрежение на мотора и на спирачката, врати, достъпи, шейни, място на машината, въжета — едно и също
+  нещо в картата и/или в двата модула. Празно поле на модул се попълва от картата, иначе от другия
+  модул: сървърът при първото отваряне, `public/js/collegati.js` докато се пише (полето следва
+  източника си, докато човекът не пише в него — `data-auto`). Две места с различни стойности (числата
+  по италиански: „1,0“ = „1“, „1.000“ = 1000, мерните единици не броят; отметките — без обща
+  категория) → списък под групата в модула и при запис потвърждение („Salva comunque“) на ТОЧНО тези
+  разлики (отпечатък SHA-256; промяна след него иска ново потвърждение); записаните разлики стоят на
+  страницата на картата. Скритото (поле с условие, затворен модул) и празното не се сравняват.
+  Свързано поле на модул няма свое `prefill` в картата на модула (проверка при старт).
 - **Търсенето** пише `searchText` (нормализиран: малки букви, без ударения) само в `schede/service.ts`;
   триграмен GIN индекс (`pg_trgm`). Всяка дума трябва да се намери; пълното съвпадение на номера е първо.
   Заявката отива като параметри (`Prisma.sql`), никога в текста на SQL.

@@ -94,3 +94,42 @@
   font-weight: 400;
   color: var(--muted);
 }
+
+/* Свързаните данни (src/ordini/collegati.ts): различна стойност в картата и в модулите. Не е грешка —
+   червеното е само за грешки, — затова пунктир: под групата на модула, над формата при запис и на
+   страницата на картата. */
+.modulo__diff,
+.notice--diff {
+  border: 1.5px dashed var(--fg);
+}
+
+.modulo__diff {
+  padding: 10px 12px;
+  border-radius: var(--radius);
+}
+
+.modulo__diff-title {
+  font-weight: 600;
+}
+
+.modulo__diff ul,
+.notice--diff ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+
+.notice--diff h2 {
+  font-size: 1.0625rem;
+}
+
+.notice--diff h2 + p {
+  margin-top: 4px;
+}
+
+.notice--diff p + ul {
+  margin-top: 8px;
+}
+
+.notice--diff ul + .toolbar {
+  margin-top: 12px;
+}

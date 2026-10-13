@@ -1,15 +1,17 @@
 import type { FormValues } from '../schede/field-parsers.js';
+import { prefillCollegati } from './collegati.js';
 import { fieldsOf, type Modulo, type PrefillToken } from './moduli.js';
+import { SLOTS } from './registry.js';
 import type { Valori } from './valori.js';
 
 /**
- * Предварителните стойности на модул от огледа: дата, № на асансьора, спирки, врати, товароносимост,
- * въжета, място на машината — и фирмата и човекът, които пишат. Само при първото отваряне на модула;
- * после всичко се редактира. Същите правила има и public/js/app.js (докато се пише в огледа).
+ * Предварителните стойности на модул: датата, № на асансьора, фирмата и човекът, които пишат (картата
+ * на модула, `prefill`), и данните на уредбата от картата или от другия модул (collegati.ts). Само при
+ * първото отваряне на модула; после всичко се редактира. Същите правила има и public/js (докато се пише).
  */
 
 export interface PrefillContext {
-  /** Стойностите на огледа във вида на формата. */
+  /** Стойностите на огледа и на другия модул във вида на формата. */
   values: FormValues;
   azienda: string;
   utente: string;
@@ -48,10 +50,6 @@ function textToken(token: PrefillToken, ctx: PrefillContext): string {
       return ctx.ruolo;
     case 'email':
       return ctx.email;
-    case 'accessi': {
-      const doppio = ctx.values.doppioAccesso;
-      return doppio === 'si' ? '2' : doppio === 'no' ? '1' : '';
-    }
     default:
       return text(ctx.values, token);
   }
@@ -63,8 +61,8 @@ function checked(token: string, values: FormValues): boolean {
   return Array.isArray(value) ? value.includes(option) : value === option;
 }
 
-/** Стойностите на модула от огледа — само там, където има какво да се вземе. */
-export function prefillValori(modulo: Modulo, ctx: PrefillContext): Valori {
+/** Стойностите от картата на модула (`prefill`) — само там, където има какво да се вземе. */
+export function prefillPropri(modulo: Modulo, ctx: PrefillContext): Valori {
   const valori: Valori = {};
   for (const field of fieldsOf(modulo)) {
     if (!field.prefill) continue;
@@ -76,4 +74,13 @@ export function prefillValori(modulo: Modulo, ctx: PrefillContext): Valori {
     if (value) valori[field.key] = value;
   }
   return valori;
+}
+
+/** Всичко, с което модулът се отваря за първи път: своето + свързаното (картата, другият модул). */
+export function prefillValori(modulo: Modulo, ctx: PrefillContext): Valori {
+  const slot = SLOTS.find((s) => s.modulo === modulo);
+  return {
+    ...prefillPropri(modulo, ctx),
+    ...(slot ? prefillCollegati(slot.prefix, ctx.values) : {}),
+  };
 }

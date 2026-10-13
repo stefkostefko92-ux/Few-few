@@ -17,6 +17,7 @@ import sharp from 'sharp';
 import { audit, fail, failures, italianOnly, signIn as signInAt, tick } from './helpers.mjs';
 import { checkSite } from './site.mjs';
 import { checkPeople } from './people.mjs';
+import { checkLinkedData, confirmDifferences } from './collegati.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const base = (process.env.RILIEVI_URL ?? 'http://127.0.0.1:4330').replace(/\/+$/, '');
@@ -94,7 +95,7 @@ try {
         portataKg: '630',
         capienzaPersone: '8',
         fermate: '6',
-        ubicazioneCassettina: '-1',
+        ubicazioneCassettina: 'Piano -1, vano contatori',
         parcheggio: 'Cortile interno',
         funiDiametroMm: '10,5',
         funiTrefoli: '8',
@@ -160,7 +161,9 @@ try {
       await tick(page, 'arganoPreventivo', 'si');
       if ((await page.inputValue('#f-pa-portata')) !== '630')
         fail('Montanari request without the load');
+      await checkLinkedData(page, scheme);
       await page.click('.actions button[type=submit]');
+      await confirmDifferences(page, scheme);
       await page.waitForURL(/\/schede\/[a-z0-9]+$/);
       sheetUrl = page.url();
       if (!(await page.textContent('.plate')).includes(fields.numeroImpianto))
@@ -187,6 +190,8 @@ try {
       if (!(await page.locator('.paper__logo').count())) fail('print without the company logo');
       if (!(await page.textContent('.paper__by')).trim()) fail('print without the author');
       if ((await page.locator('.ptable tbody tr').count()) !== 6) fail('print without 6 stop rows');
+      if (!(await page.textContent('.paper')).includes("Modulo d'ordine quadri"))
+        fail('print without the panel order');
     }
 
     for (const [name, path] of [

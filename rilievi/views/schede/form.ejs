@@ -6,6 +6,7 @@
   // Грешка в ред от мерките (`mb-<спирка>-<колона>`) — с името на колоната и номера на спирката.
   const labelOf = (key) => {
     if (key === identifiersErrorKey) return t('scheda.identifiers');
+    if (key === 'riepilogoOrdini') return t('riepilogo.title');
     const moduloField = moduloFieldOf(key);
     if (moduloField) return t('ordini.errorLabel', { label: moduloField.field.label, fornitore: moduloField.slot.modulo.fornitore });
     const misura = misuraOf(key);
@@ -14,7 +15,7 @@
   };
   const anchorOf = (key) => key === identifiersErrorKey ? '#f-indirizzo' : '#f-' + key;
   const paramsOf = (key) => { const misura = misuraOf(key); const moduloField = moduloFieldOf(key); const f = misura ? misura.column : moduloField ? moduloField.field : (fieldMap[key] || {}); return { min: f.min, max: f.max, maxLength: f.maxLength }; };
-%><%- include('../partials/top', { titleKey: isEdit ? 'schede.edit.title' : 'schede.create.title' }) %>
+%><%- include('../partials/top', { titleKey: isEdit ? 'schede.edit.title' : 'schede.create.title', scripts: ['collegati'] }) %>
 <div class="page-head">
   <div>
     <h1><%= t(isEdit ? 'schede.edit.title' : 'schede.create.title') %></h1>
@@ -38,6 +39,14 @@
     </ul>
   </div>
 <% } %>
+<% if (conferma && conferma.discrepanze.length) { %>
+  <div class="notice notice--diff" role="alert" id="confirm-summary" tabindex="-1">
+    <h2><%= t('collegati.conferma.title', { n: conferma.discrepanze.length }) %></h2>
+    <p><%= t('collegati.conferma.text') %></p>
+    <ul><% for (const d of conferma.discrepanze) { %><li><%- include('_discrepanza', { d }) %></li><% } %></ul>
+    <div class="toolbar"><button class="btn btn--primary" type="submit" form="scheda-form" name="conferma" value="<%= conferma.impronta %>"><%= t('collegati.conferma.submit') %></button></div>
+  </div>
+<% } %>
 <% if (!isEdit && can('aziende:manage') && aziende.length === 0) { %>
 <div class="empty">
   <p><strong><%= t('schede.noAziende') %></strong></p>
@@ -46,7 +55,7 @@
 <% } else { %>
 <div class="with-index">
 <%- include('_index', { titles: sections.map((s) => ({ key: s.key, title: t('scheda.section.' + s.key) })) }) %>
-<form class="form" method="post" action="<%= action %>" novalidate data-scheda-form>
+<form class="form" id="scheda-form" method="post" action="<%= action %>" novalidate data-scheda-form>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <% if (!isEdit && aziende.length > 0) { %>
   <div class="field field--azienda">
@@ -74,12 +83,22 @@
     </div>
   </fieldset>
   <% }) %>
+  <fieldset class="section" id="s-riepilogo">
+    <legend class="section__title"><%= t('riepilogo.title') %></legend>
+    <div class="grid">
+      <div class="field field--wide">
+        <label class="tick"><input type="checkbox" id="f-riepilogoOrdini" name="riepilogoOrdini" value="1" aria-describedby="riepilogo-hint"<% if (values.riepilogoOrdini === '1') { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('riepilogo.label') %></span></label>
+        <p class="field__hint" id="riepilogo-hint"><%= t('riepilogo.hint') %></p>
+      </div>
+    </div>
+  </fieldset>
   <div class="actions">
     <button class="btn btn--inverse" type="submit"><%= t(isEdit ? 'schede.edit.submit' : 'schede.create.submit') %></button>
     <a class="btn btn--bar" href="<%= isEdit ? '/schede/' + scheda.id : '/schede' %>"><%= t('common.cancel') %></a>
     <span class="actions__hint" data-dirty-hint hidden><%= t('schede.unsaved') %></span>
   </div>
 </form>
+<script type="application/json" id="collegati-dati" nonce="<%= cspNonce %>"><%- collegati.json %></script>
 </div>
 <% } %>
 </div>

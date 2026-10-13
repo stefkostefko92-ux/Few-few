@@ -1,13 +1,13 @@
-import { Router, type Request, type Response } from 'express';
+import { Router, type Request } from 'express';
 import { config } from '../config.js';
 import { isPartial, principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
-import { roleIn, spansAziende } from '../auth/scope.js';
+import { spansAziende } from '../auth/scope.js';
 import { aziendaLogo } from '../aziende/service.js';
 import { setFlash } from '../http/flash.js';
 import { pdfLimiter } from '../http/limits.js';
 import { businessDay } from '../time.js';
-import { activeFields, SECTIONS } from '../schede/fields.js';
-import { MAX_MISURE, misuraOf, misuraTemplateRow, misureFormRows } from '../schede/misure.js';
+import { discrepanzeDi } from '../ordini/collegati.js';
+import { riepilogoModuli } from '../ordini/riepilogo.js';
 import {
   displaySections,
   emptyFormValues,
@@ -24,32 +24,15 @@ import {
   updateScheda,
   type SchedaFull,
 } from '../schede/service.js';
-import {
-  formValuesFromBody,
-  IDENTIFIERS_ERROR_KEY,
-  parseScheda,
-  type FieldErrors,
-  type FormValues,
-} from '../schede/validation.js';
-import { moduloFieldOf, withPrefill } from '../ordini/form.js';
-import { SLOTS } from '../ordini/registry.js';
-import {
-  aziendaFilterOf,
-  aziendeOf,
-  notFound,
-  queryOf,
-  scope,
-  writableAziende,
-} from './schede-shared.js';
+import { formValuesFromBody, parseScheda, type FieldErrors } from '../schede/validation.js';
+import { AZIENDA_ERROR_KEY, aziendeForNew, confermaMancante, renderForm } from './schede-form.js';
+import { aziendaFilterOf, aziendeOf, notFound, queryOf, scope } from './schede-shared.js';
 
 export const schedeRouter: Router = Router();
 
 const read = requireCapability('schede:read');
 const write = requireCapability('schede:write');
 const remove = requireCapability('schede:delete');
-
-/** Ключът на грешката „избери фирма“ във формата (MASTER или човек в няколко фирми). */
-const AZIENDA_ERROR_KEY = 'azienda';
 
 schedeRouter.get('/schede', read, async (req, res) => {
   const query = queryOf(req);
@@ -70,60 +53,6 @@ schedeRouter.get('/schede', read, async (req, res) => {
 /** Картата от адреса, в обхвата; изтритата — само за тези, които виждат кошчето на нейната фирма. */
 async function loadScheda(req: Request): Promise<SchedaFull | null> {
   return getScheda(scope(req, 'schede:read'), String(req.params.id), scope(req, 'schede:trash'));
-}
-
-interface FormView {
-  scheda: SchedaFull | null;
-  values: FormValues;
-  errors: FieldErrors;
-  base: string;
-  conflict: boolean;
-  /** При нова карта: фирмите за избор (MASTER или човек в няколко фирми) и избраната. */
-  aziende: Array<{ id: string; name: string }>;
-  azienda: string;
-}
-
-function renderForm(req: Request, res: Response, status: number, view: FormView): void {
-  const user = principalOf(req).user;
-  // Модулите на доставчиците: при първото отваряне — от огледа, от фирмата и от човека, който пише
-  // (ролята му в ТАЗИ фирма).
-  const aziendaId = view.scheda?.aziendaId || view.azienda || null;
-  const role = roleIn(user, aziendaId);
-  const values = withPrefill(view.values, {
-    azienda:
-      view.scheda?.azienda.name ??
-      user.memberships.find((m) => m.aziendaId === aziendaId)?.aziendaName ??
-      '',
-    utente: user.name,
-    ruolo: role ? res.locals.t(`role.${role}`) : '',
-    email: user.email,
-  });
-  res.status(status).render('schede/form', {
-    ...view,
-    showAzienda: spansAziende(scope(req, 'schede:read')),
-    values,
-    sections: SECTIONS,
-    identifiersErrorKey: IDENTIFIERS_ERROR_KEY,
-    aziendaErrorKey: AZIENDA_ERROR_KEY,
-    // Кои полета с условие се виждат при отварянето (app.js ги следи после, докато се пише).
-    active: activeFields((key) => view.values[key]),
-    misureRows: misureFormRows(view.values, view.errors),
-    misuraTemplate: misuraTemplateRow(),
-    maxMisure: MAX_MISURE,
-    misuraOf,
-    moduli: SLOTS,
-    moduloFieldOf,
-  });
-}
-
-/**
- * Фирмите за нова карта: MASTER избира всяка активна; човек с право на запис в една фирма пише винаги
- * в нея (без избор); в няколко — избира.
- */
-async function aziendeForNew(req: Request) {
-  const choices = await writableAziende(req);
-  const only = !principalOf(req).user.master && choices.length === 1 ? choices[0]! : null;
-  return { choices: only ? [] : choices, only };
 }
 
 schedeRouter.get('/schede/nuova', write, async (req, res) => {
@@ -162,6 +91,20 @@ schedeRouter.post('/schede', write, requireCsrf, async (req, res) => {
     });
     return;
   }
+  if (confermaMancante(res, body)) {
+    // Картата и модулите казват различни неща: записът чака потвърждение на точно тези разлики.
+    renderForm(req, res, 422, {
+      scheda: null,
+      values: formValuesFromBody(body),
+      errors: {},
+      base: '',
+      conflict: false,
+      aziende: choices,
+      azienda: azienda.id,
+      conferma: true,
+    });
+    return;
+  }
   const scheda = await createScheda(parsed.data, user.id, azienda.id);
   setFlash(res, 'ok', 'flash.schedaCreated');
   res.redirect(303, `/schede/${scheda.id}`);
@@ -175,6 +118,8 @@ schedeRouter.get('/schede/:id', read, async (req, res) => {
     showAzienda: spansAziende(scope(req, 'schede:read')),
     ident: schedaTitle(scheda, res.locals.t),
     sections: displaySections(scheda, res.locals.t, res.locals.fmt),
+    // Записани с потвърждение (или отпреди проверката) — да се виждат и след записа.
+    discrepanze: discrepanzeDi(formValuesFromScheda(scheda, res.locals.fmt), res.locals.t),
   });
 });
 
@@ -208,6 +153,16 @@ schedeRouter.post('/schede/:id', write, requireCsrf, async (req, res) => {
     });
     return;
   }
+  if (confermaMancante(res, body)) {
+    renderForm(req, res, 422, {
+      ...formView,
+      values: formValuesFromBody(body),
+      errors: {},
+      conflict: false,
+      conferma: true,
+    });
+    return;
+  }
   const outcome = await updateScheda(
     scope(req, 'schede:write'),
     scheda.id,
@@ -237,6 +192,8 @@ schedeRouter.get('/schede/:id/stampa', read, async (req, res) => {
     scheda,
     ident: schedaTitle(scheda, res.locals.t),
     sections: displaySections(scheda, res.locals.t, res.locals.fmt),
+    // Попълненото в модулите — само ако картата го иска (`riepilogoOrdini`).
+    riepilogo: riepilogoModuli(scheda),
     autoPrint: req.query.auto === '1',
   });
 });

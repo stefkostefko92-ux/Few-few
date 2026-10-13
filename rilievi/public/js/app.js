@@ -107,8 +107,9 @@
   }
 
   // Supplier forms (src/ordini/): when one opens, the empty fields nobody has touched take what the
-  // survey already says (date, number, stops, doors, load...). The server fills what it knows on its
-  // own (the company, the person writing). Same rules as src/ordini/prefill.ts.
+  // survey already says (date, lift number...). The server fills what it knows on its own (the company,
+  // the person writing). Same rules as src/ordini/prefill.ts; the plant data that sits in more than one
+  // place (stops, speed, doors, load...) is collegati.js.
   const surveyValue = (id) => {
     const el = document.getElementById(`f-${id}`);
     return el ? el.value.trim() : '';
@@ -124,10 +125,6 @@
       return [numero && `N° ${numero}`, matricola && `Matr. ${matricola}`, surveyValue('indirizzo')]
         .filter(Boolean)
         .join(' — ');
-    }
-    if (token === 'accessi') {
-      const doppio = document.querySelector('input[name="doppioAccesso"]:checked');
-      return doppio ? (doppio.value === 'si' ? '2' : '1') : '';
     }
     if (token === 'azienda') {
       const select = document.getElementById('f-azienda');
@@ -214,8 +211,9 @@
     });
   }
 
-  // After a failed save, start at the summary of what to fix.
-  const summary = document.getElementById('error-summary');
+  // After a failed save, start at the summary of what to fix (or of the values to confirm).
+  const summary =
+    document.getElementById('error-summary') || document.getElementById('confirm-summary');
   if (summary) summary.focus();
 
   // Invite / reset link: one click to copy.

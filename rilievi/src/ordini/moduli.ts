@@ -11,7 +11,11 @@ import { z } from 'zod';
 
 const ASSETS = new URL('../../assets/moduli/', import.meta.url);
 
-/** Откъде идва предварителната стойност на поле (src/ordini/prefill.ts и public/js/app.js). */
+/**
+ * Откъде идва предварителната стойност на поле, което не е в никоя връзка (src/ordini/prefill.ts и
+ * public/js/app.js). Данните на уредбата, които стоят на няколко места (спирки, врати, товар, въжета…),
+ * са в src/ordini/collegati.ts — там се и сравняват.
+ */
 export const PREFILL_TOKENS = [
   'data',
   'rif',
@@ -19,18 +23,12 @@ export const PREFILL_TOKENS = [
   'utente',
   'ruolo',
   'email',
-  'accessi',
-  'fermate',
-  'portataKg',
-  'funiNumero',
-  'funiDiametroMm',
-  'pattinoRetrattileNumero',
   'operatoreMarca',
 ] as const;
 export type PrefillToken = (typeof PREFILL_TOKENS)[number];
 
-/** Отметка от огледа: „поле=СТОЙНОСТ“ (вид врати, вид асансьор, място на машината). */
-const CHECK_PREFILL = /^(tipoPorte|tipoImpianto|ubicazioneMacchina)=[A-Z]+$/;
+/** Отметка от огледа: „поле=СТОЙНОСТ“ (хидравличен асансьор → таблото „Idraulico“). */
+const CHECK_PREFILL = /^tipoImpianto=[A-Z]+$/;
 
 const num = z.number().finite();
 const base = {

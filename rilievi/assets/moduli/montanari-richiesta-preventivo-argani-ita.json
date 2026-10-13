@@ -189,8 +189,7 @@
               "kind": "text",
               "label": "PORTATA kg",
               "acro": "Portata",
-              "maxLength": 8,
-              "prefill": "portataKg"
+              "maxLength": 8
             },
             {
               "key": "cabinaOperatoreTelaio",
@@ -215,8 +214,7 @@
               "kind": "text",
               "label": "FERMATE n°",
               "acro": "Fermate",
-              "maxLength": 8,
-              "prefill": "fermate"
+              "maxLength": 8
             }
           ]
         },
@@ -338,15 +336,13 @@
               "key": "macchinaAlto",
               "kind": "check",
               "label": "IN ALTO",
-              "acro": "posizione macchina alto",
-              "prefill": "ubicazioneMacchina=ALTO"
+              "acro": "posizione macchina alto"
             },
             {
               "key": "macchinaBasso",
               "kind": "check",
               "label": "IN BASSO",
-              "acro": "posizione macchina basso",
-              "prefill": "ubicazioneMacchina=BASSO"
+              "acro": "posizione macchina basso"
             },
             {
               "key": "macchinaLaterale",
@@ -523,16 +519,14 @@
               "kind": "text",
               "label": "N°",
               "acro": "funi n°",
-              "maxLength": 6,
-              "prefill": "funiNumero"
+              "maxLength": 6
             },
             {
               "key": "funiDiam",
               "kind": "text",
               "label": "Diam. mm",
               "acro": "diam funi valore",
-              "maxLength": 11,
-              "prefill": "funiDiametroMm"
+              "maxLength": 11
             }
           ]
         },

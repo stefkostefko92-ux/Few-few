@@ -55,8 +55,8 @@ export const SECTIONS = [
     key: 'ubicazione',
     fields: [
       { key: 'ubicazioneMacchina', kind: 'checks', options: UBICAZIONE_MACCHINA },
-      // Етаж или номер на кутийката — цяло число, и отрицателно (сутерен: -1).
-      { key: 'ubicazioneCassettina', kind: 'int', min: -99, max: 999 },
+      // Къде е кутийката — свободен текст („Piano -1, vano contatori“).
+      { key: 'ubicazioneCassettina', kind: 'text', maxLength: 120 },
       { key: 'parcheggio', kind: 'text', maxLength: 300, wide: true },
     ],
   },

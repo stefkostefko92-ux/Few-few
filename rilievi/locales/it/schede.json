@@ -234,9 +234,45 @@
     "page": "Pagina {page} di {pages}"
   },
   "ordini": {
-    "hint": "Il modulo originale del fornitore, con gli stessi campi nello stesso ordine. Esce in un PDF a parte, identico all'originale: non entra nel PDF della scheda.",
+    "hint": "Il modulo originale del fornitore, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o nell'altro ordine si compilano da soli. Esce in un PDF a parte, identico all'originale.",
     "download": "Scarica PDF",
     "print": "Stampa",
     "errorLabel": "{label} ({fornitore})"
+  },
+  "collegati": {
+    "luogo": {
+      "scheda": "Scheda",
+      "oq": "Ordine quadro",
+      "pa": "Richiesta argano"
+    },
+    "fermate": "Fermate",
+    "velocita": "Velocità (m/s)",
+    "tipoVelocita": "Tipo di velocità",
+    "corsa": "Corsa (m)",
+    "portata": "Portata (kg)",
+    "norma": "Norma",
+    "tensioneMotore": "Tensione motore",
+    "tensioneFreno": "Tensione freno",
+    "porte": "Porte",
+    "accessi": "Accessi",
+    "pattini": "Pattini retrattili",
+    "macchina": "Posizione macchina",
+    "funiNumero": "Numero funi",
+    "funiDiametro": "Diametro funi (mm)",
+    "diversi": "Dati diversi tra scheda e ordini",
+    "conferma": {
+      "title": {
+        "one": "Un dato non coincide tra scheda e ordini",
+        "other": "{n} dati non coincidono tra scheda e ordini"
+      },
+      "text": "Controlla i valori qui sotto. Se sono giusti così, salva comunque; altrimenti correggili e salva di nuovo.",
+      "submit": "Salva comunque"
+    },
+    "banner": "Questi dati sono diversi tra la scheda e gli ordini:"
+  },
+  "riepilogo": {
+    "title": "Stampa e PDF",
+    "label": "Includi i dati di quadro e argano nella stampa e nel PDF della scheda",
+    "hint": "Entra solo quello che è compilato negli ordini. Gli ordini restano anche come PDF a parte."
   }
 }

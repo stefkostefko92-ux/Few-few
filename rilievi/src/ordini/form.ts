@@ -1,21 +1,30 @@
 import type { FormValues } from '../schede/field-parsers.js';
+import { prefillCollegati } from './collegati.js';
 import { fieldsOf, type ModuloField } from './moduli.js';
-import { prefillValori, type PrefillContext } from './prefill.js';
+import { prefillPropri, type PrefillContext } from './prefill.js';
 import { SLOTS, type ModuloSlot } from './registry.js';
 import { moduloFormValues, nameOf, shownName } from './valori.js';
 
 /**
  * Модулите на доставчиците във формата на картата. При първото отваряне (няма знак `<префикс>-_`)
- * идват попълнени от огледа и от човека, който пише; после — каквото е въведено или записано.
+ * идват попълнени от огледа, от другия модул и от човека, който пише; после — каквото е въведено или
+ * записано. `auto` са свързаните полета, попълнени така: браузърът ги води след източника им, докато
+ * човекът не пише в тях (public/js/collegati.js).
  */
-export function withPrefill(values: FormValues, ctx: Omit<PrefillContext, 'values'>): FormValues {
+export function withPrefill(
+  values: FormValues,
+  ctx: Omit<PrefillContext, 'values'>,
+): { values: FormValues; auto: Set<string> } {
   const out: FormValues = { ...values };
+  const auto = new Set<string>();
   for (const slot of SLOTS) {
     if (values[shownName(slot.prefix)] === '1') continue;
-    const valori = prefillValori(slot.modulo, { ...ctx, values });
+    const linked = prefillCollegati(slot.prefix, values);
+    for (const key of Object.keys(linked)) auto.add(nameOf(slot.prefix, key));
+    const valori = { ...prefillPropri(slot.modulo, { ...ctx, values }), ...linked };
     Object.assign(out, moduloFormValues(slot.modulo, slot.prefix, valori));
   }
-  return out;
+  return { values: out, auto };
 }
 
 /** Поле от модул по името му във формата (`oq-cliente`) — за обобщението на грешките. */

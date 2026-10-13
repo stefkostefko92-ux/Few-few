@@ -1,7 +1,9 @@
 <%
   // Модулът на доставчика (src/ordini/, assets/moduli/*.json) — същите полета в същия ред като на
   // хартията, за да излезе в неговия оригинален PDF. Етикетите са дословно от модула (италиански) и не
-  // се превеждат. Отваря се при „Sì“ на въпроса над него; data-prefill — попълване от огледа (app.js).
+  // се превеждат. Отваря се при „Sì“ на въпроса над него; data-prefill — попълване от огледа (app.js);
+  // data-auto — свързано поле, попълнено от картата или от другия модул: следва източника си, докато
+  // човекът не пише в него (collegati.js). Под всяка група — разминаванията на нейните свързани данни.
   const name = (key) => slot.prefix + '-' + key;
   const on = values[slot.question] === 'si';
 %><div class="modulo field--wide" id="f-<%= slot.prefix %>" data-when="<%= slot.question %>" data-when-values="si"<% if (!on) { %> data-off<% } %> data-modulo>
@@ -23,14 +25,21 @@
            const value = values[name(field.key)];
            const prefill = field.prefill ? ' data-prefill="' + field.prefill + '"' : '';
            const aria = errText ? ' aria-invalid="true" aria-describedby="' + errId + '"' : '';
-      %><% if (row.freccia && i === row.freccia) { %><span class="modulo__arrow" aria-hidden="true">→</span><% } %><% if (field.kind === 'check') { %><label class="tick tick--sm"><input type="checkbox" id="<%= id %>" name="<%= name(field.key) %>" value="si"<% if (value === 'si') { %> checked<% } %><%- prefill %>><span class="tick__box" aria-hidden="true"></span><span><%= field.label %></span></label><% } else { %><div class="modulo__text<%= field.kind === 'textarea' ? ' modulo__text--wide' : '' %>">
+           const auto = collegati.auto.has(name(field.key));
+      %><% if (row.freccia && i === row.freccia) { %><span class="modulo__arrow" aria-hidden="true">→</span><% } %><% if (field.kind === 'check') { %><label class="tick tick--sm"><input type="checkbox" id="<%= id %>" name="<%= name(field.key) %>" value="si"<% if (value === 'si') { %> checked<% } %><% if (auto && value === 'si') { %> data-auto="si"<% } %><%- prefill %>><span class="tick__box" aria-hidden="true"></span><span><%= field.label %></span></label><% } else { %><div class="modulo__text<%= field.kind === 'textarea' ? ' modulo__text--wide' : '' %>">
         <label class="field__label<%= field.labelNascosta ? ' visually-hidden' : '' %>" for="<%= id %>"><%= field.label %></label>
         <% if (field.kind === 'textarea') { %><textarea class="textarea" id="<%= id %>" name="<%= name(field.key) %>" rows="3" maxlength="<%= field.maxLength %>"<%- prefill %><%- aria %>><%= typeof value === 'string' ? value : '' %></textarea>
-        <% } else { %><input class="input" id="<%= id %>" name="<%= name(field.key) %>" type="text" maxlength="<%= field.maxLength %>" autocomplete="off" value="<%= typeof value === 'string' ? value : '' %>"<%- prefill %><%- aria %>>
+        <% } else { %><input class="input" id="<%= id %>" name="<%= name(field.key) %>" type="text" maxlength="<%= field.maxLength %>" autocomplete="off" value="<%= typeof value === 'string' ? value : '' %>"<% if (auto) { %> data-auto="<%= typeof value === 'string' ? value : '' %>"<% } %><%- prefill %><%- aria %>>
         <% } %><% if (errText) { %><p class="field__error" id="<%= errId %>"><%= errText %></p><% } %>
       </div><% } %><% }) %>
     </div>
     <% } %>
+    <% const linked = collegati.delGruppo(slot.prefix, group.righe.flatMap((row) => row.campi.map((field) => field.key)));
+       const diffs = linked.map((key) => collegati.discrepanze.get(key)).filter(Boolean);
+       if (linked.length) { %><div class="modulo__diff" data-diff="<%= linked.join(' ') %>" aria-live="polite"<% if (!diffs.length) { %> hidden<% } %>>
+      <p class="modulo__diff-title"><%= t('collegati.diversi') %></p>
+      <ul><% for (const d of diffs) { %><li><%- include('_discrepanza', { d }) %></li><% } %></ul>
+    </div><% } %>
   </fieldset>
   <% } %>
 </div>

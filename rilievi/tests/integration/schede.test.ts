@@ -16,7 +16,7 @@ const FULL = {
   capienzaPersone: '8',
   fermate: '6',
   ubicazioneMacchina: ['ALTO'],
-  ubicazioneCassettina: '-1',
+  ubicazioneCassettina: 'Piano -1, vano contatori',
   parcheggio: 'Cortile interno',
   tipoImpianto: ['ELETTRICO'],
   tipoPorte: ['AUTOMATICHE', 'SEMIAUTOMATICHE'],
@@ -67,7 +67,7 @@ describe('sheets', () => {
     assert.equal(row.data.toISOString().slice(0, 10), '2026-10-12');
     assert.equal(row.matricola, '0033871');
     assert.equal(row.portataKg, 630);
-    assert.equal(row.ubicazioneCassettina, -1);
+    assert.equal(row.ubicazioneCassettina, 'Piano -1, vano contatori');
     assert.deepEqual(row.tipoPorte, ['AUTOMATICHE', 'SEMIAUTOMATICHE']);
     assert.equal(row.serrature, true);
     assert.equal(row.serratureNumero, 6);

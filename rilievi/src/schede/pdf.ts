@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import PDFDocument from 'pdfkit';
 import type { Translator } from '../i18n.js';
 import type { ViewHelpers } from '../http/view.js';
+import { riepilogoModuli, type RiepilogoGruppo } from '../ordini/riepilogo.js';
 import { displaySections, type DisplayField } from './format.js';
 import {
   drawFields,
@@ -111,9 +112,29 @@ export function renderSchedaPdf(scheda: SchedaFull, options: PdfOptions): Promis
     }
     drawFields(ctx, chunk);
   }
+  // Попълненото в модулите на доставчиците — само ако картата го иска (`riepilogoOrdini`).
+  for (const modulo of riepilogoModuli(scheda)) {
+    drawSectionTitle(ctx, `${modulo.titolo} · ${modulo.fornitore}`);
+    drawFields(ctx, modulo.gruppi.map(gruppoField));
+  }
   drawFooters(ctx, t('pdf.generated', { at: fmt.dateTime(new Date()), name: options.generatedBy }));
   doc.end();
   return done;
+}
+
+/** Група от модул като клетка на цял ред: отметнатото с ☑, после написаното („Corsa Mt.: 12“). */
+function gruppoField(gruppo: RiepilogoGruppo, index: number): DisplayField {
+  const parts = [
+    ...gruppo.spunte.map((label) => `☑ ${label}`),
+    ...gruppo.testi.map(({ label, value }) => `${label}: ${value}`),
+  ];
+  return {
+    key: `modulo-${index}`,
+    label: gruppo.titolo,
+    value: parts.join('    '),
+    kind: 'text',
+    wide: true,
+  };
 }
 
 /** Името на файла: номер или матрикула + дата; само безопасни знаци. */

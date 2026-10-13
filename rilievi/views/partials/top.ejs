@@ -22,7 +22,8 @@
 <% for (const sheet of sheets) { %><link rel="stylesheet" href="/static/css/<%= sheet %>.css?v=<%= v %>">
 <% } %><script nonce="<%= cspNonce %>">document.documentElement.classList.add('js')</script>
 <script src="/static/js/app.js?v=<%= v %>" defer></script>
-</head>
+<% for (const script of (typeof scripts !== 'undefined' ? scripts : [])) { %><script src="/static/js/<%= script %>.js?v=<%= v %>" defer></script>
+<% } %></head>
 <body>
 <a class="skip" href="#main"><%= t('nav.skip') %></a>
 <% if (currentUser && !bareMain) { %><%- include('header') %><% } %>

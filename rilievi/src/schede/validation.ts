@@ -49,7 +49,7 @@ export const schedaSchema = z
     capienzaPersone: intOf('capienzaPersone'),
     fermate: intOf('fermate'),
     ubicazioneMacchina: checksOf<UbicazioneMacchina>('ubicazioneMacchina'),
-    ubicazioneCassettina: intOf('ubicazioneCassettina'),
+    ubicazioneCassettina: textOf('ubicazioneCassettina'),
     parcheggio: textOf('parcheggio'),
     tipoImpianto: checksOf<TipoImpianto>('tipoImpianto'),
     tipoPorte: checksOf<TipoPorte>('tipoPorte'),
@@ -104,13 +104,24 @@ export const schedaSchema = z
 
 /**
  * Полетата на картата + мерките на старите бутониери (по спирки, misure.ts) + модулите на доставчиците
- * (src/ordini/) — всеки само при „Sì“ на своя въпрос, иначе null.
+ * (src/ordini/) — всеки само при „Sì“ на своя въпрос, иначе null — и дали печатът и PDF-ът на картата
+ * включват попълненото в модулите.
  */
 export type SchedaData = z.output<typeof schedaSchema> & {
   misureBottoniere: MisuraData[];
   ordineQuadro: ModuloDati | null;
   preventivoArgano: ModuloDati | null;
+  riepilogoOrdini: boolean;
 };
+
+/** Отметката „Includi quadro e argano nella stampa“: „1“ или нищо — всичко друго е подправено. */
+const riepilogoSchema = z.preprocess(
+  (value) => (value === undefined || value === '' ? false : value),
+  z.union([z.literal(false), z.literal('1').transform(() => true)], {
+    errorMap: () => ({ message: 'invalid' }),
+  }),
+);
+export const RIEPILOGO_KEY = 'riepilogoOrdini';
 
 const asRecord = (body: unknown): Record<string, unknown> =>
   body && typeof body === 'object' ? (body as Record<string, unknown>) : {};
@@ -132,14 +143,16 @@ export function parseScheda(
       ? parseModulo(slot.modulo, slot.prefix, raw)
       : null,
   );
+  const riepilogo = riepilogoSchema.safeParse(raw[RIEPILOGO_KEY]);
   const extraErrors: FieldErrors = Object.assign(
     {},
     misure?.errors,
     ...moduli.map((modulo) => modulo?.errors ?? {}),
+    riepilogo.success ? {} : { [RIEPILOGO_KEY]: 'invalid' },
   );
 
   const parsed = schedaSchema.safeParse(input);
-  if (parsed.success && Object.keys(extraErrors).length === 0) {
+  if (parsed.success && riepilogo.success && Object.keys(extraErrors).length === 0) {
     const dati = (column: string) => moduli[SLOTS.findIndex((s) => s.column === column)]?.dati;
     return {
       ok: true,
@@ -148,6 +161,7 @@ export function parseScheda(
         misureBottoniere: misure?.rows ?? [],
         ordineQuadro: dati('ordineQuadro') ?? null,
         preventivoArgano: dati('preventivoArgano') ?? null,
+        riepilogoOrdini: riepilogo.data,
       },
     };
   }
@@ -171,6 +185,7 @@ export function formValuesFromBody(body: unknown): FormValues {
   const source = asRecord(body);
   const values: FormValues = misureFromBody(source);
   for (const slot of SLOTS) Object.assign(values, moduloFromBody(slot.modulo, slot.prefix, source));
+  values[RIEPILOGO_KEY] = source[RIEPILOGO_KEY] === '1' ? '1' : '';
   for (const field of FIELDS) {
     const raw = source[field.key];
     if (field.kind === 'checks') {

@@ -48,6 +48,19 @@
     </dl>
   </section>
   <% } %>
+  <%# Попълненото в модулите на доставчиците — само ако картата го иска (riepilogoOrdini). %>
+  <% for (const modulo of riepilogo) { %>
+  <section class="paper__section">
+    <h2><%= modulo.titolo %> · <%= modulo.fornitore %></h2>
+    <dl class="paper__grid">
+      <% for (const gruppo of modulo.gruppi) { %><div class="paper__cell paper__cell--wide">
+        <dt><%= gruppo.titolo %></dt>
+        <dd><% if (gruppo.spunte.length) { %><span class="opts"><% for (const label of gruppo.spunte) { %><span class="opt opt--on"><span class="opt__box" aria-hidden="true"></span><%= label %><span class="visually-hidden"> ✓</span></span><% } %></span><% } %><% if (gruppo.testi.length) { %><span class="pairs"><% for (const pair of gruppo.testi) { %><span><%= pair.label %>: <strong><%= pair.value %></strong></span><% } %></span><% } %></dd>
+      </div>
+      <% } %>
+    </dl>
+  </section>
+  <% } %>
   <footer class="paper__foot"><%= t('pdf.generated', { at: fmt.dateTime(new Date()), name: currentUser.name }) %> — Created and Designed by Carbon Stealth VCC — carbonstealth.eu</footer>
 </article>
 </body>

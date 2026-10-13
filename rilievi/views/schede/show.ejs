@@ -26,6 +26,12 @@
     </span><% } %>
   </div>
   <% } %>
+  <% if (discrepanze.length) { %>
+  <div class="notice notice--diff">
+    <p><strong><%= t('collegati.banner') %></strong></p>
+    <ul><% for (const d of discrepanze) { %><li><%- include('_discrepanza', { d }) %></li><% } %></ul>
+  </div>
+  <% } %>
   <%- include('../partials/plate', { byKey }) %>
   <% sections.forEach((section, index) => { %>
   <section class="sheet__section" id="s-<%= section.key %>" aria-labelledby="h-<%= section.key %>">

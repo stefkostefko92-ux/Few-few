@@ -158,6 +158,7 @@ export function formValuesFromScheda(scheda: SchedaShown, fmt: ViewHelpers): For
     const valori = storedValori(slot.modulo, values[slot.column]);
     if (valori) Object.assign(out, moduloFormValues(slot.modulo, slot.prefix, valori));
   }
+  out.riepilogoOrdini = scheda.riepilogoOrdini ? '1' : '';
   for (const section of SECTIONS) {
     for (const field of section.fields as readonly FieldDef[]) {
       const raw = values[field.key];
@@ -200,7 +201,7 @@ export function schedaTitle(
 
 /** Празна форма: днешната дата по Рим, всичко друго празно. */
 export function emptyFormValues(today: string): FormValues {
-  const out: FormValues = {};
+  const out: FormValues = { riepilogoOrdini: '' };
   for (const section of SECTIONS) {
     for (const field of section.fields as readonly FieldDef[]) {
       out[field.key] = field.kind === 'checks' ? [] : field.kind === 'date' ? today : '';

@@ -269,7 +269,8 @@ model Scheda {
   capienzaPersone         Int?
   fermate                 Int?
   ubicazioneMacchina      UbicazioneMacchina[]
-  ubicazioneCassettina    Int?
+  /// Къде е кутийката — свободен текст (до октомври 2026 беше цяло число: етажът).
+  ubicazioneCassettina    String?              @db.VarChar(120)
   parcheggio              String?              @db.VarChar(300)
   tipoImpianto            TipoImpianto[]
   tipoPorte               TipoPorte[]
@@ -324,6 +325,8 @@ model Scheda {
   arganoPreventivo        Boolean?
   /// Запитването за оферта на Montanari: {modulo, valori}. Има свой PDF.
   preventivoArgano        Json?
+  /// Печатът и PDF-ът на картата включват и попълненото в двата модула — изборът се пази в картата.
+  riepilogoOrdini         Boolean              @default(false)
   /// Нормализиран текст за търсачката (малки букви, без ударения) — пише го САМО src/schede/service.ts.
   searchText              String               @default("")
   /// Фирмата на картата — тази на създателя (или избраната от MASTER). Вижда я само тази фирма и MASTER.
