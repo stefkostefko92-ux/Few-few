@@ -241,3 +241,12 @@ export async function signedIn(role: Role, aziendaId?: string) {
   assert.equal(reply.status, 302, `login of ${role} failed with ${reply.status}`);
   return { user, browser };
 }
+
+/** The one-time link shown after an invite or a reset — as a path on the test server. */
+export function linkFrom(body: string): string {
+  const value = /<input class="input" id="link" type="text" readonly value="([^"]+)"/.exec(
+    body,
+  )?.[1];
+  assert.ok(value, 'the page shows the link once');
+  return new URL(value).pathname;
+}

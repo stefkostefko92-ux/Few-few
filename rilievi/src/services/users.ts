@@ -28,7 +28,7 @@ const USER_SELECT = {
   deactivatedAt: true,
   lastLoginAt: true,
   createdAt: true,
-  invitedBy: { select: { name: true, master: true } },
+  invitedBy: { select: { name: true, master: true, memberships: { select: { aziendaId: true } } } },
   memberships: {
     select: { aziendaId: true, role: true, azienda: { select: { name: true } } },
     orderBy: { azienda: { name: 'asc' } },
@@ -46,7 +46,10 @@ export interface UserView {
   deactivatedAt: Date | null;
   lastLoginAt: Date | null;
   createdAt: Date;
-  /** Поканил го е MASTER, а гледа друг: показва се „Amministrazione del portale“, не името. */
+  /**
+   * Кой го е поканил: MASTER за другите е „Amministrazione del portale“; човек от фирма извън обхвата на
+   * гледащия не се показва изобщо (null).
+   */
   invitedBy: { name: string; portal: boolean } | null;
   memberships: Array<{ aziendaId: string; aziendaName: string; role: Role; manageable: boolean }>;
   /** Име, имейл, връзка за парола. */
@@ -54,6 +57,16 @@ export interface UserView {
   /** Деактивиране / активиране. */
   activable: boolean;
   self: boolean;
+}
+
+function inviterOf(actor: SessionUser, row: UserRow, scope: Scope): UserView['invitedBy'] {
+  const inviter = row.invitedBy;
+  if (!inviter) return null;
+  if (actor.master) return { name: inviter.name, portal: false };
+  if (inviter.master) return { name: '', portal: true };
+  return inviter.memberships.some((m) => inScope(scope, m.aziendaId))
+    ? { name: inviter.name, portal: false }
+    : null;
 }
 
 function viewOf(actor: SessionUser, row: UserRow, scope: Scope): UserView {
@@ -66,10 +79,7 @@ function viewOf(actor: SessionUser, row: UserRow, scope: Scope): UserView {
     deactivatedAt: row.deactivatedAt,
     lastLoginAt: row.lastLoginAt,
     createdAt: row.createdAt,
-    invitedBy: row.invitedBy && {
-      name: row.invitedBy.master && !actor.master ? '' : row.invitedBy.name,
-      portal: row.invitedBy.master && !actor.master,
-    },
+    invitedBy: inviterOf(actor, row, scope),
     // Фирмите извън обхвата на гледащия не се показват — нито името им, нито ролята.
     memberships: row.memberships
       .filter((m) => inScope(scope, m.aziendaId))
@@ -121,6 +131,21 @@ export async function getUser(actor: SessionUser, id: string): Promise<UserView 
     select: USER_SELECT,
   });
   return row ? viewOf(actor, row, scope) : null;
+}
+
+/**
+ * Неизползваните връзки за нова парола спират. Вика се, когато се смени кой управлява акаунта (нова фирма,
+ * по-висока роля) или накъде отиват писмата (нов имейл): иначе връзка, дадена от човек, който вече не
+ * управлява акаунта, пак би го отворила.
+ */
+export async function revokeResetLinks(
+  tx: Prisma.TransactionClient,
+  userId: string,
+): Promise<void> {
+  await tx.passwordReset.updateMany({
+    where: { userId, usedAt: null },
+    data: { usedAt: new Date() },
+  });
 }
 
 /** Човекът с ВСИЧКИТЕ му членства — проверката за управление гледа и фирмите извън обхвата. */
@@ -182,10 +207,7 @@ export async function createResetLink(
   if (!target || !canManageAccount(actor, target) || target.deactivatedAt) return null;
   const { token, hash } = newToken();
   await prisma.$transaction(async (tx) => {
-    await tx.passwordReset.updateMany({
-      where: { userId: target.id, usedAt: null },
-      data: { usedAt: new Date() },
-    });
+    await revokeResetLinks(tx, target.id);
     await tx.passwordReset.create({
       data: {
         userId: target.id,
@@ -231,12 +253,7 @@ export async function updateAccount(
         where: { id: target.id },
         data: { name: input.name, email: input.email },
       });
-      if (fields.includes('email')) {
-        await tx.passwordReset.updateMany({
-          where: { userId: target.id, usedAt: null },
-          data: { usedAt: new Date() },
-        });
-      }
+      if (fields.includes('email')) await revokeResetLinks(tx, target.id);
       await writeUserAudit(
         {
           actorId: actor.id,

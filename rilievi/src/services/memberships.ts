@@ -5,7 +5,7 @@ import { canAssignRole, canManageMembership } from '../auth/manage.js';
 import { outranks } from '../auth/roles.js';
 import { activeAzienda, isUniqueViolation } from '../aziende/service.js';
 import type { SessionUser } from '../types.js';
-import { loadTarget } from './users.js';
+import { loadTarget, revokeResetLinks } from './users.js';
 
 /**
  * Членствата: в кои фирми е човекът и с каква роля във всяка. Фирми слага и маха само MASTER; ролята в
@@ -31,6 +31,8 @@ export async function changeMembershipRole(
       where: { userId_aziendaId: { userId: target.id, aziendaId } },
       data: { role },
     });
+    // С новата роля може да го управлява по-малко хора — връзка за парола, дадена преди, спира.
+    await revokeResetLinks(tx, target.id);
     await writeAudit(
       {
         actorId: actor.id,
@@ -63,6 +65,8 @@ export async function addMembership(
   try {
     await prisma.$transaction(async (tx) => {
       await tx.membership.create({ data: { userId: target.id, aziendaId: azienda.id, role } });
+      // Акаунтът вече стига и до тази фирма: връзка за парола от администратор само на другите спира.
+      await revokeResetLinks(tx, target.id);
       await writeAudit(
         {
           actorId: actor.id,

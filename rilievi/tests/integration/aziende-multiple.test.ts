@@ -1,6 +1,15 @@
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
-import { Browser, makeAzienda, makeUser, prisma, signedIn, startApp, stopApp } from './harness.js';
+import {
+  Browser,
+  linkFrom,
+  makeAzienda,
+  makeUser,
+  prisma,
+  signedIn,
+  startApp,
+  stopApp,
+} from './harness.js';
 
 before(startApp);
 after(stopApp);
@@ -179,13 +188,21 @@ describe('a person in several companies', () => {
   it('keeps an account shared with another company out of reach of one company ADMIN', async () => {
     const elsewhere = await makeAzienda('Azienda Esterna');
     const shared = await makeUser('TECNICO', 'Tecnico In Due Aziende');
-    await prisma.membership.create({
-      data: { userId: shared.id, aziendaId: elsewhere.id, role: 'TECNICO' },
+    const foreignBoss = await makeUser('ADMIN', 'Capo Esterno', elsewhere.id);
+    await prisma.user.update({
+      where: { id: shared.id },
+      data: {
+        invitedById: foreignBoss.id,
+        memberships: { create: { aziendaId: elsewhere.id, role: 'TECNICO' } },
+      },
     });
     const { browser } = await signedIn('ADMIN');
     const page = await browser.get(`/utenti/${shared.id}`);
     assert.equal(page.status, 200);
     assert.doesNotMatch(page.body, /Azienda Esterna/, 'the other company is not shown');
+    assert.doesNotMatch(page.body, /Capo Esterno/, 'nor who invited the person from there');
+    const { browser: master } = await signedIn('MASTER');
+    assert.match((await master.get(`/utenti/${shared.id}`)).body, /Capo Esterno/);
     assert.match(page.body, /li gestisce l(&#39;|')amministrazione del portale/);
     assert.doesNotMatch(page.body, /action="\/utenti\/[a-z0-9]+\/(stato|account|reimposta)"/);
 
@@ -202,5 +219,32 @@ describe('a person in several companies', () => {
     const roles = Object.fromEntries(after.memberships.map((m) => [m.aziendaId, m.role]));
     assert.equal(roles[shared.aziendaId!], 'OPERATORE');
     assert.equal(roles[elsewhere.id], 'TECNICO');
+  });
+
+  it('ends a password link given before the account got a new role or another company', async () => {
+    const { user: admin, browser } = await signedIn('ADMIN');
+    const { browser: master } = await signedIn('MASTER');
+    const linkFor = async (id: string) =>
+      linkFrom((await browser.submit(`/utenti/${id}`, `/utenti/${id}/reimposta`, {})).body);
+
+    // Made ADMIN by the MASTER: the link from a peer it no longer answers to stops working.
+    const promoted = await makeUser('TECNICO', 'Tecnico Promosso');
+    const first = await linkFor(promoted.id);
+    assert.equal((await new Browser().get(first)).status, 200);
+    await master.submit(
+      `/utenti/${promoted.id}`,
+      `/utenti/${promoted.id}/aziende/${admin.aziendaId}/ruolo`,
+      { role: 'ADMIN' },
+    );
+    assert.equal((await new Browser().get(first)).status, 410);
+
+    // Added to a company the admin does not manage: the account is no longer the admin's.
+    const moved = await makeUser('TECNICO', 'Tecnico Spostato');
+    const second = await linkFor(moved.id);
+    await master.submit(`/utenti/${moved.id}`, `/utenti/${moved.id}/aziende`, {
+      azienda: (await makeAzienda('Azienda Senza Quel Capo')).id,
+      role: 'TECNICO',
+    });
+    assert.equal((await new Browser().get(second)).status, 410);
   });
 });

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
 import {
   Browser,
+  linkFrom,
   makeAzienda,
   makeUser,
   outbox,
@@ -15,15 +16,6 @@ before(startApp);
 after(stopApp);
 
 const NEW_PASSWORD = 'Bottoniera-Al-Piano-Due';
-
-/** The one-time link shown after an invite or a reset — as a path on the test server. */
-function linkFrom(body: string): string {
-  const value = /<input class="input" id="link" type="text" readonly value="([^"]+)"/.exec(
-    body,
-  )?.[1];
-  assert.ok(value, 'the page shows the link once');
-  return new URL(value).pathname;
-}
 
 async function invite(manager: Browser, form: Record<string, string>) {
   return manager.submit('/utenti/invita', '/utenti/invita', {
