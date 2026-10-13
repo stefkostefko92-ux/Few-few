@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { mailEnabled } from '../config.js';
-import { writeAudit } from '../audit.js';
+import { writeUserAudit } from '../audit.js';
 import { issuePreCsrf, requireCsrf, requirePreAuthCsrf, safeNext } from '../auth/guards.js';
 import { PASSWORD_MAX_LENGTH } from '../auth/password.js';
 import {
@@ -75,13 +75,15 @@ authRouter.post('/esci', requireCsrf, async (req, res) => {
   const principal = req.principal;
   if (principal) {
     await destroySessionById(principal.session.id);
-    await writeAudit({
-      actorId: principal.user.id,
-      action: 'LOGOUT',
-      aziendaId: principal.user.aziendaId,
-      targetType: 'user',
-      targetId: principal.user.id,
-    });
+    await writeUserAudit(
+      {
+        actorId: principal.user.id,
+        action: 'LOGOUT',
+        targetType: 'user',
+        targetId: principal.user.id,
+      },
+      principal.user.id,
+    );
   }
   clearSessionCookie(res);
   setFlash(res, 'ok', 'flash.loggedOut');

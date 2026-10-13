@@ -2,13 +2,22 @@
 <div class="page-head">
   <div>
     <h1><%= t('account.title') %></h1>
-    <p class="page-head__sub"><%= currentUser.email %>, <%= t('role.' + currentUser.role) %></p>
+    <p class="page-head__sub"><%= currentUser.email %><% if (currentUser.master) { %>, <%= t('role.MASTER') %><% } %></p>
   </div>
   <form method="post" action="/esci"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn" type="submit"><%= t('account.logout') %></button></form>
 </div>
 <div class="stack-gap">
   <% if (currentUser.mustChangePassword) { %><div class="notice" role="alert"><p><strong><%= t('account.mustChange') %></strong></p></div><% } %>
   <% if (error) { %><div class="errors" role="alert" id="form-error"><h2><%= t(error) %></h2></div><% } %>
+  <% if (currentUser.memberships.length > 0) { %>
+  <section aria-labelledby="h-aziende">
+    <h2 class="section__title" id="h-aziende"><%= t('account.aziendeTitle') %></h2>
+    <dl class="kv">
+      <% for (const m of currentUser.memberships) { %><div class="kv__item"><dt><%= m.aziendaName %></dt><dd><%= t('role.' + m.role) %></dd></div>
+      <% } %>
+    </dl>
+  </section>
+  <% } %>
   <section aria-labelledby="h-password">
     <h2 class="section__title" id="h-password"><%= t('account.passwordTitle') %></h2>
     <form class="form" method="post" action="/account/password" novalidate>

@@ -78,7 +78,7 @@ export async function submitAccessRequest(input: RequestInput): Promise<SubmitRe
 async function notifyMasters(id: string, company: string): Promise<void> {
   if (!mailEnabled()) return;
   const masters = await prisma.user.findMany({
-    where: { role: 'MASTER', deactivatedAt: null },
+    where: { master: true, deactivatedAt: null },
     select: { email: true },
   });
   const link = `${config().PUBLIC_BASE_URL}/richieste/${id}`;
@@ -178,8 +178,9 @@ export async function acceptAccessRequest(
   input: AcceptInput,
 ): Promise<AcceptResult> {
   if (!isRequestId(id)) return { ok: false, error: 'notFound' };
-  // Като всяка покана: само роля под тази на поканващия (MASTER не се кани).
-  if (!outranks(actor.role, input.role)) return { ok: false, error: 'roleNotAllowed' };
+  // Заявките решава само MASTER (`requests:manage`); като всяка покана — роля под неговата (MASTER не се кани).
+  if (!actor.master || !outranks('MASTER', input.role))
+    return { ok: false, error: 'roleNotAllowed' };
   try {
     const done = await prisma.$transaction(async (tx) => {
       const claimed = await tx.accessRequest.updateMany({

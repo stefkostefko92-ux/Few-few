@@ -2,8 +2,8 @@ import type { Invite, Prisma, Role } from '@prisma/client';
 import { prisma } from '../db.js';
 import { writeAudit } from '../audit.js';
 import { hashPassword, passwordProblem, type PasswordProblem } from '../auth/password.js';
-import { outranks } from '../auth/roles.js';
-import { aziendaWhere, inScope, scopeOf } from '../auth/scope.js';
+import { isPrivileged, outranks } from '../auth/roles.js';
+import { aziendaWhere, canIn, roleIn, scopeFor } from '../auth/scope.js';
 import { activeAzienda } from '../aziende/service.js';
 import { DEFAULT_LOCALE, translatorFor } from '../i18n.js';
 import { inviteMail } from '../mail/templates.js';
@@ -20,19 +20,31 @@ export type CreateInviteResult =
   | { ok: false; error: 'roleNotAllowed' | 'userExists' | 'azienda' };
 
 /**
- * Покана от човек със `users:manage` — само за роля ПОД неговата и само в своята фирма; MASTER
- * избира фирмата (активна). Нова покана за същия имейл в същата фирма обезсилва старите (връзката
- * от старото писмо спира да работи).
+ * Фирмата на поканата: MASTER избира всяка; администратор на една фирма кани винаги в нея, каквото и
+ * да е дошло от формата; на няколко — само в избрана от тях.
+ */
+function inviteAzienda(actor: SessionUser, posted: unknown): string | null {
+  const scope = scopeFor(actor, 'users:manage');
+  if (scope.all) return typeof posted === 'string' ? posted : null;
+  if (scope.aziendaIds.length === 1) return scope.aziendaIds[0]!;
+  return typeof posted === 'string' && scope.aziendaIds.includes(posted) ? posted : null;
+}
+
+/**
+ * Покана от човек със `users:manage` във фирмата — само за роля ПОД неговата в нея (ролята е различна
+ * за всяка фирма). Нова покана за същия имейл в същата фирма обезсилва старите (връзката от старото
+ * писмо спира да работи).
  */
 export async function createInvite(
   actor: SessionUser,
   input: { email: string; name: string; role: Role; aziendaId: unknown },
 ): Promise<CreateInviteResult> {
-  if (!outranks(actor.role, input.role)) return { ok: false, error: 'roleNotAllowed' };
-  const scope = scopeOf(actor);
-  // Администраторът кани само в своята фирма — каквото и да е дошло от формата.
-  const azienda = await activeAzienda(scope.all ? input.aziendaId : scope.aziendaId);
+  const aziendaId = inviteAzienda(actor, input.aziendaId);
+  const azienda =
+    aziendaId && canIn(actor, 'users:manage', aziendaId) ? await activeAzienda(aziendaId) : null;
   if (!azienda) return { ok: false, error: 'azienda' };
+  const own = roleIn(actor, azienda.id);
+  if (!own || !outranks(own, input.role)) return { ok: false, error: 'roleNotAllowed' };
   const existing = await prisma.user.findUnique({ where: { email: input.email } });
   if (existing) return { ok: false, error: 'userExists' };
   const { invite, token } = await prisma.$transaction((tx) =>
@@ -110,19 +122,24 @@ export function pendingInvites(actor: SessionUser, filter?: string | null) {
       acceptedAt: null,
       revokedAt: null,
       expiresAt: { gt: new Date() },
-      ...aziendaWhere(scopeOf(actor), filter),
+      ...aziendaWhere(scopeFor(actor, 'users:manage'), filter),
     },
-    include: { invitedBy: { select: { name: true } }, azienda: { select: { name: true } } },
+    include: {
+      invitedBy: { select: { name: true, master: true } },
+      azienda: { select: { name: true } },
+    },
     orderBy: { createdAt: 'desc' },
   });
 }
 
-/** Отмяна: от човек над ролята на поканата, в своята фирма (MASTER — във всяка). */
+/** Отмяна: от човек над ролята на поканата в нейната фирма (MASTER — във всяка). */
 export async function revokeInvite(actor: SessionUser, inviteId: string): Promise<boolean> {
   const invite = await prisma.invite.findUnique({ where: { id: inviteId } });
   if (!invite || invite.acceptedAt || invite.revokedAt) return false;
-  if (!outranks(actor.role, invite.role) || !inScope(scopeOf(actor), invite.aziendaId))
-    return false;
+  const own = canIn(actor, 'users:manage', invite.aziendaId)
+    ? roleIn(actor, invite.aziendaId)
+    : null;
+  if (!own || !outranks(own, invite.role)) return false;
   return prisma.$transaction(async (tx) => {
     const revoked = await tx.invite.updateMany({
       where: { id: invite.id, acceptedAt: null, revokedAt: null },
@@ -159,12 +176,13 @@ export async function findValidInvite(token: unknown): Promise<ValidInvite | nul
 }
 
 export type AcceptResult =
-  | { ok: true; user: { id: string; role: Role } }
+  | { ok: true; user: { id: string; privileged: boolean } }
   | { ok: false; error: 'invalid' | 'userExists' | PasswordProblem };
 
 /**
- * Приемане: акаунтът се създава с имейла и ролята ОТ ПОКАНАТА (не от формата). Поканата се
- * изразходва в същата транзакция — две паралелни приемания дават един акаунт.
+ * Приемане: акаунтът се създава с имейла, фирмата и ролята ОТ ПОКАНАТА (не от формата) — първото му
+ * членство; другите фирми ги добавя само MASTER. Поканата се изразходва в същата транзакция — две
+ * паралелни приемания дават един акаунт.
  */
 export async function acceptInvite(
   token: unknown,
@@ -189,8 +207,7 @@ export async function acceptInvite(
         data: {
           email: invite.email,
           name: input.name,
-          role: invite.role,
-          aziendaId: invite.aziendaId,
+          memberships: { create: { aziendaId: invite.aziendaId, role: invite.role } },
           passwordHash,
           invitedById: invite.invitedById,
           lastLoginAt: new Date(),
@@ -208,7 +225,10 @@ export async function acceptInvite(
         },
         tx,
       );
-      return { ok: true, user: { id: user.id, role: user.role } } as const;
+      return {
+        ok: true,
+        user: { id: user.id, privileged: isPrivileged(invite.role) },
+      } as const;
     })
     .catch((error: unknown) => {
       // Акаунт с този имейл се е появил междувременно — транзакцията се връща цялата (поканата остава).

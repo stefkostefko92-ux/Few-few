@@ -1,7 +1,7 @@
 import { Prisma, type Scheda } from '@prisma/client';
 import { prisma } from '../db.js';
 import { writeAudit } from '../audit.js';
-import { schedaScope, type Scope } from '../auth/scope.js';
+import { aziendaSql, inScope, schedaScope, type Scope } from '../auth/scope.js';
 import { escapeLike, queryTokens, searchTextOf } from './search.js';
 import type { SchedaData } from './validation.js';
 
@@ -89,7 +89,9 @@ export async function listSchede(options: {
     options.trash ? Prisma.sql`"deletedAt" IS NOT NULL` : Prisma.sql`"deletedAt" IS NULL`,
     ...tokens.map((token) => Prisma.sql`"searchText" LIKE ${`%${token}%`}`),
   ];
-  if (scoped.aziendaId) conditions.unshift(Prisma.sql`"aziendaId" = ${scoped.aziendaId}`);
+  const companies = aziendaSql(options.scope, options.azienda);
+  if (companies === 'none') return { rows: [], total: 0, page, pages: 1, tokens };
+  if (companies) conditions.unshift(companies);
   const where = Prisma.join(conditions, ' AND ');
   const [counted, found] = await Promise.all([
     prisma.$queryRaw<Array<{ n: number }>>`SELECT COUNT(*)::int AS n FROM "Scheda" WHERE ${where}`,
@@ -135,18 +137,19 @@ const WITH_PEOPLE = {
 
 export type SchedaFull = Prisma.SchedaGetPayload<{ include: typeof WITH_PEOPLE }>;
 
-/** Карта по id в обхвата; изтритата — само ако е поискана изрично (кошчето). */
+/** Карта по id в обхвата; изтритата — само за обхвата на кошчето (`trashScope`, ролята във фирмата ѝ). */
 export async function getScheda(
   scope: Scope,
   id: string,
-  includeDeleted = false,
+  trashScope?: Scope,
 ): Promise<SchedaFull | null> {
   if (!/^[a-z0-9]{20,40}$/.test(id)) return null;
   const scheda = await prisma.scheda.findFirst({
     where: { id, ...schedaScope(scope) },
     include: WITH_PEOPLE,
   });
-  if (!scheda || (scheda.deletedAt && !includeDeleted)) return null;
+  if (!scheda) return null;
+  if (scheda.deletedAt && !(trashScope && inScope(trashScope, scheda.aziendaId))) return null;
   return scheda;
 }
 

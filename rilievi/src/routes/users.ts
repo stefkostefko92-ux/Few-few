@@ -1,56 +1,62 @@
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
-import { emailSchema } from '../auth/email.js';
+import { emailSchema, personNameSchema } from '../auth/email.js';
 import { principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
-import { assignableRoles, isRole } from '../auth/roles.js';
-import { scopeOf } from '../auth/scope.js';
-import { activeAziende, allAziendeNames, isAziendaId } from '../aziende/service.js';
+import { assignableRoles, isRole, outranks } from '../auth/roles.js';
+import { canIn, roleIn, scopeFor, spansAziende, topRole } from '../auth/scope.js';
+import { activeAziende } from '../aziende/service.js';
 import { setFlash } from '../http/flash.js';
-import { ADMIN_RESET_HOURS } from '../services/auth.js';
 import { createInvite, pendingInvites, revokeInvite, INVITE_DAYS } from '../services/invites.js';
-import {
-  canManage,
-  changeAzienda,
-  changeRole,
-  createResetLink,
-  getUser,
-  listUsers,
-  setActive,
-} from '../services/users.js';
+import { listUsers } from '../services/users.js';
+import type { SessionUser } from '../types.js';
+import { aziendaFilterOf, aziendeOf } from './schede-shared.js';
 
 /**
- * Хората на портала. Кани и управлява само най-високата роля във фирмата (ADMIN — в своята фирма) и
- * собственикът на портала (MASTER — във всяка фирма, избира я при поканата).
+ * Хората на портала: списъкът, поканите и отмяната им. Кани и управлява ADMIN — във фирмите, в които е
+ * ADMIN (роли под своята) — и собственикът на портала (MASTER — във всяка фирма). Човекът и действията
+ * над него — users-manage.ts.
  */
 export const usersRouter: Router = Router();
 const manage = requireCapability('users:manage');
 
-/** Филтърът по фирма — само за MASTER. */
-function aziendaFilterOf(req: Request): string | null {
-  const value = req.query.azienda;
-  return scopeOf(principalOf(req).user).all && isAziendaId(value) ? value : null;
-}
-
 usersRouter.get('/utenti', manage, async (req, res) => {
   const actor = principalOf(req).user;
-  const all = scopeOf(actor).all;
-  const filter = aziendaFilterOf(req);
+  const scope = scopeFor(actor, 'users:manage');
+  const filter = aziendaFilterOf(req, scope);
   const [users, invites, aziende] = await Promise.all([
     listUsers(actor, filter),
     pendingInvites(actor, filter),
-    all ? allAziendeNames() : Promise.resolve([]),
+    aziendeOf(req, scope),
   ]);
   res.render('users/index', {
-    users: users.map((user) => ({ ...user, manageable: canManage(actor, user) })),
-    invites: invites.map((invite) => ({
-      ...invite,
-      revocable: assignableRoles(actor.role).includes(invite.role),
-    })),
-    showAzienda: all,
+    users,
+    invites: invites.map((invite) => {
+      const own = canIn(actor, 'users:manage', invite.aziendaId)
+        ? roleIn(actor, invite.aziendaId)
+        : null;
+      return {
+        ...invite,
+        // Поканите от MASTER: за останалите — „Amministrazione del portale“, не името му.
+        invitedByPortal: invite.invitedBy.master && !actor.master,
+        revocable: own !== null && outranks(own, invite.role),
+      };
+    }),
+    master: actor.master,
+    showAzienda: spansAziende(scope),
     aziende,
     aziendaFilter: filter ?? '',
   });
 });
+
+/** Ролите, които човекът раздава: под най-високата му роля във фирмите, в които кани. */
+function inviteRoles(actor: SessionUser) {
+  const scope = scopeFor(actor, 'users:manage');
+  const memberships = actor.memberships.filter(
+    (m) => !scope.all && scope.aziendaIds.includes(m.aziendaId),
+  );
+  const top = topRole({ master: actor.master, memberships });
+  return top ? assignableRoles(top) : [];
+}
 
 interface InviteForm {
   email: string;
@@ -67,19 +73,26 @@ async function renderInviteForm(
   error: string | null,
 ): Promise<void> {
   const actor = principalOf(req).user;
+  const scope = scopeFor(actor, 'users:manage');
+  // MASTER избира всяка активна фирма; администратор на няколко — от своите; на една — тя, без избор.
+  const choices = scope.all
+    ? await activeAziende()
+    : actor.memberships
+        .filter((m) => scope.aziendaIds.includes(m.aziendaId))
+        .map((m) => ({ id: m.aziendaId, name: m.aziendaName }));
+  const only = !scope.all && choices.length === 1 ? choices[0]! : null;
   res.status(status).render('users/invite', {
     form,
     error,
-    roles: assignableRoles(actor.role),
+    roles: inviteRoles(actor),
     days: INVITE_DAYS,
-    // MASTER избира фирмата; администраторът кани в своята (показва се само името ѝ).
-    aziende: scopeOf(actor).all ? await activeAziende() : [],
-    ownAzienda: actor.aziendaName,
+    aziende: only ? [] : choices,
+    ownAzienda: only?.name ?? null,
   });
 }
 
 usersRouter.get('/utenti/invita', manage, async (req, res) => {
-  const roles = assignableRoles(principalOf(req).user.role);
+  const roles = inviteRoles(principalOf(req).user);
   await renderInviteForm(
     req,
     res,
@@ -96,10 +109,7 @@ usersRouter.get('/utenti/invita', manage, async (req, res) => {
 
 const inviteSchema = z.object({
   email: emailSchema,
-  name: z
-    .string()
-    .transform((value) => value.replace(/\p{Cc}/gu, ' ').trim())
-    .pipe(z.string().min(2).max(120)),
+  name: personNameSchema,
   role: z.string().refine(isRole),
 });
 
@@ -152,75 +162,4 @@ usersRouter.post('/utenti/inviti/:id/revoca', manage, requireCsrf, async (req, r
   const ok = await revokeInvite(principalOf(req).user, String(req.params.id));
   setFlash(res, ok ? 'ok' : 'error', ok ? 'flash.inviteRevoked' : 'flash.notAllowed');
   res.redirect('/utenti');
-});
-
-usersRouter.get('/utenti/:id', manage, async (req, res) => {
-  const actor = principalOf(req).user;
-  const user = await getUser(actor, String(req.params.id));
-  if (!user) {
-    res.status(404).render('errors/error', {
-      status: 404,
-      titleKey: 'error.notFoundTitle',
-      messageKey: 'error.notFound',
-    });
-    return;
-  }
-  const all = scopeOf(actor).all;
-  res.render('users/show', {
-    target: user,
-    manageable: canManage(actor, user),
-    roles: assignableRoles(actor.role),
-    resetHours: ADMIN_RESET_HOURS,
-    // Само MASTER мести хора между фирмите.
-    aziende: all && user.role !== 'MASTER' ? await activeAziende() : [],
-  });
-});
-
-usersRouter.post('/utenti/:id/ruolo', manage, requireCsrf, async (req, res) => {
-  const role = (req.body as Record<string, unknown>).role;
-  const ok = isRole(role) && (await changeRole(principalOf(req).user, String(req.params.id), role));
-  setFlash(res, ok ? 'ok' : 'error', ok ? 'flash.roleChanged' : 'flash.notAllowed');
-  res.redirect(`/utenti/${encodeURIComponent(String(req.params.id))}`);
-});
-
-usersRouter.post('/utenti/:id/azienda', manage, requireCsrf, async (req, res) => {
-  const ok = await changeAzienda(
-    principalOf(req).user,
-    String(req.params.id),
-    (req.body as Record<string, unknown>).azienda,
-  );
-  setFlash(res, ok ? 'ok' : 'error', ok ? 'flash.aziendaChanged' : 'flash.notAllowed');
-  res.redirect(`/utenti/${encodeURIComponent(String(req.params.id))}`);
-});
-
-usersRouter.post('/utenti/:id/stato', manage, requireCsrf, async (req, res) => {
-  const active = (req.body as Record<string, unknown>).active === '1';
-  const ok = await setActive(principalOf(req).user, String(req.params.id), active);
-  setFlash(
-    res,
-    ok ? 'ok' : 'error',
-    ok ? (active ? 'flash.userReactivated' : 'flash.userDeactivated') : 'flash.notAllowed',
-  );
-  res.redirect(`/utenti/${encodeURIComponent(String(req.params.id))}`);
-});
-
-usersRouter.post('/utenti/:id/reimposta', manage, requireCsrf, async (req, res) => {
-  const actor = principalOf(req).user;
-  const user = await getUser(actor, String(req.params.id));
-  const result = user ? await createResetLink(actor, user.id) : null;
-  if (!user || !result) {
-    setFlash(res, 'error', 'flash.notAllowed');
-    res.redirect('/utenti');
-    return;
-  }
-  res.set('Cache-Control', 'no-store');
-  res.render('users/link', {
-    kind: 'reset',
-    link: result.link,
-    mail: result.mail,
-    email: user.email,
-    name: user.name,
-    hours: ADMIN_RESET_HOURS,
-    hideSwitches: true,
-  });
 });

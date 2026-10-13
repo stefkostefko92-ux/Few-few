@@ -14,7 +14,11 @@
     "cestino": "Cestino",
     "registro": "Registro",
     "account": "Il tuo account",
-    "aziende": "Aziende"
+    "aziende": "Aziende",
+    "aziendeCount": {
+      "one": "{n} azienda",
+      "other": "{n} aziende"
+    }
   },
   "common": {
     "yes": "Sì",
@@ -83,8 +87,13 @@
     "aziendaSaved": "Nome dell'azienda aggiornato.",
     "logoSaved": "Logo aggiornato.",
     "logoRemoved": "Logo rimosso.",
-    "aziendaDeactivated": "Azienda disattivata: le sue persone non possono più accedere.",
+    "aziendaDeactivated": "Azienda disattivata: chi lavorava solo per questa azienda non può più accedere, gli altri continuano nelle loro aziende.",
     "aziendaReactivated": "Azienda riattivata.",
-    "aziendaChanged": "Azienda dell'account aggiornata."
+    "accountSaved": "Nome ed email salvati.",
+    "membershipAdded": "Account aggiunto all'azienda.",
+    "membershipExists": "L'account è già in questa azienda.",
+    "membershipAzienda": "Scegli un'azienda attiva.",
+    "membershipRemoved": "Account tolto dall'azienda.",
+    "membershipLast": "È l'unica azienda dell'account e non si può togliere: per togliere l'accesso, disattivalo."
   }
 }

@@ -1,16 +1,17 @@
 import type { CookieOptions, NextFunction, Request, Response } from 'express';
-import type { Prisma, Role } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import { SignJWT, jwtVerify } from 'jose';
 import { config, isProduction } from '../config.js';
 import { prisma } from '../db.js';
 import { randomToken } from '../crypto.js';
 import { readCookie } from '../http/cookies.js';
 import { DAY, HOUR, MINUTE } from '../time.js';
-import { isPrivileged } from './roles.js';
-import type { Principal } from '../types.js';
+import { activeMemberships, MEMBERSHIP_SELECT } from './memberships.js';
+import { privilegedAccess } from './scope.js';
+import type { Principal, SessionUser } from '../types.js';
 
 /**
- * MASTER/ADMIN: 12 часа без действие, таван 3 дни. Останалите (техници на телефон в машинното): 7 дни
+ * MASTER/ADMIN (поне в една фирма): 12 часа без действие, таван 3 дни. Останалите (техници на телефон в машинното): 7 дни
  * без действие, таван 30 дни — да не се вписват отново всяка сутрин.
  */
 export const SESSION_LIMITS = {
@@ -21,8 +22,8 @@ export const SESSION_LIMITS = {
 /** Най-дългият живот на сесия изобщо — по-стара няма валидна (по него чисти поддръжката). */
 export const MAX_SESSION_MS = SESSION_LIMITS.standard.absoluteMs;
 
-export function sessionLimits(role: Role): { idleMs: number; absoluteMs: number } {
-  return isPrivileged(role) ? SESSION_LIMITS.privileged : SESSION_LIMITS.standard;
+export function sessionLimits(privileged: boolean): { idleMs: number; absoluteMs: number } {
+  return privileged ? SESSION_LIMITS.privileged : SESSION_LIMITS.standard;
 }
 
 const SLIDE_MIN_INTERVAL_MS = MINUTE;
@@ -56,8 +57,11 @@ export interface NewSession {
 }
 
 /** Ред в базата + подписан JWT с `sid`. Срокът на JWT-то е абсолютният таван на сесията. */
-export async function createSession(user: { id: string; role: Role }): Promise<NewSession> {
-  const { idleMs, absoluteMs } = sessionLimits(user.role);
+export async function createSession(user: {
+  id: string;
+  privileged: boolean;
+}): Promise<NewSession> {
+  const { idleMs, absoluteMs } = sessionLimits(user.privileged);
   const now = Date.now();
   const session = await prisma.session.create({
     data: {
@@ -134,12 +138,11 @@ export async function resolveSession(token: string | undefined): Promise<Princip
           id: true,
           email: true,
           name: true,
-          role: true,
+          master: true,
           theme: true,
           mustChangePassword: true,
           deactivatedAt: true,
-          aziendaId: true,
-          azienda: { select: { name: true, deactivatedAt: true } },
+          memberships: { select: MEMBERSHIP_SELECT },
         },
       },
     },
@@ -147,11 +150,14 @@ export async function resolveSession(token: string | undefined): Promise<Princip
   if (!session || session.userId !== claims.sub) return null;
 
   const now = Date.now();
-  const { idleMs, absoluteMs } = sessionLimits(session.user.role);
+  const memberships = activeMemberships(session.user.memberships);
+  const access = { master: session.user.master, memberships };
+  const { idleMs, absoluteMs } = sessionLimits(privilegedAccess(access));
   const deadline = session.createdAt.getTime() + absoluteMs;
-  // Деактивирането (на човека или на фирмата му) важи веднага: сесията пада при следващата заявка.
+  // Деактивирането важи веднага: на човека — изцяло; на фирма — само за нея, а човек без нито една
+  // активна фирма (извън MASTER) остава без достъп. Сесията пада при следващата заявка.
   const inactive =
-    session.user.deactivatedAt !== null || Boolean(session.user.azienda?.deactivatedAt);
+    session.user.deactivatedAt !== null || (!access.master && memberships.length === 0);
   if (session.expiresAt.getTime() <= now || now >= deadline || inactive) {
     await prisma.session.deleteMany({ where: { id: session.id } });
     return null;
@@ -166,8 +172,8 @@ export async function resolveSession(token: string | undefined): Promise<Princip
     if (slid.count === 0) return null;
   }
 
-  const { deactivatedAt: _deactivatedAt, azienda, ...rest } = session.user;
-  const user = { ...rest, aziendaName: azienda?.name ?? null };
+  const { id, email, name, master, theme, mustChangePassword } = session.user;
+  const user: SessionUser = { id, email, name, master, memberships, theme, mustChangePassword };
   return { user, session: { id: session.id, csrfToken: session.csrfToken } };
 }
 

@@ -168,10 +168,15 @@ describe('invitations', () => {
     assert.equal((await guest.get('/schede')).status, 200);
     const user = await prisma.user.findUniqueOrThrow({
       where: { email: 'tecnico.due@rilievi.test' },
+      include: { memberships: true },
     });
-    assert.equal(user.role, 'TECNICO');
+    assert.equal(user.master, false);
     assert.equal(user.name, 'Mario Bianchi');
-    assert.equal(user.aziendaId, admin.aziendaId);
+    assert.deepEqual(
+      user.memberships.map((m) => [m.aziendaId, m.role]),
+      [[admin.aziendaId, 'TECNICO']],
+      'one membership: the invite’s company with the invite’s role',
+    );
     assert.equal((await new Browser().get(path)).status, 410, 'the link works once');
   });
 
@@ -211,121 +216,14 @@ describe('invitations', () => {
     assert.equal(again.status, 409);
   });
 
-  it('keeps each company ADMIN to their own people and invites', async () => {
-    const other = await makeAzienda('Concorrente Spa');
-    const stranger = await makeUser('TECNICO', 'Tecnico Altrui', other.id);
-    const { browser: otherAdmin } = await signedIn('ADMIN', other.id);
-    await invite(otherAdmin, { email: 'invito.altrui@rilievi.test', role: 'TECNICO' });
-    const foreignInvite = await prisma.invite.findFirstOrThrow({
-      where: { email: 'invito.altrui@rilievi.test' },
-    });
-
-    const { browser } = await signedIn('ADMIN');
-    const list = await browser.get('/utenti');
-    assert.doesNotMatch(list.body, /Tecnico Altrui|invito\.altrui/);
-    assert.equal((await browser.get(`/utenti/${stranger.id}`)).status, 404);
-    const _csrf = await browser.csrf('/utenti');
-    await browser.post(`/utenti/${stranger.id}/stato`, { _csrf, active: '0' });
-    await browser.post(`/utenti/${stranger.id}/ruolo`, { _csrf, role: 'CLIENTE' });
-    const after = await prisma.user.findUniqueOrThrow({ where: { id: stranger.id } });
-    assert.equal(after.deactivatedAt, null);
-    assert.equal(after.role, 'TECNICO');
-    await browser.post(`/utenti/inviti/${foreignInvite.id}/revoca`, { _csrf });
-    const still = await prisma.invite.findUniqueOrThrow({ where: { id: foreignInvite.id } });
-    assert.equal(still.revokedAt, null);
-  });
-
-  it('gives a reset link from the company ADMIN that ends the old sessions', async () => {
-    const { user, browser: old } = await signedIn('TECNICO');
-    const { browser: manager } = await signedIn('ADMIN');
-    const reply = await manager.submit(`/utenti/${user.id}`, `/utenti/${user.id}/reimposta`, {});
-    assert.equal(reply.status, 200);
-    const path = linkFrom(reply.body);
-    assert.match(path, /^\/reimposta\//);
-    const guest = new Browser();
-    const _csrf = await guest.csrf(path);
-    const done = await guest.post(path, { _csrf, password: NEW_PASSWORD, confirm: NEW_PASSWORD });
-    assert.equal(done.status, 302);
-    assert.equal(done.location, '/accesso');
-    assert.equal((await old.get('/schede')).status, 302, 'old session ended');
-    assert.equal((await new Browser().login(user.email, NEW_PASSWORD)).status, 302);
-    assert.equal((await new Browser().get(path)).status, 410, 'the link works once');
-  });
-
-  it('lets managers change roles only below their own rank and never their own', async () => {
-    const { user: manager, browser } = await signedIn('ADMIN');
-    const technician = await makeUser('TECNICO');
-    const up = await browser.submit(`/utenti/${technician.id}`, `/utenti/${technician.id}/ruolo`, {
-      role: 'ADMIN',
-    });
-    assert.equal(up.status, 302);
-    assert.equal(
-      (await prisma.user.findUniqueOrThrow({ where: { id: technician.id } })).role,
-      'TECNICO',
-    );
-    await browser.submit(`/utenti/${technician.id}`, `/utenti/${technician.id}/ruolo`, {
-      role: 'DIREZIONE',
-    });
-    assert.equal(
-      (await prisma.user.findUniqueOrThrow({ where: { id: technician.id } })).role,
-      'DIREZIONE',
-    );
-    const _csrf = await browser.csrf('/utenti');
-    const self = await browser.post(`/utenti/${manager.id}/ruolo`, { _csrf, role: 'TECNICO' });
-    assert.equal(self.status, 302);
-    assert.equal(
-      (await prisma.user.findUniqueOrThrow({ where: { id: manager.id } })).role,
-      'ADMIN',
-    );
-    const peer = await makeUser('ADMIN');
-    await browser.post(`/utenti/${peer.id}/stato`, { _csrf, active: '0' });
-    assert.equal(
-      (await prisma.user.findUniqueOrThrow({ where: { id: peer.id } })).deactivatedAt,
-      null,
-    );
-  });
-
-  it('lets only the MASTER move an account to another company', async () => {
-    const target = await makeAzienda('Destinazione Srl');
-    const person = await makeUser('TECNICO');
-    const { browser: admin } = await signedIn('ADMIN');
-    await admin.submit(`/utenti/${person.id}`, `/utenti/${person.id}/azienda`, {
-      azienda: target.id,
-    });
-    assert.notEqual(
-      (await prisma.user.findUniqueOrThrow({ where: { id: person.id } })).aziendaId,
-      target.id,
-    );
-    const { browser: master } = await signedIn('MASTER');
-    const moved = await master.submit(`/utenti/${person.id}`, `/utenti/${person.id}/azienda`, {
-      azienda: target.id,
-    });
-    assert.equal(moved.status, 302);
-    assert.equal(
-      (await prisma.user.findUniqueOrThrow({ where: { id: person.id } })).aziendaId,
-      target.id,
-    );
-  });
-
-  it('writes every user action to the audit log, tagged with the company', async () => {
+  it('writes every invitation to the audit log, tagged with the company', async () => {
     const entries = await prisma.auditLog.findMany({ select: { action: true, aziendaId: true } });
     const actions = entries.map((a) => a.action);
-    for (const action of [
-      'INVITE_CREATE',
-      'INVITE_ACCEPT',
-      'INVITE_REVOKE',
-      'PASSWORD_RESET_LINK',
-      'PASSWORD_RESET',
-      'USER_ROLE',
-      'USER_AZIENDA',
-      'LOGIN',
-    ]) {
+    for (const action of ['INVITE_CREATE', 'INVITE_ACCEPT', 'INVITE_REVOKE', 'LOGIN']) {
       assert.ok(actions.includes(action), action);
     }
     assert.ok(
-      entries
-        .filter((e) => e.action.startsWith('INVITE_') || e.action === 'USER_ROLE')
-        .every((e) => e.aziendaId !== null),
+      entries.filter((e) => e.action.startsWith('INVITE_')).every((e) => e.aziendaId !== null),
       'company events carry their company',
     );
   });

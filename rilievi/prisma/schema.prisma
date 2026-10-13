@@ -96,7 +96,7 @@ model Azienda {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  users          User[]
+  memberships    Membership[]
   invites        Invite[]
   schede         Scheda[]
   audit          AuditLog[]
@@ -111,7 +111,8 @@ model User {
   email              String    @unique
   name               String
   passwordHash       String
-  role               Role
+  /// Собственикът на портала (Carbon Stealth): вижда и управлява всичко, без фирма и без членства.
+  master             Boolean   @default(false)
   /// Не се ползва — порталът е само на италиански. Колоната остава („it“), за да не се трие с миграция.
   locale             String    @default("it")
   theme              Theme     @default(AUTO)
@@ -123,14 +124,13 @@ model User {
   lockedUntil        DateTime?
   lastLoginAt        DateTime?
   passwordChangedAt  DateTime  @default(now())
-  aziendaId          String?
-  azienda            Azienda?  @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
   invitedById        String?
   invitedBy          User?     @relation("InvitedUsers", fields: [invitedById], references: [id], onDelete: SetNull)
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
   invitedUsers    User[]          @relation("InvitedUsers")
+  memberships     Membership[]
   sessions        Session[]
   invitesSent     Invite[]        @relation("InvitesSent")
   resets          PasswordReset[] @relation("ResetsFor")
@@ -142,7 +142,20 @@ model User {
   requestsDecided AccessRequest[] @relation("AccessRequestsDecided")
 
   @@index([invitedById])
-  @@index([role])
+  @@index([master])
+}
+
+/// Членство: човекът е във фирмата с роля (ADMIN…CLIENTE) — различна за всяка фирма. Само MASTER слага
+/// и маха членства; MASTER самият няма членства (вижда всички фирми). Извън MASTER — поне едно членство.
+model Membership {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  aziendaId String
+  azienda   Azienda  @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
+  role      Role
+  createdAt DateTime @default(now())
+
+  @@id([userId, aziendaId])
   @@index([aziendaId])
 }
 

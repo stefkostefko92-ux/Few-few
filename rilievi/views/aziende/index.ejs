@@ -24,7 +24,7 @@
     <% for (const azienda of aziende) { %><tr>
       <td class="wide" data-label="<%= t('aziende.name') %>"><a class="row-link" href="/aziende/<%= azienda.id %>"><%= azienda.name %></a></td>
       <td data-label="<%= t('aziende.logo') %>"><% if (azienda.logoType) { %><span class="logo-paper logo-paper--thumb"><img src="/aziende/<%= azienda.id %>/logo?v=<%= azienda.logoUpdatedAt ? azienda.logoUpdatedAt.getTime() : 0 %>" alt="<%= t('aziende.logoAlt', { name: azienda.name }) %>" width="<%= azienda.logoWidth %>" height="<%= azienda.logoHeight %>" loading="lazy"></span><% } else { %><span class="muted">—</span><% } %></td>
-      <td class="num" data-label="<%= t('aziende.users') %>"><%= azienda._count.users %></td>
+      <td class="num" data-label="<%= t('aziende.users') %>"><%= azienda._count.memberships %></td>
       <td class="num" data-label="<%= t('aziende.schede') %>"><%= azienda._count.schede %></td>
       <td data-label="<%= t('aziende.status') %>"><% if (azienda.deactivatedAt) { %><span class="badge badge--off"><%= t('aziende.deactivated') %></span><% } else { %><span class="badge"><%= t('aziende.active') %></span><% } %></td>
     </tr>

@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { config } from '../config.js';
-import { can } from '../auth/roles.js';
-import { principalOf, requireCapability } from '../auth/guards.js';
+import { requireCapability } from '../auth/guards.js';
 import { pdfLimiter } from '../http/limits.js';
 import { renderModulo } from '../ordini/pdf.js';
 import { SLOTS } from '../ordini/registry.js';
@@ -20,8 +19,11 @@ const read = requireCapability('schede:read');
 
 for (const slot of SLOTS) {
   ordiniRouter.get(`/schede/:id/${slot.path}`, read, pdfLimiter, async (req, res) => {
-    const canTrash = can(principalOf(req).user.role, 'schede:trash');
-    const scheda = await getScheda(scope(req), String(req.params.id), canTrash);
+    const scheda = await getScheda(
+      scope(req, 'schede:read'),
+      String(req.params.id),
+      scope(req, 'schede:trash'),
+    );
     if (!scheda || scheda[slot.question] !== true) return notFound(req, res);
     const valori = storedValori(slot.modulo, scheda[slot.column]);
     if (!valori) return notFound(req, res);

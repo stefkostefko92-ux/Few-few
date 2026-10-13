@@ -58,7 +58,8 @@ async function renderShow(
 ): Promise<void> {
   const request = await getAccessRequest(String(req.params.id));
   if (!request) return notFound(req, res);
-  const roles = assignableRoles(principalOf(req).user.role);
+  // Заявките решава само MASTER (`requests:manage`) — ролите под неговата.
+  const roles = assignableRoles('MASTER');
   res.status(status).render('requests/show', {
     request,
     form: form ?? {

@@ -196,3 +196,47 @@
     display: block;
   }
 }
+
+/* Фирмите и ролите на човек: ред за фирма — името, ролята (избор, ако може да се смени), махането. */
+.memberships {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.membership {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.membership__name {
+  flex: 1 1 200px;
+  font-weight: 600;
+}
+
+.membership__role {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Изборът на роля не заема целия ред — бутонът остава до него. */
+.membership__role .select {
+  width: auto;
+  min-width: 13rem;
+}
+
+.membership-add {
+  margin-top: 16px;
+}
+
+/* В списъка: всяка фирма с ролята си на свой ред. */
+.role-line {
+  display: block;
+}

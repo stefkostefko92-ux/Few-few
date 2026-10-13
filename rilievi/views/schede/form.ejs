@@ -58,7 +58,7 @@
     </select>
     <% if (errors[aziendaErrorKey]) { %><p class="field__error" id="err-azienda"><%= t('scheda.error.azienda') %></p><% } %>
   </div>
-  <% } else if (isEdit && can('aziende:manage')) { %>
+  <% } else if (isEdit && showAzienda) { %>
   <p class="muted"><%= t('scheda.field.azienda') %>: <strong><%= scheda.azienda.name %></strong></p>
   <% } %>
   <% if (isEdit) { %><input type="hidden" name="base" value="<%= conflict ? scheda.updatedAt.toISOString() : base %>"><% } %>

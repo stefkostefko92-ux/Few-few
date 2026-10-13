@@ -13,6 +13,7 @@ export const AUDIT_ACTIONS = [
   'INVITE_REVOKE',
   'INVITE_ACCEPT',
   'USER_ROLE',
+  'USER_EDIT',
   'USER_DEACTIVATE',
   'USER_REACTIVATE',
   'PASSWORD_CHANGE',
@@ -29,7 +30,10 @@ export const AUDIT_ACTIONS = [
   'AZIENDA_LOGO',
   'AZIENDA_DEACTIVATE',
   'AZIENDA_REACTIVATE',
+  // Старите записи от времето с една фирма на човек — само за показ, нови не се пишат.
   'USER_AZIENDA',
+  'MEMBERSHIP_ADD',
+  'MEMBERSHIP_REMOVE',
   'ACCESS_REQUEST',
   'ACCESS_REQUEST_UPDATE',
   'ACCESS_REQUEST_ACCEPT',
@@ -68,4 +72,18 @@ export async function writeAudit(
       ...(entry.meta ? { meta: entry.meta } : {}),
     },
   });
+}
+
+/**
+ * Събитие за човек (вход, парола, достъп, данни на акаунта): по един запис за всяка негова фирма —
+ * администраторът на всяка вижда своето. Човек без фирма (MASTER) — запис на портала.
+ */
+export async function writeUserAudit(
+  entry: Omit<AuditEntry, 'aziendaId'>,
+  userId: string,
+  db: Prisma.TransactionClient = prisma,
+): Promise<void> {
+  const rows = await db.membership.findMany({ where: { userId }, select: { aziendaId: true } });
+  const aziende = rows.length > 0 ? rows.map((row) => row.aziendaId) : [null];
+  for (const aziendaId of aziende) await writeAudit({ ...entry, aziendaId }, db);
 }

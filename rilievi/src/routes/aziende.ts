@@ -8,7 +8,7 @@ import {
   requireUser,
   sendError,
 } from '../auth/guards.js';
-import { inScope, scopeOf } from '../auth/scope.js';
+import { inScope, scopeFor } from '../auth/scope.js';
 import { LOGO_MAX_BYTES, normalizeLogo, type Logo } from '../aziende/logo.js';
 import {
   aziendaLogo,
@@ -163,7 +163,8 @@ aziendeRouter.post('/aziende/:id/stato', manage, requireCsrf, async (req, res) =
  */
 aziendeRouter.get('/aziende/:id/logo', requireUser, async (req, res) => {
   const id = String(req.params.id);
-  if (!isAziendaId(id) || !inScope(scopeOf(principalOf(req).user), id)) return notFound(req, res);
+  const readable = scopeFor(principalOf(req).user, 'schede:read');
+  if (!isAziendaId(id) || !inScope(readable, id)) return notFound(req, res);
   const logo = await aziendaLogo(id);
   if (!logo) return notFound(req, res);
   res

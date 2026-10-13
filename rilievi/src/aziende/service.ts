@@ -34,7 +34,7 @@ export function listAziende() {
     orderBy: { name: 'asc' },
     select: {
       ...SUMMARY,
-      _count: { select: { users: true, schede: { where: { deletedAt: null } } } },
+      _count: { select: { memberships: true, schede: { where: { deletedAt: null } } } },
     },
   });
 }
@@ -217,7 +217,18 @@ export async function setAziendaActive(
   if (active === (current.deactivatedAt === null)) return true;
   await prisma.$transaction(async (tx) => {
     await tx.azienda.update({ where: { id }, data: { deactivatedAt: active ? null : new Date() } });
-    if (!active) await tx.session.deleteMany({ where: { user: { aziendaId: id } } });
+    // Хората без друга активна фирма излизат веднага (resolveSession би ги спрял и сам); останалите
+    // продължават в другите си фирми, без тази.
+    if (!active) {
+      await tx.session.deleteMany({
+        where: {
+          user: {
+            master: false,
+            memberships: { some: { aziendaId: id }, none: { azienda: { deactivatedAt: null } } },
+          },
+        },
+      });
+    }
     await writeAudit(
       {
         actorId: actor.id,

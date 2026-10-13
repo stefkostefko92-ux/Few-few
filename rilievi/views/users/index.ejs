@@ -1,8 +1,12 @@
-<%- include('../partials/top', { titleKey: 'users.title' }) %>
+<%
+  // Le persone che chi guarda può vedere: le sue aziende (il Master — tutte). Per ognuna, solo le
+  // aziende e i ruoli visibili a chi guarda; il Master non compare per gli altri.
+  const openable = (user) => user.manageable || user.memberships.some((m) => m.manageable);
+%><%- include('../partials/top', { titleKey: 'users.title' }) %>
 <div class="page-head">
   <div>
     <h1><%= t('users.title') %></h1>
-    <p class="page-head__sub"><%= t(showAzienda ? 'users.subtitleMaster' : 'users.subtitle') %></p>
+    <p class="page-head__sub"><%= t(master ? 'users.subtitleMaster' : 'users.subtitle') %></p>
   </div>
   <a class="btn btn--primary" href="/utenti/invita<%= aziendaFilter ? '?azienda=' + aziendaFilter : '' %>"><%- include('../partials/icon', { name: 'plus' }) %><%= t('users.invite') %></a>
 </div>
@@ -14,17 +18,15 @@
       <thead><tr>
         <th scope="col"><%= t('users.name') %></th>
         <th scope="col"><%= t('auth.email') %></th>
-        <th scope="col"><%= t('users.role') %></th>
-        <% if (showAzienda) { %><th scope="col"><%= t('users.azienda') %></th><% } %>
+        <th scope="col"><%= t(showAzienda ? 'users.aziendeTitle' : 'users.role') %></th>
         <th scope="col"><%= t('users.lastLogin') %></th>
         <th scope="col"><%= t('users.status') %></th>
       </tr></thead>
       <tbody>
         <% for (const user of users) { %><tr>
-          <td data-label="<%= t('users.name') %>"><% if (user.manageable) { %><a class="row-link" href="/utenti/<%= user.id %>"><%= user.name %></a><% } else { %><strong><%= user.name %></strong><% } %><% if (currentUser.id === user.id) { %> <span class="badge"><%= t('users.you') %></span><% } %></td>
+          <td data-label="<%= t('users.name') %>"><% if (openable(user)) { %><a class="row-link" href="/utenti/<%= user.id %>"><%= user.name %></a><% } else { %><strong><%= user.name %></strong><% } %><% if (user.self) { %> <span class="badge"><%= t('users.you') %></span><% } %></td>
           <td class="wide" data-label="<%= t('auth.email') %>"><%= user.email %></td>
-          <td data-label="<%= t('users.role') %>"><%= t('role.' + user.role) %></td>
-          <% if (showAzienda) { %><td data-label="<%= t('users.azienda') %>"><%= user.azienda ? user.azienda.name : '—' %></td><% } %>
+          <td data-label="<%= t(showAzienda ? 'users.aziendeTitle' : 'users.role') %>"><% if (user.master) { %><%= t('role.MASTER') %><% } else { for (const m of user.memberships) { %><span class="role-line"><% if (showAzienda) { %><%= m.aziendaName %>: <% } %><%= t('role.' + m.role) %></span><% } } %></td>
           <td data-label="<%= t('users.lastLogin') %>"><%= user.lastLoginAt ? fmt.dateTime(user.lastLoginAt) : t('users.never') %></td>
           <td data-label="<%= t('users.status') %>"><% if (user.deactivatedAt) { %><span class="badge badge--off"><%= t('users.deactivated') %></span><% } else { %><span class="badge"><%= t('users.active') %></span><% } %></td>
         </tr>
@@ -51,7 +53,7 @@
           <td class="wide" data-label="<%= t('auth.email') %>"><strong><%= invite.email %></strong><% if (invite.name) { %><br><span class="muted"><%= invite.name %></span><% } %></td>
           <td data-label="<%= t('users.role') %>"><%= t('role.' + invite.role) %></td>
           <% if (showAzienda) { %><td data-label="<%= t('users.azienda') %>"><%= invite.azienda.name %></td><% } %>
-          <td data-label="<%= t('users.invitedBy') %>"><%= invite.invitedBy.name %></td>
+          <td data-label="<%= t('users.invitedBy') %>"><%= invite.invitedByPortal ? t('users.portalAdmin') : invite.invitedBy.name %></td>
           <td data-label="<%= t('users.expires') %>"><%= fmt.dateTime(invite.expiresAt) %></td>
           <td class="actions-cell" data-label="<%= t('common.actions') %>"><% if (invite.revocable) { %><form class="inline-form" method="post" action="/utenti/inviti/<%= invite.id %>/revoca"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--sm btn--ghost" type="submit"><%= t('users.revoke') %></button></form><% } %></td>
         </tr>

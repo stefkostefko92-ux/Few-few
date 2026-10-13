@@ -1,7 +1,7 @@
 {
   "users": {
     "title": "Utenti",
-    "subtitle": "Al portale si accede solo su invito. Inviti e gestisci le persone della tua azienda con un ruolo inferiore al tuo.",
+    "subtitle": "Al portale si accede solo su invito. Inviti e gestisci le persone delle aziende in cui sei amministratore, con un ruolo inferiore al tuo.",
     "invite": "Invita utente",
     "accounts": {
       "one": "1 account",
@@ -42,7 +42,6 @@
       "disabled": "L'invio di email non è attivo: manda tu il link.",
       "failed": "L'email non è partita: manda tu il link."
     },
-    "changeRole": "Ruolo",
     "saveRole": "Salva ruolo",
     "resetTitle": "Password",
     "resetText": "Crea un link per scegliere una nuova password (vale {hours} ore). La password attuale resta valida finché il link non viene usato.",
@@ -59,16 +58,29 @@
       "roleNotAllowed": "Non puoi assegnare questo ruolo.",
       "userExists": "Esiste già un account con questa email.",
       "name": "Inserisci nome e cognome (da 2 a 120 caratteri).",
-      "azienda": "Scegli un'azienda attiva."
+      "azienda": "Scegli un'azienda attiva.",
+      "emailTaken": "Questo indirizzo è già usato da un altro account."
     },
-    "subtitleMaster": "Al portale si accede solo su invito. Come Master inviti e gestisci le persone di tutte le aziende.",
+    "subtitleMaster": "Al portale si accede solo su invito. Come Master gestisci tutti gli account, anche il tuo, e puoi mettere una persona in più aziende, con un ruolo diverso in ognuna.",
     "fullName": "Nome e cognome",
     "azienda": "Azienda",
     "aziendaFixed": "La persona entra in {azienda}.",
-    "aziendaHint": "La persona vedrà solo le schede di questa azienda.",
+    "aziendaHint": "La persona vedrà solo le schede di questa azienda. Il Master può aggiungerla ad altre aziende.",
     "noAziende": "Prima crea un'azienda, poi invita le sue persone.",
-    "saveAzienda": "Sposta in questa azienda",
-    "aziendaMoveText": "Le schede già compilate restano all'azienda in cui sono state create."
+    "portalAdmin": "Amministrazione del portale",
+    "aziendeTitle": "Aziende e ruoli",
+    "roleIn": "Ruolo in {azienda}",
+    "removeAzienda": "Togli da questa azienda",
+    "lastAziendaNote": "È l'unica azienda di questo account: per togliergli l'accesso, disattivalo.",
+    "addAzienda": "Aggiungi a un'azienda",
+    "addAziendaRole": "Ruolo nella nuova azienda",
+    "addAziendaSubmit": "Aggiungi",
+    "masterText": "Il Master vede e gestisce tutte le aziende: non ha un'azienda propria.",
+    "accountTitle": "Nome ed email",
+    "saveAccount": "Salva nome ed email",
+    "emailChangeHint": "Se cambi l'email, il vecchio indirizzo riceve un avviso e i link per la password ancora aperti smettono di valere.",
+    "selfAccessNote": "Non puoi disattivare il tuo account.",
+    "accountByPortal": "Nome, email, password e accesso di questo account li gestisce l'amministrazione del portale."
   },
   "audit": {
     "title": "Registro",
@@ -110,7 +122,10 @@
       "ACCESS_REQUEST_UPDATE": "Richiesta di accesso aggiornata dal richiedente",
       "ACCESS_REQUEST_ACCEPT": "Richiesta di accesso accettata",
       "ACCESS_REQUEST_REJECT": "Richiesta di accesso rifiutata",
-      "ACCESS_REQUEST_DELETE": "Richiesta di accesso eliminata"
+      "ACCESS_REQUEST_DELETE": "Richiesta di accesso eliminata",
+      "USER_EDIT": "Nome o email cambiati",
+      "MEMBERSHIP_ADD": "Account aggiunto a un'azienda",
+      "MEMBERSHIP_REMOVE": "Account tolto da un'azienda"
     },
     "azienda": "Azienda",
     "platform": "Portale",

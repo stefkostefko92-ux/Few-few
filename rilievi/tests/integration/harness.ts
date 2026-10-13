@@ -89,16 +89,24 @@ function defaultAziendaId(): Promise<string> {
 }
 
 /**
- * An account straight in the database (the invite flow has its own tests). MASTER has no company;
- * everyone else is in `aziendaId` or in the file's default company.
+ * An account straight in the database (the invite flow has its own tests). MASTER is the portal owner
+ * with no company; everyone else gets one membership with `role` in `aziendaId` or in the file's
+ * default company. The returned object also carries that role and company, as the tests read them.
  */
 export async function makeUser(role: Role, name = `${role} ${++userCounter}`, aziendaId?: string) {
   hashed ??= hashPassword(PASSWORD);
   const email = `${role.toLowerCase()}.${userCounter}.${randomBytes(3).toString('hex')}@rilievi.test`;
   const azienda = role === 'MASTER' ? null : (aziendaId ?? (await defaultAziendaId()));
-  return prisma.user.create({
-    data: { email, name, role, passwordHash: await hashed, aziendaId: azienda },
+  const user = await prisma.user.create({
+    data: {
+      email,
+      name,
+      passwordHash: await hashed,
+      master: role === 'MASTER',
+      ...(azienda ? { memberships: { create: { aziendaId: azienda, role } } } : {}),
+    },
   });
+  return { ...user, role, aziendaId: azienda };
 }
 
 export interface Reply {

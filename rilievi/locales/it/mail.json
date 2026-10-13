@@ -21,6 +21,10 @@
     "request": {
       "subject": "Nuova richiesta di accesso — Rilievi Impianti",
       "body": "Ciao,\n\nl'azienda {company} ha chiesto l'accesso al portale Rilievi Impianti.\n\nApri la richiesta (serve l'accesso al portale):\n{link}\n\nCarbon Stealth VCC — https://carbonstealth.eu"
+    },
+    "emailChanged": {
+      "subject": "Email del tuo account cambiata — Rilievi Impianti",
+      "body": "Ciao,\n\nl'indirizzo email del tuo account sul portale Rilievi Impianti è stato cambiato: da ora per accedere si usa il nuovo indirizzo.\n\nSe non hai chiesto tu questa modifica, avvisa subito l'amministratore della tua azienda.\n\nCarbon Stealth VCC — https://carbonstealth.eu"
     }
   }
 }

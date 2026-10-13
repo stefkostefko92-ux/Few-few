@@ -4,7 +4,8 @@ import { randomToken, safeEqual } from '../crypto.js';
 import { readCookie } from '../http/cookies.js';
 import { setFlash } from '../http/flash.js';
 import { HOUR } from '../time.js';
-import { can, type Capability } from './roles.js';
+import type { Capability } from './roles.js';
+import { canAnywhere } from './scope.js';
 import type { Principal } from '../types.js';
 
 /** Методите, които не променят нищо: без CSRF проверка и извън тавана на записите. */
@@ -78,7 +79,8 @@ export function principalOf(req: Request): Principal {
 export function requireCapability(capability: Capability) {
   return (req: Request, res: Response, next: NextFunction): void => {
     requireUser(req, res, () => {
-      if (!can(principalOf(req).user.role, capability)) {
+      // Поне в една фирма; конкретният запис (карта, човек, покана) се проверява в своята фирма.
+      if (!canAnywhere(principalOf(req).user, capability)) {
         sendError(req, res, 403, 'error.forbiddenTitle', 'error.forbidden');
         return;
       }

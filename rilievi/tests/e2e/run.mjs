@@ -16,6 +16,7 @@ import { chromium } from 'playwright';
 import sharp from 'sharp';
 import { audit, fail, failures, italianOnly, signIn as signInAt, tick } from './helpers.mjs';
 import { checkSite } from './site.mjs';
+import { checkPeople } from './people.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const base = (process.env.RILIEVI_URL ?? 'http://127.0.0.1:4330').replace(/\/+$/, '');
@@ -268,6 +269,13 @@ try {
   const sheet = await techPage.goto(sheetUrl);
   if (sheet?.status() !== 200)
     fail(`technician cannot open the company's sheet (${sheet?.status()})`);
+  await checkPeople({
+    base,
+    shots,
+    masterPage,
+    adminPage,
+    techEmail: `tecnico.e2e.${stamp}@rilievi.test`,
+  });
 } finally {
   await browser.close();
 }

@@ -37,6 +37,18 @@ export function resetMail(params: { to: string; link: string; hours: number }): 
 }
 
 /**
+ * Имейлът на акаунта е сменен — известие до СТАРИЯ адрес: ако не е било по желание на собственика, той
+ * ще разбере. Новият адрес не се пише в писмото.
+ */
+export function emailChangedMail(params: { to: string }): MailMessage {
+  return {
+    to: params.to,
+    subject: t('mail.emailChanged.subject'),
+    text: t('mail.emailChanged.body'),
+  };
+}
+
+/**
  * Нова заявка за достъп — до всеки активен MASTER. В писмото е само името на фирмата и връзката към
  * заявката (зад вход): имейлът и телефонът на заявителя не пътуват по пощата.
  */

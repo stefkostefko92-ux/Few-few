@@ -8,10 +8,10 @@
     <p class="page-head__sub"><%= t('scheda.dateLine', { date: fmt.day(scheda.data) }) %></p>
   </div>
   <div class="toolbar">
-    <% if (!scheda.deletedAt && can('schede:write')) { %><a class="btn btn--primary" href="/schede/<%= scheda.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('scheda.actions.edit') %></a><% } %>
+    <% if (!scheda.deletedAt && canIn('schede:write', scheda.aziendaId)) { %><a class="btn btn--primary" href="/schede/<%= scheda.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('scheda.actions.edit') %></a><% } %>
     <a class="btn" href="/schede/<%= scheda.id %>/stampa?auto=1"><%- include('../partials/icon', { name: 'print' }) %><%= t('scheda.actions.print') %></a>
     <a class="btn" href="/schede/<%= scheda.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('scheda.actions.pdf') %></a>
-    <% if (!scheda.deletedAt && can('schede:delete')) { %><a class="btn btn--ghost" href="/schede/<%= scheda.id %>/elimina"><%- include('../partials/icon', { name: 'trash' }) %><%= t('scheda.actions.delete') %></a><% } %>
+    <% if (!scheda.deletedAt && canIn('schede:delete', scheda.aziendaId)) { %><a class="btn btn--ghost" href="/schede/<%= scheda.id %>/elimina"><%- include('../partials/icon', { name: 'trash' }) %><%= t('scheda.actions.delete') %></a><% } %>
   </div>
 </div>
 <div class="with-index">
@@ -20,7 +20,7 @@
   <% if (scheda.deletedAt) { %>
   <div class="banner" role="status">
     <span><%= t('trash.banner', { at: fmt.dateTime(scheda.deletedAt), name: scheda.deletedBy ? scheda.deletedBy.name : '—' }) %></span>
-    <% if (can('schede:trash')) { %><span class="toolbar">
+    <% if (canIn('schede:trash', scheda.aziendaId)) { %><span class="toolbar">
       <form class="inline-form" method="post" action="/cestino/<%= scheda.id %>/ripristina"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--sm" type="submit"><%- include('../partials/icon', { name: 'restore' }) %><%= t('trash.restore') %></button></form>
       <a class="btn btn--sm btn--ghost" href="/cestino/<%= scheda.id %>/elimina"><%= t('trash.purge') %></a>
     </span><% } %>
@@ -44,7 +44,7 @@
   </section>
   <% }) %>
   <p class="sheet__meta">
-    <% if (can('aziende:manage')) { %><span><%= t('scheda.field.azienda') %>: <%= scheda.azienda.name %></span><% } %>
+    <% if (showAzienda) { %><span><%= t('scheda.field.azienda') %>: <%= scheda.azienda.name %></span><% } %>
     <span><%= t('scheda.meta.created', { name: scheda.createdBy ? scheda.createdBy.name : '—', at: fmt.dateTime(scheda.createdAt) }) %></span>
     <span><%= t('scheda.meta.updated', { name: scheda.updatedBy ? scheda.updatedBy.name : '—', at: fmt.dateTime(scheda.updatedAt) }) %></span>
   </p>

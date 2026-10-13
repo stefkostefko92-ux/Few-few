@@ -9,6 +9,13 @@
     { href: '/registro', key: 'nav.registro', icon: 'log', show: can('audit:view') },
   ].filter((item) => item.show);
   const current = (href) => path === href || path.startsWith(href + '/');
+  // Под името: Master; ролята и фирмата при една фирма; броят на фирмите при няколко.
+  const only = currentUser.memberships.length === 1 ? currentUser.memberships[0] : null;
+  const roleLine = currentUser.master
+    ? t('role.MASTER')
+    : only
+      ? t('role.' + only.role) + ', ' + only.aziendaName
+      : t('nav.aziendeCount', { n: currentUser.memberships.length });
 %><header class="topbar">
   <div class="topbar__inner">
     <a class="brand" href="/schede">
@@ -21,7 +28,7 @@
     </nav>
     <div class="topbar__end">
       <% if (can('schede:write')) { %><a class="btn btn--inverse btn--sm topbar__new" href="/schede/nuova"><%- include('icon', { name: 'plus' }) %><span class="btn__label"><%= t('schede.new') %></span></a><% } %>
-      <a class="who" href="/account"><span class="who__name"><%= currentUser.name %></span><span class="who__role"><%= t('role.' + currentUser.role) %><% if (currentUser.aziendaName) { %>, <%= currentUser.aziendaName %><% } %></span></a>
+      <a class="who" href="/account"><span class="who__name"><%= currentUser.name %></span><span class="who__role"><%= roleLine %></span></a>
       <a class="btn btn--bar btn--sm topbar__account" href="/account" aria-label="<%= t('nav.account') %>"><%- include('icon', { name: 'user' }) %></a>
     </div>
   </div>

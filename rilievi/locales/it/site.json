@@ -216,7 +216,7 @@
         "kept": "{days} giorni dall'ultima modifica della richiesta, poi cancellati automaticamente; prima, se ce lo chiedete"
       },
       "account": {
-        "data": "Email, nome, ruolo, azienda, tema, hash della password (Argon2id), data dell'ultimo accesso, numero di password errate e sessioni attive",
+        "data": "Email, nome, aziende e ruolo in ognuna, tema, hash della password (Argon2id), data dell'ultimo accesso, numero di password errate e sessioni attive",
         "why": "L'account e l'accesso al portale per conto dell'azienda",
         "basis": "Per conto dell'azienda titolare (art. 28 GDPR)",
         "kept": "Finché l'account esiste; le sessioni fino all'uscita o alla scadenza"

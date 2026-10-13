@@ -9,7 +9,8 @@ import { config, isProduction, mailEnabled } from './config.js';
 import { errorMessage, httpLogOptions, logger } from './logger.js';
 import { ROOT } from './paths.js';
 import { isPartial, renderError, SAFE_METHODS } from './auth/guards.js';
-import { can, type Capability } from './auth/roles.js';
+import type { Capability } from './auth/roles.js';
+import { canAnywhere, canIn } from './auth/scope.js';
 import { attachSession } from './auth/sessions.js';
 import { readFlash } from './http/flash.js';
 import { writeLimiter } from './http/limits.js';
@@ -26,6 +27,7 @@ import { requestsRouter } from './routes/requests.js';
 import { schedeRouter } from './routes/schede.js';
 import { siteRouter } from './routes/site.js';
 import { usersRouter } from './routes/users.js';
+import { usersManageRouter } from './routes/users-manage.js';
 import { countNewRequests } from './requests/service.js';
 import { HOME_PATH } from './seo/paths.js';
 
@@ -55,7 +57,11 @@ function errorStatus(error: unknown): number {
 /** Общото за шаблоните — от middleware-а и от страницата за грешка, паднала преди него. */
 function baseLocals(req: Request, res: Response): void {
   const user = req.principal?.user ?? null;
-  res.locals.can = (capability: Capability): boolean => (user ? can(user.role, capability) : false);
+  // `can` — поне в една фирма (менюто); `canIn` — във фирмата на конкретния запис (бутоните на картата).
+  res.locals.can = (capability: Capability): boolean =>
+    user ? canAnywhere(user, capability) : false;
+  res.locals.canIn = (capability: Capability, aziendaId: string | null): boolean =>
+    user ? canIn(user, capability, aziendaId) : false;
   res.locals.mailEnabled = mailEnabled();
   res.locals.passwordMin = PASSWORD_MIN_LENGTH;
   res.locals.path = req.path;
@@ -169,7 +175,7 @@ export function createServer(): Express {
     const user = req.principal?.user;
     if (
       user &&
-      can(user.role, 'requests:manage') &&
+      canAnywhere(user, 'requests:manage') &&
       SAFE_METHODS.has(req.method) &&
       !isPartial(req)
     ) {
@@ -189,6 +195,8 @@ export function createServer(): Express {
   app.use(cestinoRouter);
   app.use(ordiniRouter);
   app.use(usersRouter);
+  // След usersRouter: `/utenti/invita` е преди `/utenti/:id`.
+  app.use(usersManageRouter);
   app.use(aziendeRouter);
   app.use(requestsRouter);
   app.use(auditRouter);

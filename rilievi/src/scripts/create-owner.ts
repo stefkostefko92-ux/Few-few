@@ -23,7 +23,7 @@ async function main(): Promise<void> {
   if (!email.success || !name.success) throw new Error('Задай OWNER_EMAIL и OWNER_NAME.');
   const problem = passwordProblem(password, [email.data, name.data]);
   if (problem) throw new Error(`Паролата не минава проверката: ${problem}`);
-  if ((await prisma.user.count({ where: { role: 'MASTER' } })) > 0) {
+  if ((await prisma.user.count({ where: { master: true } })) > 0) {
     throw new Error('Вече има MASTER — останалите се канят от портала (Utenti → Invita).');
   }
   if (await prisma.user.findUnique({ where: { email: email.data } })) {
@@ -33,7 +33,7 @@ async function main(): Promise<void> {
     data: {
       email: email.data,
       name: name.data,
-      role: 'MASTER',
+      master: true,
       passwordHash: await hashPassword(password),
       mustChangePassword: process.env.OWNER_MUST_CHANGE === '1',
     },
