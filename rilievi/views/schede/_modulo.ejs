@@ -2,10 +2,10 @@
   // Модулът на доставчика (src/ordini/, assets/moduli/*.json) — същите полета в същия ред като на
   // хартията, за да излезе в неговия оригинален PDF. Етикетите са дословно от модула (италиански) и не
   // се превеждат. Отваря се при своята марка и „Sì“ на въпроса над него (две обвивки с data-when — таблото
-  // има два модула под един въпрос); data-prefill — попълване от огледа (app.js); data-auto — свързано
-  // поле, попълнено от картата, от другия модул или със стойността на празния модул: следва източника
-  // си, докато човекът не пише в него (collegati.js). Под всяка група — разминаванията на нейните
-  // свързани данни.
+  // има два модула под един въпрос); data-prefill — попълване от огледа (moduli.js); data-auto — поле,
+  // попълнено от огледа, от картата, от другия модул или със стойността на празния модул: следва
+  // източника си, докато човекът не пише в него (moduli.js, collegati.js). Под всяка група —
+  // разминаванията на нейните свързани данни.
   const name = (key) => slot.prefix + '-' + key;
   // Модул без марка (листът за аргано, 2SG) е отворен при всяка марка — обвивката е без условие.
   const marcaOn = !slot.marca || values[slot.marca.field] === slot.marca.value;
@@ -39,8 +39,8 @@
         <% if (errText) { %><p class="field__error" id="<%= errId %>"><%= errText %></p><% } %>
       </fieldset><% } else { %><div class="modulo__text<%= field.kind === 'textarea' ? ' modulo__text--wide' : field.kind === 'text' && field.maxLength <= 3 ? ' modulo__text--short' : '' %>">
         <label class="field__label<%= field.labelNascosta ? ' visually-hidden' : '' %>" for="<%= id %>"><%= field.label %></label>
-        <% if (field.kind === 'textarea') { %><textarea class="textarea" id="<%= id %>" name="<%= name(field.key) %>" rows="3" maxlength="<%= field.maxLength %>"<%- prefill %><%- aria %>><%= text %></textarea>
-        <% } else if (field.kind === 'select') { %><select class="select" id="<%= id %>" name="<%= name(field.key) %>"<%- prefill %><%- aria %>>
+        <% if (field.kind === 'textarea') { %><textarea class="textarea" id="<%= id %>" name="<%= name(field.key) %>" rows="3" maxlength="<%= field.maxLength %>"<% if (auto) { %> data-auto="<%= text %>"<% } %><%- prefill %><%- aria %>><%= text %></textarea>
+        <% } else if (field.kind === 'select') { %><select class="select" id="<%= id %>" name="<%= name(field.key) %>"<% if (auto) { %> data-auto="<%= text %>"<% } %><%- prefill %><%- aria %>>
           <option value="">—</option>
           <% for (const option of field.opzioni) { %><option value="<%= option %>"<% if (text === option) { %> selected<% } %>><%= option %></option>
           <% } %>

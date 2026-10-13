@@ -119,15 +119,13 @@
               "key": "automatico",
               "kind": "check",
               "label": "AUTOMATICO",
-              "box": [167.4, 286.9, 174.6, 292.7],
-              "prefill": "tipoPorte=AUTOMATICHE"
+              "box": [167.4, 286.9, 174.6, 292.7]
             },
             {
               "key": "semiautomatico",
               "kind": "check",
               "label": "SEMIAUTOMATICO",
-              "box": [168.1, 295.2, 175.0, 300.6],
-              "prefill": "tipoPorte=SEMIAUTOMATICHE"
+              "box": [168.1, 295.2, 175.0, 300.6]
             }
           ]
         },

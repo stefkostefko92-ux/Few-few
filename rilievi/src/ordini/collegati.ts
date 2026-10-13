@@ -5,21 +5,28 @@ import { activeFields, fieldByKey } from '../schede/fields.js';
 import { rispostaLabel } from '../schede/format.js';
 import {
   COLLEGAMENTI,
+  confrontato,
   moduloFields,
   type Luogo,
   type MembroNumero,
   type MembroScelta,
 } from './collegamenti.js';
+import type { ModuloField } from './moduli.js';
+import { opzioneDi } from './opzioni.js';
 import { slotAperto, SLOTS, type Prefisso } from './registry.js';
 import { nameOf, type Valori } from './valori.js';
 
 /**
- * Правилата върху свързаните данни (списъкът е в collegamenti.ts):
+ * Правилата върху свързаните данни (списъкът е в collegamenti-elenco.ts):
  * - попълването: празно поле на модул взема стойността от картата, иначе от другия модул;
  * - разминаванията: две попълнени места с различни стойности → списък в модулите и потвърждение при
- *   запис. Празното не е твърдение и не се сравнява; скритото (поле с условие, затворен модул) — също.
- * Същото прави public/js/collegati.js, докато се пише (`collegatiPerBrowser` му дава списъка).
+ *   запис. Празното не е твърдение и не се сравнява; скритото (поле с условие, затворен модул) — също;
+ *   връзка „само попълване“ (`confronto: false`) — никога.
+ * Същото прави public/js/collegati.js, докато се пише — там и празното поле на картата следва
+ * модулите (`collegatiPerBrowser` му дава списъка).
  */
+
+type MembroModulo = Exclude<MembroNumero, { luogo: 'scheda' }>;
 
 interface Attivi {
   scheda: Set<string>;
@@ -48,6 +55,10 @@ function leggiNumero(m: MembroNumero, values: FormValues, attivi: Attivi): strin
     return value || null;
   }
   if (!attivi.moduli.has(m.luogo)) return null;
+  if ('campi' in m) {
+    const [a, b] = m.campi;
+    return coppiaDi(testo(values[nameOf(m.luogo, a)]), testo(values[nameOf(m.luogo, b)])) || null;
+  }
   return testo(values[nameOf(m.luogo, m.campo)]) || null;
 }
 
@@ -83,6 +94,19 @@ export function numeriDi(text: string): number[] {
       MIGLIAIA.test(token) ? token.replace(/\./g, '').replace(',', '.') : token.replace(',', '.'),
     ),
   );
+}
+
+/** Двата реда на едно нещо („LUCE PORTA: [800] x [2000]“) като една стойност; без широчина — нищо. */
+export function coppiaDi(larghezza: string, altezza: string): string {
+  if (!larghezza) return '';
+  return altezza ? `${larghezza} x ${altezza}` : larghezza;
+}
+
+/** Обратното: числата на стойността в двата реда („800x2000 mm“ → 800 и 2000); повече от две — нищо. */
+export function dividiCoppia(value: string): readonly [string, string] | null {
+  const parti = value.match(NUMERO) ?? [];
+  if (parti.length === 0 || parti.length > 2) return null;
+  return [parti[0]!, parti[1] ?? ''];
 }
 
 const normale = (text: string): string =>
@@ -126,6 +150,7 @@ export function discrepanzeDi(values: FormValues, t: Translator): Discrepanza[] 
   const attivi = attiviDi(values);
   const out: Discrepanza[] = [];
   for (const link of COLLEGAMENTI) {
+    if (!confrontato(link)) continue;
     if (link.tipo === 'numero') {
       const voci = link.membri.flatMap((m): VoceDiscrepanza[] => {
         const valore = leggiNumero(m, values, attivi);
@@ -168,6 +193,32 @@ export function improntaDi(discrepanze: readonly Discrepanza[]): string {
 }
 
 /**
+ * Стойността в полето на модула: ред — отрязана до дължината му; падащ списък — опцията ѝ (същата дума
+ * или същите числа, иначе нищо); двата реда — числата ѝ.
+ */
+function scriviNumero(
+  target: MembroModulo,
+  value: string,
+  fields: ReadonlyMap<string, ModuloField>,
+): Valori {
+  const out: Valori = {};
+  const keys = 'campi' in target ? target.campi : [target.campo];
+  const parti = 'campi' in target ? dividiCoppia(value) : [value];
+  keys.forEach((key, i) => {
+    const field = fields.get(key);
+    const part = parti?.[i] ?? '';
+    if (!field || !part) return;
+    if (field.kind === 'select') {
+      const opzione = opzioneDi(field.opzioni, part);
+      if (opzione) out[key] = opzione;
+    } else if ('maxLength' in field) {
+      out[key] = part.slice(0, field.maxLength);
+    }
+  });
+  return out;
+}
+
+/**
  * Свързаните полета на модула `prefix`, попълнени от картата, иначе от другия модул — само от видимо и
  * попълнено. Отметка се слага само когато категорията има точно една отметка тук („VVVF“ от аргано не
  * избира сама между двата вида VVVF на таблото). Радио групата има един избор: само при една
@@ -175,19 +226,17 @@ export function improntaDi(discrepanze: readonly Discrepanza[]): string {
  */
 export function prefillCollegati(prefix: Prefisso, values: FormValues): Valori {
   const attivi = attiviDi(values);
-  const lengths = new Map(
-    moduloFields(prefix).map((f) => [f.key, 'maxLength' in f ? f.maxLength : 0]),
-  );
+  const fields = new Map(moduloFields(prefix).map((f) => [f.key, f]));
   const valori: Valori = {};
   for (const link of COLLEGAMENTI) {
     if (link.tipo === 'numero') {
-      const target = link.membri.find((m) => m.luogo === prefix);
+      const target = link.membri.find((m): m is MembroModulo => m.luogo === prefix);
       if (!target) continue;
       const source = link.membri
         .filter((m) => m.luogo !== prefix)
         .map((m) => leggiNumero(m, values, attivi))
         .find((value): value is string => value !== null);
-      if (source) valori[target.campo] = source.slice(0, lengths.get(target.campo));
+      if (source) Object.assign(valori, scriviNumero(target, source, fields));
       continue;
     }
     const target = link.membri.find((m) => m.luogo === prefix);
@@ -211,24 +260,4 @@ export function prefillCollegati(prefix: Prefisso, values: FormValues): Valori {
     }
   }
   return valori;
-}
-
-/**
- * Връзките за браузъра (public/js/collegati.js) — с имената им и на местата, без нищо от данните.
- * `colonne`: модулите на една колона (таблото — Pelazza и MoviLift) си дават стойностите при смяна на
- * марката.
- */
-export function collegatiPerBrowser(t: Translator): string {
-  const data = {
-    colonne: Object.fromEntries(SLOTS.map((slot) => [slot.prefix, slot.column])),
-    luoghi: {
-      scheda: t('collegati.luogo.scheda'),
-      oq: t('collegati.luogo.oq'),
-      om: t('collegati.luogo.om'),
-      pa: t('collegati.luogo.pa'),
-    },
-    gruppi: COLLEGAMENTI.map((link) => ({ ...link, nome: t(`collegati.${link.key}`) })),
-  };
-  // В <script type="application/json">: „<“ не бива да затвори елемента.
-  return JSON.stringify(data).replace(/</g, '\\u003c');
 }

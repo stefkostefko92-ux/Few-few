@@ -2,9 +2,10 @@
 // accepted by the MASTER (site.mjs), sign-in, a company with its logo, a full sheet (the fields that
 // appear with the door type, the alarm, one measurement row per stop that follows "Fermate" while it
 // is typed, the order forms and data sheets), search, print, PDF, the order of the sections in the
-// company settings (impostazioni.mjs), the company ADMIN invited by the MASTER, a technician invited by
-// that ADMIN who sees the company's sheets, and accessibility (axe-core, WCAG 2.1 AA) on every page, in
-// the light and the dark theme. Screenshots land in tests/e2e/shots/ (git-ignored).
+// company settings (impostazioni.mjs), the same data filled in real time in every direction
+// (tempo-reale.mjs), the company ADMIN invited by the MASTER and a technician invited by that ADMIN
+// who sees the company's sheets (inviti.mjs), and accessibility (axe-core, WCAG 2.1 AA) on every page,
+// in the light and the dark theme. Screenshots land in tests/e2e/shots/ (git-ignored).
 //
 //   RILIEVI_URL=http://127.0.0.1:4330 E2E_EMAIL=… E2E_PASSWORD=… npm run test:e2e
 //
@@ -17,10 +18,11 @@ import { chromium } from 'playwright';
 import sharp from 'sharp';
 import { audit, fail, failures, italianOnly, signIn as signInAt, tick } from './helpers.mjs';
 import { checkSite } from './site.mjs';
-import { checkPeople } from './people.mjs';
+import { checkInvites } from './inviti.mjs';
 import { checkLinkedData, confirmDifferences } from './collegati.mjs';
 import { checkMovilift } from './movilift.mjs';
 import { checkSettings } from './impostazioni.mjs';
+import { checkRealTime } from './tempo-reale.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const base = (process.env.RILIEVI_URL ?? 'http://127.0.0.1:4330').replace(/\/+$/, '');
@@ -50,17 +52,6 @@ await sharp({
   .png()
   .toFile(logoFile);
 
-async function acceptInvite(context, link, name) {
-  const page = await context.newPage();
-  await page.goto(link.replace(/^https?:\/\/[^/]+/, base));
-  await audit(page, `invite ${name}`);
-  await page.fill('#name', name);
-  await page.fill('#password', 'Fune-Trefolo-Tenditore-7');
-  await page.fill('#confirm', 'Fune-Trefolo-Tenditore-7');
-  await page.click('form button[type=submit]');
-  await page.waitForURL(/\/schede/);
-  return page;
-}
 try {
   // The public side first: the landing page and the policy, in Italian only, and an access request,
   // accepted by the MASTER as a new company with its administrator invited.
@@ -222,6 +213,7 @@ try {
         aziendaId: aziendaPath.split('/').pop(),
         sheetPath: new URL(sheetUrl).pathname,
       });
+      await checkRealTime(context, { base, aziendaName, sheetUrl, scheme });
     }
 
     for (const [name, path] of [
@@ -275,43 +267,8 @@ try {
     await context.close();
   }
 
-  // The MASTER invites the company's ADMIN; the ADMIN invites a technician into the same company.
-  const master = await browser.newContext();
-  const masterPage = await master.newPage();
-  await signIn(masterPage, email, password);
-  await masterPage.goto(`${base}/utenti/invita`);
-  const stamp = Date.now();
-  await masterPage.fill('#email', `admin.e2e.${stamp}@rilievi.test`);
-  await masterPage.fill('#name', 'Amministratore E2E');
-  await masterPage.selectOption('#azienda', { label: aziendaName });
-  await masterPage.selectOption('#role', 'ADMIN');
-  await masterPage.click('form button[type=submit]');
-  const adminLink = await masterPage.inputValue('#link');
-  const adminContext = await browser.newContext();
-  const adminPage = await acceptInvite(adminContext, adminLink, 'Amministratore E2E');
-  await adminPage.goto(`${base}/utenti/invita`);
-  if (await adminPage.locator('#azienda').count()) fail('a company ADMIN can pick another company');
-  await adminPage.fill('#email', `tecnico.e2e.${stamp}@rilievi.test`);
-  await adminPage.fill('#name', 'Tecnico E2E');
-  await adminPage.selectOption('#role', 'TECNICO');
-  await adminPage.click('form button[type=submit]');
-  const techLink = await adminPage.inputValue('#link');
-  const techContext = await browser.newContext();
-  const techPage = await acceptInvite(techContext, techLink, 'Tecnico E2E');
-  const users = await techPage.goto(`${base}/utenti`);
-  if (users?.status() !== 403) fail(`technician sees /utenti (${users?.status()})`);
-  const companies = await techPage.goto(`${base}/aziende`);
-  if (companies?.status() !== 403) fail(`technician sees /aziende (${companies?.status()})`);
-  const sheet = await techPage.goto(sheetUrl);
-  if (sheet?.status() !== 200)
-    fail(`technician cannot open the company's sheet (${sheet?.status()})`);
-  await checkPeople({
-    base,
-    shots,
-    masterPage,
-    adminPage,
-    techEmail: `tecnico.e2e.${stamp}@rilievi.test`,
-  });
+  // The MASTER invites the company's ADMIN; the ADMIN invites a technician (inviti.mjs).
+  await checkInvites({ browser, base, shots, email, password, aziendaName, sheetUrl });
 } finally {
   await browser.close();
 }

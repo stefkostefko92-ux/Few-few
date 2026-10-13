@@ -1,13 +1,25 @@
-// Supplier forms in the sheet (src/ordini/): when one opens — its brand chosen and its question
-// answered "Sì" — the empty fields nobody has touched take what the survey already says (date, lift
-// number, door operator...). The server fills what it knows on its own (the company, the person
-// writing). Same rules as src/ordini/prefill.ts; the plant data that sits in more than one place
-// (stops, speed, load...) is collegati.js. Loaded after app.js: its conditions are synced first.
+// The survey fields of the supplier forms (`prefill` in the form's map, src/ordini/prefill.ts): the
+// date, the reference of the lift, the company and the person writing, the ticked boxes of the sheet as
+// words. Each follows the sheet in real time while nobody has typed in it — empty, or still holding what
+// was put there for it (data-auto); fields of one kind follow the first one typed in when the sheet says
+// nothing. The server fills them when a form first opens. The plant data that sits in more than one
+// place (stops, address, speed...) is collegati.js. Loaded after app.js: its conditions are synced first.
 (() => {
   'use strict';
 
-  const boxes = Array.from(document.querySelectorAll('[data-modulo]'));
-  if (!boxes.length) return;
+  const form = document.querySelector('[data-scheda-form]');
+  const fields = Array.from(document.querySelectorAll('[data-modulo] [data-prefill]'));
+  if (!form || !fields.length || !window.rilieviValori) return;
+  // The option of a list for a text of the sheet (valori.js).
+  const { optionFor } = window.rilieviValori;
+  // The company and the person writing (src/ordini/collegati-browser.ts).
+  let context = {};
+  try {
+    context =
+      JSON.parse(document.getElementById('collegati-dati').textContent || '').contesto || {};
+  } catch {
+    // Without it the fields keep what the server put there.
+  }
 
   // A hidden field of the sheet says nothing (the door operator with manual doors).
   const shown = (el) => !el.closest('[data-off]');
@@ -17,10 +29,14 @@
   };
   // Ticked boxes of the sheet as words ("Automatiche, Manuali"), as their labels read.
   const surveyTicks = (name) =>
-    Array.from(document.querySelectorAll(`input[name="${name}"]:checked`), (input) => {
-      const label = input.closest('label');
-      return label ? label.textContent.trim() : input.value;
-    }).join(', ');
+    Array.from(document.querySelectorAll(`input[name="${name}"]:checked`))
+      .filter(shown)
+      .map((input) => {
+        const label = input.closest('label');
+        return label ? label.textContent.trim() : input.value;
+      })
+      .join(', ');
+  // Same as textToken() in src/ordini/prefill.ts.
   const surveyText = (token) => {
     if (token === 'data') {
       const day = surveyValue('data');
@@ -34,67 +50,70 @@
         .join(' — ');
     }
     if (token === 'azienda') {
+      // A new sheet of someone in several companies: the company chosen above the form.
       const select = document.getElementById('f-azienda');
-      return select && select.value ? select.options[select.selectedIndex].text.trim() : '';
+      if (select) return select.value ? select.options[select.selectedIndex].text.trim() : '';
+    }
+    if (['azienda', 'utente', 'ruolo', 'email'].includes(token)) {
+      return typeof context[token] === 'string' ? context[token] : '';
     }
     if (['tipoImpianto', 'tipoPorte', 'ubicazioneMacchina'].includes(token))
       return surveyTicks(token);
     return surveyValue(token);
   };
-
-  // The option of a list for a text of the sheet: the same word ("Selcom" → "SELCOM"), otherwise the
-  // only option with the same numbers ("24 V DC" → "24Vcc"). Same as opzioneDi() in prefill.ts.
-  const compact = (value) =>
-    value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/\s+/g, '');
-  const numbersIn = (value) =>
-    (value.match(/\d+(?:[.,]\d+)?/g) || []).map((n) => Number(n.replace(',', '.')));
-  const optionFor = (select, value) => {
-    const options = Array.from(select.options, (option) => option.value).filter(Boolean);
-    const wanted = compact(value);
-    if (!wanted) return '';
-    const same = options.find((option) => compact(option) === wanted);
-    if (same) return same;
-    const target = numbersIn(value);
-    if (!target.length) return '';
-    const matching = options.filter((option) => {
-      const own = numbersIn(option);
-      return own.length === target.length && own.every((n, i) => n === target[i]);
-    });
-    return matching.length === 1 ? matching[0] : '';
+  // A tick of the sheet ("pattinoRetrattile=si").
+  const surveyTick = (token) => {
+    const [name, value] = token.split('=');
+    const box = document.querySelector(`input[name="${name}"][value="${value}"]`);
+    return Boolean(box && box.checked && shown(box));
   };
 
-  const prefill = (box) => {
-    box.querySelectorAll('[data-prefill]').forEach((input) => {
-      if (input.dataset.touched) return;
-      const token = input.dataset.prefill;
-      if (input.type === 'checkbox') {
-        const [name, value] = token.split('=');
-        const source = document.querySelector(`input[name="${name}"][value="${value}"]:checked`);
-        if (source && shown(source)) input.checked = true;
-      } else if (input instanceof HTMLSelectElement) {
-        if (!input.value) input.value = optionFor(input, surveyText(token));
-      } else if (!input.value) {
-        const text = surveyText(token);
-        input.value = input.maxLength > 0 ? text.slice(0, input.maxLength) : text;
+  const touched = (el) => el.dataset.touched === '1';
+  const follows = (el) =>
+    !touched(el) &&
+    (el.type === 'checkbox'
+      ? !el.checked || el.dataset.auto === 'si'
+      : el.value === '' || el.value === el.dataset.auto);
+  const put = (el, value) => {
+    if (el.type === 'checkbox') {
+      el.checked = value === 'si';
+      el.dataset.auto = value;
+      return;
+    }
+    const text = el instanceof HTMLSelectElement ? optionFor(el, value) : value;
+    el.value = el.maxLength > 0 ? text.slice(0, el.maxLength) : text;
+    el.dataset.auto = el.value;
+  };
+
+  // Fields of one kind, in page order: the sheet speaks first; with nothing there, the first field of the
+  // kind someone typed in that is on screen.
+  const kinds = new Map();
+  fields.forEach((el) =>
+    kinds.set(el.dataset.prefill, [...(kinds.get(el.dataset.prefill) || []), el]),
+  );
+  const fill = () => {
+    kinds.forEach((list, token) => {
+      let value;
+      if (token.includes('=')) {
+        value = surveyTick(token) ? 'si' : '';
+      } else {
+        const typed = list.find((el) => !follows(el) && shown(el) && el.value.trim());
+        value = surveyText(token) || (typed ? typed.value.trim() : '');
       }
+      list.filter(follows).forEach((el) => put(el, value));
     });
   };
 
-  const touch = (event) => {
+  // What someone types in a form is theirs: it stops following. The sheet changing — typed, or filled
+  // from a form by collegati.js — refills the rest.
+  const update = (event) => {
     const target = event.target;
     if (target instanceof HTMLElement && target.closest('[data-modulo]')) {
       target.dataset.touched = '1';
     }
+    fill();
   };
-  // Open on load means the server already filled it; a form that opens later is filled here.
-  const open = new Map(boxes.map((box) => [box, shown(box)]));
-  document.addEventListener('input', touch);
-  document.addEventListener('change', (event) => {
-    touch(event);
-    boxes.forEach((box) => {
-      const now = shown(box);
-      if (now && !open.get(box)) prefill(box);
-      open.set(box, now);
-    });
-  });
+  document.addEventListener('input', update);
+  document.addEventListener('change', update);
+  fill();
 })();

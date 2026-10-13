@@ -2,7 +2,8 @@ import type { Request, Response } from 'express';
 import { principalOf } from '../auth/guards.js';
 import { roleIn, spansAziende } from '../auth/scope.js';
 import { collegatiDelGruppo } from '../ordini/collegamenti.js';
-import { collegatiPerBrowser, discrepanzeDi, improntaDi } from '../ordini/collegati.js';
+import { collegatiPerBrowser } from '../ordini/collegati-browser.js';
+import { discrepanzeDi, improntaDi } from '../ordini/collegati.js';
 import { moduloFieldOf, withPrefill } from '../ordini/form.js';
 import { SLOTS } from '../ordini/registry.js';
 import { activeFields, SECTIONS } from '../schede/fields.js';
@@ -42,7 +43,7 @@ export function renderForm(req: Request, res: Response, status: number, view: Fo
   // човека, който пише (ролята му в ТАЗИ фирма).
   const aziendaId = view.scheda?.aziendaId || view.azienda || null;
   const role = roleIn(user, aziendaId);
-  const { values, auto } = withPrefill(view.values, {
+  const contesto = {
     azienda:
       view.scheda?.azienda.name ??
       user.memberships.find((m) => m.aziendaId === aziendaId)?.aziendaName ??
@@ -50,6 +51,9 @@ export function renderForm(req: Request, res: Response, status: number, view: Fo
     utente: user.name,
     ruolo: role ? t(`role.${role}`) : '',
     email: user.email,
+  };
+  const { values, auto } = withPrefill(view.values, {
+    ...contesto,
     etichetta: (campo, valore) => t(`scheda.option.${campo}.${valore}`),
   });
   const discrepanze = discrepanzeDi(values, t);
@@ -75,7 +79,7 @@ export function renderForm(req: Request, res: Response, status: number, view: Fo
       auto,
       discrepanze: new Map(discrepanze.map((d) => [d.key, d])),
       delGruppo: collegatiDelGruppo,
-      json: collegatiPerBrowser(t),
+      json: collegatiPerBrowser(t, contesto),
     },
     conferma: view.conferma ? { discrepanze, impronta: improntaDi(discrepanze) } : null,
   });

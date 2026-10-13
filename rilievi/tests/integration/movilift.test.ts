@@ -69,11 +69,13 @@ describe('the MoviLift panel order', () => {
       page.body,
       /name="om-controllo" value="scheda" data-clearable checked data-predefinito>/,
     );
+    // The door operator's voltage is linked to the sheet (both ways), not a survey field of the form.
+    assert.match(page.body, /<select class="select" id="f-om-voltA" name="om-voltA">/);
+    // The shared values first, then the survey fields, then the linked data.
     assert.match(
       page.body,
-      /<select class="select" id="f-om-voltA" name="om-voltA" data-prefill="operatoreTensione">/,
+      /\/static\/js\/valori\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/moduli\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/collegati\.js/,
     );
-    assert.match(page.body, /<script src="\/static\/js\/moduli\.js\?v=[^"]+" defer><\/script>/);
   });
 
   it('is saved with the sheet and comes out as its own PDF, never as a Pelazza order', async () => {

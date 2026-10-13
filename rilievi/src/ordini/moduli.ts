@@ -15,8 +15,10 @@ const ASSETS = new URL('../../assets/moduli/', import.meta.url);
 
 /**
  * Откъде идва предварителната стойност на поле, което не е в никоя връзка (src/ordini/prefill.ts и
- * public/js/app.js). Данните на уредбата, които стоят на няколко места (спирки, врати, товар, въжета…),
- * са в src/ordini/collegati.ts — там се и сравняват.
+ * public/js/moduli.js — там тя следва картата и докато се пише): датата, препратката към асансьора,
+ * фирмата и човекът, които пишат, и отметките на картата като думи. Данните на уредбата, които стоят
+ * на няколко места (спирки, адрес, врати, товар, въжета…), са в src/ordini/collegamenti-elenco.ts —
+ * попълват се във всички посоки и се сравняват.
  */
 export const PREFILL_TOKENS = [
   'data',
@@ -25,11 +27,6 @@ export const PREFILL_TOKENS = [
   'utente',
   'ruolo',
   'email',
-  'indirizzo',
-  'matricola',
-  'marca',
-  'operatoreMarca',
-  'operatoreTensione',
   // Отметките на картата като думи („Automatiche, Manuali“, „Alto“) — за текстово поле на модул.
   'tipoImpianto',
   'tipoPorte',
@@ -37,11 +34,8 @@ export const PREFILL_TOKENS = [
 ] as const;
 export type PrefillToken = (typeof PREFILL_TOKENS)[number];
 
-/**
- * Отметка от огледа: „поле=СТОЙНОСТ“ (хидравличен → „Idraulico“; шейна: Sì → „Elettr. Pattino“;
- * автоматични врати → „Automatico“ на 2SG).
- */
-const CHECK_PREFILL = /^(tipoImpianto=[A-Z]+|tipoPorte=[A-Z]+|pattinoRetrattile=si)$/;
+/** Отметка от огледа: „поле=СТОЙНОСТ“ (шейна за смяна: Sì → „Elettr. Pattino“ на MoviLift). */
+const CHECK_PREFILL = /^pattinoRetrattile=si$/;
 
 const num = z.number().finite();
 const base = {

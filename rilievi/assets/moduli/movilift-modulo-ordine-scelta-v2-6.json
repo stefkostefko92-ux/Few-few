@@ -459,8 +459,7 @@
               "label": "Marca Op (lato A)",
               "acro": "Casella combinata1",
               "opzioni": ["2SG", "CMM", "DAPA", "FIAM", "IGV", "PRISMA", "SELCOM", "VICTORY"],
-              "vuoto": "SCEGLI...",
-              "prefill": "operatoreMarca"
+              "vuoto": "SCEGLI..."
             },
             {
               "key": "voltA",
@@ -468,8 +467,7 @@
               "label": "VOLT (lato A)",
               "acro": "Casella combinata3",
               "opzioni": ["24Vcc", "48Vcc", "96Vca", "125Vca", "220mono", "220tri"],
-              "vuoto": "VOLT",
-              "prefill": "operatoreTensione"
+              "vuoto": "VOLT"
             }
           ]
         },

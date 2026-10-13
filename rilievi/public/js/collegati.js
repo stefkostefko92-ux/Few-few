@@ -1,8 +1,9 @@
-// Linked data between the sheet and the supplier forms (src/ordini/collegati.ts, sent here as JSON): an
-// empty field of a form takes what the sheet or the other form already says, and keeps following it
-// until someone types in it; values that disagree are listed under their group. Progressive
-// enhancement: the server fills the forms when they first open and asks to confirm on save — this
-// only does the same while typing.
+// Linked data (src/ordini/collegamenti-elenco.ts, sent here as JSON): the same plant data in the sheet
+// and in the supplier forms. A place nobody has typed in follows the others in real time, in every
+// direction — empty, or still holding what was put there for it (data-auto): a form takes what the
+// sheet says, the sheet what a form says, one form the other. A place someone typed in keeps its value;
+// places that say different things are listed under their group, and the server asks to confirm them
+// on save. Progressive enhancement: the server fills a form when it first opens and checks on save.
 (() => {
   'use strict';
 
@@ -16,164 +17,187 @@
     return;
   }
 
-  // Numbers the Italian way: "1.000" is a thousand, "1,6" and "1.6" are the same, units do not count.
-  // Same as numeriDi() and stessoValore() in src/ordini/collegati.ts.
-  const NUMBER = /[1-9]\d{0,2}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?/g;
-  const THOUSANDS = /^[1-9]\d{0,2}(?:\.\d{3})+(?:,\d+)?$/;
-  const numbersOf = (text) =>
-    Array.from(text.matchAll(NUMBER), ([token]) =>
-      Number(
-        THOUSANDS.test(token)
-          ? token.replace(/\./g, '').replace(',', '.')
-          : token.replace(',', '.'),
-      ),
-    );
-  const plain = (text) =>
-    text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/\s+/g, ' ').trim();
-  const same = (a, b) => {
-    const na = numbersOf(a);
-    const nb = numbersOf(b);
-    if (na.length || nb.length) {
-      return na.length === nb.length && na.every((n, i) => Math.abs(n - nb[i]) < 1e-9);
+  // Numbers the Italian way, the option of a list, what a field of the sheet takes (valori.js).
+  if (!window.rilieviValori) return;
+  const { same, optionFor, forSheet, pairOf, splitPair } = window.rilieviValori;
+  const hasOwn = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
+
+  // The places of each group: a field of the sheet or of a form, read as one value (a number group) or
+  // as the categories of its ticks, its Sì/No or its radio group (a choice group).
+  const byName = (name) => Array.from(form.querySelectorAll(`[name="${name}"]`));
+  const nameOf = (m, key) => (m.luogo === 'scheda' ? key : `${m.luogo}-${key}`);
+  const placeOf = (group, m) => {
+    const sheet = m.luogo === 'scheda';
+    let els;
+    let kind;
+    if (group.tipo === 'numero' && m.campi) {
+      els = m.campi.map((key) => byName(nameOf(m, key))[0]).filter(Boolean);
+      kind = els.length === 2 ? 'pair' : null;
+    } else if (group.tipo === 'numero') {
+      els = byName(nameOf(m, m.campo));
+      kind = !els.length ? null : els[0].type === 'radio' ? 'map' : 'text';
+    } else if (!sheet && m.campo !== undefined) {
+      els = byName(nameOf(m, m.campo));
+      kind = 'radio';
+    } else {
+      els = Object.keys(m.voci)
+        .map((key) =>
+          form.querySelector(
+            sheet ? `input[name="${m.campo}"][value="${key}"]` : `input[name="${m.luogo}-${key}"]`,
+          ),
+        )
+        .filter(Boolean);
+      kind = 'boxes';
     }
-    return plain(a) === plain(b);
+    // One field may sit in two groups (the sheet's "Accessi"): its id is the same in both.
+    const id = sheet ? m.campo : `${m.luogo}-${m.campo || (m.campi || Object.keys(m.voci)).join()}`;
+    return kind && els.length ? { group, m, sheet, els, kind, id } : null;
+  };
+  const groups = data.gruppi.map((group) => ({
+    group,
+    places: group.membri.map((m) => placeOf(group, m)).filter(Boolean),
+  }));
+
+  const keyOf = (p, el) =>
+    p.sheet || p.kind === 'radio' ? el.value : el.name.slice(p.m.luogo.length + 1);
+  const ticked = (p) => p.els.filter((el) => el.checked && hasOwn(p.m.voci, keyOf(p, el)));
+  // What a place says: text for a number group, categories for a choice; null — nothing.
+  const read = (p) => {
+    if (p.kind === 'pair') return pairOf(...p.els.map((el) => el.value.trim())) || null;
+    if (p.kind === 'map') {
+      // Only the map's own keys: "constructor" from a tampered form is not an answer.
+      const box = p.els.find((el) => el.checked);
+      return box && hasOwn(p.m.valori, box.value) ? p.m.valori[box.value] : null;
+    }
+    if (p.kind === 'text') return p.els[0].value.trim() || null;
+    const boxes = ticked(p);
+    return boxes.length ? new Set(boxes.map((el) => p.m.voci[keyOf(p, el)])) : null;
   };
 
-  // Hidden means not said: a field whose condition is off, a form whose question is not "Sì".
+  // Hidden says nothing: a field whose condition is off, a form whose question is not "Sì". Filling is
+  // the one exception: the other make's form of the same column (Pelazza ↔ MoviLift), hidden only by
+  // the make while the question still says "Sì", lends what it says to its twin — that is how the order
+  // carries over when the make changes. It is never a difference: the server reads the open one.
   const shown = (el) => !el.closest('[data-off]');
+  const visibleFor = (p, target) => {
+    if (shown(p.els[0])) return true;
+    if (p.sheet || target.sheet || data.colonne[p.m.luogo] !== data.colonne[target.m.luogo])
+      return false;
+    const box = p.els[0].closest('[data-modulo]');
+    return box !== null && !box.hasAttribute('data-off');
+  };
+
+  // A place follows while nobody has typed in it: empty, or still what was put there for it.
   const touched = (el) => el.dataset.touched === '1';
-  // Filling a form is the one exception: the other make's form of the same column (Pelazza ↔ MoviLift),
-  // hidden only by the make while the question still says "Sì", lends what it says — that is how the
-  // order carries over when the make changes. It is never a difference: the server reads the open one.
-  const lends = (el, m, target) => {
-    if (shown(el)) return true;
-    const box = el.closest('[data-modulo]');
-    return (
-      m.luogo !== 'scheda' &&
-      data.colonne[m.luogo] === data.colonne[target.luogo] &&
-      box !== null &&
-      !box.hasAttribute('data-off')
+  const isTick = (el) => el.type === 'checkbox' || el.type === 'radio';
+  const follows = (p) =>
+    !p.els.some(touched) &&
+    p.els.every((el) =>
+      isTick(el)
+        ? !el.checked || el.dataset.auto === 'si'
+        : el.value === '' || el.value === el.dataset.auto,
     );
-  };
-  const visible = (el, m, target) => (target ? lends(el, m, target) : shown(el));
 
-  const numberInputs = (m) =>
-    Array.from(
-      form.querySelectorAll(`[name="${m.luogo === 'scheda' ? m.campo : `${m.luogo}-${m.campo}`}"]`),
-    );
-  const readNumber = (m, target) => {
-    const inputs = numberInputs(m);
-    if (!inputs.length || !visible(inputs[0], m, target)) return null;
-    const raw =
-      inputs[0].type === 'radio'
-        ? (inputs.find((input) => input.checked) || { value: '' }).value
-        : inputs[0].value.trim();
-    // Only the map's own keys: "constructor" from a tampered form is not an answer.
-    const own = m.valori && Object.prototype.hasOwnProperty.call(m.valori, raw);
-    return (m.valori ? (own ? m.valori[raw] : '') : raw) || null;
+  // Writing into a following place; the elements that changed come back (the sheet's get events).
+  const setText = (el, value) => {
+    const before = el.value;
+    el.value = value;
+    el.dataset.auto = el.value;
+    return el.value !== before;
   };
-  // A choice is ticks of the sheet (or its Sì/No), ticks of a form, or a radio group of a form (`campo`:
-  // all its buttons, so a button outside `voci` counts as someone's answer).
-  const radioOf = (m) => m.luogo !== 'scheda' && m.campo !== undefined;
-  const boxesOf = (m) =>
-    radioOf(m)
-      ? Array.from(form.querySelectorAll(`input[name="${m.luogo}-${m.campo}"]`))
-      : Object.keys(m.voci)
-          .map((key) =>
-            form.querySelector(
-              m.luogo === 'scheda'
-                ? `input[name="${m.campo}"][value="${key}"]`
-                : `input[name="${m.luogo}-${key}"]`,
-            ),
-          )
-          .filter(Boolean);
-  const keyOf = (m, box) =>
-    m.luogo === 'scheda' || radioOf(m) ? box.value : box.name.slice(m.luogo.length + 1);
-  const readChoice = (m, target) => {
-    const boxes = boxesOf(m);
-    if (!boxes.length || !visible(boxes[0], m, target)) return null;
-    const ticked = boxes.filter(
-      (box) => box.checked && Object.prototype.hasOwnProperty.call(m.voci, keyOf(m, box)),
-    );
-    return ticked.length ? ticked : null;
+  const setTick = (el, on) => {
+    const changed = el.checked !== on;
+    el.checked = on;
+    el.dataset.auto = on ? 'si' : '';
+    return changed;
   };
-  const labelOf = (box) => {
-    const label = box.closest('label');
-    return label ? label.textContent.trim() : box.value;
+  const write = (p, value) => {
+    if (p.kind === 'pair') {
+      const parts = splitPair(value || '');
+      return p.els.filter((el, i) => setText(el, parts[i]));
+    }
+    if (p.kind === 'map') {
+      const key = value ? Object.keys(p.m.valori).find((k) => same(p.m.valori[k], value)) : null;
+      return p.els.filter((el) => setTick(el, el.value === key));
+    }
+    if (p.kind === 'text') {
+      const el = p.els[0];
+      const text = value || '';
+      const next =
+        el instanceof HTMLSelectElement
+          ? optionFor(el, text)
+          : p.sheet
+            ? forSheet(p.m, text)
+            : text.slice(0, el.maxLength > 0 ? el.maxLength : undefined);
+      return setText(el, next) ? [el] : [];
+    }
+    const wanted = new Set();
+    for (const category of value || []) {
+      const keys = Object.keys(p.m.voci).filter((key) => p.m.voci[key] === category);
+      // A radio has one answer: only for one category over there, and its first button here. A
+      // category ticks a box only when exactly one box means it.
+      if (p.kind === 'radio' && value.size === 1 && keys.length) wanted.add(keys[0]);
+      if (p.kind !== 'radio' && keys.length === 1) wanted.add(keys[0]);
+    }
+    // Nothing said elsewhere: a radio goes back to the blank form's own answer, if it has one.
+    const fallback =
+      p.kind === 'radio' && !wanted.size ? p.els.find((el) => 'predefinito' in el.dataset) : null;
+    return p.els.filter((el) => setTick(el, el === fallback || wanted.has(keyOf(p, el))));
   };
 
-  // A form field follows the others while nobody has typed in it: empty, or still holding what was
-  // put there for it (data-auto — by the server when the form first opened, or here).
-  const follows = (input) =>
-    !touched(input) && (input.value === '' || input.value === input.dataset.auto);
-  const followsChoice = (boxes) =>
-    boxes.every((box) => !touched(box) && (!box.checked || box.dataset.auto === 'si'));
-
+  // Every following place takes the first place that says something — someone's own value before one
+  // filled in this round, which carries a value from one group to the next (a form → the sheet's
+  // "Accessi" → the other form). Followers nobody speaks for are emptied.
   const fill = () => {
-    for (const group of data.gruppi) {
-      for (const target of group.membri) {
-        if (target.luogo === 'scheda') continue;
-        const others = group.membri.filter((m) => m !== target);
-        if (group.tipo === 'numero') {
-          const input = form.querySelector(`[name="${target.luogo}-${target.campo}"]`);
-          if (!input || !follows(input)) continue;
-          const value = others.map((m) => readNumber(m, target)).find(Boolean) || '';
-          const next = input.maxLength > 0 ? value.slice(0, input.maxLength) : value;
-          input.value = next;
-          input.dataset.auto = next;
-          continue;
+    const followers = new Set();
+    groups.forEach(({ places }) => places.forEach((p) => follows(p) && followers.add(p.id)));
+    const done = new Set();
+    const changed = [];
+    const speaks = (p) => !followers.has(p.id) || done.has(p.id);
+    for (let pass = 0, progress = true; progress && pass < 6; pass += 1) {
+      progress = false;
+      for (const { places } of groups) {
+        for (const target of places) {
+          if (!followers.has(target.id) || done.has(target.id)) continue;
+          const sources = places.filter((p) => p !== target && speaks(p) && visibleFor(p, target));
+          const ordered = [
+            ...sources.filter((p) => !followers.has(p.id)),
+            ...sources.filter((p) => followers.has(p.id)),
+          ];
+          const value = ordered.map(read).find((v) => v !== null);
+          if (value === undefined) continue;
+          changed.push(...write(target, value));
+          done.add(target.id);
+          progress = true;
         }
-        const boxes = boxesOf(target);
-        if (!boxes.length || !followsChoice(boxes)) continue;
-        const radio = radioOf(target);
-        const wanted = new Set();
-        for (const m of others) {
-          const ticked = readChoice(m, target);
-          if (!ticked) continue;
-          const categories = new Set(ticked.map((box) => m.voci[keyOf(m, box)]));
-          if (radio) {
-            // One answer: only for one category over there, and its first button here.
-            const [category] = categories;
-            const key = Object.keys(target.voci).find((k) => target.voci[k] === category);
-            if (categories.size === 1 && key) wanted.add(key);
-            break;
-          }
-          // A category ticks a box here only when exactly one box means it.
-          for (const category of categories) {
-            const keys = Object.keys(target.voci).filter((key) => target.voci[key] === category);
-            if (keys.length === 1) wanted.add(keys[0]);
-          }
-          break;
-        }
-        // Nothing said elsewhere: a radio goes back to the blank form's own answer, if it has one.
-        const fallback =
-          radio && !wanted.size ? boxes.find((box) => 'predefinito' in box.dataset) : null;
-        boxes.forEach((box) => {
-          box.checked = box === fallback || wanted.has(keyOf(target, box));
-          box.dataset.auto = box.checked ? 'si' : '';
-        });
       }
     }
+    groups.forEach(({ places }) =>
+      places.forEach((target) => {
+        if (!followers.has(target.id) || done.has(target.id)) return;
+        changed.push(...write(target, null));
+        done.add(target.id);
+      }),
+    );
+    return changed;
   };
 
-  // What disagrees: different numbers, or ticked boxes with no category in common.
-  const disagreement = (group) => {
-    const parts = [];
-    for (const m of group.membri) {
-      if (group.tipo === 'numero') {
-        const value = readNumber(m);
-        if (value) parts.push({ m, value });
-      } else {
-        const ticked = readChoice(m);
-        if (ticked) {
-          parts.push({
-            m,
-            value: ticked.map(labelOf).join(', '),
-            categories: new Set(ticked.map((box) => m.voci[keyOf(m, box)])),
-          });
-        }
-      }
-    }
+  // What disagrees: different numbers, or ticked boxes with no category in common. Same text as
+  // views/schede/_discrepanza.ejs.
+  const labelOf = (el) => {
+    const label = el.closest('label');
+    return label ? label.textContent.trim() : el.value;
+  };
+  const disagreement = ({ group, places }) => {
+    const parts = places
+      .filter((p) => shown(p.els[0]))
+      .map((p) => ({ p, said: read(p) }))
+      .filter(({ said }) => said !== null)
+      .map(({ p, said }) =>
+        group.tipo === 'numero'
+          ? { p, value: said }
+          : { p, value: ticked(p).map(labelOf).join(', '), categories: said },
+      );
     if (parts.length < 2) return null;
     const differs =
       group.tipo === 'numero'
@@ -183,27 +207,24 @@
           );
     return differs ? parts : null;
   };
-
   const lists = Array.from(form.querySelectorAll('[data-diff]'));
   const render = () => {
     const found = new Map();
-    for (const group of data.gruppi) {
-      const parts = disagreement(group);
-      if (parts) found.set(group.key, { group, parts });
-    }
+    groups.forEach((entry) => {
+      const parts = entry.group.confronto ? disagreement(entry) : null;
+      if (parts) found.set(entry.group.key, { group: entry.group, parts });
+    });
     lists.forEach((box) => {
       const items = box.dataset.diff
         .split(' ')
         .map((key) => found.get(key))
         .filter(Boolean);
-      const list = box.querySelector('ul');
-      // Same text as views/schede/_discrepanza.ejs.
-      list.replaceChildren(
+      box.querySelector('ul').replaceChildren(
         ...items.map(({ group, parts }) => {
           const item = document.createElement('li');
           const name = document.createElement('strong');
           name.textContent = group.nome;
-          const where = parts.map((part) => `${data.luoghi[part.m.luogo]}: ${part.value}`);
+          const where = parts.map((part) => `${data.luoghi[part.p.m.luogo]}: ${part.value}`);
           item.append(name, ` — ${where.join(' · ')}`);
           return item;
         }),
@@ -212,36 +233,51 @@
     });
   };
 
-  // On the document, after app.js: by then a just-opened form or field is shown (its conditions are
-  // synced) and the field someone changed is marked as touched — it stops following the others.
+  // A field of the sheet filled here tells the page, as typing would: app.js shows the fields of its
+  // conditions and the rows of the stops, moduli.js the survey fields of the forms. Those events are
+  // ours — they do not mark the field as typed in. What they show can speak in turn: a few rounds.
+  let ours = false;
+  const settle = () => {
+    for (let round = 0; round < 3; round += 1) {
+      const sheet = fill().filter((el) => !el.closest('[data-modulo]'));
+      if (!sheet.length) break;
+      ours = true;
+      try {
+        sheet.forEach((el) =>
+          el.dispatchEvent(new Event(isTick(el) ? 'change' : 'input', { bubbles: true })),
+        );
+      } finally {
+        ours = false;
+      }
+    }
+    render();
+  };
+
+  // On the document, after app.js and moduli.js: by then a just-opened form or field is shown (its
+  // conditions are synced). The field someone changed is theirs from now on — it stops following.
   const update = (event) => {
     const target = event.target;
-    if (!(target instanceof HTMLElement) || !form.contains(target)) return;
-    if (target.closest('[data-modulo]')) target.dataset.touched = '1';
-    fill();
-    render();
+    if (ours || !(target instanceof HTMLElement) || !form.contains(target)) return;
+    if (target.matches('input, select, textarea')) target.dataset.touched = '1';
+    settle();
   };
   document.addEventListener('input', update);
   document.addEventListener('change', update);
 
-  // The fields still following the others travel with the form: if it comes back (an error, the
-  // confirmation), the server marks them again (data-auto) and they keep following.
+  // The fields still following — linked here or the forms' survey fields (moduli.js) — travel with the
+  // form: if it comes back (an error, the confirmation), the server marks them again.
   form.addEventListener('submit', () => {
-    const names = [];
-    for (const group of data.gruppi) {
-      for (const m of group.membri) {
-        if (m.luogo === 'scheda') continue;
-        if (group.tipo === 'numero') {
-          const input = form.querySelector(`[name="${m.luogo}-${m.campo}"]`);
-          if (input && input.value !== '' && follows(input)) names.push(input.name);
-        } else {
-          const boxes = boxesOf(m);
-          if (boxes.length && followsChoice(boxes)) {
-            boxes.filter((box) => box.checked).forEach((box) => names.push(box.name));
-          }
-        }
-      }
-    }
+    const names = new Set(Array.from(form.querySelectorAll('[data-auto]'), (el) => el.name));
+    const following = [...names].filter((name) => {
+      const els = byName(name);
+      return (
+        !els.some(touched) &&
+        els.some((el) => (isTick(el) ? el.checked : el.value !== '')) &&
+        els.every((el) =>
+          isTick(el) ? !el.checked || el.dataset.auto === 'si' : el.value === el.dataset.auto,
+        )
+      );
+    });
     let carrier = form.querySelector('input[name="collegati-auto"]');
     if (!carrier) {
       carrier = document.createElement('input');
@@ -249,8 +285,10 @@
       carrier.name = 'collegati-auto';
       form.append(carrier);
     }
-    carrier.value = names.join(' ');
+    carrier.value = following.join(' ');
   });
-  // Values the browser restored on "back" may disagree with what the server listed.
-  render();
+
+  // On load: an empty place takes what another already says (a saved sheet, values the browser
+  // restored on "back"), and the list matches what is on screen.
+  settle();
 })();

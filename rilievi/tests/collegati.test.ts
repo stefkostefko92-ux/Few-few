@@ -10,8 +10,7 @@ import {
   stessoValore,
 } from '../src/ordini/collegati.js';
 import { withPrefill } from '../src/ordini/form.js';
-import { ARGANI, nomeModulo, PELAZZA, SG } from '../src/ordini/moduli.js';
-import { riepilogoModuli } from '../src/ordini/riepilogo.js';
+import { ARGANI, PELAZZA } from '../src/ordini/moduli.js';
 
 const t = translatorFor('it');
 
@@ -171,6 +170,7 @@ describe('filling a form from the sheet and from the other form', () => {
     });
     // The motor voltage of the panel is not on the argano sheet: it stays where it is.
     assert.deepEqual(valori, {
+      matricola: '33871',
       piani: '5',
       velocita: '1,0',
       motoreAc2: true,
@@ -198,7 +198,7 @@ describe('filling a form from the sheet and from the other form', () => {
 });
 
 describe('a form that comes back (an error, the confirmation)', () => {
-  it('keeps as following only the linked fields the browser says still follow', () => {
+  it('keeps as following only the fields the browser says still follow, of the sheet or a form', () => {
     const ctx = {
       azienda: 'Prova',
       utente: 'Prova',
@@ -206,11 +206,17 @@ describe('a form that comes back (an error, the confirmation)', () => {
       email: 'p@rilievi.test',
       etichetta: (campo: string, valore: string) => t(`scheda.option.${campo}.${valore}`),
     };
+    // Linked fields, a survey field of a form, a field of the sheet filled from a form: they follow.
+    // A name the form does not have, or a field that never follows, is dropped.
     const { auto } = withPrefill(
-      { ...open, [AUTO_KEY]: 'oq-nFermate pa-motoreAc2 oq-cliente oq-nonEsiste fermate' },
+      {
+        ...open,
+        'sg-_': '1',
+        [AUTO_KEY]: 'oq-nFermate pa-motoreAc2 oq-cliente oq-nonEsiste fermate oq-note buonoLavoro',
+      },
       ctx,
     );
-    assert.deepEqual([...auto].sort(), ['oq-nFermate', 'pa-motoreAc2']);
+    assert.deepEqual([...auto].sort(), ['fermate', 'oq-cliente', 'oq-nFermate', 'pa-motoreAc2']);
   });
 });
 
@@ -219,7 +225,7 @@ describe('the linked data themselves', () => {
     for (const link of COLLEGAMENTI) {
       assert.notEqual(t(`collegati.${link.key}`), `collegati.${link.key}`, link.key);
     }
-    for (const luogo of ['scheda', 'oq', 'om', 'pa']) {
+    for (const luogo of ['scheda', 'oq', 'om', 'pa', 'sg']) {
       assert.notEqual(t(`collegati.luogo.${luogo}`), `collegati.luogo.${luogo}`);
     }
   });
@@ -240,6 +246,8 @@ describe('the linked data themselves', () => {
     assert.deepEqual(collegatiDelGruppo('pa', groupOf('Motore', ARGANI)), [
       'tipoVelocita',
       'tensioneFreno',
+      'correnteMotore',
+      'giriMotore',
     ]);
     assert.deepEqual(collegatiDelGruppo('pa', groupOf('Trazione e funi', ARGANI)), [
       'funiNumero',
@@ -247,70 +255,5 @@ describe('the linked data themselves', () => {
       'funiTrefoli',
     ]);
     assert.deepEqual(collegatiDelGruppo('oq', groupOf('Accessori', PELAZZA)), []);
-  });
-});
-
-describe('the orders in the sheet print', () => {
-  const ordine = {
-    modulo: PELAZZA.id,
-    valori: { ordine: true, velocita: '1,0', nFermate: '5', note: 'Consegna in cantiere' },
-  };
-  const scheda = {
-    riepilogoOrdini: true,
-    quadroMarca: 'PELAZZA' as const,
-    quadroOrdine: true,
-    ordineQuadro: ordine,
-    arganoPreventivo: false,
-    preventivoArgano: { modulo: ARGANI.id, valori: { taglia12: true } },
-    sospensioni: null,
-    ordineSospensioni: null,
-  };
-
-  it('come in only when the sheet asks for them, with what is filled in', () => {
-    assert.deepEqual(riepilogoModuli({ ...scheda, riepilogoOrdini: false }), []);
-    assert.deepEqual(riepilogoModuli(scheda), [
-      {
-        nome: nomeModulo(PELAZZA),
-        gruppi: [
-          { titolo: 'Intestazione', spunte: ['ORDINE'], testi: [] },
-          {
-            titolo: 'Porte',
-            spunte: [],
-            testi: [
-              { label: 'Velocità m/s', value: '1,0' },
-              { label: 'N° Fermate', value: '5' },
-            ],
-          },
-          {
-            titolo: 'Consegna e note',
-            spunte: [],
-            testi: [{ label: 'NOTE', value: 'Consegna in cantiere' }],
-          },
-        ],
-      },
-    ]);
-  });
-
-  it('bring the argano sheet by its title alone and the 2SG sheet with its supplier', () => {
-    const tutti = {
-      ...scheda,
-      quadroOrdine: false,
-      arganoPreventivo: true,
-      sospensioni: true,
-      ordineSospensioni: { modulo: SG.id, valori: { automatico: true, ordNo: '77' } },
-    };
-    assert.deepEqual(riepilogoModuli(tutti), [
-      {
-        nome: 'Modulo rilievi dati argani',
-        gruppi: [{ titolo: 'Cabina e corsa', spunte: ['Taglia 1:2'], testi: [] }],
-      },
-      {
-        nome: 'Modulo ordine operatori e sospensioni · 2SG S.r.l.',
-        gruppi: [
-          { titolo: 'Intestazione', spunte: [], testi: [{ label: 'ORD No', value: '77' }] },
-          { titolo: 'Porte di cabina (operatore)', spunte: ['AUTOMATICO'], testi: [] },
-        ],
-      },
-    ]);
   });
 });

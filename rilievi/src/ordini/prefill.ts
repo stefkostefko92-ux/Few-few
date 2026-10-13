@@ -2,14 +2,16 @@ import type { FormValues } from '../schede/field-parsers.js';
 import { activeFields, fieldByKey } from '../schede/fields.js';
 import { prefillCollegati } from './collegati.js';
 import { fieldsOf, type Modulo, type PrefillToken } from './moduli.js';
+import { opzioneDi } from './opzioni.js';
 import { SLOTS } from './registry.js';
 import type { Valori } from './valori.js';
 
 /**
- * Предварителните стойности на модул: стойностите на празния модул (`predefinito`), датата, № на
- * асансьора, фирмата и човекът, които пишат (картата на модула, `prefill`), и данните на уредбата от
- * картата или от другия модул (collegati.ts) — в този ред, всяко следващо над предишното. Само при
- * първото отваряне на модула; после всичко се редактира. Същите правила има и public/js (докато се пише).
+ * Предварителните стойности на модул: стойностите на празния модул (`predefinito`), датата, препратката
+ * към асансьора, фирмата и човекът, които пишат (картата на модула, `prefill`), и данните на уредбата
+ * от картата или от другия модул (collegati.ts) — в този ред, всяко следващо над предишното. Сървърът
+ * ги слага при първото отваряне на модула; после ги води браузърът (public/js/moduli.js и
+ * collegati.js — същите правила), докато човекът не пише в полето.
  */
 
 export interface PrefillContext {
@@ -60,33 +62,7 @@ function textToken(token: PrefillToken, ctx: PrefillContext): string {
       const list = ctx.values[token];
       return Array.isArray(list) ? list.map((v) => ctx.etichetta(token, v)).join(', ') : '';
     }
-    default:
-      return text(ctx.values, token);
   }
-}
-
-const compatto = (value: string): string =>
-  value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/\s+/g, '');
-const numeri = (value: string): number[] =>
-  (value.match(/\d+(?:[.,]\d+)?/g) ?? []).map((n) => Number(n.replace(',', '.')));
-
-/**
- * Опцията на падащ списък за текст от картата: същата дума („Selcom“ → „SELCOM“), иначе единствената
- * опция със същите числа („24 V DC“ → „24Vcc“; „220 V“ е и „220mono“, и „220tri“ — нищо). Същото е в
- * public/js/app.js.
- */
-export function opzioneDi(opzioni: readonly string[], value: string): string | null {
-  const wanted = compatto(value);
-  if (!wanted) return null;
-  const same = opzioni.find((o) => compatto(o) === wanted);
-  if (same) return same;
-  const target = numeri(value);
-  if (target.length === 0) return null;
-  const matching = opzioni.filter((o) => {
-    const own = numeri(o);
-    return own.length === target.length && own.every((n, i) => n === target[i]);
-  });
-  return matching.length === 1 ? matching[0]! : null;
 }
 
 function checked(token: string, values: FormValues, active: Set<string>): boolean {
@@ -108,12 +84,12 @@ export function predefiniti(modulo: Modulo): Valori {
 }
 
 /**
- * Стойностите от картата на модула: празният модул (`predefinito`), после огледът (`prefill`) — само
- * там, където има какво да се вземе.
+ * Стойностите от огледа (`prefill` в картата на модула) — само там, където има какво да се вземе. Тези
+ * полета следват картата и в браузъра, докато човекът не пише в тях (`data-auto`, form.ts).
  */
-export function prefillPropri(modulo: Modulo, ctx: PrefillContext): Valori {
-  const valori: Valori = predefiniti(modulo);
-  // Скритото поле на картата („шейна“ при автоматични врати, операторът при ръчни) не казва нищо.
+export function prefillToken(modulo: Modulo, ctx: PrefillContext): Valori {
+  const valori: Valori = {};
+  // Скритото поле на картата („шейна“ при автоматични врати) не казва нищо.
   const active = activeFields((key) => ctx.values[key]);
   for (const field of fieldsOf(modulo)) {
     if (!('prefill' in field) || !field.prefill) continue;
@@ -133,6 +109,11 @@ export function prefillPropri(modulo: Modulo, ctx: PrefillContext): Valori {
     }
   }
   return valori;
+}
+
+/** Своето на модула: празният модул (`predefinito`), над него — огледът (`prefill`). */
+export function prefillPropri(modulo: Modulo, ctx: PrefillContext): Valori {
+  return { ...predefiniti(modulo), ...prefillToken(modulo, ctx) };
 }
 
 /** Всичко, с което модулът се отваря за първи път: своето + свързаното (картата, другият модул). */

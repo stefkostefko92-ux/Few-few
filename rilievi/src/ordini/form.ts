@@ -1,17 +1,18 @@
 import type { FormValues } from '../schede/field-parsers.js';
-import { AUTO_KEY, campiCollegati, NOMI_COLLEGATI } from './collegamenti.js';
+import { AUTO_KEY, campiCollegati, NOMI_SEGUACI } from './collegamenti.js';
 import { prefillCollegati } from './collegati.js';
 import { fieldsOf, type ModuloField } from './moduli.js';
-import { predefiniti, prefillPropri, type PrefillContext } from './prefill.js';
+import { predefiniti, prefillToken, type PrefillContext } from './prefill.js';
 import { SLOTS, type ModuloSlot } from './registry.js';
 import { moduloFormValues, nameOf, shownName } from './valori.js';
 
 /**
  * Модулите на доставчиците във формата на картата. При първото отваряне (няма знак `<префикс>-_`)
  * идват попълнени от огледа, от другия модул и от човека, който пише; после — каквото е въведено или
- * записано. `auto` са свързаните полета, попълнени така или със стойността на празния модул („Loc.
- * Macc. in ALTO“), или върнати от браузъра като още следващи: браузърът ги води след източника им,
- * докато човекът не пише в тях (public/js/collegati.js).
+ * записано. `auto` са полетата, попълнени така (свързаните — и със стойността на празния модул: „Loc.
+ * Macc. in ALTO“), или върнати от браузъра като още следващи (и полета на картата, попълнени от
+ * модул): браузърът ги води след източника им, докато човекът не пише в тях (public/js/collegati.js,
+ * moduli.js).
  */
 export function withPrefill(
   values: FormValues,
@@ -20,20 +21,20 @@ export function withPrefill(
   const out: FormValues = { ...values };
   const claimed = values[AUTO_KEY];
   const auto = new Set<string>(
-    typeof claimed === 'string'
-      ? claimed.split(' ').filter((name) => NOMI_COLLEGATI.has(name))
-      : [],
+    typeof claimed === 'string' ? claimed.split(' ').filter((name) => NOMI_SEGUACI.has(name)) : [],
   );
   for (const slot of SLOTS) {
     if (values[shownName(slot.prefix)] === '1') continue;
     const linked = prefillCollegati(slot.prefix, values);
     const predefinito = predefiniti(slot.modulo);
+    const token = prefillToken(slot.modulo, { ...ctx, values });
     for (const key of campiCollegati(slot.prefix)) {
       if (Object.hasOwn(linked, key) || Object.hasOwn(predefinito, key)) {
         auto.add(nameOf(slot.prefix, key));
       }
     }
-    const valori = { ...prefillPropri(slot.modulo, { ...ctx, values }), ...linked };
+    for (const key of Object.keys(token)) auto.add(nameOf(slot.prefix, key));
+    const valori = { ...predefinito, ...token, ...linked };
     Object.assign(out, moduloFormValues(slot.modulo, slot.prefix, valori));
   }
   return { values: out, auto };

@@ -18,8 +18,7 @@
               "kind": "text",
               "label": "Indirizzo",
               "maxLength": 120,
-              "line": [140.5, 531.0, 91.1],
-              "prefill": "indirizzo"
+              "line": [140.5, 531.0, 91.1]
             }
           ]
         },
@@ -30,8 +29,7 @@
               "kind": "text",
               "label": "Matr.",
               "maxLength": 40,
-              "line": [112.2, 531.0, 114.1],
-              "prefill": "matricola"
+              "line": [112.2, 531.0, 114.1]
             },
             {
               "key": "nImpianto",
@@ -49,8 +47,7 @@
               "kind": "text",
               "label": "Marca",
               "maxLength": 80,
-              "line": [119.4, 531.0, 160.1],
-              "prefill": "marca"
+              "line": [119.4, 531.0, 160.1]
             }
           ]
         }

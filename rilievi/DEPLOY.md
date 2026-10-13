@@ -75,10 +75,11 @@ curl -fsS https://rilievi.carbonstealth.eu/robots.txt  # Allow само за в�
 ```
 
 След деплой, който променя витрината (текст, `CONTENT_UPDATED`, sitemap), търсачките с IndexNow (Bing,
-Yandex, Seznam, Naver, Yep) се известяват от копие на репото — ключът е на `/indexnow-key.txt`:
+Yandex, Seznam, Naver, Yep) се известяват от копието на репото, което деплоят разгърна — `current` сочи
+корена му (`tools/` е там, не в `/root`); ключът се сервира на `/indexnow-key.txt` и на `/<ключ>.txt`:
 
 ```bash
-node tools/seo/indexnow.mjs https://rilievi.carbonstealth.eu
+node /opt/few-few/current/tools/seo/indexnow.mjs https://rilievi.carbonstealth.eu
 ```
 
 Google не поддържа IndexNow — там sitemap-ът се открива сам (`/sitemap.xml`, посочен в robots.txt), а

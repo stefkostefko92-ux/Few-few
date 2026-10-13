@@ -16,14 +16,17 @@
   // Sì/No със свои думи и ред (`risposte`, „Accessi: 1 / 2“) — иначе Sì, No.
   const radios = field.kind === 'yesno' ? (field.risposte || ['si', 'no']) : field.kind === 'choice' ? field.options : [];
   const radioLabel = (option) => field.kind === 'yesno' && !field.risposte ? t(option === 'si' ? 'common.yes' : 'common.no') : t('scheda.option.' + field.key + '.' + option);
+  // Попълнено от модул (свързаните данни) и още следва източника си: data-auto (public/js/collegati.js).
+  const seguace = typeof collegati !== 'undefined' && collegati.auto.has(field.key);
+  const autoTick = seguace ? ' data-auto="si"' : '';
 %><% if (field.kind === 'checks' || radios.length) { %>
 <fieldset class="choice <%= classes %>" id="<%= id %>" data-campo="<%= field.key %>"<%- when %><% if (errText) { %> aria-describedby="<%= errId %>"<% } %>>
   <legend><%= label %></legend>
   <div class="choice__opts">
     <% if (field.kind === 'checks') { %><% for (const option of field.options) { %>
-    <label class="tick"><input type="checkbox" name="<%= field.key %>" value="<%= option %>"<% if (list.includes(option)) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('scheda.option.' + field.key + '.' + option) %></span></label>
+    <label class="tick"><input type="checkbox" name="<%= field.key %>" value="<%= option %>"<% if (list.includes(option)) { %> checked<%- autoTick %><% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('scheda.option.' + field.key + '.' + option) %></span></label>
     <% } %><% } else { %><% for (const option of radios) { %>
-    <label class="tick"><input type="radio" name="<%= field.key %>" value="<%= option %>" data-clearable<% if (text === option) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= radioLabel(option) %></span></label>
+    <label class="tick"><input type="radio" name="<%= field.key %>" value="<%= option %>" data-clearable<% if (text === option) { %> checked<%- autoTick %><% } %>><span class="tick__box" aria-hidden="true"></span><span><%= radioLabel(option) %></span></label>
     <% } %><% } %>
   </div>
   <% if (errText) { %><p class="field__error" id="<%= errId %>"><%= errText %></p><% } %>
@@ -34,11 +37,11 @@
   <% if (unit) { %><div class="unit<%= unit.length > 3 ? ' unit--long' : '' %>"><% } %>
   <% if (field.kind === 'textarea') { %><textarea class="textarea" id="<%= id %>" name="<%= field.key %>" rows="4" maxlength="<%= field.maxLength %>"<%- aria %>><%= text %></textarea>
   <% } else if (field.kind === 'date') { %><input class="input" id="<%= id %>" name="<%= field.key %>" type="date" required min="1950-01-01" max="2099-12-31" value="<%= text %>"<%- aria %>>
-  <% } else if (field.kind === 'digits') { %><input class="input" id="<%= id %>" name="<%= field.key %>" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="<%= field.maxLength %>" autocomplete="off" value="<%= text %>"<%- aria %>>
+  <% } else if (field.kind === 'digits') { %><input class="input" id="<%= id %>" name="<%= field.key %>" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="<%= field.maxLength %>" autocomplete="off" value="<%= text %>"<% if (seguace && text) { %> data-auto="<%= text %>"<% } %><%- aria %>>
   <% } else if (field.kind === 'int' && field.min < 0) { %><input class="input" id="<%= id %>" name="<%= field.key %>" type="number" step="1" min="<%= field.min %>" max="<%= field.max %>" autocomplete="off" value="<%= text %>"<%- aria %>>
-  <% } else if (field.kind === 'int') { %><input class="input" id="<%= id %>" name="<%= field.key %>" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="9" autocomplete="off" value="<%= text %>"<%- aria %>>
-  <% } else if (field.kind === 'decimal') { %><input class="input" id="<%= id %>" name="<%= field.key %>" type="text" inputmode="decimal" maxlength="10" autocomplete="off" value="<%= text %>"<%- aria %>>
-  <% } else { %><input class="input" id="<%= id %>" name="<%= field.key %>" type="text" maxlength="<%= field.maxLength %>" autocomplete="off" value="<%= text %>"<%- aria %>>
+  <% } else if (field.kind === 'int') { %><input class="input" id="<%= id %>" name="<%= field.key %>" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="9" autocomplete="off" value="<%= text %>"<% if (seguace && text) { %> data-auto="<%= text %>"<% } %><%- aria %>>
+  <% } else if (field.kind === 'decimal') { %><input class="input" id="<%= id %>" name="<%= field.key %>" type="text" inputmode="decimal" maxlength="10" autocomplete="off" value="<%= text %>"<% if (seguace && text) { %> data-auto="<%= text %>"<% } %><%- aria %>>
+  <% } else { %><input class="input" id="<%= id %>" name="<%= field.key %>" type="text" maxlength="<%= field.maxLength %>" autocomplete="off" value="<%= text %>"<% if (seguace && text) { %> data-auto="<%= text %>"<% } %><%- aria %>>
   <% } %>
   <% if (unit) { %><span class="unit__text" id="<%= unitId %>"><%= unit %></span></div><% } %>
   <% if (errText) { %><p class="field__error" id="<%= errId %>"><%= errText %></p><% } %>

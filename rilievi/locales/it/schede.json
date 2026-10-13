@@ -243,7 +243,8 @@
       "scheda": "Scheda",
       "oq": "Ordine quadro",
       "om": "Ordine quadro",
-      "pa": "Dati argano"
+      "pa": "Dati argano",
+      "sg": "Ordine 2SG"
     },
     "fermate": "Fermate",
     "velocita": "Velocità (m/s)",
@@ -261,6 +262,15 @@
     "funiNumero": "Numero funi",
     "funiDiametro": "Diametro funi (mm)",
     "funiTrefoli": "Trefoli funi",
+    "indirizzo": "Indirizzo",
+    "matricola": "Matricola",
+    "marca": "Marca impianto",
+    "tipoImpianto": "Tipo impianto",
+    "operatoreMarca": "Marca operatore",
+    "operatoreTensione": "Tensione operatore",
+    "lucePorte": "Luce porte",
+    "correnteMotore": "Corrente motore (A)",
+    "giriMotore": "Giri motore (giri/min)",
     "diversi": "Dati diversi tra scheda e ordini",
     "conferma": {
       "title": {

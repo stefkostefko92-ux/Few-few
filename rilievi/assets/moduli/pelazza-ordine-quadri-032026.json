@@ -96,7 +96,6 @@
               "key": "tqIdraulico",
               "kind": "check",
               "label": "Idraulico",
-              "prefill": "tipoImpianto=IDRAULICO",
               "box": [195.6, 107.76, 204.72, 114.48]
             }
           ]
@@ -546,7 +545,6 @@
               "kind": "text",
               "label": "Modello",
               "maxLength": 44,
-              "prefill": "operatoreMarca",
               "line": [258.2, 394.86, 356.4]
             },
             {
