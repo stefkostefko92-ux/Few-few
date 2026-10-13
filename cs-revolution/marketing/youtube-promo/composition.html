@@ -93,7 +93,7 @@ body{font-family:'Space Mono','JetBrains Mono',monospace;-webkit-font-smoothing:
 
 <div id="trust" class="scene">
   <div class="cell" style="left:150px"><div class="big disp" id="d1"></div><div class="lab mono">products live</div></div>
-  <div class="cell" style="left:700px"><div class="big disp" id="d2"></div><div class="lab mono">in development</div></div>
+  <div class="cell" style="left:700px"><div class="big disp" id="d2"></div><div class="lab mono">in beta</div></div>
   <div class="cell" style="left:1250px"><div class="big disp" id="d3"></div><div class="lab mono">languages · IT · EN · BG</div></div>
   <div class="row mono">✓ <b>Verified Publisher</b> · Chrome Web Store</div>
 </div>
@@ -121,7 +121,7 @@ var PRODUCTS = [
   { id: "mastilko", name: "Mastilko", tag: "Print · Tools", desc: "Free labels, business cards and CVs, ready to print on a real A4 sheet." },
   { id: "supremebot", name: "Supreme Bot", tag: "SaaS · Discord", desc: "Eight Discord bots, one dashboard: tickets, forms, panels and AI." },
   { id: "adblock", name: "Supreme AdBlock", tag: "Privacy · Chrome", desc: "Blocks ads in Chrome, YouTube included, with zero telemetry.", verified: true },
-  { id: "liftpilot", name: "Lift Pilot", tag: "Elevators · In development", desc: "Elevator design, checked against EN 81‑20 / EN 81‑50.", wip: true },
+  { id: "liftpilot", name: "Lift Pilot", tag: "Elevators · IT · Beta", desc: "Elevator design software: shaft survey from DXF/DWG, EN 81‑20/50 checks, 3D simulation and a calculation report.", beta: true, limD: 700, limM: 1500 },
   { id: "evanita", name: "Evanita Sport", tag: "Fitness · BG", desc: "A women's Kangoo Jumps studio in Dupnitsa: a fast site, built phone-first." },
   { id: "vaptsarov", name: "Nikola Vaptsarov School", tag: "School · BG", desc: "The website of the primary school in Bobov Dol, with its own news system.", limD: 240, limM: 1300 },
   { id: "eternal", name: "Eternal Touch", tag: "Atelier · IT · EN · BG", desc: "Showcase and catalogue of hand-cast gypsum decorations, in three languages." },
@@ -137,13 +137,13 @@ var VO = [
   "Mastilko — labels, cards and CVs, ready to print.",
   "Supreme Bot — Discord bots, run from one dashboard.",
   "Supreme AdBlock — no ads, no telemetry. A Verified Publisher on the Chrome Web Store.",
-  "Lift Pilot — elevator design, checked against the standards. In development.",
+  "Lift Pilot — elevator design with EN 81 checks and 3D simulation. Now in beta.",
   "Evanita Sport — a fitness studio site, built phone-first.",
   "Nikola Vaptsarov School — the school's news from Bobov Dol.",
   "Eternal Touch — the showcase of a handmade decor atelier.",
   "Scuola Bulgara Milano — the Bulgarian school in Milan, in three languages."
 ].map(function (s, i) { var a = 11 + i * 4.8; return [a + 0.5, a + 4.5, s]; })).concat([
-  [64.2, 68.6, "Ten products live. One in development. Three languages."],
+  [64.2, 68.6, "Eleven products live. One in beta. Three languages."],
   [69.6, 74.2, "Your project is next. carbonstealth.eu"]
 ]);
 var T_INTRO = 0, T_CAPS = 4, T_PROD = 11, PD = 4.8, T_TRUST = T_PROD + PRODUCTS.length * PD, T_OUT = 69, T_END = 75;
@@ -176,7 +176,7 @@ PRODUCTS.forEach(function (p, i) {
   o.eye = el("div", "eye mono", String(i + 1).padStart(2, "0") + " / " + PRODUCTS.length + " · " + p.tag, s);
   o.name = el("div", "name disp chrome", p.name, s);
   o.desc = el("div", "desc", p.desc, s);
-  o.foot = el("div", "foot mono", p.wip ? "<i></i>in development" : "<i></i>live · captured from the site", s);
+  o.foot = el("div", "foot mono", p.wip ? "<i></i>in development" : p.beta ? "<i></i>live · beta · captured from the site" : "<i></i>live · captured from the site", s);
   if (!p.wip) {
     o.desk = el("div", "dev desk", null, s); o.dImg = el("img", "", null, o.desk); o.dImg.src = "/shots/" + p.id + "-d.jpg";
     o.phone = el("div", "dev phone", null, s); o.mImg = el("img", "", null, o.phone); o.mImg.src = "/shots/" + p.id + "-m.jpg";
@@ -188,6 +188,7 @@ PRODUCTS.forEach(function (p, i) {
     o.bp = el("div", "", blueprint(), s); o.bp.style.cssText = "position:absolute;left:820px;top:150px;width:960px;height:760px";
     o.stamp = el("div", "stamp mono", "In development", s); o.stamp.style.left = "1330px"; o.stamp.style.top = "760px";
   }
+  if (p.beta) { o.stamp = el("div", "stamp mono", "Beta", s); o.stamp.style.left = "820px"; o.stamp.style.top = "760px"; }
   if (p.verified) {
     o.seal = el("div", "seal mono", '<svg width="64" height="64" viewBox="0 0 24 24"><path fill="#8ab4f8" d="M12 1l2.6 2.2 3.4-.4 1 3.3 3 1.6-1 3.3 1 3.3-3 1.6-1 3.3-3.4-.4L12 23l-2.6-2.2-3.4.4-1-3.3-3-1.6 1-3.3-1-3.3 3-1.6 1-3.3 3.4.4z"/><path fill="none" stroke="#0A0C0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M7.5 12.3l3 3 6-6.3"/></svg><div><div class="t1">Verified Publisher</div><div class="t2">Chrome Web Store</div><div class="t3">Created by the owner of the listed website · no history of violations</div></div>', s);
   }
@@ -277,12 +278,13 @@ window.render = function (t) {
       var ch = o.bp.querySelectorAll("#chk text"); for (var j = 0; j < ch.length; j++) ch[j].style.opacity = eo(seg(L, 1.4 + j * .5, 1.9 + j * .5));
       var ks = seg(L, 2.4, 2.7); o.stamp.style.opacity = ks; o.stamp.style.transform = "rotate(-6deg) scale(" + (1.5 - .5 * eo(ks)) + ")";
     }
+    if (o.stamp && !o.bp) { var kb2 = seg(L, 1.6, 1.9); o.stamp.style.opacity = kb2; o.stamp.style.transform = "rotate(-6deg) scale(" + (1.5 - .5 * eo(kb2)) + ")"; }
     if (o.seal) { var ks2 = seg(L, 1.6, 2.0); o.seal.style.opacity = ks2; o.seal.style.transform = "scale(" + (1.12 - .12 * eo(ks2)) + ")"; }
   });
   // trust
   var TR = $("#trust"), LT = t - T_TRUST;
   show(TR, t >= T_TRUST - .05 && t < T_OUT + .3 ? eo(seg(LT, 0, .5)) * (1 - seg(t, T_OUT - .2, T_OUT + .2)) : 0);
-  setDrum($("#d1"), [1, 0], seg(LT, .3, 1.8)); setDrum($("#d2"), [1], seg(LT, .5, 1.6)); setDrum($("#d3"), [3], seg(LT, .7, 1.8));
+  setDrum($("#d1"), [1, 1], seg(LT, .3, 1.8)); setDrum($("#d2"), [1], seg(LT, .5, 1.6)); setDrum($("#d3"), [3], seg(LT, .7, 1.8));
   ["#d1", "#d2", "#d3"].forEach(function (q, j) { var v = (-40 + 180 * seg(LT, 1.6 + j * .25, 2.8 + j * .25)) + "%"; $(q).querySelectorAll(".chrome").forEach(function (c) { c.style.setProperty("--sx", v); }); });
   var rw = $("#trust .row"); rw.style.opacity = eo(seg(LT, 1.8, 2.4)); rw.style.transform = "translateY(" + (16 * (1 - eo(seg(LT, 1.8, 2.4)))) + "px)";
   // outro

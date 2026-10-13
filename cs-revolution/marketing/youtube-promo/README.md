@@ -22,6 +22,6 @@ node render.mjs --subs 0                                                   # б�
 Нужни: Node 20+, Playwright с Chromium (`PLAYWRIGHT_MODULE`, `CHROMIUM` при нестандартен път),
 ffmpeg, Python 3. `shots/` и `out/` не влизат в репото.
 
-Правила: само реални факти за продуктите; Lift Pilot няма публичен сайт — показва се като чертеж
-с печат „В разработка“; значката „Verified Publisher“ цитира текста на Google от Chrome Web Store.
+Правила: само реални факти за продуктите; Lift Pilot е в бета (liftpilot.carbonstealth.eu, само на италиански) — живият сайт с печат „Beta“;
+значката „Verified Publisher“ цитира текста на Google от Chrome Web Store.
 Музика и глас не са в черновата — добавят се при монтажа (виж документа).

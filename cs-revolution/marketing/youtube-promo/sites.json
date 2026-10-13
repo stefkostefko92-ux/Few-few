@@ -31,6 +31,11 @@
     "locale": "en-US"
   },
   {
+    "id": "liftpilot",
+    "url": "https://liftpilot.carbonstealth.eu/it",
+    "locale": "it-IT"
+  },
+  {
     "id": "evanita",
     "url": "https://evanita-bg.com",
     "locale": "bg-BG"
