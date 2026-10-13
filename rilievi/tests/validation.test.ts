@@ -13,11 +13,12 @@ function parsedOrFail(body: Record<string, unknown>) {
 
 describe('the field list', () => {
   it('keeps the sections in the order of the printed sheet the owner marked up (October 2026)', () => {
+    // Section 1 is laid out like the head and the plate of the sheet: date, address and work order,
+    // matricola and lift number, then load, persons, stops and make.
     assert.deepEqual(
       SECTIONS.map((section) => section.key),
       [
         'impianto',
-        'targa',
         'ubicazione',
         'tipologia',
         'quadro',
@@ -35,13 +36,13 @@ describe('the field list', () => {
       [
         'data',
         'indirizzo',
-        'marca',
+        'buonoLavoro',
         'matricola',
         'numeroImpianto',
-        'buonoLavoro',
         'portataKg',
         'capienzaPersone',
         'fermate',
+        'marca',
         'ubicazioneMacchina',
         'ubicazioneCassettina',
         'parcheggio',

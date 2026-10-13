@@ -17,7 +17,7 @@
   const radios = field.kind === 'yesno' ? (field.risposte || ['si', 'no']) : field.kind === 'choice' ? field.options : [];
   const radioLabel = (option) => field.kind === 'yesno' && !field.risposte ? t(option === 'si' ? 'common.yes' : 'common.no') : t('scheda.option.' + field.key + '.' + option);
 %><% if (field.kind === 'checks' || radios.length) { %>
-<fieldset class="choice <%= classes %>" id="<%= id %>"<%- when %><% if (errText) { %> aria-describedby="<%= errId %>"<% } %>>
+<fieldset class="choice <%= classes %>" id="<%= id %>" data-campo="<%= field.key %>"<%- when %><% if (errText) { %> aria-describedby="<%= errId %>"<% } %>>
   <legend><%= label %></legend>
   <div class="choice__opts">
     <% if (field.kind === 'checks') { %><% for (const option of field.options) { %>
@@ -29,7 +29,7 @@
   <% if (errText) { %><p class="field__error" id="<%= errId %>"><%= errText %></p><% } %>
 </fieldset>
 <% } else { %>
-<div class="<%= classes %>"<%- when %>>
+<div class="<%= classes %>" data-campo="<%= field.key %>"<%- when %>>
   <label class="field__label" for="<%= id %>"><%= label %></label>
   <% if (unit) { %><div class="unit<%= unit.length > 3 ? ' unit--long' : '' %>"><% } %>
   <% if (field.kind === 'textarea') { %><textarea class="textarea" id="<%= id %>" name="<%= field.key %>" rows="4" maxlength="<%= field.maxLength %>"<%- aria %>><%= text %></textarea>

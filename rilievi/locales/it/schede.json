@@ -73,7 +73,6 @@
     },
     "section": {
       "impianto": "Impianto",
-      "targa": "Dati di targa",
       "ubicazione": "Ubicazione e accesso",
       "tipologia": "Tipologia",
       "funi": "Funi",
@@ -91,7 +90,7 @@
       "marca": "Marca impianto",
       "matricola": "Matricola",
       "numeroImpianto": "N° impianto",
-      "buonoLavoro": "Buono di lavoro di riferimento",
+      "buonoLavoro": "Buono di riferimento",
       "portataKg": "Portata",
       "capienzaPersone": "Capienza",
       "fermate": "Fermate",
@@ -186,7 +185,7 @@
     "misure": {
       "row": "Fermata {n}",
       "fermata": "Fermata",
-      "needFermate": "Indica prima le fermate in «Dati di targa»: qui compare una riga per ogni fermata.",
+      "needFermate": "Indica prima le fermate in «Impianto»: qui compare una riga per ogni fermata.",
       "errorLabel": "{col}, fermata {n}",
       "col": {
         "piano": "Piano",

@@ -3,7 +3,14 @@ import { principalOf, requireCapability, requireCsrf, sendError } from '../auth/
 import { aziendeImpostabili, setOrdineSezioni } from '../aziende/sezioni.js';
 import { setFlash } from '../http/flash.js';
 import type { SectionKey } from '../schede/fields.js';
-import { ordineEffettivo, parseMossa, parseOrdine, sposta, type Verso } from '../schede/ordine.js';
+import {
+  FISSE,
+  ordineEffettivo,
+  parseMossa,
+  parseOrdine,
+  sposta,
+  type Verso,
+} from '../schede/ordine.js';
 
 /**
  * Настройките на фирмата — редът на разделите на картата. Администраторът на фирмата (и MASTER) мести
@@ -27,7 +34,9 @@ function render(
     error?: string | null;
   },
 ): void {
-  res.status(status).render('impostazioni/index', { focus: null, error: null, ...view });
+  res
+    .status(status)
+    .render('impostazioni/index', { focus: null, error: null, fisse: FISSE, ...view });
 }
 
 function notFound(req: Request, res: Response): void {

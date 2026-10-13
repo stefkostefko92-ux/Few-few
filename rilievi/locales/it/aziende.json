@@ -45,7 +45,7 @@
       "title": "Ordine delle sezioni della scheda",
       "text": "Vale per tutte le schede dell'azienda: modulo, pagina della scheda, stampa e PDF.",
       "fixed": "Sempre in cima",
-      "hint": "Sposta una sezione con le frecce, poi salva. Impianto e dati di targa restano in cima: identificano l'impianto.",
+      "hint": "Sposta una sezione con le frecce, poi salva. Impianto resta in cima: identifica l'impianto.",
       "up": "Sposta su «{name}»",
       "down": "Sposta giù «{name}»",
       "save": "Salva ordine",

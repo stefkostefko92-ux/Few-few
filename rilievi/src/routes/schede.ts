@@ -218,7 +218,7 @@ schedeRouter.get('/schede/:id/stampa', read, async (req, res) => {
     scheda,
     ident: schedaTitle(scheda, res.locals.t),
     sections,
-    // „Impianto“ и „Dati di targa“ са в заглавната лента и в табелата — не се печатат втори път.
+    // „Impianto“ е в заглавната лента и в табелата — не се печата втори път.
     printed: sections.filter((section) => !FISSE.includes(section.key)),
     // Попълненото в модулите — само ако картата го иска (`riepilogoOrdini`).
     riepilogo: riepilogoModuli(scheda),

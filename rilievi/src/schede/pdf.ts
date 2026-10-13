@@ -102,7 +102,7 @@ export function renderSchedaPdf(scheda: SchedaFull, options: PdfOptions): Promis
   });
 
   drawPlate(ctx, scheda, byKey);
-  // „Impianto“ и „Dati di targa“ са вече в заглавната лента и в табелата.
+  // „Impianto“ е вече в заглавната лента и в табелата.
   for (const section of sections.filter((s) => !FISSE.includes(s.key))) {
     drawSectionTitle(ctx, section.title);
     // Таблицата с мерките стои веднага под своето поле: полетата се рисуват на парчета около нея.

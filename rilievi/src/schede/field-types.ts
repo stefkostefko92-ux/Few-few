@@ -17,7 +17,6 @@ export type Unit = 'kg' | 'persone' | 'mm' | 'm';
 
 export type SectionKey =
   | 'impianto'
-  | 'targa'
   | 'ubicazione'
   | 'tipologia'
   | 'funi'

@@ -74,7 +74,8 @@
   <fieldset class="section" id="s-<%= section.key %>">
     <legend class="section__title"><span class="secnum" aria-hidden="true"><%= index + 1 %></span><%= t('scheda.section.' + section.key) %></legend>
     <% if (section.key === 'impianto') { %><p class="field__hint<%= errors[identifiersErrorKey] ? ' field__error' : '' %>" id="identifiers-hint"><%= t('scheda.identifiersHint') %></p><% } %>
-    <div class="grid">
+    <%# Разделът „Impianto“ е подреден като главата и табелата на листа (sheet.css, .grid--testa). %>
+    <div class="grid<%= section.key === 'impianto' ? ' grid--testa' : '' %>">
       <% for (const field of section.fields) { %><%- include('_field', { field, value: values[field.key], error: errors[field.key] }) %>
       <% if (field.misure) { %><%- include('_misure') %><% } %>
       <% } %>

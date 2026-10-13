@@ -1,8 +1,7 @@
 <%
   // Редът на разделите на картата във фирмата (src/aziende/sezioni.ts). Без JavaScript: всеки бутон
   // праща целия ред (скритите полета „ordine“) и страницата се връща с новия ред; „Salva“ го записва.
-  // Идентификацията (Impianto, Dati di targa) стои винаги първа и не се мести.
-  const fisse = ['impianto', 'targa'];
+  // Идентификацията („Impianto“, `fisse` от src/schede/ordine.ts) стои винаги първа и не се мести.
   const autofocusOf = (key, verso) => {
     if (!focus || focus.key !== key) return false;
     const i = ordine.indexOf(key);

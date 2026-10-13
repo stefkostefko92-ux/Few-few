@@ -186,7 +186,7 @@ describe('the second brief', () => {
     );
     const show = await browser.get(`/schede/${id}`);
     assert.match(show.body, /<table class="mtable">/);
-    assert.match(show.body, /Buono di lavoro di riferimento/);
+    assert.match(show.body, /Buono di riferimento/);
     const pdf = await browser.get(`/schede/${id}/pdf`);
     assert.equal(pdf.status, 200);
     assert.equal(pdf.bytes.subarray(0, 5).toString(), '%PDF-');

@@ -150,3 +150,40 @@
   font-weight: 600;
   line-height: 1;
 }
+
+/* Раздел 1 на формата — подреден като главата и табелата на листа: датата; адресът вляво и бонът
+   вдясно; матрикулата вляво, № на асансьора вдясно; товарът, капацитетът, спирките и марката. */
+.grid--testa {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid--testa > [data-campo='indirizzo'],
+.grid--testa > [data-campo='buonoLavoro'] {
+  grid-column: 1 / -1;
+}
+
+.grid--testa > [data-campo='indirizzo'] .input {
+  font-weight: 600;
+}
+
+@media (min-width: 720px) {
+  .grid--testa {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .grid--testa > [data-campo='indirizzo'] {
+    grid-column: 1 / 4;
+  }
+
+  .grid--testa > [data-campo='buonoLavoro'] {
+    grid-column: 4 / 5;
+  }
+
+  .grid--testa > [data-campo='matricola'] {
+    grid-column: 1 / 3;
+  }
+
+  .grid--testa > [data-campo='numeroImpianto'] {
+    grid-column: 3 / 5;
+  }
+}

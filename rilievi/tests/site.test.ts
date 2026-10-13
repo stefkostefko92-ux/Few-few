@@ -131,12 +131,12 @@ describe('the public addresses', () => {
 });
 
 describe('the landing page content', () => {
-  it('lists the 12 sections of the sheet with real field labels, numbered like the drawing', () => {
+  it('lists the 11 sections of the sheet with real field labels, numbered like the drawing', () => {
     const legend = sheetLegend(translatorFor('it'));
-    assert.equal(legend.length, 12);
+    assert.equal(legend.length, 11);
     assert.deepEqual(
       legend.map((section) => section.n),
-      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
     );
     for (const section of legend) {
       assert.ok(!section.title.startsWith('scheda.'), section.key);

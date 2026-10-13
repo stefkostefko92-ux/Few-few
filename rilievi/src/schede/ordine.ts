@@ -1,12 +1,12 @@
 import { SECTIONS, type SectionKey } from './fields.js';
 
 /**
- * Редът на разделите на картата (без база — тества се само): „Impianto“ и „Dati di targa“ са
- * идентификацията на уредбата — винаги първи; другите се подреждат по фирма (`Azienda.ordineSezioni`,
+ * Редът на разделите на картата (без база — тества се само): „Impianto“ е идентификацията на уредбата
+ * и табелата ѝ — винаги първи; другите се подреждат по фирма (`Azienda.ordineSezioni`,
  * src/aziende/sezioni.ts). Празно — редът от fields.ts.
  */
 
-export const FISSE: readonly SectionKey[] = ['impianto', 'targa'];
+export const FISSE: readonly SectionKey[] = ['impianto'];
 export const ORDINABILI: readonly SectionKey[] = SECTIONS.map((s) => s.key).filter(
   (key) => !FISSE.includes(key),
 );

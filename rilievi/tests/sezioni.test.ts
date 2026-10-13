@@ -18,8 +18,8 @@ const keys = (list: ReadonlyArray<{ key: string }>) => list.map((item) => item.k
 
 describe('the order of the sheet sections in a company', () => {
   it('keeps the plant identification first; every other section can move', () => {
-    assert.deepEqual(FISSE, ['impianto', 'targa']);
-    assert.deepEqual(ORDINABILI, keys(SECTIONS).slice(2));
+    assert.deepEqual(FISSE, ['impianto']);
+    assert.deepEqual(ORDINABILI, keys(SECTIONS).slice(1));
   });
 
   it('reads a saved order without trusting it: unknown or repeated keys go, missing ones come last', () => {
@@ -35,7 +35,7 @@ describe('the order of the sheet sections in a company', () => {
 
   it('sorts the sections of the form, the page, the print and the PDF the same way', () => {
     const ordered = sezioniOrdinate(SECTIONS, ['note', 'allarme']);
-    assert.deepEqual(keys(ordered).slice(0, 4), ['impianto', 'targa', 'note', 'allarme']);
+    assert.deepEqual(keys(ordered).slice(0, 3), ['impianto', 'note', 'allarme']);
     assert.equal(ordered.length, SECTIONS.length);
     assert.deepEqual(keys(sezioniOrdinate(SECTIONS, [])), keys(SECTIONS), 'empty is the default');
 
@@ -46,7 +46,7 @@ describe('the order of the sheet sections in a company', () => {
       viewHelpers('it'),
       ['note'],
     );
-    assert.deepEqual(keys(shown).slice(0, 3), ['impianto', 'targa', 'note']);
+    assert.deepEqual(keys(shown).slice(0, 2), ['impianto', 'note']);
   });
 
   it('takes a sent order only when it holds every movable section exactly once', () => {

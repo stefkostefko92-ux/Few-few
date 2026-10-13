@@ -33,23 +33,20 @@ const ALTRA = (field: string): Condition => ({ field, values: ['ALTRO'] });
 
 export const SECTIONS = [
   {
+    // Разделът 1 е подреден като главата и табелата на листа (собственикът, октомври 2026): датата;
+    // адресът и бонът; матрикулата и № на асансьора; товарът, капацитетът, спирките и марката.
     key: 'impianto',
     fields: [
       { key: 'data', kind: 'date' },
       { key: 'indirizzo', kind: 'text', maxLength: 200, wide: true },
-      { key: 'marca', kind: 'text', maxLength: 120 },
-      { key: 'matricola', kind: 'digits', maxLength: 20 },
-      { key: 'numeroImpianto', kind: 'digits', maxLength: 20 },
       // Работната поръчка, по която е огледът — може да остане празно.
       { key: 'buonoLavoro', kind: 'text', maxLength: 60 },
-    ],
-  },
-  {
-    key: 'targa',
-    fields: [
+      { key: 'matricola', kind: 'digits', maxLength: 20 },
+      { key: 'numeroImpianto', kind: 'digits', maxLength: 20 },
       { key: 'portataKg', kind: 'int', min: 0, max: 100_000, unit: 'kg' },
       { key: 'capienzaPersone', kind: 'int', min: 0, max: 1_000, unit: 'persone' },
       { key: 'fermate', kind: 'int', min: 0, max: 300 },
+      { key: 'marca', kind: 'text', maxLength: 120 },
     ],
   },
   {

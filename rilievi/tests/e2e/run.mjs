@@ -212,7 +212,9 @@ try {
         fail('print without the address in the head');
       if (!(await page.textContent('.paper__buono')).includes(fields.buonoLavoro))
         fail('print without the work order in the head');
-      if (await page.locator('.paper__section h2', { hasText: 'Dati di targa' }).count())
+      if (
+        await page.locator('.paper__section h2', { hasText: /^(Impianto|Dati di targa)$/ }).count()
+      )
         fail('print repeats the plate data as a section');
 
       await checkSettings(page, {

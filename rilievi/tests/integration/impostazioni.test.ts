@@ -130,13 +130,7 @@ describe('the order of the sheet sections in the company settings', () => {
     });
     const { browser } = await signedIn('TECNICO', azienda.id);
     const id = await create(browser);
-    const ids = [
-      'id="s-impianto"',
-      'id="s-targa"',
-      'id="s-note"',
-      'id="s-allarme"',
-      'id="s-ubicazione"',
-    ];
+    const ids = ['id="s-impianto"', 'id="s-note"', 'id="s-allarme"', 'id="s-ubicazione"'];
     assert.ok(ascending(positions((await browser.get('/schede/nuova')).body, ids)), 'new form');
     assert.ok(
       ascending(positions((await browser.get(`/schede/${id}/modifica`)).body, ids)),
@@ -154,6 +148,41 @@ describe('the order of the sheet sections in the company settings', () => {
       ),
       'print',
     );
+  });
+});
+
+describe('the sheet form, laid out like the printed sheet', () => {
+  it('opens with section 1 as the head and the plate, and numbers the sections 1 to 11', async () => {
+    const { browser } = await signedIn('TECNICO');
+    const form = await browser.get('/schede/nuova');
+    assert.match(form.body, /<div class="grid grid--testa">/);
+    const head = [
+      'data',
+      'indirizzo',
+      'buonoLavoro',
+      'matricola',
+      'numeroImpianto',
+      'portataKg',
+      'capienzaPersone',
+      'fermate',
+      'marca',
+    ].map((key) => `id="f-${key}"`);
+    assert.ok(ascending(positions(form.body, head)), 'date, address, work order, then the plate');
+    const end = form.body.indexOf('id="s-ubicazione"');
+    assert.ok(
+      positions(form.body, head).every((at) => at < end),
+      'all in section 1',
+    );
+    const numbers = [
+      ...form.body.matchAll(
+        /<legend class="section__title"><span class="secnum" aria-hidden="true">(\d+)<\/span>/g,
+      ),
+    ];
+    assert.deepEqual(
+      numbers.map((m) => Number(m[1])),
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+    );
+    assert.doesNotMatch(form.body, /id="s-targa"/);
   });
 });
 
