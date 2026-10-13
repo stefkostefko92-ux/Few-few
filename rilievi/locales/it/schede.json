@@ -265,7 +265,7 @@
         "one": "Un dato non coincide tra scheda e ordini",
         "other": "{n} dati non coincidono tra scheda e ordini"
       },
-      "text": "Controlla i valori qui sotto. Se sono giusti così, salva comunque; altrimenti correggili e salva di nuovo.",
+      "text": "Controlla i valori qui sotto. Se sono giusti così, premi «Salva comunque» nella barra in basso; altrimenti correggili e salva di nuovo.",
       "submit": "Salva comunque"
     },
     "banner": "Questi dati sono diversi tra la scheda e gli ordini:"

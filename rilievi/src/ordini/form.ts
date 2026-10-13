@@ -1,4 +1,5 @@
 import type { FormValues } from '../schede/field-parsers.js';
+import { AUTO_KEY, NOMI_COLLEGATI } from './collegamenti.js';
 import { prefillCollegati } from './collegati.js';
 import { fieldsOf, type ModuloField } from './moduli.js';
 import { prefillPropri, type PrefillContext } from './prefill.js';
@@ -8,15 +9,20 @@ import { moduloFormValues, nameOf, shownName } from './valori.js';
 /**
  * Модулите на доставчиците във формата на картата. При първото отваряне (няма знак `<префикс>-_`)
  * идват попълнени от огледа, от другия модул и от човека, който пише; после — каквото е въведено или
- * записано. `auto` са свързаните полета, попълнени така: браузърът ги води след източника им, докато
- * човекът не пише в тях (public/js/collegati.js).
+ * записано. `auto` са свързаните полета, попълнени така (или върнати от браузъра като още следващи):
+ * браузърът ги води след източника им, докато човекът не пише в тях (public/js/collegati.js).
  */
 export function withPrefill(
   values: FormValues,
   ctx: Omit<PrefillContext, 'values'>,
 ): { values: FormValues; auto: Set<string> } {
   const out: FormValues = { ...values };
-  const auto = new Set<string>();
+  const claimed = values[AUTO_KEY];
+  const auto = new Set<string>(
+    typeof claimed === 'string'
+      ? claimed.split(' ').filter((name) => NOMI_COLLEGATI.has(name))
+      : [],
+  );
   for (const slot of SLOTS) {
     if (values[shownName(slot.prefix)] === '1') continue;
     const linked = prefillCollegati(slot.prefix, values);

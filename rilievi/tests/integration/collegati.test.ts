@@ -100,6 +100,57 @@ describe('data the sheet and the orders share', () => {
     assert.notEqual(fingerprintOf(changed.body), fingerprint);
   });
 
+  it('remembers what was confirmed: the same differences are not asked again, new ones are', async () => {
+    const { browser } = await signedIn('TECNICO');
+    const form = { ...SURVEY, ...ORDERS, 'pa-velocita': '1,6' };
+    const asked = await browser.submit('/schede/nuova', '/schede', form);
+    const _csrf = await browser.csrf('/schede/nuova');
+    const created = await browser.post('/schede', {
+      ...form,
+      _csrf,
+      conferma: fingerprintOf(asked.body),
+    });
+    assert.equal(created.status, 303);
+    const id = created.location.split('/').pop()!;
+    const edit = async (changes: Record<string, string>) => {
+      const page = await browser.get(`/schede/${id}/modifica`);
+      const base = /name="base" value="([^"]+)"/.exec(page.body)![1]!;
+      return browser.submit(`/schede/${id}/modifica`, `/schede/${id}`, {
+        ...form,
+        ...changes,
+        base,
+      });
+    };
+    // Another field changes, the confirmed difference stays: saved without asking.
+    assert.equal((await edit({ 'oq-note': 'Nota nuova' })).status, 303);
+    // The difference itself changes: asked again.
+    const again = await edit({ 'pa-velocita': '1,8' });
+    assert.equal(again.status, 422);
+    assert.match(again.body, /Richiesta argano: 1,8/);
+    // Once they agree, nothing is left to confirm.
+    assert.equal((await edit({ 'pa-velocita': '1,0' })).status, 303);
+    const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
+    assert.equal(row.discrepanzeConfermate, null);
+  });
+
+  it('keeps a field that still followed as following when the form comes back', async () => {
+    const { browser } = await signedIn('TECNICO');
+    // No address, number or matricola: the form comes back with an error.
+    const reply = await browser.submit('/schede/nuova', '/schede', {
+      ...ORDERS,
+      data: '2026-10-12',
+      fermate: '5',
+      'collegati-auto': 'oq-nFermate oq-note',
+    });
+    assert.equal(reply.status, 422);
+    assert.match(reply.body, /name="oq-nFermate"[^>]*value="5" data-auto="5"/);
+    assert.doesNotMatch(
+      reply.body,
+      /name="oq-note"[^>]*data-auto/,
+      'only linked fields can follow',
+    );
+  });
+
   it('saves at once when the sheet and the orders agree', async () => {
     const { browser } = await signedIn('TECNICO');
     // Same numbers written differently: "1,0" and "1", "12" and "12,0".

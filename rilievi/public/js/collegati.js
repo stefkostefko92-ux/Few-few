@@ -54,7 +54,9 @@
       inputs[0].type === 'radio'
         ? (inputs.find((input) => input.checked) || { value: '' }).value
         : inputs[0].value.trim();
-    return (m.valori ? m.valori[raw] : raw) || null;
+    // Only the map's own keys: "constructor" from a tampered form is not an answer.
+    const own = m.valori && Object.prototype.hasOwnProperty.call(m.valori, raw);
+    return (m.valori ? (own ? m.valori[raw] : '') : raw) || null;
   };
   const boxesOf = (m) =>
     Object.keys(m.voci)
@@ -187,6 +189,34 @@
   };
   document.addEventListener('input', update);
   document.addEventListener('change', update);
+
+  // The fields still following the others travel with the form: if it comes back (an error, the
+  // confirmation), the server marks them again (data-auto) and they keep following.
+  form.addEventListener('submit', () => {
+    const names = [];
+    for (const group of data.gruppi) {
+      for (const m of group.membri) {
+        if (m.luogo === 'scheda') continue;
+        if (group.tipo === 'numero') {
+          const input = form.querySelector(`[name="${m.luogo}-${m.campo}"]`);
+          if (input && input.value !== '' && follows(input)) names.push(input.name);
+        } else {
+          const boxes = boxesOf(m);
+          if (boxes.length && followsChoice(boxes)) {
+            boxes.filter((box) => box.checked).forEach((box) => names.push(box.name));
+          }
+        }
+      }
+    }
+    let carrier = form.querySelector('input[name="collegati-auto"]');
+    if (!carrier) {
+      carrier = document.createElement('input');
+      carrier.type = 'hidden';
+      carrier.name = 'collegati-auto';
+      form.append(carrier);
+    }
+    carrier.value = names.join(' ');
+  });
   // Values the browser restored on "back" may disagree with what the server listed.
   render();
 })();

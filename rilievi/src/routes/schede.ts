@@ -25,7 +25,12 @@ import {
   type SchedaFull,
 } from '../schede/service.js';
 import { formValuesFromBody, parseScheda, type FieldErrors } from '../schede/validation.js';
-import { AZIENDA_ERROR_KEY, aziendeForNew, confermaMancante, renderForm } from './schede-form.js';
+import {
+  AZIENDA_ERROR_KEY,
+  aziendeForNew,
+  controlloDiscrepanze,
+  renderForm,
+} from './schede-form.js';
 import { aziendaFilterOf, aziendeOf, notFound, queryOf, scope } from './schede-shared.js';
 
 export const schedeRouter: Router = Router();
@@ -91,7 +96,8 @@ schedeRouter.post('/schede', write, requireCsrf, async (req, res) => {
     });
     return;
   }
-  if (confermaMancante(res, body)) {
+  const discrepanze = controlloDiscrepanze(res, body, null);
+  if (discrepanze.manca) {
     // Картата и модулите казват различни неща: записът чака потвърждение на точно тези разлики.
     renderForm(req, res, 422, {
       scheda: null,
@@ -105,7 +111,11 @@ schedeRouter.post('/schede', write, requireCsrf, async (req, res) => {
     });
     return;
   }
-  const scheda = await createScheda(parsed.data, user.id, azienda.id);
+  const scheda = await createScheda(
+    { ...parsed.data, discrepanzeConfermate: discrepanze.impronta },
+    user.id,
+    azienda.id,
+  );
   setFlash(res, 'ok', 'flash.schedaCreated');
   res.redirect(303, `/schede/${scheda.id}`);
 });
@@ -153,7 +163,9 @@ schedeRouter.post('/schede/:id', write, requireCsrf, async (req, res) => {
     });
     return;
   }
-  if (confermaMancante(res, body)) {
+  // Потвърдените при последния запис разлики не се питат пак — само нови или променени.
+  const discrepanze = controlloDiscrepanze(res, body, scheda.discrepanzeConfermate);
+  if (discrepanze.manca) {
     renderForm(req, res, 422, {
       ...formView,
       values: formValuesFromBody(body),
@@ -167,7 +179,7 @@ schedeRouter.post('/schede/:id', write, requireCsrf, async (req, res) => {
     scope(req, 'schede:write'),
     scheda.id,
     base,
-    parsed.data,
+    { ...parsed.data, discrepanzeConfermate: discrepanze.impronta },
     principalOf(req).user.id,
   );
   if (outcome === 'missing') return notFound(req, res);

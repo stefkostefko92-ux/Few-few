@@ -7,6 +7,7 @@ import type {
   TipoPorte,
   UbicazioneMacchina,
 } from '@prisma/client';
+import { AUTO_KEY } from '../ordini/collegamenti.js';
 import { SLOTS } from '../ordini/registry.js';
 import { moduloFromBody, parseModulo, type ModuloDati } from '../ordini/valori.js';
 import { activeFields, FIELDS, IDENTIFIERS } from './fields.js';
@@ -112,6 +113,8 @@ export type SchedaData = z.output<typeof schedaSchema> & {
   ordineQuadro: ModuloDati | null;
   preventivoArgano: ModuloDati | null;
   riepilogoOrdini: boolean;
+  /** Отпечатъкът на потвърдените разминавания — слага го маршрутът при запис (schede-form.ts). */
+  discrepanzeConfermate: string | null;
 };
 
 /** Отметката „Includi quadro e argano nella stampa“: „1“ или нищо — всичко друго е подправено. */
@@ -162,6 +165,7 @@ export function parseScheda(
         ordineQuadro: dati('ordineQuadro') ?? null,
         preventivoArgano: dati('preventivoArgano') ?? null,
         riepilogoOrdini: riepilogo.data,
+        discrepanzeConfermate: null,
       },
     };
   }
@@ -186,6 +190,8 @@ export function formValuesFromBody(body: unknown): FormValues {
   const values: FormValues = misureFromBody(source);
   for (const slot of SLOTS) Object.assign(values, moduloFromBody(slot.modulo, slot.prefix, source));
   values[RIEPILOGO_KEY] = source[RIEPILOGO_KEY] === '1' ? '1' : '';
+  // Кои свързани полета още следват източника си (collegati.js) — form.ts приема само истинските имена.
+  values[AUTO_KEY] = typeof source[AUTO_KEY] === 'string' ? source[AUTO_KEY].slice(0, 4000) : '';
   for (const field of FIELDS) {
     const raw = source[field.key];
     if (field.kind === 'checks') {

@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { translatorFor } from '../src/i18n.js';
+import { AUTO_KEY, COLLEGAMENTI, collegatiDelGruppo } from '../src/ordini/collegamenti.js';
 import {
-  COLLEGAMENTI,
-  collegatiDelGruppo,
   discrepanzeDi,
   improntaDi,
   numeriDi,
   prefillCollegati,
   stessoValore,
 } from '../src/ordini/collegati.js';
+import { withPrefill } from '../src/ordini/form.js';
 import { MONTANARI, PELAZZA } from '../src/ordini/moduli.js';
 import { riepilogoModuli } from '../src/ordini/riepilogo.js';
 
@@ -140,6 +140,17 @@ describe('what disagrees between the sheet and the two forms', () => {
     );
   });
 
+  it('never takes an inherited key for an answer (a tampered form)', () => {
+    const forged = {
+      ...open,
+      tipoPorte: ['AUTOMATICHE'],
+      doppioAccesso: 'constructor',
+      'oq-nAccessi': '2',
+    };
+    assert.deepEqual(discrepanzeDi(forged, t), []);
+    assert.equal(prefillCollegati('oq', forged).nAccessi, undefined);
+  });
+
   it('fingerprints exactly these differences', () => {
     const one = discrepanzeDi({ ...open, fermate: '5', 'oq-nFermate': '6' }, t);
     const same = discrepanzeDi({ ...open, fermate: '5', 'oq-nFermate': '6' }, t);
@@ -186,6 +197,17 @@ describe('filling a form from the sheet and from the other form', () => {
     assert.deepEqual(prefillCollegati('oq', closed), {});
     const manual = { ...open, tipoPorte: ['MANUALI'], doppioAccesso: 'si' };
     assert.deepEqual(prefillCollegati('oq', manual), { porteManuali: true });
+  });
+});
+
+describe('a form that comes back (an error, the confirmation)', () => {
+  it('keeps as following only the linked fields the browser says still follow', () => {
+    const ctx = { azienda: 'Prova', utente: 'Prova', ruolo: 'Tecnico', email: 'p@rilievi.test' };
+    const { auto } = withPrefill(
+      { ...open, [AUTO_KEY]: 'oq-nFermate pa-ac2 oq-cliente oq-nonEsiste fermate' },
+      ctx,
+    );
+    assert.deepEqual([...auto].sort(), ['oq-nFermate', 'pa-ac2']);
   });
 });
 

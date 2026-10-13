@@ -327,6 +327,9 @@ model Scheda {
   preventivoArgano        Json?
   /// Печатът и PDF-ът на картата включват и попълненото в двата модула — изборът се пази в картата.
   riepilogoOrdini         Boolean              @default(false)
+  /// Отпечатъкът на разминаванията карта ↔ модули, потвърдени при последния запис (src/ordini/collegati.ts):
+  /// същите разлики не се питат пак, нови или променени — да. null — няма потвърдени.
+  discrepanzeConfermate   String?              @db.VarChar(32)
   /// Нормализиран текст за търсачката (малки букви, без ударения) — пише го САМО src/schede/service.ts.
   searchText              String               @default("")
   /// Фирмата на картата — тази на създателя (или избраната от MASTER). Вижда я само тази фирма и MASTER.

@@ -1,12 +1,8 @@
 import type { Request, Response } from 'express';
 import { principalOf } from '../auth/guards.js';
 import { roleIn, spansAziende } from '../auth/scope.js';
-import {
-  collegatiDelGruppo,
-  collegatiPerBrowser,
-  discrepanzeDi,
-  improntaDi,
-} from '../ordini/collegati.js';
+import { collegatiDelGruppo } from '../ordini/collegamenti.js';
+import { collegatiPerBrowser, discrepanzeDi, improntaDi } from '../ordini/collegati.js';
 import { moduloFieldOf, withPrefill } from '../ordini/form.js';
 import { SLOTS } from '../ordini/registry.js';
 import { activeFields, SECTIONS } from '../schede/fields.js';
@@ -79,12 +75,19 @@ export function renderForm(req: Request, res: Response, status: number, view: Fo
 }
 
 /**
- * Разминавания, които човекът още не е потвърдил: картата и модулите казват различни неща, а
- * пратеното `conferma` не е отпечатъкът на точно тези разминавания (src/ordini/collegati.ts).
+ * Разминаванията при запис (src/ordini/collegati.ts): отпечатъкът им (null — няма) и дали още чакат
+ * потвърждение. Потвърдени са, когато пратеното `conferma` или потвърденото при последния запис на
+ * картата (`confermate`) е точно този отпечатък — нови или променени разлики се питат пак.
  */
-export function confermaMancante(res: Response, body: Record<string, unknown>): boolean {
+export function controlloDiscrepanze(
+  res: Response,
+  body: Record<string, unknown>,
+  confermate: string | null,
+): { impronta: string | null; manca: boolean } {
   const discrepanze = discrepanzeDi(formValuesFromBody(body), res.locals.t);
-  return discrepanze.length > 0 && body.conferma !== improntaDi(discrepanze);
+  if (discrepanze.length === 0) return { impronta: null, manca: false };
+  const impronta = improntaDi(discrepanze);
+  return { impronta, manca: body.conferma !== impronta && confermate !== impronta };
 }
 
 /**

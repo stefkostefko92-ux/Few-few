@@ -33,5 +33,13 @@ export async function confirmDifferences(page, scheme) {
   if (!(await page.textContent('#confirm-summary')).includes('Velocità (m/s)'))
     fail(`${scheme}: the confirmation does not list the speed`);
   await audit(page, `${scheme} confirm`);
-  await page.click('#confirm-summary button[name="conferma"]');
+  // Enter in a field saves the normal way (the first button of the form): asked again, not confirmed.
+  await Promise.all([
+    page.waitForResponse((reply) => reply.request().method() === 'POST'),
+    page.press('#f-oq-quantita', 'Enter'),
+  ]);
+  await page.waitForLoadState('load');
+  if (!(await page.locator('#confirm-summary').count()))
+    fail(`${scheme}: Enter in a field confirmed the differences`);
+  await page.click('.actions button[name="conferma"]');
 }
