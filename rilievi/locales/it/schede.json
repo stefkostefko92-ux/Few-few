@@ -151,7 +151,7 @@
       "tipoImpianto": {
         "ELETTRICO": "Elettrico",
         "IDRAULICO": "Idraulico",
-        "MRL": "MRL"
+        "GEARLESS": "MRL"
       },
       "tipoPorte": {
         "AUTOMATICHE": "Automatiche",

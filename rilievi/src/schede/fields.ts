@@ -12,7 +12,8 @@ import type { Condition, FieldDef, SectionDef } from './field-types.js';
 export * from './field-types.js';
 
 export const UBICAZIONE_MACCHINA = ['ALTO', 'BASSO'] as const;
-export const TIPO_IMPIANTO = ['ELETTRICO', 'IDRAULICO', 'MRL'] as const;
+// GEARLESS се показва като „MRL“ (речникът): стойността в базата остава, за да чете предишният код.
+export const TIPO_IMPIANTO = ['ELETTRICO', 'IDRAULICO', 'GEARLESS'] as const;
 export const TIPO_PORTE = ['AUTOMATICHE', 'SEMIAUTOMATICHE', 'MANUALI'] as const;
 export const TELESOCCORSO_STATO = ['COMPLETO', 'MANCA_PERIFERICA'] as const;
 export const QUADRO_MARCA = ['PELAZZA', 'MOVILIFT', 'DMG', 'MASTECH', 'ALTRO'] as const;

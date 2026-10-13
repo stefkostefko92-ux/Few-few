@@ -115,7 +115,7 @@ describe('prefilling the MoviLift order', () => {
       portataKg: '630',
       capienzaPersone: '8',
       fermate: '6',
-      tipoImpianto: ['ELETTRICO', 'MRL'],
+      tipoImpianto: ['ELETTRICO', 'GEARLESS'],
       tipoPorte: ['AUTOMATICHE'],
       operatoreMarca: 'Selcom',
       operatoreTensione: '24 V DC',

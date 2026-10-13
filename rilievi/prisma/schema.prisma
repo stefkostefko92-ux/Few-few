@@ -35,8 +35,9 @@ enum UbicazioneMacchina {
 enum TipoImpianto {
   ELETTRICO
   IDRAULICO
-  /// До октомври 2026 — GEARLESS (собственикът го смени с MRL; миграцията преименува стойността).
-  MRL
+  /// На екрана и на листа — „MRL“ (собственикът смени надписа, октомври 2026). Стойността в базата
+  /// остава: така откатът само на кода (autodeploy при паднала сонда) чете всяка карта.
+  GEARLESS
 }
 
 enum TipoPorte {
