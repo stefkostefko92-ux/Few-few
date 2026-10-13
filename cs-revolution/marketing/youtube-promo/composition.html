@@ -188,7 +188,7 @@ PRODUCTS.forEach(function (p, i) {
     o.bp = el("div", "", blueprint(), s); o.bp.style.cssText = "position:absolute;left:820px;top:150px;width:960px;height:760px";
     o.stamp = el("div", "stamp mono", "In development", s); o.stamp.style.left = "1330px"; o.stamp.style.top = "760px";
   }
-  if (p.beta) { o.stamp = el("div", "stamp mono", "Beta", s); o.stamp.style.left = "820px"; o.stamp.style.top = "760px"; }
+  if (p.beta) { o.stamp = el("div", "stamp mono", "Beta", s); o.stamp.style.left = "118px"; o.stamp.style.top = "700px"; }   // in the text column: over the frame it covered the site's own heading
   if (p.verified) {
     o.seal = el("div", "seal mono", '<svg width="64" height="64" viewBox="0 0 24 24"><path fill="#8ab4f8" d="M12 1l2.6 2.2 3.4-.4 1 3.3 3 1.6-1 3.3 1 3.3-3 1.6-1 3.3-3.4-.4L12 23l-2.6-2.2-3.4.4-1-3.3-3-1.6 1-3.3-1-3.3 3-1.6 1-3.3 3.4.4z"/><path fill="none" stroke="#0A0C0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M7.5 12.3l3 3 6-6.3"/></svg><div><div class="t1">Verified Publisher</div><div class="t2">Chrome Web Store</div><div class="t3">Created by the owner of the listed website · no history of violations</div></div>', s);
   }

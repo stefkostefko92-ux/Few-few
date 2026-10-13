@@ -2,7 +2,8 @@
 //
 //   node render.mjs --shots <папка с кадрите> --out <папка за изхода> [--from 0] [--to 75] [--step 1] [--subs 0]
 //
-// --step 15 рендерира всеки 15-и кадър (бърз преглед, без видео). Без --step: всички кадри + promo.mp4.
+// --step 15 рендерира всеки 15-и кадър (бърз преглед, без видео). Без --step: кадрите + MP4. Кадрите носят
+// абсолютния си номер, така че --from/--to пренарежда само една сцена и MP4 се сглобява от всички.
 // Нужни: Playwright с Chromium (PLAYWRIGHT_BROWSERS_PATH или /opt/pw-browsers/chromium), ffmpeg в PATH.
 import http from 'node:http';
 import fs from 'node:fs';
@@ -41,7 +42,7 @@ const f0 = Math.round(FROM * FPS), f1 = Math.round(TO * FPS);
 let n = 0;
 for (let f = f0; f < f1; f += STEP) {
   await p.evaluate(t => window.render(t), f / FPS);
-  await p.screenshot({ path: path.join(frames, String(STEP > 1 ? n : f - f0).padStart(5, '0') + '.jpg'), type: 'jpeg', quality: 92 });
+  await p.screenshot({ path: path.join(frames, String(STEP > 1 ? n : f).padStart(5, '0') + '.jpg'), type: 'jpeg', quality: 92 });
   n++; if (n % 150 === 0) console.log('кадри', n);
 }
 // субтитрите на гласа (.srt) за YouTube — същите реплики, които черновата показва долу
