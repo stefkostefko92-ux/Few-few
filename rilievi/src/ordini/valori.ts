@@ -6,12 +6,13 @@ import {
   type FieldErrors,
   type FormValues,
 } from '../schede/field-parsers.js';
-import { fieldsOf, type Modulo } from './moduli.js';
+import { fieldsOf, type Modulo, type ModuloField } from './moduli.js';
 
 /**
- * Стойностите на модул на доставчик: отметнатите кутийки (true) и попълнените редове (текст). Празното
- * не се пази. Във формата полетата се казват `<префикс>-<ключ>`; скритото `<префикс>-_` казва, че
- * модулът е бил на екрана (тогава не се попълва наново от огледа).
+ * Стойностите на модул на доставчик: отметнатите кутийки (true), попълнените редове (текст), избраната
+ * опция на радио група (нейното `valore`) и на падащ списък (самата опция). Празното не се пази. Във
+ * формата полетата се казват `<префикс>-<ключ>`; скритото `<префикс>-_` казва, че модулът е бил на
+ * екрана (тогава не се попълва наново от огледа).
  */
 
 export type Valori = Record<string, string | true>;
@@ -24,6 +25,13 @@ export const shownName = (prefix: string): string => `${prefix}-_`;
 
 function parserOf(kind: 'text' | 'textarea', maxLength: number) {
   return textParser({ kind, maxLength });
+}
+
+/** Позволените стойности на радио група и падащ списък — всичко друго е подправено. */
+function opzioniOf(field: ModuloField): readonly string[] | null {
+  if (field.kind === 'radio') return field.opzioni.map((o) => o.valore);
+  if (field.kind === 'select') return field.opzioni;
+  return null;
 }
 
 /** Модулът от формата: отметка е само „si“; текстът — почистен и в границите на реда в PDF-а. */
@@ -43,6 +51,14 @@ export function parseModulo(
       else errors[name] = 'invalid';
       continue;
     }
+    const opzioni = opzioniOf(field);
+    if (opzioni) {
+      if (raw === undefined || raw === '') continue;
+      if (typeof raw === 'string' && opzioni.includes(raw)) valori[field.key] = raw;
+      else errors[name] = 'option';
+      continue;
+    }
+    if (field.kind !== 'text' && field.kind !== 'textarea') continue;
     const parsed = parserOf(field.kind, field.maxLength).safeParse(raw);
     if (!parsed.success) {
       const message = parsed.error.issues[0]?.message ?? 'invalid';
@@ -62,13 +78,17 @@ const storedSchema = z.object({
 /** Записаните стойности — само ключовете на модула и от правилния вид (JSON-ът се проверява). */
 export function storedValori(modulo: Modulo, json: unknown): Valori | null {
   const parsed = storedSchema.safeParse(json);
-  if (!parsed.success) return null;
+  // Една колона може да пази модула на една от няколко марки (таблото: Pelazza или MoviLift).
+  if (!parsed.success || parsed.data.modulo !== modulo.id) return null;
   const valori: Valori = {};
   for (const field of fieldsOf(modulo)) {
     const value = parsed.data.valori[field.key];
-    if (field.kind === 'check' ? value === true : typeof value === 'string' && value !== '') {
-      valori[field.key] = value!;
-    }
+    const opzioni = opzioniOf(field);
+    const ok =
+      field.kind === 'check'
+        ? value === true
+        : typeof value === 'string' && value !== '' && (!opzioni || opzioni.includes(value));
+    if (ok) valori[field.key] = value!;
   }
   return valori;
 }

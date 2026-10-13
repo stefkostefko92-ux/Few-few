@@ -5,7 +5,7 @@ import { dayFromDate } from '../time.js';
 import { activeFields, SECTIONS, type FieldDef, type SectionKey } from './fields.js';
 import type { FormValues } from './field-parsers.js';
 import { misureFromRows, misureTable, type TableView } from './misure.js';
-import { slotOf, SLOTS } from '../ordini/registry.js';
+import { slotAperto, SLOTS } from '../ordini/registry.js';
 import { moduloFormValues, storedValori } from '../ordini/valori.js';
 
 /** Картата с редовете на мерките по спирки — каквото показват страницата, печатът и PDF-ът. */
@@ -136,8 +136,13 @@ export function displaySections(
         };
         const options = optionsView(field, values[field.key], t);
         if (options) view.options = options;
-        const slot = slotOf(field.modulo);
-        if (slot && values[field.key] === true && storedValori(slot.modulo, values[slot.column])) {
+        const slot = SLOTS.find(
+          (s) =>
+            s.column === field.modulo &&
+            slotAperto(s, active, (key) => values[key]) &&
+            storedValori(s.modulo, values[s.column]),
+        );
+        if (slot) {
           const { titolo, fornitore } = slot.modulo;
           view.modulo = { path: slot.path, titolo, fornitore };
         }

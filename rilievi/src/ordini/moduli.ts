@@ -4,9 +4,12 @@ import { z } from 'zod';
 
 /**
  * Модулите на доставчиците — официалните им празни PDF-и (assets/moduli/) и картата на полетата им
- * (JSON до всеки PDF): кутийките и редовете на Pelazza в точки, имената на полетата във формуляра на
- * Montanari. Изходният PDF е самият оригинал с нашите данни върху него — затова PDF-ът е закрепен по
- * SHA-256: друга версия на модула значи други координати, и процесът отказва да тръгне.
+ * (JSON до всеки PDF): кутийките и редовете на Pelazza в точки, имената на полетата във формулярите на
+ * Montanari и MoviLift. Изходният PDF е самият оригинал с нашите данни върху него — затова PDF-ът е
+ * закрепен по SHA-256: друга версия на модула значи други координати, и процесът отказва да тръгне.
+ * Формулярът на MoviLift идва шифрован (RC4, без парола за отваряне): авторът разрешава попълване на
+ * полетата, а pdf-lib не чете шифровани файлове — в assets/ е копието без шифъра (pypdf), същото до
+ * пиксел (виж `fonte` в картата му).
  */
 
 const ASSETS = new URL('../../assets/moduli/', import.meta.url);
@@ -24,11 +27,15 @@ export const PREFILL_TOKENS = [
   'ruolo',
   'email',
   'operatoreMarca',
+  'operatoreTensione',
+  // Отметките на картата като думи („Automatiche, Manuali“) — за текстово поле на модул.
+  'tipoImpianto',
+  'tipoPorte',
 ] as const;
 export type PrefillToken = (typeof PREFILL_TOKENS)[number];
 
-/** Отметка от огледа: „поле=СТОЙНОСТ“ (хидравличен асансьор → таблото „Idraulico“). */
-const CHECK_PREFILL = /^tipoImpianto=[A-Z]+$/;
+/** Отметка от огледа: „поле=СТОЙНОСТ“ (хидравличен → „Idraulico“; шейна: Sì → „Elettr. Pattino“). */
+const CHECK_PREFILL = /^(tipoImpianto=[A-Z]+|pattinoRetrattile=si)$/;
 
 const num = z.number().finite();
 const base = {
@@ -66,14 +73,31 @@ const overlayField = z.discriminatedUnion('kind', [
   }),
 ]);
 
+/**
+ * Във формуляр: отметка, текст, радио група (опциите — по реда на бутоните ѝ в PDF-а, `widget`) и
+ * падащ списък (`vuoto` е опцията „нищо избрано“, напр. „SCEGLI...“). `predefinito` е стойността на
+ * празния модул — с нея модулът се отваря, ако нищо друго не го попълни.
+ */
 const acroField = z.discriminatedUnion('kind', [
-  z.object({ ...base, kind: z.literal('check'), prefill: checkPrefill, acro: z.string().min(1) }),
+  z.object({
+    ...base,
+    kind: z.literal('check'),
+    prefill: checkPrefill,
+    acro: z.string().min(1),
+    predefinito: z.literal(true).optional(),
+  }),
   z.object({
     ...base,
     kind: z.literal('text'),
     prefill: textPrefill,
     maxLength,
     acro: z.string().min(1),
+    predefinito: z.string().min(1).optional(),
+    /**
+     * Полето има бутон и на чуждо място (грешка в модула: „Fossa“ на MoviLift е и в първата кутийка на
+     * „Piano Corto“) — на листа излиза само този бутон.
+     */
+    widget: z.number().int().min(0).optional(),
   }),
   z.object({
     ...base,
@@ -82,6 +106,29 @@ const acroField = z.discriminatedUnion('kind', [
     maxLength,
     acro: z.string().min(1),
   }),
+  z.object({
+    ...base,
+    kind: z.literal('radio'),
+    acro: z.string().min(1),
+    opzioni: z
+      .array(
+        z.object({
+          valore: z.string().regex(/^[a-z][A-Za-z0-9]{0,30}$/),
+          label: z.string().min(1).max(120),
+          widget: z.number().int().min(0),
+        }),
+      )
+      .min(2),
+    predefinito: z.string().optional(),
+  }),
+  z.object({
+    ...base,
+    kind: z.literal('select'),
+    prefill: textPrefill,
+    acro: z.string().min(1),
+    opzioni: z.array(z.string().min(1).max(60)).min(1),
+    vuoto: z.string().min(1),
+  }),
 ]);
 
 function moduloSchema<F extends z.ZodTypeAny, T extends string>(field: F, tipo: T) {
@@ -89,7 +136,8 @@ function moduloSchema<F extends z.ZodTypeAny, T extends string>(field: F, tipo: 
     id: z.string().regex(/^[a-z0-9-]{3,80}$/),
     fornitore: z.string().min(1),
     titolo: z.string().min(1),
-    fonte: z.string().url(),
+    /** Откъде е празният модул: адресът при доставчика или как е дошъл (качен от собственика). */
+    fonte: z.string().min(1),
     file: z.string().regex(/^[a-z0-9-]+\.pdf$/),
     sha256: z.string().regex(/^[0-9a-f]{64}$/),
     tipo: z.literal(tipo),
@@ -119,8 +167,24 @@ export type Modulo = ModuloOverlay | ModuloAcro;
 
 function load<S extends z.ZodTypeAny>(name: string, schema: S): z.output<S> {
   const map: z.output<S> = schema.parse(JSON.parse(readFileSync(new URL(name, ASSETS), 'utf8')));
-  const keys = fieldsOf(map as Modulo).map((field) => field.key);
+  const fields = fieldsOf(map as Modulo);
+  const keys = fields.map((field) => field.key);
   if (new Set(keys).size !== keys.length) throw new Error(`${name}: повтарящ се ключ на поле`);
+  for (const field of fields) {
+    if (field.kind === 'radio') {
+      const valori = field.opzioni.map((o) => o.valore);
+      const widgets = field.opzioni.map((o) => o.widget);
+      const ok =
+        new Set(valori).size === valori.length &&
+        new Set(widgets).size === widgets.length &&
+        (field.predefinito === undefined || valori.includes(field.predefinito));
+      if (!ok) throw new Error(`${name}: радио ${field.key} не е цяло`);
+    }
+    if (field.kind === 'text' && 'predefinito' in field && field.predefinito !== undefined) {
+      if (field.predefinito.length > field.maxLength)
+        throw new Error(`${name}: ${field.key} е дълго`);
+    }
+  }
   return map;
 }
 
@@ -135,6 +199,10 @@ export const PELAZZA: ModuloOverlay = load(
 );
 export const MONTANARI: ModuloAcro = load(
   'montanari-richiesta-preventivo-argani-ita.json',
+  moduloSchema(acroField, 'acroform'),
+);
+export const MOVILIFT: ModuloAcro = load(
+  'movilift-modulo-ordine-scelta-v2-6.json',
   moduloSchema(acroField, 'acroform'),
 );
 
@@ -156,5 +224,5 @@ export function moduloPdf(modulo: Modulo): Uint8Array {
 
 /** Проверка при старт: двата модула са на мястото си и са точно версията на картите. */
 export function assertModuli(): void {
-  for (const modulo of [PELAZZA, MONTANARI]) moduloPdf(modulo);
+  for (const modulo of [PELAZZA, MONTANARI, MOVILIFT]) moduloPdf(modulo);
 }

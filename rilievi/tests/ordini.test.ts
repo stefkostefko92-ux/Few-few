@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { describe, it } from 'node:test';
 import { PDFCheckBox, PDFDocument, PDFTextField } from 'pdf-lib';
+import { translatorFor } from '../src/i18n.js';
 import { assertModuli, fieldsOf, moduloPdf, MONTANARI, PELAZZA } from '../src/ordini/moduli.js';
 import { renderModulo } from '../src/ordini/pdf.js';
 import { prefillValori, rifImpianto } from '../src/ordini/prefill.js';
@@ -9,6 +10,7 @@ import { parseModulo, storedValori } from '../src/ordini/valori.js';
 import { pdfFontPaths } from '../src/schede/pdf.js';
 import { parseScheda } from '../src/schede/validation.js';
 
+const t = translatorFor('it');
 const fontDir = process.env.PDF_FONT_DIR ?? '/usr/share/fonts/truetype/dejavu';
 const fontsHere = existsSync(pdfFontPaths(fontDir).regular);
 const A4 = { width: 595.32, height: 841.92 };
@@ -99,6 +101,7 @@ describe('prefilling from the survey', () => {
     utente: 'Mario Bianchi',
     ruolo: 'Tecnico',
     email: 'mario@example.it',
+    etichetta: (campo: string, valore: string) => t(`scheda.option.${campo}.${valore}`),
   };
 
   it('fills the Pelazza order with the date, the lift, the stops, the entrances and the doors', () => {

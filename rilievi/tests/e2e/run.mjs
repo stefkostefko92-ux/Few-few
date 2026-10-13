@@ -18,6 +18,7 @@ import { audit, fail, failures, italianOnly, signIn as signInAt, tick } from './
 import { checkSite } from './site.mjs';
 import { checkPeople } from './people.mjs';
 import { checkLinkedData, confirmDifferences } from './collegati.mjs';
+import { checkMovilift } from './movilift.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const base = (process.env.RILIEVI_URL ?? 'http://127.0.0.1:4330').replace(/\/+$/, '');
@@ -148,8 +149,11 @@ try {
       await page.fill('#f-mb-1-interasseSuperiore', '60 mm');
       await page.fill('#f-mb-1-interasseInferiore', '58 mm');
       await tick(page, 'mb-1-display', 'si');
-      // The supplier forms: Pelazza order and Montanari quote request, prefilled from the survey.
+      // The supplier forms: the MoviLift order first, then the Pelazza order (the same question, the
+      // other make) and the Montanari quote request, prefilled from the survey.
+      await checkMovilift(page, scheme);
       await tick(page, 'quadroMarca', 'PELAZZA');
+      if (await page.locator('#f-om').isVisible()) fail('MoviLift order shown for Pelazza');
       await tick(page, 'quadroOrdine', 'si');
       if ((await page.inputValue('#f-oq-nFermate')) !== '6')
         fail('Pelazza order without the stops');

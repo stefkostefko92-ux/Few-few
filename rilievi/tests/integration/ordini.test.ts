@@ -89,13 +89,14 @@ describe('supplier forms', () => {
     const saved = await browser.submit(`/schede/${id}/modifica`, `/schede/${id}`, {
       ...SURVEY,
       ...ORDERS,
-      quadroMarca: 'MOVILIFT',
+      // A make without an order form: the question is not asked any more.
+      quadroMarca: 'DMG',
       arganoPreventivo: 'no',
       base,
     });
     assert.equal(saved.status, 303);
     const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
-    assert.equal(row.quadroMarca, 'MOVILIFT');
+    assert.equal(row.quadroMarca, 'DMG');
     assert.equal(row.quadroOrdine, null);
     assert.equal(row.ordineQuadro, null);
     assert.equal(row.arganoPreventivo, false);

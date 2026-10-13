@@ -59,6 +59,32 @@
   max-width: none;
 }
 
+/* Кутийките за една-две букви (имената на етажите при MoviLift): тесни, по шестнайсет на ред. */
+.modulo__text--short {
+  flex: 0 0 4.75rem;
+}
+
+.modulo__text--short .input {
+  padding-inline: 6px;
+  text-align: center;
+}
+
+/* Радио група (MoviLift): една от опциите, като на листа; щракване върху избраната я маха. */
+.modulo__radio {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.modulo__opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+}
+
 /* Модулът има над сто отметки: по-ниски от тези на картата, но пак над 24 px за пръст. */
 .tick--sm {
   min-height: 38px;

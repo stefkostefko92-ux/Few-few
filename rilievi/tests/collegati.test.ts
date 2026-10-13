@@ -15,13 +15,17 @@ import { riepilogoModuli } from '../src/ordini/riepilogo.js';
 
 const t = translatorFor('it');
 
-/** A sheet with both supplier forms open, as the browser sends it. */
+/**
+ * A sheet with the Pelazza and Montanari forms open, as the browser sends it: the MoviLift form is on
+ * the page too, hidden, and it has been filled when the page was first served.
+ */
 const open = {
   data: '2026-10-12',
   matricola: '33871',
   quadroMarca: 'PELAZZA',
   quadroOrdine: 'si',
   'oq-_': '1',
+  'om-_': '1',
   arganoMarca: 'MONTANARI',
   arganoPreventivo: 'si',
   'pa-_': '1',
@@ -202,7 +206,13 @@ describe('filling a form from the sheet and from the other form', () => {
 
 describe('a form that comes back (an error, the confirmation)', () => {
   it('keeps as following only the linked fields the browser says still follow', () => {
-    const ctx = { azienda: 'Prova', utente: 'Prova', ruolo: 'Tecnico', email: 'p@rilievi.test' };
+    const ctx = {
+      azienda: 'Prova',
+      utente: 'Prova',
+      ruolo: 'Tecnico',
+      email: 'p@rilievi.test',
+      etichetta: (campo: string, valore: string) => t(`scheda.option.${campo}.${valore}`),
+    };
     const { auto } = withPrefill(
       { ...open, [AUTO_KEY]: 'oq-nFermate pa-ac2 oq-cliente oq-nonEsiste fermate' },
       ctx,
@@ -216,7 +226,7 @@ describe('the linked data themselves', () => {
     for (const link of COLLEGAMENTI) {
       assert.notEqual(t(`collegati.${link.key}`), `collegati.${link.key}`, link.key);
     }
-    for (const luogo of ['scheda', 'oq', 'pa']) {
+    for (const luogo of ['scheda', 'oq', 'om', 'pa']) {
       assert.notEqual(t(`collegati.luogo.${luogo}`), `collegati.luogo.${luogo}`);
     }
   });
@@ -250,8 +260,10 @@ describe('the orders in the sheet print', () => {
   };
   const scheda = {
     riepilogoOrdini: true,
+    quadroMarca: 'PELAZZA' as const,
     quadroOrdine: true,
     ordineQuadro: ordine,
+    arganoMarca: 'MONTANARI' as const,
     arganoPreventivo: false,
     preventivoArgano: { modulo: MONTANARI.id, valori: { mrl: true } },
   };

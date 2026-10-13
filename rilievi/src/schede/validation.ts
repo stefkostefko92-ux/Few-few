@@ -8,7 +8,7 @@ import type {
   UbicazioneMacchina,
 } from '@prisma/client';
 import { AUTO_KEY } from '../ordini/collegamenti.js';
-import { SLOTS } from '../ordini/registry.js';
+import { slotAperto, SLOTS } from '../ordini/registry.js';
 import { moduloFromBody, parseModulo, type ModuloDati } from '../ordini/valori.js';
 import { activeFields, FIELDS, IDENTIFIERS } from './fields.js';
 import {
@@ -142,9 +142,7 @@ export function parseScheda(
   const misure = raw.bottoniereMisure === 'si' ? parseMisure(raw, misureCount(raw.fermate)) : null;
   // Модулите на доставчиците: само когато въпросът им се вижда и отговорът е „Sì“.
   const moduli = SLOTS.map((slot) =>
-    active.has(slot.question) && raw[slot.question] === 'si'
-      ? parseModulo(slot.modulo, slot.prefix, raw)
-      : null,
+    slotAperto(slot, active, (key) => raw[key]) ? parseModulo(slot.modulo, slot.prefix, raw) : null,
   );
   const riepilogo = riepilogoSchema.safeParse(raw[RIEPILOGO_KEY]);
   const extraErrors: FieldErrors = Object.assign(
@@ -156,7 +154,9 @@ export function parseScheda(
 
   const parsed = schedaSchema.safeParse(input);
   if (parsed.success && riepilogo.success && Object.keys(extraErrors).length === 0) {
-    const dati = (column: string) => moduli[SLOTS.findIndex((s) => s.column === column)]?.dati;
+    // Колоната на отворения модул (таблото — Pelazza или MoviLift, никога и двата).
+    const dati = (column: string) =>
+      moduli.find((modulo, i) => modulo && SLOTS[i]!.column === column)?.dati;
     return {
       ok: true,
       data: {

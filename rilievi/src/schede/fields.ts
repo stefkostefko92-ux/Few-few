@@ -138,7 +138,7 @@ export const SECTIONS = [
     ],
   },
   {
-    // Таблото за поръчка: марката; при Pelazza — модулът им за поръчка (src/ordini/).
+    // Таблото за поръчка: марката; при Pelazza и MoviLift — модулът им за поръчка (src/ordini/).
     key: 'quadro',
     fields: [
       { key: 'quadroMarca', kind: 'choice', options: QUADRO_MARCA },
@@ -149,7 +149,8 @@ export const SECTIONS = [
         wide: true,
         question: true,
         modulo: 'ordineQuadro',
-        when: { field: 'quadroMarca', values: ['PELAZZA'] },
+        // Марките с модул за поръчка (src/ordini/registry.ts — тестът пази съвпадението).
+        when: { field: 'quadroMarca', values: ['PELAZZA', 'MOVILIFT'] },
       },
     ],
   },

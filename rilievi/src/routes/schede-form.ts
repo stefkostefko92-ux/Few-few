@@ -47,6 +47,7 @@ export function renderForm(req: Request, res: Response, status: number, view: Fo
     utente: user.name,
     ruolo: role ? t(`role.${role}`) : '',
     email: user.email,
+    etichetta: (campo, valore) => t(`scheda.option.${campo}.${valore}`),
   });
   const discrepanze = discrepanzeDi(values, t);
   res.status(status).render('schede/form', {

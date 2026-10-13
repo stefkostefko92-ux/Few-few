@@ -1,5 +1,5 @@
-// Linked data between the sheet and the two supplier forms (src/ordini/collegati.ts, sent here as JSON):
-// an empty field of a form takes what the sheet or the other form already says, and keeps following it
+// Linked data between the sheet and the supplier forms (src/ordini/collegati.ts, sent here as JSON): an
+// empty field of a form takes what the sheet or the other form already says, and keeps following it
 // until someone types in it; values that disagree are listed under their group. Progressive
 // enhancement: the server fills the forms when they first open and asks to confirm on save — this
 // only does the same while typing.
@@ -58,21 +58,29 @@
     const own = m.valori && Object.prototype.hasOwnProperty.call(m.valori, raw);
     return (m.valori ? (own ? m.valori[raw] : '') : raw) || null;
   };
+  // A choice is ticks of the sheet (or its Sì/No), ticks of a form, or a radio group of a form (`campo`:
+  // all its buttons, so a button outside `voci` counts as someone's answer).
+  const radioOf = (m) => m.luogo !== 'scheda' && m.campo !== undefined;
   const boxesOf = (m) =>
-    Object.keys(m.voci)
-      .map((key) =>
-        form.querySelector(
-          m.luogo === 'scheda'
-            ? `input[name="${m.campo}"][value="${key}"]`
-            : `input[name="${m.luogo}-${key}"]`,
-        ),
-      )
-      .filter(Boolean);
-  const keyOf = (m, box) => (m.luogo === 'scheda' ? box.value : box.name.slice(m.luogo.length + 1));
+    radioOf(m)
+      ? Array.from(form.querySelectorAll(`input[name="${m.luogo}-${m.campo}"]`))
+      : Object.keys(m.voci)
+          .map((key) =>
+            form.querySelector(
+              m.luogo === 'scheda'
+                ? `input[name="${m.campo}"][value="${key}"]`
+                : `input[name="${m.luogo}-${key}"]`,
+            ),
+          )
+          .filter(Boolean);
+  const keyOf = (m, box) =>
+    m.luogo === 'scheda' || radioOf(m) ? box.value : box.name.slice(m.luogo.length + 1);
   const readChoice = (m) => {
     const boxes = boxesOf(m);
     if (!boxes.length || !shown(boxes[0])) return null;
-    const ticked = boxes.filter((box) => box.checked);
+    const ticked = boxes.filter(
+      (box) => box.checked && Object.prototype.hasOwnProperty.call(m.voci, keyOf(m, box)),
+    );
     return ticked.length ? ticked : null;
   };
   const labelOf = (box) => {
@@ -103,19 +111,31 @@
         }
         const boxes = boxesOf(target);
         if (!boxes.length || !followsChoice(boxes)) continue;
+        const radio = radioOf(target);
         const wanted = new Set();
         for (const m of others) {
           const ticked = readChoice(m);
           if (!ticked) continue;
+          const categories = new Set(ticked.map((box) => m.voci[keyOf(m, box)]));
+          if (radio) {
+            // One answer: only for one category over there, and its first button here.
+            const [category] = categories;
+            const key = Object.keys(target.voci).find((k) => target.voci[k] === category);
+            if (categories.size === 1 && key) wanted.add(key);
+            break;
+          }
           // A category ticks a box here only when exactly one box means it.
-          for (const category of new Set(ticked.map((box) => m.voci[keyOf(m, box)]))) {
+          for (const category of categories) {
             const keys = Object.keys(target.voci).filter((key) => target.voci[key] === category);
             if (keys.length === 1) wanted.add(keys[0]);
           }
           break;
         }
+        // Nothing said elsewhere: a radio goes back to the blank form's own answer, if it has one.
+        const fallback =
+          radio && !wanted.size ? boxes.find((box) => 'predefinito' in box.dataset) : null;
         boxes.forEach((box) => {
-          box.checked = wanted.has(keyOf(target, box));
+          box.checked = box === fallback || wanted.has(keyOf(target, box));
           box.dataset.auto = box.checked ? 'si' : '';
         });
       }

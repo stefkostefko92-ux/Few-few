@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { Translator } from '../i18n.js';
 import type { FormValues } from '../schede/field-parsers.js';
-import { activeFields } from '../schede/fields.js';
+import { activeFields, fieldByKey } from '../schede/fields.js';
 import {
   COLLEGAMENTI,
   moduloFields,
@@ -9,7 +9,7 @@ import {
   type MembroNumero,
   type MembroScelta,
 } from './collegamenti.js';
-import { SLOTS, type Prefisso } from './registry.js';
+import { slotAperto, SLOTS, type Prefisso } from './registry.js';
 import { nameOf, type Valori } from './valori.js';
 
 /**
@@ -29,7 +29,7 @@ interface Attivi {
 function attiviDi(values: FormValues): Attivi {
   const scheda = activeFields((key) => values[key]);
   const moduli = new Set<Prefisso>(
-    SLOTS.filter((s) => scheda.has(s.question) && values[s.question] === 'si').map((s) => s.prefix),
+    SLOTS.filter((s) => slotAperto(s, scheda, (key) => values[key])).map((s) => s.prefix),
   );
   return { scheda, moduli };
 }
@@ -50,16 +50,21 @@ function leggiNumero(m: MembroNumero, values: FormValues, attivi: Attivi): strin
   return testo(values[nameOf(m.luogo, m.campo)]) || null;
 }
 
-/** Отметнатите на едно място (ключовете им по реда на `voci`), или null. */
+/** Избраното на едно място (ключовете от `voci`, по реда им), или null. */
 function leggiScelta(m: MembroScelta, values: FormValues, attivi: Attivi): string[] | null {
   let ticked: string[];
   if (m.luogo === 'scheda') {
     if (!attivi.scheda.has(m.campo)) return null;
-    const list = values[m.campo];
-    ticked = Object.keys(m.voci).filter((v) => Array.isArray(list) && list.includes(v));
+    // Отметките (`checks`) са списък, „Sì/No“ — един отговор.
+    const value = values[m.campo];
+    const list = Array.isArray(value) ? value : typeof value === 'string' ? [value] : [];
+    ticked = Object.keys(m.voci).filter((v) => list.includes(v));
   } else {
     if (!attivi.moduli.has(m.luogo)) return null;
-    ticked = Object.keys(m.voci).filter((k) => values[nameOf(m.luogo, k)] === 'si');
+    const radio = m.campo === undefined ? null : values[nameOf(m.luogo, m.campo)];
+    ticked = Object.keys(m.voci).filter((k) =>
+      m.campo === undefined ? values[nameOf(m.luogo, k)] === 'si' : radio === k,
+    );
   }
   return ticked.length ? ticked : null;
 }
@@ -102,8 +107,13 @@ export interface Discrepanza {
 }
 
 function etichetta(m: MembroScelta, voce: string, t: Translator): string {
-  if (m.luogo === 'scheda') return t(`scheda.option.${m.campo}.${voce}`);
-  return moduloFields(m.luogo).find((f) => f.key === voce)?.label ?? voce;
+  if (m.luogo === 'scheda') {
+    if (fieldByKey(m.campo)?.kind === 'yesno') return t(voce === 'si' ? 'common.yes' : 'common.no');
+    return t(`scheda.option.${m.campo}.${voce}`);
+  }
+  const field = moduloFields(m.luogo).find((f) => f.key === (m.campo ?? voce));
+  if (field?.kind === 'radio') return field.opzioni.find((o) => o.valore === voce)?.label ?? voce;
+  return field?.label ?? voce;
 }
 
 /**
@@ -158,12 +168,13 @@ export function improntaDi(discrepanze: readonly Discrepanza[]): string {
 /**
  * Свързаните полета на модула `prefix`, попълнени от картата, иначе от другия модул — само от видимо и
  * попълнено. Отметка се слага само когато категорията има точно една отметка тук („VVVF“ от аргано не
- * избира сама между двата вида VVVF на таблото).
+ * избира сама между двата вида VVVF на таблото). Радио групата има един избор: само при една
+ * категория отсреща — първата ѝ опция („Doppio Ingresso“, не „… Selezionato“).
  */
 export function prefillCollegati(prefix: Prefisso, values: FormValues): Valori {
   const attivi = attiviDi(values);
   const lengths = new Map(
-    moduloFields(prefix).map((f) => [f.key, f.kind === 'check' ? 0 : f.maxLength]),
+    moduloFields(prefix).map((f) => [f.key, 'maxLength' in f ? f.maxLength : 0]),
   );
   const valori: Valori = {};
   for (const link of COLLEGAMENTI) {
@@ -183,7 +194,14 @@ export function prefillCollegati(prefix: Prefisso, values: FormValues): Valori {
       if (m.luogo === prefix) continue;
       const ticked = leggiScelta(m, values, attivi);
       if (!ticked) continue;
-      for (const categoria of new Set(ticked.map((v) => m.voci[v]!))) {
+      const categorie = new Set(ticked.map((v) => m.voci[v]!));
+      if (target.campo !== undefined) {
+        const [categoria] = categorie;
+        const voce = Object.keys(target.voci).find((k) => target.voci[k] === categoria);
+        if (categorie.size === 1 && voce) valori[target.campo] = voce;
+        break;
+      }
+      for (const categoria of categorie) {
         const voci = Object.keys(target.voci).filter((k) => target.voci[k] === categoria);
         if (voci.length === 1) valori[voci[0]!] = true;
       }
@@ -199,6 +217,7 @@ export function collegatiPerBrowser(t: Translator): string {
     luoghi: {
       scheda: t('collegati.luogo.scheda'),
       oq: t('collegati.luogo.oq'),
+      om: t('collegati.luogo.om'),
       pa: t('collegati.luogo.pa'),
     },
     gruppi: COLLEGAMENTI.map((link) => ({ ...link, nome: t(`collegati.${link.key}`) })),

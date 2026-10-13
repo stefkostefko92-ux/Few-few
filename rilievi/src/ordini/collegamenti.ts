@@ -5,9 +5,10 @@ import { nameOf } from './valori.js';
 
 /**
  * Свързаните данни — СПИСЪКЪТ: едно и също нещо от уредбата, записано на повече от едно място — в
- * картата, в поръчката за таблото (Pelazza, `oq`) и в запитването за аргано (Montanari, `pa`).
- * Правилата върху него (попълване, разминавания) са в collegati.ts; същият списък стига до браузъра
- * като JSON и public/js/collegati.js прави същото, докато се пише.
+ * картата, в поръчката за таблото (Pelazza `oq` или MoviLift `om` — според марката, никога двете) и в
+ * запитването за аргано (Montanari, `pa`). Правилата върху него (попълване, разминавания) са в
+ * collegati.ts; същият списък стига до браузъра като JSON и public/js/collegati.js прави същото,
+ * докато се пише.
  */
 
 export type Luogo = 'scheda' | Prefisso;
@@ -17,10 +18,13 @@ export type MembroNumero =
   | { luogo: 'scheda'; campo: string; valori?: Readonly<Record<string, string>> }
   | { luogo: Prefisso; campo: string };
 
-/** Отметки: коя отметка (стойност от картата или ключ на модула) коя категория е. */
+/**
+ * Избор: коя стойност коя категория е. В картата — отметките на поле (`checks`) или „Sì/No“ (`yesno`);
+ * в модула — отметките му (ключовете им) или опциите на радио група (`campo`, ключовете са `valore`).
+ */
 export type MembroScelta =
   | { luogo: 'scheda'; campo: string; voci: Readonly<Record<string, string>> }
-  | { luogo: Prefisso; voci: Readonly<Record<string, string>> };
+  | { luogo: Prefisso; campo?: string; voci: Readonly<Record<string, string>> };
 
 export type Collegamento =
   | { key: string; tipo: 'numero'; membri: readonly MembroNumero[] }
@@ -30,7 +34,7 @@ export type Collegamento =
  * Редът на местата е и редът на попълването: първо картата, после таблото, после аргано. Решено със
  * собственика (октомври 2026): спирките, скоростта и нейният вид, ходът, товарът, нормата, напрежението
  * на мотора и на спирачката — плюс досегашното попълване от картата (врати, достъпи, шейни, място на
- * машината, въжета).
+ * машината, въжета). MoviLift пише и капацитета, № на асансьора и входовете на кабината.
  */
 export const COLLEGAMENTI: readonly Collegamento[] = [
   {
@@ -39,6 +43,7 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'fermate' },
       { luogo: 'oq', campo: 'nFermate' },
+      { luogo: 'om', campo: 'fermate' },
       { luogo: 'pa', campo: 'fermate' },
     ],
   },
@@ -47,6 +52,7 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     tipo: 'numero',
     membri: [
       { luogo: 'oq', campo: 'velocita' },
+      { luogo: 'om', campo: 'velocita' },
       { luogo: 'pa', campo: 'velocita' },
     ],
   },
@@ -67,6 +73,7 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     tipo: 'numero',
     membri: [
       { luogo: 'oq', campo: 'corsa' },
+      { luogo: 'om', campo: 'corsa' },
       { luogo: 'pa', campo: 'corsa' },
     ],
   },
@@ -75,7 +82,24 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     tipo: 'numero',
     membri: [
       { luogo: 'scheda', campo: 'portataKg' },
+      { luogo: 'om', campo: 'portata' },
       { luogo: 'pa', campo: 'portata' },
+    ],
+  },
+  {
+    key: 'capienza',
+    tipo: 'numero',
+    membri: [
+      { luogo: 'scheda', campo: 'capienzaPersone' },
+      { luogo: 'om', campo: 'capienza' },
+    ],
+  },
+  {
+    key: 'numeroImpianto',
+    tipo: 'numero',
+    membri: [
+      { luogo: 'scheda', campo: 'numeroImpianto' },
+      { luogo: 'om', campo: 'nImpianto' },
     ],
   },
   {
@@ -88,10 +112,12 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     ],
   },
   {
+    // MoviLift: „Tens.“ в данните на аргано („Fune“). Тяхното „Freno“ не казва дали е напрежение.
     key: 'tensioneMotore',
     tipo: 'numero',
     membri: [
       { luogo: 'oq', campo: 'motVca' },
+      { luogo: 'om', campo: 'tensFune' },
       { luogo: 'pa', campo: 'motoreVoltaggio' },
     ],
   },
@@ -136,6 +162,19 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     ],
   },
   {
+    // Същото за MoviLift: радио „Operatore Unico / Doppio Ingresso (Selezionato)“.
+    key: 'ingressi',
+    tipo: 'scelta',
+    membri: [
+      { luogo: 'scheda', campo: 'doppioAccesso', voci: { no: 'UNICO', si: 'DOPPIO' } },
+      {
+        luogo: 'om',
+        campo: 'ingressi',
+        voci: { unico: 'UNICO', doppio: 'DOPPIO', doppioSelezionato: 'DOPPIO' },
+      },
+    ],
+  },
+  {
     key: 'pattini',
     tipo: 'numero',
     membri: [
@@ -149,6 +188,7 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     tipo: 'scelta',
     membri: [
       { luogo: 'scheda', campo: 'ubicazioneMacchina', voci: { ALTO: 'ALTO', BASSO: 'BASSO' } },
+      { luogo: 'om', campo: 'locMacc', voci: { alto: 'ALTO', basso: 'BASSO' } },
       { luogo: 'pa', voci: { macchinaAlto: 'ALTO', macchinaBasso: 'BASSO' } },
     ],
   },
@@ -176,18 +216,22 @@ export function moduloFields(prefix: Prefisso): ModuloField[] {
   return fieldsOf(slot.modulo);
 }
 
+/** Полетата на модула, които едно място заема: полето му, иначе отметките му. */
+export function campiDi(m: MembroNumero | MembroScelta): string[] {
+  if ('campo' in m && m.campo !== undefined) return [m.campo];
+  return 'voci' in m ? Object.keys(m.voci) : [];
+}
+
 /** Полетата на модулите, които са в някоя връзка — те не носят свое `prefill` в картата на модула. */
 export function campiCollegati(prefix: Prefisso): Set<string> {
   const out = new Set<string>();
   for (const link of COLLEGAMENTI) {
-    for (const m of link.membri) {
-      if (m.luogo !== prefix) continue;
-      if ('campo' in m) out.add(m.campo);
-      if ('voci' in m) for (const key of Object.keys(m.voci)) out.add(key);
-    }
+    for (const m of link.membri) if (m.luogo === prefix) for (const key of campiDi(m)) out.add(key);
   }
   return out;
 }
+
+const NUMERO_SCHEDA: readonly string[] = ['int', 'decimal', 'text', 'digits'];
 
 /** Проверка при зареждане: всяко място съществува и е от правилния вид — иначе процесът не тръгва. */
 function verifica(): void {
@@ -196,25 +240,33 @@ function verifica(): void {
     for (const m of link.membri) {
       if (m.luogo === 'scheda') {
         const field = fieldByKey(m.campo);
+        const opzioni: readonly string[] =
+          field?.kind === 'checks' ? field.options : field?.kind === 'yesno' ? ['si', 'no'] : [];
         const ok =
           link.tipo === 'scelta'
-            ? field?.kind === 'checks' &&
-              'voci' in m &&
-              Object.keys(m.voci).every((v) => (field.options as readonly string[]).includes(v))
+            ? 'voci' in m &&
+              opzioni.length > 0 &&
+              Object.keys(m.voci).every((v) => opzioni.includes(v))
             : field !== undefined &&
-              (['int', 'decimal', 'text'].includes(field.kind) ||
+              (NUMERO_SCHEDA.includes(field.kind) ||
                 (field.kind === 'yesno' && 'valori' in m && m.valori !== undefined));
         if (!ok) throw new Error(`collegati ${link.key}: полето ${m.campo} на картата не пасва`);
         continue;
       }
       const fields = new Map(moduloFields(m.luogo).map((f) => [f.key, f]));
-      const keys = 'campo' in m ? [m.campo] : Object.keys(m.voci);
-      for (const key of keys) {
+      for (const key of campiDi(m)) {
         const field = fields.get(key);
-        const kind = link.tipo === 'scelta' ? 'check' : 'text';
-        if (field?.kind !== kind)
-          throw new Error(`collegati ${link.key}: ${m.luogo}-${key} не пасва`);
-        if (field.prefill)
+        // Число — текстов ред; избор — отметки, или радио група, сред чиито опции са всички `voci`.
+        const radio = 'voci' in m && m.campo !== undefined ? m.voci : null;
+        const ok =
+          link.tipo === 'numero'
+            ? field?.kind === 'text'
+            : radio
+              ? field?.kind === 'radio' &&
+                Object.keys(radio).every((v) => field.opzioni.some((o) => o.valore === v))
+              : field?.kind === 'check';
+        if (!field || !ok) throw new Error(`collegati ${link.key}: ${m.luogo}-${key} не пасва`);
+        if ('prefill' in field && field.prefill)
           throw new Error(`collegati ${link.key}: ${m.luogo}-${key} има и prefill`);
         if (seen.has(`${m.luogo}-${key}`))
           throw new Error(`collegati: ${m.luogo}-${key} е в две връзки`);
@@ -240,10 +292,6 @@ export const NOMI_COLLEGATI: ReadonlySet<string> = new Set(
 export function collegatiDelGruppo(prefix: Prefisso, campi: readonly string[]): string[] {
   const own = new Set(campi);
   return COLLEGAMENTI.filter((link) =>
-    link.membri.some(
-      (m) =>
-        m.luogo === prefix &&
-        ('campo' in m ? own.has(m.campo) : Object.keys(m.voci).some((k) => own.has(k))),
-    ),
+    link.membri.some((m) => m.luogo === prefix && campiDi(m).some((key) => own.has(key))),
   ).map((link) => link.key);
 }

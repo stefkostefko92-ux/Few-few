@@ -243,6 +243,7 @@
     "luogo": {
       "scheda": "Scheda",
       "oq": "Ordine quadro",
+      "om": "Ordine quadro",
       "pa": "Richiesta argano"
     },
     "fermate": "Fermate",
@@ -250,11 +251,14 @@
     "tipoVelocita": "Tipo di velocità",
     "corsa": "Corsa (m)",
     "portata": "Portata (kg)",
+    "capienza": "Capienza (persone)",
+    "numeroImpianto": "N° impianto",
     "norma": "Norma",
     "tensioneMotore": "Tensione motore",
     "tensioneFreno": "Tensione freno",
     "porte": "Porte",
     "accessi": "Accessi",
+    "ingressi": "Doppio accesso",
     "pattini": "Pattini retrattili",
     "macchina": "Posizione macchina",
     "funiNumero": "Numero funi",
