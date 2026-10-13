@@ -26,11 +26,15 @@ export interface RiepilogoModulo {
 /** Групите на кой да е от модулите (картите им се различават само по мястото на полетата). */
 type Gruppo = { titolo: string; righe: ReadonlyArray<{ campi: readonly ModuloField[] }> };
 
-/** Какво казва полето: отметката, опцията на радиото (етикетът ѝ) или текстът, или нищо. */
+/**
+ * Какво казва полето: отметката, опцията на радиото (етикетът ѝ) или текстът, или нищо. Текстът на
+ * празния модул („-“ на MoviLift) не е написан от човека — не влиза.
+ */
 function letto(field: ModuloField, value: string | true | undefined): string | true | null {
   if (field.kind === 'check') return value === true ? true : null;
   if (typeof value !== 'string') return null;
   if (field.kind === 'radio') return field.opzioni.find((o) => o.valore === value)?.label ?? null;
+  if ('predefinito' in field && value === field.predefinito) return null;
   return value;
 }
 

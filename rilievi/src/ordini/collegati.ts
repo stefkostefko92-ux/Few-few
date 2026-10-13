@@ -211,9 +211,14 @@ export function prefillCollegati(prefix: Prefisso, values: FormValues): Valori {
   return valori;
 }
 
-/** Връзките за браузъра (public/js/collegati.js) — с имената им и на местата, без нищо от данните. */
+/**
+ * Връзките за браузъра (public/js/collegati.js) — с имената им и на местата, без нищо от данните.
+ * `colonne`: модулите на една колона (таблото — Pelazza и MoviLift) си дават стойностите при смяна на
+ * марката.
+ */
 export function collegatiPerBrowser(t: Translator): string {
   const data = {
+    colonne: Object.fromEntries(SLOTS.map((slot) => [slot.prefix, slot.column])),
     luoghi: {
       scheda: t('collegati.luogo.scheda'),
       oq: t('collegati.luogo.oq'),

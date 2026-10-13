@@ -13,8 +13,13 @@ const chosen = (page, name) =>
 const listed = (page, name) => page.locator('#f-om [data-diff]:visible', { hasText: name }).count();
 
 export async function checkMovilift(page, scheme) {
-  await tick(page, 'quadroMarca', 'MOVILIFT');
+  // What the Pelazza order already says carries over when the panel turns out to be a MoviLift.
+  await tick(page, 'quadroMarca', 'PELAZZA');
   await tick(page, 'quadroOrdine', 'si');
+  await page.fill('#f-oq-velocita', '1,6');
+  await tick(page, 'quadroMarca', 'MOVILIFT');
+  if ((await page.inputValue('#f-om-velocita')) !== '1,6')
+    fail(`${scheme}: the speed of the Pelazza order did not carry over to MoviLift`);
   if (!(await page.locator('#f-om').isVisible())) fail(`${scheme}: MoviLift order not shown`);
   if (await page.locator('#f-oq').isVisible()) fail(`${scheme}: Pelazza order shown for MoviLift`);
   const expected = {

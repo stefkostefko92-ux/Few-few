@@ -42,14 +42,28 @@
   // Hidden means not said: a field whose condition is off, a form whose question is not "Sì".
   const shown = (el) => !el.closest('[data-off]');
   const touched = (el) => el.dataset.touched === '1';
+  // Filling a form is the one exception: the other make's form of the same column (Pelazza ↔ MoviLift),
+  // hidden only by the make while the question still says "Sì", lends what it says — that is how the
+  // order carries over when the make changes. It is never a difference: the server reads the open one.
+  const lends = (el, m, target) => {
+    if (shown(el)) return true;
+    const box = el.closest('[data-modulo]');
+    return (
+      m.luogo !== 'scheda' &&
+      data.colonne[m.luogo] === data.colonne[target.luogo] &&
+      box !== null &&
+      !box.hasAttribute('data-off')
+    );
+  };
+  const visible = (el, m, target) => (target ? lends(el, m, target) : shown(el));
 
   const numberInputs = (m) =>
     Array.from(
       form.querySelectorAll(`[name="${m.luogo === 'scheda' ? m.campo : `${m.luogo}-${m.campo}`}"]`),
     );
-  const readNumber = (m) => {
+  const readNumber = (m, target) => {
     const inputs = numberInputs(m);
-    if (!inputs.length || !shown(inputs[0])) return null;
+    if (!inputs.length || !visible(inputs[0], m, target)) return null;
     const raw =
       inputs[0].type === 'radio'
         ? (inputs.find((input) => input.checked) || { value: '' }).value
@@ -75,9 +89,9 @@
           .filter(Boolean);
   const keyOf = (m, box) =>
     m.luogo === 'scheda' || radioOf(m) ? box.value : box.name.slice(m.luogo.length + 1);
-  const readChoice = (m) => {
+  const readChoice = (m, target) => {
     const boxes = boxesOf(m);
-    if (!boxes.length || !shown(boxes[0])) return null;
+    if (!boxes.length || !visible(boxes[0], m, target)) return null;
     const ticked = boxes.filter(
       (box) => box.checked && Object.prototype.hasOwnProperty.call(m.voci, keyOf(m, box)),
     );
@@ -103,7 +117,7 @@
         if (group.tipo === 'numero') {
           const input = form.querySelector(`[name="${target.luogo}-${target.campo}"]`);
           if (!input || !follows(input)) continue;
-          const value = others.map(readNumber).find(Boolean) || '';
+          const value = others.map((m) => readNumber(m, target)).find(Boolean) || '';
           const next = input.maxLength > 0 ? value.slice(0, input.maxLength) : value;
           input.value = next;
           input.dataset.auto = next;
@@ -114,7 +128,7 @@
         const radio = radioOf(target);
         const wanted = new Set();
         for (const m of others) {
-          const ticked = readChoice(m);
+          const ticked = readChoice(m, target);
           if (!ticked) continue;
           const categories = new Set(ticked.map((box) => m.voci[keyOf(m, box)]));
           if (radio) {

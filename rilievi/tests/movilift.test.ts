@@ -311,7 +311,14 @@ describe('saving the MoviLift order', () => {
       quadroOrdine: true,
       ordineQuadro: {
         modulo: MOVILIFT.id,
-        valori: { controllo: 'scheda', fornitura: 'soloQuadro', fermate: '6', marcaOpA: 'SELCOM' },
+        // "-" is the blank form's own text on side B: not written by anyone, not printed.
+        valori: {
+          controllo: 'scheda',
+          fornitura: 'soloQuadro',
+          fermate: '6',
+          marcaOpA: 'SELCOM',
+          pianoB1: '-',
+        },
       },
       arganoMarca: null,
       arganoPreventivo: null,
