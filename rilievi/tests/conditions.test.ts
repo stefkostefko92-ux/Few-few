@@ -52,18 +52,23 @@ describe('conditions', () => {
 });
 
 describe('door details', () => {
-  it('keep the operator (make, clear opening, voltage, double entrance) for automatic and semi-automatic doors', () => {
+  it('keep the operator (make, clear opening, voltage) for automatic and semi-automatic doors', () => {
     for (const porte of ['AUTOMATICHE', 'SEMIAUTOMATICHE']) {
       const data = parsedOrFail({ ...minimal, tipoPorte: porte, ...DOORS });
       assert.equal(data.operatoreMarca, 'Selcom', porte);
       assert.equal(data.lucePorte, '800 x 2000', porte);
       assert.equal(data.operatoreTensione, '24 V DC', porte);
-      assert.equal(data.doppioAccesso, true, porte);
     }
     const manual = parsedOrFail({ ...minimal, tipoPorte: 'MANUALI', ...DOORS });
     assert.equal(manual.operatoreMarca, null);
     assert.equal(manual.lucePorte, null);
-    assert.equal(manual.doppioAccesso, null);
+  });
+
+  it('keep the double entrance with every door type, manual doors included', () => {
+    for (const porte of ['AUTOMATICHE', 'SEMIAUTOMATICHE', 'MANUALI']) {
+      const data = parsedOrFail({ ...minimal, tipoPorte: porte, ...DOORS });
+      assert.equal(data.doppioAccesso, true, porte);
+    }
   });
 
   it('keep the door blocking, self-levelling and retiring cam for manual doors only', () => {
@@ -151,6 +156,7 @@ describe('the sheet page', () => {
       data: new Date('2026-10-12T00:00:00.000Z'),
       tipoPorte: ['MANUALI'],
       pattinoRetrattile: false,
+      doppioAccesso: true,
       serrature: true,
       serratureNumero: 4,
       telesoccorso: true,
@@ -161,6 +167,7 @@ describe('the sheet page', () => {
       s.fields.map((f) => f.key),
     );
     for (const key of [
+      'doppioAccesso',
       'bloccaPortine',
       'pattinoRetrattile',
       'serratureNumero',
@@ -168,7 +175,7 @@ describe('the sheet page', () => {
     ]) {
       assert.ok(keys.includes(key), key);
     }
-    for (const key of ['operatoreMarca', 'doppioAccesso', 'pattinoRetrattileNumero']) {
+    for (const key of ['operatoreMarca', 'lucePorte', 'pattinoRetrattileNumero']) {
       assert.ok(!keys.includes(key), key);
     }
     const stato = displaySections(scheda, translatorFor('it'), viewHelpers('it'))

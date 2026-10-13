@@ -140,11 +140,12 @@ describe('the second brief', () => {
     assert.equal(await prisma.misuraBottoniera.count(), before);
   });
 
-  it('prints the renamed locks, the alarm and the measurements table; the PDF carries them too', async () => {
+  it('prints the locks and the skates to change, the alarm and the measurements table; the PDF carries them too', async () => {
     const { browser } = await signedIn('TECNICO');
     const id = await create(browser, SECOND);
     const print = await browser.get(`/schede/${id}/stampa`);
-    assert.match(print.body, /Serrature\/sospensioni/);
+    assert.match(print.body, /Serrature o sospensioni da cambiare/);
+    assert.match(print.body, /Pattino retrattile da cambiare/);
     assert.match(print.body, /Allarme e telesoccorso/);
     assert.match(
       print.body,

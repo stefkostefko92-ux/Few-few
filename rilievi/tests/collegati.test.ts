@@ -75,10 +75,16 @@ describe('what disagrees between the sheet and the two forms', () => {
   it('compares only what is shown: a closed form or a hidden field says nothing', () => {
     const closed = { ...open, quadroOrdine: 'no', fermate: '5', 'oq-nFermate': '6' };
     assert.deepEqual(discrepanzeDi(closed, t), []);
-    // "Doppio accesso" exists only with automatic or semi-automatic doors.
-    const manual = { ...open, tipoPorte: ['MANUALI'], doppioAccesso: 'si', 'oq-nAccessi': '1' };
-    assert.deepEqual(discrepanzeDi(manual, t), []);
-    const automatic = { ...manual, tipoPorte: ['AUTOMATICHE'] };
+    // "Doppio accesso" comes with the door type: before one is ticked it says nothing.
+    const noDoors = { ...open, doppioAccesso: 'si', 'oq-nAccessi': '1' };
+    assert.deepEqual(discrepanzeDi(noDoors, t), []);
+    const manual = { ...noDoors, tipoPorte: ['MANUALI'], 'oq-porteManuali': 'si' };
+    assert.deepEqual(
+      discrepanzeDi(manual, t).map((d) => d.key),
+      ['accessi'],
+      'asked with manual doors too',
+    );
+    const automatic = { ...noDoors, tipoPorte: ['AUTOMATICHE'] };
     assert.deepEqual(discrepanzeDi({ ...automatic, 'oq-porteAutomatiche': 'si' }, t), [
       {
         key: 'accessi',
@@ -199,8 +205,9 @@ describe('filling a form from the sheet and from the other form', () => {
   it('takes nothing from a closed form or a hidden field', () => {
     const closed = { ...open, arganoPreventivo: 'no', 'pa-velocita': '1,6' };
     assert.deepEqual(prefillCollegati('oq', closed), {});
+    assert.deepEqual(prefillCollegati('oq', { ...open, doppioAccesso: 'si' }), {}, 'no door type');
     const manual = { ...open, tipoPorte: ['MANUALI'], doppioAccesso: 'si' };
-    assert.deepEqual(prefillCollegati('oq', manual), { porteManuali: true });
+    assert.deepEqual(prefillCollegati('oq', manual), { porteManuali: true, nAccessi: '2' });
   });
 });
 

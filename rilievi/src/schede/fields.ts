@@ -25,6 +25,8 @@ const PORTE_CON_OPERATORE: Condition = {
   values: ['AUTOMATICHE', 'SEMIAUTOMATICHE'],
 };
 const PORTE_MANUALI: Condition = { field: 'tipoPorte', values: ['MANUALI'] };
+/** Двойният достъп — при всеки вид врати, и при ръчните (решение на собственика, октомври 2026). */
+const PORTE_SCELTE: Condition = { field: 'tipoPorte', values: TIPO_PORTE };
 /** Прибиращата се шейна — при ръчни и при полуавтоматични врати. */
 const PORTE_CON_PATTINO: Condition = { field: 'tipoPorte', values: ['MANUALI', 'SEMIAUTOMATICHE'] };
 /** „Altro“ при марката → коя. */
@@ -69,7 +71,7 @@ export const SECTIONS = [
       // Светлият отвор и напрежението — свободен текст („800 x 2000“, „24 V DC“).
       { key: 'lucePorte', kind: 'text', maxLength: 60, when: PORTE_CON_OPERATORE },
       { key: 'operatoreTensione', kind: 'text', maxLength: 60, when: PORTE_CON_OPERATORE },
-      { key: 'doppioAccesso', kind: 'yesno', when: PORTE_CON_OPERATORE },
+      { key: 'doppioAccesso', kind: 'yesno', when: PORTE_SCELTE },
       { key: 'bloccaPortine', kind: 'yesno', when: PORTE_MANUALI },
       { key: 'autolivellamento', kind: 'yesno', when: PORTE_MANUALI },
       { key: 'pattinoRetrattile', kind: 'yesno', when: PORTE_CON_PATTINO },
@@ -80,7 +82,8 @@ export const SECTIONS = [
         max: 99,
         when: yes('pattinoRetrattile'),
       },
-      // „Serrature/sospensioni“ — брави и окачвания на вратите.
+      // „Serrature o sospensioni da cambiare“ — брави и окачвания на вратите за смяна (Sì → брой и вид);
+      // „Pattino retrattile da cambiare“ по-горе — същото за шейните.
       { key: 'serrature', kind: 'yesno' },
       { key: 'serratureNumero', kind: 'int', min: 0, max: 999, when: yes('serrature') },
       { key: 'serratureTipo', kind: 'text', maxLength: 120, when: yes('serrature') },

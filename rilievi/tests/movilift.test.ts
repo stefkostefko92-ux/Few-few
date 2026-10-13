@@ -166,7 +166,7 @@ describe('prefilling the MoviLift order', () => {
     const valori = prefillValori(MOVILIFT, manual);
     assert.equal(valori.marcaOpA, undefined, 'no door operator with manual doors');
     assert.equal(valori.voltA, undefined);
-    assert.equal(valori.ingressi, 'unico', 'the blank form stays');
+    assert.equal(valori.ingressi, 'doppio', 'the double entrance is asked with manual doors too');
     assert.equal(valori.locMacc, 'alto');
     assert.equal(valori.elettrPattino, true, 'the retractable skate is asked with manual doors');
   });
