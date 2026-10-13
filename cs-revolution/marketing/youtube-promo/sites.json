@@ -1,12 +1,53 @@
 [
-  {"id": "zabobovdol", "url": "https://zabobovdol.carbonstealth.eu", "locale": "bg-BG", "tall": true},
-  {"id": "panev", "url": "https://panevascensori.it"},
-  {"id": "vizitka", "url": "https://vizitka-bg.com", "locale": "bg-BG"},
-  {"id": "mastilko", "url": "https://mastilko-bg.com", "locale": "bg-BG"},
-  {"id": "supremebot", "url": "https://supremebot.carbonstealth.eu", "locale": "en-US"},
-  {"id": "adblock", "url": "https://adblock.carbonstealth.eu", "locale": "en-US"},
-  {"id": "evanita", "url": "https://evanita-bg.com", "locale": "bg-BG"},
-  {"id": "vaptsarov", "url": "https://ouvaptsarov.com", "locale": "bg-BG"},
-  {"id": "eternal", "url": "https://eternaltouch.it"},
-  {"id": "scuola", "url": "https://www.scuolabulgaramilano.it"}
+  {
+    "id": "zabobovdol",
+    "url": "https://zabobovdol.carbonstealth.eu",
+    "locale": "bg-BG",
+    "tall": true
+  },
+  {
+    "id": "panev",
+    "url": "https://panevascensori.it/en/",
+    "locale": "en-US"
+  },
+  {
+    "id": "vizitka",
+    "url": "https://vizitka-bg.com",
+    "locale": "bg-BG"
+  },
+  {
+    "id": "mastilko",
+    "url": "https://mastilko-bg.com",
+    "locale": "bg-BG"
+  },
+  {
+    "id": "supremebot",
+    "url": "https://supremebot.carbonstealth.eu",
+    "locale": "en-US"
+  },
+  {
+    "id": "adblock",
+    "url": "https://adblock.carbonstealth.eu",
+    "locale": "en-US"
+  },
+  {
+    "id": "evanita",
+    "url": "https://evanita-bg.com",
+    "locale": "bg-BG"
+  },
+  {
+    "id": "vaptsarov",
+    "url": "https://ouvaptsarov.com",
+    "locale": "bg-BG"
+  },
+  {
+    "id": "eternal",
+    "url": "https://eternaltouch.it/en",
+    "locale": "en-US"
+  },
+  {
+    "id": "scuola",
+    "url": "https://scuolabg.carbonstealth.eu/en",
+    "locale": "en-US"
+  }
 ]

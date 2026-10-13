@@ -1,6 +1,6 @@
 # Промо клип за YouTube — Carbon Stealth VCC
 
-Черновата (animatic) на 75-секундния клип: 1920×1080, 30 fps, H.264. Сценарият кадър по
+Черновата (animatic) на 75-секундния клип, изцяло на английски: 1920×1080, 30 fps, H.264. Сценарият кадър по
 кадър, текстът на гласа и бележките за качване са в документа „Carbon Stealth VCC — сценарий
 за рекламен клип в YouTube“ (Claude Docs). Тук е само машината, която прави клипа.
 
@@ -9,7 +9,7 @@
 | `composition.html` | Целият клип като една страница: `render(t)` нарежда кадъра за време `t` (без CSS анимации — рендерът е детерминистичен). Цветове и шрифтове от сайта (`public/fonts`, `public/brand`). |
 | `sites.json` | Продуктите с жив сайт — само за заснемането; в клипа няма линкове към тях. |
 | `capture.mjs` + `stitch.py` | Живите кадри: всяка страница на компютър (1440) и телефон (390 @2x), скролирана като от човек. |
-| `render.mjs` | Кадрите → `out/frames/*.jpg` → `out/carbonstealth-promo-bg.mp4` (ffmpeg). |
+| `render.mjs` | Кадрите → `out/frames/*.jpg` → `out/carbonstealth-promo-en.mp4` + `.srt` (ffmpeg). |
 
 ```bash
 cd cs-revolution/marketing/youtube-promo

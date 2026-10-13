@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="bg">
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Carbon Stealth VCC — промо клип (композиция)</title>
+<title>Carbon Stealth VCC — promo video (composition)</title>
 <link rel="stylesheet" href="/fonts/fonts.css">
 <style>
 /* 1920×1080, 30 fps. Нищо не се анимира с CSS: render(t) нарежда всеки кадър от времето t,
@@ -80,29 +80,29 @@ body{font-family:'Space Mono','JetBrains Mono',monospace;-webkit-font-smoothing:
 <div id="intro" class="scene">
   <img class="logo" src="/brand/cs-logo-480.webp" alt="">
   <div class="t disp chrome">CARBON STEALTH VCC</div>
-  <div class="s mono">Софтуер с толеранс <b>±0,02</b></div>
+  <div class="s mono">Software built to tolerance <b>±0.02</b></div>
   <div class="hscan" id="iscan"></div>
 </div>
 
 <div id="caps" class="scene">
-  <div class="eye mono">// Какво правим</div>
-  <div class="h disp chrome">От идея до продукт.</div>
+  <div class="eye mono">// What we do</div>
+  <div class="h disp chrome">From idea to product.</div>
 </div>
 
 <div id="prods"></div>
 
 <div id="trust" class="scene">
-  <div class="cell" style="left:150px"><div class="big disp" id="d1"></div><div class="lab mono">продукта на живо</div></div>
-  <div class="cell" style="left:700px"><div class="big disp" id="d2"></div><div class="lab mono">в разработка</div></div>
-  <div class="cell" style="left:1250px"><div class="big disp" id="d3"></div><div class="lab mono">езика · IT · EN · BG</div></div>
+  <div class="cell" style="left:150px"><div class="big disp" id="d1"></div><div class="lab mono">products live</div></div>
+  <div class="cell" style="left:700px"><div class="big disp" id="d2"></div><div class="lab mono">in development</div></div>
+  <div class="cell" style="left:1250px"><div class="big disp" id="d3"></div><div class="lab mono">languages · IT · EN · BG</div></div>
   <div class="row mono">✓ <b>Verified Publisher</b> · Chrome Web Store</div>
 </div>
 
 <div id="outro" class="scene">
   <img class="logo" src="/brand/cs-logo-480.webp" alt="">
-  <div class="t disp chrome">Твоят проект е следващият.</div>
+  <div class="t disp chrome">Your project is next.</div>
   <div class="s mono">carbonstealth.eu</div>
-  <div class="s2 mono">Оферта до 24 часа · Италия · България</div>
+  <div class="s2 mono">Quote within 24 hours · Italy · Bulgaria</div>
 </div>
 
 <div id="subs"><span></span></div>
@@ -112,39 +112,39 @@ body{font-family:'Space Mono','JetBrains Mono',monospace;-webkit-font-smoothing:
 
 <script>
 // ─── данни ───────────────────────────────────────────────────────────────────
-var CAPS = ["Сайтове", "Онлайн магазини", "Софтуер и ERP", "Мобилни приложения", "Chrome разширения", "Discord ботове и SaaS", "SEO · GEO · AEO", "Хостинг в ЕС"];
+var CAPS = ["Websites", "Online stores", "Software & ERP", "Mobile apps", "Chrome extensions", "Discord bots & SaaS", "SEO · GEO · AEO", "EU hosting"];
 // limD/limM: колко най-много да се скролира в изходните пиксели (ОУ Вапцаров: спира преди вграденото видео)
 var PRODUCTS = [
-  { id: "zabobovdol", name: "За Бобов дол", tag: "Civic · BG", desc: "Граждански портал: важни телефони, услуги и помощ стъпка по стъпка за всички възрасти." },
-  { id: "panev", name: "Panev Ascensori", tag: "Ascensori · IT", desc: "Патентовани скоби за асансьори: каталог, 3D изглед и поръчка по имейл на три езика." },
-  { id: "vizitka", name: "Vizitka", tag: "QR · Профил", desc: "Дигитална визитка с постоянен QR — раздадените визитки се обновяват сами." },
-  { id: "mastilko", name: "Мастилко", tag: "Печат · Инструменти", desc: "Безплатни етикети, визитки и CV, готови за печат на истински А4 лист." },
-  { id: "supremebot", name: "Supreme Bot", tag: "SaaS · Discord", desc: "Осем бота за Discord и едно табло: тикети, формуляри, панели и AI." },
-  { id: "adblock", name: "Supreme AdBlock", tag: "Privacy · Chrome", desc: "Блокира рекламите в Chrome, вкл. в YouTube, без телеметрия.", verified: true },
-  { id: "liftpilot", name: "Lift Pilot", tag: "Асансьори · В разработка", desc: "Проектиране на асансьори с проверка по нормите EN 81-20 / EN 81-50.", wip: true },
-  { id: "evanita", name: "Evanita Sport", tag: "Фитнес · BG", desc: "Дамско студио за Kangoo Jumps в Дупница: бърз сайт, направен първо за телефона." },
-  { id: "vaptsarov", name: "ОУ „Никола Вапцаров“", tag: "Училище · BG", desc: "Сайтът на училището в Бобов дол, със система за новини.", limD: 240, limM: 1300 },
-  { id: "eternal", name: "Eternal Touch", tag: "Ателие · IT", desc: "Витрина и каталог на ръчни гипсови декорации, на три езика." },
-  { id: "scuola", name: "Scuola Bulgara Milano", tag: "Училище · IT", desc: "Българското училище в Милано: сайт със собствена система за съдържание на три езика." }
+  { id: "zabobovdol", name: "Za Bobov Dol", tag: "Civic · BG", desc: "A civic portal: emergency numbers, local services and step-by-step help for every age." },
+  { id: "panev", name: "Panev Ascensori", tag: "Elevators · IT", desc: "Patented elevator brackets: catalogue, 3D views and email ordering in three languages." },
+  { id: "vizitka", name: "Vizitka", tag: "QR · Profile", desc: "A digital business card with a permanent QR — cards already handed out update themselves." },
+  { id: "mastilko", name: "Mastilko", tag: "Print · Tools", desc: "Free labels, business cards and CVs, ready to print on a real A4 sheet." },
+  { id: "supremebot", name: "Supreme Bot", tag: "SaaS · Discord", desc: "Eight Discord bots, one dashboard: tickets, forms, panels and AI." },
+  { id: "adblock", name: "Supreme AdBlock", tag: "Privacy · Chrome", desc: "Blocks ads in Chrome, YouTube included, with zero telemetry.", verified: true },
+  { id: "liftpilot", name: "Lift Pilot", tag: "Elevators · In development", desc: "Elevator design, checked against EN 81‑20 / EN 81‑50.", wip: true },
+  { id: "evanita", name: "Evanita Sport", tag: "Fitness · BG", desc: "A women's Kangoo Jumps studio in Dupnitsa: a fast site, built phone-first." },
+  { id: "vaptsarov", name: "Nikola Vaptsarov School", tag: "School · BG", desc: "The website of the primary school in Bobov Dol, with its own news system.", limD: 240, limM: 1300 },
+  { id: "eternal", name: "Eternal Touch", tag: "Atelier · IT · EN · BG", desc: "Showcase and catalogue of hand-cast gypsum decorations, in three languages." },
+  { id: "scuola", name: "Scuola Bulgara Milano", tag: "School · IT", desc: "The Bulgarian school in Milan: courses, culture and events, with its own CMS in three languages." }
 ];
 var VO = [
-  [0.6, 3.8, "Не обещаваме. Измерваме."],
-  [4.3, 10.6, "Carbon Stealth VCC проектира сайтове, магазини, софтуер и приложения — с прецизността на инженерен цех."]
+  [0.6, 3.8, "We don't promise. We measure."],
+  [4.3, 10.6, "Carbon Stealth VCC designs websites, online stores, software and apps — with the precision of an engineering workshop."]
 ].concat([
-  "За Бобов дол — гражданският портал на града.",
-  "Panev Ascensori — каталог на патентовани скоби, с 3D изглед.",
-  "Vizitka — визитка, която се обновява сама.",
-  "Мастилко — етикети, визитки и CV, готови за печат.",
-  "Supreme Bot — Discord ботове, управлявани от едно табло.",
-  "Supreme AdBlock — без реклами, без телеметрия. Verified Publisher в Chrome Web Store.",
-  "Lift Pilot — проектиране на асансьори по нормите. В разработка.",
-  "Evanita Sport — сайт за фитнес студио, направен първо за телефона.",
-  "ОУ „Никола Вапцаров“ — новините на училището в Бобов дол.",
-  "Eternal Touch — витрина на ателие за ръчни декорации.",
-  "Scuola Bulgara Milano — българското училище в Милано, на три езика."
+  "Za Bobov Dol — the town's civic portal.",
+  "Panev Ascensori — a catalogue of patented brackets, in 3D.",
+  "Vizitka — a business card that updates itself.",
+  "Mastilko — labels, cards and CVs, ready to print.",
+  "Supreme Bot — Discord bots, run from one dashboard.",
+  "Supreme AdBlock — no ads, no telemetry. A Verified Publisher on the Chrome Web Store.",
+  "Lift Pilot — elevator design, checked against the standards. In development.",
+  "Evanita Sport — a fitness studio site, built phone-first.",
+  "Nikola Vaptsarov School — the school's news from Bobov Dol.",
+  "Eternal Touch — the showcase of a handmade decor atelier.",
+  "Scuola Bulgara Milano — the Bulgarian school in Milan, in three languages."
 ].map(function (s, i) { var a = 11 + i * 4.8; return [a + 0.5, a + 4.5, s]; })).concat([
-  [64.2, 68.6, "Десет продукта на живо. Един в разработка. Три езика."],
-  [69.6, 74.2, "Твоят проект е следващият. carbonstealth.eu"]
+  [64.2, 68.6, "Ten products live. One in development. Three languages."],
+  [69.6, 74.2, "Your project is next. carbonstealth.eu"]
 ]);
 var T_INTRO = 0, T_CAPS = 4, T_PROD = 11, PD = 4.8, T_TRUST = T_PROD + PRODUCTS.length * PD, T_OUT = 69, T_END = 75;
 var SUBS = !/subs=0/.test(location.search);
@@ -176,7 +176,7 @@ PRODUCTS.forEach(function (p, i) {
   o.eye = el("div", "eye mono", String(i + 1).padStart(2, "0") + " / " + PRODUCTS.length + " · " + p.tag, s);
   o.name = el("div", "name disp chrome", p.name, s);
   o.desc = el("div", "desc", p.desc, s);
-  o.foot = el("div", "foot mono", p.wip ? "<i></i>в разработка" : "<i></i>на живо · заснето от сайта", s);
+  o.foot = el("div", "foot mono", p.wip ? "<i></i>in development" : "<i></i>live · captured from the site", s);
   if (!p.wip) {
     o.desk = el("div", "dev desk", null, s); o.dImg = el("img", "", null, o.desk); o.dImg.src = "/shots/" + p.id + "-d.jpg";
     o.phone = el("div", "dev phone", null, s); o.mImg = el("img", "", null, o.phone); o.mImg.src = "/shots/" + p.id + "-m.jpg";
@@ -186,7 +186,7 @@ PRODUCTS.forEach(function (p, i) {
     var dv = dim(o.deco, 1590, 985, 256, "390 × 844");
   } else {
     o.bp = el("div", "", blueprint(), s); o.bp.style.cssText = "position:absolute;left:820px;top:150px;width:960px;height:760px";
-    o.stamp = el("div", "stamp mono", "В разработка", s); o.stamp.style.left = "1330px"; o.stamp.style.top = "760px";
+    o.stamp = el("div", "stamp mono", "In development", s); o.stamp.style.left = "1330px"; o.stamp.style.top = "760px";
   }
   if (p.verified) {
     o.seal = el("div", "seal mono", '<svg width="64" height="64" viewBox="0 0 24 24"><path fill="#8ab4f8" d="M12 1l2.6 2.2 3.4-.4 1 3.3 3 1.6-1 3.3 1 3.3-3 1.6-1 3.3-3.4-.4L12 23l-2.6-2.2-3.4.4-1-3.3-3-1.6 1-3.3-1-3.3 3-1.6 1-3.3 3.4.4z"/><path fill="none" stroke="#0A0C0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M7.5 12.3l3 3 6-6.3"/></svg><div><div class="t1">Verified Publisher</div><div class="t2">Chrome Web Store</div><div class="t3">Created by the owner of the listed website · no history of violations</div></div>', s);
@@ -202,13 +202,13 @@ function blueprint() {
   for (var y = 0; y <= 760; y += 40) g += "<line x1='0' y1='" + y + "' x2='960' y2='" + y + "' stroke='rgba(0,229,255,.07)'/>";
   g += "<rect x='300' y='60' width='360' height='640' stroke='#00e5ff' stroke-width='2'/>";                       // шахта
   g += "<line x1='330' y1='60' x2='330' y2='700' stroke='rgba(0,229,255,.45)' stroke-dasharray='8 8'/><line x1='630' y1='60' x2='630' y2='700' stroke='rgba(0,229,255,.45)' stroke-dasharray='8 8'/>";
-  g += "<g id='car'><rect x='350' y='0' width='190' height='200' stroke='#C9D1D6' stroke-width='2'/><line x1='445' y1='0' x2='445' y2='-60' stroke='#C9D1D6'/><text x='445' y='110' fill='#C9D1D6' font-family='Space Mono' font-size='16' text-anchor='middle' stroke='none'>CABINA</text></g>";
+  g += "<g id='car'><rect x='350' y='0' width='190' height='200' stroke='#C9D1D6' stroke-width='2'/><line x1='445' y1='0' x2='445' y2='-60' stroke='#C9D1D6'/><text x='445' y='110' fill='#C9D1D6' font-family='Space Mono' font-size='16' text-anchor='middle' stroke='none'>CAR</text></g>";
   g += "<g id='cw'><rect x='575' y='0' width='40' height='120' stroke='#7C868D' stroke-width='2'/></g>";
   g += "<line x1='240' y1='60' x2='240' y2='700' stroke='#00e5ff'/><line x1='230' y1='60' x2='250' y2='60' stroke='#00e5ff'/><line x1='230' y1='700' x2='250' y2='700' stroke='#00e5ff'/>";
-  g += "<text x='225' y='385' fill='#00e5ff' font-family='Space Mono' font-size='16' text-anchor='end' stroke='none'>CORSA</text>";
-  g += "<line x1='300' y1='735' x2='660' y2='735' stroke='#00e5ff'/><text x='480' y='728' fill='#00e5ff' font-family='Space Mono' font-size='16' text-anchor='middle' stroke='none'>VANO</text>";
+  g += "<text x='225' y='385' fill='#00e5ff' font-family='Space Mono' font-size='16' text-anchor='end' stroke='none'>TRAVEL</text>";
+  g += "<line x1='300' y1='735' x2='660' y2='735' stroke='#00e5ff'/><text x='480' y='728' fill='#00e5ff' font-family='Space Mono' font-size='16' text-anchor='middle' stroke='none'>SHAFT</text>";
   g += "<text x='700' y='110' fill='#7C868D' font-family='Space Mono' font-size='18' stroke='none'>EN 81-20</text><text x='700' y='140' fill='#7C868D' font-family='Space Mono' font-size='18' stroke='none'>EN 81-50</text>";
-  g += "<g id='chk' font-family='Space Mono' font-size='18' stroke='none'><text x='700' y='230' fill='#C9D1D6'>verifica fossa</text><text x='700' y='265' fill='#C9D1D6'>verifica testata</text><text x='700' y='300' fill='#C9D1D6'>porte di piano</text></g>";
+  g += "<g id='chk' font-family='Space Mono' font-size='18' stroke='none'><text x='700' y='230' fill='#C9D1D6'>pit check</text><text x='700' y='265' fill='#C9D1D6'>headroom check</text><text x='700' y='300' fill='#C9D1D6'>landing doors</text></g>";
   return g + "</svg>";
 }
 

@@ -48,10 +48,10 @@ for (let f = f0; f < f1; f += STEP) {
 const vo = await p.evaluate(() => VO);
 const ts = x => { const ms = Math.round(x * 1000); return [ms / 3600000 | 0, (ms / 60000 | 0) % 60, (ms / 1000 | 0) % 60].map(v => String(v).padStart(2, '0')).join(':') + ',' + String(ms % 1000).padStart(3, '0'); };
 fs.mkdirSync(OUT, { recursive: true });
-fs.writeFileSync(path.join(OUT, 'carbonstealth-promo-bg.srt'), vo.map((v, i) => `${i + 1}\n${ts(v[0])} --> ${ts(v[1])}\n${v[2]}\n`).join('\n'));
+fs.writeFileSync(path.join(OUT, 'carbonstealth-promo-en.srt'), vo.map((v, i) => `${i + 1}\n${ts(v[0])} --> ${ts(v[1])}\n${v[2]}\n`).join('\n'));
 await b.close(); srv.close();
 if (STEP === 1) {
-  const mp4 = path.join(OUT, SUBS ? 'carbonstealth-promo-bg.mp4' : 'carbonstealth-promo-bg-nosubs.mp4');
+  const mp4 = path.join(OUT, SUBS ? 'carbonstealth-promo-en.mp4' : 'carbonstealth-promo-en-nosubs.mp4');
   execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-framerate', String(FPS), '-i', path.join(frames, '%05d.jpg'),
     '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', mp4]);
   console.log('видео', mp4);
