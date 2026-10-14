@@ -5,16 +5,16 @@
 //   relazione tecnica and the drawing set (scripts/smoke-replacement.mjs) → the replacement becomes a whole
 //   project, its data entered (a draft taken up again) → shaft design by hand (a distance changed on its plan, the landing door
 //   set apart from the car door), its DXF, a calculation from it with the plan in its report → data of the installation,
-//   client and company logos, drawing set issued from
-//   that calculation (sheets, PDF) and its revision → the installation in one form with its live 3D simulation and a SICOR
-//   machine from the catalogue (drawn as it is), saved
+//   client and company logos, drawing set issued from that calculation (sheets, PDF) and its revision → the installation
+//   in one form with its live 3D simulation and a SICOR machine from the catalogue (drawn as it is), saved
 //   in one go (shaft design and calculation together), with its documents → the dashboard's result pill opens the checks
 //   behind its number (scripts/smoke-verdict.mjs) → the survey sheets: a sheet with its conditions, stops, modules,
-//   search, PDFs, print, conflict, trash (scripts/smoke-rilievi.mjs) → new user who must change the password → a
-//   second company that cannot open the first company's calculation, shaft design, DXF, drawing set, lift design or survey sheet →
-//   with MAILBOX_PORT: self-registration, confirmation, forgotten password (scripts/smoke-accounts.mjs), the rights matrix
-//   of that company (scripts/smoke-permessi.mjs), the server
-//   sending its mail to scripts/mail-sink.mjs on that port (SMTP_HOST=127.0.0.1, SMTP_PORT=<port>, MAIL_FROM set).
+//   search, PDFs, print, conflict, trash (scripts/smoke-rilievi.mjs), the company's order of the sections, the linked data
+//   with the confirmation, MoviLift, the modules in the print (scripts/smoke-rilievi-sync.mjs) → new user who must change
+//   the password → a second company that cannot open the first company's calculation, shaft design, DXF, drawing set, lift
+//   design or survey sheet (nor its modules) → with MAILBOX_PORT: self-registration, confirmation, forgotten password
+//   (scripts/smoke-accounts.mjs), the rights matrix of that company (scripts/smoke-permessi.mjs), the server sending its
+//   mail to scripts/mail-sink.mjs on that port (SMTP_HOST=127.0.0.1, SMTP_PORT=<port>, MAIL_FROM set).
 // Usage: BASE_URL=http://localhost:3100 ADMIN_EMAIL=… ADMIN_PASSWORD=… [MAILBOX_PORT=2526] node scripts/smoke.mjs
 // Playwright is not a dependency of the app: the local install is used, else the global one.
 import { Buffer } from 'node:buffer';
@@ -28,6 +28,7 @@ import { priceList } from './smoke-prices.mjs';
 import { publicPages } from './smoke-public.mjs';
 import { replacementRoom } from './smoke-replacement.mjs';
 import { rilieviFlow } from './smoke-rilievi.mjs';
+import { rilieviSync } from './smoke-rilievi-sync.mjs';
 import { archivedReadOnly, technician } from './smoke-roles.mjs';
 import { verdictPopover } from './smoke-verdict.mjs';
 
@@ -278,6 +279,7 @@ try {
 
   await priceList({ BASE, page, hydrated, stamp, liftUrl, roomUrl });
   const rilievo = await rilieviFlow({ BASE, page, hydrated });
+  const rilievoSync = await rilieviSync({ BASE, page, hydrated });
   assert.deepEqual(errors, [], 'browser errors');
 
   await technician({ BASE, page, errors, stamp, login, logout, rilievoUrl: rilievo.sheetUrl });
@@ -285,7 +287,8 @@ try {
   // the isolation check below provokes a 404 on purpose: the console must be clean up to here
   assert.deepEqual(errors, [], 'browser errors');
   await secondCompany({ BASE, page, kit: { login, logout, hydrated }, ADMIN, stamp,
-    urls: { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref, roomUrl, roomId, rilievoUrl: rilievo.sheetUrl, rilievoId: rilievo.id } });
+    urls: { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref, roomUrl, roomId, rilievoUrl: rilievo.sheetUrl, rilievoId: rilievo.id,
+      rilievoMovilift: rilievoSync.id } });
 
   if (sink) await accountFlows({ BASE, stamp, step, sink, newPage: () => newPage(browser), ADMIN_EMAIL: ADMIN.email, ADMIN, kit: { login, logout, hydrated } });
   else step('accounts without an administrator: skipped (no MAILBOX_PORT)');

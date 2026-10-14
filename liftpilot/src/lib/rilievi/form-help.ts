@@ -10,7 +10,8 @@ import { misuraOf } from './misure';
 import type { ModuloSpec } from './ordini/form';
 import type { RilieviT } from './t';
 
-/** What the errors need of a supplier module's field: its label (the paper's, verbatim), its supplier, its length. */
+/** What the errors need of a supplier module's field: its label (the paper's, verbatim), its supplier (or the sheet's
+ *  title when it has none — the argano sheet), its length. */
 export interface ModuloFieldInfo {
   label: string;
   fornitore: string;
@@ -26,15 +27,19 @@ const noModulo: ModuloLookup = () => null;
 export function specLookup(specs: readonly ModuloSpec[]): ModuloLookup {
   const byName = new Map<string, ModuloFieldInfo>();
   for (const spec of specs) {
-    for (const g of spec.gruppi) for (const r of g.righe) for (const f of r.campi) byName.set(f.name, { label: f.label, fornitore: spec.fornitore, maxLength: f.maxLength });
+    for (const g of spec.gruppi) for (const r of g.righe) for (const f of r.campi) byName.set(f.name, { label: f.label, fornitore: spec.fornitore ?? spec.titolo, maxLength: f.maxLength });
   }
   return (name) => byName.get(name) ?? null;
 }
 
-/** The label of an error's key in the summary: «Identificazione», «Lunghezza, fermata 2», «Quantità: (Pelazza Peppino)»,
- *  or the field's label. */
+/** The form's key of the tick «Includi i dati dei moduli … nella stampa e nel PDF» (validation.ts RIEPILOGO_KEY). */
+export const RIEPILOGO_KEY = 'riepilogoOrdini';
+
+/** The label of an error's key in the summary: «Identificazione», «Stampa e PDF», «Lunghezza, fermata 2», «Quantità:
+ *  (Pelazza Peppino)», or the field's label. */
 export function errorLabelOf(key: string, t: RilieviT, modulo: ModuloLookup = noModulo): string {
   if (key === IDENTIFIERS_ERROR_KEY) return t('scheda.identifiers');
+  if (key === RIEPILOGO_KEY) return t('riepilogo.title');
   const moduloField = modulo(key);
   if (moduloField) return t('ordini.errorLabel', { label: moduloField.label, fornitore: moduloField.fornitore });
   const misura = misuraOf(key);
@@ -97,3 +102,9 @@ export function moduloFileName(path: string, scheda: { numeroImpianto: string | 
 export const FLASH_KEYS = ['schedaCreated', 'schedaSaved', 'schedaTrashed', 'schedaRestored', 'schedaPurged'] as const;
 export type FlashKey = (typeof FLASH_KEYS)[number];
 export const flashOf = (v: unknown): FlashKey | null => (FLASH_KEYS as readonly unknown[]).includes(v) ? (v as FlashKey) : null;
+
+/** One discrepancy between the sheet and the modules as rilievi's _discrepanza.ejs words it: the datum's name in bold
+ *  («Fermate»), then « — » and what each place says («Scheda: 5 · Ordine quadro: 6 · Dati argano: 5»). */
+export function discrepanzaText(d: { key: string; voci: readonly { luogo: string; valore: string }[] }, t: RilieviT): { nome: string; dove: string } {
+  return { nome: t(`collegati.${d.key}`), dove: d.voci.map((v) => `${t(`collegati.luogo.${v.luogo}`)}: ${v.valore}`).join(' · ') };
+}

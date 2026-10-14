@@ -3,7 +3,9 @@
    «Torna alla scheda»; on paper only the sheet: the shell, the bar and the footer are not printed. The A4 page with its
    margins is a named page, so the other pages of the app keep the browser's own. rilievi's print page also loads its
    base.css and plate.css, so under .rv-paper their metrics (figures, headings, the plate) replace the screen's ones of
-   rilievi.css: the same weights, line heights and offsets, the same page breaks. Only the font is LiftPilot's. */
+   rilievi.css: the same weights, line heights and offsets, the same page breaks. Only the font is LiftPilot's. The
+   sheet's fonts are 1.5 pt (2 px) above the first ones, as in the PDF, and the head is rilievi's print-head.css (commit
+   ae6329cb6, asked by the owner, October 2026). */
 
 @page rilievi {
   size: A4;
@@ -23,23 +25,32 @@
   background: #fff;
   box-shadow: 0 0 0 1px #c8c8c8, var(--shadow-lg);
   color-scheme: light;
-  font-size: 10.5pt;
+  font-size: 12pt;
   line-height: 1.35;
   font-variant-numeric: tabular-nums;
 }
 @media (max-width: 640px) { .rv-paper { padding: 18px 14px; } }
 
-.rv-paper-head { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
-.rv-paper-id { min-width: 0; }
+/* the head: the logo (without one, the company's name) on the left, the day and who filled it in on the right; the title
+   in the middle; under it the address on the left (bold, as big as the title) and the work order on the right */
+.rv-paper-head { margin-bottom: 12px; }
+.rv-paper-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.rv-paper-brand { min-width: 0; }
 /* the company's logo — top left of every sheet (at most 60 × 18 mm, never stretched) */
-.rv-paper-logo { display: block; width: auto; max-width: 60mm; height: auto; max-height: 18mm; margin-bottom: 3mm; }
-.rv-paper-title { margin-top: 2px; font-size: 15pt; font-weight: 700; letter-spacing: -0.005em; line-height: 1.05; color: #000; }  /* base.css h1 */
-.rv-paper-company { margin-top: 1px; font-size: 8.5pt; color: var(--paper-muted); }
+.rv-paper-logo { display: block; width: auto; max-width: 60mm; height: auto; max-height: 18mm; }
+.rv-paper-company { font-size: 13.5pt; font-weight: 700; color: #000; }
 /* (the day stays in the meta's grey, as in rilievi: only who filled it in is black) */
-.rv-paper-meta { text-align: right; font-size: 8.5pt; color: var(--paper-muted); }
+.rv-paper-meta { text-align: right; font-size: 10pt; color: var(--paper-muted); }
 /* who filled the sheet in — large, on every printed sheet */
 .rv-paper-by { display: grid; margin: 4px 0 2px; }
-.rv-paper-by strong { font-size: 12pt; color: #000; }
+.rv-paper-by strong { font-size: 13.5pt; color: #000; }
+.rv-paper-title { margin-top: 10px; font-size: 16.5pt; font-weight: 700; letter-spacing: -0.005em; line-height: 1.05; text-align: center;
+  color: #000; }  /* base.css h1 */
+.rv-paper-sub { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-top: 4px; }
+.rv-paper-address { min-width: 0; margin: 0; font-size: 16.5pt; font-weight: 700; color: #000; overflow-wrap: anywhere; }
+.rv-paper-address.none { color: var(--paper-muted); }
+.rv-paper-buono { display: grid; flex: none; max-width: 45%; margin: 0; text-align: right; font-size: 10pt; color: var(--paper-muted); }
+.rv-paper-buono strong { font-size: 13.5pt; color: #000; overflow-wrap: anywhere; }
 
 /* the plate on paper: rilievi's plate.css, black on white (frame, inner line 8 px in, 9 px screws 12 px from the corners) */
 .rv-paper .rv-plate { padding: 18px 26px 14px; color: #000; background: #fff; border: 2px solid #000; border-radius: 12px; outline: 1px solid #000;
@@ -48,22 +59,21 @@
 .rv-paper .rv-screw, .rv-paper .rv-screw::after { border-color: #000; }
 .rv-paper .rv-screw.tl { top: 12px; left: 12px; } .rv-paper .rv-screw.tr { top: 12px; right: 12px; }
 .rv-paper .rv-screw.bl { bottom: 12px; left: 12px; } .rv-paper .rv-screw.br { bottom: 12px; right: 12px; }
-.rv-paper .rv-plate-label { color: var(--paper-muted); font-size: .75rem; font-weight: 500; line-height: inherit; letter-spacing: .08em;
+.rv-paper .rv-plate-label { color: var(--paper-muted); font-size: 10.5pt; font-weight: 500; line-height: inherit; letter-spacing: .08em;
   font-variant-numeric: tabular-nums; }
-.rv-paper .rv-plate-big { margin-top: 0; font-size: 20pt; font-weight: 600; line-height: 1.05; letter-spacing: .02em; overflow-wrap: normal; }
+.rv-paper .rv-plate-big { margin-top: 0; font-size: 21.5pt; font-weight: 600; line-height: 1.05; letter-spacing: .02em; overflow-wrap: normal; }
 .rv-paper .rv-plate-big.none { color: var(--paper-muted); }
-.rv-paper .rv-plate-address { margin: 10px 8px 0; font-size: 10.5pt; font-weight: 500; color: #000; overflow-wrap: normal; }
 .rv-paper .rv-plate-specs { border-top-color: var(--paper-line); }
-.rv-paper .rv-plate-specs dd { margin: 2px 0 0; font-size: 11pt; font-weight: 600; line-height: inherit; font-variant-numeric: tabular-nums; }
+.rv-paper .rv-plate-specs dd { margin: 2px 0 0; font-size: 12.5pt; font-weight: 600; line-height: inherit; font-variant-numeric: tabular-nums; }
 
 .rv-paper-sec { margin-top: 14px; break-inside: auto; }
-.rv-paper-sec h2 { margin-bottom: 6px; padding-bottom: 3px; border-bottom: 1px solid #000; font-size: 10.5pt; font-weight: 600; letter-spacing: -0.01em;
+.rv-paper-sec h2 { margin-bottom: 6px; padding-bottom: 3px; border-bottom: 1px solid #000; font-size: 12pt; font-weight: 600; letter-spacing: -0.01em;
   line-height: 1.2; color: #000; break-after: avoid; }  /* base.css h2 */
 .rv-paper-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 18px; margin: 0; }
 .rv-paper-cell { min-width: 0; break-inside: avoid; }
 .rv-paper-cell:has(.rv-ptable) { break-inside: auto; }
 .rv-paper-cell.wide { grid-column: 1 / -1; }
-.rv-paper-cell dt { font-size: 7.5pt; color: var(--paper-muted); }
+.rv-paper-cell dt { font-size: 9pt; color: var(--paper-muted); }
 .rv-paper-cell dd { margin: 1px 0 0; min-height: 1.35em; white-space: pre-line; overflow-wrap: anywhere; }
 .rv-paper-cell dd.empty { color: var(--paper-muted); }
 @media screen and (max-width: 640px) { .rv-paper-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -71,18 +81,21 @@
 /* the boxes of the paper: ☐ empty, ticked when chosen */
 .rv-opts-p { display: flex; flex-wrap: wrap; gap: 2px 14px; }
 .rv-opt { display: inline-flex; align-items: center; gap: 5px; }
-.rv-opt-box { position: relative; width: 10pt; height: 10pt; border: 1.2pt solid #000; border-radius: 1.5pt; }
-.rv-opt.on .rv-opt-box::after { content: ""; position: absolute; left: 2.6pt; top: 0.4pt; width: 3pt; height: 5.8pt; border: solid #000;
+.rv-opt-box { position: relative; width: 11pt; height: 11pt; border: 1.2pt solid #000; border-radius: 1.5pt; }
+.rv-opt.on .rv-opt-box::after { content: ""; position: absolute; left: 3pt; top: 0.5pt; width: 3.3pt; height: 6.4pt; border: solid #000;
   border-width: 0 1.4pt 1.4pt 0; transform: rotate(45deg); }
 .rv-opt.on { font-weight: 600; }
+/* what is written in a supplier's module (the sheet's summary): «Corsa Mt.: 12» one after the other */
+.rv-pairs { display: flex; flex-wrap: wrap; gap: 2px 18px; }
+.rv-opts-p + .rv-pairs { margin-top: 4px; }
 
 /* the measurements per stop: a table as wide as the sheet, its head repeated on every page */
-.rv-ptable { width: 100%; margin-top: 4px; border-collapse: collapse; font-size: 8.5pt; font-weight: 400; white-space: normal; }
+.rv-ptable { width: 100%; margin-top: 4px; border-collapse: collapse; font-size: 10pt; font-weight: 400; white-space: normal; }
 .rv-ptable th, .rv-ptable td { padding: 2px 5px; border: 0.75pt solid #9a9a9a; text-align: left; vertical-align: top; overflow-wrap: anywhere; }
-.rv-ptable thead th { border-bottom: 1pt solid #000; font-size: 7.5pt; color: var(--paper-muted); }
+.rv-ptable thead th { border-bottom: 1pt solid #000; font-size: 9pt; color: var(--paper-muted); }
 .rv-ptable tr { break-inside: avoid; }
 
-.rv-paper-foot { margin-top: 18px; padding-top: 6px; border-top: 1px solid var(--paper-line); font-size: 7.5pt; color: var(--paper-muted); }
+.rv-paper-foot { margin-top: 18px; padding-top: 6px; border-top: 1px solid var(--paper-line); font-size: 9pt; color: var(--paper-muted); }
 
 @media print {
   main.rv-print-page { padding: 0 !important; gap: 0 !important; }

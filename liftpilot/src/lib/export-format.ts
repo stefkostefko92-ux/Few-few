@@ -3,7 +3,7 @@
 // these keys, so a key added or removed there fails the typecheck until the register says so — and then the version
 // goes up.
 export const EXPORT_FORMAT = 'liftpilot-company-export';
-export const EXPORT_FORMAT_VERSION = 5;
+export const EXPORT_FORMAT_VERSION = 6;
 
 /** The top-level keys: the envelope, then the data (each one described on the page, messages: dataPage.keys.<key>). */
 export const EXPORT_ENVELOPE = ['format', 'formatVersion', 'exportedAt', 'termsVersion', 'note'] as const;
@@ -23,6 +23,8 @@ export const EXPORT_FORMAT_HISTORY = [
   { version: 4, since: '2026-10-14' },
   // the users no longer carry the account's language: the product speaks Italian only (migration 19_locale_it)
   { version: 5, since: '2026-10-14' },
+  // the sheets as rilievi ae6329cb6 keeps them, the company's order of their sections (migration 18_rilievi_sync)
+  { version: 6, since: '2026-10-14' },
 ] as const;
 
 /** The day the register last changed (the page shows it). */

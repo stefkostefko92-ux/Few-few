@@ -96,7 +96,6 @@
               "key": "tqIdraulico",
               "kind": "check",
               "label": "Idraulico",
-              "prefill": "tipoImpianto=IDRAULICO",
               "box": [195.6, 107.76, 204.72, 114.48]
             }
           ]
@@ -180,21 +179,18 @@
               "key": "porteManuali",
               "kind": "check",
               "label": "Manuali",
-              "prefill": "tipoPorte=MANUALI",
               "box": [321.0, 90.48, 330.96, 97.2]
             },
             {
               "key": "porteAutomatiche",
               "kind": "check",
               "label": "Automatiche",
-              "prefill": "tipoPorte=AUTOMATICHE",
               "box": [321.0, 99.12, 330.96, 105.84]
             },
             {
               "key": "porteSemiautomatiche",
               "kind": "check",
               "label": "Semiautomatiche",
-              "prefill": "tipoPorte=SEMIAUTOMATICHE",
               "box": [321.0, 107.76, 330.96, 114.48]
             }
           ]
@@ -231,7 +227,6 @@
               "kind": "text",
               "label": "N° Fermate:",
               "maxLength": 27,
-              "prefill": "fermate",
               "line": [79.16, 164.82, 161.88]
             },
             {
@@ -239,7 +234,6 @@
               "kind": "text",
               "label": "N° Accessi:",
               "maxLength": 23,
-              "prefill": "accessi",
               "line": [258.2, 330.54, 161.88]
             },
             {
@@ -406,7 +400,6 @@
               "kind": "text",
               "label": "Circuito per N°",
               "maxLength": 8,
-              "prefill": "pattinoRetrattileNumero",
               "line": [79.16, 105.66, 286.2]
             },
             {
@@ -552,7 +545,6 @@
               "kind": "text",
               "label": "Modello",
               "maxLength": 44,
-              "prefill": "operatoreMarca",
               "line": [258.2, 394.86, 356.4]
             },
             {

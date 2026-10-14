@@ -1,12 +1,14 @@
 // What the page, the print and the PDF show of a sheet; the sheet back in the shape of its form; its title; an empty
-// form. Ported 1:1 from rilievi (src/schede/format.ts); the numbers and dates are fmt.ts (Italian).
+// form. Ported 1:1 from rilievi (src/schede/format.ts, commit ae6329cb6); the numbers and dates are fmt.ts (Italian).
 import type { Scheda } from '@prisma/client';
 import { dayFromDate } from './time';
 import { fmt, toNumber } from './fmt';
 import { activeFields, SECTIONS, type FieldDef, type SectionKey } from './fields';
 import type { FormValues } from './field-parsers';
 import { misureFromRows, misureTable, type MisuraRow, type TableView } from './misure';
-import { slotOf, SLOTS } from './ordini/registry';
+import { sezioniOrdinate } from './ordine';
+import { nomeModulo } from './ordini/moduli';
+import { slotAperto, SLOTS } from './ordini/registry';
 import { moduloFormValues, storedValori } from './ordini/valori';
 import type { RilieviT } from './t';
 
@@ -33,8 +35,9 @@ export interface DisplayField {
   options?: OptionView[];
   /** The measurements of the old push-button panels per stop — a table under the field (with "Sì" and a number of stops). */
   table?: TableView;
-  /** The supplier's module filled in — its own PDF (`/api/rilievi/<id>/<path>`), never in the sheet's PDF. */
-  modulo?: { path: string; titolo: string; fornitore: string };
+  /** The supplier's module filled in — its own PDF (`/api/rilievi/<id>/<path>`); `nome` «Titolo · Fornitore» or the title
+   *  alone (the argano sheet). In the sheet's print and PDF only through the summary (ordini/riepilogo.ts). */
+  modulo?: { path: string; nome: string };
 }
 
 export interface DisplaySection {
@@ -49,13 +52,14 @@ function optionLabels(field: FieldDef, t: RilieviT): Array<{ value: string; labe
   if (field.kind === 'checks' || field.kind === 'choice') {
     return field.options.map((value) => ({ value, label: t(`scheda.option.${field.key}.${value}`) }));
   }
-  if (field.kind === 'yesno') {
-    return [
-      { value: 'si', label: t('common.yes') },
-      { value: 'no', label: t('common.no') },
-    ];
-  }
+  if (field.kind === 'yesno') return (field.risposte ?? (['si', 'no'] as const)).map((value) => ({ value, label: rispostaLabel(field, value, t) }));
   return [];
+}
+
+/** The word of a Sì/No answer: the field's own (`risposte`, «Accessi: 2»), otherwise Sì / No. */
+export function rispostaLabel(field: FieldDef, value: 'si' | 'no', t: RilieviT): string {
+  if (field.kind === 'yesno' && field.risposte) return t(`scheda.option.${field.key}.${value}`);
+  return t(value === 'si' ? 'common.yes' : 'common.no');
 }
 
 export function unitLabel(field: FieldDef, value: number, t: RilieviT): string {
@@ -88,7 +92,7 @@ function displayValue(field: FieldDef, raw: unknown, t: RilieviT): string {
     case 'choice':
       return optionLabels(field, t).find((option) => option.value === raw)?.label ?? '';
     case 'yesno':
-      return raw === true ? t('common.yes') : raw === false ? t('common.no') : '';
+      return raw === true ? rispostaLabel(field, 'si', t) : raw === false ? rispostaLabel(field, 'no', t) : '';
   }
 }
 
@@ -105,13 +109,14 @@ function optionsView(field: FieldDef, raw: unknown, t: RilieviT): OptionView[] |
 }
 
 /**
- * The sections with their values for the page, the print and the PDF. The fields with a condition (fields.ts, `when`)
- * are shown only when it holds — "Numero serrature" with "Serrature: No" does not exist.
+ * The sections with their values for the page, the print and the PDF — in the company's order (`ordine`, its setting;
+ * empty — the default). The fields with a condition (fields.ts, `when`) are shown only when it holds — "Numero serrature"
+ * with "Serrature: No" does not exist.
  */
-export function displaySections(scheda: SchedaShown, t: RilieviT): DisplaySection[] {
+export function displaySections(scheda: SchedaShown, t: RilieviT, ordine: readonly string[] = []): DisplaySection[] {
   const values = scheda as unknown as Values;
   const active = activeFields((key) => values[key]);
-  return SECTIONS.map((section) => ({
+  return sezioniOrdinate(SECTIONS, ordine).map((section) => ({
     key: section.key,
     title: t(`scheda.section.${section.key}`),
     fields: (section.fields as readonly FieldDef[])
@@ -126,11 +131,8 @@ export function displaySections(scheda: SchedaShown, t: RilieviT): DisplaySectio
         };
         const options = optionsView(field, values[field.key], t);
         if (options) view.options = options;
-        const slot = slotOf(field.modulo);
-        if (slot && values[field.key] === true && storedValori(slot.modulo, values[slot.column])) {
-          const { titolo, fornitore } = slot.modulo;
-          view.modulo = { path: slot.path, titolo, fornitore };
-        }
+        const slot = SLOTS.find((s) => s.column === field.modulo && slotAperto(s, active, (key) => values[key]) && storedValori(s.modulo, values[s.column]));
+        if (slot) view.modulo = { path: slot.path, nome: nomeModulo(slot.modulo) };
         if (field.misure && values[field.key] === true) {
           const table = misureTable(scheda.fermate, scheda.misureBottoniere, t);
           if (table) view.table = table;
@@ -148,6 +150,7 @@ export function formValuesFromScheda(scheda: SchedaShown): FormValues {
     const valori = storedValori(slot.modulo, values[slot.column]);
     if (valori) Object.assign(out, moduloFormValues(slot.modulo, slot.prefix, valori));
   }
+  out.riepilogoOrdini = scheda.riepilogoOrdini ? '1' : '';
   for (const section of SECTIONS) {
     for (const field of section.fields as readonly FieldDef[]) {
       const raw = values[field.key];
@@ -190,7 +193,7 @@ export const tabTitle = (ident: string): string => (ident.length > 40 ? `${ident
 
 /** An empty form: today in Rome, everything else empty. */
 export function emptyFormValues(today: string): FormValues {
-  const out: FormValues = {};
+  const out: FormValues = { riepilogoOrdini: '' };
   for (const section of SECTIONS) {
     for (const field of section.fields as readonly FieldDef[]) out[field.key] = field.kind === 'checks' ? [] : field.kind === 'date' ? today : '';
   }

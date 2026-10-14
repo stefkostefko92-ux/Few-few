@@ -61,6 +61,9 @@ model Company {
   /// when the owner was told that the company, inactive without a subscription, will be deleted (src/lib/inactive.ts);
   /// cleared when someone signs in again or a subscription starts
   inactiveNoticeAt     DateTime?
+  /// the order of the sections of the survey sheets (Rilievi; the keys of src/lib/rilievi/fields.ts, «impianto» always
+  /// first); empty — the default order. Set on the company page by whoever has 'company:edit'.
+  ordineSezioni        String[]          @default([])
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
   users                User[]
@@ -643,6 +646,7 @@ enum RilievoUbicazioneMacchina {
 enum RilievoTipoImpianto {
   ELETTRICO
   IDRAULICO
+  /// shown as «MRL» on the screen and on the sheet (the owner, October 2026); the stored value stays
   GEARLESS
 }
 
@@ -665,6 +669,8 @@ enum RilievoQuadroMarca {
   ALTRO
 }
 
+/// The argano's make — not asked since October 2026 (the data sheet is for every kind of machine); the column keeps the
+/// old answers.
 enum RilievoArganoMarca {
   MONTANARI
   ALTRO
@@ -684,21 +690,32 @@ model Scheda {
   capienzaPersone         Int?
   fermate                 Int?
   ubicazioneMacchina      RilievoUbicazioneMacchina[]
-  ubicazioneCassettina    Int?
+  /// where the box is — free text (an integer, the floor, until migration 18_rilievi_sync)
+  ubicazioneCassettina    String?                     @db.VarChar(120)
   parcheggio              String?                     @db.VarChar(300)
   tipoImpianto            RilievoTipoImpianto[]
   tipoPorte               RilievoTipoPorte[]
   operatoreMarca          String?                     @db.VarChar(120)
   lucePorte               String?                     @db.VarChar(60)
   operatoreTensione       String?                     @db.VarChar(60)
+  /// «Accessi: 1 / 2» on the sheet — true is 2 accesses (double access), false one
   doppioAccesso           Boolean?
+  /// the door blocking, the self-levelling and the number of retiring cams are not asked since October 2026 (the owner
+  /// took them off the sheet); the columns keep the old answers
   bloccaPortine           Boolean?
   autolivellamento        Boolean?
+  /// «Pattino retrattile da cambiare» — with manual and semi-automatic doors
   pattinoRetrattile       Boolean?
   pattinoRetrattileNumero Int?
+  /// «Serrature da cambiare» (until October 2026 «Serrature/sospensioni»); number and kind only with true
   serrature               Boolean?
   serratureNumero         Int?
   serratureTipo           String?                     @db.VarChar(120)
+  /// «Sospensioni da cambiare» — with true the number and 2SG's sheet (the suspensions and the car operator)
+  sospensioni             Boolean?
+  sospensioniNumero       Int?
+  /// 2SG's sheet {modulo, valori} (src/lib/rilievi/ordini/), or SQL NULL; it has its own PDF
+  ordineSospensioni       Json?
   luceVanoSostituire      Boolean?
   funiDiametroMm          Decimal?                    @db.Decimal(6, 2)
   funiTrefoli             Int?
@@ -724,13 +741,20 @@ model Scheda {
   quadroMarca             RilievoQuadroMarca?
   quadroMarcaAltro        String?                     @db.VarChar(120)
   quadroOrdine            Boolean?
-  /// the Pelazza order form {modulo, valori} (src/lib/rilievi/ordini/), or SQL NULL
+  /// the panel's order form {modulo, valori} — Pelazza's or MoviLift's, by the make (src/lib/rilievi/ordini/), or SQL NULL
   ordineQuadro            Json?
   arganoMarca             RilievoArganoMarca?
   arganoMarcaAltro        String?                     @db.VarChar(120)
+  /// «Argano da sostituire?» (until October 2026 the Montanari quotation request)
   arganoPreventivo        Boolean?
-  /// the Montanari quotation request {modulo, valori}, or SQL NULL
+  /// the argano's data sheet (every kind of machine) {modulo, valori}, or SQL NULL; the stored Montanari requests (another
+  /// `modulo`) are not read any more
   preventivoArgano        Json?
+  /// the sheet's print and PDF carry what is filled in the modules too — the choice is kept with the sheet
+  riepilogoOrdini         Boolean                     @default(false)
+  /// the fingerprint of the discrepancies sheet ↔ modules confirmed at the last save (src/lib/rilievi/ordini/collegati.ts):
+  /// the same differences are not asked again, new or changed ones are; null — none confirmed
+  discrepanzeConfermate   String?                     @db.VarChar(32)
   searchText              String                      @default("")
   companyId               String
   company                 Company                     @relation(fields: [companyId], references: [id], onDelete: Cascade)

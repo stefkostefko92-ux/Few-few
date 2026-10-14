@@ -378,7 +378,11 @@ prisma/              schema + migrations/0_init (тригер: без UPDATE н�
                      индексите на списъка и на кошчето, CHECK на спирките 1..300 и на JSON на модулите; адитивна; връщането
                      — в коментара ѝ), 16_permessi (Role + CHIEF_TECHNICIAN; CompanyRolePermission — промените на фирмата
                      в матрицата на правата, ключ (фирма, роля, право), CHECK без собственика/платформата и без правата,
-                     които колега никога няма; адитивна; връщането — в коментара ѝ).
+                     които колега никога няма; адитивна; връщането — в коментара ѝ), 18_rilievi_sync (синхронът с rilievi
+                     до ae6329cb6: ubicazioneCassettina → VARCHAR(120) с всяка стойност като текст, riepilogoOrdini,
+                     discrepanzeConfermate, sospensioni + sospensioniNumero + ordineSospensioni с CHECK на JSON,
+                     Company.ordineSezioni; ръчно писана, само добавя; връщането — в коментара ѝ, кодът и колоните заедно),
+                     19_locale_it (езикът на акаунта, поканата и чакащата регистрация — `it` навсякъде; само данни).
 src/lib/rilievi/     Rilievi (кръг 41) — картите за оглед, чисто (и в браузъра): fields + field-types (ЕДИНСТВЕНИЯТ списък на
                      полетата, условията `when`, activeFields), field-parsers + validation (zod по вида, parseScheda,
                      formValuesFromBody), misure (бутониерите по спирки, mb-<спирка>-<колона>), format (displaySections,
@@ -387,28 +391,41 @@ src/lib/rilievi/     Rilievi (кръг 41) — картите за оглед, �
                      като urlencoded на rilievi; id, base, търсене, страница), form-help (етикетите и текстовете на грешките —
                      полетата на модулите през ModuloLookup: specLookup върху спецификациите във формата, moduloLookup върху
                      картите на сървъра —, имената на PDF-ите, флаш ключовете, tabTitle в format), prefill-client (правилата на
-                     браузъра за модулите; rifImpianto от ordini/rif, без картите), action-state
-                     (отговорите на действията), t + i18n (преводачът на `rilievi` през use-intl/core); ordini/ — moduli
-                     (картите на полетата на Pelazza и Montanari, zod), registry (SLOTS), valori, prefill, form (withPrefill,
-                     moduloSpec за формата).
+                     браузъра за модулите: surveyText, prefillFill върху PrefillHost; rifImpianto от ordini/rif, без картите),
+                     collegati-client (свързаните данни в реално време върху CollegatiHost — collegati.js на rilievi),
+                     valori-client (радио/падащ списък и „Sì/No“ ↔ модул в браузъра), ordine (редът на разделите: FISSE,
+                     ORDINABILI, ordineEffettivo, parseOrdine, parseMossa, sposta), action-state (отговорите на действията:
+                     invalid/conflict/confirm{base, impronta}/error; CONFERMA_KEY, SCHEDA_KEY), t + i18n (преводачът на `rilievi` през
+                     use-intl/core); ordini/ — moduli (картите на полетата на Pelazza, MoviLift, листа за аргано и 2SG, zod;
+                     MODULI, nomeModulo), registry (SLOTS по марка, slotAperto, slotByPath/Prefix), valori, opzioni, numeri,
+                     collegamenti-elenco (ЕДИНСТВЕНИЯТ списък на връзките) + collegamenti (видовете места, проверката при
+                     зареждане) + collegati (discrepanzeDi, improntaDi, prefillCollegati) + collegati-browser (JSON-ът за
+                     браузъра) + auto-key (името `collegati-auto`, без картите), riepilogo (модулите в печата на картата), prefill, form (withPrefill, moduloSpec(s) за формата).
 src/server/rilievi/  queries (списък и търсене със SQL параметри, getScheda — по фирма, логото на фирмата), service (запис с
                      мерките и одита в една транзакция, base → конфликт, кошче, окончателно), pages (каквото страниците
-                     искат: картата по правата, стойностите на формата с предварителното попълване, списъкът и кошчето),
-                     actions ('use server': създаване, промяна, кошче, възстановяване, окончателно), pdf + pdf-layout +
-                     pdf-table (PDF-ът на картата, pdfkit + DejaVu), moduli-pdf (празните PDF-и, SHA-256), modulo-pdf
-                     (попълнените модули, pdf-lib). Маршрутите: src/app/api/rilievi/[id]/pdf и [id]/[modulo]
-                     (ordine-quadro, preventivo-argano). assets/moduli/ — празните формуляри на доставчиците + картите им
+                     искат: картата по правата, formStart/newForm/editForm със свързаните данни за браузъра, formSections,
+                     sheetView и printView с реда на разделите и разликите, списъкът и кошчето), actions ('use server':
+                     създаване, промяна с потвърждение на разликите, кошче, възстановяване, окончателно), sezioni +
+                     sezioni-actions (редът на разделите на фирмата, 'company:edit', одит COMPANY_SECTIONS_UPDATED), pdf +
+                     pdf-head (главата и табелата) + pdf-layout + pdf-table (PDF-ът на картата, pdfkit + DejaVu), moduli-pdf
+                     (празните PDF-и, SHA-256), modulo-pdf (плоските листове) + pdf-form (формулярът на MoviLift) + pdf-testo
+                     (шрифтът, мястото на текста, изправянето на 2SG), pdf-lib. Маршрутите: src/app/api/rilievi/[id]/pdf и
+                     [id]/[modulo] (ordine-quadro, ordine-quadro-movilift, dati-argano, sospensioni-2sg; чужда марка → 404). assets/moduli/ — празните формуляри на доставчиците + картите им
                      (двоични за git). src/instrumentation.ts → instrumentation-node.ts: при старта на Node сървъра —
                      шрифтът DejaVu и SHA-256 на модулите (иначе всяка заявка дава 500).
 src/app/[locale]/app/rilievi/  Екраните на Rilievi: списък и търсене (page), nuovo, [id] (картата), [id]/modifica, [id]/stampa
                      (листът A4), [id]/elimina (към кошчето), cestino и cestino/[id]/elimina; layout.tsx носи rilievi.css,
                      rilievi-form.css и rilievi-print.css. Пунктът „Rilievi“ е в AppShell (Area di lavoro).
-src/components/rilievi/  SchedaForm (формата: отговорите на действията, обобщението на грешките, конфликтът, фокусът на
-                     отговора; модулите като спецификации от страницата) + EditLead (редът „Ultima modifica“ в главата на
-                     промяната, обновен при конфликт) + FieldInput,
-                     MisureBlock, ModuloBlock, use-scheda-form (правилата на app.js на rilievi върху формата; връзките на
-                     приложението и другите формуляри при непазени промени — пълно зареждане, за да пита браузърът;
-                     `lib/rilievi/leave.ts`), SectionIndex,
+src/components/rilievi/  SchedaForm (формата: разделите в реда на фирмата, отговорите на действията, обобщението на
+                     грешките, конфликтът, потвърждението на разликите със «Salva comunque» след «Salva», фокусът на
+                     отговора; модулите като спецификации от страницата, връзките като данни) + EditLead (редът „Ultima
+                     modifica“ в главата на промяната, обновен при конфликт) + FieldInput,
+                     MisureBlock, ModuloBlock (обвивките за марка и «Sì», радио/падащ списък, разликите под групата),
+                     DiffItem (една разлика — и на сървъра, и в браузъра), use-scheda-form (правилата на app.js, moduli.js
+                     и collegati.js на rilievi върху формата; връзките на приложението и другите формуляри при непазени
+                     промени — пълно зареждане, за да пита браузърът; `lib/rilievi/leave.ts`) + form-dom (условията върху
+                     DOM, адаптерът на collegati-client/prefill-client), SectionIndex, SezioniForm (редът на разделите на
+                     страницата на фирмата, само за роля с `company:edit`; `rilievi-sezioni.css`),
                      LiveSearch (търсенето по адреса), Results (таблицата/картите и празните състояния), parts (табелата, таблицата
                      на мерките, маркираните думи, страниците), ActionButton (кошче/възстановяване/окончателно), Confirm,
                      Flash (`?ok=`), PrintTools, RilieviHead.

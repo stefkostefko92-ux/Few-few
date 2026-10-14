@@ -537,7 +537,8 @@
       "SCHEDA_TRASHED": "Scheda nel cestino",
       "SCHEDA_RESTORED": "Scheda ripristinata",
       "SCHEDA_PURGED": "Scheda eliminata definitivamente",
-      "PERMISSIONS_CHANGED": "Permessi cambiati"
+      "PERMISSIONS_CHANGED": "Permessi cambiati",
+      "COMPANY_SECTIONS_UPDATED": "Ordine delle sezioni della scheda cambiato"
     },
     "entities": {
       "User": "Utente",
@@ -2107,7 +2108,7 @@
       "exportedAt": "Quando è stato creato il file.",
       "termsVersion": "La versione delle condizioni d’uso pubblicata quando il file è stato creato; quella accettata da ciascun utente è in users.",
       "note": "Una nota sulle unità di misura.",
-      "company": "L’azienda: ragione sociale, partita IVA, città, stato dell’abbonamento e del periodo di prova.",
+      "company": "L’azienda: ragione sociale, partita IVA, città, stato dell’abbonamento e del periodo di prova, ordine delle sezioni della scheda di rilievo (ordineSezioni; vuoto = quello predefinito).",
       "users": "Gli utenti: nome, e-mail, ruolo, date di creazione, di ultimo accesso, di conferma dell’indirizzo e di accettazione delle condizioni; mai le password né i link.",
       "invites": "Gli inviti in attesa: e-mail, nome, ruolo, scadenza.",
       "rolePermissions": "I permessi dei ruoli dei colleghi che l’azienda ha cambiato rispetto a quelli predefiniti: ruolo, permesso, concesso o no, chi e quando l’ha cambiato.",
@@ -2115,7 +2116,7 @@
       "projects": "I progetti, ciascuno con i propri record (sotto).",
       "priceItems": "Il listino dell’azienda: il prezzo di ogni articolo dei cataloghi.",
       "customPrices": "Le voci libere del listino, con testo, prezzo e criterio di quantità.",
-      "schede": "Le schede di rilievo (Rilievi), anche quelle nel cestino: ogni campo, le misure delle bottoniere per fermata e i moduli dei fornitori (ordine quadro, richiesta di preventivo argano) come compilati.",
+      "schede": "Le schede di rilievo (Rilievi), anche quelle nel cestino: ogni campo, le misure delle bottoniere per fermata e i moduli dei fornitori come compilati — l’ordine quadro (Pelazza o MoviLift, in ordineQuadro), il modulo rilievi dati argani (in preventivoArgano), il modulo 2SG di porte, sospensioni e operatore (in ordineSospensioni) —, la scelta di includerli nella stampa (riepilogoOrdini) e l’impronta delle differenze tra scheda e moduli confermate al salvataggio (discrepanzeConfermate).",
       "auditLog": "Il registro attività: chi, che cosa, quando."
     },
     "projectText": "Ogni progetto contiene i propri record, ciascuno con i dati inseriti, la versione del motore, i risultati e l’impronta SHA-256 che ne garantisce l’integrità:",
@@ -2145,7 +2146,8 @@
       "v2": "2 — dal {date}: si aggiunge invites (gli inviti in attesa).",
       "v3": "3 — dal {date}: si aggiunge schede (le schede di rilievo, con le misure e i moduli dei fornitori).",
       "v4": "4 — dal {date}: si aggiunge rolePermissions (i permessi dei ruoli cambiati dall’azienda).",
-      "v5": "5 — dal {date}: users non riporta più la lingua dell’account (LiftPilot è solo in italiano)."
+      "v5": "5 — dal {date}: users non riporta più la lingua dell’account (LiftPilot è solo in italiano).",
+      "v6": "6 — dal {date}: in schede l’ubicazione della cassettina (ubicazioneCassettina) diventa un testo, non più un numero; si aggiungono sospensioni, sospensioniNumero, ordineSospensioni, riepilogoOrdini e discrepanzeConfermate; preventivoArgano contiene il modulo rilievi dati argani e ordineQuadro anche quello MoviLift; in company si aggiunge ordineSezioni."
     },
     "apiTitle": "C’è un’interfaccia per l’esportazione?",
     "apiText": "Sì, gratuita e uguale per tutte le aziende: una richiesta GET a {base}/api/company/export restituisce il file JSON descritto sopra a chi ha effettuato l’accesso come Titolare o, se il Titolare glielo permette, come Capotecnico. È la stessa richiesta del pulsante della pagina Azienda, al massimo 6 volte all’ora per azienda. Il nuovo fornitore riceve il file dal Titolare; questa pagina descrive il formato per scrivere il programma che lo legge (art. 30, par. 2, del Data Act).",
@@ -2257,6 +2259,7 @@
       "titleMatricola": "Matricola {n}",
       "dateLine": "Rilievo del {date}",
       "noAddress": "Indirizzo non indicato",
+      "buonoRiferimento": "Buono di riferimento",
       "plateLabel": "Dati di targa",
       "identifiers": "Identificazione",
       "identifiersHint": "Compila almeno uno tra indirizzo, matricola e n° impianto: servono per ritrovare la scheda.",
@@ -2273,12 +2276,12 @@
       },
       "section": {
         "impianto": "Impianto",
-        "targa": "Dati di targa",
         "ubicazione": "Ubicazione e accesso",
         "tipologia": "Tipologia",
         "funi": "Funi",
         "limitatore": "Limitatore",
         "cavi": "Cavi",
+        "serrature": "Serrature o sospensioni",
         "allarme": "Allarme e telesoccorso",
         "note": "Note e lavori",
         "quadro": "Quadro",
@@ -2290,7 +2293,7 @@
         "marca": "Marca impianto",
         "matricola": "Matricola",
         "numeroImpianto": "N° impianto",
-        "buonoLavoro": "Buono di lavoro di riferimento",
+        "buonoLavoro": "Buono di riferimento",
         "portataKg": "Portata",
         "capienzaPersone": "Capienza",
         "fermate": "Fermate",
@@ -2302,14 +2305,13 @@
         "operatoreMarca": "Marca operatore",
         "lucePorte": "Luce porte",
         "operatoreTensione": "Tensione operatore",
-        "doppioAccesso": "Doppio accesso",
-        "bloccaPortine": "Blocca portine",
-        "autolivellamento": "Autolivellamento",
-        "pattinoRetrattile": "Pattino retrattile",
-        "pattinoRetrattileNumero": "Numero pattini retrattili",
-        "serrature": "Serrature/sospensioni",
-        "serratureNumero": "Numero serrature/sospensioni",
-        "serratureTipo": "Tipo serrature/sospensioni",
+        "doppioAccesso": "Accessi",
+        "pattinoRetrattile": "Pattino retrattile da cambiare",
+        "serrature": "Serrature da cambiare",
+        "serratureNumero": "Numero serrature",
+        "serratureTipo": "Tipo serrature",
+        "sospensioni": "Sospensioni da cambiare",
+        "sospensioniNumero": "Numero sospensioni",
         "luceVanoSostituire": "Luce vano da sostituire",
         "funiDiametroMm": "Diametro funi",
         "funiTrefoli": "Trefoli funi",
@@ -2334,14 +2336,13 @@
         "quadroMarca": "Marca quadro",
         "quadroMarcaAltro": "Altra marca quadro",
         "quadroOrdine": "Scheda per l'ordine quadro",
-        "arganoMarca": "Marca argano",
-        "arganoMarcaAltro": "Altra marca argano",
-        "arganoPreventivo": "Richiesta di preventivo argano"
+        "arganoPreventivo": "Argano da sostituire"
       },
       "question": {
         "bottoniereMisure": "Vuoi inserire le misure delle bottoniere vecchie?",
         "quadroOrdine": "Vuoi compilare la scheda per l'ordine quadro?",
-        "arganoPreventivo": "Vuoi compilare la richiesta di preventivo argano?"
+        "arganoPreventivo": "Argano da sostituire?",
+        "sospensioni": "Sospensioni da cambiare?"
       },
       "option": {
         "ubicazioneMacchina": {
@@ -2351,12 +2352,16 @@
         "tipoImpianto": {
           "ELETTRICO": "Elettrico",
           "IDRAULICO": "Idraulico",
-          "GEARLESS": "Gearless"
+          "GEARLESS": "MRL"
         },
         "tipoPorte": {
           "AUTOMATICHE": "Automatiche",
           "SEMIAUTOMATICHE": "Semiautomatiche",
           "MANUALI": "Manuali"
+        },
+        "doppioAccesso": {
+          "no": "1",
+          "si": "2"
         },
         "telesoccorsoStato": {
           "COMPLETO": "Completo",
@@ -2367,10 +2372,6 @@
           "MOVILIFT": "Movilift",
           "DMG": "DMG",
           "MASTECH": "Mastech",
-          "ALTRO": "Altro"
-        },
-        "arganoMarca": {
-          "MONTANARI": "Montanari",
           "ALTRO": "Altro"
         }
       },
@@ -2383,7 +2384,7 @@
       "misure": {
         "row": "Fermata {n}",
         "fermata": "Fermata",
-        "needFermate": "Indica prima le fermate in «Dati di targa»: qui compare una riga per ogni fermata.",
+        "needFermate": "Indica prima le fermate in «Impianto»: qui compare una riga per ogni fermata.",
         "errorLabel": "{col}, fermata {n}",
         "col": {
           "piano": "Piano",
@@ -2431,7 +2432,7 @@
       "page": "Pagina {page} di {pages}"
     },
     "ordini": {
-      "hint": "Il modulo originale del fornitore, con gli stessi campi nello stesso ordine. Esce in un PDF a parte, identico all'originale: non entra nel PDF della scheda.",
+      "hint": "Il modulo originale, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte, identico all'originale.",
       "download": "Scarica PDF",
       "print": "Stampa",
       "errorLabel": "{label} ({fornitore})"
@@ -2469,10 +2470,73 @@
       "schedaSaved": "Modifiche salvate.",
       "schedaTrashed": "Scheda spostata nel cestino.",
       "schedaRestored": "Scheda ripristinata.",
-      "schedaPurged": "Scheda eliminata definitivamente."
+      "schedaPurged": "Scheda eliminata definitivamente.",
+      "sezioniSaved": "Ordine delle sezioni salvato.",
+      "sezioniReset": "Ripristinato l'ordine predefinito delle sezioni."
     },
     "audit": {
       "openScheda": "Apri scheda"
+    },
+    "collegati": {
+      "luogo": {
+        "scheda": "Scheda",
+        "oq": "Ordine quadro",
+        "om": "Ordine quadro",
+        "pa": "Dati argano",
+        "sg": "Ordine 2SG"
+      },
+      "fermate": "Fermate",
+      "velocita": "Velocità (m/s)",
+      "tipoVelocita": "Tipo di velocità",
+      "corsa": "Corsa (m)",
+      "portata": "Portata (kg)",
+      "capienza": "Capienza (persone)",
+      "numeroImpianto": "N° impianto",
+      "tensioneMotore": "Tensione motore",
+      "tensioneFreno": "Tensione freno",
+      "porte": "Porte",
+      "accessi": "Accessi",
+      "ingressi": "Accessi",
+      "macchina": "Posizione macchina",
+      "funiNumero": "Numero funi",
+      "funiDiametro": "Diametro funi (mm)",
+      "funiTrefoli": "Trefoli funi",
+      "indirizzo": "Indirizzo",
+      "matricola": "Matricola",
+      "marca": "Marca impianto",
+      "tipoImpianto": "Tipo impianto",
+      "operatoreMarca": "Marca operatore",
+      "operatoreTensione": "Tensione operatore",
+      "lucePorte": "Luce porte",
+      "correnteMotore": "Corrente motore (A)",
+      "giriMotore": "Giri motore (giri/min)",
+      "diversi": "Dati diversi tra scheda e ordini",
+      "conferma": {
+        "title": "{n, plural, one {Un dato non coincide tra scheda e ordini} other {{n} dati non coincidono tra scheda e ordini}}",
+        "text": "Controlla i valori qui sotto. Se sono giusti così, premi «Salva comunque» nella barra in basso; altrimenti correggili e salva di nuovo.",
+        "submit": "Salva comunque"
+      },
+      "banner": "Questi dati sono diversi tra la scheda e gli ordini:"
+    },
+    "riepilogo": {
+      "title": "Stampa e PDF",
+      "label": "Includi i dati dei moduli (quadro, argano, 2SG) nella stampa e nel PDF della scheda",
+      "hint": "Entra solo quello che è compilato nei moduli. I moduli restano anche come PDF a parte."
+    },
+    "impostazioni": {
+      "error": "L'ordine inviato non è valido. Ecco quello salvato: riprova.",
+      "sezioni": {
+        "title": "Ordine delle sezioni della scheda",
+        "text": "Vale per tutte le schede dell'azienda: modulo, pagina della scheda, stampa e PDF.",
+        "fixed": "Sempre in cima",
+        "hint": "Sposta una sezione con le frecce, poi salva. Impianto resta in cima: identifica l'impianto.",
+        "up": "Sposta su «{name}»",
+        "down": "Sposta giù «{name}»",
+        "moved": "«{name}» ora è la {n}ª sezione.",
+        "save": "Salva ordine",
+        "reset": "Ripristina l'ordine predefinito",
+        "readOnly": "L'ordine si cambia quando l'azienda non è in sola lettura."
+      }
     }
   },
   "permessi": {

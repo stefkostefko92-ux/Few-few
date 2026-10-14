@@ -1,8 +1,9 @@
 import 'server-only';
 // The table of the old push-button panels' measurements in the PDF: a row per stop, on the whole width. The head row is
-// repeated on every new page; a row never splits over two pages. Ported 1:1 from rilievi (src/schede/pdf-table.ts).
+// repeated on every new page; a row never splits over two pages. Ported 1:1 from rilievi (src/schede/pdf-table.ts, commit
+// ae6329cb6).
 import type { TableView } from '@/lib/rilievi/misure';
-import { CONTENT_WIDTH, ensureSpace, INK, MARGIN, MUTED, RULE, type PdfContext } from './pdf-layout';
+import { CONTENT_WIDTH, ensureSpace, INK, MARGIN, MUTED, RULE, SIZE, type PdfContext } from './pdf-layout';
 
 /** The columns' widths as shares: №, floor, length, width, the two hole spacings, display. */
 const WEIGHTS = [0.55, 1, 1.05, 1.05, 1.6, 1.6, 0.85];
@@ -31,12 +32,12 @@ export function drawTable(ctx: PdfContext, table: TableView): void {
   };
 
   const drawHead = () => {
-    const height = rowHeight(table.head, 7);
+    const height = rowHeight(table.head, SIZE.tableHead);
     const y = doc.y;
     table.head.forEach((head, i) => {
       doc
         .font('Sans')
-        .fontSize(7)
+        .fontSize(SIZE.tableHead)
         .fillColor(MUTED)
         .text(head, (lefts[i] ?? MARGIN) + PAD, y + PAD, { width: inner(i) });
     });
@@ -44,19 +45,19 @@ export function drawTable(ctx: PdfContext, table: TableView): void {
     doc.y = y + height;
   };
 
-  const headHeight = rowHeight(table.head, 7);
-  const firstRow = table.rows[0] ? rowHeight(table.rows[0], 9) : 0;
+  const headHeight = rowHeight(table.head, SIZE.tableHead);
+  const firstRow = table.rows[0] ? rowHeight(table.rows[0], SIZE.tableCell) : 0;
   ensureSpace(ctx, headHeight + firstRow + 4);
   doc.y += 2;
   drawHead();
   for (const row of table.rows) {
-    const height = rowHeight(row, 9);
+    const height = rowHeight(row, SIZE.tableCell);
     if (ensureSpace(ctx, height)) drawHead();
     const y = doc.y;
     row.forEach((cell, i) => {
       doc
         .font(i === 0 ? 'Sans-Bold' : 'Sans')
-        .fontSize(9)
+        .fontSize(SIZE.tableCell)
         .fillColor(cell ? INK : MUTED)
         .text(cell || '—', (lefts[i] ?? MARGIN) + PAD, y + PAD, { width: inner(i) });
     });

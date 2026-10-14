@@ -1,72 +1,17 @@
 import 'server-only';
-// The PDF of a supplier's module: the official module itself with our values on it — nothing else is touched. Pelazza
-// (a flat PDF): crosses in the boxes and text on the lines, at the coordinates of the map. Montanari (a form): the fields
-// are filled by name and the form is locked (flatten). The font is DejaVu Sans — never pdf-lib's built-in Helvetica.
-// Ported 1:1 from rilievi (src/ordini/pdf.ts).
-import { readFileSync } from 'node:fs';
-import fontkit from '@pdf-lib/fontkit';
-import { PDFDocument, rgb, type PDFFont, type PDFPage } from 'pdf-lib';
-import { fieldsOf, type Modulo, type ModuloAcro, type ModuloOverlay } from '@/lib/rilievi/ordini/moduli';
+// The PDF of a supplier's module: the official module itself with our values on it — nothing else is touched. The flat
+// sheets (Pelazza, the argano data sheet, 2SG): crosses in the boxes and text on the lines, at the coordinates of the map
+// — here. MoviLift (a form) — pdf-form.ts; what they share (the font, the place of the text, turning the upside-down
+// sheet) — pdf-testo.ts. Ported 1:1 from rilievi (src/ordini/pdf.ts, commit ae6329cb6).
+import { rgb, type PDFPage } from 'pdf-lib';
+import { fieldsOf, type Modulo, type ModuloOverlay } from '@/lib/rilievi/ordini/moduli';
 import type { Valori } from '@/lib/rilievi/ordini/valori';
-import { moduloPdf } from './moduli-pdf';
-import { pdfFontPaths } from './pdf';
+import { renderAcroform } from './pdf-form';
+import { apriModulo, fitBlock, fitLine, fitRighe } from './pdf-testo';
+
+export { fitBlock, fitLine, wrap } from './pdf-testo';
 
 const INK = rgb(0, 0, 0);
-const MIN_SIZE = 5;
-
-async function open(modulo: Modulo, fontDir: string): Promise<{ doc: PDFDocument; font: PDFFont }> {
-  const doc = await PDFDocument.load(moduloPdf(modulo));
-  doc.registerFontkit(fontkit);
-  const font = await doc.embedFont(readFileSync(pdfFontPaths(fontDir).regular), { subset: true });
-  doc.setProducer('LiftPilot Rilievi — Carbon Stealth VCC');
-  return { doc, font };
-}
-
-/** One line: never wrapped — it shrinks down to 5 pt, then it is cut with an ellipsis. */
-export function fitLine(font: PDFFont, text: string, width: number, size: number): { text: string; size: number } {
-  const wide = font.widthOfTextAtSize(text, size);
-  if (wide <= width) return { text, size };
-  const smaller = Math.max(MIN_SIZE, Math.floor(((size * width) / wide) * 10) / 10);
-  if (font.widthOfTextAtSize(text, smaller) <= width) return { text, size: smaller };
-  let cut = text;
-  while (cut.length > 1 && font.widthOfTextAtSize(`${cut}…`, smaller) > width) cut = cut.slice(0, -1);
-  return { text: `${cut}…`, size: smaller };
-}
-
-/** The lines of a paragraph within the width (by words; a long word is cut by characters). */
-export function wrap(font: PDFFont, text: string, width: number, size: number): string[] {
-  const lines: string[] = [];
-  for (const paragraph of text.split('\n')) {
-    let line = '';
-    for (const word of paragraph.split(/\s+/).filter(Boolean)) {
-      const next = line ? `${line} ${word}` : word;
-      if (font.widthOfTextAtSize(next, size) <= width) {
-        line = next;
-        continue;
-      }
-      if (line) lines.push(line);
-      line = word;
-      while (font.widthOfTextAtSize(line, size) > width && line.length > 1) {
-        let cut = line.length - 1;
-        while (cut > 1 && font.widthOfTextAtSize(line.slice(0, cut), size) > width) cut -= 1;
-        lines.push(line.slice(0, cut));
-        line = line.slice(cut);
-      }
-    }
-    lines.push(line);
-  }
-  return lines;
-}
-
-/** The largest type (up to `max`) at which the paragraph fits the box; otherwise 5 pt and whatever fits. */
-export function fitBlock(font: PDFFont, text: string, width: number, height: number, max: number): { lines: string[]; size: number } {
-  for (let size = max; size >= MIN_SIZE; size -= 0.5) {
-    const lines = wrap(font, text, width, size);
-    if (lines.length * size * 1.18 <= height) return { lines, size };
-  }
-  const lines = wrap(font, text, width, MIN_SIZE);
-  return { lines: lines.slice(0, Math.max(1, Math.floor(height / (MIN_SIZE * 1.18)))), size: MIN_SIZE };
-}
 
 function cross(page: PDFPage, box: readonly [number, number, number, number]): void {
   const height = page.getHeight();
@@ -79,9 +24,12 @@ function cross(page: PDFPage, box: readonly [number, number, number, number]): v
 }
 
 export async function renderOverlay(modulo: ModuloOverlay, valori: Valori, fontDir: string): Promise<Uint8Array> {
-  const { doc, font } = await open(modulo, fontDir);
+  const { doc, font } = await apriModulo(modulo, fontDir);
   const page = doc.getPage(0);
   const height = page.getHeight();
+  // the size of the writing and how far above the line it stands — by the sheet (the Word one has a large type)
+  const size = modulo.dimensione ?? 8;
+  const lift = modulo.sopraLinea ?? 1.6;
   for (const field of fieldsOf(modulo)) {
     const value = valori[field.key];
     if (field.kind === 'check') {
@@ -91,8 +39,17 @@ export async function renderOverlay(modulo: ModuloOverlay, valori: Valori, fontD
     if (typeof value !== 'string' || !value) continue;
     if ('line' in field) {
       const [x0, x1, y] = field.line;
-      const fit = fitLine(font, value, x1 - x0, 8);
-      page.drawText(fit.text, { x: x0, y: height - y + 1.6, size: fit.size, font, color: INK });
+      const fit = fitLine(font, value, x1 - x0, size);
+      page.drawText(fit.text, { x: x0, y: height - y + lift, size: fit.size, font, color: INK });
+    } else if ('area' in field && field.righe) {
+      // a box with lines of the sheet (2SG's NOTE): a line per rule, never larger than the other text
+      const [x0, , x1] = field.area;
+      const { righe } = field;
+      const block = fitRighe(font, value, x1 - x0, righe.length, size);
+      righe.forEach((y, i) => {
+        const line = block.lines[i];
+        if (line) page.drawText(line, { x: x0, y: height - y + lift, size: block.size, font, color: INK });
+      });
     } else if ('area' in field) {
       const [x0, top, x1, bottom] = field.area;
       const block = fitBlock(font, value, x1 - x0 - 4, bottom - top - 4, 9);
@@ -102,41 +59,6 @@ export async function renderOverlay(modulo: ModuloOverlay, valori: Valori, fontD
       });
     }
   }
-  return doc.save();
-}
-
-export async function renderAcroform(modulo: ModuloAcro, valori: Valori, fontDir: string): Promise<Uint8Array> {
-  const { doc, font } = await open(modulo, fontDir);
-  const form = doc.getForm();
-  for (const field of fieldsOf(modulo)) {
-    if (!('acro' in field)) continue;
-    const value = valori[field.key];
-    if (field.kind === 'check') {
-      if (value === true) form.getCheckBox(field.acro).check();
-      continue;
-    }
-    if (typeof value !== 'string' || !value) continue;
-    const textField = form.getTextField(field.acro);
-    const widgets = textField.acroField.getWidgets();
-    for (const widget of widgets) {
-      // the module has no border (/BC empty); pdf-lib would outline the field in black — its width becomes 0
-      if (!widget.getAppearanceCharacteristics()?.getBorderColor()?.length) widget.getBorderStyle()?.setWidth(0);
-    }
-    const rect = widgets[0]?.getRectangle();
-    const width = (rect?.width ?? 100) - 4;
-    if (field.kind === 'textarea') {
-      const block = fitBlock(font, value, width - 4, (rect?.height ?? 40) - 4, 10);
-      textField.setFontSize(block.size);
-      textField.setText(block.lines.join('\n'));
-    } else {
-      const fit = fitLine(font, value, width, 10);
-      textField.setFontSize(fit.size);
-      textField.setText(fit.text);
-    }
-    textField.updateAppearances(font);
-  }
-  // only the filled fields have a new appearance; the rest (the empty fields, the button) stays original
-  form.flatten({ updateFieldAppearances: false });
   return doc.save();
 }
 

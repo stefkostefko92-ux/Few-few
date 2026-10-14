@@ -11,9 +11,10 @@ import { ANSWER } from '@/lib/answers';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// A supplier's module filled in on a survey sheet (rilievi's GET /schede/:id/ordine-quadro and /preventivo-argano): the
-// official PDF with the stored values on it, apart from the sheet's PDF. The same rights as the sheet; a sheet of
-// another company, unknown, or without the module answered «Sì» and stored is 404. A blank module whose SHA-256 is not
+// A supplier's module filled in on a survey sheet (rilievi's GET /schede/:id/ordine-quadro, /ordine-quadro-movilift,
+// /dati-argano and /sospensioni-2sg, commit ae6329cb6): the official PDF with the stored values on it, apart from the
+// sheet's PDF. The same rights as the sheet; a sheet of another company, unknown, without the module answered «Sì» and
+// stored, or of another make (the panel's Pelazza order on a MoviLift sheet) is 404. A blank module whose SHA-256 is not
 // its map's pin makes no PDF (500). `?inline=1` opens it in the browser (to print), otherwise it is saved. An unknown
 // module path is 404 before anything else (rilievi never routed it), so it spends no download of the person's quota.
 export async function GET(req: Request, { params }: { params: Promise<{ id: string; modulo: string }> }): Promise<Response> {
@@ -24,7 +25,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     if ('refused' in d) return d.refused;
     const { user } = d;
     const scheda = await sheetToShow(user, p.id);
-    if (!scheda || scheda[slot.question] !== true) return text(404, ANSWER.notFound);
+    if (!scheda || scheda[slot.question] !== true || (slot.marca && scheda[slot.marca.field] !== slot.marca.value)) return text(404, ANSWER.notFound);
     const valori = storedValori(slot.modulo, scheda[slot.column]);
     if (!valori) return text(404, ANSWER.notFound);
     const pdf = await renderModulo(slot.modulo, valori, env().REPORT_FONT_DIR);

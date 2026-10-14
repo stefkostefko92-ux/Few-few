@@ -1,15 +1,20 @@
 import 'server-only';
 // The sheet's PDF, A4, black on white — the same content as the print page. The font is DejaVu Sans (Italian accents,
 // Cyrillic, ☑/☐) from the font directory of LiftPilot's reports (REPORT_FONT_DIR), embedded as a subset; the built-in
-// Helvetica/Times are never used. The suppliers' modules never enter it (their own PDFs: modulo-pdf.ts). Ported 1:1 from
-// rilievi (src/schede/pdf.ts); the logo is the company's logo of the drawing sets, «Compilata da» the sheet's author.
+// Helvetica/Times are never used. The sections in the company's order; what the suppliers' modules hold comes in at the
+// end only when the sheet asks for it (`riepilogoOrdini`; the modules themselves are their own PDFs: modulo-pdf.ts).
+// Ported 1:1 from rilievi (src/schede/pdf.ts, commit ae6329cb6); the logo is the company's logo of the drawing sets,
+// «Compilata da» the sheet's author.
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import PDFDocument from 'pdfkit';
 import { displaySections, type DisplayField, type SchedaShown } from '@/lib/rilievi/format';
 import { fmt } from '@/lib/rilievi/fmt';
+import { FISSE } from '@/lib/rilievi/ordine';
+import { riepilogoModuli, type RiepilogoGruppo } from '@/lib/rilievi/ordini/riepilogo';
 import type { RilieviT } from '@/lib/rilievi/t';
-import { drawFields, drawFooters, drawHeader, drawPlate, drawSectionTitle, MARGIN, type PdfContext } from './pdf-layout';
+import { drawHeader, drawPlate } from './pdf-head';
+import { drawFields, drawFooters, drawSectionTitle, MARGIN, type PdfContext } from './pdf-layout';
 import { drawTable } from './pdf-table';
 
 const FONT_FILES = { regular: 'DejaVuSans.ttf', bold: 'DejaVuSans-Bold.ttf' } as const;
@@ -25,11 +30,12 @@ export function assertPdfFonts(dir: string): void {
   }
 }
 
-/** The sheet as the PDF draws it: its fields and rows, its author and last editor, its company's name. */
+/** The sheet as the PDF draws it: its fields and rows, its author and last editor, its company's name and order of the
+ *  sections. */
 export type SchedaForPdf = SchedaShown & {
   createdBy: { name: string } | null;
   updatedBy: { name: string } | null;
-  company: { name: string };
+  company: { name: string; ordineSezioni: readonly string[] };
 };
 
 export interface PdfOptions {
@@ -68,10 +74,10 @@ export function renderSchedaPdf(scheda: SchedaForPdf, options: PdfOptions): Prom
     doc.on('error', reject);
   });
 
-  const sections = displaySections(scheda, t);
+  const sections = displaySections(scheda, t, scheda.company.ordineSezioni);
   const byKey = new Map(sections.flatMap((s) => s.fields).map((f) => [f.key, f]));
 
-  // the header band: the company's logo top left, on the right the date and who filled the sheet in
+  // the header band: the company's logo, the date and who filled the sheet in; the title, the address and the work order
   drawHeader(ctx, {
     logo: options.logo ? Buffer.from(options.logo.data) : null,
     logoSize: options.logo ? { width: options.logo.width, height: options.logo.height } : null,
@@ -85,10 +91,15 @@ export function renderSchedaPdf(scheda: SchedaForPdf, options: PdfOptions): Prom
       scheda.updatedBy && scheda.updatedAt.getTime() - scheda.createdAt.getTime() > 1000
         ? t('scheda.meta.updated', { name: scheda.updatedBy.name, at: fmt.dateTime(scheda.updatedAt) })
         : '',
+    address: scheda.indirizzo,
+    noAddress: t('scheda.noAddress'),
+    buonoLabel: t('scheda.buonoRiferimento'),
+    buono: scheda.buonoLavoro,
   });
 
   drawPlate(ctx, scheda, byKey);
-  for (const section of sections) {
+  // «Impianto» is in the header band and the plate already
+  for (const section of sections.filter((s) => !FISSE.includes(s.key))) {
     drawSectionTitle(ctx, section.title);
     // the measurements' table stands right under its field: the fields are drawn in pieces around it
     let chunk: DisplayField[] = [];
@@ -102,7 +113,18 @@ export function renderSchedaPdf(scheda: SchedaForPdf, options: PdfOptions): Prom
     }
     drawFields(ctx, chunk);
   }
+  // what is filled in the suppliers' modules — only when the sheet asks for it (`riepilogoOrdini`)
+  for (const modulo of riepilogoModuli(scheda)) {
+    drawSectionTitle(ctx, modulo.nome);
+    drawFields(ctx, modulo.gruppi.map(gruppoField));
+  }
   drawFooters(ctx, t('pdf.generated', { at: fmt.dateTime(options.now ?? new Date()), name: options.generatedBy }));
   doc.end();
   return done;
+}
+
+/** A module's group as a cell on a whole row: the ticked with ☑, then the written («Corsa Mt.: 12»). */
+function gruppoField(gruppo: RiepilogoGruppo, index: number): DisplayField {
+  const parts = [...gruppo.spunte.map((label) => `☑ ${label}`), ...gruppo.testi.map(({ label, value }) => `${label}: ${value}`)];
+  return { key: `modulo-${index}`, label: gruppo.titolo, value: parts.join('    '), kind: 'text', wide: true };
 }

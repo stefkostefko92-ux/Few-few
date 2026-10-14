@@ -1,24 +1,25 @@
 // The fields of the survey sheet — THE single source: the form, the checks, the page, the print and the PDF are built
-// from here. The order is the customer's brief word for word; the sections only group, they never reorder. The fields of
-// the second brief (doors, alarm, work order, measurements of the push-button panels) stand next to what they belong to;
-// the third (control panel and machine to order) comes last — their suppliers' modules are in ordini/. The labels are in
-// messages/it.json under `rilievi`: `scheda.field.<key>`, `scheda.section.<key>`, `scheda.option.<key>.<VALUE>`,
-// `scheda.question.<key>`. Ported 1:1 from rilievi (src/schede/fields.ts, commit 174a1e3aa).
+// from here. The order of the sections is that of the printed sheet, numbered by the owner (October 2026): the plate,
+// position, kind, panel, argano, ropes, governor, cables, locks and suspensions, alarm, notes — the company may change it
+// (src/lib/rilievi/ordine.ts, Company.ordineSezioni); the fields within a section keep this order. The suppliers' modules
+// are in ordini/. The labels are in messages/it.json under `rilievi`: `scheda.field.<key>`, `scheda.section.<key>`,
+// `scheda.option.<key>.<VALUE>`, `scheda.question.<key>`. Ported 1:1 from rilievi (src/schede/fields.ts, commit ae6329cb6).
 import type { Condition, FieldDef, SectionDef } from './field-types';
 
 export * from './field-types';
 
 export const UBICAZIONE_MACCHINA = ['ALTO', 'BASSO'] as const;
+// GEARLESS is shown as «MRL» (the messages): the value in the database stays, so that the previous code reads it.
 export const TIPO_IMPIANTO = ['ELETTRICO', 'IDRAULICO', 'GEARLESS'] as const;
 export const TIPO_PORTE = ['AUTOMATICHE', 'SEMIAUTOMATICHE', 'MANUALI'] as const;
 export const TELESOCCORSO_STATO = ['COMPLETO', 'MANCA_PERIFERICA'] as const;
 export const QUADRO_MARCA = ['PELAZZA', 'MOVILIFT', 'DMG', 'MASTECH', 'ALTRO'] as const;
-export const ARGANO_MARCA = ['MONTANARI', 'ALTRO'] as const;
 
 const yes = (field: string): Condition => ({ field, values: ['si'] });
 /** The door operator makes sense with automatic and semi-automatic doors. */
 const PORTE_CON_OPERATORE: Condition = { field: 'tipoPorte', values: ['AUTOMATICHE', 'SEMIAUTOMATICHE'] };
-const PORTE_MANUALI: Condition = { field: 'tipoPorte', values: ['MANUALI'] };
+/** The double access — with every kind of doors, the manual ones too (the owner's decision, October 2026). */
+const PORTE_SCELTE: Condition = { field: 'tipoPorte', values: TIPO_PORTE };
 /** The retiring cam — with manual and with semi-automatic doors. */
 const PORTE_CON_PATTINO: Condition = { field: 'tipoPorte', values: ['MANUALI', 'SEMIAUTOMATICHE'] };
 /** "Altro" as the make → which one. */
@@ -26,31 +27,28 @@ const ALTRA = (field: string): Condition => ({ field, values: ['ALTRO'] });
 
 export const SECTIONS = [
   {
+    // Section 1 is laid out like the head and the plate of the sheet (the owner, October 2026): the date; the address and
+    // the work order; the matricola and the lift's number; the load, the capacity, the stops and the make.
     key: 'impianto',
     fields: [
       { key: 'data', kind: 'date' },
       { key: 'indirizzo', kind: 'text', maxLength: 200, wide: true },
-      { key: 'marca', kind: 'text', maxLength: 120 },
-      { key: 'matricola', kind: 'digits', maxLength: 20 },
-      { key: 'numeroImpianto', kind: 'digits', maxLength: 20 },
       // The work order the survey was made for — may stay empty.
       { key: 'buonoLavoro', kind: 'text', maxLength: 60 },
-    ],
-  },
-  {
-    key: 'targa',
-    fields: [
+      { key: 'matricola', kind: 'digits', maxLength: 20 },
+      { key: 'numeroImpianto', kind: 'digits', maxLength: 20 },
       { key: 'portataKg', kind: 'int', min: 0, max: 100_000, unit: 'kg' },
       { key: 'capienzaPersone', kind: 'int', min: 0, max: 1_000, unit: 'persone' },
       { key: 'fermate', kind: 'int', min: 0, max: 300 },
+      { key: 'marca', kind: 'text', maxLength: 120 },
     ],
   },
   {
     key: 'ubicazione',
     fields: [
       { key: 'ubicazioneMacchina', kind: 'checks', options: UBICAZIONE_MACCHINA },
-      // A floor or the number of the box — a whole number, negative too (basement: -1).
-      { key: 'ubicazioneCassettina', kind: 'int', min: -99, max: 999 },
+      // Where the box is — free text ("Piano -1, vano contatori").
+      { key: 'ubicazioneCassettina', kind: 'text', maxLength: 120 },
       { key: 'parcheggio', kind: 'text', maxLength: 300, wide: true },
     ],
   },
@@ -63,17 +61,33 @@ export const SECTIONS = [
       // The clear opening and the voltage — free text ("800 x 2000", "24 V DC").
       { key: 'lucePorte', kind: 'text', maxLength: 60, when: PORTE_CON_OPERATORE },
       { key: 'operatoreTensione', kind: 'text', maxLength: 60, when: PORTE_CON_OPERATORE },
-      { key: 'doppioAccesso', kind: 'yesno', when: PORTE_CON_OPERATORE },
-      { key: 'bloccaPortine', kind: 'yesno', when: PORTE_MANUALI },
-      { key: 'autolivellamento', kind: 'yesno', when: PORTE_MANUALI },
+      // «Accessi: 1 / 2» — the double access as a number of accesses.
+      { key: 'doppioAccesso', kind: 'yesno', risposte: ['no', 'si'], when: PORTE_SCELTE },
+      // «Pattino retrattile da cambiare». The door blocking, the self-levelling and the number of cams — taken off (2026).
       { key: 'pattinoRetrattile', kind: 'yesno', when: PORTE_CON_PATTINO },
-      { key: 'pattinoRetrattileNumero', kind: 'int', min: 0, max: 99, when: yes('pattinoRetrattile') },
-      // "Serrature/sospensioni" — the door locks and hangers.
-      { key: 'serrature', kind: 'yesno' },
-      { key: 'serratureNumero', kind: 'int', min: 0, max: 999, when: yes('serrature') },
-      { key: 'serratureTipo', kind: 'text', maxLength: 120, when: yes('serrature') },
-      { key: 'luceVanoSostituire', kind: 'yesno' },
     ],
+  },
+  {
+    // The control panel to order: the make; with Pelazza and MoviLift their order form (ordini/).
+    key: 'quadro',
+    fields: [
+      { key: 'quadroMarca', kind: 'choice', options: QUADRO_MARCA },
+      { key: 'quadroMarcaAltro', kind: 'text', maxLength: 120, when: ALTRA('quadroMarca') },
+      {
+        key: 'quadroOrdine',
+        kind: 'yesno',
+        wide: true,
+        question: true,
+        modulo: 'ordineQuadro',
+        // the makes with an order form (ordini/registry.ts — the test keeps them the same)
+        when: { field: 'quadroMarca', values: ['PELAZZA', 'MOVILIFT'] },
+      },
+    ],
+  },
+  {
+    // «Argano da sostituire?» — with Sì the machine's data sheet, for every kind of machine (ordini/).
+    key: 'argano',
+    fields: [{ key: 'arganoPreventivo', kind: 'yesno', wide: true, question: true, modulo: 'preventivoArgano' }],
   },
   {
     key: 'funi',
@@ -102,6 +116,18 @@ export const SECTIONS = [
     ],
   },
   {
+    // The doors' locks and suspensions to change: the locks — number and kind; the suspensions — number and 2SG's sheet,
+    // which holds the car operator too (ordini/).
+    key: 'serrature',
+    fields: [
+      { key: 'serrature', kind: 'yesno' },
+      { key: 'serratureNumero', kind: 'int', min: 0, max: 999, when: yes('serrature') },
+      { key: 'serratureTipo', kind: 'text', maxLength: 120, when: yes('serrature') },
+      { key: 'sospensioni', kind: 'yesno', wide: true, question: true, modulo: 'ordineSospensioni' },
+      { key: 'sospensioniNumero', kind: 'int', min: 0, max: 999, when: yes('sospensioni') },
+    ],
+  },
+  {
     key: 'allarme',
     fields: [
       { key: 'telesoccorso', kind: 'yesno' },
@@ -115,41 +141,11 @@ export const SECTIONS = [
     fields: [
       { key: 'noteQuadretto', kind: 'textarea', maxLength: 4000, wide: true },
       { key: 'noteImpianto', kind: 'textarea', maxLength: 4000, wide: true },
+      // «Luce vano da sostituire» — in the notes (the owner moved it from «Tipologia»).
+      { key: 'luceVanoSostituire', kind: 'yesno' },
       { key: 'noteBottoniere', kind: 'textarea', maxLength: 4000, wide: true },
       { key: 'bottoniereMisure', kind: 'yesno', wide: true, question: true, misure: true },
       { key: 'lavoriExtra', kind: 'textarea', maxLength: 4000, wide: true },
-    ],
-  },
-  {
-    // The control panel to order: the make; with Pelazza their order form (ordini/).
-    key: 'quadro',
-    fields: [
-      { key: 'quadroMarca', kind: 'choice', options: QUADRO_MARCA },
-      { key: 'quadroMarcaAltro', kind: 'text', maxLength: 120, when: ALTRA('quadroMarca') },
-      {
-        key: 'quadroOrdine',
-        kind: 'yesno',
-        wide: true,
-        question: true,
-        modulo: 'ordineQuadro',
-        when: { field: 'quadroMarca', values: ['PELAZZA'] },
-      },
-    ],
-  },
-  {
-    // The machine (argano): the make; with Montanari their quotation request (ordini/).
-    key: 'argano',
-    fields: [
-      { key: 'arganoMarca', kind: 'choice', options: ARGANO_MARCA },
-      { key: 'arganoMarcaAltro', kind: 'text', maxLength: 120, when: ALTRA('arganoMarca') },
-      {
-        key: 'arganoPreventivo',
-        kind: 'yesno',
-        wide: true,
-        question: true,
-        modulo: 'preventivoArgano',
-        when: { field: 'arganoMarca', values: ['MONTANARI'] },
-      },
     ],
   },
 ] as const satisfies readonly SectionDef[];
@@ -198,7 +194,7 @@ export function tokensOf(raw: unknown): string[] {
 
 /**
  * Which fields make sense with these values: without a condition — always; with one — when it holds and the field it
- * depends on makes sense itself ("Numero pattini" ← "Pattino retrattile: Sì" ← "Porte: manuali"). The controlling
+ * depends on makes sense itself ("Numero serrature" ← "Serrature da cambiare: Sì"). The controlling
  * field comes earlier in the list (the test keeps it so), hence one pass is enough. The same function decides on the
  * server (what is read and stored) and in the browser (what is shown while typing).
  */

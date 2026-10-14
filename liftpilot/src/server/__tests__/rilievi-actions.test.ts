@@ -1,116 +1,14 @@
-// Rilievi — the server side of the survey sheets end to end over an in-memory database, as rilievi's integration tests
-// (schede, campi, ordini, aziende; commit 174a1e3aa) for what does not need PostgreSQL: a sheet saved within the
-// company with its author, conditional chain, measurements and supplier module, one audit row without content; the
-// errors keep the input; the version guard (409: the input stays, nothing overwritten, the next save knowingly wins);
-// another company's sheet is "not found" everywhere; the trash by the rights of each role; the PDFs' answers.
-import { test, mock } from 'node:test';
+// Rilievi — the server side of the survey sheets end to end over an in-memory database (rilievi-actions-fixture.ts), as
+// rilievi's integration tests (schede, campi, ordini, aziende; commit ae6329cb6) for what does not need PostgreSQL: a
+// sheet saved within the company with its author, conditional chain, measurements and supplier modules, one audit row
+// without content; the errors keep the input; who writes by the rights matrix and the read-only mode; the version guard
+// (409: the input stays, nothing overwritten, the next save knowingly wins); another company's sheet is "not found"
+// everywhere; the trash by the rights of each role; the PDFs' answers. The linked data, MoviLift and the company's order
+// of the sections: rilievi-collegati-actions.test.ts.
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createRequire } from 'node:module';
-import { pathToFileURL } from 'node:url';
 import { Prisma } from '@prisma/client';
-
-const src = (p: string) => new URL(`../../${p}`, import.meta.url).href;
-const req = createRequire(import.meta.url);
-const pkg = (m: string) => pathToFileURL(req.resolve(m)).href;
-
-type Row = Record<string, unknown>;
-const schede: Row[] = [], misure: Row[] = [], audits: Row[] = [];
-let clock = Date.parse('2026-10-12T08:00:00Z'), seq = 0;
-const tick = () => new Date((clock += 1000));
-const NAMES: Record<string, string> = { u1: 'Mario Bianchi', u2: 'Luca Verdi', u3: 'Anna Neri', u4: 'Sara Blu', u9: 'Altra Ditta' };
-
-const matches = (row: Row, where: Row): boolean => Object.entries(where).every(([k, v]) => {
-  if (v === null) return row[k] === null;
-  if (v instanceof Date) return row[k] instanceof Date && (row[k] as Date).getTime() === v.getTime();
-  if (v && typeof v === 'object' && 'not' in v) return row[k] !== (v as { not: unknown }).not;
-  if (v && typeof v === 'object' && 'in' in v) return (v as { in: unknown[] }).in.includes(row[k]);
-  return row[k] === v;
-});
-const full = (s: Row): Row => ({
-  ...s,
-  misureBottoniere: misure.filter((m) => m.schedaId === s.id).sort((a, b) => Number(a.fermata) - Number(b.fermata)),
-  createdBy: s.createdById ? { name: NAMES[String(s.createdById)] } : null,
-  updatedBy: s.updatedById ? { name: NAMES[String(s.updatedById)] } : null,
-  deletedBy: s.deletedById ? { name: NAMES[String(s.deletedById)] } : null,
-  company: { id: s.companyId, name: s.companyId === 'c1' ? 'Ascensori Rossi Srl' : 'Altra Ditta' },
-});
-const db = {
-  scheda: {
-    create: async ({ data }: { data: Row & { misureBottoniere: { createMany: { data: Row[] } } } }) => {
-      const { misureBottoniere, ...rest } = data;
-      const at = tick();
-      const row: Row = { id: `cm${String(++seq).padStart(22, '0')}`, deletedAt: null, deletedById: null, createdAt: at, updatedAt: at, ...rest };
-      schede.push(row);
-      for (const m of misureBottoniere.createMany.data) misure.push({ ...m, schedaId: row.id });
-      return row;
-    },
-    findFirst: async ({ where }: { where: Row }) => { const s = schede.find((r) => matches(r, where)); return s ? full(s) : null; },
-    updateMany: async ({ where, data }: { where: Row; data: Row }) => {
-      const hit = schede.filter((r) => matches(r, where));
-      for (const r of hit) Object.assign(r, data, { updatedAt: tick() });
-      return { count: hit.length };
-    },
-    count: async ({ where }: { where: Row }) => schede.filter((r) => matches(r, where)).length,
-    deleteMany: async ({ where }: { where: Row }) => {
-      const hit = schede.filter((r) => matches(r, where));
-      for (const r of hit) {
-        schede.splice(schedeIndex(r), 1);
-        for (let i = misure.length - 1; i >= 0; i--) if (misure[i]?.schedaId === r.id) misure.splice(i, 1);
-      }
-      return { count: hit.length };
-    },
-  },
-  misuraBottoniera: {
-    deleteMany: async ({ where }: { where: Row }) => {
-      const before = misure.length;
-      for (let i = misure.length - 1; i >= 0; i--) if (misure[i]?.schedaId === where.schedaId) misure.splice(i, 1);
-      return { count: before - misure.length };
-    },
-    createMany: async ({ data }: { data: Row[] }) => { misure.push(...data); return { count: data.length }; },
-  },
-  auditLog: { create: async ({ data }: { data: Row }) => { audits.push(data); return data; } },
-  company: { findUnique: async () => ({ logo: null }) },
-  $transaction: async (fn: unknown) => (typeof fn === 'function' ? fn(db) : Promise.all(fn as Promise<unknown>[])),
-};
-const schedeIndex = (r: Row) => schede.indexOf(r);
-
-class Redirect extends Error { constructor(readonly url: string) { super(`redirect ${url}`); } }
-let user: Record<string, unknown> | null = null;
-mock.module(src('lib/db.ts'), { namedExports: { prisma: db } });
-mock.module(src('lib/auth.ts'), { namedExports: { getSessionUser: async () => user } });
-mock.module(src('lib/env.ts'), { namedExports: { env: () => ({ REPORT_FONT_DIR: process.env.REPORT_FONT_DIR ?? '/usr/share/fonts/truetype/dejavu' }), publicBaseUrl: () => 'http://x' } });
-mock.module(pkg('next/headers'), { namedExports: { headers: async () => new Headers() } });
-mock.module(pkg('next/navigation'), { namedExports: { redirect: (url: string) => { throw new Redirect(url); } } });
-
-const as = (id: string, role: string, companyId = 'c1', readOnly = false) => {
-  user = { id, email: `${id}@example.it`, name: NAMES[id] ?? id, role, locale: 'it', companyId, companyName: companyId === 'c1' ? 'Ascensori Rossi Srl' : 'Altra Ditta', mustChangePassword: false, readOnly };
-};
-const form = (fields: Record<string, string | string[]>): FormData => {
-  const fd = new FormData();
-  for (const [k, v] of Object.entries(fields)) for (const x of Array.isArray(v) ? v : [v]) fd.append(k, x);
-  return fd;
-};
-const redirected = async (p: Promise<unknown>): Promise<string> => {
-  try { await p; } catch (e) { if (e instanceof Redirect) return e.url; throw e; }
-  assert.fail('expected a redirect');
-};
-
-const SHEET = {
-  data: '2026-10-12', indirizzo: 'Via Giuseppe Verdi 14, Milano', marca: 'Schindler', matricola: '0033871', numeroImpianto: '104552',
-  portataKg: '630', capienzaPersone: '8', fermate: '3', tipoPorte: 'MANUALI', pattinoRetrattile: 'si', pattinoRetrattileNumero: '2',
-  bottoniereMisure: 'si', 'mb-1-piano': 'S1', 'mb-1-lunghezzaMm': '320,5', 'mb-1-display': 'si', 'mb-2-piano': '2', 'mb-3-display': 'no',
-  quadroMarca: 'PELAZZA', quadroOrdine: 'si', 'oq-_': '1', 'oq-ordine': 'si', 'oq-nFermate': '3',
-  arganoMarca: 'MONTANARI', arganoPreventivo: 'no', 'pa-_': '1', 'pa-portata': '630',
-};
-const actions = () => import(src('server/rilievi/actions.ts'));
-const pages = () => import(src('server/rilievi/pages.ts'));
-const idOf = (url: string) => /\/rilievi\/([a-z0-9]+)/.exec(url)?.[1] ?? '';
-
-async function created(): Promise<string> {
-  const { createRilievoAction } = await actions();
-  as('u1', 'TECHNICIAN');
-  return idOf(await redirected(createRilievoAction({ status: 'idle' }, form(SHEET))));
-}
+import { actions, as, audits, created, form, idOf, misure, pages, redirected, schede, session, signOut, SHEET, src } from './rilievi-actions-fixture';
 
 test('una scheda nuova: nella propria azienda, con l’autore, la catena, le misure e il modulo; una riga di registro senza contenuto', async () => {
   const { createRilievoAction } = await actions();
@@ -122,7 +20,12 @@ test('una scheda nuova: nella propria azienda, con l’autore, la catena, le mis
   assert.equal(row.companyId, 'c1');
   assert.equal(row.createdById, 'u1');
   assert.equal(row.updatedById, 'u1');
-  assert.equal(row.pattinoRetrattileNumero, 2, 'the conditional chain is kept: MANUALI → pattino sì → numero');
+  assert.equal(row.pattinoRetrattile, true, 'the conditional chain is kept: MANUALI → pattino sì');
+  for (const key of ['pattinoRetrattileNumero', 'arganoMarca']) assert.ok(!(key in row), `${key}: taken off the sheet, never written`);
+  assert.equal(row.sospensioniNumero, 5);
+  assert.deepEqual(row.ordineSospensioni, { modulo: '2sg-ordine-porte', valori: { ordNo: '77' } });
+  assert.equal(row.riepilogoOrdini, false);
+  assert.equal(row.discrepanzeConfermate, null, 'nothing to confirm');
   assert.match(String(row.searchText), /^104552 0033871 via giuseppe verdi 14 milano schindler$/);
   assert.deepEqual(row.ordineQuadro, { modulo: 'pelazza-ordine-quadri-032026', valori: { ordine: true, nFermate: '3' } });
   assert.equal(row.preventivoArgano, Prisma.DbNull, 'a module answered «No» is a real SQL NULL, never JSON null');
@@ -163,9 +66,9 @@ test('la versione aperta: chi salva su una versione superata riceve il conflitto
   const id = await created();
   const opened = (schede.find((s) => s.id === id)?.updatedAt as Date).toISOString();
   as('u3', 'OWNER');
-  assert.match(await redirected(updateRilievoAction({ status: 'idle' }, form({ ...SHEET, id, base: opened, marca: 'Otis' }))), new RegExp(`/rilievi/${id}\\?ok=schedaSaved$`));
+  assert.match(await redirected(updateRilievoAction({ status: 'idle' }, form({ ...SHEET, scheda: id, base: opened, marca: 'Otis' }))), new RegExp(`/rilievi/${id}\\?ok=schedaSaved$`));
   as('u2', 'ENGINEER');
-  const r = await updateRilievoAction({ status: 'idle' }, form({ ...SHEET, id, base: opened, marca: 'Kone' }));
+  const r = await updateRilievoAction({ status: 'idle' }, form({ ...SHEET, scheda: id, base: opened, marca: 'Kone' }));
   assert.equal(r.status, 'conflict');
   const current = schede.find((s) => s.id === id);
   assert.equal(current?.marca, 'Otis', 'the other person’s change is not overwritten');
@@ -173,9 +76,9 @@ test('la versione aperta: chi salva su una versione superata riceve il conflitto
   assert.ok(r.status === 'conflict' && r.base === (current?.updatedAt as Date).toISOString(), 'the base is now the current version');
   assert.ok(r.status === 'conflict' && /^Ultima modifica di Anna Neri il \d\d\/\d\d\/\d{4}, \d\d:\d\d$/.test(r.updated), 'the head names the version that caused it');
   // saved again knowingly, over the version seen
-  assert.match(await redirected(updateRilievoAction({ status: 'idle' }, form({ ...SHEET, id, base: r.status === 'conflict' ? r.base : '', marca: 'Kone' }))), /ok=schedaSaved/);
+  assert.match(await redirected(updateRilievoAction({ status: 'idle' }, form({ ...SHEET, scheda: id, base: r.status === 'conflict' ? r.base : '', marca: 'Kone' }))), /ok=schedaSaved/);
   assert.equal(schede.find((s) => s.id === id)?.marca, 'Kone');
-  assert.equal((await updateRilievoAction({ status: 'idle' }, form({ ...SHEET, id, base: 'non-una-data' }))).status, 'conflict');
+  assert.equal((await updateRilievoAction({ status: 'idle' }, form({ ...SHEET, scheda: id, base: 'non-una-data' }))).status, 'conflict');
 });
 
 test('la scheda di un’altra azienda non esiste: modifica, cestino, pagina, PDF', async () => {
@@ -183,12 +86,12 @@ test('la scheda di un’altra azienda non esiste: modifica, cestino, pagina, PDF
   const { sheetToShow, sheetToEdit } = await pages();
   const id = await created();
   as('u9', 'OWNER', 'c2');
-  assert.deepEqual(await updateRilievoAction({ status: 'idle' }, form({ ...SHEET, id, base: new Date().toISOString() })), { status: 'error', error: 'notFound' });
+  assert.deepEqual(await updateRilievoAction({ status: 'idle' }, form({ ...SHEET, scheda: id, base: new Date().toISOString() })), { status: 'error', error: 'notFound' });
   assert.deepEqual(await trashRilievoAction({}, form({ id })), { error: 'notFound' });
   assert.deepEqual(await restoreRilievoAction({}, form({ id })), { error: 'notFound' });
-  assert.equal(await sheetToShow(user as never, id), null);
-  assert.equal(await sheetToEdit(user as never, id), null);
-  assert.equal(await sheetToShow(user as never, '../etc/passwd'), null);
+  assert.equal(await sheetToShow(session(), id), null);
+  assert.equal(await sheetToEdit(session(), id), null);
+  assert.equal(await sheetToShow(session(), '../etc/passwd'), null);
   assert.equal(schede.find((s) => s.id === id)?.deletedAt, null);
 });
 
@@ -200,12 +103,12 @@ test('il cestino: sposta il Progettista, gestisce il titolare; sequenza nel regi
   assert.deepEqual(await trashRilievoAction({}, form({ id })), { error: 'forbidden' });
   as('u2', 'ENGINEER');
   assert.equal(await redirected(trashRilievoAction({}, form({ id }))), '/it/app/rilievi?ok=schedaTrashed');
-  assert.equal(await sheetToShow(user as never, id), null, 'a trashed sheet is gone for whoever does not manage the trash');
+  assert.equal(await sheetToShow(session(), id), null, 'a trashed sheet is gone for whoever does not manage the trash');
   assert.deepEqual(await restoreRilievoAction({}, form({ id })), { error: 'forbidden' });
   as('u3', 'OWNER');
-  assert.ok((await sheetToShow(user as never, id))?.deletedAt, 'the owner opens it from the trash');
+  assert.ok((await sheetToShow(session(), id))?.deletedAt, 'the owner opens it from the trash');
   assert.equal(await redirected(restoreRilievoAction({}, form({ id }))), `/it/app/rilievi/${id}?ok=schedaRestored`);
-  assert.equal(await sheetToPurge(user as never, id), null, 'not in the trash: nothing to delete for good');
+  assert.equal(await sheetToPurge(session(), id), null, 'not in the trash: nothing to delete for good');
   assert.deepEqual(await purgeRilievoAction({}, form({ id })), { error: 'notFound' });
   await redirected(trashRilievoAction({}, form({ id })));
   assert.equal(await redirected(purgeRilievoAction({}, form({ id }))), '/it/app/rilievi/cestino?ok=schedaPurged');
@@ -232,12 +135,17 @@ test('i PDF: la scheda e il modulo compilato, da scaricare o da stampare; altrim
   r = await get(modulo, '', { id, modulo: 'ordine-quadro' });
   assert.equal(r.status, 200);
   assert.equal(r.headers.get('Content-Disposition'), 'attachment; filename="ordine-quadro-104552-2026-10-12.pdf"');
-  assert.equal((await get(modulo, '', { id, modulo: 'preventivo-argano' })).status, 404, 'answered «No»: no module');
+  assert.equal((await get(modulo, '', { id, modulo: 'dati-argano' })).status, 404, 'answered «No»: no module');
+  assert.equal((await get(modulo, '', { id, modulo: 'preventivo-argano' })).status, 404, 'the Montanari request is gone');
+  assert.equal((await get(modulo, '', { id, modulo: 'ordine-quadro-movilift' })).status, 404, 'a Pelazza panel: no MoviLift order');
+  r = await get(modulo, '', { id, modulo: 'sospensioni-2sg' });
+  assert.equal(r.status, 200);
+  assert.equal(r.headers.get('Content-Disposition'), 'attachment; filename="sospensioni-2sg-104552-2026-10-12.pdf"');
   assert.equal((await get(modulo, '', { id, modulo: 'altro' })).status, 404);
   as('u9', 'OWNER', 'c2');
   assert.equal((await get(sheet, '', { id })).status, 404);
   assert.equal((await get(modulo, '', { id, modulo: 'ordine-quadro' })).status, 404);
-  user = null;
+  signOut();
   assert.equal((await get(sheet, '', { id })).status, 401);
   assert.equal((await get(modulo, '', { id, modulo: 'altro' })).status, 404, 'an unknown module path: 404 before the sign-in and the download quota');
 });

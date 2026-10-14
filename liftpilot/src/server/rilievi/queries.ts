@@ -98,7 +98,7 @@ const WITH_PEOPLE = {
   createdBy: { select: { name: true } },
   updatedBy: { select: { name: true } },
   deletedBy: { select: { name: true } },
-  company: { select: { id: true, name: true } },
+  company: { select: { id: true, name: true, ordineSezioni: true } },
 } satisfies Prisma.SchedaInclude;
 
 export type SchedaFull = Prisma.SchedaGetPayload<{ include: typeof WITH_PEOPLE }>;
@@ -109,6 +109,13 @@ export async function getScheda(companyId: string, id: string, includeDeleted = 
   const scheda = await prisma.scheda.findFirst({ where: { id, companyId }, include: WITH_PEOPLE });
   if (!scheda || (scheda.deletedAt && !includeDeleted)) return null;
   return scheda;
+}
+
+/** The company's order of the sheet's sections (Company.ordineSezioni, src/lib/rilievi/ordine.ts) — for a new sheet (an
+ *  edited one brings it with the sheet, `company.ordineSezioni`); empty — the default order. */
+export async function ordineSezioniDi(companyId: string): Promise<string[]> {
+  const row = await prisma.company.findUnique({ where: { id: companyId }, select: { ordineSezioni: true } });
+  return row?.ordineSezioni ?? [];
 }
 
 /** The company's logo of the drawing sets (Company.logo) for the sheet's PDF, or null. */

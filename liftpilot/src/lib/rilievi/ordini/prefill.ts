@@ -1,28 +1,34 @@
-// The prefilled values of a module from the survey: date, the lift's number, stops, doors, load, ropes, machine
-// position — and the company and the person writing. Only at the module's first opening; afterwards everything is
-// edited. The browser applies the same rules while the survey is typed (prefill-client.ts). Ported 1:1 from rilievi
-// (src/ordini/prefill.ts).
+// The prefilled values of a module: the blank module's values (`predefinito`), the date, the lift's reference, the
+// company and the person writing (the module's map, `prefill`), and the plant data from the sheet or from the other
+// module (collegati.ts) — in this order, each over the one before. The server puts them at the module's first opening;
+// afterwards the browser leads them (prefill-client.ts and collegati-client.ts — the same rules) until the person types
+// in the field. Ported 1:1 from rilievi (src/ordini/prefill.ts, commit ae6329cb6).
 import type { FormValues } from '../field-parsers';
+import { activeFields, fieldByKey } from '../fields';
+import { prefillCollegati } from './collegati';
 import { fieldsOf, type Modulo, type PrefillToken } from './moduli';
+import { opzioneDi } from './opzioni';
+import { SLOTS } from './registry';
 import { rifImpianto } from './rif';
 import type { Valori } from './valori';
 
 export { rifImpianto } from './rif';
 
 export interface PrefillContext {
-  /** The survey's values in the shape of the form. */
+  /** The survey's and the other module's values in the shape of the form. */
   values: FormValues;
   azienda: string;
   utente: string;
   ruolo: string;
   email: string;
+  /** The word of a tick of the sheet («tipoPorte», «MANUALI» → «Manuali») — from the messages. */
+  etichetta: (campo: string, valore: string) => string;
 }
 
 const text = (values: FormValues, key: string): string => {
   const value = values[key];
   return typeof value === 'string' ? value.trim() : '';
 };
-
 
 function textToken(token: PrefillToken, ctx: PrefillContext): string {
   switch (token) {
@@ -40,32 +46,64 @@ function textToken(token: PrefillToken, ctx: PrefillContext): string {
       return ctx.ruolo;
     case 'email':
       return ctx.email;
-    case 'accessi': {
-      const doppio = ctx.values.doppioAccesso;
-      return doppio === 'si' ? '2' : doppio === 'no' ? '1' : '';
+    case 'tipoImpianto':
+    case 'tipoPorte':
+    case 'ubicazioneMacchina': {
+      const list = ctx.values[token];
+      return Array.isArray(list) ? list.map((v) => ctx.etichetta(token, v)).join(', ') : '';
     }
-    default:
-      return text(ctx.values, token);
   }
 }
 
-function checked(token: string, values: FormValues): boolean {
+function checked(token: string, values: FormValues, active: Set<string>): boolean {
   const [name = '', option = ''] = token.split('=');
+  if (!active.has(name)) return false;
   const value = values[name];
   return Array.isArray(value) ? value.includes(option) : value === option;
 }
 
-/** The module's values from the survey — only where there is something to take. */
-export function prefillValori(modulo: Modulo, ctx: PrefillContext): Valori {
+/** The blank module's values (`predefinito`) — the radio groups, the ticks and the lines with something in them. */
+export function predefiniti(modulo: Modulo): Valori {
   const valori: Valori = {};
   for (const field of fieldsOf(modulo)) {
-    if (!field.prefill) continue;
-    if (field.kind === 'check') {
-      if (checked(field.prefill, ctx.values)) valori[field.key] = true;
-      continue;
-    }
-    const value = textToken(field.prefill, ctx).slice(0, field.maxLength);
-    if (value) valori[field.key] = value;
+    if ('predefinito' in field && field.predefinito !== undefined) valori[field.key] = field.predefinito;
   }
   return valori;
+}
+
+/**
+ * The values from the survey (`prefill` in the module's map) — only where there is something to take. These fields
+ * follow the sheet in the browser too, until the person types in them (`auto`, form.ts).
+ */
+export function prefillToken(modulo: Modulo, ctx: PrefillContext): Valori {
+  const valori: Valori = {};
+  // the sheet's hidden field (the retiring cam with automatic doors) says nothing
+  const active = activeFields((key) => ctx.values[key]);
+  for (const field of fieldsOf(modulo)) {
+    if (!('prefill' in field) || !field.prefill) continue;
+    if (field.kind === 'check') {
+      if (checked(field.prefill, ctx.values, active)) valori[field.key] = true;
+      continue;
+    }
+    const hidden = fieldByKey(field.prefill) !== undefined && !active.has(field.prefill);
+    const value = hidden ? '' : textToken(field.prefill, ctx);
+    if (field.kind === 'select') {
+      const opzione = opzioneDi(field.opzioni, value);
+      if (opzione) valori[field.key] = opzione;
+      continue;
+    }
+    if ((field.kind === 'text' || field.kind === 'textarea') && value) valori[field.key] = value.slice(0, field.maxLength);
+  }
+  return valori;
+}
+
+/** The module's own: the blank module (`predefinito`), over it — the survey (`prefill`). */
+export function prefillPropri(modulo: Modulo, ctx: PrefillContext): Valori {
+  return { ...predefiniti(modulo), ...prefillToken(modulo, ctx) };
+}
+
+/** Everything a module opens with the first time: its own + the linked (the sheet, the other module). */
+export function prefillValori(modulo: Modulo, ctx: PrefillContext): Valori {
+  const slot = SLOTS.find((s) => s.modulo === modulo);
+  return { ...prefillPropri(modulo, ctx), ...(slot ? prefillCollegati(slot.prefix, ctx.values) : {}) };
 }

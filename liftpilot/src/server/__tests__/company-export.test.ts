@@ -23,6 +23,7 @@ const MISURE: Row[] = [
   { id: 'm1', schedaId: 's1', fermata: 1, piano: 'S1', lunghezzaMm: new Prisma.Decimal('320.5'), larghezzaMm: new Prisma.Decimal('105'), interasseSuperiore: '60 mm', interasseInferiore: null, display: true },
 ];
 let schedaArgs: Args | null = null, permArgs: Args | null = null;
+let companyArgs: { select?: Record<string, boolean> } | null = null;
 const PERMS: Row[] = [
   { companyId: 'c1', role: 'TECHNICIAN', capability: 'calc:create', granted: false, updatedById: 'u1', updatedAt: new Date('2026-10-14T08:00:00Z') },
   { companyId: 'c2', role: 'SALES', capability: 'prices:view', granted: false, updatedById: 'u9', updatedAt: new Date('2026-10-14T08:00:00Z') },
@@ -30,7 +31,12 @@ const PERMS: Row[] = [
 const none = async () => [];
 const without = (row: Row, omit: Record<string, boolean> | undefined): Row => Object.fromEntries(Object.entries(row).filter(([k]) => !omit?.[k]));
 const db = {
-  company: { findUnique: async () => ({ id: 'c1', name: 'Ascensori Rossi Srl' }) },
+  company: {
+    findUnique: async (args: { select?: Record<string, boolean> }) => {
+      companyArgs = args;
+      return { id: 'c1', name: 'Ascensori Rossi Srl', ordineSezioni: ['note'] };
+    },
+  },
   user: { findMany: none }, invite: { findMany: none }, companyLogo: { findMany: none }, project: { findMany: none },
   priceItem: { findMany: none }, customPriceItem: { findMany: none }, auditLog: { findMany: none },
   companyRolePermission: {
@@ -60,6 +66,7 @@ test('l’esportazione: ogni chiave del registro, e le schede di rilievo della p
   assert.ok(doc);
   assert.deepEqual(Object.keys(doc), [...EXPORT_ENVELOPE, ...EXPORT_DATA], 'the keys of the public register, in its order');
   assert.equal(doc.formatVersion, EXPORT_FORMAT_VERSION);
+  assert.equal(companyArgs?.select?.ordineSezioni, true, 'the company’s order of the sheet’s sections (a setting it entered)');
   assert.deepEqual(schedaArgs?.where, { companyId: 'c1' }, 'the company’s sheets, the trashed ones included (no deletedAt filter)');
   const schede = doc.schede as Row[];
   assert.deepEqual(schede.map((s) => s.id), ['s2', 's1'], 'oldest first, the other company’s never');

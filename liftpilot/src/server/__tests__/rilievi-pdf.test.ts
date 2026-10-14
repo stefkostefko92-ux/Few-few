@@ -1,6 +1,7 @@
-// Rilievi — the sheet's PDF (pdfkit with DejaVu Sans), ported from rilievi's tests/pdf.test.ts (commit 174a1e3aa):
+// Rilievi — the sheet's PDF (pdfkit with DejaVu Sans), ported from rilievi's tests/pdf.test.ts (commit ae6329cb6):
 // a valid A4 document with Cyrillic and accents, a long work order onto a second page, the measurements' table over
-// the next pages, the company's logo top left (PNG with its transparency, JPEG), never the suppliers' modules.
+// the next pages, the company's logo top left (PNG with its transparency, JPEG), the suppliers' modules only when the
+// sheet asks for them (the sections in the company's order: rilievi-sezioni.test.ts).
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { describe, it } from 'node:test';
@@ -46,6 +47,14 @@ describe('the sheet PDF', { skip: !fontsHere && 'DejaVu fonts are not installed 
       assert.match(text, kind === 'png' ? /\/SMask/ : /\/DCTDecode/);
     });
   }
+
+  it('adds what the orders hold at the end only when the sheet asks for it', async () => {
+    const ordine = { ...SCHEDA, quadroMarca: 'PELAZZA' as const, quadroOrdine: true, ordineQuadro: { modulo: 'pelazza-ordine-quadri-032026', valori: { ordine: true, velocita: '1,0', note: 'Consegna in cantiere' } } };
+    const without = await renderSchedaPdf({ ...ordine, riepilogoOrdini: false }, options);
+    const withOrders = await renderSchedaPdf({ ...ordine, riepilogoOrdini: true }, options);
+    assert.equal(withOrders.subarray(0, 5).toString(), '%PDF-');
+    assert.ok(withOrders.length > without.length, 'the orders add their own sections');
+  });
 
   it('says who made it and refuses to draw without the fonts', async () => {
     const pdf = await renderSchedaPdf(SCHEDA, options);
