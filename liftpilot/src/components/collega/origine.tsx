@@ -1,6 +1,7 @@
 'use client';
 
-// The mark «dal rilievo» in the installation's forms (round 44): beside a field whose value came from the linked survey
+// The mark «dal rilievo» in the installation's forms (round 44) — and «dal progetto» in «Calcolo argano» started from a
+// lift design's calculation (round 45): beside a field whose value came from the linked survey (or from the drawing)
 // — filled at the start or put in by «usa il valore del rilievo» (src/server/collega/forms.ts; a value the user typed
 // that happens to equal the survey's is not marked) —, like the software's «standard» and «automatico» badges. It
 // follows the value: once the user types another, the mark goes. The forms read it from this context, so that no field
@@ -17,6 +18,9 @@ export interface OrigineRilievo {
   valori: Readonly<Record<string, string>>;
   /** the form starts from the survey (its notice says so): its draft keeps that it did (src/lib/collega/formato.ts) */
   parte?: boolean;
+  /** «Calcolo argano» started from a lift design's calculation (round 45): the values its drawing gave, marked «dal
+   *  progetto» with their own badge (never kept by the draft: the survey's marks only) */
+  progetto?: { date: string; valori: Readonly<Record<string, string>> };
 }
 
 const Ctx = createContext<OrigineRilievo | null>(null);
@@ -25,20 +29,27 @@ export function OrigineProvider({ value, children }: { value: OrigineRilievo | n
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
-/** The field's value came from the survey and is still the survey's. */
+/** Where the field's value came from, while it is still that value: the survey, else the drawing (null: neither). */
+function fonteDi(o: OrigineRilievo | null, id: string, value: unknown): 'rilievo' | 'progetto' | null {
+  const r = o?.valori[id], p = o?.progetto?.valori[id];
+  return r !== undefined && stessoValore(value, r) ? 'rilievo' : p !== undefined && stessoValore(value, p) ? 'progetto' : null;
+}
+
+/** The field's value came from the survey (or from the drawing) and is still that value. */
 export function useDalRilievo(id: string, value: unknown): boolean {
-  const o = useContext(Ctx), v = o?.valori[id];
-  return v !== undefined && stessoValore(value, v);
+  return fonteDi(useContext(Ctx), id, value) !== null;
 }
 
-function Badge({ date }: { date: string }) {
+function Badge({ date, progetto }: { date: string; progetto: boolean }) {
   const t = useTranslations('collega.origine');
-  return <span className="badge rilievo" title={t('badgeTitle', { date })}>{t('badge')}</span>;
+  return progetto ? <span className="badge progetto" title={t('progettoTitle', { date })}>{t('progetto')}</span>
+    : <span className="badge rilievo" title={t('badgeTitle', { date })}>{t('badge')}</span>;
 }
 
-/** The badge beside the field's name, while its value is the survey's (outside a linked installation — the standalone
- *  page — nothing, not even its words are asked for). */
+/** The badge beside the field's name, while its value is the survey's — or the drawing's, «dal progetto» (outside a
+ *  linked installation — the standalone page — nothing, not even its words are asked for). */
 export function DalRilievo({ id, value }: { id: string; value: unknown }) {
-  const o = useContext(Ctx), on = useDalRilievo(id, value);
-  return on && o ? <Badge date={o.date} /> : null;
+  const o = useContext(Ctx), on = fonteDi(o, id, value);
+  if (!o || !on) return null;
+  return on === 'progetto' && o.progetto ? <Badge date={o.progetto.date} progetto /> : <Badge date={o.date} progetto={false} />;
 }

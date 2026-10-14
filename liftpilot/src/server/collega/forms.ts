@@ -86,12 +86,15 @@ export async function usaDatiImpianto(user: SessionUser, projectId: string, usa:
   return r && value ? { field: usa === 'indirizzo' ? 'address' : 'plantNumber', value, date: fmt.day(r.data) } : null;
 }
 
-/** The calculator's start (`kept`: what its draft kept of the survey). */
+/** The calculator's start (`kept`: what its draft kept of the survey). A transformation (a new lift, round 45) has no
+ *  existing machine: the survey's machine and ropes («o_…») are not seeded there. */
 export async function avvioCalc(user: SessionUser, projectId: string, start: FormValues, mode: Partenza, usa: unknown,
   kept: Kept = {}): Promise<Avvio<FormValues>> {
   const r = can(user, 'rilievi:view') ? await rilievoDiRiferimento(user, projectId) : null;
   if (!r) return none(start);
-  const seme = semeCalc(r), valore = (id: string): string | undefined => valoreCalc(seme, id);
+  const tutto = semeCalc(r), nuovo = start.context === 'new';
+  const seme = nuovo ? Object.fromEntries(Object.entries(tutto).filter(([id]) => !id.startsWith('o_'))) : tutto;
+  const valore = (id: string): string | undefined => valoreCalc(seme, id);
   const seeded = mode ? seminaCalc(start, seme, mode === 'new') : { values: start, seeded: [] };
   let values = seeded.values, done: UsaFatto | null = null;
   const { dal, parte } = avvioSegni(seeded.seeded, mode === 'draft' ? kept : {}, valore, (id) => values[id]);

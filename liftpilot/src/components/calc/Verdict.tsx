@@ -1,5 +1,6 @@
 // Verdict panel of the prototype v12 (renderVerdict): proposal in one line, result of the new machine counting
-// failures and warnings, key figures, sensitivity, existing machine.
+// failures and warnings, key figures, sensitivity, existing machine. A modernisation that keeps the machine (round 45,
+// `resta`: its name) verifies it as it is: no proposal, the result under the kept machine's name.
 import type { Check } from '@/calc/types';
 import Icon, { type IconName } from '@/components/Icon';
 import type { Analysis } from '@/lib/present/analysis';
@@ -8,7 +9,7 @@ import type { Pres } from '@/lib/present/tr';
 import { Pill } from './ui';
 
 /** `id`: the anchor of the checks it names (a saved calculation's: the result pill's panel leads there). */
-export default function Verdict({ id, P, X, a, badCount }: { id?: string; P: Pres; X: Texts; a: Analysis; badCount: number }) {
+export default function Verdict({ id, P, X, a, badCount, resta }: { id?: string; P: Pres; X: Texts; a: Analysis; badCount: number; resta?: string }) {
   const { t, fmt } = P;
   const { res, old, sizing, sens } = a;
   const warns = res.checks.filter((c) => c.status === 'warn');
@@ -25,11 +26,13 @@ export default function Verdict({ id, P, X, a, badCount }: { id?: string; P: Pre
   );
   return (
     <div id={id} className="verdict">
-      <div className="propline">
-        <div className="eyebrow">{t('v_prop')}</div>
-        <div className="v">{sizing.pick ? X.proposalShort(sizing.pick) : X.noneText(sizing)}</div>
-      </div>
-      <div className="eyebrow">{t('g_new')} · {t('indicative')}</div>
+      {resta ? null : (
+        <div className="propline">
+          <div className="eyebrow">{t('v_prop')}</div>
+          <div className="v">{sizing.pick ? X.proposalShort(sizing.pick) : X.noneText(sizing)}</div>
+        </div>
+      )}
+      <div className="eyebrow">{resta ?? t('g_new')} · {t('indicative')}</div>
       <div className={`big ${badCount ? 'warn' : verdictClass(res)}`}>{head}</div>
       {res.fails.length ? <div className="fails">{pills(res.fails, 'fail')}</div> : null}
       {warns.length ? <div className="fails"><span className="note">{t('k_warns')}:</span>{pills(warns, 'warn')}</div> : null}

@@ -103,8 +103,9 @@ export default async function CalculationPage({ params, searchParams }: {
           {rec.ok && can(user, 'report:download') ? (
             <a className="btn btn-primary" href={`/api/calculations/${c.id}/relazione`}>{t('downloadReport')}</a>
           ) : null}
-          {c.liftDesign ? <Link className="btn" href={`/app/lift-designs/${c.liftDesign.id}`}>{ts('openLift')}</Link>
-            : replacement && open ? <Link className="btn" href={`/app/projects/${c.projectId}/calc?from=${c.id}`}>{t('newFrom')}</Link> : null}
+          {c.liftDesign ? <Link className="btn" href={`/app/lift-designs/${c.liftDesign.id}`}>{ts('openLift')}</Link> : null}
+          {/* every calculation starts a new «Calcolo argano» (round 45): a lift design's with its drawing's values marked */}
+          {open ? <Link className="btn" href={`/app/projects/${c.projectId}/calc?from=${c.id}`}>{t('newFrom')}</Link> : null}
         </div>
       </div>
       {before ? <Refreshed before={before} now={c} kind="calc" locale={locale} /> : null}

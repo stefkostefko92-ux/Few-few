@@ -119,7 +119,7 @@ test('calcolo: «usa il valore del rilievo» mette il valore anche sopra quello 
   assert.equal(u.values.Q, '630');
   assert.deepEqual(u.set, ['Q']);
   // the ropes kept in the new machine's fields when the old machine is not compared
-  const kept = usaCalc({ ...blankCalc(), compare: false, keepRopes: true, n_n: '3' }, r, 'funiNumero');
+  const kept = usaCalc({ ...blankCalc(), context: 'repl', compare: false, keepRopes: true, n_n: '3' }, r, 'funiNumero');
   assert.equal(kept.values.o_n, '4');
   assert.equal(kept.values.n_n, '4');
   // above with the pulley not known, over a machine below: above, direct

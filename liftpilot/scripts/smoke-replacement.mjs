@@ -1,7 +1,7 @@
 // The smoke test's machine replacement project (only the machine and the machine room), in an installation of its own:
 // the main calculation has the machine below (no machine room to draw); the calculator starts from the machine over the
-// shaft (its example asked for: a new calculation starts empty), whose room is surveyed measure by measure and saved
-// with a reproduced hash; its relazione tecnica, the drawing set as a draft
+// shaft (its example asked for: a new calculation starts empty), a «Solo argano» with its ropes replaced, whose room is
+// surveyed measure by measure and saved with a reproduced hash; its relazione tecnica, the drawing set as a draft
 // (PDF), the plan and section in DXF and DWG; a drawing set issued from it, its PDF and a revision from the same survey;
 // the whole project it becomes starts from the survey.
 import assert from 'node:assert/strict';
@@ -19,6 +19,12 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   const roomProjectUrl = page.url().replace(/\/calc$/, '');
   await blankCalc({ page, hydrated, example: 'C' });
   assert.equal(await page.inputValue('#layout'), 'top', 'the example has the machine above');
+  // the example of a replacement is a «Solo argano»: the machine is the calculation's, the ropes answered «Sì» here
+  assert.ok(await page.isChecked('input[name="intervento"][value="SOLO_ARGANO"]'), 'Solo argano');
+  assert.equal(await page.locator('.parti-sino li.parte').count(), 2, 'the machine and the ropes');
+  await page.click('.parti-sino li[data-part="ropes"] button:has-text("Sì")');
+  await page.waitForSelector('.parti-sino li[data-part="ropes"] button.on:has-text("Sì")');
+  await page.waitForSelector('.savebar button.primary:not([disabled])');
   await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
   const roomCalcUrl = page.url();
   await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+\/locale$/), page.click('section[aria-labelledby="calc-room"] a[href$="/locale"]')]);

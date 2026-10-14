@@ -1,5 +1,6 @@
-// The server actions' own guards, found by the red team (2026-10-06), each pinned with its probe: a full project does
-// not take a calculator's record and a replacement does not take the one form's; a company without free slots gets the
+// The server actions' own guards, found by the red team (2026-10-06), each pinned with its probe: «Calcolo argano» takes
+// any active installation of the company but only with its type of intervention agreeing with its values and test
+// (round 45), and a replacement does not take the one form's record; a company without free slots gets the
 // same answer for any address, so it cannot probe which addresses have an account elsewhere; a company in read-only
 // mode (no subscription after its trial, or the terms not accepted) saves nothing.
 import { test, mock } from 'node:test';
@@ -12,7 +13,8 @@ const req = createRequire(import.meta.url);
 const pkg = (m: string) => pathToFileURL(req.resolve(m)).href;
 
 type Where = Record<string, unknown>;
-const PROJECTS = [{ id: 'pfull', companyId: 'c1', archivedAt: null, kind: 'FULL' }, { id: 'prepl', companyId: 'c1', archivedAt: null, kind: 'REPLACEMENT' }];
+const PROJECTS = [{ id: 'pfull', companyId: 'c1', archivedAt: null, kind: 'FULL' }, { id: 'prepl', companyId: 'c1', archivedAt: null, kind: 'REPLACEMENT' },
+  { id: 'parch', companyId: 'c1', archivedAt: new Date('2026-10-01'), kind: 'REPLACEMENT' }, { id: 'pforeign', companyId: 'c2', archivedAt: null, kind: 'REPLACEMENT' }];
 const match = (p: Record<string, unknown>, w: Where) => Object.entries(w).every(([k, v]) => p[k] === v);
 const accounts = new Set(['someone@other-company.example']);
 let role = 'TECHNICIAN', readOnly = false;
@@ -40,12 +42,18 @@ mock.module(src('lib/billing-config.ts'), { namedExports: { billingConfigured: (
 mock.module(pkg('next/cache'), { namedExports: { revalidatePath: () => {} } });
 mock.module(pkg('next/navigation'), { namedExports: { redirect: () => { throw new Error('redirect'); } } });
 
-test('a full project takes no calculator record (its calculation comes from the one form)', async () => {
+test('«Calcolo argano» for every installation (round 45): a full project takes it too; no type, nothing saved', async () => {
   const { PRESETS } = await import(src('calc/presets.ts'));
   const { saveCalculationAction } = await import(src('server/calc-actions.ts'));
   role = 'TECHNICIAN';
-  const r = await saveCalculationAction({ projectId: 'pfull', values: { ...PRESETS.A, r: PRESETS.A.r ?? 1 }, label: 'x' });
-  assert.deepEqual(r, { ok: false, error: 'notFound' });
+  const values = { ...PRESETS.A, r: PRESETS.A.r ?? 1 };
+  // a transformation (PRESETS.A is a new lift) on a project created as a whole one: past every guard, to the record
+  await assert.rejects(saveCalculationAction({ projectId: 'pfull', values, label: 'x', intervento: 'TRASFORMAZIONE_COMPLETA' }), /the guard must stop before the record/);
+  assert.deepEqual(await saveCalculationAction({ projectId: 'pfull', values, label: 'x' }), { ok: false, error: 'invalidIntervento', fields: ['intervento'] });
+  // archived or another company's: not found
+  for (const projectId of ['parch', 'pforeign']) {
+    assert.deepEqual(await saveCalculationAction({ projectId, values, label: 'x', intervento: 'TRASFORMAZIONE_COMPLETA' }), { ok: false, error: 'notFound' }, projectId);
+  }
 });
 
 test('a replacement takes no one-form record (it becomes a full project first)', async () => {
@@ -90,8 +98,9 @@ test('the rights of the matrix: the Tecnico calculates but does not draw the pro
   const { saveCalculationAction } = await import(src('server/calc-actions.ts'));
   role = 'TECHNICIAN';
   assert.deepEqual(await saveLiftDesignAction({ projectId: 'pfull', inputs: defaultLift(), source: null, label: 'x' }), { ok: false, error: 'forbidden' });
-  // the calculator answers past its right (the full project's calculation comes from the one form)
-  assert.deepEqual(await saveCalculationAction({ projectId: 'pfull', values: { ...PRESETS.A, r: PRESETS.A.r ?? 1 }, label: 'x' }), { ok: false, error: 'notFound' });
+  // the calculator answers past its right, on any installation (round 45: a full project's «Calcolo argano» too)
+  await assert.rejects(saveCalculationAction({ projectId: 'pfull', values: { ...PRESETS.A, r: PRESETS.A.r ?? 1 }, label: 'x', intervento: 'TRASFORMAZIONE_COMPLETA' }),
+    /the guard must stop before the record/);
   // the company took the calculations away from the Tecnico: refused before anything is looked up
   const { capsOf } = await import(src('lib/rbac.ts'));
   caps = capsOf('TECHNICIAN', [{ role: 'TECHNICIAN', capability: 'calc:create', granted: false }]);
@@ -115,8 +124,8 @@ test('the intervention declared with a calculation must agree with its values an
     { ok: false, error: 'invalidIntervento', fields: ['parti'] });
   assert.deepEqual(await save({ intervento: 'TRASFORMAZIONE_COMPLETA' }), { ok: false, error: 'invalidIntervento', fields: ['context'] });
   assert.deepEqual(await save({ intervento: 'AMMODERNAMENTO', collaudo: { norma: 'en81', parti: ['machine', 'car'] } }), { ok: false, error: 'invalidIntervento', fields: ['norma'] });
-  // agreeing: past the check, to the project (the replacement here; a full project waits for step 3)
+  // agreeing: past the check, to the record, whatever the project was created as
   await assert.rejects(save({ intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'] } }), /the guard must stop before the record/);
-  assert.deepEqual(await saveCalculationAction({ projectId: 'pfull', values, label: 'x', intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'] } }),
-    { ok: false, error: 'notFound' });
+  await assert.rejects(saveCalculationAction({ projectId: 'pfull', values, label: 'x', intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'] } }),
+    /the guard must stop before the record/);
 });

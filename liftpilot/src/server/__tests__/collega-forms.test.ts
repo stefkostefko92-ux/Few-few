@@ -45,6 +45,14 @@ test('calcolo nuovo: segnati i valori presi dal rilievo — anche la macchina «
   assert.ok(top.seeded.includes('layout'));
 });
 
+test('una trasformazione (impianto nuovo, kr. 45): la macchina e le funi esistenti del rilievo non entrano', async () => {
+  const { avvioCalc } = await forms();
+  const a = await avvioCalc(user, 'p1', { ...blankCalc(), context: 'new', compare: false }, 'draft', undefined);
+  assert.equal(a.start.Q, '630', 'the load measured still taken');
+  for (const id of ['o_n', 'o_d', 'o_poles']) assert.equal(a.origine?.valori[id], undefined, id);
+  assert.equal(a.start.o_n, '', 'the existing ropes left empty');
+});
+
 test('calcolo salvato ripreso: nulla dal rilievo, nessun segno sui valori uguali, nessun avviso', async () => {
   const { avvioCalc } = await forms();
   const saved = { ...blankCalc(), Q: '630', layout: 'top', o_n: '4', o_d: '10' };

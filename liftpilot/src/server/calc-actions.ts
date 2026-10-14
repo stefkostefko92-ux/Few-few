@@ -29,18 +29,18 @@ export async function saveCalculationAction(input: { projectId: unknown; values:
   const collaudo = input.collaudo == null ? null : collaudoSchema.safeParse(input.collaudo);
   const tipo = input.intervento == null ? null : tipoInterventoSchema.safeParse(input.intervento);
   if (!projectId.success || !label.success || (collaudo && !collaudo.success) || (tipo && !tipo.success)) return { ok: false, error: 'invalidFields' };
+  // «Calcolo argano» declares its type of intervention (round 45): none, nothing saved
+  if (!tipo) return { ok: false, error: 'invalidIntervento', fields: ['intervento'] };
   if (!values.success) return { ok: false, error: 'invalidFields', fields: values.error.issues.map((i) => String(i.path[0] ?? '')) };
   // an empty roping reads as 1:1 in the calculation: a new calculation has it chosen
   if (String(values.data.r ?? '').trim() === '') return { ok: false, error: 'invalidFields', fields: ['r'] };
   const chosen = collaudo?.success ? collaudo.data : null;
-  if (tipo?.success) {
-    const disagree = interventoValido(tipo.data, values.data, chosen);
-    if (disagree.length) return { ok: false, error: 'invalidIntervento', fields: disagree };
-  }
-  // the calculator is the replacement's: a full project calculates in its one form (audit 2026-10-06)
-  const project = await prisma.project.findFirst({ where: { id: projectId.data, companyId: user.companyId, archivedAt: null, kind: 'REPLACEMENT' }, select: { id: true } });
+  const disagree = tipo.success ? interventoValido(tipo.data, values.data, chosen) : [];
+  if (!tipo.success || disagree.length) return { ok: false, error: 'invalidIntervento', fields: disagree };
+  // every installation of the company, active, whatever it was created as (round 45): its «Calcolo argano»
+  const project = await prisma.project.findFirst({ where: { id: projectId.data, companyId: user.companyId, archivedAt: null }, select: { id: true } });
   if (!project) return { ok: false, error: 'notFound' };
-  const r = await createCalculation(user, project.id, values.data, label.data, chosen, tipo?.success ? tipo.data : null);
+  const r = await createCalculation(user, project.id, values.data, label.data, chosen, tipo.data);
   // the calculator's draft has become this record
   if (r.ok) await dropDraft(user.companyId, project.id, 'calc');
   return r;

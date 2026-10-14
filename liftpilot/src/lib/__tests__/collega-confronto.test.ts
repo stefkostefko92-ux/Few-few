@@ -124,7 +124,8 @@ test('le righe senza alcun valore non si mostrano; i valori si scrivono all’it
 });
 
 test('il calcolo salvato come lato: argano esistente se confrontato, funi tenute altrimenti', () => {
-  const V = { ...blankCalc(), Q: '630', r: '2', layout: 'top', o_n: '4', o_d: '10', o_D: '520', n_n: '4', n_d: '10' };
+  // a saved «Solo argano» (a new calculation's context is the type's, round 45)
+  const V = { ...blankCalc(), context: 'repl', Q: '630', r: '2', layout: 'top', o_n: '4', o_d: '10', o_D: '520', n_n: '4', n_d: '10' };
   const c = latoCalcolo({ id: 'c', createdAt: d('2026-10-11'), inputs: V });
   assert.ok(c?.repl);
   assert.equal(c?.funiNumero, 4);
