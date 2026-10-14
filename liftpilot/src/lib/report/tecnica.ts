@@ -29,6 +29,8 @@ import { TECNICA_DRAWING, roomRows, surveyBlocks } from './tecnica-room';
 import { existingNewBlocks, hookBlocks, massesBlock, openingsBlocks, p4Block, siteChecks } from './tecnica-site';
 import { shapeOf } from '../catalog/shapes';
 import { plantChanged, plantChangedBox } from './elaborati';
+import { oggettoTecnica, titoloTecnica } from './intervento-text';
+import type { TipoIntervento } from '../lift/intervento';
 
 export interface TecnicaInput {
   room: { id: string; label: string | null; createdAt: Date; sha256: string; engineVersion: string; author: string | null };
@@ -47,6 +49,8 @@ export interface TecnicaInput {
   sets: readonly { number: string; revision: number; sha256?: string; plant?: Plant }[];
   /** the SHA-256 of the data of the installation as the document reads them (canon-hash.ts on plant.ts plantData) */
   plantSha256?: string | null;
+  /** the intervention declared with the calculation (round 45); null: saved before it, the words of that time */
+  tipo?: TipoIntervento | null;
 }
 
 const LAYOUT: Readonly<Record<string, string>> = { topDefl: 'argano in alto con puleggia di rinvio nel locale', top: 'argano in alto a tiro diretto' };
@@ -62,7 +66,8 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   const st = (x: 'ok' | 'warn' | 'fail' | 'info'): string => X.st(x);
 
   B.push({ t: 'letterhead', logo: r.logo ? 'logo' : null, from: [r.company, ...(r.companyCity ? [r.companyCity] : [])], to: [] });
-  B.push({ t: 'h1', text: 'Relazione tecnica — sostituzione dell’argano' });
+  const tipo = r.tipo ?? null, head = tipo ? oggettoTecnica(tipo, C, named) : null;
+  B.push({ t: 'h1', text: `Relazione tecnica — ${tipo ? titoloTecnica(tipo) : 'sostituzione dell’argano'}` });
   B.push({ t: 'sub', text: place ? `${pr.name} · ${place}` : pr.name });
   B.push({ t: 'box', text: 'BOZZA DA VERIFICARE E FIRMARE. Documento generato dal software LiftPilot con i dati del rilievo e del calcolo inseriti '
     + 'dall’azienda: diventa relazione tecnica quando il tecnico incaricato lo verifica e lo firma, e la responsabilità è sua.' });
@@ -76,14 +81,16 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   ] });
 
   section('Oggetto');
-  B.push({ t: 'p', text: `Sostituzione dell’argano dell’impianto con un argano a riduttore ${named ? `(${named}) ` : ''}— ${LAYOUT[I.layout] ?? I.layout}, taglia ${I.r}:1. `
+  B.push({ t: 'p', text: `${head ? `${head} ` : `Sostituzione dell’argano dell’impianto con un argano a riduttore ${named ? `(${named}) ` : ''}`}— ${LAYOUT[I.layout] ?? I.layout}, taglia ${I.r}:1. `
     + 'La relazione descrive l’impianto com’è, l’argano esistente e quello nuovo, la sistemazione del nuovo nel locale macchina (basamento, '
     + 'puleggia di rinvio, calate, aperture nella soletta), i carichi sulla soletta e le verifiche del locale; le verifiche della macchina sono nella '
-    + `relazione di calcolo allegata, riassunte nella sezione «Verifiche della nuova macchina».${collaudoText(C, true, ESITI_TECNICA)}` });
+    + `relazione di calcolo allegata, riassunte nella sezione «Verifiche della nuova macchina».${collaudoText(C, true, ESITI_TECNICA, tipo)}` });
 
   section('Riferimenti normativi');
   B.push({ t: 'grid', head: ['Documento', 'Per che cosa'], widths: [0.38, 0.62], align: ['l', 'l'], rows: [
-    ['DPR 162/1999 e s.m.i., art. 2 c.1 lett. cc), artt. 12 e 14', 'la sostituzione del macchinario è una modifica costruttiva: comunicazioni e verifica straordinaria'],
+    ['DPR 162/1999 e s.m.i., art. 2 c.1 lett. cc), artt. 12 e 14', tipo === 'AMMODERNAMENTO'
+      ? 'le sostituzioni e le modifiche dell’ammodernamento sono modifiche costruttive: comunicazioni e verifica straordinaria'
+      : 'la sostituzione del macchinario è una modifica costruttiva: comunicazioni e verifica straordinaria'],
     [NORMA_SIGLA[C.norma], 'norma tecnica del collaudo della modifica'],
     ['UNI EN 81-20:2020, punti 5.2.3 e 5.2.6.3.2.1', 'porta, altezza libera e superficie libera davanti al quadro nel locale macchina'],
     ['UNI EN 81-50:2020', 'verifiche della relazione di calcolo (aderenza, funi)'],

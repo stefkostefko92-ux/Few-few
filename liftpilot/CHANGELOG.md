@@ -2167,6 +2167,26 @@ Progettista, Tecnico, Commerciale. Реални потребители още н
   проект приет, без тип и с несъвместим тип — отказ, архивиран и чужд — notFound), `collega-forms` (трансформация без
   `o_…`).
 
+- **Стъпка 4 — документите по типа** (нов `src/lib/report/intervento-text.ts`): само изчисление, записано с тип
+  (`Calculation.intervento`), казва типа; запис отпреди (NULL) — всяка дума както е отпечатана (всеки клон проверява
+  `tipo`). Relazione di calcolo: заглавие („sostituzione dell’argano“ / „ammodernamento dell’impianto“ / при rifacimento —
+  както досега / „trasformazione completa dell’impianto (collaudo come impianto nuovo)“), Oggetto (машината, която остава —
+  „Verifica dell’argano esistente con le modifiche dell’ammodernamento“), редът „Contesto“ (`ctx_solo`,
+  `ctx_ammodernamento`, `ctx_rif`, `ctx_trasformazione` в `messages/calc/it.json`), изречението на ammodernamento (DPR
+  162/1999, чл. 2 ал. 1 б. cc), частите по име, verifica straordinaria) и записът `impianto.intervento` в списъка на
+  регистъра; машина, която остава — без предложение и без съвет. Relazione tecnica на машинното: заглавието и Oggetto на
+  ammodernamento. Лист 1: бележката COLLAUDO започва с „Intervento: <тип>.“ (трансформацията без допълнителни норми —
+  нова бележка), редът INTERVENTO на листа на машинното — типът. Черновата на поръчка: ред „Intervento“; машина, която
+  остава, не се поръчва (`machineKept` → 422 „L’argano resta quello dell’impianto…“). Копираното резюме казва типа.
+  Типът минава от реда на изчислението през маршрута на relazione, `room-export`, `project-export` (`composeFromCalculation`),
+  издадените комплекти (`composeStored`, `composeStoredRoom`) и `order-export`. Регистър: нов `impianto.intervento`
+  (статус „scelta“, с номера на клаузи — 21.1, 15/16, DPR чл. 2, 12, 14); `npm run lista` + `lista-verifica-xlsx.py`
+  (186 записа, 281 реда в листата; числото на началната страница расте с едно от `registryCounts`). Тестове:
+  `intervento-documenti` (без тип — същият документ; новите думи за SOLO / AMMOD / rifacimento / машина остава / TRASF;
+  бележката на лист 1; поръчката и резюмето), `order-kept` (машината остава — отказ преди всяка машина; същото изпитване
+  без тип и ammodernamento със сменена машина — поръчка). Байтовите тестове на relazione и CAD (`report-files`,
+  `cad-files`) — непроменени.
+
 ## Проверки
 
 - [x] Пуснах пълния quality gate на засегнатия продукт `liftpilot/` (до кръг 6 — `argano/`): lint, typecheck, test (250/250, със схемите, токените и писмата на акаунтите на трите езика, с тестовете за хлабината на вратите, хода на кабината и противотежестта при трите схеми с машина долу, планките на Panev, кабелния канал, редакцията на всеки размер на плана и на разреза, каталога на машините, ограничителите, нишите, етажните табла и имената на котите на трите езика), build. **Зелен.**

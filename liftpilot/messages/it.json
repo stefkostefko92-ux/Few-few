@@ -59,7 +59,8 @@
     "roomIssues": "Il rilievo ha un problema da correggere.",
     "inviteTaken": "Questo indirizzo ha già un account LiftPilot e un indirizzo appartiene a una sola azienda: chiedi all’azienda di invitarti con un altro indirizzo.",
     "rilievoLinked": "Questo rilievo è già collegato a un impianto: scollegalo prima dalla sua pagina.",
-    "invalidIntervento": "Il tipo di intervento non corrisponde alle parti o alla norma scelte"
+    "invalidIntervento": "Il tipo di intervento non corrisponde alle parti o alla norma scelte",
+    "machineKept": "L’argano resta quello dell’impianto (Ammodernamento con «Argano: No»): non c’è un argano da ordinare."
   },
   "auth": {
     "title": "Accesso",

@@ -23,7 +23,7 @@ export function orderRoute(kind: 'design' | 'calc') {
       const r = kind === 'design' ? await exportDesignOrder(user, id.data, format.data) : await exportCalcOrder(user, id.data, format.data);
       if (!r.ok) {
         return r.error === 'engineChanged' ? text(409, ANSWER.stale)
-          : r.error === 'noMachine' ? text(422, ANSWER.noMachine) : text(404, ANSWER.notFound);
+          : r.error === 'noMachine' ? text(422, ANSWER.noMachine) : r.error === 'machineKept' ? text(422, ANSWER.machineKept) : text(404, ANSWER.notFound);
       }
       await audit({ companyId: user.companyId, userId: user.id, action: 'ORDER_EXPORTED', entity: r.entity, entityId: r.entityId, meta: { format: format.data } });
       return attachment(r.body, r.mime, r.name);

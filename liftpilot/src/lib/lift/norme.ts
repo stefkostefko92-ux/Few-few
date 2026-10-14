@@ -123,6 +123,22 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
       + 'quali verifiche riguardano ciascuna parte e la matrice delle norme compatibili sono una lettura del software, da approvare dall’ingegnere',
   },
   {
+    id: 'impianto.intervento', titolo: 'Tipo di intervento: solo argano, ammodernamento, trasformazione completa',
+    valore: 'si sceglie nel calcolo dell’argano e resta con il calcolo salvato. «Solo argano»: si sostituisce l’argano di un impianto esistente '
+      + '(e, se serve, le sue funi); «Ammodernamento»: più parti sostituite o modificate, ciascuna indicata sì o no, l’argano compreso (che può '
+      + 'restare). Sono modifiche costruttive dell’impianto esistente, collaudate secondo UNI 10411-1:2024 o UNI 10411-11:2024 con la verifica '
+      + 'straordinaria; una variazione della velocità nominale o della corsa ne fa un ammodernamento. «Trasformazione completa»: l’impianto '
+      + 'sostituito per intero, arcata compresa, progettato e collaudato come impianto nuovo secondo UNI EN 81-20:2020 e UNI EN 81-50:2020. '
+      + 'Quadro, argano, porte di piano, cabina e arcata sostituiti insieme sono una modifica sostanziale (21.1): il software lo segnala e propone '
+      + 'la trasformazione completa, senza imporla',
+    riferimento: 'DPR 162/1999 e s.m.i., art. 2 c.1 lett. cc), art. 12 c.4–5, art. 14 c.3; UNI 10411-1:2024, 15.1, 16 e 21.1; UNI 10411-11:2024, 15, 16 '
+      + 'e 21.1; UNI EN 81-20:2020; UNI EN 81-50:2020',
+    fonte: 'DPR 162/1999 (testo su Normattiva); UNI 10411-1:2024 e UNI 10411-11:2024, punti citati (il 21.1 come nella voce impianto.rifacimento); '
+      + 'ricerca, capitolo 16 §5.3', stato: 'scelta',
+    nota: 'velocità, portata e corsa variate si indicano tra le parti (la portata entra anche dai carichi documentati); quando l’insieme delle '
+      + 'modifiche diventa una sostituzione completa lo conferma il tecnico incaricato con il soggetto che esegue la verifica straordinaria',
+  },
+  {
     id: 'impianto.rifacimento', titolo: "Rifacimento con l’arcata esistente",
     valore: "si sostituiscono tutte le parti tranne l’arcata, che resta: le sostituzioni sono modifiche costruttive dell’impianto esistente, che si "
       + "collauda secondo UNI 10411-1:2024 o UNI 10411-11:2024 e non come impianto nuovo; le verifiche che riguardano solo l’arcata (il tipo di "

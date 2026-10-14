@@ -206,7 +206,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
           )}
           {tipo ? <CollaudoOptions P={P} mode={MODE[tipo]} chosen={I.chosen} value={collaudo} set={I.setCollaudo} calc={values} /> : null}
         </section>
-        {ready && !resta ? <Results P={P} X={X} a={a} mode={mode} badCount={bad.size} brand={brand} collaudo={collaudo} onUse={onUse} propMsg={propMsg}
+        {ready && !resta ? <Results P={P} X={X} a={a} mode={mode} badCount={bad.size} brand={brand} collaudo={collaudo} tipo={tipo} onUse={onUse} propMsg={propMsg}
           proposalOnly={!complete} /> : null}
       </div>
       {ready && !resta ? <MachineAdvice evaluate={evaluate} alternative={null} wall={valuesWall(deferred)} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} where="calc" /> : null}

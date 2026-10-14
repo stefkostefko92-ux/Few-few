@@ -140,7 +140,7 @@ export function getDrawingSet(user: SessionUser, id: string) {
       user: { select: { name: true } },
       logo: { select: { mime: true, data: true } },
       clientLogo: { select: { mime: true, data: true } },
-      calculation: { select: { id: true, label: true, inputs: true, sha256: true, engineVersion: true, createdAt: true, collaudo: true, liftDesign: { select: { inputs: true, engineVersion: true } } } },
+      calculation: { select: { id: true, label: true, inputs: true, sha256: true, engineVersion: true, createdAt: true, collaudo: true, intervento: true, liftDesign: { select: { inputs: true, engineVersion: true } } } },
       shaftDesign: { select: DESIGN_SELECT },
       roomDesign: { select: ROOM_SELECT },
       // whether its PDF is kept as issued (not the bytes)
@@ -211,7 +211,7 @@ export function getLiftDesign(user: SessionUser, id: string) {
     include: {
       project: { select: { id: true, name: true, archivedAt: true, plant: true, plantNumber: true, client: true } },
       user: { select: { name: true } },
-      calculation: { select: { id: true, sha256: true, engineVersion: true } },
+      calculation: { select: { id: true, sha256: true, engineVersion: true, intervento: true } },
       shaftDesign: { select: { id: true, sha256: true, engineVersion: true } },
     },
   });
@@ -266,7 +266,7 @@ export function getRoomDesign(user: SessionUser, id: string) {
     include: {
       project: true,
       user: { select: { name: true } },
-      calculation: { select: { id: true, label: true, inputs: true, sha256: true, engineVersion: true, profileId: true, createdAt: true, collaudo: true, summary: true, user: { select: { name: true } } } },
+      calculation: { select: { id: true, label: true, inputs: true, sha256: true, engineVersion: true, profileId: true, createdAt: true, collaudo: true, intervento: true, summary: true, user: { select: { name: true } } } },
     },
   });
 }

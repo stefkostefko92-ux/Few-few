@@ -20,6 +20,7 @@ import { slug } from './download';
 import { getCalculation, getLetterhead, getLiftDesign } from './queries';
 import { companyPrices } from './prices';
 import { calcRecord, storedCollaudo } from './records';
+import { macchinaResta } from '@/lib/lift/intervento';
 
 export const ORDER_FORMATS = ['docx', 'pdf'] as const;
 export type OrderFormat = (typeof ORDER_FORMATS)[number];
@@ -30,7 +31,7 @@ const MIME: Readonly<Record<OrderFormat, string>> = {
 
 export type OrderExport =
   | { ok: true; body: Uint8Array<ArrayBuffer>; mime: string; name: string; entity: 'LiftDesign' | 'Calculation'; entityId: string }
-  | { ok: false; error: 'notFound' | 'engineChanged' | 'noMachine' };
+  | { ok: false; error: 'notFound' | 'engineChanged' | 'noMachine' | 'machineKept' };
 
 const PROJECT = { name: true, address: true, city: true, province: true, plantNumber: true, plant: true } as const;
 
@@ -54,6 +55,8 @@ export async function exportDesignOrder(user: SessionUser, id: string, format: O
   const d = await getLiftDesign(user, id), r = d ? liftRecord(d, d.shaftDesign.sha256, d.calculation.sha256) : null;
   if (!d || !r) return { ok: false, error: 'notFound' };
   if (!r.same) return { ok: false, error: 'engineChanged' };
+  // a modernisation keeping the existing machine orders none (round 45)
+  if (macchinaResta(d.calculation.intervento, r.dv.collaudo)) return { ok: false, error: 'machineKept' };
   const { inputs, dv } = r, order = designOrder(inputs, savedLiftAdvice(inputs), dv);
   if (!order) return { ok: false, error: 'noMachine' };
   const found = await prisma.project.findFirst({ where: { id: d.project.id, companyId: user.companyId }, select: PROJECT });
@@ -61,7 +64,7 @@ export async function exportDesignOrder(user: SessionUser, id: string, format: O
   const { plant, ...project } = found;
   return render({
     ...await getLetterhead(user), ...await orderPrices(user, order), author: user.name, project, order, collaudo: dv.collaudo, values: dv.values, pEstimate: dv.origin.P === 'estimate',
-    ...designSite(inputs, dv, order.machine, order.recorded), plant: plantData(plant),
+    ...designSite(inputs, dv, order.machine, order.recorded), plant: plantData(plant), tipo: d.calculation.intervento,
     record: { kind: 'design', id: d.id, sha256: d.sha256, createdAt: d.createdAt, label: d.label },
   }, format);
 }
@@ -73,6 +76,8 @@ export async function exportCalcOrder(user: SessionUser, id: string, format: Ord
   if (!c || !rec) return { ok: false, error: 'notFound' };
   if (c.liftDesign) return exportDesignOrder(user, c.liftDesign.id, format);
   if (!rec.ok) return { ok: false, error: 'engineChanged' };
+  const collaudo = storedCollaudo(rec.values, c.collaudo);
+  if (macchinaResta(c.intervento, collaudo)) return { ok: false, error: 'machineKept' };
   const order = calcOrder(rec.values, savedValuesAdvice(rec.values));
   if (!order) return { ok: false, error: 'noMachine' };
   const { name, address, city, province, plantNumber } = c.project;
@@ -80,7 +85,7 @@ export async function exportCalcOrder(user: SessionUser, id: string, format: Ord
   const design = rec.design;
   return render({
     ...await getLetterhead(user), ...await orderPrices(user, order), author: user.name, project: { name, address, city, province, plantNumber }, order,
-    collaudo: storedCollaudo(rec.values, c.collaudo), values: rec.values,
+    collaudo, values: rec.values, tipo: c.intervento,
     ...calcSite(design?.layout ?? null, order.machine, rec.values), plant: plantData(c.project.plant),
     record: { kind: 'calc', id: c.id, sha256: c.sha256, createdAt: c.createdAt, label: c.label },
   }, format);

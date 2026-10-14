@@ -20,6 +20,7 @@ import { supportRows } from './sheet-loads';
 import type { Plant } from '../plant';
 import { makeFmt } from '../present/tr';
 import { collaudoNote, partiText } from '../report/collaudo';
+import { etichettaIntervento } from '../report/intervento-text';
 import { roomCheckKey, type RoomDerived } from '../room/derive';
 import { roomSupportOf } from '../room/summary';
 import type { Row, TitleData } from './datasheet';
@@ -188,7 +189,7 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
   const { ctx, res } = d.analysis, { I, N } = ctx, Pl = x.plant, C = x.collaudo, s = x.survey, R = s.room, M = d.M;
   const base: Row[] = [
     ['NORMATIVA DI RIFERIMENTO', '', C.norma === 'en81' ? 'UNI EN 81-20/50:2020' : NORMA_SIGLA[C.norma]],
-    ['INTERVENTO', '', 'SOSTITUZIONE DELL’ARGANO'],
+    ['INTERVENTO', '', x.tipo ? etichettaIntervento(x.tipo, C).toUpperCase() : 'SOSTITUZIONE DELL’ARGANO'],
     ['PARTI SOSTITUITE O MODIFICATE', '', partiText(C).toUpperCase()],
     ['PORTATA', 'kg', fmt(I.Q, 0)],
     ['VELOCITÀ', 'm/s', fmt(I.v, 2)],
@@ -262,7 +263,7 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
         + 'UNI EN 81-20:2020, punti 5.2 e 5.2.6.3.3.',
     },
   ];
-  const test = collaudoNote(C, `NOTA ${notes.length + 1}`);
+  const test = collaudoNote(C, `NOTA ${notes.length + 1}`, undefined, x.tipo ?? null);
   if (test) notes.push(test);
   // what the law asks of the modification (paraphrased, registry ADEMPIMENTI)
   notes.push({ title: 'ADEMPIMENTI (DPR 162/1999)', tag: `NOTA ${notes.length + 1}`, text: ADEMPIMENTI.modifica.map((p) => `${p.rif}: ${p.testo}.`).join(' ') });

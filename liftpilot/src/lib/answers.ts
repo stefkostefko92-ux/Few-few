@@ -13,6 +13,8 @@ export const ANSWER = {
   /** the running engines no longer reproduce the record (or what it was made from): its documents wait for it to be made again */
   stale: e.recordStale,
   noMachine: e.noCatalogueMachine,
+  /** a modernisation keeping the existing machine: nothing to order (round 45) */
+  machineKept: e.machineKept,
   failed: e.documentFailed,
   busy: e.rendererBusy,
 } as const;

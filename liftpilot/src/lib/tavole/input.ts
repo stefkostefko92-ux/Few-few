@@ -2,6 +2,7 @@
 // installation, the project and the company, and the identity of this issue of the set (number, author, revisions).
 import type { FormValues } from '@/calc/types';
 import type { Layout } from '@/shaft/types';
+import type { TipoIntervento } from '../lift/intervento';
 import type { ValueMarks } from '../lift/marks';
 import type { Plant } from '../plant';
 
@@ -35,6 +36,8 @@ export interface TavoleInput {
   /** the records the set is drawn from, as sheet 1 names them (the relazione of the same calculation goes with it):
    *  the calculation, the shaft design of a whole project or the machine room surveyed of a replacement */
   records?: SetRecords;
+  /** the intervention declared with the calculation (round 45): sheet 1's note names it; none — saved before it */
+  tipo?: TipoIntervento | null;
 }
 
 /** A stored record: its id and SHA-256. */

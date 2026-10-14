@@ -2,6 +2,7 @@
 // (folded in simple mode), UNI 10411-1 adaptations, values to check, copyable summary.
 import { useRef, useState, type ReactNode } from 'react';
 import { NORMA_SIGLA, adeguamentiDovuti, type Collaudo } from '@/lib/lift';
+import type { TipoIntervento } from '@/lib/lift/intervento';
 import { ADAPT } from '@/lib/present/adapt';
 import type { Pres } from '@/lib/present/tr';
 import type { Analysis } from '@/lib/present/analysis';
@@ -22,6 +23,9 @@ interface Props {
   brand?: string;
   /** the acceptance test: the adaptations follow its standard, as the report sets them out */
   collaudo: Collaudo;
+  /** the type of intervention chosen or declared (round 45; none: a calculation saved before it): the copied summary
+   *  names it */
+  tipo?: TipoIntervento | null;
   /** loads a proposal into the new-machine fields; absent on a saved calculation */
   onUse?: (key: UseKey) => void;
   propMsg?: string;
@@ -115,7 +119,7 @@ export default function Results(props: Props) {
     </Card>
   );
   const tech = techCards(P, X, a);
-  const copy = <CopyCard key="copy" P={P} text={summaryText(P, X, a, { badVisible: badCount, brand, rifacimento: C.rifacimento === true })} />;
+  const copy = <CopyCard key="copy" P={P} text={summaryText(P, X, a, { badVisible: badCount, brand, rifacimento: C.rifacimento === true, intervento: props.tipo ? { tipo: props.tipo, collaudo: C } : null })} />;
   const head: ReactNode[] = [<ProposalCard key="prop" P={P} X={X} a={a} onUse={props.onUse} propMsg={props.propMsg} />, quick];
   return (
     <div className="results">

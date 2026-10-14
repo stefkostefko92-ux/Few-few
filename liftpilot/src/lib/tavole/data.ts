@@ -259,7 +259,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   if (ambitoOf(C, 'gr_stress') === 'applies') notes.push(railNote(rc, railLabel(L.inputs.carRail), gear, Pl.liftUse, `NOTA ${notes.length + 1}`, fmt, !!cwGearOf(underPit, Pl)));
   // the governor's load not given; the HEB beams' bearings (round 36)
   if (Gr && SL.heb) notes.push(hebNote(`NOTA ${notes.length + 1}`));
-  const test = collaudoNote(C, `NOTA ${notes.length + 1}`, carichiOf(x.values));
+  const test = collaudoNote(C, `NOTA ${notes.length + 1}`, carichiOf(x.values), x.tipo ?? null);
   if (test) notes.push(test);
 
   return {

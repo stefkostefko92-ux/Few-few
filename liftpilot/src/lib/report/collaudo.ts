@@ -15,6 +15,8 @@ import { ADAPT } from '../present/adapt';
 import type { Tr } from '../present/tr';
 import type { BlockStatus, ReportBlock } from './model';
 import { MACCHINA_81_1 } from './refs';
+import { ammodernamentoText, notaIntervento } from './intervento-text';
+import { macchinaResta, type TipoIntervento } from '../lift/intervento';
 
 const LIFT = appIt.lift;
 
@@ -128,9 +130,10 @@ const aggiunteSentence = (C: Collaudo, esiti: string): string => (C.aggiuntive?.
   : '');
 
 /** What the object of the relazione says of the intervention and its acceptance test (a new lift: only the standards
- *  added, if any); `esiti` is the title of the document's section with the result under each standard. */
-export function collaudoText(C: Collaudo, repl: boolean, esiti = ESITI_CALCOLO): string {
-  return repl ? interventionText(C) + aggiunteSentence(C, esiti) : aggiunteSentence(C, esiti);
+ *  added, if any); `esiti` is the title of the document's section with the result under each standard; `tipo`: the type
+ *  declared with the calculation (none: the words of the record's time). */
+export function collaudoText(C: Collaudo, repl: boolean, esiti = ESITI_CALCOLO, tipo: TipoIntervento | null = null): string {
+  return repl ? interventionText(C, tipo) + aggiunteSentence(C, esiti) : aggiunteSentence(C, esiti);
 }
 
 /** The renovation that keeps the existing sling: a modification, by the practice of the registry's entry. */
@@ -139,9 +142,10 @@ const RIFACIMENTO_TEXT = " Rifacimento dell’impianto con l’arcata esistente:
   + "impianto nuovo. È la prassi seguita (voce «impianto.rifacimento» del registro): il tecnico incaricato la conferma con il soggetto che esegue "
   + 'la verifica straordinaria.';
 
-function interventionText(C: Collaudo): string {
-  // a renovation is one only under UNI 10411 (collaudoOf)
-  const what = C.rifacimento && C.norma !== 'en81' ? RIFACIMENTO_TEXT : C.parti.includes('machine') || C.norma === 'en81'
+function interventionText(C: Collaudo, tipo: TipoIntervento | null): string {
+  // a renovation is one only under UNI 10411 (collaudoOf); a modernisation declared as one says so, its parts named
+  const what = C.rifacimento && C.norma !== 'en81' ? RIFACIMENTO_TEXT
+    : tipo === 'AMMODERNAMENTO' && C.norma !== 'en81' ? ammodernamentoText(macchinaResta(tipo, C), partiText(C)) : C.parti.includes('machine') || C.norma === 'en81'
     ? ' La sostituzione del macchinario è una modifica costruttiva ai sensi del DPR 162/1999 e s.m.i.'
     : " L’intervento modifica un impianto esistente (DPR 162/1999 e s.m.i.).";
   if (C.norma === 'en81') return `${what} Il collaudo segue la ${NORMA_SIGLA.en81}, come per un impianto nuovo: ogni verifica entra nell’esito.`;
@@ -177,15 +181,16 @@ export function adaptSection(C: Collaudo, repl: boolean, t: Tr): { title: string
 }
 
 /** The note of sheet 1 on the acceptance test: a modification's parts, the standards added (none when tested as new
- *  to EN 81-20/50 alone); with the design's loads `ora`, the documented loads missing and the existing sling to check
- *  for the new loads (arcata.ts). */
-export function collaudoNote(C: Collaudo, tag: string, ora?: Carichi | null): { title: string; tag: string; text: string } | null {
+ *  to EN 81-20/50 alone, unless the type declared with the calculation is to be named: `tipo`, round 45); with the
+ *  design's loads `ora`, the documented loads missing and the existing sling to check for the new loads (arcata.ts). */
+export function collaudoNote(C: Collaudo, tag: string, ora?: Carichi | null, tipo: TipoIntervento | null = null): { title: string; tag: string; text: string } | null {
   const added = C.aggiuntive?.length ? ` Anche secondo ${(C.aggiuntive ?? []).map((n) => NORMA_BREVE[n]).join(' e ')}: ogni normativa ha il suo esito, quello del collaudo è il peggiore.` : '';
-  if (C.norma === 'en81') return added ? { title: 'COLLAUDO', tag, text: `Collaudo secondo ${NORMA_SIGLA.en81}.${added}` } : null;
+  const head = tipo ? `${notaIntervento(tipo, C)} ` : '';
+  if (C.norma === 'en81') return added || tipo ? { title: 'COLLAUDO', tag, text: `${head}Collaudo secondo ${NORMA_SIGLA.en81}.${added}` } : null;
   const rif = C.rifacimento ? " Rifacimento con l’arcata esistente: l’arcata resta quella dell’impianto, collaudato come modifica." : '';
   const carichi = ora !== undefined && tStarOf(C, ora) === 'ignoto' ? ` ${mancanti(C.norma)}.` : '';
   const arcata = ora !== undefined && slingCheck(C, ora) ? ARCATA_BREVE : '';
-  return { title: 'COLLAUDO', tag, text: `Collaudo secondo ${NORMA_SIGLA[C.norma]}.${rif}${carichi}${arcata}${added} Parti sostituite o modificate: ${partiText(C)}. Le verifiche con esito `
+  return { title: 'COLLAUDO', tag, text: `${head}Collaudo secondo ${NORMA_SIGLA[C.norma]}.${rif}${carichi}${arcata}${added} Parti sostituite o modificate: ${partiText(C)}. Le verifiche con esito `
     + "«ESISTENTE» riguardano parti che restano come sono e non entrano nell’esito delle verifiche." };
 }
 
