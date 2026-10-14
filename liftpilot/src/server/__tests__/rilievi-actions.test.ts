@@ -174,9 +174,9 @@ test('la versione aperta: chi salva su una versione superata riceve il conflitto
   const id = await created();
   const opened = (schede.find((s) => s.id === id)?.updatedAt as Date).toISOString();
   as('u3', 'OWNER');
-  assert.match(await redirected(updateRilievoAction({ status: 'idle' }, form({ ...SHEET, id, base: opened, marca: 'Otis' }))), new RegExp(`/rilievi/${id}\\?ok=schedaSaved$`));
+  assert.match(await redirected(updateRilievoAction({ status: 'idle' }, form({ ...SHEET, scheda: id, base: opened, marca: 'Otis' }))), new RegExp(`/rilievi/${id}\\?ok=schedaSaved$`));
   as('u2', 'ENGINEER');
-  const r = await updateRilievoAction({ status: 'idle' }, form({ ...SHEET, id, base: opened, marca: 'Kone' }));
+  const r = await updateRilievoAction({ status: 'idle' }, form({ ...SHEET, scheda: id, base: opened, marca: 'Kone' }));
   assert.equal(r.status, 'conflict');
   const current = schede.find((s) => s.id === id);
   assert.equal(current?.marca, 'Otis', 'the other person’s change is not overwritten');
@@ -184,9 +184,9 @@ test('la versione aperta: chi salva su una versione superata riceve il conflitto
   assert.ok(r.status === 'conflict' && r.base === (current?.updatedAt as Date).toISOString(), 'the base is now the current version');
   assert.ok(r.status === 'conflict' && /^Ultima modifica di Anna Neri il \d\d\/\d\d\/\d{4}, \d\d:\d\d$/.test(r.updated), 'the head names the version that caused it');
   // saved again knowingly, over the version seen
-  assert.match(await redirected(updateRilievoAction({ status: 'idle' }, form({ ...SHEET, id, base: r.status === 'conflict' ? r.base : '', marca: 'Kone' }))), /ok=schedaSaved/);
+  assert.match(await redirected(updateRilievoAction({ status: 'idle' }, form({ ...SHEET, scheda: id, base: r.status === 'conflict' ? r.base : '', marca: 'Kone' }))), /ok=schedaSaved/);
   assert.equal(schede.find((s) => s.id === id)?.marca, 'Kone');
-  assert.equal((await updateRilievoAction({ status: 'idle' }, form({ ...SHEET, id, base: 'non-una-data' }))).status, 'conflict');
+  assert.equal((await updateRilievoAction({ status: 'idle' }, form({ ...SHEET, scheda: id, base: 'non-una-data' }))).status, 'conflict');
 });
 
 test('la scheda di un’altra azienda non esiste: modifica, cestino, pagina, PDF', async () => {
@@ -194,7 +194,7 @@ test('la scheda di un’altra azienda non esiste: modifica, cestino, pagina, PDF
   const { sheetToShow, sheetToEdit } = await pages();
   const id = await created();
   as('u9', 'OWNER', 'c2');
-  assert.deepEqual(await updateRilievoAction({ status: 'idle' }, form({ ...SHEET, id, base: new Date().toISOString() })), { status: 'error', error: 'notFound' });
+  assert.deepEqual(await updateRilievoAction({ status: 'idle' }, form({ ...SHEET, scheda: id, base: new Date().toISOString() })), { status: 'error', error: 'notFound' });
   assert.deepEqual(await trashRilievoAction({}, form({ id })), { error: 'notFound' });
   assert.deepEqual(await restoreRilievoAction({}, form({ id })), { error: 'notFound' });
   assert.equal(await sheetToShow(user as never, id), null);
@@ -304,7 +304,7 @@ test('quello che è stato confermato si ricorda: le stesse differenze non si chi
   assert.ok(asked.status === 'confirm');
   const id = idOf(await redirected(createRilievoAction({ status: 'idle' }, form({ ...sent, conferma: asked.impronta }))));
   const base = () => (schede.find((s) => s.id === id)?.updatedAt as Date).toISOString();
-  const edit = (changes: Record<string, string>) => updateRilievoAction({ status: 'idle' }, form({ ...sent, ...changes, id, base: base() }));
+  const edit = (changes: Record<string, string>) => updateRilievoAction({ status: 'idle' }, form({ ...sent, ...changes, scheda: id, base: base() }));
   // another field changes, the confirmed difference stays: saved without asking
   assert.match(await redirected(edit({ 'oq-note': 'Nota nuova' })), /ok=schedaSaved/);
   // the difference itself changes: asked again
@@ -375,7 +375,7 @@ test('l’ordine quadro MoviLift: salvato con la scheda, il suo PDF; con Pelazza
   assert.ok(forged.status === 'invalid' && forged.errors['om-voltA'] === 'option' && forged.errors['om-controllo'] === 'option');
   // the panel turns out to be a Pelazza
   const base = (schede.find((s) => s.id === id)?.updatedAt as Date).toISOString();
-  await redirected(updateRilievoAction({ status: 'idle' }, form({ ...sheet, quadroMarca: 'PELAZZA', 'oq-nFermate': '5', id, base })));
+  await redirected(updateRilievoAction({ status: 'idle' }, form({ ...sheet, quadroMarca: 'PELAZZA', 'oq-nFermate': '5', scheda: id, base })));
   assert.deepEqual(schede.find((s) => s.id === id)?.ordineQuadro, { modulo: 'pelazza-ordine-quadri-032026', valori: { nFermate: '5' } });
   assert.equal((await get(id, 'ordine-quadro-movilift')).status, 404);
   r = await get(id, 'ordine-quadro');

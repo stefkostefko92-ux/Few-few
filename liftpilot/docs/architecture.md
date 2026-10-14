@@ -384,12 +384,12 @@ src/lib/rilievi/     Rilievi (кръг 41) — картите за оглед, �
                      collegati-client (свързаните данни в реално време върху CollegatiHost — collegati.js на rilievi),
                      valori-client (радио/падащ списък и „Sì/No“ ↔ модул в браузъра), ordine (редът на разделите: FISSE,
                      ORDINABILI, ordineEffettivo, parseOrdine, parseMossa, sposta), action-state (отговорите на действията:
-                     invalid/conflict/confirm{base, impronta}/error; CONFERMA_KEY), t + i18n (преводачът на `rilievi` през
+                     invalid/conflict/confirm{base, impronta}/error; CONFERMA_KEY, SCHEDA_KEY), t + i18n (преводачът на `rilievi` през
                      use-intl/core); ordini/ — moduli (картите на полетата на Pelazza, MoviLift, листа за аргано и 2SG, zod;
                      MODULI, nomeModulo), registry (SLOTS по марка, slotAperto, slotByPath/Prefix), valori, opzioni, numeri,
                      collegamenti-elenco (ЕДИНСТВЕНИЯТ списък на връзките) + collegamenti (видовете места, проверката при
                      зареждане) + collegati (discrepanzeDi, improntaDi, prefillCollegati) + collegati-browser (JSON-ът за
-                     браузъра), riepilogo (модулите в печата на картата), prefill, form (withPrefill, moduloSpec(s) за формата).
+                     браузъра) + auto-key (името `collegati-auto`, без картите), riepilogo (модулите в печата на картата), prefill, form (withPrefill, moduloSpec(s) за формата).
 src/server/rilievi/  queries (списък и търсене със SQL параметри, getScheda — по фирма, логото на фирмата), service (запис с
                      мерките и одита в една транзакция, base → конфликт, кошче, окончателно), pages (каквото страниците
                      искат: картата по правата, formStart/newForm/editForm със свързаните данни за браузъра, formSections,
@@ -405,12 +405,16 @@ src/server/rilievi/  queries (списък и търсене със SQL пара
 src/app/[locale]/app/rilievi/  Екраните на Rilievi: списък и търсене (page), nuovo, [id] (картата), [id]/modifica, [id]/stampa
                      (листът A4), [id]/elimina (към кошчето), cestino и cestino/[id]/elimina; layout.tsx носи rilievi.css,
                      rilievi-form.css и rilievi-print.css. Пунктът „Rilievi“ е в AppShell (Workspace).
-src/components/rilievi/  SchedaForm (формата: отговорите на действията, обобщението на грешките, конфликтът, фокусът на
-                     отговора; модулите като спецификации от страницата) + EditLead (редът „Ultima modifica“ в главата на
-                     промяната, обновен при конфликт) + FieldInput,
-                     MisureBlock, ModuloBlock, use-scheda-form (правилата на app.js на rilievi върху формата; връзките на
-                     приложението и другите формуляри при непазени промени — пълно зареждане, за да пита браузърът;
-                     `lib/rilievi/leave.ts`), SectionIndex,
+src/components/rilievi/  SchedaForm (формата: разделите в реда на фирмата, отговорите на действията, обобщението на
+                     грешките, конфликтът, потвърждението на разликите със «Salva comunque» след «Salva», фокусът на
+                     отговора; модулите като спецификации от страницата, връзките като данни) + EditLead (редът „Ultima
+                     modifica“ в главата на промяната, обновен при конфликт) + FieldInput,
+                     MisureBlock, ModuloBlock (обвивките за марка и «Sì», радио/падащ списък, разликите под групата),
+                     DiffItem (една разлика — и на сървъра, и в браузъра), use-scheda-form (правилата на app.js, moduli.js
+                     и collegati.js на rilievi върху формата; връзките на приложението и другите формуляри при непазени
+                     промени — пълно зареждане, за да пита браузърът; `lib/rilievi/leave.ts`) + form-dom (условията върху
+                     DOM, адаптерът на collegati-client/prefill-client), SectionIndex, SezioniForm (редът на разделите на
+                     страницата на фирмата, `rilievi-sezioni.css`),
                      LiveSearch (търсенето по адреса), Results (таблицата/картите и празните състояния), parts (табелата, таблицата
                      на мерките, маркираните думи, страниците), ActionButton (кошче/възстановяване/окончателно), Confirm,
                      Flash (`?ok=`), PrintTools, RilieviHead.

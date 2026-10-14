@@ -100,6 +100,20 @@
 .rv-trashed { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
 .rv-trashed .rv-acts { display: flex; flex-wrap: wrap; gap: 8px; }
 
+/* the linked data the sheet and its modules say differently (ordini/collegati.ts): no error — red is for errors — so a
+   dashed amber frame, the paper's «check this»: under a module's group while typing, over the form on save, on the sheet */
+.rv-mdiff, .rv-diffnote { border: 1.5px dashed var(--warn); border-radius: var(--radius-sm); background: var(--warn-bg); color: var(--ink); }
+.rv-mdiff { padding: 10px 14px; font-size: 14.5px; line-height: 1.5; }
+.rv-mdiff[hidden] { display: none; }
+.rv-mdiff-title { font-weight: 700; color: var(--warn); }
+.rv-diffnote { padding: 16px 18px; line-height: 1.5; }
+.rv-diffnote h2 { font-size: 17px; color: var(--ink); }
+.rv-diffnote h2 + p { margin-top: 4px; color: var(--ink-2); }
+.rv-diffnote > p > strong { color: var(--warn); }
+.rv-mdiff ul, .rv-diffnote ul { margin: 6px 0 0; padding-left: 20px; }
+.rv-diffnote p + ul { margin-top: 8px; }
+.rv-mdiff strong, .rv-diffnote li strong { color: var(--ink); }
+
 /* a filled supplier's module under its question: its name, the download and the print of its own PDF */
 .rv-modulo-links { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; white-space: normal; }
 .rv-modulo-links > span { flex-basis: 100%; font-weight: 400; color: var(--ink-2); }

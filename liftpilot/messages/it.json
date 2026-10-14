@@ -2500,7 +2500,8 @@
         "up": "Sposta su «{name}»",
         "down": "Sposta giù «{name}»",
         "save": "Salva ordine",
-        "reset": "Ripristina l'ordine predefinito"
+        "reset": "Ripristina l'ordine predefinito",
+        "readOnly": "L'ordine si cambia quando l'azienda non è in sola lettura."
       }
     }
   }

@@ -107,9 +107,10 @@ verifica();
 
 /**
  * The fields that still follow their source travel with the save under this key (collegati-client.ts): when the form
- * comes back (an error, the confirmation), they are `auto` again.
+ * comes back (an error, the confirmation), they are `auto` again. (In auto-key.ts, so that the browser's form can name it
+ * without this module.)
  */
-export const AUTO_KEY = 'collegati-auto';
+export { AUTO_KEY } from './auto-key';
 
 /**
  * The names of the form that may be `auto` — anything else is ignored: the linked fields of the sheet and of the modules

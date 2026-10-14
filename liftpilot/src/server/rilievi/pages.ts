@@ -54,12 +54,6 @@ export const newForm = (user: SessionUser, today: string = businessDay()): Rilie
 /** A stored sheet's form (for «Modifica»): its values, its rows, its modules (or their prefill when never filled). */
 export const editForm = (user: SessionUser, scheda: SchedaFull): RilievoFormStart => formStart(user, formValuesFromScheda(scheda));
 
-/** @deprecated the values alone — use newForm (it carries `auto` and the discrepancies too). */
-export const newFormValues = (user: SessionUser, today: string = businessDay()): FormValues => newForm(user, today).values;
-
-/** @deprecated the values alone — use editForm (it carries `auto` and the discrepancies too). */
-export const editFormValues = (user: SessionUser, scheda: SchedaFull): FormValues => editForm(user, scheda).values;
-
 /** The linked data for the browser (collegati-client.ts, prefill-client.ts): the links, their names, who writes. */
 export const collegatiData = (user: SessionUser): CollegatiDati => collegatiPerBrowser(rilieviTranslator(), contestoOf(user));
 

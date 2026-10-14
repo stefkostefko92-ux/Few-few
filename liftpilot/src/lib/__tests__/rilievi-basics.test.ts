@@ -13,7 +13,7 @@ import { bodyOf, listParamsSchema, MAX_FORM_FIELDS, schedaIdSchema } from '@/lib
 import { browserSendable } from '@/lib/rilievi/leave';
 import { MISURA_COLUMNS } from '@/lib/rilievi/misure';
 import { COLLEGAMENTI } from '@/lib/rilievi/ordini/collegamenti';
-import { prefillFill, misureRowsFor, prefillInput, surveyText, surveyTicked, type PrefillHost } from '@/lib/rilievi/prefill-client';
+import { prefillFill, misureRowsFor, surveyText, surveyTicked, type PrefillHost } from '@/lib/rilievi/prefill-client';
 import type { Ctl } from '@/lib/rilievi/collegati-client';
 import { businessDay, dateFromDay, dayFromDate } from '@/lib/rilievi/time';
 import { parseScheda } from '@/lib/rilievi/validation';
@@ -181,9 +181,6 @@ describe('the browser’s rules for the modules’ survey fields', () => {
     rif.dataset.auto = '';
     prefillFill(host, { ...values, numeroImpianto: '', indirizzo: '' }, ctx);
     assert.equal(rif.value, 'Mio riferimento');
-    // the prefill before the sync, kept only for the form until it is rewired: never empties, never writes who writes
-    assert.equal(prefillInput({ kind: 'text', prefill: 'data', value: '', maxLength: 27 }, values), '12/10/2026');
-    assert.equal(prefillInput({ kind: 'text', prefill: 'azienda', value: '', maxLength: 27 }, values), null);
   });
 
   it('show a row of measurements per stop typed, 1..300', () => {

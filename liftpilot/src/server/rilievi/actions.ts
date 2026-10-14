@@ -12,7 +12,7 @@ import { DEFAULT_LOCALE, isLocale } from '@/i18n/locales';
 import { getSessionUser, type SessionUser } from '@/lib/auth';
 import { can, type Capability } from '@/lib/rbac';
 import { rateLimit } from '@/lib/ratelimit';
-import { CONFERMA_KEY, type RilievoActionState, type RilievoFormState } from '@/lib/rilievi/action-state';
+import { CONFERMA_KEY, SCHEDA_KEY, type RilievoActionState, type RilievoFormState } from '@/lib/rilievi/action-state';
 import { fmt } from '@/lib/rilievi/fmt';
 import { rilieviTranslator } from '@/lib/rilievi/i18n';
 import { baseSchema, bodyOf, schedaIdSchema } from '@/lib/rilievi/inputs';
@@ -72,11 +72,11 @@ export async function createRilievoAction(_prev: RilievoFormState, fd: FormData)
   redirect(`${a.base}/${scheda.id}?ok=schedaCreated`);
 }
 
-/** «Salva modifiche»: the sheet `id`, over the version `base` the form was opened on. */
+/** «Salva modifiche»: the sheet `scheda`, over the version `base` the form was opened on. */
 export async function updateRilievoAction(_prev: RilievoFormState, fd: FormData): Promise<RilievoFormState> {
   const a = await actor(fd, 'rilievi:edit');
   if ('error' in a) return { status: 'error', error: a.error };
-  const id = schedaIdSchema.safeParse(str(fd, 'id'));
+  const id = schedaIdSchema.safeParse(str(fd, SCHEDA_KEY));
   const scheda = id.success ? await getScheda(a.user.companyId, id.data) : null;
   if (!id.success || !scheda) return { status: 'error', error: 'notFound' };
   const body = bodyOf(fd);

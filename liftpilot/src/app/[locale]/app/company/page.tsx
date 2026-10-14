@@ -3,22 +3,27 @@ import { Link } from '@/i18n/routing';
 import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { getCompanyLogo } from '@/server/queries';
+import { sezioniSetting } from '@/server/rilievi/sezioni';
 import LogoForm from '@/components/tavole/LogoForm';
 import AccountHead, { PanelHead } from '@/components/AccountHead';
 import Icon from '@/components/Icon';
+import SezioniForm from '@/components/rilievi/SezioniForm';
+import '@/app/rilievi-sezioni.css';
 
 export async function generateMetadata() {
   const t = await getTranslations('tavole');
   return { title: t('companyTitle') };
 }
 
-// The company as the drawing sets show it — its logo in the title block, changed only when the company is not read-only —
-// and all its data in one JSON file (always: also to leave the service).
+// The company as the drawing sets show it — its logo in the title block, changed only when the company is not read-only —,
+// the order of the survey sheet's sections (Rilievi: the form, the sheet's page, the print and the PDF follow it; set by
+// whoever has 'company:edit', as rilievi's company admin set it on /impostazioni) and all its data in one JSON file
+// (always: also to leave the service).
 export default async function CompanyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const user = await requireCapability(locale, 'company:export');
-  const [t, c] = await Promise.all([getTranslations('tavole'), getCompanyLogo(user)]);
+  const [t, tr, c, sezioni] = await Promise.all([getTranslations('tavole'), getTranslations('rilievi'), getCompanyLogo(user), sezioniSetting(user.companyId)]);
   const logo = c?.logo ?? null;
   return (
     <main className="page">
@@ -34,6 +39,11 @@ export default async function CompanyPage({ params }: { params: Promise<{ locale
           </figure>
         ) : <p>{t('logoNone')}</p>}
         {can(user, 'company:edit') ? <LogoForm hasLogo={logo !== null} /> : <p className="note">{t('logoReadOnly')}</p>}
+      </section>
+      <section className="panel" aria-labelledby="sezioni-h">
+        <PanelHead icon="list-tree" id="sezioni-h">{tr('impostazioni.sezioni.title')}</PanelHead>
+        <p className="note">{tr('impostazioni.sezioni.text')}</p>
+        <SezioniForm fisse={sezioni.fisse} ordine={sezioni.ordine} canEdit={can(user, 'company:edit')} />
       </section>
       <section className="panel" aria-labelledby="export-h">
         <PanelHead icon="database" id="export-h">{t('exportTitle')}</PanelHead>

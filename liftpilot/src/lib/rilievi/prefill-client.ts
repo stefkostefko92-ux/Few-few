@@ -128,17 +128,3 @@ export function misureRowsFor(fermate: string, max = 300): number {
   const n = /^\d{1,3}$/.test(raw) ? Number(raw) : 0;
   return n >= 1 && n <= max ? n : 0;
 }
-
-/**
- * @deprecated The rule before the sync with rilievi ae6329cb6 (a module's empty untouched inputs filled once, when its
- * «Sì» is chosen) — kept only so that the form compiles until it runs `prefillFill` and collegati-client's `settle`
- * (docs: scratchpad core-api.md). Never empties a field and never writes the company or the person (no context here).
- */
-export function prefillInput(input: { kind: 'check' | 'text' | 'textarea' | 'radio' | 'select'; prefill: string; value: string | boolean; maxLength: number | null }, values: FormValues): string | boolean | null {
-  if (input.kind === 'check') return input.value !== true && surveyTicked(input.prefill, values) ? true : null;
-  if (input.kind !== 'text' && input.kind !== 'textarea') return null;
-  if (input.value) return null;
-  const text = surveyText(input.prefill, values, { contesto: { azienda: '', utente: '', ruolo: '', email: '' }, etichetta: (_campo, valore) => valore });
-  const cut = input.maxLength && input.maxLength > 0 ? text.slice(0, input.maxLength) : text;
-  return cut ? cut : null;
-}

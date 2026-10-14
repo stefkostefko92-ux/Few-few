@@ -5,13 +5,14 @@ import { requireCapability } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { fmt } from '@/lib/rilievi/fmt';
 import { flashOf } from '@/lib/rilievi/form-help';
-import { displaySections, schedaTitle, type DisplayField } from '@/lib/rilievi/format';
+import { schedaTitle, type DisplayField } from '@/lib/rilievi/format';
 import type { RilieviT } from '@/lib/rilievi/t';
 import { restoreRilievoAction } from '@/server/rilievi/actions';
-import { sheetTabTitle, sheetToShow } from '@/server/rilievi/pages';
+import { sheetTabTitle, sheetToShow, sheetView } from '@/server/rilievi/pages';
 import Crumbs from '@/components/Crumbs';
 import Icon from '@/components/Icon';
 import ActionButton from '@/components/rilievi/ActionButton';
+import { DiffItem } from '@/components/rilievi/DiffItem';
 import Flash from '@/components/rilievi/Flash';
 import RilieviHead from '@/components/rilievi/RilieviHead';
 import SectionIndex from '@/components/rilievi/SectionIndex';
@@ -37,9 +38,11 @@ function ModuloLinks({ id, modulo, t }: { id: string; modulo: NonNullable<Displa
   );
 }
 
-// A survey sheet (rilievi show.ejs): its title (the lift's number, else the matricola, else the address), the day of
-// the survey, the actions the user may take; the plate; the sections with only the fields that apply, the measurements
-// per stop as a table, the suppliers' modules as links to their PDFs; who wrote it and who changed it last. A sheet in
+// A survey sheet (rilievi show.ejs, commit ae6329cb6): its title (the lift's number, else the matricola, else the
+// address), the day of the survey, the actions the user may take; the data the sheet and its modules say differently
+// (saved with the confirmation, or from before the check); the plate; the sections in the company's order with only the
+// fields that apply, the measurements per stop as a table, the suppliers' modules as links to their PDFs; who wrote it
+// and who changed it last. A sheet in
 // the trash is shown only to whoever manages the trash, with the banner to restore it or delete it for good. Another
 // company's or an unknown sheet: not found.
 export default async function RilievoPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: SP }) {
@@ -50,7 +53,7 @@ export default async function RilievoPage({ params, searchParams }: { params: Pr
   if (!scheda) notFound();
   const [t, tn] = await Promise.all([getTranslations('rilievi'), getTranslations('nav')]);
   const rt = t as unknown as RilieviT;
-  const sections = displaySections(scheda, rt);
+  const { sections, discrepanze } = sheetView(scheda, rt);
   const title = schedaTitle(scheda, rt);
   const flash = flashOf((await searchParams).ok);
   const deleted = scheda.deletedAt !== null;
@@ -81,6 +84,12 @@ export default async function RilievoPage({ params, searchParams }: { params: Pr
               ) : null}
             </div>
           ) : null}
+          {discrepanze.length ? (
+            <div className="rv-diffnote">
+              <p><strong>{t('collegati.banner')}</strong></p>
+              <ul>{discrepanze.map((d) => <DiffItem key={d.key} d={d} t={rt} />)}</ul>
+            </div>
+          ) : null}
           <Plate scheda={scheda} sections={sections} t={rt} />
           {sections.map((section, index) => (
             <section key={section.key} className="rv-sec" id={`s-${section.key}`} aria-labelledby={`h-${section.key}`}>
@@ -88,7 +97,7 @@ export default async function RilievoPage({ params, searchParams }: { params: Pr
               <dl className="rv-kv">
                 {section.fields.map((f) => (
                   <div key={f.key} className={f.wide ? 'wide' : undefined}>
-                    <dt>{f.label}</dt>
+                    <dt>{f.label}</dt>{' '}
                     {f.value ? (
                       <dd>
                         {f.value}

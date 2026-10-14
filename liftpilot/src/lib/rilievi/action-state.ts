@@ -35,6 +35,11 @@ export const initialRilievoFormState: RilievoFormState = { status: 'idle' };
 /** The name of the second submit button of a 'confirm' answer: its value is the fingerprint («Salva comunque»). */
 export const CONFERMA_KEY = 'conferma';
 
+/** The edited sheet's id in its form («Salva modifiche»). Not `id`: a field named so shadows the form's own `id`
+ *  (HTMLFormElement's named properties), and React then leaves the submitter — «Salva comunque», `conferma` — out of the
+ *  form's data, so the confirmation would be asked again and again. */
+export const SCHEDA_KEY = 'scheda';
+
 /** Trash, restore, delete for good: a refusal, or nothing (they redirect when done). */
 export type RilievoActionState = { error?: RilievoActionError };
 

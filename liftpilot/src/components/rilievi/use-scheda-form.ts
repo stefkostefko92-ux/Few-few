@@ -1,72 +1,89 @@
 'use client';
 
-// The sheet form's behaviour in the browser, rilievi's public/js/app.js ported to one hook on the form element: the
-// survey's values as they stand (for the conditions and the rows per stop), the rows made so far, the suppliers' modules
-// prefilled when their «Sì» is chosen (untouched inputs only, the rules of prefill-client.ts), the Sì/No and choices a
-// second click clears, the «unsaved changes» hint and the warning before leaving, and no half-typed number sent. The
-// server decides everything again on submit; this only shows and hides.
+// The sheet form's behaviour in the browser, rilievi's public/js (commit ae6329cb6) ported to one hook on the form
+// element, in rilievi's order of events: app.js — the conditional fields shown and hidden at once (form-dom.ts), the rows
+// per stop following «Fermate», the Sì/No and choices a second click clears, the «unsaved changes» hint and the warning
+// before leaving, no half-typed number sent; moduli.js — the modules' survey fields following the sheet while nobody has
+// typed in them (prefill-client.ts); collegati.js — the same plant data in the sheet and in the modules following each
+// other in real time, in every direction, the differences listed under the modules' groups, the names still following
+// sent with the form (collegati-client.ts). The control the person changes is theirs from then on. What the linked data
+// fill in the sheet is told to the page as typing would (its conditions, its rows, the survey fields) — those events are
+// the form's own: they mark nothing as typed and settle nothing again. The server decides everything again on submit.
 // Leaving: in rilievi every link was a page load, so the browser's own «leave the page?» covered them all. Here the
 // app's links (the sidebar, the breadcrumb, «Annulla») move inside the page; while the form is dirty such a click is
 // turned into a real page load, so the same browser question comes up (a new tab, a modified click, a link within the
 // page stay as they are). Another form sent meanwhile (the top bar's search) is sent by the browser itself, a page
 // load with the same question (lib/rilievi/leave.ts); «Esci» is a plain POST already (api/logout).
 import { useEffect, useRef, useState, type RefObject } from 'react';
+import { collegatiEngine, type ClientDiscrepanza } from '@/lib/rilievi/collegati-client';
 import type { FormValues } from '@/lib/rilievi/field-parsers';
 import { browserSendable } from '@/lib/rilievi/leave';
 import { misureCount } from '@/lib/rilievi/misure';
-import { misureRowsFor, prefillInput, valuesOfForm } from '@/lib/rilievi/prefill-client';
+import type { CollegatiDati } from '@/lib/rilievi/ordini/collegati-browser';
+import { AUTO_KEY } from '@/lib/rilievi/ordini/auto-key';
+import { misureRowsFor, prefillFill, valuesOfForm, type SurveyContext } from '@/lib/rilievi/prefill-client';
+import { domHost, isControl, isTick, syncConditions } from './form-dom';
 
-type Prefilled = HTMLInputElement | HTMLTextAreaElement;
+/** The same list of differences: the form's lists are drawn again only when it changes. */
+const sameList = (a: readonly ClientDiscrepanza[] | null, b: readonly ClientDiscrepanza[]): boolean => a !== null && JSON.stringify(a) === JSON.stringify(b);
 
-/** A module that has just opened: each prefilled input nobody touched takes what the survey says now (app.js). */
-function prefillModulo(box: Element, form: HTMLFormElement): void {
-  const values = valuesOfForm(form);
-  box.querySelectorAll<Prefilled>('[data-prefill]').forEach((input) => {
-    if (input.dataset.touched) return;
-    const check = input instanceof HTMLInputElement && input.type === 'checkbox';
-    const kind = check ? 'check' : input instanceof HTMLTextAreaElement ? 'textarea' : 'text';
-    const next = prefillInput({ kind, prefill: input.dataset.prefill ?? '', value: check ? input.checked : input.value, maxLength: input.maxLength > 0 ? input.maxLength : null }, values);
-    if (next === null) return;
-    if (check) input.checked = next === true;
-    else input.value = String(next);
-  });
-}
-
-export function useSchedaForm(form: RefObject<HTMLFormElement | null>, initial: FormValues, onSent: (values: FormValues) => void) {
+/** The browser's rules over the form: `collegati` the links (collegatiData on the server), `etichetta` the words of the
+ *  sheet's ticks. Returns the survey's values as they stand (the rows per stop), the rows made so far, whether the form
+ *  is dirty and the differences on screen (null until the page has worked them out — the server's list stays till then). */
+export function useSchedaForm(form: RefObject<HTMLFormElement | null>, initial: FormValues, onSent: (values: FormValues) => void,
+  collegati: CollegatiDati, etichetta: SurveyContext['etichetta']) {
   const [snap, setSnap] = useState<FormValues>(initial);
   const [made, setMade] = useState(() => misureCount(initial.fermate));
   const [dirty, setDirty] = useState(false);
-  const sentRef = useRef(onSent);
-  useEffect(() => { sentRef.current = onSent; }, [onSent]);
+  const [found, setFound] = useState<ClientDiscrepanza[] | null>(null);
+  const sentRef = useRef(onSent), wordsRef = useRef(etichetta);
+  useEffect(() => {
+    sentRef.current = onSent;
+    wordsRef.current = etichetta;
+  }, [onSent, etichetta]);
 
   useEffect(() => {
     const el = form.current;
     if (!el) return;
-    let isDirty = false;
+    const host = domHost(el);
+    const engine = collegatiEngine(collegati, host);
+    const ctx: SurveyContext = { contesto: collegati.contesto, etichetta: (campo, valore) => wordsRef.current(campo, valore) };
+    let isDirty = false, ours = false;
     const sync = (): void => {
       const v = valuesOfForm(el);
       setSnap(v);
       setMade((m) => Math.max(m, misureRowsFor(typeof v.fermate === 'string' ? v.fermate : '')));
-    };
-    // an input of a module typed into or changed by the person is never prefilled over
-    const touch = (e: Event): void => {
-      const target = e.target;
-      if (target instanceof HTMLElement && target.closest('[data-modulo]')) target.dataset.touched = '1';
     };
     const markDirty = (): void => {
       if (isDirty) return;
       isDirty = true;
       setDirty(true);
     };
-    const onInput = (e: Event): void => { touch(e); markDirty(); sync(); };
-    const onChange = (e: Event): void => {
-      touch(e);
+    // moduli.js: the modules' survey fields still following take what the sheet says now
+    const prefill = (): void => {
+      prefillFill(host, valuesOfForm(el), ctx);
+    };
+    // collegati.js: the following places fill in a few rounds; the sheet's controls filled are told to the page
+    const settle = (): void => {
+      const list = engine.settle((sheet) => {
+        ours = true;
+        try {
+          sheet.forEach((c) => c.dispatchEvent(new Event(isTick(c) ? 'change' : 'input', { bubbles: true })));
+        } finally {
+          ours = false;
+        }
+      });
+      setFound((before) => (sameList(before, list) ? before : list));
+    };
+    const onEvent = (e: Event): void => {
+      const target = e.target;
+      if (!isControl(target) || !el.contains(target)) return;
+      if (e.type === 'change') syncConditions(el);
       markDirty();
-      const radio = e.target;
-      if (radio instanceof HTMLInputElement && radio.type === 'radio' && radio.value === 'si' && radio.checked) {
-        const box = el.querySelector(`[data-modulo="${CSS.escape(radio.name)}"]`);
-        if (box) prefillModulo(box, el);
-      }
+      // the control the person changed is theirs: it stops following (the form's own events mark nothing)
+      if (!ours) target.dataset.touched = '1';
+      prefill();
+      if (!ours) settle();
       sync();
     };
     // a click on the ticked Sì/No (or choice) clears it: remember whether it was ticked before the click ticks it
@@ -84,7 +101,8 @@ export function useSchedaForm(form: RefObject<HTMLFormElement | null>, initial: 
       }
       radio.dataset.was = 'false';
     };
-    // a number the browser cannot read (type=number) stops the submit with its own message; otherwise the values go
+    // a number the browser cannot read (type=number) stops the submit with its own message; otherwise the values go, with
+    // the names still following their source (if the form comes back, the server marks them again)
     const onSubmit = (e: SubmitEvent): void => {
       const bad = Array.from(el.querySelectorAll<HTMLInputElement>('input[type="number"]')).find((i) => i.validity.badInput);
       if (bad) {
@@ -93,6 +111,8 @@ export function useSchedaForm(form: RefObject<HTMLFormElement | null>, initial: 
         bad.focus();
         return;
       }
+      const carrier = el.querySelector<HTMLInputElement>(`input[name="${AUTO_KEY}"]`);
+      if (carrier) carrier.value = engine.followingNames().join(' ');
       isDirty = false;
       setDirty(false);
       sentRef.current(valuesOfForm(el));
@@ -123,17 +143,27 @@ export function useSchedaForm(form: RefObject<HTMLFormElement | null>, initial: 
       const names = [...Array.from(other.elements, (c) => c.getAttribute('name') ?? ''), by?.getAttribute('name') ?? ''];
       if (browserSendable(action, names)) e.stopPropagation();
     };
-    el.addEventListener('input', onInput);
-    el.addEventListener('change', onChange);
+    el.addEventListener('input', onEvent);
+    el.addEventListener('change', onEvent);
     el.addEventListener('pointerdown', onPointerDown);
     el.addEventListener('click', onClick);
     el.addEventListener('submit', onSubmit);
     window.addEventListener('beforeunload', onLeave);
     document.addEventListener('click', onLinkClick, true);
     document.addEventListener('submit', onOtherSubmit, true);
+    // on load (rilievi: moduli.js, then collegati.js): an empty place takes what another already says, and the lists
+    // match what is on screen
+    syncConditions(el);
+    prefill();
+    settle();
+    sync();
+    // the rules are on (`data-live`): React attaches its props while hydrating, before this effect runs — whoever waits
+    // for the form to work (the smoke test, the parity harness) waits for this, not for the props
+    el.setAttribute('data-live', '1');
     return () => {
-      el.removeEventListener('input', onInput);
-      el.removeEventListener('change', onChange);
+      el.removeAttribute('data-live');
+      el.removeEventListener('input', onEvent);
+      el.removeEventListener('change', onEvent);
       el.removeEventListener('pointerdown', onPointerDown);
       el.removeEventListener('click', onClick);
       el.removeEventListener('submit', onSubmit);
@@ -141,7 +171,7 @@ export function useSchedaForm(form: RefObject<HTMLFormElement | null>, initial: 
       document.removeEventListener('click', onLinkClick, true);
       document.removeEventListener('submit', onOtherSubmit, true);
     };
-  }, [form]);
+  }, [form, collegati]);
 
-  return { snap, made, dirty };
+  return { snap, made, dirty, found };
 }

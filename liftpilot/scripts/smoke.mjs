@@ -10,7 +10,8 @@
 //   machine from the catalogue (drawn as it is), saved
 //   in one go (shaft design and calculation together), with its documents → the dashboard's result pill opens the checks
 //   behind its number (scripts/smoke-verdict.mjs) → the survey sheets: a sheet with its conditions, stops, modules,
-//   search, PDFs, print, conflict, trash (scripts/smoke-rilievi.mjs) → new user who must change the password → a
+//   search, PDFs, print, conflict, trash (scripts/smoke-rilievi.mjs), the company's order of the sections, the linked data
+//   with the confirmation, MoviLift, the modules in the print (scripts/smoke-rilievi-sync.mjs) → new user who must change the password → a
 //   second company that cannot open the first company's calculation, shaft design, DXF, drawing set, lift design or survey sheet →
 //   with MAILBOX_PORT: self-registration, confirmation, forgotten password (scripts/smoke-accounts.mjs), the server
 //   sending its mail to scripts/mail-sink.mjs on that port (SMTP_HOST=127.0.0.1, SMTP_PORT=<port>, MAIL_FROM set).
@@ -27,6 +28,7 @@ import { priceList } from './smoke-prices.mjs';
 import { publicPages } from './smoke-public.mjs';
 import { replacementRoom } from './smoke-replacement.mjs';
 import { rilieviFlow } from './smoke-rilievi.mjs';
+import { rilieviSync } from './smoke-rilievi-sync.mjs';
 import { archivedReadOnly, technician } from './smoke-roles.mjs';
 import { verdictPopover } from './smoke-verdict.mjs';
 
@@ -277,6 +279,7 @@ try {
 
   await priceList({ BASE, page, hydrated, stamp, liftUrl, roomUrl });
   const rilievo = await rilieviFlow({ BASE, page, hydrated });
+  await rilieviSync({ BASE, page, hydrated });
   assert.deepEqual(errors, [], 'browser errors');
 
   await technician({ BASE, page, errors, stamp, login, logout, rilievoUrl: rilievo.sheetUrl });

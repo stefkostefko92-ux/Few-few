@@ -57,11 +57,30 @@
 .rv-tick input:focus-visible + .rv-box { outline: 2px solid var(--accent); outline-offset: 3px; }
 .rv-choice[aria-describedby] .rv-tick { border-color: var(--fail-line); }
 
-/* a field with a condition (fields.ts `when`): hidden while it does not hold; the wrapper is no box of its own, so the
-   field stays an item of the section's grid. Without JavaScript every field shows, as in rilievi (nothing could show it). */
+/* what shows under a condition (fields.ts `when`, the measurements, a module's make and its «Sì»): hidden while it does
+   not hold. A field's wrapper is no box of its own, so the field stays an item of the section's grid. Without JavaScript
+   everything shows, as in rilievi (nothing could show it). */
 .rv-cond { display: contents; }
-.rv-cond[data-off] { display: none; }
-@media (scripting: none) { .rv-cond[data-off] { display: contents; } }
+.rv-form [data-when][data-off] { display: none; }
+@media (scripting: none) {
+  .rv-form .rv-cond[data-off] { display: contents; }
+  .rv-form .rv-mwrap[data-off] { display: block; }
+  .rv-form .rv-modulo[data-off] { display: grid; }
+}
+
+/* section 1 «Impianto» is laid out as the sheet's head and plate (rilievi .grid--testa): the date; the address on the
+   left and the work order on the right; the matricola on the left, the lift's number on the right; then the load, the
+   capacity, the stops and the make */
+.rv-grid.testa { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.rv-grid.testa > [data-campo="indirizzo"], .rv-grid.testa > [data-campo="buonoLavoro"] { grid-column: 1 / -1; }
+.rv-grid.testa > [data-campo="indirizzo"] .input { font-weight: 600; }
+@media (min-width: 720px) {
+  .rv-grid.testa { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .rv-grid.testa > [data-campo="indirizzo"] { grid-column: 1 / 4; }
+  .rv-grid.testa > [data-campo="buonoLavoro"] { grid-column: 4 / 5; }
+  .rv-grid.testa > [data-campo="matricola"] { grid-column: 1 / 3; }
+  .rv-grid.testa > [data-campo="numeroImpianto"] { grid-column: 3 / 5; }
+}
 
 /* the error summary over the form, its lines linking to the fields */
 .rv-errors { padding: 16px 18px; border: 2px solid var(--fail); border-radius: var(--radius); background: var(--fail-bg); color: var(--fail); }
@@ -72,8 +91,11 @@
 .rv-errors ul { margin: 8px 0 0; padding-left: 20px; }
 .rv-errors a { color: var(--fail); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
 
-/* the save bar: the main action, cancel, the unsaved hint */
+/* the save bar: the main action, «Salva comunque» after it when the data disagree (dashed like their lists — Enter never
+   reaches it), cancel, the unsaved hint */
 .rv-form .savebar { margin: 0 -2px; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+.rv-form .rv-confirm-btn { border-style: dashed; border-color: var(--warn); }
+.rv-form .rv-confirm-btn:hover { border-color: var(--warn); color: var(--ink); }
 .rv-dirty { font-size: 13.5px; color: var(--warn); }
 
 /* the form takes the whole width until there is room for the index beside it too: a stop's measurements stay on one
@@ -111,6 +133,14 @@
 .rv-mfollow-items { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; flex: 1 1 auto; min-width: 0; }
 .rv-mtext { display: grid; gap: 5px; flex: 1 1 180px; max-width: 340px; min-width: 0; }
 .rv-mtext.wide { flex-basis: 100%; max-width: none; }
+/* a radio group of the paper (MoviLift): one of its options; a click on the chosen one clears it */
+.rv-mradio { display: grid; gap: 6px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.rv-mradio > legend { float: left; width: 100%; margin-bottom: 6px; padding: 0; }
+.rv-mradio > legend + * { clear: both; }
+.rv-mopts { display: flex; flex-wrap: wrap; gap: 8px 10px; }
+/* the boxes for one or two letters (MoviLift's floor names): narrow, sixteen to a row */
+.rv-mtext.short { flex: 0 0 4.75rem; }
+.rv-mtext.short .input { padding-inline: 6px; text-align: center; }
 /* the module has over a hundred boxes: lower than the sheet's, still over 24 px for a finger */
 .rv-tick.sm { min-height: 40px; padding: 0 12px 0 9px; gap: 8px; font-size: 14.5px; }
 .rv-tick.sm .rv-box { width: 18px; height: 18px; }

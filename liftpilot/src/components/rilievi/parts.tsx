@@ -36,11 +36,13 @@ export function MisureTable({ table, className = 'rv-mtable' }: { table: TableVi
 /** The plate's four specs, in rilievi's order: load, persons, stops, make. */
 const PLATE_SPECS = ['portataKg', 'capienzaPersone', 'fermate', 'marca'] as const;
 
-/** The lift's plate (rilievi partials/plate.ejs): number and matricola big, the address, then the specs. */
-export function Plate({ scheda, sections, t }: {
+/** The lift's plate (rilievi partials/plate.ejs, commit ae6329cb6): the matricola on the left and the number on the right,
+ *  big, the address, then the specs. On the print the address is in the head (`withAddress` false). */
+export function Plate({ scheda, sections, t, withAddress = true }: {
   scheda: { numeroImpianto: string | null; matricola: string | null; indirizzo: string | null };
   sections: readonly DisplaySection[];
   t: RilieviT;
+  withAddress?: boolean;
 }) {
   const byKey = new Map(sections.flatMap((s) => s.fields).map((f) => [f.key, f]));
   const id = (label: string, value: string | null, end = false) => (
@@ -53,10 +55,10 @@ export function Plate({ scheda, sections, t }: {
     <section className="rv-plate" aria-label={t('scheda.plateLabel')}>
       {(['tl', 'tr', 'bl', 'br'] as const).map((c) => <span key={c} className={`rv-screw ${c}`} aria-hidden="true" />)}
       <div className="rv-plate-ids">
-        {id(t('scheda.field.numeroImpianto'), scheda.numeroImpianto)}
-        {id(t('scheda.field.matricola'), scheda.matricola, true)}
+        {id(t('scheda.field.matricola'), scheda.matricola)}
+        {id(t('scheda.field.numeroImpianto'), scheda.numeroImpianto, true)}
       </div>
-      <p className="rv-plate-address">{scheda.indirizzo || t('scheda.noAddress')}</p>
+      {withAddress ? <p className="rv-plate-address">{scheda.indirizzo || t('scheda.noAddress')}</p> : null}
       <dl className="rv-plate-specs">
         {PLATE_SPECS.map((key) => {
           const f = byKey.get(key);
