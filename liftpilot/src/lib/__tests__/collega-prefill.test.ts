@@ -10,6 +10,8 @@ import { arganoDi, poliDi, rapportoDi, rilievoDati, unNumero, type RilievoRow } 
 import { layoutDi, seminaCalc, seminaLift, semeCalc, semeLift, usaCalc, usaLift } from '@/lib/collega/prefill';
 
 const day = new Date('2026-10-10T00:00:00Z');
+/** the one form of a whole project whose intervention replaces the machine of the existing lift */
+const replLift = () => { const d = blankLift(); return { ...d, inputs: { ...d.inputs, calc: { ...d.inputs.calc, context: 'repl' } } }; };
 function row(over: Partial<RilievoRow> = {}): RilievoRow {
   return {
     id: 'cm00000000000000000000s1', data: day, createdAt: day, updatedAt: day, indirizzo: 'Via Giuseppe Verdi 14, Milano', matricola: '0123456', numeroImpianto: '71234',
@@ -73,8 +75,11 @@ test('nuovo dal rilievo: un valore già uguale alla misura (la macchina in alto,
   const draft = seminaCalc({ ...blankCalc(), layout: 'top' }, seme, false);
   assert.ok(!draft.seeded.includes('layout') && !draft.seeded.includes('o_poles'));
   // the one form: the existing machine's field already as the survey says it — «usa» says it is in, not «nothing to take»
-  const lift = seminaLift(blankLift(), rilievoDati(row({ ubicazioneMacchina: ['BASSO'] }))).draft;
+  const lift = seminaLift(replLift(), rilievoDati(row({ ubicazioneMacchina: ['BASSO'] }))).draft;
   assert.deepEqual(usaLift(lift, rilievoDati(row()), 'funiNumero').set, ['o_n']);
+  // a new lift has no existing machine: nothing goes into its hidden fields, «usa» puts nothing in
+  const nuovo = seminaLift(blankLift(), rilievoDati(row())).draft;
+  assert.deepEqual(usaLift(nuovo, rilievoDati(row()), 'funiNumero').set, []);
 });
 
 test('calcolo: il rilievo riempie solo i campi vuoti o standard, mai quelli scritti', () => {
@@ -126,7 +131,11 @@ test('calcolo: «usa il valore del rilievo» mette il valore anche sopra quello 
 
 test('progetto: il modulo unico prende portata, fermate, posizione, taglia, velocità e argano esistente dove sono da inserire', () => {
   const r = rilievoDati(row({ ubicazioneMacchina: ['BASSO'] }));
-  const { draft, seeded } = seminaLift(blankLift(), r);
+  // a new lift: the existing machine and its ropes are not its own — none of their hidden fields filled
+  const nuovo = seminaLift(blankLift(), r);
+  assert.deepEqual(nuovo.seeded.filter((k) => k.startsWith('o_')), []);
+  assert.deepEqual([nuovo.draft.inputs.calc.o_n, nuovo.draft.inputs.calc.o_D], ['', '']);
+  const { draft, seeded } = seminaLift(replLift(), r);
   assert.equal(draft.inputs.shaft.Q, 630);
   assert.ok(!draft.blank.includes('Q') && !draft.blank.includes('Qkg'));
   assert.equal(draft.inputs.shaft.vertical.floors.length, 5);

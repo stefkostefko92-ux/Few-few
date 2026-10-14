@@ -33,7 +33,15 @@ export function stessoValore(a: unknown, b: unknown): boolean {
   return s === t || (Number.isFinite(x) && Number.isFinite(y) && x === y);
 }
 
-/** The fields whose value came from the survey (`valori`: field → the survey's value) and still is it: a form's draft
- *  keeps them, so that the marks «dal rilievo» come back with the draft. */
+/** The fields whose value came from the survey (`valori`: field → the survey's value) and still is it. */
 export const ancoraDalRilievo = (valori: Readonly<Record<string, string>> | undefined, valore: (id: string) => unknown): string[] =>
   (valori ? Object.entries(valori).filter(([id, v]) => stessoValore(valore(id), v)).map(([id]) => id) : []);
+
+/** What a form's draft keeps of the survey (src/lib/draft-input.ts): the fields still the survey's, so that their marks
+ *  come back with it, and — only when the form started from the survey (`parte`) — that it did, so that its notice comes
+ *  back too. A value put in by «usa» on a saved calculation continued is marked again, never a start from the survey. */
+export function bozzaRilievo(o: { valori: Readonly<Record<string, string>>; parte?: boolean } | null | undefined,
+  valore: (id: string) => unknown): { rilievo?: string[]; parte?: true } {
+  const rilievo = ancoraDalRilievo(o?.valori, valore);
+  return rilievo.length ? { rilievo, ...(o?.parte ? { parte: true as const } : {}) } : {};
+}

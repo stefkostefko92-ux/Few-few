@@ -18,7 +18,7 @@ import { makePres, type CalcKey } from '@/lib/present/tr';
 import { visibleBad } from '@/lib/calc-input';
 import { calcMissing, plantReady } from '@/lib/calc-blank';
 import { calcDraftSchema } from '@/lib/draft-input';
-import { ancoraDalRilievo } from '@/lib/collega/formato';
+import { bozzaRilievo } from '@/lib/collega/formato';
 import MissingPanel from '@/components/MissingPanel';
 import DraftBar from '@/components/draft/DraftBar';
 import { useDraft, type DraftTarget } from '@/components/draft/useDraft';
@@ -84,9 +84,9 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   const bad = useMemo(() => new Set(visibleBad(a.ctx.bad, deferred).filter((id) => !need.has(id))), [a, deferred, need]);
   const anyBad = a.ctx.bad.length > 0;
   const texts = { choose: tb('choose'), std: tb('std'), stdTitle: tb('stdTitle'), stdInUse: (list: string) => tb('stdInUse', { list }) };
-  // the draft keeps which values came from the survey, so that their marks come back with it
-  const rilievo = ancoraDalRilievo(origine?.valori, (id) => values[id]);
-  const draftData = { values, collaudo: collaudo ?? null, ...(rilievo.length ? { rilievo } : {}) };
+  // the draft keeps which values came from the survey (and whether the form started from it), so that their marks
+  // come back with it
+  const draftData = { values, collaudo: collaudo ?? null, ...bozzaRilievo(origine, (id) => values[id]) };
   const draftHandle = useDraft(draft, draftData, calcDraftSchema.safeParse(draftData).success);
 
   const edit = (patch: FormValues): void => {

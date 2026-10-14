@@ -137,7 +137,9 @@ function liftParam(d: LiftDraft, r: RilievoDati, p: Usa, force: boolean, overSta
       return { draft: { ...d, inputs: { ...d.inputs, shaft: { ...S, vertical: { ...S.vertical, v: a?.velocita ?? S.vertical.v } } }, blank: filled(blank, ['v']) }, set: ['v'] };
     default: {
       // the existing machine and its ropes: the calculation's fields of the one form (a value already equal: the
-      // survey's in a brand new form, and «usa» says it is in)
+      // survey's in a brand new form, and «usa» says it is in) — only when its intervention replaces the machine of the
+      // existing lift (context 'repl'); a new lift has no existing machine: nothing goes into its hidden fields
+      if (C.context !== 'repl') break;
       const take = (id: string, v: string): boolean => (String(C[id] ?? '') === v ? force || overStandard : force || blankOr(C, id, overStandard ? isLiftStandard : never));
       const fields = Object.entries(campiCalc(r)[p] ?? {}).flatMap(([id, v]): [string, string][] => (v !== null && id.startsWith('o_') && take(id, v) ? [[id, v]] : []));
       if (fields.length === 0) break;

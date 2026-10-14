@@ -15,6 +15,8 @@ export interface OrigineRilievo {
   date: string;
   /** only the fields whose value came from the survey */
   valori: Readonly<Record<string, string>>;
+  /** the form starts from the survey (its notice says so): its draft keeps that it did (src/lib/collega/formato.ts) */
+  parte?: boolean;
 }
 
 const Ctx = createContext<OrigineRilievo | null>(null);

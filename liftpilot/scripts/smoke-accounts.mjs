@@ -6,6 +6,9 @@
 // inviting company — no company learns that the address joined another —; a second registration with the same address
 // and a forgotten password for an unknown one answer the same as any other. Then the company's rights matrix with its
 // owner and the colleague it invited (smoke-permessi.mjs).
+// One run registers three times from 127.0.0.1, and the server takes 5 registrations an hour from one address, counted in
+// its memory (src/server/account-actions.ts, register-ip): a second run against the same server process within the hour
+// is refused — it stops here saying so; restart the server (or wait an hour) between full runs.
 import assert from 'node:assert/strict';
 import { permessiFlow } from './smoke-permessi.mjs';
 
@@ -14,6 +17,18 @@ const link = (text, path) => {
   assert.ok(m, `link /${path} in the e-mail`);
   return { url: m[0], token: m[1] };
 };
+
+/** The registration's answer: the panel that says the e-mail is on its way — or the server's limit, said plainly. */
+async function registered(page) {
+  await page.waitForSelector('main [role="status"] h2, main #register-error');
+  const refused = page.locator('main #register-error');
+  if (await refused.count()) {
+    const why = (await refused.textContent()) ?? '';
+    throw new Error(/Troppi tentativi/.test(why)
+      ? 'registration refused by the server\'s limit (5 an hour from one address, in its memory): restart the server or wait an hour, then run the smoke again'
+      : `registration refused: ${why}`);
+  }
+}
 
 export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMAIL, ADMIN, kit }) {
   const { page, errors } = await newPage();
@@ -30,7 +45,7 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMA
   await page.fill('input[name="confirm"]', password);
   for (const k of ['accept', 'business', 'drafts', 'clauses']) await page.check(`input[name="${k}"]`);
   await page.click('main form button[type="submit"]');
-  await page.waitForSelector('main [role="status"] h2');
+  await registered(page);
   const first = await sink.next(email, since);
   assert.ok(first, 'registration e-mail');
   assert.ok(/\/it\/privacy#terms/.test(first.text), 'the terms accepted, in the registration e-mail');
@@ -127,7 +142,7 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMA
   for (const [k, v] of [['company', `Azienda trattenuta ${stamp}`], ['name', 'Titolare della casella'], ['email', held], ['password', heldPw], ['confirm', heldPw]]) await page.fill(`input[name="${k}"]`, v);
   for (const k of ['accept', 'business', 'drafts', 'clauses']) await page.check(`input[name="${k}"]`);
   await page.click('main form button[type="submit"]');
-  await page.waitForSelector('main [role="status"] h2');
+  await registered(page);
   const offer = await sink.next(held, since);
   assert.ok(offer, 'the registration e-mail');
   // until the inbox confirms, the invitation still waits in the company
@@ -180,7 +195,7 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMA
   for (const [k, v] of [['company', 'Doppione srl'], ['name', 'Qualcuno'], ['email', email], ['password', next], ['confirm', next]]) await page.fill(`input[name="${k}"]`, v);
   for (const k of ['accept', 'business', 'drafts', 'clauses']) await page.check(`input[name="${k}"]`);
   await page.click('main form button[type="submit"]');
-  await page.waitForSelector('main [role="status"] h2');
+  await registered(page);
   const exists = await sink.next(email, since);
   assert.ok(exists && /\/it\/forgot-password/.test(exists.text) && !/verify-email#/.test(exists.text), 'the "already registered" e-mail');
   const nobody = `nessuno.${stamp}@example.com`;

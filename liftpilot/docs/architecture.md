@@ -442,8 +442,9 @@ src/lib/collega/     Рилево ↔ съоръжение (кръг 44), чис
                      „dal rilievo“: само дошлите от рилевото), lati (каквото казват последното изчисление и проектът
                      на асансьора), confronto (редовете, класът stato di fatto / modifica prevista / свободен текст, състоянието,
                      sintesi, erroriDi), passi (четирите стъпки и състоянията им), moduli (модулите на доставчиците на картата),
-                     formato (числото и единицата в сравнението; stessoValore, ancoraDalRilievo — отбелязаните полета, които
-                     черновата пази), flash (съобщенията `?lk=` на двете страници).
+                     formato (числото и единицата в сравнението; stessoValore, ancoraDalRilievo/bozzaRilievo — отбелязаните
+                     полета, които черновата пази, и `parte` — дали формулярът е започнал от рилевото), flash (съобщенията
+                     `?lk=` на двете страници).
 src/server/collega/  service (collega/scollega/creaDaRilievo: суров SQL без updatedAt на картата, фирмата на двете страни в
                      същото изявление, закрепено прочетеното съоръжение, архивираното — само за четене, одит в
                      транзакцията), actions ('use server': collegaRilievoAction, scollegaRilievoAction —

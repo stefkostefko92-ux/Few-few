@@ -38,7 +38,7 @@ export default async function LiftWorkPage({ params, searchParams }: { params: P
   // a saved design opened again (chosen, or the latest one) has nothing to enter: the survey seeds a new form (also over
   // the software's standards), a carried over one or a draft (only what is still empty)
   const mode = from.success || (!start.draftAt && start.blank.length === 0) ? null : start.draftAt || start.carried ? 'draft' : 'new';
-  const avvio = await avvioLift(user, p.id, start, mode, sp.usa, start.draftAt ? start.rilievo : undefined);
+  const avvio = await avvioLift(user, p.id, start, mode, sp.usa, start.draftAt ? start : undefined);
   const [t, tp] = await Promise.all([getTranslations('lift'), getTranslations('projects')]);
   return (
     <main className="page page-wide">

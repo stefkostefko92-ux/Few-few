@@ -1,13 +1,14 @@
 // The comparison of an installation (round 44, «Confronto»): its reference survey against its latest calculation and its
 // latest design, parameter by parameter. Three classes: STATO DI FATTO — what exists on site (identity, stops, travel,
-// the machine's place, the roping, the ropes and the existing machine in a replacement): a difference is a probable
-// error; MODIFICA PREVISTA — the rated load, the persons, the speed: a difference is expected (the acceptance test counts
-// a changed load or speed as a modified part, src/lib/lift/collaudo.ts PARTI); SOLO CONFRONTO — free text and what the
-// design picks (brands, the governor and its rope, the doors' opening), side by side without a verdict. A hydraulic or a
-// gearless (MRL) lift is outside what LiftPilot calculates (electric lifts with a geared machine). Pure.
+// the machine's place — with or without a diverting pulley when the argano sheet says it —, the roping, the ropes and
+// the existing machine in a replacement): a difference is a probable error; MODIFICA PREVISTA — the rated load, the
+// persons, the speed: a difference is expected (the acceptance test counts a changed load or speed as a modified part,
+// src/lib/lift/collaudo.ts PARTI); SOLO CONFRONTO — free text and what the design picks (brands, the governor and its
+// rope, the doors' opening), side by side without a verdict. A hydraulic or a gearless (MRL) lift is outside what
+// LiftPilot calculates (electric lifts with a geared machine). Pure.
 import { stessoCodice, stessoIndirizzo } from './testo';
 import { fuoriAmbito, type RilievoDati } from './rilievo';
-import type { Usa } from './prefill';
+import { layoutDi, type Usa } from './prefill';
 
 export type Classe = 'fatto' | 'modifica' | 'info';
 /** ok — the same; diff — a probable error; mod — an expected modification; info — no verdict; na — nothing to compare
@@ -75,7 +76,9 @@ export interface ConfrontoInput {
 }
 
 const sameNum = (a: number, b: number): boolean => Math.abs(a - b) <= 1e-6 * Math.max(1, Math.abs(a), Math.abs(b));
-const samePlace = (r: string, l: string): boolean => (r === 'BASSO' ? l === 'bottom' : r === 'ALTO' ? l === 'top' || l === 'topDefl' : false);
+/** The survey's place against a record's layout: the layout itself when the argano sheet says whether there is a
+ *  diverting pulley (prefill.ts layoutDi — top ≠ topDefl), else only above or below. */
+const samePlace = (r: string, l: string): boolean => r === l || (r === 'BASSO' ? l === 'bottom' : r === 'ALTO' ? l === 'top' || l === 'topDefl' : false);
 
 /** Equal for the parameter: numbers within rounding, the machine's place above/below, an address by its words, a code as written. */
 function uguale(p: Param, a: Valore, b: Valore): boolean {
@@ -132,7 +135,8 @@ export function confronto(x: ConfrontoInput): Riga[] {
   rows.push(row('indirizzo', 'fatto', r.indirizzo, null, imp.indirizzo, 'impianto'));
   rows.push(row('fermate', 'fatto', r.fermate, side(C, 'fermate'), side(P, 'fermate')));
   rows.push(row('corsa', 'fatto', a?.corsa ?? null, side(C, 'corsa'), side(P, 'corsa')));
-  rows.push(row('posizione', 'fatto', r.posizione, side(C, 'layout'), side(P, 'layout')));
+  // the place as the calculator's layout when the argano sheet says it (with or without a diverting pulley), else ALTO/BASSO
+  rows.push(row('posizione', 'fatto', r.posizione === 'ALTO' ? layoutDi(r) ?? r.posizione : r.posizione, side(C, 'layout'), side(P, 'layout')));
   rows.push(row('taglia', 'fatto', a?.taglia ?? null, side(C, 'taglia'), side(P, 'taglia')));
   rows.push(row('funiNumero', 'fatto', r.funiNumero, side(C, 'funiNumero'), side(P, 'funiNumero')));
   rows.push(row('funiDiametro', 'fatto', r.funiDiametroMm, side(C, 'funiDiametro'), side(P, 'funiDiametro')));

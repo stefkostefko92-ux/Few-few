@@ -16,6 +16,7 @@
 //   modules) → with MAILBOX_PORT: self-registration, confirmation, forgotten password (scripts/smoke-accounts.mjs), the rights
 //   matrix of that company (scripts/smoke-permessi.mjs), the server sending its mail to scripts/mail-sink.mjs on that port.
 // Usage: BASE_URL=http://localhost:3100 ADMIN_EMAIL=… ADMIN_PASSWORD=… [MAILBOX_PORT=2526] node scripts/smoke.mjs (Playwright: local or global).
+// With MAILBOX_PORT each full run needs a fresh server process (or an hour): it registers 3 times, the server takes 5 an hour per address.
 import { Buffer } from 'node:buffer';
 import assert from 'node:assert/strict';
 import { startMailSink } from './mail-sink.mjs';
@@ -33,7 +34,6 @@ import { archivedReadOnly, technician } from './smoke-roles.mjs';
 import { verdictPopover } from './smoke-verdict.mjs';
 
 const { chromium } = loadPlaywright();
-
 const BASE = (process.env.BASE_URL ?? 'http://localhost:3100').replace(/\/+$/, '');
 const ADMIN = { email: process.env.ADMIN_EMAIL ?? 'admin@carbonstealth.eu', password: process.env.ADMIN_PASSWORD ?? '' };
 if (!ADMIN.password) throw new Error('ADMIN_PASSWORD is required');

@@ -40,6 +40,17 @@ test('tutto coincide: nessuna differenza; «in alto» coincide con tiro diretto 
   assert.equal(at(rows, 'fermate')?.stato, 'na', 'the calculation keeps no stops');
   assert.equal(at(rows, 'marca')?.stato, 'info');
   assert.ok(!rows.some((w) => w.usa), '«usa» only on a difference');
+  assert.equal(at(confronto({ rilievo: R(), storico: [], impianto: imp, calcolo: L({ layout: 'top' }), progetto: null }), 'posizione')?.stato, 'ok');
+});
+
+test('«in alto» con la puleggia di rinvio detta dal modulo dell’argano: tiro diretto e rinvio non coincidono', () => {
+  const sheet = (rinvio: string | null, rinvioD: number | null = null): RilievoDati => { const r = R(); return { ...r, argano: r.argano && { ...r.argano, rinvio, rinvioD } }; };
+  const pos = (r: RilievoDati, layout: Lato['layout']) => at(confronto({ rilievo: r, storico: [], impianto: imp, calcolo: L({ layout }), progetto: null }), 'posizione');
+  assert.deepEqual([pos(sheet('sì'), 'top')?.stato, pos(sheet('sì'), 'top')?.rilievo, pos(sheet('sì'), 'top')?.usa], ['diff', 'topDefl', 'calc']);
+  assert.equal(pos(sheet('Sì'), 'topDefl')?.stato, 'ok');
+  assert.deepEqual([pos(sheet('no'), 'topDefl')?.stato, pos(sheet('no'), 'top')?.stato], ['diff', 'ok']);
+  assert.equal(pos(sheet(null, 400), 'top')?.stato, 'diff', 'a diameter: with a diverting pulley');
+  assert.equal(pos(R({ posizione: 'BASSO' }), 'bottom')?.stato, 'ok');
 });
 
 test('stato di fatto diverso: probabile errore, con «usa il valore» verso il modulo giusto', () => {

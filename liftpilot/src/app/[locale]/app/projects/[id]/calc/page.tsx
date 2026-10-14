@@ -48,7 +48,7 @@ export default async function CalcPage({ params, searchParams }: { params: Promi
   // the survey seeds a new calculation (also over the software's standards) or its draft (only what is still empty),
   // never a saved one opened again
   const mode = from.success ? null : draft ? 'draft' : parsed?.success ? null : 'new';
-  const avvio = await avvioCalc(user, p.id, draft ? draft.data.values : parsed?.success ? parsed.data : blankCalc(), mode, sp.usa, draft?.data.rilievo);
+  const avvio = await avvioCalc(user, p.id, draft ? draft.data.values : parsed?.success ? parsed.data : blankCalc(), mode, sp.usa, draft?.data);
   const initial = avvio.start;
   const collaudo = draft ? draft.data.collaudo : chosen?.success ? chosen.data : null;
   const [t, tp] = await Promise.all([getTranslations('calculations'), getTranslations('projects')]);

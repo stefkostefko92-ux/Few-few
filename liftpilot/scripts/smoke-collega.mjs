@@ -7,7 +7,7 @@
 // documents not «fatto» beside a calculation with differences), its survey, the comparison saying the load and the speed
 // are planned modifications with the parts of the test and the machine's place a probable error → «Usa il valore del
 // rilievo» opens the saved calculation continued with the measured place in, said on top — only that value marked, no
-// word of a start from the survey → a second survey of
+// word of a start from the survey, nor in its draft taken up again → a second survey of
 // the same matricola: the installation suggested with why, linked → the installation lists both → one unlinked from the
 // installation's page → the start page: the figures (the differences' one opens its installations) and the recent
 // surveys with their link; an old address of the installations' list.
@@ -108,6 +108,14 @@ export async function collegaFlow({ BASE, page, hydrated, stamp }) {
   assert.equal(await page.inputValue('#Q'), '480', 'the rest as saved');
   assert.equal(await page.locator('label[for="layout"] .badge.rilievo').count(), 1, 'the value put in: marked');
   assert.equal(await page.locator('label[for="o_n"] .badge.rilievo').count(), 0, 'the saved ropes equal to the survey\'s: not marked');
+  // its draft taken up again: the value put in still marked, and still no start from the survey
+  await page.fill('#H', String(Number(await page.inputValue('#H')) + 1));
+  await page.waitForSelector('.savebar .draft-bar:has-text("Bozza salvata")', { timeout: 15000 });
+  await page.goto(`${projectUrl}/calc`);
+  await hydrated(page, '#Q');
+  await page.waitForSelector('.savebar .draft-bar:has-text("Bozza ripresa")');
+  assert.equal(await page.locator('label[for="layout"] .badge.rilievo').count(), 1, 'the value put in: marked again');
+  assert.equal(await page.locator('.lk-avviso').count(), 0, 'its draft: no word of a start from the survey');
 
   step('survey and installation: a second survey of the same matricola — the installation suggested, linked, then unlinked');
   const second = await newSheet({ BASE, page, hydrated }, { matricola, indirizzo: `Via Collega ${stamp} 3, Milano`, portataKg: '480' });

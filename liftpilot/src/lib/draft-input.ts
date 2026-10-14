@@ -15,14 +15,18 @@ export type DraftScope = z.infer<typeof draftScopeSchema>;
 /** The fields of the form still marked «dal rilievo» (round 44): the start reads them again only where the value is
  *  still the linked survey's (src/server/collega/forms.ts), so that the marks come back with the draft. */
 const rilievoSchema = z.array(z.string().regex(/^[A-Za-z][A-Za-z0-9_]{0,23}$/)).max(60).optional();
+/** The form started from the survey (its notice said so): only then do the fields it kept marked say it again — a value
+ *  put in by «usa» on a saved record continued is marked, but is no start from the survey. */
+const parteSchema = z.literal(true).optional();
 
 export const liftDraftSchema = z.object({
   inputs: liftInputsReadSchema,
   blank: z.array(z.custom<BlankKey>((s) => typeof s === 'string' && isBlankKey(s))).max(400),
   rilievo: rilievoSchema,
+  parte: parteSchema,
 }).strict();
 
-export const calcDraftSchema = z.object({ values: formValuesSchema, collaudo: collaudoSchema.nullable(), rilievo: rilievoSchema }).strict();
+export const calcDraftSchema = z.object({ values: formValuesSchema, collaudo: collaudoSchema.nullable(), rilievo: rilievoSchema, parte: parteSchema }).strict();
 
 export const surveyDraftSchema = z.object({
   survey: surveySchema,

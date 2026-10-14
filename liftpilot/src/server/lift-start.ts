@@ -24,6 +24,8 @@ export interface LiftStart extends LiftDraft {
   carried?: true;
   /** the draft's fields still marked «dal rilievo» (round 44, src/server/collega/forms.ts) */
   rilievo?: string[];
+  /** the draft's form started from the survey */
+  parte?: true;
 }
 
 export async function liftStart(user: SessionUser, projectId: string, fromId: string | null): Promise<LiftStart> {

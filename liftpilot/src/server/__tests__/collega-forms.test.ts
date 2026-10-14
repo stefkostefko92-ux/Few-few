@@ -2,14 +2,16 @@
 // Marked «dal rilievo» are only the fields whose value came from the survey — filled at the start (in a brand new form
 // also a value the software already held equal to the measure: the machine above, a standard), put in by «usa», or kept
 // marked by the draft while still the survey's —, never a value of a saved calculation that happens to equal it; the
-// notice «parte dal rilievo» (seeded) only when the form starts from the survey; «prima» only when the field held
-// something else. Over a mocked database holding one survey.
+// notice «parte dal rilievo» (seeded) only when the form starts from the survey — a value put in by «usa» on a saved
+// calculation continued stays marked in its draft, but never says the form starts from the survey —; «prima» only when
+// the field held something else. Over a mocked database holding one survey.
 import { test, mock, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { Prisma } from '@prisma/client';
 import { capsOf } from '@/lib/rbac';
 import { blankCalc } from '@/lib/calc-blank';
 import { blankLift } from '@/lib/lift/blank';
+import { bozzaRilievo } from '@/lib/collega/formato';
 
 const src = (p: string) => new URL(`../../${p}`, import.meta.url).href;
 type Row = Record<string, unknown>;
@@ -77,34 +79,64 @@ test('bozza: i suoi campi restano dell’utente; tornano segnati solo quelli che
   const draft = { ...blankCalc(), Q: '630', o_n: '4', o_d: '9', v: '1' };
   const plain = await avvioCalc(user, 'p1', draft, 'draft', undefined);
   assert.equal(plain.origine?.valori.Q, undefined, 'typed equal to the survey: the user’s');
-  const kept = await avvioCalc(user, 'p1', draft, 'draft', undefined, ['o_n', 'o_d', 'v', 'nonsense']);
+  const kept = await avvioCalc(user, 'p1', draft, 'draft', undefined, { rilievo: ['o_n', 'o_d', 'v', 'nonsense'], parte: true });
   assert.deepEqual(Object.keys(kept.origine?.valori ?? {}).filter((id) => ['Q', 'o_n', 'o_d', 'v', 'nonsense'].includes(id)).sort(), ['o_n', 'v'],
     'o_d changed since: no longer the survey’s');
   assert.ok(kept.seeded.includes('o_n'), 'a draft started from the survey says so again');
+  assert.equal(kept.origine?.parte, true);
   // a saved calculation continued: the marks of a draft are not read
-  assert.deepEqual((await avvioCalc(user, 'p1', draft, null, undefined, ['o_n'])).origine?.valori, {});
+  assert.deepEqual((await avvioCalc(user, 'p1', draft, null, undefined, { rilievo: ['o_n'], parte: true })).origine?.valori, {});
 });
 
 test('progetto: nuovo dal rilievo segnato; ripreso salvato — nulla; la bozza riporta i suoi segni', async () => {
   const { avvioLift } = await forms();
   survey = ROW({ ubicazioneMacchina: ['BASSO'] });
   const a = await avvioLift(user, 'p1', blankLift(), 'new', undefined);
-  for (const id of ['Qkg', 'floors', 'layout', 'v', 'o_n']) assert.ok(a.origine?.valori[id] !== undefined, id);
+  for (const id of ['Qkg', 'floors', 'layout', 'v']) assert.ok(a.origine?.valori[id] !== undefined, id);
+  // a new lift: the existing machine's hidden fields take nothing, and «usa» on them puts nothing in
+  assert.equal(a.origine?.valori.o_n, undefined);
+  assert.deepEqual((await avvioLift(user, 'p1', a.start, null, 'funiNumero')).usa?.set, []);
   const again = await avvioLift(user, 'p1', a.start, null, undefined);
   assert.deepEqual([again.seeded, again.origine?.valori], [[], {}]);
-  const draft = await avvioLift(user, 'p1', a.start, 'draft', undefined, ['Qkg', 'floors']);
+  const draft = await avvioLift(user, 'p1', a.start, 'draft', undefined, { rilievo: ['Qkg', 'floors'], parte: true });
   assert.deepEqual(Object.keys(draft.origine?.valori ?? {}).sort(), ['Qkg', 'floors']);
 });
 
-test('«sì» alla puleggia di rinvio: in alto con rinvio', async () => {
+test('«usa» su un calcolo salvato ripreso, poi la sua bozza: il valore resta segnato, nessun avviso «parte dal rilievo»', async () => {
+  const { avvioCalc } = await forms();
+  const saved = { ...blankCalc(), Q: '800', layout: 'top', o_n: '4', o_d: '10', v: '1.6', H: '18' };
+  const u = await avvioCalc(user, 'p1', saved, null, 'Q');
+  assert.deepEqual([u.seeded, u.origine?.valori, u.origine?.parte], [[], { Q: '630' }, false]);
+  // the calculator's draft after another field changed (H 18 → 19): the value put in, not a start from the survey
+  const values = { ...u.start, H: '19' }, kept = bozzaRilievo(u.origine, (id) => values[id]);
+  assert.deepEqual(kept, { rilievo: ['Q'] });
+  const again = await avvioCalc(user, 'p1', values, 'draft', undefined, kept);
+  assert.deepEqual([again.seeded, again.origine?.valori, again.origine?.parte, again.usa], [[], { Q: '630' }, false, null]);
+  // a brand new calculation from the survey: its draft says it started from it, and the notice comes back
+  const fresh = await avvioCalc(user, 'p1', blankCalc(), 'new', undefined);
+  const mine = { ...fresh.start, H: '19' }, fromSurvey = bozzaRilievo(fresh.origine, (id) => mine[id]);
+  assert.equal(fromSurvey.parte, true);
+  const back = await avvioCalc(user, 'p1', mine, 'draft', undefined, fromSurvey);
+  assert.ok(back.seeded.includes('Q') && back.origine?.parte === true);
+  // «usa» on that draft: still a form started from the survey
+  assert.ok((await avvioCalc(user, 'p1', { ...mine, Q: '800' }, 'draft', 'Q', fromSurvey)).seeded.length > 0);
+});
+
+test('«sì» alla puleggia di rinvio: in alto con rinvio — e «usa» sulla posizione dice il valore messo, non «in alto»', async () => {
   const { avvioCalc } = await forms();
   survey = ROW({ preventivoArgano: { modulo: 'rilievo-dati-argani', valori: { pulegginaRinvio: 'Sì' } } });
   assert.equal((await avvioCalc(user, 'p1', blankCalc(), 'new', undefined)).start.layout, 'topDefl');
+  const u = await avvioCalc(user, 'p1', { ...blankCalc(), layout: 'bottom' }, null, 'posizione');
+  assert.deepEqual([u.usa?.set, u.usa?.messo, u.usa?.prima], [['layout'], 'topDefl', 'bottom']);
+  // no word on the pulley: above, direct, over a machine below
+  survey = ROW({ arganoPreventivo: false, preventivoArgano: null });
+  const alto = await avvioCalc(user, 'p1', { ...blankCalc(), layout: 'bottom' }, null, 'posizione');
+  assert.deepEqual([alto.usa?.set, alto.usa?.messo], [['layout'], 'top']);
 });
 
 test('senza «rilievi:view»: nulla seminato, segnato o nominato', async () => {
   const { avvioCalc } = await forms();
   const blind = { ...user, caps: capsOf('TECHNICIAN', [{ role: 'TECHNICIAN', capability: 'rilievi:view', granted: false }]) };
-  const a = await avvioCalc(blind, 'p1', blankCalc(), 'new', 'Q', ['Q']);
+  const a = await avvioCalc(blind, 'p1', blankCalc(), 'new', 'Q', { rilievo: ['Q'], parte: true });
   assert.deepEqual([a.rilievo, a.origine, a.seeded, a.usa, a.start.Q], [null, null, [], null, '']);
 });

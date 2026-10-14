@@ -23,7 +23,7 @@ import { textsFor } from '@/lib/present/texts';
 import { makePres } from '@/lib/present/tr';
 import { visibleBad } from '@/lib/calc-input';
 import { liftDraftSchema } from '@/lib/draft-input';
-import { ancoraDalRilievo } from '@/lib/collega/formato';
+import { bozzaRilievo } from '@/lib/collega/formato';
 import { valoreLift } from '@/lib/collega/prefill';
 import type { ShaftSource } from '@/lib/shaft-input';
 import { editShaft } from '@/lib/shaft-edit';
@@ -117,11 +117,9 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
   const { nameOf, blockers, refused } = useSaveBlockers(P, derived, dInp.shaft);
   useEffect(() => { if (derived) onDerived?.(dInp, derived); }, [dInp, derived, onDerived]);
   const sim = useRef<SimApi>(null);
-  // the draft keeps which values came from the survey, so that their marks come back with it
-  const draftData = useMemo(() => {
-    const rilievo = ancoraDalRilievo(origine?.valori, (id) => valoreLift(form, id));
-    return rilievo.length ? { ...form, rilievo } : form;
-  }, [form, origine]);
+  // the draft keeps which values came from the survey (and whether the form started from it), so that their marks
+  // come back with it
+  const draftData = useMemo(() => ({ ...form, ...bozzaRilievo(origine, (id) => valoreLift(form, id)) }), [form, origine]);
   const draftValid = useMemo(() => liftDraftSchema.safeParse(draftData).success, [draftData]);
   const draftHandle = useDraft(draft, draftData, draftValid);
   const blank = useMemo(() => ({ is: (k: BlankKey) => form.blank.includes(k), list: form.blank, full: derived !== null }), [form.blank, derived]);

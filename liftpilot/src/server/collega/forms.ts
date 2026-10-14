@@ -8,7 +8,9 @@ import 'server-only';
 // is saved here: the form shows what came from the survey and the user saves it or not. Marked «dal rilievo» are only
 // the fields whose value came from the survey — filled now, put in by «usa», or kept marked by the form's draft while
 // still the survey's —, never a value of a saved calculation that happens to equal it; the notice «parte dal rilievo»
-// only when the form starts from the survey (src/components/collega/RilievoAvviso.tsx).
+// only when the form starts from the survey (src/components/collega/RilievoAvviso.tsx): filled now, or kept marked by a
+// draft that itself started from it — a value put in by «usa» on a saved calculation continued stays marked in its
+// draft, but never makes the form one that starts from the survey.
 import type { FormValues } from '@/calc/types';
 import type { SessionUser } from '@/lib/auth';
 import { can } from '@/lib/rbac';
@@ -21,20 +23,23 @@ import type { OrigineRilievo } from '@/components/collega/origine';
 import { rilievoDiRiferimento } from './queries';
 
 /** «Usa il valore del rilievo» as the form's notice says it: the parameter, the fields it set, what the main one held
- *  when it was something else (null: empty, or already the survey's value). */
+ *  when it was something else (null: empty, or already the survey's value) and what it holds now (null: nothing set) —
+ *  the machine's place as the form has it (with or without the diverting pulley), not the survey's «in alto». */
 export interface UsaFatto {
   param: Usa;
   set: string[];
   prima: string | null;
+  messo: string | null;
 }
 
 export interface Avvio<T> {
   start: T;
   rilievo: RilievoDati | null;
-  /** the marks «dal rilievo»: only the fields whose value came from the survey */
+  /** the marks «dal rilievo»: only the fields whose value came from the survey (`parte`: the form starts from it) */
   origine: OrigineRilievo | null;
-  /** the fields the form starts from the survey with (filled now, or kept marked by its draft): none — the form does
-   *  not start from the survey (a saved calculation continued), and its notice does not say it does */
+  /** the fields the form starts from the survey with (filled now, or kept marked by a draft that started from it): none
+   *  — the form does not start from the survey (a saved calculation continued, «usa» on it, its draft), and its notice
+   *  does not say it does */
   seeded: string[];
   usa: UsaFatto | null;
 }
@@ -44,6 +49,20 @@ export interface Avvio<T> {
 export type Partenza = 'new' | 'draft' | null;
 
 const none = <T>(start: T): Avvio<T> => ({ start, rilievo: null, origine: null, seeded: [], usa: null });
+
+/** What the form's draft kept of the survey (src/lib/draft-input.ts): the fields still marked «dal rilievo», and whether
+ *  the form started from it (only then do they say it again). Read only for a draft (mode 'draft'). */
+export interface Kept {
+  rilievo?: readonly string[];
+  parte?: boolean;
+}
+
+/** The marks of a form's start and the fields it starts from the survey with: filled now (`filled`), or kept by a draft
+ *  (`kept`) — marked again while still the survey's; a start from the survey only when that draft started from it. */
+function avvioSegni(filled: readonly string[], kept: Kept, valore: (id: string) => string | undefined, attuale: (id: string) => unknown) {
+  const ids = kept.rilievo ?? [];
+  return { dal: Object.keys(segnati([...filled, ...ids], valore, attuale)), parte: Object.keys(segnati([...filled, ...(kept.parte ? ids : [])], valore, attuale)) };
+}
 
 /** What the main field held before «usa»: nothing when it was empty or already the value put in. */
 const prima = (before: unknown, after: unknown): string | null => {
@@ -67,38 +86,39 @@ export async function usaDatiImpianto(user: SessionUser, projectId: string, usa:
   return r && value ? { field: usa === 'indirizzo' ? 'address' : 'plantNumber', value, date: fmt.day(r.data) } : null;
 }
 
-/** The calculator's start (`kept`: the fields its draft kept marked «dal rilievo»). */
+/** The calculator's start (`kept`: what its draft kept of the survey). */
 export async function avvioCalc(user: SessionUser, projectId: string, start: FormValues, mode: Partenza, usa: unknown,
-  kept: readonly string[] = []): Promise<Avvio<FormValues>> {
+  kept: Kept = {}): Promise<Avvio<FormValues>> {
   const r = can(user, 'rilievi:view') ? await rilievoDiRiferimento(user, projectId) : null;
   if (!r) return none(start);
   const seme = semeCalc(r), valore = (id: string): string | undefined => valoreCalc(seme, id);
   const seeded = mode ? seminaCalc(start, seme, mode === 'new') : { values: start, seeded: [] };
   let values = seeded.values, done: UsaFatto | null = null;
-  const dal = Object.keys(segnati([...seeded.seeded, ...(mode === 'draft' ? kept : [])], valore, (id) => values[id]));
+  const { dal, parte } = avvioSegni(seeded.seeded, mode === 'draft' ? kept : {}, valore, (id) => values[id]);
   if (isUsa(usa)) {
     const u = usaCalc(values, r, usa), main = u.set[0];
-    done = { param: usa, set: u.set, prima: main ? prima(values[main], u.values[main]) : null };
+    done = { param: usa, set: u.set, prima: main ? prima(values[main], u.values[main]) : null, messo: main ? String(u.values[main] ?? '') : null };
     values = u.values;
   }
   const valori = segnati([...dal, ...(done?.set ?? [])], valore, (id) => values[id]);
-  return { start: values, rilievo: r, origine: { date: fmt.day(r.data), valori }, seeded: dal, usa: done };
+  return { start: values, rilievo: r, origine: { date: fmt.day(r.data), valori, parte: parte.length > 0 }, seeded: parte, usa: done };
 }
 
-/** The one form's start (`kept`: the fields its draft kept marked «dal rilievo»). */
+/** The one form's start (`kept`: what its draft kept of the survey). */
 export async function avvioLift(user: SessionUser, projectId: string, start: LiftDraft, mode: Partenza, usa: unknown,
-  kept: readonly string[] = []): Promise<Avvio<LiftDraft>> {
+  kept: Kept = {}): Promise<Avvio<LiftDraft>> {
   const r = can(user, 'rilievi:view') ? await rilievoDiRiferimento(user, projectId) : null;
   if (!r) return none(start);
   const seme = semeLift(r), valore = (id: string): string | undefined => seme[id];
   const seeded = mode ? seminaLift(start, r, mode === 'new') : { draft: start, seeded: [] };
   let draft = seeded.draft, done: UsaFatto | null = null;
-  const dal = Object.keys(segnati([...seeded.seeded, ...(mode === 'draft' ? kept : [])], valore, (id) => valoreLift(draft, id)));
+  const { dal, parte } = avvioSegni(seeded.seeded, mode === 'draft' ? kept : {}, valore, (id) => valoreLift(draft, id));
   if (isUsa(usa)) {
     const u = usaLift(draft, r, usa), main = u.set[0];
-    done = { param: usa, set: u.set, prima: main ? prima(valoreLift(draft, main), valoreLift(u.draft, main)) : null };
+    done = { param: usa, set: u.set, prima: main ? prima(valoreLift(draft, main), valoreLift(u.draft, main)) : null,
+      messo: main ? String(valoreLift(u.draft, main) ?? '') : null };
     draft = u.draft;
   }
   const valori = segnati([...dal, ...(done?.set ?? [])], valore, (id) => valoreLift(draft, id));
-  return { start: draft, rilievo: r, origine: { date: fmt.day(r.data), valori }, seeded: dal, usa: done };
+  return { start: draft, rilievo: r, origine: { date: fmt.day(r.data), valori, parte: parte.length > 0 }, seeded: parte, usa: done };
 }
