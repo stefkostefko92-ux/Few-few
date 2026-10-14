@@ -8,6 +8,7 @@ import { pathToFileURL } from 'node:url';
 import { PRESETS } from '@/calc/presets';
 import { ENGINE_VERSION, snapshotOf } from '@/calc/snapshot';
 import { LIFT_ENGINE_VERSION, defaultLift, deriveLift } from '@/lib/lift';
+import { capsOf } from '@/lib/rbac';
 import { shaftHash } from '@/lib/shaft-hash';
 import { snapshotHash } from '@/lib/snapshot-hash';
 import { shaftSnapshot } from '@/shaft';
@@ -241,12 +242,23 @@ test('progetto dell’impianto che non passa più: al modulo con ?from= e il seg
   assert.equal(openedByRefresh({ from: 'lift1' }), false);
 });
 
-test('chi aggiorna ma non disegna il progetto (il Tecnico): resta sul record invece di aprire un modulo che non salverebbe', async () => {
-  const { refreshLiftDesignAction } = await actions();
+test('chi fa i calcoli ma non disegna il progetto (il Tecnico): il progetto dell’impianto non si rifà, si resta sul record', async () => {
+  const { refreshLiftDesignAction, refreshCalculationAction } = await actions();
   db.lift = [liftRow('lift1', { engineVersion: '0.0.0' })];
-  created = { ok: false, error: 'invalidFields' };
   signIn({ role: 'TECHNICIAN' });
   assert.equal(await go(refreshLiftDesignAction, 'lift1'), `${APP}/lift-designs/lift1`);
+  // nor through the design's calculation
+  db.calc = [calcRow('c1', { liftDesign: { id: 'lift1' }, project: project({ kind: 'FULL' }) })];
+  assert.equal(await go(refreshCalculationAction, 'c1'), `${APP}/lift-designs/lift1`);
+  assert.equal(calls.lift.length, 0, 'nessun nuovo progetto dell’impianto');
+  // one the company took the project away from, the calculations kept: the same
+  signIn({ role: 'ENGINEER', caps: capsOf('ENGINEER', [{ role: 'ENGINEER', capability: 'progetto:edit', granted: false }]) });
+  assert.equal(await go(refreshLiftDesignAction, 'lift1'), `${APP}/lift-designs/lift1`);
+  assert.equal(calls.lift.length, 0);
+  // already made again by a colleague: to the new one, as for anyone
+  db.audit = [{ companyId: 'c1', action: 'LIFT_DESIGN_SAVED', updates: 'lift1', entityId: 'lift2' }];
+  signIn({ role: 'TECHNICIAN' });
+  assert.equal(await go(refreshLiftDesignAction, 'lift1'), `${APP}/lift-designs/lift2?da=lift1`);
 });
 
 test('progetto dell’impianto di un’altra ditta o archiviato: al tabellone', async () => {
@@ -284,6 +296,19 @@ test('machinale con rilievo che il nuovo calcolo non prende più: si rifà il ca
   assert.equal(await go(refreshRoomDesignAction, 'room1'), `${APP}/calculations/new1/locale?from=room1&aggiorna=1`);
   assert.equal(calls.calc.length, 1);
   assert.equal(calls.room.length, 0, 'il rilievo illeggibile non è salvato');
+});
+
+test('il Tecnico: il locale macchina non si rifà; il calcolo sì, e il rilievo resta sul precedente', async () => {
+  const { refreshRoomDesignAction, refreshCalculationAction } = await actions();
+  db.room = [roomRow('room1')];
+  signIn({ role: 'TECHNICIAN' });
+  assert.equal(await go(refreshRoomDesignAction, 'room1'), `${APP}/room-designs/room1`);
+  assert.equal(calls.calc.length + calls.room.length, 0, 'né calcolo né locale');
+  // the replacement's calculation with its machine room: the calculation is made again, the room is not carried over
+  db.calc = [calcRow('old1', { ...stale, roomDesigns: [{ id: 'room1', label: 'locale', inputs: { nonsense: true } }] })];
+  assert.equal(await go(refreshCalculationAction, 'old1'), `${APP}/calculations/new1?da=old1`);
+  assert.equal(calls.calc.length, 1);
+  assert.equal(calls.room.length, 0, 'il locale resta sul calcolo precedente');
 });
 
 test('machinale di un’altra ditta o archiviato: al tabellone', async () => {

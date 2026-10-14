@@ -1039,7 +1039,9 @@
   и новите `impianti:create`, `rilievi:link`, `progetto:edit`, `drawings:issue`), каквото и да е дала фирмата;
   `permissions:manage` е управление като `users:manage` — остава (решение на интегратора).
 - **Къде се проверява всяко право** (страница / действие / маршрут):
-  - `rilievi:view` — `/app/rilievi`, картата, листът, `/api/rilievi/<id>/pdf|ordine-quadro|preventivo-argano`;
+  - `rilievi:view` — `/app/rilievi`, картата, листът, `/api/rilievi/<id>/pdf|ordine-quadro|preventivo-argano` (PDF-ът на
+    модула на доставчика е сваляне на попълненото, като `report:download` за всички: Търговецът изпраща запитването за
+    машина; попълването на полетата му е `rilievi:edit` — решение след прегледа);
     `rilievi:edit` — `/nuovo`, `/[id]/modifica`, `createRilievoAction`, `updateRilievoAction`; `rilievi:trash` —
     `/[id]/elimina`, `trashRilievoAction`; `rilievi:trash-manage` — `/cestino`, `/cestino/[id]/elimina`, изтрита карта,
     `restoreRilievoAction`, `purgeRilievoAction`.
@@ -1047,13 +1049,21 @@
     страницата на съоръжението и данните му (четене), `/app/norme`, `/api/lista-verifica`, страницата на проекта на
     асансьора; `calc:view` — изчисление, проект на шахтата, машинно, комплект, `/api/verdict-checks`.
   - `impianti:create` — `/app/projects/new`, `createProjectAction`, „Nuova sostituzione/Nuovo progetto“ в менюто и на
-    таблото; `rilievi:link` — фаза 2.
+    таблото; `rilievi:link` — фаза 2. Създаването не е работата по съоръжението: двата вида се създават с
+    `impianti:create`, после се отваря формулярът на вида само за който го попълва (`formRightOf`: подмяна —
+    `calc:create`, цял проект — `progetto:edit`), иначе страницата на съоръжението; формулярът на новото и празната
+    страница казват, че работата е на колега с правото (Техникът създава цял проект и попълва данните му, Проектантът го
+    чертае — фази 2 и 3 разчитат на това; решение след прегледа вместо скриване на „Nuovo progetto“).
   - `projects:edit` — `/projects/<id>/edit`, `updateProjectAction`, данните на съоръжението (`/impianto`,
     `savePlantAction`), логото на възложителя (`uploadClientLogoAction`, `removeClientLogoAction`).
   - `projects:archive` — `setProjectArchivedAction`, бутонът на страницата.
   - `calc:create` — калкулаторът на подмяната (`/projects/<id>/calc`), `saveCalculationAction`, черновата `calc`,
-    „Nuovo calcolo da questo“; `records:refresh` — `refresh-actions.ts` (когато записът се отваря във формуляр:
-    калкулаторът иска `calc:create`, `/progetto` и `/locale` — `progetto:edit`); `calc:review` —
+    „Nuovo calcolo da questo“; `records:refresh` — `refresh-actions.ts`: изчислението на подмяната — с него; проектът на
+    асансьора (нов LiftDesign + шахта + изчисление) и машинното (нов RoomDesign) са записи на Progetto — само ако ролята
+    има и `progetto:edit` (`remakes`; в режим само за четене също, затова `holds`, не `can`), иначе се остава на
+    записа и бутонът „Aggiorna“ не се показва; изчислението на подмяната, обновено от роля без `progetto:edit`, оставя
+    машинното на старото изчисление (страницата на новото го казва), за да го пренесе който чертае. Когато записът се
+    отваря във формуляр: калкулаторът иска `calc:create`, `/progetto` и `/locale` — `progetto:edit`; `calc:review` —
     `reviewCalculationAction`, формата на визата.
   - `progetto:edit` — `/projects/<id>/progetto`, `saveLiftDesignAction`, черновата `lift`; рилевото на машинното
     (`/calculations/<id>/locale`, `saveRoomDesignAction`, черновите `room:*`); подмяна → цял проект
@@ -1066,11 +1076,26 @@
     `/api/company/export` и панелът му (`/app/company` се отваря с едното от двете); `users:manage` — `/app/team`,
     `user-actions.ts`; `permissions:manage` — `/app/permessi`, `savePermissionsAction`; `billing:manage` — `/app/billing`,
     `billing-actions.ts`; `platform:admin` — `/app/admin`, `/app/admin/permessi/<id>`, фирмите.
+- **Страница без правото** (`requireCapability` → `denied`, `src/lib/auth.ts`): право, което фирмата може да даде на
+  ролята, но не е дала (`grantable` на реда от `matrixRightOf` — производното право се води по своя ред), пренасочва към
+  `/app/permesso?p=<право>` — в приложението, „Permesso non concesso“ с ролята, правото и „chiedi al titolare“, вместо
+  публичното 404. Проверката е преди търсенето на записа, затова отговорът е един и същ за всеки адрес (нищо за
+  записите на друга фирма — с правото чуждото id остава 404). Режим само за четене, право, което колега никога няма
+  (`users:manage`…), и платформата — 404 както досега.
+- **Износът на фирмата** носи редовете ѝ (`rolePermissions`: роля, право, дадено, кой и кога; формат v4 от 2026-10-14,
+  `/data`). „Utenti“ отбелязва ролите, чиято колона фирмата е сменила („modificato per la tua azienda“); регистърът
+  пише промяната с думите на матрицата („concesso → non concesso“).
 - **Екранът** (`PermissionsMatrix`, `permessi.css`): действията по групи (Rilievi, Impianti, Calcolo argano, Progetto,
-  Documenti, Prezzi, Azienda) × ролите; клетката е истинско квадратче, нарисувано като бутон на табло (светнало —
-  дадено, заключено — по правило с причина при посочване, точка — различно от подразбирането, пунктир — незаписано);
-  „Ripristina predefiniti“ за всяка роля; запис само с потвърждение (диалог със списъка на промените); на телефон — една
-  роля наведнъж, избрана над матрицата. Отметка носи предпоставките си, махане — каквото стои на нея.
+  Documenti, Prezzi, Azienda) × ролите; клетката е истинско квадратче, нарисувано като бутон на табло (светнало с
+  отметка — дадено; колоната на собственика — бледа с отметка и катинарче в ъгъла, „sempre concesso (titolare)“ в
+  легендата; щриховано с катинар — правило, написано и под действието: „Solo del titolare…“, „Si assegna solo al
+  Capotecnico“; точка — различно от подразбирането; пунктир — незаписано); всяка група повтаря имената на ролите над
+  квадратчетата си; „Ripristina predefiniti“ за всяка роля; запис само с потвърждение (диалог със списъка на
+  промените), после фокусът е на резултата; под 1500 px колоните се свиват, така че на 1024 px се виждат всички роли без
+  хоризонтално превъртане; на телефон — една роля наведнъж, избрана над матрицата. Отметка носи предпоставките си,
+  махане — каквото стои на нея, и ред под матрицата казва кои още са се движили. Колоните на екрана са с приложените
+  предпоставки (`columnsOf` → `standing`): отметнато е само каквото ролята наистина има, и диалогът, и записът броят
+  същите промени.
 - **Връщане на кръг 42:** командите са в коментара на `prisma/migrations/16_permessi/migration.sql` (таблицата се трие
   с бекъп; стойност на enum PostgreSQL не трие без нов тип — колегите Капотехник първо получават друга роля).
 

@@ -31,13 +31,25 @@ export type Grants = Record<MemberRole, MatrixCapability[]>;
 /** The default column of a role (what «Ripristina predefiniti» puts back). */
 export const defaultColumn = (role: MemberRole): MatrixCapability[] => MATRIX_CAPABILITIES.filter((c) => DEFAULT_GRANTS[c].includes(role));
 
-/** The columns as the company has them now (default with its changes), in the matrix's order. */
+/** A column without the rights that lack their prerequisite (what the screen keeps by itself; a form sent by hand may
+ *  not): what is stored is what the colleagues get. */
+export const standing = (col: readonly MatrixCapability[]): MatrixCapability[] =>
+  col.filter((c) => !REQUIRES[c]?.some((r) => !col.includes(r)));
+
+/** The columns as the company has them now (default with its changes, without a right whose prerequisite is not there —
+ *  as rbac.ts capsOf grants them, so a box is ticked only for a right the role really has), in the matrix's order. */
 export function columnsOf(overrides: readonly Override[]): Grants {
   return Object.fromEntries(MATRIX_ROLES.map((r) => {
     const g = grantsOf(r, overrides);
-    return [r, MATRIX_CAPABILITIES.filter((c) => g.has(c))];
+    return [r, standing(MATRIX_CAPABILITIES.filter((c) => g.has(c)))];
   })) as Grants;
 }
+
+/** The colleague roles whose column the company changed from the default matrix. */
+export const changedRoles = (overrides: readonly Override[]): MemberRole[] => {
+  const cols = columnsOf(overrides);
+  return MATRIX_ROLES.filter((r) => cols[r].join() !== defaultColumn(r).join());
+};
 
 /** The rights that stand on `capability` (they go when it goes). */
 export const dependentsOf = (capability: MatrixCapability): MatrixCapability[] =>
@@ -67,11 +79,6 @@ export const permissionsInputSchema = z.object({
   }
 });
 export type PermissionsInput = z.infer<typeof permissionsInputSchema>;
-
-/** A column without the rights that lack their prerequisite (what the screen keeps by itself; a form sent by hand may
- *  not): what is stored is what the colleagues get. */
-export const standing = (col: readonly MatrixCapability[]): MatrixCapability[] =>
-  col.filter((c) => !REQUIRES[c]?.some((r) => !col.includes(r)));
 
 /** One right of one role changed by a save (PERMISSIONS_CHANGED in the activity log). */
 export interface PermissionChange {

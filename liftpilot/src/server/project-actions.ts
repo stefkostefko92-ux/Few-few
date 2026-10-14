@@ -6,7 +6,7 @@ import { DEFAULT_LOCALE, isLocale } from '@/i18n/locales';
 import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
 import { getSessionUser, type SessionUser } from '@/lib/auth';
-import { can, type Capability } from '@/lib/rbac';
+import { can, formRightOf, type Capability } from '@/lib/rbac';
 import { idSchema, projectKindSchema, projectSchema } from '@/lib/schemas';
 import { str, type FormState } from './form';
 
@@ -24,7 +24,8 @@ const readProject = (fd: FormData) => projectSchema.safeParse({
   plantNumber: str(fd, 'plantNumber'), client: str(fd, 'client'), notes: str(fd, 'notes'),
 });
 
-// a new installation opens straight on its work: the replacement on the calculation, a whole project on its one form
+// a new installation opens straight on its work: the replacement on the calculation, a whole project on its one form —
+// for whoever fills that form; whoever only creates installations (a Tecnico's whole project: rbac.ts) lands on its page
 export async function createProjectAction(_prev: FormState, fd: FormData): Promise<FormState> {
   const a = await actor(fd, 'impianti:create');
   if (!a) return { error: 'forbidden' };
@@ -33,7 +34,8 @@ export async function createProjectAction(_prev: FormState, fd: FormData): Promi
   if (!parsed.success) return { error: 'invalidFields', fields: parsed.error.issues.map((i) => String(i.path[0])) };
   const project = await prisma.project.create({ data: { ...parsed.data, kind: kind.data, companyId: a.user.companyId, createdById: a.user.id } });
   await audit({ companyId: a.user.companyId, userId: a.user.id, action: 'PROJECT_CREATED', entity: 'Project', entityId: project.id, meta: { kind: kind.data } });
-  redirect(`/${a.locale}/app/projects/${project.id}/${kind.data === 'REPLACEMENT' ? 'calc' : 'progetto'}`);
+  const form = can(a.user, formRightOf(kind.data)) ? `/${kind.data === 'REPLACEMENT' ? 'calc' : 'progetto'}` : '';
+  redirect(`/${a.locale}/app/projects/${project.id}${form}`);
 }
 
 /** A machine replacement becomes a whole project: its one form starts from the latest calculation (lift-start.ts) —

@@ -3,9 +3,10 @@
 // keeps only what differs from the default and lists every change.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_GRANTS, MATRIX_CAPABILITIES, type MatrixCapability } from '../rbac';
+import { DEFAULT_GRANTS, MATRIX_CAPABILITIES, capsOf, type MatrixCapability } from '../rbac';
 import {
-  MATRIX_ROLES, PERMISSION_GROUPS, columnChanges, columnsOf, defaultColumn, matrixText, permissionsInputSchema, planSave, standing, toggle, type Grants,
+  MATRIX_ROLES, PERMISSION_GROUPS, changedRoles, columnChanges, columnsOf, defaultColumn, matrixText, permissionsInputSchema, planSave, standing, toggle,
+  type Grants,
 } from '../permissions';
 
 const defaults = (): Grants => columnsOf([]);
@@ -77,4 +78,23 @@ test('la versione della matrice non dipende dall’ordine delle righe', () => {
   const a = [{ role: 'SALES' as const, capability: 'rilievi:edit', granted: true }, { role: 'TECHNICIAN' as const, capability: 'calc:create', granted: false }];
   assert.equal(matrixText(a), matrixText([...a].reverse()));
   assert.notEqual(matrixText(a), matrixText([{ ...a[0], granted: false }, a[1]]));
+});
+
+test('lo schermo mostra i diritti che il ruolo ha davvero: senza il presupposto la casella è vuota, e il salvataggio lo dice', () => {
+  // rows stored by hand: the Tecnico loses the view of the installations, keeps (on paper) the calculations
+  const stored = [{ role: 'TECHNICIAN' as const, capability: 'projects:view', granted: false }];
+  const cols = columnsOf(stored);
+  assert.ok(!cols.TECHNICIAN.includes('calc:create') && !cols.TECHNICIAN.includes('projects:view'));
+  // the screen's column is what rbac.ts grants
+  assert.deepEqual(new Set(cols.TECHNICIAN), new Set([...capsOf('TECHNICIAN', stored)].filter((c) => (MATRIX_CAPABILITIES as readonly string[]).includes(c))));
+  // giving the view back from that screen: the dialog and the server list the same changes
+  const wanted = { ...cols, TECHNICIAN: toggle(cols.TECHNICIAN, 'TECHNICIAN', 'projects:view', true) };
+  assert.deepEqual(planSave(stored, wanted).changes, columnChanges(cols, wanted));
+});
+
+test('i ruoli che l’azienda ha cambiato rispetto al predefinito', () => {
+  assert.deepEqual(changedRoles([]), []);
+  assert.deepEqual(changedRoles([{ role: 'TECHNICIAN', capability: 'calc:create', granted: false }]), ['TECHNICIAN']);
+  // a row that changes nothing (the default already) or that the rules ignore: not a change
+  assert.deepEqual(changedRoles([{ role: 'SALES', capability: 'prices:view', granted: true }, { role: 'SALES', capability: 'users:manage', granted: true }]), []);
 });

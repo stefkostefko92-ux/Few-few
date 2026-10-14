@@ -1,11 +1,12 @@
 'use client';
 
 // The company's rights matrix (round 42): the actions in their groups down the side, the roles across — the owner's
-// column always lit and locked, a colleague role's boxes set by the owner (or the platform) within the hard rules of
-// src/lib/rbac.ts. Ticking a right brings what it stands on, clearing one takes away what stands on it
-// (src/lib/permissions.ts toggle). Nothing is saved until «Salva i permessi» and the dialog's confirmation; a save on a
-// matrix someone changed meanwhile is refused and the page shows the matrix in force. On a phone one role at a time,
-// chosen above the matrix.
+// column always granted and locked, a colleague role's boxes set by the owner (or the platform) within the hard rules of
+// src/lib/rbac.ts, each rule written under the action it locks. Ticking a right brings what it stands on, clearing one
+// takes away what stands on it (src/lib/permissions.ts toggle), and a line says which others moved with it. Each group
+// names the roles again over its boxes. Nothing is saved until «Salva i permessi» and the dialog's confirmation; the
+// outcome takes the focus; a save on a matrix someone changed meanwhile is refused and the page shows the matrix in
+// force. On a phone one role at a time, chosen above the matrix.
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import type { Role } from '@prisma/client';
@@ -18,9 +19,14 @@ import MatrixCell, { type CellLock } from './MatrixCell';
 
 const COLUMNS: readonly Role[] = ['OWNER', ...MATRIX_ROLES];
 const LOCKS = ['owner', 'never', 'chiefOnly'] as const;
-const LEGEND = { on: 'legendOn', off: 'legendOff', locked: 'legendLocked', custom: 'legendCustom', unsaved: 'legendUnsaved' } as const;
+const LEGEND = {
+  on: 'legendOn', always: 'legendAlways', off: 'legendOff', locked: 'legendLocked', custom: 'legendCustom', unsaved: 'legendUnsaved',
+} as const;
 const sameSet = (a: readonly string[], b: readonly string[]): boolean => a.length === b.length && a.every((x) => b.includes(x));
 const isMember = (r: Role): r is MemberRole => r !== 'OWNER' && r !== 'SUPERADMIN';
+/** The rule a row's locked boxes follow, written under the action: no colleague has it, or only the Capotecnico. */
+const rowRule = (c: MatrixCapability): 'never' | 'chiefOnly' | null =>
+  MATRIX_ROLES.every((r) => lockOf(r, c) === 'never') ? 'never' : MATRIX_ROLES.some((r) => lockOf(r, c) === 'chiefOnly') ? 'chiefOnly' : null;
 
 export default function PermissionsMatrix({ companyId, stamp: savedStamp, grants }: { companyId: string; stamp: string; grants: Grants }) {
   const t = useTranslations('permessi'), tr = useTranslations('roles'), router = useRouter();
@@ -35,8 +41,10 @@ export default function PermissionsMatrix({ companyId, stamp: savedStamp, grants
   }
   const [show, setShow] = useState<Role>('CHIEF_TECHNICIAN');
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  // the rights that moved with the last box (its prerequisites, or what stands on it)
+  const [cascade, setCascade] = useState<string | null>(null);
   const [busy, start] = useTransition();
-  const dialog = useRef<HTMLDialogElement>(null);
+  const dialog = useRef<HTMLDialogElement>(null), status = useRef<HTMLParagraphElement>(null);
   const changes = useMemo(() => columnChanges(base, cur), [base, cur]);
   const dirty = changes.length > 0;
 
@@ -47,18 +55,28 @@ export default function PermissionsMatrix({ companyId, stamp: savedStamp, grants
     window.addEventListener('beforeunload', onLeave);
     return () => window.removeEventListener('beforeunload', onLeave);
   }, [dirty]);
+  // the outcome of a save takes the focus: the save button it came from is disabled once nothing waits
+  useEffect(() => {
+    if (msg) status.current?.focus();
+  }, [msg]);
 
   const set = (role: MemberRole, capability: MatrixCapability, on: boolean) => {
     setMsg(null);
-    setCur((g) => ({ ...g, [role]: toggle(g[role], role, capability, on) }));
+    const next = toggle(cur[role], role, capability, on);
+    const moved = (on ? next.filter((c) => !cur[role].includes(c)) : cur[role].filter((c) => !next.includes(c))).filter((c) => c !== capability);
+    setCascade(moved.length
+      ? t(on ? 'cascadeOn' : 'cascadeOff', { role: tr(role), rights: moved.map((c) => t(`caps.${c}`)).join(', ') }) : null);
+    setCur((g) => ({ ...g, [role]: next }));
   };
   const reset = (role: MemberRole) => {
     setMsg(null);
+    setCascade(null);
     setCur((g) => ({ ...g, [role]: defaultColumn(role) }));
   };
   const save = () => start(async () => {
     const r = await savePermissionsAction({ companyId, stamp, grants: cur });
     dialog.current?.close();
+    setCascade(null);
     if (r.ok) {
       setBase(cur);
       setStamp(r.stamp);
@@ -109,39 +127,52 @@ export default function PermissionsMatrix({ companyId, stamp: savedStamp, grants
           </thead>
           {PERMISSION_GROUPS.map((g) => (
             <tbody key={g.key}>
-              <tr className="pm-group"><th scope="colgroup" colSpan={COLUMNS.length + 1}>{t(`groups.${g.key}`)}</th></tr>
-              {g.rows.map((c) => (
-                <tr key={c}>
-                  <th scope="row" className="pm-action">
-                    <span className="pm-right">{t(`caps.${c}`)}</span>
-                    {needs(c) ? <span className="pm-needs">{needs(c)}</span> : null}
-                  </th>
-                  {COLUMNS.map((r) => {
-                    const lock = lockOf(r, c) as CellLock, member = isMember(r);
-                    const on = member ? cur[r].includes(c) : true;
-                    return (
-                      <MatrixCell key={r} role={r} capability={c} label={`${tr(r)}: ${t(`caps.${c}`)}`} on={on} lock={lock} reason={lockText(lock)}
-                        custom={member && on !== DEFAULT_GRANTS[c].includes(r)} unsaved={member && on !== base[r].includes(c)}
-                        hidden={show !== r} busy={busy} onToggle={(v) => { if (member) set(r, c, v); }} />
-                    );
-                  })}
-                </tr>
-              ))}
+              <tr className="pm-group">
+                <th scope="rowgroup">{t(`groups.${g.key}`)}</th>
+                {/* the roles named again over the group's boxes (the head is far up on a long matrix) */}
+                {COLUMNS.map((r) => (
+                  <td key={r} aria-hidden="true" className={`pm-group-role${r === 'OWNER' ? ' pm-owner' : ''}${show === r ? '' : ' pm-off'}`}>{tr(r)}</td>
+                ))}
+              </tr>
+              {g.rows.map((c) => {
+                const rule = rowRule(c);
+                return (
+                  <tr key={c}>
+                    <th scope="row" className="pm-action">
+                      <span className="pm-right">{t(`caps.${c}`)}</span>
+                      {needs(c) ? <span className="pm-needs">{needs(c)}</span> : null}
+                      {rule ? <span className="pm-needs pm-rule">{t(`locks.${rule}`)}</span> : null}
+                    </th>
+                    {COLUMNS.map((r) => {
+                      const lock = lockOf(r, c) as CellLock, member = isMember(r);
+                      const on = member ? cur[r].includes(c) : true;
+                      return (
+                        <MatrixCell key={r} role={r} capability={c} label={`${tr(r)}: ${t(`caps.${c}`)}`} on={on} lock={lock} reason={lockText(lock)}
+                          custom={member && on !== DEFAULT_GRANTS[c].includes(r)} unsaved={member && on !== base[r].includes(c)}
+                          hidden={show !== r} busy={busy} onToggle={(v) => { if (member) set(r, c, v); }} />
+                      );
+                    })}
+                  </tr>
+                );
+              })}
             </tbody>
           ))}
         </table>
       </div>
       <p className="pm-legend note">
-        {(['on', 'off', 'locked', 'custom', 'unsaved'] as const).map((k) => (
+        {(Object.keys(LEGEND) as (keyof typeof LEGEND)[]).map((k) => (
           <span key={k} className="pm-leg"><span className={`pm-chip ${k}`} aria-hidden="true" />{t(LEGEND[k])}</span>
         ))}
       </p>
       <div className="savebar pm-savebar">
         <div className="inner">
-          {msg ? <p className={`pm-msg ${msg.ok ? 'ok' : 'bad'}`} role={msg.ok ? 'status' : 'alert'}>{msg.text}</p>
-            : <p className="pm-msg" role="status">{dirty ? t('pending', { n: changes.length }) : t('none')}</p>}
+          <div className="pm-status">
+            {msg ? <p ref={status} tabIndex={-1} className={`pm-msg ${msg.ok ? 'ok' : 'bad'}`} role={msg.ok ? 'status' : 'alert'}>{msg.text}</p>
+              : <p className="pm-msg" role="status">{dirty ? t('pending', { n: changes.length }) : t('none')}</p>}
+            <p className="pm-cascade" role="status">{cascade}</p>
+          </div>
           <div className="pm-actions">
-            <button type="button" className="btn btn-ghost" disabled={!dirty || busy} onClick={() => { setMsg(null); setCur(base); }}>{t('discard')}</button>
+            <button type="button" className="btn btn-ghost" disabled={!dirty || busy} onClick={() => { setMsg(null); setCascade(null); setCur(base); }}>{t('discard')}</button>
             <button type="button" className="btn btn-primary" disabled={!dirty || busy} onClick={() => dialog.current?.showModal()}>{t('save')}</button>
           </div>
         </div>

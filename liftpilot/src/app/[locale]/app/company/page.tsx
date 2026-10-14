@@ -1,7 +1,6 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
-import { notFound } from 'next/navigation';
-import { requireUser } from '@/lib/auth';
+import { denied, requireUser } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { getCompanyLogo } from '@/server/queries';
 import LogoForm from '@/components/tavole/LogoForm';
@@ -21,7 +20,7 @@ export default async function CompanyPage({ params }: { params: Promise<{ locale
   setRequestLocale(locale);
   const user = await requireUser(locale);
   const exports = can(user, 'company:export');
-  if (!exports && !can(user, 'company:edit')) notFound();
+  if (!exports && !can(user, 'company:edit')) denied(locale, user, 'company:export');
   const [t, c] = await Promise.all([getTranslations('tavole'), getCompanyLogo(user)]);
   const logo = c?.logo ?? null;
   return (

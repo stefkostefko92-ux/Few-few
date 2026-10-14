@@ -26,8 +26,10 @@ const KINDS: readonly ProjectKind[] = ['REPLACEMENT', 'FULL'];
 type Field = (typeof FIELDS)[number][0] | 'notes';
 
 /** A new installation says what it is for (`kind`: the module chosen on the dashboard); an existing one keeps it. The
- *  fields are controlled: a refused save keeps what was typed (React resets an uncontrolled form after its action). */
-export default function ProjectForm({ initial, kind = 'FULL' }: { initial?: ProjectValues; kind?: ProjectKind }) {
+ *  fields are controlled: a refused save keeps what was typed (React resets an uncontrolled form after its action).
+ *  `fills`: the modules whose form the user fills (rbac.ts formRightOf); for another one the form says that the
+ *  installation is created with its data and its work is a colleague's. */
+export default function ProjectForm({ initial, kind = 'FULL', fills = KINDS }: { initial?: ProjectValues; kind?: ProjectKind; fills?: readonly ProjectKind[] }) {
   const t = useTranslations('projects'), te = useTranslations('errors'), locale = useLocale();
   const [state, action, pending] = useActionState(initial?.id ? updateProjectAction : createProjectAction, initialFormState);
   const [v, setV] = useState<Record<Field, string>>(() => ({
@@ -55,6 +57,7 @@ export default function ProjectForm({ initial, kind = 'FULL' }: { initial?: Proj
               </label>
             ))}
           </div>
+          {fills.includes(chosen) ? null : <p className="alert alert-info" role="status">{t('createOnly', { kind: chosen })}</p>}
         </fieldset>
       )}
       <div className="form-grid">

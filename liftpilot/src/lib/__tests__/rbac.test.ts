@@ -5,8 +5,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CAPABILITIES, DEFAULT_GRANTS, MATRIX_CAPABILITIES, MEMBER_ROLES, REQUIRES, ROLES, assignableRoles, can, capsOf, editableRoles, grantable,
-  homeOf, isRole, lockOf, outranks, type Capability, type MatrixCapability, type MemberRole, type Override,
+  CAPABILITIES, DEFAULT_GRANTS, MATRIX_CAPABILITIES, MEMBER_ROLES, REQUIRES, ROLES, assignableRoles, can, capsOf, editableRoles, formRightOf,
+  grantable, holds, homeOf, isCapability, isRole, lockOf, matrixRightOf, outranks, remakes, type Capability, type MatrixCapability, type MemberRole,
+  type Override,
 } from '../rbac';
 
 const T = 'OWNER' as const, C = 'CHIEF_TECHNICIAN' as const, P = 'ENGINEER' as const, TEC = 'TECHNICIAN' as const, S = 'SALES' as const;
@@ -139,4 +140,33 @@ test('Rilievi: tutti vedono; compilano tutti tranne il Commerciale; cestino a Pr
     assert.ok(can(ro, 'rilievi:view'), r);
     assert.ok(!can(ro, 'rilievi:edit') && !can(ro, 'rilievi:trash') && !can(ro, 'rilievi:trash-manage'), r);
   }
+});
+
+test('rifare un record col software attuale: il calcolo chi fa i calcoli; il progetto dell’impianto e il locale macchina solo chi disegna il progetto, anche in sola lettura', () => {
+  // the default matrix: the Tecnico makes the calculations, does not draw the project
+  assert.ok(remakes(TEC, 'calc') && !remakes(TEC, 'lift') && !remakes(TEC, 'room'));
+  for (const r of [T, C, P, 'SUPERADMIN'] as const) assert.ok(remakes(r, 'calc') && remakes(r, 'lift') && remakes(r, 'room'), r);
+  assert.ok(!remakes(S, 'calc') && !remakes(S, 'lift'));
+  // read-only: still made again (terms art. 10) by a role that holds the rights, though progetto:edit itself is a write
+  const ro = { role: P, readOnly: true };
+  assert.ok(!can(ro, 'progetto:edit') && holds(ro, 'progetto:edit') && remakes(ro, 'lift') && remakes(ro, 'room'));
+  // the company keeps the calculations of a Progettista and takes the project away: the calculation only
+  const noDraw = { role: P, caps: capsOf(P, [{ role: P, capability: 'progetto:edit', granted: false }]) };
+  assert.ok(remakes(noDraw, 'calc') && !remakes(noDraw, 'lift') && !remakes(noDraw, 'room'));
+  // and a Tecnico given the project draws it again too
+  const draws = { role: TEC, caps: capsOf(TEC, [{ role: TEC, capability: 'progetto:edit', granted: true }]) };
+  assert.ok(remakes(draws, 'lift') && remakes(draws, 'room'));
+});
+
+test('il modulo di ogni tipo d’impianto e la riga della matrice di ogni diritto', () => {
+  assert.equal(formRightOf('REPLACEMENT'), 'calc:create');
+  assert.equal(formRightOf('FULL'), 'progetto:edit');
+  // a Tecnico creates both kinds, fills the replacement's calculator only
+  assert.ok(can(TEC, 'impianti:create') && can(TEC, formRightOf('REPLACEMENT')) && !can(TEC, formRightOf('FULL')));
+  // the derived rights come from their row; the platform's has none
+  assert.equal(matrixRightOf('calc:view'), 'projects:view');
+  assert.equal(matrixRightOf('records:refresh'), 'calc:create');
+  assert.equal(matrixRightOf('progetto:edit'), 'progetto:edit');
+  assert.equal(matrixRightOf('platform:admin'), null);
+  assert.ok(isCapability('calc:create') && !isCapability('calc:delete') && !isCapability(undefined));
 });

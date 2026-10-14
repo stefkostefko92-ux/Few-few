@@ -3,11 +3,11 @@
 // these keys, so a key added or removed there fails the typecheck until the register says so — and then the version
 // goes up.
 export const EXPORT_FORMAT = 'liftpilot-company-export';
-export const EXPORT_FORMAT_VERSION = 3;
+export const EXPORT_FORMAT_VERSION = 4;
 
 /** The top-level keys: the envelope, then the data (each one described on the page, messages: dataPage.keys.<key>). */
 export const EXPORT_ENVELOPE = ['format', 'formatVersion', 'exportedAt', 'termsVersion', 'note'] as const;
-export const EXPORT_DATA = ['company', 'users', 'invites', 'logos', 'projects', 'priceItems', 'customPrices', 'schede', 'auditLog'] as const;
+export const EXPORT_DATA = ['company', 'users', 'invites', 'rolePermissions', 'logos', 'projects', 'priceItems', 'customPrices', 'schede', 'auditLog'] as const;
 
 export type ExportKey = (typeof EXPORT_ENVELOPE)[number] | (typeof EXPORT_DATA)[number];
 
@@ -20,7 +20,8 @@ export const EXPORT_FORMAT_HISTORY = [
   { version: 1, since: null },
   { version: 2, since: '2026-10-06' },
   { version: 3, since: '2026-10-12' },
+  { version: 4, since: '2026-10-14' },
 ] as const;
 
 /** The day the register last changed (the page shows it). */
-export const EXPORT_REGISTER_DATE = '2026-10-12';
+export const EXPORT_REGISTER_DATE = '2026-10-14';

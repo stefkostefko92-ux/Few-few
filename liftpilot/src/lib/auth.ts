@@ -6,7 +6,7 @@ import { SignJWT, jwtVerify } from 'jose';
 import type { Role } from '@prisma/client';
 import { prisma } from './db';
 import { env, publicBaseUrl } from './env';
-import { MEMBER_ROLES, can, capsOf, type Capability } from './rbac';
+import { MEMBER_ROLES, can, capsOf, grantable, holds, isMemberRole, matrixRightOf, type Capability } from './rbac';
 import { daysLeft, type Access } from './billing';
 import { BILLING_SELECT, accessOf } from './billing-access';
 import { termsStateOf, type TermsState } from './legal';
@@ -148,9 +148,21 @@ export async function requireUser(locale: string, opts: { allowPasswordChange?: 
   return user;
 }
 
-/** Like requireUser, and the capability is required: otherwise the page does not exist for this user. */
+/** A page the user may not open. A right the company could give the user's role and did not (the matrix, round 42): an
+ *  in-application page says so, the same for any address — nothing about another company's records, which the pages
+ *  look up only after this check. Anything else (read-only mode, a right no colleague ever has, the platform's): the
+ *  page does not exist for the user. */
+export function denied(locale: string, user: SessionUser, capability: Capability): never {
+  const right = matrixRightOf(capability);
+  if (right && isMemberRole(user.role) && grantable(user.role, right) && !holds(user, capability)) {
+    redirect(`/${locale}/app/permesso?p=${encodeURIComponent(right)}`);
+  }
+  notFound();
+}
+
+/** Like requireUser, and the capability is required: otherwise denied(). */
 export async function requireCapability(locale: string, capability: Capability): Promise<SessionUser> {
   const user = await requireUser(locale);
-  if (!can(user, capability)) notFound();
+  if (!can(user, capability)) denied(locale, user, capability);
   return user;
 }

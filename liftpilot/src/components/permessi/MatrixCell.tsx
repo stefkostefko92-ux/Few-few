@@ -5,9 +5,9 @@ import type { MatrixCapability } from '@/lib/rbac';
 
 export type CellLock = 'owner' | 'never' | 'chiefOnly' | null;
 
-/** A box of the rights matrix, drawn as a key of a controller's panel: lit when the right is granted, with a lock when
- *  the hard rules fix it (the owner's column, the rights never given, the Capotecnico's only), a mark when the company
- *  differs from the default, a ring while the change is not saved. A real checkbox under the drawing: the keyboard, the
+/** A box of the rights matrix, drawn as a key of a controller's panel: lit with a check when the right is granted — the
+ *  owner's always, a small lock on its corner —, a lock when the hard rules keep it from a colleague (the rights never
+ *  given, the Capotecnico's only), a mark when the company differs from the default, a ring while the change is not saved. A real checkbox under the drawing: the keyboard, the
  *  screen reader and a click on the whole cell work as on any box. */
 export default function MatrixCell({ role, capability, label, on, lock, reason, custom, unsaved, hidden, busy, onToggle }: {
   role: Role;
@@ -35,12 +35,16 @@ export default function MatrixCell({ role, capability, label, on, lock, reason, 
         <input type="checkbox" checked={on} disabled={lock !== null || busy} aria-label={label}
           aria-describedby={lock ? `pm-lock-${lock}` : undefined} onChange={(e) => onToggle(e.currentTarget.checked)} />
         <span className="pm-key-face" aria-hidden="true">
-          {lock ? (
-            <svg viewBox="0 0 16 16" className="pm-glyph"><path d="M5 7V5a3 3 0 0 1 6 0v2M4 7h8v6H4z" /></svg>
-          ) : on ? (
+          {on ? (
             <svg viewBox="0 0 16 16" className="pm-glyph"><path d="M3.5 8.5l3 3 6-7" /></svg>
+          ) : lock ? (
+            <svg viewBox="0 0 16 16" className="pm-glyph"><path d="M5 7V5a3 3 0 0 1 6 0v2M4 7h8v6H4z" /></svg>
           ) : null}
         </span>
+        {/* granted and fixed by the rules (the owner's column): the check, and a lock on the corner */}
+        {on && lock ? (
+          <span className="pm-lockbadge" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M5 7V5a3 3 0 0 1 6 0v2M4 7h8v6H4z" /></svg></span>
+        ) : null}
       </label>
     </td>
   );

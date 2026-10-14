@@ -31,13 +31,14 @@ export default async function AuditPage({ params }: { params: Promise<{ locale: 
   const manageTrash = can(me, 'rilievi:trash-manage');
   const fd = dateFormat(locale);
   const label = (group: 'actions' | 'entities', key: string): string => (t.has(`${group}.${key}`) ? t(`${group}.${key}`) : key);
-  // a change of the rights: which role, which right, before → after; made by the platform, it says so (not who)
+  // a change of the rights: which role, which right, before → after in the matrix's words; made by the platform, it says
+  // so (not who)
   const permission = (meta: unknown) => {
     const m = permissionMeta.safeParse(meta);
     if (!m.success) return null;
     const role = tro.has(m.data.role) ? tro(m.data.role as 'OWNER') : m.data.role;
     const right = tp.has(`caps.${m.data.capability}`) ? tp(`caps.${m.data.capability}` as 'caps.audit:view') : m.data.capability;
-    return { by: m.data.by, text: t('permission', { role, right, from: t(m.data.from ? 'granted' : 'denied'), to: t(m.data.to ? 'granted' : 'denied') }) };
+    return { by: m.data.by, text: t('permission', { role, right, from: tp(m.data.from ? 'on' : 'off'), to: tp(m.data.to ? 'on' : 'off') }) };
   };
   const nameOf = (id: string): string => {
     const s = sheets.get(id);

@@ -47,6 +47,7 @@ const DERIVED: Readonly<Partial<Record<Capability, Capability>>> = { 'calc:view'
 export type MatrixCapability = Exclude<Capability, 'calc:view' | 'records:refresh' | 'platform:admin'>;
 export const MATRIX_CAPABILITIES = CAPABILITIES.filter((c): c is MatrixCapability => !(c in DERIVED) && c !== 'platform:admin');
 export const isMatrixCapability = (c: string): c is MatrixCapability => (MATRIX_CAPABILITIES as readonly string[]).includes(c);
+export const isCapability = (c: unknown): c is Capability => typeof c === 'string' && (CAPABILITIES as readonly string[]).includes(c);
 
 const C = 'CHIEF_TECHNICIAN', E = 'ENGINEER', T = 'TECHNICIAN', S = 'SALES';
 type Members = readonly MemberRole[];
@@ -154,9 +155,29 @@ export interface Principal {
 
 export const isRole = (x: unknown): x is Role => typeof x === 'string' && Object.prototype.hasOwnProperty.call(ROLE_LEVEL, x);
 
+/** The role has the right in the company, whatever the subscription: can() without read-only mode. Only for what
+ *  read-only mode keeps by rule (making a record again: remakes()); every other check is can(). */
+export function holds(who: Role | Principal, capability: Capability): boolean {
+  const p: Principal = typeof who === 'string' ? { role: who } : who;
+  return (p.caps ?? DEFAULT_CAPS[p.role]).has(capability);
+}
+
 export function can(who: Role | Principal, capability: Capability): boolean {
   const p: Principal = typeof who === 'string' ? { role: who } : who;
-  return (p.caps ?? DEFAULT_CAPS[p.role]).has(capability) && !(p.readOnly && WRITES.has(capability));
+  return holds(p, capability) && !(p.readOnly && WRITES.has(capability));
+}
+
+/** Who makes a saved record again with the running engines (src/server/refresh-actions.ts; read-only mode too): a
+ *  replacement's calculation, whoever makes the calculations; a lift design (with its shaft design and calculation) or a
+ *  machine room — records of the Progetto — only whoever also draws the project, the role holding 'progetto:edit'. */
+export function remakes(who: Role | Principal, record: 'calc' | 'lift' | 'room'): boolean {
+  return can(who, 'records:refresh') && (record === 'calc' || holds(who, 'progetto:edit'));
+}
+
+/** The row of the matrix that gives a right: itself, or the one a derived right follows; null for the platform's. */
+export function matrixRightOf(capability: Capability): MatrixCapability | null {
+  const c = DERIVED[capability] ?? capability;
+  return isMatrixCapability(c) ? c : null;
 }
 
 /** `actor` may manage a user (or the rights of a role) `target` only when strictly above it. */
@@ -174,6 +195,10 @@ export function editableRoles(actor: Role | Principal): MemberRole[] {
   const role = typeof actor === 'string' ? actor : actor.role;
   return can(actor, 'permissions:manage') ? MEMBER_ROLES.filter((r): r is MemberRole => isMemberRole(r) && outranks(role, r)) : [];
 }
+
+/** The right of a module's one form: the replacement's calculator, a whole project's /progetto. Creating an installation
+ *  ('impianti:create') does not bring it: whoever creates one without it lands on the installation's page. */
+export const formRightOf = (kind: 'REPLACEMENT' | 'FULL'): Capability => (kind === 'REPLACEMENT' ? 'calc:create' : 'progetto:edit');
 
 /** Where a user's work starts: the installations, else the survey sheets, else the account (rights taken away). */
 export function homeOf(who: Role | Principal): '/app' | '/app/rilievi' | '/app/account' {

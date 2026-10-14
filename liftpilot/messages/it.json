@@ -327,7 +327,9 @@
     "preview_noPlan_REPLACEMENT": "La sostituzione dell’argano non disegna il vano: qui i dati del suo ultimo calcolo.",
     "preview_noPlan_FULL": "La pianta compare quando il modulo dell’impianto è salvato: qui i dati del suo ultimo calcolo.",
     "open": "Apri l’impianto",
-    "emptyKind": "Nessun impianto di questo tipo."
+    "emptyKind": "Nessun impianto di questo tipo.",
+    "createOnly": "Il tuo ruolo crea l’impianto con i suoi dati; {kind, select, REPLACEMENT {il calcolo dell’argano lo fa} other {il progetto lo disegna}} un collega che ne ha il permesso. Dopo il salvataggio si apre la pagina dell’impianto.",
+    "workByOther": "{kind, select, REPLACEMENT {Il calcolo dell’argano lo fa} other {Il progetto lo disegna}} un collega che ne ha il permesso: il tuo ruolo vede l’impianto e ne cura i dati."
   },
   "calculations": {
     "verdictOk": "Supera le verifiche",
@@ -428,7 +430,8 @@
     "deleteConfirm": "Elimina definitivamente",
     "roleNotesLead": "I permessi predefiniti di ogni ruolo; il titolare li cambia per la sua azienda.",
     "permissionsLink": "Permessi dei ruoli",
-    "lastOwner": "Un’azienda ha sempre un titolare attivo: l’ultimo non si disattiva."
+    "lastOwner": "Un’azienda ha sempre un titolare attivo: l’ultimo non si disattiva.",
+    "roleChanged": "modificato per la tua azienda"
   },
   "admin": {
     "title": "Aziende",
@@ -543,9 +546,7 @@
       "Permission": "Permesso"
     },
     "platform": "Piattaforma LiftPilot",
-    "permission": "{role} · {right}: {from} → {to}",
-    "granted": "sì",
-    "denied": "no"
+    "permission": "{role} · {right}: {from} → {to}"
   },
   "shaft": {
     "title": "Progetto del vano",
@@ -2017,6 +2018,7 @@
     "changed": "Rifatto con il software attuale dai dati salvati il {date}: l’esito cambia. Prima e ora:",
     "roomRedo": "Il rilievo del locale macchina salvato con il calcolo precedente non passa con il software attuale: rifallo partendo da quel rilievo.",
     "roomOpen": "Apri il rilievo",
+    "roomLeft": "Il rilievo del locale macchina è rimasto sul calcolo precedente: lo rifà sul nuovo calcolo chi disegna il progetto.",
     "outdated": "da aggiornare",
     "archive": "Il software è cambiato da quando questo è stato salvato: i documenti non si rigenerano. È nell’archivio dell’impianto, ora un progetto completo: il progetto si aggiorna dal suo modulo.",
     "formTitle": "Aggiornamento con il software attuale: dati da correggere",
@@ -2093,6 +2095,7 @@
       "company": "L’azienda: ragione sociale, partita IVA, città, stato dell’abbonamento e del periodo di prova.",
       "users": "Gli utenti: nome, e-mail, ruolo, lingua, date di creazione, di ultimo accesso, di conferma dell’indirizzo e di accettazione delle condizioni; mai le password né i link.",
       "invites": "Gli inviti in attesa: e-mail, nome, ruolo, scadenza.",
+      "rolePermissions": "I permessi dei ruoli dei colleghi che l’azienda ha cambiato rispetto a quelli predefiniti: ruolo, permesso, concesso o no, chi e quando l’ha cambiato.",
       "logos": "I loghi dell’azienda, con impronta SHA-256 e dimensioni.",
       "projects": "I progetti, ciascuno con i propri record (sotto).",
       "priceItems": "Il listino dell’azienda: il prezzo di ogni articolo dei cataloghi.",
@@ -2125,7 +2128,8 @@
     "history": {
       "v1": "1 — la prima: company, users, logos, projects, priceItems, customPrices, auditLog.",
       "v2": "2 — dal {date}: si aggiunge invites (gli inviti in attesa).",
-      "v3": "3 — dal {date}: si aggiunge schede (le schede di rilievo, con le misure e i moduli dei fornitori)."
+      "v3": "3 — dal {date}: si aggiunge schede (le schede di rilievo, con le misure e i moduli dei fornitori).",
+      "v4": "4 — dal {date}: si aggiunge rolePermissions (i permessi dei ruoli cambiati dall’azienda)."
     },
     "apiTitle": "C’è un’interfaccia per l’esportazione?",
     "apiText": "Sì, gratuita e uguale per tutte le aziende: una richiesta GET a {base}/api/company/export restituisce il file JSON descritto sopra al titolare che ha effettuato l’accesso. È la stessa richiesta del pulsante della pagina Azienda, al massimo 6 volte all’ora per azienda. Il nuovo fornitore riceve il file dal titolare; questa pagina descrive il formato per scrivere il programma che lo legge (art. 30, par. 2, del Data Act).",
@@ -2527,6 +2531,7 @@
       "unauthorized": "Sessione scaduta: accedi di nuovo."
     },
     "legendOn": "concesso",
+    "legendAlways": "sempre concesso (titolare)",
     "legendOff": "non concesso",
     "legendLocked": "bloccato dalle regole",
     "legendCustom": "diverso dal predefinito",
@@ -2537,6 +2542,15 @@
     },
     "showRole": "Ruolo mostrato",
     "changesTitle": "Le modifiche",
-    "legendUnsaved": "modifica non salvata"
+    "legendUnsaved": "modifica non salvata",
+    "cascadeOn": "Concessi anche a {role}, perché servono: {rights}.",
+    "cascadeOff": "Tolti anche a {role}, perché ne dipendono: {rights}."
+  },
+  "denied": {
+    "title": "Permesso non concesso",
+    "lead": "Il tuo ruolo ({role}) non ha il permesso «{right}» in questa azienda.",
+    "leadAny": "Il tuo ruolo ({role}) non ha il permesso di aprire questa pagina in questa azienda.",
+    "ask": "I permessi di ogni ruolo li decide il titolare dell’azienda: se ti serve, chiedilo a lui.",
+    "back": "Torna al lavoro"
   }
 }

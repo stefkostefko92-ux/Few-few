@@ -3,6 +3,9 @@ import { Link } from '@/i18n/routing';
 import { requireCapability } from '@/lib/auth';
 import { MEMBER_ROLES, assignableRoles, can, outranks } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
+import { prisma } from '@/lib/db';
+import { changedRoles } from '@/lib/permissions';
+import { companyOverrides } from '@/server/permissions';
 import { listInvites, listUsers } from '@/server/queries';
 import { companySubscription } from '@/server/billing';
 import { deleteUserAction, inviteAgainAction, revokeInviteAction, updateUserAction } from '@/server/user-actions';
@@ -24,8 +27,10 @@ export default async function TeamPage({ params, searchParams }: {
   const { locale } = await params;
   setRequestLocale(locale);
   const me = await requireCapability(locale, 'users:manage');
-  const [q, t, tr, users, invites, lang, sub] = await Promise.all([searchParams, getTranslations('team'), getTranslations('roles'), listUsers(me),
-    listInvites(me), getLocale(), companySubscription(me.companyId)]);
+  const [q, t, tr, users, invites, lang, sub, overrides] = await Promise.all([searchParams, getTranslations('team'), getTranslations('roles'), listUsers(me),
+    listInvites(me), getLocale(), companySubscription(me.companyId), companyOverrides(prisma, me.companyId)]);
+  // the notes are the default matrix: a role the company changed says so (its rights are on /app/permessi)
+  const changed = new Set<string>(changedRoles(overrides));
   const fd = dateFormat(locale);
   const roles = assignableRoles(me.role);
   const free = sub?.free ?? false, limit = sub && Number.isFinite(sub.limit) ? String(sub.limit) : '∞';
@@ -38,7 +43,12 @@ export default async function TeamPage({ params, searchParams }: {
           {can(me, 'billing:manage') && sub?.access !== 'free' ? <Link href="/app/billing">{t('buySeats')}</Link> : null}</p>
         <p className="note">{t('roleNotesLead')}{can(me, 'permissions:manage') ? <> <Link href="/app/permessi">{t('permissionsLink')}</Link></> : null}</p>
         <dl className="flex flex-col gap-1">
-          {MEMBER_ROLES.map((r) => <div key={r}><dt className="inline font-semibold">{tr(r)}: </dt><dd className="inline">{t(`roleNote.${r}`)}</dd></div>)}
+          {MEMBER_ROLES.map((r) => (
+            <div key={r}>
+              <dt className="inline font-semibold">{tr(r)}: </dt>
+              <dd className="inline">{t(`roleNote.${r}`)}{changed.has(r) ? <em className="note"> · {t('roleChanged')}</em> : null}</dd>
+            </div>
+          ))}
         </dl>
       </section>
       <div className="table-panel">

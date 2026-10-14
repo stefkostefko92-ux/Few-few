@@ -1,6 +1,7 @@
 // The company's data export (GDPR art. 20, Data Act art. 25) over an in-memory database: every key the public register
 // lists, in its order, and the survey sheets of Rilievi among them — the company's own only, the trashed ones too, every
-// column with the measurements per stop in their order and the suppliers' modules as stored; never the search index.
+// column with the measurements per stop in their order and the suppliers' modules as stored; never the search index —
+// and the rights the company set for its colleagues' roles (round 42), its own only.
 import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { Prisma } from '@prisma/client';
@@ -21,13 +22,20 @@ const MISURE: Row[] = [
   { id: 'm2', schedaId: 's1', fermata: 2, piano: 'T', lunghezzaMm: new Prisma.Decimal('300'), larghezzaMm: null, interasseSuperiore: null, interasseInferiore: null, display: false },
   { id: 'm1', schedaId: 's1', fermata: 1, piano: 'S1', lunghezzaMm: new Prisma.Decimal('320.5'), larghezzaMm: new Prisma.Decimal('105'), interasseSuperiore: '60 mm', interasseInferiore: null, display: true },
 ];
-let schedaArgs: Args | null = null;
+let schedaArgs: Args | null = null, permArgs: Args | null = null;
+const PERMS: Row[] = [
+  { companyId: 'c1', role: 'TECHNICIAN', capability: 'calc:create', granted: false, updatedById: 'u1', updatedAt: new Date('2026-10-14T08:00:00Z') },
+  { companyId: 'c2', role: 'SALES', capability: 'prices:view', granted: false, updatedById: 'u9', updatedAt: new Date('2026-10-14T08:00:00Z') },
+];
 const none = async () => [];
 const without = (row: Row, omit: Record<string, boolean> | undefined): Row => Object.fromEntries(Object.entries(row).filter(([k]) => !omit?.[k]));
 const db = {
   company: { findUnique: async () => ({ id: 'c1', name: 'Ascensori Rossi Srl' }) },
   user: { findMany: none }, invite: { findMany: none }, companyLogo: { findMany: none }, project: { findMany: none },
   priceItem: { findMany: none }, customPriceItem: { findMany: none }, auditLog: { findMany: none },
+  companyRolePermission: {
+    findMany: async (args: Args) => { permArgs = args; return PERMS.filter((p) => p.companyId === args.where?.companyId); },
+  },
   scheda: {
     findMany: async (args: Args) => {
       schedaArgs = args;
@@ -66,4 +74,7 @@ test('l’esportazione: ogni chiave del registro, e le schede di rilievo della p
   assert.equal(json.schede[1]?.funiDiametroMm, '10.5');
   assert.equal(json.schede[1]?.misureBottoniere[1]?.lunghezzaMm, '300');
   assert.equal(json.schede[0]?.deletedAt, '2026-10-12T10:00:00.000Z');
+  // the rights matrix as the company set it: its rows only
+  assert.deepEqual(permArgs?.where, { companyId: 'c1' });
+  assert.deepEqual((doc.rolePermissions as Row[]).map((p) => [p.role, p.capability, p.granted]), [['TECHNICIAN', 'calc:create', false]]);
 });

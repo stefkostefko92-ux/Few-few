@@ -4,7 +4,7 @@ import { Link } from '@/i18n/routing';
 import Icon from '@/components/Icon';
 import SectionTitle from '@/components/project/SectionTitle';
 import { requireCapability } from '@/lib/auth';
-import { can } from '@/lib/rbac';
+import { can, remakes } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { NORMA_BREVE, ambitoOf, normeOf } from '@/lib/lift/collaudo';
 import { calcMachine, calcOrder, designMachine, designOrder } from '@/lib/order/machine';
@@ -66,9 +66,9 @@ export default async function CalculationPage({ params, searchParams }: {
   const below = V.layout === 'bottom', live = !c.project.archivedAt;
   // a variant in the calculator (calc:create); the one form, the machine room's survey (progetto:edit); a drawing set
   const open = can(user, 'calc:create') && live, draws = can(user, 'progetto:edit') && live, issues = can(user, 'drawings:issue') && live;
-  // made again in one click: a lift design's calculation with the design, a replacement's with its machine room; one in
-  // the archive of a whole project is made again from the project's form (refresh-actions.ts)
-  const refreshable = can(user, 'records:refresh') && !c.project.archivedAt && (!!c.liftDesign || replacement);
+  // made again in one click: a lift design's calculation with the design (whoever draws the project), a replacement's
+  // with its machine room; one in the archive of a whole project is made again from the project's form (refresh-actions.ts)
+  const refreshable = remakes(user, c.liftDesign ? 'lift' : 'calc') && !c.project.archivedAt && (!!c.liftDesign || replacement);
   // the machine room of the calculation it was made again from, which the new one did not take: to be redone from it
   const lost = before && da.success && replacement && rooms.length === 0 ? await latestRoomOf(user, da.data) : null;
   // the advice among SICOR and Montanari and the machine of the draft order: those of the lift design the calculation
@@ -109,7 +109,10 @@ export default async function CalculationPage({ params, searchParams }: {
       </div>
       {before ? <Refreshed before={before} now={c} kind="calc" locale={locale} /> : null}
       {lost ? (
-        <p className="alert alert-warn" role="status">{tf('roomRedo')} <Link href={`/app/calculations/${c.id}/locale?from=${lost.id}`}>{tf('roomOpen')}</Link></p>
+        <p className="alert alert-warn" role="status">
+          {/* whoever only makes the calculations did not carry the machine room over (refresh-actions.ts remakeCalc) */}
+          {remakes(user, 'room') ? <>{tf('roomRedo')}{draws ? <> <Link href={`/app/calculations/${c.id}/locale?from=${lost.id}`}>{tf('roomOpen')}</Link></> : null}</> : tf('roomLeft')}
+        </p>
       ) : null}
       {rec.ok ? null : (
         <div className="alert alert-warn flex flex-col items-start gap-2" role="status">

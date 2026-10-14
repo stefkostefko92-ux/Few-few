@@ -414,6 +414,8 @@ src/app/[locale]/app/permessi/ + admin/permessi/[id]/  Екранът на ма�
                      фирмата в /app/admin); src/components/permessi/ — PermissionsPanel (сървърът: матрицата на фирмата),
                      PermissionsMatrix (решетката, телефонът по роля, лентата за запис), MatrixCell (бутонът-квадратче),
                      ConfirmSave (диалогът с промените); src/app/permessi.css.
+src/app/[locale]/app/permesso/  Страницата за право, което фирмата може да даде на ролята, но не е дала
+                     (`lib/auth.ts denied` от `requireCapability`): в приложението, с ролята и правото, вместо 404.
 deploy/              deploy.sh (сървърът: тайни, поща, бекъп, compose, health, nginx), nginx/liftpilot.conf. Dockerfile,
                      docker-compose.yml, docker-entrypoint.sh.
 brand/premium/       Изходниците на облика LiftPilot Premium: wordmark, емблема, иконата на приложението, favicon,

@@ -1,6 +1,7 @@
 import 'server-only';
 // All the data a company entered, as one JSON document (terms of use, article «exit»; GDPR art. 20; Data Act art. 25):
-// the company, its users (never their password hashes or tokens), the projects with every calculation, shaft design,
+// the company, its users (never their password hashes or tokens), the rights it set for its colleagues' roles (only where
+// they differ from the default matrix, as stored: CompanyRolePermission, round 42), the projects with every calculation, shaft design,
 // lift design and drawing set and the drafts of their forms, the logos, the price list, the survey sheets (Rilievi, the
 // trashed ones too, with their measurements per stop and the suppliers' modules as filled in) and the activity log. The
 // software's own data (catalogues, the standards register, the engines) are not the company's and stay out. Its format
@@ -23,13 +24,15 @@ export async function companyExport(companyId: string): Promise<Record<string, u
       subscriptionStatus: true, seatPack: true, periodEnd: true, cancelAtPeriodEnd: true, trialEndsAt: true },
   });
   if (!company) return null;
-  const [users, invites, logos, projects, priceItems, customPrices, schede, auditLog] = await Promise.all([
+  const [users, invites, rolePermissions, logos, projects, priceItems, customPrices, schede, auditLog] = await Promise.all([
     prisma.user.findMany({
       where: { companyId }, orderBy: { createdAt: 'asc' },
       select: { id: true, name: true, email: true, role: true, active: true, locale: true, createdAt: true, lastLoginAt: true, emailVerifiedAt: true,
         termsAcceptedAt: true, termsVersion: true },
     }),
     prisma.invite.findMany({ where: { companyId }, orderBy: { createdAt: 'asc' }, select: { email: true, name: true, role: true, expiresAt: true, createdAt: true } }),
+    prisma.companyRolePermission.findMany({ where: { companyId }, orderBy: [{ role: 'asc' }, { capability: 'asc' }],
+      select: { role: true, capability: true, granted: true, updatedById: true, updatedAt: true } }),
     prisma.companyLogo.findMany({ where: { companyId }, orderBy: { createdAt: 'asc' } }),
     prisma.project.findMany({
       where: { companyId }, orderBy: { createdAt: 'asc' },
@@ -57,7 +60,7 @@ export async function companyExport(companyId: string): Promise<Record<string, u
   const doc: Record<ExportKey, unknown> = {
     format: EXPORT_FORMAT, formatVersion: EXPORT_FORMAT_VERSION, exportedAt: new Date().toISOString(), termsVersion: TERMS_VERSION,
     note: 'Data entered by the company in LiftPilot (Carbon Stealth VCC). Amounts in euro cents; lengths in millimetres unless stated; logos in base64.',
-    company, users, invites, logos: logos.map(image),
+    company, users, invites, rolePermissions, logos: logos.map(image),
     projects: projects.map(({ clientLogos, ...p }) => ({ ...p, clientLogos: clientLogos.map(image) })),
     priceItems, customPrices, schede, auditLog,
   };

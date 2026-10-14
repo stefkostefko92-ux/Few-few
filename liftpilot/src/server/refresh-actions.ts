@@ -7,7 +7,9 @@
 // id>). A record still reproduced is not copied, nor one already made again (the audit keeps `updates`: a second tab or
 // the back button finds the new one); when what was entered no longer passes (the software asks for something else
 // now), the form opens on it instead, marked (src/lib/refresh-form.ts) so that it says why at its top. A whole project
-// is made again from its form: the calculations and rooms of its archive are not copied into it.
+// is made again from its form: the calculations and rooms of its archive are not copied into it. Whoever makes the
+// calculations makes a replacement's calculation again; a lift design or a machine room — records of the Progetto — only
+// whoever also draws the project (rbac.ts remakes): the Tecnico's new calculation leaves the machine room where it was.
 import { redirect } from 'next/navigation';
 import { DEFAULT_LOCALE, isLocale } from '@/i18n/locales';
 import { getSessionUser, type SessionUser } from '@/lib/auth';
@@ -17,7 +19,7 @@ import { collaudoReadSchema, collaudoSchema, liftInputsReadSchema, liftInputsSch
 import { liftRecord } from '@/lib/lift-record';
 import { rateLimit } from '@/lib/ratelimit';
 import { REFRESH_QUERY } from '@/lib/refresh-form';
-import { can } from '@/lib/rbac';
+import { can, remakes } from '@/lib/rbac';
 import { surveySchema } from '@/lib/room/survey';
 import { idSchema } from '@/lib/schemas';
 import { shaftSourceSchema } from '@/lib/shaft-input';
@@ -74,6 +76,8 @@ async function refreshLift(user: SessionUser, id: string, app: string): Promise<
   if (liftRecord(d, d.shaftDesign.sha256, d.calculation.sha256)?.same) redirect(`${app}/lift-designs/${d.id}`);
   const done = await madeFrom(user, 'LIFT_DESIGN_SAVED', d.id);
   if (done) redirect(`${app}/lift-designs/${done}?da=${d.id}`);
+  // a new lift design is the Progetto's: not for whoever only makes the calculations
+  if (!remakes(user, 'lift')) redirect(`${app}/lift-designs/${d.id}`);
   const read = liftInputsReadSchema.safeParse(d.inputs), inputs = read.success ? liftInputsSchema.safeParse(read.data) : null;
   const source = d.source ? shaftSourceSchema.safeParse(d.source) : null;
   const r = inputs?.success ? await once(d.id, () => createLiftDesign(user, d.projectId, inputs.data, d.label, source?.success ? source.data : null, d.id)) : null;
@@ -87,7 +91,8 @@ interface CalcRow { id: string; projectId: string; label: string | null; inputs:
 interface RoomRow { id: string; label: string | null; inputs: unknown }
 
 /** A replacement's calculation made again from its values and the standards chosen with it, and the machine room given
- *  on the new one (`room` null: a survey the new calculation no longer takes, which stays where it was). */
+ *  on the new one (`room` null: a survey the new calculation no longer takes, or a user who does not draw the project's —
+ *  it stays where it was, to be made again on the new calculation by whoever does). */
 async function remakeCalc(user: SessionUser, c: CalcRow, room: RoomRow | null): Promise<{ calc: string; room: string | null } | null> {
   // the standards chosen as stored, taken again only as today's rules take them: else the form opens on the record
   const read = c.collaudo ? collaudoReadSchema.safeParse(c.collaudo) : null, chosen = read?.success ? collaudoSchema.safeParse(read.data) : null;
@@ -95,7 +100,7 @@ async function remakeCalc(user: SessionUser, c: CalcRow, room: RoomRow | null): 
   const values = formValuesSchema.safeParse(c.inputs);
   const r = values.success ? await createCalculation(user, c.projectId, values.data, c.label, chosen?.success ? chosen.data : null, c.id) : null;
   if (!r?.ok) return null;
-  if (!room) return { calc: r.id, room: null };
+  if (!room || !remakes(user, 'room')) return { calc: r.id, room: null };
   const fresh = await prisma.calculation.findFirst({ where: { id: r.id, companyId: user.companyId }, select: CALC_ROW });
   return { calc: r.id, room: fresh ? await placeRoom(user, fresh, room) : null };
 }
@@ -150,6 +155,8 @@ export async function refreshRoomDesignAction(fd: FormData): Promise<void> {
   if (r.project.kind !== 'REPLACEMENT') redirect(formOr(user, 'progetto:edit', `${app}/projects/${c.projectId}/progetto`, `${app}/room-designs/${r.id}`));
   const done = await madeFrom(user, 'ROOM_DESIGN_SAVED', r.id);
   if (done) redirect(`${app}/room-designs/${done}?da=${r.id}`);
+  // a new machine room is the Progetto's: not for whoever only makes the calculations
+  if (!remakes(user, 'room')) redirect(`${app}/room-designs/${r.id}`);
   const newer = readCalc(c)?.same ? null : await madeFrom(user, 'CALCULATION_SAVED', c.id);
   const fresh = newer ? await prisma.calculation.findFirst({ where: { id: newer, companyId: user.companyId }, select: CALC_ROW }) : null;
   const on = readCalc(c)?.same ? c : fresh && readCalc(fresh)?.same ? fresh : null;

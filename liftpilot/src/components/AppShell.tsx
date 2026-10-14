@@ -24,8 +24,9 @@ function Emblem() {
 // is a drawer the top bar's button opens (shell/Drawer). The page, the banners and the footer are the main column.
 // No bell: the application has no notifications to show.
 export default async function AppShell({ user, banners, footer, children }: { user: SessionUser; banners: ReactNode; footer: ReactNode; children: ReactNode }) {
-  const [t, tp, tr, ta, tl] = await Promise.all([
+  const [t, tp, tr, ta, tl, td] = await Promise.all([
     getTranslations('nav'), getTranslations('projects'), getTranslations('roles'), getTranslations('account'), getTranslations('legal'),
+    getTranslations('denied'),
   ]);
   const projects = can(user, 'projects:view');
   const work: NavItem[] = [
@@ -50,13 +51,14 @@ export default async function AppShell({ user, banners, footer, children }: { us
     ...(can(user, 'audit:view') ? [{ key: '/app/audit', href: '/app/audit', label: t('audit'), icon: 'history' } as const] : []),
     ...(can(user, 'platform:admin') ? [{ key: '/app/admin', href: '/app/admin', label: t('admin'), icon: 'building-gear' } as const] : []),
   ];
+  // a group shows only with something in it (a company may take every right of the work away from a role)
   const groups: NavGroup[] = [
-    { label: t('groupWork'), items: work },
+    ...(work.length ? [{ label: t('groupWork'), items: work }] : []),
     ...(library.length ? [{ label: t('groupLibrary'), items: library }] : []),
     ...(manage.length ? [{ label: t('groupAdmin'), items: manage }] : []),
   ];
   // pages outside the groups the top bar still names
-  const extra = [{ key: '/app/account', label: ta('title') }, { key: '/app/terms', label: tl('gateTitleNew') }];
+  const extra = [{ key: '/app/account', label: ta('title') }, { key: '/app/terms', label: tl('gateTitleNew') }, { key: '/app/permesso', label: td('title') }];
   const role = tr(user.role), avatar = <span className="avatar" aria-hidden="true">{initials(user.name)}</span>;
   const who = `${user.name} · ${role} · ${user.companyName}`, beta = !billingConfigured();
   return (

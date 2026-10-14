@@ -4,7 +4,7 @@ import { Link } from '@/i18n/routing';
 import Icon from '@/components/Icon';
 import SectionTitle from '@/components/project/SectionTitle';
 import { requireCapability } from '@/lib/auth';
-import { can } from '@/lib/rbac';
+import { can, remakes } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { ambitoOf } from '@/lib/lift/collaudo';
@@ -84,7 +84,8 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
       {d ? null : (
         <div className="alert alert-warn flex flex-col items-start gap-2" role="status">
           <p className="m-0">{tf(replacement ? 'room' : 'archive')}</p>
-          {can(user, 'records:refresh') && !r.project.archivedAt && replacement ? <RefreshForm kind="room" id={r.id} /> : null}
+          {/* a new machine room: whoever draws the project (rbac.ts remakes) */}
+          {remakes(user, 'room') && !r.project.archivedAt && replacement ? <RefreshForm kind="room" id={r.id} /> : null}
         </div>
       )}
       <dl className="cartiglio">

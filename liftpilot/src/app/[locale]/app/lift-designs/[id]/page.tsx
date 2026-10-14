@@ -4,7 +4,7 @@ import { Link } from '@/i18n/routing';
 import Icon from '@/components/Icon';
 import SectionTitle from '@/components/project/SectionTitle';
 import { requireCapability } from '@/lib/auth';
-import { can } from '@/lib/rbac';
+import { can, remakes } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { idSchema } from '@/lib/schemas';
 import { liftRecord } from '@/lib/lift-record';
@@ -87,7 +87,8 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
       {same ? null : (
         <div className="alert alert-warn flex flex-col items-start gap-2" role="status">
           <p className="m-0">{tf('design')}</p>
-          {can(user, 'records:refresh') && !d.project.archivedAt && r ? <RefreshForm kind="lift" id={d.id} /> : null}
+          {/* a new lift design: whoever draws the project (rbac.ts remakes) */}
+          {remakes(user, 'lift') && !d.project.archivedAt && r ? <RefreshForm kind="lift" id={d.id} /> : null}
         </div>
       )}
       {r ? <LiftView inputs={r.inputs} prices={prices} pitches={pitches} /> : <p className="alert alert-bad" role="status">{t('unreadable')}</p>}

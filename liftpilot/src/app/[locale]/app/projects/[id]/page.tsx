@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { getLocale, getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { requireCapability } from '@/lib/auth';
-import { can } from '@/lib/rbac';
+import { can, formRightOf, holds, remakes } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { getProject, latestLiftDesign, listCalculations, listDrawingSets, listLiftDesigns, listRoomDesigns, listShaftDesigns } from '@/server/queries';
 import { outdated } from '@/server/records';
@@ -42,7 +42,9 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
   const replacement = p.kind === 'REPLACEMENT';
   // the installation's data; its work: a replacement's calculator (calc:create), a whole project's one form (progetto:edit)
   const editable = can(user, 'projects:edit') && !p.archivedAt, draws = can(user, 'progetto:edit') && !p.archivedAt;
-  const saves = can(user, replacement ? 'calc:create' : 'progetto:edit') && !p.archivedAt;
+  const saves = can(user, formRightOf(p.kind)) && !p.archivedAt;
+  // a role without that form's right (a Tecnico's whole project): the empty installation says whose work it is
+  const handoff = !holds(user, formRightOf(p.kind)) && !p.archivedAt ? <p className="note">{t('workByOther', { kind: p.kind })}</p> : null;
   // the records of a lift design are reached from it; the others of a whole project are its archive
   const calcRows = calcs.filter((c) => replacement || !c.liftDesign).map((c) => ({ ...c, old: outdated.calc(c) }));
   const shaftRows = designs.filter((d) => !d.liftDesign).map((d) => ({ ...d, old: outdated.shaft(d) }));
@@ -107,13 +109,13 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
             {latest && outdated.lift(latest) ? (
               <div className="alert alert-warn flex flex-col items-start gap-2" role="status">
                 <p className="m-0">{tf('design')}</p>
-                {can(user, 'records:refresh') && !p.archivedAt ? <RefreshForm kind="lift" id={latest.id} /> : null}
+                {remakes(user, 'lift') && !p.archivedAt ? <RefreshForm kind="lift" id={latest.id} /> : null}
               </div>
             ) : null}
             {latestInputs?.success ? <LiftView inputs={latestInputs.data} checks={false} prices={await visiblePrices(user)} pitches={pitchesOf(p.plant)} /> : (
               <div className="panel items-start">
                 <p>{tl('homeEmpty')}</p>
-                {saves ? <Link className="btn btn-primary" href={`/app/projects/${p.id}/progetto`}>{tl('start')}</Link> : null}
+                {saves ? <Link className="btn btn-primary" href={`/app/projects/${p.id}/progetto`}>{tl('start')}</Link> : handoff}
               </div>
             )}
             {liftRows.length > 1 ? <SectionTitle level={3} icon="history">{tl('history')}</SectionTitle> : null}
@@ -155,7 +157,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
           {calcRows.length === 0 ? (
             <div className="panel items-start">
               <p>{tc('empty')}</p>
-              {saves ? <Link className="btn btn-primary" href={`/app/projects/${p.id}/calc`}>{tc('new')}</Link> : null}
+              {saves ? <Link className="btn btn-primary" href={`/app/projects/${p.id}/calc`}>{tc('new')}</Link> : handoff}
             </div>
           ) : calcTable}
         </section>
