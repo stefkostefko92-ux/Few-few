@@ -2437,6 +2437,16 @@ Progettista, Tecnico, Commerciale. Реални потребители още н
   страницата на съоръжението (беше 45) и нищо извън панелите; сравнението на телефон — 2545 px (беше 4333).
   Паритетът с rilievi `ae6329cb6` — строг срещу :3271, с редовете в базата: **PASS** — 532 pass, 0 fail, 32 allowed,
   3 warn (същите); никакво ново разрешение в харнеса. `node tools/security/secret-scan.mjs` — чисто.
+- [x] Кръг 44, трети кръг: възпроизведено преди поправката на :3271, сглобен наново от HEAD `a5c400116` (стъпка 4
+  „fatto“ до „differenze“; „Nuovo calcolo“ върху записан калкул — „parte dal rilievo“ и значка на въжетата, равни на
+  рилевото; „Usa il valore“ — „4 (prima: 4)“). Гейт — `tsc --noEmit` 0 грешки, `npm run lint` чисто, 953 + 170 теста
+  (нови: `collega-forms`, документите до разликите, «sì», равното в нов формуляр), `npm run build` — успешен от
+  закомитения HEAD `c4e02e38b`; :3271 рестартиран от него (`argano_p2`). На живо след поправката: двете съоръжения с
+  разлики — „Documenti e ordini: da aggiornare“; продълженият калкул — без бележка и без значки; „Usa il valore“ върху
+  равното — без „prima“; ново съоръжение от рилево «in alto» с лист „dati argano“ («no» / «Sì») — `top` / `topDefl`,
+  скоростта 0,63 и 4-те полюса със значка „dal rilievo“; при 390 и 1440 px — 0 px хоризонтално превъртане. Пълен smoke
+  с пощата — „all good“ (54 реда). Паритетът с rilievi `ae6329cb6` — строг срещу :3271, с редовете в базата:
+  **PASS** — 532 pass, 0 fail, 32 allowed, 3 warn (същите). `node tools/security/secret-scan.mjs` — чисто.
 - [x] `node tools/design/motion-a11y.mjs liftpilot/src`: проверката за reduced motion в базата — да; 6 евристични
   находки `webgl-no-rm-check` в модули на 3D, които се зареждат само през `boot.ts` (същите и преди кръг 24).
 - [x] Живата 3D сцена на началната страница е проверена в headless Chromium (WebGL 2) на двете нива на качество, без грешки в конзолата. При reduced motion three.js не се зарежда.
