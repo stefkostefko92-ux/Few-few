@@ -8,7 +8,7 @@
 import { useTranslations } from 'next-intl';
 import SectionTitle from '@/components/project/SectionTitle';
 import type { FormValues } from '@/calc/types';
-import { INTERVENTI, KL, collaudoOf, interventoOf, interventoTo, type AutoFlags, type BottomScheme, type Collaudo, type Intervento, type LiftDerived,
+import { INTERVENTI_LEGACY, KL, collaudoOf, interventoLegacyOf, interventoLegacyTo, type AutoFlags, type BottomScheme, type Collaudo, type InterventoLegacy, type LiftDerived,
   type LiftInputs } from '@/lib/lift';
 import type { CatalogChoice } from '@/lib/lift/catalog';
 import { pulleyRoomOf } from '@/lib/lift/shaft-rig';
@@ -59,9 +59,9 @@ interface Props {
 
 export default function LiftForm({ P, X, inp, derived, complete, blank, bad, need, texts, source, setShaft, setSize, onSurvey, setCalc, setAuto, setBottom, setCollaudo, setCatalog }: Props) {
   const t = useTranslations('lift'), ts = useTranslations('shaft'), is = blank.is;
-  const intervento = interventoOf(inp.calc, inp.collaudo);
-  const pick = (k: Intervento): void => {
-    const r = interventoTo(k, inp.collaudo);
+  const intervento = interventoLegacyOf(inp.calc, inp.collaudo);
+  const pick = (k: InterventoLegacy): void => {
+    const r = interventoLegacyTo(k, inp.collaudo);
     setCalc(r.calc);
     if (r.collaudo) setCollaudo(r.collaudo);
   };
@@ -81,7 +81,7 @@ export default function LiftForm({ P, X, inp, derived, complete, blank, bad, nee
     <form className="lift-form panel" autoComplete="off" noValidate onSubmit={(e) => e.preventDefault()}>
       <SectionTitle icon="clipboard-list">{t('s_context')}</SectionTitle>
       <div className="seg-row" role="radiogroup" aria-label={t('s_context')}>
-        {INTERVENTI.map((k) => (
+        {INTERVENTI_LEGACY.map((k) => (
           <button key={k} type="button" role="radio" aria-checked={intervento === k} className={intervento === k ? 'on' : undefined} onClick={() => pick(k)}>{t(`context_${k}`)}</button>
         ))}
       </div>

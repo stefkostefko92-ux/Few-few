@@ -11,7 +11,8 @@ import { textsFor } from '@/lib/present/texts';
 import { makePres } from '@/lib/present/tr';
 import { defaultInputs, layout, type ShaftInputs } from '@/shaft';
 import { liftInputsSchema } from '@/lib/lift-input';
-import { AMBITO_VERIFICHE, INTERVENTI, PARTI, PARTI_RIFACIMENTO, VOCI_IMPIANTO, ambitoOf, collaudoOf, defaultLift, deriveLift, interventoOf, interventoTo,
+import { AMBITO_VERIFICHE, INTERVENTI_LEGACY as INTERVENTI, PARTI, PARTI_RIFACIMENTO, VOCI_IMPIANTO, ambitoOf, collaudoOf, defaultLift, deriveLift, interventoLegacyOf as interventoOf,
+  interventoLegacyTo as interventoTo,
   withAggiunta, type Collaudo } from '@/lib/lift';
 import { liftAdvice } from '@/lib/lift/advice';
 import { buildOrder } from '@/lib/order/build';

@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { KL, collaudoOf, type Collaudo } from '@/lib/lift';
 import { choiceOf, esistenteOf, modificaOf } from '@/lib/lift/collaudo';
 import { carichiOf, caricoVariato, isServiceDay, normaDaMarcatura, variazioneCarico, type Carichi } from '@/lib/lift/modifica';
-import { interventoTo } from '@/lib/lift/intervento';
+import { interventoLegacyTo as interventoTo } from '@/lib/lift/intervento';
 import { collaudoReadSchema, collaudoSchema } from '@/lib/lift-input';
 import { collaudoRows } from '../report/collaudo';
 
