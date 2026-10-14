@@ -51,6 +51,8 @@ export async function permessiFlow({ BASE, page, errors, kit, owner, tecnico, ad
   assert.equal(await page.locator(`td.pm-cell[data-role="OWNER"][data-cap="calc:create"] .pm-lockbadge`).count(), 1, 'the owner\'s check with its lock');
   assert.match(await page.textContent('.pm-legend'), /sempre concesso \(Titolare\)/);
   assert.match(await page.textContent('tr:has(td.pm-cell[data-cap="users:manage"]) th.pm-action'), /Solo del Titolare/);
+  // the company's right names both things it gives: the logo and the order of the survey sheets' sections
+  assert.match(await page.textContent('tr:has(td.pm-cell[data-cap="company:edit"]) th.pm-action'), /Cambiare il logo dell’azienda e l’ordine delle sezioni delle schede di rilievo/);
   // a prerequisite taken away takes its dependents, and a line says which; discarded
   await page.click(cell('TECHNICIAN', 'projects:view'));
   assert.match(await page.textContent('.pm-cascade'), /Tolti anche a Tecnico[^:]*:.*Fare i calcoli dell’argano/);

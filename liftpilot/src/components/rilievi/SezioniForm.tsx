@@ -44,7 +44,9 @@ export default function SezioniForm({ fisse, ordine: saved, canEdit }: {
       root.querySelector<HTMLButtonElement>(`button[name="${state.status === 'saved' ? 'salva' : 'ripristina'}"]`)?.focus();
     } else if (state.status === 'invalid' || state.status === 'error') alert.current?.focus();
   }, [state]);
-  const error = state.status === 'invalid' ? t('impostazioni.error') : state.status === 'error' ? t(`error.${state.error}`) : null;
+  // `readOnly` (the company went read-only after the page was opened) gets the panel's own words, not the sheets' ones
+  const error = state.status === 'invalid' ? t('impostazioni.error')
+    : state.status === 'error' ? (state.error === 'readOnly' ? t('impostazioni.sezioni.readOnly') : t(`error.${state.error}`)) : null;
   const done = state.status === 'saved' ? t('flash.sezioniSaved') : state.status === 'reset' ? t('flash.sezioniReset') : null;
   // where the section moved is now (counting «Impianto»), then that it is not saved
   const where = state.status === 'moved'

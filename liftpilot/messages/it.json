@@ -418,7 +418,7 @@
     "buySeats": "Acquista o cambia i posti",
     "noSeats": "Non ci sono posti liberi: acquista un pacchetto di posti, disattiva un collega o annulla un invito in attesa.",
     "roleNote": {
-      "CHIEF_TECHNICIAN": "coordina il lavoro tecnico: fa tutto ciò che fa il Progettista e in più gestisce il cestino dei rilievi, vede i prezzi e il registro attività; è l’unico ruolo a cui il Titolare può affidare anche il logo e l’esportazione dei dati dell’azienda.",
+      "CHIEF_TECHNICIAN": "coordina il lavoro tecnico: fa tutto ciò che fa il Progettista e in più gestisce il cestino dei rilievi, vede i prezzi e il registro attività; è l’unico ruolo a cui il Titolare può affidare anche il logo, l’ordine delle sezioni delle schede di rilievo e l’esportazione dei dati dell’azienda.",
       "ENGINEER": "compila i rilievi e li sposta nel cestino, crea gli impianti e ne cura i dati, fa i calcoli dell’argano e mette il visto, disegna il progetto ed emette le tavole, archivia gli impianti; non vede i prezzi.",
       "TECHNICIAN": "compila i rilievi, crea gli impianti e ne cura i dati, fa i calcoli dell’argano; non sposta i rilievi nel cestino, non archivia gli impianti, non disegna il progetto, non emette le tavole, non mette il visto e non vede i prezzi.",
       "SALES": "consulta rilievi e impianti, scarica relazioni, tavole e bozze d’ordine e vede i prezzi; non modifica nulla."
@@ -2575,7 +2575,7 @@
       "prices:view": "Vedere i prezzi e il listino",
       "prices:edit": "Modificare il listino",
       "audit:view": "Vedere il registro attività",
-      "company:edit": "Cambiare il logo dell’azienda",
+      "company:edit": "Cambiare il logo dell’azienda e l’ordine delle sezioni delle schede di rilievo",
       "company:export": "Esportare tutti i dati dell’azienda",
       "users:manage": "Invitare e gestire gli utenti",
       "permissions:manage": "Gestire i permessi",

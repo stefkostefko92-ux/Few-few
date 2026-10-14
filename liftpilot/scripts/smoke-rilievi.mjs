@@ -127,6 +127,7 @@ export async function rilieviFlow({ BASE, page, hydrated }) {
   assert.equal(await page.locator('.rv-paper-sec h2', { hasText: /^Impianto$/ }).count(), 0, 'the print: «Impianto» is the head, not a section');
   assert.equal(await page.locator('.rv-paper .rv-ptable tbody tr').count(), 3, 'the print: the stops');
   assert.ok((await page.textContent('.rv-paper-by'))?.startsWith('Compilata da'), 'the print: who filled it in');
+  assert.equal(await page.textContent('.rv-paper-foot span[lang="en"]'), 'Created and Designed by Carbon Stealth VCC', 'the print: the credit marked as English');
   assert.equal(await page.locator('.rv-paper .rv-opt.on').filter({ hasText: 'Automatiche' }).count(), 1, 'the print: the boxes');
   assert.ok(!(await page.textContent('.rv-paper'))?.includes('Modulo d\'ordine quadri'), 'no module in the print unless asked');
 

@@ -123,7 +123,8 @@ export default async function PrintRilievoPage({ params }: { params: Promise<{ l
           </section>
         ))}
         <footer className="rv-paper-foot">
-          {t('pdf.generated', { at: fmt.dateTime(new Date()), name: user.name })} — Created and Designed by Carbon Stealth VCC — carbonstealth.eu
+          {/* the owner's English credit, marked as English for screen readers (the text stays the original's) */}
+          {t('pdf.generated', { at: fmt.dateTime(new Date()), name: user.name })} — <span lang="en">Created and Designed by Carbon Stealth VCC</span> — carbonstealth.eu
         </footer>
       </article>
     </main>
