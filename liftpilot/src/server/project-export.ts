@@ -1,0 +1,41 @@
+import 'server-only';
+// The saved project of a lift as files: the drawing set as a PDF draft (not issued: no number from the counter, no
+// record), and every view of it in DXF and DWG at full size — its views alone, the sheets and values they name being
+// the PDF draft's, which the file names under its first view (cad/project.ts draftCaption). Drawn again from the
+// stored calculation, shaft design and lift design, only when the running engines reproduce all three (records.ts;
+// otherwise refused, like the documents).
+import type { SessionUser } from '@/lib/auth';
+import { draftCaption, inputViews } from '@/lib/cad/project';
+import { toDwg, toDxf } from '@/lib/cad/export';
+import { prisma } from '@/lib/db';
+import { renderTavole } from '@/lib/report/render';
+import { initialsOf } from '@/lib/tavole/compose';
+import { composeFromCalculation } from './drawing-compose';
+import { slug } from './download';
+import { getLiftDesign } from './queries';
+
+export const EXPORT_FORMATS = ['pdf', 'dxf', 'dwg'] as const;
+export type ExportFormat = (typeof EXPORT_FORMATS)[number];
+
+/** The draft's drawing number in the title block. */
+const DRAFT = 'BOZZA';
+
+const MIME: Readonly<Record<ExportFormat, string>> = { pdf: 'application/pdf', dxf: 'image/vnd.dxf; charset=utf-8', dwg: 'image/vnd.dwg' };
+
+export type Exported = { ok: true; body: Uint8Array<ArrayBuffer>; mime: string; name: string; designId: string } | { ok: false; error: 'notFound' | 'engineChanged' };
+
+export async function exportLiftDesign(user: SessionUser, id: string, format: ExportFormat): Promise<Exported> {
+  const d = await getLiftDesign(user, id);
+  if (!d) return { ok: false, error: 'notFound' };
+  // the draft dated as the design (its saving), not the download: every download of the record gives the same bytes
+  const set = { number: DRAFT, issuedAt: d.createdAt, author: initialsOf(user.name) || '—', revisions: [] };
+  const c = await composeFromCalculation(prisma, user, d.calculation.id, set, true);
+  if (!c.ok) return { ok: false, error: c.error === 'engineChanged' ? 'engineChanged' : 'notFound' };
+  const date = d.createdAt.toISOString().slice(0, 10), file = (f: ExportFormat): string => `progetto-${slug(d.project.name)}-${date}.${f}`, name = file(format);
+  if (format === 'pdf') return { ok: true, body: new Uint8Array(await renderTavole(c.doc, d.createdAt)), mime: MIME.pdf, name, designId: d.id };
+  // no sheet 1 in a draft's CAD file: the sheets and values its views name are the PDF draft's, named under them
+  const views = inputViews(c.input);
+  const title = draftCaption(`${d.project.name} · progetto ${d.id} · ${date}`, file('pdf'));
+  const body = format === 'dxf' ? new TextEncoder().encode(toDxf(views, title, d.createdAt)) : new Uint8Array(toDwg(views, title, d.createdAt));
+  return { ok: true, body, mime: MIME[format], name, designId: d.id };
+}

@@ -1,0 +1,18 @@
+// The short plain-text answers of the API routes, in Italian like every text of the product: a download is a plain link,
+// so when it fails (the session expired, the rate limit, a busy renderer, a record to make again) the browser shows the
+// answer as it is. The words are the ones of messages/it.json (errors.*), the same the pages say. Pure.
+import it from '../../messages/it.json';
+
+const e = it.errors;
+
+export const ANSWER = {
+  unauthorized: e.unauthorized,
+  forbidden: e.forbidden,
+  rateLimited: e.rateLimited,
+  notFound: e.notFound,
+  /** the running engines no longer reproduce the record (or what it was made from): its documents wait for it to be made again */
+  stale: e.recordStale,
+  noMachine: e.noCatalogueMachine,
+  failed: e.documentFailed,
+  busy: e.rendererBusy,
+} as const;

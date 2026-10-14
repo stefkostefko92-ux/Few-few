@@ -1,0 +1,74 @@
+# LiftPilot on the VPS: application + PostgreSQL. The application listens only on 127.0.0.1:${APP_PORT}; the host
+# nginx (deploy/nginx/liftpilot.conf) terminates TLS for the public name. Secrets come from .env (mode 600, never in git).
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    logging: *default-logging
+    environment:
+      POSTGRES_USER: liftpilot
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: liftpilot
+      TZ: UTC
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U liftpilot -d liftpilot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    restart: unless-stopped
+    logging: *default-logging
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://liftpilot:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/liftpilot?schema=public
+      AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET (at least 32 characters) in .env}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?set PUBLIC_BASE_URL in .env}
+      ALLOW_INDEXING: ${ALLOW_INDEXING:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@carbonstealth.eu}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_NAME: ${ADMIN_NAME:-Carbon Stealth VCC}
+      ADMIN_COMPANY: ${ADMIN_COMPANY:-Carbon Stealth VCC}
+      # e-mails (registration, forgotten password): Brevo's SMTP relay; without SMTP_HOST both stay closed
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-2525}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      MAIL_FROM: ${MAIL_FROM:-}
+      # the subscription (Stripe): without all four the billing stays off (every company works without limits)
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_PRICE_MONTHLY: ${STRIPE_PRICE_MONTHLY:-}
+      STRIPE_PRODUCT_SEATS: ${STRIPE_PRODUCT_SEATS:-}
+      STRIPE_AUTOMATIC_TAX: ${STRIPE_AUTOMATIC_TAX:-false}
+      BILLING_TRIAL_DAYS: ${BILLING_TRIAL_DAYS:-14}
+      # the first day of paid use (YYYY-MM-DD): before it, or without it, the beta goes on whatever Stripe's values
+      BILLING_START: ${BILLING_START:-}
+      TZ: UTC
+    ports:
+      - "127.0.0.1:${APP_PORT:-4330}:3000"
+    security_opt:
+      - no-new-privileges:true
+    # a Node process on an unprivileged port needs no capability; the renderers (report/*.py) are bounded in number by
+    # the application (two at a time) and here in memory and processes, so a burst cannot starve the rest of the host
+    cap_drop:
+      - ALL
+    mem_limit: 2g
+    pids_limit: 256
+
+volumes:
+  db-data:

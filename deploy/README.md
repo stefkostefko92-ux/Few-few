@@ -128,6 +128,17 @@ ZIP отпреди месец.
   `up -d` (миграциите — от entrypoint-а, `prisma migrate deploy`). Health + отделна проверка, че
   **работникът** тича; при празна база напомня `npm run owner:create` (собственикът не се създава
   автоматично) → `piuma/DEPLOY.md`.
+- **liftpilot** (LiftPilot — проверка на редукторна машина): Docker Compose (app + PostgreSQL), логиката е в
+  `liftpilot/deploy/deploy.sh` (идемпотентен). Тайните са в `LIFTPILOT_ENV` (`/opt/few-few/shared/liftpilot/.env`, 600);
+  при пръв деплой се генерират (парола на базата, `AUTH_SECRET`, парола на администратора — отпечатва се веднъж;
+  своя парола: `LIFTPILOT_ADMIN_PASSWORD`, изпразва се в `.env`, щом приложението е здраво). Пощата (регистрация,
+  забравена парола) — Brevo на порт 2525: `LIFTPILOT_SMTP_USER` + `LIFTPILOT_SMTP_PASS`; без тях двете страници
+  са затворени. `pg_dump` ПРЕДИ миграцията (последните 5; провален дъмп спира деплоя), `docker compose build` +
+  `up -d` (миграциите — от entrypoint-а, `prisma migrate deploy`). Приложението слуша само на `127.0.0.1:4330`
+  (`APP_PORT`); при пръв старт проверява, че портът е свободен. Health на `/api/health` с маркер `"app":"liftpilot"`.
+  Nginx vhost (`liftpilot/deploy/nginx/liftpilot.conf`) + certbot за `liftpilot.carbonstealth.eu` — нужен е DNS A
+  запис към VPS-а; без него остава само HTTP и деплоят не се проваля. Индексирането е изключено
+  (`ALLOW_INDEXING=false`) до одобрение за публично пускане → `liftpilot/DEPLOY.md`.
 - **korpora** (мебели в 3D, разкрой, CNC): Docker Compose (db + app на `127.0.0.1:4320`).
   Стъпките са в `korpora/deploy/deploy.sh` — същият скрипт и за ръчния деплой: тайните от
   `/opt/few-few/shared/korpora/.env` (не се генерират; без тях korpora се пропуска като „още
@@ -153,7 +164,7 @@ ZIP отпреди месец.
 
 | Променлива | По подразбиране | Смисъл |
 | --- | --- | --- |
-| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora` | кои проекти да се разгръщат тук |
+| `PROJECTS` | `zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma liftpilot korpora` | кои проекти да се разгръщат тук |
 | `PANEV_DIR` | `/opt/panev` | път на panev (systemd) |
 | `PANEV_ENV` | `/etc/panev/panev.env` | тайните на panev (600, `EnvironmentFile`) |
 | `PANEV_HEALTH_URL` | `http://127.0.0.1:4102/api/health` | health на panev |
@@ -161,6 +172,7 @@ ZIP отпреди месец.
 | `OSPEDALI_HEALTH_URL` | `http://127.0.0.1:8788/healthz` | health на ospedali |
 | `ADBLOCK_WWW` | `/var/www/adblock` | www root на статичния adblock сайт |
 | `CADDY_SITES_DIR` / `CADDY_MAIN` | `/etc/caddy/sites` · `/etc/caddy/Caddyfile` | къде се инсталира adblock сайт-блокът + главен Caddyfile |
+| `LIFTPILOT_ENV` | `/opt/few-few/shared/liftpilot/.env` | тайните на liftpilot (600); портът е `APP_PORT` в него (по подразбиране 4330; 4320 е на korpora) |
 | `PIUMA_ENV` / `PIUMA_HEALTH_URL` | `/opt/few-few/shared/piuma/.env` · `http://127.0.0.1:4310/health` (портът се чете от `HTTP_PORT` в `.env`) | тайните и health на piuma |
 | `KORPORA_LAST_GOOD` | `/opt/few-few/shared/korpora/last-good` | пътят на последния release на korpora, който е отговорил — към него е откатът |
 | `KORPORA_SHARED` · `KORPORA_HEALTH_WAIT` · `KORPORA_INDEXNOW` | `/opt/few-few/shared/korpora` · `90` · `1` | тайни/бекъпи/данни (и за `autodeploy.sh`: къде са дъмповете), секунди за сондата, IndexNow |

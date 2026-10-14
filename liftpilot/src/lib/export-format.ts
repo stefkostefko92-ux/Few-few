@@ -1,0 +1,33 @@
+// The company's data export (src/server/company-export.ts) as the public register of its format describes it
+// (/<locale>/data; Data Act art. 26(b)): its name, its version and its top-level keys in order. The export is typed on
+// these keys, so a key added or removed there fails the typecheck until the register says so — and then the version
+// goes up.
+export const EXPORT_FORMAT = 'liftpilot-company-export';
+export const EXPORT_FORMAT_VERSION = 7;
+
+/** The top-level keys: the envelope, then the data (each one described on the page, messages: dataPage.keys.<key>). */
+export const EXPORT_ENVELOPE = ['format', 'formatVersion', 'exportedAt', 'termsVersion', 'note'] as const;
+export const EXPORT_DATA = ['company', 'users', 'invites', 'rolePermissions', 'logos', 'projects', 'priceItems', 'customPrices', 'schede', 'auditLog'] as const;
+
+export type ExportKey = (typeof EXPORT_ENVELOPE)[number] | (typeof EXPORT_DATA)[number];
+
+/** What a project carries inside the export (messages: dataPage.project.<key>). */
+export const EXPORT_PROJECT = ['calculations', 'shaftDesigns', 'liftDesigns', 'roomDesigns', 'drawingSets', 'formDrafts', 'clientLogos'] as const;
+
+/** Every version of the format, oldest first (messages: dataPage.history.v<version>): the day it began, null for the
+ *  first. The last is EXPORT_FORMAT_VERSION. */
+export const EXPORT_FORMAT_HISTORY = [
+  { version: 1, since: null },
+  { version: 2, since: '2026-10-06' },
+  { version: 3, since: '2026-10-12' },
+  { version: 4, since: '2026-10-14' },
+  // the users no longer carry the account's language: the product speaks Italian only (migration 19_locale_it)
+  { version: 5, since: '2026-10-14' },
+  // the sheets as rilievi ae6329cb6 keeps them, the company's order of their sections (migration 18_rilievi_sync)
+  { version: 6, since: '2026-10-14' },
+  // each sheet names the installation it is linked to (migration 20_rilievi_impianti, round 44)
+  { version: 7, since: '2026-10-14' },
+] as const;
+
+/** The day the register last changed (the page shows it). */
+export const EXPORT_REGISTER_DATE = '2026-10-14';
