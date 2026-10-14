@@ -238,7 +238,8 @@ src/lib/             auth (JWT в httpOnly бисквитка, именува с
 src/server/          Server actions ('use server') и заявки, винаги ограничени до фирмата на потребителя (queries.ts);
                      billing (синхрон на абонамента от Stripe, местата и тяхното налагане), billing-actions (Checkout, смяна на
                      пакета, порталът на Stripe), prices + price-actions (листата на фирмата), terms-actions (приемането),
-                     company-export (всички данни на фирмата в JSON, `/api/company/export`, и картите на Rilievi — `schede`);
+                     company-export (всички данни на фирмата в JSON, `/api/company/export`, и картите на Rilievi — `schede`,
+                     с връзката им към съоръжението `projectId` от формат 7);
                      account-actions — регистрация, потвърждение на адреса, забравена и нова парола; project-export
                      (записаният проект в PDF/DXF/DWG); order-export + order-route (черновата на поръчка от записан проект или
                      изчисление в DOCX/PDF); client-logo-actions (логото на възложителя на проекта); room-actions (записът на
@@ -384,7 +385,9 @@ prisma/              schema + migrations/0_init (тригер: без UPDATE н�
                      до ae6329cb6: ubicazioneCassettina → VARCHAR(120) с всяка стойност като текст, riepilogoOrdini,
                      discrepanzeConfermate, sospensioni + sospensioniNumero + ordineSospensioni с CHECK на JSON,
                      Company.ordineSezioni; ръчно писана, само добавя; връщането — в коментара ѝ, кодът и колоните заедно),
-                     19_locale_it (езикът на акаунта, поканата и чакащата регистрация — `it` навсякъде; само данни).
+                     19_locale_it (езикът на акаунта, поканата и чакащата регистрация — `it` навсякъде; само данни),
+                     20_rilievi_impianti (Scheda.projectId → Project, ON DELETE SET NULL, индекс (projectId, data DESC);
+                     ръчно писана, само добавя; връщането — в коментара ѝ).
 src/lib/rilievi/     Rilievi (кръг 41) — картите за оглед, чисто (и в браузъра): fields + field-types (ЕДИНСТВЕНИЯТ списък на
                      полетата, условията `when`, activeFields), field-parsers + validation (zod по вида, parseScheda,
                      formValuesFromBody), misure (бутониерите по спирки, mb-<спирка>-<колона>), format (displaySections,
@@ -431,6 +434,25 @@ src/components/rilievi/  SchedaForm (формата: разделите в ре�
                      LiveSearch (търсенето по адреса), Results (таблицата/картите и празните състояния), parts (табелата, таблицата
                      на мерките, маркираните думи, страниците), ActionButton (кошче/възстановяване/окончателно), Confirm,
                      Flash (`?ok=`), PrintTools, RilieviHead.
+src/lib/collega/     Рилево ↔ съоръжение (кръг 44), чисто: rilievo (RilievoDati — листът първо, после листът „dati argano“;
+                     unNumero/rapportoDi/poliDi, RILIEVO_SELECT, newestFirst), testo (адресът по думи, матрикула/№ като текст),
+                     suggerimenti (причините и редът на предложенията), prefill (semeCalc/seminaCalc/usaCalc, semeLift/seminaLift/
+                     usaLift, USA — какво „usa il valore“ може да сложи), lati (каквото казват последното изчисление и проектът
+                     на асансьора), confronto (редовете, класът stato di fatto / modifica prevista / свободен текст, състоянието,
+                     sintesi, erroriDi), passi (четирите стъпки и състоянията им), moduli (модулите на доставчиците на картата),
+                     formato (числото и единицата в сравнението).
+src/server/collega/  service (collega/scollega/creaDaRilievo: суров SQL без updatedAt на картата, фирмата на двете страни в
+                     същото изявление, одит в транзакцията), actions ('use server': collegaRilievoAction, scollegaRilievoAction —
+                     `rilievi:link`, само за четене, честота), queries (съоръжението на картата, кандидатите и предложенията,
+                     търсенето, рилевата на съоръжението, рилевото за справка, имената за регистъра), impianto (последните
+                     записи → сравнение и стъпки), home (последните рилева, броячите, плочките на съоръженията), forms
+                     (avvioCalc/avvioLift — началото на калкулатора и на /progetto от рилевото, ?usa=).
+src/components/collega/  LinkPanel (`#collegamento` на картата, извън листа), ImpiantoCollegato (на страницата на съоръжението:
+                     Passi + списъкът `#rilievi` + Confronto `#confronto`), Passi (стъпките като бутони на кабинно табло),
+                     Confronto, RilievoAvviso (над формуляра: от кое рилево, „usa“), origine ('use client': OrigineProvider и
+                     значката DalRilievo във FieldRow, ShaftOptions, VerticalOptions, ProjectForm), HomeKpis, RecentRilievi;
+                     src/app/collega.css. Страниците: `/app` — началото Rilievi (`app/[locale]/app/page.tsx`; старите `/app?q=…`
+                     пренасочва), `/app/impianti` — таблото на съоръженията (досегашното `/app`).
 src/server/permissions.ts + permission-actions.ts  Правата на фирмата (кръг 42): редовете и версията им (SHA-256),
                      savePermissionsAction — само собственикът или платформата (в друга фирма — с препратка към писменото
                      искане на собственика, `requestSchema`; в своята — без), под ключалката на фирмата, проверка на версията, редовете и

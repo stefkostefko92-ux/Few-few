@@ -84,7 +84,7 @@ export default function CollaudoOptions({ P, isNew, chosen, value, set, access, 
   const offer = NORME_AGGIUNTIVE.filter(fits);
   const uni = value.norma !== 'en81';
   return (
-    <div className="collaudo">
+    <div className="collaudo" id="collaudo">
       <label className="field">
         <span>{t('norma_title')}</span>
         <select className="input" value={value.norma} disabled={isNew} onChange={(e) => {

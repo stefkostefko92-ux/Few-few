@@ -1,4 +1,4 @@
-// The smoke test's step for the result pill (src/components/VerdictChecks.tsx): on the dashboard the first result that
+// The smoke test's step for the result pill (src/components/VerdictChecks.tsx): on the installations' page the first result that
 // does not pass (else the first that passes with warnings) opens, with a click, the panel of the checks behind its
 // count; the panel lists exactly as many as the pill's number — a record the engines no longer reproduce may list
 // what its stored records keep, and then says why —; Esc closes it and leaves the focus on the pill, where Enter opens and
@@ -8,14 +8,14 @@ import { step } from './smoke-kit.mjs';
 
 export async function verdictPopover({ BASE, page, hydrated }) {
   step('a result that does not pass shows the checks behind its number; Esc closes them');
-  await page.goto(`${BASE}/it/app?all=1`);
+  await page.goto(`${BASE}/it/app/impianti?all=1`);
   await page.waitForSelector('.dash-row');
   // a record of the running engines first (no «da aggiornare» beside its pill): its list is the one its count was made from
   const fresh = '.dash-row:not(:has(.chip.old))';
   const picks = [[`${fresh} .vc-pill.fail`, 'fail'], [`${fresh} .vc-pill.warn`, 'warn'], ['.dash-row .vc-pill.fail', 'fail'], ['.dash-row .vc-pill.warn', 'warn']];
   let pick = null;
   for (const [sel, tone] of picks) if (await page.locator(sel).count()) { pick = { sel, tone }; break; }
-  assert.ok(pick, 'a result with checks to show on the dashboard');
+  assert.ok(pick, 'a result with checks to show on the installations\' page');
   await hydrated(page, pick.sel);
   const pill = page.locator(pick.sel).first();
   const n = Number(/(\d+)/.exec((await pill.textContent()) ?? '')?.[1]);

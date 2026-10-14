@@ -30,7 +30,7 @@ export async function rilieviFlow({ BASE, page, hydrated }) {
 
   step('Rilievi: the sidebar item, a new sheet with a chain of conditions, 3 stops measured, three modules');
   await page.goto(`${BASE}/it/app/rilievi`);
-  assert.equal(await page.locator('.ws-nav a[href$="/app/rilievi"][aria-current="page"]').count(), 1, 'Rilievi marked in the sidebar');
+  assert.equal(await page.locator('.ws-nav a[href$="/app"][aria-current="true"]').count(), 1, 'Rilievi (the home) marked in the sidebar');
   await page.click('main a[href$="/app/rilievi/nuovo"]');
   await page.waitForURL(/\/app\/rilievi\/nuovo$/);
   await hydrated(page, 'form[data-scheda-form][data-live] button[type="submit"]');

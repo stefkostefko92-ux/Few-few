@@ -9,6 +9,7 @@ import { useTranslations } from 'next-intl';
 import { REASON_LETTERS, counterweightSide, reasonText, type ShaftInputs } from '@/shaft';
 import { Q_PLACEHOLDER, emptied, entrancesTo, filled, type BlankKey } from '@/lib/lift/blank';
 import { NO_BLANK, fieldId, mmOf, type FormBlank, type ShaftSet } from '../blank';
+import { DalRilievo } from '../collega/origine';
 import Seg from './Seg';
 
 interface Props {
@@ -39,7 +40,7 @@ export default function ShaftOptions({ I, set, blank = NO_BLANK }: Props) {
         onChange={(v) => (v === 'max' ? set({ Q: null }) : given())} options={[{ v: 'max', label: t('Qmax') }, { v: 'given', label: t('Qgiven') }]} />
       {!is('Q') && I.Q !== null ? (
         <label className={`field${need('Qkg')}`}>
-          <span>{t('Q')}</span>
+          <span>{t('Q')}<DalRilievo id="Qkg" value={is('Qkg') ? '' : I.Q} /></span>
           <input id={fieldId('Qkg')} className="input num" type="number" inputMode="numeric" min={100} max={10000} step={5} value={is('Qkg') ? '' : I.Q}
             aria-required={is('Qkg') || undefined} onChange={(e) => { const v = mmOf(e.target.value); if (v !== null) { setLastQ(v); set({ Q: v }, (b) => filled(b, ['Qkg'])); } }} />
         </label>

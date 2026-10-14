@@ -1,22 +1,21 @@
 // End-to-end smoke test against a running LiftPilot (local or staging), with a real browser:
-//   health → public page (no console or CSP errors, in Italian, the only language) → /en and /bg sent for good to /it →
-//   an unknown address: the 404 drawn in Italian → sign-in → the two modules → a machine replacement → its
-//   calculation, which starts empty (its draft kept, resumed, discarded; smoke-blank.mjs) → saved snapshot with reproduced hash → calculation report (PDF) → its machine room surveyed, the
-//   relazione tecnica and the drawing set (scripts/smoke-replacement.mjs) → the replacement becomes a whole
-//   project, its data entered (a draft taken up again) → shaft design by hand (a distance changed on its plan, the landing door
-//   set apart from the car door), its DXF, a calculation from it with the plan in its report → data of the installation,
-//   client and company logos, drawing set issued from that calculation (sheets, PDF) and its revision → the installation
-//   in one form with its live 3D simulation and a SICOR machine from the catalogue (drawn as it is), saved
-//   in one go (shaft design and calculation together), with its documents → the dashboard's result pill opens the checks
-//   behind its number (scripts/smoke-verdict.mjs) → the survey sheets: a sheet with its conditions, stops, modules,
-//   search, PDFs, print, conflict, trash (scripts/smoke-rilievi.mjs), the company's order of the sections, the linked data
-//   with the confirmation, MoviLift, the modules in the print (scripts/smoke-rilievi-sync.mjs) → new user who must change
-//   the password → a second company that cannot open the first company's calculation, shaft design, DXF, drawing set, lift
-//   design or survey sheet (nor its modules) → with MAILBOX_PORT: self-registration, confirmation, forgotten password
-//   (scripts/smoke-accounts.mjs), the rights matrix of that company (scripts/smoke-permessi.mjs), the server sending its
-//   mail to scripts/mail-sink.mjs on that port (SMTP_HOST=127.0.0.1, SMTP_PORT=<port>, MAIL_FROM set).
-// Usage: BASE_URL=http://localhost:3100 ADMIN_EMAIL=… ADMIN_PASSWORD=… [MAILBOX_PORT=2526] node scripts/smoke.mjs
-// Playwright is not a dependency of the app: the local install is used, else the global one.
+//   health → public page (no console or CSP errors, in Italian, the only language) → /en and /bg sent for good to /it → an unknown
+//   address: the 404 drawn in Italian → sign-in → the two modules → a machine replacement → its calculation, which starts empty
+//   (its draft kept, resumed, discarded; smoke-blank.mjs) → saved snapshot with reproduced hash → calculation report (PDF) → its
+//   machine room surveyed, the relazione tecnica and the drawing set (scripts/smoke-replacement.mjs) → the replacement becomes a
+//   whole project, its data entered (a draft taken up again) → shaft design by hand (a distance changed on its plan, the landing
+//   door set apart from the car door), its DXF, a calculation from it with the plan in its report → data of the installation,
+//   client and company logos, drawing set issued from that calculation (sheets, PDF) and its revision → the installation in one
+//   form with its live 3D simulation and a SICOR machine from the catalogue (drawn as it is), saved in one go (shaft design and
+//   calculation together), with its documents → the installations' result pill opens the checks behind its number
+//   (scripts/smoke-verdict.mjs) → the survey sheets: a sheet with its conditions, stops, modules, search, PDFs, print, conflict,
+//   trash (scripts/smoke-rilievi.mjs), the company's order of the sections, the linked data with the confirmation, MoviLift, the
+//   modules in the print (scripts/smoke-rilievi-sync.mjs) → a survey and its installation: created from it, prefilled, compared,
+//   linked by suggestion, unlinked; the home (scripts/smoke-collega.mjs) → new user who must change the password → a second
+//   company that cannot open the first company's calculation, shaft design, DXF, drawing set, lift design or survey sheet (nor its
+//   modules) → with MAILBOX_PORT: self-registration, confirmation, forgotten password (scripts/smoke-accounts.mjs), the rights
+//   matrix of that company (scripts/smoke-permessi.mjs), the server sending its mail to scripts/mail-sink.mjs on that port.
+// Usage: BASE_URL=http://localhost:3100 ADMIN_EMAIL=… ADMIN_PASSWORD=… [MAILBOX_PORT=2526] node scripts/smoke.mjs (Playwright: local or global).
 import { Buffer } from 'node:buffer';
 import assert from 'node:assert/strict';
 import { startMailSink } from './mail-sink.mjs';
@@ -29,6 +28,7 @@ import { publicPages } from './smoke-public.mjs';
 import { replacementRoom } from './smoke-replacement.mjs';
 import { rilieviFlow } from './smoke-rilievi.mjs';
 import { rilieviSync } from './smoke-rilievi-sync.mjs';
+import { collegaFlow } from './smoke-collega.mjs';
 import { archivedReadOnly, technician } from './smoke-roles.mjs';
 import { verdictPopover } from './smoke-verdict.mjs';
 
@@ -42,7 +42,6 @@ const stamp = Date.now().toString(36);
 const LOGO_PNG = 'iVBORw0KGgoAAAANSUhEUgAAAGAAAAAgCAIAAABiouoDAAAAfUlEQVR42u3aywmAMBBFUSO2YDlWZR1WZTkWMS7cDRgQowieu8n+8t6QX4mIDuf0FNQZjmWcFi4S2zpLkIq1qljK1Z9J00aCVIwggr40pOsT64mNhgSpGEEEgSCCCCKIIIIIIgjXDqsuGCWIIIJenUFeECWIoKYUvzsk6BY7X3sSQy3KvssAAAAASUVORK5CYII=';
 
 const { newPage, login, hydrated, orderFiles, logout } = smokeKit(BASE);
-
 const MAILBOX = Number(process.env.MAILBOX_PORT ?? 0);
 const sink = MAILBOX ? startMailSink(MAILBOX) : null;
 if (sink) await sink.ready;
@@ -52,8 +51,8 @@ try {
 
   step('sign-in and installation');
   await login(page, ADMIN.email, ADMIN.password);
-  // the dashboard offers the two modules; a machine replacement opens straight on its calculation
-  await page.goto(`${BASE}/it/app`);
+  // the installations' page offers the two modules; a machine replacement opens straight on its calculation
+  await page.goto(`${BASE}/it/app/impianti`);
   assert.equal(await page.locator('.app-modules .app-module').count(), 2, 'two modules');
   await page.goto(`${BASE}/it/app/projects/new?kind=replacement`);
   assert.ok(await page.isChecked('input[name="kind"][value="REPLACEMENT"]'), 'replacement chosen');
@@ -95,20 +94,20 @@ try {
 
   step('the top bar searches the installations on the server: every word, in the name, the address or the plant number');
   await page.fill('.ws-search-wide input[name="q"]', `Smoke ${stamp}`);
-  await Promise.all([page.waitForURL(/\/it\/app\?q=/), page.press('.ws-search-wide input[name="q"]', 'Enter')]);
+  await Promise.all([page.waitForURL(/\/it\/app\/impianti\?q=/), page.press('.ws-search-wide input[name="q"]', 'Enter')]);
   await page.waitForSelector('.dash-row');
   assert.equal(await page.locator('.dash-row').count(), 1, 'one installation found');
   assert.match(await page.textContent('.dash-row'), new RegExp(`Smoke ${stamp}`));
   // this run's two installations are in Milano (this one and the replacement of smoke-replacement.mjs)
-  await page.goto(`${BASE}/it/app?q=${encodeURIComponent(`milano ${stamp}`)}`);
+  await page.goto(`${BASE}/it/app/impianti?q=${encodeURIComponent(`milano ${stamp}`)}`);
   assert.equal(await page.locator('.dash-row').count(), 2, 'the municipality and a word of the name');
-  await page.goto(`${BASE}/it/app?q=${encodeURIComponent(`smoke MILANO ${stamp}`)}`);
+  await page.goto(`${BASE}/it/app/impianti?q=${encodeURIComponent(`smoke MILANO ${stamp}`)}`);
   assert.equal(await page.locator('.dash-row').count(), 1, 'every word, whatever its case');
-  await page.goto(`${BASE}/it/app?q=${encodeURIComponent(`Torino ${stamp}`)}`);
+  await page.goto(`${BASE}/it/app/impianti?q=${encodeURIComponent(`Torino ${stamp}`)}`);
   assert.equal(await page.locator('.dash-row').count(), 0, 'every word must be found');
   // % and _ are text, not LIKE's wildcards: with this run's word they find none of its two installations
   for (const w of ['%', '_', '%%']) {
-    await page.goto(`${BASE}/it/app?q=${encodeURIComponent(`${w} ${stamp}`)}`);
+    await page.goto(`${BASE}/it/app/impianti?q=${encodeURIComponent(`${w} ${stamp}`)}`);
     assert.equal(await page.locator('.dash-row').count(), 0, `«${w}» is not a wildcard`);
   }
 
@@ -280,6 +279,7 @@ try {
   await priceList({ BASE, page, hydrated, stamp, liftUrl, roomUrl });
   const rilievo = await rilieviFlow({ BASE, page, hydrated });
   const rilievoSync = await rilieviSync({ BASE, page, hydrated });
+  await collegaFlow({ BASE, page, hydrated, stamp });
   assert.deepEqual(errors, [], 'browser errors');
 
   await technician({ BASE, page, errors, stamp, login, logout, rilievoUrl: rilievo.sheetUrl });

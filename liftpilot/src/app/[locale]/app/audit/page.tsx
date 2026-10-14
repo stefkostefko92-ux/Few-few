@@ -8,6 +8,7 @@ import { schedaTitle } from '@/lib/rilievi/format';
 import type { RilieviT } from '@/lib/rilievi/t';
 import { listAuditNamed } from '@/server/queries';
 import { schedeForAudit } from '@/server/rilievi/queries';
+import { nomiImpianti } from '@/server/collega/queries';
 import AccountHead from '@/components/AccountHead';
 
 export async function generateMetadata() {
@@ -21,6 +22,9 @@ const permissionMeta = z.object({
   role: z.string(), capability: z.string(), from: z.boolean(), to: z.boolean(), by: z.enum(['owner', 'platform']), request: z.string().max(400).optional(),
 });
 
+/** A survey linked to an installation or unlinked from it (src/server/collega/service.ts): which installation. */
+const linkMeta = z.object({ projectId: z.string().max(40) }).passthrough();
+
 export default async function AuditPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -32,6 +36,9 @@ export default async function AuditPage({ params }: { params: Promise<{ locale: 
   const sheetIds = [...new Set(rows.filter((r) => r.entity === 'Scheda' && r.entityId).map((r) => r.entityId as string))];
   const sheets = new Map((sheetIds.length ? await schedeForAudit(me.companyId, sheetIds) : []).map((s) => [s.id, s]));
   const manageTrash = can(me, 'rilievi:trash-manage');
+  // the installation a survey was linked to or unlinked from, by its name (the company's; another id is shown as it is)
+  const linkOf = (r: (typeof rows)[number]) => (r.action === 'SCHEDA_LINKED' || r.action === 'SCHEDA_UNLINKED' ? linkMeta.safeParse(r.meta) : null);
+  const linked = await nomiImpianti(me, rows.flatMap((r) => { const m = linkOf(r); return m?.success ? [m.data.projectId] : []; }));
   const fd = dateFormat(locale);
   const label = (group: 'actions' | 'entities', key: string): string => (t.has(`${group}.${key}`) ? t(`${group}.${key}`) : key);
   // a change of the rights: which role, which right, before → after in the matrix's words; made by the platform, it says
@@ -58,7 +65,7 @@ export default async function AuditPage({ params }: { params: Promise<{ locale: 
             {rows.map((r) => {
               const sheet = r.entity === 'Scheda' && r.entityId ? sheets.get(r.entityId) : undefined;
               const open = sheet && r.action !== 'SCHEDA_PURGED' && (!sheet.deletedAt || manageTrash);
-              const perm = r.action === 'PERMISSIONS_CHANGED' ? permission(r.meta) : null;
+              const perm = r.action === 'PERMISSIONS_CHANGED' ? permission(r.meta) : null, lk = linkOf(r);
               return (
                 <tr key={r.id}>
                   <td className="row-title"><b>{label('actions', r.action)}</b></td>
@@ -66,7 +73,8 @@ export default async function AuditPage({ params }: { params: Promise<{ locale: 
                   <td data-label={t('who')}>{perm?.by === 'platform' ? t('platform') : r.userId ? names.get(r.userId) ?? '—' : '—'}</td>
                   <td data-label={t('object')}>
                     <span>{label('entities', r.entity)}{r.entityId ? <span className="note"> · {nameOf(r.entityId)}</span> : null}
-                      {perm ? <span className="note"> · {perm.text}</span> : null}</span>
+                      {perm ? <span className="note"> · {perm.text}</span> : null}
+                      {lk?.success ? <span className="note"> · {t('impianto', { name: linked.get(lk.data.projectId) ?? lk.data.projectId })}</span> : null}</span>
                     {open ? <> <Link href={`/app/rilievi/${sheet.id}`}>{tr('audit.openScheda')}</Link></> : null}
                   </td>
                 </tr>

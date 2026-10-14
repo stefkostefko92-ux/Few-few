@@ -18,7 +18,7 @@ export default async function NotFound() {
         <h1>{t('notFoundTitle')}</h1>
         <p className="lead">{t('notFoundText')}</p>
         <p className="err-actions">
-          <Link className="btn btn-primary" href="/app">{t('toProjects')}</Link>
+          <Link className="btn btn-primary" href="/app/impianti">{t('toProjects')}</Link>
           <Link className="btn" href="/"><Icon name="home" size={18} />{t('toHome')}</Link>
         </p>
       </main>

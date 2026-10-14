@@ -87,7 +87,10 @@ test('un diritto senza il suo presupposto non vale: senza vedere gli impianti ni
   for (const c of ['projects:view', 'calc:view', 'impianti:create', 'projects:edit', 'calc:create', 'records:refresh', 'progetto:edit', 'drawings:issue',
     'report:download', 'rilievi:link'] as Capability[]) assert.ok(!noView.has(c), c);
   assert.ok(noView.has('rilievi:edit'), 'the survey sheets stay');
-  assert.equal(homeOf({ role: P, caps: noView }), '/app/rilievi');
+  // the home is the survey sheets' (round 44): a role that sees them starts there, with or without the installations
+  assert.equal(homeOf({ role: P, caps: noView }), '/app');
+  const noSurveys = capsOf(S, [{ role: S, capability: 'rilievi:view', granted: false }]);
+  assert.equal(homeOf({ role: S, caps: noSurveys }), '/app/impianti');
   const nothing = capsOf(S, [{ role: S, capability: 'projects:view', granted: false }, { role: S, capability: 'rilievi:view', granted: false }]);
   assert.equal(homeOf({ role: S, caps: nothing }), '/app/account');
   assert.equal(homeOf(S), '/app');

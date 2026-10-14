@@ -286,6 +286,8 @@ model Project {
   liftDesigns  LiftDesign[]
   roomDesigns  RoomDesign[]
   formDrafts   FormDraft[]
+  /// the survey sheets linked to the installation (round 44): its history, the newest the reference
+  schede       Scheda[]
 
   @@index([companyId, archivedAt])
   @@index([companyId, kind])
@@ -758,6 +760,11 @@ model Scheda {
   searchText              String                      @default("")
   companyId               String
   company                 Company                     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  /// the installation the survey belongs to (round 44, src/server/collega/): many surveys per installation — its history,
+  /// the newest by `data` then `createdAt` the reference —; null: not linked. Written only by src/server/collega/service.ts,
+  /// always within one company, without touching `updatedAt` (the link is not the sheet's content nor its version)
+  projectId               String?
+  project                 Project?                    @relation(fields: [projectId], references: [id], onDelete: SetNull)
   createdById             String?
   createdBy               User?                       @relation("SchedeCreated", fields: [createdById], references: [id], onDelete: SetNull)
   updatedById             String?
@@ -771,6 +778,8 @@ model Scheda {
   /// the list in its order (survey day, then creation, newest first; the trashed ones skipped), and the trash
   @@index([companyId, data(sort: Desc), createdAt(sort: Desc)])
   @@index([companyId, deletedAt])
+  /// an installation's surveys, newest first (the reference and the history on its page)
+  @@index([projectId, data(sort: Desc)])
   @@index([data])
   @@index([matricola])
   @@index([numeroImpianto])

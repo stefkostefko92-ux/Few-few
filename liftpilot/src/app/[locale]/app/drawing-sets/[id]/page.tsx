@@ -66,7 +66,7 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
   const rooms = editable && s.roomDesign ? (await listRoomDesigns(user, s.projectId)).map((x) => ({ id: x.id, label: `${fd.dateTime(x.createdAt)}${x.label ? ` · ${x.label}` : ''} · ${roomLine(x)}` })) : [];
   return (
     <main className="page">
-      <Crumbs items={[{ href: '/app', label: tp('title') }, { href: `/app/projects/${s.projectId}`, label: s.project.name }, { label: `${t('number')} ${s.number}` }]} />
+      <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${s.projectId}`, label: s.project.name }, { label: `${t('number')} ${s.number}` }]} />
       <div className="page-head">
         <div className="titles">
           <h1>{t('title')} · {s.number}{s.revision ? ` R${s.revision}` : ''}</h1>

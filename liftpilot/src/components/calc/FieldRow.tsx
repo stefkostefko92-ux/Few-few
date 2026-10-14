@@ -1,9 +1,11 @@
 // One row of the calculator's form (prototype v12): a number with its unit, a choice or a check box, with its hint.
 // Shared by the calculator and by the one form of an installation, which can show a row read-only with the value
 // the software filled in and a badge saying so. A value still to enter shows nothing and is marked as needed (an expert
-// row among them shows in the simple mode too); a standard value of the software carries a badge saying so.
+// row among them shows in the simple mode too); a standard value of the software carries a badge saying so, a value still
+// the one measured in the installation's survey the badge «dal rilievo» (components/collega/origine.tsx).
 import type { FormValues } from '@/calc/types';
 import type { CalcKey, Pres } from '@/lib/present/tr';
+import { DalRilievo } from '../collega/origine';
 import { shown, type Field } from './fields';
 
 /** The words of an empty choice and of the standard values' badge. */
@@ -36,7 +38,8 @@ export default function FieldRow({ P, f, V, bad, set, auto = null, extra = null,
   const { t } = P;
   const label = t((f.key ?? f.id) as CalcKey);
   const hidden = !shown(f.id, V), adv = f.adv && !need ? ' adv' : '', needCls = need ? ' need' : '';
-  const badge = std && texts ? <span className="badge std" title={texts.stdTitle}>{texts.std}</span> : null;
+  // the software's standard value, or the value measured in the installation's survey (round 44)
+  const badge = std && texts ? <span className="badge std" title={texts.stdTitle}>{texts.std}</span> : <DalRilievo id={f.id} value={V[f.id]} />;
   const hint = f.hint ? <div className={`hint${adv}`} hidden={hidden}>{t(f.hint)}</div> : null;
   if (f.kind === 'check') {
     return (

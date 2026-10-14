@@ -40,7 +40,7 @@ export default async function ShaftDesignPage({ params }: { params: Promise<{ lo
   const open = !d.project.archivedAt && can(user, 'progetto:edit');
   return (
     <main className="page">
-      <Crumbs items={[{ href: '/app', label: tp('title') }, { href: `/app/projects/${d.projectId}`, label: d.project.name }, { label: t('title') }]} />
+      <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${d.projectId}`, label: d.project.name }, { label: t('title') }]} />
       <div className="page-head">
         <div className="titles"><h1>{t('title')}{d.label ? ` · ${d.label}` : ''}</h1></div>
         <div className="actions">

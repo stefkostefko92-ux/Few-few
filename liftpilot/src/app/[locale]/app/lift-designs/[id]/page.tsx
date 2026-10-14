@@ -73,7 +73,7 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
     { whole: true, rails: !r || ambitoOf(r.dv.collaudo, 'gr_stress') === 'applies', underPit: r?.dv.bottom === 'under' });
   return (
     <main className="page page-wide">
-      <Crumbs items={[{ href: '/app', label: tp('title') }, { href: `/app/projects/${d.project.id}`, label: d.project.name }, { label: t('designTitle') }]} />
+      <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${d.project.id}`, label: d.project.name }, { label: t('designTitle') }]} />
       <div className="page-head">
         <div className="titles">
           <h1>{d.label || t('designTitle')}</h1>

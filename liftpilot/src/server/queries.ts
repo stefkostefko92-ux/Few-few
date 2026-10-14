@@ -15,10 +15,10 @@ import { DESIGN_SELECT } from './drawing-compose';
 const LIFT_VERSIONS = { engineVersion: true, calculation: { select: { engineVersion: true } }, shaftDesign: { select: { engineVersion: true } } } as const;
 
 /** The list's filters: archived or active, a module, the words searched (dashboard.ts searchWords) — each found in the
- *  name, the address, the municipality or the plant number, as text (likeEscape: `%` and `_` are not wildcards). */
+ *  name, the address, the municipality, the plant number (matricola) or the matricola or number of a linked survey (round 44). */
 function projectsWhere(user: SessionUser, archived: boolean, kind: ProjectKind | null, q: readonly string[]) {
   const has = (w: string) => ({ contains: likeEscape(w), mode: 'insensitive' as const });
-  const words = q.map((w) => ({ OR: [{ name: has(w) }, { address: has(w) }, { city: has(w) }, { plantNumber: has(w) }] }));
+  const words = q.map((w) => ({ OR: [{ name: has(w) }, { address: has(w) }, { city: has(w) }, { plantNumber: has(w) }, { schede: { some: { deletedAt: null, OR: [{ matricola: has(w) }, { numeroImpianto: has(w) }] } } }] }));
   return { companyId: user.companyId, archivedAt: archived ? { not: null } : null, ...(kind ? { kind } : {}), ...(words.length ? { AND: words } : {}) };
 }
 

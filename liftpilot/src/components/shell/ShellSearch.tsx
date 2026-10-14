@@ -1,7 +1,8 @@
 'use client';
 
-// The top bar's search of the company's installations: a GET form to the dashboard (`/app?q=…`), which filters them on
-// the server by name, address, municipality and plant number (src/server/queries.ts listProjects). On the dashboard it
+// The top bar's search of the company's installations: a GET form to the installations (`/app/impianti?q=…`), which
+// filters them on the server by name, address, municipality, plant number and the matricola of their surveys
+// (src/server/queries.ts listProjects). On the installations' page it
 // keeps the list's filters (archived, module) and shows the words searched. Wide screens: the field in the bar, with
 // Ctrl+K / ⌘K to reach it; phones: a search button that opens the field under the bar, with the focus in it (Esc or a
 // click outside closes it and gives the focus back to the button, as the dashboard's «new» menu).
@@ -21,7 +22,7 @@ export default function ShellSearch({ label, placeholder }: { label: string; pla
   const locale = useLocale(), pathname = usePathname(), sp = useSearchParams();
   const kbd = useSyncExternalStore(noop, shortcutName, () => '');
   const wide = useRef<HTMLInputElement>(null), narrow = useRef<HTMLDetailsElement>(null);
-  const onDashboard = pathname === '/app';
+  const onDashboard = pathname === '/app/impianti';
   const q = onDashboard ? (sp.get('q') ?? '') : '';
   const keep = onDashboard ? (['archived', 'kind'] as const).flatMap((k) => { const v = sp.get(k); return v ? [[k, v] as const] : []; }) : [];
 
@@ -65,7 +66,7 @@ export default function ShellSearch({ label, placeholder }: { label: string; pla
 
   const field = (id: string, ref?: typeof wide, hint?: string) => (
     // keyed by the words: after a search the field shows them, after leaving the dashboard it is empty again
-    <Form key={`${pathname}?${q}`} action={`/${locale}/app`} role="search" className="ws-search" aria-label={label}>
+    <Form key={`${pathname}?${q}`} action={`/${locale}/app/impianti`} role="search" className="ws-search" aria-label={label}>
       {keep.map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
       <Icon name="search" size={16} />
       <input ref={ref} id={id} type="search" name="q" defaultValue={q} placeholder={placeholder} aria-label={label}

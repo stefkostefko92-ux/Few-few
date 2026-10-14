@@ -1,0 +1,41 @@
+import { getTranslations } from 'next-intl/server';
+import { Link } from '@/i18n/routing';
+import { confronto, type Param, type Valore } from '@/lib/collega/confronto';
+import { testoValore } from '@/lib/collega/formato';
+import type { RilievoDati } from '@/lib/collega/rilievo';
+import { fmt } from '@/lib/rilievi/fmt';
+import type { UsaFatto } from '@/server/collega/forms';
+
+/** The survey's own value of a parameter (the comparison's «rilievo» column). */
+function valoreDi(r: RilievoDati, p: Param): Valore {
+  const row = confronto({ rilievo: r, storico: [], impianto: { kind: 'FULL', indirizzo: null, plantNumber: null }, calcolo: null, progetto: null }).find((w) => w.param === p);
+  return row?.rilievo ?? null;
+}
+
+// Over an installation's form (round 44): the survey it starts from — its title and day, the way to the sheet for whoever
+// sees the surveys — and that the values marked «dal rilievo» are measured ones; after «usa il valore del rilievo» what
+// was put in (and what the field held), not saved until the user saves.
+export default async function RilievoAvviso({ rilievo, usa, sheet }: { rilievo: RilievoDati; usa: UsaFatto | null; sheet: boolean }) {
+  const t = await getTranslations('collega');
+  const title = rilievo.numeroImpianto ? t('titoloNumero', { n: rilievo.numeroImpianto }) : rilievo.matricola ? t('titoloMatricola', { n: rilievo.matricola })
+    : rilievo.indirizzo ?? t('titolo');
+  const parola = (code: string): string => (t.has(`valore.${code}`) ? t(`valore.${code}` as 'valore.ALTO') : code);
+  const label = usa ? t(`confronto.param.${usa.param}`) : '';
+  return (
+    <div className="lk-avviso" role="status">
+      <p>
+        {t('origine.notice', { title, date: fmt.day(rilievo.data) })}{' '}
+        {sheet ? <Link href={`/app/rilievi/${rilievo.id}`}>{t('origine.openSheet')}</Link> : null}
+      </p>
+      {usa ? (
+        <p className={usa.set.length ? 'alert alert-info' : 'alert alert-warn'}>
+          {usa.set.length
+            ? t(usa.prima ? 'origine.usaDonePrima' : 'origine.usaDone',
+              { param: label, valore: testoValore(usa.param, valoreDi(rilievo, usa.param), parola), prima: usa.prima ? parola(usa.prima).replace('.', ',') : '' })
+            : t('origine.usaNone', { param: label })}
+          {usa.param === 'posizione' && rilievo.posizione === 'ALTO' ? ` ${t('origine.usaAlto')}` : ''}
+        </p>
+      ) : null}
+    </div>
+  );
+}

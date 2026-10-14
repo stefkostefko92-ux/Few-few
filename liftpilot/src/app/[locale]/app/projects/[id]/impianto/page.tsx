@@ -30,7 +30,7 @@ export default async function PlantPage({ params }: { params: Promise<{ locale: 
   const catalog = await projectCatalogMachine(user, p.id, p.kind === 'FULL');
   return (
     <main className="page">
-      <Crumbs items={[{ href: '/app', label: tp('title') }, { href: `/app/projects/${p.id}`, label: p.name }, { label: t('plantTitle') }]} />
+      <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${p.id}`, label: p.name }, { label: t('plantTitle') }]} />
       <div className="page-head">
         <div className="titles">
           <h1>{t('plantTitle')}</h1>

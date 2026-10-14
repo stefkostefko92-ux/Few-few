@@ -30,15 +30,16 @@ export default async function AppShell({ user, banners, footer, children }: { us
     getTranslations('denied'),
   ]);
   const projects = can(user, 'projects:view');
+  // every job starts from the survey (round 44): the Rilievi home first (its full list, /app/rilievi, under it), then the
+  // installations, the two new ones and the archive
   const work: NavItem[] = [
-    ...(projects ? [{ key: 'dashboard', href: '/app', label: t('dashboard'), icon: 'layout-dashboard' } as const] : []),
+    ...(can(user, 'rilievi:view') ? [{ key: 'rilievi', href: '/app', label: t('rilievi'), icon: 'clipboard-list' } as const] : []),
+    ...(projects ? [{ key: 'impianti', href: '/app/impianti', label: t('impianti'), icon: 'layout-dashboard' } as const] : []),
     ...(can(user, 'impianti:create') ? [
       { key: 'new-replacement', href: '/app/projects/new?kind=replacement', label: tp('module_REPLACEMENT_new'), icon: 'motor' } as const,
       { key: 'new-full', href: '/app/projects/new?kind=full', label: tp('module_FULL_new'), icon: 'elevator' } as const,
     ] : []),
-    ...(projects ? [{ key: 'archived', href: '/app?archived=1', label: tp('archivedTitle'), icon: 'archive' } as const] : []),
-    // the survey sheets of existing lifts and the suppliers' modules (Rilievi, round 41)
-    ...(can(user, 'rilievi:view') ? [{ key: '/app/rilievi', href: '/app/rilievi', label: t('rilievi'), icon: 'clipboard-list' } as const] : []),
+    ...(projects ? [{ key: 'archived', href: '/app/impianti?archived=1', label: tp('archivedTitle'), icon: 'archive' } as const] : []),
   ];
   const library: NavItem[] = [
     ...(projects ? [{ key: '/app/norme', href: '/app/norme', label: t('norms'), icon: 'shield-check' } as const] : []),

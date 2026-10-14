@@ -32,6 +32,7 @@ import Diagram from './Diagram';
 import Verdict from './Verdict';
 import Results, { type UseKey } from './Results';
 import LegalNotice from './LegalNotice';
+import { OrigineProvider, type OrigineRilievo } from '../collega/origine';
 
 type PresetKey = 'A' | 'B' | 'C';
 const num = (V: FormValues, id: string): number => { const x = parseFloat(String(V[id] ?? '').replace(',', '.')); return Number.isFinite(x) ? x : 0; };
@@ -51,9 +52,11 @@ interface Props {
   collaudo?: Collaudo | null;
   /** where the form's draft is kept; absent: none (the standalone page) */
   draft?: DraftTarget | null;
+  /** the installation's survey the values «dal rilievo» come from (round 44); absent: none */
+  origine?: OrigineRilievo | null;
 }
 
-export default function Calculator({ projectId, initial, preset: initialPreset, brand, collaudo: initialCollaudo = null, draft = null }: Props) {
+export default function Calculator({ projectId, initial, preset: initialPreset, brand, collaudo: initialCollaudo = null, draft = null, origine = null }: Props) {
   const locale = useLocale(), messages = useMessages(), tc = useTranslations('calculations'), te = useTranslations('errors'), tb = useTranslations('blank');
   const router = useRouter();
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
@@ -133,6 +136,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   const fieldLabel = (id: string): string => t((id.replace(/^[no]_/, '') as CalcKey)) + (id.startsWith('o_') ? ` (${t('g_old')})` : '');
 
   return (
+    <OrigineProvider value={origine}>
     <div className={`calc${mode === 'simple' ? ' simple' : ''}`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="controls">
@@ -175,5 +179,6 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
         </div>
       </div>
     </div>
+    </OrigineProvider>
   );
 }

@@ -36,19 +36,21 @@ test('iniziali: prime lettere del primo e dell’ultimo nome, qualsiasi alfabeto
 test('barra laterale: la voce della pagina', () => {
   const S = ['/app/norme', '/app/team', '/app/account'];
   const at = (p: string, archived = false, kind: string | null = null) => shellSection(p, { archived, kind }, S);
-  assert.equal(at('/app'), 'dashboard');
-  assert.equal(at('/app', true), 'archived');
+  // the home is the survey sheets' (round 44); the installations are /app/impianti
+  assert.equal(at('/app'), 'rilievi');
+  assert.equal(at('/app/impianti'), 'impianti');
+  assert.equal(at('/app/impianti', true), 'archived');
   assert.equal(at('/app/projects/new', false, 'replacement'), 'new-replacement');
   assert.equal(at('/app/projects/new', false, 'full'), 'new-full');
   assert.equal(at('/app/projects/new'), null);
-  for (const p of ['/app/projects/abc', '/app/projects/abc/progetto', '/app/calculations/x/locale', '/app/lift-designs/y', '/app/drawing-sets/z']) assert.equal(at(p), 'dashboard', p);
+  for (const p of ['/app/projects/abc', '/app/projects/abc/progetto', '/app/calculations/x/locale', '/app/lift-designs/y', '/app/drawing-sets/z']) assert.equal(at(p), 'impianti', p);
   assert.equal(at('/app/norme'), '/app/norme');
   assert.equal(at('/app/team/invite'), '/app/team');
   assert.equal(at('/app/teams'), null);
   assert.equal(at('/app/prices'), null);
-  // the survey sheets: their list, a sheet, its edit and print pages, the trash — all under «Rilievi»
-  const R = (p: string) => shellSection(p, { archived: false, kind: null }, [...S, '/app/rilievi']);
-  for (const p of ['/app/rilievi', '/app/rilievi/nuovo', '/app/rilievi/abc/modifica', '/app/rilievi/abc/stampa', '/app/rilievi/cestino']) assert.equal(R(p), '/app/rilievi', p);
+  // the survey sheets: their list, a sheet, its edit and print pages, the trash — all under «Rilievi», the home's entry
+  for (const p of ['/app/rilievi', '/app/rilievi/nuovo', '/app/rilievi/abc/modifica', '/app/rilievi/abc/stampa', '/app/rilievi/cestino']) assert.equal(at(p), 'rilievi', p);
+  assert.equal(at('/app/rilievi-x'), null);
 });
 
 test('ricerca: % e _ sono testo, non caratteri jolly del LIKE', () => {
@@ -60,13 +62,14 @@ test('ricerca: % e _ sono testo, non caratteri jolly del LIKE', () => {
 });
 
 test('barra laterale: «pagina» solo sulla pagina della voce, altrimenti «true»', () => {
-  assert.equal(navCurrent('dashboard', '/app'), 'page');
-  assert.equal(navCurrent('dashboard', '/app/projects/abc'), 'true');
-  assert.equal(navCurrent('dashboard', '/app/calculations/abc'), 'true');
-  assert.equal(navCurrent('archived', '/app'), 'page');
+  assert.equal(navCurrent('impianti', '/app/impianti'), 'page');
+  assert.equal(navCurrent('impianti', '/app/projects/abc'), 'true');
+  assert.equal(navCurrent('impianti', '/app/calculations/abc'), 'true');
+  assert.equal(navCurrent('archived', '/app/impianti'), 'page');
   assert.equal(navCurrent('/app/norme', '/app/norme'), 'page');
   assert.equal(navCurrent('/app/norme', '/app/norme/en-81-20'), 'true');
   assert.equal(navCurrent('new-full', '/app/projects/new'), 'page');
-  assert.equal(navCurrent('/app/rilievi', '/app/rilievi'), 'page');
-  assert.equal(navCurrent('/app/rilievi', '/app/rilievi/abc'), 'true');
+  assert.equal(navCurrent('rilievi', '/app'), 'page');
+  assert.equal(navCurrent('rilievi', '/app/rilievi'), 'true');
+  assert.equal(navCurrent('rilievi', '/app/rilievi/abc'), 'true');
 });

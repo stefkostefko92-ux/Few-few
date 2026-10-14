@@ -17,6 +17,7 @@ import Flash from '@/components/rilievi/Flash';
 import RilieviHead from '@/components/rilievi/RilieviHead';
 import SectionIndex from '@/components/rilievi/SectionIndex';
 import { MisureTable, Plate } from '@/components/rilievi/parts';
+import LinkPanel from '@/components/collega/LinkPanel';
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 
@@ -44,7 +45,8 @@ function ModuloLinks({ id, modulo, t }: { id: string; modulo: NonNullable<Displa
 // fields that apply, the measurements per stop as a table, the suppliers' modules as links to their PDFs; who wrote it
 // and who changed it last. A sheet in
 // the trash is shown only to whoever manages the trash, with the banner to restore it or delete it for good. Another
-// company's or an unknown sheet: not found.
+// company's or an unknown sheet: not found. Over the sheet, apart from it (round 44): the survey's link to its
+// installation (components/collega/LinkPanel.tsx) — never in the sheet's content, print or PDF.
 export default async function RilievoPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: SP }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
@@ -55,7 +57,7 @@ export default async function RilievoPage({ params, searchParams }: { params: Pr
   const rt = t as unknown as RilieviT;
   const { sections, discrepanze } = sheetView(scheda, rt);
   const title = schedaTitle(scheda, rt);
-  const flash = flashOf((await searchParams).ok);
+  const sp = await searchParams, flash = flashOf(sp.ok);
   const deleted = scheda.deletedAt !== null;
   const actions = (
     <>
@@ -70,6 +72,7 @@ export default async function RilievoPage({ params, searchParams }: { params: Pr
       <Crumbs items={[{ href: '/app/rilievi', label: tn('rilievi') }, ...(deleted ? [{ href: '/app/rilievi/cestino', label: t('trash.title') }] : []), { label: title }]} />
       <RilieviHead back={{ href: '/app/rilievi', label: t('schede.back') }} title={title} lead={t('scheda.dateLine', { date: fmt.day(scheda.data) })} actions={actions} />
       {flash ? <Flash text={t(`flash.${flash}`)} /> : null}
+      <LinkPanel user={user} scheda={scheda} cerca={typeof sp.impianto === 'string' ? sp.impianto : ''} flash={sp.lk} />
       <div className="rv-with-index">
         <SectionIndex label={t('scheda.index')} titles={sections.map((s) => ({ key: s.key, title: s.title }))} />
         <div className="rv-sheet">

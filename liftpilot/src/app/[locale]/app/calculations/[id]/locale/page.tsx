@@ -45,7 +45,7 @@ export default async function RoomSurveyPage({ params, searchParams }: { params:
     : blankSurvey(Math.round(calcDrops(a, surveyMachine(values, a, startSurvey(0)).M).calata));
   return (
     <main className="page">
-      <Crumbs items={[{ href: '/app', label: tp('title') }, { href: `/app/projects/${c.projectId}`, label: c.project.name }, { href: `/app/calculations/${c.id}`, label: tc('viewTitle') }, { label: t('newTitle') }]} />
+      <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${c.projectId}`, label: c.project.name }, { href: `/app/calculations/${c.id}`, label: tc('viewTitle') }, { label: t('newTitle') }]} />
       <div className="page-head">
         <div className="titles">
           <h1>{t('newTitle')}</h1>

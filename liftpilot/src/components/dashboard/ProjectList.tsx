@@ -46,7 +46,7 @@ export default async function ProjectList({ projects, total, all, archived, kind
   const href = (k: ProjectKind | null, arch = archived, words = q, every = all): string => {
     const s = [arch ? 'archived=1' : '', k ? `kind=${slugOf(k)}` : '', words ? `q=${encodeURIComponent(words)}` : '', every ? 'all=1' : '']
       .filter(Boolean).join('&');
-    return s ? `/app?${s}` : '/app';
+    return s ? `/app/impianti?${s}` : '/app/impianti';
   };
   const more = total > projects.length;
   const empty = projects.length === 0, fresh = empty && !archived && !q && kind === null;

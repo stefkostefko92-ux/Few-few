@@ -57,7 +57,8 @@
     "invalidPrices": "Alcuni prezzi non sono validi.",
     "notReplacement": "Il rilievo del locale macchina è della sola sostituzione dell’argano: un progetto completo disegna il locale dal progetto del vano.",
     "roomIssues": "Il rilievo ha un problema da correggere.",
-    "inviteTaken": "Questo indirizzo ha già un account LiftPilot e un indirizzo appartiene a una sola azienda: chiedi all’azienda di invitarti con un altro indirizzo."
+    "inviteTaken": "Questo indirizzo ha già un account LiftPilot e un indirizzo appartiene a una sola azienda: chiedi all’azienda di invitarti con un altro indirizzo.",
+    "rilievoLinked": "Questo rilievo è già collegato a un impianto: scollegalo prima dalla sua pagina."
   },
   "auth": {
     "title": "Accesso",
@@ -95,7 +96,6 @@
     "company": "Azienda",
     "billing": "Abbonamento",
     "prices": "Listino",
-    "dashboard": "Panoramica",
     "groupWork": "Area di lavoro",
     "groupLibrary": "Libreria",
     "groupAdmin": "Gestione",
@@ -106,7 +106,8 @@
     "beta": "Beta gratuita",
     "profile": "Profilo normativo",
     "rilievi": "Rilievi",
-    "permessi": "Permessi"
+    "permessi": "Permessi",
+    "impianti": "Impianti"
   },
   "roles": {
     "OWNER": "Titolare",
@@ -538,7 +539,9 @@
       "SCHEDA_RESTORED": "Scheda ripristinata",
       "SCHEDA_PURGED": "Scheda eliminata definitivamente",
       "PERMISSIONS_CHANGED": "Permessi cambiati",
-      "COMPANY_SECTIONS_UPDATED": "Ordine delle sezioni della scheda cambiato"
+      "COMPANY_SECTIONS_UPDATED": "Ordine delle sezioni della scheda cambiato",
+      "SCHEDA_LINKED": "Rilievo collegato a un impianto",
+      "SCHEDA_UNLINKED": "Rilievo scollegato dall’impianto"
     },
     "entities": {
       "User": "Utente",
@@ -553,7 +556,8 @@
     },
     "platform": "Piattaforma LiftPilot",
     "permissionRequest": "su richiesta del Titolare: {request}",
-    "permission": "{role} · {right}: {from} → {to}"
+    "permission": "{role} · {right}: {from} → {to}",
+    "impianto": "impianto «{name}»"
   },
   "shaft": {
     "title": "Progetto del vano",
@@ -2116,7 +2120,7 @@
       "projects": "I progetti, ciascuno con i propri record (sotto).",
       "priceItems": "Il listino dell’azienda: il prezzo di ogni articolo dei cataloghi.",
       "customPrices": "Le voci libere del listino, con testo, prezzo e criterio di quantità.",
-      "schede": "Le schede di rilievo (Rilievi), anche quelle nel cestino: ogni campo, le misure delle bottoniere per fermata e i moduli dei fornitori come compilati — l’ordine quadro (Pelazza o MoviLift, in ordineQuadro), il modulo rilievi dati argani (in preventivoArgano), il modulo 2SG di porte, sospensioni e operatore (in ordineSospensioni) —, la scelta di includerli nella stampa (riepilogoOrdini) e l’impronta delle differenze tra scheda e moduli confermate al salvataggio (discrepanzeConfermate).",
+      "schede": "Le schede di rilievo (Rilievi), anche quelle nel cestino: ogni campo, le misure delle bottoniere per fermata e i moduli dei fornitori come compilati — l’ordine quadro (Pelazza o MoviLift, in ordineQuadro), il modulo rilievi dati argani (in preventivoArgano), il modulo 2SG di porte, sospensioni e operatore (in ordineSospensioni) —, la scelta di includerli nella stampa (riepilogoOrdini) e l’impronta delle differenze tra scheda e moduli confermate al salvataggio (discrepanzeConfermate), e l’impianto a cui è collegata (projectId, o null).",
       "auditLog": "Il registro attività: chi, che cosa, quando."
     },
     "projectText": "Ogni progetto contiene i propri record, ciascuno con i dati inseriti, la versione del motore, i risultati e l’impronta SHA-256 che ne garantisce l’integrità:",
@@ -2147,7 +2151,8 @@
       "v3": "3 — dal {date}: si aggiunge schede (le schede di rilievo, con le misure e i moduli dei fornitori).",
       "v4": "4 — dal {date}: si aggiunge rolePermissions (i permessi dei ruoli cambiati dall’azienda).",
       "v5": "5 — dal {date}: users non riporta più la lingua dell’account (LiftPilot è solo in italiano).",
-      "v6": "6 — dal {date}: in schede l’ubicazione della cassettina (ubicazioneCassettina) diventa un testo, non più un numero; si aggiungono sospensioni, sospensioniNumero, ordineSospensioni, riepilogoOrdini e discrepanzeConfermate; preventivoArgano contiene il modulo rilievi dati argani e ordineQuadro anche quello MoviLift; in company si aggiunge ordineSezioni."
+      "v6": "6 — dal {date}: in schede l’ubicazione della cassettina (ubicazioneCassettina) diventa un testo, non più un numero; si aggiungono sospensioni, sospensioniNumero, ordineSospensioni, riepilogoOrdini e discrepanzeConfermate; preventivoArgano contiene il modulo rilievi dati argani e ordineQuadro anche quello MoviLift; in company si aggiunge ordineSezioni.",
+      "v7": "7 — dal {date}: in schede si aggiunge projectId, l’impianto a cui il rilievo è collegato (null se non è collegato)."
     },
     "apiTitle": "C’è un’interfaccia per l’esportazione?",
     "apiText": "Sì, gratuita e uguale per tutte le aziende: una richiesta GET a {base}/api/company/export restituisce il file JSON descritto sopra a chi ha effettuato l’accesso come Titolare o, se il Titolare glielo permette, come Capotecnico. È la stessa richiesta del pulsante della pagina Azienda, al massimo 6 volte all’ora per azienda. Il nuovo fornitore riceve il file dal Titolare; questa pagina descrive il formato per scrivere il programma che lo legge (art. 30, par. 2, del Data Act).",
@@ -2633,5 +2638,184 @@
     "lead": "Il tuo ruolo ({role}) non ha il permesso «{right}» in questa azienda.",
     "ask": "I permessi di ogni ruolo li decide il Titolare dell’azienda: se te ne serve uno, chiedilo al Titolare.",
     "back": "Torna al lavoro"
+  },
+  "collega": {
+    "titolo": "Scheda rilievo impianto",
+    "titoloNumero": "Impianto n° {n}",
+    "titoloMatricola": "Matricola {n}",
+    "matricola": "matricola {n}",
+    "collega": "Collega",
+    "kind": {
+      "REPLACEMENT": "Sostituzione argano",
+      "FULL": "Progetto completo"
+    },
+    "motivo": {
+      "matricola": "stessa matricola",
+      "numero": "stesso n° impianto di un suo rilievo",
+      "indirizzo": "stesso indirizzo"
+    },
+    "panel": {
+      "title": "Collegamento all’impianto",
+      "linked": "Collegato all’impianto",
+      "linkedHidden": "Questo rilievo è collegato a un impianto.",
+      "archived": "archiviato",
+      "confronto": "Vedi il confronto",
+      "unlink": "Scollega",
+      "none": "Questo rilievo non è collegato a un impianto.",
+      "noneLead": "Collegalo per partire dai valori misurati nel calcolo e nel progetto e per confrontarli con quello che è stato salvato.",
+      "create": "Crea impianto",
+      "createLead": "Un impianto nuovo con indirizzo e matricola del rilievo: scegli se è una sostituzione dell’argano o un progetto completo.",
+      "suggested": "Impianti suggeriti",
+      "suggestedNone": "Nessun impianto attivo dell’azienda ha la stessa matricola, lo stesso n° impianto o lo stesso indirizzo.",
+      "searchLabel": "Cerca un altro impianto",
+      "searchPlaceholder": "Nome, indirizzo, comune, n° impianto",
+      "search": "Cerca",
+      "searchResults": "Impianti trovati per «{q}»",
+      "searchNone": "Nessun impianto attivo trovato per «{q}».",
+      "readOnly": "L’azienda è in sola lettura: il collegamento non si cambia."
+    },
+    "flash": {
+      "linked": "Rilievo collegato all’impianto.",
+      "unlinked": "Rilievo scollegato dall’impianto.",
+      "forbidden": "Il tuo ruolo non collega i rilievi agli impianti: chiedilo al Titolare.",
+      "readOnly": "L’azienda è in sola lettura: nessun collegamento è cambiato.",
+      "tooMany": "Troppe operazioni in un minuto: riprova tra poco.",
+      "notFound": "Rilievo non trovato.",
+      "projectNotFound": "Impianto non trovato o archiviato: nessun collegamento è cambiato."
+    },
+    "nuovo": {
+      "from": "L’impianto nasce collegato al rilievo «{title}» del {date}: nome, indirizzo e matricola vengono dal rilievo e il suo modulo di lavoro partirà dai valori misurati.",
+      "linked": "Questo rilievo è già collegato a un impianto: l’impianto qui sotto nascerebbe senza rilievo.",
+      "missing": "Rilievo non trovato: l’impianto qui sotto nasce senza rilievo."
+    },
+    "origine": {
+      "badge": "dal rilievo",
+      "badgeTitle": "Valore misurato nel rilievo del {date}",
+      "notice": "Questo impianto parte dal rilievo «{title}» del {date}: i valori segnati «dal rilievo» sono quelli misurati; quelli che scrivi tu restano tuoi.",
+      "openSheet": "Apri il rilievo",
+      "usaDone": "Inserito il valore del rilievo per «{param}»: {valore}. Non è ancora salvato: salva per registrarlo.",
+      "usaDonePrima": "Inserito il valore del rilievo per «{param}»: {valore} (prima: {prima}). Non è ancora salvato: salva per registrarlo.",
+      "usaNone": "Il rilievo non ha un valore per «{param}» che questo modulo possa prendere.",
+      "usaAlto": "Il rilievo dice solo «in alto»: verifica se l’argano ha la puleggia di rinvio."
+    },
+    "passi": {
+      "label": "Dal rilievo ai documenti",
+      "rilievo": "Rilievo",
+      "calcolo": "Calcolo argano",
+      "progetto": "Progetto",
+      "documenti": "Documenti e ordini",
+      "room": "locale macchina",
+      "moduli": "Moduli dei fornitori del rilievo di riferimento",
+      "stato": {
+        "fatto": "fatto",
+        "daFare": "da fare",
+        "daAggiornare": "da aggiornare",
+        "differenze": "differenze"
+      }
+    },
+    "rilievi": {
+      "title": "Rilievi",
+      "lead": "Dal più recente: il primo è il riferimento, da cui partono i valori «dal rilievo» e il confronto.",
+      "none": "Nessun rilievo collegato.",
+      "noneLead": "Si collega dalla pagina del rilievo: «Collega a un impianto».",
+      "toList": "Vai ai rilievi",
+      "reference": "riferimento",
+      "pdf": "PDF"
+    },
+    "confronto": {
+      "title": "Confronto",
+      "lead": "Il rilievo di riferimento del {date} accanto all’ultimo calcolo e all’ultimo progetto salvati.",
+      "summary": "{diff, plural, =0 {nessuna differenza sullo stato di fatto} one {# differenza sullo stato di fatto} other {# differenze sullo stato di fatto}}, {mod, plural, =0 {nessuna modifica prevista} one {# modifica prevista} other {# modifiche previste}}",
+      "fuori": "Il rilievo indica un impianto idraulico o MRL: LiftPilot calcola gli impianti elettrici con argano a riduttore, quindi il calcolo e il progetto non si applicano a questo impianto.",
+      "colParam": "Parametro",
+      "colRilievo": "Rilievo",
+      "colCalcolo": "Calcolo",
+      "colProgetto": "Progetto",
+      "colStato": "Stato",
+      "group": {
+        "fatto": "Stato di fatto",
+        "fattoLead": "Quello che c’è sul posto: una differenza è un probabile errore.",
+        "modifica": "Modifica prevista",
+        "modificaLead": "Cambia con l’intervento: la differenza è attesa.",
+        "info": "Solo confronto",
+        "infoLead": "Testi e scelte del progetto, affiancati senza giudizio."
+      },
+      "param": {
+        "tipo": "Tipo impianto",
+        "matricola": "Matricola",
+        "numero": "N° impianto",
+        "indirizzo": "Indirizzo",
+        "fermate": "Fermate",
+        "corsa": "Corsa",
+        "posizione": "Posizione della macchina",
+        "taglia": "Taglia",
+        "funiNumero": "Numero di funi",
+        "funiDiametro": "Diametro funi",
+        "pesoCabina": "Massa cabina",
+        "puleggia": "Diametro puleggia di trazione",
+        "rapporto": "Rapporto di riduzione",
+        "potenza": "Potenza del motore",
+        "giri": "Giri del motore",
+        "poli": "Poli del motore",
+        "Q": "Portata",
+        "persone": "Persone",
+        "velocita": "Velocità",
+        "marca": "Marca impianto",
+        "operatore": "Operatore porte",
+        "porte": "Luce porte",
+        "limitatore": "Limitatore di velocità",
+        "funicella": "Diametro funicella"
+      },
+      "stato": {
+        "ok": "coincide",
+        "diff": "differenza",
+        "mod": "modifica prevista",
+        "info": "solo confronto",
+        "na": "nessun confronto",
+        "fuori": "fuori ambito"
+      },
+      "storico": "Nel rilievo del {date}: {valore}.",
+      "collaudoLoad": "Il collaudo considera la portata cambiata una parte modificata («Portata o carichi (variati)»).",
+      "collaudoLink": "Parti del collaudo",
+      "collaudoSpeed": "Il collaudo considera la velocità cambiata una parte modificata («Velocità nominale (variata)»).",
+      "usa": "Usa il valore del rilievo",
+      "identityNote": "Per matricola e indirizzo la colonna «Progetto» riporta i dati dell’impianto; matricola e n° impianto si confrontano anche con i rilievi precedenti dell’impianto."
+    },
+    "valore": {
+      "ALTO": "in alto",
+      "BASSO": "in basso",
+      "top": "in alto, tiro diretto",
+      "topDefl": "in alto, con rinvio",
+      "bottom": "in basso",
+      "ELETTRICO": "Elettrico",
+      "IDRAULICO": "Idraulico",
+      "GEARLESS": "MRL"
+    },
+    "home": {
+      "eyebrow": "Area di lavoro",
+      "title": "Rilievi",
+      "lead": "Ogni lavoro parte dal sopralluogo: le schede di rilievo, l’impianto a cui appartengono e quello che resta da fare.",
+      "new": "Nuovo rilievo",
+      "all": "Tutti i rilievi",
+      "impianti": "Vai agli impianti",
+      "kpiLabel": "Rilievi e impianti in cifre",
+      "kpiSenza": "Rilievi senza impianto",
+      "kpiSenzaSub": "{n, plural, =0 {nessun rilievo ancora} one {su # rilievo} other {su # rilievi}}, fuori dal cestino",
+      "kpiDiff": "Impianti con differenze",
+      "kpiDiffSub": "rilievo e calcolo o progetto non coincidono su quello che c’è sul posto",
+      "kpiOld": "Calcoli da aggiornare",
+      "kpiOldSub": "{rilievo} con un rilievo più recente, {software} per il software aggiornato",
+      "kpiOnlyRilievi": "Il tuo ruolo vede i rilievi, non gli impianti.",
+      "recent": "Rilievi recenti",
+      "recentLead": "{n, plural, =0 {Nessun rilievo} one {# rilievo in tutto} other {# rilievi in tutto}}: qui i più recenti per data del sopralluogo.",
+      "empty": "Nessun rilievo ancora: il primo sopralluogo si scrive da «Nuovo rilievo».",
+      "colData": "Data",
+      "colRilievo": "Rilievo",
+      "colIndirizzo": "Indirizzo",
+      "colTipo": "Tipo",
+      "colImpianto": "Impianto",
+      "notLinked": "non collegato",
+      "linked": "collegato"
+    }
   }
 }

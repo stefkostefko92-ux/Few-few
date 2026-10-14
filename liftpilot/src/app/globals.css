@@ -14,6 +14,7 @@
 @import './advice.css';
 @import './blank.css';
 @import './verdict.css';
+@import './collega.css';
 
 @tailwind base;
 @tailwind components;

@@ -72,7 +72,7 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
     select: { id: true, number: true, revision: true, createdAt: true, authorInitials: true, user: { select: { name: true } } } });
   return (
     <main className="page">
-      <Crumbs items={[{ href: '/app', label: tp('title') }, { href: `/app/projects/${r.projectId}`, label: r.project.name }, { label: t('viewTitle') }]} />
+      <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${r.projectId}`, label: r.project.name }, { label: t('viewTitle') }]} />
       <div className="page-head">
         <div className="titles"><h1>{t('viewTitle')}{r.label ? `\u00a0· ${r.label}` : ''}</h1><p className="lead">{lead}</p></div>
         <div className="actions">

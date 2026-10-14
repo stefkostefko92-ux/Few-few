@@ -73,22 +73,25 @@ export function initials(name: string): string {
   return (first(words[0]) + first(words.length > 1 ? words[words.length - 1] : undefined)).toLocaleUpperCase() || '?';
 }
 
-/** The pages of an installation's records: in the sidebar they belong to the dashboard, where the installations are. */
+/** The pages of an installation's records: in the sidebar they belong to the installations. */
 const RECORD_PAGES = ['/app/projects/', '/app/calculations/', '/app/lift-designs/', '/app/shaft-designs/', '/app/room-designs/', '/app/drawing-sets/'];
 
-/** Which entry of the sidebar the page is (its key: `dashboard`, `archived`, `new-replacement`, `new-full`, or the path
- *  of a section such as `/app/norme`); null for a page none of them names (the chooser of a new installation). */
+/** Which entry of the sidebar the page is (its key: `rilievi` — the home and the survey sheets —, `impianti`, `archived`,
+ *  `new-replacement`, `new-full`, or the path of a section such as `/app/norme`); null for a page none of them names (the
+ *  chooser of a new installation). */
 export function shellSection(pathname: string, search: { archived: boolean; kind: string | null }, sections: readonly string[]): string | null {
-  if (pathname === '/app') return search.archived ? 'archived' : 'dashboard';
+  if (pathname === '/app' || pathname === '/app/rilievi' || pathname.startsWith('/app/rilievi/')) return 'rilievi';
+  if (pathname === '/app/impianti') return search.archived ? 'archived' : 'impianti';
   if (pathname === '/app/projects/new') return search.kind === 'replacement' ? 'new-replacement' : search.kind === 'full' ? 'new-full' : null;
-  if (RECORD_PAGES.some((p) => pathname.startsWith(p))) return 'dashboard';
+  if (RECORD_PAGES.some((p) => pathname.startsWith(p))) return 'impianti';
   return sections.find((s) => pathname === s || pathname.startsWith(`${s}/`)) ?? null;
 }
 
 /** The sidebar entry's aria-current: `page` when the address is the entry's own page, `true` when the page only belongs
- *  to it (an installation's record under «Panoramica», a sub-page of a section) — a reader is not told it is on «Panoramica». */
+ *  to it (an installation's record under «Impianti», a survey sheet under «Rilievi», a sub-page of a section). */
 export function navCurrent(key: string, pathname: string): 'page' | 'true' {
-  if (key === 'dashboard' || key === 'archived') return pathname === '/app' ? 'page' : 'true';
+  if (key === 'rilievi') return pathname === '/app' ? 'page' : 'true';
+  if (key === 'impianti' || key === 'archived') return pathname === '/app/impianti' ? 'page' : 'true';
   if (key.startsWith('/')) return pathname === key ? 'page' : 'true';
   return 'page';
 }

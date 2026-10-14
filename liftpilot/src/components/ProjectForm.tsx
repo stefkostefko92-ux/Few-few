@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { createProjectAction, updateProjectAction } from '@/server/project-actions';
 import { initialFormState } from '@/server/form';
 import type { ProjectKind } from '@/lib/schemas';
+import { DalRilievo, OrigineProvider, type OrigineRilievo } from './collega/origine';
 
 export interface ProjectValues {
   id?: string;
@@ -28,8 +29,12 @@ type Field = (typeof FIELDS)[number][0] | 'notes';
 /** A new installation says what it is for (`kind`: the module chosen on the dashboard); an existing one keeps it. The
  *  fields are controlled: a refused save keeps what was typed (React resets an uncontrolled form after its action).
  *  `fills`: the modules whose form the user fills (rbac.ts formRightOf); for another one the form says that the
- *  installation is created with its data and its work is a colleague's. */
-export default function ProjectForm({ initial, kind = 'FULL', fills = KINDS }: { initial?: ProjectValues; kind?: ProjectKind; fills?: readonly ProjectKind[] }) {
+ *  installation is created with its data and its work is a colleague's. `rilievo` (round 44): a new installation made
+ *  from a survey (linked to it when created) or the data taken from the survey on purpose — the values marked «dal
+ *  rilievo» while they are the survey's. */
+export default function ProjectForm({ initial, kind = 'FULL', fills = KINDS, rilievo = null }: {
+  initial?: ProjectValues; kind?: ProjectKind; fills?: readonly ProjectKind[]; rilievo?: { id: string | null; origine: OrigineRilievo } | null;
+}) {
   const t = useTranslations('projects'), te = useTranslations('errors'), locale = useLocale();
   const [state, action, pending] = useActionState(initial?.id ? updateProjectAction : createProjectAction, initialFormState);
   const [v, setV] = useState<Record<Field, string>>(() => ({
@@ -40,9 +45,11 @@ export default function ProjectForm({ initial, kind = 'FULL', fills = KINDS }: {
   const put = (k: Field, x: string): void => setV((p) => ({ ...p, [k]: x }));
   const bad = new Set(state.fields ?? []);
   return (
+    <OrigineProvider value={rilievo?.origine ?? null}>
     <form action={action} className="panel" noValidate>
       <input type="hidden" name="locale" value={locale} />
       {initial?.id ? <input type="hidden" name="id" value={initial.id} /> : null}
+      {rilievo?.id ? <input type="hidden" name="rilievo" value={rilievo.id} /> : null}
       {state.error ? <p className="alert alert-bad" role="alert">{te(state.error)}</p> : null}
       {initial?.id ? null : (
         <fieldset className="flex flex-col gap-2">
@@ -63,7 +70,7 @@ export default function ProjectForm({ initial, kind = 'FULL', fills = KINDS }: {
       <div className="form-grid">
         {FIELDS.map(([name, max, required]) => (
           <label key={name} className={`field${name === 'name' ? ' span-2' : ''}`}>
-            <span>{t(`field_${name}`)}{required ? ' *' : ''}</span>
+            <span>{t(`field_${name}`)}{required ? ' *' : ''}<DalRilievo id={name} value={v[name]} /></span>
             <input className="input" name={name} value={v[name]} onChange={(e) => put(name, e.target.value)} maxLength={max} required={required}
               aria-invalid={bad.has(name) || undefined} />
           </label>
@@ -77,5 +84,6 @@ export default function ProjectForm({ initial, kind = 'FULL', fills = KINDS }: {
         <button type="submit" className="btn btn-primary" disabled={pending}>{initial?.id ? t('save') : t('create')}</button>
       </div>
     </form>
+    </OrigineProvider>
   );
 }

@@ -20,7 +20,7 @@ let session: Row | null = null;
 mock.module(src('lib/db.ts'), { namedExports: { prisma: {
   project: { create: async ({ data }: { data: Row }) => { created.push(data); return { id: `p${created.length}`, ...data }; } },
 } } });
-mock.module(src('lib/audit.ts'), { namedExports: { audit: async (a: Row) => { audited.push(a); } } });
+mock.module(src('lib/audit.ts'), { namedExports: { audit: async (a: Row) => { audited.push(a); }, auditTx: async (_tx: unknown, a: Row) => { audited.push(a); } } });
 mock.module(src('lib/auth.ts'), { namedExports: { getSessionUser: async () => session } });
 mock.module(pkg('next/cache'), { namedExports: { revalidatePath: () => {} } });
 mock.module(pkg('next/navigation'), { namedExports: { redirect: (to: string) => { throw new Redirect(to); } } });

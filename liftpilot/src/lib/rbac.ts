@@ -208,7 +208,8 @@ export function editableRoles(actor: Role | Principal): MemberRole[] {
  *  ('impianti:create') does not bring it: whoever creates one without it lands on the installation's page. */
 export const formRightOf = (kind: 'REPLACEMENT' | 'FULL'): Capability => (kind === 'REPLACEMENT' ? 'calc:create' : 'progetto:edit');
 
-/** Where a user's work starts: the installations, else the survey sheets, else the account (rights taken away). */
-export function homeOf(who: Role | Principal): '/app' | '/app/rilievi' | '/app/account' {
-  return can(who, 'projects:view') ? '/app' : can(who, 'rilievi:view') ? '/app/rilievi' : '/app/account';
+/** Where a user's work starts: the Rilievi home (/app, round 44: every job starts from the survey), else the
+ *  installations, else the account (rights taken away). */
+export function homeOf(who: Role | Principal): '/app' | '/app/impianti' | '/app/account' {
+  return can(who, 'rilievi:view') ? '/app' : can(who, 'projects:view') ? '/app/impianti' : '/app/account';
 }

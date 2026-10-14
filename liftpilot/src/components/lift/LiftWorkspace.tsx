@@ -33,6 +33,7 @@ import RefreshNotice from '../RefreshNotice';
 import type { ShaftSet } from '../blank';
 import DraftBar from '../draft/DraftBar';
 import { useDraft, type DraftTarget } from '../draft/useDraft';
+import { OrigineProvider, type OrigineRilievo } from '../collega/origine';
 import PanevBom from '../shaft/PanevBom';
 import PlanEditor from '../shaft/PlanEditor';
 import type { Refusal } from '../drawing/EditableDrawing';
@@ -62,6 +63,8 @@ interface Props {
   draft?: DraftTarget | null;
   /** opened by «Aggiorna con il software attuale» on a record that no longer saves as it was: what to correct, on top */
   refresh?: boolean;
+  /** the installation's survey the values «dal rilievo» come from (round 44); absent: none */
+  origine?: OrigineRilievo | null;
 }
 
 /** The largest height of the diverting pulley under the sheave a drawing may set [mm]. */
@@ -74,7 +77,7 @@ export interface WorkspaceApi {
 
 const isEmpty = (x: unknown): boolean => String(x ?? '').trim() === '';
 
-export default function LiftWorkspace({ projectId, initial, blank: initialBlank = [], onDerived, api, prices, pitches, draft = null, refresh = false }: Props) {
+export default function LiftWorkspace({ projectId, initial, blank: initialBlank = [], onDerived, api, prices, pitches, draft = null, refresh = false, origine = null }: Props) {
   const locale = useLocale(), messages = useMessages(), t = useTranslations('lift'), ts = useTranslations('shaft'), te = useTranslations('errors'), tb = useTranslations('blank');
   const router = useRouter();
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
@@ -225,6 +228,7 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
   const items = (keys: readonly string[]) => missingItems(keys, dInp.shaft.vertical.floors, { shaft: (k, v) => ts(k, v), blank: (k, v) => tb(k, v), lift: (k, v) => t(k, v), calc: nameOf });
   const above = derived?.values.layout !== 'bottom', toEnter = derived ? machineMissing : missing;
   return (
+    <OrigineProvider value={origine}>
     <div className="lift-work">
       {refresh ? <RefreshNotice kind="lift" items={[...items(derived ? machineMissing : missing), ...blockers]} /> : null}
       <LiftForm P={P} X={X} inp={inp} derived={derived} complete={complete} blank={blank} bad={bad} need={need} texts={texts} source={source} setShaft={setShaft} setSize={setSize}
@@ -259,5 +263,6 @@ export default function LiftWorkspace({ projectId, initial, blank: initialBlank 
         </div>
       </div>
     </div>
+    </OrigineProvider>
   );
 }

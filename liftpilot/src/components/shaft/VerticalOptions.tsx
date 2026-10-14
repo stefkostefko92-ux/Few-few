@@ -12,6 +12,7 @@ import { screenOf, standOf } from '@/shaft/section';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { filled, floorRemoved, floorsTo, type BlankKey } from '@/lib/lift/blank';
 import { NO_BLANK, StdBadge, fieldId, type FormBlank, type ShaftSet } from '../blank';
+import { DalRilievo } from '../collega/origine';
 
 interface Props {
   I: ShaftInputs;
@@ -45,7 +46,7 @@ export default function VerticalOptions({ I, set, open = false, blank = NO_BLANK
   // the project's own values: empty until entered
   const data = (key: 'v' | 'pit' | 'headroom', min: number, max: number, step = 10) => (
     <label className={`field${is(key) ? ' need' : ''}`} key={key}>
-      <span>{t(`vt_${key}`)}</span>
+      <span>{t(`vt_${key}`)}<DalRilievo id={key} value={is(key) ? '' : V[key]} /></span>
       <input id={fieldId(key)} className="input num" type="number" inputMode="decimal" min={min} max={max} step={step} value={is(key) ? '' : V[key]}
         aria-required={is(key) || undefined} onChange={(e) => { const v = num(e.target.value); if (Number.isFinite(v)) put({ [key]: key === 'v' ? v : Math.round(v) }, [key]); }} />
     </label>
@@ -87,7 +88,7 @@ export default function VerticalOptions({ I, set, open = false, blank = NO_BLANK
         {data('pit', 100, 10000)}
         {data('headroom', 1000, 20000)}
         <label className={`field${is('floors') ? ' need' : ''}`}>
-          <span>{tb('count')}</span>
+          <span>{tb('count')}<DalRilievo id="floors" value={is('floors') ? '' : floors.length} /></span>
           <input id={fieldId('floors')} key={is('floors') ? 'blank' : floors.length} className="input num" type="number" inputMode="numeric" min={2} max={60} step={1}
             defaultValue={is('floors') ? '' : floors.length} aria-required={is('floors') || undefined} onBlur={(e) => count(e.currentTarget)}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); count(e.currentTarget); } }} />

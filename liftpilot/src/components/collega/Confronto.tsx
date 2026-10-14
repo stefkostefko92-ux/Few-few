@@ -1,0 +1,83 @@
+import { getTranslations } from 'next-intl/server';
+import { Link } from '@/i18n/routing';
+import { sintesi, type Classe, type Riga } from '@/lib/collega/confronto';
+import { testoValore } from '@/lib/collega/formato';
+import { fmt } from '@/lib/rilievi/fmt';
+
+/** Where «usa il valore del rilievo» goes: the form of the installation's module, or its data; null — not for this role. */
+export interface UsaLink {
+  calc: string | null;
+  progetto: string | null;
+  impianto: string | null;
+}
+
+const CLASSI: readonly Classe[] = ['fatto', 'modifica', 'info'];
+const TONE = { ok: 'ok', diff: 'fail', mod: 'warn', info: 'info', na: '', fuori: 'fail' } as const;
+
+// The «Confronto» of an installation (round 44, src/lib/collega/confronto.ts): parameter | rilievo | calcolo | progetto |
+// stato in three groups — what exists on site (a difference is a probable error), the expected modifications (the load,
+// the persons and the speed: the acceptance test counts a changed load or speed as a modified part), and what is only set
+// side by side. A difference offers «Usa il valore del rilievo», which opens the right form with the survey's value in it
+// (nothing is changed until that form is saved).
+export default async function Confronto({ righe, date, usa, collaudo }: { righe: readonly Riga[]; date: Date; usa: UsaLink; collaudo: string | null }) {
+  const t = await getTranslations('collega.confronto'), tv = await getTranslations('collega');
+  const parola = (code: string): string => (tv.has(`valore.${code}`) ? tv(`valore.${code}` as 'valore.ALTO') : code);
+  const s = sintesi(righe);
+  const cell = (w: Riga, v: Riga['rilievo']) => testoValore(w.param, v, parola);
+  return (
+    <section className="panel lk-confronto" id="confronto" aria-labelledby="lk-confronto-title">
+      <div className="panel-head">
+        <div className="dash-panel-titles">
+          <h2 id="lk-confronto-title">{t('title')}</h2>
+          <p className="note">{t('lead', { date: fmt.day(date) })}</p>
+        </div>
+        <p className={`status-pill ${s.diff ? 'fail' : 'ok'}`}>{t('summary', { diff: s.diff, mod: s.mod })}</p>
+      </div>
+      {s.fuori ? <p className="alert alert-bad" role="note">{t('fuori')}</p> : null}
+      <div className="table-panel">
+        <table className="data-table stack lk-table">
+          <caption className="sr-only">{t('title')}</caption>
+          <thead>
+            <tr>
+              <th scope="col">{t('colParam')}</th><th scope="col">{t('colRilievo')}</th><th scope="col">{t('colCalcolo')}</th>
+              <th scope="col">{t('colProgetto')}</th><th scope="col">{t('colStato')}</th>
+            </tr>
+          </thead>
+          {CLASSI.map((c) => {
+            const rows = righe.filter((w) => w.classe === c);
+            if (rows.length === 0) return null;
+            return (
+              <tbody key={c} className={`lk-group lk-${c}`}>
+                <tr className="lk-group-head"><th scope="rowgroup" colSpan={5}><strong>{t(`group.${c}`)}</strong> <span className="note">{t(`group.${c}Lead`)}</span></th></tr>
+                {rows.map((w) => {
+                  const href = w.usa ? usa[w.usa] : null;
+                  const target = href ? `${href}${href.includes('?') ? '&' : '?'}usa=${w.param}` : null;
+                  return (
+                    <tr key={w.param} className={`lk-row lk-${w.stato}`} data-param={w.param}>
+                      <th scope="row" className="row-title">{t(`param.${w.param}`)}</th>
+                      <td data-label={t('colRilievo')} className="lk-v">{cell(w, w.rilievo)}</td>
+                      <td data-label={t('colCalcolo')} className="lk-v">{cell(w, w.calcolo)}</td>
+                      <td data-label={t('colProgetto')} className="lk-v">{cell(w, w.progetto)}</td>
+                      <td data-label={t('colStato')}>
+                        <div className="lk-stato">
+                          <span className={`status-pill ${TONE[w.stato]}`}>{t(`stato.${w.stato}`)}</span>
+                          {w.storico?.map((o) => <span key={o.data.toISOString()} className="note lk-note">{t('storico', { date: fmt.day(o.data), valore: o.valore })}</span>)}
+                          {w.param === 'Q' && w.stato === 'mod' ? (
+                            <span className="note lk-note">{t('collaudoLoad')}{collaudo ? <> <Link href={collaudo}>{t('collaudoLink')}</Link></> : null}</span>
+                          ) : null}
+                          {w.param === 'velocita' && w.stato === 'mod' ? <span className="note lk-note">{t('collaudoSpeed')}</span> : null}
+                          {target ? <Link className="btn btn-sm lk-usa" href={target}>{t('usa')}</Link> : null}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            );
+          })}
+        </table>
+      </div>
+      <p className="note">{t('identityNote')}</p>
+    </section>
+  );
+}

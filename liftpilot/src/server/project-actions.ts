@@ -8,6 +8,8 @@ import { audit } from '@/lib/audit';
 import { getSessionUser, type SessionUser } from '@/lib/auth';
 import { can, formRightOf, type Capability } from '@/lib/rbac';
 import { idSchema, projectKindSchema, projectSchema } from '@/lib/schemas';
+import { schedaIdSchema } from '@/lib/rilievi/inputs';
+import { creaDaRilievo } from './collega/service';
 import { str, type FormState } from './form';
 
 const localeOf = (fd: FormData): string => { const l = str(fd, 'locale'); return isLocale(l) ? l : DEFAULT_LOCALE; };
@@ -25,16 +27,26 @@ const readProject = (fd: FormData) => projectSchema.safeParse({
 });
 
 // a new installation opens straight on its work: the replacement on the calculation, a whole project on its one form —
-// for whoever fills that form; whoever only creates installations (a Tecnico's whole project: rbac.ts) lands on its page
+// for whoever fills that form; whoever only creates installations (a Tecnico's whole project: rbac.ts) lands on its page.
+// Created from a survey («Crea impianto», round 44: `rilievo`), it is linked to it in the same transaction — which also
+// needs 'rilievi:link' — and its form starts from the survey's values (src/lib/collega/prefill.ts).
 export async function createProjectAction(_prev: FormState, fd: FormData): Promise<FormState> {
   const a = await actor(fd, 'impianti:create');
   if (!a) return { error: 'forbidden' };
   const parsed = readProject(fd), kind = projectKindSchema.safeParse(str(fd, 'kind'));
   if (!kind.success) return { error: 'invalidFields', fields: ['kind'] };
   if (!parsed.success) return { error: 'invalidFields', fields: parsed.error.issues.map((i) => String(i.path[0])) };
+  const form = can(a.user, formRightOf(kind.data)) ? `/${kind.data === 'REPLACEMENT' ? 'calc' : 'progetto'}` : '';
+  const rilievo = str(fd, 'rilievo');
+  if (rilievo) {
+    const id = schedaIdSchema.safeParse(rilievo);
+    if (!id.success || !can(a.user, 'rilievi:link')) return { error: 'forbidden' };
+    const made = await creaDaRilievo(a.user.companyId, a.user.id, parsed.data, kind.data, id.data);
+    if (made.esito !== 'ok' || !made.id) return { error: made.esito === 'alreadyLinked' ? 'rilievoLinked' : 'notFound' };
+    redirect(`/${a.locale}/app/projects/${made.id}${form}`);
+  }
   const project = await prisma.project.create({ data: { ...parsed.data, kind: kind.data, companyId: a.user.companyId, createdById: a.user.id } });
   await audit({ companyId: a.user.companyId, userId: a.user.id, action: 'PROJECT_CREATED', entity: 'Project', entityId: project.id, meta: { kind: kind.data } });
-  const form = can(a.user, formRightOf(kind.data)) ? `/${kind.data === 'REPLACEMENT' ? 'calc' : 'progetto'}` : '';
   redirect(`/${a.locale}/app/projects/${project.id}${form}`);
 }
 

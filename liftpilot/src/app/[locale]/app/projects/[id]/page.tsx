@@ -16,6 +16,7 @@ import RecordTable from '@/components/project/RecordTable';
 import SectionTitle from '@/components/project/SectionTitle';
 import { roomSummaryLine } from '@/server/room-summary';
 import { pitchesOf } from '@/lib/plant';
+import ImpiantoCollegato from '@/components/collega/ImpiantoCollegato';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const t = await getTranslations('projects');
@@ -26,8 +27,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 // versions, the drawing sets; the records made before the one form (shaft designs, calculations, the machine rooms of a
 // replacement become a whole project) are in the archive. A machine replacement shows its calculations, its machine
 // rooms and the way to a whole project. A record the running engines no longer reproduce is marked, and the latest lift
-// design is updated from here in one click.
-export default async function ProjectPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
+// design is updated from here in one click. Under its data (round 44): the steps from the survey to the documents, its
+// surveys and the comparison of the reference survey with its records (components/collega/ImpiantoCollegato.tsx).
+export default async function ProjectPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ lk?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
   const user = await requireCapability(locale, 'projects:view');
@@ -68,7 +70,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
   );
   return (
     <main className="page">
-      <Crumbs items={[{ href: '/app', label: t('title') }, { label: p.name }]} />
+      <Crumbs items={[{ href: '/app/impianti', label: t('title') }, { label: p.name }]} />
       <div className="page-head">
         <div className="titles">
           <span className={`kind-tag kind-${p.kind.toLowerCase()}`}>{t(`kind_${p.kind}`)}</span>
@@ -99,6 +101,8 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
         <div><dt>{t('updated')}</dt><dd>{fd.dateTime(p.updatedAt)}</dd></div>
         {p.notes ? <div className="wide"><dt>{t('field_notes')}</dt><dd className="whitespace-pre-line">{p.notes}</dd></div> : null}
       </dl>
+
+      <ImpiantoCollegato user={user} p={p} archived={!!p.archivedAt} flash={(await searchParams).lk} />
 
       {replacement ? null : (
         <>
