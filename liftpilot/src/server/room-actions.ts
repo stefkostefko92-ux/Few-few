@@ -17,7 +17,8 @@ export type RoomSaveResult = Created;
 export async function saveRoomDesignAction(input: { calculationId: unknown; survey: unknown; label: unknown }): Promise<RoomSaveResult> {
   const user = await getSessionUser();
   if (!user) return { ok: false, error: 'unauthorized' };
-  if (user.mustChangePassword || !can(user, 'calc:create')) return { ok: false, error: 'forbidden' };
+  // the survey of the machine room is drawn: whoever draws the project
+  if (user.mustChangePassword || !can(user, 'progetto:edit')) return { ok: false, error: 'forbidden' };
   if (!rateLimit(`room:${user.id}`, 60, 10 * 60 * 1000)) return { ok: false, error: 'rateLimited' };
   const calcId = idSchema.safeParse(input.calculationId), label = calcLabelSchema.safeParse(input.label ?? ''), survey = surveySaveSchema.safeParse(input.survey);
   if (!calcId.success || !label.success) return { ok: false, error: 'invalidFields' };

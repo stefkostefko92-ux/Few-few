@@ -53,7 +53,8 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
   const fd = dateFormat(locale), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']), lead = (await roomSummaryLine())(r);
   // a machine room is a replacement's: one in the archive of a whole project is read only (its project is made again
   // from the form)
-  const download = !!d && can(user, 'report:download'), editable = can(user, 'calc:create') && !r.project.archivedAt;
+  const download = !!d && can(user, 'report:download'), editable = can(user, 'progetto:edit') && !r.project.archivedAt;
+  const issues = can(user, 'drawings:issue') && !r.project.archivedAt;
   const replacement = r.project.kind === 'REPLACEMENT';
   const views = d ? (['plan', 'section'] as const).map((k) => {
     try {
@@ -142,7 +143,7 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
             {sets.map((x) => <li key={x.id}><Link href={`/app/drawing-sets/${x.id}`} className="num">{x.number}{x.revision ? ` R${x.revision}` : ''}</Link><span className="note">{fd.dateTime(x.createdAt)} · {x.user?.name ?? x.authorInitials}</span></li>)}
           </ul>
         ) : null}
-        {d && editable ? <IssueForm roomDesignId={r.id} initials={initialsOf(user.name)} checks={checks} projectId={r.projectId} /> : null}
+        {d && issues ? <IssueForm roomDesignId={r.id} initials={initialsOf(user.name)} checks={checks} projectId={r.projectId} /> : null}
       </section>
     </main>
   );

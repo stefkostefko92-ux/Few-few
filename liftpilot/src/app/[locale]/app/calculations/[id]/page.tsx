@@ -63,7 +63,9 @@ export default async function CalculationPage({ params, searchParams }: {
   const replacement = c.project.kind === 'REPLACEMENT' && !c.liftDesign;
   const roomLine = await roomSummaryLine();
   const rooms = replacement ? (await listRoomDesigns(user, c.projectId)).filter((x) => x.calculationId === c.id).map((x) => ({ ...x, summary: roomLine(x) })) : [];
-  const below = V.layout === 'bottom', open = can(user, 'calc:create') && !c.project.archivedAt;
+  const below = V.layout === 'bottom', live = !c.project.archivedAt;
+  // a variant in the calculator (calc:create); the one form, the machine room's survey (progetto:edit); a drawing set
+  const open = can(user, 'calc:create') && live, draws = can(user, 'progetto:edit') && live, issues = can(user, 'drawings:issue') && live;
   // made again in one click: a lift design's calculation with the design, a replacement's with its machine room; one in
   // the archive of a whole project is made again from the project's form (refresh-actions.ts)
   const refreshable = can(user, 'records:refresh') && !c.project.archivedAt && (!!c.liftDesign || replacement);
@@ -113,7 +115,7 @@ export default async function CalculationPage({ params, searchParams }: {
         <div className="alert alert-warn flex flex-col items-start gap-2" role="status">
           <p className="m-0">{tf(c.liftDesign ? 'design' : replacement ? 'calc' : 'archive')}</p>
           {refreshable ? <RefreshForm kind="calc" id={c.id} />
-            : open ? <Link className="btn" href={`/app/projects/${c.projectId}/progetto`}>{ts('openForm')}</Link> : null}
+            : draws ? <Link className="btn" href={`/app/projects/${c.projectId}/progetto`}>{ts('openForm')}</Link> : null}
         </div>
       )}
       <dl className="cartiglio">
@@ -172,7 +174,7 @@ export default async function CalculationPage({ params, searchParams }: {
               ))}
             </ul>
           ) : null}
-          {!below && same && open ? (
+          {!below && same && draws ? (
             <div><Link className="btn btn-primary" href={`/app/calculations/${c.id}/locale`}>{rooms.length ? tm('again') : tm('start')}</Link></div>
           ) : null}
         </section>
@@ -188,7 +190,7 @@ export default async function CalculationPage({ params, searchParams }: {
           </ul>
         ) : null}
         {replacement ? null : !c.shaftDesign ? <p className="note">{tt('needDesign')}</p>
-          : rec.ok && open ? <IssueForm calculationId={c.id} initials={initialsOf(user.name)} checks={checks} projectId={c.projectId} /> : null}
+          : rec.ok && issues ? <IssueForm calculationId={c.id} initials={initialsOf(user.name)} checks={checks} projectId={c.projectId} /> : null}
       </section>
       <CalculationView id="checks" values={V} brand={user.companyName} collaudo={C} design={!!c.shaftDesign} />
     </main>

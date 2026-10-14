@@ -32,10 +32,11 @@ export default async function TeamPage({ params, searchParams }: {
   return (
     <main className="page">
       <AccountHead area="company" title={t('title')} lead={t('lead')} />
-      {q.e === 'noSeats' ? <p className="alert alert-bad" role="alert">{t('noSeats')}</p> : null}
+      {q.e === 'noSeats' || q.e === 'lastOwner' ? <p className="alert alert-bad" role="alert">{t(q.e)}</p> : null}
       <section className="panel">
         <p className="seats-line"><Icon name="user-check" size={20} />{t('seats', { used: sub?.used ?? 0, limit })}{' '}
           {can(me, 'billing:manage') && sub?.access !== 'free' ? <Link href="/app/billing">{t('buySeats')}</Link> : null}</p>
+        <p className="note">{t('roleNotesLead')}{can(me, 'permissions:manage') ? <> <Link href="/app/permessi">{t('permissionsLink')}</Link></> : null}</p>
         <dl className="flex flex-col gap-1">
           {MEMBER_ROLES.map((r) => <div key={r}><dt className="inline font-semibold">{tr(r)}: </dt><dd className="inline">{t(`roleNote.${r}`)}</dd></div>)}
         </dl>

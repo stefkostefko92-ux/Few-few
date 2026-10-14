@@ -202,7 +202,10 @@ src/lib/report/      build.ts — моделът на relazione (италиан�
                      UNI 10411 на изпитването).
 src/lib/             auth (JWT в httpOnly бисквитка, именува сесия в базата `Session`: изходът и новата парола я трият; режим само
                      за четене и дължимото приемане на условията), registrations (чакащите регистрации), purge, rbac (собственик,
-                     колегите Проектант/Търговец/Техник и администраторът на платформата, по способности), billing (правилата
+                     колегите Капотехник/Проектант/Техник/Търговец и администраторът на платформата, по способности:
+                     матрицата по подразбиране, твърдите правила, capsOf — правата на ролята с промените на фирмата,
+                     can — чиста, чете caps на сесията), permissions (матрицата на екрана: групите, toggle с
+                     предпоставките, входът zod, planSave — редовете и промените за регистъра), billing (правилата
                      на абонамента: пакетите, пробният период, местата, достъпът — чисти), billing-access, billing-config,
                      stripe (клиентът, месечната цена от Stripe), money, prices/ (ценовата листа: groups — групи, единици,
                      основите на свободните редове; articles — всеки артикул; bom — количествата на проекта и на подмяната;
@@ -368,7 +371,9 @@ prisma/              schema + migrations/0_init (тригер: без UPDATE н�
                      12_form_drafts (FormDraft — черновата на формуляр по проект и обхват; не е запис: без хеш и тригер),
                      15_rilievi (Scheda + MisuraBottoniera с енумите Rilievo*, pg_trgm и GIN индексът на searchText,
                      индексите на списъка и на кошчето, CHECK на спирките 1..300 и на JSON на модулите; адитивна; връщането
-                     — в коментара ѝ).
+                     — в коментара ѝ), 16_permessi (Role + CHIEF_TECHNICIAN; CompanyRolePermission — промените на фирмата
+                     в матрицата на правата, ключ (фирма, роля, право), CHECK без собственика/платформата и без правата,
+                     които колега никога няма; адитивна; връщането — в коментара ѝ).
 src/lib/rilievi/     Rilievi (кръг 41) — картите за оглед, чисто (и в браузъра): fields + field-types (ЕДИНСТВЕНИЯТ списък на
                      полетата, условията `when`, activeFields), field-parsers + validation (zod по вида, parseScheda,
                      formValuesFromBody), misure (бутониерите по спирки, mb-<спирка>-<колона>), format (displaySections,
@@ -402,6 +407,13 @@ src/components/rilievi/  SchedaForm (формата: отговорите на �
                      LiveSearch (търсенето по адреса), Results (таблицата/картите и празните състояния), parts (табелата, таблицата
                      на мерките, маркираните думи, страниците), ActionButton (кошче/възстановяване/окончателно), Confirm,
                      Flash (`?ok=`), PrintTools, RilieviHead.
+src/server/permissions.ts + permission-actions.ts  Правата на фирмата (кръг 42): редовете и версията им (SHA-256),
+                     savePermissionsAction — само собственикът или платформата, под ключалката на фирмата, проверка на
+                     версията, редовете и PERMISSIONS_CHANGED (роля, право, преди → след, by) в една транзакция.
+src/app/[locale]/app/permessi/ + admin/permessi/[id]/  Екранът на матрицата: на собственика и на платформата (от реда на
+                     фирмата в /app/admin); src/components/permessi/ — PermissionsPanel (сървърът: матрицата на фирмата),
+                     PermissionsMatrix (решетката, телефонът по роля, лентата за запис), MatrixCell (бутонът-квадратче),
+                     ConfirmSave (диалогът с промените); src/app/permessi.css.
 deploy/              deploy.sh (сървърът: тайни, поща, бекъп, compose, health, nginx), nginx/liftpilot.conf. Dockerfile,
                      docker-compose.yml, docker-entrypoint.sh.
 brand/premium/       Изходниците на облика LiftPilot Premium: wordmark, емблема, иконата на приложението, favicon,

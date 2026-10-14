@@ -47,7 +47,8 @@ let lax = false;
 mock.module(src('lib/draft-input.ts'), { namedExports: { ...realDraft, draftSchemaOf: (scope: never) => (lax ? z.any() : realDraft.draftSchemaOf(scope)) } });
 
 let n = 0;
-const signIn = (over: Row = {}) => { session = { id: `u${++n}`, role: 'TECHNICIAN', companyId: 'c1', mustChangePassword: false, readOnly: false, ...over }; };
+// the Progettista fills in every form (the calculator's and the project's: round 42)
+const signIn = (over: Row = {}) => { session = { id: `u${++n}`, role: 'ENGINEER', companyId: 'c1', mustChangePassword: false, readOnly: false, ...over }; };
 const lift = () => ({ inputs: defaultLift(), blank: [] });
 const actions = () => import(src('server/draft-actions.ts'));
 
@@ -70,6 +71,15 @@ test('senza sessione: unauthorized; con la password da cambiare o senza il dirit
   assert.deepEqual(await saveDraftAction({ projectId: 'p1', scope: 'lift', data: lift() }), { ok: false, error: 'forbidden' });
   signIn({ role: 'SALES' });
   assert.deepEqual(await saveDraftAction({ projectId: 'p1', scope: 'lift', data: lift() }), { ok: false, error: 'forbidden' });
+  assert.equal(upserts.length, 0);
+});
+
+test('il diritto è quello del modulo: il Tecnico tiene la bozza del calcolo, non quella del progetto né del locale macchina', async () => {
+  const { saveDraftAction, discardDraftAction } = await actions();
+  signIn({ role: 'TECHNICIAN' });
+  assert.equal((await discardDraftAction({ projectId: 'p1', scope: 'calc' })).ok, true);
+  assert.deepEqual(await saveDraftAction({ projectId: 'p1', scope: 'lift', data: lift() }), { ok: false, error: 'forbidden' });
+  assert.deepEqual(await discardDraftAction({ projectId: 'p1', scope: 'room:calc1' }), { ok: false, error: 'forbidden' });
   assert.equal(upserts.length, 0);
 });
 

@@ -11,13 +11,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// Seven levels, strictly ordered: a higher level includes the lower ones (src/lib/rbac.ts).
-/// The company's owner, the colleagues with one of three roles (Progettista, Commerciale, Tecnico: src/lib/rbac.ts),
-/// the platform's administrator.
+/// The company's owner (Titolare), the colleagues with one of four roles (Capotecnico, Progettista, Tecnico,
+/// Commerciale: src/lib/rbac.ts), the platform's administrator. What each colleague role may do is the default matrix
+/// of rbac.ts with the company's changes (CompanyRolePermission).
 enum Role {
   SALES
   TECHNICIAN
   ENGINEER
+  CHIEF_TECHNICIAN
   OWNER
   SUPERADMIN
 }
@@ -78,6 +79,7 @@ model Company {
   formDrafts           FormDraft[]
   invites              Invite[]
   schede               Scheda[]
+  rolePermissions      CompanyRolePermission[]
 }
 
 /// A logo uploaded by a company, immutable: a drawing set keeps the one it was issued with. PNG or JPEG, checked by
@@ -550,6 +552,24 @@ model AuditLog {
 
   @@index([companyId, createdAt])
   @@index([userId])
+}
+
+/// A right of a colleague role the company changed from the default matrix (round 42, src/lib/rbac.ts DEFAULT_GRANTS):
+/// granted or taken away. Only the rows that differ from the default are kept; the owner's and the platform's roles and
+/// the rights never given to a colleague never have one (CHECK in 16_permessi). The owner (or the platform) sets them on
+/// /app/permessi; every change is in the activity log (PERMISSIONS_CHANGED).
+model CompanyRolePermission {
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  role        Role
+  /// a capability of src/lib/rbac.ts (MATRIX_CAPABILITIES); one the code no longer knows is ignored
+  capability  String
+  granted     Boolean
+  /// who set it (the owner, or the platform's administrator): no foreign key, as for the price list
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+
+  @@id([companyId, role, capability])
 }
 
 /// A Stripe event already processed: the webhook acts on each one once (Stripe delivers at least once).

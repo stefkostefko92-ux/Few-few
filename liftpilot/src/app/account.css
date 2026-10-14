@@ -35,3 +35,6 @@
 .terms-gate .gate-read { white-space: normal; text-align: left; justify-content: flex-start; align-items: flex-start; max-width: 100%; }
 .terms-gate .gate-read > .icon { margin-top: -1px; }
 
+
+/* the platform's companies: the way to a company's rights matrix under its name */
+.admin-perm { margin-top: 8px; }

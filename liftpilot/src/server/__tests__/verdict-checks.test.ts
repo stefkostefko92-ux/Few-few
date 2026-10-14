@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import { PRESETS } from '@/calc/presets';
 import type { FormValues } from '@/calc/types';
 import type { SessionUser } from '@/lib/auth';
+import { capsOf } from '@/lib/rbac';
 import { defaultLift, newLift, type LiftInputs } from '@/lib/lift';
 import { startSurvey } from '@/lib/room/survey';
 import it from '../../../messages/it.json';
@@ -60,7 +61,7 @@ const save = (): Promise<typeof import('../save')> => import(src('server/save.ts
 const verdict = (): Promise<typeof import('../verdict-checks')> => import(src('server/verdict-checks.ts'));
 const user: SessionUser = {
   id: 'u1', email: 'tecnico@example.com', name: 'Tecnico', role: 'ENGINEER', locale: 'it', companyId: 'c1', companyName: 'Ditta', mustChangePassword: false,
-  access: 'active', trialDays: 0, readOnly: false, terms: 'ok', termsBinding: null,
+  access: 'active', trialDays: 0, readOnly: false, caps: capsOf('ENGINEER'), terms: 'ok', termsBinding: null,
 };
 const other: SessionUser = { ...user, id: 'u2', companyId: 'c2' };
 const row = (m: Model, id: string): Row => { const r = db[m].find((x) => x.id === id); assert.ok(r, `${m} ${id}`); return r; };

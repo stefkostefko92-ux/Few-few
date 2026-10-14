@@ -138,14 +138,23 @@ export async function updateUserAction(fd: FormData): Promise<void> {
     // a colleague brought back takes a slot again: decided on the user as it is once the company is locked
     await lockCompany(tx, me.companyId);
     const now = await tx.user.findFirst({ where: { id: target.id, companyId: me.companyId }, select: { active: true, role: true } });
-    if (!now) return true;
+    if (!now) return 'noop';
+    // a company always keeps an active owner (Titolare): the owner's role never changes from the team, and the last
+    // active owner is not deactivated
+    if (now.role === 'OWNER') {
+      delete data.role;
+      const others = data.active === false ? await tx.user.count({ where: { companyId: me.companyId, role: 'OWNER', active: true, id: { not: target.id } } }) : 1;
+      if (!others) return 'lastOwner';
+      if (!Object.keys(data).length) return 'noop';
+    }
     const seat = data.active === true && !now.active && MEMBER_ROLES.includes(data.role ?? now.role);
-    if (seat && !(await seatAvailable(tx, me.companyId))) return false;
+    if (seat && !(await seatAvailable(tx, me.companyId))) return 'noSeats';
     await tx.user.update({ where: { id: target.id }, data });
     if (data.active === false) await tx.session.deleteMany({ where: { userId: target.id } });
-    return true;
+    return 'ok';
   });
-  if (!done) redirect(`/${localeOf(fd)}/app/team?e=noSeats`);
+  if (done === 'noop') return;
+  if (done !== 'ok') redirect(`/${localeOf(fd)}/app/team?e=${done}`);
   await audit({ companyId: me.companyId, userId: me.id, action: 'USER_UPDATED', entity: 'User', entityId: target.id,
     meta: { ...(data.role ? { role: data.role } : {}), ...(data.active !== undefined ? { active: data.active } : {}) } });
   revalidatePath(`/${localeOf(fd)}/app/team`);

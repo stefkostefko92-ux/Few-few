@@ -72,8 +72,8 @@ export const projectSchema = z.object({
 export const projectKindSchema = z.enum(['REPLACEMENT', 'FULL']);
 export type ProjectKind = z.infer<typeof projectKindSchema>;
 
-/** The roles a company's owner gives to the colleagues: Progettista, Commerciale, Tecnico (src/lib/rbac.ts). */
-export const roleSchema = z.enum(['ENGINEER', 'SALES', 'TECHNICIAN']);
+/** The roles a company's owner gives to the colleagues: Capotecnico, Progettista, Tecnico, Commerciale (src/lib/rbac.ts). */
+export const roleSchema = z.enum(['CHIEF_TECHNICIAN', 'ENGINEER', 'TECHNICIAN', 'SALES']);
 
 export const userCreateSchema = z.object({
   email: emailSchema,

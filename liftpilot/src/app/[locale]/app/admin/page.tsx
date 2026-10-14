@@ -2,6 +2,7 @@ import { getLocale, getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireCapability } from '@/lib/auth';
 import { dateFormat } from '@/lib/dates';
 import { listCompanies } from '@/server/queries';
+import { Link } from '@/i18n/routing';
 import { setCompanyActiveAction, setCompanyExemptAction } from '@/server/user-actions';
 import CreateCompanyForm from '@/components/CreateCompanyForm';
 import AccountHead from '@/components/AccountHead';
@@ -26,7 +27,11 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
           <tbody>
             {companies.map((c) => (
               <tr key={c.id}>
-                <td className="row-title"><b>{c.name}</b><div className="note">{[c.vatNumber, c.city].filter(Boolean).join(' · ') || '—'}</div></td>
+                <td className="row-title">
+                  <b>{c.name}</b><div className="note">{[c.vatNumber, c.city].filter(Boolean).join(' · ') || '—'}</div>
+                  {/* the company's rights matrix, set by the platform (attributed to it in the company's activity log) */}
+                  <Link className="btn btn-sm admin-perm" href={`/app/admin/permessi/${c.id}`}>{t('permissions')}</Link>
+                </td>
                 <td data-label={t('created')}>{fd.date(c.createdAt)}</td>
                 <td data-label={t('users')} className="num text-right">{c._count.users}</td>
                 <td data-label={t('projects')} className="num text-right">{c._count.projects}</td>

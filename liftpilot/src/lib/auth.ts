@@ -6,14 +6,15 @@ import { SignJWT, jwtVerify } from 'jose';
 import type { Role } from '@prisma/client';
 import { prisma } from './db';
 import { env, publicBaseUrl } from './env';
-import { MEMBER_ROLES, can, type Capability } from './rbac';
+import { MEMBER_ROLES, can, capsOf, type Capability } from './rbac';
 import { daysLeft, type Access } from './billing';
 import { BILLING_SELECT, accessOf } from './billing-access';
 import { termsStateOf, type TermsState } from './legal';
 
 // Session: a short JWT (HS256) in an httpOnly cookie naming a session kept on the server (Session): signing out deletes
 // it, so a copied cookie stops at once. Every request re-reads the session and the user from the database, so a
-// deactivated user, a changed role or a password change (tokenVersion) takes effect at once — and so do the company's
+// deactivated user, a changed role, a change of the company's rights matrix (CompanyRolePermission, read in the same
+// query) or a password change (tokenVersion) takes effect at once — and so do the company's
 // subscription (read-only without one after the trial) and its owner's acceptance of the terms in force (read-only for
 // the whole company once a new version binds it and until the owner accepts it — src/lib/legal.ts; an owner who never
 // accepted any goes to the terms first).
@@ -37,6 +38,9 @@ export interface SessionUser {
   /** without a subscription after the trial, or with the terms binding the company not accepted by the owner: reads,
    *  downloads, manages the colleagues and pays, but does not write (src/lib/rbac.ts) */
   readOnly: boolean;
+  /** the rights of the user's role in the company, resolved once for the request: the default matrix with the
+   *  company's changes and the hard rules (src/lib/rbac.ts capsOf); can() reads them */
+  caps: ReadonlySet<Capability>;
   /** the company's acceptance of the terms in force, by its owner (src/lib/legal.ts termsStateOf) */
   terms: TermsState;
   /** the day the version in force binds the company (`pending` once announced, `changed`), else null */
@@ -101,7 +105,11 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
     where: { id: c.sid },
     select: {
       userId: true, expiresAt: true,
-      user: { include: { company: { select: { name: true, active: true, ...BILLING_SELECT, users: { where: { role: 'OWNER' }, select: { termsVersion: true, termsNoticeVersion: true, termsNoticeAt: true }, take: 1 } } } } },
+      user: { include: { company: { select: {
+        name: true, active: true, ...BILLING_SELECT,
+        users: { where: { role: 'OWNER' }, select: { termsVersion: true, termsNoticeVersion: true, termsNoticeAt: true }, take: 1 },
+        rolePermissions: { select: { role: true, capability: true, granted: true } },
+      } } } },
     },
   });
   if (!session || session.userId !== c.sub || session.expiresAt <= new Date()) return null;
@@ -116,7 +124,8 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   return {
     id: user.id, email: user.email, name: user.name, role: user.role, locale: user.locale,
     companyId: user.companyId, companyName: user.company.name, mustChangePassword: user.mustChangePassword,
-    access, trialDays: daysLeft(billing.trialEndsAt, now), readOnly: access === 'readonly' || terms === 'changed' || terms === 'never', terms,
+    access, trialDays: daysLeft(billing.trialEndsAt, now), readOnly: access === 'readonly' || terms === 'changed' || terms === 'never',
+    caps: capsOf(user.role, user.company.rolePermissions), terms,
     termsBinding: binding,
   };
 });

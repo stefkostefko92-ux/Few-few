@@ -39,8 +39,10 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
   const latestInputs = latest ? liftInputsReadSchema.safeParse(latest.inputs) : null;
   const fd = dateFormat(locale);
   const place = [p.address, p.city, p.province].filter(Boolean).join(', ');
-  const editable = can(user, 'projects:edit') && !p.archivedAt, saves = can(user, 'calc:create') && !p.archivedAt;
   const replacement = p.kind === 'REPLACEMENT';
+  // the installation's data; its work: a replacement's calculator (calc:create), a whole project's one form (progetto:edit)
+  const editable = can(user, 'projects:edit') && !p.archivedAt, draws = can(user, 'progetto:edit') && !p.archivedAt;
+  const saves = can(user, replacement ? 'calc:create' : 'progetto:edit') && !p.archivedAt;
   // the records of a lift design are reached from it; the others of a whole project are its archive
   const calcRows = calcs.filter((c) => replacement || !c.liftDesign).map((c) => ({ ...c, old: outdated.calc(c) }));
   const shaftRows = designs.filter((d) => !d.liftDesign).map((d) => ({ ...d, old: outdated.shaft(d) }));
@@ -167,7 +169,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
           <div><Link className="btn" href={`/app/projects/${p.id}/impianto`}>{tt('plantTitle')}</Link></div>
         </section>
       ) : null}
-      {replacement && editable ? (
+      {replacement && draws ? (
         <section className="panel items-start">
           <SectionTitle icon="elevator">{t('upgradeTitle')}</SectionTitle>
           <p className="note">{t('upgradeLead')}</p>

@@ -29,7 +29,7 @@ export default function InviteAcceptForm() {
     <form action={action} className="panel" noValidate>
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="token" value={token} />
-      <p>{t('who', { company: info?.company ?? '', email: info?.email ?? '', role: info ? troles(info.role as 'ENGINEER' | 'SALES' | 'TECHNICIAN') : '' })}</p>
+      <p>{t('who', { company: info?.company ?? '', email: info?.email ?? '', role: info ? troles(info.role as 'CHIEF_TECHNICIAN' | 'ENGINEER' | 'SALES' | 'TECHNICIAN') : '' })}</p>
       {state.error ? <p className="alert alert-bad" role="alert">{te(state.error, { min: PASSWORD_MIN_LENGTH })}</p> : null}
       <label className="field">
         <span>{t('next')}</span>

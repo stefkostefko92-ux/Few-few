@@ -12,7 +12,8 @@
 //   behind its number (scripts/smoke-verdict.mjs) → the survey sheets: a sheet with its conditions, stops, modules,
 //   search, PDFs, print, conflict, trash (scripts/smoke-rilievi.mjs) → new user who must change the password → a
 //   second company that cannot open the first company's calculation, shaft design, DXF, drawing set, lift design or survey sheet →
-//   with MAILBOX_PORT: self-registration, confirmation, forgotten password (scripts/smoke-accounts.mjs), the server
+//   with MAILBOX_PORT: self-registration, confirmation, forgotten password (scripts/smoke-accounts.mjs), the rights matrix
+//   of that company (scripts/smoke-permessi.mjs), the server
 //   sending its mail to scripts/mail-sink.mjs on that port (SMTP_HOST=127.0.0.1, SMTP_PORT=<port>, MAIL_FROM set).
 // Usage: BASE_URL=http://localhost:3100 ADMIN_EMAIL=… ADMIN_PASSWORD=… [MAILBOX_PORT=2526] node scripts/smoke.mjs
 // Playwright is not a dependency of the app: the local install is used, else the global one.
@@ -286,7 +287,7 @@ try {
   await secondCompany({ BASE, page, kit: { login, logout, hydrated }, ADMIN, stamp,
     urls: { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref, roomUrl, roomId, rilievoUrl: rilievo.sheetUrl, rilievoId: rilievo.id } });
 
-  if (sink) await accountFlows({ BASE, stamp, step, sink, newPage: () => newPage(browser), ADMIN_EMAIL: ADMIN.email });
+  if (sink) await accountFlows({ BASE, stamp, step, sink, newPage: () => newPage(browser), ADMIN_EMAIL: ADMIN.email, ADMIN, kit: { login, logout, hydrated } });
   else step('accounts without an administrator: skipped (no MAILBOX_PORT)');
 
   step('all good');

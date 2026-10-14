@@ -37,7 +37,7 @@ export default async function ShaftDesignPage({ params }: { params: Promise<{ lo
   const L = withPitches(stored, pitchesOf(d.project.plant));
   const [t, tc, tp] = await Promise.all([getTranslations('shaft'), getTranslations('calculations'), getTranslations('projects')]);
   const fd = dateFormat(locale), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
-  const open = !d.project.archivedAt && can(user, 'calc:create');
+  const open = !d.project.archivedAt && can(user, 'progetto:edit');
   return (
     <main className="page">
       <Crumbs items={[{ href: '/app', label: tp('title') }, { href: `/app/projects/${d.projectId}`, label: d.project.name }, { label: t('title') }]} />

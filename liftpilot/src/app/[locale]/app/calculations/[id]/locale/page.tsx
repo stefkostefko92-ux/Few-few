@@ -27,7 +27,7 @@ export async function generateMetadata() {
 export default async function RoomSurveyPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ from?: string; aggiorna?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
-  const user = await requireCapability(locale, 'calc:create');
+  const user = await requireCapability(locale, 'progetto:edit');
   const c = await getCalculation(user, id);
   if (!c || c.project.archivedAt || c.project.kind !== 'REPLACEMENT' || c.liftDesign) notFound();
   const calc = readCalc(c);

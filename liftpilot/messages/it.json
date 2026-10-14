@@ -100,13 +100,15 @@
     "searchPlaceholder": "Nome, indirizzo, matricola…",
     "beta": "Beta gratuita",
     "profile": "Profilo normativo",
-    "rilievi": "Rilievi"
+    "rilievi": "Rilievi",
+    "permessi": "Permessi"
   },
   "roles": {
-    "ENGINEER": "Progettista",
-    "SALES": "Commerciale",
-    "TECHNICIAN": "Tecnico",
     "OWNER": "Titolare",
+    "CHIEF_TECHNICIAN": "Capotecnico",
+    "ENGINEER": "Progettista",
+    "TECHNICIAN": "Tecnico",
+    "SALES": "Commerciale",
     "SUPERADMIN": "Amministratore della piattaforma"
   },
   "landing": {
@@ -409,9 +411,10 @@
     "buySeats": "Acquista o cambia i posti",
     "noSeats": "Non ci sono posti liberi: acquista un pacchetto di posti o disattiva un collega.",
     "roleNote": {
-      "ENGINEER": "progetta e calcola, mette il visto ai calcoli e archivia gli impianti; non vede i prezzi.",
-      "SALES": "consulta e scarica progetti, relazioni e bozze d’ordine e vede i prezzi; non modifica nulla.",
-      "TECHNICIAN": "progetta e calcola; non mette il visto, non archivia e non vede i prezzi."
+      "CHIEF_TECHNICIAN": "coordina il lavoro tecnico: progetta e calcola, mette il visto, archivia gli impianti, gestisce il cestino dei rilievi, vede i prezzi e il registro attività.",
+      "ENGINEER": "progetta e calcola, disegna il progetto ed emette le tavole, mette il visto ai calcoli e archivia gli impianti; non vede i prezzi.",
+      "TECHNICIAN": "compila i rilievi, crea gli impianti e fa i calcoli dell’argano; non disegna il progetto, non mette il visto e non vede i prezzi.",
+      "SALES": "consulta rilievi e impianti, scarica relazioni, tavole e bozze d’ordine e vede i prezzi; non modifica nulla."
     },
     "inviteSent": "Invito inviato a {email}: il collega apre il link dell’e-mail e sceglie la sua password (il link vale {days} giorni). Nessuna password passa da te.",
     "invitesTitle": "Inviti in attesa",
@@ -422,7 +425,10 @@
     "resetSent": "Link per una nuova password inviato a {email}: la password attuale vale finché il collega non ne sceglie una nuova.",
     "delete": "Elimina",
     "deleteNote": "L’account del collega è cancellato per sempre; i progetti e i documenti che ha creato restano all’azienda, senza il suo nome.",
-    "deleteConfirm": "Elimina definitivamente"
+    "deleteConfirm": "Elimina definitivamente",
+    "roleNotesLead": "I permessi predefiniti di ogni ruolo; il titolare li cambia per la sua azienda.",
+    "permissionsLink": "Permessi dei ruoli",
+    "lastOwner": "Un’azienda ha sempre un titolare attivo: l’ultimo non si disattiva."
   },
   "admin": {
     "title": "Aziende",
@@ -445,7 +451,8 @@
     "add": "Crea azienda",
     "billing": "Abbonamento",
     "exempt": "Esenta dal pagamento",
-    "bill": "Torna a pagamento"
+    "bill": "Torna a pagamento",
+    "permissions": "Permessi"
   },
   "norme": {
     "title": "Registro delle norme",
@@ -521,7 +528,8 @@
       "SCHEDA_UPDATED": "Scheda modificata",
       "SCHEDA_TRASHED": "Scheda nel cestino",
       "SCHEDA_RESTORED": "Scheda ripristinata",
-      "SCHEDA_PURGED": "Scheda eliminata definitivamente"
+      "SCHEDA_PURGED": "Scheda eliminata definitivamente",
+      "PERMISSIONS_CHANGED": "Permessi cambiati"
     },
     "entities": {
       "User": "Utente",
@@ -531,8 +539,13 @@
       "ShaftDesign": "Progetto del vano",
       "DrawingSet": "Tavole",
       "LiftDesign": "Progetto dell’impianto",
-      "Scheda": "Scheda di rilievo"
-    }
+      "Scheda": "Scheda di rilievo",
+      "Permission": "Permesso"
+    },
+    "platform": "Piattaforma LiftPilot",
+    "permission": "{role} · {right}: {from} → {to}",
+    "granted": "sì",
+    "denied": "no"
   },
   "shaft": {
     "title": "Progetto del vano",
@@ -2442,5 +2455,88 @@
     "audit": {
       "openScheda": "Apri scheda"
     }
+  },
+  "permessi": {
+    "title": "Permessi",
+    "lead": "Cosa può fare ogni ruolo nella tua azienda. Il titolare ha sempre tutti i permessi; la gestione degli utenti, dei permessi e dell’abbonamento resta solo sua.",
+    "adminTitle": "Permessi · {company}",
+    "adminLead": "La matrice dei permessi di un’azienda cliente. Ogni modifica vale dalla prossima pagina aperta dai suoi colleghi e compare nel registro attività dell’azienda, attribuita alla piattaforma.",
+    "back": "Torna alle aziende",
+    "matrix": "Permessi per ruolo",
+    "action": "Azione",
+    "ownerAll": "sempre tutto",
+    "groups": {
+      "rilievi": "Rilievi",
+      "impianti": "Impianti",
+      "calcolo": "Calcolo argano",
+      "progetto": "Progetto",
+      "documenti": "Documenti",
+      "prezzi": "Prezzi",
+      "azienda": "Azienda"
+    },
+    "caps": {
+      "rilievi:view": "Vedere le schede di rilievo e scaricarne i PDF",
+      "rilievi:edit": "Compilare e modificare le schede e i moduli dei fornitori",
+      "rilievi:trash": "Spostare una scheda nel cestino",
+      "rilievi:trash-manage": "Gestire il cestino: ripristinare o eliminare per sempre",
+      "projects:view": "Vedere gli impianti con calcoli, progetti e tavole",
+      "impianti:create": "Creare un impianto",
+      "rilievi:link": "Collegare un rilievo a un impianto",
+      "projects:edit": "Modificare i dati dell’impianto e il logo del committente",
+      "projects:archive": "Archiviare e ripristinare gli impianti",
+      "calc:create": "Fare i calcoli dell’argano e aggiornarli al software attuale",
+      "calc:review": "Mettere il visto ai calcoli",
+      "progetto:edit": "Disegnare il progetto: vano, impianto, locale macchina",
+      "drawings:issue": "Emettere le tavole e le revisioni",
+      "report:download": "Scaricare relazioni, tavole, DXF/DWG e bozze d’ordine",
+      "prices:view": "Vedere i prezzi e il listino",
+      "prices:edit": "Modificare il listino",
+      "audit:view": "Vedere il registro attività",
+      "company:edit": "Cambiare il logo dell’azienda",
+      "company:export": "Esportare tutti i dati dell’azienda",
+      "users:manage": "Invitare e gestire gli utenti",
+      "permissions:manage": "Gestire i permessi",
+      "billing:manage": "Gestire l’abbonamento"
+    },
+    "locks": {
+      "owner": "Il titolare ha sempre tutti i permessi.",
+      "never": "Solo del titolare: non si assegna ai colleghi.",
+      "chiefOnly": "Si assegna solo al Capotecnico."
+    },
+    "requires": "Richiede: {rights}",
+    "default": "predefinito",
+    "on": "concesso",
+    "off": "non concesso",
+    "reset": "Ripristina predefiniti",
+    "roleChanged": "{n, plural, one {# diverso dal predefinito} other {# diversi dal predefinito}}",
+    "pending": "{n, plural, one {# modifica non salvata} other {# modifiche non salvate}}",
+    "none": "Nessuna modifica da salvare",
+    "save": "Salva i permessi",
+    "discard": "Annulla le modifiche",
+    "confirmTitle": "Salvare i permessi?",
+    "confirmText": "{n, plural, one {Cambia # permesso} other {Cambiano # permessi}}. Valgono dalla prossima pagina che ogni collega apre e restano nel registro attività.",
+    "confirm": "Conferma e salva",
+    "cancel": "Torna alla matrice",
+    "saved": "{n, plural, =0 {Nessun permesso cambiato.} one {# permesso salvato.} other {# permessi salvati.}} Valgono dalla prossima pagina che ogni collega apre.",
+    "errors": {
+      "conflict": "Nel frattempo i permessi sono stati cambiati da qualcun altro: la matrice mostra ora quelli in vigore. Rifai le modifiche e salva di nuovo.",
+      "forbidden": "Non hai i permessi per cambiare questa matrice.",
+      "notFound": "Azienda non trovata.",
+      "invalidFields": "La matrice inviata non è valida: ricarica la pagina.",
+      "rateLimited": "Troppi salvataggi. Riprova tra qualche minuto.",
+      "unauthorized": "Sessione scaduta: accedi di nuovo."
+    },
+    "legendOn": "concesso",
+    "legendOff": "non concesso",
+    "legendLocked": "bloccato dalle regole",
+    "legendCustom": "diverso dal predefinito",
+    "short": {
+      "projects:view": "Vedere gli impianti",
+      "rilievi:view": "Vedere i rilievi",
+      "prices:view": "Vedere i prezzi"
+    },
+    "showRole": "Ruolo mostrato",
+    "changesTitle": "Le modifiche",
+    "legendUnsaved": "modifica non salvata"
   }
 }

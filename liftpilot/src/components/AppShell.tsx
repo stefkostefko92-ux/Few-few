@@ -27,30 +27,32 @@ export default async function AppShell({ user, banners, footer, children }: { us
   const [t, tp, tr, ta, tl] = await Promise.all([
     getTranslations('nav'), getTranslations('projects'), getTranslations('roles'), getTranslations('account'), getTranslations('legal'),
   ]);
+  const projects = can(user, 'projects:view');
   const work: NavItem[] = [
-    { key: 'dashboard', href: '/app', label: t('dashboard'), icon: 'layout-dashboard' },
-    ...(can(user, 'projects:edit') ? [
+    ...(projects ? [{ key: 'dashboard', href: '/app', label: t('dashboard'), icon: 'layout-dashboard' } as const] : []),
+    ...(can(user, 'impianti:create') ? [
       { key: 'new-replacement', href: '/app/projects/new?kind=replacement', label: tp('module_REPLACEMENT_new'), icon: 'motor' } as const,
       { key: 'new-full', href: '/app/projects/new?kind=full', label: tp('module_FULL_new'), icon: 'elevator' } as const,
     ] : []),
-    { key: 'archived', href: '/app?archived=1', label: tp('archivedTitle'), icon: 'archive' },
+    ...(projects ? [{ key: 'archived', href: '/app?archived=1', label: tp('archivedTitle'), icon: 'archive' } as const] : []),
     // the survey sheets of existing lifts and the suppliers' modules (Rilievi, round 41)
     ...(can(user, 'rilievi:view') ? [{ key: '/app/rilievi', href: '/app/rilievi', label: t('rilievi'), icon: 'clipboard-list' } as const] : []),
   ];
   const library: NavItem[] = [
-    { key: '/app/norme', href: '/app/norme', label: t('norms'), icon: 'shield-check' },
+    ...(projects ? [{ key: '/app/norme', href: '/app/norme', label: t('norms'), icon: 'shield-check' } as const] : []),
     ...(can(user, 'prices:view') ? [{ key: '/app/prices', href: '/app/prices', label: t('prices'), icon: 'tag' } as const] : []),
   ];
   const manage: NavItem[] = [
     ...(can(user, 'users:manage') ? [{ key: '/app/team', href: '/app/team', label: t('team'), icon: 'users' } as const] : []),
-    ...(can(user, 'company:export') ? [{ key: '/app/company', href: '/app/company', label: t('company'), icon: 'building' } as const] : []),
+    ...(can(user, 'permissions:manage') ? [{ key: '/app/permessi', href: '/app/permessi', label: t('permessi'), icon: 'lock-keyhole' } as const] : []),
+    ...(can(user, 'company:export') || can(user, 'company:edit') ? [{ key: '/app/company', href: '/app/company', label: t('company'), icon: 'building' } as const] : []),
     ...(can(user, 'billing:manage') ? [{ key: '/app/billing', href: '/app/billing', label: t('billing'), icon: 'hand-coins' } as const] : []),
     ...(can(user, 'audit:view') ? [{ key: '/app/audit', href: '/app/audit', label: t('audit'), icon: 'history' } as const] : []),
     ...(can(user, 'platform:admin') ? [{ key: '/app/admin', href: '/app/admin', label: t('admin'), icon: 'building-gear' } as const] : []),
   ];
   const groups: NavGroup[] = [
     { label: t('groupWork'), items: work },
-    { label: t('groupLibrary'), items: library },
+    ...(library.length ? [{ label: t('groupLibrary'), items: library }] : []),
     ...(manage.length ? [{ label: t('groupAdmin'), items: manage }] : []),
   ];
   // pages outside the groups the top bar still names
@@ -92,7 +94,8 @@ export default async function AppShell({ user, banners, footer, children }: { us
             <Link href="/app" className="ws-topbrand"><Emblem /><span>LiftPilot</span></Link>
             <ShellCrumbs groups={groups} extra={extra} label={t('breadcrumb')} />
             <div className="ws-top-actions">
-              <ShellSearch label={t('search')} placeholder={t('searchPlaceholder')} />
+              {/* the search of the installations, for whoever sees them */}
+              {projects ? <ShellSearch label={t('search')} placeholder={t('searchPlaceholder')} /> : null}
               <ShellLink href="/app/account" className="ws-user-top" title={who}>
                 {avatar}
                 <span className="ws-who"><b>{user.name}</b><small>{role}</small></span>

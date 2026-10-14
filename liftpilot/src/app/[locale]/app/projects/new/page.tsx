@@ -12,7 +12,7 @@ export async function generateMetadata() {
 export default async function NewProjectPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ kind?: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireCapability(locale, 'projects:edit');
+  await requireCapability(locale, 'impianti:create');
   const t = await getTranslations('projects'), kind = (await searchParams).kind === 'replacement' ? 'REPLACEMENT' : 'FULL';
   return (
     <main className="page page-narrow">

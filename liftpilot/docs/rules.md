@@ -895,8 +895,10 @@
   (`src/lib/same-origin.ts`: хостът на Origin = X-Forwarded-Host или Host, както Next.js проверява сървърните действия;
   Sec-Fetch-Site, когато го има, е same-origin; иначе 403 и сесията остава); сесията се трие от базата и бисквитката,
   одитът пише `LOGOUT`, после 303 към `/it/login`.
-- **Роли и абонамент** (`src/lib/rbac.ts`, `src/lib/billing.ts`): собственикът (OWNER) кани колегите с роля Проектант
-  (ENGINEER), Търговец (SALES) или Техник (TECHNICIAN); всеки активен колега и всяка чакаща покана заема място. Абонаментът: месечната цена на
+- **Роли и абонамент** (`src/lib/rbac.ts`, `src/lib/billing.ts`): собственикът (OWNER, Titolare) кани колегите с роля
+  Капотехник (CHIEF_TECHNICIAN, Capotecnico), Проектант (ENGINEER), Техник (TECHNICIAN) или Търговец (SALES) — какво може
+  всяка, е в „Права — матрицата“ по-долу; всеки активен колега и всяка чакаща покана заема място. Фирмата винаги има
+  активен собственик: ролята му не се сменя от екипа, последният активен не се деактивира (`updateUserAction` → `lastOwner`). Абонаментът: месечната цена на
   собственика е Price в Stripe (`STRIPE_PRICE_MONTHLY`, никога в кода), пакетите места се продават като продукта
   `STRIPE_PRODUCT_SEATS` със сума = дял от месечната цена: 5 места +50 %, 10 +80 %, неограничено +100 %. Пробният период
   (`BILLING_TRIAL_DAYS`, поне `MIN_TRIAL_DAYS` = 14 — толкова обещават условията) тръгва при първия вход с включено плащане; след него без абонамент — само четене (`WRITES` в
@@ -924,8 +926,8 @@
   цената ги назовава (`calcUncounted` → `prices.uncounted`; нов асансьор, изчислен без проект — `prices.uncountedNew`). Свободните редове (`CustomPriceItem`, до 100): описание, цена, основа
   (паушално, на спирка, на метър ход) и проекти (всички, цели, подмени); `projectCost` ги добавя сам, а на подмяната
   редовете на спирка не се броят и се казват. Формата на листата се праща на ръка (`onSubmit`): след своето действие
-  React 19 нулира формата и падащите менюта показват първоначалния избор. Цените виждат само собственикът и Търговецът
-  (`prices:view`), променя ги собственикът.
+  React 19 нулира формата и падащите менюта показват първоначалния избор. Цените виждат по подразбиране собственикът,
+  Капотехникът и Търговецът (`prices:view`), променя ги собственикът (`prices:edit`; матрицата — кръг 42).
 - **Спецификацията като на проектант** (кръг 36; `prices/bom.ts`, `bom-parts.ts`): въжетата — `ropeCut` (при изчисление
   с проект на шахтата `calcBom(…, shaft)` с `layoutRigLength`); ролки и неподвижни закрепвания при 2:1, ролки в главата и
   основа при машина долу, клинови закрепвания, въже на ограничителя, парашут, обувки на противотежестта, ACOP/UCM,
@@ -976,6 +978,102 @@
   влиза в документите, `usableLogo`); съветът (всички машини, ~0,1 s) — кеш в процеса по входа на записа
   (`advice-cache.ts`).
 
+## Права — матрицата (кръг 42)
+
+Решение на собственика от 2026-10-14 (фаза 1 от три: права; фаза 2 — Rilievi като начало и връзка рилево–съоръжение;
+фаза 3 — изчислението по вид на намесата и проектът само за чертане). Код: `src/lib/rbac.ts` (ролите, матрицата по
+подразбиране, твърдите правила, `capsOf`, `can`), `src/lib/permissions.ts` (редовете на екрана, входът, записът),
+`src/server/permissions.ts` + `permission-actions.ts`, екранът `/app/permessi` (`src/components/permessi/`).
+
+- **Ролите:** Titolare = OWNER, Capotecnico = CHIEF_TECHNICIAN (нова, колега: заема място, кани се и се създава от
+  собственика, `ROLE_LEVEL` 1 като другите колеги), Progettista = ENGINEER, Tecnico = TECHNICIAN, Commerciale = SALES;
+  SUPERADMIN — платформата (Carbon Stealth).
+- **Матрицата по подразбиране** (✓ — дадено; собственикът има всичко винаги):
+
+  | Действие (право) | Capotecnico | Progettista | Tecnico | Commerciale |
+  |---|---|---|---|---|
+  | Rilievi: виж (`rilievi:view`) | ✓ | ✓ | ✓ | ✓ |
+  | Rilievi: попълни, модулите (`rilievi:edit`) | ✓ | ✓ | ✓ | — |
+  | Rilievi: в кошчето (`rilievi:trash`) | ✓ | ✓ | — | — |
+  | Rilievi: кошчето — списък, връщане, окончателно (`rilievi:trash-manage`) | ✓ | — | — | — |
+  | Impianti: виж (`projects:view`; с него `calc:view`) | ✓ | ✓ | ✓ | ✓ |
+  | Impianti: нов (`impianti:create`) | ✓ | ✓ | ✓ | — |
+  | Impianti: свържи рилево (`rilievi:link`, фаза 2) | ✓ | ✓ | ✓ | — |
+  | Impianti: данните (`projects:edit`) | ✓ | ✓ | ✓ | — |
+  | Impianti: архив (`projects:archive`) | ✓ | ✓ | — | — |
+  | Calcolo: направи (`calc:create`; с него `records:refresh`) | ✓ | ✓ | ✓ | — |
+  | Calcolo: визирай (`calc:review`) | ✓ | ✓ | — | — |
+  | Progetto: чертай (`progetto:edit`) | ✓ | ✓ | — | — |
+  | Progetto: издай комплект и ревизия (`drawings:issue`) | ✓ | ✓ | — | — |
+  | Документи: свали (`report:download`) | ✓ | ✓ | ✓ | ✓ |
+  | Цени: виж (`prices:view`) | ✓ | — | — | ✓ |
+  | Цени: промени (`prices:edit`) | — | — | — | — |
+  | Регистър на дейността (`audit:view`) | ✓ | — | — | — |
+  | Лого на фирмата (`company:edit`), износ (`company:export`) | — | — | — | — |
+  | Потребители, права, абонамент (`users:manage`, `permissions:manage`, `billing:manage`) | никога | никога | никога | никога |
+
+  Тестът `rbac.test.ts` държи таблицата клетка по клетка (`DECISION`).
+- **Промените на фирмата:** `CompanyRolePermission {companyId, role, capability, granted}` — ред само където фирмата се
+  различава от подразбирането (дадено или отнето); връщане към подразбирането трие реда. Ефективните права =
+  подразбирането с промените, после твърдите правила, после предпоставките (`REQUIRES`: всяка работа по съоръженията стои
+  на `projects:view`, по рилевата — на `rilievi:view`, `prices:edit` — на `prices:view`; без предпоставката правото не
+  важи и екранът го маха заедно с нея), накрая производните (`calc:view` = `projects:view`, `records:refresh` =
+  `calc:create`). Непознато право в базата се пренебрегва.
+- **Твърдите правила (в кода, не се редактират):** собственикът има всяко право на фирмата, каквото и да пише в базата
+  (колоната му е светнала и заключена); фирмата винаги има активен собственик; `users:manage`, `permissions:manage`,
+  `billing:manage`, `platform:admin` — никога на колега (`NEVER_GRANTED`; и CHECK в базата); `company:edit` и
+  `company:export` — само на Капотехника (`CHIEF_ONLY`); никой не мени права на роля на своето ниво или над него
+  (`editableRoles`: собственикът — четирите роли на колегите; платформата — същите във всяка фирма). Глобален редактор
+  на тавана няма (YAGNI): таванът са тези правила.
+- **Кой мени:** собственикът — матрицата на своята фирма (`/app/permessi`, менюто „Gestione“ → „Permessi“ и връзка от
+  „Utenti“); платформата — на всяка фирма от `/app/admin` (редът на фирмата → „Permessi“ → `/app/admin/permessi/<id>`).
+  Всяка промяна е ред `PERMISSIONS_CHANGED` в регистъра на фирмата (роля, право, преди → след, `by: owner|platform`) в
+  същата транзакция като редовете, под ключалката на фирмата; регистърът на собственика показва промените на
+  платформата като „Piattaforma LiftPilot“ (не името на човека). Записът е върху версията, на която екранът е отворен
+  (SHA-256 на редовете): промяна междувременно → `conflict`, нищо не се пише, екранът показва действащата матрица.
+- **Едно разрешаване на заявка:** сесията (`getSessionUser`, една заявка към базата заедно с потребителя и фирмата)
+  чете редовете на фирмата и смята `caps` веднъж; `can(user, …)` е чиста и чете `caps` (без тях — подразбирането на
+  ролята). Страниците, сървърните действия и маршрутите минават през същата сесия, затова промяна важи от следващата
+  заявка на всеки колега, без кеш за изчистване.
+- **Само за четене** (без абонамент след пробния период или неприети условия) спира всяко право за писане (`WRITES`:
+  и новите `impianti:create`, `rilievi:link`, `progetto:edit`, `drawings:issue`), каквото и да е дала фирмата;
+  `permissions:manage` е управление като `users:manage` — остава (решение на интегратора).
+- **Къде се проверява всяко право** (страница / действие / маршрут):
+  - `rilievi:view` — `/app/rilievi`, картата, листът, `/api/rilievi/<id>/pdf|ordine-quadro|preventivo-argano`;
+    `rilievi:edit` — `/nuovo`, `/[id]/modifica`, `createRilievoAction`, `updateRilievoAction`; `rilievi:trash` —
+    `/[id]/elimina`, `trashRilievoAction`; `rilievi:trash-manage` — `/cestino`, `/cestino/[id]/elimina`, изтрита карта,
+    `restoreRilievoAction`, `purgeRilievoAction`.
+  - `projects:view` — таблото `/app` (без него — към `homeOf`: Rilievi или профила), архивът, търсенето в горната лента,
+    страницата на съоръжението и данните му (четене), `/app/norme`, `/api/lista-verifica`, страницата на проекта на
+    асансьора; `calc:view` — изчисление, проект на шахтата, машинно, комплект, `/api/verdict-checks`.
+  - `impianti:create` — `/app/projects/new`, `createProjectAction`, „Nuova sostituzione/Nuovo progetto“ в менюто и на
+    таблото; `rilievi:link` — фаза 2.
+  - `projects:edit` — `/projects/<id>/edit`, `updateProjectAction`, данните на съоръжението (`/impianto`,
+    `savePlantAction`), логото на възложителя (`uploadClientLogoAction`, `removeClientLogoAction`).
+  - `projects:archive` — `setProjectArchivedAction`, бутонът на страницата.
+  - `calc:create` — калкулаторът на подмяната (`/projects/<id>/calc`), `saveCalculationAction`, черновата `calc`,
+    „Nuovo calcolo da questo“; `records:refresh` — `refresh-actions.ts` (когато записът се отваря във формуляр:
+    калкулаторът иска `calc:create`, `/progetto` и `/locale` — `progetto:edit`); `calc:review` —
+    `reviewCalculationAction`, формата на визата.
+  - `progetto:edit` — `/projects/<id>/progetto`, `saveLiftDesignAction`, черновата `lift`; рилевото на машинното
+    (`/calculations/<id>/locale`, `saveRoomDesignAction`, черновите `room:*`); подмяна → цял проект
+    (`upgradeProjectAction`); връзките „Modifica/Apri il modulo“ от записите.
+  - `drawings:issue` — `issueDrawingSetAction`, `issueRoomSetAction`, `reviseDrawingSetAction`, формата за издаване
+    (изчисление, проект на асансьора, машинно) и за ревизия (комплект).
+  - `report:download` — всяко сваляне през `downloader` (relazione, DXF/DWG/PDF, комплект, CAD, поръчка) и бутоните им.
+  - `prices:view` — `/app/prices`, цените на екрана и в поръчката; `prices:edit` — `savePricesAction`, свободните редове.
+  - `audit:view` — `/app/audit`; `company:edit` — логото (`uploadLogoAction`, `removeLogoAction`); `company:export` —
+    `/api/company/export` и панелът му (`/app/company` се отваря с едното от двете); `users:manage` — `/app/team`,
+    `user-actions.ts`; `permissions:manage` — `/app/permessi`, `savePermissionsAction`; `billing:manage` — `/app/billing`,
+    `billing-actions.ts`; `platform:admin` — `/app/admin`, `/app/admin/permessi/<id>`, фирмите.
+- **Екранът** (`PermissionsMatrix`, `permessi.css`): действията по групи (Rilievi, Impianti, Calcolo argano, Progetto,
+  Documenti, Prezzi, Azienda) × ролите; клетката е истинско квадратче, нарисувано като бутон на табло (светнало —
+  дадено, заключено — по правило с причина при посочване, точка — различно от подразбирането, пунктир — незаписано);
+  „Ripristina predefiniti“ за всяка роля; запис само с потвърждение (диалог със списъка на промените); на телефон — една
+  роля наведнъж, избрана над матрицата. Отметка носи предпоставките си, махане — каквото стои на нея.
+- **Връщане на кръг 42:** командите са в коментара на `prisma/migrations/16_permessi/migration.sql` (таблицата се трие
+  с бекъп; стойност на enum PostgreSQL не трие без нов тип — колегите Капотехник първо получават друга роля).
+
 ## Rilievi — картите за оглед на съществуващ асансьор (кръг 41)
 
 Пренесени 1:1 от самостоятелния портал rilievi (commit `174a1e3aa`): полетата, логиката, търсенето, печатът, PDF-ите и
@@ -1017,10 +1115,10 @@ LiftPilot (от rilievi не се взема нито вход, нито пок�
   мести в кошчето (`deletedAt`), оттам — възстановяване или окончателно изтриване (с мерките); автоматично изтичане няма.
   Всяка промяна е в една транзакция с реда в одита (`SCHEDA_CREATED|UPDATED|TRASHED|RESTORED|PURGED`, `entity: Scheda`) —
   без съдържание на картата, без IP.
-- **Права** (`src/lib/rbac.ts`): `rilievi:view` и `rilievi:edit` (създаване, промяна, модулите) — всяка роля (в rilievi
-  пишеше всеки освен клиента; в LiftPilot клиент няма); `rilievi:trash` — Progettista и собственикът (rilievi:
-  RESPONSABILE+); `rilievi:trash-manage` (кошчето, отваряне на изтрита карта, възстановяване, окончателно) — собственикът
-  (rilievi: ADMIN+). Администраторът на платформата работи в своята фирма, както навсякъде; изглед „всички фирми“ няма.
+- **Права** (`src/lib/rbac.ts`, по подразбиране; фирмата ги мени в матрицата — кръг 42): `rilievi:view` — всяка роля;
+  `rilievi:edit` (създаване, промяна, модулите) — всяка без Търговеца (решение от 2026-10-14; до кръг 42 — всяка);
+  `rilievi:trash` — Капотехникът, Проектантът и собственикът (rilievi: RESPONSABILE+); `rilievi:trash-manage` (кошчето,
+  отваряне на изтрита карта, възстановяване, окончателно) — Капотехникът и собственикът (rilievi: ADMIN+). Администраторът на платформата работи в своята фирма, както навсякъде; изглед „всички фирми“ няма.
   Само за четене (без абонамент, неприети условия) — само четене. Чужда или непозната карта — 404.
 - **Търсенето** (`search.ts`, `src/server/rilievi/queries.ts`): един нормализатор за записа и заявката (малки букви, без
   ударения, само букви и цифри); всяка дума (до 8, заявка до 100 знака) трябва да е в `searchText` (`LIKE` с параметри,

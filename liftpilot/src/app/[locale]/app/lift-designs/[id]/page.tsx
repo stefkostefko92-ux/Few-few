@@ -55,7 +55,7 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
   // the bracket pitches of the installation's data count the brackets of the list and place them in 3D, as on sheet 1
   const pitches = pitchesOf(d.project.plant), r = liftRecord(d, d.shaftDesign.sha256, d.calculation.sha256), same = r?.same ?? false;
   const dv = r ? { ...r.dv, layout: withPitches(r.dv.layout, pitches) } : null;
-  const editable = can(user, 'calc:create') && !d.project.archivedAt;
+  const editable = can(user, 'progetto:edit') && !d.project.archivedAt, issues = can(user, 'drawings:issue') && !d.project.archivedAt;
   // the advice among SICOR and Montanari for the saved inputs, and the machine of the draft order: the one the design
   // verified, or the advice's first
   const advice = r ? savedLiftAdvice(r.inputs) : null, alt = r && advice ? savedLiftAlternative(r.inputs, advice) : null;
@@ -133,7 +133,7 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
             ) : <p className="note">{ta('order_none')}</p>}
           </div>
         ) : null}
-        {same && editable ? (
+        {same && issues ? (
           <div className="panel">
             <SectionTitle level={3} icon="file-stack">{tt('title')}</SectionTitle>
             <p className="note">{tt('lead')}</p>

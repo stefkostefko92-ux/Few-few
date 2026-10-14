@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { requireCapability } from '@/lib/auth';
-import { can } from '@/lib/rbac';
+import { redirect } from 'next/navigation';
+import { requireUser } from '@/lib/auth';
+import { can, homeOf } from '@/lib/rbac';
 import { ALL_ROWS, DASH_ROWS, searchWords } from '@/lib/dashboard';
 import type { ProjectKind } from '@/lib/schemas';
 import { activeResults, latestPlan, recordCounts } from '@/server/dashboard';
@@ -29,7 +30,9 @@ export default async function DashboardPage({ params, searchParams }: {
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const user = await requireCapability(locale, 'projects:view');
+  const user = await requireUser(locale);
+  // where the sign-in lands: a colleague whose role no longer sees the installations starts where it works
+  if (!can(user, 'projects:view')) redirect(`/${locale}${homeOf(user)}`);
   const sp = await searchParams, archived = sp.archived === '1', kind = kindOf(sp.kind), all = sp.all === '1';
   const words = searchWords(sp.q), q = words.join(' ');
   const plainView = !archived && kind === null && words.length === 0;
@@ -49,7 +52,7 @@ export default async function DashboardPage({ params, searchParams }: {
     : latestId ? (projects.find((p) => p.id === latestId) ?? await getProjectRow(user, latestId)) : null;
   const design = latest ? latestOf(latest).design : null;
   const plan = design ? await latestPlan(user, design.id) : null;
-  const canEdit = can(user, 'projects:edit');
+  const canEdit = can(user, 'impianti:create');
   // with no installation yet the list itself offers the two modules (ProjectList); else the header's button does
   const menu = canEdit && !archived && !(plainView && total === 0);
   return (

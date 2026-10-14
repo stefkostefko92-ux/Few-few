@@ -45,7 +45,8 @@ mock.module(pkg('next/navigation'), { namedExports: { redirect: (to: string) => 
 
 const actions = () => import(src('server/refresh-actions.ts'));
 let n = 0;
-const signIn = (over: Row = {}) => { session = { id: `u${++n}`, role: 'TECHNICIAN', companyId: 'c1', mustChangePassword: false, readOnly: false, ...over }; };
+// the Progettista makes the records and fills in every form (the calculator's, the project's: round 42)
+const signIn = (over: Row = {}) => { session = { id: `u${++n}`, role: 'ENGINEER', companyId: 'c1', mustChangePassword: false, readOnly: false, ...over }; };
 const fd = (id: string) => { const f = new FormData(); f.set('id', id); f.set('locale', 'it'); return f; };
 /** Where an action ends: it always ends in a redirect. */
 async function go(run: (f: FormData) => Promise<void>, id: string): Promise<string> {
@@ -238,6 +239,14 @@ test('progetto dell’impianto che non passa più: al modulo con ?from= e il seg
   const { openedByRefresh } = await import(src('lib/refresh-form.ts'));
   assert.equal(openedByRefresh(Object.fromEntries(new URL(to, 'http://x').searchParams)), true);
   assert.equal(openedByRefresh({ from: 'lift1' }), false);
+});
+
+test('chi aggiorna ma non disegna il progetto (il Tecnico): resta sul record invece di aprire un modulo che non salverebbe', async () => {
+  const { refreshLiftDesignAction } = await actions();
+  db.lift = [liftRow('lift1', { engineVersion: '0.0.0' })];
+  created = { ok: false, error: 'invalidFields' };
+  signIn({ role: 'TECHNICIAN' });
+  assert.equal(await go(refreshLiftDesignAction, 'lift1'), `${APP}/lift-designs/lift1`);
 });
 
 test('progetto dell’impianto di un’altra ditta o archiviato: al tabellone', async () => {

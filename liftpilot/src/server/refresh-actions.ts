@@ -30,8 +30,9 @@ import { createCalculation, createLiftDesign, createRoomDesign } from './save';
 const localeOf = (fd: FormData): string => { const l = str(fd, 'locale'); return isLocale(l) ? l : DEFAULT_LOCALE; };
 
 /** Where a record goes when it must be made again from a form: the form, or back to the record for whoever does not
- *  write (read-only mode: the form would not save). */
-const formOr = (user: SessionUser, form: string, record: string): string => (can(user, 'calc:create') ? form : record);
+ *  fill that form (read-only mode, or the right not given: the form would not save). The calculator is whoever makes
+ *  the calculations'; the one form (/progetto) and the machine room's survey (/locale), whoever draws the project's. */
+const formOr = (user: SessionUser, right: 'calc:create' | 'progetto:edit', form: string, record: string): string => (can(user, right) ? form : record);
 
 /** The user who may make records again (in read-only mode too: rbac.ts), the record's id and the locale; else to the
  *  sign-in or the dashboard. */
@@ -77,7 +78,7 @@ async function refreshLift(user: SessionUser, id: string, app: string): Promise<
   const source = d.source ? shaftSourceSchema.safeParse(d.source) : null;
   const r = inputs?.success ? await once(d.id, () => createLiftDesign(user, d.projectId, inputs.data, d.label, source?.success ? source.data : null, d.id)) : null;
   if (r === 'busy') redirect(`${app}/lift-designs/${d.id}`);
-  if (!r?.ok) redirect(formOr(user, `${app}/projects/${d.projectId}/progetto?from=${d.id}&${REFRESH_QUERY}`, `${app}/lift-designs/${d.id}`));
+  if (!r?.ok) redirect(formOr(user, 'progetto:edit', `${app}/projects/${d.projectId}/progetto?from=${d.id}&${REFRESH_QUERY}`, `${app}/lift-designs/${d.id}`));
   redirect(`${app}/lift-designs/${r.id}?da=${d.id}`);
 }
 
@@ -126,12 +127,12 @@ export async function refreshCalculationAction(fd: FormData): Promise<void> {
   if (calcRecord({ ...c, liftDesign: null })?.ok) redirect(`${app}/calculations/${c.id}`);
   // the archive of a whole project (a shaft design's calculation before the one form, a replacement's before it became
   // a whole project): the project is made again from its form
-  if (c.shaftDesign || c.project.kind !== 'REPLACEMENT') redirect(formOr(user, `${app}/projects/${c.projectId}/progetto`, `${app}/calculations/${c.id}`));
+  if (c.shaftDesign || c.project.kind !== 'REPLACEMENT') redirect(formOr(user, 'progetto:edit', `${app}/projects/${c.projectId}/progetto`, `${app}/calculations/${c.id}`));
   const done = await madeFrom(user, 'CALCULATION_SAVED', c.id);
   if (done) redirect(`${app}/calculations/${done}?da=${c.id}`);
   const r = await once(c.id, () => remakeCalc(user, c, c.roomDesigns[0] ?? null));
   if (r === 'busy') redirect(`${app}/calculations/${c.id}`);
-  if (!r) redirect(formOr(user, `${app}/projects/${c.projectId}/calc?from=${c.id}&${REFRESH_QUERY}`, `${app}/calculations/${c.id}`));
+  if (!r) redirect(formOr(user, 'calc:create', `${app}/projects/${c.projectId}/calc?from=${c.id}&${REFRESH_QUERY}`, `${app}/calculations/${c.id}`));
   redirect(`${app}/calculations/${r.calc}?da=${c.id}`);
 }
 
@@ -146,7 +147,7 @@ export async function refreshRoomDesignAction(fd: FormData): Promise<void> {
   if (!r) redirect(app);
   const c = r.calculation;
   if (reproduceRoomRecord(r, c).ok) redirect(`${app}/room-designs/${r.id}`);
-  if (r.project.kind !== 'REPLACEMENT') redirect(formOr(user, `${app}/projects/${c.projectId}/progetto`, `${app}/room-designs/${r.id}`));
+  if (r.project.kind !== 'REPLACEMENT') redirect(formOr(user, 'progetto:edit', `${app}/projects/${c.projectId}/progetto`, `${app}/room-designs/${r.id}`));
   const done = await madeFrom(user, 'ROOM_DESIGN_SAVED', r.id);
   if (done) redirect(`${app}/room-designs/${done}?da=${r.id}`);
   const newer = readCalc(c)?.same ? null : await madeFrom(user, 'CALCULATION_SAVED', c.id);
@@ -154,7 +155,7 @@ export async function refreshRoomDesignAction(fd: FormData): Promise<void> {
   const on = readCalc(c)?.same ? c : fresh && readCalc(fresh)?.same ? fresh : null;
   const m = await once(r.id, async () => (on ? { calc: on.id, room: await placeRoom(user, on, r) } : remakeCalc(user, c, r)));
   if (m === 'busy') redirect(`${app}/room-designs/${r.id}`);
-  if (!m) redirect(formOr(user, `${app}/projects/${c.projectId}/calc?from=${c.id}&${REFRESH_QUERY}`, `${app}/room-designs/${r.id}`));
+  if (!m) redirect(formOr(user, 'calc:create', `${app}/projects/${c.projectId}/calc?from=${c.id}&${REFRESH_QUERY}`, `${app}/room-designs/${r.id}`));
   // a survey the calculation no longer takes: its form, on that calculation, from this survey
-  redirect(m.room ? `${app}/room-designs/${m.room}?da=${r.id}` : formOr(user, `${app}/calculations/${m.calc}/locale?from=${r.id}&${REFRESH_QUERY}`, `${app}/calculations/${m.calc}`));
+  redirect(m.room ? `${app}/room-designs/${m.room}?da=${r.id}` : formOr(user, 'progetto:edit', `${app}/calculations/${m.calc}/locale?from=${r.id}&${REFRESH_QUERY}`, `${app}/calculations/${m.calc}`));
 }

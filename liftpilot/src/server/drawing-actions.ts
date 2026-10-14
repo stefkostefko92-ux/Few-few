@@ -131,7 +131,7 @@ async function issueNew(user: SessionUser, author: string, compose: Compose): Pr
 }
 
 export async function issueDrawingSetAction(input: { calculationId: unknown; authorInitials: unknown }): Promise<DrawingResult> {
-  const user = await actor('calc:create');
+  const user = await actor('drawings:issue');
   if (!user) return { ok: false, error: 'forbidden' };
   if (!rateLimit(`tavole:${user.id}`, 30, 10 * 60 * 1000)) return { ok: false, error: 'rateLimited' };
   const calcId = idSchema.safeParse(input.calculationId), initials = initialsSchema.safeParse(input.authorInitials);
@@ -144,7 +144,7 @@ export async function issueDrawingSetAction(input: { calculationId: unknown; aut
 
 /** The drawing set of a machine replacement, from its saved machine room. */
 export async function issueRoomSetAction(input: { roomDesignId: unknown; authorInitials: unknown }): Promise<DrawingResult> {
-  const user = await actor('calc:create');
+  const user = await actor('drawings:issue');
   if (!user) return { ok: false, error: 'forbidden' };
   if (!rateLimit(`tavole:${user.id}`, 30, 10 * 60 * 1000)) return { ok: false, error: 'rateLimited' };
   const roomId = idSchema.safeParse(input.roomDesignId), initials = initialsSchema.safeParse(input.authorInitials);
@@ -155,7 +155,7 @@ export async function issueRoomSetAction(input: { roomDesignId: unknown; authorI
 /** A revision of a set (same number, revision + 1, with a note), drawn again from the calculation given (a whole
  *  project) or from the saved machine room given (a replacement). */
 export async function reviseDrawingSetAction(input: { drawingSetId: unknown; calculationId?: unknown; roomDesignId?: unknown; note: unknown; authorInitials: unknown }): Promise<DrawingResult> {
-  const user = await actor('calc:create');
+  const user = await actor('drawings:issue');
   if (!user) return { ok: false, error: 'forbidden' };
   if (!rateLimit(`tavole:${user.id}`, 30, 10 * 60 * 1000)) return { ok: false, error: 'rateLimited' };
   const setId = idSchema.safeParse(input.drawingSetId), note = revisionNoteSchema.safeParse(input.note), initials = initialsSchema.safeParse(input.authorInitials);

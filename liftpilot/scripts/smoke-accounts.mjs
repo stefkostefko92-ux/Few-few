@@ -4,8 +4,10 @@
 // an account elsewhere gets the same answer), forgets the password and sets a new one through the e-mail; a sign-out
 // ends the session on the server; a registration with the address of a waiting invitation leaves it waiting in the
 // inviting company — no company learns that the address joined another —; a second registration with the same address
-// and a forgotten password for an unknown one answer the same as any other.
+// and a forgotten password for an unknown one answer the same as any other. Then the company's rights matrix with its
+// owner and the colleague it invited (smoke-permessi.mjs).
 import assert from 'node:assert/strict';
+import { permessiFlow } from './smoke-permessi.mjs';
 
 const link = (text, path) => {
   const m = new RegExp(`https?://[^\\s"<>]+/it/${path}#([A-Za-z0-9_-]{43})`).exec(text);
@@ -13,7 +15,7 @@ const link = (text, path) => {
   return { url: m[0], token: m[1] };
 };
 
-export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMAIL }) {
+export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMAIL, ADMIN, kit }) {
   const { page, errors } = await newPage();
   const email = `registrata.${stamp}@example.com`, password = `Registrata${stamp}Pw9`;
 
@@ -188,5 +190,9 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMA
   await page.click('main form button[type="submit"]');
   await page.waitForSelector('main .alert-ok');
   assert.equal(await sink.next(nobody, since, 1500), null, 'no e-mail for an unknown address');
+  assert.deepEqual(errors, [], 'browser errors');
+
+  await permessiFlow({ BASE, page, errors, kit, owner: { email, password: next }, tecnico: { email: member, password: memberPw }, admin: ADMIN,
+    company: `Ascensori ${stamp} srl` });
   assert.deepEqual(errors, [], 'browser errors');
 }

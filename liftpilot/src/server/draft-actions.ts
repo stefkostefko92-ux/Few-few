@@ -5,7 +5,7 @@
 // form sends it and is no larger than DRAFT_MAX. A draft is not a record: it holds what was typed, nothing derived.
 import { prisma } from '@/lib/db';
 import { getSessionUser, type SessionUser } from '@/lib/auth';
-import { can } from '@/lib/rbac';
+import { can, type Capability } from '@/lib/rbac';
 import { rateLimit } from '@/lib/ratelimit';
 import { idSchema } from '@/lib/schemas';
 import { DRAFT_MAX, draftSchemaOf, draftScopeSchema, type DraftScope } from '@/lib/draft-input';
@@ -14,13 +14,19 @@ export type DraftResult = { ok: true; at: string } | { ok: false; error: 'unauth
 
 type Target = { user: SessionUser; projectId: string; scope: DraftScope };
 
+/** Who fills the form a draft belongs to: the calculator's, whoever makes the calculations; the one form's and the
+ *  machine room's survey, whoever draws the project. */
+const formRight = (scope: DraftScope): Capability => (scope === 'calc' ? 'calc:create' : 'progetto:edit');
+
 async function target(input: { projectId: unknown; scope: unknown }, limit: string): Promise<Target | Exclude<DraftResult, { ok: true }>> {
   const user = await getSessionUser();
   if (!user) return { ok: false, error: 'unauthorized' };
-  if (user.mustChangePassword || !can(user, 'calc:create')) return { ok: false, error: 'forbidden' };
+  const projectId = idSchema.safeParse(input.projectId), scope = draftScopeSchema.safeParse(input.scope);
+  // the form's right; a scope that reads as none still needs one of the two forms
+  const allowed = scope.success ? can(user, formRight(scope.data)) : can(user, 'calc:create') || can(user, 'progetto:edit');
+  if (user.mustChangePassword || !allowed) return { ok: false, error: 'forbidden' };
   // a change of the form every second at most, and the discards with them
   if (!rateLimit(`${limit}:${user.id}`, 600, 10 * 60 * 1000)) return { ok: false, error: 'rateLimited' };
-  const projectId = idSchema.safeParse(input.projectId), scope = draftScopeSchema.safeParse(input.scope);
   if (!projectId.success || !scope.success) return { ok: false, error: 'invalidFields' };
   const project = await prisma.project.findFirst({ where: { id: projectId.data, companyId: user.companyId, archivedAt: null }, select: { id: true } });
   if (!project) return { ok: false, error: 'notFound' };

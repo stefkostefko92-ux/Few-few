@@ -16,6 +16,8 @@ const PROJECTS = [{ id: 'pfull', companyId: 'c1', archivedAt: null, kind: 'FULL'
 const match = (p: Record<string, unknown>, w: Where) => Object.entries(w).every(([k, v]) => p[k] === v);
 const accounts = new Set(['someone@other-company.example']);
 let role = 'TECHNICIAN', readOnly = false;
+/** the rights resolved with the session (round 42): none — the role's defaults */
+let caps: ReadonlySet<string> | undefined;
 const tx = {
   $queryRaw: async () => [],
   company: { findUnique: async () => ({ billingExempt: false, subscriptionStatus: null, trialEndsAt: new Date(Date.now() + 864e5), seatPack: 'NONE' }) },
@@ -29,7 +31,7 @@ mock.module(src('lib/db.ts'), { namedExports: { prisma: {
   formDraft: { deleteMany: async () => ({ count: 0 }) },
   $transaction: async (fn: (t: typeof tx) => unknown) => fn(tx),
 } } });
-mock.module(src('lib/auth.ts'), { namedExports: { getSessionUser: async () => ({ id: 'u1', role, companyId: 'c1', mustChangePassword: false, readOnly }) } });
+mock.module(src('lib/auth.ts'), { namedExports: { getSessionUser: async () => ({ id: 'u1', role, companyId: 'c1', mustChangePassword: false, readOnly, ...(caps ? { caps } : {}) }) } });
 mock.module(src('lib/mail.ts'), { namedExports: { mailConfigured: () => true } });
 mock.module(src('lib/inactive.ts'), { namedExports: { purgeInactive: async () => ({ told: 0, deleted: 0 }) } });
 mock.module(src('lib/account-mail.ts'), { namedExports: { mailAccount: () => {} } });
@@ -49,7 +51,8 @@ test('a full project takes no calculator record (its calculation comes from the 
 test('a replacement takes no one-form record (it becomes a full project first)', async () => {
   const { defaultLift } = await import(src('lib/lift/index.ts'));
   const { saveLiftDesignAction } = await import(src('server/lift-actions.ts'));
-  role = 'TECHNICIAN';
+  // the one form is the project's drawing: the Progettista's (the Tecnico does not draw it: round 42)
+  role = 'ENGINEER';
   const r = await saveLiftDesignAction({ projectId: 'prepl', inputs: defaultLift(), source: null, label: 'x' });
   assert.deepEqual(r, { ok: false, error: 'notFound' });
 });
@@ -77,5 +80,24 @@ test('read-only: neither a calculation nor a lift design is saved, before anythi
     assert.deepEqual(await saveLiftDesignAction({ projectId: 'pfull', inputs: defaultLift(), source: null, label: 'x' }), { ok: false, error: 'forbidden' });
   } finally {
     readOnly = false;
+  }
+});
+
+test('the rights of the matrix: the Tecnico calculates but does not draw the project, and a company may take the calculator away', async () => {
+  const { defaultLift } = await import(src('lib/lift/index.ts'));
+  const { PRESETS } = await import(src('calc/presets.ts'));
+  const { saveLiftDesignAction } = await import(src('server/lift-actions.ts'));
+  const { saveCalculationAction } = await import(src('server/calc-actions.ts'));
+  role = 'TECHNICIAN';
+  assert.deepEqual(await saveLiftDesignAction({ projectId: 'pfull', inputs: defaultLift(), source: null, label: 'x' }), { ok: false, error: 'forbidden' });
+  // the calculator answers past its right (the full project's calculation comes from the one form)
+  assert.deepEqual(await saveCalculationAction({ projectId: 'pfull', values: { ...PRESETS.A, r: PRESETS.A.r ?? 1 }, label: 'x' }), { ok: false, error: 'notFound' });
+  // the company took the calculations away from the Tecnico: refused before anything is looked up
+  const { capsOf } = await import(src('lib/rbac.ts'));
+  caps = capsOf('TECHNICIAN', [{ role: 'TECHNICIAN', capability: 'calc:create', granted: false }]);
+  try {
+    assert.deepEqual(await saveCalculationAction({ projectId: 'prepl', values: { ...PRESETS.A, r: PRESETS.A.r ?? 1 }, label: 'x' }), { ok: false, error: 'forbidden' });
+  } finally {
+    caps = undefined;
   }
 });

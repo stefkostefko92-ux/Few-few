@@ -23,7 +23,7 @@ export async function generateMetadata() {
 export default async function LiftWorkPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ from?: string; aggiorna?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
-  const user = await requireCapability(locale, 'calc:create');
+  const user = await requireCapability(locale, 'progetto:edit');
   const p = await getProject(user, id);
   if (!p || p.archivedAt) notFound();
   // the one form is the full project's; a replacement becomes one from its page (upgradeProjectAction)

@@ -48,7 +48,7 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
   const total = doc?.pages.length ?? s.pages, page = Math.min(Math.max(1, Number((await searchParams).p) || 1), total);
   const sheet = doc?.pages[page - 1];
   const revs = revisionsSchema.safeParse(s.revisions);
-  const editable = can(user, 'calc:create') && !s.project.archivedAt;
+  const editable = can(user, 'drawings:issue') && !s.project.archivedAt;
   // a whole project's set comes from a calculation made from a shaft design, a replacement's from a saved machine room
   const calcs = editable && !s.roomDesign ? (await listCalculations(user, s.projectId)).filter((c) => c.shaftDesignId).map((c) => ({ id: c.id, label: `${fd.dateTime(c.createdAt)}${c.label ? ` · ${c.label}` : ''} · ${c.summary}` })) : [];
   const roomLine = await roomSummaryLine();

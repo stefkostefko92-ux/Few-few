@@ -141,9 +141,11 @@ test('i dati sbagliati: tornano con gli errori e con quello che era scritto, nie
   assert.equal(schede.length, before);
 });
 
-test('chi scrive: ogni ruolo (anche il Commerciale); in sola lettura nessuno; troppi campi non sono un modulo', async () => {
+test('chi scrive: ogni ruolo tranne il Commerciale (matrice del 2026-10-14); in sola lettura nessuno; troppi campi non sono un modulo', async () => {
   const { createRilievoAction } = await actions();
   as('u4', 'SALES');
+  assert.deepEqual(await createRilievoAction({ status: 'idle' }, form(SHEET)), { status: 'error', error: 'forbidden' });
+  as('u1', 'TECHNICIAN');
   assert.match(await redirected(createRilievoAction({ status: 'idle' }, form(SHEET))), /ok=schedaCreated/);
   as('u3', 'OWNER', 'c1', true);
   assert.deepEqual(await createRilievoAction({ status: 'idle' }, form(SHEET)), { status: 'error', error: 'forbidden' });

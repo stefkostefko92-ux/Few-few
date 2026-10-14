@@ -26,7 +26,7 @@ const readProject = (fd: FormData) => projectSchema.safeParse({
 
 // a new installation opens straight on its work: the replacement on the calculation, a whole project on its one form
 export async function createProjectAction(_prev: FormState, fd: FormData): Promise<FormState> {
-  const a = await actor(fd, 'projects:edit');
+  const a = await actor(fd, 'impianti:create');
   if (!a) return { error: 'forbidden' };
   const parsed = readProject(fd), kind = projectKindSchema.safeParse(str(fd, 'kind'));
   if (!kind.success) return { error: 'invalidFields', fields: ['kind'] };
@@ -36,9 +36,10 @@ export async function createProjectAction(_prev: FormState, fd: FormData): Promi
   redirect(`/${a.locale}/app/projects/${project.id}/${kind.data === 'REPLACEMENT' ? 'calc' : 'progetto'}`);
 }
 
-/** A machine replacement becomes a whole project: its one form starts from the latest calculation (lift-start.ts). */
+/** A machine replacement becomes a whole project: its one form starts from the latest calculation (lift-start.ts) —
+ *  the start of the project's drawing, so whoever draws the project (progetto:edit). */
 export async function upgradeProjectAction(fd: FormData): Promise<void> {
-  const a = await actor(fd, 'projects:edit');
+  const a = await actor(fd, 'progetto:edit');
   const id = idSchema.safeParse(str(fd, 'id'));
   if (!a || !id.success) return;
   const res = await prisma.project.updateMany({ where: { id: id.data, companyId: a.user.companyId, archivedAt: null, kind: 'REPLACEMENT' }, data: { kind: 'FULL' } });
