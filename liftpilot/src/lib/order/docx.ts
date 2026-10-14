@@ -166,7 +166,7 @@ export function toDocx(doc: ReportDoc, when: Date, views: readonly Uint8Array[] 
   const header = `${XML}<w:hdr xmlns:w="${W_NS}" xmlns:r="${R_NS}"><w:p><w:pPr><w:pStyle w:val="PageBand"/><w:pBdr>${border('bottom', 3, RULE)}</w:pBdr></w:pPr>`
     + `${runs(m.header)}<w:r><w:tab/><w:t xml:space="preserve">Pagina </w:t></w:r>${field('PAGE')}<w:r><w:t xml:space="preserve"> di </w:t></w:r>${field('NUMPAGES')}</w:p></w:hdr>`;
   const footer = `${XML}<w:ftr xmlns:w="${W_NS}" xmlns:r="${R_NS}"><w:p><w:pPr><w:pStyle w:val="PageBand"/><w:pBdr>${border('top', 3, RULE)}</w:pBdr></w:pPr>`
-    + `${runs(m.footer)}<w:r><w:tab/><w:t xml:space="preserve">Ideato e realizzato da Carbon Stealth VCC · carbonstealth.eu</w:t></w:r></w:p>`
+    + `${runs(m.footer)}<w:r><w:tab/><w:t xml:space="preserve">Created and Designed by Carbon Stealth VCC · carbonstealth.eu</w:t></w:r></w:p>`
     + `<w:p><w:pPr><w:pStyle w:val="PageBand"/></w:pPr>${runs(m.code)}</w:p></w:ftr>`;
   const settings = `${XML}<w:settings xmlns:w="${W_NS}"><w:defaultTabStop w:val="708"/><w:characterSpacingControl w:val="doNotCompress"/>`
     + '<w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>';

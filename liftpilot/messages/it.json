@@ -10,8 +10,7 @@
     "legal": "Privacy e condizioni",
     "provider": "Carbon Stealth VCC (Карбон Стелт ЕДПК), società unipersonale a capitale variabile di diritto bulgaro · ul. Samuil 3, 2670 Bobov Dol, Bulgaria · UIC (ЕИК) 208725180 · P. IVA BG208725180 · tel. +359 877 414 874, +39 379 296 9699 · info@carbonstealth.eu",
     "dataLink": "Dati e formati",
-    "pricingLink": "Prezzi",
-    "credit": "Ideato e realizzato da <link>Carbon Stealth VCC</link>"
+    "pricingLink": "Prezzi"
   },
   "errors": {
     "notFoundTitle": "Pagina non trovata",
@@ -2429,7 +2428,6 @@
     },
     "pdf": {
       "generated": "Generato il {at} da {name}",
-      "credit": "Ideato e realizzato da Carbon Stealth VCC — carbonstealth.eu",
       "page": "Pagina {page} di {pages}"
     },
     "ordini": {

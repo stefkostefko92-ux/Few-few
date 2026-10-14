@@ -98,7 +98,7 @@ function Tools() {
       <footer className="site-footer">
         <div className="inner">
           <span>{tcm('footerNote')}</span>
-          <span>Ideato e realizzato da <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></span>
+          <span lang="en">Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></span>
         </div>
       </footer>
     </>

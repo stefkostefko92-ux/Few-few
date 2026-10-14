@@ -133,9 +133,8 @@ npx tsx --conditions=react-server scripts/landing-docs.ts   # страницит
   Безопасно-критичните и правните текстове не се превеждат машинно; `en.txt`/`bg.txt` на условията до версия 4 остават
   в `legal/terms/` като запис на приетото: страницата на версията ги свързва като документи от архива
   (`/api/terms/<версия>/<en|bg>`, text/plain, noindex), а SHA-256 на всеки архивен файл е закрепен
-  (`legal-archive.test.ts`). Подписът на Carbon Stealth е италиански („Ideato e realizzato da Carbon Stealth VCC“ —
-  футърът, relazione, поръчката, обобщението, артефактът, PDF-ът и печатът на картата на Rilievi — там единственият ред,
-  различен от rilievi). Кратките отговори на API маршрутите — от `src/lib/answers.ts` (думите
+  (`legal-archive.test.ts`). Подписът на Carbon Stealth е единственият английски ред и остава такъв („Created and Designed by Carbon Stealth
+  VCC“ — постоянното правило на собственика за всеки сайт, без изключение; в HTML с `lang="en"`). Кратките отговори на API маршрутите — от `src/lib/answers.ts` (думите
   на `errors.*`), никога английски литерал (`answers.test.ts`); само webhook-ът на Stripe отговаря на Stripe. Бележките в документите са наш текст с номера на клаузи — никога текст на чужд комплект.
 - **CSP с nonce** (`src/middleware.ts`): никакви inline скриптове; единственият `dangerouslySetInnerHTML` е JSON-LD с
   екраниран `<`.

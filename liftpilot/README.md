@@ -58,4 +58,4 @@ python3 scripts/lista-verifica-xlsx.py        # l'.xlsx dalla .json (serve openp
 
 Pubblicazione sul server: `DEPLOY.md`.
 
-Ideato e realizzato da [Carbon Stealth VCC](https://carbonstealth.eu).
+Created and Designed by [Carbon Stealth VCC](https://carbonstealth.eu).

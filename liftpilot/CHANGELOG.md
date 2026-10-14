@@ -1770,10 +1770,10 @@ Progettista, Tecnico, Commerciale. Реални потребители още н
   („su richiesta del Titolare: …“). `permessi.adminLead` казва условието с членовете 4 и 9. Затваря отвореното (1).
 - **Менюто:** „Panoramica“ и „Area di lavoro“ вместо „Dashboard“ и „Workspace“ (менюто, пътят, заглавието и H1 на
   `/it/app`). Затваря отвореното (2).
-- **Подписът на италиански:** „Ideato e realizzato da Carbon Stealth VCC“ — долният колонтитул (`common.credit`, без
-  `lang="en"`), relazione, черновата на поръчка (DOCX), обобщението, артефактът, README. PDF-ът и печатът на картата на
-  Rilievi пазят подписа на rilievi байт по байт (правилото „PDF на картата“; клоновете за синхрона на Rilievi пренасят
-  листа наново) — единственият английски ред, записан като изключение в `docs/rules.md`. Затваря отвореното (3).
+- **Подписът:** остава „Created and Designed by Carbon Stealth VCC“ навсякъде (долният колонтитул с `lang="en"`,
+  relazione, черновата на поръчка, обобщението, артефактът, README, PDF-ът и печатът на картата на Rilievi) —
+  постоянното правило на собственика за всеки сайт, без изключение; не е текст на продукта, а подпис на флота.
+  Затваря отвореното (3).
 - **Rilievi в режим само за четене:** роля, която има правото, но фирмата е само за четене (без абонамент, неприети
   условия), получава `readOnly` („L’azienda è in sola lettura…“), не „chiedilo al Titolare“ (`actor` по `holds`).
 - **Местата:** `errors.noSeats` и `team.noSeats` казват и „annulla un invito in attesa“, `billing.terms.t3` — „o annulla gli
@@ -1814,11 +1814,6 @@ Progettista, Tecnico, Commerciale. Реални потребители още н
   avvisa il Titolare, che può rimediare dalla pagina Abbonamento, poi riapri il link dell’invito.“ (`errors.inviteNoSeats`)
   — вярно във всяко състояние (абонамент с пакет, плащането, по-голям пакет — все от „Abbonamento“) и без да казва на
   още не-колегата в какво състояние е плащането на фирмата.
-- **Подписът и на картата на Rilievi е италиански:** PDF-ът и листът `/stampa` казват „Ideato e realizzato da Carbon
-  Stealth VCC — carbonstealth.eu“ (`rilievi.pdf.credit`) вместо английския ред на rilievi — по решението на собственика
-  „само италиански“ (същото решение вече беше дало двете изключения от дословността на текстовете на Rilievi). Това е
-  единственият ред, по който PDF-ът се различава от rilievi; всичко друго остава байт по байт. При сливането на клоновете
-  за синхрона на Rilievi редът остава италиански. Проверено на живо: колонтитулът на двете страници на PDF-а и листът.
 - **Регистърът на дейността — кой го вижда, казано еднакво:** тестът за баланс (`legal.interestText`) казва „Il registro
   attività mostra al Titolare, e ai colleghi a cui il Titolare ne dà il permesso, gli accessi e le azioni degli altri
   colleghi“ (Титулярът го вижда винаги — твърдо правило — и той е главният път на контрола от работодателя, за който е
