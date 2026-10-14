@@ -5,6 +5,7 @@ import { env } from '../env';
 import type { DrawingDoc } from '@/drawing';
 import type { ReportDoc } from './model';
 import { rendererInput } from './payload';
+import { ANSWER } from '@/lib/answers';
 
 const TIMEOUT_MS = 30_000;
 const MAX_BYTES = 25 * 1024 * 1024;
@@ -51,7 +52,7 @@ async function slot(): Promise<void> {
 }
 
 /** The response of a route whose renderer is busy. */
-export const busyResponse = (): Response => new Response('Busy: try again in a few seconds', {
+export const busyResponse = (): Response => new Response(ANSWER.busy, {
   status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'Retry-After': '5' },
 });
 

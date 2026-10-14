@@ -13,8 +13,9 @@ export async function generateMetadata() {
   return { title: t('schede.delete.title') };
 }
 
-// «Elimina» (rilievi GET /schede/:id/elimina): the sheet moves to the trash, from where the owner can restore it. Only
-// for whoever may (the Progettista, the owner); a sheet of another company, unknown or already in the trash: not found.
+// «Elimina» (rilievi GET /schede/:id/elimina): the sheet moves to the trash, from where whoever manages the trash
+// (the owner; by default the Capotecnico) can restore it. Only for whoever holds 'rilievi:trash' (the owner; by default the
+// Capotecnico and the Progettista); a sheet of another company, unknown or already in the trash: not found.
 export default async function TrashRilievoPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);

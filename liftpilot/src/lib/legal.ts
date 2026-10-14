@@ -10,8 +10,10 @@ import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { TOKEN_TTL_MS } from './token-shape';
 
 /** The version in force for new companies, the day it was published, and the earliest day it binds the others. */
-export const TERMS_VERSION = '4';
-export const TERMS_DATE = '2026-10-06';
+export const TERMS_VERSION = '5';
+export const TERMS_DATE = '2026-10-14';
+// the earliest day termsBinding allows for an e-mail sent on TERMS_DATE is 2026-11-14 (a Saturday); the Monday after
+// leaves two days to deploy and send the e-mails (npm run legal:notice) without moving the day
 export const TERMS_EFFECTIVE = '2026-11-16';
 
 /** Every version kept in legal/terms/<version>/, oldest first: the day it was published and the number the pages call it
@@ -21,6 +23,7 @@ export const TERMS_HISTORY: readonly { version: string; label: string; date: str
   { version: '2026-10-02', label: '1', date: '2026-10-02' },
   { version: '2', label: '2', date: '2026-10-02' },
   { version: '3', label: '3', date: '2026-10-06' },
+  { version: '4', label: '4', date: '2026-10-06' },
   { version: TERMS_VERSION, label: TERMS_VERSION, date: TERMS_DATE },
 ];
 

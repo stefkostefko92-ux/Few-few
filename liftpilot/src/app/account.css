@@ -31,7 +31,7 @@
 .terms-gate label.check.consent input { width: 18px; height: 18px; }
 .terms-gate .note a, .terms-gate .lead a { color: var(--accent); }
 .gate-actions { padding-top: 4px; }
-/* the link to the text in force: a long label (IT/EN) wraps inside the panel instead of widening the page */
+/* the link to the text in force: a long label wraps inside the panel instead of widening the page */
 .terms-gate .gate-read { white-space: normal; text-align: left; justify-content: flex-start; align-items: flex-start; max-width: 100%; }
 .terms-gate .gate-read > .icon { margin-top: -1px; }
 

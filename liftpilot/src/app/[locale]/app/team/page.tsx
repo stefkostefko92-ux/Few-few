@@ -19,7 +19,7 @@ export async function generateMetadata() {
   return { title: t('title') };
 }
 
-// The owner's colleagues: each has one of the three roles and, while active, takes a slot of the subscription; so does
+// The owner's colleagues: each has one of the four roles (Capotecnico, Progettista, Tecnico, Commerciale) and, while active, takes a slot of the subscription; so does
 // an invitation while it waits (the colleague chooses the password from the link of the e-mail).
 export default async function TeamPage({ params, searchParams }: {
   params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | string[] | undefined>>;

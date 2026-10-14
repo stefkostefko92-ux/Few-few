@@ -1,9 +1,10 @@
 'use client';
 
-// The company's free lines (voci a stesura libera) inside the price list's form: the owner writes the words and the
-// price, how each project counts the quantity (once, by the stop, by the metre of travel) and which projects take the
-// line, adds and removes lines; the Commerciale reads them. Every line is sent in its order with how many there are (the
-// search does not hide them: a line not sent would be deleted); a line left empty is dropped when saved.
+// The company's free lines (voci a stesura libera) inside the price list's form: whoever may edit the prices writes the
+// words and the price, how each project counts the quantity (once, by the stop, by the metre of travel) and which projects
+// take the line, adds and removes lines; whoever may only see the prices reads them. Every line is sent in its order with
+// how many there are (the search does not hide them: a line not sent would be deleted); a line left empty is dropped
+// when saved.
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CUSTOM_MAX, PRICE_BASES, PRICE_SCOPES, type PriceBasisName, type PriceScopeName, type PriceUnit } from '@/lib/prices/groups';

@@ -12,6 +12,8 @@ import it from '../../../messages/it.json';
 import { PRIVACY, TERMS, TERMS_DATE, TERMS_HISTORY, TERMS_VERSION, article, dateText, legalValues } from '../legal';
 import { legalSha256, legalText } from '../legal-text';
 import { CONSENTS } from '../consents';
+import { PROVIDER } from '../provider';
+import { MEMBER_ROLES } from '../rbac';
 
 const ARCHIVE = join(process.cwd(), 'legal', 'terms');
 /** The versions published while the interface was in Italian, English and Bulgarian: their three texts are the record
@@ -59,4 +61,21 @@ test('le conferme della registrazione citano gli articoli in vigore', () => {
     assert.ok(clauses.includes(` ${article(k)} (`), `clauses: article ${k}`);
   }
   assert.ok(say('accept').includes(` ${article('dpa')})`), 'accept: dpa');
+});
+
+test('il testo in vigore parla solo italiano, nomina i quattro ruoli e tiene le lingue del DSA per le autorità', () => {
+  // only Italian is archived from version 5 on; the en/bg texts stay only for the versions that had them
+  assert.deepEqual(readdirSync(join(ARCHIVE, TERMS_VERSION)), ['it.txt']);
+  const text = legalText('it');
+  const roles = MEMBER_ROLES.map((r) => (it.roles as Record<string, string>)[r]);
+  assert.ok(text.includes(`${roles.slice(0, -1).join(', ')} o ${roles[roles.length - 1]}`), 'the colleagues’ roles, all of them, in the matrix’s order');
+  for (const gone of ['NEXT_LOCALE', 'inglese e bulgaro', 'inglese o bulgaro', 'prevale il testo']) assert.ok(!text.includes(gone), gone);
+  // DSA art. 11(3): the authorities' point of contact names an official language of Bulgaria (main establishment)
+  assert.ok(text.includes('(art. 11 del Regolamento (UE) 2022/2065, DSA), in bulgaro, in inglese o in italiano'), 'DSA art. 11');
+  assert.ok(text.includes(PROVIDER.nameBg), 'the legal name in Bulgarian');
+  // outside the hashed text, changed by hand with each version: the 1341-1342 c.c. confirmation and the e-mail's summary
+  const t = createTranslator({ locale: 'it', messages: it });
+  assert.ok(!t('register.clauses', legalValues()).includes('prevalenza'), 'register.clauses: no prevailing text with one language');
+  const previous = TERMS_HISTORY[TERMS_HISTORY.length - 2].label;
+  assert.ok(t('mail.termsNoticeChanges', legalValues()).startsWith(`Che cosa cambia rispetto alla versione ${previous}:`), 'mail.termsNoticeChanges: the summary of this version');
 });

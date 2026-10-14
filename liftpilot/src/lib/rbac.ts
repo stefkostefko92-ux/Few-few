@@ -156,7 +156,8 @@ export interface Principal {
 export const isRole = (x: unknown): x is Role => typeof x === 'string' && Object.prototype.hasOwnProperty.call(ROLE_LEVEL, x);
 
 /** The role has the right in the company, whatever the subscription: can() without read-only mode. Only for what
- *  read-only mode keeps by rule (making a record again: remakes()); every other check is can(). */
+ *  read-only mode keeps by rule (making a record again: remakes()) and to say why an action is not offered (read-only
+ *  mode or no right: the company's logo); every check is can(). */
 export function holds(who: Role | Principal, capability: Capability): boolean {
   const p: Principal = typeof who === 'string' ? { role: who } : who;
   return (p.caps ?? DEFAULT_CAPS[p.role]).has(capability);

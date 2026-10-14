@@ -1,6 +1,6 @@
 // A company's prices and what a bill of materials costs with them: the price of every article is the company's own, or
 // the one it starts from (Panev's list), or none; a line without a price is counted, never guessed. Amounts in cents.
-// And the price as the owner types it, in the language's way of writing numbers. Pure.
+// And the price as whoever may edit it types it, the Italian way (comma for the decimals, dot for the thousands). Pure.
 import { PRICE_ARTICLES, priceArticle, type ArticleLabel, type PriceUnit } from './articles';
 
 /** The company's prices by key [cents]. */

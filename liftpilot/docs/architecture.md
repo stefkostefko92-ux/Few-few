@@ -243,13 +243,13 @@ src/server/          Server actions ('use server') и заявки, винаги
                      което е направен, възпроизведени от текущите двигатели — calcRecord, recordMarks; `outdated` — „da
                      aggiornare“ по версиите), save (записите: изчисление, проект на асансьора, машинно — от формите и от
                      обновяването), refresh-actions («Aggiorna con il software attuale»), drawing-pdf (PDF-ът на издадения
-                     комплект, пазен какъвто е издаден), download (отказите и отговорите на сваляните документи), lift-start
+                     комплект, пазен какъвто е издаден), download (отказите и отговорите на сваляните документи; кратките отговори — на италиански от src/lib/answers.ts, думите на errors.*), lift-start
                      (откъде тръгва формулярът: избраният проект, черновата, последният проект, пренесеното от съоръжението
                      — src/lib/lift/carry.ts — или празно), drafts + draft-actions (черновите: четене по схемата, запис,
                      изхвърляне; изтриване при запис на формуляра); set-cad + set-identity (CAD файловете и самоличността на
                      издаден комплект: R0, номерът), plant-machine (машината от каталога на съоръжението за следващия комплект);
                      verdict-checks (проверките зад резултата на запис — неминалите, после тези с внимание — за панела на
-                     хапчето, `GET /api/verdict-checks/<calc|shaft|room|lift>/<id>?locale=`: записът на фирмата, прочетен
+                     хапчето, `GET /api/verdict-checks/<calc|shaft|room|lift>/<id>`: записът на фирмата, прочетен
                      както save.ts е броил запазените броеве — src/lib/verdict-checks.ts, чисто —, на италиански;
                      проектът на асансьора се извежда наново само докато се възпроизвежда, иначе списъкът е от запазеното и
                      панелът казва защо може да не съвпада с числото).
@@ -348,7 +348,7 @@ src/app/             [locale]/… страниците, api/ (health, logout —
                      чернова на поръчка на машината, room-designs/<id>/relazione|pdf|dxf|dwg — документите на подмяната), robots,
                      sitemap, llms.txt; [locale]/pricing — цената от Stripe (`monthlyPrice`, отговорът се пази 10 минути;
                      след грешка — „su richiesta“ за минута), пакетите места и FAQ с JSON-LD.
-messages/            it.json — приложението; messages/calc/it.json — речникът на прототипа v12 (410 ключа). Само италиански
+messages/            it.json — приложението; messages/calc/it.json — речникът на прототипа v12 (425 ключа). Само италиански
                      (от 2026-10-12): src/i18n/locales.ts (LOCALES = ['it']), legacy.ts (/en и /bg → 301 към /it,
                      в src/middleware.ts преди next-intl), request.ts (статичните it.json), routing.ts (без hreflang и
                      без бисквитка за езика).

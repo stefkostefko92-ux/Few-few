@@ -8,6 +8,7 @@ import { audit } from '@/lib/audit';
 import { log } from '@/lib/log';
 import { attachment, downloader, slug, text } from '@/server/download';
 import { getShaftDesign } from '@/server/queries';
+import { ANSWER } from '@/lib/answers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -20,12 +21,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     if ('refused' in dl) return dl.refused;
     const { user } = dl;
     const id = idSchema.safeParse((await params).id);
-    if (!id.success) return text(404, 'Not found');
+    if (!id.success) return text(404, ANSWER.notFound);
     const d = await getShaftDesign(user, id.data);
     const inputs = d ? shaftInputsReadSchema.safeParse(d.inputs) : null;
-    if (!d || !inputs?.success) return text(404, 'Not found');
+    if (!d || !inputs?.success) return text(404, ANSWER.notFound);
     const stored = verifyShaftStored(inputs.data, d.sha256);
-    if (!stored.same) return text(409, 'The running engine does not reproduce this design');
+    if (!stored.same) return text(409, ANSWER.stale);
     const title = `${d.project.name} · progetto del vano ${d.id} · ${d.createdAt.toISOString().slice(0, 10)} · SHA-256 ${d.sha256.slice(0, 16)}`;
     // the brackets' codes at the pitches of the installation's data, as the design's page and sheet 1 count them; dated
     // as the design (its saving), so that every download gives the same bytes
@@ -35,6 +36,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     return attachment(dxf, 'image/vnd.dxf; charset=utf-8', name);
   } catch (err) {
     log.error({ err }, 'dxf failed');
-    return text(500, 'DXF generation failed');
+    return text(500, ANSWER.failed);
   }
 }

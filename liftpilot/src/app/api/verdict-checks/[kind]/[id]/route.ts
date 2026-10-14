@@ -4,6 +4,7 @@ import { idSchema } from '@/lib/schemas';
 import { isVerdictKind } from '@/lib/verdict-checks';
 import { downloader, text } from '@/server/download';
 import { verdictDetail } from '@/server/verdict-checks';
+import { ANSWER } from '@/lib/answers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -17,12 +18,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ kind: s
     const d = await downloader('verdict', 300, 'calc:view');
     if ('refused' in d) return d.refused;
     const { kind, id } = await params, parsed = idSchema.safeParse(id);
-    if (!isVerdictKind(kind) || !parsed.success) return text(404, 'Not found');
+    if (!isVerdictKind(kind) || !parsed.success) return text(404, ANSWER.notFound);
     const detail = await verdictDetail(d.user, kind, parsed.data, DEFAULT_LOCALE);
-    if (!detail) return text(404, 'Not found');
+    if (!detail) return text(404, ANSWER.notFound);
     return Response.json(detail, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (err) {
     log.error({ err }, 'verdict checks failed');
-    return text(500, 'Failed');
+    return text(500, ANSWER.failed);
   }
 }

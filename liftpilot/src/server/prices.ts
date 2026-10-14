@@ -1,7 +1,7 @@
 import 'server-only';
 // The company's price list on the server: its own prices over the ones the articles start from (Panev's list), and
-// what a page may show — the prices go only to whoever may see them (the owner and the Commerciale), never to a page of
-// the Progettista or the Tecnico.
+// what a page may show — the prices go only to whoever holds 'prices:view' (the owner always; by default the
+// Capotecnico and the Commerciale, the company's matrix may change it), never to a page of a role without it.
 import type { SessionUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { can } from '@/lib/rbac';

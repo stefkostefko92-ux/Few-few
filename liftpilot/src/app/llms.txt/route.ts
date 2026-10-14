@@ -1,6 +1,7 @@
 import { indexingAllowed, publicBaseUrl } from '@/lib/env';
 import { PROFILO } from '@/calc/norme';
 import it from '../../../messages/it.json';
+import { ANSWER } from '@/lib/answers';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +12,7 @@ const STEPS = [0, 1, 2, 3, 4] as const;
 // and the sitemap. In Italian, the only language of the site, with the very words of its pages (messages/it.json); a
 // title and its paragraph joined by a dash, as each paragraph starts with a capital (no colon before it).
 export function GET(): Response {
-  if (!indexingAllowed()) return new Response('Not found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+  if (!indexingAllowed()) return new Response(ANSWER.notFound, { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
   const base = publicBaseUrl(), l = it.landing;
   const body = [
     '# LiftPilot',

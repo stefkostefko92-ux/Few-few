@@ -58,6 +58,8 @@ test('senza sessione: 401, mai in cache', async () => {
   assert.ok('refused' in r);
   assert.equal(r.refused.status, 401);
   assert.equal(r.refused.headers.get('Cache-Control'), 'no-store');
+  // the browser shows the answer as it is: in Italian, like every text of the product
+  assert.equal(await r.refused.text(), 'Sessione scaduta: accedi di nuovo.');
 });
 
 test('con la password da cambiare: 401 come senza sessione', async () => {
@@ -74,6 +76,7 @@ test('senza il diritto richiesto: 403', async () => {
   const r = await downloader('t-cap', 5, 'company:export');
   assert.ok('refused' in r);
   assert.equal(r.refused.status, 403);
+  assert.equal(await r.refused.text(), 'Non hai i permessi per questa operazione.');
 });
 
 test('il Commerciale scarica (report:download)', async () => {
@@ -90,6 +93,7 @@ test('la richiesta dopo il massimo: 429; un altro utente non è toccato', async 
   const over = await downloader('t-rate', 3);
   assert.ok('refused' in over);
   assert.equal(over.refused.status, 429);
+  assert.equal(await over.refused.text(), 'Troppi tentativi. Riprova tra qualche minuto.');
   user = signedIn({ id: 'u2' });
   assert.ok('user' in (await downloader('t-rate', 3)));
 });

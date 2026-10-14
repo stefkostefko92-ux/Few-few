@@ -59,7 +59,7 @@ export async function companyExport(companyId: string): Promise<Record<string, u
   ]);
   const doc: Record<ExportKey, unknown> = {
     format: EXPORT_FORMAT, formatVersion: EXPORT_FORMAT_VERSION, exportedAt: new Date().toISOString(), termsVersion: TERMS_VERSION,
-    note: 'Data entered by the company in LiftPilot (Carbon Stealth VCC). Amounts in euro cents; lengths in millimetres unless stated; logos in base64.',
+    note: 'Dati inseriti dall’azienda in LiftPilot (Carbon Stealth VCC). Importi in centesimi di euro senza IVA, lunghezze in millimetri salvo diversa indicazione, immagini in base64.',
     company, users, invites, rolePermissions, logos: logos.map(image),
     projects: projects.map(({ clientLogos, ...p }) => ({ ...p, clientLogos: clientLogos.map(image) })),
     priceItems, customPrices, schede, auditLog,

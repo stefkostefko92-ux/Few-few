@@ -3,6 +3,7 @@ import { audit } from '@/lib/audit';
 import { endSession, getSessionUser } from '@/lib/auth';
 import { sameOriginPost } from '@/lib/same-origin';
 import { text } from '@/server/download';
+import { ANSWER } from '@/lib/answers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -12,7 +13,7 @@ export const dynamic = 'force-dynamic';
 // the client's router cache. Only from the application's own pages (sameOriginPost); the session goes from the
 // database and the cookie, the activity log says LOGOUT, then the sign-in page (303: the browser follows with a GET).
 export async function POST(req: Request): Promise<Response> {
-  if (!sameOriginPost(req.headers)) return text(403, 'Forbidden');
+  if (!sameOriginPost(req.headers)) return text(403, ANSWER.forbidden);
   const user = await getSessionUser();
   await endSession();
   if (user) await audit({ companyId: user.companyId, userId: user.id, action: 'LOGOUT', entity: 'User', entityId: user.id });

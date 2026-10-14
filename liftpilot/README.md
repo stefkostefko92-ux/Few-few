@@ -15,16 +15,21 @@ Ricerca: `../research/argano-geared/` (nella radice del monorepo). Storia dello 
 - **Abbonamento** (Stripe): il titolare dell'azienda acquista i posti per i colleghi.
 - **Motore di calcolo** (`src/calc/`): TypeScript puro, identico numero per numero al calcolatore
   prototipo pubblicato per Panev Ascensori (versione 12), con il registro delle voci normative.
-- **Applicazione web** (Next.js 15): aziende e utenti con ruoli distinti (titolare, progettista, commerciale, tecnico), impianti, calcolatore con i
-  risultati in tempo reale, calcoli salvati come snapshot immutabili con impronta SHA-256 (il server
-  ricalcola sempre, non si fida del browser), visto interno dell'ingegnere, registro attività.
+- **Applicazione web** (Next.js 15): aziende con il titolare e i colleghi in quattro ruoli (Capotecnico, Progettista,
+  Tecnico, Commerciale), con i permessi di ogni ruolo che il titolare cambia per la sua azienda entro regole fisse
+  (pagina Permessi, `src/lib/rbac.ts`), impianti, calcolatore con i risultati in tempo reale, calcoli salvati come
+  snapshot immutabili con impronta SHA-256 (il server ricalcola sempre, non si fida del browser), visto interno di chi
+  ne ha il permesso, registro attività.
+- **Rilievi**: schede di rilievo degli impianti esistenti e moduli dei fornitori (ordine quadri Pelazza, richiesta di
+  preventivo argani Montanari), con stampa e PDF.
 - **Relazione di calcolo in PDF** (in italiano) da ogni calcolo salvato: dati, verifiche con le
   clausole, tutti i casi di aderenza, tabelle di dettaglio, sensibilità, stato delle voci normative,
   avvertenza e spazio per la firma. Resta una bozza finché il tecnico incaricato non la firma.
 - **Account senza amministratore:** l'azienda si registra da sola (il titolare conferma l'indirizzo con
   il link dell'e-mail e la sua password) e chi dimentica la password ne sceglie una nuova con un link.
   E-mail tramite Brevo; informativa privacy e condizioni d'uso in `/privacy`.
-- Interfaccia solo in italiano (gli indirizzi `/en/…` e `/bg/…` portano, con un 301, alla stessa pagina in `/it/…`);
+- Solo in italiano: interfaccia, e-mail, relazioni, tavole, DXF/DWG, bozze d'ordine e condizioni d'uso (versione 5;
+  gli indirizzi `/en/…` e `/bg/…` portano, con un 301, alla stessa pagina in `/it/…`);
   pagina pubblica senza indicizzazione fino all'approvazione. Indirizzo: https://liftpilot.carbonstealth.eu.
 
 ## Verifica normativa

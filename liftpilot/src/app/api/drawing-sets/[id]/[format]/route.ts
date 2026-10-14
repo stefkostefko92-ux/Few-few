@@ -4,6 +4,7 @@ import { audit } from '@/lib/audit';
 import { log } from '@/lib/log';
 import { attachment, downloader, text } from '@/server/download';
 import { SET_CAD_FORMATS, exportDrawingSet } from '@/server/set-cad';
+import { ANSWER } from '@/lib/answers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -18,13 +19,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     if ('refused' in d) return d.refused;
     const { user } = d;
     const p = await params, id = idSchema.safeParse(p.id), format = formatSchema.safeParse(p.format);
-    if (!id.success || !format.success) return text(404, 'Not found');
+    if (!id.success || !format.success) return text(404, ANSWER.notFound);
     const r = await exportDrawingSet(user, id.data, format.data);
-    if (!r.ok) return r.error === 'engineChanged' ? text(409, 'The running engines do not reproduce this drawing set') : text(404, 'Not found');
+    if (!r.ok) return r.error === 'engineChanged' ? text(409, ANSWER.stale) : text(404, ANSWER.notFound);
     await audit({ companyId: user.companyId, userId: user.id, action: 'DRAWING_SET_DOWNLOADED', entity: 'DrawingSet', entityId: r.setId, meta: { format: format.data } });
     return attachment(r.body, r.mime, r.name);
   } catch (err) {
     log.error({ err }, 'drawing set cad failed');
-    return text(500, 'Drawing set generation failed');
+    return text(500, ANSWER.failed);
   }
 }

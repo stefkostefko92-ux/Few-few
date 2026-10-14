@@ -8,6 +8,7 @@ import { getDrawingSet } from '@/server/queries';
 import { keepSetPdf, keptSetPdf } from '@/server/drawing-pdf';
 import { firstIssuedAt } from '@/server/set-identity';
 import { RendererBusy, busyResponse } from '@/lib/report/render';
+import { ANSWER } from '@/lib/answers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -21,16 +22,16 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     if ('refused' in d) return d.refused;
     const { user } = d;
     const id = idSchema.safeParse((await params).id);
-    if (!id.success) return text(404, 'Not found');
+    if (!id.success) return text(404, ANSWER.notFound);
     const s = await getDrawingSet(user, id.data);
-    if (!s) return text(404, 'Not found');
+    if (!s) return text(404, ANSWER.notFound);
     let pdf = await keptSetPdf(s.id);
     if (!pdf) {
       // a whole project's set from its shaft design, a replacement's from its machine room (R0: its number's first issue)
       const first = await firstIssuedAt(user.companyId, s);
       const r = s.roomDesign ? composeStoredRoom({ ...s, firstIssuedAt: first, calculation: s.calculation, roomDesign: s.roomDesign, logo: s.logo, clientLogo: s.clientLogo })
         : s.shaftDesign ? composeStored({ ...s, firstIssuedAt: first, calculation: s.calculation, shaftDesign: s.shaftDesign, logo: s.logo, clientLogo: s.clientLogo }) : null;
-      if (!r) return text(404, 'Not found');
+      if (!r) return text(404, ANSWER.notFound);
       if ('ok' in r) return text(r.error === 'engineChanged' ? 409 : 404, r.error === 'engineChanged' ? 'The running engines do not reproduce this drawing set' : 'Not found');
       pdf = await keepSetPdf(s.id, r.doc, s.createdAt);
     }
@@ -40,6 +41,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   } catch (err) {
     if (err instanceof RendererBusy) return busyResponse();
     log.error({ err }, 'drawing set pdf failed');
-    return text(500, 'Drawing set generation failed');
+    return text(500, ANSWER.failed);
   }
 }

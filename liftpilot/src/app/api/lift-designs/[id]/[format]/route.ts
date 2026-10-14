@@ -5,6 +5,7 @@ import { log } from '@/lib/log';
 import { EXPORT_FORMATS, exportLiftDesign } from '@/server/project-export';
 import { RendererBusy, busyResponse } from '@/lib/report/render';
 import { attachment, downloader, text } from '@/server/download';
+import { ANSWER } from '@/lib/answers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -19,14 +20,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     if ('refused' in d) return d.refused;
     const { user } = d;
     const p = await params, id = idSchema.safeParse(p.id), format = formatSchema.safeParse(p.format);
-    if (!id.success || !format.success) return text(404, 'Not found');
+    if (!id.success || !format.success) return text(404, ANSWER.notFound);
     const r = await exportLiftDesign(user, id.data, format.data);
-    if (!r.ok) return r.error === 'engineChanged' ? text(409, 'The running engines do not reproduce this project') : text(404, 'Not found');
+    if (!r.ok) return r.error === 'engineChanged' ? text(409, ANSWER.stale) : text(404, ANSWER.notFound);
     await audit({ companyId: user.companyId, userId: user.id, action: 'PROJECT_EXPORTED', entity: 'LiftDesign', entityId: r.designId, meta: { format: format.data } });
     return attachment(r.body, r.mime, r.name);
   } catch (err) {
     if (err instanceof RendererBusy) return busyResponse();
     log.error({ err }, 'project export failed');
-    return text(500, 'Export failed');
+    return text(500, ANSWER.failed);
   }
 }

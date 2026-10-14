@@ -11,6 +11,7 @@ import { plantData } from '@/lib/plant';
 import { canonHash } from '@/lib/canon-hash';
 import { calcRecord, recordMarks } from '@/server/records';
 import { RendererBusy, busyResponse } from '@/lib/report/render';
+import { ANSWER } from '@/lib/answers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -24,10 +25,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     if ('refused' in d) return d.refused;
     const { user } = d;
     const id = idSchema.safeParse((await params).id);
-    if (!id.success) return text(404, 'Not found');
+    if (!id.success) return text(404, ANSWER.notFound);
     const c = await getCalculation(user, id.data), rec = c ? calcRecord(c) : null;
-    if (!c || !rec) return text(404, 'Not found');
-    if (!rec.ok) return text(409, 'The running engines do not reproduce this calculation or the records it was made from');
+    if (!c || !rec) return text(404, ANSWER.notFound);
+    if (!rec.ok) return text(409, ANSWER.stale);
     // the advice among SICOR and Montanari: from the lift design's inputs when it has one, else from the values
     const advice = rec.lift ? savedLiftAdvice(rec.lift.inputs) : savedValuesAdvice(rec.values);
     // the data of the installation (the rails and the loads of a lift design) with their fingerprint, and the drawing
@@ -48,6 +49,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   } catch (err) {
     if (err instanceof RendererBusy) return busyResponse();
     log.error({ err }, 'report failed');
-    return text(500, 'Report generation failed');
+    return text(500, ANSWER.failed);
   }
 }

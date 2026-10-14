@@ -7,8 +7,8 @@
 // counterweight, the 2:1 roping's pulleys and dead ends, ACOP/UCM, the electrical system and the signalling, the labour
 // (bom.ts counts them).
 // Each company keeps its own prices (PriceItem); Panev's start from the 2026 list price (p. 65, VAT excluded), the
-// others from none. The names are the makers' and the catalogues'; what an article is, the screens say in their
-// language (messages `prices.items`). Pure.
+// others from none. The names are the makers' and the catalogues'; what an article is, the screens say in Italian
+// (messages `prices.items`). Pure.
 import { BEDPLATE_CODES } from '@/lib/catalog/bedplates';
 import { MACHINES } from '@/lib/catalog/machines';
 import { PANEV_ARTICLES, PANEV_LISTINO } from '@/lib/catalog/panev';

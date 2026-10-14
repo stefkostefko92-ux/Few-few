@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { denied, requireUser } from '@/lib/auth';
-import { can } from '@/lib/rbac';
+import { can, holds } from '@/lib/rbac';
 import { getCompanyLogo } from '@/server/queries';
 import LogoForm from '@/components/tavole/LogoForm';
 import AccountHead, { PanelHead } from '@/components/AccountHead';
@@ -14,7 +14,8 @@ export async function generateMetadata() {
 
 // The company as the drawing sets show it — its logo in the title block, changed only when the company is not read-only —
 // and all its data in one JSON file (always: also to leave the service). The owner's; a Capotecnico's when the company
-// gives one of the two (round 42): the page shows what the rights allow.
+// gives one of the two (round 42): the page shows what the rights allow, and why the logo cannot be changed (the company
+// is read-only, or the role lacks the right).
 export default async function CompanyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -36,7 +37,8 @@ export default async function CompanyPage({ params }: { params: Promise<{ locale
             <figcaption className="note">{t('logoCurrent')} · {logo.width} × {logo.height} px</figcaption>
           </figure>
         ) : <p>{t('logoNone')}</p>}
-        {can(user, 'company:edit') ? <LogoForm hasLogo={logo !== null} /> : <p className="note">{t('logoReadOnly')}</p>}
+        {can(user, 'company:edit') ? <LogoForm hasLogo={logo !== null} />
+          : <p className="note">{t(holds(user, 'company:edit') ? 'logoReadOnly' : 'logoNoRight')}</p>}
       </section>
       {exports ? <section className="panel" aria-labelledby="export-h">
         <PanelHead icon="database" id="export-h">{t('exportTitle')}</PanelHead>

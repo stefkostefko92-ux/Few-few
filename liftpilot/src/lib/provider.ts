@@ -1,5 +1,5 @@
 // Carbon Stealth VCC, who provides LiftPilot: the values the footer, the structured data and the legal texts state
-// (the words around them are in messages/<locale>.json; src/lib/__tests__/legal.test.ts checks that they agree). The
+// (the words around them are in messages/it.json; src/lib/__tests__/legal-periods.test.ts checks that they agree). The
 // company is entered in the Bulgarian Commercial Register in Cyrillic and in Latin letters; ЕДПК is a sole-owner
 // variable capital company (Commerce Act, art. 260a ff.), which English and Italian call VCC.
 export const PROVIDER = {

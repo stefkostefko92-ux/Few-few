@@ -19,8 +19,8 @@ export interface PriceRow {
   own: boolean;
 }
 
-// The company's price list by group, with a search, and its free lines; the owner edits every price in place (the search
-// only hides articles: a hidden row is not sent and keeps its price), the Commerciale reads it.
+// The company's price list by group, with a search, and its free lines; whoever may edit the prices edits every one in
+// place (the search only hides articles: a hidden row is not sent and keeps its price), whoever may only see them reads it.
 export default function PriceList({ rows, values, custom, editable }: { rows: PriceRow[]; values: Record<string, string>; custom: CustomRow[]; editable: boolean }) {
   const t = useTranslations('prices'), te = useTranslations('errors'), locale = useLocale();
   const [state, action, pending] = useActionState(savePricesAction, initialFormState);

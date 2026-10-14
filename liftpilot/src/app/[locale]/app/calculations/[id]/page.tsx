@@ -101,7 +101,7 @@ export default async function CalculationPage({ params, searchParams }: {
         <div className="titles"><h1>{t('viewTitle')}{c.label ? ` · ${c.label}` : ''}</h1></div>
         <div className="actions">
           {rec.ok && can(user, 'report:download') ? (
-            <a className="btn btn-primary" href={`/api/calculations/${c.id}/relazione?locale=${locale}`}>{t('downloadReport')}</a>
+            <a className="btn btn-primary" href={`/api/calculations/${c.id}/relazione`}>{t('downloadReport')}</a>
           ) : null}
           {c.liftDesign ? <Link className="btn" href={`/app/lift-designs/${c.liftDesign.id}`}>{ts('openLift')}</Link>
             : replacement && open ? <Link className="btn" href={`/app/projects/${c.projectId}/calc?from=${c.id}`}>{t('newFrom')}</Link> : null}

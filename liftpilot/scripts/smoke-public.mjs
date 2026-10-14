@@ -45,14 +45,22 @@ export async function publicPages({ BASE, browser, newPage }) {
   }
   // and the page it leads to is there (one hop)
   assert.equal((await fetch(`${BASE}/bg/pricing?x=1`)).status, 200);
-  // no language cookie any more (the privacy page still names NEXT_LOCALE until the next terms version): none set, with or
-  // without a language asked, and the one a browser kept from the time with three languages removed
+  // no language cookie any more: none set, with or without a language asked, and the one a browser kept from the time
+  // with three languages removed
   for (const al of ['', 'bg-BG,bg;q=0.9', 'it-IT']) {
     const r = await fetch(`${BASE}/it`, { headers: { 'accept-language': al }, redirect: 'manual' });
     assert.ok(!/NEXT_LOCALE=[^;]/.test(r.headers.get('set-cookie') ?? ''), `no language cookie (accept-language «${al}»)`);
   }
   const kept = (await fetch(`${BASE}/it`, { headers: { cookie: 'NEXT_LOCALE=en' }, redirect: 'manual' })).headers.get('set-cookie') ?? '';
   assert.match(kept, /NEXT_LOCALE=;[^,]*Expires=Thu, 01 Jan 1970/i, `the old language cookie removed: ${kept}`);
+  // and the terms in force say so: one cookie (the session's), Italian only, the colleagues' four roles; the DSA point of
+  // contact for the authorities keeps Bulgarian and English
+  {
+    const terms = await (await fetch(`${BASE}/it/privacy`)).text();
+    assert.ok(!terms.includes('NEXT_LOCALE') && !/inglese (?:e|o) bulgaro/.test(terms), 'the terms speak of no other language');
+    assert.ok(terms.includes('Capotecnico, Progettista, Tecnico o Commerciale'), 'the terms name the four roles');
+    assert.ok(terms.includes('in bulgaro, in inglese o in italiano'), 'DSA art. 11: the authorities’ languages');
+  }
   step('an unknown address: the 404 drawn in Italian, also from a former-language address');
   // Next 15 sends its error shell for a notFound() (no lang, noindex) and the browser draws the localized page — in
   // Italian, with the page's language (docs/rules.md)

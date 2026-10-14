@@ -14,8 +14,9 @@ export async function generateMetadata() {
   return { title: t('title') };
 }
 
-// The company's price list and its free lines: the owner keeps it, the Commerciale reads it; the projects and the draft
-// orders take their prices from here, only for those two.
+// The company's price list and its free lines: whoever holds 'prices:edit' keeps it (the owner; a colleague the company
+// gives it to), whoever holds only 'prices:view' reads it (by default the Capotecnico and the Commerciale); the projects
+// and the draft orders take their prices from here, only for those with 'prices:view'.
 export default async function PricesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);

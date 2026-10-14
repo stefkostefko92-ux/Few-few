@@ -4,6 +4,7 @@ import 'server-only';
 import { getSessionUser, type SessionUser } from '@/lib/auth';
 import { can, type Capability } from '@/lib/rbac';
 import { rateLimit } from '@/lib/ratelimit';
+import { ANSWER } from '@/lib/answers';
 
 /** A short answer in plain text, never cached. */
 export const text = (status: number, body: string): Response =>
@@ -21,8 +22,8 @@ export const attachment = (body: BodyInit, mime: string, name: string, dispositi
 /** The user allowed to download (`capability`) at most `max` times in 10 minutes per `key`, or the answer refusing. */
 export async function downloader(key: string, max: number, capability: Capability = 'report:download'): Promise<{ user: SessionUser } | { refused: Response }> {
   const user = await getSessionUser();
-  if (!user || user.mustChangePassword) return { refused: text(401, 'Unauthorized') };
-  if (!can(user, capability)) return { refused: text(403, 'Forbidden') };
-  if (!rateLimit(`${key}:${user.id}`, max, 10 * 60 * 1000)) return { refused: text(429, 'Too many requests') };
+  if (!user || user.mustChangePassword) return { refused: text(401, ANSWER.unauthorized) };
+  if (!can(user, capability)) return { refused: text(403, ANSWER.forbidden) };
+  if (!rateLimit(`${key}:${user.id}`, max, 10 * 60 * 1000)) return { refused: text(429, ANSWER.rateLimited) };
   return { user };
 }

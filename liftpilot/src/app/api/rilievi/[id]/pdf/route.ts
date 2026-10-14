@@ -6,6 +6,7 @@ import { attachment, downloader, text } from '@/server/download';
 import { sheetToShow } from '@/server/rilievi/pages';
 import { renderSchedaPdf } from '@/server/rilievi/pdf';
 import { companyLogo } from '@/server/rilievi/queries';
+import { ANSWER } from '@/lib/answers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -19,7 +20,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     if ('refused' in d) return d.refused;
     const { user } = d;
     const scheda = await sheetToShow(user, (await params).id);
-    if (!scheda) return text(404, 'Not found');
+    if (!scheda) return text(404, ANSWER.notFound);
     const pdf = await renderSchedaPdf(scheda, {
       t: rilieviTranslator(),
       generatedBy: user.name,
@@ -30,6 +31,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     return attachment(new Uint8Array(pdf), 'application/pdf', pdfFileName(scheda), inline ? 'inline' : 'attachment');
   } catch (err) {
     log.error({ err }, 'rilievi sheet pdf failed');
-    return text(500, 'Sheet PDF generation failed');
+    return text(500, ANSWER.failed);
   }
 }
