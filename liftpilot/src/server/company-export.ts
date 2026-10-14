@@ -20,7 +20,7 @@ export async function companyExport(companyId: string): Promise<Record<string, u
   const company = await prisma.company.findUnique({
     where: { id: companyId },
     select: { id: true, name: true, vatNumber: true, city: true, active: true, logoId: true, createdAt: true, updatedAt: true,
-      subscriptionStatus: true, seatPack: true, periodEnd: true, cancelAtPeriodEnd: true, trialEndsAt: true },
+      subscriptionStatus: true, seatPack: true, periodEnd: true, cancelAtPeriodEnd: true, trialEndsAt: true, ordineSezioni: true },
   });
   if (!company) return null;
   const [users, invites, logos, projects, priceItems, customPrices, schede, auditLog] = await Promise.all([

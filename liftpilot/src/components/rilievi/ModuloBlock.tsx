@@ -8,7 +8,8 @@
 // filled from the survey, from the sheet, from the other module or with the blank module's own value, which follows its
 // source until the person types in it (collegati-client.ts); `data-predefinito` the blank module's own answer of a
 // radio group. The hidden `<prefix>-_` mark is always sent: it tells the server the module was shown, so it is never
-// prefilled again over what the person typed. Under each group, the linked data that say something else elsewhere. A
+// prefilled again over what the person typed. Under each group, the linked data that say something else elsewhere (in a
+// live region always on the page: one shown only with its first difference is not read out by every screen reader). A
 // row with the paper's arrow keeps what follows the arrow together behind it: on a narrow screen it wraps as one piece.
 import type { FieldErrors, FormValues } from '@/lib/rilievi/field-parsers';
 import { errorTextOf, type ModuloLookup } from '@/lib/rilievi/form-help';
@@ -100,10 +101,15 @@ export default function ModuloBlock({ spec, values, errors, auto, marcaOn, on, d
                 </div>
               );
             })}
+            {/* the live region is always there (empty, it takes no room), so that a list appearing in it is read out */}
             {g.diff.length ? (
-              <div className="rv-mdiff" aria-live="polite" hidden={lines.length === 0}>
-                <p className="rv-mdiff-title">{t('collegati.diversi')}</p>
-                <ul>{lines.map((d) => <DiffItem key={d.key} d={d} t={t} />)}</ul>
+              <div className="rv-mlive" aria-live="polite">
+                {lines.length ? (
+                  <div className="rv-mdiff">
+                    <p className="rv-mdiff-title">{t('collegati.diversi')}</p>
+                    <ul>{lines.map((d) => <DiffItem key={d.key} d={d} t={t} />)}</ul>
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </fieldset>

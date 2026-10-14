@@ -279,7 +279,7 @@ try {
 
   await priceList({ BASE, page, hydrated, stamp, liftUrl, roomUrl });
   const rilievo = await rilieviFlow({ BASE, page, hydrated });
-  await rilieviSync({ BASE, page, hydrated });
+  const rilievoSync = await rilieviSync({ BASE, page, hydrated });
   assert.deepEqual(errors, [], 'browser errors');
 
   await technician({ BASE, page, errors, stamp, login, logout, rilievoUrl: rilievo.sheetUrl });
@@ -287,7 +287,8 @@ try {
   // the isolation check below provokes a 404 on purpose: the console must be clean up to here
   assert.deepEqual(errors, [], 'browser errors');
   await secondCompany({ BASE, page, kit: { login, logout, hydrated }, ADMIN, stamp,
-    urls: { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref, roomUrl, roomId, rilievoUrl: rilievo.sheetUrl, rilievoId: rilievo.id } });
+    urls: { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref, roomUrl, roomId, rilievoUrl: rilievo.sheetUrl, rilievoId: rilievo.id,
+      rilievoMovilift: rilievoSync.id } });
 
   if (sink) await accountFlows({ BASE, stamp, step, sink, newPage: () => newPage(browser), ADMIN_EMAIL: ADMIN.email });
   else step('accounts without an administrator: skipped (no MAILBOX_PORT)');

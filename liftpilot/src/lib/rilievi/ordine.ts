@@ -2,6 +2,7 @@
 // and its plate — always first; the others are ordered per company (`Company.ordineSezioni`, set on the company page by
 // whoever has 'company:edit', src/server/rilievi/sezioni-actions.ts). Empty — the order of fields.ts. It holds for the
 // form, the sheet's page, the print and the PDF. Ported 1:1 from rilievi (src/schede/ordine.ts, commit ae6329cb6).
+import { z } from 'zod';
 import { SECTIONS, type SectionKey } from './fields';
 
 export const FISSE: readonly SectionKey[] = ['impianto'];
@@ -26,21 +27,27 @@ export function sezioniOrdinate<T extends { key: SectionKey }>(sections: readonl
   return [...sections].sort((a, b) => (rank.get(a.key) ?? 0) - (rank.get(b.key) ?? 0));
 }
 
-/** The order sent: exactly the sections to order, each once — otherwise null (a forged form). */
+/** A section that can be moved (the fixed ones cannot). */
+const Ordinabile = z.enum(ORDINABILI as [SectionKey, ...SectionKey[]]);
+
+/** The order sent: exactly the sections to order, each once. */
+const OrdineInviato = z.array(Ordinabile).length(ORDINABILI.length).refine((list) => new Set(list).size === list.length);
+
+/** The order sent — otherwise null (a forged form). */
 export function parseOrdine(raw: unknown): SectionKey[] | null {
-  const list: unknown[] = Array.isArray(raw) ? raw : [raw];
-  if (list.length !== ORDINABILI.length || !list.every(isOrdinabile)) return null;
-  return new Set(list).size === list.length ? list : null;
+  const sent = OrdineInviato.safeParse(raw);
+  return sent.success ? sent.data : null;
 }
 
 export type Verso = 'su' | 'giu';
 
-/** A section's «up/down» button: «funi:su» — otherwise null. */
+/** A section's «up/down» button: exactly «funi:su» / «funi:giu». */
+const MossaInviata = z.string().transform((raw) => raw.split(':')).pipe(z.tuple([Ordinabile, z.enum(['su', 'giu'])]));
+
+/** A section's «up/down» button — otherwise null. */
 export function parseMossa(raw: unknown): { key: SectionKey; verso: Verso } | null {
-  if (typeof raw !== 'string') return null;
-  const [key, verso] = raw.split(':');
-  if (!isOrdinabile(key) || (verso !== 'su' && verso !== 'giu')) return null;
-  return { key, verso };
+  const sent = MossaInviata.safeParse(raw);
+  return sent.success ? { key: sent.data[0], verso: sent.data[1] } : null;
 }
 
 /** One step up or down; at the edge — no change. */

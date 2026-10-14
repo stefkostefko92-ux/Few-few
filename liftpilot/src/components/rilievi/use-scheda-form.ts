@@ -9,6 +9,8 @@
 // sent with the form (collegati-client.ts). The control the person changes is theirs from then on. What the linked data
 // fill in the sheet is told to the page as typing would (its conditions, its rows, the survey fields) — those events are
 // the form's own: they mark nothing as typed and settle nothing again. The server decides everything again on submit.
+// A form that came back unsaved (refused, a conflict, differences to confirm) opens dirty: in rilievi the page drawn
+// again after the POST was clean, but here the app's links move inside the page, and that input is the most at risk.
 // Leaving: in rilievi every link was a page load, so the browser's own «leave the page?» covered them all. Here the
 // app's links (the sidebar, the breadcrumb, «Annulla») move inside the page; while the form is dirty such a click is
 // turned into a real page load, so the same browser question comes up (a new tab, a modified click, a link within the
@@ -28,13 +30,16 @@ import { domHost, isControl, isTick, syncConditions } from './form-dom';
 const sameList = (a: readonly ClientDiscrepanza[] | null, b: readonly ClientDiscrepanza[]): boolean => a !== null && JSON.stringify(a) === JSON.stringify(b);
 
 /** The browser's rules over the form: `collegati` the links (collegatiData on the server), `etichetta` the words of the
- *  sheet's ticks. Returns the survey's values as they stand (the rows per stop), the rows made so far, whether the form
- *  is dirty and the differences on screen (null until the page has worked them out — the server's list stays till then). */
+ *  sheet's ticks, `unsaved` whether the form opens with input not saved (it came back from the server: a refusal, a
+ *  conflict, the differences to confirm — nothing was saved). Returns the survey's values as they stand (the rows per
+ *  stop), the rows made so far, whether the form is dirty and the differences on screen (null until the page has worked
+ *  them out — the server's list stays till then). */
 export function useSchedaForm(form: RefObject<HTMLFormElement | null>, initial: FormValues, onSent: (values: FormValues) => void,
-  collegati: CollegatiDati, etichetta: SurveyContext['etichetta']) {
+  collegati: CollegatiDati, etichetta: SurveyContext['etichetta'], unsaved = false) {
   const [snap, setSnap] = useState<FormValues>(initial);
   const [made, setMade] = useState(() => misureCount(initial.fermate));
-  const [dirty, setDirty] = useState(false);
+  const [dirty, setDirty] = useState(unsaved);
+  const unsavedRef = useRef(unsaved);
   const [found, setFound] = useState<ClientDiscrepanza[] | null>(null);
   const sentRef = useRef(onSent), wordsRef = useRef(etichetta);
   useEffect(() => {
@@ -48,7 +53,7 @@ export function useSchedaForm(form: RefObject<HTMLFormElement | null>, initial: 
     const host = domHost(el);
     const engine = collegatiEngine(collegati, host);
     const ctx: SurveyContext = { contesto: collegati.contesto, etichetta: (campo, valore) => wordsRef.current(campo, valore) };
-    let isDirty = false, ours = false;
+    let isDirty = unsavedRef.current, ours = false;
     const sync = (): void => {
       const v = valuesOfForm(el);
       setSnap(v);

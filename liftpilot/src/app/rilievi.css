@@ -105,6 +105,8 @@
 .rv-mdiff, .rv-diffnote { border: 1.5px dashed var(--warn); border-radius: var(--radius-sm); background: var(--warn-bg); color: var(--ink); }
 .rv-mdiff { padding: 10px 14px; font-size: 14.5px; line-height: 1.5; }
 .rv-mdiff[hidden] { display: none; }
+/* the live region around a module group's differences: empty, out of the flow (no gap in the group), still on the page */
+.rv-mlive:empty { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .rv-mdiff-title { font-weight: 700; color: var(--warn); }
 .rv-diffnote { padding: 16px 18px; line-height: 1.5; }
 .rv-diffnote h2 { font-size: 17px; color: var(--ink); }

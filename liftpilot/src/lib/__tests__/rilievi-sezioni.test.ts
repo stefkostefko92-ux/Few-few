@@ -41,6 +41,8 @@ describe('the order of the sheet sections in a company', () => {
     assert.equal(parseOrdine('note'), null);
     assert.equal(parseOrdine(undefined), null);
     assert.equal(parseOrdine([...ORDINABILI.slice(1), new Blob(['x'])]), null, 'a file is no section');
+    assert.equal(parseOrdine([...ORDINABILI.slice(1), '__proto__']), null, 'no other name');
+    assert.equal(parseOrdine([...ORDINABILI, 'note']), null, 'one more');
   });
 
   it('moves one section one step, and nothing at the edges', () => {
@@ -49,6 +51,8 @@ describe('the order of the sheet sections in a company', () => {
     assert.equal(parseMossa('impianto:su'), null, 'the identification does not move');
     assert.equal(parseMossa('funi:lato'), null);
     assert.equal(parseMossa(['funi:su']), null);
+    assert.equal(parseMossa('funi:su:giu'), null, 'exactly one section and one way');
+    assert.equal(parseMossa('constructor:su'), null);
     const up = sposta(order, 'argano', 'su');
     assert.deepEqual(up.slice(0, 4), ['ubicazione', 'tipologia', 'argano', 'quadro']);
     assert.deepEqual(sposta(order, order[0] ?? 'funi', 'su'), order);

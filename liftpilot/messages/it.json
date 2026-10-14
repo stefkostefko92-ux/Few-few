@@ -2078,14 +2078,14 @@
       "exportedAt": "Quando è stato creato il file.",
       "termsVersion": "La versione delle condizioni d’uso pubblicata quando il file è stato creato; quella accettata da ciascun utente è in users.",
       "note": "Una nota, in inglese, sulle unità di misura.",
-      "company": "L’azienda: ragione sociale, partita IVA, città, stato dell’abbonamento e del periodo di prova.",
+      "company": "L’azienda: ragione sociale, partita IVA, città, stato dell’abbonamento e del periodo di prova, ordine delle sezioni della scheda di rilievo (ordineSezioni; vuoto = quello predefinito).",
       "users": "Gli utenti: nome, e-mail, ruolo, lingua, date di creazione, di ultimo accesso, di conferma dell’indirizzo e di accettazione delle condizioni; mai le password né i link.",
       "invites": "Gli inviti in attesa: e-mail, nome, ruolo, scadenza.",
       "logos": "I loghi dell’azienda, con impronta SHA-256 e dimensioni.",
       "projects": "I progetti, ciascuno con i propri record (sotto).",
       "priceItems": "Il listino dell’azienda: il prezzo di ogni articolo dei cataloghi.",
       "customPrices": "Le voci libere del listino, con testo, prezzo e criterio di quantità.",
-      "schede": "Le schede di rilievo (Rilievi), anche quelle nel cestino: ogni campo, le misure delle bottoniere per fermata e i moduli dei fornitori (ordine quadro, richiesta di preventivo argano) come compilati.",
+      "schede": "Le schede di rilievo (Rilievi), anche quelle nel cestino: ogni campo, le misure delle bottoniere per fermata e i moduli dei fornitori come compilati — l’ordine quadro (Pelazza o MoviLift, in ordineQuadro), il modulo rilievi dati argani (in preventivoArgano), il modulo 2SG di porte, sospensioni e operatore (in ordineSospensioni) —, la scelta di includerli nella stampa (riepilogoOrdini) e l’impronta delle differenze tra scheda e moduli confermate al salvataggio (discrepanzeConfermate).",
       "auditLog": "Il registro attività: chi, che cosa, quando."
     },
     "projectText": "Ogni progetto contiene i propri record, ciascuno con i dati inseriti, la versione del motore, i risultati e l’impronta SHA-256 che ne garantisce l’integrità:",
@@ -2113,7 +2113,8 @@
     "history": {
       "v1": "1 — la prima: company, users, logos, projects, priceItems, customPrices, auditLog.",
       "v2": "2 — dal {date}: si aggiunge invites (gli inviti in attesa).",
-      "v3": "3 — dal {date}: si aggiunge schede (le schede di rilievo, con le misure e i moduli dei fornitori)."
+      "v3": "3 — dal {date}: si aggiunge schede (le schede di rilievo, con le misure e i moduli dei fornitori).",
+      "v4": "4 — dal {date}: in schede l’ubicazione della cassettina (ubicazioneCassettina) diventa un testo, non più un numero; si aggiungono sospensioni, sospensioniNumero, ordineSospensioni, riepilogoOrdini e discrepanzeConfermate; preventivoArgano contiene il modulo rilievi dati argani e ordineQuadro anche quello MoviLift; in company si aggiunge ordineSezioni."
     },
     "apiTitle": "C’è un’interfaccia per l’esportazione?",
     "apiText": "Sì, gratuita e uguale per tutte le aziende: una richiesta GET a {base}/api/company/export restituisce il file JSON descritto sopra al titolare che ha effettuato l’accesso. È la stessa richiesta del pulsante della pagina Azienda, al massimo 6 volte all’ora per azienda. Il nuovo fornitore riceve il file dal titolare; questa pagina descrive il formato per scrivere il programma che lo legge (art. 30, par. 2, del Data Act).",
@@ -2499,6 +2500,7 @@
         "hint": "Sposta una sezione con le frecce, poi salva. Impianto resta in cima: identifica l'impianto.",
         "up": "Sposta su «{name}»",
         "down": "Sposta giù «{name}»",
+        "moved": "«{name}» ora è la {n}ª sezione.",
         "save": "Salva ordine",
         "reset": "Ripristina l'ordine predefinito",
         "readOnly": "L'ordine si cambia quando l'azienda non è in sola lettura."

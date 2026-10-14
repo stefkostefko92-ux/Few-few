@@ -5,7 +5,7 @@
 // when the make changes; the modules asked in the print; the save asking to confirm the difference («Salva comunque»
 // after «Salva»: Enter asks again, never confirms), the fields still following on the returned form; the sheet's banner;
 // the PDFs of the open modules only (the other make's 404); an edit of another field saved without asking (remembered),
-// a changed difference asked again.
+// a changed difference asked again. Returns the sheet saved with MoviLift's order (for the other company's check).
 import assert from 'node:assert/strict';
 import { step } from './smoke-kit.mjs';
 
@@ -23,7 +23,14 @@ async function submitBack(page, press) {
 
 /** The company page's «Ripristina l'ordine predefinito». */
 async function resetOrder(BASE, page, hydrated) {
-  await page.goto(`${BASE}/it/app/company`);
+  // after a failed step the page may be a form that came back unsaved (it asks before leaving): leave it
+  const leave = (d) => void d.accept();
+  page.on('dialog', leave);
+  try {
+    await page.goto(`${BASE}/it/app/company`);
+  } finally {
+    page.off('dialog', leave);
+  }
   await hydrated(page, 'button[name="ripristina"]');
   await page.click('button[name="ripristina"]');
   await page.waitForSelector('.rv-order-box .alert[role="status"]');
@@ -43,9 +50,13 @@ export async function rilieviSync({ BASE, page, hydrated }) {
   await page.waitForFunction(() => [...globalThis.document.querySelectorAll('input[name="ordine"]')].map((e) => e.value).at(-1) === 'allarme');
   assert.equal(await page.evaluate(() => globalThis.document.activeElement?.getAttribute('value')), 'note:su', 'the focus stays on the arrow pressed');
   assert.equal(await page.isVisible('.rv-order-dirty'), true, 'moved, not saved yet');
-  await page.click('button[name="salva"]');
+  assert.equal((await page.textContent('.rv-order-dirty'))?.trim(), '«Note e lavori» ora è la 10ª sezione. Modifiche non salvate',
+    'the status line says where the section is now');
+  await page.focus('button[name="salva"]');
+  await page.keyboard.press('Enter');
   await page.waitForSelector('.rv-order-box .alert[role="status"]');
   assert.equal((await page.textContent('.rv-order-box .alert[role="status"]'))?.trim(), 'Ordine delle sezioni salvato.');
+  await page.waitForFunction(() => globalThis.document.activeElement?.getAttribute('name') === 'salva');
 
   try {
     step('Rilievi: the form in that order; the linked data both ways, a difference listed; Pelazza → MoviLift');
@@ -72,6 +83,11 @@ export async function rilieviSync({ BASE, page, hydrated }) {
     await tick(page, 'quadroMarca', 'MOVILIFT');
     await page.waitForSelector('#f-om', { state: 'visible' });
     assert.equal(await page.isVisible('#f-oq'), false, 'Pelazza closed with MoviLift');
+    // MoviLift's radio groups with a hidden name («Fornitura»): the page does not scroll sideways
+    assert.equal(await page.evaluate(() => {
+      const root = globalThis.document.documentElement;
+      return root.scrollWidth <= root.clientWidth;
+    }), true, 'MoviLift open: no sideways scroll');
     assert.equal(await page.inputValue('#f-om-velocita'), '1,6', 'the order carries over to MoviLift');
     assert.notEqual(await page.inputValue('#f-om-ragioneSociale'), '', 'MoviLift: the company');
     assert.equal(await page.isChecked('input[name="om-ingressi"][value="unico"]'), true, 'MoviLift: the blank form\'s own answer');
@@ -85,6 +101,7 @@ export async function rilieviSync({ BASE, page, hydrated }) {
     assert.deepEqual(await page.locator('#confirm-summary li').allTextContents(), [fermate]);
     assert.equal(await page.evaluate(() => globalThis.document.activeElement?.id), 'confirm-summary', 'the list focused');
     assert.deepEqual(await page.locator('form[data-scheda-form] button[type="submit"]').allTextContents(), ['Salva scheda', 'Salva comunque'], '«Salva comunque» after «Salva»');
+    assert.equal(await page.isVisible('form[data-scheda-form] .rv-dirty'), true, 'nothing saved yet: the form says so (and asks before leaving)');
     await submitBack(page, async () => {
       await page.focus('#f-matricola');
       await page.keyboard.press('Enter');
@@ -122,9 +139,10 @@ export async function rilieviSync({ BASE, page, hydrated }) {
     assert.deepEqual(await page.locator('#confirm-summary li').allTextContents(), ['Fermate — Scheda: 5 · Ordine quadro: 5 · Dati argano: 7'], 'asked again');
     await Promise.all([page.waitForURL(saved), page.click('form[data-scheda-form] button[name="conferma"]')]);
     await page.waitForSelector('.rv-flash');
+    return { id };
   } finally {
     step('Rilievi: the default order back');
     await resetOrder(BASE, page, hydrated);
+    assert.deepEqual(await order(page), before, 'the default order');
   }
-  assert.deepEqual(await order(page), before, 'the default order');
 }

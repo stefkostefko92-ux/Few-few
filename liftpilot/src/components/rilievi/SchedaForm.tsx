@@ -60,18 +60,20 @@ interface BodyProps {
   edit: { id: string; base: string } | null;
   /** the fingerprint of the differences to confirm («Salva comunque»), or null */
   impronta: string | null;
+  /** the form came back without saving (a refusal, a conflict, the differences to confirm): it opens dirty */
+  unsaved: boolean;
   cancelHref: string;
   pending: boolean;
   onSent: (values: FormValues) => void;
 }
 
-function FormBody({ specs, order, collegati, action, back, errors, edit, impronta, cancelHref, pending, onSent }: BodyProps) {
+function FormBody({ specs, order, collegati, action, back, errors, edit, impronta, unsaved, cancelHref, pending, onSent }: BodyProps) {
   const t = useTranslations('rilievi'), locale = useLocale();
   const rt = t as unknown as RilieviT;
   const form = useRef<HTMLFormElement>(null);
   const etichetta = useCallback((campo: string, valore: string) => rt(`scheda.option.${campo}.${valore}`), [rt]);
   const { values } = back;
-  const { snap, made, dirty, found } = useSchedaForm(form, values, onSent, collegati, etichetta);
+  const { snap, made, dirty, found } = useSchedaForm(form, values, onSent, collegati, etichetta, unsaved);
   // how the form opens; afterwards the page shows and hides (form-dom.ts), never React
   const active = useMemo(() => activeFields((k) => values[k]), [values]);
   const auto = useMemo(() => new Set(back.auto), [back.auto]);
@@ -230,7 +232,7 @@ export default function SchedaForm({ initial, edit, cancelHref, specs, order, co
         <SectionIndex label={t('scheda.index')} titles={titles} />
         <FormBody key={keyOf(state)} specs={specs} order={order} collegati={collegati} action={action} back={back} errors={errors}
           edit={edit ? { id: edit.id, base } : null} impronta={state.status === 'confirm' && state.discrepanze.length ? state.impronta : null}
-          cancelHref={cancelHref} pending={pending} onSent={onSent} />
+          unsaved={state.status !== 'idle'} cancelHref={cancelHref} pending={pending} onSent={onSent} />
       </div>
     </>
   );
