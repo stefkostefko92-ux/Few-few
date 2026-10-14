@@ -22,8 +22,9 @@ export async function generateMetadata() {
 // else from the latest design, else from the installation's shaft design and calculation with the rest of the project
 // to enter, else empty (src/server/lift-start.ts). Opened by «Aggiorna con il software attuale» on a design that no longer
 // saves as it was (&aggiorna=1), it says so at its top with what to correct. With a survey linked to the installation
-// (round 44) what is still to enter takes the measured values, marked «dal rilievo» (never over a saved design opened
-// again); «usa il valore del rilievo» (&usa=<parametro>) puts one in on purpose, said on top.
+// (round 44) what is still to enter takes the measured values, marked «dal rilievo» and said on top (never over a saved
+// design opened again, which says nothing of the survey); «usa il valore del rilievo» (&usa=<parametro>) puts one in on
+// purpose, said on top.
 export default async function LiftWorkPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ from?: string; aggiorna?: string; usa?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
@@ -37,7 +38,7 @@ export default async function LiftWorkPage({ params, searchParams }: { params: P
   // a saved design opened again (chosen, or the latest one) has nothing to enter: the survey seeds a new form (also over
   // the software's standards), a carried over one or a draft (only what is still empty)
   const mode = from.success || (!start.draftAt && start.blank.length === 0) ? null : start.draftAt || start.carried ? 'draft' : 'new';
-  const avvio = await avvioLift(user, p.id, start, mode, sp.usa);
+  const avvio = await avvioLift(user, p.id, start, mode, sp.usa, start.draftAt ? start.rilievo : undefined);
   const [t, tp] = await Promise.all([getTranslations('lift'), getTranslations('projects')]);
   return (
     <main className="page page-wide">
@@ -48,7 +49,7 @@ export default async function LiftWorkPage({ params, searchParams }: { params: P
           <p className="lead">{t('workLead')}</p>
         </div>
       </div>
-      {avvio.rilievo ? <RilievoAvviso rilievo={avvio.rilievo} usa={avvio.usa} /> : null}
+      {avvio.rilievo ? <RilievoAvviso rilievo={avvio.rilievo} usa={avvio.usa} parte={avvio.seeded.length > 0} /> : null}
       <LiftWorkspace key={`${from.success ? from.data : 'start'}:${sp.usa ?? ''}`} projectId={p.id} initial={avvio.start.inputs} blank={avvio.start.blank}
         prices={await visiblePrices(user)} origine={avvio.origine}
         pitches={pitchesOf(p.plant)} draft={{ projectId: p.id, scope: 'lift', resumed: start.draftAt ? dateFormat(locale).dateTime(new Date(start.draftAt)) : null }}

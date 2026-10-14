@@ -438,10 +438,12 @@ src/components/rilievi/  SchedaForm (формата: разделите в ре�
 src/lib/collega/     Рилево ↔ съоръжение (кръг 44), чисто: rilievo (RilievoDati — листът първо, после листът „dati argano“;
                      unNumero/rapportoDi/poliDi, RILIEVO_SELECT, newestFirst), testo (адресът по думи, матрикула/№ като текст),
                      suggerimenti (причините и редът на предложенията), prefill (semeCalc/seminaCalc/usaCalc, semeLift/seminaLift/
-                     usaLift, USA — какво „usa il valore“ може да сложи), lati (каквото казват последното изчисление и проектът
+                     usaLift, USA — какво „usa il valore“ може да сложи; valoreCalc/valoreLift/segnati — кои полета носят
+                     „dal rilievo“: само дошлите от рилевото), lati (каквото казват последното изчисление и проектът
                      на асансьора), confronto (редовете, класът stato di fatto / modifica prevista / свободен текст, състоянието,
                      sintesi, erroriDi), passi (четирите стъпки и състоянията им), moduli (модулите на доставчиците на картата),
-                     formato (числото и единицата в сравнението), flash (съобщенията `?lk=` на двете страници).
+                     formato (числото и единицата в сравнението; stessoValore, ancoraDalRilievo — отбелязаните полета, които
+                     черновата пази), flash (съобщенията `?lk=` на двете страници).
 src/server/collega/  service (collega/scollega/creaDaRilievo: суров SQL без updatedAt на картата, фирмата на двете страни в
                      същото изявление, закрепено прочетеното съоръжение, архивираното — само за четене, одит в
                      транзакцията), actions ('use server': collegaRilievoAction, scollegaRilievoAction —

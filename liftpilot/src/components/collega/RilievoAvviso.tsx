@@ -12,21 +12,22 @@ function valoreDi(r: RilievoDati, p: Param): Valore {
   return row?.rilievo ?? null;
 }
 
-// Over an installation's form (round 44): the survey it starts from — its title, its day and the way to its sheet (only
-// whoever sees the surveys gets here, src/server/collega/forms.ts) — and that the values marked «dal rilievo» are
-// measured ones; after «usa il valore del rilievo» what was put in (and what the field held), not saved until the user saves.
-export default async function RilievoAvviso({ rilievo, usa }: { rilievo: RilievoDati; usa: UsaFatto | null }) {
+// Over an installation's form (round 44): when the form starts from the survey (`parte`: some value came from it), the
+// survey — its title, its day and the way to its sheet (only whoever sees the surveys gets here,
+// src/server/collega/forms.ts) — and that the values marked «dal rilievo» are measured ones; after «usa il valore del
+// rilievo» what was put in (and what the field held, when it was something else), not saved until the user saves. A
+// saved calculation or design continued says nothing of the survey.
+export default async function RilievoAvviso({ rilievo, usa, parte }: { rilievo: RilievoDati; usa: UsaFatto | null; parte: boolean }) {
+  if (!parte && !usa) return null;
   const t = await getTranslations('collega');
   const title = rilievo.numeroImpianto ? t('titoloNumero', { n: rilievo.numeroImpianto }) : rilievo.matricola ? t('titoloMatricola', { n: rilievo.matricola })
     : rilievo.indirizzo ?? t('titolo');
   const parola = (code: string): string => (t.has(`valore.${code}`) ? t(`valore.${code}` as 'valore.ALTO') : code);
   const label = usa ? t(`confronto.param.${usa.param}`) : '';
+  const sheet = <Link href={`/app/rilievi/${rilievo.id}`}>{t('origine.openSheet')}</Link>;
   return (
     <div className="lk-avviso" role="status">
-      <p>
-        {t('origine.notice', { title, date: fmt.day(rilievo.data) })}{' '}
-        <Link href={`/app/rilievi/${rilievo.id}`}>{t('origine.openSheet')}</Link>
-      </p>
+      {parte ? <p>{t('origine.notice', { title, date: fmt.day(rilievo.data) })} {sheet}</p> : null}
       {usa ? (
         <p className={usa.set.length ? 'alert alert-info' : 'alert alert-warn'}>
           {usa.set.length
@@ -34,6 +35,7 @@ export default async function RilievoAvviso({ rilievo, usa }: { rilievo: Rilievo
               { param: label, valore: testoValore(usa.param, valoreDi(rilievo, usa.param), parola), prima: usa.prima ? parola(usa.prima).replace('.', ',') : '' })
             : t('origine.usaNone', { param: label })}
           {usa.param === 'posizione' && rilievo.posizione === 'ALTO' ? ` ${t('origine.usaAlto')}` : ''}
+          {parte ? null : <> {sheet}</>}
         </p>
       ) : null}
     </div>

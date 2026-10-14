@@ -61,6 +61,20 @@ test('la posizione della macchina: in basso; in alto con o senza rinvio solo se 
   const withPulley = row({ preventivoArgano: { modulo: 'rilievo-dati-argani', valori: { pulegginaRinvio: '400' } } });
   assert.equal(layoutDi(rilievoDati(withPulley)), 'topDefl');
   assert.equal(layoutDi(rilievoDati(row({ arganoPreventivo: false }))), null, 'above, the pulley not known');
+  // «sì» as the sheets write it (a word boundary after «ì» is not one for \b)
+  for (const s of ['sì', 'Sì, Ø 400', 'si']) assert.equal(layoutDi(rilievoDati(row({ preventivoArgano: { modulo: 'rilievo-dati-argani', valori: { pulegginaRinvio: s } } }))), 'topDefl', s);
+  assert.equal(layoutDi(rilievoDati(row({ preventivoArgano: { modulo: 'rilievo-dati-argani', valori: { pulegginaRinvio: 'sicuro?' } } }))), null);
+});
+
+test('nuovo dal rilievo: un valore già uguale alla misura (la macchina in alto, uno standard) è del rilievo; in una bozza no', () => {
+  const seme = semeCalc(rilievoDati(row()));
+  const fresh = seminaCalc({ ...blankCalc(), layout: 'top' }, seme);
+  assert.ok(fresh.seeded.includes('layout') && fresh.seeded.includes('o_poles'), fresh.seeded.join());
+  const draft = seminaCalc({ ...blankCalc(), layout: 'top' }, seme, false);
+  assert.ok(!draft.seeded.includes('layout') && !draft.seeded.includes('o_poles'));
+  // the one form: the existing machine's field already as the survey says it — «usa» says it is in, not «nothing to take»
+  const lift = seminaLift(blankLift(), rilievoDati(row({ ubicazioneMacchina: ['BASSO'] }))).draft;
+  assert.deepEqual(usaLift(lift, rilievoDati(row()), 'funiNumero').set, ['o_n']);
 });
 
 test('calcolo: il rilievo riempie solo i campi vuoti o standard, mai quelli scritti', () => {
@@ -128,10 +142,11 @@ test('progetto: il modulo unico prende portata, fermate, posizione, taglia, velo
   const seme = semeLift(r);
   assert.equal(seme.Qkg, '630');
   assert.equal(seme.floors, '5');
-  // a value already entered stays (a draft): seeding twice changes nothing
+  // a value already entered stays (a draft): seeding twice changes nothing and fills nothing
   const typed = { ...draft, inputs: { ...draft.inputs, shaft: { ...draft.inputs.shaft, Q: 900 } } };
   assert.equal(seminaLift(typed, r).draft.inputs.shaft.Q, 900);
-  assert.deepEqual(seminaLift(typed, r).seeded, []);
+  assert.deepEqual(seminaLift(typed, r, false).seeded, []);
+  assert.deepEqual(seminaLift(typed, r, false).draft, typed);
   // «usa il valore»: over what it holds
   assert.equal(usaLift(typed, r, 'Q').draft.inputs.shaft.Q, 630);
   // a load out of the form's range is not put in

@@ -12,12 +12,17 @@ import { isSurveyField, surveySchema, type SurveyField } from './room/survey';
 export const draftScopeSchema = z.union([z.literal('lift'), z.literal('calc'), z.string().regex(/^room:[a-z0-9]{1,40}$/i)]);
 export type DraftScope = z.infer<typeof draftScopeSchema>;
 
+/** The fields of the form still marked «dal rilievo» (round 44): the start reads them again only where the value is
+ *  still the linked survey's (src/server/collega/forms.ts), so that the marks come back with the draft. */
+const rilievoSchema = z.array(z.string().regex(/^[A-Za-z][A-Za-z0-9_]{0,23}$/)).max(60).optional();
+
 export const liftDraftSchema = z.object({
   inputs: liftInputsReadSchema,
   blank: z.array(z.custom<BlankKey>((s) => typeof s === 'string' && isBlankKey(s))).max(400),
+  rilievo: rilievoSchema,
 }).strict();
 
-export const calcDraftSchema = z.object({ values: formValuesSchema, collaudo: collaudoSchema.nullable() }).strict();
+export const calcDraftSchema = z.object({ values: formValuesSchema, collaudo: collaudoSchema.nullable(), rilievo: rilievoSchema }).strict();
 
 export const surveyDraftSchema = z.object({
   survey: surveySchema,

@@ -4,8 +4,9 @@
 // reproduce it) or «differenze» (the record says otherwise than the survey about what exists on site, confronto.ts).
 // «Documenti e ordini» are the documents of the saved records — the relazione and the order draft of the calculation (a
 // replacement) or of the design (a whole project), the drawing set when issued —: done when they can be downloaded, to
-// update when a record they come from is no longer reproduced or the set issued is older than the latest record. For a
-// role that does not see the surveys nothing is judged against the survey: only whether one is linked. Pure.
+// update when a record they come from is no longer reproduced, says otherwise than the survey or is older than it, or
+// the set issued is older than the latest record (never «fatto» beside a step that is not). For a role that does not see
+// the surveys nothing is judged against the survey: only whether one is linked. Pure.
 
 export type StatoPasso = 'fatto' | 'daFare' | 'daAggiornare' | 'differenze';
 
@@ -47,12 +48,16 @@ function statoDi(rec: Record | null, rilievo: PassiInput['rilievo'], errori: num
 }
 
 /** The documents' state: none without a saved record; to update when a record they come from is no longer reproduced
- *  (its documents are not served, src/server/records.ts) or the set issued is older than the latest record. */
+ *  (its documents are not served, src/server/records.ts), says otherwise than the survey about what is on site or is
+ *  older than the survey (its step is «differenze» or «da aggiornare»: documents made from it would carry the same), or
+ *  the set issued is older than the latest record. */
 function documentiDi(x: PassiInput): StatoPasso {
-  const records = [x.calcolo, x.progetto].filter((r): r is Record => r !== null);
-  if (records.length === 0) return 'daFare';
-  const latest = Math.max(...records.map((r) => r.createdAt.getTime()));
-  return records.some((r) => r.old) || (x.tavole && x.tavole.createdAt.getTime() < latest) ? 'daAggiornare' : 'fatto';
+  const records = [[x.calcolo, x.erroriCalcolo], [x.progetto, x.erroriProgetto]] as const;
+  const saved = records.flatMap(([r, errori]) => (r ? [{ r, errori }] : []));
+  if (saved.length === 0) return 'daFare';
+  const latest = Math.max(...saved.map(({ r }) => r.createdAt.getTime()));
+  const stale = saved.some(({ r, errori }) => statoDi(r, x.rilievo, errori) !== 'fatto');
+  return stale || (x.tavole && x.tavole.createdAt.getTime() < latest) ? 'daAggiornare' : 'fatto';
 }
 
 export function passi(x: PassiInput): Passi {

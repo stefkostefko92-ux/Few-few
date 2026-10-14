@@ -16,7 +16,8 @@ const TONE = { ok: 'ok', diff: 'fail', mod: 'warn', info: 'info', na: '', fuori:
 
 // The «Confronto» of an installation (round 44, src/lib/collega/confronto.ts): parameter | rilievo | calcolo | progetto |
 // stato in three groups — what exists on site (a difference is a probable error), the expected modifications (the load,
-// the persons and the speed: the acceptance test counts a changed load or speed as a modified part), and what is only set
+// the persons and the speed: the acceptance test counts a changed load or speed as a modified part — the note links to
+// the parts of the test, src/lib/lift/collaudo.ts PARTI 'load' and 'speed'), and what is only set
 // side by side. A difference offers «Usa il valore del rilievo», which opens the right form with the survey's value in it
 // (nothing is changed until that form is saved). The parameters the survey has no value for are folded under the table
 // (on a phone they would bury the differences); the summary is green only once something was really compared.
@@ -61,10 +62,11 @@ export default async function Confronto({ righe, date, usa, collaudo, salvati }:
                       <div className="lk-stato">
                         <span className={`status-pill ${TONE[w.stato]}`}>{t(`stato.${w.stato}`)}</span>
                         {w.storico?.map((o) => <span key={o.data.toISOString()} className="note lk-note">{t('storico', { date: fmt.day(o.data), valore: o.valore })}</span>)}
-                        {w.param === 'Q' && w.stato === 'mod' ? (
-                          <span className="note lk-note">{t('collaudoLoad')}{collaudo ? <> <Link href={collaudo}>{t('collaudoLink')}</Link></> : null}</span>
+                        {(w.param === 'Q' || w.param === 'velocita') && w.stato === 'mod' ? (
+                          <span className="note lk-note">
+                            {t(w.param === 'Q' ? 'collaudoLoad' : 'collaudoSpeed')}{collaudo ? <> <Link href={collaudo}>{t('collaudoLink')}</Link></> : null}
+                          </span>
                         ) : null}
-                        {w.param === 'velocita' && w.stato === 'mod' ? <span className="note lk-note">{t('collaudoSpeed')}</span> : null}
                         {target ? <Link className="btn btn-sm lk-usa" href={target}>{t('usa')}</Link> : null}
                       </div>
                     </td>

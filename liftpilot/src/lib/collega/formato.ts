@@ -1,6 +1,7 @@
 // The values of the comparison and of the forms' notices as the screen writes them (round 44): Italian decimals («6,5»,
 // up to two figures, no thousands separator, as the survey sheets write them), each with its unit. The words (the
-// machine's place, the kind of lift) are the page's (messages: collega.valore.*). Pure.
+// machine's place, the kind of lift) are the page's (messages: collega.valore.*); and when a form's value is the
+// survey's, however written. Pure.
 import type { Param, Valore } from './confronto';
 
 export const UNITA: Readonly<Partial<Record<Param, string>>> = {
@@ -23,3 +24,16 @@ export function testoValore(p: Param, v: Valore, parola: (code: string) => strin
   if (p === 'tipo') return v.split(', ').map(parola).join(', ');
   return v;
 }
+
+/** The same value of a form's field however written: «630» and 630, «6.5» and «6,5»; an empty value is never the same. */
+export function stessoValore(a: unknown, b: unknown): boolean {
+  const s = String(a ?? '').trim(), t = String(b ?? '').trim();
+  if (s === '' || t === '') return false;
+  const x = Number(s.replace(',', '.')), y = Number(t.replace(',', '.'));
+  return s === t || (Number.isFinite(x) && Number.isFinite(y) && x === y);
+}
+
+/** The fields whose value came from the survey (`valori`: field → the survey's value) and still is it: a form's draft
+ *  keeps them, so that the marks «dal rilievo» come back with the draft. */
+export const ancoraDalRilievo = (valori: Readonly<Record<string, string>> | undefined, valore: (id: string) => unknown): string[] =>
+  (valori ? Object.entries(valori).filter(([id, v]) => stessoValore(valore(id), v)).map(([id]) => id) : []);

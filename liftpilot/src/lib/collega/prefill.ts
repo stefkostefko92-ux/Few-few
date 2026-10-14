@@ -2,12 +2,15 @@
 // whole project (/progetto) start from the measured values where they have the matching input, marked «dal rilievo».
 // Only an empty value is filled — in a brand new form also one still at the software's standard (in a draft a value equal
 // to the standard may be the user's: it stays) —: a value the user typed is never overwritten;
-// a saved record never changes (the forms seed a new record or a draft). «Usa il valore del rilievo» (the comparison) puts
-// one value in on purpose, over what the form holds, and the form says so before anything is saved. Pure.
+// a saved record never changes (the forms seed a new record or a draft). In a brand new form nothing is the user's: a
+// value the software already holds equal to the measured one (a standard, a default) is the survey's too — what was
+// filled lists it, so that it is marked like the others. «Usa il valore del rilievo» (the comparison) puts one value in
+// on purpose, over what the form holds, and the form says so before anything is saved. Pure.
 import type { FormValues } from '@/calc/types';
 import { isStandard } from '@/lib/calc-blank';
 import { filled, floorsTo, layoutTo, type LiftDraft } from '@/lib/lift/blank';
 import { isLiftStandard } from '@/lib/lift/defaults';
+import { stessoValore } from './formato';
 import type { RilievoDati } from './rilievo';
 
 /** A value the survey gives a field of a form, as the form holds it: field id → value. */
@@ -25,7 +28,8 @@ export function layoutDi(r: RilievoDati): 'top' | 'topDefl' | 'bottom' | null {
   if (r.posizione === 'BASSO') return 'bottom';
   if (r.posizione !== 'ALTO') return null;
   const rinvio = r.argano?.rinvio?.toLowerCase() ?? '';
-  if (r.argano?.rinvioD || /^s[iì]\b|^presente/.test(rinvio)) return 'topDefl';
+  // «sì» as the sheets write it: a word boundary after «ì» is not one for \b (a non-ASCII letter)
+  if (r.argano?.rinvioD || /^s[iì](?![\p{L}\p{N}])|^presente/u.test(rinvio)) return 'topDefl';
   if (/^no\b|^assente|^senza/.test(rinvio)) return 'top';
   return null;
 }
@@ -66,11 +70,14 @@ const never = (): boolean => false;
 const ropesInPlace = (V: FormValues): boolean => V.context === 'repl' && !!V.keepRopes && !V.compare;
 
 /** The calculator over its start: the survey's values where the field is empty — or, `overStandard` (a brand new
- *  calculation), still at the software's standard; what was filled, by field. */
+ *  calculation, nothing of the user's), still at the software's standard or already equal to the survey's; what was
+ *  filled, by field. */
 export function seminaCalc(V: FormValues, seme: Seme, overStandard = true): { values: FormValues; seeded: string[] } {
   const out: Record<string, FormValues[string]> = { ...V }, seeded: string[] = [];
   const put = (id: string, v: string | undefined): void => {
-    if (v === undefined || String(out[id] ?? '') === v || !blankOr(out, id, overStandard ? isStandard : never)) return;
+    if (v === undefined || seeded.includes(id)) return;
+    if (String(out[id] ?? '') === v) { if (overStandard) seeded.push(id); return; }
+    if (!blankOr(out, id, overStandard ? isStandard : never)) return;
     out[id] = v;
     seeded.push(id);
   };
@@ -129,9 +136,10 @@ function liftParam(d: LiftDraft, r: RilievoDati, p: Usa, force: boolean, overSta
       if (!open('v') || !inRange(a?.velocita ?? null, 0.1, 10)) break;
       return { draft: { ...d, inputs: { ...d.inputs, shaft: { ...S, vertical: { ...S.vertical, v: a?.velocita ?? S.vertical.v } } }, blank: filled(blank, ['v']) }, set: ['v'] };
     default: {
-      // the existing machine and its ropes: the calculation's fields of the one form
-      const fields = Object.entries(campiCalc(r)[p] ?? {}).flatMap(([id, v]): [string, string][] =>
-        (v !== null && id.startsWith('o_') && String(C[id] ?? '') !== v && (force || blankOr(C, id, overStandard ? isLiftStandard : never)) ? [[id, v]] : []));
+      // the existing machine and its ropes: the calculation's fields of the one form (a value already equal: the
+      // survey's in a brand new form, and «usa» says it is in)
+      const take = (id: string, v: string): boolean => (String(C[id] ?? '') === v ? force || overStandard : force || blankOr(C, id, overStandard ? isLiftStandard : never));
+      const fields = Object.entries(campiCalc(r)[p] ?? {}).flatMap(([id, v]): [string, string][] => (v !== null && id.startsWith('o_') && take(id, v) ? [[id, v]] : []));
       if (fields.length === 0) break;
       return { draft: withCalc(Object.fromEntries(fields)), set: fields.map(([id]) => id) };
     }
@@ -154,3 +162,30 @@ export function seminaLift(d: LiftDraft, r: RilievoDati, overStandard = true): {
 
 /** «Usa il valore del rilievo» in the one form: the parameter set over what it holds. */
 export const usaLift = (d: LiftDraft, r: RilievoDati, p: Usa): { draft: LiftDraft; set: string[] } => liftParam(d, r, p, true);
+
+/** The survey's value of a calculator's field: the ropes kept in place go in the new machine's fields too. */
+export const valoreCalc = (seme: Seme, id: string): string | undefined => seme[id] ?? (id === 'n_n' ? seme.o_n : id === 'n_d' ? seme.o_d : undefined);
+
+/** A field of the one form as its mark reads it (field ids of semeLift): what is still to enter is empty — its
+ *  placeholder is not a value. */
+export function valoreLift(d: LiftDraft, id: string): unknown {
+  const S = d.inputs.shaft, open = (k: string): boolean => (d.blank as readonly string[]).includes(k);
+  switch (id) {
+    case 'Qkg': return open('Q') || open('Qkg') || S.Q === null ? '' : S.Q;
+    case 'floors': return open('floors') ? '' : S.vertical.floors.length;
+    case 'v': return open('v') ? '' : S.vertical.v;
+    case 'layout': case 'r': return open(id) ? '' : d.inputs.calc[id];
+    default: return d.inputs.calc[id];
+  }
+}
+
+/** The marks «dal rilievo» of a form: of the fields given (filled at the start, put in by «usa», kept marked by its
+ *  draft), those whose value is the survey's — field → the survey's value. */
+export function segnati(ids: Iterable<string>, valore: (id: string) => string | undefined, attuale: (id: string) => unknown): Seme {
+  const out: Record<string, string> = {};
+  for (const id of ids) {
+    const v = valore(id);
+    if (v !== undefined && stessoValore(attuale(id), v)) out[id] = v;
+  }
+  return out;
+}

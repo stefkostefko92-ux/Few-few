@@ -1,10 +1,13 @@
 // The smoke test's survey and installation (round 44): a survey sheet with its plate, load, stops, machine below and
-// ropes → «Crea impianto» from its link panel (the new installation's form prefilled from it, marked «dal rilievo», the
-// module to choose: none preselected, a save without it asks for it) → the installation's comparison with nothing saved
-// yet: neutral, not green → a machine replacement whose calculator starts from the measured values (the load marked; a
-// value typed over it is the user's) → saved with a load changed and the machine above → the installation's page: the
-// four steps, its survey, the comparison saying the load is a planned modification and the machine's place a probable
-// error → «Usa il valore del rilievo» opens the calculator with the measured place in, said on top → a second survey of
+// ropes, its argano sheet with the speed → «Crea impianto» from its link panel (the new installation's form prefilled
+// from it, marked «dal rilievo», the module to choose: none preselected, a save without it asks for it) → the
+// installation's comparison with nothing saved yet: neutral, not green → a machine replacement whose calculator starts
+// from the measured values (the load marked; a value typed over it is the user's; its draft brings the other marks back)
+// → saved with a load and a speed changed and the machine above → the installation's page: the four steps (the
+// documents not «fatto» beside a calculation with differences), its survey, the comparison saying the load and the speed
+// are planned modifications with the parts of the test and the machine's place a probable error → «Usa il valore del
+// rilievo» opens the saved calculation continued with the measured place in, said on top — only that value marked, no
+// word of a start from the survey → a second survey of
 // the same matricola: the installation suggested with why, linked → the installation lists both → one unlinked from the
 // installation's page → the start page: the figures (the differences' one opens its installations) and the recent
 // surveys with their link; an old address of the installations' list.
@@ -13,12 +16,14 @@ import { step } from './smoke-kit.mjs';
 
 const tick = (page, name, value) => page.click(`form[data-scheda-form] label:has(> input[name="${name}"][value="${value}"])`);
 
-/** A new survey sheet saved with these fields (#f-<key> → value; `checks`: name → value ticked); its address. */
-async function newSheet({ BASE, page, hydrated }, fields, checks = {}) {
+/** A new survey sheet saved with these fields (#f-<key> → value; `checks`: name → value ticked; `then`: the fields a
+ *  check opens); its address. */
+async function newSheet({ BASE, page, hydrated }, fields, checks = {}, then = {}) {
   await page.goto(`${BASE}/it/app/rilievi/nuovo`);
   await hydrated(page, 'form[data-scheda-form][data-live] button[type="submit"]');
   for (const [k, v] of Object.entries(fields)) await page.fill(`#f-${k}`, v);
   for (const [name, value] of Object.entries(checks)) await tick(page, name, value);
+  for (const [k, v] of Object.entries(then)) await page.fill(`#f-${k}`, v);
   await Promise.all([page.waitForURL(/\/app\/rilievi\/[a-z0-9]{20,40}$/), page.click('form[data-scheda-form] button[type="submit"]')]);
   return page.url().replace(/\?.*$/, '');
 }
@@ -28,7 +33,8 @@ export async function collegaFlow({ BASE, page, hydrated, stamp }) {
 
   step('survey and installation: a survey, «Crea impianto» from its panel, prefilled from it');
   const sheetUrl = await newSheet({ BASE, page, hydrated },
-    { numeroImpianto: numero, matricola, indirizzo, portataKg: '630', fermate: '5', funiNumero: '4', funiDiametroMm: '10' }, { ubicazioneMacchina: 'BASSO' });
+    { numeroImpianto: numero, matricola, indirizzo, portataKg: '630', fermate: '5', funiNumero: '4', funiDiametroMm: '10' },
+    { ubicazioneMacchina: 'BASSO', arganoPreventivo: 'si' }, { 'pa-velocita': '0,63' });
   const panel = page.locator('#collegamento');
   assert.match(await panel.textContent(), /non è collegato a un impianto/, 'a new survey belongs to no installation');
   // the panel is the page's, not the sheet's: never inside its sections
@@ -58,8 +64,18 @@ export async function collegaFlow({ BASE, page, hydrated, stamp }) {
   assert.match(await page.textContent('.lk-avviso'), /parte dal rilievo/, 'the survey it starts from, said on top');
   assert.equal(await page.inputValue('#Q'), '630', 'the load from the survey');
   assert.equal(await page.locator('label[for="Q"] .badge.rilievo').count(), 1, 'the load marked «dal rilievo»');
+  assert.equal(await page.inputValue('#v'), '0.63', 'the speed from its argano sheet');
   await page.fill('#Q', '480');
   await page.waitForSelector('label[for="Q"] .badge.rilievo', { state: 'detached' });
+  // the draft keeps which values came from the survey: taken up again, they are marked again — the load typed is not
+  await page.waitForSelector('.savebar .draft-bar:has-text("Bozza salvata")', { timeout: 15000 });
+  await page.reload();
+  await hydrated(page, '#Q');
+  await page.waitForSelector('.savebar .draft-bar:has-text("Bozza ripresa")');
+  assert.equal(await page.inputValue('#Q'), '480');
+  assert.equal(await page.locator('label[for="Q"] .badge.rilievo').count(), 0, 'the load typed: the user\'s');
+  assert.equal(await page.locator('label[for="o_n"] .badge.rilievo').count(), 1, 'the ropes still the survey\'s, marked again');
+  assert.match(await page.textContent('.lk-avviso'), /parte dal rilievo/, 'the draft started from the survey: said again');
   // the example fills what the survey does not say (the machine above, its ropes Ø 11); the load typed over it again
   await page.click('.controls button:has-text("Esempio C")');
   await page.waitForSelector('.verdict .big');
@@ -70,10 +86,15 @@ export async function collegaFlow({ BASE, page, hydrated, stamp }) {
   step('survey and installation: the steps, the survey and the comparison on the installation\'s page');
   await page.goto(projectUrl);
   assert.equal(await page.locator('.lk-steps > li').count(), 4, 'four steps');
+  const states = (await page.locator('.lk-steps > li .lk-step-state').allTextContents()).map((x) => x.trim());
+  assert.deepEqual([states[1], states[3]], ['differenze', 'da aggiornare'], 'the documents of a calculation with differences: not «fatto»');
   assert.equal(await page.locator('#rilievi .lk-rilievi-list > li').count(), 1, 'its survey');
   const row = (p) => page.locator(`#confronto tr[data-param="${p}"]`);
   assert.match((await row('Q').getAttribute('class')) ?? '', /\blk-mod\b/, 'the load: a planned modification');
   assert.match(await row('Q').textContent(), /collaudo/, 'the acceptance test told');
+  assert.match((await row('velocita').getAttribute('class')) ?? '', /\blk-mod\b/, 'the speed: a planned modification');
+  assert.match(await row('velocita').textContent(), /Velocità nominale \(variata\)/, 'the test\'s part named');
+  assert.equal(await row('velocita').locator('a[href$="/calc#collaudo"]').count(), 1, 'the way to the parts of the test, as for the load');
   assert.match((await row('posizione').getAttribute('class')) ?? '', /\blk-diff\b/, 'the machine\'s place: a probable error');
   assert.match((await row('funiNumero').getAttribute('class')) ?? '', /\blk-ok\b/, 'the ropes\' number: the same');
   assert.match((await row('funiDiametro').getAttribute('class')) ?? '', /\blk-diff\b/, 'the ropes\' Ø: 10 measured, 11 calculated');
@@ -81,9 +102,12 @@ export async function collegaFlow({ BASE, page, hydrated, stamp }) {
   step('survey and installation: «Usa il valore del rilievo» opens the calculator with it, nothing saved');
   await Promise.all([page.waitForURL(/\/calc\?usa=posizione$/), row('posizione').locator('a.lk-usa').click()]);
   await hydrated(page, '#Q');
-  assert.match(await page.textContent('.lk-avviso .alert'), /Inserito il valore del rilievo per «[^»]+»: in basso/, 'what was put in');
+  assert.match(await page.textContent('.lk-avviso .alert'), /Inserito il valore del rilievo per «[^»]+»: in basso \(prima: in alto/, 'what was put in, and what it was');
+  assert.doesNotMatch(await page.textContent('.lk-avviso'), /parte dal rilievo/, 'the saved calculation continued: not a start from the survey');
   assert.equal(await page.inputValue('#layout'), 'bottom', 'the machine below');
   assert.equal(await page.inputValue('#Q'), '480', 'the rest as saved');
+  assert.equal(await page.locator('label[for="layout"] .badge.rilievo').count(), 1, 'the value put in: marked');
+  assert.equal(await page.locator('label[for="o_n"] .badge.rilievo').count(), 0, 'the saved ropes equal to the survey\'s: not marked');
 
   step('survey and installation: a second survey of the same matricola — the installation suggested, linked, then unlinked');
   const second = await newSheet({ BASE, page, hydrated }, { matricola, indirizzo: `Via Collega ${stamp} 3, Milano`, portataKg: '480' });
