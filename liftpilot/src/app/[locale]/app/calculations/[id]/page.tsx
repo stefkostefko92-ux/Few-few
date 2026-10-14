@@ -4,7 +4,7 @@ import { Link } from '@/i18n/routing';
 import Icon from '@/components/Icon';
 import SectionTitle from '@/components/project/SectionTitle';
 import { requireCapability } from '@/lib/auth';
-import { can, remakes } from '@/lib/rbac';
+import { can, remakerOf, remakes } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { NORMA_BREVE, ambitoOf, normeOf } from '@/lib/lift/collaudo';
 import { calcMachine, calcOrder, designMachine, designOrder } from '@/lib/order/machine';
@@ -29,7 +29,7 @@ import ReviewForm from '@/components/ReviewForm';
 import { REVIEW_MAX } from '@/lib/review';
 import Crumbs from '@/components/Crumbs';
 import CalculationView from '@/components/calc/CalculationView';
-import RefreshForm from '@/components/RefreshForm';
+import StaleNotice from '@/components/StaleNotice';
 import Refreshed from '@/components/Refreshed';
 import AdviceView from '@/components/lift/AdviceView';
 import { pitchesOf, plantData, plantReadSchema } from '@/lib/plant';
@@ -68,7 +68,7 @@ export default async function CalculationPage({ params, searchParams }: {
   const open = can(user, 'calc:create') && live, draws = can(user, 'progetto:edit') && live, issues = can(user, 'drawings:issue') && live;
   // made again in one click: a lift design's calculation with the design (whoever draws the project), a replacement's
   // with its machine room; one in the archive of a whole project is made again from the project's form (refresh-actions.ts)
-  const refreshable = remakes(user, c.liftDesign ? 'lift' : 'calc') && !c.project.archivedAt && (!!c.liftDesign || replacement);
+  const remaker = remakerOf(user, c.liftDesign ? 'lift' : 'calc', live && (!!c.liftDesign || replacement));
   // the machine room of the calculation it was made again from, which the new one did not take: to be redone from it
   const lost = before && da.success && replacement && rooms.length === 0 ? await latestRoomOf(user, da.data) : null;
   // the advice among SICOR and Montanari and the machine of the draft order: those of the lift design the calculation
@@ -114,12 +114,12 @@ export default async function CalculationPage({ params, searchParams }: {
           {remakes(user, 'room') ? <>{tf('roomRedo')}{draws ? <> <Link href={`/app/calculations/${c.id}/locale?from=${lost.id}`}>{tf('roomOpen')}</Link></> : null}</> : tf('roomLeft')}
         </p>
       ) : null}
+      {/* without the button, who makes it again: a lift design's, whoever draws the project; a replacement's, whoever
+          makes the calculations (rbac.ts remakerOf) */}
       {rec.ok ? null : (
-        <div className="alert alert-warn flex flex-col items-start gap-2" role="status">
-          <p className="m-0">{tf(c.liftDesign ? 'design' : replacement ? 'calc' : 'archive')}</p>
-          {refreshable ? <RefreshForm kind="calc" id={c.id} />
-            : draws ? <Link className="btn" href={`/app/projects/${c.projectId}/progetto`}>{ts('openForm')}</Link> : null}
-        </div>
+        <StaleNotice text={c.liftDesign ? 'design' : replacement ? 'calc' : 'archive'} by={remaker} refresh={{ kind: 'calc', id: c.id }}>
+          {draws ? <Link className="btn" href={`/app/projects/${c.projectId}/progetto`}>{ts('openForm')}</Link> : null}
+        </StaleNotice>
       )}
       <dl className="cartiglio">
         <div><dt>{t('col_result')}</dt><dd><VerdictPill verdict={c.verdict} fails={c.failCount} warns={c.warnCount} record={{ kind: 'calc', id: c.id }} /></dd></div>

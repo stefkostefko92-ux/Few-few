@@ -264,7 +264,9 @@ src/components/shaft/ Шахтата в единния формуляр (зап�
                      src/components/drawing/ShapesSvg — ядрото в SVG; EditableDrawing — слой с бутони над размерите и
                      поле на място (hit-boxes: бутоните растат до пръст, без да се покриват).
 src/components/project/ RecordTable — записите на асансьора на страницата му (резултат, „da aggiornare“, архив).
-src/components/RefreshForm + Refreshed — бутонът «Aggiorna con il software attuale» и лентата „резултатът (не) се промени“.
+src/components/RefreshForm + Refreshed — бутонът «Aggiorna con il software attuale» и лентата „резултатът (не) се промени“;
+                     StaleNotice — предупреждението над остарял запис: бутонът с изречението си за който го прави наново,
+                     иначе кой колега го прави (rbac.ts remakerOf).
 src/components/VerdictPill + VerdictChecks — резултатът на записа (запазените броеве); „Non supera“/„attenzione“ е бутон, който
                      отваря панела с проверките зад числото (popover в горния слой, четене при първото отваряне, Esc/клик
                      навън, по един; таблото, таблиците на проекта, страниците на записите, Refreshed); verdict.css.

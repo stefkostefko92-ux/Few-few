@@ -174,6 +174,13 @@ export function remakes(who: Role | Principal, record: 'calc' | 'lift' | 'room')
   return can(who, 'records:refresh') && (record === 'calc' || holds(who, 'progetto:edit'));
 }
 
+/** Who makes such a record again, as its notice tells the user (src/components/StaleNotice.tsx): the user ('self', who
+ *  has the button), else the colleague who draws the project or who makes the calculations; nobody on an archived one. */
+export function remakerOf(who: Role | Principal, record: 'calc' | 'lift' | 'room', live: boolean): 'self' | 'drawer' | 'calc' | null {
+  if (!live) return null;
+  return remakes(who, record) ? 'self' : record === 'calc' ? 'calc' : 'drawer';
+}
+
 /** The row of the matrix that gives a right: itself, or the one a derived right follows; null for the platform's. */
 export function matrixRightOf(capability: Capability): MatrixCapability | null {
   const c = DERIVED[capability] ?? capability;

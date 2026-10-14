@@ -4,7 +4,7 @@ import { Link } from '@/i18n/routing';
 import Icon from '@/components/Icon';
 import SectionTitle from '@/components/project/SectionTitle';
 import { requireCapability } from '@/lib/auth';
-import { can, remakes } from '@/lib/rbac';
+import { can, remakerOf } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { ambitoOf } from '@/lib/lift/collaudo';
@@ -27,7 +27,7 @@ import IssueForm from '@/components/tavole/IssueForm';
 import DrawingFigure from '@/components/drawing/DrawingFigure';
 import ShapesSvg from '@/components/drawing/ShapesSvg';
 import VerdictPill from '@/components/VerdictPill';
-import RefreshForm from '@/components/RefreshForm';
+import StaleNotice from '@/components/StaleNotice';
 import Refreshed from '@/components/Refreshed';
 
 export async function generateMetadata() {
@@ -47,14 +47,14 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
   const user = await requireCapability(locale, 'calc:view');
   const r = await getRoomDesign(user, id);
   if (!r) notFound();
-  const [t, tp, tc, tt, ts, tf, before] = await Promise.all([getTranslations('room'), getTranslations('projects'), getTranslations('calculations'), getTranslations('tavole'),
-    getTranslations('shaft'), getTranslations('refresh'), refreshedFrom(user, 'roomDesign', (await searchParams).da, r.projectId)]);
+  const [t, tp, tc, tt, ts, before] = await Promise.all([getTranslations('room'), getTranslations('projects'), getTranslations('calculations'), getTranslations('tavole'),
+    getTranslations('shaft'), refreshedFrom(user, 'roomDesign', (await searchParams).da, r.projectId)]);
   const rep = reproduceRoomRecord(r, r.calculation), d = rep.ok ? rep.derived : null;
   const fd = dateFormat(locale), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']), lead = (await roomSummaryLine())(r);
   // a machine room is a replacement's: one in the archive of a whole project is read only (its project is made again
   // from the form)
-  const download = !!d && can(user, 'report:download'), editable = can(user, 'progetto:edit') && !r.project.archivedAt;
-  const issues = can(user, 'drawings:issue') && !r.project.archivedAt;
+  const live = !r.project.archivedAt, download = !!d && can(user, 'report:download'), editable = can(user, 'progetto:edit') && live;
+  const issues = can(user, 'drawings:issue') && live;
   const replacement = r.project.kind === 'REPLACEMENT';
   const views = d ? (['plan', 'section'] as const).map((k) => {
     try {
@@ -81,13 +81,8 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
         </div>
       </div>
       {before ? <Refreshed before={before} now={r} kind="room" locale={locale} /> : null}
-      {d ? null : (
-        <div className="alert alert-warn flex flex-col items-start gap-2" role="status">
-          <p className="m-0">{tf(replacement ? 'room' : 'archive')}</p>
-          {/* a new machine room: whoever draws the project (rbac.ts remakes) */}
-          {remakes(user, 'room') && !r.project.archivedAt && replacement ? <RefreshForm kind="room" id={r.id} /> : null}
-        </div>
-      )}
+      {/* a new machine room, a replacement's: whoever draws the project (rbac.ts remakerOf); the others read who does */}
+      {d ? null : <StaleNotice text={replacement ? 'room' : 'archive'} by={remakerOf(user, 'room', live && replacement)} refresh={{ kind: 'room', id: r.id }} />}
       <dl className="cartiglio">
         <div><dt>{tc('col_result')}</dt><dd><VerdictPill verdict={r.verdict} fails={r.failCount} warns={r.warnCount} record={{ kind: 'room', id: r.id }} /></dd></div>
         <div><dt>{tc('col_date')}</dt><dd>{fd.dateTime(r.createdAt)}</dd></div>

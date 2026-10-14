@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { getLocale, getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { requireCapability } from '@/lib/auth';
-import { can, formRightOf, holds, remakes } from '@/lib/rbac';
+import { can, formRightOf, holds, remakerOf } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { getProject, latestLiftDesign, listCalculations, listDrawingSets, listLiftDesigns, listRoomDesigns, listShaftDesigns } from '@/server/queries';
 import { outdated } from '@/server/records';
@@ -11,7 +11,7 @@ import { visiblePrices } from '@/server/prices';
 import LiftView from '@/components/lift/LiftView';
 import { setProjectArchivedAction, upgradeProjectAction } from '@/server/project-actions';
 import Crumbs from '@/components/Crumbs';
-import RefreshForm from '@/components/RefreshForm';
+import StaleNotice from '@/components/StaleNotice';
 import RecordTable from '@/components/project/RecordTable';
 import SectionTitle from '@/components/project/SectionTitle';
 import { roomSummaryLine } from '@/server/room-summary';
@@ -33,8 +33,8 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
   const user = await requireCapability(locale, 'projects:view');
   const p = await getProject(user, id);
   if (!p) notFound();
-  const [t, tc, ts, tt, tl, tm, tf, calcs, designs, sets, lifts, latest, rooms, lang] = await Promise.all([getTranslations('projects'), getTranslations('calculations'),
-    getTranslations('shaft'), getTranslations('tavole'), getTranslations('lift'), getTranslations('room'), getTranslations('refresh'), listCalculations(user, p.id),
+  const [t, tc, ts, tt, tl, tm, calcs, designs, sets, lifts, latest, rooms, lang] = await Promise.all([getTranslations('projects'), getTranslations('calculations'),
+    getTranslations('shaft'), getTranslations('tavole'), getTranslations('lift'), getTranslations('room'), listCalculations(user, p.id),
     listShaftDesigns(user, p.id), listDrawingSets(user, p.id), listLiftDesigns(user, p.id), latestLiftDesign(user, p.id), listRoomDesigns(user, p.id), getLocale()]);
   const latestInputs = latest ? liftInputsReadSchema.safeParse(latest.inputs) : null;
   const fd = dateFormat(locale);
@@ -107,10 +107,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
               {latest ? <Link className="btn" href={`/app/lift-designs/${latest.id}`}>{tl('open')}</Link> : null}
             </div>
             {latest && outdated.lift(latest) ? (
-              <div className="alert alert-warn flex flex-col items-start gap-2" role="status">
-                <p className="m-0">{tf('design')}</p>
-                {remakes(user, 'lift') && !p.archivedAt ? <RefreshForm kind="lift" id={latest.id} /> : null}
-              </div>
+              <StaleNotice text="design" by={remakerOf(user, 'lift', !p.archivedAt)} refresh={{ kind: 'lift', id: latest.id }} />
             ) : null}
             {latestInputs?.success ? <LiftView inputs={latestInputs.data} checks={false} prices={await visiblePrices(user)} pitches={pitchesOf(p.plant)} /> : (
               <div className="panel items-start">

@@ -1061,9 +1061,11 @@
     „Nuovo calcolo da questo“; `records:refresh` — `refresh-actions.ts`: изчислението на подмяната — с него; проектът на
     асансьора (нов LiftDesign + шахта + изчисление) и машинното (нов RoomDesign) са записи на Progetto — само ако ролята
     има и `progetto:edit` (`remakes`; в режим само за четене също, затова `holds`, не `can`), иначе се остава на
-    записа и бутонът „Aggiorna“ не се показва; изчислението на подмяната, обновено от роля без `progetto:edit`, оставя
-    машинното на старото изчисление (страницата на новото го казва), за да го пренесе който чертае. Когато записът се
-    отваря във формуляр: калкулаторът иска `calc:create`, `/progetto` и `/locale` — `progetto:edit`; `calc:review` —
+    записа и бутонът „Aggiorna“ не се показва — предупреждението над записа тогава казва кой колега го прави
+    (`remakerOf` → `StaleNotice`: „…che disegna il progetto“ / „…che fa i calcoli“), не изречението за бутона;
+    изчислението на подмяната, обновено от роля без `progetto:edit`, оставя машинното на старото изчисление
+    (страницата на новото го казва), за да го пренесе който чертае. Когато записът се отваря във формуляр:
+    калкулаторът иска `calc:create`, `/progetto` и `/locale` — `progetto:edit`; `calc:review` —
     `reviewCalculationAction`, формата на визата.
   - `progetto:edit` — `/projects/<id>/progetto`, `saveLiftDesignAction`, черновата `lift`; рилевото на машинното
     (`/calculations/<id>/locale`, `saveRoomDesignAction`, черновите `room:*`); подмяна → цял проект

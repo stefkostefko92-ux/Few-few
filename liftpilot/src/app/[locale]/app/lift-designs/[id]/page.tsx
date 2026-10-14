@@ -4,7 +4,7 @@ import { Link } from '@/i18n/routing';
 import Icon from '@/components/Icon';
 import SectionTitle from '@/components/project/SectionTitle';
 import { requireCapability } from '@/lib/auth';
-import { can, remakes } from '@/lib/rbac';
+import { can, remakerOf } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { idSchema } from '@/lib/schemas';
 import { liftRecord } from '@/lib/lift-record';
@@ -29,7 +29,7 @@ import AdviceView from '@/components/lift/AdviceView';
 import IssueForm from '@/components/tavole/IssueForm';
 import Crumbs from '@/components/Crumbs';
 import VerdictPill from '@/components/VerdictPill';
-import RefreshForm from '@/components/RefreshForm';
+import StaleNotice from '@/components/StaleNotice';
 import Refreshed from '@/components/Refreshed';
 
 export async function generateMetadata() {
@@ -48,14 +48,14 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
   if (!parsedId.success) notFound();
   const d = await getLiftDesign(user, parsedId.data);
   if (!d) notFound();
-  const [t, tp, tt, ta, tf, before] = await Promise.all([getTranslations('lift'), getTranslations('projects'), getTranslations('tavole'), getTranslations('advice'),
-    getTranslations('refresh'), refreshedFrom(user, 'liftDesign', (await searchParams).da, d.project.id)]);
+  const [t, tp, tt, ta, before] = await Promise.all([getTranslations('lift'), getTranslations('projects'), getTranslations('tavole'), getTranslations('advice'),
+    refreshedFrom(user, 'liftDesign', (await searchParams).da, d.project.id)]);
   const fd = dateFormat(locale);
   // the running engines give the same records? (else the documents are refused: a new save is needed)
   // the bracket pitches of the installation's data count the brackets of the list and place them in 3D, as on sheet 1
   const pitches = pitchesOf(d.project.plant), r = liftRecord(d, d.shaftDesign.sha256, d.calculation.sha256), same = r?.same ?? false;
   const dv = r ? { ...r.dv, layout: withPitches(r.dv.layout, pitches) } : null;
-  const editable = can(user, 'progetto:edit') && !d.project.archivedAt, issues = can(user, 'drawings:issue') && !d.project.archivedAt;
+  const live = !d.project.archivedAt, editable = can(user, 'progetto:edit') && live, issues = can(user, 'drawings:issue') && live;
   // the advice among SICOR and Montanari for the saved inputs, and the machine of the draft order: the one the design
   // verified, or the advice's first
   const advice = r ? savedLiftAdvice(r.inputs) : null, alt = r && advice ? savedLiftAlternative(r.inputs, advice) : null;
@@ -84,13 +84,8 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
         </div>
       </div>
       {before ? <Refreshed before={before} now={d} kind="lift" locale={locale} /> : null}
-      {same ? null : (
-        <div className="alert alert-warn flex flex-col items-start gap-2" role="status">
-          <p className="m-0">{tf('design')}</p>
-          {/* a new lift design: whoever draws the project (rbac.ts remakes) */}
-          {remakes(user, 'lift') && !d.project.archivedAt && r ? <RefreshForm kind="lift" id={d.id} /> : null}
-        </div>
-      )}
+      {/* a new lift design: whoever draws the project (rbac.ts remakerOf); the others read who does */}
+      {same ? null : <StaleNotice text="design" by={remakerOf(user, 'lift', live)} refresh={r ? { kind: 'lift', id: d.id } : null} />}
       {r ? <LiftView inputs={r.inputs} prices={prices} pitches={pitches} /> : <p className="alert alert-bad" role="status">{t('unreadable')}</p>}
       {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} locale={locale} scope={kind === 'full' ? 'design' : 'modification'} editable={can(user, 'prices:edit')} /> : null}
       {advice ? (
