@@ -44,7 +44,8 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
   const editable = can(user, 'projects:edit') && !p.archivedAt, draws = can(user, 'progetto:edit') && !p.archivedAt;
   const saves = can(user, formRightOf(p.kind)) && !p.archivedAt;
   // a role without that form's right (a Tecnico's whole project): the empty installation says whose work it is
-  const handoff = !holds(user, formRightOf(p.kind)) && !p.archivedAt ? <p className="note">{t('workByOther', { kind: p.kind })}</p> : null;
+  const handoff = !holds(user, formRightOf(p.kind)) && !p.archivedAt
+    ? <p className="note">{t('workByOther', { kind: p.kind, edits: editable ? 'yes' : 'no' })}</p> : null;
   // the records of a lift design are reached from it; the others of a whole project are its archive
   const calcRows = calcs.filter((c) => replacement || !c.liftDesign).map((c) => ({ ...c, old: outdated.calc(c) }));
   const shaftRows = designs.filter((d) => !d.liftDesign).map((d) => ({ ...d, old: outdated.shaft(d) }));
@@ -162,7 +163,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
       {replacement ? (
         <section className="flex flex-col gap-3" aria-labelledby="project-rooms">
           <SectionTitle id="project-rooms" icon="building-gear">{tm('projectTitle')}</SectionTitle>
-          {roomRows.length === 0 ? <p className="note">{tm('projectEmpty')}</p>
+          {roomRows.length === 0 ? <p className="note">{tm(p.archivedAt ? 'projectNone' : holds(user, 'progetto:edit') ? 'projectEmpty' : 'projectEmptyOther')}</p>
             : <RecordTable rows={roomRows} kind="room" href={(x) => `/app/room-designs/${x}`} what={tm('col_room')} locale={locale} />}
           {setList}
           <div><Link className="btn" href={`/app/projects/${p.id}/impianto`}>{tt('plantTitle')}</Link></div>

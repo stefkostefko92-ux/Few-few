@@ -329,7 +329,7 @@
     "open": "Apri l’impianto",
     "emptyKind": "Nessun impianto di questo tipo.",
     "createOnly": "Il tuo ruolo crea l’impianto con i suoi dati; {kind, select, REPLACEMENT {il calcolo dell’argano lo fa} other {il progetto lo disegna}} un collega che ne ha il permesso. Dopo il salvataggio si apre la pagina dell’impianto.",
-    "workByOther": "{kind, select, REPLACEMENT {Il calcolo dell’argano lo fa} other {Il progetto lo disegna}} un collega che ne ha il permesso: il tuo ruolo vede l’impianto e ne cura i dati."
+    "workByOther": "{kind, select, REPLACEMENT {Il calcolo dell’argano lo fa} other {Il progetto lo disegna}} un collega che ne ha il permesso: il tuo ruolo vede l’impianto{edits, select, yes { e ne cura i dati} other {}}."
   },
   "calculations": {
     "verdictOk": "Supera le verifiche",
@@ -1989,6 +1989,8 @@
     "setsFromRoom": "Nella sostituzione le tavole si emettono dal rilievo del locale macchina.",
     "projectTitle": "Progetto della sostituzione",
     "projectEmpty": "Nessun rilievo del locale macchina. Aprilo da un calcolo salvato: «Rileva il locale macchina».",
+    "projectNone": "Nessun rilievo del locale macchina.",
+    "projectEmptyOther": "Nessun rilievo del locale macchina. Lo fa un collega che disegna il progetto, da un calcolo salvato.",
     "col_room": "Locale e argano",
     "summary": "Locale {W} × {D} mm · {machine} su {support} · calate {calata} mm",
     "sum_machine": "argano",
@@ -2554,8 +2556,7 @@
   "denied": {
     "title": "Permesso non concesso",
     "lead": "Il tuo ruolo ({role}) non ha il permesso «{right}» in questa azienda.",
-    "leadAny": "Il tuo ruolo ({role}) non ha il permesso di aprire questa pagina in questa azienda.",
-    "ask": "I permessi di ogni ruolo li decide il titolare dell’azienda: se ti serve, chiedilo a lui.",
+    "ask": "I permessi di ogni ruolo li decide il titolare dell’azienda: se te ne serve uno, chiedilo al titolare.",
     "back": "Torna al lavoro"
   }
 }

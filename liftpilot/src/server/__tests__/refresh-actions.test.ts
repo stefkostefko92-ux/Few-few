@@ -1,85 +1,16 @@
 // «Aggiorna con il software attuale» (src/server/refresh-actions.ts): a record the engines no longer reproduce is made
 // again once — never a duplicate of a legal document: not a record still reproduced, not one already made again (the
 // audit keeps `updates`), not two at the same moment. What no longer passes opens the form. Always the user's company.
-import { test, mock, beforeEach } from 'node:test';
+// A replacement's machine room: refresh-room.test.ts.
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createRequire } from 'node:module';
-import { pathToFileURL } from 'node:url';
-import { PRESETS } from '@/calc/presets';
-import { ENGINE_VERSION, snapshotOf } from '@/calc/snapshot';
-import { LIFT_ENGINE_VERSION, defaultLift, deriveLift } from '@/lib/lift';
 import { capsOf } from '@/lib/rbac';
-import { shaftHash } from '@/lib/shaft-hash';
-import { snapshotHash } from '@/lib/snapshot-hash';
-import { shaftSnapshot } from '@/shaft';
-
-const src = (p: string) => new URL(`../../${p}`, import.meta.url).href;
-const req = createRequire(import.meta.url);
-const pkg = (m: string) => pathToFileURL(req.resolve(m)).href;
-
-type Row = Record<string, unknown>;
-class Redirect extends Error { constructor(readonly to: string) { super(`redirect ${to}`); } }
-
-// ---- the database as a company sees it
-const db: { calc: Row[]; lift: Row[]; room: Row[]; audit: Row[] } = { calc: [], lift: [], room: [], audit: [] };
-const visible = (r: Row, w: Row) => r.id === w.id && r.companyId === w.companyId
-  && (!('project' in w) || (r.project as { archivedAt: unknown }).archivedAt === null);
-const calls: { calc: unknown[][]; lift: unknown[][]; room: unknown[][] } = { calc: [], lift: [], room: [] };
-let gate: Promise<void> | null = null;
-let created: { ok: true; id: string } | { ok: false; error: string } = { ok: true, id: 'new1' };
-mock.module(src('lib/db.ts'), { namedExports: { prisma: {
-  calculation: { findFirst: async ({ where }: { where: Row }) => db.calc.find((r) => visible(r, where)) ?? null },
-  liftDesign: { findFirst: async ({ where }: { where: Row }) => db.lift.find((r) => visible(r, where)) ?? null },
-  roomDesign: { findFirst: async ({ where }: { where: Row }) => db.room.find((r) => visible(r, where)) ?? null },
-  auditLog: { findFirst: async ({ where }: { where: { companyId: string; action: string; meta: { equals: string } } }) =>
-    db.audit.find((a) => a.companyId === where.companyId && a.action === where.action && a.updates === where.meta.equals) ?? null },
-} } });
-mock.module(src('server/save.ts'), { namedExports: {
-  createCalculation: async (...a: unknown[]) => { calls.calc.push(a); await gate; return created; },
-  createLiftDesign: async (...a: unknown[]) => { calls.lift.push(a); await gate; return created; },
-  createRoomDesign: async (...a: unknown[]) => { calls.room.push(a); return created; },
-} });
-let session: Row | null = null;
-mock.module(src('lib/auth.ts'), { namedExports: { getSessionUser: async () => session } });
-mock.module(pkg('next/headers'), { namedExports: { headers: async () => new Headers() } });
-mock.module(pkg('next/navigation'), { namedExports: { redirect: (to: string) => { throw new Redirect(to); } } });
-
-const actions = () => import(src('server/refresh-actions.ts'));
-let n = 0;
-// the Progettista makes the records and fills in every form (the calculator's, the project's: round 42)
-const signIn = (over: Row = {}) => { session = { id: `u${++n}`, role: 'ENGINEER', companyId: 'c1', mustChangePassword: false, readOnly: false, ...over }; };
-const fd = (id: string) => { const f = new FormData(); f.set('id', id); f.set('locale', 'it'); return f; };
-/** Where an action ends: it always ends in a redirect. */
-async function go(run: (f: FormData) => Promise<void>, id: string): Promise<string> {
-  try { await run(fd(id)); } catch (e) { if (e instanceof Redirect) return e.to; throw e; }
-  throw new Error('no redirect');
-}
-
-const APP = '/it/app';
-const project = (over: Row = {}) => ({ kind: 'REPLACEMENT', archivedAt: null, ...over });
-const snap = (V: typeof PRESETS.B) => { const s = snapshotOf(V); return { inputs: s.values, sha256: snapshotHash(s) }; };
-const calcRow = (id: string, over: Row = {}): Row => ({
-  id, companyId: 'c1', projectId: 'p1', label: 'prima', collaudo: null, liftDesign: null, shaftDesign: null, roomDesigns: [], project: project(), engineVersion: ENGINE_VERSION,
-  ...snap(PRESETS.B), ...over,
-});
-const stale = { sha256: '0'.repeat(64) };
-const liftRow = (id: string, over: Row = {}): Row => {
-  const inputs = defaultLift(), dv = deriveLift(inputs), S = shaftSnapshot(dv.shaft);
-  return {
-    id, companyId: 'c1', projectId: 'p1', label: 'prima', inputs, source: null, engineVersion: LIFT_ENGINE_VERSION, project: project({ kind: 'FULL' }),
-    shaftDesign: { sha256: shaftHash(S.snapshot) }, calculation: { sha256: snapshotHash(snapshotOf(dv.values)) }, ...over,
-  };
-};
-
-beforeEach(() => {
-  db.calc = []; db.lift = []; db.room = []; db.audit = [];
-  calls.calc = []; calls.lift = []; calls.room = []; gate = null; created = { ok: true, id: 'new1' }; signIn();
-});
+import { APP, actions, calcRow, calls, db, go, liftRow, project, signIn, src, stale, state } from './refresh-fixture';
 
 // ---- who may ask
 test('senza sessione: all’accesso', async () => {
   const { refreshCalculationAction } = await actions();
-  session = null;
+  state.session = null;
   assert.equal(await go(refreshCalculationAction, 'c1'), '/it/login');
 });
 
@@ -147,7 +78,7 @@ test('due richieste nello stesso momento: la seconda trova «occupato», un solo
   const { refreshCalculationAction } = await actions();
   db.calc = [calcRow('old1', stale)];
   let open!: () => void;
-  gate = new Promise<void>((r) => { open = r; });
+  state.gate = new Promise<void>((r) => { open = r; });
   const first = go(refreshCalculationAction, 'old1');
   await new Promise((r) => setImmediate(r)); // the first is inside the save
   assert.equal(calls.calc.length, 1);
@@ -155,23 +86,23 @@ test('due richieste nello stesso momento: la seconda trova «occupato», un solo
   assert.equal(calls.calc.length, 1, 'nessun secondo record');
   open();
   assert.equal(await first, `${APP}/calculations/new1?da=old1`);
-  gate = null;
+  state.gate = null;
   assert.equal(await go(refreshCalculationAction, 'old1'), `${APP}/calculations/new1?da=old1`, 'il blocco è tolto dopo');
 });
 
 test('il blocco è tolto anche se il salvataggio fallisce', async () => {
   const { refreshCalculationAction } = await actions();
   db.calc = [calcRow('old1', stale)];
-  created = { ok: false, error: 'invalidFields' };
+  state.created = { ok: false, error: 'invalidFields' };
   assert.equal(await go(refreshCalculationAction, 'old1'), `${APP}/projects/p1/calc?from=old1&aggiorna=1`);
-  created = { ok: true, id: 'new1' };
+  state.created = { ok: true, id: 'new1' };
   assert.equal(await go(refreshCalculationAction, 'old1'), `${APP}/calculations/new1?da=old1`);
 });
 
 test('dati che il software non accetta più: si apre il modulo su di essi, nessun record', async () => {
   const { refreshCalculationAction } = await actions();
   db.calc = [calcRow('old1', stale)];
-  created = { ok: false, error: 'invalidFields' };
+  state.created = { ok: false, error: 'invalidFields' };
   assert.equal(await go(refreshCalculationAction, 'old1'), `${APP}/projects/p1/calc?from=old1&aggiorna=1`);
   db.calc = [calcRow('bad1', { inputs: { nonsense: true }, sha256: '0'.repeat(64) })];
   calls.calc = [];
@@ -221,7 +152,7 @@ test('progetto dell’impianto: due richieste insieme, un solo record', async ()
   const { refreshLiftDesignAction } = await actions();
   db.lift = [liftRow('lift1', { engineVersion: '0.0.0' })];
   let open!: () => void;
-  gate = new Promise<void>((r) => { open = r; });
+  state.gate = new Promise<void>((r) => { open = r; });
   const first = go(refreshLiftDesignAction, 'lift1');
   await new Promise((r) => setImmediate(r));
   assert.equal(await go(refreshLiftDesignAction, 'lift1'), `${APP}/lift-designs/lift1`);
@@ -233,7 +164,7 @@ test('progetto dell’impianto: due richieste insieme, un solo record', async ()
 test('progetto dell’impianto che non passa più: al modulo con ?from= e il segno che lo dice in cima (aggiorna=1)', async () => {
   const { refreshLiftDesignAction } = await actions();
   db.lift = [liftRow('lift1', { engineVersion: '0.0.0' })];
-  created = { ok: false, error: 'invalidFields' };
+  state.created = { ok: false, error: 'invalidFields' };
   const to = await go(refreshLiftDesignAction, 'lift1');
   assert.equal(to, `${APP}/projects/p1/progetto?from=lift1&aggiorna=1`);
   // the form reads the mark and says at its top why it opened (refresh-form.ts); opened from the record's page, it does not
@@ -267,54 +198,4 @@ test('progetto dell’impianto di un’altra ditta o archiviato: al tabellone', 
   assert.equal(await go(refreshLiftDesignAction, 'theirs'), APP);
   assert.equal(await go(refreshLiftDesignAction, 'arch'), APP);
   assert.equal(calls.lift.length, 0);
-});
-
-// ---- a replacement's machine room
-const roomRow = (id: string, over: Row = {}): Row => ({
-  id, companyId: 'c1', label: 'locale', inputs: { nonsense: true }, sha256: '0'.repeat(64), project: project(), calculation: calcRow('old1', stale), ...over,
-});
-
-test('machinale di un progetto intero: si rifà dal modulo, niente copia', async () => {
-  const { refreshRoomDesignAction } = await actions();
-  db.room = [roomRow('room1', { project: project({ kind: 'FULL' }) })];
-  assert.equal(await go(refreshRoomDesignAction, 'room1'), `${APP}/projects/p1/progetto`);
-  assert.equal(calls.calc.length + calls.room.length, 0);
-});
-
-test('machinale già rifatto: al nuovo con ?da=, nessun record', async () => {
-  const { refreshRoomDesignAction } = await actions();
-  db.room = [roomRow('room1')];
-  db.audit = [{ companyId: 'c1', action: 'ROOM_DESIGN_SAVED', updates: 'room1', entityId: 'made1' }];
-  assert.equal(await go(refreshRoomDesignAction, 'room1'), `${APP}/room-designs/made1?da=room1`);
-  assert.equal(calls.calc.length + calls.room.length, 0);
-});
-
-test('machinale con rilievo che il nuovo calcolo non prende più: si rifà il calcolo, il rilievo va al suo modulo', async () => {
-  const { refreshRoomDesignAction } = await actions();
-  db.room = [roomRow('room1')];
-  db.calc = [calcRow('new1')]; // the calculation made again, as the database then has it
-  assert.equal(await go(refreshRoomDesignAction, 'room1'), `${APP}/calculations/new1/locale?from=room1&aggiorna=1`);
-  assert.equal(calls.calc.length, 1);
-  assert.equal(calls.room.length, 0, 'il rilievo illeggibile non è salvato');
-});
-
-test('il Tecnico: il locale macchina non si rifà; il calcolo sì, e il rilievo resta sul precedente', async () => {
-  const { refreshRoomDesignAction, refreshCalculationAction } = await actions();
-  db.room = [roomRow('room1')];
-  signIn({ role: 'TECHNICIAN' });
-  assert.equal(await go(refreshRoomDesignAction, 'room1'), `${APP}/room-designs/room1`);
-  assert.equal(calls.calc.length + calls.room.length, 0, 'né calcolo né locale');
-  // the replacement's calculation with its machine room: the calculation is made again, the room is not carried over
-  db.calc = [calcRow('old1', { ...stale, roomDesigns: [{ id: 'room1', label: 'locale', inputs: { nonsense: true } }] })];
-  assert.equal(await go(refreshCalculationAction, 'old1'), `${APP}/calculations/new1?da=old1`);
-  assert.equal(calls.calc.length, 1);
-  assert.equal(calls.room.length, 0, 'il locale resta sul calcolo precedente');
-});
-
-test('machinale di un’altra ditta o archiviato: al tabellone', async () => {
-  const { refreshRoomDesignAction } = await actions();
-  db.room = [roomRow('theirs', { companyId: 'c2' }), roomRow('arch', { project: project({ archivedAt: new Date(0) }) })];
-  assert.equal(await go(refreshRoomDesignAction, 'theirs'), APP);
-  assert.equal(await go(refreshRoomDesignAction, 'arch'), APP);
-  assert.equal(calls.calc.length + calls.room.length, 0);
 });
