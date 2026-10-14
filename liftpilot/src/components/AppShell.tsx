@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { PROFILO } from '@/calc/norme';
 import { can } from '@/lib/rbac';
+import { companyPageView } from '@/lib/company-page';
 import type { SessionUser } from '@/lib/auth';
 import { billingConfigured } from '@/lib/billing-config';
 import { EMBLEM } from '@/lib/brand';
@@ -46,7 +47,8 @@ export default async function AppShell({ user, banners, footer, children }: { us
   const manage: NavItem[] = [
     ...(can(user, 'users:manage') ? [{ key: '/app/team', href: '/app/team', label: t('team'), icon: 'users' } as const] : []),
     ...(can(user, 'permissions:manage') ? [{ key: '/app/permessi', href: '/app/permessi', label: t('permessi'), icon: 'lock-keyhole' } as const] : []),
-    ...(can(user, 'company:export') || can(user, 'company:edit') ? [{ key: '/app/company', href: '/app/company', label: t('company'), icon: 'building' } as const] : []),
+    // held, read-only mode or not: the page says why nothing changes there (src/lib/company-page.ts)
+    ...(companyPageView(user) ? [{ key: '/app/company', href: '/app/company', label: t('company'), icon: 'building' } as const] : []),
     ...(can(user, 'billing:manage') ? [{ key: '/app/billing', href: '/app/billing', label: t('billing'), icon: 'hand-coins' } as const] : []),
     ...(can(user, 'audit:view') ? [{ key: '/app/audit', href: '/app/audit', label: t('audit'), icon: 'history' } as const] : []),
     ...(can(user, 'platform:admin') ? [{ key: '/app/admin', href: '/app/admin', label: t('admin'), icon: 'building-gear' } as const] : []),

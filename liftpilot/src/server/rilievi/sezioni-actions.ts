@@ -6,7 +6,8 @@
 // (the owner; the Capotecnico when the company gives it — round 42), within the company of the session; a role holding it
 // in a read-only company is told so (`readOnly`, as the sheets' actions), not sent to the owner for a right it has; 60
 // a minute per person, as rilievi's own limit on every write (src/http/limits.ts `writeLimiter`): a section moved to the
-// far end one step at a time takes up to ten presses. Over the limit nothing is done and the order on screen stays, unsaved moves included.
+// far end one step at a time takes up to ten presses. A refusal — no right, read-only, over the limit — does nothing and
+// the order on screen stays, unsaved moves included.
 import { redirect } from 'next/navigation';
 import { DEFAULT_LOCALE, isLocale } from '@/i18n/locales';
 import { getSessionUser } from '@/lib/auth';
@@ -20,15 +21,14 @@ import { prisma } from '@/lib/db';
 
 /** The setting's answer: the order to show (`moved` — moved, not saved yet; `focus` — the button pressed, to keep the
  *  focus on it), saved or reset (the page shows `rilievi.flash.sezioniSaved|sezioniReset`), or a refusal (`invalid`:
- *  «L'ordine inviato non è valido. Ecco quello salvato: riprova.» with the saved order; `tooMany` with the order that was
- *  on screen, `modificato` when it holds moves not saved yet). */
+ *  «L'ordine inviato non è valido. Ecco quello salvato: riprova.» with the saved order; `forbidden`, `readOnly` and
+ *  `tooMany` with the order that was on screen, `modificato` when it holds moves not saved yet). */
 export type SezioniState =
   | { status: 'idle' }
   | { status: 'moved'; ordine: SectionKey[]; focus: { key: SectionKey; verso: Verso } }
   | { status: 'saved' | 'reset'; ordine: SectionKey[] }
   | { status: 'invalid'; ordine: SectionKey[] }
-  | { status: 'error'; error: 'forbidden' | 'readOnly' }
-  | { status: 'error'; error: 'tooMany'; ordine?: SectionKey[]; modificato?: boolean };
+  | { status: 'error'; error: 'forbidden' | 'readOnly' | 'tooMany'; ordine?: SectionKey[]; modificato?: boolean };
 
 /** What the page showed before this press (the previous answer, as the browser hands it back — only for the screen,
  *  checked like a sent order): its order, and whether it held moves not saved yet. */
@@ -38,19 +38,21 @@ function shownBefore(prev: unknown): { ordine: SectionKey[] | null; modificato: 
   return { ordine: parseOrdine(p.ordine), modificato: p.status === 'moved' || (p.status === 'error' && p.modificato === true) };
 }
 
+/** A refusal: nothing done, the order on screen stays — the one sent with the press, or (the reset form sends none) the
+ *  one shown before —, with its unsaved moves. */
+function refused(error: 'forbidden' | 'readOnly' | 'tooMany', prev: unknown, fd: FormData): SezioniState {
+  const before = shownBefore(prev);
+  const ordine = parseOrdine(fd.getAll('ordine')) ?? before.ordine;
+  return ordine ? { status: 'error', error, ordine, modificato: before.modificato } : { status: 'error', error };
+}
+
 export async function ordineSezioniAction(prev: SezioniState, fd: FormData): Promise<SezioniState> {
   const l = str(fd, 'locale'), locale = isLocale(l) ? l : DEFAULT_LOCALE;
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
-  if (user.mustChangePassword) return { status: 'error', error: 'forbidden' };
-  if (!can(user, 'company:edit')) return { status: 'error', error: holds(user, 'company:edit') ? 'readOnly' : 'forbidden' };
-  if (!rateLimit(`rilievi-sezioni:${user.id}`, 60, 60 * 1000)) {
-    // nothing done: the order on screen stays — the one sent with the press, or (the reset form sends none) the one
-    // shown before —, with its unsaved moves
-    const before = shownBefore(prev);
-    const ordine = parseOrdine(fd.getAll('ordine')) ?? before.ordine;
-    return ordine ? { status: 'error', error: 'tooMany', ordine, modificato: before.modificato } : { status: 'error', error: 'tooMany' };
-  }
+  if (user.mustChangePassword) return refused('forbidden', prev, fd);
+  if (!can(user, 'company:edit')) return refused(holds(user, 'company:edit') ? 'readOnly' : 'forbidden', prev, fd);
+  if (!rateLimit(`rilievi-sezioni:${user.id}`, 60, 60 * 1000)) return refused('tooMany', prev, fd);
   const saved = async (): Promise<SectionKey[]> => {
     const row = await prisma.company.findUnique({ where: { id: user.companyId }, select: { ordineSezioni: true } });
     return ordineEffettivo(row?.ordineSezioni ?? []);
@@ -64,6 +66,6 @@ export async function ordineSezioniAction(prev: SezioniState, fd: FormData): Pro
   const mossa = parseMossa(fd.get('sposta'));
   if (mossa) return { status: 'moved', ordine: sposta(ordine, mossa.key, mossa.verso), focus: mossa };
   if (str(fd, 'salva') !== '1') return { status: 'invalid', ordine: await saved() };
-  if (!(await setOrdineSezioni(user.companyId, user.id, ordine))) return { status: 'error', error: 'forbidden' };
+  if (!(await setOrdineSezioni(user.companyId, user.id, ordine))) return refused('forbidden', prev, fd);
   return { status: 'saved', ordine };
 }

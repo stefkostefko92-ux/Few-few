@@ -137,15 +137,23 @@ test('l’ordine delle sezioni: solo chi modifica l’azienda; sposta senza salv
   const { ORDINABILI } = await import(src('lib/rilievi/ordine.ts'));
   const { formSections } = await pages();
   const ordine = (list: readonly string[], extra: Record<string, string> = {}) => form({ ordine: [...list], ...extra });
+  // a refusal does nothing and keeps the order on screen: the one sent with the press
+  const kept = (error: string, list: readonly string[], modificato: boolean) => ({ status: 'error', error, ordine: [...list], modificato });
   as('u1', 'TECHNICIAN');
-  assert.deepEqual(await ordineSezioniAction({ status: 'idle' }, ordine(ORDINABILI, { salva: '1' })), { status: 'error', error: 'forbidden' });
+  assert.deepEqual(await ordineSezioniAction({ status: 'idle' }, ordine(ORDINABILI, { salva: '1' })), kept('forbidden', ORDINABILI, false));
   // the round-42 matrix: 'company:edit' is the owner's, and the Capotecnico's only when the company gives it
   as('u2', 'CHIEF_TECHNICIAN');
-  assert.deepEqual(await ordineSezioniAction({ status: 'idle' }, ordine(ORDINABILI, { sposta: 'note:su' })), { status: 'error', error: 'forbidden' });
+  assert.deepEqual(await ordineSezioniAction({ status: 'idle' }, ordine(ORDINABILI, { sposta: 'note:su' })), kept('forbidden', ORDINABILI, false));
   as('u2', 'CHIEF_TECHNICIAN', 'c1', false, capsOf('CHIEF_TECHNICIAN', [{ role: 'CHIEF_TECHNICIAN', capability: 'company:edit', granted: true }]));
   assert.equal((await ordineSezioniAction({ status: 'idle' }, ordine(ORDINABILI, { sposta: 'note:su' }))).status, 'moved');
   as('u3', 'OWNER', 'c1', true);
-  assert.deepEqual(await ordineSezioniAction({ status: 'idle' }, ordine(ORDINABILI, { salva: '1' })), { status: 'error', error: 'readOnly' }, 'read only: said so');
+  assert.deepEqual(await ordineSezioniAction({ status: 'idle' }, ordine(ORDINABILI, { salva: '1' })), kept('readOnly', ORDINABILI, false), 'read only: said so');
+  // moves not saved yet stay on screen, still unsaved — also after the reset form, which sends no order (the one shown before)
+  const onScreen = [...ORDINABILI.slice(0, -2), 'note', 'allarme'];
+  const shown = { status: 'moved', ordine: onScreen, focus: { key: 'note', verso: 'su' } };
+  assert.deepEqual(await ordineSezioniAction(shown, ordine(onScreen, { salva: '1' })), kept('readOnly', onScreen, true), 'read only: the moves stay');
+  assert.deepEqual(await ordineSezioniAction(shown, form({ ripristina: '1' })), kept('readOnly', onScreen, true), 'read only: the reset refused, the moves stay');
+  assert.deepEqual(companies.c1?.ordineSezioni, [], 'nothing saved');
   as('u3', 'OWNER');
   const moved = await ordineSezioniAction({ status: 'idle' }, ordine(ORDINABILI, { sposta: 'note:su' }));
   assert.equal(moved.status, 'moved');

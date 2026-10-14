@@ -7,8 +7,9 @@
 // the button pressed (at the edge, where it is switched off, on the other one), so the keyboard can move a section
 // several places in a row, and the status line says where the section is now; after «Salva ordine» or «Ripristina…» it
 // goes back to that button, after a refusal to the message (the buttons are off while the server answers, which would
-// leave it nowhere). A refusal keeps the order on screen, unsaved moves included. Only for 'company:edit' (the server
-// checks again); in read-only mode the order is shown.
+// leave it nowhere). A refusal — no right, read-only, over the limit — keeps the order on screen, unsaved moves included
+// (an order the server cannot read comes back as the saved one, and says so). Only for 'company:edit' (the server checks
+// again); in read-only mode the order is shown.
 import { useActionState, useEffect, useRef } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { SectionKey } from '@/lib/rilievi/fields';
