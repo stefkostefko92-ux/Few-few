@@ -111,15 +111,20 @@ test('dati che il software non accetta più: si apre il modulo su di essi, nessu
   assert.equal(calls.calc.length, 0, 'valori illeggibili: non si salva');
 });
 
-test('archivio di un progetto intero (non una sostituzione, o con progetto del vano): si rifà dal modulo, niente copia', async () => {
+test('calcolo argano di un impianto qualsiasi (round 45): si rifà al suo posto col suo tipo; l’archivio del vano dal Progetto', async () => {
   const { refreshCalculationAction } = await actions();
   db.calc = [
-    calcRow('full1', { ...stale, project: project({ kind: 'FULL' }) }),
+    calcRow('full1', { ...stale, intervento: 'TRASFORMAZIONE_COMPLETA', project: project({ kind: 'FULL' }) }),
     calcRow('shaft1', { ...stale, shaftDesign: { id: 'd1' } }),
   ];
-  assert.equal(await go(refreshCalculationAction, 'full1'), `${APP}/projects/p1/progetto`);
+  // a step-2 calculation of a former whole project: made again in place, its type carried
+  assert.equal(await go(refreshCalculationAction, 'full1'), `${APP}/calculations/new1?da=full1`);
+  assert.equal(calls.calc.length, 1);
+  assert.equal(calls.calc[0]?.[5], 'TRASFORMAZIONE_COMPLETA', 'il tipo passa al nuovo');
+  assert.equal(calls.calc[0]?.[6], 'full1');
+  // a calculation of the archive (made from a shaft design before the one form): from the Progetto, no copy
   assert.equal(await go(refreshCalculationAction, 'shaft1'), `${APP}/projects/p1/progetto`);
-  assert.equal(calls.calc.length + calls.lift.length, 0);
+  assert.equal(calls.calc.length + calls.lift.length, 1);
 });
 
 test('calcolo di un progetto dell’impianto: tocca al progetto rifarlo', async () => {
@@ -144,6 +149,7 @@ test('progetto dell’impianto vecchio: rifatto una volta; già rifatto: al nuov
   assert.equal(await go(refreshLiftDesignAction, 'lift1'), `${APP}/lift-designs/new1?da=lift1`);
   assert.equal(calls.lift.length, 1);
   assert.equal(calls.lift[0][5], 'lift1', 'il record dice quale rifà');
+  assert.equal(calls.lift[0][6], null, 'un progetto del modulo unico non ha base');
   db.audit = [{ companyId: 'c1', action: 'LIFT_DESIGN_SAVED', updates: 'lift1', entityId: 'made1' }];
   assert.equal(await go(refreshLiftDesignAction, 'lift1'), `${APP}/lift-designs/made1?da=lift1`);
   assert.equal(calls.lift.length, 1);
@@ -199,4 +205,35 @@ test('progetto dell’impianto di un’altra ditta o archiviato: al tabellone', 
   assert.equal(await go(refreshLiftDesignAction, 'theirs'), APP);
   assert.equal(await go(refreshLiftDesignAction, 'arch'), APP);
   assert.equal(calls.lift.length, 0);
+});
+
+// ---- a lift design drawn on a «Calcolo argano» (round 45)
+test('progetto disegnato su un calcolo argano: base riprodotta — la stessa; base vecchia — prima il calcolo, poi il disegno su quello nuovo', async () => {
+  const { refreshLiftDesignAction } = await actions();
+  const { liftInputsOf, progettoOf } = await import(src('lib/lift/progetto.ts'));
+  const base = calcRow('b1', { intervento: 'AMMODERNAMENTO', collaudo: { norma: '10411-1', parti: ['machine', 'controller'] } });
+  db.lift = [liftRow('lift1', { engineVersion: '0.0.0', baseCalculation: base })];
+  assert.equal(await go(refreshLiftDesignAction, 'lift1'), `${APP}/lift-designs/new1?da=lift1`);
+  assert.deepEqual(calls.lift[0]?.[6], { id: 'b1', intervento: 'AMMODERNAMENTO' }, 'la stessa base');
+  assert.equal(calls.calc.length, 0);
+  // the base no longer reproduced: made again first (its type carried, no machine room), the drawing composed on it
+  calls.lift = [];
+  db.lift = [liftRow('lift2', { engineVersion: '0.0.0', baseCalculation: { ...base, ...stale } })];
+  db.calc = [calcRow('new1', { intervento: 'AMMODERNAMENTO', collaudo: { norma: '10411-1', parti: ['machine', 'controller'] } })];
+  assert.equal(await go(refreshLiftDesignAction, 'lift2'), `${APP}/lift-designs/new1?da=lift2`);
+  assert.equal(calls.calc.length, 1);
+  assert.equal(calls.calc[0]?.[5], 'AMMODERNAMENTO');
+  assert.equal(calls.calc[0]?.[6], 'b1');
+  assert.deepEqual(calls.lift[0]?.[6], { id: 'new1', intervento: 'AMMODERNAMENTO' }, 'la nuova base');
+  const sent = calls.lift[0]?.[2] as { calc: Record<string, unknown>; auto: { P: boolean; machine: boolean }; collaudo?: unknown };
+  const fresh = db.calc[0] as { inputs: Record<string, unknown> };
+  assert.deepEqual(sent, liftInputsOf(progettoOf((db.lift[0] as { inputs: never }).inputs), { values: fresh.inputs, collaudo: { norma: '10411-1', parti: ['machine', 'controller'] } }));
+  assert.equal(sent.auto.P || sent.auto.machine, false, 'argano e massa della cabina dal calcolo');
+  // already made again by a colleague: the drawing goes on that calculation, which is not made a second time
+  calls.calc = []; calls.lift = [];
+  db.audit = [{ companyId: 'c1', action: 'CALCULATION_SAVED', updates: 'b1', entityId: 'new1' }];
+  db.lift = [liftRow('lift3', { engineVersion: '0.0.0', baseCalculation: { ...base, ...stale } })];
+  assert.equal(await go(refreshLiftDesignAction, 'lift3'), `${APP}/lift-designs/new1?da=lift3`);
+  assert.equal(calls.calc.length, 0);
+  assert.deepEqual(calls.lift[0]?.[6], { id: 'new1', intervento: 'AMMODERNAMENTO' });
 });

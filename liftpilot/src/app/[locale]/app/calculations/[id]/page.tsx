@@ -34,6 +34,10 @@ import Refreshed from '@/components/Refreshed';
 import AdviceView from '@/components/lift/AdviceView';
 import { pitchesOf, plantData, plantReadSchema } from '@/lib/plant';
 import { withPitches } from '@/shaft/brackets';
+import { disegnoDi, macchinaResta } from '@/lib/lift/intervento';
+import { progettiSu, rilevaLocale, tipoDi } from '@/server/calcolo-base';
+import CalcRuolo from '@/components/calc/CalcRuolo';
+import ProgettoPanel from '@/components/calc/ProgettoPanel';
 
 export async function generateMetadata() {
   const t = await getTranslations('calculations');
@@ -59,18 +63,22 @@ export default async function CalculationPage({ params, searchParams }: {
   const [t, tp, tr, ts, tt, ta, tm, tf, sets, before] = await Promise.all([getTranslations('calculations'), getTranslations('projects'), getTranslations('roles'),
     getTranslations('shaft'), getTranslations('tavole'), getTranslations('advice'), getTranslations('room'), getTranslations('refresh'), listDrawingSets(user, c.projectId),
     refreshedFrom(user, 'calculation', da.data, c.projectId)]);
-  // a replacement's project: the machine room surveyed on this calculation, its relazione tecnica and drawing sets
-  const replacement = c.project.kind === 'REPLACEMENT' && !c.liftDesign;
+  // what the record is (round 45, by its shape, not by the installation's former kind): a «Calcolo argano» (step 2), a
+  // lift design's own calculation, or one of the archive made from a shaft design; its type, declared or read; the
+  // machine room is surveyed on a «Calcolo argano» of an existing lift; a machine kept is not ordered
+  const step2 = !c.liftDesign && !c.shaftDesign, perLocale = rilevaLocale(c), tipo = tipoDi(c), kept = macchinaResta(c.intervento, C);
+  const disegno = step2 ? disegnoDi(tipo, C, V) : null;
   const roomLine = await roomSummaryLine();
-  const rooms = replacement ? (await listRoomDesigns(user, c.projectId)).filter((x) => x.calculationId === c.id).map((x) => ({ ...x, summary: roomLine(x) })) : [];
+  const rooms = perLocale ? (await listRoomDesigns(user, c.projectId)).filter((x) => x.calculationId === c.id).map((x) => ({ ...x, summary: roomLine(x) })) : [];
+  const progetti = step2 ? await progettiSu(user, c.id) : [];
   const below = V.layout === 'bottom', live = !c.project.archivedAt;
   // a variant in the calculator (calc:create); the one form, the machine room's survey (progetto:edit); a drawing set
   const open = can(user, 'calc:create') && live, draws = can(user, 'progetto:edit') && live, issues = can(user, 'drawings:issue') && live;
-  // made again in one click: a lift design's calculation with the design (whoever draws the project), a replacement's
-  // with its machine room; one in the archive of a whole project is made again from the project's form (refresh-actions.ts)
-  const remaker = remakerOf(user, c.liftDesign ? 'lift' : 'calc', live && (!!c.liftDesign || replacement));
+  // made again in one click: a lift design's calculation with the design (whoever draws the project), a «Calcolo argano»
+  // with its machine room; one in the archive of a whole project is made again from the Progetto (refresh-actions.ts)
+  const remaker = remakerOf(user, c.liftDesign ? 'lift' : 'calc', live && (!!c.liftDesign || step2));
   // the machine room of the calculation it was made again from, which the new one did not take: to be redone from it
-  const lost = before && da.success && replacement && rooms.length === 0 ? await latestRoomOf(user, da.data) : null;
+  const lost = before && da.success && perLocale && rooms.length === 0 ? await latestRoomOf(user, da.data) : null;
   // the advice among SICOR and Montanari and the machine of the draft order: those of the lift design the calculation
   // was made from (its machine room, the sheave direct pull needs), as the design's page and the report give them; else
   // for the saved values: the catalogue's machine these values are, or the advice's first
@@ -78,11 +86,11 @@ export default async function CalculationPage({ params, searchParams }: {
   const own = lift ? designMachine(lift.dv) : calcMachine(V), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
   // a calculation of a design the running engines no longer reproduce has no order: the design is saved again
   const download = rec.ok && can(user, 'report:download');
-  const order = !download ? null : lift ? designOrder(lift.inputs, advice, lift.dv) : calcOrder(V, advice);
+  const order = !download || kept ? null : lift ? designOrder(lift.inputs, advice, lift.dv) : calcOrder(V, advice);
   // the cost with the company's prices (only for whoever sees prices): the design's articles, or the replacement's machine
   // (a lift design tested to UNI 10411: only the parts it replaces, as a replacement) with the ropes cut as sheet 1 of its
   // shaft design measures them
-  const costKind = lift ? bomKind(lift.dv.collaudo) : 'replacement';
+  const costKind = bomKind(lift ? lift.dv.collaudo : C);
   const costed = await projectCost(user, lift ? designBom({ ...lift.dv, layout: withPitches(lift.dv.layout, pitchesOf(c.project.plant)) }, plantData(c.project.plant)) : calcBom(V, C, null, rec.design?.layout ?? null), costKind,
     lift ? designBasis(lift.dv) : { stops: null, travel: analyse(V).ctx.I.H });
   const where = lift ? 'design' : 'calc';
@@ -98,7 +106,10 @@ export default async function CalculationPage({ params, searchParams }: {
     <main className="page">
       <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${c.projectId}`, label: c.project.name }, { label: t('viewTitle') }]} />
       <div className="page-head">
-        <div className="titles"><h1>{t('viewTitle')}{c.label ? ` · ${c.label}` : ''}</h1></div>
+        <div className="titles">
+          <h1>{t('viewTitle')}{c.label ? ` · ${c.label}` : ''}</h1>
+          <CalcRuolo tipo={tipo} ruolo={step2 ? 'calcolo' : c.liftDesign ? 'progetto' : 'archivio'} base={c.liftDesign?.baseCalculation ?? null} locale={locale} />
+        </div>
         <div className="actions">
           {rec.ok && can(user, 'report:download') ? (
             <a className="btn btn-primary" href={`/api/calculations/${c.id}/relazione`}>{t('downloadReport')}</a>
@@ -118,7 +129,7 @@ export default async function CalculationPage({ params, searchParams }: {
       {/* without the button, who makes it again: a lift design's, whoever draws the project; a replacement's, whoever
           makes the calculations (rbac.ts remakerOf) */}
       {rec.ok ? null : (
-        <StaleNotice text={c.liftDesign ? 'design' : replacement ? 'calc' : 'archive'} by={remaker} refresh={{ kind: 'calc', id: c.id }}>
+        <StaleNotice text={c.liftDesign ? 'design' : step2 ? 'calc' : 'archive'} by={remaker} refresh={{ kind: 'calc', id: c.id }}>
           {draws ? <Link className="btn" href={`/app/projects/${c.projectId}/progetto`}>{ts('openForm')}</Link> : null}
         </StaleNotice>
       )}
@@ -150,7 +161,7 @@ export default async function CalculationPage({ params, searchParams }: {
                 <a className="btn" href={`/api/calculations/${c.id}/order/pdf`}><Icon name="file-pdf" size={18} />{ta('order_pdf')}</a>
               </div>
             </>
-          ) : <p className="note">{ta('order_none')}</p>}
+          ) : <p className="note">{kept ? t('progetto.ordineResta') : ta('order_none')}</p>}
         </section>
       ) : null}
       <section className="panel">
@@ -167,25 +178,11 @@ export default async function CalculationPage({ params, searchParams }: {
         ) : <p className="note">{t('noReviews')}</p>}
         {can(user, 'calc:review') && !c.project.archivedAt && c.reviews.length < REVIEW_MAX ? <ReviewForm calculationId={c.id} /> : null}
       </section>
-      {replacement ? (
-        <section className="panel" aria-labelledby="calc-room">
-          <SectionTitle id="calc-room" icon="building-gear">{tm('calcTitle')}</SectionTitle>
-          <p className="note">{below ? tm('calcBelow') : tm('calcLead')}</p>
-          {rooms.length ? (
-            <ul className="rec-list">
-              {rooms.map((x) => (
-                <li key={x.id}><Link href={`/app/room-designs/${x.id}`}>{fd.dateTime(x.createdAt)}{x.label ? ` · ${x.label}` : ''}</Link><span className="note">{x.summary}</span></li>
-              ))}
-            </ul>
-          ) : null}
-          {!below && same && draws ? (
-            <div><Link className="btn btn-primary" href={`/app/calculations/${c.id}/locale`}>{rooms.length ? tm('again') : tm('start')}</Link></div>
-          ) : null}
-        </section>
-      ) : null}
+      {disegno ? <ProgettoPanel calcId={c.id} projectId={c.projectId} disegno={disegno} repl={V.context === 'repl'} below={below} rooms={rooms} progetti={progetti}
+        draws={draws && same} locale={locale} /> : null}
       <section className="panel">
         <SectionTitle icon="file-stack">{tt('title')}</SectionTitle>
-        <p className="note">{replacement ? tm('setsFromRoom') : tt('lead')}</p>
+        <p className="note">{disegno ? (disegno === 'locale' ? tm('setsFromRoom') : t('progetto.tavole')) : tt('lead')}</p>
         {mine.length ? (
           <ul className="rec-list">
             {mine.map((x) => (
@@ -193,10 +190,10 @@ export default async function CalculationPage({ params, searchParams }: {
             ))}
           </ul>
         ) : null}
-        {replacement ? null : !c.shaftDesign ? <p className="note">{tt('needDesign')}</p>
+        {step2 ? null : !c.shaftDesign ? <p className="note">{tt('needDesign')}</p>
           : rec.ok && issues ? <IssueForm calculationId={c.id} initials={initialsOf(user.name)} checks={checks} projectId={c.projectId} /> : null}
       </section>
-      <CalculationView id="checks" values={V} brand={user.companyName} collaudo={C} design={!!c.shaftDesign} />
+      <CalculationView id="checks" values={V} brand={user.companyName} collaudo={C} design={!!c.shaftDesign} tipo={c.intervento} resta={kept} />
     </main>
   );
 }

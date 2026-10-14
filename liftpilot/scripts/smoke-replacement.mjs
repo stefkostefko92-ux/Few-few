@@ -11,7 +11,7 @@ import { step } from './smoke-kit.mjs';
 export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) {
   step('replacement: a calculation with the machine above, the survey of its machine room, saved');
   await page.goto(calcUrl);
-  assert.match(await page.textContent('section[aria-labelledby="calc-room"]'), /Argano in basso/, 'no machine room below');
+  assert.match(await page.textContent('section[aria-labelledby="calc-progetto"]'), /Argano in basso/, 'no machine room below');
   await page.goto(`${BASE}/it/app/projects/new?kind=replacement`);
   await page.fill('input[name="name"]', `Sostituzione ${stamp}`);
   await page.fill('input[name="city"]', 'Milano');
@@ -27,7 +27,7 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   await page.waitForSelector('.savebar button.primary:not([disabled])');
   await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
   const roomCalcUrl = page.url();
-  await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+\/locale$/), page.click('section[aria-labelledby="calc-room"] a[href$="/locale"]')]);
+  await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+\/locale$/), page.click('section[aria-labelledby="calc-progetto"] a[href$="/locale"]')]);
   const save = 'section[aria-labelledby="room-save"] button.btn-primary';
   await hydrated(page, save);
   // a new survey starts empty: every measure typed (a higher room, the existing drops as measured)
@@ -65,7 +65,7 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   assert.match(await page.textContent('h1'), / R1$/, 'revision R1');
   // the calculation lists its machine room and the sets
   await page.goto(roomCalcUrl);
-  assert.equal(await page.locator('section[aria-labelledby="calc-room"] a[href*="/room-designs/"]').count(), 1, 'machine room on the calculation');
+  assert.equal(await page.locator('section[aria-labelledby="calc-progetto"] a[href*="/room-designs/"]').count(), 1, 'machine room on the calculation');
 
   step('replacement: the whole project it becomes starts from the survey');
   await page.goto(roomProjectUrl);

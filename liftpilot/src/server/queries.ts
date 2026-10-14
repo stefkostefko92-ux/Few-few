@@ -41,7 +41,7 @@ export function getCalculation(user: SessionUser, id: string) {
       reviews: { orderBy: { createdAt: 'asc' }, include: { user: { select: { name: true, role: true } } } },
       shaftDesign: { select: { id: true, label: true, summary: true, inputs: true, source: true, sha256: true, engineVersion: true, profileId: true, createdAt: true, user: { select: { name: true } } } },
       // the one form it was made from, if any: the documents mark what the software filled in
-      liftDesign: { select: { id: true, inputs: true, engineVersion: true } },
+      liftDesign: { select: { id: true, inputs: true, engineVersion: true, baseCalculation: { select: { id: true, createdAt: true } } } },
     },
   });
 }
@@ -266,7 +266,12 @@ export function getRoomDesign(user: SessionUser, id: string) {
     include: {
       project: true,
       user: { select: { name: true } },
-      calculation: { select: { id: true, label: true, inputs: true, sha256: true, engineVersion: true, profileId: true, createdAt: true, collaudo: true, intervento: true, summary: true, user: { select: { name: true } } } },
+      calculation: {
+        select: {
+          id: true, label: true, inputs: true, sha256: true, engineVersion: true, profileId: true, createdAt: true, collaudo: true, intervento: true, summary: true,
+          shaftDesignId: true, liftDesign: { select: { id: true } }, user: { select: { name: true } },
+        },
+      },
     },
   });
 }

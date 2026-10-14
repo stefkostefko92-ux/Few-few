@@ -55,7 +55,7 @@
     "noSeats": "Non ci sono posti liberi: acquista un pacchetto di posti, disattiva un collega o annulla un invito in attesa.",
     "inviteNoSeats": "L’azienda in questo momento non può aggiungere colleghi: avvisa il Titolare, che può rimediare dalla pagina Abbonamento, poi riapri il link dell’invito.",
     "invalidPrices": "Alcuni prezzi non sono validi.",
-    "notReplacement": "Il rilievo del locale macchina è della sola sostituzione dell’argano: un progetto completo disegna il locale dal progetto del vano.",
+    "notLocale": "Il locale macchina si rileva su un calcolo di un impianto esistente (Solo argano o Ammodernamento)",
     "roomIssues": "Il rilievo ha un problema da correggere.",
     "inviteTaken": "Questo indirizzo ha già un account LiftPilot e un indirizzo appartiene a una sola azienda: chiedi all’azienda di invitarti con un altro indirizzo.",
     "rilievoLinked": "Questo rilievo è già collegato a un impianto: scollegalo prima dalla sua pagina.",
@@ -425,6 +425,26 @@
       "err_sling": "arcata",
       "err_compare": "confronto con l’argano esistente",
       "err_ropes": "funi sostituite"
+    },
+    "ruolo": {
+      "calcolo": "Calcolo argano dell’impianto",
+      "progetto": "Calcolo del progetto,",
+      "base": "disegnato sul calcolo argano del {date}",
+      "moduloUnico": "Calcolo del progetto del modulo unico (prima del calcolo argano separato)",
+      "archivio": "Archivio: calcolo fatto da un progetto del vano prima del modulo unico"
+    },
+    "progetto": {
+      "title": "Progetto",
+      "leadLocale": "Per questo intervento il Progetto è il rilievo del locale macchina: il software sistema l’argano sulle calate esistenti, verifica locale, basamento e calate e prepara relazione tecnica e tavole. Si può disegnare anche l’intero impianto.",
+      "leadVano": "Il Progetto disegna il vano e la cabina su questo calcolo: portata, velocità, argano, funi e collaudo vengono dal calcolo, la geometria dal disegno.",
+      "disegna": "Disegna il progetto",
+      "disegnaIntero": "Disegna l’intero impianto",
+      "notaVano": "Il locale macchina non verifica le parti nel vano: il progetto dell’impianto resta da disegnare.",
+      "locali": "Locali macchina rilevati su questo calcolo",
+      "progetti": "Progetti su questo calcolo",
+      "preliminare": "Questo è il calcolo argano preliminare al progetto: relazione, tavole e ordine dell’impianto sono quelli del progetto disegnato su di esso.",
+      "tavole": "Le tavole si emettono dal progetto disegnato su questo calcolo.",
+      "ordineResta": "L’argano resta quello dell’impianto: non c’è un argano da ordinare."
     }
   },
   "account": {

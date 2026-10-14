@@ -1,6 +1,7 @@
-// «Aggiorna con il software attuale» on a replacement's machine room (src/server/refresh-actions.ts): a whole project's
-// is made again from its form; one already made again opens the new one; the calculation is made again with it, by
-// whoever draws the project — the Tecnico makes the calculation again and the room stays on the previous one.
+// «Aggiorna con il software attuale» on a machine room (src/server/refresh-actions.ts): of any installation (round 45: a
+// former whole project's too, re-placed in place); one already made again opens the new one; the calculation is made
+// again with it, by whoever draws the project — the Tecnico makes the calculation again and the room stays on the
+// previous one.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { APP, actions, calcRow, calls, db, go, project, signIn, stale, type Row } from './refresh-fixture';
@@ -9,11 +10,12 @@ const roomRow = (id: string, over: Row = {}): Row => ({
   id, companyId: 'c1', label: 'locale', inputs: { nonsense: true }, sha256: '0'.repeat(64), project: project(), calculation: calcRow('old1', stale), ...over,
 });
 
-test('machinale di un progetto intero: si rifà dal modulo, niente copia', async () => {
+test('machinale di un impianto qualsiasi (round 45): si rifà al suo posto, non dal Progetto', async () => {
   const { refreshRoomDesignAction } = await actions();
   db.room = [roomRow('room1', { project: project({ kind: 'FULL' }) })];
-  assert.equal(await go(refreshRoomDesignAction, 'room1'), `${APP}/projects/p1/progetto`);
-  assert.equal(calls.calc.length + calls.room.length, 0);
+  db.calc = [calcRow('new1')];
+  assert.equal(await go(refreshRoomDesignAction, 'room1'), `${APP}/calculations/new1/locale?from=room1&aggiorna=1`);
+  assert.equal(calls.calc.length, 1, 'il calcolo rifatto');
 });
 
 test('machinale già rifatto: al nuovo con ?da=, nessun record', async () => {

@@ -67,3 +67,13 @@
 /* the base of a transformation's test: fixed, shown as a value, not a choice */
 .collaudo .norma-fissa { margin: 0; padding: 9px 12px; font-size: 14px; font-weight: 600; color: var(--ink); border: 1px dashed var(--rule-strong);
   border-radius: var(--radius-sm); background: var(--bg-2); }
+
+/* the record's role under its title (calculation page): the type with its scale, smaller, then what the calculation is */
+.calc-ruolo { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 8px 0 0; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+.tipo-badge { display: inline-flex; align-items: center; gap: 8px; padding: 3px 10px 3px 8px; font-weight: 700; color: var(--ink);
+  border: 1px solid var(--card-on-line); border-radius: var(--radius-sm); background: var(--accent-soft); }
+.tipo-badge .tipo-scala { align-self: center; height: 16px; padding-top: 0; gap: 2px; }
+.tipo-badge .tipo-scala i { width: 4px; }
+.tipo-badge .tipo-scala i:nth-child(1) { height: 7px; } .tipo-badge .tipo-scala i:nth-child(2) { height: 11px; } .tipo-badge .tipo-scala i:nth-child(3) { height: 15px; }
+.tipo-badge .tipo-scala i.piena { background: var(--accent); }
+.calc-ruolo .ruolo a { font-weight: 600; }

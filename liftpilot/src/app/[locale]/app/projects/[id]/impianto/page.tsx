@@ -26,8 +26,9 @@ export default async function PlantPage({ params }: { params: Promise<{ locale: 
   const plant = plantReadSchema.safeParse(p.plant ?? {});
   const readOnly = !can(user, 'projects:edit') || p.archivedAt !== null;
   const cl = p.clientLogo, clientLogo = cl ? `data:${cl.mime};base64,${Buffer.from(cl.data).toString('base64')}` : null;
-  // the catalogue's machine the next drawing set would carry: the machine's name is checked against it
-  const catalog = await projectCatalogMachine(user, p.id, p.kind === 'FULL');
+  // the catalogue's machine the next drawing set would carry: the machine's name is checked against it; the shaft's
+  // fields for a whole drawing (a lift design, or a «Calcolo argano» whose Progetto draws the shaft: round 45)
+  const { whole, catalog } = await projectCatalogMachine(user, p.id);
   return (
     <main className="page">
       <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${p.id}`, label: p.name }, { label: t('plantTitle') }]} />
@@ -38,7 +39,7 @@ export default async function PlantPage({ params }: { params: Promise<{ locale: 
         </div>
       </div>
       <ClientLogoForm projectId={p.id} current={clientLogo} readOnly={readOnly} />
-      <PlantForm projectId={p.id} initial={plant.success ? plant.data : {}} readOnly={readOnly} whole={p.kind === 'FULL'} catalog={catalog} />
+      <PlantForm projectId={p.id} initial={plant.success ? plant.data : {}} readOnly={readOnly} whole={whole} catalog={catalog} />
     </main>
   );
 }

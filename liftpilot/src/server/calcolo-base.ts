@@ -61,3 +61,18 @@ export async function tipoImpianto(user: SessionUser, projectId: string): Promis
     ?? await prisma.calculation.findFirst({ where, orderBy: { createdAt: 'desc' }, select: ROW });
   return c ? tipoDi(c) : null;
 }
+
+/** A calculation the machine room is surveyed on: a step-2 calculation of an existing lift (context 'repl', «Solo
+ *  argano» or «Ammodernamento»), whatever the installation was called before round 45. */
+export function rilevaLocale(c: { liftDesign: unknown; shaftDesignId: string | null; inputs: unknown }): boolean {
+  const V = c.inputs && typeof c.inputs === 'object' ? (c.inputs as FormValues) : {};
+  return !c.liftDesign && !c.shaftDesignId && V.context === 'repl';
+}
+
+/** The lift designs drawn on a «Calcolo argano» of the company, newest first. */
+export function progettiSu(user: SessionUser, calculationId: string) {
+  return prisma.liftDesign.findMany({
+    where: { baseCalculationId: calculationId, companyId: user.companyId }, orderBy: { createdAt: 'desc' }, take: 50,
+    select: { id: true, label: true, createdAt: true, verdict: true, failCount: true, warnCount: true, summary: true },
+  });
+}
