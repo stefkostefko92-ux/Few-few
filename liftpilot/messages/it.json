@@ -106,6 +106,7 @@
     "beta": "Beta gratuita",
     "profile": "Profilo normativo",
     "rilievi": "Rilievi",
+    "rilieviAll": "Tutti i rilievi",
     "permessi": "Permessi",
     "impianti": "Impianti"
   },
@@ -335,7 +336,12 @@
     "open": "Apri l’impianto",
     "emptyKind": "Nessun impianto di questo tipo.",
     "createOnly": "Il tuo ruolo crea l’impianto con i suoi dati; {kind, select, REPLACEMENT {il calcolo dell’argano lo fa} other {il progetto lo disegna}} un collega che ne ha il permesso. Dopo il salvataggio si apre la pagina dell’impianto.",
-    "workByOther": "{kind, select, REPLACEMENT {Il calcolo dell’argano lo fa} other {Il progetto lo disegna}} un collega che ne ha il permesso: il tuo ruolo vede l’impianto{edits, select, yes { e ne cura i dati} other {}}."
+    "workByOther": "{kind, select, REPLACEMENT {Il calcolo dell’argano lo fa} other {Il progetto lo disegna}} un collega che ne ha il permesso: il tuo ruolo vede l’impianto{edits, select, yes { e ne cura i dati} other {}}.",
+    "kindChoose": "Scegli il modulo: Sostituzione argano o Progetto completo.",
+    "stato_differenze": "{n, plural, =0 {Nessun impianto} one {# impianto} other {# impianti}} con differenze tra il rilievo e il calcolo o il progetto su quello che c’è sul posto.",
+    "stato_aggiornare": "{n, plural, =0 {Nessun impianto} one {# impianto} other {# impianti}} con il calcolo da aggiornare: un rilievo più recente o il software aggiornato.",
+    "stato_capped": "Le differenze sono cercate tra i {n} impianti con rilievo modificati per ultimi.",
+    "stato_clear": "Mostra tutti gli impianti"
   },
   "calculations": {
     "verdictOk": "Supera le verifiche",
@@ -2659,6 +2665,7 @@
       "linked": "Collegato all’impianto",
       "linkedHidden": "Questo rilievo è collegato a un impianto.",
       "archived": "archiviato",
+      "archivedLead": "L’impianto è archiviato, quindi in sola lettura: il rilievo resta collegato.",
       "confronto": "Vedi il confronto",
       "unlink": "Scollega",
       "none": "Questo rilievo non è collegato a un impianto.",
@@ -2668,10 +2675,11 @@
       "suggested": "Impianti suggeriti",
       "suggestedNone": "Nessun impianto attivo dell’azienda ha la stessa matricola, lo stesso n° impianto o lo stesso indirizzo.",
       "searchLabel": "Cerca un altro impianto",
-      "searchPlaceholder": "Nome, indirizzo, comune, n° impianto",
+      "searchPlaceholder": "Nome, indirizzo, comune, matricola o n° impianto",
       "search": "Cerca",
       "searchResults": "Impianti trovati per «{q}»",
       "searchNone": "Nessun impianto attivo trovato per «{q}».",
+      "searchOnlySuggested": "Per «{q}» solo gli impianti già suggeriti qui sopra.",
       "readOnly": "L’azienda è in sola lettura: il collegamento non si cambia."
     },
     "flash": {
@@ -2681,7 +2689,9 @@
       "readOnly": "L’azienda è in sola lettura: nessun collegamento è cambiato.",
       "tooMany": "Troppe operazioni in un minuto: riprova tra poco.",
       "notFound": "Rilievo non trovato.",
-      "projectNotFound": "Impianto non trovato o archiviato: nessun collegamento è cambiato."
+      "projectNotFound": "Impianto non trovato o archiviato: nessun collegamento è cambiato.",
+      "archived": "L’impianto è archiviato, quindi in sola lettura: nessun collegamento è cambiato.",
+      "changed": "Nel frattempo il collegamento di questo rilievo è stato cambiato da un’altra persona: nulla è cambiato. Controlla e riprova."
     },
     "nuovo": {
       "from": "L’impianto nasce collegato al rilievo «{title}» del {date}: nome, indirizzo e matricola vengono dal rilievo e il suo modulo di lavoro partirà dai valori misurati.",
@@ -2690,7 +2700,7 @@
     },
     "origine": {
       "badge": "dal rilievo",
-      "badgeTitle": "Valore misurato nel rilievo del {date}",
+      "badgeTitle": "Valore preso dal rilievo del {date}",
       "notice": "Questo impianto parte dal rilievo «{title}» del {date}: i valori segnati «dal rilievo» sono quelli misurati; quelli che scrivi tu restano tuoi.",
       "openSheet": "Apri il rilievo",
       "usaDone": "Inserito il valore del rilievo per «{param}»: {valore}. Non è ancora salvato: salva per registrarlo.",
@@ -2717,15 +2727,18 @@
       "title": "Rilievi",
       "lead": "Dal più recente: il primo è il riferimento, da cui partono i valori «dal rilievo» e il confronto.",
       "none": "Nessun rilievo collegato.",
-      "noneLead": "Si collega dalla pagina del rilievo: «Collega a un impianto».",
+      "noneLead": "Si collega dalla pagina del rilievo, nel riquadro «Collegamento all’impianto».",
       "toList": "Vai ai rilievi",
       "reference": "riferimento",
-      "pdf": "PDF"
+      "pdf": "PDF",
+      "autore": "rilevato da {name}"
     },
     "confronto": {
       "title": "Confronto",
       "lead": "Il rilievo di riferimento del {date} accanto all’ultimo calcolo e all’ultimo progetto salvati.",
       "summary": "{diff, plural, =0 {nessuna differenza sullo stato di fatto} one {# differenza sullo stato di fatto} other {# differenze sullo stato di fatto}}, {mod, plural, =0 {nessuna modifica prevista} one {# modifica prevista} other {# modifiche previste}}",
+      "summaryEmpty": "niente da confrontare: nessun calcolo o progetto salvato",
+      "summaryNone": "nessun parametro tecnico confrontato: rilievo e record salvati non hanno valori in comune",
       "fuori": "Il rilievo indica un impianto idraulico o MRL: LiftPilot calcola gli impianti elettrici con argano a riduttore, quindi il calcolo e il progetto non si applicano a questo impianto.",
       "colParam": "Parametro",
       "colRilievo": "Rilievo",
@@ -2775,11 +2788,13 @@
         "fuori": "fuori ambito"
       },
       "storico": "Nel rilievo del {date}: {valore}.",
-      "collaudoLoad": "Il collaudo considera la portata cambiata una parte modificata («Portata o carichi (variati)»).",
+      "collaudoLoad": "Per il collaudo la portata variata è una parte modificata («Portata o carichi (variati)»).",
       "collaudoLink": "Parti del collaudo",
-      "collaudoSpeed": "Il collaudo considera la velocità cambiata una parte modificata («Velocità nominale (variata)»).",
+      "collaudoSpeed": "Per il collaudo la velocità variata è una parte modificata («Velocità nominale (variata)»).",
       "usa": "Usa il valore del rilievo",
-      "identityNote": "Per matricola e indirizzo la colonna «Progetto» riporta i dati dell’impianto; matricola e n° impianto si confrontano anche con i rilievi precedenti dell’impianto."
+      "identityNote": "Per matricola e indirizzo la colonna «Progetto» riporta i dati dell’impianto; matricola e n° impianto si confrontano anche con i rilievi precedenti dell’impianto.",
+      "more": "{n, plural, one {Un altro parametro, senza valore nel rilievo} other {Altri # parametri, senza valore nel rilievo}}",
+      "nothingMeasured": "Il rilievo non ha valori da confrontare."
     },
     "valore": {
       "ALTO": "in alto",
@@ -2800,9 +2815,10 @@
       "impianti": "Vai agli impianti",
       "kpiLabel": "Rilievi e impianti in cifre",
       "kpiSenza": "Rilievi senza impianto",
-      "kpiSenzaSub": "{n, plural, =0 {nessun rilievo ancora} one {su # rilievo} other {su # rilievi}}, fuori dal cestino",
+      "kpiSenzaSub": "{n, plural, =0 {nessun rilievo ancora} one {su # rilievo, esclusi quelli nel cestino} other {su # rilievi, esclusi quelli nel cestino}}",
       "kpiDiff": "Impianti con differenze",
       "kpiDiffSub": "rilievo e calcolo o progetto non coincidono su quello che c’è sul posto",
+      "kpiDiffCapped": "tra i {n} impianti con rilievo modificati per ultimi: potrebbero essercene altri",
       "kpiOld": "Calcoli da aggiornare",
       "kpiOldSub": "{rilievo} con un rilievo più recente, {software} per il software aggiornato",
       "kpiOnlyRilievi": "Il tuo ruolo vede i rilievi, non gli impianti.",
@@ -2813,9 +2829,11 @@
       "colRilievo": "Rilievo",
       "colIndirizzo": "Indirizzo",
       "colTipo": "Tipo",
-      "colImpianto": "Impianto",
+      "colImpianto": "Collegato a",
       "notLinked": "non collegato",
-      "linked": "collegato"
+      "linked": "collegato",
+      "numero": "N° {n}",
+      "matricola": "Matricola {n}"
     }
   }
 }

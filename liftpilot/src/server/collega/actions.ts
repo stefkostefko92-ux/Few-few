@@ -12,10 +12,12 @@ import { rateLimit } from '@/lib/ratelimit';
 import { schedaIdSchema } from '@/lib/rilievi/inputs';
 import { idSchema } from '@/lib/schemas';
 import { str } from '../form';
-import { collega, scollega } from './service';
+import type { Flash } from '@/lib/collega/flash';
+import { collega, scollega, type Esito } from './service';
 
-/** The message the page shows after an action (messages: collega.flash.<esito>). */
-export type Flash = 'linked' | 'unlinked' | 'forbidden' | 'readOnly' | 'tooMany' | 'notFound' | 'projectNotFound';
+/** The message of a link's outcome (an archived installation is read only; a link changed meanwhile is said so). */
+const LINKED: Readonly<Record<Esito, Flash>> = { ok: 'linked', notFound: 'notFound', projectNotFound: 'projectNotFound', alreadyLinked: 'projectNotFound',
+  archived: 'archived', changed: 'changed' };
 
 /** Where the action ends: the survey's page (the link panel), or the installation's (its surveys). */
 function back(locale: string, fd: FormData, schedaId: string, projectId: string | null, flash: Flash): never {
@@ -43,8 +45,7 @@ export async function collegaRilievoAction(fd: FormData): Promise<void> {
   if (!scheda.success) redirect(`/${locale}/app/rilievi`);
   if (refusal) back(locale, fd, scheda.data, null, refusal);
   if (!impianto.success) back(locale, fd, scheda.data, null, 'projectNotFound');
-  const esito = await collega(user.companyId, scheda.data, impianto.data, user.id);
-  back(locale, fd, scheda.data, null, esito === 'ok' ? 'linked' : esito === 'notFound' ? 'notFound' : 'projectNotFound');
+  back(locale, fd, scheda.data, null, LINKED[await collega(user.companyId, scheda.data, impianto.data, user.id)]);
 }
 
 /** «Scollega»: the survey `scheda` off its installation. */
@@ -55,5 +56,5 @@ export async function scollegaRilievoAction(fd: FormData): Promise<void> {
   const from = str(fd, 'impianto') || null;
   if (refusal) back(locale, fd, scheda.data, from, refusal);
   const r = await scollega(user.companyId, scheda.data, user.id);
-  back(locale, fd, scheda.data, r.projectId ?? from, r.esito === 'ok' ? 'unlinked' : 'notFound');
+  back(locale, fd, scheda.data, r.projectId ?? from, r.esito === 'ok' ? 'unlinked' : LINKED[r.esito]);
 }

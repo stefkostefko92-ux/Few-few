@@ -86,6 +86,12 @@ test('calcolo: il rilievo riempie solo i campi vuoti o standard, mai quelli scri
   // a standard value of the software is the software's, not the user's: the measured one takes its place
   const six = seminaCalc(blankCalc(), semeCalc(rilievoDati(row({ preventivoArgano: { modulo: 'rilievo-dati-argani', valori: { poli: '6' } } }))));
   assert.equal(six.values.o_poles, '6');
+  // in a draft a value equal to the standard may be the user's: only the empty fields take the survey's
+  const sixSeme = semeCalc(rilievoDati(row({ preventivoArgano: { modulo: 'rilievo-dati-argani', valori: { poli: '6' } } })));
+  const draft = seminaCalc({ ...blankCalc(), o_poles: '4', o_fn: 50 }, sixSeme, false);
+  assert.equal(draft.values.o_poles, '4', 'a draft’s value at the standard stays');
+  assert.ok(!draft.seeded.includes('o_poles'));
+  assert.equal(draft.values.Q, '630', 'an empty field of the draft still takes the survey’s');
 });
 
 test('calcolo: «usa il valore del rilievo» mette il valore anche sopra quello scritto', () => {

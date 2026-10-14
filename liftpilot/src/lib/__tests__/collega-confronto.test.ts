@@ -30,7 +30,9 @@ const at = (rows: readonly Riga[], p: string) => rows.find((w) => w.param === p)
 
 test('tutto coincide: nessuna differenza; «in alto» coincide con tiro diretto e con rinvio', () => {
   const rows = confronto({ rilievo: R(), storico: [], impianto: imp, calcolo: L(), progetto: null });
-  assert.deepEqual(sintesi(rows), { diff: 0, mod: 0, fuori: false });
+  const s = sintesi(rows);
+  assert.deepEqual([s.diff, s.mod, s.fuori], [0, 0, false]);
+  assert.ok(s.confrontati >= 10, 'the technical rows really compared');
   assert.equal(at(rows, 'posizione')?.stato, 'ok');
   assert.equal(at(rows, 'indirizzo')?.stato, 'ok', 'the same address by its words');
   assert.equal(at(rows, 'matricola')?.stato, 'ok', 'the installation\'s «Numero di matricola»');
@@ -64,7 +66,15 @@ test('modifica prevista: portata, persone e velocità diverse sono attese, non e
   assert.equal(at(rows, 'persone')?.stato, 'mod');
   assert.equal(at(rows, 'velocita')?.stato, 'mod');
   assert.equal(at(rows, 'persone')?.usa, null, 'no input for the persons');
-  assert.deepEqual(sintesi(rows), { diff: 0, mod: 3, fuori: false });
+  const s = sintesi(rows);
+  assert.deepEqual([s.diff, s.mod, s.fuori], [0, 3, false]);
+});
+
+test('appena creato dal rilievo: matricola e indirizzo copiati coincidono, ma nulla è stato confrontato', () => {
+  const rows = confronto({ rilievo: R(), storico: [], impianto: imp, calcolo: null, progetto: null });
+  assert.equal(at(rows, 'matricola')?.stato, 'ok');
+  assert.equal(at(rows, 'indirizzo')?.stato, 'ok');
+  assert.deepEqual(sintesi(rows), { diff: 0, mod: 0, fuori: false, confrontati: 0 });
 });
 
 test('funi e argano in posto contano solo dove il record è una sostituzione', () => {
@@ -116,7 +126,7 @@ test('il calcolo salvato come lato: argano esistente se confrontato, funi tenute
   assert.equal(latoCalcolo({ id: 'c', createdAt: d('2026-10-11'), inputs: { nonsense: 1 } }), null);
 });
 
-test('i passi: da fare, fatto, da aggiornare (software o rilievo più recente), differenze', () => {
+test('i passi: da fare, fatto, da aggiornare (software o rilievo più recente), differenze; i documenti; chi non vede i rilievi', () => {
   const rec = (s: string, old = false) => ({ createdAt: new Date(s), old });
   const none = passi({ rilievo: null, calcolo: null, progetto: null, tavole: null, erroriCalcolo: 0, erroriProgetto: 0 });
   assert.deepEqual(none, { rilievo: 'daFare', calcolo: 'daFare', progetto: 'daFare', documenti: 'daFare' });
@@ -125,6 +135,15 @@ test('i passi: da fare, fatto, da aggiornare (software o rilievo più recente), 
     erroriCalcolo: 0, erroriProgetto: 0 });
   assert.deepEqual(p, { rilievo: 'fatto', calcolo: 'daAggiornare', progetto: 'daAggiornare', documenti: 'daAggiornare' });
   assert.equal(passi({ rilievo: r, calcolo: rec('2026-10-13T09:00:00Z'), progetto: null, tavole: null, erroriCalcolo: 2, erroriProgetto: 0 }).calcolo, 'differenze');
+  // the documents: the record's own (relazione, ordine) — done once a current record is saved, without a set issued too
+  assert.equal(passi({ rilievo: r, calcolo: rec('2026-10-13T09:00:00Z'), progetto: null, tavole: null, erroriCalcolo: 0, erroriProgetto: 0 }).documenti, 'fatto');
+  assert.equal(passi({ rilievo: r, calcolo: rec('2026-10-13T09:00:00Z', true), progetto: null, tavole: null, erroriCalcolo: 0, erroriProgetto: 0 }).documenti, 'daAggiornare');
+  assert.equal(passi({ rilievo: r, calcolo: rec('2026-10-13T09:00:00Z'), progetto: rec('2026-10-14T09:00:00Z'), tavole: { createdAt: new Date('2026-10-14T10:00:00Z') },
+    erroriCalcolo: 0, erroriProgetto: 0 }).documenti, 'fatto');
+  // a role that does not see the surveys: linked or not, nothing judged against the survey
+  const blind = passi({ rilievo: null, collegato: true, calcolo: rec('2026-10-11T09:00:00Z'), progetto: null, tavole: null, erroriCalcolo: 0, erroriProgetto: 0 });
+  assert.deepEqual(blind, { rilievo: 'fatto', calcolo: 'fatto', progetto: 'daFare', documenti: 'fatto' });
+  assert.equal(passi({ rilievo: null, collegato: false, calcolo: null, progetto: null, tavole: null, erroriCalcolo: 0, erroriProgetto: 0 }).rilievo, 'daFare');
   assert.deepEqual(calcoloDaAggiornare(rec('2026-10-12T09:00:00Z', true), r), { old: true, rilievo: true });
   assert.equal(calcoloDaAggiornare(rec('2026-10-13T09:00:00Z'), r), null);
 });

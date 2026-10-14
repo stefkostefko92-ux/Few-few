@@ -5,7 +5,8 @@ import 'server-only';
 //     site (the comparison's STATO DI FATTO rows marked as a probable error, src/lib/collega/confronto.ts);
 //   * «Calcoli da aggiornare» — the active installations whose latest calculation the running engines no longer reproduce,
 //     or which is older than the last change of the reference survey (src/lib/collega/passi.ts) — each installation once.
-// The recent surveys come with their link. What a role may not see is not read (the page passes its rights).
+// Each figure comes with its installations (the tiles open /app/impianti?stato=differenze|aggiornare, those only). The
+// recent surveys come with their link. What a role may not see is not read (the page passes its rights).
 import { prisma } from '@/lib/db';
 import type { SessionUser } from '@/lib/auth';
 import { sintesi } from '@/lib/collega/confronto';
@@ -14,8 +15,9 @@ import { RILIEVO_SELECT, rilievoDati, type RilievoDati } from '@/lib/collega/ril
 import { outdated } from '../records';
 import { CALC_SELECT, LIFT_SELECT, righeDi } from './impianto';
 
-/** At most this many active installations with surveys are compared for the figures. */
-const MAX_LINKED = 300;
+/** At most this many active installations with surveys (the latest changed) are compared for the differences: past it
+ *  the figure says «at least» (`capped`). */
+export const MAX_LINKED = 300;
 
 export async function recentRilievi(user: SessionUser, take = 8) {
   return prisma.scheda.findMany({
@@ -44,10 +46,14 @@ interface LatestRow {
 export interface ImpiantiFigures {
   /** active installations with a survey whose comparison finds a probable error */
   conDifferenze: number;
+  /** the differences were looked for among the MAX_LINKED latest changed only: there may be more */
+  capped: boolean;
   /** active installations whose latest calculation is «da aggiornare», and why (one may have both reasons) */
   daAggiornare: number;
   perSoftware: number;
   perRilievo: number;
+  /** the installations of each figure (the filtered list) */
+  ids: { differenze: string[]; aggiornare: string[] };
 }
 
 export async function impiantiFigures(user: SessionUser): Promise<ImpiantiFigures> {
@@ -77,21 +83,22 @@ export async function impiantiFigures(user: SessionUser): Promise<ImpiantiFigure
   ]);
   const surveys = new Map<string, RilievoDati[]>();
   for (const s of schede) if (s.projectId) surveys.set(s.projectId, [...(surveys.get(s.projectId) ?? []), rilievoDati(s)]);
-  let conDifferenze = 0;
+  const differenze: string[] = [], aggiornare: string[] = [];
   for (const p of linked) {
     const row = byId.get(p.id), calc = calcs.find((c) => c.id === row?.calcId) ?? null, lift = lifts.find((d) => d.id === row?.liftId) ?? null;
-    if (sintesi(righeDi(p, surveys.get(p.id) ?? [], calc, lift)).diff > 0) conDifferenze++;
+    if (sintesi(righeDi(p, surveys.get(p.id) ?? [], calc, lift)).diff > 0) differenze.push(p.id);
   }
-  let daAggiornare = 0, perSoftware = 0, perRilievo = 0;
+  let perSoftware = 0, perRilievo = 0;
   for (const r of latest) {
     if (!r.calcId || !r.calcAt || r.cEngine === null) continue;
     const old = outdated.calc({ engineVersion: r.cEngine, shaftDesign: r.cShaft === null ? null : { engineVersion: r.cShaft },
       liftDesign: r.cLift === null ? null : { engineVersion: r.cLift } });
     const why = calcoloDaAggiornare({ createdAt: r.calcAt, old }, surveys.get(r.id)?.[0] ?? null);
     if (!why) continue;
-    daAggiornare++;
+    aggiornare.push(r.id);
     if (why.old) perSoftware++;
     if (why.rilievo) perRilievo++;
   }
-  return { conDifferenze, daAggiornare, perSoftware, perRilievo };
+  return { conDifferenze: differenze.length, capped: linked.length === MAX_LINKED, daAggiornare: aggiornare.length, perSoftware, perRilievo,
+    ids: { differenze, aggiornare } };
 }

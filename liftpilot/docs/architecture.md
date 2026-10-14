@@ -440,13 +440,16 @@ src/lib/collega/     Рилево ↔ съоръжение (кръг 44), чис
                      usaLift, USA — какво „usa il valore“ може да сложи), lati (каквото казват последното изчисление и проектът
                      на асансьора), confronto (редовете, класът stato di fatto / modifica prevista / свободен текст, състоянието,
                      sintesi, erroriDi), passi (четирите стъпки и състоянията им), moduli (модулите на доставчиците на картата),
-                     formato (числото и единицата в сравнението).
+                     formato (числото и единицата в сравнението), flash (съобщенията `?lk=` на двете страници).
 src/server/collega/  service (collega/scollega/creaDaRilievo: суров SQL без updatedAt на картата, фирмата на двете страни в
-                     същото изявление, одит в транзакцията), actions ('use server': collegaRilievoAction, scollegaRilievoAction —
-                     `rilievi:link`, само за четене, честота), queries (съоръжението на картата, кандидатите и предложенията,
+                     същото изявление, закрепено прочетеното съоръжение, архивираното — само за четене, одит в
+                     транзакцията), actions ('use server': collegaRilievoAction, scollegaRilievoAction —
+                     `rilievi:link`, само за четене, честота), queries (съоръжението на картата, кандидатите в две заявки — по код и по адрес —
+                     и предложенията,
                      търсенето, рилевата на съоръжението, рилевото за справка, имената за регистъра), impianto (последните
-                     записи → сравнение и стъпки), home (последните рилева, броячите, плочките на съоръженията), forms
-                     (avvioCalc/avvioLift — началото на калкулатора и на /progetto от рилевото, ?usa=).
+                     записи → сравнение и стъпки; без `rilievi:view` нищо от рилевата), home (последните рилева, броячите,
+                     плочките на съоръженията и техните id за `/app/impianti?stato=`), forms (avvioCalc/avvioLift — началото на
+                     калкулатора и на /progetto от рилевото — само с `rilievi:view`; нов / чернова / записан, ?usa=).
 src/components/collega/  LinkPanel (`#collegamento` на картата, извън листа), ImpiantoCollegato (на страницата на съоръжението:
                      Passi + списъкът `#rilievi` + Confronto `#confronto`), Passi (стъпките като бутони на кабинно табло),
                      Confronto, RilievoAvviso (над формуляра: от кое рилево, „usa“), origine ('use client': OrigineProvider и

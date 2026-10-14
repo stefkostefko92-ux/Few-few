@@ -7,6 +7,7 @@ import { dateFormat } from '@/lib/dates';
 import type { ProjectKind } from '@/lib/schemas';
 import type { listProjects } from '@/server/queries';
 import { outdated } from '@/server/records';
+import { MAX_LINKED } from '@/server/collega/home';
 import ModuleCards, { MODULES } from './ModuleCards';
 
 export type ListedProject = Awaited<ReturnType<typeof listProjects>>[number];
@@ -33,23 +34,25 @@ interface Props {
   /** the active installations by module, for the filters (the plain active list only) */
   counts: { all: number; REPLACEMENT: number; FULL: number } | null;
   canEdit: boolean;
+  /** the installations of a figure of the Rilievi home (round 44); `capped`: looked for among the latest changed only */
+  stato?: { key: 'differenze' | 'aggiornare'; capped: boolean } | null;
 }
 
 // The company's installations, latest change first (the dashboard's «Progetti recenti»): the view's latest changed
 // and «show all (N)» for the rest, with the module filters, the archive, the search's words, and per row its module,
 // address, plant number, latest result («da aggiornare» when the engines changed), its date and machine line, and the
-// number of calculations.
-export default async function ProjectList({ projects, total, all, archived, kind, q, counts, canEdit }: Props) {
+// number of calculations. From a figure of the Rilievi home (?stato=) only its installations, said on top.
+export default async function ProjectList({ projects, total, all, archived, kind, q, counts, canEdit, stato = null }: Props) {
   const [t, tf, locale] = await Promise.all([getTranslations('projects'), getTranslations('refresh'), getLocale()]);
   const fd = dateFormat(locale);
   const slugOf = (k: ProjectKind | null): string | null => MODULES.find((m) => m.kind === k)?.slug ?? null;
-  const href = (k: ProjectKind | null, arch = archived, words = q, every = all): string => {
-    const s = [arch ? 'archived=1' : '', k ? `kind=${slugOf(k)}` : '', words ? `q=${encodeURIComponent(words)}` : '', every ? 'all=1' : '']
+  const href = (k: ProjectKind | null, arch = archived, words = q, every = all, st = arch ? null : stato?.key ?? null): string => {
+    const s = [arch ? 'archived=1' : '', k ? `kind=${slugOf(k)}` : '', words ? `q=${encodeURIComponent(words)}` : '', st ? `stato=${st}` : '', every ? 'all=1' : '']
       .filter(Boolean).join('&');
     return s ? `/app/impianti?${s}` : '/app/impianti';
   };
   const more = total > projects.length;
-  const empty = projects.length === 0, fresh = empty && !archived && !q && kind === null;
+  const empty = projects.length === 0, fresh = empty && !archived && !q && kind === null && !stato;
   return (
     <section className="panel dash-list" aria-labelledby="dash-list-title">
       <div className="panel-head">
@@ -71,6 +74,12 @@ export default async function ProjectList({ projects, total, all, archived, kind
           </Link>
         ))}
       </nav>
+      {stato ? (
+        <p className="dash-q" role="status">
+          {t(`stato_${stato.key}`, { n: total })}{stato.capped ? ` ${t('stato_capped', { n: MAX_LINKED })}` : ''}{' '}
+          <Link href={href(kind, archived, q, all, null)}>{t('stato_clear')}</Link>
+        </p>
+      ) : null}
       {q ? (
         <p className="dash-q" role="status">
           {empty ? t('searchNone', { q }) : t('searchResults', { n: total, q })}{' '}
@@ -83,7 +92,7 @@ export default async function ProjectList({ projects, total, all, archived, kind
           {canEdit ? <ModuleCards /> : null}
         </div>
       ) : empty ? (
-        q ? null : <p className="dash-empty">{archived && kind === null ? t('emptyArchived') : t('emptyKind')}</p>
+        q || stato ? null : <p className="dash-empty">{archived && kind === null ? t('emptyArchived') : t('emptyKind')}</p>
       ) : (
         <ul className="dash-rows" role="list">
           {projects.map((p) => {

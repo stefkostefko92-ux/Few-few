@@ -4,23 +4,34 @@ import 'server-only';
 // (SCHEDA_LINKED / SCHEDA_UNLINKED, without the sheet's content). The link is not the sheet's content nor its version: it
 // is written with plain SQL so that `updatedAt` stays (a form opened on the sheet is not put in conflict, «Ultima
 // modifica» keeps naming who changed the sheet). Only a sheet out of the trash is linked or unlinked, only to an active
-// installation (an archived one is read only).
+// installation, and never away from an archived one (an archived installation is read only: its surveys stay). Each
+// UPDATE pins what was read in the same transaction (the sheet's installation, still active): a link changed meanwhile
+// by someone else is «changed», nothing is written and the log names the right `from`.
 import type { ProjectKind } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { auditTx } from '@/lib/audit';
 
-export type Esito = 'ok' | 'notFound' | 'projectNotFound' | 'alreadyLinked';
+/** `archived`: the sheet's installation is archived (read only); `changed`: its link changed since it was read. */
+export type Esito = 'ok' | 'notFound' | 'projectNotFound' | 'alreadyLinked' | 'archived' | 'changed';
+
+/** The sheet as a link reads it: its installation and whether that one is archived. */
+const PREV = { projectId: true, project: { select: { archivedAt: true } } } as const;
 
 /** The sheet linked to the installation (another link replaced: the log says from which). */
 export async function collega(companyId: string, schedaId: string, projectId: string, userId: string): Promise<Esito> {
   return prisma.$transaction(async (tx) => {
-    const prev = await tx.scheda.findFirst({ where: { id: schedaId, companyId, deletedAt: null }, select: { projectId: true } });
+    const prev = await tx.scheda.findFirst({ where: { id: schedaId, companyId, deletedAt: null }, select: PREV });
     if (!prev) return 'notFound';
     if (prev.projectId === projectId) return 'ok';
+    if (prev.project?.archivedAt) return 'archived';
+    const target = await tx.project.findFirst({ where: { id: projectId, companyId, archivedAt: null }, select: { id: true } });
+    if (!target) return 'projectNotFound';
     const n = await tx.$executeRaw`UPDATE "Scheda" AS s SET "projectId" = p."id" FROM "Project" AS p
       WHERE s."id" = ${schedaId} AND s."companyId" = ${companyId} AND s."deletedAt" IS NULL
+        AND s."projectId" IS NOT DISTINCT FROM ${prev.projectId}
+        AND NOT EXISTS (SELECT 1 FROM "Project" AS q WHERE q."id" = s."projectId" AND q."archivedAt" IS NOT NULL)
         AND p."id" = ${projectId} AND p."companyId" = ${companyId} AND p."archivedAt" IS NULL`;
-    if (n !== 1) return 'projectNotFound';
+    if (n !== 1) return 'changed';
     await auditTx(tx, { companyId, userId, action: 'SCHEDA_LINKED', entity: 'Scheda', entityId: schedaId,
       meta: prev.projectId ? { projectId, from: prev.projectId } : { projectId } });
     return 'ok';
@@ -30,12 +41,14 @@ export async function collega(companyId: string, schedaId: string, projectId: st
 /** The sheet unlinked from its installation; the installation it was linked to, or null when it was not linked. */
 export async function scollega(companyId: string, schedaId: string, userId: string): Promise<{ esito: Esito; projectId: string | null }> {
   return prisma.$transaction(async (tx) => {
-    const prev = await tx.scheda.findFirst({ where: { id: schedaId, companyId, deletedAt: null }, select: { projectId: true } });
+    const prev = await tx.scheda.findFirst({ where: { id: schedaId, companyId, deletedAt: null }, select: PREV });
     if (!prev) return { esito: 'notFound' as const, projectId: null };
     if (!prev.projectId) return { esito: 'ok' as const, projectId: null };
-    const n = await tx.$executeRaw`UPDATE "Scheda" SET "projectId" = NULL
-      WHERE "id" = ${schedaId} AND "companyId" = ${companyId} AND "deletedAt" IS NULL AND "projectId" = ${prev.projectId}`;
-    if (n !== 1) return { esito: 'notFound' as const, projectId: null };
+    if (prev.project?.archivedAt) return { esito: 'archived' as const, projectId: prev.projectId };
+    const n = await tx.$executeRaw`UPDATE "Scheda" AS s SET "projectId" = NULL
+      WHERE s."id" = ${schedaId} AND s."companyId" = ${companyId} AND s."deletedAt" IS NULL AND s."projectId" = ${prev.projectId}
+        AND EXISTS (SELECT 1 FROM "Project" AS p WHERE p."id" = s."projectId" AND p."companyId" = ${companyId} AND p."archivedAt" IS NULL)`;
+    if (n !== 1) return { esito: 'changed' as const, projectId: prev.projectId };
     await auditTx(tx, { companyId, userId, action: 'SCHEDA_UNLINKED', entity: 'Scheda', entityId: schedaId, meta: { projectId: prev.projectId } });
     return { esito: 'ok' as const, projectId: prev.projectId };
   });

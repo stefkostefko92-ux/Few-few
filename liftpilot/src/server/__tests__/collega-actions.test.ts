@@ -1,8 +1,11 @@
 // Round 44: linking a survey to an installation (src/server/collega/actions.ts, service.ts) and creating an installation
 // from a survey (src/server/project-actions.ts). Over an in-memory database: the right 'rilievi:link' (a read-only
 // company told so), the company of the session on both sides — another company's sheet or installation is never
-// touched —, an archived installation refused, the audit rows, the rollback of a creation whose sheet is already linked,
-// and the suggestions read within the company's active installations only.
+// touched —, an archived installation refused (as the target, and as the installation a survey leaves: read only), a link
+// changed meanwhile («changed»), the audit rows, the rollback of a creation whose sheet is already linked, and the
+// suggestions read within the company's active installations only — the same matricola never crowded out by the
+// address. The mock runs the statements as the database would; every statement's text is also checked for the company,
+// trash, archive and pinning predicates, so that a predicate dropped from service.ts fails here.
 import { test, mock, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
@@ -16,12 +19,17 @@ const pkg = (m: string) => pathToFileURL(req.resolve(m)).href;
 type Row = Record<string, unknown>;
 class Redirect extends Error { constructor(readonly to: string) { super(`redirect ${to}`); } }
 
-const S1 = 'cm00000000000000000000s1', S2 = 'cm00000000000000000000s2', S9 = 'cm00000000000000000000s9';
-let schede: Row[] = [], projects: Row[] = [], audits: Row[] = [], session: Row | null = null, findManyWhere: Row | null = null;
+const S1 = 'cm00000000000000000000s1', S2 = 'cm00000000000000000000s2', S3 = 'cm00000000000000000000s3', S9 = 'cm00000000000000000000s9';
+let schede: Row[] = [], projects: Row[] = [], audits: Row[] = [], session: Row | null = null, findManyCalls: Row[] = [], findManyResult: (args: Row) => Row[] = () => [];
+/** every raw statement run, its text with `?` for each value */
+let statements: string[] = [];
+/** what the next read of a sheet returns instead of the row (a link changed by someone else after this read) */
+let staleRead: Row | null = null;
 const reset = () => {
   schede = [
     { id: S1, companyId: 'c1', projectId: null, deletedAt: null },
     { id: S2, companyId: 'c1', projectId: 'p1', deletedAt: null },
+    { id: S3, companyId: 'c1', projectId: 'pa', deletedAt: null },
     { id: S9, companyId: 'c2', projectId: null, deletedAt: null },
   ];
   projects = [
@@ -29,23 +37,33 @@ const reset = () => {
     { id: 'pa', companyId: 'c1', archivedAt: new Date() }, { id: 'px', companyId: 'c2', archivedAt: null },
   ];
   audits = [];
+  statements = [];
+  staleRead = null;
+  findManyCalls = [];
+  findManyResult = () => [];
 };
 const matches = (r: Row, where: Row) => Object.entries(where).every(([k, v]) => r[k] === v);
 
+const archivedProject = (id: unknown) => projects.find((r) => r.id === id)?.archivedAt != null;
 // the three statements of service.ts, by their text and their values in order
 function executeRaw(strings: TemplateStringsArray, ...v: unknown[]): number {
   const sql = strings.join('?');
-  if (sql.includes('FROM "Project" AS p')) {
-    const [sid, c1, pid, c2] = v, s = schede.find((r) => r.id === sid && r.companyId === c1 && r.deletedAt === null);
+  statements.push(sql);
+  if (sql.includes('SET "projectId" = NULL')) {
+    const [sid, c, prev, c2] = v, s = schede.find((r) => r.id === sid && r.companyId === c && r.deletedAt === null && r.projectId === prev
+      && projects.some((p) => p.id === r.projectId && p.companyId === c2 && p.archivedAt === null));
+    if (!s) return 0;
+    s.projectId = null;
+    return 1;
+  }
+  if (sql.includes('UPDATE "Scheda" AS s SET "projectId" = p."id"')) {
+    // collega: the sheet (its company, out of the trash, still on the installation read, which is not archived) to the
+    // installation (the company's, active)
+    const [sid, c1, prev, pid, c2] = v;
+    const s = schede.find((r) => r.id === sid && r.companyId === c1 && r.deletedAt === null && (r.projectId ?? null) === (prev ?? null) && !archivedProject(r.projectId));
     const p = projects.find((r) => r.id === pid && r.companyId === c2 && r.archivedAt === null);
     if (!s || !p) return 0;
     s.projectId = p.id;
-    return 1;
-  }
-  if (sql.includes('SET "projectId" = NULL')) {
-    const [sid, c, prev] = v, s = schede.find((r) => r.id === sid && r.companyId === c && r.deletedAt === null && r.projectId === prev);
-    if (!s) return 0;
-    s.projectId = null;
     return 1;
   }
   const [pid, sid, c] = v, s = schede.find((r) => r.id === sid && r.companyId === c && r.deletedAt === null && r.projectId === null);
@@ -55,10 +73,20 @@ function executeRaw(strings: TemplateStringsArray, ...v: unknown[]): number {
 }
 interface Db { [model: string]: unknown; $transaction(fn: (tx: Db) => Promise<unknown>): Promise<unknown> }
 const db: Db = {
-  scheda: { findFirst: async ({ where }: { where: Row }) => { const s = schede.find((r) => matches(r, where)); return s ? { projectId: s.projectId } : null; } },
+  scheda: {
+    findFirst: async ({ where }: { where: Row }) => {
+      const s = schede.find((r) => matches(r, where));
+      if (!s) return null;
+      const read = staleRead ?? s;
+      staleRead = null;
+      const p = projects.find((r) => r.id === read.projectId);
+      return { projectId: read.projectId, project: p ? { archivedAt: p.archivedAt } : null };
+    },
+  },
   project: {
     create: async ({ data }: { data: Row }) => { const row = { id: `pn${projects.length}`, archivedAt: null, ...data }; projects.push(row); return { id: row.id }; },
-    findMany: async ({ where }: { where: Row }) => { findManyWhere = where; return []; },
+    findFirst: async ({ where }: { where: Row }) => { const p = projects.find((r) => matches(r, where)); return p ? { id: p.id } : null; },
+    findMany: async (args: Row) => { findManyCalls.push(args); return findManyResult(args); },
   },
   auditLog: { create: async ({ data }: { data: Row }) => { audits.push(data); return data; } },
   $executeRaw: async (strings: TemplateStringsArray, ...v: unknown[]) => executeRaw(strings, ...v),
@@ -114,7 +142,7 @@ test('collega: un impianto di un’altra azienda o archiviato, un rilievo di un�
   // from the other company's side: our sheet does not exist for it
   signIn({ companyId: 'c2' });
   assert.equal(await run(() => collegaRilievoAction(form({ scheda: S1, impianto: 'px' }))), `/it/app/rilievi/${S1}?lk=notFound#collegamento`);
-  assert.deepEqual(schede.map((s) => s.projectId), [null, 'p1', null]);
+  assert.deepEqual(schede.map((s) => s.projectId), [null, 'p1', 'pa', null]);
   assert.equal(audits.length, 0);
   // a forged id is no sheet at all
   assert.equal(await run(() => collegaRilievoAction(form({ scheda: '../x', impianto: 'p1' }))), '/it/app/rilievi');
@@ -154,12 +182,63 @@ test('crea impianto dal rilievo: nasce collegato, nella stessa transazione; già
   assert.equal(projects.length, before + 1);
 });
 
-test('suggerimenti: solo gli impianti attivi dell’azienda dell’utente', async () => {
-  const { candidatiPer } = await import(src('server/collega/queries.ts'));
+test('suggerimenti: solo gli impianti attivi dell’azienda dell’utente; la stessa matricola mai esclusa dagli indirizzi', async () => {
+  const { candidatiPer, suggerimentiPer, MAX_CODICE, MAX_INDIRIZZO } = await import(src('server/collega/queries.ts'));
   await candidatiPer({ companyId: 'c1' }, { matricola: '0123', numeroImpianto: '77', indirizzo: 'Via Verdi 14, Milano' });
-  assert.equal(findManyWhere?.companyId, 'c1');
-  assert.equal(findManyWhere?.archivedAt, null);
-  findManyWhere = null;
+  assert.equal(findManyCalls.length, 2, 'the codes and the address apart');
+  for (const call of findManyCalls) {
+    const where = call.where as Row;
+    assert.equal(where.companyId, 'c1');
+    assert.equal(where.archivedAt, null);
+  }
+  const [code, address] = findManyCalls as { where: { OR: Row[] }; take: number }[];
+  assert.equal(code?.take, MAX_CODICE);
+  assert.ok(!JSON.stringify(code?.where).includes('Verdi') && !JSON.stringify(code?.where).includes('milano'), 'no address word in the query by code');
+  assert.equal(address?.take, MAX_INDIRIZZO);
+  findManyCalls = [];
   assert.deepEqual(await candidatiPer({ companyId: 'c1' }, { matricola: null, numeroImpianto: null, indirizzo: null }), []);
-  assert.equal(findManyWhere, null, 'nothing to look for: no query');
+  assert.equal(findManyCalls.length, 0, 'nothing to look for: no query');
+  // 50 installations of the same city changed later than the one of the same matricola: that one still comes first
+  const at = (i: number) => new Date(Date.UTC(2026, 9, 1, 0, i));
+  const city = Array.from({ length: 50 }, (_, i) => ({ id: `pc${i}`, name: `Via Garibaldi ${i}`, kind: 'REPLACEMENT', address: `Via Garibaldi ${i}`, city: 'Milano',
+    province: 'MI', plantNumber: null, updatedAt: at(100 + i), schede: [] }));
+  const match = { id: 'pm', name: 'Condominio Verdi', kind: 'REPLACEMENT', address: 'Via Verdi 14', city: 'Milano', province: 'MI', plantNumber: '0123', updatedAt: at(1), schede: [] };
+  findManyResult = (args) => (JSON.stringify(args.where).includes('plantNumber') ? [match] : city);
+  const out = await suggerimentiPer({ companyId: 'c1' }, { matricola: '0123', numeroImpianto: null, indirizzo: 'Via Verdi 14, Milano', projectId: null });
+  assert.equal(out[0]?.id, 'pm');
+  assert.deepEqual(out[0]?.motivi, ['matricola', 'indirizzo']);
+});
+
+test('i predicati delle istruzioni: azienda su entrambi i lati, cestino, archivio, collegamento letto', async () => {
+  const { collegaRilievoAction, scollegaRilievoAction } = await actions();
+  await run(() => collegaRilievoAction(form({ scheda: S1, impianto: 'p2' })));
+  await run(() => scollegaRilievoAction(form({ scheda: S1 })));
+  const [link, unlink] = statements;
+  for (const re of [/s\."companyId" = \?/, /s\."deletedAt" IS NULL/, /s\."projectId" IS NOT DISTINCT FROM \?/, /q\."archivedAt" IS NOT NULL/,
+    /p\."companyId" = \?/, /p\."archivedAt" IS NULL/]) assert.match(link ?? '', re);
+  for (const re of [/s\."companyId" = \?/, /s\."deletedAt" IS NULL/, /s\."projectId" = \?/, /p\."companyId" = \?/, /p\."archivedAt" IS NULL/]) assert.match(unlink ?? '', re);
+});
+
+test('impianto archiviato: in sola lettura, i suoi rilievi non si scollegano né si spostano', async () => {
+  const { collegaRilievoAction, scollegaRilievoAction } = await actions();
+  assert.equal(await run(() => scollegaRilievoAction(form({ scheda: S3 }))), `/it/app/rilievi/${S3}?lk=archived#collegamento`);
+  assert.equal(await run(() => collegaRilievoAction(form({ scheda: S3, impianto: 'p2' }))), `/it/app/rilievi/${S3}?lk=archived#collegamento`);
+  assert.equal(schede[2]?.projectId, 'pa');
+  assert.equal(audits.length, 0);
+  assert.equal(statements.length, 0, 'refused before any write');
+});
+
+test('collegamento cambiato nel frattempo: nulla si scrive, il registro non nomina un «from» sbagliato', async () => {
+  const { collegaRilievoAction, scollegaRilievoAction } = await actions();
+  // read as not linked, but someone linked it to p1 meanwhile
+  staleRead = { projectId: null };
+  schede[0] = { ...schede[0], projectId: 'p1' };
+  assert.equal(await run(() => collegaRilievoAction(form({ scheda: S1, impianto: 'p2' }))), `/it/app/rilievi/${S1}?lk=changed#collegamento`);
+  assert.equal(schede[0]?.projectId, 'p1');
+  // read as on p1, but moved to p2 meanwhile: the unlink does not take it off p2
+  staleRead = { projectId: 'p1' };
+  schede[0] = { ...schede[0], projectId: 'p2' };
+  assert.equal(await run(() => scollegaRilievoAction(form({ scheda: S1 }))), `/it/app/rilievi/${S1}?lk=changed#collegamento`);
+  assert.equal(schede[0]?.projectId, 'p2');
+  assert.equal(audits.length, 0);
 });

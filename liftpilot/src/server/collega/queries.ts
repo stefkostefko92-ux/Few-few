@@ -20,23 +20,41 @@ export function impiantoDi(user: SessionUser, projectId: string | null) {
   return prisma.project.findFirst({ where: { id: projectId, companyId: user.companyId }, select: IMPIANTO_SELECT });
 }
 
-/** The company's active installations that may be the survey's: the same «Numero di matricola», a survey of the same
- *  matricola or number, a word of the address (the ranking and the reasons are suggerimenti.ts). At most 50 read. */
+/** An installation as the suggestions read it, with its linked surveys out of the trash — the newest 20, or in the query
+ *  by code only those of the same matricola or number (`schede`), so that a match is never cut off. */
+const candidatoSelect = (schede: object) => ({
+  id: true, name: true, kind: true, address: true, city: true, province: true, plantNumber: true, updatedAt: true,
+  schede: { where: { deletedAt: null, ...schede }, orderBy: [{ data: 'desc' as const }, { createdAt: 'desc' as const }], take: 20,
+    select: { matricola: true, numeroImpianto: true, indirizzo: true } },
+});
+
+/** At most this many installations of the same matricola or number, and of the same address words, are read. */
+export const MAX_CODICE = 10, MAX_INDIRIZZO = 50;
+
+/** The company's active installations that may be the survey's (the ranking and the reasons are suggerimenti.ts), read in
+ *  two queries so that the strongest reason is never crowded out: those of the same «Numero di matricola» or with a
+ *  survey of the same matricola or number (no address words, at most 10), then those with a word of the address in
+ *  theirs or in a survey's (at most 50, latest changed) — merged by id. */
 export async function candidatiPer(user: SessionUser, r: { matricola: string | null; numeroImpianto: string | null; indirizzo: string | null }): Promise<Candidato[]> {
-  const or: object[] = [];
-  if (r.matricola) or.push({ plantNumber: r.matricola });
+  const active = { companyId: user.companyId, archivedAt: null };
   const codes = [...(r.matricola ? [{ matricola: r.matricola }] : []), ...(r.numeroImpianto ? [{ numeroImpianto: r.numeroImpianto }] : [])];
-  if (codes.length) or.push({ schede: { some: { deletedAt: null, OR: codes } } });
-  for (const w of paroleDaCercare(r.indirizzo)) {
+  const byCode = codes.length ? [...(r.matricola ? [{ plantNumber: r.matricola }] : []), { schede: { some: { deletedAt: null, OR: codes } } }] : [];
+  const byAddress = paroleDaCercare(r.indirizzo).flatMap((w) => {
     const has = { contains: likeEscape(w), mode: 'insensitive' as const };
-    or.push({ address: has }, { schede: { some: { deletedAt: null, indirizzo: has } } });
-  }
-  if (or.length === 0) return [];
-  return prisma.project.findMany({
-    where: { companyId: user.companyId, archivedAt: null, OR: or }, orderBy: { updatedAt: 'desc' }, take: 50,
-    select: { id: true, name: true, kind: true, address: true, city: true, province: true, plantNumber: true, updatedAt: true,
-      schede: { where: { deletedAt: null }, select: { matricola: true, numeroImpianto: true, indirizzo: true }, take: 20 } },
+    return [{ address: has }, { schede: { some: { deletedAt: null, indirizzo: has } } }];
   });
+  const [code, address] = await Promise.all([
+    byCode.length ? prisma.project.findMany({ where: { ...active, OR: byCode }, orderBy: { updatedAt: 'desc' }, take: MAX_CODICE, select: candidatoSelect({ OR: codes }) })
+      : Promise.resolve([]),
+    byAddress.length ? prisma.project.findMany({ where: { ...active, OR: byAddress }, orderBy: { updatedAt: 'desc' }, take: MAX_INDIRIZZO, select: candidatoSelect({}) })
+      : Promise.resolve([]),
+  ]);
+  const out = new Map<string, Candidato>();
+  for (const c of [...code, ...address]) {
+    const seen = out.get(c.id);
+    out.set(c.id, seen ? { ...seen, schede: [...seen.schede, ...c.schede] } : c);
+  }
+  return [...out.values()];
 }
 
 /** The suggestions for a survey (not the installation it is linked to). */
@@ -44,13 +62,15 @@ export async function suggerimentiPer(user: SessionUser, r: { matricola: string 
   return suggerimenti(r, await candidatiPer(user, r));
 }
 
-/** The company's active installations by the words searched (name, address, municipality, plant number): at most 8. */
+/** The company's active installations by the words searched — each in the name, the address, the municipality, the
+ *  «Numero di matricola» or the matricola or number of a linked survey (as the top bar's search, queries.ts): at most 8. */
 export function cercaImpianti(user: SessionUser, q: unknown) {
   const words = searchWords(q);
   if (words.length === 0) return Promise.resolve([]);
   const has = (w: string) => ({ contains: likeEscape(w), mode: 'insensitive' as const });
   return prisma.project.findMany({
-    where: { companyId: user.companyId, archivedAt: null, AND: words.map((w) => ({ OR: [{ name: has(w) }, { address: has(w) }, { city: has(w) }, { plantNumber: has(w) }] })) },
+    where: { companyId: user.companyId, archivedAt: null, AND: words.map((w) => ({ OR: [{ name: has(w) }, { address: has(w) }, { city: has(w) }, { plantNumber: has(w) },
+      { schede: { some: { deletedAt: null, OR: [{ matricola: has(w) }, { numeroImpianto: has(w) }] } } }] })) },
     orderBy: { updatedAt: 'desc' }, take: 8, select: IMPIANTO_SELECT,
   });
 }

@@ -157,13 +157,16 @@ export function confronto(x: ConfrontoInput): Riga[] {
   return rows.filter((w) => w.rilievo !== null || w.calcolo !== null || w.progetto !== null);
 }
 
-/** What the comparison finds: the probable errors, the expected modifications, a lift outside LiftPilot's scope. */
-export function sintesi(rows: readonly Riga[]): { diff: number; mod: number; fuori: boolean } {
-  return { diff: rows.filter((w) => w.stato === 'diff').length, mod: rows.filter((w) => w.stato === 'mod').length, fuori: rows.some((w) => w.stato === 'fuori') };
-}
-
 /** The identity rows: the installation's data (and the older surveys), not a record's. */
 const IDENTITA: ReadonlySet<Param> = new Set<Param>(['tipo', 'matricola', 'numero', 'indirizzo']);
+
+/** What the comparison finds: the probable errors, the expected modifications, a lift outside LiftPilot's scope, and how
+ *  many technical rows (not the identity, which a new installation copies from the survey) really met a record's value —
+ *  none: nothing was compared yet, whatever «coincide» the identity says. */
+export function sintesi(rows: readonly Riga[]): { diff: number; mod: number; fuori: boolean; confrontati: number } {
+  return { diff: rows.filter((w) => w.stato === 'diff').length, mod: rows.filter((w) => w.stato === 'mod').length, fuori: rows.some((w) => w.stato === 'fuori'),
+    confrontati: rows.filter((w) => !IDENTITA.has(w.param) && (w.stato === 'ok' || w.stato === 'diff' || w.stato === 'mod')).length };
+}
 
 /** A record's own probable errors: the rows of the state on site where that record says otherwise than the survey. */
 export const erroriDi = (rows: readonly Riga[], lato: 'calcolo' | 'progetto'): Riga[] =>

@@ -2,9 +2,12 @@ import 'server-only';
 // An installation with its surveys (round 44): the surveys newest first, the comparison of the reference survey with the
 // latest calculation and the latest design, and the four steps from the survey to the documents — all from the records
 // of the company of the signed-in user (an installation of another company never reaches here: its page is 404 first).
+// A role without 'rilievi:view' reads nothing of the surveys: no list, no comparison, steps not judged against the
+// survey — only whether one is linked.
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import type { SessionUser } from '@/lib/auth';
+import { can } from '@/lib/rbac';
 import { confronto, erroriDi, type Riga } from '@/lib/collega/confronto';
 import { latoCalcolo, latoProgetto } from '@/lib/collega/lati';
 import { passi, type Passi } from '@/lib/collega/passi';
@@ -54,6 +57,7 @@ export function righeDi(p: ImpiantoInfo, rilievi: readonly RilievoDati[], calc: 
 }
 
 export interface Collegamento {
+  /** the installation's surveys newest first (none read for a role that does not see them) */
   rilievi: RilievoElencato[];
   righe: Riga[];
   passi: Passi;
@@ -65,8 +69,10 @@ export interface Collegamento {
 
 export async function collegamentoImpianto(user: SessionUser, p: ImpiantoInfo): Promise<Collegamento> {
   const mine = { projectId: p.id, companyId: user.companyId }, latest = { orderBy: { createdAt: 'desc' as const } };
-  const [rilievi, calc, lift, room, set] = await Promise.all([
-    rilieviImpianto(user, p.id),
+  const sees = can(user, 'rilievi:view');
+  const [rilievi, linked, calc, lift, room, set] = await Promise.all([
+    sees ? rilieviImpianto(user, p.id) : Promise.resolve([]),
+    sees ? Promise.resolve(0) : prisma.scheda.count({ where: { ...mine, deletedAt: null } }),
     prisma.calculation.findFirst({ where: mine, ...latest, select: CALC_SELECT }),
     p.kind === 'FULL' ? prisma.liftDesign.findFirst({ where: mine, ...latest, select: LIFT_SELECT }) : Promise.resolve(null),
     p.kind === 'REPLACEMENT'
@@ -80,7 +86,8 @@ export async function collegamentoImpianto(user: SessionUser, p: ImpiantoInfo): 
   return {
     rilievi, righe,
     passi: passi({
-      rilievo: rilievi[0]?.dati ?? null, calcolo: calc ? { createdAt: calc.createdAt, old: outdated.calc(calc) } : null, progetto: design, tavole: set,
+      rilievo: rilievi[0]?.dati ?? null, ...(sees ? {} : { collegato: linked > 0 }),
+      calcolo: calc ? { createdAt: calc.createdAt, old: outdated.calc(calc) } : null, progetto: design, tavole: set,
       // a replacement's machine room keeps no data of the comparison: its own differences are none
       erroriCalcolo: erroriDi(righe, 'calcolo').length, erroriProgetto: lift ? erroriDi(righe, 'progetto').length : 0,
     }),

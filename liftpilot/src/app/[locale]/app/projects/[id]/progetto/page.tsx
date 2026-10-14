@@ -1,7 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireCapability } from '@/lib/auth';
-import { can } from '@/lib/rbac';
 import { idSchema } from '@/lib/schemas';
 import { dateFormat } from '@/lib/dates';
 import { getProject } from '@/server/queries';
@@ -35,9 +34,10 @@ export default async function LiftWorkPage({ params, searchParams }: { params: P
   if (p.kind !== 'FULL') redirect(`/${locale}/app/projects/${p.id}`);
   const sp = await searchParams, from = idSchema.safeParse(sp.from);
   const start = await liftStart(user, p.id, from.success ? from.data : null);
-  // a saved design opened again (chosen, or the latest one) has nothing to enter: the survey seeds a new form, a carried
-  // over one or a draft
-  const avvio = await avvioLift(user, p.id, start, !from.success && (!!start.draftAt || start.blank.length > 0), sp.usa);
+  // a saved design opened again (chosen, or the latest one) has nothing to enter: the survey seeds a new form (also over
+  // the software's standards), a carried over one or a draft (only what is still empty)
+  const mode = from.success || (!start.draftAt && start.blank.length === 0) ? null : start.draftAt || start.carried ? 'draft' : 'new';
+  const avvio = await avvioLift(user, p.id, start, mode, sp.usa);
   const [t, tp] = await Promise.all([getTranslations('lift'), getTranslations('projects')]);
   return (
     <main className="page page-wide">
@@ -48,7 +48,7 @@ export default async function LiftWorkPage({ params, searchParams }: { params: P
           <p className="lead">{t('workLead')}</p>
         </div>
       </div>
-      {avvio.rilievo ? <RilievoAvviso rilievo={avvio.rilievo} usa={avvio.usa} sheet={can(user, 'rilievi:view')} /> : null}
+      {avvio.rilievo ? <RilievoAvviso rilievo={avvio.rilievo} usa={avvio.usa} /> : null}
       <LiftWorkspace key={`${from.success ? from.data : 'start'}:${sp.usa ?? ''}`} projectId={p.id} initial={avvio.start.inputs} blank={avvio.start.blank}
         prices={await visiblePrices(user)} origine={avvio.origine}
         pitches={pitchesOf(p.plant)} draft={{ projectId: p.id, scope: 'lift', resumed: start.draftAt ? dateFormat(locale).dateTime(new Date(start.draftAt)) : null }}

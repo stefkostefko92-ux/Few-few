@@ -11,6 +11,7 @@ import Flash from '@/components/rilievi/Flash';
 import LiveSearch from '@/components/rilievi/LiveSearch';
 import Results from '@/components/rilievi/Results';
 import RilieviHead from '@/components/rilievi/RilieviHead';
+import Crumbs from '@/components/Crumbs';
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 
@@ -21,7 +22,7 @@ export async function generateMetadata() {
 
 // The company's survey sheets (rilievi list.ejs): the search by number, matricola, address, make, work order or notes
 // — every word must be found, accents and capitals do not count —, the count, the results (25 a page). A new sheet and
-// the trash from the head, for whoever may.
+// the trash from the head, for whoever may. Its path says it is the full list under the Rilievi home (round 44).
 export default async function RilieviPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: SP }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -33,8 +34,10 @@ export default async function RilieviPage({ params, searchParams }: { params: Pr
   const flash = flashOf(sp.ok);
   const status = q ? t('schede.search.found', { n: page.total, q }) : t('schede.count', { n: page.total });
   const canCreate = can(user, 'rilievi:edit');
+  const tn = await getTranslations('nav');
   return (
     <main className="page">
+      <Crumbs items={[{ href: '/app', label: tn('rilievi') }, { label: tn('rilieviAll') }]} />
       <RilieviHead title={t('schede.title')} lead={t('schede.subtitle')} actions={(
         <>
           {canCreate ? <Link className="btn btn-primary" href="/app/rilievi/nuovo">{t('schede.new')}</Link> : null}

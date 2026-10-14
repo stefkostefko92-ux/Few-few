@@ -82,13 +82,25 @@ a.lk-step-link:hover .lk-btn { border-color: var(--accent); }
 .lk-rilievo-main { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; min-width: 0; }
 .lk-rilievo-main > a { font-weight: 700; }
 .lk-rilievo-main .badge { margin-left: 0; }
-.lk-docs { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
+.lk-docs { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; min-width: 0; }
+/* a module's long name («Modulo ordine operatori e sospensioni · 2SG S.r.l.») wraps inside the panel on a phone */
+.lk-docs .btn { max-width: 100%; white-space: normal; text-align: left; justify-content: flex-start; }
 @media (max-width: 760px) {
   .lk-rilievi-list > li { grid-template-columns: minmax(0, 1fr); }
   .lk-docs { justify-content: flex-start; }
 }
 
 /* ---- the comparison ---------------------------------------------------------------------------------------------- */
+/* the summary wraps under the title on a phone instead of pushing the page wider */
+.lk-confronto .panel-head .status-pill { max-width: 100%; white-space: normal; }
+.lk-confronto .panel-head .status-pill::before { align-self: flex-start; margin-top: .4em; }
+/* the parameters the survey has no value for, folded under the table */
+.lk-more { margin-top: 4px; }
+.lk-more > summary { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; cursor: pointer; font: 600 13.5px/1.3 var(--font-body);
+  color: var(--ink-2); }
+.lk-more > summary:hover { color: var(--ink); }
+.lk-more > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.lk-more[open] > summary { margin-bottom: 8px; }
 .lk-table .lk-group-head th { padding-top: 16px; background: var(--surface2); color: var(--ink); font: 600 13.5px/1.4 var(--font-body);
   letter-spacing: 0; text-transform: none; }
 .lk-table .lk-group-head .note { font-weight: 400; }
@@ -115,8 +127,16 @@ a.lk-step-link:hover .lk-btn { border-color: var(--accent); }
 
 /* ---- the Rilievi home --------------------------------------------------------------------------------------------- */
 .lk-home-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-@container dash (min-width: 860px) { .lk-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+/* three figures: three in a row (dashboard.css sets four for the installations' figures — this rule must win it) */
+@container dash (min-width: 860px) { .dash-kpis.lk-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+/* a figure that opens its installations */
+a.lk-kpi-link { color: inherit; text-decoration: none; transition: border-color .15s; }
+a.lk-kpi-link:hover { border-color: var(--accent-line); }
+a.lk-kpi-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+a.lk-kpi-link .kpi-label { text-decoration: underline; text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { a.lk-kpi-link { transition: none; } }
 .lk-kpis-note { grid-column: 1 / -1; margin: 0; }
 .lk-recent .panel-head .note { margin: 0; }
+.lk-recent-table .lk-when { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .lk-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
 .lk-empty p { margin: 0; }

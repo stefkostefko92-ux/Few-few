@@ -26,14 +26,15 @@ const KINDS: readonly ProjectKind[] = ['REPLACEMENT', 'FULL'];
 
 type Field = (typeof FIELDS)[number][0] | 'notes';
 
-/** A new installation says what it is for (`kind`: the module chosen on the dashboard); an existing one keeps it. The
+/** A new installation says what it is for (`kind`: the module chosen on the dashboard; null — from a survey, where the
+ *  user must choose it: nothing is preselected); an existing one keeps it. The
  *  fields are controlled: a refused save keeps what was typed (React resets an uncontrolled form after its action).
  *  `fills`: the modules whose form the user fills (rbac.ts formRightOf); for another one the form says that the
  *  installation is created with its data and its work is a colleague's. `rilievo` (round 44): a new installation made
  *  from a survey (linked to it when created) or the data taken from the survey on purpose — the values marked «dal
  *  rilievo» while they are the survey's. */
 export default function ProjectForm({ initial, kind = 'FULL', fills = KINDS, rilievo = null }: {
-  initial?: ProjectValues; kind?: ProjectKind; fills?: readonly ProjectKind[]; rilievo?: { id: string | null; origine: OrigineRilievo } | null;
+  initial?: ProjectValues; kind?: ProjectKind | null; fills?: readonly ProjectKind[]; rilievo?: { id: string | null; origine: OrigineRilievo } | null;
 }) {
   const t = useTranslations('projects'), te = useTranslations('errors'), locale = useLocale();
   const [state, action, pending] = useActionState(initial?.id ? updateProjectAction : createProjectAction, initialFormState);
@@ -41,7 +42,7 @@ export default function ProjectForm({ initial, kind = 'FULL', fills = KINDS, ril
     name: initial?.name ?? '', plantNumber: initial?.plantNumber ?? '', address: initial?.address ?? '', city: initial?.city ?? '',
     province: initial?.province ?? '', client: initial?.client ?? '', notes: initial?.notes ?? '',
   }));
-  const [chosen, setChosen] = useState<ProjectKind>(kind);
+  const [chosen, setChosen] = useState<ProjectKind | null>(kind);
   const put = (k: Field, x: string): void => setV((p) => ({ ...p, [k]: x }));
   const bad = new Set(state.fields ?? []);
   return (
@@ -52,19 +53,20 @@ export default function ProjectForm({ initial, kind = 'FULL', fills = KINDS, ril
       {rilievo?.id ? <input type="hidden" name="rilievo" value={rilievo.id} /> : null}
       {state.error ? <p className="alert alert-bad" role="alert">{te(state.error)}</p> : null}
       {initial?.id ? null : (
-        <fieldset className="flex flex-col gap-2">
-          <legend className="field-legend">{t('field_kind')}</legend>
+        <fieldset className="flex flex-col gap-2" aria-describedby={chosen ? undefined : 'kind-choose'}>
+          <legend className="field-legend">{t('field_kind')} *</legend>
+          {chosen ? null : <p id="kind-choose" className={bad.has('kind') ? 'alert alert-warn' : 'note'} role={bad.has('kind') ? 'alert' : undefined}>{t('kindChoose')}</p>}
           <div className="app-modules">
             {KINDS.map((k) => (
               <label key={k} className="app-module">
-                <input type="radio" name="kind" value={k} checked={k === chosen} onChange={() => setChosen(k)} />
+                <input type="radio" name="kind" value={k} checked={k === chosen} onChange={() => setChosen(k)} required aria-invalid={(bad.has('kind') && !chosen) || undefined} />
                 <span className="eyebrow">{t(`kind_${k}`)}</span>
                 <strong>{t(`module_${k}_title`)}</strong>
                 <span className="note">{t(`module_${k}_lead`)}</span>
               </label>
             ))}
           </div>
-          {fills.includes(chosen) ? null : <p className="alert alert-info" role="status">{t('createOnly', { kind: chosen })}</p>}
+          {!chosen || fills.includes(chosen) ? null : <p className="alert alert-info" role="status">{t('createOnly', { kind: chosen })}</p>}
         </fieldset>
       )}
       <div className="form-grid">

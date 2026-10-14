@@ -1,6 +1,7 @@
 // What a linked survey gives the installation's forms (round 44): the replacement's calculator and the one form of a
 // whole project (/progetto) start from the measured values where they have the matching input, marked «dal rilievo».
-// Only an empty value (or one still at the software's standard) is filled: a value the user typed is never overwritten;
+// Only an empty value is filled — in a brand new form also one still at the software's standard (in a draft a value equal
+// to the standard may be the user's: it stays) —: a value the user typed is never overwritten;
 // a saved record never changes (the forms seed a new record or a draft). «Usa il valore del rilievo» (the comparison) puts
 // one value in on purpose, over what the form holds, and the form says so before anything is saved. Pure.
 import type { FormValues } from '@/calc/types';
@@ -59,16 +60,17 @@ export function semeCalc(r: RilievoDati): Seme {
 }
 
 const blankOr = (V: FormValues, id: string, std: (V: FormValues, id: string) => boolean): boolean => String(V[id] ?? '').trim() === '' || std(V, id);
+const never = (): boolean => false;
 
 /** The ropes in place a replacement keeps, entered in the new machine's fields when the old machine is not compared. */
 const ropesInPlace = (V: FormValues): boolean => V.context === 'repl' && !!V.keepRopes && !V.compare;
 
-/** The calculator over its start (a new one, its draft): the survey's values where the field is empty or at the
- *  software's standard; what was filled, by field. */
-export function seminaCalc(V: FormValues, seme: Seme): { values: FormValues; seeded: string[] } {
+/** The calculator over its start: the survey's values where the field is empty — or, `overStandard` (a brand new
+ *  calculation), still at the software's standard; what was filled, by field. */
+export function seminaCalc(V: FormValues, seme: Seme, overStandard = true): { values: FormValues; seeded: string[] } {
   const out: Record<string, FormValues[string]> = { ...V }, seeded: string[] = [];
   const put = (id: string, v: string | undefined): void => {
-    if (v === undefined || String(out[id] ?? '') === v || !blankOr(out, id, isStandard)) return;
+    if (v === undefined || String(out[id] ?? '') === v || !blankOr(out, id, overStandard ? isStandard : never)) return;
     out[id] = v;
     seeded.push(id);
   };
@@ -100,8 +102,9 @@ export function semeLift(r: RilievoDati): Seme {
 
 const inRange = (x: number | null, lo: number, hi: number): x is number => x !== null && x >= lo && x <= hi;
 
-/** One parameter into the one form's draft (`force`: «usa il valore», else only where it is still to enter). */
-function liftParam(d: LiftDraft, r: RilievoDati, p: Usa, force: boolean): { draft: LiftDraft; set: string[] } {
+/** One parameter into the one form's draft (`force`: «usa il valore», else only where it is still to enter — the existing
+ *  machine's fields also at the software's standard when `overStandard`). */
+function liftParam(d: LiftDraft, r: RilievoDati, p: Usa, force: boolean, overStandard = true): { draft: LiftDraft; set: string[] } {
   const S = d.inputs.shaft, C = d.inputs.calc, blank = d.blank, open = (k: 'Q' | 'floors' | 'layout' | 'r' | 'v'): boolean => force || blank.includes(k);
   const withCalc = (patch: FormValues, keys: readonly ('layout' | 'r')[] = []) => ({ ...d, inputs: { ...d.inputs, calc: { ...C, ...patch } }, blank: filled(blank, keys) });
   const a = r.argano;
@@ -128,7 +131,7 @@ function liftParam(d: LiftDraft, r: RilievoDati, p: Usa, force: boolean): { draf
     default: {
       // the existing machine and its ropes: the calculation's fields of the one form
       const fields = Object.entries(campiCalc(r)[p] ?? {}).flatMap(([id, v]): [string, string][] =>
-        (v !== null && id.startsWith('o_') && String(C[id] ?? '') !== v && (force || blankOr(C, id, isLiftStandard)) ? [[id, v]] : []));
+        (v !== null && id.startsWith('o_') && String(C[id] ?? '') !== v && (force || blankOr(C, id, overStandard ? isLiftStandard : never)) ? [[id, v]] : []));
       if (fields.length === 0) break;
       return { draft: withCalc(Object.fromEntries(fields)), set: fields.map(([id]) => id) };
     }
@@ -136,13 +139,13 @@ function liftParam(d: LiftDraft, r: RilievoDati, p: Usa, force: boolean): { draf
   return { draft: d, set: [] };
 }
 
-/** The one form's start (new, carried over from the replacement, its draft) with the survey's values where they are
- *  still to enter; what was filled. */
-export function seminaLift(d: LiftDraft, r: RilievoDati): { draft: LiftDraft; seeded: string[] } {
+/** The one form's start (new — `overStandard` —, carried over from the replacement, its draft) with the survey's values
+ *  where they are still to enter; what was filled. */
+export function seminaLift(d: LiftDraft, r: RilievoDati, overStandard = true): { draft: LiftDraft; seeded: string[] } {
   let draft = d;
   const seeded: string[] = [];
   for (const p of ['Q', 'fermate', 'posizione', 'taglia', 'velocita', 'funiNumero', 'funiDiametro', 'puleggia', 'rapporto', 'potenza', 'giri', 'poli'] as const) {
-    const step = liftParam(draft, r, p, false);
+    const step = liftParam(draft, r, p, false, overStandard);
     draft = step.draft;
     seeded.push(...step.set);
   }

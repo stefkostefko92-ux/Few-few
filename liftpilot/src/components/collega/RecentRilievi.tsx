@@ -5,13 +5,13 @@ import type { recentRilievi } from '@/server/collega/home';
 
 type Row = Awaited<ReturnType<typeof recentRilievi>>[number];
 
-/** The latest surveys on the home (round 44): the day, the survey (its number, matricola or address — the sheet's own
- *  title), the address, the kind of lift, and the installation it is linked to — named and opened for whoever sees the
- *  installations, otherwise only whether it is linked. The full list is /app/rilievi (the 1:1 list of rilievi). */
+/** The latest surveys on the home (round 44): the day, the survey (its lift's number or matricola — short, the sheet's
+ *  own title stays on the sheet — else its title), the address, the kind of lift, and the installation it is linked to —
+ *  named and opened for whoever sees the installations, otherwise only whether it is linked. The full list is
+ *  /app/rilievi (the 1:1 list of rilievi), behind the panel's one button. */
 export default async function RecentRilievi({ rows, total, projects, canCreate }: { rows: Row[]; total: number; projects: boolean; canCreate: boolean }) {
   const [t, tr] = await Promise.all([getTranslations('collega.home'), getTranslations('rilievi')]);
-  const ident = (r: Row): string => (r.numeroImpianto ? tr('scheda.titleImpianto', { n: r.numeroImpianto }) : r.matricola ? tr('scheda.titleMatricola', { n: r.matricola })
-    : r.indirizzo ?? tr('scheda.title'));
+  const ident = (r: Row): string => (r.numeroImpianto ? t('numero', { n: r.numeroImpianto }) : r.matricola ? t('matricola', { n: r.matricola }) : tr('scheda.title'));
   const tipo = (v: readonly string[]): string => v.map((x) => tr(`scheda.option.tipoImpianto.${x}` as 'scheda.option.tipoImpianto.ELETTRICO')).join(', ');
   return (
     <section className="panel lk-recent" aria-labelledby="lk-recent-title">
@@ -33,7 +33,7 @@ export default async function RecentRilievi({ rows, total, projects, canCreate }
             <caption className="sr-only">{t('recent')}</caption>
             <thead>
               <tr>
-                <th scope="col">{t('colData')}</th>
+                <th scope="col" className="lk-when">{t('colData')}</th>
                 <th scope="col">{t('colRilievo')}</th>
                 <th scope="col">{t('colIndirizzo')}</th>
                 <th scope="col">{t('colTipo')}</th>
@@ -43,7 +43,7 @@ export default async function RecentRilievi({ rows, total, projects, canCreate }
             <tbody>
               {rows.map((r) => (
                 <tr key={r.id}>
-                  <td className="mono num" data-label={t('colData')}>{fmt.day(r.data)}</td>
+                  <td className="mono lk-when" data-label={t('colData')}>{fmt.day(r.data)}</td>
                   <td className="row-title" data-label={t('colRilievo')}><Link href={`/app/rilievi/${r.id}`}>{ident(r)}</Link></td>
                   <td data-label={t('colIndirizzo')}>{r.indirizzo ?? '—'}</td>
                   <td data-label={t('colTipo')}>{r.tipoImpianto.length ? tipo(r.tipoImpianto) : '—'}</td>

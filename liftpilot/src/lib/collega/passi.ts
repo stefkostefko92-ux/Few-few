@@ -1,8 +1,11 @@
 // The way of an installation from its survey to its documents (round 44): 1 Rilievo → 2 Calcolo argano → 3 Progetto →
 // 4 Documenti e ordini, each with its state from the records — «fatto», «da fare», «da aggiornare» (the record is older
 // than the survey it should read — the reference survey written or changed after it —, or the running engines no longer
-// reproduce it, or the documents are older than the record they come from) or «differenze» (the record says otherwise
-// than the survey about what exists on site, confronto.ts). Pure.
+// reproduce it) or «differenze» (the record says otherwise than the survey about what exists on site, confronto.ts).
+// «Documenti e ordini» are the documents of the saved records — the relazione and the order draft of the calculation (a
+// replacement) or of the design (a whole project), the drawing set when issued —: done when they can be downloaded, to
+// update when a record they come from is no longer reproduced or the set issued is older than the latest record. For a
+// role that does not see the surveys nothing is judged against the survey: only whether one is linked. Pure.
 
 export type StatoPasso = 'fatto' | 'daFare' | 'daAggiornare' | 'differenze';
 
@@ -13,8 +16,10 @@ export interface Record {
 }
 
 export interface PassiInput {
-  /** the reference survey: when it was last written */
+  /** the reference survey: when it was last written (null: none, or not read — a role that does not see the surveys) */
   rilievo: { updatedAt: Date } | null;
+  /** a survey is linked, for a role that does not see the surveys (default: whether `rilievo` is there) */
+  collegato?: boolean;
   /** the latest calculation and the latest design (a whole project's lift design, a replacement's machine room) */
   calcolo: Record | null;
   progetto: Record | null;
@@ -41,13 +46,21 @@ function statoDi(rec: Record | null, rilievo: PassiInput['rilievo'], errori: num
   return rec.old || piuVecchio(rec, rilievo) ? 'daAggiornare' : 'fatto';
 }
 
+/** The documents' state: none without a saved record; to update when a record they come from is no longer reproduced
+ *  (its documents are not served, src/server/records.ts) or the set issued is older than the latest record. */
+function documentiDi(x: PassiInput): StatoPasso {
+  const records = [x.calcolo, x.progetto].filter((r): r is Record => r !== null);
+  if (records.length === 0) return 'daFare';
+  const latest = Math.max(...records.map((r) => r.createdAt.getTime()));
+  return records.some((r) => r.old) || (x.tavole && x.tavole.createdAt.getTime() < latest) ? 'daAggiornare' : 'fatto';
+}
+
 export function passi(x: PassiInput): Passi {
-  const latest = Math.max(x.calcolo?.createdAt.getTime() ?? 0, x.progetto?.createdAt.getTime() ?? 0);
   return {
-    rilievo: x.rilievo ? 'fatto' : 'daFare',
+    rilievo: (x.collegato ?? !!x.rilievo) ? 'fatto' : 'daFare',
     calcolo: statoDi(x.calcolo, x.rilievo, x.erroriCalcolo),
     progetto: statoDi(x.progetto, x.rilievo, x.erroriProgetto),
-    documenti: !x.tavole ? 'daFare' : x.tavole.createdAt.getTime() < latest ? 'daAggiornare' : 'fatto',
+    documenti: documentiDi(x),
   };
 }
 

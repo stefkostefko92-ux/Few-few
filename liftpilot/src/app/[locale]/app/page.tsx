@@ -41,7 +41,6 @@ export default async function HomePage({ params, searchParams }: { params: Promi
         </div>
         <div className="lk-home-actions">
           {can(user, 'rilievi:edit') ? <Link className="btn btn-primary" href="/app/rilievi/nuovo"><Icon name="clipboard-list" size={18} />{t('new')}</Link> : null}
-          <Link className="btn" href="/app/rilievi">{t('all')}</Link>
           {projects ? <Link className="btn btn-ghost" href="/app/impianti">{t('impianti')}</Link> : null}
         </div>
       </header>

@@ -20,6 +20,8 @@ import { storedCollaudo } from './records';
 export interface LiftStart extends LiftDraft {
   /** when the draft the form opens with was kept (ISO); null: none */
   draftAt: string | null;
+  /** the start carries over saved records of the installation (its values are the user's) */
+  carried?: true;
 }
 
 export async function liftStart(user: SessionUser, projectId: string, fromId: string | null): Promise<LiftStart> {
@@ -55,5 +57,6 @@ export async function liftStart(user: SessionUser, projectId: string, fromId: st
       survey: R?.success ? R.data : null,
     }),
     draftAt: null,
+    ...(S?.success || C?.success || R?.success ? { carried: true as const } : {}),
   };
 }

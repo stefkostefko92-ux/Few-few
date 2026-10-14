@@ -1,7 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { requireCapability } from '@/lib/auth';
-import { can } from '@/lib/rbac';
 import { prisma } from '@/lib/db';
 import { formValuesSchema } from '@/lib/calc-input';
 import { collaudoReadSchema } from '@/lib/lift-input';
@@ -28,7 +27,8 @@ export async function generateMetadata() {
 // the installation or the machines filled in. A whole project has one form, which saves its calculation with it. Opened
 // by «Aggiorna con il software attuale» on a calculation that no longer saves as it was (&aggiorna=1), it says so on top.
 // With a survey linked to the installation (round 44) a new calculation or its draft takes the measured values where
-// still empty, marked «dal rilievo»; «usa il valore del rilievo» (&usa=<parametro>) puts one in on purpose, said on top.
+// still empty, marked «dal rilievo»; «usa il valore del rilievo» (&usa=<parametro>) puts one in on purpose, said on top —
+// for whoever sees the surveys (src/server/collega/forms.ts).
 export default async function CalcPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ from?: string; aggiorna?: string; usa?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
@@ -44,7 +44,10 @@ export default async function CalcPage({ params, searchParams }: { params: Promi
     select: { inputs: true, collaudo: true },
   });
   const parsed = source ? formValuesSchema.safeParse(source.inputs) : null, chosen = source?.collaudo ? collaudoReadSchema.safeParse(source.collaudo) : null;
-  const avvio = await avvioCalc(user, p.id, draft ? draft.data.values : parsed?.success ? parsed.data : blankCalc(), !from.success && (!!draft || !parsed?.success), sp.usa);
+  // the survey seeds a new calculation (also over the software's standards) or its draft (only what is still empty),
+  // never a saved one opened again
+  const mode = from.success ? null : draft ? 'draft' : parsed?.success ? null : 'new';
+  const avvio = await avvioCalc(user, p.id, draft ? draft.data.values : parsed?.success ? parsed.data : blankCalc(), mode, sp.usa);
   const initial = avvio.start;
   const collaudo = draft ? draft.data.collaudo : chosen?.success ? chosen.data : null;
   const [t, tp] = await Promise.all([getTranslations('calculations'), getTranslations('projects')]);
@@ -58,7 +61,7 @@ export default async function CalcPage({ params, searchParams }: { params: Promi
         </div>
       </div>
       {from.success && openedByRefresh(sp) ? <RefreshNotice kind="calc" /> : null}
-      {avvio.rilievo ? <RilievoAvviso rilievo={avvio.rilievo} usa={avvio.usa} sheet={can(user, 'rilievi:view')} /> : null}
+      {avvio.rilievo ? <RilievoAvviso rilievo={avvio.rilievo} usa={avvio.usa} /> : null}
       <Calculator key={sp.usa ?? 'start'} projectId={p.id} initial={initial} preset={null} brand={user.companyName} collaudo={collaudo} origine={avvio.origine}
         draft={{ projectId: p.id, scope: 'calc', resumed: draft ? dateFormat(locale).dateTime(new Date(draft.at)) : null }} />
     </main>

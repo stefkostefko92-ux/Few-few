@@ -14,12 +14,12 @@ import { DESIGN_SELECT } from './drawing-compose';
 /** The engine versions a lift design's records were saved with (records.ts, `outdated`). */
 const LIFT_VERSIONS = { engineVersion: true, calculation: { select: { engineVersion: true } }, shaftDesign: { select: { engineVersion: true } } } as const;
 
-/** The list's filters: archived or active, a module, the words searched (dashboard.ts searchWords) — each found in the
- *  name, the address, the municipality, the plant number (matricola) or the matricola or number of a linked survey (round 44). */
-function projectsWhere(user: SessionUser, archived: boolean, kind: ProjectKind | null, q: readonly string[]) {
+/** The list's filters: archived or active, a module, the words searched (dashboard.ts searchWords; in the name, address,
+ *  municipality, plant number, or a linked survey's matricola or number), a Rilievi home figure's installations (`ids`). */
+function projectsWhere(user: SessionUser, archived: boolean, kind: ProjectKind | null, q: readonly string[], ids?: readonly string[]) {
   const has = (w: string) => ({ contains: likeEscape(w), mode: 'insensitive' as const });
   const words = q.map((w) => ({ OR: [{ name: has(w) }, { address: has(w) }, { city: has(w) }, { plantNumber: has(w) }, { schede: { some: { deletedAt: null, OR: [{ matricola: has(w) }, { numeroImpianto: has(w) }] } } }] }));
-  return { companyId: user.companyId, archivedAt: archived ? { not: null } : null, ...(kind ? { kind } : {}), ...(words.length ? { AND: words } : {}) };
+  return { companyId: user.companyId, archivedAt: archived ? { not: null } : null, ...(kind ? { kind } : {}), ...(words.length ? { AND: words } : {}), ...(ids ? { id: { in: [...ids] } } : {}) };
 }
 
 const PROJECT_ROW_SELECT = {
@@ -34,13 +34,13 @@ const PROJECT_ROW_SELECT = {
 } as const;
 
 /** The company's installations, latest change first: the first `take` of the view (dashboard: its recent ones). */
-export function listProjects(user: SessionUser, archived: boolean, kind: ProjectKind | null = null, q: readonly string[] = [], take = ALL_ROWS) {
-  return prisma.project.findMany({ where: projectsWhere(user, archived, kind, q), orderBy: { updatedAt: 'desc' }, take, select: PROJECT_ROW_SELECT });
+export function listProjects(user: SessionUser, archived: boolean, kind: ProjectKind | null = null, q: readonly string[] = [], take = ALL_ROWS, ids?: readonly string[]) {
+  return prisma.project.findMany({ where: projectsWhere(user, archived, kind, q, ids), orderBy: { updatedAt: 'desc' }, take, select: PROJECT_ROW_SELECT });
 }
 
 /** How many installations the view has (the list shows the first of them). */
-export function countProjects(user: SessionUser, archived: boolean, kind: ProjectKind | null = null, q: readonly string[] = []) {
-  return prisma.project.count({ where: projectsWhere(user, archived, kind, q) });
+export function countProjects(user: SessionUser, archived: boolean, kind: ProjectKind | null = null, q: readonly string[] = [], ids?: readonly string[]) {
+  return prisma.project.count({ where: projectsWhere(user, archived, kind, q, ids) });
 }
 
 /** One installation of the company as a row of the list (the dashboard's preview); null when it is not the company's. */
