@@ -86,7 +86,7 @@ export function shellSection(pathname: string, search: { archived: boolean; kind
 }
 
 /** The sidebar entry's aria-current: `page` when the address is the entry's own page, `true` when the page only belongs
- *  to it (an installation's record under «Dashboard», a sub-page of a section) — a reader is not told it is on «Dashboard». */
+ *  to it (an installation's record under «Panoramica», a sub-page of a section) — a reader is not told it is on «Panoramica». */
 export function navCurrent(key: string, pathname: string): 'page' | 'true' {
   if (key === 'dashboard' || key === 'archived') return pathname === '/app' ? 'page' : 'true';
   if (key.startsWith('/')) return pathname === key ? 'page' : 'true';

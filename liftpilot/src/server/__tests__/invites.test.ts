@@ -144,7 +144,7 @@ test('an ended link, an address taken meanwhile and a company without a free slo
   assert.deepEqual(await accept(token), { error: 'inviteTaken' });
   userCreateError = null; billing = true;
   invites = [row(new Date(Date.now() + 864e5))];
-  assert.deepEqual(await accept(token), { error: 'noSeats' });
+  assert.deepEqual(await accept(token), { error: 'inviteNoSeats' });
   assert.equal(created.length, 0);
   assert.equal((await accept('bad')).error, 'invalidLink', 'a malformed link');
 });

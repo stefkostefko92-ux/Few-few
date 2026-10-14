@@ -5,19 +5,21 @@
 // (below the actor), only what the hard rules let the company set (src/lib/rbac.ts); on the version the screen was
 // opened on (else 'conflict': someone changed it meanwhile, nothing is written). The rows and one PERMISSIONS_CHANGED per
 // changed right (role, right, before → after, by the owner or the platform) commit together, under the company's lock.
+// The platform changes a company's rights only on its owner's written request (terms of use, artt. 4 and 9 — an
+// instruction under GDPR art. 28(3)(a)): it must write the request's reference, kept in each change's log entry.
 // The new rights apply on the next request of every colleague: the session resolves them each time (src/lib/auth.ts).
 import { prisma } from '@/lib/db';
 import { auditTx } from '@/lib/audit';
 import { getSessionUser } from '@/lib/auth';
 import { DEFAULT_GRANTS, can, editableRoles } from '@/lib/rbac';
-import { permissionsInputSchema, planSave } from '@/lib/permissions';
+import { permissionsInputSchema, planSave, requestSchema } from '@/lib/permissions';
 import { rateLimit } from '@/lib/ratelimit';
 import { lockCompany } from './billing';
 import { companyOverrides, stampOf } from './permissions';
 
 export type PermissionsResult =
   | { ok: true; changed: number; stamp: string }
-  | { ok: false; error: 'unauthorized' | 'forbidden' | 'rateLimited' | 'invalidFields' | 'notFound' | 'conflict' };
+  | { ok: false; error: 'unauthorized' | 'forbidden' | 'rateLimited' | 'invalidFields' | 'notFound' | 'conflict' | 'requestNeeded' };
 
 const HOUR = 60 * 60 * 1000;
 
@@ -32,6 +34,9 @@ export async function savePermissionsAction(input: unknown): Promise<Permissions
   if (companyId !== user.companyId && !can(user, 'platform:admin')) return { ok: false, error: 'notFound' };
   if (!rateLimit(`permissions:${user.id}`, 30, HOUR)) return { ok: false, error: 'rateLimited' };
   const roles = editableRoles(user), by = user.role === 'SUPERADMIN' ? 'platform' : 'owner';
+  // the owner's own changes need no reference; the platform's never go without one
+  const request = by === 'platform' ? requestSchema.safeParse(parsed.data.request ?? '') : null;
+  if (request && !request.success) return { ok: false, error: 'requestNeeded' };
   const out = await prisma.$transaction(async (tx) => {
     await lockCompany(tx, companyId);
     if (!(await tx.company.findUnique({ where: { id: companyId }, select: { id: true } }))) return 'notFound' as const;
@@ -47,7 +52,7 @@ export async function savePermissionsAction(input: unknown): Promise<Permissions
       else await tx.companyRolePermission.upsert({ where, create: { ...where.companyId_role_capability, granted: c.to, updatedById: user.id }, update: { granted: c.to, updatedById: user.id } });
       await auditTx(tx, {
         companyId, userId: user.id, action: 'PERMISSIONS_CHANGED', entity: 'Permission', entityId: null,
-        meta: { role: c.role, capability: c.capability, from: c.from, to: c.to, by },
+        meta: { role: c.role, capability: c.capability, from: c.from, to: c.to, by, ...(request?.success ? { request: request.data } : {}) },
       });
     }
     return { changed: changes.length, stamp: changes.length ? stampOf(await companyOverrides(tx, companyId)) : stamp };

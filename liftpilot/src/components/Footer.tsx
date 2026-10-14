@@ -3,7 +3,7 @@ import { Link } from '@/i18n/routing';
 import { LOGO_COMPACT } from '@/lib/brand';
 
 // The footer of every page (public and application), after the Premium template: the logo, the year and the note on
-// the results, the legal links, the Carbon Stealth credit, then the provider's details in small print.
+// the results, the legal links, the Carbon Stealth credit (in Italian, like every text of the product), then the provider's details in small print.
 export default async function Footer() {
   const t = await getTranslations('common');
   return (
@@ -19,9 +19,8 @@ export default async function Footer() {
           <Link className="footer-link" href="/pricing">{t('pricingLink')}</Link>
           <Link className="footer-link" href="/data">{t('dataLink')}</Link>
         </span>
-        <span className="footer-credit" lang="en">
-          Created and Designed by{' '}
-          <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a>
+        <span className="footer-credit">
+          {t.rich('credit', { link: (c) => <a href="https://carbonstealth.eu" target="_blank" rel="noopener">{c}</a> })}
         </span>
         <small className="footer-provider">{t('provider')}</small>
       </div>

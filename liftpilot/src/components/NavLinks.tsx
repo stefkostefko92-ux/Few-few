@@ -30,7 +30,7 @@ export function useSection(groups: readonly NavGroup[], extra: readonly string[]
   return shellSection(pathname, { archived: sp.get('archived') === '1', kind: sp.get('kind') }, pathsOf(groups, extra));
 }
 
-// The sidebar's sections in their groups (Workspace, Library, Management), each with its painted icon; the current one
+// The sidebar's sections in their groups (Area di lavoro, Libreria, Gestione), each with its painted icon; the current one
 // marked (aria-current: `page` on its own page, `true` on a page that belongs to it) with the template's cyan edge.
 // A link followed in the phone drawer closes it (shell/Drawer).
 export default function NavLinks({ groups, label }: { groups: NavGroup[]; label: string }) {

@@ -12,11 +12,11 @@ Ricerca: `../research/argano-geared/` (nella radice del monorepo). Storia dello 
   progetto del vano da DXF/DWG, relazione di calcolo, kit di tavole (PDF/DXF/DWG), consiglio
   sull'argano tra i modelli SICOR e Montanari (solo dati tecnici, senza prezzi) e bozza d'ordine
   (DOCX/PDF). Struttura del codice: `docs/architecture.md`; regole per modulo: `docs/rules.md`.
-- **Abbonamento** (Stripe): il titolare dell'azienda acquista i posti per i colleghi.
+- **Abbonamento** (Stripe): il Titolare dell'azienda acquista i posti per i colleghi.
 - **Motore di calcolo** (`src/calc/`): TypeScript puro, identico numero per numero al calcolatore
   prototipo pubblicato per Panev Ascensori (versione 12), con il registro delle voci normative.
-- **Applicazione web** (Next.js 15): aziende con il titolare e i colleghi in quattro ruoli (Capotecnico, Progettista,
-  Tecnico, Commerciale), con i permessi di ogni ruolo che il titolare cambia per la sua azienda entro regole fisse
+- **Applicazione web** (Next.js 15): aziende con il Titolare e i colleghi in quattro ruoli (Capotecnico, Progettista,
+  Tecnico, Commerciale), con i permessi di ogni ruolo che il Titolare cambia per la sua azienda entro regole fisse
   (pagina Permessi, `src/lib/rbac.ts`), impianti, calcolatore con i risultati in tempo reale, calcoli salvati come
   snapshot immutabili con impronta SHA-256 (il server ricalcola sempre, non si fida del browser), visto interno di chi
   ne ha il permesso, registro attività.
@@ -25,7 +25,7 @@ Ricerca: `../research/argano-geared/` (nella radice del monorepo). Storia dello 
 - **Relazione di calcolo in PDF** (in italiano) da ogni calcolo salvato: dati, verifiche con le
   clausole, tutti i casi di aderenza, tabelle di dettaglio, sensibilità, stato delle voci normative,
   avvertenza e spazio per la firma. Resta una bozza finché il tecnico incaricato non la firma.
-- **Account senza amministratore:** l'azienda si registra da sola (il titolare conferma l'indirizzo con
+- **Account senza amministratore:** l'azienda si registra da sola (il Titolare conferma l'indirizzo con
   il link dell'e-mail e la sua password) e chi dimentica la password ne sceglie una nuova con un link.
   E-mail tramite Brevo; informativa privacy e condizioni d'uso in `/privacy`.
 - Solo in italiano: interfaccia, e-mail, relazioni, tavole, DXF/DWG, bozze d'ordine e condizioni d'uso (versione 5;
@@ -58,4 +58,4 @@ python3 scripts/lista-verifica-xlsx.py        # l'.xlsx dalla .json (serve openp
 
 Pubblicazione sul server: `DEPLOY.md`.
 
-Created and Designed by [Carbon Stealth VCC](https://carbonstealth.eu).
+Ideato e realizzato da [Carbon Stealth VCC](https://carbonstealth.eu).

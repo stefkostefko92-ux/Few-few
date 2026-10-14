@@ -67,12 +67,19 @@ export function toggle(column: readonly MatrixCapability[], role: MemberRole, ca
 
 const column = z.array(z.enum(MATRIX_CAPABILITIES as unknown as [MatrixCapability, ...MatrixCapability[]])).max(MATRIX_CAPABILITIES.length);
 
-/** What the screen sends: the company, the version of the matrix it was opened on, every colleague role's column. A
- *  right the hard rules lock in a column is a forged input, refused. */
+/** The reference of the owner's written request (its date and subject) the platform writes when it changes a company's
+ *  rights (terms of use, artt. 4 and 9; docs/terms-changes.md §1b): kept with each change in the company's log. */
+export const REQUEST_MIN = 4;
+export const requestSchema = z.string().trim().min(REQUEST_MIN).max(200);
+
+/** What the screen sends: the company, the version of the matrix it was opened on, every colleague role's column, and
+ *  from the platform the reference of the owner's request. A right the hard rules lock in a column is a forged input,
+ *  refused. */
 export const permissionsInputSchema = z.object({
   companyId: idSchema,
   stamp: z.string().regex(/^[0-9a-f]{64}$/),
   grants: z.object({ CHIEF_TECHNICIAN: column, ENGINEER: column, TECHNICIAN: column, SALES: column }).strict(),
+  request: z.string().max(400).optional(),
 }).superRefine((v, ctx) => {
   for (const role of MATRIX_ROLES) {
     for (const c of v.grants[role]) if (!grantable(role, c)) ctx.addIssue({ code: 'custom', path: ['grants', role], message: 'locked' });

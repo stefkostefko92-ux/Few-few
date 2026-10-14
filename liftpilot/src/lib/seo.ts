@@ -50,10 +50,10 @@ export function organizationLd(): JsonLd {
     telephone: p.phones[0], vatID: p.vat, taxID: p.eik, identifier: { '@type': 'PropertyValue', propertyID: 'EIK', value: p.eik },
     address: { '@type': 'PostalAddress', streetAddress: p.address.street, postalCode: p.address.postalCode, addressLocality: p.address.locality,
       addressRegion: p.address.region, addressCountry: p.address.country },
-    // the language the provider answers LiftPilot's customers in: Italian, as the whole product (the DSA art. 11 point of
+    // both numbers serve LiftPilot's customers, in Italy and in Italian, as the whole product (the DSA art. 11 point of
     // contact for the authorities, also in Bulgarian or English, is stated in the terms: legal.contactText)
-    contactPoint: p.phones.map((telephone, i) => ({ '@type': 'ContactPoint', contactType: 'customer support', telephone, email: p.email,
-      areaServed: i === 0 ? 'BG' : 'IT', availableLanguage: ['it'] })),
+    contactPoint: p.phones.map((telephone) => ({ '@type': 'ContactPoint', contactType: 'customer support', telephone, email: p.email,
+      areaServed: 'IT', availableLanguage: ['it'] })),
   };
 }
 

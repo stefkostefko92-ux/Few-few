@@ -7,7 +7,7 @@
 import { redirect } from 'next/navigation';
 import { DEFAULT_LOCALE, isLocale } from '@/i18n/locales';
 import { getSessionUser, type SessionUser } from '@/lib/auth';
-import { can, type Capability } from '@/lib/rbac';
+import { can, holds, type Capability } from '@/lib/rbac';
 import { rateLimit } from '@/lib/ratelimit';
 import type { RilievoActionState, RilievoFormState } from '@/lib/rilievi/action-state';
 import { fmt } from '@/lib/rilievi/fmt';
@@ -20,14 +20,17 @@ import { prefillContext } from './pages';
 import { getScheda } from './queries';
 import { createScheda, purgeScheda, restoreScheda, trashScheda, updateScheda } from './service';
 
-type Refusal = { error: 'forbidden' | 'tooMany' };
+type Refusal = { error: 'forbidden' | 'readOnly' | 'tooMany' };
 
-/** The signed-in user allowed to `capability`, within the write rate; the anonymous go to the login. */
+/** The signed-in user allowed to `capability`, within the write rate; the anonymous go to the login. A role that holds
+ *  the right in a company that is read-only (no subscription, terms not accepted) is told so, not sent to the owner for a
+ *  right it has (`readOnly`, as /app/permesso tells the two apart). */
 async function actor(fd: FormData, capability: Capability): Promise<{ user: SessionUser; base: string } | Refusal> {
   const l = str(fd, 'locale'), locale = isLocale(l) ? l : DEFAULT_LOCALE;
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/login`);
-  if (user.mustChangePassword || !can(user, capability)) return { error: 'forbidden' };
+  if (user.mustChangePassword) return { error: 'forbidden' };
+  if (!can(user, capability)) return { error: holds(user, capability) ? 'readOnly' : 'forbidden' };
   if (!rateLimit(`rilievi:${user.id}`, 60, 60 * 1000)) return { error: 'tooMany' };
   return { user, base: `/${locale}/app/rilievi` };
 }

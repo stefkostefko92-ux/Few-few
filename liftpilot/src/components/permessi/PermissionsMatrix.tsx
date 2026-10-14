@@ -6,7 +6,8 @@
 // takes away what stands on it (src/lib/permissions.ts toggle), and a line says which others moved with it. Each group
 // names the roles again over its boxes. Nothing is saved until «Salva i permessi» and the dialog's confirmation; the
 // outcome takes the focus; a save on a matrix someone changed meanwhile is refused and the page shows the matrix in
-// force. On a phone one role at a time, chosen above the matrix.
+// force. On a phone one role at a time, chosen above the matrix. The platform's save asks, in the dialog, for the
+// reference of the owner's written request (terms of use, artt. 4 and 9), kept with each change in the company's log.
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import type { Role } from '@prisma/client';
@@ -28,7 +29,9 @@ const isMember = (r: Role): r is MemberRole => r !== 'OWNER' && r !== 'SUPERADMI
 const rowRule = (c: MatrixCapability): 'never' | 'chiefOnly' | null =>
   MATRIX_ROLES.every((r) => lockOf(r, c) === 'never') ? 'never' : MATRIX_ROLES.some((r) => lockOf(r, c) === 'chiefOnly') ? 'chiefOnly' : null;
 
-export default function PermissionsMatrix({ companyId, stamp: savedStamp, grants }: { companyId: string; stamp: string; grants: Grants }) {
+export default function PermissionsMatrix({ companyId, stamp: savedStamp, grants, platform }: {
+  companyId: string; stamp: string; grants: Grants; platform: boolean;
+}) {
   const t = useTranslations('permessi'), tr = useTranslations('roles'), router = useRouter();
   const [seen, setSeen] = useState(savedStamp);
   const [base, setBase] = useState(grants), [cur, setCur] = useState(grants), [stamp, setStamp] = useState(savedStamp);
@@ -44,6 +47,7 @@ export default function PermissionsMatrix({ companyId, stamp: savedStamp, grants
   // the rights that moved with the last box (its prerequisites, or what stands on it)
   const [cascade, setCascade] = useState<string | null>(null);
   const [busy, start] = useTransition();
+  const [request, setRequest] = useState('');
   const dialog = useRef<HTMLDialogElement>(null), status = useRef<HTMLParagraphElement>(null);
   const changes = useMemo(() => columnChanges(base, cur), [base, cur]);
   const dirty = changes.length > 0;
@@ -74,13 +78,14 @@ export default function PermissionsMatrix({ companyId, stamp: savedStamp, grants
     setCur((g) => ({ ...g, [role]: defaultColumn(role) }));
   };
   const save = () => start(async () => {
-    const r = await savePermissionsAction({ companyId, stamp, grants: cur });
+    const r = await savePermissionsAction({ companyId, stamp, grants: cur, ...(platform ? { request } : {}) });
     dialog.current?.close();
     setCascade(null);
     if (r.ok) {
       setBase(cur);
       setStamp(r.stamp);
       setMsg({ ok: true, text: t('saved', { n: r.changed }) });
+      setRequest('');
       return;
     }
     setMsg({ ok: false, text: t(`errors.${r.error}`) });
@@ -177,7 +182,8 @@ export default function PermissionsMatrix({ companyId, stamp: savedStamp, grants
           </div>
         </div>
       </div>
-      <ConfirmSave dialogRef={dialog} changes={changes} busy={busy} onConfirm={save} />
+      <ConfirmSave dialogRef={dialog} changes={changes} busy={busy} onConfirm={save}
+        request={platform ? { value: request, set: setRequest } : null} />
     </div>
   );
 }

@@ -208,7 +208,8 @@ export async function acceptInviteAction(_prev: FormState, fd: FormData): Promis
         passwordHash, mustChangePassword: false, locale: isLocale(invite.locale) ? invite.locale : DEFAULT_LOCALE, emailVerifiedAt: now, lastLoginAt: now } });
     });
   } catch (e) {
-    if (e instanceof NoSeat) return { error: 'noSeats' };
+    // the invitee can neither buy seats nor free one: their own words (errors.inviteNoSeats), the link stays valid
+    if (e instanceof NoSeat) return { error: 'inviteNoSeats' };
     // the address got an account meanwhile (a registration, another invitation): one address, one company
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') return { error: 'inviteTaken' };
     throw e;

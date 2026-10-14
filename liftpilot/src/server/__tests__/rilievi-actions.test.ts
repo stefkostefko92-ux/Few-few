@@ -141,13 +141,16 @@ test('i dati sbagliati: tornano con gli errori e con quello che era scritto, nie
   assert.equal(schede.length, before);
 });
 
-test('chi scrive: ogni ruolo tranne il Commerciale (matrice del 2026-10-14); in sola lettura nessuno; troppi campi non sono un modulo', async () => {
+test('chi scrive: ogni ruolo tranne il Commerciale (matrice del 2026-10-14); in sola lettura nessuno, e gli si dice perché; troppi campi non sono un modulo', async () => {
   const { createRilievoAction } = await actions();
   as('u4', 'SALES');
   assert.deepEqual(await createRilievoAction({ status: 'idle' }, form(SHEET)), { status: 'error', error: 'forbidden' });
   as('u1', 'TECHNICIAN');
   assert.match(await redirected(createRilievoAction({ status: 'idle' }, form(SHEET))), /ok=schedaCreated/);
+  // read-only (no subscription, terms not accepted): the role has the right, the company cannot write — said so
   as('u3', 'OWNER', 'c1', true);
+  assert.deepEqual(await createRilievoAction({ status: 'idle' }, form(SHEET)), { status: 'error', error: 'readOnly' });
+  as('u4', 'SALES', 'c1', true);
   assert.deepEqual(await createRilievoAction({ status: 'idle' }, form(SHEET)), { status: 'error', error: 'forbidden' });
   as('u3', 'OWNER');
   const many = form(SHEET);

@@ -27,7 +27,7 @@ export async function companyExport(companyId: string): Promise<Record<string, u
   const [users, invites, rolePermissions, logos, projects, priceItems, customPrices, schede, auditLog] = await Promise.all([
     prisma.user.findMany({
       where: { companyId }, orderBy: { createdAt: 'asc' },
-      select: { id: true, name: true, email: true, role: true, active: true, locale: true, createdAt: true, lastLoginAt: true, emailVerifiedAt: true,
+      select: { id: true, name: true, email: true, role: true, active: true, createdAt: true, lastLoginAt: true, emailVerifiedAt: true,
         termsAcceptedAt: true, termsVersion: true },
     }),
     prisma.invite.findMany({ where: { companyId }, orderBy: { createdAt: 'asc' }, select: { email: true, name: true, role: true, expiresAt: true, createdAt: true } }),

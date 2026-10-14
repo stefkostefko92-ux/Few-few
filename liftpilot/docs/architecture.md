@@ -223,7 +223,9 @@ src/lib/             auth (JWT в httpOnly бисквитка, именува с
                      ratelimit, audit, calc-input (zod за стойностите на формата), calc-blank (новият калкулатор празен,
                      CALC_STANDARD, calcMissing), draft-input (zod на черновите и техните обхвати), snapshot-hash, seo, brand (логото по
                      размери), legal (версията и датата на условията, редът на разделите и номерата на членовете, сроковете
-                     в текстовете), legal-text (страницата като текст: архивът и SHA-256 при приемане), consents (четирите
+                     в текстовете), legal-text (страницата като текст: архивът и SHA-256 при приемане), legal-archive
+                     (английските и българските текстове на версиите до 4 като запис: кои има, за страницата на версията и
+                     `/api/terms/<версия>/<en|bg>`), consents (четирите
                      потвърждения); акаунтите: tokens
                      (линковете по имейл: SHA-256 в базата, еднократни) + token-shape/token-hash (чисти), mail
                      (nodemailer към Brevo, само кодове на грешки в лога), mail-templates (писмата: текст + HTML, на
@@ -290,7 +292,7 @@ src/components/landing/ Началната страница по темплей�
                      — същата като /pricing), Norms, Faq (`<details>`), Closing; example.ts (числата от двигателите, само на
                      сървъра), drawings.ts и docs.ts (размерите на статичните чертежи и страници). Стилът е в home.css, хедърът и
                      футърът в landing.css.
-src/components/AppShell + shell/ Работното пространство: странична лента (Workspace / Libreria / Gestione по правата,
+src/components/AppShell + shell/ Работното пространство: странична лента (Area di lavoro / Libreria / Gestione по правата,
                      `navCurrent`), горна лента с пътя и търсенето (ShellSearch, GET `?q=`), чекмедже под 1024 px (Drawer:
                      Esc, фон, фокусът остава вътре и се връща), картата на потребителя.
 src/components/dashboard/ Таблото (/app): Kpis (броевете от `src/server/dashboard.ts`), NewMenu + ModuleCards (двата
@@ -346,7 +348,8 @@ src/app/             [locale]/… страниците, api/ (health, logout —
                      (`lib/same-origin.ts`), billing/webhook — Stripe с проверен подпис, relazione PDF, DXF на проект, PDF на комплект, lista-verifica,
                      lift-designs/<id>/pdf|dxf|dwg — износ на записания проект, lift-designs|calculations/<id>/order/docx|pdf —
                      чернова на поръчка на машината, room-designs/<id>/relazione|pdf|dxf|dwg — документите на подмяната), robots,
-                     sitemap, llms.txt; [locale]/pricing — цената от Stripe (`monthlyPrice`, отговорът се пази 10 минути;
+                     terms/<версия>/<en|bg> — приетият текст на условията до версия 4 на английски или български (text/plain,
+                     noindex), sitemap, llms.txt; [locale]/pricing — цената от Stripe (`monthlyPrice`, отговорът се пази 10 минути;
                      след грешка — „su richiesta“ за минута), пакетите места и FAQ с JSON-LD.
 messages/            it.json — приложението; messages/calc/it.json — речникът на прототипа v12 (425 ключа). Само италиански
                      (от 2026-10-12): src/i18n/locales.ts (LOCALES = ['it']), legacy.ts (/en и /bg → 301 към /it,
@@ -399,7 +402,7 @@ src/server/rilievi/  queries (списък и търсене със SQL пара
                      шрифтът DejaVu и SHA-256 на модулите (иначе всяка заявка дава 500).
 src/app/[locale]/app/rilievi/  Екраните на Rilievi: списък и търсене (page), nuovo, [id] (картата), [id]/modifica, [id]/stampa
                      (листът A4), [id]/elimina (към кошчето), cestino и cestino/[id]/elimina; layout.tsx носи rilievi.css,
-                     rilievi-form.css и rilievi-print.css. Пунктът „Rilievi“ е в AppShell (Workspace).
+                     rilievi-form.css и rilievi-print.css. Пунктът „Rilievi“ е в AppShell (Area di lavoro).
 src/components/rilievi/  SchedaForm (формата: отговорите на действията, обобщението на грешките, конфликтът, фокусът на
                      отговора; модулите като спецификации от страницата) + EditLead (редът „Ultima modifica“ в главата на
                      промяната, обновен при конфликт) + FieldInput,
@@ -410,12 +413,13 @@ src/components/rilievi/  SchedaForm (формата: отговорите на �
                      на мерките, маркираните думи, страниците), ActionButton (кошче/възстановяване/окончателно), Confirm,
                      Flash (`?ok=`), PrintTools, RilieviHead.
 src/server/permissions.ts + permission-actions.ts  Правата на фирмата (кръг 42): редовете и версията им (SHA-256),
-                     savePermissionsAction — само собственикът или платформата, под ключалката на фирмата, проверка на
-                     версията, редовете и PERMISSIONS_CHANGED (роля, право, преди → след, by) в една транзакция.
+                     savePermissionsAction — само собственикът или платформата (тя — с препратка към писменото искане на
+                     собственика, `requestSchema`), под ключалката на фирмата, проверка на версията, редовете и
+                     PERMISSIONS_CHANGED (роля, право, преди → след, by, request) в една транзакция.
 src/app/[locale]/app/permessi/ + admin/permessi/[id]/  Екранът на матрицата: на собственика и на платформата (от реда на
                      фирмата в /app/admin); src/components/permessi/ — PermissionsPanel (сървърът: матрицата на фирмата),
                      PermissionsMatrix (решетката, телефонът по роля, лентата за запис), MatrixCell (бутонът-квадратче),
-                     ConfirmSave (диалогът с промените); src/app/permessi.css.
+                     ConfirmSave (диалогът с промените; за платформата — и полето за препратката); src/app/permessi.css.
 src/app/[locale]/app/permesso/  Страницата за право, което фирмата може да даде на ролята, но не е дала
                      (`lib/auth.ts denied` от `requireCapability`): в приложението, с ролята и правото, вместо 404.
 deploy/              deploy.sh (сървърът: тайни, поща, бекъп, compose, health, nginx), nginx/liftpilot.conf. Dockerfile,

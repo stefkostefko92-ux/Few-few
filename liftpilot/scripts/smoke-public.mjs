@@ -60,6 +60,18 @@ export async function publicPages({ BASE, browser, newPage }) {
     assert.ok(!terms.includes('NEXT_LOCALE') && !/inglese (?:e|o) bulgaro/.test(terms), 'the terms speak of no other language');
     assert.ok(terms.includes('Capotecnico, Progettista, Tecnico o Commerciale'), 'the terms name the four roles');
     assert.ok(terms.includes('in bulgaro, in inglese o in italiano'), 'DSA art. 11: the authorities’ languages');
+    assert.ok(!terms.includes('/api/terms/'), 'the version in force links no other language');
+  }
+  // an earlier version, accepted also in English or Bulgarian: its page links those texts, served as plain-text records
+  {
+    const v4 = await (await fetch(`${BASE}/it/privacy/4`)).text();
+    assert.ok(v4.includes('/api/terms/4/en') && v4.includes('/api/terms/4/bg'), 'version 4 links its English and Bulgarian texts');
+    const en = await fetch(`${BASE}/api/terms/4/en`);
+    assert.equal(en.status, 200, '/api/terms/4/en');
+    assert.match(en.headers.get('content-type') ?? '', /^text\/plain; charset=utf-8/);
+    assert.match(en.headers.get('x-robots-tag') ?? '', /noindex/);
+    assert.ok((await en.text()).startsWith('Privacy and terms of use\nVersion 4 of'), 'the English text as kept');
+    for (const bad of ['/api/terms/5/en', '/api/terms/4/it', '/api/terms/9/bg', '/api/terms/4/de']) assert.equal((await fetch(`${BASE}${bad}`)).status, 404, bad);
   }
   step('an unknown address: the 404 drawn in Italian, also from a former-language address');
   // Next 15 sends its error shell for a notFound() (no lang, noindex) and the browser draws the localized page — in

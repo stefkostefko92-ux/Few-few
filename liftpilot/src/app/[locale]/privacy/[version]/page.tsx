@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { notFound, redirect } from 'next/navigation';
@@ -6,6 +7,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { isLocale, type Locale } from '@/i18n/locales';
 import { TERMS_HISTORY, TERMS_VERSION, article, dateText } from '@/lib/legal';
+import { archivedLanguages } from '@/lib/legal-archive';
 import { pageMetadata } from '@/lib/seo';
 import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
@@ -13,7 +15,9 @@ import LegalPage from '@/components/LegalPage';
 
 // An earlier version of the privacy notice and the terms of use, word for word as kept in legal/terms/<version>/: a
 // company whose owner has not accepted the version in force yet is still bound by one of these (src/lib/legal.ts).
-// Kept out of the search engines: the page that counts is /privacy.
+// The versions accepted while the interface also had English and Bulgarian (up to 4) link those texts too, word for word
+// as accepted, as records (src/lib/legal-archive.ts): the first one had no clause on a prevailing language. Kept out of
+// the search engines: the page that counts is /privacy.
 const loc = (l: string): Locale => (isLocale(l) ? l : 'it');
 const earlier = (v: string) => TERMS_HISTORY.find((h) => h.version === v && h.version !== TERMS_VERSION);
 
@@ -41,12 +45,17 @@ export default async function ArchivedTermsPage({ params }: { params: Promise<{ 
   const text = await readFile(join(process.cwd(), 'legal', 'terms', h.version, `${loc(locale)}.txt`), 'utf8');
   const t = await getTranslations('legal');
   const date = dateText(locale, h.date);
+  const others = archivedLanguages(h.version).length > 0;
+  const record = (lang: string) => (c: ReactNode) => (
+    <a href={`/api/terms/${encodeURIComponent(h.version)}/${lang}`} hrefLang={lang} type="text/plain">{c}</a>
+  );
   return (
     <>
       <SiteHeader />
       <LegalPage eyebrow={t('eyebrow')} title={t('archiveItem', { label: h.label, date })} head={(
         <>
           <p className="lead">{t('archiveLead', { label: h.label, date, changes: article('changes') })}</p>
+          {others ? <p className="note">{t.rich('archiveOther', { en: record('en'), bg: record('bg') })}</p> : null}
           <p><Link href="/privacy">{t('archiveCurrent')}</Link></p>
         </>
       )}>

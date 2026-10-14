@@ -14,10 +14,16 @@ import { step } from './smoke-kit.mjs';
 const cell = (role, cap) => `td.pm-cell[data-role="${role}"][data-cap="${cap}"] input`;
 
 /** A save of the matrix through the dialog; the status says how many rights changed. */
-async function saveMatrix(page, n) {
+async function saveMatrix(page, n, request = null) {
   await page.click('.pm-savebar button.btn-primary');
   await page.waitForSelector('dialog.pm-dialog[open]');
   assert.equal(await page.locator('dialog.pm-dialog .pm-changes li').count(), n, 'the dialog lists the changes');
+  // the platform saves only with the reference of the owner's written request (terms, artt. 4 and 9)
+  assert.equal(await page.locator('dialog.pm-dialog #pm-request').count(), request ? 1 : 0, 'the request\'s reference only for the platform');
+  if (request) {
+    assert.ok(await page.locator('dialog.pm-dialog button.btn-primary').isDisabled(), 'no save without the reference');
+    await page.fill('dialog.pm-dialog #pm-request', request);
+  }
   await page.click('dialog.pm-dialog button.btn-primary');
   await page.waitForSelector('.pm-msg.ok');
   assert.match(await page.textContent('.pm-msg.ok'), new RegExp(`${n} permess[oi] salvat[oi]`));
@@ -42,8 +48,8 @@ export async function permessiFlow({ BASE, page, errors, kit, owner, tecnico, ad
   assert.ok(await page.isChecked(cell('TECHNICIAN', 'calc:create')) && !(await page.isChecked(cell('TECHNICIAN', 'progetto:edit'))), 'the default matrix');
   // the owner's column says what it is; a row locked for colleagues says its rule
   assert.equal(await page.locator(`td.pm-cell[data-role="OWNER"][data-cap="calc:create"] .pm-lockbadge`).count(), 1, 'the owner\'s check with its lock');
-  assert.match(await page.textContent('.pm-legend'), /sempre concesso \(titolare\)/);
-  assert.match(await page.textContent('tr:has(td.pm-cell[data-cap="users:manage"]) th.pm-action'), /Solo del titolare/);
+  assert.match(await page.textContent('.pm-legend'), /sempre concesso \(Titolare\)/);
+  assert.match(await page.textContent('tr:has(td.pm-cell[data-cap="users:manage"]) th.pm-action'), /Solo del Titolare/);
   // a prerequisite taken away takes its dependents, and a line says which; discarded
   await page.click(cell('TECHNICIAN', 'projects:view'));
   assert.match(await page.textContent('.pm-cascade'), /Tolti anche a Tecnico[^:]*:.*Fare i calcoli dell’argano/);
@@ -93,20 +99,21 @@ export async function permessiFlow({ BASE, page, errors, kit, owner, tecnico, ad
   await page.goto(`${BASE}/it/app`);
   await logout(page);
 
-  step('permissions: the platform changes the company\'s matrix; the owner\'s log says it was the platform');
+  step('permissions: the platform changes the company\'s matrix on the owner\'s request; the owner\'s log says it was the platform, and on which request');
   await login(page, admin.email, admin.password);
   await page.goto(`${BASE}/it/app/admin`);
   await Promise.all([page.waitForURL(/\/app\/admin\/permessi\/[a-z0-9]+$/), page.click(`tr:has-text("${company}") a.admin-perm`)]);
   assert.match(await page.textContent('h1'), new RegExp(company));
   await hydrated(page, cell('SALES', 'prices:view'));
   await page.click(cell('SALES', 'prices:view'));
-  await saveMatrix(page, 1);
+  await saveMatrix(page, 1, '12/10/2026 — prezzi del Commerciale');
   await logout(page);
   await login(page, owner.email, owner.password);
   await page.goto(`${BASE}/it/app/audit`);
   // the newest entries first: the owner's sign-in, then the platform's change
   assert.match(await page.textContent('main table tbody tr:has-text("Piattaforma LiftPilot")'),
-    /Permessi cambiati[\s\S]*Piattaforma LiftPilot[\s\S]*Commerciale · Vedere i prezzi e il listino: concesso → non concesso/, 'the platform\'s change, attributed to it');
+    /Permessi cambiati[\s\S]*Piattaforma LiftPilot[\s\S]*Commerciale · Vedere i prezzi e il listino: concesso → non concesso · su richiesta del Titolare: 12\/10\/2026 — prezzi del Commerciale/,
+    'the platform\'s change, attributed to it, with the owner\'s request');
   await page.goto(`${BASE}/it/app`);
   await logout(page);
 }

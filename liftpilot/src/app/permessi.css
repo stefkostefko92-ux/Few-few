@@ -104,6 +104,8 @@ tbody:first-of-type .pm-group :is(th, td) { padding-top: 14px; }
 .pm-change-to { white-space: nowrap; font-weight: 600; }
 .pm-change-to.on { color: var(--accent); }
 .pm-change-to.off { color: var(--warn); }
+/* the platform's save: the reference of the owner's written request, above the buttons */
+.pm-request { margin: 0 0 18px; }
 .pm-dialog-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
 /* a tablet or a laptop: the columns close up, so that the four colleague roles and the owner's fit from 720 px (no

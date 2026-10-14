@@ -15,8 +15,11 @@ export async function generateMetadata() {
   return { title: t('title') };
 }
 
-/** A change of the rights matrix as the save writes it (src/server/permission-actions.ts). */
-const permissionMeta = z.object({ role: z.string(), capability: z.string(), from: z.boolean(), to: z.boolean(), by: z.enum(['owner', 'platform']) });
+/** A change of the rights matrix as the save writes it (src/server/permission-actions.ts): the platform's carries the
+ *  reference of the owner's written request. */
+const permissionMeta = z.object({
+  role: z.string(), capability: z.string(), from: z.boolean(), to: z.boolean(), by: z.enum(['owner', 'platform']), request: z.string().max(400).optional(),
+});
 
 export default async function AuditPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -38,7 +41,8 @@ export default async function AuditPage({ params }: { params: Promise<{ locale: 
     if (!m.success) return null;
     const role = tro.has(m.data.role) ? tro(m.data.role as 'OWNER') : m.data.role;
     const right = tp.has(`caps.${m.data.capability}`) ? tp(`caps.${m.data.capability}` as 'caps.audit:view') : m.data.capability;
-    return { by: m.data.by, text: t('permission', { role, right, from: tp(m.data.from ? 'on' : 'off'), to: tp(m.data.to ? 'on' : 'off') }) };
+    const text = t('permission', { role, right, from: tp(m.data.from ? 'on' : 'off'), to: tp(m.data.to ? 'on' : 'off') });
+    return { by: m.data.by, text: m.data.request ? `${text} · ${t('permissionRequest', { request: m.data.request })}` : text };
   };
   const nameOf = (id: string): string => {
     const s = sheets.get(id);

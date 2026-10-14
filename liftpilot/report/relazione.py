@@ -248,7 +248,7 @@ def numbered_canvas(meta):
             self.line(MARGIN, y[0] + 3.3 * mm, PAGE_W - MARGIN, y[0] + 3.3 * mm)
             self.drawString(MARGIN, y[0], meta["footer"])
             # the credit beside it, smaller when the line would leave less than 6 mm between the two
-            credit, size = "Created and Designed by Carbon Stealth VCC · carbonstealth.eu", 7.2
+            credit, size = "Ideato e realizzato da Carbon Stealth VCC · carbonstealth.eu", 7.2
             room = PAGE_W - 2 * MARGIN - 6 * mm - pdfmetrics.stringWidth(meta["footer"], "DejaVu", 7.2)
             while size > 5.6 and pdfmetrics.stringWidth(credit, "DejaVu", size) > room:
                 size -= 0.2

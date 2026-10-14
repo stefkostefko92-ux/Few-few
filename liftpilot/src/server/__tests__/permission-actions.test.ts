@@ -88,11 +88,17 @@ test('un’altra azienda: per il titolare non esiste; la piattaforma la cambia e
   assert.deepEqual(await save({ companyId: 'c2', stamp: stampOf('c2'), grants: changed('c2') }), { ok: false, error: 'notFound' });
   assert.equal(rows.length, 0);
   signIn('SUPERADMIN', { companyId: 'platform' });
-  const r = await save({ companyId: 'c2', stamp: stampOf('c2'), grants: changed('c2') });
+  // only on the owner's written request (terms, artt. 4 and 9): without its reference nothing is written
+  for (const request of [undefined, '', '   ', 'ok']) {
+    assert.deepEqual(await save({ companyId: 'c2', stamp: stampOf('c2'), grants: changed('c2'), request }), { ok: false, error: 'requestNeeded' });
+  }
+  assert.equal(rows.length + audits.length, 0, 'nothing written');
+  const r = await save({ companyId: 'c2', stamp: stampOf('c2'), grants: changed('c2'), request: '  12/10/2026 — permessi del Tecnico ' });
   assert.equal(r.ok, true);
   assert.ok(rows.every((x) => x.companyId === 'c2'));
-  assert.ok(audits.length === 2 && audits.every((a) => a.companyId === 'c2' && (a.meta as { by: string }).by === 'platform'));
-  assert.deepEqual(await save({ companyId: 'c9', stamp: stampOf('c9'), grants: columnsOf([]) }), { ok: false, error: 'notFound' });
+  assert.ok(audits.length === 2 && audits.every((a) => a.companyId === 'c2' && (a.meta as { by: string }).by === 'platform'
+    && (a.meta as { request: string }).request === '12/10/2026 — permessi del Tecnico'));
+  assert.deepEqual(await save({ companyId: 'c9', stamp: stampOf('c9'), grants: columnsOf([]), request: '12/10/2026 — prova' }), { ok: false, error: 'notFound' });
 });
 
 test('una matrice cambiata nel frattempo: conflitto, nulla scritto', async () => {
@@ -119,4 +125,9 @@ test('un diritto bloccato dalle regole fisse è un input falsato: rifiutato prim
 test('in sola lettura il titolare gestisce ancora i permessi (come i colleghi)', async () => {
   signIn('OWNER', { readOnly: true });
   assert.equal((await save({ companyId: 'c1', stamp: stampOf('c1'), grants: changed('c1') })).ok, true);
+});
+
+test('il titolare non scrive un riferimento: le sue modifiche sono sue, il registro non ne porta', async () => {
+  assert.equal((await save({ companyId: 'c1', stamp: stampOf('c1'), grants: changed('c1'), request: 'qualunque testo' })).ok, true);
+  assert.ok(audits.length > 0 && audits.every((a) => (a.meta as { by: string }).by === 'owner' && !('request' in (a.meta as object))));
 });

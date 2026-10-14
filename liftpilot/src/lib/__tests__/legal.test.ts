@@ -79,3 +79,22 @@ test('il testo in vigore parla solo italiano, nomina i quattro ruoli e tiene le 
   const previous = TERMS_HISTORY[TERMS_HISTORY.length - 2].label;
   assert.ok(t('mail.termsNoticeChanges', legalValues()).startsWith(`Che cosa cambia rispetto alla versione ${previous}:`), 'mail.termsNoticeChanges: the summary of this version');
 });
+
+test('il testo in vigore distingue il ruolo «Titolare» dal titolare del trattamento e dice chi decide sul registro attività', () => {
+  const text = legalText('it');
+  // the GDPR controller always in full, the role always with its capital (as the UI and the four colleague roles)
+  for (const m of text.matchAll(/\btitolar([ei])\b(.{0,30})/g)) {
+    const ok = m[1] === 'e' ? /^ (?:autonomo )?del trattamento/.test(m[2]) : /^(?: del trattamento| dei marchi|,)/.test(m[2]);
+    assert.ok(ok, `«titolar${m[1]}${m[2]}»: the role is «Titolare», the controller «titolare del trattamento»`);
+  }
+  assert.ok(text.includes('Per il Titolare, cioè chi registra l’azienda su LiftPilot,'), 'the role defined where it first appears');
+  // the activity log: ours for security (art. 6(1)(f)), the company's to show and export (art. 28), and so in art. 9
+  assert.ok(text.includes('Lo teniamo come titolari del trattamento per la sicurezza del servizio'), 'the log: our part');
+  assert.ok(text.includes('Quali colleghi lo vedono e chi lo scarica lo decide invece l’azienda'), 'the log: the company’s part');
+  assert.ok(text.includes('e per il registro attività quando l’azienda lo mostra ai colleghi o lo esporta, l’azienda è titolare del trattamento'), 'art. 9');
+  assert.ok(text.includes('art. 4, comma 3, della legge 20 maggio 1970, n. 300'), 'the balance: the employer informs its people');
+  // the Capotecnico downloads only while active (colleagues are deactivated when the subscription ends, art. 7)
+  assert.equal(text.match(/anche il Capotecnico finché è attivo/g)?.length, 2, 'privacy and art. 10');
+  assert.ok(!/ruolo, lingua,/.test(text) && text.includes('lingua del testo accettato'), 'no language on the account, only the accepted text’s');
+});
+
