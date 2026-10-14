@@ -413,11 +413,11 @@ src/components/rilievi/  SchedaForm (формата: отговорите на �
                      на мерките, маркираните думи, страниците), ActionButton (кошче/възстановяване/окончателно), Confirm,
                      Flash (`?ok=`), PrintTools, RilieviHead.
 src/server/permissions.ts + permission-actions.ts  Правата на фирмата (кръг 42): редовете и версията им (SHA-256),
-                     savePermissionsAction — само собственикът или платформата (тя — с препратка към писменото искане на
-                     собственика, `requestSchema`), под ключалката на фирмата, проверка на версията, редовете и
+                     savePermissionsAction — само собственикът или платформата (в друга фирма — с препратка към писменото
+                     искане на собственика, `requestSchema`; в своята — без), под ключалката на фирмата, проверка на версията, редовете и
                      PERMISSIONS_CHANGED (роля, право, преди → след, by, request) в една транзакция.
 src/app/[locale]/app/permessi/ + admin/permessi/[id]/  Екранът на матрицата: на собственика и на платформата (от реда на
-                     фирмата в /app/admin); src/components/permessi/ — PermissionsPanel (сървърът: матрицата на фирмата),
+                     фирмата в /app/admin; своята фирма — на /app/permessi); src/components/permessi/ — PermissionsPanel (сървърът: матрицата на фирмата),
                      PermissionsMatrix (решетката, телефонът по роля, лентата за запис), MatrixCell (бутонът-квадратче),
                      ConfirmSave (диалогът с промените; за платформата — и полето за препратката); src/app/permessi.css.
 src/app/[locale]/app/permesso/  Страницата за право, което фирмата може да даде на ролята, но не е дала

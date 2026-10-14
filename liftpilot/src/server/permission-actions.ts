@@ -5,8 +5,9 @@
 // (below the actor), only what the hard rules let the company set (src/lib/rbac.ts); on the version the screen was
 // opened on (else 'conflict': someone changed it meanwhile, nothing is written). The rows and one PERMISSIONS_CHANGED per
 // changed right (role, right, before → after, by the owner or the platform) commit together, under the company's lock.
-// The platform changes a company's rights only on its owner's written request (terms of use, artt. 4 and 9 — an
-// instruction under GDPR art. 28(3)(a)): it must write the request's reference, kept in each change's log entry.
+// The platform changes another company's rights only on its owner's written request (terms of use, artt. 4 and 9 — an
+// instruction under GDPR art. 28(3)(a)): it must write the request's reference, kept in each change's log entry. In its
+// own company (/app/permessi) the platform is the one deciding: no request to refer to, none asked for or kept.
 // The new rights apply on the next request of every colleague: the session resolves them each time (src/lib/auth.ts).
 import { prisma } from '@/lib/db';
 import { auditTx } from '@/lib/audit';
@@ -34,8 +35,9 @@ export async function savePermissionsAction(input: unknown): Promise<Permissions
   if (companyId !== user.companyId && !can(user, 'platform:admin')) return { ok: false, error: 'notFound' };
   if (!rateLimit(`permissions:${user.id}`, 30, HOUR)) return { ok: false, error: 'rateLimited' };
   const roles = editableRoles(user), by = user.role === 'SUPERADMIN' ? 'platform' : 'owner';
-  // the owner's own changes need no reference; the platform's never go without one
-  const request = by === 'platform' ? requestSchema.safeParse(parsed.data.request ?? '') : null;
+  // the owner's own changes need no reference, nor the platform's in its own company; in another company the platform's
+  // never go without one
+  const request = by === 'platform' && companyId !== user.companyId ? requestSchema.safeParse(parsed.data.request ?? '') : null;
   if (request && !request.success) return { ok: false, error: 'requestNeeded' };
   const out = await prisma.$transaction(async (tx) => {
     await lockCompany(tx, companyId);

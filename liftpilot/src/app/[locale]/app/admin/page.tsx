@@ -29,8 +29,9 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
               <tr key={c.id}>
                 <td className="row-title">
                   <b>{c.name}</b><div className="note">{[c.vatNumber, c.city].filter(Boolean).join(' · ') || '—'}</div>
-                  {/* the company's rights matrix, set by the platform (attributed to it in the company's activity log) */}
-                  <Link className="btn btn-sm admin-perm" href={`/app/admin/permessi/${c.id}`} aria-label={`${t('permissions')} · ${c.name}`}>{t('permissions')}</Link>
+                  {/* the company's rights matrix, set by the platform (attributed to it in the company's activity log); its
+                      own company's on /app/permessi, without the owner's request another company's needs */}
+                  <Link className="btn btn-sm admin-perm" href={c.id === me.companyId ? '/app/permessi' : `/app/admin/permessi/${c.id}`} aria-label={`${t('permissions')} · ${c.name}`}>{t('permissions')}</Link>
                 </td>
                 <td data-label={t('created')}>{fd.date(c.createdAt)}</td>
                 <td data-label={t('users')} className="num text-right">{c._count.users}</td>

@@ -12,7 +12,8 @@ export async function generateMetadata() {
 
 // The owner's page of the company's rights (round 42): what each colleague role may do, from the default matrix with the
 // company's changes (src/lib/rbac.ts, src/lib/permissions.ts). Only who manages the rights: the owner (and the platform
-// for its own company; another company's matrix is under /app/admin/permessi/<id>).
+// for its own company, which saves here without a request's reference; another company's matrix is under
+// /app/admin/permessi/<id>, where the save asks for the reference of its owner's written request).
 export default async function PermessiPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);

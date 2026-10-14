@@ -227,7 +227,7 @@ export function drawFooters(ctx: PdfContext, generated: string): void {
       .lineWidth(0.5)
       .stroke(RULE);
     doc.font('Sans').fontSize(7).fillColor(MUTED);
-    doc.text(`${generated} — Created and Designed by Carbon Stealth VCC — carbonstealth.eu`, MARGIN, y, { width: CONTENT_WIDTH - 80, lineBreak: false });
+    doc.text(`${generated} — ${t('pdf.credit')}`, MARGIN, y, { width: CONTENT_WIDTH - 80, lineBreak: false });
     doc.text(t('pdf.page', { page: String(i + 1), pages: String(range.count) }), MARGIN + CONTENT_WIDTH - 80, y, { width: 80, align: 'right', lineBreak: false });
   }
 }

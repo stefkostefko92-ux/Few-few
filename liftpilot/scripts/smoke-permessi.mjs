@@ -6,8 +6,9 @@
 // a page in the application says the role lacks that right —, nor sees the way to it; the activity log has the change.
 // «Ripristina predefiniti» for the Tecnico and a save give it back; the Tecnico creates a whole project, which he does
 // not draw, and lands on its page (never a 404). The platform's administrator opens the same company's matrix from
-// /app/admin and changes it; the owner's log says it was the platform. The 404 provoked on purpose are cleared from the
-// console's errors.
+// /app/admin and changes it on the owner's request; the owner's log says it was the platform, and on which request. In
+// its own company (/app/permessi) the platform saves with no request to refer to. The 404 provoked on purpose are cleared
+// from the console's errors.
 import assert from 'node:assert/strict';
 import { step } from './smoke-kit.mjs';
 
@@ -114,6 +115,28 @@ export async function permessiFlow({ BASE, page, errors, kit, owner, tecnico, ad
   assert.match(await page.textContent('main table tbody tr:has-text("Piattaforma LiftPilot")'),
     /Permessi cambiati[\s\S]*Piattaforma LiftPilot[\s\S]*Commerciale · Vedere i prezzi e il listino: concesso → non concesso · su richiesta del Titolare: 12\/10\/2026 — prezzi del Commerciale/,
     'the platform\'s change, attributed to it, with the owner\'s request');
+  await page.goto(`${BASE}/it/app`);
+  await logout(page);
+
+  step('permissions: the platform changes its own company\'s matrix on /app/permessi, with no request to refer to');
+  await login(page, admin.email, admin.password);
+  await page.goto(`${BASE}/it/app/admin`);
+  assert.equal(await page.locator('a.admin-perm[href$="/app/permessi"]').count(), 1, 'its own company\'s Permessi: /app/permessi');
+  await page.goto(`${BASE}/it/app/permessi`);
+  await hydrated(page, cell('SALES', 'prices:view'));
+  // whatever the box says now, changed and then put back: the platform's own company keeps its matrix
+  const was = await page.isChecked(cell('SALES', 'prices:view'));
+  await page.click(cell('SALES', 'prices:view'));
+  await saveMatrix(page, 1);
+  await page.goto(`${BASE}/it/app/audit`);
+  const own = await page.textContent('main table tbody tr:has-text("Permessi cambiati")');
+  assert.match(own, /Piattaforma LiftPilot[\s\S]*Commerciale · Vedere i prezzi e il listino/, 'its own change, attributed to the platform');
+  assert.doesNotMatch(own, /su richiesta del Titolare/, 'no request in its own company');
+  await page.goto(`${BASE}/it/app/permessi`);
+  await hydrated(page, cell('SALES', 'prices:view'));
+  await page.click(cell('SALES', 'prices:view'));
+  await saveMatrix(page, 1);
+  assert.equal(await page.isChecked(cell('SALES', 'prices:view')), was, 'put back');
   await page.goto(`${BASE}/it/app`);
   await logout(page);
 }

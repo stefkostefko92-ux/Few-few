@@ -93,8 +93,15 @@ test('il testo in vigore distingue il ruolo «Titolare» dal titolare del tratta
   assert.ok(text.includes('Quali colleghi lo vedono e chi lo scarica lo decide invece l’azienda'), 'the log: the company’s part');
   assert.ok(text.includes('e per il registro attività quando l’azienda lo mostra ai colleghi o lo esporta, l’azienda è titolare del trattamento'), 'art. 9');
   assert.ok(text.includes('art. 4, comma 3, della legge 20 maggio 1970, n. 300'), 'the balance: the employer informs its people');
+  // the balance names who sees the log as the privacy text does: the owner always (a hard rule), then whom it allows
+  assert.ok(text.includes('Il registro attività mostra al Titolare, e ai colleghi a cui il Titolare ne dà il permesso, gli accessi'), 'the balance: who sees the log');
   // the Capotecnico downloads only while active (colleagues are deactivated when the subscription ends, art. 7)
   assert.equal(text.match(/anche il Capotecnico finché è attivo/g)?.length, 2, 'privacy and art. 10');
   assert.ok(!/ruolo, lingua,/.test(text) && text.includes('lingua del testo accettato'), 'no language on the account, only the accepted text’s');
+  // the e-mail announcing this version says the same of the log: the owner sees it, the company decides who else sees and
+  // downloads it
+  const notice = createTranslator({ locale: 'it', messages: it })('mail.termsNoticeChanges', legalValues());
+  assert.ok(notice.includes('lo vedono il Titolare e i colleghi a cui il Titolare ne dà il permesso'), 'the notice: who sees the log');
+  assert.ok(notice.includes('quali colleghi lo vedono e chi lo scarica lo decide l’azienda'), 'the notice: the company’s part');
 });
 

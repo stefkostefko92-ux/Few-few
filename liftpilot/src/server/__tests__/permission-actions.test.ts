@@ -1,7 +1,8 @@
 // The save of a company's rights matrix (src/server/permission-actions.ts, round 42): only the owner of the company or
 // the platform's administrator; never a colleague, whatever the company stored; never on a matrix changed meanwhile;
 // never a right the hard rules lock; every change in the activity log with its role, right, before → after and who
-// (the owner or the platform), in the same transaction as the rows.
+// (the owner or the platform), in the same transaction as the rows. The platform writes the reference of the owner's
+// written request for another company, never for its own.
 import { test, mock, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
@@ -14,7 +15,7 @@ type Row = Override & { companyId: string; updatedById?: string | null };
 let rows: Row[] = [];
 let audits: Record<string, unknown>[] = [];
 let session: Record<string, unknown> | null = null;
-const COMPANIES = new Set(['c1', 'c2']);
+const COMPANIES = new Set(['c1', 'c2', 'platform']);
 const key = (r: { companyId: string; role: string; capability: string }) => `${r.companyId}|${r.role}|${r.capability}`;
 const tx = {
   company: { findUnique: async ({ where }: { where: { id: string } }) => (COMPANIES.has(where.id) ? { id: where.id } : null) },
@@ -99,6 +100,19 @@ test('un’altra azienda: per il titolare non esiste; la piattaforma la cambia e
   assert.ok(audits.length === 2 && audits.every((a) => a.companyId === 'c2' && (a.meta as { by: string }).by === 'platform'
     && (a.meta as { request: string }).request === '12/10/2026 — permessi del Tecnico'));
   assert.deepEqual(await save({ companyId: 'c9', stamp: stampOf('c9'), grants: columnsOf([]), request: '12/10/2026 — prova' }), { ok: false, error: 'notFound' });
+});
+
+test('la piattaforma nella sua azienda: nessun riferimento chiesto né tenuto, il registro dice la piattaforma', async () => {
+  signIn('SUPERADMIN', { companyId: 'platform' });
+  const r = await save({ companyId: 'platform', stamp: stampOf('platform'), grants: changed('platform') });
+  assert.deepEqual(r, { ok: true, changed: 2, stamp: stampOf('platform') });
+  assert.ok(rows.length === 2 && rows.every((x) => x.companyId === 'platform'));
+  assert.ok(audits.length === 2 && audits.every((a) => a.companyId === 'platform' && (a.meta as { by: string }).by === 'platform'
+    && !('request' in (a.meta as object))), 'by the platform, no request');
+  // a reference sent anyway is not kept: there is no owner's request in the platform's own company
+  assert.equal((await save({ companyId: 'platform', stamp: stampOf('platform'), grants: columnsOf([]), request: '12/10/2026 — prova' })).ok, true);
+  assert.equal(audits.length, 4);
+  assert.ok(audits.every((a) => !('request' in (a.meta as object))));
 });
 
 test('una matrice cambiata nel frattempo: conflitto, nulla scritto', async () => {
