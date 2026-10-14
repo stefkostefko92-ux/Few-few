@@ -28,6 +28,7 @@ import { str } from './form';
 import { calcRecord, readCalc } from './records';
 import { reproduceRoomRecord } from './room-compose';
 import { createCalculation, createLiftDesign, createRoomDesign } from './save';
+import type { TipoIntervento } from '@/lib/lift/intervento';
 
 const localeOf = (fd: FormData): string => { const l = str(fd, 'locale'); return isLocale(l) ? l : DEFAULT_LOCALE; };
 
@@ -70,7 +71,10 @@ async function once<T>(id: string, make: () => Promise<T>): Promise<T | 'busy'> 
 async function refreshLift(user: SessionUser, id: string, app: string): Promise<never> {
   const d = await prisma.liftDesign.findFirst({
     where: { id, companyId: user.companyId, project: { archivedAt: null } },
-    select: { id: true, projectId: true, label: true, inputs: true, source: true, engineVersion: true, shaftDesign: { select: { sha256: true } }, calculation: { select: { sha256: true } } },
+    select: {
+      id: true, projectId: true, label: true, inputs: true, source: true, engineVersion: true, shaftDesign: { select: { sha256: true } }, calculation: { select: { sha256: true } },
+      baseCalculation: { select: { id: true, intervento: true } },
+    },
   });
   if (!d) redirect(app);
   if (liftRecord(d, d.shaftDesign.sha256, d.calculation.sha256)?.same) redirect(`${app}/lift-designs/${d.id}`);
@@ -80,17 +84,19 @@ async function refreshLift(user: SessionUser, id: string, app: string): Promise<
   if (!remakes(user, 'lift')) redirect(`${app}/lift-designs/${d.id}`);
   const read = liftInputsReadSchema.safeParse(d.inputs), inputs = read.success ? liftInputsSchema.safeParse(read.data) : null;
   const source = d.source ? shaftSourceSchema.safeParse(d.source) : null;
-  const r = inputs?.success ? await once(d.id, () => createLiftDesign(user, d.projectId, inputs.data, d.label, source?.success ? source.data : null, d.id)) : null;
+  // drawn on a «Calcolo argano»: the new design names the same one (round 45)
+  const r = inputs?.success ? await once(d.id, () => createLiftDesign(user, d.projectId, inputs.data, d.label, source?.success ? source.data : null, d.id, d.baseCalculation)) : null;
   if (r === 'busy') redirect(`${app}/lift-designs/${d.id}`);
   if (!r?.ok) redirect(formOr(user, 'progetto:edit', `${app}/projects/${d.projectId}/progetto?from=${d.id}&${REFRESH_QUERY}`, `${app}/lift-designs/${d.id}`));
   redirect(`${app}/lift-designs/${r.id}?da=${d.id}`);
 }
 
-const CALC_ROW = { id: true, projectId: true, label: true, inputs: true, sha256: true, collaudo: true } as const;
-interface CalcRow { id: string; projectId: string; label: string | null; inputs: unknown; sha256: string; collaudo: unknown }
+const CALC_ROW = { id: true, projectId: true, label: true, inputs: true, sha256: true, collaudo: true, intervento: true } as const;
+interface CalcRow { id: string; projectId: string; label: string | null; inputs: unknown; sha256: string; collaudo: unknown; intervento: TipoIntervento | null }
 interface RoomRow { id: string; label: string | null; inputs: unknown }
 
-/** A replacement's calculation made again from its values and the standards chosen with it, and the machine room given
+/** A replacement's calculation made again from its values, the standards chosen with it and its intervention as stored
+ *  (none before round 45: none on the new one either), and the machine room given
  *  on the new one (`room` null: a survey the new calculation no longer takes, or a user who does not draw the project's —
  *  it stays where it was, to be made again on the new calculation by whoever does). */
 async function remakeCalc(user: SessionUser, c: CalcRow, room: RoomRow | null): Promise<{ calc: string; room: string | null } | null> {
@@ -98,7 +104,7 @@ async function remakeCalc(user: SessionUser, c: CalcRow, room: RoomRow | null): 
   const read = c.collaudo ? collaudoReadSchema.safeParse(c.collaudo) : null, chosen = read?.success ? collaudoSchema.safeParse(read.data) : null;
   if (chosen && !chosen.success) return null;
   const values = formValuesSchema.safeParse(c.inputs);
-  const r = values.success ? await createCalculation(user, c.projectId, values.data, c.label, chosen?.success ? chosen.data : null, c.id) : null;
+  const r = values.success ? await createCalculation(user, c.projectId, values.data, c.label, chosen?.success ? chosen.data : null, c.intervento, c.id) : null;
   if (!r?.ok) return null;
   if (!room || !remakes(user, 'room')) return { calc: r.id, room: null };
   const fresh = await prisma.calculation.findFirst({ where: { id: r.id, companyId: user.companyId }, select: CALC_ROW });

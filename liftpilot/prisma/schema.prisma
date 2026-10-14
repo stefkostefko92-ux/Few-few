@@ -248,6 +248,14 @@ model AuthToken {
   @@index([userId, kind])
 }
 
+/// The intervention declared in «Calcolo argano» (src/lib/lift/intervento.ts): «Solo argano», «Ammodernamento»,
+/// «Trasformazione completa» (round 45, migration 21_intervento).
+enum TipoIntervento {
+  SOLO_ARGANO
+  AMMODERNAMENTO
+  TRASFORMAZIONE_COMPLETA
+}
+
 /// A lift installation (impianto) of a company.
 /// What an installation is for: the machine replacement alone (the calculation and its report), or a whole project
 /// (shaft, car, doors, machine, drawing set, 3D). A replacement can become a whole project, never the reverse.
@@ -336,13 +344,19 @@ model Calculation {
   /// the standards of the acceptance test as chosen ({norma, aggiuntive?, parti}, src/lib/lift/collaudo.ts; null: the
   /// default by the context): what the report sets out, not the physics, so outside the hash; as immutable as the row
   collaudo      Json?
+  /// the intervention declared in «Calcolo argano» (round 45, src/lib/lift/intervento.ts): like the test, outside the
+  /// snapshot and its hash — what the documents declare, not the physics —, as immutable as the row; a lift design's
+  /// calculation takes its base calculation's. NULL: saved before round 45, read by its shape (interventoDi)
+  intervento    TipoIntervento?
   /// shaft design the calculation was started from (its plan goes into the report)
   shaftDesignId String?
   shaftDesign   ShaftDesign?        @relation(fields: [shaftDesignId], references: [id], onDelete: NoAction)
   createdAt     DateTime            @default(now())
   reviews       CalculationReview[]
   drawingSets   DrawingSet[]
-  liftDesign    LiftDesign?
+  liftDesign    LiftDesign?         @relation("LiftDesignCalc")
+  /// the lift designs drawn on this «Calcolo argano» (LiftDesign.baseCalculationId, round 45)
+  progetti      LiftDesign[]        @relation("LiftDesignBase")
   roomDesigns   RoomDesign[]
 
   @@index([projectId, createdAt])
@@ -390,35 +404,41 @@ model ShaftDesign {
 /// of the derivation and the SHA-256 of the canonical record. The 3D simulation replays it; the report, the DXF and
 /// the drawing sets come from its calculation and shaft design, which keep their own hashes.
 model LiftDesign {
-  id            String      @id @default(cuid())
-  companyId     String
-  company       Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  projectId     String
-  project       Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  userId        String?
-  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  label         String?
+  id                String       @id @default(cuid())
+  companyId         String
+  company           Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  projectId         String
+  project           Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId            String?
+  user              User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  label             String?
   /// { shaft, calc, auto } as entered (src/lib/lift-input.ts)
-  inputs        Json
+  inputs            Json
   /// where the shaft's dimensions come from (null: typed in), as for a shaft design
-  source        Json?
-  shaftDesignId String      @unique
-  shaftDesign   ShaftDesign @relation(fields: [shaftDesignId], references: [id], onDelete: NoAction)
-  calculationId String      @unique
-  calculation   Calculation @relation(fields: [calculationId], references: [id], onDelete: NoAction)
+  source            Json?
+  shaftDesignId     String       @unique
+  shaftDesign       ShaftDesign  @relation(fields: [shaftDesignId], references: [id], onDelete: NoAction)
+  calculationId     String       @unique
+  calculation       Calculation  @relation("LiftDesignCalc", fields: [calculationId], references: [id], onDelete: NoAction)
+  /// the «Calcolo argano» the design was drawn on (round 45: Q, v, the machine, the ropes and the test come from it,
+  /// src/lib/lift/progetto.ts): provenance, outside the hash. NULL: a design of the one form before round 45 (or made
+  /// again from one)
+  baseCalculationId String?
+  baseCalculation   Calculation? @relation("LiftDesignBase", fields: [baseCalculationId], references: [id], onDelete: NoAction)
   /// version of the derivation from the one form (src/lib/lift/version.ts)
-  engineVersion String
-  sha256        String
-  verdict       Verdict
-  failCount     Int
-  warnCount     Int
+  engineVersion     String
+  sha256            String
+  verdict           Verdict
+  failCount         Int
+  warnCount         Int
   /// e.g. "Vano 1600 × 1750 · 600 kg · 0,63 m/s · D 520 · 4 × Ø10 · 1:63 · 4 kW"
-  summary       String
-  createdAt     DateTime    @default(now())
+  summary           String
+  createdAt         DateTime     @default(now())
 
   @@index([projectId, createdAt])
   @@index([companyId])
   @@index([userId])
+  @@index([baseCalculationId])
 }
 
 /// The machine room of a machine replacement as surveyed (immutable, like a calculation): the room, the shaft under it

@@ -3,7 +3,7 @@
 // these keys, so a key added or removed there fails the typecheck until the register says so — and then the version
 // goes up.
 export const EXPORT_FORMAT = 'liftpilot-company-export';
-export const EXPORT_FORMAT_VERSION = 7;
+export const EXPORT_FORMAT_VERSION = 8;
 
 /** The top-level keys: the envelope, then the data (each one described on the page, messages: dataPage.keys.<key>). */
 export const EXPORT_ENVELOPE = ['format', 'formatVersion', 'exportedAt', 'termsVersion', 'note'] as const;
@@ -27,6 +27,9 @@ export const EXPORT_FORMAT_HISTORY = [
   { version: 6, since: '2026-10-14' },
   // each sheet names the installation it is linked to (migration 20_rilievi_impianti, round 44)
   { version: 7, since: '2026-10-14' },
+  // each calculation names the intervention declared with it, each lift design the calculation it was drawn on
+  // (migration 21_intervento, round 45)
+  { version: 8, since: '2026-10-14' },
 ] as const;
 
 /** The day the register last changed (the page shows it). */

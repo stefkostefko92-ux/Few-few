@@ -7,6 +7,7 @@ import { shaftInputsReadSchema, shaftInputsSchema } from './shaft-input';
 import { BRANDS } from '@/lib/catalog/machines';
 import { NORME_AGGIUNTIVE, NORME_COLLAUDO, PARTI } from '@/lib/lift/collaudo';
 import { MARCATURE, isServiceDay } from '@/lib/lift/modifica';
+import { TIPI_INTERVENTO } from '@/lib/lift/intervento';
 
 const DAY = /^(19|20)\d\d-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 
@@ -52,6 +53,9 @@ const liftObject = <S extends z.ZodTypeAny, C extends z.ZodTypeAny>(shaft: S, co
 export const liftInputsSchema = liftObject(shaftInputsSchema, collaudoSchema);
 /** A saved one form read back (the shaft and the test as stored: shaftInputsReadSchema, collaudoReadSchema). */
 export const liftInputsReadSchema = liftObject(shaftInputsReadSchema, collaudoReadSchema);
+
+/** The intervention declared with a calculation (src/lib/lift/intervento.ts; the database's enum TipoIntervento). */
+export const tipoInterventoSchema = z.enum(TIPI_INTERVENTO);
 
 /** A drawing of the Progetto (src/lib/lift/progetto.ts): the geometry only — no calculation, test, catalog or the
  *  switches of the car's mass and the machine, refused as extra keys; the shaft's rated load and speed are overwritten

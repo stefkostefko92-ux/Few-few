@@ -57,7 +57,7 @@ export const APP = '/it/app';
 export const project = (over: Row = {}) => ({ kind: 'REPLACEMENT', archivedAt: null, ...over });
 const snap = (V: typeof PRESETS.B) => { const s = snapshotOf(V); return { inputs: s.values, sha256: snapshotHash(s) }; };
 export const calcRow = (id: string, over: Row = {}): Row => ({
-  id, companyId: 'c1', projectId: 'p1', label: 'prima', collaudo: null, liftDesign: null, shaftDesign: null, roomDesigns: [], project: project(), engineVersion: ENGINE_VERSION,
+  id, companyId: 'c1', projectId: 'p1', label: 'prima', collaudo: null, intervento: null, liftDesign: null, shaftDesign: null, roomDesigns: [], project: project(), engineVersion: ENGINE_VERSION,
   ...snap(PRESETS.B), ...over,
 });
 export const stale = { sha256: '0'.repeat(64) };

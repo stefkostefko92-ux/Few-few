@@ -54,8 +54,9 @@ test('calcolo vecchio: rifatto una volta, con la stessa etichetta, e la pagina d
   db.calc = [calcRow('old1', stale)];
   assert.equal(await go(refreshCalculationAction, 'old1'), `${APP}/calculations/new1?da=old1`);
   assert.equal(calls.calc.length, 1);
-  const [, projectId, , label, , from] = calls.calc[0];
-  assert.deepEqual([projectId, label, from], ['p1', 'prima', 'old1']);
+  // the type as stored: none before round 45
+  const [, projectId, , label, , tipo, from] = calls.calc[0];
+  assert.deepEqual([projectId, label, tipo, from], ['p1', 'prima', null, 'old1']);
 });
 
 test('calcolo già rifatto (il registro ha `updates`): al nuovo con ?da=, nessun secondo record', async () => {

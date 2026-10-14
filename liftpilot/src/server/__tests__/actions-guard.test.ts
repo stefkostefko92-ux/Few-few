@@ -101,3 +101,22 @@ test('the rights of the matrix: the Tecnico calculates but does not draw the pro
     caps = undefined;
   }
 });
+
+test('the intervention declared with a calculation must agree with its values and test (round 45)', async () => {
+  const { PRESETS } = await import(src('calc/presets.ts'));
+  const { saveCalculationAction } = await import(src('server/calc-actions.ts'));
+  role = 'TECHNICIAN';
+  const values = { ...PRESETS.A, r: PRESETS.A.r ?? 1, context: 'repl', keepRopes: true, compare: true };
+  const save = (x: Record<string, unknown>) => saveCalculationAction({ projectId: 'prepl', values, label: 'x', ...x });
+  // not one of the three
+  assert.deepEqual(await save({ intervento: 'FULL' }), { ok: false, error: 'invalidFields' });
+  // a «Solo argano» with the landing doors, a transformation on an existing lift's values, a renovation keeping the sling
+  assert.deepEqual(await save({ intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine', 'landingDoors'] } }),
+    { ok: false, error: 'invalidIntervento', fields: ['parti'] });
+  assert.deepEqual(await save({ intervento: 'TRASFORMAZIONE_COMPLETA' }), { ok: false, error: 'invalidIntervento', fields: ['context'] });
+  assert.deepEqual(await save({ intervento: 'AMMODERNAMENTO', collaudo: { norma: 'en81', parti: ['machine', 'car'] } }), { ok: false, error: 'invalidIntervento', fields: ['norma'] });
+  // agreeing: past the check, to the project (the replacement here; a full project waits for step 3)
+  await assert.rejects(save({ intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'] } }), /the guard must stop before the record/);
+  assert.deepEqual(await saveCalculationAction({ projectId: 'pfull', values, label: 'x', intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'] } }),
+    { ok: false, error: 'notFound' });
+});

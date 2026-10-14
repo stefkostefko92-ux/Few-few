@@ -58,7 +58,8 @@
     "notReplacement": "Il rilievo del locale macchina è della sola sostituzione dell’argano: un progetto completo disegna il locale dal progetto del vano.",
     "roomIssues": "Il rilievo ha un problema da correggere.",
     "inviteTaken": "Questo indirizzo ha già un account LiftPilot e un indirizzo appartiene a una sola azienda: chiedi all’azienda di invitarti con un altro indirizzo.",
-    "rilievoLinked": "Questo rilievo è già collegato a un impianto: scollegalo prima dalla sua pagina."
+    "rilievoLinked": "Questo rilievo è già collegato a un impianto: scollegalo prima dalla sua pagina.",
+    "invalidIntervento": "Il tipo di intervento non corrisponde alle parti o alla norma scelte"
   },
   "auth": {
     "title": "Accesso",
@@ -2131,9 +2132,9 @@
     },
     "projectText": "Ogni progetto contiene i propri record, ciascuno con i dati inseriti, la versione del motore, i risultati e l’impronta SHA-256 che ne garantisce l’integrità:",
     "project": {
-      "calculations": "i calcoli dell’argano, con le verifiche interne",
+      "calculations": "i calcoli dell’argano, con il tipo di intervento dichiarato e le verifiche interne",
       "shaftDesigns": "i progetti del vano",
-      "liftDesigns": "i progetti completi dell’impianto",
+      "liftDesigns": "i progetti completi dell’impianto, con il calcolo argano su cui sono disegnati",
       "roomDesigns": "i rilievi del locale macchina",
       "drawingSets": "le tavole emesse, con le revisioni e l’impronta del PDF",
       "formDrafts": "le bozze dei moduli non ancora salvate",
@@ -2158,7 +2159,8 @@
       "v4": "4 — dal {date}: si aggiunge rolePermissions (i permessi dei ruoli cambiati dall’azienda).",
       "v5": "5 — dal {date}: users non riporta più la lingua dell’account (LiftPilot è solo in italiano).",
       "v6": "6 — dal {date}: in schede l’ubicazione della cassettina (ubicazioneCassettina) diventa un testo, non più un numero; si aggiungono sospensioni, sospensioniNumero, ordineSospensioni, riepilogoOrdini e discrepanzeConfermate; preventivoArgano contiene il modulo rilievi dati argani e ordineQuadro anche quello MoviLift; in company si aggiunge ordineSezioni.",
-      "v7": "7 — dal {date}: in schede si aggiunge projectId, l’impianto a cui il rilievo è collegato (null se non è collegato)."
+      "v7": "7 — dal {date}: in schede si aggiunge projectId, l’impianto a cui il rilievo è collegato (null se non è collegato).",
+      "v8": "8 — dal {date}: in calculations si aggiunge intervento, il tipo di intervento dichiarato con il calcolo (SOLO_ARGANO, AMMODERNAMENTO o TRASFORMAZIONE_COMPLETA; null se il calcolo è stato salvato prima); in liftDesigns si aggiunge baseCalculationId, il calcolo argano su cui è stato disegnato il progetto (null se è un progetto del modulo unico di prima)."
     },
     "apiTitle": "C’è un’interfaccia per l’esportazione?",
     "apiText": "Sì, gratuita e uguale per tutte le aziende: una richiesta GET a {base}/api/company/export restituisce il file JSON descritto sopra a chi ha effettuato l’accesso come Titolare o, se il Titolare glielo permette, come Capotecnico. È la stessa richiesta del pulsante della pagina Azienda, al massimo 6 volte all’ora per azienda. Il nuovo fornitore riceve il file dal Titolare; questa pagina descrive il formato per scrivere il programma che lo legge (art. 30, par. 2, del Data Act).",

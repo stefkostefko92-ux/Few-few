@@ -8,30 +8,39 @@ import { rateLimit } from '@/lib/ratelimit';
 import { REVIEW_MAX } from '@/lib/review';
 import { calcLabelSchema, idSchema, reviewSchema } from '@/lib/schemas';
 import { formValuesSchema } from '@/lib/calc-input';
-import { collaudoSchema } from '@/lib/lift-input';
+import { collaudoSchema, tipoInterventoSchema } from '@/lib/lift-input';
+import { interventoValido } from '@/lib/lift/intervento';
 import { dropDraft } from './drafts';
 import { createCalculation, type Created } from './save';
 
 export type SaveResult = Created;
 
 // The browser only shows a preview: the server validates the values, recomputes everything with the same engine
-// and stores the immutable snapshot with its hash (save.ts). The browser's result is never trusted. The standards of
-// the acceptance test chosen with it are stored beside the snapshot (they are what the report sets out, not the physics).
-export async function saveCalculationAction(input: { projectId: unknown; values: unknown; label: unknown; collaudo?: unknown }): Promise<SaveResult> {
+// and stores the immutable snapshot with its hash (save.ts). The browser's result is never trusted. The intervention
+// declared and the standards of the acceptance test chosen with it are stored beside the snapshot (they are what the
+// documents set out, not the physics); the type, the values and the test must agree (interventoValido: 'invalidIntervento'
+// with the keys they disagree on).
+export async function saveCalculationAction(input: { projectId: unknown; values: unknown; label: unknown; collaudo?: unknown; intervento?: unknown }): Promise<SaveResult> {
   const user = await getSessionUser();
   if (!user) return { ok: false, error: 'unauthorized' };
   if (user.mustChangePassword || !can(user, 'calc:create')) return { ok: false, error: 'forbidden' };
   if (!rateLimit(`calc:${user.id}`, 60, 10 * 60 * 1000)) return { ok: false, error: 'rateLimited' };
   const projectId = idSchema.safeParse(input.projectId), label = calcLabelSchema.safeParse(input.label ?? ''), values = formValuesSchema.safeParse(input.values);
   const collaudo = input.collaudo == null ? null : collaudoSchema.safeParse(input.collaudo);
-  if (!projectId.success || !label.success || (collaudo && !collaudo.success)) return { ok: false, error: 'invalidFields' };
+  const tipo = input.intervento == null ? null : tipoInterventoSchema.safeParse(input.intervento);
+  if (!projectId.success || !label.success || (collaudo && !collaudo.success) || (tipo && !tipo.success)) return { ok: false, error: 'invalidFields' };
   if (!values.success) return { ok: false, error: 'invalidFields', fields: values.error.issues.map((i) => String(i.path[0] ?? '')) };
   // an empty roping reads as 1:1 in the calculation: a new calculation has it chosen
   if (String(values.data.r ?? '').trim() === '') return { ok: false, error: 'invalidFields', fields: ['r'] };
+  const chosen = collaudo?.success ? collaudo.data : null;
+  if (tipo?.success) {
+    const disagree = interventoValido(tipo.data, values.data, chosen);
+    if (disagree.length) return { ok: false, error: 'invalidIntervento', fields: disagree };
+  }
   // the calculator is the replacement's: a full project calculates in its one form (audit 2026-10-06)
   const project = await prisma.project.findFirst({ where: { id: projectId.data, companyId: user.companyId, archivedAt: null, kind: 'REPLACEMENT' }, select: { id: true } });
   if (!project) return { ok: false, error: 'notFound' };
-  const r = await createCalculation(user, project.id, values.data, label.data, collaudo?.success ? collaudo.data : null);
+  const r = await createCalculation(user, project.id, values.data, label.data, chosen, tipo?.success ? tipo.data : null);
   // the calculator's draft has become this record
   if (r.ok) await dropDraft(user.companyId, project.id, 'calc');
   return r;
