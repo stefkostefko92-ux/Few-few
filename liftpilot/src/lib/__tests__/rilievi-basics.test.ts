@@ -1,4 +1,4 @@
-// Rilievi — the basics (rilievi's tests/basics.test.ts and i18n.test.ts, commit 174a1e3aa, Italian only): the day of a
+// Rilievi — the basics (rilievi's tests/basics.test.ts and i18n.test.ts, commit ae6329cb6, Italian only): the day of a
 // `@db.Date`, today in Rome, the numbers; every label the field list asks for is in messages/it.json; the plurals; the
 // form read as rilievi's server read it; the helpers the form shows its errors with; the browser's prefill rules.
 import assert from 'node:assert/strict';
@@ -12,7 +12,9 @@ import { rilieviTranslator } from '@/lib/rilievi/i18n';
 import { bodyOf, listParamsSchema, MAX_FORM_FIELDS, schedaIdSchema } from '@/lib/rilievi/inputs';
 import { browserSendable } from '@/lib/rilievi/leave';
 import { MISURA_COLUMNS } from '@/lib/rilievi/misure';
-import { misureRowsFor, prefillInput, surveyText } from '@/lib/rilievi/prefill-client';
+import { COLLEGAMENTI } from '@/lib/rilievi/ordini/collegamenti';
+import { prefillFill, misureRowsFor, prefillInput, surveyText, surveyTicked, type PrefillHost } from '@/lib/rilievi/prefill-client';
+import type { Ctl } from '@/lib/rilievi/collegati-client';
 import { businessDay, dateFromDay, dayFromDate } from '@/lib/rilievi/time';
 import { parseScheda } from '@/lib/rilievi/validation';
 
@@ -50,7 +52,14 @@ describe('the messages', () => {
       assert.ok(has(`scheda.field.${field.key}`), `field ${field.key}`);
       if (field.question) assert.ok(has(`scheda.question.${field.key}`), `${field.key}?`);
       if (field.kind === 'checks' || field.kind === 'choice') for (const option of field.options) assert.ok(has(`scheda.option.${field.key}.${option}`), option);
+      if (field.kind === 'yesno' && field.risposte) for (const answer of field.risposte) assert.ok(has(`scheda.option.${field.key}.${answer}`), `${field.key} ${answer}`);
     }
+    // every linked datum and every place by name, the confirmation, the print of the modules, the company setting
+    for (const link of COLLEGAMENTI) assert.ok(has(`collegati.${link.key}`), link.key);
+    for (const luogo of ['scheda', 'oq', 'om', 'pa', 'sg']) assert.ok(has(`collegati.luogo.${luogo}`), luogo);
+    for (const key of ['collegati.diversi', 'collegati.banner', 'collegati.conferma.text', 'collegati.conferma.submit', 'riepilogo.title', 'riepilogo.label', 'riepilogo.hint',
+      'impostazioni.error', 'impostazioni.sezioni.title', 'impostazioni.sezioni.save', 'impostazioni.sezioni.reset', 'flash.sezioniSaved', 'flash.sezioniReset', 'scheda.buonoRiferimento']) assert.ok(has(key), key);
+    assert.ok('COMPANY_SECTIONS_UPDATED' in it_.audit.actions);
     for (const section of SECTIONS) assert.ok(has(`scheda.section.${section.key}`), section.key);
     for (const column of MISURA_COLUMNS) assert.ok(has(`scheda.misure.col.${column.key}`), column.key);
     for (const a of ['SCHEDA_CREATED', 'SCHEDA_UPDATED', 'SCHEDA_TRASHED', 'SCHEDA_RESTORED', 'SCHEDA_PURGED']) assert.ok(a in it_.audit.actions, a);
@@ -65,6 +74,10 @@ describe('the messages', () => {
     assert.equal(t('scheda.errorSummary', { n: 2 }), 'Correggi 2 campi');
     assert.equal(t('schede.search.found', { n: 1, q: '987' }), '1 scheda per «987»');
     assert.equal(t('scheda.question.quadroOrdine'), 'Vuoi compilare la scheda per l\'ordine quadro?');
+    assert.equal(t('collegati.conferma.title', { n: 1 }), 'Un dato non coincide tra scheda e ordini');
+    assert.equal(t('collegati.conferma.title', { n: 2 }), '2 dati non coincidono tra scheda e ordini');
+    assert.equal(t('scheda.option.tipoImpianto.GEARLESS'), 'MRL', 'a label only: the value stays GEARLESS');
+    assert.equal(t('impostazioni.sezioni.up', { name: 'Funi' }), 'Sposta su «Funi»');
   });
 });
 
@@ -103,6 +116,9 @@ describe('the form’s helpers', () => {
     assert.equal(errorLabelOf('oq-quantita', t, moduloLookup), 'Quantità: (Pelazza Peppino)');
     assert.equal(errorLabelOf('oq-quantita', t, specLookup(moduloSpecs())), 'Quantità: (Pelazza Peppino)', 'the form’s specs say the same as the maps');
     assert.equal(errorLabelOf('portataKg', t), 'Portata');
+    assert.equal(errorLabelOf('riepilogoOrdini', t), 'Stampa e PDF');
+    assert.equal(errorLabelOf('pa-pesoCabina', t, moduloLookup), 'Peso cabina (KG) (Modulo rilievi dati argani)', 'a sheet without a supplier is named by its title');
+    assert.equal(errorLabelOf('pa-pesoCabina', t, specLookup(moduloSpecs())), 'Peso cabina (KG) (Modulo rilievi dati argani)');
     assert.equal(errorAnchorOf('mb-2-lunghezzaMm'), '#f-mb-2-lunghezzaMm');
     assert.deepEqual(errorParamsOf('portataKg'), { min: '0', max: '100000' });
     assert.equal(errorTextOf('portataKg', 'range', t), 'Inserisci un valore tra 0 e 100000.');
@@ -113,7 +129,7 @@ describe('the form’s helpers', () => {
     assert.deepEqual(errorParamsOf('oq-ordine', moduloLookup), {}, 'a box has no length');
     assert.equal(unitTextOf('capienzaPersone', t), 'persone');
     assert.equal(unitTextOf('fermate', t), null);
-    assert.deepEqual(['matricola', 'portataKg', 'ubicazioneCassettina', 'funiDiametroMm', 'data'].map(inputMaxLengthOf), [20, 9, null, 10, null]);
+    assert.deepEqual(['matricola', 'portataKg', 'ubicazioneCassettina', 'funiDiametroMm', 'data'].map(inputMaxLengthOf), [20, 9, 120, 10, null]);
     assert.equal(flashOf('schedaSaved'), 'schedaSaved');
     assert.equal(flashOf('altro'), null);
   });
@@ -127,20 +143,47 @@ describe('the form’s helpers', () => {
   });
 });
 
-describe('the browser’s rules', () => {
-  const values = { data: '2026-10-12', numeroImpianto: '104552', matricola: '', indirizzo: 'Via Verdi 14', doppioAccesso: 'no', tipoPorte: ['MANUALI'], fermate: ' 6 ' };
+describe('the browser’s rules for the modules’ survey fields', () => {
+  const values = { data: '2026-10-12', numeroImpianto: '104552', matricola: '', indirizzo: 'Via Verdi 14', doppioAccesso: 'no', tipoPorte: ['MANUALI'], fermate: ' 6 ', operatoreMarca: 'Selcom', pattinoRetrattile: 'si' };
+  const ctx = { contesto: { azienda: 'Ascensori Rossi Srl', utente: 'Mario Bianchi', ruolo: 'Tecnico', email: 'mario@example.it' }, etichetta: (campo: string, valore: string) => t(`scheda.option.${campo}.${valore}`) };
 
-  it('prefill an untouched, empty field from the survey on the screen, and tick what the survey ticks', () => {
-    assert.equal(surveyText('data', values), '12/10/2026');
-    assert.equal(surveyText('rif', values), 'N° 104552 — Via Verdi 14');
-    assert.equal(surveyText('accessi', values), '1');
-    assert.equal(surveyText('azienda', values), '', 'the company was prefilled by the server');
-    assert.equal(surveyText('fermate', values), '6');
-    assert.equal(prefillInput({ kind: 'text', prefill: 'fermate', value: '', maxLength: 27 }, values), '6');
-    assert.equal(prefillInput({ kind: 'text', prefill: 'fermate', value: '4', maxLength: 27 }, values), null, 'never over what is there');
-    assert.equal(prefillInput({ kind: 'text', prefill: 'rif', value: '', maxLength: 5 }, values), 'N° 10');
-    assert.equal(prefillInput({ kind: 'check', prefill: 'tipoPorte=MANUALI', value: false, maxLength: null }, values), true);
-    assert.equal(prefillInput({ kind: 'check', prefill: 'tipoPorte=AUTOMATICHE', value: false, maxLength: null }, values), null);
+  it('say what the survey on the screen says, a hidden field nothing', () => {
+    assert.equal(surveyText('data', values, ctx), '12/10/2026');
+    assert.equal(surveyText('rif', values, ctx), 'N° 104552 — Via Verdi 14');
+    assert.equal(surveyText('azienda', values, ctx), 'Ascensori Rossi Srl');
+    assert.equal(surveyText('email', values, ctx), 'mario@example.it');
+    assert.equal(surveyText('tipoPorte', { ...values, tipoPorte: ['AUTOMATICHE', 'MANUALI'] }, ctx), 'Automatiche, Manuali');
+    assert.equal(surveyText('operatoreMarca', values, ctx), '', 'no door operator with manual doors');
+    assert.equal(surveyTicked('pattinoRetrattile=si', values), true);
+    assert.equal(surveyTicked('pattinoRetrattile=si', { ...values, tipoPorte: ['AUTOMATICHE'] }), false, 'hidden with automatic doors');
+  });
+
+  it('keep following the sheet until the person types; a kind follows the first one typed when the sheet says nothing', () => {
+    const el = (name: string, prefill: string, value = '', type = 'text', auto?: string): Ctl & { prefill: string } => ({ name, type, value, checked: false, maxLength: -1, dataset: auto === undefined ? {} : { auto }, prefill });
+    const data1 = el('oq-data', 'data', '01/01/2026', 'text', '01/01/2026');
+    const data2 = el('sg-data', 'data');
+    const typed = el('pa-rif', 'rif', 'Mio riferimento');
+    typed.dataset.touched = '1';
+    const rif = el('oq-rifImpianto', 'rif');
+    const pattino = el('om-elettrPattino', 'pattinoRetrattile=si', '', 'checkbox');
+    const all = [data1, data2, typed, rif, pattino];
+    const host: PrefillHost<Ctl & { prefill: string }> = { controls: () => all, tokenOf: (c) => c.prefill, shown: () => true, optionsOf: () => null };
+    const changed = prefillFill(host, values, ctx);
+    assert.equal(data1.value, '12/10/2026', 'still the value put there for it: it follows');
+    assert.equal(data2.value, '12/10/2026');
+    assert.equal(typed.value, 'Mio riferimento', 'typed by the person: never refilled');
+    assert.equal(rif.value, 'N° 104552 — Via Verdi 14', 'the sheet speaks first');
+    assert.equal(pattino.checked, true);
+    assert.equal(pattino.dataset.auto, 'si');
+    assert.deepEqual(changed.map((c) => c.name).sort(), ['oq-data', 'oq-rifImpianto', 'om-elettrPattino', 'sg-data'].sort());
+    // the sheet says nothing about the reference: the empty followers take the one typed
+    rif.value = '';
+    rif.dataset.auto = '';
+    prefillFill(host, { ...values, numeroImpianto: '', indirizzo: '' }, ctx);
+    assert.equal(rif.value, 'Mio riferimento');
+    // the prefill before the sync, kept only for the form until it is rewired: never empties, never writes who writes
+    assert.equal(prefillInput({ kind: 'text', prefill: 'data', value: '', maxLength: 27 }, values), '12/10/2026');
+    assert.equal(prefillInput({ kind: 'text', prefill: 'azienda', value: '', maxLength: 27 }, values), null);
   });
 
   it('show a row of measurements per stop typed, 1..300', () => {

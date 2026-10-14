@@ -1,5 +1,5 @@
-// Rilievi — the sheet's field list and its check, ported from rilievi's tests/validation.test.ts (commit 174a1e3aa):
-// the order of the brief, the kinds, the identifiers, digits, decimals, whole numbers, ticks, dates, text cleaning,
+// Rilievi — the sheet's field list and its check, ported from rilievi's tests/validation.test.ts (commit ae6329cb6):
+// the order of the printed sheet, the kinds, the identifiers, digits, decimals, whole numbers, ticks, dates, text cleaning,
 // forged forms and every error at once.
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
@@ -15,26 +15,26 @@ function parsedOrFail(body: Record<string, unknown>) {
 }
 
 describe('the field list', () => {
-  it('keeps the fields of the brief in its order, the later briefs next to what they belong to', () => {
+  it('keeps the sections in the order of the printed sheet the owner marked up (October 2026)', () => {
+    // section 1 is laid out like the head and the plate of the sheet: date, address and work order, matricola and lift
+    // number, then load, persons, stops and make
+    assert.deepEqual(SECTIONS.map((section) => section.key), ['impianto', 'ubicazione', 'tipologia', 'quadro', 'argano', 'funi', 'limitatore', 'cavi', 'serrature', 'allarme', 'note']);
     assert.deepEqual(
       FIELDS.map((field) => field.key),
       [
-        'data', 'indirizzo', 'marca', 'matricola', 'numeroImpianto', 'buonoLavoro',
-        'portataKg', 'capienzaPersone', 'fermate',
+        'data', 'indirizzo', 'buonoLavoro', 'matricola', 'numeroImpianto', 'portataKg', 'capienzaPersone', 'fermate', 'marca',
         'ubicazioneMacchina', 'ubicazioneCassettina', 'parcheggio',
-        'tipoImpianto', 'tipoPorte', 'operatoreMarca', 'lucePorte', 'operatoreTensione', 'doppioAccesso', 'bloccaPortine',
-        'autolivellamento', 'pattinoRetrattile', 'pattinoRetrattileNumero', 'serrature', 'serratureNumero', 'serratureTipo',
-        'luceVanoSostituire',
+        'tipoImpianto', 'tipoPorte', 'operatoreMarca', 'lucePorte', 'operatoreTensione', 'doppioAccesso', 'pattinoRetrattile',
+        'quadroMarca', 'quadroMarcaAltro', 'quadroOrdine',
+        'arganoPreventivo',
         'funiDiametroMm', 'funiTrefoli', 'funiNumero', 'funiLunghezzaM',
         'limitatoreTipo', 'funicellaDiametroMm', 'funicellaLunghezzaM', 'tenditore',
         'caviNumero', 'caviConduttori', 'caviLunghezzaM',
+        'serrature', 'serratureNumero', 'serratureTipo', 'sospensioni', 'sospensioniNumero',
         'telesoccorso', 'telesoccorsoStato', 'allarmePortineria', 'displayPortineria',
-        'noteQuadretto', 'noteImpianto', 'noteBottoniere', 'bottoniereMisure', 'lavoriExtra',
-        'quadroMarca', 'quadroMarcaAltro', 'quadroOrdine',
-        'arganoMarca', 'arganoMarcaAltro', 'arganoPreventivo',
+        'noteQuadretto', 'noteImpianto', 'luceVanoSostituire', 'noteBottoniere', 'bottoniereMisure', 'lavoriExtra',
       ],
     );
-    assert.equal(SECTIONS.length, 11);
   });
 
   it('gives every number a kind the brief asked for: the identifiers are digits, never numbers', () => {
@@ -42,6 +42,7 @@ describe('the field list', () => {
     assert.equal(kind('matricola'), 'digits');
     assert.equal(kind('numeroImpianto'), 'digits');
     assert.equal(kind('indirizzo'), 'text');
+    assert.equal(kind('ubicazioneCassettina'), 'text', 'where the box is, in words');
     for (const key of ['ubicazioneMacchina', 'tipoImpianto', 'tipoPorte']) assert.equal(kind(key), 'checks');
     assert.equal(kind('serrature'), 'yesno');
   });
@@ -86,9 +87,8 @@ describe('parseScheda', () => {
     assert.equal(!thousands.ok && thousands.errors.funiLunghezzaM, 'decimal');
   });
 
-  it('checks whole numbers and their range, negative only where the field allows it', () => {
+  it('checks whole numbers and their range, never below zero', () => {
     assert.equal(parsedOrFail({ ...minimal, portataKg: '630' }).portataKg, 630);
-    assert.equal(parsedOrFail({ ...minimal, ubicazioneCassettina: '-1' }).ubicazioneCassettina, -1);
     const letter = parseScheda({ ...minimal, portataKg: '63O' });
     assert.equal(!letter.ok && letter.errors.portataKg, 'integer');
     const negative = parseScheda({ ...minimal, fermate: '-2' });
@@ -125,8 +125,9 @@ describe('parseScheda', () => {
   });
 
   it('cleans text: single lines collapse spaces, notes keep their line breaks, control characters go', () => {
-    const data = parsedOrFail({ ...minimal, indirizzo: '  Via   Roma\t12 ', noteImpianto: 'Riga uno\r\nRiga due\u0007  ' });
+    const data = parsedOrFail({ ...minimal, indirizzo: '  Via   Roma\t12 ', ubicazioneCassettina: ' Piano -1,  vano contatori ', noteImpianto: 'Riga uno\r\nRiga due\u0007  ' });
     assert.equal(data.indirizzo, 'Via Roma 12');
+    assert.equal(data.ubicazioneCassettina, 'Piano -1, vano contatori');
     assert.equal(data.noteImpianto, 'Riga uno\nRiga due');
   });
 
@@ -144,6 +145,26 @@ describe('formValuesFromBody', () => {
     assert.equal(values.indirizzo, '');
     assert.deepEqual(values.tipoPorte, ['MANUALI']);
     assert.equal(values.fermate, '');
+  });
+
+  it('keeps the print choice as «1» or nothing and the names still following, cut to 4000 characters', () => {
+    const values = formValuesFromBody({ riepilogoOrdini: 'yes', 'collegati-auto': `fermate ${'x'.repeat(5000)}` });
+    assert.equal(values.riepilogoOrdini, '');
+    assert.equal(formValuesFromBody({ riepilogoOrdini: '1' }).riepilogoOrdini, '1');
+    assert.equal(String(values['collegati-auto']).length, 4000);
+    assert.equal(formValuesFromBody({ 'collegati-auto': ['a'] })['collegati-auto'], '');
+  });
+});
+
+describe('the print of the modules with the sheet', () => {
+  it('is «1» or nothing; anything else is forged and named', () => {
+    assert.equal(parsedOrFail({ ...minimal, riepilogoOrdini: '1' }).riepilogoOrdini, true);
+    assert.equal(parsedOrFail(minimal).riepilogoOrdini, false);
+    assert.equal(parsedOrFail({ ...minimal, riepilogoOrdini: '' }).riepilogoOrdini, false);
+    for (const forged of ['yes', 'on', ['1', '1'], null]) {
+      const result = parseScheda({ ...minimal, riepilogoOrdini: forged });
+      assert.equal(!result.ok && result.errors.riepilogoOrdini, 'invalid', String(forged));
+    }
   });
 });
 

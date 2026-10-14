@@ -1,16 +1,17 @@
 // The check of the sheet's form. The fields with a condition (fields.ts, `when`) that make no sense with the values sent
 // are not read at all: they are kept as null and give no error the person cannot see (the hidden "Numero serrature"
-// with "Serrature: No"). Ported 1:1 from rilievi (src/schede/validation.ts).
+// with "Serrature: No"). Ported 1:1 from rilievi (src/schede/validation.ts, commit ae6329cb6).
 import { z } from 'zod';
 import type {
-  RilievoArganoMarca,
   RilievoQuadroMarca,
   RilievoTelesoccorsoStato,
   RilievoTipoImpianto,
   RilievoTipoPorte,
   RilievoUbicazioneMacchina,
 } from '@prisma/client';
-import { SLOTS } from './ordini/registry';
+import { RIEPILOGO_KEY } from './form-help';
+import { AUTO_KEY } from './ordini/collegamenti';
+import { slotAperto, SLOTS } from './ordini/registry';
 import { moduloFromBody, parseModulo, type ModuloDati } from './ordini/valori';
 import { activeFields, FIELDS, IDENTIFIERS, IDENTIFIERS_ERROR_KEY } from './fields';
 import {
@@ -45,7 +46,7 @@ export const schedaSchema = z
     capienzaPersone: intOf('capienzaPersone'),
     fermate: intOf('fermate'),
     ubicazioneMacchina: checksOf<RilievoUbicazioneMacchina>('ubicazioneMacchina'),
-    ubicazioneCassettina: intOf('ubicazioneCassettina'),
+    ubicazioneCassettina: textOf('ubicazioneCassettina'),
     parcheggio: textOf('parcheggio'),
     tipoImpianto: checksOf<RilievoTipoImpianto>('tipoImpianto'),
     tipoPorte: checksOf<RilievoTipoPorte>('tipoPorte'),
@@ -53,13 +54,12 @@ export const schedaSchema = z
     lucePorte: textOf('lucePorte'),
     operatoreTensione: textOf('operatoreTensione'),
     doppioAccesso: yesNoOf('doppioAccesso'),
-    bloccaPortine: yesNoOf('bloccaPortine'),
-    autolivellamento: yesNoOf('autolivellamento'),
     pattinoRetrattile: yesNoOf('pattinoRetrattile'),
-    pattinoRetrattileNumero: intOf('pattinoRetrattileNumero'),
     serrature: yesNoOf('serrature'),
     serratureNumero: intOf('serratureNumero'),
     serratureTipo: textOf('serratureTipo'),
+    sospensioni: yesNoOf('sospensioni'),
+    sospensioniNumero: intOf('sospensioniNumero'),
     luceVanoSostituire: yesNoOf('luceVanoSostituire'),
     funiDiametroMm: decimalOf('funiDiametroMm'),
     funiTrefoli: intOf('funiTrefoli'),
@@ -84,8 +84,6 @@ export const schedaSchema = z
     quadroMarca: choiceOf<RilievoQuadroMarca>('quadroMarca'),
     quadroMarcaAltro: textOf('quadroMarcaAltro'),
     quadroOrdine: yesNoOf('quadroOrdine'),
-    arganoMarca: choiceOf<RilievoArganoMarca>('arganoMarca'),
-    arganoMarcaAltro: textOf('arganoMarcaAltro'),
     arganoPreventivo: yesNoOf('arganoPreventivo'),
   })
   .superRefine((value, ctx) => {
@@ -96,13 +94,26 @@ export const schedaSchema = z
 
 /**
  * The fields of the sheet + the measurements of the old push-button panels (per stop, misure.ts) + the suppliers'
- * modules (ordini/) — each only with "Sì" on its question, otherwise null.
+ * modules (ordini/) — each only with "Sì" on its question, otherwise null — and whether the sheet's print and PDF carry
+ * what is filled in the modules. The fields taken off the sheet (October 2026: the door blocking, the self-levelling, the
+ * number of retiring cams, the argano's make) are not read: a save leaves their columns as they are.
  */
 export type SchedaData = z.output<typeof schedaSchema> & {
   misureBottoniere: MisuraData[];
   ordineQuadro: ModuloDati | null;
   preventivoArgano: ModuloDati | null;
+  ordineSospensioni: ModuloDati | null;
+  riepilogoOrdini: boolean;
+  /** The fingerprint of the confirmed discrepancies — the action sets it on save (src/server/rilievi/actions.ts). */
+  discrepanzeConfermate: string | null;
 };
+
+/** The tick «Includi i dati dei moduli … nella stampa»: «1» or nothing — anything else is forged. */
+const riepilogoSchema = z.preprocess(
+  (value) => (value === undefined || value === '' ? false : value),
+  z.union([z.literal(false), z.literal('1').transform(() => true)], { errorMap: () => ({ message: 'invalid' }) }),
+);
+export { RIEPILOGO_KEY };
 
 const asRecord = (body: unknown): Record<string, unknown> => (body && typeof body === 'object' ? (body as Record<string, unknown>) : {});
 
@@ -113,13 +124,15 @@ export function parseScheda(body: unknown): { ok: true; data: SchedaData } | { o
   const input = Object.fromEntries(FIELDS.filter((field) => active.has(field.key)).map((field) => [field.key, raw[field.key]]));
   // The measurements per stop: with "Sì" and a number of stops within the bounds (otherwise there are no rows).
   const misure = raw.bottoniereMisure === 'si' ? parseMisure(raw, misureCount(raw.fermate)) : null;
-  // The suppliers' modules: only when their question is shown and the answer is "Sì".
-  const moduli = SLOTS.map((slot) => (active.has(slot.question) && raw[slot.question] === 'si' ? parseModulo(slot.modulo, slot.prefix, raw) : null));
-  const extraErrors: FieldErrors = Object.assign({}, misure?.errors, ...moduli.map((modulo) => modulo?.errors ?? {}));
+  // The suppliers' modules: only when their question is shown, the answer is "Sì" and the make is theirs.
+  const moduli = SLOTS.map((slot) => (slotAperto(slot, active, (key) => raw[key]) ? parseModulo(slot.modulo, slot.prefix, raw) : null));
+  const riepilogo = riepilogoSchema.safeParse(raw[RIEPILOGO_KEY]);
+  const extraErrors: FieldErrors = Object.assign({}, misure?.errors, ...moduli.map((modulo) => modulo?.errors ?? {}), riepilogo.success ? {} : { [RIEPILOGO_KEY]: 'invalid' });
 
   const parsed = schedaSchema.safeParse(input);
-  if (parsed.success && Object.keys(extraErrors).length === 0) {
-    const dati = (column: string) => moduli[SLOTS.findIndex((s) => s.column === column)]?.dati;
+  if (parsed.success && riepilogo.success && Object.keys(extraErrors).length === 0) {
+    // the column of the open module (the panel — Pelazza or MoviLift, never both)
+    const dati = (column: string) => moduli.find((modulo, i) => modulo && SLOTS[i]?.column === column)?.dati;
     return {
       ok: true,
       data: {
@@ -127,6 +140,9 @@ export function parseScheda(body: unknown): { ok: true; data: SchedaData } | { o
         misureBottoniere: misure?.rows ?? [],
         ordineQuadro: dati('ordineQuadro') ?? null,
         preventivoArgano: dati('preventivoArgano') ?? null,
+        ordineSospensioni: dati('ordineSospensioni') ?? null,
+        riepilogoOrdini: riepilogo.data,
+        discrepanzeConfermate: null,
       },
     };
   }
@@ -150,6 +166,10 @@ export function formValuesFromBody(body: unknown): FormValues {
   const source = asRecord(body);
   const values: FormValues = misureFromBody(source);
   for (const slot of SLOTS) Object.assign(values, moduloFromBody(slot.modulo, slot.prefix, source));
+  values[RIEPILOGO_KEY] = source[RIEPILOGO_KEY] === '1' ? '1' : '';
+  // which linked fields still follow their source (collegati-client.ts) — form.ts takes only the real names
+  const auto = source[AUTO_KEY];
+  values[AUTO_KEY] = typeof auto === 'string' ? auto.slice(0, 4000) : '';
   for (const field of FIELDS) {
     const raw = source[field.key];
     if (field.kind === 'checks') {

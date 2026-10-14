@@ -368,7 +368,10 @@ prisma/              schema + migrations/0_init (тригер: без UPDATE н�
                      12_form_drafts (FormDraft — черновата на формуляр по проект и обхват; не е запис: без хеш и тригер),
                      15_rilievi (Scheda + MisuraBottoniera с енумите Rilievo*, pg_trgm и GIN индексът на searchText,
                      индексите на списъка и на кошчето, CHECK на спирките 1..300 и на JSON на модулите; адитивна; връщането
-                     — в коментара ѝ).
+                     — в коментара ѝ), 18_rilievi_sync (синхронът с rilievi до ae6329cb6: ubicazioneCassettina → VARCHAR(120)
+                     с всяка стойност като текст, riepilogoOrdini, discrepanzeConfermate, sospensioni + sospensioniNumero +
+                     ordineSospensioni с CHECK на JSON, Company.ordineSezioni; ръчно писана, само добавя; връщането — в
+                     коментара ѝ, кодът и колоните заедно).
 src/lib/rilievi/     Rilievi (кръг 41) — картите за оглед, чисто (и в браузъра): fields + field-types (ЕДИНСТВЕНИЯТ списък на
                      полетата, условията `when`, activeFields), field-parsers + validation (zod по вида, parseScheda,
                      formValuesFromBody), misure (бутониерите по спирки, mb-<спирка>-<колона>), format (displaySections,
@@ -377,17 +380,26 @@ src/lib/rilievi/     Rilievi (кръг 41) — картите за оглед, �
                      като urlencoded на rilievi; id, base, търсене, страница), form-help (етикетите и текстовете на грешките —
                      полетата на модулите през ModuloLookup: specLookup върху спецификациите във формата, moduloLookup върху
                      картите на сървъра —, имената на PDF-ите, флаш ключовете, tabTitle в format), prefill-client (правилата на
-                     браузъра за модулите; rifImpianto от ordini/rif, без картите), action-state
-                     (отговорите на действията), t + i18n (преводачът на `rilievi` през use-intl/core); ordini/ — moduli
-                     (картите на полетата на Pelazza и Montanari, zod), registry (SLOTS), valori, prefill, form (withPrefill,
-                     moduloSpec за формата).
+                     браузъра за модулите: surveyText, prefillFill върху PrefillHost; rifImpianto от ordini/rif, без картите),
+                     collegati-client (свързаните данни в реално време върху CollegatiHost — collegati.js на rilievi),
+                     valori-client (радио/падащ списък и „Sì/No“ ↔ модул в браузъра), ordine (редът на разделите: FISSE,
+                     ORDINABILI, ordineEffettivo, parseOrdine, parseMossa, sposta), action-state (отговорите на действията:
+                     invalid/conflict/confirm{base, impronta}/error; CONFERMA_KEY), t + i18n (преводачът на `rilievi` през
+                     use-intl/core); ordini/ — moduli (картите на полетата на Pelazza, MoviLift, листа за аргано и 2SG, zod;
+                     MODULI, nomeModulo), registry (SLOTS по марка, slotAperto, slotByPath/Prefix), valori, opzioni, numeri,
+                     collegamenti-elenco (ЕДИНСТВЕНИЯТ списък на връзките) + collegamenti (видовете места, проверката при
+                     зареждане) + collegati (discrepanzeDi, improntaDi, prefillCollegati) + collegati-browser (JSON-ът за
+                     браузъра), riepilogo (модулите в печата на картата), prefill, form (withPrefill, moduloSpec(s) за формата).
 src/server/rilievi/  queries (списък и търсене със SQL параметри, getScheda — по фирма, логото на фирмата), service (запис с
                      мерките и одита в една транзакция, base → конфликт, кошче, окончателно), pages (каквото страниците
-                     искат: картата по правата, стойностите на формата с предварителното попълване, списъкът и кошчето),
-                     actions ('use server': създаване, промяна, кошче, възстановяване, окончателно), pdf + pdf-layout +
-                     pdf-table (PDF-ът на картата, pdfkit + DejaVu), moduli-pdf (празните PDF-и, SHA-256), modulo-pdf
-                     (попълнените модули, pdf-lib). Маршрутите: src/app/api/rilievi/[id]/pdf и [id]/[modulo]
-                     (ordine-quadro, preventivo-argano). assets/moduli/ — празните формуляри на доставчиците + картите им
+                     искат: картата по правата, formStart/newForm/editForm със свързаните данни за браузъра, formSections,
+                     sheetView и printView с реда на разделите и разликите, списъкът и кошчето), actions ('use server':
+                     създаване, промяна с потвърждение на разликите, кошче, възстановяване, окончателно), sezioni +
+                     sezioni-actions (редът на разделите на фирмата, 'company:edit', одит COMPANY_SECTIONS_UPDATED), pdf +
+                     pdf-head (главата и табелата) + pdf-layout + pdf-table (PDF-ът на картата, pdfkit + DejaVu), moduli-pdf
+                     (празните PDF-и, SHA-256), modulo-pdf (плоските листове) + pdf-form (формулярът на MoviLift) + pdf-testo
+                     (шрифтът, мястото на текста, изправянето на 2SG), pdf-lib. Маршрутите: src/app/api/rilievi/[id]/pdf и
+                     [id]/[modulo] (ordine-quadro, ordine-quadro-movilift, dati-argano, sospensioni-2sg; чужда марка → 404). assets/moduli/ — празните формуляри на доставчиците + картите им
                      (двоични за git). src/instrumentation.ts → instrumentation-node.ts: при старта на Node сървъра —
                      шрифтът DejaVu и SHA-256 на модулите (иначе всяка заявка дава 500).
 src/app/[locale]/app/rilievi/  Екраните на Rilievi: списък и търсене (page), nuovo, [id] (картата), [id]/modifica, [id]/stampa

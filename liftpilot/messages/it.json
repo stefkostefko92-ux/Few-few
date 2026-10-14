@@ -521,7 +521,8 @@
       "SCHEDA_UPDATED": "Scheda modificata",
       "SCHEDA_TRASHED": "Scheda nel cestino",
       "SCHEDA_RESTORED": "Scheda ripristinata",
-      "SCHEDA_PURGED": "Scheda eliminata definitivamente"
+      "SCHEDA_PURGED": "Scheda eliminata definitivamente",
+      "COMPANY_SECTIONS_UPDATED": "Ordine delle sezioni della scheda cambiato"
     },
     "entities": {
       "User": "Utente",
@@ -2224,6 +2225,7 @@
       "titleMatricola": "Matricola {n}",
       "dateLine": "Rilievo del {date}",
       "noAddress": "Indirizzo non indicato",
+      "buonoRiferimento": "Buono di riferimento",
       "plateLabel": "Dati di targa",
       "identifiers": "Identificazione",
       "identifiersHint": "Compila almeno uno tra indirizzo, matricola e n° impianto: servono per ritrovare la scheda.",
@@ -2240,12 +2242,12 @@
       },
       "section": {
         "impianto": "Impianto",
-        "targa": "Dati di targa",
         "ubicazione": "Ubicazione e accesso",
         "tipologia": "Tipologia",
         "funi": "Funi",
         "limitatore": "Limitatore",
         "cavi": "Cavi",
+        "serrature": "Serrature o sospensioni",
         "allarme": "Allarme e telesoccorso",
         "note": "Note e lavori",
         "quadro": "Quadro",
@@ -2257,7 +2259,7 @@
         "marca": "Marca impianto",
         "matricola": "Matricola",
         "numeroImpianto": "N° impianto",
-        "buonoLavoro": "Buono di lavoro di riferimento",
+        "buonoLavoro": "Buono di riferimento",
         "portataKg": "Portata",
         "capienzaPersone": "Capienza",
         "fermate": "Fermate",
@@ -2269,14 +2271,13 @@
         "operatoreMarca": "Marca operatore",
         "lucePorte": "Luce porte",
         "operatoreTensione": "Tensione operatore",
-        "doppioAccesso": "Doppio accesso",
-        "bloccaPortine": "Blocca portine",
-        "autolivellamento": "Autolivellamento",
-        "pattinoRetrattile": "Pattino retrattile",
-        "pattinoRetrattileNumero": "Numero pattini retrattili",
-        "serrature": "Serrature/sospensioni",
-        "serratureNumero": "Numero serrature/sospensioni",
-        "serratureTipo": "Tipo serrature/sospensioni",
+        "doppioAccesso": "Accessi",
+        "pattinoRetrattile": "Pattino retrattile da cambiare",
+        "serrature": "Serrature da cambiare",
+        "serratureNumero": "Numero serrature",
+        "serratureTipo": "Tipo serrature",
+        "sospensioni": "Sospensioni da cambiare",
+        "sospensioniNumero": "Numero sospensioni",
         "luceVanoSostituire": "Luce vano da sostituire",
         "funiDiametroMm": "Diametro funi",
         "funiTrefoli": "Trefoli funi",
@@ -2301,14 +2302,13 @@
         "quadroMarca": "Marca quadro",
         "quadroMarcaAltro": "Altra marca quadro",
         "quadroOrdine": "Scheda per l'ordine quadro",
-        "arganoMarca": "Marca argano",
-        "arganoMarcaAltro": "Altra marca argano",
-        "arganoPreventivo": "Richiesta di preventivo argano"
+        "arganoPreventivo": "Argano da sostituire"
       },
       "question": {
         "bottoniereMisure": "Vuoi inserire le misure delle bottoniere vecchie?",
         "quadroOrdine": "Vuoi compilare la scheda per l'ordine quadro?",
-        "arganoPreventivo": "Vuoi compilare la richiesta di preventivo argano?"
+        "arganoPreventivo": "Argano da sostituire?",
+        "sospensioni": "Sospensioni da cambiare?"
       },
       "option": {
         "ubicazioneMacchina": {
@@ -2318,12 +2318,16 @@
         "tipoImpianto": {
           "ELETTRICO": "Elettrico",
           "IDRAULICO": "Idraulico",
-          "GEARLESS": "Gearless"
+          "GEARLESS": "MRL"
         },
         "tipoPorte": {
           "AUTOMATICHE": "Automatiche",
           "SEMIAUTOMATICHE": "Semiautomatiche",
           "MANUALI": "Manuali"
+        },
+        "doppioAccesso": {
+          "no": "1",
+          "si": "2"
         },
         "telesoccorsoStato": {
           "COMPLETO": "Completo",
@@ -2334,10 +2338,6 @@
           "MOVILIFT": "Movilift",
           "DMG": "DMG",
           "MASTECH": "Mastech",
-          "ALTRO": "Altro"
-        },
-        "arganoMarca": {
-          "MONTANARI": "Montanari",
           "ALTRO": "Altro"
         }
       },
@@ -2350,7 +2350,7 @@
       "misure": {
         "row": "Fermata {n}",
         "fermata": "Fermata",
-        "needFermate": "Indica prima le fermate in «Dati di targa»: qui compare una riga per ogni fermata.",
+        "needFermate": "Indica prima le fermate in «Impianto»: qui compare una riga per ogni fermata.",
         "errorLabel": "{col}, fermata {n}",
         "col": {
           "piano": "Piano",
@@ -2398,7 +2398,7 @@
       "page": "Pagina {page} di {pages}"
     },
     "ordini": {
-      "hint": "Il modulo originale del fornitore, con gli stessi campi nello stesso ordine. Esce in un PDF a parte, identico all'originale: non entra nel PDF della scheda.",
+      "hint": "Il modulo originale, con gli stessi campi nello stesso ordine. I dati già scritti nella scheda o negli altri moduli si compilano da soli. Esce in un PDF a parte, identico all'originale.",
       "download": "Scarica PDF",
       "print": "Stampa",
       "errorLabel": "{label} ({fornitore})"
@@ -2437,10 +2437,71 @@
       "schedaTrashed": "Scheda spostata nel cestino.",
       "schedaRestored": "Scheda ripristinata.",
       "schedaPurged": "Scheda eliminata definitivamente.",
-      "notAllowed": "Operazione non consentita per il tuo ruolo."
+      "notAllowed": "Operazione non consentita per il tuo ruolo.",
+      "sezioniSaved": "Ordine delle sezioni salvato.",
+      "sezioniReset": "Ripristinato l'ordine predefinito delle sezioni."
     },
     "audit": {
       "openScheda": "Apri scheda"
+    },
+    "collegati": {
+      "luogo": {
+        "scheda": "Scheda",
+        "oq": "Ordine quadro",
+        "om": "Ordine quadro",
+        "pa": "Dati argano",
+        "sg": "Ordine 2SG"
+      },
+      "fermate": "Fermate",
+      "velocita": "Velocità (m/s)",
+      "tipoVelocita": "Tipo di velocità",
+      "corsa": "Corsa (m)",
+      "portata": "Portata (kg)",
+      "capienza": "Capienza (persone)",
+      "numeroImpianto": "N° impianto",
+      "tensioneMotore": "Tensione motore",
+      "tensioneFreno": "Tensione freno",
+      "porte": "Porte",
+      "accessi": "Accessi",
+      "ingressi": "Accessi",
+      "macchina": "Posizione macchina",
+      "funiNumero": "Numero funi",
+      "funiDiametro": "Diametro funi (mm)",
+      "funiTrefoli": "Trefoli funi",
+      "indirizzo": "Indirizzo",
+      "matricola": "Matricola",
+      "marca": "Marca impianto",
+      "tipoImpianto": "Tipo impianto",
+      "operatoreMarca": "Marca operatore",
+      "operatoreTensione": "Tensione operatore",
+      "lucePorte": "Luce porte",
+      "correnteMotore": "Corrente motore (A)",
+      "giriMotore": "Giri motore (giri/min)",
+      "diversi": "Dati diversi tra scheda e ordini",
+      "conferma": {
+        "title": "{n, plural, one {Un dato non coincide tra scheda e ordini} other {{n} dati non coincidono tra scheda e ordini}}",
+        "text": "Controlla i valori qui sotto. Se sono giusti così, premi «Salva comunque» nella barra in basso; altrimenti correggili e salva di nuovo.",
+        "submit": "Salva comunque"
+      },
+      "banner": "Questi dati sono diversi tra la scheda e gli ordini:"
+    },
+    "riepilogo": {
+      "title": "Stampa e PDF",
+      "label": "Includi i dati dei moduli (quadro, argano, 2SG) nella stampa e nel PDF della scheda",
+      "hint": "Entra solo quello che è compilato nei moduli. I moduli restano anche come PDF a parte."
+    },
+    "impostazioni": {
+      "error": "L'ordine inviato non è valido. Ecco quello salvato: riprova.",
+      "sezioni": {
+        "title": "Ordine delle sezioni della scheda",
+        "text": "Vale per tutte le schede dell'azienda: modulo, pagina della scheda, stampa e PDF.",
+        "fixed": "Sempre in cima",
+        "hint": "Sposta una sezione con le frecce, poi salva. Impianto resta in cima: identifica l'impianto.",
+        "up": "Sposta su «{name}»",
+        "down": "Sposta giù «{name}»",
+        "save": "Salva ordine",
+        "reset": "Ripristina l'ordine predefinito"
+      }
     }
   }
 }

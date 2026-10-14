@@ -3,20 +3,23 @@
 // (can(), the company's read-only mode included), a bounded rate (60 a minute per person, rilievi's writeLimiter), the
 // form read as rilievi read it (inputs.ts bodyOf), checked on the server (validation.ts) whatever the browser showed,
 // written within the company of the session. On success they redirect with `?ok=<flash key>`; otherwise they answer
-// with the state the form shows (action-state.ts). A sheet of another company is "not found".
+// with the state the form shows (action-state.ts). A sheet of another company is "not found". When the sheet and the
+// suppliers' modules say different things (ordini/collegati.ts), the save waits for the confirmation of exactly those
+// differences (rilievi's schede-form.ts controlloDiscrepanze, commit ae6329cb6): the fingerprint sent with «Salva
+// comunque», or the one confirmed at the sheet's last save — new or changed differences are asked again.
 import { redirect } from 'next/navigation';
 import { DEFAULT_LOCALE, isLocale } from '@/i18n/locales';
 import { getSessionUser, type SessionUser } from '@/lib/auth';
 import { can, type Capability } from '@/lib/rbac';
 import { rateLimit } from '@/lib/ratelimit';
-import type { RilievoActionState, RilievoFormState } from '@/lib/rilievi/action-state';
+import { CONFERMA_KEY, type RilievoActionState, type RilievoFormState } from '@/lib/rilievi/action-state';
 import { fmt } from '@/lib/rilievi/fmt';
 import { rilieviTranslator } from '@/lib/rilievi/i18n';
 import { baseSchema, bodyOf, schedaIdSchema } from '@/lib/rilievi/inputs';
-import { withPrefill } from '@/lib/rilievi/ordini/form';
+import { discrepanzeDi, improntaDi } from '@/lib/rilievi/ordini/collegati';
 import { formValuesFromBody, parseScheda } from '@/lib/rilievi/validation';
 import { str } from '../form';
-import { prefillContext } from './pages';
+import { formStart } from './pages';
 import { getScheda } from './queries';
 import { createScheda, purgeScheda, restoreScheda, trashScheda, updateScheda } from './service';
 
@@ -32,8 +35,27 @@ async function actor(fd: FormData, capability: Capability): Promise<{ user: Sess
   return { user, base: `/${locale}/app/rilievi` };
 }
 
-/** The values as sent, to show them again (the modules' prefill only where the form never showed them). */
-const sentValues = (user: SessionUser, body: unknown) => withPrefill(formValuesFromBody(body), prefillContext(user));
+/** The values as sent, to show them again (the modules' prefill only where the form never showed them), with the names
+ *  still following their source and the discrepancies as they stand. */
+const sentBack = (user: SessionUser, body: unknown) => formStart(user, formValuesFromBody(body));
+
+/**
+ * The discrepancies on save: their fingerprint (null — none) and whether they still wait for the confirmation. They are
+ * confirmed when the `conferma` sent, or the one confirmed at the sheet's last save (`confermate`), is exactly this
+ * fingerprint. A forged answer of the sheet («constructor») is no answer (collegati.ts) — never a crash.
+ */
+function controlloDiscrepanze(body: Record<string, unknown>, confermate: string | null): { impronta: string | null; manca: boolean } {
+  const discrepanze = discrepanzeDi(formValuesFromBody(body), rilieviTranslator());
+  if (discrepanze.length === 0) return { impronta: null, manca: false };
+  const impronta = improntaDi(discrepanze);
+  return { impronta, manca: body[CONFERMA_KEY] !== impronta && confermate !== impronta };
+}
+
+/** The 'confirm' answer: the form as sent, the discrepancies on top and the fingerprint for «Salva comunque». */
+function confirmState(user: SessionUser, body: unknown, base: string): RilievoFormState {
+  const back = sentBack(user, body);
+  return { status: 'confirm', ...back, base, impronta: improntaDi(back.discrepanze) };
+}
 
 /** «Salva scheda»: a new sheet of the user's company. */
 export async function createRilievoAction(_prev: RilievoFormState, fd: FormData): Promise<RilievoFormState> {
@@ -42,8 +64,11 @@ export async function createRilievoAction(_prev: RilievoFormState, fd: FormData)
   const body = bodyOf(fd);
   if (!body) return { status: 'error', error: 'tooLarge' };
   const parsed = parseScheda(body);
-  if (!parsed.ok) return { status: 'invalid', values: sentValues(a.user, body), errors: parsed.errors, base: '' };
-  const scheda = await createScheda(parsed.data, a.user.id, a.user.companyId);
+  if (!parsed.ok) return { status: 'invalid', ...sentBack(a.user, body), errors: parsed.errors, base: '' };
+  // the sheet and the modules say different things: the save waits for the confirmation of exactly these differences
+  const discrepanze = controlloDiscrepanze(body, null);
+  if (discrepanze.manca) return confirmState(a.user, body, '');
+  const scheda = await createScheda({ ...parsed.data, discrepanzeConfermate: discrepanze.impronta }, a.user.id, a.user.companyId);
   redirect(`${a.base}/${scheda.id}?ok=schedaCreated`);
 }
 
@@ -59,14 +84,17 @@ export async function updateRilievoAction(_prev: RilievoFormState, fd: FormData)
   const sent = baseSchema.safeParse(str(fd, 'base'));
   const base = sent.success ? sent.data : '';
   const parsed = parseScheda(body);
-  if (!parsed.ok) return { status: 'invalid', values: sentValues(a.user, body), errors: parsed.errors, base };
-  const outcome = await updateScheda(a.user.companyId, scheda.id, base, parsed.data, a.user.id);
+  if (!parsed.ok) return { status: 'invalid', ...sentBack(a.user, body), errors: parsed.errors, base };
+  // the differences confirmed at the last save are not asked again — only new or changed ones
+  const discrepanze = controlloDiscrepanze(body, scheda.discrepanzeConfermate);
+  if (discrepanze.manca) return confirmState(a.user, body, base);
+  const outcome = await updateScheda(a.user.companyId, scheda.id, base, { ...parsed.data, discrepanzeConfermate: discrepanze.impronta }, a.user.id);
   if (outcome === 'missing') return { status: 'error', error: 'notFound' };
   // the input stays on the screen; the person decides after seeing the new version — the one read here, before the
   // save, as rilievi read it for the page it drew again (its head names who saved it and when)
   if (outcome === 'conflict') {
     const updated = rilieviTranslator()('scheda.meta.updated', { name: scheda.updatedBy?.name ?? '—', at: fmt.dateTime(scheda.updatedAt) });
-    return { status: 'conflict', values: sentValues(a.user, body), base: scheda.updatedAt.toISOString(), updated };
+    return { status: 'conflict', ...sentBack(a.user, body), base: scheda.updatedAt.toISOString(), updated };
   }
   redirect(`${a.base}/${scheda.id}?ok=schedaSaved`);
 }

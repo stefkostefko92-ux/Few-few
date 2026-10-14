@@ -2,7 +2,8 @@ import 'server-only';
 // The survey sheets' writes, always within the company of the signed-in user. Each one runs in one transaction with its
 // audit entry (no sheet content in it, no IP: who, what, which sheet), as in rilievi (src/schede/service.ts). A sheet is
 // edited in place, only over the version the form was opened on (`base` = its updatedAt to the millisecond): a change
-// by someone else meanwhile is a conflict, never a silent overwrite. The company of a sheet never changes.
+// by someone else meanwhile is a conflict, never a silent overwrite. The company of a sheet never changes. The fields taken
+// off the sheet (src/lib/rilievi/validation.ts) are not in the data: a save leaves their old answers in their columns.
 import { Prisma, type Scheda } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { auditTx, type AuditAction } from '@/lib/audit';
@@ -15,13 +16,14 @@ const audit = (tx: Prisma.TransactionClient, action: AuditAction, companyId: str
 
 /** The sheet's columns (the rows of the measurements are their own table) and its search text. */
 function persisted(data: SchedaData): Omit<Prisma.SchedaUncheckedCreateInput, 'createdById' | 'companyId'> {
-  const { misureBottoniere: _rows, ordineQuadro, preventivoArgano, ...fields } = data;
+  const { misureBottoniere: _rows, ordineQuadro, preventivoArgano, ordineSospensioni, ...fields } = data;
   void _rows;
   return {
     ...fields,
     // the suppliers' modules — JSON or a real NULL in the database (never JSON null)
     ordineQuadro: ordineQuadro ?? Prisma.DbNull,
     preventivoArgano: preventivoArgano ?? Prisma.DbNull,
+    ordineSospensioni: ordineSospensioni ?? Prisma.DbNull,
     searchText: searchTextOf(fields),
   };
 }

@@ -1,9 +1,10 @@
-// The values of a supplier's module: the ticked boxes (true) and the filled lines (text). Nothing empty is stored. In the
-// form the fields are named `<prefix>-<key>`; the hidden `<prefix>-_` says the module has been on the screen (then it is
-// not prefilled again from the survey). Ported 1:1 from rilievi (src/ordini/valori.ts).
+// The values of a supplier's module: the ticked boxes (true), the filled lines (text), the chosen option of a radio group
+// (its `valore`) and of a drop-down list (the option itself). Nothing empty is stored. In the form the fields are named
+// `<prefix>-<key>`; the hidden `<prefix>-_` says the module has been on the screen (then it is not prefilled again from the
+// survey). Ported 1:1 from rilievi (src/ordini/valori.ts, commit ae6329cb6).
 import { z } from 'zod';
 import { ERROR_CODES, textParser, type FieldErrorCode, type FieldErrors, type FormValues } from '../field-parsers';
-import { fieldsOf, type Modulo } from './moduli';
+import { fieldsOf, type Modulo, type ModuloField } from './moduli';
 
 export type Valori = Record<string, string | true>;
 
@@ -13,7 +14,15 @@ export type ModuloDati = { modulo: string; valori: Valori };
 export const nameOf = (prefix: string, key: string): string => `${prefix}-${key}`;
 export const shownName = (prefix: string): string => `${prefix}-_`;
 
-/** The module from the form: a tick is only "si"; text — cleaned and within the line of the PDF. */
+/** The allowed values of a radio group and of a drop-down list — anything else is forged. */
+function opzioniOf(field: ModuloField): readonly string[] | null {
+  if (field.kind === 'radio') return field.opzioni.map((o) => o.valore);
+  if (field.kind === 'select') return field.opzioni;
+  return null;
+}
+
+/** The module from the form: a tick is only "si"; an option only one of its own; text — cleaned and within the line of
+ *  the PDF. */
 export function parseModulo(modulo: Modulo, prefix: string, body: Record<string, unknown>): { dati: ModuloDati; errors: FieldErrors } {
   const valori: Valori = {};
   const errors: FieldErrors = {};
@@ -26,6 +35,14 @@ export function parseModulo(modulo: Modulo, prefix: string, body: Record<string,
       else errors[name] = 'invalid';
       continue;
     }
+    const opzioni = opzioniOf(field);
+    if (opzioni) {
+      if (raw === undefined || raw === '') continue;
+      if (typeof raw === 'string' && opzioni.includes(raw)) valori[field.key] = raw;
+      else errors[name] = 'option';
+      continue;
+    }
+    if (field.kind !== 'text' && field.kind !== 'textarea') continue;
     const parsed = textParser({ kind: field.kind, maxLength: field.maxLength }).safeParse(raw);
     if (!parsed.success) {
       const message = parsed.error.issues[0]?.message ?? 'invalid';
@@ -39,16 +56,18 @@ export function parseModulo(modulo: Modulo, prefix: string, body: Record<string,
 
 const storedSchema = z.object({ modulo: z.string(), valori: z.record(z.union([z.string(), z.literal(true)])) });
 
-/** The stored values — only the module's keys and of the right kind (the JSON is checked). */
+/** The stored values — only the module's keys and of the right kind (the JSON is checked). One column may keep the module
+ *  of one of several makes (the panel: Pelazza or MoviLift): another module's JSON is nothing here. */
 export function storedValori(modulo: Modulo, json: unknown): Valori | null {
   const parsed = storedSchema.safeParse(json);
-  if (!parsed.success) return null;
+  if (!parsed.success || parsed.data.modulo !== modulo.id) return null;
   const valori: Valori = {};
   for (const field of fieldsOf(modulo)) {
     const value = parsed.data.valori[field.key];
+    const opzioni = opzioniOf(field);
     if (field.kind === 'check') {
       if (value === true) valori[field.key] = true;
-    } else if (typeof value === 'string' && value !== '') {
+    } else if (typeof value === 'string' && value !== '' && (!opzioni || opzioni.includes(value))) {
       valori[field.key] = value;
     }
   }

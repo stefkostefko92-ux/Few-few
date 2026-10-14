@@ -1,5 +1,5 @@
 // The kinds of fields of the survey sheet and their checks — what fields.ts (the list), the form and the PDF share.
-// Ported 1:1 from rilievi (src/schede/field-types.ts, commit 174a1e3aa).
+// Ported 1:1 from rilievi (src/schede/field-types.ts, commit ae6329cb6).
 
 export type FieldKind =
   | 'date' // today by default
@@ -16,12 +16,12 @@ export type Unit = 'kg' | 'persone' | 'mm' | 'm';
 
 export type SectionKey =
   | 'impianto'
-  | 'targa'
   | 'ubicazione'
   | 'tipologia'
   | 'funi'
   | 'limitatore'
   | 'cavi'
+  | 'serrature'
   | 'allarme'
   | 'note'
   | 'quadro'
@@ -47,7 +47,7 @@ interface BaseField {
   /** With "Sì" it carries the table of the old push-button panels' measurements, a row per stop (misure.ts). */
   misure?: boolean;
   /** With "Sì" it opens the supplier's module (ordini/) — its own PDF, apart from the sheet. */
-  modulo?: 'ordineQuadro' | 'preventivoArgano';
+  modulo?: 'ordineQuadro' | 'preventivoArgano' | 'ordineSospensioni';
 }
 
 export interface TextField extends BaseField {
@@ -69,6 +69,9 @@ export interface OptionsField extends BaseField {
 
 export interface PlainField extends BaseField {
   kind: 'date' | 'yesno';
+  /** Sì/No with words of its own and in this order (`scheda.option.<key>.no|si`): «Accessi: 1 / 2» is «Doppio accesso:
+   *  No / Sì». The record and the linked data stay Sì/No. */
+  risposte?: readonly ['no', 'si'];
 }
 
 export type FieldDef = TextField | NumberField | OptionsField | PlainField;

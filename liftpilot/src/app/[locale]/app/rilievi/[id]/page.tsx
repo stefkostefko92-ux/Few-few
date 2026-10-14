@@ -30,7 +30,7 @@ function ModuloLinks({ id, modulo, t }: { id: string; modulo: NonNullable<Displa
   const href = `/api/rilievi/${id}/${modulo.path}`;
   return (
     <span className="rv-modulo-links">
-      <span>{modulo.titolo} · {modulo.fornitore}</span>
+      <span>{modulo.nome}</span>
       <a className="btn btn-sm" href={href}><Icon name="download" size={16} />{t('ordini.download')}</a>
       <a className="btn btn-sm" href={`${href}?inline=1`} target="_blank" rel="noopener"><Icon name="printer" size={16} />{t('ordini.print')}</a>
     </span>

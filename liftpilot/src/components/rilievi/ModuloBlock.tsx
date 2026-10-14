@@ -18,7 +18,7 @@ function Field({ f, spec, values, errors, t }: FieldProps) {
   const id = `f-${f.name}`, errId = `err-${f.name}`, value = values[f.name];
   if (f.kind === 'check') return <Tick type="checkbox" id={id} name={f.name} value="si" checked={value === 'si'} label={f.label} small prefill={f.prefill ?? undefined} />;
   const error = errors[f.name];
-  const lookup: ModuloLookup = () => ({ label: f.label, fornitore: spec.fornitore, maxLength: f.maxLength });
+  const lookup: ModuloLookup = () => ({ label: f.label, fornitore: spec.fornitore ?? spec.titolo, maxLength: f.maxLength });
   const errText = error ? errorTextOf(f.name, error, t, lookup) : null;
   const common = {
     id, name: f.name, maxLength: f.maxLength ?? undefined, defaultValue: typeof value === 'string' ? value : '', 'data-prefill': f.prefill ?? undefined,
@@ -38,7 +38,7 @@ export default function ModuloBlock({ spec, values, errors, t }: { spec: ModuloS
     <div className="rv-modulo rv-wide" id={`f-${spec.prefix}`} data-modulo={spec.question}>
       <input type="hidden" name={spec.shownName} value="1" />
       <div className="rv-modulo-head">
-        <p className="rv-modulo-title"><strong>{spec.titolo}</strong> · {spec.fornitore}</p>
+        <p className="rv-modulo-title"><strong>{spec.titolo}</strong>{spec.fornitore ? ` · ${spec.fornitore}` : null}</p>
         <p className="rv-hint">{t('ordini.hint')}</p>
       </div>
       {spec.gruppi.map((g, gi) => (

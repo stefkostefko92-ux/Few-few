@@ -1,29 +1,33 @@
 import 'server-only';
-// The layout of the sheet's PDF page: A4, 40 pt margins, three columns, the plate on top, a bottom line with the page
-// number. Drawing only — the data and the texts come ready (format.ts, the messages). Ported 1:1 from rilievi
-// (src/schede/pdf-layout.ts): every constant, font size and offset is rilievi's.
+// The layout of the sheet's PDF page: A4, 40 pt margins, three columns, a bottom line with the page number (the header
+// band and the plate — pdf-head.ts). Drawing only — the data and the texts come ready (format.ts, the messages). Ported 1:1
+// from rilievi (src/schede/pdf-layout.ts, commit ae6329cb6): every constant, font size and offset is rilievi's.
 import type { DisplayField } from '@/lib/rilievi/format';
 import type { RilieviT } from '@/lib/rilievi/t';
 
 const PAGE = { width: 595.28, height: 841.89 };
 export const MARGIN = 40;
 export const CONTENT_WIDTH = PAGE.width - MARGIN * 2;
-const FOOTER_SPACE = 34;
-const GAP = 16;
+const FOOTER_SPACE = 44;
+export const GAP = 16;
 export const INK = '#000000';
 export const MUTED = '#555555';
 export const RULE = '#BDBDBD';
 
+/** The font sizes (pt). All 1.5 pt (2 px) above the first ones — asked by the owner for the sheet (PDF and print, October
+ *  2026); the screens do not change. */
+export const SIZE = {
+  label: 9,
+  value: 11.5,
+  section: 12,
+  tableHead: 8.5,
+  tableCell: 10.5,
+  footer: 8.5,
+} as const;
+
 export interface PdfContext {
   doc: PDFKit.PDFDocument;
   t: RilieviT;
-}
-
-/** The plate's data: the identifiers and the address of the sheet. */
-export interface PlateData {
-  numeroImpianto: string | null;
-  matricola: string | null;
-  indirizzo: string | null;
 }
 
 function bottom(): number {
@@ -46,20 +50,20 @@ function cellText(field: DisplayField): string {
 
 function cellHeight(ctx: PdfContext, field: DisplayField, width: number): number {
   const { doc } = ctx;
-  doc.font('Sans').fontSize(7.5);
+  doc.font('Sans').fontSize(SIZE.label);
   const label = doc.heightOfString(field.label, { width });
-  doc.font('Sans').fontSize(10);
+  doc.font('Sans').fontSize(SIZE.value);
   const value = doc.heightOfString(cellText(field), { width });
   return label + 2 + value;
 }
 
 function drawCell(ctx: PdfContext, field: DisplayField, x: number, y: number, width: number): void {
   const { doc } = ctx;
-  doc.font('Sans').fontSize(7.5).fillColor(MUTED).text(field.label, x, y, { width });
+  doc.font('Sans').fontSize(SIZE.label).fillColor(MUTED).text(field.label, x, y, { width });
   const valueY = doc.y + 2;
   doc
     .font('Sans')
-    .fontSize(10)
+    .fontSize(SIZE.value)
     .fillColor(field.value || field.options ? INK : MUTED)
     .text(cellText(field), x, valueY, { width });
 }
@@ -97,7 +101,7 @@ export function drawSectionTitle(ctx: PdfContext, title: string): void {
   // the title and at least one row of fields under it — never a title alone at the bottom of a page
   ensureSpace(ctx, 64);
   doc.y += 4;
-  doc.font('Sans-Bold').fontSize(10.5).fillColor(INK).text(title, MARGIN, doc.y);
+  doc.font('Sans-Bold').fontSize(SIZE.section).fillColor(INK).text(title, MARGIN, doc.y);
   const lineY = doc.y + 3;
   doc
     .moveTo(MARGIN, lineY)
@@ -107,127 +111,30 @@ export function drawSectionTitle(ctx: PdfContext, title: string): void {
   doc.y = lineY + 7;
 }
 
-/** What the header band holds — the texts come ready from pdf.ts. */
-export interface HeaderInfo {
-  /** The company's logo (PNG/JPEG as uploaded and checked) and its size in pixels; null — no logo. */
-  logo: Buffer | null;
-  logoSize: { width: number; height: number } | null;
-  aziendaName: string;
-  title: string;
-  dateLine: string;
-  creatorLabel: string;
-  creator: string;
-  updatedLine: string;
-}
-
-const LOGO_BOX = { width: 170, height: 52 };
-const HEADER_RIGHT = 220;
-
 /**
- * The header band: top left the company's logo (the title and the company's name under it), on the right the date and
- * who filled the sheet in — in a large type, to be seen on every printed sheet.
+ * The bottom line of every page, on two lines: who downloaded the file and when + the page number, then Carbon Stealth's
+ * signature. It stands below the page's bottom margin — the margin is lowered while it is written, otherwise pdfkit would
+ * carry the text onto a new empty page.
  */
-export function drawHeader(ctx: PdfContext, info: HeaderInfo): void {
-  const { doc } = ctx;
-  const top = MARGIN;
-  const leftWidth = CONTENT_WIDTH - HEADER_RIGHT - GAP;
-  let leftY = top;
-  if (info.logo) {
-    const size = info.logoSize;
-    const scale = size ? Math.min(LOGO_BOX.width / size.width, LOGO_BOX.height / size.height) : 1;
-    const drawn = size ? size.height * scale : LOGO_BOX.height;
-    doc.image(info.logo, MARGIN, top, { fit: [LOGO_BOX.width, LOGO_BOX.height] });
-    leftY = top + drawn + 8;
-  }
-  doc.font('Sans-Bold').fontSize(15).fillColor(INK).text(info.title, MARGIN, leftY, { width: leftWidth });
-  doc
-    .font('Sans')
-    .fontSize(9)
-    .fillColor(MUTED)
-    .text(info.aziendaName, MARGIN, doc.y + 1, { width: leftWidth });
-  const leftBottom = doc.y;
-
-  const x = MARGIN + CONTENT_WIDTH - HEADER_RIGHT;
-  const right = { width: HEADER_RIGHT, align: 'right' } as const;
-  doc.font('Sans-Bold').fontSize(9).fillColor(INK).text(info.dateLine, x, top, right);
-  doc
-    .font('Sans')
-    .fontSize(8)
-    .fillColor(MUTED)
-    .text(info.creatorLabel, x, doc.y + 6, right);
-  doc
-    .font('Sans-Bold')
-    .fontSize(12)
-    .fillColor(INK)
-    .text(info.creator, x, doc.y + 1, right);
-  if (info.updatedLine) {
-    doc
-      .font('Sans')
-      .fontSize(7.5)
-      .fillColor(MUTED)
-      .text(info.updatedLine, x, doc.y + 4, right);
-  }
-  doc.y = Math.max(leftBottom, doc.y) + 12;
-}
-
-/** The lift's nameplate: number and matricola, address, load/persons/stops/make — as in the car. */
-export function drawPlate(ctx: PdfContext, scheda: PlateData, fields: Map<string, DisplayField>): void {
-  const { doc, t } = ctx;
-  const top = doc.y;
-  const height = 104;
-  doc.roundedRect(MARGIN, top, CONTENT_WIDTH, height, 7).lineWidth(1.6).stroke(INK);
-  for (const [cx, cy] of [
-    [MARGIN + 9, top + 9],
-    [MARGIN + CONTENT_WIDTH - 9, top + 9],
-    [MARGIN + 9, top + height - 9],
-    [MARGIN + CONTENT_WIDTH - 9, top + height - 9],
-  ] as const) {
-    doc.circle(cx, cy, 2.4).lineWidth(0.8).stroke(INK);
-  }
-  const inner = MARGIN + 22;
-  const innerWidth = CONTENT_WIDTH - 44;
-  doc.font('Sans').fontSize(7.5).fillColor(MUTED);
-  doc.text(t('scheda.field.numeroImpianto').toUpperCase(), inner, top + 16, { width: innerWidth / 2 });
-  doc.text(t('scheda.field.matricola').toUpperCase(), inner + innerWidth / 2, top + 16, { width: innerWidth / 2, align: 'right' });
-  doc.font('Sans-Bold').fontSize(18).fillColor(INK);
-  doc.text(scheda.numeroImpianto ?? '—', inner, top + 26, { width: innerWidth / 2 });
-  doc.text(scheda.matricola ?? '—', inner + innerWidth / 2, top + 26, { width: innerWidth / 2, align: 'right' });
-  doc
-    .font('Sans')
-    .fontSize(10)
-    .fillColor(scheda.indirizzo ? INK : MUTED)
-    .text(scheda.indirizzo ?? '—', inner, top + 52, { width: innerWidth, height: 13, ellipsis: true });
-  const lineY = top + 70;
-  doc
-    .moveTo(inner, lineY)
-    .lineTo(inner + innerWidth, lineY)
-    .lineWidth(0.5)
-    .stroke(RULE);
-  const cols = ['portataKg', 'capienzaPersone', 'fermate', 'marca'] as const;
-  const colWidth = innerWidth / cols.length;
-  cols.forEach((key, i) => {
-    const field = fields.get(key);
-    doc.font('Sans').fontSize(7).fillColor(MUTED);
-    doc.text((field?.label ?? key).toUpperCase(), inner + i * colWidth, lineY + 6, { width: colWidth - 6, height: 9, ellipsis: true });
-    doc.font('Sans-Bold').fontSize(10).fillColor(INK);
-    doc.text(field?.value || '—', inner + i * colWidth, lineY + 16, { width: colWidth - 6, height: 13, ellipsis: true });
-  });
-  doc.y = top + height + 10;
-}
-
 export function drawFooters(ctx: PdfContext, generated: string): void {
   const { doc, t } = ctx;
   const range = doc.bufferedPageRange();
+  const pageWidth = 90;
   for (let i = range.start; i < range.start + range.count; i += 1) {
     doc.switchToPage(i);
-    const y = PAGE.height - MARGIN - 14;
+    const margin = doc.page.margins.bottom;
+    doc.page.margins.bottom = 0;
+    const second = PAGE.height - MARGIN - 8;
+    const first = second - 12;
     doc
-      .moveTo(MARGIN, y - 6)
-      .lineTo(MARGIN + CONTENT_WIDTH, y - 6)
+      .moveTo(MARGIN, first - 6)
+      .lineTo(MARGIN + CONTENT_WIDTH, first - 6)
       .lineWidth(0.5)
       .stroke(RULE);
-    doc.font('Sans').fontSize(7).fillColor(MUTED);
-    doc.text(`${generated} — Created and Designed by Carbon Stealth VCC — carbonstealth.eu`, MARGIN, y, { width: CONTENT_WIDTH - 80, lineBreak: false });
-    doc.text(t('pdf.page', { page: String(i + 1), pages: String(range.count) }), MARGIN + CONTENT_WIDTH - 80, y, { width: 80, align: 'right', lineBreak: false });
+    doc.font('Sans').fontSize(SIZE.footer).fillColor(MUTED);
+    doc.text(generated, MARGIN, first, { width: CONTENT_WIDTH - pageWidth, height: 11, ellipsis: true, lineBreak: false });
+    doc.text(t('pdf.page', { page: String(i + 1), pages: String(range.count) }), MARGIN + CONTENT_WIDTH - pageWidth, first, { width: pageWidth, align: 'right', lineBreak: false });
+    doc.text('Created and Designed by Carbon Stealth VCC — carbonstealth.eu', MARGIN, second, { width: CONTENT_WIDTH, lineBreak: false });
+    doc.page.margins.bottom = margin;
   }
 }

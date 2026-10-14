@@ -5,7 +5,7 @@ import 'server-only';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { MONTANARI, PELAZZA, type Modulo } from '@/lib/rilievi/ordini/moduli';
+import { MODULI, type Modulo } from '@/lib/rilievi/ordini/moduli';
 
 /** The directory of the blank modules: assets/moduli under the application's root (the Docker image copies it). */
 export const moduliDir = (): string => path.join(process.cwd(), 'assets', 'moduli');
@@ -24,7 +24,8 @@ export function moduloPdf(modulo: Modulo): Uint8Array {
   return copy;
 }
 
-/** The start check: both modules are in place and exactly the version of their maps. */
+/** The start check: every module (Pelazza, MoviLift, the argano sheet, 2SG) is in place and exactly the version of its
+ *  map. */
 export function assertModuli(): void {
-  for (const modulo of [PELAZZA, MONTANARI]) moduloPdf(modulo);
+  for (const modulo of MODULI) moduloPdf(modulo);
 }

@@ -55,5 +55,5 @@ export async function secondCompany({ BASE, page, kit, ADMIN, stamp, urls }) {
   for (const format of ['relazione', 'pdf', 'dxf', 'dwg']) assert.equal((await page.request.get(`${BASE}/api/room-designs/${roomId}/${format}`)).status(), 404, `machine room ${format} of another company`);
   // the survey sheet: its page, its edit and print pages, its PDF and its modules' PDFs (Rilievi)
   for (const sub of ['', '/modifica', '/stampa', '/elimina']) assert.equal((await page.goto(`${rilievoUrl}${sub}`)).status(), 404, `survey sheet${sub} of another company`);
-  for (const pdf of ['pdf', 'ordine-quadro', 'preventivo-argano']) assert.equal((await page.request.get(`${BASE}/api/rilievi/${rilievoId}/${pdf}`)).status(), 404, `survey sheet ${pdf} of another company`);
+  for (const pdf of ['pdf', 'ordine-quadro', 'ordine-quadro-movilift', 'dati-argano', 'sospensioni-2sg']) assert.equal((await page.request.get(`${BASE}/api/rilievi/${rilievoId}/${pdf}`)).status(), 404, `survey sheet ${pdf} of another company`);
 }

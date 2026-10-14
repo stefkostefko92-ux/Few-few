@@ -1,47 +1,112 @@
-// The browser's rules for the suppliers' modules while the survey is typed (rilievi's public/js/app.js, the same as
-// ordini/prefill.ts on the server): when a module's question turns to "Sì", every prefilled field of it the person has
-// not touched yet and that is still empty takes its value from the survey as it stands; a tick is set when the survey
-// has the option ticked. Pure: the form gives the survey's current values (the shape of FormValues, e.g. from
-// `valuesOfForm`), the component applies the result to the inputs it has not marked as touched.
+// The survey fields of the suppliers' modules in the browser (`prefill` in the module's map, ordini/prefill.ts): the date,
+// the lift's reference, the company and the person writing, the sheet's ticks as words, a tick of the sheet («Pattino
+// retrattile da cambiare: Sì» → MoviLift's «Elettr. Pattino»). Each follows the sheet in real time while nobody has typed
+// in it — empty, or still holding what was put there for it (`auto`); fields of one kind follow the first one typed in
+// when the sheet says nothing. The server fills them when a module first opens. The plant data that sit in more than one
+// place (stops, address, speed…) are collegati-client.ts. Pure: rilievi's public/js/moduli.js (commit ae6329cb6) over
+// the survey's values (FormValues — `valuesOfForm`) and an adapter of the modules' controls. Run it after the conditions
+// are synced, before collegati-client's `settle`, on load and after every input or change (marking a module's control
+// the person changed as touched first).
 import type { FormValues } from './field-parsers';
+import { activeFields } from './fields';
+import type { Ctl } from './collegati-client';
+import type { ContestoBrowser } from './ordini/collegati-browser';
 import { rifImpianto } from './ordini/rif';
+import { optionFor } from './valori-client';
 
-/** The text a token gives from the survey on the screen (app.js `surveyText`). The company has no select in LiftPilot
- *  (one company per user), so «azienda» is '' here as for a non-MASTER in rilievi: the server prefilled it already. */
-export function surveyText(token: string, values: FormValues): string {
+/** What the survey side needs besides its values: who writes (collegati-browser.ts `contesto`) and the word of a tick of
+ *  the sheet («tipoPorte», «MANUALI» → «Manuali»: `t('scheda.option.<campo>.<valore>')`, as its label reads). */
+export interface SurveyContext {
+  contesto: ContestoBrowser;
+  etichetta: (campo: string, valore: string) => string;
+}
+
+const TICK_WORDS = ['tipoImpianto', 'tipoPorte', 'ubicazioneMacchina'];
+const WHO = ['azienda', 'utente', 'ruolo', 'email'] as const;
+
+/** What a token says from the survey on the screen (moduli.js `surveyText`): a hidden field of the sheet says nothing
+ *  (the door operator with manual doors). The company has no select in LiftPilot (one company per user). */
+export function surveyText(token: string, values: FormValues, ctx: SurveyContext, active: ReadonlySet<string> = activeFields((key) => values[key])): string {
   const value = (key: string): string => {
     const v = values[key];
-    return typeof v === 'string' ? v.trim() : '';
+    return active.has(key) && typeof v === 'string' ? v.trim() : '';
   };
   if (token === 'data') {
     const day = value('data');
     return /^\d{4}-\d{2}-\d{2}$/.test(day) ? day.split('-').reverse().join('/') : '';
   }
-  if (token === 'rif') return rifImpianto(values);
-  if (token === 'accessi') {
-    const doppio = values.doppioAccesso;
-    return doppio === 'si' ? '2' : doppio === 'no' ? '1' : '';
+  if (token === 'rif') return rifImpianto({ numeroImpianto: value('numeroImpianto'), matricola: value('matricola'), indirizzo: value('indirizzo') });
+  const who = WHO.find((w) => w === token);
+  if (who) return typeof ctx.contesto[who] === 'string' ? ctx.contesto[who] : '';
+  if (TICK_WORDS.includes(token)) {
+    const list = values[token];
+    const ticks = active.has(token) ? (Array.isArray(list) ? list : typeof list === 'string' && list ? [list] : []) : [];
+    return ticks.map((v) => ctx.etichetta(token, v)).join(', ');
   }
-  if (token === 'azienda') return '';
   return value(token);
 }
 
-/** A tick's prefill (`tipoPorte=MANUALI`) holds in the survey on the screen (app.js: the option is checked). */
-export function surveyTicked(token: string, values: FormValues): boolean {
+/** A tick of the sheet holds (`pattinoRetrattile=si`): ticked and shown (moduli.js `surveyTick`). */
+export function surveyTicked(token: string, values: FormValues, active: ReadonlySet<string> = activeFields((key) => values[key])): boolean {
   const [name = '', option = ''] = token.split('=');
+  if (!active.has(name)) return false;
   const v = values[name];
   return Array.isArray(v) ? v.includes(option) : v === option;
 }
 
-/** The new value of one prefilled input of a module, or null to leave it: a checkbox only gets ticked (never unticked),
- *  a text only when it is empty, cut to its maxlength (app.js `prefillModulo`). Untouched inputs only — the caller
- *  skips those the person has typed in. */
-export function prefillInput(input: { kind: 'check' | 'text' | 'textarea'; prefill: string; value: string | boolean; maxLength: number | null }, values: FormValues): string | boolean | null {
-  if (input.kind === 'check') return input.value !== true && surveyTicked(input.prefill, values) ? true : null;
-  if (input.value) return null;
-  const text = surveyText(input.prefill, values);
-  const cut = input.maxLength && input.maxLength > 0 ? text.slice(0, input.maxLength) : text;
-  return cut ? cut : null;
+/** What the engine asks the form about the modules' survey controls. */
+export interface PrefillHost<E extends Ctl> {
+  /** every control of a module with a `prefill` token, in page order (rilievi: `[data-modulo] [data-prefill]`) */
+  controls(): E[];
+  /** its token (`data`, `rif`, `tipoPorte`, `pattinoRetrattile=si`…) */
+  tokenOf(el: E): string;
+  /** shown: not inside anything hidden (its module closed or of another make) */
+  shown(el: E): boolean;
+  /** a select's option values, or null when the control is not a select */
+  optionsOf(el: E): readonly string[] | null;
+}
+
+const touched = (el: Ctl): boolean => el.dataset.touched === '1';
+const follows = (el: Ctl): boolean =>
+  !touched(el) && (el.type === 'checkbox' ? el.checked !== true || el.dataset.auto === 'si' : el.value === '' || el.value === el.dataset.auto);
+
+/**
+ * One round (moduli.js `fill`): fields of one kind, in page order — the sheet speaks first; with nothing there, the first
+ * field of the kind someone typed in that is on screen. Every field still following takes that value. Returns the
+ * controls that changed.
+ */
+export function prefillFill<E extends Ctl>(host: PrefillHost<E>, values: FormValues, ctx: SurveyContext): E[] {
+  const active = activeFields((key) => values[key]);
+  const kinds = new Map<string, E[]>();
+  for (const el of host.controls()) {
+    const token = host.tokenOf(el);
+    kinds.set(token, [...(kinds.get(token) ?? []), el]);
+  }
+  const changed: E[] = [];
+  const put = (el: E, value: string): void => {
+    const before = el.type === 'checkbox' ? String(el.checked === true) : el.value;
+    if (el.type === 'checkbox') {
+      el.checked = value === 'si';
+      el.dataset.auto = value;
+    } else {
+      const options = host.optionsOf(el);
+      const text = options ? optionFor(options, value) : value;
+      el.value = el.maxLength !== undefined && el.maxLength > 0 ? text.slice(0, el.maxLength) : text;
+      el.dataset.auto = el.value;
+    }
+    if ((el.type === 'checkbox' ? String(el.checked === true) : el.value) !== before) changed.push(el);
+  };
+  kinds.forEach((list, token) => {
+    let value: string;
+    if (token.includes('=')) {
+      value = surveyTicked(token, values, active) ? 'si' : '';
+    } else {
+      const typed = list.find((el) => !follows(el) && host.shown(el) && el.value.trim());
+      value = surveyText(token, values, ctx, active) || (typed ? typed.value.trim() : '');
+    }
+    list.filter(follows).forEach((el) => put(el, value));
+  });
+  return changed;
 }
 
 /** The survey's values of a form element as FormValues (a repeated name — the ticks — as a list), for the rules above
@@ -62,4 +127,18 @@ export function misureRowsFor(fermate: string, max = 300): number {
   const raw = fermate.trim();
   const n = /^\d{1,3}$/.test(raw) ? Number(raw) : 0;
   return n >= 1 && n <= max ? n : 0;
+}
+
+/**
+ * @deprecated The rule before the sync with rilievi ae6329cb6 (a module's empty untouched inputs filled once, when its
+ * «Sì» is chosen) — kept only so that the form compiles until it runs `prefillFill` and collegati-client's `settle`
+ * (docs: scratchpad core-api.md). Never empties a field and never writes the company or the person (no context here).
+ */
+export function prefillInput(input: { kind: 'check' | 'text' | 'textarea' | 'radio' | 'select'; prefill: string; value: string | boolean; maxLength: number | null }, values: FormValues): string | boolean | null {
+  if (input.kind === 'check') return input.value !== true && surveyTicked(input.prefill, values) ? true : null;
+  if (input.kind !== 'text' && input.kind !== 'textarea') return null;
+  if (input.value) return null;
+  const text = surveyText(input.prefill, values, { contesto: { azienda: '', utente: '', ruolo: '', email: '' }, etichetta: (_campo, valore) => valore });
+  const cut = input.maxLength && input.maxLength > 0 ? text.slice(0, input.maxLength) : text;
+  return cut ? cut : null;
 }
