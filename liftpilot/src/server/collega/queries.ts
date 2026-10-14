@@ -2,9 +2,11 @@ import 'server-only';
 // The reads of the link between surveys and installations (round 44), always within the company of the signed-in user:
 // an installation or a survey of another company is "not found". The survey's page: the installation it is linked to,
 // the suggestions (src/lib/collega/suggerimenti.ts) among the company's active installations, the search of another
-// one. The installation's page: its surveys newest first, with their supplier modules.
+// one. The installation's page: its surveys newest first, with their supplier modules. The reads of an installation's
+// surveys give nothing to a role without 'rilievi:view' (whatever page calls them).
 import { prisma } from '@/lib/db';
 import type { SessionUser } from '@/lib/auth';
+import { can } from '@/lib/rbac';
 import { likeEscape, searchWords } from '@/lib/dashboard';
 import { MODULI_SELECT, moduliDi, type ModuloLink } from '@/lib/collega/moduli';
 import { RILIEVO_SELECT, rilievoDati, type RilievoDati } from '@/lib/collega/rilievo';
@@ -82,8 +84,9 @@ export interface RilievoElencato {
   moduli: ModuloLink[];
 }
 
-/** The installation's surveys out of the trash, newest first (the first is the reference). */
+/** The installation's surveys out of the trash, newest first (the first is the reference); none without 'rilievi:view'. */
 export async function rilieviImpianto(user: SessionUser, projectId: string): Promise<RilievoElencato[]> {
+  if (!can(user, 'rilievi:view')) return [];
   const rows = await prisma.scheda.findMany({
     where: { companyId: user.companyId, projectId, deletedAt: null }, orderBy: [{ data: 'desc' }, { createdAt: 'desc' }], take: 100,
     select: { ...RILIEVO_SELECT, ...MODULI_SELECT, createdBy: { select: { name: true } } },
@@ -91,8 +94,9 @@ export async function rilieviImpianto(user: SessionUser, projectId: string): Pro
   return rows.map((s) => ({ dati: rilievoDati(s), autore: s.createdBy?.name ?? null, moduli: moduliDi(s) }));
 }
 
-/** The reference survey of an installation (its newest), or null. */
+/** The reference survey of an installation (its newest), or null (also without 'rilievi:view'). */
 export async function rilievoDiRiferimento(user: SessionUser, projectId: string): Promise<RilievoDati | null> {
+  if (!can(user, 'rilievi:view')) return null;
   const s = await prisma.scheda.findFirst({
     where: { companyId: user.companyId, projectId, deletedAt: null }, orderBy: [{ data: 'desc' }, { createdAt: 'desc' }], select: RILIEVO_SELECT,
   });

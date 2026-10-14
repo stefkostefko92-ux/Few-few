@@ -40,7 +40,7 @@ export default async function PrintRilievoPage({ params }: { params: Promise<{ l
   return (
     <main className="page rv-print-page">
       <AutoPrint />
-      <Crumbs items={[{ href: '/app/rilievi', label: tn('rilievi') }, { href: `/app/rilievi/${scheda.id}`, label: title }, { label: t('scheda.actions.print') }]} />
+      <Crumbs items={[{ href: '/app', label: tn('rilievi') }, { href: '/app/rilievi', label: tn('rilieviAll') }, { href: `/app/rilievi/${scheda.id}`, label: title }, { label: t('scheda.actions.print') }]} />
       <div className="rv-print-bar">
         <PrintButton label={t('scheda.actions.print')} />
         <a className="btn" href={`/api/rilievi/${scheda.id}/pdf`}><Icon name="download" size={18} />{t('scheda.actions.pdf')}</a>

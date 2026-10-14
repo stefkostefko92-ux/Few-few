@@ -97,7 +97,7 @@ export default async function AppShell({ user, banners, footer, children }: { us
           <header className="ws-topbar">
             <DrawerToggle openLabel={t('menu')} closeLabel={t('close')} />
             <Link href="/app" className="ws-topbrand"><Emblem /><span>LiftPilot</span></Link>
-            <ShellCrumbs groups={groups} extra={extra} label={t('breadcrumb')} />
+            <ShellCrumbs groups={groups} extra={extra} label={t('breadcrumb')} list={t('rilieviAll')} />
             <div className="ws-top-actions">
               {/* the search of the installations, for whoever sees them */}
               {projects ? <ShellSearch label={t('search')} placeholder={t('searchPlaceholder')} /> : null}

@@ -235,7 +235,8 @@ src/lib/             auth (JWT в httpOnly бисквитка, именува с
                      Кръг 37: prices/parts (`panevPart`, `keptPart`: към коя част на изпитването е редът на спецификацията и дали
                      изменението я брои), room/summary + server/room-summary (редът на записа на машинното — данни, пишат се при
                      показване), refresh-form (знакът, с който «Aggiorna» отваря формуляра, когато въведеното вече не се записва).
-src/server/          Server actions ('use server') и заявки, винаги ограничени до фирмата на потребителя (queries.ts);
+src/server/          Server actions ('use server') и заявки, винаги ограничени до фирмата на потребителя (queries.ts;
+                     списъкът на съоръженията и търсенето му — project-list.ts);
                      billing (синхрон на абонамента от Stripe, местата и тяхното налагане), billing-actions (Checkout, смяна на
                      пакета, порталът на Stripe), prices + price-actions (листата на фирмата), terms-actions (приемането),
                      company-export (всички данни на фирмата в JSON, `/api/company/export`, и картите на Rilievi — `schede`,
@@ -446,10 +447,12 @@ src/server/collega/  service (collega/scollega/creaDaRilievo: суров SQL б�
                      транзакцията), actions ('use server': collegaRilievoAction, scollegaRilievoAction —
                      `rilievi:link`, само за четене, честота), queries (съоръжението на картата, кандидатите в две заявки — по код и по адрес —
                      и предложенията,
-                     търсенето, рилевата на съоръжението, рилевото за справка, имената за регистъра), impianto (последните
-                     записи → сравнение и стъпки; без `rilievi:view` нищо от рилевата), home (последните рилева, броячите,
-                     плочките на съоръженията и техните id за `/app/impianti?stato=`), forms (avvioCalc/avvioLift — началото на
-                     калкулатора и на /progetto от рилевото — само с `rilievi:view`; нов / чернова / записан, ?usa=).
+                     търсенето, рилевата на съоръжението и рилевото за справка — празни без `rilievi:view`, имената за
+                     регистъра), impianto (последните записи → сравнение и стъпки; без `rilievi:view` нищо от рилевата), home
+                     (последните рилева, броячите, плочките на съоръженията — сравнени на партиди по 250 до 5000 — и техните id
+                     за `/app/impianti?stato=`), forms (avvioCalc/avvioLift — началото на калкулатора и на /progetto от
+                     рилевото; usaDatiImpianto — адресът/матрикулата за данните на съоръжението; всички само с
+                     `rilievi:view`; нов / чернова / записан, ?usa=).
 src/components/collega/  LinkPanel (`#collegamento` на картата, извън листа), ImpiantoCollegato (на страницата на съоръжението:
                      Passi + списъкът `#rilievi` + Confronto `#confronto`), Passi (стъпките като бутони на кабинно табло),
                      Confronto, RilievoAvviso (над формуляра: от кое рилево, „usa“), origine ('use client': OrigineProvider и

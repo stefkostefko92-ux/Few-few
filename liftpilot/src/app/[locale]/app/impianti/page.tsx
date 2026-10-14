@@ -6,7 +6,7 @@ import { ALL_ROWS, DASH_ROWS, searchWords } from '@/lib/dashboard';
 import type { ProjectKind } from '@/lib/schemas';
 import { activeResults, latestPlan, recordCounts } from '@/server/dashboard';
 import { impiantiFigures } from '@/server/collega/home';
-import { countProjects, getProjectRow, listProjects } from '@/server/queries';
+import { countProjects, getProjectRow, listProjects } from '@/server/project-list';
 import Kpis from '@/components/dashboard/Kpis';
 import ModuleCards, { MODULES } from '@/components/dashboard/ModuleCards';
 import NewMenu from '@/components/dashboard/NewMenu';

@@ -26,7 +26,7 @@ export default async function TrashRilievoPage({ params }: { params: Promise<{ l
   const rt = t as unknown as RilieviT;
   return (
     <main className="page page-narrow">
-      <Crumbs items={[{ href: '/app/rilievi', label: tn('rilievi') }, { href: `/app/rilievi/${scheda.id}`, label: schedaTitle(scheda, rt) }, { label: t('scheda.actions.delete') }]} />
+      <Crumbs items={[{ href: '/app', label: tn('rilievi') }, { href: '/app/rilievi', label: tn('rilieviAll') }, { href: `/app/rilievi/${scheda.id}`, label: schedaTitle(scheda, rt) }, { label: t('scheda.actions.delete') }]} />
       <RilieviHead title={t('schede.delete.title')} lead={t('schede.delete.text')} />
       <Confirm mode="trash" scheda={scheda} t={rt} />
     </main>

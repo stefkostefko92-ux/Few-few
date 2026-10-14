@@ -15,9 +15,11 @@ import { RILIEVO_SELECT, rilievoDati, type RilievoDati } from '@/lib/collega/ril
 import { outdated } from '../records';
 import { CALC_SELECT, LIFT_SELECT, righeDi } from './impianto';
 
-/** At most this many active installations with surveys (the latest changed) are compared for the differences: past it
- *  the figure says «at least» (`capped`). */
-export const MAX_LINKED = 300;
+/** The active installations with surveys are compared for the differences in batches of this many (the memory one
+ *  batch's records take), all of them up to MAX_LINKED (the latest changed first): past it the figure says «at least»
+ *  (`capped`) — a bound on the page's time, not a size a company of installers reaches. */
+const BATCH = 250;
+export const MAX_LINKED = 5000;
 
 export async function recentRilievi(user: SessionUser, take = 8) {
   return prisma.scheda.findMany({
@@ -70,35 +72,42 @@ export async function impiantiFigures(user: SessionUser): Promise<ImpiantiFigure
     LEFT JOIN "LiftDesign" cl ON cl."calculationId" = c."id"
     LEFT JOIN LATERAL (SELECT "id" FROM "LiftDesign" WHERE "projectId" = p."id" ORDER BY "createdAt" DESC LIMIT 1) d ON true
     WHERE p."companyId" = ${companyId} AND p."archivedAt" IS NULL`;
-  const linked = await prisma.project.findMany({
-    where: { companyId, archivedAt: null, schede: { some: { deletedAt: null } } }, orderBy: { updatedAt: 'desc' }, take: MAX_LINKED,
-    select: { id: true, kind: true, address: true, city: true, province: true, plantNumber: true },
-  });
-  const ids = linked.map((p) => p.id), byId = new Map(latest.map((r) => [r.id, r]));
-  const [schede, calcs, lifts] = await Promise.all([
-    prisma.scheda.findMany({ where: { companyId, deletedAt: null, projectId: { in: ids } }, orderBy: [{ data: 'desc' }, { createdAt: 'desc' }],
-      select: { ...RILIEVO_SELECT, projectId: true } }),
-    prisma.calculation.findMany({ where: { companyId, id: { in: linked.flatMap((p) => byId.get(p.id)?.calcId ?? []) } }, select: CALC_SELECT }),
-    prisma.liftDesign.findMany({ where: { companyId, id: { in: linked.flatMap((p) => byId.get(p.id)?.liftId ?? []) } }, select: LIFT_SELECT }),
-  ]);
-  const surveys = new Map<string, RilievoDati[]>();
-  for (const s of schede) if (s.projectId) surveys.set(s.projectId, [...(surveys.get(s.projectId) ?? []), rilievoDati(s)]);
-  const differenze: string[] = [], aggiornare: string[] = [];
-  for (const p of linked) {
-    const row = byId.get(p.id), calc = calcs.find((c) => c.id === row?.calcId) ?? null, lift = lifts.find((d) => d.id === row?.liftId) ?? null;
-    if (sintesi(righeDi(p, surveys.get(p.id) ?? [], calc, lift)).diff > 0) differenze.push(p.id);
+  const byId = new Map(latest.map((r) => [r.id, r]));
+  const differenze: string[] = [], ref = new Map<string, RilievoDati>();
+  // the order is read once (ids only), the records batch by batch: one changed meanwhile is neither skipped nor counted twice
+  const where = { companyId, archivedAt: null, schede: { some: { deletedAt: null } } };
+  const order = await prisma.project.findMany({ where, orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }], take: MAX_LINKED + 1, select: { id: true } });
+  const capped = order.length > MAX_LINKED, all = order.slice(0, MAX_LINKED).map((p) => p.id);
+  for (let i = 0; i < all.length; i += BATCH) {
+    const ids = all.slice(i, i + BATCH);
+    const [linked, schede, calcs, lifts] = await Promise.all([
+      prisma.project.findMany({ where: { companyId, archivedAt: null, id: { in: ids } }, select: { id: true, kind: true, address: true, city: true, province: true, plantNumber: true } }),
+      prisma.scheda.findMany({ where: { companyId, deletedAt: null, projectId: { in: ids } }, orderBy: [{ data: 'desc' }, { createdAt: 'desc' }],
+        select: { ...RILIEVO_SELECT, projectId: true } }),
+      prisma.calculation.findMany({ where: { companyId, id: { in: ids.flatMap((id) => byId.get(id)?.calcId ?? []) } }, select: CALC_SELECT }),
+      prisma.liftDesign.findMany({ where: { companyId, id: { in: ids.flatMap((id) => byId.get(id)?.liftId ?? []) } }, select: LIFT_SELECT }),
+    ]);
+    const surveys = new Map<string, RilievoDati[]>();
+    for (const s of schede) if (s.projectId) surveys.set(s.projectId, [...(surveys.get(s.projectId) ?? []), rilievoDati(s)]);
+    for (const p of linked) {
+      const row = byId.get(p.id), calc = calcs.find((c) => c.id === row?.calcId) ?? null, lift = lifts.find((d) => d.id === row?.liftId) ?? null;
+      const mine = surveys.get(p.id) ?? [];
+      if (mine[0]) ref.set(p.id, mine[0]);
+      if (sintesi(righeDi(p, mine, calc, lift)).diff > 0) differenze.push(p.id);
+    }
   }
+  const aggiornare: string[] = [];
   let perSoftware = 0, perRilievo = 0;
   for (const r of latest) {
     if (!r.calcId || !r.calcAt || r.cEngine === null) continue;
     const old = outdated.calc({ engineVersion: r.cEngine, shaftDesign: r.cShaft === null ? null : { engineVersion: r.cShaft },
       liftDesign: r.cLift === null ? null : { engineVersion: r.cLift } });
-    const why = calcoloDaAggiornare({ createdAt: r.calcAt, old }, surveys.get(r.id)?.[0] ?? null);
+    const why = calcoloDaAggiornare({ createdAt: r.calcAt, old }, ref.get(r.id) ?? null);
     if (!why) continue;
     aggiornare.push(r.id);
     if (why.old) perSoftware++;
     if (why.rilievo) perRilievo++;
   }
-  return { conDifferenze: differenze.length, capped: linked.length === MAX_LINKED, daAggiornare: aggiornare.length, perSoftware, perRilievo,
+  return { conDifferenze: differenze.length, capped, daAggiornare: aggiornare.length, perSoftware, perRilievo,
     ids: { differenze, aggiornare } };
 }

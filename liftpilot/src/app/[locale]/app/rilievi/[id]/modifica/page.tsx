@@ -31,7 +31,7 @@ export default async function EditRilievoPage({ params }: { params: Promise<{ lo
   const title = schedaTitle(scheda, rt);
   return (
     <main className="page">
-      <Crumbs items={[{ href: '/app/rilievi', label: tn('rilievi') }, { href: `/app/rilievi/${scheda.id}`, label: title }, { label: t('schede.edit.title') }]} />
+      <Crumbs items={[{ href: '/app', label: tn('rilievi') }, { href: '/app/rilievi', label: tn('rilieviAll') }, { href: `/app/rilievi/${scheda.id}`, label: title }, { label: t('schede.edit.title') }]} />
       <EditLeadProvider initial={t('scheda.meta.updated', { name: scheda.updatedBy?.name ?? '—', at: fmt.dateTime(scheda.updatedAt) })}>
         <RilieviHead title={t('schede.edit.title')} lead={<EditLead />} />
         <SchedaForm initial={editForm(user, scheda)} edit={{ id: scheda.id, base: scheda.updatedAt.toISOString() }} cancelHref={`/app/rilievi/${scheda.id}`}

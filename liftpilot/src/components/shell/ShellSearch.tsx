@@ -2,7 +2,7 @@
 
 // The top bar's search of the company's installations: a GET form to the installations (`/app/impianti?q=…`), which
 // filters them on the server by name, address, municipality, plant number and the matricola of their surveys
-// (src/server/queries.ts listProjects). On the installations' page it
+// — the last only for whoever sees the surveys (src/server/project-list.ts listProjects). On the installations' page it
 // keeps the list's filters (archived, module) and shows the words searched. Wide screens: the field in the bar, with
 // Ctrl+K / ⌘K to reach it; phones: a search button that opens the field under the bar, with the focus in it (Esc or a
 // click outside closes it and gives the focus back to the button, as the dashboard's «new» menu).

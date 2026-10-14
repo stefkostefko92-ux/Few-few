@@ -20,7 +20,7 @@ export default async function NewRilievoPage({ params }: { params: Promise<{ loc
   const [t, tn, order] = await Promise.all([getTranslations('rilievi'), getTranslations('nav'), formSections(user)]);
   return (
     <main className="page">
-      <Crumbs items={[{ href: '/app/rilievi', label: tn('rilievi') }, { label: t('schede.create.title') }]} />
+      <Crumbs items={[{ href: '/app', label: tn('rilievi') }, { href: '/app/rilievi', label: tn('rilieviAll') }, { label: t('schede.create.title') }]} />
       <RilieviHead title={t('schede.create.title')} lead={t('schede.create.sub')} />
       <SchedaForm initial={newForm(user)} edit={null} cancelHref="/app/rilievi" specs={moduloSpecs()} order={order} collegati={collegatiData(user)} />
     </main>

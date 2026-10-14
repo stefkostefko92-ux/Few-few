@@ -31,7 +31,7 @@ export default async function RilieviTrashPage({ params, searchParams }: { param
   const status = q ? t('schede.search.found', { n: page.total, q }) : t('schede.count', { n: page.total });
   return (
     <main className="page">
-      <Crumbs items={[{ href: '/app/rilievi', label: tn('rilievi') }, { label: t('trash.title') }]} />
+      <Crumbs items={[{ href: '/app', label: tn('rilievi') }, { href: '/app/rilievi', label: tn('rilieviAll') }, { label: t('trash.title') }]} />
       <RilieviHead title={t('trash.title')} lead={t('trash.subtitle')} />
       {flash ? <Flash text={t(`flash.${flash}`)} /> : null}
       <LiveSearch action={`/${locale}/app/rilievi/cestino`} base="/app/rilievi/cestino" query={q} label={t('schede.search.label')}

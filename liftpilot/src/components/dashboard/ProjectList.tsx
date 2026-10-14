@@ -5,7 +5,7 @@ import VerdictPill from '@/components/VerdictPill';
 import { DASH_ROWS } from '@/lib/dashboard';
 import { dateFormat } from '@/lib/dates';
 import type { ProjectKind } from '@/lib/schemas';
-import type { listProjects } from '@/server/queries';
+import type { listProjects } from '@/server/project-list';
 import { outdated } from '@/server/records';
 import { MAX_LINKED } from '@/server/collega/home';
 import ModuleCards, { MODULES } from './ModuleCards';

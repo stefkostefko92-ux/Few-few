@@ -113,6 +113,14 @@ export async function collegaFlow({ BASE, page, hydrated, stamp }) {
   const recent = (id) => page.locator(`.lk-recent-table tr:has(a[href$="/rilievi/${id}"])`);
   assert.match(await recent(secondId).textContent(), /non collegato/, 'the second one, not linked');
   assert.equal(await recent(sheetUrl.split('/').pop()).locator('.lk-impianto-link').count(), 1, 'the first one, with its installation');
+  // the full list under the home has its own name — «Schede», its heading as in the original —, never the home's
+  await Promise.all([page.waitForURL(/\/app\/rilievi$/), page.click('.lk-recent a.btn[href$="/app/rilievi"]')]);
+  assert.equal((await page.textContent('h1'))?.trim(), 'Schede');
+  const path = async () => (await page.locator('main nav.crumbs-nav li').allInnerTexts()).map((x) => x.trim()).join(' / ');
+  assert.equal(await path(), 'Rilievi / Schede');
+  assert.equal(await page.locator('header nav.ws-crumbs li').allInnerTexts().then((l) => l.map((x) => x.trim()).join(' / ')), 'Area di lavoro / Rilievi / Schede');
+  await page.goto(sheetUrl);
+  assert.match(await path(), /^Rilievi \/ Schede \/ /);
   await page.goto(`${BASE}/it/app?q=${encodeURIComponent(`Collega ${stamp}`)}`);
   assert.equal(new URL(page.url()).pathname, '/it/app/impianti', 'the old address of the list');
   assert.equal(await page.locator('.dash-row').count(), 1, 'its search kept');

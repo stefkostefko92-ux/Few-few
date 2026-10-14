@@ -43,6 +43,22 @@ const prima = (V: FormValues, set: readonly string[]): string | null => {
   return v === undefined || String(v).trim() === '' ? null : String(v);
 };
 
+/** «Usa il valore del rilievo» on the installation's data (?usa=indirizzo|matricola, from the comparison): the field of
+ *  the edit form it goes in, the reference survey's value and day — only for whoever sees the surveys (as the forms
+ *  above: another role's edit form is the installation's own data, nothing named from a survey). */
+export interface UsaDati {
+  field: 'address' | 'plantNumber';
+  value: string;
+  date: string;
+}
+
+export async function usaDatiImpianto(user: SessionUser, projectId: string, usa: unknown): Promise<UsaDati | null> {
+  if ((usa !== 'indirizzo' && usa !== 'matricola') || !can(user, 'rilievi:view')) return null;
+  const r = await rilievoDiRiferimento(user, projectId);
+  const value = r ? (usa === 'indirizzo' ? r.indirizzo : r.matricola) : null;
+  return r && value ? { field: usa === 'indirizzo' ? 'address' : 'plantNumber', value, date: fmt.day(r.data) } : null;
+}
+
 /** The calculator's start. */
 export async function avvioCalc(user: SessionUser, projectId: string, start: FormValues, mode: Partenza, usa: unknown): Promise<Avvio<FormValues>> {
   const r = can(user, 'rilievi:view') ? await rilievoDiRiferimento(user, projectId) : null;

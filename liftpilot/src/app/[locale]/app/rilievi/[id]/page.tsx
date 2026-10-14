@@ -69,7 +69,7 @@ export default async function RilievoPage({ params, searchParams }: { params: Pr
   );
   return (
     <main className="page">
-      <Crumbs items={[{ href: '/app/rilievi', label: tn('rilievi') }, ...(deleted ? [{ href: '/app/rilievi/cestino', label: t('trash.title') }] : []), { label: title }]} />
+      <Crumbs items={[{ href: '/app', label: tn('rilievi') }, { href: '/app/rilievi', label: tn('rilieviAll') }, ...(deleted ? [{ href: '/app/rilievi/cestino', label: t('trash.title') }] : []), { label: title }]} />
       <RilieviHead back={{ href: '/app/rilievi', label: t('schede.back') }} title={title} lead={t('scheda.dateLine', { date: fmt.day(scheda.data) })} actions={actions} />
       {flash ? <Flash text={t(`flash.${flash}`)} /> : null}
       <LinkPanel user={user} scheda={scheda} cerca={typeof sp.impianto === 'string' ? sp.impianto : ''} flash={sp.lk} />

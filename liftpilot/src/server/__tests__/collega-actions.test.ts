@@ -4,7 +4,8 @@
 // touched —, an archived installation refused (as the target, and as the installation a survey leaves: read only), a link
 // changed meanwhile («changed»), the audit rows, the rollback of a creation whose sheet is already linked, and the
 // suggestions read within the company's active installations only — the same matricola never crowded out by the
-// address. The mock runs the statements as the database would; every statement's text is also checked for the company,
+// address; a role without 'rilievi:view' gets nothing of a survey (the installation's data with ?usa=, the reads, the
+// search). The mock runs the statements as the database would; every statement's text is also checked for the company,
 // trash, archive and pinning predicates, so that a predicate dropped from service.ts fails here.
 import { test, mock, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -25,6 +26,11 @@ let schede: Row[] = [], projects: Row[] = [], audits: Row[] = [], session: Row |
 let statements: string[] = [];
 /** what the next read of a sheet returns instead of the row (a link changed by someone else after this read) */
 let staleRead: Row | null = null;
+/** the reads of a survey's own data (the reference survey, an installation's surveys) */
+let surveyReads = 0;
+const SURVEY = { data: new Date(Date.UTC(2026, 9, 1)), createdAt: new Date(), updatedAt: new Date(), indirizzo: 'Via Rilievo 1, Torino', matricola: 'MX-1',
+  numeroImpianto: null, marca: null, portataKg: null, capienzaPersone: null, fermate: null, ubicazioneMacchina: [], tipoImpianto: [], funiNumero: null,
+  funiDiametroMm: null, funicellaDiametroMm: null, limitatoreTipo: null, operatoreMarca: null, lucePorte: null, arganoPreventivo: null, preventivoArgano: null };
 const reset = () => {
   schede = [
     { id: S1, companyId: 'c1', projectId: null, deletedAt: null },
@@ -39,6 +45,7 @@ const reset = () => {
   audits = [];
   statements = [];
   staleRead = null;
+  surveyReads = 0;
   findManyCalls = [];
   findManyResult = () => [];
 };
@@ -74,14 +81,17 @@ function executeRaw(strings: TemplateStringsArray, ...v: unknown[]): number {
 interface Db { [model: string]: unknown; $transaction(fn: (tx: Db) => Promise<unknown>): Promise<unknown> }
 const db: Db = {
   scheda: {
-    findFirst: async ({ where }: { where: Row }) => {
+    findFirst: async ({ where, select }: { where: Row; select?: Row }) => {
       const s = schede.find((r) => matches(r, where));
+      // the reference survey (collega/queries.ts): its data
+      if (select && 'indirizzo' in select) { surveyReads++; return s ? { ...SURVEY, id: s.id } : null; }
       if (!s) return null;
       const read = staleRead ?? s;
       staleRead = null;
       const p = projects.find((r) => r.id === read.projectId);
       return { projectId: read.projectId, project: p ? { archivedAt: p.archivedAt } : null };
     },
+    findMany: async () => { surveyReads++; return []; },
   },
   project: {
     create: async ({ data }: { data: Row }) => { const row = { id: `pn${projects.length}`, archivedAt: null, ...data }; projects.push(row); return { id: row.id }; },
@@ -241,4 +251,27 @@ test('collegamento cambiato nel frattempo: nulla si scrive, il registro non nomi
   assert.equal(await run(() => scollegaRilievoAction(form({ scheda: S1 }))), `/it/app/rilievi/${S1}?lk=changed#collegamento`);
   assert.equal(schede[0]?.projectId, 'p2');
   assert.equal(audits.length, 0);
+});
+
+test('senza «rilievi:view» nulla del rilievo: i dati dell’impianto con ?usa=, le letture, la ricerca degli impianti', async () => {
+  const { usaDatiImpianto } = await import(src('server/collega/forms.ts'));
+  const { rilievoDiRiferimento, rilieviImpianto } = await import(src('server/collega/queries.ts'));
+  const { listProjects } = await import(src('server/project-list.ts'));
+  const sees = { id: 'u1', role: 'TECHNICIAN', companyId: 'c1' };
+  const blind = { ...sees, caps: capsOf('TECHNICIAN', [{ role: 'TECHNICIAN', capability: 'rilievi:view', granted: false }]) };
+  const u = await usaDatiImpianto(sees, 'p1', 'indirizzo');
+  assert.deepEqual([u?.field, u?.value, typeof u?.date], ['address', 'Via Rilievo 1, Torino', 'string']);
+  assert.deepEqual([(await usaDatiImpianto(sees, 'p1', 'matricola'))?.field, await usaDatiImpianto(sees, 'p1', 'portata')], ['plantNumber', null]);
+  surveyReads = 0;
+  for (const usa of ['indirizzo', 'matricola']) assert.equal(await usaDatiImpianto(blind, 'p1', usa), null);
+  assert.equal(await rilievoDiRiferimento(blind, 'p1'), null);
+  assert.deepEqual(await rilieviImpianto(blind, 'p1'), []);
+  assert.equal(surveyReads, 0, 'the survey is not even read');
+  // the search of the installations: a linked survey's matricola or number only for whoever sees the surveys
+  findManyCalls = [];
+  await listProjects(blind, false, null, ['MX-1']);
+  await listProjects(sees, false, null, ['MX-1']);
+  const [b, v] = findManyCalls.map((c) => JSON.stringify(c.where));
+  assert.ok(b?.includes('plantNumber') && !b.includes('schede'), 'without the right: name, address, municipality, matricola only');
+  assert.ok(v?.includes('schede'));
 });

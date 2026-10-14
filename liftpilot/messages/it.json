@@ -106,7 +106,7 @@
     "beta": "Beta gratuita",
     "profile": "Profilo normativo",
     "rilievi": "Rilievi",
-    "rilieviAll": "Tutti i rilievi",
+    "rilieviAll": "Schede",
     "permessi": "Permessi",
     "impianti": "Impianti"
   },
@@ -2811,7 +2811,7 @@
       "title": "Rilievi",
       "lead": "Ogni lavoro parte dal sopralluogo: le schede di rilievo, l’impianto a cui appartengono e quello che resta da fare.",
       "new": "Nuovo rilievo",
-      "all": "Tutti i rilievi",
+      "all": "Tutte le schede",
       "impianti": "Vai agli impianti",
       "kpiLabel": "Rilievi e impianti in cifre",
       "kpiSenza": "Rilievi senza impianto",
