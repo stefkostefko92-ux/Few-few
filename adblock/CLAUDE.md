@@ -64,6 +64,10 @@ tools/                  build_filters.mjs (EasyList→DNR + каталога too
                         server/index.html, popup/панелите от store генератора, звукът е генериран;
                         `PW_ROOT=$(npm root -g) PYTHONPATH=<numpy> FFMPEG=$(command -v ffmpeg) node tools/promo/render.mjs [--cut social]`;
                         caption-и и правила за публикуване → docs/SOCIAL.md)
+                        **Клиповете НЕ се обновяват повече** (решение на собственика, 2026-10-15): нито при нова
+                        версия, нито при промяна в popup-а/сайта/текстовете — не пускай render.mjs, не предлагай
+                        нов рендер и не пиши стъпки „смени клипа“ в кита/документите. Последният рендер е store
+                        cut 5.1.8. Инструментите остават в репото само за изрично искане на собственика.
                         + popup_shield3d.mjs (three.js от CDN САМО в инструмента → popup/img/; `PW_ROOT=$(npm root -g) node tools/popup_shield3d.mjs`;
                         `--hero <png>` = голям щит за промото)
                         + store_promo.mjs (промо плочка 440×280 + marquee 1400×560: 3D щитът, ударен от мълния — БЕЗ текст,
