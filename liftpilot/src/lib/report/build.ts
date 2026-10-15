@@ -33,7 +33,7 @@ import type { MachineAdvice } from '../lift/advice';
 import { catalogMachineOf, modelOf } from '../lift/known';
 import { designRoomBlocks } from './tecnica-site';
 import { designMachine } from './build-design';
-import { contestoKey, oggettoCalcolo, titoloCalcolo } from './intervento-text';
+import { contestoKey, oggettoCalcolo, restaVariataText, titoloCalcolo } from './intervento-text';
 import { macchinaResta, type TipoIntervento } from '../lift/intervento';
 
 export interface ReportInput {
@@ -102,7 +102,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   const what = tipo ? oggettoCalcolo(tipo, C) : `Verifica dell’argano a riduttore ${rif ? "per il rifacimento di un impianto esistente che ne mantiene l’arcata" : repl ? "in sostituzione su impianto esistente" : "per un impianto nuovo"}`;
   B.push({ t: 'p', text: `${what} (${layoutText}, ${I.r}:1): aderenza al caricamento, in frenatura di emergenza e a cabina bloccata (UNI EN 81-50:2020, 5.11); funi e coefficiente di sicurezza (UNI EN 81-20:2020, 5.5; UNI EN 81-50:2020, 5.12); freno (UNI EN 81-20:2020, 5.9.2.2); azionamento, manovra di emergenza e carico sull’albero secondo il modello di calcolo del software.${I.std === 'en81-1' ? std81_1(C.norma) : ''}${collaudoText(C, repl, undefined, tipo)}${r.design ? ' La pianta del vano e della cabina, con le sue verifiche, viene dal progetto del vano del software (sezione «Vano e cabina»).' : ''}` });
   section('Riferimenti normativi');
-  B.push({ t: 'grid', head: ['Documento', 'Ambito'], rows: riferimentiRows(repl, C, I.std, !!r.design), widths: [0.38, 0.62], align: ['l', 'l'] });
+  B.push({ t: 'grid', head: ['Documento', 'Ambito'], rows: riferimentiRows(repl, C, I.std, !!r.design, kept), widths: [0.38, 0.62], align: ['l', 'l'] });
 
   section("Dati dell’impianto");
   const plant: [string, string][] = [
@@ -192,7 +192,7 @@ export function buildReport(r: ReportInput): ReportDoc {
     B.push({ t: 'verdict', text: X.verdictText(old), status: verdictStatus(old) });
   }
 
-  section(t('q_title'));
+  section(kept ? 'Argano esistente (resta): esito in breve' : t('q_title'));
   const quick = quickRows(P, X, N, res, sens);
   B.push({ t: 'grid', head: [t('col_item'), t('col_res'), t('col_note')], rows: quick.map((q) => [t(q.key), st(q.status), q.text]), status: quick.map((q) => q.status), statusCol: 1, widths: [0.2, 0.1, 0.7], align: ['l', 'l', 'l'] });
 
@@ -208,13 +208,15 @@ export function buildReport(r: ReportInput): ReportDoc {
   if (res.checks.some((c) => ambitoOf(C, c.id) === 'existing')) {
     B.push({ t: 'p', style: 'note', text: EXISTING_NOTE });
   }
+  const variata = tipo ? restaVariataText(tipo, C) : null;
+  if (variata) B.push({ t: 'p', style: 'note', text: variata });
 
   // each standard of the test with its own result, and the test's: the calculation's checks and, with a shaft design,
   // the shaft's and the beams'
   section(ESITI_CALCOLO);
   B.push(...esitiBlocks(C, [...res.checks, ...(r.design ? mergeChecks(r.design.layout.checks, beams) : []), ...(guide?.checks ?? [])], (x) => st(x)));
   section('Adempimenti e punti da verificare in sito');
-  B.push(...adempimentiBlocks(C, repl));
+  B.push(...adempimentiBlocks(C, repl, kept));
 
   section("Aderenza: tutti i casi di calcolo");
   B.push(...casesBlocks(P, I, N, res, (c) => X.caseText(c), st));

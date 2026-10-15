@@ -53,7 +53,8 @@ function ProposalCard({ P, X, a, onUse, propMsg, vincolo }: Pick<Props, 'P' | 'X
         </div>
       ) : null}
       <h3 className="sub">{X.altText(sizing)}</h3>
-      <div className="tbl">
+      {/* scrolled sideways on a phone: reachable with the keyboard, named for a screen reader */}
+      <div className="tbl" tabIndex={0} role="region" aria-label={X.altText(sizing)}>
         <table>
           <thead><tr>{X.proposalHead().map((h, j) => <th key={h} className={j ? 'num' : undefined}>{h}</th>)}{onUse ? <th className="num"><span className="sr-only">{t('p_use_row')}</span></th> : null}</tr></thead>
           <tbody>

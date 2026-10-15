@@ -26,7 +26,10 @@ export async function generateMetadata() {
 // The Progetto of an installation (round 45): the drawing made on a «Calcolo argano» — the one chosen (?calc=, a step-2
 // calculation of this installation, else 404), else the latest. Without one there is nothing to draw on: the way to the
 // calculation (a lift design of the one form before round 45 says so, with the way to bring its data into the
-// calculation); a base no longer reproduced is updated first. A base whose Progetto is the machine room's survey says
+// calculation). A design of the one form newer than the latest calculation (an installation made whole after its
+// replacement) is not drawn on that older calculation by default — its data go to the calculation first, as the
+// lift design's page has it (calcolo-base.ts legacyPiuNuovo); chosen with ?calc= it is. A base no longer reproduced
+// is updated first. A base whose Progetto is the machine room's survey says
 // so on top — the whole drawing stays possible. The drawing starts from a saved design (?from=), its draft, the latest
 // design, the installation's records, else empty (src/server/progetto-start.ts); with a linked survey its stops come
 // from it, marked «dal rilievo» (round 44). Opened by «Aggiorna con il software attuale» (&aggiorna=1), it says why on top.
@@ -40,15 +43,17 @@ export default async function ProgettoPage({ params, searchParams }: {
   if (!p || p.archivedAt) notFound();
   const sp = await searchParams, from = idSchema.safeParse(sp.from), chosen = sp.calc === undefined ? null : idSchema.safeParse(sp.calc);
   if (chosen && !chosen.success) notFound();
-  const base = await calcoloBase(user, p.id, chosen?.data);
-  if (chosen && !base) notFound();
+  const found = await calcoloBase(user, p.id, chosen?.data);
+  if (chosen && !found) notFound();
   const [t, tl, tp] = await Promise.all([getTranslations('progetto'), getTranslations('lift'), getTranslations('projects')]);
   const fd = dateFormat(locale), canCalc = can(user, 'calc:create');
   // the latest lift design: one of the one form (no base) newer than the base asks for its data to be brought over
   const legacy = await prisma.liftDesign.findFirst({
     where: { projectId: p.id, companyId: user.companyId }, orderBy: { createdAt: 'desc' }, select: { id: true, calculationId: true, baseCalculationId: true, createdAt: true },
   });
-  const unico = legacy && legacy.baseCalculationId === null && (!base || legacy.createdAt > base.createdAt) ? legacy : null;
+  const unico = legacy && legacy.baseCalculationId === null && (!found || legacy.createdAt > found.createdAt) ? legacy : null;
+  // that older calculation is drawn on only when chosen
+  const base = unico && !chosen ? null : found;
   const head = (
     <>
       <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${p.id}`, label: p.name }, { label: tl('workTitle') }]} />
@@ -63,7 +68,6 @@ export default async function ProgettoPage({ params, searchParams }: {
           <p>{t('legacy')}</p>
           <div className="btnrow">
             {canCalc ? <Link className="btn btn-sm" href={`/app/projects/${p.id}/calc?from=${unico.calculationId}`}>{t('portaLegacy')}</Link> : <span className="note">{t('byOther')}</span>}
-            {base ? <Link className="btn btn-sm" href={`/app/projects/${p.id}/progetto?calc=${base.id}&from=${unico.id}`}>{t('disegnaSu', { date: fd.date(base.createdAt) })}</Link> : null}
           </div>
         </div>
       ) : null}

@@ -1,6 +1,7 @@
 // The machine room's survey saved on a «Calcolo argano» (round 45, phase 3 step 5): on a step-2 calculation of an
 // existing lift, whatever the installation was created as (a former whole project's too); refused with 'notLocale' on a
-// transformation, on a lift design's calculation and on one of the archive made from a shaft design; an archived or
+// transformation, on a lift design's calculation and on one of the archive made from a shaft design, with
+// 'notLocaleResta' on a modernisation keeping the machine; an archived or
 // foreign installation is not found; whoever does not draw the project is refused before anything is looked up.
 import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
@@ -36,10 +37,17 @@ test('locale macchina: su ogni calcolo argano di un impianto esistente; mai su t
     calc('arch1', { shaftDesignId: 's1' }),
     calc('old1', { project: { archivedAt: new Date('2026-10-01') } }),
     calc('theirs1', { companyId: 'c2' }),
+    // a modernisation keeping the machine: no new machine to place in the room (its Progetto is the shaft); the same test
+    // saved before the type existed is read as it was
+    calc('kept1', { intervento: 'AMMODERNAMENTO', collaudo: { norma: '10411-1', parti: ['controller'] } }),
+    calc('legacy1', { intervento: null, collaudo: { norma: '10411-1', parti: ['controller'] } }),
   ];
   assert.deepEqual(await save('repl1'), { ok: true, id: 'room-repl1' });
   for (const id of ['trasf1', 'lift1', 'arch1']) assert.deepEqual(await save(id), { ok: false, error: 'notLocale' }, id);
   for (const id of ['old1', 'theirs1']) assert.deepEqual(await save(id), { ok: false, error: 'notFound' }, id);
+  assert.deepEqual(await save('kept1'), { ok: false, error: 'notLocaleResta' });
+  assert.deepEqual(await save('legacy1'), { ok: true, id: 'room-legacy1' });
+  saved.length = 1;
   assert.deepEqual(saved, ['repl1']);
   // the Tecnico calculates but does not draw: refused before anything is looked up
   role = 'TECHNICIAN';

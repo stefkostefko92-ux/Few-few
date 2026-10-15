@@ -4,7 +4,8 @@ import 'server-only';
 // from the records of the company of the signed-in user (an installation of another company never reaches here: its
 // page is 404 first). Round 45, by record, never by a kind of installation: the calculation is the latest step-2
 // calculation (else, before round 45, the latest of any provenance); the Progetto the newest lift design, or — when the
-// intervention's Progetto is the machine room (disegnoDi 'locale') — the newest of it and the machine rooms; it is
+// intervention's Progetto is the machine room (disegnoDi 'locale') — the newest of it and the machine rooms (the type
+// and the Progetto of a design of the one form newer than that calculation are the design's); it is
 // aligned when drawn on that latest calculation (a design of the one form: when no calculation is newer than it), else
 // «da aggiornare (calcolo più recente)». A role without 'rilievi:view' reads nothing of the surveys: no list, no
 // comparison, steps not judged against the survey — only whether one is linked.
@@ -19,14 +20,14 @@ import { passi, type Passi } from '@/lib/collega/passi';
 import type { RilievoDati } from '@/lib/collega/rilievo';
 import { indirizzoImpianto } from '@/lib/collega/testo';
 import { disegnoDi, type TipoIntervento } from '@/lib/lift/intervento';
-import { STEP2, tipoDi } from '../calcolo-base';
+import { STEP2, legacyPiuNuovo, tipoDi } from '../calcolo-base';
 import { outdated, storedCollaudo } from '../records';
 import { rilieviImpianto, type RilievoElencato } from './queries';
 
 /** A saved calculation as the comparison and the steps read it (its type and test: the installation's Progetto). */
 export const CALC_SELECT = {
   id: true, createdAt: true, inputs: true, engineVersion: true, collaudo: true, intervento: true,
-  shaftDesign: { select: { engineVersion: true } }, liftDesign: { select: { engineVersion: true, inputs: true } },
+  shaftDesign: { select: { engineVersion: true } }, liftDesign: { select: { engineVersion: true, inputs: true, baseCalculationId: true } },
 } as const;
 /** A saved lift design as the comparison and the steps read it (its base: what it was drawn on). */
 export const LIFT_SELECT = {
@@ -35,7 +36,7 @@ export const LIFT_SELECT = {
 } as const;
 
 type CalcRow = { id: string; createdAt: Date; inputs: unknown; engineVersion: string; collaudo: unknown; intervento: TipoIntervento | null;
-  shaftDesign: { engineVersion: string } | null; liftDesign: { engineVersion: string; inputs: unknown } | null };
+  shaftDesign: { engineVersion: string } | null; liftDesign: { engineVersion: string; inputs: unknown; baseCalculationId: string | null } | null };
 type LiftRow = { id: string; createdAt: Date; inputs: unknown; engineVersion: string; baseCalculationId: string | null; calculation: { engineVersion: string };
   shaftDesign: { engineVersion: string; results: unknown } };
 
@@ -101,7 +102,9 @@ export async function collegamentoImpianto(user: SessionUser, p: ImpiantoInfo): 
     prisma.liftDesign.findFirst({ where: mine, ...latest, select: LIFT_SELECT }),
     prisma.drawingSet.findFirst({ where: mine, ...latest, select: { id: true, createdAt: true } }),
   ]);
-  const calc = step2 ?? any, { tipo, disegno } = interventoDi(calc);
+  // the type and the Progetto: a design of the one form newer than the step-2 calculation is what the installation is now
+  const calc = step2 ?? any, newer = !!any?.liftDesign && legacyPiuNuovo(step2, { baseCalculationId: any.liftDesign.baseCalculationId, createdAt: any.createdAt });
+  const { tipo, disegno } = interventoDi(newer ? any : calc);
   // the machine room is the Progetto of an intervention that only touches the machine room's parts
   const room = disegno === 'locale' ? await prisma.roomDesign.findFirst({
     where: mine, ...latest, select: { id: true, createdAt: true, engineVersion: true, calculationId: true, calculation: { select: { engineVersion: true } } },

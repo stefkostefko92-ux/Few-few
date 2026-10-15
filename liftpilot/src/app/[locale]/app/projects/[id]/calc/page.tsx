@@ -21,7 +21,7 @@ export async function generateMetadata() {
 }
 
 // «Calcolo argano» (round 45), for every installation and every type of intervention: it starts from the chosen saved
-// calculation (?from=), else from the form's draft, else from the project's latest step-2 calculation, else from its
+// calculation (?from=, one of this installation's, else 404), else from the form's draft, else from the project's latest step-2 calculation, else from its
 // latest calculation of any provenance (a whole project before round 45), else empty (src/server/calc-start.ts) —
 // nothing of the installation or the machines filled in, the type of intervention to choose first. Opened by «Aggiorna
 // con il software attuale» on a calculation that no longer saves as it was (&aggiorna=1), it says so on top. Started
@@ -42,6 +42,8 @@ export default async function CalcPage({ params, searchParams }: {
   if (!p || p.archivedAt) notFound();
   const sp = await searchParams, from = idSchema.safeParse(sp.from);
   const start = await calcStart(user, p.id, from.success ? from.data : null);
+  // a calculation of another installation (or none): 404, never an empty form over this one's draft
+  if (!start) notFound();
   const avvio = await avvioCalc(user, p.id, start.values, start.mode, sp.usa, start.draft ?? undefined);
   const fd = dateFormat(locale), dal = sp.dal === 'progetto' ? await dalProgetto(user, p.id, avvio.start) : null;
   const progetto = dal ? { date: fd.date(dal.at), valori: dal.valori, prima: dal.prima }

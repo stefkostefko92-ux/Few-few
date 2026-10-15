@@ -138,6 +138,13 @@ test('the intervention declared with a calculation must agree with its values an
   assert.deepEqual(await save({ intervento: 'AMMODERNAMENTO', collaudo: { norma: 'en81', parti: ['machine', 'car'] } }), { ok: false, error: 'invalidIntervento', fields: ['norma'] });
   // agreeing: past the check, to the record, whatever the project was created as
   await assert.rejects(save({ intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'] } }), /the guard must stop before the record/);
+  // the machine and its ropes with the load the documented loads change (UNI 10411, 6.1): the modernisation the «Solo
+  // argano» warning points to is saved; without the loads it is a «Solo argano» and is refused
+  const C = { ...values, ...PRESETS.C, r: PRESETS.C.r ?? 1, context: 'repl', keepRopes: true, compare: true }, doc = { documentato: { Q: 400, P: 600, Mcw: 800 } };
+  await assert.rejects(saveCalculationAction({ projectId: 'prepl', values: C, label: 'x', intervento: 'AMMODERNAMENTO', collaudo: { norma: '10411-1', parti: ['machine', 'ropes'], ...doc } }),
+    /the guard must stop before the record/);
+  assert.deepEqual(await saveCalculationAction({ projectId: 'prepl', values: C, label: 'x', intervento: 'AMMODERNAMENTO', collaudo: { norma: '10411-1', parti: ['machine', 'ropes'] } }),
+    { ok: false, error: 'invalidIntervento', fields: ['parti'] });
   await assert.rejects(saveCalculationAction({ projectId: 'pfull', values, label: 'x', intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'] } }),
     /the guard must stop before the record/);
 });

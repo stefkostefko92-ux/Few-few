@@ -7,7 +7,9 @@ import 'server-only';
 // part answered, one before only its «Sì». Started from a lift design's calculation, the values are those it derived
 // but the extra bends as entered on the design (the derived ones count the head pulleys of a machine below, which the
 // drawing adds again: never copied), the test the design's, and the travel, the rope beyond it, the diverting pulley and
-// the head pulleys' height are marked «dal progetto». The calculation's context is the type's.
+// the head pulleys' height are marked «dal progetto». The calculation's context is the type's. A ?from= that is not a
+// calculation of this project gives null (the page answers 404): never an empty form whose first change would overwrite
+// the project's draft.
 import type { FormValues } from '@/calc/types';
 import type { SessionUser } from '@/lib/auth';
 import { blankCalc } from '@/lib/calc-blank';
@@ -44,7 +46,7 @@ function withType(values: FormValues, tipo: TipoIntervento | null, chosen: Colla
   return { values: V, intervento: { tipo, collaudo, risposte: risposte ?? risposteIniziali(tipo, collaudo, dichiarato) } };
 }
 
-export async function calcStart(user: SessionUser, projectId: string, fromId: string | null): Promise<CalcStart> {
+export async function calcStart(user: SessionUser, projectId: string, fromId: string | null): Promise<CalcStart | null> {
   const draft = fromId ? null : await readDraft(user, projectId, 'calc', calcDraftSchema);
   if (draft) {
     const d = draft.data, chosen = d.collaudo ?? null;
@@ -56,6 +58,7 @@ export async function calcStart(user: SessionUser, projectId: string, fromId: st
   const where = { projectId, companyId: user.companyId };
   const c = await prisma.calculation.findFirst({ where: { ...where, ...(fromId ? { id: fromId } : STEP2) }, orderBy: { createdAt: 'desc' }, select: SOURCE })
     ?? (fromId ? null : await prisma.calculation.findFirst({ where, orderBy: { createdAt: 'desc' }, select: SOURCE }));
+  if (fromId && !c) return null;
   const parsed = c ? formValuesSchema.safeParse(c.inputs) : null;
   if (!c || !parsed?.success) return { ...withType(blankCalc(), null, null, null, false), mode: 'new', draft: null, progetto: null };
   let values: FormValues = parsed.data, chosen: Collaudo | null = null, progetto: CalcStart['progetto'] = null;

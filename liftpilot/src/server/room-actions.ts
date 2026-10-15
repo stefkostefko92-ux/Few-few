@@ -11,7 +11,7 @@ import { rateLimit } from '@/lib/ratelimit';
 import { calcLabelSchema, idSchema } from '@/lib/schemas';
 import { surveySaveSchema } from '@/lib/room/survey';
 import { dropDraft } from './drafts';
-import { rilevaLocale } from './calcolo-base';
+import { localeRilevabile, rilevaLocale } from './calcolo-base';
 import { createRoomDesign, type Created } from './save';
 
 export type RoomSaveResult = Created;
@@ -28,13 +28,16 @@ export async function saveRoomDesignAction(input: { calculationId: unknown; surv
   const c = await prisma.calculation.findFirst({
     where: { id: calcId.data, companyId: user.companyId },
     select: {
-      id: true, inputs: true, sha256: true, collaudo: true, projectId: true, shaftDesignId: true, liftDesign: { select: { id: true } }, project: { select: { archivedAt: true } },
+      id: true, inputs: true, sha256: true, collaudo: true, intervento: true, projectId: true, shaftDesignId: true, liftDesign: { select: { id: true } },
+      project: { select: { archivedAt: true } },
     },
   });
   if (!c || c.project.archivedAt) return { ok: false, error: 'notFound' };
   // the machine room of an existing lift, on its «Calcolo argano»: a lift design draws its own from its shaft design, a
   // transformation is drawn whole, an archive calculation is made again from the form (round 45)
   if (!rilevaLocale(c)) return { ok: false, error: 'notLocale' };
+  // a modernisation keeping the machine has no new machine to place: its Progetto is the shaft (intervento.ts disegnoDi)
+  if (!localeRilevabile(c)) return { ok: false, error: 'notLocaleResta' };
   const r = await createRoomDesign(user, c, survey.data, label.data);
   // the survey's draft has become this record
   if (r.ok) await dropDraft(user.companyId, c.projectId, `room:${c.id}`);

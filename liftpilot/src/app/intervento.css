@@ -43,7 +43,7 @@
 .parte.da .parte-nome { color: var(--ink); }
 .parte.fissa { border-left-color: var(--accent-line); }
 .parte.fissa .parte-nome { color: var(--muted); }
-.parte-scelta > button { min-width: 3.4em; padding: 7px 12px; }
+.parte-scelta > label { min-width: 3.4em; padding: 7px 12px; }
 .parte-regola { font-size: 12.5px; font-weight: 600; color: var(--muted); text-align: right; }
 .parte-regola.si { color: var(--accent); }
 .parte-da, .parte-perche { grid-column: 1 / -1; font-size: 12px; line-height: 1.35; }

@@ -47,10 +47,13 @@ interface ActiveRow {
   sTipo: TipoIntervento | null;
   sContext: string | null;
   sCollaudo: unknown;
+  sAt: Date | null;
   cId: string | null;
   cTipo: TipoIntervento | null;
   cContext: string | null;
   cCollaudo: unknown;
+  cAt: Date | null;
+  cLegacy: boolean | null;
   cVerdict: Verdict | null;
   cEngine: string | null;
   cShaft: string | null;
@@ -67,18 +70,19 @@ interface ActiveRow {
  *  installation, not all of them; the type mapped in TypeScript (calcolo-base.ts tipoDaUltimi). */
 export async function activeResults(user: SessionUser): Promise<{ stats: ProjectStats; latestId: string | null }> {
   const rows = await prisma.$queryRaw<ActiveRow[]>`
-    SELECT p."id", s."id" AS "sId", s."intervento" AS "sTipo", s."inputs"->>'context' AS "sContext", s."collaudo" AS "sCollaudo",
-      c."id" AS "cId", c."intervento" AS "cTipo", c."inputs"->>'context' AS "cContext", c."collaudo" AS "cCollaudo",
+    SELECT p."id", s."id" AS "sId", s."intervento" AS "sTipo", s."inputs"->>'context' AS "sContext", s."collaudo" AS "sCollaudo", s."createdAt" AS "sAt",
+      c."id" AS "cId", c."intervento" AS "cTipo", c."inputs"->>'context' AS "cContext", c."collaudo" AS "cCollaudo", c."createdAt" AS "cAt",
+      EXISTS (SELECT 1 FROM "LiftDesign" l WHERE l."calculationId" = c."id" AND l."baseCalculationId" IS NULL) AS "cLegacy",
       c."verdict" AS "cVerdict", c."engineVersion" AS "cEngine", cs."engineVersion" AS "cShaft",
       d."verdict" AS "dVerdict", d."engineVersion" AS "dEngine", dc."engineVersion" AS "dCalc", ds."engineVersion" AS "dShaft"
     FROM "Project" p
     LEFT JOIN LATERAL (
-      SELECT k."id", k."intervento", k."inputs", k."collaudo" FROM "Calculation" k
+      SELECT k."id", k."intervento", k."inputs", k."collaudo", k."createdAt" FROM "Calculation" k
       WHERE k."projectId" = p."id" AND k."shaftDesignId" IS NULL AND NOT EXISTS (SELECT 1 FROM "LiftDesign" l WHERE l."calculationId" = k."id")
       ORDER BY k."createdAt" DESC LIMIT 1
     ) s ON true
     LEFT JOIN LATERAL (
-      SELECT "id", "intervento", "inputs", "collaudo", "verdict", "engineVersion", "shaftDesignId" FROM "Calculation"
+      SELECT "id", "intervento", "inputs", "collaudo", "createdAt", "verdict", "engineVersion", "shaftDesignId" FROM "Calculation"
       WHERE "projectId" = p."id" ORDER BY "createdAt" DESC LIMIT 1
     ) c ON true
     LEFT JOIN "ShaftDesign" cs ON cs."id" = c."shaftDesignId"
@@ -98,8 +102,8 @@ export async function activeResults(user: SessionUser): Promise<{ stats: Project
     const calc = r.cVerdict && r.cEngine !== null
       ? { verdict: r.cVerdict, old: outdated.calc({ engineVersion: r.cEngine, shaftDesign: r.cShaft === null ? null : { engineVersion: r.cShaft } }) }
       : null;
-    const tipo = tipoDaUltimi(r.sId ? { intervento: r.sTipo, context: r.sContext, collaudo: r.sCollaudo } : null,
-      r.cId ? { intervento: r.cTipo, context: r.cContext, collaudo: r.cCollaudo } : null);
+    const tipo = tipoDaUltimi(r.sId ? { intervento: r.sTipo, context: r.sContext, collaudo: r.sCollaudo, createdAt: r.sAt } : null,
+      r.cId ? { intervento: r.cTipo, context: r.cContext, collaudo: r.cCollaudo, createdAt: r.cAt, legacy: r.cLegacy } : null);
     return { tipo, latest: design ?? calc };
   });
   const first = results.findIndex((r) => r.latest);

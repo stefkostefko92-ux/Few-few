@@ -11,7 +11,7 @@ import { dateFormat } from '@/lib/dates';
 import { getCalculation } from '@/server/queries';
 import { readDraft } from '@/server/drafts';
 import { readCalc } from '@/server/records';
-import { rilevaLocale } from '@/server/calcolo-base';
+import { localeRilevabile } from '@/server/calcolo-base';
 import Crumbs from '@/components/Crumbs';
 import RefreshNotice from '@/components/RefreshNotice';
 import { openedByRefresh } from '@/lib/refresh-form';
@@ -23,7 +23,7 @@ export async function generateMetadata() {
 }
 
 // The survey of the machine room on a «Calcolo argano» of an existing lift (step 2, «Solo argano» or «Ammodernamento»,
-// whatever the installation was called before round 45): it starts from the saved room chosen with ?from=, else
+// whatever the installation was called before round 45) whose machine is replaced (one kept draws the shaft): it starts from the saved room chosen with ?from=, else
 // from the survey's draft, else from the latest saved room of the installation, else empty (every measure to enter).
 // Opened by «Aggiorna con il software attuale» on a survey the calculation no longer takes (&aggiorna=1), it says so.
 export default async function RoomSurveyPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ from?: string; aggiorna?: string }> }) {
@@ -31,7 +31,7 @@ export default async function RoomSurveyPage({ params, searchParams }: { params:
   setRequestLocale(locale);
   const user = await requireCapability(locale, 'progetto:edit');
   const c = await getCalculation(user, id);
-  if (!c || c.project.archivedAt || !rilevaLocale(c)) notFound();
+  if (!c || c.project.archivedAt || !localeRilevabile(c)) notFound();
   const calc = readCalc(c);
   if (!calc) notFound();
   const [t, tp, tc] = await Promise.all([getTranslations('room'), getTranslations('projects'), getTranslations('calculations')]);

@@ -33,12 +33,13 @@ export async function ridisegnaDalCalcoloAction(fd: FormData): Promise<void> {
   if (!rateLimit(`lift:${user.id}`, 60, 10 * 60 * 1000)) redirect(page);
   const d = await prisma.liftDesign.findFirst({
     where: { id: id.data, companyId: user.companyId, project: { archivedAt: null } },
-    select: { id: true, projectId: true, label: true, inputs: true, source: true, baseCalculationId: true },
+    select: { id: true, projectId: true, label: true, inputs: true, source: true, baseCalculationId: true, createdAt: true },
   });
   if (!d) redirect(app);
   const latest = await calcoloBase(user, d.projectId);
-  // nothing newer to draw on
-  if (!latest || latest.id === d.baseCalculationId) redirect(page);
+  // nothing newer to draw on: the base is the latest; a design of the one form is drawn again only on a calculation
+  // newer than it (the page's rule — an older one is the replacement an upgraded installation started from)
+  if (!latest || (d.baseCalculationId ? latest.id === d.baseCalculationId : latest.createdAt <= d.createdAt)) redirect(page);
   const done = await madeFrom(user, 'LIFT_DESIGN_SAVED', d.id);
   const again = done ? await prisma.liftDesign.findFirst({ where: { id: done, companyId: user.companyId }, select: { id: true, baseCalculationId: true } }) : null;
   if (again && again.baseCalculationId === latest.id) redirect(`${app}/lift-designs/${again.id}`);

@@ -23,6 +23,7 @@ import { initialsOf } from '@/lib/tavole/compose';
 import { issueChecks } from '@/lib/tavole/issue-check';
 import { valueMarks } from '@/lib/lift/marks';
 import { ambitoOf } from '@/lib/lift/collaudo';
+import { macchinaResta } from '@/lib/lift/intervento';
 import ProjectCost from '@/components/prices/ProjectCost';
 import LiftView from '@/components/lift/LiftView';
 import AdviceView from '@/components/lift/AdviceView';
@@ -53,8 +54,8 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
   if (!parsedId.success) notFound();
   const d = await getLiftDesign(user, parsedId.data);
   if (!d) notFound();
-  const [t, tp, tt, ta, tg, ti, before, base, latest] = await Promise.all([getTranslations('lift'), getTranslations('projects'), getTranslations('tavole'),
-    getTranslations('advice'), getTranslations('progetto'), getTranslations('calculations.intervento'), refreshedFrom(user, 'liftDesign', (await searchParams).da, d.project.id),
+  const [t, tp, tt, ta, tg, ti, tc, before, base, latest] = await Promise.all([getTranslations('lift'), getTranslations('projects'), getTranslations('tavole'),
+    getTranslations('advice'), getTranslations('progetto'), getTranslations('calculations.intervento'), getTranslations('calculations'), refreshedFrom(user, 'liftDesign', (await searchParams).da, d.project.id),
     d.baseCalculationId ? prisma.calculation.findFirst({ where: { id: d.baseCalculationId, companyId: user.companyId }, select: { id: true, createdAt: true, inputs: true, collaudo: true, intervento: true } }) : null,
     calcoloBase(user, d.project.id)]);
   const fd = dateFormat(locale);
@@ -69,7 +70,9 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
   // verified, or the advice's first
   const advice = r ? savedLiftAdvice(r.inputs) : null, alt = r && advice ? savedLiftAlternative(r.inputs, advice) : null;
   const own = dv ? designMachine(dv) : null, fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
-  const order = same && r && advice && can(user, 'report:download') ? designOrder(r.inputs, advice, r.dv) : null;
+  // drawn on a modernisation keeping the machine: no advice and no order (order-export.ts refuses it too)
+  const kept = !!dv && macchinaResta(d.calculation.intervento, dv.collaudo);
+  const order = same && r && advice && !kept && can(user, 'report:download') ? designOrder(r.inputs, advice, r.dv) : null;
   // the cost of its articles with the company's prices: only for whoever sees prices
   // (a modification tested to UNI 10411: only the parts it replaces, as a replacement)
   const prices = await visiblePrices(user), kind = dv ? bomKind(dv.collaudo) : 'full';
@@ -93,7 +96,7 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
         </div>
       </div>
       <p className="calc-ruolo progetto-base">
-        {base ? <>{tg('base')}: <Link href={`/app/calculations/${base.id}`}>{fd.date(base.createdAt)} — {ti(tipoDi(base))}</Link></> : tg('moduloUnico')}
+        {base ? <>{tg('base')}: <Link href={`/app/calculations/${base.id}`}>{fd.dateTime(base.createdAt)} — {ti(tipoDi(base))}</Link></> : tg('moduloUnico')}
       </p>
       {newer ? (
         <div className="alert alert-warn ridisegna" role="status">
@@ -112,7 +115,7 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
       {same ? null : <StaleNotice text="design" by={remakerOf(user, 'lift', live)} refresh={r ? { kind: 'lift', id: d.id } : null} />}
       {r ? <LiftView inputs={r.inputs} prices={prices} pitches={pitches} /> : <p className="alert alert-bad" role="status">{t('unreadable')}</p>}
       {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} locale={locale} scope={kind === 'full' ? 'design' : 'modification'} editable={can(user, 'prices:edit')} /> : null}
-      {advice ? (
+      {advice && !kept ? (
         <AdviceView advice={advice} alt={alt && dv ? { advice: alt, sheave: dv.machine.D } : null} fmt={fmt} where="design"
           inUse={(c) => own !== null && own.brand === c.brand && own.model === c.model && own.I.layout === c.I.layout} />
       ) : null}
@@ -150,7 +153,7 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
                   <a className="btn" href={`/api/lift-designs/${d.id}/order/pdf`}><Icon name="file-pdf" size={18} />{ta('order_pdf')}</a>
                 </div>
               </>
-            ) : <p className="note">{ta('order_none')}</p>}
+            ) : <p className="note">{kept ? tc('progetto.ordineResta') : ta('order_none')}</p>}
           </div>
         ) : null}
         {same && issues ? (

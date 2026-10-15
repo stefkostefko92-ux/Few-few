@@ -4,12 +4,14 @@
 // leaves it out of every query (src/lib/db.ts) and the company export does not carry it (format 9). This test reads the
 // source of the application and of its scripts and pins that nothing reaches for it again: the type, its schema, the
 // rule that chose a form by it, the upgrade, a read of `.kind` on an installation, a raw query naming the column, a
-// comparison or a write of its two values.
+// comparison or a write of its two values, a select of it or an omit turned off; and the client's type of a project row
+// has no `kind` at all (a read through any variable does not compile).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { prisma } from '@/lib/db';
 
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
 const SELF = fileURLToPath(import.meta.url);
@@ -31,10 +33,29 @@ const KIND = [
   /\bkind\s*(?:===|!==|=|:)\s*'(?:REPLACEMENT|FULL)'/, /p\."kind"|"Project"\."kind"/, /\b(?:kind|module)_(?:REPLACEMENT|FULL)\b/,
 ];
 
+/** The two ways a query would still return the column despite the global omit: selecting it, or omitting it «false».
+ *  Only the omits that keep it out may name it (the client, the export, the export's test). */
+const SELECT_KIND = /\bkind\s*:\s*(?:true|false)\b/;
+const OMITS = ['src/lib/db.ts', 'src/server/company-export.ts', 'src/server/__tests__/company-export.test.ts'];
+
 test('nessun codice legge o scrive Project.kind (src/ e scripts/)', () => {
-  const hits = [...files(join(ROOT, 'src')), ...files(join(ROOT, 'scripts'))].flatMap((f) =>
-    readFileSync(f, 'utf8').split('\n').flatMap((line, i) => (KIND.some((re) => re.test(line)) ? [`${relative(ROOT, f)}:${i + 1}: ${line.trim()}`] : [])));
+  const hits = [...files(join(ROOT, 'src')), ...files(join(ROOT, 'scripts'))].flatMap((f) => {
+    const allowed = OMITS.includes(relative(ROOT, f));
+    return readFileSync(f, 'utf8').split('\n').flatMap((line, i) =>
+      (KIND.some((re) => re.test(line)) || (!allowed && SELECT_KIND.test(line)) || (allowed && /\bkind\s*:\s*false\b/.test(line))
+        ? [`${relative(ROOT, f)}:${i + 1}: ${line.trim()}`] : []));
+  });
   assert.deepEqual(hits, []);
+});
+
+// at compile time (npm run typecheck): a project row of the client has no `kind`, whatever variable holds it — a read of
+// `.kind` on one does not compile (the global omit of src/lib/db.ts)
+type ProjectRow = NonNullable<Awaited<ReturnType<typeof prisma.project.findFirst<{ where: { id: string } }>>>>;
+const kindInRow: 'kind' extends keyof ProjectRow ? true : false = false;
+const nameInRow: 'name' extends keyof ProjectRow ? true : false = true;
+
+test('il tipo delle righe di Project del client non ha kind', () => {
+  assert.deepEqual([kindInRow, nameInRow], [false, true]);
 });
 
 test('la colonna resta, segnata deprecata; il client la lascia fuori; l’esportazione non la porta', () => {

@@ -15,8 +15,9 @@ interface Rec {
  *  of the machine room, with the whole drawing as the alternative; or the drawing of the shaft and the car, with the
  *  machine room's survey offered on an existing lift (it does not verify the parts in the shaft). The machine rooms
  *  surveyed and the lift designs drawn on this calculation are listed; the buttons are for whoever draws the project,
- *  on a live installation and a calculation the running engine reproduces. */
-export default async function ProgettoPanel({ calcId, projectId, disegno, repl, below, rooms, progetti, draws, locale }: {
+ *  on a live installation and a calculation the running engine reproduces; a role without that right reads whose the
+ *  step is (`handoff`, as on the installation's page). */
+export default async function ProgettoPanel({ calcId, projectId, disegno, repl, below, rooms, progetti, draws, handoff = false, locale }: {
   calcId: string;
   projectId: string;
   disegno: Disegno;
@@ -27,9 +28,11 @@ export default async function ProgettoPanel({ calcId, projectId, disegno, repl, 
   rooms: readonly Rec[];
   progetti: readonly Rec[];
   draws: boolean;
+  /** the role does not hold the right to draw the project (read-only mode or not) */
+  handoff?: boolean;
   locale: string;
 }) {
-  const [t, tm] = await Promise.all([getTranslations('calculations.progetto'), getTranslations('room')]);
+  const [t, tm, tp] = await Promise.all([getTranslations('calculations.progetto'), getTranslations('room'), getTranslations('projects')]);
   const fd = dateFormat(locale), survey = repl && !below;
   const rileva = <Link className={`btn${disegno === 'locale' ? ' btn-primary' : ''}`} href={`/app/calculations/${calcId}/locale`}>{rooms.length ? tm('again') : tm('start')}</Link>;
   const disegna = (primary: boolean) => (
@@ -56,6 +59,7 @@ export default async function ProgettoPanel({ calcId, projectId, disegno, repl, 
         </div>
       ) : null}
       {draws && disegno === 'vano' && survey ? <p className="note">{t('notaVano')}</p> : null}
+      {handoff ? <p className="note">{tp('handoff_progetto')}</p> : null}
     </section>
   );
 }

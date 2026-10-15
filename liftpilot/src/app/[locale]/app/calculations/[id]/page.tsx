@@ -4,7 +4,7 @@ import { Link } from '@/i18n/routing';
 import Icon from '@/components/Icon';
 import SectionTitle from '@/components/project/SectionTitle';
 import { requireCapability } from '@/lib/auth';
-import { can, remakerOf, remakes } from '@/lib/rbac';
+import { RIGHT_OF_STEP, can, holds, remakerOf, remakes } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { NORMA_BREVE, ambitoOf, normeOf } from '@/lib/lift/collaudo';
 import { calcMachine, calcOrder, designMachine, designOrder } from '@/lib/order/machine';
@@ -88,10 +88,10 @@ export default async function CalculationPage({ params, searchParams }: {
   const download = rec.ok && can(user, 'report:download');
   const order = !download || kept ? null : lift ? designOrder(lift.inputs, advice, lift.dv) : calcOrder(V, advice);
   // the cost with the company's prices (only for whoever sees prices): the design's articles, or the replacement's machine
-  // (a lift design tested to UNI 10411: only the parts it replaces, as a replacement) with the ropes cut as sheet 1 of its
-  // shaft design measures them
+  // (a lift design tested to UNI 10411: only the parts it replaces, as a replacement; a machine kept: none) with the ropes
+  // cut as sheet 1 of its shaft design measures them
   const costKind = bomKind(lift ? lift.dv.collaudo : C);
-  const costed = await projectCost(user, lift ? designBom({ ...lift.dv, layout: withPitches(lift.dv.layout, pitchesOf(c.project.plant)) }, plantData(c.project.plant)) : calcBom(V, C, null, rec.design?.layout ?? null), costKind,
+  const costed = await projectCost(user, lift ? designBom({ ...lift.dv, layout: withPitches(lift.dv.layout, pitchesOf(c.project.plant)) }, plantData(c.project.plant)) : calcBom(V, C, null, rec.design?.layout ?? null, kept), costKind,
     lift ? designBasis(lift.dv) : { stops: null, travel: analyse(V).ctx.I.H });
   const where = lift ? 'design' : 'calc';
   // before an issue: the machine the data of the installation name against the catalogue's the set would carry (the
@@ -145,9 +145,11 @@ export default async function CalculationPage({ params, searchParams }: {
         ) : null}
         <div className="wide"><dt>{t('col_hash')}</dt><dd className="hash">{c.sha256}{same ? ` · ${t('hashOk')}` : ''}</dd></div>
       </dl>
-      <AdviceView advice={advice} alt={alt && lift ? { advice: alt, sheave: lift.dv.machine.D } : null} fmt={fmt} where={where}
-        inUse={(x) => own !== null && own.brand === x.brand && own.model === x.model && (!lift || own.I.layout === x.I.layout)} />
-      {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} uncounted={lift ? null : calcUncounted(C)} locale={locale} scope={!lift ? 'calc' : costKind === 'full' ? 'design' : 'modification'}
+      {/* a machine kept is verified as it is: no proposal, advice or order (the calculator shows none either) */}
+      {kept ? null : <AdviceView advice={advice} alt={alt && lift ? { advice: alt, sheave: lift.dv.machine.D } : null} fmt={fmt} where={where}
+        inUse={(x) => own !== null && own.brand === x.brand && own.model === x.model && (!lift || own.I.layout === x.I.layout)} />}
+      {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} uncounted={lift ? null : calcUncounted(C)} locale={locale}
+        scope={!lift ? (kept ? 'resta' : 'calc') : costKind === 'full' ? 'design' : 'modification'}
         editable={can(user, 'prices:edit')} /> : null}
       {download ? (
         <section className="panel">
@@ -178,8 +180,8 @@ export default async function CalculationPage({ params, searchParams }: {
         ) : <p className="note">{t('noReviews')}</p>}
         {can(user, 'calc:review') && !c.project.archivedAt && c.reviews.length < REVIEW_MAX ? <ReviewForm calculationId={c.id} /> : null}
       </section>
-      {disegno ? <ProgettoPanel calcId={c.id} projectId={c.projectId} disegno={disegno} repl={V.context === 'repl'} below={below} rooms={rooms} progetti={progetti}
-        draws={draws && same} locale={locale} /> : null}
+      {disegno ? <ProgettoPanel calcId={c.id} projectId={c.projectId} disegno={disegno} repl={V.context === 'repl' && !kept} below={below} rooms={rooms} progetti={progetti}
+        draws={draws && same} handoff={live && !holds(user, RIGHT_OF_STEP.progetto)} locale={locale} /> : null}
       <section className="panel">
         <SectionTitle icon="file-stack">{tt('title')}</SectionTitle>
         <p className="note">{disegno ? (disegno === 'locale' ? tm('setsFromRoom') : t('progetto.tavole')) : tt('lead')}</p>

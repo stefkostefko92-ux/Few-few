@@ -135,21 +135,22 @@ export const calcUncounted = (C: Collaudo | null): Uncounted =>
  *  software's default for the calculation, collaudo.ts collaudoOf; the ropes by ropesKept), the adaptation of ACOP/UCM
  *  under UNI 10411-11, and the installer as a lump sum (the other parts `C` replaces: calcUncounted). The cut length on
  *  the rig of the shaft design laid out `shaft` the calculation was made from, as its sheet 1 measures it (rope.ts
- *  layoutRigLength); without one, the formula. */
-export function calcBom(V: FormValues, C: Collaudo | null = null, room: RoomDerived | null = null, shaft: Layout | null = null): BomLine[] {
+ *  layoutRigLength); without one, the formula. A modernisation keeping the machine (`resta`, round 45: intervento.ts
+ *  macchinaResta) counts no machine and nothing it stands on — only the parts it replaces and the installer. */
+export function calcBom(V: FormValues, C: Collaudo | null = null, room: RoomDerived | null = null, shaft: Layout | null = null, resta = false): BomLine[] {
   const c = calcMachine(V), a = room?.analysis ?? analyse(V), { I, N } = a.ctx, col = C ?? collaudoOf(V);
-  const L: BomLine[] = [c ? { key: machineKey(c.brand, c.model), label: { item: 'machine', name: `${c.brand} ${c.model}` }, qty: 1, unit: 'pz' } : { key: null, label: { item: 'machine_other' }, qty: 1, unit: 'pz' }];
+  const L: BomLine[] = resta ? [] : [c ? { key: machineKey(c.brand, c.model), label: { item: 'machine', name: `${c.brand} ${c.model}` }, qty: 1, unit: 'pz' } : { key: null, label: { item: 'machine_other' }, qty: 1, unit: 'pz' }];
   // with the room surveyed, what stands there (the maker's frame, ours, or the support with the pulley's stand); else
   // the maker's bedplate the calculation's machine takes
-  const rf = room?.M.rinvio ?? null, mk = room ? (rf?.on === 'frame' ? rf.maker : null) : c?.bedplate ?? null;
+  const rf = resta ? null : room?.M.rinvio ?? null, mk = resta ? null : room ? (rf?.on === 'frame' ? rf.maker : null) : c?.bedplate ?? null;
   if (mk) L.push({ key: bedplateKey(mk.code), label: { item: 'bedplate', name: `${mk.brand} ${mk.code}` }, qty: 1, unit: 'pz' });
-  else if (room?.G) {
+  else if (room?.G && !resta) {
     const sup = supportOf(room.G.room, room.M.Dp > 0);
     L.push({ key: `support:${sup.kind}`, label: { item: `support_${sup.kind}` }, qty: 1, unit: 'pz' });
   }
   if (rf?.on === 'stand') L.push({ key: 'support:stand', label: { item: 'support_stand' }, qty: 1, unit: 'pz' });
-  L.push(...hebLines(room?.heb?.chosen));
-  if (I.layout === 'bottom') L.push({ key: 'base:below', label: { item: 'base_below' }, qty: 1, unit: 'pz' });
+  if (!resta) L.push(...hebLines(room?.heb?.chosen));
+  if (I.layout === 'bottom' && !resta) L.push({ key: 'base:below', label: { item: 'base_below' }, qty: 1, unit: 'pz' });
   // the ropes when the intervention replaces them: as the test says, and new whenever the calculation gives them their
   // own number and diameter (collaudo.ts ropesKept, as sheet 1 and the draft order)
   if (!ropesKept(col, V)) {

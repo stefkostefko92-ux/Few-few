@@ -101,7 +101,8 @@ npx tsx --conditions=react-server scripts/landing-docs.ts   # страницит
 - **Calcolo argano смята, Progetto чертае** (кръг 45): типът на интервенцията, изпитването, машината, Q, v, P, въжетата
   и окачването са на „Calcolo argano“; Progetto праща само геометрията (`ProgettoInputs`) и коя е основата, сървърът
   сглобява (`liftInputsOf`) и пише `LiftDesign.baseCalculationId`. Съоръжението не пази тип — чете го от последното
-  изчисление от стъпка 2 (`src/server/calcolo-base.ts`); „подмяна → цял проект“ (`upgradeProjectAction`) вече няма.
+  изчисление от стъпка 2, освен ако проект отпреди е по-нов от него (`src/server/calcolo-base.ts`, `legacyPiuNuovo`);
+  машина, която остава („Argano: No“) — без предложение, съвет, цена и поръчка, Progetto — шахтата, не машинното; „подмяна → цял проект“ (`upgradeProjectAction`) вече няма.
   `Project.kind` не се чете и не се пише от никой код (глобален `omit` в `src/lib/db.ts`, тест `no-project-kind`);
   колоната остава до миграция след потвърждението на собственика. Кръгът Calcolo ↔ Progetto: „Porta nel calcolo“
   (`?dal=progetto`) и „Aggiorna il progetto con l’ultimo calcolo“. `/vano` няма; записите отпреди формуляра са в архива

@@ -45,17 +45,21 @@ export const pilastroRif = (norma: Norma10411): string => (norma === '10411-1' ?
  *  area are the shaft design's). */
 const EN81_20_MACCHINA = 'funi (5.5), freno (5.9.2.2) e manovra di emergenza (5.9.2.3)';
 
-/** A modification that replaces other parts besides the machine, in the references (registry PROFILO, DPR 162/1999). */
+/** A modification that replaces other parts besides the machine, in the references (registry PROFILO, DPR 162/1999); a
+ *  modernisation keeping the machine (round 45) modifies the other parts only. */
 const DPR_PARTI = 'sostituzione del macchinario e delle altre parti come modifiche costruttive (art. 2 c.1 lett. cc)); verifica straordinaria (art. 14)';
+const DPR_RESTA = 'sostituzione o modifica delle parti indicate come modifiche costruttive, con l’argano esistente che resta (art. 2 c.1 lett. cc)); '
+  + 'verifica straordinaria (art. 14)';
 
 /** The references of the relazione, by the case: an existing installation is modified under DPR 162/1999 and tested to
  *  the UNI 10411 part chosen; a new one is placed on the market and put into service (section «Adempimenti»), with no UNI
- *  10411 and no extraordinary inspection; DM 236/1989 with a shaft design; UNI EN 81-1 with a machine to it. */
-export function riferimentiRows(repl: boolean, C: Pick<Collaudo, 'norma' | 'parti'>, std: MachineStd, design: boolean): string[][] {
+ *  10411 and no extraordinary inspection; DM 236/1989 with a shaft design; UNI EN 81-1 with a machine to it. `resta`: a
+ *  modernisation keeping the machine (intervento.ts macchinaResta; false for a record saved without its type). */
+export function riferimentiRows(repl: boolean, C: Pick<Collaudo, 'norma' | 'parti'>, std: MachineStd, design: boolean, resta = false): string[][] {
   const norma = C.norma, altre = repl && norma !== 'en81' && C.parti.some((p) => p !== 'machine');
   const rows = PROFILO.documenti
     .filter((d) => (d.sigla.startsWith('UNI 10411') ? repl && d.sigla.startsWith(`UNI ${norma}:`) : d.sigla.startsWith('DM 236') ? design : true))
-    .map((d) => [d.sigla, d.sigla.startsWith('DPR 162/1999') && (!repl || altre) ? (repl ? DPR_PARTI : DPR_NUOVO)
+    .map((d) => [d.sigla, d.sigla.startsWith('DPR 162/1999') && (!repl || altre) ? (repl ? (resta ? DPR_RESTA : DPR_PARTI) : DPR_NUOVO)
       : !design && d.sigla === 'UNI EN 81-20:2020' ? EN81_20_MACCHINA : d.ambito]);
   return std === 'en81-1' ? [...rows, en81_1(norma)] : rows;
 }
@@ -216,19 +220,29 @@ export function esitiBlocks(C: Collaudo, checks: readonly { id: CheckId | ShaftC
 }
 
 /** The parts a modification replaces or changes besides the machine: modifications too, the case of DPR 162/1999 art. 2
- *  c.1 lett. cc) of each for the engineer to name (the list of the cases is not in the texts read). */
-function altreModifiche(C: Collaudo): PuntoInSito[] {
+ *  c.1 lett. cc) of each for the engineer to name (the list of the cases is not in the texts read); with the machine
+ *  kept (`resta`) they are the modification. */
+function altreModifiche(C: Collaudo, resta: boolean): PuntoInSito[] {
   const altre = C.norma === 'en81' ? [] : C.parti.filter((p) => p !== 'machine');
   return altre.length ? [{ rif: 'DPR 162/1999, art. 2 c.1 lett. cc)', stato: 'da_verificare',
-    testo: `sono modifiche costruttive anche le altre parti sostituite o modificate (${altre.map((p) => LIFT[`parte_${p}` as const].toLowerCase()).join(', ')}): `
+    testo: `sono modifiche costruttive ${resta ? 'le parti' : 'anche le altre parti'} sostituite o modificate (${altre.map((p) => LIFT[`parte_${p}` as const].toLowerCase()).join(', ')}): `
       + 'il caso della lettera cc) di ciascuna lo indica il tecnico nella comunicazione' }] : [];
 }
+
+/** With the machine kept (round 45): DPR 162/1999's case of the machine replaced is not this one, and the points of UNI
+ *  10411 and UNI EN 81-20 that only concern a new machine (point 14 of UNI 10411-1/-11) are not printed. */
+const DPR_CC_RESTA: PuntoInSito = { rif: 'DPR 162/1999, art. 2 c.1 lett. cc)', stato: 'confermato',
+  testo: 'la modifica è costruttiva; l’argano resta, quindi non è il caso n. 5) della sostituzione del macchinario' };
+export const PUNTI_MACCHINA_NUOVA: readonly string[] = ['UNI 10411-1:2024, 14.4 a)–g)', 'UNI 10411-11:2024, 14.3 a) e App. A (14); UNI EN 81-20:2020, 5.6.6.2 e 5.6.7.3',
+  'UNI 10411-11:2024, 14.3 b)', 'UNI EN 81-20:2020, C.2 e 7.3.2'];
 
 const punto = (p: PuntoInSito): string => `${p.rif}: ${p.testo}${p.stato === 'da_verificare' ? ' (da verificare sul testo vigente)' : ''}.`;
 
 /** The section of what the law asks of the intervention (DPR 162/1999: a new lift, or a modification) and, for each
- *  standard of the test, its citation in the Official Journal and the points the engineer checks on site. */
-export function adempimentiBlocks(C: Collaudo, repl: boolean): ReportBlock[] {
+ *  standard of the test, its citation in the Official Journal and the points the engineer checks on site (`resta`: the
+ *  machine kept, PUNTI_MACCHINA_NUOVA left out). */
+export function adempimentiBlocks(C: Collaudo, repl: boolean, resta = false): ReportBlock[] {
+  const modifica = resta ? [DPR_CC_RESTA, ...ADEMPIMENTI.modifica.slice(1)] : ADEMPIMENTI.modifica;
   const out: ReportBlock[] = [
     { t: 'p', text: repl
       ? "L’intervento modifica un impianto esistente: il DPR 162/1999 e s.m.i. chiede gli adempimenti che seguono. Per ogni normativa del collaudo, "
@@ -236,12 +250,12 @@ export function adempimentiBlocks(C: Collaudo, repl: boolean): ReportBlock[] {
       : "Impianto nuovo: il DPR 162/1999 e s.m.i. chiede gli adempimenti che seguono. Per ogni normativa del collaudo, sotto, la sua citazione e i punti "
         + 'che il tecnico verifica in sito, con il riferimento e il valore (parafrasati: il testo delle norme non è riportato).' },
     { t: 'h3', text: 'Adempimenti (DPR 162/1999)' },
-    { t: 'list', items: [...ADEMPIMENTI[repl ? 'modifica' : 'nuovo'], ...(repl ? altreModifiche(C) : [])].map(punto) },
+    { t: 'list', items: [...(repl ? modifica : ADEMPIMENTI.nuovo), ...(repl ? altreModifiche(C, resta) : [])].map(punto) },
   ];
   for (const n of normeOf(C)) {
-    const info = NORME_INFO[n];
+    const info = NORME_INFO[n], punti = resta ? info.punti.filter((p) => !PUNTI_MACCHINA_NUOVA.includes(p.rif)) : info.punti;
     out.push({ t: 'h3', text: NORMA_SIGLA[n] }, { t: 'p', style: 'note', text: `Citazione: ${info.citazione}.${info.avviso ? ` Attenzione: ${info.avviso}.` : ''}` });
-    if (info.punti.length) out.push({ t: 'list', items: info.punti.map(punto) });
+    if (punti.length) out.push({ t: 'list', items: punti.map(punto) });
   }
   return out;
 }

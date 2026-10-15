@@ -21,7 +21,7 @@ export async function blankCalc({ page, hydrated, example }) {
   // «Solo argano»: the ropes still to answer, right after the type's place in the list
   await page.click('label.intervento-tipo[data-tipo="SOLO_ARGANO"]');
   assert.equal((await page.textContent('.summary .missing-list li:first-child'))?.trim(), 'Funi sostituite', 'the ropes to answer');
-  await page.click('.parti-sino li[data-part="ropes"] button:has-text("No")');
+  await page.click('.parti-sino li[data-part="ropes"] label:has-text("No")');
   assert.notEqual((await page.textContent('.summary .missing-list li:first-child'))?.trim(), 'Funi sostituite', 'answered');
   await page.fill('#Q', '630');
   await page.waitForSelector('.savebar .draft-bar:has-text("Bozza salvata")', { timeout: 15000 });

@@ -50,33 +50,37 @@ interface TipoRow {
   sTipo: TipoIntervento | null;
   sContext: string | null;
   sCollaudo: unknown;
+  sAt: Date | null;
   aId: string | null;
   aTipo: TipoIntervento | null;
   aContext: string | null;
   aCollaudo: unknown;
+  aAt: Date | null;
+  aLegacy: boolean | null;
 }
 
 /** The type of intervention of each installation of the company, archived or active (round 45, never stored on the
- *  installation): its latest step-2 calculation's, else its latest calculation's of any provenance (a whole project
- *  before round 45), read by its shape when declared before none; null — «Da definire». One query: each installation's
- *  two latest calculations through the [projectId, createdAt] index (LATERAL … LIMIT 1); mapped in TypeScript only
- *  (calcolo-base.ts tipoDaUltimi). */
+ *  installation): its latest step-2 calculation's — or its newer design's of the one form —, else its latest
+ *  calculation's of any provenance (a whole project before round 45), read by its shape when declared before none; null
+ *  — «Da definire». One query: each installation's two latest calculations through the [projectId, createdAt] index
+ *  (LATERAL … LIMIT 1); mapped in TypeScript only (calcolo-base.ts tipoDaUltimi). */
 export async function tipiImpianti(user: SessionUser, archived: boolean): Promise<Map<string, TipoIntervento | null>> {
   const rows = await prisma.$queryRaw<TipoRow[]>`
-    SELECT p."id", s."id" AS "sId", s."intervento" AS "sTipo", s."inputs"->>'context' AS "sContext", s."collaudo" AS "sCollaudo",
-      a."id" AS "aId", a."intervento" AS "aTipo", a."inputs"->>'context' AS "aContext", a."collaudo" AS "aCollaudo"
+    SELECT p."id", s."id" AS "sId", s."intervento" AS "sTipo", s."inputs"->>'context' AS "sContext", s."collaudo" AS "sCollaudo", s."createdAt" AS "sAt",
+      a."id" AS "aId", a."intervento" AS "aTipo", a."inputs"->>'context' AS "aContext", a."collaudo" AS "aCollaudo", a."createdAt" AS "aAt",
+      EXISTS (SELECT 1 FROM "LiftDesign" l WHERE l."calculationId" = a."id" AND l."baseCalculationId" IS NULL) AS "aLegacy"
     FROM "Project" p
     LEFT JOIN LATERAL (
-      SELECT c."id", c."intervento", c."inputs", c."collaudo" FROM "Calculation" c
+      SELECT c."id", c."intervento", c."inputs", c."collaudo", c."createdAt" FROM "Calculation" c
       WHERE c."projectId" = p."id" AND c."shaftDesignId" IS NULL AND NOT EXISTS (SELECT 1 FROM "LiftDesign" l WHERE l."calculationId" = c."id")
       ORDER BY c."createdAt" DESC LIMIT 1
     ) s ON true
     LEFT JOIN LATERAL (
-      SELECT c."id", c."intervento", c."inputs", c."collaudo" FROM "Calculation" c WHERE c."projectId" = p."id" ORDER BY c."createdAt" DESC LIMIT 1
+      SELECT c."id", c."intervento", c."inputs", c."collaudo", c."createdAt" FROM "Calculation" c WHERE c."projectId" = p."id" ORDER BY c."createdAt" DESC LIMIT 1
     ) a ON true
     WHERE p."companyId" = ${user.companyId} AND ${archived ? Prisma.sql`p."archivedAt" IS NOT NULL` : Prisma.sql`p."archivedAt" IS NULL`}`;
-  return new Map(rows.map((r) => [r.id, tipoDaUltimi(r.sId ? { intervento: r.sTipo, context: r.sContext, collaudo: r.sCollaudo } : null,
-    r.aId ? { intervento: r.aTipo, context: r.aContext, collaudo: r.aCollaudo } : null)]));
+  return new Map(rows.map((r) => [r.id, tipoDaUltimi(r.sId ? { intervento: r.sTipo, context: r.sContext, collaudo: r.sCollaudo, createdAt: r.sAt } : null,
+    r.aId ? { intervento: r.aTipo, context: r.aContext, collaudo: r.aCollaudo, createdAt: r.aAt, legacy: r.aLegacy } : null)]));
 }
 
 /** One installation of the company as a row of the list (the dashboard's preview); null when it is not the company's. */

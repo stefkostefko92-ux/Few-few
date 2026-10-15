@@ -1,7 +1,8 @@
 // «Aggiorna il progetto con l'ultimo calcolo» (round 45, phase 3 step 7; src/server/ridisegna-actions.ts): a lift design
 // drawn on an older «Calcolo argano» (or of the one form, older than the latest) is drawn again on the installation's
 // latest step-2 calculation — its drawing as saved, composed on it, saved naming it — for whoever draws the project and
-// not in read-only mode; an archived or foreign design, or one already on the latest, is left as it is; one already
+// not in read-only mode; an archived or foreign design, one already on the latest, or one of the one form newer than the
+// latest, is left as it is; one already
 // drawn again on it is not copied; a second click at the same moment is busy; a drawing that no longer passes, or a
 // latest calculation not reproduced, opens the Progetto on that calculation from this drawing.
 import { test, mock, beforeEach } from 'node:test';
@@ -46,7 +47,8 @@ const calc = (id: string, at: number, over: Row = {}): Row => ({
   intervento: 'AMMODERNAMENTO', ...snap(PRESETS.B), ...over,
 });
 const stored = () => liftInputsSchema.parse(liftInputsOf(progettoOf(defaultLift()), { values: snap(PRESETS.B).inputs as FormValues, collaudo: { norma: '10411-1', parti: ['machine'] } }));
-const design = (id: string, over: Row = {}): Row => ({ id, projectId: 'p1', companyId: 'c1', label: 'x', inputs: stored(), source: null, baseCalculationId: 'old', ...over });
+const design = (id: string, over: Row = {}): Row => ({ id, projectId: 'p1', companyId: 'c1', label: 'x', inputs: stored(), source: null, baseCalculationId: 'old',
+  createdAt: new Date(1.5), ...over });
 const fd = (id: string) => { const f = new FormData(); f.set('id', id); f.set('locale', 'it'); return f; };
 async function go(id: string): Promise<string> {
   const { ridisegnaDalCalcoloAction } = await import(src('server/ridisegna-actions.ts'));
@@ -57,7 +59,7 @@ async function go(id: string): Promise<string> {
 beforeEach(() => {
   calcs = [calc('old', 1), calc('latest', 2, { intervento: null, ...snap({ ...PRESETS.B, H: Number(PRESETS.B.H) + 1 }) })];
   lifts = [design('ld1'), design('legacy', { baseCalculationId: null }), design('onlatest', { baseCalculationId: 'latest' }), design('arch', { archived: true }),
-    design('theirs', { companyId: 'c2' })];
+    design('theirs', { companyId: 'c2' }), design('upgraded', { baseCalculationId: null, createdAt: new Date(3) })];
   audit = []; saved.length = 0; created = { ok: true, id: 'new1' }; gate = null; role = 'ENGINEER'; readOnly = false;
 });
 
@@ -80,6 +82,9 @@ test('ridisegna: già sull’ultimo calcolo, già rifatto, archiviato o di un’
   audit.push({ companyId: 'c1', action: 'LIFT_DESIGN_SAVED', updates: 'ld1', entityId: 'again' });
   assert.equal(await go('ld1'), '/it/app/lift-designs/again', 'the one already drawn again');
   for (const id of ['arch', 'theirs', 'nonexistent']) assert.equal(await go(id), '/it/app', id);
+  // a design of the one form newer than the latest calculation (an installation made whole after its replacement): that
+  // older calculation is not drawn on, whatever the form posted
+  assert.equal(await go('upgraded'), '/it/app/lift-designs/upgraded', 'the page’s rule on the server');
   calcs = [];
   assert.equal(await go('legacy'), '/it/app/lift-designs/legacy', 'no calculation to draw on');
   assert.equal(saved.length, 0);

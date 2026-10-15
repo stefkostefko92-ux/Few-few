@@ -85,6 +85,30 @@ test('relazione «Ammodernamento»: le parti nominate, il rifacimento e l’arga
   assert.ok(h2(doc).some((x) => x.includes(calcIt.c_prop)), 'la proposta resta quando l’argano si sostituisce');
 });
 
+test('relazione con l’argano che resta: niente «argano nuovo» né i punti della macchina nuova; senza tipo come prima', () => {
+  const all = (d: ReportDoc): string => d.blocks.map((b) => JSON.stringify(b)).join('\n');
+  const kept = report(KEPT, 'AMMODERNAMENTO'), text = all(kept);
+  assert.ok(h2(kept).some((x) => x.endsWith('Argano esistente (resta): esito in breve')), 'the summary under the kept machine');
+  assert.ok(!h2(kept).some((x) => x.includes(calcIt.q_title)));
+  assert.ok(!text.includes('sostituzione del macchinario e delle altre parti'), 'the references: no machine replaced');
+  assert.ok(text.includes('con l’argano esistente che resta (art. 2 c.1 lett. cc))'));
+  assert.ok(!text.includes('la sostituzione del macchinario ne è il caso n. 5)') && text.includes('non è il caso n. 5) della sostituzione del macchinario'));
+  assert.ok(!text.includes('UNI 10411-1:2024, 14.4 a)–g)'), 'no point of the new machine');
+  assert.ok(!text.includes('anche le altre parti sostituite'), 'the parts are the modification');
+  // a machine replaced, and a record saved without its type, print as before
+  const doc = all(report(AMMOD, 'AMMODERNAMENTO'));
+  assert.ok(doc.includes('UNI 10411-11:2024, 14.3 b)') && doc.includes('la sostituzione del macchinario ne è il caso n. 5)'));
+  assert.ok(h2(report(KEPT, null)).some((x) => x.endsWith(calcIt.q_title)), 'no type: the words of its time');
+  assert.ok(all(report(KEPT, null)).includes('UNI 10411-1:2024, 14.4 a)–g)'));
+  // the speed changed with the machine kept: the engineer evaluates the checks printed «Esistente» (15.8)
+  const speed = paras(report({ ...KEPT, parti: [...KEPT.parti, 'speed'] }, 'AMMODERNAMENTO'));
+  assert.ok(speed.includes('⚠ L’argano resta, con velocità nominale variata: le verifiche con esito «Esistente»'), speed);
+  assert.ok(speed.includes('(UNI 10411-1:2024, 15.8)'));
+  assert.ok(paras(report({ norma: '10411-11', parti: ['controller', 'speed', 'travel'] }, 'AMMODERNAMENTO')).includes('velocità nominale variata e corsa variata')
+    && paras(report({ norma: '10411-11', parti: ['controller', 'speed'] }, 'AMMODERNAMENTO')).includes('(UNI 10411-11:2024, 15 d))'));
+  assert.ok(!paras(kept).includes('L’argano resta, con'), 'nothing changed: no note');
+});
+
 test('relazione «Trasformazione completa»: il titolo, l’oggetto e il contesto', () => {
   const doc = report(TRASF, 'TRASFORMAZIONE_COMPLETA', PRESETS.A);
   assert.equal(h1(doc), 'Relazione di calcolo — trasformazione completa dell’impianto (collaudo come impianto nuovo)');

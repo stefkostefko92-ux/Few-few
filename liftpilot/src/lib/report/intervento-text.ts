@@ -63,3 +63,19 @@ export function oggettoTecnica(tipo: TipoIntervento, C: Prova, named: string | n
 
 /** The note of sheet 1 on the test, opened by the type of a calculation saved with it. */
 export const notaIntervento = (tipo: TipoIntervento, C: Prova): string => `Intervento: ${etichettaIntervento(tipo, C)}.`;
+
+/** A machine kept while the speed, the load or the travel change (round 45): the checks printed «Esistente» stay out of
+ *  the result, so the engineer evaluates them with the modified lift's data — with the speed changed the suspension is
+ *  verified again whatever stays (UNI 10411-1:2024, 15.8 with 14.1; UNI 10411-11:2024, 15 d)). Text only: which checks
+ *  enter the result is the engine's scope, round 46's correction. Null: not this case. */
+export function restaVariataText(tipo: TipoIntervento, C: Prova): string | null {
+  const v = (['speed', 'load', 'travel'] as const).filter((p) => C.parti.includes(p));
+  if (!macchinaResta(tipo, C) || !v.length) return null;
+  const nomi = v.map((p) => ({ speed: 'velocità nominale variata', load: 'portata variata', travel: 'corsa variata' })[p]);
+  const lista = nomi.length > 1 ? `${nomi.slice(0, -1).join(', ')} e ${nomi.at(-1)}` : nomi[0];
+  const funi = !v.includes('speed') ? '' : C.norma === '10411-11'
+    ? ' Con la velocità variata gli organi di sospensione si verificano per la nuova velocità (UNI 10411-11:2024, 15 d)).'
+    : ' Con la velocità variata le funi si verificano con il punto 14.1 anche se macchina e puleggia restano (UNI 10411-1:2024, 15.8).';
+  return `⚠ L’argano resta, con ${lista}: le verifiche con esito «Esistente», tra cui quelle dell’argano, non entrano nell’esito delle verifiche, `
+    + `ma il tecnico le valuta con i dati dell’impianto modificato.${funi}`;
+}

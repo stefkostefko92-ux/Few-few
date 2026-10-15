@@ -4,7 +4,7 @@
 // surveyed measure by measure and saved with a reproduced hash; its relazione tecnica, the drawing set as a draft
 // (PDF), the plan and section in DXF and DWG; a drawing set issued from it, its PDF and a revision from the same survey;
 // the whole drawing — still possible on a «Solo argano» (round 45: no more «Passa a progetto completo») — starts from the
-// survey.
+// survey; a modernisation keeping the machine is verified as it is and draws the shaft.
 import assert from 'node:assert/strict';
 import { blankCalc, blankSurvey, projectData } from './smoke-blank.mjs';
 import { step } from './smoke-kit.mjs';
@@ -23,8 +23,8 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   // the example of a replacement is a «Solo argano»: the machine is the calculation's, the ropes answered «Sì» here
   assert.ok(await page.isChecked('input[name="intervento"][value="SOLO_ARGANO"]'), 'Solo argano');
   assert.equal(await page.locator('.parti-sino li.parte').count(), 2, 'the machine and the ropes');
-  await page.click('.parti-sino li[data-part="ropes"] button:has-text("Sì")');
-  await page.waitForSelector('.parti-sino li[data-part="ropes"] button.on:has-text("Sì")');
+  await page.click('.parti-sino li[data-part="ropes"] label:has-text("Sì")');
+  await page.waitForSelector('.parti-sino li[data-part="ropes"] label.on:has-text("Sì")');
   await page.waitForSelector('.savebar button.primary:not([disabled])');
   await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
   const roomCalcUrl = page.url();
@@ -81,5 +81,43 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   // a direct pull: the plan takes the car and the counterweight under the surveyed drops, so nothing is left to fix
   // before the save (no «Calata» against the existing sheave)
   assert.equal(await page.locator('.lift-work .savebar button.btn-primary').isDisabled(), false, 'the drawing saves without a calata to fix');
+  await keptMachine({ BASE, page, hydrated, roomCalcUrl });
   return { roomUrl, roomId, roomSetUrl };
+}
+
+/** A modernisation keeping the machine (round 45, «Argano: No»): verified as it is — no proposal, advice, machine priced
+ *  or order, and its Progetto is the shaft (the machine room's survey places a new machine: refused). */
+async function keptMachine({ BASE, page, hydrated, roomCalcUrl }) {
+  step('a modernisation keeping the machine: no advice, machine cost or order; its Progetto is the shaft');
+  await page.goto(roomCalcUrl);
+  await Promise.all([page.waitForURL(/\/calc\?from=/), page.click('.page-head a[href*="/calc?from="]')]);
+  await hydrated(page, '#Q');
+  await page.click('label.intervento-tipo[data-tipo="AMMODERNAMENTO"]');
+  await page.waitForSelector('.parti-sino li[data-part="machine"] label');
+  for (const part of await page.$$eval('.parti-sino li.parte', (ls) => ls.map((l) => l.getAttribute('data-part')))) {
+    const pick = page.locator(`.parti-sino li[data-part="${part}"] label:has-text("${part === 'controller' ? 'Sì' : 'No'}")`);
+    if (await pick.count()) await pick.click();
+  }
+  // the arrow keys move along a part's pair (native radios): «Sì» → «No» and back
+  await page.focus('.parti-sino li[data-part="car"] input[value="no"]');
+  await page.keyboard.press('ArrowLeft');
+  await page.waitForSelector('.parti-sino li[data-part="car"] label.on:has-text("Sì")');
+  await page.keyboard.press('ArrowRight');
+  await page.waitForSelector('.parti-sino li[data-part="car"] label.on:has-text("No")');
+  assert.equal(await page.locator('.parti-sino li.parte.da').count(), 0, 'every part answered');
+  await page.waitForSelector('.savebar button.primary:not([disabled])');
+  await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
+  const keptUrl = page.url();
+  await page.waitForSelector('.verdict');
+  assert.match(await page.textContent('.verdict'), /Argano esistente \(resta\)/, 'the verdict under the kept machine');
+  assert.equal(await page.locator('.verdict .propline').count(), 0, 'no proposal');
+  assert.equal(await page.locator('section.advice').count(), 0, 'no advice');
+  assert.match(await page.textContent('main'), /L’argano resta quello dell’impianto: non c’è un argano da ordinare/, 'no order');
+  if (await page.locator('#project-cost-h').count()) assert.match(await page.textContent('section[aria-labelledby="project-cost-h"]'), /nessun argano né basamento da acquistare/);
+  assert.equal(await page.locator('section[aria-labelledby="calc-progetto"] a[href$="/locale"]').count(), 0, 'no survey of the machine room');
+  assert.equal(await page.locator('section[aria-labelledby="calc-progetto"] a[href*="/progetto?calc="]').count(), 1, 'the shaft to draw');
+  assert.equal((await page.request.get(`${keptUrl}/locale`)).status(), 404, 'the survey page refused');
+  const id = keptUrl.split('/').pop();
+  assert.equal((await page.request.get(`${BASE}/api/calculations/${id}/relazione`)).status(), 200, 'its relazione');
+  assert.equal((await page.request.get(`${BASE}/api/calculations/${id}/order/pdf`)).status(), 422, 'no order to draft');
 }

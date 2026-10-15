@@ -11,7 +11,7 @@
 /* «Nuovo impianto» (round 45: one — the type of intervention is chosen in its «Calcolo argano»), and under it the four
    steps every installation goes through, numbered as the stepper of its page numbers them: small dark car buttons on
    a rail, the order the work is done in */
-.dash-nuovo { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.dash-nuovo { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
 .dash-passi { display: flex; flex-wrap: wrap; gap: 6px 0; margin: 0; padding: 0; list-style: none; counter-reset: passo; font-size: 12.5px; color: var(--ink-2); }
 .dash-passi li { display: inline-flex; align-items: center; gap: 6px; counter-increment: passo; white-space: nowrap; }
 .dash-passi li::before { content: counter(passo); display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;

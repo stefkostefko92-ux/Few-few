@@ -37,7 +37,7 @@ import Verdict from './Verdict';
 import Results, { type UseKey } from './Results';
 import LegalNotice from './LegalNotice';
 import InterventoChoice from './InterventoChoice';
-import PartiSiNo from './PartiSiNo';
+import PartiSiNo, { etichettaParte } from './PartiSiNo';
 import AvvisiIntervento from './AvvisiIntervento';
 import { useIntervento, type InterventoInit } from './useIntervento';
 import { OrigineProvider, type OrigineRilievo } from '../collega/origine';
@@ -169,7 +169,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   // the hint speaks of the proposal: none while the machine stays
   const keepRopesHint = !keep || resta ? '' : mirror ? t('hint_keepRopes', { n: a.ctx.N.n, d: X.dText(a.ctx.N.d) }) : t('hint_keepRopes_free');
   const fieldLabel = (id: string): string => t((id.replace(/^[no]_/, '') as CalcKey)) + (id.startsWith('o_') ? ` (${t('g_old')})` : '');
-  const parteLabel = (p: Parte): string => (tipo === 'SOLO_ARGANO' && p === 'ropes' ? ti('funi') : tl(`parte_${p}`));
+  const parteLabel = (p: Parte): string => etichettaParte(ti, tl, tipo, p);
   const itemLabel = (id: string): string => (id === 'intervento' ? tb('intervento') : id.startsWith('parte-') ? parteLabel(id.slice(6) as Parte) : fieldLabel(id));
   const named = (keys: readonly string[]): string => keys.map((k) => ti(`err_${k}`)).join(', ');
   const errorText = saveError

@@ -130,7 +130,7 @@ try {
   await page.click('label.intervento-tipo[data-tipo="AMMODERNAMENTO"]');
   await page.click('.parti-sino .rif-preset button');
   await page.waitForSelector('.parti-sino .rif-preset button.on');
-  for (const part of ['speed', 'load', 'travel']) await page.click(`.parti-sino li[data-part="${part}"] button:has-text("No")`);
+  for (const part of ['speed', 'load', 'travel']) await page.click(`.parti-sino li[data-part="${part}"] label:has-text("No")`);
   await page.uncheck('.collaudo label:has-text("tutto l’impianto") input');
   await page.selectOption('.collaudo select', '10411-11');
   await page.waitForSelector('.savebar button.primary:not([disabled])');

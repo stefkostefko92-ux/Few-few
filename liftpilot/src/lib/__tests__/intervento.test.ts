@@ -130,6 +130,14 @@ test('interventoValido: ogni regola rifiuta il suo caso', () => {
   assert.deepEqual(v('AMMODERNAMENTO', REPL, C(['controller'])), ['compare']);
   assert.deepEqual(v('SOLO_ARGANO', { ...REPL, keepRopes: false }, C(['machine'])), ['ropes']);
   assert.deepEqual(v('AMMODERNAMENTO', { ...REPL, keepRopes: false }, C(['machine', 'car'])), ['ropes']);
+  // the load the documented loads change (UNI 10411, 6.1) makes a modernisation of the machine and its ropes: the one
+  // the «Solo argano» warning points to saves (the parts as the documents read them, collaudoOf)
+  const EX_C: FormValues = { ...PRESETS.C, ...REPL }, carichi = { documentato: { Q: 400, P: 600, Mcw: 800 } };
+  assert.ok(collaudoOf(EX_C, C(['machine'], carichi)).parti.includes('load'), 'the documented loads change the load');
+  assert.deepEqual(v('AMMODERNAMENTO', EX_C, C(['machine'], carichi)), []);
+  assert.deepEqual(v('AMMODERNAMENTO', EX_C, C(['machine', 'ropes'], carichi)), []);
+  assert.deepEqual(v('AMMODERNAMENTO', EX_C, C(['machine'])), ['parti'], 'without them, a «Solo argano»');
+  assert.deepEqual(v('SOLO_ARGANO', EX_C, C(['machine'], carichi)), [], '«Solo argano» warns, never refuses');
 });
 
 test('disegnoDi: locale macchina o vano', () => {
@@ -143,6 +151,9 @@ test('disegnoDi: locale macchina o vano', () => {
   // a machine below has no machine room over the shaft
   assert.equal(disegnoDi('SOLO_ARGANO', C(['machine']), bottom), 'vano');
   assert.equal(disegnoDi('AMMODERNAMENTO', C(['controller']), bottom), 'vano');
+  // the machine kept: the survey would place a new machine (bedplate, openings, relazione tecnica) — the shaft instead
+  assert.equal(disegnoDi('AMMODERNAMENTO', C(['controller']), top), 'vano');
+  assert.equal(disegnoDi('AMMODERNAMENTO', C(['ropes', 'controller']), top), 'vano');
 });
 
 test('punto 21.1 e argano che resta', () => {

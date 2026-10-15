@@ -23,6 +23,8 @@ mock.module(src('lib/db.ts'), { namedExports: { prisma: {
   formDraft: { findFirst: async () => (draft ? { data: draft, updatedAt: new Date('2026-10-14T10:00:00Z') } : null) },
 } } });
 const start = (): Promise<typeof import('../calc-start')> => import(src('server/calc-start.ts'));
+/** A start that exists (a ?from= of the project, or none). */
+const must = async <T,>(p: Promise<T | null>): Promise<T> => { const x = await p; assert.ok(x, 'a start'); return x; };
 const user: SessionUser = {
   id: 'u1', email: 'tecnico@example.com', name: 'Tecnico', role: 'TECHNICIAN', locale: 'it', companyId: 'c1', companyName: 'Ditta', mustChangePassword: false,
   access: 'active', trialDays: 0, readOnly: false, caps: capsOf('TECHNICIAN'), terms: 'ok', termsBinding: null,
@@ -34,18 +36,18 @@ const calc = (x: Partial<Calc>): Calc => ({ id: `c${++n}`, projectId: 'p1', comp
 test('vuoto, senza tipo; la bozza col suo tipo, una di prima letta per forma, una senza tipo da scegliere', async () => {
   const { calcStart } = await start();
   calcs = []; draft = null;
-  const blank = await calcStart(user, 'p1', null);
+  const blank = await must(calcStart(user, 'p1', null));
   assert.deepEqual([blank.mode, blank.intervento.tipo, blank.values.context], ['new', null, '']);
   draft = { values: { ...blankCalc(), Q: 630 }, collaudo: { norma: '10411-1', parti: ['machine', 'car'] }, intervento: 'AMMODERNAMENTO', risposte: ['machine', 'car', 'ropes'] };
-  const d = await calcStart(user, 'p1', null);
+  const d = await must(calcStart(user, 'p1', null));
   assert.deepEqual([d.mode, d.intervento.tipo, d.values.context], ['draft', 'AMMODERNAMENTO', 'repl']);
   assert.deepEqual(d.intervento.risposte, ['machine', 'car', 'ropes']);
   draft = { values: { ...blankCalc(), context: 'repl' }, collaudo: null };
-  const old = await calcStart(user, 'p1', null);
+  const old = await must(calcStart(user, 'p1', null));
   assert.deepEqual([old.intervento.tipo, old.intervento.collaudo], ['SOLO_ARGANO', { norma: '10411-1', parti: ['machine'] }], 'a draft before round 45');
   assert.deepEqual(old.intervento.risposte, ['machine'], 'only its «Sì»: the ropes asked again');
   draft = { values: blankCalc(), collaudo: null };
-  assert.equal((await calcStart(user, 'p1', null)).intervento.tipo, null, 'still to choose');
+  assert.equal((await must(calcStart(user, 'p1', null))).intervento.tipo, null, 'still to choose');
   draft = null;
 });
 
@@ -54,17 +56,17 @@ test('l’ultimo calcolo di passo 2, poi quello di qualsiasi provenienza; il tip
   const declared = calc({ intervento: 'AMMODERNAMENTO', collaudo: { norma: '10411-11', parti: ['machine', 'controller'] } });
   const archive = calc({ shaftDesignId: 's1' });
   calcs = [declared, archive];
-  const s = await calcStart(user, 'p1', null);
+  const s = await must(calcStart(user, 'p1', null));
   assert.equal(s.mode, null, 'a saved calculation continued');
   assert.deepEqual([s.intervento.tipo, s.values.context], ['AMMODERNAMENTO', 'repl']);
   assert.deepEqual(s.intervento.risposte, [...PARTI], 'declared: every part was answered');
   // asked for: the archive one, read by its shape
-  assert.equal((await calcStart(user, 'p1', archive.id)).intervento.tipo, 'SOLO_ARGANO');
-  // another project's id: empty
-  assert.equal((await calcStart(user, 'p2', declared.id)).mode, 'new');
+  assert.equal((await must(calcStart(user, 'p1', archive.id))).intervento.tipo, 'SOLO_ARGANO');
+  // another project's id: none (the page answers 404 — never an empty form over the draft)
+  assert.equal(await calcStart(user, 'p2', declared.id), null);
   // a renovation saved before round 45: a modernisation with its «Sì» answered
   calcs = [calc({ collaudo: { norma: '10411-1', parti: PARTI_RIFACIMENTO, rifacimento: true }, inputs: { ...PRESETS.C, keepRopes: false } })];
-  const rif = await calcStart(user, 'p1', null);
+  const rif = await must(calcStart(user, 'p1', null));
   assert.equal(rif.intervento.tipo, 'AMMODERNAMENTO');
   assert.deepEqual(rif.intervento.risposte, [...PARTI_RIFACIMENTO]);
 });
@@ -77,7 +79,7 @@ test('dal calcolo di un progetto dell’impianto: nps come inserito, la prova de
   assert.ok(Number(dv.values.nps) > 1, 'the derived bends include the extra head pulleys');
   const lift = calc({ inputs: dv.values, collaudo: { ...dv.collaudo }, shaftDesignId: 's1', liftDesign: { inputs: L, createdAt: new Date('2026-10-02T09:00:00Z') } });
   calcs = [lift];
-  const s = await calcStart(user, 'p1', null);
+  const s = await must(calcStart(user, 'p1', null));
   assert.equal(s.values.nps, 1, 'the bends entered on the design, never the derived ones');
   assert.deepEqual([s.intervento.tipo, s.values.context], ['TRASFORMAZIONE_COMPLETA', 'new']);
   assert.deepEqual(Object.keys(s.progetto?.valori ?? {}).sort(), ['H', 'Hv', 'L0']);
@@ -86,7 +88,7 @@ test('dal calcolo di un progetto dell’impianto: nps come inserito, la prova de
   const R = { ...defaultLift(), calc: { ...defaultLift().calc, context: 'repl', layout: 'topDefl' }, collaudo: { norma: '10411-11' as const, parti: ['machine' as const, 'ropes' as const] } };
   const rv = deriveLift(R);
   calcs = [calc({ inputs: rv.values, collaudo: { ...rv.collaudo }, shaftDesignId: 's2', liftDesign: { inputs: R, createdAt: new Date('2026-10-03T09:00:00Z') } })];
-  const r = await calcStart(user, 'p1', null);
+  const r = await must(calcStart(user, 'p1', null));
   assert.deepEqual([r.intervento.tipo, r.intervento.collaudo], ['SOLO_ARGANO', R.collaudo]);
   assert.deepEqual(Object.keys(r.progetto?.valori ?? {}).sort(), ['H', 'L0', 'dx', 'h']);
 });

@@ -9,7 +9,7 @@
 // type existed are read by their shape (interventoDi); the one form's three choices of round 27 are gone with it (the
 // renovation is the modernisation's preset, rifacimentoTo). Pure.
 import type { FormValues } from '@/calc/types';
-import { NORME_AGGIUNTIVE, PARTI, ammessa, esistenteOf, type Collaudo, type NormaAggiuntiva, type NormaCollaudo, type Parte } from './collaudo';
+import { NORME_AGGIUNTIVE, PARTI, ammessa, collaudoOf, esistenteOf, type Collaudo, type NormaAggiuntiva, type NormaCollaudo, type Parte } from './collaudo';
 import { SOSTANZIALE } from './norme-collaudo';
 
 /** The three types, as the database's enum names them (TipoIntervento, migration 21): no mapping between the two. */
@@ -90,7 +90,8 @@ export function rifacimentoTo(on: boolean, C: Collaudo): { values: FormValues; c
 /** What the type, the calculation's values and the test chosen disagree on (the keys of the save's error; none: they
  *  agree). The base EN 81-20/50 is the transformation's (it can be added to a modification as a standard); speed and
  *  travel make a modernisation of what would be a «Solo argano»; the load is never chosen there (the documented loads
- *  may bring it: a warning, not a refusal). */
+ *  may bring it: a warning, not a refusal) — and the load they bring makes one too: a modernisation is told apart from
+ *  a «Solo argano» on the parts as the documents read them (collaudoOf), the rule's load among them. */
 export function interventoValido(t: TipoIntervento | null | undefined, V: FormValues, chosen: Collaudo | null | undefined): string[] {
   if (!t) return ['intervento'];
   const out = new Set<string>();
@@ -105,7 +106,7 @@ export function interventoValido(t: TipoIntervento | null | undefined, V: FormVa
   if (t === 'SOLO_ARGANO') {
     if (!has('machine') || !subset(P, PARTI_SOLO)) out.add('parti');
     if (chosen.rifacimento) out.add('rifacimento');
-  } else if (!P.length || (!chosen.rifacimento && has('machine') && subset(P, PARTI_SOLO))) out.add('parti');
+  } else if (!P.length || (!chosen.rifacimento && has('machine') && subset(collaudoOf(V, chosen).parti, PARTI_SOLO))) out.add('parti');
   if (chosen.rifacimento) {
     if (!subset(PARTI_RIFACIMENTO, P)) out.add('rifacimento');
     if (has('sling')) out.add('sling');
@@ -115,16 +116,17 @@ export function interventoValido(t: TipoIntervento | null | undefined, V: FormVa
   return [...out];
 }
 
+/** A modernisation that keeps the existing machine: the calculation verifies it with the modified lift's data — no
+ *  proposal, advice or order. */
+export const macchinaResta = (t: TipoIntervento | null | undefined, C: Pick<Collaudo, 'parti'>): boolean => t === 'AMMODERNAMENTO' && !C.parti.includes('machine');
+
 /** What the Progetto of a step-2 calculation draws: the survey of the machine room for a «Solo argano» and for a
  *  modernisation of the machine room's parts only (C: the test as the documents read it, collaudoOf), the whole shaft
- *  otherwise; a machine below has no machine room over the shaft. */
+ *  otherwise; a machine below has no machine room over the shaft. The survey places a new machine on the falls in place
+ *  (its bedplate, its openings, its relazione tecnica): a modernisation that keeps the machine draws the shaft. */
 export const disegnoDi = (t: TipoIntervento, C: Pick<Collaudo, 'parti'>, V: FormValues): Disegno =>
-  (V.layout !== 'bottom' && (t === 'SOLO_ARGANO' || (t === 'AMMODERNAMENTO' && subset(C.parti, PARTI_LOCALE))) ? 'locale' : 'vano');
+  (V.layout !== 'bottom' && !macchinaResta(t, C) && (t === 'SOLO_ARGANO' || (t === 'AMMODERNAMENTO' && subset(C.parti, PARTI_LOCALE))) ? 'locale' : 'vano');
 
 /** Controller, machine, landing doors, car and sling replaced together: a substantial modification, UNI 10411-1/-11
  *  point 21.1 (the form warns and offers the transformation; the documents print the point, norme-collaudo.ts). */
 export const sostanziale = (C: Pick<Collaudo, 'parti'>): boolean => SOSTANZIALE.every((p) => C.parti.includes(p));
-
-/** A modernisation that keeps the existing machine: the calculation verifies it with the modified lift's data — no
- *  proposal, advice or order. */
-export const macchinaResta = (t: TipoIntervento | null | undefined, C: Pick<Collaudo, 'parti'>): boolean => t === 'AMMODERNAMENTO' && !C.parti.includes('machine');

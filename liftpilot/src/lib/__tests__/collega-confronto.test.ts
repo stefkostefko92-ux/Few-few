@@ -149,20 +149,21 @@ test('i passi: da fare, fatto, da aggiornare (software o rilievo più recente), 
     erroriCalcolo: 0, erroriProgetto: 0 });
   assert.deepEqual(p, { rilievo: 'fatto', calcolo: 'daAggiornare', progetto: 'daAggiornare', documenti: 'daAggiornare' });
   assert.equal(passi({ rilievo: r, calcolo: rec('2026-10-13T09:00:00Z'), progetto: null, tavole: null, erroriCalcolo: 2, erroriProgetto: 0 }).calcolo, 'differenze');
-  // the documents: the record's own (relazione, ordine) — done once a current record is saved, without a set issued too
-  assert.equal(passi({ rilievo: r, calcolo: rec('2026-10-13T09:00:00Z'), progetto: null, tavole: null, erroriCalcolo: 0, erroriProgetto: 0 }).documenti, 'fatto');
+  // the documents: the records' own (relazione, ordine) — done once the Progetto is saved too, without a set issued
+  // (round 45: the calculation alone leaves them to do — the tavole and the relazione of step 3 are missing)
+  assert.equal(passi({ rilievo: r, calcolo: rec('2026-10-13T09:00:00Z'), progetto: null, tavole: null, erroriCalcolo: 0, erroriProgetto: 0 }).documenti, 'daFare');
   assert.equal(passi({ rilievo: r, calcolo: rec('2026-10-13T09:00:00Z', true), progetto: null, tavole: null, erroriCalcolo: 0, erroriProgetto: 0 }).documenti, 'daAggiornare');
   assert.equal(passi({ rilievo: r, calcolo: rec('2026-10-13T09:00:00Z'), progetto: rec('2026-10-14T09:00:00Z'), tavole: { createdAt: new Date('2026-10-14T10:00:00Z') },
     erroriCalcolo: 0, erroriProgetto: 0 }).documenti, 'fatto');
   // a role that does not see the surveys: linked or not, nothing judged against the survey
   const blind = passi({ rilievo: null, collegato: true, calcolo: rec('2026-10-11T09:00:00Z'), progetto: null, tavole: null, erroriCalcolo: 0, erroriProgetto: 0 });
-  assert.deepEqual(blind, { rilievo: 'fatto', calcolo: 'fatto', progetto: 'daFare', documenti: 'fatto' });
+  assert.deepEqual(blind, { rilievo: 'fatto', calcolo: 'fatto', progetto: 'daFare', documenti: 'daFare' });
   assert.equal(passi({ rilievo: null, collegato: false, calcolo: null, progetto: null, tavole: null, erroriCalcolo: 0, erroriProgetto: 0 }).rilievo, 'daFare');
   assert.deepEqual(calcoloDaAggiornare(rec('2026-10-12T09:00:00Z', true), r), { old: true, rilievo: true });
   assert.equal(calcoloDaAggiornare(rec('2026-10-13T09:00:00Z'), r), null);
 });
 
-test('i documenti mai «fatto» accanto a un record con differenze o più vecchio del rilievo', () => {
+test('i documenti mai «fatto» accanto a un record con differenze o più vecchio del rilievo, né senza il Progetto', () => {
   const rec = (s: string, old = false) => ({ createdAt: new Date(s), old });
   const r = { updatedAt: new Date('2026-10-12T10:00:00Z') };
   const diff = passi({ rilievo: r, calcolo: rec('2026-10-13T09:00:00Z'), progetto: null, tavole: null, erroriCalcolo: 1, erroriProgetto: 0 });
@@ -177,7 +178,8 @@ test('i documenti mai «fatto» accanto a un record con differenze o più vecchi
     for (const p of [null, rec('2026-10-12T09:30:00Z'), rec('2026-10-13T10:00:00Z'), rec('2026-10-13T10:00:00Z', true)]) {
       for (const [ec, ep] of [[0, 0], [1, 0], [0, 1]] as const) {
         const s = passi({ rilievo: r, calcolo: c, progetto: p, tavole: null, erroriCalcolo: ec, erroriProgetto: ep });
-        if (s.documenti === 'fatto') assert.ok([s.calcolo, s.progetto].every((x) => x === 'fatto' || x === 'daFare'), JSON.stringify(s));
+        if (s.documenti === 'fatto') assert.ok(s.progetto === 'fatto' && (s.calcolo === 'fatto' || s.calcolo === 'daFare'), JSON.stringify(s));
+        else if (s.documenti === 'daFare') assert.ok(!p && [s.calcolo, s.progetto].every((x) => x === 'fatto' || x === 'daFare'), JSON.stringify(s));
         else if (c || p) assert.equal(s.documenti, 'daAggiornare');
       }
     }

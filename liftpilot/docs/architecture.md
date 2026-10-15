@@ -253,11 +253,12 @@ src/server/          Server actions ('use server') и заявки, винаги
                      aggiornare“ по версиите), save (записите: изчисление, проект на асансьора, машинно — от формите и от
                      обновяването), refresh-actions («Aggiorna con il software attuale»), drawing-pdf (PDF-ът на издадения
                      комплект, пазен какъвто е издаден), download (отказите и отговорите на сваляните документи; кратките отговори — на италиански от src/lib/answers.ts, думите на errors.*), calc-start
-                     (кръг 45: откъде тръгва „Calcolo argano“ — ?from=, черновата, последното от стъпка 2, последното изобщо,
-                     празно — с типа, изпитването и частите), progetto-start (откъде тръгва Progetto: избраният проект,
+                     (кръг 45: откъде тръгва „Calcolo argano“ — ?from= (на друго съоръжение — null, страницата 404),
+                     черновата, последното от стъпка 2, последното изобщо, празно — с типа, изпитването и частите), progetto-start (откъде тръгва Progetto: избраният проект,
                      черновата, последният проект, пренесеното от съоръжението — src/lib/lift/carry.ts — или празно; основата
                      ?calc=), calcolo-base (кръг 45: изчисленията от стъпка 2 — STEP2, основата, типът на съоръжението:
-                     tipoDi/tipoDaUltimi/tipoImpianto), dal-progetto (кръг 45: какво дава чертежът на изчислението при
+                     tipoDi/tipoDaUltimi/tipoImpianto, legacyPiuNuovo — проект отпреди, по-нов от изчислението; localeRilevabile —
+                     машинното само с нова машина), dal-progetto (кръг 45: какво дава чертежът на изчислението при
                      ?dal=progetto), ridisegna-actions + remake (кръг 45: „Aggiorna il progetto con l’ultimo calcolo“; вече
                      направеното и едно по едно — общо с refresh-actions), drafts + draft-actions (черновите: четене по схемата, запис,
                      изхвърляне; изтриване при запис на формуляра); set-cad + set-identity (CAD файловете и самоличността на
