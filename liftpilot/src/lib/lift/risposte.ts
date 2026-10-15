@@ -2,20 +2,25 @@
 // answered «Sì» or «No» explicitly — none counts as «No» by default, which would silently turn a replaced part's checks
 // into «esistente» —, except the machine, answered «Sì» on entry and changeable; a «Solo argano» asks only whether the
 // ropes are replaced. Some answers are the rule's, not the user's: new ropes of their own number and diameter are
-// replaced; a load the documented loads count as changed is changed; the renovation keeps the sling. The test's parts
+// replaced; a load the documented loads count as changed is changed, and so are a speed and a travel the logbook counts
+// as changed (round 46, AUTO_PARTI); the renovation keeps the sling. The test's parts
 // (Collaudo.parti) hold the «Sì» answers; which parts were answered is kept beside them (the form's draft). Pure.
 import type { FormValues } from '@/calc/types';
-import { PARTI, choiceOf, collaudoOf, type Collaudo, type Parte } from './collaudo';
+import { AUTO_PARTI, PARTI, choiceOf, collaudoOf, type Collaudo, type Parte } from './collaudo';
 import { PARTI_RIFACIMENTO, VARIAZIONI, type TipoIntervento } from './intervento';
 
 /** An answer the rule gives (shown, not changeable): «Sì» or «No», and why. */
-export type Bloccata = { si: boolean; perche: 'funi' | 'carichi' | 'arcata' };
+export type Bloccata = { si: boolean; perche: 'funi' | 'carichi' | 'velocita' | 'corsa' | 'arcata' };
+
+/** Why the rule brings each change: the documented loads, the logbook's speed, its travel. */
+const PERCHE_AUTO = { load: 'carichi', speed: 'velocita', travel: 'corsa' } as const;
+const isAuto = (p: Parte): p is keyof typeof PERCHE_AUTO => AUTO_PARTI.includes(p);
 
 /** The answer the rule gives to a part, if any. `C`: the test as the documents read it (collaudoOf). */
 export function bloccata(t: TipoIntervento | null, chosen: Collaudo | undefined, C: Collaudo, V: FormValues, p: Parte): Bloccata | null {
   if (t !== 'SOLO_ARGANO' && t !== 'AMMODERNAMENTO') return null;
   if (p === 'ropes' && !V.keepRopes) return { si: true, perche: 'funi' };
-  if (t === 'AMMODERNAMENTO' && p === 'load' && C.parti.includes('load') && !choiceOf(C, chosen).includes('load')) return { si: true, perche: 'carichi' };
+  if (t === 'AMMODERNAMENTO' && isAuto(p) && C.parti.includes(p) && !choiceOf(C, chosen).includes(p)) return { si: true, perche: PERCHE_AUTO[p] };
   if (t === 'AMMODERNAMENTO' && p === 'sling' && chosen?.rifacimento) return { si: false, perche: 'arcata' };
   return null;
 }
@@ -55,10 +60,16 @@ export function risposteRifacimento(on: boolean, risposte: readonly Parte[]): Pa
   return PARTI.filter((p) => PARTI_RIFACIMENTO.includes(p) || p === 'sling' || (VARIAZIONI.includes(p) && risposte.includes(p)));
 }
 
-/** The test of a saved calculation as the user chose it: the record stores it normalised (collaudoOf), with the load the
- *  documented loads count as changed among its parts — the rule's, not an answer, left out when the rule still gives it. */
+/** The test of a saved calculation as the user chose it: the record stores it normalised (collaudoOf), with the changes
+ *  the rule brings among its parts (AUTO_PARTI: the load by the documented loads, the speed and the travel by the
+ *  logbook) — the rule's, not answers, each left out when the rule still gives it. */
 export function sceltaSalvata(V: FormValues, stored: Collaudo): Collaudo {
-  if (!stored.parti.includes('load') || stored.norma === 'en81') return stored;
-  const senza = { ...stored, parti: stored.parti.filter((p) => p !== 'load') };
-  return collaudoOf(V, senza).parti.includes('load') ? senza : stored;
+  if (stored.norma === 'en81') return stored;
+  let out = stored;
+  for (const p of AUTO_PARTI) {
+    if (!out.parti.includes(p)) continue;
+    const senza = { ...out, parti: out.parti.filter((x) => x !== p) };
+    if (collaudoOf(V, senza).parti.includes(p)) out = senza;
+  }
+  return out;
 }

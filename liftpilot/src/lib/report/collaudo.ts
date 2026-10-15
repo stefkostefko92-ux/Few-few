@@ -4,9 +4,9 @@
 // machine. Pure.
 import appIt from '../../../messages/it.json';
 import { PROFILO } from '@/calc/norme';
-import type { CheckId, MachineStd } from '@/calc/types';
+import type { CheckId, FormValues, MachineStd } from '@/calc/types';
 import type { ShaftCheckId } from '@/shaft';
-import { NORMA_BREVE, NORMA_SIGLA, adeguamentiDovuti, ambitoOf, collaudoVerdict, esitiNorme, normeOf, type Collaudo } from '../lift/collaudo';
+import { NORMA_BREVE, NORMA_SIGLA, adeguamentiDovuti, ambitoOf, collaudoVerdict, esitiNorme, normeOf, type Collaudo, type Parte } from '../lift/collaudo';
 import { ADEMPIMENTI, NORME_INFO, obblighiParti, type PuntoInSito } from '../lift/norme-collaudo';
 import { KL } from '../lift/norme';
 import { variazioneCarico, type Carichi, type Norma10411, type Variazione } from '../lift/modifica';
@@ -16,6 +16,7 @@ import type { Tr } from '../present/tr';
 import type { BlockStatus, ReportBlock } from './model';
 import { MACCHINA_81_1 } from './refs';
 import { ammodernamentoText, notaIntervento } from './intervento-text';
+import { variazioniDoc, variazioniNota, variazioniRows } from './variazioni';
 import { macchinaResta, type TipoIntervento } from '../lift/intervento';
 
 const LIFT = appIt.lift;
@@ -92,7 +93,10 @@ export function variazioneText(v: Variazione, arcata = false): string {
     ? `: ${v.limiti ? 'oltre i limiti' : 'aumento (UNI 10411-11, 6.1)'}, le verifiche del carico entrano nell’esito`
     : v.calo ? ": un carico diminuisce, le verifiche del carico entrano nell’esito (ammortizzatori, paracadute progressivo)" : ': entro i limiti';
   const str = v.strutture ? `; oltre il ${num(KL.loadStruct11 * 100)} % anche le strutture dell’edificio (UNI 10411-11, 5)` : '';
-  return `${head}${lim}${over}${str}.${arcata ? ARCATA : ''} Aggiornare la documentazione con i nuovi carichi.`;
+  // the ratio of the suspended loads changed (round 46): D.1, D.2 and buffers to 5.8 (UNI 10411-1, 6.1)
+  const rap = v.rapporto ? '; il rapporto tra i carichi lato cabina e lato contrappeso cambia: D.1, D.2 e ammortizzatori secondo la UNI EN 81-20 5.8 '
+    + '(UNI 10411-1, 6.1)' : '';
+  return `${head}${lim}${over}${str}${rap}.${arcata ? ARCATA : ''} Aggiornare la documentazione con i nuovi carichi.`;
 }
 
 /** The existing sling under loads beyond the limits or not known (the check sl_frame of the result, arcata.ts): one
@@ -107,8 +111,9 @@ const carichiMancanti = (norma: Norma10411, arcata: boolean): string => `⚠ ${m
   + `collaudo o dell’ultima verifica straordinaria.${arcata ? ARCATA : ''}`;
 
 /** The rows of the data of the installation: the standards and, for a modification, what it replaces or changes, the
- *  answer about the CE marking and the change of the loads from the documented ones (`ora`: the design's). */
-export function collaudoRows(C: Collaudo, repl: boolean, ora?: Carichi | null): [string, string][] {
+ *  answer about the CE marking, the change of the loads from the documented ones (`ora`: the design's) and the changes
+ *  of speed and travel from the logbook's (round 46, `V`: the calculation's values; variazioni.ts). */
+export function collaudoRows(C: Collaudo, repl: boolean, ora?: Carichi | null, V?: FormValues): [string, string][] {
   const uni = repl && C.norma !== 'en81', ce = uni ? marcaturaText(C) : null, doc = uni ? C.documentato : undefined;
   const v = doc && ora && C.norma !== 'en81' ? variazioneCarico(C.norma, doc, ora) : null;
   // the existing sling under a new car or rated load (arcata.ts); T* not comparable without the documented loads
@@ -121,6 +126,7 @@ export function collaudoRows(C: Collaudo, repl: boolean, ora?: Carichi | null): 
     ...(doc ? [['Carichi documentati (portata · cabina · contrappeso)', `${num(doc.Q)} · ${num(doc.P)} · ${num(doc.Mcw)} kg`] as [string, string]] : []),
     ...(v ? [['Variazione dei carichi', variazioneText(v, arcata)] as [string, string]] : []),
     ...(missing && C.norma !== 'en81' ? [['Variazione dei carichi', carichiMancanti(C.norma, arcata)] as [string, string]] : []),
+    ...(uni ? variazioniRows(variazioniDoc(C, V)) : []),
   ];
 }
 
@@ -171,11 +177,12 @@ export const EXISTING_NOTE = "Le verifiche con esito «Esistente» riguardano pa
   + 'collaudo; tra parentesi l’esito del calcolo, da valutare con il tecnico quando non passa.';
 
 /** The section of the adaptations: its title and blocks, the machine's then those of the other parts replaced or
- *  changed (norme-collaudo.ts obblighiParti). `t` reads the calculator's texts. */
-export function adaptSection(C: Collaudo, repl: boolean, t: Tr): { title: string; blocks: ReportBlock[] } {
+ *  changed (obblighi.ts obblighiParti; the cases of speed, load and travel by the calculation's values `V`). `t` reads
+ *  the calculator's texts. */
+export function adaptSection(C: Collaudo, repl: boolean, t: Tr, V?: FormValues): { title: string; blocks: ReportBlock[] } {
   if (!repl) return { title: t('c_ucmp'), blocks: [{ t: 'p', text: t('n_new') }] };
   if (C.norma === 'en81') return { title: t('c_adapt_en81'), blocks: [{ t: 'p', text: t('a_en81') }] };
-  const altre = obblighiParti(C), others: ReportBlock[] = altre.length
+  const altre = obblighiParti(C, V), others: ReportBlock[] = altre.length
     ? [{ t: 'h3', text: 'Altre parti sostituite o modificate' }, { t: 'list', items: altre.map(punto) }] : [];
   if (adeguamentiDovuti(C)) {
     return { title: t('c_adapt'), blocks: [{ t: 'list', items: ADAPT.map((k) => t(k)) }, { t: 'p', text: t('a_src'), style: 'note' }, ...others] };
@@ -186,15 +193,16 @@ export function adaptSection(C: Collaudo, repl: boolean, t: Tr): { title: string
 
 /** The note of sheet 1 on the acceptance test: a modification's parts, the standards added (none when tested as new
  *  to EN 81-20/50 alone, unless the type declared with the calculation is to be named: `tipo`, round 45); with the
- *  design's loads `ora`, the documented loads missing and the existing sling to check for the new loads (arcata.ts). */
-export function collaudoNote(C: Collaudo, tag: string, ora?: Carichi | null, tipo: TipoIntervento | null = null): { title: string; tag: string; text: string } | null {
+ *  design's loads `ora`, the documented loads missing and the existing sling to check for the new loads (arcata.ts);
+ *  with the calculation's values `V`, the changes of speed and travel from the logbook's (round 46, variazioni.ts). */
+export function collaudoNote(C: Collaudo, tag: string, ora?: Carichi | null, tipo: TipoIntervento | null = null, V?: FormValues): { title: string; tag: string; text: string } | null {
   const added = C.aggiuntive?.length ? ` Anche secondo ${(C.aggiuntive ?? []).map((n) => NORMA_BREVE[n]).join(' e ')}: ogni normativa ha il suo esito, quello del collaudo è il peggiore.` : '';
   const head = tipo ? `${notaIntervento(tipo, C)} ` : '';
   if (C.norma === 'en81') return added || tipo ? { title: 'COLLAUDO', tag, text: `${head}Collaudo secondo ${NORMA_SIGLA.en81}.${added}` } : null;
   const rif = C.rifacimento ? " Rifacimento con l’arcata esistente: l’arcata resta quella dell’impianto, collaudato come modifica." : '';
   const carichi = ora !== undefined && tStarOf(C, ora) === 'ignoto' ? ` ${mancanti(C.norma)}.` : '';
-  const arcata = ora !== undefined && slingCheck(C, ora) ? ARCATA_BREVE : '';
-  return { title: 'COLLAUDO', tag, text: `${head}Collaudo secondo ${NORMA_SIGLA[C.norma]}.${rif}${carichi}${arcata}${added} Parti sostituite o modificate: ${partiText(C)}. Le verifiche con esito `
+  const arcata = ora !== undefined && slingCheck(C, ora) ? ARCATA_BREVE : '', variate = variazioniNota(variazioniDoc(C, V));
+  return { title: 'COLLAUDO', tag, text: `${head}Collaudo secondo ${NORMA_SIGLA[C.norma]}.${rif}${carichi}${arcata}${variate}${added} Parti sostituite o modificate: ${partiText(C)}. Le verifiche con esito `
     + "«ESISTENTE» riguardano parti che restano come sono e non entrano nell’esito delle verifiche." };
 }
 
@@ -219,14 +227,26 @@ export function esitiBlocks(C: Collaudo, checks: readonly { id: CheckId | ShaftC
   return out;
 }
 
-/** The parts a modification replaces or changes besides the machine: modifications too, the case of DPR 162/1999 art. 2
- *  c.1 lett. cc) of each for the engineer to name (the list of the cases is not in the texts read); with the machine
- *  kept (`resta`) they are the modification. */
+/** The case of DPR 162/1999 art. 2 c.1 lett. cc) of each part a modification replaces or changes besides the machine
+ *  (round 46): a change of the speed n. 1), of the rated load n. 2), of the travel n. 3); the controller, the landing
+ *  doors and the car with its sling n. 5) — read on the article —; any other part is one of n. 5)'s other main
+ *  components, for the engineer to confirm. With the machine kept (`resta`) they are the modification. */
+const CC = 'DPR 162/1999, art. 2 c.1 lett. cc)';
+const CC_VARIAZIONE: readonly [Parte, string, string][] = [['speed', '1)', 'cambio della velocità nominale'], ['load', '2)', 'cambio della portata e dei carichi'],
+  ['travel', '3)', 'cambio della corsa']];
 function altreModifiche(C: Collaudo, resta: boolean): PuntoInSito[] {
-  const altre = C.norma === 'en81' ? [] : C.parti.filter((p) => p !== 'machine');
-  return altre.length ? [{ rif: 'DPR 162/1999, art. 2 c.1 lett. cc)', stato: 'da_verificare',
-    testo: `sono modifiche costruttive ${resta ? 'le parti' : 'anche le altre parti'} sostituite o modificate (${altre.map((p) => LIFT[`parte_${p}` as const].toLowerCase()).join(', ')}): `
-      + 'il caso della lettera cc) di ciascuna lo indica il tecnico nella comunicazione' }] : [];
+  const altre: readonly Parte[] = C.norma === 'en81' ? [] : C.parti.filter((p) => p !== 'machine'), has = (p: Parte): boolean => altre.includes(p);
+  const nome = (p: Parte): string => LIFT[`parte_${p}` as const].toLowerCase(), cabina = has('car') && has('sling');
+  const principali = [...(has('controller') ? [nome('controller')] : []), ...(has('landingDoors') ? [nome('landingDoors')] : []), ...(cabina ? ['cabina con l’arcata'] : [])];
+  const numerate: readonly Parte[] = ['speed', 'load', 'travel', 'controller', 'landingDoors'];
+  const altri = altre.filter((p) => !numerate.includes(p) && !(cabina && (p === 'car' || p === 'sling')));
+  return [
+    ...CC_VARIAZIONE.filter(([p]) => has(p)).map(([, n, testo]): PuntoInSito => ({ rif: `${CC} n. ${n}`, stato: 'confermato', testo: `${testo}: modifica costruttiva` })),
+    ...(principali.length ? [{ rif: `${CC} n. 5)`, stato: 'confermato' as const,
+      testo: `sostituzione ${resta ? 'di' : 'anche di'} ${principali.join(', ')}: modifica costruttiva` }] : []),
+    ...(altri.length ? [{ rif: `${CC} n. 5)`, stato: 'da_verificare' as const,
+      testo: `altri componenti principali sostituiti (${altri.map(nome).join(', ')}): il tecnico conferma il caso nella comunicazione` }] : []),
+  ];
 }
 
 /** With the machine kept (round 45): DPR 162/1999's case of the machine replaced is not this one, and the points of UNI

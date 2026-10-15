@@ -87,3 +87,19 @@ test('progetto: sola lettura e chi non disegna — rifiutati prima di ogni lettu
   assert.deepEqual(await save({ baseCalculationId: 'b1' }), { ok: false, error: 'forbidden' });
   assert.equal(saved.length, 0);
 });
+
+test('progetto su un «Solo argano»: la corsa disegnata diversa dal libretto rivede il tipo (round 46, tipoDaRivedere)', async () => {
+  // the drawing's travel, as the derivation gives it on the base
+  const { deriveLift } = await import(src('lib/lift/derive.ts'));
+  const H = Number(deriveLift(liftInputsOf(progetto(), { values: PRESETS.B, collaudo: { norma: '10411-1', parti: ['machine'] } })).values.H);
+  const solo = (lib: Row): Row => ({ intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'], libretto: lib } });
+  calcs.push(calc('solosame', solo({ H })), calc('sololong', solo({ H: H - 2 })), calc('solonone', { intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'] } }),
+    calc('ammodlong', { collaudo: { norma: '10411-1', parti: ['machine', 'controller'], libretto: { H: H - 2 } } }));
+  assert.deepEqual(await save({ baseCalculationId: 'sololong' }), { ok: false, error: 'tipoDaRivedere' });
+  assert.equal(saved.length, 0);
+  // the logbook's travel drawn as it is, no logbook, a modernisation (its travel brought among the parts): saved
+  for (const id of ['solosame', 'solonone', 'ammodlong']) assert.deepEqual(await save({ baseCalculationId: id }), { ok: true, id: 'ld1' }, id);
+  // the modernisation's stored test leaves the rule's travel out: the derivation brings it again on the drawing's travel
+  const inputs = saved[2]?.[2] as { collaudo?: { parti: string[] } };
+  assert.deepEqual(inputs.collaudo?.parti, ['machine', 'controller']);
+});

@@ -2,9 +2,11 @@
 // on «Calcolo argano»), its Progetto has nothing to draw on yet and leads back to «Calcolo argano»; the calculation as a
 // transformation (UNI EN 81-20/50 fixed, the example of a new lift), saved; its page leads to the Progetto, which shows
 // what it draws on and asks only the drawing; saved, the lift design names its base and its calculation the type; a
-// drawing set issued from it says the type in sheet 1's note.
+// drawing set issued from it says the type in sheet 1's note. Round 46: a «Solo argano» with its logbook — the Progetto
+// with another travel held (tipoDaRivedere), the speed +6 % refused and saved as a modernisation (smoke-intervento.mjs).
 import assert from 'node:assert/strict';
 import { blankCalc, projectData } from './smoke-blank.mjs';
+import { soloLibretto } from './smoke-intervento.mjs';
 import { step } from './smoke-kit.mjs';
 
 export async function progettoFlow({ BASE, page, hydrated, stamp }) {
@@ -74,6 +76,7 @@ export async function progettoFlow({ BASE, page, hydrated, stamp }) {
   const sheet1 = ((await page.textContent('.sheet-page svg.sheet-svg')) ?? '').replace(/\s+/g, '');
   assert.ok(sheet1.includes('Intervento:Trasformazionecompleta'), 'the type in sheet 1’s note');
   const loop = await progettoLoop({ BASE, page, hydrated, liftUrl });
+  await soloLibretto({ BASE, page, hydrated, stamp, projectData });
   return { projectUrl, baseUrl, liftUrl: loop.liftUrl };
 }
 

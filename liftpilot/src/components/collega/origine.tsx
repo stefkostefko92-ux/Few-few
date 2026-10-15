@@ -36,6 +36,12 @@ function fonteDi(o: OrigineRilievo | null, id: string, value: unknown): 'rilievo
   return r !== undefined && stessoValore(value, r) ? 'rilievo' : p !== undefined && stessoValore(value, p) ? 'progetto' : null;
 }
 
+/** The value the linked survey gave a field (as the form holds it), whatever the field holds now — a reference beside
+ *  another field, never filled in (round 46: the logbook's speed and travel, DatiLibretto); undefined: none. */
+export function useValoreRilievo(id: string): string | undefined {
+  return useContext(Ctx)?.valori[id];
+}
+
 /** The field's value came from the survey (or from the drawing) and is still that value. */
 export function useDalRilievo(id: string, value: unknown): boolean {
   return fonteDi(useContext(Ctx), id, value) !== null;

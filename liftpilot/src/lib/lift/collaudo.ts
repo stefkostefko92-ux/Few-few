@@ -11,9 +11,9 @@
 // engineer on the standard in force. Pure.
 import type { CheckId, FormValues } from '@/calc/types';
 import type { ShaftCheckId } from '@/shaft';
-import { AMBITO_VERIFICHE, SOLO_10411_1, VERIFICHE_DATI } from './ambito';
+import { AMBITO_10411_1, AMBITO_VERIFICHE, SOLO_10411_1, VERIFICHE_DATI } from './ambito';
 import { NORME_INFO, type AmbitoNorma } from './norme-collaudo';
-import { carichiOf, caricoVariato, normaDaMarcatura, variazioneCarico, type Carichi, type Libretto, type Marcatura, type Regolazione } from './modifica';
+import { normaDaMarcatura, variazioniDi, type Carichi, type Libretto, type Marcatura, type Regolazione } from './modifica';
 
 /** The base standard of the test: one, by the context. */
 export const NORME_COLLAUDO = ['en81', '10411-1', '10411-11'] as const;
@@ -49,6 +49,11 @@ export const NORMA_BREVE: Readonly<Record<Norma, string>> = {
 export const PARTI = ['machine', 'ropes', 'car', 'sling', 'cw', 'rails', 'landingDoors', 'carDoors', 'buffers', 'governor', 'controller', 'speed', 'load', 'travel'] as const;
 export type Parte = (typeof PARTI)[number];
 
+/** The changes the rule brings among a modification's parts (round 46): the load by the documented loads, the speed and
+ *  the travel by the logbook (modifica.ts variazioniDi) — the software's, never kept as the designer's answer
+ *  (choiceOf, risposte.ts sceltaSalvata). */
+export const AUTO_PARTI: readonly Parte[] = ['load', 'speed', 'travel'];
+
 export interface Collaudo {
   norma: NormaCollaudo;
   /** standards added to the base one (absent: the base alone) */
@@ -76,7 +81,7 @@ export interface Collaudo {
 export type Ambito = 'applies' | 'existing';
 
 // which parts each check concerns (the table, the checks of one part of UNI 10411, those of the data): ambito.ts
-export { AMBITO_VERIFICHE, SOLO_10411_1, VERIFICHE_DATI } from './ambito';
+export { AMBITO_10411_1, AMBITO_VERIFICHE, SOLO_10411_1, VERIFICHE_DATI } from './ambito';
 
 /** The accessibility checks of DM 236/1989: the shaft's, present when its case is chosen in the shaft's data. */
 export const VERIFICHE_DM236: readonly ShaftCheckId[] = ['v_acc_car', 'v_acc_door', 'v_acc_side', 'v_acc_c', 'v_call'];
@@ -90,13 +95,17 @@ const isNorma = (x: unknown): x is NormaCollaudo => NORME_COLLAUDO.some((n) => n
 /** The test's standards in order: the base one, then those added. */
 export const normeOf = (C: Collaudo): Norma[] => [C.norma, ...(C.aggiuntive ?? [])];
 
-/** Whether a check enters the test under one of its standards. */
+/** Whether a check enters the test under one of its standards: under UNI 10411-1 the parts of AMBITO_VERIFICHE and of
+ *  AMBITO_10411_1 (round 46), under -11 those of AMBITO_VERIFICHE. */
 export function underNorma(C: Collaudo, n: Norma, id: CheckId | ShaftCheckId): boolean {
-  if (SOLO_10411_1.some((x) => x === id)) return n === '10411-1' && AMBITO_VERIFICHE[id].some((p) => C.parti.includes(p));
+  const touched = (parti: readonly Parte[] | undefined): boolean => !!parti?.some((p) => C.parti.includes(p));
+  if (SOLO_10411_1.some((x) => x === id)) return n === '10411-1' && touched(AMBITO_VERIFICHE[id]);
   if (n === 'en81') return true;
   if (n === 'dm236') return VERIFICHE_DM236.some((x) => x === id);
   if (n === 'ntc2018') return VERIFICHE_NTC.some((x) => x === id);
-  if (n === '10411-1' || n === '10411-11') return VERIFICHE_DATI.some((x) => x === id) || AMBITO_VERIFICHE[id].some((p) => C.parti.includes(p));
+  if (n === '10411-1' || n === '10411-11') {
+    return VERIFICHE_DATI.some((x) => x === id) || touched(AMBITO_VERIFICHE[id]) || (n === '10411-1' && touched(AMBITO_10411_1[id]));
+  }
   return false;
 }
 
@@ -129,8 +138,10 @@ export const modificaOf = (C: Collaudo | undefined): Pick<Collaudo, 'rifacimento
  *  chosen, by default UNI 10411-1 with the machine replaced (the intervention the software is made for). The standards
  *  added stay, in their order, once each, where they fit the base (EN 81-20/50 only on top of another base). A
  *  renovation keeps its sling, never among the parts replaced, and is one only under UNI 10411 (tested to EN 81-20/50
- *  the lift is tested as new). Under UNI 10411 the answer about the CE marking picks its part, and a change of the loads
- *  from the documented ones that brings the checks of the load counts the load as changed (modifica.ts). */
+ *  the lift is tested as new). Under UNI 10411 the answer about the CE marking picks its part, and the documents of the
+ *  existing lift bring the changes by the rule (AUTO_PARTI, modifica.ts variazioniDi, round 46): the loads documented
+ *  against the design's bring the load, the logbook's speed and travel against the calculation's the speed and the
+ *  travel. */
 export function collaudoOf(calc: FormValues, chosen?: Collaudo): Collaudo {
   const added = (base: NormaCollaudo): NormaAggiuntiva[] => NORME_AGGIUNTIVE.filter((n) => chosen?.aggiuntive?.includes(n) && ammessa(n, base));
   const withAdded = (c: Collaudo): Collaudo => {
@@ -142,16 +153,17 @@ export function collaudoOf(calc: FormValues, chosen?: Collaudo): Collaudo {
     if (chosen.norma === 'en81') return withAdded({ norma: 'en81', parti: PARTI });
     const rif = chosen.rifacimento === true, mod = modificaOf(chosen);
     const norma = (chosen.marcatura && normaDaMarcatura(chosen.marcatura, chosen.servizio)) || chosen.norma;
-    const ora = carichiOf(calc), load = !!mod.documentato && !!ora && caricoVariato(variazioneCarico(norma, mod.documentato, ora));
-    return withAdded({ norma, parti: PARTI.filter((p) => (chosen.parti.includes(p) || (p === 'load' && load)) && !(rif && p === 'sling')), ...mod });
+    const auto = variazioniDi(norma, mod, calc), byRule = (p: Parte): boolean => (p === 'load' || p === 'speed' || p === 'travel') && auto[p];
+    return withAdded({ norma, parti: PARTI.filter((p) => (chosen.parti.includes(p) || byRule(p)) && !(rif && p === 'sling')), ...mod });
   }
   return { norma: '10411-1', parti: ['machine'] };
 }
 
-/** The parts of a test as a choice: the load counted as changed by the documented loads (collaudoOf) is the software's,
- *  not the designer's — it is left out unless it was chosen. */
+/** The parts of a test as a choice: a change the rule brings (AUTO_PARTI: the load by the documented loads, the speed and
+ *  the travel by the logbook — collaudoOf) is the software's, not the designer's — it is left out unless it was chosen. */
 export const choiceOf = (C: Collaudo, chosen: Collaudo | undefined): readonly Parte[] =>
-  (C.parti.includes('load') && !(chosen?.parti.includes('load') ?? false) && C.norma !== 'en81' ? C.parti.filter((p) => p !== 'load') : C.parti);
+  (C.norma === 'en81' || !AUTO_PARTI.some((p) => C.parti.includes(p) && !(chosen?.parti.includes(p) ?? false)) ? C.parti
+    : C.parti.filter((p) => !AUTO_PARTI.includes(p) || (chosen?.parti.includes(p) ?? false)));
 
 /** The test chosen with a standard added or taken off (`on`) in the options of the one form. Under a new lift what was
  *  chosen for a modification stays as it was (collaudoOf ignores it there; none chosen: the replacement's default), so

@@ -2536,6 +2536,54 @@ frizione, Diametro pulegge di rinvio, Inerzia per puleggia…, Massa della macch
   `modifica-variazioni` (праговете ±5 %, 50 Hz, -11, 8,00/8,01 m, скъсяване; 4000 случая — `interventoTo`,
   `rifacimentoTo`, `withAggiunta`, `collaudoOf` не губят libretto и regolazione и не сменят частите), `calc-start`
   (записът, `?from=`, черновата). `reproduce-all`, `docs-compare` и `refresh-sim` — байт по байт като преди.
+- **S4 — правилата на изпитването (B1, B3–B5) и четирите версии**:
+  - *Скоростта и ходът — части по правило* (B3, `collaudoOf` с `AUTO_PARTI` и `variazioniDi`, като товара): по -1
+    скоростта над 5 % над по-голямата от libretto и 50 Hz (15.1) или над 5 % под libretto (15.16; +5,00 % не, +5,01 % да);
+    по -11 всяка промяна отвъд 0,005 m/s; ходът — всяка промяна отвъд 0,05 m, и скъсяването (DPR cc) n. 3); над 8 m от
+    първото изпитване по -1 — само предупреждение (въпрос 2). Съотношението на окачените товари по -1 6.1
+    (`Variazione.rapporto`, брои се като товар): T* или P далеч от стойността, която пази документираното съотношение
+    спрямо новата противотежест, отвъд закръглението на протокола (0,5 kg), *пренесено към тази стойност* — двусмислието е
+    решено така, защото буквалното сравнение с 0,5 kg брои закръглението на противотежестта като смяна (1093,5 срещу
+    1094 kg дава 0,62 kg на T*), а „половин килограм е закръгляне“ е правило отпреди. Частите по правило не са отговор
+    (`choiceOf`, `sceltaSalvata`); в Ammodernamento — заключено «Sì» с причината (`bloccata` 'velocita'/'corsa'); «Solo
+    argano», чието изпитване ги получава, се отказва (`interventoValido` 'velocita', 'corsa' — само за неизбраните: избраната
+    скорост остава 'parti'; не при нов асансьор, той е 'context'). Progetto: `liftInputsOf` пази избора на основата без
+    частите по правило (изведеното ги внася наново с хода на чертежа — затова той може и да ги махне), а
+    `saveLiftDesignAction` отказва 'tipoDaRivedere', когато основата е «Solo argano» с libretto и изведеното изпитване
+    получава скорост или ход.
+  - *Празнините в обхвата* (B4, `ambito.ts`): скоростта в tr_*, r_sfa и g_press; ходът в r_sfa, главата (h_*) и ямата
+    (p_refuge, p_apron); скоростта и ходът във водачите (gr_*), товарът, скоростта и ходът в gr_cw; товарът в sg_cw, sg_type,
+    b_car, b_cw; само по -1 (`AMBITO_10411_1`, `underNorma`) — екранът на противотежестта (p_screen*) с товар, скорост или
+    ход и b_sets/b_one с ново табло (11.1.4). `restaVariataText` — без ⚠, изброява проверките, които остават «Esistente».
+  - *Задълженията и документите* (B5): `obblighi-variazioni.ts` — по случай (-1: 15.1–15.15 / 15.16–15.17 / бележка в ±5 %,
+    6.3–6.12 + 6.15 / 6.4–6.15 / намаление / съотношение с D.1 и D.2, 16 a)–l) с ⚠ над 8 m, скъсяване по т. 4; -11: 15
+    a)–k) с 15 i), 6.1–6.13, 16 a)–i), всичко с 4.3); рамата по -1 (6.2, 22 b)); етажните врати по -1 и с 19.5–19.6;
+    `obblighiParti(C, V)`. Редовете «Velocità documentata · variazione» и «Corsa del primo collaudo · variazione» (-11:
+    «Corsa documentata») и изречението на лист 1 — само с libretto (`report/variazioni.ts`). Случаите по DPR 162/1999 чл. 2
+    ал. 1 б. cc) (`altreModifiche`): скоростта n. 1), товарът n. 2), ходът n. 3), таблото, етажните врати и кабината с
+    рамата n. 5) — потвърдени; другите части — „altri componenti principali“ (da verificare). Регистърът: бележките на
+    `impianto.variazione.carico` (съотношението, по-строгото от нормата), `.velocita` (намалението) и `impianto.collaudo`
+    (новите връзки); листата — 301 реда (+18: случаите и рамата).
+  - *Версиите* (B1): ENGINE 1.7.0, LIFT 1.32.0, ROOM 1.16.0, SHAFT 2.26.0 заедно — изпитването е извън хеша на
+    изчислението, а стига до документите на всеки вид запис; тестът `ambito-version` държи SHA-256 на обхвата (PARTI,
+    AMBITO, AMBITO_10411_1, SOLO_10411_1, VERIFICHE_DATI, OBBLIGHI, KL на изменението) с версиите и пада при смяна без
+    вдигане. `compute()` не е пипан, golden-v12 — непокътнат.
+  - *Екранът*: `DatiLibretto` (до „Carichi documentati“: скоростта по libretto/verbale, след 50 Hz само по -1, ходът при
+    първото изпитване — по -11 «Corsa documentata»; редът на живо; стойността от рилевото само като справка «nel rilievo:
+    …»; записва се само валидно число); PartiSiNo — «Velocità variata»/«Corsa variata» заключени «Sì — dal libretto» с
+    причината (`.parte-perche`, `aria-describedby`); AvvisiIntervento — скоростта и ходът на «Solo argano» с «Passa ad
+    Ammodernamento», над 8 m с «Passa a Trasformazione completa» (никога наложено), 15 i), ±5 % по -1; отказите 'velocita' и
+    'corsa' в лентата за запис; Progetto — бележката, че начертаният ход внася или маха хода, и 'tipoDaRivedere' с «Porta
+    nel calcolo». Smoke: `smoke-intervento.mjs` — ammodernamento по -11 с libretto, който заключва скоростта (smoke.mjs);
+    «Solo argano» с libretto — Progetto с друг ход задържан, скорост +6 % отказана, «Passa» го записва (smoke-progetto.mjs).
+  - *Доказателства срещу S0* (`argano_r46`): `refresh-sim` + `diff-classify --stage S4` — 1854 сравнени, 0 необяснени; R1 —
+    резултатите на всички изчисления същите (`res` — 0 разлики), R2 — каноничният хеш на всеки чертеж същият (0), R5 —
+    шахтите и машинните същите; R3 — обхватът се мени само на 21 изчисления по -1 с табло без машина (b_sets/b_one; 18 с
+    друга присъда) — на копието от спецификацията те бяха 2, другите 19 са от обходите на кръг 46 A; R4 — 189 relazioni di
+    calcolo и 10 tecniche само в „Adempimenti“ (случаите cc)), 2 в „Adeguamenti“ (етажните врати), лист 1 — нищо.
+    `reproduce-all`: всеки от 1756-те записа отпреди — четим, «da aggiornare», не възпроизведен (352 бяха); SHA-256 на всеки
+    `DrawingSetPdf` и всеки записан хеш — същите; 158 комплекта без PDF (0 възпроизводими). Записите от smoke-а след това —
+    възпроизведени с новите двигатели.
 
 ## Проверки
 
@@ -2966,6 +3014,17 @@ frizione, Diametro pulegge di rinvio, Inerzia per puleggia…, Massa della macch
   `/app/audit` (известната от кръговете 22, 33 и 44, страницата не е пипана); 4-то — „all good“ (66 реда), рестарт преди
   всяко. Паритетът с rilievi `ae6329cb6` — строг срещу :3301: **PASS** — 532 pass, 0 fail, 32 allowed, 3 warn (същите).
   `node tools/security/secret-scan.mjs` — чисто. Нито един файл в `src/calc`, `src/shaft`, `derive.ts` и в Rilievi.
+- [x] Кръг 46 B, S0–S4 (клон `tpl-r46`, база `argano_r46`, :3311; снимките S0 — 1854 записа, при 2f68808c5): S1–S3 —
+  гейт зелен след всяка стъпка (1027 + 209, 1030 + 209, 1041 + 210 теста), `reproduce-all`, `docs-compare` и `refresh-sim`
+  байт по байт като S0, `diff-classify` S2/S3 — 0. S4 — `tsc --noEmit` 0 грешки, `npm run lint` чисто, `npm test` — 1053 +
+  211 теста (golden-v12 и ръчните проверки непокътнати), `npm run build` — успешен; :3311 спрян само по процеса с cwd на
+  работното дърво и пуснат от новия build (`/api/health` — engine 1.7.0). `refresh-sim` + `diff-classify --stage S4` — 1854
+  сравнени (57 записа от smoke-овете след снимката — преброени, не сравнени), 0 необяснени: R1 — 648/648 изчисления със
+  същите резултати, R2 — 0 разлики в чертежите, R3 — 21 (само по -1 с табло без машина), R4 — само в разрешените блокове.
+  `reproduce-all` — 1756/1756 записа отпреди: четими, «da aggiornare», PDF-ите и хешовете — същите. Пълен smoke с пощата —
+  „all good“ (68 реда; новите стъпки — libretto в ammodernamento, «Solo argano» с libretto). Новите текстове на задълженията
+  срещу бележките на нормите (`norme-ascensori/tools/overlap.mjs`, ≥ 8 думи) — 0 реда. `node tools/security/secret-scan.mjs`
+  — чисто.
 - [x] `node tools/design/motion-a11y.mjs liftpilot/src`: проверката за reduced motion в базата — да; 6 евристични
   находки `webgl-no-rm-check` в модули на 3D, които се зареждат само през `boot.ts` (същите и преди кръг 24).
 - [x] Живата 3D сцена на началната страница е проверена в headless Chromium (WebGL 2) на двете нива на качество, без грешки в конзолата. При reduced motion three.js не се зарежда.

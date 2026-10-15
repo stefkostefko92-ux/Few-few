@@ -36,7 +36,8 @@ export const VOCI_VARIAZIONI: readonly VoceImpianto[] = [
     fonte: `${letto('UNI 10411-1:2024', 'pp. 14–15')}; ${letto('UNI 10411-11:2024', 'pp. 12–13')}`, stato: 'confermato',
     costanti: ['speedInc1', 'speedDec1', 'ucmSpeed11'],
     nota: 'una differenza entro 0,005 m/s è l’arrotondamento dei dati (scelta del software, non un valore della norma); con la -1 una variazione '
-      + 'entro il 5 % non porta i punti 15.2–15.15: se sia comunque un cambio della velocità ai sensi del DPR 162/1999 lo valuta il tecnico',
+      + 'entro il 5 % non porta i punti 15.2–15.15: se sia comunque un cambio della velocità ai sensi del DPR 162/1999 lo valuta il tecnico; una '
+      + 'diminuzione oltre il 5 % porta nell’esito tutte le verifiche che riguardano la velocità, più dei punti 15.2 e 15.17 (dalla parte della sicurezza)',
   },
   {
     id: 'impianto.variazione.corsa', titolo: 'Modifica: variazione della corsa rispetto a quella documentata',

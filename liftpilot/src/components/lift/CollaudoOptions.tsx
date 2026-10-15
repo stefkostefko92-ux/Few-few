@@ -4,8 +4,8 @@
 // 10411, the parts the intervention replaces or changes. A new lift is tested to UNI EN 81-20/50 whatever was chosen;
 // the checks of what stays as it is are marked "existing" in the list and stay out of the result; each standard added
 // has its own result (src/lib/lift/collaudo.ts). Under UNI 10411 the answer about the lift's CE marking picks its part,
-// and the loads the last report documents, against the design's, can bring the checks of the load
-// (src/lib/lift/modifica.ts). In «Calcolo argano» (round 45, `mode`) the type of intervention decides the base: a «Solo
+// the loads the last report documents, against the design's, can bring the checks of the load, and the logbook's speed
+// and travel those of the speed and of the travel (round 46, DatiLibretto; src/lib/lift/modifica.ts). In «Calcolo argano» (round 45, `mode`) the type of intervention decides the base: a «Solo
 // argano» or a modernisation under UNI 10411-1 or -11, the transformation under EN 81-20/50 (locked); the parts are
 // answered in the type's card (src/components/calc/PartiSiNo.tsx), and DM 236 is ticked here with its case chosen in the
 // Progetto. On the one form (no `mode`, until /progetto stops choosing the intervention) the parts are ticked here and DM
@@ -21,6 +21,7 @@ import type { Access } from '@/shaft';
 import { ADAPT } from '@/lib/present/adapt';
 import type { Pres } from '@/lib/present/tr';
 import CarichiDocumentati from './CarichiDocumentati';
+import DatiLibretto from './DatiLibretto';
 import NormeAggiunte from './NormeAggiunte';
 
 /** The type of intervention of «Calcolo argano» the test follows. */
@@ -141,6 +142,7 @@ export default function CollaudoOptions({ P, mode, isNew: isNewForm = false, cho
         </fieldset>
       ) : null}
       {uni ? <CarichiDocumentati P={P} value={value} calc={calc} set={(documentato) => setKnown({ documentato })} /> : null}
+      {uni ? <DatiLibretto P={P} value={value} calc={calc} set={(libretto) => setKnown({ libretto })} /> : null}
       {offer.length ? <NormeAggiunte fits={fits} added={added} toggle={toggleAdded} dm236Note={dm236Note} /> : null}
       {adeguamentiDovuti(value) ? (
         <div className="adapt">

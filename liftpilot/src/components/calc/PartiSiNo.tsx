@@ -5,14 +5,18 @@
 // A «Solo argano» replaces the machine and asks only about the ropes; a modernisation asks about every part, its
 // machine answered «Sì» on entry, and offers the renovation that keeps the existing sling, which answers every part it
 // replaces at once (speed, load and travel still to answer). The rule's answers are shown, not asked: new ropes of their
-// own number and diameter, a load the documented loads changed, the sling kept by the renovation (src/lib/lift/risposte.ts).
+// own number and diameter, a load the documented loads changed, a speed or a travel the logbook counts as changed (round
+// 46: locked «Sì», the reason beside it and named by the lock, aria-describedby), the sling kept by the renovation
+// (src/lib/lift/risposte.ts).
 // Each pair is two native radio buttons of one group (arrow keys move and answer, one tab stop per part, as the type
 // cards above); none is checked while the part is still to answer.
 import { useTranslations } from 'next-intl';
 import type { FormValues } from '@/calc/types';
 import { parteId } from '@/lib/calc-blank';
 import type { Collaudo, Parte } from '@/lib/lift';
-import { bloccata, partiDi } from '@/lib/lift/risposte';
+import { corsaOf, variazioneCorsa, variazioneVelocita, velocitaOf } from '@/lib/lift/modifica';
+import { bloccata, partiDi, type Bloccata } from '@/lib/lift/risposte';
+import type { Fmt } from '@/lib/present/tr';
 
 interface Props {
   tipo: 'SOLO_ARGANO' | 'AMMODERNAMENTO';
@@ -25,6 +29,7 @@ interface Props {
   answer(p: Parte, si: boolean): void;
   /** the renovation keeping the existing sling (a modernisation only) */
   rifacimento?: { on: boolean; set(on: boolean): void };
+  fmt: Fmt;
 }
 
 const VARIATA: Partial<Record<Parte, string>> = { machine: 'parte_argano', speed: 'parte_speed_var', load: 'parte_load_var', travel: 'parte_travel_var' };
@@ -34,20 +39,33 @@ export function etichettaParte(t: (k: string) => string, tl: (k: string) => stri
   return tipo === 'SOLO_ARGANO' && p === 'ropes' ? t('funi') : VARIATA[p] ? t(VARIATA[p]) : tl(`parte_${p}`);
 }
 
-export default function PartiSiNo({ tipo, chosen, value, V, risposte, answer, rifacimento }: Props) {
+export default function PartiSiNo({ tipo, chosen, value, V, risposte, answer, rifacimento, fmt }: Props) {
   const t = useTranslations('calculations.intervento'), tl = useTranslations('lift');
   const solo = tipo === 'SOLO_ARGANO';
   const label = (p: Parte): string => etichettaParte(t, tl, tipo, p);
+  // why the rule answers: the ropes of their own, the documented loads, the logbook's speed and travel against the design's
+  const norma = value.norma === '10411-11' ? '10411-11' : '10411-1';
+  const perche = (lock: Bloccata): string | null => {
+    if (lock.perche === 'funi') return t('funi_nuove');
+    if (lock.perche === 'carichi') return t('perche_carichi');
+    const v = lock.perche === 'velocita' ? velocitaOf(V) : null, H = lock.perche === 'corsa' ? corsaOf(V) : null;
+    const xv = v !== null ? variazioneVelocita(norma, value.libretto, v) : null, xh = H !== null ? variazioneCorsa(norma, value.libretto, H) : null;
+    if (xv) return t('perche_velocita', { dv: `${xv.dv < 0 ? '−' : '+'}${fmt(Math.abs(xv.dv) * 100, 1)} %`, rif: fmt(xv.rif, 2),
+      clausola: norma === '10411-11' ? 'UNI 10411-11, 15' : xv.aumento ? 'UNI 10411-1, 15.1' : 'UNI 10411-1, 15.16' });
+    if (xh && value.libretto?.H) return t('perche_corsa', { dH: `${xh.dH < 0 ? '−' : '+'}${fmt(Math.abs(xh.dH), 2)} m`, H: fmt(value.libretto.H, 2), clausola: `UNI ${norma}, 16` });
+    return null;
+  };
+  const AUTO_LABEL: Partial<Record<Bloccata['perche'], string>> = { carichi: 'load_auto', velocita: 'velocita_auto', corsa: 'corsa_auto', arcata: 'sling_rif' };
   const row = (p: Parte) => {
     if (solo && p === 'machine') return <li key={p} className="parte fissa" data-part={p}><span className="parte-nome">{t('argano_fisso')}</span></li>;
     const lock = bloccata(tipo, chosen, value, V, p), answered = risposte.includes(p) || lock !== null;
-    const si = lock ? lock.si : chosen.parti.includes(p);
+    const si = lock ? lock.si : chosen.parti.includes(p), why = lock ? perche(lock) : null, whyId = `${parteId(p)}-perche`;
     return (
       <li key={p} className={`parte${answered ? '' : ' da'}`} data-part={p}>
         <span className="parte-nome" id={`${parteId(p)}-label`}>{label(p)}</span>
         {lock ? (
-          <span className={`parte-regola ${lock.si ? 'si' : 'no'}`}>
-            {lock.perche === 'carichi' ? t('load_auto') : lock.perche === 'arcata' ? t('sling_rif') : t('si')}
+          <span className={`parte-regola ${lock.si ? 'si' : 'no'}`} aria-describedby={why ? whyId : undefined}>
+            {t(AUTO_LABEL[lock.perche] ?? 'si')}
           </span>
         ) : (
           <span className="seg-row parte-scelta" role="radiogroup" aria-labelledby={`${parteId(p)}-label`}>
@@ -60,7 +78,7 @@ export default function PartiSiNo({ tipo, chosen, value, V, risposte, answer, ri
           </span>
         )}
         {!answered ? <span className="parte-da">{t('da')}</span> : null}
-        {lock?.perche === 'funi' ? <span className="parte-perche">{t('funi_nuove')}</span> : null}
+        {why ? <span className="parte-perche" id={whyId}>{why}</span> : null}
       </li>
     );
   };

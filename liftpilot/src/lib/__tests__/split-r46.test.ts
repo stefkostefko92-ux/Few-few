@@ -29,6 +29,6 @@ test('norme-collaudo.ts riesporta gli obblighi di obblighi.ts', () => {
 test('variazioni: senza variazioni nessuna riga e nessuna frase', () => {
   assert.deepEqual(variazioniRows([]), []);
   assert.equal(variazioniNota([]), '');
-  assert.deepEqual(variazioniRows([{ voce: 'corsa', text: 'x' }]), [['Corsa del primo collaudo · variazione', 'x']]);
-  assert.equal(variazioniNota([{ voce: 'velocita', text: 'a.' }, { voce: 'corsa', text: 'b.' }]), ' a. b.');
+  assert.deepEqual(variazioniRows([{ voce: 'corsa', label: 'Corsa del primo collaudo · variazione', text: 'x', nota: ' x.' }]), [['Corsa del primo collaudo · variazione', 'x']]);
+  assert.equal(variazioniNota([{ voce: 'velocita', label: '', text: '', nota: ' a.' }, { voce: 'corsa', label: '', text: '', nota: ' b.' }]), ' a. b.');
 });

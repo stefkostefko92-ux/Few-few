@@ -107,7 +107,7 @@ export function buildReport(r: ReportInput): ReportDoc {
 
   section("Dati dell’impianto");
   const plant: [string, string][] = [
-    [t('context'), t(tipo ? contestoKey(tipo, C) : rif ? 'ctx_rif' : repl ? 'ctx_repl' : 'ctx_new')], ...collaudoRows(C, repl, carichiOf(r.values)), [t('layout'), layoutText.charAt(0).toUpperCase() + layoutText.slice(1)], [t('Q'), `${fmt(I.Q, 0)} kg`],
+    [t('context'), t(tipo ? contestoKey(tipo, C) : rif ? 'ctx_rif' : repl ? 'ctx_repl' : 'ctx_new')], ...collaudoRows(C, repl, carichiOf(r.values), r.values), [t('layout'), layoutText.charAt(0).toUpperCase() + layoutText.slice(1)], [t('Q'), `${fmt(I.Q, 0)} kg`],
     [t('P'), `${fmt(I.P, 0)} kg${m.pEstimate ? ' — stima del software, da sostituire con la massa reale' : ''}`],
     [`${t('k')} · M_cw`, `${fmt(res.k, 3)} · ${fmt(res.Mcw, 0)} kg${I.qeq > 0 ? ` (${t('qeq')}: ${fmt(I.qeq, 0)} kg)` : ''}`], [t('v'), `${fmt(I.v, 2)} m/s`],
     [t('r'), `${I.r}:1`], [`${t('H')} · ${t('L0')}`, `${fmt(I.H, 2)} m · ${fmt(I.L0, 2)} m${fromShaft('L0')}`], [t('alphaMode'), `α ${X.alphaText(res)}`],
@@ -212,7 +212,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   if (res.checks.some((c) => ambitoOf(C, c.id) === 'existing')) {
     B.push({ t: 'p', style: 'note', text: EXISTING_NOTE });
   }
-  const variata = tipo ? restaVariataText(tipo, C) : null;
+  const variata = tipo ? restaVariataText(tipo, C, res.checks.filter((c) => ambitoOf(C, c.id) === 'existing').map((c) => X.checkText(c))) : null;
   if (variata) B.push({ t: 'p', style: 'note', text: variata });
 
   // each standard of the test with its own result, and the test's: the calculation's checks and, with a shaft design,
@@ -260,7 +260,7 @@ export function buildReport(r: ReportInput): ReportDoc {
     B.push(...adviceBlocks(r.advice, fmt, a.hold === 'drop' ? N.D : null));
   }
 
-  const adapt = adaptSection(C, repl, t);
+  const adapt = adaptSection(C, repl, t, r.values);
   section(adapt.title);
   B.push(...adapt.blocks);
 

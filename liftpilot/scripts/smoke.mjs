@@ -4,7 +4,7 @@
 //   (its draft kept, resumed, discarded; smoke-blank.mjs) → saved snapshot with reproduced hash → calculation report (PDF) → its
 //   machine room surveyed, the relazione tecnica and the drawing set (scripts/smoke-replacement.mjs) → the installation's page:
 //   its type, its sections → a «Calcolo argano» of a modernisation from the saved one (round 45: the renovation keeping the sling,
-//   UNI 10411-11) → the Progetto drawn on it: its data entered (a draft taken up again), a distance of the plan, the landing door
+//   UNI 10411-11; round 46: its logbook's speed locks «Velocità variata», scripts/smoke-intervento.mjs) → the Progetto drawn on it: its data entered (a draft taken up again), a distance of the plan, the landing door
 //   set apart from the car door and the car buffers changed on the drawings, live 3D simulation, the test of its base, saved
 //   in one go (shaft design and calculation together) with its documents → data of the installation, client and company
 //   logos, drawing set issued from it (sheets, PDF) and its revision → the installations' result pill opens the checks behind its number
@@ -25,6 +25,7 @@ import { accountFlows } from './smoke-accounts.mjs';
 import { secondCompany } from './smoke-isolation.mjs';
 import { loadPlaywright, smokeKit, step } from './smoke-kit.mjs';
 import { blankCalc, blankSaves, projectData } from './smoke-blank.mjs';
+import { ammodernamento } from './smoke-intervento.mjs';
 import { priceList } from './smoke-prices.mjs';
 import { progettoFlow } from './smoke-progetto.mjs';
 import { publicPages } from './smoke-public.mjs';
@@ -122,23 +123,8 @@ try {
   assert.match(await page.getAttribute('.page-head .actions a.btn-primary', 'href') ?? '', /\/progetto\?calc=/, 'the next step: the Progetto');
   assert.equal(await page.locator('button:has-text("Passa a progetto completo")').count(), 0, 'no upgrade any more');
 
-  step('Calcolo argano for the drawing (round 45): a modernisation renewing the lift with its existing sling, UNI 10411-11');
-  // a new «Calcolo argano» from the saved one: the type changed, the renovation's preset, the changes of speed, load and
-  // travel answered; the standard added before taken off, the part of UNI 10411 chosen
-  await page.goto(calcUrl);
-  await Promise.all([page.waitForURL(/\/calc\?from=/), page.click('.page-head a[href*="/calc?from="]')]);
-  await hydrated(page, '#Q');
-  await page.click('label.intervento-tipo[data-tipo="AMMODERNAMENTO"]');
-  await page.click('.parti-sino .rif-preset button');
-  await page.waitForSelector('.parti-sino .rif-preset button.on');
-  for (const part of ['speed', 'load', 'travel']) await page.click(`.parti-sino li[data-part="${part}"] label:has-text("No")`);
-  await page.uncheck('.collaudo label:has-text("tutto l’impianto") input');
-  await page.selectOption('.collaudo select', '10411-11');
-  await page.waitForSelector('.savebar button.primary:not([disabled])');
-  await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
-  assert.match(await page.textContent('.calc-ruolo'), /Ammodernamento[\s\S]*Calcolo argano dell’impianto/, 'the type and the role of the record');
-  // its Progetto draws the shaft (the parts in it are replaced): the way to it from the calculation
-  await Promise.all([page.waitForURL(/\/progetto\?calc=[a-z0-9]+$/, { timeout: 30000 }), page.click('section[aria-labelledby="calc-progetto"] a[href*="/progetto?calc="]')]);
+  // a «Calcolo argano» of a modernisation from the saved one, its logbook's speed locking «Velocità variata» (round 46)
+  await ammodernamento({ page, hydrated, calcUrl });
 
   step('the Progetto draws on it: the drawing\'s data entered, the plan edited on the drawing, live simulation, save');
   // the calculation's load, speed, roping, machine place, machine and test are the base's: shown, never asked; the shaft,

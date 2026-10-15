@@ -99,7 +99,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
 
   section('L’impianto com’è');
   B.push({ t: 'kv', rows: [
-    ...collaudoRows(C, true, carichiOf(r.values)), ['Disposizione', `${LAYOUT[I.layout] ?? I.layout}, taglia ${I.r}:1`], [t('Q'), `${fmt(I.Q, 0)} kg`], [t('P'), `${fmt(I.P, 0)} kg`],
+    ...collaudoRows(C, true, carichiOf(r.values), r.values), ['Disposizione', `${LAYOUT[I.layout] ?? I.layout}, taglia ${I.r}:1`], [t('Q'), `${fmt(I.Q, 0)} kg`], [t('P'), `${fmt(I.P, 0)} kg`],
     [`${t('k')} · M_cw`, `${fmt(res.k, 3)} · ${fmt(res.Mcw, 0)} kg`], [t('v'), `${fmt(I.v, 2)} m/s`], [`${t('H')} · ${t('L0')}`, `${fmt(I.H, 2)} m · ${fmt(I.L0, 2)} m`],
     ...(I.layout === 'topDefl' ? [[`${t('dx')} · ${t('h')} · ${t('Dp')}`, `${fmt(I.dx, 3)} m · ${fmt(I.h, 3)} m · ${fmt(I.Dp, 0)} mm`] as [string, string]] : []),
   ] });
@@ -156,7 +156,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
 
   section(ESITI_TECNICA);
   B.push(...esitiBlocks(C, [...res.checks, ...checks], (x) => st(x)));
-  const adapt = adaptSection(C, true, t);
+  const adapt = adaptSection(C, true, t, r.values);
   section(adapt.title);
   B.push(...adapt.blocks);
   section('Adempimenti e punti da verificare in sito');

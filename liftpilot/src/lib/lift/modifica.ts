@@ -71,6 +71,10 @@ export interface Variazione {
   calo: boolean;
   /** under -11 a change beyond KL.loadStruct11 brings its §5 (the structures) too; under -1 null */
   strutture: boolean | null;
+  /** under -1 the ratio of the suspended loads changed (6.1): T* or P away, by more than the documented loads' rounding
+   *  carried to it, from the value that would keep the documented ratio to the new counterweight Tcp — D.1, D.2 and
+   *  buffers to 5.8; under -11 false (its 6.1 counts every increase) */
+  rapporto: boolean;
 }
 
 /** The change of the loads from the documented state `doc` to the design's `ora` under the part of UNI 10411. Under -1
@@ -83,15 +87,22 @@ export function variazioneCarico(norma: Norma10411, doc: Carichi, ora: Carichi):
   const calo = over(Td, To) || over(doc.Mcw, ora.Mcw);
   if (norma === '10411-11') {
     const big = Math.max(Math.abs(To - Td) / Td, Math.abs(ora.Mcw - doc.Mcw) / doc.Mcw) > KL.loadStruct11;
-    return { dQ, dT, dTcp, limiti: null, p1: over(To, Td), p2: over(ora.Mcw, doc.Mcw), calo, strutture: big };
+    return { dQ, dT, dTcp, limiti: null, p1: over(To, Td), p2: over(ora.Mcw, doc.Mcw), calo, strutture: big, rapporto: false };
   }
   const row = doc.Q > KL.loadSplitQ || ora.Q > KL.loadSplitQ ? 1 : 0;
   const limiti = { Q: KL.loadIncQ[row], T: KL.loadIncT[row], Tcp: KL.loadIncTcp[row] };
-  return { dQ, dT, dTcp, limiti, p1: dQ > limiti.Q || dT > limiti.T, p2: dTcp > limiti.Tcp, calo, strutture: null };
+  // the ratio kept: T* and P in the documented proportion to the new counterweight (the full car and the empty one),
+  // within the documented loads' rounding carried to the value that keeps it (a load and the counterweight each within
+  // half a kilogram of the report's: a rounding of the report is never a change of the ratio)
+  const k = ora.Mcw / doc.Mcw, off = (a: number, d: number): boolean => Math.abs(a - d * k) > ROUNDING_KG * k * (1 + d / doc.Mcw) + 1e-9;
+  const rapporto = off(To, Td) || off(ora.P, doc.P);
+  return { dQ, dT, dTcp, limiti, p1: dQ > limiti.Q || dT > limiti.T, p2: dTcp > limiti.Tcp, calo, strutture: null, rapporto };
 }
 
-/** Whether the change brings the checks of the load into the test. */
-export const caricoVariato = (v: Variazione): boolean => v.p1 || v.p2 || v.calo;
+/** Whether the change brings the checks of the load into the test: beyond the prospetti, a load decreased, or (under
+ *  -1) the ratio of the suspended loads changed — stricter than the prospetti, on the side of safety (registry
+ *  impianto.variazione.carico). */
+export const caricoVariato = (v: Variazione): boolean => v.p1 || v.p2 || v.calo || v.rapporto;
 
 /** The speed regulation of the existing controller, as the survey names it (rilievi's tipoVelocita): a frequency
  *  converter, two speeds, one speed. */
@@ -165,4 +176,17 @@ export function variazioneCorsa(norma: Norma10411, lib: Libretto | undefined, H:
   if (!lib?.H) return null;
   const dH = H - lib.H, variata = oltre(Math.abs(dH), ROUNDING_H);
   return { dH, allungata: variata && dH > 0, accorciata: variata && dH < 0, oltre8: norma === '10411-1' && oltre(dH, KL.travelInc1), variata };
+}
+
+/** What the documents of the existing lift bring among a modification's parts, by the rule (round 46): the load by the
+ *  documented loads (caricoVariato), the speed and the travel by the logbook (variazioneVelocita, variazioneCorsa), each
+ *  against the calculation's values `V`. Nothing documented: nothing brought (the calculation is not even read). */
+export function variazioniDi(norma: Norma10411, doc: { documentato?: Carichi; libretto?: Libretto }, V: FormValues): { load: boolean; speed: boolean; travel: boolean } {
+  const lib = doc.libretto, ora = doc.documentato ? carichiOf(V) : null;
+  const v = lib && (lib.v || lib.v50) ? velocitaOf(V) : null, H = lib?.H ? corsaOf(V) : null;
+  return {
+    load: !!doc.documentato && !!ora && caricoVariato(variazioneCarico(norma, doc.documentato, ora)),
+    speed: v !== null && !!variazioneVelocita(norma, lib, v)?.variata,
+    travel: H !== null && !!variazioneCorsa(norma, lib, H)?.variata,
+  };
 }

@@ -77,7 +77,9 @@ npx tsx --conditions=react-server scripts/landing-docs.ts   # страницит
   с текущите двигатели (нищо изчислено в браузъра), пази се snapshot + SHA-256; тригерите в базата забраняват UPDATE;
   вариант = нов запис.
 - **Хешът покрива версията на двигателя** (`ENGINE_VERSION`, `SHAFT_ENGINE_VERSION`, `LIFT_ENGINE_VERSION`,
-  `ROOM_ENGINE_VERSION`): всяко вдигане прави старите записи „da aggiornare“. Страниците им се виждат (стойностите —
+  `ROOM_ENGINE_VERSION`): всяко вдигане прави старите записи „da aggiornare“. Обхватът на изпитването (коя част коя проверка
+  внася, задълженията, KL на изменението) е извън хеша на изчислението, но стига до документите: смяна в него иска вдигане
+  на четирите версии — тестът `ambito-version` пада иначе (кръг 46). Страниците им се виждат (стойностите —
   преизчислени), документите — не. Ново поле във входа се добавя така, че каноничните входове без него да останат
   същите (старите записи се четат), но хешът пак се сменя с версията. Промяна в извеждането → вдигни версията.
 - **Едно правило за документите** (`src/server/records.ts`): relazione, DXF, износ, поръчка, комплект, машинно — само ако
@@ -103,6 +105,8 @@ npx tsx --conditions=react-server scripts/landing-docs.ts   # страницит
   сглобява (`liftInputsOf`) и пише `LiftDesign.baseCalculationId`. Съоръжението не пази тип — чете го от последното
   изчисление от стъпка 2, освен ако проект отпреди е по-нов от него (`src/server/calcolo-base.ts`, `legacyPiuNuovo`);
   машина, която остава („Argano: No“) — без предложение, съвет, цена и поръчка, Progetto — шахтата, не машинното; „подмяна → цял проект“ (`upgradeProjectAction`) вече няма.
+  Скоростта и ходът по libretto са части по правило (кръг 46): «Solo argano», който ги получава — отказ и «Passa ad
+  Ammodernamento»; Progetto върху него с друг ход — `tipoDaRivedere` и «Porta nel calcolo».
   `Project.kind` не се чете и не се пише от никой код (глобален `omit` в `src/lib/db.ts`, тест `no-project-kind`);
   колоната остава до миграция след потвърждението на собственика. Кръгът Calcolo ↔ Progetto: „Porta nel calcolo“
   (`?dal=progetto`) и „Aggiorna il progetto con l’ultimo calcolo“. `/vano` няма; записите отпреди формуляра са в архива

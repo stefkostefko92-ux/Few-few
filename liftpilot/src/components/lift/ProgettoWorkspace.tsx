@@ -13,7 +13,7 @@ import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import type { Edit } from '@/drawing';
-import { deriveLift, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
+import { deriveLift, tipoDaRivedere, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import { bottomTo, enteredBy, filled, missingOf, type BlankKey, type LiftDraft } from '@/lib/lift/blank';
 import { composto, dalComposto, type ProgettoAuto, type ProgettoDraft } from '@/lib/lift/progetto';
 import { calataVerso, calateAlCompleto, calateEsistenti } from '@/lib/lift/calata';
@@ -109,6 +109,8 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
   }, [missing, dInp, car, cw]);
   // what the save would refuse, as the server refuses it, named as the form names it (save-blockers.ts)
   const { nameOf, blockers, refused } = useSaveBlockers(P, derived, dInp.shaft);
+  // a «Solo argano» base whose test the drawn travel changes (round 46): the type to review in the calculation
+  const rivedere = !!derived && tipoDaRivedere(base.tipo, derived.collaudo);
   useEffect(() => { if (derived) onDerived?.(dInp, derived); }, [dInp, derived, onDerived]);
   const sim = useRef<SimApi>(null);
   // the draft keeps the drawing, its base and which values came from the survey (and whether the form started from it)
@@ -210,7 +212,7 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
         {!derived ? <MissingPanel title={tb('title')} lead={tb('lead')} items={items(missing)} /> : (
           <>
             <LiftFacts derived={derived} X={X} fmt={P.fmt} />
-            <DifferenzeCalcolo P={P} X={X} base={base.values} derived={derived} porta={porta} pending={leaving} />
+            <DifferenzeCalcolo P={P} X={X} base={base.values} derived={derived} porta={porta} pending={leaving} collaudo={base.collaudo} tipo={base.tipo} />
             <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />
             <section className="panel"><PlanEditor I={drawn} onChange={setDrawn} machine={above ? derived.machine : null} onCalc={setCalcFromDrawing} id="lift-plan"
               below={derived.bottom ? { machine: derived.machine, analysis: derived.analysis, scheme: derived.bottom } : null} /></section>
@@ -222,10 +224,10 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
       <div className="savebar">
         <div className="inner">
           <input className="input" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={120} placeholder={t('label')} aria-label={t('label')} />
-          <button type="button" className="btn btn-primary" onClick={save} disabled={saving || !derived || !settled || refused.length > 0}>{saving ? t('saving') : t('save')}</button>
+          <button type="button" className="btn btn-primary" onClick={save} disabled={saving || !derived || !settled || refused.length > 0 || rivedere}>{saving ? t('saving') : t('save')}</button>
           <span className={derived && refused.length ? 'note bad' : 'note'}>
             {/* what to correct, each a link to where it is corrected (round 46: the falls by the plan's dimension) */}
-            {!derived ? tb('saveMissing', { n: missing.length }) : refused.length ? <>{t('fix_list_lead')} {blockers.map((b, i) => (
+            {!derived ? tb('saveMissing', { n: missing.length }) : rivedere ? te('tipoDaRivedere') : refused.length ? <>{t('fix_list_lead')} {blockers.map((b, i) => (
               <span key={`${b.id ?? ''}${b.label}`}>{i ? ', ' : ''}{b.id ? <a href={`#${b.id}`} onClick={(e) => { e.preventDefault(); if (b.id) goToField(b.id); }}>{b.label}</a> : b.label}</span>
             ))}.</> : t('save_hint')}
           </span>

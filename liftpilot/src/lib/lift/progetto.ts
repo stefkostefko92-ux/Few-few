@@ -11,6 +11,7 @@ import type { BottomScheme } from './bottom';
 import { blankLift, type BlankKey, type LiftDraft } from './blank';
 import type { Collaudo } from './collaudo';
 import type { AutoFlags, LiftInputs } from './derive-types';
+import { sceltaSalvata } from './risposte';
 
 /** The switches of the values the drawing gives (true) or the calculation keeps (false); the panel's place as before. */
 export type ProgettoAuto = Pick<AutoFlags, 'L0' | 'dx' | 'Hv' | 'panel'>;
@@ -40,7 +41,9 @@ const numOf = (x: FormValues[string] | undefined): number | null => {
  * The one form's inputs of a drawing on its base: the shaft's rated load and speed are the calculation's (whatever the
  * browser sent), the calculation's values as stored with the plan's h on a diverting pulley (kept as stored when it
  * reads the same number), the machine and the car's mass as entered there (never proposed or estimated again), the
- * scheme of a machine below, the base's test; no catalog.
+ * scheme of a machine below, the base's test as chosen — the changes the rule brought on the base's values left out
+ * (risposte.ts sceltaSalvata, round 46): the derivation brings them again on the drawing's, its travel the drawn one;
+ * no catalog.
  */
 export function liftInputsOf(p: ProgettoInputs, base: BaseCalcolo): LiftInputs {
   const V = base.values, layout = V.layout;
@@ -50,7 +53,7 @@ export function liftInputsOf(p: ProgettoInputs, base: BaseCalcolo): LiftInputs {
     calc: { ...V, ...h },
     auto: { P: false, machine: false, L0: p.auto.L0, dx: p.auto.dx, Hv: p.auto.Hv, ...(p.auto.panel !== undefined ? { panel: p.auto.panel } : {}) },
     ...(layout === 'bottom' && p.bottom ? { bottom: p.bottom } : {}),
-    ...(base.collaudo ? { collaudo: base.collaudo } : {}),
+    ...(base.collaudo ? { collaudo: sceltaSalvata(V, base.collaudo) } : {}),
   };
 }
 

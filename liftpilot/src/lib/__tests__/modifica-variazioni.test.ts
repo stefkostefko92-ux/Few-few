@@ -98,12 +98,16 @@ test('4000 casi: il libretto e la regolazione passano per interventoTo, rifacime
     keeps(withAggiunta(r() < 0.2, C, C, pick(NORME_AGGIUNTIVE), r() < 0.5), 'withAggiunta');
     keeps({ ...C, ...esistenteOf(C) }, 'esistenteOf');
     keeps({ ...C, ...modificaOf(C) }, 'modificaOf');
-    // the acceptance test's rules do not read them (round 46 S3): the same parts as without them; a modification carries them
+    // the acceptance test reads the logbook (round 46 S4): the same parts as without it and, by the rule, the speed and
+    // the travel it counts as changed — nothing else, never a part taken away; the regulation brings none; a
+    // modification carries them
     const V = { ...pick(loads), context: pick(['repl', 'repl', 'new']) };
     const { libretto: _l, regolazione: _r, ...senza } = C;
     void _l; void _r;
-    const a = collaudoOf(V, C), b = collaudoOf(V, senza);
-    assert.deepEqual(a.parti, b.parti);
+    const a = collaudoOf(V, C), b = collaudoOf(V, senza), extra = a.parti.filter((p) => !b.parti.includes(p));
+    assert.ok(b.parti.every((p) => a.parti.includes(p)), JSON.stringify(C));
+    assert.ok(extra.every((p) => p === 'speed' || p === 'travel'), `${extra.join(',')} ${JSON.stringify(C)}`);
+    assert.deepEqual(collaudoOf(V, { ...C, regolazione: pick(REGOLAZIONI) }).parti, a.parti);
     assert.equal(a.norma, b.norma);
     if (a.norma !== 'en81') keeps(a, 'collaudoOf');
   }

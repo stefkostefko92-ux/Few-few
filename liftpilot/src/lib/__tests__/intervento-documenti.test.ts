@@ -101,9 +101,12 @@ test('relazione con l’argano che resta: niente «argano nuovo» né i punti de
   assert.ok(doc.includes('UNI 10411-11:2024, 14.3 b)') && doc.includes('la sostituzione del macchinario ne è il caso n. 5)'));
   assert.ok(h2(report(KEPT, null)).some((x) => x.endsWith(calcIt.q_title)), 'no type: the words of its time');
   assert.ok(all(report(KEPT, null)).includes('UNI 10411-1:2024, 14.4 a)–g)'));
-  // the speed changed with the machine kept: the engineer evaluates the checks printed «Esistente» (15.8)
+  // the speed changed with the machine kept (round 46: the scope has it, the note is informative): the checks the speed
+  // concerns enter the result, those still «Esistente» are named for the engineer, the ropes again with 14.1 (15.8)
   const speed = paras(report({ ...KEPT, parti: [...KEPT.parti, 'speed'] }, 'AMMODERNAMENTO'));
-  assert.ok(speed.includes('⚠ L’argano resta, con velocità nominale variata: le verifiche con esito «Esistente»'), speed);
+  assert.ok(speed.includes('L’argano resta, con velocità nominale variata: le verifiche che le variazioni riguardano entrano nell’esito delle verifiche.'), speed);
+  assert.ok(!speed.includes('⚠ L’argano resta'), 'informative, no ⚠');
+  assert.ok(/Restano «Esistente» \(fuori dall’esito delle verifiche[^)]*\): [^.]+\./.test(speed) || speed.includes('Nessuna verifica del calcolo resta «Esistente».'), speed);
   assert.ok(speed.includes('(UNI 10411-1:2024, 15.8)'));
   assert.ok(paras(report({ norma: '10411-11', parti: ['controller', 'speed', 'travel'] }, 'AMMODERNAMENTO')).includes('velocità nominale variata e corsa variata')
     && paras(report({ norma: '10411-11', parti: ['controller', 'speed'] }, 'AMMODERNAMENTO')).includes('(UNI 10411-11:2024, 15 d))'));

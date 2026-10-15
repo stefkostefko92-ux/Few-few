@@ -89,7 +89,8 @@ export function rifacimentoTo(on: boolean, C: Collaudo): { values: FormValues; c
 
 /** What the type, the calculation's values and the test chosen disagree on (the keys of the save's error; none: they
  *  agree). The base EN 81-20/50 is the transformation's (it can be added to a modification as a standard); speed and
- *  travel make a modernisation of what would be a «Solo argano»; the load is never chosen there (the documented loads
+ *  travel make a modernisation of what would be a «Solo argano» — chosen ('parti') or brought by the logbook (round
+ *  46: 'velocita', 'corsa', the test as the documents read it); the load is never chosen there (the documented loads
  *  may bring it: a warning, not a refusal) — and the load they bring makes one too: a modernisation is told apart from
  *  a «Solo argano» on the parts as the documents read them (collaudoOf), the rule's load among them. */
 export function interventoValido(t: TipoIntervento | null | undefined, V: FormValues, chosen: Collaudo | null | undefined): string[] {
@@ -106,6 +107,11 @@ export function interventoValido(t: TipoIntervento | null | undefined, V: FormVa
   if (t === 'SOLO_ARGANO') {
     if (!has('machine') || !subset(P, PARTI_SOLO)) out.add('parti');
     if (chosen.rifacimento) out.add('rifacimento');
+    // the changes the logbook brings on an existing lift (chosen: 'parti'; a new lift is tested with every part:
+    // 'context' says it)
+    const C = V.context === 'new' ? null : collaudoOf(V, chosen);
+    if (C?.parti.includes('speed') && !has('speed')) out.add('velocita');
+    if (C?.parti.includes('travel') && !has('travel')) out.add('corsa');
   } else if (!P.length || (!chosen.rifacimento && has('machine') && subset(collaudoOf(V, chosen).parti, PARTI_SOLO))) out.add('parti');
   if (chosen.rifacimento) {
     if (!subset(PARTI_RIFACIMENTO, P)) out.add('rifacimento');
@@ -115,6 +121,11 @@ export function interventoValido(t: TipoIntervento | null | undefined, V: FormVa
   if (!V.keepRopes && !has('ropes')) out.add('ropes');
   return [...out];
 }
+
+/** A drawing whose test (as derived on it: the drawing's travel) brings a change of speed or travel on a «Solo argano»
+ *  base: the type is to be reviewed in the calculation (round 46, the Progetto's save refuses 'tipoDaRivedere'). */
+export const tipoDaRivedere = (t: TipoIntervento | null | undefined, C: Pick<Collaudo, 'parti'>): boolean =>
+  t === 'SOLO_ARGANO' && (C.parti.includes('speed') || C.parti.includes('travel'));
 
 /** A modernisation that keeps the existing machine: the calculation verifies it with the modified lift's data — no
  *  proposal, advice or order. */

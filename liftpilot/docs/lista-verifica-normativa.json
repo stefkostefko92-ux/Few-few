@@ -1856,7 +1856,7 @@
       "fonte": "UNI 10411-1:2024, testo della norma, letto il 2026-10-06, p. 7; UNI 10411-11:2024, testo della norma, letto il 2026-10-06, pp. 7–8",
       "stato": "confermato",
       "verifiche": "",
-      "nota": "T* della norma non comprende funi e cavi: P del calcolo comprende la quota del cavo flessibile, che si annulla nel confronto se resta la stessa. Quale portata decide la riga del prospetto non è detto nel testo (scelta prudente del software); con la -11 il 10 % si somma alle modifiche precedenti: lo stato documentato è quello dell’impianto originale"
+      "nota": "T* della norma non comprende funi e cavi: P del calcolo comprende la quota del cavo flessibile, che si annulla nel confronto se resta la stessa. Quale portata decide la riga del prospetto non è detto nel testo (scelta prudente del software); con la -11 il 10 % si somma alle modifiche precedenti: lo stato documentato è quello dell’impianto originale. Con la -1 (6.1) anche il rapporto tra i carichi appesi lato cabina e lato contrappeso porta le verifiche del carico: T* o P lontani dal valore che conserverebbe il rapporto documentato col nuovo contrappeso oltre l’arrotondamento di 0,5 kg dei carichi documentati riportato al rapporto (scelta del software), con D.1, D.2 e ammortizzatori secondo la UNI EN 81-20 5.8; il calo dei carichi e il rapporto portano le verifiche più spesso delle soglie dei prospetti: più severo della norma, dalla parte della sicurezza"
     },
     {
       "n": 153,
@@ -1868,7 +1868,7 @@
       "fonte": "UNI 10411-1:2024, testo della norma, letto il 2026-10-06, pp. 14–15; UNI 10411-11:2024, testo della norma, letto il 2026-10-06, pp. 12–13",
       "stato": "confermato",
       "verifiche": "",
-      "nota": "una differenza entro 0,005 m/s è l’arrotondamento dei dati (scelta del software, non un valore della norma); con la -1 una variazione entro il 5 % non porta i punti 15.2–15.15: se sia comunque un cambio della velocità ai sensi del DPR 162/1999 lo valuta il tecnico"
+      "nota": "una differenza entro 0,005 m/s è l’arrotondamento dei dati (scelta del software, non un valore della norma); con la -1 una variazione entro il 5 % non porta i punti 15.2–15.15: se sia comunque un cambio della velocità ai sensi del DPR 162/1999 lo valuta il tecnico; una diminuzione oltre il 5 % porta nell’esito tutte le verifiche che riguardano la velocità, più dei punti 15.2 e 15.17 (dalla parte della sicurezza)"
     },
     {
       "n": 154,
@@ -1904,7 +1904,7 @@
       "fonte": "UNI 10411-1:2024, testo della norma, letto il 2026-10-06, pp. 5, 13–14; UNI 10411-11:2024, testo della norma, letto il 2026-10-06, pp. 5, 12; schema ICIM delle verifiche (la verifica straordinaria si limita di norma alle modifiche); ricerca, capitoli 2.4 e 6.6",
       "stato": "scelta del software",
       "verifiche": "",
-      "nota": "lo scopo delle due UNI 10411 e i requisiti per la sostituzione del macchinario (punto 14) sono letti sul testo (voce sostituzione.adeguamenti); quali verifiche riguardano ciascuna parte e la matrice delle norme compatibili sono una lettura del software, da approvare dall’ingegnere"
+      "nota": "lo scopo delle due UNI 10411 e i requisiti per la sostituzione del macchinario (punto 14) sono letti sul testo (voce sostituzione.adeguamenti); quali verifiche riguardano ciascuna parte e la matrice delle norme compatibili sono una lettura del software, da approvare dall’ingegnere. Velocità, portata e corsa variate entrano tra le parti da sole quando i dati del libretto e i carichi documentati lo dicono (voci impianto.variazione.*). Con la velocità variata entrano l’aderenza, le funi e la pressione nelle gole (-1 15.8 con 14.1 e D.2; -11 15 d)), con la corsa variata gli spazi in testata e in fossa e le guide (-1 16 g), j); -11 16 f), i)), con la portata variata i paracadute, le guide del contrappeso e gli ammortizzatori (6.1, 6.4–6.6, 6.13–6.14); solo con la -1 lo schermo del contrappeso in fossa (6.13, 15.7, 16 a)) e, con il quadro nuovo, il freno a doppio elemento (11.1.4)"
     },
     {
       "n": 157,
@@ -3315,7 +3315,7 @@
       "id": "collaudo.parti.10411-1.3",
       "gruppo": "Collaudo: UNI 10411-1:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-1:2024, 19 e 12.2",
-      "valore": "porte di piano nuove secondo la UNI EN 81-20 5.3, mai più basse delle esistenti (sotto 1,9 m la UNI EN 81-21 5.12); resistenza al fuoco non inferiore all’esistente; presenza della cabina segnalata (5.3.7.2); grembiule della soglia di cabina secondo la 5.4.5 (la UNI EN 81-21 5.8 se i luoghi non lo consentono); dispositivi di blocco nuovi con certificato di esame del tipo (12.2)",
+      "valore": "porte di piano nuove secondo la UNI EN 81-20 5.3, mai più basse delle esistenti (sotto 1,9 m la UNI EN 81-21 5.12); resistenza al fuoco non inferiore all’esistente; presenza della cabina segnalata (5.3.7.2); porte scorrevoli nuove: la difesa frontale del vano dove si muovono secondo il punto 7 (19.5); grembiule della soglia di cabina secondo la 5.4.5 (la UNI EN 81-21 5.8 se i luoghi non lo consentono, 19.6); dispositivi di blocco nuovi con certificato di esame del tipo (12.2)",
       "riferimento": "UNI 10411-1:2024, 19 e 12.2",
       "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
       "stato": "confermato",
@@ -3326,6 +3326,18 @@
       "n": 275,
       "id": "collaudo.parti.10411-1.4",
       "gruppo": "Collaudo: UNI 10411-1:2024, parti sostituite oltre la macchina",
+      "voce": "UNI 10411-1:2024, 6.2 e 22 b)",
+      "valore": "arcata nuova: il contatto di allentamento delle funi, che interviene anche per una sola fune, si conserva, anche con cabina e arcata sostituite insieme",
+      "riferimento": "UNI 10411-1:2024, 6.2 e 22 b)",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 276,
+      "id": "collaudo.parti.10411-1.5",
+      "gruppo": "Collaudo: UNI 10411-1:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-1:2024, 11.1",
       "valore": "quadro nuovo secondo la UNI EN 81-20 da 5.10 a 5.12.4, 5.4.10.4 c) e da 5.9.2.5 a 5.9.2.7, con le deroghe di 11.1.3; la parte elettrica si rifà salvo compatibilità attestata e conduttori marcati (11.1.2); senza UCM conforme alla 5.6.7 il freno a doppio elemento meccanico sorvegliato (11.1.4); luce del locale del macchinario e del vano secondo la 5.2.1.4 (11.1.8)",
       "riferimento": "UNI 10411-1:2024, 11.1",
@@ -3335,8 +3347,8 @@
       "nota": ""
     },
     {
-      "n": 276,
-      "id": "collaudo.parti.10411-1.5",
+      "n": 277,
+      "id": "collaudo.parti.10411-1.6",
       "gruppo": "Collaudo: UNI 10411-1:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-1:2024, 17",
       "valore": "funi nuove secondo la UNI EN 81-20 5.5.1 e attacchi d’estremità controllati (17.1); diametro o carico di rottura diversi da quelli documentati: verifiche della 14.1 anche con la stessa puleggia (17.2)",
@@ -3347,8 +3359,8 @@
       "nota": ""
     },
     {
-      "n": 277,
-      "id": "collaudo.parti.10411-1.6",
+      "n": 278,
+      "id": "collaudo.parti.10411-1.7",
       "gruppo": "Collaudo: UNI 10411-1:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-1:2024, 18",
       "valore": "limitatore, tenditore, fune e contatti nuovi secondo la UNI EN 81-20 5.6.2.2.1 e 5.5.7.1, con l’intervento del paracadute entro i limiti della norma in vigore all’installazione",
@@ -3359,7 +3371,7 @@
       "nota": ""
     },
     {
-      "n": 278,
+      "n": 279,
       "id": "collaudo.parti.10411-11.1",
       "gruppo": "Collaudo: UNI 10411-11:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-11:2024, 22",
@@ -3371,7 +3383,7 @@
       "nota": ""
     },
     {
-      "n": 279,
+      "n": 280,
       "id": "collaudo.parti.10411-11.2",
       "gruppo": "Collaudo: UNI 10411-11:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-11:2024, 12.1–12.3",
@@ -3383,7 +3395,7 @@
       "nota": ""
     },
     {
-      "n": 280,
+      "n": 281,
       "id": "collaudo.parti.10411-11.3",
       "gruppo": "Collaudo: UNI 10411-11:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-11:2024, 19",
@@ -3395,7 +3407,7 @@
       "nota": ""
     },
     {
-      "n": 281,
+      "n": 282,
       "id": "collaudo.parti.10411-11.4",
       "gruppo": "Collaudo: UNI 10411-11:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-11:2024, 11.1",
@@ -3407,7 +3419,7 @@
       "nota": ""
     },
     {
-      "n": 282,
+      "n": 283,
       "id": "collaudo.parti.10411-11.5",
       "gruppo": "Collaudo: UNI 10411-11:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-11:2024, 17",
@@ -3419,7 +3431,7 @@
       "nota": ""
     },
     {
-      "n": 283,
+      "n": 284,
       "id": "collaudo.parti.10411-11.6",
       "gruppo": "Collaudo: UNI 10411-11:2024, parti sostituite oltre la macchina",
       "voce": "UNI 10411-11:2024, 18",
@@ -3427,6 +3439,210 @@
       "riferimento": "UNI 10411-11:2024, 18",
       "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
       "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 285,
+      "id": "collaudo.variazioni.10411-1.1",
+      "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-1:2024, 15.1–15.15",
+      "valore": "velocità portata oltre il 5 % sopra il riferimento (la maggiore tra quella del libretto, o accertata in seguito con verbale, e quella dopo il passaggio della rete a 50 Hz): ammortizzatori (15.2) e paracadute (15.3) secondo la UNI EN 81-20, guide con attacchi e giunzioni (15.5–15.6), contrappeso guidato e difesa del suo percorso (15.7), funi verificate con il 14.1 anche se macchina e puleggia restano (15.8), spazi liberi in fossa e in testata (15.11, con la UNI EN 81-21 se i luoghi non lo consentono: 15.12); non calcolati dal software: ACOP secondo la 5.6.6 (15.4), ispezione non oltre 0,63 m/s (15.9), porta a ogni accesso della cabina (15.10), limitatore secondo la 5.6.2.2.1 (15.13), extracorsa secondo la 5.12.2 (15.14), precisione di arresto e livellamento secondo la 5.12.1.1.4 (15.15)",
+      "riferimento": "UNI 10411-1:2024, 15.1–15.15",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 286,
+      "id": "collaudo.variazioni.10411-1.2",
+      "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-1:2024, 15.16–15.17",
+      "valore": "velocità ridotta oltre il 5 % rispetto a quella iniziale o documentata con verbale: ammortizzatori secondo la UNI EN 81-20 5.8 (15.2) e paracadute fatto intervenire dal limitatore entro i limiti della normativa in vigore all’installazione (15.17)",
+      "riferimento": "UNI 10411-1:2024, 15.16–15.17",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 287,
+      "id": "collaudo.variazioni.10411-1.3",
+      "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-1:2024, 15.1 e 15.16",
+      "valore": "velocità entro il 5 % del riferimento: i punti da 15.2 a 15.17 non si applicano; se sia comunque un cambio della velocità ai sensi del DPR 162/1999 (art. 2 c.1 lett. cc) n. 1)) lo valuta il tecnico",
+      "riferimento": "UNI 10411-1:2024, 15.1 e 15.16",
+      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 288,
+      "id": "collaudo.variazioni.10411-1.4",
+      "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-1:2024, 6.1, 6.3–6.12 e 6.15",
+      "valore": "T* o portata oltre il prospetto 1: strutture dell’edificio secondo il punto 5 (6.3), ammortizzatori secondo la UNI EN 81-20 5.8 (6.4), guide e ancoraggi (6.5), paracadute di cabina per i nuovi carichi (6.6), funi e attacchi (6.8), arcata (6.9), macchina (6.10) e altri componenti interessati (6.15); non calcolati dal software: controllo del carico secondo la 5.12.1.2 (6.11) e ACOP secondo la 5.6.6 (6.12)",
+      "riferimento": "UNI 10411-1:2024, 6.1, 6.3–6.12 e 6.15",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 289,
+      "id": "collaudo.variazioni.10411-1.5",
+      "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-1:2024, 6.1, 6.4, 6.5, 6.8 e 6.13–6.15",
+      "valore": "contrappeso oltre il prospetto 2: ammortizzatori (6.4), guide e ancoraggi (6.5), funi e attacchi (6.8), contrappeso guidato e difesa del suo percorso (6.13), altri componenti interessati (6.15); non calcolato dal software: con spazi accessibili sotto il vano fondo della fossa per almeno 5000 N/m² e paracadute del contrappeso (6.14)",
+      "riferimento": "UNI 10411-1:2024, 6.1, 6.4, 6.5, 6.8 e 6.13–6.15",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 290,
+      "id": "collaudo.variazioni.10411-1.6",
+      "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-1:2024, 6.1",
+      "valore": "T* o contrappeso diminuiti: ammortizzatori esistenti secondo la UNI EN 81-20 5.8 e paracadute progressivo, se c’è, secondo la 5.6.2",
+      "riferimento": "UNI 10411-1:2024, 6.1",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 291,
+      "id": "collaudo.variazioni.10411-1.7",
+      "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-1:2024, 6.1 e App. D",
+      "valore": "rapporto tra i carichi appesi lato cabina e lato contrappeso cambiato: stabilità allo scorrimento (D.1) e pressione nelle gole (D.2) verificate, ammortizzatori secondo la UNI EN 81-20 5.8 sotto cabina e contrappeso; aderenza eccessiva delle funi esclusa (UNI EN 81-20 5.5.3 c))",
+      "riferimento": "UNI 10411-1:2024, 6.1 e App. D",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 292,
+      "id": "collaudo.variazioni.10411-1.8",
+      "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-1:2024, 16 a)–l)",
+      "valore": "corsa allungata rispetto al primo collaudo, fino a 8 m: contrappeso guidato e difesa del suo percorso (a)), locale o macchina spostati con i punti 8 e 9 (b), c)), difese dei tratti di vano aggiunti (d)), linee elettriche (e)), quadro (f)), guide dei tratti aggiunti (g)), funi nuove con il 17.2 (h)), fune del limitatore (i)), spazi liberi in fossa e in testata (j)), porte di piano nuove con il punto 19 (k)), extracorsa all’estremità interessata (l))",
+      "riferimento": "UNI 10411-1:2024, 16 a)–l)",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 293,
+      "id": "collaudo.variazioni.10411-1.9",
+      "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-1:2024, 16",
+      "valore": "⚠ corsa allungata di oltre 8 m rispetto al primo collaudo: l’intervento conta come nuova installazione; la procedura la conferma il tecnico con il soggetto che esegue la verifica",
+      "riferimento": "UNI 10411-1:2024, 16",
+      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 294,
+      "id": "collaudo.variazioni.10411-1.10",
+      "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-1:2024, 16 e 4",
+      "valore": "corsa accorciata: il punto 16 tratta solo l’allungamento; la modifica (DPR 162/1999, art. 2 c.1 lett. cc) n. 3)) si valuta secondo il punto 4",
+      "riferimento": "UNI 10411-1:2024, 16 e 4",
+      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 295,
+      "id": "collaudo.variazioni.10411-11.1",
+      "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-11:2024, 15 a)–k) e 4.3",
+      "valore": "velocità cambiata, in più o in meno: verificati per la nuova velocità ammortizzatori (a)), paracadute (b)), ACOP (c)), organi di sospensione (d)), limitatore (f)), extracorsa (g)) e guide di cabina e del contrappeso con attacchi e giunzioni (j), k)); spazi liberi in fossa e in testata (e)); precisione di arresto e livellamento secondo la UNI EN 81-20 5.12.1.1.4 (h)); valutazione 4.3",
+      "riferimento": "UNI 10411-11:2024, 15 a)–k) e 4.3",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 296,
+      "id": "collaudo.variazioni.10411-11.2",
+      "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-11:2024, 15 i)",
+      "valore": "protezione UCM secondo la UNI EN 81-20 5.6.7, salvo con una variazione della velocità entro il 5 % su un impianto dove la 5.6.7 non era applicata",
+      "riferimento": "UNI 10411-11:2024, 15 i)",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 297,
+      "id": "collaudo.variazioni.10411-11.3",
+      "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-11:2024, 6.1–6.13",
+      "valore": "T* aumentato: verificati per i nuovi carichi organi di sospensione (6.3), ammortizzatori (6.4), guide (6.5), paracadute (6.6), attacchi (6.8), arcata (6.9), ACOP e UCM (6.10), controllo del carico (6.11), macchina (6.12) e altri componenti interessati (6.13); entro il 10 %, anche sommato alle modifiche precedenti, le strutture del punto 5 no (6.2)",
+      "riferimento": "UNI 10411-11:2024, 6.1–6.13",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 298,
+      "id": "collaudo.variazioni.10411-11.4",
+      "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-11:2024, 6.1–6.13",
+      "valore": "contrappeso aumentato: i punti da 6.2 a 6.13 per i nuovi carichi, tranne l’arcata (6.9)",
+      "riferimento": "UNI 10411-11:2024, 6.1–6.13",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 299,
+      "id": "collaudo.variazioni.10411-11.5",
+      "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-11:2024, 6.1",
+      "valore": "T* o contrappeso diminuiti: ammortizzatori e, se c’è, paracadute progressivo verificati per i nuovi carichi",
+      "riferimento": "UNI 10411-11:2024, 6.1",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 300,
+      "id": "collaudo.variazioni.10411-11.6",
+      "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-11:2024, 16 a)–i) e 4.3",
+      "valore": "corsa allungata: locale o macchina spostati con i punti 8 e 9 (a), b)), difese dei tratti di vano aggiunti (c)), linee elettriche (d)), quadro (e)), guide dei tratti aggiunti con gli ancoraggi (f)), organi di sospensione nuovi con il punto 17 (g)), fune nuova del limitatore (h)), spazi liberi in fossa e in testata (i)); valutazione 4.3",
+      "riferimento": "UNI 10411-11:2024, 16 a)–i) e 4.3",
+      "fonte": "testo della norma, letto il 2026-10-06 (punti e valori con parole nostre)",
+      "stato": "confermato",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 301,
+      "id": "collaudo.variazioni.10411-11.7",
+      "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-11:2024, 16 e 4.3",
+      "valore": "corsa accorciata: il punto 16 tratta solo l’allungamento; la modifica (DPR 162/1999, art. 2 c.1 lett. cc) n. 3)) si valuta con la 4.3",
+      "riferimento": "UNI 10411-11:2024, 16 e 4.3",
+      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "stato": "da verificare",
       "verifiche": "",
       "nota": ""
     }

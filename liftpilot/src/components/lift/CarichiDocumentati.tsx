@@ -47,9 +47,9 @@ export default function CarichiDocumentati({ P, value, calc, set }: Props) {
         ))}
       </div>
       {v ? (
-        <p className={`note${v.p1 || v.p2 || v.calo ? ' bad' : ''}`} role="status">
+        <p className={`note${v.p1 || v.p2 || v.calo || v.rapporto ? ' bad' : ''}`} role="status">
           {t('var_line', { dQ: pct(v.dQ), dT: pct(v.dT), dTcp: pct(v.dTcp) })}{' '}
-          {t(v.p1 || v.p2 ? 'var_over' : v.calo ? 'var_down' : 'var_within')}{v.strutture ? ` ${t('var_struct', { s: P.fmt(KL.loadStruct11 * 100, 0) })}` : ''}
+          {t(v.p1 || v.p2 ? 'var_over' : v.calo ? 'var_down' : v.rapporto ? 'var_ratio' : 'var_within')}{v.strutture ? ` ${t('var_struct', { s: P.fmt(KL.loadStruct11 * 100, 0) })}` : ''}
         </p>
       ) : null}
       <p className="note">{t('doc_hint', { split: KL.loadSplitQ, q1: P.fmt(KL.loadIncQ[0] * 100, 0), t1: P.fmt(KL.loadIncT[0] * 100, 0), q2: P.fmt(KL.loadIncQ[1] * 100, 0),

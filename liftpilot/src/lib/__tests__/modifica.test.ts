@@ -69,9 +69,17 @@ test('il collaudo: la marcatura sceglie la parte, la variazione porta la portata
   assert.equal(collaudoOf(calc, { norma: '10411-11', parti: ['machine'], marcatura: 'incerta', servizio: '1998-05-04' }).norma, '10411-1');
   assert.equal(collaudoOf(calc, { norma: '10411-11', parti: ['machine'], marcatura: 'incerta' }).norma, '10411-11');
   assert.equal(collaudoOf(calc, { norma: 'en81', parti: ['machine'], marcatura: 'no' }).norma, 'en81');
-  // documented 600 kg with a heavier car: the rated load +5 % (the limit over 500 kg), T* and the counterweight the same
+  // documented 600 kg with a heavier car: the rated load +5 % (the limit over 500 kg), T* and the counterweight the same —
+  // within the prospetti, but the empty car lighter against the same counterweight changes the ratio of the suspended
+  // loads (round 46, 6.1): the load comes in
   const within: Collaudo = { norma: '10411-1', parti: ['machine'], documentato: doc(600, 730, 1015) };
-  assert.deepEqual(collaudoOf(calc, within).parti, ['machine']);
+  assert.deepEqual(collaudoOf(calc, within).parti, ['machine', 'load']);
+  assert.equal(variazioneCarico('10411-1', doc(600, 730, 1015), doc(630, 700, 1015)).rapporto, true);
+  // every load scaled by the same factor (+5,26 %, within the prospetti up to 500 kg): the ratio is kept, nothing comes in
+  const calc400 = { context: 'repl', Q: '400', P: '500', k: '0.5' }, scaled: Collaudo = { norma: '10411-1', parti: ['machine'], documentato: doc(380, 475, 665) };
+  assert.equal(variazioneCarico('10411-1', doc(380, 475, 665), doc(400, 500, 700)).rapporto, false);
+  assert.deepEqual(collaudoOf(calc400, scaled).parti, ['machine']);
+  assert.equal(variazioneCarico('10411-11', doc(380, 475, 665), doc(400, 500, 600)).rapporto, false, 'solo con la -1');
   const over: Collaudo = { norma: '10411-1', parti: ['machine'], documentato: doc(580, 700, 990) };
   const C = collaudoOf(calc, over);
   assert.deepEqual(C.parti, ['machine', 'load']);

@@ -117,6 +117,13 @@ test('interventoValido: ogni regola rifiuta il suo caso', () => {
   assert.deepEqual(v('SOLO_ARGANO', REPL, C(['machine', 'landingDoors'])), ['parti']);
   assert.deepEqual(v('SOLO_ARGANO', REPL, C(['machine', 'load'])), ['parti'], 'la portata non si sceglie');
   assert.deepEqual(v('SOLO_ARGANO', REPL, C(['machine', 'speed'])), ['parti'], 'la velocità fa un ammodernamento');
+  // round 46: the speed or the travel the logbook brings make one too (UNI 10411-1 15.1: over 5 %; -11 15: any change)
+  const EX_A: FormValues = { ...PRESETS.C, ...REPL, v: '1.06', H: '18' };
+  assert.deepEqual(v('SOLO_ARGANO', EX_A, C(['machine'], { libretto: { v: 1 } })), ['velocita'], '+6 %');
+  assert.deepEqual(v('SOLO_ARGANO', { ...EX_A, v: '1.04' }, C(['machine'], { libretto: { v: 1 } })), [], '+4 %: entro il 5 %');
+  assert.deepEqual(v('SOLO_ARGANO', { ...EX_A, v: '1.04' }, C(['machine'], { norma: '10411-11', libretto: { v: 1 } })), ['velocita'], '-11: ogni variazione');
+  assert.deepEqual(v('SOLO_ARGANO', EX_A, C(['machine'], { libretto: { v: 1.06, H: 15 } })), ['corsa'], 'corsa allungata');
+  assert.deepEqual(v('AMMODERNAMENTO', EX_A, C(['machine'], { libretto: { v: 1 } })), [], 'un ammodernamento con la velocità variata si salva');
   assert.deepEqual(v('SOLO_ARGANO', REPL, C(['ropes'])), ['parti', 'compare']);
   assert.deepEqual(v('SOLO_ARGANO', { ...REPL, keepRopes: false }, C(PARTI_RIFACIMENTO, { rifacimento: true })), ['parti', 'rifacimento']);
   // a modernisation that is no more than a «Solo argano», or nothing
@@ -193,9 +200,11 @@ test('collaudoOf è idempotente: la prova normalizzata, normalizzata di nuovo, �
   assert.equal(n, 4000);
 });
 
-test('fase 3 non tocca i motori: le versioni restano', () => {
-  assert.equal(ENGINE_VERSION, '1.6.0');
-  assert.equal(SHAFT_ENGINE_VERSION, '2.25.0');
-  assert.equal(LIFT_ENGINE_VERSION, '1.31.0');
-  assert.equal(ROOM_ENGINE_VERSION, '1.15.0');
+test('kit di round 46: le quattro versioni alzate insieme (il perimetro del collaudo, ambito-version.test)', () => {
+  // round 45 (phase 3) left the engines as they were; round 46 S4 changes the scope of the test, which reaches the
+  // documents of every kind of record: every record becomes «da aggiornare»
+  assert.equal(ENGINE_VERSION, '1.7.0');
+  assert.equal(SHAFT_ENGINE_VERSION, '2.26.0');
+  assert.equal(LIFT_ENGINE_VERSION, '1.32.0');
+  assert.equal(ROOM_ENGINE_VERSION, '1.16.0');
 });

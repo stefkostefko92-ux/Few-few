@@ -203,10 +203,10 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
       <LegalNotice P={P} />
       <InterventoChoice tipo={tipo} choose={I.choose}>
         {repl && I.chosen ? (
-          <PartiSiNo tipo={tipo} chosen={I.chosen} value={collaudo} V={values} risposte={I.risposte} answer={I.answer}
+          <PartiSiNo tipo={tipo} chosen={I.chosen} value={collaudo} V={values} risposte={I.risposte} answer={I.answer} fmt={P.fmt}
             rifacimento={tipo === 'AMMODERNAMENTO' ? { on: I.rif, set: I.rifacimento } : undefined} />
         ) : null}
-        {tipo ? <AvvisiIntervento tipo={tipo} value={collaudo} passa={() => I.choose('TRASFORMAZIONE_COMPLETA')} /> : null}
+        {tipo ? <AvvisiIntervento tipo={tipo} value={collaudo} V={values} passa={I.choose} /> : null}
       </InterventoChoice>
       <div className="layout">
         <CalcForm P={P} V={values} bad={bad} set={set} onEstimate={onEstimate} estMsg={estMsg} keepRopesHint={keepRopesHint} need={need} texts={texts}

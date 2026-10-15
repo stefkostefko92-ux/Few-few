@@ -9,6 +9,7 @@ import { VOCI_VANO } from '../src/shaft/index';
 import type { GruppoVano, ShaftCheckId } from '../src/shaft/index';
 import { VOCI_IMPIANTO } from '../src/lib/lift/norme';
 import { ADEMPIMENTI, NORME_INFO, OBBLIGHI_PARTI, type PuntoInSito } from '../src/lib/lift/norme-collaudo';
+import { OBBLIGHI_VARIAZIONI } from '../src/lib/lift/obblighi-variazioni';
 import { NORMA_SIGLA, NORME_AGGIUNTIVE, NORME_COLLAUDO, VERIFICHE_DM236, VERIFICHE_NTC } from '../src/lib/lift/collaudo';
 import { VOCI_SIM } from '../src/sim/norme';
 
@@ -93,9 +94,13 @@ const rows = [
       key: n, gruppo: `Collaudo: ${NORMA_SIGLA[n]}`, punti: NORME_INFO[n].punti,
       verifiche: (n === 'dm236' ? VERIFICHE_DM236 : n === 'ntc2018' ? VERIFICHE_NTC : []).map((c) => VERIFICA_VANO[c]).join('; '),
     })),
-    // what each part of UNI 10411 asks of the parts replaced besides the machine (the relazione's adaptations)
+    // what each part of UNI 10411 asks of the parts replaced besides the machine (the relazione's adaptations), and of
+    // the changes of speed, load and travel by their case (round 46)
     ...(['10411-1', '10411-11'] as const).map((n) => ({
       key: `parti.${n}`, gruppo: `Collaudo: ${NORMA_SIGLA[n]}, parti sostituite oltre la macchina`, punti: Object.values(OBBLIGHI_PARTI[n]), verifiche: '',
+    })),
+    ...(['10411-1', '10411-11'] as const).map((n) => ({
+      key: `variazioni.${n}`, gruppo: `Collaudo: ${NORMA_SIGLA[n]}, velocità, carichi e corsa variati`, punti: Object.values(OBBLIGHI_VARIAZIONI[n]), verifiche: '',
     }))].flatMap(({ key, gruppo, punti, verifiche }) => punti.map((p: PuntoInSito, i) => ({
     id: `collaudo.${key}.${i + 1}`, gruppo, voce: p.rif, valore: p.testo, riferimento: p.rif, fonte: p.fonte ?? 'ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)',
     stato: STATO[p.stato], verifiche, nota: '',

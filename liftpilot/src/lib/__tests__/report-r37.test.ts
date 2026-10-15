@@ -202,10 +202,12 @@ test('relazione del rifacimento: carichi mancanti, arcata da verificare, obbligh
   assert.deepEqual(list.items.map((x) => x.split(': ')[0]), ['UNI 10411-11:2024, 22', 'UNI 10411-11:2024, 12.1–12.3', 'UNI 10411-11:2024, 19',
     'UNI 10411-11:2024, 11.1', 'UNI 10411-11:2024, 17', 'UNI 10411-11:2024, 18']);
   assert.ok(list.items[0]?.includes('tra cui l’arcata (6.9)'));
-  // the duties: the machine's case of art. 2 c.1 lett. cc), the other parts' for the engineer to name
+  // the duties: the machine's case of art. 2 c.1 lett. cc), the controller's and the landing doors' n. 5) (round 46, read on
+  // the article), the other parts n. 5)'s other main components for the engineer to confirm
   const duties = doc.blocks.flatMap((b) => (b.t === 'list' ? b.items : [])).filter((x) => x.startsWith('DPR 162/1999, art. 2 c.1 lett. cc)'));
-  assert.equal(duties.length, 2);
-  assert.ok(duties[1]?.includes('quadro di manovra') && duties[1].endsWith('(da verificare sul testo vigente).'), duties[1]);
+  assert.equal(duties.length, 3);
+  assert.ok(duties[1]?.startsWith('DPR 162/1999, art. 2 c.1 lett. cc) n. 5): sostituzione anche di quadro di manovra, porte di piano') && !duties[1].includes('da verificare'), duties[1]);
+  assert.ok(duties[2]?.includes('altri componenti principali') && duties[2].includes('funi') && duties[2].endsWith('(da verificare sul testo vigente).'), duties[2]);
   // the machine alone: as before
   const v80 = relazione(defaultLift());
   assert.equal(kv(v80).get('Variazione dei carichi'), undefined);

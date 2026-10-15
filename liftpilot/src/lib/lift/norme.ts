@@ -97,7 +97,10 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
     costanti: ['loadSplitQ', 'loadIncQ', 'loadIncT', 'loadIncTcp', 'loadStruct11'],
     nota: 'T* della norma non comprende funi e cavi: P del calcolo comprende la quota del cavo flessibile, che si annulla nel confronto se resta la '
       + 'stessa. Quale portata decide la riga del prospetto non è detto nel testo (scelta prudente del software); con la -11 il 10 % si somma alle '
-      + 'modifiche precedenti: lo stato documentato è quello dell’impianto originale',
+      + 'modifiche precedenti: lo stato documentato è quello dell’impianto originale. Con la -1 (6.1) anche il rapporto tra i carichi appesi lato cabina e '
+      + 'lato contrappeso porta le verifiche del carico: T* o P lontani dal valore che conserverebbe il rapporto documentato col nuovo contrappeso oltre '
+      + 'l’arrotondamento di 0,5 kg dei carichi documentati riportato al rapporto (scelta del software), con D.1, D.2 e ammortizzatori secondo la UNI EN 81-20 5.8; il calo dei carichi e il rapporto '
+      + 'portano le verifiche più spesso delle soglie dei prospetti: più severo della norma, dalla parte della sicurezza',
   },
   ...VOCI_VARIAZIONI,
   {
@@ -124,7 +127,12 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
     fonte: `${letto('UNI 10411-1:2024', 'pp. 5, 13–14')}; ${letto('UNI 10411-11:2024', 'pp. 5, 12')}; schema ICIM delle verifiche (la verifica `
       + 'straordinaria si limita di norma alle modifiche); ricerca, capitoli 2.4 e 6.6', stato: 'scelta',
     nota: "lo scopo delle due UNI 10411 e i requisiti per la sostituzione del macchinario (punto 14) sono letti sul testo (voce sostituzione.adeguamenti); "
-      + 'quali verifiche riguardano ciascuna parte e la matrice delle norme compatibili sono una lettura del software, da approvare dall’ingegnere',
+      + 'quali verifiche riguardano ciascuna parte e la matrice delle norme compatibili sono una lettura del software, da approvare dall’ingegnere. '
+      + 'Velocità, portata e corsa variate entrano tra le parti da sole quando i dati del libretto e i carichi documentati lo dicono (voci '
+      + 'impianto.variazione.*). Con la velocità variata entrano l’aderenza, le funi e la pressione nelle gole (-1 15.8 con 14.1 e D.2; -11 15 d)), con la '
+      + 'corsa variata gli spazi in testata e in fossa e le guide (-1 16 g), j); -11 16 f), i)), con la portata variata i paracadute, le guide del '
+      + 'contrappeso e gli ammortizzatori (6.1, 6.4–6.6, 6.13–6.14); solo con la -1 lo schermo del contrappeso in fossa (6.13, 15.7, 16 a)) e, con il '
+      + 'quadro nuovo, il freno a doppio elemento (11.1.4)',
   },
   {
     id: 'impianto.intervento', titolo: 'Tipo di intervento: solo argano, ammodernamento, trasformazione completa',

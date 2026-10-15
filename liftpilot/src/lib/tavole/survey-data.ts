@@ -263,7 +263,7 @@ export function surveySheetData(x: SurveyTavoleInput, d: RoomDerived, pages: num
         + 'UNI EN 81-20:2020, punti 5.2 e 5.2.6.3.3.',
     },
   ];
-  const test = collaudoNote(C, `NOTA ${notes.length + 1}`, undefined, x.tipo ?? null);
+  const test = collaudoNote(C, `NOTA ${notes.length + 1}`, undefined, x.tipo ?? null, x.values);
   if (test) notes.push(test);
   // what the law asks of the modification (paraphrased, registry ADEMPIMENTI)
   notes.push({ title: 'ADEMPIMENTI (DPR 162/1999)', tag: `NOTA ${notes.length + 1}`, text: ADEMPIMENTI.modifica.map((p) => `${p.rif}: ${p.testo}.`).join(' ') });
