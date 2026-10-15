@@ -32,8 +32,9 @@ export const liftDraftSchema = z.object({
   parte: parteSchema,
 }).strict();
 
-/** The calculator's draft: its values and test as typed, the type of intervention chosen and the parts answered (round
- *  45; absent in the drafts before it: the type read by their shape, or left to choose on a blank start). */
+/** The calculator's draft: its values and test as typed (with the logbook's speed and travel and the existing
+ *  controller's regulation, round 46: as a record saves them), the type of intervention chosen and the parts answered
+ *  (round 45; absent in the drafts before it: the type read by their shape, or left to choose on a blank start). */
 export const calcDraftSchema = z.object({
   values: formValuesSchema, collaudo: collaudoSchema.nullable(), intervento: z.enum(TIPI_INTERVENTO).optional(),
   risposte: z.array(z.enum(PARTI)).max(PARTI.length).optional(), rilievo: rilievoSchema, parte: parteSchema,

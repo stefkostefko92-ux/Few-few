@@ -276,6 +276,14 @@
   закръгляне на протокола, не промяна. Денят на пускане е ден от календара, не след днес (`isServiceDay`); записаното
   преди се чете (`collaudoReadSchema`), нов запис иска днешните правила (`collaudoSchema`). Във формуляра изборът се
   показва веднага, не от отложеното извеждане (`LiftForm`).
+  Кръг 46 (входовете, B2): `Collaudo.libretto` — скоростта по libretto (`v`; по -1 началната или установената по-късно с
+  verbale, по -11 документираната), скоростта след 50 Hz (`v50`, само -1) и ходът при първото изпитване (`H`; по -11
+  документираният) — и `Collaudo.regolazione` (`vvvf` / `2v` / `1v`, регулирането на съществуващото табло). Запис: v и
+  v50 от 0,1 до 10 m/s, H от 1 до 300 m, поне една стойност; четене — положителни. Носят се като документираните товари
+  (`documentiOf` → `esistenteOf`/`modificaOf`: смяната на типа, rifacimento, норма добавена, черновата, `?from=`); от
+  рилевото не се попълва нищо. Чистите помощници (`variazioneVelocita`, `variazioneCorsa`, закръгленията 0,005 m/s и
+  0,05 m) и регистърът (`impianto.variazione.velocita`/`.corsa`, `KL.speedInc1`/`speedDec1`/`ucmSpeed11`/`travelInc1`,
+  `src/lib/lift/norme-variazioni.ts`) са готови; правилата на изпитването още не ги четат (`collaudoOf` — както преди).
 - **Обновяване със съществуващата рама (`src/lib/lift/intervento.ts`, регистър `impianto.rifacimento`, статус „prassi“):**
   третият избор в „Intervento“ на `/progetto` — между „Подмяна на машината“ и „Нов асансьор“ (кръг 45: в „Calcolo
   argano“ — „Rifacimento con l’arcata esistente“ е предварителен избор на Ammodernamento, отговаря всички части наведнъж). По практика рамата на

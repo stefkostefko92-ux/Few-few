@@ -2264,7 +2264,7 @@
     },
     "projectText": "Ogni progetto contiene i propri record, ciascuno con i dati inseriti, la versione del motore, i risultati e l’impronta SHA-256 che ne garantisce l’integrità:",
     "project": {
-      "calculations": "i calcoli dell’argano, con il tipo di intervento dichiarato e le verifiche interne",
+      "calculations": "i calcoli dell’argano, con il tipo di intervento dichiarato, i dati del collaudo (tra cui, quando indicati, la velocità e la corsa del libretto e la regolazione del quadro esistente) e le verifiche interne",
       "shaftDesigns": "i progetti del vano",
       "liftDesigns": "i progetti completi dell’impianto, con il calcolo argano su cui sono disegnati",
       "roomDesigns": "i rilievi del locale macchina",

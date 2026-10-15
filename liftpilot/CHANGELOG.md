@@ -2520,6 +2520,22 @@ frizione, Diametro pulegge di rinvio, Inerzia per puleggia…, Massa della macch
   `collaudo.ts`, `norme-collaudo.ts` и `index.ts` ги реекспортират (същите обекти — тест `split-r46`). Скелет на
   `src/lib/report/variazioni.ts` (редовете за скоростта и хода — празни до правилата). Версиите не са пипнати;
   `reproduce-all`, `docs-compare` (1794 реда) и `refresh-sim` (1854 записа) — байт по байт като преди.
+- **S3 — входовете (B2), без смяна на двигател**: `Collaudo.libretto` (`v`, `v50`, `H` — скоростта по libretto или
+  verbale, скоростта след 50 Hz по -1, ходът при първото изпитване / документираният) и `Collaudo.regolazione`
+  (`vvvf`/`2v`/`1v`); схемите за запис (v, v50 0,1–10 m/s, H 1–300 m, празен `{}` — отказ) и за четене (положителни);
+  носят се като документираните товари (`documentiOf`, `esistenteOf`, `modificaOf` → смяната на типа, rifacimento,
+  добавената норма, смяната на нормата във формуляра, черновата, `?from=` и «Nuovo calcolo da questi dati»). Чистите
+  помощници в `modifica.ts` (`velocitaOf`, `corsaOf`, `variazioneVelocita`, `variazioneCorsa`, закръглението 0,005 m/s
+  и 0,05 m) и регистърът `impianto.variazione.velocita`/`.corsa` с `KL.speedInc1`, `speedDec1`, `ucmSpeed11` (0,05) и
+  `travelInc1` (8 m) в `norme-variazioni.ts` (`norme.ts` щеше да мине 300 реда). Правилата на изпитването още не ги
+  четат (`collaudoOf` не е пипнат); новите записи на регистъра не влизат в приложението на нито един документ (там са
+  само „попълнените“), затова остават в S3; `npm run lista` + `lista-verifica-xlsx.py` — 188 стойности (импиантото
+  32), 283 реда. Страницата `/data` назовава данните на изпитването в изчисленията
+  (форматът остава 9). Тестове: `lift-input` (всяка различна форма на `Calculation.collaudo` и на изпитването на
+  проектите от `argano_r46`, замразени в `fixtures/collaudo-r46.json` — четат се и се записват; отказите),
+  `modifica-variazioni` (праговете ±5 %, 50 Hz, -11, 8,00/8,01 m, скъсяване; 4000 случая — `interventoTo`,
+  `rifacimentoTo`, `withAggiunta`, `collaudoOf` не губят libretto и regolazione и не сменят частите), `calc-start`
+  (записът, `?from=`, черновата). `reproduce-all`, `docs-compare` и `refresh-sim` — байт по байт като преди.
 
 ## Проверки
 

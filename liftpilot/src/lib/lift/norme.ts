@@ -7,6 +7,7 @@ import { SHEAVE_GRID } from '@/calc/sizing';
 import { VOCI_MASSE, type CostanteMasse } from './norme-masse';
 import { VOCI_TAVOLE } from '../tavole/norme-tavole';
 import { KL_ORDINE, VOCI_ORDINE } from './norme-ordine';
+import { KL_VARIAZIONI, VOCI_VARIAZIONI } from './norme-variazioni';
 
 export const KL = {
   // estimate of the empty car mass when it is not entered: P = ratio · Q, rounded up to the step [kg]
@@ -49,6 +50,8 @@ export const KL = {
   // DPR 162/1999, art. 19 c.1: lifts put in service by the earlier rules until 30 June 1999; from this day only with
   // the CE marking (a reading of the article: the day is to be confirmed on the logbook)
   ceFrom: '1999-07-01',
+  // UNI 10411-1/-11:2024, 15 and 16: the changes of the rated speed and of the travel (norme-variazioni.ts)
+  ...KL_VARIAZIONI,
   ...KL_ORDINE,
 } as const;
 
@@ -96,6 +99,7 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
       + 'stessa. Quale portata decide la riga del prospetto non è detto nel testo (scelta prudente del software); con la -11 il 10 % si somma alle '
       + 'modifiche precedenti: lo stato documentato è quello dell’impianto originale',
   },
+  ...VOCI_VARIAZIONI,
   {
     id: 'impianto.marcatura', titolo: 'Modifica: UNI 10411-1 o UNI 10411-11',
     valore: `dalla marcatura CE dell’impianto — dichiarazione di conformità CE/UE nel libretto e marcatura nella cabina —: presente UNI 10411-11, `

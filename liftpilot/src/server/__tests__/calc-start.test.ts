@@ -108,3 +108,26 @@ test('da un record: i campi fuori vista come in un modulo nuovo, mai i valori di
     assert.equal(s.values.dropAlign, saved.dropAlign);
   }
 });
+
+test('il libretto e la regolazione del quadro tornano con il calcolo, con «Nuovo calcolo da questi dati» e con la bozza', async () => {
+  const { calcStart } = await start();
+  const known = { libretto: { v: 1, v50: 1.05, H: 18.2 }, regolazione: '2v' as const };
+  // a modernisation saved with its type: the test normalised, the load the rule's (none here); a «Solo argano» too
+  const amm = calc({ intervento: 'AMMODERNAMENTO', collaudo: { norma: '10411-1', parti: ['machine', 'controller'], ...known } });
+  const solo = calc({ intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-11', parti: ['machine'], marcatura: 'si', ...known } });
+  calcs = [amm, solo];
+  for (const c of [amm, solo]) {
+    const s = await must(calcStart(user, 'p1', c.id));
+    assert.deepEqual([s.intervento.collaudo?.libretto, s.intervento.collaudo?.regolazione], [known.libretto, known.regolazione], c.id);
+  }
+  // one saved before the type, read by its shape
+  calcs = [calc({ collaudo: { norma: '10411-1', parti: ['machine'], ...known } })];
+  const old = await must(calcStart(user, 'p1', null));
+  assert.deepEqual(old.intervento.collaudo?.libretto, known.libretto);
+  // the draft
+  calcs = [];
+  draft = { values: { ...blankCalc(), Q: 630 }, collaudo: { norma: '10411-1', parti: ['machine'], ...known }, intervento: 'SOLO_ARGANO', risposte: ['machine'] };
+  const d = await must(calcStart(user, 'p1', null));
+  assert.deepEqual([d.mode, d.intervento.collaudo?.libretto, d.intervento.collaudo?.regolazione], ['draft', known.libretto, '2v']);
+  draft = null;
+});

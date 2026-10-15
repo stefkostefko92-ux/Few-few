@@ -39,6 +39,8 @@ export async function companyExport(companyId: string): Promise<Record<string, u
       where: { companyId }, orderBy: { createdAt: 'asc' }, omit: { kind: true },
       include: {
         clientLogos: { orderBy: { createdAt: 'asc' } },
+        // the test chosen with each calculation as stored (with the logbook's speed and travel and the controller's
+        // regulation when entered, round 46: the format stays 9, the register names them)
         calculations: { orderBy: { createdAt: 'asc' }, select: { ...RECORD, profileId: true, results: true, collaudo: true, intervento: true, shaftDesignId: true,
           reviews: { orderBy: { createdAt: 'asc' }, select: { id: true, userId: true, note: true, createdAt: true } } } },
         shaftDesigns: { orderBy: { createdAt: 'asc' }, select: { ...RECORD, profileId: true, source: true, results: true } },

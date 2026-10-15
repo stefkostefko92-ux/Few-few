@@ -13,7 +13,7 @@ import type { CheckId, FormValues } from '@/calc/types';
 import type { ShaftCheckId } from '@/shaft';
 import { AMBITO_VERIFICHE, SOLO_10411_1, VERIFICHE_DATI } from './ambito';
 import { NORME_INFO, type AmbitoNorma } from './norme-collaudo';
-import { carichiOf, caricoVariato, normaDaMarcatura, variazioneCarico, type Carichi, type Marcatura } from './modifica';
+import { carichiOf, caricoVariato, normaDaMarcatura, variazioneCarico, type Carichi, type Libretto, type Marcatura, type Regolazione } from './modifica';
 
 /** The base standard of the test: one, by the context. */
 export const NORME_COLLAUDO = ['en81', '10411-1', '10411-11'] as const;
@@ -64,6 +64,12 @@ export interface Collaudo {
   servizio?: string;
   /** a modification: the loads the last report documents; their change can bring the checks of the load (modifica.ts) */
   documentato?: Carichi;
+  /** a modification: the speed and the travel the logbook or a later verbale documents (round 46, UNI 10411-1/-11:2024,
+   *  15 and 16; modifica.ts); absent: none entered */
+  libretto?: Libretto;
+  /** a modification: the speed regulation of the existing controller (round 46, UNI 10411-1:2024 11.2.1, UNI
+   *  10411-11:2024 11.2); absent: not answered */
+  regolazione?: Regolazione;
 }
 
 /** The check of a result: applies to the acceptance test, or concerns a part that stays as it is. */
@@ -100,15 +106,22 @@ export const ambitoNorme = (C: Pick<Collaudo, 'norma'>): AmbitoNorma => (C.norma
 /** Whether a standard can be added to the test's base (the compatibility matrix of chapter 16, §5.2). */
 export const ammessa = (n: NormaAggiuntiva, base: NormaCollaudo): boolean => NORME_INFO[n].ambiti.includes(ambitoNorme({ norma: base }));
 
-/** What a modification knows of the existing lift: the answer about the CE marking with its day, the documented loads
- *  (intervento.ts and the form keep them across a change). */
-export const esistenteOf = (C: Collaudo | undefined): Pick<Collaudo, 'marcatura' | 'servizio' | 'documentato'> => ({
+/** What the documents of the existing lift say, whatever part of UNI 10411 its CE marking picks: the documented loads,
+ *  the logbook's speed and travel, the existing controller's speed regulation (round 46). */
+export const documentiOf = (C: Partial<Pick<Collaudo, 'documentato' | 'libretto' | 'regolazione'>> | undefined): Pick<Collaudo, 'documentato' | 'libretto' | 'regolazione'> => ({
+  ...(C?.documentato ? { documentato: C.documentato } : {}), ...(C?.libretto ? { libretto: C.libretto } : {}),
+  ...(C?.regolazione ? { regolazione: C.regolazione } : {}),
+});
+
+/** What a modification knows of the existing lift: the answer about the CE marking with its day, what its documents
+ *  say (intervento.ts and the form keep them across a change). */
+export const esistenteOf = (C: Collaudo | undefined): Pick<Collaudo, 'marcatura' | 'servizio' | 'documentato' | 'libretto' | 'regolazione'> => ({
   ...(C?.marcatura ? { marcatura: C.marcatura } : {}), ...(C?.marcatura === 'incerta' && C.servizio ? { servizio: C.servizio } : {}),
-  ...(C?.documentato ? { documentato: C.documentato } : {}),
+  ...documentiOf(C),
 });
 
 /** What a modification carries besides its standards and parts: the renovation's mark and what it knows of the lift. */
-export const modificaOf = (C: Collaudo | undefined): Pick<Collaudo, 'rifacimento' | 'marcatura' | 'servizio' | 'documentato'> => ({
+export const modificaOf = (C: Collaudo | undefined): Pick<Collaudo, 'rifacimento' | 'marcatura' | 'servizio' | 'documentato' | 'libretto' | 'regolazione'> => ({
   ...(C?.rifacimento ? { rifacimento: true as const } : {}), ...esistenteOf(C),
 });
 

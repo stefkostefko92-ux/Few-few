@@ -6,29 +6,43 @@ import { formValuesSchema } from './calc-input';
 import { shaftInputsReadSchema, shaftInputsSchema } from './shaft-input';
 import { BRANDS } from '@/lib/catalog/machines';
 import { NORME_AGGIUNTIVE, NORME_COLLAUDO, PARTI } from '@/lib/lift/collaudo';
-import { MARCATURE, isServiceDay } from '@/lib/lift/modifica';
+import { MARCATURE, REGOLAZIONI, isServiceDay } from '@/lib/lift/modifica';
 import { TIPI_INTERVENTO } from '@/lib/lift/intervento';
 
 const DAY = /^(19|20)\d\d-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 
+/** The bounds of what a test stores: the day the lift was put in service, the documented loads [kg], the logbook's
+ *  speeds [m/s] and travel [m]; `emptyLibretto`: a logbook without a value is read back as it is (none is saved). */
+interface Bounds { day: z.ZodType<string>; kg: z.ZodType<number>; speed: z.ZodType<number>; travel: z.ZodType<number>; emptyLibretto: boolean }
+
 /** The acceptance test: its base standard, the standards added (absent: none), the parts replaced or changed, the
  *  renovation that keeps the existing sling, the answer about the CE marking with the day the lift was put in service,
- *  the documented loads (absent: none). */
-const collaudoObject = (day: z.ZodType<string>, kg: z.ZodType<number>) => z.object({
+ *  the documented loads, the logbook's speed and travel (round 46: at least one value) and the existing controller's
+ *  speed regulation (absent: none). */
+const collaudoObject = (b: Bounds) => z.object({
   norma: z.enum(NORME_COLLAUDO),
   aggiuntive: z.array(z.enum(NORME_AGGIUNTIVE)).max(NORME_AGGIUNTIVE.length).refine((a) => new Set(a).size === a.length, 'each standard once').optional(),
   parti: z.array(z.enum(PARTI)).max(PARTI.length),
   rifacimento: z.literal(true).optional(),
   marcatura: z.enum(MARCATURE).optional(),
-  servizio: day.optional(),
-  documentato: z.object({ Q: kg, P: kg, Mcw: kg }).strict().optional(),
+  servizio: b.day.optional(),
+  documentato: z.object({ Q: b.kg, P: b.kg, Mcw: b.kg }).strict().optional(),
+  libretto: z.object({ v: b.speed.optional(), v50: b.speed.optional(), H: b.travel.optional() }).strict()
+    .refine((l) => b.emptyLibretto || l.v !== undefined || l.v50 !== undefined || l.H !== undefined, 'at least one value').optional(),
+  regolazione: z.enum(REGOLAZIONI).optional(),
 }).strict();
 
-/** The test as a new record saves it: a day of the calendar not after today, loads of a report (from 1 kg). */
-export const collaudoSchema = collaudoObject(z.string().regex(DAY).refine((s) => isServiceDay(s), 'a day of the calendar, not after today'),
-  z.number().finite().min(1).max(100_000));
+/** The test as a new record saves it: a day of the calendar not after today, loads of a report (from 1 kg), the logbook's
+ *  speeds from 0,1 to 10 m/s and travel from 1 to 300 m, never an empty logbook. */
+export const collaudoSchema = collaudoObject({
+  day: z.string().regex(DAY).refine((s) => isServiceDay(s), 'a day of the calendar, not after today'), kg: z.number().finite().min(1).max(100_000),
+  speed: z.number().finite().min(0.1).max(10), travel: z.number().finite().min(1).max(300), emptyLibretto: false,
+});
 /** The test as stored: what an earlier rule saved is read back (the record says whether it still reproduces). */
-export const collaudoReadSchema = collaudoObject(z.string().regex(DAY), z.number().finite().positive().max(100_000));
+export const collaudoReadSchema = collaudoObject({
+  day: z.string().regex(DAY), kg: z.number().finite().positive().max(100_000), speed: z.number().finite().positive(), travel: z.number().finite().positive(),
+  emptyLibretto: true,
+});
 
 export const autoSchema = z.object({
   P: z.boolean(),

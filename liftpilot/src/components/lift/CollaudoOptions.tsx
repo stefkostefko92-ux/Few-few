@@ -15,7 +15,7 @@ import { useTranslations } from 'next-intl';
 import type { FormValues } from '@/calc/types';
 import { NORME_AGGIUNTIVE, NORME_COLLAUDO, PARTI, adeguamentiDovuti, ammessa, withAggiunta, type Collaudo, type NormaAggiuntiva, type NormaCollaudo,
   type Parte } from '@/lib/lift';
-import { choiceOf, esistenteOf } from '@/lib/lift/collaudo';
+import { choiceOf, documentiOf, esistenteOf } from '@/lib/lift/collaudo';
 import { MARCATURE, isServiceDay } from '@/lib/lift/modifica';
 import type { Access } from '@/shaft';
 import { ADAPT } from '@/lib/present/adapt';
@@ -55,9 +55,9 @@ export default function CollaudoOptions({ P, mode, isNew: isNewForm = false, cho
   // documents; on the one form, the test's parts but the load the documented loads count as changed
   const parti = mode ? chosen?.parti ?? [] : choiceOf(value, chosen), autoLoad = value.parti.includes('load') && !parti.includes('load');
   // the parts ticked under UNI 10411 are kept with EN 81 too, so going to EN 81 and back loses nothing; a part of UNI
-  // 10411 chosen by hand drops the answer about the CE marking that would pick the other
+  // 10411 chosen by hand drops the answer about the CE marking that would pick the other, never what the documents say
   const setNorma = (norma: NormaCollaudo): void =>
-    set({ norma, parti: chosen?.parti ?? ['machine'], ...keep(chosen?.aggiuntive ?? []), ...mark, ...(known.documentato ? { documentato: known.documentato } : {}) });
+    set({ norma, parti: chosen?.parti ?? ['machine'], ...keep(chosen?.aggiuntive ?? []), ...mark, ...documentiOf(known) });
   const toggle = (p: Parte, on: boolean): void => set({ norma: value.norma, parti: PARTI.filter((x) => (x === p ? on : parti.includes(x))), ...keep(chosen?.aggiuntive ?? added), ...mark, ...known });
   const setKnown = (patch: Partial<Collaudo>): void => {
     const next = { ...known, ...patch };

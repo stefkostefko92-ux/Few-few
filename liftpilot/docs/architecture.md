@@ -28,7 +28,9 @@ src/lib/lift/        Единният формуляр: LiftInputs {shaft, calc,
                      изпитването и сменените части: ambitoOf, collaudoVerdict; кръг 46 — таблицата AMBITO_VERIFICHE в
                      ambito, задълженията на частите OBBLIGHI_PARTI/obblighiParti в obblighi, punti — PuntoInSito и
                      помощниците; collaudo и norme-collaudo ги реекспортират), modifica (CE маркировката → частта на
-                     UNI 10411; промяната на документираните товари по прил. 1 и 2 на -1 и по -11), intervento (кръг 45:
+                     UNI 10411; промяната на документираните товари по прил. 1 и 2 на -1 и по -11; кръг 46 — скоростта и
+                     ходът спрямо libretto: variazioneVelocita/variazioneCorsa, Libretto, Regolazione; регистърът им —
+                     norme-variazioni), intervento (кръг 45:
                      типът на интервенцията — TipoIntervento, interventoDi/interventoValido, disegnoDi (машинното или
                      шахтата), частите; и трите избора отпреди — interventoOf/interventoTo, PARTI_RIFACIMENTO), risposte
                      (частите „Sì/No“ на „Calcolo argano“), progetto (кръг 45: ProgettoInputs — само геометрията;

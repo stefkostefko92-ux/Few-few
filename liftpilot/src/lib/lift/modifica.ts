@@ -4,7 +4,9 @@
 // change of the loads, against the state the last report documents (the acceptance test's or an extraordinary
 // verification's), brings the checks of the load: beyond the increases of prospetti 1 and 2 of UNI 10411-1 (6.1), any
 // increase under UNI 10411-11 (6.1); a load that decreases brings them too (the buffers, the progressive safety gear).
-// Registry: impianto.marcatura, impianto.variazione.carico. Pure.
+// And (round 46) the changes of the rated speed and of the travel against what the logbook or a verbale documents
+// (UNI 10411-1/-11:2024, 15 and 16), with the speed regulation of the existing controller.
+// Registry: impianto.marcatura, impianto.variazione.carico, impianto.variazione.velocita, impianto.variazione.corsa. Pure.
 import { readInputs } from '@/calc/inputs';
 import type { FormValues } from '@/calc/types';
 import { KL } from './norme';
@@ -12,6 +14,13 @@ import { KL } from './norme';
 /** The documented loads are whole kilograms from a report: a difference within half a kilogram is their rounding, not
  *  a change of the load (input sanity, not a value of a standard). */
 const ROUNDING_KG = 0.5;
+/** The documented speed and travel, against the calculation's: a difference within these is their rounding, not a
+ *  change (the same as sheet 1's mismatches between the calculation and the shaft, tavole/data.ts; input sanity, not a
+ *  value of a standard) [m/s, m]. */
+export const ROUNDING_V = 0.005, ROUNDING_H = 0.05;
+/** Over a limit — a standard's or the rounding's: strictly, past the floating point's noise (+5,00 % is not over 5 %,
+ *  15,05 m is within 0,05 m of 15 m). */
+const oltre = (x: number, limit: number): boolean => x > limit + 1e-9;
 
 /** The answer about the CE marking: there, not there, not known. */
 export const MARCATURE = ['si', 'no', 'incerta'] as const;
@@ -83,3 +92,77 @@ export function variazioneCarico(norma: Norma10411, doc: Carichi, ora: Carichi):
 
 /** Whether the change brings the checks of the load into the test. */
 export const caricoVariato = (v: Variazione): boolean => v.p1 || v.p2 || v.calo;
+
+/** The speed regulation of the existing controller, as the survey names it (rilievi's tipoVelocita): a frequency
+ *  converter, two speeds, one speed. */
+export const REGOLAZIONI = ['vvvf', '2v', '1v'] as const;
+export type Regolazione = (typeof REGOLAZIONI)[number];
+
+/** What the logbook (libretto) or a later verbale documents of the lift (a type, not an interface: it is stored as JSON
+ *  with the test; at least one value): `v` the reference rated speed [m/s] — under UNI 10411-1 the initial one of the
+ *  logbook, or the one an extraordinary verification established after an increase over 5 %; under -11 the documented
+ *  one —, `v50` the speed after the passage of the mains to 50 Hz [m/s] (UNI 10411-1 only), `H` the travel [m] — under
+ *  -1 at the first acceptance test, under -11 the documented one. */
+export type Libretto = { v?: number; v50?: number; H?: number };
+
+/** The calculation's rated speed [m/s] and travel [m] as the calculation reads them; null while not entered or out of
+ *  range. */
+export function velocitaOf(V: FormValues): number | null {
+  const { I, bad } = readInputs(V);
+  return bad.includes('v') ? null : I.v;
+}
+export function corsaOf(V: FormValues): number | null {
+  const { I, bad } = readInputs(V);
+  return bad.includes('H') ? null : I.H;
+}
+
+export interface VariazioneVelocita {
+  /** the speed the change is measured from [m/s]: under -1 the higher of the logbook's and the one after 50 Hz, under -11
+   *  the documented one */
+  rif: number;
+  /** the change from it, as a fraction (negative: a decrease) */
+  dv: number;
+  /** under -1 over KL.speedInc1 above `rif` (15.1), under -11 any increase past the rounding */
+  aumento: boolean;
+  /** under -1 over KL.speedDec1 below the logbook's speed (15.16), under -11 any decrease past the rounding */
+  calo: boolean;
+  /** the speed is among the parts the modification changes */
+  variata: boolean;
+  /** under -11 a change over KL.ucmSpeed11: the UCM protection to UNI EN 81-20 5.6.7 (15 i)); under -1 false */
+  ucm15i: boolean;
+}
+
+/** The change of the rated speed `v` of the design from what the logbook documents, under the part of UNI 10411; null
+ *  without a documented speed (under -1 the logbook's or the one after 50 Hz, under -11 the documented one). */
+export function variazioneVelocita(norma: Norma10411, lib: Libretto | undefined, v: number): VariazioneVelocita | null {
+  if (norma === '10411-11') {
+    if (!lib?.v) return null;
+    const rif = lib.v, d = v - rif, variata = oltre(Math.abs(d), ROUNDING_V);
+    return { rif, dv: d / rif, aumento: variata && d > 0, calo: variata && d < 0, variata, ucm15i: oltre(Math.abs(d) / rif, KL.ucmSpeed11) };
+  }
+  const rif = Math.max(lib?.v ?? 0, lib?.v50 ?? 0);
+  if (!(rif > 0)) return null;
+  const aumento = oltre((v - rif) / rif, KL.speedInc1), calo = !!lib?.v && oltre((lib.v - v) / lib.v, KL.speedDec1);
+  return { rif, dv: (v - rif) / rif, aumento, calo, variata: aumento || calo, ucm15i: false };
+}
+
+export interface VariazioneCorsa {
+  /** the travel's change from the documented one [m] (negative: shortened) */
+  dH: number;
+  allungata: boolean;
+  accorciata: boolean;
+  /** under -1 lengthened over KL.travelInc1 from the first acceptance test: the intervention counts as a new installation
+   *  (16) — a warning, to be confirmed with whoever carries out the verification; under -11 false (no limit) */
+  oltre8: boolean;
+  /** the travel is among the parts the modification changes: any change past the rounding, a shortening too (DPR
+   *  162/1999, art. 2 c.1 lett. cc) n. 3) */
+  variata: boolean;
+}
+
+/** The change of the travel `H` of the design from the documented one, under the part of UNI 10411; null without a
+ *  documented travel. */
+export function variazioneCorsa(norma: Norma10411, lib: Libretto | undefined, H: number): VariazioneCorsa | null {
+  if (!lib?.H) return null;
+  const dH = H - lib.H, variata = oltre(Math.abs(dH), ROUNDING_H);
+  return { dH, allungata: variata && dH > 0, accorciata: variata && dH < 0, oltre8: norma === '10411-1' && oltre(dH, KL.travelInc1), variata };
+}
