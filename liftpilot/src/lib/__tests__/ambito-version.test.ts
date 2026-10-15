@@ -24,9 +24,9 @@ import { SHAFT_ENGINE_VERSION } from '@/shaft/snapshot';
 /** The key and the versions it was pinned at (round 46; S5 — the optional parts and the controller's regulation —, S7
  *  — D.1 —, the review — the groups of parts and the roundings in the key, the obligations' words —, its recheck — the
  *  car sill's apron with new landing doors under -1 — and the final check — the load answered «Sì» with the documented
- *  loads unchanged, loadDocumentati — pinned again within the same kit: S4–S8, the review, the recheck and the final
+ *  loads unchanged, loadDocumentati, then its -11 wording — pinned again within the same kit: S4–S8, the review, the recheck and the final
  *  check ship together with the one bump, never deployed apart). */
-const PINNED = { sha256: 'a46913f12da5fa9ec65c3be71cd6812c150d997eb71c071151703ce556d1b7f3', engine: '1.7.0', lift: '1.32.0', room: '1.16.0', shaft: '2.26.0' };
+const PINNED = { sha256: '57c351ae223ba7109aa36e809426a0dd4f3882b6c80924a36081f55c5eb6727e', engine: '1.7.0', lift: '1.32.0', room: '1.16.0', shaft: '2.26.0' };
 
 /** The constants of a modification: the loads (6.1), the CE marking's day, the speed and the travel (15, 16). */
 const KL_MODIFICA = {

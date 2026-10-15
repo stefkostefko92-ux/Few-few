@@ -287,7 +287,7 @@ export const VOCI: readonly Voce[] = [
       + 'frenatura con la coppia reale del freno, che dà un C1 maggiore) non è precisato e la conferma il soggetto della verifica; con una '
       + `maggiore il tecnico ripete la verifica. Con l’esito la relazione scrive anche, come informazione, la decelerazione a cui equivale il C1 `
       + `minimo della fascia (a = g·(C1 − 1)/(C1 + 1): ${D1_A_FASCE} m/s² nelle quattro fasce) e quella limite fino a cui la condizione regge `
-      + 'nel caso più sfavorevole (C1 = e^(f·α)/((T1/T2)·C2)), che il soggetto della verifica confronta con la decelerazione misurata alla prova del '
+      + 'nel caso più sfavorevole (C1 = e^(f·α)/((T1/T2)·C2)), che il soggetto della verifica può confrontare con la decelerazione misurata alla prova del '
       + 'freno; l’esito resta quello con il C1 sopra. Gola semicircolare senza intaglio: '
       + 'C2 = 1 come con l’intaglio; gola a V non temprata, con intaglio: il minore dei due f, C2 = 1,2 (scelte del software, a favore di '
       + 'sicurezza). Se la verifica della UNI EN 81-50, 5.11 valga al posto della D.1 lo decide il soggetto della verifica',

@@ -57,7 +57,7 @@ const EN81_20_MACCHINA = 'funi (5.5), freno (5.9.2.2) e manovra di emergenza (5.
 const DPR_PARTI = `sostituzione del macchinario come modifica costruttiva (art. 2 c.1 lett. cc) n. 5)); il caso di ogni altra parte nella sezione ${
   SEZIONE_ADEMPIMENTI}; verifica straordinaria (art. 14)`;
 const DPR_RESTA = `argano esistente che resta: il caso di ogni parte sostituita o modificata (art. 2 c.1 lett. cc)) nella sezione ${SEZIONE_ADEMPIMENTI}; `
-  + 'verifica straordinaria (art. 14) della modifica costruttiva';
+  + 'verifica straordinaria (art. 14) se la modifica è costruttiva';
 
 /** The references of the relazione, by the case: an existing installation is modified under DPR 162/1999 and tested to
  *  the UNI 10411 part chosen; a new one is placed on the market and put into service (section «Adempimenti»), with no UNI

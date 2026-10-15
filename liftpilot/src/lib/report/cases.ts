@@ -55,7 +55,7 @@ export function d1Blocks(P: Pres, C: Collaudo, V: FormValues): ReportBlock[] {
       + `calcolo (a_e), mai sotto ${fmt(d.c1Min, 2)} a ${fmt(d.v, 2)} m/s (il minimo della fascia, che equivale a una decelerazione di ${fmt(d.aMin, 2)} m/s²); C2 = ${fmt(d.C2, d.C2 % 1 ? 1 : 0)} (${gola}); μ = ${fmt(d.mu, 2)}. `
       + `La condizione (T1/T2)·C1·C2 ≤ e^(f·α) ${d1Ok(d.worst.util) ? `è soddisfatta in entrambi i casi con a = ${fmt(d.a, 2)} m/s²` : 'non è soddisfatta: il rapporto tra '
         + 'i carichi non può cambiare così'}. ${d.aLim !== null ? `Regge fino a C1 = ${fmt(d.c1Lim, 3)}, cioè fino a una decelerazione di frenatura della `
-        + `cabina di ${fmt(d.aLim, 2)} m/s² (a = g·(C1 − 1)/(C1 + 1), nel caso più sfavorevole): il soggetto della verifica la confronta con quella `
+        + `cabina di ${fmt(d.aLim, 2)} m/s² (a = g·(C1 − 1)/(C1 + 1), nel caso più sfavorevole): il soggetto della verifica può confrontarla con quella `
         + 'misurata alla prova del freno.' : `Non regge nemmeno con il C1 minimo della fascia (il limite è C1 = ${fmt(d.c1Lim, 3)}): nessuna decelerazione la rispetta.`} `
       + 'Quale decelerazione di frenatura della cabina intenda la D.1 la norma non lo precisa: il software prende quella della verifica di frenatura '
       + 'del calcolo; la frenatura con la coppia reale del freno (nei casi dell’aderenza) decelera di più e darebbe un C1 maggiore. L’esito vale con la '

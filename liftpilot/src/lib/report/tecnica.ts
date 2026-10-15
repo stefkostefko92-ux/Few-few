@@ -92,7 +92,8 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
     // (round 46 final check: never every part called a constructive modification)
     ['DPR 162/1999 e s.m.i., art. 2 c.1 lett. cc), artt. 12 e 14', tipo !== 'AMMODERNAMENTO'
       ? 'la sostituzione del macchinario è una modifica costruttiva: comunicazioni e verifica straordinaria'
-      : kept ? `l’argano resta: il caso di ogni parte sostituita o modificata nella sezione ${SEZIONE_ADEMPIMENTI}; comunicazioni e verifica straordinaria`
+      : kept ? `l’argano resta: il caso di ogni parte sostituita o modificata nella sezione ${SEZIONE_ADEMPIMENTI}; comunicazioni e verifica straordinaria `
+        + 'se la modifica è costruttiva'
         : `la sostituzione del macchinario è una modifica costruttiva (n. 5)), il caso delle altre parti nella sezione ${SEZIONE_ADEMPIMENTI}: `
           + 'comunicazioni e verifica straordinaria'],
     [NORMA_SIGLA[C.norma], 'norma tecnica del collaudo della modifica'],

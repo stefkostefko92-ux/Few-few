@@ -74,7 +74,7 @@ test('DPR cc) n. 2): solo con la portata cambiata; i carichi senza la portata, a
 
 test('DPR cc) n. 5): le porte scorrevoli non due volte, il locale a parte', () => {
   const items = cc({ norma: '10411-1', parti: ['car', 'carDoors', 'slidingDoors', 'room', 'alarm'] }, true);
-  const altri = items.find((x) => x.includes('altri componenti principali')) ?? '';
+  const altri = items.find((x) => x.includes('altre parti sostituite')) ?? '';
   assert.ok(altri.includes('(cabina, porte di cabina, allarme di emergenza)') || /\(cabina, porte di cabina, [^)]*allarme[^)]*\)/i.test(altri), altri);
   assert.ok(!altri.includes('scorrevoli') && !altri.includes('locale'), altri);
   assert.ok(items.some((x) => x.includes('locale del macchinario nuovo o modificato: un’opera dell’edificio')), items.join('\n'));

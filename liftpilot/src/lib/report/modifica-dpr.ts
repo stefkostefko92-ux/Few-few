@@ -26,8 +26,9 @@ const CARICHI_SENZA_PORTATA: PuntoInSito = { rif: CC, stato: 'da_verificare',
 const CARICHI_INVARIATI: PuntoInSito = { rif: `${CC} n. 2)`, stato: 'da_verificare',
   testo: 'portata indicata come variata, ma i carichi documentati (portata, T* e contrappeso) coincidono con quelli del progetto entro '
     + 'l’arrotondamento dei dati: se sia un cambio della portata lo conferma il tecnico nella comunicazione' };
-const PORTATA_DOCUMENTATA = 'cambio della portata secondo i carichi documentati, anche se T* e contrappeso non portano le verifiche del carico '
-  + '(UNI 10411, 6.1): modifica costruttiva';
+const PORTATA_DOCUMENTATA = (norma: '10411-1' | '10411-11'): string => 'cambio della portata secondo i carichi documentati, anche se '
+  + `${norma === '10411-1' ? 'T*, contrappeso e il loro rapporto non portano' : 'T* e contrappeso non portano'} le verifiche del carico (UNI ${norma}:2024, 6.1): `
+  + 'modifica costruttiva';
 const LOCALE_CC: PuntoInSito = { rif: CC, stato: 'da_verificare',
   testo: 'locale del macchinario nuovo o modificato: un’opera dell’edificio, non un componente dell’impianto; se indicarlo nella comunicazione lo '
     + 'valuta il tecnico' };
@@ -45,7 +46,7 @@ export function altreModifiche(C: Collaudo, resta: boolean, nome: (p: Parte) => 
   const carichi = !doc || !ora || !norma || portata ? null : carichiVariati(norma, doc, ora) ? CARICHI_SENZA_PORTATA : CARICHI_INVARIATI;
   return [
     ...CC_VARIAZIONE.filter(([p]) => has(p) || (p === 'load' && portata)).map(([p, n, testo]): PuntoInSito => (p === 'load' && carichi ? carichi
-      : { rif: `${CC} n. ${n}`, stato: 'confermato', testo: p === 'load' && !has(p) ? PORTATA_DOCUMENTATA : `${testo}: modifica costruttiva` })),
+      : { rif: `${CC} n. ${n}`, stato: 'confermato', testo: p === 'load' && !has(p) && norma ? PORTATA_DOCUMENTATA(norma) : `${testo}: modifica costruttiva` })),
     ...(principali.length ? [{ rif: `${CC} n. 5)`, stato: 'confermato' as const,
       testo: `sostituzione ${resta ? 'di' : 'anche di'} ${principali.join(', ')}: modifica costruttiva` }] : []),
     ...(altri.length ? [{ rif: `${CC} n. 5)`, stato: 'da_verificare' as const,
@@ -68,7 +69,8 @@ export const ccResta = (numerata: boolean): PuntoInSito => (numerata
   ? { rif: CC, stato: 'confermato', testo: 'l’argano resta, quindi non è il caso n. 5) della sostituzione del macchinario; la modifica è costruttiva '
     + 'per i casi numerati delle parti che seguono' }
   : { rif: CC, stato: 'da_verificare', testo: 'l’argano resta, quindi non è il caso n. 5) della sostituzione del macchinario, e nessuna delle parti '
-    + 'che seguono è un caso numerato dell’articolo: se la modifica sia costruttiva lo conferma il tecnico nella comunicazione' });
+    + 'che seguono è un caso numerato già confermato: se lo siano (n. 2) o «altri componenti principali» del n. 5)) e quindi se la modifica sia '
+    + 'costruttiva lo conferma il tecnico nella comunicazione' });
 export const PUNTI_MACCHINA_NUOVA: readonly string[] = ['UNI 10411-1:2024, 14.4 a)–g)', 'UNI 10411-11:2024, 14.3 a) e App. A (14); UNI EN 81-20:2020, 5.6.6.2 e 5.6.7.3',
   'UNI 10411-11:2024, 14.3 b)', 'UNI EN 81-20:2020, C.2 e 7.3.2'];
 /** With the machine kept, the apparatus moved or added in the machine room are the new controller's or the others: the

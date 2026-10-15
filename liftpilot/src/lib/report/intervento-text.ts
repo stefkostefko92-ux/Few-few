@@ -62,8 +62,9 @@ export function ammodernamentoText(kept: boolean, numerata = true, altre = true)
   return numerata
     ? `${head}è una modifica costruttiva ai sensi del DPR 162/1999 e s.m.i. (art. 2, comma 1, lettera cc)) per i casi numerati tra le parti `
       + `sostituite o modificate, con la verifica straordinaria (art. 14); il caso di ogni parte è indicato nella sezione ${SEZIONE_ADEMPIMENTI}.`
-    : `${head}nessuna delle parti sostituite o modificate è un caso numerato del DPR 162/1999 e s.m.i. (art. 2, comma 1, lettera cc)); se `
-      + `l’intervento sia una modifica costruttiva, con la verifica straordinaria (art. 14), lo conferma il tecnico (sezione ${SEZIONE_ADEMPIMENTI}).`;
+    : `${head}nessuna delle parti sostituite o modificate è un caso numerato già confermato del DPR 162/1999 e s.m.i. (art. 2, comma 1, `
+      + `lettera cc)); se lo sia (ad esempio tra gli «altri componenti principali» del n. 5)) e quindi se l’intervento sia una modifica costruttiva, `
+      + `con la verifica straordinaria (art. 14), lo conferma il tecnico (sezione ${SEZIONE_ADEMPIMENTI}).`;
 }
 
 /** The relazione tecnica of a machine room surveyed on a calculation saved with its type: what follows «Relazione

@@ -69,7 +69,8 @@ export const OBBLIGHI_VARIAZIONI: Readonly<Record<Norma10411, Partial<Readonly<R
     loadCalo: lt('UNI 10411-11:2024, 6.1', 'T* o contrappeso diminuiti: ammortizzatori e, se c’è, paracadute progressivo verificati per i '
       + 'nuovi carichi'),
     loadDocumentati: DA_VERIFICARE('UNI 10411-11:2024, 6.1', 'carichi indicati come variati, ma secondo i carichi documentati T* e contrappeso '
-      + 'restano gli stessi entro l’arrotondamento dei dati: i punti da 6.2 a 6.13 valgono solo se il tecnico conferma una variazione'),
+      + 'restano gli stessi entro l’arrotondamento dei dati: i punti da 6.2 a 6.13 valgono solo se il tecnico conferma un aumento di T* o del '
+      + 'contrappeso (con una riduzione, le verifiche della 6.1)'),
     travelUp: lt('UNI 10411-11:2024, 16 a)–i) e 4.3', 'corsa allungata: locale o macchina spostati con i punti 8 e 9 (a), b)), difese dei '
       + 'tratti di vano aggiunti (c)), linee elettriche (d)), quadro (e)), guide dei tratti aggiunti con gli ancoraggi (f)), organi di sospensione '
       + 'nuovi con il punto 17 (g)), fune nuova del limitatore (h)), spazi liberi in fossa e in testata (i)); valutazione 4.3'),

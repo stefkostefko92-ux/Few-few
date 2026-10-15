@@ -47,7 +47,8 @@ test('oggetto dell’ammodernamento: il caso n. 5) della macchina, le altre part
 test('argano che resta: costruttiva per un caso numerato, altrimenti la conferma il tecnico (oggetto e adempimenti)', () => {
   const solo: Collaudo = { norma: '10411-1', parti: ['alarm', 'ropes'] };
   const t = collaudoText(solo, true, undefined, 'AMMODERNAMENTO', V());
-  assert.ok(t.includes('nessuna delle parti sostituite o modificate è un caso numerato') && t.includes('lo conferma il tecnico'), t);
+  assert.ok(t.includes('nessuna delle parti sostituite o modificate è un caso numerato già confermato') && t.includes('«altri componenti principali» del n. 5)')
+    && t.includes('lo conferma il tecnico'), t);
   const first = cc(solo, true, V())[0] ?? '';
   assert.ok(first.includes('non è il caso n. 5) della sostituzione del macchinario') && first.includes('se la modifica sia costruttiva lo conferma il tecnico'), first);
   assert.ok(!first.includes('la modifica è costruttiva'), first);
@@ -141,10 +142,16 @@ test('D.1 nella relazione: la decelerazione del C1 minimo e quella limite, l’e
   assert.ok(f.includes(`regge fino a una decelerazione di frenatura di ${d.aLim.toFixed(2).replace('.', ',')} m/s², da confrontare con quella misurata alla prova del freno`), f);
   const note = d1Blocks(makePres(calcIt, 'it-IT'), C, Vx).flatMap((b) => (b.t === 'p' ? [b.text] : [])).join(' ');
   assert.ok(note.includes('il minimo della fascia, che equivale a una decelerazione di 0,68 m/s²') && note.includes('Regge fino a C1 = '), note);
-  assert.ok(note.includes('la confronta con quella misurata alla prova del freno'), note);
+  assert.ok(note.includes('può confrontarla con quella misurata alla prova del freno'), note);
   // the registry: the four decelerations of the bands, the limit one; the check's entry points to it
   const nota = VOCI.find((v) => v.id === 'modifica.d1')?.nota ?? '';
   const quattro = K.c1Bands.map(([, c]) => aOfC1(c).toFixed(2).replace('.', ',')).join(' / ');
-  assert.ok(quattro === '0,47 / 0,68 / 0,89 / 1,09' && nota.includes(`${quattro} m/s²`) && nota.includes('confronta con la decelerazione misurata alla prova del freno'), nota);
+  assert.ok(quattro === '0,47 / 0,68 / 0,89 / 1,09' && nota.includes(`${quattro} m/s²`) && nota.includes('può confrontare con la decelerazione misurata alla prova del freno'), nota);
   assert.ok((VOCI_VANO.find((v) => v.id === 'rapporto.d1')?.nota ?? '').includes('quella limite fino a cui la condizione regge'));
+});
+
+test('argano che resta: la verifica straordinaria solo se la modifica è costruttiva (riferimenti)', () => {
+  const C: Collaudo = { norma: '10411-1', parti: ['alarm', 'ropes'] };
+  const dpr = riferimentiRows(true, C, 'en81-20', false, true).find((r) => r[0]?.startsWith('DPR 162/1999'))?.[1] ?? '';
+  assert.ok(dpr.includes('verifica straordinaria (art. 14) se la modifica è costruttiva') && !dpr.includes('della modifica costruttiva'), dpr);
 });
