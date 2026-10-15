@@ -203,10 +203,11 @@ so this is an **update of the existing item**, not a new one:
    review again. **Delete every old screenshot and tile, in every language**, then
    upload the 5 screenshots + promo tiles (§2). The summary needs no edit: it is
    `extDescription` from the package.
-3. **Video (optional).** Only the store cut (`node tools/promo/render.mjs --cut store`
-   → `dist/supreme-adblock-promo-<version>-store-web.mp4`, uploaded to YouTube) — **never**
-   the full or the social cut (they carry "Free" and a comparison with other blockers:
-   the "Red Nickel" rejection again). No video is better than the wrong one.
+3. **Video — not updated anymore** (owner's decision, 15 October 2026). Leave the listing's
+   YouTube video field as it is; do not render or upload a new video for a release. The last
+   render is the 5.1.8 store cut. If a video is ever changed by the owner's explicit request:
+   only a store cut — **never** the full or the social cut (they carry "Free" and a comparison
+   with other blockers: the "Red Nickel" rejection again).
 4. **Store listing → URLs:** official URL `carbonstealth.eu` (the verified site), homepage
    `https://adblock.carbonstealth.eu`, support `https://adblock.carbonstealth.eu/#faq`.
 5. Re-check the **Privacy practices** tab (§4) and paste the permission
