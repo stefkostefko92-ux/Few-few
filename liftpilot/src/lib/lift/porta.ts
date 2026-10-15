@@ -22,6 +22,13 @@ export function chiaviDelDisegno(layoutOf: unknown, auto: Pick<AutoFlags, 'L0' |
   ];
 }
 
+/** The values the drawing works out that its calculation holds but does not use with this roping (the derivation sets
+ *  them with their switch on whatever the roping): the diverting pulley's distance without a diverting pulley, the head
+ *  pulleys' height of a machine below with the machine above. Brought without a mark — nothing to see in the form —, so
+ *  that a calculation that takes every value of its drawing is the drawing's own calculation (the same SHA-256). */
+export const chiaviNascoste = (layoutOf: unknown, auto: Pick<AutoFlags, 'dx' | 'Hv'>): PortaKey[] =>
+  [...(layoutOf !== 'topDefl' && auto.dx ? (['dx'] as const) : []), ...(layoutOf !== 'bottom' && auto.Hv ? (['Hv'] as const) : [])];
+
 /** The calculation's values with the drawing's, the marks of the values brought (as the form holds them) and the value
  *  each replaced where it held another. */
 export interface Portato {
@@ -35,10 +42,14 @@ const numero = (s: string): number => Number(s.replace(',', '.'));
 /** The same value however written ('18', '18.0', 18). */
 const uguali = (a: string, b: string): boolean => a === b || (a !== '' && b !== '' && Number.isFinite(numero(a)) && numero(a) === numero(b));
 
-/** The values `V` of a calculation with the drawing's derived values `drawn` for `keys` (chiaviDelDisegno); a key the
- *  drawing has no number for stays as it was. */
-export function portaNelCalcolo(V: FormValues, drawn: FormValues, keys: readonly PortaKey[]): Portato {
+/** The values `V` of a calculation with the drawing's derived values `drawn` for `keys` (chiaviDelDisegno) and, unmarked,
+ *  for `nascoste` (chiaviNascoste); a key the drawing has no number for stays as it was. */
+export function portaNelCalcolo(V: FormValues, drawn: FormValues, keys: readonly PortaKey[], nascoste: readonly PortaKey[] = []): Portato {
   const values: Record<string, FormValues[string]> = { ...V }, valori: Record<string, string> = {}, prima: Record<string, string> = {};
+  for (const k of nascoste) {
+    const d = drawn[k];
+    if (scritto(d) !== '' && Number.isFinite(numero(scritto(d)))) values[k] = d;
+  }
   for (const k of keys) {
     const d = drawn[k], s = scritto(d);
     if (s === '' || !Number.isFinite(numero(s))) continue;

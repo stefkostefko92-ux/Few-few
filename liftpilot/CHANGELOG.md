@@ -2269,6 +2269,40 @@ Progettista, Tecnico, Commerciale. Реални потребители още н
   `actions-guard` (само четене). Smoke (`smoke-progetto.mjs`): панелът на разликите, „Modifica nel calcolo argano“ със
   знаците и списъка, сменена машина, „Aggiorna il progetto con l’ultimo calcolo“ — същият SHA-256 на двете изчисления.
 
+- **Стъпка 8 — страницата на съоръжението, стъпките, сравнението, създаването, менюто и списъците без вида на
+  обекта**: ново съоръжение няма модул — само данните му, бележка „Il tipo di intervento si sceglie nel Calcolo argano.“,
+  създаденото се отваря на „Calcolo argano“ за който смята (`calc:create`), иначе на страницата си (`createProjectAction`
+  и `creaDaRilievo` без вид, одитът — `{rilievo?}`; стар `?kind=` се пренебрегва); `upgradeProjectAction`, `formRightOf`,
+  `projectKindSchema`, `ModuleCards` и `NewMenu` са махнати, вместо тях `RIGHT_OF_STEP` (`calcolo` → `calc:create`,
+  `progetto` → `progetto:edit`). Менюто — един „Nuovo impianto“. `/app/impianti`: бутонът „Nuovo impianto“ с четирите
+  стъпки (Rilievo → Calcolo argano → Progetto → Documenti e ordini), филтрите по тип на интервенцията (`?tipo=solo-argano|
+  ammodernamento|trasformazione-completa|da-definire`, от `tipiImpianti` — една заявка с LATERAL към последното изчисление
+  от стъпка 2 и последното изобщо, съпоставянето в TypeScript, `tipoDaUltimi`), плочката „attivi“ по тип, редът и
+  прегледът — с етикета на типа и скалата му (`TipoTag`). Страницата на съоръжението — едно оформление (разделено на
+  `ProjectSections`): типът горе (или „Intervento da definire“), основният бутон — следващата стъпка за който има правото ѝ
+  („Calcola l’argano“ → „Rileva il locale macchina“ или „Disegna il progetto“ върху последното изчисление → „Nuovo calcolo“),
+  иначе чия е; разделите по реда на работата — „Calcolo argano“ (изчисленията от стъпка 2 с типа), „Progetto“ (последният
+  проект в 3D с версиите, рилеванията на машинното), „Tavole emesse“ с данните на съоръжението, „Archivio“ (само проекти
+  на шахтата и изчисленията им отпреди единния формуляр). Стъпките (`collega/impianto.ts`): изчислението — последното от
+  стъпка 2 (иначе последното изобщо), Progetto — по запис (най-новият проект на асансьора, а когато интервенцията е само
+  машинното — и рилеванията), `allineato` — начертан върху последното изчисление от стъпка 2 (проект отпреди — няма
+  по-ново изчисление); иначе стъпка 3 е „da aggiornare (calcolo più recente)“ (`superato`), документите с нея; подпис
+  „locale macchina“ за машинното; връзките по `RIGHT_OF_STEP`. Сравнението: „Usa il valore“ — към „Calcolo argano“ за
+  каквото държи изчислението, към Progetto за спирките, при всеки обект; проект, начертан върху изчисление — само страната
+  на чертежа (`latoProgetto` `based`). Плочките на началото — последното изчисление от стъпка 2. Предложенията и панелът
+  на рилевото — без модула. Цените: обхватите „Trasformazione completa (UNI EN 81-20/50)“ и „Solo argano e ammodernamento
+  (UNI 10411)“. Описанията на правата: „Calcolo argano: scegliere il tipo di intervento…“, „Progetto: disegnare il vano o
+  rilevare il locale macchina“. Тестове: `rbac` (`RIGHT_OF_STEP`), `dashboard` (по тип, `?tipo=`, стар `?kind=` не е
+  филтър, менюто „new“), `collega-confronto` (целта по параметъра, `superato`, страната на чертежа), `calcolo-base`
+  (`tipoDaUltimi`), `project-actions` (без вид, `upgradeProjectAction` няма), `collega-actions` (създаване от рилево без
+  вид). Smoke в същата стъпка: `smoke.mjs`, `smoke-replacement`, `smoke-progetto`, `smoke-collega` (без радио за модула,
+  стъпка 3 „locale macchina“), `smoke-roles` (Tecnico записва трансформация, /progetto → `/app/permesso?p=progetto:edit`),
+  `smoke-permessi`, `smoke-prices` (етикетите на обхватите). Поправка на стъпка 7, намерена от пълния smoke: стойностите,
+  които изчислението държи, но с окачването си не ползва (разстоянието до ролка на отклонение без ролка, височината на
+  ролките в главата с машина горе), „Porta nel calcolo“ вече носи без знак и без „prima“ (`chiaviNascoste`), за да е
+  изчислението, което взема всичко от чертежа, същото изчисление (същият SHA-256 при директно окачване, с ролка и с
+  машина долу — тест `porta`).
+
 ## Проверки
 
 - [x] Пуснах пълния quality gate на засегнатия продукт `liftpilot/` (до кръг 6 — `argano/`): lint, typecheck, test (250/250, със схемите, токените и писмата на акаунтите на трите езика, с тестовете за хлабината на вратите, хода на кабината и противотежестта при трите схеми с машина долу, планките на Panev, кабелния канал, редакцията на всеки размер на плана и на разреза, каталога на машините, ограничителите, нишите, етажните табла и имената на котите на трите езика), build. **Зелен.**

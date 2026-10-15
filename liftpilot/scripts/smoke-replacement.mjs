@@ -3,7 +3,8 @@
 // shaft (its example asked for: a new calculation starts empty), a «Solo argano» with its ropes replaced, whose room is
 // surveyed measure by measure and saved with a reproduced hash; its relazione tecnica, the drawing set as a draft
 // (PDF), the plan and section in DXF and DWG; a drawing set issued from it, its PDF and a revision from the same survey;
-// the whole project it becomes starts from the survey.
+// the whole drawing — still possible on a «Solo argano» (round 45: no more «Passa a progetto completo») — starts from the
+// survey.
 import assert from 'node:assert/strict';
 import { blankCalc, blankSurvey, projectData } from './smoke-blank.mjs';
 import { step } from './smoke-kit.mjs';
@@ -12,7 +13,7 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   step('replacement: a calculation with the machine above, the survey of its machine room, saved');
   await page.goto(calcUrl);
   assert.match(await page.textContent('section[aria-labelledby="calc-progetto"]'), /Argano in basso/, 'no machine room below');
-  await page.goto(`${BASE}/it/app/projects/new?kind=replacement`);
+  await page.goto(`${BASE}/it/app/projects/new`);
   await page.fill('input[name="name"]', `Sostituzione ${stamp}`);
   await page.fill('input[name="city"]', 'Milano');
   await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/calc$/), page.click('main form button[type="submit"]')]);
@@ -67,15 +68,18 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   await page.goto(roomCalcUrl);
   assert.equal(await page.locator('section[aria-labelledby="calc-progetto"] a[href*="/room-designs/"]').count(), 1, 'machine room on the calculation');
 
-  step('replacement: the whole project it becomes starts from the survey');
+  step('replacement: the whole drawing on the same «Calcolo argano» starts from the survey');
   await page.goto(roomProjectUrl);
-  await Promise.all([page.waitForURL(/\/progetto$/, { timeout: 30000 }), page.click('button:has-text("Passa a progetto completo")')]);
+  assert.equal(await page.locator('button:has-text("Passa a progetto completo")').count(), 0, 'no upgrade any more');
+  await page.goto(roomCalcUrl);
+  await Promise.all([page.waitForURL(/\/progetto\?calc=[a-z0-9]+$/, { timeout: 30000 }), page.click('section[aria-labelledby="calc-progetto"] a[href*="/progetto?calc="]')]);
+  assert.match(await page.textContent('main'), /Per la sola sostituzione dell’argano basta il rilievo del locale macchina/, 'the machine room is enough, said on top');
   // the shaft, the walls and the room of the survey carried over, the counterweight at its drop: the rest to enter
   await projectData({ page, hydrated, shaft: false });
   await page.evaluate(() => { const d = globalThis.document.querySelector('.lift-form details.room-options'); if (d) d.open = true; });
   assert.equal(await page.locator('.lift-form details.room-options input[type="number"]').nth(4).inputValue(), '2700', 'the surveyed machine room carried over');
   // a direct pull: the plan takes the car and the counterweight under the surveyed drops, so nothing is left to fix
   // before the save (no «Calata» against the existing sheave)
-  assert.equal(await page.locator('.lift-work .savebar button.btn-primary').isDisabled(), false, 'the upgrade saves without a calata to fix');
+  assert.equal(await page.locator('.lift-work .savebar button.btn-primary').isDisabled(), false, 'the drawing saves without a calata to fix');
   return { roomUrl, roomId, roomSetUrl };
 }

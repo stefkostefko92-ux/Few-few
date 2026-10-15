@@ -6,10 +6,11 @@
 // largest car of the drawn shaft.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { canon } from '@/calc/snapshot';
 import type { FormValues } from '@/calc/types';
 import { deriveLift, newLift, type LiftInputs } from '@/lib/lift';
 import { liftInputsOf, progettoOf } from '@/lib/lift/progetto';
-import { cabinaMassima, chiaviDelDisegno, portaNelCalcolo } from '@/lib/lift/porta';
+import { cabinaMassima, chiaviDelDisegno, chiaviNascoste, portaNelCalcolo } from '@/lib/lift/porta';
 import { analyse, sizingWithSheave } from '@/lib/present/analysis';
 import { layout } from '@/shaft';
 
@@ -36,6 +37,26 @@ test('portaNelCalcolo: solo i valori del disegno, segnati; «prima» solo se era
   assert.equal(JSON.stringify(drawn), frozen, 'the drawing untouched');
   // a key the drawing has no number for stays as it was
   assert.deepEqual(portaNelCalcolo(V, { ...drawn, Hv: '' }, ['Hv']).values, V);
+  // the head pulleys' height with the machine above: brought, never marked (it is no value of this roping's form)
+  assert.deepEqual(chiaviNascoste('topDefl', { dx: true, Hv: true }), ['Hv']);
+  assert.deepEqual(chiaviNascoste('top', { dx: true, Hv: true }), ['dx', 'Hv']);
+  assert.deepEqual([chiaviNascoste('bottom', { dx: false, Hv: true }), chiaviNascoste('top', { dx: false, Hv: false })], [[], []]);
+  const silent = portaNelCalcolo(V, drawn, ['H'], ['Hv']);
+  assert.equal(silent.values.Hv, 24.2);
+  assert.ok(!('Hv' in silent.valori) && !('Hv' in silent.prima));
+});
+
+test('ogni valore del disegno nel calcolo: il calcolo del progetto è lo stesso calcolo (stesso snapshot)', () => {
+  for (const layoutOf of ['topDefl', 'top', 'bottom'] as const) {
+    const L: LiftInputs = { ...newLift(), calc: { ...newLift().calc, layout: layoutOf }, ...(layoutOf === 'bottom' ? { bottom: 'head' as const } : {}) };
+    const { V, d } = drawnOn(L);
+    const auto = { L0: true, dx: true, Hv: true };
+    const r = portaNelCalcolo(V, d.values, chiaviDelDisegno(V.layout, auto), chiaviNascoste(V.layout, auto));
+    // drawn again on the calculation that took its values: the same values (a machine below adds its extra bends)
+    const again = deriveLift(liftInputsOf({ ...progettoOf(L), auto: { ...auto, panel: true } }, { values: r.values, collaudo: L.collaudo ?? null })).values;
+    const extra = d.headPulleys > 2 ? d.headPulleys - 2 : 0;
+    assert.deepEqual(JSON.stringify(canon({ ...again, nps: Number(again.nps) - extra })), JSON.stringify(canon({ ...r.values, nps: Number(r.values.nps) })), layoutOf);
+  }
 });
 
 /** A drawing on its calculation as the Progetto composes it, with every switch on. */

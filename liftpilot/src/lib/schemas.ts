@@ -68,10 +68,6 @@ export const projectSchema = z.object({
   client: optionalText(160),
   notes: optionalText(4000),
 });
-/** What the installation is for (Project.kind): the machine replacement alone, or a whole project. */
-export const projectKindSchema = z.enum(['REPLACEMENT', 'FULL']);
-export type ProjectKind = z.infer<typeof projectKindSchema>;
-
 /** The roles a company's owner gives to the colleagues: Capotecnico, Progettista, Tecnico, Commerciale (src/lib/rbac.ts). */
 export const roleSchema = z.enum(['CHIEF_TECHNICIAN', 'ENGINEER', 'TECHNICIAN', 'SALES']);
 

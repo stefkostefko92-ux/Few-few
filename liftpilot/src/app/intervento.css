@@ -98,3 +98,9 @@
 .ridisegna form { margin: 0; }
 .porta-avviso { max-width: 100ch; }
 .differenze .badge.warn { color: var(--warn); background: var(--warn-bg); text-transform: none; letter-spacing: .02em; }
+/* an installation's type in the lists (round 45): the badge of «Calcolo argano» at the size of a tag; none yet — dashed */
+.tipo-badge.sm { gap: 6px; padding: 2px 8px 2px 6px; font-size: 12px; font-weight: 600; line-height: 1.25; white-space: nowrap; }
+.tipo-badge.sm .tipo-scala { height: 12px; gap: 1.5px; }
+.tipo-badge.sm .tipo-scala i { width: 3px; }
+.tipo-badge.sm .tipo-scala i:nth-child(1) { height: 5px; } .tipo-badge.sm .tipo-scala i:nth-child(2) { height: 8px; } .tipo-badge.sm .tipo-scala i:nth-child(3) { height: 11px; }
+.tipo-badge[data-tipo="none"] { color: var(--ink-2); background: transparent; border-style: dashed; border-color: var(--rule-strong); }

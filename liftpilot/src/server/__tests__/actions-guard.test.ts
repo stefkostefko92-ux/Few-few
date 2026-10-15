@@ -13,8 +13,9 @@ const req = createRequire(import.meta.url);
 const pkg = (m: string) => pathToFileURL(req.resolve(m)).href;
 
 type Where = Record<string, unknown>;
-const PROJECTS = [{ id: 'pfull', companyId: 'c1', archivedAt: null, kind: 'FULL' }, { id: 'prepl', companyId: 'c1', archivedAt: null, kind: 'REPLACEMENT' },
-  { id: 'parch', companyId: 'c1', archivedAt: new Date('2026-10-01'), kind: 'REPLACEMENT' }, { id: 'pforeign', companyId: 'c2', archivedAt: null, kind: 'REPLACEMENT' }];
+// (the ids keep the names of the kinds of installation before round 45, which no code reads any more)
+const PROJECTS = [{ id: 'pfull', companyId: 'c1', archivedAt: null }, { id: 'prepl', companyId: 'c1', archivedAt: null },
+  { id: 'parch', companyId: 'c1', archivedAt: new Date('2026-10-01') }, { id: 'pforeign', companyId: 'c2', archivedAt: null }];
 const match = (p: Record<string, unknown>, w: Where) => Object.entries(w).every(([k, v]) => p[k] === v);
 const accounts = new Set(['someone@other-company.example']);
 let role = 'TECHNICIAN', readOnly = false;

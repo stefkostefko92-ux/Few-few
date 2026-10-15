@@ -2,86 +2,79 @@ import { notFound } from 'next/navigation';
 import { getLocale, getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import { requireCapability } from '@/lib/auth';
-import { can, formRightOf, holds, remakerOf } from '@/lib/rbac';
+import { RIGHT_OF_STEP, can, holds } from '@/lib/rbac';
 import { dateFormat } from '@/lib/dates';
 import { getProject, latestLiftDesign, listCalculations, listDrawingSets, listLiftDesigns, listRoomDesigns, listShaftDesigns } from '@/server/queries';
 import { outdated } from '@/server/records';
-import { liftInputsReadSchema } from '@/lib/lift-input';
-import { visiblePrices } from '@/server/prices';
-import LiftView from '@/components/lift/LiftView';
-import { setProjectArchivedAction, upgradeProjectAction } from '@/server/project-actions';
+import { tipoDi } from '@/server/calcolo-base';
+import { collegamentoImpianto } from '@/server/collega/impianto';
+import { setProjectArchivedAction } from '@/server/project-actions';
 import Crumbs from '@/components/Crumbs';
-import StaleNotice from '@/components/StaleNotice';
-import RecordTable from '@/components/project/RecordTable';
-import SectionTitle from '@/components/project/SectionTitle';
 import { roomSummaryLine } from '@/server/room-summary';
-import { pitchesOf } from '@/lib/plant';
 import ImpiantoCollegato from '@/components/collega/ImpiantoCollegato';
+import TipoTag from '@/components/project/TipoTag';
+import { ArchivioSection, CalcoloSection, ProgettoSection, TavoleSection } from '@/components/project/ProjectSections';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const t = await getTranslations('projects');
   return { title: `${t('project')} ${(await params).id.slice(-6)}` };
 }
 
-// An installation. A whole project has one way in, its form (/progetto): the latest lift design in 3D, its saved
-// versions, the drawing sets; the records made before the one form (shaft designs, calculations, the machine rooms of a
-// replacement become a whole project) are in the archive. A machine replacement shows its calculations, its machine
-// rooms and the way to a whole project. A record the running engines no longer reproduce is marked, and the latest lift
-// design is updated from here in one click. Under its data (round 44): the steps from the survey to the documents, its
-// surveys and the comparison of the reference survey with its records (components/collega/ImpiantoCollegato.tsx).
+// An installation (round 45: one layout whatever it was called before — its type of intervention is its «Calcolo
+// argano»'s, never stored on it). Under its data the steps from the survey to the documents, its surveys and the
+// comparison (components/collega/ImpiantoCollegato.tsx); then, in the order of the work, «Calcolo argano» (its step-2
+// calculations), the Progetto (the latest lift design in 3D with its versions, the machine rooms surveyed), the drawing
+// sets with the installation's data, and the archive of the records made before the one form. The header's button is the
+// next step for whoever holds its right — the calculation, the Progetto on the latest calculation (the machine room or the
+// shaft, by the intervention), a new calculation —, else whose the step is. A record the running engines no longer
+// reproduce is marked, and the latest lift design is updated from here in one click.
 export default async function ProjectPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ lk?: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
   const user = await requireCapability(locale, 'projects:view');
   const p = await getProject(user, id);
   if (!p) notFound();
-  const [t, tc, ts, tt, tl, tm, calcs, designs, sets, lifts, latest, rooms, lang] = await Promise.all([getTranslations('projects'), getTranslations('calculations'),
-    getTranslations('shaft'), getTranslations('tavole'), getTranslations('lift'), getTranslations('room'), listCalculations(user, p.id),
-    listShaftDesigns(user, p.id), listDrawingSets(user, p.id), listLiftDesigns(user, p.id), latestLiftDesign(user, p.id), listRoomDesigns(user, p.id), getLocale()]);
-  const latestInputs = latest ? liftInputsReadSchema.safeParse(latest.inputs) : null;
-  const fd = dateFormat(locale);
-  const place = [p.address, p.city, p.province].filter(Boolean).join(', ');
-  const replacement = p.kind === 'REPLACEMENT';
-  // the installation's data; its work: a replacement's calculator (calc:create), a whole project's one form (progetto:edit)
-  const editable = can(user, 'projects:edit') && !p.archivedAt, draws = can(user, 'progetto:edit') && !p.archivedAt;
-  const saves = can(user, formRightOf(p.kind)) && !p.archivedAt;
-  // a role without that form's right (a Tecnico's whole project): the empty installation says whose work it is
-  const handoff = !holds(user, formRightOf(p.kind)) && !p.archivedAt
-    ? <p className="note">{t('workByOther', { kind: p.kind, edits: editable ? 'yes' : 'no' })}</p> : null;
-  // the records of a lift design are reached from it; the others of a whole project are its archive
-  const calcRows = calcs.filter((c) => replacement || !c.liftDesign).map((c) => ({ ...c, old: outdated.calc(c) }));
+  const [t, tc, ti, calcs, designs, sets, lifts, latest, rooms, lang, c] = await Promise.all([getTranslations('projects'), getTranslations('calculations'),
+    getTranslations('calculations.intervento'), listCalculations(user, p.id), listShaftDesigns(user, p.id), listDrawingSets(user, p.id), listLiftDesigns(user, p.id),
+    latestLiftDesign(user, p.id), listRoomDesigns(user, p.id), getLocale(), collegamentoImpianto(user, p)]);
+  const live = !p.archivedAt, place = [p.address, p.city, p.province].filter(Boolean).join(', ');
+  const editable = can(user, 'projects:edit') && live, calcola = can(user, RIGHT_OF_STEP.calcolo) && live, disegna = can(user, RIGHT_OF_STEP.progetto) && live;
+  const calcHref = `/app/projects/${p.id}/calc`;
+  // the step's handoff: a role without its right (held, read-only mode or not) reads whose it is
+  const handoff = (step: 'calcolo' | 'progetto') => (live && !holds(user, RIGHT_OF_STEP[step]) ? <p className="note">{t(`handoff_${step}`)}</p> : null);
+  // the next step: the calculation; the Progetto on the latest «Calcolo argano» (machine room or shaft); a new calculation
+  const base = c.base, drawn = c.progetto?.allineato ?? false;
+  const progettoHref = base ? (c.disegno === 'locale' ? `/app/calculations/${base.id}/locale` : `/app/projects/${p.id}/progetto?calc=${base.id}`) : null;
+  const next = !base ? (calcola ? <Link className="btn btn-primary" href={calcHref}>{t('calcola')}</Link> : null)
+    : !drawn && progettoHref ? (disegna ? <Link className="btn btn-primary" href={progettoHref}>{t(c.disegno === 'locale' ? 'rileva' : 'disegna')}</Link> : null)
+      : calcola ? <Link className="btn btn-primary" href={calcHref}>{tc('new')}</Link> : null;
+  const nextHandoff = !base ? handoff('calcolo') : !drawn && progettoHref ? handoff('progetto') : null;
+  // the records by what they are: «Calcolo argano» (step 2), a lift design's (reached from it), the archive
+  const step2 = calcs.filter((x) => !x.liftDesign && !x.shaftDesignId)
+    .map((x) => ({ ...x, old: outdated.calc(x), tipo: tipoDi(x), reviews: x._count.reviews }));
+  const archiveCalcs = calcs.filter((x) => x.shaftDesignId && !x.liftDesign).map((x) => ({ ...x, old: outdated.calc(x) }));
   const shaftRows = designs.filter((d) => !d.liftDesign).map((d) => ({ ...d, old: outdated.shaft(d) }));
   const roomLine = await roomSummaryLine(), roomRows = rooms.map((r) => ({ ...r, summary: roomLine(r), old: outdated.room(r) }));
   const liftRows = lifts.map((d) => ({ ...d, old: outdated.lift(d) }));
-  const archive = !replacement && (calcRows.length > 0 || shaftRows.length > 0 || roomRows.length > 0);
-  const setList = sets.length ? (
-    <ul className="rec-list" aria-label={tt('list')}>
-      {sets.map((x) => (
-        <li key={x.id}>
-          <Link href={`/app/drawing-sets/${x.id}`} className="num">{tt('number')} {x.number}{x.revision ? ` R${x.revision}` : ''}</Link>
-          <span className="note">{fd.dateTime(x.createdAt)} · {x.user?.name ?? x.authorInitials}</span>
-        </li>
-      ))}
-    </ul>
-  ) : null;
-  const calcTable = (
-    <RecordTable rows={calcRows} kind="calc" href={(x) => `/app/calculations/${x}`} what={tc('col_machine')} locale={locale}
-      under={(r) => { const n = calcs.find((c) => c.id === r.id)?._count.reviews ?? 0; return n ? <span className="note">{tc('reviewed', { n })}</span> : null; }} />
+  const vuotoProgetto = (
+    <>
+      <p>{t(c.disegno ? `progettoVuoto_${c.disegno}` : 'progettoVuoto_none')}</p>
+      {progettoHref && disegna ? <Link className="btn btn-primary" href={progettoHref}>{t(c.disegno === 'locale' ? 'rileva' : 'disegna')}</Link> : base ? handoff('progetto') : null}
+    </>
   );
+  const fd = dateFormat(locale);
   return (
     <main className="page">
       <Crumbs items={[{ href: '/app/impianti', label: t('title') }, { label: p.name }]} />
       <div className="page-head">
         <div className="titles">
-          <span className={`kind-tag kind-${p.kind.toLowerCase()}`}>{t(`kind_${p.kind}`)}</span>
+          <TipoTag tipo={c.tipo} label={ti(c.tipo ?? 'daDefinire')} />
           {p.archivedAt ? <span className="chip">{t('archived')}</span> : null}
           <h1>{p.name}</h1>
           {place ? <p className="lead">{place}</p> : null}
         </div>
         <div className="actions">
-          {saves ? (replacement
-            ? <Link className="btn btn-primary" href={`/app/projects/${p.id}/calc`}>{calcs.length ? tc('new') : t('startReplacement')}</Link>
-            : <Link className="btn btn-primary" href={`/app/projects/${p.id}/progetto`}>{latest ? tl('edit') : tl('start')}</Link>) : null}
+          {next}
           {editable ? <Link className="btn" href={`/app/projects/${p.id}/edit`}>{t('edit')}</Link> : null}
           {can(user, 'projects:archive') ? (
             <form action={setProjectArchivedAction}>
@@ -93,6 +86,7 @@ export default async function ProjectPage({ params, searchParams }: { params: Pr
           ) : null}
         </div>
       </div>
+      {nextHandoff}
 
       <dl className="cartiglio">
         <div><dt>{t('field_plantNumber')}</dt><dd className="num">{p.plantNumber ?? '—'}</dd></div>
@@ -102,88 +96,17 @@ export default async function ProjectPage({ params, searchParams }: { params: Pr
         {p.notes ? <div className="wide"><dt>{t('field_notes')}</dt><dd className="whitespace-pre-line">{p.notes}</dd></div> : null}
       </dl>
 
-      <ImpiantoCollegato user={user} p={p} archived={!!p.archivedAt} flash={(await searchParams).lk} />
+      <ImpiantoCollegato user={user} p={p} c={c} archived={!live} flash={(await searchParams).lk} />
 
-      {replacement ? null : (
+      <CalcoloSection rows={step2} locale={locale} nuovo={calcola ? calcHref : null} vuoto={(
         <>
-          <section className="flex flex-col gap-3 lift-home">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <SectionTitle icon="cube" eyebrow={latest ? fd.dateTime(latest.createdAt) : undefined}>{tl('homeTitle')}</SectionTitle>
-              {latest ? <Link className="btn" href={`/app/lift-designs/${latest.id}`}>{tl('open')}</Link> : null}
-            </div>
-            {latest && outdated.lift(latest) ? (
-              <StaleNotice text="design" by={remakerOf(user, 'lift', !p.archivedAt)} refresh={{ kind: 'lift', id: latest.id }} />
-            ) : null}
-            {latestInputs?.success ? <LiftView inputs={latestInputs.data} checks={false} prices={await visiblePrices(user)} pitches={pitchesOf(p.plant)} /> : (
-              <div className="panel items-start">
-                <p>{tl('homeEmpty')}</p>
-                {saves ? <Link className="btn btn-primary" href={`/app/projects/${p.id}/progetto`}>{tl('start')}</Link> : handoff}
-              </div>
-            )}
-            {liftRows.length > 1 ? <SectionTitle level={3} icon="history">{tl('history')}</SectionTitle> : null}
-            {liftRows.length > 1 ? <RecordTable rows={liftRows} kind="lift" href={(x) => `/app/lift-designs/${x}`} what={tl('col_design')} locale={locale} /> : null}
-          </section>
-
-          <section className="flex flex-col gap-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <SectionTitle icon="file-stack">{tt('list')}</SectionTitle>
-              <Link className="btn" href={`/app/projects/${p.id}/impianto`}>{tt('plantTitle')}</Link>
-            </div>
-            {setList ?? <p className="note">{tt('none')} {tt('needDesign')}</p>}
-          </section>
-
-          {archive ? (
-            <details className="panel archive">
-              <summary>{t('archiveTitle')}</summary>
-              <p className="note">{t('archiveLead')}</p>
-              {shaftRows.length ? <h3>{ts('sectionTitle')}</h3> : null}
-              {shaftRows.length ? (
-                <RecordTable rows={shaftRows} kind="shaft" href={(x) => `/app/shaft-designs/${x}`} what={ts('col_design')} locale={locale}
-                  extra={{ label: ts('source'), cell: (r) => (designs.find((d) => d.id === r.id)?.source ? 'DXF/DWG' : ts('sourceHand')) }} />
-              ) : null}
-              {calcRows.length ? <h3>{tc('title')}</h3> : null}
-              {calcRows.length ? calcTable : null}
-              {roomRows.length ? <h3>{tm('projectTitle')}</h3> : null}
-              {roomRows.length ? <RecordTable rows={roomRows} kind="room" href={(x) => `/app/room-designs/${x}`} what={tm('col_room')} locale={locale} /> : null}
-            </details>
-          ) : null}
+          <p>{t('calcoloVuoto')}</p>
+          {calcola ? <Link className="btn btn-primary" href={calcHref}>{t('calcola')}</Link> : handoff('calcolo')}
         </>
-      )}
-
-      {replacement ? (
-        <section className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <SectionTitle icon="calculator">{tc('title')}</SectionTitle>
-            {saves && calcs.length ? <Link className="btn" href={`/app/projects/${p.id}/calc`}>{tc('new')}</Link> : null}
-          </div>
-          {calcRows.length === 0 ? (
-            <div className="panel items-start">
-              <p>{tc('empty')}</p>
-              {saves ? <Link className="btn btn-primary" href={`/app/projects/${p.id}/calc`}>{tc('new')}</Link> : handoff}
-            </div>
-          ) : calcTable}
-        </section>
-      ) : null}
-      {replacement ? (
-        <section className="flex flex-col gap-3" aria-labelledby="project-rooms">
-          <SectionTitle id="project-rooms" icon="building-gear">{tm('projectTitle')}</SectionTitle>
-          {roomRows.length === 0 ? <p className="note">{tm(p.archivedAt ? 'projectNone' : holds(user, 'progetto:edit') ? 'projectEmpty' : 'projectEmptyOther')}</p>
-            : <RecordTable rows={roomRows} kind="room" href={(x) => `/app/room-designs/${x}`} what={tm('col_room')} locale={locale} />}
-          {setList}
-          <div><Link className="btn" href={`/app/projects/${p.id}/impianto`}>{tt('plantTitle')}</Link></div>
-        </section>
-      ) : null}
-      {replacement && draws ? (
-        <section className="panel items-start">
-          <SectionTitle icon="elevator">{t('upgradeTitle')}</SectionTitle>
-          <p className="note">{t('upgradeLead')}</p>
-          <form action={upgradeProjectAction}>
-            <input type="hidden" name="locale" value={lang} />
-            <input type="hidden" name="id" value={p.id} />
-            <button type="submit" className="btn">{t('upgrade')}</button>
-          </form>
-        </section>
-      ) : null}
+      )} />
+      <ProgettoSection user={user} plant={p.plant} latest={latest} lifts={liftRows} rooms={roomRows} locale={locale} live={live} vuoto={vuotoProgetto} />
+      <TavoleSection projectId={p.id} sets={sets} locale={locale} />
+      <ArchivioSection shafts={shaftRows} calcs={archiveCalcs} sources={new Set(designs.filter((d) => d.source).map((d) => d.id))} locale={locale} />
     </main>
   );
 }

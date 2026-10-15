@@ -1,7 +1,21 @@
 // The dashboard's figures and the shell's small helpers, pure: the search words of the top bar's field, the counts of
-// the company's active installations by the result of their latest record, the initials on the avatar. The queries
-// are in src/server/dashboard.ts; nothing here reads the database.
-import type { ProjectKind } from '@/lib/schemas';
+// the company's active installations by their type of intervention and by the result of their latest record, the
+// filters by type, the initials on the avatar. The queries are in src/server/dashboard.ts and project-list.ts; nothing
+// here reads the database.
+import type { TipoIntervento } from '@/lib/lift/intervento';
+
+/** The list's filters by type of intervention (round 45, ?tipo=): the three types and the installations without a
+ *  «Calcolo argano» yet («Da definire»). */
+export const TIPI_FILTRO = ['solo-argano', 'ammodernamento', 'trasformazione-completa', 'da-definire'] as const;
+export type TipoFiltro = (typeof TIPI_FILTRO)[number];
+const TIPO_DI_FILTRO: Readonly<Record<TipoFiltro, TipoIntervento | null>> = {
+  'solo-argano': 'SOLO_ARGANO', ammodernamento: 'AMMODERNAMENTO', 'trasformazione-completa': 'TRASFORMAZIONE_COMPLETA', 'da-definire': null,
+};
+/** The filter of an address (?tipo=), null for none or an unknown one (an old ?kind= is not one). */
+export const tipoFiltroOf = (slug: unknown): TipoFiltro | null => (TIPI_FILTRO.find((t) => t === slug) ?? null);
+/** The installations of a filter among the types read (project-list.ts tipiImpianti). */
+export const idsDelTipo = (tipi: ReadonlyMap<string, TipoIntervento | null>, f: TipoFiltro): string[] =>
+  [...tipi].filter(([, t]) => t === TIPO_DI_FILTRO[f]).map(([id]) => id);
 
 /** At most this many characters and words of a search are used: a longer one is cut, never refused. */
 export const SEARCH_MAX_CHARS = 80;
@@ -32,17 +46,20 @@ export interface LatestResult {
 }
 
 export interface ProjectRow {
-  kind: ProjectKind;
+  /** the type of intervention (round 45; null — no calculation yet) */
+  tipo: TipoIntervento | null;
   latest: LatestResult | null;
 }
 
-/** What the dashboard's tiles count among the active installations: how many, by module, without a saved result yet,
- *  whose latest result does not pass or passes with warnings, whose latest result the engines no longer reproduce, and
- *  the installations to review — any of the three (one installation counted once). */
+/** What the dashboard's tiles count among the active installations: how many, by type of intervention, without a saved
+ *  result yet, whose latest result does not pass or passes with warnings, whose latest result the engines no longer
+ *  reproduce, and the installations to review — any of the three (one installation counted once). */
 export interface ProjectStats {
   active: number;
-  replacement: number;
-  full: number;
+  soloArgano: number;
+  ammodernamento: number;
+  trasformazione: number;
+  daDefinire: number;
   noResult: number;
   fail: number;
   warn: number;
@@ -51,10 +68,12 @@ export interface ProjectStats {
 }
 
 export function projectStats(rows: readonly ProjectRow[]): ProjectStats {
-  const s: ProjectStats = { active: rows.length, replacement: 0, full: 0, noResult: 0, fail: 0, warn: 0, outdated: 0, review: 0 };
+  const s: ProjectStats = { active: rows.length, soloArgano: 0, ammodernamento: 0, trasformazione: 0, daDefinire: 0, noResult: 0, fail: 0, warn: 0, outdated: 0, review: 0 };
   for (const r of rows) {
-    if (r.kind === 'REPLACEMENT') s.replacement++;
-    else s.full++;
+    if (r.tipo === 'SOLO_ARGANO') s.soloArgano++;
+    else if (r.tipo === 'AMMODERNAMENTO') s.ammodernamento++;
+    else if (r.tipo === 'TRASFORMAZIONE_COMPLETA') s.trasformazione++;
+    else s.daDefinire++;
     if (!r.latest) s.noResult++;
     else {
       if (r.latest.verdict === 'FAIL') s.fail++;
@@ -77,12 +96,11 @@ export function initials(name: string): string {
 const RECORD_PAGES = ['/app/projects/', '/app/calculations/', '/app/lift-designs/', '/app/shaft-designs/', '/app/room-designs/', '/app/drawing-sets/'];
 
 /** Which entry of the sidebar the page is (its key: `rilievi` — the home and the survey sheets —, `impianti`, `archived`,
- *  `new-replacement`, `new-full`, or the path of a section such as `/app/norme`); null for a page none of them names (the
- *  chooser of a new installation). */
-export function shellSection(pathname: string, search: { archived: boolean; kind: string | null }, sections: readonly string[]): string | null {
+ *  `new` — the new installation —, or the path of a section such as `/app/norme`); null for a page none of them names. */
+export function shellSection(pathname: string, search: { archived: boolean }, sections: readonly string[]): string | null {
   if (pathname === '/app' || pathname === '/app/rilievi' || pathname.startsWith('/app/rilievi/')) return 'rilievi';
   if (pathname === '/app/impianti') return search.archived ? 'archived' : 'impianti';
-  if (pathname === '/app/projects/new') return search.kind === 'replacement' ? 'new-replacement' : search.kind === 'full' ? 'new-full' : null;
+  if (pathname === '/app/projects/new') return 'new';
   if (RECORD_PAGES.some((p) => pathname.startsWith(p))) return 'impianti';
   return sections.find((s) => pathname === s || pathname.startsWith(`${s}/`)) ?? null;
 }

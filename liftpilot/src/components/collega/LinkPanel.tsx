@@ -18,13 +18,13 @@ interface Scheda {
   deletedAt: Date | null;
 }
 
-/** One installation offered for the link: its name, module, address and number, why it is suggested, «Collega». */
+/** One installation offered for the link: its name, address and number, why it is suggested, «Collega». */
 function Offerta({ s, schedaId, locale, link, t }: { s: Suggerimento; schedaId: string; locale: string; link: boolean; t: Awaited<ReturnType<typeof getTranslations<'collega'>>> }) {
   return (
     <li className="lk-offer">
       <div className="lk-offer-main">
         <Link href={`/app/projects/${s.id}`} className="lk-offer-name">{s.name}</Link>
-        <span className="note">{[t(`kind.${s.kind}`), s.indirizzo, s.plantNumber ? t('matricola', { n: s.plantNumber }) : null].filter(Boolean).join(' — ')}</span>
+        <span className="note">{[s.indirizzo, s.plantNumber ? t('matricola', { n: s.plantNumber }) : null].filter(Boolean).join(' — ')}</span>
         {s.motivi.length ? <span className="lk-reasons">{s.motivi.map((m) => <span key={m} className="pill">{t(`motivo.${m}`)}</span>)}</span> : null}
       </div>
       {link ? (
@@ -54,7 +54,7 @@ export default async function LinkPanel({ user, scheda, cerca, flash }: { user: 
     ? await Promise.all([suggerimentiPer(user, scheda), cercaImpianti(user, cerca)]) : [[], []];
   const suggested = new Set(offerte.map((s) => s.id));
   const found: Suggerimento[] = trovati.filter((p) => !suggested.has(p.id))
-    .map((p) => ({ id: p.id, name: p.name, kind: p.kind, indirizzo: indirizzoImpianto(p), plantNumber: p.plantNumber, motivi: [] }));
+    .map((p) => ({ id: p.id, name: p.name, indirizzo: indirizzoImpianto(p), plantNumber: p.plantNumber, motivi: [] }));
   const msg = isFlash(flash) ? flash : null;
   // an archived installation is read only: its surveys are not unlinked from it
   const unlink = link && !!imp && !imp.archivedAt;
@@ -71,7 +71,8 @@ export default async function LinkPanel({ user, scheda, cerca, flash }: { user: 
           {imp ? (
             <p>
               {t('panel.linked')} <Link href={`/app/projects/${imp.id}`} className="lk-impianto-link">{imp.name}</Link>
-              <span className="note"> — {[t(`kind.${imp.kind}`), where && where !== imp.name ? where : null, imp.archivedAt ? t('panel.archived') : null].filter(Boolean).join(' — ')}</span>
+              {[where && where !== imp.name ? where : null, imp.archivedAt ? t('panel.archived') : null].some(Boolean)
+                ? <span className="note"> — {[where && where !== imp.name ? where : null, imp.archivedAt ? t('panel.archived') : null].filter(Boolean).join(' — ')}</span> : null}
             </p>
           ) : <p>{t('panel.linkedHidden')}</p>}
           <div className="lk-actions">

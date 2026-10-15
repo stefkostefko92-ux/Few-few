@@ -1,19 +1,22 @@
 // The way of an installation from its survey to its documents (round 44): 1 Rilievo → 2 Calcolo argano → 3 Progetto →
 // 4 Documenti e ordini, each with its state from the records — «fatto», «da fare», «da aggiornare» (the record is older
 // than the survey it should read — the reference survey written or changed after it —, or the running engines no longer
-// reproduce it) or «differenze» (the record says otherwise than the survey about what exists on site, confronto.ts).
-// «Documenti e ordini» are the documents of the saved records — the relazione and the order draft of the calculation (a
-// replacement) or of the design (a whole project), the drawing set when issued —: done when they can be downloaded, to
-// update when a record they come from is no longer reproduced, says otherwise than the survey or is older than it, or
-// the set issued is older than the latest record (never «fatto» beside a step that is not). For a role that does not see
-// the surveys nothing is judged against the survey: only whether one is linked. Pure.
+// reproduce it), «da aggiornare (calcolo più recente)» (round 45: the Progetto drawn on an older «Calcolo argano» than
+// the latest) or «differenze» (the record says otherwise than the survey about what exists on site, confronto.ts).
+// «Documenti e ordini» are the documents of the saved records — the relazione and the order draft of «Calcolo argano»
+// and of the Progetto's record (round 45: by record, whatever the installation), the drawing set when issued —: done
+// when they can be downloaded, to update when a record they come from is no longer reproduced, says otherwise than the
+// survey or is older than it, or the set issued is older than the latest record (never «fatto» beside a step that is
+// not). For a role that does not see the surveys nothing is judged against the survey: only whether one is linked. Pure.
 
-export type StatoPasso = 'fatto' | 'daFare' | 'daAggiornare' | 'differenze';
+export type StatoPasso = 'fatto' | 'daFare' | 'daAggiornare' | 'superato' | 'differenze';
 
 export interface Record {
   createdAt: Date;
   /** the running engines no longer reproduce it (src/server/records.ts outdated) */
   old: boolean;
+  /** the Progetto's record drawn on an older «Calcolo argano» than the installation's latest (round 45) */
+  superato?: boolean;
 }
 
 export interface PassiInput {
@@ -21,7 +24,7 @@ export interface PassiInput {
   rilievo: { updatedAt: Date } | null;
   /** a survey is linked, for a role that does not see the surveys (default: whether `rilievo` is there) */
   collegato?: boolean;
-  /** the latest calculation and the latest design (a whole project's lift design, a replacement's machine room) */
+  /** the installation's «Calcolo argano» and its Progetto's record (a lift design, or a machine room surveyed) */
   calcolo: Record | null;
   progetto: Record | null;
   /** the latest drawing set issued */
@@ -44,7 +47,7 @@ export const piuVecchio = (rec: { createdAt: Date }, rilievo: { updatedAt: Date 
 function statoDi(rec: Record | null, rilievo: PassiInput['rilievo'], errori: number): StatoPasso {
   if (!rec) return 'daFare';
   if (errori > 0) return 'differenze';
-  return rec.old || piuVecchio(rec, rilievo) ? 'daAggiornare' : 'fatto';
+  return rec.old || piuVecchio(rec, rilievo) ? 'daAggiornare' : rec.superato ? 'superato' : 'fatto';
 }
 
 /** The documents' state: none without a saved record; to update when a record they come from is no longer reproduced

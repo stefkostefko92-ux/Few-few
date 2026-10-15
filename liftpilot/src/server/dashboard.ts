@@ -5,11 +5,12 @@ import 'server-only';
 import type { Verdict } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import type { SessionUser } from '@/lib/auth';
-import type { ProjectKind } from '@/lib/schemas';
 import { projectStats, type ProjectStats } from '@/lib/dashboard';
+import type { TipoIntervento } from '@/lib/lift/intervento';
 import { shaftInputsReadSchema } from '@/lib/shaft-input';
 import { previews } from '@/lib/tavole/views';
 import { layout } from '@/shaft';
+import { tipoDaUltimi } from './calcolo-base';
 import { outdated } from './records';
 
 const DAY_MS = 86_400_000;
@@ -37,11 +38,19 @@ export async function recordCounts(user: SessionUser, now: Date = new Date()): P
   return { sets, revisions, recentCalcs, recentProjects };
 }
 
-/** One active installation as the tiles read it: its module and the verdict and engine versions of its latest
+/** One active installation as the tiles read it: the type of intervention of its latest step-2 calculation and of its
+ *  latest calculation (round 45: never stored on the installation), and the verdict and engine versions of its latest
  *  calculation and of its latest lift design (null where it has none). */
 interface ActiveRow {
   id: string;
-  kind: ProjectKind;
+  sId: string | null;
+  sTipo: TipoIntervento | null;
+  sContext: string | null;
+  sCollaudo: unknown;
+  cId: string | null;
+  cTipo: TipoIntervento | null;
+  cContext: string | null;
+  cCollaudo: unknown;
   cVerdict: Verdict | null;
   cEngine: string | null;
   cShaft: string | null;
@@ -51,18 +60,25 @@ interface ActiveRow {
   dShaft: string | null;
 }
 
-/** Every active installation with only what its latest result needs (module, verdict, engine versions), latest change
- *  first: the tiles count all of them — not the first rows of a list — and the preview takes the first with a result.
- *  One query: each installation's latest calculation and latest lift design through the [projectId, createdAt] index
- *  (LATERAL … LIMIT 1), so that the database reads one record of each per installation, not all of them. */
+/** Every active installation with only what its latest result needs (type of intervention, verdict, engine versions),
+ *  latest change first: the tiles count all of them — not the first rows of a list — and the preview takes the first
+ *  with a result. One query: each installation's latest step-2 calculation, latest calculation and latest lift design
+ *  through the [projectId, createdAt] index (LATERAL … LIMIT 1), so that the database reads one record of each per
+ *  installation, not all of them; the type mapped in TypeScript (calcolo-base.ts tipoDaUltimi). */
 export async function activeResults(user: SessionUser): Promise<{ stats: ProjectStats; latestId: string | null }> {
   const rows = await prisma.$queryRaw<ActiveRow[]>`
-    SELECT p."id", p."kind",
+    SELECT p."id", s."id" AS "sId", s."intervento" AS "sTipo", s."inputs"->>'context' AS "sContext", s."collaudo" AS "sCollaudo",
+      c."id" AS "cId", c."intervento" AS "cTipo", c."inputs"->>'context' AS "cContext", c."collaudo" AS "cCollaudo",
       c."verdict" AS "cVerdict", c."engineVersion" AS "cEngine", cs."engineVersion" AS "cShaft",
       d."verdict" AS "dVerdict", d."engineVersion" AS "dEngine", dc."engineVersion" AS "dCalc", ds."engineVersion" AS "dShaft"
     FROM "Project" p
     LEFT JOIN LATERAL (
-      SELECT "verdict", "engineVersion", "shaftDesignId" FROM "Calculation"
+      SELECT k."id", k."intervento", k."inputs", k."collaudo" FROM "Calculation" k
+      WHERE k."projectId" = p."id" AND k."shaftDesignId" IS NULL AND NOT EXISTS (SELECT 1 FROM "LiftDesign" l WHERE l."calculationId" = k."id")
+      ORDER BY k."createdAt" DESC LIMIT 1
+    ) s ON true
+    LEFT JOIN LATERAL (
+      SELECT "id", "intervento", "inputs", "collaudo", "verdict", "engineVersion", "shaftDesignId" FROM "Calculation"
       WHERE "projectId" = p."id" ORDER BY "createdAt" DESC LIMIT 1
     ) c ON true
     LEFT JOIN "ShaftDesign" cs ON cs."id" = c."shaftDesignId"
@@ -82,7 +98,9 @@ export async function activeResults(user: SessionUser): Promise<{ stats: Project
     const calc = r.cVerdict && r.cEngine !== null
       ? { verdict: r.cVerdict, old: outdated.calc({ engineVersion: r.cEngine, shaftDesign: r.cShaft === null ? null : { engineVersion: r.cShaft } }) }
       : null;
-    return { kind: r.kind, latest: design ?? calc };
+    const tipo = tipoDaUltimi(r.sId ? { intervento: r.sTipo, context: r.sContext, collaudo: r.sCollaudo } : null,
+      r.cId ? { intervento: r.cTipo, context: r.cContext, collaudo: r.cCollaudo } : null);
+    return { tipo, latest: design ?? calc };
   });
   const first = results.findIndex((r) => r.latest);
   return { stats: projectStats(results), latestId: first < 0 ? null : rows[first].id };

@@ -12,7 +12,7 @@ const roomRow = (id: string, over: Row = {}): Row => ({
 
 test('machinale di un impianto qualsiasi (round 45): si rifà al suo posto, non dal Progetto', async () => {
   const { refreshRoomDesignAction } = await actions();
-  db.room = [roomRow('room1', { project: project({ kind: 'FULL' }) })];
+  db.room = [roomRow('room1', { project: project() })];
   db.calc = [calcRow('new1')];
   assert.equal(await go(refreshRoomDesignAction, 'room1'), `${APP}/calculations/new1/locale?from=room1&aggiorna=1`);
   assert.equal(calls.calc.length, 1, 'il calcolo rifatto');

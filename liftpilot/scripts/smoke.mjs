@@ -1,9 +1,9 @@
 // End-to-end smoke test against a running LiftPilot (local or staging), with a real browser:
 //   health → public page (no console or CSP errors, in Italian, the only language) → /en and /bg sent for good to /it → an unknown
-//   address: the 404 drawn in Italian → sign-in → the two modules → a machine replacement → its calculation, which starts empty
+//   address: the 404 drawn in Italian → sign-in → «Nuovo impianto» → its «Calcolo argano», which starts empty
 //   (its draft kept, resumed, discarded; smoke-blank.mjs) → saved snapshot with reproduced hash → calculation report (PDF) → its
-//   machine room surveyed, the relazione tecnica and the drawing set (scripts/smoke-replacement.mjs) → the replacement becomes a
-//   whole project → a «Calcolo argano» of a modernisation from the saved one (round 45: the renovation keeping the sling,
+//   machine room surveyed, the relazione tecnica and the drawing set (scripts/smoke-replacement.mjs) → the installation's page:
+//   its type, its sections → a «Calcolo argano» of a modernisation from the saved one (round 45: the renovation keeping the sling,
 //   UNI 10411-11) → the Progetto drawn on it: its data entered (a draft taken up again), a distance of the plan, the landing door
 //   set apart from the car door and the car buffers changed on the drawings, live 3D simulation, the test of its base, saved
 //   in one go (shaft design and calculation together) with its documents → data of the installation, client and company
@@ -53,11 +53,14 @@ try {
 
   step('sign-in and installation');
   await login(page, ADMIN.email, ADMIN.password);
-  // the installations' page offers the two modules; a machine replacement opens straight on its calculation
+  // the installations' page offers one new installation and the four steps of its work (round 45); a new installation
+  // has no module: it opens straight on its «Calcolo argano», where the type of intervention is chosen
   await page.goto(`${BASE}/it/app/impianti`);
-  assert.equal(await page.locator('.app-modules .app-module').count(), 2, 'two modules');
+  assert.equal(await page.locator('main .dash-nuovo a[href$="/app/projects/new"]').count(), 1, 'one new installation');
+  assert.equal(await page.locator('main .dash-nuovo .dash-passi li').count(), 4, 'the four steps');
   await page.goto(`${BASE}/it/app/projects/new?kind=replacement`);
-  assert.ok(await page.isChecked('input[name="kind"][value="REPLACEMENT"]'), 'replacement chosen');
+  assert.equal(await page.locator('main input[name="kind"]').count(), 0, 'no module to choose (an old ?kind= is ignored)');
+  assert.match(await page.textContent('main form'), /Il tipo di intervento si sceglie nel Calcolo argano/);
   await page.fill('input[name="name"]', `Smoke ${stamp}`);
   await page.fill('input[name="city"]', 'Milano');
   await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/calc$/), page.click('main form button[type="submit"]')]);
@@ -113,13 +116,15 @@ try {
     assert.equal(await page.locator('.dash-row').count(), 0, `«${w}» is not a wildcard`);
   }
 
-  step('the replacement becomes a whole project');
+  step('the installation: its type from «Calcolo argano», its sections in the order of the work (round 45)');
   await page.goto(projectUrl);
-  assert.match(await page.textContent('.titles'), /Sostituzione argano/);
-  assert.equal(await page.locator('.lift-home').count(), 0, 'no whole-project sections on a replacement');
-  await Promise.all([page.waitForURL(/\/progetto$/, { timeout: 30000 }), page.click('button:has-text("Passa a progetto completo")')]);
-  await page.goto(projectUrl);
-  assert.match(await page.textContent('.titles'), /Progetto completo/);
+  assert.match(await page.textContent('.page-head .titles .tipo-badge'), /Solo argano/, 'the type read from its calculation');
+  for (const id of ['sec-calcolo', 'sec-progetto', 'sec-tavole']) assert.equal(await page.locator(`#${id}`).count(), 1, id);
+  assert.ok(await page.locator('section[aria-labelledby="sec-calcolo"] tbody tr').count() > 0, 'its «Calcolo argano»');
+  // a «Solo argano» with the machine below: its Progetto draws the shaft (no machine room above to survey), still to do
+  assert.ok(await page.locator('section[aria-labelledby="sec-progetto"] a[href*="/progetto?calc="]').count() > 0, 'its Progetto: the shaft to draw on it');
+  assert.match(await page.getAttribute('.page-head .actions a.btn-primary', 'href') ?? '', /\/progetto\?calc=/, 'the next step: the Progetto');
+  assert.equal(await page.locator('button:has-text("Passa a progetto completo")').count(), 0, 'no upgrade any more');
 
   step('Calcolo argano for the drawing (round 45): a modernisation renewing the lift with its existing sling, UNI 10411-11');
   // a new «Calcolo argano» from the saved one: the type changed, the renovation's preset, the changes of speed, load and
@@ -281,7 +286,7 @@ try {
   await collegaFlow({ BASE, page, hydrated, stamp });
   assert.deepEqual(errors, [], 'browser errors');
 
-  await technician({ BASE, page, errors, stamp, login, logout, rilievoUrl: rilievo.sheetUrl });
+  await technician({ BASE, page, errors, stamp, login, logout, hydrated, rilievoUrl: rilievo.sheetUrl });
 
   // the isolation check below provokes a 404 on purpose: the console must be clean up to here
   assert.deepEqual(errors, [], 'browser errors');

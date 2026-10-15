@@ -53,6 +53,20 @@ export async function calcoloBase(user: SessionUser, projectId: string, id?: str
     same: read.same };
 }
 
+/** A calculation as the lists read its type (a raw query's columns): the type declared, its context, its test. */
+export interface TipoRiga {
+  intervento: TipoIntervento | null;
+  context: string | null;
+  collaudo: unknown;
+}
+
+/** The type of an installation from its latest step-2 calculation, else its latest calculation of any provenance (a
+ *  whole project before round 45); null — none: «Intervento da definire». Mapped here, never stored. */
+export const tipoDaUltimi = (step2: TipoRiga | null, any: TipoRiga | null): TipoIntervento | null => {
+  const c = step2 ?? any;
+  return c ? tipoDi({ inputs: { context: c.context ?? undefined }, collaudo: c.collaudo, intervento: c.intervento }) : null;
+};
+
 /** The type of an installation: its latest step-2 calculation's; else that of its latest calculation of any provenance
  *  (a whole project before round 45, read by its shape); null — «Intervento da definire». */
 export async function tipoImpianto(user: SessionUser, projectId: string): Promise<TipoIntervento | null> {

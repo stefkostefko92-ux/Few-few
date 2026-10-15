@@ -80,3 +80,14 @@ test('tipoImpianto: dal passo 2, altrimenti dall’ultimo calcolo letto per form
   assert.equal(tipoDi({ inputs: REPL, collaudo: { norma: '10411-1', parti: ['machine', 'landingDoors'] }, intervento: null }), 'AMMODERNAMENTO');
   assert.equal(tipoDi({ inputs: REPL, collaudo: { bad: true }, intervento: null }), 'SOLO_ARGANO', 'an unreadable test reads as none chosen');
 });
+
+test('tipoDaUltimi (le liste, round 45): il tipo dichiarato, altrimenti per forma; il passo 2 prima; nessun calcolo — da definire', async () => {
+  const { tipoDaUltimi } = await base();
+  const solo = { intervento: null, context: 'repl', collaudo: null }, nuovo = { intervento: null, context: 'new', collaudo: null };
+  assert.equal(tipoDaUltimi(null, null), null);
+  assert.equal(tipoDaUltimi({ intervento: 'AMMODERNAMENTO', context: 'repl', collaudo: null }, nuovo), 'AMMODERNAMENTO', 'the column, the step-2 first');
+  assert.equal(tipoDaUltimi(solo, nuovo), 'SOLO_ARGANO', 'a replacement before round 45, by its shape');
+  assert.equal(tipoDaUltimi(null, nuovo), 'TRASFORMAZIONE_COMPLETA', 'a whole project before round 45: its design’s calculation');
+  assert.equal(tipoDaUltimi(null, { intervento: null, context: 'repl', collaudo: { norma: '10411-1', parti: ['machine', 'landingDoors'] } }), 'AMMODERNAMENTO');
+  assert.equal(tipoDaUltimi(null, { intervento: null, context: 'repl', collaudo: { norma: 'en81', parti: [] } }), 'TRASFORMAZIONE_COMPLETA');
+});

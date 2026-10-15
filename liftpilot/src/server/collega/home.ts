@@ -60,13 +60,15 @@ export interface ImpiantiFigures {
 
 export async function impiantiFigures(user: SessionUser): Promise<ImpiantiFigures> {
   const companyId = user.companyId;
-  // every active installation's latest calculation (with the versions that make it «da aggiornare») and latest design
+  // every active installation's «Calcolo argano» — its latest step-2 calculation, else (before round 45) its latest of any
+  // provenance — with the versions that make it «da aggiornare», and its latest design
   const latest = await prisma.$queryRaw<LatestRow[]>`
     SELECT p."id", c."id" AS "calcId", c."createdAt" AS "calcAt", c."engineVersion" AS "cEngine", cs."engineVersion" AS "cShaft",
       cl."engineVersion" AS "cLift", d."id" AS "liftId"
     FROM "Project" p
     LEFT JOIN LATERAL (
-      SELECT "id", "createdAt", "engineVersion", "shaftDesignId" FROM "Calculation" WHERE "projectId" = p."id" ORDER BY "createdAt" DESC LIMIT 1
+      SELECT k."id", k."createdAt", k."engineVersion", k."shaftDesignId" FROM "Calculation" k WHERE k."projectId" = p."id"
+      ORDER BY (k."shaftDesignId" IS NULL AND NOT EXISTS (SELECT 1 FROM "LiftDesign" l WHERE l."calculationId" = k."id")) DESC, k."createdAt" DESC LIMIT 1
     ) c ON true
     LEFT JOIN "ShaftDesign" cs ON cs."id" = c."shaftDesignId"
     LEFT JOIN "LiftDesign" cl ON cl."calculationId" = c."id"
@@ -81,7 +83,7 @@ export async function impiantiFigures(user: SessionUser): Promise<ImpiantiFigure
   for (let i = 0; i < all.length; i += BATCH) {
     const ids = all.slice(i, i + BATCH);
     const [linked, schede, calcs, lifts] = await Promise.all([
-      prisma.project.findMany({ where: { companyId, archivedAt: null, id: { in: ids } }, select: { id: true, kind: true, address: true, city: true, province: true, plantNumber: true } }),
+      prisma.project.findMany({ where: { companyId, archivedAt: null, id: { in: ids } }, select: { id: true, address: true, city: true, province: true, plantNumber: true } }),
       prisma.scheda.findMany({ where: { companyId, deletedAt: null, projectId: { in: ids } }, orderBy: [{ data: 'desc' }, { createdAt: 'desc' }],
         select: { ...RILIEVO_SELECT, projectId: true } }),
       prisma.calculation.findMany({ where: { companyId, id: { in: ids.flatMap((id) => byId.get(id)?.calcId ?? []) } }, select: CALC_SELECT }),

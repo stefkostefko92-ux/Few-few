@@ -54,7 +54,7 @@ export async function go(run: (f: FormData) => Promise<void>, id: string): Promi
 }
 
 export const APP = '/it/app';
-export const project = (over: Row = {}) => ({ kind: 'REPLACEMENT', archivedAt: null, ...over });
+export const project = (over: Row = {}) => ({ archivedAt: null, ...over });
 const snap = (V: typeof PRESETS.B) => { const s = snapshotOf(V); return { inputs: s.values, sha256: snapshotHash(s) }; };
 export const calcRow = (id: string, over: Row = {}): Row => ({
   id, companyId: 'c1', projectId: 'p1', label: 'prima', collaudo: null, intervento: null, liftDesign: null, shaftDesign: null, roomDesigns: [], project: project(), engineVersion: ENGINE_VERSION,
@@ -64,7 +64,7 @@ export const stale = { sha256: '0'.repeat(64) };
 export const liftRow = (id: string, over: Row = {}): Row => {
   const inputs = defaultLift(), dv = deriveLift(inputs), S = shaftSnapshot(dv.shaft);
   return {
-    id, companyId: 'c1', projectId: 'p1', label: 'prima', inputs, source: null, engineVersion: LIFT_ENGINE_VERSION, project: project({ kind: 'FULL' }),
+    id, companyId: 'c1', projectId: 'p1', label: 'prima', inputs, source: null, engineVersion: LIFT_ENGINE_VERSION, project: project(),
     shaftDesign: { sha256: shaftHash(S.snapshot) }, calculation: { sha256: snapshotHash(snapshotOf(dv.values)) }, ...over,
   };
 };

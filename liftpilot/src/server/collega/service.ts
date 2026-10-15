@@ -7,7 +7,6 @@ import 'server-only';
 // installation, and never away from an archived one (an archived installation is read only: its surveys stay). Each
 // UPDATE pins what was read in the same transaction (the sheet's installation, still active): a link changed meanwhile
 // by someone else is «changed», nothing is written and the log names the right `from`.
-import type { ProjectKind } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { auditTx } from '@/lib/audit';
 
@@ -71,17 +70,17 @@ export interface NuovoImpianto {
 
 /** A new installation created from a survey and linked to it in one transaction: the sheet must be the company's, out
  *  of the trash and not linked yet (else nothing is created). */
-export async function creaDaRilievo(companyId: string, userId: string, data: NuovoImpianto, kind: ProjectKind, schedaId: string): Promise<{ esito: Esito; id?: string }> {
+export async function creaDaRilievo(companyId: string, userId: string, data: NuovoImpianto, schedaId: string): Promise<{ esito: Esito; id?: string }> {
   try {
     return await prisma.$transaction(async (tx) => {
       const s = await tx.scheda.findFirst({ where: { id: schedaId, companyId, deletedAt: null }, select: { projectId: true } });
       if (!s) throw new Annulla('notFound');
       if (s.projectId) throw new Annulla('alreadyLinked');
-      const project = await tx.project.create({ data: { ...data, kind, companyId, createdById: userId }, select: { id: true } });
+      const project = await tx.project.create({ data: { ...data, companyId, createdById: userId }, select: { id: true } });
       const n = await tx.$executeRaw`UPDATE "Scheda" SET "projectId" = ${project.id}
         WHERE "id" = ${schedaId} AND "companyId" = ${companyId} AND "deletedAt" IS NULL AND "projectId" IS NULL`;
       if (n !== 1) throw new Annulla('alreadyLinked');
-      await auditTx(tx, { companyId, userId, action: 'PROJECT_CREATED', entity: 'Project', entityId: project.id, meta: { kind, rilievo: schedaId } });
+      await auditTx(tx, { companyId, userId, action: 'PROJECT_CREATED', entity: 'Project', entityId: project.id, meta: { rilievo: schedaId } });
       await auditTx(tx, { companyId, userId, action: 'SCHEDA_LINKED', entity: 'Scheda', entityId: schedaId, meta: { projectId: project.id } });
       return { esito: 'ok' as const, id: project.id };
     });

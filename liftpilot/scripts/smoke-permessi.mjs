@@ -34,8 +34,8 @@ export async function permessiFlow({ BASE, page, errors, kit, owner, tecnico, ad
   const { login, logout, hydrated } = kit;
   step('permissions: the owner takes the calculations away from the Tecnico, who can no longer open the calculator');
   await login(page, owner.email, owner.password);
-  // an installation of the owner's company, opened on its calculator
-  await page.goto(`${BASE}/it/app/projects/new?kind=replacement`);
+  // an installation of the owner's company, opened on its «Calcolo argano»
+  await page.goto(`${BASE}/it/app/projects/new`);
   await page.fill('input[name="name"]', 'Impianto dei permessi');
   await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/calc$/), page.click('main form button[type="submit"]')]);
   const calcUrl = page.url(), projectUrl = calcUrl.replace(/\/calc$/, '');
@@ -55,7 +55,7 @@ export async function permessiFlow({ BASE, page, errors, kit, owner, tecnico, ad
   assert.match(await page.textContent('tr:has(td.pm-cell[data-cap="company:edit"]) th.pm-action'), /Cambiare il logo dell’azienda e l’ordine delle sezioni delle schede di rilievo/);
   // a prerequisite taken away takes its dependents, and a line says which; discarded
   await page.click(cell('TECHNICIAN', 'projects:view'));
-  assert.match(await page.textContent('.pm-cascade'), /Tolti anche a Tecnico[^:]*:.*Fare i calcoli dell’argano/);
+  assert.match(await page.textContent('.pm-cascade'), /Tolti anche a Tecnico[^:]*:.*Calcolo argano: scegliere il tipo di intervento/);
   await page.click('.pm-savebar button.btn-ghost');
   assert.ok(await page.isChecked(cell('TECHNICIAN', 'projects:view')) && await page.isChecked(cell('TECHNICIAN', 'calc:create')));
   await page.click(cell('TECHNICIAN', 'calc:create'));
@@ -63,7 +63,7 @@ export async function permessiFlow({ BASE, page, errors, kit, owner, tecnico, ad
   await saveMatrix(page, 1);
   assert.equal(await page.locator('.pm-msg:focus').count(), 1, 'the outcome of the save has the focus');
   await page.goto(`${BASE}/it/app/audit`);
-  assert.match(await page.textContent('main table'), /Permessi cambiati[\s\S]*Tecnico · Fare i calcoli dell’argano[^:]*: concesso → non concesso/, 'the change in the activity log');
+  assert.match(await page.textContent('main table'), /Permessi cambiati[\s\S]*Tecnico · Calcolo argano: scegliere il tipo di intervento[^→]*: concesso → non concesso/, 'the change in the activity log');
   await logout(page);
 
   await login(page, tecnico.email, tecnico.password);
@@ -71,7 +71,7 @@ export async function permessiFlow({ BASE, page, errors, kit, owner, tecnico, ad
   assert.equal((await page.goto(calcUrl)).status(), 200);
   assert.match(page.url(), /\/it\/app\/permesso\?p=calc%3Acreate$/, 'the page of the right not given');
   assert.match(await page.textContent('main h1'), /Permesso non concesso/);
-  assert.match(await page.textContent('main .lead'), /Tecnico[\s\S]*«Fare i calcoli dell’argano/);
+  assert.match(await page.textContent('main .lead'), /Tecnico[\s\S]*«Calcolo argano: scegliere il tipo di intervento/);
   assert.equal(await page.locator('.ws-shell').count(), 1, 'inside the application');
   await page.goto(projectUrl);
   assert.equal(await page.locator(`main a[href$="${new URL(calcUrl).pathname}"]`).count(), 0, 'no way to the calculator');
@@ -92,13 +92,14 @@ export async function permessiFlow({ BASE, page, errors, kit, owner, tecnico, ad
   await login(page, tecnico.email, tecnico.password);
   assert.equal((await page.goto(calcUrl)).status(), 200, 'the calculator again');
   assert.match(page.url(), /\/calc$/);
-  // a whole project created by a Tecnico, who does not draw it: its page, saying whose work it is (never /progetto's 404)
-  await page.goto(`${BASE}/it/app/projects/new?kind=full`);
-  assert.match(await page.textContent('main form .alert-info'), /il progetto lo disegna un collega/);
-  await page.fill('input[name="name"]', 'Progetto del Tecnico');
-  await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+$/), page.click('main form button[type="submit"]')]);
-  assert.match(await page.textContent('main'), /Il progetto lo disegna un collega che ne ha il permesso/);
-  assert.equal(await page.locator('main a[href$="/progetto"]').count(), 0, 'no way to the form he cannot fill');
+  // an installation created by a Tecnico opens on its «Calcolo argano» (round 45: his to make, of any type); the
+  // Progetto, which he does not draw, is not linked from its empty page (never /progetto's 404)
+  await page.goto(`${BASE}/it/app/projects/new`);
+  assert.equal(await page.locator('main form .alert-info').count(), 0, 'the calculation is his: nothing said of a colleague');
+  await page.fill('input[name="name"]', 'Impianto del Tecnico');
+  await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/calc$/), page.click('main form button[type="submit"]')]);
+  await page.goto(page.url().replace(/\/calc$/, ''));
+  assert.equal(await page.locator('main a[href*="/progetto"]').count(), 0, 'no way to the form he cannot fill');
   await page.goto(`${BASE}/it/app`);
   await logout(page);
 

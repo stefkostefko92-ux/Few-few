@@ -114,7 +114,7 @@ test('dati che il software non accetta più: si apre il modulo su di essi, nessu
 test('calcolo argano di un impianto qualsiasi (round 45): si rifà al suo posto col suo tipo; l’archivio del vano dal Progetto', async () => {
   const { refreshCalculationAction } = await actions();
   db.calc = [
-    calcRow('full1', { ...stale, intervento: 'TRASFORMAZIONE_COMPLETA', project: project({ kind: 'FULL' }) }),
+    calcRow('full1', { ...stale, intervento: 'TRASFORMAZIONE_COMPLETA', project: project() }),
     calcRow('shaft1', { ...stale, shaftDesign: { id: 'd1' } }),
   ];
   // a step-2 calculation of a former whole project: made again in place, its type carried
@@ -186,7 +186,7 @@ test('chi fa i calcoli ma non disegna il progetto (il Tecnico): il progetto dell
   signIn({ role: 'TECHNICIAN' });
   assert.equal(await go(refreshLiftDesignAction, 'lift1'), `${APP}/lift-designs/lift1`);
   // nor through the design's calculation
-  db.calc = [calcRow('c1', { liftDesign: { id: 'lift1' }, project: project({ kind: 'FULL' }) })];
+  db.calc = [calcRow('c1', { liftDesign: { id: 'lift1' }, project: project() })];
   assert.equal(await go(refreshCalculationAction, 'c1'), `${APP}/lift-designs/lift1`);
   assert.equal(calls.lift.length, 0, 'nessun nuovo progetto dell’impianto');
   // one the company took the project away from, the calculations kept: the same
@@ -201,7 +201,7 @@ test('chi fa i calcoli ma non disegna il progetto (il Tecnico): il progetto dell
 
 test('progetto dell’impianto di un’altra ditta o archiviato: al tabellone', async () => {
   const { refreshLiftDesignAction } = await actions();
-  db.lift = [liftRow('theirs', { engineVersion: '0.0.0', companyId: 'c2' }), liftRow('arch', { engineVersion: '0.0.0', project: project({ archivedAt: new Date(0), kind: 'FULL' }) })];
+  db.lift = [liftRow('theirs', { engineVersion: '0.0.0', companyId: 'c2' }), liftRow('arch', { engineVersion: '0.0.0', project: project({ archivedAt: new Date(0) }) })];
   assert.equal(await go(refreshLiftDesignAction, 'theirs'), APP);
   assert.equal(await go(refreshLiftDesignAction, 'arch'), APP);
   assert.equal(calls.lift.length, 0);

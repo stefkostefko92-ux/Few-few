@@ -13,7 +13,8 @@ export async function generateMetadata() {
   return { title: (await getTranslations('nav'))('rilievi') };
 }
 
-/** The installations' list moved to /app/impianti (round 44): an old address with its filters goes there. */
+/** The installations' list moved to /app/impianti (round 44): an old address with its filters goes there (round 45: an
+ *  old ?kind= goes along and is ignored there). */
 const OLD_LIST = ['archived', 'kind', 'q', 'all'] as const;
 
 // The start page (round 44, the owner's plan of 2026-10-14: every job starts from the survey): the figures of the

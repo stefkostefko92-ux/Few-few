@@ -44,7 +44,6 @@ export interface Lato {
 }
 
 export interface Impianto {
-  kind: 'REPLACEMENT' | 'FULL';
   /** street, municipality, province in one line (testo.ts indirizzoImpianto) */
   indirizzo: string | null;
   plantNumber: string | null;
@@ -100,16 +99,16 @@ function verdetto(p: Param, classe: Classe, r: Valore, sides: readonly { v: Valo
 
 /** The parameters of a replacement's existing installation: compared only on the side that is a replacement. */
 const IN_PLACE: ReadonlySet<Param> = new Set<Param>(['taglia', 'funiNumero', 'funiDiametro', 'pesoCabina', 'puleggia', 'rapporto', 'potenza', 'giri', 'poli']);
-/** The form «usa il valore» opens for each parameter with an input: the calculator (a replacement) or the one form. */
+/** The form «usa il valore» opens for each parameter with an input, whatever the installation (round 45): «Calcolo
+ *  argano» for what the calculation holds, the Progetto for the stops it draws. */
 const IN_CALC: ReadonlySet<Param> = new Set<Param>(['Q', 'posizione', 'taglia', 'velocita', 'corsa', 'pesoCabina', 'funiNumero', 'funiDiametro', 'puleggia',
   'rapporto', 'potenza', 'giri', 'poli']);
-const IN_LIFT: ReadonlySet<Param> = new Set<Param>(['Q', 'fermate', 'posizione', 'taglia', 'velocita', 'funiNumero', 'funiDiametro', 'puleggia', 'rapporto',
-  'potenza', 'giri', 'poli']);
+const IN_PROGETTO: ReadonlySet<Param> = new Set<Param>(['fermate']);
 
 export function confronto(x: ConfrontoInput): Riga[] {
   const { rilievo: r, impianto: imp, calcolo: C, progetto: P } = x, a = r.argano;
   const rows: Riga[] = [];
-  const target = (p: Param): Riga['usa'] => (imp.kind === 'REPLACEMENT' ? (IN_CALC.has(p) ? 'calc' : null) : IN_LIFT.has(p) ? 'progetto' : null);
+  const target = (p: Param): Riga['usa'] => (IN_CALC.has(p) ? 'calc' : IN_PROGETTO.has(p) ? 'progetto' : null);
   const row = (param: Param, classe: Classe, rv: Valore, cv: Valore, pv: Valore, usa: Riga['usa'] = target(param)): Riga => {
     // the identity's «progetto» is the installation's own data, there whatever its records
     const conta = (side: Lato | null): boolean => param === 'matricola' || param === 'indirizzo' || (!!side && (!IN_PLACE.has(param) || side.repl));

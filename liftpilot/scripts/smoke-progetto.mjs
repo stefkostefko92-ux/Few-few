@@ -1,5 +1,5 @@
-// The smoke test's «Trasformazione completa» (round 45, phase 3 step 6), in an installation of its own: created as a
-// whole project, its Progetto has nothing to draw on yet and leads to «Calcolo argano»; the calculation as a
+// The smoke test's «Trasformazione completa» (round 45, phase 3 step 6), in an installation of its own: created (it opens
+// on «Calcolo argano»), its Progetto has nothing to draw on yet and leads back to «Calcolo argano»; the calculation as a
 // transformation (UNI EN 81-20/50 fixed, the example of a new lift), saved; its page leads to the Progetto, which shows
 // what it draws on and asks only the drawing; saved, the lift design names its base and its calculation the type; a
 // drawing set issued from it says the type in sheet 1's note.
@@ -9,11 +9,16 @@ import { step } from './smoke-kit.mjs';
 
 export async function progettoFlow({ BASE, page, hydrated, stamp }) {
   step('trasformazione completa: the Progetto starts from «Calcolo argano»');
-  await page.goto(`${BASE}/it/app/projects/new?kind=full`);
+  await page.goto(`${BASE}/it/app/projects/new`);
   await page.fill('input[name="name"]', `Trasformazione ${stamp}`);
   await page.fill('input[name="city"]', 'Bergamo');
-  await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/progetto$/), page.click('main form button[type="submit"]')]);
-  const projectUrl = page.url().replace(/\/progetto$/, '');
+  await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/calc$/), page.click('main form button[type="submit"]')]);
+  const projectUrl = page.url().replace(/\/calc$/, '');
+  // the installation: «Intervento da definire», its next step the calculation
+  await page.goto(projectUrl);
+  assert.match(await page.textContent('.page-head .titles .tipo-badge'), /Intervento da definire/);
+  assert.equal(await page.getAttribute('.page-head .actions a.btn-primary', 'href'), `${new URL(projectUrl).pathname}/calc`, 'the next step: the calculation');
+  await page.goto(`${projectUrl}/progetto`);
   assert.match(await page.textContent('main .progetto-vuoto'), /Il progetto parte dal calcolo argano/, 'nothing to draw on yet');
   await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/calc$/), page.click('main .progetto-vuoto a[href$="/calc"]')]);
 

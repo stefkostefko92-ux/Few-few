@@ -14,7 +14,7 @@ import { deriveLift, type LiftDerived } from '@/lib/lift';
 import { missingOf } from '@/lib/lift/blank';
 import { planFalls } from '@/lib/lift/direct';
 import { composto } from '@/lib/lift/progetto';
-import { chiaviDelDisegno, portaNelCalcolo, type PortaKey, type Portato } from '@/lib/lift/porta';
+import { chiaviDelDisegno, chiaviNascoste, portaNelCalcolo, type PortaKey, type Portato } from '@/lib/lift/porta';
 import { readDraft } from './drafts';
 
 export interface DalProgetto extends Portato {
@@ -54,7 +54,7 @@ export async function dalProgetto(user: SessionUser, projectId: string, V: FormV
     const d = missingOf(L).length ? null : derived(L.inputs);
     if (d) {
       const keys = chiaviDelDisegno(V.layout, L.inputs.auto, draft.data.progetto.h !== undefined);
-      return { ...portaNelCalcolo(V, d.values, keys), at: new Date(draft.at), sheave: sheaveOf(d) };
+      return { ...portaNelCalcolo(V, d.values, keys, chiaviNascoste(V.layout, L.inputs.auto)), at: new Date(draft.at), sheave: sheaveOf(d) };
     }
   }
   const lift = await prisma.liftDesign.findFirst({
@@ -62,5 +62,6 @@ export async function dalProgetto(user: SessionUser, projectId: string, V: FormV
   });
   const L = lift ? liftInputsReadSchema.safeParse(lift.inputs) : null, d = L?.success ? derived(L.data) : null;
   if (!lift || !L?.success || !d) return null;
-  return { ...portaNelCalcolo(V, d.values, chiaviSalvate(V, d.values, L.data.auto)), at: lift.createdAt, sheave: sheaveOf(d) };
+  const nascoste = d.values.layout === V.layout ? chiaviNascoste(V.layout, L.data.auto) : [];
+  return { ...portaNelCalcolo(V, d.values, chiaviSalvate(V, d.values, L.data.auto), nascoste), at: lift.createdAt, sheave: sheaveOf(d) };
 }

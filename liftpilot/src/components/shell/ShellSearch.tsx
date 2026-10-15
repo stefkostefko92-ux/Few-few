@@ -24,7 +24,7 @@ export default function ShellSearch({ label, placeholder }: { label: string; pla
   const wide = useRef<HTMLInputElement>(null), narrow = useRef<HTMLDetailsElement>(null);
   const onDashboard = pathname === '/app/impianti';
   const q = onDashboard ? (sp.get('q') ?? '') : '';
-  const keep = onDashboard ? (['archived', 'kind'] as const).flatMap((k) => { const v = sp.get(k); return v ? [[k, v] as const] : []; }) : [];
+  const keep = onDashboard ? (['archived', 'tipo'] as const).flatMap((k) => { const v = sp.get(k); return v ? [[k, v] as const] : []; }) : [];
 
   // Ctrl+K / ⌘K: the field takes the focus (on a phone the search opens first)
   useEffect(() => {

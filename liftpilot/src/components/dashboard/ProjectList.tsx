@@ -2,13 +2,14 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import Icon from '@/components/Icon';
 import VerdictPill from '@/components/VerdictPill';
-import { DASH_ROWS } from '@/lib/dashboard';
+import { DASH_ROWS, TIPI_FILTRO, type TipoFiltro } from '@/lib/dashboard';
 import { dateFormat } from '@/lib/dates';
-import type { ProjectKind } from '@/lib/schemas';
+import type { TipoIntervento } from '@/lib/lift/intervento';
 import type { listProjects } from '@/server/project-list';
 import { outdated } from '@/server/records';
 import { MAX_LINKED } from '@/server/collega/home';
-import ModuleCards, { MODULES } from './ModuleCards';
+import TipoTag, { iconaTipo } from '@/components/project/TipoTag';
+import NuovoImpianto from './NuovoImpianto';
 
 export type ListedProject = Awaited<ReturnType<typeof listProjects>>[number];
 
@@ -28,31 +29,34 @@ interface Props {
   total: number;
   all: boolean;
   archived: boolean;
-  kind: ProjectKind | null;
+  /** the filter by type of intervention (round 45, ?tipo=); null: all */
+  tipo: TipoFiltro | null;
+  /** the type of intervention of each installation listed (project-list.ts tipiImpianti; absent: «da definire») */
+  tipi: ReadonlyMap<string, TipoIntervento | null>;
   /** the words searched as typed, '' for none */
   q: string;
-  /** the active installations by module, for the filters (the plain active list only) */
-  counts: { all: number; REPLACEMENT: number; FULL: number } | null;
+  /** the active installations by type of intervention, for the filters (the plain active list only) */
+  counts: { all: number } & Record<TipoFiltro, number> | null;
   canEdit: boolean;
   /** the installations of a figure of the Rilievi home (round 44); `capped`: looked for among the latest changed only */
   stato?: { key: 'differenze' | 'aggiornare'; capped: boolean } | null;
 }
 
 // The company's installations, latest change first (the dashboard's «Progetti recenti»): the view's latest changed
-// and «show all (N)» for the rest, with the module filters, the archive, the search's words, and per row its module,
+// and «show all (N)» for the rest, with the filters by type of intervention (round 45), the archive, the search's words,
+// and per row its type of intervention,
 // address, plant number, latest result («da aggiornare» when the engines changed), its date and machine line, and the
 // number of calculations. From a figure of the Rilievi home (?stato=) only its installations, said on top.
-export default async function ProjectList({ projects, total, all, archived, kind, q, counts, canEdit, stato = null }: Props) {
-  const [t, tf, locale] = await Promise.all([getTranslations('projects'), getTranslations('refresh'), getLocale()]);
+export default async function ProjectList({ projects, total, all, archived, tipo, tipi, q, counts, canEdit, stato = null }: Props) {
+  const [t, tf, ti, locale] = await Promise.all([getTranslations('projects'), getTranslations('refresh'), getTranslations('calculations.intervento'), getLocale()]);
   const fd = dateFormat(locale);
-  const slugOf = (k: ProjectKind | null): string | null => MODULES.find((m) => m.kind === k)?.slug ?? null;
-  const href = (k: ProjectKind | null, arch = archived, words = q, every = all, st = arch ? null : stato?.key ?? null): string => {
-    const s = [arch ? 'archived=1' : '', k ? `kind=${slugOf(k)}` : '', words ? `q=${encodeURIComponent(words)}` : '', st ? `stato=${st}` : '', every ? 'all=1' : '']
+  const href = (k: TipoFiltro | null, arch = archived, words = q, every = all, st = arch ? null : stato?.key ?? null): string => {
+    const s = [arch ? 'archived=1' : '', k ? `tipo=${k}` : '', words ? `q=${encodeURIComponent(words)}` : '', st ? `stato=${st}` : '', every ? 'all=1' : '']
       .filter(Boolean).join('&');
     return s ? `/app/impianti?${s}` : '/app/impianti';
   };
   const more = total > projects.length;
-  const empty = projects.length === 0, fresh = empty && !archived && !q && kind === null && !stato;
+  const empty = projects.length === 0, fresh = empty && !archived && !q && tipo === null && !stato;
   return (
     <section className="panel dash-list" aria-labelledby="dash-list-title">
       <div className="panel-head">
@@ -60,51 +64,51 @@ export default async function ProjectList({ projects, total, all, archived, kind
           <p className="eyebrow plain">{t('list_eyebrow')}</p>
           <h2 id="dash-list-title">{archived ? t('archivedTitle') : t('title')}</h2>
         </div>
-        <Link className="btn btn-sm" href={href(kind, !archived)}>
+        <Link className="btn btn-sm" href={href(tipo, !archived)}>
           <Icon name={archived ? 'layout-dashboard' : 'archive'} size={16} />{archived ? t('showActive') : t('showArchived')}
         </Link>
       </div>
-      <nav className="dash-filters" aria-label={t('col_kind')}>
-        <Link href={href(null)} aria-current={kind === null ? 'page' : undefined}>
+      <nav className="dash-filters" aria-label={t('col_tipo')}>
+        <Link href={href(null)} aria-current={tipo === null ? 'page' : undefined}>
           {t('filter_all')}{counts ? <span className="dash-count">{counts.all}</span> : null}
         </Link>
-        {MODULES.map((m) => (
-          <Link key={m.kind} href={href(m.kind)} aria-current={kind === m.kind ? 'page' : undefined}>
-            {t(`filter_${m.kind}`)}{counts ? <span className="dash-count">{counts[m.kind]}</span> : null}
+        {TIPI_FILTRO.map((f) => (
+          <Link key={f} href={href(f)} aria-current={tipo === f ? 'page' : undefined}>
+            {t(`filtroTipo.${f}`)}{counts ? <span className="dash-count">{counts[f]}</span> : null}
           </Link>
         ))}
       </nav>
       {stato ? (
         <p className="dash-q" role="status">
           {t(`stato_${stato.key}`, { n: total })}{stato.capped ? ` ${t('stato_capped', { n: MAX_LINKED })}` : ''}{' '}
-          <Link href={href(kind, archived, q, all, null)}>{t('stato_clear')}</Link>
+          <Link href={href(tipo, archived, q, all, null)}>{t('stato_clear')}</Link>
         </p>
       ) : null}
       {q ? (
         <p className="dash-q" role="status">
           {empty ? t('searchNone', { q }) : t('searchResults', { n: total, q })}{' '}
-          <Link href={href(kind, archived, '')}>{t('searchClear')}</Link>
+          <Link href={href(tipo, archived, '')}>{t('searchClear')}</Link>
         </p>
       ) : null}
       {fresh ? (
         <div className="dash-empty">
           <p>{canEdit ? t('emptyStart') : t('emptyNoEdit')}</p>
-          {canEdit ? <ModuleCards /> : null}
+          {canEdit ? <NuovoImpianto /> : null}
         </div>
       ) : empty ? (
-        q || stato ? null : <p className="dash-empty">{archived && kind === null ? t('emptyArchived') : t('emptyKind')}</p>
+        q || stato ? null : <p className="dash-empty">{archived && tipo === null ? t('emptyArchived') : t('emptyKind')}</p>
       ) : (
         <ul className="dash-rows" role="list">
           {projects.map((p) => {
-            const { last, old, record } = latestOf(p);
+            const { last, old, record } = latestOf(p), tp = tipi.get(p.id) ?? null;
             const place = [p.address, p.city, p.province].filter(Boolean).join(', ');
             return (
               <li key={p.id} className="dash-row">
-                <span className="icon-tile sm"><Icon name={p.kind === 'REPLACEMENT' ? 'motor' : 'elevator'} size={20} /></span>
+                <span className="icon-tile sm"><Icon name={iconaTipo(tp)} size={20} /></span>
                 <div className="dash-row-main">
                   <Link href={`/app/projects/${p.id}`} className="dash-row-link">{p.name}</Link>
                   <span className="dash-row-meta">
-                    <span className={`kind-tag kind-${p.kind.toLowerCase()}`}>{t(`kind_${p.kind}`)}</span>
+                    <TipoTag tipo={tp} label={ti(tp ?? 'daDefinire')} small />
                     {place ? <span>{place}</span> : null}
                     {p.plantNumber ? <span>{t('col_plantNumber')} <span className="mono">{p.plantNumber}</span></span> : null}
                   </span>
@@ -138,11 +142,11 @@ export default async function ProjectList({ projects, total, all, archived, kind
         </ul>
       )}
       {more && !all ? (
-        <p className="dash-more"><Link className="btn btn-sm" href={href(kind, archived, q, true)}>{t('showAll', { n: total })}</Link></p>
+        <p className="dash-more"><Link className="btn btn-sm" href={href(tipo, archived, q, true)}>{t('showAll', { n: total })}</Link></p>
       ) : all && !empty ? (
         <p className="dash-more">
           {more ? <span className="note">{t('listCapped', { n: projects.length, total })}</span> : null}
-          {total > DASH_ROWS ? <Link href={href(kind, archived, q, false)}>{t('showRecent')}</Link> : null}
+          {total > DASH_ROWS ? <Link href={href(tipo, archived, q, false)}>{t('showRecent')}</Link> : null}
         </p>
       ) : null}
     </section>

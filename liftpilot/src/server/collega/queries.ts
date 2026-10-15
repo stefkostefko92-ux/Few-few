@@ -14,7 +14,7 @@ import { suggerimenti, type Candidato, type Suggerimento } from '@/lib/collega/s
 import { paroleDaCercare } from '@/lib/collega/testo';
 
 /** What a page shows of an installation the survey is (or may be) linked to. */
-export const IMPIANTO_SELECT = { id: true, name: true, kind: true, address: true, city: true, province: true, plantNumber: true, archivedAt: true } as const;
+export const IMPIANTO_SELECT = { id: true, name: true, address: true, city: true, province: true, plantNumber: true, archivedAt: true } as const;
 
 /** The installation a survey is linked to (the company's); null when none or not readable. */
 export function impiantoDi(user: SessionUser, projectId: string | null) {
@@ -25,7 +25,7 @@ export function impiantoDi(user: SessionUser, projectId: string | null) {
 /** An installation as the suggestions read it, with its linked surveys out of the trash — the newest 20, or in the query
  *  by code only those of the same matricola or number (`schede`), so that a match is never cut off. */
 const candidatoSelect = (schede: object) => ({
-  id: true, name: true, kind: true, address: true, city: true, province: true, plantNumber: true, updatedAt: true,
+  id: true, name: true, address: true, city: true, province: true, plantNumber: true, updatedAt: true,
   schede: { where: { deletedAt: null, ...schede }, orderBy: [{ data: 'desc' as const }, { createdAt: 'desc' as const }], take: 20,
     select: { matricola: true, numeroImpianto: true, indirizzo: true } },
 });

@@ -26,6 +26,8 @@ export function listCalculations(user: SessionUser, projectId: string) {
     take: 200,
     select: {
       id: true, label: true, verdict: true, failCount: true, warnCount: true, summary: true, sha256: true, createdAt: true, engineVersion: true, shaftDesignId: true,
+      // the type of intervention (round 45): declared, else read by the context and the test (calcolo-base.ts tipoDi)
+      intervento: true, collaudo: true, inputs: true,
       shaftDesign: { select: { engineVersion: true } }, liftDesign: { select: { id: true, engineVersion: true } },
       user: { select: { name: true } }, _count: { select: { reviews: true } },
     },

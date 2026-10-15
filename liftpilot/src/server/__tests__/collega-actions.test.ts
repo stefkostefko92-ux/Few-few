@@ -171,7 +171,7 @@ test('scollega: dalla pagina dell’impianto torna lì, con la riga nel registro
 
 test('crea impianto dal rilievo: nasce collegato, nella stessa transazione; già collegato o senza diritto — nessun impianto', async () => {
   const { createProjectAction } = await import(src('server/project-actions.ts'));
-  const create = (o: Record<string, string>) => run(() => createProjectAction({}, form({ kind: 'REPLACEMENT', name: 'Via Verdi 14', ...o })));
+  const create = (o: Record<string, string>) => run(() => createProjectAction({}, form({ name: 'Via Verdi 14', ...o })));
   const before = projects.length;
   const to = await create({ rilievo: S1 });
   assert.match(String(to), /^\/it\/app\/projects\/pn\d+\/calc$/);
@@ -179,7 +179,7 @@ test('crea impianto dal rilievo: nasce collegato, nella stessa transazione; già
   assert.equal(made?.companyId, 'c1');
   assert.equal(schede[0]?.projectId, made?.id);
   assert.deepEqual(audits.map((a) => a.action), ['PROJECT_CREATED', 'SCHEDA_LINKED']);
-  assert.deepEqual(audits[0]?.meta, { kind: 'REPLACEMENT', rilievo: S1 });
+  assert.deepEqual(audits[0]?.meta, { rilievo: S1 }, 'no kind (round 45)');
   // the sheet already linked: the transaction is undone, no installation is left
   audits = [];
   assert.deepEqual(await create({ rilievo: S2 }), { error: 'rilievoLinked' });
@@ -210,9 +210,9 @@ test('suggerimenti: solo gli impianti attivi dell’azienda dell’utente; la st
   assert.equal(findManyCalls.length, 0, 'nothing to look for: no query');
   // 50 installations of the same city changed later than the one of the same matricola: that one still comes first
   const at = (i: number) => new Date(Date.UTC(2026, 9, 1, 0, i));
-  const city = Array.from({ length: 50 }, (_, i) => ({ id: `pc${i}`, name: `Via Garibaldi ${i}`, kind: 'REPLACEMENT', address: `Via Garibaldi ${i}`, city: 'Milano',
+  const city = Array.from({ length: 50 }, (_, i) => ({ id: `pc${i}`, name: `Via Garibaldi ${i}`, address: `Via Garibaldi ${i}`, city: 'Milano',
     province: 'MI', plantNumber: null, updatedAt: at(100 + i), schede: [] }));
-  const match = { id: 'pm', name: 'Condominio Verdi', kind: 'REPLACEMENT', address: 'Via Verdi 14', city: 'Milano', province: 'MI', plantNumber: '0123', updatedAt: at(1), schede: [] };
+  const match = { id: 'pm', name: 'Condominio Verdi', address: 'Via Verdi 14', city: 'Milano', province: 'MI', plantNumber: '0123', updatedAt: at(1), schede: [] };
   findManyResult = (args) => (JSON.stringify(args.where).includes('plantNumber') ? [match] : city);
   const out = await suggerimentiPer({ companyId: 'c1' }, { matricola: '0123', numeroImpianto: null, indirizzo: 'Via Verdi 14, Milano', projectId: null });
   assert.equal(out[0]?.id, 'pm');
@@ -269,8 +269,8 @@ test('senza «rilievi:view» nulla del rilievo: i dati dell’impianto con ?usa=
   assert.equal(surveyReads, 0, 'the survey is not even read');
   // the search of the installations: a linked survey's matricola or number only for whoever sees the surveys
   findManyCalls = [];
-  await listProjects(blind, false, null, ['MX-1']);
-  await listProjects(sees, false, null, ['MX-1']);
+  await listProjects(blind, false, ['MX-1']);
+  await listProjects(sees, false, ['MX-1']);
   const [b, v] = findManyCalls.map((c) => JSON.stringify(c.where));
   assert.ok(b?.includes('plantNumber') && !b.includes('schede'), 'without the right: name, address, municipality, matricola only');
   assert.ok(v?.includes('schede'));

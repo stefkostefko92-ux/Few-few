@@ -1,9 +1,9 @@
 import { getLocale, getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 import type { SessionUser } from '@/lib/auth';
-import { can, formRightOf } from '@/lib/rbac';
+import { RIGHT_OF_STEP, can } from '@/lib/rbac';
 import { fmt } from '@/lib/rilievi/fmt';
-import { collegamentoImpianto, type ImpiantoInfo } from '@/server/collega/impianto';
+import type { Collegamento, ImpiantoInfo } from '@/server/collega/impianto';
 import { flashOk, isFlash } from '@/lib/collega/flash';
 import { scollegaRilievoAction } from '@/server/collega/actions';
 import Icon from '@/components/Icon';
@@ -13,21 +13,24 @@ import Passi, { type Passo } from './Passi';
 // An installation's surveys and where it stands (round 44): the four steps from the survey to the documents, the
 // surveys linked to it newest first (the first the reference: the forms start from it and the comparison reads it) with
 // the way to each sheet, its PDF and its supplier modules, and the comparison. The surveys, the comparison and the first
-// step's link only for whoever sees the surveys; the links to a form only for whoever fills it (the module's right, as
-// the page's buttons): a replacement's «Progetto» is its machine room, made from the latest calculation by whoever draws;
-// «Documenti e ordini» opens the issued set, else the record whose documents they are.
-export default async function ImpiantoCollegato({ user, p, archived, flash }: { user: SessionUser; p: ImpiantoInfo; archived: boolean; flash: unknown }) {
-  const [t, locale, c] = await Promise.all([getTranslations('collega'), getLocale(), collegamentoImpianto(user, p)]);
-  const sees = can(user, 'rilievi:view'), unlink = can(user, 'rilievi:link') && !archived, replacement = p.kind === 'REPLACEMENT';
-  const ref = c.rilievi[0] ?? null, form = can(user, formRightOf(p.kind)) && !archived;
-  const formHref = replacement ? `/app/projects/${p.id}/calc` : `/app/projects/${p.id}/progetto`;
+// step's link only for whoever sees the surveys; the links to a step's form only for whoever holds that step's right
+// (round 45, rbac.ts RIGHT_OF_STEP): «Calcolo argano» for every installation, the Progetto — the machine room surveyed on
+// the latest «Calcolo argano» when its intervention touches only the machine room, else the shaft drawn on it; «usa il
+// valore» opens the calculation for what it holds and the Progetto for the stops; «Documenti e ordini» opens the issued
+// set, else the record whose documents they are. The records are read once by the page (collegamentoImpianto).
+export default async function ImpiantoCollegato({ user, p, c, archived, flash }: { user: SessionUser; p: ImpiantoInfo; c: Collegamento; archived: boolean; flash: unknown }) {
+  const [t, locale] = await Promise.all([getTranslations('collega'), getLocale()]);
+  const sees = can(user, 'rilievi:view'), unlink = can(user, 'rilievi:link') && !archived;
+  const ref = c.rilievi[0] ?? null, calcola = can(user, RIGHT_OF_STEP.calcolo) && !archived, disegna = can(user, RIGHT_OF_STEP.progetto) && !archived;
+  const calcHref = `/app/projects/${p.id}/calc`, progettoHref = `/app/projects/${p.id}/progetto`;
   const record = c.progetto?.kind === 'lift' ? `/app/lift-designs/${c.progetto.id}` : c.calcolo ? `/app/calculations/${c.calcolo.id}` : null;
-  const room = replacement && c.calcolo && can(user, 'progetto:edit') && !archived ? `/app/calculations/${c.calcolo.id}/locale` : null;
+  const locale_ = c.disegno === 'locale';
+  const drawHref = !disegna ? null : locale_ && c.base ? `/app/calculations/${c.base.id}/locale` : c.base ? `${progettoHref}?calc=${c.base.id}` : progettoHref;
   const passi: Passo[] = [
     { key: 'rilievo', href: sees ? (ref ? `/app/rilievi/${ref.dati.id}` : '#rilievi') : null },
-    { key: 'calcolo', href: c.calcolo ? `/app/calculations/${c.calcolo.id}` : form ? formHref : null },
-    { key: 'progetto', sub: replacement ? t('passi.room') : undefined,
-      href: c.progetto ? `/app/${c.progetto.kind === 'lift' ? 'lift-designs' : 'room-designs'}/${c.progetto.id}` : replacement ? room : form ? formHref : null },
+    { key: 'calcolo', href: c.calcolo ? `/app/calculations/${c.calcolo.id}` : calcola ? calcHref : null },
+    { key: 'progetto', sub: locale_ ? t('passi.room') : undefined,
+      href: c.progetto ? `/app/${c.progetto.kind === 'lift' ? 'lift-designs' : 'room-designs'}/${c.progetto.id}` : drawHref },
     { key: 'documenti', href: c.tavole ? `/app/drawing-sets/${c.tavole.id}` : record },
   ];
   const msg = isFlash(flash) ? flash : null;
@@ -75,8 +78,8 @@ export default async function ImpiantoCollegato({ user, p, archived, flash }: { 
         </section>
       ) : null}
       {sees && ref ? (
-        <Confronto righe={c.righe} date={ref.dati.data} salvati={!!(c.calcolo || c.progetto?.kind === 'lift')} collaudo={form ? `${formHref}#collaudo` : null}
-          usa={{ calc: form && replacement ? formHref : null, progetto: form && !replacement ? formHref : null,
+        <Confronto righe={c.righe} date={ref.dati.data} salvati={!!(c.calcolo || c.progetto?.kind === 'lift')} collaudo={calcola ? `${calcHref}#collaudo` : null}
+          usa={{ calc: calcola ? calcHref : null, progetto: disegna ? progettoHref : null,
             impianto: can(user, 'projects:edit') && !archived ? `/app/projects/${p.id}/edit` : null }} />
       ) : null}
     </>
