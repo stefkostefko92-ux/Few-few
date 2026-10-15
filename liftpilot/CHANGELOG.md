@@ -2514,6 +2514,12 @@ frizione, Diametro pulegge di rinvio, Inerzia per puleggia…, Massa della macch
   същият байт по байт. Проба на временно копие с изтрити 22 запазени PDF-а (14 на машинно, 8 на цял проект): скриптът
   ги нарисува отново със същия SHA-256 като запазените при издаването; втори пробег — 0. Деплоят: `DEPLOY.md` („Преди
   деплой, който мени двигател“). `getDrawingSet` приема само фирмата (`Pick<SessionUser, 'companyId'>`).
+- **S2 — разделяне без смяна на поведение**: таблицата „коя проверка коя част засяга“ (`AMBITO_VERIFICHE`,
+  `SOLO_10411_1`, `VERIFICHE_DATI`) — в `src/lib/lift/ambito.ts`; задълженията на частите (`OBBLIGHI_PARTI`,
+  `obblighiParti`, `SOSTANZIALE`) — в `src/lib/lift/obblighi.ts`, с общите помощници на точките в `punti.ts`;
+  `collaudo.ts`, `norme-collaudo.ts` и `index.ts` ги реекспортират (същите обекти — тест `split-r46`). Скелет на
+  `src/lib/report/variazioni.ts` (редовете за скоростта и хода — празни до правилата). Версиите не са пипнати;
+  `reproduce-all`, `docs-compare` (1794 реда) и `refresh-sim` (1854 записа) — байт по байт като преди.
 
 ## Проверки
 

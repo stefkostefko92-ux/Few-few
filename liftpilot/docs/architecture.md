@@ -25,7 +25,9 @@ src/lib/lift/        Единният формуляр: LiftInputs {shaft, calc,
                      предложението; pickOption — изборът на опция на оразмеряването), advice (препоръчаната машина сред
                      SICOR и Montanari: всеки модел, проверен с асансьора, подредбата и причината, sourcesOf — буквите на
                      източника, алтернативата с отклоняваща ролка), collaudo (нормата на
-                     изпитването и сменените части: AMBITO_VERIFICHE, ambitoOf, collaudoVerdict), modifica (CE маркировката → частта на
+                     изпитването и сменените части: ambitoOf, collaudoVerdict; кръг 46 — таблицата AMBITO_VERIFICHE в
+                     ambito, задълженията на частите OBBLIGHI_PARTI/obblighiParti в obblighi, punti — PuntoInSito и
+                     помощниците; collaudo и norme-collaudo ги реекспортират), modifica (CE маркировката → частта на
                      UNI 10411; промяната на документираните товари по прил. 1 и 2 на -1 и по -11), intervento (кръг 45:
                      типът на интервенцията — TipoIntervento, interventoDi/interventoValido, disegnoDi (машинното или
                      шахтата), частите; и трите избора отпреди — interventoOf/interventoTo, PARTI_RIFACIMENTO), risposte
@@ -196,6 +198,8 @@ src/lib/report/      build.ts — моделът на relazione (италиан�
                      секцията „Vano e cabina“ с плана (ядрото); advice.ts — разделът със съвета (информативен); render.ts —
                      вика report/relazione.py, report/tavole.py или report/raster.py (чертежите като PNG за DOCX);
                      tecnica.ts + tecnica-room.ts — relazione tecnica на подмяната (машината и машинното, 13 раздела).
+                     variazioni.ts (кръг 46) — редовете и изречението за промяната на скоростта и хода спрямо
+                     документираните (скелет до правилата на изпитването).
                      Кръг 36: build-parts (части на build.ts), guide („Guide e carichi sulle strutture“ — водачите и товарите от
                      sheet-loads), refs (клаузите в колоната „Riferimento“), elaborati (издадените комплекти в relazione),
                      tecnica-site (отворите, товарите и закрепването в relazione tecnica).
