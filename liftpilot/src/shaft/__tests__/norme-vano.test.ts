@@ -14,6 +14,8 @@ const CHECKS: readonly ShaftCheckId[] = [
   'h_hung', 'sg_cw', 'h_refuge_rig', 'h_stand_rig',
   // round 37: the existing sling under a new car or rated load (a modification)
   'sl_frame',
+  // round 46: D.1 of UNI 10411-1 with the ratio of the suspended loads changed (a modification)
+  'tr_d1',
 ];
 const it = (x: number, dec?: number): string => (dec == null ? String(x) : x.toFixed(dec)).replace('.', ',');
 const voce = (id: string) => {

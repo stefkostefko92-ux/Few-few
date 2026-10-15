@@ -11,6 +11,9 @@ src/calc/            Чист изчислителен модул: без I/O, �
                      норми, общ за всички регистри.
                      Кръг 36: types-sizing + types-results (типовете, отделени от types.ts), norme-azionamento (групите
                      „azionamento“ и „albero“ на VOCI).
+                     Кръг 46: d1 — D.1 на UNI 10411-1 (стабилност срещу приплъзване при сменено съотношение на товарите,
+                     6.1): двата статични случая с опъванията на model.ts, C1 по лентата на скоростта, C2 и f по жлеба;
+                     извън compute() — golden и предложението не се менят (запис modifica.d1).
 src/sim/             Чиста симулация във времето: профил с ограничен jerk (profile), физиката на проверките във всеки миг
                      (physics, през calc/model.ts), сценариите ride, brake, statics (товарене 125 %, блокирана кабина), buffer;
                      series (типизирани масиви + събития), norme (KS, VOCI_SIM).
@@ -56,7 +59,8 @@ src/lib/lift/        Единният формуляр: LiftInputs {shaft, calc,
                      Кръг 37: direct (директното окачване — `planFalls`, `dropSheaves`, `designSizing`: проверената шайба е калатата от
                      плана навсякъде, където предложението се прави или показва), entered (машина, превключена на „въведена“, започва
                      от всяка стойност на софтуера — `NEW_MACHINE_FIELDS`; машина от каталога, въведена на ръка, е тази машина —
-                     `known.ts catalogMachineOf`), arcata (`sl_frame`: запазената рама при увеличено или неизвестно T*), buffers
+                     `known.ts catalogMachineOf`), arcata (`sl_frame`: запазената рама при увеличено или неизвестно T*), rapporto
+                     (кръг 46: `tr_d1` — D.1 по -1 само при сменено съотношение на товарите, `d1Check`/`d1Di`), buffers
                      (`shaft/buffers.ts`: стандартният маслен буфер над 1 m/s става на проекта, преди да се запише размер).
 src/lib/order/       Черновата на поръчка на машината (италиански): machine (за коя машина: проверената в записа, иначе първата
                      от съвета), build (блоковете на relazione: бланка, машината, рамата с ролката, асансьорът, машинното,
@@ -210,7 +214,8 @@ src/lib/report/      build.ts — моделът на relazione (италиан�
                      variazioni.ts (кръг 46) — редовете и изречението на лист 1 за промяната на скоростта и хода спрямо
                      libretto (само с него) и редът на регулирането на таблото под нова машина (S5, regolazioneRows — с ⚠
                      без отговор, само в relazioni); collaudo.ts altreModifiche — случаят по DPR 162/1999 чл. 2 ал. 1 б. cc)
-                     на всяка част.
+                     на всяка част. cases.ts (кръг 46 S7) — d1Blocks (двата случая на D.1 след сцеплението) и d1Frase
+                     (изречението в «Variazione dei carichi»).
                      Кръг 36: build-parts (части на build.ts), guide („Guide e carichi sulle strutture“ — водачите и товарите от
                      sheet-loads), refs (клаузите в колоната „Riferimento“), elaborati (издадените комплекти в relazione),
                      tecnica-site (отворите, товарите и закрепването в relazione tecnica).

@@ -70,6 +70,7 @@ const VERIFICA_VANO: Record<ShaftCheckId, string> = {
   h_refuge_rig: 'spazio di rifugio sul tetto di cabina: altezza libera fino a ciò che pende sotto la soletta',
   h_stand_rig: 'spazio di rifugio sul tetto di cabina fuori da ciò che pende sotto la soletta',
   sl_frame: 'modifica: arcata esistente con carichi oltre i limiti (T* o portata) o non documentati, da verificare per i nuovi carichi',
+  tr_d1: 'modifica (UNI 10411-1): stabilità allo scorrimento delle funi con il rapporto tra i carichi cambiato (D.1)',
 };
 const ORDER_VANO: readonly GruppoVano[] = ['cabina', 'distanze', 'accessibilita', 'porte', 'ingombri', 'sezione', 'locale', 'carichi', 'modello_vano'];
 const IMPIANTO = 'Impianto: valori calcolati dai dati inseriti una volta', SIMULAZIONE = 'Simulazione nel tempo (3D e grafici)';

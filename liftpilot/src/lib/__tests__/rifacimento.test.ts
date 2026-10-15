@@ -47,9 +47,10 @@ test('collaudoOf: il rifacimento tiene l’arcata fuori dalle parti, solo sotto 
 
 test('ambito: con il rifacimento restano «esistente» solo l’arcata e il locale dell’edificio', () => {
   const existing = (C: Collaudo) => Object.keys(AMBITO_VERIFICHE).filter((id) => ambitoOf(C, id as keyof typeof AMBITO_VERIFICHE) === 'existing');
-  assert.deepEqual(existing(RIF), ['m_height', 'm_door', 'm_pheight', 'm_pdoor', 'sg_type']);
+  // and D.1 (round 46, B10), which only the load the changed ratio of the loads brings enters (a renovation chooses none)
+  assert.deepEqual(existing(RIF), ['m_height', 'm_door', 'm_pheight', 'm_pdoor', 'sg_type', 'tr_d1']);
   // a new speed brings the safety gear's type into the test
-  assert.deepEqual(existing({ ...RIF, parti: [...PARTI_RIFACIMENTO, 'speed'] }), ['m_height', 'm_door', 'm_pheight', 'm_pdoor']);
+  assert.deepEqual(existing({ ...RIF, parti: [...PARTI_RIFACIMENTO, 'speed'] }), ['m_height', 'm_door', 'm_pheight', 'm_pdoor', 'tr_d1']);
 });
 
 test('rifacimento (round 45): il preset dell’ammodernamento, acceso e spento', () => {

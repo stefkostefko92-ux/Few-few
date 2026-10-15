@@ -74,11 +74,15 @@ function sheaveNote(hold: SheaveHold, D: number, Dv: number, fmt: Fmt): string {
  *  the existing ones): out of the list when the machine stays (round 45). */
 const SOLO_SOSTITUZIONE = (id: string): boolean => id.startsWith('sostituzione.') || id === 'locale.calate';
 
+/** The calculation's entries of a check derived out of compute() and emitted as the lift's (round 46: D.1, the check
+ *  tr_d1 — lift/rapporto.ts), listed when the check is in the document. */
+const DERIVATE: Readonly<Record<string, string>> = { 'modifica.d1': 'tr_d1' };
+
 /** The registry entries the document uses — the checks', the model's limits, the shaft's, the values the software
  *  filled in (`filled`) — with their status; with the machine kept (`resta`, intervento.ts macchinaResta) without those of
  *  its replacement alone, and a line saying so (every relazione without it as before). */
 export function vociBlocks(ids: ReadonlySet<string>, vano: readonly VoceVano[], filled: ReadonlySet<string>, resta = false): ReportBlock[] {
-  const used: readonly Voce[] = VOCI.filter((v) => v.verifiche?.some((c) => ids.has(c)));
+  const used: readonly Voce[] = VOCI.filter((v) => v.verifiche?.some((c) => ids.has(c)) || ids.has(DERIVATE[v.id] ?? ''));
   const all = [...used, ...VOCI.filter((v) => LIMITI_MODELLO.includes(v.id)), ...vano, ...VOCI_IMPIANTO.filter((v) => filled.has(v.id))];
   const listed = resta ? all.filter((v) => !SOLO_SOSTITUZIONE(v.id)) : all;
   return [

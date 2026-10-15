@@ -1,10 +1,14 @@
 // The traction cases of the relazione, each with its tensions (UNI EN 81-50:2020, 5.11): the loading, the emergency
 // braking at the minimum deceleration and at the brake's real one (a warning; with the acceptance test of UNI EN
-// 81-20:2020, 6.3.3 b) among its cases), the stalled car or counterweight; and the
-// limits of the calculation model stated before the checks. Pure.
+// 81-20:2020, 6.3.3 b) among its cases), the stalled car or counterweight; the stability against slipping of UNI
+// 10411-1:2024 D.1 when a modification under it changes the ratio of the suspended loads (6.1, round 46: its two
+// cases, and its sentence in the data's «Variazione dei carichi»); and the limits of the calculation model stated
+// before the checks. Pure.
 import { deg } from '@/calc/math';
 import { K, VOCI } from '@/calc/norme';
-import type { BrakeCase, CheckStatus, Machine, Plant, Results, TractionCase } from '@/calc/types';
+import type { BrakeCase, CheckStatus, FormValues, Machine, Plant, Results, TractionCase } from '@/calc/types';
+import type { Collaudo } from '../lift/collaudo';
+import { d1Di } from '../lift/rapporto';
 import type { Pres } from '../present/tr';
 import type { BlockStatus, ReportBlock } from './model';
 
@@ -32,6 +36,36 @@ export function casesBlocks(P: Pres, I: Plant, N: Machine, res: Results, caseTex
     fmt(deg(s.alpha), 1), fmt(s.mu, 4), fmt(s.f, 4), fmt(s.efa, 3), fmt(s.T1, 0), fmt(s.T2, 0), fmt(s.ratio, 2), `≥ e^(f·α): ${st(stallStatus[k])}`]),
   status: stallStatus, widths: STALL_W });
   return B;
+}
+
+const d1Ok = (u: number): boolean => u <= 1 + 1e-9;
+
+/** D.1 (lift/rapporto.ts d1Di) in tables: its two cases with the static pulls, then C1, C2 and f; none when not asked. */
+export function d1Blocks(P: Pres, C: Collaudo, V: FormValues): ReportBlock[] {
+  const d = d1Di(C, V), { fmt } = P;
+  if (!d) return [];
+  const util = (u: number): string => (Number.isFinite(u) ? fmt(u, 3) : '—'), gola = d.C2 === K.c2Wedge ? 'gola a cuneo' : 'gola semicircolare';
+  return [
+    { t: 'h3', text: 'Stabilità allo scorrimento con il rapporto tra i carichi cambiato (UNI 10411-1:2024, 6.1 e D.1)' },
+    { t: 'grid', head: ['Caso', 'α [°]', 'f', 'e^(f·α)', 'T1 [N]', 'T2 [N]', 'T1/T2', '(T1/T2)·C1·C2', 'Utilizzo'], widths: CASE_W,
+      rows: d.cases.map((c) => [c.pos === 'b' ? `Cabina al piano più basso con ${fmt(K.loadTestFactor, 2)}·Q` : 'Cabina vuota al piano più alto', fmt(deg(c.alpha), 1),
+        fmt(d.f, 4), fmt(c.efa, 3), fmt(c.T1, 0), fmt(c.T2, 0), Number.isFinite(c.ratio) ? fmt(c.ratio, 3) : '—', util(c.lhs), util(c.util)]),
+      status: d.cases.map((c) => (d1Ok(c.util) ? 'ok' : 'fail')) },
+    { t: 'p', style: 'note', text: `C1 = ${fmt(d.C1, 3)}: (g + a)/(g − a) con a = ${fmt(d.a, 2)} m/s², la decelerazione della verifica di frenatura del `
+      + `calcolo, mai sotto ${fmt(d.c1Min, 2)} a ${fmt(d.v, 2)} m/s; C2 = ${fmt(d.C2, d.C2 % 1 ? 1 : 0)} (${gola}); μ = ${fmt(d.mu, 2)}. La condizione (T1/T2)·C1·C2 ≤ `
+      + `e^(f·α) ${d1Ok(d.worst.util) ? 'è soddisfatta in entrambi i casi' : 'non è soddisfatta: il rapporto tra i carichi non può cambiare così'}. `
+      + 'Con la D.1 servono la D.2 (pressione specifica nelle gole) e gli ammortizzatori secondo la UNI EN 81-20, 5.8; se la frenatura reale della '
+      + 'cabina decelera di più, il tecnico ripete la verifica con quella (voci modifica.d1 e rapporto.d1 del registro).' },
+  ];
+}
+
+/** D.1 in one sentence (opened by a space) for the data's «Variazione dei carichi» (report/collaudo.ts); '' when not
+ *  asked. */
+export function d1Frase(C: Collaudo, V: FormValues | undefined): string {
+  const d = V ? d1Di(C, V) : null, u = d?.worst.util;
+  if (u === undefined) return '';
+  const n = Number.isFinite(u) ? new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(u) : '—';
+  return ` Stabilità allo scorrimento (D.1): utilizzo ${n} nel caso più sfavorevole, ${d1Ok(u) ? 'verificata' : '⚠ non verificata'}.`;
 }
 
 /** Registry entries with no check of their own that bound where the calculation holds: the compensation and the

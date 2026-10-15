@@ -193,6 +193,15 @@ export const VOCI_VERT: readonly VoceVano[] = [
     nota: 'la UNI 10411-11:2024 (6.1) esclude la 6.9 quando aumenta solo il carico lato contrappeso; con l’arcata sostituita la verifica non si fa',
   },
   {
+    id: 'rapporto.d1', gruppo: 'carichi', titolo: 'Rapporto tra i carichi cambiato (UNI 10411-1): stabilità allo scorrimento delle funi',
+    valore: 'nella modifica secondo la UNI 10411-1 il cui rapporto tra i carichi lato cabina e lato contrappeso cambia rispetto a quello documentato '
+      + '(voce impianto.variazione.carico), la condizione della D.1 con i valori della voce modifica.d1 del calcolo, nei suoi due casi: esito '
+      + 'l’utilizzo (T1/T2)·C1·C2 / e^(f·α) del caso più sfavorevole, al massimo 1; con la UNI 10411-11 o con il rapporto che resta la verifica non c’è. '
+      + 'Con la D.1 servono la D.2 (pressione specifica) e gli ammortizzatori secondo la UNI EN 81-20, 5.8',
+    riferimento: 'UNI 10411-1:2024, 6.1 e D.1', fonte: letto('UNI 10411-1:2024', 'pp. 6–7 e 33'), stato: 'confermato',
+    verifiche: ['tr_d1'], rifFuoriNorma: 'UNI 10411-1:2024, 6.1 e D.1 (verifica della sola UNI 10411-1)',
+  },
+  {
     id: 'carichi.cavi', gruppo: 'carichi', titolo: 'Massa dei cavi flessibili',
     valore: '0,5 kg/m per metà della corsa più 3 m (cavo piatto 24G0,75), sul basamento dell’argano, nella relazione e nel foglio 1',
     riferimento: '—', fonte: 'schede dei costruttori di cavi piatti (0,48–0,57 kg/m)', stato: 'stima',

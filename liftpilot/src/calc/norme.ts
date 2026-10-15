@@ -25,6 +25,14 @@ export const K = {
   aeMin: 0.5,
   aeReducedStroke: 0.8,
   tractionWarn: 0.97,
+  // stability against slipping when a modification changes the ratio of the suspended loads (UNI 10411-1:2024, 6.1 and
+  // D.1): C1's minimum by the rated speed's band [m/s, —] (lower bound excluded), over the last computed and never under
+  // c1Min; C2 of a wedge and of a semicircular groove; μ of steel ropes in a cast iron sheave
+  c1Bands: [[0.63, 1.1], [1.0, 1.15], [1.6, 1.2], [2.5, 1.25]] as const,
+  c1Min: 1.25,
+  c2Wedge: 1.2,
+  c2Undercut: 1,
+  muD1: 0.09,
   // grooves (UNI EN 81-50:2020, 5.11.2.3.1); the specific pressure in them (UNI 10411-1:2024, D.2): the limit
   // (12,5 + 4·v_c)/(1 + v_c) and the factors of the semicircular (8) and the V groove (4,5)
   pressBase: 12.5,
@@ -260,6 +268,20 @@ export const VOCI: readonly Voce[] = [
   {
     id: 'sostituzione.funi', gruppo: 'sostituzione', titolo: 'Funi nella sostituzione', valore: 'di norma funi nuove con lo stesso numero e diametro di quelle montate; la proposta le tiene fisse',
     riferimento: '—', fonte: 'indicazione di Panev Ascensori (29 settembre 2026)', stato: 'prassi',
+  },
+  {
+    id: 'modifica.d1', gruppo: 'sostituzione', titolo: 'Rapporto tra i carichi cambiato (UNI 10411-1): stabilità allo scorrimento delle funi',
+    valore: '(T1/T2)·C1·C2 ≤ e^(f·α) con le tensioni statiche ai due lati della puleggia di frizione, cabina al piano più basso con 1,25·Q e cabina '
+      + 'vuota al piano più alto; C1 = (g + a)/(g − a), mai sotto 1,10 fino a 0,63 m/s, 1,15 fino a 1,00 m/s, 1,20 fino a 1,60 m/s, 1,25 fino a '
+      + '2,50 m/s, oltre calcolato e mai sotto 1,25; C2 = 1,2 con gola a cuneo, 1 con gola semicircolare; μ = 0,09: f = μ/sin(γ/2) con gola a '
+      + 'cuneo, 4μ·(1 − sin(β/2))/(π − β − sin β) con gola semicircolare (β = 0 senza intaglio)',
+    riferimento: 'UNI 10411-1:2024, 6.1 e D.1', fonte: letto(U1, 'pp. 6–7 e 33'), stato: 'confermato',
+    costanti: ['c1Bands', 'c1Min', 'c2Wedge', 'c2Undercut', 'muD1', 'loadTestFactor'],
+    nota: 'Solo nella modifica secondo la UNI 10411-1 che cambia il rapporto tra i carichi appesi (voce impianto.variazione.carico), come verifica '
+      + 'a sé (rapporto.d1) fuori dall’aderenza della UNI EN 81-50: il calcolo dell’argano non cambia. a è la decelerazione della verifica di '
+      + 'frenatura del calcolo (a_e), da sostituire con quella reale di frenatura della cabina se è maggiore. Gola semicircolare senza intaglio: '
+      + 'C2 = 1 come con l’intaglio; gola a V non temprata, con intaglio: il minore dei due f, C2 = 1,2 (scelte del software, a favore di '
+      + 'sicurezza). Se la verifica della UNI EN 81-50, 5.11 valga al posto della D.1 lo decide il soggetto della verifica',
   },
   // ---------- model ----------
   ...VOCI_MODELLO,

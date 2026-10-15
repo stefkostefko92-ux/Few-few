@@ -20,7 +20,7 @@ import { textsFor, verdictStatus } from '../present/texts';
 import { makePres } from '../present/tr';
 import type { ReportBlock, ReportDoc } from './model';
 import { shaftBlocks, type ReportDesign } from './shaft';
-import { casesBlocks, limitiBlocks } from './cases';
+import { casesBlocks, d1Blocks, limitiBlocks } from './cases';
 import { checkRefs } from './refs';
 import { BOTTOM_IT, STATO, cellText, drawnText, massNote, proposalBlocks, rowStatus, underPitText, vociBlocks } from './build-parts';
 import { guideSection } from './guide';
@@ -218,12 +218,12 @@ export function buildReport(r: ReportInput): ReportDoc {
   // each standard of the test with its own result, and the test's: the calculation's checks and, with a shaft design,
   // the shaft's and the beams'
   section(ESITI_CALCOLO);
-  B.push(...esitiBlocks(C, [...res.checks, ...(r.design ? mergeChecks(r.design.layout.checks, beams) : []), ...(guide?.checks ?? [])], (x) => st(x)));
+  B.push(...esitiBlocks(C, [...res.checks, ...(r.design ? mergeChecks(r.design.layout.checks, beams) : beams), ...(guide?.checks ?? [])], (x) => st(x)));
   section('Adempimenti e punti da verificare in sito');
   B.push(...adempimentiBlocks(C, repl, kept));
 
   section("Aderenza: tutti i casi di calcolo");
-  B.push(...casesBlocks(P, I, N, res, (c) => X.caseText(c), st));
+  B.push(...casesBlocks(P, I, N, res, (c) => X.caseText(c), st), ...d1Blocks(P, C, r.values));
 
   section('Dettaglio delle verifiche');
   const tables = techTables(P, X, a);
@@ -278,7 +278,7 @@ export function buildReport(r: ReportInput): ReportDoc {
     ...(I.layout === 'bottom' && m.bottom ? ['impianto.basso.schema'] : []), ...(chosen ? ['impianto.catalogo'] : []), ...(whole.estimate ? ['impianto.massa.argano'] : []),
     ...(guide ? ['impianto.massa.basamento'] : []), ...(a.hold === 'drop' ? ['impianto.calata'] : []),
     ...m.geometry.filter((k) => k === 'L0' || (k === 'dx' && I.layout === 'topDefl') || (k === 'Hv' && I.layout === 'bottom')).map((k) => `impianto.${k}`)]);
-  B.push(...vociBlocks(new Set(res.checks.map((c) => c.id)), vano, filled, kept));
+  B.push(...vociBlocks(new Set([...res.checks, ...beams].map((c) => c.id)), vano, filled, kept));
 
   // what the software is in the document, said once before the signature: the technician who signs makes it theirs
   section(t('rep_legal_title'));

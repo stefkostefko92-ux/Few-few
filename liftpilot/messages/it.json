@@ -1056,6 +1056,7 @@
     "c_m_wheel": "Superficie libera accanto all’argano presso il volantino (manovra manuale), margine",
     "c_m_hexist": "Locale esistente: altezza libera sotto 2,0 m (UNI 10411, 9.2)",
     "c_sl_frame": "Arcata esistente con carichi oltre i limiti (T* o portata) o non documentati: da verificare per i nuovi carichi (UNI 10411, 6.9)",
+    "c_tr_d1": "Rapporto tra i carichi cambiato: stabilità allo scorrimento delle funi, (T1/T2)·C1·C2 / e^(f·α) (UNI 10411-1, D.1)",
     "c_m_holes": "Appoggi del nuovo basamento dal bordo delle aperture esistenti della soletta: distanza minima",
     "c_m_holes_kept": "Appoggi del basamento esistente (da rilevare) dal bordo delle aperture esistenti della soletta: distanza minima",
     "c_m_govdrop": "Funi del limitatore esistente attraverso la soletta: il loro foro sopra l’interno del vano, margine",

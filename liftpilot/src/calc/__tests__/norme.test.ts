@@ -55,6 +55,10 @@ test('i testi delle voci riportano i numeri usati dal motore', () => {
     ['gole.pressione', `p ≤ (${it(K.pressBase)} + ${K.pressSpeed}·v_c)/(1 + v_c)`], ['gole.pressione', `${K.pressU}·cos(β/2)`], ['gole.pressione', `${it(K.pressV)}/sin(γ/2)`],
   ];
   for (const [id, text] of pairs) assert.ok(voce(id).valore.includes(text), `${id}: manca «${text}» in «${voce(id).valore}»`);
+  // D.1 of UNI 10411-1 (round 46): every band of C1 with its value, the minimum over the last, C2 and μ
+  for (const [v, c] of K.c1Bands) assert.ok(voce('modifica.d1').valore.includes(`${it(c, 2)} fino a ${it(v, 2)} m/s`), `C1 ${c} fino a ${v} m/s`);
+  for (const t of [`mai sotto ${it(K.c1Min, 2)}`, `C2 = ${it(K.c2Wedge)} con gola a cuneo`, `${K.c2Undercut} con gola semicircolare`, `μ = ${it(K.muD1)}`,
+    `${it(K.loadTestFactor)}·Q`]) assert.ok(voce('modifica.d1').valore.includes(t), `modifica.d1: manca «${t}»`);
   // N_equiv(t) table: every point, as in the engine (UNI EN 81-50:2020, table 2)
   for (const [a, n] of [...K.neqU, ...K.neqV]) assert.ok(voce('funi.Nequiv.gola').valore.includes(`${a}° ${it(n, 1)}`), `manca ${a}° ${it(n, 1)}`);
 });

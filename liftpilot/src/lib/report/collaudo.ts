@@ -17,6 +17,7 @@ import type { BlockStatus, ReportBlock } from './model';
 import { MACCHINA_81_1 } from './refs';
 import { ammodernamentoText, notaIntervento } from './intervento-text';
 import { regolazioneRows, variazioniDoc, variazioniNota, variazioniRows } from './variazioni';
+import { d1Frase } from './cases';
 import { macchinaResta, type TipoIntervento } from '../lift/intervento';
 
 const LIFT = appIt.lift;
@@ -88,8 +89,9 @@ const marcaturaText = (C: Collaudo): string | null => (C.marcatura === 'si'
       + "dell’impianto (dichiarazione di conformità)" : null);
 
 /** The change of the loads in words: the increases and what they bring under the part of UNI 10411; `arcata`: the
- *  existing sling under them, to be checked for the new loads (arcata.ts). */
-export function variazioneText(v: Variazione, arcata = false): string {
+ *  existing sling under them, to be checked for the new loads (arcata.ts); `d1`: the sentence of D.1 with the ratio
+ *  changed (cases.ts d1Frase, round 46). */
+export function variazioneText(v: Variazione, arcata = false, d1 = ''): string {
   const head = `portata ${pctText(v.dQ)}, T* ${pctText(v.dT)}, contrappeso ${pctText(v.dTcp)} della portata`;
   const lim = v.limiti ? ` (ammessi senza verifiche: ${pctText(v.limiti.Q)}, ${pctText(v.limiti.T)} e ${pctText(v.limiti.Tcp)}, UNI 10411-1, prospetti 1 e 2)` : '';
   const over = v.p1 || v.p2
@@ -99,7 +101,7 @@ export function variazioneText(v: Variazione, arcata = false): string {
   // the ratio of the suspended loads changed (round 46): D.1, D.2 and buffers to 5.8 (UNI 10411-1, 6.1)
   const rap = v.rapporto ? '; il rapporto tra i carichi lato cabina e lato contrappeso cambia: D.1, D.2 e ammortizzatori secondo la UNI EN 81-20 5.8 '
     + '(UNI 10411-1, 6.1)' : '';
-  return `${head}${lim}${over}${str}${rap}.${arcata ? ARCATA : ''} Aggiornare la documentazione con i nuovi carichi.`;
+  return `${head}${lim}${over}${str}${rap}.${d1}${arcata ? ARCATA : ''} Aggiornare la documentazione con i nuovi carichi.`;
 }
 
 /** The existing sling under loads beyond the limits or not known (the check sl_frame of the result, arcata.ts): one
@@ -128,7 +130,7 @@ export function collaudoRows(C: Collaudo, repl: boolean, ora?: Carichi | null, V
     ...(repl ? [['Parti sostituite o modificate', partiText(C)] as [string, string]] : []),
     ...(ce ? [['Marcatura CE dell’impianto', ce] as [string, string]] : []),
     ...(doc ? [['Carichi documentati (portata · cabina · contrappeso)', `${num(doc.Q)} · ${num(doc.P)} · ${num(doc.Mcw)} kg`] as [string, string]] : []),
-    ...(v ? [['Variazione dei carichi', variazioneText(v, arcata)] as [string, string]] : []),
+    ...(v ? [['Variazione dei carichi', variazioneText(v, arcata, d1Frase(C, V))] as [string, string]] : []),
     ...(missing && C.norma !== 'en81' ? [['Variazione dei carichi', carichiMancanti(C.norma, arcata)] as [string, string]] : []),
     ...(uni ? [...variazioniRows(variazioniDoc(C, V)), ...regolazioneRows(C)] : []),
   ];

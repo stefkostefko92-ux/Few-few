@@ -8,6 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { K } from '@/calc/norme';
 import { ENGINE_VERSION, canon } from '@/calc/snapshot';
 import { AMBITO_10411_1, AMBITO_VERIFICHE, PARTI, SOLO_10411_1, VERIFICHE_DATI } from '../lift/collaudo';
 import { KL } from '../lift/norme';
@@ -18,9 +19,9 @@ import { LIFT_ENGINE_VERSION } from '../lift/version';
 import { ROOM_ENGINE_VERSION } from '../room/snapshot';
 import { SHAFT_ENGINE_VERSION } from '@/shaft/snapshot';
 
-/** The key and the versions it was pinned at (round 46; S5 — the optional parts and the controller's regulation — pinned
- *  again within the same kit: S4–S8 ship together with the one bump, never deployed apart). */
-const PINNED = { sha256: '91ed6b0220d3f6c234c0cb0b5f2a876e7ef041b243df6aaa4ab697b9795ae53c', engine: '1.7.0', lift: '1.32.0', room: '1.16.0', shaft: '2.26.0' };
+/** The key and the versions it was pinned at (round 46; S5 — the optional parts and the controller's regulation — and S7
+ *  — D.1 — pinned again within the same kit: S4–S8 ship together with the one bump, never deployed apart). */
+const PINNED = { sha256: '5a495056a5fc995d59e4242bc556e4159e4043daddfc9275234ad8f1f4d2f9ee', engine: '1.7.0', lift: '1.32.0', room: '1.16.0', shaft: '2.26.0' };
 
 /** The constants of a modification: the loads (6.1), the CE marking's day, the speed and the travel (15, 16). */
 const KL_MODIFICA = {
@@ -28,6 +29,8 @@ const KL_MODIFICA = {
   speedInc1: KL.speedInc1, speedDec1: KL.speedDec1, ucmSpeed11: KL.ucmSpeed11, travelInc1: KL.travelInc1,
   // round 46 S5: the car doors made sliding (13.1.3 b), printed as information)
   slidingClear: KL.slidingClear, slidingClearV2: KL.slidingClearV2,
+  // round 46 S7: D.1 with the ratio of the loads changed (6.1) — the calculation's constants, out of its golden results
+  c1Bands: K.c1Bands, c1Min: K.c1Min, c2Wedge: K.c2Wedge, c2Undercut: K.c2Undercut, muD1: K.muD1,
 };
 
 const scopeKey = (): string => createHash('sha256').update(JSON.stringify(canon({

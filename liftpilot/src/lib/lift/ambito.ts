@@ -84,6 +84,9 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
   h_refuge_rig: [...HEAD, 'machine', 'slidingDoors'], h_stand_rig: [...HEAD, 'machine'],
   // the existing sling under a new car or a new rated load (arcata.ts: emitted when T* increases or is not known)
   sl_frame: ['car', 'load'],
+  // the stability against slipping of UNI 10411-1 D.1 with the ratio of the suspended loads changed (rapporto.ts: emitted
+  // only then, under -1 only — SOLO_10411_1; the changed ratio brings the load, collaudoOf)
+  tr_d1: ['load'],
 };
 
 /** The parts that bring a check into the test under UNI 10411-1 only, besides AMBITO_VERIFICHE: the counterweight's
@@ -96,8 +99,10 @@ export const AMBITO_10411_1: Readonly<Partial<Record<CheckId | ShaftCheckId, rea
 };
 
 /** Checks of one part of UNI 10411 only: the height of an existing room under 2,0 m takes the measures of UNI EN 81-21,
- *  5.9 under UNI 10411-1:2024, 9.2; under UNI 10411-11 the existing height stays, a new lift has its own (m_height). */
-export const SOLO_10411_1: readonly ShaftCheckId[] = ['m_hexist'];
+ *  5.9 under UNI 10411-1:2024, 9.2; under UNI 10411-11 the existing height stays, a new lift has its own (m_height). The
+ *  stability against slipping of D.1 with the ratio of the loads changed (round 46, B10): UNI 10411-1 6.1 asks it, -11
+ *  counts every increase of the load instead (its 6.1), a new lift has the traction of UNI EN 81-50 5.11. */
+export const SOLO_10411_1: readonly ShaftCheckId[] = ['m_hexist', 'tr_d1'];
 
 /** Checks of the data, not of a part: the distances set by hand on the plan keep every part in its place
  *  (layout.ts); the existing governor surveyed over the shaft it drops its ropes into (survey-site.ts, round 37). They

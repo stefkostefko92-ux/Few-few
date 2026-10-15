@@ -10,6 +10,7 @@ import { existingRoomCheck } from '@/shaft/room-above';
 import type { SupportLoad } from '@/shaft/support-check';
 import type { Layout } from '@/shaft/types';
 import { slingCheck } from '../lift/arcata';
+import { d1Check } from '../lift/rapporto';
 import { belowChecks } from '../lift/below-checks';
 import { bottomGeo, sheaveHalfBelow, type BottomScheme } from '../lift/bottom';
 import type { Collaudo } from '../lift/collaudo';
@@ -40,7 +41,7 @@ export interface DesignMachine {
   ld: SupportLoad;
   /** the maker's bedplate with the pulley [kg] */
   bed: number;
-  /** the checks that need the machine */
+  /** the checks that need the machine; without a design, D.1 alone when it is asked */
   beams: ShaftCheck[];
 }
 
@@ -65,8 +66,10 @@ export function designMachine(r: ReportInput, a: Analysis, C: Collaudo, m: Value
   if (L) beams.push(...cwGapOver(L, beams));
   // a modification: the existing room's height under 2,0 m (UNI 10411-1:2024, 9.2), as the design's verdict takes it
   if (I.context === 'repl' && L?.inputs.room && !scheme) beams.push(existingRoomCheck(L.inputs.room));
-  // the existing sling under a new car or rated load (arcata.ts), as the design's verdict takes it
-  const sling = slingCheck(C, carichiOf(r.values));
+  // the existing sling under a new car or rated load (arcata.ts), as the design's verdict takes it; D.1 with the ratio of
+  // the loads changed under UNI 10411-1 (rapporto.ts), with a design or without: the calculation's own
+  const sling = slingCheck(C, carichiOf(r.values)), d1 = d1Check(C, r.values);
   if (L && sling) beams.push(sling);
+  if (d1) beams.push(d1);
   return { machine, weighed, scheme, L, rope, ld, bed, beams };
 }
