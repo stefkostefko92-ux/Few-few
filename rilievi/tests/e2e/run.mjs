@@ -201,6 +201,8 @@ try {
       if ((await page.locator('.ptable tbody tr').count()) !== 6) fail('print without 6 stop rows');
       if (!(await page.textContent('.paper')).includes("Modulo d'ordine quadri"))
         fail('print without the panel order');
+      if ((await page.textContent('.paper')).includes('Modulo rilievi dati argani'))
+        fail('print carries the argano sheet that was not ticked');
       if (await page.locator('.paper__section h2', { hasText: /^Cavi$/ }).count())
         fail('print keeps the section left out of it');
       // The head: the address and the work order under the title; the identification is not repeated.

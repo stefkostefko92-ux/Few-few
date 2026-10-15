@@ -1,11 +1,11 @@
 import type { Scheda } from '@prisma/client';
 import { nomeModulo, type ModuloField } from './moduli.js';
-import { sceltoNellaScheda, SLOTS } from './registry.js';
+import { COLONNE, sceltoNellaScheda, SLOTS, type ModuloSlot } from './registry.js';
 import { storedValori } from './valori.js';
 
 /**
- * Попълненото в модулите на доставчиците за печата и PDF-а на картата — когато картата го иска
- * (`riepilogoOrdini`, отметка във формата). По групите на модула, само отметнатото, избраното и
+ * Попълненото в модулите на доставчиците за печата и PDF-а на картата — на всеки модул, който картата
+ * иска (`moduliStampati`, отметките във формата). По групите на модула, само отметнатото, избраното и
  * написаното; етикетите са дословно от модула. Самите модули си остават и като свои PDF-и.
  */
 
@@ -47,6 +47,7 @@ const etichetta = (field: ModuloField): string => field.label.replace(/\s*:\s*$/
 type SchedaModuli = Pick<
   Scheda,
   | 'riepilogoOrdini'
+  | 'moduliStampati'
   | 'quadroMarca'
   | 'quadroModello'
   | 'quadroOrdine'
@@ -57,10 +58,23 @@ type SchedaModuli = Pick<
   | 'ordineSospensioni'
 >;
 
-export function riepilogoModuli(scheda: SchedaModuli): RiepilogoModulo[] {
+/**
+ * Колоните на модулите, които картата иска в печата. Без общото „riepilogoOrdini“ — нито един; с него,
+ * но без списък — и трите (карта отпреди отделния избор или записана от предишния код при откат).
+ */
+export function moduliStampatiDi(
+  scheda: Pick<Scheda, 'riepilogoOrdini' | 'moduliStampati'>,
+): ModuloSlot['column'][] {
   if (!scheda.riepilogoOrdini) return [];
+  const scelti = COLONNE.filter((col) => scheda.moduliStampati.includes(col));
+  return scelti.length > 0 ? scelti : [...COLONNE];
+}
+
+export function riepilogoModuli(scheda: SchedaModuli): RiepilogoModulo[] {
+  const stampati = moduliStampatiDi(scheda);
   const out: RiepilogoModulo[] = [];
   for (const slot of SLOTS) {
+    if (!stampati.includes(slot.column)) continue;
     if (scheda[slot.question] !== true) continue;
     if (!sceltoNellaScheda(slot, (key) => scheda[key as keyof SchedaModuli])) continue;
     const valori = storedValori(slot.modulo, scheda[slot.column]);

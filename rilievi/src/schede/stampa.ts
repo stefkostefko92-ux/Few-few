@@ -1,20 +1,41 @@
 import { z } from 'zod';
+import { COLONNE } from '../ordini/registry.js';
 import { ORDINABILI } from './ordine.js';
 
 /**
- * Какво влиза в печата и PDF-а на картата — изборите в края на формата: попълненото в модулите
- * (`riepilogoOrdini`) и разделите (`stampa`). Проверката на пратеното е тук; записът — в
+ * Какво влиза в печата и PDF-а на картата — изборите в края на формата: попълненото в модулите, всеки
+ * поотделно (`riepilogoOrdini`) и разделите (`stampa`). Проверката на пратеното е тук; записът — в
  * validation.ts, печатът и PDF-ът — ordine.ts (`sezioniStampate`) и src/ordini/riepilogo.ts.
  */
 
-/** Отметката „Includi quadro e argano nella stampa“: „1“ или нищо — всичко друго е подправено. */
+/** Страница отпреди отделния избор праща една отметка „1“ за всички модули. */
+const TUTTI = '1';
+const scelte = (value: unknown): unknown =>
+  value === undefined || value === '' ? [] : typeof value === 'string' ? [value] : value;
+
+/**
+ * Модулите в печата: отметнатите колони (`riepilogoOrdini`, повтарящ се ключ) в реда на слотовете;
+ * „1“ (стара страница) — всичките. Друга стойност е подправена.
+ */
 export const riepilogoSchema = z.preprocess(
-  (value) => (value === undefined || value === '' ? false : value),
-  z.union([z.literal(false), z.literal('1').transform(() => true)], {
-    errorMap: () => ({ message: 'invalid' }),
-  }),
+  scelte,
+  z
+    .array(z.string({ invalid_type_error: 'invalid' }), { invalid_type_error: 'invalid' })
+    .max(COLONNE.length + 1, 'invalid')
+    .refine(
+      (keys) => keys.every((key) => key === TUTTI || (COLONNE as readonly string[]).includes(key)),
+      'invalid',
+    )
+    .transform((keys) => COLONNE.filter((col) => keys.includes(TUTTI) || keys.includes(col))),
 );
 export const RIEPILOGO_KEY = 'riepilogoOrdini';
+
+/** Отметнатите модули, както са пратени (формата се връща) — само познатите колони. */
+export function riepilogoFromBody(source: Record<string, unknown>): string[] {
+  const list = scelte(source[RIEPILOGO_KEY]);
+  if (!Array.isArray(list)) return [];
+  return COLONNE.filter((col) => list.includes(col) || list.includes(TUTTI));
+}
 
 /**
  * Разделите в печата и PDF-а: отметнатите (`stampa`, повтарящ се ключ). Списъкът е във формата, когато

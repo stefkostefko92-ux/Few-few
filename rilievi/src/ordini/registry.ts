@@ -77,6 +77,14 @@ export const SLOTS: readonly ModuloSlot[] = [
   },
 ];
 
+/**
+ * Колоните на модулите (таблото — каквато и да е марка, листът за аргано, 2SG) в реда на слотовете: това
+ * се избира поотделно за печата и PDF-а на картата (src/schede/stampa.ts).
+ */
+export const COLONNE: readonly ModuloSlot['column'][] = [
+  ...new Set(SLOTS.map((slot) => slot.column)),
+];
+
 /** Изборите на картата, при които модулът се отваря: марката, после моделът (изгледът — обвивка за всеки). */
 export function sceltaDi(slot: ModuloSlot): Array<{ field: string; value: string }> {
   return [slot.marca, slot.modello].filter((c): c is NonNullable<typeof c> => c !== undefined);

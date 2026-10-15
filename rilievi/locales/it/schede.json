@@ -370,8 +370,13 @@
   },
   "riepilogo": {
     "title": "Stampa e PDF",
-    "label": "Includi i dati dei moduli (quadro, argano, 2SG) nella stampa e nel PDF della scheda",
-    "hint": "Entra solo quello che è compilato nei moduli. I moduli restano anche come PDF a parte.",
+    "moduli": "Dati dei moduli nella stampa e nel PDF",
+    "modulo": {
+      "ordineQuadro": "Ordine quadro",
+      "preventivoArgano": "Dati argano",
+      "ordineSospensioni": "Ordine 2SG (operatori e sospensioni)"
+    },
+    "hint": "Spunta i moduli da aggiungere in fondo al foglio: entra solo quello che è compilato. I moduli restano anche come PDF a parte.",
     "sezioni": "Sezioni nella stampa e nel PDF",
     "sezioniHint": "Togli la spunta alle sezioni da lasciare fuori dal foglio stampato. L'intestazione con indirizzo, matricola e n° impianto c'è sempre."
   }

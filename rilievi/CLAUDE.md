@@ -166,9 +166,11 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   `{modulo, valori}` — `modulo` е id-то на картата, затова записът на Pelazza никога не се чете като
   MoviLift, нито старото запитване към Montanari като листа за аргано) и излизат като свой PDF
   (`/schede/:id/ordine-quadro`, `/ordine-quadro-movilift`, `/ordine-quadro-mastech-ng120`,
-  `/ordine-quadro-mastech-qi-touch`, `/dati-argano`, `/sospensioni-2sg`; затворен модул → 404). В печата и PDF-а на картата влизат САМО когато картата го иска (отметката
-  `riepilogoOrdini`, пази се в картата) — само попълненото, по групите на модула
-  (`ordini/riepilogo.ts`). PDF-ът на модула е самият модул: плоските листове (Pelazza, аргано, 2SG) —
+  `/ordine-quadro-mastech-qi-touch`, `/dati-argano`, `/sospensioni-2sg`; затворен модул → 404). В печата
+  и PDF-а на картата влизат САМО модулите, които картата иска — всеки поотделно (таблото, аргано, 2SG:
+  отметките `riepilogoOrdini` в края на формата, пазят се в `moduliStampati`; `riepilogoOrdini` в базата е
+  „поне един“ за предишния код, а карта с него и без списък включва и трите, както преди) — само
+  попълненото, по групите на модула (`ordini/riepilogo.ts`). PDF-ът на модула е самият модул: плоските листове (Pelazza, аргано, 2SG) —
   кръстчета и текст по координатите от картата (`dimensione`/`sopraLinea` — размерът на текста по
   листа; `righe` — кутия с редове, NOTE на 2SG; `pagina` — групата е на втората страница, QI Touch;
   `segno: 'cerchio'` — кръгче около номера на етажа, NG120); `titolo` на ред — надписът на реда от листа

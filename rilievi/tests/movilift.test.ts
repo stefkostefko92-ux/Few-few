@@ -312,6 +312,7 @@ describe('saving the MoviLift order', () => {
   it('comes into the sheet print with its choices as the paper words them', () => {
     const scheda = {
       riepilogoOrdini: true,
+      moduliStampati: [],
       quadroMarca: 'MOVILIFT' as const,
       quadroModello: null,
       quadroOrdine: true,

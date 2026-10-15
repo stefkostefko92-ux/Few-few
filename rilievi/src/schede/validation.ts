@@ -34,6 +34,7 @@ import {
 import { misureCount, misureFromBody, parseMisure, type MisuraData } from './misure.js';
 import {
   RIEPILOGO_KEY,
+  riepilogoFromBody,
   riepilogoSchema,
   STAMPA_KEY,
   sezioniEscluseDi,
@@ -161,7 +162,9 @@ export type SchedaData = z.output<typeof schedaSchema> & {
   ordineQuadro: ModuloDati | null;
   preventivoArgano: ModuloDati | null;
   ordineSospensioni: ModuloDati | null;
+  /** Поне един модул в печата (за предишния код) и кои — колоните им. */
   riepilogoOrdini: boolean;
+  moduliStampati: string[];
   /** Разделите, които не влизат в печата и PDF-а (изборът в края на формата). */
   sezioniEscluse: string[];
   /** Отпечатъкът на потвърдените разминавания — слага го маршрутът при запис (schede-form.ts). */
@@ -217,7 +220,8 @@ export function parseScheda(
         ordineQuadro: dati('ordineQuadro') ?? null,
         preventivoArgano: dati('preventivoArgano') ?? null,
         ordineSospensioni: dati('ordineSospensioni') ?? null,
-        riepilogoOrdini: riepilogo.data,
+        riepilogoOrdini: riepilogo.data.length > 0,
+        moduliStampati: riepilogo.data,
         sezioniEscluse: stampa.data,
         discrepanzeConfermate: null,
       },
@@ -243,7 +247,7 @@ export function formValuesFromBody(body: unknown): FormValues {
   const source = asRecord(body);
   const values: FormValues = misureFromBody(source);
   for (const slot of SLOTS) Object.assign(values, moduloFromBody(slot.modulo, slot.prefix, source));
-  values[RIEPILOGO_KEY] = source[RIEPILOGO_KEY] === '1' ? '1' : '';
+  values[RIEPILOGO_KEY] = riepilogoFromBody(source);
   values[STAMPA_KEY] = stampaFromBody(source);
   // Кои свързани полета още следват източника си (collegati.js) — form.ts приема само истинските имена.
   values[AUTO_KEY] = typeof source[AUTO_KEY] === 'string' ? source[AUTO_KEY].slice(0, 4000) : '';

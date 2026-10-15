@@ -193,6 +193,7 @@ describe('the Mastech orders and the sheet', () => {
   it('come into the sheet print by their groups, a tick named by its row of the sheet', () => {
     const scheda = {
       riepilogoOrdini: true,
+      moduliStampati: ['ordineQuadro'],
       quadroMarca: 'MASTECH' as const,
       quadroModello: 'NG120' as const,
       quadroOrdine: true,

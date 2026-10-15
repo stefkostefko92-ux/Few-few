@@ -1,7 +1,7 @@
 // Linked data in a real browser (public/js/collegati.js): what the panel order says follows into the
 // argano data sheet while nobody types there; a different value is listed under its group in both forms,
 // the same number written otherwise is not; on save the differences wait for a confirmation.
-import { audit, fail } from './helpers.mjs';
+import { audit, fail, tick } from './helpers.mjs';
 
 const listed = (page, form, name) =>
   page.locator(`#f-${form} [data-diff]:visible`, { hasText: name }).count();
@@ -22,10 +22,8 @@ export async function checkLinkedData(page, scheme) {
   await page.fill('#f-oq-velocita', '1,2');
   if ((await page.inputValue('#f-pa-velocita')) !== '1,6')
     fail(`${scheme}: a typed value was overwritten`);
-  // The orders go into the sheet print too (a DOM click, like tick() in helpers.mjs).
-  await page.locator('#f-riepilogoOrdini').evaluate((input) => {
-    if (!input.checked) input.click();
-  });
+  // Of the orders, only the panel order goes into the sheet print — each is chosen on its own.
+  await tick(page, 'riepilogoOrdini', 'ordineQuadro');
 }
 
 export async function confirmDifferences(page, scheme) {

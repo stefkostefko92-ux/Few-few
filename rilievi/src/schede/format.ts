@@ -8,6 +8,7 @@ import { misureFromRows, misureTable, type TableView } from './misure.js';
 import { ORDINABILI, sezioniOrdinate } from './ordine.js';
 import { nomeModulo } from '../ordini/moduli.js';
 import { slotAperto, SLOTS } from '../ordini/registry.js';
+import { moduliStampatiDi } from '../ordini/riepilogo.js';
 import { moduloFormValues, storedValori } from '../ordini/valori.js';
 
 /** Картата с редовете на мерките по спирки — каквото показват страницата, печатът и PDF-ът. */
@@ -177,7 +178,7 @@ export function formValuesFromScheda(scheda: SchedaShown, fmt: ViewHelpers): For
     const valori = storedValori(slot.modulo, values[slot.column]);
     if (valori) Object.assign(out, moduloFormValues(slot.modulo, slot.prefix, valori));
   }
-  out.riepilogoOrdini = scheda.riepilogoOrdini ? '1' : '';
+  out.riepilogoOrdini = moduliStampatiDi(scheda);
   out.stampa = ORDINABILI.filter((key) => !scheda.sezioniEscluse.includes(key));
   for (const section of SECTIONS) {
     for (const field of section.fields as readonly FieldDef[]) {
@@ -221,7 +222,7 @@ export function schedaTitle(
 
 /** Празна форма: днешната дата по Рим, всичко друго празно. */
 export function emptyFormValues(today: string): FormValues {
-  const out: FormValues = { riepilogoOrdini: '', stampa: [...ORDINABILI] };
+  const out: FormValues = { riepilogoOrdini: [], stampa: [...ORDINABILI] };
   for (const section of SECTIONS) {
     for (const field of section.fields as readonly FieldDef[]) {
       out[field.key] = field.kind === 'checks' ? [] : field.kind === 'date' ? today : '';

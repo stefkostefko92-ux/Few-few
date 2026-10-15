@@ -117,7 +117,7 @@ export function renderSchedaPdf(scheda: SchedaFull, options: PdfOptions): Promis
     }
     drawFields(ctx, chunk);
   }
-  // Попълненото в модулите на доставчиците — само ако картата го иска (`riepilogoOrdini`).
+  // Попълненото в модулите на доставчиците — само в тези, които картата иска (`moduliStampati`).
   for (const modulo of riepilogoModuli(scheda)) {
     drawSectionTitle(ctx, modulo.nome);
     drawFields(ctx, modulo.gruppi.map(gruppoField));

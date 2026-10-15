@@ -175,8 +175,11 @@ describe('data the sheet and the orders share', () => {
 
   it('puts the orders in the sheet print only when the sheet asks for it', async () => {
     const { browser } = await signedIn('TECNICO');
+    // The one box of a page from before the separate choices: all the orders.
     const id = await create(browser, { ...SURVEY, ...ORDERS, riepilogoOrdini: '1' });
-    assert.equal((await prisma.scheda.findUniqueOrThrow({ where: { id } })).riepilogoOrdini, true);
+    const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
+    assert.equal(row.riepilogoOrdini, true);
+    assert.deepEqual(row.moduliStampati, ['ordineQuadro', 'preventivoArgano', 'ordineSospensioni']);
     const print = await browser.get(`/schede/${id}/stampa`);
     assert.match(print.body, /Modulo d&#39;ordine quadri · Pelazza Peppino/);
     assert.match(print.body, /Velocità m\/s: <strong>1,0<\/strong>/);
@@ -187,16 +190,34 @@ describe('data the sheet and the orders share', () => {
     assert.equal(pdf.status, 200);
     assert.equal(pdf.bytes.subarray(0, 5).toString(), '%PDF-');
 
-    // Unticked on the form: the print goes back to the sheet alone; the orders keep their own PDFs.
+    // Each order on its own: only the argano sheet; then none — the orders keep their own PDFs.
     const edit = await browser.get(`/schede/${id}/modifica`);
-    assert.match(edit.body, /name="riepilogoOrdini" value="1"[^>]*checked/);
+    for (const colonna of ['ordineQuadro', 'preventivoArgano', 'ordineSospensioni']) {
+      assert.match(edit.body, new RegExp(`name="riepilogoOrdini" value="${colonna}" checked`));
+    }
     const base = /name="base" value="([^"]+)"/.exec(edit.body)![1]!;
+    const argano = await browser.submit(`/schede/${id}/modifica`, `/schede/${id}`, {
+      ...SURVEY,
+      ...ORDERS,
+      riepilogoOrdini: ['preventivoArgano'],
+      base,
+    });
+    assert.equal(argano.status, 303);
+    const onlyArgano = await browser.get(`/schede/${id}/stampa`);
+    assert.match(onlyArgano.body, /<h2>Modulo rilievi dati argani<\/h2>/);
+    assert.doesNotMatch(onlyArgano.body, /Consegna in cantiere/);
+    const again = await browser.get(`/schede/${id}/modifica`);
+    assert.match(again.body, /name="riepilogoOrdini" value="preventivoArgano" checked/);
+    assert.doesNotMatch(again.body, /name="riepilogoOrdini" value="ordineQuadro" checked/);
+    const base2 = /name="base" value="([^"]+)"/.exec(again.body)![1]!;
     const saved = await browser.submit(`/schede/${id}/modifica`, `/schede/${id}`, {
       ...SURVEY,
       ...ORDERS,
-      base,
+      base: base2,
     });
     assert.equal(saved.status, 303);
+    const after = await prisma.scheda.findUniqueOrThrow({ where: { id } });
+    assert.deepEqual([after.riepilogoOrdini, after.moduliStampati], [false, []]);
     const plain = await browser.get(`/schede/${id}/stampa`);
     assert.doesNotMatch(plain.body, /Consegna in cantiere|Modulo rilievi dati argani/);
     assert.equal((await browser.get(`/schede/${id}/ordine-quadro`)).status, 200);
@@ -209,6 +230,7 @@ describe('data the sheet and the orders share', () => {
       riepilogoOrdini: 'yes',
     });
     assert.equal(reply.status, 422);
-    assert.match(reply.body, /href="#f-riepilogoOrdini">Stampa e PDF:/);
+    assert.match(reply.body, /href="#f-riepilogoOrdini">Dati dei moduli nella stampa e nel PDF:/);
+    assert.match(reply.body, /id="err-riepilogoOrdini"/);
   });
 });

@@ -380,8 +380,12 @@ model Scheda {
   centralinaDiscesaEmergenza   Boolean?
   centralinaOlioLivello        OlioLivello?
   centralinaOlioStato          OlioStato?
-  /// Печатът и PDF-ът на картата включват и попълненото в двата модула — изборът се пази в картата.
+  /// Печатът и PDF-ът на картата включват попълненото в поне един модул (старият общ избор — четат го
+  /// и предишните версии на кода; новата го пише като „поне един“).
   riepilogoOrdini              Boolean                  @default(false)
+  /// Кои модули влизат в печата и PDF-а — колоните им (`ordineQuadro`, `preventivoArgano`,
+  /// `ordineSospensioni`). Празно при „riepilogoOrdini“ — карта отпреди отделния избор: и трите.
+  moduliStampati               String[]                 @default([])
   /// Разделите, които НЕ влизат в печата и PDF-а (изборът в края на формата) — пазят се изключените, за
   /// да е новият раздел включен и в старите карти.
   sezioniEscluse               String[]                 @default([])

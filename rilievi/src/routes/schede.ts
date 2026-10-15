@@ -221,7 +221,7 @@ schedeRouter.get('/schede/:id/stampa', read, async (req, res) => {
     // „Impianto“ е в заглавната лента и в табелата — не се печата втори път; изключените в картата —
     // никак.
     printed: sezioniStampate(sections, scheda.sezioniEscluse),
-    // Попълненото в модулите — само ако картата го иска (`riepilogoOrdini`).
+    // Попълненото в модулите — само в тези, които картата иска (`moduliStampati`).
     riepilogo: riepilogoModuli(scheda),
     autoPrint: req.query.auto === '1',
   });

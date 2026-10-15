@@ -5,7 +5,7 @@ import { collegatiDelGruppo } from '../ordini/collegamenti.js';
 import { collegatiPerBrowser } from '../ordini/collegati-browser.js';
 import { discrepanzeDi, improntaDi } from '../ordini/collegati.js';
 import { moduloFieldOf, withPrefill } from '../ordini/form.js';
-import { SLOTS } from '../ordini/registry.js';
+import { COLONNE, SLOTS } from '../ordini/registry.js';
 import { activeParts, SECTIONS } from '../schede/fields.js';
 import { MAX_MISURE, misuraOf, misuraTemplateRow, misureFormRows } from '../schede/misure.js';
 import { FISSE, sezioniOrdinate } from '../schede/ordine.js';
@@ -72,6 +72,8 @@ export function renderForm(req: Request, res: Response, status: number, view: Fo
     active: shown.fields,
     activeSections: shown.sections,
     fisse: FISSE,
+    // Модулите, които се избират поотделно за печата (таблото, листът за аргано, 2SG).
+    moduliStampa: COLONNE,
     misureRows: misureFormRows(view.values, view.errors),
     misuraTemplate: misuraTemplateRow(),
     maxMisure: MAX_MISURE,

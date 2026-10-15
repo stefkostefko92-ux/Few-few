@@ -6,7 +6,7 @@
   // Грешка в ред от мерките (`mb-<спирка>-<колона>`) — с името на колоната и номера на спирката.
   const labelOf = (key) => {
     if (key === identifiersErrorKey) return t('scheda.identifiers');
-    if (key === 'riepilogoOrdini') return t('riepilogo.title');
+    if (key === 'riepilogoOrdini') return t('riepilogo.moduli');
     if (key === 'stampa') return t('riepilogo.sezioni');
     const moduloField = moduloFieldOf(key);
     if (moduloField) return t('ordini.errorLabel', { label: moduloField.field.label, fornitore: moduloField.slot.modulo.fornitore || moduloField.slot.modulo.titolo });
@@ -101,10 +101,17 @@
         <p class="field__hint" id="stampa-hint"><%= t('riepilogo.sezioniHint') %></p>
         <% if (errors.stampa) { %><p class="field__error" id="err-stampa"><%= t('scheda.error.' + errors.stampa) %></p><% } %>
       </fieldset>
-      <div class="field field--wide">
-        <label class="tick"><input type="checkbox" id="f-riepilogoOrdini" name="riepilogoOrdini" value="1" aria-describedby="riepilogo-hint"<% if (values.riepilogoOrdini === '1') { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('riepilogo.label') %></span></label>
+      <%# Модулите на листа — всеки поотделно (таблото, аргано, 2SG); влиза само попълненото в тях. %>
+      <% const moduliScelti = Array.isArray(values.riepilogoOrdini) ? values.riepilogoOrdini : []; %>
+      <fieldset class="choice field field--wide" id="f-riepilogoOrdini" aria-describedby="riepilogo-hint<%= errors.riepilogoOrdini ? ' err-riepilogoOrdini' : '' %>">
+        <legend><%= t('riepilogo.moduli') %></legend>
+        <div class="choice__opts">
+          <% for (const colonna of moduliStampa) { %><label class="tick"><input type="checkbox" name="riepilogoOrdini" value="<%= colonna %>"<% if (moduliScelti.includes(colonna)) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('riepilogo.modulo.' + colonna) %></span></label>
+          <% } %>
+        </div>
         <p class="field__hint" id="riepilogo-hint"><%= t('riepilogo.hint') %></p>
-      </div>
+        <% if (errors.riepilogoOrdini) { %><p class="field__error" id="err-riepilogoOrdini"><%= t('scheda.error.' + errors.riepilogoOrdini) %></p><% } %>
+      </fieldset>
     </div>
   </fieldset>
   <div class="actions">

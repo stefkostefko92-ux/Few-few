@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { ARGANI, nomeModulo, PELAZZA, SG } from '../src/ordini/moduli.js';
-import { riepilogoModuli } from '../src/ordini/riepilogo.js';
+import { moduliStampatiDi, riepilogoModuli } from '../src/ordini/riepilogo.js';
+import { riepilogoFromBody, riepilogoSchema } from '../src/schede/stampa.js';
 
 describe('the orders in the sheet print', () => {
   const ordine = {
@@ -10,6 +11,7 @@ describe('the orders in the sheet print', () => {
   };
   const scheda = {
     riepilogoOrdini: true,
+    moduliStampati: [] as string[],
     quadroMarca: 'PELAZZA' as const,
     quadroModello: null,
     quadroOrdine: true,
@@ -65,6 +67,62 @@ describe('the orders in the sheet print', () => {
           { titolo: 'Porte di cabina (operatore)', spunte: ['AUTOMATICO'], testi: [] },
         ],
       },
+    ]);
+  });
+});
+
+describe('each order chosen for the sheet print on its own', () => {
+  const tutti = {
+    riepilogoOrdini: true,
+    moduliStampati: [] as string[],
+    quadroMarca: 'PELAZZA' as const,
+    quadroModello: null,
+    quadroOrdine: true,
+    ordineQuadro: { modulo: PELAZZA.id, valori: { ordine: true } },
+    arganoPreventivo: true,
+    preventivoArgano: { modulo: ARGANI.id, valori: { taglia12: true } },
+    sospensioni: true,
+    ordineSospensioni: { modulo: SG.id, valori: { automatico: true } },
+  };
+  const nomi = (scheda: typeof tutti) => riepilogoModuli(scheda).map((modulo) => modulo.nome);
+
+  it('prints only the ticked ones, in the order of the sheet', () => {
+    assert.deepEqual(nomi({ ...tutti, moduliStampati: ['preventivoArgano'] }), [
+      'Modulo rilievi dati argani',
+    ]);
+    assert.deepEqual(nomi({ ...tutti, moduliStampati: ['ordineSospensioni', 'ordineQuadro'] }), [
+      nomeModulo(PELAZZA),
+      nomeModulo(SG),
+    ]);
+    assert.deepEqual(
+      nomi({ ...tutti, riepilogoOrdini: false, moduliStampati: ['ordineQuadro'] }),
+      [],
+    );
+  });
+
+  it('keeps all three for a sheet saved with the one box of before', () => {
+    assert.deepEqual(moduliStampatiDi(tutti), [
+      'ordineQuadro',
+      'preventivoArgano',
+      'ordineSospensioni',
+    ]);
+    assert.equal(nomi(tutti).length, 3);
+  });
+
+  it('reads the ticked boxes of the form, the one box of an old page, and nothing forged', () => {
+    const parse = (value: unknown) => riepilogoSchema.safeParse(value);
+    assert.deepEqual(parse(['ordineSospensioni', 'ordineQuadro']).data, [
+      'ordineQuadro',
+      'ordineSospensioni',
+    ]);
+    assert.deepEqual(parse('preventivoArgano').data, ['preventivoArgano']);
+    assert.deepEqual(parse(undefined).data, []);
+    assert.deepEqual(parse('1').data, ['ordineQuadro', 'preventivoArgano', 'ordineSospensioni']);
+    for (const forged of ['yes', 'constructor', ['ordineQuadro', 'note'], { a: 1 }]) {
+      assert.equal(parse(forged).success, false, JSON.stringify(forged));
+    }
+    assert.deepEqual(riepilogoFromBody({ riepilogoOrdini: ['ordineSospensioni', 'x'] }), [
+      'ordineSospensioni',
     ]);
   });
 });

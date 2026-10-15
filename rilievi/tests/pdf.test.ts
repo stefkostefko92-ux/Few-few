@@ -62,6 +62,7 @@ const scheda = {
   misureBottoniere: [],
   lavoriExtra: 'x '.repeat(1500),
   sezioniEscluse: [],
+  moduliStampati: [],
   searchText: '',
   createdById: null,
   updatedById: null,
@@ -117,9 +118,18 @@ describe('the sheet PDF', { skip: !fontsHere && 'DejaVu fonts are not installed 
       },
     };
     const without = await renderSchedaPdf({ ...ordine, riepilogoOrdini: false }, options);
-    const withOrders = await renderSchedaPdf({ ...ordine, riepilogoOrdini: true }, options);
+    const withOrders = await renderSchedaPdf(
+      { ...ordine, riepilogoOrdini: true, moduliStampati: ['ordineQuadro'] },
+      options,
+    );
     assert.equal(withOrders.subarray(0, 5).toString(), '%PDF-');
     assert.ok(withOrders.length > without.length, 'the order adds its own section');
+    // Only the argano sheet ticked: the panel order stays out (it is its own PDF).
+    const otherOnly = await renderSchedaPdf(
+      { ...ordine, riepilogoOrdini: true, moduliStampati: ['preventivoArgano'] },
+      options,
+    );
+    assert.ok(otherOnly.length < withOrders.length, 'the unticked panel order is not printed');
   });
 
   it('leaves out the sections the sheet takes off the print', async () => {
