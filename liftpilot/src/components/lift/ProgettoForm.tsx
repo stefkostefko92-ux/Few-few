@@ -11,6 +11,7 @@ import SectionTitle from '@/components/project/SectionTitle';
 import { KL, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import type { ProgettoAuto } from '@/lib/lift/progetto';
 import { pulleyRoomOf } from '@/lib/lift/shaft-rig';
+import { macchinaEsistente } from '@/lib/lift/kept';
 import { roomGeo } from '@/shaft/machine-room';
 import { KV_VERT } from '@/shaft/norme-vert';
 import type { Texts } from '@/lib/present/texts';
@@ -66,6 +67,8 @@ export default function ProgettoForm({ P, X, inp, base, projectId, when, canCalc
   // the machine room comes with a machine above; the pulley room with a machine below whose pulleys stand over the slab
   // (scheme room): the room the sheets and the 3D draw and the checks measure
   const above = inp.calc.layout !== 'bottom';
+  // the machine the intervention keeps stands on its existing base, its L0, dx and h the calculation's (round 46, B8)
+  const kept = macchinaEsistente(inp);
   const pulley = inp.calc.layout === 'bottom' && !is('bottom') && inp.bottom === 'room'
     ? { standard: pulleyRoomOf({ ...inp.shaft, room: null }), minH: KV_VERT.pulleyRoomH, doorW: KV_VERT.doorMinW, doorH: KV_VERT.pulleyDoorH, above: KV_VERT.pulleyAbove } : undefined;
   const size = (key: 'W' | 'D') => (
@@ -104,12 +107,12 @@ export default function ProgettoForm({ P, X, inp, base, projectId, when, canCalc
       <VerticalOptions I={inp.shaft} set={setShaft} open blank={blank} fixedV={{ ms: inp.shaft.vertical.v, label: fromCalc }} />
       {above ? (
         <RoomOptions I={inp.shaft} set={setShaft} blank={blank}
-          machine={derived ? { D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D, shape: derived.machine.shape ?? null, rinvio: derived.machine.rinvio ?? null, heb: derived.heb, turn: roomGeo(derived.layout, derived.machine)?.dir } : undefined}
+          machine={derived ? { D: derived.machine.D, shimsAxis: KL.sheaveAxisPerD * derived.machine.D, shape: derived.machine.shape ?? null, rinvio: derived.machine.rinvio ?? null, heb: derived.heb, turn: roomGeo(derived.layout, derived.machine)?.dir, kept } : undefined}
           panel={{ auto: !!inp.auto.panel, set: (on) => setAuto({ panel: on }), placed: derived && derived.origin.panel === 'auto' ? derived.shaft.room : null }} />
       ) : pulley ? <RoomOptions I={inp.shaft} set={setShaft} blank={blank} pulley={pulley} /> : null}
       <SectionTitle icon="gear">{t('s_funi')}</SectionTitle>
       <ProgettoFuni P={P} base={base.values} auto={inp.auto} bottom={inp.bottom} h={h} derived={derived} blank={blank} texts={texts} setAuto={setAuto} setBottom={setBottom}
-        t={(k, v) => t(k, v)} porta={porta ? { ...porta, label: tp('porta') } : null} calate={calate} />
+        t={(k, v) => t(k, v)} porta={porta ? { ...porta, label: tp('porta') } : null} calate={calate} kept={kept} />
     </form>
   );
 }

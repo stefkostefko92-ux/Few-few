@@ -79,6 +79,11 @@ export function buildSupport(sup: MachineSupport, F: MachineFrame, D: number, ga
     return g;
   }
   const floor = base - gap;
+  // the existing base of a machine kept (round 46, B8): a neutral block under the bedframe, as the drawings hatch it
+  if (sup.kind === 'esistente') {
+    const zs = [...beams].sort((a, c) => a - c);
+    box(MOUNTS[0] - 0.12 * s, MOUNTS[MOUNTS.length - 1] + 0.12 * s, floor, top, zs[0] - 0.08 * s, zs[zs.length - 1] + 0.08 * s, M.slab);
+  }
   if (sup.kind === 'shims') atMounts(0.06 * s, 0.05 * s, floor, 0, M.galv);
   if (sup.kind === 'plates') atMounts(0.09 * s, 0.06 * s, floor, top, M.galv);
   if (sup.kind === 'plinth' && span) for (const [z0, z1] of F.plinth) box(span[0] / 1000, span[1] / 1000, floor, top, z0 / 1000, z1 / 1000, M.slab);

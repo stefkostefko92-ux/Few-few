@@ -31,6 +31,9 @@ export interface Reactions {
   /** the diverting pulley's own stand on the room's floor beside the support: its legs on the slab and their reactions
    *  [daN] under its own weight (`load.stand`), R(n+1)… after the support's; null without one or on the HEB beams */
   stand: { pts: Pt[]; R: number[] } | null;
+  /** the machine kept on its existing base (round 46, B8): one resultant on the base, static and with the dynamic
+   *  coefficient [daN], where it acts (room axes) — its share over the base's bearings is to be surveyed (no R1…Rn) */
+  kept?: { static: number; dynamic: number; at: Pt };
 }
 
 const onDrop = (G: RoomGeo, u: number, v: number): Pt => [G.carDrop[0] + u * G.ux - v * G.uy, G.carDrop[1] + u * G.uy + v * G.ux];
@@ -76,6 +79,7 @@ function standReactions(G: RoomGeo, M: MachineSpec, kg: number): Reactions['stan
 export function supportReactions(G: RoomGeo, M: MachineSpec, load: SupportLoad, heb: HebLayout | null = null): Reactions {
   const R = G.room, s = supportOf(R, M.Dp > 0), F = G.frame, c = loadCentre(G, M, load), Fn = c.F * G_ACC, at = onDrop(G, c.u, c.v);
   const stand = standReactions(G, M, load.stand ?? 0);
+  if (s.kind === 'esistente') return { on: 'slab', pts: [], R: [], stand: null, kept: { static: daN(loadCentre(G, M, { ...load, dyn: 1 }).F * G_ACC), dynamic: daN(Fn), at } };
   if (heb && onHeb(R, M.Dp > 0)) {
     // the HEB beams: each its share across them, simply supported between its bearings' centres along them, each as
     // long as heb.ts makes it (its mass on sheet 1)

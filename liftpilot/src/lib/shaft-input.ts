@@ -3,7 +3,7 @@
 // ranges wide enough for any lift and narrow enough to refuse nonsense. A design saved before the vertical data
 // existed (engine 1) reads with the typical values of what it lacks.
 import { z } from 'zod';
-import { DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, HEB_PROFILES, KV, KV_VERT, PROFILES, PROFILE_NAMES, RAIL_TYPES, SUPPORT_KINDS, hasProfile, layout, planOutside, profileOf, reasonText,
+import { BASI_ESISTENTI, DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, HEB_PROFILES, KV, KV_VERT, PROFILES, PROFILE_NAMES, RAIL_TYPES, SUPPORT_KINDS, hasProfile, layout, planOutside, profileOf, reasonText,
   type ShaftInputs } from '@/shaft';
 import { CW_CHOICES, DOOR_PAIRS } from '@/shaft/staffe-ids';
 
@@ -52,12 +52,16 @@ export const verticalSchema = z.object({
 
 const wall = z.enum(['front', 'rear', 'left', 'right']);
 
-/** What the machine stands on (src/shaft/support.ts); each value absent is the typical one. */
+/** What the machine stands on (src/shaft/support.ts); each value absent is the typical one. The existing base of a
+ *  machine kept (round 46, B8) with what it looks like; its axis is the derivation's (src/lib/lift/kept.ts), any sent
+ *  is replaced. */
 const supportSchema = z.object({
   kind: z.enum(SUPPORT_KINDS),
   profile: z.enum(PROFILE_NAMES).optional(),
   height: mm(0, 3000).optional(),
   length: mm(300, 5000).optional(),
+  of: z.enum(BASI_ESISTENTI).optional(),
+  axis: z.number().finite().min(-20000).max(20000).optional(),
 }).strict();
 
 export const roomSchema = z.object({

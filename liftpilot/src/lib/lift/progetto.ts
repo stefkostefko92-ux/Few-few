@@ -12,6 +12,7 @@ import { blankLift, type BlankKey, type LiftDraft } from './blank';
 import type { Collaudo } from './collaudo';
 import type { AutoFlags, LiftInputs } from './derive-types';
 import { sceltaSalvata } from './risposte';
+import { macchinaEsistente } from './kept';
 
 /** The switches of the values the drawing gives (true) or the calculation keeps (false); the panel's place as before. */
 export type ProgettoAuto = Pick<AutoFlags, 'L0' | 'dx' | 'Hv' | 'panel'>;
@@ -46,14 +47,16 @@ const numOf = (x: FormValues[string] | undefined): number | null => {
  * no catalog.
  */
 export function liftInputsOf(p: ProgettoInputs, base: BaseCalcolo): LiftInputs {
-  const V = base.values, layout = V.layout;
-  const h = p.h !== undefined && layout === 'topDefl' && numOf(V.h) !== p.h ? { h: p.h } : {};
+  const V = base.values, layout = V.layout, collaudo = base.collaudo ? sceltaSalvata(V, base.collaudo) : null;
+  // a machine the intervention keeps (round 46, B8): L0, dx and h are the calculation's, never the drawing's (kept.ts)
+  const kept = macchinaEsistente({ calc: V, collaudo });
+  const h = !kept && p.h !== undefined && layout === 'topDefl' && numOf(V.h) !== p.h ? { h: p.h } : {};
   return {
     shaft: { ...p.shaft, Q: Math.round(Number(V.Q)), vertical: { ...p.shaft.vertical, v: Number(V.v) } },
     calc: { ...V, ...h },
-    auto: { P: false, machine: false, L0: p.auto.L0, dx: p.auto.dx, Hv: p.auto.Hv, ...(p.auto.panel !== undefined ? { panel: p.auto.panel } : {}) },
+    auto: { P: false, machine: false, L0: kept ? false : p.auto.L0, dx: kept ? false : p.auto.dx, Hv: p.auto.Hv, ...(p.auto.panel !== undefined ? { panel: p.auto.panel } : {}) },
     ...(layout === 'bottom' && p.bottom ? { bottom: p.bottom } : {}),
-    ...(base.collaudo ? { collaudo: sceltaSalvata(V, base.collaudo) } : {}),
+    ...(collaudo ? { collaudo } : {}),
   };
 }
 

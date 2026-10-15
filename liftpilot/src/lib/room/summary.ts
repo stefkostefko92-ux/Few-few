@@ -6,7 +6,7 @@
 // (which the results do not keep) from that sentence. The support is named as sheet 1 names it (survey-data.ts
 // supportName, by the same parts and the same rule for the existing support kept): one place. Pure.
 import { z } from 'zod';
-import { SUPPORT_KINDS, profileOf, supportOf, type SupportKind } from '@/shaft/support';
+import { SUPPORT_KINDS, SUPPORT_SCELTE, profileOf, supportOf, type SupportKind } from '@/shaft/support';
 import type { RoomDerived } from './derive';
 import { EXISTING_SUPPORTS, type Survey } from './survey';
 import { keptKind } from './survey-site';
@@ -14,7 +14,7 @@ import { keptKind } from './survey-site';
 /** What the machine stands on: the kind, a frame's or the beams' profile, the maker's bedplate with the diverting pulley
  *  ("SICOR XTE3022"), or ours made to measure for it. */
 export interface RoomSupportParts {
-  kind: SupportKind;
+  kind: RoomSupportKind;
   profile: string | null;
   maker: string | null;
   own: boolean;
@@ -38,12 +38,17 @@ export interface RoomSummary {
 
 type ExistingKind = (typeof EXISTING_SUPPORTS)[number];
 
+/** The supports of a machine room's survey: never the existing base of a machine kept (round 46, B8 — the survey
+ *  places a new machine; survey.ts refuses it, its existing support is `existingSupport`). */
+export type RoomSupportKind = Exclude<SupportKind, 'esistente'>;
+
 /** The support's parts: `sup` as chosen (supportOf; a frame or beams without a profile have the typical one), the
  *  diverting pulley's bedplate `rf` as the derivation placed it. */
 export function supportParts(sup: { kind: SupportKind; profile?: string }, rf: { on: string; maker: string | null } | null): RoomSupportParts {
   const profile = sup.kind === 'frame' || sup.kind === 'beams' ? sup.profile ?? profileOf({ kind: sup.kind }) : null;
   const onFrame = sup.kind === 'rinvio' && rf?.on === 'frame';
-  return { kind: sup.kind, profile, maker: onFrame ? rf.maker : null, own: onFrame && rf.maker === null };
+  // (the existing base of a machine kept never reaches a survey: read as the shims it is drawn as)
+  return { kind: sup.kind === 'esistente' ? 'shims' : sup.kind, profile, maker: onFrame ? rf.maker : null, own: onFrame && rf.maker === null };
 }
 
 /** The support of a derived machine room (survey-data.ts supportName writes it on sheet 1). */
@@ -61,7 +66,7 @@ export const roomSummaryOf = (d: RoomDerived, s: Pick<Survey, 'room' | 'existing
 const n = z.number().finite();
 const summarySchema = z.object({
   v: z.literal(1), W: n, D: n, machine: z.string().max(120).nullable(), heb: z.string().max(40).nullable(), calata: n,
-  support: z.object({ kind: z.enum(SUPPORT_KINDS), profile: z.string().max(40).nullable(), maker: z.string().max(80).nullable(), own: z.boolean() }).strict(),
+  support: z.object({ kind: z.enum(SUPPORT_SCELTE), profile: z.string().max(40).nullable(), maker: z.string().max(80).nullable(), own: z.boolean() }).strict(),
   // (round 37, after the first records: absent, read from the record's survey)
   kept: z.enum(EXISTING_SUPPORTS).nullable().optional(),
 }).strict();

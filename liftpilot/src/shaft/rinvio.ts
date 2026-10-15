@@ -37,8 +37,10 @@ export interface MakerBedplate {
 
 /** Where the pulley turns and what holds it. */
 export interface RinvioFrame {
-  /** in the machine's bedplate, or on its own stand on the floor when another support carries the machine */
-  on: 'frame' | 'stand';
+  /** in the machine's bedplate, or on its own stand on the floor when another support carries the machine; with the
+   *  machine kept on its existing base (round 46, B8) the existing pulley as it is — no frame or stand drawn, checked or
+   *  billed, its axis the calculation's h under the sheave */
+  on: 'frame' | 'stand' | 'esistente';
   pulleyAxis: number;
   /** the bedplate's top over the floor; 0 on a stand */
   top: number;
@@ -66,6 +68,7 @@ export const rinvioTopOf = (Dp: number): number => Math.max(KV_VERT.rinvioTop, r
 export function rinvioFrame(sup: MachineSupport, Dp: number, maker: MakerBedplate | null, yWheel: number | null, base = 0): RinvioFrame {
   // over the floor, or over the HEB beams (the frame's own heights unchanged, every height over the floor raised)
   const on = (rf: RinvioFrame): RinvioFrame => (base ? { ...rf, pulleyAxis: rf.pulleyAxis + base, top: rf.top + base, base } : rf);
+  if (sup.kind === 'esistente') return { on: 'esistente', pulleyAxis: rinvioAxisOf(Dp), top: 0, bed: null, maker: null };
   if (sup.kind !== 'rinvio') return on({ on: 'stand', pulleyAxis: rinvioAxisOf(Dp), top: 0, bed: null, maker: null });
   const seat = maker && yWheel !== null ? maker.sheaveAxis - maker.top - yWheel : null;
   if (maker && sup.height === undefined && (seat === null || seat >= 0)) return on({ on: 'frame', pulleyAxis: maker.pulleyAxis, top: maker.top, bed: seat, maker });

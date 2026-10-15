@@ -48,12 +48,13 @@ export function titleSpares(title: string, subtitle?: string): Box[] {
 }
 
 /** The legend's shapes in `area` (the view's) clear of `drawn` (the view with its marks); when it does not fit there,
- *  smaller in one of the `spare` boxes (titleSpares); none when nothing fits. */
-export function roomLegend(drawn: readonly Shape[], area: Box, spare: readonly Box[] = []): Shape[] {
+ *  smaller in one of the `spare` boxes (titleSpares); none when nothing fits. `items`: the symbols the plan has (a
+ *  machine kept on its existing base has no hook, round 46). */
+export function roomLegend(drawn: readonly Shape[], area: Box, spare: readonly Box[] = [], items: readonly LegendItem[] = ROOM_LEGEND): Shape[] {
   let ext: Box | null = null;
   for (const s of drawn) ext = union(ext, shapeBox(s));
   if (!ext) return [];
-  const cell = cellOf(LOOK), w = area.x1 - area.x0, n = ROOM_LEGEND.length;
+  const cell = cellOf(LOOK), w = area.x1 - area.x0, n = items.length;
   // a block of rows under the drawing or over it, as few rows as the width allows
   for (let cols = n; cols >= 2; cols--) {
     if (cols * cell > w) continue;
@@ -61,33 +62,33 @@ export function roomLegend(drawn: readonly Shape[], area: Box, spare: readonly B
     const below = ext.y0 - area.y0 >= h + 2 ? area.y0 : null, above = area.y1 - ext.y1 >= h + 2 ? area.y1 - h : null;
     const y0 = below ?? above;
     if (y0 === null) continue;
-    return block(x0, y0, cols, cell, rows, LOOK);
+    return block(x0, y0, cols, cell, rows, LOOK, items);
   }
   // else a column beside it
   const h = n * LOOK.row + 2 * LOOK.pad;
   for (const x0 of [area.x1 - cell, area.x0]) {
     const clear = x0 > (area.x0 + area.x1) / 2 ? area.x1 - ext.x1 >= cell + 2 : ext.x0 - area.x0 >= cell + 2;
-    if (clear && area.y1 - area.y0 >= h) return block(x0, area.y0, 1, cell, n, LOOK);
+    if (clear && area.y1 - area.y0 >= h) return block(x0, area.y0, 1, cell, n, LOOK, items);
   }
   // else beside the title, closer (round 36 review: the symbols are drawn in any case): in one box, else its first items
   // left of the title and the rest right of it
-  const inBox = (b: Box, k: Look, items: readonly LegendItem[]): Shape[] | null => {
+  const inBox = (b: Box, k: Look, its: readonly LegendItem[]): Shape[] | null => {
     const c = cellOf(k);
-    for (let cols = 1; cols <= items.length; cols++) {
-      const rows = Math.ceil(items.length / cols), bh = rows * k.row + 2 * k.pad;
+    for (let cols = 1; cols <= its.length; cols++) {
+      const rows = Math.ceil(its.length / cols), bh = rows * k.row + 2 * k.pad;
       if (cols * c > b.x1 - b.x0 || bh > b.y1 - b.y0) continue;
-      return block(b.x0, (b.y0 + b.y1) / 2 - bh / 2, cols, c, rows, k, items);
+      return block(b.x0, (b.y0 + b.y1) / 2 - bh / 2, cols, c, rows, k, its);
     }
     return null;
   };
   for (const k of SPARE) for (const b of spare) {
-    const one = inBox(b, k, ROOM_LEGEND);
+    const one = inBox(b, k, items);
     if (one) return one;
   }
   const [left, right] = spare;
   if (left && right) {
     for (const k of SPARE) for (let m = Math.ceil(n / 2); m < n; m++) {
-      const a = inBox(left, k, ROOM_LEGEND.slice(0, m)), b = a && inBox(right, k, ROOM_LEGEND.slice(m));
+      const a = inBox(left, k, items.slice(0, m)), b = a && inBox(right, k, items.slice(m));
       if (a && b) return [...a, ...b];
     }
   }

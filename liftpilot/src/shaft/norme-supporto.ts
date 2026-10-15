@@ -25,6 +25,26 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
       + '100 mm oltre l’argano anche dentro un muro',
   },
   {
+    id: 'locale.basamento.esistente', gruppo: 'locale', titolo: 'Argano che resta sul suo basamento esistente',
+    valore: 'con l’argano che resta (calcolo di un impianto esistente il cui collaudo non sostituisce la macchina, qualunque sia il tipo di '
+      + 'intervento) i disegni del locale lo mettono sul suo basamento esistente: un blocco tratteggiato «BASAMENTO ESISTENTE — DA RILEVARE: '
+      + 'POSIZIONE, ALTEZZA E APPOGGI», l’asse della puleggia dove lo porta la L0 del calcolo (un asse che l’argano non può avere è un problema di '
+      + 'L0), senza telaio, antivibranti, putrelle HEB, gancio né supporto del rinvio; le aperture nella soletta esistenti, tratteggiate; L0, dx e h '
+      + 'vengono dal calcolo; non si calcolano le verifiche di un basamento nuovo (m_beam, m_heb, m_bedplate, m_base, m_stand, m_rinvio, m_holes, '
+      + 'm_calata), restano quelle dell’argano nel locale (m_fit, m_free, m_panel, m_quadro, m_route); il foglio 1 dà «ARGANO ESISTENTE» con la '
+      + 'massa del calcolo, «BASAMENTO ESISTENTE (DA RILEVARE)» senza massa e una risultante sul basamento, statica e con il coefficiente '
+      + 'dinamico, con la ripartizione sugli appoggi da rilevare; il tipo di basamento indicato (spessori, telaio, putrelle, plinto, non chiaro) è '
+      + 'solo descrittivo',
+    riferimento: 'UNI 10411-1:2024, 9.1–9.2 e 5; UNI 10411-11:2024, 9.2 e 5; UNI EN 81-20:2020, 5.2.6.3.3 (aperture, qui esistenti); DPR 162/1999, '
+      + 'art. 12 c.4',
+    fonte: 'UNI 10411-1:2024 e UNI 10411-11:2024, punti 5 e 9 letti sul testo; come si disegna l’argano che resta e quale asse prende: scelta del '
+      + 'software',
+    stato: 'scelta',
+    nota: 'posizione, altezza, appoggi e portata del basamento esistente non sono verificati: con portata o velocità maggiori la prova della '
+      + 'struttura dell’edificio è a cura del proprietario (punto 5), da confermare dal tecnico strutturale; l’asse dalla L0 ne eredita la '
+      + 'precisione; fino a SHAFT 2.25.0 e LIFT 1.31.0 l’argano che resta si disegnava su un basamento nuovo del software, con le sue verifiche',
+  },
+  {
     id: 'locale.telaio', gruppo: 'locale', titolo: 'Telaio sotto l’argano',
     valore: 'il telaio ha sempre tre ferri sopra e la puleggia sta fra i ferri, così il carico delle funi cade fra gli appoggi e il telaio non si '
       + 'ribalta: un ferro sotto ogni fila di fori dei piedi e, se nessuna fila (il supporto esterno) sta oltre la puleggia, un terzo ferro oltre di '

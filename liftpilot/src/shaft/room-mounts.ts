@@ -6,6 +6,7 @@
 // structural engineer's to confirm. Section B-B writes it beside the support, the relazioni in their rows. Italian; pure.
 import type { MachineSpec, RoomGeo } from './machine-room';
 import { upliftText, type Uplift } from './room-reactions';
+import { KEPT_MOUNTS_LINES, KEPT_MOUNTS_TEXT } from './room-kept';
 import { onHeb, supportOf } from './support';
 
 /** What the mounts' text adds to the room: `kept` — the existing support the new machine stands on, kept (its kind in
@@ -27,6 +28,8 @@ export function mountsText(G: RoomGeo, M: MachineSpec, o: MountsOpts = {}): stri
   const tail = ' — tipo e portata degli antivibranti del costruttore; fissaggi da verificare dallo strutturista';
   const onFloor = heb ? 'alle ali delle putrelle HEB con piastre e bulloni (o morsetti)' : 'alla soletta con tasselli (fermi contro lo scorrimento)';
   const bedplate = s.kind === 'rinvio' && M.rinvio?.on === 'frame';
+  // the machine kept on its existing base (round 46, B8): no new mounts or fixings named
+  if (s.kind === 'esistente') return KEPT_MOUNTS_TEXT;
   if (o.kept) {
     return bedplate ? `N. 4 antivibranti sotto le gambe del telaio con rinvio, ${onKept(o.kept)}; gambe fissate al basamento esistente${up}${tail}`
       : `N. ${n} antivibranti sotto i ferri del telaio dell’argano, ${onKept(o.kept)}; fissaggi al basamento esistente${up}${tail}`;
@@ -48,6 +51,7 @@ export function mountsLines(G: RoomGeo, M: MachineSpec, o: MountsOpts = {}): [st
   const R = G.room, s = supportOf(R, M.Dp > 0), F = G.frame, heb = onHeb(R, M.Dp > 0), n = F.mounts.length * F.beams.length;
   const tail = `${o.uplift?.length ? `; a trazione ${upliftText(o.uplift)}` : ''} — da verificare dallo strutturista`, on = heb ? 'alle putrelle HEB con piastre e bulloni' : 'alla soletta con tasselli';
   const bedplate = s.kind === 'rinvio' && M.rinvio?.on === 'frame';
+  if (s.kind === 'esistente') return KEPT_MOUNTS_LINES;
   if (o.kept) {
     const where = `sul basamento esistente (${o.kept}) riusato: posizione, altezza e fissaggi da rilevare${tail}`;
     return bedplate ? ['N. 4 antivibranti sotto le gambe del telaio (tipo e portata del costruttore)', `gambe ${where}`]

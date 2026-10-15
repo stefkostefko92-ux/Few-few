@@ -64,8 +64,8 @@ export function oggettoTecnica(tipo: TipoIntervento, C: Prova, named: string | n
 /** The note of sheet 1 on the test, opened by the type of a calculation saved with it. */
 export const notaIntervento = (tipo: TipoIntervento, C: Prova): string => `Intervento: ${etichettaIntervento(tipo, C)}.`;
 
-/** A machine kept while the speed, the load or the travel change (round 45; round 46: informative, the scope has the
- *  changes): the checks the changes bring enter the result (ambito.ts), those still printed «Esistente» — named in
+/** A machine kept while the speed, the load or the travel change, as information (the scope has the changes): the
+ *  checks the changes bring enter the result (ambito.ts), those still printed «Esistente» — named in
  *  `esistenti`, as ambitoOf gives them — stay out of it and the engineer evaluates them with the modified lift's data;
  *  with the speed changed the suspension is verified again whatever stays (UNI 10411-1:2024, 15.8 with 14.1; UNI
  *  10411-11:2024, 15 d)). Null: not this case. */

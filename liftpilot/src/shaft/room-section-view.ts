@@ -22,12 +22,14 @@ import { hebNote } from './heb-view';
 import { mountsLines } from './room-mounts';
 import { AT, takenBy } from './room-label';
 import { foundGaps, foundSection } from './room-section-found';
+import { onKeptBase } from './room-kept';
 
 /** Section B-B along the rope drops: X is u along the drop line, Z the height above the room floor. `o`: the door's and
  *  the panel's heights in one row, the dimensions placed for another scale than 1:25 (views.ts, to keep the section at
  *  its plan's scale). */
 export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDrawOpts = {}): { entities: Entity[]; bounds: Box } {
-  const R = G.room, out: Entity[] = [], sk = (o.scale ?? 25) / 25;
+  // (the machine kept on its existing base, round 46 B8: no upstands, new heights, frame or hook — room-kept.ts)
+  const R = G.room, out: Entity[] = [], sk = (o.scale ?? 25) / 25, kept = onKeptBase(R, M);
   const [r0, r1] = span(G, 0, 0, R.W, R.D), [s0, s1] = span(G, R.shaftX, R.shaftY, R.shaftX + S.W, R.shaftY + S.D);
   const top = R.H, ridge = R.ridge > 0 ? R.ridge : R.H, midU = (r0 + r1) / 2, below = 1300 * sk, foot = -R.slab - below;
   // floor slab over the shaft, open where the ropes and a pulley go through and where the cut crosses an existing
@@ -48,7 +50,7 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
   } else out.push(rect(r0 - WALL, top, r1 + WALL, top + WALL, 'wall', 'concrete'));
   // the door and the panel where the view sees them, under the machine drawn next; the openings' upstands (round 36)
   const fit = seenFittings(G, r0, r1);
-  out.push(...fit.entities, ...kerbsSection(S, M, G));
+  out.push(...fit.entities, ...(kept ? [] : kerbsSection(S, M, G)));
   // the machine on its support (shims, frame, beams, plates or plinth), its sheave's axis at the height the
   // calculation counts
   const k = 1000 * G.s, F = G.frame, base = F.shape ? M.axis - F.axis : M.axis - MACHINE_A.yWheel * k, zs = M.axis, D = M.D, rf = M.rinvio ?? null;
@@ -100,7 +102,8 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
   }
   // the sheave's axis: the support's height takes the change (the machine's own height and the HEB beams under
   // the support stay)
-  const hb = M.base ?? 0, axisEdit = rf?.on === 'frame' ? (rf.maker ? null : E('rinvio.height', -F.axis - hb)) : E('sup.height', -(ownAxis(D, F.shape) + hb));
+  // (kept on its existing base: the axis is the calculation's L0, not an input of the drawing)
+  const hb = M.base ?? 0, axisEdit = kept ? null : rf?.on === 'frame' ? (rf.maker ? null : E('rinvio.height', -F.axis - hb)) : E('sup.height', -(ownAxis(D, F.shape) + hb));
   // (on the bedplate of the pulley, left of its two heights; the h of the pulley right of its legs)
   out.push(chain({ dir: 'y', pts: [0, zs], at: bedRun ? Math.min(G.frame0 - 120 * sk, bedRun[0] - 620 * sk) : G.frame0 - 120 * sk, from: [null, G.sheaveAt], text: ['Asse {v}'],
     edit: [axisEdit] }));
@@ -111,7 +114,7 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
     // on the bedplate whose h the calculation took, a change of h is a change of the bedplate's top; on its own stand,
     // of the machine's support (the pulley's axis stays where the stand has it)
     const standH = E('sup.height', G.pulleyZ - ownAxis(D, F.shape) - hb, low ? 1 : -1);
-    const hEdit = rf?.auto ? (rf.on === 'frame' ? (low ? rinvioHEdit(M, rf) : null) : standH) : S.calcEdits ? E('calc.h', 0, low ? 1 : -1) : null;
+    const hEdit = kept ? null : rf?.auto ? (rf.on === 'frame' ? (low ? rinvioHEdit(M, rf) : null) : standH) : S.calcEdits ? E('calc.h', 0, low ? 1 : -1) : null;
     if (hChain) out.push(chain({ dir: 'y', pts: low ? [G.pulleyZ, zs] : [zs, G.pulleyZ], at: ue, from: low ? [G.pulleyAt, G.sheaveAt] : [G.sheaveAt, G.pulleyAt], text: ['h {v}'], edit: [hEdit] }));
     const less = 2 * M.ropeIn + M.D / 2 + (M.reverse ? -M.Dp / 2 : M.Dp / 2);
     // over the room, nearest to it: the frames' lengths in the rows beyond
@@ -120,7 +123,7 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
   }
   // the bedframe's length over the room, from its ends (none on a bedplate's irons or the maker's pedestal); the rope
   // drop between the ropes' axes in the shaft
-  if (F.on === 'frame') out.push(chain({ dir: 'x', pts: [G.frame0, G.frame1], side: 'top', row: M.Dp > 0 ? 1 : 0, from: [base, base], text: ['{v} Telaio argano'] }));
+  if (F.on === 'frame' && !kept) out.push(chain({ dir: 'x', pts: [G.frame0, G.frame1], side: 'top', row: M.Dp > 0 ? 1 : 0, from: [base, base], text: ['{v} Telaio argano'] }));
   out.push(chain({ dir: 'x', pts: [0, G.calata], at: foot + 160 * sk, from: [ropeFoot, ropeFoot], axis: [true, true], text: ['{v} Calata Funi (Rif.)'], edit: [S.calata(0, false, true)] }));
   const along = Math.abs(G.uy) > 0.999 ? 'D' : Math.abs(G.ux) > 0.999 ? 'W' : null;
   // (askew, the shaft cut on the slant: a reference, no one input of the shaft gives it)
@@ -145,16 +148,16 @@ export function roomSectionOn(S: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
       out.push(chain({ dir: 'y', pts: [0, R.panelH], side: fit.panel, row: Math.max(rows[fit.panel], ...taken), text: [text], edit: [panelH] }));
     }
   }
-  out.push(...kerbDim(S, M, G, out, r0, r1, sk));
+  if (!kept) out.push(...kerbDim(S, M, G, out, r0, r1, sk));
   // the hook over the machine with its rated load, the free height over the rotating parts; the mounts and the
   // fixings named (round 36)
-  const hook = hookOf(G, M, S.pieces ?? []);
-  out.push(...aboveSection(G, M, hook.u, sk));
+  const hook = kept ? null : hookOf(G, M, S.pieces ?? []);
+  out.push(...aboveSection(G, M, hook?.u ?? null, sk));
   // the existing openings the cut crosses, named under the slab (the hook's name and the notes keep off them)
   out.push(...foundSection(S, G, out, sk));
   // (outside the drawing, under its foot or right of the room, as much as the paper leaves at this scale — round 37)
   const bounds0: Box = { x0: r0 - WALL, y0: foot, x1: r1 + WALL, y1: Math.max(top, ridge) + WALL }, outside = outsideSection(out, bounds0, AT * sk, o.paper);
-  const named = hookSection(G, hook, out, { r0, r1 }, outside, sk, [machineArea]);
+  const named = hook ? hookSection(G, hook, out, { r0, r1 }, outside, sk, [machineArea]) : [];
   out.push(...named);
   const under: Box = { x0: s0 - S.wall, y0: -R.slab - below, x1: s1 + S.wall, y1: -R.slab };
   // (to a mount: under the first leg of the bedplate with the pulley — where the drawing stands it, on the HEB beams where

@@ -34,6 +34,8 @@ interface Props {
   porta: { go(): void; pending: boolean; label: string } | null;
   /** the existing falls a direct pull keeps [mm] and the plan's drop set to them (round 46); null: the plan's falls */
   calate?: { Do: number; fix(): void } | null;
+  /** the machine the intervention keeps (round 46, B8): L0, dx and h locked to the calculation's (src/lib/lift/kept.ts) */
+  kept?: boolean;
 }
 
 const field = (id: string): Field => {
@@ -69,7 +71,7 @@ const placeFail = (d: LiftDerived): number | null => {
   return c && c.status === 'fail' && c.value !== null ? c.value : null;
 };
 
-export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank, texts, setAuto, setBottom, t, porta, calate = null }: Props) {
+export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank, texts, setAuto, setBottom, t, porta, calate = null, kept = false }: Props) {
   const { fmt } = P, layout = base.layout, DV = derived?.values ?? base;
   // the issues the calculation resolves: the way to it, beside them
   const toCalc = (on: boolean) => (on && porta ? <div className="btnrow"><button type="button" className="btn btn-sm porta-calcolo" onClick={porta.go} disabled={porta.pending}>{porta.label}</button></div> : null);
@@ -83,9 +85,12 @@ export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank,
         auto={{ value: x === null || !Number.isFinite(x) ? '—' : fmt(x, dec), badge: t(on ? 'badge_auto' : plan ? 'badge_pianta' : 'badge_calcolo') }} />
     );
   };
+  // (kept: L0 and dx·h the calculation's, the switch locked off with its reason)
+  const locked = (key: 'L0' | 'dx' | 'Hv'): boolean => kept && key !== 'Hv';
   const toggle = (key: 'L0' | 'dx' | 'Hv', label: string) => (
-    <div className="row check auto-toggle">
-      <input type="checkbox" id={`auto-${key}`} checked={auto[key]} onChange={(e) => setAuto({ [key]: e.target.checked })} />
+    <div className={`row check auto-toggle${locked(key) ? ' locked' : ''}`}>
+      <input type="checkbox" id={`auto-${key}`} checked={locked(key) ? false : auto[key]} disabled={locked(key)} aria-describedby={locked(key) ? 'progetto-kept' : undefined}
+        onChange={(e) => setAuto({ [key]: e.target.checked })} />
       <label htmlFor={`auto-${key}`}>{label}</label>
     </div>
   );
@@ -96,6 +101,7 @@ export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank,
         <summary>{t('g_funi')}</summary>
         <div className="rows">
           <p className="hint">{t('hint_funi')}</p>
+          {kept ? <p className="hint" id="progetto-kept">{t('hint_kept_funi')}</p> : null}
           {complete && derived.calata !== null ? calataHint(derived, fmt, t, calate) : null}
           {/* the plan's drop at the existing falls, the car or the counterweight no longer in its place: the software's
               drop, not a dimension fixed by hand (round 46) */}
@@ -127,14 +133,15 @@ export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank,
               {layout === 'bottom' && scheme !== 'room' ? ` ${t('hint_refuge_room')}` : ''}</p>
           ) : null}
           {toggle('L0', t('auto_L0'))}
-          {value('L0', auto.L0, 2)}
+          {value('L0', auto.L0 && !kept, 2)}
           {complete && derived.issues.includes('L0') && derived.drawn.L0 !== null ? (
-            <p className="hint bad" role="alert">{t('hint_L0_drawn', { v: fmt(Number(DV.L0), 2), g: fmt(derived.drawn.L0, 2) })}</p>
+            <p className="hint bad" role="alert">{t(kept ? 'hint_L0_kept' : 'hint_L0_drawn', { v: fmt(Number(DV.L0), 2), g: fmt(derived.drawn.L0, 2) })}</p>
           ) : null}
+          {toCalc(kept && complete && derived.issues.includes('L0'))}
           {layout === 'topDefl' ? (
             <>
               {toggle('dx', t('auto_dx'))}
-              {value('dx', auto.dx, 3)}
+              {value('dx', auto.dx && !kept, 3)}
               {complete && derived.issues.includes('dx') ? (
                 <p className="hint bad" role="alert">
                   {/* the pulley on its own stand under a machine on the floor: no h fits, the support is the cause */}
@@ -142,7 +149,7 @@ export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank,
                 </p>
               ) : null}
               {toCalc(complete && derived.issues.includes('dx'))}
-              {value('h', auto.dx && !!derived?.machine.rinvio, 3, !auto.dx && h !== undefined)}
+              {value('h', auto.dx && !kept && !!derived?.machine.rinvio, 3, !kept && !auto.dx && h !== undefined)}
               {complete && derived.issues.includes('rinvio') ? <p className="hint bad" role="alert">{t(derived.rinvioClash === 'machine' ? 'hint_rinvio_machine' : 'hint_rinvio_floor')}</p> : null}
               {toCalc(complete && derived.issues.includes('rinvio'))}
             </>

@@ -104,8 +104,9 @@
     черновата); цената на проект на асансьора върху такава основа — `costNoteModificationResta`, и двете бележки без
     „adeguamento ACOP/UCM“ (`acopLines` го брои само с машината между частите); приложението на relazione „Voci
     normative usate“ — без записите само на подмяната (`sostituzione.*`, `locale.calate`) и с ред, който го казва;
-    другите общи записи на регистъра, които говорят за „macchina nuova“ (`locale.esistente`, отворите в плочата, UCM), остават
-    общ текст (редът ги чете като апаратурата, сменена или добавена). Лист 1 на комплект върху такава основа: ARGANO
+    общите записи на регистъра (`locale.esistente`, `locale.fori`, `modello.non.calcolate`) от кръг 46 S6 (B9) казват сами
+    „apparecchiature sostituite o aggiunte“ и „con la macchina nuova o con la velocità variata“, затова редът казва само,
+    че записите на подмяната не са изброени. Лист 1 на комплект върху такава основа: ARGANO
     „ESISTENTE (име)“ и бележката за съществуващото машинно „Attorno alle apparecchiature sostituite o aggiunte…“
     (`NoteCase.resta`) — само с декларирания тип, затова комплектите отпреди и издадените остават байт по байт (на
     `argano_p3` няма издаден комплект върху такава основа). Разрезът B-B на машинното още рисува рамата на софтуера
@@ -315,6 +316,21 @@
   само със сменени кабинни врати ('porte'). Обхватът им е в `ambito.ts` (h_clear остава по EN 81-20, въпрос 5), задълженията
   — в `obblighi-facoltative.ts`; `PARTI_LOCALE` включва машинното, алармата и UCM. Трансформацията (EN 81-20/50) има и тях
   в частите си — цената и думите на документите за нея са както преди (`calcUncounted`, `partiText`).
+  Кръг 46 S6 (B8): машината, която остава, се чертае и товари като съществуваща. Условието е физическо
+  (`src/lib/lift/kept.ts` `macchinaEsistente`: изчисление 'repl', чието изпитване пази машината — `partKept`), каквото и
+  да е типът (думите на листовете остават по декларирания тип). `deriveLift` нормализира входа най-напред (`keptInputs`):
+  основата е `'esistente'` (`MachineSupport.of` — какво е по думите на потребителя: spessori / telaio / putrelle / plinto /
+  non chiaro, само описание), без HEB; L0, dx и h — от изчислението (`liftInputsOf`: `auto.L0`/`dx` = false, без h от
+  плана); оста на шайбата — от L0 (`keptAxis` = L0 − headroom + frameTop − плочата), ос под пода — проблемът 'L0'.
+  Чертежите (`src/shaft/room-kept.ts`): B-B — щрихован блок «BASAMENTO ESISTENTE — DA RILEVARE: POSIZIONE, ALTEZZA E
+  APPOGGI», без «Telaio argano», бордове, антивибратори, HEB и кука; планът — основата и отворите пунктирани («FORO
+  ESISTENTE»), без кука и R1…Rn; ролката — съществуващата, без рама или стойка (`RinvioFrame.on` 'esistente'). Не се
+  смятат `NON_SU_ESISTENTE` (m_beam*, m_heb*, m_bedplate, m_base, m_stand, m_rinvio, m_holes, m_calata); остават
+  m_fit, m_free, m_panel, m_quadro, m_route. Лист 1: «ARGANO ESISTENTE» (масата от изчислението, оценката — «STIMA — DA
+  TARGA O LIBRETTO»), «BASAMENTO ESISTENTE (DA RILEVARE)» без маса, една резултантна «SUL BASAMENTO ESISTENTE» (статична
+  и с динамичния коефициент, разпределението по опорите — да се заснеме), бележката по т. 5 (при по-голям товар или
+  скорост доказателството за сградата е на собственика). Капацитетът на съществуващата основа не се проверява.
+  Рилевото на машинното никога няма такава основа (`surveySaveSchema` я отказва).
 - **Обновяване със съществуващата рама (`src/lib/lift/intervento.ts`, регистър `impianto.rifacimento`, статус „prassi“):**
   третият избор в „Intervento“ на `/progetto` — между „Подмяна на машината“ и „Нов асансьор“ (кръг 45: в „Calcolo
   argano“ — „Rifacimento con l’arcata esistente“ е предварителен избор на Ammodernamento, отговаря всички части наведнъж). По практика рамата на

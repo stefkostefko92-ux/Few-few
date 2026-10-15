@@ -69,7 +69,9 @@ export function buildLiftWorld(renderer: THREE.WebGPURenderer, dv: LiftDerived, 
   const travel = [sim.levels[0], sim.levels[sim.levels.length - 1]].map((s) => [s, sim.cw0 - s] as const);
   // the slab over the shaft: the governor's rope through it only where the governor stands over it (with the pulleys
   // hung under the slab it is on its bracket under the ceiling)
-  const govFloor = governorFloor(rig, S, slab * 1000), openings = shaftSlabOpenings(rig, N.n, N.d, S, slab * 1000, travel, gov);
+  // (a machine kept on its existing base, round 46 B8: the openings existing, without curbs)
+  const govFloor = governorFloor(rig, S, slab * 1000), holes = shaftSlabOpenings(rig, N.n, N.d, S, slab * 1000, travel, gov);
+  const openings = I.room?.support?.kind === 'esistente' ? holes.map((o) => ({ ...o, curb: false })) : holes;
   // a machine below: its front through the wall behind the counterweight, or under the pit with the ropes through its
   // slab where the plan of the pit and section A-A open it
   const passage = machinePassage(rig, N.D);

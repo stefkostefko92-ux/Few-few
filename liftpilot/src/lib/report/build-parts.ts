@@ -82,8 +82,7 @@ export function vociBlocks(ids: ReadonlySet<string>, vano: readonly VoceVano[], 
   const all = [...used, ...VOCI.filter((v) => LIMITI_MODELLO.includes(v.id)), ...vano, ...VOCI_IMPIANTO.filter((v) => filled.has(v.id))];
   const listed = resta ? all.filter((v) => !SOLO_SOSTITUZIONE(v.id)) : all;
   return [
-    ...(resta ? [{ t: 'p', style: 'note', text: 'L’argano resta: le voci della sola sostituzione del macchinario non sono elencate; nelle altre, quanto detto della '
-      + 'macchina nuova vale per le apparecchiature sostituite o aggiunte.' } as const] : []),
+    ...(resta ? [{ t: 'p', style: 'note', text: 'L’argano resta: le voci della sola sostituzione del macchinario non sono elencate.' } as const] : []),
     { t: 'grid', head: ['Voce', 'Valore nel software', 'Dove si verifica', 'Stato'], rows: listed.map((v) => [v.titolo, v.valore, v.riferimento, STATO[v.stato]]),
       status: listed.map((v) => (v.stato === 'confermato' ? 'ok' : v.stato === 'da_verificare' ? 'warn' : 'info')), widths: [0.27, 0.33, 0.26, 0.14], align: ['l', 'l', 'l', 'l'] },
   ];

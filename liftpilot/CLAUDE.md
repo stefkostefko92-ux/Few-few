@@ -106,7 +106,8 @@ npx tsx --conditions=react-server scripts/landing-docs.ts   # страницит
   изчисление от стъпка 2, освен ако проект отпреди е по-нов от него (`src/server/calcolo-base.ts`, `legacyPiuNuovo`);
   машина, която остава („Argano: No“) — без предложение, съвет, цена и поръчка, Progetto — шахтата, не машинното; „подмяна → цял проект“ (`upgradeProjectAction`) вече няма.
   Скоростта и ходът по libretto са части по правило (кръг 46): «Solo argano», който ги получава — отказ и «Passa ad
-  Ammodernamento»; Progetto върху него с друг ход — `tipoDaRivedere` и «Porta nel calcolo».
+  Ammodernamento»; Progetto върху него с друг ход — `tipoDaRivedere` и «Porta nel calcolo». Машината, която остава, се
+  чертае върху съществуващата си основа (`src/lib/lift/kept.ts`, `src/shaft/room-kept.ts`): L0 и dx·h — от изчислението.
   `Project.kind` не се чете и не се пише от никой код (глобален `omit` в `src/lib/db.ts`, тест `no-project-kind`);
   колоната остава до миграция след потвърждението на собственика. Кръгът Calcolo ↔ Progetto: „Porta nel calcolo“
   (`?dal=progetto`) и „Aggiorna il progetto con l’ultimo calcolo“. `/vano` няма; записите отпреди формуляра са в архива

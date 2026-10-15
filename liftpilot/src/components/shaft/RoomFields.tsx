@@ -14,7 +14,7 @@ import { useTranslations } from 'next-intl';
 import type { HebTaken, RoomInputs } from '@/shaft';
 import { KV_VERT } from '@/shaft/norme-vert';
 import { PROFILE_NAMES } from '@/shaft/profiles';
-import { SUPPORT_KINDS, hasProfile, profileOf, supportHeight, supportLength, supportOf, type MachineSupport } from '@/shaft/support';
+import { BASI_ESISTENTI, SUPPORT_SCELTE, hasProfile, profileOf, supportHeight, supportLength, supportOf, type MachineSupport } from '@/shaft/support';
 import type { MachineShape } from '@/shaft/machine-shape';
 import type { RinvioFrame } from '@/shaft/rinvio';
 import { mmOf } from '../blank';
@@ -30,6 +30,8 @@ export interface RoomMachine {
   heb?: HebTaken | null;
   /** where the derivation turned the machine: its motor toward the counterweight's drop (1) or the car's (−1) */
   turn?: 1 | -1;
+  /** the machine the intervention keeps, on its existing base (round 46, B8) */
+  kept?: boolean;
 }
 
 type Measure = Exclude<keyof RoomInputs, 'support' | 'heb' | 'motor'>;
@@ -97,21 +99,38 @@ export default function RoomFields({ R, put, machine, blank = () => false, choos
         onChange={(e) => { const v = mmOf(e.target.value); if (v !== null) apply(v); }} />
     </label>
   );
+  // the machine the intervention keeps (round 46, B8): its existing base, what it looks like only — no support, height,
+  // HEB beams or pulley's frame to choose (src/lib/lift/kept.ts)
+  const kept = !!machine?.kept, of = sup.kind === 'esistente' ? sup.of : undefined;
   const supportFields = machine ? (
     <>
-      <h3>{t('sp_title')}</h3>
+      <h3>{t(kept ? 'kept_title' : 'sp_title')}</h3>
+      {kept ? <p className="note" id="kept-base-note">{t('kept_note')}</p> : null}
       <div className="form-grid">
-        <label className="field">
-          <span>{t('sp_kind')}</span>
-          <select className="input" value={sup.kind} onChange={(e) => {
-            const kind = SUPPORT_KINDS.find((k) => k === e.target.value);
-            // a new kind starts from its typical profile, height and length; the one the software takes is left unset
-            if (kind) put({ support: kind === (rf ? 'rinvio' : 'shims') ? undefined : { kind } });
-          }}>
-            {SUPPORT_KINDS.map((k) => <option key={k} value={k}>{t(`sp_${k}`)}</option>)}
-          </select>
-        </label>
-        {hasProfile(sup) ? (
+        {kept ? (
+          <label className="field">
+            <span>{t('kept_of')}</span>
+            <select id="bk-room-kept-of" className="input" value={of ?? ''} aria-describedby="kept-base-note" onChange={(e) => {
+              const o = BASI_ESISTENTI.find((k) => k === e.target.value);
+              put({ support: { kind: 'esistente', ...(o ? { of: o } : {}) } });
+            }}>
+              <option value="">{t('kept_of_none')}</option>
+              {BASI_ESISTENTI.map((k) => <option key={k} value={k}>{t(`kept_of_${k}`)}</option>)}
+            </select>
+          </label>
+        ) : (
+          <label className="field">
+            <span>{t('sp_kind')}</span>
+            <select className="input" value={sup.kind} onChange={(e) => {
+              const kind = SUPPORT_SCELTE.find((k) => k === e.target.value);
+              // a new kind starts from its typical profile, height and length; the one the software takes is left unset
+              if (kind) put({ support: kind === (rf ? 'rinvio' : 'shims') ? undefined : { kind } });
+            }}>
+              {SUPPORT_SCELTE.map((k) => <option key={k} value={k}>{t(`sp_${k}`)}</option>)}
+            </select>
+          </label>
+        )}
+        {!kept && hasProfile(sup) ? (
           <label className="field">
             <span>{t('sp_profile')}</span>
             <select className="input" value={profileOf(sup)} onChange={(e) => {
@@ -122,9 +141,9 @@ export default function RoomFields({ R, put, machine, blank = () => false, choos
             </select>
           </label>
         ) : null}
-        {sup.kind === 'rinvio' && rf?.maker ? null
+        {kept || (sup.kind === 'rinvio' && rf?.maker) ? null
           : num(t('sp_height'), sup.kind === 'rinvio' && rf ? rf.top : supportHeight(sup, machine.D, machine.shimsAxis, machine.shape ?? null), 0, 3000, (v) => putSup({ height: v }))}
-        {supportLength(sup, machine.D, machine.shape ?? null) !== null
+        {!kept && supportLength(sup, machine.D, machine.shape ?? null) !== null
           ? num(t('sp_length'), supportLength(sup, machine.D, machine.shape ?? null) ?? 0, 300, 5000, (v) => putSup({ length: v })) : null}
         <label className="field">
           <span>{t('rm_motor')}</span>
@@ -139,11 +158,11 @@ export default function RoomFields({ R, put, machine, blank = () => false, choos
         </label>
       </div>
       <p className="note">{t('rm_motor_hint')}</p>
-      {rf ? <p className="note">{rf.on === 'stand' ? t('sp_rinvio_stand', { axis: Math.round(rf.pulleyAxis) })
+      {rf && !kept ? <p className="note">{rf.on === 'stand' ? t('sp_rinvio_stand', { axis: Math.round(rf.pulleyAxis) })
         : rf.maker ? t('sp_rinvio_maker', { code: rf.maker.code, mass: rf.maker.mass, axis: rf.maker.pulleyAxis, A: rf.maker.sheaveAxis })
           : t('sp_rinvio_ours', { axis: Math.round(rf.pulleyAxis), top: Math.round(rf.top) })}</p> : null}
-      <p className="note">{t('sp_hint')}</p>
-      <HebFields R={R} put={put} heb={machine.heb} deflector={rf !== null} />
+      {kept ? null : <p className="note">{t('sp_hint')}</p>}
+      {kept ? null : <HebFields R={R} put={put} heb={machine.heb} deflector={rf !== null} />}
     </>
   ) : null;
   return (

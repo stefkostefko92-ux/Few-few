@@ -51,7 +51,9 @@ export const VOCI_AZIONAMENTO: readonly Voce[] = [
     riferimento: 'UNI EN 81-20:2020, 5.9.2.4; UNI 10411-1:2024, 15.1', fonte: `${letto(T20, 'p. 102')}; ${letto(U1, 'p. 14')}`, stato: 'confermato',
     nota: 'Con la UNI 10411-1:2024 (15.1) una velocità oltre il 5 % sopra la maggiore tra quella del libretto e quella dopo il passaggio a 50 Hz '
       + 'è un aumento della velocità nominale (punti 15.2–15.15). Con la UNI 10411-11:2024 (15) ogni cambio della velocità nominale, in più o in '
-      + 'meno, porta ai punti 15 a)–k) e alla valutazione 4.3.',
+      + 'meno, porta ai punti 15 a)–k) e alla valutazione 4.3. Il confronto con il libretto si applica con la voce impianto.variazione.velocita '
+      + '(dai dati del collaudo); la velocità reale di 5.9.2.4 resta non verificata (fino a ENGINE 1.6.0 e LIFT 1.31.0 il confronto con il libretto '
+      + 'non c’era).',
   },
 ];
 

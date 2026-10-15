@@ -26,7 +26,8 @@ import { belowGeoOf, belowView, headLoadsOf, machineOf, planView, roomView, sect
 import type { Uplift } from '@/shaft/room-reactions';
 import { railsNotes, railsSheets } from './rails-sheet';
 import { CHECKS_SUBTITLE, CHECKS_TITLE, checksSheet } from './checks-sheet';
-import { roomLegend, titleSpares } from './room-legend';
+import { ROOM_LEGEND, roomLegend, titleSpares } from './room-legend';
+import { onKeptBase } from '@/shaft/room-kept';
 
 /** A sheet of the set after the data: a plan of the shaft, section A-A or a detail, the machine room. */
 export type Spec =
@@ -200,7 +201,9 @@ function roomSheet(L: Layout, M: MachineSpec, kind: 'room-plan' | 'room-section'
   if (!v) throw new Error('no machine room');
   const marks = kind === 'room-plan' ? roomMarks(v.G, v.place, v.r.extent) : [];
   // (the plan's symbols named in a free band, else beside the title: round 36)
-  const legend = kind === 'room-plan' ? roomLegend([...v.r.shapes, ...marks], area, spare) : [];
+  // (a machine kept on its existing base: no hook drawn, none named — round 46, B8)
+  const items = onKeptBase(L.inputs.room, M) ? ROOM_LEGEND.filter((it) => it.sym !== 'hook') : ROOM_LEGEND;
+  const legend = kind === 'room-plan' ? roomLegend([...v.r.shapes, ...marks], area, spare, items) : [];
   return { entities: v.entities, place: v.place, shapes: v.r.shapes, notes: [...marks, ...legend], scale: v.place.scale, hits: v.r.hits };
 }
 

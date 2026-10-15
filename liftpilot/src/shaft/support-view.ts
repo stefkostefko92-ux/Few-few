@@ -16,12 +16,14 @@ import { KV_VERT } from './norme-vert';
 import { PROFILES, PROFILE_NAMES } from './profiles';
 import { rinvioRun } from './rinvio';
 import { rinvioPlan, rinvioSection } from './rinvio-view';
+import { keptBasePlan, keptBaseSection } from './room-kept';
 import { hasProfile, ownAxis, profileOf, supportOf, type MachineSupport } from './support';
 
 const MOUNTS = [-0.36, 0.95] as const;
 /** The steel packs under a frame set higher than its profile, along the drop line at each end [mm] (the 3D's). */
 const FRAME_PACK = 100;
-const NAME: Record<MachineSupport['kind'], string> = { shims: 'Spessori', frame: 'Telaio', beams: 'Putrelle', plates: 'Piastre', plinth: 'Plinto', rinvio: 'Telaio con rinvio' };
+const NAME: Record<MachineSupport['kind'], string> = { shims: 'Spessori', frame: 'Telaio', beams: 'Putrelle', plates: 'Piastre', plinth: 'Plinto', rinvio: 'Telaio con rinvio',
+  esistente: 'Basamento esistente' };
 /** The support's name when a replacement keeps the existing one under the new machine (its heights to survey). */
 const KEPT = 'Basamento esistente';
 
@@ -51,6 +53,8 @@ export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: numbe
   kept: string | null = null): Entity[] {
   const s = supportOf(G.room, M.Dp > 0), k = 1000 * G.s, top = supportTop(M, s), out: Entity[] = [], F = G.frame, base = M.base ?? 0;
   const span = supportRunIn(G, M), run = span ? machineRun(G, span[0], span[1]) : null;
+  // the machine kept on its existing base (round 46, B8): the base as it is, hatched (room-kept.ts)
+  if (s.kind === 'esistente') return keptBaseSection(M, G, sk);
   if (s.kind === 'rinvio' && M.rinvio?.on === 'frame') {
     return [...(heb ? hebSection(heb, G, rinvioRun(M, G)[0] - 420 * sk, !onHebTop(heb, M.rinvio.base ?? 0)) : []), ...rinvioSection(M, G, M.rinvio, sk, heb)];
   }
@@ -109,6 +113,7 @@ export function supportSection(M: MachineSpec, G: RoomGeo, r0: number, r1: numbe
 export function supportPlan(M: MachineSpec, G: RoomGeo, onDrop: (u: number, v: number) => Pt, r0: number, r1: number, heb: HebLayout | null = null): Entity[] {
   const s = supportOf(G.room, M.Dp > 0), k = 1000 * G.s, out: Entity[] = [], F = G.frame, span = supportRunIn(G, M);
   if (s.kind === 'rinvio' && M.rinvio?.on === 'frame') return rinvioPlan(M, G, M.rinvio, onDrop, heb);
+  if (s.kind === 'esistente') return keptBasePlan(G, onDrop);
   const quad = (u0: number, v0: number, u1: number, v1: number): Pt[] => [onDrop(u0, v0), onDrop(u1, v0), onDrop(u1, v1), onDrop(u0, v1)];
   // the mounts (the generic machine's scaled, a maker's on our bedframe), the irons' lines across and the plinth's blocks
   // on each side of the ropes [u, v], as the machine is turned

@@ -81,6 +81,48 @@ export async function progettoFlow({ BASE, page, hydrated, stamp }) {
   return { projectUrl, baseUrl, liftUrl: loop.liftUrl };
 }
 
+/** Round 46 (B8): the Progetto of a modernisation keeping the machine (`keptUrl`, smoke-replacement.mjs) draws it on its
+ *  existing base — its base's kind only, L0 and dx·h locked «dal calcolo»; section B-B with «BASAMENTO ESISTENTE» and no
+ *  «antivibranti»; saved and issued, sheet 1 names the existing machine and the base «da rilevare», never «(STIMA)». */
+export async function keptProgetto({ page, hydrated, keptUrl }) {
+  step('a modernisation keeping the machine: its Progetto draws it on its existing base (round 46)');
+  await page.goto(keptUrl);
+  await Promise.all([page.waitForURL(/\/progetto\?calc=[a-z0-9]+$/, { timeout: 30000 }), page.click('section[aria-labelledby="calc-progetto"] a[href*="/progetto?calc="]')]);
+  await hydrated(page, '#bk-room-W');
+  // (the same installation's survey of its machine room starts the drawing: complete; else its data typed)
+  await page.waitForSelector('.lift-facts .lift-verdict, .lift-main .missing', { timeout: 60000 });
+  const roomBox = page.locator('.lift-form details:has(#bk-room-W)');
+  if (!(await roomBox.evaluate((d) => d.open))) await roomBox.locator('summary').first().click();
+  if (await page.locator('.lift-main .missing').count()) {
+    const room = { W: 3000, D: 3000, shaftX: 500, shaftY: 500, H: 2700, slab: 250, doorAt: 300, doorW: 800, doorH: 2000, panelW: 800, panelD: 300, panelH: 1800 };
+    for (const [k, v] of Object.entries(room)) await page.fill(`#bk-room-${k}`, String(v));
+    await page.selectOption('#bk-room-doorWall', 'front');
+    await projectData({ page, hydrated });
+  }
+  await page.waitForSelector('#kept-base-note', { timeout: 60000 });
+  assert.match(await page.textContent('#kept-base-note'), /Argano esistente \(resta\) sul suo basamento — da rilevare/, 'the existing base said');
+  assert.equal(await page.locator('.lift-form .heb-fields, #heb-on').count(), 0, 'no HEB beams to choose');
+  await page.selectOption('#bk-room-kept-of', 'frame');
+  assert.ok(await page.isDisabled('#auto-L0') && !(await page.isChecked('#auto-L0')), 'L0 locked to the calculation’s');
+  assert.match(await page.textContent('#progetto-kept'), /quelle del calcolo/, 'the reason');
+  assert.match(await page.textContent('output#L0'), /dal calcolo/, 'L0 «dal calcolo»');
+  // a direct pull on the existing falls: the plan's drop set to them
+  if (await page.locator('.calata-esistente').count()) await page.click('.calata-esistente');
+  await page.click('.lift-main [role="tab"]:has-text("Sezione B-B")');
+  await page.waitForFunction(() => /BASAMENTO\s*ESISTENTE/.test(globalThis.document.querySelector('.lift-main .draw-stage svg')?.textContent ?? ''), null, { timeout: 30000 });
+  const bb = ((await page.textContent('.lift-main .draw-stage svg')) ?? '').replace(/\s+/g, '');
+  assert.ok(bb.includes('BASAMENTOESISTENTE—DARILEVARE') && !/antivibranti/i.test(bb), 'B-B: the existing base, no anti-vibration mounts');
+  await page.waitForSelector('.lift-work .savebar button.btn-primary:not([disabled])', { timeout: 60000 });
+  await page.fill('.lift-work .savebar input', 'Argano esistente');
+  await Promise.all([page.waitForURL(/\/lift-designs\/[a-z0-9]+$/, { timeout: 60000 }), page.click('.lift-work .savebar button.btn-primary')]);
+  await page.fill('main form input[maxlength="12"]', 'S.T.');
+  await Promise.all([page.waitForURL(/\/drawing-sets\/[a-z0-9]+$/, { timeout: 60000 }), page.click('main form:has(input[maxlength="12"]) button[type="submit"]')]);
+  await page.waitForSelector('.sheet-page svg.sheet-svg');
+  const sheet1 = ((await page.locator('.sheet-page svg.sheet-svg').first().textContent()) ?? '').replace(/\s+/g, '');
+  assert.ok(sheet1.includes('ARGANOESISTENTE') && sheet1.includes('BASAMENTOESISTENTE(DARILEVARE)'), 'sheet 1: the existing machine and its base');
+  assert.ok(!/BASAMENTOESISTENTE\(DARILEVARE\)\(STIMA/.test(sheet1) && sheet1.includes('RISULTANTESULBASAMENTOESISTENTE'), 'no estimate on the base, one resultant');
+}
+
 /** A calculation as its page shows it: its verdict, its machine and its checks. */
 async function shownOf(page, url) {
   await page.goto(url);

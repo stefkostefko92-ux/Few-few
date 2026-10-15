@@ -38,7 +38,7 @@ import { sheetLoads, sheetRails, supportRows } from './sheet-loads';
 import { cwGearChecks, cwGearOf, cwGearRow, cwTripOf } from './cw-gear';
 import { tripText } from './governor-trip';
 import { cwRails } from './cw-rail-check';
-import { hebFor, hebNote, hookRow, reactionRows } from './room-rows';
+import { hebFor, hebNote, hookRow, keptBaseNote, reactionRows } from './room-rows';
 import { supportReactions, upliftOf, type Uplift } from '@/shaft/room-reactions';
 import { roomGeo } from '@/shaft/machine-room';
 import { governorRopes, shaftUnder } from '@/shaft/room-site';
@@ -197,6 +197,8 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const made = x.marks?.catalog ?? null, M = machineOf(a, Pl, L, made), below = I.layout === 'bottom';
   const SL = sheetLoads(a, L, Pl, M, massModelOf(I, N, x.values, made), N.n * N.qf * ropeLen, R, cwGearOf(underPit, Pl)), { ropesKg, cablesKg, dyn, ld } = SL, machine = SL.carried;
   const kg = (v: number | undefined): string => (v == null ? '—' : fmt(v, 0));
+  // the machine kept on its existing base (round 46, B8): no hook, one resultant, the note on point 5 (room-rows.ts)
+  const keptBase = SL.support.kind === 'esistente';
   const loadRows: DataSheet['loads'] = [
     ['CABINA', kg(Pl.massShell), 'kg'],
     ['PAVIMENTO DEL CLIENTE (MAX)', kg(Pl.massFloor), 'kg'],
@@ -213,12 +215,13 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
       [`ARGANO IN BASSO (NON SULLA SOLETTA)${SL.machine.estimate ? ' (STIMA)' : ''}`, fmt(SL.machine.kg, 0), 'kg'] as const,
       ['SOLLEVAMENTO NETTO ANCORAGGI ARGANO, PROVA 1,25·Q', fmt(Math.max(0, res.shaft.uplift ?? 0), 0), 'kg'] as const,
       [`TIRO ANCORAGGI ARGANO, PORTATA × ${fmt(dyn, 1)}`, fmt(Math.max(0, SL.anchor?.dyn ?? 0), 0), 'kg'] as const,
-    ] : [[`ARGANO${SL.machine.estimate ? ' (STIMA)' : ''}`, fmt(SL.machine.kg, 0), 'kg'] as const, ...supportRows(SL.support, M, fmt), ...hebRows(SL.heb, fmt)]),
+    ] : [[keptBase ? `ARGANO ESISTENTE${SL.machine.estimate ? ' (STIMA — DA TARGA O LIBRETTO)' : ''}` : `ARGANO${SL.machine.estimate ? ' (STIMA)' : ''}`, fmt(SL.machine.kg, 0), 'kg'] as const,
+      ...supportRows(SL.support, M, fmt), ...hebRows(SL.heb, fmt)]),
   ];
   // the machine room over the shaft: the hook's rated load and the reactions R1…Rn on the support's bearings (round 36)
   const Gr = !below ? roomGeo(L, M) : null, car0 = carSideStatic({ P: I.P, Q: I.Q, roping: I.r, ropes: ropesKg, cables: cablesKg });
   const roomLoad = { machine, static: ld.static, dyn, car: car0, stand: SL.support.stand }, roomHeb = Gr ? hebFor(Gr, M, shaftUnder(L), governorRopes(L, Gr.room)) : null;
-  const roomRows = Gr ? [hookRow(Gr, M, fmt), ...reactionRows(Gr, M, roomLoad, roomHeb, fmt)] : [];
+  const roomRows = Gr ? [...(keptBase ? [] : [hookRow(Gr, M, fmt)]), ...reactionRows(Gr, M, roomLoad, roomHeb, fmt)] : [];
   const uplift = Gr ? upliftOf(supportReactions(Gr, M, roomLoad, roomHeb)) : [];
   const each = [false, false, false, false, true, V.carBuffers > 1, true, false, false];
   const P = ld.P.map((p, i) => (p === null ? (i === 3 ? GOVERNOR_LOAD_UNSET : '—') : `${each[i] ? 'cad. ' : ''}${fmt(p, 0)}`));
@@ -263,6 +266,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   if (ambitoOf(C, 'gr_stress') === 'applies') notes.push(railNote(rc, railLabel(L.inputs.carRail), gear, Pl.liftUse, `NOTA ${notes.length + 1}`, fmt, !!cwGearOf(underPit, Pl)));
   // the governor's load not given; the HEB beams' bearings (round 36)
   if (Gr && SL.heb) notes.push(hebNote(`NOTA ${notes.length + 1}`));
+  if (Gr && keptBase) notes.push(keptBaseNote(`NOTA ${notes.length + 1}`));
   const test = collaudoNote(C, `NOTA ${notes.length + 1}`, carichiOf(x.values), x.tipo ?? null, x.values);
   if (test) notes.push(test);
 

@@ -16,7 +16,7 @@ import { PANEV_LIST_PRICE } from '@/lib/catalog/panev-prices';
 import { GOVERNORS } from '@/shaft/governor';
 import { RAIL_TYPES, railLabel } from '@/shaft/rails';
 import { KV_VERT } from '@/shaft/norme-vert';
-import { HEB_PROFILES, SUPPORT_KINDS } from '@/shaft/support';
+import { HEB_PROFILES, SUPPORT_SCELTE } from '@/shaft/support';
 import type { BufferType } from '@/shaft/vertical';
 import type { DoorKind } from '@/shaft/types';
 import type { PriceGroup, PriceUnit } from './groups';
@@ -85,7 +85,7 @@ const PANEV_SRC = `Panev ${PANEV_LISTINO.year}, p. ${PANEV_LISTINO.page}`;
 export const PRICE_ARTICLES: readonly PriceArticle[] = [
   ...MACHINES.map((m): PriceArticle => ({ key: machineKey(m.brand, m.model), group: 'machines', label: { item: 'machine', name: `${m.brand} ${m.model}` }, unit: 'pz' })),
   ...BEDPLATE_CODES.map((b): PriceArticle => ({ key: bedplateKey(b.code), group: 'bedplates', label: { item: 'bedplate', name: `SICOR ${b.code} (${b.models.join(', ')})` }, unit: 'pz' })),
-  ...SUPPORT_KINDS.map((k): PriceArticle => ({ key: `support:${k}`, group: 'supports', label: { item: `support_${k}` }, unit: 'pz' })),
+  ...SUPPORT_SCELTE.map((k): PriceArticle => ({ key: `support:${k}`, group: 'supports', label: { item: `support_${k}` }, unit: 'pz' })),
   { key: 'support:stand', group: 'supports', label: { item: 'support_stand' }, unit: 'pz' },
   ...HEB_PROFILES.map((p): PriceArticle => ({ key: hebKey(p), group: 'supports', label: { item: 'heb', name: p }, unit: 'm' })),
   { key: HEB_PLATE_KEY, group: 'supports', label: { item: 'heb_plate', name: hebPlateSize }, unit: 'pz' },

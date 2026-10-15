@@ -4,7 +4,9 @@
 // under each of the three irons of the machine's frame, the sheave between the last two (machine-shape.ts) —, steel
 // plates under the mounts, a concrete plinth on each side of the ropes, or the bedplate with the diverting pulley
 // (rinvio.ts, registry locale.rinvio: what the machine stands on when it has one, unless another is chosen);
-// the machine's own anti-vibration mounts straight on it (one elastic stage; the bedplate's dampers under its legs). Its
+// the machine's own anti-vibration mounts straight on it (one elastic stage; the bedplate's dampers under its legs) — or,
+// the machine kept by the intervention (round 46, B8; src/lib/lift/kept.ts), its existing base as it is, to be surveyed,
+// the sheave's axis where the calculation's L0 puts it (registry locale.basamento.esistente). Its
 // height sets the sheave's axis over the room's floor (the calculation's rope beyond the travel and the 3D follow it);
 // a frame and a plinth run along the rope drop line past the machine's bedplate. Millimetres; the machine is the one of
 // the drawings scaled to the sheave (machine-outline.ts) or a maker's on our bedframe (machine-shape.ts). Pure.
@@ -14,8 +16,16 @@ import { KV_VERT } from './norme-vert';
 import { PROFILES, type ProfileName } from './profiles';
 import type { RoomInputs } from './room';
 
-export const SUPPORT_KINDS = ['shims', 'frame', 'beams', 'plates', 'plinth', 'rinvio'] as const;
+/** The supports a user chooses for a new machine (the form, the price list, a survey); with the existing base of a
+ *  machine kept, every kind. */
+export const SUPPORT_SCELTE = ['shims', 'frame', 'beams', 'plates', 'plinth', 'rinvio'] as const;
+export const SUPPORT_KINDS = [...SUPPORT_SCELTE, 'esistente'] as const;
 export type SupportKind = (typeof SUPPORT_KINDS)[number];
+
+/** What the existing base of a machine kept looks like, as the user saw it (optional; 'unknown': not clear): levelling
+ *  shims, a frame of profiles, beams, a plinth. It names the base in words only — nothing is checked on it. */
+export const BASI_ESISTENTI = ['shims', 'frame', 'beams', 'plinth', 'unknown'] as const;
+export type BaseEsistente = (typeof BASI_ESISTENTI)[number];
 
 /** The HEB beams on the shaft's walls the support may stand on (heb.ts, registry locale.putrelle.vano): the profiles
  *  the software chooses among, and the direction they span — the shaft's width (x) or its depth (y). */
@@ -40,6 +50,10 @@ export interface MachineSupport {
   height?: number;
   /** a frame's or a plinth's length along the rope drop line (missing: the bedplate's plus the overhang at each end) */
   length?: number;
+  /** the existing base of a machine kept: what it looks like (missing: not said) */
+  of?: BaseEsistente;
+  /** the existing base of a machine kept: the sheave's axis over the room's floor the calculation's L0 gives (kept.ts) [mm] */
+  axis?: number;
 }
 
 const SHIMS: MachineSupport = { kind: 'shims' }, RINVIO: MachineSupport = { kind: 'rinvio' };
@@ -59,7 +73,7 @@ export const bedplate = (D: number, shape: MachineShape | null = null): readonly
 /** Whether the support stands on HEB beams over the shaft's walls: chosen, under a support that can (not the beams from
  *  wall to wall of the room, not a concrete plinth). */
 export const onHeb = (R: RoomInputs | null | undefined, deflector = false): boolean =>
-  !!R?.heb && supportOf(R, deflector).kind !== 'beams' && supportOf(R, deflector).kind !== 'plinth';
+  !!R?.heb && !(['beams', 'plinth', 'esistente'] as const).some((k) => k === supportOf(R, deflector).kind);
 
 /** What lifts the HEB beams off the slab (registry locale.putrelle.vano): the bearing plate over the shaft's wall on its
  *  bed of non-shrink mortar — the beam's underside as high over the slab, clear of it between the bearings [mm]. */
@@ -77,6 +91,9 @@ export const hebBase = (R: RoomInputs | null | undefined, deflector = false): nu
 export function supportHeight(s: MachineSupport, D: number, shimsAxis: number, shape: MachineShape | null = null, Dp = 0): number {
   if (s.height !== undefined) return s.height;
   if (s.kind === 'rinvio') return rinvioTopOf(Dp);
+  // the existing base: as high as the axis the calculation's L0 gives leaves under the machine (never under the floor:
+  // an axis the machine cannot have is the issue 'L0', drawn.ts), else as the shims would
+  if (s.kind === 'esistente') return Math.max(0, (s.axis ?? shimsAxis) - ownAxis(D, shape));
   if (s.kind === 'shims') return shape ? Math.max(0, shimsAxis - ownAxis(D)) : shimsAxis - ownAxis(D);
   if (hasProfile(s)) return PROFILES[profileOf(s)].h;
   return s.kind === 'plates' ? KV_VERT.supportPlate : KV_VERT.supportPlinth;

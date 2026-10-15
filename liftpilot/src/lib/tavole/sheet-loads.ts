@@ -98,7 +98,9 @@ export function sheetLoads(a: Analysis, L: Layout, Pl: Plant, M: MachineSpec, ma
  *  the machine stands on shims. */
 export function supportRows(w: SupportMass, M: MachineSpec, fmt: (x: number, dec?: number) => string): (readonly [string, string, string])[] {
   const rf = M.rinvio ?? null, mk = rf?.on === 'frame' ? rf.maker : null, stand = rf?.on === 'stand';
-  const BASE: Readonly<Record<SupportMass['kind'], string>> = { shims: 'RINVIO E SUPPORTO', frame: 'TELAIO', beams: 'PUTRELLE', plates: 'PIASTRE', plinth: 'PLINTO', rinvio: 'TELAIO CON RINVIO' };
+  // the existing base of a machine kept (round 46, B8): named, its mass not the software's (to be surveyed)
+  if (w.kind === 'esistente') return [['BASAMENTO ESISTENTE (DA RILEVARE)', '—', '']];
+  const BASE: Readonly<Record<Exclude<SupportMass['kind'], 'esistente'>, string>> = { shims: 'RINVIO E SUPPORTO', frame: 'TELAIO', beams: 'PUTRELLE', plates: 'PIASTRE', plinth: 'PLINTO', rinvio: 'TELAIO CON RINVIO' };
   const names = [...(w.frame > 0 ? ['TELAIO ARGANO'] : []), ...(w.base > 0 ? [`${BASE[w.kind]}${stand && w.kind !== 'shims' ? ' + RINVIO' : ''}`] : []),
     ...(mk ? [`TELAIO CON RINVIO ${mk.code}`] : [])];
   const total = w.frame + w.base + w.maker;

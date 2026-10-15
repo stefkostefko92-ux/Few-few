@@ -9,6 +9,7 @@ import { TEXT, chain, edit as E, line, path, type Box, type Edit, type Entity, t
 import { machineCorners, type MachineSpec, type RoomGeo } from './machine-room';
 import { KV_VERT } from './norme-vert';
 import { kerbOf, onDrop, openingsOf, type SlabOpening } from './room-draw';
+import { KEPT_HOLE, onKeptBase } from './room-kept';
 import type { Hook } from './room-hook';
 import { AT, dimBands, firstClear, gridNear, leaderFrom, letteringBox, meets, placeOf, tagBox, takenBy, type Tries } from './room-label';
 import { hitchTags } from './room-loads';
@@ -73,10 +74,12 @@ const gridAnd = <T extends { box: Box }>(at: (p: Pt) => T, to: Pt, within: Box, 
  *  parts, the places kept clear, the lettering and the dimension lines; `k` the plan's scale. */
 function openingMarks(S: RoomSite, M: MachineSpec, G: RoomGeo, busy: Box[], within: Box, beyond: Box | null, k: number): Entity[] {
   const out: Entity[] = [], g = G.dir;
+  // (a machine kept on its existing base, round 46 B8: the openings existing, no upstands — room-kept.ts)
+  const kept = onKeptBase(G.room, M);
   for (const o of slabOpenings(S, M, G)) {
     // the upstand round it, as thick as KV_VERT.kerbW
-    out.push(path(kerbOf(G, o), true, 'thin'));
-    const text = openingName(o, G), uc = (o.u0 + o.u1) / 2, at = (p: Pt): { at: Pt; box: Box } => ({ at: p, box: letteringBox(p, text, TEXT.min, 'c', 0, false, k) });
+    if (!kept) out.push(path(kerbOf(G, o), true, 'thin'));
+    const text = kept ? KEPT_HOLE : openingName(o, G), uc = (o.u0 + o.u1) / 2, at = (p: Pt): { at: Pt; box: Box } => ({ at: p, box: letteringBox(p, text, TEXT.min, 'c', 0, false, k) });
     // beside the machine on the side away from its gearbox, then the other, stepping out; then farther over the room
     const vs = [-1, 1].flatMap((s) => [150, 300, 450, 600, 800].map((dv) => (s * -g > 0 ? G.across[1] + dv : G.across[0] - dv)));
     const places = vs.flatMap((v) => [0, 250, -250].map((du) => at(onDrop(G, uc + du, v))));
@@ -94,7 +97,7 @@ const GAP = 0.8;
  *  machine's parts and the places kept clear; `rows`: the bands of the chains already beside the machine), the hook
  *  `hook` over the machine; `k` the plan's scale (model millimetres to one of paper: its lettering's size there);
  *  `beyond`: the band beyond the wall no row takes, a name's or a reference's last resort (room-label.ts beyondWall). */
-export function setoutPlan(S: RoomSite, M: MachineSpec, G: RoomGeo, hook: Hook, drawn: readonly Entity[], keep: readonly Box[], rows: readonly Box[] = [], k = AT, beyond: Box | null = null): Entity[] {
+export function setoutPlan(S: RoomSite, M: MachineSpec, G: RoomGeo, hook: Hook | null, drawn: readonly Entity[], keep: readonly Box[], rows: readonly Box[] = [], k = AT, beyond: Box | null = null): Entity[] {
   const R = G.room, out: Entity[] = [], within: Box = { x0: 60, y0: 60, x1: R.W - 60, y1: R.D - 60 }, busy = [...takenBy(drawn, k), ...dimBands(drawn, k), ...keep];
   out.push(...openingMarks(S, M, G, busy, within, beyond, k));
   // from the two walls with the most room beside the machine, a chain each: to the bedplate's edge (its corner toward
@@ -102,7 +105,10 @@ export function setoutPlan(S: RoomSite, M: MachineSpec, G: RoomGeo, hook: Hook, 
   // each segment named by its far end; askew the drops' coordinates and the angle place the line
   const cs = machineCorners(G, M, false), box = M.rinvio?.on === 'frame' && cs.length >= 8 ? cs.slice(4, 8) : cs.slice(0, 4);
   const xs = box.map((q) => q[0]), ys = box.map((q) => q[1]), bx0 = Math.min(...xs), bx1 = Math.max(...xs), by0 = Math.min(...ys), by1 = Math.max(...ys);
-  const askew = askewOf(G), alongY = Math.abs(G.uy) > 0.999, sheave = onDrop(G, G.sheaveAt, 0), rope = G.carDrop, [hx, hy] = hook.at;
+  const askew = askewOf(G), alongY = Math.abs(G.uy) > 0.999, sheave = onDrop(G, G.sheaveAt, 0), rope = G.carDrop;
+  // (no hook over a machine kept on its existing base; its bedframe is the existing machine's)
+  const hookX: (readonly [number, number, string])[] = hook ? [[hook.at[0], hook.at[1], 'Gancio']] : [], hookY: (readonly [number, number, string])[] = hook ? [[hook.at[1], hook.at[0], 'Gancio']] : [];
+  const frameName = onKeptBase(G.room, M) ? 'Argano' : 'Telaio';
   // (on an axis: across the drop line the ropes' line, along it the sheave's axis)
   const extraX: (readonly [number, number, string])[] = askew ? [] : alongY ? [[rope[0], rope[1], 'Asse funi']] : [[sheave[0], sheave[1], 'Asse puleggia']];
   const extraY: (readonly [number, number, string])[] = askew ? [] : alongY ? [[sheave[1], sheave[0], 'Asse puleggia']] : [[rope[1], rope[0], 'Asse funi']];
@@ -132,10 +138,10 @@ export function setoutPlan(S: RoomSite, M: MachineSpec, G: RoomGeo, hook: Hook, 
     const text = values.slice(1).map((v, i) => named(wall === 0 ? v : values[i])), from = values.map((v) => (v === wall ? undefined : pts.find((m) => m[0] === v)?.[1]));
     return chain({ dir: ax ? 'y' : 'x', pts: values, at, from, text, within });
   };
-  const px = place(0, by0, by1, R.W, R.D, (w) => [[corner(0, w)[0], corner(0, w)[1], 'Telaio'], ...extraX, [hx, hy, 'Gancio']]), cx = setOut(0, px.w, px.ms, px.a);
+  const px = place(0, by0, by1, R.W, R.D, (w) => [[corner(0, w)[0], corner(0, w)[1], frameName], ...extraX, ...hookX]), cx = setOut(0, px.w, px.ms, px.a);
   // (the other off the first's line and lettering where it can)
   avoid.push(...dimBands([cx], k));
-  const py = place(1, bx0, bx1, R.D, R.W, (w) => [[corner(1, w)[1], corner(1, w)[0], 'Telaio'], ...extraY, [hy, hx, 'Gancio']]);
+  const py = place(1, bx0, bx1, R.D, R.W, (w) => [[corner(1, w)[1], corner(1, w)[0], frameName], ...extraY, ...hookY]);
   const chains = [cx, setOut(1, py.w, py.ms, py.a)];
   // (the angle's figure off what is there and off the set-out's chains)
   busy.push(...dimBands(chains, k));
@@ -143,7 +149,7 @@ export function setoutPlan(S: RoomSite, M: MachineSpec, G: RoomGeo, hook: Hook, 
   out.push(...chains, ...angle);
   // the hook's name and the hitches' references off the set-out's chains and the angle too
   busy.push(...takenBy(angle, k));
-  out.push(...hookMarks(hook, { x0: bx0, y0: by0, x1: bx1, y1: by1 }, busy, within, beyond, k), ...hitchMarks(G, busy, within, beyond, k));
+  out.push(...(hook ? hookMarks(hook, { x0: bx0, y0: by0, x1: bx1, y1: by1 }, busy, within, beyond, k) : []), ...hitchMarks(G, busy, within, beyond, k));
   return out;
 }
 

@@ -25,6 +25,11 @@ export function hookRow(G: RoomGeo, M: MachineSpec, fmt: Fmt, pieces: readonly n
  *  with their pull (round 37). */
 export function reactionRows(G: RoomGeo, M: MachineSpec, load: SupportLoad, heb: HebLayout | null, fmt: Fmt): LoadRow[] {
   const r = supportReactions(G, M, load, heb), out: LoadRow[] = [], up = upliftOf(r);
+  // the machine kept on its existing base (round 46, B8): one resultant, its share over the base's bearings surveyed
+  if (r.kept) {
+    return [['RISULTANTE SUL BASAMENTO ESISTENTE, STATICA', fmt(r.kept.static, 0), 'daN'], ['RISULTANTE SUL BASAMENTO ESISTENTE, DINAMICA', fmt(r.kept.dynamic, 0), 'daN'],
+      ['RIPARTIZIONE SUGLI APPOGGI DEL BASAMENTO ESISTENTE', 'DA RILEVARE', '']];
+  }
   const rows = (R: readonly number[], first: number, what: string, where: string): void => {
     for (let i = 0; i < R.length; i += 3) {
       const part = R.slice(i, i + 3), names = part.map((_, k) => `R${first + i + k}`).join(' / ');
@@ -37,6 +42,15 @@ export function reactionRows(G: RoomGeo, M: MachineSpec, load: SupportLoad, heb:
   if (up.length) out.push([`${up.length > 1 ? 'ANCORAGGI' : 'ANCORAGGIO'} A TRAZIONE (SOLLEVAMENTO) ${up.map((u) => `R${u.i}`).join(' / ')} ≥`, up.map((u) => fmt(u.pull, 0)).join(' / '), 'daN']);
   return out;
 }
+
+/** The machine kept on its existing base (round 46, B8; registry locale.basamento.esistente): what the software does not
+ *  check, and whose proof it is (UNI 10411-1:2024 and UNI 10411-11:2024, point 5). */
+export const keptBaseNote = (tag: string): Note => ({
+  title: 'ARGANO ESISTENTE SUL SUO BASAMENTO', tag,
+  text: 'L’argano resta sul suo basamento esistente: posizione, altezza e appoggi da rilevare in sito; l’asse della puleggia è quello della L0 del '
+    + 'calcolo. Il software non verifica il basamento né la soletta: con portata o velocità maggiori la prova della struttura dell’edificio è a cura '
+    + 'del proprietario (UNI 10411-1:2024, 5; UNI 10411-11:2024, 5), da confermare dal tecnico strutturale.',
+});
 
 /** The HEB beams the drawings take for the room of `G` (none without them): the beams of the reactions. */
 export const hebFor = (G: RoomGeo, M: MachineSpec, shaft: HebShaft, govRopes: Parameters<typeof hebDrawn>[3] = []): HebLayout | null =>

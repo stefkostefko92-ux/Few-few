@@ -64,7 +64,8 @@ export function designBom(dv: LiftDerived, plant: Plant = {}): BomLine[] {
   if (!dv.bottom && I.room) {
     const rf = M.rinvio, sup = supportOf(I.room, M.Dp > 0);
     if (rf?.on === 'frame' && rf.maker) add('machine', { key: bedplateKey(rf.maker.code), label: { item: 'bedplate', name: `${rf.maker.brand} ${rf.maker.code}` }, qty: 1, unit: 'pz' });
-    else add('machine', { key: `support:${sup.kind}`, label: { item: `support_${sup.kind}` }, qty: 1, unit: 'pz' });
+    // (the existing base of a machine kept is the building's: no line, round 46 B8)
+    else if (sup.kind !== 'esistente') add('machine', { key: `support:${sup.kind}`, label: { item: `support_${sup.kind}` }, qty: 1, unit: 'pz' });
     if (rf?.on === 'stand') add('machine', { key: 'support:stand', label: { item: 'support_stand' }, qty: 1, unit: 'pz' });
     // the two HEB beams on the shaft's walls by the metre, on their bearing plates
     add('machine', ...hebLines(dv.heb?.chosen));

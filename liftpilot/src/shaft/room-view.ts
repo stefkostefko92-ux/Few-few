@@ -20,6 +20,7 @@ import { supportOf } from './support';
 import { layoutSite, type RoomSite } from './room-site';
 import { roomSectionOn } from './room-section-view';
 import { hookOf } from './room-hook';
+import { onKeptBase } from './room-kept';
 import { reactionPoints, type Uplift } from './room-reactions';
 import { DROP_TEXT, FRAME_TEXT, bedChain, bedOf, besideMachine } from './room-beside';
 import { panelSeen } from './room-section-extra';
@@ -75,9 +76,11 @@ export function roomPlanOn(site: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
   const out0 = Math.max(WALL, swing.reach);
   // the shaft underneath, the slab's openings round the ropes and a pulley dipping into it, a 2:1 roping's dead ends
   out.push(rect(R.shaftX, R.shaftY, R.shaftX + S.W, R.shaftY + S.D, 'hidden'));
+  // (kept on its existing base, round 46 B8: the openings existing, dashed — room-kept.ts)
+  const kept = onKeptBase(R, M);
   for (const h of holes) {
     const a = (h.wheel ? Math.max(w.ropes, w.pulley) : w.ropes) + 30;
-    out.push(path(quad(G, h.u0, -a, h.u1, a), true, 'thin'));
+    out.push(path(quad(G, h.u0, -a, h.u1, a), true, kept ? 'hidden' : 'thin'));
   }
   // a 2:1 roping's dead ends, each opening along the plane its pulley turns in (the loads of their hitches, P2 and P3,
   // with the set-out: room-setout.ts)
@@ -93,11 +96,12 @@ export function roomPlanOn(site: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
     const u = G.pulleyAt, r = M.Dp / 2, half = w.pulley, under = G.pulleyZ <= -R.slab;
     // in the bedplate its plates hold it (rinvio-view.ts); else its own stand over the opening
     const framed = M.rinvio?.on === 'frame' && G.pulleyZ - r >= 0;
-    if (!under && !framed) {
+    // (the existing pulley of a machine kept: as it is, no stand drawn)
+    if (!under && !framed && !kept) {
       const u0 = u - r - 110, u1 = u + r + 110;
       for (const s of [-1, 1]) out.push(path(quad(G, u0, s * (half - 10), u1, s * half), true, 'outline'));
       for (const [a, b] of [[u0, u0 + 70], [u1 - 70, u1]]) out.push(path(quad(G, a, -half - 40, b, half + 40), true, 'outline', 'paper'));
-    } else out.push(path(quad(G, u - 140, -half - 40, u + 140, half + 40), true, 'hidden'));
+    } else if (!kept) out.push(path(quad(G, u - 140, -half - 40, u + 140, half + 40), true, 'hidden'));
     out.push(path(pulley, true, under ? 'hidden' : 'outline', under ? undefined : 'steel'), line(onDrop(G, u, -half - 22), onDrop(G, u, half + 22), under ? 'hidden' : 'thin'));
   }
   // from the lowest up: the HEB beams on the shaft's walls, the support on them, the machine on it
@@ -141,7 +145,8 @@ export function roomPlanOn(site: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
   // clear of the governor (its body, its name, its P4: the tight boxes, not the footprint its dimensions keep off), its
   // leader too; askew, off the rows of the frame's and the drop's chains along the drop line (their lines cross it)
   const p1To = onDrop(G, machineU(G, F.shape ? 0 : 0.1 * k), machineV(G, 0)), marks = S.governor.marks ?? [], askew = Math.max(Math.abs(G.ux), Math.abs(G.uy)) <= 0.999;
-  const rows = askew ? [[0, G.calata, vDrop], ...(G.frame.on === 'frame' ? [[G.frame0, G.frame1, vFrame]] : [])].map(([u0, u1, v]) => [onDrop(G, u0, v), onDrop(G, u1, v)] as const) : [];
+  const framed = G.frame.on === 'frame' && !kept;
+  const rows = askew ? [[0, G.calata, vDrop], ...(framed ? [[G.frame0, G.frame1, vFrame]] : [])].map(([u0, u1, v]) => [onDrop(G, u0, v), onDrop(G, u1, v)] as const) : [];
   const offGov = (p: Pt): boolean => marks.every((m) => !nearBox(p, m, TAG_R) && !segMeets(p, p1To, m)) && rows.every(([q0, q1]) => segGap(p, q0, q1) > TAG_R + 40);
   // the governor; its dimensions' lettering off the machine, the bedplate with the pulley and a frame's or a plinth's
   // outline (not where the governor stands on them: m_gov asks to move it there)
@@ -173,7 +178,7 @@ export function roomPlanOn(site: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
   const edgeV = vFrame < G.across[0] ? G.across[0] : G.across[1], edge = onDrop(G, G.frame0, edgeV)[1 - ax];
   // askew, the frames' lengths along the drop line itself, like the drop's (on an axis their projection is their length)
   const on = { o: G.carDrop, u: [G.ux, G.uy] as Pt };
-  if (G.frame.on === 'frame') {
+  if (framed) {
     out.push(chain(askew ? { dir: ax ? 'y' : 'x', on, pts: [G.frame0, G.frame1], at: vFrame, from: [edgeV, edgeV], text: [FRAME_TEXT], within }
       : { dir: ax ? 'y' : 'x', pts: sorted(a[ax], b[ax]), at: a[1 - ax], from: [edge, edge], text: [FRAME_TEXT], within }));
   }
@@ -214,7 +219,7 @@ export function roomPlanOn(site: RoomSite, M: MachineSpec, G: RoomGeo, o: RoomDr
   // (none in the room: beyond the wall no row of dimensions takes)
   tagAt ??= outBand ? gridNear(outBand, p1To).find((p) => offText(p) && insideOf(tagBox(p, 'P1', ks), outBand)) : undefined;
   out.push({ e: 'tag', at: tagAt ?? spots.find(usual) ?? spots[0], text: 'P1', to: p1To });
-  out.push(...setoutPlan(S, M, G, hookOf(G, M, S.pieces ?? []), out, keep, rowBands, ks, outBand));
+  out.push(...setoutPlan(S, M, G, kept ? null : hookOf(G, M, S.pieces ?? []), out, keep, rowBands, ks, outBand));
   out.push(...reactionMarks(reactionPoints(G, M, heb), out, keep, within, ks, outBand));
   if (S.railY !== undefined && S.railY !== null) out.push(...railAxis(S, G, S.railY, out, keep, ks));
   // (the names and references set beyond the wall widen the drawing the sheet places)

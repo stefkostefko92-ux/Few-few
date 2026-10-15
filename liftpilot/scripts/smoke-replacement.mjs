@@ -7,6 +7,7 @@
 // survey; a modernisation keeping the machine is verified as it is and draws the shaft.
 import assert from 'node:assert/strict';
 import { blankCalc, blankSurvey, projectData } from './smoke-blank.mjs';
+import { keptProgetto } from './smoke-progetto.mjs';
 import { step } from './smoke-kit.mjs';
 
 export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) {
@@ -129,4 +130,5 @@ async function keptMachine({ BASE, page, hydrated, roomCalcUrl }) {
   const id = keptUrl.split('/').pop();
   assert.equal((await page.request.get(`${BASE}/api/calculations/${id}/relazione`)).status(), 200, 'its relazione');
   assert.equal((await page.request.get(`${BASE}/api/calculations/${id}/order/pdf`)).status(), 422, 'no order to draft');
+  await keptProgetto({ page, hydrated, keptUrl });
 }

@@ -32,6 +32,7 @@ import { dropSheaves, planFalls } from './direct';
 import { existingRoomCheck } from '@/shaft/room-above';
 import { slingCheck } from './arcata';
 import { carichiOf } from './modifica';
+import { keptInputs } from './kept';
 
 export type { AutoFlags, DerivedKey, IssueKey, LiftDerived, LiftInputs, Origin } from './derive-types';
 import type { DerivedKey, IssueKey, LiftDerived, LiftInputs, Origin } from './derive-types';
@@ -247,10 +248,12 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
  * their height, which the rope beyond the travel and the diverting pulley's h follow: with their profile or direction
  * left to the software, the form is derived with the tallest (or the profile chosen), the beams taken among the six for
  * that machine and that load, and — when another profile — derived again on them; the design goes on with them named in
- * its room (the drawings, the 3D, the shaft's record), marked as the software's.
+ * its room (the drawings, the 3D, the shaft's record), marked as the software's. A machine the intervention keeps is
+ * derived on its existing base, without them (kept.ts).
  */
-export function deriveLift(inp: LiftInputs): LiftDerived {
-  const R = inp.shaft.room, chosenBy = R?.heb, first = deriveOnce(inp), taken = first.heb?.chosen;
+export function deriveLift(sent: LiftInputs): LiftDerived {
+  // the machine the intervention keeps stands on its existing base, its geometry the calculation's (kept.ts)
+  const inp = keptInputs(sent), R = inp.shaft.room, chosenBy = R?.heb, first = deriveOnce(inp), taken = first.heb?.chosen;
   if (!R || !chosenBy || (chosenBy.profile && chosenBy.dir) || !first.heb || !taken) return first;
   const auto = { profile: !chosenBy.profile, dir: !chosenBy.dir }, heb = { profile: taken.profile, dir: taken.dir };
   if (taken.profile !== (chosenBy.profile ?? HEB_PROFILES[HEB_PROFILES.length - 1])) {

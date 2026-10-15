@@ -31,7 +31,8 @@ export function shapeRows(S: MachineShape, D: number, fmt: (x: number, dp?: numb
     ['Puleggia', `Ø ${fmt(D, 0)} mm, piano medio a P = ${fmt(P, 1)} mm dal piano della vite, larghezza E `
       + (S.sheaveScaled ? scaled(`${fmt(E, 0)} mm`, true) : `= ${fmt(E, 0)} mm${S.bodyFrom ? ` (come la ${S.bodyFrom})` : ''}`)],
     ['Fissaggio', `${S.holes.length} × ${S.hole} su ${span(xs)} × ${span(zs)} mm; piedi ${fmt(S.feet[2] - S.feet[0], 0)} × ${fmt(S.feet[3] - S.feet[1], 0)} mm`],
-    standsOn(F, mk, irons, through, fmt),
+    rf?.on === 'esistente' ? ['Basamento', 'esistente, dell’argano che resta: posizione, altezza e appoggi da rilevare; l’asse della puleggia dalla L0 del calcolo']
+      : standsOn(F, mk, irons, through, fmt),
   ];
 }
 
@@ -62,6 +63,8 @@ function standsOn(F: MachineFrame, mk: MakerBedplate | null, irons: string, thro
  *  or ours) or on its own stand on the floor. */
 export function rinvioRow(rf: RinvioFrame, fmt: (x: number, dp?: number) => string): [string, string] {
   const axis = `asse a ${fmt(rf.pulleyAxis, 0)} mm sul pavimento del locale`;
+  // the existing pulley of a machine kept on its existing base (round 46, B8): as it is
+  if (rf.on === 'esistente') return ['Puleggia di rinvio', 'esistente, nel locale macchina: resta al suo posto con l’argano, posizione e supporto da rilevare; h dal calcolo'];
   if (rf.on === 'stand') return ['Puleggia di rinvio', `nel locale macchina, mai nel vano: su un proprio supporto a pavimento, ${axis}`];
   const mk = rf.maker;
   return ['Puleggia di rinvio', mk

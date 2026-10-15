@@ -9,7 +9,8 @@ import { roomChecksOf } from '@/shaft/machine-room';
 import { outlineGap, switchBox, type Box } from '@/shaft/room-floor';
 import type { PanelSpot } from '@/shaft/room-panel';
 import { governorFootprint, governorRopes as governorRopesIn, shaftUnder } from '@/shaft/room-site';
-import { beamChecks, fitChecks, governorRoomChecks, machineParts, panelFloorChecks, panelPlace, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
+import { NON_SU_ESISTENTE, beamChecks, fitChecks, governorRoomChecks, machineParts, panelFloorChecks, panelPlace, rinvioChecks, type SupportLoad } from '@/shaft/support-check';
+import { onKeptBase } from '@/shaft/room-kept';
 import { IRON } from '@/shaft/machine-shape';
 import { supportRunIn } from '@/shaft/machine-room';
 import { PROFILES } from '@/shaft/profiles';
@@ -87,7 +88,8 @@ export interface SupportMass {
 
 export function supportMass(G: RoomGeo | null, M: MachineSpec): SupportMass {
   const s = supportOf(G?.room ?? null, M.Dp > 0), rf = M.rinvio ?? null, maker = bedplateMass(M);
-  if (!G) return { maker, frame: 0, base: 0, stand: 0, kind: s.kind };
+  // the existing base of a machine kept (round 46, B8): the building's, no mass of a new support (sheet 1 «DA RILEVARE»)
+  if (!G || s.kind === 'esistente') return { maker, frame: 0, base: 0, stand: 0, kind: s.kind };
   const F = G.frame, steel = KM.steelKgM3 / 1e9, run = (r: readonly [number, number] | null): number => (r ? r[1] - r[0] : 0);
   const channel = (h: number, len: number): number => (2 * IRON * KM.ironTf + Math.max(0, h - 2 * KM.ironTf) * KM.ironTw) * len * steel;
   const across = Math.max(...F.beams) - Math.min(...F.beams);
@@ -172,8 +174,10 @@ export const supportChecks = (L: Layout, M: MachineSpec, load: SupportLoad, abov
   const G = roomGeo(L, M);
   if (!above || !G) return [...beamChecks(G, M, load), ...rinvioChecks(G, M)];
   const others = floorOthers(L, G), panel = roomChecksOf(G.room, [...machineParts(G, M), ...others]).filter((c) => c.id === 'm_panel');
-  return [...beamChecks(G, M, load), ...rinvioChecks(G, M), ...hebChecks(hebOf(L, M, load)?.chosen.result ?? null), ...fitChecks(G, M, others), ...panel,
+  const all = [...beamChecks(G, M, load), ...rinvioChecks(G, M), ...hebChecks(hebOf(L, M, load)?.chosen.result ?? null), ...fitChecks(G, M, others), ...panel,
     ...panelFloorChecks(G, M, others), ...governorRoomChecks(governorFootprint(L, G.room), G, M)];
+  // the machine kept on its existing base: none of a new support's checks (support-check.ts NON_SU_ESISTENTE)
+  return onKeptBase(G.room, M) ? all.filter((c) => !NON_SU_ESISTENTE.has(c.id)) : all;
 };
 
 /** Where the software puts the control panel in the room over the shaft for the machine `M` (room-panel.ts placePanel);

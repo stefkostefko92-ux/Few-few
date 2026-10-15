@@ -36,7 +36,11 @@ export type SurveyOpening = z.infer<typeof openingSchema>;
 export type Survey = z.infer<typeof surveySchema>;
 
 /** A survey as a new record must be (the save and the edits on the drawings): the stored shape and its rules. */
-export const surveySaveSchema = surveySchema.superRefine((S, ctx) => supportAtLeastProfile(S.room.support, ctx));
+export const surveySaveSchema = surveySchema.superRefine((S, ctx) => {
+  supportAtLeastProfile(S.room.support, ctx);
+  // the existing base of a machine kept is the Progetto's (round 46, B8): a survey places a new machine
+  if (S.room.support?.kind === 'esistente') ctx.addIssue({ code: 'custom', path: ['room', 'support', 'kind'], message: 'existing base of a kept machine' });
+});
 
 /** The survey a new machine room starts from: the room and the shaft of the software's example (to be replaced with the
  *  measures), the car's drop in the middle of the shaft and the counterweight's behind it at the calculation's spacing

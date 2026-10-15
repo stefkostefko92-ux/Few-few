@@ -96,13 +96,14 @@ export const VOCI_LOCALE: readonly VoceVano[] = [
   },
   {
     id: 'locale.esistente', gruppo: 'locale', titolo: 'Locale del macchinario esistente nella modifica',
-    valore: 'con la macchina nuova il locale segue la UNI EN 81-20 5.2.6.3 attorno alle apparecchiature sostituite o aggiunte; l’altezza libera '
+    valore: 'nella modifica il locale segue la UNI EN 81-20 5.2.6.3 attorno alle apparecchiature sostituite o aggiunte (la macchina nuova, il quadro '
+      + 'nuovo o le apparecchiature spostate); in un locale dove nulla si sposta né si aggiunge il punto 9 non si applica; l’altezza libera '
       + 'esistente sulle zone di lavoro può restare sotto 2100 mm se non si riduce; con la UNI 10411-1, sotto 2000 mm zone segnalate, materiale '
       + 'ammortizzante al soffitto e almeno 1800 mm liberi sotto di esso (UNI EN 81-21:2022, 5.9); con la UNI 10411-11 resta l’altezza esistente',
     riferimento: 'UNI 10411-1:2024, 9.1–9.2; UNI 10411-11:2024, 9.2; UNI EN 81-21:2022, 5.9',
     fonte: `${letto('UNI 10411-1:2024', 'p. 9')}; ${letto('UNI 10411-11:2024', 'p. 9')}; ${letto('UNI EN 81-21:2022', 'p. 23')}`, stato: 'confermato',
     nota: 'nella nota del foglio della sostituzione; nell’esito l’altezza e la porta restano «esistente», la superficie davanti al quadro entra '
-      + 'quando cambia la macchina',
+      + 'quando cambia la macchina; fino a SHAFT 2.25.0 la voce diceva «con la macchina nuova», come se ogni modifica la portasse',
   },
   {
     id: 'locale.pulegge', gruppo: 'locale', titolo: 'Locale delle pulegge di rinvio (macchina in basso)',
@@ -183,11 +184,14 @@ export const VOCI_LOCALE: readonly VoceVano[] = [
       + '(«FORO L × P»: L lungo x, P lungo y del locale; con la linea delle calate obliqua lungo e di traverso le calate) e la posizione del centro '
       + 'dai muri interni del vano (x dal muro di sinistra, y dal muro dell’accesso A, come nel rilievo); la sezione B-B disegna e quota i bordi; '
       + 'nella sostituzione le aperture esistenti rilevate sono disegnate tratteggiate e gli appoggi del nuovo basamento ne stanno ad almeno 100 mm '
-      + 'dal bordo (m_holes, avviso: un’apertura si può chiudere)',
+      + 'dal bordo (m_holes, avviso: un’apertura si può chiudere); con l’argano che resta sul suo basamento esistente (locale.basamento.esistente) '
+      + 'le aperture sono quelle esistenti, tratteggiate («FORO ESISTENTE»), senza bordi e senza m_holes, e nulla di nuovo si disegna: i 100 mm dagli '
+      + 'appoggi valgono solo con un basamento nuovo',
     riferimento: 'UNI EN 81-20:2020, 5.2.6.3.3 (aperture ridotte al minimo, bordi di almeno 50 mm); il gioco e lo spessore del bordo sono scelte '
       + 'del software',
     fonte: `${letto(T20, 'p. 43')}; gioco di 30 mm e bordo in lamiera di 25 mm come il 3D che taglia la soletta; un bordo in calcestruzzo, più spesso, si adatta in sito`,
     stato: 'scelta', verifiche: ['m_holes'],
+    nota: 'fino a SHAFT 2.25.0 anche l’argano che resta si disegnava su un basamento nuovo, con i fori bordati e la verifica m_holes',
   },
   {
     id: 'locale.gancio', gruppo: 'locale', titolo: 'Gancio di sollevamento sopra l’argano',

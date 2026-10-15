@@ -168,7 +168,7 @@ export function machineCorners(G: RoomGeo, M: MachineSpec, stand = true): [numbe
   if (rf?.on === 'frame') {
     const [u0, u1] = rinvioRun(M, G), [v0, v1] = rinvioAcross(G, rf);
     boxes.push([u0, v0, u1, v1]);
-  } else if (stand && M.Dp > 0 && G.pulleyZ > -R.slab) boxes.push(standBox(M, G));
+  } else if (stand && rf?.on !== 'esistente' && M.Dp > 0 && G.pulleyZ > -R.slab) boxes.push(standBox(M, G));
   return boxes.flatMap(([u0, v0, u1, v1]) => ([[u0, v0], [u1, v0], [u1, v1], [u0, v1]] as const)
     .map(([u, v]): [number, number] => [G.carDrop[0] + u * G.ux - v * G.uy, G.carDrop[1] + u * G.uy + v * G.ux]));
 }

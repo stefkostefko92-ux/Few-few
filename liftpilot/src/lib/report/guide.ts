@@ -89,8 +89,10 @@ export function guideSection(a: Analysis, L: Layout, Pl: Plant, M: MachineSpec, 
   // where each load acts, as the scheme has it (loads.ts loadPlaces)
   const at = loadPlaces(below ? scheme ?? 'head' : null, !!L.inputs.room);
   const mass: [string, string][] = [
-    [`Argano${SL.machine.estimate ? ' (argano completo, stima ⚠)' : ''}`, `${fmt(SL.machine.kg, 0)} kg${below ? ' (in basso, non sulla soletta)' : ''}`],
-    ...supportRows(SL.support, M, fmt).map(([l, v]): [string, string] => [labelCase(l).replace('(stima)', '(stima ⚠)'), `${v} kg`]),
+    // (the machine kept on its existing base, round 46 B8: its mass from the plate or the logbook, the base not weighed)
+    [SL.support.kind === 'esistente' ? `Argano esistente${SL.machine.estimate ? ' (stima ⚠: da targa o libretto)' : ''}` : `Argano${SL.machine.estimate ? ' (argano completo, stima ⚠)' : ''}`,
+      `${fmt(SL.machine.kg, 0)} kg${below ? ' (in basso, non sulla soletta)' : ''}`],
+    ...supportRows(SL.support, M, fmt).map(([l, v, u]): [string, string] => [labelCase(l).replace('(stima)', '(stima ⚠)'), u ? `${v} ${u}` : v]),
     ...(SL.heb ? [[`Putrelle ${SL.heb.profile} sui muri del vano (due)`, `${fmt(SL.hebKg, 0)} kg`] as [string, string]] : []),
     [below ? 'Carico statico sulle pulegge in testata' : 'Carico statico sull’asse dell’argano', `${fmt(ld.static, 0)} kg; per il coefficiente dinamico × ${dyn}: ${fmt(ld.dynamic, 0)} kg`],
     ...(SL.anchor ? [['Ancoraggi dell’argano in basso: prova 1,25·Q · portata × coefficiente dinamico',

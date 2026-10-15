@@ -2620,6 +2620,47 @@ frizione, Diametro pulegge di rinvio, Inerzia per puleggia…, Massa della macch
     Ammodernamento con il quadro» — таблото заключено с 11.2.1, записва (smoke-progetto → `soloQuadro`).
   - *Бележката на `azionamento.tolleranza.velocita`* (B6) се печата и в „Ipotesi e limiti del modello“ на всяка relazione,
     извън блоковете, които `diff-classify` допуска в S5: влиза със записите на регистъра в S6 (B9).
+- **S6 — машината, която остава (B8), и регистърът (B9)** (SHAFT 2.26.0 и LIFT 1.32.0 от S4 — резултатите за
+  съществуващите входове са същите, версиите не се вдигат пак):
+  - *Условието е физическо* (`src/lib/lift/kept.ts`): изчисление на съществуващо съоръжение ('repl'), чието изпитване пази
+    машината (`partKept`), какъвто и тип да е обявен — думите на листовете остават по декларирания тип (кръг 45).
+    `deriveLift` нормализира входа най-напред (`keptInputs`): основата е `'esistente'` (`of` — spessori / telaio / putrelle
+    / plinto / non chiaro, само описание), без HEB; L0, dx и h — от изчислението (`liftInputsOf`: `auto.L0`/`dx` = false,
+    без h от плана); оста на шайбата — от L0 (`keptAxis` = L0 − headroom + frameTop − плочата); ос под пода — проблемът
+    'L0'. Друго изчисление губи изпратената основа 'esistente'; рилевото на машинното я отказва (`surveySaveSchema`) —
+    там машината винаги е нова, `survey-data.ts` не е пипан.
+  - *Чертежите* (`src/shaft/room-kept.ts`): B-B — машината върху щрихован блок «BASAMENTO ESISTENTE — DA RILEVARE:
+    POSIZIONE, ALTEZZA E APPOGGI», височината само за четене; без «Telaio argano», бордове, «N. … antivibranti», HEB и кука;
+    планът — основата и отворите пунктирани («FORO ESISTENTE», без бордове), без кука и «Gancio» в трасирането («Argano»
+    вместо «Telaio»), без R1…Rn; отклоняващата ролка — съществуващата, без рама или стойка (`RinvioFrame.on` 'esistente').
+    Не се смятат `NON_SU_ESISTENTE` (m_beam*, m_heb*, m_bedplate, m_base, m_stand, m_rinvio, m_holes, m_calata); остават
+    m_fit, m_free, m_panel, m_quadro, m_route (и m_wheel, m_above, m_gov). Капацитетът на основата не се проверява.
+  - *Лист 1 и документите*: «ARGANO ESISTENTE» с масата от изчислението (оценката — «(STIMA — DA TARGA O LIBRETTO)»);
+    «BASAMENTO ESISTENTE (DA RILEVARE)» без маса; една резултантна «SUL BASAMENTO ESISTENTE» — статична и с динамичния
+    коефициент («…, STATICA» и «…, DINAMICA»), разпределението по опорите «DA RILEVARE»; без куката; бележката по т. 5 (при по-голям товар или скорост
+    доказателството за сградата е на собственика, `keptBaseNote`). Relazione: «Argano esistente sul suo basamento
+    esistente (da rilevare)…», резултантната, без кука и R1…Rn (`designRoomBlocks`); «Basamento» и «Puleggia di rinvio»
+    — съществуващи (`machine-shape.ts`). 3D — неутрален блок, без кука, бордове и стойка на ролката. Легендата на плана — без куката. Листата: без ред за основа
+    (`designBom`); изборът на основа и ценовата листа — само `SUPPORT_SCELTE` (без 'esistente').
+  - *Екранът*: ProgettoForm скрива основата и HEB и казва «Argano esistente (resta) sul suo basamento — da rilevare», с
+    незадължителен избор на вида; ProgettoFuni заключва L0 и dx·h «dal calcolo» с причината (`hint_kept_funi`), при
+    невъзможна ос — `hint_L0_kept` с «Porta nel calcolo». Smoke (`smoke-progetto.mjs` `keptProgetto`, след машината, която
+    остава, в smoke-replacement): бележката, без HEB, L0 заключено, B-B с «BASAMENTO ESISTENTE» без «antivibranti»,
+    запис, комплект — лист 1 с «ARGANO ESISTENTE», «BASAMENTO ESISTENTE (DA RILEVARE)» без «(STIMA)» и резултантната.
+  - *Регистърът* (B9): нов `locale.basamento.esistente` (scelta); преформулирани с бележка «fino a … X»:
+    `locale.esistente` (апаратурата сменена или добавена — новата машина, новото табло, преместеното; т. 9 не важи за
+    машинно, където нищо не се мести или добавя), `locale.fori` (при машина, която остава — отворите съществуващи, нищо
+    ново; 100 mm от опорите — само с нова основа), `modello.non.calcolate` (UCM и ACOP «con la macchina nuova o con la
+    velocità variata»), `impianto.intervento` и `impianto.collaudo` (скоростта и ходът и от libretto),
+    `azionamento.tolleranza.velocita` (B6 — сравнението с libretto, печата се в „Ipotesi e limiti del modello“). От реда на
+    приложението на кръг 45 е махната частта «quanto detto della macchina nuova vale per le apparecchiature sostituite o
+    aggiunte» (остава «L’argano resta: le voci della sola sostituzione del macchinario non sono elencate.»), от коментара
+    на `restaVariataText` — бележките „кръг 46“. Листата — 314 реда (+1). `diff-classify` от S6 допуска реда на
+    `azionamento.tolleranza.velocita` в „Ipotesi e limiti“ и броя на записите на регистъра в първата рамка на relazione.
+  - *Тестове*: `kept-machine.test.ts` — условието; B-B и планът без 'antivibranti', 'TELAIO', кука и '(STIMA)', с
+    «BASAMENTO ESISTENTE» и «FORO ESISTENTE»; без HEB; пропуснатите проверки ги няма, останалите — да; L0 = L0 на
+    изчислението, същата ос като при нова машина със същата L0, невъзможна ос → 'L0'; ролката без рама; Progetto — L0 и
+    dx·h на изчислението; лист 1; 3D се строи. `shapes.test` и рилевото с основа, която остава, под нова машина — непроменени.
 
 ## Проверки
 
@@ -3070,6 +3111,17 @@ frizione, Diametro pulegge di rinvio, Inerzia per puleggia…, Massa della macch
   `lista-verifica-xlsx.py` — 313 реда (+12). Пълен smoke с пощата — „all good“ (69 реда; новите стъпки — регулирането
   в празния «Solo argano», 2 скорости → отказ и VVVF → запис, групата на допълнителните части, «Solo argano» с 1 скорост →
   «Passa ad Ammodernamento con il quadro»). `node tools/security/secret-scan.mjs` — чисто.
+- [x] Кръг 46 B, S6 (същият клон, база и :3311): `tsc --noEmit` 0 грешки, `npm run lint` чисто, `npm test` — 1069 + 211
+  теста (нов `kept-machine.test.ts`); `npm run build` — успешен, :3311 спрян само по процеса с cwd на работното дърво и
+  пуснат от новия build. `refresh-sim` + `diff-classify --stage S6` срещу S0 — 1854 сравнени (98 от smoke-овете след
+  снимката), 0 необяснени: R2 — каноничният хеш на чертежа на всеки комплект (и на машинните), LiftDesign и чернова с
+  чертеж — същият, R5 — резултатите на всеки ShaftDesign и RoomDesign същите, R1 — 0; R4 757, R6 79, R3 60 (от S4/S5). Срещу
+  снимката след S5 — само 676 relazioni di calcolo: приложението на регистъра, редът на `azionamento.tolleranza.velocita`
+  в „Ipotesi e limiti“, броят на записите в първата рамка и редът «L’argano resta» (25); tecniche, лист 1 и чертежите —
+  нищо. `reproduce-all` — всеки ред на запис от след S5 е същият (1808); `docs-compare` — 15 от 1454 реда се менят, всички
+  relazioni на записи от smoke-овете с текущите версии (текстът на регистъра), 0 от снимката S0; поръчките и DXF-ите на
+  комплектите — същите. `npm run lista` + `lista-verifica-xlsx.py` — 314 реда (+1). Пълен smoke с пощата — „all good“ (70 реда; новата стъпка — Progetto на машината, която остава: основата, L0 заключено, B-B, лист 1).
+  `node tools/security/secret-scan.mjs` — чисто.
 - [x] `node tools/design/motion-a11y.mjs liftpilot/src`: проверката за reduced motion в базата — да; 6 евристични
   находки `webgl-no-rm-check` в модули на 3D, които се зареждат само през `boot.ts` (същите и преди кръг 24).
 - [x] Живата 3D сцена на началната страница е проверена в headless Chromium (WebGL 2) на двете нива на качество, без грешки в конзолата. При reduced motion three.js не се зарежда.

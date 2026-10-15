@@ -196,7 +196,8 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
 
   // the lifting hook over the machine, on its plate under the roof: where the drawings put it (over the machine's centre
   // of gravity, its eye KV_VERT.hookDrop under the ceiling), else over the sheave
-  if (R) {
+  // (none over a machine kept on its existing base: round 46, B8)
+  if (R && sup.kind !== 'esistente') {
     const hook = new Batch(), hx = hookAt ? hookAt.at[0] - R.shaftX : centre.x * 1000, hy = hookAt ? hookAt.at[1] - R.shaftY : -centre.z * 1000;
     const eye = z0 + (hookAt ? hookAt.eye : R.H - KV_VERT.hookDrop), ring = 45;
     hook.box(hx - 110, hy - 110, z0 + R.H - 14, hx + 110, hy + 110, z0 + R.H, M.galv);
@@ -214,7 +215,8 @@ export function buildRoom(L: Layout, rig: RopeRig, n: number, d: number, D: numb
     common.add(p);
   }
   const over = !rig.bottom ? z0 + hebH : rig.scheme?.scheme === 'room' ? ceiling + (I.room?.slab ?? KL.slab) : null;
-  pulleyFrames(frames, M, rig, n, d, over, ceiling, framed);
+  // (the existing pulley of a machine kept on its existing base: as it is, no stand of ours — round 46, B8)
+  pulleyFrames(frames, M, rig, n, d, over, ceiling, framed || (!rig.bottom && rinvio?.on === 'esistente'));
   frames.into(common);
   const pcs = rig.pieces(0, 0), first = pcs[0], last = pcs[pcs.length - 1];
   const moving = (pc: typeof first, e: (typeof first.els)[number] | undefined): THREE.Group | null =>
