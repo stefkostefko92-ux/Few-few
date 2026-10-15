@@ -11,7 +11,7 @@ const src = (p: string) => new URL(`../../src/${p}`, import.meta.url).href;
 const req = createRequire(import.meta.url);
 const pkg = (m: string) => pathToFileURL(req.resolve(m)).href;
 
-type Kind = 'shaft' | 'room' | 'stale' | 'none';
+type Kind = 'shaft' | 'room' | 'stale' | 'none' | 'throws';
 interface Fake { kind: Kind; companyId: string; busy?: number; raceKeep?: boolean }
 const SETS: Record<string, Fake> = {
   a: { kind: 'shaft', companyId: 'c1' }, b: { kind: 'room', companyId: 'c2' }, c: { kind: 'stale', companyId: 'c1' }, d: { kind: 'shaft', companyId: 'c1' },
@@ -64,12 +64,15 @@ mock.module(src('server/queries.ts'), { namedExports: {
     const k = kept.get(id);
     return {
       id, companyId: f.companyId, number: `26-0${id}`, revision: 0, year: 2026, seq: 1, createdAt: new Date('2026-10-01T08:00:00Z'), companyName: 'Ditta', project: { name: `Impianto ${id}` },
-      calculation: {}, logo: null, clientLogo: null, shaftDesign: f.kind === 'shaft' || f.kind === 'stale' ? {} : null, roomDesign: f.kind === 'room' ? {} : null,
+      calculation: {}, logo: null, clientLogo: null, shaftDesign: f.kind === 'shaft' || f.kind === 'stale' || f.kind === 'throws' ? {} : null, roomDesign: f.kind === 'room' ? {} : null,
       pdf: k ? { sha256: sha(k) } : null,
     };
   },
 } });
-const draw = (id: string) => (SETS[id].kind === 'stale' ? { ok: false, error: 'engineChanged' } : { doc: { set: id } });
+const draw = (id: string) => {
+  if (SETS[id].kind === 'throws') throw new Error(`compose ${id} failed`);
+  return SETS[id].kind === 'stale' ? { ok: false, error: 'engineChanged' } : { doc: { set: id } };
+};
 mock.module(src('server/drawing-compose.ts'), { namedExports: { composeStored: (s: { id: string }) => draw(s.id) } });
 mock.module(src('server/room-compose.ts'), { namedExports: { composeStoredRoom: (s: { id: string }) => draw(s.id) } });
 mock.module(src('server/set-identity.ts'), { namedExports: { firstIssuedAt: async () => null } });
@@ -119,4 +122,17 @@ test('renderer sempre occupato: il set fallisce dopo i tentativi, gli altri cont
   assert.equal(i?.outcome, 'failed');
   assert.equal(busyLeft.i, 96, 'three tries');
   assert.equal(kept.has('i'), false);
+});
+
+test('un set che lancia mentre si ridisegna: «failed» con il motivo, il giro continua sugli altri', async () => {
+  SETS.j = { kind: 'throws', companyId: 'c1' };
+  SETS.k = { kind: 'shaft', companyId: 'c2' };
+  busyLeft = {};
+  const lines = await keepSetPdfs({ waitMs: 1 });
+  const j = lines.find((l) => l.id === 'j');
+  assert.deepEqual([j?.outcome, j?.error], ['failed', 'compose j failed']);
+  assert.equal(lines.find((l) => l.id === 'k')?.outcome, 'kept', 'the sets after it are kept');
+  // a set without a design to draw it from: not found, the reason named
+  assert.deepEqual(lines.find((l) => l.id === 'h')?.error, 'noDesign');
+  delete SETS.j;
 });

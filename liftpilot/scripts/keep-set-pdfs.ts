@@ -58,8 +58,11 @@ export async function keepSetPdfs(o: KeepOptions = {}): Promise<SetLine[]> {
     const done = (line: SetLine): void => { out.push(line); o.report?.(line); };
     // kept by the server between the list and now: never drawn again
     if (!s || s.pdf) { done({ ...head, outcome: s ? 'already' : 'notFound', ...(s?.pdf ? { sha256: s.pdf.sha256 } : {}) }); continue; }
-    const r = await compose(s);
-    if (!r || 'ok' in r) { done({ ...head, outcome: r?.error === 'engineChanged' ? 'stale' : 'notFound' }); continue; }
+    // a set that throws while it is drawn again (as the PDF route answers 500 for that set only): failed, the walk goes on
+    let r: Awaited<ReturnType<typeof compose>>;
+    try { r = await compose(s); } catch (err) { done({ ...head, outcome: 'failed', error: err instanceof Error ? err.message : String(err) }); continue; }
+    // no longer drawn by the running engines: listed for the owner; any other reason the set is not drawn is named
+    if (!r || 'ok' in r) { done({ ...head, ...(r?.error === 'engineChanged' ? { outcome: 'stale' } : { outcome: 'notFound', error: r?.error ?? 'noDesign' }) }); continue; }
     if (o.dryRun) { done({ ...head, outcome: 'listed' }); continue; }
     for (let i = 1; ; i++) {
       try {
@@ -84,7 +87,8 @@ async function main(): Promise<void> {
   const count = (k: SetLine['outcome']): number => lines.filter((l) => l.outcome === k).length;
   process.stdout.write(`sets without a kept PDF: ${lines.length} — kept ${count('kept')}, kept meanwhile ${count('already')}, `
     + `${dryRun ? `to keep ${count('listed')}, ` : ''}no longer drawn by the running engines ${count('stale')} (listed above as "stale": the owner issues a `
-    + `new revision where one is needed), not found ${count('notFound')}, failed ${count('failed')}\n`);
+    + `new revision where one is needed), not found or not drawn for another reason ${count('notFound')}, failed ${count('failed')} (the reason on `
+    + `each line)\n`);
   await prisma.$disconnect();
   if (count('failed')) process.exitCode = 1;
 }
