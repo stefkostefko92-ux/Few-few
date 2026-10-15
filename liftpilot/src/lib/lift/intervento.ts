@@ -12,6 +12,9 @@ import type { FormValues } from '@/calc/types';
 import { NORME_AGGIUNTIVE, PARTI, ammessa, collaudoOf, esistenteOf, type Collaudo, type NormaAggiuntiva, type NormaCollaudo, type Parte } from './collaudo';
 import { SOSTANZIALE } from './norme-collaudo';
 
+const subset = (a: readonly Parte[], of: readonly Parte[]): boolean => a.every((p) => of.includes(p));
+const isUni = (n: NormaCollaudo | undefined): n is '10411-1' | '10411-11' => n === '10411-1' || n === '10411-11';
+
 /** The three types, as the database's enum names them (TipoIntervento, migration 21): no mapping between the two. */
 export const TIPI_INTERVENTO = ['SOLO_ARGANO', 'AMMODERNAMENTO', 'TRASFORMAZIONE_COMPLETA'] as const;
 export type TipoIntervento = (typeof TIPI_INTERVENTO)[number];
@@ -24,8 +27,15 @@ export const PARTI_SOLO: readonly Parte[] = ['machine', 'ropes'];
  *  is answered when there is one). */
 export const PARTI_RIFACIMENTO: readonly Parte[] = ['machine', 'ropes', 'car', 'cw', 'rails', 'landingDoors', 'carDoors', 'buffers', 'governor', 'controller'];
 
-/** What the survey of the machine room verifies: the machine, its ropes and the control panel in the room. */
-export const PARTI_LOCALE: readonly Parte[] = ['machine', 'ropes', 'controller'];
+/** What the survey of the machine room verifies: the machine, its ropes and the control panel in the room; round 46
+ *  (B7), the room itself, the alarm and the UCM protection that go with them. */
+export const PARTI_LOCALE: readonly Parte[] = ['machine', 'ropes', 'controller', 'room', 'alarm', 'ucm'];
+
+/** The optional parts of a modernisation (round 46, B7, owner's decision Q3): a group of their own, «No» unless answered
+ *  «Sì», never among what is still to answer, not answered by the renovation — the safety gear, the ACOP and UCM
+ *  protections, the emergency alarm, the machine room, the car doors made sliding (only with the car doors replaced:
+ *  interventoValido 'porte'). */
+export const PARTI_FACOLTATIVE: readonly Parte[] = ['safetyGear', 'ucm', 'alarm', 'room', 'slidingDoors'];
 
 /** The parts that change a lift without being replaced: speed, rated load, travel. */
 export const VARIAZIONI: readonly Parte[] = ['speed', 'load', 'travel'];
@@ -33,11 +43,19 @@ export const VARIAZIONI: readonly Parte[] = ['speed', 'load', 'travel'];
 /** What the Progetto of a step draws: the survey of the existing machine room, or the whole shaft. */
 export type Disegno = 'locale' | 'vano';
 
+/** The speed regulation the software sizes every machine it proposes for (round 46, B6): a frequency converter
+ *  (KL.catalogRatioTol). UNI 10411-1:2024 11.2.1 and UNI 10411-11:2024 11.2 do not allow adding a speed regulation to
+ *  a controller without one: a new machine on an existing controller of one or two speeds needs the controller replaced. */
+export const senzaRegolazione = (r: Collaudo['regolazione']): boolean => r === '1v' || r === '2v';
+
+/** A modification whose new machine stays on the existing controller: the speed regulation of that controller is
+ *  asked (a «Solo argano» always, a modernisation with the machine «Sì» and the controller «No»). */
+export const regolazioneChiesta = (t: TipoIntervento | null | undefined, C: Pick<Collaudo, 'norma' | 'parti'>): boolean =>
+  (t === 'SOLO_ARGANO' || t === 'AMMODERNAMENTO') && isUni(C.norma) && C.parti.includes('machine') && !C.parti.includes('controller');
+
 /** The calculation's context of a type: a new lift for the transformation, a replacement otherwise. */
 export const contestoDi = (t: TipoIntervento): 'new' | 'repl' => (t === 'TRASFORMAZIONE_COMPLETA' ? 'new' : 'repl');
 
-const subset = (a: readonly Parte[], of: readonly Parte[]): boolean => a.every((p) => of.includes(p));
-const isUni = (n: NormaCollaudo | undefined): n is '10411-1' | '10411-11' => n === '10411-1' || n === '10411-11';
 
 /** The type of a record saved before it was declared, read by its shape: the calculation's context and its test as
  *  stored (collaudoReadSchema-parsed or normalised; null: none chosen). A new lift or a test to EN 81-20/50 is a
@@ -79,11 +97,13 @@ export function interventoTo(t: TipoIntervento, prev?: Collaudo): { values: Form
 
 /** The renovation that keeps the existing sling turned on or off in a modernisation. On: every part but the sling,
  *  the changes of speed, load and travel as answered, new ropes free of those in place. Off: the machine alone, the
- *  ropes' number and diameter in place. The part of UNI 10411, the standards added and what is known of the lift stay. */
+ *  ropes' number and diameter in place. The part of UNI 10411, the standards added, what is known of the lift and the
+ *  optional parts as answered (round 46: the renovation does not answer them) stay. */
 export function rifacimentoTo(on: boolean, C: Collaudo): { values: FormValues; collaudo: Collaudo } {
   const norma: NormaCollaudo = isUni(C.norma) ? C.norma : '10411-1', rest = { ...esistenteOf(C), ...aggiunteFor(C, norma) };
-  if (!on) return { values: { keepRopes: true }, collaudo: { norma, parti: ['machine'], ...rest } };
-  const parti = PARTI.filter((p) => PARTI_RIFACIMENTO.includes(p) || (VARIAZIONI.includes(p) && C.parti.includes(p)));
+  const extra = (p: Parte): boolean => PARTI_FACOLTATIVE.includes(p) && C.parti.includes(p);
+  if (!on) return { values: { keepRopes: true }, collaudo: { norma, parti: PARTI.filter((p) => p === 'machine' || extra(p)), ...rest } };
+  const parti = PARTI.filter((p) => PARTI_RIFACIMENTO.includes(p) || (VARIAZIONI.includes(p) && C.parti.includes(p)) || extra(p));
   return { values: { keepRopes: false }, collaudo: { norma, parti, rifacimento: true, ...rest } };
 }
 
@@ -92,7 +112,10 @@ export function rifacimentoTo(on: boolean, C: Collaudo): { values: FormValues; c
  *  travel make a modernisation of what would be a «Solo argano» — chosen ('parti') or brought by the logbook (round
  *  46: 'velocita', 'corsa', the test as the documents read it); the load is never chosen there (the documented loads
  *  may bring it: a warning, not a refusal) — and the load they bring makes one too: a modernisation is told apart from
- *  a «Solo argano» on the parts as the documents read them (collaudoOf), the rule's load among them. */
+ *  a «Solo argano» on the parts as the documents read them (collaudoOf), the rule's load among them. Round 46 (B6, B7):
+ *  a new machine on an existing controller of one or two speeds ('inverter': the controller is replaced — UNI
+ *  10411-1:2024 11.2.1, UNI 10411-11:2024 11.2; an unanswered regulation is the form's to ask, never a refusal here, so
+ *  a record saved before still updates), the car doors made sliding without the car doors replaced ('porte'). */
 export function interventoValido(t: TipoIntervento | null | undefined, V: FormValues, chosen: Collaudo | null | undefined): string[] {
   if (!t) return ['intervento'];
   const out = new Set<string>();
@@ -117,6 +140,8 @@ export function interventoValido(t: TipoIntervento | null | undefined, V: FormVa
     if (!subset(PARTI_RIFACIMENTO, P)) out.add('rifacimento');
     if (has('sling')) out.add('sling');
   }
+  if (regolazioneChiesta(t, chosen) && senzaRegolazione(chosen.regolazione)) out.add('inverter');
+  if (has('slidingDoors') && !has('carDoors')) out.add('porte');
   if (!has('machine') && V.compare) out.add('compare');
   if (!V.keepRopes && !has('ropes')) out.add('ropes');
   return [...out];

@@ -3,14 +3,21 @@
 // into «esistente» —, except the machine, answered «Sì» on entry and changeable; a «Solo argano» asks only whether the
 // ropes are replaced. Some answers are the rule's, not the user's: new ropes of their own number and diameter are
 // replaced; a load the documented loads count as changed is changed, and so are a speed and a travel the logbook counts
-// as changed (round 46, AUTO_PARTI); the renovation keeps the sling. The test's parts
+// as changed (round 46, AUTO_PARTI); the renovation keeps the sling; a new machine on an existing controller without a
+// speed regulation replaces the controller in a modernisation (round 46, B6, 'inverter'). The optional parts (B7,
+// owner's decision Q3) are a group of their own, «No» unless answered. The test's parts
 // (Collaudo.parti) hold the «Sì» answers; which parts were answered is kept beside them (the form's draft). Pure.
 import type { FormValues } from '@/calc/types';
 import { AUTO_PARTI, PARTI, choiceOf, collaudoOf, type Collaudo, type Parte } from './collaudo';
-import { PARTI_RIFACIMENTO, VARIAZIONI, type TipoIntervento } from './intervento';
+import { PARTI_FACOLTATIVE, PARTI_RIFACIMENTO, VARIAZIONI, regolazioneChiesta, senzaRegolazione, type TipoIntervento } from './intervento';
 
 /** An answer the rule gives (shown, not changeable): «Sì» or «No», and why. */
-export type Bloccata = { si: boolean; perche: 'funi' | 'carichi' | 'velocita' | 'corsa' | 'arcata' };
+export type Bloccata = { si: boolean; perche: 'funi' | 'carichi' | 'velocita' | 'corsa' | 'arcata' | 'inverter' };
+
+/** A modernisation's new machine on the existing controller answered without a speed regulation: the controller is
+ *  replaced (UNI 10411-1:2024 11.2.1, UNI 10411-11:2024 11.2). `chosen`: the parts as the user answered them. */
+const quadroForzato = (t: TipoIntervento | null, chosen: Collaudo | undefined): boolean =>
+  t === 'AMMODERNAMENTO' && !!chosen && chosen.parti.includes('machine') && senzaRegolazione(chosen.regolazione);
 
 /** Why the rule brings each change: the documented loads, the logbook's speed, its travel. */
 const PERCHE_AUTO = { load: 'carichi', speed: 'velocita', travel: 'corsa' } as const;
@@ -22,21 +29,49 @@ export function bloccata(t: TipoIntervento | null, chosen: Collaudo | undefined,
   if (p === 'ropes' && !V.keepRopes) return { si: true, perche: 'funi' };
   if (t === 'AMMODERNAMENTO' && isAuto(p) && C.parti.includes(p) && !choiceOf(C, chosen).includes(p)) return { si: true, perche: PERCHE_AUTO[p] };
   if (t === 'AMMODERNAMENTO' && p === 'sling' && chosen?.rifacimento) return { si: false, perche: 'arcata' };
+  if (p === 'controller' && quadroForzato(t, chosen)) return { si: true, perche: 'inverter' };
   return null;
 }
 
+/** The test as the save sends it: the parts answered with the rule's answers — new ropes of their own number and
+ *  diameter replaced, and in a modernisation the controller replaced under a new machine when the existing one has no
+ *  speed regulation ('inverter'). */
+export function effettiva(t: TipoIntervento | null, chosen: Collaudo | undefined, V: FormValues): Collaudo | undefined {
+  if (!chosen || (t !== 'SOLO_ARGANO' && t !== 'AMMODERNAMENTO')) return chosen;
+  const funi = !V.keepRopes && !chosen.parti.includes('ropes'), quadro = quadroForzato(t, chosen) && !chosen.parti.includes('controller');
+  return funi || quadro ? { ...chosen, parti: PARTI.filter((x) => chosen.parti.includes(x) || (funi && x === 'ropes') || (quadro && x === 'controller')) } : chosen;
+}
+
+/** Whether the form asks the existing controller's speed regulation: a new machine staying on it (a «Solo argano»; a
+ *  modernisation with the machine «Sì» and the controller answered «No»), or the answer is what replaces the controller
+ *  (so that it can be changed). `chosen`: as answered, `risposte`: the parts answered. */
+export const chiediRegolazione = (t: TipoIntervento | null, chosen: Collaudo | undefined, risposte: readonly Parte[]): boolean =>
+  !!chosen && (quadroForzato(t, chosen) || (regolazioneChiesta(t, chosen) && (t === 'SOLO_ARGANO' || risposte.includes('controller'))));
+
+/** The test of an example loaded with the button (complete: every part answered): a new machine on the existing
+ *  controller has it with a frequency converter, as the examples' machines are sized (round 46). */
+export const esempioCollaudo = (t: TipoIntervento, c: Collaudo): Collaudo => (regolazioneChiesta(t, c) && !c.regolazione ? { ...c, regolazione: 'vvvf' } : c);
+
 /** The parts shown with their answer for a type: the machine and the ropes for a «Solo argano» (the machine always
- *  «Sì»: it is the machine's calculation), every part for a modernisation, none for a transformation. */
-export const partiDi = (t: TipoIntervento | null): readonly Parte[] => (t === 'SOLO_ARGANO' ? ['machine', 'ropes'] : t === 'AMMODERNAMENTO' ? PARTI : []);
+ *  «Sì»: it is the machine's calculation), every part but the optional ones for a modernisation, none for a
+ *  transformation. */
+export const partiDi = (t: TipoIntervento | null): readonly Parte[] =>
+  (t === 'SOLO_ARGANO' ? ['machine', 'ropes'] : t === 'AMMODERNAMENTO' ? PARTI.filter((p) => !PARTI_FACOLTATIVE.includes(p)) : []);
+
+/** The optional parts a modernisation shows (round 46, owner's decision Q3: «No» unless answered, never still to answer):
+ *  the car doors made sliding only with the car doors replaced. */
+export const facoltativeDi = (t: TipoIntervento | null, chosen: Collaudo | undefined): readonly Parte[] =>
+  (t === 'AMMODERNAMENTO' ? PARTI_FACOLTATIVE.filter((p) => p !== 'slidingDoors' || !!chosen?.parti.includes('carDoors')) : []);
 
 /** The parts the user still has to answer, in their order: shown, not given by the rule, not answered. */
 export function daIndicare(t: TipoIntervento | null, chosen: Collaudo | undefined, C: Collaudo, V: FormValues, risposte: readonly Parte[]): Parte[] {
   return partiDi(t).filter((p) => !(t === 'SOLO_ARGANO' && p === 'machine') && !risposte.includes(p) && !bloccata(t, chosen, C, V, p));
 }
 
-/** The test with one part answered: «Sì» among its parts (in their order), «No» out of them. */
+/** The test with one part answered: «Sì» among its parts (in their order), «No» out of them; the car doors «No» take
+ *  their sliding doors with them. */
 export const rispondi = (chosen: Collaudo, p: Parte, si: boolean): Collaudo =>
-  ({ ...chosen, parti: PARTI.filter((x) => (x === p ? si : chosen.parti.includes(x))) });
+  ({ ...chosen, parti: PARTI.filter((x) => (x === p ? si : chosen.parti.includes(x) && !(x === 'slidingDoors' && p === 'carDoors' && !si))) });
 
 /** The answers a form starts with. A calculation saved with its type declared had every part answered; one saved
  *  before (or a draft without the answers) only its «Sì» parts — its «No» were the old checkboxes' default and are asked

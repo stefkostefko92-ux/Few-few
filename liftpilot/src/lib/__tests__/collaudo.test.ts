@@ -41,8 +41,11 @@ test('ambito: ogni verifica del calcolo e del vano ha le sue parti; la macchina 
   const V: Collaudo = { norma: '10411-1', parti: ['speed'] }, C: Collaudo = { norma: '10411-11', parti: ['car'] };
   for (const id of ['h_refuge', 'h_clear', 'p_refuge', 'b_type', 'b_car', 'b_cw'] as const) assert.equal(ambitoOf(V, id), 'applies', id);
   for (const id of ['v_area', 'v_fit', 'h_parapet', 'v_doorcar'] as const) assert.equal(ambitoOf(C, id), 'applies', id);
-  // the building's machine room is never the intervention's
-  for (const id of ['m_height', 'm_door'] as const) assert.equal(ambitoOf({ norma: '10411-1', parti: PARTI }, id), 'existing', id);
+  // the building's machine room is never the intervention's — unless the modernisation modifies it (round 46, the
+  // optional part 'room': UNI 10411-1/-11:2024, 8)
+  const senzaLocale = PARTI.filter((p) => p !== 'room');
+  for (const id of ['m_height', 'm_door', 'm_pheight', 'm_pdoor'] as const) assert.equal(ambitoOf({ norma: '10411-1', parti: senzaLocale }, id), 'existing', id);
+  for (const id of ['m_height', 'm_door', 'm_pheight', 'm_pdoor', 'm_panel', 'm_free', 'm_route'] as const) assert.equal(ambitoOf({ norma: '10411-11', parti: ['room'] }, id), 'applies', id);
   // tested as new, everything applies — but the existing room's height under 2,0 m, a UNI 10411-1 measure only (new, the
   // room's height is m_height's; round 36)
   for (const id of Object.keys(AMBITO_VERIFICHE) as (CheckId | ShaftCheckId)[]) assert.equal(ambitoOf(collaudoOf(NEW), id), SOLO_10411_1.some((x) => x === id) ? 'existing' : 'applies', id);

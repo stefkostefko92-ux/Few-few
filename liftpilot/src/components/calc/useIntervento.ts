@@ -6,11 +6,15 @@
 // own number and diameter are replaced); what the documents read is collaudoOf of it. A modernisation left for the
 // transformation and chosen again comes back with its answers. «Argano: No» puts the existing machine's data in the
 // machine's fields (the machine kept is the existing one), «Sì» again brings back the machine replaced (round 46,
-// src/lib/calc-resta.ts). Pure state, no server.
+// src/lib/calc-resta.ts). Round 46 (B6): the existing controller's speed regulation, asked under a new machine on it;
+// one or two speeds replace the controller in a modernisation (the rule's «Sì», risposte.ts effettiva), and «Passa ad
+// Ammodernamento con il quadro» leaves a refused «Solo argano» for a modernisation with the controller «Sì». Pure state,
+// no server.
 import { useMemo, useState } from 'react';
 import type { FormValues } from '@/calc/types';
 import { collaudoOf, interventoDi, interventoTo, interventoValido, macchinaResta, rifacimentoTo, type Collaudo, type Parte, type TipoIntervento } from '@/lib/lift';
-import { daIndicare, partiDi, rispondi, risposteDopo, risposteRifacimento } from '@/lib/lift/risposte';
+import { chiediRegolazione, daIndicare, effettiva, esempioCollaudo, partiDi, rispondi, risposteDopo, risposteRifacimento } from '@/lib/lift/risposte';
+import type { Regolazione } from '@/lib/lift/modifica';
 import { arganoResta, arganoSostituito, macchinaDi } from '@/lib/calc-resta';
 
 export interface InterventoInit {
@@ -31,13 +35,13 @@ export function useIntervento(init: InterventoInit, values: FormValues, edit: (p
   const [lasciato, setLasciato] = useState<Lasciato | null>(null);
   // the machine replaced while «Argano: No» holds the existing one's data in its fields (restored by «Sì»)
   const [sostituita, setSostituita] = useState<FormValues | null>(null);
-  const repl = tipo === 'SOLO_ARGANO' || tipo === 'AMMODERNAMENTO';
-  // ropes of their own number and diameter are new: the rule's «Sì», whatever was answered (it comes back when the
-  // ropes in place are kept again)
-  const forced = repl && !!chosen && !values.keepRopes && !chosen.parti.includes('ropes');
-  const effective = useMemo(() => (forced && chosen ? rispondi(chosen, 'ropes', true) : chosen), [forced, chosen]);
+  // ropes of their own number and diameter are new, and a modernisation's controller without a speed regulation under a
+  // new machine is replaced: the rule's «Sì», whatever was answered (each comes back when its reason goes)
+  const effective = useMemo(() => effettiva(tipo, chosen, values), [tipo, chosen, values]);
   const value = useMemo(() => collaudoOf(values, effective), [values, effective]);
   const mancanti = useMemo(() => daIndicare(tipo, effective, value, values, risposte), [tipo, effective, value, values, risposte]);
+  // the existing controller's speed regulation: asked, and still to answer
+  const chiedi = chiediRegolazione(tipo, chosen, risposte), mancaRegolazione = chiedi && !chosen?.regolazione;
   const incoerenze = useMemo(() => (tipo ? interventoValido(tipo, values, effective) : []), [tipo, values, effective]);
   const restaOra = macchinaResta(tipo, value);
 
@@ -55,8 +59,9 @@ export function useIntervento(init: InterventoInit, values: FormValues, edit: (p
   };
 
   /** A type chosen: its context and test; a transformation compares no existing machine, a modification of what was a
-   *  new lift compares it again (the replacement's default). */
-  const choose = (t: TipoIntervento): void => {
+   *  new lift compares it again (the replacement's default). `quadro`: the modernisation with the controller «Sì»
+   *  («Passa ad Ammodernamento con il quadro», round 46). */
+  const choose = (t: TipoIntervento, quadro = false): void => {
     if (t === tipo) return;
     setLasciato(tipo === 'AMMODERNAMENTO' && t === 'TRASFORMAZIONE_COMPLETA' && chosen
       ? { chosen, risposte, values: { compare: values.compare, keepD: values.keepD } } : null);
@@ -67,11 +72,16 @@ export function useIntervento(init: InterventoInit, values: FormValues, edit: (p
       setTipo(t);
       return;
     }
-    const r = interventoTo(t, chosen);
-    edit(conMacchina({ ...r.values, ...(t === 'TRASFORMAZIONE_COMPLETA' ? { compare: false, keepD: false } : values.context !== 'repl' ? { compare: true } : {}) }, t, r.collaudo));
-    setChosen(r.collaudo);
-    setRisposte(risposteDopo(t, risposte));
+    const r = interventoTo(t, chosen), next = quadro ? rispondi(r.collaudo, 'controller', true) : r.collaudo;
+    edit(conMacchina({ ...r.values, ...(t === 'TRASFORMAZIONE_COMPLETA' ? { compare: false, keepD: false } : values.context !== 'repl' ? { compare: true } : {}) }, t, next));
+    setChosen(next);
+    const dopo = risposteDopo(t, risposte);
+    setRisposte(quadro && !dopo.includes('controller') ? [...dopo, 'controller'] : dopo);
     setTipo(t);
+  };
+  /** The existing controller's speed regulation answered. */
+  const regola = (r: Regolazione): void => {
+    if (chosen) setChosen({ ...chosen, regolazione: r });
   };
   /** A part answered; the machine kept is not compared with itself. */
   const answer = (p: Parte, si: boolean): void => {
@@ -90,17 +100,18 @@ export function useIntervento(init: InterventoInit, values: FormValues, edit: (p
     setChosen(r.collaudo);
     setRisposte(risposteRifacimento(on, risposte));
   };
-  /** An example loaded: its type by its shape, every part of it answered (the example is complete). */
+  /** An example loaded: its type by its shape, every part of it answered (the example is complete, the controller with
+   *  a frequency converter). */
   const esempio = (V: FormValues): void => {
     const t = interventoDi(V.context, null), r = interventoTo(t, chosen);
     setLasciato(null);
     setSostituita(null);
     setTipo(t);
-    setChosen(r.collaudo);
+    setChosen(esempioCollaudo(t, r.collaudo));
     setRisposte([...partiDi(t)]);
   };
   return {
-    tipo, chosen, effective, value, risposte, mancanti, incoerenze, resta: macchinaResta(tipo, value),
+    tipo, chosen, effective, value, risposte, mancanti, incoerenze, resta: macchinaResta(tipo, value), chiedi, mancaRegolazione, regola,
     rif: chosen?.rifacimento === true, choose, answer, rifacimento, esempio, setCollaudo: (c: Collaudo) => setChosen(c),
   };
 }

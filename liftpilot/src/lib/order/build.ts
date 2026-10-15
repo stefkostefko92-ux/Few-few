@@ -110,6 +110,8 @@ export function buildOrder(o: OrderInput): ReportDoc {
     ['Rapporto di riduzione', `${c.ratio} (i = ${fmt(c.i, 3)})`],
     ['Puleggia di frizione', `Ø ${fmt(N.D, 0)} mm primitivo; ${N.n} gole per funi Ø ${dText(N.d)} mm; ${X.grooveText(N.groove)}`],
     ['Motore', `${fmt(N.Pn, 1)} kW · ${N.poles} ${t('poles_short')} · ${fmt(N.nm, 0)} giri/min · ${fmt(N.fn, 0)} Hz${c.kWmax !== null ? ` (a catalogo fino a ${fmt(c.kWmax, 1)} kW)` : ''}`],
+    // always a frequency converter: a new machine on a controller without speed regulation is refused (round 46, B6:
+    // UNI 10411-1:2024 11.2.1, UNI 10411-11:2024 11.2 — intervento.ts 'inverter'), so the regulation is there
     ['Comando', `a frequenza variabile (inverter): con il rapporto ${c.ratio} la cabina va a ${fmt(vMains, 2)} m/s a ${fmt(N.fn, 0)} Hz (${dvText(c.dv, fmt)} %), l’inverter la porta a ${fmt(I.v, 2)} m/s`],
     ['Freno', `${N.brakeSets} × ${fmt(N.brakeNm, 0)} N·m sull’albero del motore (taratura; minimo richiesto dal calcolo ${fmt(c.brakeMin, 1)} N·m per gruppo, `
       + 'UNI EN 81-20:2020, 5.9.2.2)'],

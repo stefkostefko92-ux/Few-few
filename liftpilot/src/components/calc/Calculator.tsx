@@ -18,13 +18,13 @@ import { analyse, mirrorRopes, proposalValues, sizingWithSheave } from '@/lib/pr
 import { textsFor } from '@/lib/present/texts';
 import { makePres, type CalcKey } from '@/lib/present/tr';
 import { visibleBad } from '@/lib/calc-input';
-import { calcMissing, plantReady } from '@/lib/calc-blank';
+import { REGOLAZIONE_ID, calcMissing, plantReady } from '@/lib/calc-blank';
 import { savedValues } from '@/lib/calc-saved';
 import { segniResta } from '@/lib/calc-resta';
 import { calcDraftSchema } from '@/lib/draft-input';
 import { bozzaRilievo } from '@/lib/collega/formato';
 import { interventoDi, interventoTo, type Collaudo, type Parte, type TipoIntervento } from '@/lib/lift';
-import { partiDi } from '@/lib/lift/risposte';
+import { esempioCollaudo, partiDi } from '@/lib/lift/risposte';
 import MissingPanel from '@/components/MissingPanel';
 import { useDraft, type DraftTarget } from '@/components/draft/useDraft';
 import { saveCalculationAction } from '@/server/calc-actions';
@@ -58,7 +58,7 @@ function startOf(initial: FormValues, preset: PresetKey | null, given: Intervent
   if (given) return given;
   if (!preset) return { tipo: null, collaudo: null, risposte: [] };
   const tipo = interventoDi(initial.context, null);
-  return { tipo, collaudo: interventoTo(tipo).collaudo, risposte: partiDi(tipo) };
+  return { tipo, collaudo: esempioCollaudo(tipo, interventoTo(tipo).collaudo), risposte: partiDi(tipo) };
 }
 
 interface Props {
@@ -121,7 +121,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   const evaluate = useCallback((m: AdviceModel) => valuesCandidate(saved, a, m), [saved, a]);
   // the type and the parts still to answer first; the values still to enter are needed, not wrong: marked apart from
   // the ones out of range
-  const missing = useMemo(() => calcMissing(deferred, a.ctx.bad, tipo, I.mancanti), [a, deferred, tipo, I.mancanti]);
+  const missing = useMemo(() => calcMissing(deferred, a.ctx.bad, tipo, I.mancanti, I.mancaRegolazione), [a, deferred, tipo, I.mancanti, I.mancaRegolazione]);
   const need = useMemo(() => new Set(missing), [missing]);
   const ready = plantReady(missing), complete = missing.length === 0;
   useEffect(() => { if (complete && tipo) onBase?.({ values: saved, collaudo, tipo }); }, [complete, tipo, saved, collaudo, onBase]);
@@ -177,7 +177,8 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   const keepRopesHint = !keep || resta ? '' : mirror ? t('hint_keepRopes', { n: a.ctx.N.n, d: X.dText(a.ctx.N.d) }) : t('hint_keepRopes_free');
   const fieldLabel = (id: string): string => t((id.replace(/^[no]_/, '') as CalcKey)) + (id.startsWith('o_') ? ` (${t('g_old')})` : '');
   const parteLabel = (p: Parte): string => etichettaParte(ti, tl, tipo, p);
-  const itemLabel = (id: string): string => (id === 'intervento' ? tb('intervento') : id.startsWith('parte-') ? parteLabel(id.slice(6) as Parte) : fieldLabel(id));
+  const itemLabel = (id: string): string => (id === 'intervento' ? tb('intervento') : id === REGOLAZIONE_ID ? ti('reg_missing')
+    : id.startsWith('parte-') ? parteLabel(id.slice(6) as Parte) : fieldLabel(id));
   const named = (keys: readonly string[]): string => keys.map((k) => ti(`err_${k}`)).join(', ');
   const errorText = saveError
     ? `${te(saveError.error)}${saveError.fields.length ? `: ${saveError.error === 'invalidIntervento' ? named(saveError.fields) : saveError.fields.map(fieldLabel).join(', ')}` : ''}` : null;
@@ -204,7 +205,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
       <InterventoChoice tipo={tipo} choose={I.choose}>
         {repl && I.chosen ? (
           <PartiSiNo tipo={tipo} chosen={I.chosen} value={collaudo} V={values} risposte={I.risposte} answer={I.answer} fmt={P.fmt}
-            rifacimento={tipo === 'AMMODERNAMENTO' ? { on: I.rif, set: I.rifacimento } : undefined} />
+            rifacimento={tipo === 'AMMODERNAMENTO' ? { on: I.rif, set: I.rifacimento } : undefined} regolazione={I.chiedi ? { set: I.regola } : null} />
         ) : null}
         {tipo ? <AvvisiIntervento tipo={tipo} value={collaudo} V={values} passa={I.choose} /> : null}
       </InterventoChoice>

@@ -15,6 +15,7 @@
 import type { FormValues } from '@/calc/types';
 import { panevBom } from '@/lib/catalog/panev';
 import type { LiftDerived } from '@/lib/lift/derive';
+import { PARTI_FACOLTATIVE } from '@/lib/lift/intervento';
 import { layoutRigLength, rigLength } from '@/lib/lift/rope';
 import { calcMachine } from '@/lib/order/machine';
 import type { Plant } from '@/lib/plant';
@@ -123,10 +124,11 @@ const CALC_COUNTED: readonly Parte[] = ['machine', 'ropes', 'controller', 'speed
 export type Uncounted = { parts: Parte[]; newLift: boolean };
 
 /** The parts the acceptance test `C` puts in the lift that a machine replacement's bill does not count (calcBom): under
- *  UNI 10411 those it names replaced, under EN 81-20/50 every part of the new lift. They need the design of the lift
+ *  UNI 10411 those it names replaced (the optional parts of round 46 among them), under EN 81-20/50 every part of the
+ *  new lift but the optional parts (a new lift has them all: named as before). They need the design of the lift
  *  (its shaft, doors, rails, car), so the cost says so, never silently leaves them out. */
 export const calcUncounted = (C: Collaudo | null): Uncounted =>
-  ({ parts: (C?.parti ?? []).filter((p) => !CALC_COUNTED.includes(p)), newLift: C?.norma === 'en81' });
+  ({ parts: (C?.parti ?? []).filter((p) => !CALC_COUNTED.includes(p) && !(C?.norma === 'en81' && PARTI_FACOLTATIVE.includes(p))), newLift: C?.norma === 'en81' });
 
 /** The replacement of the machine: the machine (the catalogue's whose values the calculator holds), what it stands on
  *  (the maker's bedplate with the pulley; with the machine room surveyed `room`, the support chosen there, the pulley's

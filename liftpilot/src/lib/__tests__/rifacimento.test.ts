@@ -11,7 +11,7 @@ import { textsFor } from '@/lib/present/texts';
 import { makePres } from '@/lib/present/tr';
 import { defaultInputs, layout, type ShaftInputs } from '@/shaft';
 import { liftInputsSchema } from '@/lib/lift-input';
-import { AMBITO_VERIFICHE, PARTI, PARTI_RIFACIMENTO, TIPI_INTERVENTO, VOCI_IMPIANTO, ambitoOf, collaudoOf, defaultLift, deriveLift, interventoDi, interventoTo,
+import { AMBITO_VERIFICHE, PARTI, PARTI_FACOLTATIVE, PARTI_RIFACIMENTO, TIPI_INTERVENTO, VOCI_IMPIANTO, ambitoOf, collaudoOf, defaultLift, deriveLift, interventoDi, interventoTo,
   rifacimentoTo, withAggiunta, type Collaudo } from '@/lib/lift';
 import { liftAdvice } from '@/lib/lift/advice';
 import { buildOrder } from '@/lib/order/build';
@@ -27,7 +27,8 @@ const RIF: Collaudo = { norma: '10411-1', parti: PARTI_RIFACIMENTO, rifacimento:
 const marks = (collaudo: Collaudo) => ({ pEstimate: false, geometry: [], machineProposed: false, collaudo });
 
 test('le parti del rifacimento: tutte tranne l’arcata e le variazioni', () => {
-  assert.deepEqual(PARTI_RIFACIMENTO, PARTI.filter((p) => !['sling', 'speed', 'load', 'travel'].includes(p)));
+  // round 46: nor the optional parts, which the renovation does not answer (owner's decision Q3)
+  assert.deepEqual(PARTI_RIFACIMENTO, PARTI.filter((p) => !['sling', 'speed', 'load', 'travel'].includes(p) && !PARTI_FACOLTATIVE.includes(p)));
   // (round 45: the renovation is the preset of a modernisation, no longer a third choice of the one form)
   assert.deepEqual([...TIPI_INTERVENTO], ['SOLO_ARGANO', 'AMMODERNAMENTO', 'TRASFORMAZIONE_COMPLETA']);
 });

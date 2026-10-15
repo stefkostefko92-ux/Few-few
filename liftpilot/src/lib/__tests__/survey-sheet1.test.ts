@@ -10,6 +10,7 @@ import type { FormValues } from '@/calc/types';
 import { textBox, type Shape, type TextShape } from '@/drawing';
 import appIt from '../../../messages/it.json';
 import { PARTI } from '../lift/collaudo';
+import { PARTI_FACOLTATIVE, PARTI_LOCALE } from '../lift/intervento';
 import { deriveRoom } from '../room/derive';
 import { startSurvey, type Survey } from '../room/survey';
 import { buildSurveyTavole } from '../tavole/survey-build';
@@ -23,10 +24,15 @@ const heb: Change = (s) => ({ ...audit(s), room: { ...audit(s).room, heb: {} } }
 /** The round 37 review's: on HEB beams in a room 1850 high (m_hexist's longer note), every part replaced — its checks do
  *  not fit sheet 1 legibly. */
 const low: Change = (s) => ({ ...heb(s), room: { ...heb(s).room, H: 1850 } });
+/** Every part as before round 46 (the most checks a survey's sheet ever had) and the parts a survey of the machine room
+ *  verifies since (intervento.ts PARTI_LOCALE: the room, the alarm and the UCM with the machine, its ropes and the
+ *  controller; the optional parts beyond them draw the shaft, never this sheet). */
+const TUTTE: Parti = PARTI.filter((p) => !PARTI_FACOLTATIVE.includes(p));
 const CASES: [string, FormValues, Change, '10411-1' | '10411-11', Parti?][] = [
   ['A', { ...PRESETS.A }, audit, '10411-1'], ['C', { ...PRESETS.C }, audit, '10411-1'], ['B in alto', { ...PRESETS.B, layout: 'top' }, audit, '10411-11'],
   ['A su HEB', { ...PRESETS.A }, heb, '10411-1'], ['C su HEB', { ...PRESETS.C }, heb, '10411-1'], ['C senza rilievo', { ...PRESETS.C }, (s) => s, '10411-1'],
-  ['A su HEB, tutte le parti', { ...PRESETS.A }, heb, '10411-1', PARTI], ['C su HEB, H 1850, tutte le parti', { ...PRESETS.C }, low, '10411-1', PARTI],
+  ['A su HEB, tutte le parti', { ...PRESETS.A }, heb, '10411-1', TUTTE], ['C su HEB, H 1850, tutte le parti', { ...PRESETS.C }, low, '10411-1', TUTTE],
+  ['A su HEB, le parti del locale', { ...PRESETS.A }, heb, '10411-1', PARTI_LOCALE], ['C su HEB, H 1850, le parti del locale', { ...PRESETS.C }, low, '10411-11', PARTI_LOCALE],
 ];
 
 function set(V: FormValues, f: Change, norma: '10411-1' | '10411-11', parti: Parti = ['machine']) {

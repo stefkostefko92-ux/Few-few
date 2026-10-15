@@ -2584,6 +2584,42 @@ frizione, Diametro pulegge di rinvio, Inerzia per puleggia…, Massa della macch
     `reproduce-all`: всеки от 1756-те записа отпреди — четим, «da aggiornare», не възпроизведен (352 бяха); SHA-256 на всеки
     `DrawingSetPdf` и всеки записан хеш — същите; 158 комплекта без PDF (0 възпроизводими). Записите от smoke-а след това —
     възпроизведени с новите двигатели.
+- **S5 — инверторът (B6, въпрос 1) и допълнителните части (B7, въпрос 3)**:
+  - *Регулирането на таблото, което остава под нова машина* (UNI 10411-1:2024 11.2.1, UNI 10411-11:2024 11.2 — не се
+    добавя регулиране към табло без такова; софтуерът оразмерява всяка предложена машина за инвертор): въпросът се задава
+    при «Solo argano» (под въжетата) и при Ammodernamento с «Argano: Sì» и «Quadro: No» (под реда на таблото), с отговори
+    VVVF / 2 velocità / 1 velocità; без отговор е в списъка на липсващото (`calcMissing`, `REGOLAZIONE_ID`), никога отказ на
+    сървъра — запис отпреди се обновява. С 1 или 2 скорости: «Solo argano» се отказва (`interventoValido` 'inverter',
+    `senzaRegolazione`, `regolazioneChiesta`) с «Passa ad Ammodernamento con il quadro» (единственият път към
+    Ammodernamento в предупрежденията); в Ammodernamento таблото е заключено «Sì — senza regolazione della velocità» с
+    причината (`bloccata` 'inverter'; изпратеното изпитване е `effettiva` — заедно с въжетата на правилото). С VVVF —
+    задължението 11.2.1 / 11.2 (регулирането остава; смяна на устройството — 11.1.4 / 11.1.3). Relazione di calcolo и
+    tecnica: ред «Regolazione della velocità del quadro esistente» — с ⚠ без отговор (всеки запис отпреди с нова машина на
+    старото табло), лист 1 — непроменен (`regolazioneRows`, `report/variazioni.ts`). Примерите A/B/C идват с VVVF.
+    Регистърът: нов `impianto.quadro.regolazione` (confermato); бележката на `impianto.catalogo` — 10 % важи, защото
+    регулиране винаги има; поръчката пише „inverter“ (коментар). Машина без инвертор не е моделирана (въпрос 1).
+  - *Допълнителните части* (`PARTI` + `safetyGear`, `ucm`, `alarm`, `room`, `slidingDoors` в края — съхранените масиви
+    остават; `PARTI_FACOLTATIVE`): отделна група «Altre parti (facoltative)» в Ammodernamento, «No» по подразбиране, извън
+    списъка на липсващото, «Rifacimento con l’arcata esistente» не ги отговаря (`rifacimentoTo` ги пази каквито са);
+    «Porte di cabina: da battente a scorrevoli» — само с «Porte di cabina: Sì» (отговорът «No» на вратите го маха; на
+    сървъра — 'porte'). Обхватът: парашутът → sg_type, sg_cw, gr_stress/flange/defl, gr_cw; машинното → m_height, m_door,
+    m_pheight, m_pdoor, m_panel, m_free, m_route; плъзгащите врати → v_area, h_refuge (и h_refuge_rig, който го замества),
+    p_apron — h_clear не (въпрос 5); ACOP/UCM и алармата — само задължения. Задълженията (`obblighi-facoltative.ts`): -1 6.6,
+    6.7, 15.3, 15.6 (da verificare — 6.7 е в т. 6), 6.12, 15.4, 14.4 c)–d), 23, 8 с дерогацията, 13.1.1–13.2.4 с 0,3 +
+    0,035·v² m, сметнато с v на изчислението, като информация (`KL.slidingClear`, `slidingClearV2`, запис
+    `impianto.parti.facoltative`); -11 — 6.6–6.7, 6.10, 15 c), 15 i), 14.3 a), 23, 8 (2,10 m или съществуващата), 13, с 4.3.
+    `PARTI_LOCALE` + room, alarm, ucm (рилевото на машинното). Трансформацията пази по-дългия PARTI (R6) — цената назовава
+    частите на новия асансьор както преди (`calcUncounted`), имената в изречение — с малка първа буква само
+    (`nomeParte`: «protezioni ACOP e UCM»). Ключът на обхвата (`ambito-version`) — закрепен наново в същия комплект версии
+    (S4–S8 излизат заедно), с `OBBLIGHI_REGOLAZIONE` и двете нови константи.
+  - *Екранът*: `RegolazioneQuadro.tsx` (три истински радио бутона, `id="regolazione"` за списъка на липсващото, подсказката
+    с клаузата), `AltreParti.tsx` (по-тиха група с пунктир, «No» отбелязано, без кехлибарен ръб), `useIntervento` (`regola`,
+    `choose(t, quadro)`), AvvisiIntervento `avviso_inverter`. Smoke: празният «Solo argano» пита регулирането след въжетата
+    и черновата го пази (smoke-blank); примерът — VVVF, 2 скорости — отказ, VVVF — записва (smoke-replacement);
+    ammodernamento — групата с 5-те части на «No» (smoke-intervento); «Solo argano» с 1 скорост — отказ, «Passa ad
+    Ammodernamento con il quadro» — таблото заключено с 11.2.1, записва (smoke-progetto → `soloQuadro`).
+  - *Бележката на `azionamento.tolleranza.velocita`* (B6) се печата и в „Ipotesi e limiti del modello“ на всяка relazione,
+    извън блоковете, които `diff-classify` допуска в S5: влиза със записите на регистъра в S6 (B9).
 
 ## Проверки
 
@@ -3025,6 +3061,15 @@ frizione, Diametro pulegge di rinvio, Inerzia per puleggia…, Massa della macch
   „all good“ (68 реда; новите стъпки — libretto в ammodernamento, «Solo argano» с libretto). Новите текстове на задълженията
   срещу бележките на нормите (`norme-ascensori/tools/overlap.mjs`, ≥ 8 думи) — 0 реда. `node tools/security/secret-scan.mjs`
   — чисто.
+- [x] Кръг 46 B, S5 (същият клон, база и :3311): `tsc --noEmit` 0 грешки, `npm run lint` чисто, `npm test` — 1063 + 211
+  теста; `npm run build` — успешен, :3311 спрян само по процеса с cwd на работното дърво и пуснат от новия build.
+  `refresh-sim` + `diff-classify --stage S5` срещу S0 — 1854 сравнени (57 от smoke-овете след снимката), 0 необяснени (R4 704,
+  R6 79 — частите на трансформациите, R3 60 — b_sets/b_one от S4); срещу снимката след S4 — само редът «Regolazione della
+  velocità del quadro esistente» (486 relazioni di calcolo, 111 tecniche) и R6, лист 1 — нищо. `reproduce-all` — байт по
+  байт като след S4 (версиите не са пипани); `docs-compare` — нито един ред от S4 не се мени. `npm run lista` +
+  `lista-verifica-xlsx.py` — 313 реда (+12). Пълен smoke с пощата — „all good“ (69 реда; новите стъпки — регулирането
+  в празния «Solo argano», 2 скорости → отказ и VVVF → запис, групата на допълнителните части, «Solo argano» с 1 скорост →
+  «Passa ad Ammodernamento con il quadro»). `node tools/security/secret-scan.mjs` — чисто.
 - [x] `node tools/design/motion-a11y.mjs liftpilot/src`: проверката за reduced motion в базата — да; 6 евристични
   находки `webgl-no-rm-check` в модули на 3D, които се зареждат само през `boot.ts` (същите и преди кръг 24).
 - [x] Живата 3D сцена на началната страница е проверена в headless Chromium (WebGL 2) на двете нива на качество, без грешки в конзолата. При reduced motion three.js не се зарежда.

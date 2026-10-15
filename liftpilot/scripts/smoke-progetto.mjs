@@ -6,7 +6,7 @@
 // with another travel held (tipoDaRivedere), the speed +6 % refused and saved as a modernisation (smoke-intervento.mjs).
 import assert from 'node:assert/strict';
 import { blankCalc, projectData } from './smoke-blank.mjs';
-import { soloLibretto } from './smoke-intervento.mjs';
+import { soloLibretto, soloQuadro } from './smoke-intervento.mjs';
 import { step } from './smoke-kit.mjs';
 
 export async function progettoFlow({ BASE, page, hydrated, stamp }) {
@@ -76,7 +76,8 @@ export async function progettoFlow({ BASE, page, hydrated, stamp }) {
   const sheet1 = ((await page.textContent('.sheet-page svg.sheet-svg')) ?? '').replace(/\s+/g, '');
   assert.ok(sheet1.includes('Intervento:Trasformazionecompleta'), 'the type in sheet 1’s note');
   const loop = await progettoLoop({ BASE, page, hydrated, liftUrl });
-  await soloLibretto({ BASE, page, hydrated, stamp, projectData });
+  const soloUrl = await soloLibretto({ BASE, page, hydrated, stamp, projectData });
+  await soloQuadro({ page, hydrated, soloUrl });
   return { projectUrl, baseUrl, liftUrl: loop.liftUrl };
 }
 

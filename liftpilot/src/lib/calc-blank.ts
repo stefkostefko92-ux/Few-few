@@ -35,13 +35,18 @@ const orderOf = (id: string): number => { const i = ORDER.indexOf(id); return i 
 /** The id of a part still to answer in the list of what is missing (the «Sì» of its row, src/components/calc/PartiSiNo.tsx). */
 export const parteId = (p: Parte): string => `parte-${p}`;
 
+/** The id of the existing controller's speed regulation still to answer (round 46, B6: its first answer,
+ *  src/components/calc/RegolazioneQuadro.tsx). */
+export const REGOLAZIONE_ID = 'regolazione';
+
 /** What is still to enter, in the form's order: the type of intervention first (`tipo` null: not chosen; absent: a form
- *  without the choice), the parts still to answer (`parti`, src/lib/lift/risposte.ts daIndicare), then the fields the
- *  form shows (the roping included), the installation's before the new machine's. */
-export function calcMissing(V: FormValues, bad: readonly string[], tipo?: TipoIntervento | null, parti: readonly Parte[] = []): string[] {
+ *  without the choice), the parts still to answer (`parti`, src/lib/lift/risposte.ts daIndicare), the existing
+ *  controller's speed regulation when it is asked and not answered (`regolazione`, round 46), then the fields the form
+ *  shows (the roping included), the installation's before the new machine's. */
+export function calcMissing(V: FormValues, bad: readonly string[], tipo?: TipoIntervento | null, parti: readonly Parte[] = [], regolazione = false): string[] {
   const out = visibleBad(bad, V).filter((id) => isBlank(V, id));
   if (isBlank(V, 'r') && !out.includes('r')) out.push('r');
-  return [...(tipo === null ? ['intervento'] : []), ...parti.map(parteId), ...out.sort((a, b) => orderOf(a) - orderOf(b))];
+  return [...(tipo === null ? ['intervento'] : []), ...parti.map(parteId), ...(regolazione ? [REGOLAZIONE_ID] : []), ...out.sort((a, b) => orderOf(a) - orderOf(b))];
 }
 
 /** Whether the proposals can be worked out: the type chosen, every part answered, nothing of the installation (or of the

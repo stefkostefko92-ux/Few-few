@@ -11,15 +11,18 @@ import type { FormValues } from '@/calc/types';
 import { shown } from '@/components/calc/fields';
 import { blankCalc, calcMissing, parteId, plantReady } from '@/lib/calc-blank';
 import { calcDraftSchema } from '@/lib/draft-input';
-import { PARTI, PARTI_RIFACIMENTO, collaudoOf, type Collaudo } from '@/lib/lift';
-import { bloccata, daIndicare, partiDi, rispondi, risposteDopo, risposteIniziali, risposteRifacimento, sceltaSalvata } from '@/lib/lift/risposte';
+import { PARTI, PARTI_FACOLTATIVE, PARTI_RIFACIMENTO, collaudoOf, type Collaudo } from '@/lib/lift';
+import { bloccata, chiediRegolazione, daIndicare, effettiva, facoltativeDi, partiDi, rispondi, risposteDopo, risposteIniziali, risposteRifacimento,
+  sceltaSalvata } from '@/lib/lift/risposte';
 
 const REPL: FormValues = { ...PRESETS.B, context: 'repl', keepRopes: true };
 const C = (parti: Collaudo['parti'], x: Partial<Collaudo> = {}): Collaudo => ({ norma: '10411-1', parti, ...x });
+/** The parts a modernisation asks one by one: every part but the optional ones (round 46, owner's decision Q3). */
+const ASKED = PARTI.filter((p) => !PARTI_FACOLTATIVE.includes(p));
 
 test('le parti da indicare: per «Solo argano» le funi, per l’ammodernamento tutte, nessuna per la trasformazione', () => {
   assert.deepEqual(partiDi('SOLO_ARGANO'), ['machine', 'ropes']);
-  assert.deepEqual(partiDi('AMMODERNAMENTO'), PARTI);
+  assert.deepEqual(partiDi('AMMODERNAMENTO'), ASKED);
   assert.deepEqual(partiDi('TRASFORMAZIONE_COMPLETA'), []);
   assert.deepEqual(partiDi(null), []);
   const solo = C(['machine']);
@@ -31,7 +34,7 @@ test('le parti da indicare: per «Solo argano» le funi, per l’ammodernamento 
   assert.deepEqual(daIndicare('SOLO_ARGANO', solo, collaudoOf(own, solo), own, []), []);
   // a modernisation: every part but the machine answered on entry
   const amm = C(['machine']);
-  assert.deepEqual(daIndicare('AMMODERNAMENTO', amm, collaudoOf(REPL, amm), REPL, ['machine']), PARTI.filter((p) => p !== 'machine'));
+  assert.deepEqual(daIndicare('AMMODERNAMENTO', amm, collaudoOf(REPL, amm), REPL, ['machine']), ASKED.filter((p) => p !== 'machine'));
   assert.deepEqual(daIndicare('TRASFORMAZIONE_COMPLETA', undefined, { norma: 'en81', parti: PARTI }, { ...REPL, context: 'new' }, []), []);
 });
 
@@ -56,12 +59,12 @@ test('rispondere, cambiare tipo, il rifacimento', () => {
   assert.deepEqual(risposteDopo('SOLO_ARGANO', ['machine', 'ropes', 'car']), ['machine', 'ropes']);
   assert.deepEqual(risposteDopo('TRASFORMAZIONE_COMPLETA', ['machine', 'car']), []);
   // the renovation answers its parts and the sling at once; speed, load and travel as they were
-  assert.deepEqual(risposteRifacimento(true, ['machine', 'speed']), [...PARTI.filter((p) => p !== 'speed' && p !== 'load' && p !== 'travel'), 'speed']);
+  assert.deepEqual(risposteRifacimento(true, ['machine', 'speed']), [...ASKED.filter((p) => p !== 'speed' && p !== 'load' && p !== 'travel'), 'speed']);
   assert.deepEqual(risposteRifacimento(false, PARTI), ['machine']);
 });
 
 test('le risposte iniziali: un calcolo col tipo dichiarato ha tutto risposto, uno di prima solo i suoi «Sì»', () => {
-  assert.deepEqual(risposteIniziali('AMMODERNAMENTO', C(['machine', 'car']), true), [...PARTI]);
+  assert.deepEqual(risposteIniziali('AMMODERNAMENTO', C(['machine', 'car']), true), [...ASKED]);
   assert.deepEqual(risposteIniziali('AMMODERNAMENTO', C(['machine', 'car']), false), ['machine', 'car']);
   assert.deepEqual(risposteIniziali('SOLO_ARGANO', C(['machine']), false), ['machine'], 'the old default «No» of the ropes is asked again');
   assert.deepEqual(risposteIniziali(null, undefined, false), []);
@@ -100,4 +103,45 @@ test('la bozza del calcolo: tipo e risposte, e le bozze di prima', () => {
   assert.equal(calcDraftSchema.safeParse({ ...d, intervento: 'FULL' }).success, false);
   assert.equal(calcDraftSchema.safeParse({ ...d, risposte: ['arcata'] }).success, false);
   assert.equal(calcDraftSchema.safeParse({ ...d, risposte: [...PARTI, 'machine'] }).success, false, 'at most every part');
+});
+
+test('round 46 B7: le altre parti (facoltative) — «No» finché non si risponde, mai tra quelle da indicare, non le dà il rifacimento', () => {
+  assert.deepEqual(PARTI.slice(-5), ['safetyGear', 'ucm', 'alarm', 'room', 'slidingDoors'], 'appended: the stored arrays keep their order');
+  const amm = C(['machine']);
+  assert.ok(PARTI_FACOLTATIVE.every((p) => !daIndicare('AMMODERNAMENTO', amm, collaudoOf(REPL, amm), REPL, ['machine']).includes(p)));
+  assert.deepEqual(risposteIniziali('AMMODERNAMENTO', C(['machine', 'alarm']), false), ['machine'], 'an optional «Sì» is not an answer of the list');
+  // the group: the car doors made sliding only with the car doors replaced; none outside a modernisation
+  assert.deepEqual(facoltativeDi('AMMODERNAMENTO', amm), ['safetyGear', 'ucm', 'alarm', 'room']);
+  assert.deepEqual(facoltativeDi('AMMODERNAMENTO', C(['machine', 'carDoors'])), PARTI_FACOLTATIVE);
+  assert.deepEqual(facoltativeDi('SOLO_ARGANO', amm), []);
+  // the car doors «No» take their sliding doors with them
+  assert.deepEqual(rispondi(C(['machine', 'carDoors', 'slidingDoors']), 'carDoors', false).parti, ['machine']);
+  assert.deepEqual(rispondi(C(['machine', 'carDoors']), 'slidingDoors', true).parti, ['machine', 'carDoors', 'slidingDoors']);
+  // the renovation answers its parts, never the optional ones: those answered stay, the others stay «No»
+  assert.ok(PARTI_FACOLTATIVE.every((p) => !risposteRifacimento(true, ['machine']).includes(p)));
+});
+
+test('round 46 B6: la regolazione del quadro esistente — chiesta, blocca il quadro in un ammodernamento, la parte «Sì» del salvataggio', () => {
+  const solo = C(['machine']), amm = C(['machine'], { regolazione: '1v' });
+  // asked: a «Solo argano» always, a modernisation with the machine and the controller answered «No»
+  assert.ok(chiediRegolazione('SOLO_ARGANO', solo, []));
+  assert.ok(!chiediRegolazione('AMMODERNAMENTO', C(['machine']), ['machine']), 'the controller still to answer');
+  assert.ok(chiediRegolazione('AMMODERNAMENTO', C(['machine']), ['machine', 'controller']));
+  assert.ok(!chiediRegolazione('AMMODERNAMENTO', C(['machine', 'controller']), ['machine', 'controller']), 'a new controller: not asked');
+  assert.ok(!chiediRegolazione('AMMODERNAMENTO', C(['controller']), ['machine', 'controller']), 'the machine kept: not asked');
+  assert.ok(!chiediRegolazione('TRASFORMAZIONE_COMPLETA', solo, []));
+  // one or two speeds: the controller replaced, the rule's «Sì» (the answer can still be changed)
+  assert.deepEqual(bloccata('AMMODERNAMENTO', amm, collaudoOf(REPL, amm), REPL, 'controller'), { si: true, perche: 'inverter' });
+  assert.ok(chiediRegolazione('AMMODERNAMENTO', amm, ['machine']), 'the answer that replaces the controller stays in view');
+  assert.ok(!daIndicare('AMMODERNAMENTO', amm, collaudoOf(REPL, amm), REPL, ['machine']).includes('controller'));
+  assert.deepEqual(effettiva('AMMODERNAMENTO', amm, REPL)?.parti, ['machine', 'controller']);
+  assert.equal(bloccata('AMMODERNAMENTO', C(['machine'], { regolazione: 'vvvf' }), collaudoOf(REPL, amm), REPL, 'controller'), null);
+  assert.equal(bloccata('SOLO_ARGANO', C(['machine'], { regolazione: '2v' }), collaudoOf(REPL, solo), REPL, 'controller'), null, 'a «Solo argano» is refused instead');
+  // the ropes of their own number and diameter as before, both rules together
+  assert.deepEqual(effettiva('AMMODERNAMENTO', amm, { ...REPL, keepRopes: false })?.parti, ['machine', 'ropes', 'controller']);
+  assert.equal(effettiva('AMMODERNAMENTO', C(['machine', 'car']), REPL)?.parti.length, 2, 'nothing to add: the same test');
+  // the list of what is missing: after the parts, before the fields
+  const V = blankCalc(), m = calcMissing(V, readInputs(V).bad, 'SOLO_ARGANO', ['ropes'], true);
+  assert.deepEqual(m.slice(0, 2), [parteId('ropes'), 'regolazione']);
+  assert.equal(plantReady(calcMissing({ ...PRESETS.C }, readInputs({ ...PRESETS.C }).bad, 'SOLO_ARGANO', [], true)), false, 'the answer holds the proposals');
 });

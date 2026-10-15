@@ -22,9 +22,17 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   assert.equal(await page.inputValue('#layout'), 'top', 'the example has the machine above');
   // the example of a replacement is a «Solo argano»: the machine is the calculation's, the ropes answered «Sì» here
   assert.ok(await page.isChecked('input[name="intervento"][value="SOLO_ARGANO"]'), 'Solo argano');
-  assert.equal(await page.locator('.parti-sino li.parte').count(), 2, 'the machine and the ropes');
+  assert.equal(await page.locator('.parti-sino li.parte:not(.regola)').count(), 2, 'the machine and the ropes');
   await page.click('.parti-sino li[data-part="ropes"] label:has-text("Sì")');
   await page.waitForSelector('.parti-sino li[data-part="ropes"] label.on:has-text("Sì")');
+  // round 46 (11.2.1): the existing controller with a frequency converter (the example's), two speeds refused, VVVF saves
+  const reg = '.parti-sino li[data-part="regolazione"]';
+  assert.ok(await page.isChecked(`${reg} input[value="vvvf"]`), 'the example: VVVF');
+  await page.click(`${reg} label:has-text("2 velocità")`);
+  await page.waitForSelector('[data-avviso="avviso_inverter"]');
+  assert.ok(await page.locator('.savebar button.primary').isDisabled(), 'two speeds: refused');
+  await page.click(`${reg} label:has-text("VVVF")`);
+  await page.waitForSelector('[data-avviso="avviso_inverter"]', { state: 'detached' });
   await page.waitForSelector('.savebar button.primary:not([disabled])');
   await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
   const roomCalcUrl = page.url();

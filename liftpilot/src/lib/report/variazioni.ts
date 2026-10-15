@@ -2,7 +2,9 @@
 // 10411-11:2024, 15 and 16), as the documents print them: the rows of the relazione's data of the installation
 // («Velocità documentata · variazione», «Corsa del primo collaudo · variazione» — under -11 «Corsa documentata») and the
 // sentence of sheet 1's COLLAUDO note, kept out of collaudo.ts (round 46, B5). Only with what the logbook documents
-// (Collaudo.libretto): a record without it prints nothing, as before. Our words with the clause numbers. Pure.
+// (Collaudo.libretto): a record without it prints nothing, as before. And (B6) the row of the existing controller's
+// speed regulation under a new machine — with a ⚠ when it was not answered (a record saved before the question): the
+// relazioni only, sheet 1 stays as issued. Our words with the clause numbers. Pure.
 import type { FormValues } from '@/calc/types';
 import type { Collaudo } from '../lift/collaudo';
 import { corsaOf, variazioneCorsa, variazioneVelocita, velocitaOf, type Norma10411 } from '../lift/modifica';
@@ -82,3 +84,17 @@ export const variazioniRows = (list: readonly VariazioneDoc[]): [string, string]
 
 /** The sentence of sheet 1's COLLAUDO note: the changes' sentences ('' without one). */
 export const variazioniNota = (list: readonly VariazioneDoc[]): string => list.map((x) => x.nota).join('');
+
+/** The row of the existing controller's speed regulation in the relazione's data of the installation (round 46, B6): a
+ *  modification whose new machine stays on the existing controller (the controller not among the parts) — answered,
+ *  what it is; not answered, a ⚠ (UNI 10411-1:2024 11.2.1, UNI 10411-11:2024 11.2: no regulation added to a controller
+ *  without one, while the software sizes the new machine for a frequency converter). None otherwise. */
+export function regolazioneRows(C: Pick<Collaudo, 'norma' | 'parti' | 'regolazione'>): [string, string][] {
+  if (C.norma === 'en81' || !C.parti.includes('machine') || C.parti.includes('controller')) return [];
+  const rif = C.norma === '10411-1' ? 'UNI 10411-1:2024, 11.2.1' : 'UNI 10411-11:2024, 11.2', label = 'Regolazione della velocità del quadro esistente';
+  const regola = `la macchina nuova resta sul quadro esistente e il software la dimensiona per la regolazione con inverter; non si aggiunge la `
+    + `regolazione a un quadro che non l’ha (${rif})`;
+  if (!C.regolazione) return [[label, `⚠ Non indicata: ${regola}. Verificare che il quadro esistente l’abbia, altrimenti sostituire il quadro.`]];
+  if (C.regolazione === 'vvvf') return [[label, `inverter (VVVF): la regolazione resta (${rif}); sostituendo il suo dispositivo vale anche ${C.norma === '10411-1' ? 'l’11.1.4' : 'l’11.1.3'}.`]];
+  return [[label, `⚠ ${C.regolazione === '2v' ? 'a due velocità' : 'a una velocità'}: ${regola}. Il quadro va sostituito.`]];
+}

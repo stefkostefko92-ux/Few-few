@@ -22,8 +22,10 @@ test('norme-collaudo.ts riesporta gli obblighi di obblighi.ts', () => {
   assert.equal(norme.obblighiParti, obblighi.obblighiParti);
   assert.equal(norme.SOSTANZIALE, obblighi.SOSTANZIALE);
   assert.equal(lift.SOSTANZIALE, obblighi.SOSTANZIALE);
-  // the points keep the source they were read on
-  assert.ok(Object.values(obblighi.OBBLIGHI_PARTI['10411-1']).every((p) => p?.stato === 'confermato' && p.fonte?.startsWith('testo della norma, letto il 2026-10-06')));
+  // the points keep the source they were read on; the new safety gear under -1 6.7 (point 6, the loads) is uncertain
+  // without a change of load (round 46, B7)
+  assert.ok(Object.entries(obblighi.OBBLIGHI_PARTI['10411-1']).every(([k, p]) => (k === 'safetyGear' ? p?.stato === 'da_verificare'
+    : p?.stato === 'confermato' && p.fonte?.startsWith('testo della norma, letto il 2026-10-06'))));
 });
 
 test('variazioni: senza variazioni nessuna riga e nessuna frase', () => {

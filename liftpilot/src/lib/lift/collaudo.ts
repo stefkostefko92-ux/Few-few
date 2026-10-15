@@ -45,8 +45,12 @@ export const NORMA_BREVE: Readonly<Record<Norma, string>> = {
   'en81-80': 'EN 81-80', 'en81-82': 'EN 81-82', 'en81-83': 'EN 81-83', dm236: 'DM 236/89', antincendio: 'Antincendio', ntc2018: 'NTC 2018',
 };
 
-/** What an intervention can replace (the parts) or change (speed, rated load, travel). */
-export const PARTI = ['machine', 'ropes', 'car', 'sling', 'cw', 'rails', 'landingDoors', 'carDoors', 'buffers', 'governor', 'controller', 'speed', 'load', 'travel'] as const;
+/** What an intervention can replace (the parts) or change (speed, rated load, travel); round 46 (B7) appended, so that
+ *  the stored arrays keep their order, the optional parts of a modernisation — the safety gear, the ACOP and UCM
+ *  protections, the emergency alarm, the machine room, the car doors from hinged to sliding (intervento.ts
+ *  PARTI_FACOLTATIVE; a test as new has them all). */
+export const PARTI = ['machine', 'ropes', 'car', 'sling', 'cw', 'rails', 'landingDoors', 'carDoors', 'buffers', 'governor', 'controller', 'speed', 'load', 'travel',
+  'safetyGear', 'ucm', 'alarm', 'room', 'slidingDoors'] as const;
 export type Parte = (typeof PARTI)[number];
 
 /** The changes the rule brings among a modification's parts (round 46): the load by the documented loads, the speed and

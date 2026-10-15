@@ -39,7 +39,8 @@ export default function DalCalcolo({ P, X, base, projectId, when, canCalc }: Pro
   const t = useTranslations('progetto'), ti = useTranslations('calculations.intervento'), tl = useTranslations('lift');
   const { ctx } = useMemo(() => analyse(base.values), [base.values]), { I, N } = ctx, { fmt } = P;
   const C = base.collaudo, i = TIPI_INTERVENTO.indexOf(base.tipo);
-  const parti = C.norma === 'en81' ? null : C.parti.map((p) => tl(`parte_${p}`).toLowerCase()).join(', ');
+  // a part's name in the sentence: its first letter in lower case («Protezioni ACOP e UCM» keeps its acronyms)
+  const parti = C.norma === 'en81' ? null : C.parti.map((p) => { const x = tl(`parte_${p}`); return x.charAt(0).toLowerCase() + x.slice(1); }).join(', ');
   const fact = (dt: string, dd: string) => <div><dt>{dt}</dt><dd className="num">{dd}</dd></div>;
   return (
     <div className="dal-calcolo">

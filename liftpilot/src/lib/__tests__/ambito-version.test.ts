@@ -13,21 +13,25 @@ import { AMBITO_10411_1, AMBITO_VERIFICHE, PARTI, SOLO_10411_1, VERIFICHE_DATI }
 import { KL } from '../lift/norme';
 import { OBBLIGHI_PARTI } from '../lift/obblighi';
 import { OBBLIGHI_VARIAZIONI } from '../lift/obblighi-variazioni';
+import { OBBLIGHI_REGOLAZIONE } from '../lift/obblighi-facoltative';
 import { LIFT_ENGINE_VERSION } from '../lift/version';
 import { ROOM_ENGINE_VERSION } from '../room/snapshot';
 import { SHAFT_ENGINE_VERSION } from '@/shaft/snapshot';
 
-/** The key and the versions it was pinned at (round 46). */
-const PINNED = { sha256: '509cef73d00ee44da15efcde720c2d238e8dad0f3934af4cc9322f09f06449ae', engine: '1.7.0', lift: '1.32.0', room: '1.16.0', shaft: '2.26.0' };
+/** The key and the versions it was pinned at (round 46; S5 — the optional parts and the controller's regulation — pinned
+ *  again within the same kit: S4–S8 ship together with the one bump, never deployed apart). */
+const PINNED = { sha256: '91ed6b0220d3f6c234c0cb0b5f2a876e7ef041b243df6aaa4ab697b9795ae53c', engine: '1.7.0', lift: '1.32.0', room: '1.16.0', shaft: '2.26.0' };
 
 /** The constants of a modification: the loads (6.1), the CE marking's day, the speed and the travel (15, 16). */
 const KL_MODIFICA = {
   loadSplitQ: KL.loadSplitQ, loadIncQ: KL.loadIncQ, loadIncT: KL.loadIncT, loadIncTcp: KL.loadIncTcp, loadStruct11: KL.loadStruct11, ceFrom: KL.ceFrom,
   speedInc1: KL.speedInc1, speedDec1: KL.speedDec1, ucmSpeed11: KL.ucmSpeed11, travelInc1: KL.travelInc1,
+  // round 46 S5: the car doors made sliding (13.1.3 b), printed as information)
+  slidingClear: KL.slidingClear, slidingClearV2: KL.slidingClearV2,
 };
 
 const scopeKey = (): string => createHash('sha256').update(JSON.stringify(canon({
-  PARTI, AMBITO_VERIFICHE, AMBITO_10411_1, SOLO_10411_1, VERIFICHE_DATI, OBBLIGHI_PARTI, OBBLIGHI_VARIAZIONI, KL_MODIFICA,
+  PARTI, AMBITO_VERIFICHE, AMBITO_10411_1, SOLO_10411_1, VERIFICHE_DATI, OBBLIGHI_PARTI, OBBLIGHI_VARIAZIONI, OBBLIGHI_REGOLAZIONE, KL_MODIFICA,
 }))).digest('hex');
 
 test('ambito-version: il perimetro del collaudo non cambia senza le versioni dei motori', () => {

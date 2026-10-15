@@ -262,7 +262,8 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
       + 'estratti delle pagine dei costruttori e dei rivenditori, 1° ottobre 2026',
     stato: 'scelta', costanti: ['catalogRatioTol'],
     nota: 'la tolleranza sul rapporto è una scelta del software: la velocità reale con l’inverter deve restare entro il 5 % sopra la nominale '
-      + '(UNI EN 81-20:2020, 5.9.2.4; buona pratica non oltre l\'8 % sotto); i dati di Sassi, Montanari, GEM e FAER vengono da estratti dei motori di ricerca, non dai documenti; tutti vanno confermati sulla scheda del costruttore prima dell’ordine; '
+      + '(UNI EN 81-20:2020, 5.9.2.4; buona pratica non oltre l\'8 % sotto); vale perché con la macchina nuova la regolazione della velocità c’è '
+      + 'sempre: sul quadro che resta va dichiarata (voce impianto.quadro.regolazione), senza si sostituisce il quadro; i dati di Sassi, Montanari, GEM e FAER vengono da estratti dei motori di ricerca, non dai documenti; tutti vanno confermati sulla scheda del costruttore prima dell’ordine; '
       + 'per Montanari la massa è quella del riduttore (senza motore, puleggia e volano) e le pulegge sono quelle delle configurazioni tipiche; '
       + 'GEAT Elevators distribuisce argani Montanari, Sassi e FAER (P58F, P58S) e non ne costruisce; fino a LIFT 1.28.0 il motore e la gola '
       + 'restavano quelli della griglia, al rapporto ideale e con la geometria dell’argano generico: un argano più veloce poteva mancare la '

@@ -10,7 +10,7 @@ import type { FormValues } from '@/calc/types';
 import type { SessionUser } from '@/lib/auth';
 import { blankCalc } from '@/lib/calc-blank';
 import { capsOf } from '@/lib/rbac';
-import { PARTI, PARTI_RIFACIMENTO, defaultLift, deriveLift, newLift } from '@/lib/lift';
+import { PARTI, PARTI_FACOLTATIVE, PARTI_RIFACIMENTO, defaultLift, deriveLift, newLift } from '@/lib/lift';
 
 const src = (p: string) => new URL(`../../${p}`, import.meta.url).href;
 type Calc = { id: string; projectId: string; companyId: string; createdAt: Date; inputs: FormValues; collaudo: unknown; intervento: string | null;
@@ -59,7 +59,8 @@ test('l’ultimo calcolo di passo 2, poi quello di qualsiasi provenienza; il tip
   const s = await must(calcStart(user, 'p1', null));
   assert.equal(s.mode, null, 'a saved calculation continued');
   assert.deepEqual([s.intervento.tipo, s.values.context], ['AMMODERNAMENTO', 'repl']);
-  assert.deepEqual(s.intervento.risposte, [...PARTI], 'declared: every part was answered');
+  // every part of the list (round 46: the optional parts are a group of their own, «No» unless answered — not in it)
+  assert.deepEqual(s.intervento.risposte, PARTI.filter((p) => !PARTI_FACOLTATIVE.includes(p)), 'declared: every part was answered');
   // asked for: the archive one, read by its shape
   assert.equal((await must(calcStart(user, 'p1', archive.id))).intervento.tipo, 'SOLO_ARGANO');
   // another project's id: none (the page answers 404 — never an empty form over the draft)

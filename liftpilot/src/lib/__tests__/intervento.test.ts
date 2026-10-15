@@ -24,7 +24,7 @@ test('i tipi: gli stessi nomi dell’enum del database, il contesto del calcolo'
   assert.equal(contestoDi('SOLO_ARGANO'), 'repl');
   assert.equal(contestoDi('AMMODERNAMENTO'), 'repl');
   assert.deepEqual(PARTI_SOLO, ['machine', 'ropes']);
-  assert.deepEqual(PARTI_LOCALE, ['machine', 'ropes', 'controller']);
+  assert.deepEqual(PARTI_LOCALE, ['machine', 'ropes', 'controller', 'room', 'alarm', 'ucm'], 'round 46: the room, its alarm and the UCM with the machine room');
   assert.deepEqual(SOSTANZIALE, ['controller', 'machine', 'landingDoors', 'car', 'sling']);
 });
 

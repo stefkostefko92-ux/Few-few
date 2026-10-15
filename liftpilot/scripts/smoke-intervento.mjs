@@ -2,7 +2,9 @@
 // with its existing sling under UNI 10411-11 whose logbook's speed locks «Velocità variata» on «Sì» with its reason
 // (smoke.mjs draws the Progetto on it); a «Solo argano» whose drawn travel differs from the logbook's — the Progetto's
 // save held, the type to review, «Porta nel calcolo» offered —, then a «Calcolo argano» from it with the speed +6 %
-// over the logbook's: refused as a «Solo argano», «Passa ad Ammodernamento» saves it with the speed locked.
+// over the logbook's: refused as a «Solo argano», «Passa ad Ammodernamento» saves it with the speed locked. Round 46
+// S5: the optional parts of the modernisation «No» unless answered; a «Solo argano» on a controller of one speed refused,
+// «Passa ad Ammodernamento con il quadro» saves it with the controller replaced (11.2.1).
 import assert from 'node:assert/strict';
 import { step } from './smoke-kit.mjs';
 
@@ -17,6 +19,11 @@ export async function ammodernamento({ page, hydrated, calcUrl }) {
   await page.click('label.intervento-tipo[data-tipo="AMMODERNAMENTO"]');
   await page.click('.parti-sino .rif-preset button');
   await page.waitForSelector('.parti-sino .rif-preset button.on');
+  // the optional parts: a group of their own, «No» checked, never still to answer; the renovation does not answer them
+  assert.match(await page.textContent('.parti-altre legend'), /Altre parti \(facoltative\)/);
+  assert.equal(await page.locator('.parti-altre li.parte').count(), 5, 'safety gear, ACOP/UCM, alarm, room, sliding car doors (the car doors replaced)');
+  assert.equal(await page.locator('.parti-altre li.parte label.on:has-text("No")').count(), 5, '«No» unless answered');
+  assert.equal(await page.locator('.parti-altre li.da').count(), 0);
   await page.uncheck('.collaudo label:has-text("tutto l’impianto") input');
   await page.selectOption('.collaudo select', '10411-11');
   // the logbook's speed: under -11 any change counts, the speed is the rule's «Sì», its reason beside it
@@ -86,4 +93,35 @@ export async function soloLibretto({ BASE, page, hydrated, stamp, projectData })
   await page.waitForSelector('.savebar button.primary:not([disabled])');
   await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
   assert.match(await page.textContent('.calc-ruolo'), /Ammodernamento/, 'saved as a modernisation');
+  return soloUrl;
+}
+
+/** A «Calcolo argano» from the «Solo argano» `soloUrl` (its controller answered VVVF with the example): one speed refuses
+ *  it (UNI 10411-1, 11.2.1); «Passa ad Ammodernamento con il quadro» locks the controller «Sì» with its reason, and saves. */
+export async function soloQuadro({ page, hydrated, soloUrl }) {
+  step('Solo argano on a controller of one speed (round 46, 11.2.1): refused; «Passa ad Ammodernamento con il quadro» saves it');
+  await page.goto(soloUrl);
+  await Promise.all([page.waitForURL(/\/calc\?from=/), page.click('.page-head a[href*="/calc?from="]')]);
+  await hydrated(page, '#Q');
+  const reg = '.parti-sino li[data-part="regolazione"]';
+  await page.waitForSelector(`${reg} label.on:has-text("VVVF")`);
+  assert.equal(await page.locator('.parti-altre').count(), 0, 'a «Solo argano» has no other parts');
+  await page.click(`${reg} label:has-text("1 velocità")`);
+  await page.waitForSelector('[data-avviso="avviso_inverter"]');
+  assert.ok(await page.locator('.savebar button.primary').isDisabled(), 'refused as a «Solo argano»');
+  assert.match(await page.textContent('.savebar'), /quadro esistente senza regolazione della velocità/);
+  assert.equal(await page.locator('[data-avviso] button:has-text("Passa ad Ammodernamento")').count(), 1, 'one way to the modernisation');
+  await page.click('[data-avviso="avviso_inverter"] button:has-text("Passa ad Ammodernamento con il quadro")');
+  await page.waitForSelector('input[name="intervento"][value="AMMODERNAMENTO"]:checked');
+  await page.waitForSelector('.parti-sino li[data-part="controller"] .parte-regola.si');
+  assert.match(await page.textContent('.parti-sino li[data-part="controller"] .parte-perche'), /non ha la regolazione della velocità[\s\S]*UNI 10411-1, 11\.2\.1/);
+  assert.ok(await page.isChecked(`${reg} input[value="1v"]`), 'the answer in view, changeable');
+  while (await page.locator('.parti-sino li.da').count()) {
+    const part = await page.getAttribute('.parti-sino li.da', 'data-part');
+    await page.click(`.parti-sino li[data-part="${part}"] label:has-text("No")`);
+  }
+  await page.waitForSelector('.savebar button.primary:not([disabled])');
+  await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
+  assert.match(await page.textContent('.calc-ruolo'), /Ammodernamento/, 'saved as a modernisation');
+  assert.match(await page.textContent('main'), /Quadro di manovra/, 'the controller among the parts');
 }

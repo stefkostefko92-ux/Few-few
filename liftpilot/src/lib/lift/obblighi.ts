@@ -1,11 +1,13 @@
 // What UNI 10411-1/-11:2024 ask of the parts a modification replaces or changes besides the machine, in our words with
 // the clause (round 46: out of norme-collaudo.ts, which re-exports it), and the parts that together make a substantial
 // modification. The changes of speed, load and travel have one point per case (obblighi-variazioni.ts), picked by what
-// the documents of the existing lift say against the calculation (B5). Pure.
+// the documents of the existing lift say against the calculation (B5); the optional parts of a modernisation and the
+// speed regulation of the controller kept under a new machine are in obblighi-facoltative.ts (B6, B7). Pure.
 import type { FormValues } from '@/calc/types';
 import type { Collaudo, Parte } from './collaudo';
 import { carichiOf, corsaOf, variazioneCarico, variazioneCorsa, variazioneVelocita, velocitaOf } from './modifica';
 import { OBBLIGHI_VARIAZIONI, type CasoVariazione } from './obblighi-variazioni';
+import { OBBLIGHI_FACOLTATIVE, OBBLIGHI_REGOLAZIONE, spazioScorrevoli } from './obblighi-facoltative';
 import { lt, type PuntoInSito } from './punti';
 
 /** What UNI 10411-1/-11:2024 ask of the parts a modification replaces besides the machine (whose adaptations are
@@ -34,6 +36,7 @@ export const OBBLIGHI_PARTI: Readonly<Record<'10411-1' | '10411-11', Partial<Rea
       + 'diversi da quelli documentati: verifiche della 14.1 anche con la stessa puleggia (17.2)'),
     governor: lt('UNI 10411-1:2024, 18', 'limitatore, tenditore, fune e contatti nuovi secondo la UNI EN 81-20 5.6.2.2.1 e 5.5.7.1, con l’intervento del '
       + 'paracadute entro i limiti della norma in vigore all’installazione'),
+    ...OBBLIGHI_FACOLTATIVE['10411-1'],
   },
   '10411-11': {
     car: lt('UNI 10411-11:2024, 22', 'cabina nuova sull’arcata esistente: la cabina e ciò che vi è montato secondo la UNI EN 81-20 da 5.4.1 a 5.4.10; con T* '
@@ -49,9 +52,11 @@ export const OBBLIGHI_PARTI: Readonly<Record<'10411-1' | '10411-11', Partial<Rea
     ropes: lt('UNI 10411-11:2024, 17', 'funi nuove e attacchi d’estremità come gli originali, altrimenti verificati per l’impianto con la valutazione 4.3'),
     governor: lt('UNI 10411-11:2024, 18', 'limitatore, tenditore, fune e contatti come gli originali, altrimenti verificati per l’impianto con la '
       + 'valutazione 4.3'),
+    ...OBBLIGHI_FACOLTATIVE['10411-11'],
   },
 };
-const ORDINE_PARTI: readonly Parte[] = ['speed', 'load', 'travel', 'car', 'sling', 'carDoors', 'landingDoors', 'controller', 'ropes', 'governor'];
+const ORDINE_PARTI: readonly Parte[] = ['speed', 'load', 'travel', 'car', 'sling', 'carDoors', 'slidingDoors', 'landingDoors', 'controller', 'ropes', 'governor',
+  'safetyGear', 'ucm', 'alarm', 'room'];
 /** Controller, machine, landing doors, car and sling replaced together: a substantial modification (UNI 10411-1/-11,
  *  21.1; the form warns, intervento.ts sostanziale). */
 export const SOSTANZIALE: readonly Parte[] = ['controller', 'machine', 'landingDoors', 'car', 'sling'];
@@ -76,22 +81,29 @@ function casi(C: Pick<Collaudo, 'norma' | 'parti' | 'documentato' | 'libretto'>,
 }
 type Variata = 'speed' | 'load' | 'travel';
 const isVariata = (p: Parte): p is Variata => p === 'speed' || p === 'load' || p === 'travel';
+const it = (x: number, d: number): string => x.toFixed(d).replace('.', ',');
 
 /** The points of the parts a modification replaces or changes besides the machine, under its part of UNI 10411: the
  *  changes of speed, load and travel by their case (casi, with the calculation's values `V`), the new car only on the
- *  existing sling (22); all of controller, machine, landing doors, car and sling a substantial modification (21.1).
+ *  existing sling (22); all of controller, machine, landing doors, car and sling a substantial modification (21.1); the
+ *  existing controller kept under a new machine with its speed regulation (round 46, 11.2.1 / 11.2 — unanswered, the
+ *  relazione's ⚠, report/variazioni.ts); the car doors made sliding with the clearance at the calculation's speed.
  *  None tested as new. */
-export function obblighiParti(C: Pick<Collaudo, 'norma' | 'parti' | 'documentato' | 'libretto'>, V?: FormValues): PuntoInSito[] {
+export function obblighiParti(C: Pick<Collaudo, 'norma' | 'parti' | 'documentato' | 'libretto' | 'regolazione'>, V?: FormValues): PuntoInSito[] {
   if (C.norma === 'en81') return [];
   const n = C.norma, keep = (p: Parte): boolean => C.parti.includes(p) && !(p === 'car' && C.parti.includes('sling'));
   const sostanziale = SOSTANZIALE.every((p) => C.parti.includes(p))
     ? [lt(`UNI ${n}:2024, 21.1`, `quadro, macchina, porte di piano, cabina e arcata sostituiti insieme${n === '10411-1' ? ' (con il macchinario in un locale apposito)' : ''}: `
       + 'modifica sostanziale, il risultato segue la UNI EN 81-20:2020, con i requisiti della UNI EN 81-21:2022 dove i luoghi, i vincoli strutturali o '
       + 'le difese conservate non lo consentono')] : [];
-  const perCaso = casi(C, n, V), di = (p: Parte): PuntoInSito[] => {
+  const perCaso = casi(C, n, V), v = V ? velocitaOf(V) : null, di = (p: Parte): PuntoInSito[] => {
     if (isVariata(p)) return perCaso[p].flatMap((c) => { const x = OBBLIGHI_VARIAZIONI[n][c]; return x ? [x] : []; });
+    if (p === 'controller' && !C.parti.includes(p)) return C.parti.includes('machine') && C.regolazione === 'vvvf' ? [OBBLIGHI_REGOLAZIONE[n]] : [];
     const x = OBBLIGHI_PARTI[n][p];
-    return keep(p) && x ? [x] : [];
+    if (!keep(p) || !x) return [];
+    // the clearance over the new parts on the car roof at the calculation's speed: information, the check stays EN 81-20's
+    return p === 'slidingDoors' && v !== null ? [{ ...x, testo: `${x.testo}; con v = ${it(v, 2)} m/s lo spazio è ${it(spazioScorrevoli(v), 3)} m, `
+      + 'come informazione (la verifica dello spazio libero in testata resta secondo la UNI EN 81-20)' }] : [x];
   };
   return [...sostanziale, ...ORDINE_PARTI.flatMap(di)];
 }

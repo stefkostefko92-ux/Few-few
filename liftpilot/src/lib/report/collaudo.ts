@@ -16,7 +16,7 @@ import type { Tr } from '../present/tr';
 import type { BlockStatus, ReportBlock } from './model';
 import { MACCHINA_81_1 } from './refs';
 import { ammodernamentoText, notaIntervento } from './intervento-text';
-import { variazioniDoc, variazioniNota, variazioniRows } from './variazioni';
+import { regolazioneRows, variazioniDoc, variazioniNota, variazioniRows } from './variazioni';
 import { macchinaResta, type TipoIntervento } from '../lift/intervento';
 
 const LIFT = appIt.lift;
@@ -65,10 +65,13 @@ export function riferimentiRows(repl: boolean, C: Pick<Collaudo, 'norma' | 'part
   return std === 'en81-1' ? [...rows, en81_1(norma)] : rows;
 }
 
+/** A part's name inside a sentence: its first letter in lower case (round 46: «Protezioni ACOP e UCM» keeps its acronyms). */
+export const nomeParte = (p: Parte): string => { const x = LIFT[`parte_${p}` as const]; return x.charAt(0).toLowerCase() + x.slice(1); };
+
 /** The parts replaced or changed, in words (tested as new: all of them). */
 export const partiText = (C: Collaudo): string => (C.norma === 'en81'
   ? "tutte: l’impianto si collauda come nuovo"
-  : C.parti.length ? C.parti.map((p) => LIFT[`parte_${p}` as const].toLowerCase()).join(', ') : 'nessuna');
+  : C.parti.length ? C.parti.map(nomeParte).join(', ') : 'nessuna');
 
 /** The standards added to the base one, in words (empty: none). */
 const aggiunteText = (C: Collaudo): string => (C.aggiuntive ?? []).map((n) => NORMA_SIGLA[n]).join('; ');
@@ -111,8 +114,9 @@ const carichiMancanti = (norma: Norma10411, arcata: boolean): string => `⚠ ${m
   + `collaudo o dell’ultima verifica straordinaria.${arcata ? ARCATA : ''}`;
 
 /** The rows of the data of the installation: the standards and, for a modification, what it replaces or changes, the
- *  answer about the CE marking, the change of the loads from the documented ones (`ora`: the design's) and the changes
- *  of speed and travel from the logbook's (round 46, `V`: the calculation's values; variazioni.ts). */
+ *  answer about the CE marking, the change of the loads from the documented ones (`ora`: the design's), the changes
+ *  of speed and travel from the logbook's (round 46, `V`: the calculation's values; variazioni.ts) and the existing
+ *  controller's speed regulation under a new machine (B6). */
 export function collaudoRows(C: Collaudo, repl: boolean, ora?: Carichi | null, V?: FormValues): [string, string][] {
   const uni = repl && C.norma !== 'en81', ce = uni ? marcaturaText(C) : null, doc = uni ? C.documentato : undefined;
   const v = doc && ora && C.norma !== 'en81' ? variazioneCarico(C.norma, doc, ora) : null;
@@ -126,7 +130,7 @@ export function collaudoRows(C: Collaudo, repl: boolean, ora?: Carichi | null, V
     ...(doc ? [['Carichi documentati (portata · cabina · contrappeso)', `${num(doc.Q)} · ${num(doc.P)} · ${num(doc.Mcw)} kg`] as [string, string]] : []),
     ...(v ? [['Variazione dei carichi', variazioneText(v, arcata)] as [string, string]] : []),
     ...(missing && C.norma !== 'en81' ? [['Variazione dei carichi', carichiMancanti(C.norma, arcata)] as [string, string]] : []),
-    ...(uni ? variazioniRows(variazioniDoc(C, V)) : []),
+    ...(uni ? [...variazioniRows(variazioniDoc(C, V)), ...regolazioneRows(C)] : []),
   ];
 }
 
@@ -236,7 +240,7 @@ const CC_VARIAZIONE: readonly [Parte, string, string][] = [['speed', '1)', 'camb
   ['travel', '3)', 'cambio della corsa']];
 function altreModifiche(C: Collaudo, resta: boolean): PuntoInSito[] {
   const altre: readonly Parte[] = C.norma === 'en81' ? [] : C.parti.filter((p) => p !== 'machine'), has = (p: Parte): boolean => altre.includes(p);
-  const nome = (p: Parte): string => LIFT[`parte_${p}` as const].toLowerCase(), cabina = has('car') && has('sling');
+  const nome = nomeParte, cabina = has('car') && has('sling');
   const principali = [...(has('controller') ? [nome('controller')] : []), ...(has('landingDoors') ? [nome('landingDoors')] : []), ...(cabina ? ['cabina con l’arcata'] : [])];
   const numerate: readonly Parte[] = ['speed', 'load', 'travel', 'controller', 'landingDoors'];
   const altri = altre.filter((p) => !numerate.includes(p) && !(cabina && (p === 'car' || p === 'sling')));

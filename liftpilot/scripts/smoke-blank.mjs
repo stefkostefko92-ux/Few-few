@@ -23,6 +23,11 @@ export async function blankCalc({ page, hydrated, example }) {
   assert.equal((await page.textContent('.summary .missing-list li:first-child'))?.trim(), 'Funi sostituite', 'the ropes to answer');
   await page.click('.parti-sino li[data-part="ropes"] label:has-text("No")');
   assert.notEqual((await page.textContent('.summary .missing-list li:first-child'))?.trim(), 'Funi sostituite', 'answered');
+  // round 46 (11.2.1): the new machine on the existing controller — its speed regulation asked, next in the list
+  assert.equal((await page.textContent('.summary .missing-list li:first-child'))?.trim(), 'Regolazione della velocità del quadro esistente');
+  assert.equal(await page.locator('.parti-sino li[data-part="regolazione"].da input[type="radio"]').count(), 3, 'VVVF, 2 or 1 speed, none checked');
+  await page.click('.parti-sino li[data-part="regolazione"] label:has-text("VVVF")');
+  await page.waitForSelector('.parti-sino li[data-part="regolazione"]:not(.da)');
   await page.fill('#Q', '630');
   await page.waitForSelector('.savebar .draft-bar:has-text("Bozza salvata")', { timeout: 15000 });
   await page.reload();
@@ -30,6 +35,7 @@ export async function blankCalc({ page, hydrated, example }) {
   assert.equal(await page.inputValue('#Q'), '630', 'the draft taken up again');
   assert.ok(await page.isChecked('input[name="intervento"][value="SOLO_ARGANO"]'), 'with its type');
   assert.equal(await page.locator('.parti-sino li[data-part="ropes"].da').count(), 0, 'and the ropes answered');
+  assert.ok(await page.isChecked('.parti-sino li[data-part="regolazione"] input[value="vvvf"]'), 'and the controller’s regulation');
   await page.waitForSelector('.savebar .draft-bar:has-text("Bozza ripresa")');
   await page.click('.savebar .draft-bar button:has-text("Scarta la bozza")');
   await page.click('.savebar .draft-bar button:has-text("Sì, scarta")');
