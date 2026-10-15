@@ -16,6 +16,7 @@ import type { Edit } from '@/drawing';
 import { deriveLift, type BottomScheme, type LiftDerived, type LiftInputs } from '@/lib/lift';
 import { bottomTo, enteredBy, filled, missingOf, type BlankKey, type LiftDraft } from '@/lib/lift/blank';
 import { composto, dalComposto, type ProgettoAuto, type ProgettoDraft } from '@/lib/lift/progetto';
+import { calataVerso, calateAlCompleto, calateEsistenti } from '@/lib/lift/calata';
 import { drawnShaft, edited, enteredShaft, movedPanel, panelEntered } from '@/lib/lift/panel-form';
 import { withPitches, type BracketPitches } from '@/shaft/brackets';
 import { textsFor } from '@/lib/present/texts';
@@ -28,7 +29,7 @@ import { editShaft } from '@/lib/shaft-edit';
 import { saveLiftDesignAction } from '@/server/lift-actions';
 import { editValue, keptPlan, type ShaftInputs } from '@/shaft';
 import { asCalcDict } from '../calc/dict';
-import MissingPanel from '../MissingPanel';
+import MissingPanel, { goToField } from '../MissingPanel';
 import RefreshNotice from '../RefreshNotice';
 import type { ShaftSet } from '../blank';
 import DraftBar from '../draft/DraftBar';
@@ -123,9 +124,10 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
   }) : null;
   const texts = { choose: tb('choose'), std: tb('std'), stdTitle: tb('stdTitle') };
 
-  // a change the one form's helpers make on the composed draft, kept as the drawing (the plan's h as it was)
+  // a change the one form's helpers make on the composed draft, kept as the drawing (the plan's h as it was); the change
+  // that completes it on existing falls puts the plan's drop at them (round 46, src/lib/lift/calata.ts)
   const change = (f: (L: LiftDraft) => LiftDraft): void => {
-    setForm((d) => dalComposto(f(composto(d, B)), d.progetto.h));
+    setForm((d) => calateAlCompleto(d, dalComposto(f(composto(d, B)), d.progetto.h), B));
     setSaveError(null);
   };
   const setShaft: ShaftSet = (patch, edit) => change((L) => {
@@ -158,6 +160,12 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
       return null;
     },
   }));
+  // the existing falls a direct pull keeps: the plan's drop set to them with one click beside the hint
+  const Do = useMemo(() => calateEsistenti(base.values), [base.values]);
+  const calate = Do === null ? null : { Do, fix: (): void => {
+    const to = derived ? calataVerso(drawn, derived, Do) : null, r = to && derived ? editShaft(edited(drawn, to.e, derived), to.e, to.length) : null;
+    if (r?.ok) setDrawn(r.inputs);
+  } };
   // (scheme room brings its pulley room: blank.ts bottomTo)
   const setBottom = (bottom: BottomScheme): void => change((L) => bottomTo(L, bottom));
   // a switch of the drawn values; the panel switched to entered stays where the software placed it
@@ -197,7 +205,7 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
       {refresh ? <RefreshNotice kind="lift" items={[...items(missing), ...blockers]} /> : null}
       <ProgettoForm P={P} X={X} inp={inp} base={base} projectId={projectId} when={when} canCalc={canCalc} h={form.progetto.h} derived={derived} blank={blank}
         texts={texts} source={source} setShaft={setShaft} setSize={setSize} onSurvey={onSurvey} setAuto={setAuto} setBottom={setBottom}
-        porta={porta ? { go: porta, pending: leaving } : null} />
+        porta={porta ? { go: porta, pending: leaving } : null} calate={calate} />
       <div className="lift-main">
         {!derived ? <MissingPanel title={tb('title')} lead={tb('lead')} items={items(missing)} /> : (
           <>
@@ -216,7 +224,10 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
           <input className="input" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={120} placeholder={t('label')} aria-label={t('label')} />
           <button type="button" className="btn btn-primary" onClick={save} disabled={saving || !derived || !settled || refused.length > 0}>{saving ? t('saving') : t('save')}</button>
           <span className={derived && refused.length ? 'note bad' : 'note'}>
-            {!derived ? tb('saveMissing', { n: missing.length }) : refused.length ? t('fix_list', { list: refused.join(', ') }) : t('save_hint')}
+            {/* what to correct, each a link to where it is corrected (round 46: the falls by the plan's dimension) */}
+            {!derived ? tb('saveMissing', { n: missing.length }) : refused.length ? <>{t('fix_list_lead')} {blockers.map((b, i) => (
+              <span key={`${b.id ?? ''}${b.label}`}>{i ? ', ' : ''}{b.id ? <a href={`#${b.id}`} onClick={(e) => { e.preventDefault(); if (b.id) goToField(b.id); }}>{b.label}</a> : b.label}</span>
+            ))}.</> : t('save_hint')}
           </span>
           {saveError ? <span className="note bad" role="alert">{saveError}</span> : null}
           {draft ? <DraftBar target={draft} draft={draftHandle} /> : null}

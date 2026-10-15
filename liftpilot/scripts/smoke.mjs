@@ -24,7 +24,7 @@ import { startMailSink } from './mail-sink.mjs';
 import { accountFlows } from './smoke-accounts.mjs';
 import { secondCompany } from './smoke-isolation.mjs';
 import { loadPlaywright, smokeKit, step } from './smoke-kit.mjs';
-import { blankCalc, projectData } from './smoke-blank.mjs';
+import { blankCalc, blankSaves, projectData } from './smoke-blank.mjs';
 import { priceList } from './smoke-prices.mjs';
 import { progettoFlow } from './smoke-progetto.mjs';
 import { publicPages } from './smoke-public.mjs';
@@ -111,6 +111,7 @@ try {
     assert.equal(await page.locator('.dash-row').count(), n, why);
   }
 
+  await blankSaves({ BASE, page, hydrated, stamp });
   step('the installation: its type from «Calcolo argano», its sections in the order of the work (round 45)');
   await page.goto(projectUrl);
   assert.match(await page.textContent('.page-head .titles .tipo-badge'), /Solo argano/, 'the type read from its calculation');

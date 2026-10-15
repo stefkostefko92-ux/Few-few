@@ -9,6 +9,7 @@ import type { Plant } from '../plant';
 import { COND, PALETTE, concreteTile, type SheetImage } from '@/drawing';
 import { mergeChecks, vociOfDesign } from '@/shaft';
 import type { CheckId, CheckStatus, FormValues } from '@/calc/types';
+import { shown } from '@/components/calc/fields';
 import { NO_MARKS, P_ESTIMATE_RULE, type ValueMarks } from '../lift/marks';
 import { ambitoOf, collaudoOf, ropesKept, ropesOutsideTest } from '../lift/collaudo';
 import { carichiOf } from '../lift/modifica';
@@ -113,7 +114,10 @@ export function buildReport(r: ReportInput): ReportDoc {
     ...(I.layout === 'topDefl' ? [[`${t('dx')} · ${t('h')}`, `${fmt(I.dx, 3)} m · ${fmt(I.h, 3)} m${m.geometry.includes('dx')
       ? ' (dx dal progetto del vano; h dal basamento o dal telaio del rinvio, salvo se inserita a mano)' : ''}`] as [string, string]] : []),
     ...(I.layout === 'bottom' ? [[t('Hv'), `${fmt(I.Hv, 2)} m${fromShaft('Hv', false)}`] as [string, string]] : []),
-    ...(res.ropes.DpD != null ? [[`${t('Dp')} · ${t('Jp')}`, `${fmt(I.Dp, 0)} mm · ${fmt(I.Jp, 2)} kg·m²`] as [string, string]] : []),
+    // the pulleys' inertia only where the calculation reads it (a diverting pulley or 2:1; extra bends alone: their
+    // diameter): never a value the form did not show (round 46)
+    ...(res.ropes.DpD != null ? [shown('Jp', r.values) ? [`${t('Dp')} · ${t('Jp')}`, `${fmt(I.Dp, 0)} mm · ${fmt(I.Jp, 2)} kg·m²`] as [string, string]
+      : [t('Dp'), `${fmt(I.Dp, 0)} mm`] as [string, string]] : []),
     [t('etaShaft'), fmt(I.etaShaft, 2)], [`${t('aDesign')} · ${t('aBrake')}`, `${fmt(I.aDesign, 2)} · ${fmt(I.aBrake, 2)} m/s²`],
     [t('buffers'), I.buffers ? `sì (a_e ${fmt(I.ae, 2)} m/s²)` : 'no'], [t('rh'), `${fmt(I.rh, 2)} m`],
   ];

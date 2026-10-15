@@ -17,6 +17,7 @@ import { can } from '@/lib/rbac';
 import type { ProgettoDraft } from '@/lib/lift/progetto';
 import { fmt } from '@/lib/rilievi/fmt';
 import { stessoValore } from '@/lib/collega/formato';
+import { dividiIndirizzo } from '@/lib/collega/testo';
 import { isUsa, segnati, seminaCalc, seminaLift, semeCalc, semeLift, usaCalc, usaLift, valoreCalc, valoreLift, type Usa } from '@/lib/collega/prefill';
 import type { RilievoDati } from '@/lib/collega/rilievo';
 import type { OrigineRilievo } from '@/components/collega/origine';
@@ -77,13 +78,16 @@ export interface UsaDati {
   field: 'address' | 'plantNumber';
   value: string;
   date: string;
+  /** the municipality and province the survey writes last in its address, to their own fields (round 46) */
+  extra: { city?: string; province?: string };
 }
 
 export async function usaDatiImpianto(user: SessionUser, projectId: string, usa: unknown): Promise<UsaDati | null> {
   if ((usa !== 'indirizzo' && usa !== 'matricola') || !can(user, 'rilievi:view')) return null;
   const r = await rilievoDiRiferimento(user, projectId);
-  const value = r ? (usa === 'indirizzo' ? r.indirizzo : r.matricola) : null;
-  return r && value ? { field: usa === 'indirizzo' ? 'address' : 'plantNumber', value, date: fmt.day(r.data) } : null;
+  const parti = dividiIndirizzo(r?.indirizzo), value = r ? (usa === 'indirizzo' ? parti.via || null : r.matricola) : null;
+  const extra = usa === 'indirizzo' ? { ...(parti.citta ? { city: parti.citta } : {}), ...(parti.provincia ? { province: parti.provincia } : {}) } : {};
+  return r && value ? { field: usa === 'indirizzo' ? 'address' : 'plantNumber', value, date: fmt.day(r.data), extra } : null;
 }
 
 /** The calculator's start (`kept`: what its draft kept of the survey). A transformation (a new lift, round 45) has no

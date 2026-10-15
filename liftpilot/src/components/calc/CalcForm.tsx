@@ -38,6 +38,9 @@ export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopes
   const stdNote = texts.stdInUse && expert.length
     ? texts.stdInUse(expert.map((f) => `${t((f.key ?? f.id) as CalcKey)}${f.id.startsWith('o_') ? ` (${t('g_old')})` : ''} ${String(V[f.id])}${f.kind === 'num' && f.unit ? ` ${f.unit}` : ''}`).join(', '))
     : '';
+  // the service's group, expert only and closed: open and shown in the simple mode too while a value of it is still to
+  // enter or out of range
+  const service = SERVICE.some((f) => need.has(f.id) || bad.has(f.id));
   const check = (id: 'compare' | 'keepD' | 'keepRopes') => (
     <div className="row check" hidden={!shown(id, V) || (id === 'keepRopes' && !!resta)}>
       <input type="checkbox" id={id} checked={!!V[id]} onChange={(e) => set(id, e.target.checked)} />
@@ -81,7 +84,7 @@ export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopes
           {estimate('n_')}
         </div>
       </details>
-      <details className={`group${SERVICE.some((f) => need.has(f.id)) ? '' : ' adv'}`} open={SERVICE.some((f) => need.has(f.id)) || undefined}>
+      <details className={`group${service ? '' : ' adv'}`} open={service || undefined}>
         <summary>{t('g_service')}</summary><div className="rows">{rows(SERVICE)}</div>
       </details>
       <p className="note simple-only">{t('simple_note')}</p>

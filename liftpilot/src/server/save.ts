@@ -9,11 +9,12 @@ import { compute } from '@/calc/compute';
 import { readInputs } from '@/calc/inputs';
 import type { SessionUser } from '@/lib/auth';
 import { audit } from '@/lib/audit';
+import { visibleBad } from '@/lib/calc-input';
+import { savedValues } from '@/lib/calc-saved';
 import { prisma } from '@/lib/db';
 import { log } from '@/lib/log';
 import { LIFT_ENGINE_VERSION, collaudoOf, collaudoVerdict, deriveLift, type Collaudo, type LiftInputs, type TipoIntervento } from '@/lib/lift';
 import { liftHash } from '@/lib/lift-hash';
-import { mirrorRopes } from '@/lib/present/analysis';
 import { verdictStatus } from '@/lib/present/texts';
 import { makeFmt } from '@/lib/present/tr';
 import { roomHash } from '@/lib/room-hash';
@@ -38,15 +39,20 @@ const machineSummary = (N: ReturnType<typeof readInputs>['N']): string =>
 
 const touch = (projectId: string) => prisma.project.update({ where: { id: projectId }, data: { updatedAt: new Date() } });
 
-/** A calculation from its values, with the intervention declared with it and the standards of its acceptance test (both
- *  stored beside the snapshot, outside its hash; the test normalised as the documents read them — collaudoOf is
- *  idempotent, so a stored default reads as the default it was). A save from the form stores the test always; one made
- *  again from a record (`from`: the record it updates, audit) keeps that record's rule — the test only when one was
- *  stored — and its type (NULL stays NULL: a calculation saved before round 45 keeps the documents' wording). */
+/** A calculation from its values (as the form shows them: calc-saved.ts savedValues), with the intervention declared
+ *  with it and the standards of its acceptance test (both stored beside the snapshot, outside its hash; the test
+ *  normalised as the documents read them — collaudoOf is idempotent, so a stored default reads as the default it was).
+ *  A save from the form stores the test always; one made again from a record (`from`: the record it updates, audit)
+ *  keeps that record's rule — the test only when one was stored — and its type (NULL stays NULL: a calculation saved
+ *  before round 45 keeps the documents' wording). */
 export async function createCalculation(user: SessionUser, projectId: string, values: FormValues, label: string | null, chosen: Collaudo | null,
   tipo: TipoIntervento | null, from?: string): Promise<Created> {
-  const V = mirrorRopes(values), ctx = readInputs(V);
-  if (ctx.bad.length) return { ok: false, error: 'invalidInputs', fields: [...new Set(ctx.bad)] };
+  // the values as the form shows them (round 46): a field out of view at the value the engine reads in its place, so
+  // what is refused is what the form flags, and nothing typed under another layout or type is stored
+  const V = savedValues(values), ctx = readInputs(V);
+  // named as the form flags them: the new ropes that follow the existing ones (mirrorRopes) by the existing ones'
+  const seen = visibleBad(ctx.bad, V);
+  if (ctx.bad.length) return { ok: false, error: 'invalidInputs', fields: seen.length ? seen : [...new Set(ctx.bad)] };
   const snapshot = snapshotOf(V), res = compute(ctx.I, ctx.N);
   const calc = await prisma.calculation.create({
     data: {

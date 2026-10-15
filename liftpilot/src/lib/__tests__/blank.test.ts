@@ -135,7 +135,8 @@ test('sostituzione nel progetto: funi in opera e macchina esistente da inserire'
   assert.deepEqual(existingMissing(V), [], 'a new lift has none');
   assert.deepEqual(existingMissing({ ...V, context: 'repl' }), ['n_n', 'n_d', 'n_Fmin', 'n_qf']);
   const compared = existingMissing({ ...V, context: 'repl', compare: true });
-  assert.ok(compared.includes('o_D') && compared.includes('o_n') && !compared.includes('n_n') && !compared.includes('o_mass'), compared.join());
+  // the existing machine's mass wherever it stands (round 46: the relazione tecnica and the hook read it above too)
+  assert.ok(compared.includes('o_D') && compared.includes('o_n') && !compared.includes('n_n') && compared.includes('o_mass'), compared.join());
   assert.deepEqual(existingMissing({ ...PRESETS.C }), [], 'entered');
 });
 

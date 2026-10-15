@@ -19,6 +19,8 @@ import { textsFor } from '@/lib/present/texts';
 import { makePres, type CalcKey } from '@/lib/present/tr';
 import { visibleBad } from '@/lib/calc-input';
 import { calcMissing, plantReady } from '@/lib/calc-blank';
+import { savedValues } from '@/lib/calc-saved';
+import { segniResta } from '@/lib/calc-resta';
 import { calcDraftSchema } from '@/lib/draft-input';
 import { bozzaRilievo } from '@/lib/collega/formato';
 import { interventoDi, interventoTo, type Collaudo, type Parte, type TipoIntervento } from '@/lib/lift';
@@ -105,24 +107,29 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   const I = useIntervento(startOf(initial, initialPreset, intervento), values, edit);
   // the machine kept once «Argano: No» is answered (src/lib/lift/intervento.ts macchinaResta)
   const { tipo, value: collaudo } = I, resta = I.resta && I.risposte.includes('machine');
+  // the machine kept is the existing one: the survey's marks of the existing machine on its fields (round 46)
+  const vista = useMemo(() => (resta && origine ? { ...origine, valori: segniResta(origine.valori) } : origine), [resta, origine]);
 
   const deferred = useDeferredValue(values);
-  const analysed = useMemo(() => analyse(deferred), [deferred]);
+  // the calculation as it will be saved (round 46): the fields out of view at the value the engine reads in their place
+  // (src/lib/calc-saved.ts), the form keeping what was typed in them
+  const saved = useMemo(() => savedValues(deferred), [deferred]);
+  const analysed = useMemo(() => analyse(saved), [saved]);
   // a drawing's direct pull (?dal=progetto): the proposals of the sheave its falls hang from only (shown, not saved)
   const held = sheave && deferred.layout === 'top' ? sheave : null;
   const a = useMemo(() => (held ? { ...analysed, sizing: sizingWithSheave(analysed.ctx, held), hold: 'drop' as const } : analysed), [analysed, held]);
-  const evaluate = useCallback((m: AdviceModel) => valuesCandidate(deferred, a, m), [deferred, a]);
+  const evaluate = useCallback((m: AdviceModel) => valuesCandidate(saved, a, m), [saved, a]);
   // the type and the parts still to answer first; the values still to enter are needed, not wrong: marked apart from
   // the ones out of range
   const missing = useMemo(() => calcMissing(deferred, a.ctx.bad, tipo, I.mancanti), [a, deferred, tipo, I.mancanti]);
   const need = useMemo(() => new Set(missing), [missing]);
   const ready = plantReady(missing), complete = missing.length === 0;
-  useEffect(() => { if (complete && tipo) onBase?.({ values: deferred, collaudo, tipo }); }, [complete, tipo, deferred, collaudo, onBase]);
+  useEffect(() => { if (complete && tipo) onBase?.({ values: saved, collaudo, tipo }); }, [complete, tipo, saved, collaudo, onBase]);
   const bad = useMemo(() => new Set(visibleBad(a.ctx.bad, deferred).filter((id) => !need.has(id))), [a, deferred, need]);
   const texts = { choose: tb('choose'), std: tb('std'), stdTitle: tb('stdTitle'), stdInUse: (list: string) => tb('stdInUse', { list }) };
   // the draft keeps the type, the parts answered and which values came from the survey (and whether the form started
   // from it), so that their marks come back with it
-  const draftData = { values, collaudo: I.chosen ?? null, ...(tipo ? { intervento: tipo } : {}), risposte: I.risposte, ...bozzaRilievo(origine, (id) => values[id]) };
+  const draftData = { values, collaudo: I.chosen ?? null, ...(tipo ? { intervento: tipo } : {}), risposte: I.risposte, ...bozzaRilievo(vista, (id) => values[id]) };
   const draftHandle = useDraft(draft, draftData, calcDraftSchema.safeParse(draftData).success);
 
   const set = (id: string, v: string | boolean): void => edit({ [id]: v });
@@ -159,7 +166,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
     setSaveError(null);
     draftHandle.stop();
     startSaving(async () => {
-      const r = await saveCalculationAction({ projectId, values, label, collaudo: I.effective ?? null, intervento: tipo });
+      const r = await saveCalculationAction({ projectId, values: savedValues(values), label, collaudo: I.effective ?? null, intervento: tipo });
       if (r.ok) router.push(`/app/calculations/${r.id}`);
       else setSaveError({ error: r.error, fields: r.fields ?? [] });
     });
@@ -179,7 +186,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   const repl = tipo === 'SOLO_ARGANO' || tipo === 'AMMODERNAMENTO';
 
   return (
-    <OrigineProvider value={origine}>
+    <OrigineProvider value={vista}>
     <div className={`calc${mode === 'simple' ? ' simple' : ''}`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="controls">
@@ -211,16 +218,17 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
               <Verdict P={P} X={X} a={a} badCount={bad.size} resta={resta ? ti('argano_resta') : undefined} />
             </>
           ) : (
-            <MissingPanel title={ready ? tb('machineTitle') : tb('title')} lead={ready ? tb('machineLead') : tb('lead')} items={missing.map((id) => ({ id, label: itemLabel(id) }))} />
+            <MissingPanel title={ready ? tb(resta ? 'keptTitle' : 'machineTitle') : tb('title')} lead={ready ? tb(resta ? 'keptLead' : 'machineLead') : tb('lead')}
+              items={missing.map((id) => ({ id, label: itemLabel(id) }))} />
           )}
           {tipo ? <CollaudoOptions P={P} mode={MODE[tipo]} chosen={I.chosen} value={collaudo} set={I.setCollaudo} calc={values} /> : null}
         </section>
         {ready && !resta ? <Results P={P} X={X} a={a} mode={mode} badCount={bad.size} brand={brand} collaudo={collaudo} tipo={tipo} onUse={onUse} propMsg={propMsg}
           proposalOnly={!complete} vincolo={held ? tc('porta.sheave', { D: held }) : undefined} /> : null}
       </div>
-      {ready && !resta ? <MachineAdvice evaluate={evaluate} alternative={null} wall={valuesWall(deferred)} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} where="calc" /> : null}
+      {ready && !resta ? <MachineAdvice evaluate={evaluate} alternative={null} wall={valuesWall(saved)} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} where="calc" /> : null}
       <CalcSaveBar label={label} setLabel={setLabel} save={save} saving={saving} missing={missing.length}
-        bad={a.ctx.bad.length ? [...new Set(a.ctx.bad)].map(fieldLabel).join(', ') : ''} incoerente={missing.length ? '' : named(I.incoerenze)}
+        bad={[...bad].map(fieldLabel).join(', ')} incoerente={missing.length ? '' : named(I.incoerenze)}
         draft={draft} draftHandle={draftHandle} error={errorText} />
     </div>
     </OrigineProvider>

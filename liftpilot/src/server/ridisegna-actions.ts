@@ -5,7 +5,8 @@
 // step-2 calculation of its installation — its drawing as saved (progettoOf), composed on that calculation
 // (liftInputsOf) and saved through the unchanged derivation (createLiftDesign, naming its new base). Whoever draws the
 // project, not in read-only mode (can()); one at a time per design; a design already drawn again on that calculation
-// is not copied; a calculation no longer reproduced, or a drawing that no longer passes on it, opens the Progetto on
+// is not copied; a calculation no longer reproduced, a drawing that no longer passes on it, or a calculation of another
+// intervention than the design's (round 46: type, renovation or parts — the page names the change) opens the Progetto on
 // that calculation from this drawing.
 import { redirect } from 'next/navigation';
 import { DEFAULT_LOCALE, isLocale } from '@/i18n/locales';
@@ -13,6 +14,8 @@ import { getSessionUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { liftInputsReadSchema, liftInputsSchema } from '@/lib/lift-input';
 import { liftInputsOf, progettoOf } from '@/lib/lift/progetto';
+import { collaudoOf } from '@/lib/lift/collaudo';
+import { interventoDi, stessoIntervento } from '@/lib/lift/intervento';
 import { rateLimit } from '@/lib/ratelimit';
 import { can } from '@/lib/rbac';
 import { idSchema } from '@/lib/schemas';
@@ -33,7 +36,7 @@ export async function ridisegnaDalCalcoloAction(fd: FormData): Promise<void> {
   if (!rateLimit(`lift:${user.id}`, 60, 10 * 60 * 1000)) redirect(page);
   const d = await prisma.liftDesign.findFirst({
     where: { id: id.data, companyId: user.companyId, project: { archivedAt: null } },
-    select: { id: true, projectId: true, label: true, inputs: true, source: true, baseCalculationId: true, createdAt: true },
+    select: { id: true, projectId: true, label: true, inputs: true, source: true, baseCalculationId: true, createdAt: true, calculation: { select: { intervento: true } } },
   });
   if (!d) redirect(app);
   const latest = await calcoloBase(user, d.projectId);
@@ -45,6 +48,10 @@ export async function ridisegnaDalCalcoloAction(fd: FormData): Promise<void> {
   if (again && again.baseCalculationId === latest.id) redirect(`${app}/lift-designs/${again.id}`);
   const form = `${app}/projects/${d.projectId}/progetto?from=${d.id}&calc=${latest.id}`;
   const read = liftInputsReadSchema.safeParse(d.inputs), source = d.source ? shaftSourceSchema.safeParse(d.source) : null;
+  // another intervention: never in one click (the page's rule)
+  const own = read.success ? collaudoOf(read.data.calc, read.data.collaudo) : null;
+  const tipo = read.success && own ? d.calculation.intervento ?? interventoDi(read.data.calc.context, own) : null;
+  if (own && tipo && !stessoIntervento({ tipo, collaudo: own }, latest)) redirect(form);
   const r = await once(d.id, async () => {
     if (!latest.same || !read.success) return null;
     const inputs = liftInputsSchema.safeParse(liftInputsOf(progettoOf(read.data), latest));

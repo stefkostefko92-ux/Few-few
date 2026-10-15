@@ -23,7 +23,7 @@ import { initialsOf } from '@/lib/tavole/compose';
 import { issueChecks } from '@/lib/tavole/issue-check';
 import { valueMarks } from '@/lib/lift/marks';
 import { ambitoOf } from '@/lib/lift/collaudo';
-import { macchinaResta } from '@/lib/lift/intervento';
+import { interventoDi, macchinaResta, stessoIntervento, type Dichiarato } from '@/lib/lift/intervento';
 import ProjectCost from '@/components/prices/ProjectCost';
 import LiftView from '@/components/lift/LiftView';
 import AdviceView from '@/components/lift/AdviceView';
@@ -70,6 +70,12 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
   // verified, or the advice's first
   const advice = r ? savedLiftAdvice(r.inputs) : null, alt = r && advice ? savedLiftAlternative(r.inputs, advice) : null;
   const own = dv ? designMachine(dv) : null, fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
+  // the latest calculation of another intervention than the design's (type, renovation, parts): named, and drawn again
+  // only through the Progetto (round 46: one click had saved it with another scope)
+  const own$: Dichiarato | null = dv ? { tipo: d.calculation.intervento ?? interventoDi(dv.values.context, dv.collaudo), collaudo: dv.collaudo } : null;
+  const nome = (x: Dichiarato): string => (x.collaudo.rifacimento ? ti('rif_preset') : ti(x.tipo))
+    + (x.tipo === 'AMMODERNAMENTO' && !x.collaudo.rifacimento ? ` (${x.collaudo.parti.map((p) => t(`parte_${p}`)).join(', ')})` : '');
+  const cambio = newer && own$ && !stessoIntervento(own$, newer) ? { da: nome(own$), a: nome(newer) } : null;
   // drawn on a modernisation keeping the machine: no advice and no order (order-export.ts refuses it too)
   const kept = !!dv && macchinaResta(d.calculation.intervento, dv.collaudo);
   const order = same && r && advice && !kept && can(user, 'report:download') ? designOrder(r.inputs, advice, r.dv) : null;
@@ -100,8 +106,10 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
       </p>
       {newer ? (
         <div className="alert alert-warn ridisegna" role="status">
-          <p>{tg('ridisegnaLead', { date: fd.date(newer.createdAt) })}</p>
-          {editable ? (
+          <p>{cambio ? tg('ridisegnaCambio', { date: fd.date(newer.createdAt), ...cambio }) : tg('ridisegnaLead', { date: fd.date(newer.createdAt) })}</p>
+          {editable && cambio ? (
+            <Link className="btn btn-sm" href={`/app/projects/${d.project.id}/progetto?from=${d.id}&calc=${newer.id}`}>{tg('ridisegnaApri')}</Link>
+          ) : editable ? (
             <form action={ridisegnaDalCalcoloAction}>
               <input type="hidden" name="id" value={d.id} />
               <input type="hidden" name="locale" value={locale} />

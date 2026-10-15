@@ -124,8 +124,9 @@ export function seminaLift(d: ProgettoDraft, r: RilievoDati): { draft: ProgettoD
  *  argano»'s: nothing set). */
 export const usaLift = (d: ProgettoDraft, r: RilievoDati, p: Usa): { draft: ProgettoDraft; set: string[] } => liftParam(d, r, p, true);
 
-/** The survey's value of a calculator's field: the ropes kept in place go in the new machine's fields too. */
-export const valoreCalc = (seme: Seme, id: string): string | undefined => seme[id] ?? (id === 'n_n' ? seme.o_n : id === 'n_d' ? seme.o_d : undefined);
+/** The survey's value of a calculator's field: the ropes kept in place, and the machine kept («Argano: No», round 46:
+ *  the existing one, src/lib/calc-resta.ts), go in the new machine's fields too. */
+export const valoreCalc = (seme: Seme, id: string): string | undefined => seme[id] ?? (id.startsWith('n_') ? seme[`o_${id.slice(2)}`] : undefined);
 
 /** A field of the Progetto as its mark reads it (field ids of semeLift): what is still to enter is empty — its
  *  placeholder is not a value. */

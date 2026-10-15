@@ -130,3 +130,13 @@ export const disegnoDi = (t: TipoIntervento, C: Pick<Collaudo, 'parti'>, V: Form
 /** Controller, machine, landing doors, car and sling replaced together: a substantial modification, UNI 10411-1/-11
  *  point 21.1 (the form warns and offers the transformation; the documents print the point, norme-collaudo.ts). */
 export const sostanziale = (C: Pick<Collaudo, 'parti'>): boolean => SOSTANZIALE.every((p) => C.parti.includes(p));
+
+/** An intervention as two records are compared on it: the type and the test (the parts, the renovation). */
+export interface Dichiarato { tipo: TipoIntervento; collaudo: Pick<Collaudo, 'parti' | 'rifacimento'> }
+
+/** The same intervention: type, renovation and the parts replaced or changed (round 46: «Aggiorna il progetto con
+ *  l’ultimo calcolo» draws again in one click only on a calculation of the same intervention; another one opens the
+ *  Progetto on it, the change named). */
+export const stessoIntervento = (a: Dichiarato, b: Dichiarato): boolean =>
+  a.tipo === b.tipo && !!a.collaudo.rifacimento === !!b.collaudo.rifacimento && a.collaudo.parti.length === b.collaudo.parti.length
+  && a.collaudo.parti.every((p) => b.collaudo.parti.includes(p));

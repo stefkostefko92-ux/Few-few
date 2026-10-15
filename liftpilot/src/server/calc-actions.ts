@@ -9,7 +9,8 @@ import { REVIEW_MAX } from '@/lib/review';
 import { calcLabelSchema, idSchema, reviewSchema } from '@/lib/schemas';
 import { formValuesSchema } from '@/lib/calc-input';
 import { collaudoSchema, tipoInterventoSchema } from '@/lib/lift-input';
-import { interventoValido } from '@/lib/lift/intervento';
+import { interventoValido, macchinaResta } from '@/lib/lift/intervento';
+import { collaudoOf } from '@/lib/lift/collaudo';
 import { dropDraft } from './drafts';
 import { createCalculation, type Created } from './save';
 
@@ -40,7 +41,9 @@ export async function saveCalculationAction(input: { projectId: unknown; values:
   // every installation of the company, active, whatever it was created as (round 45): its «Calcolo argano»
   const project = await prisma.project.findFirst({ where: { id: projectId.data, companyId: user.companyId, archivedAt: null }, select: { id: true } });
   if (!project) return { ok: false, error: 'notFound' };
-  const r = await createCalculation(user, project.id, values.data, label.data, chosen, tipo.data);
+  // the machine kept is the existing one (round 46): never a catalogue's model carried over from an earlier calculation
+  const kept = macchinaResta(tipo.data, collaudoOf(values.data, chosen ?? undefined));
+  const r = await createCalculation(user, project.id, kept ? { ...values.data, n_model: '' } : values.data, label.data, chosen, tipo.data);
   // the calculator's draft has become this record
   if (r.ok) await dropDraft(user.companyId, project.id, 'calc');
   return r;

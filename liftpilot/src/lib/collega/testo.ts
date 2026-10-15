@@ -39,3 +39,25 @@ export function paroleDaCercare(text: string | null | undefined, max = 3): strin
   const generic = new Set(['via', 'viale', 'piazza', 'corso', 'largo', 'strada', 'localita', 'frazione', 'vicolo', 'piazzale']);
   return [...new Set(paroleIndirizzo(text).filter((w) => w.length >= 4 && !/^\d+$/.test(w) && !generic.has(w)))].sort((x, y) => y.length - x.length).slice(0, max);
 }
+
+/** The words that start a street, never a municipality's name. */
+const STRADA = /^(?:via|viale|v\.le|piazza|p\.za|p\.zza|piazzale|corso|c\.so|largo|l\.go|vicolo|strada|str\.|localita|località|loc\.|frazione|fraz\.|condominio)\b/iu;
+
+/** A survey's address in its parts (round 46): the municipality written last («…, Milano», «…, 20100 Milano (MI)») goes
+ *  to the city — and the province in brackets to the province —, the rest is the street; an address whose last part is
+ *  no municipality (a street, a number) is all street. */
+export function dividiIndirizzo(text: string | null | undefined): { via: string; citta: string | null; provincia: string | null } {
+  const all = (text ?? '').trim(), cut = all.lastIndexOf(','), via = cut > 0 ? all.slice(0, cut).trim() : all;
+  const m = cut > 0 ? /^(?:\d{5}\s+)?([\p{L}][\p{L}' .-]*?)(?:\s*\(\s*([A-Za-z]{2})\s*\))?$/u.exec(all.slice(cut + 1).trim()) : null;
+  const name = m?.[1]?.trim() ?? '';
+  if (!via || !name || STRADA.test(name)) return { via: all, citta: null, provincia: null };
+  return { via, citta: name, provincia: m?.[2] ? m[2].toUpperCase() : null };
+}
+
+/** The municipality of a survey's address and an installation's city: the same unless both are written and their words
+ *  differ (a survey without one says nothing against it). */
+export function stessaCitta(indirizzoRilievo: string | null | undefined, citta: string | null | undefined): boolean {
+  const a = dividiIndirizzo(indirizzoRilievo).citta;
+  if (!a || !citta?.trim()) return true;
+  return paroleIndirizzo(a).join(' ') === paroleIndirizzo(citta).join(' ');
+}

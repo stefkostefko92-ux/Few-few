@@ -6,7 +6,8 @@
 // largest car of the drawn shaft.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { canon } from '@/calc/snapshot';
+import { canon, snapshotOf } from '@/calc/snapshot';
+import { savedValues } from '@/lib/calc-saved';
 import type { FormValues } from '@/calc/types';
 import { deriveLift, newLift, type LiftInputs } from '@/lib/lift';
 import { liftInputsOf, progettoOf } from '@/lib/lift/progetto';
@@ -56,6 +57,9 @@ test('ogni valore del disegno nel calcolo: il calcolo del progetto è lo stesso 
     const again = deriveLift(liftInputsOf({ ...progettoOf(L), auto: { ...auto, panel: true } }, { values: r.values, collaudo: L.collaudo ?? null })).values;
     const extra = d.headPulleys > 2 ? d.headPulleys - 2 : 0;
     assert.deepEqual(JSON.stringify(canon({ ...again, nps: Number(again.nps) - extra })), JSON.stringify(canon({ ...r.values, nps: Number(r.values.nps) })), layoutOf);
+    // saved, the values this roping does not use are at the engine's own (round 46): the same results
+    const saved = snapshotOf(savedValues(r.values)).results, kept = snapshotOf(r.values).results;
+    for (const k of ['res', 'old', 'window', 'sizing'] as const) assert.equal(JSON.stringify(saved[k]), JSON.stringify(kept[k]), `${layoutOf}: ${k}`);
   }
 });
 

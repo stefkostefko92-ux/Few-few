@@ -1,7 +1,7 @@
 // One row of the calculator's form (prototype v12): a number with its unit, a choice or a check box, with its hint.
 // Shared by the calculator and by the one form of an installation, which can show a row read-only with the value
 // the software filled in and a badge saying so. A value still to enter shows nothing and is marked as needed (an expert
-// row among them shows in the simple mode too); a standard value of the software carries a badge saying so, a value still
+// row among them, or out of range, shows in the simple mode too); a standard value of the software carries a badge saying so, a value still
 // the one measured in the installation's survey the badge «dal rilievo» (components/collega/origine.tsx) — that one
 // first, also when the survey's value happens to be the standard (the measure says more than the default).
 import type { FormValues } from '@/calc/types';
@@ -38,7 +38,9 @@ interface Props {
 export default function FieldRow({ P, f, V, bad, set, auto = null, extra = null, need = false, std = false, texts }: Props) {
   const { t } = P;
   const label = t((f.key ?? f.id) as CalcKey);
-  const hidden = !shown(f.id, V), adv = f.adv && !need ? ' adv' : '', needCls = need ? ' need' : '';
+  // an expert row still to enter or out of range shows in the simple mode too (round 46: one out of range stayed hidden
+  // there while the save named it)
+  const hidden = !shown(f.id, V), adv = f.adv && !need && !bad.has(f.id) ? ' adv' : '', needCls = need ? ' need' : '';
   // the value measured in the installation's survey (round 44), else the software's standard value
   const measured = useDalRilievo(f.id, V[f.id]);
   const badge = measured ? <DalRilievo id={f.id} value={V[f.id]} /> : std && texts ? <span className="badge std" title={texts.stdTitle}>{texts.std}</span> : null;

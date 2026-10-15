@@ -106,9 +106,10 @@ export default async function ProgettoPage({ params, searchParams }: {
   return (
     <main className="page page-wide">
       {head}
-      {/* (e) an intervention whose Progetto is the machine room's survey: said on top, the whole drawing possible */}
+      {/* (e) an intervention whose Progetto is the machine room's survey: said on top by its type (round 46: a modernisation
+          of the machine room's parts read as a «Solo argano»), the whole drawing possible */}
       {soloLocale ? (
-        <p className="alert alert-info" role="status">{t('soloNota')} <Link href={`/app/calculations/${base.id}/locale`}>{t('rileva')}</Link></p>
+        <p className="alert alert-info" role="status">{t(base.tipo === 'SOLO_ARGANO' ? 'soloNota' : 'localeNota')} <Link href={`/app/calculations/${base.id}/locale`}>{t('rileva')}</Link></p>
       ) : null}
       {avvio.rilievo ? <RilievoAvviso rilievo={avvio.rilievo} usa={avvio.usa} parte={avvio.seeded.length > 0} /> : null}
       <ProgettoWorkspace key={`${base.id}:${from.success ? from.data : 'start'}:${sp.usa ?? ''}`} projectId={p.id} initial={avvio.start}

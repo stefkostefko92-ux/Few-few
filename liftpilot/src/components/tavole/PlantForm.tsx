@@ -23,6 +23,10 @@ const LIFT_USES = ['passengers', 'goods', 'goodsHeavy'] as const;
 // the counterweight's safety gear over a space under the shaft and what trips it (sheet 1: P7 and its check)
 const CW_GEARS = ['progressive', 'roller', 'instantaneous', 'pillar'] as const;
 const CW_TRIPS = ['governor', 'rupture', 'rope'] as const;
+// what only a whole lift's set reads: kept as entered on a machine room's set (the installation's data, one per
+// project, serve its later sets too), not shown nor printed there — the form says so (round 46)
+const WHOLE_ONLY: readonly (keyof Plant)[] = ['shaft', 'carFinish', 'liftUse', 'cwSafetyGear', 'cwGearTrip', 'currentIn', 'currentStart', 'carBracketPitch',
+  'cwBracketPitch', 'massShell', 'massFloor', 'massDoors', 'massFrame'];
 
 /** `catalog`: the catalogue's machine the next drawing set carries (its latest design or calculation); the machine's name
  *  here must name its model, or the set is not issued. */
@@ -111,6 +115,7 @@ export default function PlantForm({ projectId, initial, readOnly, whole, catalog
           ) : null}
         </div>
         <p className="note">{t(whole ? 'fromDesign' : 'fromCalc')}</p>
+        {!whole && WHOLE_ONLY.some((k) => P[k] !== undefined) ? <p className="note">{t('keptWhole')}</p> : null}
       </fieldset>
       <fieldset className="panel">
         <legend>{t('g_electric')}</legend>

@@ -260,7 +260,8 @@ test('senza «rilievi:view» nulla del rilievo: i dati dell’impianto con ?usa=
   const sees = { id: 'u1', role: 'TECHNICIAN', companyId: 'c1' };
   const blind = { ...sees, caps: capsOf('TECHNICIAN', [{ role: 'TECHNICIAN', capability: 'rilievi:view', granted: false }]) };
   const u = await usaDatiImpianto(sees, 'p1', 'indirizzo');
-  assert.deepEqual([u?.field, u?.value, typeof u?.date], ['address', 'Via Rilievo 1, Torino', 'string']);
+  // the street in «Indirizzo», the municipality at its end in «Città» (round 46)
+  assert.deepEqual([u?.field, u?.value, typeof u?.date, u?.extra], ['address', 'Via Rilievo 1', 'string', { city: 'Torino' }]);
   assert.deepEqual([(await usaDatiImpianto(sees, 'p1', 'matricola'))?.field, await usaDatiImpianto(sees, 'p1', 'portata')], ['plantNumber', null]);
   surveyReads = 0;
   for (const usa of ['indirizzo', 'matricola']) assert.equal(await usaDatiImpianto(blind, 'p1', usa), null);

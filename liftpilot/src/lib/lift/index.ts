@@ -17,7 +17,7 @@ export { AMBITO_VERIFICHE, NORMA_BREVE, NORMA_SIGLA, NORME_AGGIUNTIVE, NORME_COL
   ambitoOf, ammessa, collaudoOf, collaudoVerdict, esitiNorme, normeOf, underNorma, withAggiunta } from './collaudo';
 export type { Ambito, Collaudo, EsitoNorma, Norma, NormaAggiuntiva, NormaCollaudo, Parte } from './collaudo';
 export { PARTI_LOCALE, PARTI_RIFACIMENTO, PARTI_SOLO, TIPI_INTERVENTO, VARIAZIONI, contestoDi, disegnoDi, interventoDi, interventoTo, interventoValido,
-  isTipoIntervento, macchinaResta, rifacimentoTo, sostanziale } from './intervento';
+  isTipoIntervento, macchinaResta, rifacimentoTo, sostanziale, stessoIntervento, type Dichiarato } from './intervento';
 export type { Disegno, TipoIntervento } from './intervento';
 export { ADEMPIMENTI, NORME_INFO, SOSTANZIALE } from './norme-collaudo';
 export type { AmbitoNorma, NormaInfo, PuntoInSito } from './norme-collaudo';

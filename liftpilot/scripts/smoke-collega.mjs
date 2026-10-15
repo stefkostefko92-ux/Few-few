@@ -42,6 +42,8 @@ export async function collegaFlow({ BASE, page, hydrated, stamp }) {
   await Promise.all([page.waitForURL(/\/app\/projects\/new\?rilievo=/), panel.locator('a:has-text("Crea impianto")').click()]);
   await hydrated(page, 'main form button[type="submit"]');
   assert.equal(await page.inputValue('input[name="name"]'), indirizzo, 'the name from the survey');
+  // the municipality at the end of the survey's address in «Città», the street in «Indirizzo» (round 46)
+  assert.deepEqual([await page.inputValue('input[name="address"]'), await page.inputValue('input[name="city"]')], [`Via Collega ${stamp} 3`, 'Milano']);
   assert.equal(await page.inputValue('input[name="plantNumber"]'), matricola, 'the «Numero di matricola» from the survey');
   assert.ok(await page.locator('main form .badge.rilievo').count() >= 2, 'marked «dal rilievo»');
   assert.equal(await page.locator('main input[name="kind"]').count(), 0, 'no module to choose (round 45)');

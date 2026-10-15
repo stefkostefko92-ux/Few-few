@@ -9,21 +9,25 @@ import { prisma } from '@/lib/db';
 import { log } from '@/lib/log';
 import { RendererBusy, renderTavole } from '@/lib/report/render';
 
-const isUniqueViolation = (err: unknown): boolean => typeof err === 'object' && err !== null && 'code' in err && (err as { code: unknown }).code === 'P2002';
+/** The renders under way, by set: the background one after the issue and a first download right after it share one
+ *  render (round 46: two ran, the second's insert failed on the unique set). */
+const inFlight = new Map<string, Promise<Uint8Array<ArrayBuffer>>>();
 
-/** The set's drawing rendered (dated `issuedAt`, the set's issue) and kept; when a concurrent first download kept it
- *  first, that PDF. */
-export async function keepSetPdf(drawingSetId: string, doc: DrawingDoc, issuedAt: Date): Promise<Uint8Array<ArrayBuffer>> {
-  const pdf = new Uint8Array(await renderTavole(doc, issuedAt));
-  const sha256 = createHash('sha256').update(pdf).digest('hex');
-  try {
-    await prisma.drawingSetPdf.create({ data: { drawingSetId, sha256, data: pdf } });
-    return pdf;
-  } catch (err) {
-    if (!isUniqueViolation(err)) throw err;
+/** The set's drawing rendered (dated `issuedAt`, the set's issue) and kept, once per set at a time; when another
+ *  process kept it first, that PDF (the insert skips a set already kept, so no failed insert is logged). */
+export function keepSetPdf(drawingSetId: string, doc: DrawingDoc, issuedAt: Date): Promise<Uint8Array<ArrayBuffer>> {
+  const running = inFlight.get(drawingSetId);
+  if (running) return running;
+  const job = (async () => {
+    const pdf = new Uint8Array(await renderTavole(doc, issuedAt));
+    const sha256 = createHash('sha256').update(pdf).digest('hex');
+    const made = await prisma.drawingSetPdf.createMany({ data: [{ drawingSetId, sha256, data: pdf }], skipDuplicates: true });
+    if (made.count) return pdf;
     const kept = await prisma.drawingSetPdf.findUnique({ where: { drawingSetId }, select: { data: true } });
     return kept ? new Uint8Array(kept.data) : pdf;
-  }
+  })().finally(() => inFlight.delete(drawingSetId));
+  inFlight.set(drawingSetId, job);
+  return job;
 }
 
 /** After an issue or a revision, once the answer is sent: the PDF kept (with the renderers busy, the first download

@@ -97,3 +97,64 @@ export async function projectData({ page, hydrated, shaft = true, bottom = null,
   await page.waitForSelector('.lift-facts .lift-verdict', { timeout: 60000 });
   assert.equal(await page.locator('.lift-main .missing').count(), 0, 'nothing left to enter');
 }
+
+/** Values as a user types them for each field the list of what is missing names (the examples'). */
+const TYPED = {
+  Q: 630, P: 700, k: 0.5, v: 1, H: 18, o_D: 560, o_beta: 95, o_gamma: 35, o_i: 45, o_etaD: 0.6, o_nm: 1430, o_Pn: 7.5, o_Jm: 0.25, o_Js: 3.2, o_brakeSets: 1,
+  o_brakeNm: 80, o_mass: 600, o_n: 4, o_d: 11, o_Fmin: 57.47, o_qf: 0.4065, n_D: 560, n_beta: 90, n_gamma: 35, n_i: 43, n_etaD: 0.7, n_nm: 1450, n_Pn: 7.5,
+  n_Jm: 0.08, n_Js: 2.5, n_brakeSets: 2, n_brakeNm: 60, n_mass: 450, n_n: 4, n_d: 10, n_Fmin: 47.5, n_qf: 0.336,
+};
+const PICKED = { o_groove: 'UU', n_groove: 'UU', o_poles: '4', n_poles: '4' };
+
+/** The form filled with exactly what the list of what is missing names, field by field, until the verdict shows. */
+async function fillMissing(page) {
+  for (let round = 0; round < 8 && !(await page.locator('.summary .verdict .big').count()); round++) {
+    const ids = await page.$$eval('.summary .missing-list a', (as) => as.map((a) => (a.getAttribute('href') ?? '').slice(1)));
+    for (const id of ids) {
+      if (id in PICKED) await page.selectOption(`#${id}`, PICKED[id]);
+      else if (id in TYPED) await page.fill(`#${id}`, String(TYPED[id]));
+      else throw new Error(`missing «${id}»: no value to type`);
+    }
+    await page.waitForTimeout(400);
+  }
+  await page.waitForSelector('.summary .verdict .big');
+}
+
+/**
+ * Round 46 (the demo's bug): a blank «Calcolo argano» typed field by field, never an example — an «Ammodernamento» with
+ * the machine above on a direct pull 1:1, whose hidden fields (rinvio, Hv, pulleys) stopped the save —, saved; then a
+ * new calculation from it with «Argano: No», whose machine is the existing one, saved too.
+ */
+export async function blankSaves({ BASE, page, hydrated, stamp }) {
+  step('calculation typed from blank, no example: «In alto, tiro diretto» 1:1 saves (round 46)');
+  await page.goto(`${BASE}/it/app/projects/new`);
+  await page.fill('input[name="name"]', `Vuoto ${stamp}`);
+  await page.fill('input[name="city"]', 'Bergamo');
+  await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/calc$/), page.click('main form button[type="submit"]')]);
+  await hydrated(page, '#Q');
+  await page.click('label.intervento-tipo[data-tipo="AMMODERNAMENTO"]');
+  // the machine «Sì» (the type's default) and the control panel replaced, nothing else
+  while (await page.locator('.parti-sino li.da').count()) {
+    const part = await page.getAttribute('.parti-sino li.da', 'data-part');
+    await page.click(`.parti-sino li[data-part="${part}"] label:has-text("${part === 'controller' ? 'Sì' : 'No'}")`);
+  }
+  await page.selectOption('#layout', 'top');
+  await page.selectOption('#r', '1');
+  await fillMissing(page);
+  for (const id of ['dx', 'h', 'Hv', 'Dp', 'Jp']) assert.ok(await page.isHidden(`#${id}`), `${id}: not shown at the top, 1:1`);
+  await page.waitForSelector('.savebar button.primary:not([disabled])', { timeout: 15000 });
+  assert.equal(await page.locator('.savebar .note.bad').count(), 0, 'nothing named to correct');
+  await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
+
+  step('«Argano: No» from it: the machine kept is the existing one, saved (round 46)');
+  await Promise.all([page.waitForURL(/\/calc\?from=/), page.click('.page-head a[href*="/calc?from="]')]);
+  await hydrated(page, '#Q');
+  await page.click('.parti-sino li[data-part="machine"] label:has-text("No")');
+  await page.waitForSelector('.calc .inputs summary:has-text("Argano esistente (resta)")');
+  assert.equal(await page.inputValue('#n_D'), String(TYPED.o_D), 'the existing sheave in the machine kept');
+  assert.equal(await page.inputValue('#n_i'), String(TYPED.o_i), 'its ratio');
+  await fillMissing(page);
+  await page.waitForSelector('.savebar button.primary:not([disabled])', { timeout: 15000 });
+  await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
+  assert.match(await page.textContent('main'), /Argano esistente \(resta\)/, 'verified as it is');
+}

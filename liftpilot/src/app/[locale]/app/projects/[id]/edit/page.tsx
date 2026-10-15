@@ -29,8 +29,8 @@ export default async function EditProjectPage({ params, searchParams }: { params
           {tc(initial[u.field] && initial[u.field] !== u.value ? 'origine.usaDonePrima' : 'origine.usaDone', { param: t(`field_${u.field}`), valore: u.value, prima: initial[u.field] })}
         </p>
       ) : null}
-      <ProjectForm initial={u ? { ...initial, [u.field]: u.value } : initial}
-        rilievo={u ? { id: null, origine: { date: u.date, valori: { [u.field]: u.value } } } : null} />
+      <ProjectForm initial={u ? { ...initial, ...u.extra, [u.field]: u.value } : initial}
+        rilievo={u ? { id: null, origine: { date: u.date, valori: { ...u.extra, [u.field]: u.value } } } : null} />
     </main>
   );
 }

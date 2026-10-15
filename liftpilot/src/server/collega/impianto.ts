@@ -58,7 +58,7 @@ export function righeDi(p: ImpiantoInfo, rilievi: readonly RilievoDati[], calc: 
   const ref = rilievi[0];
   if (!ref) return [];
   return confronto({
-    rilievo: ref, storico: rilievi.slice(1), impianto: { indirizzo: indirizzoImpianto(p), plantNumber: p.plantNumber },
+    rilievo: ref, storico: rilievi.slice(1), impianto: { indirizzo: indirizzoImpianto(p), citta: p.city, plantNumber: p.plantNumber },
     calcolo: calc ? latoCalcolo(calc, pStimato(calc)) : null,
     progetto: lift ? latoProgetto({ id: lift.id, createdAt: lift.createdAt, inputs: lift.inputs, shaftResults: lift.shaftDesign.results, based: lift.baseCalculationId !== null }) : null,
   });

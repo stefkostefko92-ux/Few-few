@@ -3,6 +3,7 @@ import { Link } from '@/i18n/routing';
 import { denied, requireCapability } from '@/lib/auth';
 import { RIGHT_OF_STEP, can } from '@/lib/rbac';
 import { fmt } from '@/lib/rilievi/fmt';
+import { dividiIndirizzo } from '@/lib/collega/testo';
 import { getScheda } from '@/server/rilievi/queries';
 import ProjectForm from '@/components/ProjectForm';
 import Crumbs from '@/components/Crumbs';
@@ -26,8 +27,12 @@ export default async function NewProjectPage({ params, searchParams }: { params:
   const [t, tc] = await Promise.all([getTranslations('projects'), getTranslations('collega')]);
   const s = sp.rilievo ? await getScheda(user.companyId, sp.rilievo) : null;
   const title = s ? s.numeroImpianto ? tc('titoloNumero', { n: s.numeroImpianto }) : s.matricola ? tc('titoloMatricola', { n: s.matricola }) : s.indirizzo ?? tc('titolo') : '';
-  // the measured values the form marks (the name is the address or the title copied, not a measure: no mark)
-  const valori = s ? Object.fromEntries(Object.entries({ address: s.indirizzo, plantNumber: s.matricola }).filter((e): e is [string, string] => !!e[1])) : {};
+  // the measured values the form marks (the name is the survey's address as written or the title copied, not a
+  // measure: no mark); the municipality the survey writes last goes to the city, the province in brackets to the
+  // province (round 46: the city was left in the address and typed again)
+  const parti = dividiIndirizzo(s?.indirizzo);
+  const valori = s ? Object.fromEntries(Object.entries({ address: parti.via, city: parti.citta, province: parti.provincia, plantNumber: s.matricola })
+    .filter((e): e is [string, string] => !!e[1])) : {};
   const name = s ? (s.indirizzo ?? title).slice(0, 160) : '';
   return (
     <main className="page page-narrow">
@@ -42,7 +47,7 @@ export default async function NewProjectPage({ params, searchParams }: { params:
       {s?.projectId ? (
         <p className="alert alert-warn" role="status">{tc('nuovo.linked')} <Link href={`/app/rilievi/${s.id}`}>{tc('origine.openSheet')}</Link></p>
       ) : s ? <p className="lk-avviso">{tc('nuovo.from', { title, date: fmt.day(s.data) })}</p> : null}
-      <ProjectForm calcola={can(user, RIGHT_OF_STEP.calcolo)} initial={s && !s.projectId ? { name, address: valori.address ?? '', city: '', province: '',
+      <ProjectForm calcola={can(user, RIGHT_OF_STEP.calcolo)} initial={s && !s.projectId ? { name, address: valori.address ?? '', city: valori.city ?? '', province: valori.province ?? '',
         plantNumber: valori.plantNumber ?? '', client: '', notes: '' } : undefined}
         rilievo={s && !s.projectId ? { id: s.id, origine: { date: fmt.day(s.data), valori } } : null} />
     </main>

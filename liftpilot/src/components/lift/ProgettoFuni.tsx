@@ -32,6 +32,8 @@ interface Props {
   t(key: string, values?: Record<string, string | number>): string;
   /** «Porta nel calcolo»; null: not for this user */
   porta: { go(): void; pending: boolean; label: string } | null;
+  /** the existing falls a direct pull keeps [mm] and the plan's drop set to them (round 46); null: the plan's falls */
+  calate?: { Do: number; fix(): void } | null;
 }
 
 const field = (id: string): Field => {
@@ -41,17 +43,27 @@ const field = (id: string): Field => {
 };
 const NONE = new Set<string>();
 
-/** A direct pull: the falls in the plan are the sheave's diameter apart, or why not. */
-function calataHint(derived: LiftDerived, fmt: Pres['fmt'], t: Props['t']) {
-  const { I, N, O, compare } = derived.analysis.ctx, c = derived.calata ?? 0, D = compare && I.context === 'repl' ? O.D : N.D;
-  const bad = derived.issues.includes('calata'), out = c < SHEAVE_GRID[0] - 0.5 || c > SHEAVE_GRID[SHEAVE_GRID.length - 1] + 0.5;
+/** A direct pull: the falls in the plan are the sheave's diameter apart, or why not; on the falls an existing lift keeps
+ *  (round 46), the existing sheave's spacing beside the new sheave, and the plan's drop set to them with one click. */
+function calataHint(derived: LiftDerived, fmt: Pres['fmt'], t: Props['t'], calate: Props['calate']) {
+  const c = derived.calata ?? 0, D = derived.analysis.ctx.N.D, bad = derived.issues.includes('calata');
+  if (calate) {
+    const v = { c: fmt(c, 0), Do: fmt(calate.Do, 0), D: fmt(D, 0) };
+    return (
+      <div id="progetto-calata" tabIndex={-1}>
+        <p className={bad ? 'hint bad' : 'hint'} role={bad ? 'alert' : undefined}>{t(bad ? 'hint_calata_esistenti_bad' : 'hint_calata_esistenti', v)}</p>
+        {bad ? <div className="btnrow"><button type="button" className="btn btn-sm calata-esistente" onClick={calate.fix}>{t('calata_fix', v)}</button></div> : null}
+      </div>
+    );
+  }
+  const out = c < SHEAVE_GRID[0] - 0.5 || c > SHEAVE_GRID[SHEAVE_GRID.length - 1] + 0.5;
   const text = !bad ? t('hint_calata', { c: fmt(c, 0), D: fmt(D, 0) })
     : out ? t('hint_calata_range', { c: fmt(c, 0), min: SHEAVE_GRID[0], max: SHEAVE_GRID[SHEAVE_GRID.length - 1] })
       : t('hint_calata_bad', { c: fmt(c, 0), D: fmt(D, 0) });
-  return <p className={bad ? 'hint bad' : 'hint'} role={bad ? 'alert' : undefined}>{text}</p>;
+  return <p id="progetto-calata" tabIndex={-1} className={bad ? 'hint bad' : 'hint'} role={bad ? 'alert' : undefined}>{text}</p>;
 }
 
-export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank, texts, setAuto, setBottom, t, porta }: Props) {
+export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank, texts, setAuto, setBottom, t, porta, calate = null }: Props) {
   const { fmt } = P, layout = base.layout, DV = derived?.values ?? base;
   // the issues the calculation resolves: the way to it, beside them
   const toCalc = (on: boolean) => (on && porta ? <div className="btnrow"><button type="button" className="btn btn-sm porta-calcolo" onClick={porta.go} disabled={porta.pending}>{porta.label}</button></div> : null);
@@ -78,7 +90,7 @@ export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank,
         <summary>{t('g_funi')}</summary>
         <div className="rows">
           <p className="hint">{t('hint_funi')}</p>
-          {complete && derived.calata !== null ? calataHint(derived, fmt, t) : null}
+          {complete && derived.calata !== null ? calataHint(derived, fmt, t, calate) : null}
           {toCalc(complete && derived.issues.includes('calata'))}
           {layout === 'bottom' ? (
             <>

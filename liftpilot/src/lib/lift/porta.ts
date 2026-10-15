@@ -25,7 +25,9 @@ export function chiaviDelDisegno(layoutOf: unknown, auto: Pick<AutoFlags, 'L0' |
 /** The values the drawing works out that its calculation holds but does not use with this roping (the derivation sets
  *  them with their switch on whatever the roping): the diverting pulley's distance without a diverting pulley, the head
  *  pulleys' height of a machine below with the machine above. Brought without a mark — nothing to see in the form —, so
- *  that a calculation that takes every value of its drawing is the drawing's own calculation (the same SHA-256). */
+ *  that the form holds the drawing's value should its layout change; the save stores them at the value the engine reads
+ *  in their place while the form does not show them (round 46, src/lib/calc-saved.ts: the drawing's calculation and the
+ *  saved one differ only in those, with the same results). */
 export const chiaviNascoste = (layoutOf: unknown, auto: Pick<AutoFlags, 'dx' | 'Hv'>): PortaKey[] =>
   [...(layoutOf !== 'topDefl' && auto.dx ? (['dx'] as const) : []), ...(layoutOf !== 'bottom' && auto.Hv ? (['Hv'] as const) : [])];
 

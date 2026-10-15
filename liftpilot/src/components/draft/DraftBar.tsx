@@ -1,13 +1,13 @@
 'use client';
 
-// Where a form's draft stands, in its save bar: resumed (kept on a day the server writes), kept a moment ago, or not
-// kept; and its discard, asked twice — the page then opens again from the latest record of the project or empty.
+// Where a form's draft stands, in its save bar: resumed (kept on a day the server writes), kept a moment ago (the time in
+// Italy, as the server writes the day), or not kept; and its discard, asked twice — the page then opens again from the latest record of the project or empty.
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { discardDraftAction } from '@/server/draft-actions';
+import { romeTime } from '@/lib/dates';
 import type { DraftHandle, DraftTarget } from './useDraft';
 
-const hhmm = (d: Date): string => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
 export default function DraftBar({ target, draft }: { target: DraftTarget; draft: DraftHandle }) {
   const { state } = draft;
@@ -22,7 +22,7 @@ export default function DraftBar({ target, draft }: { target: DraftTarget; draft
     if (r.ok) window.location.reload();
     else setError(true);
   });
-  const text = state.kind === 'resumed' ? t('resumed', { at: state.at }) : state.kind === 'saved' ? t('saved', { time: hhmm(state.at) }) : t('failed');
+  const text = state.kind === 'resumed' ? t('resumed', { at: state.at }) : state.kind === 'saved' ? t('saved', { time: romeTime(state.at) }) : t('failed');
   return (
     <span className={`draft-bar note${state.kind === 'failed' || error ? ' bad' : ''}`} role="status">
       {text}

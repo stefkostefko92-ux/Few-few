@@ -90,9 +90,10 @@ export function shown(id: string, V: FormValues): boolean {
     case 'machineStd': return V.context === 'repl';
     // the alternative of UNI EN 81-20:2020, 5.5.3 c) 2): not with a machine to UNI EN 81-1
     case 'stallDevice': return V.context !== 'repl' || V.machineStd !== 'en81-1';
-    // the new machine's mass is the load on the slab and the beams of the machine room (survey, sheet 1, relazione
-    // tecnica) wherever it stands; the old one counts only below (its anchors)
-    case 'o_mass': return V.layout === 'bottom';
+    // either machine's mass wherever it stands: the new one is the load on the slab and the beams of the machine room
+    // (survey, sheet 1, relazione tecnica); the old one the uplift on its anchors below, and above its P9 on the slab, the
+    // piece the hook lifts out and the masses lifted in the relazione tecnica (round 46: hidden above, it was read there)
+    case 'o_mass': return true;
     case 'n_beta': return V.n_groove === 'UU' || V.n_groove === 'VN';
     case 'o_beta': return V.o_groove === 'UU' || V.o_groove === 'VN';
     case 'keepD': return !!V.compare && V.context === 'repl';
@@ -101,3 +102,8 @@ export function shown(id: string, V: FormValues): boolean {
     default: return true;
   }
 }
+
+/** A field of the form in view in this state: its row shown and, for the existing machine's, the machine compared (its
+ *  group is hidden otherwise). The one rule of what the form asks for (calc-input.ts visibleBad) and of what a save
+ *  keeps as entered (calc-input.ts savedValues). */
+export const inForm = (id: string, V: FormValues): boolean => shown(id, V) && (!id.startsWith('o_') || !!V.compare);

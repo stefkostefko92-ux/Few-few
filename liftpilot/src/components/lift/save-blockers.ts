@@ -1,8 +1,9 @@
 'use client';
 
 // What the save of the one form would refuse, as the server refuses it (src/server/save.ts createLiftDesign), named as the
-// form names it and with the field each one is corrected in: every value of the calculation out of range (shown or not),
-// each issue of the geometry, every value of the shaft out of the ranges the server accepts. The bar of the save lists
+// form names it and with the field each one is corrected in: every value of the calculation out of range (its base saved
+// as the calculator shows it, round 46: none the form hid), each issue of the geometry — the falls of a direct pull by
+// the plan's dimension they are corrected on —, every value of the shaft out of the ranges the server accepts. The bar of the save lists
 // them; after «Aggiorna con il software attuale» found the record no longer saves as it was, the notice at the top links
 // each one to its field (RefreshNotice).
 import { useCallback, useMemo } from 'react';
@@ -25,8 +26,8 @@ function shaftLabelKey(path: readonly string[]): string {
   return a && a in DEFAULTS ? `a_${a}` : a ?? '';
 }
 
-/** An issue of the geometry as the field it is fixed in. */
-const ISSUE_FIELD: Readonly<Record<string, string>> = { calata: 'n_D', rinvio: 'h' };
+/** An issue of the geometry as the field it is fixed in (the falls: their hint with the plan's dimension, ProgettoFuni). */
+const ISSUE_FIELD: Readonly<Record<string, string>> = { calata: 'progetto-calata', rinvio: 'h' };
 
 const isShaftField = (k: string): k is (typeof SHAFT_FIELDS)[number] => (SHAFT_FIELDS as readonly string[]).includes(k);
 const isVertical = (k: string): k is Extract<BlankKey, 'v' | 'pit' | 'headroom'> => k === 'v' || k === 'pit' || k === 'headroom';
@@ -50,15 +51,16 @@ export interface SaveBlocker {
 
 /** The values the save would refuse of the inputs `shaft` and their derivation `derived` (null: not worked out yet). */
 export function useSaveBlockers(P: Pres, derived: LiftDerived | null, shaft: ShaftInputs) {
-  const ts = useTranslations('shaft');
+  const ts = useTranslations('shaft'), tl = useTranslations('lift');
   const nameOf = useCallback((field: string): string => {
+    if (field === 'calata') return tl('blk_calata');
     if (field.startsWith('shaft.')) {
       const path = field.slice(6).split('.'), key = shaftLabelKey(path);
       return ts.has(key) ? ts(key) : path.join('.');
     }
     const id = ISSUE_FIELD[field] ?? field.replace(/^calc\./, '');
     return P.t(id.replace(/^[no]_/, '') as CalcKey) + (id.startsWith('o_') ? ` (${P.t('g_old')})` : '');
-  }, [P, ts]);
+  }, [P, ts, tl]);
   const blockers = useMemo((): SaveBlocker[] => {
     if (!derived) return [];
     const r = shaftInputsSchema.safeParse(shaft);

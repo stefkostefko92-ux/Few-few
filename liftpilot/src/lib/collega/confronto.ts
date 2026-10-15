@@ -6,7 +6,7 @@
 // src/lib/lift/collaudo.ts PARTI); SOLO CONFRONTO — free text and what the design picks (brands, the governor and its
 // rope, the doors' opening), side by side without a verdict. A hydraulic or a gearless (MRL) lift is outside what
 // LiftPilot calculates (electric lifts with a geared machine). Pure.
-import { stessoCodice, stessoIndirizzo } from './testo';
+import { stessoCodice, stessaCitta, stessoIndirizzo } from './testo';
 import { fuoriAmbito, type RilievoDati } from './rilievo';
 import { layoutDi, type Usa } from './prefill';
 
@@ -46,6 +46,8 @@ export interface Lato {
 export interface Impianto {
   /** street, municipality, province in one line (testo.ts indirizzoImpianto) */
   indirizzo: string | null;
+  /** the municipality as entered: the survey's, written last in its address, must be it (round 46) */
+  citta?: string | null;
   plantNumber: string | null;
 }
 
@@ -131,7 +133,10 @@ export function confronto(x: ConfrontoInput): Riga[] {
   };
   rows.push(storico('matricola', row('matricola', 'fatto', r.matricola, null, imp.plantNumber, 'impianto')));
   rows.push(storico('numeroImpianto', row('numero', 'fatto', r.numeroImpianto, null, null, null)));
-  rows.push(row('indirizzo', 'fatto', r.indirizzo, null, imp.indirizzo, 'impianto'));
+  // the address by its words, and the municipality the survey writes last against the installation's city (round 46:
+  // «…, Milano» was in the address of an installation in Bergamo, and read the same)
+  const indirizzo = row('indirizzo', 'fatto', r.indirizzo, null, imp.indirizzo, 'impianto');
+  rows.push(indirizzo.stato === 'ok' && !stessaCitta(r.indirizzo, imp.citta) ? { ...indirizzo, stato: 'diff', usa: 'impianto' } : indirizzo);
   rows.push(row('fermate', 'fatto', r.fermate, side(C, 'fermate'), side(P, 'fermate')));
   rows.push(row('corsa', 'fatto', a?.corsa ?? null, side(C, 'corsa'), side(P, 'corsa')));
   // the place as the calculator's layout when the argano sheet says it (with or without a diverting pulley), else ALTO/BASSO

@@ -77,10 +77,11 @@ export async function progettoFlow({ BASE, page, hydrated, stamp }) {
   return { projectUrl, baseUrl, liftUrl: loop.liftUrl };
 }
 
-/** The hash of a calculation as its page shows it. */
-async function hashOf(page, url) {
+/** A calculation as its page shows it: its verdict, its machine and its checks. */
+async function shownOf(page, url) {
   await page.goto(url);
-  return ((await page.textContent('dd.hash')) ?? '').split('·')[0].trim();
+  const dd = page.locator('.cartiglio dd');
+  return { verdict: await dd.nth(0).textContent(), machine: await dd.nth(3).textContent(), checks: await page.textContent('#checks') };
 }
 
 async function progettoLoop({ BASE, page, hydrated, liftUrl }) {
@@ -101,7 +102,7 @@ async function progettoLoop({ BASE, page, hydrated, liftUrl }) {
   await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
   const latestUrl = page.url(), latestId = latestUrl.split('/').pop();
 
-  step('calcolo ↔ progetto: the design drawn on the older calculation, drawn again on the latest — one SHA-256');
+  step('calcolo ↔ progetto: the design drawn on the older calculation, drawn again on the latest — the same calculation');
   await page.goto(liftUrl);
   await page.waitForSelector('main .ridisegna');
   await Promise.all([page.waitForURL((u) => /\/lift-designs\/[a-z0-9]+$/.test(u.pathname) && !u.href.startsWith(liftUrl), { timeout: 60000 }),
@@ -112,6 +113,8 @@ async function progettoLoop({ BASE, page, hydrated, liftUrl }) {
   assert.equal(await page.getAttribute('main .progetto-base a', 'href'), `/it/app/calculations/${latestId}`, 'it names its base');
   const relHref = await page.getAttribute('.doc-links a[href*="/relazione"]', 'href');
   const calcId = /\/api\/calculations\/([a-z0-9]+)\/relazione/.exec(relHref ?? '')?.[1];
-  assert.equal(await hashOf(page, `${BASE}/it/app/calculations/${calcId}`), await hashOf(page, latestUrl), 'every input the same: one calculation');
+  // every input the form shows the same, the same results (round 46: the values the form does not show are saved at the
+  // engine's own, the drawing's calculation holds the drawing's — their hashes differ, nothing else; calc-saved.ts)
+  assert.deepEqual(await shownOf(page, `${BASE}/it/app/calculations/${calcId}`), await shownOf(page, latestUrl), 'the same calculation');
   return { liftUrl: again };
 }

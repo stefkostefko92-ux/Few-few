@@ -46,9 +46,9 @@ const calc = (id: string, at: number, over: Row = {}): Row => ({
   id, projectId: 'p1', companyId: 'c1', createdAt: new Date(at), liftDesign: null, shaftDesignId: null, collaudo: { norma: '10411-1', parti: ['machine', 'controller'] },
   intervento: 'AMMODERNAMENTO', ...snap(PRESETS.B), ...over,
 });
-const stored = () => liftInputsSchema.parse(liftInputsOf(progettoOf(defaultLift()), { values: snap(PRESETS.B).inputs as FormValues, collaudo: { norma: '10411-1', parti: ['machine'] } }));
+const stored = () => liftInputsSchema.parse(liftInputsOf(progettoOf(defaultLift()), { values: snap(PRESETS.B).inputs as FormValues, collaudo: { norma: '10411-1', parti: ['machine', 'controller'] } }));
 const design = (id: string, over: Row = {}): Row => ({ id, projectId: 'p1', companyId: 'c1', label: 'x', inputs: stored(), source: null, baseCalculationId: 'old',
-  createdAt: new Date(1.5), ...over });
+  createdAt: new Date(1.5), calculation: { intervento: 'AMMODERNAMENTO' }, ...over });
 const fd = (id: string) => { const f = new FormData(); f.set('id', id); f.set('locale', 'it'); return f; };
 async function go(id: string): Promise<string> {
   const { ridisegnaDalCalcoloAction } = await import(src('server/ridisegna-actions.ts'));
@@ -87,6 +87,16 @@ test('ridisegna: già sull’ultimo calcolo, già rifatto, archiviato o di un’
   assert.equal(await go('upgraded'), '/it/app/lift-designs/upgraded', 'the page’s rule on the server');
   calcs = [];
   assert.equal(await go('legacy'), '/it/app/lift-designs/legacy', 'no calculation to draw on');
+  assert.equal(saved.length, 0);
+});
+
+test('ridisegna: l’ultimo calcolo ha un altro intervento (tipo, rifacimento, parti) — il Progetto su quel calcolo, niente in un clic', async () => {
+  // round 46: an «Ammodernamento» of the machine room's parts drawn again on a renovation with the existing sling
+  calcs[1] = { ...calcs[1], intervento: 'AMMODERNAMENTO', collaudo: { norma: '10411-1', parti: ['machine', 'ropes', 'car', 'cw', 'rails', 'landingDoors', 'carDoors', 'buffers',
+    'governor', 'controller'], rifacimento: true } };
+  assert.equal(await go('ld1'), '/it/app/projects/p1/progetto?from=ld1&calc=latest');
+  calcs[1] = { ...calcs[1], intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'] } };
+  assert.equal(await go('ld1'), '/it/app/projects/p1/progetto?from=ld1&calc=latest', 'another type');
   assert.equal(saved.length, 0);
 });
 
