@@ -133,7 +133,7 @@ export function listDrawingSets(user: SessionUser, projectId: string) {
   });
 }
 
-export function getDrawingSet(user: SessionUser, id: string) {
+export function getDrawingSet(user: Pick<SessionUser, 'companyId'>, id: string) {
   return prisma.drawingSet.findFirst({
     where: { id, companyId: user.companyId },
     include: {
