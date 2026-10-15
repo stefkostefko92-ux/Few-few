@@ -60,7 +60,8 @@
     "inviteTaken": "Questo indirizzo ha già un account LiftPilot e un indirizzo appartiene a una sola azienda: chiedi all’azienda di invitarti con un altro indirizzo.",
     "rilievoLinked": "Questo rilievo è già collegato a un impianto: scollegalo prima dalla sua pagina.",
     "invalidIntervento": "Il tipo di intervento non corrisponde alle parti o alla norma scelte",
-    "machineKept": "L’argano resta quello dell’impianto (Ammodernamento con «Argano: No»): non c’è un argano da ordinare."
+    "machineKept": "L’argano resta quello dell’impianto (Ammodernamento con «Argano: No»): non c’è un argano da ordinare.",
+    "noCalc": "Prima il calcolo dell’argano: il progetto parte da un calcolo salvato"
   },
   "auth": {
     "title": "Accesso",
@@ -1188,7 +1189,7 @@
   },
   "lift": {
     "workTitle": "Progetto e simulazione",
-    "workLead": "Inserisci i dati una volta sola: il vano, i piani, la portata, la macchina. Il resto lo calcola il software e la simulazione 3D lo mostra.",
+    "workLead": "Il vano, le porte, i piani e il locale, disegnati sul calcolo argano: portata, velocità, argano, funi e collaudo vengono dal calcolo. Il resto lo calcola il software e la simulazione 3D lo mostra.",
     "designTitle": "Progetto dell’impianto",
     "homeTitle": "Progetto dell’impianto e simulazione 3D",
     "homeEmpty": "Non c’è ancora un progetto: inserisci i dati dell’impianto e il software calcola tutto il resto.",
@@ -1275,6 +1276,11 @@
     "auto_dx": "Distanza e altezza del rinvio dalla pianta e dal telaio",
     "auto_Hv": "Altezza delle pulegge dai dati del vano",
     "badge_auto": "automatico",
+    "badge_calcolo": "dal calcolo",
+    "badge_pianta": "dalla pianta",
+    "s_funi": "Funi e rinvii",
+    "g_funi": "Funi nel disegno",
+    "hint_funi": "Acceso: il valore viene dal disegno; spento: resta quello del calcolo argano, che si cambia nel calcolo.",
     "badge_estimate": "stimato",
     "facts": "Valori calcolati",
     "facts_ok": "Tutte le verifiche passano.",
@@ -1290,7 +1296,7 @@
     "label": "Nome del progetto (facoltativo)",
     "save": "Salva il progetto",
     "saving": "Salvataggio…",
-    "save_hint": "Il server rifà tutti i calcoli e salva progetto del vano e calcolo insieme.",
+    "save_hint": "Il server ricompone il disegno sul calcolo argano, rifà tutti i calcoli e salva progetto del vano e calcolo del progetto insieme.",
     "fix_list": "Da correggere per salvare: {list}.",
     "sim_title": "Simulazione 3D",
     "stage_label": "L’impianto in 3D: vano, cabina, contrappeso, funi e macchina",
@@ -2149,6 +2155,25 @@
     "main": "Fermata principale",
     "stdInUse": "Valori standard in uso (si cambiano in modalità esperto): {list}.",
     "intervento": "Tipo di intervento"
+  },
+  "progetto": {
+    "dalCalcolo": "Dal calcolo argano",
+    "parti": "Parti sostituite o modificate: {parti}.",
+    "argano": "Argano verificato nel calcolo",
+    "apri": "Apri il calcolo",
+    "cambia": "Modifica nel calcolo argano",
+    "fromCalc": "dal calcolo",
+    "dm236": "Il calcolo argano aggiunge il DM 236/89 al collaudo: il caso si sceglie qui, nell’accessibilità del vano.",
+    "vuoto": "Il progetto parte dal calcolo argano",
+    "vuotoLead": "Prima si sceglie il tipo di intervento e si calcola l’argano; poi il Progetto disegna il vano o rileva il locale macchina su quel calcolo.",
+    "calcola": "Calcola l’argano",
+    "byOther": "Il calcolo dell’argano lo fa un collega che ne ha il permesso.",
+    "legacy": "Questo impianto ha un progetto del modulo unico: porta i suoi dati nel calcolo argano, poi ridisegnalo.",
+    "portaLegacy": "Porta i dati del progetto nel calcolo argano",
+    "disegnaSu": "Disegna sul calcolo argano del {date}",
+    "stale": "Il calcolo argano va aggiornato con il software attuale prima di disegnarci sopra.",
+    "soloNota": "Per la sola sostituzione dell’argano basta il rilievo del locale macchina.",
+    "rileva": "Rileva il locale macchina"
   },
   "dataPage": {
     "title": "Dati, formati e giurisdizione",

@@ -1,5 +1,5 @@
 // A value the one form's software worked out, switched to entered, starts from the one the software showed, so that
-// nothing jumps (LiftWorkspace setAuto). For the machine that is every value of the new machine — its fields and its
+// nothing jumps (the one form before round 45; the Progetto no longer switches the machine). For the machine that is every value of the new machine — its fields and its
 // ropes as the calculator has them (components/calc/fields.ts) and the catalogue's model it is (n_model): the sizing
 // option's and, from a catalogue, the catalogue's own (lift/catalog.ts catalogValues, its mass besides). So a
 // catalogue's machine switched to entered is still that machine (known.ts), and the derivation draws and checks it as

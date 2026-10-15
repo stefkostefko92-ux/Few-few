@@ -5,13 +5,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Prisma } from '@prisma/client';
 import { blankCalc } from '@/lib/calc-blank';
-import { blankLift } from '@/lib/lift/blank';
+import { blankProgetto } from '@/lib/lift/progetto';
 import { arganoDi, poliDi, rapportoDi, rilievoDati, unNumero, type RilievoRow } from '@/lib/collega/rilievo';
 import { layoutDi, seminaCalc, seminaLift, semeCalc, semeLift, usaCalc, usaLift } from '@/lib/collega/prefill';
 
 const day = new Date('2026-10-10T00:00:00Z');
-/** the one form of a whole project whose intervention replaces the machine of the existing lift */
-const replLift = () => { const d = blankLift(); return { ...d, inputs: { ...d.inputs, calc: { ...d.inputs.calc, context: 'repl' } } }; };
+/** a brand new drawing of the Progetto (round 45) */
+const nuovoDisegno = () => blankProgetto();
 function row(over: Partial<RilievoRow> = {}): RilievoRow {
   return {
     id: 'cm00000000000000000000s1', data: day, createdAt: day, updatedAt: day, indirizzo: 'Via Giuseppe Verdi 14, Milano', matricola: '0123456', numeroImpianto: '71234',
@@ -74,12 +74,9 @@ test('nuovo dal rilievo: un valore già uguale alla misura (la macchina in alto,
   assert.ok(fresh.seeded.includes('layout') && fresh.seeded.includes('o_poles'), fresh.seeded.join());
   const draft = seminaCalc({ ...blankCalc(), layout: 'top' }, seme, false);
   assert.ok(!draft.seeded.includes('layout') && !draft.seeded.includes('o_poles'));
-  // the one form: the existing machine's field already as the survey says it — «usa» says it is in, not «nothing to take»
-  const lift = seminaLift(replLift(), rilievoDati(row({ ubicazioneMacchina: ['BASSO'] }))).draft;
-  assert.deepEqual(usaLift(lift, rilievoDati(row()), 'funiNumero').set, ['o_n']);
-  // a new lift has no existing machine: nothing goes into its hidden fields, «usa» puts nothing in
-  const nuovo = seminaLift(blankLift(), rilievoDati(row())).draft;
-  assert.deepEqual(usaLift(nuovo, rilievoDati(row()), 'funiNumero').set, []);
+  // the Progetto (round 45): the machine and its ropes are the «Calcolo argano»'s — «usa» puts nothing in
+  const lift = seminaLift(nuovoDisegno(), rilievoDati(row({ ubicazioneMacchina: ['BASSO'] }))).draft;
+  assert.deepEqual(usaLift(lift, rilievoDati(row()), 'funiNumero').set, []);
 });
 
 test('calcolo: il rilievo riempie solo i campi vuoti o standard, mai quelli scritti', () => {
@@ -129,35 +126,24 @@ test('calcolo: «usa il valore del rilievo» mette il valore anche sopra quello 
   assert.deepEqual(usaCalc(blankCalc(), rilievoDati(row({ arganoPreventivo: false })), 'giri').set, []);
 });
 
-test('progetto: il modulo unico prende portata, fermate, posizione, taglia, velocità e argano esistente dove sono da inserire', () => {
+test('progetto (round 45): il disegno prende dal rilievo solo le fermate; il resto è del calcolo argano', () => {
   const r = rilievoDati(row({ ubicazioneMacchina: ['BASSO'] }));
-  // a new lift: the existing machine and its ropes are not its own — none of their hidden fields filled
-  const nuovo = seminaLift(blankLift(), r);
-  assert.deepEqual(nuovo.seeded.filter((k) => k.startsWith('o_')), []);
-  assert.deepEqual([nuovo.draft.inputs.calc.o_n, nuovo.draft.inputs.calc.o_D], ['', '']);
-  const { draft, seeded } = seminaLift(replLift(), r);
-  assert.equal(draft.inputs.shaft.Q, 630);
-  assert.ok(!draft.blank.includes('Q') && !draft.blank.includes('Qkg'));
-  assert.equal(draft.inputs.shaft.vertical.floors.length, 5);
+  const { draft, seeded } = seminaLift(nuovoDisegno(), r);
+  assert.deepEqual(seeded, ['floors']);
+  assert.equal(draft.progetto.shaft.vertical.floors.length, 5);
   assert.ok(!draft.blank.includes('floors') && draft.blank.includes('rise.0'), 'the stops in, their rises to enter');
-  assert.equal(draft.inputs.calc.layout, 'bottom');
-  assert.ok(draft.blank.includes('bottom'), 'a machine below asks its scheme');
-  assert.equal(draft.inputs.calc.r, '2');
-  assert.equal(draft.inputs.shaft.vertical.v, 1);
-  assert.equal(draft.inputs.calc.o_n, '4');
-  assert.equal(draft.inputs.calc.o_D, '520');
-  for (const k of ['Qkg', 'floors', 'layout', 'r', 'v', 'o_n', 'o_d']) assert.ok(seeded.includes(k), k);
-  // the badges compare the form with these
-  const seme = semeLift(r);
-  assert.equal(seme.Qkg, '630');
-  assert.equal(seme.floors, '5');
-  // a value already entered stays (a draft): seeding twice changes nothing and fills nothing
-  const typed = { ...draft, inputs: { ...draft.inputs, shaft: { ...draft.inputs.shaft, Q: 900 } } };
-  assert.equal(seminaLift(typed, r).draft.inputs.shaft.Q, 900);
-  assert.deepEqual(seminaLift(typed, r, false).seeded, []);
-  assert.deepEqual(seminaLift(typed, r, false).draft, typed);
-  // «usa il valore»: over what it holds
-  assert.equal(usaLift(typed, r, 'Q').draft.inputs.shaft.Q, 630);
-  // a load out of the form's range is not put in
-  assert.equal(seminaLift(blankLift(), rilievoDati(row({ portataKg: 50 }))).draft.inputs.shaft.Q === 50, false);
+  // the load, the speed, the roping and the machine's place are not the drawing's to take
+  assert.deepEqual(draft.progetto.shaft.Q, nuovoDisegno().progetto.shaft.Q);
+  for (const k of ['Q', 'Qkg', 'v', 'r', 'layout'] as const) assert.ok(!draft.blank.includes(k), `${k} is the calculation's`);
+  // the badges compare the drawing with the stops alone
+  assert.deepEqual(semeLift(r), { floors: '5' });
+  // a value already entered stays (a draft): seeding again changes nothing and fills nothing
+  assert.deepEqual(seminaLift(draft, r), { draft, seeded: [] });
+  // «usa il valore»: the stops over what the drawing holds; any other parameter is the calculation's
+  const four = { ...draft, progetto: { ...draft.progetto, shaft: { ...draft.progetto.shaft, vertical: { ...draft.progetto.shaft.vertical,
+    floors: draft.progetto.shaft.vertical.floors.slice(0, 4).map((f, i) => (i === 3 ? { ...f, rise: 0 } : f)) } } } };
+  assert.equal(usaLift(four, r, 'fermate').draft.progetto.shaft.vertical.floors.length, 5);
+  for (const p of ['Q', 'velocita', 'posizione', 'taglia'] as const) assert.deepEqual(usaLift(four, r, p).set, [], p);
+  // stops out of the form's range are not put in
+  assert.deepEqual(seminaLift(nuovoDisegno(), rilievoDati(row({ fermate: 90 }))).seeded, []);
 });

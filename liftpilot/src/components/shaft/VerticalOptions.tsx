@@ -20,6 +20,8 @@ interface Props {
   /** unfolded at first (the one form of an installation) */
   open?: boolean;
   blank?: FormBlank;
+  /** the rated speed fixed by the «Calcolo argano» the Progetto draws on (round 45): shown, not entered */
+  fixedV?: { ms: number; label: string };
 }
 
 type NumKey = Exclude<keyof VerticalInputs, 'floors' | 'main' | 'topRefuge' | 'pitRefuge' | 'carBufferType' | 'cwBufferType'>;
@@ -28,7 +30,7 @@ const num = (s: string): number => (s.trim() === '' ? NaN : Number(s.replace(','
 /** Values worked out until one is entered (missing in the inputs). */
 const WORKED_OUT: readonly NumKey[] = ['cwScreen', 'standW', 'standD'];
 
-export default function VerticalOptions({ I, set, open = false, blank = NO_BLANK }: Props) {
+export default function VerticalOptions({ I, set, open = false, blank = NO_BLANK, fixedV }: Props) {
   const t = useTranslations('shaft'), tb = useTranslations('blank'), V = I.vertical, floors = V.floors, is = blank.is;
   const multi = !is('entrances') && I.entrances !== 'one';
   const put = (patch: Partial<VerticalInputs>, entered: readonly BlankKey[] = []): void => set({ vertical: { ...V, ...patch } }, (b) => filled(b, entered));
@@ -84,7 +86,12 @@ export default function VerticalOptions({ I, set, open = false, blank = NO_BLANK
     <details className="vertical-options" open={open}>
       <summary>{t('vt_title')}</summary>
       <div className="form-grid">
-        {data('v', 0.1, 10, 0.05)}
+        {fixedV ? (
+          <label className="field">
+            <span>{t('vt_v')}<span className="badge calcolo">{fixedV.label}</span></span>
+            <input id={fieldId('v')} className="input num" type="number" value={fixedV.ms} readOnly aria-readonly="true" />
+          </label>
+        ) : data('v', 0.1, 10, 0.05)}
         {data('pit', 100, 10000)}
         {data('headroom', 1000, 20000)}
         <label className={`field${is('floors') ? ' need' : ''}`}>

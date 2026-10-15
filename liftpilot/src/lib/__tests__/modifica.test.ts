@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { KL, collaudoOf, type Collaudo } from '@/lib/lift';
 import { choiceOf, esistenteOf, modificaOf } from '@/lib/lift/collaudo';
 import { carichiOf, caricoVariato, isServiceDay, normaDaMarcatura, variazioneCarico, type Carichi } from '@/lib/lift/modifica';
-import { interventoLegacyTo as interventoTo } from '@/lib/lift/intervento';
+import { rifacimentoTo } from '@/lib/lift/intervento';
 import { collaudoReadSchema, collaudoSchema } from '@/lib/lift-input';
 import { collaudoRows } from '../report/collaudo';
 
@@ -82,7 +82,7 @@ test('il collaudo: la marcatura sceglie la parte, la variazione porta la portata
   // the day stays only with an unknown marking; the renovation and what is known of the lift go with the intervention
   assert.deepEqual(esistenteOf({ norma: '10411-1', parti: [], marcatura: 'si', servizio: '1990-01-01' }), { marcatura: 'si' });
   assert.deepEqual(modificaOf({ norma: '10411-1', parti: [], rifacimento: true, documentato: doc(1, 2, 3) }), { rifacimento: true, documentato: doc(1, 2, 3) });
-  const rif = interventoTo('rifacimento', { norma: '10411-11', parti: ['machine'], marcatura: 'si', documentato: doc(630, 700, 1015) }).collaudo;
+  const rif = rifacimentoTo(true, { norma: '10411-11', parti: ['machine'], marcatura: 'si', documentato: doc(630, 700, 1015) }).collaudo;
   assert.equal(rif?.marcatura, 'si');
   assert.deepEqual(rif?.documentato, doc(630, 700, 1015));
   assert.equal(rif?.rifacimento, true);

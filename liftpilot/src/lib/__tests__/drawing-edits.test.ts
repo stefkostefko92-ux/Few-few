@@ -79,7 +79,7 @@ const VIEWS: View[] = [
 const SCREEN: Readonly<Record<string, ScreenView>> = { 'plan-main': 'plan', 'plan-top': 'head', 'plan-pit': 'pit-plan', 'section-top': 'top', 'section-floor': 'floor',
   'section-pit': 'pit', 'room-plan': 'room-plan', 'room-section': 'room-section', 'below-plan': 'below-plan', 'below-section': 'below-section' };
 
-/** The form after a drawing's edit, as LiftWorkspace applies it; null when refused. */
+/** The form after a drawing's edit, as the Progetto applies it (ProgettoWorkspace); null when refused. */
 function applyLift(inp: LiftInputs, d: LiftDerived, e: Edit, length: number): LiftInputs | null {
   if (e.key.startsWith('calc.')) {
     const v = editValue(e, length);

@@ -6,10 +6,10 @@
 // the existing sling is the site practice that keeps a renovation a modification (registry impianto.rifacimento;
 // research, chapter 16 §3.2 and §5.3). The type is a fact of the calculation record (Calculation.intervento, outside its
 // hash, like the test); the calculation's context and the acceptance test it stores follow it. Records saved before the
-// type existed are read by their shape (interventoDi). The one form's three choices of round 27 keep their names with
-// «Legacy» until /progetto stops choosing the intervention. Pure.
+// type existed are read by their shape (interventoDi); the one form's three choices of round 27 are gone with it (the
+// renovation is the modernisation's preset, rifacimentoTo). Pure.
 import type { FormValues } from '@/calc/types';
-import { NORME_AGGIUNTIVE, PARTI, ammessa, collaudoOf, esistenteOf, type Collaudo, type NormaAggiuntiva, type NormaCollaudo, type Parte } from './collaudo';
+import { NORME_AGGIUNTIVE, PARTI, ammessa, esistenteOf, type Collaudo, type NormaAggiuntiva, type NormaCollaudo, type Parte } from './collaudo';
 import { SOSTANZIALE } from './norme-collaudo';
 
 /** The three types, as the database's enum names them (TipoIntervento, migration 21): no mapping between the two. */
@@ -128,27 +128,3 @@ export const sostanziale = (C: Pick<Collaudo, 'parti'>): boolean => SOSTANZIALE.
 /** A modernisation that keeps the existing machine: the calculation verifies it with the modified lift's data — no
  *  proposal, advice or order. */
 export const macchinaResta = (t: TipoIntervento | null | undefined, C: Pick<Collaudo, 'parti'>): boolean => t === 'AMMODERNAMENTO' && !C.parti.includes('machine');
-
-// ---- the one form's choices of round 27, until /progetto stops choosing the intervention (phase 3, step 6) ----
-
-export const INTERVENTI_LEGACY = ['repl', 'rifacimento', 'new'] as const;
-export type InterventoLegacy = (typeof INTERVENTI_LEGACY)[number];
-
-/** The intervention of the one form: the calculation's context and, for a modification, the renovation chosen. */
-export const interventoLegacyOf = (calc: FormValues, chosen?: Collaudo): InterventoLegacy =>
-  (calc.context === 'new' ? 'new' : collaudoOf(calc, chosen).rifacimento ? 'rifacimento' : 'repl');
-
-/** What choosing an intervention of the one form sets (round 27): the calculation's context and, when it changes, the
- *  test. The renovation ticks every part but the sling, new ropes; back to the machine's replacement, the machine alone
- *  with the ropes' number and diameter in place; a new lift keeps what was chosen, so going there and back loses
- *  nothing. */
-export function interventoLegacyTo(k: InterventoLegacy, chosen?: Collaudo): { calc: FormValues; collaudo?: Collaudo } {
-  if (k === 'new') return { calc: { context: 'new' } };
-  const norma: NormaCollaudo = chosen && chosen.norma !== 'en81' ? chosen.norma : '10411-1';
-  const added = chosen?.aggiuntive?.length ? { aggiuntive: chosen.aggiuntive } : {}, mod = esistenteOf(chosen);
-  if (k === 'rifacimento') {
-    return chosen?.rifacimento && chosen.norma !== 'en81' ? { calc: { context: 'repl' }, collaudo: chosen }
-      : { calc: { context: 'repl', keepRopes: false }, collaudo: { norma, parti: PARTI_RIFACIMENTO, rifacimento: true, ...mod, ...added } };
-  }
-  return chosen?.rifacimento ? { calc: { context: 'repl', keepRopes: true }, collaudo: { norma, parti: ['machine'], ...mod, ...added } } : { calc: { context: 'repl' } };
-}

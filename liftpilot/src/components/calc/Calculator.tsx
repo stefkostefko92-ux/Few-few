@@ -7,7 +7,7 @@
 // starts empty (src/lib/calc-blank.ts): the type and the values still to enter are listed, the proposals and the advice
 // come once the installation is entered, the verdict once the new machine is too; a modernisation that keeps the machine
 // verifies it as it is, with no proposal or advice; the form's draft is kept as it is filled in.
-import { useCallback, useDeferredValue, useMemo, useState, useTransition } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useState, useTransition } from 'react';
 import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
@@ -21,7 +21,7 @@ import { visibleBad } from '@/lib/calc-input';
 import { calcMissing, plantReady } from '@/lib/calc-blank';
 import { calcDraftSchema } from '@/lib/draft-input';
 import { bozzaRilievo } from '@/lib/collega/formato';
-import { interventoDi, interventoTo, type Parte } from '@/lib/lift';
+import { interventoDi, interventoTo, type Collaudo, type Parte, type TipoIntervento } from '@/lib/lift';
 import { partiDi } from '@/lib/lift/risposte';
 import MissingPanel from '@/components/MissingPanel';
 import { useDraft, type DraftTarget } from '@/components/draft/useDraft';
@@ -72,9 +72,11 @@ interface Props {
   draft?: DraftTarget | null;
   /** the installation's survey the values «dal rilievo» come from (round 44), the drawing those «dal progetto» come from */
   origine?: OrigineRilievo | null;
+  /** the values, test and type as they settle with nothing missing (the standalone page draws its Progetto on them) */
+  onBase?(base: { values: FormValues; collaudo: Collaudo; tipo: TipoIntervento }): void;
 }
 
-export default function Calculator({ projectId, initial, preset: initialPreset, brand, intervento, draft = null, origine = null }: Props) {
+export default function Calculator({ projectId, initial, preset: initialPreset, brand, intervento, draft = null, origine = null, onBase }: Props) {
   const locale = useLocale(), messages = useMessages(), tc = useTranslations('calculations'), te = useTranslations('errors'), tb = useTranslations('blank');
   const ti = useTranslations('calculations.intervento'), tl = useTranslations('lift');
   const router = useRouter();
@@ -109,6 +111,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   const missing = useMemo(() => calcMissing(deferred, a.ctx.bad, tipo, I.mancanti), [a, deferred, tipo, I.mancanti]);
   const need = useMemo(() => new Set(missing), [missing]);
   const ready = plantReady(missing), complete = missing.length === 0;
+  useEffect(() => { if (complete && tipo) onBase?.({ values: deferred, collaudo, tipo }); }, [complete, tipo, deferred, collaudo, onBase]);
   const bad = useMemo(() => new Set(visibleBad(a.ctx.bad, deferred).filter((id) => !need.has(id))), [a, deferred, need]);
   const texts = { choose: tb('choose'), std: tb('std'), stdTitle: tb('stdTitle'), stdInUse: (list: string) => tb('stdInUse', { list }) };
   // the draft keeps the type, the parts answered and which values came from the survey (and whether the form started

@@ -10,7 +10,8 @@ import { canon, snapshotOf } from '@/calc/snapshot';
 import type { FormValues } from '@/calc/types';
 import { LIFT_ENGINE_VERSION, PARTI_RIFACIMENTO, deriveLift, defaultLift, newLift, type LiftInputs } from '@/lib/lift';
 import { progettoInputsReadSchema, progettoInputsSchema } from '@/lib/lift-input';
-import { TOLLERANZE, baseOf, blankProgetto, differenzeCalcolo, liftInputsOf, progettoOf, type ProgettoInputs } from '@/lib/lift/progetto';
+import { TOLLERANZE, autoNuovo, baseOf, blankProgetto, composto, dalComposto, differenzeCalcolo, liftInputsOf, progettoOf, type ProgettoInputs } from '@/lib/lift/progetto';
+import { bottomTo, missingOf } from '@/lib/lift/blank';
 import { shaftSnapshot } from '@/shaft';
 
 /** A design as the Progetto composes it: the shaft's rated load and speed are the calculation's, the car's mass and the
@@ -125,4 +126,24 @@ test('differenzeCalcolo: le tolleranze dello schermo, i rinvii in più mai una d
   assert.deepEqual(differenzeCalcolo({ ...base, layout: 'top' }, base, 0).map((r) => r.key), ['H', 'L0', 'nps']);
   // nps of another scheme is shown, never flagged
   assert.equal(differenzeCalcolo(base, { ...base, nps: 5 }, 0).find((r) => r.key === 'nps')?.differs, false);
+});
+
+test('il disegno sulla sua base (step 6): da inserire solo la geometria; i cambi del modulo tornano disegno, h della pianta tenuta', () => {
+  const b = blankProgetto(), L = defaultLift(), repl = baseOf({ ...L, calc: { ...L.calc, context: 'repl', layout: 'topDefl' } });
+  const missing = missingOf(composto(b, repl));
+  for (const k of ['Q', 'Qkg', 'v', 'r', 'layout', 'bottom'] as const) assert.ok(!missing.includes(k), `${k}: del calcolo`);
+  assert.ok(missing.includes('W') && missing.includes('floors'));
+  // a machine below asks the scheme of its ropes: the drawing's
+  const low = baseOf({ ...L, calc: { ...L.calc, layout: 'bottom' } });
+  assert.ok(missingOf(composto(b, low)).includes('bottom'));
+  const withScheme = dalComposto(bottomTo(composto(b, low), 'room'), undefined);
+  assert.equal(withScheme.progetto.bottom, 'room');
+  assert.ok(!withScheme.blank.includes('bottom') && !withScheme.blank.includes('layout'));
+  // the plan's h stays the drawing's through a change; the base's own is not taken as the drawing's
+  const drawn = { ...b, progetto: { ...b.progetto, h: 0.75 } };
+  assert.equal(dalComposto(composto(drawn, repl), drawn.progetto.h).progetto.h, 0.75);
+  assert.equal(dalComposto(composto(b, repl), undefined).progetto.h, undefined);
+  // the switches of a drawing started anew: dx from the plan only for a transformation
+  assert.equal(autoNuovo(repl).dx, false);
+  assert.equal(autoNuovo(baseOf(newLift())).dx, true);
 });

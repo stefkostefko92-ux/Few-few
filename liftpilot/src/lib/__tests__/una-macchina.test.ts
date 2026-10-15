@@ -151,7 +151,7 @@ for (const [brand, model] of [['Montanari', 'M93'], ['SICOR', 'SH160'], ['Sassi'
     test(`${brand} ${model}${heb ? ' sulle putrelle HEB' : ''} proposto e poi inserito a mano: lo stesso argano, le stesse verifiche, gli stessi fogli`, () => {
       const base: LiftInputs = { ...newLift(), catalog: { brand, model } }, inp = heb ? withHeb(base) : base, a = deriveLift(inp);
       assert.equal(a.catalog?.fit?.machine.model, model);
-      // the form's switch: the values as shown (LiftWorkspace setAuto)
+      // the form's switch: the values as shown (the one form's setAuto before round 45)
       const hand: LiftInputs = { ...inp, auto: { ...inp.auto, machine: false }, calc: mirrorRopes({ ...inp.calc, ...enteredSeed(a, { machine: false }) }) };
       const b = deriveLift(hand);
       assert.equal(b.origin.machine, 'entered');

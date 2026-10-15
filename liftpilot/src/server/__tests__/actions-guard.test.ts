@@ -1,6 +1,6 @@
 // The server actions' own guards, found by the red team (2026-10-06), each pinned with its probe: «Calcolo argano» takes
 // any active installation of the company but only with its type of intervention agreeing with its values and test
-// (round 45), and a replacement does not take the one form's record; a company without free slots gets the
+// (round 45), and the Progetto draws only on a «Calcolo argano» (round 45: none sent, the calculation first); a company without free slots gets the
 // same answer for any address, so it cannot probe which addresses have an account elsewhere; a company in read-only
 // mode (no subscription after its trial, or the terms not accepted) saves nothing.
 import { test, mock } from 'node:test';
@@ -56,13 +56,17 @@ test('«Calcolo argano» for every installation (round 45): a full project takes
   }
 });
 
-test('a replacement takes no one-form record (it becomes a full project first)', async () => {
+test('the Progetto of any installation draws on a «Calcolo argano»: none sent, the calculation first (round 45)', async () => {
   const { defaultLift } = await import(src('lib/lift/index.ts'));
+  const { progettoOf } = await import(src('lib/lift/progetto.ts'));
   const { saveLiftDesignAction } = await import(src('server/lift-actions.ts'));
-  // the one form is the project's drawing: the Progettista's (the Tecnico does not draw it: round 42)
+  // the Progetto is the project's drawing: the Progettista's (the Tecnico does not draw it: round 42)
   role = 'ENGINEER';
-  const r = await saveLiftDesignAction({ projectId: 'prepl', inputs: defaultLift(), source: null, label: 'x' });
-  assert.deepEqual(r, { ok: false, error: 'notFound' });
+  for (const projectId of ['prepl', 'pfull']) {
+    assert.deepEqual(await saveLiftDesignAction({ projectId, progetto: progettoOf(defaultLift()), source: null, label: 'x' }), { ok: false, error: 'noCalc' }, projectId);
+  }
+  // the one form's inputs (the calculation with them) are no drawing: refused by the strict schema
+  assert.equal((await saveLiftDesignAction({ projectId: 'pfull', baseCalculationId: 'cmbase', progetto: defaultLift(), source: null, label: 'x' })).ok, false);
 });
 
 test('without a free slot the answer is the same for any address', async () => {
@@ -85,7 +89,7 @@ test('read-only: neither a calculation nor a lift design is saved, before anythi
   readOnly = true;
   try {
     assert.deepEqual(await saveCalculationAction({ projectId: 'prepl', values: { ...PRESETS.A, r: PRESETS.A.r ?? 1 }, label: 'x' }), { ok: false, error: 'forbidden' });
-    assert.deepEqual(await saveLiftDesignAction({ projectId: 'pfull', inputs: defaultLift(), source: null, label: 'x' }), { ok: false, error: 'forbidden' });
+    assert.deepEqual(await saveLiftDesignAction({ projectId: 'pfull', baseCalculationId: 'cmbase', progetto: defaultLift(), source: null, label: 'x' }), { ok: false, error: 'forbidden' });
   } finally {
     readOnly = false;
   }
@@ -97,7 +101,7 @@ test('the rights of the matrix: the Tecnico calculates but does not draw the pro
   const { saveLiftDesignAction } = await import(src('server/lift-actions.ts'));
   const { saveCalculationAction } = await import(src('server/calc-actions.ts'));
   role = 'TECHNICIAN';
-  assert.deepEqual(await saveLiftDesignAction({ projectId: 'pfull', inputs: defaultLift(), source: null, label: 'x' }), { ok: false, error: 'forbidden' });
+  assert.deepEqual(await saveLiftDesignAction({ projectId: 'pfull', baseCalculationId: 'cmbase', progetto: defaultLift(), source: null, label: 'x' }), { ok: false, error: 'forbidden' });
   // the calculator answers past its right, on any installation (round 45: a full project's «Calcolo argano» too)
   await assert.rejects(saveCalculationAction({ projectId: 'pfull', values: { ...PRESETS.A, r: PRESETS.A.r ?? 1 }, label: 'x', intervento: 'TRASFORMAZIONE_COMPLETA' }),
     /the guard must stop before the record/);

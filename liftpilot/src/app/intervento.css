@@ -77,3 +77,7 @@
 .tipo-badge .tipo-scala i:nth-child(1) { height: 7px; } .tipo-badge .tipo-scala i:nth-child(2) { height: 11px; } .tipo-badge .tipo-scala i:nth-child(3) { height: 15px; }
 .tipo-badge .tipo-scala i.piena { background: var(--accent); }
 .calc-ruolo .ruolo a { font-weight: 600; }
+
+/* a value of the Progetto that the «Calcolo argano» fixes (the rated load, the speed): read only, its source said */
+.badge.calcolo { margin-left: 6px; color: var(--ink-2); background: var(--surface2); border-color: var(--rule-strong); text-transform: none; letter-spacing: .02em; }
+.field input[readonly] { color: var(--ink-2); background: var(--bg-2); }

@@ -1,6 +1,6 @@
 import 'server-only';
-// Where the installation's forms start from its reference survey (round 44): the replacement's calculator and the one
-// form of a whole project (/progetto) take the measured values where they are still empty — a new form or its draft,
+// Where the installation's forms start from its reference survey (round 44): «Calcolo argano» and the Progetto
+// (/progetto, round 45: only the stops — the rest is the calculation's) take the measured values where they are still empty — a new form or its draft,
 // never a saved record opened again —, and «usa il valore del rilievo» (?usa=<parametro>, from the comparison) puts one
 // value in on purpose. A brand new form also takes them over the software's standard values; a draft or what was
 // carried over from saved records is the user's: only its empty fields. Only for whoever sees the surveys (the right
@@ -14,7 +14,7 @@ import 'server-only';
 import type { FormValues } from '@/calc/types';
 import type { SessionUser } from '@/lib/auth';
 import { can } from '@/lib/rbac';
-import type { LiftDraft } from '@/lib/lift/blank';
+import type { ProgettoDraft } from '@/lib/lift/progetto';
 import { fmt } from '@/lib/rilievi/fmt';
 import { stessoValore } from '@/lib/collega/formato';
 import { isUsa, segnati, seminaCalc, seminaLift, semeCalc, semeLift, usaCalc, usaLift, valoreCalc, valoreLift, type Usa } from '@/lib/collega/prefill';
@@ -107,13 +107,13 @@ export async function avvioCalc(user: SessionUser, projectId: string, start: For
   return { start: values, rilievo: r, origine: { date: fmt.day(r.data), valori, parte: parte.length > 0 }, seeded: parte, usa: done };
 }
 
-/** The one form's start (`kept`: what its draft kept of the survey). */
-export async function avvioLift(user: SessionUser, projectId: string, start: LiftDraft, mode: Partenza, usa: unknown,
-  kept: Kept = {}): Promise<Avvio<LiftDraft>> {
+/** The Progetto's start (`kept`: what its draft kept of the survey): the survey's stops. */
+export async function avvioProgetto(user: SessionUser, projectId: string, start: ProgettoDraft, mode: Partenza, usa: unknown,
+  kept: Kept = {}): Promise<Avvio<ProgettoDraft>> {
   const r = can(user, 'rilievi:view') ? await rilievoDiRiferimento(user, projectId) : null;
   if (!r) return none(start);
   const seme = semeLift(r), valore = (id: string): string | undefined => seme[id];
-  const seeded = mode ? seminaLift(start, r, mode === 'new') : { draft: start, seeded: [] };
+  const seeded = mode ? seminaLift(start, r) : { draft: start, seeded: [] };
   let draft = seeded.draft, done: UsaFatto | null = null;
   const { dal, parte } = avvioSegni(seeded.seeded, mode === 'draft' ? kept : {}, valore, (id) => valoreLift(draft, id));
   if (isUsa(usa)) {

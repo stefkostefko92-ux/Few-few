@@ -7,9 +7,12 @@ import { IntlProvider, useTranslations } from 'use-intl';
 import appIt from '../messages/it.json';
 import calcIt from '../messages/calc/it.json';
 import { PRESETS } from '@/calc/presets';
-import { defaultLift, type LiftDerived, type LiftInputs } from '@/lib/lift';
+import { collaudoOf, defaultLift, interventoDi, type Collaudo, type LiftDerived, type LiftInputs, type TipoIntervento } from '@/lib/lift';
+import { progettoOf } from '@/lib/lift/progetto';
+import type { FormValues } from '@/calc/types';
 import Calculator from '@/components/calc/Calculator';
-import LiftWorkspace, { type WorkspaceApi } from '@/components/lift/LiftWorkspace';
+import ProgettoWorkspace, { type WorkspaceApi } from '@/components/lift/ProgettoWorkspace';
+import type { BaseProgetto } from '@/components/lift/DalCalcolo';
 import { LOGO_COMPACT as LOGO } from '@/lib/brand';
 import { PANEV_LIST_PRICE } from '@/lib/catalog/panev-prices';
 import Sheets from './Sheets';
@@ -21,15 +24,22 @@ type Tab = 'calcolo' | 'progetto';
 const MESSAGES = { ...appIt, calc: calcIt };
 
 // the page's own words (the tools speak through the app's messages)
-const SHELL: { sub: string; tabs: Record<Tab, string>; calcTitle: string; calcLead: string; local: string; sheetsLead: string } = {
+const SHELL: { sub: string; tabs: Record<Tab, string>; calcTitle: string; calcLead: string; local: string; sheetsLead: string; baseWhen: string } = {
   sub: 'argano geared · progetto dell’impianto',
   tabs: { calcolo: 'Calcolo dell’argano', progetto: 'Progetto e simulazione 3D' },
   calcTitle: 'Scelta e verifica dell’argano geared',
   calcLead: 'Aderenza, funi, motore, freno, soccorso e albero, con l’argano esistente a confronto e la proposta di un argano nuovo. I risultati si aggiornano mentre scrivi.',
   local: 'Tutto si calcola nel tuo browser: nessun dato esce da questa pagina e niente viene salvato.',
   sheetsLead: 'Le tavole del progetto qui sopra, disegnate dal vivo con lo stesso nucleo del PDF dell’applicazione: un set non emesso, senza numero né logo. Anche qui ogni quota si cambia con un clic.',
+  baseWhen: 'il calcolo della scheda «Calcolo dell’argano»',
 };
 const isTab = (x: unknown): x is Tab => x === 'calcolo' || x === 'progetto';
+
+/** The «Calcolo argano» the Progetto draws on: the calculator's tab as it settles (round 45), until then the example's. */
+const baseDi = (b: { values: FormValues; collaudo: Collaudo; tipo: TipoIntervento }): BaseProgetto => ({ id: '', createdAt: new Date(0).toISOString(), ...b });
+const EXAMPLE = (() => { const L = defaultLift(); return { values: L.calc, collaudo: collaudoOf(L.calc), tipo: interventoDi(L.calc.context, null) }; })();
+/** The example's drawing, everything entered. */
+const DRAWING = { progetto: progettoOf(defaultLift()), blank: [] };
 
 /** A per-device convenience: storage may be missing or refuse (private windows, previews). */
 function remembered(key: string): string | null {
@@ -51,6 +61,8 @@ function Tools() {
   const [design, setDesign] = useState<{ inputs: LiftInputs; derived: LiftDerived } | null>(null);
   const onDerived = useCallback((inputs: LiftInputs, derived: LiftDerived) => setDesign({ inputs, derived }), []);
   const work = useRef<WorkspaceApi>(null);
+  const [base, setBase] = useState<BaseProgetto>(() => baseDi(EXAMPLE));
+  const onBase = useCallback((b: { values: FormValues; collaudo: Collaudo; tipo: TipoIntervento }) => setBase(baseDi(b)), []);
   const open = (next: Tab) => (e: MouseEvent<HTMLAnchorElement>): void => {
     e.preventDefault();
     setTab(next);
@@ -84,12 +96,12 @@ function Tools() {
         </div>
         {opened.calcolo ? (
           <div hidden={tab !== 'calcolo'}>
-            <Calculator projectId="" initial={PRESETS.B} preset="B" brand="LiftPilot" />
+            <Calculator projectId="" initial={PRESETS.B} preset="B" brand="LiftPilot" onBase={onBase} />
           </div>
         ) : null}
         {opened.progetto ? (
           <div hidden={tab !== 'progetto'} className="ar-lift">
-            <LiftWorkspace projectId="" initial={defaultLift()} onDerived={onDerived} api={work} prices={PANEV_PRICES} />
+            <ProgettoWorkspace projectId="" base={base} when={SHELL.baseWhen} canCalc={false} initial={DRAWING} onDerived={onDerived} api={work} prices={PANEV_PRICES} />
             {design ? <Sheets inputs={design.inputs} derived={design.derived} lead={SHELL.sheetsLead}
               onEdit={(e, length) => work.current?.edit(e, length) ?? { min: null, max: null }} /> : null}
           </div>

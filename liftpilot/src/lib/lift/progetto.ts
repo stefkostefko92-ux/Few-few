@@ -8,7 +8,7 @@
 import type { FormValues } from '@/calc/types';
 import type { ShaftInputs } from '@/shaft';
 import type { BottomScheme } from './bottom';
-import { blankLift, type BlankKey } from './blank';
+import { blankLift, type BlankKey, type LiftDraft } from './blank';
 import type { Collaudo } from './collaudo';
 import type { AutoFlags, LiftInputs } from './derive-types';
 
@@ -70,6 +70,32 @@ export const baseOf = (L: LiftInputs): BaseCalcolo => ({ values: L.calc, ...(L.c
 
 /** The keys the calculation holds, never to enter in the drawing. */
 const DAL_CALCOLO: readonly BlankKey[] = ['Q', 'Qkg', 'v', 'r', 'layout'];
+
+/** The drawing as it is being filled in: its geometry and the values still to enter (none of the calculation's). */
+export interface ProgettoDraft {
+  progetto: ProgettoInputs;
+  blank: readonly BlankKey[];
+}
+
+/** The values still to enter without the calculation's (the base holds them). */
+export const soloDisegno = (blank: readonly BlankKey[]): BlankKey[] => blank.filter((k) => !DAL_CALCOLO.includes(k));
+
+/** The drawing as the one form's draft on its base: what the shared helpers of the form (blank.ts, panel-form.ts) and the
+ *  derivation read. */
+export const composto = (d: ProgettoDraft, base: BaseCalcolo): LiftDraft => ({ inputs: liftInputsOf(d.progetto, base), blank: d.blank });
+
+/** A one form's draft changed by those helpers, as a drawing again: its geometry, switches and scheme, the plan's h of
+ *  the drawing kept as it was (the base's own is not the drawing's). */
+export function dalComposto(L: LiftDraft, h: number | undefined): ProgettoDraft {
+  const { h: _h, ...rest } = progettoOf(L.inputs);
+  void _h;
+  return { progetto: { ...rest, ...(h !== undefined ? { h } : {}) }, blank: soloDisegno(L.blank) };
+}
+
+/** The switches of a drawing started anew on its base: the rope beyond the travel and a machine below's pulleys from the
+ *  drawing, the diverting pulley's distance from the plan only for a transformation (an existing lift keeps the one its
+ *  calculation measured), the panel placed by the software. */
+export const autoNuovo = (base: BaseCalcolo): ProgettoAuto => ({ L0: true, dx: base.values.context === 'new', Hv: true, panel: true });
 
 /** A brand new drawing: every value of the geometry still to enter (blankLift without the calculation's keys), the
  *  drawn values on. */

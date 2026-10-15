@@ -2210,6 +2210,41 @@ Progettista, Tecnico, Commerciale. Реални потребители още н
   проект — на място с типа; основа, която се възпроизвежда — същата; остаряла — първо тя, после чертежът; вече
   направена от колега — не втори път), `refresh-room` (машинно на бивш цял проект — на място).
 
+- **Стъпка 6 — Progetto само чертае**: браузърът праща само геометрията (`ProgettoInputs`) и коя „Calcolo argano“ е
+  основата; `saveLiftDesignAction({projectId, baseCalculationId, progetto, source, label})` — `progetto:edit`, лимит
+  `lift:`, strict схема (изчисление, изпитване, каталог, автоматичните P/машина — отказ), основата е изчисление от стъпка
+  2 на този активен обект на фирмата (иначе notFound; без основа — `noCalc` „Prima il calcolo dell’argano…“),
+  възпроизвеждано (иначе `engineChanged`); DM 236, добавен в изчислението, иска случая в чертежа (`access`); сървърът
+  сглобява (`liftInputsOf`) и записва с непроменения `createLiftDesign` с основата и нейния тип (основа без тип — без
+  тип). Бариерата „само цял проект“ е махната. Черновата `lift` е `{progetto, base, blank, …}` (на единния формуляр
+  отпреди вече не се чете, следващият запис я презаписва). `src/server/progetto-start.ts` (вместо `lift-start.ts`):
+  `?from=` → чернова → последният проект → шахтата от архива или рилевото на машинното → празно; нов чертеж — L0/Hv от
+  чертежа, dx от плана само при трансформация. `avvioProgetto` — от рилевото само спирките (`semeLift`/`usaLift` —
+  само `fermate`). Страницата `/progetto` (`?calc=` — изчисление от стъпка 2 на обекта, иначе 404): без основа — „Il
+  progetto parte dal calcolo argano“ с „Calcola l’argano“; проект на единния формуляр, по-нов от основата — „porta i
+  suoi dati nel calcolo argano“ и „Disegna sul calcolo argano del …“; основа, която не се възпроизвежда — първо
+  обновяване; основа за машинното — бележка „Per la sola sostituzione dell’argano basta il rilievo del locale
+  macchina“. Екранът: `ProgettoWorkspace` (вместо `LiftWorkspace`), `ProgettoForm` (без „Intervento“, без
+  `CollaudoOptions`, без полетата на изчислението), `DalCalcolo` (типът със скалата, нормата, частите „Sì“,
+  rifacimento, машината, Q, v, P, тиро, позиция, въжета — тези, които остават, като „Funi esistenti (restano)“;
+  „Apri il calcolo“, „Modifica nel calcolo argano“ — само с `calc:create`), `ProgettoFuni` (схемата долу,
+  превключвателите L0 / dx·h / Hv „от чертежа | от изчислението“, подсказките за калата, убежището, rinvio), Q и v — само за четене „dal calcolo“; h от плана — в `ProgettoInputs.h`.
+  Махнати: `LiftWorkspace`, `LiftForm`, `LiftCalcFields`, съветът за машина и каталогът в Progetto, `*Legacy` на
+  интервенцията. Артефактът: вторият таб е `ProgettoWorkspace` върху стойностите на калкулатора (`onBase`), докато
+  калкулаторът не е отворен — върху примера; `npm run artifact`. Smoke: в `smoke.mjs` — „Calcolo argano“ на
+  ammodernamento (rifacimento, UNI 10411-11) от записаното, после Progetto върху него; нов `smoke-progetto.mjs`
+  (трансформация: празният Progetto води към изчислението, EN 81-20/50 заключено, чертеж с машинното на новия асансьор,
+  запис, комплект с „Intervento: Trasformazione completa.“). Тестове: `lift-actions` (основа, strict схема,
+  `noCalc`/notFound/`engineChanged`, DM 236, записаното = `liftInputsOf`, типът, черновата, само четене и права),
+  `progetto-start`, `collega-forms`, `collega-prefill`, `draft-actions`, `blank`, `progetto` (чертежът върху основата),
+  `rifacimento` и `modifica` върху новия модел, `actions-guard`.
+
+- **Проверки (стъпки 4–6)**: след всяка стъпка — `tsc --noEmit`, `npm run lint`, `npm test` (994 + 189, зелени); накрая
+  `npm run build`, сървър от новия build и пълният smoke (59 стъпки, с `smoke-progetto`) — зелен; доказателството
+  „всеки запис се възпроизвежда“ на `argano_p3` срещу записаното след стъпка 3 — 1508 общи записа, същите ok/outdated и
+  хешове (новите са само от smoke-а); паритетът на Rilievi — 0 fail, 3 warn, 32 allowed, 532 pass; `secret-scan` — чисто;
+  `npm run artifact` — калкулаторът и Progetto без грешки в конзолата; Progetto на 390 px — без хоризонтален скрол.
+
 ## Проверки
 
 - [x] Пуснах пълния quality gate на засегнатия продукт `liftpilot/` (до кръг 6 — `argano/`): lint, typecheck, test (250/250, със схемите, токените и писмата на акаунтите на трите езика, с тестовете за хлабината на вратите, хода на кабината и противотежестта при трите схеми с машина долу, планките на Panev, кабелния канал, редакцията на всеки размер на плана и на разреза, каталога на машините, ограничителите, нишите, етажните табла и имената на котите на трите езика), build. **Зелен.**
