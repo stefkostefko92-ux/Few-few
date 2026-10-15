@@ -166,6 +166,19 @@ Title и Summary за другите езици: същите като англ�
 
 Chrome Web Store **One Stop Support** → опцията за номинация за Featured badge. Условията на Google (всички изпълнени): разширение, публикувано и публично, наше, с английски, без активни нарушения, основните функции без акаунт и плащане. Badge-ът не се купува; прегледът отнема време.
 
+Преди да номинираш — листингът трябва да показва най-доброто (ревюърът гледа него, а класирането — оценките и задържането):
+- [ ] {ver} е публикувана и в Details пише Version {ver}
+- [ ] Description (EN) е новото от т. 1 — на живо НЕ трябва да има „not retrofitted“, „acceptable ads“, „Daily signed“ или „73 languages“
+- [ ] Описанията по езици от `listing/<код>.txt` са поставени (поне de, fr, es, it, pt_BR, ru, pl, nl, tr, ja, ko, id, uk, bg) — без тях чужденците виждат стар английски текст
+- [ ] Клипът е новият store cut (`supreme-adblock-promo-<версия>-store-web.mp4`, без сравнение и без „free“) — не промото от 5.1.6
+- [ ] Скрийншотите са от този кит; промо плочката и marquee — също
+- [ ] Сайтът е деплойнат от същия ref (политиката и твърденията там съвпадат с листинга)
+- [ ] Graphic assets: качени са `promo_small_440x280.png` (без нея листингът е след тези, които я имат) и `marquee_1400x560.png` (без нея — никога в голямата витрина)
+- [ ] Homepage URL = `https://adblock.carbonstealth.eu` — САМО ако в Search Console е потвърден целият домейн (Domain property, DNS); при URL-prefix свойство за `https://carbonstealth.eu` го остави, иначе текстът на значката „Created by the owner of the listed website“ може да падне
+- [ ] Contact email: фирменият (`info@carbonstealth.eu`) вместо личния Gmail — показва се публично в листинга
+- [ ] Статус на търговец (DSA): днес „Non-trader“ с предупреждението, че правата на потребителите в ЕС не важат; Carbon Stealth VCC е фирма — реши с Правния Разбирач дали да се декларира като търговец (адресът и телефонът стават публични)
+- [ ] Линкът за дарения (popup + Настройки) води към лична Revolut сметка, а издателят е Carbon Stealth — по-прозрачно е фирмена сметка или страница на сайта, която казва кой получава парите
+
 ## 10. Microsoft Edge Add-ons (същият zip)
 
 Partner Center → https://partner.microsoft.com/dashboard/microsoftedge/ → Create new extension → качи `supreme-adblock-{ver}.zip` (същия като за Chrome). Category Productivity; privacy/website/support — като горе. Edge иска описание за всеки език в `_locales` — ползвай САМО `listing/<код>.txt` (дългото описание от т. 1 споменава Chrome, а Edge 1.1.2 забранява други браузъри). Search terms (≤7): `ad blocker` · `block ads` · `youtube ad blocker` · `tracker blocker` · `cookie banner blocker` · `popup blocker` · `Carbon Stealth`. Screenshots — същите. Notes for certification — бележката от т. 7 плюс: домейните идват от мрежата, защото рекламните мрежи ги сменят всеки ден; файлът е подписан и съдържа само имена на домейни; листите от автора са по избор.

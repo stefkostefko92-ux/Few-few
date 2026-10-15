@@ -219,7 +219,7 @@ so this is an **update of the existing item**, not a new one:
    the listing shows "Non-trader" with a personal e-mail, while we publish as Carbon
    Stealth VCC and take donations — declaring as a trader (company details,
    `info@carbonstealth.eu`) is the consistent choice and an owner decision.
-7. **Category → Privacy & Security** (Store listing → Category; it is *Tools* today).
+7. **Category → Privacy & Security** (Store listing → Category; already set since 12 October 2026 — keep it).
 8. **Submit for review** — tick **deferred publishing** if you want to choose the moment
    the approved version goes live.
 9. **After the update is live — nominate for the Featured badge** (Chrome Web Store

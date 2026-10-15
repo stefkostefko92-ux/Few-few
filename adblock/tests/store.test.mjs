@@ -78,6 +78,13 @@ const langCount = new Set(locs.map((l) => l.split("_")[0])).size;
 const langClaims = [...(idxHtml + llms + storeListing).matchAll(/(\d+) (?:languages|езика|lingue|Sprachen)/g)].map((m) => +m[1]).filter((n) => n !== 31);
 ok(`site + store listing: “N languages” = ${langCount} languages (${locs.length} locale folders) everywhere (${[...new Set(langClaims)].join(",")})`, langClaims.length >= 6 && langClaims.every((n) => n === langCount));
 
+// PageSpeed/Lighthouse тичат без GPU (SwiftShader): WebGL бурята там правеше ~4,9 s дълги задачи за 9 s при 4× CPU
+// (мобилно 75/100). Без GPU декоративната буря не тръгва изобщо — същото правило като щита в popup-а.
+ok("site: the WebGL storm detects a software renderer and skips all storm work without a GPU",
+  /var soft = \/swiftshader\|llvmpipe\|software\|basic render\/i\.test\(rend\)/.test(idxHtml) && /if \(soft\) \{ noGpu = true;/.test(idxHtml) && /if \(noGpu\) return;/.test(idxHtml));
+// Бутонът за движение: на телефон само икона, но с име (axe button-name); без aria-pressed, защото надписът се сменя (APG).
+ok("site: the motion button keeps its accessible name on phones and has no aria-pressed", !/\.iconbtn \.lbl\{display:none\}/.test(idxHtml) && !/id="motion"[^>]*aria-pressed/.test(idxHtml));
+
 // Графиките за магазина по правилата на Google („Supplying Images“): точните размери, а иконата 128
 // е 96×96 рисунка с ~16 px прозрачен отстъп (install диалогът и магазинът я ползват от пакета).
 import { inflateSync } from "node:zlib";

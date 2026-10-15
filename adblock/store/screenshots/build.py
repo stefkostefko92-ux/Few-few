@@ -213,7 +213,7 @@ def features_panel():
   <div class="card"><h3>Focus mode</h3>
     <div class="row"><div><div class="t">Chat bubbles</div><div class="d">Support and sales chat pop-ups</div></div><div class="mini"></div></div>
     <div class="row"><div><div class="t">YouTube Shorts</div><div class="d">Shelves and tabs</div></div><div class="mini"></div></div>
-    <div class="row"><div><div class="t">“Sign in with Google”</div><div class="d">One Tap prompts</div></div><div class="mini off"></div></div>
+    <div class="row"><div><div class="t">Newsletter pop-ups</div><div class="d">Subscribe and sign-up walls</div></div><div class="mini off"></div></div>
   </div>
 </div>"""
 

@@ -11,10 +11,11 @@ Privacy & Security
 
 ## Detailed description
 
-Supreme AdBlock removes ads and trackers from the pages you visit, without watching what you do.
+Supreme AdBlock is an ad blocker for Chrome: it removes ads and trackers from the pages you visit,
+without watching what you do.
 
-- Blocks YouTube video ads (pre-roll & mid-roll) at the source, plus feed
-  and search ads
+- YouTube ad blocker: video ads (pre-roll & mid-roll) are stopped at the source,
+  plus feed and search ads
 - EasyList, EasyPrivacy and other open filter lists built in, plus the list for
   your language — 31 regional lists, the one for your browser's language on by itself
 - Removes banners, pop-ups, pop-unders and native sponsored-content widgets
