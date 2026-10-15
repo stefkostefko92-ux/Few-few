@@ -75,6 +75,18 @@ test('rifatto da un record: la regola e il tipo del record (prima del giro 45 ne
   assert.deepEqual(audits.at(-1)?.meta, { updates: 'old2' });
 });
 
+test('l’argano che resta è quello esistente: nessun modello del catalogo, dal calcolatore e da «Aggiorna»', async () => {
+  const { createCalculation } = await save();
+  const resta = { norma: '10411-1' as const, parti: ['controller' as const] }, V = { ...REPL, n_model: 'Montanari M75H' };
+  const model = (r: Awaited<ReturnType<typeof createCalculation>>): unknown => (r.ok ? (row('calculation', r.id).inputs as Row).n_model : 'refused');
+  assert.equal(model(await createCalculation(user, 'p1', V, null, resta, 'AMMODERNAMENTO')), '', 'from the form');
+  // a record saved before round 46 made again with the software of now (refresh-actions.ts remakeCalc): the model goes
+  assert.equal(model(await createCalculation(user, 'p1', V, null, resta, 'AMMODERNAMENTO', 'old5')), '', 'from «Aggiorna»');
+  // the machine replaced keeps the catalogue's model taken from the advice
+  assert.equal(model(await createCalculation(user, 'p1', V, null, { norma: '10411-1', parti: ['machine', 'controller'] }, 'AMMODERNAMENTO')), 'Montanari M75H');
+  assert.equal(model(await createCalculation(user, 'p1', V, null, null, null, 'old6')), 'Montanari M75H', 'a record without a type: as it was');
+});
+
 test('il progetto disegnato su un calcolo argano lo nomina e ne prende il tipo; quello del modulo unico nessuno', async () => {
   const { createLiftDesign } = await save();
   const based = await createLiftDesign(user, 'p1', newLift(), null, null, undefined, { id: 'calcBase', intervento: 'TRASFORMAZIONE_COMPLETA' });

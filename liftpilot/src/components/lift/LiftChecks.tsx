@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import SectionTitle from '@/components/project/SectionTitle';
 import type { Check, CheckStatus } from '@/calc/types';
 import { NORMA_BREVE, NORMA_SIGLA, ambitoOf, type LiftDerived } from '@/lib/lift';
+import { verificaKey } from '@/lib/lift/calata';
 import type { Texts } from '@/lib/present/texts';
 import { isUpperLimit, mergeChecks, shownValue, type ShaftCheck } from '@/shaft';
 import { scenarioForCheck } from './scenarios';
@@ -53,7 +54,7 @@ export default function LiftChecks({ derived, X, fmt, onSimulate }: Props) {
               const unit = c.unit ? ` ${c.unit}` : '';
               return (
                 <tr key={c.id} className={existing(c.id) ? 'existing' : undefined}>
-                  <th scope="row">{ts(`c_${c.id}`)}</th>
+                  <th scope="row">{ts(verificaKey(c.id, derived.values))}</th>
                   <td className="num" data-label={t('col_value')}>{c.value === null ? '—' : `${shownValue(c, fmt)}${unit}`}</td>
                   <td className="num note" data-label={t('col_limit')}>{c.limit === null ? '' : `${isUpperLimit(c.id) ? '≤' : '≥'} ${fmt(c.limit, c.dec)}${unit}`}</td>
                   <td data-label={t('col_result')}>{result(c.id, c.status, ts(`st_${c.status}`))}</td>

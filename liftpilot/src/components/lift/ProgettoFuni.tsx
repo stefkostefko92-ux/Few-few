@@ -63,6 +63,12 @@ function calataHint(derived: LiftDerived, fmt: Pres['fmt'], t: Props['t'], calat
   return <p id="progetto-calata" tabIndex={-1} className={bad ? 'hint bad' : 'hint'} role={bad ? 'alert' : undefined}>{text}</p>;
 }
 
+/** The margin of the car's and the counterweight's place with the fixed dimensions [mm] when it fails, else null. */
+const placeFail = (d: LiftDerived): number | null => {
+  const c = d.layout.checks.find((x) => x.id === 'v_place');
+  return c && c.status === 'fail' && c.value !== null ? c.value : null;
+};
+
 export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank, texts, setAuto, setBottom, t, porta, calate = null }: Props) {
   const { fmt } = P, layout = base.layout, DV = derived?.values ?? base;
   // the issues the calculation resolves: the way to it, beside them
@@ -91,7 +97,12 @@ export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank,
         <div className="rows">
           <p className="hint">{t('hint_funi')}</p>
           {complete && derived.calata !== null ? calataHint(derived, fmt, t, calate) : null}
-          {toCalc(complete && derived.issues.includes('calata'))}
+          {/* the plan's drop at the existing falls, the car or the counterweight no longer in its place: the software's
+              drop, not a dimension fixed by hand (round 46) */}
+          {complete && calate && placeFail(derived) !== null ? (
+            <p className="hint bad" role="alert">{t('hint_calata_esistenti_place', { Do: fmt(calate.Do, 0), m: fmt(placeFail(derived) ?? 0, 0) })}</p>
+          ) : null}
+          {toCalc(complete && (derived.issues.includes('calata') || (!!calate && placeFail(derived) !== null)))}
           {layout === 'bottom' ? (
             <>
               <div className={`row wide${bottomBlank ? ' need' : ''}`}>

@@ -12,12 +12,15 @@ import type { FormValues } from '@/calc/types';
 import { FIELD_IDS, inForm, shown } from '@/components/calc/fields';
 import { blankCalc, calcMissing } from '@/lib/calc-blank';
 import { visibleBad } from '@/lib/calc-input';
-import { neutralOf, outOfView, savedValues } from '@/lib/calc-saved';
+import { fromRecord, neutralOf, outOfView, savedValues } from '@/lib/calc-saved';
 import { deriveLift, interventoTo, macchinaResta, newLift, type Collaudo, type TipoIntervento } from '@/lib/lift';
 import { rispondi } from '@/lib/lift/risposte';
 import { liftInputsOf, progettoOf } from '@/lib/lift/progetto';
-import { mirrorRopes } from '@/lib/present/analysis';
 import { buildReport } from '@/lib/report/build';
+import { analyse, mirrorRopes } from '@/lib/present/analysis';
+import { calcDrops, deriveRoom } from '@/lib/room/derive';
+import { startSurvey } from '@/lib/room/survey';
+import { fallSlants } from '@/lib/tavole/survey-data';
 
 const LAYOUTS = ['top', 'topDefl', 'bottom'] as const;
 const ROPINGS = ['1', '2'] as const;
@@ -56,6 +59,9 @@ function typedElsewhere(V: FormValues): FormValues {
   for (const id of outOfView(V)) out[id] = id in garbage ? garbage[id] : id.startsWith('o_') ? (PRESETS.B[id] ?? '') : neutralOf(id);
   return out;
 }
+
+/** The existing machine's fields and ropes. */
+const MACHINE_O = FIELD_IDS.filter((id) => id.startsWith('o_'));
 
 const cases = LAYOUTS.flatMap((layout) => ROPINGS.flatMap((r) => TIPI.map((caso) => ({ layout, r, caso }))));
 
@@ -140,4 +146,49 @@ test('relazione di un calcolo salvato da vuoto: nessun buco, nessun valore che i
     assert.equal(keys.some((k) => k.includes('Inerzia per puleggia')), shown('Jp', values), `${tag}: Jp`);
     assert.equal(keys.some((k) => k.startsWith('Diametro pulegge di rinvio')), layout !== 'top' || r === '2' || nps > 0, `${tag}: Dp`);
   }
+});
+
+test('un nuovo calcolo da un record: i campi fuori vista come in un modulo nuovo, chiesti quando tornano in vista', () => {
+  const GEOMETRY = ['dx', 'h', 'Hv', 'Dp', 'Jp'];
+  for (const { layout, r, caso } of cases) {
+    const tag = `${caso} ${layout} ${r}:1`, saved = savedValues(fillMissing(start(caso, layout, r).V)), form = fromRecord(saved);
+    // nothing in view changes, nothing is missing as it opens, saved again it is the same record
+    for (const id of FIELD_IDS) if (inForm(id, saved)) assert.equal(form[id], saved[id], `${tag}: ${id} in view`);
+    assert.deepEqual(calcMissing(form, readInputs(form).bad), [], `${tag}: nothing missing`);
+    assert.deepEqual(savedValues(form), saved, `${tag}: saved again, the same values`);
+    // the engine's placeholders never come back: another layout or roping asks for its geometry
+    for (const l2 of LAYOUTS) for (const r2 of ROPINGS) {
+      const W = { ...form, layout: l2, r: r2 }, missing = calcMissing(W, readInputs(W).bad);
+      for (const id of GEOMETRY) if (inForm(id, W) && !inForm(id, saved)) assert.ok(missing.includes(id), `${tag} → ${l2} ${r2}:1: ${id} asked for`);
+    }
+  }
+  // the recheck's walk: «in alto, tiro diretto» 1:1, then «in alto, con rinvio»
+  const top = fromRecord(savedValues(fillMissing(start('AMMODERNAMENTO', 'top', '1').V))), defl = { ...top, layout: 'topDefl' };
+  assert.deepEqual([top.dx, top.h, top.Hv, top.Dp, top.Jp], ['', '', '', '', '']);
+  const asked = calcMissing(defl, readInputs(defl).bad);
+  assert.ok(['dx', 'h', 'Dp', 'Jp'].every((id) => asked.includes(id)), asked.join(', '));
+  // the groove's undercut and the existing machine: a new form's when they come into view
+  const V = { ...fillMissing(start('SOLO_ARGANO', 'top', '1').V), n_groove: 'VH', o_groove: 'VH' }, g = fromRecord(savedValues(V));
+  assert.deepEqual([g.n_beta, g.o_beta], ['', '']);
+  const uu = { ...g, n_groove: 'UU', o_groove: 'UU' };
+  assert.ok(['n_beta', 'o_beta'].every((id) => calcMissing(uu, readInputs(uu).bad).includes(id)));
+  const kept = fromRecord(savedValues(fillMissing(start('AMMODERNAMENTO_RESTA', 'top', '1').V)));
+  assert.ok(MACHINE_O.every((id) => kept[id] === (blankCalc()[id] ?? '')), 'the existing machine, not compared: a new form’s');
+});
+
+test('allineamento della puleggia sulle calate esistenti: letto dal locale macchine, mostrato e salvato anche con l’angolo a mano', () => {
+  const survey = startSurvey(600);
+  for (const alphaMode of ['geo', 'manual']) {
+    for (const dropAlign of ['center', 'car']) {
+      const tag = `${alphaMode} ${dropAlign}`, V: FormValues = { ...PRESETS.C, alphaMode, alphaManual: 170, dropAlign }, S = savedValues(V);
+      assert.ok(inForm('dropAlign', V), `${tag}: shown`);
+      assert.equal(S.dropAlign, dropAlign, `${tag}: saved as chosen`);
+      const typed = deriveRoom(V, survey), saved = deriveRoom(S, survey);
+      assert.deepEqual(calcDrops(analyse(S), saved.M), calcDrops(analyse(V), typed.M), `${tag}: the sheave's place`);
+      assert.deepEqual(fallSlants(saved), fallSlants(typed), `${tag}: the falls' slant`);
+      assert.equal(fallSlants(saved).aligned, dropAlign === 'car', tag);
+    }
+  }
+  // out of view only where nothing reads it: no existing drops (not compared, another layout, a new lift)
+  for (const W of [{ ...PRESETS.C, compare: false }, { ...PRESETS.C, layout: 'topDefl' }, { ...PRESETS.C, context: 'new' }]) assert.ok(!inForm('dropAlign', W));
 });

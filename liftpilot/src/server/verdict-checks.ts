@@ -11,6 +11,7 @@ import type { SessionUser } from '@/lib/auth';
 import { formValuesSchema } from '@/lib/calc-input';
 import { prisma } from '@/lib/db';
 import { liftRecord } from '@/lib/lift-record';
+import { verificaKey } from '@/lib/lift/calata';
 import type { Collaudo } from '@/lib/lift/collaudo';
 import { textsFor, type ShownMachine } from '@/lib/present/texts';
 import { makeFmt, makePres } from '@/lib/present/tr';
@@ -88,16 +89,18 @@ async function listOf(user: SessionUser, kind: VerdictKind, id: string): Promise
   });
   if (!d) return null;
   const rec = attempt(() => liftRecord(d, d.shaftDesign.sha256, d.calculation.sha256));
+  // the existing falls kept: the place of the car and the counterweight names them among the fixed dimensions
+  const values = formValuesSchema.safeParse(d.calculation.inputs), key = values.success ? (k: string) => verificaKey(k, values.data) : undefined;
   if (rec?.same && rec.shaftLayout) {
     // reproduced: the save's own derivation (save.ts createLiftDesign), the beams under the machine included — the shaft
     // design's layout the one the record's comparison has just made
     const dv = rec.dv;
-    return { list: liftListDerived(dv.collaudo, dv.analysis.res.checks, rec.shaftLayout.checks, dv.supportChecks), counts: d, machine: dv.analysis.ctx.N, old: false };
+    return { list: liftListDerived(dv.collaudo, dv.analysis.res.checks, rec.shaftLayout.checks, dv.supportChecks), counts: d, machine: dv.analysis.ctx.N, key, old: false };
   }
   const defs: readonly ShaftCheck[] = rec ? mergeChecks(rec.dv.layout.checks, rec.dv.supportChecks) : [];
   return {
     list: liftListStored(d.calculation.results, d.shaftDesign.results, collaudoOf(d.calculation.inputs, d.calculation.collaudo), defs), counts: d,
-    machine: machineOf(d.calculation.results), old: true,
+    machine: machineOf(d.calculation.results), key, old: true,
   };
 }
 

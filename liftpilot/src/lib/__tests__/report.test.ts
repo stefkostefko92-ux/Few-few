@@ -10,6 +10,7 @@ import { SHAFT_ENGINE_VERSION, defaultInputs, shaftSnapshot, type ShaftInputs } 
 import { readFileSync } from 'node:fs';
 import { mirrorRopes } from '@/lib/present/analysis';
 import { ADVICE_MODELS, valuesAdvice } from '@/lib/lift/advice';
+import { NO_MARKS } from '@/lib/lift/marks';
 import { buildReport } from '../report/build';
 import type { ReportDoc } from '../report/model';
 import type { ReportDesign } from '../report/shaft';
@@ -139,6 +140,12 @@ test('carta intestata, argano riconosciuto dal catalogo, argano consigliato fra 
   void _taken;
   const known = buildReport({ ...input('A'), values: unnamed, advice }).blocks.find((b) => b.t === 'kv' && b.rows[0]?.[0] === 'Costruttore e modello');
   assert.ok(known?.t === 'kv' && known.rows[0]?.[1].startsWith(`${first.brand} ${first.model} (riconosciuto dal catalogo`));
+  // «Argano: No» (round 46): the machine kept is the existing one — a record saved before, with the catalogue's model of
+  // an earlier calculation carried over, names no catalogue's machine, taken or recognised, nor what the sizing chose
+  const kept = buildReport({ ...input('A'), values: mirrorRopes({ ...PRESETS.A, ...first.values }), tipo: 'AMMODERNAMENTO',
+    marks: { ...NO_MARKS, collaudo: { norma: '10411-1', parti: ['controller'] } } });
+  assert.ok(!kept.blocks.some((b) => b.t === 'kv' && b.rows.some((r) => r[0] === 'Costruttore e modello')), 'no maker and model for the machine kept');
+  assert.ok(!texts(kept).some((x) => x.includes('preso dal catalogo') || x.startsWith('Dal catalogo del costruttore')));
   const sec = doc.blocks.findIndex((b) => b.t === 'h2' && b.text.endsWith('Confronto degli argani SICOR e Montanari (informativo)'));
   assert.ok(sec > 0);
   const grid = doc.blocks.slice(sec).find((b) => b.t === 'grid');

@@ -92,3 +92,19 @@ test('dal calcolo di un progetto dell’impianto: nps come inserito, la prova de
   assert.deepEqual([r.intervento.tipo, r.intervento.collaudo], ['SOLO_ARGANO', R.collaudo]);
   assert.deepEqual(Object.keys(r.progetto?.valori ?? {}).sort(), ['H', 'L0', 'dx', 'h']);
 });
+
+test('da un record: i campi fuori vista come in un modulo nuovo, mai i valori di riserva del motore salvati al loro posto', async () => {
+  const { calcStart } = await start();
+  const { savedValues } = await import('@/lib/calc-saved');
+  // «in alto, tiro diretto» 1:1 saved with the engine's placeholders in the deflector's and the machine below's fields
+  const saved = savedValues({ ...PRESETS.C, layout: 'top', r: '1', dx: 0.32, h: 0.65, Hv: 21, Dp: 300, Jp: 1.5 });
+  assert.deepEqual([saved.dx, saved.h, saved.Hv, saved.Dp, saved.Jp], [0.3, 0.6, 24, 400, 0], 'stored at the placeholders');
+  const rec = calc({ inputs: saved, intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'] } });
+  calcs = [rec];
+  for (const from of [rec.id, null]) {
+    const s = await must(calcStart(user, 'p1', from));
+    assert.deepEqual([s.values.dx, s.values.h, s.values.Hv, s.values.Dp, s.values.Jp], ['', '', '', '', ''], `from ${from ?? 'the latest'}`);
+    assert.equal(s.values.Q, saved.Q, 'what is in view as saved');
+    assert.equal(s.values.dropAlign, saved.dropAlign);
+  }
+});

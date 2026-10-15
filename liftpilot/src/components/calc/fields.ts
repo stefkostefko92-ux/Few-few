@@ -80,7 +80,9 @@ export function shown(id: string, V: FormValues): boolean {
     // contestoDi): never a field of its own, still among the values and in the hash
     case 'context': return false;
     case 'alphaManual': return V.alphaMode === 'manual';
-    case 'dropAlign': return V.context === 'repl' && V.layout === 'top' && V.alphaMode !== 'manual' && !!V.compare;
+    // the new sheave on the existing drops: the wrap angle from the geometry reads it, and the machine room's sheave and
+    // falls whatever the angle (room/derive.ts calcDrops, tavole/survey-data.ts fallSlants; round 46: with the angle entered by hand too)
+    case 'dropAlign': return V.context === 'repl' && V.layout === 'top' && !!V.compare;
     case 'dx': case 'h': return V.layout === 'topDefl';
     case 'Hv': return V.layout === 'bottom';
     case 'Dp': return V.layout !== 'top' || V.r === '2' || numOf(V, 'nps') + numOf(V, 'npr') > 0;

@@ -160,9 +160,9 @@ export function buildReport(r: ReportInput): ReportDoc {
   }
 
   section('Argano verificato');
-  // the maker and model: proposed from a catalogue in the one form, else recognised by the values (ratio, static load,
-  // mass, sheave), also the one form's machine entered by hand — drawn and checked as that machine (derive.ts)
-  const chosen = m.machineProposed ? m.catalog ?? null : null, known = chosen ? null : catalogMachineOf(I, N, modelOf(r.values))?.machine ?? null;
+  // the maker and model: proposed from a catalogue in the one form, else recognised by the values (ratio, static load, mass,
+  // sheave), also the one form's machine entered by hand (derive.ts); never a machine kept, the existing one (round 46)
+  const chosen = m.machineProposed ? m.catalog ?? null : null, known = chosen || kept ? null : catalogMachineOf(I, N, modelOf(r.values))?.machine ?? null;
   const taken = !!known && `${known.brand} ${known.model}` === modelOf(r.values);
   const how = !taken ? 'riconosciuto dal catalogo' : r.design ? 'inserito a mano con il modello del catalogo' : 'preso dal catalogo nel calcolatore';
   const named: [string, string][] = chosen ? [['Costruttore e modello', `${chosen.brand} ${chosen.model} (dal catalogo, scelto nel progetto)`]]

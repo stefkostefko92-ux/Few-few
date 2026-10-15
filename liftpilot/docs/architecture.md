@@ -254,7 +254,8 @@ src/server/          Server actions ('use server') и заявки, винаги
                      обновяването), refresh-actions («Aggiorna con il software attuale»), drawing-pdf (PDF-ът на издадения
                      комплект, пазен какъвто е издаден), download (отказите и отговорите на сваляните документи; кратките отговори — на италиански от src/lib/answers.ts, думите на errors.*), calc-start
                      (кръг 45: откъде тръгва „Calcolo argano“ — ?from= (на друго съоръжение — null, страницата 404),
-                     черновата, последното от стъпка 2, последното изобщо, празно — с типа, изпитването и частите), progetto-start (откъде тръгва Progetto: избраният проект,
+                     черновата, последното от стъпка 2, последното изобщо, празно — с типа, изпитването и частите; от запис —
+                     полетата извън погледа като в нов формуляр, src/lib/calc-saved.ts fromRecord, кръг 46), progetto-start (откъде тръгва Progetto: избраният проект,
                      черновата, последният проект, пренесеното от съоръжението — src/lib/lift/carry.ts — или празно; основата
                      ?calc=), calcolo-base (кръг 45: изчисленията от стъпка 2 — STEP2, основата, типът на съоръжението:
                      tipoDi/tipoDaUltimi/tipoImpianto, legacyPiuNuovo — проект отпреди, по-нов от изчислението; localeRilevabile —

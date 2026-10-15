@@ -104,10 +104,12 @@ const TYPED = {
   o_brakeNm: 80, o_mass: 600, o_n: 4, o_d: 11, o_Fmin: 57.47, o_qf: 0.4065, n_D: 560, n_beta: 90, n_gamma: 35, n_i: 43, n_etaD: 0.7, n_nm: 1450, n_Pn: 7.5,
   n_Jm: 0.08, n_Js: 2.5, n_brakeSets: 2, n_brakeNm: 60, n_mass: 450, n_n: 4, n_d: 10, n_Fmin: 47.5, n_qf: 0.336,
 };
-const PICKED = { o_groove: 'UU', n_groove: 'UU', o_poles: '4', n_poles: '4' };
+const PICKED = { o_groove: 'UU', n_groove: 'UU', o_poles: '4', n_poles: '4', layout: 'top', r: '1' };
 
-/** The form filled with exactly what the list of what is missing names, field by field, until the verdict shows. */
+/** The form filled with exactly what the list of what is missing names, field by field, until the verdict shows. The
+ *  list follows the values a moment later (useDeferredValue): a choice just made may still be named, and is made again. */
 async function fillMissing(page) {
+  await page.waitForTimeout(400);
   for (let round = 0; round < 8 && !(await page.locator('.summary .verdict .big').count()); round++) {
     const ids = await page.$$eval('.summary .missing-list a', (as) => as.map((a) => (a.getAttribute('href') ?? '').slice(1)));
     for (const id of ids) {

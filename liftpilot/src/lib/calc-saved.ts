@@ -4,10 +4,11 @@
 // so that a field nobody can see never stops a save nor travels with the record (its inputs, its hash, the documents,
 // the Progetto and the machine room drawn on it). One rule with the form: `inForm` (src/components/calc/fields.ts).
 // The results are the same bit for bit (calc-saved.test.ts). Pure; shared by the calculator, the server's save and
-// «Aggiorna con il software attuale».
+// «Aggiorna con il software attuale». And the other way (`fromRecord`): a form started from a saved record holds in
+// those fields what a brand new form holds, never the engine's placeholders.
 import type { FormValues } from '@/calc/types';
 import { FIELD_IDS, SERVICE, inForm } from '@/components/calc/fields';
-import { CALC_STANDARD } from './calc-blank';
+import { CALC_STANDARD, blankCalc } from './calc-blank';
 import { mirrorRopes } from './present/analysis';
 
 /** Values a save keeps whatever the form shows: the calculation's context (the type of intervention sets it), the
@@ -38,5 +39,16 @@ export const outOfView = (V: FormValues): string[] => FIELD_IDS.filter((id) => !
 export function savedValues(values: FormValues): FormValues {
   const V = mirrorRopes(values), out: Record<string, FormValues[string]> = { ...V };
   for (const id of outOfView(V)) out[id] = neutralOf(id);
+  return out;
+}
+
+/** The values of a form started from a saved record (src/server/calc-start.ts: «Nuovo calcolo da questo», the latest
+ *  calculation, the form «Aggiorna» opens on a record that no longer passes): every field out of view in that state —
+ *  saved at its placeholder (savedValues), or as typed under another layout before round 46 — as a brand new form has
+ *  it, the software's standard else empty, so that a field coming into view (another layout, roping or groove, the
+ *  existing machine compared) is asked for or marked standard, never a value nobody entered. Nothing in view changes. */
+export function fromRecord(record: FormValues): FormValues {
+  const blank = blankCalc(), out: Record<string, FormValues[string]> = { ...record };
+  for (const id of outOfView(record)) out[id] = blank[id];
   return out;
 }

@@ -9,10 +9,12 @@ import 'server-only';
 // drawing adds again: never copied), the test the design's, and the travel, the rope beyond it, the diverting pulley and
 // the head pulleys' height are marked «dal progetto». The calculation's context is the type's. A ?from= that is not a
 // calculation of this project gives null (the page answers 404): never an empty form whose first change would overwrite
-// the project's draft.
+// the project's draft. Started from a record, the fields out of view in it are a brand new form's (calc-saved.ts
+// fromRecord): asked for, or marked standard, once they come into view.
 import type { FormValues } from '@/calc/types';
 import type { SessionUser } from '@/lib/auth';
 import { blankCalc } from '@/lib/calc-blank';
+import { fromRecord } from '@/lib/calc-saved';
 import { formValuesSchema } from '@/lib/calc-input';
 import { prisma } from '@/lib/db';
 import { calcDraftSchema } from '@/lib/draft-input';
@@ -74,5 +76,8 @@ export async function calcStart(user: SessionUser, projectId: string, fromId: st
     chosen = c.intervento ? sceltaSalvata(values, raw.data) : raw.data;
   }
   const tipo = c.intervento ?? interventoDi(values.context, chosen ?? (raw?.success ? raw.data : null));
-  return { ...withType(values, tipo, chosen, null, c.intervento !== null), mode: null, draft: null, progetto };
+  // the fields out of view in the state it opens in, as a brand new form has them (round 46, calc-saved.ts fromRecord):
+  // the engine's placeholders a save stored there never come back as values the user seems to have entered
+  const typed = withType(values, tipo, chosen, null, c.intervento !== null);
+  return { ...typed, values: fromRecord(typed.values), mode: null, draft: null, progetto };
 }

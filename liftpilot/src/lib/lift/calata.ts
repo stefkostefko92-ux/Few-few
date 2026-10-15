@@ -22,6 +22,11 @@ export function calateEsistenti(V: FormValues): number | null {
   return c.I.layout === 'top' && !planFalls(c) ? c.O.D : null;
 }
 
+/** The label key of a shaft check (messages shaft) of a drawing on the values `V`: on the existing falls the plan's drop
+ *  is theirs, set by the software (not by hand), so the car's and the counterweight's place with the fixed dimensions
+ *  names them (round 46: «Quote fissate a mano» with no dimension fixed by hand). */
+export const verificaKey = (id: string, V: FormValues): string => (id === 'v_place' && calateEsistenti(V) !== null ? 'c_v_place_calate' : `c_${id}`);
+
 /** The plan's drop dimension and the length that hangs the falls `Do` apart (the falls move with the drop); null without
  *  a direct pull. */
 export function calataVerso(S: ShaftInputs, d: Pick<LiftDerived, 'layout' | 'calata'>, Do: number): { e: Edit; length: number } | null {

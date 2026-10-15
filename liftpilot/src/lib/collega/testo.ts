@@ -43,19 +43,43 @@ export function paroleDaCercare(text: string | null | undefined, max = 3): strin
 /** The words that start a street, never a municipality's name. */
 const STRADA = /^(?:via|viale|v\.le|piazza|p\.za|p\.zza|piazzale|corso|c\.so|largo|l\.go|vicolo|strada|str\.|localita|località|loc\.|frazione|fraz\.|condominio)\b/iu;
 
+/** The words that start a part of the building, never a municipality's name: whatever follows them. */
+const PARTE_SEMPRE = new Set(['palazzina', 'pal', 'edificio', 'ed', 'fabbricato', 'fabb', 'stabile', 'blocco', 'corpo', 'interno', 'int', 'isolato', 'lotto',
+  'ingresso', 'portone', 'cortile', 'residence', 'complesso', 'angolo', 'presso', 'c/o', 'sc', 'zona', 'quartiere', 'rione']);
+/** The words that start a part of the building with a short mark after them («Scala B», «Torre 2», «Piano terra»), but
+ *  also a municipality's name with more words or alone (Scala, Torre del Greco, Piano di Sorrento, Ala). */
+const PARTE_CON_SEGNO = new Set(['scala', 'torre', 'piano', 'ala', 'lato', 'settore']);
+const SEGNO = /^(?:[a-z]{1,2}\d{0,3}|\d+[a-z]?|[ivx]+|nord|sud|est|ovest|terra|rialzato|seminterrato|interrato|attico|mezzanino|primo|secondo|terzo|quarto|quinto)$/u;
+
+/** A part of an address that names a part of the building (round 46: «Scala B», «Palazzina C», «int. 3»): one of those
+ *  words first, or a lone letter last (no municipality ends in one). */
+export function parteEdificio(text: string): boolean {
+  const w = text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim().split(/\s+/u).filter(Boolean).map((x) => x.replace(/\.$/u, ''));
+  const first = w[0] ?? '', last = w[w.length - 1] ?? '';
+  if (PARTE_SEMPRE.has(first) || /^\p{L}$/u.test(last)) return true;
+  return PARTE_CON_SEGNO.has(first) && w.length === 2 && SEGNO.test(last);
+}
+
+/** A municipality as written last in an address: the postcode before it, the province in brackets after it. */
+const COMUNE = /^(?:\d{5}\s+)?([\p{L}][\p{L}' .-]*?)(?:\s*\(\s*([A-Za-z]{2})\s*\))?$/u;
+
 /** A survey's address in its parts (round 46): the municipality written last («…, Milano», «…, 20100 Milano (MI)») goes
- *  to the city — and the province in brackets to the province —, the rest is the street; an address whose last part is
- *  no municipality (a street, a number) is all street. */
+ *  to the city — and the province in brackets to the province —, the rest is the street; the parts of the building
+ *  written after it («…, Milano, scala A») stay with the street and are skipped to find it, never taken for it. An
+ *  address whose last part (past those) is no municipality (a street, a number, a part of the building: «Via Roma 5,
+ *  Scala B») is all street, with no city. */
 export function dividiIndirizzo(text: string | null | undefined): { via: string; citta: string | null; provincia: string | null } {
-  const all = (text ?? '').trim(), cut = all.lastIndexOf(','), via = cut > 0 ? all.slice(0, cut).trim() : all;
-  const m = cut > 0 ? /^(?:\d{5}\s+)?([\p{L}][\p{L}' .-]*?)(?:\s*\(\s*([A-Za-z]{2})\s*\))?$/u.exec(all.slice(cut + 1).trim()) : null;
-  const name = m?.[1]?.trim() ?? '';
-  if (!via || !name || STRADA.test(name)) return { via: all, citta: null, provincia: null };
-  return { via, citta: name, provincia: m?.[2] ? m[2].toUpperCase() : null };
+  const all = (text ?? '').trim(), parts = all.split(',').map((p) => p.trim()).filter(Boolean);
+  let i = parts.length - 1;
+  while (i > 0 && parteEdificio(parts[i] ?? '')) i -= 1;
+  const m = i > 0 ? COMUNE.exec(parts[i] ?? '') : null, name = m?.[1]?.trim() ?? '';
+  if (!m || !name || STRADA.test(name) || parteEdificio(name)) return { via: all, citta: null, provincia: null };
+  const via = parts.filter((_, k) => k !== i).join(', ');
+  return { via, citta: name, provincia: m[2] ? m[2].toUpperCase() : null };
 }
 
 /** The municipality of a survey's address and an installation's city: the same unless both are written and their words
- *  differ (a survey without one says nothing against it). */
+ *  differ (a survey without one — nothing after the street but parts of the building — says nothing against it). */
 export function stessaCitta(indirizzoRilievo: string | null | undefined, citta: string | null | undefined): boolean {
   const a = dividiIndirizzo(indirizzoRilievo).citta;
   if (!a || !citta?.trim()) return true;
