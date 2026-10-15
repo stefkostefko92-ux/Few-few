@@ -9,7 +9,7 @@ import { REVIEW_MAX } from '@/lib/review';
 import { calcLabelSchema, idSchema, reviewSchema } from '@/lib/schemas';
 import { formValuesSchema } from '@/lib/calc-input';
 import { collaudoSchema, tipoInterventoSchema } from '@/lib/lift-input';
-import { interventoValido } from '@/lib/lift/intervento';
+import { interventoValido, regolazioneChiesta } from '@/lib/lift/intervento';
 import { dropDraft } from './drafts';
 import { createCalculation, type Created } from './save';
 
@@ -19,7 +19,7 @@ export type SaveResult = Created;
 // and stores the immutable snapshot with its hash (save.ts). The browser's result is never trusted. The intervention
 // declared and the standards of the acceptance test chosen with it are stored beside the snapshot (they are what the
 // documents set out, not the physics); the type, the values and the test must agree (interventoValido: 'invalidIntervento'
-// with the keys they disagree on).
+// with the keys they disagree on; a new record answers the regulation where it is asked: 'regolazione').
 export async function saveCalculationAction(input: { projectId: unknown; values: unknown; label: unknown; collaudo?: unknown; intervento?: unknown }): Promise<SaveResult> {
   const user = await getSessionUser();
   if (!user) return { ok: false, error: 'unauthorized' };
@@ -35,7 +35,10 @@ export async function saveCalculationAction(input: { projectId: unknown; values:
   // an empty roping reads as 1:1 in the calculation: a new calculation has it chosen
   if (String(values.data.r ?? '').trim() === '') return { ok: false, error: 'invalidFields', fields: ['r'] };
   const chosen = collaudo?.success ? collaudo.data : null;
-  const disagree = tipo.success ? interventoValido(tipo.data, values.data, chosen) : [];
+  // a new record answers the existing controller's speed regulation where it is asked (round 46; the form asks it):
+  // unanswered, 'regolazione' — «Aggiorna» makes a record saved before again without it (its documents print ⚠)
+  const unanswered = tipo.success && chosen && regolazioneChiesta(tipo.data, chosen) && !chosen.regolazione ? ['regolazione'] : [];
+  const disagree = tipo.success ? [...interventoValido(tipo.data, values.data, chosen), ...unanswered] : [];
   if (!tipo.success || disagree.length) return { ok: false, error: 'invalidIntervento', fields: disagree };
   // every installation of the company, active, whatever it was created as (round 45): its «Calcolo argano»
   const project = await prisma.project.findFirst({ where: { id: projectId.data, companyId: user.companyId, archivedAt: null }, select: { id: true } });

@@ -40,7 +40,8 @@ export const OBBLIGHI_VARIAZIONI: Readonly<Record<Norma10411, Partial<Readonly<R
     loadRapporto: lt('UNI 10411-1:2024, 6.1 e App. D', 'rapporto tra i carichi appesi lato cabina e lato contrappeso cambiato: stabilità '
       + 'allo scorrimento (D.1) e pressione nelle gole (D.2) verificate, ammortizzatori secondo la UNI EN 81-20 5.8 sotto cabina e contrappeso; '
       + 'aderenza eccessiva delle funi esclusa (UNI EN 81-20 5.5.3 c))'),
-    travelUp: lt('UNI 10411-1:2024, 16 a)–l)', 'corsa allungata rispetto al primo collaudo, fino a 8 m: contrappeso guidato e difesa del suo '
+    travelUp: lt('UNI 10411-1:2024, 16 a)–l)', 'corsa allungata rispetto al primo collaudo (fino a 8 m l’intervento non conta come nuova '
+      + 'installazione, punto 16): contrappeso guidato e difesa del suo '
       + 'percorso (a)), locale o macchina spostati con i punti 8 e 9 (b), c)), difese dei tratti di vano aggiunti (d)), linee elettriche (e)), '
       + 'quadro (f)), guide dei tratti aggiunti (g)), funi nuove con il 17.2 (h)), fune del limitatore (i)), spazi liberi in fossa e in testata '
       + '(j)), porte di piano nuove con il punto 19 (k)), extracorsa all’estremità interessata (l))'),

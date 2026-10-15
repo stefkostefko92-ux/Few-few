@@ -3,7 +3,8 @@
 // What the logbook (libretto) or a later verbale documents of the existing lift — the reference rated speed, under UNI
 // 10411-1 the speed after the passage of the mains to 50 Hz, the travel at the first acceptance test (under -11 the
 // documented one) — against the calculation's (round 46): a change past the rule brings the speed or the travel among
-// the parts of the test (src/lib/lift/modifica.ts variazioneVelocita, variazioneCorsa), the line says it live. Typed as
+// the parts of the test (src/lib/lift/modifica.ts variazioneVelocita, variazioneCorsa), the line says it live, against
+// the speed each change is measured from (an increase the reference, a decrease the logbook's speed). Typed as
 // text; each value stored once it is a valid number (none: nothing stored), as CarichiDocumentati. The linked survey's
 // value only as a reference beside the field («nel rilievo: …»), never filled in.
 import { useState } from 'react';
@@ -48,6 +49,8 @@ export default function DatiLibretto({ P, value, calc, set }: Props) {
   const xv = norma && v !== null ? variazioneVelocita(norma, L, v) : null, xh = norma && H !== null ? variazioneCorsa(norma, L, H) : null;
   const pct = (x: number): string => `${x < 0 ? '−' : '+'}${P.fmt(Math.abs(x) * 100, 1)} %`, m = (x: number): string => `${x < 0 ? '−' : '+'}${P.fmt(Math.abs(x), 2)} m`;
   const clausolaV = !uno ? 'UNI 10411-11, 15' : xv?.aumento ? 'UNI 10411-1, 15.1' : 'UNI 10411-1, 15.16';
+  // an increase against the reference (15.1), a decrease against the logbook's speed (15.16): the documents' comparisons
+  const [c0, c1] = xv?.confronti ?? [];
   return (
     <fieldset className="parti libretto" id="libretto">
       <legend>{t('lib_title')}</legend>
@@ -61,10 +64,12 @@ export default function DatiLibretto({ P, value, calc, set }: Props) {
           </label>
         ))}
       </div>
-      {xv ? (
+      {xv && c0 ? (
         <p className={`note${xv.variata ? ' bad' : ''}`} role="status" data-var="velocita">
-          {xv.variata ? t('lib_v_variata', { dv: pct(xv.dv), rif: P.fmt(xv.rif, 2), clausola: clausolaV })
-            : uno && Math.abs(xv.dv) > 0.0005 ? t('lib_v_entro', { dv: pct(xv.dv), rif: P.fmt(xv.rif, 2) }) : t('lib_v_uguale')}
+          {xv.variata ? t('lib_v_variata', { dv: pct(c0.dv), rif: P.fmt(c0.rispetto, 2), clausola: clausolaV })
+            : !uno || xv.uguale ? t('lib_v_uguale')
+              : c1 ? t('lib_v_tra', { dv1: pct(c0.dv), v1: P.fmt(c0.rispetto, 2), dv2: pct(c1.dv), v2: P.fmt(c1.rispetto, 2) })
+                : !L?.v && c0.dv < 0 ? t('lib_v_sotto50', { dv: pct(c0.dv), rif: P.fmt(c0.rispetto, 2) }) : t('lib_v_entro', { dv: pct(c0.dv), rif: P.fmt(c0.rispetto, 2) })}
         </p>
       ) : null}
       {xh && L?.H ? (

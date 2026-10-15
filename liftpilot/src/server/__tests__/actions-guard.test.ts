@@ -132,19 +132,54 @@ test('the intervention declared with a calculation must agree with its values an
   // not one of the three
   assert.deepEqual(await save({ intervento: 'FULL' }), { ok: false, error: 'invalidFields' });
   // a «Solo argano» with the landing doors, a transformation on an existing lift's values, a renovation keeping the sling
-  assert.deepEqual(await save({ intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine', 'landingDoors'] } }),
+  assert.deepEqual(await save({ intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine', 'landingDoors'], regolazione: 'vvvf' } }),
     { ok: false, error: 'invalidIntervento', fields: ['parti'] });
   assert.deepEqual(await save({ intervento: 'TRASFORMAZIONE_COMPLETA' }), { ok: false, error: 'invalidIntervento', fields: ['context'] });
   assert.deepEqual(await save({ intervento: 'AMMODERNAMENTO', collaudo: { norma: 'en81', parti: ['machine', 'car'] } }), { ok: false, error: 'invalidIntervento', fields: ['norma'] });
-  // agreeing: past the check, to the record, whatever the project was created as
-  await assert.rejects(save({ intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'] } }), /the guard must stop before the record/);
+  // agreeing: past the check, to the record, whatever the project was created as (round 46: a new machine on the existing
+  // controller answers its speed regulation)
+  await assert.rejects(save({ intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'], regolazione: 'vvvf' } }), /the guard must stop before the record/);
   // the machine and its ropes with the load the documented loads change (UNI 10411, 6.1): the modernisation the «Solo
   // argano» warning points to is saved; without the loads it is a «Solo argano» and is refused
   const C = { ...values, ...PRESETS.C, r: PRESETS.C.r ?? 1, context: 'repl', keepRopes: true, compare: true }, doc = { documentato: { Q: 400, P: 600, Mcw: 800 } };
-  await assert.rejects(saveCalculationAction({ projectId: 'prepl', values: C, label: 'x', intervento: 'AMMODERNAMENTO', collaudo: { norma: '10411-1', parti: ['machine', 'ropes'], ...doc } }),
+  await assert.rejects(saveCalculationAction({ projectId: 'prepl', values: C, label: 'x', intervento: 'AMMODERNAMENTO', collaudo: { norma: '10411-1', parti: ['machine', 'ropes'], regolazione: 'vvvf', ...doc } }),
     /the guard must stop before the record/);
-  assert.deepEqual(await saveCalculationAction({ projectId: 'prepl', values: C, label: 'x', intervento: 'AMMODERNAMENTO', collaudo: { norma: '10411-1', parti: ['machine', 'ropes'] } }),
+  assert.deepEqual(await saveCalculationAction({ projectId: 'prepl', values: C, label: 'x', intervento: 'AMMODERNAMENTO', collaudo: { norma: '10411-1', parti: ['machine', 'ropes'], regolazione: 'vvvf' } }),
     { ok: false, error: 'invalidIntervento', fields: ['parti'] });
-  await assert.rejects(saveCalculationAction({ projectId: 'pfull', values, label: 'x', intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'] } }),
+  await assert.rejects(saveCalculationAction({ projectId: 'pfull', values, label: 'x', intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'], regolazione: 'vvvf' } }),
+    /the guard must stop before the record/);
+});
+
+test('round 46: the logbook\'s speed on a «Solo argano» and a new machine on a controller without speed regulation, refused at the save', async () => {
+  const { PRESETS } = await import(src('calc/presets.ts'));
+  const { saveCalculationAction } = await import(src('server/calc-actions.ts'));
+  role = 'TECHNICIAN';
+  const values = { ...PRESETS.A, r: PRESETS.A.r ?? 1, context: 'repl', keepRopes: true, compare: true }, v = Number(values.v);
+  const save = (intervento: string, collaudo: Record<string, unknown>) => saveCalculationAction({ projectId: 'prepl', values, label: 'x', intervento, collaudo });
+  const solo = (norma: string, libretto: Record<string, number>) => save('SOLO_ARGANO', { norma, parti: ['machine'], libretto, regolazione: 'vvvf' });
+  const refused = (fields: string[]) => ({ ok: false, error: 'invalidIntervento', fields });
+  // UNI 10411-1 15.1: more than 5 % above the logbook's speed — the speed is changed, no «Solo argano»; within 5 % — saved
+  assert.deepEqual(await solo('10411-1', { v: v / 1.06 }), refused(['velocita']), '-1 +6 %');
+  await assert.rejects(solo('10411-1', { v: v / 1.04 }), /the guard must stop before the record/, '-1 +4 %');
+  // 15.16: more than 5 % below it
+  assert.deepEqual(await solo('10411-1', { v: v / 0.94 }), refused(['velocita']), '-1 −6 %');
+  // UNI 10411-11: any change past the rounding
+  assert.deepEqual(await solo('10411-11', { v: v / 1.04 }), refused(['velocita']), '-11 +4 %');
+  // the travel by the logbook (UNI 10411-1 16 / -11 16): changed past the rounding
+  assert.deepEqual(await solo('10411-1', { H: Number(values.H) - 2 }), refused(['corsa']));
+  // UNI 10411-1 11.2.1 / UNI 10411-11 11.2: a new machine on an existing controller of one or two speeds — the controller
+  // is replaced ('inverter'); with VVVF, or the controller replaced too, saved; unanswered — a new record is refused
+  // ('regolazione': the form asks it), a record saved before still updates (refresh-actions.test.ts)
+  for (const regolazione of ['1v', '2v']) {
+    assert.deepEqual(await save('SOLO_ARGANO', { norma: '10411-1', parti: ['machine'], regolazione }), refused(['inverter']), `SOLO ${regolazione}`);
+    assert.deepEqual(await save('AMMODERNAMENTO', { norma: '10411-11', parti: ['machine', 'car'], regolazione }), refused(['inverter']), `AMMOD ${regolazione}`);
+    await assert.rejects(save('AMMODERNAMENTO', { norma: '10411-1', parti: ['machine', 'controller', 'car'], regolazione }), /the guard must stop before the record/);
+  }
+  await assert.rejects(save('SOLO_ARGANO', { norma: '10411-1', parti: ['machine'], regolazione: 'vvvf' }), /the guard must stop before the record/);
+  assert.deepEqual(await save('SOLO_ARGANO', { norma: '10411-1', parti: ['machine'] }), refused(['regolazione']));
+  assert.deepEqual(await save('AMMODERNAMENTO', { norma: '10411-1', parti: ['machine', 'car'] }), refused(['regolazione']));
+  // not asked: the controller replaced, or the machine kept
+  await assert.rejects(save('AMMODERNAMENTO', { norma: '10411-1', parti: ['machine', 'controller'] }), /the guard must stop before the record/);
+  await assert.rejects(saveCalculationAction({ projectId: 'prepl', values: { ...values, compare: false }, label: 'x', intervento: 'AMMODERNAMENTO', collaudo: { norma: '10411-1', parti: ['controller'] } }),
     /the guard must stop before the record/);
 });

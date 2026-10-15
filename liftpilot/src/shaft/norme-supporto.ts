@@ -40,8 +40,9 @@ export const VOCI_SUPPORTO: readonly VoceVano[] = [
     fonte: 'UNI 10411-1:2024 e UNI 10411-11:2024, punti 5 e 9 letti sul testo; come si disegna l’argano che resta e quale asse prende: scelta del '
       + 'software',
     stato: 'scelta',
-    nota: 'posizione, altezza, appoggi e portata del basamento esistente non sono verificati: con portata o velocità maggiori la prova della '
-      + 'struttura dell’edificio è a cura del proprietario (punto 5), da confermare dal tecnico strutturale; l’asse dalla L0 ne eredita la '
+    nota: 'posizione, altezza, appoggi e portata del basamento esistente non sono verificati: se le forze sulle strutture dell’edificio crescono '
+      + 'o si spostano a sfavore della sicurezza (per esempio con portata o velocità maggiori), la prova della struttura è a cura del proprietario '
+      + '(punto 5), da confermare dal tecnico strutturale; l’asse dalla L0 ne eredita la '
       + 'precisione; fino a SHAFT 2.25.0 e LIFT 1.31.0 l’argano che resta si disegnava su un basamento nuovo del software, con le sue verifiche',
   },
   {

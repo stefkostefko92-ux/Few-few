@@ -10,6 +10,10 @@ import { KL } from './norme';
 
 type Facoltativa = 'safetyGear' | 'ucm' | 'alarm' | 'room' | 'slidingDoors';
 
+/** The clearance over the new parts on the car roof as the obligation prints it (obblighi.ts follows it with its value
+ *  at the calculation's speed). */
+export const SPAZIO_FORMULA = `${String(KL.slidingClear).replace('.', ',')} + ${String(KL.slidingClearV2).replace('.', ',')}·v² m`;
+
 export const OBBLIGHI_FACOLTATIVE: Readonly<Record<Norma10411, Readonly<Record<Facoltativa, PuntoInSito>>>> = {
   '10411-1': {
     // -1 6.7 sits in point 6 (the loads): whether it applies without a change of load is uncertain (spec, uncertain)
@@ -27,9 +31,10 @@ export const OBBLIGHI_FACOLTATIVE: Readonly<Record<Norma10411, Readonly<Record<F
       + 'non consentono uno di questi requisiti basta una sicurezza almeno equivalente a quella dell’epoca dell’installazione'),
     slidingDoors: lt('UNI 10411-1:2024, 13.1.1–13.2.4', 'porte di cabina da battente a scorrevoli: portata e T* ricalcolati se la nuova '
       + 'superficie utile lo richiede, con il punto 6 (13.1.1); porte secondo la UNI EN 81-20 5.3 esclusa la 5.3.15.2, il punto 7 se si avvicinano '
-      + 'alle difese (13.1.2); sul tetto di cabina il rifugio della 5.2.5.7 e sopra le parti nuove uno spazio libero di almeno '
-      + `${String(KL.slidingClear).replace('.', ',')} + ${String(KL.slidingClearV2).replace('.', ',')}·v² m, altrimenti la UNI EN 81-21 5.5 (13.1.3); `
-      + 'grembiule secondo la 5.4.5 (13.1.4); motorizzate anche 5.3.6.2 e 5.3.6.3, pulsante di riapertura in cabina e schema come al punto 11.2 (13.2)'),
+      + 'alle difese (13.1.2); sul tetto di cabina il rifugio della 5.2.5.7 (o quello dell’app. B) e sopra le parti nuove uno spazio libero di almeno '
+      + `${SPAZIO_FORMULA}, altrimenti la UNI EN 81-21 5.5 (13.1.3); `
+      + 'grembiule secondo la 5.4.5 (13.1.4); motorizzate anche 5.3.6.2 e 5.3.6.3, pulsante di riapertura in cabina, tolto l’eventuale pulsante ALT, e '
+      + 'schema come al punto 11.2 (13.2)'),
   },
   '10411-11': {
     safetyGear: dv('UNI 10411-11:2024, 6.6 e 6.7', 'paracadute nuovo (di cabina o del contrappeso) verificato per l’impianto, con il suo '
@@ -44,7 +49,7 @@ export const OBBLIGHI_FACOLTATIVE: Readonly<Record<Norma10411, Readonly<Record<F
     slidingDoors: lt('UNI 10411-11:2024, 13.1.1–13.2.4', 'porte di cabina da battente a scorrevoli: portata e T* ricalcolati se la nuova '
       + 'superficie utile lo richiede, con il punto 6 (13.1.1); porte secondo la UNI EN 81-20 5.3 (la 5.3.15.2 se già applicata), il punto 7 se si '
       + 'avvicinano alle difese; sul tetto di cabina il rifugio della 5.2.5.7 e sopra le parti nuove uno spazio libero di almeno '
-      + `${String(KL.slidingClear).replace('.', ',')} + ${String(KL.slidingClearV2).replace('.', ',')}·v² m, altrimenti la UNI EN 81-21 5.5 (13.1.2); `
+      + `${SPAZIO_FORMULA}, altrimenti la UNI EN 81-21 5.5 (13.1.2); `
       + 'motorizzate anche 5.3.6.2 e 5.3.6.3, pulsante di riapertura in cabina e schema come all’11.2 (13.2)'),
   },
 };

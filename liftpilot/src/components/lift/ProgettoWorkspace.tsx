@@ -17,6 +17,7 @@ import { deriveLift, tipoDaRivedere, type BottomScheme, type LiftDerived, type L
 import { bottomTo, enteredBy, filled, missingOf, type BlankKey, type LiftDraft } from '@/lib/lift/blank';
 import { composto, dalComposto, type ProgettoAuto, type ProgettoDraft } from '@/lib/lift/progetto';
 import { calataVerso, calateAlCompleto, calateEsistenti } from '@/lib/lift/calata';
+import { macchinaEsistente } from '@/lib/lift/kept';
 import { drawnShaft, edited, enteredShaft, movedPanel, panelEntered } from '@/lib/lift/panel-form';
 import { withPitches, type BracketPitches } from '@/shaft/brackets';
 import { textsFor } from '@/lib/present/texts';
@@ -162,12 +163,15 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
       return null;
     },
   }));
-  // the existing falls a direct pull keeps: the plan's drop set to them with one click beside the hint
+  // the existing falls a direct pull keeps — or the sheave of the machine the intervention keeps (round 46 review): the
+  // plan's drop set to them with one click beside the hint
   const Do = useMemo(() => calateEsistenti(base.values), [base.values]);
-  const calate = Do === null ? null : { Do, fix: (): void => {
-    const to = derived ? calataVerso(drawn, derived, Do) : null, r = to && derived ? editShaft(edited(drawn, to.e, derived), to.e, to.length) : null;
+  const keptD = Do === null && derived && macchinaEsistente(inp) ? derived.analysis.ctx.N.D : null;
+  const verso = (at: number) => (): void => {
+    const to = derived ? calataVerso(drawn, derived, at) : null, r = to && derived ? editShaft(edited(drawn, to.e, derived), to.e, to.length) : null;
     if (r?.ok) setDrawn(r.inputs);
-  } };
+  };
+  const calate = Do !== null ? { Do, fix: verso(Do) } : keptD !== null ? { Do: keptD, fix: verso(keptD), kept: true } : null;
   // (scheme room brings its pulley room: blank.ts bottomTo)
   const setBottom = (bottom: BottomScheme): void => change((L) => bottomTo(L, bottom));
   // a switch of the drawn values; the panel switched to entered stays where the software placed it

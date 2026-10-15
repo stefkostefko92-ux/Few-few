@@ -16,6 +16,10 @@ intero: le sezioni 1, 2.1, 3.4, 4.7, 6 e 7 dicono che cosa confermano e che cosa
 UNI [F31] e una presentazione di settore sull'emendamento A3 [F32]. Chiusi qui i punti aperti su
 documenti della modifica (3.2), edizioni di EN 81-1 (2.3, 3.6) e matrice 5.2 (EN 81-20/50, -21, -28 per M).
 
+**Aggiornamento del 15 ottobre 2026 (giro 46 di LiftPilot).** Riletti sul testo [F31] i punti della UNI 10411-1/-11:2024
+che il software applica a una modifica oltre alla macchina: velocità, corsa, carichi, regolazione del quadro, porte di
+cabina scorrevoli, strutture dell'edificio (nuova sezione 3.2.1, con lo stato di ogni lettura).
+
 **Legenda.** ✅ letto nella fonte indicata · ⚠️ derivato, interpretato o preso da fonte secondaria (indicata)
 · ❓ non trovato. Le fonti sono numerate **[F1]…[F32]** (sezione 7, con URL); consultate il **2026-10-02**,
 F29 e F30 il **2026-10-04**, F31 e F32 il **2026-10-05**. Ambiti: **N** impianto nuovo in edificio nuovo · **NE** impianto nuovo (o sostituzione
@@ -199,6 +203,26 @@ Regolamento macchine) ✅ [F6], fuori ambito.
 | Norma tecnica | UNI 10411-1:2024 se l'impianto non è conforme alla Direttiva; UNI 10411-11:2024 se è conforme (95/16/CE o 2014/33/UE); la serie esclude le modifiche che cambiano le misure antincendio | [F6] ✅ |
 | Antincendio | nelle attività soggette ai controlli, sono «modifiche sostanziali» che attivano il DM 15/09/2005 anche: nuovo impianto; aumento delle fermate o cambio dell'azionamento; sostituzione di pareti del vano, porte di piano, locale macchine e/o pulegge di rinvio con materiali, modelli, dimensioni o criteri diversi; rifacimento di solai o scale che coinvolge l'impianto; sopraelevazione; cambio di destinazione d'uso | DM 15/09/2005 art. 1 c.2 lett. a)–g) ✅ [F18] |
 | Chi dichiara la modifica | il DPR 162/1999 non indica un documento dell'installatore per la modifica; la UNI 10411:2024 sì: dopo ogni modifica le nuove caratteristiche dell'impianto vanno documentate con il fascicolo tecnico per tipo di modifica (appendice C della -1, appendice A della -11), che il proprietario tiene pronto per la verifica straordinaria (art. 14) e che fa da allegato alla dichiarazione di conformità del DM 37/2008 (all. I); per la macchina nuova la voce 14 del fascicolo chiede, tra l'altro, la relazione con i dati tecnici della macchina | [F1]; ✅ letto sul testo [F31] (UNI 10411-1:2024 e UNI 10411-11:2024, punti 25.1 e 25.3; app. C e app. A, voce 14) |
+
+### 3.2.1 Che cosa chiede la UNI 10411:2024 a una modifica (lettura del giro 46)
+
+Solo numero di punto, valore e parole nostre; ✅ letto sul testo [F31], ⚠️ lettura o scelta del software da confermare.
+
+| Caso | UNI 10411-1:2024 (non conforme) | UNI 10411-11:2024 (conforme) | Stato |
+|---|---|---|---|
+| Velocità aumentata | 15.1: oltre +5 % rispetto alla maggiore tra la velocità nominale del libretto (o accertata in seguito con verbale) e quella dopo il passaggio della rete a 50 Hz → punti 15.2–15.15 | 15: ogni variazione, con la valutazione 4.3; 15 i): oltre il 5 % la protezione UCM della EN 81-20 5.6.7 | ✅ |
+| Velocità ridotta | 15.16: oltre −5 % rispetto alla velocità iniziale o a quella documentata con verbale (mai quella dopo 50 Hz) → 15.2 e 15.17 | come sopra (15) | ✅ |
+| Velocità entro il 5 % | i punti 15.2–15.17 non si applicano; se sia comunque un «cambio della velocità» del DPR (art. 2 c.1 lett. cc) n. 1)) lo valuta il tecnico | — | ✅ il punto; ⚠️ il caso DPR |
+| Corsa allungata | 16: fino a +8 m dal primo collaudo senza contare come nuova installazione, con le condizioni a)–l) | 16 a)–i), con la valutazione 4.3; nessun limite in metri | ✅ |
+| Corsa oltre +8 m | conta come nuova installazione: il software avvisa e propone la trasformazione, mai la impone (decisione del titolare) | — | ✅ il limite; ⚠️ la procedura |
+| Carichi | 6.1 con i prospetti 1 e 2; rapporto tra i carichi appesi cambiato → appendice D (D.1 stabilità allo scorrimento, D.2 pressione nelle gole) e ammortizzatori EN 81-20 5.8 | 6.1–6.13: ogni aumento, con la valutazione 4.3 | ✅ |
+| D.1 | (T1/T2)·C1·C2 ≤ e^(f·α) nei due casi (cabina in basso con 1,25·Q, vuota in alto); C1 = (g + a)/(g − a) mai sotto 1,10 / 1,15 / 1,20 / 1,25 per le fasce fino a 0,63 / 1,00 / 1,60 / 2,50 m/s; C2 1,2 (cuneo) o 1 (semicircolare); μ 0,09 | — (la -11 conta ogni aumento) | ✅ i valori; ⚠️ quale decelerazione «a» intenda (il software usa quella della verifica di frenatura del calcolo e lo scrive: la conferma il soggetto della verifica) |
+| Quadro esistente sotto una macchina nuova | 11.2.1: la regolazione della velocità esistente resta; a un quadro che non l'ha non si aggiunge | 11.2: lo stesso | ✅; ⚠️ la conseguenza del software (una o due velocità: si sostituisce il quadro, decisione del titolare) |
+| Macchina nuova | 14.4 a)–g) | 14.3 a)–b) e app. A (14) | ✅ |
+| Porte di cabina da battente a scorrevoli | 13.1.1–13.2.4; 13.1.3: rifugio della EN 81-20 5.2.5.7 (o quello dell'app. B) e spazio libero sopra le parti nuove ≥ 0,3 + 0,035·v² m (0,335 m a 1,00 m/s), altrimenti EN 81-21 5.5; 13.2.3: pulsante di riapertura, tolto l'eventuale ALT | 13.1.2 (senza l'app. B) e 13.2.3 (senza l'ALT) | ✅; il valore è stampato come informazione, la verifica dello spazio in testata resta della EN 81-20 (decisione del titolare) |
+| Porte di piano nuove | 19.6: grembiule della soglia di cabina secondo EN 81-20 5.4.5 (EN 81-21 5.8 se i luoghi non lo consentono) | — (il punto 19 non ne parla) | ✅ il punto; ⚠️ quale verifica del software ne discende (domanda al titolare) |
+| Strutture dell'edificio | 5: se le forze statiche o dinamiche sulle strutture crescono o il loro punto di applicazione si sposta a sfavore della sicurezza, la prova spetta al proprietario (eccezioni al punto 6) | 5: lo stesso | ✅ |
+| DPR 162/1999 art. 2 c.1 lett. cc) | n. 1) velocità, n. 2) portata, n. 3) corsa, n. 5) macchinario, cabina con l'arcata, quadro, porte di piano, difese del vano, altri componenti principali; la sola variazione dei carichi statici senza cambio della portata non è il n. 2) | — | ✅ il testo [F1]; ⚠️ come il tecnico la classifica |
 
 ### 3.3 Spazi di rifugio ridotti (art. 17-bis)
 

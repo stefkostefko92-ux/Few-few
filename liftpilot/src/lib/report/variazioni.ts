@@ -34,13 +34,21 @@ const pct = (x: number): string => `${x < 0 ? '−' : '+'}${num(Math.abs(x) * 10
 const metri = (x: number): string => `${x < 0 ? '−' : '+'}${num(Math.abs(x), 2)} m`;
 type Lib = NonNullable<Collaudo['libretto']>;
 
+/** Whose speed a comparison is against, named when the logbook gives both under -1. */
+const DI = { libretto: ' (libretto)', '50hz': ' (dopo 50 Hz)', documentata: '' } as const;
+const DPR_TECNICO = 'se sia comunque un cambio della velocità ai sensi del DPR 162/1999 lo valuta il tecnico';
+
 function velocita(n: Norma10411, lib: Lib, v: number): VariazioneDoc | null {
   const x = variazioneVelocita(n, lib, v);
   if (!x) return null;
   const doc = n === '10411-1'
     ? [lib.v ? `${num(lib.v, 2)} m/s (libretto o verbale)` : '', lib.v50 ? `${num(lib.v50, 2)} m/s dopo il passaggio a 50 Hz` : ''].filter(Boolean).join(', ')
     : `${num(x.rif, 2)} m/s (documentata)`;
-  const head = `${doc}; progetto ${num(v, 2)} m/s, ${pct(x.dv)} rispetto a ${num(x.rif, 2)} m/s`, label = VOCE_VARIAZIONE.velocita;
+  // an increase against the reference (15.1), a decrease against the logbook's speed (15.16): each percentage names the
+  // speed it is measured from (both when the design lies between the logbook's and the one after 50 Hz)
+  const both = n === '10411-1' && !!lib.v && !!lib.v50, [c0] = x.confronti;
+  const contro = x.confronti.map((c) => `${pct(c.dv)} rispetto a ${num(c.rispetto, 2)} m/s${both ? DI[c.di] : ''}`).join(' e ');
+  const head = `${doc}; progetto ${num(v, 2)} m/s, ${contro}`, label = VOCE_VARIAZIONE.velocita;
   if (n === '10411-11') {
     if (!x.variata) return { voce: 'velocita', label, text: `${head}: invariata entro l’arrotondamento dei dati.`, nota: '' };
     const ucm = x.ucm15i ? '; oltre il 5 % serve la protezione UCM della UNI EN 81-20, 5.6.7 (15 i))' : '';
@@ -49,10 +57,14 @@ function velocita(n: Norma10411, lib: Lib, v: number): VariazioneDoc | null {
   }
   const what = x.aumento ? 'oltre il 5 % sopra il riferimento: velocità variata, entra tra le parti modificate (UNI 10411-1, 15.1: punti da 15.2 a 15.15)'
     : x.calo ? 'oltre il 5 % sotto la velocità iniziale o documentata: velocità variata, entra tra le parti modificate (UNI 10411-1, 15.16: punti 15.2 e 15.17)'
-      : 'entro il 5 % (UNI 10411-1, 15.1 e 15.16): la velocità non entra tra le parti modificate; se sia comunque un cambio della velocità ai sensi del DPR '
-        + '162/1999 lo valuta il tecnico';
+      : x.uguale ? 'uguale alla velocità documentata entro l’arrotondamento dei dati: la velocità non cambia'
+        : x.confronti.length > 1 ? 'tra la velocità del libretto e quella dopo il passaggio a 50 Hz: né oltre il 5 % sopra il riferimento (UNI 10411-1, 15.1) '
+          + `né oltre il 5 % sotto la velocità del libretto (15.16), la velocità non entra tra le parti modificate; ${DPR_TECNICO}`
+          : !lib.v && v < x.rif ? 'non oltre il 5 % sopra il riferimento (UNI 10411-1, 15.1); una riduzione (15.16) si misura dalla velocità iniziale del '
+            + `libretto, non indicata: la velocità non entra tra le parti modificate; ${DPR_TECNICO}`
+            : `entro il 5 % (UNI 10411-1, 15.1 e 15.16): la velocità non entra tra le parti modificate; ${DPR_TECNICO}`;
   return { voce: 'velocita', label, text: `${head}: ${what}.`,
-    nota: x.variata ? ` Velocità ${num(x.rif, 2)} → ${num(v, 2)} m/s (${pct(x.dv)}): variata (UNI 10411-1, ${x.aumento ? '15.1' : '15.16'}).` : '' };
+    nota: x.variata && c0 ? ` Velocità ${num(c0.rispetto, 2)} → ${num(v, 2)} m/s (${pct(c0.dv)}): variata (UNI 10411-1, ${x.aumento ? '15.1' : '15.16'}).` : '' };
 }
 
 function corsa(n: Norma10411, lib: Lib, H: number): VariazioneDoc | null {

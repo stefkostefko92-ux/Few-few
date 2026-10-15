@@ -127,6 +127,17 @@ test('calcolo argano di un impianto qualsiasi (round 45): si rifà al suo posto 
   assert.equal(calls.calc.length + calls.lift.length, 1);
 });
 
+test('«Solo argano» salvato prima del giro 46, senza la regolazione del quadro: si rifà (nessun rifiuto «inverter»; il ⚠ nei documenti)', async () => {
+  // «Aggiorna» makes the record again from what it stored (createCalculation, no interventoValido): the question the form
+  // asks since round 46 is not a refusal here
+  const { refreshCalculationAction } = await actions();
+  db.calc = [calcRow('solo46', { ...stale, intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'] } })];
+  assert.equal(await go(refreshCalculationAction, 'solo46'), `${APP}/calculations/new1?da=solo46`);
+  assert.equal(calls.calc.length, 1);
+  const [, , , , chosen, tipo, from] = calls.calc[0] ?? [];
+  assert.deepEqual([chosen, tipo, from], [{ norma: '10411-1', parti: ['machine'] }, 'SOLO_ARGANO', 'solo46']);
+});
+
 test('calcolo di un progetto dell’impianto: tocca al progetto rifarlo', async () => {
   const { refreshCalculationAction } = await actions();
   db.calc = [calcRow('clift1', { ...stale, liftDesign: { id: 'lift1' } })];

@@ -52,10 +52,12 @@ export function d1Blocks(P: Pres, C: Collaudo, V: FormValues): ReportBlock[] {
         fmt(d.f, 4), fmt(c.efa, 3), fmt(c.T1, 0), fmt(c.T2, 0), Number.isFinite(c.ratio) ? fmt(c.ratio, 3) : '—', util(c.lhs), util(c.util)]),
       status: d.cases.map((c) => (d1Ok(c.util) ? 'ok' : 'fail')) },
     { t: 'p', style: 'note', text: `C1 = ${fmt(d.C1, 3)}: (g + a)/(g − a) con a = ${fmt(d.a, 2)} m/s², la decelerazione della verifica di frenatura del `
-      + `calcolo, mai sotto ${fmt(d.c1Min, 2)} a ${fmt(d.v, 2)} m/s; C2 = ${fmt(d.C2, d.C2 % 1 ? 1 : 0)} (${gola}); μ = ${fmt(d.mu, 2)}. La condizione (T1/T2)·C1·C2 ≤ `
-      + `e^(f·α) ${d1Ok(d.worst.util) ? 'è soddisfatta in entrambi i casi' : 'non è soddisfatta: il rapporto tra i carichi non può cambiare così'}. `
-      + 'Con la D.1 servono la D.2 (pressione specifica nelle gole) e gli ammortizzatori secondo la UNI EN 81-20, 5.8; se la frenatura reale della '
-      + 'cabina decelera di più, il tecnico ripete la verifica con quella (voci modifica.d1 e rapporto.d1 del registro).' },
+      + `calcolo (a_e), mai sotto ${fmt(d.c1Min, 2)} a ${fmt(d.v, 2)} m/s; C2 = ${fmt(d.C2, d.C2 % 1 ? 1 : 0)} (${gola}); μ = ${fmt(d.mu, 2)}. La condizione (T1/T2)·C1·C2 ≤ `
+      + `e^(f·α) ${d1Ok(d.worst.util) ? `è soddisfatta in entrambi i casi con a = ${fmt(d.a, 2)} m/s²` : 'non è soddisfatta: il rapporto tra i carichi non può cambiare così'}. `
+      + 'Quale decelerazione di frenatura della cabina intenda la D.1 la norma non lo precisa: il software prende quella della verifica di frenatura '
+      + 'del calcolo; la frenatura con la coppia reale del freno (nei casi dell’aderenza) decelera di più e darebbe un C1 maggiore. L’esito vale con la '
+      + 'a indicata: la decelerazione da usare la conferma il soggetto della verifica, e con una maggiore il tecnico ripete la verifica. Con la D.1 '
+      + 'servono la D.2 (pressione specifica nelle gole) e gli ammortizzatori secondo la UNI EN 81-20, 5.8 (voci modifica.d1 e rapporto.d1 del registro).' },
   ];
 }
 
@@ -65,7 +67,9 @@ export function d1Frase(C: Collaudo, V: FormValues | undefined): string {
   const d = V ? d1Di(C, V) : null, u = d?.worst.util;
   if (u === undefined) return '';
   const n = Number.isFinite(u) ? new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(u) : '—';
-  return ` Stabilità allo scorrimento (D.1): utilizzo ${n} nel caso più sfavorevole, ${d1Ok(u) ? 'verificata' : '⚠ non verificata'}.`;
+  const a = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(d?.a ?? 0);
+  return ` Stabilità allo scorrimento (D.1): utilizzo ${n} nel caso più sfavorevole con a = ${a} m/s², ${d1Ok(u) ? 'verificata con questa decelerazione, da '
+    + 'confermare con il soggetto della verifica' : '⚠ non verificata'}.`;
 }
 
 /** Registry entries with no check of their own that bound where the calculation holds: the compensation and the

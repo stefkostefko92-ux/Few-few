@@ -37,5 +37,6 @@ export const keptBasePlan = (G: RoomGeo, onDrop: (u: number, v: number) => Pt): 
 /** The words of the mounts' note on the existing base: section B-B's two lines and the relazione's sentence. */
 export const KEPT_MOUNTS_LINES: [string, string] = [KEPT_BASE_NOTE, 'argano esistente sul suo basamento: nessun nuovo supporto né fissaggio; portata da verificare dallo strutturista'];
 export const KEPT_MOUNTS_TEXT = 'Argano esistente sul suo basamento esistente (da rilevare): posizione, altezza e appoggi da rilevare in sito; nessun nuovo '
-  + 'supporto né fissaggio — la portata del basamento e della soletta non è verificata dal software: con portata o velocità maggiori la prova '
-  + 'della struttura dell’edificio è a cura del proprietario (UNI 10411-1:2024, 5; UNI 10411-11:2024, 5)';
+  + 'supporto né fissaggio — la portata del basamento e della soletta non è verificata dal software: se le forze sulle strutture dell’edificio '
+  + 'crescono o si spostano a sfavore della sicurezza (per esempio con portata o velocità maggiori), la prova della struttura è a cura del '
+  + 'proprietario (UNI 10411-1:2024, 5; UNI 10411-11:2024, 5)';

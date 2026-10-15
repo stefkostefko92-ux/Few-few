@@ -67,7 +67,7 @@ export const VOCI_VARIAZIONI: readonly VoceImpianto[] = [
     riferimento: 'UNI 10411-1:2024, 11.2.1 e 11.1.4; UNI 10411-11:2024, 11.2 e 11.1.3',
     fonte: `${letto('UNI 10411-1:2024', 'p. 11')}; ${letto('UNI 10411-11:2024', 'p. 10')}`, stato: 'confermato',
     nota: 'una macchina senza inverter (una o due velocità alla frequenza di rete) non è modellata; i calcoli salvati prima, senza la risposta, '
-      + 'si aggiornano e la relazione lo segnala con ⚠ (fino a LIFT 1.32.0 la domanda non c’era)',
+      + 'si aggiornano e la relazione lo segnala con ⚠ (fino a LIFT 1.31.0 la domanda non c’era)',
   },
   {
     id: 'impianto.parti.facoltative', titolo: 'Ammodernamento: altre parti (facoltative)',

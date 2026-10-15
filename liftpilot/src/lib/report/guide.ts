@@ -110,7 +110,8 @@ export function guideSection(a: Analysis, L: Layout, Pl: Plant, M: MachineSpec, 
     ['P7', daN(P[6], true), cwGear ? `paracadute del contrappeso: k1·g·M_cw/2 + peso della guida (k1 ${cwGear === 'progressive' ? KV_VERT.k1Progressive : cwGear === 'roller' ? KV_VERT.k1Roller : KV_VERT.k1Instant})`
       : 'peso della guida', at[6]],
     ['P8', daN(P[7]), `${KV_VERT.bufferFactor}·g·M_cw`, at[7]],
-    ['P9', daN(P[8]), below ? 'P1 + P2 + P3 (l’argano è in basso)' : 'P1 + P2 + P3 + argano, telaio, basamento e putrelle (senza coefficiente)', at[8]],
+    ['P9', daN(P[8]), below ? 'P1 + P2 + P3 (l’argano è in basso)' : SL.support.kind === 'esistente'
+      ? 'P1 + P2 + P3 + argano esistente (senza coefficiente), sul basamento esistente' : 'P1 + P2 + P3 + argano, telaio, basamento e putrelle (senza coefficiente)', at[8]],
   ] });
   B.push({ t: 'p', style: 'note', text: 'Carichi non contemporanei, secondo UNI EN 81-20:2020, 5.2.1.8.1 e 5.2.1.8.4–5.2.1.8.6 (voci carichi.macchina, carichi.fossa, '
     + 'guide.spinte, impianto.massa.basamento); il progettista strutturale verifica soletta, fondo della fossa e ancoraggi con questi valori. P = cabina con '

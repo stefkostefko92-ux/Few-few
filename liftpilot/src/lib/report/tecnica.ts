@@ -160,7 +160,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   section(adapt.title);
   B.push(...adapt.blocks);
   section('Adempimenti e punti da verificare in sito');
-  B.push(...adempimentiBlocks(C, true));
+  B.push(...adempimentiBlocks(C, true, false, r.values));
   B.push({ t: 'h3', text: 'Rilievi in sito per la sostituzione' });
   B.push({ t: 'list', items: [
     'Posizione delle calate esistenti (funi lato cabina e lato contrappeso) rispetto ai muri del vano, come nelle tavole',

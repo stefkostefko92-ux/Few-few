@@ -19,6 +19,7 @@ export async function ammodernamento({ page, hydrated, calcUrl }) {
   await page.click('label.intervento-tipo[data-tipo="AMMODERNAMENTO"]');
   await page.click('.parti-sino .rif-preset button');
   await page.waitForSelector('.parti-sino .rif-preset button.on');
+  assert.match(await page.textContent('.parti-sino .rif-preset button.on'), /Rifacimento con l’arcata esistente/, 'the renovation preset');
   // the optional parts: a group of their own, «No» checked, never still to answer; the renovation does not answer them
   assert.match(await page.textContent('.parti-altre legend'), /Altre parti \(facoltative\)/);
   assert.equal(await page.locator('.parti-altre li.parte').count(), 5, 'safety gear, ACOP/UCM, alarm, room, sliding car doors (the car doors replaced)');

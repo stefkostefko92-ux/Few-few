@@ -10,18 +10,21 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { K } from '@/calc/norme';
 import { ENGINE_VERSION, canon } from '@/calc/snapshot';
-import { AMBITO_10411_1, AMBITO_VERIFICHE, PARTI, SOLO_10411_1, VERIFICHE_DATI } from '../lift/collaudo';
+import { AMBITO_10411_1, AMBITO_VERIFICHE, AUTO_PARTI, PARTI, SOLO_10411_1, VERIFICHE_DATI } from '../lift/collaudo';
+import { PARTI_FACOLTATIVE, PARTI_LOCALE, PARTI_RIFACIMENTO, PARTI_SOLO, VARIAZIONI } from '../lift/intervento';
+import { ROUNDING_H, ROUNDING_KG, ROUNDING_V } from '../lift/modifica';
 import { KL } from '../lift/norme';
-import { OBBLIGHI_PARTI } from '../lift/obblighi';
+import { OBBLIGHI_PARTI, SOSTANZIALE } from '../lift/obblighi';
 import { OBBLIGHI_VARIAZIONI } from '../lift/obblighi-variazioni';
 import { OBBLIGHI_REGOLAZIONE } from '../lift/obblighi-facoltative';
 import { LIFT_ENGINE_VERSION } from '../lift/version';
 import { ROOM_ENGINE_VERSION } from '../room/snapshot';
 import { SHAFT_ENGINE_VERSION } from '@/shaft/snapshot';
 
-/** The key and the versions it was pinned at (round 46; S5 — the optional parts and the controller's regulation — and S7
- *  — D.1 — pinned again within the same kit: S4–S8 ship together with the one bump, never deployed apart). */
-const PINNED = { sha256: '5a495056a5fc995d59e4242bc556e4159e4043daddfc9275234ad8f1f4d2f9ee', engine: '1.7.0', lift: '1.32.0', room: '1.16.0', shaft: '2.26.0' };
+/** The key and the versions it was pinned at (round 46; S5 — the optional parts and the controller's regulation —, S7
+ *  — D.1 — and the review — the groups of parts and the roundings in the key, the obligations' words — pinned again
+ *  within the same kit: S4–S8 and the review ship together with the one bump, never deployed apart). */
+const PINNED = { sha256: '6df66bb6e33eb57666dec56571cb1a78e95c0c158e5ba97e568529caf8c658a0', engine: '1.7.0', lift: '1.32.0', room: '1.16.0', shaft: '2.26.0' };
 
 /** The constants of a modification: the loads (6.1), the CE marking's day, the speed and the travel (15, 16). */
 const KL_MODIFICA = {
@@ -33,8 +36,14 @@ const KL_MODIFICA = {
   c1Bands: K.c1Bands, c1Min: K.c1Min, c2Wedge: K.c2Wedge, c2Undercut: K.c2Undercut, muD1: K.muD1,
 };
 
+/** The groups of parts and the roundings that decide which parts a record's test gets, and so its printed verdicts and
+ *  obligations (round 46 review): the rule's parts, the optional ones, those of the machine room's survey, of a «Solo
+ *  argano», of the renovation, the changes, the substantial modification; the documents' roundings of loads, speed and
+ *  travel. */
+const GRUPPI = { AUTO_PARTI, PARTI_FACOLTATIVE, PARTI_LOCALE, PARTI_SOLO, PARTI_RIFACIMENTO, VARIAZIONI, SOSTANZIALE, ROUNDING_KG, ROUNDING_V, ROUNDING_H };
+
 const scopeKey = (): string => createHash('sha256').update(JSON.stringify(canon({
-  PARTI, AMBITO_VERIFICHE, AMBITO_10411_1, SOLO_10411_1, VERIFICHE_DATI, OBBLIGHI_PARTI, OBBLIGHI_VARIAZIONI, OBBLIGHI_REGOLAZIONE, KL_MODIFICA,
+  PARTI, AMBITO_VERIFICHE, AMBITO_10411_1, SOLO_10411_1, VERIFICHE_DATI, OBBLIGHI_PARTI, OBBLIGHI_VARIAZIONI, OBBLIGHI_REGOLAZIONE, KL_MODIFICA, GRUPPI,
 }))).digest('hex');
 
 test('ambito-version: il perimetro del collaudo non cambia senza le versioni dei motori', () => {

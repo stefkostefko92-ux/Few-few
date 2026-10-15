@@ -13,7 +13,7 @@ import { visibleBad } from '@/lib/calc-input';
 import { savedValues } from '@/lib/calc-saved';
 import { prisma } from '@/lib/db';
 import { log } from '@/lib/log';
-import { LIFT_ENGINE_VERSION, collaudoOf, collaudoVerdict, deriveLift, macchinaResta, type Collaudo, type LiftInputs, type TipoIntervento } from '@/lib/lift';
+import { LIFT_ENGINE_VERSION, collaudoOf, collaudoVerdict, deriveLift, macchinaResta, tipoDaRivedere, type Collaudo, type LiftInputs, type TipoIntervento } from '@/lib/lift';
 import { liftHash } from '@/lib/lift-hash';
 import { verdictStatus } from '@/lib/present/texts';
 import { makeFmt } from '@/lib/present/tr';
@@ -81,10 +81,15 @@ export interface BaseRef {
 /** An installation from the one form: in one transaction the shaft design, the calculation made from it and the lift
  *  design that ties them. Refused while the derivation has issues (a distance to be measured, a machine that does not
  *  fit the plan). `base`: the step-2 calculation it was drawn on — the design names it (provenance, outside its hash)
- *  and its calculation takes the base's intervention; null: a design of the one form before round 45. */
+ *  and its calculation takes the base's intervention; null: a design of the one form before round 45. A «Solo argano»
+ *  base whose drawing brings a change of speed or travel is refused ('tipoDaRivedere', round 46). */
 export async function createLiftDesign(user: SessionUser, projectId: string, inputs: LiftInputs, label: string | null, source: ShaftSource | null, from?: string,
   base: BaseRef | null = null): Promise<Created> {
   const d = deriveLift(inputs);
+  // a «Solo argano» base whose test, on the drawing's travel, gets a change of speed or travel by the logbook (round 46):
+  // the type is to be reviewed in the calculation («Porta nel calcolo») — on every path that saves a drawing (the
+  // Progetto, «Aggiorna il progetto con l'ultimo calcolo», «Aggiorna con il software attuale»); only a logbook brings them
+  if (base?.intervento === 'SOLO_ARGANO' && inputs.collaudo?.libretto && tipoDaRivedere(base.intervento, d.collaudo)) return { ok: false, error: 'tipoDaRivedere' };
   if (d.analysis.ctx.bad.length || d.issues.length) return { ok: false, error: 'invalidInputs', fields: [...new Set([...d.analysis.ctx.bad, ...d.issues])] };
   const { snapshot: shaftSnap, layout: L } = shaftSnapshot(d.shaft), calcSnap = snapshotOf(d.values);
   const shaftSha = shaftHash(shaftSnap), calcSha = snapshotHash(calcSnap), res = d.analysis.res, S = d.shaft;

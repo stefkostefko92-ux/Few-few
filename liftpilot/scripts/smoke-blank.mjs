@@ -26,6 +26,12 @@ export async function blankCalc({ page, hydrated, example }) {
   // round 46 (11.2.1): the new machine on the existing controller — its speed regulation asked, next in the list
   assert.equal((await page.textContent('.summary .missing-list li:first-child'))?.trim(), 'Regolazione della velocità del quadro esistente');
   assert.equal(await page.locator('.parti-sino li[data-part="regolazione"].da input[type="radio"]').count(), 3, 'VVVF, 2 or 1 speed, none checked');
+  // readable on a phone: the answers under the question, never the question squeezed to nothing (round 46 review)
+  const vp = page.viewportSize();
+  await page.setViewportSize({ width: 390, height: 844 });
+  const domanda = await page.locator('.parti-sino li[data-part="regolazione"] .parte-nome').boundingBox();
+  assert.ok(domanda && domanda.width > 200, `the question at 390 px: ${JSON.stringify(domanda)}`);
+  if (vp) await page.setViewportSize(vp);
   await page.click('.parti-sino li[data-part="regolazione"] label:has-text("VVVF")');
   await page.waitForSelector('.parti-sino li[data-part="regolazione"]:not(.da)');
   await page.fill('#Q', '630');

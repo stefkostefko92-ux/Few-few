@@ -53,6 +53,11 @@
    (the ropes of a «Solo argano», the controller of a modernisation), across the whole list, set in from its edge */
 .parte.regola { grid-column: 1 / -1; margin-left: 13px; }
 .parte.regola .parte-scelta > label { min-width: 0; white-space: nowrap; }
+/* the three answers do not fit beside the question on a phone: under it, from the left, wrapping (round 46 review) */
+@container calc (max-width: 640px) {
+  .parte.regola { grid-template-columns: minmax(0, 1fr); margin-left: 8px; }
+  .parte.regola .parte-scelta { justify-self: start; }
+}
 /* the optional parts: a quieter group of their own, «No» checked, never amber (never missing) */
 .parti-altre { margin: 4px 0 0; padding: 12px 0 0; border: 0; border-top: 1px dashed var(--rule-strong); min-width: 0; display: flex; flex-direction: column; gap: 8px; }
 .parti-altre legend { float: left; width: 100%; padding: 0; font-size: 13.5px; font-weight: 700; color: var(--ink-2); }

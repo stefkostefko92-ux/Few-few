@@ -279,7 +279,9 @@ export const VOCI: readonly Voce[] = [
     costanti: ['c1Bands', 'c1Min', 'c2Wedge', 'c2Undercut', 'muD1', 'loadTestFactor'],
     nota: 'Solo nella modifica secondo la UNI 10411-1 che cambia il rapporto tra i carichi appesi (voce impianto.variazione.carico), come verifica '
       + 'a sé (rapporto.d1) fuori dall’aderenza della UNI EN 81-50: il calcolo dell’argano non cambia. a è la decelerazione della verifica di '
-      + 'frenatura del calcolo (a_e), da sostituire con quella reale di frenatura della cabina se è maggiore. Gola semicircolare senza intaglio: '
+      + 'frenatura del calcolo (a_e), che la relazione scrive con l’esito: quale decelerazione di frenatura intenda la D.1 (servizio o '
+      + 'frenatura con la coppia reale del freno, che dà un C1 maggiore) non è precisato e la conferma il soggetto della verifica; con una '
+      + 'maggiore il tecnico ripete la verifica. Gola semicircolare senza intaglio: '
       + 'C2 = 1 come con l’intaglio; gola a V non temprata, con intaglio: il minore dei due f, C2 = 1,2 (scelte del software, a favore di '
       + 'sicurezza). Se la verifica della UNI EN 81-50, 5.11 valga al posto della D.1 lo decide il soggetto della verifica',
   },

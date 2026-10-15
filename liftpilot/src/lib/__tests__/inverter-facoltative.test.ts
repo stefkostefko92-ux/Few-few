@@ -89,7 +89,11 @@ test('B6 + B7 obblighi: le altre parti con le loro clausole, la regolazione che 
   // the car doors made sliding: 0,3 + 0,035·v² at the calculation's speed, as information
   const V = { ...PRESETS.B, ...REPL, v: '1' };
   const sl = obblighiParti(C(['carDoors', 'slidingDoors']), V).find((p) => p.rif === 'UNI 10411-1:2024, 13.1.1–13.2.4');
-  assert.ok(sl?.testo.includes('0,3 + 0,035·v² m') && sl.testo.includes('con v = 1,00 m/s lo spazio è 0,335 m'), sl?.testo);
+  // (round 46 review: the value right after the formula; -1 13.1.3 a) app. B and 13.2.3 the ALT button)
+  assert.ok(sl?.testo.includes('0,3 + 0,035·v² m (con v = 1,00 m/s: 0,335 m, come informazione;'), sl?.testo);
+  assert.ok(sl?.testo.includes('5.2.5.7 (o quello dell’app. B)') && sl.testo.includes('tolto l’eventuale pulsante ALT'), sl?.testo);
+  const sl11 = obblighiParti(C(['carDoors', 'slidingDoors'], { norma: '10411-11' }), V).find((p) => p.rif === 'UNI 10411-11:2024, 13.1.1–13.2.4');
+  assert.ok(sl11?.testo.includes('(con v = 1,00 m/s: 0,335 m') && !sl11.testo.includes('app. B') && !sl11.testo.includes('ALT'), sl11?.testo);
 });
 
 test('B6 relazione: ⚠ solo senza risposta su una modifica che tiene il quadro sotto la macchina nuova', () => {

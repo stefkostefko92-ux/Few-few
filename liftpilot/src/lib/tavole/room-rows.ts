@@ -48,8 +48,9 @@ export function reactionRows(G: RoomGeo, M: MachineSpec, load: SupportLoad, heb:
 export const keptBaseNote = (tag: string): Note => ({
   title: 'ARGANO ESISTENTE SUL SUO BASAMENTO', tag,
   text: 'L’argano resta sul suo basamento esistente: posizione, altezza e appoggi da rilevare in sito; l’asse della puleggia è quello della L0 del '
-    + 'calcolo. Il software non verifica il basamento né la soletta: con portata o velocità maggiori la prova della struttura dell’edificio è a cura '
-    + 'del proprietario (UNI 10411-1:2024, 5; UNI 10411-11:2024, 5), da confermare dal tecnico strutturale.',
+    + 'calcolo. Il software non verifica il basamento né la soletta: se le forze sulle strutture dell’edificio crescono o si spostano a sfavore '
+    + 'della sicurezza (per esempio con portata o velocità maggiori), la prova della struttura è a cura del proprietario (UNI 10411-1:2024, 5; '
+    + 'UNI 10411-11:2024, 5), da confermare dal tecnico strutturale.',
 });
 
 /** The HEB beams the drawings take for the room of `G` (none without them): the beams of the reactions. */

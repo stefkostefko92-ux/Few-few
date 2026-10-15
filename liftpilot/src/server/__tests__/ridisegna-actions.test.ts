@@ -100,6 +100,19 @@ test('ridisegna: l’ultimo calcolo ha un altro intervento (tipo, rifacimento, p
   assert.equal(saved.length, 0);
 });
 
+test('ridisegna: «Solo argano» con il libretto — il disegno passa a createLiftDesign, che rivede il tipo; il rifiuto apre il Progetto (round 46)', async () => {
+  // the latest «Solo argano» saved with the logbook's travel equal to its own (the calculation's save passes it) and a
+  // design of the same intervention: drawn again through createLiftDesign, which derives on the drawing's travel and
+  // refuses 'tipoDaRivedere' (save.ts, every path that saves a drawing — save-intervento.test.ts)
+  const solo = { norma: '10411-1', parti: ['machine'] };
+  calcs[1] = { ...calcs[1], intervento: 'SOLO_ARGANO', collaudo: { ...solo, libretto: { H: Number(PRESETS.B.H) + 1 } } };
+  lifts.push(design('solo1', { inputs: { ...stored(), collaudo: solo }, calculation: { intervento: 'SOLO_ARGANO' } }));
+  created = { ok: false, error: 'tipoDaRivedere' };
+  assert.equal(await go('solo1'), '/it/app/projects/p1/progetto?from=solo1&calc=latest');
+  assert.deepEqual(saved[0]?.[6], { id: 'latest', intervento: 'SOLO_ARGANO' });
+  assert.deepEqual((saved[0]?.[2] as { collaudo?: { libretto?: unknown } }).collaudo?.libretto, { H: Number(PRESETS.B.H) + 1 });
+});
+
 test('ridisegna: chi non disegna il progetto o in sola lettura — niente, prima di cercare', async () => {
   role = 'TECHNICIAN';
   assert.equal(await go('ld1'), '/it/app');

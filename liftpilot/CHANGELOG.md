@@ -2628,7 +2628,8 @@ frizione, Diametro pulegge di rinvio, Inerzia per puleggia…, Massa della macch
     / plinto / non chiaro, само описание), без HEB; L0, dx и h — от изчислението (`liftInputsOf`: `auto.L0`/`dx` = false,
     без h от плана); оста на шайбата — от L0 (`keptAxis` = L0 − headroom + frameTop − плочата); ос под пода — проблемът
     'L0'. Друго изчисление губи изпратената основа 'esistente'; рилевото на машинното я отказва (`surveySaveSchema`) —
-    там машината винаги е нова, `survey-data.ts` не е пипан.
+    там машината винаги е нова: `survey-data.ts` получава само стойностите на изчислението за бележката COLLAUDO (S4),
+    никога машина, която остава.
   - *Чертежите* (`src/shaft/room-kept.ts`): B-B — машината върху щрихован блок «BASAMENTO ESISTENTE — DA RILEVARE:
     POSIZIONE, ALTEZZA E APPOGGI», височината само за четене; без «Telaio argano», бордове, «N. … antivibranti», HEB и кука;
     планът — основата и отворите пунктирани («FORO ESISTENTE», без бордове), без кука и «Gancio» в трасирането («Argano»
@@ -2717,6 +2718,69 @@ frizione, Diametro pulegge di rinvio, Inerzia per puleggia…, Massa della macch
     отпреди кръга се чете, 207-те възпроизведени преди — «da aggiornare» сега, SHA-256 на всеки запазен `DrawingSetPdf` —
     същият; спрямо S7 — 1878 общи реда, 0 разлики; `docs-compare` спрямо S7 — 1587 общи реда, 0 разлики. Golden-v12 и ръчните проверки — непокътнати. След деплоя: IndexNow за
     публичните страници (броят на началната страница се смени).
+- **След прегледа** (34 находки: 2 major, 16 minor, 16 nit — поправени всички major и minor освен двете, които са на
+  собственика, и евтините nit; останалите — отхвърлени с доказателство по-долу):
+  - *Записите*: 46а — изключение при прерисуването на един комплект е `failed` с причината и обходът продължава (изход
+    1); другите причини, поради които комплект не се рисува (`noDesign`, `archived`, `machineMismatch`), са на реда му;
+    `DEPLOY.md` — `npm run pdf:keep` отново точно преди деплоя на двигателите (комплект, издаден след първия пробег и
+    несвалян, иначе губи PDF-а си); отделен комит без двигател. `tipoDaRivedere` е в `createLiftDesign` — всеки път, който
+    записва чертеж (Progetto, «Aggiorna il progetto con l’ultimo calcolo», «Aggiorna con il software attuale»), не само
+    формулярът. Нов «Calcolo argano» без отговор за регулирането на таблото, където се пита — 'regolazione' на сървъра
+    (`saveCalculationAction`, `err_regolazione`); «Aggiorna» на запис отпреди не пита (⚠ в документите). `v50` е само на
+    -1: изпитването по -11 не го пази (`collaudoOf`, ключовете в реда им — записите без него се четат както са записани).
+    Ключът на обхвата (`ambito-version`) включва и групите части и закръгленията (`AUTO_PARTI`, `PARTI_FACOLTATIVE`,
+    `PARTI_LOCALE`, `PARTI_SOLO`, `PARTI_RIFACIMENTO`, `VARIAZIONI`, `SOSTANZIALE`, `ROUNDING_KG`/`V`/`H`) — закрепен наново
+    при същите версии (същият комплект, не е деплойван).
+  - *Нормите в документите*: скоростта — увеличението спрямо по-голямата от libretto и 50 Hz (15.1), намалението спрямо
+    скоростта по libretto (15.16, никога тази след 50 Hz); проект между двете — и двете разлики; равна в закръглението —
+    «uguale», без бележката за ±5 % и без реда в «Altre parti sostituite o modificate» (`VariazioneVelocita.confronti`,
+    `.uguale`; същото в `DatiLibretto`, `AvvisiIntervento` и причината на заключения ред). DPR 162/1999 cc) n. 2) — само при
+    сменена номинална товароподемност (`portataVariata`); статичните товари без нея — ред `da_verificare` за инженера;
+    n. 5) — без плъзгащите врати, когато вратите на кабината са назовани, машинното — отделен ред (`report/modifica-dpr.ts`,
+    извън `collaudo.ts` заради 300-те реда). D.1 — relazione и изречението назовават приетото a (a_e) и че кое забавяне има
+    предвид D.1 го потвърждава soggetto della verifica (регистърът `modifica.d1` — също). Плъзгащите врати по -1 — и
+    убежището на app. B (13.1.3 a)), и махнатият бутон ALT (13.2.3); 0,335 m при 1,00 m/s — веднага след формулата (беше
+    в края на точката: находката, че стойността липсва, не се потвърди). 9.1–9.2 при машина, която остава — без „macchina
+    nuova“. Точка 5 — условието на нормата (силите растат или се местят към неблагоприятното; товарът и скоростта — пример)
+    на лист 1, в relazione tecnica и в `locale.basamento.esistente`. P9 на машина, която остава — «argano esistente …, sul
+    basamento esistente». Над 8 m — ⚠ първо, 16 a)–l) с „fino a 8 m l’intervento non conta come nuova installazione“.
+    `impianto.quadro.regolazione` — «fino a LIFT 1.31.0». `npm run lista` + xlsx — 316 реда.
+  - *Екраните*: въпросът за регулирането на 390 px — над отговорите (`@container calc (max-width: 640px)`; smoke-blank
+    проверява ширината му); машина, която остава, без рилево на машинното — подсказка за калатата с Ø на шайбата ѝ и
+    «Calata a … mm (puleggia dell’argano esistente)» с едно натискане (на живо — записът се отключва); «Il progetto
+    completa il calcolo» при машина, която остава — дава само хода (`differenzeLeadKept`).
+  - *Кодът и тестовете*: коментарът на `NON_SU_ESISTENTE` — над `loadCentre`; тестове: `saveCalculationAction`
+    ('velocita' -1 +6 % / +4 % / −6 %, -11 +4 %, 'corsa', 'inverter' 1v/2v на «Solo argano» и ammodernamento, 'regolazione'),
+    «Aggiorna» на «Solo argano» без регулиране, `createLiftDesign` и «Aggiorna il progetto…» с `tipoDaRivedere`,
+    `review-r46.test.ts` (7), `keep-set-pdfs` (compose хвърля); smoke-intervento — «Rifacimento con l’arcata esistente»
+    изрично (кликът беше там, през `.rif-preset`).
+  - *Изследването* (`research/argano-geared/06` и `16` §3.2.1): прочитът на кръг 46 — клаузи и стойности с ✅/⚠️; „не са
+    намерени“ за 14.4 / 14.3 е заменено.
+  - *Сверката на нормите (поток Б)*: `overlap.mjs` (≥ 8 дословни думи) — 598-те италиански текста на кръга и на прегледа
+    (задълженията, NORME_INFO и ADEMPIMENTI, бележките, `calculations.intervento`, `lift`, `progetto`) и новите раздели
+    на изследването — 0 реда; листата — 1 ред отпреди кръга (110, 9 думи, не е на кръга); `node tools/agents/verifier.mjs
+    asansyorchika` върху сверката (клауза → бележка файл:ред) — минава.
+  - *Сменените твърдения в тестовете*: `intervento.test.ts` — версиите 1.6.0→1.7.0, 1.31.0→1.32.0, 1.15.0→1.16.0,
+    2.25.0→2.26.0 (B1: обхватът мени документите на всеки запис); `collaudo.test.ts` — машинното „никога на интервенцията“ →
+    „освен с 'room'“ (8 на -1 и -11, B7); `intervento-documenti.test.ts` — `restaVariata` без ⚠, информативна (B4);
+    `PARTI_LOCALE` += room, alarm, ucm (B7); `landing` — 186/119 → 193/120 (S8). След прегледа: `actions-guard` (кр. 45) —
+    машина върху старото табло се записва с отговора VVVF ('regolazione'); `lift-actions` — tipoDaRivedere е в
+    `createLiftDesign` (тук — предаването и отказът); `inverter-facoltative` — стойността след формулата, app. B, ALT;
+    `modifica-variazioni` (4000 случая) — по -11 `v50` не остава; `ambito-version` — нов ключ при същите версии.
+  - *Не е поправено*: p_apron при нови етажни врати по -1 (19.6) — извън спецификацията (B4), въпрос на собственика (на
+    копието не мени нито един запис: всеки -1 запис с `landingDoors` има и `carDoors`); примерът C с VVVF — примерът е
+    пълен набор от данни (правилото за примерите), решение на собственика; `alarm` и `ucm` остават в n. 5) `da_verificare`
+    (компоненти на асансьора).
+  - *Отворени въпроси на собственика*: махането на `Project.kind`; дали «Rifacimento» отговаря на velocità/portata/corsa;
+    кое забавяне a има предвид D.1 (сега a_e, C1 — минимумът на лентата); p_apron по 19.6.
+  - *Проверки* (на `argano_r46`): tsc 0, lint чисто, тестове 1084 + 216, `npm run build`, :3311 от него, пълен smoke два
+    пъти с рестарт — „all good“ (70 реда), secret-scan чисто, landing-docs — същите изображения, `npm run artifact` —
+    сглобен. `refresh-sim` + `diff-classify` срещу S0 — 1854 сравнени, 0 необяснени (R4 757, R6 79, R3 60 — като в S8);
+    срещу S8 — 2054, 47 R4 и 13 други — само записи от smoke-овете на кръга: 1 relazione без «Altre parti…» (скоростта =
+    libretto), 4 relazioni и 4 комплекта на машина, която остава (P9, бележката за основата; хешът на чертежа на 4-те
+    комплекта — PDF-ът им е запазен). `reproduce-all` — всеки от 1756-те записа отпреди кръга — същият ред като в S8;
+    спрямо S8 — 1942 общи, 3 комплекта от smoke-а на кръга вече не се рисуват (PDF — запазен); `docs-compare` — 1542 общи,
+    27 различни, всичките от smoke-овете на кръга, 0 от S0.
 
 ## Проверки
 
@@ -3177,6 +3241,12 @@ frizione, Diametro pulegge di rinvio, Inerzia per puleggia…, Massa della macch
   нищо. `reproduce-all` — всеки ред на запис от след S5 е същият (1808); `docs-compare` — 15 от 1454 реда се менят, всички
   relazioni на записи от smoke-овете с текущите версии (текстът на регистъра), 0 от снимката S0; поръчките и DXF-ите на
   комплектите — същите. `npm run lista` + `lista-verifica-xlsx.py` — 314 реда (+1). Пълен smoke с пощата — „all good“ (70 реда; новата стъпка — Progetto на машината, която остава: основата, L0 заключено, B-B, лист 1).
+  `node tools/security/secret-scan.mjs` — чисто.
+- [x] Кръг 46 B, след прегледа (същият клон, база и :3311): `tsc --noEmit` 0 грешки, `npm run lint` чисто, `npm test` —
+  1084 + 216 теста (нов `review-r46.test.ts`); `npm run build` — успешен, :3311 спрян само по процеса с cwd на работното
+  дърво и пуснат от новия build. Пълен smoke два пъти с рестарт — „all good“ (70 реда всеки). `refresh-sim` +
+  `diff-classify` срещу S0 — 1854 сравнени, 0 необяснени; `reproduce-all` и `docs-compare` — разликите само на записи от
+  smoke-овете на кръга (виж „След прегледа“). `npm run lista` + `lista-verifica-xlsx.py` — 316 реда.
   `node tools/security/secret-scan.mjs` — чисто.
 - [x] `node tools/design/motion-a11y.mjs liftpilot/src`: проверката за reduced motion в базата — да; 6 евристични
   находки `webgl-no-rm-check` в модули на 3D, които се зареждат само през `boot.ts` (същите и преди кръг 24).

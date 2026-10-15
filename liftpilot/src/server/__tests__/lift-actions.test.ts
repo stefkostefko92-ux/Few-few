@@ -18,6 +18,7 @@ import { snapshotHash } from '@/lib/snapshot-hash';
 const src = (p: string) => new URL(`../../${p}`, import.meta.url).href;
 type Row = Record<string, unknown>;
 let calcs: Row[] = [], role = 'ENGINEER', readOnly = false;
+let created: { ok: true; id: string } | { ok: false; error: string } = { ok: true, id: 'ld1' };
 const saved: unknown[][] = [], dropped: unknown[] = [];
 const PROJECTS = [{ id: 'p1', companyId: 'c1', archivedAt: null }, { id: 'p2', companyId: 'c1', archivedAt: null }, { id: 'parch', companyId: 'c1', archivedAt: new Date(0) }];
 mock.module(src('lib/db.ts'), { namedExports: { prisma: {
@@ -27,7 +28,7 @@ mock.module(src('lib/db.ts'), { namedExports: { prisma: {
     && c.liftDesign === null && c.shaftDesignId === null && (!where.id || c.id === where.id)) ?? null },
   formDraft: { deleteMany: async ({ where }: { where: Row }) => { dropped.push(where); return { count: 1 }; } },
 } } });
-mock.module(src('server/save.ts'), { namedExports: { createLiftDesign: async (...a: unknown[]) => { saved.push(a); return { ok: true, id: 'ld1' }; } } });
+mock.module(src('server/save.ts'), { namedExports: { createLiftDesign: async (...a: unknown[]) => { saved.push(a); return created; } } });
 mock.module(src('lib/auth.ts'), { namedExports: { getSessionUser: async () => ({ id: 'u1', role, companyId: 'c1', mustChangePassword: false, readOnly, caps: capsOf(role as 'ENGINEER') }) } });
 
 const snap = (V: FormValues) => { const s = snapshotOf(V); return { inputs: s.values, sha256: snapshotHash(s) }; };
@@ -42,7 +43,7 @@ beforeEach(() => {
   calcs = [calc('b1'), calc('legacy1', { intervento: null }), calc('theirs', { companyId: 'c2' }), calc('elsewhere', { projectId: 'p2' }),
     calc('lift1', { liftDesign: { id: 'd1' } }), calc('arch1', { shaftDesignId: 's1' }), calc('stale1', { sha256: '0'.repeat(64) }),
     calc('dm1', { collaudo: { norma: '10411-1', parti: ['machine', 'car'], aggiuntive: ['dm236'] } })];
-  saved.length = 0; dropped.length = 0; role = 'ENGINEER'; readOnly = false;
+  saved.length = 0; dropped.length = 0; role = 'ENGINEER'; readOnly = false; created = { ok: true, id: 'ld1' };
 });
 
 test('progetto: sul calcolo argano di questo impianto, composto dal server; il tipo passa al calcolo del progetto', async () => {
@@ -88,18 +89,18 @@ test('progetto: sola lettura e chi non disegna — rifiutati prima di ogni lettu
   assert.equal(saved.length, 0);
 });
 
-test('progetto su un «Solo argano»: la corsa disegnata diversa dal libretto rivede il tipo (round 46, tipoDaRivedere)', async () => {
-  // the drawing's travel, as the derivation gives it on the base
-  const { deriveLift } = await import(src('lib/lift/derive.ts'));
-  const H = Number(deriveLift(liftInputsOf(progetto(), { values: PRESETS.B, collaudo: { norma: '10411-1', parti: ['machine'] } })).values.H);
-  const solo = (lib: Row): Row => ({ intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'], libretto: lib } });
-  calcs.push(calc('solosame', solo({ H })), calc('sololong', solo({ H: H - 2 })), calc('solonone', { intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'] } }),
-    calc('ammodlong', { collaudo: { norma: '10411-1', parti: ['machine', 'controller'], libretto: { H: H - 2 } } }));
+test('progetto su un «Solo argano»: il tipo da rivedere lo decide createLiftDesign (round 46) — il suo rifiuto torna al Progetto', async () => {
+  // the rule (the drawing's travel against the logbook's on a «Solo argano» base) is save.ts's, shared by every path that
+  // saves a drawing (save-intervento.test.ts): the action hands it the declared type and answers its refusal
+  calcs.push(calc('sololong', { intervento: 'SOLO_ARGANO', collaudo: { norma: '10411-1', parti: ['machine'], libretto: { H: 3 } } }),
+    calc('ammodlong', { collaudo: { norma: '10411-1', parti: ['machine', 'controller'], libretto: { H: 3 } } }));
+  created = { ok: false, error: 'tipoDaRivedere' };
   assert.deepEqual(await save({ baseCalculationId: 'sololong' }), { ok: false, error: 'tipoDaRivedere' });
-  assert.equal(saved.length, 0);
-  // the logbook's travel drawn as it is, no logbook, a modernisation (its travel brought among the parts): saved
-  for (const id of ['solosame', 'solonone', 'ammodlong']) assert.deepEqual(await save({ baseCalculationId: id }), { ok: true, id: 'ld1' }, id);
-  // the modernisation's stored test leaves the rule's travel out: the derivation brings it again on the drawing's travel
-  const inputs = saved[2]?.[2] as { collaudo?: { parti: string[] } };
-  assert.deepEqual(inputs.collaudo?.parti, ['machine', 'controller']);
+  assert.deepEqual(saved[0]?.[6], { id: 'sololong', intervento: 'SOLO_ARGANO' });
+  assert.deepEqual((saved[0]?.[2] as { collaudo?: { libretto?: unknown } }).collaudo?.libretto, { H: 3 }, 'the logbook goes with the drawing');
+  assert.deepEqual(dropped, [], 'the draft stays');
+  // a modernisation: the stored test leaves the rule's travel out (the derivation brings it again on the drawing's travel)
+  created = { ok: true, id: 'ld1' };
+  assert.deepEqual(await save({ baseCalculationId: 'ammodlong' }), { ok: true, id: 'ld1' });
+  assert.deepEqual((saved[1]?.[2] as { collaudo?: { parti: string[] } }).collaudo?.parti, ['machine', 'controller']);
 });

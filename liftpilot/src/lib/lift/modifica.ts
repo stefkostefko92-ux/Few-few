@@ -13,7 +13,7 @@ import { KL } from './norme';
 
 /** The documented loads are whole kilograms from a report: a difference within half a kilogram is their rounding, not
  *  a change of the load (input sanity, not a value of a standard). */
-const ROUNDING_KG = 0.5;
+export const ROUNDING_KG = 0.5;
 /** The documented speed and travel, against the calculation's: a difference within these is their rounding, not a
  *  change (the same as sheet 1's mismatches between the calculation and the shaft, tavole/data.ts; input sanity, not a
  *  value of a standard) [m/s, m]. */
@@ -99,6 +99,9 @@ export function variazioneCarico(norma: Norma10411, doc: Carichi, ora: Carichi):
   return { dQ, dT, dTcp, limiti, p1: dQ > limiti.Q || dT > limiti.T, p2: dTcp > limiti.Tcp, calo, strutture: null, rapporto };
 }
 
+/** The rated load changed past the documented loads' rounding (DPR 162/1999 art. 2 c.1 lett. cc) n. 2) names it). */
+export const portataVariata = (doc: Carichi, ora: Carichi): boolean => Math.abs(ora.Q - doc.Q) > ROUNDING_KG;
+
 /** Whether the change brings the checks of the load into the test: beyond the prospetti, a load decreased, or (under
  *  -1) the ratio of the suspended loads changed — stricter than the prospetti, on the side of safety (registry
  *  impianto.variazione.carico). */
@@ -127,6 +130,11 @@ export function corsaOf(V: FormValues): number | null {
   return bad.includes('H') ? null : I.H;
 }
 
+/** A comparison the documents and the form print for a change of speed: the speed compared with [m/s], the change from
+ *  it (a fraction, negative: a decrease) and whose speed it is — the logbook's (or a later verbale's), the one after the
+ *  passage to 50 Hz (UNI 10411-1), the documented one (UNI 10411-11). */
+export interface ConfrontoVelocita { rispetto: number; dv: number; di: 'libretto' | '50hz' | 'documentata' }
+
 export interface VariazioneVelocita {
   /** the speed the change is measured from [m/s]: under -1 the higher of the logbook's and the one after 50 Hz, under -11
    *  the documented one */
@@ -141,20 +149,34 @@ export interface VariazioneVelocita {
   variata: boolean;
   /** under -11 a change over KL.ucmSpeed11: the UCM protection to UNI EN 81-20 5.6.7 (15 i)); under -1 false */
   ucm15i: boolean;
+  /** the design's speed equal, within the rounding, to a documented one (under -1 the logbook's or the one after 50 Hz):
+   *  no change at all — no note of a change within 5 % */
+  uguale: boolean;
+  /** what the change is printed against (round 46 review): under -1 an increase against `rif` (15.1), a decrease against
+   *  the logbook's speed (15.16 — never the one after 50 Hz); within both, against the logbook's speed and the one after
+   *  50 Hz when the design lies between them, else against the nearer of the two; under -11 the documented speed */
+  confronti: ConfrontoVelocita[];
 }
 
 /** The change of the rated speed `v` of the design from what the logbook documents, under the part of UNI 10411; null
  *  without a documented speed (under -1 the logbook's or the one after 50 Hz, under -11 the documented one). */
 export function variazioneVelocita(norma: Norma10411, lib: Libretto | undefined, v: number): VariazioneVelocita | null {
+  const c = (rispetto: number, di: ConfrontoVelocita['di']): ConfrontoVelocita => ({ rispetto, dv: (v - rispetto) / rispetto, di });
   if (norma === '10411-11') {
     if (!lib?.v) return null;
     const rif = lib.v, d = v - rif, variata = oltre(Math.abs(d), ROUNDING_V);
-    return { rif, dv: d / rif, aumento: variata && d > 0, calo: variata && d < 0, variata, ucm15i: oltre(Math.abs(d) / rif, KL.ucmSpeed11) };
+    return { rif, dv: d / rif, aumento: variata && d > 0, calo: variata && d < 0, variata, ucm15i: oltre(Math.abs(d) / rif, KL.ucmSpeed11), uguale: !variata,
+      confronti: [c(rif, 'documentata')] };
   }
   const rif = Math.max(lib?.v ?? 0, lib?.v50 ?? 0);
   if (!(rif > 0)) return null;
   const aumento = oltre((v - rif) / rif, KL.speedInc1), calo = !!lib?.v && oltre((lib.v - v) / lib.v, KL.speedDec1);
-  return { rif, dv: (v - rif) / rif, aumento, calo, variata: aumento || calo, ucm15i: false };
+  const lv = lib?.v, v50 = lib?.v50, diRif = lv === rif ? 'libretto' : '50hz';
+  const uguale = [lv, v50].some((b) => !!b && !oltre(Math.abs(v - b), ROUNDING_V));
+  const confronti = aumento ? [c(rif, diRif)] : calo && lv ? [c(lv, 'libretto')]
+    : lv && v50 && v50 > lv && oltre(v - lv, ROUNDING_V) && oltre(v50 - v, ROUNDING_V) ? [c(lv, 'libretto'), c(v50, '50hz')]
+      : !lv || Math.abs(v - rif) <= Math.abs(v - lv) ? [c(rif, diRif)] : [c(lv, 'libretto')];
+  return { rif, dv: (v - rif) / rif, aumento, calo, variata: aumento || calo, ucm15i: false, uguale, confronti };
 }
 
 export interface VariazioneCorsa {

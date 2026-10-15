@@ -213,8 +213,9 @@ src/lib/report/      build.ts — моделът на relazione (италиан�
                      tecnica.ts + tecnica-room.ts — relazione tecnica на подмяната (машината и машинното, 13 раздела).
                      variazioni.ts (кръг 46) — редовете и изречението на лист 1 за промяната на скоростта и хода спрямо
                      libretto (само с него) и редът на регулирането на таблото под нова машина (S5, regolazioneRows — с ⚠
-                     без отговор, само в relazioni); collaudo.ts altreModifiche — случаят по DPR 162/1999 чл. 2 ал. 1 б. cc)
-                     на всяка част. cases.ts (кръг 46 S7) — d1Blocks (двата случая на D.1 след сцеплението) и d1Frase
+                     без отговор, само в relazioni); modifica-dpr.ts (след прегледа, извън collaudo.ts) altreModifiche —
+                     случаят по DPR 162/1999 чл. 2 ал. 1 б. cc) на всяка част, PUNTI_MACCHINA_NUOVA и restaPunto (9.1–9.2
+                     при машина, която остава). cases.ts (кръг 46 S7) — d1Blocks (двата случая на D.1 след сцеплението) и d1Frase
                      (изречението в «Variazione dei carichi»).
                      Кръг 36: build-parts (части на build.ts), guide („Guide e carichi sulle strutture“ — водачите и товарите от
                      sheet-loads), refs (клаузите в колоната „Riferimento“), elaborati (издадените комплекти в relazione),
@@ -274,7 +275,7 @@ src/server/          Server actions ('use server') и заявки, винаги
                      обновяването), refresh-actions («Aggiorna con il software attuale»), drawing-pdf (PDF-ът на издадения
                      комплект, пазен какъвто е издаден; кръг 46 — scripts/keep-set-pdfs.ts, `npm run pdf:keep`: преди деплой,
                      който мени двигател, рисува и пази PDF-а на всеки комплект без такъв, който текущите двигатели още
-                     чертаят, другите изброява), download (отказите и отговорите на сваляните документи; кратките отговори — на италиански от src/lib/answers.ts, думите на errors.*), calc-start
+                     чертаят, другите изброява с причината; комплект, който се проваля, не спира обхода), download (отказите и отговорите на сваляните документи; кратките отговори — на италиански от src/lib/answers.ts, думите на errors.*), calc-start
                      (кръг 45: откъде тръгва „Calcolo argano“ — ?from= (на друго съоръжение — null, страницата 404),
                      черновата, последното от стъпка 2, последното изобщо, празно — с типа, изпитването и частите; от запис —
                      полетата извън погледа като в нов формуляр, src/lib/calc-saved.ts fromRecord, кръг 46), progetto-start (откъде тръгва Progetto: избраният проект,

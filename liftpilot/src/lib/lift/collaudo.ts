@@ -138,6 +138,12 @@ export const modificaOf = (C: Collaudo | undefined): Pick<Collaudo, 'rifacimento
   ...(C?.rifacimento ? { rifacimento: true as const } : {}), ...esistenteOf(C),
 });
 
+/** A logbook without the speed after 50 Hz (UNI 10411-1 only); undefined when nothing else is left. */
+function senzaV50(l: Libretto): Libretto | undefined {
+  const out: Libretto = { ...(l.v !== undefined ? { v: l.v } : {}), ...(l.H !== undefined ? { H: l.H } : {}) };
+  return out.v !== undefined || out.H !== undefined ? out : undefined;
+}
+
 /** The acceptance standards of the one form: a new lift is tested to EN 81-20/50 whatever was chosen; a replacement as
  *  chosen, by default UNI 10411-1 with the machine replaced (the intervention the software is made for). The standards
  *  added stay, in their order, once each, where they fit the base (EN 81-20/50 only on top of another base). A
@@ -158,7 +164,12 @@ export function collaudoOf(calc: FormValues, chosen?: Collaudo): Collaudo {
     const rif = chosen.rifacimento === true, mod = modificaOf(chosen);
     const norma = (chosen.marcatura && normaDaMarcatura(chosen.marcatura, chosen.servizio)) || chosen.norma;
     const auto = variazioniDi(norma, mod, calc), byRule = (p: Parte): boolean => (p === 'load' || p === 'speed' || p === 'travel') && auto[p];
-    return withAdded({ norma, parti: PARTI.filter((p) => (chosen.parti.includes(p) || byRule(p)) && !(rif && p === 'sling')), ...mod });
+    // the speed after 50 Hz is UNI 10411-1's (15.1): typed under -1 and kept by the form when the CE answer makes it -11,
+    // it is not part of the test (round 46 review: no hidden value stored)
+    // (the keys in their order: a test without v50 to drop reads back as it was stored)
+    const { libretto: lib, ...resto } = mod, drop = norma === '10411-11' && lib?.v50 !== undefined, l11 = drop && lib ? senzaV50(lib) : undefined;
+    const noto = !drop ? mod : l11 ? { ...mod, libretto: l11 } : resto;
+    return withAdded({ norma, parti: PARTI.filter((p) => (chosen.parti.includes(p) || byRule(p)) && !(rif && p === 'sling')), ...noto });
   }
   return { norma: '10411-1', parti: ['machine'] };
 }

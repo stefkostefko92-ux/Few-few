@@ -32,8 +32,9 @@ interface Props {
   t(key: string, values?: Record<string, string | number>): string;
   /** «Porta nel calcolo»; null: not for this user */
   porta: { go(): void; pending: boolean; label: string } | null;
-  /** the existing falls a direct pull keeps [mm] and the plan's drop set to them (round 46); null: the plan's falls */
-  calate?: { Do: number; fix(): void } | null;
+  /** the existing falls a direct pull keeps [mm] and the plan's drop set to them (round 46); `kept`: the sheave of the
+   *  machine the intervention keeps (its falls are where they hang); null: the plan's falls */
+  calate?: { Do: number; fix(): void; kept?: boolean } | null;
   /** the machine the intervention keeps (round 46, B8): L0, dx and h locked to the calculation's (src/lib/lift/kept.ts) */
   kept?: boolean;
 }
@@ -50,11 +51,11 @@ const NONE = new Set<string>();
 function calataHint(derived: LiftDerived, fmt: Pres['fmt'], t: Props['t'], calate: Props['calate']) {
   const c = derived.calata ?? 0, D = derived.analysis.ctx.N.D, bad = derived.issues.includes('calata');
   if (calate) {
-    const v = { c: fmt(c, 0), Do: fmt(calate.Do, 0), D: fmt(D, 0) };
+    const v = { c: fmt(c, 0), Do: fmt(calate.Do, 0), D: fmt(D, 0) }, k = calate.kept ? '_kept' : '';
     return (
       <div id="progetto-calata" tabIndex={-1}>
-        <p className={bad ? 'hint bad' : 'hint'} role={bad ? 'alert' : undefined}>{t(bad ? 'hint_calata_esistenti_bad' : 'hint_calata_esistenti', v)}</p>
-        {bad ? <div className="btnrow"><button type="button" className="btn btn-sm calata-esistente" onClick={calate.fix}>{t('calata_fix', v)}</button></div> : null}
+        <p className={bad ? 'hint bad' : 'hint'} role={bad ? 'alert' : undefined}>{t(bad ? `hint_calata_esistenti${k}_bad` : `hint_calata_esistenti${k}`, v)}</p>
+        {bad ? <div className="btnrow"><button type="button" className="btn btn-sm calata-esistente" onClick={calate.fix}>{t(`calata_fix${k}`, v)}</button></div> : null}
       </div>
     );
   }

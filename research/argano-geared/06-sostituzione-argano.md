@@ -108,10 +108,18 @@ in vigore). Per la sostituzione della macchina sono richiesti:
   non si aprono, richiesto solo in assenza di protezione contro i movimenti incontrollati della
   cabina a porte aperte e quando l'impianto ha un dispositivo che controlla il rallentamento.
 
-Ricerca del 2 ottobre 2026 (capitolo 2.4.1): il testo 2024 sul macchinario non è stato trovato; la lista qui sopra
-resta quella della 2021. Un estratto non attribuito aggiunge che anche un nuovo inverter senza protezione UCMP
-richiede il freno in due elementi ⚠️. Per un impianto **conforme** alla direttiva vale la UNI 10411-11:2024, i cui
-requisiti per la sostituzione del macchinario non sono stati trovati: il software lo dichiara nella relazione.
+Ricerca del 2 ottobre 2026 (capitolo 2.4.1): allora il testo 2024 sul macchinario non era stato trovato e la lista
+qui sopra era quella della 2021; un estratto non attribuito aggiungeva che anche un nuovo inverter senza protezione
+UCMP richiede il freno in due elementi ⚠️.
+
+Lettura del 15 ottobre 2026 (giro 46, testo letto per uso interno [F31] del capitolo 16; solo punti, valori e parole
+nostre): la macchina nuova è il punto 14.4 a)–g) della UNI 10411-1:2024 ✅ e il 14.3 a)–b) con l'app. A (14) della
+UNI 10411-11:2024 ✅, non più «non trovati». Con la macchina nuova sul quadro esistente la regolazione della velocità
+resta e non si aggiunge a un quadro che non l'ha (11.2.1 della -1, 11.2 della -11) ✅: il software, che dimensiona la
+macchina per l'inverter, chiede la regolazione e con una o due velocità fa sostituire il quadro (decisione del
+titolare) ⚠️. Velocità (15.1: oltre +5 % sul maggiore tra libretto e 50 Hz; 15.16: oltre −5 % sulla velocità del
+libretto), corsa (16: fino a +8 m) e carichi (6.1 con l'appendice D quando cambia il rapporto) sono riassunti nella
+sezione 3.2.1 del capitolo 16, con lo stato di ogni lettura.
 
 Conseguenza per il software: nella sostituzione il **profilo normativo è la UNI 10411-1** con i
 suoi rimandi a EN 81-20, non l'intero EN 81-20 degli impianti nuovi; la regola del capitolo 4.10

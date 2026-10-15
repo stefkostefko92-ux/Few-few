@@ -109,6 +109,10 @@ test('4000 casi: il libretto e la regolazione passano per interventoTo, rifacime
     assert.ok(extra.every((p) => p === 'speed' || p === 'travel'), `${extra.join(',')} ${JSON.stringify(C)}`);
     assert.deepEqual(collaudoOf(V, { ...C, regolazione: pick(REGOLAZIONI) }).parti, a.parti);
     assert.equal(a.norma, b.norma);
-    if (a.norma !== 'en81') keeps(a, 'collaudoOf');
+    // (round 46 review) the speed after 50 Hz is UNI 10411-1's: under -11 the test does not keep it
+    const { v50: _v50, ...no50 } = libretto;
+    void _v50;
+    const lib11 = Object.keys(no50).length ? no50 : undefined;
+    if (a.norma !== 'en81') assert.deepEqual([a.libretto, a.regolazione], [a.norma === '10411-11' ? lib11 : libretto, regolazione], `collaudoOf ${JSON.stringify(C)}`);
   }
 });

@@ -12,8 +12,6 @@ import { can } from '@/lib/rbac';
 import { rateLimit } from '@/lib/ratelimit';
 import { calcLabelSchema, idSchema } from '@/lib/schemas';
 import { liftInputsSchema, progettoInputsSchema } from '@/lib/lift-input';
-import { deriveLift } from '@/lib/lift/derive';
-import { tipoDaRivedere } from '@/lib/lift/intervento';
 import { liftInputsOf } from '@/lib/lift/progetto';
 import { shaftSourceSchema } from '@/lib/shaft-input';
 import { calcoloBase } from './calcolo-base';
@@ -44,11 +42,9 @@ export async function saveLiftDesignAction(input: { projectId: unknown; baseCalc
   if (base.collaudo.aggiuntive?.includes('dm236') && progetto.data.shaft.access === 'none') return { ok: false, error: 'invalidFields', fields: ['access'] };
   const inputs = liftInputsSchema.safeParse(liftInputsOf(progetto.data, base));
   if (!inputs.success) return { ok: false, error: 'invalidFields', fields: inputs.error.issues.map((i) => i.path.join('.')) };
-  // a «Solo argano» whose test, on the drawing's travel, gets a change of speed or travel by the logbook (round 46):
-  // the type is to be reviewed in the calculation («Porta nel calcolo»); only a logbook can bring them
-  if (base.tipo === 'SOLO_ARGANO' && base.collaudo.libretto && tipoDaRivedere(base.tipo, deriveLift(inputs.data).collaudo)) return { ok: false, error: 'tipoDaRivedere' };
   // the derived calculation takes the type declared with the base (none before round 45: none, the documents' words of
-  // that time)
+  // that time); a «Solo argano» base whose drawing brings a change of speed or travel by the logbook is refused there
+  // ('tipoDaRivedere', save.ts: every path that saves a drawing)
   const r = await createLiftDesign(user, project.id, inputs.data, label.data, source?.success ? source.data : null, undefined,
     { id: base.id, intervento: base.dichiarato ? base.tipo : null });
   // the drawing's draft has become this record

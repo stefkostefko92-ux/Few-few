@@ -18,6 +18,9 @@ import { MACCHINA_81_1 } from './refs';
 import { ammodernamentoText, notaIntervento } from './intervento-text';
 import { regolazioneRows, variazioniDoc, variazioniNota, variazioniRows } from './variazioni';
 import { d1Frase } from './cases';
+import { DPR_CC_RESTA, PUNTI_MACCHINA_NUOVA, altreModifiche, restaPunto } from './modifica-dpr';
+
+export { PUNTI_MACCHINA_NUOVA } from './modifica-dpr';
 import { macchinaResta, type TipoIntervento } from '../lift/intervento';
 
 const LIFT = appIt.lift;
@@ -233,41 +236,13 @@ export function esitiBlocks(C: Collaudo, checks: readonly { id: CheckId | ShaftC
   return out;
 }
 
-/** The case of DPR 162/1999 art. 2 c.1 lett. cc) of each part a modification replaces or changes besides the machine
- *  (round 46): a change of the speed n. 1), of the rated load n. 2), of the travel n. 3); the controller, the landing
- *  doors and the car with its sling n. 5) — read on the article —; any other part is one of n. 5)'s other main
- *  components, for the engineer to confirm. With the machine kept (`resta`) they are the modification. */
-const CC = 'DPR 162/1999, art. 2 c.1 lett. cc)';
-const CC_VARIAZIONE: readonly [Parte, string, string][] = [['speed', '1)', 'cambio della velocità nominale'], ['load', '2)', 'cambio della portata e dei carichi'],
-  ['travel', '3)', 'cambio della corsa']];
-function altreModifiche(C: Collaudo, resta: boolean): PuntoInSito[] {
-  const altre: readonly Parte[] = C.norma === 'en81' ? [] : C.parti.filter((p) => p !== 'machine'), has = (p: Parte): boolean => altre.includes(p);
-  const nome = nomeParte, cabina = has('car') && has('sling');
-  const principali = [...(has('controller') ? [nome('controller')] : []), ...(has('landingDoors') ? [nome('landingDoors')] : []), ...(cabina ? ['cabina con l’arcata'] : [])];
-  const numerate: readonly Parte[] = ['speed', 'load', 'travel', 'controller', 'landingDoors'];
-  const altri = altre.filter((p) => !numerate.includes(p) && !(cabina && (p === 'car' || p === 'sling')));
-  return [
-    ...CC_VARIAZIONE.filter(([p]) => has(p)).map(([, n, testo]): PuntoInSito => ({ rif: `${CC} n. ${n}`, stato: 'confermato', testo: `${testo}: modifica costruttiva` })),
-    ...(principali.length ? [{ rif: `${CC} n. 5)`, stato: 'confermato' as const,
-      testo: `sostituzione ${resta ? 'di' : 'anche di'} ${principali.join(', ')}: modifica costruttiva` }] : []),
-    ...(altri.length ? [{ rif: `${CC} n. 5)`, stato: 'da_verificare' as const,
-      testo: `altri componenti principali sostituiti (${altri.map(nome).join(', ')}): il tecnico conferma il caso nella comunicazione` }] : []),
-  ];
-}
-
-/** With the machine kept (round 45): DPR 162/1999's case of the machine replaced is not this one, and the points of UNI
- *  10411 and UNI EN 81-20 that only concern a new machine (point 14 of UNI 10411-1/-11) are not printed. */
-const DPR_CC_RESTA: PuntoInSito = { rif: 'DPR 162/1999, art. 2 c.1 lett. cc)', stato: 'confermato',
-  testo: 'la modifica è costruttiva; l’argano resta, quindi non è il caso n. 5) della sostituzione del macchinario' };
-export const PUNTI_MACCHINA_NUOVA: readonly string[] = ['UNI 10411-1:2024, 14.4 a)–g)', 'UNI 10411-11:2024, 14.3 a) e App. A (14); UNI EN 81-20:2020, 5.6.6.2 e 5.6.7.3',
-  'UNI 10411-11:2024, 14.3 b)', 'UNI EN 81-20:2020, C.2 e 7.3.2'];
-
 const punto = (p: PuntoInSito): string => `${p.rif}: ${p.testo}${p.stato === 'da_verificare' ? ' (da verificare sul testo vigente)' : ''}.`;
 
 /** The section of what the law asks of the intervention (DPR 162/1999: a new lift, or a modification) and, for each
  *  standard of the test, its citation in the Official Journal and the points the engineer checks on site (`resta`: the
- *  machine kept, PUNTI_MACCHINA_NUOVA left out). */
-export function adempimentiBlocks(C: Collaudo, repl: boolean, resta = false): ReportBlock[] {
+ *  machine kept, PUNTI_MACCHINA_NUOVA left out and 9.1–9.2 without the new machine; `V`: the calculation's values, the
+ *  rated load's case n. 2) by the documented loads). */
+export function adempimentiBlocks(C: Collaudo, repl: boolean, resta = false, V?: FormValues): ReportBlock[] {
   const modifica = resta ? [DPR_CC_RESTA, ...ADEMPIMENTI.modifica.slice(1)] : ADEMPIMENTI.modifica;
   const out: ReportBlock[] = [
     { t: 'p', text: repl
@@ -276,10 +251,10 @@ export function adempimentiBlocks(C: Collaudo, repl: boolean, resta = false): Re
       : "Impianto nuovo: il DPR 162/1999 e s.m.i. chiede gli adempimenti che seguono. Per ogni normativa del collaudo, sotto, la sua citazione e i punti "
         + 'che il tecnico verifica in sito, con il riferimento e il valore (parafrasati: il testo delle norme non è riportato).' },
     { t: 'h3', text: 'Adempimenti (DPR 162/1999)' },
-    { t: 'list', items: [...(repl ? modifica : ADEMPIMENTI.nuovo), ...(repl ? altreModifiche(C, resta) : [])].map(punto) },
+    { t: 'list', items: [...(repl ? modifica : ADEMPIMENTI.nuovo), ...(repl ? altreModifiche(C, resta, nomeParte, V) : [])].map(punto) },
   ];
   for (const n of normeOf(C)) {
-    const info = NORME_INFO[n], punti = resta ? info.punti.filter((p) => !PUNTI_MACCHINA_NUOVA.includes(p.rif)) : info.punti;
+    const info = NORME_INFO[n], punti = resta ? info.punti.filter((p) => !PUNTI_MACCHINA_NUOVA.includes(p.rif)).map(restaPunto) : info.punti;
     out.push({ t: 'h3', text: NORMA_SIGLA[n] }, { t: 'p', style: 'note', text: `Citazione: ${info.citazione}.${info.avviso ? ` Attenzione: ${info.avviso}.` : ''}` });
     if (punti.length) out.push({ t: 'list', items: punti.map(punto) });
   }

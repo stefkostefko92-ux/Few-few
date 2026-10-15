@@ -14,6 +14,7 @@ import { useTranslations } from 'next-intl';
 import SectionTitle from '@/components/project/SectionTitle';
 import type { FormValues } from '@/calc/types';
 import { tipoDaRivedere, type Collaudo, type LiftDerived, type TipoIntervento } from '@/lib/lift';
+import { macchinaEsistente } from '@/lib/lift/kept';
 import { differenzeCalcolo, type DifferenzaKey } from '@/lib/lift/progetto';
 import { cabinaMassima } from '@/lib/lift/porta';
 import { analyse } from '@/lib/present/analysis';
@@ -50,7 +51,8 @@ export default function DifferenzeCalcolo({ P, X, base, derived, porta, pending,
   return (
     <section className="panel differenze" aria-labelledby="differenze-title">
       <SectionTitle level={3} icon="calculator-check" id="differenze-title">{t('differenze')}</SectionTitle>
-      <p className="note">{t('differenzeLead')}</p>
+      {/* the machine kept: L0 and the diverting pulley are the calculation's (ProgettoFuni), the drawing gives the travel */}
+      <p className="note">{t(macchinaEsistente({ calc: base, collaudo }) ? 'differenzeLeadKept' : 'differenzeLead')}</p>
       <div className="tbl">
         <table>
           <thead><tr><th>{t('colValore')}</th><th className="num">{t('colCalcolo')}</th><th className="num">{t('colDisegno')}</th></tr></thead>

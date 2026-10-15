@@ -49,9 +49,6 @@ export interface BeamResult {
   fMax: number;
 }
 
-/** The machine's load [kg] and where it acts, along the rope drop line from the car's drop (u) and across it (v) [mm]:
- *  the machine with its bedframe at the middle of its outline, the static load times the dynamic coefficient on the
- *  fall of the car (`load.car`, else half of it) and on the counterweight's (2:1: the falls toward the machine). */
 /** The checks of a new support the existing base of a machine kept does not take (round 46, B8; registry
  *  locale.basamento.esistente): the beams under it, the HEB beams over the shaft, the bedplate with the diverting pulley,
  *  what stands under the mounts, the pulley's stand, the slab's openings and a survey's drops — the base is the building's
@@ -59,6 +56,9 @@ export interface BeamResult {
 export const NON_SU_ESISTENTE: ReadonlySet<ShaftCheckId> = new Set<ShaftCheckId>(['m_beam', 'm_beamf', 'm_beamwall', 'm_heb', 'm_hebf', 'm_hebfeet', 'm_hebrope',
   'm_hebkerb', 'm_hebwall', 'm_bedplate', 'm_base', 'm_stand', 'm_rinvio', 'm_holes', 'm_calata']);
 
+/** The machine's load [kg] and where it acts, along the rope drop line from the car's drop (u) and across it (v) [mm]:
+ *  the machine with its bedframe at the middle of its outline, the static load times the dynamic coefficient on the
+ *  fall of the car (`load.car`, else half of it) and on the counterweight's (2:1: the falls toward the machine). */
 export function loadCentre(Gm: RoomGeo, M: MachineSpec, load: SupportLoad): { u: number; v: number; F: number } {
   const car = load.car ?? load.static / 2;
   const parts: readonly (readonly [number, number, number])[] = [

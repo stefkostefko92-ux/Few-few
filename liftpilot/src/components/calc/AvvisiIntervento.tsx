@@ -53,7 +53,7 @@ export default function AvvisiIntervento({ tipo, value, V, passa }: Props) {
   if (tipo !== 'TRASFORMAZIONE_COMPLETA') {
     if (xh?.oltre8) avvisi.push({ key: 'avviso_corsa_8m', ...(avvisi.some((a) => a.azione === 'TRASFORMAZIONE_COMPLETA') ? {} : { azione: 'TRASFORMAZIONE_COMPLETA' as const }) });
     if (xv?.ucm15i) avvisi.push({ key: 'avviso_ucm_15i' });
-    if (norma === '10411-1' && xv && !xv.variata && Math.abs(xv.dv) > 0.0005) avvisi.push({ key: 'avviso_velocita_entro5' });
+    if (norma === '10411-1' && xv && !xv.variata && !xv.uguale) avvisi.push({ key: 'avviso_velocita_entro5' });
   }
   const passaTo = (to: TipoIntervento, quadro = false): void => {
     passa(to, quadro);

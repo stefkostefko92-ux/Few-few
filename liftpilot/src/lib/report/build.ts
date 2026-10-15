@@ -220,7 +220,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   section(ESITI_CALCOLO);
   B.push(...esitiBlocks(C, [...res.checks, ...(r.design ? mergeChecks(r.design.layout.checks, beams) : beams), ...(guide?.checks ?? [])], (x) => st(x)));
   section('Adempimenti e punti da verificare in sito');
-  B.push(...adempimentiBlocks(C, repl, kept));
+  B.push(...adempimentiBlocks(C, repl, kept, r.values));
 
   section("Aderenza: tutti i casi di calcolo");
   B.push(...casesBlocks(P, I, N, res, (c) => X.caseText(c), st), ...d1Blocks(P, C, r.values));

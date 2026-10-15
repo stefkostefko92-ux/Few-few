@@ -59,7 +59,10 @@ export default function PartiSiNo({ tipo, chosen, value, V, risposte, answer, ri
     if (lock.perche === 'inverter') return t('perche_inverter', { clausola: norma === '10411-11' ? 'UNI 10411-11, 11.2' : 'UNI 10411-1, 11.2.1' });
     const v = lock.perche === 'velocita' ? velocitaOf(V) : null, H = lock.perche === 'corsa' ? corsaOf(V) : null;
     const xv = v !== null ? variazioneVelocita(norma, value.libretto, v) : null, xh = H !== null ? variazioneCorsa(norma, value.libretto, H) : null;
-    if (xv) return t('perche_velocita', { dv: `${xv.dv < 0 ? '−' : '+'}${fmt(Math.abs(xv.dv) * 100, 1)} %`, rif: fmt(xv.rif, 2),
+    // the comparison the change is measured on: an increase from the reference (15.1), a decrease from the logbook's (15.16)
+    const c = xv?.confronti[0];
+    if (xv && c) return t('perche_velocita', { dv: `${c.dv < 0 ? '−' : '+'}${fmt(Math.abs(c.dv) * 100, 1)} %`, rif: fmt(c.rispetto, 2),
+      di: t(c.di === '50hz' ? 'perche_di_50hz' : 'perche_di_libretto'),
       clausola: norma === '10411-11' ? 'UNI 10411-11, 15' : xv.aumento ? 'UNI 10411-1, 15.1' : 'UNI 10411-1, 15.16' });
     if (xh && value.libretto?.H) return t('perche_corsa', { dH: `${xh.dH < 0 ? '−' : '+'}${fmt(Math.abs(xh.dH), 2)} m`, H: fmt(value.libretto.H, 2), clausola: `UNI ${norma}, 16` });
     return null;

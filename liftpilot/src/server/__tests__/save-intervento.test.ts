@@ -12,6 +12,8 @@ import { PRESETS } from '@/calc/presets';
 import type { SessionUser } from '@/lib/auth';
 import { capsOf } from '@/lib/rbac';
 import { PARTI, collaudoOf, defaultLift, newLift } from '@/lib/lift';
+import { liftInputsSchema } from '@/lib/lift-input';
+import { liftInputsOf, progettoOf } from '@/lib/lift/progetto';
 
 const src = (p: string) => new URL(`../../${p}`, import.meta.url).href;
 type Row = Record<string, unknown>;
@@ -108,6 +110,23 @@ test('il progetto disegnato su un calcolo argano lo nomina e ne prende il tipo; 
   const L3 = row('liftDesign', plain.id);
   assert.equal(L3.baseCalculationId, undefined);
   assert.equal(row('calculation', String(L3.calculationId)).intervento, undefined);
+});
+
+test('progetto su un «Solo argano»: la corsa disegnata diversa dal libretto rivede il tipo, su ogni via che salva un disegno (round 46)', async () => {
+  // the Progetto, «Aggiorna il progetto con l'ultimo calcolo» and «Aggiorna con il software attuale» all save through
+  // createLiftDesign: a «Solo argano» base whose drawing (its travel) brings a change of travel by the logbook is refused
+  const { createLiftDesign } = await save();
+  const { deriveLift } = await import(src('lib/lift/derive.ts'));
+  const on = (libretto?: { H: number }) => liftInputsSchema.parse(liftInputsOf(progettoOf(defaultLift()),
+    { values: PRESETS.B, collaudo: { norma: '10411-1', parti: ['machine'], ...(libretto ? { libretto } : {}) } }));
+  const H = Number(deriveLift(on()).values.H), n = db.liftDesign.length;
+  assert.deepEqual(await createLiftDesign(user, 'p1', on({ H: H - 2 }), null, null, 'old7', { id: 'calcSolo', intervento: 'SOLO_ARGANO' }), { ok: false, error: 'tipoDaRivedere' });
+  assert.equal(db.liftDesign.length, n, 'nothing saved');
+  // the logbook's travel drawn as it is, no logbook, a modernisation (its travel among the parts), a base without a type
+  for (const [inputs, intervento] of [[on({ H }), 'SOLO_ARGANO'], [on(), 'SOLO_ARGANO'], [on({ H: H - 2 }), 'AMMODERNAMENTO'], [on({ H: H - 2 }), null]] as const) {
+    const r = await createLiftDesign(user, 'p1', inputs, null, null, undefined, { id: 'calcB', intervento });
+    assert.ok(r.ok, `${intervento} ${JSON.stringify(inputs.collaudo?.libretto)}: ${JSON.stringify(r)}`);
+  }
 });
 
 test('nessun codice fuori da save.ts crea un calcolo', () => {

@@ -7,7 +7,7 @@ import type { FormValues } from '@/calc/types';
 import type { Collaudo, Parte } from './collaudo';
 import { carichiOf, corsaOf, variazioneCarico, variazioneCorsa, variazioneVelocita, velocitaOf } from './modifica';
 import { OBBLIGHI_VARIAZIONI, type CasoVariazione } from './obblighi-variazioni';
-import { OBBLIGHI_FACOLTATIVE, OBBLIGHI_REGOLAZIONE, spazioScorrevoli } from './obblighi-facoltative';
+import { OBBLIGHI_FACOLTATIVE, OBBLIGHI_REGOLAZIONE, SPAZIO_FORMULA, spazioScorrevoli } from './obblighi-facoltative';
 import { lt, type PuntoInSito } from './punti';
 
 /** What UNI 10411-1/-11:2024 ask of the parts a modification replaces besides the machine (whose adaptations are
@@ -63,7 +63,7 @@ export const SOSTANZIALE: readonly Parte[] = ['controller', 'machine', 'landingD
 
 /** The cases of the changes of speed, load and travel among the parts, by what the documents of the existing lift say
  *  against the calculation's values `V` (round 46): under -1 the speed increased or decreased (a change within 5 % noted
- *  when it is not among the parts), the loads beyond prospetto 1 or 2, decreased or their ratio changed, the travel
+ *  when it is not among the parts — none when the speed is the documented one within the rounding), the loads beyond prospetto 1 or 2, decreased or their ratio changed, the travel
  *  lengthened (⚠ over 8 m) or shortened; under -11 the speed with 15 i), the loads increased or decreased, the travel.
  *  Without `V` or without the documents (a change answered «Sì» by hand) the lengthening and increase cases. */
 function casi(C: Pick<Collaudo, 'norma' | 'parti' | 'documentato' | 'libretto'>, n: '10411-1' | '10411-11', V?: FormValues): Record<Variata, CasoVariazione[]> {
@@ -71,12 +71,12 @@ function casi(C: Pick<Collaudo, 'norma' | 'parti' | 'documentato' | 'libretto'>,
   const v = V && C.libretto ? velocitaOf(V) : null, H = V && C.libretto?.H ? corsaOf(V) : null, ora = V && C.documentato ? carichiOf(V) : null;
   const xv = v !== null ? variazioneVelocita(n, C.libretto, v) : null, xh = H !== null ? variazioneCorsa(n, C.libretto, H) : null;
   const xl = C.documentato && ora ? variazioneCarico(n, C.documentato, ora) : null;
-  const speed: CasoVariazione[] = !has('speed') ? (uno && xv && !xv.variata ? ['speedWithin'] : [])
+  const speed: CasoVariazione[] = !has('speed') ? (uno && xv && !xv.variata && !xv.uguale ? ['speedWithin'] : [])
     : uno ? [xv?.calo && !xv.aumento ? 'speedDown' : 'speedUp'] : ['speedUp', 'speedUcm'];
   const doc: CasoVariazione[] = xl ? [...(xl.p1 ? ['loadP1' as const] : []), ...(xl.p2 ? ['loadP2' as const] : []), ...(xl.calo ? ['loadCalo' as const] : []),
     ...(xl.rapporto ? ['loadRapporto' as const] : [])] : [];
   const load: CasoVariazione[] = !has('load') ? [] : doc.length ? doc : uno ? ['loadP1', 'loadP2'] : ['loadP1'];
-  const travel: CasoVariazione[] = !has('travel') ? [] : xh?.accorciata ? ['travelDown'] : xh?.oltre8 ? ['travelUp', 'travelOver8'] : ['travelUp'];
+  const travel: CasoVariazione[] = !has('travel') ? [] : xh?.accorciata ? ['travelDown'] : xh?.oltre8 ? ['travelOver8', 'travelUp'] : ['travelUp'];
   return { speed, load, travel };
 }
 type Variata = 'speed' | 'load' | 'travel';
@@ -101,9 +101,10 @@ export function obblighiParti(C: Pick<Collaudo, 'norma' | 'parti' | 'documentato
     if (p === 'controller' && !C.parti.includes(p)) return C.parti.includes('machine') && C.regolazione === 'vvvf' ? [OBBLIGHI_REGOLAZIONE[n]] : [];
     const x = OBBLIGHI_PARTI[n][p];
     if (!keep(p) || !x) return [];
-    // the clearance over the new parts on the car roof at the calculation's speed: information, the check stays EN 81-20's
-    return p === 'slidingDoors' && v !== null ? [{ ...x, testo: `${x.testo}; con v = ${it(v, 2)} m/s lo spazio è ${it(spazioScorrevoli(v), 3)} m, `
-      + 'come informazione (la verifica dello spazio libero in testata resta secondo la UNI EN 81-20)' }] : [x];
+    // the clearance over the new parts on the car roof at the calculation's speed, right after the formula: information,
+    // the check stays EN 81-20's (owner's decision Q5)
+    return p === 'slidingDoors' && v !== null ? [{ ...x, testo: x.testo.replace(SPAZIO_FORMULA, `${SPAZIO_FORMULA} (con v = ${it(v, 2)} m/s: `
+      + `${it(spazioScorrevoli(v), 3)} m, come informazione; la verifica dello spazio libero in testata resta secondo la UNI EN 81-20)`) }] : [x];
   };
   return [...sostanziale, ...ORDINE_PARTI.flatMap(di)];
 }
