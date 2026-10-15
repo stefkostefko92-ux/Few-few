@@ -125,6 +125,10 @@ export interface Voce {
   corsaRidotta?: true;
 }
 
+/** The deceleration each band minimum of C1 stands for in D.1, a = g·(C1 − 1)/(C1 + 1), in words (registry modifica.d1,
+ *  round 46 final check: information, the check stays at C1). */
+const D1_A_FASCE = K.c1Bands.map(([, c]) => ((K.g * (c - 1)) / (c + 1)).toFixed(2).replace('.', ',')).join(' / ');
+
 export const PROFILO = {
   id: 'IT-2026.1',
   titolo: "Italia — sostituzione dell’argano su impianto esistente",
@@ -281,7 +285,10 @@ export const VOCI: readonly Voce[] = [
       + 'a sé (rapporto.d1) fuori dall’aderenza della UNI EN 81-50: il calcolo dell’argano non cambia. a è la decelerazione della verifica di '
       + 'frenatura del calcolo (a_e), che la relazione scrive con l’esito: quale decelerazione di frenatura intenda la D.1 (servizio o '
       + 'frenatura con la coppia reale del freno, che dà un C1 maggiore) non è precisato e la conferma il soggetto della verifica; con una '
-      + 'maggiore il tecnico ripete la verifica. Gola semicircolare senza intaglio: '
+      + `maggiore il tecnico ripete la verifica. Con l’esito la relazione scrive anche, come informazione, la decelerazione a cui equivale il C1 `
+      + `minimo della fascia (a = g·(C1 − 1)/(C1 + 1): ${D1_A_FASCE} m/s² nelle quattro fasce) e quella limite fino a cui la condizione regge `
+      + 'nel caso più sfavorevole (C1 = e^(f·α)/((T1/T2)·C2)), che il soggetto della verifica confronta con la decelerazione misurata alla prova del '
+      + 'freno; l’esito resta quello con il C1 sopra. Gola semicircolare senza intaglio: '
       + 'C2 = 1 come con l’intaglio; gola a V non temprata, con intaglio: il minore dei due f, C2 = 1,2 (scelte del software, a favore di '
       + 'sicurezza). Se la verifica della UNI EN 81-50, 5.11 valga al posto della D.1 lo decide il soggetto della verifica',
   },

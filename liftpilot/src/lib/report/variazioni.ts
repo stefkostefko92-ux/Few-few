@@ -7,7 +7,7 @@
 // relazioni only, sheet 1 stays as issued. Our words with the clause numbers. Pure.
 import type { FormValues } from '@/calc/types';
 import type { Collaudo } from '../lift/collaudo';
-import { corsaOf, variazioneCorsa, variazioneVelocita, velocitaOf, type Norma10411 } from '../lift/modifica';
+import { ROUNDING_V, corsaOf, variazioneCorsa, variazioneVelocita, velocitaOf, type Norma10411 } from '../lift/modifica';
 
 /** What a change is about: the rated speed or the travel. */
 export type VoceVariazione = 'velocita' | 'corsa';
@@ -45,19 +45,25 @@ function velocita(n: Norma10411, lib: Lib, v: number): VariazioneDoc | null {
     ? [lib.v ? `${num(lib.v, 2)} m/s (libretto o verbale)` : '', lib.v50 ? `${num(lib.v50, 2)} m/s dopo il passaggio a 50 Hz` : ''].filter(Boolean).join(', ')
     : `${num(x.rif, 2)} m/s (documentata)`;
   // an increase against the reference (15.1), a decrease against the logbook's speed (15.16): each percentage names the
-  // speed it is measured from (both when the design lies between the logbook's and the one after 50 Hz)
+  // speed it is measured from (both whenever the design is above the logbook's and the one after 50 Hz is the higher)
   const both = n === '10411-1' && !!lib.v && !!lib.v50, [c0] = x.confronti;
+  // above the one after 50 Hz (past the rounding) yet within 5 % of it: both comparisons, not «between» (round 46 final check)
+  const sopra50 = !!lib.v50 && v - lib.v50 > ROUNDING_V + 1e-9;
   const contro = x.confronti.map((c) => `${pct(c.dv)} rispetto a ${num(c.rispetto, 2)} m/s${both ? DI[c.di] : ''}`).join(' e ');
   const head = `${doc}; progetto ${num(v, 2)} m/s, ${contro}`, label = VOCE_VARIAZIONE.velocita;
   if (n === '10411-11') {
     if (!x.variata) return { voce: 'velocita', label, text: `${head}: invariata entro l’arrotondamento dei dati.`, nota: '' };
-    const ucm = x.ucm15i ? '; oltre il 5 % serve la protezione UCM della UNI EN 81-20, 5.6.7 (15 i))' : '';
+    // 15 i): over 5 % always; within 5 % where 5.6.7 was already applied (the obligations' line says the same)
+    const ucm = x.ucm15i ? '; oltre il 5 % serve la protezione UCM della UNI EN 81-20, 5.6.7 (15 i))'
+      : '; entro il 5 % la protezione UCM della UNI EN 81-20, 5.6.7 serve dove la 5.6.7 era già applicata (15 i)): lo conferma il tecnico';
     return { voce: 'velocita', label, text: `${head}: velocità variata, entra tra le parti modificate (UNI 10411-11, 15, valutazione 4.3)${ucm}.`,
       nota: ` Velocità ${num(x.rif, 2)} → ${num(v, 2)} m/s: variata (UNI 10411-11, 15)${x.ucm15i ? ', protezione UCM (15 i))' : ''}.` };
   }
   const what = x.aumento ? 'oltre il 5 % sopra il riferimento: velocità variata, entra tra le parti modificate (UNI 10411-1, 15.1: punti da 15.2 a 15.15)'
     : x.calo ? 'oltre il 5 % sotto la velocità iniziale o documentata: velocità variata, entra tra le parti modificate (UNI 10411-1, 15.16: punti 15.2 e 15.17)'
       : x.uguale ? 'uguale alla velocità documentata entro l’arrotondamento dei dati: la velocità non cambia'
+        : x.confronti.length > 1 && sopra50 ? 'sopra la velocità del libretto e sopra quella dopo il passaggio a 50 Hz, che è il riferimento, ma non oltre '
+          + `il 5 % da essa (UNI 10411-1, 15.1): la velocità non entra tra le parti modificate; ${DPR_TECNICO}`
         : x.confronti.length > 1 ? 'tra la velocità del libretto e quella dopo il passaggio a 50 Hz: né oltre il 5 % sopra il riferimento (UNI 10411-1, 15.1) '
           + `né oltre il 5 % sotto la velocità del libretto (15.16), la velocità non entra tra le parti modificate; ${DPR_TECNICO}`
           : !lib.v && v < x.rif ? 'non oltre il 5 % sopra il riferimento (UNI 10411-1, 15.1); una riduzione (15.16) si misura dalla velocità iniziale del '

@@ -71,7 +71,9 @@ test('relazione «Ammodernamento»: le parti nominate, il rifacimento e l’arga
   assert.equal(h1(doc), 'Relazione di calcolo — ammodernamento dell’impianto');
   assert.equal(kv(doc).get('Contesto'), 'Ammodernamento');
   assert.ok(p.includes('Verifica dell’argano a riduttore per l’ammodernamento di un impianto esistente'));
-  assert.ok(p.includes(`Ammodernamento dell’impianto esistente: le parti sostituite o modificate (${partiText(AMMOD)}) sono modifiche costruttive`), p);
+  // the case of the DPR the modernisation is, never every part called a constructive modification (round 46 final check)
+  assert.ok(p.includes('Ammodernamento dell’impianto esistente: la sostituzione del macchinario ne fa una modifica costruttiva') && p.includes('lettera cc) n. 5))'), p);
+  assert.ok(!p.includes('sono modifiche costruttive') && p.includes(`le parti sostituite o modificate (${partiText(AMMOD)})`), p);
   assert.ok(p.includes('art. 2, comma 1, lettera cc)') && p.includes('Il collaudo segue la UNI 10411-11:2024'));
   // the renovation keeps its title, sentence and context row
   const rif = report(RIF, 'AMMODERNAMENTO');
@@ -92,7 +94,7 @@ test('relazione con l’argano che resta: niente «argano nuovo» né i punti de
   assert.ok(h2(kept).some((x) => x.endsWith('Argano esistente (resta): esito in breve')), 'the summary under the kept machine');
   assert.ok(!h2(kept).some((x) => x.includes(calcIt.q_title)));
   assert.ok(!text.includes('sostituzione del macchinario e delle altre parti'), 'the references: no machine replaced');
-  assert.ok(text.includes('con l’argano esistente che resta (art. 2 c.1 lett. cc))'));
+  assert.ok(text.includes('argano esistente che resta: il caso di ogni parte sostituita o modificata (art. 2 c.1 lett. cc))'));
   assert.ok(!text.includes('la sostituzione del macchinario ne è il caso n. 5)') && text.includes('non è il caso n. 5) della sostituzione del macchinario'));
   assert.ok(!text.includes('UNI 10411-1:2024, 14.4 a)–g)'), 'no point of the new machine');
   assert.ok(!text.includes('anche le altre parti sostituite'), 'the parts are the modification');

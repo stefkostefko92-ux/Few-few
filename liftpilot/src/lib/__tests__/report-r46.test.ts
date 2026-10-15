@@ -68,7 +68,7 @@ test('DPR 162/1999 art. 2 c.1 lett. cc): il numero di ogni parte', () => {
   assert.ok(all[0]?.startsWith('DPR 162/1999, art. 2 c.1 lett. cc) n. 1): cambio della velocità nominale'));
   assert.ok(all[1]?.startsWith('DPR 162/1999, art. 2 c.1 lett. cc) n. 2)') && all[2]?.startsWith('DPR 162/1999, art. 2 c.1 lett. cc) n. 3)'));
   assert.ok(all[3]?.includes('quadro di manovra, porte di piano, cabina con l’arcata') && !all[3].includes('da verificare'), all[3]);
-  assert.ok(all[4]?.includes('altre parti sostituite (funi): se siano «altri componenti principali» lo conferma il tecnico') && all[4].endsWith('(da verificare sul testo vigente).'), all[4]);
+  assert.ok(all[4]?.includes('altre parti sostituite (funi): se siano «altri componenti principali» lo conferma il tecnico') && all[4].endsWith('nella comunicazione.'), all[4]);
   // the car without its sling: whether it is one of the other main components the engineer says (round 46 recheck)
   assert.ok(items({ norma: '10411-1', parti: ['machine', 'car'] })[0]?.includes('altre parti sostituite (cabina): se siano «altri componenti principali»'));
   assert.deepEqual(items({ norma: '10411-1', parti: ['machine'] }), [], 'la sola macchina: il caso n. 5) degli adempimenti');

@@ -43,12 +43,28 @@ export function contestoKey(tipo: TipoIntervento, C: Prova): CalcKey {
   return tipo === 'TRASFORMAZIONE_COMPLETA' ? 'ctx_trasformazione' : tipo === 'SOLO_ARGANO' ? 'ctx_solo' : rifDi(C) ? 'ctx_rif' : 'ctx_ammodernamento';
 }
 
-/** The sentence of a modernisation in the object (not a renovation, which keeps its own): the replacements and changes
- *  are constructive modifications (DPR 162/1999, art. 2 c.1 lett. cc)), the parts named (`parti`, in words); the machine
- *  kept is said. */
-export const ammodernamentoText = (kept: boolean, parti: string): string => ` Ammodernamento dell’impianto esistente${kept
-  ? ', con l’argano che resta e si verifica con i dati dell’impianto modificato' : ''}: le parti sostituite o modificate (${parti}) sono modifiche costruttive `
-  + 'ai sensi del DPR 162/1999 e s.m.i. (art. 2, comma 1, lettera cc)), e l’impianto si sottopone a verifica straordinaria (art. 14).';
+/** The title of the documents' section where each part's case of DPR 162/1999 art. 2 c.1 lett. cc) is (report/
+ *  modifica-dpr.ts), in quotes: the relazione di calcolo's and the relazione tecnica's. */
+export const SEZIONE_ADEMPIMENTI = '«Adempimenti e punti da verificare in sito»';
+
+/** The sentence of a modernisation in the object (not a renovation, which keeps its own), by which case of DPR 162/1999
+ *  art. 2 c.1 lett. cc) it is a constructive modification (round 46 final check: never every part called one, the
+ *  parts' own cases are in the section of the adempimenti): the machine replaced, n. 5) (`altre`: other parts besides);
+ *  the machine kept (`kept`, said), the numbered cases among the parts (`numerata`, modifica-dpr.ts casoNumerato) or,
+ *  without one, the engineer's to confirm. The parts are named in the sentence that follows (collaudo.ts). */
+export function ammodernamentoText(kept: boolean, numerata = true, altre = true): string {
+  const head = ` Ammodernamento dell’impianto esistente${kept ? ', con l’argano che resta e si verifica con i dati dell’impianto modificato' : ''}: `;
+  if (!kept) {
+    return `${head}la sostituzione del macchinario ne fa una modifica costruttiva ai sensi del DPR 162/1999 e s.m.i. (art. 2, comma 1, lettera cc) `
+      + `n. 5)), con la verifica straordinaria (art. 14)${altre ? `; il caso delle altre parti sostituite o modificate è indicato parte per parte nella sezione ${
+        SEZIONE_ADEMPIMENTI}` : ''}.`;
+  }
+  return numerata
+    ? `${head}è una modifica costruttiva ai sensi del DPR 162/1999 e s.m.i. (art. 2, comma 1, lettera cc)) per i casi numerati tra le parti `
+      + `sostituite o modificate, con la verifica straordinaria (art. 14); il caso di ogni parte è indicato nella sezione ${SEZIONE_ADEMPIMENTI}.`
+    : `${head}nessuna delle parti sostituite o modificate è un caso numerato del DPR 162/1999 e s.m.i. (art. 2, comma 1, lettera cc)); se `
+      + `l’intervento sia una modifica costruttiva, con la verifica straordinaria (art. 14), lo conferma il tecnico (sezione ${SEZIONE_ADEMPIMENTI}).`;
+}
 
 /** The relazione tecnica of a machine room surveyed on a calculation saved with its type: what follows «Relazione
  *  tecnica — ». */

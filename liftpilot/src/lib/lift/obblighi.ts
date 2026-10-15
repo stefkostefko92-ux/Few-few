@@ -65,7 +65,8 @@ export const SOSTANZIALE: readonly Parte[] = ['controller', 'machine', 'landingD
  *  against the calculation's values `V` (round 46): under -1 the speed increased or decreased (a change within 5 % noted
  *  when it is not among the parts — none when the speed is the documented one within the rounding), the loads beyond prospetto 1 or 2, decreased or their ratio changed, the travel
  *  lengthened (⚠ over 8 m) or shortened; under -11 the speed with 15 i), the loads increased or decreased, the travel.
- *  Without `V` or without the documents (a change answered «Sì» by hand) the lengthening and increase cases. */
+ *  Without `V` or without the documents (a change answered «Sì» by hand) the lengthening and increase cases; the load
+ *  answered «Sì» while the documented loads show no case, the point that says so (loadDocumentati). */
 function casi(C: Pick<Collaudo, 'norma' | 'parti' | 'documentato' | 'libretto'>, n: '10411-1' | '10411-11', V?: FormValues): Record<Variata, CasoVariazione[]> {
   const has = (p: Parte): boolean => C.parti.includes(p), uno = n === '10411-1';
   const v = V && C.libretto ? velocitaOf(V) : null, H = V && C.libretto?.H ? corsaOf(V) : null, ora = V && C.documentato ? carichiOf(V) : null;
@@ -75,7 +76,9 @@ function casi(C: Pick<Collaudo, 'norma' | 'parti' | 'documentato' | 'libretto'>,
     : uno ? [xv?.calo && !xv.aumento ? 'speedDown' : 'speedUp'] : ['speedUp', 'speedUcm'];
   const doc: CasoVariazione[] = xl ? [...(xl.p1 ? ['loadP1' as const] : []), ...(xl.p2 ? ['loadP2' as const] : []), ...(xl.calo ? ['loadCalo' as const] : []),
     ...(xl.rapporto ? ['loadRapporto' as const] : [])] : [];
-  const load: CasoVariazione[] = !has('load') ? [] : doc.length ? doc : uno ? ['loadP1', 'loadP2'] : ['loadP1'];
+  // 'load' answered «Sì» by hand: with the documented loads, the case they show — none, a point for the engineer, never
+  // the prospetti's obligations as if exceeded (round 46 final check); without them, the increases
+  const load: CasoVariazione[] = !has('load') ? [] : doc.length ? doc : xl ? ['loadDocumentati'] : uno ? ['loadP1', 'loadP2'] : ['loadP1'];
   const travel: CasoVariazione[] = !has('travel') ? [] : xh?.accorciata ? ['travelDown'] : xh?.oltre8 ? ['travelOver8', 'travelUp'] : ['travelUp'];
   return { speed, load, travel };
 }

@@ -200,6 +200,8 @@ export const VOCI_VERT: readonly VoceVano[] = [
       + 'Con la D.1 servono la D.2 (pressione specifica) e gli ammortizzatori secondo la UNI EN 81-20, 5.8',
     riferimento: 'UNI 10411-1:2024, 6.1 e D.1', fonte: letto('UNI 10411-1:2024', 'pp. 6–7 e 33'), stato: 'confermato',
     verifiche: ['tr_d1'], rifFuoriNorma: 'UNI 10411-1:2024, 6.1 e D.1 (verifica della sola UNI 10411-1)',
+    nota: 'con l’esito, come informazione, la decelerazione a cui equivale il C1 minimo della fascia e quella limite fino a cui la condizione '
+      + 'regge (voce modifica.d1), da confrontare con la prova del freno; l’esito non cambia',
   },
   {
     id: 'carichi.cavi', gruppo: 'carichi', titolo: 'Massa dei cavi flessibili',

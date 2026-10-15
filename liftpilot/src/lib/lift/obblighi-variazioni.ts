@@ -1,6 +1,7 @@
 // What UNI 10411-1/-11:2024 ask when a modification changes the rated speed, the loads or the travel (round 46, B5): one
 // point per case — under -1 the speed increased (15.1–15.15) or decreased (15.16–15.17), a change within 5 % noted; the
-// loads beyond prospetto 1 or 2, decreased, or their ratio changed (6.1 with App. D); the travel lengthened (16, with
+// loads beyond prospetto 1 or 2, decreased, or their ratio changed (6.1 with App. D) — answered «Sì» by hand while the
+// documented loads show none of these, a point for the engineer (round 46 final check); the travel lengthened (16, with
 // the ⚠ over 8 m) or shortened (point 4) —, under -11 any change of the speed (15 with 15 i)), of the loads (6.1–6.13)
 // and of the travel (16), each with the assessment 4.3. In our words with the clause numbers and values, read on the
 // standards' text — never their text (CEN-CENELEC and UNI copyright). obblighi.ts picks them by the documents of the
@@ -10,7 +11,7 @@ import type { Norma10411 } from './modifica';
 
 /** The cases of a change of speed, load or travel. */
 export type CasoVariazione = 'speedUp' | 'speedDown' | 'speedWithin' | 'speedUcm' | 'loadP1' | 'loadP2' | 'loadCalo' | 'loadRapporto'
-  | 'travelUp' | 'travelOver8' | 'travelDown';
+  | 'loadDocumentati' | 'travelUp' | 'travelOver8' | 'travelDown';
 
 const DA_VERIFICARE = (rif: string, testo: string): PuntoInSito => ({ rif, testo, stato: 'da_verificare' });
 
@@ -37,6 +38,10 @@ export const OBBLIGHI_VARIAZIONI: Readonly<Record<Norma10411, Partial<Readonly<R
       + 'calcolato dal software: con spazi accessibili sotto il vano fondo della fossa per almeno 5000 N/m² e paracadute del contrappeso (6.14)'),
     loadCalo: lt('UNI 10411-1:2024, 6.1', 'T* o contrappeso diminuiti: ammortizzatori esistenti secondo la UNI EN 81-20 5.8 e paracadute '
       + 'progressivo, se c’è, secondo la 5.6.2'),
+    // the load answered «Sì» by hand while the documented loads show no case (round 46 final check): for the engineer
+    loadDocumentati: DA_VERIFICARE('UNI 10411-1:2024, 6.1', 'carichi indicati come variati, ma secondo i carichi documentati la variazione resta '
+      + 'entro i prospetti 1 e 2, nessun carico diminuisce e il rapporto tra i carichi appesi non cambia: i punti da 6.3 a 6.15 e l’App. D valgono '
+      + 'solo se il tecnico conferma una variazione oltre questi limiti'),
     loadRapporto: lt('UNI 10411-1:2024, 6.1 e App. D', 'rapporto tra i carichi appesi lato cabina e lato contrappeso cambiato: stabilità '
       + 'allo scorrimento (D.1) e pressione nelle gole (D.2) verificate, ammortizzatori secondo la UNI EN 81-20 5.8 sotto cabina e contrappeso; '
       + 'aderenza eccessiva delle funi esclusa (UNI EN 81-20 5.5.3 c))'),
@@ -63,6 +68,8 @@ export const OBBLIGHI_VARIAZIONI: Readonly<Record<Norma10411, Partial<Readonly<R
     loadP2: lt('UNI 10411-11:2024, 6.1–6.13', 'contrappeso aumentato: i punti da 6.2 a 6.13 per i nuovi carichi, tranne l’arcata (6.9)'),
     loadCalo: lt('UNI 10411-11:2024, 6.1', 'T* o contrappeso diminuiti: ammortizzatori e, se c’è, paracadute progressivo verificati per i '
       + 'nuovi carichi'),
+    loadDocumentati: DA_VERIFICARE('UNI 10411-11:2024, 6.1', 'carichi indicati come variati, ma secondo i carichi documentati T* e contrappeso '
+      + 'restano gli stessi entro l’arrotondamento dei dati: i punti da 6.2 a 6.13 valgono solo se il tecnico conferma una variazione'),
     travelUp: lt('UNI 10411-11:2024, 16 a)–i) e 4.3', 'corsa allungata: locale o macchina spostati con i punti 8 e 9 (a), b)), difese dei '
       + 'tratti di vano aggiunti (c)), linee elettriche (d)), quadro (e)), guide dei tratti aggiunti con gli ancoraggi (f)), organi di sospensione '
       + 'nuovi con il punto 17 (g)), fune nuova del limitatore (h)), spazi liberi in fossa e in testata (i)); valutazione 4.3'),

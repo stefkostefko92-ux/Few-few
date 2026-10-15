@@ -668,7 +668,7 @@
       "fonte": "UNI 10411-1:2024, testo della norma, letto il 2026-10-06, pp. 6–7 e 33",
       "stato": "confermato",
       "verifiche": "",
-      "nota": "Solo nella modifica secondo la UNI 10411-1 che cambia il rapporto tra i carichi appesi (voce impianto.variazione.carico), come verifica a sé (rapporto.d1) fuori dall’aderenza della UNI EN 81-50: il calcolo dell’argano non cambia. a è la decelerazione della verifica di frenatura del calcolo (a_e), che la relazione scrive con l’esito: quale decelerazione di frenatura intenda la D.1 (servizio o frenatura con la coppia reale del freno, che dà un C1 maggiore) non è precisato e la conferma il soggetto della verifica; con una maggiore il tecnico ripete la verifica. Gola semicircolare senza intaglio: C2 = 1 come con l’intaglio; gola a V non temprata, con intaglio: il minore dei due f, C2 = 1,2 (scelte del software, a favore di sicurezza). Se la verifica della UNI EN 81-50, 5.11 valga al posto della D.1 lo decide il soggetto della verifica"
+      "nota": "Solo nella modifica secondo la UNI 10411-1 che cambia il rapporto tra i carichi appesi (voce impianto.variazione.carico), come verifica a sé (rapporto.d1) fuori dall’aderenza della UNI EN 81-50: il calcolo dell’argano non cambia. a è la decelerazione della verifica di frenatura del calcolo (a_e), che la relazione scrive con l’esito: quale decelerazione di frenatura intenda la D.1 (servizio o frenatura con la coppia reale del freno, che dà un C1 maggiore) non è precisato e la conferma il soggetto della verifica; con una maggiore il tecnico ripete la verifica. Con l’esito la relazione scrive anche, come informazione, la decelerazione a cui equivale il C1 minimo della fascia (a = g·(C1 − 1)/(C1 + 1): 0,47 / 0,68 / 0,89 / 1,09 m/s² nelle quattro fasce) e quella limite fino a cui la condizione regge nel caso più sfavorevole (C1 = e^(f·α)/((T1/T2)·C2)), che il soggetto della verifica confronta con la decelerazione misurata alla prova del freno; l’esito resta quello con il C1 sopra. Gola semicircolare senza intaglio: C2 = 1 come con l’intaglio; gola a V non temprata, con intaglio: il minore dei due f, C2 = 1,2 (scelte del software, a favore di sicurezza). Se la verifica della UNI EN 81-50, 5.11 valga al posto della D.1 lo decide il soggetto della verifica"
     },
     {
       "n": 54,
@@ -1700,7 +1700,7 @@
       "fonte": "UNI 10411-1:2024, testo della norma, letto il 2026-10-06, pp. 6–7 e 33",
       "stato": "confermato",
       "verifiche": "modifica (UNI 10411-1): stabilità allo scorrimento delle funi con il rapporto tra i carichi cambiato (D.1)",
-      "nota": ""
+      "nota": "con l’esito, come informazione, la decelerazione a cui equivale il C1 minimo della fascia e quella limite fino a cui la condizione regge (voce modifica.d1), da confrontare con la prova del freno; l’esito non cambia"
     },
     {
       "n": 140,
@@ -3698,6 +3698,18 @@
       "n": 306,
       "id": "collaudo.variazioni.10411-1.7",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-1:2024, 6.1",
+      "valore": "carichi indicati come variati, ma secondo i carichi documentati la variazione resta entro i prospetti 1 e 2, nessun carico diminuisce e il rapporto tra i carichi appesi non cambia: i punti da 6.3 a 6.15 e l’App. D valgono solo se il tecnico conferma una variazione oltre questi limiti",
+      "riferimento": "UNI 10411-1:2024, 6.1",
+      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 307,
+      "id": "collaudo.variazioni.10411-1.8",
+      "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 6.1 e App. D",
       "valore": "rapporto tra i carichi appesi lato cabina e lato contrappeso cambiato: stabilità allo scorrimento (D.1) e pressione nelle gole (D.2) verificate, ammortizzatori secondo la UNI EN 81-20 5.8 sotto cabina e contrappeso; aderenza eccessiva delle funi esclusa (UNI EN 81-20 5.5.3 c))",
       "riferimento": "UNI 10411-1:2024, 6.1 e App. D",
@@ -3707,8 +3719,8 @@
       "nota": ""
     },
     {
-      "n": 307,
-      "id": "collaudo.variazioni.10411-1.8",
+      "n": 308,
+      "id": "collaudo.variazioni.10411-1.9",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 16 a)–l)",
       "valore": "corsa allungata rispetto al primo collaudo (fino a 8 m l’intervento non conta come nuova installazione, punto 16): contrappeso guidato e difesa del suo percorso (a)), locale o macchina spostati con i punti 8 e 9 (b), c)), difese dei tratti di vano aggiunti (d)), linee elettriche (e)), quadro (f)), guide dei tratti aggiunti (g)), funi nuove con il 17.2 (h)), fune del limitatore (i)), spazi liberi in fossa e in testata (j)), porte di piano nuove con il punto 19 (k)), extracorsa all’estremità interessata (l))",
@@ -3719,8 +3731,8 @@
       "nota": ""
     },
     {
-      "n": 308,
-      "id": "collaudo.variazioni.10411-1.9",
+      "n": 309,
+      "id": "collaudo.variazioni.10411-1.10",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 16",
       "valore": "⚠ corsa allungata di oltre 8 m rispetto al primo collaudo: l’intervento conta come nuova installazione; la procedura la conferma il tecnico con il soggetto che esegue la verifica",
@@ -3731,8 +3743,8 @@
       "nota": ""
     },
     {
-      "n": 309,
-      "id": "collaudo.variazioni.10411-1.10",
+      "n": 310,
+      "id": "collaudo.variazioni.10411-1.11",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 16 e 4",
       "valore": "corsa accorciata: il punto 16 tratta solo l’allungamento; la modifica (DPR 162/1999, art. 2 c.1 lett. cc) n. 3)) si valuta secondo il punto 4",
@@ -3743,7 +3755,7 @@
       "nota": ""
     },
     {
-      "n": 310,
+      "n": 311,
       "id": "collaudo.variazioni.10411-11.1",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 15 a)–k) e 4.3",
@@ -3755,7 +3767,7 @@
       "nota": ""
     },
     {
-      "n": 311,
+      "n": 312,
       "id": "collaudo.variazioni.10411-11.2",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 15 i)",
@@ -3767,7 +3779,7 @@
       "nota": ""
     },
     {
-      "n": 312,
+      "n": 313,
       "id": "collaudo.variazioni.10411-11.3",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1–6.13",
@@ -3779,7 +3791,7 @@
       "nota": ""
     },
     {
-      "n": 313,
+      "n": 314,
       "id": "collaudo.variazioni.10411-11.4",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1–6.13",
@@ -3791,7 +3803,7 @@
       "nota": ""
     },
     {
-      "n": 314,
+      "n": 315,
       "id": "collaudo.variazioni.10411-11.5",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1",
@@ -3803,8 +3815,20 @@
       "nota": ""
     },
     {
-      "n": 315,
+      "n": 316,
       "id": "collaudo.variazioni.10411-11.6",
+      "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-11:2024, 6.1",
+      "valore": "carichi indicati come variati, ma secondo i carichi documentati T* e contrappeso restano gli stessi entro l’arrotondamento dei dati: i punti da 6.2 a 6.13 valgono solo se il tecnico conferma una variazione",
+      "riferimento": "UNI 10411-11:2024, 6.1",
+      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 317,
+      "id": "collaudo.variazioni.10411-11.7",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 16 a)–i) e 4.3",
       "valore": "corsa allungata: locale o macchina spostati con i punti 8 e 9 (a), b)), difese dei tratti di vano aggiunti (c)), linee elettriche (d)), quadro (e)), guide dei tratti aggiunti con gli ancoraggi (f)), organi di sospensione nuovi con il punto 17 (g)), fune nuova del limitatore (h)), spazi liberi in fossa e in testata (i)); valutazione 4.3",
@@ -3815,8 +3839,8 @@
       "nota": ""
     },
     {
-      "n": 316,
-      "id": "collaudo.variazioni.10411-11.7",
+      "n": 318,
+      "id": "collaudo.variazioni.10411-11.8",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 16 e 4.3",
       "valore": "corsa accorciata: il punto 16 tratta solo l’allungamento; la modifica (DPR 162/1999, art. 2 c.1 lett. cc) n. 3)) si valuta con la 4.3",

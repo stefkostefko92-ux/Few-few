@@ -5,7 +5,9 @@
 // highest —, C1 = (gn + a)/(gn − a) with the car's braking deceleration a, never under the minimum of the rated speed's
 // band (over the last band computed, never under K.c1Min), C2 by the groove, f by the groove with μ = 0,09. Not part of
 // compute(): the static pulls are taken from the same rope model (model.ts walk) with compute's arithmetic for its
-// loading cases, so the golden results and the machine proposal do not change. Registry: modifica.d1. Pure.
+// loading cases, so the golden results and the machine proposal do not change. With the result (round 46 final check),
+// as information for the soggetto della verifica: the deceleration C1's band minimum stands for and the limit
+// deceleration up to which the condition still holds, a = gn·(C1 − 1)/(C1 + 1). Registry: modifica.d1. Pure.
 import { K } from './norme';
 import { G, rad, ratio } from './math';
 import { wrapAngles } from './geometry';
@@ -21,6 +23,9 @@ export function c1Min(v: number): number {
 
 /** C1 = (gn + a)/(gn − a), never under the minimum of the speed band; a deceleration of gravity or more: none holds. */
 export const c1Of = (v: number, a: number): number => (a < G ? Math.max((G + a) / (G - a), c1Min(v)) : Infinity);
+
+/** The braking deceleration a C1 stands for, the inverse of (gn + a)/(gn − a): a = gn·(C1 − 1)/(C1 + 1) [m/s²]. */
+export const aOfC1 = (c1: number): number => (G * (c1 - 1)) / (c1 + 1);
 
 /** C2 by how the groove's profile changes with wear: a wedge (V) groove 1,2; a semicircular one 1 (with the undercut, as
  *  D.1 gives it; without, the same — the software's reading). */
@@ -58,6 +63,9 @@ export interface D1Result {
   v: number;
   a: number;
   c1Min: number;
+  /** the deceleration C1's minimum stands for, aOfC1(c1Min) [m/s²]: taking C1 at the band's minimum assumes the car
+   *  brakes no harder than this (round 46 final check: information for the soggetto della verifica) */
+  aMin: number;
   C1: number;
   C2: number;
   mu: number;
@@ -65,6 +73,13 @@ export interface D1Result {
   cases: readonly [D1Case, D1Case];
   /** the case with the higher utilisation */
   worst: D1Case;
+  /** the largest C1 that still meets the condition, e^(f·α)/((T1/T2)·C2) in the worse of the two cases (0 with a slack
+   *  side) */
+  c1Lim: number;
+  /** the braking deceleration up to which D.1 still holds, aOfC1(c1Lim) [m/s²], for the soggetto della verifica to
+   *  compare with the one measured at the brake test; null when not even C1's minimum meets it (no deceleration does).
+   *  Information only: the check stays at C1 (round 46 final check, norms lens) */
+  aLim: number | null;
 }
 
 /** D.1 of the installation `I` and the machine `M`; `a` the car's braking deceleration [m/s²] (by default the
@@ -77,6 +92,9 @@ export function d1Of(I: Plant, M: Machine, a: number = I.ae): D1Result {
     const Tc = walk(I.P + load, 0, p.car), Tw = walk(Mcw, 0, p.cwt), efa = Math.exp(f * alpha), q = ratio(Tc, Tw), lhs = q * C1 * C2;
     return { pos, alpha, efa, T1: Math.max(Tc, Tw), T2: Math.min(Tc, Tw), ratio: q, lhs, util: lhs / efa };
   };
-  const b = one('b'), t = one('t');
-  return { v: I.v, a, c1Min: c1Min(I.v), C1, C2, mu: K.muD1, f, cases: [b, t], worst: t.util > b.util ? t : b };
+  const b = one('b'), t = one('t'), min = c1Min(I.v);
+  // the limit C1 of each case: the condition met with equality (a slack side, ratio ∞: none)
+  const lim = (c: D1Case): number => (Number.isFinite(c.ratio) && c.ratio > 0 ? c.efa / (c.ratio * C2) : 0), c1Lim = Math.min(lim(b), lim(t));
+  return { v: I.v, a, c1Min: min, aMin: aOfC1(min), C1, C2, mu: K.muD1, f, cases: [b, t], worst: t.util > b.util ? t : b,
+    c1Lim, aLim: c1Lim >= min - 1e-12 ? aOfC1(c1Lim) : null };
 }

@@ -207,7 +207,7 @@ test('relazione del rifacimento: carichi mancanti, arcata da verificare, obbligh
   const duties = doc.blocks.flatMap((b) => (b.t === 'list' ? b.items : [])).filter((x) => x.startsWith('DPR 162/1999, art. 2 c.1 lett. cc)'));
   assert.equal(duties.length, 3);
   assert.ok(duties[1]?.startsWith('DPR 162/1999, art. 2 c.1 lett. cc) n. 5): sostituzione anche di quadro di manovra, porte di piano') && !duties[1].includes('da verificare'), duties[1]);
-  assert.ok(duties[2]?.includes('altri componenti principali') && duties[2].includes('funi') && duties[2].endsWith('(da verificare sul testo vigente).'), duties[2]);
+  assert.ok(duties[2]?.includes('altri componenti principali') && duties[2].includes('funi') && duties[2].endsWith('lo conferma il tecnico nella comunicazione.'), duties[2]);
   // the machine alone: as before
   const v80 = relazione(defaultLift());
   assert.equal(kv(v80).get('Variazione dei carichi'), undefined);

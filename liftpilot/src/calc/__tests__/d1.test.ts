@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { PRESETS, compute, readInputs } from '../index';
 import { K } from '../norme';
-import { c1Min, c1Of, c2Of, d1Of, fD1 } from '../d1';
+import { aOfC1, c1Min, c1Of, c2Of, d1Of, fD1 } from '../d1';
 import type { FormValues, Groove } from '../types';
 
 const G = 9.81;
@@ -84,4 +84,42 @@ test('D.1: la decelerazione a è quella della verifica di frenatura del calcolo,
   assert.equal(d1Of(I, N).a, I.ae);
   assert.equal(d1Of(I, N, 2).a, 2);
   assert.ok(d1Of(I, N, 2).C1 > d1Of(I, N).C1);
+});
+
+// Round 46 final check (norms lens): the verdict stays at C1 = max(band minimum, (gn + a_e)/(gn − a_e)); with it, as
+// information, the deceleration the band minimum stands for and the limit deceleration up to which D.1 holds.
+test('D.1: la decelerazione del C1 minimo di ogni fascia, a = g·(C1 − 1)/(C1 + 1)', () => {
+  assert.deepEqual(K.c1Bands.map(([, c]) => aOfC1(c).toFixed(2)), ['0.47', '0.68', '0.89', '1.09']);
+  // the inverse of (g + a)/(g − a): at or over the band minimum, C1 of that deceleration is that C1
+  for (const [top, c] of K.c1Bands) {
+    near(`C1 ${c}`, c1Of(top, aOfC1(c)), c);
+    near(`C1 ${c + 0.3}`, c1Of(top, aOfC1(c + 0.3)), c + 0.3);
+  }
+  for (const v of [0.5, 1, 1.5, 2, 3]) assert.equal(d1Of(readInputs({ ...PRESETS.C, v: String(v) } as FormValues).I, readInputs(PRESETS.C).N).aMin, aOfC1(c1Min(v)));
+});
+
+test('D.1: a_lim, la decelerazione limite — a quella decelerazione l’utilizzo è 1 (andata e ritorno)', () => {
+  let seen = 0;
+  for (const P of [PRESETS.A, PRESETS.B, PRESETS.C]) {
+    for (const v of [0.5, 0.6, 1, 1.2, 1.6, 2]) {
+      const { I, N } = readInputs({ ...P, v: String(v) } as FormValues), d = d1Of(I, N);
+      // the limit C1 is the worse case's e^(f·α)/((T1/T2)·C2): the verdict at C1 is over 1 exactly when C1 is over it
+      near('C1 limite', d.c1Lim, Math.min(...d.cases.map((c) => c.efa / (c.ratio * d.C2))));
+      assert.equal(d.worst.util <= 1 + 1e-9, d.C1 <= d.c1Lim + 1e-12, `${v} m/s`);
+      // no new verdict: C1 and the utilisation as before (a_e, the band minimum)
+      assert.equal(d.C1, c1Of(I.v, I.ae));
+      if (d.aLim === null) {
+        assert.ok(d.c1Lim < d.c1Min, 'not even the band minimum holds');
+        assert.ok(d1Of(I, N, 0).worst.util > 1);
+        continue;
+      }
+      seen += 1;
+      assert.ok(d.aLim >= d.aMin - 1e-12 && d.aLim < G);
+      // the round trip: D.1 at a_lim is met with equality, a little more breaks it
+      near('utilizzo a a_lim', d1Of(I, N, d.aLim).worst.util, 1, 1e-9);
+      assert.ok(d1Of(I, N, d.aLim + 0.01).worst.util > 1);
+      assert.equal(d1Of(I, N, d.aLim).aLim, d.aLim, 'a_lim does not depend on the a it is taken at');
+    }
+  }
+  assert.ok(seen >= 3, `cases with a limit: ${seen}`);
 });

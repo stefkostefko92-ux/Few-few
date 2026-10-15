@@ -15,10 +15,10 @@ import { ADAPT } from '../present/adapt';
 import type { Tr } from '../present/tr';
 import type { BlockStatus, ReportBlock } from './model';
 import { MACCHINA_81_1 } from './refs';
-import { ammodernamentoText, notaIntervento } from './intervento-text';
+import { SEZIONE_ADEMPIMENTI, ammodernamentoText, notaIntervento } from './intervento-text';
 import { regolazioneRows, variazioniDoc, variazioniNota, variazioniRows } from './variazioni';
 import { d1Frase } from './cases';
-import { DPR_CC_RESTA, PUNTI_MACCHINA_NUOVA, altreModifiche, restaPunto } from './modifica-dpr';
+import { PUNTI_MACCHINA_NUOVA, altreModifiche, casoNumerato, ccResta, restaPunto } from './modifica-dpr';
 
 export { PUNTI_MACCHINA_NUOVA } from './modifica-dpr';
 import { macchinaResta, type TipoIntervento } from '../lift/intervento';
@@ -50,11 +50,14 @@ export const pilastroRif = (norma: Norma10411): string => (norma === '10411-1' ?
  *  area are the shaft design's). */
 const EN81_20_MACCHINA = 'funi (5.5), freno (5.9.2.2) e manovra di emergenza (5.9.2.3)';
 
-/** A modification that replaces other parts besides the machine, in the references (registry PROFILO, DPR 162/1999); a
- *  modernisation keeping the machine (round 45) modifies the other parts only. */
-const DPR_PARTI = 'sostituzione del macchinario e delle altre parti come modifiche costruttive (art. 2 c.1 lett. cc)); verifica straordinaria (art. 14)';
-const DPR_RESTA = 'sostituzione o modifica delle parti indicate come modifiche costruttive, con l’argano esistente che resta (art. 2 c.1 lett. cc)); '
-  + 'verifica straordinaria (art. 14)';
+/** A modification that replaces other parts besides the machine, in the references (registry PROFILO, DPR 162/1999): the
+ *  machine replaced is n. 5), each other part's case is in the section of the adempimenti (modifica-dpr.ts); a
+ *  modernisation keeping the machine (round 45) modifies the other parts only (round 46 final check: never every part
+ *  called a constructive modification). */
+const DPR_PARTI = `sostituzione del macchinario come modifica costruttiva (art. 2 c.1 lett. cc) n. 5)); il caso di ogni altra parte nella sezione ${
+  SEZIONE_ADEMPIMENTI}; verifica straordinaria (art. 14)`;
+const DPR_RESTA = `argano esistente che resta: il caso di ogni parte sostituita o modificata (art. 2 c.1 lett. cc)) nella sezione ${SEZIONE_ADEMPIMENTI}; `
+  + 'verifica straordinaria (art. 14) della modifica costruttiva';
 
 /** The references of the relazione, by the case: an existing installation is modified under DPR 162/1999 and tested to
  *  the UNI 10411 part chosen; a new one is placed on the market and put into service (section «Adempimenti»), with no UNI
@@ -150,9 +153,10 @@ const aggiunteSentence = (C: Collaudo, esiti: string): string => (C.aggiuntive?.
 
 /** What the object of the relazione says of the intervention and its acceptance test (a new lift: only the standards
  *  added, if any); `esiti` is the title of the document's section with the result under each standard; `tipo`: the type
- *  declared with the calculation (none: the words of the record's time). */
-export function collaudoText(C: Collaudo, repl: boolean, esiti = ESITI_CALCOLO, tipo: TipoIntervento | null = null): string {
-  return repl ? interventionText(C, tipo) + aggiunteSentence(C, esiti) : aggiunteSentence(C, esiti);
+ *  declared with the calculation (none: the words of the record's time); `V`: the calculation's values (a modernisation
+ *  keeping the machine: the DPR's numbered cases among its parts by the documented loads, modifica-dpr.ts). */
+export function collaudoText(C: Collaudo, repl: boolean, esiti = ESITI_CALCOLO, tipo: TipoIntervento | null = null, V?: FormValues): string {
+  return repl ? interventionText(C, tipo, V) + aggiunteSentence(C, esiti) : aggiunteSentence(C, esiti);
 }
 
 /** The renovation that keeps the existing sling: a modification, by the practice of the registry's entry. */
@@ -161,10 +165,13 @@ const RIFACIMENTO_TEXT = " Rifacimento dell’impianto con l’arcata esistente:
   + "impianto nuovo. È la prassi seguita (voce «impianto.rifacimento» del registro): il tecnico incaricato la conferma con il soggetto che esegue "
   + 'la verifica straordinaria.';
 
-function interventionText(C: Collaudo, tipo: TipoIntervento | null): string {
-  // a renovation is one only under UNI 10411 (collaudoOf); a modernisation declared as one says so, its parts named
+function interventionText(C: Collaudo, tipo: TipoIntervento | null, V?: FormValues): string {
+  // a renovation is one only under UNI 10411 (collaudoOf); a modernisation declared as one says by which case of the DPR
+  // it is a constructive modification (its parts are named below)
+  const kept = tipo !== null && macchinaResta(tipo, C);
   const what = C.rifacimento && C.norma !== 'en81' ? RIFACIMENTO_TEXT
-    : tipo === 'AMMODERNAMENTO' && C.norma !== 'en81' ? ammodernamentoText(macchinaResta(tipo, C), partiText(C)) : C.parti.includes('machine') || C.norma === 'en81'
+    : tipo === 'AMMODERNAMENTO' && C.norma !== 'en81' ? ammodernamentoText(kept, !kept || casoNumerato(C, V), C.parti.some((p) => p !== 'machine'))
+      : C.parti.includes('machine') || C.norma === 'en81'
     ? ' La sostituzione del macchinario è una modifica costruttiva ai sensi del DPR 162/1999 e s.m.i.'
     : " L’intervento modifica un impianto esistente (DPR 162/1999 e s.m.i.).";
   if (C.norma === 'en81') return `${what} Il collaudo segue la ${NORMA_SIGLA.en81}, come per un impianto nuovo: ogni verifica entra nell’esito.`;
@@ -236,14 +243,17 @@ export function esitiBlocks(C: Collaudo, checks: readonly { id: CheckId | ShaftC
   return out;
 }
 
-const punto = (p: PuntoInSito): string => `${p.rif}: ${p.testo}${p.stato === 'da_verificare' ? ' (da verificare sul testo vigente)' : ''}.`;
+/** A point in a list; one still to verify says so — but not a case of DPR 162/1999, whose article is read: its sentence
+ *  already says who classifies the part (round 46 final check). */
+const punto = (p: PuntoInSito): string => `${p.rif}: ${p.testo}${p.stato === 'da_verificare' && !p.rif.startsWith('DPR 162/1999')
+  ? ' (da verificare sul testo vigente)' : ''}.`;
 
 /** The section of what the law asks of the intervention (DPR 162/1999: a new lift, or a modification) and, for each
  *  standard of the test, its citation in the Official Journal and the points the engineer checks on site (`resta`: the
  *  machine kept, PUNTI_MACCHINA_NUOVA left out and 9.1–9.2 without the new machine; `V`: the calculation's values, the
  *  rated load's case n. 2) by the documented loads). */
 export function adempimentiBlocks(C: Collaudo, repl: boolean, resta = false, V?: FormValues): ReportBlock[] {
-  const modifica = resta ? [DPR_CC_RESTA, ...ADEMPIMENTI.modifica.slice(1)] : ADEMPIMENTI.modifica;
+  const modifica = resta ? [ccResta(casoNumerato(C, V)), ...ADEMPIMENTI.modifica.slice(1)] : ADEMPIMENTI.modifica;
   const out: ReportBlock[] = [
     { t: 'p', text: repl
       ? "L’intervento modifica un impianto esistente: il DPR 162/1999 e s.m.i. chiede gli adempimenti che seguono. Per ogni normativa del collaudo, "

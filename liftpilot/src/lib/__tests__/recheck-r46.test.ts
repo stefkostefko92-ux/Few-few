@@ -27,7 +27,7 @@ test('DPR cc) n. 2): «portata variata» a mano con i carichi documentati uguali
     assert.ok(C.parti.includes('load'), 'the hand\'s answer stays');
     const s = cc(C, V()), n2 = s.find((x) => x.startsWith('DPR 162/1999, art. 2 c.1 lett. cc) n. 2)')) ?? '';
     assert.ok(n2.includes('portata indicata come variata, ma i carichi documentati (portata, T* e contrappeso) coincidono con quelli del progetto'), n2);
-    assert.ok(n2.endsWith('(da verificare sul testo vigente).'), n2);
+    assert.ok(n2.endsWith('lo conferma il tecnico nella comunicazione.'), n2);
     assert.ok(!s.some((x) => x.includes('carichi statici variati') || x.includes('cambio della portata: modifica costruttiva')), s.join('\n'));
   }
 });
@@ -77,5 +77,5 @@ test('DPR cc) n. 5): le altre parti per il tecnico, senza dire che sono componen
   const s = cc({ norma: '10411-1', parti: ['machine', 'alarm', 'ucm'] }).filter((x) => x.startsWith('DPR 162/1999, art. 2 c.1 lett. cc) n. 5)'));
   assert.equal(s.length, 1, s.join('\n'));
   assert.ok(!s[0]?.includes('componenti principali sostituiti'), s[0]);
-  assert.match(s[0] ?? '', /^DPR 162\/1999, art\. 2 c\.1 lett\. cc\) n\. 5\): altre parti sostituite \([^)]+\): se siano «altri componenti principali» lo conferma il tecnico nella comunicazione \(da verificare sul testo vigente\)\.$/);
+  assert.match(s[0] ?? '', /^DPR 162\/1999, art\. 2 c\.1 lett\. cc\) n\. 5\): altre parti sostituite \([^)]+\): se siano «altri componenti principali» lo conferma il tecnico nella comunicazione\.$/);
 });

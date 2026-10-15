@@ -63,7 +63,8 @@ test('DPR cc) n. 2): solo con la portata cambiata; i carichi senza la portata, a
   assert.ok(Cs.parti.includes('load'), 'the loads changed');
   const s = cc(Cs, false, same);
   assert.ok(!s.some((x) => x.startsWith('DPR 162/1999, art. 2 c.1 lett. cc) n. 2)')), s.join('\n'));
-  assert.ok(s.some((x) => x.includes('carichi statici variati') && x.endsWith('(da verificare sul testo vigente).')), s.join('\n'));
+  // a case of the DPR names who classifies it: no «da verificare sul testo vigente» (round 46 final check)
+  assert.ok(s.some((x) => x.includes('carichi statici variati') && x.endsWith('lo conferma il tecnico nella comunicazione.')), s.join('\n'));
   // the rated load changed: n. 2), confirmed
   const more = V(1, 18, { Q: 800, P: 700, k: 0.5, qeq: '' }), Cm = collaudoOf(more, { norma: '10411-1', parti: ['machine', 'controller'], documentato: doc });
   assert.ok(cc(Cm, false, more).some((x) => x.startsWith('DPR 162/1999, art. 2 c.1 lett. cc) n. 2): cambio della portata: modifica costruttiva')));

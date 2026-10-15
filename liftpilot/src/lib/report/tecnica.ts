@@ -29,8 +29,8 @@ import { TECNICA_DRAWING, roomRows, surveyBlocks } from './tecnica-room';
 import { existingNewBlocks, hookBlocks, massesBlock, openingsBlocks, p4Block, siteChecks } from './tecnica-site';
 import { shapeOf } from '../catalog/shapes';
 import { plantChanged, plantChangedBox } from './elaborati';
-import { oggettoTecnica, titoloTecnica } from './intervento-text';
-import type { TipoIntervento } from '../lift/intervento';
+import { SEZIONE_ADEMPIMENTI, oggettoTecnica, titoloTecnica } from './intervento-text';
+import { macchinaResta, type TipoIntervento } from '../lift/intervento';
 
 export interface TecnicaInput {
   room: { id: string; label: string | null; createdAt: Date; sha256: string; engineVersion: string; author: string | null };
@@ -66,7 +66,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   const st = (x: 'ok' | 'warn' | 'fail' | 'info'): string => X.st(x);
 
   B.push({ t: 'letterhead', logo: r.logo ? 'logo' : null, from: [r.company, ...(r.companyCity ? [r.companyCity] : [])], to: [] });
-  const tipo = r.tipo ?? null, head = tipo ? oggettoTecnica(tipo, C, named) : null;
+  const tipo = r.tipo ?? null, head = tipo ? oggettoTecnica(tipo, C, named) : null, kept = macchinaResta(tipo, C);
   B.push({ t: 'h1', text: `Relazione tecnica — ${tipo ? titoloTecnica(tipo) : 'sostituzione dell’argano'}` });
   B.push({ t: 'sub', text: place ? `${pr.name} · ${place}` : pr.name });
   B.push({ t: 'box', text: 'BOZZA DA VERIFICARE E FIRMARE. Documento generato dal software LiftPilot con i dati del rilievo e del calcolo inseriti '
@@ -84,13 +84,17 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   B.push({ t: 'p', text: `${head ? `${head} ` : `Sostituzione dell’argano dell’impianto con un argano a riduttore ${named ? `(${named}) ` : ''}`}— ${LAYOUT[I.layout] ?? I.layout}, taglia ${I.r}:1. `
     + 'La relazione descrive l’impianto com’è, l’argano esistente e quello nuovo, la sistemazione del nuovo nel locale macchina (basamento, '
     + 'puleggia di rinvio, calate, aperture nella soletta), i carichi sulla soletta e le verifiche del locale; le verifiche della macchina sono nella '
-    + `relazione di calcolo allegata, riassunte nella sezione «Verifiche della nuova macchina».${collaudoText(C, true, ESITI_TECNICA, tipo)}` });
+    + `relazione di calcolo allegata, riassunte nella sezione «Verifiche della nuova macchina».${collaudoText(C, true, ESITI_TECNICA, tipo, r.values)}` });
 
   section('Riferimenti normativi');
   B.push({ t: 'grid', head: ['Documento', 'Per che cosa'], widths: [0.38, 0.62], align: ['l', 'l'], rows: [
-    ['DPR 162/1999 e s.m.i., art. 2 c.1 lett. cc), artt. 12 e 14', tipo === 'AMMODERNAMENTO'
-      ? 'le sostituzioni e le modifiche dell’ammodernamento sono modifiche costruttive: comunicazioni e verifica straordinaria'
-      : 'la sostituzione del macchinario è una modifica costruttiva: comunicazioni e verifica straordinaria'],
+    // a modernisation: the machine replaced is the case n. 5), each other part's case in the section of the adempimenti
+    // (round 46 final check: never every part called a constructive modification)
+    ['DPR 162/1999 e s.m.i., art. 2 c.1 lett. cc), artt. 12 e 14', tipo !== 'AMMODERNAMENTO'
+      ? 'la sostituzione del macchinario è una modifica costruttiva: comunicazioni e verifica straordinaria'
+      : kept ? `l’argano resta: il caso di ogni parte sostituita o modificata nella sezione ${SEZIONE_ADEMPIMENTI}; comunicazioni e verifica straordinaria`
+        : `la sostituzione del macchinario è una modifica costruttiva (n. 5)), il caso delle altre parti nella sezione ${SEZIONE_ADEMPIMENTI}: `
+          + 'comunicazioni e verifica straordinaria'],
     [NORMA_SIGLA[C.norma], 'norma tecnica del collaudo della modifica'],
     ['UNI EN 81-20:2020, punti 5.2.3 e 5.2.6.3.2.1', 'porta, altezza libera e superficie libera davanti al quadro nel locale macchina'],
     ['UNI EN 81-50:2020', 'verifiche della relazione di calcolo (aderenza, funi)'],
@@ -160,7 +164,7 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   section(adapt.title);
   B.push(...adapt.blocks);
   section('Adempimenti e punti da verificare in sito');
-  B.push(...adempimentiBlocks(C, true, false, r.values));
+  B.push(...adempimentiBlocks(C, true, kept, r.values));
   B.push({ t: 'h3', text: 'Rilievi in sito per la sostituzione' });
   B.push({ t: 'list', items: [
     'Posizione delle calate esistenti (funi lato cabina e lato contrappeso) rispetto ai muri del vano, come nelle tavole',
