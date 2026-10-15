@@ -103,17 +103,12 @@ try {
   await page.waitForSelector('.dash-row');
   assert.equal(await page.locator('.dash-row').count(), 1, 'one installation found');
   assert.match(await page.textContent('.dash-row'), new RegExp(`Smoke ${stamp}`));
-  // this run's two installations are in Milano (this one and the replacement of smoke-replacement.mjs)
-  await page.goto(`${BASE}/it/app/impianti?q=${encodeURIComponent(`milano ${stamp}`)}`);
-  assert.equal(await page.locator('.dash-row').count(), 2, 'the municipality and a word of the name');
-  await page.goto(`${BASE}/it/app/impianti?q=${encodeURIComponent(`smoke MILANO ${stamp}`)}`);
-  assert.equal(await page.locator('.dash-row').count(), 1, 'every word, whatever its case');
-  await page.goto(`${BASE}/it/app/impianti?q=${encodeURIComponent(`Torino ${stamp}`)}`);
-  assert.equal(await page.locator('.dash-row').count(), 0, 'every word must be found');
-  // % and _ are text, not LIKE's wildcards: with this run's word they find none of its two installations
-  for (const w of ['%', '_', '%%']) {
-    await page.goto(`${BASE}/it/app/impianti?q=${encodeURIComponent(`${w} ${stamp}`)}`);
-    assert.equal(await page.locator('.dash-row').count(), 0, `«${w}» is not a wildcard`);
+  // this run's two installations are in Milano (this one and the replacement of smoke-replacement.mjs); % and _ are
+  // text, not LIKE's wildcards: with this run's word they find none of its two installations
+  for (const [q, n, why] of [[`milano ${stamp}`, 2, 'the municipality and a word of the name'], [`smoke MILANO ${stamp}`, 1, 'every word, whatever its case'],
+    [`Torino ${stamp}`, 0, 'every word must be found'], ...['%', '_', '%%'].map((w) => [`${w} ${stamp}`, 0, `«${w}» is not a wildcard`])]) {
+    await page.goto(`${BASE}/it/app/impianti?q=${encodeURIComponent(q)}`);
+    assert.equal(await page.locator('.dash-row').count(), n, why);
   }
 
   step('the installation: its type from «Calcolo argano», its sections in the order of the work (round 45)');

@@ -6,6 +6,7 @@ import 'server-only';
 // made from the one form of a lift design carries the marks of what the software filled in (the estimated car weight on
 // sheet 1) and follows that design (records.ts: all three reproduced); one without it, the standards chosen with it.
 import type { Prisma } from '@prisma/client';
+import type { Db } from '@/lib/db';
 import type { SessionUser } from '@/lib/auth';
 import { plantReadSchema } from '@/lib/plant';
 import type { StoredDesign } from '@/lib/shaft-hash';
@@ -20,7 +21,7 @@ import { usableLogo } from '@/lib/logo';
 import type { TipoIntervento } from '@/lib/lift/intervento';
 import { calcRecord, recordMarks } from './records';
 
-type Tx = Prisma.TransactionClient;
+type Tx = Db;
 
 export const DESIGN_SELECT = {
   id: true, label: true, summary: true, inputs: true, source: true, sha256: true, engineVersion: true, profileId: true, createdAt: true, user: { select: { name: true } },

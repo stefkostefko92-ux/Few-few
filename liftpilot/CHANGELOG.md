@@ -2303,6 +2303,39 @@ Progettista, Tecnico, Commerciale. Реални потребители още н
   изчислението, което взема всичко от чертежа, същото изчисление (същият SHA-256 при директно окачване, с ролка и с
   машина долу — тест `porta`).
 
+- **Стъпка 9 — никой код не чете `Project.kind`; износът, публичните текстове, документите**: клиентът на Prisma
+  изпуска колоната от всяка заявка (`omit: { project: { kind: true } }` в `src/lib/db.ts`; типът `Db` за транзакциите в
+  `drawing-compose.ts` и `room-compose.ts`); колоната, enum-ът `ProjectKind` и индексът остават в `schema.prisma` с
+  „deprecated — dropped by a later migration after the owner's confirmation“ — разрушителната миграция не е написана,
+  чака изричното потвърждение на собственика (`prisma migrate diff` срещу базата — празен). Износът на фирмата — формат 9
+  (от 2026-10-15): проектите без `kind` (`omit` в `company-export.ts`; историята на формата и описанието на `projects` го
+  казват). Тестът `no-project-kind.test.ts` чете `src/` и `scripts/` и не намира четене или писане (типа, схемата,
+  `formRightOf`, `upgradeProjectAction`, `.kind` на съоръжение, суров SQL с колоната, стойностите `REPLACEMENT`/`FULL`),
+  проверява бележката в схемата, `omit` на клиента и на износа и че миграция за махането няма. Публичните текстове:
+  ключовите думи (14, с „Carbon Stealth“, „calcolo argano“, „ammodernamento ascensore“, „trasformazione completa
+  ascensore“, „UNI 10411“), лендингът — „Dal rilievo al calcolo argano / al progetto e ai documenti“, четирите стъпки и
+  трите типа вместо двата модула, „Calcolo argano“ и „Progetto“ вместо „Sostituzione dell’argano“ и „Progetto completo“,
+  цените (`inc1`); „come nel progetto completo“ → „come nel Progetto del vano“ в двете бележки за машина долу.
+  Документите: `CLAUDE.md` (интервенцията и четирите стъпки; „Calcolo argano смята, Progetto чертае“ вместо „Цял проект
+  има един вход“), `docs/rules.md` („Интервенцията и стъпките“ вместо „Двата модула“ — с връщането на миграция 21 и
+  правилото за бъдещата миграция на `kind`; празният старт, машинното, проектът на асансьора, изпитването, rifacimento,
+  правата — `RIGHT_OF_STEP`, без `upgradeProjectAction`; бележки за кръг 45 в „Rilievo e impianto“),
+  `docs/architecture.md` (новите модули, компонентите, миграция 21, `kind` „deprecated“). Никоя версия на двигател не е
+  вдигната; `src/calc`, `src/shaft`, `src/lib/lift/derive.ts` и `src/lib/room/derive.ts` не са пипани в кръга. IndexNow —
+  след деплоя: `node tools/seo/indexnow.mjs https://liftpilot.carbonstealth.eu`. `smoke.mjs` — проверките на търсенето
+  в една таблица (файлът — под 300 реда).
+
+- **Проверки (стъпки 7–9)**: след всяка стъпка — `prisma generate` (стъпка 9), `tsc --noEmit` 0 грешки, `npm run lint`
+  чисто, `npm test` зелен (след стъпка 8 — 1003 + 196, след стъпка 9 — 1005 + 196); накрая `npm run build`, :3291 от
+  новия build и пълният smoke (63 стъпки, с кръга Calcolo ↔ Progetto) — „all good“ два пъти, с рестарт между тях;
+  `prisma migrate diff` базата ↔ `schema.prisma` — празен (бележките „deprecated“ са само коментари), 21 миграции,
+  схемата е актуална. Доказателството „всеки запис се възпроизвежда“ на `argano_p3` — всичките 1020 записа отпреди
+  (след стъпка 6) със същия SHA-256, ok и outdated, 75-те нови (от smoke-а) — всички ok. Нито един файл в `src/calc`,
+  `src/shaft` (освен коментар в тест), `src/lib/lift/derive.ts`, `src/lib/room/derive.ts` не е пипан; версиите на
+  двигателите — същите. Паритетът с rilievi `ae6329cb6` срещу :3291 — **PASS**: 532 pass, 0 fail, 32 allowed, 3 warn
+  (същите). `node tools/security/secret-scan.mjs` — чисто. `npm run artifact` — двата таба в Chromium без грешки в
+  конзолата (примерът — „Solo argano“). Ключовите думи на `/it` — 14, с „Carbon Stealth“; :3100 и :4330 — 200.
+
 ## Проверки
 
 - [x] Пуснах пълния quality gate на засегнатия продукт `liftpilot/` (до кръг 6 — `argano/`): lint, typecheck, test (250/250, със схемите, токените и писмата на акаунтите на трите езика, с тестовете за хлабината на вратите, хода на кабината и противотежестта при трите схеми с машина долу, планките на Panev, кабелния канал, редакцията на всеки размер на плана и на разреза, каталога на машините, ограничителите, нишите, етажните табла и имената на котите на трите езика), build. **Зелен.**

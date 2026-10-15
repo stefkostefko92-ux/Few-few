@@ -24,7 +24,7 @@ const MISURE: Row[] = [
 ];
 let schedaArgs: Args | null = null, permArgs: Args | null = null;
 let companyArgs: { select?: Record<string, boolean> } | null = null;
-let projectArgs: { include?: Record<string, { select?: Record<string, unknown> }> } | null = null;
+let projectArgs: { include?: Record<string, { select?: Record<string, unknown> }>; omit?: Record<string, boolean> } | null = null;
 const PERMS: Row[] = [
   { companyId: 'c1', role: 'TECHNICIAN', capability: 'calc:create', granted: false, updatedById: 'u1', updatedAt: new Date('2026-10-14T08:00:00Z') },
   { companyId: 'c2', role: 'SALES', capability: 'prices:view', granted: false, updatedById: 'u9', updatedAt: new Date('2026-10-14T08:00:00Z') },
@@ -89,5 +89,7 @@ test('l’esportazione: ogni chiave del registro, e le schede di rilievo della p
   // format 8 (round 45): each calculation names the intervention declared with it, each lift design its base calculation
   assert.equal(projectArgs?.include?.calculations?.select?.intervento, true);
   assert.equal(projectArgs?.include?.liftDesigns?.select?.baseCalculationId, true);
-  assert.equal(doc.formatVersion, 8);
+  // format 9 (round 45): the installations without their former module
+  assert.deepEqual(projectArgs?.omit, { kind: true });
+  assert.equal(doc.formatVersion, 9);
 });

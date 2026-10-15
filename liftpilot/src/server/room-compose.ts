@@ -5,6 +5,7 @@ import 'server-only';
 // by the issue and the revision (live data), by the draft of a saved room and by the PDF of an issued set (its
 // snapshots).
 import type { Prisma } from '@prisma/client';
+import type { Db } from '@/lib/db';
 import type { DrawingDoc } from '@/drawing';
 import type { SessionUser } from '@/lib/auth';
 import type { FormValues } from '@/calc/types';
@@ -23,7 +24,7 @@ import { SET_PROJECT, setBasis, type ComposeError } from './drawing-compose';
 import { usableLogo } from '@/lib/logo';
 import { readCalc, storedCollaudo } from './records';
 
-type Tx = Prisma.TransactionClient;
+type Tx = Db;
 
 export interface RoomComposed {
   ok: true;

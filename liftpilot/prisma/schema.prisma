@@ -256,18 +256,21 @@ enum TipoIntervento {
   TRASFORMAZIONE_COMPLETA
 }
 
-/// A lift installation (impianto) of a company.
-/// What an installation is for: the machine replacement alone (the calculation and its report), or a whole project
-/// (shaft, car, doors, machine, drawing set, 3D). A replacement can become a whole project, never the reverse.
+/// What an installation was for before round 45: the machine replacement alone, or a whole project. Deprecated — no
+/// code reads or writes it (the type of intervention is each step-2 calculation's, Calculation.intervento); dropped by
+/// a later migration after the owner's confirmation, with Project.kind and its index.
 enum ProjectKind {
   REPLACEMENT
   FULL
 }
 
+/// A lift installation (impianto) of a company; its type of intervention is read from its calculations, never stored.
 model Project {
   id           String        @id @default(cuid())
   companyId    String
   company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  /// deprecated — dropped by a later migration after the owner's confirmation (round 45: no code reads or writes it; the
+  /// client leaves it out of every query, src/lib/db.ts; a new installation takes the column's default)
   kind         ProjectKind   @default(FULL)
   name         String
   address      String?
@@ -298,6 +301,7 @@ model Project {
   schede       Scheda[]
 
   @@index([companyId, archivedAt])
+  // (with kind: dropped by the later migration after the owner's confirmation)
   @@index([companyId, kind])
   @@index([createdById])
 }
