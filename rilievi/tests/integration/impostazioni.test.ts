@@ -58,7 +58,7 @@ describe('the order of the sheet sections in the company settings', () => {
     assert.equal(moved.status, 200);
     assert.match(moved.body, /Modifiche non salvate/);
     const order = [...moved.body.matchAll(/name="ordine" value="([a-z]+)"/g)].map((m) => m[1]);
-    assert.deepEqual(order.slice(-2), ['note', 'allarme']);
+    assert.deepEqual(order.slice(-2), ['note', 'telesoccorso']);
     assert.match(
       moved.body,
       /value="note:su"[^>]*autofocus/,
@@ -142,7 +142,7 @@ describe('the order of the sheet sections in the company settings', () => {
       ascending(
         positions(print.body, [
           '<h2>Note e lavori</h2>',
-          '<h2>Allarme e telesoccorso</h2>',
+          '<h2>Allarme</h2>',
           '<h2>Ubicazione e accesso</h2>',
         ]),
       ),
@@ -152,7 +152,7 @@ describe('the order of the sheet sections in the company settings', () => {
 });
 
 describe('the sheet form, laid out like the printed sheet', () => {
-  it('opens with section 1 as the head and the plate, and numbers the sections 1 to 11', async () => {
+  it('opens with section 1 as the head and the plate, and numbers only the sections on screen', async () => {
     const { browser } = await signedIn('TECNICO');
     const form = await browser.get('/schede/nuova');
     assert.match(form.body, /<div class="grid grid--testa">/);
@@ -173,15 +173,17 @@ describe('the sheet form, laid out like the printed sheet', () => {
       positions(form.body, head).every((at) => at < end),
       'all in section 1',
     );
-    const numbers = [
-      ...form.body.matchAll(
-        /<legend class="section__title"><span class="secnum" aria-hidden="true">(\d+)<\/span>/g,
-      ),
+    // The number is the CSS counter of the sections on screen: a hidden one (the power unit before a
+    // hydraulic lift is ticked) takes no number, and the sections after it close up.
+    const legends = [
+      ...form.body.matchAll(/<legend class="section__title"><span class="secnum"[^>]*><\/span>/g),
     ];
-    assert.deepEqual(
-      numbers.map((m) => Number(m[1])),
-      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-    );
+    assert.equal(legends.length, 13);
+    assert.match(form.body, /<fieldset class="section"[^>]*id="s-centralina"[^>]*data-off/);
+    assert.match(form.body, /<fieldset class="section"[^>]*id="s-argano"(?![^>]*data-off)[^>]*>/);
+    const css = await browser.get('/static/css/sheet.css');
+    assert.match(css.body, /counter-increment: sezione;/);
+    assert.match(css.body, /\.secnum:empty::before \{\s*content: counter\(sezione\);/);
     assert.doesNotMatch(form.body, /id="s-targa"/);
   });
 });

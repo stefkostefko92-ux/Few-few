@@ -50,8 +50,9 @@ const scheda = {
   caviNumero: 2,
   caviConduttori: 24,
   caviLunghezzaM: null,
-  telesoccorso: true,
-  telesoccorsoStato: 'MANCA_PERIFERICA',
+  telesoccorsoInstallare: true,
+  perifericaInstallare: false,
+  cornettaInstallare: null,
   allarmePortineria: false,
   displayPortineria: null,
   noteQuadretto: null,
@@ -60,6 +61,7 @@ const scheda = {
   bottoniereMisure: false,
   misureBottoniere: [],
   lavoriExtra: 'x '.repeat(1500),
+  sezioniEscluse: [],
   searchText: '',
   createdById: null,
   updatedById: null,
@@ -118,6 +120,23 @@ describe('the sheet PDF', { skip: !fontsHere && 'DejaVu fonts are not installed 
     const withOrders = await renderSchedaPdf({ ...ordine, riepilogoOrdini: true }, options);
     assert.equal(withOrders.subarray(0, 5).toString(), '%PDF-');
     assert.ok(withOrders.length > without.length, 'the order adds its own section');
+  });
+
+  it('leaves out the sections the sheet takes off the print', async () => {
+    const options = {
+      t: translatorFor('it'),
+      fmt: viewHelpers('it'),
+      generatedBy: 'Prova',
+      fontDir,
+      logo: null,
+    };
+    const short = { ...scheda, lavoriExtra: null };
+    const all = await renderSchedaPdf(short, options);
+    const fewer = await renderSchedaPdf(
+      { ...short, sezioniEscluse: ['funi', 'cavi', 'serrature', 'tipologia'] },
+      options,
+    );
+    assert.ok(fewer.length < all.length, 'four sections fewer, a shorter document');
   });
 });
 

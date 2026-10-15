@@ -1,28 +1,34 @@
 <%
   // Модулът на доставчика (src/ordini/, assets/moduli/*.json) — същите полета в същия ред като на
   // хартията, за да излезе в неговия оригинален PDF. Етикетите са дословно от модула (италиански) и не
-  // се превеждат. Отваря се при своята марка и „Sì“ на въпроса над него (две обвивки с data-when — таблото
-  // има два модула под един въпрос); data-prefill — попълване от огледа (moduli.js); data-auto — поле,
-  // попълнено от огледа, от картата, от другия модул или със стойността на празния модул: следва
-  // източника си, докато човекът не пише в него (moduli.js, collegati.js). Под всяка група —
-  // разминаванията на нейните свързани данни.
+  // се превеждат. Отваря се при своята марка (и модел — Mastech) и „Sì“ на въпроса над него (обвивки с
+  // data-when — таблото има четири модула под един въпрос); data-prefill — попълване от огледа
+  // (moduli.js); data-auto — поле, попълнено от огледа, от картата, от другия модул или със стойността на
+  // празния модул: следва източника си, докато човекът не пише в него (moduli.js, collegati.js). Под
+  // всяка група — разминаванията на нейните свързани данни; редът с надпис („Norme di riferimento“) е
+  // група за четеца на екрана.
   const name = (key) => slot.prefix + '-' + key;
-  // Модул без марка (листът за аргано, 2SG) е отворен при всяка марка — обвивката е без условие.
-  const marcaOn = !slot.marca || values[slot.marca.field] === slot.marca.value;
+  // Изборите на картата за модула: марката, после моделът — обвивка за всеки. Модул без марка (листът за
+  // аргано, 2SG) е отворен при всяка марка — обвивката е без условие.
+  const [marca, modello] = [slot.marca, slot.modello];
+  const off = (c) => c && values[c.field] !== c.value;
   // Отворен само ако и въпросът се вижда — иначе „Sì“ е остатък от друга марка.
   const on = active.has(slot.question) && values[slot.question] === 'si';
-%><div class="field--wide"<% if (slot.marca) { %> data-when="<%= slot.marca.field %>" data-when-values="<%= slot.marca.value %>"<% } %><% if (!marcaOn) { %> data-off<% } %>>
+%><div class="field--wide"<% if (marca) { %> data-when="<%= marca.field %>" data-when-values="<%= marca.value %>"<% } %><% if (off(marca)) { %> data-off<% } %>>
+<% if (modello) { %><div data-when="<%= modello.field %>" data-when-values="<%= modello.value %>"<% if (off(modello)) { %> data-off<% } %>><% } %>
 <div class="modulo" id="f-<%= slot.prefix %>" data-when="<%= slot.question %>" data-when-values="si"<% if (!on) { %> data-off<% } %> data-modulo>
   <input type="hidden" name="<%= slot.prefix %>-_" value="1">
   <div class="modulo__head">
     <p class="modulo__title"><strong><%= slot.modulo.titolo %></strong><% if (slot.modulo.fornitore) { %> · <%= slot.modulo.fornitore %><% } %></p>
     <p class="field__hint"><%= t('ordini.hint') %></p>
   </div>
-  <% for (const group of slot.modulo.gruppi) { %>
+  <% slot.modulo.gruppi.forEach((group, g) => { %>
   <fieldset class="modulo__group">
     <legend><%= group.titolo %></legend>
-    <% for (const row of group.righe) { %>
-    <div class="modulo__row">
+    <% group.righe.forEach((row, r) => {
+         const rowId = 'r-' + slot.prefix + '-' + g + '-' + r; %>
+    <div class="modulo__row"<% if (row.titolo) { %> role="group" aria-labelledby="<%= rowId %>"<% } %>>
+      <% if (row.titolo) { %><span class="modulo__rowtitle" id="<%= rowId %>"><%= row.titolo %></span><% } %>
       <% row.campi.forEach((field, i) => {
            const id = 'f-' + name(field.key);
            const errId = 'err-' + name(field.key);
@@ -49,7 +55,7 @@
         <% } %><% if (errText) { %><p class="field__error" id="<%= errId %>"><%= errText %></p><% } %>
       </div><% } %><% }) %>
     </div>
-    <% } %>
+    <% }) %>
     <% const linked = collegati.delGruppo(slot.prefix, group.righe.flatMap((row) => row.campi.map((field) => field.key)));
        const diffs = linked.map((key) => collegati.discrepanze.get(key)).filter(Boolean);
        if (linked.length) { %><div class="modulo__diff" data-diff="<%= linked.join(' ') %>" aria-live="polite"<% if (!diffs.length) { %> hidden<% } %>>
@@ -57,6 +63,7 @@
       <ul><% for (const d of diffs) { %><li><%- include('_discrepanza', { d }) %></li><% } %></ul>
     </div><% } %>
   </fieldset>
-  <% } %>
+  <% }) %>
 </div>
+<% if (modello) { %></div><% } %>
 </div>

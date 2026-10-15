@@ -1,7 +1,8 @@
 // End-to-end check of a running portal in a real Chromium: the public pages and an access request
 // accepted by the MASTER (site.mjs), sign-in, a company with its logo, a full sheet (the fields that
 // appear with the door type, the alarm, one measurement row per stop that follows "Fermate" while it
-// is typed, the order forms and data sheets), search, print, PDF, the order of the sections in the
+// is typed, the order forms and data sheets, Mastech and the hydraulic lift — mastech.mjs), search,
+// print (the sections chosen for it), PDF, the order of the sections in the
 // company settings (impostazioni.mjs), the same data filled in real time in every direction
 // (tempo-reale.mjs), the company ADMIN invited by the MASTER and a technician invited by that ADMIN
 // who sees the company's sheets (inviti.mjs), and accessibility (axe-core, WCAG 2.1 AA) on every page,
@@ -20,6 +21,7 @@ import { audit, fail, failures, italianOnly, signIn as signInAt, tick } from './
 import { checkSite } from './site.mjs';
 import { checkInvites } from './inviti.mjs';
 import { checkLinkedData, confirmDifferences } from './collegati.mjs';
+import { checkMastech } from './mastech.mjs';
 import { checkMovilift } from './movilift.mjs';
 import { checkSettings } from './impostazioni.mjs';
 import { checkRealTime } from './tempo-reale.mjs';
@@ -123,8 +125,8 @@ try {
       await page.fill('#f-serratureNumero', '6');
       await page.fill('#f-serratureTipo', 'Elettromeccaniche');
       await tick(page, 'luceVanoSostituire', 'si');
-      await tick(page, 'telesoccorso', 'si');
-      await tick(page, 'telesoccorsoStato', 'MANCA_PERIFERICA');
+      await tick(page, 'telesoccorsoInstallare', 'si');
+      await tick(page, 'perifericaInstallare', 'no');
       await tick(page, 'allarmePortineria', 'no');
       // The old push-button panels: one row per stop, following "Fermate" while it is typed.
       await tick(page, 'bottoniereMisure', 'si');
@@ -145,6 +147,7 @@ try {
       // The forms: the MoviLift order first, then the Pelazza order (the same question, the other
       // make), the argano data sheet and the 2SG sheet, prefilled from the survey.
       await checkMovilift(page, scheme);
+      await checkMastech(page, scheme, aziendaName);
       await tick(page, 'quadroMarca', 'PELAZZA');
       if (await page.locator('#f-om').isVisible()) fail('MoviLift order shown for Pelazza');
       await tick(page, 'quadroOrdine', 'si');
@@ -198,6 +201,8 @@ try {
       if ((await page.locator('.ptable tbody tr').count()) !== 6) fail('print without 6 stop rows');
       if (!(await page.textContent('.paper')).includes("Modulo d'ordine quadri"))
         fail('print without the panel order');
+      if (await page.locator('.paper__section h2', { hasText: /^Cavi$/ }).count())
+        fail('print keeps the section left out of it');
       // The head: the address and the work order under the title; the identification is not repeated.
       if (!(await page.textContent('.paper__address')).includes('Via Giuseppe Verdi'))
         fail('print without the address in the head');

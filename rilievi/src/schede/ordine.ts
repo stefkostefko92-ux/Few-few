@@ -62,3 +62,16 @@ export function sposta(ordine: readonly SectionKey[], key: SectionKey, verso: Ve
   out[from] = other;
   return out;
 }
+
+/**
+ * Разделите на листа (печат и PDF): без идентификацията — тя е в заглавната лента и в табелата — и без
+ * изключените в картата (изборът в края на формата, `sezioniEscluse`).
+ */
+export function sezioniStampate<T extends { key: SectionKey }>(
+  sections: readonly T[],
+  escluse: readonly string[],
+): T[] {
+  return sections.filter(
+    (section) => !FISSE.includes(section.key) && !escluse.includes(section.key),
+  );
+}

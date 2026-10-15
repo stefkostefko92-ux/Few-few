@@ -6,9 +6,9 @@ import { collegatiPerBrowser } from '../ordini/collegati-browser.js';
 import { discrepanzeDi, improntaDi } from '../ordini/collegati.js';
 import { moduloFieldOf, withPrefill } from '../ordini/form.js';
 import { SLOTS } from '../ordini/registry.js';
-import { activeFields, SECTIONS } from '../schede/fields.js';
+import { activeParts, SECTIONS } from '../schede/fields.js';
 import { MAX_MISURE, misuraOf, misuraTemplateRow, misureFormRows } from '../schede/misure.js';
-import { sezioniOrdinate } from '../schede/ordine.js';
+import { FISSE, sezioniOrdinate } from '../schede/ordine.js';
 import type { SchedaFull } from '../schede/service.js';
 import {
   formValuesFromBody,
@@ -57,6 +57,7 @@ export function renderForm(req: Request, res: Response, status: number, view: Fo
     etichetta: (campo, valore) => t(`scheda.option.${campo}.${valore}`),
   });
   const discrepanze = discrepanzeDi(values, t);
+  const shown = activeParts((key) => view.values[key]);
   res.status(status).render('schede/form', {
     ...view,
     showAzienda: spansAziende(scope(req, 'schede:read')),
@@ -67,8 +68,10 @@ export function renderForm(req: Request, res: Response, status: number, view: Fo
     ),
     identifiersErrorKey: IDENTIFIERS_ERROR_KEY,
     aziendaErrorKey: AZIENDA_ERROR_KEY,
-    // Кои полета с условие се виждат при отварянето (app.js ги следи после, докато се пише).
-    active: activeFields((key) => view.values[key]),
+    // Кои полета и раздели с условие се виждат при отварянето (app.js ги следи после, докато се пише).
+    active: shown.fields,
+    activeSections: shown.sections,
+    fisse: FISSE,
     misureRows: misureFormRows(view.values, view.errors),
     misuraTemplate: misuraTemplateRow(),
     maxMisure: MAX_MISURE,

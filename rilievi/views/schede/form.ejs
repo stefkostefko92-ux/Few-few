@@ -7,6 +7,7 @@
   const labelOf = (key) => {
     if (key === identifiersErrorKey) return t('scheda.identifiers');
     if (key === 'riepilogoOrdini') return t('riepilogo.title');
+    if (key === 'stampa') return t('riepilogo.sezioni');
     const moduloField = moduloFieldOf(key);
     if (moduloField) return t('ordini.errorLabel', { label: moduloField.field.label, fornitore: moduloField.slot.modulo.fornitore || moduloField.slot.modulo.titolo });
     const misura = misuraOf(key);
@@ -53,7 +54,7 @@
 </div>
 <% } else { %>
 <div class="with-index">
-<%- include('_index', { titles: sections.map((s) => ({ key: s.key, title: t('scheda.section.' + s.key) })) }) %>
+<%- include('_index', { titles: sections.map((s) => ({ key: s.key, title: t('scheda.section.' + s.key), when: s.when, off: !activeSections.has(s.key) })) }) %>
 <form class="form" method="post" action="<%= action %>" novalidate data-scheda-form>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <% if (!isEdit && aziende.length > 0) { %>
@@ -70,9 +71,11 @@
   <p class="muted"><%= t('scheda.field.azienda') %>: <strong><%= scheda.azienda.name %></strong></p>
   <% } %>
   <% if (isEdit) { %><input type="hidden" name="base" value="<%= conflict ? scheda.updatedAt.toISOString() : base %>"><% } %>
-  <% sections.forEach((section, index) => { %>
-  <fieldset class="section" id="s-<%= section.key %>">
-    <legend class="section__title"><span class="secnum" aria-hidden="true"><%= index + 1 %></span><%= t('scheda.section.' + section.key) %></legend>
+  <% sections.forEach((section) => { %>
+  <%# Раздел с условие („Argano“ — не при хидравлична уредба): app.js го скрива като полетата; номерата
+     на видимите раздели ги брои CSS-ът (sheet.css), затова скритият не оставя дупка. %>
+  <fieldset class="section" id="s-<%= section.key %>"<%- include('_when', { when: section.when, off: !activeSections.has(section.key) }) %>>
+    <legend class="section__title"><span class="secnum" aria-hidden="true"></span><%= t('scheda.section.' + section.key) %></legend>
     <% if (section.key === 'impianto') { %><p class="field__hint<%= errors[identifiersErrorKey] ? ' field__error' : '' %>" id="identifiers-hint"><%= t('scheda.identifiersHint') %></p><% } %>
     <%# Разделът „Impianto“ е подреден като главата и табелата на листа (sheet.css, .grid--testa). %>
     <div class="grid<%= section.key === 'impianto' ? ' grid--testa' : '' %>">
@@ -87,6 +90,17 @@
   <fieldset class="section" id="s-riepilogo">
     <legend class="section__title"><%= t('riepilogo.title') %></legend>
     <div class="grid">
+      <%# Разделите на листа: отметнатите влизат в печата и PDF-а; разделът с условие се крие и тук. %>
+      <fieldset class="choice field field--wide" id="f-stampa" aria-describedby="stampa-hint<%= errors.stampa ? ' err-stampa' : '' %>">
+        <legend><%= t('riepilogo.sezioni') %></legend>
+        <input type="hidden" name="stampa-_" value="1">
+        <div class="choice__opts">
+          <% for (const section of sections.filter((s) => !fisse.includes(s.key))) { %><label class="tick"<%- include('_when', { when: section.when, off: !activeSections.has(section.key) }) %>><input type="checkbox" name="stampa" value="<%= section.key %>"<% if ((values.stampa || []).includes(section.key)) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('scheda.section.' + section.key) %></span></label>
+          <% } %>
+        </div>
+        <p class="field__hint" id="stampa-hint"><%= t('riepilogo.sezioniHint') %></p>
+        <% if (errors.stampa) { %><p class="field__error" id="err-stampa"><%= t('scheda.error.' + errors.stampa) %></p><% } %>
+      </fieldset>
       <div class="field field--wide">
         <label class="tick"><input type="checkbox" id="f-riepilogoOrdini" name="riepilogoOrdini" value="1" aria-describedby="riepilogo-hint"<% if (values.riepilogoOrdini === '1') { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('riepilogo.label') %></span></label>
         <p class="field__hint" id="riepilogo-hint"><%= t('riepilogo.hint') %></p>

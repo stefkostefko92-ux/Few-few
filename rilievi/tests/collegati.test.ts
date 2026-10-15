@@ -15,8 +15,9 @@ import { ARGANI, PELAZZA } from '../src/ordini/moduli.js';
 const t = translatorFor('it');
 
 /**
- * A sheet with the Pelazza order and the argano sheet open, as the browser sends it: the MoviLift form
- * is on the page too, hidden, and it has been filled when the page was first served.
+ * A sheet with the Pelazza order and the argano sheet open, as the browser sends it: the MoviLift and
+ * the two Mastech forms are on the page too, hidden, and they have been filled when the page was first
+ * served.
  */
 const open = {
   data: '2026-10-12',
@@ -25,6 +26,8 @@ const open = {
   quadroOrdine: 'si',
   'oq-_': '1',
   'om-_': '1',
+  'mn-_': '1',
+  'mq-_': '1',
   arganoPreventivo: 'si',
   'pa-_': '1',
 };
@@ -225,7 +228,7 @@ describe('the linked data themselves', () => {
     for (const link of COLLEGAMENTI) {
       assert.notEqual(t(`collegati.${link.key}`), `collegati.${link.key}`, link.key);
     }
-    for (const luogo of ['scheda', 'oq', 'om', 'pa', 'sg']) {
+    for (const luogo of ['scheda', 'oq', 'om', 'mn', 'mq', 'pa', 'sg']) {
       assert.notEqual(t(`collegati.luogo.${luogo}`), `collegati.luogo.${luogo}`);
     }
   });
@@ -242,17 +245,22 @@ describe('the linked data themselves', () => {
       'corsa',
       'porte',
       'accessi',
+      'servizi',
     ]);
     assert.deepEqual(collegatiDelGruppo('pa', groupOf('Motore', ARGANI)), [
       'tipoVelocita',
       'tensioneFreno',
       'correnteMotore',
       'giriMotore',
+      'poli',
+      'potenzaMotore',
     ]);
     assert.deepEqual(collegatiDelGruppo('pa', groupOf('Trazione e funi', ARGANI)), [
       'funiNumero',
       'funiDiametro',
       'funiTrefoli',
+      'diametroPuleggia',
+      'rapportoRiduzione',
     ]);
     assert.deepEqual(collegatiDelGruppo('oq', groupOf('Accessori', PELAZZA)), []);
   });

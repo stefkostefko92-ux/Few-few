@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { FIELDS, SECTIONS } from '../src/schede/fields.js';
+import { SEZIONE_CENTRALINA } from '../src/schede/fields-centralina.js';
 import { formValuesFromBody, parseScheda } from '../src/schede/validation.js';
 
 const minimal = { data: '2026-10-12', matricola: '33871' };
@@ -14,7 +15,8 @@ function parsedOrFail(body: Record<string, unknown>) {
 describe('the field list', () => {
   it('keeps the sections in the order of the printed sheet the owner marked up (October 2026)', () => {
     // Section 1 is laid out like the head and the plate of the sheet: date, address and work order,
-    // matricola and lift number, then load, persons, stops and make.
+    // matricola and lift number, then load, persons, stops and make. The power unit of a hydraulic
+    // lift stands where its machine would; the emergency call comes after the alarm.
     assert.deepEqual(
       SECTIONS.map((section) => section.key),
       [
@@ -23,11 +25,13 @@ describe('the field list', () => {
         'tipologia',
         'quadro',
         'argano',
+        'centralina',
         'funi',
         'limitatore',
         'cavi',
         'serrature',
         'allarme',
+        'telesoccorso',
         'note',
       ],
     );
@@ -55,8 +59,14 @@ describe('the field list', () => {
         'pattinoRetrattile',
         'quadroMarca',
         'quadroMarcaAltro',
+        'quadroModello',
+        'fossaRidotta',
+        'testataRidotta',
         'quadroOrdine',
         'arganoPreventivo',
+        'ganasceFreno',
+        'contattiFreno',
+        ...SEZIONE_CENTRALINA.fields.map((field) => field.key),
         'funiDiametroMm',
         'funiTrefoli',
         'funiNumero',
@@ -73,10 +83,11 @@ describe('the field list', () => {
         'serratureTipo',
         'sospensioni',
         'sospensioniNumero',
-        'telesoccorso',
-        'telesoccorsoStato',
         'allarmePortineria',
         'displayPortineria',
+        'telesoccorsoInstallare',
+        'perifericaInstallare',
+        'cornettaInstallare',
         'noteQuadretto',
         'noteImpianto',
         'luceVanoSostituire',

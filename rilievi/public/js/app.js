@@ -63,23 +63,27 @@
     });
   }
 
-  // Fields that only make sense for some answers (fields.ts `when`): "Numero serrature" with
-  // "Serrature: Sì", the door operator with automatic doors... In page order, so a field hidden by its
-  // condition also hides the fields that depend on it. The server ignores them too.
+  // Fields and sections that only make sense for some answers (fields.ts `when`): "Numero serrature"
+  // with "Serrature: Sì", the door operator with automatic doors, the power unit of a hydraulic lift
+  // and no machine there (`data-when-not`: none of the values). A field inside something hidden says
+  // nothing, so what depends on it hides too; a second pass settles a section moved above the field it
+  // depends on (the company's order). The server ignores them too.
   const conditional = Array.from(document.querySelectorAll('[data-when]'));
   const syncConditions = () => {
-    conditional.forEach((el) => {
-      const control = document.getElementById(`f-${el.dataset.when}`);
-      const values = (el.dataset.whenValues || '').split(' ');
-      const chosen = Array.from(
-        document.querySelectorAll(`input[name="${el.dataset.when}"]:checked`),
-        (input) => input.value,
-      );
-      const on =
-        !(control && control.hasAttribute('data-off')) &&
-        chosen.some((value) => values.includes(value));
-      el.toggleAttribute('data-off', !on);
-    });
+    for (let pass = 0; pass < 2; pass += 1) {
+      conditional.forEach((el) => {
+        const control = document.getElementById(`f-${el.dataset.when}`);
+        const values = (el.dataset.whenValues || '').split(' ');
+        const chosen = Array.from(
+          document.querySelectorAll(`input[name="${el.dataset.when}"]:checked`),
+          (input) => input.value,
+        );
+        const has =
+          !(control && control.closest('[data-off]')) &&
+          chosen.some((value) => values.includes(value));
+        el.toggleAttribute('data-off', 'whenNot' in el.dataset ? has : !has);
+      });
+    }
   };
   if (conditional.length) document.addEventListener('change', syncConditions);
 

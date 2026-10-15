@@ -1,22 +1,22 @@
+import { AGGIUNTI } from './collegamenti-aggiunti.js';
 import type { Collegamento } from './collegamenti.js';
 
 /**
  * Свързаните данни — СПИСЪКЪТ: едно и също нещо от уредбата, записано на повече от едно място — в
- * картата, в поръчката за таблото (Pelazza `oq` или MoviLift `om` — според марката, никога двете), в
- * листа с данни за аргано (`pa`) и в листа на 2SG (`sg`). Всяко място, в което човекът не е писал, се
- * попълва от другите — във всяка посока и докато се пише (public/js/collegati.js); различните
- * стойности се сравняват (collegati.ts). Типовете и проверката при старт са в collegamenti.ts.
+ * картата, в поръчката за таблото (Pelazza `oq`, MoviLift `om`, Mastech NG120 `mn` или QI Touch `mq` —
+ * според марката и модела, никога две), в листа с данни за аргано (`pa`) и в листа на 2SG (`sg`).
+ * Всяко място, в което човекът не е писал, се попълва от другите — във всяка посока и докато се пише
+ * (public/js/collegati.js); различните стойности се сравняват (collegati.ts). Типовете и проверката
+ * при старт са в collegamenti.ts; добавените по-късно връзки — в collegamenti-aggiunti.ts (след тези).
  *
- * Редът на местата е и редът на източниците: първо картата, после таблото, аргано и 2SG. Редът на
+ * Редът на местата е и редът на източниците: първо картата, после таблата, аргано и 2SG. Редът на
  * връзките е редът в списъка с разминавания (и в отпечатъка на потвърждението) — новите са накрая.
- * Решено със собственика (октомври 2026): спирките, скоростта и нейният вид, ходът, товарът,
- * напрежението на мотора и на спирачката — плюс досегашното попълване от картата (врати, достъпи,
- * място на машината, въжета). MoviLift и листът за аргано пишат и капацитета и № на асансьора;
- * MoviLift — и входовете на кабината. После (октомври 2026, „всички полета с еднакви параметри“):
- * адресът, матрикулата и марката (листът за аргано), видът на уредбата (Pelazza „Idraulico“), вратите
- * на 2SG, операторът (марка, напрежение) и светлият отвор, токът и оборотите на мотора.
+ * Решено със собственика (октомври 2026): спирките, скоростта и видът ѝ, ходът, товарът, напрежението
+ * на мотора и на спирачката, капацитетът, № на асансьора, входовете, вратите, достъпите, мястото на
+ * машината, въжетата; после — адресът, матрикулата, марката, видът на уредбата, операторът и светлият
+ * отвор, токът и оборотите на мотора; после — централата и Mastech (и в тези връзки).
  */
-export const COLLEGAMENTI: readonly Collegamento[] = [
+const BASE: readonly Collegamento[] = [
   {
     // „Piani n°“ на листа за аргано са спирките.
     key: 'fermate',
@@ -25,15 +25,21 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
       { luogo: 'scheda', campo: 'fermate' },
       { luogo: 'oq', campo: 'nFermate' },
       { luogo: 'om', campo: 'fermate' },
+      { luogo: 'mn', campo: 'nFermate' },
+      { luogo: 'mq', campo: 'numeroFermate' },
       { luogo: 'pa', campo: 'piani' },
     ],
   },
   {
+    // Скоростта на хидравличния асансьор е в централата (картата).
     key: 'velocita',
     tipo: 'numero',
     membri: [
+      { luogo: 'scheda', campo: 'centralinaVelocita' },
       { luogo: 'oq', campo: 'velocita' },
       { luogo: 'om', campo: 'velocita' },
+      { luogo: 'mn', campo: 'velocita' },
+      { luogo: 'mq', campo: 'velocita' },
       { luogo: 'pa', campo: 'velocita' },
     ],
   },
@@ -46,15 +52,19 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
         luogo: 'oq',
         voci: { tq1Velocita: '1V', tq2Velocita: '2V', tqVvvfAperto: 'VVVF', tqVvvfChiuso: 'VVVF' },
       },
+      { luogo: 'mn', voci: { velocita1: '1V', velocita2: '2V', vvvf: 'VVVF' } },
       { luogo: 'pa', voci: { motoreAc1: '1V', motoreAc2: '2V', motoreInverter: 'VVVF' } },
     ],
   },
   {
+    // Ходът в метри; „Corsa [mm]“ на QI Touch е в милиметри — не е тук.
     key: 'corsa',
     tipo: 'numero',
     membri: [
+      { luogo: 'scheda', campo: 'centralinaCorsaM' },
       { luogo: 'oq', campo: 'corsa' },
       { luogo: 'om', campo: 'corsa' },
+      { luogo: 'mn', campo: 'corsa' },
       { luogo: 'pa', campo: 'corsa' },
     ],
   },
@@ -64,6 +74,7 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'portataKg' },
       { luogo: 'om', campo: 'portata' },
+      { luogo: 'mq', campo: 'portataNominale' },
       { luogo: 'pa', campo: 'portata' },
     ],
   },
@@ -99,6 +110,8 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     tipo: 'numero',
     membri: [
       { luogo: 'oq', campo: 'circuitoFrenoVcc' },
+      { luogo: 'mn', campo: 'tensioneFreno' },
+      { luogo: 'mq', campo: 'tensioneFreno' },
       { luogo: 'pa', campo: 'tensioneFreno' },
     ],
   },
@@ -124,6 +137,15 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
           porteManuali: 'MANUALI',
         },
       },
+      // NG120: „Tipo di Operatore 1“ — вратите на първия достъп.
+      {
+        luogo: 'mn',
+        voci: {
+          op1Automatico: 'AUTOMATICHE',
+          op1Semiautomatico: 'SEMIAUTOMATICHE',
+          op1Manuale: 'MANUALI',
+        },
+      },
       { luogo: 'sg', voci: { automatico: 'AUTOMATICHE', semiautomatico: 'SEMIAUTOMATICHE' } },
     ],
   },
@@ -134,6 +156,7 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'doppioAccesso', valori: { si: '2', no: '1' } },
       { luogo: 'oq', campo: 'nAccessi' },
+      { luogo: 'mq', campo: 'numeroAccessi' },
     ],
   },
   {
@@ -229,6 +252,7 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
       { luogo: 'scheda', campo: 'operatoreMarca' },
       { luogo: 'oq', campo: 'opModello' },
       { luogo: 'om', campo: 'marcaOpA' },
+      { luogo: 'mq', campo: 'modelloOperatore1' },
     ],
   },
   {
@@ -257,6 +281,8 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     membri: [
       { luogo: 'oq', campo: 'motIn' },
       { luogo: 'om', campo: 'amp' },
+      { luogo: 'mn', campo: 'correnteNominale' },
+      { luogo: 'mq', campo: 'correnteMotore' },
       { luogo: 'pa', campo: 'ampere' },
     ],
   },
@@ -269,3 +295,5 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     ],
   },
 ];
+
+export const COLLEGAMENTI: readonly Collegamento[] = [...BASE, ...AGGIUNTI];

@@ -1,13 +1,20 @@
 import { z } from 'zod';
 import type {
+  CentralinaAlimentazione,
+  CentralinaAvviamento,
+  CentralinaAzionamento,
+  CentralinaMotore,
+  OlioLivello,
+  OlioStato,
   QuadroMarca,
-  TelesoccorsoStato,
+  QuadroModello,
   TipoImpianto,
   TipoPorte,
+  Tubazione,
   UbicazioneMacchina,
 } from '@prisma/client';
 import { AUTO_KEY } from '../ordini/collegamenti.js';
-import { slotAperto, SLOTS } from '../ordini/registry.js';
+import { modelloMancante, slotAperto, SLOTS } from '../ordini/registry.js';
 import { moduloFromBody, parseModulo, type ModuloDati } from '../ordini/valori.js';
 import { activeFields, FIELDS, IDENTIFIERS } from './fields.js';
 import {
@@ -25,6 +32,13 @@ import {
   type FormValues,
 } from './field-parsers.js';
 import { misureCount, misureFromBody, parseMisure, type MisuraData } from './misure.js';
+import {
+  RIEPILOGO_KEY,
+  riepilogoSchema,
+  STAMPA_KEY,
+  sezioniEscluseDi,
+  stampaFromBody,
+} from './stampa.js';
 
 export type { FieldErrorCode, FieldErrors, FormValues } from './field-parsers.js';
 
@@ -36,6 +50,37 @@ export type { FieldErrorCode, FieldErrors, FormValues } from './field-parsers.js
 
 /** Ключът на формата за грешката „поне едно от адрес / матрикула / номер“. */
 export const IDENTIFIERS_ERROR_KEY = 'identifiers';
+
+/** Централата на хидравличния асансьор (fields-centralina.ts). */
+const centralinaSchema = {
+  centralinaDaFare: yesNoOf('centralinaDaFare'),
+  centralinaAzionamento: choiceOf<CentralinaAzionamento>('centralinaAzionamento'),
+  centralinaParacadute: yesNoOf('centralinaParacadute'),
+  centralinaPistoni: intOf('centralinaPistoni'),
+  centralinaDiametroPistoneMm: decimalOf('centralinaDiametroPistoneMm'),
+  centralinaCorsaM: decimalOf('centralinaCorsaM'),
+  centralinaVelocita: decimalOf('centralinaVelocita'),
+  centralinaPressioneBar: decimalOf('centralinaPressioneBar'),
+  centralinaPortataPompa: decimalOf('centralinaPortataPompa'),
+  centralinaPotenzaKw: decimalOf('centralinaPotenzaKw'),
+  centralinaAlimentazione: choiceOf<CentralinaAlimentazione>('centralinaAlimentazione'),
+  centralinaAlimentazioneAltro: textOf('centralinaAlimentazioneAltro'),
+  centralinaAvviamento: choiceOf<CentralinaAvviamento>('centralinaAvviamento'),
+  centralinaTubazione: choiceOf<Tubazione>('centralinaTubazione'),
+  centralinaTubazioneM: decimalOf('centralinaTubazioneM'),
+  centralinaAttacco: textOf('centralinaAttacco'),
+  centralinaDistanzaM: decimalOf('centralinaDistanzaM'),
+  centralinaAccesso: textOf('centralinaAccesso'),
+  centralinaCorseOra: intOf('centralinaCorseOra'),
+  centralinaNote: textOf('centralinaNote'),
+  centralinaMarca: textOf('centralinaMarca'),
+  centralinaMotore: choiceOf<CentralinaMotore>('centralinaMotore'),
+  centralinaBloccoValvole: textOf('centralinaBloccoValvole'),
+  emendamentoA3: yesNoOf('emendamentoA3'),
+  centralinaDiscesaEmergenza: yesNoOf('centralinaDiscesaEmergenza'),
+  centralinaOlioLivello: choiceOf<OlioLivello>('centralinaOlioLivello'),
+  centralinaOlioStato: choiceOf<OlioStato>('centralinaOlioStato'),
+};
 
 export const schedaSchema = z
   .object({
@@ -75,10 +120,11 @@ export const schedaSchema = z
     caviNumero: intOf('caviNumero'),
     caviConduttori: intOf('caviConduttori'),
     caviLunghezzaM: decimalOf('caviLunghezzaM'),
-    telesoccorso: yesNoOf('telesoccorso'),
-    telesoccorsoStato: choiceOf<TelesoccorsoStato>('telesoccorsoStato'),
     allarmePortineria: yesNoOf('allarmePortineria'),
     displayPortineria: yesNoOf('displayPortineria'),
+    telesoccorsoInstallare: yesNoOf('telesoccorsoInstallare'),
+    perifericaInstallare: yesNoOf('perifericaInstallare'),
+    cornettaInstallare: yesNoOf('cornettaInstallare'),
     noteQuadretto: textOf('noteQuadretto'),
     noteImpianto: textOf('noteImpianto'),
     noteBottoniere: textOf('noteBottoniere'),
@@ -86,8 +132,14 @@ export const schedaSchema = z
     lavoriExtra: textOf('lavoriExtra'),
     quadroMarca: choiceOf<QuadroMarca>('quadroMarca'),
     quadroMarcaAltro: textOf('quadroMarcaAltro'),
+    quadroModello: choiceOf<QuadroModello>('quadroModello'),
+    fossaRidotta: yesNoOf('fossaRidotta'),
+    testataRidotta: yesNoOf('testataRidotta'),
     quadroOrdine: yesNoOf('quadroOrdine'),
     arganoPreventivo: yesNoOf('arganoPreventivo'),
+    ganasceFreno: yesNoOf('ganasceFreno'),
+    contattiFreno: yesNoOf('contattiFreno'),
+    ...centralinaSchema,
   })
   .superRefine((value, ctx) => {
     if (IDENTIFIERS.every((key) => value[key] === null)) {
@@ -110,18 +162,11 @@ export type SchedaData = z.output<typeof schedaSchema> & {
   preventivoArgano: ModuloDati | null;
   ordineSospensioni: ModuloDati | null;
   riepilogoOrdini: boolean;
+  /** Разделите, които не влизат в печата и PDF-а (изборът в края на формата). */
+  sezioniEscluse: string[];
   /** Отпечатъкът на потвърдените разминавания — слага го маршрутът при запис (schede-form.ts). */
   discrepanzeConfermate: string | null;
 };
-
-/** Отметката „Includi quadro e argano nella stampa“: „1“ или нищо — всичко друго е подправено. */
-const riepilogoSchema = z.preprocess(
-  (value) => (value === undefined || value === '' ? false : value),
-  z.union([z.literal(false), z.literal('1').transform(() => true)], {
-    errorMap: () => ({ message: 'invalid' }),
-  }),
-);
-export const RIEPILOGO_KEY = 'riepilogoOrdini';
 
 const asRecord = (body: unknown): Record<string, unknown> =>
   body && typeof body === 'object' ? (body as Record<string, unknown>) : {};
@@ -142,15 +187,25 @@ export function parseScheda(
     slotAperto(slot, active, (key) => raw[key]) ? parseModulo(slot.modulo, slot.prefix, raw) : null,
   );
   const riepilogo = riepilogoSchema.safeParse(raw[RIEPILOGO_KEY]);
+  const stampa = sezioniEscluseDi(raw);
+  // Mastech: „Sì“ на поръчката без модел — човекът да избере NG120 или QI Touch.
+  const modello = modelloMancante(active, (key) => raw[key]);
   const extraErrors: FieldErrors = Object.assign(
     {},
     misure?.errors,
+    modello ? { [modello]: 'modelloNeeded' } : {},
     ...moduli.map((modulo) => modulo?.errors ?? {}),
     riepilogo.success ? {} : { [RIEPILOGO_KEY]: 'invalid' },
+    stampa.success ? {} : { [STAMPA_KEY]: 'option' },
   );
 
   const parsed = schedaSchema.safeParse(input);
-  if (parsed.success && riepilogo.success && Object.keys(extraErrors).length === 0) {
+  if (
+    parsed.success &&
+    riepilogo.success &&
+    stampa.success &&
+    Object.keys(extraErrors).length === 0
+  ) {
     // Колоната на отворения модул (таблото — Pelazza или MoviLift, никога и двата).
     const dati = (column: string) =>
       moduli.find((modulo, i) => modulo && SLOTS[i]!.column === column)?.dati;
@@ -163,6 +218,7 @@ export function parseScheda(
         preventivoArgano: dati('preventivoArgano') ?? null,
         ordineSospensioni: dati('ordineSospensioni') ?? null,
         riepilogoOrdini: riepilogo.data,
+        sezioniEscluse: stampa.data,
         discrepanzeConfermate: null,
       },
     };
@@ -188,6 +244,7 @@ export function formValuesFromBody(body: unknown): FormValues {
   const values: FormValues = misureFromBody(source);
   for (const slot of SLOTS) Object.assign(values, moduloFromBody(slot.modulo, slot.prefix, source));
   values[RIEPILOGO_KEY] = source[RIEPILOGO_KEY] === '1' ? '1' : '';
+  values[STAMPA_KEY] = stampaFromBody(source);
   // Кои свързани полета още следват източника си (collegati.js) — form.ts приема само истинските имена.
   values[AUTO_KEY] = typeof source[AUTO_KEY] === 'string' ? source[AUTO_KEY].slice(0, 4000) : '';
   for (const field of FIELDS) {

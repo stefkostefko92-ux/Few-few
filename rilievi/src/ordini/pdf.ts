@@ -1,14 +1,15 @@
-import { rgb, type PDFPage } from 'pdf-lib';
-import { fieldsOf, type Modulo, type ModuloOverlay } from './moduli.js';
+import { rgb, type PDFFont, type PDFPage } from 'pdf-lib';
+import type { Modulo, ModuloOverlay } from './moduli.js';
 import { renderAcroform } from './pdf-form.js';
 import { apriModulo, fitBlock, fitLine, fitRighe } from './pdf-testo.js';
 import type { Valori } from './valori.js';
 
 /**
  * PDF-ът на модул: самият официален модул с нашите стойности — нищо друго не се пипа. Плоските листове
- * (Pelazza, листът с данни за аргано, 2SG): кръстчета в кутийките и текст върху редовете, по
- * координатите от картата — тук. MoviLift (формуляр) — pdf-form.ts; общото (шрифтът, мястото на
- * текста, изправянето на обърнатия лист) — pdf-testo.ts.
+ * (Pelazza, листът с данни за аргано, 2SG, Mastech): кръстчета в кутийките (или кръгче около номера на
+ * етажа) и текст върху редовете, по координатите от картата и на страницата на групата — тук. MoviLift
+ * (формуляр) — pdf-form.ts; общото (шрифтът, мястото на текста, изправянето на обърнатия лист) —
+ * pdf-testo.ts.
  */
 
 const INK = rgb(0, 0, 0);
@@ -28,21 +29,48 @@ function cross(page: PDFPage, box: readonly [number, number, number, number]): v
   });
 }
 
+/** Кръгче около надписа в кутийката — етажът, отбелязан по номера си (NG120). */
+function circle(page: PDFPage, box: readonly [number, number, number, number]): void {
+  const [x0, top, x1, bottom] = box;
+  page.drawEllipse({
+    x: (x0 + x1) / 2,
+    y: page.getHeight() - (top + bottom) / 2,
+    xScale: (x1 - x0) / 2,
+    yScale: (bottom - top) / 2,
+    borderWidth: 1.1,
+    borderColor: INK,
+  });
+}
+
 export async function renderOverlay(
   modulo: ModuloOverlay,
   valori: Valori,
   fontDir: string,
 ): Promise<Uint8Array> {
   const { doc, font } = await apriModulo(modulo, fontDir);
-  const page = doc.getPage(0);
-  const height = page.getHeight();
   // Размерът на написаното и колко над линията стои — по листа (Word-ът е с едри букви).
   const size = modulo.dimensione ?? 8;
   const lift = modulo.sopraLinea ?? 1.6;
-  for (const field of fieldsOf(modulo)) {
+  for (const gruppo of modulo.gruppi) {
+    const page = doc.getPage((gruppo.pagina ?? 1) - 1);
+    for (const riga of gruppo.righe) drawCampi(page, riga.campi, valori, font, size, lift);
+  }
+  return doc.save();
+}
+
+function drawCampi(
+  page: PDFPage,
+  campi: ModuloOverlay['gruppi'][number]['righe'][number]['campi'],
+  valori: Valori,
+  font: PDFFont,
+  size: number,
+  lift: number,
+): void {
+  const height = page.getHeight();
+  for (const field of campi) {
     const value = valori[field.key];
     if (field.kind === 'check') {
-      if (value === true && 'box' in field) cross(page, field.box);
+      if (value === true) (field.segno === 'cerchio' ? circle : cross)(page, field.box);
       continue;
     }
     if (typeof value !== 'string' || !value) continue;
@@ -69,7 +97,6 @@ export async function renderOverlay(
       });
     }
   }
-  return doc.save();
 }
 
 export function renderModulo(modulo: Modulo, valori: Valori, fontDir: string): Promise<Uint8Array> {

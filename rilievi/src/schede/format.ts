@@ -2,10 +2,10 @@ import type { MisuraBottoniera, Scheda } from '@prisma/client';
 import type { Translator } from '../i18n.js';
 import { toNumber, type ViewHelpers } from '../http/view.js';
 import { dayFromDate } from '../time.js';
-import { activeFields, SECTIONS, type FieldDef, type SectionKey } from './fields.js';
+import { activeParts, SECTIONS, type FieldDef, type SectionKey } from './fields.js';
 import type { FormValues } from './field-parsers.js';
 import { misureFromRows, misureTable, type TableView } from './misure.js';
-import { sezioniOrdinate } from './ordine.js';
+import { ORDINABILI, sezioniOrdinate } from './ordine.js';
 import { nomeModulo } from '../ordini/moduli.js';
 import { slotAperto, SLOTS } from '../ordini/registry.js';
 import { moduloFormValues, storedValori } from '../ordini/valori.js';
@@ -124,8 +124,9 @@ function optionsView(field: FieldDef, raw: unknown, t: Translator): OptionView[]
 
 /**
  * Разделите със стойностите за страницата, печата и PDF-а — в реда на фирмата (`ordine`, настройките;
- * празно — по подразбиране). Полетата с условие (fields.ts, `when`) се показват само когато то е
- * изпълнено — „Numero serrature“ при „Serrature: No“ не съществува.
+ * празно — по подразбиране). Полетата и разделите с условие (fields.ts, `when`) се показват само когато
+ * то е изпълнено — „Numero serrature“ при „Serrature: No“ и „Argano“ при хидравлична уредба не
+ * съществуват.
  */
 export function displaySections(
   scheda: SchedaShown,
@@ -134,36 +135,38 @@ export function displaySections(
   ordine: readonly string[] = [],
 ): DisplaySection[] {
   const values = scheda as unknown as Values;
-  const active = activeFields((key) => values[key]);
-  return sezioniOrdinate(SECTIONS, ordine).map((section) => ({
-    key: section.key,
-    title: t(`scheda.section.${section.key}`),
-    fields: (section.fields as readonly FieldDef[])
-      .filter((field) => active.has(field.key))
-      .map((field) => {
-        const view: DisplayField = {
-          key: field.key,
-          label: t(`scheda.field.${field.key}`),
-          value: displayValue(field, values[field.key], t, fmt),
-          kind: field.kind,
-          wide: field.wide === true,
-        };
-        const options = optionsView(field, values[field.key], t);
-        if (options) view.options = options;
-        const slot = SLOTS.find(
-          (s) =>
-            s.column === field.modulo &&
-            slotAperto(s, active, (key) => values[key]) &&
-            storedValori(s.modulo, values[s.column]),
-        );
-        if (slot) view.modulo = { path: slot.path, nome: nomeModulo(slot.modulo) };
-        if (field.misure && values[field.key] === true) {
-          const table = misureTable(scheda.fermate, scheda.misureBottoniere, t, fmt);
-          if (table) view.table = table;
-        }
-        return view;
-      }),
-  }));
+  const { fields: active, sections: attive } = activeParts((key) => values[key]);
+  return sezioniOrdinate(SECTIONS, ordine)
+    .filter((section) => attive.has(section.key))
+    .map((section) => ({
+      key: section.key,
+      title: t(`scheda.section.${section.key}`),
+      fields: (section.fields as readonly FieldDef[])
+        .filter((field) => active.has(field.key))
+        .map((field) => {
+          const view: DisplayField = {
+            key: field.key,
+            label: t(`scheda.field.${field.key}`),
+            value: displayValue(field, values[field.key], t, fmt),
+            kind: field.kind,
+            wide: field.wide === true,
+          };
+          const options = optionsView(field, values[field.key], t);
+          if (options) view.options = options;
+          const slot = SLOTS.find(
+            (s) =>
+              s.column === field.modulo &&
+              slotAperto(s, active, (key) => values[key]) &&
+              storedValori(s.modulo, values[s.column]),
+          );
+          if (slot) view.modulo = { path: slot.path, nome: nomeModulo(slot.modulo) };
+          if (field.misure && values[field.key] === true) {
+            const table = misureTable(scheda.fermate, scheda.misureBottoniere, t, fmt);
+            if (table) view.table = table;
+          }
+          return view;
+        }),
+    }));
 }
 
 /** Стойностите на запазена схема във вида на формата (за „Modifica“), с редовете на мерките. */
@@ -175,6 +178,7 @@ export function formValuesFromScheda(scheda: SchedaShown, fmt: ViewHelpers): For
     if (valori) Object.assign(out, moduloFormValues(slot.modulo, slot.prefix, valori));
   }
   out.riepilogoOrdini = scheda.riepilogoOrdini ? '1' : '';
+  out.stampa = ORDINABILI.filter((key) => !scheda.sezioniEscluse.includes(key));
   for (const section of SECTIONS) {
     for (const field of section.fields as readonly FieldDef[]) {
       const raw = values[field.key];
@@ -217,7 +221,7 @@ export function schedaTitle(
 
 /** Празна форма: днешната дата по Рим, всичко друго празно. */
 export function emptyFormValues(today: string): FormValues {
-  const out: FormValues = { riepilogoOrdini: '' };
+  const out: FormValues = { riepilogoOrdini: '', stampa: [...ORDINABILI] };
   for (const section of SECTIONS) {
     for (const field of section.fields as readonly FieldDef[]) {
       out[field.key] = field.kind === 'checks' ? [] : field.kind === 'date' ? today : '';

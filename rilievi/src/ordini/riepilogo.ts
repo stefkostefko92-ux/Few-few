@@ -1,6 +1,6 @@
 import type { Scheda } from '@prisma/client';
 import { nomeModulo, type ModuloField } from './moduli.js';
-import { SLOTS } from './registry.js';
+import { sceltoNellaScheda, SLOTS } from './registry.js';
 import { storedValori } from './valori.js';
 
 /**
@@ -24,7 +24,10 @@ export interface RiepilogoModulo {
 }
 
 /** Групите на кой да е от модулите (картите им се различават само по мястото на полетата). */
-type Gruppo = { titolo: string; righe: ReadonlyArray<{ campi: readonly ModuloField[] }> };
+type Gruppo = {
+  titolo: string;
+  righe: ReadonlyArray<{ titolo?: string; campi: readonly ModuloField[] }>;
+};
 
 /**
  * Какво казва полето: отметката, опцията на радиото (етикетът ѝ) или текстът, или нищо. Текстът на
@@ -45,6 +48,7 @@ type SchedaModuli = Pick<
   Scheda,
   | 'riepilogoOrdini'
   | 'quadroMarca'
+  | 'quadroModello'
   | 'quadroOrdine'
   | 'ordineQuadro'
   | 'arganoPreventivo'
@@ -58,19 +62,23 @@ export function riepilogoModuli(scheda: SchedaModuli): RiepilogoModulo[] {
   const out: RiepilogoModulo[] = [];
   for (const slot of SLOTS) {
     if (scheda[slot.question] !== true) continue;
-    if (slot.marca && scheda[slot.marca.field] !== slot.marca.value) continue;
+    if (!sceltoNellaScheda(slot, (key) => scheda[key as keyof SchedaModuli])) continue;
     const valori = storedValori(slot.modulo, scheda[slot.column]);
     if (!valori) continue;
     const groups: readonly Gruppo[] = slot.modulo.gruppi;
     const gruppi = groups
       .map((gruppo): RiepilogoGruppo => {
         const vista: RiepilogoGruppo = { titolo: gruppo.titolo, spunte: [], testi: [] };
-        for (const campo of gruppo.righe.flatMap((riga) => riga.campi)) {
-          const value = letto(campo, valori[campo.key]);
-          if (value === null) continue;
-          if (value === true) vista.spunte.push(campo.label);
-          else if (campo.kind === 'radio' && campo.labelNascosta) vista.spunte.push(value);
-          else vista.testi.push({ label: etichetta(campo), value });
+        for (const riga of gruppo.righe) {
+          // „Tensione Allarme: 12V“ — отметката сама („12V“) не казва за какво е.
+          const conTitolo = (label: string) => (riga.titolo ? `${riga.titolo}: ${label}` : label);
+          for (const campo of riga.campi) {
+            const value = letto(campo, valori[campo.key]);
+            if (value === null) continue;
+            if (value === true) vista.spunte.push(conTitolo(campo.label));
+            else if (campo.kind === 'radio' && campo.labelNascosta) vista.spunte.push(value);
+            else vista.testi.push({ label: conTitolo(etichetta(campo)), value });
+          }
         }
         return vista;
       })

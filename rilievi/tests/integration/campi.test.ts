@@ -24,8 +24,9 @@ const SECOND = {
   sospensioni: 'si',
   sospensioniNumero: '4',
   luceVanoSostituire: 'si',
-  telesoccorso: 'si',
-  telesoccorsoStato: 'MANCA_PERIFERICA',
+  telesoccorsoInstallare: 'si',
+  perifericaInstallare: 'no',
+  cornettaInstallare: 'si',
   allarmePortineria: 'si',
   displayPortineria: 'no',
   noteBottoniere: 'Placche in ottone',
@@ -76,7 +77,10 @@ describe('the second brief', () => {
       '"Sì" opens the 2SG sheet, empty when nothing is written in it',
     );
     assert.equal(row.luceVanoSostituire, true);
-    assert.equal(row.telesoccorsoStato, 'MANCA_PERIFERICA');
+    assert.deepEqual(
+      [row.telesoccorsoInstallare, row.perifericaInstallare, row.cornettaInstallare],
+      [true, false, true],
+    );
     assert.equal(row.displayPortineria, false);
     assert.equal(row.bottoniereMisure, true);
     assert.match(row.searchText, /bl 2026 512/);
@@ -103,7 +107,7 @@ describe('the second brief', () => {
     assert.match(page.body, /name="mb-2-piano"[^>]*value="2"/);
     assert.match(page.body, /<template data-misure-template>[\s\S]*name="mb-__N__-piano"/);
     assert.match(page.body, /Vuoi inserire le misure delle bottoniere vecchie\?/);
-    assert.match(page.body, /value="MANCA_PERIFERICA" data-clearable checked/);
+    assert.match(page.body, /name="perifericaInstallare" value="no" data-clearable checked/);
   });
 
   it('rewrites the rows on save: fewer stops drop the rows above, "No" drops them all', async () => {
@@ -136,16 +140,25 @@ describe('the second brief', () => {
         autolivellamento: false,
         pattinoRetrattileNumero: 2,
         arganoMarca: 'MONTANARI',
+        telesoccorso: true,
+        telesoccorsoStato: 'MANCA_PERIFERICA',
       },
     });
     assert.equal((await edit(browser, id, SECOND)).status, 303);
     const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
     assert.deepEqual(
-      [row.bloccaPortine, row.autolivellamento, row.pattinoRetrattileNumero, row.arganoMarca],
-      [true, false, 2, 'MONTANARI'],
+      [
+        row.bloccaPortine,
+        row.autolivellamento,
+        row.pattinoRetrattileNumero,
+        row.arganoMarca,
+        row.telesoccorso,
+        row.telesoccorsoStato,
+      ],
+      [true, false, 2, 'MONTANARI', true, 'MANCA_PERIFERICA'],
     );
     const page = await browser.get(`/schede/${id}`);
-    assert.doesNotMatch(page.body, /Blocca portine|Autolivellamento|Montanari/);
+    assert.doesNotMatch(page.body, /Blocca portine|Autolivellamento|Montanari|Manca periferica/);
   });
 
   it('brings a wrong cell back next to it, with what was typed, and saves nothing', async () => {
@@ -174,11 +187,9 @@ describe('the second brief', () => {
     assert.match(print.body, /<dt>Serrature da cambiare<\/dt>/);
     assert.match(print.body, /<dt>Numero sospensioni<\/dt>\s*<dd>4<\/dd>/);
     assert.match(print.body, /Pattino retrattile da cambiare/);
-    assert.match(print.body, /Allarme e telesoccorso/);
-    assert.match(
-      print.body,
-      /class="opt opt--on"><span class="opt__box" aria-hidden="true"><\/span>Manca periferica/,
-    );
+    assert.match(print.body, /<h2>Allarme<\/h2>/);
+    assert.match(print.body, /<h2>Telesoccorso<\/h2>/);
+    assert.match(print.body, /<dt>Periferica sotto cabina da installare<\/dt>/);
     assert.match(print.body, /<table class="ptable">/);
     assert.match(
       print.body,

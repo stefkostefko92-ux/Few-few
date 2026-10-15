@@ -11,6 +11,7 @@ describe('the orders in the sheet print', () => {
   const scheda = {
     riepilogoOrdini: true,
     quadroMarca: 'PELAZZA' as const,
+    quadroModello: null,
     quadroOrdine: true,
     ordineQuadro: ordine,
     arganoPreventivo: false,

@@ -97,7 +97,7 @@ describe('the MoviLift order form', () => {
   });
 
   it('opens under the question of the panel order only for its own make', () => {
-    assert.deepEqual(marcheOf('quadroOrdine'), ['PELAZZA', 'MOVILIFT']);
+    assert.deepEqual(marcheOf('quadroOrdine'), ['PELAZZA', 'MOVILIFT', 'MASTECH']);
     assert.deepEqual(fieldByKey('quadroOrdine')?.when?.values, marcheOf('quadroOrdine'));
     // The argano sheet and the 2SG sheet are for every make: their questions have no condition.
     for (const question of ['arganoPreventivo', 'sospensioni'] as const) {
@@ -313,6 +313,7 @@ describe('saving the MoviLift order', () => {
     const scheda = {
       riepilogoOrdini: true,
       quadroMarca: 'MOVILIFT' as const,
+      quadroModello: null,
       quadroOrdine: true,
       ordineQuadro: {
         modulo: MOVILIFT.id,

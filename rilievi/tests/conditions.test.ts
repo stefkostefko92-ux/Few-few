@@ -2,7 +2,14 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import type { SchedaShown } from '../src/schede/format.js';
 import { displaySections } from '../src/schede/format.js';
-import { activeFields, FIELDS, fieldByKey } from '../src/schede/fields.js';
+import {
+  activeFields,
+  FIELDS,
+  fieldByKey,
+  SECTIONS,
+  type Condition,
+  type SectionDef,
+} from '../src/schede/fields.js';
 import { viewHelpers } from '../src/http/view.js';
 import { translatorFor } from '../src/i18n.js';
 import { parseScheda } from '../src/schede/validation.js';
@@ -24,17 +31,31 @@ const DOORS = {
   pattinoRetrattile: 'si',
 };
 
+/** A condition points at an earlier field and at answers that field really has. */
+function checkCondition(when: Condition, at: number, who: string) {
+  const control = fieldByKey(when.field);
+  assert.ok(control, `${who} depends on a field that does not exist`);
+  assert.ok(FIELDS.indexOf(control) < at, `${who} must come after ${control.key}`);
+  const answers =
+    control.kind === 'yesno'
+      ? ['si', 'no']
+      : control.kind === 'checks' || control.kind === 'choice'
+        ? control.options
+        : null;
+  assert.ok(answers, `${who} depends on a ${control.kind} field`);
+  assert.ok(when.values.length > 0, who);
+  for (const value of when.values) assert.ok(answers.includes(value), `${who}: ${value}`);
+}
+
 describe('conditions', () => {
-  it('point at an earlier field: a yes/no answered "si", or ticked options of that field', () => {
+  it('point at an earlier field and at its own answers (fields and whole sections)', () => {
     for (const [index, field] of FIELDS.entries()) {
-      if (!field.when) continue;
-      const control = fieldByKey(field.when.field);
-      assert.ok(control, `${field.key} depends on a field that does not exist`);
-      assert.ok(FIELDS.indexOf(control) < index, `${field.key} must come after ${control.key}`);
-      if (control.kind === 'yesno') assert.deepEqual(field.when.values, ['si'], field.key);
-      else if (control.kind === 'checks' || control.kind === 'choice') {
-        for (const value of field.when.values) assert.ok(control.options.includes(value), value);
-      } else assert.fail(`${field.key} depends on a ${control.kind} field`);
+      if (field.when) checkCondition(field.when, index, field.key);
+    }
+    for (const section of SECTIONS as readonly SectionDef[]) {
+      if (section.when) {
+        checkCondition(section.when, FIELDS.indexOf(section.fields[0]!), section.key);
+      }
     }
   });
 
@@ -147,22 +168,25 @@ describe('door details', () => {
 });
 
 describe('alarm and the second brief', () => {
-  it('keeps the emergency call state (complete / peripheral missing) only when there is one', () => {
-    const yes = parsedOrFail({
+  it('asks what of the emergency call is to install, no longer the old state', () => {
+    const data = parsedOrFail({
       ...minimal,
-      telesoccorso: 'si',
-      telesoccorsoStato: 'MANCA_PERIFERICA',
+      telesoccorsoInstallare: 'si',
+      perifericaInstallare: 'no',
+      cornettaInstallare: 'si',
       allarmePortineria: 'no',
       displayPortineria: 'si',
+      // The questions taken off the sheet (October 2026): their old answers stay in the database.
+      telesoccorso: 'si',
+      telesoccorsoStato: 'MANCA_PERIFERICA',
     });
-    assert.equal(yes.telesoccorso, true);
-    assert.equal(yes.telesoccorsoStato, 'MANCA_PERIFERICA');
-    assert.equal(yes.allarmePortineria, false);
-    assert.equal(yes.displayPortineria, true);
-    const no = parsedOrFail({ ...minimal, telesoccorso: 'no', telesoccorsoStato: 'COMPLETO' });
-    assert.equal(no.telesoccorsoStato, null);
-    const forged = parseScheda({ ...minimal, telesoccorso: 'si', telesoccorsoStato: 'ROTTO' });
-    assert.equal(!forged.ok && forged.errors.telesoccorsoStato, 'option');
+    assert.deepEqual(
+      [data.telesoccorsoInstallare, data.perifericaInstallare, data.cornettaInstallare],
+      [true, false, true],
+    );
+    assert.equal(data.allarmePortineria, false);
+    assert.equal(data.displayPortineria, true);
+    assert.ok(!('telesoccorso' in data) && !('telesoccorsoStato' in data));
   });
 
   it('takes the reference work order as optional free text and the shaft lighting as yes/no', () => {
@@ -187,33 +211,37 @@ describe('the sheet page', () => {
       doppioAccesso: true,
       serrature: true,
       serratureNumero: 4,
-      telesoccorso: true,
-      telesoccorsoStato: 'COMPLETO',
+      tipoImpianto: ['IDRAULICO'],
+      centralinaDaFare: false,
+      centralinaOlioStato: 'PERDITE',
+      sezioniEscluse: [],
       misureBottoniere: [],
     } as unknown as SchedaShown;
-    const keys = displaySections(scheda, translatorFor('it'), viewHelpers('it')).flatMap((s) =>
-      s.fields.map((f) => f.key),
-    );
+    const sections = displaySections(scheda, translatorFor('it'), viewHelpers('it'));
+    const keys = sections.flatMap((s) => s.fields.map((f) => f.key));
     for (const key of [
       'doppioAccesso',
       'pattinoRetrattile',
       'serratureNumero',
-      'telesoccorsoStato',
+      'centralinaOlioStato',
     ]) {
       assert.ok(keys.includes(key), key);
     }
     for (const key of ['operatoreMarca', 'lucePorte', 'sospensioniNumero', 'bloccaPortine']) {
       assert.ok(!keys.includes(key), key);
     }
-    const stato = displaySections(scheda, translatorFor('it'), viewHelpers('it'))
-      .flatMap((s) => s.fields)
-      .find((f) => f.key === 'telesoccorsoStato');
-    assert.equal(stato?.value, 'Completo');
+    // A hydraulic lift: no machine, no governor — the power unit instead.
+    const titles = sections.map((s) => s.key);
+    assert.ok(titles.includes('centralina'));
+    assert.ok(!titles.includes('argano') && !titles.includes('limitatore'));
+    const stato = sections.flatMap((s) => s.fields).find((f) => f.key === 'centralinaOlioStato');
+    assert.equal(stato?.value, 'Perdite visibili');
     assert.deepEqual(
       stato?.options?.map((o) => [o.label, o.checked]),
       [
-        ['Completo', true],
-        ['Manca periferica', false],
+        ['Buono', false],
+        ['Da sostituire', false],
+        ['Perdite visibili', true],
       ],
     );
   });

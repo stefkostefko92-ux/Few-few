@@ -25,8 +25,9 @@ export type MembroNumero =
   | { luogo: Prefisso; campi: readonly [string, string] };
 
 /**
- * Избор: коя стойност коя категория е. В картата — отметките на поле (`checks`) или „Sì/No“ (`yesno`);
- * в модула — отметките му (ключовете им) или опциите на радио група (`campo`, ключовете са `valore`).
+ * Избор: коя стойност коя категория е. В картата — отметките на поле (`checks`), един избор (`choice`)
+ * или „Sì/No“ (`yesno`); в модула — отметките му (ключовете им) или опциите на радио група (`campo`,
+ * ключовете са `valore`).
  */
 export type MembroScelta =
   | { luogo: 'scheda'; campo: string; voci: Readonly<Record<string, string>> }
@@ -81,7 +82,11 @@ function verifica(): void {
       if (m.luogo === 'scheda') {
         const field = fieldByKey(m.campo);
         const opzioni: readonly string[] =
-          field?.kind === 'checks' ? field.options : field?.kind === 'yesno' ? ['si', 'no'] : [];
+          field?.kind === 'checks' || field?.kind === 'choice'
+            ? field.options
+            : field?.kind === 'yesno'
+              ? ['si', 'no']
+              : [];
         const ok =
           link.tipo === 'scelta'
             ? 'voci' in m &&

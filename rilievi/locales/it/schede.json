@@ -75,14 +75,16 @@
       "impianto": "Impianto",
       "ubicazione": "Ubicazione e accesso",
       "tipologia": "Tipologia",
+      "quadro": "Quadro",
+      "argano": "Argano",
+      "centralina": "Centralina",
       "funi": "Funi",
       "limitatore": "Limitatore",
       "cavi": "Cavi",
       "serrature": "Serrature o sospensioni",
-      "allarme": "Allarme e telesoccorso",
-      "note": "Note e lavori",
-      "quadro": "Quadro",
-      "argano": "Argano"
+      "allarme": "Allarme",
+      "telesoccorso": "Telesoccorso",
+      "note": "Note e lavori"
     },
     "field": {
       "data": "Data",
@@ -121,8 +123,6 @@
       "caviNumero": "Numero cavi",
       "caviConduttori": "Conduttori cavi",
       "caviLunghezzaM": "Lunghezza cavi",
-      "telesoccorso": "Telesoccorso esistente",
-      "telesoccorsoStato": "Stato telesoccorso",
       "allarmePortineria": "Allarme in portineria",
       "displayPortineria": "Display in portineria",
       "noteQuadretto": "Note quadretto elettrico",
@@ -134,13 +134,49 @@
       "quadroMarca": "Marca quadro",
       "quadroMarcaAltro": "Altra marca quadro",
       "quadroOrdine": "Scheda per l'ordine quadro",
-      "arganoPreventivo": "Argano da sostituire"
+      "arganoPreventivo": "Argano da sostituire",
+      "quadroModello": "Tipologia quadro",
+      "fossaRidotta": "Fossa ridotta",
+      "testataRidotta": "Testata ridotta",
+      "ganasceFreno": "Ganasce freno da cambiare",
+      "contattiFreno": "Contatti freno da cambiare",
+      "centralinaDaFare": "Centralina da fare",
+      "centralinaAzionamento": "Tipo di azionamento",
+      "centralinaParacadute": "Valvola di blocco (paracadute) sul cilindro",
+      "centralinaPistoni": "Numero pistoni",
+      "centralinaDiametroPistoneMm": "Diametro pistone (stelo)",
+      "centralinaCorsaM": "Corsa",
+      "centralinaVelocita": "Velocità nominale",
+      "centralinaPressioneBar": "Pressione statica a pieno carico",
+      "centralinaPortataPompa": "Portata pompa (targa attuale)",
+      "centralinaPotenzaKw": "Potenza motore",
+      "centralinaAlimentazione": "Alimentazione",
+      "centralinaAlimentazioneAltro": "Alimentazione (quale)",
+      "centralinaAvviamento": "Avviamento",
+      "centralinaTubazione": "Tubazione",
+      "centralinaTubazioneM": "Lunghezza tubazione",
+      "centralinaAttacco": "Ø attacco tubazione",
+      "centralinaDistanzaM": "Distanza locale macchina - vano",
+      "centralinaAccesso": "Accesso al locale macchina",
+      "centralinaCorseOra": "Corse/ora",
+      "centralinaNote": "Note centralina (marca/modello attuale, targa)",
+      "centralinaMarca": "Tipo / marca centralina",
+      "centralinaMotore": "Motore",
+      "centralinaBloccoValvole": "Blocco valvole (marca/modello)",
+      "emendamentoA3": "Emendamento A3 da fare",
+      "centralinaDiscesaEmergenza": "Discesa manuale di emergenza funzionante",
+      "centralinaOlioLivello": "Livello olio",
+      "centralinaOlioStato": "Stato olio",
+      "telesoccorsoInstallare": "Telesoccorso da installare",
+      "perifericaInstallare": "Periferica sotto cabina da installare",
+      "cornettaInstallare": "Cornetta nel locale da installare"
     },
     "question": {
       "bottoniereMisure": "Vuoi inserire le misure delle bottoniere vecchie?",
       "quadroOrdine": "Vuoi compilare la scheda per l'ordine quadro?",
       "arganoPreventivo": "Argano da sostituire?",
-      "sospensioni": "Sospensioni da cambiare?"
+      "sospensioni": "Sospensioni da cambiare?",
+      "centralinaDaFare": "Centralina da fare?"
     },
     "option": {
       "ubicazioneMacchina": {
@@ -161,16 +197,49 @@
         "no": "1",
         "si": "2"
       },
-      "telesoccorsoStato": {
-        "COMPLETO": "Completo",
-        "MANCA_PERIFERICA": "Manca periferica"
-      },
       "quadroMarca": {
         "PELAZZA": "Pelazza",
         "MOVILIFT": "Movilift",
         "DMG": "DMG",
         "MASTECH": "Mastech",
         "ALTRO": "Altro"
+      },
+      "quadroModello": {
+        "NG120": "NG120",
+        "QI_TOUCH": "QI Touch"
+      },
+      "centralinaAzionamento": {
+        "DIRETTO_LATERALE": "Diretto laterale",
+        "DIRETTO_CENTRALE": "Diretto centrale (interrato)",
+        "INDIRETTO_2_1": "Indiretto in taglia 2:1"
+      },
+      "centralinaAlimentazione": {
+        "TRIFASE_400": "400 V trifase",
+        "MONOFASE_230": "230 V monofase",
+        "ALTRO": "Altro"
+      },
+      "centralinaAvviamento": {
+        "DIRETTO": "Diretto",
+        "STELLA_TRIANGOLO": "Stella-triangolo",
+        "SOFT_STARTER": "Soft-starter",
+        "INVERTER": "Inverter"
+      },
+      "centralinaTubazione": {
+        "RIGIDA": "Rigida",
+        "FLESSIBILE": "Flessibile"
+      },
+      "centralinaMotore": {
+        "IMMERSO": "Immerso",
+        "ESTERNO": "Esterno"
+      },
+      "centralinaOlioLivello": {
+        "REGOLARE": "Regolare",
+        "BASSO": "Basso"
+      },
+      "centralinaOlioStato": {
+        "BUONO": "Buono",
+        "DA_SOSTITUIRE": "Da sostituire",
+        "PERDITE": "Perdite visibili"
       }
     },
     "unit": {
@@ -180,7 +249,11 @@
         "other": "persone"
       },
       "mm": "mm",
-      "m": "m"
+      "m": "m",
+      "bar": "bar",
+      "lmin": "l/min",
+      "kw": "kW",
+      "ms": "m/s"
     },
     "misure": {
       "row": "Fermata {n}",
@@ -208,6 +281,7 @@
       "range": "Inserisci un valore tra {min} e {max}.",
       "option": "Scelta non valida.",
       "identifierNeeded": "Compila almeno indirizzo, matricola o n° impianto.",
+      "modelloNeeded": "Scegli la tipologia del quadro (NG120 o QI Touch) per compilare il suo modulo d'ordine.",
       "azienda": "Scegli l'azienda della scheda."
     },
     "compiledBy": "Compilata da",
@@ -243,6 +317,8 @@
       "scheda": "Scheda",
       "oq": "Ordine quadro",
       "om": "Ordine quadro",
+      "mn": "Ordine quadro",
+      "mq": "Ordine quadro",
       "pa": "Dati argano",
       "sg": "Ordine 2SG"
     },
@@ -271,6 +347,16 @@
     "lucePorte": "Luce porte",
     "correnteMotore": "Corrente motore (A)",
     "giriMotore": "Giri motore (giri/min)",
+    "servizi": "Servizi",
+    "poli": "Poli motore",
+    "potenzaMotore": "Potenza motore (kW)",
+    "taglia": "Taglia",
+    "diametroPuleggia": "Diametro puleggia (mm)",
+    "rapportoRiduzione": "Rapporto di riduzione",
+    "tensionePattino": "Tensione pattino retrattile",
+    "potenzaCentralina": "Potenza motore centralina (kW)",
+    "avviamento": "Avviamento centralina",
+    "centralina": "Marca centralina",
     "diversi": "Dati diversi tra scheda e ordini",
     "conferma": {
       "title": {
@@ -285,6 +371,8 @@
   "riepilogo": {
     "title": "Stampa e PDF",
     "label": "Includi i dati dei moduli (quadro, argano, 2SG) nella stampa e nel PDF della scheda",
-    "hint": "Entra solo quello che è compilato nei moduli. I moduli restano anche come PDF a parte."
+    "hint": "Entra solo quello che è compilato nei moduli. I moduli restano anche come PDF a parte.",
+    "sezioni": "Sezioni nella stampa e nel PDF",
+    "sezioniHint": "Togli la spunta alle sezioni da lasciare fuori dal foglio stampato. L'intestazione con indirizzo, matricola e n° impianto c'è sempre."
   }
 }

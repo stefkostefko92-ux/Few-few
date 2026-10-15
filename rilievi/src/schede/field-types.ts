@@ -13,7 +13,8 @@ export type FieldKind =
   | 'choice' // един избор от няколко (или неотбелязано)
   | 'yesno'; // Sì / No / неотбелязано
 
-export type Unit = 'kg' | 'persone' | 'mm' | 'm';
+/** `lmin` — l/min, `kw` — kW, `ms` — m/s (централата на хидравличния асансьор). */
+export type Unit = 'kg' | 'persone' | 'mm' | 'm' | 'bar' | 'lmin' | 'kw' | 'ms';
 
 export type SectionKey =
   | 'impianto'
@@ -24,17 +25,21 @@ export type SectionKey =
   | 'cavi'
   | 'serrature'
   | 'allarme'
+  | 'telesoccorso'
   | 'note'
   | 'quadro'
-  | 'argano';
+  | 'argano'
+  | 'centralina';
 
 /**
- * Кога полето има смисъл: по-ранно поле от формата има една от `values` — при Sì/No това е 'si', при
- * отметките стига една от изброените. Иначе полето не се показва и не се пази (null).
+ * Кога полето (или разделът) има смисъл: по-ранно поле от формата има една от `values` — при Sì/No
+ * това е 'si' или 'no', при отметките стига една от изброените. `not` — обратното: полето няма нито
+ * една от тях (и празното, и скритото). Иначе полето не се показва и не се пази (null).
  */
 export interface Condition {
   field: string;
   values: readonly string[];
+  not?: true;
 }
 
 interface BaseField {
@@ -81,6 +86,8 @@ export type FieldDef = TextField | NumberField | OptionsField | PlainField;
 
 export interface SectionDef {
   key: SectionKey;
+  /** Целият раздел има смисъл само при това условие („Argano“ — не при хидравлична уредба). */
+  when?: Condition;
   fields: readonly FieldDef[];
 }
 

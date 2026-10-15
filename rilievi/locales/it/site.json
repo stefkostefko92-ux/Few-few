@@ -33,7 +33,7 @@
     },
     "hero": {
       "title": "Il rilievo dell'ascensore, campo per campo.",
-      "lead": "Dati di targa, funi, porte, quadro e argano, le bottoniere piano per piano: il tecnico compila la scheda dal telefono, l'ufficio la ritrova per matricola o indirizzo e la stampa con il logo dell'azienda.",
+      "lead": "Dati di targa, funi, porte, quadro, argano o centralina, le bottoniere piano per piano: il tecnico compila la scheda dal telefono, l'ufficio la ritrova per matricola o indirizzo e la stampa con il logo dell'azienda.",
       "request": "Richiedi l'accesso",
       "login": "Accedi",
       "note": "Non c'è registrazione libera: ogni azienda entra su richiesta e poi invita i propri tecnici."
@@ -63,7 +63,7 @@
       },
       "orders": {
         "title": "Moduli d'ordine dal rilievo",
-        "text": "Con un quadro Pelazza o Movilift la scheda compila il modulo d'ordine originale; con l'argano da sostituire, la scheda dati dell'argano; con le sospensioni da cambiare, il modulo 2SG per operatori e sospensioni. Ogni modulo esce come PDF a parte, identico all'originale. Pelazza, Movilift e 2SG sono marchi dei rispettivi titolari."
+        "text": "Con un quadro Pelazza, Movilift o Mastech (NG120 o QI Touch) la scheda compila il modulo d'ordine originale; con l'argano da sostituire, la scheda dati dell'argano; con le sospensioni da cambiare, il modulo 2SG per operatori e sospensioni. Ogni modulo esce come PDF a parte, identico all'originale. Pelazza, Movilift, Mastech e 2SG sono marchi dei rispettivi titolari."
       },
       "misure": {
         "title": "Misuri le bottoniere piano per piano",

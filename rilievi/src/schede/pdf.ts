@@ -5,7 +5,7 @@ import type { Translator } from '../i18n.js';
 import type { ViewHelpers } from '../http/view.js';
 import { riepilogoModuli, type RiepilogoGruppo } from '../ordini/riepilogo.js';
 import { displaySections, type DisplayField } from './format.js';
-import { FISSE } from './ordine.js';
+import { sezioniStampate } from './ordine.js';
 import { drawHeader, drawPlate } from './pdf-head.js';
 import {
   drawFields,
@@ -102,8 +102,8 @@ export function renderSchedaPdf(scheda: SchedaFull, options: PdfOptions): Promis
   });
 
   drawPlate(ctx, scheda, byKey);
-  // „Impianto“ е вече в заглавната лента и в табелата.
-  for (const section of sections.filter((s) => !FISSE.includes(s.key))) {
+  // „Impianto“ е вече в заглавната лента и в табелата; изключените в картата не влизат.
+  for (const section of sezioniStampate(sections, scheda.sezioniEscluse)) {
     drawSectionTitle(ctx, section.title);
     // Таблицата с мерките стои веднага под своето поле: полетата се рисуват на парчета около нея.
     let chunk: DisplayField[] = [];

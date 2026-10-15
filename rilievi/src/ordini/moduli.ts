@@ -8,7 +8,8 @@ import { z } from 'zod';
  * аргано, 2SG), имената на полетата във формуляра на MoviLift. Изходният PDF е самият оригинал с нашите
  * данни върху него — затова PDF-ът е закрепен по SHA-256: друга версия на модула значи други
  * координати, и процесът отказва да тръгне. Откъде е всеки празен модул — `fonte` в картата му
- * (MoviLift — копието без шифъра; листът за аргано — Word, конвертиран в PDF; 2SG — сканиран).
+ * (MoviLift — копието без шифъра; листът за аргано — Word, конвертиран в PDF; 2SG и двата листа на
+ * Mastech — сканирани).
  */
 
 const ASSETS = new URL('../../assets/moduli/', import.meta.url);
@@ -55,6 +56,8 @@ const overlayField = z.discriminatedUnion('kind', [
     prefill: checkPrefill,
     /** Вътрешността на кутийката: x0, y0 (от горе), x1, y1 — в точки. */
     box: z.tuple([num, num, num, num]),
+    /** Кръгче около надписа вместо кръстче — етажите на NG120 се отбелязват по номера си. */
+    segno: z.literal('cerchio').optional(),
   }),
   z.object({
     ...base,
@@ -152,8 +155,15 @@ function moduloSchema<F extends z.ZodTypeAny, T extends string>(field: F, tipo: 
     gruppi: z.array(
       z.object({
         titolo: z.string().min(1),
+        /** Страницата на листа, на която е групата (QI Touch е на две); без нея — първата. */
+        pagina: z.number().int().min(1).max(4).optional(),
         righe: z.array(
           z.object({
+            /**
+             * Надписът на реда на листа („Norme di riferimento“), когато отметките сами не казват за
+             * какво са („6V“, „12V“): във формата е пред тях, в резюмето — пред всяка.
+             */
+            titolo: z.string().min(1).max(80).optional(),
             campi: z.array(field).min(1),
             /** Стрелката от хартията: след толкова полета от реда. */
             freccia: z.number().int().min(1).optional(),
@@ -217,6 +227,14 @@ export const SG: ModuloOverlay = load(
   '2sg-ordine-porte.json',
   moduloSchema(overlayField, 'overlay'),
 );
+export const MASTECH_NG120: ModuloOverlay = load(
+  'mastech-ng120.json',
+  moduloSchema(overlayField, 'overlay'),
+);
+export const MASTECH_QI: ModuloOverlay = load(
+  'mastech-qi-touch.json',
+  moduloSchema(overlayField, 'overlay'),
+);
 
 const bytes = new Map<string, Uint8Array>();
 
@@ -236,7 +254,8 @@ export function moduloPdf(modulo: Modulo): Uint8Array {
 
 /** Проверка при старт: модулите са на мястото си и са точно версията на картите. */
 export function assertModuli(): void {
-  for (const modulo of [PELAZZA, MOVILIFT, ARGANI, SG]) moduloPdf(modulo);
+  for (const modulo of [PELAZZA, MOVILIFT, ARGANI, SG, MASTECH_NG120, MASTECH_QI])
+    moduloPdf(modulo);
 }
 
 /** „Modulo ordine quadro (Scelta v2.6) · MoviLift“ — без доставчик само заглавието. */

@@ -3,7 +3,7 @@ import { config } from '../config.js';
 import { isPartial, principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
 import { spansAziende } from '../auth/scope.js';
 import { ordineSezioniDi } from '../aziende/sezioni.js';
-import { FISSE } from '../schede/ordine.js';
+import { sezioniStampate } from '../schede/ordine.js';
 import { aziendaLogo } from '../aziende/service.js';
 import { setFlash } from '../http/flash.js';
 import { pdfLimiter } from '../http/limits.js';
@@ -218,8 +218,9 @@ schedeRouter.get('/schede/:id/stampa', read, async (req, res) => {
     scheda,
     ident: schedaTitle(scheda, res.locals.t),
     sections,
-    // „Impianto“ е в заглавната лента и в табелата — не се печата втори път.
-    printed: sections.filter((section) => !FISSE.includes(section.key)),
+    // „Impianto“ е в заглавната лента и в табелата — не се печата втори път; изключените в картата —
+    // никак.
+    printed: sezioniStampate(sections, scheda.sezioniEscluse),
     // Попълненото в модулите — само ако картата го иска (`riepilogoOrdini`).
     riepilogo: riepilogoModuli(scheda),
     autoPrint: req.query.auto === '1',

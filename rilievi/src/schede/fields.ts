@@ -1,35 +1,35 @@
 /**
  * Полетата на схемата — ЕДИНСТВЕНИЯТ източник: формата, проверката, страницата, печатът и PDF-ът се
  * строят оттук. Редът на разделите е този от отпечатаната карта, номериран от собственика (октомври
- * 2026): табелата, място, вид, табло, аргано, въжета, ограничител, кабели, брави и окачвания, аларма,
- * бележки — фирмата може да го смени (src/aziende/sezioni.ts); полетата в раздела остават в този ред.
- * Модулите на доставчиците са в src/ordini/. Етикетите са в речника: `scheda.field.<key>`,
- * `scheda.section.<key>`, `scheda.option.<key>.<СТОЙНОСТ>`, `scheda.question.<key>`.
+ * 2026): табелата, място, вид, табло, аргано (или централата при хидравлична уредба), въжета,
+ * ограничител, кабели, брави и окачвания, аларма, аварийна връзка, бележки — фирмата може да го смени
+ * (src/aziende/sezioni.ts); полетата в раздела остават в този ред. Модулите на доставчиците са в
+ * src/ordini/. Етикетите са в речника: `scheda.field.<key>`, `scheda.section.<key>`,
+ * `scheda.option.<key>.<СТОЙНОСТ>`, `scheda.question.<key>`; опциите — в field-options.ts.
  */
 
-import type { Condition, FieldDef, SectionDef } from './field-types.js';
+import {
+  QUADRO_MARCA,
+  QUADRO_MODELLO,
+  TIPO_IMPIANTO,
+  TIPO_PORTE,
+  UBICAZIONE_MACCHINA,
+} from './field-options.js';
+import type { Condition, FieldDef, SectionDef, SectionKey } from './field-types.js';
 
 export * from './field-types.js';
+export * from './field-options.js';
 
-export const UBICAZIONE_MACCHINA = ['ALTO', 'BASSO'] as const;
-// GEARLESS се показва като „MRL“ (речникът): стойността в базата остава, за да чете предишният код.
-export const TIPO_IMPIANTO = ['ELETTRICO', 'IDRAULICO', 'GEARLESS'] as const;
-export const TIPO_PORTE = ['AUTOMATICHE', 'SEMIAUTOMATICHE', 'MANUALI'] as const;
-export const TELESOCCORSO_STATO = ['COMPLETO', 'MANCA_PERIFERICA'] as const;
-export const QUADRO_MARCA = ['PELAZZA', 'MOVILIFT', 'DMG', 'MASTECH', 'ALTRO'] as const;
-
-const yes = (field: string): Condition => ({ field, values: ['si'] });
-/** Операторът на вратите има смисъл при автоматични и полуавтоматични врати. */
-const PORTE_CON_OPERATORE: Condition = {
-  field: 'tipoPorte',
-  values: ['AUTOMATICHE', 'SEMIAUTOMATICHE'],
-};
-/** Двойният достъп — при всеки вид врати, и при ръчните (решение на собственика, октомври 2026). */
-const PORTE_SCELTE: Condition = { field: 'tipoPorte', values: TIPO_PORTE };
-/** Прибиращата се шейна — при ръчни и при полуавтоматични врати. */
-const PORTE_CON_PATTINO: Condition = { field: 'tipoPorte', values: ['MANUALI', 'SEMIAUTOMATICHE'] };
-/** „Altro“ при марката → коя. */
-const ALTRA = (field: string): Condition => ({ field, values: ['ALTRO'] });
+import {
+  ALTRA,
+  NON_IDRAULICO,
+  PORTE_CON_OPERATORE,
+  PORTE_CON_PATTINO,
+  PORTE_SCELTE,
+  yes,
+  no,
+} from './field-conditions.js';
+import { SEZIONE_CENTRALINA } from './fields-centralina.js';
 
 export const SECTIONS = [
   {
@@ -74,11 +74,20 @@ export const SECTIONS = [
     ],
   },
   {
-    // Таблото за поръчка: марката; при Pelazza и MoviLift — модулът им за поръчка (src/ordini/).
+    // Таблото за поръчка: марката (Mastech — и моделът); при Pelazza, MoviLift и Mastech — модулът им
+    // за поръчка (src/ordini/). Намалената яма и горното пространство — за таблото (октомври 2026).
     key: 'quadro',
     fields: [
       { key: 'quadroMarca', kind: 'choice', options: QUADRO_MARCA },
       { key: 'quadroMarcaAltro', kind: 'text', maxLength: 120, when: ALTRA('quadroMarca') },
+      {
+        key: 'quadroModello',
+        kind: 'choice',
+        options: QUADRO_MODELLO,
+        when: { field: 'quadroMarca', values: ['MASTECH'] },
+      },
+      { key: 'fossaRidotta', kind: 'yesno' },
+      { key: 'testataRidotta', kind: 'yesno' },
       {
         key: 'quadroOrdine',
         kind: 'yesno',
@@ -86,13 +95,15 @@ export const SECTIONS = [
         question: true,
         modulo: 'ordineQuadro',
         // Марките с модул за поръчка (src/ordini/registry.ts — тестът пази съвпадението).
-        when: { field: 'quadroMarca', values: ['PELAZZA', 'MOVILIFT'] },
+        when: { field: 'quadroMarca', values: ['PELAZZA', 'MOVILIFT', 'MASTECH'] },
       },
     ],
   },
   {
-    // „Argano da sostituire?“ — при Sì листът с данните на машината, за всеки вид аргано (src/ordini/).
+    // „Argano da sostituire?“ — при Sì листът с данните на машината, за всеки вид аргано (src/ordini/);
+    // при No — сменят ли се челюстите и контактите на спирачката. Не при хидравлична уредба.
     key: 'argano',
+    when: NON_IDRAULICO,
     fields: [
       {
         key: 'arganoPreventivo',
@@ -101,8 +112,11 @@ export const SECTIONS = [
         question: true,
         modulo: 'preventivoArgano',
       },
+      { key: 'ganasceFreno', kind: 'yesno', when: no('arganoPreventivo') },
+      { key: 'contattiFreno', kind: 'yesno', when: no('arganoPreventivo') },
     ],
   },
+  SEZIONE_CENTRALINA,
   {
     key: 'funi',
     fields: [
@@ -114,6 +128,7 @@ export const SECTIONS = [
   },
   {
     key: 'limitatore',
+    when: NON_IDRAULICO,
     fields: [
       { key: 'limitatoreTipo', kind: 'text', maxLength: 120 },
       { key: 'funicellaDiametroMm', kind: 'decimal', min: 0, max: 100, unit: 'mm' },
@@ -150,15 +165,18 @@ export const SECTIONS = [
   {
     key: 'allarme',
     fields: [
-      { key: 'telesoccorso', kind: 'yesno' },
-      {
-        key: 'telesoccorsoStato',
-        kind: 'choice',
-        options: TELESOCCORSO_STATO,
-        when: yes('telesoccorso'),
-      },
       { key: 'allarmePortineria', kind: 'yesno' },
       { key: 'displayPortineria', kind: 'yesno' },
+    ],
+  },
+  {
+    // Аварийната връзка: какво има да се монтира (октомври 2026). Заменя „Telesoccorso esistente“ и
+    // състоянието му — колоните им остават със старите отговори, проверката не ги чете.
+    key: 'telesoccorso',
+    fields: [
+      { key: 'telesoccorsoInstallare', kind: 'yesno' },
+      { key: 'perifericaInstallare', kind: 'yesno' },
+      { key: 'cornettaInstallare', kind: 'yesno' },
     ],
   },
   {
@@ -197,6 +215,7 @@ export const SEARCHABLE = [
   'serratureTipo',
   'limitatoreTipo',
   'tenditore',
+  'centralinaMarca',
   'noteQuadretto',
   'noteImpianto',
   'noteBottoniere',
@@ -216,20 +235,40 @@ export function tokensOf(raw: unknown): string[] {
   return [];
 }
 
+/** Условието е изпълнено при тези стойности; `active` — вече видимите полета (по-ранните). */
+function conditionMet(
+  when: Condition,
+  active: ReadonlySet<string>,
+  valueOf: (key: string) => unknown,
+): boolean {
+  const has =
+    active.has(when.field) && tokensOf(valueOf(when.field)).some((v) => when.values.includes(v));
+  return when.not ? !has : has;
+}
+
 /**
- * Кои полета имат смисъл при тези стойности: без условие — винаги; с условие — когато то е изпълнено и
- * полето, от което зависи, само има смисъл („Numero pattini“ ← „Pattino retrattile: Sì“ ← „Porte:
- * manuali“). Полето-условие стои по-рано в списъка (тестът го пази), затова стига един проход.
+ * Кои раздели и полета имат смисъл при тези стойности: без условие — винаги; с условие — когато то е
+ * изпълнено и полето, от което зависи, само има смисъл („Numero pattini“ ← „Pattino retrattile: Sì“
+ * ← „Porte: manuali“); полето на скрит раздел няма смисъл („Argano“ при хидравлична уредба).
+ * Полето-условие стои по-рано в списъка (тестът го пази), затова стига един проход.
  */
-export function activeFields(valueOf: (key: string) => unknown): Set<string> {
-  const active = new Set<string>();
-  for (const field of FIELDS) {
-    const when = field.when;
-    const met =
-      !when ||
-      (active.has(when.field) &&
-        tokensOf(valueOf(when.field)).some((v) => when.values.includes(v)));
-    if (met) active.add(field.key);
+export function activeParts(valueOf: (key: string) => unknown): {
+  sections: Set<SectionKey>;
+  fields: Set<string>;
+} {
+  const sections = new Set<SectionKey>();
+  const fields = new Set<string>();
+  for (const section of SECTIONS as readonly SectionDef[]) {
+    if (section.when && !conditionMet(section.when, fields, valueOf)) continue;
+    sections.add(section.key);
+    for (const field of section.fields) {
+      if (!field.when || conditionMet(field.when, fields, valueOf)) fields.add(field.key);
+    }
   }
-  return active;
+  return { sections, fields };
+}
+
+/** Полетата със смисъл при тези стойности (activeParts). */
+export function activeFields(valueOf: (key: string) => unknown): Set<string> {
+  return activeParts(valueOf).fields;
 }

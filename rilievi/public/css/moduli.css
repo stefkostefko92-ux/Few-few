@@ -46,6 +46,13 @@
   line-height: 1;
 }
 
+/* Надписът на реда от листа („Norme di riferimento“) — на свой ред над отметките, които назовава. */
+.modulo__rowtitle {
+  flex-basis: 100%;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
 .modulo__text {
   display: grid;
   gap: 4px;

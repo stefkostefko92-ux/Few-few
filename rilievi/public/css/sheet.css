@@ -135,6 +135,33 @@
   color: var(--muted);
 }
 
+/* Номерата на разделите във формата и в индекса броят само видимите: раздел с условие, скрит от
+   app.js („Argano“ при хидравлична уредба), не оставя дупка. На страницата на картата и във витрината
+   номерът е в самия HTML. */
+.form {
+  counter-reset: sezione;
+}
+
+.form > .section {
+  counter-increment: sezione;
+}
+
+.section__title > .secnum:empty::before {
+  content: counter(sezione);
+}
+
+.secindex ol {
+  counter-reset: sezione-indice;
+}
+
+.secindex li {
+  counter-increment: sezione-indice;
+}
+
+.secindex .secnum:empty::before {
+  content: counter(sezione-indice);
+}
+
 /* Номерът на раздела — същият като на чертежа във витрината. */
 .secnum {
   display: inline-flex;

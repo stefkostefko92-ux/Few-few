@@ -263,103 +263,146 @@ model PasswordReset {
 /// Схемата на уредбата — полетата и редът им са дословно от заданието (src/schede/fields.ts).
 /// Идентификаторите (matricola, numeroImpianto) са низове само от цифри: водещата нула се пази.
 model Scheda {
-  id                      String               @id @default(cuid())
-  data                    DateTime             @db.Date
-  indirizzo               String?              @db.VarChar(200)
-  marca                   String?              @db.VarChar(120)
-  matricola               String?              @db.VarChar(20)
-  numeroImpianto          String?              @db.VarChar(20)
+  id                           String                   @id @default(cuid())
+  data                         DateTime                 @db.Date
+  indirizzo                    String?                  @db.VarChar(200)
+  marca                        String?                  @db.VarChar(120)
+  matricola                    String?                  @db.VarChar(20)
+  numeroImpianto               String?                  @db.VarChar(20)
   /// Работната поръчка, по която е огледът (по желание).
-  buonoLavoro             String?              @db.VarChar(60)
-  portataKg               Int?
-  capienzaPersone         Int?
-  fermate                 Int?
-  ubicazioneMacchina      UbicazioneMacchina[]
+  buonoLavoro                  String?                  @db.VarChar(60)
+  portataKg                    Int?
+  capienzaPersone              Int?
+  fermate                      Int?
+  ubicazioneMacchina           UbicazioneMacchina[]
   /// Къде е кутийката — свободен текст (до октомври 2026 беше цяло число: етажът).
-  ubicazioneCassettina    String?              @db.VarChar(120)
-  parcheggio              String?              @db.VarChar(300)
-  tipoImpianto            TipoImpianto[]
-  tipoPorte               TipoPorte[]
+  ubicazioneCassettina         String?                  @db.VarChar(120)
+  parcheggio                   String?                  @db.VarChar(300)
+  tipoImpianto                 TipoImpianto[]
+  tipoPorte                    TipoPorte[]
   /// Операторът на вратите — само при автоматични/полуавтоматични врати (иначе null).
-  operatoreMarca          String?              @db.VarChar(120)
-  lucePorte               String?              @db.VarChar(60)
-  operatoreTensione       String?              @db.VarChar(60)
+  operatoreMarca               String?                  @db.VarChar(120)
+  lucePorte                    String?                  @db.VarChar(60)
+  operatoreTensione            String?                  @db.VarChar(60)
   /// „Accessi: 1 / 2“ на листа — true е 2 достъпа (двоен достъп), false — един.
-  doppioAccesso           Boolean?
+  doppioAccesso                Boolean?
   /// Блокировката на вратичките, донивелирането и броят шейни не се питат от октомври 2026 (собственикът
   /// ги махна от листа); колоните остават със старите отговори.
-  bloccaPortine           Boolean?
-  autolivellamento        Boolean?
+  bloccaPortine                Boolean?
+  autolivellamento             Boolean?
   /// „Pattino retrattile da cambiare“ — при ръчни и полуавтоматични врати.
-  pattinoRetrattile       Boolean?
-  pattinoRetrattileNumero Int?
+  pattinoRetrattile            Boolean?
+  pattinoRetrattileNumero      Int?
   /// „Serrature da cambiare“ (до октомври 2026 — „Serrature/sospensioni“). numero/tipo — само при true.
-  serrature               Boolean?
-  serratureNumero         Int?
-  serratureTipo           String?              @db.VarChar(120)
+  serrature                    Boolean?
+  serratureNumero              Int?
+  serratureTipo                String?                  @db.VarChar(120)
   /// „Sospensioni da cambiare“ — при true броят и листът 2SG (окачванията и операторът на кабината).
-  sospensioni             Boolean?
-  sospensioniNumero       Int?
+  sospensioni                  Boolean?
+  sospensioniNumero            Int?
   /// Листът 2SG: {modulo, valori}. Има свой PDF.
-  ordineSospensioni       Json?
+  ordineSospensioni            Json?
   /// Осветлението на шахтата е за смяна.
-  luceVanoSostituire      Boolean?
-  funiDiametroMm          Decimal?             @db.Decimal(6, 2)
-  funiTrefoli             Int?
-  funiNumero              Int?
-  funiLunghezzaM          Decimal?             @db.Decimal(8, 2)
-  limitatoreTipo          String?              @db.VarChar(120)
-  funicellaDiametroMm     Decimal?             @db.Decimal(6, 2)
-  funicellaLunghezzaM     Decimal?             @db.Decimal(8, 2)
-  tenditore               String?              @db.VarChar(120)
-  caviNumero              Int?
-  caviConduttori          Int?
-  caviLunghezzaM          Decimal?             @db.Decimal(8, 2)
-  /// Аварийна връзка; състоянието има смисъл само при true.
-  telesoccorso            Boolean?
-  telesoccorsoStato       TelesoccorsoStato?
-  allarmePortineria       Boolean?
-  displayPortineria       Boolean?
-  noteQuadretto           String?
-  noteImpianto            String?
-  noteBottoniere          String?
+  luceVanoSostituire           Boolean?
+  funiDiametroMm               Decimal?                 @db.Decimal(6, 2)
+  funiTrefoli                  Int?
+  funiNumero                   Int?
+  funiLunghezzaM               Decimal?                 @db.Decimal(8, 2)
+  limitatoreTipo               String?                  @db.VarChar(120)
+  funicellaDiametroMm          Decimal?                 @db.Decimal(6, 2)
+  funicellaLunghezzaM          Decimal?                 @db.Decimal(8, 2)
+  tenditore                    String?                  @db.VarChar(120)
+  caviNumero                   Int?
+  caviConduttori               Int?
+  caviLunghezzaM               Decimal?                 @db.Decimal(8, 2)
+  /// Аварийната връзка и състоянието ѝ не се питат от октомври 2026 (заменени от трите „da installare“);
+  /// колоните остават със старите отговори.
+  telesoccorso                 Boolean?
+  telesoccorsoStato            TelesoccorsoStato?
+  allarmePortineria            Boolean?
+  displayPortineria            Boolean?
+  /// Раздел „Telesoccorso“: какво има да се монтира.
+  telesoccorsoInstallare       Boolean?
+  perifericaInstallare         Boolean?
+  cornettaInstallare           Boolean?
+  noteQuadretto                String?
+  noteImpianto                 String?
+  noteBottoniere               String?
   /// „Мерки на старите бутониери?“ — при true редовете са в MisuraBottoniera.
-  bottoniereMisure        Boolean?
-  misureBottoniere        MisuraBottoniera[]
-  lavoriExtra             String?
-  quadroMarca             QuadroMarca?
-  quadroMarcaAltro        String?              @db.VarChar(120)
+  bottoniereMisure             Boolean?
+  misureBottoniere             MisuraBottoniera[]
+  lavoriExtra                  String?
+  quadroMarca                  QuadroMarca?
+  quadroMarcaAltro             String?                  @db.VarChar(120)
+  /// Mastech: NG120 или QI Touch — всеки със свой модул за поръчка (в `ordineQuadro`).
+  quadroModello                QuadroModello?
+  fossaRidotta                 Boolean?
+  testataRidotta               Boolean?
   /// „Да попълня ли модула за поръчка на таблото?“ — само при Pelazza.
-  quadroOrdine            Boolean?
+  quadroOrdine                 Boolean?
   /// Модулът за поръчка на Pelazza: {modulo, valori} — ключовете са в assets/moduli/*.json. Има свой PDF.
-  ordineQuadro            Json?
-  arganoMarca             ArganoMarca?
-  arganoMarcaAltro        String?              @db.VarChar(120)
+  ordineQuadro                 Json?
+  arganoMarca                  ArganoMarca?
+  arganoMarcaAltro             String?                  @db.VarChar(120)
   /// „Argano da sostituire?“ (до октомври 2026 — запитването към Montanari).
-  arganoPreventivo        Boolean?
+  arganoPreventivo             Boolean?
   /// Листът с данните на аргано (за всеки вид): {modulo, valori}. Има свой PDF. Записите с модула на
   /// Montanari не се четат повече (друг `modulo`).
-  preventivoArgano        Json?
+  preventivoArgano             Json?
+  /// Аргано, което остава („Argano da sostituire?“ — No): сменят ли се челюстите и контактите на спирачката.
+  ganasceFreno                 Boolean?
+  contattiFreno                Boolean?
+  /// Централата на хидравличния асансьор (src/schede/fields-centralina.ts) — вместо аргано.
+  centralinaDaFare             Boolean?
+  centralinaAzionamento        CentralinaAzionamento?
+  centralinaParacadute         Boolean?
+  centralinaPistoni            Int?
+  centralinaDiametroPistoneMm  Decimal?                 @db.Decimal(8, 2)
+  centralinaCorsaM             Decimal?                 @db.Decimal(8, 2)
+  centralinaVelocita           Decimal?                 @db.Decimal(8, 2)
+  centralinaPressioneBar       Decimal?                 @db.Decimal(8, 2)
+  centralinaPortataPompa       Decimal?                 @db.Decimal(8, 2)
+  centralinaPotenzaKw          Decimal?                 @db.Decimal(8, 2)
+  centralinaAlimentazione      CentralinaAlimentazione?
+  centralinaAlimentazioneAltro String?                  @db.VarChar(60)
+  centralinaAvviamento         CentralinaAvviamento?
+  centralinaTubazione          Tubazione?
+  centralinaTubazioneM         Decimal?                 @db.Decimal(8, 2)
+  centralinaAttacco            String?                  @db.VarChar(60)
+  centralinaDistanzaM          Decimal?                 @db.Decimal(8, 2)
+  centralinaAccesso            String?                  @db.VarChar(200)
+  centralinaCorseOra           Int?
+  centralinaNote               String?
+  centralinaMarca              String?                  @db.VarChar(120)
+  centralinaMotore             CentralinaMotore?
+  centralinaBloccoValvole      String?                  @db.VarChar(120)
+  emendamentoA3                Boolean?
+  centralinaDiscesaEmergenza   Boolean?
+  centralinaOlioLivello        OlioLivello?
+  centralinaOlioStato          OlioStato?
   /// Печатът и PDF-ът на картата включват и попълненото в двата модула — изборът се пази в картата.
-  riepilogoOrdini         Boolean              @default(false)
+  riepilogoOrdini              Boolean                  @default(false)
+  /// Разделите, които НЕ влизат в печата и PDF-а (изборът в края на формата) — пазят се изключените, за
+  /// да е новият раздел включен и в старите карти.
+  sezioniEscluse               String[]                 @default([])
   /// Отпечатъкът на разминаванията карта ↔ модули, потвърдени при последния запис (src/ordini/collegati.ts):
   /// същите разлики не се питат пак, нови или променени — да. null — няма потвърдени.
-  discrepanzeConfermate   String?              @db.VarChar(32)
+  discrepanzeConfermate        String?                  @db.VarChar(32)
   /// Нормализиран текст за търсачката (малки букви, без ударения) — пише го САМО src/schede/service.ts.
-  searchText              String               @default("")
+  searchText                   String                   @default("")
   /// Фирмата на картата — тази на създателя (или избраната от MASTER). Вижда я само тази фирма и MASTER.
-  aziendaId               String
-  azienda                 Azienda              @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
-  createdById             String?
-  createdBy               User?                @relation("SchedeCreated", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedById             String?
-  updatedBy               User?                @relation("SchedeUpdated", fields: [updatedById], references: [id], onDelete: SetNull)
+  aziendaId                    String
+  azienda                      Azienda                  @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
+  createdById                  String?
+  createdBy                    User?                    @relation("SchedeCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById                  String?
+  updatedBy                    User?                    @relation("SchedeUpdated", fields: [updatedById], references: [id], onDelete: SetNull)
   /// Кошче: изтритата схема се пази, докато ADMIN не я възстанови или изтрие окончателно.
-  deletedAt               DateTime?
-  deletedById             String?
-  deletedBy               User?                @relation("SchedeDeleted", fields: [deletedById], references: [id], onDelete: SetNull)
-  createdAt               DateTime             @default(now())
-  updatedAt               DateTime             @updatedAt
+  deletedAt                    DateTime?
+  deletedById                  String?
+  deletedBy                    User?                    @relation("SchedeDeleted", fields: [deletedById], references: [id], onDelete: SetNull)
+  createdAt                    DateTime                 @default(now())
+  updatedAt                    DateTime                 @updatedAt
 
   @@index([aziendaId, deletedAt])
   @@index([data])
@@ -409,4 +452,51 @@ model MisuraBottoniera {
   display            Boolean?
 
   @@unique([schedaId, fermata])
+}
+
+/// Mastech: моделът на таблото — всеки със свой модул за поръчка.
+enum QuadroModello {
+  NG120
+  QI_TOUCH
+}
+
+/// Централата на хидравличния асансьор (src/schede/field-options.ts).
+enum CentralinaAzionamento {
+  DIRETTO_LATERALE
+  DIRETTO_CENTRALE
+  INDIRETTO_2_1
+}
+
+enum CentralinaAlimentazione {
+  TRIFASE_400
+  MONOFASE_230
+  ALTRO
+}
+
+enum CentralinaAvviamento {
+  DIRETTO
+  STELLA_TRIANGOLO
+  SOFT_STARTER
+  INVERTER
+}
+
+enum Tubazione {
+  RIGIDA
+  FLESSIBILE
+}
+
+enum CentralinaMotore {
+  IMMERSO
+  ESTERNO
+}
+
+enum OlioLivello {
+  REGOLARE
+  BASSO
+}
+
+enum OlioStato {
+  BUONO
+  DA_SOSTITUIRE
+  PERDITE
 }
