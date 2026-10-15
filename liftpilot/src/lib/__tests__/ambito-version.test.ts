@@ -22,9 +22,10 @@ import { ROOM_ENGINE_VERSION } from '../room/snapshot';
 import { SHAFT_ENGINE_VERSION } from '@/shaft/snapshot';
 
 /** The key and the versions it was pinned at (round 46; S5 — the optional parts and the controller's regulation —, S7
- *  — D.1 — and the review — the groups of parts and the roundings in the key, the obligations' words — pinned again
- *  within the same kit: S4–S8 and the review ship together with the one bump, never deployed apart). */
-const PINNED = { sha256: '6df66bb6e33eb57666dec56571cb1a78e95c0c158e5ba97e568529caf8c658a0', engine: '1.7.0', lift: '1.32.0', room: '1.16.0', shaft: '2.26.0' };
+ *  — D.1 —, the review — the groups of parts and the roundings in the key, the obligations' words — and its recheck —
+ *  the car sill's apron with new landing doors under -1 — pinned again within the same kit: S4–S8, the review and the
+ *  recheck ship together with the one bump, never deployed apart). */
+const PINNED = { sha256: '59709a80edfe64471fc43c247451ed0a641eb7543664196812950c1c50daa5ff', engine: '1.7.0', lift: '1.32.0', room: '1.16.0', shaft: '2.26.0' };
 
 /** The constants of a modification: the loads (6.1), the CE marking's day, the speed and the travel (15, 16). */
 const KL_MODIFICA = {

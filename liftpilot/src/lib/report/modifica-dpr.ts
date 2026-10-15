@@ -3,22 +3,28 @@
 // kept; and the points of UNI 10411 that only concern a new machine. Our words with the article's numbers. Pure.
 import type { FormValues } from '@/calc/types';
 import type { Collaudo, Parte } from '../lift/collaudo';
-import { carichiOf, portataVariata } from '../lift/modifica';
+import { carichiOf, carichiVariati, portataVariata } from '../lift/modifica';
 import type { PuntoInSito } from '../lift/norme-collaudo';
 
 /** The case of DPR 162/1999 art. 2 c.1 lett. cc) of each part a modification replaces or changes besides the machine
  *  (round 46): a change of the speed n. 1), of the rated load n. 2), of the travel n. 3); the controller, the landing
- *  doors and the car with its sling n. 5) — read on the article —; any other part is one of n. 5)'s other main
- *  components, for the engineer to confirm. With the machine kept (`resta`) they are the modification. The loads
+ *  doors and the car with its sling n. 5) — read on the article —; whether any other part is one of n. 5)'s other main
+ *  components the article does not say (the alarm, the UCM protection, the ropes…): the engineer says it, the line does
+ *  not (round 46 recheck). With the machine kept (`resta`) they are the modification. The loads
  *  changed by the documented loads with the rated load the same (T*, the counterweight or their ratio: 'load' brought by
- *  the rule) are no case n. 2) — the article names the rated load —: the engineer places them; the car doors made
- *  sliding are the car doors already named, and the machine room is the building's, not a component (round 46 review). */
+ *  the rule) are no case n. 2) — the article names the rated load —: the engineer places them; 'load' answered by hand
+ *  while the documented loads are the design's is the answer for the engineer to confirm (round 46 recheck); the car
+ *  doors made sliding are the car doors already named, and the machine room is the building's, not a component (round
+ *  46 review). */
 const CC = 'DPR 162/1999, art. 2 c.1 lett. cc)';
 const CC_VARIAZIONE: readonly [Parte, string, string][] = [['speed', '1)', 'cambio della velocità nominale'], ['load', '2)', 'cambio della portata'],
   ['travel', '3)', 'cambio della corsa']];
 const CARICHI_SENZA_PORTATA: PuntoInSito = { rif: CC, stato: 'da_verificare',
   testo: 'carichi statici variati (T*, contrappeso o il loro rapporto) senza cambio della portata: non è il caso n. 2); se e come sia una '
     + 'modifica costruttiva lo conferma il tecnico nella comunicazione' };
+const CARICHI_INVARIATI: PuntoInSito = { rif: `${CC} n. 2)`, stato: 'da_verificare',
+  testo: 'portata indicata come variata, ma i carichi documentati (portata, T* e contrappeso) coincidono con quelli del progetto entro '
+    + 'l’arrotondamento dei dati: se sia un cambio della portata lo conferma il tecnico nella comunicazione' };
 const LOCALE_CC: PuntoInSito = { rif: CC, stato: 'da_verificare',
   testo: 'locale del macchinario nuovo o modificato: un’opera dell’edificio, non un componente dell’impianto; se indicarlo nella comunicazione lo '
     + 'valuta il tecnico' };
@@ -28,16 +34,19 @@ export function altreModifiche(C: Collaudo, resta: boolean, nome: (p: Parte) => 
   const principali = [...(has('controller') ? [nome('controller')] : []), ...(has('landingDoors') ? [nome('landingDoors')] : []), ...(cabina ? ['cabina con l’arcata'] : [])];
   const numerate: readonly Parte[] = ['speed', 'load', 'travel', 'controller', 'landingDoors', 'room'];
   const altri = altre.filter((p) => !numerate.includes(p) && !(cabina && (p === 'car' || p === 'sling')) && !(p === 'slidingDoors' && has('carDoors')));
-  // the rated load: with the documented loads and the calculation's, only when it changes; answered by hand (no
-  // documents to read it on), as answered
-  const ora = V && C.documentato ? carichiOf(V) : null, portata = !C.documentato || !ora || portataVariata(C.documentato, ora);
+  // the rated load: with the documented loads and the calculation's, n. 2) only when it changes, the static loads
+  // changed without it for the engineer, nothing changed on the documents the hand's answer for the engineer to
+  // confirm; answered by hand without documents to read it on, as answered
+  const doc = C.documentato, ora = V && doc ? carichiOf(V) : null, norma = C.norma === 'en81' ? null : C.norma;
+  const carichi = !doc || !ora || !norma || portataVariata(doc, ora) ? null : carichiVariati(norma, doc, ora) ? CARICHI_SENZA_PORTATA : CARICHI_INVARIATI;
   return [
-    ...CC_VARIAZIONE.filter(([p]) => has(p)).map(([p, n, testo]): PuntoInSito => (p === 'load' && !portata ? CARICHI_SENZA_PORTATA
+    ...CC_VARIAZIONE.filter(([p]) => has(p)).map(([p, n, testo]): PuntoInSito => (p === 'load' && carichi ? carichi
       : { rif: `${CC} n. ${n}`, stato: 'confermato', testo: `${testo}: modifica costruttiva` })),
     ...(principali.length ? [{ rif: `${CC} n. 5)`, stato: 'confermato' as const,
       testo: `sostituzione ${resta ? 'di' : 'anche di'} ${principali.join(', ')}: modifica costruttiva` }] : []),
     ...(altri.length ? [{ rif: `${CC} n. 5)`, stato: 'da_verificare' as const,
-      testo: `altri componenti principali sostituiti (${altri.map(nome).join(', ')}): il tecnico conferma il caso nella comunicazione` }] : []),
+      testo: `altre parti sostituite (${altri.map(nome).join(', ')}): se siano «altri componenti principali» lo conferma il tecnico nella `
+        + 'comunicazione' }] : []),
     ...(has('room') ? [LOCALE_CC] : []),
   ];
 }

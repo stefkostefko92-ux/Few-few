@@ -132,7 +132,8 @@ export const VOCI_IMPIANTO: readonly VoceImpianto[] = [
       + 'impianto.variazione.*). Con la velocità variata entrano l’aderenza, le funi e la pressione nelle gole (-1 15.8 con 14.1 e D.2; -11 15 d)), con la '
       + 'corsa variata gli spazi in testata e in fossa e le guide (-1 16 g), j); -11 16 f), i)), con la portata variata i paracadute, le guide del '
       + 'contrappeso e gli ammortizzatori (6.1, 6.4–6.6, 6.13–6.14); solo con la -1 lo schermo del contrappeso in fossa (6.13, 15.7, 16 a)) e, con il '
-      + 'quadro nuovo, il freno a doppio elemento (11.1.4); fino a LIFT 1.31.0 velocità e corsa entravano solo come indicate tra le parti',
+      + 'quadro nuovo, il freno a doppio elemento (11.1.4), con le porte di piano sostituite o aggiunte il grembiule della soglia di cabina (19.6); '
+      + 'fino a LIFT 1.31.0 velocità e corsa entravano solo come indicate tra le parti',
   },
   {
     id: 'impianto.intervento', titolo: 'Tipo di intervento: solo argano, ammodernamento, trasformazione completa',

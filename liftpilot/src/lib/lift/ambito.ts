@@ -92,9 +92,11 @@ export const AMBITO_VERIFICHE: Readonly<Record<CheckId | ShaftCheckId, readonly 
 /** The parts that bring a check into the test under UNI 10411-1 only, besides AMBITO_VERIFICHE: the counterweight's
  *  screen in the pit with the load, the speed or the travel changed (-1 6.13, 15.7, 16 a) with UNI EN 81-20 5.2.5.5.1;
  *  -11 asks none), the brake's two sets with a new controller (-1 11.1.4, without UCM to 5.6.7; -11 11.1.3 asks only
- *  that it be watched). */
+ *  that it be watched), the car sill's apron with landing doors replaced or added (-1 19.6 with UNI EN 81-20 5.4.5; -11
+ *  19 asks none — round 46 recheck). */
 export const AMBITO_10411_1: Readonly<Partial<Record<CheckId | ShaftCheckId, readonly Parte[]>>> = {
   p_screen: ['load', 'speed', 'travel'], p_screenlo: ['load', 'speed', 'travel'], p_screenw: ['load', 'speed', 'travel'],
+  p_apron: ['landingDoors'],
   b_sets: ['controller'], b_one: ['controller'],
 };
 

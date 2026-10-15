@@ -102,6 +102,12 @@ export function variazioneCarico(norma: Norma10411, doc: Carichi, ora: Carichi):
 /** The rated load changed past the documented loads' rounding (DPR 162/1999 art. 2 c.1 lett. cc) n. 2) names it). */
 export const portataVariata = (doc: Carichi, ora: Carichi): boolean => Math.abs(ora.Q - doc.Q) > ROUNDING_KG;
 
+/** The static loads changed past the documented loads' rounding — T* or the counterweight, up or down, or (under -1)
+ *  their ratio (`Variazione.rapporto`): what the documents show of a change of the loads, whatever the prospetti allow
+ *  (round 46 recheck: the DPR's case of the loads names it only when the documents show it). */
+export const carichiVariati = (norma: Norma10411, doc: Carichi, ora: Carichi): boolean =>
+  Math.abs(ora.P + ora.Q - (doc.P + doc.Q)) > ROUNDING_KG || Math.abs(ora.Mcw - doc.Mcw) > ROUNDING_KG || variazioneCarico(norma, doc, ora).rapporto;
+
 /** Whether the change brings the checks of the load into the test: beyond the prospetti, a load decreased, or (under
  *  -1) the ratio of the suspended loads changed — stricter than the prospetti, on the side of safety (registry
  *  impianto.variazione.carico). */
@@ -149,12 +155,14 @@ export interface VariazioneVelocita {
   variata: boolean;
   /** under -11 a change over KL.ucmSpeed11: the UCM protection to UNI EN 81-20 5.6.7 (15 i)); under -1 false */
   ucm15i: boolean;
-  /** the design's speed equal, within the rounding, to a documented one (under -1 the logbook's or the one after 50 Hz):
-   *  no change at all — no note of a change within 5 % */
+  /** the design's speed equal, within the rounding, to the documented one — under -1 the logbook's, or the one after
+   *  50 Hz only when the logbook gives no speed (round 46 recheck: equal to the one after 50 Hz and above the logbook's is
+   *  no «uguale»): no change at all — no note of a change within 5 % */
   uguale: boolean;
   /** what the change is printed against (round 46 review): under -1 an increase against `rif` (15.1), a decrease against
    *  the logbook's speed (15.16 — never the one after 50 Hz); within both, against the logbook's speed and the one after
-   *  50 Hz when the design lies between them, else against the nearer of the two; under -11 the documented speed */
+   *  50 Hz when the design lies between them or equals the one after 50 Hz (within the rounding), else against the
+   *  nearer of the two; under -11 the documented speed */
   confronti: ConfrontoVelocita[];
 }
 
@@ -172,9 +180,9 @@ export function variazioneVelocita(norma: Norma10411, lib: Libretto | undefined,
   if (!(rif > 0)) return null;
   const aumento = oltre((v - rif) / rif, KL.speedInc1), calo = !!lib?.v && oltre((lib.v - v) / lib.v, KL.speedDec1);
   const lv = lib?.v, v50 = lib?.v50, diRif = lv === rif ? 'libretto' : '50hz';
-  const uguale = [lv, v50].some((b) => !!b && !oltre(Math.abs(v - b), ROUNDING_V));
+  const base = lv || v50, uguale = !!base && !oltre(Math.abs(v - base), ROUNDING_V);
   const confronti = aumento ? [c(rif, diRif)] : calo && lv ? [c(lv, 'libretto')]
-    : lv && v50 && v50 > lv && oltre(v - lv, ROUNDING_V) && oltre(v50 - v, ROUNDING_V) ? [c(lv, 'libretto'), c(v50, '50hz')]
+    : lv && v50 && v50 > lv && oltre(v - lv, ROUNDING_V) && !oltre(v - v50, ROUNDING_V) ? [c(lv, 'libretto'), c(v50, '50hz')]
       : !lv || Math.abs(v - rif) <= Math.abs(v - lv) ? [c(rif, diRif)] : [c(lv, 'libretto')];
   return { rif, dv: (v - rif) / rif, aumento, calo, variata: aumento || calo, ucm15i: false, uguale, confronti };
 }
