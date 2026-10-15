@@ -9,7 +9,7 @@ import type { UsaFatto } from '@/server/collega/forms';
 
 /** The survey's own value of a parameter (the comparison's «rilievo» column). */
 function valoreDi(r: RilievoDati, p: Param): Valore {
-  const row = confronto({ rilievo: r, storico: [], impianto: { kind: 'FULL', indirizzo: null, plantNumber: null }, calcolo: null, progetto: null }).find((w) => w.param === p);
+  const row = confronto({ rilievo: r, storico: [], impianto: { indirizzo: null, plantNumber: null }, calcolo: null, progetto: null }).find((w) => w.param === p);
   return row?.rilievo ?? null;
 }
 

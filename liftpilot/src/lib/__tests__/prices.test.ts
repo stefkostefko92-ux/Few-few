@@ -141,6 +141,12 @@ test('the replacement: the parts the acceptance test replaces, the installer as 
   assert.ok(d.M.rinvio?.on === 'frame' && !d.M.rinvio.maker);
   const base = calcBom(DEFL, null, d).filter((l) => l.key?.startsWith('bedplate:') || l.key?.startsWith('support:'));
   assert.deepEqual(base.map((l) => l.key), ['support:rinvio']);
+  // a modernisation keeping the machine (round 45): no machine and nothing it stands on, the parts it replaces counted
+  const kept = calcBom(DEFL, { norma: '10411-1', parti: ['controller', 'ropes'] }, d, null, true);
+  assert.ok(!kept.some((l) => l.label.item.startsWith('machine') || l.key?.startsWith('bedplate:') || l.key?.startsWith('support:') || l.key?.startsWith('heb')
+    || l.key === 'base:below'), JSON.stringify(kept.map((l) => l.key)));
+  assert.deepEqual(kept.filter((l) => l.key === 'controller' || l.key === 'labour:replacement').map((l) => l.key), ['controller', 'labour:replacement']);
+  assert.ok(kept.some((l) => l.key?.startsWith('rope:')));
 });
 
 test('free lines: counted by their basis in the projects they go into; by the stop not in a replacement', () => {

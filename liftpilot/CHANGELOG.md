@@ -2097,6 +2097,329 @@ Progettista, Tecnico, Commerciale. Реални потребители още н
   формуляр), `collega-confronto` (позицията с ролката от листа). Smoke: черновата на продължения калкул след „Usa il
   valore“ — поставеното пак със значка, без „parte dal rilievo“.
 
+### Кръг 45 — интервенцията в Calcolo argano, Progetto само чертае
+Фаза 3 от плана на собственика: типът на интервенцията става факт на изчислението от стъпка 2 („Calcolo argano“) —
+„Solo argano“, „Ammodernamento“ или „Trasformazione completa“ —, а Progetto само чертае върху него. Решенията на
+собственика за кръга: частите на „Ammodernamento“ започват без отговор (всяко „Sì/No“ изрично, записът чака всички),
+освен „Argano“ — предварително „Sì“, може да стане „No“; „Rifacimento con l’arcata esistente“ ги отговаря наведнъж;
+точка 21.1 на UNI 10411-1/-11 само предупреждава и предлага „Passa a Trasformazione completa“; корекциите на двигателите от
+нормативния преглед са за кръг 46 (никоя версия на двигател не мърда); разрушителната миграция 22 (`Project.kind`) не е в
+този кръг — чака изричното потвърждение на собственика.
+- **Стъпка 1 — чистият модел на интервенцията** (`src/lib/lift/intervento.ts`, без UI и база): `TIPI_INTERVENTO` (същите
+  имена като бъдещия enum в базата), `PARTI_SOLO`, `PARTI_LOCALE`, `contestoDi`, `interventoDi` (старите записи по формата
+  им: нов асансьор или EN 81-20/50 — трансформация; rifacimento — ammodernamento; машината с въжетата (и товара от
+  документираните товари) или нищо избрано — solo argano; иначе ammodernamento), `interventoTo` (смяната не губи
+  CE маркировката, деня на пускане, документираните товари и съвместимите допълнителни норми; частите на изпитване като
+  нов не са отговори), `rifacimentoTo`, `interventoValido` (ключовете на отказа: тип, контекст, норма, части,
+  rifacimento, рамата, сравнение със запазена машина, нови въжета без частта), `disegnoDi` (машинното или шахтата),
+  `sostanziale` (21.1, `SOSTANZIALE` изнесено от `norme-collaudo.ts`), `macchinaResta`. Изборът от три на /progetto от
+  кръг 27 остава с имена `*Legacy` до стъпка 6. Нов `src/lib/lift/progetto.ts`: `ProgettoInputs` (само геометрията),
+  `liftInputsOf` (Q и v на шахтата — от изчислението, P и машината — както са въведени там, изпитването — неговото, без
+  каталог; h от плана само при ролка на отклонение и само ако е друго число), `progettoOf`, `blankProgetto`,
+  `differenzeCalcolo` (толерансите на екрана; допълнителните ролки на схемата долу никога не са разлика сами);
+  `progettoInputsSchema` (strict: изчисление, изпитване, каталог, P/machine се отказват). Тестове: `intervento.test.ts`
+  (матрицата на старите записи, отиване и връщане SOLO → AMMOD → TRASF → SOLO, всяко правило на валидатора,
+  идемпотентността на `collaudoOf` върху 4000 генерирани случая, версиите на двигателите 1.6.0 / 2.25.0 / 1.31.0 /
+  1.15.0), `progetto.test.ts` (проект от преди, сглобен наново върху своето изчисление — същите входове и същите
+  хешове на проекта, шахтата и изчислението за нов асансьор, подмяна, rifacimento, 10411-11, директно окачване, h от
+  чертежа и трите схеми долу).
+
+- **Стъпка 2 — миграция 21 и записът** (`prisma/migrations/21_intervento`, адитивна, с коментар за връщане): enum
+  `TipoIntervento`, `Calculation.intervento` (извън snapshot-а и хеша, неизменимо като реда; NULL — записано преди кръг 45) и
+  `LiftDesign.baseCalculationId` (индекс и FK `ON DELETE NO ACTION`; NULL — проект на единния формуляр отпреди); двете
+  връзки между `LiftDesign` и `Calculation` са именувани („LiftDesignCalc“, „LiftDesignBase“) — само в клиента на Prisma
+  (`migrate diff` показва само колоната, индекса и FK). `createCalculation(…, chosen, tipo, from?)`: от формуляра пази
+  типа и нормализираното изпитване винаги (`collaudoOf` е идемпотентна — записан по подразбиране се чете като
+  същото), при «Aggiorna» — правилото и типа на записа (NULL остава NULL); `createLiftDesign(…, from?, base)` пише
+  основата и типа ѝ върху изведеното изчисление (одитът — `meta.base`), «Aggiorna» на проект с основа пази същата.
+  `saveCalculationAction` приема `intervento` по избор и го проверява с `interventoValido` (`invalidIntervento` с ключовете).
+  Нов `src/server/calcolo-base.ts` (`STEP2`, `calcoloBase`, `tipoImpianto`, `tipoDi`). Износът на фирмата — формат 8
+  (`calculations[].intervento`, `liftDesigns[].baseCalculationId`, история и текстът на /data). Миграцията — проба на
+  копие (нагоре, тригерите отказват промяна на новите колони, връщане, `migrate diff` празен, пак нагоре), после на
+  `argano_p3` след `pg_dump -Fc`; доказателството „всеки запис се възпроизвежда“ преди и след нея — идентично
+  (511 изчисления, 156 проекта на асансьора, 97 машинни, 234 проекта на шахтата, 488 комплекта; md5 на редовете на
+  неизменимите таблици — същите). Тестове: `save-intervento` (тип и изпитване при запис, правилото при «Aggiorna», основата
+  на проекта, никой друг код не създава изчисление), `calcolo-base`, `actions-guard` (типът срещу стойностите и изпитването),
+  `company-export` (формат 8).
+
+- **Стъпка 3 — „Calcolo argano“ за всеки обект и всеки тип**: пренасочването на цял проект към /progetto и бариерата
+  „само подмяна“ в `saveCalculationAction` са махнати; типът е задължителен (`invalidIntervento` с ключовете, без тип —
+  `['intervento']`). Над формуляра — картата „Tipo di intervento“ (`InterventoChoice`: трите типа с ред и базата на
+  изпитването, скала колко от асансьора влиза в изпитването), под нея частите „Sì/No“ (`PartiSiNo`): „Solo argano“ пита
+  само за въжетата (машината е на изчислението), „Ammodernamento“ — за всяка част, „Argano“ предварително „Sì“;
+  отговорите на правилото се показват, не се питат (нови въжета със свой брой и диаметър, товар от документираните
+  товари, рамата при rifacimento — `src/lib/lift/risposte.ts`); „Rifacimento con l’arcata esistente“ отговаря частите
+  наведнъж. Предупрежденията (`AvvisiIntervento`): товар при „Solo argano“, 21.1 с бутон „Passa a Trasformazione
+  completa“ (никога насила), противопожарни врати, достъпна кабина, подсказка за EN 81-21 при трансформация. „Argano: No“
+  — машината остава: формулярът я проверява каквато е, без предложение и съвет (резултатът — под нейното име, въжетата,
+  когато не се сменят — „Funi esistenti (restano)“). `CollaudoOptions` с `mode`
+  (трансформацията — EN 81-20/50 заключено; DM 236 без достъп, случаят — в Progetto); изнесени `NormeAggiunte`,
+  `CarichiDocumentati`, `CalcSaveBar`, `useIntervento`. Контекстът вече не е поле (`shown('context')` е `false`, следва типа);
+  нов калкулатор — без тип и с празен контекст, „Tipo di intervento“ първо в списъка на липсващото, после неотговорените
+  части; машината отпреди се вижда, докато няма тип. Черновата пази типа и отговорите (`calcDraftSchema`); черновите отпреди
+  се четат по формата си. Откъде тръгва (`src/server/calc-start.ts`): `?from=` → чернова → последното изчисление от
+  стъпка 2 → последното изобщо (цял проект отпреди — изчислението на проекта му: допълнителните ролки както са въведени
+  в проекта, изпитването на проекта, H/L0/dx/h/Hv със знак „dal progetto“) → празно; типът — записаният или по формата
+  (записаният с тип — всичко отговорено, отпреди — само неговите „Sì“, въжетата се питат пак). „Nuovo calcolo da questi
+  dati“ на всяко изчисление. Трансформацията не взема от рилиевото машината и въжетата отпреди (`o_…`). Заглавие
+  „Calcolo argano“. Smoke: `smoke-blank` (типът първо, „Solo argano“, въжетата отговорени, черновата с типа, примерът
+  носи типа), `smoke-replacement` („Solo argano“ с въжета „Sì“). Тестове: `risposte`, `calc-start`, `actions-guard` (цял
+  проект приет, без тип и с несъвместим тип — отказ, архивиран и чужд — notFound), `collega-forms` (трансформация без
+  `o_…`).
+
+- **Стъпка 4 — документите по типа** (нов `src/lib/report/intervento-text.ts`): само изчисление, записано с тип
+  (`Calculation.intervento`), казва типа; запис отпреди (NULL) — всяка дума както е отпечатана (всеки клон проверява
+  `tipo`). Relazione di calcolo: заглавие („sostituzione dell’argano“ / „ammodernamento dell’impianto“ / при rifacimento —
+  както досега / „trasformazione completa dell’impianto (collaudo come impianto nuovo)“), Oggetto (машината, която остава —
+  „Verifica dell’argano esistente con le modifiche dell’ammodernamento“), редът „Contesto“ (`ctx_solo`,
+  `ctx_ammodernamento`, `ctx_rif`, `ctx_trasformazione` в `messages/calc/it.json`), изречението на ammodernamento (DPR
+  162/1999, чл. 2 ал. 1 б. cc), частите по име, verifica straordinaria) и записът `impianto.intervento` в списъка на
+  регистъра; машина, която остава — без предложение и без съвет. Relazione tecnica на машинното: заглавието и Oggetto на
+  ammodernamento. Лист 1: бележката COLLAUDO започва с „Intervento: <тип>.“ (трансформацията без допълнителни норми —
+  нова бележка), редът INTERVENTO на листа на машинното — типът. Черновата на поръчка: ред „Intervento“; машина, която
+  остава, не се поръчва (`machineKept` → 422 „L’argano resta quello dell’impianto…“). Копираното резюме казва типа.
+  Типът минава от реда на изчислението през маршрута на relazione, `room-export`, `project-export` (`composeFromCalculation`),
+  издадените комплекти (`composeStored`, `composeStoredRoom`) и `order-export`. Регистър: нов `impianto.intervento`
+  (статус „scelta“, с номера на клаузи — 21.1, 15/16, DPR чл. 2, 12, 14); `npm run lista` + `lista-verifica-xlsx.py`
+  (186 записа, 281 реда в листата; числото на началната страница расте с едно от `registryCounts`). Тестове:
+  `intervento-documenti` (без тип — същият документ; новите думи за SOLO / AMMOD / rifacimento / машина остава / TRASF;
+  бележката на лист 1; поръчката и резюмето), `order-kept` (машината остава — отказ преди всяка машина; същото изпитване
+  без тип и ammodernamento със сменена машина — поръчка). Байтовите тестове на relazione и CAD (`report-files`,
+  `cad-files`) — непроменени.
+
+- **Стъпка 5 — записите и рилевото на машинното без вида на обекта**: страниците и действията четат записа по формата
+  му, не по `Project.kind`. Страницата на изчислението: под заглавието — типът със скалата на „Calcolo argano“ и какво е
+  записът (`CalcRuolo`: „Calcolo argano dell’impianto“; изчисление на проект — „disegnato sul calcolo argano del <дата>“ с
+  връзка към основата или „del modulo unico“; архив от проект на шахтата); панел „Progetto“ на изчислението от стъпка 2
+  по `disegnoDi` (`ProgettoPanel`: машинното — „Rileva il locale macchina“ първо и „Disegna l’intero impianto“; шахтата —
+  „Disegna il progetto“ първо, при съществуващ асансьор и „Rileva il locale macchina“ с бележката, че машинното не
+  проверява частите в шахтата), рилеванията и проектите на това изчисление („Progetti su questo calcolo“, по
+  `LiftDesign.baseCalculationId`) и бележката, че с начертан проект документите са на проекта; машина, която остава —
+  без поръчка и без предложение (`CalculationView` `resta`); цената — `bomKind` и на изчислението от стъпка 2 (само на
+  екрана). Рилевото на машинното (`/calculations/<id>/locale`, `saveRoomDesignAction`, страницата на машинното) — върху
+  изчисление от стъпка 2 с контекст `repl` на всеки обект (`rilevaLocale` в `calcolo-base.ts`); иначе `notLocale` („Il
+  locale macchina si rileva su un calcolo di un impianto esistente (Solo argano o Ammodernamento)“, вместо
+  `notReplacement`). «Aggiorna»: изчисление от стъпка 2 на всеки обект се прави наново на място с типа си, архивът от
+  проект на шахтата — от Progetto; машинното на всеки обект — на място; проект на асансьора, начертан върху „Calcolo
+  argano“, който вече не се възпроизвежда — първо изчислението (или вече направеното наново), после чертежът,
+  сглобен върху новото (`liftInputsOf(progettoOf(…))`, новата основа); проект отпреди — както досега, без основа.
+  Данните на съоръжението: полетата на шахтата, когато има проект на асансьора или „Calcolo argano“ с Progetto на
+  шахтата (без изчисление — когато има проект на шахтата от архива); машината от каталога — на последния проект, иначе
+  на последното изчисление от стъпка 2. Тестове: `room-actions` (всеки обект; трансформация, изчисление на проект и
+  архив — `notLocale`; архивиран и чужд — notFound; Tecnico — forbidden), `refresh-actions` (изчисление на бивш цял
+  проект — на място с типа; основа, която се възпроизвежда — същата; остаряла — първо тя, после чертежът; вече
+  направена от колега — не втори път), `refresh-room` (машинно на бивш цял проект — на място).
+
+- **Стъпка 6 — Progetto само чертае**: браузърът праща само геометрията (`ProgettoInputs`) и коя „Calcolo argano“ е
+  основата; `saveLiftDesignAction({projectId, baseCalculationId, progetto, source, label})` — `progetto:edit`, лимит
+  `lift:`, strict схема (изчисление, изпитване, каталог, автоматичните P/машина — отказ), основата е изчисление от стъпка
+  2 на този активен обект на фирмата (иначе notFound; без основа — `noCalc` „Prima il calcolo dell’argano…“),
+  възпроизвеждано (иначе `engineChanged`); DM 236, добавен в изчислението, иска случая в чертежа (`access`); сървърът
+  сглобява (`liftInputsOf`) и записва с непроменения `createLiftDesign` с основата и нейния тип (основа без тип — без
+  тип). Бариерата „само цял проект“ е махната. Черновата `lift` е `{progetto, base, blank, …}` (на единния формуляр
+  отпреди вече не се чете, следващият запис я презаписва). `src/server/progetto-start.ts` (вместо `lift-start.ts`):
+  `?from=` → чернова → последният проект → шахтата от архива или рилевото на машинното → празно; нов чертеж — L0/Hv от
+  чертежа, dx от плана само при трансформация. `avvioProgetto` — от рилевото само спирките (`semeLift`/`usaLift` —
+  само `fermate`). Страницата `/progetto` (`?calc=` — изчисление от стъпка 2 на обекта, иначе 404): без основа — „Il
+  progetto parte dal calcolo argano“ с „Calcola l’argano“; проект на единния формуляр, по-нов от основата — „porta i
+  suoi dati nel calcolo argano“ и „Disegna sul calcolo argano del …“; основа, която не се възпроизвежда — първо
+  обновяване; основа за машинното — бележка „Per la sola sostituzione dell’argano basta il rilievo del locale
+  macchina“. Екранът: `ProgettoWorkspace` (вместо `LiftWorkspace`), `ProgettoForm` (без „Intervento“, без
+  `CollaudoOptions`, без полетата на изчислението), `DalCalcolo` (типът със скалата, нормата, частите „Sì“,
+  rifacimento, машината, Q, v, P, тиро, позиция, въжета — тези, които остават, като „Funi esistenti (restano)“;
+  „Apri il calcolo“, „Modifica nel calcolo argano“ — само с `calc:create`), `ProgettoFuni` (схемата долу,
+  превключвателите L0 / dx·h / Hv „от чертежа | от изчислението“, подсказките за калата, убежището, rinvio), Q и v — само за четене „dal calcolo“; h от плана — в `ProgettoInputs.h`.
+  Махнати: `LiftWorkspace`, `LiftForm`, `LiftCalcFields`, съветът за машина и каталогът в Progetto, `*Legacy` на
+  интервенцията. Артефактът: вторият таб е `ProgettoWorkspace` върху стойностите на калкулатора (`onBase`), докато
+  калкулаторът не е отворен — върху примера; `npm run artifact`. Smoke: в `smoke.mjs` — „Calcolo argano“ на
+  ammodernamento (rifacimento, UNI 10411-11) от записаното, после Progetto върху него; нов `smoke-progetto.mjs`
+  (трансформация: празният Progetto води към изчислението, EN 81-20/50 заключено, чертеж с машинното на новия асансьор,
+  запис, комплект с „Intervento: Trasformazione completa.“). Тестове: `lift-actions` (основа, strict схема,
+  `noCalc`/notFound/`engineChanged`, DM 236, записаното = `liftInputsOf`, типът, черновата, само четене и права),
+  `progetto-start`, `collega-forms`, `collega-prefill`, `draft-actions`, `blank`, `progetto` (чертежът върху основата),
+  `rifacimento` и `modifica` върху новия модел, `actions-guard`.
+
+- **Проверки (стъпки 4–6)**: след всяка стъпка — `tsc --noEmit`, `npm run lint`, `npm test` (994 + 189, зелени); накрая
+  `npm run build`, сървър от новия build и пълният smoke (59 стъпки, с `smoke-progetto`) — зелен; доказателството
+  „всеки запис се възпроизвежда“ на `argano_p3` срещу записаното след стъпка 3 — 1508 общи записа, същите ok/outdated и
+  хешове (новите са само от smoke-а); паритетът на Rilievi — 0 fail, 3 warn, 32 allowed, 532 pass; `secret-scan` — чисто;
+  `npm run artifact` — калкулаторът и Progetto без грешки в конзолата; Progetto на 390 px — без хоризонтален скрол.
+
+- **Стъпка 7 — кръгът Calcolo ↔ Progetto**: Progetto показва какво допълва от изчислението си („Il progetto completa il
+  calcolo“, `DifferenzeCalcolo`): хода, въжето над хода, разстоянието и височината на ролката на отклонение, височината на
+  ролките в главата при машина долу — стойността на изчислението до тази на чертежа, отбелязани, когато се различават над
+  толеранса на екрана (`differenzeCalcolo`); допълнителните огъвания на схемата долу — изброени, никога разлика сами;
+  присъдата на машината върху стойностите на изчислението и върху чертежа; най-голямата кабина, която шахтата позволява
+  (`cabinaMassima`); без разлики — „Calcolo e progetto coincidono“. „Porta nel calcolo“ (до разликите и до проблемите,
+  които изчислението решава — калата, разстоянието и височината на ролката) първо записва черновата веднага
+  (`DraftHandle.flush`), после отваря „Calcolo argano“ с `?dal=progetto`: стойностите на чертежа (от черновата, сглобена
+  върху стойностите на изчислението, когато е пълна; иначе от последния записан проект) влизат със знак „dal progetto“ и
+  „prima: …“ само когато полето имаше друга стойност, изброени горе (`src/lib/lift/porta.ts`, `src/server/dal-progetto.ts`)
+  — никога допълнителните огъвания, машината, Q, v или P; нищо не се записва, докато изчислението не се запише. Директно
+  окачване, чиито спускания чертежът разполага: предложенията на калкулатора — само с тази шайба (`sizingWithSheave`,
+  само на екрана) и „Il progetto appende le funi a X mm…“. Страницата на проекта на асансьора: „Calcolo argano di
+  partenza: <дата> — <тип>“ с връзка (или „Progetto del modulo unico…“), „Modifica il disegno“ (`?from=…&calc=<основата>`),
+  а когато основата не е последното изчисление от стъпка 2 (или проект отпреди е по-стар от него) — „Aggiorna il progetto
+  con l’ultimo calcolo“ (`ridisegnaDalCalcoloAction`: същият чертеж, сглобен върху последното изчисление, записан с
+  непроменения `createLiftDesign` и новата основа; `progetto:edit` през `can()` — не в режим само за четене; лимит `lift:`,
+  едно по едно (`once`, изнесено с `madeFrom` в `src/server/remake.ts`); вече направен наново — не втори път;
+  неизпълним чертеж или основа, която не се възпроизвежда — Progetto върху нея). Тестове: `porta` (ключовете, без nps,
+  машина, Q, v, P при всяка схема долу; „prima“; шайбата; най-голямата кабина), `dal-progetto`, `ridisegna-actions`
+  (права, само четене, архивиран, чужд, вече на последното, вече направен, зает, неизпълним, основа за обновяване),
+  `actions-guard` (само четене). Smoke (`smoke-progetto.mjs`): панелът на разликите, „Modifica nel calcolo argano“ със
+  знаците и списъка, сменена машина, „Aggiorna il progetto con l’ultimo calcolo“ — същият SHA-256 на двете изчисления.
+
+- **Стъпка 8 — страницата на съоръжението, стъпките, сравнението, създаването, менюто и списъците без вида на
+  обекта**: ново съоръжение няма модул — само данните му, бележка „Il tipo di intervento si sceglie nel Calcolo argano.“,
+  създаденото се отваря на „Calcolo argano“ за който смята (`calc:create`), иначе на страницата си (`createProjectAction`
+  и `creaDaRilievo` без вид, одитът — `{rilievo?}`; стар `?kind=` се пренебрегва); `upgradeProjectAction`, `formRightOf`,
+  `projectKindSchema`, `ModuleCards` и `NewMenu` са махнати, вместо тях `RIGHT_OF_STEP` (`calcolo` → `calc:create`,
+  `progetto` → `progetto:edit`). Менюто — един „Nuovo impianto“. `/app/impianti`: бутонът „Nuovo impianto“ с четирите
+  стъпки (Rilievo → Calcolo argano → Progetto → Documenti e ordini), филтрите по тип на интервенцията (`?tipo=solo-argano|
+  ammodernamento|trasformazione-completa|da-definire`, от `tipiImpianti` — една заявка с LATERAL към последното изчисление
+  от стъпка 2 и последното изобщо, съпоставянето в TypeScript, `tipoDaUltimi`), плочката „attivi“ по тип, редът и
+  прегледът — с етикета на типа и скалата му (`TipoTag`). Страницата на съоръжението — едно оформление (разделено на
+  `ProjectSections`): типът горе (или „Intervento da definire“), основният бутон — следващата стъпка за който има правото ѝ
+  („Calcola l’argano“ → „Rileva il locale macchina“ или „Disegna il progetto“ върху последното изчисление → „Nuovo calcolo“),
+  иначе чия е; разделите по реда на работата — „Calcolo argano“ (изчисленията от стъпка 2 с типа), „Progetto“ (последният
+  проект в 3D с версиите, рилеванията на машинното), „Tavole emesse“ с данните на съоръжението, „Archivio“ (само проекти
+  на шахтата и изчисленията им отпреди единния формуляр). Стъпките (`collega/impianto.ts`): изчислението — последното от
+  стъпка 2 (иначе последното изобщо), Progetto — по запис (най-новият проект на асансьора, а когато интервенцията е само
+  машинното — и рилеванията), `allineato` — начертан върху последното изчисление от стъпка 2 (проект отпреди — няма
+  по-ново изчисление); иначе стъпка 3 е „da aggiornare (calcolo più recente)“ (`superato`), документите с нея; подпис
+  „locale macchina“ за машинното; връзките по `RIGHT_OF_STEP`. Сравнението: „Usa il valore“ — към „Calcolo argano“ за
+  каквото държи изчислението, към Progetto за спирките, при всеки обект; проект, начертан върху изчисление — само страната
+  на чертежа (`latoProgetto` `based`). Плочките на началото — последното изчисление от стъпка 2. Предложенията и панелът
+  на рилевото — без модула. Цените: обхватите „Trasformazione completa (UNI EN 81-20/50)“ и „Solo argano e ammodernamento
+  (UNI 10411)“. Описанията на правата: „Calcolo argano: scegliere il tipo di intervento…“, „Progetto: disegnare il vano o
+  rilevare il locale macchina“. Тестове: `rbac` (`RIGHT_OF_STEP`), `dashboard` (по тип, `?tipo=`, стар `?kind=` не е
+  филтър, менюто „new“), `collega-confronto` (целта по параметъра, `superato`, страната на чертежа), `calcolo-base`
+  (`tipoDaUltimi`), `project-actions` (без вид, `upgradeProjectAction` няма), `collega-actions` (създаване от рилево без
+  вид). Smoke в същата стъпка: `smoke.mjs`, `smoke-replacement`, `smoke-progetto`, `smoke-collega` (без радио за модула,
+  стъпка 3 „locale macchina“), `smoke-roles` (Tecnico записва трансформация, /progetto → `/app/permesso?p=progetto:edit`),
+  `smoke-permessi`, `smoke-prices` (етикетите на обхватите). Поправка на стъпка 7, намерена от пълния smoke: стойностите,
+  които изчислението държи, но с окачването си не ползва (разстоянието до ролка на отклонение без ролка, височината на
+  ролките в главата с машина горе), „Porta nel calcolo“ вече носи без знак и без „prima“ (`chiaviNascoste`), за да е
+  изчислението, което взема всичко от чертежа, същото изчисление (същият SHA-256 при директно окачване, с ролка и с
+  машина долу — тест `porta`).
+
+- **Стъпка 9 — никой код не чете `Project.kind`; износът, публичните текстове, документите**: клиентът на Prisma
+  изпуска колоната от всяка заявка (`omit: { project: { kind: true } }` в `src/lib/db.ts`; типът `Db` за транзакциите в
+  `drawing-compose.ts` и `room-compose.ts`); колоната, enum-ът `ProjectKind` и индексът остават в `schema.prisma` с
+  „deprecated — dropped by a later migration after the owner's confirmation“ — разрушителната миграция не е написана,
+  чака изричното потвърждение на собственика (`prisma migrate diff` срещу базата — празен). Износът на фирмата — формат 9
+  (от 2026-10-15): проектите без `kind` (`omit` в `company-export.ts`; историята на формата и описанието на `projects` го
+  казват). Тестът `no-project-kind.test.ts` чете `src/` и `scripts/` и не намира четене или писане (типа, схемата,
+  `formRightOf`, `upgradeProjectAction`, `.kind` на съоръжение, суров SQL с колоната, стойностите `REPLACEMENT`/`FULL`),
+  проверява бележката в схемата, `omit` на клиента и на износа и че миграция за махането няма. Публичните текстове:
+  ключовите думи (14, с „Carbon Stealth“, „calcolo argano“, „ammodernamento ascensore“, „trasformazione completa
+  ascensore“, „UNI 10411“), лендингът — „Dal rilievo al calcolo argano / al progetto e ai documenti“, четирите стъпки и
+  трите типа вместо двата модула, „Calcolo argano“ и „Progetto“ вместо „Sostituzione dell’argano“ и „Progetto completo“,
+  цените (`inc1`); „come nel progetto completo“ → „come nel Progetto del vano“ в двете бележки за машина долу.
+  Документите: `CLAUDE.md` (интервенцията и четирите стъпки; „Calcolo argano смята, Progetto чертае“ вместо „Цял проект
+  има един вход“), `docs/rules.md` („Интервенцията и стъпките“ вместо „Двата модула“ — с връщането на миграция 21 и
+  правилото за бъдещата миграция на `kind`; празният старт, машинното, проектът на асансьора, изпитването, rifacimento,
+  правата — `RIGHT_OF_STEP`, без `upgradeProjectAction`; бележки за кръг 45 в „Rilievo e impianto“),
+  `docs/architecture.md` (новите модули, компонентите, миграция 21, `kind` „deprecated“). Никоя версия на двигател не е
+  вдигната; `src/calc`, `src/shaft`, `src/lib/lift/derive.ts` и `src/lib/room/derive.ts` не са пипани в кръга. IndexNow —
+  след деплоя: `node tools/seo/indexnow.mjs https://liftpilot.carbonstealth.eu`. `smoke.mjs` — проверките на търсенето
+  в една таблица (файлът — под 300 реда).
+
+- **Проверки (стъпки 7–9)**: след всяка стъпка — `prisma generate` (стъпка 9), `tsc --noEmit` 0 грешки, `npm run lint`
+  чисто, `npm test` зелен (след стъпка 8 — 1003 + 196, след стъпка 9 — 1005 + 196); накрая `npm run build`, :3291 от
+  новия build и пълният smoke (63 стъпки, с кръга Calcolo ↔ Progetto) — „all good“ два пъти, с рестарт между тях;
+  `prisma migrate diff` базата ↔ `schema.prisma` — празен (бележките „deprecated“ са само коментари), 21 миграции,
+  схемата е актуална. Доказателството „всеки запис се възпроизвежда“ на `argano_p3` — всичките 1020 записа отпреди
+  (след стъпка 6) със същия SHA-256, ok и outdated, 75-те нови (от smoke-а) — всички ok. Нито един файл в `src/calc`,
+  `src/shaft` (освен коментар в тест), `src/lib/lift/derive.ts`, `src/lib/room/derive.ts` не е пипан; версиите на
+  двигателите — същите. Паритетът с rilievi `ae6329cb6` срещу :3291 — **PASS**: 532 pass, 0 fail, 32 allowed, 3 warn
+  (същите). `node tools/security/secret-scan.mjs` — чисто. `npm run artifact` — двата таба в Chromium без грешки в
+  конзолата (примерът — „Solo argano“). Ключовите думи на `/it` — 14, с „Carbon Stealth“; :3100 и :4330 — 200.
+
+- **След прегледа (записи, норми, UX)** — всяка находка проверена първо (в кода, на `argano_p3` или на живо на :3291):
+  - *Машината остава* („Argano: No“): страницата на записаното изчисление вече не показва съвета SICOR/Montanari и
+    предложението — присъдата е под „Argano esistente (resta)“ (`CalculationView` → `Verdict resta`), цената е без
+    машината и без това, на което стои (`calcBom(…, resta)`, бележката `costNoteResta`); проектът на асансьора върху
+    такава основа — без съвет и поръчка. Progetto на такава интервенция е шахтата: `disegnoDi` връща 'vano', а
+    рилевото на машинното (което поставя нова машина — основа, отвори в плочата, relazione tecnica на „нова машина“) се
+    отказва (`localeRilevabile`: страницата 404, записът `notLocaleResta`, панелът „Progetto“ без „Rileva il locale
+    macchina“). Relazione di calcolo: „Argano esistente (resta): esito in breve“ вместо „Argano nuovo“, редът на DPR
+    162/1999 без „sostituzione del macchinario“, задълженията без случай n. 5) и без точките само на нова машина (UNI
+    10411-1 14.4 a)–g), -11 14.3 a)/b), EN 81-20 C.2 — `PUNTI_MACCHINA_NUOVA`, закрепени с тест), а при променени
+    скорост, товар или ход — бележка, че проверките „Esistente“ ги оценява техникът с новите данни (UNI 10411-1 15.8 с
+    14.1; -11 15 d)) — корекцията на `AMBITO` остава за кръг 46. Запис без тип — дума по дума както е отпечатан.
+  - *Товарът от документираните товари* (UNI 10411, 6.1): „Ammodernamento“, към което сочи предупреждението на „Solo
+    argano“, вече се записва — `interventoValido` различава ammodernamento от solo argano по частите, както документите
+    ги четат (`collaudoOf`, с товара на правилото); без документираните товари машината с въжетата остава „Solo argano“.
+  - *Съоръжение, направено цяло след подмяната си* (151 на `argano_p3`: проект на единния формуляр, по-нов от
+    последното изчисление от стъпка 2): типът му е на проекта (`legacyPiuNuovo` в `tipoDaUltimi`, `tipoImpianto`,
+    `tipiImpianti`, таблото, страницата и стъпките — „Ammodernamento“/„Trasformazione completa“ вместо „Solo argano“);
+    /progetto не чертае по подразбиране върху по-старото изчисление (само „Porta i dati del progetto nel calcolo
+    argano“; „Disegna sul calcolo argano del …“ е махнато, с `?calc=` — да). `ridisegnaDalCalcoloAction` повтаря на
+    сървъра правилото на страницата: проект отпреди — само върху по-ново изчисление.
+  - *Предупрежденията с точната клауза*: достъпна кабина — в съществената модификация UNI 10411-1/-11, 21.2, върху
+    съществуващата рама по UNI 10411-1, 22 j) (бутониерите на етажите — само с нови етажни врати), при -11 извън 21 — нищо;
+    противопожарните врати — DM 15/09/2005, чл. 1 ал. 2, или Codice, RTV V.3, където се прилага.
+  - *UX*: „Passa a Trasformazione completa“ оставя фокуса на избрания тип, а обратно към „Ammodernamento“ връща
+    отговорите (само на екрана); частите „Sì/No“ са два истински радио бутона (стрелките, едно спиране на Tab); имената
+    на частите — същите и в списъка на липсващото („Argano“, „… variata“); стъпка 4 не е „fatto“, докато Progetto е за
+    правене; Tecnico на страницата на изчислението чете чий е Progetto; `?from=` на друго съоръжение — 404 (не празен
+    калкулатор върху черновата); „Calcolo argano di partenza“ — с часа; таблото — „impianti creati“ и бутонът подравнен
+    със стъпките; таблицата с предложенията — достъпна с клавиатурата (`scrollable-region-focusable`).
+  - *Тестът за `Project.kind`*: и `select`/`omit: false` на колоната, и проверка по типа, че редът на клиента няма `kind`.
+  - Отхвърлено с причина: „Rifacimento“ да отговаря и скорост/товар/ход (Q1 и спецификацията — изменения, не части,
+    винаги изричен отговор; въпрос към собственика); имената `lift.parte_*` в документите не се пипат (те са в листовете
+    на издадените комплекти).
+- **Проверки (след прегледа)**: `tsc --noEmit` 0 грешки, `npm run lint` чисто, `npm test` — 1007 + 197 (нови: машината
+  остава в relazione, `calcBom`, рилевото на машинното, товарът от документираните товари в действието, `legacyPiuNuovo`,
+  ridisegna върху по-старо изчисление, `?from=` на друго съоръжение, стъпка 4, типът на реда на клиента), `npm run build` и
+  `npm run artifact` — успешни (артефактът в Chromium без грешки). Доказателството „всеки запис се възпроизвежда“ на
+  `argano_p3` — кодът на HEAD и поправеният дават байт по байт същия списък (1145 записа); документите на всички записи
+  отпреди миграция 21 (relazione, поръчки, DXF на комплектите — 1295 реда) — същите хешове като на HEAD. :3291 рестартиран
+  от новия build; пълният smoke с пощата — „all good“ (64 стъпки, нова: машината остава — без съвет, цена и поръчка,
+  Progetto — шахтата, `/locale` 404, поръчката 422, стрелките в частите). На живо: съоръжението от прегледа —
+  „Ammodernamento“, /progetto само с „Porta …“; „Passa“ — фокусът на трансформацията, обратно — всички отговори; Tecnico —
+  бележката; axe на 390 px — без `scrollable-region-focusable`. Паритетът с rilievi
+  `ae6329cb6` срещу :3291 — **PASS**: 532 pass, 0 fail, 32 allowed, 3 warn (същите). `node tools/security/secret-scan.mjs` —
+  чисто; :3100 и :4330 — 200.
+
+- **Втори кръг (след повторната проверка)** — всяка точка проверена първо в кода и на `argano_p3`:
+  - *Комплектът върху машина, която остава*: лист 1 пише ARGANO „ESISTENTE“ (с името, когато е известно — „ESISTENTE
+    (Montanari M75AL)“), както ARCATA и PORTE DI PIANO; бележката за съществуващото машинно (и за машинното долу) казва
+    „Attorno alle apparecchiature sostituite o aggiunte il locale segue la UNI EN 81-20 5.2.6.3 …“ (думите на записа
+    `locale.esistente`), не „attorno alla macchina nuova“ (`NoteCase.resta`, `roomNote`/`belowRoomNote(…, resta)`). Само
+    с декларирания тип: комплектите отпреди и издадените — байт по байт (на `argano_p3` няма издаден комплект върху такава
+    основа). Разрезът B-B още рисува рамата на софтуера с „N. 4 antivibranti…“ (`src/shaft/room-mounts.ts`) и товарите ѝ на
+    лист 1 — за кръг 46 (Q3: `src/shaft` не се пипа).
+  - *Поръчката и цената при машина, която остава*: панелът „Bozza d’ordine dell’argano“ на изчислението и на проекта на
+    асансьора казва само „L’argano resta quello dell’impianto: non c’è un argano da ordinare.“ (без описанието на
+    черновата); цената на проекта на асансьора — нова бележка `costNoteModificationResta`; и тя, и `costNoteResta` вече не
+    споменават адаптацията ACOP/UCM, която не се брои (`acopLines` — само с машината между частите).
+  - *Приложението „Voci normative usate e loro stato“*: при машина, която остава — без записите само на подмяната
+    (`sostituzione.*` — „Adeguamenti richiesti per la sostituzione del macchinario“ — и `locale.calate`), с ред, който го
+    казва и чете останалите общи записи („macchina nuova“ в `locale.esistente`, отворите, UCM) като апаратурата, сменена
+    или добавена; без тип и при сменена машина — както преди.
+  - *«Aggiorna con il software attuale»*: рилевото на машинното не се пренася върху изчисление с машина, която остава
+    (`arganoResta` в `placeRoom`): то остава на старото изчисление; обновяването на самото машинно води до изчислението.
+  - *Страницата на съоръжението*: „Il progetto lo disegna un collega che ne ha il permesso.“ (и „Il calcolo …“) — веднъж:
+    под заглавието само когато разделът му не е празен (празният го казва сам).
+  - Оставено за собственика (без промяна): „Rifacimento con l’arcata esistente“ не отговаря на „Velocità/Portata/Corsa
+    variata“ (Q1: изрично „Sì/No“; спецификацията — „speed/load/travel still to answer“).
+- **Проверки (втори кръг)**: `tsc --noEmit` 0 грешки, `npm run lint` чисто, `npm test` — 1009 + 199 (нови: лист 1 и
+  бележката на машинното с машина, която остава — и без тип/със сменена машина както преди; приложението на relazione;
+  сметката и бележките без ACOP/UCM; «Aggiorna» не носи машинното върху такова изчисление — проверено и с върнатата
+  поправка: тестовете падат), `npm run build` и `npm run artifact` — успешни (артефактът в Chromium без грешки).
+  Документите на всички записи на `argano_p3` (relazione, поръчки, чернови на проектите на асансьора, DXF на 546-те
+  издадени комплекта — 1952 реда) срещу HEAD: различни са само 13-те relazione (11 изчисления и 2 проекта на асансьора с
+  машина, която остава) и 2-те чернови на комплекта на тези проекти; всичко друго — същият SHA-256. Възпроизвеждането на всеки запис — 1163-те реда отпреди същите.
+  Нито един файл в `src/calc`, `src/shaft`, `src/lib/lift/derive.ts`, `src/lib/room/derive.ts` не е пипан; версиите на
+  двигателите — същите. :3291 рестартиран от новия build; пълният smoke с пощата — „all good“ (64 стъпки; нови проверки:
+  бележката за Progetto веднъж за Tecnico, без описанието на поръчката при машина, която остава). На живо: панелите на
+  поръчката, бележките на цената, лист 1 („ESISTENTE (Montanari M75AL)“, „Attorno alle apparecchiature…“) и приложението
+  на двете relazione; Tecnico — бележката веднъж на трите съоръжения от проверката. Паритетът с rilievi не е пускан наново:
+  нищо от Rilievi и нищо, което Rilievi внася, не е пипано. `node tools/security/secret-scan.mjs` — чисто; :3100 и
+  :4330 — 200.
+
 ## Проверки
 
 - [x] Пуснах пълния quality gate на засегнатия продукт `liftpilot/` (до кръг 6 — `argano/`): lint, typecheck, test (250/250, със схемите, токените и писмата на акаунтите на трите езика, с тестовете за хлабината на вратите, хода на кабината и противотежестта при трите схеми с машина долу, планките на Panev, кабелния канал, редакцията на всеки размер на плана и на разреза, каталога на машините, ограничителите, нишите, етажните табла и имената на котите на трите езика), build. **Зелен.**
@@ -2488,6 +2811,19 @@ Progettista, Tecnico, Commerciale. Реални потребители още н
   с пощата срещу пресния процес — „all good“ (54 реда). Паритетът с rilievi не е пускан: нищо, което страниците Rilievi
   ползват, не е пипано (`src/app/[locale]/app/rilievi`, `src/components/rilievi`, `src/lib|server/rilievi` не внасят
   променените файлове). `node tools/security/secret-scan.mjs` — чисто.
+- [x] Кръг 45, стъпки 1–3 (клон `tpl-p3`, база `argano_p3`, :3291): след всяка стъпка — `tsc --noEmit` 0 грешки,
+  `npm run lint` чисто, `npm test` зелен (след стъпка 3 — 986 + 182 теста; `prisma generate` при стъпка 2). Миграция 21 —
+  проба на копие (нагоре, тригерите отказват промяна на новите колони, връщане, `migrate diff` празен, пак нагоре), после
+  на `argano_p3` след `pg_dump -Fc` (mode 600). Възпроизвеждането на всеки запис — преди и след миграцията идентично
+  (sha256 на всеки запис, md5 на неизменимите таблици); след стъпка 3 и двата smoke-а — всичките 1486 реда отпреди
+  същите, новите (8 изчисления, 6 от тях `SOLO_ARGANO`; 2 проекта на асансьора, 2 машинни, 2 шахти) се възпроизвеждат.
+  Нито един файл в `src/calc`, `src/shaft`, `src/lib/lift/derive.ts`, `src/lib/room/derive.ts` не е пипан; версиите на
+  двигателите — същите. `npm run build` — успешен; :3291 пуснат от него; пълен smoke с пощата — „all good“ (54 реда, два
+  пъти, с рестарт между тях). Екрани: празен калкулатор (типът първо), частите на „Ammodernamento“, 21.1 с „Passa a
+  Trasformazione completa“, машината остава (без предложение, „Funi esistenti (restano)“), трансформацията (EN 81-20/50
+  заключено), 390 px — 0 px хоризонтално превъртане, без грешки в конзолата. `npm run artifact` — двата таба в Chromium
+  без грешки (примерът — „Solo argano“). Паритетът с rilievi `ae6329cb6` — строг срещу :3291, с редовете в базата:
+  **PASS** — 532 pass, 0 fail, 32 allowed, 3 warn (същите). `node tools/security/secret-scan.mjs` — чисто.
 - [x] `node tools/design/motion-a11y.mjs liftpilot/src`: проверката за reduced motion в базата — да; 6 евристични
   находки `webgl-no-rm-check` в модули на 3D, които се зареждат само през `boot.ts` (същите и преди кръг 24).
 - [x] Живата 3D сцена на началната страница е проверена в headless Chromium (WebGL 2) на двете нива на качество, без грешки в конзолата. При reduced motion three.js не се зарежда.

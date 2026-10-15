@@ -76,6 +76,9 @@ const numOf = (V: FormValues, id: string): number => {
 /** Visibility of a row (prototype syncVisibility); rows not listed are always shown. */
 export function shown(id: string, V: FormValues): boolean {
   switch (id) {
+    // the calculation's context follows the type of intervention chosen above the form (src/lib/lift/intervento.ts
+    // contestoDi): never a field of its own, still among the values and in the hash
+    case 'context': return false;
     case 'alphaManual': return V.alphaMode === 'manual';
     case 'dropAlign': return V.context === 'repl' && V.layout === 'top' && V.alphaMode !== 'manual' && !!V.compare;
     case 'dx': case 'h': return V.layout === 'topDefl';

@@ -27,7 +27,7 @@ const pathsOf = (groups: readonly NavGroup[], extra: readonly string[]): string[
 /** The key of the page in the sidebar, from the address (its path and the dashboard's query). */
 export function useSection(groups: readonly NavGroup[], extra: readonly string[] = []): string | null {
   const pathname = usePathname(), sp = useSearchParams();
-  return shellSection(pathname, { archived: sp.get('archived') === '1', kind: sp.get('kind') }, pathsOf(groups, extra));
+  return shellSection(pathname, { archived: sp.get('archived') === '1' }, pathsOf(groups, extra));
 }
 
 // The sidebar's sections in their groups (Area di lavoro, Libreria, Gestione), each with its painted icon; the current one

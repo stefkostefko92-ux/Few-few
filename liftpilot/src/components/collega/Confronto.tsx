@@ -4,7 +4,7 @@ import { sintesi, type Classe, type Riga } from '@/lib/collega/confronto';
 import { testoValore } from '@/lib/collega/formato';
 import { fmt } from '@/lib/rilievi/fmt';
 
-/** Where «usa il valore del rilievo» goes: the form of the installation's module, or its data; null — not for this role. */
+/** Where «usa il valore del rilievo» goes: «Calcolo argano» or the Progetto (round 45, by the parameter), or the installation's data; null — not for this role. */
 export interface UsaLink {
   calc: string | null;
   progetto: string | null;

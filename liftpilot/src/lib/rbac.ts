@@ -204,9 +204,10 @@ export function editableRoles(actor: Role | Principal): MemberRole[] {
   return can(actor, 'permissions:manage') ? MEMBER_ROLES.filter((r): r is MemberRole => isMemberRole(r) && outranks(role, r)) : [];
 }
 
-/** The right of a module's one form: the replacement's calculator, a whole project's /progetto. Creating an installation
- *  ('impianti:create') does not bring it: whoever creates one without it lands on the installation's page. */
-export const formRightOf = (kind: 'REPLACEMENT' | 'FULL'): Capability => (kind === 'REPLACEMENT' ? 'calc:create' : 'progetto:edit');
+/** The right of each step of an installation's work (round 45): «Calcolo argano» (the type of intervention, the parts,
+ *  the test and the machine's calculation) and the Progetto (the shaft drawn, or the machine room surveyed). Creating an
+ *  installation ('impianti:create') brings neither: whoever creates one without the calculation's lands on its page. */
+export const RIGHT_OF_STEP = { calcolo: 'calc:create', progetto: 'progetto:edit' } as const satisfies Record<string, Capability>;
 
 /** Where a user's work starts: the Rilievi home (/app, round 44: every job starts from the survey), else the
  *  installations, else the account (rights taken away). */

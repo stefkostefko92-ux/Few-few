@@ -11,8 +11,8 @@ import { textsFor } from '@/lib/present/texts';
 import { makePres } from '@/lib/present/tr';
 import { defaultInputs, layout, type ShaftInputs } from '@/shaft';
 import { liftInputsSchema } from '@/lib/lift-input';
-import { AMBITO_VERIFICHE, INTERVENTI, PARTI, PARTI_RIFACIMENTO, VOCI_IMPIANTO, ambitoOf, collaudoOf, defaultLift, deriveLift, interventoOf, interventoTo,
-  withAggiunta, type Collaudo } from '@/lib/lift';
+import { AMBITO_VERIFICHE, PARTI, PARTI_RIFACIMENTO, TIPI_INTERVENTO, VOCI_IMPIANTO, ambitoOf, collaudoOf, defaultLift, deriveLift, interventoDi, interventoTo,
+  rifacimentoTo, withAggiunta, type Collaudo } from '@/lib/lift';
 import { liftAdvice } from '@/lib/lift/advice';
 import { buildOrder } from '@/lib/order/build';
 import { designOrder } from '@/lib/order/machine';
@@ -28,7 +28,8 @@ const marks = (collaudo: Collaudo) => ({ pEstimate: false, geometry: [], machine
 
 test('le parti del rifacimento: tutte tranne l’arcata e le variazioni', () => {
   assert.deepEqual(PARTI_RIFACIMENTO, PARTI.filter((p) => !['sling', 'speed', 'load', 'travel'].includes(p)));
-  assert.deepEqual([...INTERVENTI], ['repl', 'rifacimento', 'new']);
+  // (round 45: the renovation is the preset of a modernisation, no longer a third choice of the one form)
+  assert.deepEqual([...TIPI_INTERVENTO], ['SOLO_ARGANO', 'AMMODERNAMENTO', 'TRASFORMAZIONE_COMPLETA']);
 });
 
 test('collaudoOf: il rifacimento tiene l’arcata fuori dalle parti, solo sotto la UNI 10411', () => {
@@ -50,25 +51,20 @@ test('ambito: con il rifacimento restano «esistente» solo l’arcata e il loca
   assert.deepEqual(existing({ ...RIF, parti: [...PARTI_RIFACIMENTO, 'speed'] }), ['m_height', 'm_door', 'm_pheight', 'm_pdoor']);
 });
 
-test('intervento: le tre scelte, e andata e ritorno', () => {
-  assert.equal(interventoOf(REPL), 'repl');
-  assert.equal(interventoOf(REPL, { norma: '10411-1', parti: PARTI.filter((p) => p !== 'sling') }), 'repl', 'le parti da sole non fanno il rifacimento');
-  // to the renovation: every part but the sling, new ropes free of those in place; the part of UNI 10411 and the standards added stay
-  const toRif = interventoTo('rifacimento', { norma: '10411-11', parti: ['machine'], aggiuntive: ['en81-28'] });
-  assert.deepEqual(toRif, { calc: { context: 'repl', keepRopes: false }, collaudo: { norma: '10411-11', parti: PARTI_RIFACIMENTO, rifacimento: true, aggiuntive: ['en81-28'] } });
-  assert.equal(interventoOf({ ...REPL, ...toRif.calc }, toRif.collaudo), 'rifacimento');
+test('rifacimento (round 45): il preset dell’ammodernamento, acceso e spento', () => {
+  assert.equal(interventoDi('repl', null), 'SOLO_ARGANO');
+  assert.equal(collaudoOf(REPL, { norma: '10411-1', parti: PARTI.filter((p) => p !== 'sling') }).rifacimento, undefined, 'le parti da sole non fanno il rifacimento');
+  // on: every part but the sling, new ropes free of those in place; the part of UNI 10411 and the standards added stay
+  const toRif = rifacimentoTo(true, { norma: '10411-11', parti: ['machine'], aggiuntive: ['en81-28'] });
+  assert.deepEqual(toRif, { values: { keepRopes: false }, collaudo: { norma: '10411-11', parti: PARTI_RIFACIMENTO, rifacimento: true, aggiuntive: ['en81-28'] } });
+  assert.equal(interventoDi('repl', toRif.collaudo), 'AMMODERNAMENTO');
   // from EN 81-20/50 chosen on a modification: UNI 10411-1
-  assert.equal(interventoTo('rifacimento', { norma: 'en81', parti: [] }).collaudo?.norma, '10411-1');
-  // a new lift keeps what was chosen; back to the renovation it is the same, with its parts as left
+  assert.equal(rifacimentoTo(true, { norma: 'en81', parti: [] }).collaudo.norma, '10411-1');
+  // a modernisation chosen again keeps the renovation with its parts as left
   const mine: Collaudo = { ...RIF, parti: PARTI_RIFACIMENTO.filter((p) => p !== 'landingDoors') };
-  assert.deepEqual(interventoTo('new', mine), { calc: { context: 'new' } });
-  assert.equal(interventoOf(NEW, mine), 'new');
-  assert.deepEqual(interventoTo('rifacimento', mine), { calc: { context: 'repl' }, collaudo: mine });
-  // back to the machine's replacement: the machine alone, the ropes' number and diameter in place
-  assert.deepEqual(interventoTo('repl', { ...RIF, aggiuntive: ['en81-80'] }), { calc: { context: 'repl', keepRopes: true }, collaudo: { norma: '10411-1', parti: ['machine'], aggiuntive: ['en81-80'] } });
-  // a replacement as it was chosen stays
-  assert.deepEqual(interventoTo('repl', { norma: '10411-1', parti: ['machine', 'ropes'] }), { calc: { context: 'repl' } });
-  assert.deepEqual(interventoTo('repl'), { calc: { context: 'repl' } });
+  assert.deepEqual(interventoTo('AMMODERNAMENTO', mine), { values: { context: 'repl' }, collaudo: mine });
+  // off: the machine alone, the ropes' number and diameter in place
+  assert.deepEqual(rifacimentoTo(false, { ...RIF, aggiuntive: ['en81-80'] }), { values: { keepRopes: true }, collaudo: { norma: '10411-1', parti: ['machine'], aggiuntive: ['en81-80'] } });
 });
 
 test('norme aggiunte sotto «Nuovo impianto»: la modifica scelta resta, al ritorno non si perde nulla', () => {
@@ -77,7 +73,7 @@ test('norme aggiunte sotto «Nuovo impianto»: la modifica scelta resta, al rito
   const ticked = withAggiunta(true, mine, collaudoOf(NEW, mine), 'en81-28', true);
   assert.deepEqual(ticked, { ...mine, aggiuntive: ['en81-28'] });
   assert.deepEqual(collaudoOf(NEW, ticked), { norma: 'en81', parti: PARTI, aggiuntive: ['en81-28'] });
-  assert.deepEqual(interventoTo('rifacimento', ticked), { calc: { context: 'repl' }, collaudo: ticked });
+  assert.deepEqual(interventoTo('AMMODERNAMENTO', ticked), { values: { context: 'repl' }, collaudo: ticked });
   assert.deepEqual(collaudoOf(REPL, ticked), { ...mine, aggiuntive: ['en81-28'] });
   // the machine's replacement likewise: UNI 10411-11 stays its base
   const repl11: Collaudo = { norma: '10411-11', parti: ['machine', 'ropes'] };

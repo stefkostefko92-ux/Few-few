@@ -243,7 +243,9 @@ export const OBBLIGHI_PARTI: Readonly<Record<'10411-1' | '10411-11', Partial<Rea
   },
 };
 const ORDINE_PARTI: readonly Parte[] = ['car', 'carDoors', 'landingDoors', 'controller', 'ropes', 'governor'];
-const SOSTANZIALE: readonly Parte[] = ['controller', 'machine', 'landingDoors', 'car', 'sling'];
+/** Controller, machine, landing doors, car and sling replaced together: a substantial modification (UNI 10411-1/-11,
+ *  21.1; the form warns, intervento.ts sostanziale). */
+export const SOSTANZIALE: readonly Parte[] = ['controller', 'machine', 'landingDoors', 'car', 'sling'];
 
 /** The points of the parts a modification replaces besides the machine, under its part of UNI 10411: the new car only
  *  on the existing sling (22); all of controller, machine, landing doors, car and sling a substantial modification

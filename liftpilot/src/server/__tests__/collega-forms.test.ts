@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 import { Prisma } from '@prisma/client';
 import { capsOf } from '@/lib/rbac';
 import { blankCalc } from '@/lib/calc-blank';
-import { blankLift } from '@/lib/lift/blank';
+import { blankProgetto } from '@/lib/lift/progetto';
 import { bozzaRilievo } from '@/lib/collega/formato';
 
 const src = (p: string) => new URL(`../../${p}`, import.meta.url).href;
@@ -45,6 +45,14 @@ test('calcolo nuovo: segnati i valori presi dal rilievo — anche la macchina «
   assert.ok(top.seeded.includes('layout'));
 });
 
+test('una trasformazione (impianto nuovo, kr. 45): la macchina e le funi esistenti del rilievo non entrano', async () => {
+  const { avvioCalc } = await forms();
+  const a = await avvioCalc(user, 'p1', { ...blankCalc(), context: 'new', compare: false }, 'draft', undefined);
+  assert.equal(a.start.Q, '630', 'the load measured still taken');
+  for (const id of ['o_n', 'o_d', 'o_poles']) assert.equal(a.origine?.valori[id], undefined, id);
+  assert.equal(a.start.o_n, '', 'the existing ropes left empty');
+});
+
 test('calcolo salvato ripreso: nulla dal rilievo, nessun segno sui valori uguali, nessun avviso', async () => {
   const { avvioCalc } = await forms();
   const saved = { ...blankCalc(), Q: '630', layout: 'top', o_n: '4', o_d: '10' };
@@ -58,20 +66,19 @@ test('calcolo salvato ripreso: nulla dal rilievo, nessun segno sui valori uguali
 });
 
 test('«usa il valore»: «prima» solo se il campo aveva un altro valore', async () => {
-  const { avvioCalc, avvioLift } = await forms();
+  const { avvioCalc, avvioProgetto } = await forms();
   const same = await avvioCalc(user, 'p1', { ...blankCalc(), o_n: '4' }, null, 'funiNumero');
   assert.deepEqual([same.usa?.set, same.usa?.prima], [['o_n'], null]);
   assert.equal((await avvioCalc(user, 'p1', { ...blankCalc(), o_n: '6' }, null, 'funiNumero')).usa?.prima, '6');
   assert.equal((await avvioCalc(user, 'p1', { ...blankCalc(), layout: 'bottom' }, null, 'posizione')).usa?.prima, 'bottom');
   assert.equal((await avvioCalc(user, 'p1', { ...blankCalc(), layout: 'top' }, null, 'posizione')).usa?.prima, null);
-  // the one form: a value still to enter held nothing (its placeholder is not a value); an equal one — nothing either
-  const lift = blankLift();
-  assert.equal((await avvioLift(user, 'p1', lift, null, 'posizione')).usa?.prima, null);
-  const five = (await avvioLift(user, 'p1', lift, 'new', undefined)).start;
-  assert.equal((await avvioLift(user, 'p1', five, null, 'fermate')).usa?.prima, null);
-  assert.equal((await avvioLift(user, 'p1', five, null, 'Q')).usa?.prima, null);
-  const typed = { ...five, inputs: { ...five.inputs, shaft: { ...five.inputs.shaft, Q: 800 } } };
-  assert.equal((await avvioLift(user, 'p1', typed, null, 'Q')).usa?.prima, '800');
+  // the Progetto (round 45: only the stops): a value still to enter held nothing (its placeholder is not a value); an equal
+  // one — nothing either; the calculation's parameters put nothing in
+  const disegno = blankProgetto();
+  assert.equal((await avvioProgetto(user, 'p1', disegno, null, 'fermate')).usa?.prima, null);
+  const five = (await avvioProgetto(user, 'p1', disegno, 'new', undefined)).start;
+  assert.equal((await avvioProgetto(user, 'p1', five, null, 'fermate')).usa?.prima, null);
+  assert.deepEqual((await avvioProgetto(user, 'p1', five, null, 'Q')).usa, { param: 'Q', set: [], prima: null, messo: null });
 });
 
 test('bozza: i suoi campi restano dell’utente; tornano segnati solo quelli che la bozza teneva segnati e ancora uguali', async () => {
@@ -88,18 +95,18 @@ test('bozza: i suoi campi restano dell’utente; tornano segnati solo quelli che
   assert.deepEqual((await avvioCalc(user, 'p1', draft, null, undefined, { rilievo: ['o_n'], parte: true })).origine?.valori, {});
 });
 
-test('progetto: nuovo dal rilievo segnato; ripreso salvato — nulla; la bozza riporta i suoi segni', async () => {
-  const { avvioLift } = await forms();
+test('progetto (round 45): nuovo dal rilievo — le fermate segnate; ripreso salvato — nulla; la bozza riporta i suoi segni', async () => {
+  const { avvioProgetto } = await forms();
   survey = ROW({ ubicazioneMacchina: ['BASSO'] });
-  const a = await avvioLift(user, 'p1', blankLift(), 'new', undefined);
-  for (const id of ['Qkg', 'floors', 'layout', 'v']) assert.ok(a.origine?.valori[id] !== undefined, id);
-  // a new lift: the existing machine's hidden fields take nothing, and «usa» on them puts nothing in
-  assert.equal(a.origine?.valori.o_n, undefined);
-  assert.deepEqual((await avvioLift(user, 'p1', a.start, null, 'funiNumero')).usa?.set, []);
-  const again = await avvioLift(user, 'p1', a.start, null, undefined);
+  const a = await avvioProgetto(user, 'p1', blankProgetto(), 'new', undefined);
+  assert.deepEqual(a.origine?.valori, { floors: '5' }, 'the stops: the rest is the calculation’s');
+  assert.equal(a.start.progetto.shaft.vertical.floors.length, 5);
+  // the machine and its ropes are the calculation's: «usa» on them puts nothing in
+  assert.deepEqual((await avvioProgetto(user, 'p1', a.start, null, 'funiNumero')).usa?.set, []);
+  const again = await avvioProgetto(user, 'p1', a.start, null, undefined);
   assert.deepEqual([again.seeded, again.origine?.valori], [[], {}]);
-  const draft = await avvioLift(user, 'p1', a.start, 'draft', undefined, { rilievo: ['Qkg', 'floors'], parte: true });
-  assert.deepEqual(Object.keys(draft.origine?.valori ?? {}).sort(), ['Qkg', 'floors']);
+  const draft = await avvioProgetto(user, 'p1', a.start, 'draft', undefined, { rilievo: ['Qkg', 'floors'], parte: true });
+  assert.deepEqual(Object.keys(draft.origine?.valori ?? {}).sort(), ['floors']);
 });
 
 test('«usa» su un calcolo salvato ripreso, poi la sua bozza: il valore resta segnato, nessun avviso «parte dal rilievo»', async () => {

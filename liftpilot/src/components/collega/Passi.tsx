@@ -8,7 +8,7 @@ export interface Passo {
   key: 'rilievo' | 'calcolo' | 'progetto' | 'documenti';
   /** the page of the step's record, or of the form that makes it; none when the role may not open it */
   href: string | null;
-  /** what the step is for this installation (a replacement's «Progetto» is its machine room) */
+  /** what the step is for this installation (the «Progetto» of an intervention on the machine room alone: its survey) */
   sub?: string;
 }
 
@@ -18,7 +18,7 @@ export interface Passo {
 // reference survey. The states come from the records (src/lib/collega/passi.ts).
 export default async function Passi({ stati, passi, moduli, schedaId }: { stati: Stati; passi: readonly Passo[]; moduli: readonly ModuloLink[]; schedaId: string | null }) {
   const t = await getTranslations('collega.passi');
-  const tone = (s: StatoPasso): string => (s === 'fatto' ? 'ok' : s === 'differenze' ? 'fail' : s === 'daAggiornare' ? 'warn' : 'off');
+  const tone = (s: StatoPasso): string => (s === 'fatto' ? 'ok' : s === 'differenze' ? 'fail' : s === 'daAggiornare' || s === 'superato' ? 'warn' : 'off');
   return (
     <nav className="lk-steps-wrap" aria-label={t('label')}>
       <ol className="lk-steps">

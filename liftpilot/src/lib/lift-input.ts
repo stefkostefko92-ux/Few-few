@@ -7,6 +7,7 @@ import { shaftInputsReadSchema, shaftInputsSchema } from './shaft-input';
 import { BRANDS } from '@/lib/catalog/machines';
 import { NORME_AGGIUNTIVE, NORME_COLLAUDO, PARTI } from '@/lib/lift/collaudo';
 import { MARCATURE, isServiceDay } from '@/lib/lift/modifica';
+import { TIPI_INTERVENTO } from '@/lib/lift/intervento';
 
 const DAY = /^(19|20)\d\d-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 
@@ -52,3 +53,22 @@ const liftObject = <S extends z.ZodTypeAny, C extends z.ZodTypeAny>(shaft: S, co
 export const liftInputsSchema = liftObject(shaftInputsSchema, collaudoSchema);
 /** A saved one form read back (the shaft and the test as stored: shaftInputsReadSchema, collaudoReadSchema). */
 export const liftInputsReadSchema = liftObject(shaftInputsReadSchema, collaudoReadSchema);
+
+/** The intervention declared with a calculation (src/lib/lift/intervento.ts; the database's enum TipoIntervento). */
+export const tipoInterventoSchema = z.enum(TIPI_INTERVENTO);
+
+/** A drawing of the Progetto (src/lib/lift/progetto.ts): the geometry only — no calculation, test, catalog or the
+ *  switches of the car's mass and the machine, refused as extra keys; the shaft's rated load and speed are overwritten
+ *  by the base calculation's. */
+const progettoObject = <S extends z.ZodTypeAny>(shaft: S) => z.object({
+  shaft,
+  auto: z.object({ L0: z.boolean(), dx: z.boolean(), Hv: z.boolean(), panel: z.boolean().optional() }).strict(),
+  bottom: z.enum(['head', 'room', 'under']).optional(),
+  // the diverting pulley's height under the sheave set on the plan [m]: a number, as the plan writes it
+  h: z.number().finite().nonnegative().max(1000).optional(),
+}).strict();
+
+/** A drawing as it is saved (today's rules). */
+export const progettoInputsSchema = progettoObject(shaftInputsSchema);
+/** A drawing read back (a draft: the shaft as stored). */
+export const progettoInputsReadSchema = progettoObject(shaftInputsReadSchema);

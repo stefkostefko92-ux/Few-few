@@ -1,5 +1,5 @@
-// What a linked survey gives the installation's forms (round 44): the replacement's calculator and the one form of a
-// whole project (/progetto) start from the measured values where they have the matching input, marked «dal rilievo».
+// What a linked survey gives the installation's forms (round 44): «Calcolo argano» and the Progetto (round 45: only the
+// stops, its own) start from the measured values where they have the matching input, marked «dal rilievo».
 // Only an empty value is filled — in a brand new form also one still at the software's standard (in a draft a value equal
 // to the standard may be the user's: it stays) —: a value the user typed is never overwritten;
 // a saved record never changes (the forms seed a new record or a draft). In a brand new form nothing is the user's: a
@@ -8,8 +8,8 @@
 // on purpose, over what the form holds, and the form says so before anything is saved. Pure.
 import type { FormValues } from '@/calc/types';
 import { isStandard } from '@/lib/calc-blank';
-import { filled, floorsTo, layoutTo, type LiftDraft } from '@/lib/lift/blank';
-import { isLiftStandard } from '@/lib/lift/defaults';
+import { floorsTo } from '@/lib/lift/blank';
+import type { ProgettoDraft } from '@/lib/lift/progetto';
 import { stessoValore } from './formato';
 import type { RilievoDati } from './rilievo';
 
@@ -96,89 +96,41 @@ export function usaCalc(V: FormValues, r: RilievoDati, p: Usa): { values: FormVa
   return { values: out, set };
 }
 
-/** The one form's values the survey gives (the badges compare with them): the load, the stops, the place of the machine,
- *  the roping, the speed, the existing machine and its ropes. */
+/** The Progetto's values the survey gives (the badges compare with them): the stops — the drawing's own (round 45; the
+ *  load, the speed, the roping, the machine's place and the existing machine are the «Calcolo argano»'s). */
 export function semeLift(r: RilievoDati): Seme {
-  const calc = semeCalc(r), out: Record<string, string> = {};
-  for (const id of ['layout', 'r', 'o_n', 'o_d', 'o_D', 'o_gamma', 'o_i', 'o_Pn', 'o_nm', 'o_poles']) if (calc[id] !== undefined) out[id] = calc[id];
-  if (calc.Q !== undefined) out.Qkg = calc.Q;
-  if (calc.v !== undefined) out.v = calc.v;
-  if (r.fermate !== null) out.floors = String(r.fermate);
-  return out;
+  return r.fermate !== null ? { floors: String(r.fermate) } : {};
 }
 
 const inRange = (x: number | null, lo: number, hi: number): x is number => x !== null && x >= lo && x <= hi;
 
-/** One parameter into the one form's draft (`force`: «usa il valore», else only where it is still to enter — the existing
- *  machine's fields also at the software's standard when `overStandard`). */
-function liftParam(d: LiftDraft, r: RilievoDati, p: Usa, force: boolean, overStandard = true): { draft: LiftDraft; set: string[] } {
-  const S = d.inputs.shaft, C = d.inputs.calc, blank = d.blank, open = (k: 'Q' | 'floors' | 'layout' | 'r' | 'v'): boolean => force || blank.includes(k);
-  const withCalc = (patch: FormValues, keys: readonly ('layout' | 'r')[] = []) => ({ ...d, inputs: { ...d.inputs, calc: { ...C, ...patch } }, blank: filled(blank, keys) });
-  const a = r.argano;
-  switch (p) {
-    case 'Q':
-      if (!open('Q') || !inRange(r.portataKg, 100, 10000)) break;
-      return { draft: { ...d, inputs: { ...d.inputs, shaft: { ...S, Q: Math.round(r.portataKg) } }, blank: filled(blank, ['Q', 'Qkg']) }, set: ['Qkg'] };
-    case 'fermate': {
-      if (!open('floors') || !inRange(r.fermate, 2, 60)) break;
-      const multi = !blank.includes('entrances') && S.entrances !== 'one', f = floorsTo(S.vertical, blank, r.fermate, multi);
-      return { draft: { ...d, inputs: { ...d.inputs, shaft: { ...S, vertical: f.vertical } }, blank: f.blank }, set: ['floors'] };
-    }
-    case 'posizione': {
-      const known = layoutDi(r), next = known ?? (force && r.posizione === 'ALTO' && C.layout === 'bottom' ? 'top' : null);
-      if (!open('layout') || !next) break;
-      return { draft: { ...d, inputs: { ...d.inputs, calc: { ...C, layout: next } }, blank: layoutTo(String(C.layout ?? ''), blank, next) }, set: ['layout'] };
-    }
-    case 'taglia':
-      if (!open('r') || !a?.taglia) break;
-      return { draft: withCalc({ r: String(a.taglia) }, ['r']), set: ['r'] };
-    case 'velocita':
-      if (!open('v') || !inRange(a?.velocita ?? null, 0.1, 10)) break;
-      return { draft: { ...d, inputs: { ...d.inputs, shaft: { ...S, vertical: { ...S.vertical, v: a?.velocita ?? S.vertical.v } } }, blank: filled(blank, ['v']) }, set: ['v'] };
-    default: {
-      // the existing machine and its ropes: the calculation's fields of the one form (a value already equal: the
-      // survey's in a brand new form, and «usa» says it is in) — only when its intervention replaces the machine of the
-      // existing lift (context 'repl'); a new lift has no existing machine: nothing goes into its hidden fields
-      if (C.context !== 'repl') break;
-      const take = (id: string, v: string): boolean => (String(C[id] ?? '') === v ? force || overStandard : force || blankOr(C, id, overStandard ? isLiftStandard : never));
-      const fields = Object.entries(campiCalc(r)[p] ?? {}).flatMap(([id, v]): [string, string][] => (v !== null && id.startsWith('o_') && take(id, v) ? [[id, v]] : []));
-      if (fields.length === 0) break;
-      return { draft: withCalc(Object.fromEntries(fields)), set: fields.map(([id]) => id) };
-    }
-  }
-  return { draft: d, set: [] };
+/** One parameter into the Progetto's draft (`force`: «usa il valore», else only where it is still to enter): the stops,
+ *  the only one the drawing takes from the survey. */
+function liftParam(d: ProgettoDraft, r: RilievoDati, p: Usa, force: boolean): { draft: ProgettoDraft; set: string[] } {
+  const S = d.progetto.shaft, blank = d.blank;
+  if (p !== 'fermate' || !(force || blank.includes('floors')) || !inRange(r.fermate, 2, 60)) return { draft: d, set: [] };
+  const multi = !blank.includes('entrances') && S.entrances !== 'one', f = floorsTo(S.vertical, blank, r.fermate, multi);
+  return { draft: { ...d, progetto: { ...d.progetto, shaft: { ...S, vertical: f.vertical } }, blank: f.blank }, set: ['floors'] };
 }
 
-/** The one form's start (new — `overStandard` —, carried over from the replacement, its draft) with the survey's values
- *  where they are still to enter; what was filled. */
-export function seminaLift(d: LiftDraft, r: RilievoDati, overStandard = true): { draft: LiftDraft; seeded: string[] } {
-  let draft = d;
-  const seeded: string[] = [];
-  for (const p of ['Q', 'fermate', 'posizione', 'taglia', 'velocita', 'funiNumero', 'funiDiametro', 'puleggia', 'rapporto', 'potenza', 'giri', 'poli'] as const) {
-    const step = liftParam(draft, r, p, false, overStandard);
-    draft = step.draft;
-    seeded.push(...step.set);
-  }
-  return { draft, seeded };
+/** The Progetto's start (new, carried over from the installation's records, its draft) with the survey's stops where
+ *  they are still to enter; what was filled. */
+export function seminaLift(d: ProgettoDraft, r: RilievoDati): { draft: ProgettoDraft; seeded: string[] } {
+  const step = liftParam(d, r, 'fermate', false);
+  return { draft: step.draft, seeded: step.set };
 }
 
-/** «Usa il valore del rilievo» in the one form: the parameter set over what it holds. */
-export const usaLift = (d: LiftDraft, r: RilievoDati, p: Usa): { draft: LiftDraft; set: string[] } => liftParam(d, r, p, true);
+/** «Usa il valore del rilievo» in the Progetto: the stops set over what it holds (any other parameter is the «Calcolo
+ *  argano»'s: nothing set). */
+export const usaLift = (d: ProgettoDraft, r: RilievoDati, p: Usa): { draft: ProgettoDraft; set: string[] } => liftParam(d, r, p, true);
 
 /** The survey's value of a calculator's field: the ropes kept in place go in the new machine's fields too. */
 export const valoreCalc = (seme: Seme, id: string): string | undefined => seme[id] ?? (id === 'n_n' ? seme.o_n : id === 'n_d' ? seme.o_d : undefined);
 
-/** A field of the one form as its mark reads it (field ids of semeLift): what is still to enter is empty — its
+/** A field of the Progetto as its mark reads it (field ids of semeLift): what is still to enter is empty — its
  *  placeholder is not a value. */
-export function valoreLift(d: LiftDraft, id: string): unknown {
-  const S = d.inputs.shaft, open = (k: string): boolean => (d.blank as readonly string[]).includes(k);
-  switch (id) {
-    case 'Qkg': return open('Q') || open('Qkg') || S.Q === null ? '' : S.Q;
-    case 'floors': return open('floors') ? '' : S.vertical.floors.length;
-    case 'v': return open('v') ? '' : S.vertical.v;
-    case 'layout': case 'r': return open(id) ? '' : d.inputs.calc[id];
-    default: return d.inputs.calc[id];
-  }
+export function valoreLift(d: ProgettoDraft, id: string): unknown {
+  return id === 'floors' && !d.blank.includes('floors') ? d.progetto.shaft.vertical.floors.length : '';
 }
 
 /** The marks «dal rilievo» of a form: of the fields given (filled at the start, put in by «usa», kept marked by its

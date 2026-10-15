@@ -33,6 +33,8 @@ import type { MachineAdvice } from '../lift/advice';
 import { catalogMachineOf, modelOf } from '../lift/known';
 import { designRoomBlocks } from './tecnica-site';
 import { designMachine } from './build-design';
+import { contestoKey, oggettoCalcolo, restaVariataText, titoloCalcolo } from './intervento-text';
+import { macchinaResta, type TipoIntervento } from '../lift/intervento';
 
 export interface ReportInput {
   calc: { id: string; label: string | null; createdAt: Date; sha256: string; engineVersion: string; profileId: string; author: string | null };
@@ -56,6 +58,9 @@ export interface ReportInput {
   /** the SHA-256 of the data of the installation as the document reads them (canon-hash.ts on plant.ts plantData): the
    *  calculation's fingerprint does not cover them */
   plantSha256?: string | null;
+  /** the intervention declared with the calculation (Calculation.intervento, round 45); null: saved before it, the
+   *  words of that time (intervento-text.ts) */
+  tipo?: TipoIntervento | null;
 }
 
 export function buildReport(r: ReportInput): ReportDoc {
@@ -63,6 +68,9 @@ export function buildReport(r: ReportInput): ReportDoc {
   const a = analyse(r.values, !!r.design), { ctx, res, old, sizing, sens } = a, { I, N } = ctx;
   const when = (d: Date): string => new Intl.DateTimeFormat('it-IT', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Europe/Rome' }).format(d);
   const repl = I.context === 'repl', pr = r.project, m = r.marks ?? NO_MARKS, C = m.collaudo ?? collaudoOf(r.values), rif = repl && C.rifacimento === true && C.norma !== 'en81';
+  // the type declared with the calculation names the work (none: the words of the record's time); a machine kept is
+  // verified as it is, with no proposal
+  const tipo = r.tipo ?? null, kept = macchinaResta(tipo, C);
   const layoutText = I.layout === 'bottom' && m.bottom ? BOTTOM_IT[m.bottom] : t(`lay_${I.layout}`);
   const fromShaft = (k: 'L0' | 'dx' | 'Hv', named = true): string => (m.geometry.includes(k) ? ` (${named ? `${k} ` : ''}dal progetto del vano)`
     : k === 'L0' || k === 'Hv' ? drawnText(I[k], m.drawn?.[k], fmt) : '');
@@ -77,7 +85,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   const countText = (Object.keys(STATO) as Stato[]).filter((s) => counts[s]).map((s) => `${counts[s]} ${STATO[s]}`).join(' · ');
 
   B.push({ t: 'letterhead', logo: r.logo ? 'logo' : null, from: [r.company, ...(r.companyCity ? [r.companyCity] : [])], to: [] });
-  B.push({ t: 'h1', text: `Relazione di calcolo — ${rif ? "rifacimento dell’impianto con l’arcata esistente" : repl ? "sostituzione dell’argano" : "argano per impianto nuovo"}` });
+  B.push({ t: 'h1', text: `Relazione di calcolo — ${tipo ? titoloCalcolo(tipo, C) : rif ? "rifacimento dell’impianto con l’arcata esistente" : repl ? "sostituzione dell’argano" : "argano per impianto nuovo"}` });
   B.push({ t: 'sub', text: place ? `${pr.name} · ${place}` : pr.name });
   B.push({ t: 'box', text: `BOZZA DA VERIFICARE E FIRMARE. Documento generato dal software LiftPilot: diventa relazione di calcolo quando il tecnico incaricato lo verifica e lo firma, e la responsabilità è sua. Il segno ⚠ indica ciò che il tecnico deve controllare: stime, scelte del software e valori normativi ancora da verificare sul testo vigente (lista di verifica normativa del profilo ${PROFILO.id}; voci del registro: ${countText}).` });
   B.push({ t: 'kv', rows: [
@@ -91,13 +99,14 @@ export function buildReport(r: ReportInput): ReportDoc {
   ] });
 
   section('Oggetto');
-  B.push({ t: 'p', text: `Verifica dell’argano a riduttore ${rif ? "per il rifacimento di un impianto esistente che ne mantiene l’arcata" : repl ? "in sostituzione su impianto esistente" : "per un impianto nuovo"} (${layoutText}, ${I.r}:1): aderenza al caricamento, in frenatura di emergenza e a cabina bloccata (UNI EN 81-50:2020, 5.11); funi e coefficiente di sicurezza (UNI EN 81-20:2020, 5.5; UNI EN 81-50:2020, 5.12); freno (UNI EN 81-20:2020, 5.9.2.2); azionamento, manovra di emergenza e carico sull’albero secondo il modello di calcolo del software.${I.std === 'en81-1' ? std81_1(C.norma) : ''}${collaudoText(C, repl)}${r.design ? ' La pianta del vano e della cabina, con le sue verifiche, viene dal progetto del vano del software (sezione «Vano e cabina»).' : ''}` });
+  const what = tipo ? oggettoCalcolo(tipo, C) : `Verifica dell’argano a riduttore ${rif ? "per il rifacimento di un impianto esistente che ne mantiene l’arcata" : repl ? "in sostituzione su impianto esistente" : "per un impianto nuovo"}`;
+  B.push({ t: 'p', text: `${what} (${layoutText}, ${I.r}:1): aderenza al caricamento, in frenatura di emergenza e a cabina bloccata (UNI EN 81-50:2020, 5.11); funi e coefficiente di sicurezza (UNI EN 81-20:2020, 5.5; UNI EN 81-50:2020, 5.12); freno (UNI EN 81-20:2020, 5.9.2.2); azionamento, manovra di emergenza e carico sull’albero secondo il modello di calcolo del software.${I.std === 'en81-1' ? std81_1(C.norma) : ''}${collaudoText(C, repl, undefined, tipo)}${r.design ? ' La pianta del vano e della cabina, con le sue verifiche, viene dal progetto del vano del software (sezione «Vano e cabina»).' : ''}` });
   section('Riferimenti normativi');
-  B.push({ t: 'grid', head: ['Documento', 'Ambito'], rows: riferimentiRows(repl, C, I.std, !!r.design), widths: [0.38, 0.62], align: ['l', 'l'] });
+  B.push({ t: 'grid', head: ['Documento', 'Ambito'], rows: riferimentiRows(repl, C, I.std, !!r.design, kept), widths: [0.38, 0.62], align: ['l', 'l'] });
 
   section("Dati dell’impianto");
   const plant: [string, string][] = [
-    [t('context'), t(rif ? 'ctx_rif' : repl ? 'ctx_repl' : 'ctx_new')], ...collaudoRows(C, repl, carichiOf(r.values)), [t('layout'), layoutText.charAt(0).toUpperCase() + layoutText.slice(1)], [t('Q'), `${fmt(I.Q, 0)} kg`],
+    [t('context'), t(tipo ? contestoKey(tipo, C) : rif ? 'ctx_rif' : repl ? 'ctx_repl' : 'ctx_new')], ...collaudoRows(C, repl, carichiOf(r.values)), [t('layout'), layoutText.charAt(0).toUpperCase() + layoutText.slice(1)], [t('Q'), `${fmt(I.Q, 0)} kg`],
     [t('P'), `${fmt(I.P, 0)} kg${m.pEstimate ? ' — stima del software, da sostituire con la massa reale' : ''}`],
     [`${t('k')} · M_cw`, `${fmt(res.k, 3)} · ${fmt(res.Mcw, 0)} kg${I.qeq > 0 ? ` (${t('qeq')}: ${fmt(I.qeq, 0)} kg)` : ''}`], [t('v'), `${fmt(I.v, 2)} m/s`],
     [t('r'), `${I.r}:1`], [`${t('H')} · ${t('L0')}`, `${fmt(I.H, 2)} m · ${fmt(I.L0, 2)} m${fromShaft('L0')}`], [t('alphaMode'), `α ${X.alphaText(res)}`],
@@ -183,7 +192,7 @@ export function buildReport(r: ReportInput): ReportDoc {
     B.push({ t: 'verdict', text: X.verdictText(old), status: verdictStatus(old) });
   }
 
-  section(t('q_title'));
+  section(kept ? 'Argano esistente (resta): esito in breve' : t('q_title'));
   const quick = quickRows(P, X, N, res, sens);
   B.push({ t: 'grid', head: [t('col_item'), t('col_res'), t('col_note')], rows: quick.map((q) => [t(q.key), st(q.status), q.text]), status: quick.map((q) => q.status), statusCol: 1, widths: [0.2, 0.1, 0.7], align: ['l', 'l', 'l'] });
 
@@ -199,13 +208,15 @@ export function buildReport(r: ReportInput): ReportDoc {
   if (res.checks.some((c) => ambitoOf(C, c.id) === 'existing')) {
     B.push({ t: 'p', style: 'note', text: EXISTING_NOTE });
   }
+  const variata = tipo ? restaVariataText(tipo, C) : null;
+  if (variata) B.push({ t: 'p', style: 'note', text: variata });
 
   // each standard of the test with its own result, and the test's: the calculation's checks and, with a shaft design,
   // the shaft's and the beams'
   section(ESITI_CALCOLO);
   B.push(...esitiBlocks(C, [...res.checks, ...(r.design ? mergeChecks(r.design.layout.checks, beams) : []), ...(guide?.checks ?? [])], (x) => st(x)));
   section('Adempimenti e punti da verificare in sito');
-  B.push(...adempimentiBlocks(C, repl));
+  B.push(...adempimentiBlocks(C, repl, kept));
 
   section("Aderenza: tutti i casi di calcolo");
   B.push(...casesBlocks(P, I, N, res, (c) => X.caseText(c), st));
@@ -234,10 +245,13 @@ export function buildReport(r: ReportInput): ReportDoc {
     B.push({ t: 'grid', head: [t('col_item'), t('col_old'), t('col_new')], rows: X.comparisonRows(res, old), widths: [0.4, 0.3, 0.3] });
   }
 
-  section(`${t('c_prop')} (informative)`);
-  B.push(...proposalBlocks({ X, fmt, N, sizing, hold: a.hold, catalog: chosen, machine, through: !!scheme && scheme !== 'under', design: !!r.design }));
+  // a machine kept has nothing to propose or advise (the form shows none either)
+  if (!kept) {
+    section(`${t('c_prop')} (informative)`);
+    B.push(...proposalBlocks({ X, fmt, N, sizing, hold: a.hold, catalog: chosen, machine, through: !!scheme && scheme !== 'under', design: !!r.design }));
+  }
 
-  if (r.advice) {
+  if (r.advice && !kept) {
     section('Confronto degli argani SICOR e Montanari (informativo)');
     B.push(...adviceBlocks(r.advice, fmt, a.hold === 'drop' ? N.D : null));
   }
@@ -256,11 +270,11 @@ export function buildReport(r: ReportInput): ReportDoc {
 
   section('Voci normative usate e loro stato');
   // and the registry entries of the values the software filled in, where the layout uses them
-  const filled = new Set([...(repl ? ['impianto.collaudo'] : []), ...(rif ? ['impianto.rifacimento'] : []), ...(m.pEstimate ? ['impianto.massa.cabina'] : []), ...(m.machineProposed ? ['impianto.macchina'] : []),
+  const filled = new Set([...(tipo ? ['impianto.intervento'] : []), ...(repl ? ['impianto.collaudo'] : []), ...(rif ? ['impianto.rifacimento'] : []), ...(m.pEstimate ? ['impianto.massa.cabina'] : []), ...(m.machineProposed ? ['impianto.macchina'] : []),
     ...(I.layout === 'bottom' && m.bottom ? ['impianto.basso.schema'] : []), ...(chosen ? ['impianto.catalogo'] : []), ...(whole.estimate ? ['impianto.massa.argano'] : []),
     ...(guide ? ['impianto.massa.basamento'] : []), ...(a.hold === 'drop' ? ['impianto.calata'] : []),
     ...m.geometry.filter((k) => k === 'L0' || (k === 'dx' && I.layout === 'topDefl') || (k === 'Hv' && I.layout === 'bottom')).map((k) => `impianto.${k}`)]);
-  B.push(...vociBlocks(new Set(res.checks.map((c) => c.id)), vano, filled));
+  B.push(...vociBlocks(new Set(res.checks.map((c) => c.id)), vano, filled, kept));
 
   // what the software is in the document, said once before the signature: the technician who signs makes it theirs
   section(t('rep_legal_title'));

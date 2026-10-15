@@ -45,7 +45,7 @@ export async function exportRoomDesign(user: SessionUser, id: string, format: Ro
       room: { id: r.id, label: r.label, createdAt: r.createdAt, sha256: r.sha256, engineVersion: r.engineVersion, author: r.user?.name ?? null },
       calc: { id: r.calculation.id, label: r.calculation.label, createdAt: r.calculation.createdAt, sha256: r.calculation.sha256, engineVersion: r.calculation.engineVersion, profileId: r.calculation.profileId },
       project: r.project, ...await getLetterhead(user), values: rep.values, survey: rep.survey, derived: d,
-      collaudo: rep.collaudo, plant: P, plantSha256: canonHash(P), sets,
+      collaudo: rep.collaudo, plant: P, plantSha256: canonHash(P), sets, tipo: rep.tipo,
     });
     return { ok: true, body: new Uint8Array(await renderPdf(doc, r.createdAt)), mime: MIME.relazione, name: `relazione-tecnica-${base}.pdf` };
   }

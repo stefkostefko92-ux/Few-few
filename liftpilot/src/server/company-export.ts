@@ -34,14 +34,15 @@ export async function companyExport(companyId: string): Promise<Record<string, u
     prisma.companyRolePermission.findMany({ where: { companyId }, orderBy: [{ role: 'asc' }, { capability: 'asc' }],
       select: { role: true, capability: true, granted: true, updatedById: true, updatedAt: true } }),
     prisma.companyLogo.findMany({ where: { companyId }, orderBy: { createdAt: 'asc' } }),
+    // the installation's module of before round 45 (Project.kind) is no data of the company's any more (format 9)
     prisma.project.findMany({
-      where: { companyId }, orderBy: { createdAt: 'asc' },
+      where: { companyId }, orderBy: { createdAt: 'asc' }, omit: { kind: true },
       include: {
         clientLogos: { orderBy: { createdAt: 'asc' } },
-        calculations: { orderBy: { createdAt: 'asc' }, select: { ...RECORD, profileId: true, results: true, collaudo: true, shaftDesignId: true,
+        calculations: { orderBy: { createdAt: 'asc' }, select: { ...RECORD, profileId: true, results: true, collaudo: true, intervento: true, shaftDesignId: true,
           reviews: { orderBy: { createdAt: 'asc' }, select: { id: true, userId: true, note: true, createdAt: true } } } },
         shaftDesigns: { orderBy: { createdAt: 'asc' }, select: { ...RECORD, profileId: true, source: true, results: true } },
-        liftDesigns: { orderBy: { createdAt: 'asc' }, select: { ...RECORD, source: true, shaftDesignId: true, calculationId: true } },
+        liftDesigns: { orderBy: { createdAt: 'asc' }, select: { ...RECORD, source: true, shaftDesignId: true, calculationId: true, baseCalculationId: true } },
         roomDesigns: { orderBy: { createdAt: 'asc' }, select: { ...RECORD, results: true, calculationId: true } },
         formDrafts: { orderBy: { createdAt: 'asc' }, select: { scope: true, data: true, createdAt: true, updatedAt: true } },
         drawingSets: { orderBy: { createdAt: 'asc' }, select: { id: true, number: true, revision: true, authorInitials: true, revisions: true, plant: true,

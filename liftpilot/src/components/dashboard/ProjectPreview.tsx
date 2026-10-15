@@ -4,13 +4,16 @@ import Icon from '@/components/Icon';
 import VerdictPill from '@/components/VerdictPill';
 import ShapesSvg from '@/components/drawing/ShapesSvg';
 import type { LatestPlan } from '@/server/dashboard';
+import type { TipoIntervento } from '@/lib/lift/intervento';
+import TipoTag, { iconaTipo } from '@/components/project/TipoTag';
 import { latestOf, type ListedProject } from './ProjectList';
 
 // The installation changed last, as it is: for a whole project the plan at the main floor of its saved shaft, drawn by
 // the running engine on white paper (a sheet on the desk, never an illustration); for a replacement, or a project not
-// saved yet, its data alone. Its module, plant number, latest result and machine line, and the way to it.
-export default async function ProjectPreview({ project: p, plan }: { project: ListedProject; plan: LatestPlan | null }) {
-  const [t, tf, ts] = await Promise.all([getTranslations('projects'), getTranslations('refresh'), getTranslations('shaft')]);
+// saved yet, its data alone. Its type of intervention (round 45), plant number, latest result and machine line, and the
+// way to it.
+export default async function ProjectPreview({ project: p, plan, tipo }: { project: ListedProject; plan: LatestPlan | null; tipo: TipoIntervento | null }) {
+  const [t, tf, ts, ti] = await Promise.all([getTranslations('projects'), getTranslations('refresh'), getTranslations('shaft'), getTranslations('calculations.intervento')]);
   const { last, old, record } = latestOf(p);
   const planLabel = plan ? ts('planLabel', { W: plan.W, D: plan.D, A: plan.A, B: plan.B }) : '';
   return (
@@ -36,13 +39,13 @@ export default async function ProjectPreview({ project: p, plan }: { project: Li
       ) : (
         // no plan to draw: the machine of the latest calculation as its figures, like a nameplate
         <div className="dash-stage dash-plate blueprint even">
-          <span className="icon-tile lg"><Icon name={p.kind === 'REPLACEMENT' ? 'motor' : 'elevator'} size={28} /></span>
+          <span className="icon-tile lg"><Icon name={iconaTipo(tipo)} size={28} /></span>
           {last ? <ul className="dash-plate-list" role="list">{last.summary.split(' · ').map((v, i) => <li key={`${i}${v}`}>{v}</li>)}</ul> : null}
-          <p className="note">{t(`preview_noPlan_${p.kind}`)}</p>
+          <p className="note">{t(tipo && tipo !== 'SOLO_ARGANO' ? 'preview_noPlan_vano' : 'preview_noPlan_calc')}</p>
         </div>
       )}
       <dl className="dash-specs">
-        <div><dt>{t('col_kind')}</dt><dd>{t(`kind_${p.kind}`)}</dd></div>
+        <div><dt>{t('col_tipo')}</dt><dd><TipoTag tipo={tipo} label={ti(tipo ?? 'daDefinire')} small /></dd></div>
         <div><dt>{t('col_plantNumber')}</dt><dd className="mono">{p.plantNumber ?? '—'}</dd></div>
         <div className="wide">
           <dt>{t('col_last')}</dt>

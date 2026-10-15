@@ -16,6 +16,7 @@ import {
 } from '@/lib/lift/blank';
 import { carriedOver } from '@/lib/lift/carry';
 import { panelEntered } from '@/lib/lift/panel-form';
+import { dalComposto } from '@/lib/lift/progetto';
 import { blankCalc, calcMissing, isStandard, plantReady } from '@/lib/calc-blank';
 import { readInputs } from '@/calc/index';
 import { calcDraftSchema, draftScopeSchema, liftDraftSchema, surveyDraftSchema } from '@/lib/draft-input';
@@ -54,8 +55,11 @@ test('progetto nuovo: vuoto, nulla da calcolare finché mancano i dati del proge
   for (const id of ['n_D', 'n_i', 'n_Pn', 'n_brakeNm', 'n_n', 'n_d', 'o_D', 'o_i', 'o_n', 'o_d', 'o_mass']) assert.equal(d.inputs.calc[id], '', id);
   for (const id of Object.keys(LIFT_STANDARD)) assert.ok(isLiftStandard(d.inputs.calc, id), id);
   assert.equal(isLiftStandard({ ...d.inputs.calc, k: 0.45 }, 'k'), false);
-  assert.ok(liftDraftSchema.safeParse(d).success, 'the draft keeps it');
-  assert.equal(liftDraftSchema.safeParse({ ...d, blank: [...d.blank, 'nonsense'] }).success, false);
+  // the Progetto's draft (round 45): the drawing of the one form's start, the calculation's keys left to the base
+  const drawing = dalComposto(d, undefined);
+  assert.ok(liftDraftSchema.safeParse(drawing).success, 'the draft keeps it');
+  assert.equal(liftDraftSchema.safeParse({ ...drawing, blank: [...drawing.blank, 'nonsense'] }).success, false);
+  assert.equal(liftDraftSchema.safeParse(d).success, false, 'the one form’s inputs whole: no drawing');
 });
 
 test('una scelta porta i suoi dati da inserire: portata data, secondo accesso, contrappeso, locale, macchina in basso', () => {
@@ -97,7 +101,7 @@ test('macchina in basso con lo schema room: il locale delle pulegge da inserire 
   // a room entered for a machine above stays as entered and becomes the pulley room
   const kept = bottomTo({ inputs: { ...d.inputs, shaft: { ...d.inputs.shaft, room: { ...ROOM_PLACEHOLDER, H: 2100 } } }, blank: entered }, 'room');
   assert.deepEqual([kept.inputs.shaft.room?.H, missingOf(kept).some((k) => k.startsWith('room.'))], [2100, false]);
-  assert.ok(liftDraftSchema.safeParse(added).success, 'the draft keeps it');
+  assert.ok(liftDraftSchema.safeParse(dalComposto(added, undefined)).success, 'the draft keeps it');
 });
 
 test('fermate: righe dal numero, interpiani e accessi da inserire; aggiunte, tolte, la principale', () => {

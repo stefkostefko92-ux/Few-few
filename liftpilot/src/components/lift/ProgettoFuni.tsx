@@ -1,0 +1,140 @@
+'use client';
+
+// The ropes in the drawing (round 45): what the Progetto completes of its «Calcolo argano» — the scheme of a machine
+// below and the switches of the values the drawing gives (the rope beyond the travel, the diverting pulley's distance
+// and height, a machine below's pulleys): on, the drawing's value; off, the calculation's as it was saved. The hints
+// of the one form follow (a direct pull's falls against the sheave, the refuge, the pulleys of a machine below, a
+// distance to measure); the calculation's own fields are not here — they are changed in «Calcolo argano»: an issue the
+// calculation resolves (the falls against the sheave, the diverting pulley's distance or height) carries «Porta nel
+// calcolo», which opens it with the drawing's values.
+import { SHEAVE_GRID } from '@/calc/sizing';
+import type { FormValues } from '@/calc/types';
+import { BOTTOM_SCHEMES, type BottomScheme, type LiftDerived } from '@/lib/lift';
+import type { ProgettoAuto } from '@/lib/lift/progetto';
+import type { Pres } from '@/lib/present/tr';
+import FieldRow, { type BlankTexts } from '../calc/FieldRow';
+import { LAYOUT, PLANT, type Field } from '../calc/fields';
+import { fieldId, type FormBlank } from '../blank';
+
+interface Props {
+  P: Pres;
+  /** the base calculation's values, as saved */
+  base: FormValues;
+  auto: ProgettoAuto;
+  bottom: BottomScheme | undefined;
+  /** the diverting pulley's height set on the plan [m] (counts with the switch off) */
+  h: number | undefined;
+  derived: LiftDerived | null;
+  blank: FormBlank;
+  texts: BlankTexts;
+  setAuto(patch: Partial<ProgettoAuto>): void;
+  setBottom(b: BottomScheme): void;
+  t(key: string, values?: Record<string, string | number>): string;
+  /** «Porta nel calcolo»; null: not for this user */
+  porta: { go(): void; pending: boolean; label: string } | null;
+}
+
+const field = (id: string): Field => {
+  const f = [...PLANT, ...LAYOUT].find((x) => x.id === id);
+  if (!f) throw new Error(`no field ${id}`);
+  return f;
+};
+const NONE = new Set<string>();
+
+/** A direct pull: the falls in the plan are the sheave's diameter apart, or why not. */
+function calataHint(derived: LiftDerived, fmt: Pres['fmt'], t: Props['t']) {
+  const { I, N, O, compare } = derived.analysis.ctx, c = derived.calata ?? 0, D = compare && I.context === 'repl' ? O.D : N.D;
+  const bad = derived.issues.includes('calata'), out = c < SHEAVE_GRID[0] - 0.5 || c > SHEAVE_GRID[SHEAVE_GRID.length - 1] + 0.5;
+  const text = !bad ? t('hint_calata', { c: fmt(c, 0), D: fmt(D, 0) })
+    : out ? t('hint_calata_range', { c: fmt(c, 0), min: SHEAVE_GRID[0], max: SHEAVE_GRID[SHEAVE_GRID.length - 1] })
+      : t('hint_calata_bad', { c: fmt(c, 0), D: fmt(D, 0) });
+  return <p className={bad ? 'hint bad' : 'hint'} role={bad ? 'alert' : undefined}>{text}</p>;
+}
+
+export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank, texts, setAuto, setBottom, t, porta }: Props) {
+  const { fmt } = P, layout = base.layout, DV = derived?.values ?? base;
+  // the issues the calculation resolves: the way to it, beside them
+  const toCalc = (on: boolean) => (on && porta ? <div className="btnrow"><button type="button" className="btn btn-sm porta-calcolo" onClick={porta.go} disabled={porta.pending}>{porta.label}</button></div> : null);
+  const bottomBlank = blank.is('bottom'), scheme = derived?.bottom ?? bottom ?? 'head';
+  // a value of the drawing (switched on: the drawing's, once worked out) or of the calculation (off: as saved); the
+  // diverting pulley's height set on the plan, the plan's
+  const value = (id: 'L0' | 'dx' | 'h' | 'Hv', on: boolean, dec: number, plan = false) => {
+    const x = on || plan ? (derived ? Number(DV[id]) : plan && h !== undefined ? h : null) : Number(base[id]);
+    return (
+      <FieldRow key={id} P={P} f={field(id)} V={base} bad={NONE} set={() => {}} texts={texts}
+        auto={{ value: x === null || !Number.isFinite(x) ? '—' : fmt(x, dec), badge: t(on ? 'badge_auto' : plan ? 'badge_pianta' : 'badge_calcolo') }} />
+    );
+  };
+  const toggle = (key: 'L0' | 'dx' | 'Hv', label: string) => (
+    <div className="row check auto-toggle">
+      <input type="checkbox" id={`auto-${key}`} checked={auto[key]} onChange={(e) => setAuto({ [key]: e.target.checked })} />
+      <label htmlFor={`auto-${key}`}>{label}</label>
+    </div>
+  );
+  const complete = derived !== null;
+  return (
+    <div className="calc lift-calc">
+      <details className="group" open>
+        <summary>{t('g_funi')}</summary>
+        <div className="rows">
+          <p className="hint">{t('hint_funi')}</p>
+          {complete && derived.calata !== null ? calataHint(derived, fmt, t) : null}
+          {toCalc(complete && derived.issues.includes('calata'))}
+          {layout === 'bottom' ? (
+            <>
+              <div className={`row wide${bottomBlank ? ' need' : ''}`}>
+                <label htmlFor={fieldId('bottom')}>{t('bottom_scheme')}</label>
+                <select id={fieldId('bottom')} className="input" value={bottomBlank ? '' : scheme} aria-required={bottomBlank || undefined}
+                  onChange={(e) => { const b = BOTTOM_SCHEMES.find((x) => x === e.target.value); if (b) setBottom(b); }}>
+                  {bottomBlank ? <option value="" disabled>{texts.choose}</option> : null}
+                  {BOTTOM_SCHEMES.map((b) => <option key={b} value={b}>{t(`bottom_${b}`)}</option>)}
+                </select>
+              </div>
+              {complete ? <p className="hint">{t('hint_bottom_pulleys', { n: derived.headPulleys, extra: derived.headPulleys - 2 })}</p> : null}
+              {!bottomBlank && scheme === 'under' ? <p className="hint">{t('hint_bottom_under')}</p> : null}
+              {complete && derived.bottomGap ? (
+                <p className="hint bad" role="alert">{derived.bottomGap.need === null
+                  ? t('hint_bottom_gap_none', { now: derived.bottomGap.now })
+                  : t('hint_bottom_gap', { now: derived.bottomGap.now, need: derived.bottomGap.need })}</p>
+              ) : null}
+            </>
+          ) : null}
+          {complete && derived.refugeHead ? (
+            <p className="hint bad" role="alert">{t('hint_refuge_head', { now: derived.refugeHead.now, need: derived.refugeHead.need })}
+              {layout === 'bottom' && scheme !== 'room' ? ` ${t('hint_refuge_room')}` : ''}</p>
+          ) : null}
+          {toggle('L0', t('auto_L0'))}
+          {value('L0', auto.L0, 2)}
+          {complete && derived.issues.includes('L0') && derived.drawn.L0 !== null ? (
+            <p className="hint bad" role="alert">{t('hint_L0_drawn', { v: fmt(Number(DV.L0), 2), g: fmt(derived.drawn.L0, 2) })}</p>
+          ) : null}
+          {layout === 'topDefl' ? (
+            <>
+              {toggle('dx', t('auto_dx'))}
+              {value('dx', auto.dx, 3)}
+              {complete && derived.issues.includes('dx') ? (
+                <p className="hint bad" role="alert">
+                  {/* the pulley on its own stand under a machine on the floor: no h fits, the support is the cause */}
+                  {t(derived.supportChecks.some((c) => c.id === 'm_stand' && c.status === 'fail') ? 'hint_stand_under' : 'hint_dx_tight')}
+                </p>
+              ) : null}
+              {toCalc(complete && derived.issues.includes('dx'))}
+              {value('h', auto.dx && !!derived?.machine.rinvio, 3, !auto.dx && h !== undefined)}
+              {complete && derived.issues.includes('rinvio') ? <p className="hint bad" role="alert">{t(derived.rinvioClash === 'machine' ? 'hint_rinvio_machine' : 'hint_rinvio_floor')}</p> : null}
+              {toCalc(complete && derived.issues.includes('rinvio'))}
+            </>
+          ) : null}
+          {layout === 'bottom' ? (
+            <>
+              {toggle('Hv', t('auto_Hv'))}
+              {value('Hv', auto.Hv, 2)}
+              {complete && derived.issues.includes('Hv') && derived.drawn.Hv !== null ? (
+                <p className="hint bad" role="alert">{t('hint_Hv_drawn', { v: fmt(Number(DV.Hv), 2), g: fmt(derived.drawn.Hv, 2) })}</p>
+              ) : null}
+            </>
+          ) : null}
+        </div>
+      </details>
+    </div>
+  );
+}

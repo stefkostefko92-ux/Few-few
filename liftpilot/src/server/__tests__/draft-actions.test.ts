@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { defaultLift } from '@/lib/lift';
+import { progettoOf } from '@/lib/lift/progetto';
 import { z } from 'zod';
 import * as realDraft from '@/lib/draft-input';
 
@@ -49,7 +50,8 @@ mock.module(src('lib/draft-input.ts'), { namedExports: { ...realDraft, draftSche
 let n = 0;
 // the Progettista fills in every form (the calculator's and the project's: round 42)
 const signIn = (over: Row = {}) => { session = { id: `u${++n}`, role: 'ENGINEER', companyId: 'c1', mustChangePassword: false, readOnly: false, ...over }; };
-const lift = () => ({ inputs: defaultLift(), blank: [] });
+/** the Progetto's draft (round 45): the drawing on its base */
+const lift = () => ({ progetto: progettoOf(defaultLift()), base: 'cmbase0001', blank: [] });
 const actions = () => import(src('server/draft-actions.ts'));
 
 beforeEach(() => { upserts = []; deletes = []; draftRow = null; lax = false; signIn(); });
@@ -152,6 +154,9 @@ test('readDraft: bozza leggibile con l’ora; bozza che non passa lo schema: nes
   const ok = await readDraft(user, 'p1', 'lift', liftDraftSchema);
   assert.equal(ok?.at, updatedAt.toISOString());
   draftRow = { ...draftRow, data: { nonsense: true } };
+  assert.equal(await readDraft(user, 'p1', 'lift', liftDraftSchema), null);
+  // a draft of the one form before round 45 (its inputs whole): no longer read, the next save overwrites it
+  draftRow = { ...draftRow, data: { inputs: defaultLift(), blank: [] } };
   assert.equal(await readDraft(user, 'p1', 'lift', liftDraftSchema), null);
   draftRow = { projectId: 'p1', scope: 'lift', companyId: 'c2', updatedAt, data: lift() };
   assert.equal(await readDraft(user, 'p1', 'lift', liftDraftSchema), null);

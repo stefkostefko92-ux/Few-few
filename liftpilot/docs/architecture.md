@@ -26,10 +26,13 @@ src/lib/lift/        Единният формуляр: LiftInputs {shaft, calc,
                      SICOR и Montanari: всеки модел, проверен с асансьора, подредбата и причината, sourcesOf — буквите на
                      източника, алтернативата с отклоняваща ролка), collaudo (нормата на
                      изпитването и сменените части: AMBITO_VERIFICHE, ambitoOf, collaudoVerdict), modifica (CE маркировката → частта на
-                     UNI 10411; промяната на документираните товари по прил. 1 и 2 на -1 и по -11), intervento (трите
-                     избора на формуляра: подмяна на машината, обновяване със съществуващата рама, нов асансьор —
-                     interventoOf/interventoTo, PARTI_RIFACIMENTO), drops (подмяна → цял
-                     проект: кабината и противотежестта под калатите от рилевото), support (товарът на основата на
+                     UNI 10411; промяната на документираните товари по прил. 1 и 2 на -1 и по -11), intervento (кръг 45:
+                     типът на интервенцията — TipoIntervento, interventoDi/interventoValido, disegnoDi (машинното или
+                     шахтата), частите; и трите избора отпреди — interventoOf/interventoTo, PARTI_RIFACIMENTO), risposte
+                     (частите „Sì/No“ на „Calcolo argano“), progetto (кръг 45: ProgettoInputs — само геометрията;
+                     liftInputsOf/progettoOf/composto — чертежът върху „Calcolo argano“), porta (кръг 45: „Porta nel
+                     calcolo“ — chiaviDelDisegno/chiaviNascoste/portaNelCalcolo, cabinaMassima), drops (директно окачване:
+                     кабината и противотежестта под калатите от рилевото), support (товарът на основата на
                      машината, проверките на гредите, на гредите HEB върху стените на шахтата — hebOf — и на пода на
                      машинното), panel-form (таблото и гредите HEB на софтуера в чертежите на формуляра: drawnShaft,
                      enteredShaft, edited), norme (KL, VOCI_IMPIANTO), version (LIFT_ENGINE_VERSION). deriveLift извежда
@@ -249,9 +252,15 @@ src/server/          Server actions ('use server') и заявки, винаги
                      което е направен, възпроизведени от текущите двигатели — calcRecord, recordMarks; `outdated` — „da
                      aggiornare“ по версиите), save (записите: изчисление, проект на асансьора, машинно — от формите и от
                      обновяването), refresh-actions («Aggiorna con il software attuale»), drawing-pdf (PDF-ът на издадения
-                     комплект, пазен какъвто е издаден), download (отказите и отговорите на сваляните документи; кратките отговори — на италиански от src/lib/answers.ts, думите на errors.*), lift-start
-                     (откъде тръгва формулярът: избраният проект, черновата, последният проект, пренесеното от съоръжението
-                     — src/lib/lift/carry.ts — или празно), drafts + draft-actions (черновите: четене по схемата, запис,
+                     комплект, пазен какъвто е издаден), download (отказите и отговорите на сваляните документи; кратките отговори — на италиански от src/lib/answers.ts, думите на errors.*), calc-start
+                     (кръг 45: откъде тръгва „Calcolo argano“ — ?from= (на друго съоръжение — null, страницата 404),
+                     черновата, последното от стъпка 2, последното изобщо, празно — с типа, изпитването и частите), progetto-start (откъде тръгва Progetto: избраният проект,
+                     черновата, последният проект, пренесеното от съоръжението — src/lib/lift/carry.ts — или празно; основата
+                     ?calc=), calcolo-base (кръг 45: изчисленията от стъпка 2 — STEP2, основата, типът на съоръжението:
+                     tipoDi/tipoDaUltimi/tipoImpianto, legacyPiuNuovo — проект отпреди, по-нов от изчислението; localeRilevabile —
+                     машинното само с нова машина; arganoResta — и «Aggiorna» не носи машинното върху него), dal-progetto (кръг 45: какво дава чертежът на изчислението при
+                     ?dal=progetto), ridisegna-actions + remake (кръг 45: „Aggiorna il progetto con l’ultimo calcolo“; вече
+                     направеното и едно по едно — общо с refresh-actions), drafts + draft-actions (черновите: четене по схемата, запис,
                      изхвърляне; изтриване при запис на формуляра); set-cad + set-identity (CAD файловете и самоличността на
                      издаден комплект: R0, номерът), plant-machine (машината от каталога на съоръжението за следващия комплект);
                      verdict-checks (проверките зад резултата на запис — неминалите, после тези с внимание — за панела на
@@ -259,7 +268,11 @@ src/server/          Server actions ('use server') и заявки, винаги
                      както save.ts е броил запазените броеве — src/lib/verdict-checks.ts, чисто —, на италиански;
                      проектът на асансьора се извежда наново само докато се възпроизвежда, иначе списъкът е от запазеното и
                      панелът казва защо може да не съвпада с числото).
-src/components/calc/ Калкулаторът в React (форма, схема, присъда, карти), портнат от прототипа.
+src/components/calc/ Калкулаторът в React (форма, схема, присъда, карти), портнат от прототипа. Кръг 45 — „Calcolo
+                     argano“ на всяко съоръжение: InterventoChoice (типът първо) + PartiSiNo (частите) + useIntervento
+                     (типът, изпитването и частите като състояние) + AvvisiIntervento (предупрежденията, 21.1 само
+                     предупреждава) + CalcSaveBar (записът) + CalcRuolo (ролята на записа) + ProgettoPanel (Progetto на
+                     изчислението: машинното или шахтата).
 src/components/      blank (FormBlank, StdBadge, mmOf — празните полета на формулярите), MissingPanel (какво липсва, с линкове
                      към полетата), draft/ (useDraft — черновата 1,5 s след промяна; DraftBar — състоянието и изхвърлянето).
 src/components/shaft/ Шахтата в единния формуляр (записаният проект на шахтата — само за четене): SurveyPanel + CadViewer (canvas, pan/zoom, клик), опции (данните
@@ -269,7 +282,9 @@ src/components/shaft/ Шахтата в единния формуляр (зап�
                      PlanFixes (ръчно зададените размери на плана, „Върни“), ShaftViews (само за четене), резултати.
                      src/components/drawing/ShapesSvg — ядрото в SVG; EditableDrawing — слой с бутони над размерите и
                      поле на място (hit-boxes: бутоните растат до пръст, без да се покриват).
-src/components/project/ RecordTable — записите на асансьора на страницата му (резултат, „da aggiornare“, архив).
+src/components/project/ RecordTable — записите на асансьора на страницата му (резултат, „da aggiornare“, архив);
+                     кръг 45: ProjectSections (Calcolo argano, Progetto, Tavole, Archivio — по реда на работата), TipoTag
+                     (типът на интервенцията като знак, „Intervento da definire“ без изчисление).
 src/components/RefreshForm + Refreshed — бутонът «Aggiorna con il software attuale» и лентата „резултатът (не) се промени“;
                      StaleNotice — предупреждението над остарял запис: бутонът с изречението си за който го прави наново,
                      иначе кой колега го прави (rbac.ts remakerOf).
@@ -299,8 +314,9 @@ src/components/landing/ Началната страница по темплей�
 src/components/AppShell + shell/ Работното пространство: странична лента (Area di lavoro / Libreria / Gestione по правата,
                      `navCurrent`), горна лента с пътя и търсенето (ShellSearch, GET `?q=`), чекмедже под 1024 px (Drawer:
                      Esc, фон, фокусът остава вътре и се връща), картата на потребителя.
-src/components/dashboard/ Таблото (/app): Kpis (броевете от `src/server/dashboard.ts`), NewMenu + ModuleCards (двата
-                     модула), ProjectList (последните `DASH_ROWS`, филтри, „Mostra tutti“ до `ALL_ROWS`), ProjectPreview
+src/components/dashboard/ Таблото (/app/impianti): Kpis (броевете от `src/server/dashboard.ts`; кръг 45 — по типа на
+                     интервенцията), NuovoImpianto (кръг 45: един вход и четирите стъпки; до кръг 44 — NewMenu + ModuleCards,
+                     двата модула), ProjectList (последните `DASH_ROWS`, филтри, „Mostra tutti“ до `ALL_ROWS`), ProjectPreview
                      (последният изчислен асансьор: планът от двигателя върху бяла хартия; при подмяна — само данните).
                      Чистите функции — `src/lib/dashboard.ts` (searchWords, likeEscape, projectStats, shellSection).
 src/components/machine/ Частите на 3D машината (няма собствена сцена): parts/ — рама, редуктор, шайба, спирачка, мотор;
@@ -340,8 +356,11 @@ src/components/lift3d/ 3D асансьорът от данните (лениво
                      изтеглен/валцуван водач, алуминий, електропоцинковано с ирисценция); support (основата на машината в
                      3D); boot — 4 изгледа, рендер само докато нещо се движи, смяна на света без нов renderer; pipeline
                      (сцена + конвейер = stage), resolution (пикселите в движение и в покой).
-src/components/lift/ Екранът: LiftWorkspace (състоянието — въведеното и какво липсва заедно, изведеното на живо, запис,
-                     чернова) + LiftForm (лявата колона) + missing-items (имената в списъка какво липсва), LiftView
+src/components/lift/ Екранът Progetto (кръг 45; до него LiftWorkspace + LiftForm + LiftCalcFields): ProgettoWorkspace
+                     (състоянието — геометрията и какво липсва заедно, сглобена върху „Calcolo argano“, изведеното на живо,
+                     запис, чернова, „Porta nel calcolo“) + ProgettoForm (лявата колона) + ProgettoFuni (въжетата в чертежа,
+                     превключвателите) + DalCalcolo (основата, само за четене) + DifferenzeCalcolo (какво допълва чертежът)
+                     + missing-items (имената в списъка какво липсва), LiftView
                      (записан проект), LiftSimulator
                      (сцена, HUD, изгледи, сценарии, часовник), SimCharts (малки графики по една величина, курсор, подсказка),
                      LiftChecks (всяка проверка с бутон „Симулирай“), LiftFacts (изведеното с произход), MachineAdvice
@@ -388,7 +407,11 @@ prisma/              schema + migrations/0_init (тригер: без UPDATE н�
                      Company.ordineSezioni; ръчно писана, само добавя; връщането — в коментара ѝ, кодът и колоните заедно),
                      19_locale_it (езикът на акаунта, поканата и чакащата регистрация — `it` навсякъде; само данни),
                      20_rilievi_impianti (Scheda.projectId → Project, ON DELETE SET NULL, индекс (projectId, data DESC);
-                     ръчно писана, само добавя; връщането — в коментара ѝ).
+                     ръчно писана, само добавя; връщането — в коментара ѝ), 21_intervento (кръг 45: TipoIntervento,
+                     Calculation.intervento, LiftDesign.baseCalculationId с индекс и FK; адитивна; връщането — в
+                     docs/rules.md „Интервенцията и стъпките“). Project.kind (6_project_kind) остава в базата, „deprecated“
+                     в schema.prisma: никой код не го чете (глобален omit в src/lib/db.ts, тестът no-project-kind); пада с
+                     по-късна миграция след потвърждението на собственика.
 src/lib/rilievi/     Rilievi (кръг 41) — картите за оглед, чисто (и в браузъра): fields + field-types (ЕДИНСТВЕНИЯТ списък на
                      полетата, условията `when`, activeFields), field-parsers + validation (zod по вида, parseScheda,
                      formValuesFromBody), misure (бутониерите по спирки, mb-<спирка>-<колона>), format (displaySections,
@@ -451,7 +474,8 @@ src/server/collega/  service (collega/scollega/creaDaRilievo: суров SQL б�
                      `rilievi:link`, само за четене, честота), queries (съоръжението на картата, кандидатите в две заявки — по код и по адрес —
                      и предложенията,
                      търсенето, рилевата на съоръжението и рилевото за справка — празни без `rilievi:view`, имената за
-                     регистъра), impianto (последните записи → сравнение и стъпки; без `rilievi:view` нищо от рилевата), home
+                     регистъра), impianto (последните записи → сравнение и стъпки; кръг 45 — по записа: последното от стъпка 2,
+                     Progetto на интервенцията, `allineato`/„superato“; без `rilievi:view` нищо от рилевата), home
                      (последните рилева, броячите, плочките на съоръженията — сравнени на партиди по 250 до 5000 — и техните id
                      за `/app/impianti?stato=`), forms (avvioCalc/avvioLift — началото на калкулатора и на /progetto от
                      рилевото; usaDatiImpianto — адресът/матрикулата за данните на съоръжението; всички само с

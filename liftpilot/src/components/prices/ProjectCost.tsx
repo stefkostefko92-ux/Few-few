@@ -11,10 +11,17 @@ import { makeFmt } from '@/lib/present/tr';
 // amount, the company's free lines counted by their basis, the total of the priced ones and how many have none; the
 // free lines a replacement cannot count (by the stop); the parts a calculation's bill cannot count without the lift's
 // design (`uncounted`: bom.ts calcUncounted) — those the acceptance test names replaced, or a new lift's — in words of
-// their own; which scope it counts (a new lift, a modification tested to UNI 10411 with its replaced parts only, a machine
-// replacement). Only on the pages of those who see prices.
+// their own; which scope it counts (a new lift, a modification tested to UNI 10411 with its replaced parts only — with the
+// machine kept, nothing for a new one —, a machine replacement, a modernisation keeping the machine). Only on the pages
+// of those who see prices.
+/** Which note the cost closes with (messages prices.costNote*). */
+export type CostScope = 'design' | 'modification' | 'modificationResta' | 'calc' | 'resta';
+const NOTE: Readonly<Record<CostScope, string>> = {
+  design: 'costNoteDesign', modification: 'costNoteModification', modificationResta: 'costNoteModificationResta', calc: 'costNoteCalc', resta: 'costNoteResta',
+};
+
 export default async function ProjectCost({ cost, skipped = [], uncounted = null, locale, scope, editable }: {
-  cost: Cost; skipped?: readonly string[]; uncounted?: Uncounted | null; locale: string; scope: 'design' | 'modification' | 'calc'; editable: boolean;
+  cost: Cost; skipped?: readonly string[]; uncounted?: Uncounted | null; locale: string; scope: CostScope; editable: boolean;
 }) {
   const t = await getTranslations('prices'), tl = await getTranslations('lift'), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
   const eur = (c: number | null): string => (c === null ? '—' : money(c, 'eur', locale));
@@ -46,7 +53,7 @@ export default async function ProjectCost({ cost, skipped = [], uncounted = null
         <p className="alert alert-warn" role="status">{t(uncounted.newLift ? 'uncountedNew' : 'uncounted', { list: uncounted.parts.map((p) => tl(`parte_${p}`)).join(', ') })}</p>
       ) : null}
       {skipped.length ? <p className="note">{t('skipped', { list: skipped.join('; ') })}</p> : null}
-      <p className="note">{t(scope === 'design' ? 'costNoteDesign' : scope === 'modification' ? 'costNoteModification' : 'costNoteCalc')}</p>
+      <p className="note">{t(NOTE[scope])}</p>
     </section>
   );
 }

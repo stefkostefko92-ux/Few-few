@@ -1,32 +1,45 @@
-// The smoke test's new projects, which start empty: the calculator (nothing filled in, what is missing listed, its draft
-// kept, resumed after a reload and discarded, an example only on request), a machine room survey typed measure by
-// measure, and the one form of a whole project with its project data entered (the carried-over ones stay, the rest is
-// typed; a draft taken up again after a reload).
+// The smoke test's new projects, which start empty: the calculator (no type of intervention and nothing filled in, what
+// is missing listed with the type first, its draft kept with its type, resumed after a reload and discarded, an example
+// only on request), a machine room survey typed measure by measure, and the one form of a whole project with its
+// project data entered (the carried-over ones stay, the rest is typed; a draft taken up again after a reload).
 import assert from 'node:assert/strict';
 import { step } from './smoke-kit.mjs';
 
 const choose = (page, id) => page.click(`label:has(> #${id})`);
 
-/** A new calculation: empty, its draft kept and discarded; then the example asked for. */
+/** A new calculation: empty, the type of intervention asked first; its draft (with the type) kept and discarded; then
+ *  the example asked for, which brings its type. */
 export async function blankCalc({ page, hydrated, example }) {
-  step('calculation: a new one starts empty, its draft kept, resumed and discarded');
+  step('calculation: a new one starts empty, the type of intervention first; its draft kept, resumed and discarded');
   await hydrated(page, '#Q');
+  assert.equal((await page.textContent('main h1'))?.trim(), 'Calcolo argano');
   assert.equal(await page.inputValue('#Q'), '', 'no example value');
   assert.equal(await page.locator('.summary .missing').count(), 1, 'what is still to enter');
+  assert.equal(await page.locator('input[name="intervento"]:checked').count(), 0, 'no type chosen');
+  assert.equal((await page.textContent('.summary .missing-list li:first-child'))?.trim(), 'Tipo di intervento', 'the type first');
   assert.equal(await page.locator('.verdict .big').count(), 0, 'nothing worked out');
+  // «Solo argano»: the ropes still to answer, right after the type's place in the list
+  await page.click('label.intervento-tipo[data-tipo="SOLO_ARGANO"]');
+  assert.equal((await page.textContent('.summary .missing-list li:first-child'))?.trim(), 'Funi sostituite', 'the ropes to answer');
+  await page.click('.parti-sino li[data-part="ropes"] label:has-text("No")');
+  assert.notEqual((await page.textContent('.summary .missing-list li:first-child'))?.trim(), 'Funi sostituite', 'answered');
   await page.fill('#Q', '630');
   await page.waitForSelector('.savebar .draft-bar:has-text("Bozza salvata")', { timeout: 15000 });
   await page.reload();
   await hydrated(page, '#Q');
   assert.equal(await page.inputValue('#Q'), '630', 'the draft taken up again');
+  assert.ok(await page.isChecked('input[name="intervento"][value="SOLO_ARGANO"]'), 'with its type');
+  assert.equal(await page.locator('.parti-sino li[data-part="ropes"].da').count(), 0, 'and the ropes answered');
   await page.waitForSelector('.savebar .draft-bar:has-text("Bozza ripresa")');
   await page.click('.savebar .draft-bar button:has-text("Scarta la bozza")');
   await page.click('.savebar .draft-bar button:has-text("Sì, scarta")');
   await page.waitForSelector('.savebar .draft-bar', { state: 'detached', timeout: 15000 });
   await hydrated(page, '#Q');
   assert.equal(await page.inputValue('#Q'), '', 'discarded: empty again');
+  assert.equal(await page.locator('input[name="intervento"]:checked').count(), 0, 'and no type');
   await page.click(`.controls button:has-text("Esempio ${example}")`);
   await page.waitForSelector('.verdict .big');
+  assert.equal(await page.locator('input[name="intervento"]:checked').count(), 1, 'the example brings its type');
 }
 
 /** A new survey of the machine room: every measure typed (the higher room, the existing drops as measured). */

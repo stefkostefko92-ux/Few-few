@@ -16,11 +16,13 @@ interface Props {
   I: ShaftInputs;
   set: ShaftSet;
   blank?: FormBlank;
+  /** the rated load fixed by the «Calcolo argano» the Progetto draws on (round 45): shown, not entered */
+  fixedQ?: { kg: number; label: string };
 }
 
 const ACCESS = ['none', 'dm236_existing', 'dm236_residential', 'dm236_public'] as const;
 
-export default function ShaftOptions({ I, set, blank = NO_BLANK }: Props) {
+export default function ShaftOptions({ I, set, blank = NO_BLANK, fixedQ }: Props) {
   const t = useTranslations('shaft'), tb = useTranslations('blank'), is = blank.is;
   // the load last given (kg): back to a given load, it is the one entered; none entered yet, its figure is to enter
   const [lastQ, setLastQ] = useState<number | null>(I.Q);
@@ -36,9 +38,16 @@ export default function ShaftOptions({ I, set, blank = NO_BLANK }: Props) {
   const one = is('entrances') || I.entrances === 'one';
   return (
     <div className="shaft-options">
-      <Seg name="qmode" id={fieldId('Q')} need={is('Q')} label={t('Qmode')} value={is('Q') ? null : I.Q === null ? 'max' : 'given'}
-        onChange={(v) => (v === 'max' ? set({ Q: null }) : given())} options={[{ v: 'max', label: t('Qmax') }, { v: 'given', label: t('Qgiven') }]} />
-      {!is('Q') && I.Q !== null ? (
+      {fixedQ ? (
+        <label className="field">
+          <span>{t('Q')}<span className="badge calcolo">{fixedQ.label}</span></span>
+          <input id={fieldId('Qkg')} className="input num" type="number" value={fixedQ.kg} readOnly aria-readonly="true" />
+        </label>
+      ) : (
+        <Seg name="qmode" id={fieldId('Q')} need={is('Q')} label={t('Qmode')} value={is('Q') ? null : I.Q === null ? 'max' : 'given'}
+          onChange={(v) => (v === 'max' ? set({ Q: null }) : given())} options={[{ v: 'max', label: t('Qmax') }, { v: 'given', label: t('Qgiven') }]} />
+      )}
+      {!fixedQ && !is('Q') && I.Q !== null ? (
         <label className={`field${need('Qkg')}`}>
           <span>{t('Q')}<DalRilievo id="Qkg" value={is('Qkg') ? '' : I.Q} /></span>
           <input id={fieldId('Qkg')} className="input num" type="number" inputMode="numeric" min={100} max={10000} step={5} value={is('Qkg') ? '' : I.Q}

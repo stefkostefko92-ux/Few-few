@@ -6,6 +6,7 @@ import 'server-only';
 // made from the one form of a lift design carries the marks of what the software filled in (the estimated car weight on
 // sheet 1) and follows that design (records.ts: all three reproduced); one without it, the standards chosen with it.
 import type { Prisma } from '@prisma/client';
+import type { Db } from '@/lib/db';
 import type { SessionUser } from '@/lib/auth';
 import { plantReadSchema } from '@/lib/plant';
 import type { StoredDesign } from '@/lib/shaft-hash';
@@ -17,9 +18,10 @@ import type { TitleData } from '@/lib/tavole/title-block';
 import { tavoleHash } from '@/lib/tavole-hash';
 import type { DrawingDoc } from '@/drawing';
 import { usableLogo } from '@/lib/logo';
+import type { TipoIntervento } from '@/lib/lift/intervento';
 import { calcRecord, recordMarks } from './records';
 
-type Tx = Prisma.TransactionClient;
+type Tx = Db;
 
 export const DESIGN_SELECT = {
   id: true, label: true, summary: true, inputs: true, source: true, sha256: true, engineVersion: true, profileId: true, createdAt: true, user: { select: { name: true } },
@@ -72,14 +74,16 @@ export interface Composed {
   pages: number;
 }
 
-type StoredCalc = { inputs: unknown; sha256: string; collaudo: unknown; shaftDesign: StoredDesign | null; liftDesign: { inputs: unknown; engineVersion: string } | null };
+type StoredCalc = {
+  inputs: unknown; sha256: string; collaudo: unknown; intervento: TipoIntervento | null; shaftDesign: StoredDesign | null; liftDesign: { inputs: unknown; engineVersion: string } | null;
+};
 
 /** The values of a calculation, the layout of its shaft design and what the documents mark: every record reproduced. */
 function reproduce(c: StoredCalc) {
   if (!c.shaftDesign) return { ok: false as const, error: 'noDesign' as const };
   const rec = calcRecord(c);
   if (!rec?.ok || !rec.design) return { ok: false as const, error: 'engineChanged' as const };
-  return { ok: true as const, values: rec.values, layout: rec.design.layout, designId: c.shaftDesign.id, marks: recordMarks(rec, c.collaudo) };
+  return { ok: true as const, values: rec.values, layout: rec.design.layout, designId: c.shaftDesign.id, marks: recordMarks(rec, c.collaudo), tipo: c.intervento };
 }
 
 /** `readOnly`: an export, allowed for an archived project too (an issue is not). */
@@ -87,7 +91,7 @@ export async function composeFromCalculation(tx: Tx, user: SessionUser, calculat
   const c = await tx.calculation.findFirst({
     where: { id: calculationId, companyId: user.companyId },
     select: {
-      inputs: true, sha256: true, collaudo: true, shaftDesign: { select: DESIGN_SELECT }, liftDesign: { select: { inputs: true, engineVersion: true } },
+      inputs: true, sha256: true, collaudo: true, intervento: true, shaftDesign: { select: DESIGN_SELECT }, liftDesign: { select: { inputs: true, engineVersion: true } },
       project: { select: SET_PROJECT },
     },
   });
@@ -96,7 +100,7 @@ export async function composeFromCalculation(tx: Tx, user: SessionUser, calculat
   const r = reproduce(c);
   if (!r.ok) return r;
   const b = await setBasis(tx, user, c.project, set);
-  const input = b ? storedInput(r.values, r.layout, b.stored, b.logo, r.marks, b.clientLogo, recordsOf(calculationId, c)) : null;
+  const input = b ? storedInput(r.values, r.layout, b.stored, b.logo, r.marks, b.clientLogo, recordsOf(calculationId, c), r.tipo) : null;
   if (!b || !input) return { ok: false, error: 'notFound' };
   const { doc } = buildTavole(input);
   return { ok: true, ...b.row, shaftDesignId: r.designId, doc, input, sha256: tavoleHash(doc), pages: doc.pages.length };
@@ -113,14 +117,14 @@ const recordsOf = (calculationId: string, c: { sha256: string; shaftDesign: { id
  */
 export function composeStored(s: StoredSet & {
   sha256: string;
-  calculation: { id: string; inputs: unknown; sha256: string; collaudo: unknown; liftDesign: { inputs: unknown; engineVersion: string } | null };
+  calculation: { id: string; inputs: unknown; sha256: string; collaudo: unknown; intervento: TipoIntervento | null; liftDesign: { inputs: unknown; engineVersion: string } | null };
   shaftDesign: StoredDesign;
   logo: { mime: string; data: Uint8Array } | null;
   clientLogo?: { mime: string; data: Uint8Array } | null;
 }): { doc: DrawingDoc; warnings: Mismatch[]; input: TavoleInput; title: TitleData; sheets: TavoleResult['sheets'] } | ComposeError {
   const r = reproduce({ ...s.calculation, shaftDesign: s.shaftDesign });
   if (!r.ok) return r;
-  const input = storedInput(r.values, r.layout, s, usableLogo(s.logo), r.marks, usableLogo(s.clientLogo ?? null), recordsOf(s.calculation.id, { sha256: s.calculation.sha256, shaftDesign: s.shaftDesign }));
+  const input = storedInput(r.values, r.layout, s, usableLogo(s.logo), r.marks, usableLogo(s.clientLogo ?? null), recordsOf(s.calculation.id, { sha256: s.calculation.sha256, shaftDesign: s.shaftDesign }), r.tipo);
   if (!input) return { ok: false, error: 'notFound' };
   const { doc, warnings, title, sheets } = buildTavole(input);
   return tavoleHash(doc) === s.sha256 ? { doc, warnings, input, title, sheets } : { ok: false, error: 'engineChanged' };

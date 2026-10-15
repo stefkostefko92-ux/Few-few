@@ -4,6 +4,7 @@
 import { z } from 'zod';
 import type { FormValues } from '@/calc/types';
 import type { Layout } from '@/shaft/types';
+import type { TipoIntervento } from '../lift/intervento';
 import { NO_MARKS, type ValueMarks } from '../lift/marks';
 import { plantReadSchema } from '../plant';
 import type { SetRecords, TavoleInput, TavoleRevision } from './input';
@@ -76,8 +77,8 @@ export function storedParts(
  *  cites (the calculation and the shaft design the set is drawn from). */
 export function storedInput(
   values: FormValues, layout: Layout, s: StoredSet, logo: { mime: 'image/png' | 'image/jpeg'; data: Uint8Array } | null, marks: ValueMarks = NO_MARKS,
-  clientLogo: { mime: 'image/png' | 'image/jpeg'; data: Uint8Array } | null = null, records?: SetRecords,
+  clientLogo: { mime: 'image/png' | 'image/jpeg'; data: Uint8Array } | null = null, records?: SetRecords, tipo: TipoIntervento | null = null,
 ): TavoleInput | null {
   const p = storedParts(s, logo, clientLogo);
-  return p ? { values, layout, marks, ...p, ...(records ? { records } : {}) } : null;
+  return p ? { values, layout, marks, ...p, ...(records ? { records } : {}), ...(tipo ? { tipo } : {}) } : null;
 }

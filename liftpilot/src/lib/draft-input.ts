@@ -1,14 +1,18 @@
-// A form's draft as the browser sends it and the server keeps it (src/server/drafts.ts): the installation's one form
-// (its inputs and the values still to enter), a replacement's calculator (its values as typed and the standards of its
-// test), a calculation's machine room survey (its measures and those still to enter). The inputs are kept in the ranges
-// a record accepts: a value being typed out of range is not kept until it is back in range.
+// A form's draft as the browser sends it and the server keeps it (src/server/drafts.ts): the Progetto (round 45: the
+// drawing's geometry, the «Calcolo argano» it is drawn on and the values still to enter — a draft of the one form before
+// it no longer reads, and is overwritten by the next one), «Calcolo argano» (its values as typed, the type of intervention, the parts
+// answered and the standards of its test), a calculation's machine room survey (its measures and those still to
+// enter). The inputs are kept in the ranges a record accepts: a value being typed out of range is not kept until it is
+// back in range.
 import { z } from 'zod';
 import { formValuesSchema } from './calc-input';
-import { collaudoSchema, liftInputsReadSchema } from './lift-input';
+import { collaudoSchema, progettoInputsReadSchema } from './lift-input';
 import { isBlankKey, type BlankKey } from './lift/blank';
+import { PARTI } from './lift/collaudo';
+import { TIPI_INTERVENTO } from './lift/intervento';
 import { isSurveyField, surveySchema, type SurveyField } from './room/survey';
 
-/** "lift" (the one form of a whole project), "calc" (a replacement's calculator), "room:<calculation>" (its survey). */
+/** "lift" (the Progetto's drawing), "calc" («Calcolo argano»), "room:<calculation>" (its machine room's survey). */
 export const draftScopeSchema = z.union([z.literal('lift'), z.literal('calc'), z.string().regex(/^room:[a-z0-9]{1,40}$/i)]);
 export type DraftScope = z.infer<typeof draftScopeSchema>;
 
@@ -20,13 +24,20 @@ const rilievoSchema = z.array(z.string().regex(/^[A-Za-z][A-Za-z0-9_]{0,23}$/)).
 const parteSchema = z.literal(true).optional();
 
 export const liftDraftSchema = z.object({
-  inputs: liftInputsReadSchema,
+  progetto: progettoInputsReadSchema,
+  /** the «Calcolo argano» the drawing was being made on */
+  base: z.string().regex(/^[a-z0-9]{1,40}$/i).optional(),
   blank: z.array(z.custom<BlankKey>((s) => typeof s === 'string' && isBlankKey(s))).max(400),
   rilievo: rilievoSchema,
   parte: parteSchema,
 }).strict();
 
-export const calcDraftSchema = z.object({ values: formValuesSchema, collaudo: collaudoSchema.nullable(), rilievo: rilievoSchema, parte: parteSchema }).strict();
+/** The calculator's draft: its values and test as typed, the type of intervention chosen and the parts answered (round
+ *  45; absent in the drafts before it: the type read by their shape, or left to choose on a blank start). */
+export const calcDraftSchema = z.object({
+  values: formValuesSchema, collaudo: collaudoSchema.nullable(), intervento: z.enum(TIPI_INTERVENTO).optional(),
+  risposte: z.array(z.enum(PARTI)).max(PARTI.length).optional(), rilievo: rilievoSchema, parte: parteSchema,
+}).strict();
 
 export const surveyDraftSchema = z.object({
   survey: surveySchema,

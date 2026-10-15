@@ -14,6 +14,8 @@ import type { SheetImage } from '@/drawing';
 import { CATALOG_READ_ON, MAKER_SITE } from '@/lib/catalog/machines';
 import type { DataSource, MachineCandidate } from '@/lib/lift/advice';
 import { NORMA_SIGLA, ropesKept, type Collaudo } from '@/lib/lift/collaudo';
+import type { TipoIntervento } from '@/lib/lift/intervento';
+import { etichettaIntervento } from '@/lib/report/intervento-text';
 import { dvText, machineName } from '@/lib/present/advice';
 import { textsFor } from '@/lib/present/texts';
 import { makePres } from '@/lib/present/tr';
@@ -51,6 +53,8 @@ export interface OrderInput {
   /** the company's prices of the machine and of the maker's bedplate [cents, VAT excluded], for a downloader who sees
    *  prices; missing: the price is left blank (null: not in the company's list) */
   prices?: { machine: number | null; bedplate: number | null };
+  /** the intervention declared with the calculation (round 45): a row of the installation's data; none — saved before it */
+  tipo?: TipoIntervento | null;
 }
 
 const BLANK = '______________________';
@@ -143,6 +147,7 @@ export function buildOrder(o: OrderInput): ReportDoc {
     ['Disposizione', t(`lay_${I.layout}`)],
     ['Funi (non comprese)', `${N.n} × Ø ${dText(N.d)} mm, carico di rottura minimo ${fmt(N.Fmin, 1)} kN${cut !== null ? `, lunghezza di taglio ${fmt(cut, 0)} m ciascuna` : ''}`],
     ['Norma del collaudo', `${NORMA_SIGLA[o.collaudo.norma]}${o.collaudo.rifacimento ? ' (rifacimento con l’arcata esistente)' : ''}`],
+    ...(o.tipo ? [['Intervento', etichettaIntervento(o.tipo, o.collaudo)] as [string, string]] : []),
   ] });
 
   if (o.room.length) {

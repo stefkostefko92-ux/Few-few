@@ -24,6 +24,7 @@ const MISURE: Row[] = [
 ];
 let schedaArgs: Args | null = null, permArgs: Args | null = null;
 let companyArgs: { select?: Record<string, boolean> } | null = null;
+let projectArgs: { include?: Record<string, { select?: Record<string, unknown> }>; omit?: Record<string, boolean> } | null = null;
 const PERMS: Row[] = [
   { companyId: 'c1', role: 'TECHNICIAN', capability: 'calc:create', granted: false, updatedById: 'u1', updatedAt: new Date('2026-10-14T08:00:00Z') },
   { companyId: 'c2', role: 'SALES', capability: 'prices:view', granted: false, updatedById: 'u9', updatedAt: new Date('2026-10-14T08:00:00Z') },
@@ -37,7 +38,8 @@ const db = {
       return { id: 'c1', name: 'Ascensori Rossi Srl', ordineSezioni: ['note'] };
     },
   },
-  user: { findMany: none }, invite: { findMany: none }, companyLogo: { findMany: none }, project: { findMany: none },
+  user: { findMany: none }, invite: { findMany: none }, companyLogo: { findMany: none },
+  project: { findMany: async (args: typeof projectArgs) => { projectArgs = args; return []; } },
   priceItem: { findMany: none }, customPriceItem: { findMany: none }, auditLog: { findMany: none },
   companyRolePermission: {
     findMany: async (args: Args) => { permArgs = args; return PERMS.filter((p) => p.companyId === args.where?.companyId); },
@@ -84,4 +86,10 @@ test('l’esportazione: ogni chiave del registro, e le schede di rilievo della p
   // the rights matrix as the company set it: its rows only
   assert.deepEqual(permArgs?.where, { companyId: 'c1' });
   assert.deepEqual((doc.rolePermissions as Row[]).map((p) => [p.role, p.capability, p.granted]), [['TECHNICIAN', 'calc:create', false]]);
+  // format 8 (round 45): each calculation names the intervention declared with it, each lift design its base calculation
+  assert.equal(projectArgs?.include?.calculations?.select?.intervento, true);
+  assert.equal(projectArgs?.include?.liftDesigns?.select?.baseCalculationId, true);
+  // format 9 (round 45): the installations without their former module
+  assert.deepEqual(projectArgs?.omit, { kind: true });
+  assert.equal(doc.formatVersion, 9);
 });

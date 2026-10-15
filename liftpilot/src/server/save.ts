@@ -11,7 +11,7 @@ import type { SessionUser } from '@/lib/auth';
 import { audit } from '@/lib/audit';
 import { prisma } from '@/lib/db';
 import { log } from '@/lib/log';
-import { LIFT_ENGINE_VERSION, collaudoOf, collaudoVerdict, deriveLift, type Collaudo, type LiftInputs } from '@/lib/lift';
+import { LIFT_ENGINE_VERSION, collaudoOf, collaudoVerdict, deriveLift, type Collaudo, type LiftInputs, type TipoIntervento } from '@/lib/lift';
 import { liftHash } from '@/lib/lift-hash';
 import { mirrorRopes } from '@/lib/present/analysis';
 import { verdictStatus } from '@/lib/present/texts';
@@ -38,9 +38,13 @@ const machineSummary = (N: ReturnType<typeof readInputs>['N']): string =>
 
 const touch = (projectId: string) => prisma.project.update({ where: { id: projectId }, data: { updatedAt: new Date() } });
 
-/** A calculation of a replacement from its values, with the standards of its acceptance test chosen with it (stored
- *  beside the snapshot, normalised as the documents read them). `from`: the record it updates (audit). */
-export async function createCalculation(user: SessionUser, projectId: string, values: FormValues, label: string | null, chosen: Collaudo | null, from?: string): Promise<Created> {
+/** A calculation from its values, with the intervention declared with it and the standards of its acceptance test (both
+ *  stored beside the snapshot, outside its hash; the test normalised as the documents read them — collaudoOf is
+ *  idempotent, so a stored default reads as the default it was). A save from the form stores the test always; one made
+ *  again from a record (`from`: the record it updates, audit) keeps that record's rule — the test only when one was
+ *  stored — and its type (NULL stays NULL: a calculation saved before round 45 keeps the documents' wording). */
+export async function createCalculation(user: SessionUser, projectId: string, values: FormValues, label: string | null, chosen: Collaudo | null,
+  tipo: TipoIntervento | null, from?: string): Promise<Created> {
   const V = mirrorRopes(values), ctx = readInputs(V);
   if (ctx.bad.length) return { ok: false, error: 'invalidInputs', fields: [...new Set(ctx.bad)] };
   const snapshot = snapshotOf(V), res = compute(ctx.I, ctx.N);
@@ -49,7 +53,7 @@ export async function createCalculation(user: SessionUser, projectId: string, va
       companyId: user.companyId, projectId, userId: user.id, label, engineVersion: snapshot.engine, profileId: snapshot.profile, inputs: snapshot.values ?? {},
       results: snapshot.results, sha256: snapshotHash(snapshot), verdict: VERDICT[verdictStatus(res)], failCount: res.fails.length,
       warnCount: res.checks.filter((c) => c.status === 'warn').length, summary: machineSummary(ctx.N),
-      ...(chosen ? { collaudo: { ...collaudoOf(V, chosen) } } : {}),
+      ...(chosen || !from ? { collaudo: { ...collaudoOf(V, chosen ?? undefined) } } : {}), ...(tipo ? { intervento: tipo } : {}),
     },
     select: { id: true },
   });
@@ -59,10 +63,18 @@ export async function createCalculation(user: SessionUser, projectId: string, va
   return { ok: true, id: calc.id };
 }
 
+/** The «Calcolo argano» a drawing is made on (round 45): its id and the intervention declared with it. */
+export interface BaseRef {
+  id: string;
+  intervento: TipoIntervento | null;
+}
+
 /** An installation from the one form: in one transaction the shaft design, the calculation made from it and the lift
  *  design that ties them. Refused while the derivation has issues (a distance to be measured, a machine that does not
- *  fit the plan). */
-export async function createLiftDesign(user: SessionUser, projectId: string, inputs: LiftInputs, label: string | null, source: ShaftSource | null, from?: string): Promise<Created> {
+ *  fit the plan). `base`: the step-2 calculation it was drawn on — the design names it (provenance, outside its hash)
+ *  and its calculation takes the base's intervention; null: a design of the one form before round 45. */
+export async function createLiftDesign(user: SessionUser, projectId: string, inputs: LiftInputs, label: string | null, source: ShaftSource | null, from?: string,
+  base: BaseRef | null = null): Promise<Created> {
   const d = deriveLift(inputs);
   if (d.analysis.ctx.bad.length || d.issues.length) return { ok: false, error: 'invalidInputs', fields: [...new Set([...d.analysis.ctx.bad, ...d.issues])] };
   const { snapshot: shaftSnap, layout: L } = shaftSnapshot(d.shaft), calcSnap = snapshotOf(d.values);
@@ -88,6 +100,7 @@ export async function createLiftDesign(user: SessionUser, projectId: string, inp
         companyId: user.companyId, projectId, userId: user.id, label, engineVersion: calcSnap.engine, profileId: calcSnap.profile, inputs: calcSnap.values ?? {},
         results: calcSnap.results, sha256: calcSha, verdict: VERDICT[verdictStatus(res)], failCount: res.fails.length,
         warnCount: res.checks.filter((c) => c.status === 'warn').length, summary: machine, shaftDesignId: shaft.id, collaudo: { ...d.collaudo },
+        ...(base?.intervento ? { intervento: base.intervento } : {}),
       },
       select: { id: true },
     });
@@ -95,7 +108,7 @@ export async function createLiftDesign(user: SessionUser, projectId: string, inp
       data: {
         // the form as entered (validated), stored as is
         companyId: user.companyId, projectId, userId: user.id, label, inputs: inputs as unknown as Prisma.InputJsonValue, source: source$,
-        shaftDesignId: shaft.id, calculationId: calc.id, engineVersion: LIFT_ENGINE_VERSION, sha256: hash,
+        shaftDesignId: shaft.id, calculationId: calc.id, ...(base ? { baseCalculationId: base.id } : {}), engineVersion: LIFT_ENGINE_VERSION, sha256: hash,
         verdict: VERDICT[test.verdict], failCount: test.fails, warnCount: test.warns,
         summary: `${S.W} × ${S.D} mm · ${fmt(L.Q, 0)} kg · ${fmt(S.vertical.v, 2)} m/s · ${machine}`,
       },
@@ -103,7 +116,8 @@ export async function createLiftDesign(user: SessionUser, projectId: string, inp
     });
   });
   await touch(projectId);
-  await audit({ companyId: user.companyId, userId: user.id, action: 'LIFT_DESIGN_SAVED', entity: 'LiftDesign', entityId: created.id, ...(from ? { meta: { updates: from } } : {}) });
+  const meta = { ...(from ? { updates: from } : {}), ...(base ? { base: base.id } : {}) };
+  await audit({ companyId: user.companyId, userId: user.id, action: 'LIFT_DESIGN_SAVED', entity: 'LiftDesign', entityId: created.id, ...(from || base ? { meta } : {}) });
   log.info({ userId: user.id, liftDesignId: created.id }, 'lift design saved');
   return { ok: true, id: created.id };
 }

@@ -9,7 +9,6 @@ export type Motivo = 'matricola' | 'numero' | 'indirizzo';
 export interface Candidato {
   id: string;
   name: string;
-  kind: 'REPLACEMENT' | 'FULL';
   address: string | null;
   city: string | null;
   province: string | null;
@@ -22,7 +21,6 @@ export interface Candidato {
 export interface Suggerimento {
   id: string;
   name: string;
-  kind: Candidato['kind'];
   indirizzo: string | null;
   plantNumber: string | null;
   motivi: Motivo[];
@@ -49,5 +47,5 @@ export function suggerimenti(r: { matricola: string | null; numeroImpianto: stri
     .filter((x) => x.motivi.length > 0)
     .sort((a, b) => PESO[b.motivi[0] as Motivo] - PESO[a.motivi[0] as Motivo] || b.motivi.length - a.motivi.length || b.c.updatedAt.getTime() - a.c.updatedAt.getTime())
     .slice(0, max)
-    .map(({ c, motivi }) => ({ id: c.id, name: c.name, kind: c.kind, indirizzo: indirizzoImpianto(c), plantNumber: c.plantNumber, motivi }));
+    .map(({ c, motivi }) => ({ id: c.id, name: c.name, indirizzo: indirizzoImpianto(c), plantNumber: c.plantNumber, motivi }));
 }

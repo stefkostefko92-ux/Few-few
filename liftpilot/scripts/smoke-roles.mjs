@@ -30,7 +30,7 @@ async function denied(page, url, right, what) {
   assert.match(await page.textContent('main h1'), /Permesso non concesso/, what);
 }
 
-export async function technician({ BASE, page, errors, stamp, login, logout, rilievoUrl }) {
+export async function technician({ BASE, page, errors, stamp, login, logout, hydrated, rilievoUrl }) {
   step('new user with a temporary password');
   await page.goto(`${BASE}/it/app/team`);
   const userEmail = `tecnico.${stamp}@example.com`;
@@ -53,6 +53,21 @@ export async function technician({ BASE, page, errors, stamp, login, logout, ril
   // a Tecnico sees no prices (a right the company may give: its page says so) and manages nobody (never: 404)
   await denied(page, `${BASE}/it/app/prices`, 'prices:view', 'price list of a Tecnico');
   assert.equal((await page.goto(`${BASE}/it/app/team`)).status(), 404, 'team page of a Tecnico');
+  // round 45: a Tecnico creates an installation and makes its «Calcolo argano» of any type — here a transformation —; the
+  // Progetto is the Progettista's: its page names whose the next step is, /progetto the right it needs
+  await page.goto(`${BASE}/it/app/projects/new`);
+  await page.fill('input[name="name"]', `Impianto del Tecnico ${stamp}`);
+  await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/calc$/), page.click('main form button[type="submit"]')]);
+  const tecProject = page.url().replace(/\/calc$/, '');
+  await hydrated(page, '#Q');
+  await page.click('.controls button:has-text("Esempio A")');
+  await page.click('label.intervento-tipo[data-tipo="TRASFORMAZIONE_COMPLETA"]');
+  await page.waitForSelector('.savebar button.primary:not([disabled])');
+  await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
+  assert.match(await page.textContent('.calc-ruolo'), /Trasformazione completa/, 'a Tecnico saves a transformation');
+  await denied(page, `${tecProject}/progetto`, 'progetto:edit', 'the Progetto of a Tecnico');
+  await page.goto(tecProject);
+  assert.equal((await page.textContent('main')).split('Il progetto lo disegna un collega che ne ha il permesso').length - 1, 1, 'whose the next step is, once');
   assert.equal((await page.request.get(`${BASE}/api/company/export`)).status(), 403, 'company export by a Tecnico');
   // the survey sheets: read and edited by a Tecnico, never moved to the trash by one
   await page.goto(rilievoUrl);

@@ -5,10 +5,12 @@ import 'server-only';
 // by the issue and the revision (live data), by the draft of a saved room and by the PDF of an issued set (its
 // snapshots).
 import type { Prisma } from '@prisma/client';
+import type { Db } from '@/lib/db';
 import type { DrawingDoc } from '@/drawing';
 import type { SessionUser } from '@/lib/auth';
 import type { FormValues } from '@/calc/types';
 import type { Collaudo } from '@/lib/lift/collaudo';
+import type { TipoIntervento } from '@/lib/lift/intervento';
 import { reproduceRoom } from '@/lib/room-hash';
 import type { RoomDerived } from '@/lib/room/derive';
 import type { Survey } from '@/lib/room/survey';
@@ -22,7 +24,7 @@ import { SET_PROJECT, setBasis, type ComposeError } from './drawing-compose';
 import { usableLogo } from '@/lib/logo';
 import { readCalc, storedCollaudo } from './records';
 
-type Tx = Prisma.TransactionClient;
+type Tx = Db;
 
 export interface RoomComposed {
   ok: true;
@@ -43,14 +45,14 @@ export interface RoomComposed {
 }
 
 /** A saved room and its calculation, both reproduced by the running engines: the values, the survey, the room derived
- *  again, the standards. */
-export function reproduceRoomRecord(r: { inputs: unknown; sha256: string }, c: { inputs: unknown; sha256: string; collaudo: unknown }):
-  { ok: true; values: FormValues; survey: Survey; derived: RoomDerived; collaudo: Collaudo } | ComposeError {
+ *  again, the standards, the type declared with the calculation (round 45; null: saved before it). */
+export function reproduceRoomRecord(r: { inputs: unknown; sha256: string }, c: { inputs: unknown; sha256: string; collaudo: unknown; intervento?: TipoIntervento | null }):
+  { ok: true; values: FormValues; survey: Survey; derived: RoomDerived; collaudo: Collaudo; tipo: TipoIntervento | null } | ComposeError {
   const calc = readCalc(c);
   if (!calc?.same) return { ok: false, error: 'engineChanged' };
   const room = reproduceRoom(r, calc.values, c.sha256);
   if (!room?.same) return { ok: false, error: 'engineChanged' };
-  return { ok: true, values: calc.values, survey: room.survey, derived: room.derived, collaudo: storedCollaudo(calc.values, c.collaudo) };
+  return { ok: true, values: calc.values, survey: room.survey, derived: room.derived, collaudo: storedCollaudo(calc.values, c.collaudo), tipo: c.intervento ?? null };
 }
 
 /** `readOnly`: a draft, allowed for an archived project too (an issue is not). */
@@ -59,7 +61,7 @@ export async function composeFromRoom(
 ): Promise<RoomComposed | ComposeError> {
   const r = await tx.roomDesign.findFirst({
     where: { id: roomDesignId, companyId: user.companyId },
-    select: { id: true, inputs: true, sha256: true, calculation: { select: { id: true, inputs: true, sha256: true, collaudo: true } }, project: { select: SET_PROJECT } },
+    select: { id: true, inputs: true, sha256: true, calculation: { select: { id: true, inputs: true, sha256: true, collaudo: true, intervento: true } }, project: { select: SET_PROJECT } },
   });
   if (!r) return { ok: false, error: 'notFound' };
   if (r.project.archivedAt && !readOnly) return { ok: false, error: 'archived' };
@@ -68,7 +70,7 @@ export async function composeFromRoom(
   const b = await setBasis(tx, user, r.project, set);
   const parts = b ? storedParts(b.stored, b.logo, b.clientLogo) : null;
   if (!b || !parts) return { ok: false, error: 'notFound' };
-  const input: SurveyTavoleInput = { values: rep.values, survey: rep.survey, collaudo: rep.collaudo, ...parts, records: roomRecords(r.calculation, r) };
+  const input: SurveyTavoleInput = { values: rep.values, survey: rep.survey, collaudo: rep.collaudo, ...parts, records: roomRecords(r.calculation, r), ...(rep.tipo ? { tipo: rep.tipo } : {}) };
   const { doc } = buildSurveyTavole(input);
   return { ok: true, ...b.row, calculationId: r.calculation.id, roomDesignId: r.id, doc, input, made: rep.derived.made, sha256: tavoleHash(doc), pages: doc.pages.length };
 }
@@ -81,7 +83,7 @@ const roomRecords = (c: { id: string; sha256: string }, r: { id: string; sha256:
  *  do not reproduce it. */
 export function composeStoredRoom(s: StoredSet & {
   sha256: string;
-  calculation: { id: string; inputs: unknown; sha256: string; collaudo: unknown };
+  calculation: { id: string; inputs: unknown; sha256: string; collaudo: unknown; intervento: TipoIntervento | null };
   roomDesign: { id: string; inputs: unknown; sha256: string };
   logo: { mime: string; data: Uint8Array } | null;
   clientLogo?: { mime: string; data: Uint8Array } | null;
@@ -90,7 +92,7 @@ export function composeStoredRoom(s: StoredSet & {
   if (!rep.ok) return rep;
   const parts = storedParts(s, usableLogo(s.logo), usableLogo(s.clientLogo ?? null));
   if (!parts) return { ok: false, error: 'notFound' };
-  const input: SurveyTavoleInput = { values: rep.values, survey: rep.survey, collaudo: rep.collaudo, ...parts, records: roomRecords(s.calculation, s.roomDesign) };
+  const input: SurveyTavoleInput = { values: rep.values, survey: rep.survey, collaudo: rep.collaudo, ...parts, records: roomRecords(s.calculation, s.roomDesign), ...(rep.tipo ? { tipo: rep.tipo } : {}) };
   const { doc, derived, title, sheets } = buildSurveyTavole(input);
   return tavoleHash(doc) === s.sha256 ? { doc, input, derived, title, sheets } : { ok: false, error: 'engineChanged' };
 }

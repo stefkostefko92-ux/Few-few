@@ -5,7 +5,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  CAPABILITIES, DEFAULT_GRANTS, MATRIX_CAPABILITIES, MEMBER_ROLES, REQUIRES, ROLES, assignableRoles, can, capsOf, editableRoles, formRightOf,
+  CAPABILITIES, DEFAULT_GRANTS, MATRIX_CAPABILITIES, MEMBER_ROLES, REQUIRES, ROLES, assignableRoles, can, capsOf, editableRoles, RIGHT_OF_STEP,
   grantable, holds, homeOf, isCapability, isRole, lockOf, matrixRightOf, outranks, remakes, type Capability, type MatrixCapability, type MemberRole,
   type Override,
 } from '../rbac';
@@ -161,11 +161,11 @@ test('rifare un record col software attuale: il calcolo chi fa i calcoli; il pro
   assert.ok(remakes(draws, 'lift') && remakes(draws, 'room'));
 });
 
-test('il modulo di ogni tipo d’impianto e la riga della matrice di ogni diritto', () => {
-  assert.equal(formRightOf('REPLACEMENT'), 'calc:create');
-  assert.equal(formRightOf('FULL'), 'progetto:edit');
-  // a Tecnico creates both kinds, fills the replacement's calculator only
-  assert.ok(can(TEC, 'impianti:create') && can(TEC, formRightOf('REPLACEMENT')) && !can(TEC, formRightOf('FULL')));
+test('il diritto di ogni passo dell’impianto e la riga della matrice di ogni diritto', () => {
+  // round 45: «Calcolo argano» for every installation, the Progetto draws on it
+  assert.deepEqual(RIGHT_OF_STEP, { calcolo: 'calc:create', progetto: 'progetto:edit' });
+  // a Tecnico creates an installation and makes its «Calcolo argano» of any type; the Progetto is the Progettista's
+  assert.ok(can(TEC, 'impianti:create') && can(TEC, RIGHT_OF_STEP.calcolo) && !can(TEC, RIGHT_OF_STEP.progetto));
   // the derived rights come from their row; the platform's has none
   assert.equal(matrixRightOf('calc:view'), 'projects:view');
   assert.equal(matrixRightOf('records:refresh'), 'calc:create');

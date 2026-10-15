@@ -20,9 +20,15 @@ interface Props {
   /** the values still to enter */
   need: ReadonlySet<string>;
   texts: BlankTexts;
+  /** the existing machine's group (compared, kept sheave and ropes): an existing lift whose machine is replaced; absent:
+   *  as the context says */
+  esistente?: boolean;
+  /** a modernisation that keeps the machine (round 45): the machine's group is the existing machine's, with its title
+   *  and hint, and the ropes' group the existing ropes' when they stay too (`funi`: its title); null: the new machine */
+  resta?: { title: string; hint: string; funi: string | null } | null;
 }
 
-export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopesHint, need, texts }: Props) {
+export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopesHint, need, texts, esistente = V.context === 'repl', resta = null }: Props) {
   const { t } = P;
   const row = (f: Field) => <FieldRow key={f.id} P={P} f={f} V={V} bad={bad} set={set} need={need.has(f.id)} std={isStandard(V, f.id)} texts={texts} />;
   const rows = (fields: readonly Field[]) => fields.map(row);
@@ -33,7 +39,7 @@ export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopes
     ? texts.stdInUse(expert.map((f) => `${t((f.key ?? f.id) as CalcKey)}${f.id.startsWith('o_') ? ` (${t('g_old')})` : ''} ${String(V[f.id])}${f.kind === 'num' && f.unit ? ` ${f.unit}` : ''}`).join(', '))
     : '';
   const check = (id: 'compare' | 'keepD' | 'keepRopes') => (
-    <div className="row check" hidden={!shown(id, V)}>
+    <div className="row check" hidden={!shown(id, V) || (id === 'keepRopes' && !!resta)}>
       <input type="checkbox" id={id} checked={!!V[id]} onChange={(e) => set(id, e.target.checked)} />
       <label htmlFor={id}>{t(id)}</label>
     </div>
@@ -48,7 +54,7 @@ export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopes
     <form className="inputs" autoComplete="off" noValidate onSubmit={(e) => e.preventDefault()}>
       <details className="group" open><summary>{t('g_plant')}</summary><div className="rows">{rows(PLANT)}</div></details>
       <details className="group" open><summary>{t('g_layout')}</summary><div className="rows">{rows(LAYOUT)}</div></details>
-      <details className="group" open>
+      <details className="group" open hidden={!esistente || !!resta}>
         <summary>{t('g_old')}</summary>
         <div className="rows">
           {check('compare')}
@@ -63,11 +69,11 @@ export default function CalcForm({ P, V, bad, set, onEstimate, estMsg, keepRopes
         </div>
       </details>
       <details className="group" open>
-        <summary>{t('g_new')}</summary>
-        <div className="rows"><div className="hint">{t('hint_new')}</div>{rows(MACHINE('n_'))}</div>
+        <summary>{resta ? resta.title : t('g_new')}</summary>
+        <div className="rows"><div className="hint">{resta ? resta.hint : t('hint_new')}</div>{rows(MACHINE('n_'))}</div>
       </details>
       <details className="group" open>
-        <summary>{t('g_ropes')}</summary>
+        <summary>{resta?.funi ?? t('g_ropes')}</summary>
         <div className="rows">
           {check('keepRopes')}
           <div className="hint" hidden={!keepRopesHint}>{keepRopesHint}</div>

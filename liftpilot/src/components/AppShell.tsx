@@ -31,13 +31,13 @@ export default async function AppShell({ user, banners, footer, children }: { us
   ]);
   const projects = can(user, 'projects:view');
   // every job starts from the survey (round 44): the Rilievi home first (its full list, /app/rilievi, under it), then the
-  // installations, the two new ones and the archive
+  // installations, the new one (round 45: one entry — the type of intervention is chosen in its «Calcolo argano») and
+  // the archive
   const work: NavItem[] = [
     ...(can(user, 'rilievi:view') ? [{ key: 'rilievi', href: '/app', label: t('rilievi'), icon: 'clipboard-list' } as const] : []),
     ...(projects ? [{ key: 'impianti', href: '/app/impianti', label: t('impianti'), icon: 'layout-dashboard' } as const] : []),
     ...(can(user, 'impianti:create') ? [
-      { key: 'new-replacement', href: '/app/projects/new?kind=replacement', label: tp('module_REPLACEMENT_new'), icon: 'motor' } as const,
-      { key: 'new-full', href: '/app/projects/new?kind=full', label: tp('module_FULL_new'), icon: 'elevator' } as const,
+      { key: 'new', href: '/app/projects/new', label: tp('new'), icon: 'plus' } as const,
     ] : []),
     ...(projects ? [{ key: 'archived', href: '/app/impianti?archived=1', label: tp('archivedTitle'), icon: 'archive' } as const] : []),
   ];

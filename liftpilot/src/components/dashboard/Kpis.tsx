@@ -20,7 +20,7 @@ interface Tile {
 export default async function Kpis({ stats, counts }: { stats: ProjectStats; counts: RecordCounts }) {
   const t = await getTranslations('projects');
   const tiles: Tile[] = [
-    { key: 'active', icon: 'building', value: stats.active, label: t('kpi_active'), sub: t('kpi_active_sub', { r: stats.replacement, f: stats.full }) },
+    { key: 'active', icon: 'building', value: stats.active, label: t('kpi_active'), sub: t('kpi_active_sub', { s: stats.soloArgano, a: stats.ammodernamento, t: stats.trasformazione, d: stats.daDefinire }) },
     {
       key: 'review', icon: stats.fail ? 'alert-triangle' : 'clipboard-check', tone: stats.fail ? 'fail' : stats.review ? 'warn' : 'ok', value: stats.review,
       label: t('kpi_review'), sub: t('kpi_review_sub', { fail: stats.fail, none: stats.noResult, old: stats.outdated }),

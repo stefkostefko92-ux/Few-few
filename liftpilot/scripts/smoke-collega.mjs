@@ -1,6 +1,6 @@
 // The smoke test's survey and installation (round 44): a survey sheet with its plate, load, stops, machine below and
 // ropes, its argano sheet with the speed → «Crea impianto» from its link panel (the new installation's form prefilled
-// from it, marked «dal rilievo», the module to choose: none preselected, a save without it asks for it) → the
+// from it, marked «dal rilievo»; no module to choose — round 45: the type of intervention is its calculation's) → the
 // installation's comparison with nothing saved yet: neutral, not green → a machine replacement whose calculator starts
 // from the measured values (the load marked; a value typed over it is the user's; its draft brings the other marks back)
 // → saved with a load and a speed changed and the machine above → the installation's page: the four steps (the
@@ -44,11 +44,8 @@ export async function collegaFlow({ BASE, page, hydrated, stamp }) {
   assert.equal(await page.inputValue('input[name="name"]'), indirizzo, 'the name from the survey');
   assert.equal(await page.inputValue('input[name="plantNumber"]'), matricola, 'the «Numero di matricola» from the survey');
   assert.ok(await page.locator('main form .badge.rilievo').count() >= 2, 'marked «dal rilievo»');
-  assert.equal(await page.locator('input[name="kind"]:checked').count(), 0, 'the module asked: none preselected');
-  await page.click('main form button[type="submit"]');
-  await page.waitForSelector('#kind-choose.alert');
-  assert.match(new URL(page.url()).pathname, /\/projects\/new$/, 'nothing created without the module');
-  await page.click('label.app-module:has(input[name="kind"][value="REPLACEMENT"])');
+  assert.equal(await page.locator('main input[name="kind"]').count(), 0, 'no module to choose (round 45)');
+  assert.match(await page.textContent('main form'), /Il tipo di intervento si sceglie nel Calcolo argano/);
   await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/calc$/), page.click('main form button[type="submit"]')]);
   const projectUrl = page.url().replace(/\/calc$/, '');
 
@@ -88,6 +85,11 @@ export async function collegaFlow({ BASE, page, hydrated, stamp }) {
   assert.equal(await page.locator('.lk-steps > li').count(), 4, 'four steps');
   const states = (await page.locator('.lk-steps > li .lk-step-state').allTextContents()).map((x) => x.trim());
   assert.deepEqual([states[1], states[3]], ['differenze', 'da aggiornare'], 'the documents of a calculation with differences: not «fatto»');
+  // a «Solo argano» with the machine above: its Progetto is the machine room surveyed on the calculation (round 45)
+  const step3 = page.locator('.lk-steps > li').nth(2);
+  assert.match(await step3.textContent(), /locale macchina/, 'the step says what the Progetto is');
+  assert.equal(await step3.locator('a[href$="/locale"]').count(), 1, 'the way to the machine room survey');
+  assert.match(await page.textContent('.page-head .titles .tipo-badge'), /Solo argano/, 'the type read from the calculation');
   assert.equal(await page.locator('#rilievi .lk-rilievi-list > li').count(), 1, 'its survey');
   const row = (p) => page.locator(`#confronto tr[data-param="${p}"]`);
   assert.match((await row('Q').getAttribute('class')) ?? '', /\blk-mod\b/, 'the load: a planned modification');

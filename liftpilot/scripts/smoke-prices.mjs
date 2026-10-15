@@ -16,6 +16,9 @@ export async function priceList({ BASE, page, hydrated, stamp, liftUrl, roomUrl 
   await page.fill(`main input[name="c:${n}:price"]`, '150,00');
   await page.selectOption(`main select[name="c:${n}:basis"]`, 'STOP');
   await page.selectOption(`main select[name="c:${n}:scope"]`, 'FULL');
+  // the scopes by type of intervention (round 45): the transformation's lines, the machine's and the modernisation's
+  assert.match(await page.textContent(`main select[name="c:${n}:scope"] option[value="FULL"]`), /Trasformazione completa/);
+  assert.match(await page.textContent(`main select[name="c:${n}:scope"] option[value="REPLACEMENT"]`), /Solo argano e ammodernamento/);
   await page.click(`${free} button:has-text("Aggiungi una voce")`);
   await page.fill(`main input[name="c:${n + 1}:text"]`, lot);
   await page.fill(`main input[name="c:${n + 1}:price"]`, '300');

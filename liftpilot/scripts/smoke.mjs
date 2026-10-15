@@ -1,14 +1,15 @@
 // End-to-end smoke test against a running LiftPilot (local or staging), with a real browser:
 //   health → public page (no console or CSP errors, in Italian, the only language) → /en and /bg sent for good to /it → an unknown
-//   address: the 404 drawn in Italian → sign-in → the two modules → a machine replacement → its calculation, which starts empty
+//   address: the 404 drawn in Italian → sign-in → «Nuovo impianto» → its «Calcolo argano», which starts empty
 //   (its draft kept, resumed, discarded; smoke-blank.mjs) → saved snapshot with reproduced hash → calculation report (PDF) → its
-//   machine room surveyed, the relazione tecnica and the drawing set (scripts/smoke-replacement.mjs) → the replacement becomes a
-//   whole project, its data entered (a draft taken up again) → shaft design by hand (a distance changed on its plan, the landing
-//   door set apart from the car door), its DXF, a calculation from it with the plan in its report → data of the installation,
-//   client and company logos, drawing set issued from that calculation (sheets, PDF) and its revision → the installation in one
-//   form with its live 3D simulation and a SICOR machine from the catalogue (drawn as it is), saved in one go (shaft design and
-//   calculation together), with its documents → the installations' result pill opens the checks behind its number
-//   (scripts/smoke-verdict.mjs) → the survey sheets: a sheet with its conditions, stops, modules, search, PDFs, print, conflict,
+//   machine room surveyed, the relazione tecnica and the drawing set (scripts/smoke-replacement.mjs) → the installation's page:
+//   its type, its sections → a «Calcolo argano» of a modernisation from the saved one (round 45: the renovation keeping the sling,
+//   UNI 10411-11) → the Progetto drawn on it: its data entered (a draft taken up again), a distance of the plan, the landing door
+//   set apart from the car door and the car buffers changed on the drawings, live 3D simulation, the test of its base, saved
+//   in one go (shaft design and calculation together) with its documents → data of the installation, client and company
+//   logos, drawing set issued from it (sheets, PDF) and its revision → the installations' result pill opens the checks behind its number
+//   (scripts/smoke-verdict.mjs) → a «Trasformazione completa»: its Progetto leads to the calculation, the calculation fixed to
+//   UNI EN 81-20/50, the Progetto drawn on it, its set (scripts/smoke-progetto.mjs) → the survey sheets: a sheet with its conditions, stops, modules, search, PDFs, print, conflict,
 //   trash (scripts/smoke-rilievi.mjs), the company's order of the sections, the linked data with the confirmation, MoviLift, the
 //   modules in the print (scripts/smoke-rilievi-sync.mjs) → a survey and its installation: created from it, prefilled, compared,
 //   linked by suggestion, unlinked; the home (scripts/smoke-collega.mjs) → new user who must change the password → a second
@@ -25,6 +26,7 @@ import { secondCompany } from './smoke-isolation.mjs';
 import { loadPlaywright, smokeKit, step } from './smoke-kit.mjs';
 import { blankCalc, projectData } from './smoke-blank.mjs';
 import { priceList } from './smoke-prices.mjs';
+import { progettoFlow } from './smoke-progetto.mjs';
 import { publicPages } from './smoke-public.mjs';
 import { replacementRoom } from './smoke-replacement.mjs';
 import { rilieviFlow } from './smoke-rilievi.mjs';
@@ -51,11 +53,14 @@ try {
 
   step('sign-in and installation');
   await login(page, ADMIN.email, ADMIN.password);
-  // the installations' page offers the two modules; a machine replacement opens straight on its calculation
+  // the installations' page offers one new installation and the four steps of its work (round 45); a new installation
+  // has no module: it opens straight on its «Calcolo argano», where the type of intervention is chosen
   await page.goto(`${BASE}/it/app/impianti`);
-  assert.equal(await page.locator('.app-modules .app-module').count(), 2, 'two modules');
+  assert.equal(await page.locator('main .dash-nuovo a[href$="/app/projects/new"]').count(), 1, 'one new installation');
+  assert.equal(await page.locator('main .dash-nuovo .dash-passi li').count(), 4, 'the four steps');
   await page.goto(`${BASE}/it/app/projects/new?kind=replacement`);
-  assert.ok(await page.isChecked('input[name="kind"][value="REPLACEMENT"]'), 'replacement chosen');
+  assert.equal(await page.locator('main input[name="kind"]').count(), 0, 'no module to choose (an old ?kind= is ignored)');
+  assert.match(await page.textContent('main form'), /Il tipo di intervento si sceglie nel Calcolo argano/);
   await page.fill('input[name="name"]', `Smoke ${stamp}`);
   await page.fill('input[name="city"]', 'Milano');
   await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/calc$/), page.click('main form button[type="submit"]')]);
@@ -98,32 +103,49 @@ try {
   await page.waitForSelector('.dash-row');
   assert.equal(await page.locator('.dash-row').count(), 1, 'one installation found');
   assert.match(await page.textContent('.dash-row'), new RegExp(`Smoke ${stamp}`));
-  // this run's two installations are in Milano (this one and the replacement of smoke-replacement.mjs)
-  await page.goto(`${BASE}/it/app/impianti?q=${encodeURIComponent(`milano ${stamp}`)}`);
-  assert.equal(await page.locator('.dash-row').count(), 2, 'the municipality and a word of the name');
-  await page.goto(`${BASE}/it/app/impianti?q=${encodeURIComponent(`smoke MILANO ${stamp}`)}`);
-  assert.equal(await page.locator('.dash-row').count(), 1, 'every word, whatever its case');
-  await page.goto(`${BASE}/it/app/impianti?q=${encodeURIComponent(`Torino ${stamp}`)}`);
-  assert.equal(await page.locator('.dash-row').count(), 0, 'every word must be found');
-  // % and _ are text, not LIKE's wildcards: with this run's word they find none of its two installations
-  for (const w of ['%', '_', '%%']) {
-    await page.goto(`${BASE}/it/app/impianti?q=${encodeURIComponent(`${w} ${stamp}`)}`);
-    assert.equal(await page.locator('.dash-row').count(), 0, `«${w}» is not a wildcard`);
+  // this run's two installations are in Milano (this one and the replacement of smoke-replacement.mjs); % and _ are
+  // text, not LIKE's wildcards: with this run's word they find none of its two installations
+  for (const [q, n, why] of [[`milano ${stamp}`, 2, 'the municipality and a word of the name'], [`smoke MILANO ${stamp}`, 1, 'every word, whatever its case'],
+    [`Torino ${stamp}`, 0, 'every word must be found'], ...['%', '_', '%%'].map((w) => [`${w} ${stamp}`, 0, `«${w}» is not a wildcard`])]) {
+    await page.goto(`${BASE}/it/app/impianti?q=${encodeURIComponent(q)}`);
+    assert.equal(await page.locator('.dash-row').count(), n, why);
   }
 
-  step('the replacement becomes a whole project');
+  step('the installation: its type from «Calcolo argano», its sections in the order of the work (round 45)');
   await page.goto(projectUrl);
-  assert.match(await page.textContent('.titles'), /Sostituzione argano/);
-  assert.equal(await page.locator('.lift-home').count(), 0, 'no whole-project sections on a replacement');
-  await Promise.all([page.waitForURL(/\/progetto$/, { timeout: 30000 }), page.click('button:has-text("Passa a progetto completo")')]);
-  await page.goto(projectUrl);
-  assert.match(await page.textContent('.titles'), /Progetto completo/);
+  assert.match(await page.textContent('.page-head .titles .tipo-badge'), /Solo argano/, 'the type read from its calculation');
+  for (const id of ['sec-calcolo', 'sec-progetto', 'sec-tavole']) assert.equal(await page.locator(`#${id}`).count(), 1, id);
+  assert.ok(await page.locator('section[aria-labelledby="sec-calcolo"] tbody tr').count() > 0, 'its «Calcolo argano»');
+  // a «Solo argano» with the machine below: its Progetto draws the shaft (no machine room above to survey), still to do
+  assert.ok(await page.locator('section[aria-labelledby="sec-progetto"] a[href*="/progetto?calc="]').count() > 0, 'its Progetto: the shaft to draw on it');
+  assert.match(await page.getAttribute('.page-head .actions a.btn-primary', 'href') ?? '', /\/progetto\?calc=/, 'the next step: the Progetto');
+  assert.equal(await page.locator('button:has-text("Passa a progetto completo")').count(), 0, 'no upgrade any more');
 
-  step('the installation in one form: the project data entered, the plan edited on the drawing, live simulation, save');
-  await page.goto(`${projectUrl}/progetto`);
-  // the calculation's load, speed, roping and machine place carried over; the shaft, the floors and the scheme of the
-  // machine below to enter
+  step('Calcolo argano for the drawing (round 45): a modernisation renewing the lift with its existing sling, UNI 10411-11');
+  // a new «Calcolo argano» from the saved one: the type changed, the renovation's preset, the changes of speed, load and
+  // travel answered; the standard added before taken off, the part of UNI 10411 chosen
+  await page.goto(calcUrl);
+  await Promise.all([page.waitForURL(/\/calc\?from=/), page.click('.page-head a[href*="/calc?from="]')]);
+  await hydrated(page, '#Q');
+  await page.click('label.intervento-tipo[data-tipo="AMMODERNAMENTO"]');
+  await page.click('.parti-sino .rif-preset button');
+  await page.waitForSelector('.parti-sino .rif-preset button.on');
+  for (const part of ['speed', 'load', 'travel']) await page.click(`.parti-sino li[data-part="${part}"] label:has-text("No")`);
+  await page.uncheck('.collaudo label:has-text("tutto l’impianto") input');
+  await page.selectOption('.collaudo select', '10411-11');
+  await page.waitForSelector('.savebar button.primary:not([disabled])');
+  await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
+  assert.match(await page.textContent('.calc-ruolo'), /Ammodernamento[\s\S]*Calcolo argano dell’impianto/, 'the type and the role of the record');
+  // its Progetto draws the shaft (the parts in it are replaced): the way to it from the calculation
+  await Promise.all([page.waitForURL(/\/progetto\?calc=[a-z0-9]+$/, { timeout: 30000 }), page.click('section[aria-labelledby="calc-progetto"] a[href*="/progetto?calc="]')]);
+
+  step('the Progetto draws on it: the drawing\'s data entered, the plan edited on the drawing, live simulation, save');
+  // the calculation's load, speed, roping, machine place, machine and test are the base's: shown, never asked; the shaft,
+  // the floors and the scheme of the machine below to enter
   await projectData({ page, hydrated, bottom: 'head', draft: true });
+  assert.equal(await page.locator('.lift-form .collaudo').count(), 0, 'no test in the Progetto');
+  assert.match(await page.textContent('.lift-form .dal-calcolo'), /Ammodernamento[\s\S]*UNI 10411-11/, 'what it draws on');
+  assert.ok(await page.locator('#bk-Qkg[readonly]').count() === 1, 'the rated load the calculation’s');
   await page.waitForSelector('.lift-main svg.sheet-svg');
   // a distance of the plan changed on the drawing itself: the platform 20 mm further from the left wall
   const hit = page.locator('.lift-main .ed-hits .hit[aria-label*="Piattaforma: distanza dalla parete sinistra"]').first();
@@ -152,37 +174,10 @@ try {
   await page.waitForSelector('.lift-stage.live, .lift-stage.failed', { timeout: 120000 });
   await page.click('.scenario-tabs button[data-scenario="brake"]');
   await page.waitForSelector('.sim-chart svg path.line');
-  await page.check('#auto-P');
-  await page.waitForSelector('.lift-calc .auto-value .badge');
-  await page.waitForSelector('.lift-work .advice .advice-card');
-  // the acceptance test: the replacement's standards carried over (EN 81-20/50 for the whole installation on top), now
-  // UNI 10411-11 alone with the machine and the ropes replaced; the checks of what stays are existing
-  assert.ok(await page.isChecked('.collaudo label:has-text("tutto l’impianto") input'), 'the replacement’s test standards carried over');
-  await page.uncheck('.collaudo label:has-text("tutto l’impianto") input');
-  await page.selectOption('.collaudo select', '10411-11');
-  await page.check('.collaudo .parti-grid label[data-part="ropes"] input');
+  // the acceptance test of its base: UNI 10411-11, the renovation keeping the sling; the checks of what stays are existing
   await page.waitForSelector('.lift-checks tr.existing .status-pill.existing');
   assert.match(await page.textContent('.lift-work .lift-verdict .badge'), /UNI 10411-11/, 'standard of the acceptance test');
-  // the renovation keeping the existing sling: every part but the sling (locked), still tested to the UNI 10411 part
-  // chosen, never to EN 81-20/50; through a new lift and back it is the same
-  const rif = '.lift-form .seg-row button:has-text("Rifacimento con arcata esistente")';
-  await page.click(rif);
-  await page.waitForSelector('.collaudo .parti-grid label[data-part="sling"] input:disabled');
-  assert.ok(await page.isChecked('.collaudo .parti-grid label[data-part="car"] input'), 'the car replaced');
-  assert.equal(await page.locator('.lift-form .collaudo select option[value="en81"]').count(), 0, 'EN 81-20/50 not offered');
   await page.waitForFunction(() => /arcata esistente/.test(globalThis.document.querySelector('.lift-work .lift-verdict')?.textContent ?? ''));
-  await page.click('.lift-form .seg-row button:has-text("Nuovo impianto")');
-  await page.waitForFunction(() => /EN 81-20\/50/.test(globalThis.document.querySelector('.lift-work .lift-verdict .badge')?.textContent ?? ''));
-  await page.click(rif);
-  await page.waitForSelector('.collaudo .parti-grid label[data-part="sling"] input:disabled');
-  assert.equal(await page.inputValue('.collaudo select'), '10411-11', 'the part of UNI 10411 kept');
-  await page.waitForFunction(() => /UNI 10411-11/.test(globalThis.document.querySelector('.lift-work .lift-verdict .badge')?.textContent ?? ''));
-  // the machine from SICOR's catalogue: the proposal takes one of its models, which the room's drawings, the 3D and the
-  // relazione show as it is (src/lib/catalog/shapes.ts); the saved design must reproduce it on the server
-  await page.evaluate(() => { const d = globalThis.document.querySelector('#auto-machine')?.closest('details'); if (d) d.open = true; });
-  await page.check('#auto-machine');
-  await page.selectOption('#cat-brand', 'SICOR');
-  await page.waitForFunction(() => [...globalThis.document.querySelectorAll('.lift-calc p.hint')].some((p) => /SICOR (SH|MR)\d/.test(p.textContent ?? '')));
   // Panev's brackets: the bill shows the landing doors' pair; a counterweight rail support chosen by hand follows into
   // the bill and into the saved design
   await page.waitForSelector('.lift-work .panev-bom tbody td.code');
@@ -254,7 +249,10 @@ try {
   // (the checks themselves on the set's last sheet, which sheet 1 points to)
   const sheet1 = await page.textContent('.sheet-page svg.sheet-svg');
   assert.ok(sheet1?.includes('VERIFICA DELLE GUIDE DI CABINA') && new RegExp(`VERIFICHE (DEL PROGETTO: FOGLIO|NON SUPERATE: \\d+ — VEDI FOGLIO) ${sheets}`).test(sheet1), 'the rails\' check on sheet 1');
-  assert.ok(sheet1.includes("Rifacimento con l’arcata esistente"), 'the renovation in the test’s note');
+  // (the note wraps on its lines, whose texts join without the space: compared without spaces)
+  const flat = (s) => (s ?? '').replace(/\s+/g, '');
+  assert.ok(flat(sheet1).includes(flat("Rifacimento con l’arcata esistente:")), 'the renovation in the test’s note');
+  assert.ok(flat(sheet1).includes(flat('Intervento: Ammodernamento')), 'the type declared with the calculation in the test’s note');
   await page.goto(`${setUrl}?p=${sheets}`);
   await page.waitForSelector('.sheet-page svg.sheet-svg');
   const checksSheet = await page.textContent('.sheet-page svg.sheet-svg');
@@ -277,12 +275,13 @@ try {
   await archivedReadOnly({ page, hydrated, projectUrl, errors });
 
   await priceList({ BASE, page, hydrated, stamp, liftUrl, roomUrl });
+  await progettoFlow({ BASE, page, hydrated, stamp });
   const rilievo = await rilieviFlow({ BASE, page, hydrated });
   const rilievoSync = await rilieviSync({ BASE, page, hydrated });
   await collegaFlow({ BASE, page, hydrated, stamp });
   assert.deepEqual(errors, [], 'browser errors');
 
-  await technician({ BASE, page, errors, stamp, login, logout, rilievoUrl: rilievo.sheetUrl });
+  await technician({ BASE, page, errors, stamp, login, logout, hydrated, rilievoUrl: rilievo.sheetUrl });
 
   // the isolation check below provokes a 404 on purpose: the console must be clean up to here
   assert.deepEqual(errors, [], 'browser errors');

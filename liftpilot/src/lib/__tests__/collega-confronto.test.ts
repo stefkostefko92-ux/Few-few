@@ -6,7 +6,8 @@ import assert from 'node:assert/strict';
 import { blankCalc } from '@/lib/calc-blank';
 import { confronto, erroriDi, sintesi, type Lato, type Riga } from '@/lib/collega/confronto';
 import { testoValore } from '@/lib/collega/formato';
-import { latoCalcolo } from '@/lib/collega/lati';
+import { latoCalcolo, latoProgetto } from '@/lib/collega/lati';
+import { newLift } from '@/lib/lift';
 import { calcoloDaAggiornare, passi } from '@/lib/collega/passi';
 import type { RilievoDati } from '@/lib/collega/rilievo';
 import { suggerimenti, type Candidato } from '@/lib/collega/suggerimenti';
@@ -25,7 +26,7 @@ const L = (over: Partial<Lato> = {}): Lato => ({
   funiNumero: 4, funiDiametro: 10, puleggia: 520, rapporto: 53, potenza: 7.5, giri: 1400, poli: 4, funicella: null, porte: null, operatore: null, ...over,
 });
 // the installation's «Numero di matricola» is the survey's matricola
-const imp = { kind: 'REPLACEMENT' as const, indirizzo: 'Via Giuseppe Verdi 14, Milano, MI', plantNumber: '0123456' };
+const imp = { indirizzo: 'Via Giuseppe Verdi 14, Milano, MI', plantNumber: '0123456' };
 const at = (rows: readonly Riga[], p: string) => rows.find((w) => w.param === p);
 
 test('tutto coincide: nessuna differenza; «in alto» coincide con tiro diretto e con rinvio', () => {
@@ -53,16 +54,17 @@ test('«in alto» con la puleggia di rinvio detta dal modulo dell’argano: tiro
   assert.equal(pos(R({ posizione: 'BASSO' }), 'bottom')?.stato, 'ok');
 });
 
-test('stato di fatto diverso: probabile errore, con «usa il valore» verso il modulo giusto', () => {
+test('stato di fatto diverso: probabile errore, con «usa il valore» verso il passo del parametro', () => {
   const rows = confronto({ rilievo: R(), storico: [], impianto: imp, calcolo: L({ funiNumero: 5, layout: 'bottom' }), progetto: null });
   assert.equal(at(rows, 'funiNumero')?.stato, 'diff');
   assert.equal(at(rows, 'funiNumero')?.usa, 'calc');
   assert.equal(at(rows, 'posizione')?.stato, 'diff');
   assert.deepEqual(erroriDi(rows, 'calcolo').map((w) => w.param), ['posizione', 'funiNumero']);
-  // a whole project: the same rows open its one form
-  const full = confronto({ rilievo: R(), storico: [], impianto: { ...imp, kind: 'FULL' }, calcolo: null, progetto: L({ fermate: 6 }) });
+  // round 45, whatever the installation: what the calculation holds opens «Calcolo argano», the stops the Progetto
+  const full = confronto({ rilievo: R(), storico: [], impianto: imp, calcolo: L({ funiNumero: 5 }), progetto: L({ fermate: 6, funiNumero: 5 }) });
   assert.equal(at(full, 'fermate')?.stato, 'diff');
   assert.equal(at(full, 'fermate')?.usa, 'progetto');
+  assert.equal(at(full, 'funiNumero')?.usa, 'calc', 'the ropes: the calculation, also with a lift design');
   // the identity: the installation's data, «usa» to its data
   const moved = confronto({ rilievo: R(), storico: [], impianto: { ...imp, indirizzo: 'Corso Como 3, Milano', plantNumber: '99' }, calcolo: null, progetto: null });
   assert.equal(at(moved, 'indirizzo')?.stato, 'diff');
@@ -124,7 +126,8 @@ test('le righe senza alcun valore non si mostrano; i valori si scrivono all’it
 });
 
 test('il calcolo salvato come lato: argano esistente se confrontato, funi tenute altrimenti', () => {
-  const V = { ...blankCalc(), Q: '630', r: '2', layout: 'top', o_n: '4', o_d: '10', o_D: '520', n_n: '4', n_d: '10' };
+  // a saved «Solo argano» (a new calculation's context is the type's, round 45)
+  const V = { ...blankCalc(), context: 'repl', Q: '630', r: '2', layout: 'top', o_n: '4', o_d: '10', o_D: '520', n_n: '4', n_d: '10' };
   const c = latoCalcolo({ id: 'c', createdAt: d('2026-10-11'), inputs: V });
   assert.ok(c?.repl);
   assert.equal(c?.funiNumero, 4);
@@ -146,20 +149,21 @@ test('i passi: da fare, fatto, da aggiornare (software o rilievo più recente), 
     erroriCalcolo: 0, erroriProgetto: 0 });
   assert.deepEqual(p, { rilievo: 'fatto', calcolo: 'daAggiornare', progetto: 'daAggiornare', documenti: 'daAggiornare' });
   assert.equal(passi({ rilievo: r, calcolo: rec('2026-10-13T09:00:00Z'), progetto: null, tavole: null, erroriCalcolo: 2, erroriProgetto: 0 }).calcolo, 'differenze');
-  // the documents: the record's own (relazione, ordine) — done once a current record is saved, without a set issued too
-  assert.equal(passi({ rilievo: r, calcolo: rec('2026-10-13T09:00:00Z'), progetto: null, tavole: null, erroriCalcolo: 0, erroriProgetto: 0 }).documenti, 'fatto');
+  // the documents: the records' own (relazione, ordine) — done once the Progetto is saved too, without a set issued
+  // (round 45: the calculation alone leaves them to do — the tavole and the relazione of step 3 are missing)
+  assert.equal(passi({ rilievo: r, calcolo: rec('2026-10-13T09:00:00Z'), progetto: null, tavole: null, erroriCalcolo: 0, erroriProgetto: 0 }).documenti, 'daFare');
   assert.equal(passi({ rilievo: r, calcolo: rec('2026-10-13T09:00:00Z', true), progetto: null, tavole: null, erroriCalcolo: 0, erroriProgetto: 0 }).documenti, 'daAggiornare');
   assert.equal(passi({ rilievo: r, calcolo: rec('2026-10-13T09:00:00Z'), progetto: rec('2026-10-14T09:00:00Z'), tavole: { createdAt: new Date('2026-10-14T10:00:00Z') },
     erroriCalcolo: 0, erroriProgetto: 0 }).documenti, 'fatto');
   // a role that does not see the surveys: linked or not, nothing judged against the survey
   const blind = passi({ rilievo: null, collegato: true, calcolo: rec('2026-10-11T09:00:00Z'), progetto: null, tavole: null, erroriCalcolo: 0, erroriProgetto: 0 });
-  assert.deepEqual(blind, { rilievo: 'fatto', calcolo: 'fatto', progetto: 'daFare', documenti: 'fatto' });
+  assert.deepEqual(blind, { rilievo: 'fatto', calcolo: 'fatto', progetto: 'daFare', documenti: 'daFare' });
   assert.equal(passi({ rilievo: null, collegato: false, calcolo: null, progetto: null, tavole: null, erroriCalcolo: 0, erroriProgetto: 0 }).rilievo, 'daFare');
   assert.deepEqual(calcoloDaAggiornare(rec('2026-10-12T09:00:00Z', true), r), { old: true, rilievo: true });
   assert.equal(calcoloDaAggiornare(rec('2026-10-13T09:00:00Z'), r), null);
 });
 
-test('i documenti mai «fatto» accanto a un record con differenze o più vecchio del rilievo', () => {
+test('i documenti mai «fatto» accanto a un record con differenze o più vecchio del rilievo, né senza il Progetto', () => {
   const rec = (s: string, old = false) => ({ createdAt: new Date(s), old });
   const r = { updatedAt: new Date('2026-10-12T10:00:00Z') };
   const diff = passi({ rilievo: r, calcolo: rec('2026-10-13T09:00:00Z'), progetto: null, tavole: null, erroriCalcolo: 1, erroriProgetto: 0 });
@@ -174,11 +178,37 @@ test('i documenti mai «fatto» accanto a un record con differenze o più vecchi
     for (const p of [null, rec('2026-10-12T09:30:00Z'), rec('2026-10-13T10:00:00Z'), rec('2026-10-13T10:00:00Z', true)]) {
       for (const [ec, ep] of [[0, 0], [1, 0], [0, 1]] as const) {
         const s = passi({ rilievo: r, calcolo: c, progetto: p, tavole: null, erroriCalcolo: ec, erroriProgetto: ep });
-        if (s.documenti === 'fatto') assert.ok([s.calcolo, s.progetto].every((x) => x === 'fatto' || x === 'daFare'), JSON.stringify(s));
+        if (s.documenti === 'fatto') assert.ok(s.progetto === 'fatto' && (s.calcolo === 'fatto' || s.calcolo === 'daFare'), JSON.stringify(s));
+        else if (s.documenti === 'daFare') assert.ok(!p && [s.calcolo, s.progetto].every((x) => x === 'fatto' || x === 'daFare'), JSON.stringify(s));
         else if (c || p) assert.equal(s.documenti, 'daAggiornare');
       }
     }
   }
+});
+
+test('il Progetto disegnato su un calcolo argano più vecchio: «da aggiornare (calcolo più recente)», e i documenti con lui (round 45)', () => {
+  const rec = (s: string, over: { old?: boolean; superato?: boolean } = {}) => ({ createdAt: new Date(s), old: false, ...over });
+  const r = { updatedAt: new Date('2026-10-12T10:00:00Z') };
+  const s = passi({ rilievo: r, calcolo: rec('2026-10-14T09:00:00Z'), progetto: rec('2026-10-13T09:00:00Z', { superato: true }), tavole: { createdAt: new Date('2026-10-14T10:00:00Z') },
+    erroriCalcolo: 0, erroriProgetto: 0 });
+  assert.deepEqual([s.calcolo, s.progetto, s.documenti], ['fatto', 'superato', 'daAggiornare']);
+  // the engines or the survey first: «da aggiornare» says more; differences above all
+  assert.equal(passi({ rilievo: r, calcolo: null, progetto: rec('2026-10-13T09:00:00Z', { superato: true, old: true }), tavole: null, erroriCalcolo: 0, erroriProgetto: 0 }).progetto, 'daAggiornare');
+  assert.equal(passi({ rilievo: r, calcolo: null, progetto: rec('2026-10-13T09:00:00Z', { superato: true }), tavole: null, erroriCalcolo: 0, erroriProgetto: 1 }).progetto, 'differenze');
+  // aligned again: done
+  assert.equal(passi({ rilievo: r, calcolo: null, progetto: rec('2026-10-13T09:00:00Z', { superato: false }), tavole: null, erroriCalcolo: 0, erroriProgetto: 0 }).progetto, 'fatto');
+});
+
+test('un progetto disegnato sul calcolo argano: solo il lato del disegno; uno del modulo unico come prima (round 45)', () => {
+  const L0 = newLift(), inputs = { ...L0, calc: { ...L0.calc, context: 'repl', compare: true, o_n: '4', o_d: '10', o_D: '520' } };
+  const shaftResults = { Q: 630, persons: 8 };
+  const legacy = latoProgetto({ id: 'd', createdAt: d('2026-10-11'), inputs, shaftResults });
+  const based = latoProgetto({ id: 'd', createdAt: d('2026-10-11'), inputs, shaftResults, based: true });
+  assert.ok(legacy?.repl && legacy.funiNumero === 4 && legacy.puleggia === 520 && legacy.velocita !== null);
+  assert.ok(based);
+  assert.deepEqual([based.repl, based.funiNumero, based.funiDiametro, based.puleggia, based.rapporto, based.velocita, based.pesoCabina, based.layout, based.taglia],
+    [false, null, null, null, null, null, null, null, null], 'the machine and what is in place are its base calculation’s');
+  assert.deepEqual([based.Q, based.persone, based.fermate, based.porte], [630, 8, L0.shaft.vertical.floors.length, `${L0.shaft.doorWidth} x ${L0.shaft.doorHeight}`], 'the drawing’s side');
 });
 
 test('gli indirizzi: le parole, le abbreviazioni, il più corto dentro il più lungo', () => {
@@ -191,7 +221,7 @@ test('gli indirizzi: le parole, le abbreviazioni, il più corto dentro il più l
 });
 
 test('i suggerimenti: prima la matricola, poi il numero, poi l’indirizzo; mai l’impianto già collegato', () => {
-  const c = (id: string, over: Partial<Candidato> = {}): Candidato => ({ id, name: id, kind: 'FULL', address: null, city: null, province: null, plantNumber: null,
+  const c = (id: string, over: Partial<Candidato> = {}): Candidato => ({ id, name: id, address: null, city: null, province: null, plantNumber: null,
     updatedAt: d('2026-10-01'), schede: [], ...over });
   const r = { matricola: '0123456', numeroImpianto: '71234', indirizzo: 'Via Giuseppe Verdi 14, Milano', projectId: 'linked' };
   const out = suggerimenti(r, [

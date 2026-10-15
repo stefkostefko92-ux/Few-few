@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ADEMPIMENTI, NORME_AGGIUNTIVE, NORME_COLLAUDO, NORME_INFO, ammessa, collaudoOf, esitiNorme, underNorma, type Collaudo } from '@/lib/lift';
 import { liftInputsSchema } from '@/lib/lift-input';
-import { adempimentiBlocks, esitiBlocks } from '../report/collaudo';
+import { PUNTI_MACCHINA_NUOVA, adempimentiBlocks, esitiBlocks } from '../report/collaudo';
 import type { ReportBlock } from '../report/model';
 
 const REPL = { context: 'repl' }, NEW = { context: 'new' };
@@ -64,4 +64,10 @@ test('relazione: gli adempimenti del DPR 162/1999 per il nuovo e per la modifica
   const en81 = text(adempimentiBlocks({ norma: 'en81', parti: [], aggiuntive: [] }, false));
   for (const p of ['6.3.1', '6.3.2', '6.3.3', '6.3.11, 6.3.12 e 6.3.13', '6.3.14', 'C.2 e 7.3.2']) assert.match(en81, new RegExp(`UNI EN 81-20:2020, ${p.replace(/\./g, '\\.')}:`));
   assert.match(text(adempimentiBlocks({ norma: '10411-1', parti: ['machine'], aggiuntive: [] }, true)), /UNI 10411-1:2024, 14\.4 a\)–g\): con la macchina nuova/);
+  // the machine kept (round 45): the points only a new machine has are left out — each one a point of the standards
+  const punti = Object.values(NORME_INFO).flatMap((i) => i.punti.map((x) => x.rif));
+  for (const rif of PUNTI_MACCHINA_NUOVA) assert.ok(punti.includes(rif), rif);
+  const resta = text(adempimentiBlocks({ norma: '10411-11', parti: ['controller'], aggiuntive: ['en81'] }, true, true));
+  for (const rif of PUNTI_MACCHINA_NUOVA) assert.ok(!resta.includes(`${rif}:`), rif);
+  assert.match(resta, /UNI 10411-11:2024, scopo/);
 });

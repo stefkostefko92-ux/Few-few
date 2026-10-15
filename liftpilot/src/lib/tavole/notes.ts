@@ -28,14 +28,18 @@ export interface Note {
 
 /** What the notes for the client follow besides the layout: the scheme of a machine below (its room below, the pulleys
  *  over the shaft: hung under the slab, or in a pulley room; under the pit a space people reach under the shaft), a
- *  modification tested to UNI 10411-1/-11 (its rooms the existing ones, 9.2), and `detail`: the sentences on the pit,
- *  the sills, the counterweight's sign and the brackets' anchors (notes-vano.ts), in NOTA 1 before its references. */
+ *  modification tested to UNI 10411-1/-11 (its rooms the existing ones, 9.2), a modernisation keeping the machine
+ *  (`resta`: the existing room's note round the apparatus replaced or added, not a new machine), and `detail`: the
+ *  sentences on the pit, the sills, the counterweight's sign and the brackets' anchors (notes-vano.ts), in NOTA 1 before
+ *  its references. */
 export interface NoteCase {
   scheme?: BottomScheme | null;
   /** the test's base standard: a part of UNI 10411 makes the rooms the existing ones (9.2) and, under the pit, names the
    *  clause of the pillar that may stand in place of the counterweight's safety gear (pilastroRif); absent or UNI EN
    *  81-20/50: a new lift */
   norma?: NormaCollaudo;
+  /** the machine stays (intervento.ts macchinaResta, round 45); absent: a new machine, as every set before it */
+  resta?: boolean;
   detail?: string;
 }
 
@@ -59,10 +63,10 @@ export function clientNotes(L: Layout, below = false, c: NoteCase = {}): Note[] 
     },
   ];
   if (scheme === null) {
-    if (room) notes.push(roomNote(ex ? 'existing' : 'machine'));
+    if (room) notes.push(roomNote(ex ? 'existing' : 'machine', undefined, c.resta));
   } else {
     // the machine's room below, then over the shaft what the scheme has there
-    notes.push(belowRoomNote(scheme === 'under', ex));
+    notes.push(belowRoomNote(scheme === 'under', ex, c.resta));
     notes.push(scheme === 'room' ? roomNote(ex && room ? 'pulleysExisting' : 'pulleys') : hungNote());
     if (scheme === 'under') notes.push(underNote(norma));
   }
@@ -85,6 +89,10 @@ const AMBIENT = `Illuminazione fissa di almeno ${K0.roomLux} lux al pavimento ne
   + `accesso, entro ${K0.lightSwitchMax} mm (UNI EN 81-20:2020, 5.2.1.5.2, 5.10.7.2 e 5.10.8.2). `;
 /** The openings of the slab over the shaft (5.2.6.3.3, 5.2.6.7.2). */
 const SLAB_OPENINGS = `Aperture nella soletta sopra il vano ridotte al minimo, con manicotti o bordi che sporgono almeno ${K0.slabKerb} mm dal pavimento. `;
+/** What the existing room follows 5.2.6.3 round (UNI 10411-1/-11, 9.2): the new machine; when the machine stays, the
+ *  apparatus replaced or added (registry locale.esistente) — the words of every set before round 45 unchanged. */
+const AROUND = (resta: boolean): string => `Attorno ${resta ? 'alle apparecchiature sostituite o aggiunte' : 'alla macchina nuova'} il locale segue la UNI EN 81-20 `
+  + '5.2.6.3 (UNI 10411-1:2024 e UNI 10411-11:2024, punto 9.2): ';
 /** The free areas round the controller and the machine (5.2.6.3.2.1). */
 const PANEL = `davanti al quadro una superficie libera profonda almeno ${K0.panelFreeDepth} mm e larga almeno ${K0.panelFreeWidth} mm; accanto alla `
   + `macchina una superficie libera di ${K0.maintW} × ${K0.maintD} mm per la manutenzione e la manovra di emergenza. `;
@@ -93,8 +101,8 @@ const PANEL = `davanti al quadro una superficie libera profonda almeno ${K0.pane
  *  shaft of a machine below (`pulleys`, or the existing room it takes in a modification: `pulleysExisting`), or the
  *  existing machine room of a modification (`existing`, UNI 10411-1/-11:2024, 9.2): access, door, heights, free areas,
  *  light, temperature, openings, lifting point, switches, sockets. `H`: the existing room's height — at least 2,0 m,
- *  without the measures of UNI EN 81-21 for a lower one (round 36). */
-export function roomNote(kind: 'machine' | 'pulleys' | 'pulleysExisting' | 'existing', H?: number): Omit<Note, 'tag'> {
+ *  without the measures of UNI EN 81-21 for a lower one (round 36). `resta`: the machine stays (AROUND). */
+export function roomNote(kind: 'machine' | 'pulleys' | 'pulleysExisting' | 'existing', H?: number, resta = false): Omit<Note, 'tag'> {
   const K = KV_VERT, ambient = AMBIENT + SLAB_OPENINGS;
   if (kind === 'pulleys') {
     return {
@@ -119,7 +127,7 @@ export function roomNote(kind: 'machine' | 'pulleys' | 'pulleysExisting' | 'exis
   if (kind === 'existing') {
     return {
       title: 'LOCALE DELLA MACCHINA (ESISTENTE)',
-      text: 'Attorno alla macchina nuova il locale segue la UNI EN 81-20 5.2.6.3 (UNI 10411-1:2024 e UNI 10411-11:2024, punto 9.2): '
+      text: AROUND(resta)
         + `${PANEL}L’altezza libera esistente sulle zone di lavoro può restare sotto ${K.roomH} mm se non si riduce${H !== undefined && H >= K.existingRoomMin ? '' : `; con la UNI 10411-1, sotto `
         + `${K.existingRoomMin} mm zone segnalate a strisce gialle e nere o con un cartello, materiale ammortizzante al soffitto e almeno `
         + `${K.existingRoomPad} mm liberi sotto di esso (UNI EN 81-21:2022, 5.9)`}. Porta e accesso restano quelli esistenti. ${ambient}Sopra la `
@@ -138,7 +146,7 @@ export function roomNote(kind: 'machine' | 'pulleys' | 'pulleysExisting' | 'exis
 /** The machine's room below (registry impianto.basso.schema, below-checks.ts): beside the shaft at the lowest floor, its
  *  sheave through the wall behind the counterweight; or under the pit, the ropes down through its slab. A room of the
  *  machinery as one over the shaft (5.2.6.3); in a modification an existing one as UNI 10411-1/-11 9.2 lets it stay. */
-export function belowRoomNote(under: boolean, existing: boolean): Omit<Note, 'tag'> {
+export function belowRoomNote(under: boolean, existing: boolean, resta = false): Omit<Note, 'tag'> {
   const K = KV_VERT, where = under ? 'SOTTO IL VANO' : 'IN BASSO';
   const through = under
     ? `Le aperture nella soletta della fossa per le funi ridotte al minimo, con bordi che sporgono almeno ${K.slabKerb} mm dal fondo della fossa. `
@@ -146,7 +154,7 @@ export function belowRoomNote(under: boolean, existing: boolean): Omit<Note, 'ta
   if (existing) {
     return {
       title: `LOCALE MACCHINA ${where} (ESISTENTE)`,
-      text: 'Attorno alla macchina nuova il locale segue la UNI EN 81-20 5.2.6.3 (UNI 10411-1:2024 e UNI 10411-11:2024, punto 9.2): '
+      text: AROUND(resta)
         + `${PANEL}L’altezza libera esistente sulle zone di lavoro può restare sotto ${K.roomH} mm se non si riduce. Porta e accesso restano quelli `
         + `esistenti. ${AMBIENT}${through}Sopra la macchina un gancio o una trave di sollevamento con il carico ammesso indicato; interruttore generale `
         + 'e comando della luce vicino all’accesso. Riferimenti: UNI EN 81-20:2020, punti 5.2.6.3 e 5.10; UNI 10411-1:2024 e UNI 10411-11:2024, punto 9.2.',

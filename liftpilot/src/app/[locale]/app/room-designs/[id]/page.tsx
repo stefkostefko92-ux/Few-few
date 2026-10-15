@@ -16,6 +16,7 @@ import { prisma } from '@/lib/db';
 import { reproduceRoomRecord } from '@/server/room-compose';
 import { roomSummaryLine } from '@/server/room-summary';
 import { getRoomDesign, refreshedFrom } from '@/server/queries';
+import { rilevaLocale } from '@/server/calcolo-base';
 import { projectCost } from '@/server/prices';
 import { calcBom, calcUncounted } from '@/lib/prices/bom';
 import { initialsOf } from '@/lib/tavole/compose';
@@ -51,11 +52,11 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
     getTranslations('shaft'), refreshedFrom(user, 'roomDesign', (await searchParams).da, r.projectId)]);
   const rep = reproduceRoomRecord(r, r.calculation), d = rep.ok ? rep.derived : null;
   const fd = dateFormat(locale), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']), lead = (await roomSummaryLine())(r);
-  // a machine room is a replacement's: one in the archive of a whole project is read only (its project is made again
-  // from the form)
+  // a machine room is surveyed on a «Calcolo argano» of an existing lift (round 45: whatever the installation was called);
+  // one whose calculation is not such a one is read only
   const live = !r.project.archivedAt, download = !!d && can(user, 'report:download'), editable = can(user, 'progetto:edit') && live;
   const issues = can(user, 'drawings:issue') && live;
-  const replacement = r.project.kind === 'REPLACEMENT';
+  const replacement = rilevaLocale(r.calculation);
   const views = d ? (['plan', 'section'] as const).map((k) => {
     try {
       const v = surveyView(d, k, AREA);

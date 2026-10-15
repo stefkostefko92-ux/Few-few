@@ -86,7 +86,7 @@ const MOD_KEEP_D = ((n: LiftInputs): LiftInputs => ({ ...n, calc: { ...n.calc, n
 
 test('calcolo salvato: tante non superate e attenzioni quante l’esito, con valore e limite', async () => {
   const { createCalculation } = await save();
-  const made = await createCalculation(user, 'p1', PRESETS.B, null, null);
+  const made = await createCalculation(user, 'p1', PRESETS.B, null, null, null);
   assert.ok(made.ok);
   const r = row('calculation', made.id);
   assert.ok(Number(r.failCount) > 0 && Number(r.warnCount) > 0, 'the example fails and warns');
@@ -124,7 +124,7 @@ test('modifica (UNI 10411-1): solo le verifiche che il collaudo prende, come l�
 test('locale macchina della sostituzione: le verifiche del collaudo scelto col calcolo', async () => {
   const { createCalculation, createRoomDesign } = await save();
   const V: FormValues = { ...PRESETS.A, context: 'repl', alphaMode: 'geo', h: 0.95 };
-  const calc = await createCalculation(user, 'p2', V, null, null);
+  const calc = await createCalculation(user, 'p2', V, null, null, null);
   assert.ok(calc.ok);
   const c = row('calculation', calc.id), s = startSurvey(780);
   const made = await createRoomDesign(user, { id: calc.id, inputs: c.inputs, sha256: String(c.sha256), collaudo: c.collaudo ?? null, projectId: 'p2' },
@@ -139,7 +139,7 @@ test('locale macchina della sostituzione: le verifiche del collaudo scelto col c
 test('un record di un’altra ditta, o che non c’è: nessuna risposta, la stessa', async () => {
   const { createCalculation } = await save();
   const { verdictDetail } = await verdict();
-  const made = await createCalculation(user, 'p1', PRESETS.B, null, null);
+  const made = await createCalculation(user, 'p1', PRESETS.B, null, null, null);
   assert.ok(made.ok);
   assert.equal(await verdictDetail(other, 'calc', made.id, 'it'), null);
   assert.equal(await verdictDetail(user, 'calc', 'nessuno', 'it'), null);
