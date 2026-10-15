@@ -67,7 +67,7 @@ export async function technician({ BASE, page, errors, stamp, login, logout, hyd
   assert.match(await page.textContent('.calc-ruolo'), /Trasformazione completa/, 'a Tecnico saves a transformation');
   await denied(page, `${tecProject}/progetto`, 'progetto:edit', 'the Progetto of a Tecnico');
   await page.goto(tecProject);
-  assert.match(await page.textContent('main'), /Il progetto lo disegna un collega che ne ha il permesso/, 'whose the next step is');
+  assert.equal((await page.textContent('main')).split('Il progetto lo disegna un collega che ne ha il permesso').length - 1, 1, 'whose the next step is, once');
   assert.equal((await page.request.get(`${BASE}/api/company/export`)).status(), 403, 'company export by a Tecnico');
   // the survey sheets: read and edited by a Tecnico, never moved to the trash by one
   await page.goto(rilievoUrl);

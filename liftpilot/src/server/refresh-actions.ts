@@ -3,8 +3,8 @@
 // «Aggiorna con il software attuale»: a saved record the running engines no longer reproduce, made again in one click
 // from what was entered (save.ts), keeping its label: a lift design with its shaft design and calculation (drawn on a
 // «Calcolo argano» no longer reproduced: that calculation first, then the drawing on the new one); a «Calcolo argano»
-// (step 2, of any installation) with the machine room surveyed on it; a machine room (on its calculation, or on the one
-// that calculation was made again into). The new record's page says whether the result changed (?da=<old id>). A record
+// (step 2, of any installation) with the machine room surveyed on it (none on one keeping the machine: the room stays as
+// it was); a machine room (on its calculation, or on the one that calculation was made again into). The new record's page says whether the result changed (?da=<old id>). A record
 // still reproduced is not copied, nor one already made again (the audit keeps `updates`: a second tab or the back
 // button finds the new one); when what was entered no longer passes (the software asks for something else now), the
 // form opens on it instead, marked (src/lib/refresh-form.ts) so that it says why at its top. The archive of a whole
@@ -27,6 +27,7 @@ import { idSchema } from '@/lib/schemas';
 import { shaftSourceSchema } from '@/lib/shaft-input';
 import { DESIGN_SELECT } from './drawing-compose';
 import { str } from './form';
+import { arganoResta } from './calcolo-base';
 import { calcRecord, readCalc, storedCollaudo } from './records';
 import { reproduceRoomRecord } from './room-compose';
 import { madeFrom, once } from './remake';
@@ -112,8 +113,11 @@ async function rebase(user: SessionUser, b: CalcRow): Promise<(CalcRow & { value
   return c && read?.same ? { ...c, values: read.values, collaudo: storedCollaudo(read.values, c.collaudo) } : null;
 }
 
-/** A survey saved on a calculation the running engine reproduces; null when it no longer passes there. */
+/** A survey saved on a calculation the running engine reproduces; null when it no longer passes there, or when that
+ *  calculation keeps the machine (calcolo-base.ts arganoResta: no machine room is surveyed on it — the room stays as it
+ *  was, on its own calculation). */
 async function placeRoom(user: SessionUser, c: CalcRow, room: RoomRow): Promise<string | null> {
+  if (arganoResta(c)) return null;
   const survey = surveySchema.safeParse(room.inputs);
   const made = survey.success ? await createRoomDesign(user, c, survey.data, room.label, room.id) : null;
   return made?.ok ? made.id : null;
@@ -169,6 +173,8 @@ export async function refreshRoomDesignAction(fd: FormData): Promise<void> {
   const m = await once(r.id, async () => (on ? { calc: on.id, room: await placeRoom(user, on, r) } : remakeCalc(user, c, r)));
   if (m === 'busy') redirect(`${app}/room-designs/${r.id}`);
   if (!m) redirect(formOr(user, 'calc:create', `${app}/projects/${c.projectId}/calc?from=${c.id}&${REFRESH_QUERY}`, `${app}/room-designs/${r.id}`));
-  // a survey the calculation no longer takes: its form, on that calculation, from this survey
-  redirect(m.room ? `${app}/room-designs/${m.room}?da=${r.id}` : formOr(user, 'progetto:edit', `${app}/calculations/${m.calc}/locale?from=${r.id}&${REFRESH_QUERY}`, `${app}/calculations/${m.calc}`));
+  // a survey the calculation no longer takes: its form, on that calculation, from this survey; a calculation keeping the
+  // machine takes none (its Progetto is the shaft): its page, the room left as it was
+  if (m.room) redirect(`${app}/room-designs/${m.room}?da=${r.id}`);
+  redirect(arganoResta(c) ? `${app}/calculations/${m.calc}` : formOr(user, 'progetto:edit', `${app}/calculations/${m.calc}/locale?from=${r.id}&${REFRESH_QUERY}`, `${app}/calculations/${m.calc}`));
 }

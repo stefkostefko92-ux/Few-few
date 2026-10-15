@@ -70,13 +70,23 @@ function sheaveNote(hold: SheaveHold, D: number, Dv: number, fmt: Fmt): string {
       + `geometria della puleggia verificata, e ${alt}. Prima di sceglierla il progetto va ripetuto con quella puleggia.`;
 }
 
+/** The registry entries of the machine's replacement alone (the group «sostituzione», the falls of a new machine over
+ *  the existing ones): out of the list when the machine stays (round 45). */
+const SOLO_SOSTITUZIONE = (id: string): boolean => id.startsWith('sostituzione.') || id === 'locale.calate';
+
 /** The registry entries the document uses — the checks', the model's limits, the shaft's, the values the software
- *  filled in (`filled`) — with their status. */
-export function vociBlocks(ids: ReadonlySet<string>, vano: readonly VoceVano[], filled: ReadonlySet<string>): ReportBlock[] {
+ *  filled in (`filled`) — with their status; with the machine kept (`resta`, intervento.ts macchinaResta) without those of
+ *  its replacement alone, and a line saying so (every relazione without it as before). */
+export function vociBlocks(ids: ReadonlySet<string>, vano: readonly VoceVano[], filled: ReadonlySet<string>, resta = false): ReportBlock[] {
   const used: readonly Voce[] = VOCI.filter((v) => v.verifiche?.some((c) => ids.has(c)));
-  const listed = [...used, ...VOCI.filter((v) => LIMITI_MODELLO.includes(v.id)), ...vano, ...VOCI_IMPIANTO.filter((v) => filled.has(v.id))];
-  return [{ t: 'grid', head: ['Voce', 'Valore nel software', 'Dove si verifica', 'Stato'], rows: listed.map((v) => [v.titolo, v.valore, v.riferimento, STATO[v.stato]]),
-    status: listed.map((v) => (v.stato === 'confermato' ? 'ok' : v.stato === 'da_verificare' ? 'warn' : 'info')), widths: [0.27, 0.33, 0.26, 0.14], align: ['l', 'l', 'l', 'l'] }];
+  const all = [...used, ...VOCI.filter((v) => LIMITI_MODELLO.includes(v.id)), ...vano, ...VOCI_IMPIANTO.filter((v) => filled.has(v.id))];
+  const listed = resta ? all.filter((v) => !SOLO_SOSTITUZIONE(v.id)) : all;
+  return [
+    ...(resta ? [{ t: 'p', style: 'note', text: 'L’argano resta: le voci della sola sostituzione del macchinario non sono elencate; nelle altre, quanto detto della '
+      + 'macchina nuova vale per le apparecchiature sostituite o aggiunte.' } as const] : []),
+    { t: 'grid', head: ['Voce', 'Valore nel software', 'Dove si verifica', 'Stato'], rows: listed.map((v) => [v.titolo, v.valore, v.riferimento, STATO[v.stato]]),
+      status: listed.map((v) => (v.stato === 'confermato' ? 'ok' : v.stato === 'da_verificare' ? 'warn' : 'info')), widths: [0.27, 0.33, 0.26, 0.14], align: ['l', 'l', 'l', 'l'] },
+  ];
 }
 
 const KIND_IT = { totale: 'l’argano completo', senza_volano_puleggia: 'l’argano senza volano e puleggia', senza_puleggia: 'l’argano senza puleggia',

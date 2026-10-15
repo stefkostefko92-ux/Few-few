@@ -274,7 +274,7 @@ export function buildReport(r: ReportInput): ReportDoc {
     ...(I.layout === 'bottom' && m.bottom ? ['impianto.basso.schema'] : []), ...(chosen ? ['impianto.catalogo'] : []), ...(whole.estimate ? ['impianto.massa.argano'] : []),
     ...(guide ? ['impianto.massa.basamento'] : []), ...(a.hold === 'drop' ? ['impianto.calata'] : []),
     ...m.geometry.filter((k) => k === 'L0' || (k === 'dx' && I.layout === 'topDefl') || (k === 'Hv' && I.layout === 'bottom')).map((k) => `impianto.${k}`)]);
-  B.push(...vociBlocks(new Set(res.checks.map((c) => c.id)), vano, filled));
+  B.push(...vociBlocks(new Set(res.checks.map((c) => c.id)), vano, filled, kept));
 
   // what the software is in the document, said once before the signature: the technician who signs makes it theirs
   section(t('rep_legal_title'));

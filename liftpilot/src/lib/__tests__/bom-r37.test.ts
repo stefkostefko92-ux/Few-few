@@ -99,7 +99,19 @@ test('W2-G7-06: two N1 clips on every SG of the counterweight rails, with the ra
   assert.equal(qty(designBom(modification(dv, ['machine', 'landingDoors'])), N1_KEY), 0);
   // the cost's note says the clips are counted and the anchors and bolts are not: a new lift's and a modification's
   // (a lift design tested to UNI 10411 shows costNoteModification)
-  for (const note of [it.prices.costNoteDesign, it.prices.costNoteModification]) assert.ok(note.includes('N1') && note.includes('tasselli'), note);
+  for (const note of [it.prices.costNoteDesign, it.prices.costNoteModification, it.prices.costNoteModificationResta]) assert.ok(note.includes('N1') && note.includes('tasselli'), note);
+  // the machine kept (round 45): no machine, no base and no ACOP/UCM adaptation is billed (acopLines needs the machine
+  // among the parts), and the notes say so — never the adaptation «all’argano nuovo»
+  const kept = modification(dv, ['controller', 'landingDoors']), m11 = { ...kept, collaudo: { ...kept.collaudo, norma: '10411-11' as const } };
+  for (const d of [kept, m11]) {
+    const keys = designBom(d).map((l) => l.key ?? '');
+    assert.ok(!keys.some((k) => k.startsWith('acop:') || k.startsWith('machine:') || k.startsWith('bedplate:') || k.startsWith('support:')), keys.join(' '));
+  }
+  // (with the machine replaced to UNI 10411-11 the adaptation is billed: the notes of a new machine say it)
+  assert.ok(designBom({ ...m11, collaudo: { ...m11.collaudo, parti: ['machine', 'controller'] } }).some((l) => l.key === 'acop:adapt'));
+  for (const note of [it.prices.costNoteResta, it.prices.costNoteModificationResta]) {
+    assert.ok(note.includes('nessun argano né basamento da acquistare, né l’adeguamento delle protezioni ACOP/UCM a un argano nuovo'), note);
+  }
 });
 
 test('W2-L1b-05: the bearing plate under each end of the HEB beams, in the design’s bill and in the replacement’s', () => {

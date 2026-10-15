@@ -20,6 +20,7 @@ import { collaudoNote, partiText } from '../report/collaudo';
 import { oggettoTecnica, titoloTecnica } from '../report/intervento-text';
 import type { ReportDoc } from '../report/model';
 import { buildTavole } from '../tavole/build';
+import { belowRoomNote, clientNotes, roomNote } from '../tavole/notes';
 import type { TavoleInput } from '../tavole/input';
 import calcIt from '../../../messages/calc/it.json';
 
@@ -116,10 +117,10 @@ test('relazione «Trasformazione completa»: il titolo, l’oggetto e il contest
   assert.ok(paras(doc).startsWith('Verifica dell’argano a riduttore per la trasformazione completa dell’impianto'));
 });
 
-const sheet1 = (collaudo: Collaudo, tipo?: TipoIntervento): string => {
-  const I: ShaftInputs = { ...defaultInputs(1740, 1445), Q: 630, access: 'none', room: null };
+const sheet1 = (collaudo: Collaudo, tipo?: TipoIntervento | null, room = false): string => {
+  const I: ShaftInputs = { ...defaultInputs(1740, 1445), Q: 630, access: 'none', ...(room ? {} : { room: null }) };
   const x: TavoleInput = {
-    values: PRESETS.C, layout: layout(I), plant: {}, marks: marks(collaudo), ...(tipo ? { tipo } : {}),
+    values: PRESETS.C, layout: layout(I), plant: {}, marks: marks(collaudo), ...(tipo !== undefined ? { tipo } : {}),
     project: { name: 'Impianto di prova', address: null, city: null, province: null, plantNumber: null, client: null },
     company: { name: 'Ditta di prova', logo: null }, set: { number: '26-045', issuedAt: new Date('2026-10-14T10:00:00Z'), author: 'LP', revisions: [] },
   };
@@ -135,6 +136,33 @@ test('foglio 1: la nota del collaudo si apre con il tipo; senza tipo come prima'
   // tested as new to EN 81-20/50 alone: no note before, the type's note now
   assert.equal(collaudoNote(TRASF, 'NOTA 1'), null);
   assert.equal(collaudoNote(TRASF, 'NOTA 1', undefined, 'TRASFORMAZIONE_COMPLETA')?.text, 'Intervento: Trasformazione completa. Collaudo secondo UNI EN 81-20:2020 e UNI EN 81-50:2020.');
+});
+
+test('foglio 1 con l’argano che resta: ARGANO «ESISTENTE», il locale attorno alle apparecchiature; senza tipo come prima', () => {
+  const kept = sheet1(KEPT, 'AMMODERNAMENTO', true), legacy = sheet1(KEPT, null, true), replaced = sheet1(AMMOD, 'AMMODERNAMENTO', true);
+  assert.ok(kept.includes('ARGANO tipo ESISTENTE'), 'the machine kept is existing');
+  assert.ok(kept.includes('Attorno alle apparecchiature sostituite o aggiunte il locale segue la UNI EN 81-20 5.2.6.3'));
+  assert.ok(!kept.includes('Attorno alla macchina nuova'));
+  // a set without the type, and a machine replaced, print the words of before
+  for (const x of [legacy, replaced]) {
+    assert.ok(x.includes('Attorno alla macchina nuova il locale segue la UNI EN 81-20 5.2.6.3') && !x.includes('ARGANO tipo ESISTENTE'));
+  }
+  assert.equal(sheet1(KEPT, null, true), sheet1(KEPT, undefined, true));
+  // the notes themselves: the words of every set before round 45 unchanged, the machine kept named round what changes
+  assert.deepEqual(roomNote('existing', 1900), roomNote('existing', 1900, false));
+  assert.ok(roomNote('existing').text.startsWith('Attorno alla macchina nuova il locale segue la UNI EN 81-20 5.2.6.3 (UNI 10411-1:2024 e UNI 10411-11:2024, punto 9.2): davanti'));
+  assert.ok(belowRoomNote(false, true).text.startsWith('Attorno alla macchina nuova il locale segue') && belowRoomNote(true, true, true).text.startsWith('Attorno alle apparecchiature sostituite'));
+  assert.deepEqual(clientNotes(layout(defaultInputs(1740, 1445)), false, { norma: '10411-1' }), clientNotes(layout(defaultInputs(1740, 1445)), false, { norma: '10411-1', resta: false }));
+});
+
+test('relazione con l’argano che resta: le voci della sola sostituzione fuori dall’elenco, detto; senza tipo come prima', () => {
+  const ADEG = 'Adeguamenti richiesti per la sostituzione del macchinario', NOTE = 'L’argano resta: le voci della sola sostituzione del macchinario non sono elencate';
+  const kept = report(KEPT, 'AMMODERNAMENTO');
+  assert.ok(!voci(kept).includes(ADEG) && voci(kept).length > 0);
+  assert.ok(paras(kept).includes(NOTE));
+  for (const doc of [report(KEPT, null), report(AMMOD, 'AMMODERNAMENTO'), report(SOLO, 'SOLO_ARGANO')]) {
+    assert.ok(voci(doc).includes(ADEG) && !paras(doc).includes(NOTE));
+  }
 });
 
 test('relazione tecnica del locale macchina: il titolo e l’oggetto dell’ammodernamento', () => {

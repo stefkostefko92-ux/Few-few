@@ -149,12 +149,13 @@ export default async function CalculationPage({ params, searchParams }: {
       {kept ? null : <AdviceView advice={advice} alt={alt && lift ? { advice: alt, sheave: lift.dv.machine.D } : null} fmt={fmt} where={where}
         inUse={(x) => own !== null && own.brand === x.brand && own.model === x.model && (!lift || own.I.layout === x.I.layout)} />}
       {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} uncounted={lift ? null : calcUncounted(C)} locale={locale}
-        scope={!lift ? (kept ? 'resta' : 'calc') : costKind === 'full' ? 'design' : 'modification'}
+        scope={!lift ? (kept ? 'resta' : 'calc') : costKind === 'full' ? 'design' : kept ? 'modificationResta' : 'modification'}
         editable={can(user, 'prices:edit')} /> : null}
       {download ? (
         <section className="panel">
           <SectionTitle icon="file-text">{ta('order_title')}</SectionTitle>
-          <p className="note">{ta('order_lead')}</p>
+          {/* a machine kept: nothing to order, said in place of what the draft would carry */}
+          <p className="note">{kept ? t('progetto.ordineResta') : ta('order_lead')}</p>
           {order ? (
             <>
               <p className="order-machine">{ta(`${order.recorded ? 'order_chosen' : 'order_advised'}_${where}`, { machine: `${order.machine.brand} ${order.machine.model}` })}</p>
@@ -163,7 +164,7 @@ export default async function CalculationPage({ params, searchParams }: {
                 <a className="btn" href={`/api/calculations/${c.id}/order/pdf`}><Icon name="file-pdf" size={18} />{ta('order_pdf')}</a>
               </div>
             </>
-          ) : <p className="note">{kept ? t('progetto.ordineResta') : ta('order_none')}</p>}
+          ) : kept ? null : <p className="note">{ta('order_none')}</p>}
         </section>
       ) : null}
       <section className="panel">

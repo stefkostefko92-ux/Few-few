@@ -4,6 +4,7 @@
 // previous one.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { startSurvey } from '@/lib/room/survey';
 import { APP, actions, calcRow, calls, db, go, project, signIn, stale, type Row } from './refresh-fixture';
 
 const roomRow = (id: string, over: Row = {}): Row => ({
@@ -54,4 +55,34 @@ test('machinale di un’altra ditta o archiviato: al tabellone', async () => {
   assert.equal(await go(refreshRoomDesignAction, 'theirs'), APP);
   assert.equal(await go(refreshRoomDesignAction, 'arch'), APP);
   assert.equal(calls.calc.length + calls.room.length, 0);
+});
+
+// a modernisation keeping the machine (round 45): no machine room is surveyed on its calculation, nor carried onto it
+const KEPT = { intervento: 'AMMODERNAMENTO', collaudo: { norma: '10411-1', parti: ['controller'] } };
+const survey = startSurvey(600);
+
+test('calcolo con l’argano che resta: il locale salvato prima non si rifà sul calcolo rifatto, resta com’è', async () => {
+  const { refreshCalculationAction } = await actions();
+  db.calc = [calcRow('old1', { ...stale, ...KEPT, roomDesigns: [{ id: 'room1', label: 'locale', inputs: survey }] }), calcRow('new1', KEPT)];
+  assert.equal(await go(refreshCalculationAction, 'old1'), `${APP}/calculations/new1?da=old1`);
+  assert.equal(calls.calc.length, 1, 'il calcolo rifatto');
+  assert.equal(calls.room.length, 0, 'il locale non è portato sul calcolo che tiene l’argano');
+  // the same survey on a calculation replacing the machine is carried over (the rule above is the kept machine's only)
+  db.calc = [calcRow('old2', { ...stale, roomDesigns: [{ id: 'room2', label: 'locale', inputs: survey }] }), calcRow('new1')];
+  calls.calc = [];
+  assert.equal(await go(refreshCalculationAction, 'old2'), `${APP}/calculations/new1?da=old2`);
+  assert.equal(calls.room.length, 1);
+});
+
+test('locale macchina su un calcolo con l’argano che resta: non si rifà, si torna al calcolo', async () => {
+  const { refreshRoomDesignAction } = await actions();
+  // its calculation still reproduced: the room is not placed again on it
+  db.room = [roomRow('room1', { inputs: survey, calculation: calcRow('calc1', KEPT) })];
+  assert.equal(await go(refreshRoomDesignAction, 'room1'), `${APP}/calculations/calc1`);
+  // its calculation made again: the new one, without the room
+  db.room = [roomRow('room2', { inputs: survey, calculation: calcRow('old1', { ...stale, ...KEPT }) })];
+  db.calc = [calcRow('new1', KEPT)];
+  assert.equal(await go(refreshRoomDesignAction, 'room2'), `${APP}/calculations/new1`);
+  assert.equal(calls.calc.length, 1);
+  assert.equal(calls.room.length, 0, 'nessun locale sul calcolo che tiene l’argano');
 });

@@ -101,8 +101,13 @@ export function rilevaLocale(c: { liftDesign: unknown; shaftDesignId: string | n
  *  is replaced — the survey places a new machine on the falls in place; a modernisation keeping the machine draws the
  *  shaft instead (intervento.ts disegnoDi). The machine rooms surveyed before are read as they are (rilevaLocale). */
 export function localeRilevabile(c: { liftDesign: unknown; shaftDesignId: string | null; inputs: unknown; collaudo: unknown; intervento: TipoIntervento | null }): boolean {
-  return rilevaLocale(c) && !macchinaResta(c.intervento, storedCollaudo(c.inputs as FormValues, c.collaudo));
+  return rilevaLocale(c) && !arganoResta(c);
 }
+
+/** A «Calcolo argano» of a modernisation keeping the machine (intervento.ts macchinaResta, on the standards stored with
+ *  it): no machine room is surveyed on it, nor carried onto it when it is made again (refresh-actions.ts). */
+export const arganoResta = (c: { inputs: unknown; collaudo: unknown; intervento: TipoIntervento | null }): boolean =>
+  macchinaResta(c.intervento, storedCollaudo(c.inputs as FormValues, c.collaudo));
 
 /** The lift designs drawn on a «Calcolo argano» of the company, newest first. */
 export function progettiSu(user: SessionUser, calculationId: string) {

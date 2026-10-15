@@ -48,10 +48,12 @@ export default async function ProjectPage({ params, searchParams }: { params: Pr
   const next = !base ? (calcola ? <Link className="btn btn-primary" href={calcHref}>{t('calcola')}</Link> : null)
     : !drawn && progettoHref ? (disegna ? <Link className="btn btn-primary" href={progettoHref}>{t(c.disegno === 'locale' ? 'rileva' : 'disegna')}</Link> : null)
       : calcola ? <Link className="btn btn-primary" href={calcHref}>{tc('new')}</Link> : null;
-  const nextHandoff = !base ? handoff('calcolo') : !drawn && progettoHref ? handoff('progetto') : null;
   // the records by what they are: «Calcolo argano» (step 2), a lift design's (reached from it), the archive
   const step2 = calcs.filter((x) => !x.liftDesign && !x.shaftDesignId)
     .map((x) => ({ ...x, old: outdated.calc(x), tipo: tipoDi(x), reviews: x._count.reviews }));
+  // whose the next step is, under the header — unless its section is empty and says it there (once on the page)
+  const nextHandoff = !base ? (step2.length ? handoff('calcolo') : null)
+    : !drawn && progettoHref && (latest || rooms.length) ? handoff('progetto') : null;
   const archiveCalcs = calcs.filter((x) => x.shaftDesignId && !x.liftDesign).map((x) => ({ ...x, old: outdated.calc(x) }));
   const shaftRows = designs.filter((d) => !d.liftDesign).map((d) => ({ ...d, old: outdated.shaft(d) }));
   const roomLine = await roomSummaryLine(), roomRows = rooms.map((r) => ({ ...r, summary: roomLine(r), old: outdated.room(r) }));

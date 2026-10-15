@@ -114,7 +114,7 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
       {/* a new lift design: whoever draws the project (rbac.ts remakerOf); the others read who does */}
       {same ? null : <StaleNotice text="design" by={remakerOf(user, 'lift', live)} refresh={r ? { kind: 'lift', id: d.id } : null} />}
       {r ? <LiftView inputs={r.inputs} prices={prices} pitches={pitches} /> : <p className="alert alert-bad" role="status">{t('unreadable')}</p>}
-      {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} locale={locale} scope={kind === 'full' ? 'design' : 'modification'} editable={can(user, 'prices:edit')} /> : null}
+      {costed ? <ProjectCost cost={costed.cost} skipped={costed.skipped} locale={locale} scope={kind === 'full' ? 'design' : kept ? 'modificationResta' : 'modification'} editable={can(user, 'prices:edit')} /> : null}
       {advice && !kept ? (
         <AdviceView advice={advice} alt={alt && dv ? { advice: alt, sheave: dv.machine.D } : null} fmt={fmt} where="design"
           inUse={(c) => own !== null && own.brand === c.brand && own.model === c.model && own.I.layout === c.I.layout} />
@@ -144,7 +144,8 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
         {same && can(user, 'report:download') ? (
           <div className="panel">
             <SectionTitle level={3} icon="file-text">{ta('order_title')}</SectionTitle>
-            <p className="note">{ta('order_lead')}</p>
+            {/* a machine kept: nothing to order, said in place of what the draft would carry */}
+            <p className="note">{kept ? tc('progetto.ordineResta') : ta('order_lead')}</p>
             {order ? (
               <>
                 <p className="order-machine">{ta(order.recorded ? 'order_chosen_design' : 'order_advised_design', { machine: `${order.machine.brand} ${order.machine.model}` })}</p>
@@ -153,7 +154,7 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
                   <a className="btn" href={`/api/lift-designs/${d.id}/order/pdf`}><Icon name="file-pdf" size={18} />{ta('order_pdf')}</a>
                 </div>
               </>
-            ) : <p className="note">{kept ? tc('progetto.ordineResta') : ta('order_none')}</p>}
+            ) : kept ? null : <p className="note">{ta('order_none')}</p>}
           </div>
         ) : null}
         {same && issues ? (

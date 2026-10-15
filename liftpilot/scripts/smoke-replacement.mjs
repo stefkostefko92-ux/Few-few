@@ -113,6 +113,7 @@ async function keptMachine({ BASE, page, hydrated, roomCalcUrl }) {
   assert.equal(await page.locator('.verdict .propline').count(), 0, 'no proposal');
   assert.equal(await page.locator('section.advice').count(), 0, 'no advice');
   assert.match(await page.textContent('main'), /L’argano resta quello dell’impianto: non c’è un argano da ordinare/, 'no order');
+  assert.ok(!(await page.textContent('main')).includes('L’argano con i dati per il costruttore'), 'no order lead for a machine kept');
   if (await page.locator('#project-cost-h').count()) assert.match(await page.textContent('section[aria-labelledby="project-cost-h"]'), /nessun argano né basamento da acquistare/);
   assert.equal(await page.locator('section[aria-labelledby="calc-progetto"] a[href$="/locale"]').count(), 0, 'no survey of the machine room');
   assert.equal(await page.locator('section[aria-labelledby="calc-progetto"] a[href*="/progetto?calc="]').count(), 1, 'the shaft to draw');

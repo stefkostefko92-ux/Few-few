@@ -46,6 +46,7 @@ import { belowGeoOf, machineOf, machineText } from './views';
 import { clientNotes, estimateNote, railNote, safetyGearNote, spaceLegend } from './notes';
 import { shaftDetailText } from './notes-vano';
 import { NORMA_SIGLA, ambitoOf, collaudoOf, partKept, ropesKept } from '../lift/collaudo';
+import { macchinaResta } from '../lift/intervento';
 import { collaudoNote } from '../report/collaudo';
 
 /** The buffers by type as the data sheet writes them: the car's (plural) and the counterweight's. */
@@ -57,6 +58,8 @@ const fmt = makeFmt('it-IT');
 const dec = (x: number): number => (Number.isInteger(x) ? 0 : Math.abs(x * 10 - Math.round(x * 10)) < 1e-9 ? 1 : 2);
 const num = (x: number | null | undefined): string => (x == null ? '—' : fmt(x, dec(x)));
 const txt = (s: string | undefined, fallback = '—'): string => (s && s.trim() ? s.trim() : fallback);
+/** The machine a modernisation keeps, as the sheet writes the parts it keeps: existing, with its name when known. */
+const existingMachine = (name: string): string => (name.trim() ? `ESISTENTE (${name.trim()})` : 'ESISTENTE');
 
 /** A value the calculation and the shaft design give differently; or the car mass of the calculation and the sum of
  *  its parts in the data of the installation (`shaft`). */
@@ -93,8 +96,9 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   if (L.Q !== I.Q) warnings.push({ what: 'load', calc: I.Q, shaft: L.Q });
   const parts = carParts(Pl);
   if (parts !== null && Math.abs(parts - I.P) > 0.5) warnings.push({ what: 'carMass', calc: I.P, shaft: parts });
-  // the parts the intervention leaves in place (a lift tested as new, UNI EN 81-20/50: none)
-  const kept = (p: (typeof C.parti)[number]): boolean => partKept(C, p);
+  // the parts the intervention leaves in place (a lift tested as new, UNI EN 81-20/50: none); the machine too in a
+  // modernisation keeping it (round 45: only with the type declared — a set without it reads as before)
+  const kept = (p: (typeof C.parti)[number]): boolean => partKept(C, p), resta = macchinaResta(x.tipo, C);
 
   // stops and landing doors actually served
   const served = (f: (typeof V.floors)[number]): number => [...f.door].filter((s) => L.doors.some((d) => d.side === s)).length;
@@ -149,7 +153,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   const govText = oldGov ? 'ESISTENTE' : `${gov.brand} ${gov.model}`;
   const govRope = oldGov ? 'ESISTENTE' : `${fmt(governorRopeLength(V, S.top, room, scheme), 0)} - ${fmt(2 * gov.rope, 0)}`;
   const specs: Row[] = [
-    ['ARGANO', 'tipo', txt(machineText(Pl, x.marks?.catalog ?? null))],
+    ['ARGANO', 'tipo', (resta ? existingMachine : txt)(machineText(Pl, x.marks?.catalog ?? null))],
     ['RAPPORTO DI RIDUZIONE', '', `1 : ${num(N.i)}`],
     ['PULEGGIA DI FRIZIONE Ø', 'mm', fmt(N.D, 0)],
     ['PULEGGIA DI RINVIO/TAGLIA Ø', 'mm', I.layout === 'top' && I.r === 1 ? '—' : fmt(I.Dp, 0)],
@@ -251,7 +255,7 @@ export function dataSheet(x: TavoleInput, a: Analysis, pages: number): DataSheet
   // the rooms as the scheme of a machine below has them, existing in a modification tested to UNI 10411-1/-11 (9.2); the
   // shaft's note with the pit, the sills, the counterweight's sign and the brackets' anchors (notes-vano.ts)
   const gap = all.find((c) => c.id === 'h_cwgap')?.value ?? null;
-  const sp = spaceLegend(L, fmt), notes = clientNotes(L, below, { scheme, norma: C.norma,
+  const sp = spaceLegend(L, fmt), notes = clientNotes(L, below, { scheme, norma: C.norma, ...(resta ? { resta } : {}),
     detail: shaftDetailText(L, { cwGap: gap === null ? null : num(gap), fx: fmt(F.fx, 0), fy: fmt(F.fy, 0) }) });
   if (pEstimate) notes.push(estimateNote(fmt(I.P, 0), `NOTA ${notes.length + 1}`));
   if (!Pl.safetyGear) notes.push(safetyGearNote(`NOTA ${notes.length + 1}`));

@@ -258,7 +258,7 @@ src/server/          Server actions ('use server') и заявки, винаги
                      черновата, последният проект, пренесеното от съоръжението — src/lib/lift/carry.ts — или празно; основата
                      ?calc=), calcolo-base (кръг 45: изчисленията от стъпка 2 — STEP2, основата, типът на съоръжението:
                      tipoDi/tipoDaUltimi/tipoImpianto, legacyPiuNuovo — проект отпреди, по-нов от изчислението; localeRilevabile —
-                     машинното само с нова машина), dal-progetto (кръг 45: какво дава чертежът на изчислението при
+                     машинното само с нова машина; arganoResta — и «Aggiorna» не носи машинното върху него), dal-progetto (кръг 45: какво дава чертежът на изчислението при
                      ?dal=progetto), ridisegna-actions + remake (кръг 45: „Aggiorna il progetto con l’ultimo calcolo“; вече
                      направеното и едно по едно — общо с refresh-actions), drafts + draft-actions (черновите: четене по схемата, запис,
                      изхвърляне; изтриване при запис на формуляра); set-cad + set-identity (CAD файловете и самоличността на
