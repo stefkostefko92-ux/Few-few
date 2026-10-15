@@ -7,6 +7,10 @@ from pathlib import Path
 A = Path(__file__).resolve().parent.parent  # adblock/
 KIT = A / "dist" / "store-kit"
 ver = json.loads((A / "manifest.json").read_text())["version"]
+LOCALES = sorted(p.name for p in (A / "_locales").iterdir() if p.is_dir())
+LANGS = len({l.split("_")[0] for l in LOCALES})  # езиците, не папките (es/es_419, pt_BR/pt_PT, zh_CN/zh_TW)
+# Chrome Web Store не показва тези в листинга си (живата страница, 2026-10-12: 63 от 73) — Chrome пак ги ползва
+CWS_UNLISTED = ["af", "be", "bs", "cy", "gl", "is", "kk", "km", "mn", "zu"]
 listing = (A / "docs" / "STORE_LISTING.md").read_text()
 sub = (A / "docs" / "SUBMISSION.md").read_text()
 
@@ -91,11 +95,11 @@ md = f"""# Supreme AdBlock {ver} — Chrome Web Store: всичко за copy/pa
 
 ## 2b. Store listing → Promo video (YouTube)
 
-По избор. Листингът в момента е без клип. Само версията за магазина (без сравнение и без „free“) — никога пълната или вертикалната за социалните мрежи (там има „Free“ и сравнение → отново „Red Nickel“). По-добре без клип, отколкото с грешния. Ако в листинга вече е клипът за магазина, остави го — не се сменя с всяка версия. Нов клип: `node tools/promo/render.mjs --cut store` → качи в YouTube `supreme-adblock-promo-<версия>-store-web.mp4` (идва отделно от кита; версията БЕЗ сравнение с други блокери и без „free“ — правилото на CWS за текст в медиите) като Public или Unlisted, заглавие „Supreme AdBlock — ad blocker for Chrome · Carbon Stealth“, миниатюра `{thumb}` (от последния клип за магазина). После постави адреса на видеото в полето **YouTube video** на листинга. Клипът е 35 s, 1080p, със звук. Пълната версия (43 s, със сравнението) е за сайта и YouTube канала — НЕ я слагай в листинга.
+По избор. В листинга вече има клип („Supreme Adblock presentation video“, YouTube `uFfqFO_j1OM`, към 2026-10-12). Ако е нашият промо клип отпреди 5.1.8, в третата сцена пише „73 languages“ — верното е 70 (73 са папките в `_locales`); новият рендер казва 70. Само версията за магазина (без сравнение и без „free“) — никога пълната или вертикалната за социалните мрежи (там има „Free“ и сравнение → отново „Red Nickel“). По-добре без клип, отколкото с грешния. Ако в листинга вече е клипът за магазина, остави го — не се сменя с всяка версия. Нов клип: `node tools/promo/render.mjs --cut store` → качи в YouTube `supreme-adblock-promo-<версия>-store-web.mp4` (идва отделно от кита; версията БЕЗ сравнение с други блокери и без „free“ — правилото на CWS за текст в медиите) като Public или Unlisted, заглавие „Supreme AdBlock — ad blocker for Chrome · Carbon Stealth“, миниатюра `{thumb}` (от последния клип за магазина). После постави адреса на видеото в полето **YouTube video** на листинга. Клипът е 35 s, 1080p, със звук. Пълната версия (43 s, със сравнението) е за сайта и YouTube канала — НЕ я слагай в листинга.
 
 ## 3. Store listing → Additional languages
 
-Готово описание за ВСЕКИ от {len(list((A / "_locales").iterdir()))}-те езика е в `listing/<код>.txt` (кодът = папката в `_locales`). В dashboard-а: **Add language** → избери езика → постави съдържанието на файла в Description. Title остава „Supreme AdBlock“; Summary идва от manifest-а (`extDescription` е преведен). Преводите извън en/bg/it/de са машинно подпомогнати — ако имаш носител на езика, дай му ги да ги прегледа преди да ги поставиш.
+Готово описание за всеки от {len(LOCALES)}-те локала ({LANGS} езика — es/es_419, pt_BR/pt_PT и zh_CN/zh_TW са варианти) е в `listing/<код>.txt` (кодът = папката в `_locales`). В dashboard-а: **Add language** → избери езика → постави съдържанието на файла в Description. Магазинът показва {len(LOCALES) - len(CWS_UNLISTED)} от тях („{len(LOCALES) - len(CWS_UNLISTED)} languages“ в Details): {", ".join(CWS_UNLISTED)} не са в неговия списък — ако ги няма в Add language, пропусни ги; разширението пак е на тези езици за хората с Chrome на тях. Title остава „Supreme AdBlock“; Summary идва от manifest-а (`extDescription` е преведен). Преводите извън en/bg/it/de са машинно подпомогнати — ако имаш носител на езика, дай му ги да ги прегледа преди да ги поставиш.
 
 Пълните bg/it/de описания (от `docs/STORE_LISTING.md`):
 
@@ -161,6 +165,19 @@ Title и Summary за другите езици: същите като англ�
 ## 9b. След като {ver} е публикувана — номинация за Featured
 
 Chrome Web Store **One Stop Support** → опцията за номинация за Featured badge. Условията на Google (всички изпълнени): разширение, публикувано и публично, наше, с английски, без активни нарушения, основните функции без акаунт и плащане. Badge-ът не се купува; прегледът отнема време.
+
+Преди да номинираш — листингът трябва да показва най-доброто (ревюърът гледа него, а класирането — оценките и задържането):
+- [ ] {ver} е публикувана и в Details пише Version {ver}
+- [ ] Description (EN) е новото от т. 1 — на живо НЕ трябва да има „not retrofitted“, „acceptable ads“, „Daily signed“ или „73 languages“
+- [ ] Описанията по езици от `listing/<код>.txt` са поставени (поне de, fr, es, it, pt_BR, ru, pl, nl, tr, ja, ko, id, uk, bg) — без тях чужденците виждат стар английски текст
+- [ ] Клипът е новият store cut (`supreme-adblock-promo-<версия>-store-web.mp4`, без сравнение и без „free“) — не промото от 5.1.6
+- [ ] Скрийншотите са от този кит; промо плочката и marquee — също
+- [ ] Сайтът е деплойнат от същия ref (политиката и твърденията там съвпадат с листинга)
+- [ ] Graphic assets: качени са `promo_small_440x280.png` (без нея листингът е след тези, които я имат) и `marquee_1400x560.png` (без нея — никога в голямата витрина)
+- [ ] Homepage URL = `https://adblock.carbonstealth.eu` — САМО ако в Search Console е потвърден целият домейн (Domain property, DNS); при URL-prefix свойство за `https://carbonstealth.eu` го остави, иначе текстът на значката „Created by the owner of the listed website“ може да падне
+- [ ] Contact email: фирменият (`info@carbonstealth.eu`) вместо личния Gmail — показва се публично в листинга
+- [ ] Статус на търговец (DSA): днес „Non-trader“ с предупреждението, че правата на потребителите в ЕС не важат; Carbon Stealth VCC е фирма — реши с Правния Разбирач дали да се декларира като търговец (адресът и телефонът стават публични)
+- [ ] Линкът за дарения (popup + Настройки) води към лична Revolut сметка, а издателят е Carbon Stealth — по-прозрачно е фирмена сметка или страница на сайта, която казва кой получава парите
 
 ## 10. Microsoft Edge Add-ons (същият zip)
 
