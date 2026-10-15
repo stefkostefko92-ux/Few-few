@@ -2,7 +2,8 @@
 import { brakeWindow, compute, sensitivity } from '@/calc/compute';
 import { readInputs } from '@/calc/inputs';
 import type { BrakeWindow, FormValues, ParsedInputs, Results, SensitivityVariant, Sizing, SizingOption } from '@/calc/types';
-import { designSizing, sheaveHold, type SheaveHold } from '@/lib/lift/direct';
+import { sizeMachine } from '@/calc/sizing';
+import { designSizing, dropSheaves, sheaveHold, type SheaveHold } from '@/lib/lift/direct';
 
 export interface Analysis {
   ctx: ParsedInputs;
@@ -22,6 +23,15 @@ export function analyse(V: FormValues, design = false): Analysis {
   const old = ctx.compare ? compute(ctx.I, ctx.O) : null;
   const sizing = designSizing(ctx, design);
   return { ctx, res, old, sizing, hold: sheaveHold(ctx, design), sens: sensitivity(ctx.I, ctx.N, res), win: brakeWindow(res) };
+}
+
+/** The calculator's sizing held to the sheave a drawing hangs a direct pull's falls from (round 45, «Porta nel
+ *  calcolo»: `D` the falls' spacing in the drawn plan [mm]): the options of that sheave only, none when it is off the
+ *  grid's range — as the drawing's own proposal (lift/direct.ts). Shown only: the engine and the saved values do not
+ *  change. */
+export function sizingWithSheave(ctx: ParsedInputs, D: number): Sizing {
+  const [fixed] = dropSheaves(D);
+  return fixed ? sizeMachine(ctx.I, ctx.N, fixed, ctx.rope) : { options: [], pick: null, fixedD: D, keep: ctx.rope };
 }
 
 /** Replacement with the ropes kept and the existing machine entered: the new ropes follow the existing ones. */

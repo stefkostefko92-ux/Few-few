@@ -81,3 +81,20 @@
 /* a value of the Progetto that the «Calcolo argano» fixes (the rated load, the speed): read only, its source said */
 .badge.calcolo { margin-left: 6px; color: var(--ink-2); background: var(--surface2); border-color: var(--rule-strong); text-transform: none; letter-spacing: .02em; }
 .field input[readonly] { color: var(--ink-2); background: var(--bg-2); }
+
+/* «Il progetto completa il calcolo» (round 45): the calculation's value beside the drawing's; a row the drawing changes
+   beyond the screen's tolerance carries the amber edge the warnings use, so the eye finds what «Porta nel calcolo» brings */
+.differenze table { width: 100%; }
+.differenze tbody th { font-weight: 500; text-align: left; color: var(--ink-2); }
+.differenze tr.differs th, .differenze tr.differs td { background: var(--warn-bg); }
+.differenze tr.differs th { box-shadow: inset 3px 0 0 var(--warn); color: var(--ink); }
+.differenze td .badge { margin-left: 8px; }
+.differenze-esito { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin: 10px 0 0; font-size: 14px; color: var(--ink-2); }
+.differenze-esito > span { display: inline-flex; align-items: center; gap: 6px; }
+/* the base a lift design was drawn on, under its title; drawn on an older one, the way to the latest */
+.progetto-base { margin-top: 0; }
+.ridisegna { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.ridisegna p { margin: 0; flex: 1 1 26rem; max-width: 80ch; }
+.ridisegna form { margin: 0; }
+.porta-avviso { max-width: 100ch; }
+.differenze .badge.warn { color: var(--warn); background: var(--warn-bg); text-transform: none; letter-spacing: .02em; }

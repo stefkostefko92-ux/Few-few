@@ -3,7 +3,8 @@
 // The draft of a form kept as it is filled in (src/server/draft-actions.ts): a second and a half after the last change,
 // when the values read as the server keeps them (a value being typed out of range waits until it is back in range).
 // Saving the form's record or discarding the draft stops the pending keep first, so the draft never comes back after
-// the record (the record's save deletes it).
+// the record (the record's save deletes it). Leaving for a page that reads the draft (round 45, «Porta nel calcolo»)
+// keeps it at once first (flush).
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { saveDraftAction } from '@/server/draft-actions';
 import type { DraftScope } from '@/lib/draft-input';
@@ -21,6 +22,9 @@ export interface DraftHandle {
   state: DraftState;
   /** what the form holds now is not kept as a draft: it is being saved as a record, or the draft discarded */
   stop(): void;
+  /** what the form holds now kept at once (the pending keep in its place, and kept even when unchanged since the form
+   *  opened: the page that follows reads the draft as what is on the screen), when it reads as the server keeps it */
+  flush(): Promise<void>;
 }
 
 const DELAY = 1500;
@@ -45,5 +49,16 @@ export function useDraft(target: DraftTarget | null, data: unknown, valid: boole
     if (timer.current) clearTimeout(timer.current);
     kept.current = json;
   }, [json]);
-  return { state, stop };
+  const flush = useCallback(async (): Promise<void> => {
+    if (timer.current) clearTimeout(timer.current);
+    if (!target || !valid) return;
+    kept.current = json;
+    try {
+      const r = await saveDraftAction({ projectId: target.projectId, scope: target.scope, data: JSON.parse(json) as unknown });
+      setState(r.ok ? { kind: 'saved', at: new Date(r.at) } : { kind: 'failed' });
+    } catch {
+      setState({ kind: 'failed' });
+    }
+  }, [json, target, valid]);
+  return { state, stop, flush };
 }

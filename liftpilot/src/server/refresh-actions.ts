@@ -29,6 +29,7 @@ import { DESIGN_SELECT } from './drawing-compose';
 import { str } from './form';
 import { calcRecord, readCalc, storedCollaudo } from './records';
 import { reproduceRoomRecord } from './room-compose';
+import { madeFrom, once } from './remake';
 import { createCalculation, createLiftDesign, createRoomDesign } from './save';
 import type { TipoIntervento } from '@/lib/lift/intervento';
 import type { Collaudo } from '@/lib/lift/collaudo';
@@ -49,27 +50,6 @@ async function refresher(fd: FormData): Promise<{ user: SessionUser; id: string;
   const id = idSchema.safeParse(str(fd, 'id'));
   if (user.mustChangePassword || !can(user, 'records:refresh') || !id.success || !rateLimit(`refresh:${user.id}`, 30, 10 * 60 * 1000)) redirect(`/${locale}/app`);
   return { user, id: id.data, app: `/${locale}/app` };
-}
-
-/** The record a saved one was already made again into (the audit of the save keeps `updates`), if any. */
-async function madeFrom(user: SessionUser, action: 'LIFT_DESIGN_SAVED' | 'CALCULATION_SAVED' | 'ROOM_DESIGN_SAVED', id: string): Promise<string | null> {
-  const a = await prisma.auditLog.findFirst({
-    where: { companyId: user.companyId, action, meta: { path: ['updates'], equals: id } }, orderBy: { createdAt: 'desc' }, select: { entityId: true },
-  });
-  return a?.entityId ?? null;
-}
-
-const making = new Set<string>();
-
-/** One update of a record at a time in the process: a second one at the same moment gets 'busy'. */
-async function once<T>(id: string, make: () => Promise<T>): Promise<T | 'busy'> {
-  if (making.has(id)) return 'busy';
-  making.add(id);
-  try {
-    return await make();
-  } finally {
-    making.delete(id);
-  }
 }
 
 async function refreshLift(user: SessionUser, id: string, app: string): Promise<never> {

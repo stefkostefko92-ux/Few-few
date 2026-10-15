@@ -14,7 +14,7 @@ import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { PRESETS } from '@/calc/presets';
 import { ropeFamily } from '@/calc/sizing';
 import type { FormValues } from '@/calc/types';
-import { analyse, mirrorRopes, proposalValues } from '@/lib/present/analysis';
+import { analyse, mirrorRopes, proposalValues, sizingWithSheave } from '@/lib/present/analysis';
 import { textsFor } from '@/lib/present/texts';
 import { makePres, type CalcKey } from '@/lib/present/tr';
 import { visibleBad } from '@/lib/calc-input';
@@ -74,9 +74,12 @@ interface Props {
   origine?: OrigineRilievo | null;
   /** the values, test and type as they settle with nothing missing (the standalone page draws its Progetto on them) */
   onBase?(base: { values: FormValues; collaudo: Collaudo; tipo: TipoIntervento }): void;
+  /** the sheave a drawing's direct pull hangs its falls from [mm] (round 45, ?dal=progetto): the proposals take only it
+   *  while the machine stays above with a direct pull; null: none */
+  sheave?: number | null;
 }
 
-export default function Calculator({ projectId, initial, preset: initialPreset, brand, intervento, draft = null, origine = null, onBase }: Props) {
+export default function Calculator({ projectId, initial, preset: initialPreset, brand, intervento, draft = null, origine = null, onBase, sheave = null }: Props) {
   const locale = useLocale(), messages = useMessages(), tc = useTranslations('calculations'), te = useTranslations('errors'), tb = useTranslations('blank');
   const ti = useTranslations('calculations.intervento'), tl = useTranslations('lift');
   const router = useRouter();
@@ -104,7 +107,10 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   const { tipo, value: collaudo } = I, resta = I.resta && I.risposte.includes('machine');
 
   const deferred = useDeferredValue(values);
-  const a = useMemo(() => analyse(deferred), [deferred]);
+  const analysed = useMemo(() => analyse(deferred), [deferred]);
+  // a drawing's direct pull (?dal=progetto): the proposals of the sheave its falls hang from only (shown, not saved)
+  const held = sheave && deferred.layout === 'top' ? sheave : null;
+  const a = useMemo(() => (held ? { ...analysed, sizing: sizingWithSheave(analysed.ctx, held), hold: 'drop' as const } : analysed), [analysed, held]);
   const evaluate = useCallback((m: AdviceModel) => valuesCandidate(deferred, a, m), [deferred, a]);
   // the type and the parts still to answer first; the values still to enter are needed, not wrong: marked apart from
   // the ones out of range
@@ -210,7 +216,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
           {tipo ? <CollaudoOptions P={P} mode={MODE[tipo]} chosen={I.chosen} value={collaudo} set={I.setCollaudo} calc={values} /> : null}
         </section>
         {ready && !resta ? <Results P={P} X={X} a={a} mode={mode} badCount={bad.size} brand={brand} collaudo={collaudo} tipo={tipo} onUse={onUse} propMsg={propMsg}
-          proposalOnly={!complete} /> : null}
+          proposalOnly={!complete} vincolo={held ? tc('porta.sheave', { D: held }) : undefined} /> : null}
       </div>
       {ready && !resta ? <MachineAdvice evaluate={evaluate} alternative={null} wall={valuesWall(deferred)} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} where="calc" /> : null}
       <CalcSaveBar label={label} setLabel={setLabel} save={save} saving={saving} missing={missing.length}

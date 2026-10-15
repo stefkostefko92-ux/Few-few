@@ -18,9 +18,10 @@ export interface OrigineRilievo {
   valori: Readonly<Record<string, string>>;
   /** the form starts from the survey (its notice says so): its draft keeps that it did (src/lib/collega/formato.ts) */
   parte?: boolean;
-  /** «Calcolo argano» started from a lift design's calculation (round 45): the values its drawing gave, marked «dal
-   *  progetto» with their own badge (never kept by the draft: the survey's marks only) */
-  progetto?: { date: string; valori: Readonly<Record<string, string>> };
+  /** «Calcolo argano» started from a lift design's calculation, or opened from the Progetto (round 45, ?dal=progetto):
+   *  the values its drawing gave, marked «dal progetto» with their own badge, and the value each replaced where it held
+   *  another (never kept by the draft: the survey's marks only) */
+  progetto?: { date: string; valori: Readonly<Record<string, string>>; prima?: Readonly<Record<string, string>> };
 }
 
 const Ctx = createContext<OrigineRilievo | null>(null);
@@ -40,9 +41,9 @@ export function useDalRilievo(id: string, value: unknown): boolean {
   return fonteDi(useContext(Ctx), id, value) !== null;
 }
 
-function Badge({ date, progetto }: { date: string; progetto: boolean }) {
+function Badge({ date, progetto, prima }: { date: string; progetto: boolean; prima?: string | undefined }) {
   const t = useTranslations('collega.origine');
-  return progetto ? <span className="badge progetto" title={t('progettoTitle', { date })}>{t('progetto')}</span>
+  return progetto ? <span className="badge progetto" title={prima === undefined ? t('progettoTitle', { date }) : t('progettoTitlePrima', { date, prima })}>{t('progetto')}</span>
     : <span className="badge rilievo" title={t('badgeTitle', { date })}>{t('badge')}</span>;
 }
 
@@ -51,5 +52,5 @@ function Badge({ date, progetto }: { date: string; progetto: boolean }) {
 export function DalRilievo({ id, value }: { id: string; value: unknown }) {
   const o = useContext(Ctx), on = fonteDi(o, id, value);
   if (!o || !on) return null;
-  return on === 'progetto' && o.progetto ? <Badge date={o.progetto.date} progetto /> : <Badge date={o.date} progetto={false} />;
+  return on === 'progetto' && o.progetto ? <Badge date={o.progetto.date} progetto prima={o.progetto.prima?.[id]} /> : <Badge date={o.date} progetto={false} />;
 }

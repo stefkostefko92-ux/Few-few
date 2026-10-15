@@ -6,6 +6,8 @@
 // machine, ropes, roping, machine's place and test are the calculation's) to draw and check it, as the server does when
 // it saves — the server never takes the calculation from the browser. A new drawing starts empty: until its data are in
 // the right side lists what is still to enter and nothing is worked out or drawn. Its draft is kept as it is filled in.
+// What the drawing completes of the calculation is set beside it (DifferenzeCalcolo); «Porta nel calcolo» keeps the
+// draft at once and opens the calculation with the drawing's values (?dal=progetto), for whoever makes it.
 import { useDeferredValue, useEffect, useImperativeHandle, useMemo, useRef, useState, useTransition, type Ref } from 'react';
 import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
@@ -40,6 +42,7 @@ import type { BaseProgetto } from './DalCalcolo';
 import LiftFacts from './LiftFacts';
 import LiftChecks from './LiftChecks';
 import LiftSimulator, { type SimApi } from './LiftSimulator';
+import DifferenzeCalcolo from './DifferenzeCalcolo';
 import ProgettoForm from './ProgettoForm';
 import { missingItems } from './missing-items';
 import { useSaveBlockers } from './save-blockers';
@@ -112,6 +115,12 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
   const draftValid = useMemo(() => liftDraftSchema.safeParse(draftData).success, [draftData]);
   const draftHandle = useDraft(draft, draftData, draftValid);
   const blank = useMemo(() => ({ is: (k: BlankKey) => form.blank.includes(k), list: form.blank, full: derived !== null }), [form.blank, derived]);
+  // «Porta nel calcolo»: the drawing kept as the draft the calculation reads, then the calculation on this base
+  const [leaving, startLeaving] = useTransition();
+  const porta = projectId && canCalc ? (): void => startLeaving(async () => {
+    await draftHandle.flush();
+    router.push(`/app/projects/${projectId}/calc?from=${base.id}&dal=progetto`);
+  }) : null;
   const texts = { choose: tb('choose'), std: tb('std'), stdTitle: tb('stdTitle') };
 
   // a change the one form's helpers make on the composed draft, kept as the drawing (the plan's h as it was)
@@ -187,11 +196,13 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
     <div className="lift-work">
       {refresh ? <RefreshNotice kind="lift" items={[...items(missing), ...blockers]} /> : null}
       <ProgettoForm P={P} X={X} inp={inp} base={base} projectId={projectId} when={when} canCalc={canCalc} h={form.progetto.h} derived={derived} blank={blank}
-        texts={texts} source={source} setShaft={setShaft} setSize={setSize} onSurvey={onSurvey} setAuto={setAuto} setBottom={setBottom} />
+        texts={texts} source={source} setShaft={setShaft} setSize={setSize} onSurvey={onSurvey} setAuto={setAuto} setBottom={setBottom}
+        porta={porta ? { go: porta, pending: leaving } : null} />
       <div className="lift-main">
         {!derived ? <MissingPanel title={tb('title')} lead={tb('lead')} items={items(missing)} /> : (
           <>
             <LiftFacts derived={derived} X={X} fmt={P.fmt} />
+            <DifferenzeCalcolo P={P} X={X} base={base.values} derived={derived} porta={porta} pending={leaving} />
             <LiftSimulator derived={derived} fmt={P.fmt} api={sim} />
             <section className="panel"><PlanEditor I={drawn} onChange={setDrawn} machine={above ? derived.machine : null} onCalc={setCalcFromDrawing} id="lift-plan"
               below={derived.bottom ? { machine: derived.machine, analysis: derived.analysis, scheme: derived.bottom } : null} /></section>

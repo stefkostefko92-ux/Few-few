@@ -68,5 +68,45 @@ export async function progettoFlow({ BASE, page, hydrated, stamp }) {
   // (the note wraps on its lines, whose texts join without the space: compared without spaces)
   const sheet1 = ((await page.textContent('.sheet-page svg.sheet-svg')) ?? '').replace(/\s+/g, '');
   assert.ok(sheet1.includes('Intervento:Trasformazionecompleta'), 'the type in sheet 1’s note');
-  return { projectUrl, baseUrl, liftUrl };
+  const loop = await progettoLoop({ BASE, page, hydrated, liftUrl });
+  return { projectUrl, baseUrl, liftUrl: loop.liftUrl };
+}
+
+/** The hash of a calculation as its page shows it. */
+async function hashOf(page, url) {
+  await page.goto(url);
+  return ((await page.textContent('dd.hash')) ?? '').split('·')[0].trim();
+}
+
+async function progettoLoop({ BASE, page, hydrated, liftUrl }) {
+  step('calcolo ↔ progetto: what the drawing completes of the calculation, beside it');
+  await page.goto(liftUrl);
+  await Promise.all([page.waitForURL(/\/progetto\?from=[a-z0-9]+&calc=[a-z0-9]+$/, { timeout: 30000 }), page.click('main .page-head .actions a[href*="/progetto?from="]')]);
+  await page.waitForSelector('.lift-work .differenze', { timeout: 60000 });
+  assert.match(await page.textContent('.lift-work .differenze'), /Il progetto completa il calcolo[\s\S]*Corsa H/, 'the drawing beside its calculation');
+
+  step('calcolo ↔ progetto: «Modifica nel calcolo argano» brings the drawing’s values, the machine changed and saved');
+  await Promise.all([page.waitForURL(/\/calc\?from=[a-z0-9]+&dal=progetto$/, { timeout: 30000 }), page.click('.lift-form .dal-calcolo a[href*="dal=progetto"]')]);
+  await hydrated(page, '#Q');
+  assert.match(await page.textContent('main .porta-avviso'), /Valori portati dal progetto del[\s\S]*Corsa H/, 'the values brought, listed');
+  assert.ok(await page.locator('.calc .badge.progetto').count() > 0, 'marked «dal progetto»');
+  const Pn = Number(await page.inputValue('#n_Pn'));
+  await page.fill('#n_Pn', String(Pn + 1));
+  await page.waitForSelector('.savebar button.primary:not([disabled])');
+  await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
+  const latestUrl = page.url(), latestId = latestUrl.split('/').pop();
+
+  step('calcolo ↔ progetto: the design drawn on the older calculation, drawn again on the latest — one SHA-256');
+  await page.goto(liftUrl);
+  await page.waitForSelector('main .ridisegna');
+  await Promise.all([page.waitForURL((u) => /\/lift-designs\/[a-z0-9]+$/.test(u.pathname) && !u.href.startsWith(liftUrl), { timeout: 60000 }),
+    page.click('main .ridisegna button[type="submit"]')]);
+  const again = page.url();
+  assert.notEqual(again, liftUrl, 'a new design');
+  assert.equal(await page.locator('main .ridisegna').count(), 0, 'on the latest calculation');
+  assert.equal(await page.getAttribute('main .progetto-base a', 'href'), `/it/app/calculations/${latestId}`, 'it names its base');
+  const relHref = await page.getAttribute('.doc-links a[href*="/relazione"]', 'href');
+  const calcId = /\/api\/calculations\/([a-z0-9]+)\/relazione/.exec(relHref ?? '')?.[1];
+  assert.equal(await hashOf(page, `${BASE}/it/app/calculations/${calcId}`), await hashOf(page, latestUrl), 'every input the same: one calculation');
+  return { liftUrl: again };
 }

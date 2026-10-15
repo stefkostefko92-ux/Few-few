@@ -4,7 +4,9 @@
 // below and the switches of the values the drawing gives (the rope beyond the travel, the diverting pulley's distance
 // and height, a machine below's pulleys): on, the drawing's value; off, the calculation's as it was saved. The hints
 // of the one form follow (a direct pull's falls against the sheave, the refuge, the pulleys of a machine below, a
-// distance to measure); the calculation's own fields are not here — they are changed in «Calcolo argano».
+// distance to measure); the calculation's own fields are not here — they are changed in «Calcolo argano»: an issue the
+// calculation resolves (the falls against the sheave, the diverting pulley's distance or height) carries «Porta nel
+// calcolo», which opens it with the drawing's values.
 import { SHEAVE_GRID } from '@/calc/sizing';
 import type { FormValues } from '@/calc/types';
 import { BOTTOM_SCHEMES, type BottomScheme, type LiftDerived } from '@/lib/lift';
@@ -28,6 +30,8 @@ interface Props {
   setAuto(patch: Partial<ProgettoAuto>): void;
   setBottom(b: BottomScheme): void;
   t(key: string, values?: Record<string, string | number>): string;
+  /** «Porta nel calcolo»; null: not for this user */
+  porta: { go(): void; pending: boolean; label: string } | null;
 }
 
 const field = (id: string): Field => {
@@ -47,8 +51,10 @@ function calataHint(derived: LiftDerived, fmt: Pres['fmt'], t: Props['t']) {
   return <p className={bad ? 'hint bad' : 'hint'} role={bad ? 'alert' : undefined}>{text}</p>;
 }
 
-export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank, texts, setAuto, setBottom, t }: Props) {
+export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank, texts, setAuto, setBottom, t, porta }: Props) {
   const { fmt } = P, layout = base.layout, DV = derived?.values ?? base;
+  // the issues the calculation resolves: the way to it, beside them
+  const toCalc = (on: boolean) => (on && porta ? <div className="btnrow"><button type="button" className="btn btn-sm porta-calcolo" onClick={porta.go} disabled={porta.pending}>{porta.label}</button></div> : null);
   const bottomBlank = blank.is('bottom'), scheme = derived?.bottom ?? bottom ?? 'head';
   // a value of the drawing (switched on: the drawing's, once worked out) or of the calculation (off: as saved); the
   // diverting pulley's height set on the plan, the plan's
@@ -73,6 +79,7 @@ export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank,
         <div className="rows">
           <p className="hint">{t('hint_funi')}</p>
           {complete && derived.calata !== null ? calataHint(derived, fmt, t) : null}
+          {toCalc(complete && derived.issues.includes('calata'))}
           {layout === 'bottom' ? (
             <>
               <div className={`row wide${bottomBlank ? ' need' : ''}`}>
@@ -111,8 +118,10 @@ export default function ProgettoFuni({ P, base, auto, bottom, h, derived, blank,
                   {t(derived.supportChecks.some((c) => c.id === 'm_stand' && c.status === 'fail') ? 'hint_stand_under' : 'hint_dx_tight')}
                 </p>
               ) : null}
+              {toCalc(complete && derived.issues.includes('dx'))}
               {value('h', auto.dx && !!derived?.machine.rinvio, 3, !auto.dx && h !== undefined)}
               {complete && derived.issues.includes('rinvio') ? <p className="hint bad" role="alert">{t(derived.rinvioClash === 'machine' ? 'hint_rinvio_machine' : 'hint_rinvio_floor')}</p> : null}
+              {toCalc(complete && derived.issues.includes('rinvio'))}
             </>
           ) : null}
           {layout === 'bottom' ? (

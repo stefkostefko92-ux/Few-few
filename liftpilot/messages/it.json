@@ -446,6 +446,13 @@
       "preliminare": "Questo è il calcolo argano preliminare al progetto: relazione, tavole e ordine dell’impianto sono quelli del progetto disegnato su di esso.",
       "tavole": "Le tavole si emettono dal progetto disegnato su questo calcolo.",
       "ordineResta": "L’argano resta quello dell’impianto: non c’è un argano da ordinare."
+    },
+    "porta": {
+      "notice": "Valori portati dal progetto del {date}: {list}. Non sono ancora salvati: salva il calcolo per registrarli.",
+      "item": "{name} {valore}",
+      "itemPrima": "{name} {valore} (prima: {prima})",
+      "none": "Il progetto non ha ancora valori da portare nel calcolo: completa il disegno nel Progetto.",
+      "sheave": "Il progetto appende le funi a {D} mm: la puleggia dell’argano deve avere D = {D} mm."
     }
   },
   "account": {
@@ -2173,7 +2180,24 @@
     "disegnaSu": "Disegna sul calcolo argano del {date}",
     "stale": "Il calcolo argano va aggiornato con il software attuale prima di disegnarci sopra.",
     "soloNota": "Per la sola sostituzione dell’argano basta il rilievo del locale macchina.",
-    "rileva": "Rileva il locale macchina"
+    "rileva": "Rileva il locale macchina",
+    "differenze": "Il progetto completa il calcolo",
+    "differenzeLead": "Il disegno dà al calcolo la corsa, la fune oltre la corsa e il rinvio: qui accanto ai valori del calcolo argano salvato.",
+    "colValore": "Valore",
+    "colCalcolo": "Calcolo argano",
+    "colDisegno": "Disegno",
+    "differisce": "diverso",
+    "npsTesta": "(con le pulegge in testata del disegno)",
+    "esito": "Verifiche dell’argano:",
+    "cabinaMax": "La cabina più grande che il vano consente: {kg} kg.",
+    "coincidono": "Calcolo e progetto coincidono.",
+    "porta": "Porta nel calcolo",
+    "base": "Calcolo argano di partenza",
+    "moduloUnico": "Progetto del modulo unico (prima del calcolo argano separato)",
+    "ridisegna": "Aggiorna il progetto con l’ultimo calcolo",
+    "ridisegnaLead": "C’è un calcolo argano più recente, del {date}: il progetto si rifà su quello con lo stesso disegno.",
+    "ridisegnaByOther": "Lo aggiorna un collega che disegna il progetto.",
+    "modifica": "Modifica il disegno"
   },
   "dataPage": {
     "title": "Dati, formati e giurisdizione",
@@ -2805,7 +2829,8 @@
       "usaNone": "Il rilievo non ha un valore per «{param}» che questo modulo possa prendere.",
       "usaAlto": "Il rilievo dice solo «in alto»: verifica se l’argano ha la puleggia di rinvio.",
       "progetto": "dal progetto",
-      "progettoTitle": "Valore preso dal progetto del {date}"
+      "progettoTitle": "Valore preso dal progetto del {date}",
+      "progettoTitlePrima": "Valore preso dal progetto del {date} (prima: {prima})"
     },
     "passi": {
       "label": "Dal rilievo ai documenti",

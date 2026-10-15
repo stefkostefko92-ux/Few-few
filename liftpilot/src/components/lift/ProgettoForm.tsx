@@ -54,9 +54,12 @@ interface Props {
   onSurvey(r: SurveyResult): void;
   setAuto(patch: Partial<ProgettoAuto>): void;
   setBottom(b: BottomScheme): void;
+  /** «Porta nel calcolo» beside an issue the calculation resolves (the falls, the diverting pulley); null: not for this
+   *  user (or the standalone page) */
+  porta: { go(): void; pending: boolean } | null;
 }
 
-export default function ProgettoForm({ P, X, inp, base, projectId, when, canCalc, h, derived, blank, texts, source, setShaft, setSize, onSurvey, setAuto, setBottom }: Props) {
+export default function ProgettoForm({ P, X, inp, base, projectId, when, canCalc, h, derived, blank, texts, source, setShaft, setSize, onSurvey, setAuto, setBottom, porta }: Props) {
   const t = useTranslations('lift'), ts = useTranslations('shaft'), tp = useTranslations('progetto'), is = blank.is;
   // the machine room comes with a machine above; the pulley room with a machine below whose pulleys stand over the slab
   // (scheme room): the room the sheets and the 3D draw and the checks measure
@@ -104,7 +107,7 @@ export default function ProgettoForm({ P, X, inp, base, projectId, when, canCalc
       ) : pulley ? <RoomOptions I={inp.shaft} set={setShaft} blank={blank} pulley={pulley} /> : null}
       <SectionTitle icon="gear">{t('s_funi')}</SectionTitle>
       <ProgettoFuni P={P} base={base.values} auto={inp.auto} bottom={inp.bottom} h={h} derived={derived} blank={blank} texts={texts} setAuto={setAuto} setBottom={setBottom}
-        t={(k, v) => t(k, v)} />
+        t={(k, v) => t(k, v)} porta={porta ? { ...porta, label: tp('porta') } : null} />
     </form>
   );
 }

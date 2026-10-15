@@ -31,16 +31,20 @@ interface Props {
   propMsg?: string;
   /** only the proposal: the new machine is still to enter, nothing else is worked out yet */
   proposalOnly?: boolean;
+  /** what holds the proposal to one sheave (round 45: a drawing's direct pull, ?dal=progetto), said above it */
+  vincolo?: string | undefined;
 }
 
-function ProposalCard({ P, X, a, onUse, propMsg }: Pick<Props, 'P' | 'X' | 'a' | 'onUse' | 'propMsg'>) {
+function ProposalCard({ P, X, a, onUse, propMsg, vincolo }: Pick<Props, 'P' | 'X' | 'a' | 'onUse' | 'propMsg' | 'vincolo'>) {
   const { t } = P, { sizing } = a, N = a.ctx.N;
+  const held = vincolo ? <Note>{vincolo}</Note> : null;
   if (!sizing.pick) {
-    return <Card title={t('c_prop')} refText={t('prop_ref')}><Note bad>{X.noneText(sizing)}</Note><Note>{X.critText(sizing)}</Note></Card>;
+    return <Card title={t('c_prop')} refText={t('prop_ref')}>{held}<Note bad>{X.noneText(sizing)}</Note><Note>{X.critText(sizing)}</Note></Card>;
   }
   const p = sizing.pick;
   return (
     <Card title={t('c_prop')} refText={t('prop_ref')}>
+      {held}
       <KV rows={X.proposalRows(p, N, a.hold, !!sizing.keep)} />
       {onUse ? (
         <div className="btnrow">
@@ -95,7 +99,7 @@ function CopyCard({ P, text }: { P: Pres; text: string }) {
 
 export default function Results(props: Props) {
   const { P, X, a, mode, badCount, brand } = props, { t } = P, { ctx, res, sens } = a, { I, N } = ctx;
-  if (props.proposalOnly) return <div className="results"><ProposalCard P={P} X={X} a={a} onUse={props.onUse} propMsg={props.propMsg} /></div>;
+  if (props.proposalOnly) return <div className="results"><ProposalCard P={P} X={X} a={a} onUse={props.onUse} propMsg={props.propMsg} vincolo={props.vincolo} /></div>;
   const quick = (
     <Card key="quick" title={t('q_title')}>
       <ul className="quick">
@@ -120,7 +124,7 @@ export default function Results(props: Props) {
   );
   const tech = techCards(P, X, a);
   const copy = <CopyCard key="copy" P={P} text={summaryText(P, X, a, { badVisible: badCount, brand, rifacimento: C.rifacimento === true, intervento: props.tipo ? { tipo: props.tipo, collaudo: C } : null })} />;
-  const head: ReactNode[] = [<ProposalCard key="prop" P={P} X={X} a={a} onUse={props.onUse} propMsg={props.propMsg} />, quick];
+  const head: ReactNode[] = [<ProposalCard key="prop" P={P} X={X} a={a} onUse={props.onUse} propMsg={props.propMsg} vincolo={props.vincolo} />, quick];
   return (
     <div className="results">
       {mode === 'simple'

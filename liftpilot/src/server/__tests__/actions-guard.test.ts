@@ -90,6 +90,13 @@ test('read-only: neither a calculation nor a lift design is saved, before anythi
   try {
     assert.deepEqual(await saveCalculationAction({ projectId: 'prepl', values: { ...PRESETS.A, r: PRESETS.A.r ?? 1 }, label: 'x' }), { ok: false, error: 'forbidden' });
     assert.deepEqual(await saveLiftDesignAction({ projectId: 'pfull', baseCalculationId: 'cmbase', progetto: defaultLift(), source: null, label: 'x' }), { ok: false, error: 'forbidden' });
+    // «Aggiorna il progetto con l'ultimo calcolo» (round 45) is a write: back to the app before any lookup (the mocked
+    // database has no lift designs — a lookup would fail otherwise)
+    const { ridisegnaDalCalcoloAction } = await import(src('server/ridisegna-actions.ts'));
+    const fd = new FormData();
+    fd.set('id', 'cmdesign');
+    fd.set('locale', 'it');
+    await assert.rejects(ridisegnaDalCalcoloAction(fd), /redirect/);
   } finally {
     readOnly = false;
   }
