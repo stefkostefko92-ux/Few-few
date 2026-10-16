@@ -5,17 +5,23 @@
 // the ⚠ over 8 m) or shortened (point 4) —, under -11 any change of the speed (15 with 15 i)), of the loads (6.1–6.13)
 // and of the travel (16), each with the assessment 4.3. Round 47 (owner's decision D1): the speed or the travel answered
 // «Sì» by hand while the documents show no change, a point for the engineer as the loads' (speedDocumentati,
-// travelDocumentati); a new car whose design loads are the documented ones, the car's mass to confirm
-// (loadCabinaNuova). In our words with the clause numbers and values, read on the standards' text — never their text
-// (CEN-CENELEC and UNI copyright). obblighi.ts picks them by the documents of the existing lift (modifica.ts). Pure.
+// travelDocumentati); a new car whose design loads are the documented ones, the car's mass to confirm — on the existing
+// sling with point 22 (loadCabinaNuova), with the sling replaced too 6.1 alone (loadCabinaArcata: point 22 is the new
+// car on the old sling; round 47 review). In our words with the clause numbers and values, read on the standards' text
+// — never their text (CEN-CENELEC and UNI copyright). obblighi.ts picks them by the documents of the existing lift
+// (modifica.ts). Pure.
 import { lt, type PuntoInSito } from './punti';
 import type { Norma10411 } from './modifica';
 
 /** The cases of a change of speed, load or travel. */
 export type CasoVariazione = 'speedUp' | 'speedDown' | 'speedWithin' | 'speedUcm' | 'loadP1' | 'loadP2' | 'loadCalo' | 'loadRapporto'
-  | 'loadDocumentati' | 'travelUp' | 'travelOver8' | 'travelDown' | 'speedDocumentati' | 'travelDocumentati' | 'loadCabinaNuova';
+  | 'loadDocumentati' | 'travelUp' | 'travelOver8' | 'travelDown' | 'speedDocumentati' | 'travelDocumentati' | 'loadCabinaNuova' | 'loadCabinaArcata';
 
 const DA_VERIFICARE = (rif: string, testo: string): PuntoInSito => ({ rif, testo, stato: 'da_verificare' });
+/** The new car's mass to confirm while the design's loads are the documented ones (round 47, D1): on the existing sling
+ *  (point 22) or with the sling replaced too. */
+const MASSA_CABINA = (cosa: string): string => `${cosa} con i carichi del progetto uguali a quelli documentati: P va confermata come massa della `
+  + 'cabina nuova completa (arcata, porte e operatore compresi); se cambia, i carichi si confrontano di nuovo con quelli documentati';
 
 export const OBBLIGHI_VARIAZIONI: Readonly<Record<Norma10411, Partial<Readonly<Record<CasoVariazione, PuntoInSito>>>>> = {
   '10411-1': {
@@ -64,9 +70,8 @@ export const OBBLIGHI_VARIAZIONI: Readonly<Record<Norma10411, Partial<Readonly<R
       + 'primo collaudo entro l’arrotondamento dei dati: le lettere a)–l) del punto 16 valgono solo se il tecnico accerta un allungamento (un '
       + 'accorciamento si valuta secondo il punto 4)'),
     // a new car with the design's loads equal to the documented ones: the car's mass to confirm before the loads count as unchanged
-    loadCabinaNuova: DA_VERIFICARE('UNI 10411-1:2024, 22 e 6.1', 'cabina nuova con i carichi del progetto uguali a quelli documentati: P va '
-      + 'confermata come massa della cabina nuova completa (arcata, porte e operatore compresi); se cambia, i carichi si confrontano di nuovo con '
-      + 'quelli documentati'),
+    loadCabinaNuova: DA_VERIFICARE('UNI 10411-1:2024, 22 e 6.1', MASSA_CABINA('cabina nuova sull’arcata esistente')),
+    loadCabinaArcata: DA_VERIFICARE('UNI 10411-1:2024, 6.1', MASSA_CABINA('cabina e arcata nuove')),
   },
   '10411-11': {
     speedUp: lt('UNI 10411-11:2024, 15 a)–k) e 4.3', 'velocità cambiata, in più o in meno: verificati per la nuova velocità ammortizzatori '
@@ -95,22 +100,28 @@ export const OBBLIGHI_VARIAZIONI: Readonly<Record<Norma10411, Partial<Readonly<R
     travelDocumentati: DA_VERIFICARE('UNI 10411-11:2024, 16 e 4.3', 'corsa indicata come variata, ma quella del progetto coincide con la '
       + 'documentata entro l’arrotondamento dei dati: le lettere a)–i) del punto 16 e la valutazione 4.3 valgono solo se il tecnico accerta un '
       + 'allungamento (un accorciamento con la 4.3)'),
-    loadCabinaNuova: DA_VERIFICARE('UNI 10411-11:2024, 22 e 6.1', 'cabina nuova con i carichi del progetto uguali a quelli documentati: P va '
-      + 'confermata come massa della cabina nuova completa (arcata, porte e operatore compresi); se cambia, i carichi si confrontano di nuovo con '
-      + 'quelli documentati'),
+    loadCabinaNuova: DA_VERIFICARE('UNI 10411-11:2024, 22 e 6.1', MASSA_CABINA('cabina nuova sull’arcata esistente')),
+    loadCabinaArcata: DA_VERIFICARE('UNI 10411-11:2024, 6.1', MASSA_CABINA('cabina e arcata nuove')),
   },
 };
 
 /** D.1 at the brake test (round 47, owner's decision D2): with the ratio of the loads changed under UNI 10411-1 (the
  *  check tr_d1), a point to verify on site in the relazioni's «Adempimenti» — the car's braking deceleration measured
  *  at the brake test against a_lim, the limit up to which D.1 holds (calc/d1.ts aLim; report/cases.ts d1Sito splices
- *  the values into D1_FORMULA); above it D.1 done again with the measured one does not hold. When not even C1's band
- *  minimum meets D.1 (aLim null), no measured deceleration does (D1_NON_REGGE). Out of OBBLIGHI_VARIAZIONI: no case of
- *  a change, the verdict stays round 46's; the list of verification names both (scripts/lista-verifica.ts). */
+ *  the values into D1_FORMULA); above it D.1 done again with the measured one does not hold. D.1 gives the loads of its
+ *  two cases and where the car stands, not a direction of travel: the brake test's directions are the software's
+ *  reading, said as such (round 47 review). When not even C1's band minimum meets D.1 (aLim null), no measured
+ *  deceleration does (D1_NON_REGGE). Out of OBBLIGHI_VARIAZIONI: no case of a change, the verdict stays round 46's; the
+ *  list of verification names both, with D.1's reading as their source (scripts/lista-verifica.ts). */
 export const D1_FORMULA = '(a_lim = g·(C1lim − 1)/(C1lim + 1), con C1lim della relazione)';
-export const D1_PROVA_FRENO = DA_VERIFICARE('UNI 10411-1:2024, 6.1 e D.1', 'alla prova del freno si misura la decelerazione di frenatura della '
-  + 'cabina, in discesa con 1,25·Q e in salita a vuoto come nei due casi della D.1, e la maggiore si confronta con a_lim, la decelerazione fino '
-  + `alla quale la D.1 regge nel caso più sfavorevole ${D1_FORMULA}; se quella misurata supera a_lim, la D.1 rifatta con essa non regge e vanno `
-  + 'rivisti il rapporto tra i carichi o la frenatura; quale decelerazione intenda la D.1 lo decide il soggetto della verifica');
-export const D1_NON_REGGE = DA_VERIFICARE('UNI 10411-1:2024, 6.1 e D.1', 'la D.1 non regge nemmeno con il C1 minimo della fascia di velocità: '
-  + 'nessuna decelerazione misurata alla prova del freno la rispetta, e il rapporto tra i carichi va rivisto con il soggetto della verifica');
+/** Where the two templates come from, for the list of verification (round 47 review): D.1 read on the standard. */
+export const D1_FONTE = 'UNI 10411-1:2024, testo della norma, letto il 2026-10-06, p. 33 (D.1); il confronto alla prova del freno: scelta del software';
+export const D1_PROVA_FRENO: PuntoInSito = { ...DA_VERIFICARE('UNI 10411-1:2024, 6.1 e D.1', 'alla prova del freno si misura la decelerazione di '
+  + 'frenatura della cabina con i carichi dei due casi della D.1 (1,25·Q e cabina vuota) — in discesa con 1,25·Q e in salita a vuoto, scelta del '
+  + 'software: la D.1 dà i carichi e la posizione della cabina ferma, non il verso di marcia —, e la maggiore si confronta con a_lim, la '
+  + `decelerazione fino alla quale la D.1 regge nel caso più sfavorevole ${D1_FORMULA}; se quella misurata supera a_lim, la D.1 rifatta con essa non `
+  + 'regge e vanno rivisti il rapporto tra i carichi o la frenatura; come si fa la prova lo decide il tecnico e quale decelerazione intenda la D.1 '
+  + 'il soggetto della verifica'), fonte: D1_FONTE };
+export const D1_NON_REGGE: PuntoInSito = { ...DA_VERIFICARE('UNI 10411-1:2024, 6.1 e D.1', 'la D.1 non regge nemmeno con il C1 minimo della '
+  + 'fascia di velocità: nessuna decelerazione misurata alla prova del freno la rispetta, e il rapporto tra i carichi va rivisto con il soggetto '
+  + 'della verifica'), fonte: D1_FONTE };

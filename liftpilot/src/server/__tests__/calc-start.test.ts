@@ -156,12 +156,28 @@ test('round 47 (D1): la bozza e il calcolo riaperto non salvano la risposta dai 
   const od = open(d);
   assert.ok(VAR.every((p) => !od.left.includes(p) && dalDocumento('AMMODERNAMENTO', od.value, d.values, p)), od.left.join());
   draft = null;
-  // a modernisation saved with its type, opened again («Nuovo calcolo da questi dati»): every part answered, its «No» the documents' too
+  // a modernisation saved with its type, opened again («Nuovo calcolo da questi dati»): every part answered but the three
+  // the documents answer «No» — theirs, derived again (round 47 review), nothing left to answer
   const saved = calc({ inputs: values, intervento: 'AMMODERNAMENTO', collaudo: { norma: '10411-1', parti: ['machine'], ...docs } });
   calcs = [saved];
   const s = await must(calcStart(user, 'p1', saved.id));
   const os = open(s);
   assert.deepEqual(os.left, []);
+  assert.ok(VAR.every((p) => !s.intervento.risposte.includes(p)), s.intervento.risposte.join());
   assert.ok(VAR.every((p) => !os.value.parti.includes(p) && dalDocumento('AMMODERNAMENTO', os.value, s.values, p)));
+  // then the values change so the documents no longer decide: the counterweight 0,6 kg heavier within the prospetti (T*
+  // or the counterweight different, the ratio kept: 'aperta'), the travel no longer documented — asked again, never a «No»
+  // the user did not give
+  const chosen = s.intervento.collaudo as Parameters<typeof effettiva>[1];
+  const pesante: FormValues = { ...s.values, qeq: Number(documentato.Mcw - documentato.P) + 0.6 };
+  const left = (V: FormValues, c = chosen) => daIndicare('AMMODERNAMENTO', c, collaudoOf(V, effettiva('AMMODERNAMENTO', c, V)), V, s.intervento.risposte as Parameters<typeof daIndicare>[4]);
+  assert.ok(left(pesante).includes('load'), left(pesante).join());
+  const senzaH = chosen ? { ...chosen, libretto: { v: 1 } } : chosen;
+  assert.ok(left(s.values, senzaH).includes('travel'), left(s.values, senzaH).join());
+  // an explicit «No» saved where the documents did not decide stays the user's answer
+  const aperta = calc({ inputs: pesante, intervento: 'AMMODERNAMENTO', collaudo: { norma: '10411-1', parti: ['machine'], ...docs } });
+  calcs = [aperta];
+  const a = await must(calcStart(user, 'p1', aperta.id));
+  assert.ok(a.intervento.risposte.includes('load') && !a.intervento.risposte.includes('speed'), a.intervento.risposte.join());
   calcs = [];
 });

@@ -82,14 +82,18 @@ export function d1Frase(C: Collaudo, V: FormValues | undefined): string {
 }
 
 /** D.1 at the brake test (round 47, owner's decision D2): the point to verify on site whenever tr_d1 applies — the
- *  measured braking deceleration against a_lim, its value, C1lim and the calculation's a spliced in; the variant when
- *  not even C1's band minimum meets D.1. Null when D.1 is not asked. The verdict is round 46's (information only). */
+ *  measured braking deceleration against a_lim, its value, C1lim and the C1 the verdict used spliced in (round 47
+ *  review: at the band's minimum it is that minimum, not the calculation's a, which is printed beside it); the variant
+ *  when not even C1's band minimum meets D.1. Null when D.1 is not asked. The verdict is round 46's (information
+ *  only). */
 export function d1Sito(C: Collaudo, V: FormValues): PuntoInSito | null {
   const d = d1Di(C, V);
   if (!d || ambitoOf(C, 'tr_d1') !== 'applies') return null;
   if (d.aLim === null) return { ...D1_NON_REGGE, testo: D1_NON_REGGE.testo.replace('fascia di velocità', `fascia di velocità (C1lim = ${f(d.c1Lim, 3)}, sotto ${f(d.c1Min, 2)})`) };
+  const minimo = d.C1 <= d.c1Min + 1e-12, a = `a = ${f(d.a, 2)} m/s²`;
+  const usato = minimo ? `C1 = ${f(d.C1, 3)}, il minimo della fascia, che equivale a ${f(d.aMin, 2)} m/s² (con ${a} sarebbe minore)` : `C1 = ${f(d.C1, 3)} (${a})`;
   return { ...D1_PROVA_FRENO, testo: D1_PROVA_FRENO.testo.replace(D1_FORMULA, `(a_lim = g·(C1lim − 1)/(C1lim + 1) = ${f(d.aLim, 2)} m/s² con C1lim = `
-    + `${f(d.c1Lim, 3)}; il calcolo la verifica con a = ${f(d.a, 2)} m/s²)`) };
+    + `${f(d.c1Lim, 3)}; il calcolo la verifica con ${usato})`) };
 }
 const f = (x: number, n: number): string => new Intl.NumberFormat('it-IT', { minimumFractionDigits: n, maximumFractionDigits: n }).format(x);
 

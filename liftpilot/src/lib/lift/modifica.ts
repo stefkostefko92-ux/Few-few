@@ -160,15 +160,19 @@ export interface VariazioneVelocita {
   variata: boolean;
   /** under -11 a change over KL.ucmSpeed11: the UCM protection to UNI EN 81-20 5.6.7 (15 i)); under -1 false */
   ucm15i: boolean;
-  /** the design's speed equal, within the rounding, to the documented one — under -1 the logbook's, or the one after
-   *  50 Hz only when the logbook gives no speed (round 46 recheck: equal to the one after 50 Hz and above the logbook's is
-   *  no «uguale»): no change at all — no note of a change within 5 % */
+  /** the design's speed equal, within the rounding, to every documented one — under -1 the logbook's, and the one after
+   *  50 Hz when the logbook gives it too (round 47 review: equal to the logbook's while the lift runs at another speed
+   *  after 50 Hz is no «uguale» — the speed does change from the one it runs at), or the one after 50 Hz alone when the
+   *  logbook gives no speed (round 46 recheck: equal to the one after 50 Hz and above the logbook's is no «uguale»): no
+   *  change at all — no note of a change within 5 % */
   uguale: boolean;
   /** what the change is printed against (round 46 review): under -1 an increase against `rif` (15.1), a decrease against
    *  the logbook's speed (15.16 — never the one after 50 Hz); within both, against the logbook's speed and the one after
    *  50 Hz whenever the design is above the logbook's speed (past the rounding) and the one after 50 Hz is the higher —
    *  between them, equal to it or up to 5 % over it (round 46 final check: the change from the logbook is never hidden)
-   *  —, else against the nearer of the two; under -11 the documented speed */
+   *  —, or the design is the logbook's within the rounding and the one after 50 Hz another (round 47 review: the change
+   *  from the speed it runs at is never hidden either), else against the nearer of the two; under -11 the documented
+   *  speed */
   confronti: ConfrontoVelocita[];
 }
 
@@ -186,9 +190,10 @@ export function variazioneVelocita(norma: Norma10411, lib: Libretto | undefined,
   if (!(rif > 0)) return null;
   const aumento = oltre((v - rif) / rif, KL.speedInc1), calo = !!lib?.v && oltre((lib.v - v) / lib.v, KL.speedDec1);
   const lv = lib?.v, v50 = lib?.v50, diRif = lv === rif ? 'libretto' : '50hz';
-  const base = lv || v50, uguale = !!base && !oltre(Math.abs(v - base), ROUNDING_V);
+  const pari = (x: number | undefined): boolean => !!x && !oltre(Math.abs(v - x), ROUNDING_V);
+  const uguale = lv ? pari(lv) && (!v50 || pari(v50)) : pari(v50);
   const confronti = aumento ? [c(rif, diRif)] : calo && lv ? [c(lv, 'libretto')]
-    : lv && v50 && v50 > lv && oltre(v - lv, ROUNDING_V) ? [c(lv, 'libretto'), c(v50, '50hz')]
+    : lv && v50 && ((v50 > lv && oltre(v - lv, ROUNDING_V)) || (pari(lv) && !pari(v50))) ? [c(lv, 'libretto'), c(v50, '50hz')]
       : !lv || Math.abs(v - rif) <= Math.abs(v - lv) ? [c(rif, diRif)] : [c(lv, 'libretto')];
   return { rif, dv: (v - rif) / rif, aumento, calo, variata: aumento || calo, ucm15i: false, uguale, confronti };
 }

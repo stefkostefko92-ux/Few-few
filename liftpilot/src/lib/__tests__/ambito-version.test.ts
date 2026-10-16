@@ -27,8 +27,9 @@ import { SHAFT_ENGINE_VERSION } from '@/shaft/snapshot';
  *  loads unchanged, loadDocumentati, then its -11 wording — pinned again within the same kit: S4–S8, the review, the recheck and the final
  *  check ship together with the one bump, never deployed apart). Round 47 (owner's decision D1): the speed and the travel
  *  answered «Sì» against the documents and a new car on unchanged documented loads (speedDocumentati, travelDocumentati,
- *  loadCabinaNuova) — pinned again at the same versions: the kit is still not deployed, round 47 ships with it. */
-const PINNED = { sha256: '4f09d78d6d50073f5acabade63ec5dd423fe973d0cfba7d58539c910d87bf08f', engine: '1.7.0', lift: '1.32.0', room: '1.16.0', shaft: '2.26.0' };
+ *  loadCabinaNuova) — pinned again at the same versions: the kit is still not deployed, round 47 ships with it; its review
+ *  (the new car with the sling replaced too, loadCabinaArcata, and the shared words of the car's mass) — the same. */
+const PINNED = { sha256: '6e3f878561ff28adb816da0edb57102366c950a38b1432322af65b73f462f817', engine: '1.7.0', lift: '1.32.0', room: '1.16.0', shaft: '2.26.0' };
 
 /** The constants of a modification: the loads (6.1), the CE marking's day, the speed and the travel (15, 16). */
 const KL_MODIFICA = {

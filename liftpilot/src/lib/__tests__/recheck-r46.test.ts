@@ -61,8 +61,10 @@ test('velocità uguale a quella dopo 50 Hz ma sopra il libretto: non «uguale»,
   assert.match(row, /\+18,\d % rispetto a 0,80 m\/s \(libretto\) e \+0,0 % rispetto a 0,95 m\/s \(dopo 50 Hz\): tra la velocità del libretto/, row);
   assert.ok(row.includes('ai sensi del DPR 162/1999 lo valuta il tecnico') && !row.includes('la velocità non cambia'), row);
   assert.ok(obblighiParti(C, V(0.95)).some((p) => p.rif === 'UNI 10411-1:2024, 15.1 e 15.16'), 'the note of a change within 5 %');
-  // the logbook's speed, or the one after 50 Hz with no logbook's: equal
-  assert.equal(variazioneVelocita('10411-1', lib, 0.8)?.uguale, true);
+  // the logbook's speed alone, or the one after 50 Hz with no logbook's: equal; the logbook's while the lift runs at
+  // another after 50 Hz: not equal (round 47 review — equal to every documented speed)
+  assert.equal(variazioneVelocita('10411-1', { v: 0.8 }, 0.8)?.uguale, true);
+  assert.equal(variazioneVelocita('10411-1', lib, 0.8)?.uguale, false);
   assert.equal(variazioneVelocita('10411-1', { v50: 0.95 }, 0.95)?.uguale, true);
 });
 

@@ -3,7 +3,7 @@
 // change; a change they bring stays the rule's locked «Sì» (round 46); one they do not decide, or none documented, stays
 // to answer, the list of what is missing naming what is needed. A «Sì» against the documents keeps the engineer's lines
 // (speedDocumentati, travelDocumentati, DPR n. 1) / n. 3) to confirm, the rows say so); a new car on unchanged
-// documented loads, its mass to confirm (loadCabinaNuova).
+// documented loads, its mass to confirm (loadCabinaNuova; with the sling replaced too, loadCabinaArcata).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { PRESETS } from '@/calc/presets';
@@ -160,8 +160,10 @@ test('cambio di tipo, risposta sulla marcatura CE, bozza e «Nuovo calcolo da qu
   assert.equal(esitoParte('AMMODERNAMENTO', uno, Vx, 'speed'), 'no');
   assert.equal(esitoParte('AMMODERNAMENTO', undici, Vx, 'speed'), 'si');
   assert.ok(undici.parti.includes('speed') && !uno.parti.includes('speed'));
-  // a draft (its answers as typed) and a record opened again (every part answered: its «No» kept, the mark beside it)
+  // a draft (its answers as typed) and a record opened again: every part answered but the «No» the documents give, which
+  // stays theirs (round 47 review) — without the values, every part
   assert.deepEqual(risposteIniziali('AMMODERNAMENTO', doc, true), ASKED);
+  assert.deepEqual(risposteIniziali('AMMODERNAMENTO', doc, true, Vx), ASKED.filter((p) => !(VAR as readonly Parte[]).includes(p)));
   // a record of before round 45: only its «Sì» answered — the three come from the documents, not still to answer
   const vecchio = risposteIniziali('AMMODERNAMENTO', doc, false);
   assert.deepEqual(vecchio, ['machine', 'ropes']);
@@ -190,15 +192,20 @@ test('«Sì» contro i documenti: i punti per il tecnico, il DPR da confermare, 
   const b = si('10411-1', ['speed'], 1.03);
   assert.equal(altreModifiche(b.C, false, (p) => p, b.Vx).find((p) => p.rif.endsWith('n. 1)'))?.stato, 'confermato');
   assert.ok(has(obblighiParti(b.C, b.Vx), OBBLIGHI_VARIAZIONI['10411-1'].speedDocumentati));
-  // the one after 50 Hz alone, a hand «Sì» within the limits: the engineer's point, never 15.1–15.15 as if increased
-  const c50 = { C: C(['machine', 'speed'], { libretto: { v50: 0.95 } }), Vx: V(0.92) };
-  assert.ok(has(obblighiParti(c50.C, c50.Vx), OBBLIGHI_VARIAZIONI['10411-1'].speedDocumentati));
+  // the one after 50 Hz alone, a «Sì» while the documents leave it open (round 47 review): never 15.1–15.15 (the increase
+  // over 5 % is excluded by them), never the engineer's point against the documents — the reduction the answer declares
+  const c50 = { C: C(['machine', 'speed'], { libretto: { v50: 0.95 } }), Vx: V(0.92) }, p50 = obblighiParti(c50.C, c50.Vx);
+  assert.ok(has(p50, OBBLIGHI_VARIAZIONI['10411-1'].speedDown) && !has(p50, OBBLIGHI_VARIAZIONI['10411-1'].speedDocumentati) && !has(p50, OBBLIGHI_VARIAZIONI['10411-1'].speedUp));
 });
 
 test('cabina nuova sui carichi documentati uguali: P da confermare; senza cabina nuova nessun punto', () => {
   for (const n of ['10411-1', '10411-11'] as const) {
-    const pts = obblighiParti(C(['machine', 'car', 'sling'], { norma: n, documentato: ora() }), V());
+    // on the existing sling point 22 with 6.1; with the sling replaced too 6.1 alone (round 47 review)
+    const pts = obblighiParti(C(['machine', 'car'], { norma: n, documentato: ora() }), V());
     assert.ok(pts.some((p) => p.testo === OBBLIGHI_VARIAZIONI[n].loadCabinaNuova?.testo), n);
+    const arcata = obblighiParti(C(['machine', 'car', 'sling'], { norma: n, documentato: ora() }), V());
+    assert.ok(arcata.some((p) => p.rif === `UNI ${n}:2024, 6.1` && p.testo === OBBLIGHI_VARIAZIONI[n].loadCabinaArcata?.testo), n);
+    assert.ok(!arcata.some((p) => p.testo === OBBLIGHI_VARIAZIONI[n].loadCabinaNuova?.testo), `${n}: point 22 is the new car on the old sling`);
     assert.ok(!obblighiParti(C(['machine', 'controller'], { norma: n, documentato: ora() }), V()).some((p) => p.testo === OBBLIGHI_VARIAZIONI[n].loadCabinaNuova?.testo));
     // the loads changed on the documents: not this point (the rule's cases, or the part to answer)
     assert.ok(!obblighiParti(C(['machine', 'car'], { norma: n, documentato: ora() }), V(1, 18, { Q: 730 })).some((p) => p.testo === OBBLIGHI_VARIAZIONI[n].loadCabinaNuova?.testo));

@@ -26,10 +26,11 @@ test('velocità: l’aumento rispetto al riferimento (15.1), la riduzione rispet
   const tra = row(C1(lib, undefined, 0.86), V(0.86));
   assert.match(tra, /progetto 0,86 m\/s, \+7,5 % rispetto a 0,80 m\/s \(libretto\) e −9,5 % rispetto a 0,95 m\/s \(dopo 50 Hz\): tra la velocità del libretto/, tra);
   assert.deepEqual(variazioneVelocita('10411-1', lib, 0.86)?.confronti.map((c) => c.di), ['libretto', '50hz']);
-  // equal to the logbook's speed: no change at all, never «−15,8 % rispetto a 0,95» with «entro il 5 %»
+  // equal to the logbook's speed: never «−15,8 % rispetto a 0,95» with «entro il 5 %»; round 47 review — the lift runs at
+  // 0,95 after 50 Hz, so not «uguale» either: both comparisons, equal to the logbook's and not to the other, the DPR's note
   const uguale = row(C1(lib), V(0.8));
-  assert.match(uguale, /progetto 0,80 m\/s, \+0,0 % rispetto a 0,80 m\/s \(libretto\): uguale alla velocità documentata/, uguale);
-  assert.ok(!uguale.includes('entro il 5 %'));
+  assert.match(uguale, /progetto 0,80 m\/s, \+0,0 % rispetto a 0,80 m\/s \(libretto\) e −15,8 % rispetto a 0,95 m\/s \(dopo 50 Hz\): uguale alla velocità del libretto/, uguale);
+  assert.ok(!uguale.includes('entro il 5 %') && !uguale.includes('la velocità non cambia') && uguale.includes('lo valuta il tecnico'), uguale);
   // a decrease past 5 % from the logbook's: measured on it (−12,5 %), 15.16 — row and sheet 1
   const C = C1(lib, undefined, 0.7), r = row(C, V(0.7)), n = nota(C, V(0.7));
   assert.match(r, /progetto 0,70 m\/s, −12,5 % rispetto a 0,80 m\/s \(libretto\): oltre il 5 % sotto la velocità iniziale/, r);

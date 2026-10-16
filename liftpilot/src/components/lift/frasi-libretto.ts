@@ -1,6 +1,6 @@
 // The sentences of the logbook's speed and travel against the calculation's (round 46, DatiLibretto's live line):
 // out of the component in round 47 (owner's decision D1), so that «Calcolo argano»'s parts say the same words beside a
-// «No» from the documents — one text, one place. The key of the `lift` texts and its values; an increase against the
+// «No» from the documents — one text, one place; a speed within 5 % keeps the DPR's caveat (round 47 review). The key of the `lift` texts and its values; an increase against the
 // reference (15.1), a decrease against the logbook's speed (15.16): the documents' comparisons. Pure.
 import { variazioneCorsa, variazioneVelocita, type Libretto, type Norma10411 } from '@/lib/lift/modifica';
 import type { Fmt } from '@/lib/present/tr';
@@ -20,7 +20,8 @@ export function fraseVelocita(norma: Norma10411, L: Libretto | undefined, v: num
   return xv.variata ? f('lib_v_variata', { dv: p(c0.dv), rif: fmt(c0.rispetto, 2), clausola })
     : !uno || xv.uguale ? f('lib_v_uguale')
       : c1 ? f('lib_v_tra', { dv1: p(c0.dv), v1: fmt(c0.rispetto, 2), dv2: p(c1.dv), v2: fmt(c1.rispetto, 2) })
-        : !L?.v && c0.dv < 0 ? f('lib_v_sotto50', { dv: p(c0.dv), rif: fmt(c0.rispetto, 2) }) : f('lib_v_entro', { dv: p(c0.dv), rif: fmt(c0.rispetto, 2) });
+        // the one after 50 Hz alone: a reduction (15.16) is not measured, below it or over it (round 47 review)
+        : !L?.v ? f('lib_v_sotto50', { dv: p(c0.dv), rif: fmt(c0.rispetto, 2) }) : f('lib_v_entro', { dv: p(c0.dv), rif: fmt(c0.rispetto, 2) });
 }
 
 /** The travel's sentence: null without a documented travel or the calculation's (`H` null). */

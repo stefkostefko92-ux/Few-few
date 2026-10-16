@@ -43,7 +43,8 @@ src/lib/lift/        Единният формуляр: LiftInputs {shaft, calc,
                      шахтата), частите; и трите избора отпреди — interventoOf/interventoTo, PARTI_RIFACIMENTO; кръг 46 S5 —
                      PARTI_FACOLTATIVE, regolazioneChiesta/senzaRegolazione — 'inverter', 'porte'), risposte
                      (частите „Sì/No“ на „Calcolo argano“; S5 — effettiva, chiediRegolazione, facoltativeDi, заключването
-                     'inverter'; кръг 47 — esitoParte/dalDocumento: «No» от документите, изведено, никога записано),
+                     'inverter'; кръг 47 — esitoParte/dalDocumento: «No» от документите, изведено, никога записано;
+                     след прегледа — и в записа, отворен наново: risposteIniziali(…, V)),
                      progetto (кръг 45: ProgettoInputs — само геометрията;
                      liftInputsOf/progettoOf/composto — чертежът върху „Calcolo argano“), porta (кръг 45: „Porta nel
                      calcolo“ — chiaviDelDisegno/chiaviNascoste/portaNelCalcolo, cabinaMassima), drops (директно окачване:
@@ -219,7 +220,7 @@ src/lib/report/      build.ts — моделът на relazione (италиан�
                      случаят по DPR 162/1999 чл. 2 ал. 1 б. cc) на всяка част, PUNTI_MACCHINA_NUOVA и restaPunto (9.1–9.2
                      при машина, която остава). cases.ts (кръг 46 S7) — d1Blocks (двата случая на D.1 след сцеплението) и d1Frase
                      (изречението в «Variazione dei carichi»); кръг 47 (D2) — d1Sito (точката за изпитването на спирачката
-                     с a_lim в «Adempimenti», при UNI 10411-1 на adempimentiBlocks).
+                     с a_lim и C1 на присъдата в «Adempimenti», при UNI 10411-1 на adempimentiBlocks).
                      Кръг 36: build-parts (части на build.ts), guide („Guide e carichi sulle strutture“ — водачите и товарите от
                      sheet-loads), refs (клаузите в колоната „Riferimento“), elaborati (издадените комплекти в relazione),
                      tecnica-site (отворите, товарите и закрепването в relazione tecnica).

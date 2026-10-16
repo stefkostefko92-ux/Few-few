@@ -84,8 +84,12 @@ export default function PartiSiNo({ tipo, chosen, value, V, risposte, answer, ri
     if (e === 'aperta') {
       return doc && ora && portataVariata(doc, ora) ? t('perche_portata_aperta', { Q0: fmt(doc.Q, 0), Q: fmt(ora.Q, 0) }) : t('perche_carichi_aperta');
     }
-    return `${t('perche_carichi_uguali')}${chosen.parti.includes('car') ? ` ${t('perche_carichi_cabina')}` : ''}`;
+    // a new car: its mass to confirm — on the existing sling with point 22, with the sling replaced too 6.1 alone
+    const cabina = chosen.parti.includes('car') ? ` ${t(chosen.parti.includes('sling') ? 'perche_carichi_cabina_arcata' : 'perche_carichi_cabina')}` : '';
+    return `${t('perche_carichi_uguali')}${cabina}`;
   };
+  // a change the documents bring, answered «Sì» by the user before the rule would lock it: the lock's words (round 47 review)
+  const PERCHE_SI: Partial<Record<Parte, Bloccata['perche']>> = { speed: 'velocita', load: 'carichi', travel: 'corsa' };
   // the regulation's question goes under the part it hangs on: the ropes of a «Solo argano», the controller otherwise
   const dopo: Parte = solo ? 'ropes' : 'controller';
   const domanda = regolazione ? <RegolazioneQuadro key="regolazione" value={chosen.regolazione} set={regolazione.set} norma={norma} /> : null;
@@ -93,7 +97,8 @@ export default function PartiSiNo({ tipo, chosen, value, V, risposte, answer, ri
     if (solo && p === 'machine') return <li key={p} className="parte fissa" data-part={p}><span className="parte-nome">{t('argano_fisso')}</span></li>;
     const lock = bloccata(tipo, chosen, value, V, p), e = lock ? null : esitoParte(tipo, value, V, p), doc = e === 'no';
     const answered = risposte.includes(p) || lock !== null || doc, si = lock ? lock.si : chosen.parti.includes(p);
-    const why = lock ? perche(lock) : e ? perDoc(p, e) : null, whyId = `${parteId(p)}-perche`, controId = `${parteId(p)}-contro`;
+    const motivo = PERCHE_SI[p], why = lock ? perche(lock) : e === 'si' && motivo ? perche({ si: true, perche: motivo }) : e ? perDoc(p, e) : null;
+    const whyId = `${parteId(p)}-perche`, controId = `${parteId(p)}-contro`;
     const described = [why ? whyId : '', doc && si ? controId : ''].filter(Boolean).join(' ') || undefined;
     return (
       <li key={p} className={`parte${answered || e === 'attesa' ? '' : ' da'}`} data-part={p} data-doc={e ?? undefined}>

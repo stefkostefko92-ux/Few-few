@@ -21,6 +21,7 @@ export function mancaParte(t: Tv, tl: (k: string) => string, tipo: string | null
   const nome = etichettaParte(t, tl, tipo, p);
   if (tipo !== 'AMMODERNAMENTO' || !VARIATA[p] || p === 'machine') return nome;
   if (e === 'aperta') return t('manca_aperta', { parte: nome });
-  return e === null ? t(p === 'travel' && norma === '10411-11' ? 'manca_travel11' : `manca_${p}`) : nome;
+  // under -11 the speed and the travel are the documented ones (the logbook's initial speed and first test are -1's)
+  return e === null ? t(norma === '10411-11' && p !== 'load' ? `manca_${p}11` : `manca_${p}`) : nome;
 }
 

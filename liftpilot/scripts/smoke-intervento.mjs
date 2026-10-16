@@ -133,7 +133,7 @@ export async function soloQuadro({ page, hydrated, soloUrl }) {
  *  them «No» («dai documenti»), the answer stays the user's («Sì» against the documents says so); saved with the three
  *  «No», opened again with the same marks; the travel beyond the logbook's locks «Sì». */
 export async function documentiNo({ BASE, page, hydrated, stamp }) {
-  step('Ammodernamento with «Rifacimento» (round 47, D1): the logbook and the documented loads within the limits answer speed, load and travel «No»; beyond them «Sì»');
+  step('Ammodernamento with «Rifacimento» (round 47, D1): the logbook and the documented loads within the limits answer speed, load and travel «No»; beyond them «Sì»; reopened, the «No» stays the documents\'');
   await page.goto(`${BASE}/it/app/projects/new`);
   await page.fill('input[name="name"]', `Documenti ${stamp}`);
   await page.fill('input[name="city"]', 'Como');
@@ -186,4 +186,12 @@ export async function documentiNo({ BASE, page, hydrated, stamp }) {
   await page.waitForSelector('.parti-sino li[data-part="travel"] .parte-regola.si');
   assert.match(await page.textContent('.parti-sino li[data-part="travel"] .parte-perche'), /\+1,00 m rispetto a 18,00 m del libretto: variata \(UNI 10411-1, 16\)/);
   assert.ok(await page.locator('.parti-sino li[data-part="speed"] .parte-doc').count() === 1, 'the speed still «No» from the documents');
+  // the documents' «No» stays theirs on the record opened again (round 47 review): the logbook's travel cleared, the
+  // travel is to answer again — never a «No» nobody gave
+  await page.fill('#H', '18');
+  await page.waitForSelector('.parti-sino li[data-part="travel"] .parte-doc');
+  await page.fill('.collaudo [data-lib="H"]', '');
+  await page.waitForSelector('.parti-sino li.da[data-part="travel"]');
+  assert.equal(await page.isChecked('.parti-sino li[data-part="travel"] input[value="no"]'), false, 'the travel: not a «No» nobody gave');
+  assert.match(await page.textContent('.missing-list'), /Corsa variata: «Sì» o «No», oppure la corsa del primo collaudo/);
 }

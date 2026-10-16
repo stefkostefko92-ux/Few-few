@@ -18,7 +18,9 @@ import type { PuntoInSito } from '../lift/norme-collaudo';
  *  counterweight within what UNI 10411 allows (round 46 final check); the car doors made sliding are the car doors
  *  already named, and the machine room is the building's, not a component (round 46 review). The speed or the travel
  *  answered «Sì» by hand while the design's is the documented one within the rounding: the answer for the engineer to
- *  confirm, as the loads' (round 47, D1 — a speed within 5 % but not equal stays n. 1): the article has no tolerance). */
+ *  confirm, as the loads' (round 47, D1 — a speed within 5 % but not equal stays n. 1): the article has no tolerance; so
+ *  does one equal to the logbook's while the lift runs at another after 50 Hz, and the speed the documents leave open,
+ *  round 47 review). */
 const CC = 'DPR 162/1999, art. 2 c.1 lett. cc)';
 const CC_VARIAZIONE: readonly [Parte, string, string][] = [['speed', '1)', 'cambio della velocità nominale'], ['load', '2)', 'cambio della portata'],
   ['travel', '3)', 'cambio della corsa']];
@@ -50,9 +52,11 @@ export function altreModifiche(C: Collaudo, resta: boolean, nome: (p: Parte) => 
   const doc = C.documentato, ora = V && doc ? carichiOf(V) : null, norma = C.norma === 'en81' ? null : C.norma;
   const portata = !!doc && !!ora && !!norma && portataVariata(doc, ora);
   const carichi = !doc || !ora || !norma || portata ? null : carichiVariati(norma, doc, ora) ? CARICHI_SENZA_PORTATA : CARICHI_INVARIATI;
-  // the speed and the travel the documents show unchanged within the rounding (round 47, D1)
+  // the speed and the travel the documents show unchanged within the rounding (round 47, D1) — the speed only where
+  // they decide it (round 47 review: under -1 the speed after 50 Hz alone leaves it open, a «Sì» there is the change)
   const lib = C.libretto, v = V && lib && norma ? velocitaOf(V) : null, H = V && lib?.H && norma ? corsaOf(V) : null;
-  const uguale = { speed: v !== null && !!norma && !!variazioneVelocita(norma, lib, v)?.uguale, travel: H !== null && !!norma && variazioneCorsa(norma, lib, H)?.variata === false };
+  const uguale = { speed: v !== null && !!norma && !!variazioneVelocita(norma, lib, v)?.uguale && (norma === '10411-11' || !!lib?.v),
+    travel: H !== null && !!norma && variazioneCorsa(norma, lib, H)?.variata === false };
   return [
     ...CC_VARIAZIONE.filter(([p]) => has(p) || (p === 'load' && portata)).map(([p, n, testo]): PuntoInSito => (p === 'load' && carichi ? carichi
       : p === 'speed' && uguale.speed ? VELOCITA_UGUALE : p === 'travel' && uguale.travel ? CORSA_UGUALE

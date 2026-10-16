@@ -5,7 +5,7 @@
 // speed regulation of the controller kept under a new machine are in obblighi-facoltative.ts (B6, B7). Pure.
 import type { FormValues } from '@/calc/types';
 import type { Collaudo, Parte } from './collaudo';
-import { carichiOf, carichiVariati, corsaOf, portataVariata, variazioneCarico, variazioneCorsa, variazioneVelocita, velocitaOf } from './modifica';
+import { carichiOf, carichiVariati, corsaOf, esitoDocumenti, portataVariata, variazioneCarico, variazioneCorsa, variazioneVelocita, velocitaOf } from './modifica';
 import { OBBLIGHI_VARIAZIONI, type CasoVariazione } from './obblighi-variazioni';
 import { OBBLIGHI_FACOLTATIVE, OBBLIGHI_REGOLAZIONE, SPAZIO_FORMULA, spazioScorrevoli } from './obblighi-facoltative';
 import { lt, type PuntoInSito } from './punti';
@@ -67,22 +67,27 @@ export const SOSTANZIALE: readonly Parte[] = ['controller', 'machine', 'landingD
  *  lengthened (⚠ over 8 m) or shortened; under -11 the speed with 15 i), the loads increased or decreased, the travel.
  *  Without `V` or without the documents (a change answered «Sì» by hand) the lengthening and increase cases; the load
  *  answered «Sì» while the documented loads show no case, the point that says so (loadDocumentati) — and (round 47, D1)
- *  so the speed and the travel (speedDocumentati, travelDocumentati); the loads unchanged on the documents under a new
- *  car, its mass to confirm (loadCabinaNuova). */
+ *  so the speed and the travel (speedDocumentati, travelDocumentati) where the documents say «No»; the speed answered
+ *  «Sì» while they leave it open (under -1 the speed after 50 Hz alone, round 47 review): the increase over 5 % above the
+ *  reference is excluded by them, the reduction from the initial speed (15.16) is what the answer declares
+ *  (speedDown); the loads unchanged on the documents under a new car, its mass to confirm (loadCabinaNuova on the
+ *  existing sling, loadCabinaArcata with the sling replaced too). */
 function casi(C: Pick<Collaudo, 'norma' | 'parti' | 'documentato' | 'libretto'>, n: '10411-1' | '10411-11', V?: FormValues): Record<Variata, CasoVariazione[]> {
   const has = (p: Parte): boolean => C.parti.includes(p), uno = n === '10411-1';
   const v = V && C.libretto ? velocitaOf(V) : null, H = V && C.libretto?.H ? corsaOf(V) : null, ora = V && C.documentato ? carichiOf(V) : null;
   const xv = v !== null ? variazioneVelocita(n, C.libretto, v) : null, xh = H !== null ? variazioneCorsa(n, C.libretto, H) : null;
   const xl = C.documentato && ora ? variazioneCarico(n, C.documentato, ora) : null;
+  const ev = V ? esitoDocumenti(n, C, V).speed : null;
   const speed: CasoVariazione[] = !has('speed') ? (uno && xv && !xv.variata && !xv.uguale ? ['speedWithin'] : [])
-    : xv && !xv.variata ? ['speedDocumentati'] : uno ? [xv?.calo && !xv.aumento ? 'speedDown' : 'speedUp'] : ['speedUp', 'speedUcm'];
+    : ev === 'no' ? ['speedDocumentati'] : ev === 'aperta' ? ['speedDown'] : uno ? [xv?.calo && !xv.aumento ? 'speedDown' : 'speedUp'] : ['speedUp', 'speedUcm'];
   const doc: CasoVariazione[] = xl ? [...(xl.p1 ? ['loadP1' as const] : []), ...(xl.p2 ? ['loadP2' as const] : []), ...(xl.calo ? ['loadCalo' as const] : []),
     ...(xl.rapporto ? ['loadRapporto' as const] : [])] : [];
   // 'load' answered «Sì» by hand: with the documented loads, the case they show — none, a point for the engineer, never
   // the prospetti's obligations as if exceeded (round 46 final check); without them, the increases
   // the loads unchanged on the documents (rated load, T* and counterweight) under a new car: its mass to confirm
   const uguali = !!xl && !!C.documentato && !!ora && !carichiVariati(n, C.documentato, ora) && !portataVariata(C.documentato, ora);
-  const load: CasoVariazione[] = !has('load') ? (uguali && has('car') ? ['loadCabinaNuova'] : []) : doc.length ? doc : xl ? ['loadDocumentati'] : uno ? ['loadP1', 'loadP2'] : ['loadP1'];
+  const nuova: CasoVariazione[] = uguali && has('car') ? [has('sling') ? 'loadCabinaArcata' : 'loadCabinaNuova'] : [];
+  const load: CasoVariazione[] = !has('load') ? nuova : doc.length ? doc : xl ? ['loadDocumentati'] : uno ? ['loadP1', 'loadP2'] : ['loadP1'];
   const travel: CasoVariazione[] = !has('travel') ? [] : xh && !xh.variata ? ['travelDocumentati'] : xh?.accorciata ? ['travelDown']
     : xh?.oltre8 ? ['travelOver8', 'travelUp'] : ['travelUp'];
   return { speed, load, travel };
