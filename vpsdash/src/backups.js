@@ -58,7 +58,12 @@ export function backupAllSpec(cfg = null) {
     // се върти → rc остава 0 → задачата рапортува УСПЕХ с празна секция. Тоест
     // трите ни Postgres бази не се бекъпваха ИЗОБЩО, а панелът рисуваше зелено.
     '    PGU=$(docker exec "$c" printenv POSTGRES_USER 2>/dev/null || echo postgres)',
-    '    dbs=$(docker exec "$c" psql -U "$PGU" -At -c "SELECT datname FROM pg_database WHERE datistemplate = false AND datname <> \'postgres\';") || { echo "  ✘ $c: psql не отговори (потребител $PGU)"; rc=1; continue; }',
+    // `-d postgres` е ЗАДЪЛЖИТЕЛНО: без него psql се свързва с база на ИМЕТО НА
+    // ПОТРЕБИТЕЛЯ. Стек с POSTGRES_USER=sklad_user и POSTGRES_DB=sklad няма база
+    // „sklad_user" → FATAL → „psql не отговори" → базите му НЕ СЕ БЕКЪПВАХА (живо:
+    // sklad и erp, от инсталирането им), а задачата падаше с код 1 всяка нощ.
+    // `postgres` е служебната база, която initdb създава винаги.
+    '    dbs=$(docker exec "$c" psql -U "$PGU" -d postgres -At -c "SELECT datname FROM pg_database WHERE datistemplate = false AND datname <> \'postgres\';") || { echo "  ✘ $c: psql не отговори (потребител $PGU)"; rc=1; continue; }',
     '    [ -n "$dbs" ] || { echo "  ✘ $c: нула бази (потребител $PGU) — това не е успех"; rc=1; continue; }',
     '    for d in $dbs; do',
     `      out="${DUMP_DIR}/\${d}-\${TS}.sql.gz"`,
@@ -150,6 +155,14 @@ export function assertDumpName(name) {
 // Стъпка 1: разопакова в /tmp и описва съдържанието. Нищо живо не се докосва.
 export function restorePreviewSpec(name) {
   const { base, full } = assertDumpName(name);
+  return { ...previewSpecFor(base, full), exclusive: 'backup', timeoutMs: 30 * 60 * 1000 };
+}
+
+// Чистата половина на прегледа (без проверката, че файлът съществува) — отделена,
+// за да може тестът да пусне `bash -n` върху ИСТИНСКИЯ скрипт. Една незатворена
+// кавичка в последния ред („Приложи" с права затваряща) правеше ВСЕКИ преглед и
+// всяка проба за възстановяване „провалени" с код 2, при напълно здрав дъмп.
+export function previewSpecFor(base, full) {
   const isSqlite = base.endsWith('.sqlite.gz');
   const out = `${RESTORE_PREVIEW_DIR}/${base.replace(/\.gz$/, '')}`;
   const describe = isSqlite
@@ -169,10 +182,8 @@ export function restorePreviewSpec(name) {
       `ls -lh "${out}"`,
       describe,
       `echo`,
-      `echo "НИЩО ЖИВО НЕ Е ПРОМЕНЕНО. Ако това е снимката, която искаш, натисни „Приложи"."`,
+      `echo "НИЩО ЖИВО НЕ Е ПРОМЕНЕНО. Ако това е снимката, която искаш, натисни „Приложи“."`,
     ].join('\n'),
-    exclusive: 'backup',
-    timeoutMs: 30 * 60 * 1000,
   };
 }
 

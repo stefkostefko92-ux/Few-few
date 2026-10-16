@@ -123,6 +123,10 @@ async function postgresOverview() {
         'psql',
         '-U',
         pgUser,
+        // Без `-d` psql търси база на ИМЕТО на потребителя — при POSTGRES_DB ≠
+        // POSTGRES_USER (sklad, erp) такава няма и инстанцията изглежда недостъпна.
+        '-d',
+        'postgres',
         '-At',
         '-F',
         '|',
