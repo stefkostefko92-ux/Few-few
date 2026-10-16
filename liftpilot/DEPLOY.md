@@ -169,8 +169,8 @@ docker exec liftpilot-app-1 npm run engine:notice -- --send --motivo "<какв�
 
 ## Кръг 48 — редът на деплоя
 
-Всеки етап — жив и здрав (`/api/health`, вход, едно съоръжение отворено), преди следващия. `<SHA48>` е комитът на
-кръг 48 в клона на PR-а.
+Всеки етап — жив и здрав (`/api/health`, вход, едно съоръжение отворено), преди следващия. SHA-то на кръг 48 е `4215e1f67` —
+последният комит на кода на кръг 48 в клона на PR-а (следващите комити на клона са само документи и дават същия release).
 
 0. **Проверки преди** (по-долу): `[ -s /opt/few-few/shared/liftpilot/backups/pre-22-replacement-ids.txt ] && wc -l
    /opt/few-few/shared/liftpilot/backups/pre-22-replacement-ids.txt` — файлът е и не е празен (празен или липсващ —
@@ -185,7 +185,7 @@ docker exec liftpilot-app-1 npm run engine:notice -- --send --motivo "<какв�
    cd "$LP" && docker compose exec -T app npm run pdf:keep -- --dry-run
    docker compose exec -T app npm run pdf:keep
    ```
-2. **Деплоят:** `REF=<SHA48> PROJECTS="liftpilot"` (с `fetch-deploy.sh` от `<SHA48>`). Миграциите `23_beta_invites`,
+2. **Деплоят:** `REF=4215e1f67 PROJECTS="liftpilot"` (с `fetch-deploy.sh` от `4215e1f67`). Миграциите `23_beta_invites`,
    `24_feedback` и `25_clauses_write_key` са адитивни, entrypoint-ът ги пуска: 23 — нова таблица `BetaInvite` и нова
    nullable колона `betaInviteId` в `PendingRegistration` (с външен ключ); 24 — нова таблица `Feedback` (и enum-ът
    `FeedbackKind`); 25 — nullable
