@@ -89,7 +89,9 @@ test('l’esportazione: ogni chiave del registro, e le schede di rilievo della p
   // format 8 (round 45): each calculation names the intervention declared with it, each lift design its base calculation
   assert.equal(projectArgs?.include?.calculations?.select?.intervento, true);
   assert.equal(projectArgs?.include?.liftDesigns?.select?.baseCalculationId, true);
-  // format 9 (round 45): the installations without their former module
-  assert.deepEqual(projectArgs?.omit, { kind: true });
+  // format 9 (round 45): the installations without their former module — the client ignores the column (round 47): no
+  // omit needed, no key of it in an installation
+  assert.equal(projectArgs?.omit, undefined);
+  assert.ok((doc.projects as Row[]).every((p) => !('kind' in p)));
   assert.equal(doc.formatVersion, 9);
 });

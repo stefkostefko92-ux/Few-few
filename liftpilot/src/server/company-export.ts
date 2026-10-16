@@ -34,9 +34,10 @@ export async function companyExport(companyId: string): Promise<Record<string, u
     prisma.companyRolePermission.findMany({ where: { companyId }, orderBy: [{ role: 'asc' }, { capability: 'asc' }],
       select: { role: true, capability: true, granted: true, updatedById: true, updatedAt: true } }),
     prisma.companyLogo.findMany({ where: { companyId }, orderBy: { createdAt: 'asc' } }),
-    // the installation's module of before round 45 (Project.kind) is no data of the company's any more (format 9)
+    // the installation's module of before round 45 (Project.kind) is no data of the company's any more (format 9; the
+    // client ignores the column since round 47)
     prisma.project.findMany({
-      where: { companyId }, orderBy: { createdAt: 'asc' }, omit: { kind: true },
+      where: { companyId }, orderBy: { createdAt: 'asc' },
       include: {
         clientLogos: { orderBy: { createdAt: 'asc' } },
         // the test chosen with each calculation as stored (with the logbook's speed and travel and the controller's

@@ -115,8 +115,9 @@ npx tsx --conditions=react-server scripts/landing-docs.ts   # страницит
   части — група «Altre parti (facoltative)», «No» по подразбиране; сменено съотношение на товарите по -1 — проверката D.1
   (`src/calc/d1.ts`, `tr_d1`; кръг 47, D2 — и точка за изпитването на спирачката с a_lim в «Adempimenti», `d1Sito`). Машината, която остава, се
   чертае върху съществуващата си основа (`src/lib/lift/kept.ts`, `src/shaft/room-kept.ts`): L0 и dx·h — от изчислението.
-  `Project.kind` не се чете и не се пише от никой код (глобален `omit` в `src/lib/db.ts`, тест `no-project-kind`);
-  колоната остава до миграция след потвърждението на собственика. Кръгът Calcolo ↔ Progetto: „Porta nel calcolo“
+  `Project.kind` не се чете и не се пише от никой код: кръг 47 — `@ignore` в схемата (клиентът не го назовава в нито една
+  заявка; глобалният `omit` на кръгове 45–46 все още го пишеше във всеки INSERT), тест `no-project-kind`; колоната пада с
+  миграция 22 като отделен release след двигателите (потвърждението на собственика, `DEPLOY.md`). Кръгът Calcolo ↔ Progetto: „Porta nel calcolo“
   (`?dal=progetto`) и „Aggiorna il progetto con l’ultimo calcolo“. `/vano` няма; записите отпреди формуляра са в архива
   на страницата на съоръжението. Подробно — `docs/rules.md` → „Интервенцията и стъпките“.
 - **Една стойност — едно място:** данните на съоръжението (`src/lib/plant.ts`) държат само каквото проектът не знае

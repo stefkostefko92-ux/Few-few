@@ -2937,6 +2937,18 @@ frizione, Diametro pulegge di rinvio, Inerzia per puleggia…, Massa della macch
   ги назовава в «velocità, carichi e corsa variati» на -1 — 326 реда (+2). Тестове: `r47-d1.test.ts` (5: точката с a_lim при
   UNI 10411-1, вариантът при a_lim null, никога без `tr_d1` — -11, пропорционални товари, без документи, без стойностите;
   точката ⇔ `d1Check` и `ambitoOf` на 32 случая; relazione di calcolo, relazione tecnica и листата).
+- **Подготовка за D3 — `Project.kind @ignore` в release-а на двигателите**: предпоставката на решението („клиентът на кръг
+  45+ с глобалния `omit` никога не избира и не пише kind“) не се потвърди — пробата на лещата на кода, пусната наново на
+  `argano_r47` (`kind-queries.mjs`, всичко в транзакция с rollback): SELECT, UPDATE и RETURNING не го назовават, но **всеки
+  INSERT** го пише (`INSERT INTO "Project" ("id","companyId","kind",…) VALUES (…, CAST($3::text AS "ProjectKind"), …)` — create,
+  createMany и вложен create), защото двигателят попълва `@default(FULL)`; след изтриване на колоната такъв клиент не може
+  да създаде съоръжение («Nuovo impianto», «Crea impianto»). Затова в release-а на двигателите полето е `@ignore`, а двата
+  `omit` (глобалният в `src/lib/db.ts` и този на износа) са махнати — с `@ignore` не се компилират и не трябват. Доказано:
+  `prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel` с временна shadow база
+  (`argano_r47_shadow`) и `--from-url argano_r47` — «No difference detected» и в двата; пробата с новия клиент — 3 INSERT, 0
+  заявки с `kind`; новият ред получава стойността по подразбиране от базата. Износът — същият (форматът остава 9). Тестове:
+  `no-project-kind` (без omit, `@ignore` в схемата, `Prisma.ProjectScalarFieldEnum` без kind, типът на реда без kind, още
+  без миграция за изтриване), `company-export` (без omit). Отделен комит преди D3.
 
 ### Кръг 47 — след прегледа: D1 и D2
 Прегледът по трите лещи (код, норми, живо) — 17 находки, всяка проверена първо (пробите на прегледа — пуснати наново,

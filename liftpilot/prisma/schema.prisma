@@ -258,7 +258,7 @@ enum TipoIntervento {
 
 /// What an installation was for before round 45: the machine replacement alone, or a whole project. Deprecated — no
 /// code reads or writes it (the type of intervention is each step-2 calculation's, Calculation.intervento); dropped by
-/// a later migration after the owner's confirmation, with Project.kind and its index.
+/// migration 22_drop_project_kind (round 47, the owner's confirmation), with Project.kind and its index.
 enum ProjectKind {
   REPLACEMENT
   FULL
@@ -269,9 +269,10 @@ model Project {
   id           String        @id @default(cuid())
   companyId    String
   company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  /// deprecated — dropped by a later migration after the owner's confirmation (round 45: no code reads or writes it; the
-  /// client leaves it out of every query, src/lib/db.ts; a new installation takes the column's default)
-  kind         ProjectKind   @default(FULL)
+  /// deprecated — dropped by migration 22_drop_project_kind after the owner's confirmation (round 47). Ignored by the
+  /// client (round 47, the release before the drop): no query names it at all — not even an INSERT, which the global
+  /// omit of rounds 45–46 still filled with the default —, a new row takes the column's default from the database
+  kind         ProjectKind   @default(FULL) @ignore
   name         String
   address      String?
   city         String?

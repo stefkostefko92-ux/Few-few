@@ -2,9 +2,10 @@ import 'server-only';
 import { PrismaClient, type Prisma } from '@prisma/client';
 
 // One client per process (hot reload in development would otherwise open a pool per reload). Project.kind (the module
-// of an installation before round 45) is never read: the column stays in the database until a later migration drops it
-// after the owner's confirmation, and the client leaves it out of every query (global omit).
-const make = () => new PrismaClient({ log: ['error'], omit: { project: { kind: true } } });
+// of an installation before round 45) is @ignore in the schema (round 47): the client names it in no query — the global
+// omit of rounds 45–46 kept it out of reads but still wrote its default on every INSERT —, until migration
+// 22_drop_project_kind drops the column.
+const make = () => new PrismaClient({ log: ['error'] });
 type Client = ReturnType<typeof make>;
 const globalForPrisma = globalThis as unknown as { prisma?: Client };
 
