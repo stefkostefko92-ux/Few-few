@@ -62,8 +62,10 @@ const ORDINE_PARTI: readonly Parte[] = ['speed', 'load', 'travel', 'car', 'sling
 export const SOSTANZIALE: readonly Parte[] = ['controller', 'machine', 'landingDoors', 'car', 'sling'];
 
 /** The cases of the changes of speed, load and travel among the parts, by what the documents of the existing lift say
- *  against the calculation's values `V` (round 46): under -1 the speed increased or decreased (a change within 5 % noted
- *  when it is not among the parts — none when the speed is the documented one within the rounding), the loads beyond prospetto 1 or 2, decreased or their ratio changed, the travel
+ *  against the calculation's values `V` (round 46): under -1 the speed increased or decreased (a change within 15.1 and
+ *  15.16 noted when it is not among the parts — with the speed after 50 Hz alone, the reduction from the initial speed
+ *  not measured, speedWithin50, round 47 recheck; none when the speed is the documented one within the rounding), the
+ *  loads beyond prospetto 1 or 2, decreased or their ratio changed, the travel
  *  lengthened (⚠ over 8 m) or shortened; under -11 the speed with 15 i), the loads increased or decreased, the travel.
  *  Without `V` or without the documents (a change answered «Sì» by hand) the lengthening and increase cases; the load
  *  answered «Sì» while the documented loads show no case, the point that says so (loadDocumentati) — and (round 47, D1)
@@ -78,7 +80,7 @@ function casi(C: Pick<Collaudo, 'norma' | 'parti' | 'documentato' | 'libretto'>,
   const xv = v !== null ? variazioneVelocita(n, C.libretto, v) : null, xh = H !== null ? variazioneCorsa(n, C.libretto, H) : null;
   const xl = C.documentato && ora ? variazioneCarico(n, C.documentato, ora) : null;
   const ev = V ? esitoDocumenti(n, C, V).speed : null;
-  const speed: CasoVariazione[] = !has('speed') ? (uno && xv && !xv.variata && !xv.uguale ? ['speedWithin'] : [])
+  const speed: CasoVariazione[] = !has('speed') ? (uno && xv && !xv.variata && !xv.uguale ? [C.libretto?.v ? 'speedWithin' : 'speedWithin50'] : [])
     : ev === 'no' ? ['speedDocumentati'] : ev === 'aperta' ? ['speedDown'] : uno ? [xv?.calo && !xv.aumento ? 'speedDown' : 'speedUp'] : ['speedUp', 'speedUcm'];
   const doc: CasoVariazione[] = xl ? [...(xl.p1 ? ['loadP1' as const] : []), ...(xl.p2 ? ['loadP2' as const] : []), ...(xl.calo ? ['loadCalo' as const] : []),
     ...(xl.rapporto ? ['loadRapporto' as const] : [])] : [];

@@ -3651,7 +3651,7 @@
       "id": "collaudo.variazioni.10411-1.3",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 15.1 e 15.16",
-      "valore": "velocità entro il 5 % del riferimento: i punti da 15.2 a 15.17 non si applicano; se sia comunque un cambio della velocità ai sensi del DPR 162/1999 (art. 2 c.1 lett. cc) n. 1)) lo valuta il tecnico",
+      "valore": "velocità né oltre il 5 % sopra il riferimento (15.1) né oltre il 5 % sotto la velocità iniziale del libretto o documentata con verbale (15.16): i punti da 15.2 a 15.17 non si applicano; se sia comunque un cambio della velocità ai sensi del DPR 162/1999 (art. 2 c.1 lett. cc) n. 1)) lo valuta il tecnico",
       "riferimento": "UNI 10411-1:2024, 15.1 e 15.16",
       "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
       "stato": "da verificare",
@@ -3662,6 +3662,18 @@
       "n": 303,
       "id": "collaudo.variazioni.10411-1.4",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-1:2024, 15.1 e 15.16",
+      "valore": "velocità non oltre il 5 % sopra il riferimento, la velocità dopo il passaggio della rete a 50 Hz (15.1): i punti da 15.2 a 15.15 non si applicano; la riduzione dalla velocità iniziale (15.16) non si misura senza la velocità del libretto — indicata come non variata, i punti 15.2 e 15.17 valgono se il tecnico accerta sul libretto una riduzione di oltre il 5 %; se sia comunque un cambio della velocità ai sensi del DPR 162/1999 (art. 2 c.1 lett. cc) n. 1)) lo valuta il tecnico",
+      "riferimento": "UNI 10411-1:2024, 15.1 e 15.16",
+      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 304,
+      "id": "collaudo.variazioni.10411-1.5",
+      "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 6.1, 6.3–6.12 e 6.15",
       "valore": "T* o portata oltre il prospetto 1: strutture dell’edificio secondo il punto 5 (6.3), ammortizzatori secondo la UNI EN 81-20 5.8 (6.4), guide e ancoraggi (6.5), paracadute di cabina per i nuovi carichi (6.6), funi e attacchi (6.8), arcata (6.9), macchina (6.10) e altri componenti interessati (6.15); non calcolati dal software: controllo del carico secondo la 5.12.1.2 (6.11) e ACOP secondo la 5.6.6 (6.12)",
       "riferimento": "UNI 10411-1:2024, 6.1, 6.3–6.12 e 6.15",
@@ -3671,8 +3683,8 @@
       "nota": ""
     },
     {
-      "n": 304,
-      "id": "collaudo.variazioni.10411-1.5",
+      "n": 305,
+      "id": "collaudo.variazioni.10411-1.6",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 6.1, 6.4, 6.5, 6.8 e 6.13–6.15",
       "valore": "contrappeso oltre il prospetto 2: ammortizzatori (6.4), guide e ancoraggi (6.5), funi e attacchi (6.8), contrappeso guidato e difesa del suo percorso (6.13), altri componenti interessati (6.15); non calcolato dal software: con spazi accessibili sotto il vano fondo della fossa per almeno 5000 N/m² e paracadute del contrappeso (6.14)",
@@ -3683,8 +3695,8 @@
       "nota": ""
     },
     {
-      "n": 305,
-      "id": "collaudo.variazioni.10411-1.6",
+      "n": 306,
+      "id": "collaudo.variazioni.10411-1.7",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 6.1",
       "valore": "T* o contrappeso diminuiti: ammortizzatori esistenti secondo la UNI EN 81-20 5.8 e paracadute progressivo, se c’è, secondo la 5.6.2",
@@ -3695,8 +3707,8 @@
       "nota": ""
     },
     {
-      "n": 306,
-      "id": "collaudo.variazioni.10411-1.7",
+      "n": 307,
+      "id": "collaudo.variazioni.10411-1.8",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 6.1",
       "valore": "carichi indicati come variati, ma secondo i carichi documentati la variazione resta entro i prospetti 1 e 2, nessun carico diminuisce e il rapporto tra i carichi appesi non cambia: i punti da 6.3 a 6.15 e l’App. D valgono solo se il tecnico conferma una variazione oltre questi limiti",
@@ -3707,8 +3719,8 @@
       "nota": ""
     },
     {
-      "n": 307,
-      "id": "collaudo.variazioni.10411-1.8",
+      "n": 308,
+      "id": "collaudo.variazioni.10411-1.9",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 6.1 e App. D",
       "valore": "rapporto tra i carichi appesi lato cabina e lato contrappeso cambiato: stabilità allo scorrimento (D.1) e pressione nelle gole (D.2) verificate, ammortizzatori secondo la UNI EN 81-20 5.8 sotto cabina e contrappeso; aderenza eccessiva delle funi esclusa (UNI EN 81-20 5.5.3 c))",
@@ -3719,8 +3731,8 @@
       "nota": ""
     },
     {
-      "n": 308,
-      "id": "collaudo.variazioni.10411-1.9",
+      "n": 309,
+      "id": "collaudo.variazioni.10411-1.10",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 16 a)–l)",
       "valore": "corsa allungata rispetto al primo collaudo (fino a 8 m l’intervento non conta come nuova installazione, punto 16): contrappeso guidato e difesa del suo percorso (a)), locale o macchina spostati con i punti 8 e 9 (b), c)), difese dei tratti di vano aggiunti (d)), linee elettriche (e)), quadro (f)), guide dei tratti aggiunti (g)), funi nuove con il 17.2 (h)), fune del limitatore (i)), spazi liberi in fossa e in testata (j)), porte di piano nuove con il punto 19 (k)), extracorsa all’estremità interessata (l))",
@@ -3731,8 +3743,8 @@
       "nota": ""
     },
     {
-      "n": 309,
-      "id": "collaudo.variazioni.10411-1.10",
+      "n": 310,
+      "id": "collaudo.variazioni.10411-1.11",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 16",
       "valore": "⚠ corsa allungata di oltre 8 m rispetto al primo collaudo: l’intervento conta come nuova installazione; la procedura la conferma il tecnico con il soggetto che esegue la verifica",
@@ -3743,8 +3755,8 @@
       "nota": ""
     },
     {
-      "n": 310,
-      "id": "collaudo.variazioni.10411-1.11",
+      "n": 311,
+      "id": "collaudo.variazioni.10411-1.12",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 16 e 4",
       "valore": "corsa accorciata: il punto 16 tratta solo l’allungamento; la modifica (DPR 162/1999, art. 2 c.1 lett. cc) n. 3)) si valuta secondo il punto 4",
@@ -3755,8 +3767,8 @@
       "nota": ""
     },
     {
-      "n": 311,
-      "id": "collaudo.variazioni.10411-1.12",
+      "n": 312,
+      "id": "collaudo.variazioni.10411-1.13",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 15.1 e 15.16",
       "valore": "velocità indicata come variata, ma secondo i dati documentati quella del progetto non supera di oltre il 5 % il riferimento né, quando il libretto ne riporta la velocità, scende di oltre il 5 % sotto di essa: i punti da 15.2 a 15.15 (aumento) o 15.2 e 15.17 (riduzione) valgono solo se il tecnico accerta una variazione oltre questi limiti",
@@ -3767,8 +3779,8 @@
       "nota": ""
     },
     {
-      "n": 312,
-      "id": "collaudo.variazioni.10411-1.13",
+      "n": 313,
+      "id": "collaudo.variazioni.10411-1.14",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 16",
       "valore": "corsa indicata come variata, ma quella del progetto coincide con la corsa del primo collaudo entro l’arrotondamento dei dati: le lettere a)–l) del punto 16 valgono solo se il tecnico accerta un allungamento (un accorciamento si valuta secondo il punto 4)",
@@ -3779,8 +3791,8 @@
       "nota": ""
     },
     {
-      "n": 313,
-      "id": "collaudo.variazioni.10411-1.14",
+      "n": 314,
+      "id": "collaudo.variazioni.10411-1.15",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 22 e 6.1",
       "valore": "cabina nuova sull’arcata esistente con i carichi del progetto uguali a quelli documentati: P va confermata come massa della cabina nuova completa (arcata, porte e operatore compresi); se cambia, i carichi si confrontano di nuovo con quelli documentati",
@@ -3791,8 +3803,8 @@
       "nota": ""
     },
     {
-      "n": 314,
-      "id": "collaudo.variazioni.10411-1.15",
+      "n": 315,
+      "id": "collaudo.variazioni.10411-1.16",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 6.1",
       "valore": "cabina e arcata nuove con i carichi del progetto uguali a quelli documentati: P va confermata come massa della cabina nuova completa (arcata, porte e operatore compresi); se cambia, i carichi si confrontano di nuovo con quelli documentati",
@@ -3803,8 +3815,8 @@
       "nota": ""
     },
     {
-      "n": 315,
-      "id": "collaudo.variazioni.10411-1.16",
+      "n": 316,
+      "id": "collaudo.variazioni.10411-1.17",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 6.1 e D.1",
       "valore": "alla prova del freno si misura la decelerazione di frenatura della cabina con i carichi dei due casi della D.1 (1,25·Q e cabina vuota) — in discesa con 1,25·Q e in salita a vuoto, scelta del software: la D.1 dà i carichi e la posizione della cabina ferma, non il verso di marcia —, e la maggiore si confronta con a_lim, la decelerazione fino alla quale la D.1 regge nel caso più sfavorevole (a_lim = g·(C1lim − 1)/(C1lim + 1), con C1lim della relazione); se quella misurata supera a_lim, la D.1 rifatta con essa non regge e vanno rivisti il rapporto tra i carichi o la frenatura; come si fa la prova lo decide il tecnico e quale decelerazione intenda la D.1 il soggetto della verifica",
@@ -3815,8 +3827,8 @@
       "nota": ""
     },
     {
-      "n": 316,
-      "id": "collaudo.variazioni.10411-1.17",
+      "n": 317,
+      "id": "collaudo.variazioni.10411-1.18",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 6.1 e D.1",
       "valore": "la D.1 non regge nemmeno con il C1 minimo della fascia di velocità: nessuna decelerazione misurata alla prova del freno la rispetta, e il rapporto tra i carichi va rivisto con il soggetto della verifica",
@@ -3827,7 +3839,7 @@
       "nota": ""
     },
     {
-      "n": 317,
+      "n": 318,
       "id": "collaudo.variazioni.10411-11.1",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 15 a)–k) e 4.3",
@@ -3839,7 +3851,7 @@
       "nota": ""
     },
     {
-      "n": 318,
+      "n": 319,
       "id": "collaudo.variazioni.10411-11.2",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 15 i)",
@@ -3851,7 +3863,7 @@
       "nota": ""
     },
     {
-      "n": 319,
+      "n": 320,
       "id": "collaudo.variazioni.10411-11.3",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1–6.13",
@@ -3863,7 +3875,7 @@
       "nota": ""
     },
     {
-      "n": 320,
+      "n": 321,
       "id": "collaudo.variazioni.10411-11.4",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1–6.13",
@@ -3875,7 +3887,7 @@
       "nota": ""
     },
     {
-      "n": 321,
+      "n": 322,
       "id": "collaudo.variazioni.10411-11.5",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1",
@@ -3887,7 +3899,7 @@
       "nota": ""
     },
     {
-      "n": 322,
+      "n": 323,
       "id": "collaudo.variazioni.10411-11.6",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1",
@@ -3899,7 +3911,7 @@
       "nota": ""
     },
     {
-      "n": 323,
+      "n": 324,
       "id": "collaudo.variazioni.10411-11.7",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 16 a)–i) e 4.3",
@@ -3911,7 +3923,7 @@
       "nota": ""
     },
     {
-      "n": 324,
+      "n": 325,
       "id": "collaudo.variazioni.10411-11.8",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 16 e 4.3",
@@ -3923,7 +3935,7 @@
       "nota": ""
     },
     {
-      "n": 325,
+      "n": 326,
       "id": "collaudo.variazioni.10411-11.9",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 15 e 4.3",
@@ -3935,7 +3947,7 @@
       "nota": ""
     },
     {
-      "n": 326,
+      "n": 327,
       "id": "collaudo.variazioni.10411-11.10",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 16 e 4.3",
@@ -3947,7 +3959,7 @@
       "nota": ""
     },
     {
-      "n": 327,
+      "n": 328,
       "id": "collaudo.variazioni.10411-11.11",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 22 e 6.1",
@@ -3959,7 +3971,7 @@
       "nota": ""
     },
     {
-      "n": 328,
+      "n": 329,
       "id": "collaudo.variazioni.10411-11.12",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1",

@@ -78,7 +78,8 @@ test('D.1 alla prova del freno: il C1 della verifica, i versi di marcia come sce
   const Cd = collaudoOf(Vx, { norma: '10411-1', parti: ['machine'], documentato: { Q: o.Q, P: o.P - 100, Mcw: o.Mcw } });
   const d = d1Di(Cd, Vx), p = d1Sito(Cd, Vx);
   assert.ok(d && p && d.aLim !== null && d.C1 === d.c1Min, 'the fixture: C1 at the band minimum');
-  assert.ok(p.testo.includes('il calcolo la verifica con C1 = 1,150, il minimo della fascia, che equivale a 0,68 m/s² (con a = 0,50 m/s² sarebbe minore)'), p.testo);
+  // round 47 recheck: the outcome in words — met here
+  assert.ok(p.testo.includes('nel calcolo è soddisfatta con C1 = 1,150, il minimo della fascia, che equivale a 0,68 m/s² (con a = 0,50 m/s² sarebbe minore)'), p.testo);
   // over the band minimum: C1 with the calculation's a
   const V6: FormValues = { ...Vx, k: '0.45', v: '0.6' }, o6 = carichiOf(V6) as Carichi;
   const C6 = collaudoOf(V6, { norma: '10411-1', parti: ['machine'], documentato: { Q: o6.Q, P: o6.P - 20, Mcw: o6.Mcw } }), d6 = d1Di(C6, V6), p6 = d1Sito(C6, V6);

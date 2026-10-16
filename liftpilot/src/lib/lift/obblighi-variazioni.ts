@@ -1,5 +1,6 @@
 // What UNI 10411-1/-11:2024 ask when a modification changes the rated speed, the loads or the travel (round 46, B5): one
-// point per case — under -1 the speed increased (15.1–15.15) or decreased (15.16–15.17), a change within 5 % noted; the
+// point per case — under -1 the speed increased (15.1–15.15) or decreased (15.16–15.17), a change within the two limits
+// noted (with the speed after 50 Hz alone, the reduction not measured — round 47 recheck); the
 // loads beyond prospetto 1 or 2, decreased, or their ratio changed (6.1 with App. D) — answered «Sì» by hand while the
 // documented loads show none of these, a point for the engineer (round 46 final check); the travel lengthened (16, with
 // the ⚠ over 8 m) or shortened (point 4) —, under -11 any change of the speed (15 with 15 i)), of the loads (6.1–6.13)
@@ -14,7 +15,7 @@ import { lt, type PuntoInSito } from './punti';
 import type { Norma10411 } from './modifica';
 
 /** The cases of a change of speed, load or travel. */
-export type CasoVariazione = 'speedUp' | 'speedDown' | 'speedWithin' | 'speedUcm' | 'loadP1' | 'loadP2' | 'loadCalo' | 'loadRapporto'
+export type CasoVariazione = 'speedUp' | 'speedDown' | 'speedWithin' | 'speedWithin50' | 'speedUcm' | 'loadP1' | 'loadP2' | 'loadCalo' | 'loadRapporto'
   | 'loadDocumentati' | 'travelUp' | 'travelOver8' | 'travelDown' | 'speedDocumentati' | 'travelDocumentati' | 'loadCabinaNuova' | 'loadCabinaArcata';
 
 const DA_VERIFICARE = (rif: string, testo: string): PuntoInSito => ({ rif, testo, stato: 'da_verificare' });
@@ -35,8 +36,16 @@ export const OBBLIGHI_VARIAZIONI: Readonly<Record<Norma10411, Partial<Readonly<R
     speedDown: lt('UNI 10411-1:2024, 15.16–15.17', 'velocità ridotta di più del 5 % sotto l’iniziale o quella documentata con verbale: '
       + 'ammortizzatori secondo la UNI EN 81-20 5.8 (15.2) e paracadute fatto intervenire dal limitatore entro i limiti della normativa in '
       + 'vigore all’installazione (15.17)'),
-    speedWithin: DA_VERIFICARE('UNI 10411-1:2024, 15.1 e 15.16', 'velocità entro il 5 % del riferimento: i punti da 15.2 a 15.17 non si '
-      + 'applicano; se sia comunque un cambio della velocità ai sensi del DPR 162/1999 (art. 2 c.1 lett. cc) n. 1)) lo valuta il tecnico'),
+    // not a change by 15.1 and 15.16 (round 47 recheck: said as the two limits, never «within 5 % of the reference» — a
+    // design up to 5 % above the reference may be far below it, down to 5 % under the logbook's speed); with the speed
+    // after 50 Hz alone the reduction from the initial speed is not measured (speedWithin50)
+    speedWithin: DA_VERIFICARE('UNI 10411-1:2024, 15.1 e 15.16', 'velocità né oltre il 5 % sopra il riferimento (15.1) né oltre il 5 % sotto la '
+      + 'velocità iniziale del libretto o documentata con verbale (15.16): i punti da 15.2 a 15.17 non si applicano; se sia comunque un cambio '
+      + 'della velocità ai sensi del DPR 162/1999 (art. 2 c.1 lett. cc) n. 1)) lo valuta il tecnico'),
+    speedWithin50: DA_VERIFICARE('UNI 10411-1:2024, 15.1 e 15.16', 'velocità non oltre il 5 % sopra il riferimento, la velocità dopo il passaggio '
+      + 'della rete a 50 Hz (15.1): i punti da 15.2 a 15.15 non si applicano; la riduzione dalla velocità iniziale (15.16) non si misura senza la '
+      + 'velocità del libretto — indicata come non variata, i punti 15.2 e 15.17 valgono se il tecnico accerta sul libretto una riduzione di oltre '
+      + 'il 5 %; se sia comunque un cambio della velocità ai sensi del DPR 162/1999 (art. 2 c.1 lett. cc) n. 1)) lo valuta il tecnico'),
     loadP1: lt('UNI 10411-1:2024, 6.1, 6.3–6.12 e 6.15', 'T* o portata oltre il prospetto 1: strutture dell’edificio secondo il punto 5 '
       + '(6.3), ammortizzatori secondo la UNI EN 81-20 5.8 (6.4), guide e ancoraggi (6.5), paracadute di cabina per i nuovi carichi (6.6), funi '
       + 'e attacchi (6.8), arcata (6.9), macchina (6.10) e altri componenti interessati (6.15); non calcolati dal software: controllo del carico '

@@ -179,5 +179,18 @@ test('round 47 (D1): la bozza e il calcolo riaperto non salvano la risposta dai 
   calcs = [aperta];
   const a = await must(calcStart(user, 'p1', aperta.id));
   assert.ok(a.intervento.risposte.includes('load') && !a.intervento.risposte.includes('speed'), a.intervento.risposte.join());
+  // round 47 recheck: the documents' «Sì» too — the travel the rule locks (H 20 against the logbook's 18) is stored among
+  // the parts, taken out as the rule's (sceltaSalvata) and left out of the answers: with the logbook's travel cleared it
+  // is asked again, never a «No» nobody gave
+  const lunga = calc({ inputs: { ...values, H: 20 }, intervento: 'AMMODERNAMENTO', collaudo: { norma: '10411-1', parti: ['machine', 'travel'], ...docs } });
+  calcs = [lunga];
+  const l = await must(calcStart(user, 'p1', lunga.id));
+  const lc = l.intervento.collaudo as Parameters<typeof effettiva>[1];
+  assert.ok(!l.intervento.risposte.includes('travel') && !lc?.parti.includes('travel'), l.intervento.risposte.join());
+  const ol = open(l);
+  assert.ok(ol.value.parti.includes('travel') && !ol.left.includes('travel'), 'locked «Sì» while the logbook gives 18 m');
+  const lsenzaH = lc ? { ...lc, libretto: { v: 1 } } : lc;
+  const lleft = daIndicare('AMMODERNAMENTO', lsenzaH, collaudoOf(l.values, effettiva('AMMODERNAMENTO', lsenzaH, l.values)), l.values, l.intervento.risposte as Parameters<typeof daIndicare>[4]);
+  assert.ok(lleft.includes('travel'), lleft.join());
   calcs = [];
 });

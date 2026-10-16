@@ -131,7 +131,8 @@ export async function soloQuadro({ page, hydrated, soloUrl }) {
  *  10411-1, in an installation of its own). Without documents the speed, the load and the travel stay to answer, the
  *  list of what is missing naming what is needed; the logbook and the documented loads equal to the design's answer
  *  them «No» («dai documenti»), the answer stays the user's («Sì» against the documents says so); saved with the three
- *  «No», opened again with the same marks; the travel beyond the logbook's locks «Sì». */
+ *  «No», opened again with the same marks; the travel beyond the logbook's locks «Sì»; a record saved with it locked and
+ *  opened again asks it again once the logbook's travel is cleared (round 47 recheck). */
 export async function documentiNo({ BASE, page, hydrated, stamp }) {
   step('Ammodernamento with «Rifacimento» (round 47, D1): the logbook and the documented loads within the limits answer speed, load and travel «No»; beyond them «Sì»; reopened, the «No» stays the documents\'');
   await page.goto(`${BASE}/it/app/projects/new`);
@@ -194,4 +195,19 @@ export async function documentiNo({ BASE, page, hydrated, stamp }) {
   await page.waitForSelector('.parti-sino li.da[data-part="travel"]');
   assert.equal(await page.isChecked('.parti-sino li[data-part="travel"] input[value="no"]'), false, 'the travel: not a «No» nobody gave');
   assert.match(await page.textContent('.missing-list'), /Corsa variata: «Sì» o «No», oppure la corsa del primo collaudo/);
+  // and their «Sì» (round 47 recheck): saved with the travel locked by the logbook, opened again, the logbook's travel
+  // cleared — to answer again, never the «No» of a part the rule had answered
+  await page.fill('.collaudo [data-lib="H"]', '18');
+  await page.fill('#H', '19');
+  await page.waitForSelector('.parti-sino li[data-part="travel"] .parte-regola.si');
+  await page.waitForSelector('.savebar button.primary:not([disabled])');
+  await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
+  await Promise.all([page.waitForURL(/\/calc\?from=/), page.click('.page-head a[href*="/calc?from="]')]);
+  await hydrated(page, '#Q');
+  await page.waitForSelector('.parti-sino li[data-part="travel"] .parte-regola.si');
+  await page.fill('.collaudo [data-lib="H"]', '');
+  await page.waitForSelector('.parti-sino li.da[data-part="travel"]');
+  assert.equal(await page.isChecked('.parti-sino li[data-part="travel"] input[value="no"]'), false, 'the travel the rule had locked: not a «No» nobody gave');
+  assert.match(await page.textContent('.missing-list'), /Corsa variata: «Sì» o «No», oppure la corsa del primo collaudo/);
+  assert.ok(await page.locator('.savebar button.primary').isDisabled(), 'not saved while the travel is to answer');
 }

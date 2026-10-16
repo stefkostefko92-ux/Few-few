@@ -93,15 +93,17 @@ export const rispondi = (chosen: Collaudo, p: Parte, si: boolean): Collaudo =>
 
 /** The answers a form starts with. A calculation saved with its type declared had every part answered; one saved
  *  before (or a draft without the answers) only its «Sì» parts — its «No» were the old checkboxes' default and are asked
- *  again. Round 47 review (D1): a declared record's «No» to a change the documents show none of, read against its
- *  values `V`, is the documents' answer, not the user's — left out of the answers, it stays derived and is asked again
- *  once the documents stop deciding it (values or documents changed); without `V`, every part as before. */
+ *  again. Round 47 review (D1): a declared record's change of speed, load or travel the documents decide, read against
+ *  its values `V`, is the documents' answer, not the user's — their «No», and (round 47 recheck) their «Sì», which the
+ *  record stores among its parts and sceltaSalvata takes out of `chosen` as the rule's. Left out of the answers, it
+ *  stays derived — locked while they say «Sì», «No · dai documenti» while they say «No» — and is asked again once they
+ *  stop deciding it (values or documents changed): never a «No» nobody gave. Without `V`, every part as before. */
 export function risposteIniziali(t: TipoIntervento | null, chosen: Collaudo | undefined, dichiarato: boolean, V?: FormValues): Parte[] {
   const shown = partiDi(t);
   if (!dichiarato) return shown.filter((p) => chosen?.parti.includes(p));
   if (!V || !chosen) return [...shown];
   const C = collaudoOf(V, chosen);
-  return shown.filter((p) => !VARIAZIONI.includes(p) || chosen.parti.includes(p) || !dalDocumento(t, C, V, p));
+  return shown.filter((p) => !VARIAZIONI.includes(p) || chosen.parti.includes(p) || !['no', 'si'].includes(esitoParte(t, C, V, p) ?? ''));
 }
 
 /** The answers kept when the type changes: those of the parts both types show (a «Solo argano»'s ropes answered stay

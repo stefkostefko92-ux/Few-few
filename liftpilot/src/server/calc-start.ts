@@ -4,8 +4,9 @@ import 'server-only';
 // latest calculation of any provenance (a whole project before round 45: its lift design's), else empty
 // (src/lib/calc-blank.ts). With the values come the type of intervention, the test as chosen and the parts answered:
 // the type declared with the record, else read by its shape (interventoDi); a calculation saved with its type had every
-// part answered, one before only its «Sì» — but a «No» the documents give to a change of speed, load or travel stays
-// theirs, derived again on every render (round 47 review, risposteIniziali). Started from a lift design's calculation, the values are those it derived
+// part answered, one before only its «Sì» — but the «No» or the «Sì» the documents give to a change of speed, load or
+// travel stays theirs, derived again on every render (round 47 review and recheck, risposteIniziali). Started from a
+// lift design's calculation, the values are those it derived
 // but the extra bends as entered on the design (the derived ones count the head pulleys of a machine below, which the
 // drawing adds again: never copied), the test the design's, and the travel, the rope beyond it, the diverting pulley and
 // the head pulleys' height are marked «dal progetto». The calculation's context is the type's. A ?from= that is not a
@@ -46,7 +47,7 @@ function withType(values: FormValues, tipo: TipoIntervento | null, chosen: Colla
   if (!tipo) return { values, intervento: { tipo, collaudo: chosen, risposte: [] } };
   const collaudo = chosen ?? interventoTo(tipo).collaudo;
   const V = { ...values, context: contestoDi(tipo), ...(tipo === 'TRASFORMAZIONE_COMPLETA' ? { compare: false, keepD: false } : {}) };
-  // a declared record's «No» the documents give stays theirs (derived), read on the values the form opens with
+  // a declared record's «No» or «Sì» the documents give stays theirs (derived), read on the values the form opens with
   return { values: V, intervento: { tipo, collaudo, risposte: risposte ?? risposteIniziali(tipo, collaudo, dichiarato, dichiarato ? fromRecord(V) : undefined) } };
 }
 

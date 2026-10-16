@@ -30,7 +30,8 @@ src/lib/lift/        Единният формуляр: LiftInputs {shaft, calc,
                      източника, алтернативата с отклоняваща ролка), collaudo (нормата на
                      изпитването и сменените части: ambitoOf, collaudoVerdict; кръг 46 — таблицата AMBITO_VERIFICHE в
                      ambito (с AMBITO_10411_1 — частите, които внасят проверка само по -1), задълженията на частите
-                     OBBLIGHI_PARTI/obblighiParti в obblighi (по случай за скорост, товар и ход — obblighi-variazioni;
+                     OBBLIGHI_PARTI/obblighiParti в obblighi (по случай за скорост, товар и ход — obblighi-variazioni,
+                     кръг 47 — speedWithin в двете граници, speedWithin50 само със скоростта след 50 Hz;
                      S5 — допълнителните части и регулирането на таблото, което остава — obblighi-facoltative;
                      S6 — kept: машината, която остава, върху съществуващата си основа — macchinaEsistente, keptInputs),
                      punti — PuntoInSito и помощниците; collaudo и norme-collaudo ги реекспортират; AUTO_PARTI — товарът,
@@ -44,7 +45,8 @@ src/lib/lift/        Единният формуляр: LiftInputs {shaft, calc,
                      PARTI_FACOLTATIVE, regolazioneChiesta/senzaRegolazione — 'inverter', 'porte'), risposte
                      (частите „Sì/No“ на „Calcolo argano“; S5 — effettiva, chiediRegolazione, facoltativeDi, заключването
                      'inverter'; кръг 47 — esitoParte/dalDocumento: «No» от документите, изведено, никога записано;
-                     след прегледа — и в записа, отворен наново: risposteIniziali(…, V)),
+                     след прегледа — и в записа, отворен наново: risposteIniziali(…, V); повторната проверка — и
+                     «Sì» на документите),
                      progetto (кръг 45: ProgettoInputs — само геометрията;
                      liftInputsOf/progettoOf/composto — чертежът върху „Calcolo argano“), porta (кръг 45: „Porta nel
                      calcolo“ — chiaviDelDisegno/chiaviNascoste/portaNelCalcolo, cabinaMassima), drops (директно окачване:
@@ -220,7 +222,7 @@ src/lib/report/      build.ts — моделът на relazione (италиан�
                      случаят по DPR 162/1999 чл. 2 ал. 1 б. cc) на всяка част, PUNTI_MACCHINA_NUOVA и restaPunto (9.1–9.2
                      при машина, която остава). cases.ts (кръг 46 S7) — d1Blocks (двата случая на D.1 след сцеплението) и d1Frase
                      (изречението в «Variazione dei carichi»); кръг 47 (D2) — d1Sito (точката за изпитването на спирачката
-                     с a_lim и C1 на присъдата в «Adempimenti», при UNI 10411-1 на adempimentiBlocks).
+                     с a_lim, C1 на присъдата и изхода ѝ с думи в «Adempimenti», при UNI 10411-1 на adempimentiBlocks).
                      Кръг 36: build-parts (части на build.ts), guide („Guide e carichi sulle strutture“ — водачите и товарите от
                      sheet-loads), refs (клаузите в колоната „Riferimento“), elaborati (издадените комплекти в relazione),
                      tecnica-site (отворите, товарите и закрепването в relazione tecnica).
