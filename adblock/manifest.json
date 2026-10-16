@@ -1675,6 +1675,11 @@
         "path": "rules/privacy.json"
       },
       {
+        "id": "gpc",
+        "enabled": true,
+        "path": "rules/gpc.json"
+      },
+      {
         "id": "list_ubo",
         "enabled": false,
         "path": "rules/list_ubo.json"
