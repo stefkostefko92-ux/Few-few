@@ -47,7 +47,7 @@ popup/ · options/       UI (popup + настройки; карти „Филт�
                         Liquid Glass: стъклото е само CSS (backdrop-filter + маскиран ръб ::after + --mx/--my
                         от popup.js), сиянието е body::before; prefers-reduced-transparency → плътни панели.
                         НЕ ползвай localStorage в popup-а (първият достъп ~40 ms) и не връщай three.js в пакета.
-                        **↶ N** (5.5.0, отмяна на picker-а) е бутон до „Скрий елемент“, не отделен ред: пълното
+                        **↶ N** (5.2.0, отмяна на picker-а) е бутон до „Скрий елемент“, не отделен ред: пълното
                         изречение е aria-label/title; ако редът прелее, `.actions.squeeze` оставя на Settings само
                         зъбното колело (fitPopup()). Отделен ред за нещо ново = над 600 px на 9 езика (измерено).
                         **Таван 600 px** (Chrome): fitPopup() стяга отстоянията (`html.tight`) само ако съдържанието
@@ -155,7 +155,7 @@ bash tools/package.sh                         # билд + самопровер�
   (Option+Shift пише знаци на Mac). Никога буква, която Chrome пази и тихо отказва като suggested key
   (B — лентата с отметки, C, P, W, X, Z; измерено в Chromium), нито менютата на Google Docs/Sheets/Slides
   (F E V I O T H A N D X S R). Днес U (сайтът) и Q (пауза); picker-ът е без клавиш. Гейт в
-  `tests/control55.test.mjs`, реалното присвояване — в `tests/browser/control55.browser.mjs`.
+  `tests/control52.test.mjs`, реалното присвояване — в `tests/browser/control52.browser.mjs`.
 - Smart Detection крие само cross-origin iframe с точен IAB рекламен размер —
   консервативно, за да няма false positives.
 - **cookies.js кликва само CMP-специфични бутони глобално**; всичко генерично (текст,

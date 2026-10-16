@@ -39,7 +39,7 @@ try {
   const site = await ctx.newPage(); await site.goto(`http://127.0.0.1:${srv.address().port}/news`);
   // popup+review: the review card is up (≥ 7 days, ≥ 1000 blocked) — the bottom sheet and what it makes inert
   const due = () => sw.evaluate(() => chrome.storage.local.set({ installedAt: Date.now() - 8 * 86400000, blockedTotal: 54321, review: {}, reviewAsk: true }));
-  // popup+undo: the picker hid something on this site — ↶ N next to the picker (5.5.0)
+  // popup+undo: the picker hid something on this site — ↶ N next to the picker (5.2.0)
   const undo = () => sw.evaluate(() => chrome.storage.local.set({ customHidden: { "127.0.0.1": [".x", ".y"] } }));
   const pages = [["popup", "popup/popup.html", 320, 600], ["popup+review", "popup/popup.html", 320, 600, due, "review"], ["popup+undo", "popup/popup.html", 320, 600, undo, "undoBtn"], ["settings", "options/options.html", 1280, 900], ["welcome", "welcome/welcome.html", 1280, 900], ["report", "report/report.html", 900, 900]];
   for (const theme of ["carbon", "light"]) {
