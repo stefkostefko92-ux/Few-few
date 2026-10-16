@@ -35,13 +35,18 @@ stays on your device.
   in "My filters" and in the live filter update.
 - **Tracking-parameter removal**, strips `utm_*`, `fbclid`, `gclid` and other
   click identifiers from the links you open (toggleable).
-- **Malware protection**, optionally blocks known malware domains (URLhaus by
-  abuse.ch).
+- **Malware protection** (on by default), a known malware site (URLhaus by
+  abuse.ch) opens a warning page instead (`blocked/blocked.html`: “Go back” or
+  “Continue anyway”, checked in the service worker), and what pages load from
+  such sites is blocked.
 - **Cookie / consent banners**, auto-dismisses them, preferring "Reject".
 - **Anti-adblock bypass**, removes "disable your adblocker" walls and restores
   page scrolling.
 - **Element picker**, click any element to hide it permanently on that site;
   the popup's ↶ N takes the last one back at once, no reload.
+- **Connections on this page**, the popup lists the other sites a page loaded
+  something from (Resource Timing, read when you open the box) and blocks one on
+  that site only (a dynamic rule with `initiatorDomains`, priority 5000).
 - **Import from another ad blocker**, the allowed sites and own filters of a
   uBlock Origin, AdGuard or Adblock Plus backup (`lib/foreign.js`, checked
   again in the service worker; a rule it cannot apply is left out, never

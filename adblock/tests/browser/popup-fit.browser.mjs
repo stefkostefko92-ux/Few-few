@@ -44,7 +44,7 @@ try {
       document.getElementById("listDot").textContent = msg("filtersCount", "60,936");
       document.getElementById("siteHost").textContent = "news.example.com";
       document.getElementById("reportBtn").hidden = false;
-      // 5.2.0: what the picker hid here (Undo) and a site allowed for a while (the longer label)
+      // 5.5.0: what the picker hid here (Undo) and a site allowed for a while (the longer label)
       document.getElementById("undoCount").textContent = "12"; document.getElementById("undoBtn").hidden = false;
       document.getElementById("allowLabel").textContent = msg("allowedFor", "59");
       document.getElementById("rate").hidden = false;

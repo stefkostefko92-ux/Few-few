@@ -232,7 +232,7 @@
     "message": "Hapus utm_*, fbclid, gclid, dan pengenal klik lainnya dari link yang Anda buka"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokir domain malware yang dikenal (daftar URLhaus dari abuse.ch)"
+    "message": "Peringatkan sebelum situs malware yang dikenal terbuka, dan blokir apa yang dimuat halaman dari situs tersebut (daftar URLhaus dari abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Nonaktifkan API iklan Google Topics, FLoC, dan Protected Audience di setiap situs"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Opsional: semuanya sudah berfungsi. Semua ini dapat diubah nanti di Setelan."
+  },
+  "blk_page_title": {
+    "message": "Situs diblokir — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Situs ini dapat membahayakan perangkat Anda"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock menghentikan halaman ini karena situsnya ada di URLhaus, daftar publik alamat yang menyebarkan malware."
+  },
+  "blk_back": {
+    "message": "Kembali"
+  },
+  "blk_continue": {
+    "message": "Tetap lanjutkan"
+  },
+  "blk_note": {
+    "message": "Jika dilanjutkan, hanya halaman situs ini yang diizinkan, sampai Anda menutup browser."
+  },
+  "blk_why": {
+    "message": "Mengapa situs ini terdaftar? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Koneksi di halaman ini"
+  },
+  "conn_empty": {
+    "message": "Halaman ini tidak memuat apa pun dari situs lain."
+  },
+  "conn_block": {
+    "message": "Blokir di sini"
+  },
+  "conn_blocked": {
+    "message": "Diblokir di sini"
+  },
+  "conn_hint": {
+    "message": "Blokir apa yang dimuat situs ini dari $1"
+  },
+  "opt_conn_title": {
+    "message": "Koneksi yang Anda blokir"
+  },
+  "opt_conn_sub": {
+    "message": "Diblokir dari “Koneksi di halaman ini” di popup, masing-masing hanya di situsnya sendiri."
+  },
+  "opt_empty_conn": {
+    "message": "Belum ada yang diblokir."
+  },
+  "opt_conn_remove": {
+    "message": "Buka blokir $1 di $2"
+  },
+  "opt_h_danger": {
+    "message": "Halaman peringatan malware"
+  },
+  "opt_h_capacity": {
+    "message": "Kapasitas aturan"
   }
 }

@@ -232,7 +232,7 @@
     "message": "Retire utm_*, fbclid, gclid et autres identifiants de clic des liens que vous ouvrez"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Bloque les domaines malveillants connus (liste URLhaus d’abuse.ch)"
+    "message": "Avertit avant l’ouverture d’un site malveillant connu et bloque ce que les pages chargent depuis ces sites (liste URLhaus d’abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Désactive les API publicitaires Google Topics, FLoC et Protected Audience sur tous les sites"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Facultatif : tout fonctionne déjà. Vous pourrez modifier ces options plus tard dans les Paramètres."
+  },
+  "blk_page_title": {
+    "message": "Site bloqué — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Ce site peut nuire à votre appareil"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock a bloqué cette page, car le site figure sur URLhaus, une liste publique d’adresses qui propagent des logiciels malveillants."
+  },
+  "blk_back": {
+    "message": "Revenir en arrière"
+  },
+  "blk_continue": {
+    "message": "Continuer quand même"
+  },
+  "blk_note": {
+    "message": "Si vous continuez, seules les pages de ce site seront autorisées, jusqu’à la fermeture du navigateur."
+  },
+  "blk_why": {
+    "message": "Pourquoi figure-t-il sur la liste ? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Connexions de cette page"
+  },
+  "conn_empty": {
+    "message": "Cette page n’a rien chargé depuis d’autres sites."
+  },
+  "conn_block": {
+    "message": "Bloquer ici"
+  },
+  "conn_blocked": {
+    "message": "Bloqué ici"
+  },
+  "conn_hint": {
+    "message": "Bloquer ce que ce site charge depuis $1"
+  },
+  "opt_conn_title": {
+    "message": "Connexions que vous avez bloquées"
+  },
+  "opt_conn_sub": {
+    "message": "Bloquées depuis « Connexions de cette page » dans la fenêtre de Supreme AdBlock, chacune uniquement sur son propre site."
+  },
+  "opt_empty_conn": {
+    "message": "Rien n’a encore été bloqué."
+  },
+  "opt_conn_remove": {
+    "message": "Débloquer $1 sur $2"
+  },
+  "opt_h_danger": {
+    "message": "Page d’alerte anti-malware"
+  },
+  "opt_h_capacity": {
+    "message": "Capacité des règles"
   }
 }

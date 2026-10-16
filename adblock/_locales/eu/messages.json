@@ -232,7 +232,7 @@
     "message": "Kendu utm_*, fbclid, gclid eta beste klik-identifikatzaile batzuk irekitzen dituzun esteketatik"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokeatu malware-domeinu ezagunak (abuse.ch-ren URLhaus zerrenda)"
+    "message": "Abisatu malware-webgune ezagun bat ireki aurretik, eta blokeatu orriek horrelako webguneetatik kargatzen dutena (abuse.ch-ren URLhaus zerrenda)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Desgaitu Google Topics, FLoC eta Protected Audience iragarki-APIak webgune guztietan"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Aukerakoa: dagoeneko badabil. Hauetako edozein geroago alda dezakezu Ezarpenetan."
+  },
+  "blk_page_title": {
+    "message": "Webgunea blokeatuta — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Webgune honek zure gailua kalte dezake"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock-ek orri hau geldiarazi du webgunea URLhaus-en zerrendatuta dagoelako; malwarea zabaltzen duten helbideen zerrenda publiko bat da URLhaus."
+  },
+  "blk_back": {
+    "message": "Itzuli"
+  },
+  "blk_continue": {
+    "message": "Jarraitu hala ere"
+  },
+  "blk_note": {
+    "message": "Jarraitzen baduzu, webgune honen orriei soilik utziko zaie pasatzen, nabigatzailea itxi arte."
+  },
+  "blk_why": {
+    "message": "Zergatik dago zerrendan? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Orri honetako konexioak"
+  },
+  "conn_empty": {
+    "message": "Orri honek ez du ezer kargatu beste webguneetatik."
+  },
+  "conn_block": {
+    "message": "Blokeatu hemen"
+  },
+  "conn_blocked": {
+    "message": "Hemen blokeatuta"
+  },
+  "conn_hint": {
+    "message": "Blokeatu webgune honek $1 helbidetik kargatzen duena"
+  },
+  "opt_conn_title": {
+    "message": "Blokeatu dituzun konexioak"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock leihoko «Orri honetako konexioak» ataletik blokeatuak, bakoitza bere webgunean soilik."
+  },
+  "opt_empty_conn": {
+    "message": "Oraindik ez da ezer blokeatu."
+  },
+  "opt_conn_remove": {
+    "message": "Desblokeatu $1 $2 webgunean"
+  },
+  "opt_h_danger": {
+    "message": "Malware-abisuaren orria"
+  },
+  "opt_h_capacity": {
+    "message": "Arauen edukiera"
   }
 }

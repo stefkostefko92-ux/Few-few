@@ -25,6 +25,11 @@ async function getRuleCounts() {
 // Dynamic-rule id ranges, kept clear of the static rulesets.
 const YT_BYPASS_RULE_ID = 70000; // YouTube session bypass (allowAllRequests); below every sync range
 const PAUSE_RULE_ID = 69999;      // off / paused: one allowAllRequests rule above everything (dynamic rules too)
+const DANGER_RULE_BASE = 69000;   // malware sites: the navigation goes to the warning page (≤ 50 rules)
+const DANGER_RULE_END = 69050;
+const SITE_BLOCK_BASE = 60000;    // "Connections on this page" → blocked on that site (one rule per site)
+const SITE_BLOCK_END = 62000;     // ≤ 2000 sites
+const SITE_BLOCK_HOSTS = 100;     // blocked hosts per site
 const USER_BLOCK_BASE = 80000;   // user "my filters" block rules
 const ALLOW_RULE_BASE = 90000;   // allowlist (allowAllRequests)
 const ALLOW_RULE_MAX = 5000;     // cap: allowlist ids must stay below LIVE_RULE_BASE (same cap as import)
@@ -135,7 +140,7 @@ const DEFAULTS = {
   smartBlocked: 0,
   smartLog: [],
   allowlist: [],
-  features: { cookies: true, antiAdblock: true, meta: true, youtube: true, smart: true, removeparam: true, malware: false, topics: true, privacy: true, gpc: true },
+  features: { cookies: true, antiAdblock: true, meta: true, youtube: true, smart: true, removeparam: true, malware: true, topics: true, privacy: true, gpc: true },
   customHidden: {},
   userFilters: "",
   theme: "carbon",
@@ -150,6 +155,7 @@ const DEFAULTS = {
   cookieRejections: 0, // how many times cookies.js pressed a banner's Reject — a count, no sites
   reviewAsk: true,     // Chrome Web Store review: the ★ link + the rare card in the popup (Settings → off)
   daily: {},           // { "YYYY-MM-DD": { b: blocked, c: cookie banners rejected } } — last 30 days, numbers only
+  siteBlocks: {},      // { site: [host, …] } — "Block here" in the popup's Connections on this page
 };
 
 // ---- Daily totals (the Settings chart): device-local days, numbers only, never sites ----
@@ -173,7 +179,7 @@ function bumpDaily(daily, field, n, t = Date.now()) {
 // NOT `enabled`: on/off and a timed pause are per device — the pause's resume
 // alarm lives on the device that paused, so a synced `enabled:false` left the
 // OTHER device switched off with nothing to turn it back on.
-const SYNC_KEYS = ["features", "theme", "allowlist", "userFilters", "subscriptions", "noCosmetics", "lists", "reviewAsk"];
+const SYNC_KEYS = ["features", "theme", "allowlist", "userFilters", "subscriptions", "noCosmetics", "lists", "reviewAsk", "siteBlocks"];
 
 // ---- Отзив в Chrome Web Store ----
 // Молбата е тиха и рядка: само в popup-а, който потребителят сам е отворил — никога по сайтовете,
@@ -243,6 +249,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   await applyState();
   await syncAllowRules();
   await syncUserRules();
+  await syncSiteBlocks();
   createMenus();
   ensureAlarms();
   await reconcileYtBypass(); // update clears alarms; re-arm/clear an in-flight bypass
@@ -347,6 +354,7 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
       await applyState();
       await syncAllowRules();
       await syncUserRules();
+      await syncSiteBlocks();
     }
   }
 });
@@ -507,6 +515,7 @@ async function applyState() {
     } catch (e2) { console.warn("core ruleset toggle failed", e2); }
   }
   await setPauseRule(!on);
+  await syncDangerRedirect(on && f.malware === true);
   syncRemoteLists(on).catch(() => {});
   await syncScriptlets(on);
   chrome.action.setBadgeBackgroundColor({ color: on ? "#00838f" : "#5a5a5a" });
@@ -653,6 +662,81 @@ async function setPauseRule(paused) {
     });
   } catch (e) {
     console.warn("pause rule update failed", e);
+  }
+}
+
+// ---- "Connections on this page": a host blocked on one site only ----
+// siteBlocks = { site: [host…] } → one rule per site: block those hosts when that site
+// (or its subdomains) loads them. Priority 5000: above the lists' own exceptions (≤ 5), below
+// an allowed site (10000), the YouTube bypass and a pause — an allowed site loads everything.
+const cleanSiteBlocks = (v) => {
+  const out = {};
+  if (!v || typeof v !== "object" || Array.isArray(v)) return out;
+  for (const site of Object.keys(v).slice(0, SITE_BLOCK_END - SITE_BLOCK_BASE)) {
+    const s = String(site).trim().toLowerCase();
+    if (!isHost(s) || !Array.isArray(v[site])) continue;
+    const hosts = [...new Set(v[site].map((h) => (typeof h === "string" ? h.trim().toLowerCase() : "")).filter((h) => isHost(h) && h !== s && !SA_POLICY.protectedHost(h)))].slice(0, SITE_BLOCK_HOSTS);
+    if (hosts.length) out[s] = hosts;
+  }
+  return out;
+};
+async function syncSiteBlocks() {
+  try {
+    const { siteBlocks = {} } = await chrome.storage.local.get("siteBlocks");
+    const existing = (await chrome.declarativeNetRequest.getDynamicRules())
+      .filter((r) => r.id >= SITE_BLOCK_BASE && r.id < SITE_BLOCK_END).map((r) => r.id);
+    const addRules = Object.entries(cleanSiteBlocks(siteBlocks)).map(([site, hosts], i) => ({
+      id: SITE_BLOCK_BASE + i,
+      priority: 5000,
+      action: { type: "block" },
+      condition: { requestDomains: hosts, initiatorDomains: [site], resourceTypes: BLOCK_TYPES.concat("websocket", "other") },
+    }));
+    await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds: existing, addRules });
+  } catch (e) {
+    console.warn("site blocks update failed", e);
+  }
+}
+
+// ---- Dangerous sites: a warning page instead of opening them ----
+// The urlhaus ruleset blocks what a page LOADS from a malware host, but a rule without
+// resourceTypes never matches main_frame — opening such a site was not stopped at all.
+// These dynamic rules send that navigation to blocked/blocked.html#<the address>, which
+// says why and offers "Go back" or "Continue anyway". Priority 2: above the static blocks,
+// below an allowed site (10000), the YouTube bypass and a pause — those are never interrupted.
+let dangerDomainsCache = null;
+async function dangerDomains() {
+  if (dangerDomainsCache) return dangerDomainsCache;
+  try {
+    const rules = await (await fetch(chrome.runtime.getURL("rules/urlhaus.json"))).json();
+    const set = new Set();
+    for (const r of Array.isArray(rules) ? rules : []) for (const d of (r.condition && r.condition.requestDomains) || []) if (isHost(d)) set.add(d);
+    dangerDomainsCache = [...set];
+  } catch {
+    return []; // not cached: the next applyState tries again
+  }
+  return dangerDomainsCache;
+}
+const isDangerHost = (host, list) => list.some((d) => host === d || host.endsWith("." + d));
+async function syncDangerRedirect(on) {
+  try {
+    const existing = (await chrome.declarativeNetRequest.getDynamicRules())
+      .filter((r) => r.id >= DANGER_RULE_BASE && r.id < DANGER_RULE_END).map((r) => r.id);
+    const addRules = [];
+    if (on) {
+      const domains = await dangerDomains();
+      const page = chrome.runtime.getURL("blocked/blocked.html");
+      for (let i = 0; i < domains.length && DANGER_RULE_BASE + addRules.length < DANGER_RULE_END; i += DOMAINS_PER_RULE) {
+        addRules.push({
+          id: DANGER_RULE_BASE + addRules.length,
+          priority: 2,
+          action: { type: "redirect", redirect: { regexSubstitution: page + "#\\0" } },
+          condition: { regexFilter: "^https?://.*", requestDomains: domains.slice(i, i + DOMAINS_PER_RULE), resourceTypes: ["main_frame"] },
+        });
+      }
+    }
+    await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds: existing, addRules });
+  } catch (e) {
+    console.warn("danger redirect update failed", e);
   }
 }
 
@@ -1352,12 +1436,13 @@ function logListKey(rule) {
   const rs = rule.rulesetId, id = rule.ruleId;
   if (rs === "_dynamic") {
     if (id === YT_BYPASS_RULE_ID || id === PAUSE_RULE_ID || (id >= ALLOW_RULE_BASE && id < LIVE_RULE_BASE)) return null;
+    if (id >= DANGER_RULE_BASE && id < DANGER_RULE_END) return "malware";
     if (id >= REMOTE_RULE_BASE) return "lists";
     if (id >= LIVE_RULE_BASE) return "live";
     if (id >= USER_BLOCK_BASE) return "user";
     return "user";
   }
-  if (rs === "_session") return "user";
+  if (rs === "_session") return null; // only "Continue anyway" (an allow rule) lives there
   if (rs === "list_ubo") return "ubo";
   if (rs === "list_plowe") return "plowe";
   if (rs.startsWith("list_reg-")) return "regional";
@@ -1492,12 +1577,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       // Diagnostics for the options page: is the engine registered, which
       // rulesets are on, how many dynamic rules per range, live-config state.
       (async () => {
-        const out = { engineRegistered: false, enabledRulesets: [], dynamic: { user: 0, allow: 0, live: 0, ytBypass: false }, liveVersion: 0, liveUpdated: 0, liveError: "", scriptletsError: "", ed25519: false, keys: SIG_PUBKEYS_B64.length, popupHosts: 0 };
+        const out = { engineRegistered: false, enabledRulesets: [], dynamic: { user: 0, allow: 0, live: 0, ytBypass: false, danger: 0 }, liveVersion: 0, liveUpdated: 0, liveError: "", scriptletsError: "", ed25519: false, keys: SIG_PUBKEYS_B64.length, popupHosts: 0 };
         try { out.engineRegistered = (await chrome.scripting.getRegisteredContentScripts({ ids: [SCRIPTLET_SCRIPT_ID] })).length > 0; } catch {}
         try { out.enabledRulesets = await chrome.declarativeNetRequest.getEnabledRulesets(); } catch {}
         try {
           for (const r of await chrome.declarativeNetRequest.getDynamicRules()) {
             if (r.id === YT_BYPASS_RULE_ID) out.dynamic.ytBypass = true;
+            else if (r.id >= DANGER_RULE_BASE && r.id < DANGER_RULE_END) out.dynamic.danger += (r.condition.requestDomains || []).length;
             else if (r.id >= REMOTE_RULE_BASE) continue; // counted as dynamic.remote below
             else if (r.id >= LIVE_RULE_BASE) out.dynamic.live += (r.condition.requestDomains || []).length || 1;
             else if (r.id >= ALLOW_RULE_BASE) out.dynamic.allow++;
@@ -1513,6 +1599,17 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         } catch {}
         try { out.ed25519 = await canVerifyEd25519(); } catch {}
         try { out.popupHosts = (await getRuleCounts()).popupHosts || 0; } catch {}
+        // Chrome's rule budget: how much of it we use (a full budget makes rule updates fail)
+        try {
+          const dnr = chrome.declarativeNetRequest;
+          const dyn = await dnr.getDynamicRules();
+          out.capacity = {
+            dynamic: dyn.length, dynamicMax: dnr.MAX_NUMBER_OF_DYNAMIC_RULES || 30000,
+            regex: dyn.filter((r) => r.condition && r.condition.regexFilter).length, regexMax: dnr.MAX_NUMBER_OF_REGEX_RULES || 1000,
+            staticLeft: typeof dnr.getAvailableStaticRuleCount === "function" ? await dnr.getAvailableStaticRuleCount() : null,
+          };
+        } catch {}
+        try { out.malwareOn = ((await chrome.storage.local.get("features")).features || DEFAULTS.features).malware === true; } catch {}
         try {
           const { catalog, on } = await listState();
           out.lists = catalog.filter((e) => on.has(e.id)).map((e) => e.id);
@@ -1527,7 +1624,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "getStats":
       chrome.storage.local.get(
-        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil", "autoUpdate", "liveConfig", "liveUpdated", "noCosmetics", "cookieRejections", "reviewAsk", "review", "installedAt", "daily", "customHidden", "allowUntil"],
+        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil", "autoUpdate", "liveConfig", "liveUpdated", "noCosmetics", "cookieRejections", "reviewAsk", "review", "installedAt", "daily", "customHidden", "allowUntil", "siteBlocks"],
         async (data) => {
           let host = null;
           let allowed = false;
@@ -1569,6 +1666,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             daily: data.daily || {},
             hiddenHere: host && data.customHidden && Array.isArray(data.customHidden[host]) ? data.customHidden[host].length : 0,
             allowedUntil: host && data.allowUntil && data.allowUntil[host] > now ? data.allowUntil[host] : 0,
+            siteBlocked: host && data.siteBlocks && Array.isArray(data.siteBlocks[host]) ? data.siteBlocks[host] : [],
             smartBlocked: data.smartBlocked || 0,
             sync: !!data.sync,
             pausedUntil: data.pausedUntil || 0,
@@ -1624,6 +1722,52 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "setAllow":
       setAllowHost(msg.host, !!msg.allow, typeof msg.minutes === "number" ? msg.minutes : 0).then(sendResponse);
+      return true;
+
+    // Popup "Connections on this page" → "Block here" (and Settings → remove): one host on one site.
+    case "siteBlock":
+      chrome.storage.local.get("siteBlocks", async (data) => {
+        const site = claimedHost(msg.site).replace(/^www\./, "");
+        const host = claimedHost(msg.host);
+        if (!isHost(site) || !isHost(host) || host === site) return sendResponse({ ok: false, reason: "invalid host" });
+        if (msg.block && SA_POLICY.protectedHost(host)) return sendResponse({ ok: false, reason: "protected" });
+        const map = cleanSiteBlocks(data.siteBlocks);
+        const list = (map[site] || []).filter((h) => h !== host);
+        if (msg.block) {
+          if (list.length >= SITE_BLOCK_HOSTS) return sendResponse({ ok: false, reason: "full" });
+          if (!map[site] && Object.keys(map).length >= SITE_BLOCK_END - SITE_BLOCK_BASE) return sendResponse({ ok: false, reason: "full" });
+          list.push(host);
+        }
+        if (list.length) map[site] = list; else delete map[site];
+        await chrome.storage.local.set({ siteBlocks: map });
+        await syncSiteBlocks();
+        sendResponse({ ok: true, hosts: map[site] || [] });
+      });
+      return true;
+
+    // blocked/blocked.html → "Continue anyway": the page is an extension page that any site can
+    // navigate to, so the address is checked here — http(s) only, and only a host that really is
+    // on the list (nothing else can be let through this way). One session rule lets that host's
+    // pages open until the browser closes; what they load stays filtered.
+    case "proceedDangerous":
+      (async () => {
+        let u = null;
+        try { u = new URL(String(msg.url || "")); } catch {}
+        const host = u && /^https?:$/.test(u.protocol) ? u.hostname.toLowerCase() : "";
+        if (!isHost(host) || !isDangerHost(host, await dangerDomains())) return sendResponse({ ok: false });
+        try {
+          const rules = await chrome.declarativeNetRequest.getSessionRules();
+          if (!rules.some((r) => (r.condition.requestDomains || []).includes(host))) {
+            const id = rules.reduce((m, r) => Math.max(m, r.id), 0) + 1;
+            await chrome.declarativeNetRequest.updateSessionRules({
+              addRules: [{ id, priority: 3, action: { type: "allow" }, condition: { requestDomains: [host], resourceTypes: ["main_frame"] } }],
+            });
+          }
+          sendResponse({ ok: true, url: u.href });
+        } catch (e) {
+          sendResponse({ ok: false });
+        }
+      })();
       return true;
 
     // The popup's "Hidden here: N · Undo": the last element the picker hid on this site
@@ -1779,6 +1923,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             }
             clean[k] = m;
           }
+        } else if (k === "siteBlocks") {
+          clean[k] = cleanSiteBlocks(v); // { site: [host…] }: valid hosts, caps, never a protected host
         } else if (typeof v === typeof DEFAULTS[k]) {
           clean[k] = v; // прости скаларни ключове само при съвпадащ тип
         }
@@ -1787,6 +1933,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         await applyState();
         await syncAllowRules();
         await syncUserRules();
+        await syncSiteBlocks();
         sendResponse({ ok: true });
       });
       return true;

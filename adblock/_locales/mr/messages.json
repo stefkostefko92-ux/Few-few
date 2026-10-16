@@ -232,7 +232,7 @@
     "message": "तुम्ही उघडता त्या लिंकमधून utm_*, fbclid, gclid आणि इतर क्लिक ओळखकर्ते काढून टाका"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "ज्ञात मालवेअर डोमेन ब्लॉक करा (abuse.ch ची URLhaus सूची)"
+    "message": "ज्ञात मालवेअर साइट उघडण्यापूर्वी चेतावणी द्या, आणि पेज अशा साइटवरून जे लोड करतात ते ब्लॉक करा (abuse.ch ची URLhaus सूची)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "प्रत्येक साइटवर Google Topics, FLoC आणि Protected Audience जाहिरात API बंद करा"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "ऐच्छिक: ते आधीच काम करत आहे. यापैकी काहीही नंतर सेटिंग्जमध्ये बदलता येते."
+  },
+  "blk_page_title": {
+    "message": "साइट ब्लॉक केली — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "ही साइट तुमच्या डिव्हाइसला हानी पोहोचवू शकते"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock ने हे पेज थांबवले, कारण ही साइट URLhaus वर आहे — मालवेअर पसरवणाऱ्या पत्त्यांची एक सार्वजनिक सूची."
+  },
+  "blk_back": {
+    "message": "मागे जा"
+  },
+  "blk_continue": {
+    "message": "तरीही पुढे जा"
+  },
+  "blk_note": {
+    "message": "पुढे गेल्यास, ब्राउझर बंद करेपर्यंत फक्त याच साइटची पेज उघडू दिली जातील."
+  },
+  "blk_why": {
+    "message": "ती सूचीत का आहे? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "या पेजवरील कनेक्शन"
+  },
+  "conn_empty": {
+    "message": "या पेजने इतर साइटवरून काहीही लोड केले नाही."
+  },
+  "conn_block": {
+    "message": "इथे ब्लॉक करा"
+  },
+  "conn_blocked": {
+    "message": "इथे ब्लॉक केले"
+  },
+  "conn_hint": {
+    "message": "ही साइट $1 वरून जे लोड करते ते ब्लॉक करा"
+  },
+  "opt_conn_title": {
+    "message": "तुम्ही ब्लॉक केलेली कनेक्शन"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock विंडोतील “या पेजवरील कनेक्शन” मधून ब्लॉक केलेली, प्रत्येक फक्त आपल्याच साइटवर."
+  },
+  "opt_empty_conn": {
+    "message": "अद्याप काहीही ब्लॉक केलेले नाही."
+  },
+  "opt_conn_remove": {
+    "message": "$2 वर $1 अनब्लॉक करा"
+  },
+  "opt_h_danger": {
+    "message": "मालवेअर चेतावणी पेज"
+  },
+  "opt_h_capacity": {
+    "message": "नियमांची क्षमता"
   }
 }

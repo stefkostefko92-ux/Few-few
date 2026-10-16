@@ -232,7 +232,7 @@
     "message": "ඔබ විවෘත කරන සබැඳිවලින් utm_*, fbclid, gclid සහ වෙනත් ක්ලික් හඳුනාගැනුම් ඉවත් කරන්න"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "දන්නා අනිෂ්ට වසම් අවහිර කරන්න (abuse.ch හි URLhaus ලැයිස්තුව)"
+    "message": "දන්නා අනිෂ්ට අඩවියක් විවෘත වීමට පෙර අනතුරු අඟවන්න, සහ පිටු එවැනි අඩවිවලින් පූරණය කරන දේ අවහිර කරන්න (abuse.ch හි URLhaus ලැයිස්තුව)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "සෑම අඩවියකම Google Topics, FLoC සහ Protected Audience දැන්වීම් API අක්‍රිය කරන්න"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "විකල්පයි: එය දැනටමත් ක්‍රියා කරයි. මේ ඕනෑම එකක් පසුව සැකසීම් තුළ වෙනස් කළ හැක."
+  },
+  "blk_page_title": {
+    "message": "අඩවිය අවහිර කර ඇත — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "මෙම අඩවිය ඔබේ උපාංගයට හානි කළ හැක"
+  },
+  "blk_text": {
+    "message": "අඩවිය URLhaus හි ඇති නිසා Supreme AdBlock මෙම පිටුව නැවැත්වීය. URLhaus යනු අනිෂ්ට මෘදුකාංග පතුරුවන ලිපිනවල පොදු ලැයිස්තුවකි."
+  },
+  "blk_back": {
+    "message": "ආපසු යන්න"
+  },
+  "blk_continue": {
+    "message": "කෙසේ වෙතත් ඉදිරියට යන්න"
+  },
+  "blk_note": {
+    "message": "ඉදිරියට ගියහොත්, ඔබ බ්‍රවුසරය වසන තෙක් මෙම අඩවියේ පිටු පමණක් විවෘත වීමට ඉඩ දෙනු ලැබේ."
+  },
+  "blk_why": {
+    "message": "එය ලැයිස්තුගත කර ඇත්තේ ඇයි? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "මෙම පිටුවේ සම්බන්ධතා"
+  },
+  "conn_empty": {
+    "message": "මෙම පිටුව වෙනත් අඩවිවලින් කිසිවක් පූරණය නොකළේය."
+  },
+  "conn_block": {
+    "message": "මෙහි අවහිර කරන්න"
+  },
+  "conn_blocked": {
+    "message": "මෙහි අවහිර කළ"
+  },
+  "conn_hint": {
+    "message": "මෙම අඩවිය $1 වෙතින් පූරණය කරන දේ අවහිර කරන්න"
+  },
+  "opt_conn_title": {
+    "message": "ඔබ අවහිර කළ සම්බන්ධතා"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock කවුළුවේ “මෙම පිටුවේ සම්බන්ධතා” වෙතින් අවහිර කළ ඒවා, සෑම එකක්ම තම අඩවියේ පමණි."
+  },
+  "opt_empty_conn": {
+    "message": "තවම කිසිවක් අවහිර කර නැත."
+  },
+  "opt_conn_remove": {
+    "message": "$2 හි $1 අවහිර කිරීම ඉවත් කරන්න"
+  },
+  "opt_h_danger": {
+    "message": "අනිෂ්ට මෘදුකාංග අවවාද පිටුව"
+  },
+  "opt_h_capacity": {
+    "message": "නීති ධාරිතාව"
   }
 }

@@ -232,7 +232,7 @@
     "message": "ลบ utm_*, fbclid, gclid และตัวระบุการคลิกอื่นๆ ออกจากลิงก์ที่คุณเปิด"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "บล็อกโดเมนมัลแวร์ที่รู้จัก (รายการ URLhaus โดย abuse.ch)"
+    "message": "เตือนก่อนเปิดเว็บไซต์มัลแวร์ที่รู้จัก และบล็อกสิ่งที่หน้าเว็บโหลดจากเว็บไซต์ดังกล่าว (รายการ URLhaus โดย abuse.ch)"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "ปิดใช้ API โฆษณา Google Topics, FLoC และ Protected Audience ในทุกเว็บไซต์"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "ไม่บังคับ: ส่วนขยายทำงานอยู่แล้ว คุณเปลี่ยนตัวเลือกเหล่านี้ได้ภายหลังในการตั้งค่า"
+  },
+  "blk_page_title": {
+    "message": "บล็อกเว็บไซต์แล้ว — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "เว็บไซต์นี้อาจเป็นอันตรายต่ออุปกรณ์ของคุณ"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock หยุดหน้านี้ไว้ เนื่องจากเว็บไซต์นี้อยู่ใน URLhaus ซึ่งเป็นรายการสาธารณะของที่อยู่ที่แพร่กระจายมัลแวร์"
+  },
+  "blk_back": {
+    "message": "ย้อนกลับ"
+  },
+  "blk_continue": {
+    "message": "ไปต่ออยู่ดี"
+  },
+  "blk_note": {
+    "message": "การไปต่อจะอนุญาตเฉพาะหน้าของเว็บไซต์นี้ จนกว่าคุณจะปิดเบราว์เซอร์"
+  },
+  "blk_why": {
+    "message": "ทำไมจึงอยู่ในรายการ (URLhaus)"
+  },
+  "conn_title": {
+    "message": "การเชื่อมต่อในหน้านี้"
+  },
+  "conn_empty": {
+    "message": "หน้านี้ไม่ได้โหลดสิ่งใดจากเว็บไซต์อื่น"
+  },
+  "conn_block": {
+    "message": "บล็อกที่นี่"
+  },
+  "conn_blocked": {
+    "message": "บล็อกที่นี่แล้ว"
+  },
+  "conn_hint": {
+    "message": "บล็อกสิ่งที่เว็บไซต์นี้โหลดจาก $1"
+  },
+  "opt_conn_title": {
+    "message": "การเชื่อมต่อที่คุณบล็อก"
+  },
+  "opt_conn_sub": {
+    "message": "บล็อกจาก “การเชื่อมต่อในหน้านี้” ในป๊อปอัป แต่ละรายการมีผลเฉพาะในเว็บไซต์ของตัวเอง"
+  },
+  "opt_empty_conn": {
+    "message": "ยังไม่มีสิ่งใดถูกบล็อก"
+  },
+  "opt_conn_remove": {
+    "message": "เลิกบล็อก $1 ใน $2"
+  },
+  "opt_h_danger": {
+    "message": "หน้าคำเตือนมัลแวร์"
+  },
+  "opt_h_capacity": {
+    "message": "ความจุของกฎ"
   }
 }

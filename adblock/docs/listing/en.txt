@@ -6,7 +6,9 @@ Supreme AdBlock blocks ads everywhere — YouTube video ads, banners, pop-ups an
 • Cookie banners: it presses Reject for you, clears the leftover blur and scroll lock, and never presses a sign-in, OAuth or payment button.
 • Focus mode: hide chat bubbles, newsletter pop-ups, notification prompts, social widgets, AI pop-ups and YouTube Shorts.
 • Anti-adblock walls and pop-unders are neutralised.
+• Dangerous sites: a known malware site opens a warning page instead, and you decide whether to go on.
 • Site broken? One click fixes it, or tell us — nothing is sent without you seeing it first.
 • Switching from uBlock Origin, AdGuard or Adblock Plus? Bring your allowed sites and filters with one file.
+• See which other sites a page connects to, and block one just there with a click.
 • Signed filter updates twice a day: new ad networks can be added within hours, with no remote code.
 • No account, no telemetry, no data collection, and Global Privacy Control asks every site not to sell or share your data.

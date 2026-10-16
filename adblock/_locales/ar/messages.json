@@ -232,7 +232,7 @@
     "message": "إزالة utm_* و fbclid و gclid وغيرها من معرّفات النقرات من الروابط التي تفتحها"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "حظر نطاقات البرامج الضارة المعروفة (قائمة URLhaus من abuse.ch)"
+    "message": "التحذير قبل فتح موقع معروف بنشر البرامج الضارة، وحظر ما تحمّله الصفحات من مثل هذه المواقع (قائمة URLhaus من abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "تعطيل واجهات API الإعلانية Google Topics و FLoC و Protected Audience في كل موقع"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "اختياري: الإضافة تعمل بالفعل. يمكن تغيير أيٍّ من هذه لاحقًا من الإعدادات."
+  },
+  "blk_page_title": {
+    "message": "تم حظر الموقع — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "قد يُلحق هذا الموقع الضرر بجهازك"
+  },
+  "blk_text": {
+    "message": "أوقف Supreme AdBlock هذه الصفحة لأن الموقع مُدرج في URLhaus، وهي قائمة عامة بالعناوين التي تنشر البرامج الضارة."
+  },
+  "blk_back": {
+    "message": "العودة"
+  },
+  "blk_continue": {
+    "message": "المتابعة على أي حال"
+  },
+  "blk_note": {
+    "message": "المتابعة تسمح بمرور صفحات هذا الموقع فقط، حتى تُغلق المتصفح."
+  },
+  "blk_why": {
+    "message": "لماذا هو مُدرج؟ (URLhaus)"
+  },
+  "conn_title": {
+    "message": "الاتصالات في هذه الصفحة"
+  },
+  "conn_empty": {
+    "message": "لم تُحمّل هذه الصفحة أي شيء من مواقع أخرى."
+  },
+  "conn_block": {
+    "message": "حظر هنا"
+  },
+  "conn_blocked": {
+    "message": "محظور هنا"
+  },
+  "conn_hint": {
+    "message": "حظر ما يحمّله هذا الموقع من $1"
+  },
+  "opt_conn_title": {
+    "message": "الاتصالات التي حظرتها"
+  },
+  "opt_conn_sub": {
+    "message": "حُظرت من «الاتصالات في هذه الصفحة» في نافذة الإضافة، وكلٌّ منها على موقعه فقط."
+  },
+  "opt_empty_conn": {
+    "message": "لم يُحظر شيء بعد."
+  },
+  "opt_conn_remove": {
+    "message": "إلغاء حظر $1 على $2"
+  },
+  "opt_h_danger": {
+    "message": "صفحة التحذير من البرامج الضارة"
+  },
+  "opt_h_capacity": {
+    "message": "سعة القواعد"
   }
 }

@@ -232,7 +232,7 @@
     "message": "Հեռացնում է utm_*, fbclid, gclid և սեղմումների այլ նույնացուցիչներ ձեր բացած հղումներից"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Արգելափակում է հայտնի վնասակար տիրույթները (abuse.ch-ի URLhaus ցուցակ)"
+    "message": "Զգուշացնում է նախքան հայտնի վնասակար կայքի բացվելը և արգելափակում այն, ինչ էջերը բեռնում են նման կայքերից (abuse.ch-ի URLhaus ցուցակ)։"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Անջատում է Google Topics, FLoC և Protected Audience գովազդային API-ները բոլոր կայքերում"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Ըստ ցանկության. ամեն ինչ արդեն աշխատում է։ Այս ամենը հետո կարող եք փոխել Կարգավորումներում։"
+  },
+  "blk_page_title": {
+    "message": "Կայքն արգելափակված է — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Այս կայքը կարող է վնասել ձեր սարքը"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock-ը կասեցրեց այս էջը, քանի որ կայքը ներառված է URLhaus-ում՝ վնասաբեր ծրագրեր տարածող հասցեների հանրային ցուցակում։"
+  },
+  "blk_back": {
+    "message": "Վերադառնալ"
+  },
+  "blk_continue": {
+    "message": "Միևնույն է՝ շարունակել"
+  },
+  "blk_note": {
+    "message": "Եթե շարունակեք, մինչև դիտարկիչը փակելը կթույլատրվեն միայն այս կայքի էջերը։"
+  },
+  "blk_why": {
+    "message": "Ինչո՞ւ է այն ցուցակում (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Այս էջի կապերը"
+  },
+  "conn_empty": {
+    "message": "Այս էջը ոչինչ չի բեռնել այլ կայքերից։"
+  },
+  "conn_block": {
+    "message": "Արգելել այստեղ"
+  },
+  "conn_blocked": {
+    "message": "Արգելված այստեղ"
+  },
+  "conn_hint": {
+    "message": "Արգելափակել այն, ինչ այս կայքը բեռնում է այստեղից՝ $1"
+  },
+  "opt_conn_title": {
+    "message": "Ձեր արգելափակած կապերը"
+  },
+  "opt_conn_sub": {
+    "message": "Արգելափակված են Supreme AdBlock-ի պատուհանի «Այս էջի կապերը» բաժնից, յուրաքանչյուրը՝ միայն իր կայքում։"
+  },
+  "opt_empty_conn": {
+    "message": "Դեռ ոչինչ արգելափակված չէ։"
+  },
+  "opt_conn_remove": {
+    "message": "Հանել $1-ի արգելափակումը $2 կայքում"
+  },
+  "opt_h_danger": {
+    "message": "Վնասաբեր ծրագրի զգուշացման էջ"
+  },
+  "opt_h_capacity": {
+    "message": "Կանոնների տարողություն"
   }
 }

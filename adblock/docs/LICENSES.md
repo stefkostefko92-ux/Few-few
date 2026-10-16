@@ -8,7 +8,7 @@ regenerated with `node tools/build_filters.mjs`.
 |------|--------|---------|----------|
 | EasyList | <https://easylist.to/easylist/easylist.txt> | GPLv3 / CC BY-SA 3.0 | ad network + cosmetic rules |
 | EasyPrivacy | <https://easylist.to/easylist/easyprivacy.txt> | GPLv3 / CC BY-SA 3.0 | tracker rules |
-| URLhaus hostfile | <https://urlhaus.abuse.ch/downloads/hostfile/> | CC0 | optional malware protection |
+| URLhaus hostfile | <https://urlhaus.abuse.ch/downloads/hostfile/> | CC0 | malware protection (on by default for new installs; warning page) |
 
 EasyList and EasyPrivacy are © The EasyList authors, dual-licensed under the
 GNU General Public License v3 and Creative Commons Attribution-ShareAlike 3.0.

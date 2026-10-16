@@ -232,7 +232,7 @@
     "message": "حذف utm_*، fbclid، gclid و دیگر شناسه‌های کلیک از پیوندهایی که باز می‌کنید"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "مسدود کردن دامنه‌های بدافزار شناخته‌شده (فهرست URLhaus از abuse.ch)"
+    "message": "هشدار پیش از باز شدن یک سایت بدافزار شناخته‌شده، و مسدود کردن آنچه صفحه‌ها از چنین سایت‌هایی بارگیری می‌کنند (فهرست URLhaus از abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "غیرفعال کردن APIهای تبلیغاتی Google Topics، FLoC و Protected Audience در همه سایت‌ها"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "اختیاری است: افزونه از همین حالا کار می‌کند. هر کدام از این‌ها را بعداً می‌توانید در تنظیمات تغییر دهید."
+  },
+  "blk_page_title": {
+    "message": "سایت مسدود شد — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "این سایت ممکن است به دستگاه شما آسیب بزند"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock این صفحه را متوقف کرد، چون این سایت در URLhaus آمده است؛ فهرستی عمومی از نشانی‌هایی که بدافزار پخش می‌کنند."
+  },
+  "blk_back": {
+    "message": "بازگشت"
+  },
+  "blk_continue": {
+    "message": "با این حال ادامه دهید"
+  },
+  "blk_note": {
+    "message": "ادامه دادن فقط به صفحه‌های همین سایت اجازهٔ عبور می‌دهد، تا وقتی که مرورگر را ببندید."
+  },
+  "blk_why": {
+    "message": "چرا در فهرست است؟ (URLhaus)"
+  },
+  "conn_title": {
+    "message": "اتصال‌های این صفحه"
+  },
+  "conn_empty": {
+    "message": "این صفحه چیزی از سایت‌های دیگر بارگیری نکرده است."
+  },
+  "conn_block": {
+    "message": "مسدود کردن اینجا"
+  },
+  "conn_blocked": {
+    "message": "اینجا مسدود است"
+  },
+  "conn_hint": {
+    "message": "مسدود کردن آنچه این سایت از $1 بارگیری می‌کند"
+  },
+  "opt_conn_title": {
+    "message": "اتصال‌هایی که مسدود کرده‌اید"
+  },
+  "opt_conn_sub": {
+    "message": "از بخش «اتصال‌های این صفحه» در پنجرهٔ افزونه مسدود شده‌اند، هر کدام فقط در سایت خودش."
+  },
+  "opt_empty_conn": {
+    "message": "هنوز چیزی مسدود نشده است."
+  },
+  "opt_conn_remove": {
+    "message": "رفع انسداد $1 در $2"
+  },
+  "opt_h_danger": {
+    "message": "صفحهٔ هشدار بدافزار"
+  },
+  "opt_h_capacity": {
+    "message": "ظرفیت قوانین"
   }
 }

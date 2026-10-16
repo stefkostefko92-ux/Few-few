@@ -232,7 +232,7 @@
     "message": "Odstraňuje utm_*, fbclid, gclid a další identifikátory kliknutí z odkazů, které otevíráte"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokuje známé škodlivé domény (seznam URLhaus od abuse.ch)"
+    "message": "Varuje před otevřením známého škodlivého webu a blokuje to, co stránky načítají z takových webů (seznam URLhaus od abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Vypíná reklamní API Google Topics, FLoC a Protected Audience na všech webech"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Volitelné: vše už funguje. Cokoli z toho můžete později změnit v nastavení."
+  },
+  "blk_page_title": {
+    "message": "Web zablokován — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Tento web může poškodit vaše zařízení"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock zastavil tuto stránku, protože web je na seznamu URLhaus — veřejném seznamu adres, které šíří malware."
+  },
+  "blk_back": {
+    "message": "Zpět"
+  },
+  "blk_continue": {
+    "message": "Přesto pokračovat"
+  },
+  "blk_note": {
+    "message": "Pokud budete pokračovat, propustí se jen stránky tohoto webu, a to do zavření prohlížeče."
+  },
+  "blk_why": {
+    "message": "Proč je na seznamu? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Připojení na této stránce"
+  },
+  "conn_empty": {
+    "message": "Tato stránka nic nenačetla z jiných webů."
+  },
+  "conn_block": {
+    "message": "Blokovat zde"
+  },
+  "conn_blocked": {
+    "message": "Blokováno zde"
+  },
+  "conn_hint": {
+    "message": "Blokovat, co tento web načítá z $1"
+  },
+  "opt_conn_title": {
+    "message": "Vámi blokovaná připojení"
+  },
+  "opt_conn_sub": {
+    "message": "Blokováno v okně Supreme AdBlock v části „Připojení na této stránce“, každé jen na svém webu."
+  },
+  "opt_empty_conn": {
+    "message": "Zatím nic není blokováno."
+  },
+  "opt_conn_remove": {
+    "message": "Odblokovat $1 na webu $2"
+  },
+  "opt_h_danger": {
+    "message": "Varovná stránka před malwarem"
+  },
+  "opt_h_capacity": {
+    "message": "Kapacita pravidel"
   }
 }

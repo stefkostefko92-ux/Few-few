@@ -232,7 +232,7 @@
     "message": "Eemaldab avatavatest linkidest utm_*, fbclid, gclid ja muud klikitunnused"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokeerib teadaolevad pahavara domeenid (abuse.ch URLhausi loend)"
+    "message": "Hoiatab enne teadaoleva pahavarasaidi avamist ja blokeerib selle, mida lehed sellistelt saitidelt laadivad (abuse.ch URLhausi loend)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Keelab igal saidil reklaami-API-d Google Topics, FLoC ja Protected Audience"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Valikuline: kõik juba töötab. Seadetes saate neid hiljem igal ajal muuta."
+  },
+  "blk_page_title": {
+    "message": "Sait blokeeritud — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "See sait võib teie seadet kahjustada"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock peatas selle lehe, sest sait on kirjas URLhausis, avalikus loendis aadressidest, mis levitavad pahavara."
+  },
+  "blk_back": {
+    "message": "Mine tagasi"
+  },
+  "blk_continue": {
+    "message": "Jätka siiski"
+  },
+  "blk_note": {
+    "message": "Kui jätkate, lastakse läbi ainult selle saidi lehed, kuni sulgete brauseri."
+  },
+  "blk_why": {
+    "message": "Miks see loendis on? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Selle lehe ühendused"
+  },
+  "conn_empty": {
+    "message": "See leht ei laadinud teistelt saitidelt midagi."
+  },
+  "conn_block": {
+    "message": "Blokeeri siin"
+  },
+  "conn_blocked": {
+    "message": "Siin blokeeritud"
+  },
+  "conn_hint": {
+    "message": "Blokeeri see, mida see sait hostist $1 laadib"
+  },
+  "opt_conn_title": {
+    "message": "Teie blokeeritud ühendused"
+  },
+  "opt_conn_sub": {
+    "message": "Blokeeritud Supreme AdBlocki akna jaotisest „Selle lehe ühendused“, igaüks ainult oma saidil."
+  },
+  "opt_empty_conn": {
+    "message": "Veel pole midagi blokeeritud."
+  },
+  "opt_conn_remove": {
+    "message": "Tühista hosti $1 blokeerimine saidil $2"
+  },
+  "opt_h_danger": {
+    "message": "Pahavara hoiatusleht"
+  },
+  "opt_h_capacity": {
+    "message": "Reeglite maht"
   }
 }

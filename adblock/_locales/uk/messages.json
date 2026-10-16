@@ -232,7 +232,7 @@
     "message": "Видаляє utm_*, fbclid, gclid та інші ідентифікатори кліків із посилань, які ви відкриваєте"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Блокує відомі шкідливі домени (список URLhaus від abuse.ch)"
+    "message": "Попереджає перед відкриттям відомого шкідливого сайту й блокує те, що сторінки завантажують із таких сайтів (список URLhaus від abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Вимикає рекламні API Google Topics, FLoC і Protected Audience на всіх сайтах"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Необов’язково: усе вже працює. Будь-що з цього можна пізніше змінити в налаштуваннях."
+  },
+  "blk_page_title": {
+    "message": "Сайт заблоковано — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Цей сайт може зашкодити вашому пристрою"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock зупинив відкриття цієї сторінки, бо сайт є в URLhaus — загальнодоступному списку адрес, через які поширюється шкідливе ПЗ."
+  },
+  "blk_back": {
+    "message": "Повернутися назад"
+  },
+  "blk_continue": {
+    "message": "Усе одно продовжити"
+  },
+  "blk_note": {
+    "message": "Якщо продовжити, пропускатимуться лише сторінки цього сайту — доки ви не закриєте браузер."
+  },
+  "blk_why": {
+    "message": "Чому він у списку? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "З’єднання на цій сторінці"
+  },
+  "conn_empty": {
+    "message": "Ця сторінка нічого не завантажувала з інших сайтів."
+  },
+  "conn_block": {
+    "message": "Блокувати тут"
+  },
+  "conn_blocked": {
+    "message": "Заблоковано тут"
+  },
+  "conn_hint": {
+    "message": "Блокувати те, що цей сайт завантажує з $1"
+  },
+  "opt_conn_title": {
+    "message": "Заблоковані вами з’єднання"
+  },
+  "opt_conn_sub": {
+    "message": "Заблоковано у вікні Supreme AdBlock через «З’єднання на цій сторінці», кожне — лише на своєму сайті."
+  },
+  "opt_empty_conn": {
+    "message": "Поки нічого не заблоковано."
+  },
+  "opt_conn_remove": {
+    "message": "Розблокувати $1 на сайті $2"
+  },
+  "opt_h_danger": {
+    "message": "Попередження про шкідливе ПЗ"
+  },
+  "opt_h_capacity": {
+    "message": "Ліміт правил"
   }
 }

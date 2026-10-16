@@ -6,7 +6,9 @@ Supreme AdBlock blokira reklame svuda — video reklame na YouTubeu, banere, isk
 • Baneri za kolačiće: pritišće „Odbij“ umjesto vas, uklanja zaostalo zamućenje i zaključano skrolanje i nikada ne pritišće dugme za prijavu, OAuth ili plaćanje.
 • Režim fokusa: sakriva chat oblačiće, iskočne prozore za bilten, upite za obavještenja, vidžete društvenih mreža, iskočne AI asistente i YouTube Shorts.
 • Anti-adblock zidovi i pop-under prozori se neutraliziraju.
+• Opasni sajtovi: umjesto poznatog zlonamjernog sajta otvara se stranica upozorenja, a vi odlučujete hoćete li nastaviti.
 • Sajt ne radi? Jedan klik ga popravlja — ili nam javite; ništa se ne šalje prije nego što to vidite.
 • Prelazite s blokatora uBlock Origin, AdGuard ili Adblock Plus? Prenesite dozvoljene sajtove i filtere jednom datotekom.
+• Pogledajte s kojim se drugim sajtovima stranica povezuje i jednim klikom blokirajte neki samo tamo.
 • Potpisana ažuriranja filtera dvaput dnevno: nove reklamne mreže pokrivaju se u roku od nekoliko sati, bez udaljenog koda.
 • Bez računa, bez telemetrije, bez prikupljanja podataka, a Global Privacy Control traži od svakog sajta da ne prodaje i ne dijeli vaše podatke.

@@ -232,7 +232,7 @@
     "message": "Выдаляе utm_*, fbclid, gclid і іншыя ідэнтыфікатары клікаў са спасылак, якія вы адкрываеце"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Блакуе вядомыя шкодныя дамены (спіс URLhaus ад abuse.ch)"
+    "message": "Папярэджвае перад адкрыццём вядомага шкоднага сайта і блакуе тое, што старонкі загружаюць з такіх сайтаў (спіс URLhaus ад abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Выключае рэкламныя API Google Topics, FLoC і Protected Audience на ўсіх сайтах"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Па жаданні: усё ўжо працуе. Любы з гэтых параметраў можна пазней змяніць у наладах."
+  },
+  "blk_page_title": {
+    "message": "Сайт заблакаваны — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Гэты сайт можа нашкодзіць вашай прыладзе"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock спыніў адкрыццё гэтай старонкі, бо сайт ёсць у URLhaus — агульнадаступным спісе адрасоў, праз якія распаўсюджваецца шкоднае ПЗ."
+  },
+  "blk_back": {
+    "message": "Вярнуцца назад"
+  },
+  "blk_continue": {
+    "message": "Усё роўна працягнуць"
+  },
+  "blk_note": {
+    "message": "Калі працягнуць, будуць прапускацца толькі старонкі гэтага сайта — пакуль вы не закрыеце браўзер."
+  },
+  "blk_why": {
+    "message": "Чаму ён у спісе? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Злучэнні на гэтай старонцы"
+  },
+  "conn_empty": {
+    "message": "Гэтая старонка нічога не загружала з іншых сайтаў."
+  },
+  "conn_block": {
+    "message": "Блакаваць тут"
+  },
+  "conn_blocked": {
+    "message": "Заблакавана тут"
+  },
+  "conn_hint": {
+    "message": "Блакаваць тое, што гэты сайт загружае з $1"
+  },
+  "opt_conn_title": {
+    "message": "Заблакаваныя вамі злучэнні"
+  },
+  "opt_conn_sub": {
+    "message": "Заблакаваны ў акне Supreme AdBlock праз «Злучэнні на гэтай старонцы», кожнае — толькі на сваім сайце."
+  },
+  "opt_empty_conn": {
+    "message": "Пакуль нічога не заблакавана."
+  },
+  "opt_conn_remove": {
+    "message": "Разблакаваць $1 на сайце $2"
+  },
+  "opt_h_danger": {
+    "message": "Папярэджанне пра шкоднае ПЗ"
+  },
+  "opt_h_capacity": {
+    "message": "Ліміт правілаў"
   }
 }

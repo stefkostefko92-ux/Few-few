@@ -234,7 +234,7 @@
     "message": "Премахва utm_*, fbclid, gclid и други идентификатори на кликове от връзките, които отваряте"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Блокира известни зловредни домейни (листът URLhaus на abuse.ch)"
+    "message": "Предупреждава, преди да се отвори известен зловреден сайт, и блокира това, което страниците зареждат от такива сайтове (листа URLhaus на abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Изключва рекламните API Google Topics, FLoC и Protected Audience на всеки сайт"
@@ -741,5 +741,59 @@
   },
   "welQuickSub": {
     "message": "По желание — всичко вече работи. От настройките можете да промените това по всяко време."
+  },
+  "blk_page_title": {
+    "message": "Сайтът е блокиран — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Този сайт може да навреди на устройството ви"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock спря тази страница, защото сайтът е в URLhaus — публичен списък с адреси, които разпространяват зловреден софтуер."
+  },
+  "blk_back": {
+    "message": "Назад"
+  },
+  "blk_continue": {
+    "message": "Продължи въпреки това"
+  },
+  "blk_note": {
+    "message": "Продължаването пропуска само страниците на този сайт, докато затворите браузъра."
+  },
+  "blk_why": {
+    "message": "Защо е в списъка? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Връзки на страницата"
+  },
+  "conn_empty": {
+    "message": "Страницата не е заредила нищо от други сайтове."
+  },
+  "conn_block": {
+    "message": "Блокирай тук"
+  },
+  "conn_blocked": {
+    "message": "Блокиран тук"
+  },
+  "conn_hint": {
+    "message": "Блокирай това, което сайтът зарежда от $1"
+  },
+  "opt_conn_title": {
+    "message": "Връзки, които сте блокирали"
+  },
+  "opt_conn_sub": {
+    "message": "Блокирани от „Връзки на страницата“ в прозореца на Supreme AdBlock — всяка само на своя сайт."
+  },
+  "opt_empty_conn": {
+    "message": "Още нищо не е блокирано."
+  },
+  "opt_conn_remove": {
+    "message": "Отблокирай $1 на $2"
+  },
+  "opt_h_danger": {
+    "message": "Страница за зловредни сайтове"
+  },
+  "opt_h_capacity": {
+    "message": "Капацитет на правилата"
   }
 }

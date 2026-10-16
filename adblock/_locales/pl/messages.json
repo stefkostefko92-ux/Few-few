@@ -232,7 +232,7 @@
     "message": "Usuwa utm_*, fbclid, gclid i inne identyfikatory kliknięć z otwieranych linków"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokuje znane domeny ze złośliwym oprogramowaniem (lista URLhaus od abuse.ch)"
+    "message": "Ostrzega przed otwarciem znanej złośliwej witryny i blokuje to, co strony wczytują z takich witryn (lista URLhaus od abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Wyłącza reklamowe API Google Topics, FLoC i Protected Audience we wszystkich witrynach"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Opcjonalnie: wszystko już działa. Każdą z tych opcji możesz później zmienić w ustawieniach."
+  },
+  "blk_page_title": {
+    "message": "Witryna zablokowana — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Ta witryna może zaszkodzić Twojemu urządzeniu"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock zatrzymał tę stronę, ponieważ witryna jest na liście URLhaus — publicznej liście adresów, które rozpowszechniają złośliwe oprogramowanie."
+  },
+  "blk_back": {
+    "message": "Wróć"
+  },
+  "blk_continue": {
+    "message": "Kontynuuj mimo to"
+  },
+  "blk_note": {
+    "message": "Jeśli kontynuujesz, przepuszczane będą tylko strony tej witryny — do zamknięcia przeglądarki."
+  },
+  "blk_why": {
+    "message": "Dlaczego jest na liście? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Połączenia na tej stronie"
+  },
+  "conn_empty": {
+    "message": "Ta strona nie wczytała niczego z innych witryn."
+  },
+  "conn_block": {
+    "message": "Blokuj tu"
+  },
+  "conn_blocked": {
+    "message": "Zablokowane tu"
+  },
+  "conn_hint": {
+    "message": "Blokuj to, co ta witryna wczytuje z $1"
+  },
+  "opt_conn_title": {
+    "message": "Zablokowane przez Ciebie połączenia"
+  },
+  "opt_conn_sub": {
+    "message": "Zablokowane w oknie Supreme AdBlock w sekcji „Połączenia na tej stronie”, każde tylko we własnej witrynie."
+  },
+  "opt_empty_conn": {
+    "message": "Na razie nic nie zablokowano."
+  },
+  "opt_conn_remove": {
+    "message": "Odblokuj $1 w witrynie $2"
+  },
+  "opt_h_danger": {
+    "message": "Ostrzeżenie o złośliwej witrynie"
+  },
+  "opt_h_capacity": {
+    "message": "Limit reguł"
   }
 }

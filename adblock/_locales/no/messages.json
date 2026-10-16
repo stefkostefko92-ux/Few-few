@@ -232,7 +232,7 @@
     "message": "Fjern utm_*, fbclid, gclid og andre klikk-ID-er fra lenkene du åpner"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokker kjente skadevaredomener (URLhaus-listen fra abuse.ch)"
+    "message": "Advar før et kjent skadevarenettsted åpnes, og blokker det sider laster inn fra slike nettsteder (URLhaus-listen fra abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Slå av annonse-API-ene Google Topics, FLoC og Protected Audience på alle nettsteder"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Valgfritt: den virker allerede. Du kan endre alt dette senere i Innstillinger."
+  },
+  "blk_page_title": {
+    "message": "Nettsted blokkert – Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Dette nettstedet kan skade enheten din"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock stoppet denne siden fordi nettstedet står på URLhaus, en offentlig liste over adresser som sprer skadevare."
+  },
+  "blk_back": {
+    "message": "Gå tilbake"
+  },
+  "blk_continue": {
+    "message": "Fortsett likevel"
+  },
+  "blk_note": {
+    "message": "Hvis du fortsetter, slippes bare sidene på dette nettstedet gjennom, til du lukker nettleseren."
+  },
+  "blk_why": {
+    "message": "Hvorfor står det på listen? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Tilkoblinger på denne siden"
+  },
+  "conn_empty": {
+    "message": "Denne siden har ikke lastet inn noe fra andre nettsteder."
+  },
+  "conn_block": {
+    "message": "Blokker her"
+  },
+  "conn_blocked": {
+    "message": "Blokkert her"
+  },
+  "conn_hint": {
+    "message": "Blokker det dette nettstedet laster inn fra $1"
+  },
+  "opt_conn_title": {
+    "message": "Tilkoblinger du har blokkert"
+  },
+  "opt_conn_sub": {
+    "message": "Blokkert fra «Tilkoblinger på denne siden» i Supreme AdBlock-vinduet, hver bare på sitt eget nettsted."
+  },
+  "opt_empty_conn": {
+    "message": "Ingenting blokkert ennå."
+  },
+  "opt_conn_remove": {
+    "message": "Opphev blokkering av $1 på $2"
+  },
+  "opt_h_danger": {
+    "message": "Advarselsside for skadevare"
+  },
+  "opt_h_capacity": {
+    "message": "Regelkapasitet"
   }
 }

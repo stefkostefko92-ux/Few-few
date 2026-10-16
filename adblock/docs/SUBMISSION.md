@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-5.2.0.zip
+bash tools/package.sh      # → dist/supreme-adblock-5.5.0.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -100,8 +100,10 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
 ## 5. Permission justifications (paste each)
 
 - **declarativeNetRequest** — block ad/tracker network requests using bundled
-  filter rules, and add the Global Privacy Control header (`Sec-GPC: 1`, a fixed
-  rule in the package, switchable in Settings) to the requests the browser sends.
+  filter rules, add the Global Privacy Control header (`Sec-GPC: 1`, a fixed
+  rule in the package, switchable in Settings) to the requests the browser sends,
+  and send a navigation to a known malware site (the bundled URLhaus list) to the
+  packaged warning page `blocked/blocked.html` instead.
 - **declarativeNetRequestFeedback** — `declarativeNetRequest.getMatchedRules()`
   for the active tab only, to render the per-tab blocked count on the toolbar
   badge and, in the popup, how many requests each of our filter lists blocked on
@@ -177,7 +179,15 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
 > backup file (read locally) and the keyboard shortcuts. It requires nothing and
 > sends nothing.
 >
-> **Global Privacy Control and shortcuts (5.2.0).** A fixed static ruleset
+> **Malware warning page.** `blocked/blocked.html` is in `web_accessible_resources`
+> only because Chrome redirects a navigation solely to a web-accessible page: a dynamic
+> `redirect` rule (main_frame, the bundled URLhaus domains) sends the user there with
+> the address after `#`. The page shows the site name, “Go back” and “Continue anyway”;
+> continuing is checked by the service worker (http(s) only, the host must be on the
+> list) and adds one session `allow` rule for that host. Inside a frame the page renders
+> nothing, so another site cannot frame it to trick a click.
+>
+> **Global Privacy Control and shortcuts (5.5.0).** A fixed static ruleset
 > (`rules/gpc.json`, one `modifyHeaders` rule) adds `Sec-GPC: 1` to requests, and
 > `gpc.js` (MAIN world, bundled) defines `navigator.globalPrivacyControl` — the
 > standard "do not sell or share my data" signal, on by default and switchable in
@@ -219,7 +229,7 @@ so this is an **update of the existing item**, not a new one:
    the privacy policy with Google's Limited Use statement goes live, and `filters.json`
    (data only — no `scriptlets` key) is published with a fresh Ed25519 signature. Check
    `https://adblock.carbonstealth.eu/privacy` shows the Limited Use section before you submit.
-1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.2.0.zip`.
+1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.5.0.zip`.
 2. Refresh the listing (§3: description + the new feature bullets) **in every
    language that has its own description** — a package update does NOT replace the
    live text, and an old localised description still saying "100% free" fails the
@@ -256,7 +266,7 @@ so this is an **update of the existing item**, not a new one:
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (5.2.0)
+- [ ] `manifest.json` and `package.json` versions match (5.5.0)
 - [ ] `npm test` (tests/) and `node tools/build_scriptlets.mjs --check` are green
 - [ ] `PW_ROOT=$(npm root -g) npm run test:browser` is green — real Chromium, including the
       back/forward-cache check (the page is restored on Back, with the extension on)

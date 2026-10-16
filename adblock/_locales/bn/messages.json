@@ -232,7 +232,7 @@
     "message": "আপনার খোলা লিঙ্ক থেকে utm_*, fbclid, gclid ও অন্যান্য ক্লিক শনাক্তকারী সরান"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "পরিচিত ম্যালওয়্যার ডোমেন ব্লক করুন (abuse.ch-এর URLhaus তালিকা)"
+    "message": "পরিচিত কোনো ম্যালওয়্যার সাইট খোলার আগে সতর্ক করুন, এবং পৃষ্ঠাগুলো এমন সাইট থেকে যা লোড করে তা ব্লক করুন (abuse.ch-এর URLhaus তালিকা)।"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "প্রতিটি সাইটে Google Topics, FLoC ও Protected Audience বিজ্ঞাপন API বন্ধ করুন"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "ঐচ্ছিক: এটি এখনই কাজ করছে। পরে সেটিংসে এগুলোর যেকোনোটি বদলানো যাবে।"
+  },
+  "blk_page_title": {
+    "message": "সাইট ব্লক করা হয়েছে — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "এই সাইটটি আপনার ডিভাইসের ক্ষতি করতে পারে"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock এই পৃষ্ঠাটি থামিয়েছে, কারণ সাইটটি URLhaus-এ আছে — ম্যালওয়্যার ছড়ায় এমন ঠিকানার একটি সর্বজনীন তালিকা।"
+  },
+  "blk_back": {
+    "message": "ফিরে যান"
+  },
+  "blk_continue": {
+    "message": "তবুও চালিয়ে যান"
+  },
+  "blk_note": {
+    "message": "চালিয়ে গেলে ব্রাউজার বন্ধ না করা পর্যন্ত শুধু এই সাইটের পৃষ্ঠাগুলো খুলতে দেওয়া হবে।"
+  },
+  "blk_why": {
+    "message": "কেন এটি তালিকায় আছে? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "এই পৃষ্ঠার সংযোগ"
+  },
+  "conn_empty": {
+    "message": "এই পৃষ্ঠা অন্য সাইট থেকে কিছুই লোড করেনি।"
+  },
+  "conn_block": {
+    "message": "এখানে ব্লক করুন"
+  },
+  "conn_blocked": {
+    "message": "এখানে ব্লক করা"
+  },
+  "conn_hint": {
+    "message": "এই সাইট $1 থেকে যা লোড করে তা ব্লক করুন"
+  },
+  "opt_conn_title": {
+    "message": "আপনার ব্লক করা সংযোগ"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock উইন্ডোর “এই পৃষ্ঠার সংযোগ” থেকে ব্লক করা, প্রতিটি শুধু নিজের সাইটে।"
+  },
+  "opt_empty_conn": {
+    "message": "এখনও কিছু ব্লক করা হয়নি।"
+  },
+  "opt_conn_remove": {
+    "message": "$2-এ $1 আনব্লক করুন"
+  },
+  "opt_h_danger": {
+    "message": "ম্যালওয়্যার সতর্কতা পৃষ্ঠা"
+  },
+  "opt_h_capacity": {
+    "message": "নিয়মের ধারণক্ষমতা"
   }
 }

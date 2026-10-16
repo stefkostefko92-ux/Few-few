@@ -232,7 +232,7 @@
     "message": "Susa i-utm_*, i-fbclid, i-gclid nezinye izihlonzi zokuchofoza kumalinki owavulayo"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Vimba izizinda ze-malware ezaziwayo (uhlu lwe-URLhaus lwe-abuse.ch)"
+    "message": "Xwayisa ngaphambi kokuba kuvuleke isayithi ye-malware eyaziwayo, futhi uvimbe lokho amakhasi akulayisha kumasayithi anjalo (uhlu lwe-URLhaus lwe-abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Khubaza ama-API ezikhangiso e-Google Topics, FLoC ne-Protected Audience kuyo yonke isayithi"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Kungokuzikhethela: sekuvele kuyasebenza. Noma yikuphi kwalokhu kungashintshwa kamuva ezilungiselelweni."
+  },
+  "blk_page_title": {
+    "message": "Isayithi ivinjiwe — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Le sayithi ingalimaza idivayisi yakho"
+  },
+  "blk_text": {
+    "message": "I-Supreme AdBlock imise leli khasi ngoba isayithi isohlwini lwe-URLhaus, uhlu lomphakathi lwamakheli asakaza i-malware."
+  },
+  "blk_back": {
+    "message": "Buyela emuva"
+  },
+  "blk_continue": {
+    "message": "Qhubeka noma kunjalo"
+  },
+  "blk_note": {
+    "message": "Ukuqhubeka kuvumela amakhasi ale sayithi kuphela, uze uvale isiphequluli."
+  },
+  "blk_why": {
+    "message": "Kungani isohlwini? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Uxhumano kuleli khasi"
+  },
+  "conn_empty": {
+    "message": "Leli khasi alilayishanga lutho kwamanye amasayithi."
+  },
+  "conn_block": {
+    "message": "Vimba lapha"
+  },
+  "conn_blocked": {
+    "message": "Kuvinjwe lapha"
+  },
+  "conn_hint": {
+    "message": "Vimba lokho le sayithi ekulayisha ku-$1"
+  },
+  "opt_conn_title": {
+    "message": "Uxhumano oluvimbile"
+  },
+  "opt_conn_sub": {
+    "message": "Kuvinjwe engxenyeni ethi “Uxhumano kuleli khasi” ewindini le-Supreme AdBlock, ngalunye kusayithi yalo kuphela."
+  },
+  "opt_empty_conn": {
+    "message": "Akukho okuvinjiwe okwamanje."
+  },
+  "opt_conn_remove": {
+    "message": "Susa ukuvimba kwe-$1 ku-$2"
+  },
+  "opt_h_danger": {
+    "message": "Ikhasi lesixwayiso se-malware"
+  },
+  "opt_h_capacity": {
+    "message": "Umthamo wemithetho"
   }
 }

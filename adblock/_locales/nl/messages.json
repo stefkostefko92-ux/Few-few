@@ -232,7 +232,7 @@
     "message": "Verwijdert utm_*, fbclid, gclid en andere klik-ID’s uit de links die u opent"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokkeert bekende malwaredomeinen (URLhaus-lijst van abuse.ch)"
+    "message": "Waarschuwt voordat een bekende malwarewebsite wordt geopend en blokkeert wat pagina’s van zulke websites laden (URLhaus-lijst van abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Schakelt de advertentie-API’s Google Topics, FLoC en Protected Audience uit op elke website"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Optioneel: het werkt al. U kunt dit allemaal later wijzigen in Instellingen."
+  },
+  "blk_page_title": {
+    "message": "Website geblokkeerd — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Deze website kan uw apparaat schaden"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock heeft deze pagina tegengehouden omdat de website op URLhaus staat, een openbare lijst van adressen die malware verspreiden."
+  },
+  "blk_back": {
+    "message": "Ga terug"
+  },
+  "blk_continue": {
+    "message": "Toch doorgaan"
+  },
+  "blk_note": {
+    "message": "Als u doorgaat, worden alleen de pagina’s van deze website doorgelaten, totdat u de browser sluit."
+  },
+  "blk_why": {
+    "message": "Waarom staat deze website op de lijst? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Verbindingen op deze pagina"
+  },
+  "conn_empty": {
+    "message": "Deze pagina heeft niets van andere websites geladen."
+  },
+  "conn_block": {
+    "message": "Hier blokkeren"
+  },
+  "conn_blocked": {
+    "message": "Hier geblokkeerd"
+  },
+  "conn_hint": {
+    "message": "Blokkeer wat deze website van $1 laadt"
+  },
+  "opt_conn_title": {
+    "message": "Verbindingen die u hebt geblokkeerd"
+  },
+  "opt_conn_sub": {
+    "message": "Geblokkeerd via “Verbindingen op deze pagina” in het venster van Supreme AdBlock, elk alleen op de eigen website."
+  },
+  "opt_empty_conn": {
+    "message": "Nog niets geblokkeerd."
+  },
+  "opt_conn_remove": {
+    "message": "$1 deblokkeren op $2"
+  },
+  "opt_h_danger": {
+    "message": "Waarschuwingspagina voor malware"
+  },
+  "opt_h_capacity": {
+    "message": "Regelcapaciteit"
   }
 }

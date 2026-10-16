@@ -42,7 +42,7 @@ var SA_POLICY = (function () {
     "no-xhr-if": "no-xhr-if", "prevent-xhr": "no-xhr-if",
     "set-cookie": "set-cookie",
     "remove-cookie": "remove-cookie", "cookie-remover": "remove-cookie",
-    // 5.2.0 — the uBO routines the bundled lists use most that we did not run yet.
+    // 5.5.0 — the uBO routines the bundled lists use most that we did not run yet.
     // Same rule as above: our own implementations, baked data only, never trusted-*.
     "prevent-fetch": "no-fetch-if", "prevent-window-open": "no-window-open-if",
     "prevent-setTimeout": "no-setTimeout-if", "prevent-setInterval": "no-setInterval-if",
@@ -297,7 +297,7 @@ var SA_POLICY = (function () {
     var n = args.length;
     var proto = !live && hasOwn.call(PROTO_ROUTINES, name);
     for (var i = 0; i < n; i++) if (!(proto && i === 0 ? argSafeProto(args[i]) : argSafe(args[i]))) return false;
-    // The 5.2.0 routines exist for the baked uBO list only (there is no live scriptlet channel).
+    // The 5.5.0 routines exist for the baked uBO list only (there is no live scriptlet channel).
     if (live && /^(json-prune-(fetch|xhr)-response|noeval(-if)?|nano-(stb|sib)|set-(local|session)-storage-item|nobab|nofab|popads-dummy|popads\.net|xml-prune|m3u-prune|refresh-defuser|set-attr|no-requestAnimationFrame-if|prevent-innerHTML|window\.name-defuser|alert-buster)$/.test(name)) return false;
     switch (name) {
       case "set-constant":

@@ -6,7 +6,9 @@ O Supreme AdBlock bloqueia anúncios em todo lugar — anúncios em vídeo do Yo
 • Avisos de cookies: ele clica em “Recusar” por você, remove o desfoque e o bloqueio de rolagem que sobram e nunca clica em botões de login, OAuth ou pagamento.
 • Modo Foco: oculte bolhas de chat, pop-ups de newsletter, pedidos de notificação, widgets sociais, pop-ups de IA e YouTube Shorts.
 • Barreiras antiadblock e pop-unders são neutralizados.
+• Sites perigosos: em vez de um site de malware conhecido, aparece uma página de aviso, e você decide se quer continuar.
 • Site com problemas? Um clique resolve, ou nos avise — nada é enviado sem que você veja antes.
 • Vindo do uBlock Origin, AdGuard ou Adblock Plus? Traga seus sites permitidos e filtros com um só arquivo.
+• Veja a quais outros sites uma página se conecta e bloqueie qualquer um deles só nesse site com um clique.
 • Atualizações de filtros assinadas duas vezes por dia: novas redes de anúncios são tratadas em poucas horas, sem código remoto.
 • Sem conta, sem telemetria, sem coleta de dados, e o Global Privacy Control pede a cada site que não venda nem compartilhe seus dados.

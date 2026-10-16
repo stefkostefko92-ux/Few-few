@@ -885,7 +885,7 @@
       }
     },
 
-    // ---- 5.2.0: the uBO routines the bundled lists use most ------------------
+    // ---- 5.5.0: the uBO routines the bundled lists use most ------------------
 
     // json-prune-fetch-response(props, needles, "propsToMatch", "url:/api …",
     // "stackToMatch", "needle"): json-prune for the JSON body of matching fetch()

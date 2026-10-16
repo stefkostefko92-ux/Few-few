@@ -1,4 +1,4 @@
-// Scriptlet-ите от 5.2.0 в реален Chromium (Playwright): нещата, които симулираният свят
+// Scriptlet-ите от 5.5.0 в реален Chromium (Playwright): нещата, които симулираният свят
 // на tests/engine.test.mjs не може да покаже честно — истински fetch/XHR отговори, DOMParser
 // и XMLSerializer, Element.prototype.innerHTML, eval, таймери, requestAnimationFrame, „entity“
 // домейни (example.*) по истинския hostname и маскирането на toString.

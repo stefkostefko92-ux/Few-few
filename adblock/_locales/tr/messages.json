@@ -232,7 +232,7 @@
     "message": "Açtığınız bağlantılardan utm_*, fbclid, gclid ve diğer tıklama tanımlayıcılarını kaldırır"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Bilinen kötü amaçlı alan adlarını engeller (abuse.ch'nin URLhaus listesi)"
+    "message": "Bilinen kötü amaçlı bir site açılmadan önce uyarır ve sayfaların bu tür sitelerden yüklediklerini engeller (abuse.ch'nin URLhaus listesi)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Her sitede Google Topics, FLoC ve Protected Audience reklam API'lerini devre dışı bırakır"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "İsteğe bağlı: zaten çalışıyor. Bunların hepsini daha sonra Ayarlar'dan değiştirebilirsiniz."
+  },
+  "blk_page_title": {
+    "message": "Site engellendi — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Bu site cihazınıza zarar verebilir"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock bu sayfayı durdurdu, çünkü site, kötü amaçlı yazılım yayan adreslerin herkese açık listesi olan URLhaus'ta yer alıyor."
+  },
+  "blk_back": {
+    "message": "Geri dön"
+  },
+  "blk_continue": {
+    "message": "Yine de devam et"
+  },
+  "blk_note": {
+    "message": "Devam ederseniz, tarayıcıyı kapatana kadar yalnızca bu sitenin sayfalarına izin verilir."
+  },
+  "blk_why": {
+    "message": "Neden listede? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Bu sayfadaki bağlantılar"
+  },
+  "conn_empty": {
+    "message": "Bu sayfa diğer sitelerden hiçbir şey yüklemedi."
+  },
+  "conn_block": {
+    "message": "Burada engelle"
+  },
+  "conn_blocked": {
+    "message": "Burada engelli"
+  },
+  "conn_hint": {
+    "message": "Bu sitenin $1 kaynağından yüklediklerini engelle"
+  },
+  "opt_conn_title": {
+    "message": "Engellediğiniz bağlantılar"
+  },
+  "opt_conn_sub": {
+    "message": "Uzantı penceresindeki “Bu sayfadaki bağlantılar” bölümünden engellendi, her biri yalnızca kendi sitesinde."
+  },
+  "opt_empty_conn": {
+    "message": "Henüz hiçbir şey engellenmedi."
+  },
+  "opt_conn_remove": {
+    "message": "$2 sitesinde $1 için engeli kaldır"
+  },
+  "opt_h_danger": {
+    "message": "Kötü amaçlı site uyarı sayfası"
+  },
+  "opt_h_capacity": {
+    "message": "Kural kapasitesi"
   }
 }
