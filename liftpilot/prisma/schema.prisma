@@ -38,34 +38,34 @@ enum Verdict {
 }
 
 model Company {
-  id                   String            @id @default(cuid())
+  id                   String                  @id @default(cuid())
   name                 String
   vatNumber            String?
   city                 String?
-  active               Boolean           @default(true)
+  active               Boolean                 @default(true)
   /// the logo in the title block of the drawing sets (one of the company's logos; null = the name in letters)
-  logoId               String?           @unique
-  logo                 CompanyLogo?      @relation("CurrentLogo", fields: [logoId], references: [id], onDelete: SetNull)
+  logoId               String?                 @unique
+  logo                 CompanyLogo?            @relation("CurrentLogo", fields: [logoId], references: [id], onDelete: SetNull)
   /// the subscription (Stripe): the customer and the subscription, their state as Stripe last gave it (webhook or API
   /// with the server's key), the slots for colleagues it pays, the end of the paid period; the trial's end (null: not
   /// started — it starts at the company's first sign-in with billing on)
-  stripeCustomerId     String?           @unique
-  stripeSubscriptionId String?           @unique
+  stripeCustomerId     String?                 @unique
+  stripeSubscriptionId String?                 @unique
   subscriptionStatus   String?
-  seatPack             SeatPack          @default(NONE)
+  seatPack             SeatPack                @default(NONE)
   periodEnd            DateTime?
-  cancelAtPeriodEnd    Boolean           @default(false)
+  cancelAtPeriodEnd    Boolean                 @default(false)
   trialEndsAt          DateTime?
   /// the platform's own company: never billed
-  billingExempt        Boolean           @default(false)
+  billingExempt        Boolean                 @default(false)
   /// when the owner was told that the company, inactive without a subscription, will be deleted (src/lib/inactive.ts);
   /// cleared when someone signs in again or a subscription starts
   inactiveNoticeAt     DateTime?
   /// the order of the sections of the survey sheets (Rilievi; the keys of src/lib/rilievi/fields.ts, «impianto» always
   /// first); empty — the default order. Set on the company page by whoever has 'company:edit'.
-  ordineSezioni        String[]          @default([])
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
+  ordineSezioni        String[]                @default([])
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
   users                User[]
   priceItems           PriceItem[]
   customPrices         CustomPriceItem[]
@@ -74,7 +74,7 @@ model Company {
   calculations         Calculation[]
   shaftDesigns         ShaftDesign[]
   auditLogs            AuditLog[]
-  logos                CompanyLogo[]     @relation("CompanyLogos")
+  logos                CompanyLogo[]           @relation("CompanyLogos")
   clientLogos          ClientLogo[]
   drawingSets          DrawingSet[]
   drawingCounters      DrawingCounter[]
@@ -83,6 +83,8 @@ model Company {
   invites              Invite[]
   schede               Scheda[]
   rolePermissions      CompanyRolePermission[]
+  betaInvites          BetaInvite[]
+  feedback             Feedback[]
 }
 
 /// A logo uploaded by a company, immutable: a drawing set keeps the one it was issued with. PNG or JPEG, checked by
@@ -163,6 +165,8 @@ model User {
   schedeCreated      Scheda[]            @relation("SchedeCreated")
   schedeUpdated      Scheda[]            @relation("SchedeUpdated")
   schedeDeleted      Scheda[]            @relation("SchedeDeleted")
+  betaInvitesCreated BetaInvite[]        @relation("BetaInvitesCreated")
+  feedback           Feedback[]
 
   @@index([companyId])
 }
@@ -186,10 +190,10 @@ model Session {
 /// of the address never confirmed nor used (a colleague a company added) and drops the others. Gone with its link, at
 /// the latest UNCONFIRMED_DAYS after it was made (src/lib/purge.ts).
 model PendingRegistration {
-  id           String   @id @default(cuid())
+  id           String      @id @default(cuid())
   email        String
   /// SHA-256 of the newest link's token (src/lib/tokens.ts): a new link ends the earlier one
-  tokenHash    String   @unique
+  tokenHash    String      @unique
   expiresAt    DateTime
   passwordHash String
   name         String
@@ -200,9 +204,39 @@ model PendingRegistration {
   /// the terms accepted at the registration: their version and the SHA-256 of the text shown (src/lib/legal-text.ts)
   termsVersion String
   termsSha256  String
-  createdAt    DateTime @default(now())
+  /// the beta invitation it was made with (REGISTRATION_MODE=invite, src/lib/beta-invites.ts): used up when the link of
+  /// the e-mail makes the company; an invitation withdrawn takes its waiting registrations with it
+  betaInviteId String?
+  betaInvite   BetaInvite? @relation(fields: [betaInviteId], references: [id], onDelete: Cascade)
+  createdAt    DateTime    @default(now())
 
   @@index([email, createdAt])
+  @@index([expiresAt])
+  @@index([betaInviteId])
+}
+
+/// An invitation to the beta, made by the platform administrator (/app/admin): while the registration is by invitation
+/// (REGISTRATION_MODE=invite) only its link opens the registration form, for its address only. One company per
+/// invitation: used up when the link of the confirmation e-mail makes the company, which it then names.
+model BetaInvite {
+  id          String                @id @default(cuid())
+  email       String
+  /// SHA-256 of the link's token (src/lib/token-hash.ts); the token itself is never stored
+  tokenHash   String                @unique
+  /// the administrator's own note on the tester, never shown to the tester
+  note        String?
+  createdById String?
+  createdBy   User?                 @relation("BetaInvitesCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  expiresAt   DateTime
+  usedAt      DateTime?
+  companyId   String?
+  company     Company?              @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  createdAt   DateTime              @default(now())
+  pending     PendingRegistration[]
+
+  @@index([email])
+  @@index([createdById])
+  @@index([companyId])
   @@index([expiresAt])
 }
 
@@ -815,4 +849,34 @@ model MisuraBottoniera {
   display            Boolean?
 
   @@unique([schedaId, fermata])
+}
+
+enum FeedbackKind {
+  BUG
+  IDEA
+  QUESTION
+}
+
+/// A report sent from inside the app («Segnala un problema», src/server/feedback-actions.ts): what the user wrote,
+/// from which page and, from the error page, the error's code. Only in our database (never by e-mail, which carries
+/// only that a report arrived); read by the platform administrator; part of the company's data — it goes with it.
+model Feedback {
+  id        String       @id @default(cuid())
+  companyId String
+  company   Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  kind      FeedbackKind
+  /// the path of the page it was sent from, without the query string
+  page      String
+  /// the code of the error page (Next's digest), when sent from it
+  digest    String?
+  message   String
+  createdAt DateTime     @default(now())
+  /// when the administrator marked it handled
+  handledAt DateTime?
+
+  @@index([companyId])
+  @@index([userId])
+  @@index([createdAt])
 }
