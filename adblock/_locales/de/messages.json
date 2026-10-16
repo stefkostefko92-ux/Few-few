@@ -234,7 +234,7 @@
     "message": "Entfernt utm_*, fbclid, gclid und andere Klick-Kennungen aus den Links, die Sie öffnen"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blockiert bekannte Malware-Domains (URLhaus-Liste von abuse.ch)"
+    "message": "Warnt, bevor sich eine bekannte Malware-Website öffnet, und blockiert, was Seiten von solchen Websites laden (URLhaus-Liste von abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Deaktiviert die Werbe-APIs Google Topics, FLoC und Protected Audience auf allen Websites"
@@ -741,5 +741,59 @@
   },
   "welQuickSub": {
     "message": "Optional: Es funktioniert bereits. In den Einstellungen können Sie all das jederzeit ändern."
+  },
+  "blk_page_title": {
+    "message": "Website blockiert — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Diese Website kann Ihrem Gerät schaden"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock hat diese Seite angehalten, weil die Website auf URLhaus steht, einer öffentlichen Liste von Adressen, die Schadsoftware verbreiten."
+  },
+  "blk_back": {
+    "message": "Zurück"
+  },
+  "blk_continue": {
+    "message": "Trotzdem fortfahren"
+  },
+  "blk_note": {
+    "message": "Fortfahren lässt nur die Seiten dieser Website durch, bis Sie den Browser schließen."
+  },
+  "blk_why": {
+    "message": "Warum steht sie auf der Liste? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Verbindungen dieser Seite"
+  },
+  "conn_empty": {
+    "message": "Diese Seite hat nichts von anderen Websites geladen."
+  },
+  "conn_block": {
+    "message": "Hier blockieren"
+  },
+  "conn_blocked": {
+    "message": "Hier blockiert"
+  },
+  "conn_hint": {
+    "message": "Blockieren, was diese Website von $1 lädt"
+  },
+  "opt_conn_title": {
+    "message": "Von Ihnen blockierte Verbindungen"
+  },
+  "opt_conn_sub": {
+    "message": "Im Fenster von Supreme AdBlock unter „Verbindungen dieser Seite“ blockiert, jeweils nur auf der eigenen Website."
+  },
+  "opt_empty_conn": {
+    "message": "Noch nichts blockiert."
+  },
+  "opt_conn_remove": {
+    "message": "$1 auf $2 wieder zulassen"
+  },
+  "opt_h_danger": {
+    "message": "Malware-Warnseite"
+  },
+  "opt_h_capacity": {
+    "message": "Regelkapazität"
   }
 }

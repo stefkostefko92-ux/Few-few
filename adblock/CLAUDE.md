@@ -47,7 +47,7 @@ popup/ · options/       UI (popup + настройки; карти „Филт�
                         Liquid Glass: стъклото е само CSS (backdrop-filter + маскиран ръб ::after + --mx/--my
                         от popup.js), сиянието е body::before; prefers-reduced-transparency → плътни панели.
                         НЕ ползвай localStorage в popup-а (първият достъп ~40 ms) и не връщай three.js в пакета.
-                        **↶ N** (5.2.0, отмяна на picker-а) е бутон до „Скрий елемент“, не отделен ред: пълното
+                        **↶ N** (5.5.0, отмяна на picker-а) е бутон до „Скрий елемент“, не отделен ред: пълното
                         изречение е aria-label/title; ако редът прелее, `.actions.squeeze` оставя на Settings само
                         зъбното колело (fitPopup()). Отделен ред за нещо ново = над 600 px на 9 езика (измерено).
                         **Таван 600 px** (Chrome): fitPopup() стяга отстоянията (`html.tight`) само ако съдържанието
@@ -58,6 +58,11 @@ popup/ · options/       UI (popup + настройки; карти „Филт�
                         (`reviewDue`/`reviewUrl` — линк само при инсталация от CWS), popup-ът рисува; ключът
                         `reviewAsk` в Настройки маха всичко. БЕЗ стимули, без филтър по мнение, никога по сайтовете
                         или като известие (CWS Program Policies) — не добавяй „оцени с 5 звезди“ или награди.
+blocked/                страницата вместо опасен сайт: динамично redirect правило (regexSubstitution →
+                        chrome.runtime.getURL — затова е WAR БЕЗ use_dynamic_url), приоритет 2 (под разрешен сайт,
+                        пауза и YouTube bypass). „Продължи“ само през SW (`proceedDangerous`: http(s), хост от URLhaus)
+                        → едно session allow правило; в рамка страницата не прави нищо (click-jacking). Статичното
+                        правило на URLhaus без resourceTypes НЕ хваща main_frame — затова съществува това.
 report/                 „Сайтът е счупен?" — бързи поправки (вкл. „за 1 час“ → allowUntil + аларма allow-expire) + mailto доклад
 welcome/                първо пускане: бързи избори (setFeatures/setList — features се праща ЦЯЛ), вносът, клавишите
 icons/ · _locales/      икони · локализация
@@ -151,11 +156,16 @@ bash tools/package.sh                         # билд + самопровер�
   `tests/generate_rules.test.mjs` ребилдва във временна папка и сравнява байт по байт.
 - Всички `chrome.*.on*.addListener` се регистрират **синхронно на top level** в
   service worker-а.
+- **„Връзки на страницата“** (popup): content.js чете Resource Timing САМО при отваряне на кутията, само в top
+  frame, само за нашето съобщение `getConnections`; „Блокирай тук“ = `siteBlocks[site]` → едно правило на сайт
+  (60000+, `initiatorDomains`, приоритет 5000: над изключенията на листите ≤ 5, под allowlist 10000). Защитен хост
+  (SA_POLICY.protectedHost) никога; импортът минава през `cleanSiteBlocks`. Нов диапазон динамични id → провери
+  `logListKey` и getHealth (бюджетът на Chrome е в „Състояние на ядрото“).
 - **Клавишни комбинации** (manifest `commands`): само `Alt+Shift+<буква>` / `MacCtrl+Shift+<буква>`
   (Option+Shift пише знаци на Mac). Никога буква, която Chrome пази и тихо отказва като suggested key
   (B — лентата с отметки, C, P, W, X, Z; измерено в Chromium), нито менютата на Google Docs/Sheets/Slides
   (F E V I O T H A N D X S R). Днес U (сайтът) и Q (пауза); picker-ът е без клавиш. Гейт в
-  `tests/control52.test.mjs`, реалното присвояване — в `tests/browser/control52.browser.mjs`.
+  `tests/control.test.mjs`, реалното присвояване — в `tests/browser/control.browser.mjs`.
 - Smart Detection крие само cross-origin iframe с точен IAB рекламен размер —
   консервативно, за да няма false positives.
 - **cookies.js кликва само CMP-специфични бутони глобално**; всичко генерично (текст,
@@ -169,7 +179,8 @@ bash tools/package.sh                         # билд + самопровер�
   текст не струват нищо, една `querySelectorAll` на списък, не на селектор.
 - **Content script ≠ страница на разширението:** SW приема от content script само
   `smartHit`, `getCosmetic`, `saveCustomSelector`, `ytBypass`, `cookieRejected`; всичко
-  друго (вкл. `undoHidden`, `importForeign`, `setAllow` с `minutes`) — само от popup/options/report/welcome
+  друго (вкл. `undoHidden`, `importForeign`, `setAllow` с `minutes`, `siteBlock`, `proceedDangerous`) — само от
+  popup/options/report/welcome/blocked
   (`sender.url` на разширението).
 - **Листи: в пакета само ясно лицензирани.** Лист без лиценз за разпространение (BG, PL NC,
   Dandelicence) никога не влиза в пакета — сваля се от автора САМО при включване от

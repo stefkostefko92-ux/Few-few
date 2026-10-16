@@ -232,7 +232,7 @@
     "message": "utm_*፣ fbclid፣ gclid እና ሌሎች የጠቅታ መለያዎችን ከሚከፍቷቸው አገናኞች ያስወግዳል"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "የታወቁ ተንኮል-አዘል ጎራዎችን ያግዳል (የabuse.ch URLhaus ዝርዝር)"
+    "message": "የታወቀ ተንኮል-አዘል ጣቢያ ከመከፈቱ በፊት ያስጠነቅቃል፣ እና ገጾች ከእንደዚህ ዓይነት ጣቢያዎች የሚጭኑትን ያግዳል (የabuse.ch URLhaus ዝርዝር)።"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "በሁሉም ጣቢያ ላይ የGoogle Topics፣ FLoC እና Protected Audience ማስታወቂያ APIዎችን ያሰናክላል"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "አማራጭ ነው፦ አስቀድሞ እየሠራ ነው። ከእነዚህ ውስጥ ማንኛውንም በኋላ በቅንብሮች ውስጥ መቀየር ይችላሉ።"
+  },
+  "blk_page_title": {
+    "message": "ጣቢያው ታግዷል — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "ይህ ጣቢያ መሣሪያዎን ሊጎዳ ይችላል"
+  },
+  "blk_text": {
+    "message": "ጣቢያው ተንኮል-አዘል ሶፍትዌር የሚያሰራጩ አድራሻዎች ይፋዊ ዝርዝር በሆነው URLhaus ላይ ስለሚገኝ Supreme AdBlock ይህን ገጽ አቁሞታል።"
+  },
+  "blk_back": {
+    "message": "ወደ ኋላ ይመለሱ"
+  },
+  "blk_continue": {
+    "message": "ቢሆንም ይቀጥሉ"
+  },
+  "blk_note": {
+    "message": "መቀጠል አሳሹን እስኪዘጉ ድረስ የዚህን ጣቢያ ገጾች ብቻ ያሳልፋል።"
+  },
+  "blk_why": {
+    "message": "ለምን ተዘረዘረ? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "በዚህ ገጽ ላይ ያሉ ግንኙነቶች"
+  },
+  "conn_empty": {
+    "message": "ይህ ገጽ ከሌሎች ጣቢያዎች ምንም አልጫነም።"
+  },
+  "conn_block": {
+    "message": "እዚህ ያግዱ"
+  },
+  "conn_blocked": {
+    "message": "እዚህ ታግዷል"
+  },
+  "conn_hint": {
+    "message": "ይህ ጣቢያ ከ$1 የሚጭነውን ያግዱ"
+  },
+  "opt_conn_title": {
+    "message": "ያገዷቸው ግንኙነቶች"
+  },
+  "opt_conn_sub": {
+    "message": "በSupreme AdBlock መስኮት ውስጥ ካለው «በዚህ ገጽ ላይ ያሉ ግንኙነቶች» የታገዱ፣ እያንዳንዳቸው በራሳቸው ጣቢያ ላይ ብቻ።"
+  },
+  "opt_empty_conn": {
+    "message": "እስካሁን ምንም አልታገደም።"
+  },
+  "opt_conn_remove": {
+    "message": "በ$2 ላይ የ$1 እገዳን ያንሱ"
+  },
+  "opt_h_danger": {
+    "message": "የተንኮል-አዘል ጣቢያ ማስጠንቀቂያ ገጽ"
+  },
+  "opt_h_capacity": {
+    "message": "የደንብ አቅም"
   }
 }

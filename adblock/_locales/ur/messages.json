@@ -232,7 +232,7 @@
     "message": "آپ کے کھولے گئے لنکس سے utm_*، fbclid، gclid اور دیگر کلک شناخت کنندگان ہٹائیں"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "معروف میلویئر ڈومینز بلاک کریں (abuse.ch کی URLhaus فہرست)"
+    "message": "کسی معروف میلویئر سائٹ کے کھلنے سے پہلے خبردار کریں، اور صفحات ایسی سائٹس سے جو کچھ لوڈ کرتے ہیں اسے بلاک کریں (abuse.ch کی URLhaus فہرست)۔"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "ہر سائٹ پر Google Topics، FLoC اور Protected Audience اشتہاری APIs غیر فعال کریں"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "اختیاری: یہ پہلے ہی کام کر رہا ہے۔ ان میں سے کوئی بھی چیز بعد میں ترتیبات میں بدلی جا سکتی ہے۔"
+  },
+  "blk_page_title": {
+    "message": "سائٹ بلاک کر دی گئی — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "یہ سائٹ آپ کے آلے کو نقصان پہنچا سکتی ہے"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock نے یہ صفحہ روک دیا کیونکہ یہ سائٹ URLhaus پر درج ہے، جو میلویئر پھیلانے والے پتوں کی ایک عوامی فہرست ہے۔"
+  },
+  "blk_back": {
+    "message": "واپس جائیں"
+  },
+  "blk_continue": {
+    "message": "پھر بھی جاری رکھیں"
+  },
+  "blk_note": {
+    "message": "جاری رکھنے پر، براؤزر بند کرنے تک صرف اسی سائٹ کے صفحات کو کھلنے دیا جاتا ہے۔"
+  },
+  "blk_why": {
+    "message": "یہ فہرست میں کیوں ہے؟ (URLhaus)"
+  },
+  "conn_title": {
+    "message": "اس صفحے کے کنکشنز"
+  },
+  "conn_empty": {
+    "message": "اس صفحے نے دوسری سائٹس سے کچھ لوڈ نہیں کیا۔"
+  },
+  "conn_block": {
+    "message": "یہاں بلاک کریں"
+  },
+  "conn_blocked": {
+    "message": "یہاں بلاک شدہ"
+  },
+  "conn_hint": {
+    "message": "یہ سائٹ $1 سے جو کچھ لوڈ کرتی ہے اسے بلاک کریں"
+  },
+  "opt_conn_title": {
+    "message": "آپ کے بلاک کردہ کنکشنز"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock ونڈو کے “اس صفحے کے کنکشنز” سے بلاک کیے گئے، ہر ایک صرف اپنی سائٹ پر۔"
+  },
+  "opt_empty_conn": {
+    "message": "ابھی تک کچھ بلاک نہیں کیا گیا۔"
+  },
+  "opt_conn_remove": {
+    "message": "$2 پر $1 کو ان بلاک کریں"
+  },
+  "opt_h_danger": {
+    "message": "میلویئر انتباہی صفحہ"
+  },
+  "opt_h_capacity": {
+    "message": "اصولوں کی گنجائش"
   }
 }

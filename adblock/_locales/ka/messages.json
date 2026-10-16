@@ -232,7 +232,7 @@
     "message": "შლის utm_*, fbclid, gclid და სხვა დაწკაპუნების იდენტიფიკატორებს თქვენ მიერ გახსნილი ბმულებიდან"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "ბლოკავს ცნობილ მავნე დომენებს (abuse.ch-ის URLhaus სია)"
+    "message": "გაფრთხილებთ ცნობილი მავნე საიტის გახსნამდე და ბლოკავს იმას, რასაც გვერდები ასეთი საიტებიდან ტვირთავს (abuse.ch-ის URLhaus სია)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "თიშავს Google Topics, FLoC და Protected Audience სარეკლამო API-ებს ყველა საიტზე"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "არასავალდებულოა: ყველაფერი უკვე მუშაობს. ამ ყველაფრის შეცვლა მოგვიანებით პარამეტრებში შეგიძლიათ."
+  },
+  "blk_page_title": {
+    "message": "საიტი დაბლოკილია — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "ამ საიტმა შეიძლება ზიანი მიაყენოს თქვენს მოწყობილობას"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock-მა ეს გვერდი შეაჩერა, რადგან საიტი შეტანილია URLhaus-ში — მავნე პროგრამების გამავრცელებელი მისამართების საჯარო სიაში."
+  },
+  "blk_back": {
+    "message": "უკან დაბრუნება"
+  },
+  "blk_continue": {
+    "message": "მაინც გაგრძელება"
+  },
+  "blk_note": {
+    "message": "გაგრძელების შემთხვევაში ბრაუზერის დახურვამდე დაიშვება მხოლოდ ამ საიტის გვერდები."
+  },
+  "blk_why": {
+    "message": "რატომ არის სიაში? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "ამ გვერდის კავშირები"
+  },
+  "conn_empty": {
+    "message": "ამ გვერდს სხვა საიტებიდან არაფერი ჩაუტვირთავს."
+  },
+  "conn_block": {
+    "message": "დაბლოკვა აქ"
+  },
+  "conn_blocked": {
+    "message": "დაბლოკილია აქ"
+  },
+  "conn_hint": {
+    "message": "იმის დაბლოკვა, რასაც ეს საიტი $1-დან ტვირთავს"
+  },
+  "opt_conn_title": {
+    "message": "თქვენ მიერ დაბლოკილი კავშირები"
+  },
+  "opt_conn_sub": {
+    "message": "დაბლოკილია Supreme AdBlock-ის ფანჯრის „ამ გვერდის კავშირები“ სიიდან, თითოეული მხოლოდ თავის საიტზე."
+  },
+  "opt_empty_conn": {
+    "message": "ჯერ არაფერი დაბლოკილა."
+  },
+  "opt_conn_remove": {
+    "message": "$1-ის განბლოკვა საიტზე $2"
+  },
+  "opt_h_danger": {
+    "message": "მავნე საიტის გაფრთხილების გვერდი"
+  },
+  "opt_h_capacity": {
+    "message": "წესების ტევადობა"
   }
 }

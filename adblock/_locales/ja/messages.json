@@ -232,7 +232,7 @@
     "message": "開くリンクから utm_*、fbclid、gclid などのクリック識別子を取り除きます"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "既知のマルウェア ドメインをブロックします（abuse.ch の URLhaus リスト）"
+    "message": "既知のマルウェア サイトが開く前に警告し、ページがそのようなサイトから読み込むものをブロックします（abuse.ch の URLhaus リスト）。"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "すべてのサイトで Google の Topics、FLoC、Protected Audience 広告 API を無効にします"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "任意です。このままでも機能します。どの項目も後から設定で変更できます。"
+  },
+  "blk_page_title": {
+    "message": "サイトをブロックしました — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "このサイトはお使いのデバイスに害を及ぼすおそれがあります"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock がこのページを停止しました。このサイトは、マルウェアを拡散するアドレスの公開リスト URLhaus に掲載されています。"
+  },
+  "blk_back": {
+    "message": "戻る"
+  },
+  "blk_continue": {
+    "message": "このまま続行"
+  },
+  "blk_note": {
+    "message": "続行すると、ブラウザを閉じるまでの間、このサイトのページに限り表示を許可します。"
+  },
+  "blk_why": {
+    "message": "なぜ掲載されているのですか？（URLhaus）"
+  },
+  "conn_title": {
+    "message": "このページの接続先"
+  },
+  "conn_empty": {
+    "message": "このページはほかのサイトから何も読み込んでいません。"
+  },
+  "conn_block": {
+    "message": "ここでブロック"
+  },
+  "conn_blocked": {
+    "message": "ここでブロック済み"
+  },
+  "conn_hint": {
+    "message": "このサイトが $1 から読み込むものをブロック"
+  },
+  "opt_conn_title": {
+    "message": "ブロックした接続先"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock のウィンドウの「このページの接続先」でブロックしたもので、それぞれのサイトでのみ適用されます。"
+  },
+  "opt_empty_conn": {
+    "message": "まだ何もブロックしていません。"
+  },
+  "opt_conn_remove": {
+    "message": "$2 での $1 のブロックを解除"
+  },
+  "opt_h_danger": {
+    "message": "マルウェア警告ページ"
+  },
+  "opt_h_capacity": {
+    "message": "ルールの容量"
   }
 }

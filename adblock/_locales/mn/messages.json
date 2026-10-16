@@ -232,7 +232,7 @@
     "message": "Таны нээж буй холбоосоос utm_*, fbclid, gclid болон бусад товшилтын танигчийг арилгах"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Мэдэгдэж буй хортой домэйнуудыг хаах (abuse.ch-ийн URLhaus жагсаалт)"
+    "message": "Мэдэгдэж буй хортой сайт нээгдэхээс өмнө анхааруулж, хуудсууд ийм сайтаас ачаалдаг зүйлийг хаана (abuse.ch-ийн URLhaus жагсаалт)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Бүх сайт дээр Google Topics, FLoC болон Protected Audience зарын API-г идэвхгүй болгох"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Заавал биш: аль хэдийн ажиллаж байна. Эдгээрийг дараа нь Тохиргоо хэсгээс хүссэн үедээ өөрчилж болно."
+  },
+  "blk_page_title": {
+    "message": "Сайт хаагдсан — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Энэ сайт таны төхөөрөмжид хор хөнөөл учруулж болзошгүй"
+  },
+  "blk_text": {
+    "message": "Энэ сайт хортой програм тараадаг хаягуудын нийтийн жагсаалт болох URLhaus-д орсон тул Supreme AdBlock энэ хуудсыг зогсоолоо."
+  },
+  "blk_back": {
+    "message": "Буцах"
+  },
+  "blk_continue": {
+    "message": "Гэсэн ч үргэлжлүүлэх"
+  },
+  "blk_note": {
+    "message": "Үргэлжлүүлбэл хөтчөө хаах хүртэл зөвхөн энэ сайтын хуудсуудыг нэвтрүүлнэ."
+  },
+  "blk_why": {
+    "message": "Яагаад жагсаалтад орсон бэ? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Энэ хуудасны холболтууд"
+  },
+  "conn_empty": {
+    "message": "Энэ хуудас бусад сайтаас юу ч ачаалаагүй."
+  },
+  "conn_block": {
+    "message": "Энд хаах"
+  },
+  "conn_blocked": {
+    "message": "Энд хаасан"
+  },
+  "conn_hint": {
+    "message": "Энэ сайтын $1-ээс ачаалдаг зүйлийг хаах"
+  },
+  "opt_conn_title": {
+    "message": "Таны хаасан холболтууд"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock-ийн цонхны «Энэ хуудасны холболтууд» хэсгээс хаасан, тус бүр зөвхөн өөрийн сайт дээр."
+  },
+  "opt_empty_conn": {
+    "message": "Одоогоор юу ч хаагаагүй."
+  },
+  "opt_conn_remove": {
+    "message": "Хаалтыг цуцлах: $1 ($2 дээр)"
+  },
+  "opt_h_danger": {
+    "message": "Хортой сайтын анхааруулах хуудас"
+  },
+  "opt_h_capacity": {
+    "message": "Дүрмийн багтаамж"
   }
 }

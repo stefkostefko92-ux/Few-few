@@ -232,7 +232,7 @@
     "message": "Уклања utm_*, fbclid, gclid и друге идентификаторе кликова из линкова које отварате"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Блокира познате злонамерне домене (листа URLhaus од abuse.ch)"
+    "message": "Упозорава пре отварања познатог злонамерног сајта и блокира оно што странице учитавају са таквих сајтова (листа URLhaus од abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Искључује рекламне API-је Google Topics, FLoC и Protected Audience на сваком сајту"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Опционо: већ ради. Све ово можете касније да промените у подешавањима."
+  },
+  "blk_page_title": {
+    "message": "Сајт је блокиран — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Овај сајт може да нашкоди вашем уређају"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock је зауставио ову страницу јер је сајт на листи URLhaus — јавном списку адреса које шире злонамерни софтвер."
+  },
+  "blk_back": {
+    "message": "Назад"
+  },
+  "blk_continue": {
+    "message": "Ипак настави"
+  },
+  "blk_note": {
+    "message": "Ако наставите, пропуштаће се само странице овог сајта, док не затворите прегледач."
+  },
+  "blk_why": {
+    "message": "Зашто је на листи? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Везе на овој страници"
+  },
+  "conn_empty": {
+    "message": "Ова страница није ништа учитала са других сајтова."
+  },
+  "conn_block": {
+    "message": "Блокирај овде"
+  },
+  "conn_blocked": {
+    "message": "Блокирано овде"
+  },
+  "conn_hint": {
+    "message": "Блокирај оно што овај сајт учитава са $1"
+  },
+  "opt_conn_title": {
+    "message": "Везе које сте блокирали"
+  },
+  "opt_conn_sub": {
+    "message": "Блокиране у прозору Supreme AdBlock-а преко „Везе на овој страници“, свака само на свом сајту."
+  },
+  "opt_empty_conn": {
+    "message": "Још ништа није блокирано."
+  },
+  "opt_conn_remove": {
+    "message": "Деблокирај $1 на сајту $2"
+  },
+  "opt_h_danger": {
+    "message": "Упозорење на злонамерне сајтове"
+  },
+  "opt_h_capacity": {
+    "message": "Капацитет правила"
   }
 }

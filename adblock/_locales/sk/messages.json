@@ -232,7 +232,7 @@
     "message": "Odstraňuje utm_*, fbclid, gclid a ďalšie identifikátory kliknutí z odkazov, ktoré otvárate"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokuje známe škodlivé domény (zoznam URLhaus od abuse.ch)"
+    "message": "Varuje pred otvorením známeho škodlivého webu a blokuje to, čo stránky načítavajú z takých webov (zoznam URLhaus od abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Vypína reklamné API Google Topics, FLoC a Protected Audience na všetkých weboch"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Voliteľné: všetko už funguje. Čokoľvek z toho môžete neskôr zmeniť v nastaveniach."
+  },
+  "blk_page_title": {
+    "message": "Web zablokovaný — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Tento web môže poškodiť vaše zariadenie"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock zastavil túto stránku, pretože web je v zozname URLhaus — verejnom zozname adries, ktoré šíria malvér."
+  },
+  "blk_back": {
+    "message": "Späť"
+  },
+  "blk_continue": {
+    "message": "Napriek tomu pokračovať"
+  },
+  "blk_note": {
+    "message": "Ak budete pokračovať, prepustia sa len stránky tohto webu, a to do zatvorenia prehliadača."
+  },
+  "blk_why": {
+    "message": "Prečo je v zozname? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Pripojenia na tejto stránke"
+  },
+  "conn_empty": {
+    "message": "Táto stránka nenačítala nič z iných webov."
+  },
+  "conn_block": {
+    "message": "Blokovať tu"
+  },
+  "conn_blocked": {
+    "message": "Blokované tu"
+  },
+  "conn_hint": {
+    "message": "Blokovať, čo tento web načítava z $1"
+  },
+  "opt_conn_title": {
+    "message": "Vami blokované pripojenia"
+  },
+  "opt_conn_sub": {
+    "message": "Blokované v okne Supreme AdBlock v časti „Pripojenia na tejto stránke“, každé len na svojom webe."
+  },
+  "opt_empty_conn": {
+    "message": "Zatiaľ nie je nič blokované."
+  },
+  "opt_conn_remove": {
+    "message": "Odblokovať $1 na webe $2"
+  },
+  "opt_h_danger": {
+    "message": "Varovná stránka pred malvérom"
+  },
+  "opt_h_capacity": {
+    "message": "Kapacita pravidiel"
   }
 }

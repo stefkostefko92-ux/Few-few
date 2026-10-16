@@ -6,7 +6,9 @@ Supreme AdBlock, ne yaptığınızı izlemeden reklamları her yerde engeller �
 • Çerez banner'ları: sizin yerinize “Reddet”e basar, kalan bulanıklığı ve kaydırma kilidini temizler; oturum açma, OAuth veya ödeme düğmelerine asla basmaz.
 • Odak modu: sohbet baloncuklarını, bülten pop-up'larını, bildirim isteklerini, sosyal medya widget'larını, yapay zekâ pop-up'larını ve YouTube Shorts'u gizleyin.
 • Anti-adblock duvarları ve pop-under'lar etkisiz hâle getirilir.
+• Tehlikeli siteler: bilinen kötü amaçlı bir site yerine bir uyarı sayfası açılır ve devam edip etmeyeceğinize siz karar verirsiniz.
 • Site bozuk mu? Tek tıklama düzeltir ya da bize bildirin — siz görmeden hiçbir şey gönderilmez.
 • uBlock Origin, AdGuard veya Adblock Plus'tan mı geçiyorsunuz? İzin verdiğiniz siteleri ve filtrelerinizi tek bir dosyayla getirin.
+• Bir sayfanın başka hangi sitelere bağlandığını görün ve birini tek tıkla yalnızca orada engelleyin.
 • Günde iki kez imzalı filtre güncellemeleri: yeni reklam ağları saatler içinde ele alınır, uzaktan kod olmadan.
 • Hesap yok, telemetri yok, veri toplama yok; ayrıca Global Privacy Control her siteden verilerinizi satmamasını veya paylaşmamasını ister.

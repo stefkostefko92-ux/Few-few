@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en" data-theme="carbon">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title data-i18n="blk_page_title">Site blocked — Supreme AdBlock</title>
+  <script src="../theme.js"></script>
+  <script src="../i18n.js"></script>
+  <link rel="stylesheet" href="../options/options.css" />
+  <link rel="stylesheet" href="blocked.css" />
+</head>
+<body>
+  <main class="danger" id="main">
+    <svg class="sign" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="M12 8v5m0 3v.5"/></svg>
+    <h1 data-i18n="blk_title">This site may harm your device</h1>
+    <p class="host" id="host">—</p>
+    <p data-i18n="blk_text">Supreme AdBlock stopped this page because the site is on URLhaus, a public list of addresses that spread malware.</p>
+    <div class="acts">
+      <button id="back" class="btn" type="button" data-i18n="blk_back">Go back</button>
+      <button id="go" class="btn ghost" type="button" data-i18n="blk_continue" hidden>Continue anyway</button>
+    </div>
+    <p class="note" id="note" data-i18n="blk_note" hidden>Continuing lets only this site's pages through, until you close the browser.</p>
+    <p class="note"><a id="why" target="_blank" rel="noopener noreferrer" data-i18n="blk_why" hidden>Why is it listed? (URLhaus)</a></p>
+  </main>
+  <script src="blocked.js"></script>
+</body>
+</html>

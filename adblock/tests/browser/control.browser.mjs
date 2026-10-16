@@ -1,4 +1,4 @@
-// 5.2.0 — контролът с истинското разширение в реален Chromium (Playwright): „Върни последния“ в
+// 5.5.0 — контролът с истинското разширение в реален Chromium (Playwright): „Върни последния“ в
 // popup-а връща скрития елемент веднага (без презареждане), Настройките (графиката за 30 дни, GPC,
 // клавишите, вносът от uBlock Origin), „Разреши за 1 час“ в страницата за поправки и брояча в
 // popup-а, клавишните команди в service worker-а, бързите избори на приветствената страница и
@@ -143,6 +143,12 @@ try {
   ok("…the sites are in the allowlist, the usable filters in My filters, the path rule is not", after.allowlist.includes("bank.example") && after.allowlist.includes("shop.example") &&
     after.userFilters.includes("ads.tracker.example") && after.userFilters.includes("news.example##.promo") && !after.userFilters.includes("cdn.example"));
   ok("…and the allowlist on the page shows them", (await opt.textContent("#allowList")).includes("bank.example"));
+
+  // engine health: the rule budget and the malware warning page
+  await opt.waitForFunction(() => document.getElementById("healthList").textContent.includes("Rule capacity"), null, { timeout: 8000 }).catch(() => {});
+  const health = await opt.textContent("#healthList");
+  ok(`engine health shows Chrome's rule budget (${(health.match(/[\d,]+ \/ 30,000 dynamic[^O!]*/) || [""])[0].trim()})`, /\d[\d,]* \/ 30,000 dynamic · \d+ \/ 1,000 regex · [\d,]+ static to spare/.test(health));
+  ok("…and that the malware warning page is armed", /Malware warning pagearmed for [\d,]+ sites/.test(health.replace(/\s+/g, " ").replace(/page armed/, "pagearmed")));
 
   // the switches show keyboard focus (the input itself is invisible)
   await opt.focus("#featTopics");

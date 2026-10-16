@@ -232,7 +232,7 @@
     "message": "Ta bort utm_*, fbclid, gclid och andra klick-id:n från länkarna du öppnar"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blockera kända skadliga domäner (URLhaus-listan från abuse.ch)"
+    "message": "Varna innan en känd skadlig webbplats öppnas, och blockera det som sidor läser in från sådana webbplatser (URLhaus-listan från abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Inaktivera annons-API:erna Google Topics, FLoC och Protected Audience på alla webbplatser"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Valfritt: det fungerar redan. Du kan ändra allt detta senare i Inställningar."
+  },
+  "blk_page_title": {
+    "message": "Webbplats blockerad – Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Den här webbplatsen kan skada din enhet"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock stoppade den här sidan eftersom webbplatsen finns på URLhaus, en offentlig lista över adresser som sprider skadlig programvara."
+  },
+  "blk_back": {
+    "message": "Gå tillbaka"
+  },
+  "blk_continue": {
+    "message": "Fortsätt ändå"
+  },
+  "blk_note": {
+    "message": "Om du fortsätter släpps bara den här webbplatsens sidor igenom, tills du stänger webbläsaren."
+  },
+  "blk_why": {
+    "message": "Varför finns den på listan? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Anslutningar på den här sidan"
+  },
+  "conn_empty": {
+    "message": "Den här sidan läste inte in något från andra webbplatser."
+  },
+  "conn_block": {
+    "message": "Blockera här"
+  },
+  "conn_blocked": {
+    "message": "Blockerad här"
+  },
+  "conn_hint": {
+    "message": "Blockera det den här webbplatsen läser in från $1"
+  },
+  "opt_conn_title": {
+    "message": "Anslutningar du har blockerat"
+  },
+  "opt_conn_sub": {
+    "message": "Blockerade från ”Anslutningar på den här sidan” i Supreme AdBlock-fönstret, var och en bara på sin egen webbplats."
+  },
+  "opt_empty_conn": {
+    "message": "Inget blockerat än."
+  },
+  "opt_conn_remove": {
+    "message": "Avblockera $1 på $2"
+  },
+  "opt_h_danger": {
+    "message": "Varningssida för skadlig kod"
+  },
+  "opt_h_capacity": {
+    "message": "Regelkapacitet"
   }
 }

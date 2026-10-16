@@ -232,7 +232,7 @@
     "message": "Tynnu utm_*, fbclid, gclid a dynodwyr clicio eraill o’r dolenni rydych yn eu hagor"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Rhwystro parthau maleisus hysbys (rhestr URLhaus gan abuse.ch)"
+    "message": "Rhybuddio cyn i wefan faleisus hysbys agor, a rhwystro’r hyn y mae tudalennau’n ei lwytho o wefannau o’r fath (rhestr URLhaus gan abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Analluogi APIs hysbysebu Google Topics, FLoC a Protected Audience ar bob gwefan"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Dewisol: mae eisoes yn gweithio. Gallwch newid unrhyw un o’r rhain yn nes ymlaen yn y Gosodiadau."
+  },
+  "blk_page_title": {
+    "message": "Gwefan wedi’i rhwystro — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Gallai’r wefan hon niweidio eich dyfais"
+  },
+  "blk_text": {
+    "message": "Mae Supreme AdBlock wedi atal y dudalen hon oherwydd bod y wefan ar URLhaus, rhestr gyhoeddus o gyfeiriadau sy’n lledaenu maleiswedd."
+  },
+  "blk_back": {
+    "message": "Mynd yn ôl"
+  },
+  "blk_continue": {
+    "message": "Parhau beth bynnag"
+  },
+  "blk_note": {
+    "message": "Os byddwch yn parhau, dim ond tudalennau’r wefan hon fydd yn cael mynd drwodd, nes i chi gau’r porwr."
+  },
+  "blk_why": {
+    "message": "Pam mae hi ar y rhestr? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Cysylltiadau ar y dudalen hon"
+  },
+  "conn_empty": {
+    "message": "Ni lwythodd y dudalen hon ddim o wefannau eraill."
+  },
+  "conn_block": {
+    "message": "Rhwystro yma"
+  },
+  "conn_blocked": {
+    "message": "Rhwystrwyd yma"
+  },
+  "conn_hint": {
+    "message": "Rhwystro’r hyn y mae’r wefan hon yn ei lwytho o $1"
+  },
+  "opt_conn_title": {
+    "message": "Cysylltiadau rydych wedi’u rhwystro"
+  },
+  "opt_conn_sub": {
+    "message": "Wedi’u rhwystro o “Cysylltiadau ar y dudalen hon” yn ffenestr Supreme AdBlock, pob un ar ei wefan ei hun yn unig."
+  },
+  "opt_empty_conn": {
+    "message": "Dim wedi’i rwystro eto."
+  },
+  "opt_conn_remove": {
+    "message": "Dadrwystro $1 ar $2"
+  },
+  "opt_h_danger": {
+    "message": "Tudalen rybudd maleiswedd"
+  },
+  "opt_h_capacity": {
+    "message": "Capasiti rheolau"
   }
 }

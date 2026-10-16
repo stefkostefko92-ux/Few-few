@@ -232,7 +232,7 @@
     "message": "તમે ખોલો છો તે લિંકમાંથી utm_*, fbclid, gclid અને અન્ય ક્લિક ઓળખકર્તા કાઢી નાખો"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "જાણીતા માલવેર ડોમેન બ્લૉક કરો (abuse.chની URLhaus સૂચિ)"
+    "message": "જાણીતી માલવેર સાઇટ ખૂલે તે પહેલાં ચેતવણી આપો, અને પેજ આવી સાઇટ પરથી જે લોડ કરે તે બ્લૉક કરો (abuse.chની URLhaus સૂચિ)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "દરેક સાઇટ પર Google Topics, FLoC અને Protected Audience જાહેરાત API બંધ કરો"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "વૈકલ્પિક: તે પહેલેથી કામ કરે છે. આમાંનું કંઈ પણ પછીથી સેટિંગમાં બદલી શકાય છે."
+  },
+  "blk_page_title": {
+    "message": "સાઇટ બ્લૉક કરાઈ — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "આ સાઇટ તમારા ડિવાઇસને નુકસાન પહોંચાડી શકે છે"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock દ્વારા આ પેજ અટકાવાયું છે, કારણ કે આ સાઇટ URLhaus પર છે — માલવેર ફેલાવતાં સરનામાંની એક જાહેર સૂચિ."
+  },
+  "blk_back": {
+    "message": "પાછા જાઓ"
+  },
+  "blk_continue": {
+    "message": "તેમ છતાં આગળ વધો"
+  },
+  "blk_note": {
+    "message": "આગળ વધવાથી, તમે બ્રાઉઝર બંધ કરો ત્યાં સુધી ફક્ત આ સાઇટનાં પેજ ખૂલવા દેવાશે."
+  },
+  "blk_why": {
+    "message": "તે સૂચિમાં કેમ છે? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "આ પેજનાં કનેક્શન"
+  },
+  "conn_empty": {
+    "message": "આ પેજે બીજી સાઇટ પરથી કંઈ લોડ કર્યું નથી."
+  },
+  "conn_block": {
+    "message": "અહીં બ્લૉક કરો"
+  },
+  "conn_blocked": {
+    "message": "અહીં બ્લૉક થયેલ"
+  },
+  "conn_hint": {
+    "message": "આ સાઇટ $1 પરથી જે લોડ કરે તે બ્લૉક કરો"
+  },
+  "opt_conn_title": {
+    "message": "તમે બ્લૉક કરેલાં કનેક્શન"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock વિન્ડોના “આ પેજનાં કનેક્શન”માંથી બ્લૉક કરેલાં, દરેક ફક્ત પોતાની સાઇટ પર."
+  },
+  "opt_empty_conn": {
+    "message": "હજી સુધી કંઈ બ્લૉક કર્યું નથી."
+  },
+  "opt_conn_remove": {
+    "message": "$2 પર $1 અનબ્લૉક કરો"
+  },
+  "opt_h_danger": {
+    "message": "માલવેર ચેતવણી પેજ"
+  },
+  "opt_h_capacity": {
+    "message": "નિયમોની ક્ષમતા"
   }
 }

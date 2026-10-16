@@ -232,7 +232,7 @@
     "message": "तपाईंले खोल्ने लिङ्कहरूबाट utm_*, fbclid, gclid र अन्य क्लिक पहिचानकर्ता हटाउनुहोस्"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "ज्ञात मालवेयर डोमेनहरू ब्लक गर्नुहोस् (abuse.ch को URLhaus सूची)"
+    "message": "ज्ञात मालवेयर साइट खुल्नुअघि चेतावनी दिनुहोस्, र पृष्ठहरूले त्यस्ता साइटबाट लोड गर्ने कुरा ब्लक गर्नुहोस् (abuse.ch को URLhaus सूची)।"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "हरेक साइटमा Google Topics, FLoC र Protected Audience विज्ञापन API बन्द गर्नुहोस्"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "ऐच्छिक: यो पहिले नै काम गरिरहेको छ। यीमध्ये जुनसुकै पनि पछि सेटिङमा परिवर्तन गर्न सकिन्छ।"
+  },
+  "blk_page_title": {
+    "message": "साइट ब्लक गरियो — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "यो साइटले तपाईंको डिभाइसलाई हानि गर्न सक्छ"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock ले यो पृष्ठ रोक्यो, किनकि यो साइट URLhaus मा छ — मालवेयर फैलाउने ठेगानाहरूको एउटा सार्वजनिक सूची।"
+  },
+  "blk_back": {
+    "message": "पछाडि जानुहोस्"
+  },
+  "blk_continue": {
+    "message": "तैपनि जारी राख्नुहोस्"
+  },
+  "blk_note": {
+    "message": "जारी राख्दा, ब्राउजर बन्द नगरेसम्म यो साइटका पृष्ठहरू मात्र खोल्न दिइन्छ।"
+  },
+  "blk_why": {
+    "message": "यो किन सूचीमा छ? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "यो पृष्ठका जडानहरू"
+  },
+  "conn_empty": {
+    "message": "यो पृष्ठले अन्य साइटबाट केही पनि लोड गरेन।"
+  },
+  "conn_block": {
+    "message": "यहाँ ब्लक गर्ने"
+  },
+  "conn_blocked": {
+    "message": "यहाँ ब्लक गरिएको"
+  },
+  "conn_hint": {
+    "message": "यो साइटले $1 बाट लोड गर्ने कुरा ब्लक गर्नुहोस्"
+  },
+  "opt_conn_title": {
+    "message": "तपाईंले ब्लक गरेका जडानहरू"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock विन्डोको “यो पृष्ठका जडानहरू” बाट ब्लक गरिएका, प्रत्येक आफ्नै साइटमा मात्र।"
+  },
+  "opt_empty_conn": {
+    "message": "अहिलेसम्म केही पनि ब्लक गरिएको छैन।"
+  },
+  "opt_conn_remove": {
+    "message": "$2 मा $1 अनब्लक गर्नुहोस्"
+  },
+  "opt_h_danger": {
+    "message": "मालवेयर चेतावनी पृष्ठ"
+  },
+  "opt_h_capacity": {
+    "message": "नियम क्षमता"
   }
 }

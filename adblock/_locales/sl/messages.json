@@ -232,7 +232,7 @@
     "message": "Iz povezav, ki jih odprete, odstrani utm_*, fbclid, gclid in druge identifikatorje klikov"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokira znane zlonamerne domene (seznam URLhaus, abuse.ch)"
+    "message": "Opozori pred odprtjem znanega zlonamernega spletnega mesta in blokira, kar strani nalagajo s takšnih spletnih mest (seznam URLhaus, abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Na vseh spletnih mestih onemogoči oglaševalske API-je Google Topics, FLoC in Protected Audience"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Neobvezno: že deluje. Vse to lahko pozneje spremenite v nastavitvah."
+  },
+  "blk_page_title": {
+    "message": "Spletno mesto blokirano — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "To spletno mesto lahko škoduje vaši napravi"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock je ustavil to stran, ker je spletno mesto na seznamu URLhaus — javnem seznamu naslovov, ki širijo zlonamerno programsko opremo."
+  },
+  "blk_back": {
+    "message": "Nazaj"
+  },
+  "blk_continue": {
+    "message": "Vseeno nadaljuj"
+  },
+  "blk_note": {
+    "message": "Če nadaljujete, bodo prepuščene le strani tega spletnega mesta, dokler ne zaprete brskalnika."
+  },
+  "blk_why": {
+    "message": "Zakaj je na seznamu? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Povezave na tej strani"
+  },
+  "conn_empty": {
+    "message": "Ta stran ni naložila ničesar z drugih spletnih mest."
+  },
+  "conn_block": {
+    "message": "Blokiraj tukaj"
+  },
+  "conn_blocked": {
+    "message": "Blokirano tukaj"
+  },
+  "conn_hint": {
+    "message": "Blokiraj, kar to spletno mesto nalaga z gostitelja $1"
+  },
+  "opt_conn_title": {
+    "message": "Povezave, ki ste jih blokirali"
+  },
+  "opt_conn_sub": {
+    "message": "Blokirane v oknu Supreme AdBlock v razdelku „Povezave na tej strani“, vsaka samo na svojem spletnem mestu."
+  },
+  "opt_empty_conn": {
+    "message": "Še nič ni blokirano."
+  },
+  "opt_conn_remove": {
+    "message": "Odblokiraj $1 na spletnem mestu $2"
+  },
+  "opt_h_danger": {
+    "message": "Opozorilo o zlonamernem mestu"
+  },
+  "opt_h_capacity": {
+    "message": "Zmogljivost pravil"
   }
 }

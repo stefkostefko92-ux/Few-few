@@ -232,7 +232,7 @@
     "message": "Açdığınız keçidlərdən utm_*, fbclid, gclid və digər klik identifikatorlarını silir"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Məlum zərərli domenləri bloklayır (abuse.ch-in URLhaus siyahısı)"
+    "message": "Məlum zərərli sayt açılmazdan əvvəl xəbərdarlıq edir və səhifələrin belə saytlardan yüklədiklərini bloklayır (abuse.ch-in URLhaus siyahısı)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Hər saytda Google Topics, FLoC və Protected Audience reklam API-lərini söndürür"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "İstəyə bağlı: artıq işləyir. Bunların hər birini sonra Ayarlarda dəyişə bilərsiniz."
+  },
+  "blk_page_title": {
+    "message": "Sayt bloklandı — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Bu sayt cihazınıza ziyan vura bilər"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock bu səhifəni dayandırdı, çünki sayt URLhaus siyahısındadır: bu, zərərli proqram yayan ünvanların ictimai siyahısıdır."
+  },
+  "blk_back": {
+    "message": "Geri qayıt"
+  },
+  "blk_continue": {
+    "message": "Yenə də davam et"
+  },
+  "blk_note": {
+    "message": "Davam etsəniz, brauzeri bağlayana qədər yalnız bu saytın səhifələri buraxılır."
+  },
+  "blk_why": {
+    "message": "Niyə siyahıdadır? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Bu səhifədəki bağlantılar"
+  },
+  "conn_empty": {
+    "message": "Bu səhifə digər saytlardan heç nə yükləməyib."
+  },
+  "conn_block": {
+    "message": "Burada blokla"
+  },
+  "conn_blocked": {
+    "message": "Burada bloklanıb"
+  },
+  "conn_hint": {
+    "message": "Bu saytın $1 mənbəyindən yüklədiklərini blokla"
+  },
+  "opt_conn_title": {
+    "message": "Blokladığınız bağlantılar"
+  },
+  "opt_conn_sub": {
+    "message": "Artırma pəncərəsindəki «Bu səhifədəki bağlantılar» bölməsindən bloklanıb, hər biri yalnız öz saytında."
+  },
+  "opt_empty_conn": {
+    "message": "Hələ heç nə bloklanmayıb."
+  },
+  "opt_conn_remove": {
+    "message": "$2 saytında $1 üçün bloku götür"
+  },
+  "opt_h_danger": {
+    "message": "Zərərli sayt xəbərdarlığı"
+  },
+  "opt_h_capacity": {
+    "message": "Qayda tutumu"
   }
 }

@@ -232,7 +232,7 @@
     "message": "Ги отстранува utm_*, fbclid, gclid и другите идентификатори на кликови од врските што ги отворате"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Блокира познати злонамерни домени (листата URLhaus од abuse.ch)"
+    "message": "Предупредува пред да се отвори познат злонамерен сајт и го блокира она што страниците го вчитуваат од такви сајтови (листата URLhaus од abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Ги исклучува рекламните API Google Topics, FLoC и Protected Audience на секој сајт"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Изборно: веќе работи. Секое од овие подоцна можете да го промените во поставките."
+  },
+  "blk_page_title": {
+    "message": "Сајтот е блокиран — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Овој сајт може да му наштети на вашиот уред"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock ја запре оваа страница бидејќи сајтот е на URLhaus, јавна листа на адреси што шират злонамерен софтвер."
+  },
+  "blk_back": {
+    "message": "Врати се назад"
+  },
+  "blk_continue": {
+    "message": "Сепак продолжи"
+  },
+  "blk_note": {
+    "message": "Ако продолжите, се пропуштаат само страниците на овој сајт, додека не го затворите прелистувачот."
+  },
+  "blk_why": {
+    "message": "Зошто е на листата? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Врски на оваа страница"
+  },
+  "conn_empty": {
+    "message": "Оваа страница не вчита ништо од други сајтови."
+  },
+  "conn_block": {
+    "message": "Блокирај тука"
+  },
+  "conn_blocked": {
+    "message": "Блокирано тука"
+  },
+  "conn_hint": {
+    "message": "Блокирај го она што овој сајт го вчитува од $1"
+  },
+  "opt_conn_title": {
+    "message": "Врски што ги блокиравте"
+  },
+  "opt_conn_sub": {
+    "message": "Блокирани од „Врски на оваа страница“ во прозорецот на додатокот, секоја само на својот сајт."
+  },
+  "opt_empty_conn": {
+    "message": "Сè уште ништо не е блокирано."
+  },
+  "opt_conn_remove": {
+    "message": "Одблокирај го $1 на $2"
+  },
+  "opt_h_danger": {
+    "message": "Предупредување за злонамерен сајт"
+  },
+  "opt_h_capacity": {
+    "message": "Капацитет на правила"
   }
 }

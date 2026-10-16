@@ -232,7 +232,7 @@
     "message": "Poistaa utm_*-, fbclid-, gclid- ja muut klikkaustunnisteet avaamistasi linkeistä"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Estää tunnetut haittaohjelmien verkkotunnukset (abuse.ch:n URLhaus-luettelo)"
+    "message": "Varoittaa ennen kuin tunnettu haittaohjelmasivusto avautuu, ja estää sen, mitä sivut lataavat tällaisilta sivustoilta (abuse.ch:n URLhaus-luettelo)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Poistaa käytöstä Google Topics-, FLoC- ja Protected Audience -mainosrajapinnat kaikilla sivustoilla"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Valinnaista: se toimii jo. Voit muuttaa mitä tahansa näistä myöhemmin Asetuksissa."
+  },
+  "blk_page_title": {
+    "message": "Sivusto estetty – Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Tämä sivusto voi vahingoittaa laitettasi"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock pysäytti tämän sivun, koska sivusto on URLhausissa, julkisessa luettelossa haittaohjelmia levittävistä osoitteista."
+  },
+  "blk_back": {
+    "message": "Palaa takaisin"
+  },
+  "blk_continue": {
+    "message": "Jatka silti"
+  },
+  "blk_note": {
+    "message": "Jos jatkat, vain tämän sivuston sivut päästetään läpi, kunnes suljet selaimen."
+  },
+  "blk_why": {
+    "message": "Miksi se on luettelossa? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Tämän sivun yhteydet"
+  },
+  "conn_empty": {
+    "message": "Tämä sivu ei ladannut mitään muilta sivustoilta."
+  },
+  "conn_block": {
+    "message": "Estä täällä"
+  },
+  "conn_blocked": {
+    "message": "Estetty täällä"
+  },
+  "conn_hint": {
+    "message": "Estä se, mitä tämä sivusto lataa palvelimelta $1"
+  },
+  "opt_conn_title": {
+    "message": "Estämäsi yhteydet"
+  },
+  "opt_conn_sub": {
+    "message": "Estetty Supreme AdBlock -ikkunan kohdasta ”Tämän sivun yhteydet”, kukin vain omalla sivustollaan."
+  },
+  "opt_empty_conn": {
+    "message": "Mitään ei ole vielä estetty."
+  },
+  "opt_conn_remove": {
+    "message": "Poista palvelimen $1 esto sivustolla $2"
+  },
+  "opt_h_danger": {
+    "message": "Haittaohjelmavaroitussivu"
+  },
+  "opt_h_capacity": {
+    "message": "Sääntökapasiteetti"
   }
 }

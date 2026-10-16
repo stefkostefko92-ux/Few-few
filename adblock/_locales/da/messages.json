@@ -232,7 +232,7 @@
     "message": "Fjern utm_*, fbclid, gclid og andre klik-id’er fra de links, du åbner"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Bloker kendte malware-domæner (URLhaus-listen fra abuse.ch)"
+    "message": "Advar, før et kendt malware-websted åbnes, og bloker det, som sider indlæser fra sådanne websteder (URLhaus-listen fra abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Deaktiver annonce-API’erne Google Topics, FLoC og Protected Audience på alle websteder"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Valgfrit: det virker allerede. Du kan ændre alt dette senere i Indstillinger."
+  },
+  "blk_page_title": {
+    "message": "Websted blokeret — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Dette websted kan skade din enhed"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock har stoppet denne side, fordi webstedet er på URLhaus, en offentlig liste over adresser, der spreder malware."
+  },
+  "blk_back": {
+    "message": "Gå tilbage"
+  },
+  "blk_continue": {
+    "message": "Fortsæt alligevel"
+  },
+  "blk_note": {
+    "message": "Hvis du fortsætter, slippes kun dette websteds sider igennem, indtil du lukker browseren."
+  },
+  "blk_why": {
+    "message": "Hvorfor er det på listen? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Forbindelser på denne side"
+  },
+  "conn_empty": {
+    "message": "Denne side har ikke indlæst noget fra andre websteder."
+  },
+  "conn_block": {
+    "message": "Bloker her"
+  },
+  "conn_blocked": {
+    "message": "Blokeret her"
+  },
+  "conn_hint": {
+    "message": "Bloker det, dette websted indlæser fra $1"
+  },
+  "opt_conn_title": {
+    "message": "Forbindelser, du har blokeret"
+  },
+  "opt_conn_sub": {
+    "message": "Blokeret fra »Forbindelser på denne side« i Supreme AdBlock-vinduet, hver kun på sit eget websted."
+  },
+  "opt_empty_conn": {
+    "message": "Intet blokeret endnu."
+  },
+  "opt_conn_remove": {
+    "message": "Fjern blokering af $1 på $2"
+  },
+  "opt_h_danger": {
+    "message": "Advarselsside for malware"
+  },
+  "opt_h_capacity": {
+    "message": "Regelkapacitet"
   }
 }

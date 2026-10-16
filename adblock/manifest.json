@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "5.2.0",
+  "version": "5.5.0",
   "description": "__MSG_extDescription__",
   "author": "Carbon Stealth",
   "homepage_url": "https://adblock.carbonstealth.eu",
@@ -1623,6 +1623,14 @@
         "<all_urls>"
       ],
       "use_dynamic_url": true
+    },
+    {
+      "resources": [
+        "blocked/blocked.html"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ],
   "declarative_net_request": {

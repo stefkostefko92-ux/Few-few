@@ -6,7 +6,9 @@ Supreme AdBlock blockiert Werbung überall – YouTube-Videoanzeigen, Banner, Po
 • Cookie-Banner: drückt für Sie „Ablehnen“, entfernt zurückgebliebene Unschärfe und Scroll-Sperren und drückt nie eine Anmelde-, OAuth- oder Zahlungsschaltfläche.
 • Fokusmodus: blendet Chat-Blasen, Newsletter-Pop-ups, Benachrichtigungs-Aufforderungen, Social-Widgets, KI-Pop-ups und YouTube Shorts aus.
 • Anti-Adblock-Sperren und Pop-under werden neutralisiert.
+• Gefährliche Websites: Eine bekannte Malware-Website öffnet stattdessen eine Warnseite, und Sie entscheiden, ob Sie fortfahren.
 • Website kaputt? Ein Klick behebt es – oder melden Sie es uns; nichts wird gesendet, ohne dass Sie es vorher sehen.
 • Sie wechseln von uBlock Origin, AdGuard oder Adblock Plus? Nehmen Sie erlaubte Websites und Filter mit einer Datei mit.
+• Sehen Sie, mit welchen anderen Websites sich eine Seite verbindet, und blockieren Sie eine davon mit einem Klick nur dort.
 • Signierte Filter-Updates zweimal täglich: Neue Werbenetzwerke sind in Stunden abgedeckt, ohne Code aus dem Netz.
 • Kein Konto, keine Telemetrie, keine Datensammlung – und Global Privacy Control bittet jede Website, Ihre Daten nicht zu verkaufen oder weiterzugeben.
