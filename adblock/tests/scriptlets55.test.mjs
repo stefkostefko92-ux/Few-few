@@ -88,4 +88,21 @@ ok("bundle: more than 9,000 uBO directives baked (6,608 in 5.1.8)", (() => {
   return n + Object.values(entData).reduce((a, v) => a + v.length, 0) > 9000;
 })());
 
+// ---- cosmetic rules on entities: the converter keeps them, the SW finds them ----
+{
+  const c2 = { SA_POLICY: P, URL, console, domainToASCII: (d) => d };
+  vm.createContext(c2);
+  vm.runInContext(readFileSync(join(ROOT, "lib", "abp2dnr.js"), "utf8"), c2);
+  const conv = c2.ABP2DNR.convertCosmetic("wetteronline.*##.ad-box\nfoo.com##.xx-ad\nbad*host##.yy-ad\nshop.co.*#@#.keep");
+  ok("converter: example.* cosmetic rules are kept (and #@# on entities), junk hosts still dropped",
+    conv.specific.has("wetteronline.*") && conv.specific.has("foo.com") && !conv.specific.has("bad*host") && conv.unhide.has("shop.co.*"));
+  const bgSrc = readFileSync(join(ROOT, "background.js"), "utf8");
+  const fn = bgSrc.slice(bgSrc.indexOf("function entityKeysOf(host) {"), bgSrc.indexOf("async function cosmeticFor(host)"));
+  const entityKeysOf = new Function(fn + "; return entityKeysOf;")();
+  const keys = entityKeysOf("www.wetteronline.co.uk");
+  ok("SW: entity keys of www.wetteronline.co.uk include wetteronline.* (and only plausible splits)",
+    keys.includes("wetteronline.*") && keys.includes("wetteronline.co.*") && !keys.includes("uk.*") && keys.length === 6);
+  ok("SW: cosmeticFor looks the entity keys up next to the domain chain", /const chain = domainChain\(host \|\| ""\)\.concat\(entityKeysOf\(host \|\| ""\)\);/.test(bgSrc));
+}
+
 done();

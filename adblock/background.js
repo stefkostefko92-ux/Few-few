@@ -932,11 +932,22 @@ function domainChain(host) {
   return out;
 }
 
+// uBO "entity" keys (example.* = example on any public suffix): every way to split
+// a public suffix off the hostname, without a suffix list — a key that is not a
+// real entity simply is not in the data. Same as entityKeys() in the engine.
+function entityKeysOf(host) {
+  const parts = (host || "").split("."), out = [];
+  for (let i = 0; i < parts.length - 1; i++) {
+    for (let j = i; j < parts.length - 1; j++) out.push(parts.slice(i, j + 1).join(".") + ".*");
+  }
+  return out;
+}
+
 async function cosmeticFor(host) {
   const { specific = {}, unhide = {}, genericHide = [] } = await getCosmeticBundle();
   const hide = [];
   const show = [];
-  const chain = domainChain(host || "");
+  const chain = domainChain(host || "").concat(entityKeysOf(host || ""));
   for (const d of chain) {
     if (specific[d]) hide.push(...specific[d]);
     if (unhide[d]) show.push(...unhide[d]);
