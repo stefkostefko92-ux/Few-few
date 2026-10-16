@@ -226,7 +226,7 @@
     "message": "“আপনার অ্যাডব্লকার বন্ধ করুন” দেয়াল লুকান এবং পৃষ্ঠাটি আগের অবস্থায় ফেরান"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook ও Instagram-এ “স্পনসর করা” পোস্ট লুকান"
+    "message": "Facebook, Instagram ও Threads-এ “স্পনসর করা” পোস্ট লুকান"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "আপনার খোলা লিঙ্ক থেকে utm_*, fbclid, gclid ও অন্যান্য ক্লিক শনাক্তকারী সরান"
@@ -670,5 +670,74 @@
   "welDone": {
     "message": "বুঝেছি",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "অনুমোদিত · $1 মিনিট বাকি"
+  },
+  "hiddenHere": {
+    "message": "এখানে লুকানো এলিমেন্ট: $1 · শেষটি ফিরিয়ে আনুন"
+  },
+  "cmd_toggle_site": {
+    "message": "এই সাইটে ব্লকিং চালু বা বন্ধ করুন"
+  },
+  "cmd_pause": {
+    "message": "সুরক্ষা থামান বা আবার চালু করুন (30 মিনিট)"
+  },
+  "cmd_picker": {
+    "message": "এই পেজে একটি এলিমেন্ট লুকান"
+  },
+  "rep_fix_hour": {
+    "message": "1 ঘণ্টা এখানে বিজ্ঞাপনের অনুমতি দিন"
+  },
+  "rep_done_hour": {
+    "message": "এই সাইটে 1 ঘণ্টার জন্য বিজ্ঞাপনের অনুমতি আছে। আবার লোড হয়েছে — ঠিক হয়েছে কি?"
+  },
+  "opt_last30": {
+    "message": "গত 30 দিন"
+  },
+  "opt_last30_sum": {
+    "message": "ব্লক করা: $1 · কুকি ব্যানার: $2"
+  },
+  "opt_last30_empty": {
+    "message": "আপনি ব্রাউজ করার সঙ্গে সঙ্গে আপনার দৈনিক মোট সংখ্যা এখানে দেখা যাবে।"
+  },
+  "opt_last30_sub": {
+    "message": "শুধু দৈনিক মোট সংখ্যা, এই ডিভাইসেই 30 দিন রাখা হয়। কোনো সাইট নয়, কোনো ঠিকানা নয়।"
+  },
+  "opt_gpc_sub": {
+    "message": "আপনি যে সাইটেই যান, সেটিকে আপনার ডেটা বিক্রি বা শেয়ার না করতে বলে (Sec-GPC সংকেত, যা কিছু গোপনীয়তা আইন অনুযায়ী সাইটগুলোকে মানতে হয়)। আপনার অনুমোদিত সাইটে এটি পাঠানো হয় না।"
+  },
+  "opt_shortcuts": {
+    "message": "কিবোর্ড শর্টকাট"
+  },
+  "opt_shortcuts_change": {
+    "message": "শর্টকাট বদলান"
+  },
+  "opt_shortcut_none": {
+    "message": "সেট করা নেই"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox-এ: অ্যাড-অন ও থিম → ⚙ → এক্সটেনশন শর্টকাট পরিচালনা করুন।"
+  },
+  "opt_import_foreign": {
+    "message": "অন্য অ্যাডব্লকার থেকে ইমপোর্ট করুন"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard বা Adblock Plus থেকে আসছেন? সেটির ব্যাকআপ ফাইল বেছে নিন: আপনার অনুমোদিত সাইট ও আপনার নিজের ফিল্টার এখানে যোগ হবে। আগের কিছুই বদলানো হয় না।"
+  },
+  "opt_import_foreign_done": {
+    "message": "অনুমোদিত সাইট: $1 · যোগ করা ফিল্টার: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "বাদ দেওয়া হয়েছে (এখানে প্রয়োগ করা যায় না): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "এই ফাইলটি এমন ব্যাকআপ নয় যা আমরা পড়তে পারি।"
+  },
+  "welQuickTitle": {
+    "message": "নিজের মতো করে নিন"
+  },
+  "welQuickSub": {
+    "message": "ঐচ্ছিক: এটি এখনই কাজ করছে। পরে সেটিংসে এগুলোর যেকোনোটি বদলানো যাবে।"
   }
 }

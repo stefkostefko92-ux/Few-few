@@ -46,5 +46,10 @@ adblock.carbonstealth.eu {
 	@pretty path /privacy /support /youtube-ad-blocker /cookie-banner-blocker
 	rewrite @pretty {path}.html
 
+	# Language pages (tools/site_lang.mjs → /<lang>/index.html): file_server serves the folder's
+	# index.html and redirects /bg to /bg/ (the canonical address) by itself.
+	@langs path /bg /de /it /es /fr /pt-br
+	redir @langs {path}/ 301
+
 	file_server
 }

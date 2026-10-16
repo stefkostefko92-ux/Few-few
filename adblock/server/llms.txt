@@ -8,7 +8,7 @@
 - Maker: Carbon Stealth VCC, Bulgaria (EU) — carbonstealth.eu, info@carbonstealth.eu
 - Platform: Chrome Manifest V3 extension; Chrome, Edge, Brave and other Chromium browsers, version 121+
 - Price: free, no account, no paid tier; optional donations
-- Current version: 5.1.8 (12 October 2026)
+- Current version: 5.5.0 (16 October 2026)
 - Homepage: https://adblock.carbonstealth.eu
 - Chrome Web Store: https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk
 - Trust: Established Publisher badge on the Chrome Web Store — the publisher's identity is verified by Google, the listing is published by the owner of carbonstealth.eu, and the publisher has a good record with no history of policy violations
@@ -22,6 +22,7 @@
 - [Cookie banner blocker](https://adblock.carbonstealth.eu/cookie-banner-blocker): how banners are answered (Reject first, Accept only as a last resort), the consent tools it knows, and the buttons it never presses
 - [Support](https://adblock.carbonstealth.eu/support): fixes for a broken site, a YouTube video that won't play, a missed ad or cookie banner; settings, sync, removal and contact
 - [Privacy policy](https://adblock.carbonstealth.eu/privacy): what stays on the device, the only network requests, GDPR rights
+- The same overview in other languages: [Български](https://adblock.carbonstealth.eu/bg/), [Deutsch](https://adblock.carbonstealth.eu/de/), [Italiano](https://adblock.carbonstealth.eu/it/), [Español](https://adblock.carbonstealth.eu/es/), [Français](https://adblock.carbonstealth.eu/fr/), [Português (Brasil)](https://adblock.carbonstealth.eu/pt-br/)
 
 ## What it does
 
@@ -30,7 +31,7 @@
 - Regional lists: 31 language and country lists ship in the package and the ones matching the browser language turn on automatically; 4 more (Bulgarian, Polish, Nordic, Croatian) have no redistribution licence and are downloaded from their authors only when the user turns them on — data, never code.
 - Focus mode: optional switches hide social widgets, chat pop-ups, newsletter and notification prompts, AI assistant pop-ups, "sign in with Google" prompts and short-video shelves (YouTube Shorts, Reels).
 - Signed updates: filter data (domains, CSS selectors) refreshes about twice a day, Ed25519-signed and version-locked. Only data is downloaded, never code.
-- Anti-adblock: a scriptlet engine with 19 named routines (set-constant, abort-on-property-read, no-setTimeout-if, json-prune, no-fetch-if, …) runs before page scripts.
+- Anti-adblock: a scriptlet engine with 39 named routines in the uBlock Origin syntax (set-constant, abort-on-property-read, no-setTimeout-if, json-prune with array paths, no-fetch-if, xml-prune, m3u-prune, …) runs before page scripts; the routines and the sites they run on are fixed in the package.
 - Pop-unders: 2,700+ known pop-up ad hosts are refused at window.open.
 - Cookie banners: presses the banner's own Reject button when there is one (Accept only as a last resort), then clears leftover blur, backdrops and scroll locks. It only presses a cookie banner's own buttons — never a sign-in, OAuth or payment button, never one that submits a form.
 - Smart Detection: a list-free heuristic that hides cross-origin frames sized like ad slots.
@@ -60,4 +61,4 @@ Q: Does it collect data? A: No browsing data leaves the device; no analytics or 
 Q: Will it break websites? A: Rarely; one click in the popup allows a site or turns off element hiding for it.
 Q: Who makes it? A: Carbon Stealth VCC, a software studio in Bulgaria (EU).
 
-_Last updated: 16 October 2026 (version 5.1.8)._
+_Last updated: 16 October 2026 (version 5.5.0)._

@@ -226,7 +226,7 @@
     "message": "Piilottaa ”poista mainosesto käytöstä” -muurit ja palauttaa sivun"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Piilottaa ”Sponsoroitu”-julkaisut Facebookissa ja Instagramissa"
+    "message": "Piilottaa ”Sponsoroitu”-julkaisut Facebookissa, Instagramissa ja Threadsissa"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Poistaa utm_*-, fbclid-, gclid- ja muut klikkaustunnisteet avaamistasi linkeistä"
@@ -670,5 +670,74 @@
   "welDone": {
     "message": "Selvä",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Sallittu · $1 min jäljellä"
+  },
+  "hiddenHere": {
+    "message": "Täällä piilottamasi: $1 · Kumoa viimeisin"
+  },
+  "cmd_toggle_site": {
+    "message": "Esto päälle tai pois tällä sivustolla"
+  },
+  "cmd_pause": {
+    "message": "Keskeytä tai jatka suojausta (30 minuuttia)"
+  },
+  "cmd_picker": {
+    "message": "Piilota elementti tältä sivulta"
+  },
+  "rep_fix_hour": {
+    "message": "Salli mainokset täällä 1 tunniksi"
+  },
+  "rep_done_hour": {
+    "message": "Mainokset sallitaan tällä sivustolla 1 tunnin ajan. Ladattu uudelleen – korjaantuiko?"
+  },
+  "opt_last30": {
+    "message": "Viimeiset 30 päivää"
+  },
+  "opt_last30_sum": {
+    "message": "Estetty: $1 · Evästebannerit: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Päivittäiset kokonaismääräsi näkyvät tässä selatessasi."
+  },
+  "opt_last30_sub": {
+    "message": "Vain päivittäiset kokonaismäärät, säilytetään tällä laitteella 30 päivää. Ei sivustoja, ei osoitteita."
+  },
+  "opt_gpc_sub": {
+    "message": "Pyytää jokaista vierailemaasi sivustoa olemaan myymättä tai jakamatta tietojasi (Sec-GPC-signaali, jota jotkin tietosuojalait velvoittavat sivustot noudattamaan). Ei lähetetä sivustoille, jotka olet sallinut."
+  },
+  "opt_shortcuts": {
+    "message": "Pikanäppäimet"
+  },
+  "opt_shortcuts_change": {
+    "message": "Muuta pikanäppäimiä"
+  },
+  "opt_shortcut_none": {
+    "message": "Ei asetettu"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefoxissa: Laajennukset ja teemat → ⚙ → Hallitse laajennusten pikanäppäimiä."
+  },
+  "opt_import_foreign": {
+    "message": "Tuo toisesta mainosten estäjästä"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Siirrytkö uBlock Originista, AdGuardista tai Adblock Plusista? Valitse sen varmuuskopiotiedosto: sallimasi sivustot ja omat suodattimesi lisätään tänne. Mitään ei korvata."
+  },
+  "opt_import_foreign_done": {
+    "message": "Sallittuja sivustoja: $1 · Lisättyjä suodattimia: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Jätetty pois (ei voi käyttää täällä): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Tämä tiedosto ei ole varmuuskopio, jota voimme lukea."
+  },
+  "welQuickTitle": {
+    "message": "Tee siitä omasi"
+  },
+  "welQuickSub": {
+    "message": "Valinnaista: se toimii jo. Voit muuttaa mitä tahansa näistä myöhemmin Asetuksissa."
   }
 }

@@ -226,7 +226,7 @@
     "message": "“Reklama blokerini oʻchiring” devorlarini yashiradi va sahifani tiklaydi"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook va Instagram tarmoqlaridagi “Homiylik” belgili postlarni yashiradi"
+    "message": "Facebook, Instagram va Threads tarmoqlaridagi “Homiylik” belgili postlarni yashiradi"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Siz ochadigan havolalardan utm_*, fbclid, gclid va boshqa bosish identifikatorlarini olib tashlaydi"
@@ -670,5 +670,74 @@
   "welDone": {
     "message": "Tushunarli",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Ruxsat · $1 daq qoldi"
+  },
+  "hiddenHere": {
+    "message": "Bu yerda yashirilgan: $1 · Oxirgisini qaytarish"
+  },
+  "cmd_toggle_site": {
+    "message": "Bu saytda bloklashni yoqish yoki oʻchirish"
+  },
+  "cmd_pause": {
+    "message": "Himoyani pauza qilish yoki davom ettirish (30 daqiqa)"
+  },
+  "cmd_picker": {
+    "message": "Bu sahifadagi elementni yashirish"
+  },
+  "rep_fix_hour": {
+    "message": "Saytda reklamaga 1 soatga ruxsat berish"
+  },
+  "rep_done_hour": {
+    "message": "Bu saytda reklamaga 1 soatga ruxsat berildi. Qayta yuklandi — tuzaldimi?"
+  },
+  "opt_last30": {
+    "message": "Soʻnggi 30 kun"
+  },
+  "opt_last30_sum": {
+    "message": "Bloklangan: $1 · Cookie bannerlari: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Saytlarni koʻrib chiqqaningiz sari kunlik jami koʻrsatkichlar shu yerda paydo boʻladi."
+  },
+  "opt_last30_sub": {
+    "message": "Faqat kunlik jami koʻrsatkichlar, bu qurilmada 30 kun saqlanadi. Saytlar ham, manzillar ham yoʻq."
+  },
+  "opt_gpc_sub": {
+    "message": "Siz kiradigan har bir saytdan maʼlumotlaringizni sotmaslik va ulashmaslikni soʻraydi (Sec-GPC signali; baʼzi maxfiylik qonunlari saytlardan unga amal qilishni talab qiladi). Siz ruxsat bergan saytlarda yuborilmaydi."
+  },
+  "opt_shortcuts": {
+    "message": "Tezkor tugmalar"
+  },
+  "opt_shortcuts_change": {
+    "message": "Tezkor tugmalarni oʻzgartirish"
+  },
+  "opt_shortcut_none": {
+    "message": "Belgilanmagan"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox brauzerida: Qoʻshimchalar va mavzular → ⚙ → Kengaytmalar tezkor tugmalarini boshqarish"
+  },
+  "opt_import_foreign": {
+    "message": "Boshqa reklama blokeridan import qilish"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard yoki Adblock Plus kengaytmasidan oʻtyapsizmi? Uning zaxira nusxa faylini tanlang: siz ruxsat bergan saytlar va oʻz filtrlaringiz shu yerga qoʻshiladi. Hech narsa almashtirilmaydi."
+  },
+  "opt_import_foreign_done": {
+    "message": "Ruxsat berilgan saytlar: $1 · Qoʻshilgan filtrlar: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Tashlab ketildi (bu yerda qoʻllab boʻlmaydi): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Bu fayl biz oʻqiy oladigan zaxira nusxa emas."
+  },
+  "welQuickTitle": {
+    "message": "Oʻzingizga moslang"
+  },
+  "welQuickSub": {
+    "message": "Ixtiyoriy: hammasi allaqachon ishlayapti. Bularning istalganini keyinroq Sozlamalarda oʻzgartirish mumkin."
   }
 }

@@ -226,7 +226,7 @@
     "message": "Skrije zidove „Izklopite blokator oglasov“ in obnovi stran"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Skrije objave „Sponzorirano“ na Facebooku in Instagramu"
+    "message": "Skrije objave „Sponzorirano“ na Facebooku, Instagramu in Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Iz povezav, ki jih odprete, odstrani utm_*, fbclid, gclid in druge identifikatorje klikov"
@@ -670,5 +670,74 @@
   "welDone": {
     "message": "Razumem",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Dovoljeno · še $1 min"
+  },
+  "hiddenHere": {
+    "message": "Tu skriti elementi: $1 · Povrni zadnjega"
+  },
+  "cmd_toggle_site": {
+    "message": "Vklopi ali izklopi blokiranje na tem spletnem mestu"
+  },
+  "cmd_pause": {
+    "message": "Začasno ustavi ali nadaljuj zaščito (30 minut)"
+  },
+  "cmd_picker": {
+    "message": "Skrij element na tej strani"
+  },
+  "rep_fix_hour": {
+    "message": "Dovoli oglase tukaj za 1 uro"
+  },
+  "rep_done_hour": {
+    "message": "Oglasi so na tem spletnem mestu dovoljeni za 1 uro. Stran je znova naložena — je težava odpravljena?"
+  },
+  "opt_last30": {
+    "message": "Zadnjih 30 dni"
+  },
+  "opt_last30_sum": {
+    "message": "Blokirano: $1 · Obvestila o piškotkih: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Vaši dnevni seštevki se bodo prikazali tukaj med brskanjem."
+  },
+  "opt_last30_sub": {
+    "message": "Samo dnevni seštevki, shranjeni v tej napravi 30 dni. Brez spletnih mest, brez naslovov."
+  },
+  "opt_gpc_sub": {
+    "message": "Vsako spletno mesto, ki ga obiščete, prosi, naj vaših podatkov ne prodaja in ne deli (signal Sec-GPC, ki ga morajo spletna mesta po nekaterih zakonih o zasebnosti upoštevati). Ni poslan na spletnih mestih, ki ste jih dovolili."
+  },
+  "opt_shortcuts": {
+    "message": "Bližnjice na tipkovnici"
+  },
+  "opt_shortcuts_change": {
+    "message": "Spremeni bližnjice"
+  },
+  "opt_shortcut_none": {
+    "message": "Ni nastavljeno"
+  },
+  "opt_shortcuts_ff": {
+    "message": "V Firefoxu: Razširitve in teme → ⚙ → Upravljanje bližnjic razširitev."
+  },
+  "opt_import_foreign": {
+    "message": "Uvozi iz drugega blokatorja oglasov"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Prehajate z uBlock Origin, AdGuard ali Adblock Plus? Izberite njegovo varnostno kopijo: spletna mesta, ki ste jih dovolili, in vaši lastni filtri bodo dodani sem. Nič ne bo zamenjano."
+  },
+  "opt_import_foreign_done": {
+    "message": "Dovoljena spletna mesta: $1 · Dodani filtri: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Izpuščeno (tu ni mogoče uporabiti): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Ta datoteka ni varnostna kopija, ki bi jo lahko prebrali."
+  },
+  "welQuickTitle": {
+    "message": "Prilagodite si ga"
+  },
+  "welQuickSub": {
+    "message": "Neobvezno: že deluje. Vse to lahko pozneje spremenite v nastavitvah."
   }
 }

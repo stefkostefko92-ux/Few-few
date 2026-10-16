@@ -226,7 +226,7 @@
     "message": "Elrejti a „kapcsolja ki a reklámblokkolót” falakat, és helyreállítja az oldalt"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Elrejti a „Szponzorált” bejegyzéseket a Facebookon és az Instagramon"
+    "message": "Elrejti a „Szponzorált” bejegyzéseket a Facebookon, az Instagramon és a Threadsen"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Eltávolítja az utm_*, fbclid, gclid és más kattintásazonosítókat a megnyitott linkekből"
@@ -670,5 +670,74 @@
   "welDone": {
     "message": "Értem",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Megengedve · még $1 perc"
+  },
+  "hiddenHere": {
+    "message": "Itt elrejtett elemek: $1 · Utolsó visszavonása"
+  },
+  "cmd_toggle_site": {
+    "message": "Blokkolás be- vagy kikapcsolása ezen a webhelyen"
+  },
+  "cmd_pause": {
+    "message": "Védelem szüneteltetése vagy folytatása (30 perc)"
+  },
+  "cmd_picker": {
+    "message": "Elem elrejtése ezen az oldalon"
+  },
+  "rep_fix_hour": {
+    "message": "Hirdetések engedélyezése itt 1 órára"
+  },
+  "rep_done_hour": {
+    "message": "A hirdetések 1 órára engedélyezve vannak ezen a webhelyen. Újratöltve – megjavult?"
+  },
+  "opt_last30": {
+    "message": "Az elmúlt 30 nap"
+  },
+  "opt_last30_sum": {
+    "message": "Blokkolt: $1 · Cookie-sávok: $2"
+  },
+  "opt_last30_empty": {
+    "message": "A napi összesítései böngészés közben itt jelennek meg."
+  },
+  "opt_last30_sub": {
+    "message": "Csak napi összesítések, 30 napig ezen az eszközön tárolva. Se webhelyek, se címek."
+  },
+  "opt_gpc_sub": {
+    "message": "Minden meglátogatott webhelyet megkér, hogy ne adja el és ne ossza meg az adatait (a Sec-GPC jelzés, amelynek betartására egyes adatvédelmi törvények kötelezik a webhelyeket). Az Ön által engedélyezett webhelyekre nem küldi el."
+  },
+  "opt_shortcuts": {
+    "message": "Billentyűparancsok"
+  },
+  "opt_shortcuts_change": {
+    "message": "Billentyűparancsok módosítása"
+  },
+  "opt_shortcut_none": {
+    "message": "Nincs beállítva"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefoxban: Kiegészítők és témák → ⚙ → Kiegészítő-gyorsbillentyűk kezelése."
+  },
+  "opt_import_foreign": {
+    "message": "Importálás másik hirdetésblokkolóból"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Az uBlock Originről, az AdGuardról vagy az Adblock Plusról vált át? Válassza ki annak biztonsági mentési fájlját: az Ön által engedélyezett webhelyek és a saját szűrői ide kerülnek. Semmi sem íródik felül."
+  },
+  "opt_import_foreign_done": {
+    "message": "Engedélyezett webhelyek: $1 · Hozzáadott szűrők: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Kihagyva (itt nem alkalmazható): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Ez a fájl nem olyan biztonsági mentés, amelyet be tudunk olvasni."
+  },
+  "welQuickTitle": {
+    "message": "Szabja személyre"
+  },
+  "welQuickSub": {
+    "message": "Nem kötelező: már most is működik. Bármelyiket később módosíthatja a Beállításokban."
   }
 }

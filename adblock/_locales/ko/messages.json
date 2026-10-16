@@ -226,7 +226,7 @@
     "message": "'광고 차단기를 사용 중지하세요' 벽을 숨기고 페이지를 복원합니다"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook 및 Instagram의 '스폰서' 게시물을 숨깁니다"
+    "message": "Facebook, Instagram 및 Threads의 '스폰서' 게시물을 숨깁니다"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "여는 링크에서 utm_*, fbclid, gclid 등의 클릭 식별자를 제거합니다"
@@ -670,5 +670,74 @@
   "welDone": {
     "message": "확인",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "허용됨 · $1분 남음"
+  },
+  "hiddenHere": {
+    "message": "여기서 숨긴 요소: $1 · 마지막 항목 되돌리기"
+  },
+  "cmd_toggle_site": {
+    "message": "이 사이트에서 차단 켜기/끄기"
+  },
+  "cmd_pause": {
+    "message": "보호 일시중지 또는 재개(30분)"
+  },
+  "cmd_picker": {
+    "message": "이 페이지에서 요소 숨기기"
+  },
+  "rep_fix_hour": {
+    "message": "이 사이트에서 1시간 동안 광고 허용"
+  },
+  "rep_done_hour": {
+    "message": "이 사이트에서 1시간 동안 광고를 허용했습니다. 새로고침했습니다. 해결되었나요?"
+  },
+  "opt_last30": {
+    "message": "최근 30일"
+  },
+  "opt_last30_sum": {
+    "message": "차단: $1 · 쿠키 배너: $2"
+  },
+  "opt_last30_empty": {
+    "message": "탐색하는 동안 일별 합계가 여기에 표시됩니다."
+  },
+  "opt_last30_sub": {
+    "message": "일별 합계만 이 기기에 30일 동안 보관됩니다. 사이트나 주소는 저장하지 않습니다."
+  },
+  "opt_gpc_sub": {
+    "message": "방문하는 모든 사이트에 데이터를 판매하거나 공유하지 말라고 요청합니다(Sec-GPC 신호이며, 일부 개인정보 보호법은 사이트가 이를 따르도록 규정합니다). 허용한 사이트에는 보내지 않습니다."
+  },
+  "opt_shortcuts": {
+    "message": "키보드 단축키"
+  },
+  "opt_shortcuts_change": {
+    "message": "단축키 변경"
+  },
+  "opt_shortcut_none": {
+    "message": "설정 안 됨"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox에서는: 부가 기능 및 테마 → ⚙ → 확장 기능 단축키 관리"
+  },
+  "opt_import_foreign": {
+    "message": "다른 광고 차단기에서 가져오기"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard 또는 Adblock Plus에서 옮겨 오시나요? 해당 백업 파일을 선택하면 허용한 사이트와 직접 추가한 필터가 여기에 추가됩니다. 아무것도 대체되지 않습니다."
+  },
+  "opt_import_foreign_done": {
+    "message": "허용한 사이트: $1 · 추가한 필터: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "제외됨(여기서 적용할 수 없음): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "읽을 수 있는 백업 파일이 아닙니다."
+  },
+  "welQuickTitle": {
+    "message": "내 방식대로 설정하기"
+  },
+  "welQuickSub": {
+    "message": "선택 사항입니다. 이미 작동하고 있으며, 이 항목들은 나중에 설정에서 언제든 바꿀 수 있습니다."
   }
 }

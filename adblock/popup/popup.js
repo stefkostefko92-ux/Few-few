@@ -8,6 +8,7 @@ const FALLBACK = {
   on: "On", off: "Off", thisPage: "this page", filtersCount: "$1+ filters",
   logUnavailable: "Log unavailable right now (browser quota) — try again in a minute.",
   reviewBlocked: "$1 requests blocked so far",
+  allowedFor: "Allowed · $1 min left", hiddenHere: "Elements you hid here: $1 · Undo the last",
 };
 
 const toggle = $("toggle");
@@ -78,12 +79,18 @@ function load() {
         cosmToggle.checked = !res.noCosmetics;
         setCosmLabel(!res.noCosmetics);
         cosmToggle.disabled = !!res.allowed;
+        // allowed for a while (the repair page's "for 1 hour"): the label says how long is left
+        if (res.allowed && res.allowedUntil > Date.now()) {
+          allowLabel.textContent = t("allowedFor", [String(Math.max(1, Math.round((res.allowedUntil - Date.now()) / 60000)))]);
+        }
       } else {
         siteHost.textContent = t("thisPage");
         allowToggle.disabled = true;
         cosmToggle.disabled = true;
       }
 
+      // what the picker hid on this site: one click brings the last one back
+      renderUndo(currentHost ? res.hiddenHere || 0 : 0);
       // ★ преди мерене (заема място в долната лента), картата след него (покрива каквото покрива)
       renderRate(res.review);
       fitPopup();
@@ -159,6 +166,16 @@ function fitPopup() {
     foot.classList.add("compact");
     for (const s of labels) if (!s.parentElement.title) s.parentElement.title = s.textContent.trim();
   }
+  // ↶ N next to the picker: a one-word label that cannot wrap ("Կարգավորումներ", "Einstellungen")
+  // would push the row wider than the popup — then Settings shows only its gear (the word stays
+  // its name and tooltip), like the footer above
+  const actions = document.querySelector(".actions");
+  const settings = $("settingsBtn");
+  actions.classList.remove("squeeze");
+  if (actions.scrollWidth > actions.clientWidth + 1) {
+    actions.classList.add("squeeze");
+    if (!settings.title) settings.title = settings.textContent.trim();
+  }
 }
 
 function setAllowLabel(blocking) {
@@ -222,6 +239,37 @@ $("pickBtn").addEventListener("click", () => {
 });
 
 $("settingsBtn").addEventListener("click", () => chrome.runtime.openOptionsPage());
+
+function renderUndo(n) {
+  const b = $("undoBtn");
+  b.hidden = !n;
+  if (!n) return;
+  const count = n.toLocaleString(UI_LANG);
+  const label = t("hiddenHere", [count]);
+  $("undoCount").textContent = count;
+  b.title = label;
+  b.setAttribute("aria-label", label);
+}
+$("undoBtn").addEventListener("click", () => {
+  if (!currentHost) return;
+  chrome.runtime.sendMessage({ type: "undoHidden", host: currentHost }, (r) => {
+    renderUndo(r && r.ok ? r.left : 0);
+    fitPopup();
+    if ($("undoBtn").hidden) $("pickBtn").focus(); // the button the keyboard was on is gone
+  });
+});
+
+// Keyboard shortcuts in the tooltips (chrome.commands; the user may have changed or removed them).
+try {
+  chrome.commands.getAll((cmds) => {
+    const keys = {};
+    for (const c of cmds || []) if (c.shortcut) keys[c.name] = c.shortcut;
+    const hint = (el, name) => { if (el && keys[name]) el.title = (el.title || el.textContent.trim()) + " (" + keys[name] + ")"; };
+    hint(pauseBtn, "pause");
+    hint($("pickBtn"), "picker");
+    hint(allowToggle.closest("label"), "toggle-site");
+  });
+} catch {}
 
 document.addEventListener("DOMContentLoaded", load);
 

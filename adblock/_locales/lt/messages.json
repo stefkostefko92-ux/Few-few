@@ -226,7 +226,7 @@
     "message": "Paslepia sienas „išjunkite reklamų blokavimo priemonę“ ir atkuria puslapį"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Paslepia įrašus „Remiama“ Facebook ir Instagram"
+    "message": "Paslepia įrašus „Remiama“ Facebook, Instagram ir Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Pašalina utm_*, fbclid, gclid ir kitus paspaudimų identifikatorius iš jūsų atidaromų nuorodų"
@@ -670,5 +670,74 @@
   "welDone": {
     "message": "Supratau",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Leidžiama · liko $1 min."
+  },
+  "hiddenHere": {
+    "message": "Čia paslėpta elementų: $1 · Atšaukti paskutinį"
+  },
+  "cmd_toggle_site": {
+    "message": "Įjungti arba išjungti blokavimą šioje svetainėje"
+  },
+  "cmd_pause": {
+    "message": "Pristabdyti arba tęsti apsaugą (30 minučių)"
+  },
+  "cmd_picker": {
+    "message": "Paslėpti elementą šiame puslapyje"
+  },
+  "rep_fix_hour": {
+    "message": "Leisti reklamas čia 1 valandai"
+  },
+  "rep_done_hour": {
+    "message": "Reklamos šioje svetainėje leidžiamos 1 valandai. Įkelta iš naujo — ar pataisyta?"
+  },
+  "opt_last30": {
+    "message": "Paskutinės 30 dienų"
+  },
+  "opt_last30_sum": {
+    "message": "Užblokuota: $1 · Slapukų pranešimai: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Jūsų dienos sumos atsiras čia, kai naršysite."
+  },
+  "opt_last30_sub": {
+    "message": "Tik dienos sumos, saugomos šiame įrenginyje 30 dienų. Jokių svetainių, jokių adresų."
+  },
+  "opt_gpc_sub": {
+    "message": "Prašo kiekvienos lankomos svetainės neparduoti ir nebendrinti jūsų duomenų (Sec-GPC signalas, kurio pagal kai kuriuos privatumo įstatymus svetainės privalo paisyti). Nesiunčiamas svetainėse, kurias leidžiate."
+  },
+  "opt_shortcuts": {
+    "message": "Spartieji klavišai"
+  },
+  "opt_shortcuts_change": {
+    "message": "Keisti sparčiuosius klavišus"
+  },
+  "opt_shortcut_none": {
+    "message": "Nenustatyta"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox naršyklėje: Priedai ir temos → ⚙ → Tvarkyti sparčiuosius klavišus priedams."
+  },
+  "opt_import_foreign": {
+    "message": "Importuoti iš kito reklamų blokatoriaus"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Pereinate nuo uBlock Origin, AdGuard ar Adblock Plus? Pasirinkite jo atsarginės kopijos failą: jūsų leistos svetainės ir jūsų filtrai bus pridėti čia. Niekas nepakeičiama."
+  },
+  "opt_import_foreign_done": {
+    "message": "Leista svetainių: $1 · Pridėta filtrų: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Praleista (čia pritaikyti negalima): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Šis failas nėra atsarginė kopija, kurią galime perskaityti."
+  },
+  "welQuickTitle": {
+    "message": "Pritaikykite sau"
+  },
+  "welQuickSub": {
+    "message": "Neprivaloma: viskas jau veikia. Bet kurį iš šių nustatymų vėliau galėsite pakeisti nustatymuose."
   }
 }

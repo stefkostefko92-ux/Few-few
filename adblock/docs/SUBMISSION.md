@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-5.1.8.zip
+bash tools/package.sh      # → dist/supreme-adblock-5.5.0.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -100,7 +100,8 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
 ## 5. Permission justifications (paste each)
 
 - **declarativeNetRequest** — block ad/tracker network requests using bundled
-  filter rules.
+  filter rules, and add the Global Privacy Control header (`Sec-GPC: 1`, a fixed
+  rule in the package, switchable in Settings) to the requests the browser sends.
 - **declarativeNetRequestFeedback** — `declarativeNetRequest.getMatchedRules()`
   for the active tab only, to render the per-tab blocked count on the toolbar
   badge and, in the popup, how many requests each of our filter lists blocked on
@@ -118,7 +119,9 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
   the user turned on (bundled files). No code is fetched or `eval`-ed at runtime, no
   personal data is read, nothing is sent.
   On YouTube only, it also registers the bundled `youtube_main.js` (MAIN world,
-  `document_start`) — see the YouTube reviewer note below.
+  `document_start`) — see the YouTube reviewer note below. And, unless the user
+  switches Global Privacy Control off, the bundled `gpc.js` (MAIN world, every
+  site except allowed ones), which only defines `navigator.globalPrivacyControl = true`.
 - **host permissions `<all_urls>`** — a universal ad blocker must filter and
   cosmetically clean ads on every site the user visits; all processing is local.
 
@@ -129,12 +132,15 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
 > arguments; no functions). It neutralises
 > anti-adblock detectors — the same mechanism established ad blockers use for
 > `##+js(...)`.
-> `main.js` contains (a) a fixed set of **19 named routines** — `set-constant`,
+> `main.js` contains (a) a fixed set of **39 named routines** — `set-constant`,
 > `abort-on-property-read/write`, `abort-current-script`, `abort-on-stack-trace`,
-> `no-setTimeout-if`, `no-setInterval-if`, `addEventListener-defuser`,
-> `json-prune`, `no-fetch-if`, `no-window-open-if`, `remove-attr`, `remove-class`,
-> `href-sanitizer`, `remove-node-text`, `nowebrtc`, `no-xhr-if`, `set-cookie`, `remove-cookie`
-> — and (b) a static table mapping hostnames to routine names plus arguments.
+> `no-setTimeout-if`, `no-setInterval-if`, `no-requestAnimationFrame-if`, `addEventListener-defuser`,
+> `json-prune`, `json-prune-fetch-response`, `json-prune-xhr-response`, `xml-prune`, `m3u-prune`,
+> `no-fetch-if`, `no-xhr-if`, `no-window-open-if`, `window.name-defuser`, `refresh-defuser`,
+> `remove-attr`, `remove-class`, `set-attr`, `href-sanitizer`, `remove-node-text`, `prevent-innerHTML`,
+> `nowebrtc`, `noeval`, `noeval-if`, `nano-stb`, `nano-sib`, `nobab`, `nofab`, `popads-dummy`,
+> `popads.net`, `alert-buster`, `set-cookie`, `remove-cookie`, `set-local-storage-item`,
+> `set-session-storage-item` — and (b) a static table mapping hostnames to routine names plus arguments.
 > Arguments are restricted by grammar (property names, CSS selectors, text
 > needles; `set-constant` values come from a closed dictionary).
 > Both the routines and the host table are **fixed in the package** (since 5.1.4):
@@ -166,8 +172,20 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
 >
 > **Welcome page.** On first install only (not on updates) the extension opens
 > its own local page `welcome/welcome.html`: how to pin it, what to do if a site
-> breaks, and that nothing leaves the device. It asks for nothing and sends
-> nothing.
+> breaks, and that nothing leaves the device. It also offers optional switches
+> (cookie banners, a few Focus-mode lists), an import from another ad blocker's
+> backup file (read locally) and the keyboard shortcuts. It requires nothing and
+> sends nothing.
+>
+> **Global Privacy Control and shortcuts (5.5.0).** A fixed static ruleset
+> (`rules/gpc.json`, one `modifyHeaders` rule) adds `Sec-GPC: 1` to requests, and
+> `gpc.js` (MAIN world, bundled) defines `navigator.globalPrivacyControl` — the
+> standard "do not sell or share my data" signal, on by default and switchable in
+> Settings; neither runs on allowed sites or while paused. The manifest declares
+> keyboard `commands` (blocking on this site on/off, pause, element picker); they
+> act only on the active tab. Importing another blocker's backup reads the chosen
+> file on the device and keeps only allowed sites and plain domain / `##` filter
+> lines; nothing is sent anywhere.
 >
 > **Review request (5.1.8).** The popup has a small ★ “Rate” link in its footer
 > and, at most twice (no earlier than 7 days after install and 1,000 blocked
@@ -201,7 +219,7 @@ so this is an **update of the existing item**, not a new one:
    the privacy policy with Google's Limited Use statement goes live, and `filters.json`
    (data only — no `scriptlets` key) is published with a fresh Ed25519 signature. Check
    `https://adblock.carbonstealth.eu/privacy` shows the Limited Use section before you submit.
-1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.1.8.zip`.
+1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.5.0.zip`.
 2. Refresh the listing (§3: description + the new feature bullets) **in every
    language that has its own description** — a package update does NOT replace the
    live text, and an old localised description still saying "100% free" fails the
@@ -238,7 +256,7 @@ so this is an **update of the existing item**, not a new one:
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (5.1.8)
+- [ ] `manifest.json` and `package.json` versions match (5.5.0)
 - [ ] `npm test` (tests/) and `node tools/build_scriptlets.mjs --check` are green
 - [ ] `PW_ROOT=$(npm root -g) npm run test:browser` is green — real Chromium, including the
       back/forward-cache check (the page is restored on Back, with the extension on)
