@@ -100,3 +100,17 @@ export const OBBLIGHI_VARIAZIONI: Readonly<Record<Norma10411, Partial<Readonly<R
       + 'quelli documentati'),
   },
 };
+
+/** D.1 at the brake test (round 47, owner's decision D2): with the ratio of the loads changed under UNI 10411-1 (the
+ *  check tr_d1), a point to verify on site in the relazioni's «Adempimenti» — the car's braking deceleration measured
+ *  at the brake test against a_lim, the limit up to which D.1 holds (calc/d1.ts aLim; report/cases.ts d1Sito splices
+ *  the values into D1_FORMULA); above it D.1 done again with the measured one does not hold. When not even C1's band
+ *  minimum meets D.1 (aLim null), no measured deceleration does (D1_NON_REGGE). Out of OBBLIGHI_VARIAZIONI: no case of
+ *  a change, the verdict stays round 46's; the list of verification names both (scripts/lista-verifica.ts). */
+export const D1_FORMULA = '(a_lim = g·(C1lim − 1)/(C1lim + 1), con C1lim della relazione)';
+export const D1_PROVA_FRENO = DA_VERIFICARE('UNI 10411-1:2024, 6.1 e D.1', 'alla prova del freno si misura la decelerazione di frenatura della '
+  + 'cabina, in discesa con 1,25·Q e in salita a vuoto come nei due casi della D.1, e la maggiore si confronta con a_lim, la decelerazione fino '
+  + `alla quale la D.1 regge nel caso più sfavorevole ${D1_FORMULA}; se quella misurata supera a_lim, la D.1 rifatta con essa non regge e vanno `
+  + 'rivisti il rapporto tra i carichi o la frenatura; quale decelerazione intenda la D.1 lo decide il soggetto della verifica');
+export const D1_NON_REGGE = DA_VERIFICARE('UNI 10411-1:2024, 6.1 e D.1', 'la D.1 non regge nemmeno con il C1 minimo della fascia di velocità: '
+  + 'nessuna decelerazione misurata alla prova del freno la rispetta, e il rapporto tra i carichi va rivisto con il soggetto della verifica');

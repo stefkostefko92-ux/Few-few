@@ -2924,6 +2924,19 @@ frizione, Diametro pulegge di rinvio, Inerzia per puleggia…, Massa della macch
     (трите за отговор, списъкът казва какво трябва), с libretto и документирани товари като проекта (трите «No — dai
     documenti», «Sì» → «Contro i documenti», пак «No»), запис, «Nuovo calcolo da questi dati» със същите знаци и ходът +1 m
     → заключено «Sì».
+- **D2 — D.1 при изпитването на спирачката** (UNI 10411-1:2024, прил. D): присъдата остава, както я остави кръг 46 (C1 =
+  max(минимума на лентата, (g + a_e)/(g − a_e)); a_min и a_lim — като информация). Ново: винаги когато `tr_d1` се прилага,
+  точка `da_verificare` в «Adempimenti e punti da verificare in sito» на двете relazioni, при UNI 10411-1 (`report/cases.ts
+  d1Sito`, `adempimentiBlocks`): при изпитването на спирачката забавянето на кабината (надолу с 1,25·Q, нагоре празна — двата
+  случая на D.1) се сравнява с a_lim — стойността, C1lim и приетото a са в точката (напр. «= 0,88 m/s² con C1lim = 1,197; il
+  calcolo la verifica con a = 0,50 m/s²»); над a_lim D.1, направена наново с измереното, не е изпълнена (уточнението на
+  лещата на кода — при a_lim utilizzo = 1) и се преразглеждат съотношението на товарите или спирането; кое забавяне има
+  предвид D.1 решава soggetto della verifica. Когато и минимумът на лентата не стига (a_lim null) — вариантът «la D.1 non
+  regge nemmeno con il C1 minimo della fascia…». Без нов вход (YAGNI); лист 1 — без промяна. Шаблоните `D1_PROVA_FRENO` и
+  `D1_NON_REGGE` (`obblighi-variazioni.ts`) са извън `OBBLIGHI_VARIAZIONI` — ключът на обхвата и версиите не се менят; листата
+  ги назовава в «velocità, carichi e corsa variati» на -1 — 326 реда (+2). Тестове: `r47-d1.test.ts` (5: точката с a_lim при
+  UNI 10411-1, вариантът при a_lim null, никога без `tr_d1` — -11, пропорционални товари, без документи, без стойностите;
+  точката ⇔ `d1Check` и `ambitoOf` на 32 случая; relazione di calcolo, relazione tecnica и листата).
 
 ## Проверки
 

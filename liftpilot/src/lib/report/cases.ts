@@ -2,12 +2,14 @@
 // braking at the minimum deceleration and at the brake's real one (a warning; with the acceptance test of UNI EN
 // 81-20:2020, 6.3.3 b) among its cases), the stalled car or counterweight; the stability against slipping of UNI
 // 10411-1:2024 D.1 when a modification under it changes the ratio of the suspended loads (6.1, round 46: its two
-// cases, and its sentence in the data's «Variazione dei carichi»); and the limits of the calculation model stated
-// before the checks. Pure.
+// cases, and its sentence in the data's «Variazione dei carichi»; round 47, D2: its point at the brake test, d1Sito); and
+// the limits of the calculation model stated before the checks. Pure.
 import { deg } from '@/calc/math';
 import { K, VOCI } from '@/calc/norme';
 import type { BrakeCase, CheckStatus, FormValues, Machine, Plant, Results, TractionCase } from '@/calc/types';
-import type { Collaudo } from '../lift/collaudo';
+import { ambitoOf, type Collaudo } from '../lift/collaudo';
+import { D1_FORMULA, D1_NON_REGGE, D1_PROVA_FRENO } from '../lift/obblighi-variazioni';
+import type { PuntoInSito } from '../lift/punti';
 import { d1Di } from '../lift/rapporto';
 import type { Pres } from '../present/tr';
 import type { BlockStatus, ReportBlock } from './model';
@@ -78,6 +80,18 @@ export function d1Frase(C: Collaudo, V: FormValues | undefined): string {
   return ` Stabilità allo scorrimento (D.1): utilizzo ${n} nel caso più sfavorevole con a = ${a} m/s² (il C1 minimo della fascia, ${f2(d.c1Min)}, equivale a una decelerazione di ${f2(d.aMin)} m/s²), `
     + `${d1Ok(u) ? 'verificata con questa decelerazione' : '⚠ non verificata'}${lim}; da confermare con il soggetto della verifica.`;
 }
+
+/** D.1 at the brake test (round 47, owner's decision D2): the point to verify on site whenever tr_d1 applies — the
+ *  measured braking deceleration against a_lim, its value, C1lim and the calculation's a spliced in; the variant when
+ *  not even C1's band minimum meets D.1. Null when D.1 is not asked. The verdict is round 46's (information only). */
+export function d1Sito(C: Collaudo, V: FormValues): PuntoInSito | null {
+  const d = d1Di(C, V);
+  if (!d || ambitoOf(C, 'tr_d1') !== 'applies') return null;
+  if (d.aLim === null) return { ...D1_NON_REGGE, testo: D1_NON_REGGE.testo.replace('fascia di velocità', `fascia di velocità (C1lim = ${f(d.c1Lim, 3)}, sotto ${f(d.c1Min, 2)})`) };
+  return { ...D1_PROVA_FRENO, testo: D1_PROVA_FRENO.testo.replace(D1_FORMULA, `(a_lim = g·(C1lim − 1)/(C1lim + 1) = ${f(d.aLim, 2)} m/s² con C1lim = `
+    + `${f(d.c1Lim, 3)}; il calcolo la verifica con a = ${f(d.a, 2)} m/s²)`) };
+}
+const f = (x: number, n: number): string => new Intl.NumberFormat('it-IT', { minimumFractionDigits: n, maximumFractionDigits: n }).format(x);
 
 /** Registry entries with no check of their own that bound where the calculation holds: the compensation and the
  *  travelling cable kept inside P, the tolerance of the real speed on the rated one (registry, group modello). */

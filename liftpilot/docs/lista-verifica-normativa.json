@@ -3792,6 +3792,30 @@
     },
     {
       "n": 314,
+      "id": "collaudo.variazioni.10411-1.15",
+      "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-1:2024, 6.1 e D.1",
+      "valore": "alla prova del freno si misura la decelerazione di frenatura della cabina, in discesa con 1,25·Q e in salita a vuoto come nei due casi della D.1, e la maggiore si confronta con a_lim, la decelerazione fino alla quale la D.1 regge nel caso più sfavorevole (a_lim = g·(C1lim − 1)/(C1lim + 1), con C1lim della relazione); se quella misurata supera a_lim, la D.1 rifatta con essa non regge e vanno rivisti il rapporto tra i carichi o la frenatura; quale decelerazione intenda la D.1 lo decide il soggetto della verifica",
+      "riferimento": "UNI 10411-1:2024, 6.1 e D.1",
+      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 315,
+      "id": "collaudo.variazioni.10411-1.16",
+      "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-1:2024, 6.1 e D.1",
+      "valore": "la D.1 non regge nemmeno con il C1 minimo della fascia di velocità: nessuna decelerazione misurata alla prova del freno la rispetta, e il rapporto tra i carichi va rivisto con il soggetto della verifica",
+      "riferimento": "UNI 10411-1:2024, 6.1 e D.1",
+      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 316,
       "id": "collaudo.variazioni.10411-11.1",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 15 a)–k) e 4.3",
@@ -3803,7 +3827,7 @@
       "nota": ""
     },
     {
-      "n": 315,
+      "n": 317,
       "id": "collaudo.variazioni.10411-11.2",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 15 i)",
@@ -3815,7 +3839,7 @@
       "nota": ""
     },
     {
-      "n": 316,
+      "n": 318,
       "id": "collaudo.variazioni.10411-11.3",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1–6.13",
@@ -3827,7 +3851,7 @@
       "nota": ""
     },
     {
-      "n": 317,
+      "n": 319,
       "id": "collaudo.variazioni.10411-11.4",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1–6.13",
@@ -3839,7 +3863,7 @@
       "nota": ""
     },
     {
-      "n": 318,
+      "n": 320,
       "id": "collaudo.variazioni.10411-11.5",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1",
@@ -3851,7 +3875,7 @@
       "nota": ""
     },
     {
-      "n": 319,
+      "n": 321,
       "id": "collaudo.variazioni.10411-11.6",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1",
@@ -3863,7 +3887,7 @@
       "nota": ""
     },
     {
-      "n": 320,
+      "n": 322,
       "id": "collaudo.variazioni.10411-11.7",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 16 a)–i) e 4.3",
@@ -3875,7 +3899,7 @@
       "nota": ""
     },
     {
-      "n": 321,
+      "n": 323,
       "id": "collaudo.variazioni.10411-11.8",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 16 e 4.3",
@@ -3887,7 +3911,7 @@
       "nota": ""
     },
     {
-      "n": 322,
+      "n": 324,
       "id": "collaudo.variazioni.10411-11.9",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 15 e 4.3",
@@ -3899,7 +3923,7 @@
       "nota": ""
     },
     {
-      "n": 323,
+      "n": 325,
       "id": "collaudo.variazioni.10411-11.10",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 16 e 4.3",
@@ -3911,7 +3935,7 @@
       "nota": ""
     },
     {
-      "n": 324,
+      "n": 326,
       "id": "collaudo.variazioni.10411-11.11",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 22 e 6.1",

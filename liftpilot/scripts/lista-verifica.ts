@@ -9,7 +9,7 @@ import { VOCI_VANO } from '../src/shaft/index';
 import type { GruppoVano, ShaftCheckId } from '../src/shaft/index';
 import { VOCI_IMPIANTO } from '../src/lib/lift/norme';
 import { ADEMPIMENTI, NORME_INFO, OBBLIGHI_PARTI, type PuntoInSito } from '../src/lib/lift/norme-collaudo';
-import { OBBLIGHI_VARIAZIONI } from '../src/lib/lift/obblighi-variazioni';
+import { D1_NON_REGGE, D1_PROVA_FRENO, OBBLIGHI_VARIAZIONI } from '../src/lib/lift/obblighi-variazioni';
 import { NORMA_SIGLA, NORME_AGGIUNTIVE, NORME_COLLAUDO, VERIFICHE_DM236, VERIFICHE_NTC } from '../src/lib/lift/collaudo';
 import { VOCI_SIM } from '../src/sim/norme';
 
@@ -101,7 +101,9 @@ const rows = [
       key: `parti.${n}`, gruppo: `Collaudo: ${NORMA_SIGLA[n]}, parti sostituite oltre la macchina`, punti: Object.values(OBBLIGHI_PARTI[n]), verifiche: '',
     })),
     ...(['10411-1', '10411-11'] as const).map((n) => ({
-      key: `variazioni.${n}`, gruppo: `Collaudo: ${NORMA_SIGLA[n]}, velocità, carichi e corsa variati`, punti: Object.values(OBBLIGHI_VARIAZIONI[n]), verifiche: '',
+      key: `variazioni.${n}`, gruppo: `Collaudo: ${NORMA_SIGLA[n]}, velocità, carichi e corsa variati`, verifiche: '',
+      // round 47 (D2): D.1 at the brake test, out of the cases (the relazioni splice a_lim in: report/cases.ts d1Sito)
+      punti: [...Object.values(OBBLIGHI_VARIAZIONI[n]), ...(n === '10411-1' ? [D1_PROVA_FRENO, D1_NON_REGGE] : [])],
     }))].flatMap(({ key, gruppo, punti, verifiche }) => punti.map((p: PuntoInSito, i) => ({
     id: `collaudo.${key}.${i + 1}`, gruppo, voce: p.rif, valore: p.testo, riferimento: p.rif, fonte: p.fonte ?? 'ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)',
     stato: STATO[p.stato], verifiche, nota: '',

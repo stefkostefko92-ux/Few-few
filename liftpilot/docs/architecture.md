@@ -218,7 +218,8 @@ src/lib/report/      build.ts — моделът на relazione (италиан�
                      без отговор, само в relazioni); modifica-dpr.ts (след прегледа, извън collaudo.ts) altreModifiche —
                      случаят по DPR 162/1999 чл. 2 ал. 1 б. cc) на всяка част, PUNTI_MACCHINA_NUOVA и restaPunto (9.1–9.2
                      при машина, която остава). cases.ts (кръг 46 S7) — d1Blocks (двата случая на D.1 след сцеплението) и d1Frase
-                     (изречението в «Variazione dei carichi»).
+                     (изречението в «Variazione dei carichi»); кръг 47 (D2) — d1Sito (точката за изпитването на спирачката
+                     с a_lim в «Adempimenti», при UNI 10411-1 на adempimentiBlocks).
                      Кръг 36: build-parts (части на build.ts), guide („Guide e carichi sulle strutture“ — водачите и товарите от
                      sheet-loads), refs (клаузите в колоната „Riferimento“), elaborati (издадените комплекти в relazione),
                      tecnica-site (отворите, товарите и закрепването в relazione tecnica).

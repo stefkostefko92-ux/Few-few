@@ -17,7 +17,7 @@ import type { BlockStatus, ReportBlock } from './model';
 import { MACCHINA_81_1 } from './refs';
 import { SEZIONE_ADEMPIMENTI, ammodernamentoText, notaIntervento } from './intervento-text';
 import { regolazioneRows, variazioniDoc, variazioniNota, variazioniRows } from './variazioni';
-import { d1Frase } from './cases';
+import { d1Frase, d1Sito } from './cases';
 import { PUNTI_MACCHINA_NUOVA, altreModifiche, casoNumerato, ccResta, restaPunto } from './modifica-dpr';
 
 export { PUNTI_MACCHINA_NUOVA } from './modifica-dpr';
@@ -251,7 +251,7 @@ const punto = (p: PuntoInSito): string => `${p.rif}: ${p.testo}${p.stato === 'da
 /** The section of what the law asks of the intervention (DPR 162/1999: a new lift, or a modification) and, for each
  *  standard of the test, its citation in the Official Journal and the points the engineer checks on site (`resta`: the
  *  machine kept, PUNTI_MACCHINA_NUOVA left out and 9.1–9.2 without the new machine; `V`: the calculation's values, the
- *  rated load's case n. 2) by the documented loads). */
+ *  rated load's case n. 2) by the documented loads, and D.1 at the brake test — round 47, d1Sito). */
 export function adempimentiBlocks(C: Collaudo, repl: boolean, resta = false, V?: FormValues): ReportBlock[] {
   const modifica = resta ? [ccResta(casoNumerato(C, V)), ...ADEMPIMENTI.modifica.slice(1)] : ADEMPIMENTI.modifica;
   const out: ReportBlock[] = [
@@ -264,7 +264,9 @@ export function adempimentiBlocks(C: Collaudo, repl: boolean, resta = false, V?:
     { t: 'list', items: [...(repl ? modifica : ADEMPIMENTI.nuovo), ...(repl ? altreModifiche(C, resta, nomeParte, V) : [])].map(punto) },
   ];
   for (const n of normeOf(C)) {
-    const info = NORME_INFO[n], punti = resta ? info.punti.filter((p) => !PUNTI_MACCHINA_NUOVA.includes(p.rif)).map(restaPunto) : info.punti;
+    // round 47 (D2): D.1 at the brake test, with tr_d1, among UNI 10411-1's points
+    const info = NORME_INFO[n], d1 = n === '10411-1' && V ? d1Sito(C, V) : null;
+    const punti = [...(resta ? info.punti.filter((p) => !PUNTI_MACCHINA_NUOVA.includes(p.rif)).map(restaPunto) : info.punti), ...(d1 ? [d1] : [])];
     out.push({ t: 'h3', text: NORMA_SIGLA[n] }, { t: 'p', style: 'note', text: `Citazione: ${info.citazione}.${info.avviso ? ` Attenzione: ${info.avviso}.` : ''}` });
     if (punti.length) out.push({ t: 'list', items: punti.map(punto) });
   }

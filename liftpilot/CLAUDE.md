@@ -113,7 +113,7 @@ npx tsx --conditions=react-server scripts/landing-docs.ts   # страницит
   (`esitoDocumenti`, `esitoParte`, `mancaParte`); Progetto върху него с друг ход — `tipoDaRivedere` и «Porta nel calcolo». Табло без регулиране на
   скоростта под нова машина (11.2.1 / 11.2) — отказ 'inverter' и «Passa ad Ammodernamento con il quadro»; допълнителните
   части — група «Altre parti (facoltative)», «No» по подразбиране; сменено съотношение на товарите по -1 — проверката D.1
-  (`src/calc/d1.ts`, `tr_d1`). Машината, която остава, се
+  (`src/calc/d1.ts`, `tr_d1`; кръг 47, D2 — и точка за изпитването на спирачката с a_lim в «Adempimenti», `d1Sito`). Машината, която остава, се
   чертае върху съществуващата си основа (`src/lib/lift/kept.ts`, `src/shaft/room-kept.ts`): L0 и dx·h — от изчислението.
   `Project.kind` не се чете и не се пише от никой код (глобален `omit` в `src/lib/db.ts`, тест `no-project-kind`);
   колоната остава до миграция след потвърждението на собственика. Кръгът Calcolo ↔ Progetto: „Porta nel calcolo“
