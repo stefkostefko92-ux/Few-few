@@ -118,6 +118,27 @@
   "support": {
     "message": "Apoiar"
   },
+  "rate": {
+    "message": "Avaliar"
+  },
+  "rateTitle": {
+    "message": "Avaliar o Supreme AdBlock na Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "$1 pedidos bloqueados até agora"
+  },
+  "reviewAsk": {
+    "message": "Se o Supreme AdBlock lhe é útil, uma breve avaliação na Chrome Web Store ajuda outras pessoas a encontrá-lo."
+  },
+  "reviewLeave": {
+    "message": "Escrever uma avaliação"
+  },
+  "reviewLater": {
+    "message": "Agora não"
+  },
+  "reviewNever": {
+    "message": "Não voltar a perguntar"
+  },
   "filtersCount": {
     "message": "$1+ filtros",
     "placeholders": {
@@ -205,7 +226,7 @@
     "message": "Oculta as barreiras «desative o seu bloqueador de anúncios» e restaura a página"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Oculta as publicações «Patrocinado» no Facebook e no Instagram"
+    "message": "Oculta as publicações «Patrocinado» no Facebook, no Instagram e no Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Remove utm_*, fbclid, gclid e outros identificadores de clique das ligações que abre"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Doar através do Revolut"
+  },
+  "opt_review": {
+    "message": "Lembretes de avaliação"
+  },
+  "opt_review_sub": {
+    "message": "Uma pequena ligação ★ na parte inferior da janela do Supreme AdBlock e, no máximo duas vezes, um breve pedido aí para o avaliar na Chrome Web Store. Nunca em sites, nunca como notificação."
   },
   "opt_made_by": {
     "message": "feito pela Carbon Stealth"
@@ -643,5 +670,74 @@
   "welDone": {
     "message": "Percebi",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Permitido · faltam $1 min"
+  },
+  "hiddenHere": {
+    "message": "Elementos ocultos aqui: $1 · Desfazer o último"
+  },
+  "cmd_toggle_site": {
+    "message": "Ativar ou desativar o bloqueio neste site"
+  },
+  "cmd_pause": {
+    "message": "Pausar ou retomar a proteção (30 minutos)"
+  },
+  "cmd_picker": {
+    "message": "Ocultar um elemento nesta página"
+  },
+  "rep_fix_hour": {
+    "message": "Permitir anúncios aqui durante 1 hora"
+  },
+  "rep_done_hour": {
+    "message": "Os anúncios estão permitidos neste site durante 1 hora. Página recarregada: ficou resolvido?"
+  },
+  "opt_last30": {
+    "message": "Últimos 30 dias"
+  },
+  "opt_last30_sum": {
+    "message": "Bloqueados: $1 · Avisos de cookies: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Os seus totais diários aparecem aqui à medida que navega."
+  },
+  "opt_last30_sub": {
+    "message": "Apenas totais diários, guardados neste dispositivo durante 30 dias. Sem sites, sem endereços."
+  },
+  "opt_gpc_sub": {
+    "message": "Pede a cada site que visita que não venda nem partilhe os seus dados (o sinal Sec-GPC, que algumas leis de privacidade obrigam os sites a respeitar). Não é enviado nos sites que permite."
+  },
+  "opt_shortcuts": {
+    "message": "Atalhos de teclado"
+  },
+  "opt_shortcuts_change": {
+    "message": "Alterar atalhos"
+  },
+  "opt_shortcut_none": {
+    "message": "Não definido"
+  },
+  "opt_shortcuts_ff": {
+    "message": "No Firefox: Extensões e temas → ⚙ → Gerir atalhos de extensões."
+  },
+  "opt_import_foreign": {
+    "message": "Importar de outro bloqueador de anúncios"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Vem do uBlock Origin, AdGuard ou Adblock Plus? Escolha o ficheiro de cópia de segurança desse bloqueador: os sites que permitiu e os seus próprios filtros são adicionados aqui. Nada é substituído."
+  },
+  "opt_import_foreign_done": {
+    "message": "Sites permitidos: $1 · Filtros adicionados: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Linhas ignoradas (não aplicáveis aqui): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Este ficheiro não é uma cópia de segurança que consigamos ler."
+  },
+  "welQuickTitle": {
+    "message": "Personalize à sua maneira"
+  },
+  "welQuickSub": {
+    "message": "Opcional: já funciona. Pode alterar qualquer uma destas opções mais tarde nas Definições."
   }
 }

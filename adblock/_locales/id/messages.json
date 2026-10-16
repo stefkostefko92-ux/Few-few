@@ -118,6 +118,27 @@
   "support": {
     "message": "Dukung"
   },
+  "rate": {
+    "message": "Beri nilai"
+  },
+  "rateTitle": {
+    "message": "Beri nilai Supreme AdBlock di Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "$1 permintaan diblokir sejauh ini"
+  },
+  "reviewAsk": {
+    "message": "Jika Supreme AdBlock bermanfaat bagi Anda, ulasan singkat di Chrome Web Store membantu orang lain menemukannya."
+  },
+  "reviewLeave": {
+    "message": "Tulis ulasan"
+  },
+  "reviewLater": {
+    "message": "Lain kali"
+  },
+  "reviewNever": {
+    "message": "Jangan tanya lagi"
+  },
   "filtersCount": {
     "message": "$1+ filter",
     "placeholders": {
@@ -205,7 +226,7 @@
     "message": "Sembunyikan dinding “nonaktifkan adblocker Anda” dan pulihkan halaman"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Sembunyikan postingan “Bersponsor” di Facebook & Instagram"
+    "message": "Sembunyikan postingan “Bersponsor” di Facebook, Instagram & Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Hapus utm_*, fbclid, gclid, dan pengenal klik lainnya dari link yang Anda buka"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Donasi via Revolut"
+  },
+  "opt_review": {
+    "message": "Pengingat ulasan"
+  },
+  "opt_review_sub": {
+    "message": "Tautan ★ kecil di bagian bawah jendela Supreme AdBlock dan, paling banyak dua kali, permintaan singkat di sana untuk menilainya di Chrome Web Store. Tidak pernah di situs web, tidak pernah sebagai notifikasi."
   },
   "opt_made_by": {
     "message": "dibuat oleh Carbon Stealth"
@@ -643,5 +670,74 @@
   "welDone": {
     "message": "Mengerti",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Diizinkan · sisa $1 mnt"
+  },
+  "hiddenHere": {
+    "message": "Tersembunyi di sini: $1 · Urungkan yang terakhir"
+  },
+  "cmd_toggle_site": {
+    "message": "Aktifkan atau nonaktifkan pemblokiran di situs ini"
+  },
+  "cmd_pause": {
+    "message": "Jeda atau lanjutkan perlindungan (30 menit)"
+  },
+  "cmd_picker": {
+    "message": "Sembunyikan elemen di halaman ini"
+  },
+  "rep_fix_hour": {
+    "message": "Izinkan iklan di sini selama 1 jam"
+  },
+  "rep_done_hour": {
+    "message": "Iklan diizinkan di situs ini selama 1 jam. Sudah dimuat ulang — apakah sudah beres?"
+  },
+  "opt_last30": {
+    "message": "30 hari terakhir"
+  },
+  "opt_last30_sum": {
+    "message": "Diblokir: $1 · Banner cookie: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Total harian Anda akan muncul di sini saat Anda menjelajah."
+  },
+  "opt_last30_sub": {
+    "message": "Hanya total harian, disimpan di perangkat ini selama 30 hari. Tanpa situs, tanpa alamat."
+  },
+  "opt_gpc_sub": {
+    "message": "Meminta setiap situs yang Anda kunjungi untuk tidak menjual atau membagikan data Anda (sinyal Sec-GPC, yang menurut sebagian undang-undang privasi wajib dihormati oleh situs). Tidak dikirim di situs yang Anda izinkan."
+  },
+  "opt_shortcuts": {
+    "message": "Pintasan keyboard"
+  },
+  "opt_shortcuts_change": {
+    "message": "Ubah pintasan"
+  },
+  "opt_shortcut_none": {
+    "message": "Belum diatur"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Di Firefox: Pengaya dan tema → ⚙ → Kelola Pintasan Ekstensi."
+  },
+  "opt_import_foreign": {
+    "message": "Impor dari pemblokir iklan lain"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Pindah dari uBlock Origin, AdGuard, atau Adblock Plus? Pilih file cadangannya: situs yang Anda izinkan dan filter Anda sendiri akan ditambahkan di sini. Tidak ada yang diganti."
+  },
+  "opt_import_foreign_done": {
+    "message": "Situs diizinkan: $1 · Filter ditambahkan: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Dilewati (tidak dapat diterapkan di sini): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "File ini bukan cadangan yang dapat kami baca."
+  },
+  "welQuickTitle": {
+    "message": "Sesuaikan sesuka Anda"
+  },
+  "welQuickSub": {
+    "message": "Opsional: semuanya sudah berfungsi. Semua ini dapat diubah nanti di Setelan."
   }
 }

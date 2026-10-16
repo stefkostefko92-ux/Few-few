@@ -118,6 +118,27 @@
   "support": {
     "message": "Col·labora"
   },
+  "rate": {
+    "message": "Valora"
+  },
+  "rateTitle": {
+    "message": "Valoreu Supreme AdBlock a la Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "$1 sol·licituds bloquejades fins ara"
+  },
+  "reviewAsk": {
+    "message": "Si Supreme AdBlock us és útil, una ressenya breu a la Chrome Web Store ajuda altres persones a trobar-lo."
+  },
+  "reviewLeave": {
+    "message": "Escriviu una ressenya"
+  },
+  "reviewLater": {
+    "message": "Ara no"
+  },
+  "reviewNever": {
+    "message": "No ho tornis a preguntar"
+  },
   "filtersCount": {
     "message": "$1+ filtres",
     "placeholders": {
@@ -205,7 +226,7 @@
     "message": "Amaga els murs «desactiveu el blocador d’anuncis» i restaura la pàgina"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Amaga les publicacions «Patrocinat» a Facebook i Instagram"
+    "message": "Amaga les publicacions «Patrocinat» a Facebook, Instagram i Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Elimina utm_*, fbclid, gclid i altres identificadors de clic dels enllaços que obriu"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Feu un donatiu amb Revolut"
+  },
+  "opt_review": {
+    "message": "Recordatoris de ressenya"
+  },
+  "opt_review_sub": {
+    "message": "Un petit enllaç ★ a la part inferior de la finestra de Supreme AdBlock i, com a màxim dues vegades, una breu petició per valorar-lo a la Chrome Web Store. Mai als llocs web, mai com a notificació."
   },
   "opt_made_by": {
     "message": "fet per Carbon Stealth"
@@ -643,5 +670,74 @@
   "welDone": {
     "message": "Entesos",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Permès · queden $1 min"
+  },
+  "hiddenHere": {
+    "message": "Elements amagats aquí: $1 · Desfés l’últim"
+  },
+  "cmd_toggle_site": {
+    "message": "Activa o desactiva el bloqueig en aquest lloc"
+  },
+  "cmd_pause": {
+    "message": "Posa en pausa o reprèn la protecció (30 minuts)"
+  },
+  "cmd_picker": {
+    "message": "Amaga un element d’aquesta pàgina"
+  },
+  "rep_fix_hour": {
+    "message": "Permet els anuncis aquí durant 1 hora"
+  },
+  "rep_done_hour": {
+    "message": "Els anuncis estan permesos en aquest lloc durant 1 hora. S’ha tornat a carregar: s’ha solucionat?"
+  },
+  "opt_last30": {
+    "message": "Darrers 30 dies"
+  },
+  "opt_last30_sum": {
+    "message": "Bloquejats: $1 · Bàners de galetes: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Els vostres totals diaris apareixeran aquí a mesura que navegueu."
+  },
+  "opt_last30_sub": {
+    "message": "Només totals diaris, desats en aquest dispositiu durant 30 dies. Ni llocs ni adreces."
+  },
+  "opt_gpc_sub": {
+    "message": "Demana a cada lloc que visiteu que no vengui ni comparteixi les vostres dades (el senyal Sec-GPC, que algunes lleis de privadesa obliguen els llocs a respectar). No s’envia als llocs que permeteu."
+  },
+  "opt_shortcuts": {
+    "message": "Dreceres de teclat"
+  },
+  "opt_shortcuts_change": {
+    "message": "Canvia les dreceres"
+  },
+  "opt_shortcut_none": {
+    "message": "Sense assignar"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Al Firefox: Extensions i temes → ⚙ → Gestiona les dreceres de les extensions."
+  },
+  "opt_import_foreign": {
+    "message": "Importa d’un altre blocador d’anuncis"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Veniu d’uBlock Origin, AdGuard o Adblock Plus? Trieu el fitxer de còpia de seguretat d’aquest blocador: els llocs que hi heu permès i els vostres filtres s’afegeixen aquí. No se substitueix res."
+  },
+  "opt_import_foreign_done": {
+    "message": "Llocs permesos: $1 · Filtres afegits: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Línies omeses (no aplicables aquí): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Aquest fitxer no és una còpia de seguretat que puguem llegir."
+  },
+  "welQuickTitle": {
+    "message": "Personalitzeu-lo"
+  },
+  "welQuickSub": {
+    "message": "Opcional: ja funciona. Podeu canviar qualsevol d’aquestes opcions més endavant a la Configuració."
   }
 }

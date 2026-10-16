@@ -124,6 +124,13 @@ HTML filtering `##^`/`filterResponseData`, `$replace=` (response body rewrite),
 - ✅ Добавени (v4.6.0): `href-sanitizer`, `remove-node-text`/`rmnt`, `nowebrtc`.
 - ✅ Добавени (v4.7.0): `abort-on-stack-trace`/`aost`, `set-cookie`, `remove-cookie` (последният
   само от печения списък). Roster: 18 scriptlet-а — пълен спрямо приоритетния uBO списък.
+- ✅ **5.5.0:** 39 имена (20 нови: `json-prune-fetch/xhr-response`, `xml-prune`, `m3u-prune`,
+  `noeval(-if)`, `nano-stb/sib`, `set-local/session-storage-item`, `nobab/nofab`, `popads-dummy`,
+  `popads.net`, `refresh-defuser`, `set-attr`, `no-requestAnimationFrame-if`, `prevent-innerHTML`,
+  `window.name-defuser`, `alert-buster`); пътищата на uBO в json-prune (`[]`, `*`, `[-]`, `{-}`) —
+  52 правила, които дотогава тихо не правеха нищо; домейни с шаблон (`example.*`, 1 435 имена) и
+  `~host` изключения. **9 366** директиви на uBO вместо 6 608 при релийза (893 остават отказани от валидатора —
+  основно `trusted-*` и аргументи извън граматиката).
 
 > ⚠️ **Преди Web Store submission:** курираните site-specific директиви (ако се добавят
 > към глобалните анти-адблок) трябва да минат жив тест на реална страница —

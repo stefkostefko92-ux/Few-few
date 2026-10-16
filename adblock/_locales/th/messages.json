@@ -118,6 +118,27 @@
   "support": {
     "message": "สนับสนุน"
   },
+  "rate": {
+    "message": "ให้คะแนน"
+  },
+  "rateTitle": {
+    "message": "ให้คะแนน Supreme AdBlock ใน Chrome เว็บสโตร์"
+  },
+  "reviewBlocked": {
+    "message": "บล็อกคำขอไปแล้ว $1 รายการ"
+  },
+  "reviewAsk": {
+    "message": "หาก Supreme AdBlock มีประโยชน์กับคุณ รีวิวสั้นๆ ใน Chrome เว็บสโตร์จะช่วยให้คนอื่นค้นพบได้"
+  },
+  "reviewLeave": {
+    "message": "เขียนรีวิว"
+  },
+  "reviewLater": {
+    "message": "ไว้ทีหลัง"
+  },
+  "reviewNever": {
+    "message": "ไม่ต้องถามอีก"
+  },
   "filtersCount": {
     "message": "$1+ ตัวกรอง",
     "placeholders": {
@@ -205,7 +226,7 @@
     "message": "ซ่อนกำแพง “ปิดตัวบล็อกโฆษณาของคุณ” และกู้คืนหน้าเว็บ"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "ซ่อนโพสต์ “ได้รับการสนับสนุน” บน Facebook และ Instagram"
+    "message": "ซ่อนโพสต์ “ได้รับการสนับสนุน” บน Facebook, Instagram และ Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "ลบ utm_*, fbclid, gclid และตัวระบุการคลิกอื่นๆ ออกจากลิงก์ที่คุณเปิด"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "บริจาคผ่าน Revolut"
+  },
+  "opt_review": {
+    "message": "การเตือนให้รีวิว"
+  },
+  "opt_review_sub": {
+    "message": "ลิงก์ ★ เล็กๆ ที่ด้านล่างของหน้าต่าง Supreme AdBlock และคำขอสั้นๆ ตรงนั้นให้ช่วยให้คะแนนใน Chrome เว็บสโตร์ ไม่เกินสองครั้ง ไม่แสดงบนเว็บไซต์และไม่แสดงเป็นการแจ้งเตือน"
   },
   "opt_made_by": {
     "message": "สร้างโดย Carbon Stealth"
@@ -643,5 +670,74 @@
   "welDone": {
     "message": "เข้าใจแล้ว",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "อนุญาต · เหลือ $1 นาที"
+  },
+  "hiddenHere": {
+    "message": "ซ่อนองค์ประกอบที่นี่แล้ว: $1 · เลิกทำอันล่าสุด"
+  },
+  "cmd_toggle_site": {
+    "message": "เปิดหรือปิดการบล็อกในเว็บไซต์นี้"
+  },
+  "cmd_pause": {
+    "message": "หยุดการป้องกันชั่วคราวหรือทำงานต่อ (30 นาที)"
+  },
+  "cmd_picker": {
+    "message": "ซ่อนองค์ประกอบในหน้านี้"
+  },
+  "rep_fix_hour": {
+    "message": "อนุญาตโฆษณาที่นี่ 1 ชั่วโมง"
+  },
+  "rep_done_hour": {
+    "message": "อนุญาตโฆษณาในเว็บไซต์นี้ 1 ชั่วโมงแล้ว โหลดใหม่แล้ว — แก้ไขได้หรือยัง"
+  },
+  "opt_last30": {
+    "message": "30 วันที่ผ่านมา"
+  },
+  "opt_last30_sum": {
+    "message": "บล็อกแล้ว: $1 · แบนเนอร์คุกกี้: $2"
+  },
+  "opt_last30_empty": {
+    "message": "ยอดรวมรายวันของคุณจะแสดงที่นี่ขณะที่คุณท่องเว็บ"
+  },
+  "opt_last30_sub": {
+    "message": "เก็บเฉพาะยอดรวมรายวันไว้ในอุปกรณ์นี้ 30 วัน ไม่มีเว็บไซต์ ไม่มีที่อยู่"
+  },
+  "opt_gpc_sub": {
+    "message": "ขอให้ทุกเว็บไซต์ที่คุณเข้าชมไม่ขายหรือแชร์ข้อมูลของคุณ (สัญญาณ Sec-GPC ซึ่งกฎหมายความเป็นส่วนตัวบางฉบับกำหนดให้เว็บไซต์ต้องปฏิบัติตาม) ไม่ส่งในเว็บไซต์ที่คุณอนุญาต"
+  },
+  "opt_shortcuts": {
+    "message": "แป้นพิมพ์ลัด"
+  },
+  "opt_shortcuts_change": {
+    "message": "เปลี่ยนแป้นพิมพ์ลัด"
+  },
+  "opt_shortcut_none": {
+    "message": "ยังไม่ได้ตั้ง"
+  },
+  "opt_shortcuts_ff": {
+    "message": "ใน Firefox: ส่วนเสริมและชุดตกแต่ง → ⚙ → จัดการทางลัดส่วนขยาย"
+  },
+  "opt_import_foreign": {
+    "message": "นำเข้าจากตัวบล็อกโฆษณาอื่น"
+  },
+  "opt_import_foreign_sub": {
+    "message": "ย้ายมาจาก uBlock Origin, AdGuard หรือ Adblock Plus ใช่ไหม เลือกไฟล์สำรองข้อมูลของตัวนั้น แล้วเว็บไซต์ที่คุณอนุญาตและตัวกรองของคุณเองจะถูกเพิ่มที่นี่ ไม่มีอะไรถูกแทนที่"
+  },
+  "opt_import_foreign_done": {
+    "message": "เว็บไซต์ที่อนุญาต: $1 · ตัวกรองที่เพิ่ม: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "ข้ามไป (ใช้ที่นี่ไม่ได้): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "ไฟล์นี้ไม่ใช่ไฟล์สำรองข้อมูลที่เราอ่านได้"
+  },
+  "welQuickTitle": {
+    "message": "ปรับให้เป็นแบบของคุณ"
+  },
+  "welQuickSub": {
+    "message": "ไม่บังคับ: ส่วนขยายทำงานอยู่แล้ว คุณเปลี่ยนตัวเลือกเหล่านี้ได้ภายหลังในการตั้งค่า"
   }
 }

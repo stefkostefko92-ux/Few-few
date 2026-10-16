@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-5.1.7.zip
+bash tools/package.sh      # → dist/supreme-adblock-5.5.0.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -44,13 +44,18 @@ Google's image rules ("Supplying Images"), and how we meet them:
 - **Promo tile and marquee** — no text (they are not per-language), saturated colours, no large
   white or light-grey areas (the store puts them on light grey), the whole area filled, clear edges,
   readable at half size, the brand rather than a screenshot: the 3D shield struck by lightning.
-- **Screenshots** — 1280×800, square corners, full bleed, the real UI.
+- **Screenshots** — 1280×800, square corners, full bleed, the real UI. Minimal text (a kicker, a
+  two-part headline and one sentence, large enough to read at 640×400), and **locale-specific**:
+  every language the store lists gets its own five, with the real popup and settings strings in that
+  language and right-to-left layout for Arabic, Hebrew, Persian and Urdu.
 
 Regenerate: `python3 tools/generate_icons.py` (icons; the artwork is the brand shield from
 `store/brand/` — never a drawing made in-repo), `PW_ROOT=$(npm root -g) node tools/store_promo.mjs`
 (promo tile + marquee: the 3D shield from `tools/popup_shield3d.mjs --hero` and the landing page's
 storm), `python3 store/screenshots/build.py` (renders the real popup with demo numbers via headless
-Chromium; see that script's header).
+Chromium; see that script's header) and `python3 store/screenshots/build.py --locales` (the other
+62 store languages → `dist/store-screenshots/<locale>/`, JPEG; captions in
+`store/screenshots/i18n.json`; needs the Noto fonts for every script).
 
 ## 3. Listing fields (paste as-is)
 
@@ -95,7 +100,8 @@ Chromium; see that script's header).
 ## 5. Permission justifications (paste each)
 
 - **declarativeNetRequest** — block ad/tracker network requests using bundled
-  filter rules.
+  filter rules, and add the Global Privacy Control header (`Sec-GPC: 1`, a fixed
+  rule in the package, switchable in Settings) to the requests the browser sends.
 - **declarativeNetRequestFeedback** — `declarativeNetRequest.getMatchedRules()`
   for the active tab only, to render the per-tab blocked count on the toolbar
   badge and, in the popup, how many requests each of our filter lists blocked on
@@ -113,7 +119,9 @@ Chromium; see that script's header).
   the user turned on (bundled files). No code is fetched or `eval`-ed at runtime, no
   personal data is read, nothing is sent.
   On YouTube only, it also registers the bundled `youtube_main.js` (MAIN world,
-  `document_start`) — see the YouTube reviewer note below.
+  `document_start`) — see the YouTube reviewer note below. And, unless the user
+  switches Global Privacy Control off, the bundled `gpc.js` (MAIN world, every
+  site except allowed ones), which only defines `navigator.globalPrivacyControl = true`.
 - **host permissions `<all_urls>`** — a universal ad blocker must filter and
   cosmetically clean ads on every site the user visits; all processing is local.
 
@@ -124,12 +132,15 @@ Chromium; see that script's header).
 > arguments; no functions). It neutralises
 > anti-adblock detectors — the same mechanism established ad blockers use for
 > `##+js(...)`.
-> `main.js` contains (a) a fixed set of **19 named routines** — `set-constant`,
+> `main.js` contains (a) a fixed set of **39 named routines** — `set-constant`,
 > `abort-on-property-read/write`, `abort-current-script`, `abort-on-stack-trace`,
-> `no-setTimeout-if`, `no-setInterval-if`, `addEventListener-defuser`,
-> `json-prune`, `no-fetch-if`, `no-window-open-if`, `remove-attr`, `remove-class`,
-> `href-sanitizer`, `remove-node-text`, `nowebrtc`, `no-xhr-if`, `set-cookie`, `remove-cookie`
-> — and (b) a static table mapping hostnames to routine names plus arguments.
+> `no-setTimeout-if`, `no-setInterval-if`, `no-requestAnimationFrame-if`, `addEventListener-defuser`,
+> `json-prune`, `json-prune-fetch-response`, `json-prune-xhr-response`, `xml-prune`, `m3u-prune`,
+> `no-fetch-if`, `no-xhr-if`, `no-window-open-if`, `window.name-defuser`, `refresh-defuser`,
+> `remove-attr`, `remove-class`, `set-attr`, `href-sanitizer`, `remove-node-text`, `prevent-innerHTML`,
+> `nowebrtc`, `noeval`, `noeval-if`, `nano-stb`, `nano-sib`, `nobab`, `nofab`, `popads-dummy`,
+> `popads.net`, `alert-buster`, `set-cookie`, `remove-cookie`, `set-local-storage-item`,
+> `set-session-storage-item` — and (b) a static table mapping hostnames to routine names plus arguments.
 > Arguments are restricted by grammar (property names, CSS selectors, text
 > needles; `set-constant` values come from a closed dictionary).
 > Both the routines and the host table are **fixed in the package** (since 5.1.4):
@@ -161,8 +172,28 @@ Chromium; see that script's header).
 >
 > **Welcome page.** On first install only (not on updates) the extension opens
 > its own local page `welcome/welcome.html`: how to pin it, what to do if a site
-> breaks, and that nothing leaves the device. It asks for nothing and sends
-> nothing.
+> breaks, and that nothing leaves the device. It also offers optional switches
+> (cookie banners, a few Focus-mode lists), an import from another ad blocker's
+> backup file (read locally) and the keyboard shortcuts. It requires nothing and
+> sends nothing.
+>
+> **Global Privacy Control and shortcuts (5.5.0).** A fixed static ruleset
+> (`rules/gpc.json`, one `modifyHeaders` rule) adds `Sec-GPC: 1` to requests, and
+> `gpc.js` (MAIN world, bundled) defines `navigator.globalPrivacyControl` — the
+> standard "do not sell or share my data" signal, on by default and switchable in
+> Settings; neither runs on allowed sites or while paused. The manifest declares
+> keyboard `commands` (blocking on this site on/off, pause, element picker); they
+> act only on the active tab. Importing another blocker's backup reads the chosen
+> file on the device and keeps only allowed sites and plain domain / `##` filter
+> lines; nothing is sent anywhere.
+>
+> **Review request (5.1.8).** The popup has a small ★ “Rate” link in its footer
+> and, at most twice (no earlier than 7 days after install and 1,000 blocked
+> requests, at least 60 days apart), a dismissible card asking for a Chrome Web
+> Store review. It is the same request for everyone (no rating gate), offers no
+> incentive of any kind, never appears on websites or as a notification, and only
+> opens this listing's reviews page in a new tab. One switch in Settings turns
+> both off.
 >
 > **Remote rules (dynamic DNR).** The bundled rulesets in `rules/` are static
 > and fully reviewable. In addition, the service worker may add **dynamic block
@@ -188,19 +219,21 @@ so this is an **update of the existing item**, not a new one:
    the privacy policy with Google's Limited Use statement goes live, and `filters.json`
    (data only — no `scriptlets` key) is published with a fresh Ed25519 signature. Check
    `https://adblock.carbonstealth.eu/privacy` shows the Limited Use section before you submit.
-1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.1.7.zip`.
+1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.5.0.zip`.
 2. Refresh the listing (§3: description + the new feature bullets) **in every
    language that has its own description** — a package update does NOT replace the
    live text, and an old localised description still saying "100% free" fails the
    review again. **Delete every old screenshot and tile, in every language**, then
-   upload the 5 screenshots + promo tiles (§2). The summary needs no edit: it is
+   upload the 5 screenshots + promo tiles (§2), and in every language its own 5 screenshots
+   (`supreme-adblock-<version>-screenshots.zip`). The summary needs no edit: it is
    `extDescription` from the package.
-3. **Video (optional).** Only the store cut (`node tools/promo/render.mjs --cut store`
-   → `dist/supreme-adblock-promo-<version>-store-web.mp4`, uploaded to YouTube) — **never**
-   the full or the social cut (they carry "Free" and a comparison with other blockers:
-   the "Red Nickel" rejection again). No video is better than the wrong one.
+3. **Video — not updated anymore** (owner's decision, 15 October 2026). Leave the listing's
+   YouTube video field as it is; do not render or upload a new video for a release. The last
+   render is the 5.1.8 store cut. If a video is ever changed by the owner's explicit request:
+   only a store cut — **never** the full or the social cut (they carry "Free" and a comparison
+   with other blockers: the "Red Nickel" rejection again).
 4. **Store listing → URLs:** official URL `carbonstealth.eu` (the verified site), homepage
-   `https://adblock.carbonstealth.eu`, support `https://adblock.carbonstealth.eu/#faq`.
+   `https://adblock.carbonstealth.eu`, support `https://adblock.carbonstealth.eu/support`.
 5. Re-check the **Privacy practices** tab (§4) and paste the permission
    justifications (§5) — `tabs` was removed in 5.0.0, so delete its entry.
 6. **Publisher identity:** the product, manifest and privacy policy say
@@ -211,7 +244,7 @@ so this is an **update of the existing item**, not a new one:
    the listing shows "Non-trader" with a personal e-mail, while we publish as Carbon
    Stealth VCC and take donations — declaring as a trader (company details,
    `info@carbonstealth.eu`) is the consistent choice and an owner decision.
-7. **Category → Privacy & Security** (Store listing → Category; it is *Tools* today).
+7. **Category → Privacy & Security** (Store listing → Category; already set since 12 October 2026 — keep it).
 8. **Submit for review** — tick **deferred publishing** if you want to choose the moment
    the approved version goes live.
 9. **After the update is live — nominate for the Featured badge** (Chrome Web Store
@@ -223,7 +256,7 @@ so this is an **update of the existing item**, not a new one:
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (5.1.7)
+- [ ] `manifest.json` and `package.json` versions match (5.5.0)
 - [ ] `npm test` (tests/) and `node tools/build_scriptlets.mjs --check` are green
 - [ ] `PW_ROOT=$(npm root -g) npm run test:browser` is green — real Chromium, including the
       back/forward-cache check (the page is restored on Back, with the extension on)
@@ -244,7 +277,7 @@ The **same zip** as Chrome (`dist/supreme-adblock-<version>.zip`) — Edge runs 
 
 1. Partner Center → <https://partner.microsoft.com/dashboard/microsoftedge/> → **Create new extension** → upload the zip.
 2. Availability: Public, all markets.
-3. Properties: category *Productivity*; privacy policy URL `https://adblock.carbonstealth.eu/privacy`; website `https://adblock.carbonstealth.eu`; support `https://adblock.carbonstealth.eu/#faq`.
+3. Properties: category *Productivity*; privacy policy URL `https://adblock.carbonstealth.eu/privacy`; website `https://adblock.carbonstealth.eu`; support `https://adblock.carbonstealth.eu/support`.
 4. Store listings: Edge asks for a listing **per language packaged in `_locales`**. Use
    `docs/listing/<lang>.txt` for every language — they never mention another browser
    (Edge policy 1.1.2 forbids it; the long texts in `docs/STORE_LISTING.md` do mention

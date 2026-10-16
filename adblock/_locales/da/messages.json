@@ -118,6 +118,27 @@
   "support": {
     "message": "Støt"
   },
+  "rate": {
+    "message": "Bedøm"
+  },
+  "rateTitle": {
+    "message": "Bedøm Supreme AdBlock i Chrome Webshop"
+  },
+  "reviewBlocked": {
+    "message": "$1 forespørgsler blokeret indtil nu"
+  },
+  "reviewAsk": {
+    "message": "Hvis Supreme AdBlock er nyttig for dig, hjælper en kort anmeldelse i Chrome Webshop andre med at finde den."
+  },
+  "reviewLeave": {
+    "message": "Skriv en anmeldelse"
+  },
+  "reviewLater": {
+    "message": "Ikke nu"
+  },
+  "reviewNever": {
+    "message": "Spørg ikke igen"
+  },
   "filtersCount": {
     "message": "$1+ filtre",
     "placeholders": {
@@ -205,7 +226,7 @@
     "message": "Skjul »slå din adblocker fra«-mure, og gendan siden"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Skjul »Sponsoreret«-opslag på Facebook og Instagram"
+    "message": "Skjul »Sponsoreret«-opslag på Facebook, Instagram og Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Fjern utm_*, fbclid, gclid og andre klik-id’er fra de links, du åbner"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Doner via Revolut"
+  },
+  "opt_review": {
+    "message": "Påmindelser om anmeldelse"
+  },
+  "opt_review_sub": {
+    "message": "Et lille ★-link nederst i Supreme AdBlock-vinduet og højst to gange en kort anmodning dér om at bedømme den i Chrome Webshop. Aldrig på websteder, aldrig som notifikation."
   },
   "opt_made_by": {
     "message": "lavet af Carbon Stealth"
@@ -643,5 +670,74 @@
   "welDone": {
     "message": "Forstået",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Tilladt · $1 min tilbage"
+  },
+  "hiddenHere": {
+    "message": "Elementer skjult her: $1 · Fortryd den seneste"
+  },
+  "cmd_toggle_site": {
+    "message": "Slå blokering til eller fra på dette websted"
+  },
+  "cmd_pause": {
+    "message": "Pause eller genoptag beskyttelse (30 minutter)"
+  },
+  "cmd_picker": {
+    "message": "Skjul et element på denne side"
+  },
+  "rep_fix_hour": {
+    "message": "Tillad annoncer her i 1 time"
+  },
+  "rep_done_hour": {
+    "message": "Annoncer er tilladt på dette websted i 1 time. Genindlæst — er det løst?"
+  },
+  "opt_last30": {
+    "message": "Seneste 30 dage"
+  },
+  "opt_last30_sum": {
+    "message": "Blokeret: $1 · Cookiebannere: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Dine daglige totaler vises her, mens du browser."
+  },
+  "opt_last30_sub": {
+    "message": "Kun daglige totaler, gemt på denne enhed i 30 dage. Ingen websteder, ingen adresser."
+  },
+  "opt_gpc_sub": {
+    "message": "Beder alle websteder, du besøger, om ikke at sælge eller dele dine data (Sec-GPC-signalet, som nogle love om privatliv pålægger websteder at respektere). Sendes ikke på websteder, du tillader."
+  },
+  "opt_shortcuts": {
+    "message": "Tastaturgenveje"
+  },
+  "opt_shortcuts_change": {
+    "message": "Skift genveje"
+  },
+  "opt_shortcut_none": {
+    "message": "Ikke angivet"
+  },
+  "opt_shortcuts_ff": {
+    "message": "I Firefox: Udvidelser og temaer → ⚙ → Håndter genveje til udvidelser."
+  },
+  "opt_import_foreign": {
+    "message": "Importer fra en anden adblocker"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Skifter du fra uBlock Origin, AdGuard eller Adblock Plus? Vælg dens sikkerhedskopifil: de websteder, du har tilladt, og dine egne filtre føjes til her. Intet erstattes."
+  },
+  "opt_import_foreign_done": {
+    "message": "Websteder tilladt: $1 · Filtre tilføjet: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Udeladt (kan ikke anvendes her): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Denne fil er ikke en sikkerhedskopi, vi kan læse."
+  },
+  "welQuickTitle": {
+    "message": "Gør den til din egen"
+  },
+  "welQuickSub": {
+    "message": "Valgfrit: det virker allerede. Du kan ændre alt dette senere i Indstillinger."
   }
 }

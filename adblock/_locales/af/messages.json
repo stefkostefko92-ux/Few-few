@@ -118,6 +118,27 @@
   "support": {
     "message": "Ondersteun"
   },
+  "rate": {
+    "message": "Gradeer"
+  },
+  "rateTitle": {
+    "message": "Gradeer Supreme AdBlock in die Chrome Webwinkel"
+  },
+  "reviewBlocked": {
+    "message": "$1 versoeke tot dusver geblokkeer"
+  },
+  "reviewAsk": {
+    "message": "As Supreme AdBlock vir u nuttig is, help 'n kort resensie in die Chrome Webwinkel ander om dit te vind."
+  },
+  "reviewLeave": {
+    "message": "Skryf 'n resensie"
+  },
+  "reviewLater": {
+    "message": "Nie nou nie"
+  },
+  "reviewNever": {
+    "message": "Moenie weer vra nie"
+  },
   "filtersCount": {
     "message": "$1+ filters",
     "placeholders": {
@@ -205,7 +226,7 @@
     "message": "Versteek “skakel u advertensieblokker af”-mure en herstel die bladsy"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Versteek “Geborg”-plasings op Facebook en Instagram"
+    "message": "Versteek “Geborg”-plasings op Facebook, Instagram en Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Verwyder utm_*, fbclid, gclid en ander klik-identifiseerders uit die skakels wat u oopmaak"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Skenk via Revolut"
+  },
+  "opt_review": {
+    "message": "Resensie-herinneringe"
+  },
+  "opt_review_sub": {
+    "message": "'n Klein ★-skakel onderaan die Supreme AdBlock-venster en, hoogstens twee keer, 'n kort versoek daar om dit in die Chrome Webwinkel te gradeer. Nooit op webwerwe nie, nooit as 'n kennisgewing nie."
   },
   "opt_made_by": {
     "message": "gemaak deur Carbon Stealth"
@@ -643,5 +670,74 @@
   "welDone": {
     "message": "Ek verstaan",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Toegelaat · $1 min oor"
+  },
+  "hiddenHere": {
+    "message": "Hier versteek: $1 · Maak die laaste ongedaan"
+  },
+  "cmd_toggle_site": {
+    "message": "Skakel blokkering op hierdie werf aan of af"
+  },
+  "cmd_pause": {
+    "message": "Pouseer of hervat beskerming (30 minute)"
+  },
+  "cmd_picker": {
+    "message": "Versteek ’n element op hierdie bladsy"
+  },
+  "rep_fix_hour": {
+    "message": "Laat advertensies hier vir 1 uur toe"
+  },
+  "rep_done_hour": {
+    "message": "Advertensies word vir 1 uur op hierdie werf toegelaat. Herlaai — is dit reggestel?"
+  },
+  "opt_last30": {
+    "message": "Afgelope 30 dae"
+  },
+  "opt_last30_sum": {
+    "message": "Geblokkeer: $1 · Koekiebaniere: $2"
+  },
+  "opt_last30_empty": {
+    "message": "U daaglikse totale verskyn hier terwyl u blaai."
+  },
+  "opt_last30_sub": {
+    "message": "Slegs daaglikse totale, 30 dae lank op hierdie toestel bewaar. Geen werwe, geen adresse nie."
+  },
+  "opt_gpc_sub": {
+    "message": "Vra elke werf wat u besoek om u data nie te verkoop of te deel nie (die Sec-GPC-sein, wat sommige privaatheidswette werwe verplig om na te kom). Word nie gestuur op werwe wat u toelaat nie."
+  },
+  "opt_shortcuts": {
+    "message": "Sleutelbordkortpaaie"
+  },
+  "opt_shortcuts_change": {
+    "message": "Verander kortpaaie"
+  },
+  "opt_shortcut_none": {
+    "message": "Nie gestel nie"
+  },
+  "opt_shortcuts_ff": {
+    "message": "In Firefox: Uitbreidings en temas → ⚙ → Bestuur uitbreidingskortpaaie."
+  },
+  "opt_import_foreign": {
+    "message": "Voer in uit ’n ander adblokker"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Skuif u van uBlock Origin, AdGuard of Adblock Plus oor? Kies sy rugsteunlêer: die werwe wat u toegelaat het en u eie filters word hier bygevoeg. Niks word vervang nie."
+  },
+  "opt_import_foreign_done": {
+    "message": "Werwe toegelaat: $1 · Filters bygevoeg: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Weggelaat (kan nie hier toegepas word nie): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Hierdie lêer is nie ’n rugsteun wat ons kan lees nie."
+  },
+  "welQuickTitle": {
+    "message": "Maak dit u eie"
+  },
+  "welQuickSub": {
+    "message": "Opsioneel: dit werk reeds. U kan enige hiervan later in Instellings verander."
   }
 }

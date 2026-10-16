@@ -7,6 +7,8 @@ const FALLBACK = {
   pausedResume: "Paused, resume now ($1m left)", blocking: "Blocking", allowed: "Allowed",
   on: "On", off: "Off", thisPage: "this page", filtersCount: "$1+ filters",
   logUnavailable: "Log unavailable right now (browser quota) — try again in a minute.",
+  reviewBlocked: "$1 requests blocked so far",
+  allowedFor: "Allowed · $1 min left", hiddenHere: "Elements you hid here: $1 · Undo the last",
 };
 
 const toggle = $("toggle");
@@ -77,11 +79,22 @@ function load() {
         cosmToggle.checked = !res.noCosmetics;
         setCosmLabel(!res.noCosmetics);
         cosmToggle.disabled = !!res.allowed;
+        // allowed for a while (the repair page's "for 1 hour"): the label says how long is left
+        if (res.allowed && res.allowedUntil > Date.now()) {
+          allowLabel.textContent = t("allowedFor", [String(Math.max(1, Math.round((res.allowedUntil - Date.now()) / 60000)))]);
+        }
       } else {
         siteHost.textContent = t("thisPage");
         allowToggle.disabled = true;
         cosmToggle.disabled = true;
       }
+
+      // what the picker hid on this site: one click brings the last one back
+      renderUndo(currentHost ? res.hiddenHere || 0 : 0);
+      // ★ преди мерене (заема място в долната лента), картата след него (покрива каквото покрива)
+      renderRate(res.review);
+      fitPopup();
+      showReviewCard(res.review, res.blockedTotal);
     });
     loadLog();
   });
@@ -137,6 +150,32 @@ function setStatus(enabled) {
   hero.classList.toggle("off", !enabled);
   // read by popup.css and shield3d.js (colour + light of the shield)
   hero.dataset.state = !enabled ? (S.paused ? "paused" : "off") : allowedHere ? "allowed" : "protected";
+}
+
+// Chrome показва popup-а най-много 600 px висок; на дългите езици текстът се пренася и съдържанието
+// минава тавана → скролбар. Тогава — по-стегнати отстояния (html.tight); а ако надписите в долната
+// лента не се събират — само иконите (.foot.compact; текстът остава името на линка, title — подсказка).
+function fitPopup() {
+  const root = document.documentElement;
+  root.classList.remove("tight");
+  if (document.body.getBoundingClientRect().bottom > 600) root.classList.add("tight");
+  const foot = document.querySelector(".foot");
+  foot.classList.remove("compact");
+  const labels = [...foot.querySelectorAll(".links a:not([hidden]) span")];
+  if (labels.some((s) => s.scrollWidth > s.clientWidth + 1)) {
+    foot.classList.add("compact");
+    for (const s of labels) if (!s.parentElement.title) s.parentElement.title = s.textContent.trim();
+  }
+  // ↶ N next to the picker: a one-word label that cannot wrap ("Կարգավորումներ", "Einstellungen")
+  // would push the row wider than the popup — then Settings shows only its gear (the word stays
+  // its name and tooltip), like the footer above
+  const actions = document.querySelector(".actions");
+  const settings = $("settingsBtn");
+  actions.classList.remove("squeeze");
+  if (actions.scrollWidth > actions.clientWidth + 1) {
+    actions.classList.add("squeeze");
+    if (!settings.title) settings.title = settings.textContent.trim();
+  }
 }
 
 function setAllowLabel(blocking) {
@@ -201,12 +240,103 @@ $("pickBtn").addEventListener("click", () => {
 
 $("settingsBtn").addEventListener("click", () => chrome.runtime.openOptionsPage());
 
+function renderUndo(n) {
+  const b = $("undoBtn");
+  b.hidden = !n;
+  if (!n) return;
+  const count = n.toLocaleString(UI_LANG);
+  const label = t("hiddenHere", [count]);
+  $("undoCount").textContent = count;
+  b.title = label;
+  b.setAttribute("aria-label", label);
+}
+$("undoBtn").addEventListener("click", () => {
+  if (!currentHost) return;
+  chrome.runtime.sendMessage({ type: "undoHidden", host: currentHost }, (r) => {
+    renderUndo(r && r.ok ? r.left : 0);
+    fitPopup();
+    if ($("undoBtn").hidden) $("pickBtn").focus(); // the button the keyboard was on is gone
+  });
+});
+
+// Keyboard shortcuts in the tooltips (chrome.commands; the user may have changed or removed them).
+try {
+  chrome.commands.getAll((cmds) => {
+    const keys = {};
+    for (const c of cmds || []) if (c.shortcut) keys[c.name] = c.shortcut;
+    const hint = (el, name) => { if (el && keys[name]) el.title = (el.title || el.textContent.trim()) + " (" + keys[name] + ")"; };
+    hint(pauseBtn, "pause");
+    hint($("pickBtn"), "picker");
+    hint(allowToggle.closest("label"), "toggle-site");
+  });
+} catch {}
+
 document.addEventListener("DOMContentLoaded", load);
 
 $("reportBtn").addEventListener("click", () => {
   chrome.tabs.create({ url: chrome.runtime.getURL("report/report.html?tab=" + currentTabId) });
   window.close();
 });
+
+// Отзив в Chrome Web Store: тиха ★ в долната лента + най-много два пъти карта след реална полза.
+// Кога — решава service worker-ът (reviewDue в background.js), тук само се рисува; Настройки махат
+// и двете. Нищо не се праща никъде: линкът отваря страницата с отзивите в магазина, нищо повече.
+const review = $("review");
+let reviewShown = false;
+
+function renderRate(rv) {
+  if (!rv || !rv.url || !rv.on) return;
+  $("rate").href = rv.url;
+  $("rate").hidden = false;
+}
+
+function showReviewCard(rv, blocked) {
+  if (!rv || !rv.url || !rv.on || !rv.ask || reviewShown) return; // load() се вика пак след пауза — веднъж на отваряне
+  reviewShown = true;
+  $("reviewTitle").textContent = t("reviewBlocked", [blocked.toLocaleString(UI_LANG)]);
+  $("reviewGo").href = rv.url;
+  review.hidden = false;
+  // каквото листът покрива, не взема фокус (WCAG 2.4.11) — става inert, докато листът е тук
+  // (offsetTop, не getBoundingClientRect: анимацията на влизане го отмества с transform)
+  const top = review.offsetTop;
+  for (const el of document.querySelectorAll("main > *, .foot")) {
+    if (!el.hidden && el.getBoundingClientRect().bottom > top) el.inert = true;
+  }
+  chrome.runtime.sendMessage({ type: "review", action: "shown" });
+}
+
+function closeReview() {
+  if (review.hidden || review.classList.contains("out")) return;
+  const hadFocus = review.contains(document.activeElement);
+  const done = () => {
+    review.hidden = true;
+    review.classList.remove("out");
+    document.querySelectorAll("[inert]").forEach((el) => (el.inert = false));
+    if (hadFocus) document.querySelector("main").focus({ preventScroll: true }); // не на body: Tab продължава от съдържанието
+  };
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return done();
+  review.classList.add("out");
+  setTimeout(done, 200);
+}
+
+// отзивът е оставен (или поне отворен) — картата повече не идва; ★ остава, ако някой иска да го смени
+function goReview(e) {
+  e.preventDefault();
+  const url = e.currentTarget.href;
+  chrome.runtime.sendMessage({ type: "review", action: "done" }, () => {
+    void chrome.runtime.lastError;
+    chrome.tabs.create({ url });
+    window.close();
+  });
+}
+$("reviewGo").addEventListener("click", goReview);
+$("rate").addEventListener("click", goReview);
+$("reviewLater").addEventListener("click", closeReview);
+$("reviewNever").addEventListener("click", () => {
+  chrome.runtime.sendMessage({ type: "review", action: "done" });
+  closeReview();
+});
+addEventListener("keydown", (e) => { if (e.key === "Escape" && !review.hidden) { e.preventDefault(); closeReview(); } });
 
 // 3D щитът (popup/shield3d.js) се зарежда чак СЛЕД първото рисуване: още една заявка към
 // разширението на критичния път струва ~40 ms до първия кадър (измерено), а статичният кадър

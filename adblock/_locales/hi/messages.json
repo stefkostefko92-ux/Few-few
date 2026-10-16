@@ -118,6 +118,27 @@
   "support": {
     "message": "सहयोग दें"
   },
+  "rate": {
+    "message": "रेटिंग दें"
+  },
+  "rateTitle": {
+    "message": "Chrome वेब स्टोर पर Supreme AdBlock को रेटिंग दें"
+  },
+  "reviewBlocked": {
+    "message": "अब तक $1 अनुरोध ब्लॉक किए गए"
+  },
+  "reviewAsk": {
+    "message": "अगर Supreme AdBlock आपके काम आता है, तो Chrome वेब स्टोर पर एक छोटी समीक्षा दूसरों को इसे ढूँढने में मदद करती है।"
+  },
+  "reviewLeave": {
+    "message": "समीक्षा लिखें"
+  },
+  "reviewLater": {
+    "message": "अभी नहीं"
+  },
+  "reviewNever": {
+    "message": "फिर से न पूछें"
+  },
   "filtersCount": {
     "message": "$1+ फ़िल्टर",
     "placeholders": {
@@ -205,7 +226,7 @@
     "message": "“अपना एडब्लॉकर बंद करें” वाली दीवारें छिपाएँ और पेज को पहले जैसा करें"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook और Instagram पर “प्रायोजित” पोस्ट छिपाएँ"
+    "message": "Facebook, Instagram और Threads पर “प्रायोजित” पोस्ट छिपाएँ"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "आपके खोले गए लिंक से utm_*, fbclid, gclid और अन्य क्लिक पहचानकर्ता हटाएँ"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut से दान करें"
+  },
+  "opt_review": {
+    "message": "समीक्षा रिमाइंडर"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock विंडो के नीचे एक छोटा ★ लिंक, और ज़्यादा से ज़्यादा दो बार वहीं Chrome वेब स्टोर पर इसे रेटिंग देने का छोटा-सा अनुरोध। वेबसाइटों पर कभी नहीं, सूचना के रूप में कभी नहीं।"
   },
   "opt_made_by": {
     "message": "Carbon Stealth द्वारा बनाया गया"
@@ -643,5 +670,74 @@
   "welDone": {
     "message": "ठीक है",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "अनुमति है · $1 मिनट बाकी"
+  },
+  "hiddenHere": {
+    "message": "यहाँ छिपाए गए एलिमेंट: $1 · आख़िरी वापस लाएँ"
+  },
+  "cmd_toggle_site": {
+    "message": "इस साइट पर ब्लॉकिंग चालू या बंद करें"
+  },
+  "cmd_pause": {
+    "message": "सुरक्षा रोकें या फिर शुरू करें (30 मिनट)"
+  },
+  "cmd_picker": {
+    "message": "इस पेज पर कोई एलिमेंट छिपाएँ"
+  },
+  "rep_fix_hour": {
+    "message": "यहाँ 1 घंटे विज्ञापनों की अनुमति दें"
+  },
+  "rep_done_hour": {
+    "message": "इस साइट पर 1 घंटे के लिए विज्ञापनों की अनुमति है। पेज फिर से लोड हुआ — क्या अब ठीक है?"
+  },
+  "opt_last30": {
+    "message": "पिछले 30 दिन"
+  },
+  "opt_last30_sum": {
+    "message": "ब्लॉक किए: $1 · कुकी बैनर: $2"
+  },
+  "opt_last30_empty": {
+    "message": "ब्राउज़ करते समय आपके रोज़ के कुल आँकड़े यहाँ दिखेंगे।"
+  },
+  "opt_last30_sub": {
+    "message": "सिर्फ़ रोज़ के कुल आँकड़े, जो 30 दिनों तक इसी डिवाइस पर रखे जाते हैं। न कोई साइट, न कोई पता।"
+  },
+  "opt_gpc_sub": {
+    "message": "आपकी देखी जाने वाली हर साइट से अनुरोध करता है कि वह आपका डेटा न बेचे और न साझा करे (Sec-GPC सिग्नल, जिसे मानना कुछ निजता क़ानून साइटों के लिए ज़रूरी बनाते हैं)। जिन साइटों को आपने अनुमति दी है, उन पर यह नहीं भेजा जाता।"
+  },
+  "opt_shortcuts": {
+    "message": "कीबोर्ड शॉर्टकट"
+  },
+  "opt_shortcuts_change": {
+    "message": "शॉर्टकट बदलें"
+  },
+  "opt_shortcut_none": {
+    "message": "सेट नहीं है"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox में: ऐड-ऑन और थीम → ⚙ → एक्सटेंशन शॉर्टकट प्रबंधित करें।"
+  },
+  "opt_import_foreign": {
+    "message": "दूसरे एडब्लॉकर से इंपोर्ट करें"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard या Adblock Plus से आ रहे हैं? उसकी बैकअप फ़ाइल चुनें: आपकी अनुमति दी गई साइटें और आपके अपने फ़िल्टर यहाँ जोड़ दिए जाते हैं। मौजूदा कुछ भी नहीं बदला जाता।"
+  },
+  "opt_import_foreign_done": {
+    "message": "अनुमति दी गई साइटें: $1 · जोड़े गए फ़िल्टर: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "छोड़ी गई पंक्तियाँ (यहाँ लागू नहीं हो सकतीं): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "यह ऐसी बैकअप फ़ाइल नहीं है जिसे हम पढ़ सकें।"
+  },
+  "welQuickTitle": {
+    "message": "इसे अपने हिसाब से बनाएँ"
+  },
+  "welQuickSub": {
+    "message": "वैकल्पिक: यह पहले से काम कर रहा है। इनमें से कोई भी चीज़ बाद में सेटिंग में बदली जा सकती है।"
   }
 }

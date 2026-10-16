@@ -118,6 +118,27 @@
   "support": {
     "message": "Ủng hộ"
   },
+  "rate": {
+    "message": "Đánh giá"
+  },
+  "rateTitle": {
+    "message": "Đánh giá Supreme AdBlock trên Cửa hàng Chrome trực tuyến"
+  },
+  "reviewBlocked": {
+    "message": "Đã chặn $1 yêu cầu cho đến nay"
+  },
+  "reviewAsk": {
+    "message": "Nếu Supreme AdBlock hữu ích với bạn, một bài đánh giá ngắn trên Cửa hàng Chrome trực tuyến sẽ giúp người khác tìm thấy tiện ích."
+  },
+  "reviewLeave": {
+    "message": "Viết đánh giá"
+  },
+  "reviewLater": {
+    "message": "Để sau"
+  },
+  "reviewNever": {
+    "message": "Không hỏi lại"
+  },
   "filtersCount": {
     "message": "$1+ bộ lọc",
     "placeholders": {
@@ -205,7 +226,7 @@
     "message": "Ẩn tường “hãy tắt trình chặn quảng cáo” và khôi phục trang"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Ẩn bài viết “Được tài trợ” trên Facebook và Instagram"
+    "message": "Ẩn bài viết “Được tài trợ” trên Facebook, Instagram và Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Loại bỏ utm_*, fbclid, gclid và các mã nhận dạng lượt nhấp khác khỏi các đường liên kết bạn mở"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Ủng hộ qua Revolut"
+  },
+  "opt_review": {
+    "message": "Lời nhắc đánh giá"
+  },
+  "opt_review_sub": {
+    "message": "Một liên kết ★ nhỏ ở cuối cửa sổ Supreme AdBlock và tối đa hai lần, một lời đề nghị ngắn ngay tại đó để đánh giá tiện ích trên Cửa hàng Chrome trực tuyến. Không bao giờ trên trang web, không bao giờ dưới dạng thông báo."
   },
   "opt_made_by": {
     "message": "made by Carbon Stealth"
@@ -643,5 +670,74 @@
   "welDone": {
     "message": "Đã hiểu",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Cho phép · còn $1 phút"
+  },
+  "hiddenHere": {
+    "message": "Phần tử đã ẩn ở đây: $1 · Hoàn tác lần cuối"
+  },
+  "cmd_toggle_site": {
+    "message": "Bật hoặc tắt chặn quảng cáo trên trang web này"
+  },
+  "cmd_pause": {
+    "message": "Tạm dừng hoặc tiếp tục bảo vệ (30 phút)"
+  },
+  "cmd_picker": {
+    "message": "Ẩn một phần tử trên trang này"
+  },
+  "rep_fix_hour": {
+    "message": "Cho phép quảng cáo ở đây trong 1 giờ"
+  },
+  "rep_done_hour": {
+    "message": "Đã cho phép quảng cáo trên trang web này trong 1 giờ. Đã tải lại — lỗi đã được khắc phục chưa?"
+  },
+  "opt_last30": {
+    "message": "30 ngày qua"
+  },
+  "opt_last30_sum": {
+    "message": "Đã chặn: $1 · Biểu ngữ cookie: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Tổng số hằng ngày của bạn sẽ xuất hiện ở đây khi bạn duyệt web."
+  },
+  "opt_last30_sub": {
+    "message": "Chỉ lưu tổng số hằng ngày, trên thiết bị này trong 30 ngày. Không có trang web, không có địa chỉ."
+  },
+  "opt_gpc_sub": {
+    "message": "Yêu cầu mọi trang web bạn truy cập không bán hoặc chia sẻ dữ liệu của bạn (tín hiệu Sec-GPC, mà một số luật về quyền riêng tư buộc các trang web phải tôn trọng). Không gửi trên các trang web bạn cho phép."
+  },
+  "opt_shortcuts": {
+    "message": "Phím tắt"
+  },
+  "opt_shortcuts_change": {
+    "message": "Thay đổi phím tắt"
+  },
+  "opt_shortcut_none": {
+    "message": "Chưa đặt"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Trong Firefox: Tiện ích và chủ đề → ⚙ → Quản lý phím tắt tiện ích mở rộng."
+  },
+  "opt_import_foreign": {
+    "message": "Nhập từ trình chặn quảng cáo khác"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Chuyển từ uBlock Origin, AdGuard hoặc Adblock Plus sang? Hãy chọn tệp sao lưu của tiện ích đó: các trang web bạn đã cho phép và bộ lọc riêng của bạn sẽ được thêm vào đây. Không có gì bị thay thế."
+  },
+  "opt_import_foreign_done": {
+    "message": "Trang web được cho phép: $1 · Bộ lọc đã thêm: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Bỏ qua (không áp dụng được ở đây): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Tệp này không phải là bản sao lưu mà chúng tôi đọc được."
+  },
+  "welQuickTitle": {
+    "message": "Tùy chỉnh theo ý bạn"
+  },
+  "welQuickSub": {
+    "message": "Không bắt buộc: tiện ích đã hoạt động sẵn. Bạn có thể thay đổi bất kỳ mục nào trong số này sau trong Cài đặt."
   }
 }

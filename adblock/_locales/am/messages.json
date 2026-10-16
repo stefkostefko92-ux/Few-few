@@ -118,6 +118,27 @@
   "support": {
     "message": "ይደግፉ"
   },
+  "rate": {
+    "message": "ደረጃ ይስጡ"
+  },
+  "rateTitle": {
+    "message": "Supreme AdBlockን በChrome ድር መደብር ላይ ደረጃ ይስጡ"
+  },
+  "reviewBlocked": {
+    "message": "እስካሁን $1 ጥያቄዎች ታግደዋል"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock ጠቃሚ ከሆነልዎ፣ በChrome ድር መደብር ላይ አጭር ግምገማ ሌሎች እንዲያገኙት ይረዳል።"
+  },
+  "reviewLeave": {
+    "message": "ግምገማ ይጻፉ"
+  },
+  "reviewLater": {
+    "message": "አሁን አይደለም"
+  },
+  "reviewNever": {
+    "message": "ዳግመኛ አትጠይቅ"
+  },
   "filtersCount": {
     "message": "$1+ ማጣሪያዎች",
     "placeholders": {
@@ -205,7 +226,7 @@
     "message": "የ«ማስታወቂያ አጋጅዎን ያሰናክሉ» ግድግዳዎችን ይደብቃል እና ገጹን ይመልሳል"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "በFacebook እና Instagram ላይ «ስፖንሰር የተደረገ» ልጥፎችን ይደብቃል"
+    "message": "በFacebook፣ Instagram እና Threads ላይ «ስፖንሰር የተደረገ» ልጥፎችን ይደብቃል"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "utm_*፣ fbclid፣ gclid እና ሌሎች የጠቅታ መለያዎችን ከሚከፍቷቸው አገናኞች ያስወግዳል"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "በRevolut ይለግሱ"
+  },
+  "opt_review": {
+    "message": "የግምገማ አስታዋሾች"
+  },
+  "opt_review_sub": {
+    "message": "በSupreme AdBlock መስኮት ግርጌ ላይ ትንሽ የ★ አገናኝ፣ እና ቢበዛ ሁለት ጊዜ እዚያው በChrome ድር መደብር ላይ ደረጃ እንዲሰጡት የሚጠይቅ አጭር መልዕክት። በድር ጣቢያዎች ላይም ሆነ እንደ ማሳወቂያ ፈጽሞ አይታይም።"
   },
   "opt_made_by": {
     "message": "በCarbon Stealth የተሠራ"
@@ -643,5 +670,74 @@
   "welDone": {
     "message": "ገባኝ",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "ተፈቅዷል · $1 ደቂቃ ቀርቷል"
+  },
+  "hiddenHere": {
+    "message": "እዚህ የደበቋቸው አባሎች፦ $1 · የመጨረሻውን ይመልሱ"
+  },
+  "cmd_toggle_site": {
+    "message": "በዚህ ጣቢያ ላይ ማገድን ያብሩ/ያጥፉ"
+  },
+  "cmd_pause": {
+    "message": "ጥበቃን ያቁሙ ወይም ይቀጥሉ (30 ደቂቃ)"
+  },
+  "cmd_picker": {
+    "message": "በዚህ ገጽ ላይ አንድ አባል ይደብቁ"
+  },
+  "rep_fix_hour": {
+    "message": "እዚህ ለ1 ሰዓት ማስታወቂያዎችን ይፍቀዱ"
+  },
+  "rep_done_hour": {
+    "message": "በዚህ ጣቢያ ላይ ማስታወቂያዎች ለ1 ሰዓት ተፈቅደዋል። እንደገና ተጭኗል — ተስተካክሏል?"
+  },
+  "opt_last30": {
+    "message": "ያለፉት 30 ቀናት"
+  },
+  "opt_last30_sum": {
+    "message": "የታገዱ፦ $1 · የኩኪ ሰንደቆች፦ $2"
+  },
+  "opt_last30_empty": {
+    "message": "ሲያስሱ የዕለት ድምሮችዎ እዚህ ይታያሉ።"
+  },
+  "opt_last30_sub": {
+    "message": "የዕለት ድምሮች ብቻ፣ በዚህ መሣሪያ ላይ ለ30 ቀናት ይቀመጣሉ። ጣቢያዎች የሉም፣ አድራሻዎች የሉም።"
+  },
+  "opt_gpc_sub": {
+    "message": "የሚጎበኙትን እያንዳንዱን ጣቢያ ውሂብዎን እንዳይሸጥ ወይም እንዳያጋራ ይጠይቃል (አንዳንድ የግላዊነት ሕጎች ጣቢያዎች እንዲያከብሩት የሚያስገድዱት የSec-GPC ምልክት)። በሚፈቅዷቸው ጣቢያዎች ላይ አይላክም።"
+  },
+  "opt_shortcuts": {
+    "message": "የቁልፍ ሰሌዳ አቋራጮች"
+  },
+  "opt_shortcuts_change": {
+    "message": "አቋራጮችን ይቀይሩ"
+  },
+  "opt_shortcut_none": {
+    "message": "አልተዘጋጀም"
+  },
+  "opt_shortcuts_ff": {
+    "message": "በFirefox ውስጥ፦ ተጨማሪዎች እና ገጽታዎች → ⚙ → የቅጥያ አቋራጮችን ያስተዳድሩ።"
+  },
+  "opt_import_foreign": {
+    "message": "ከሌላ የማስታወቂያ አጋጅ ያስመጡ"
+  },
+  "opt_import_foreign_sub": {
+    "message": "ከuBlock Origin፣ AdGuard ወይም Adblock Plus እየቀየሩ ነው? የእሱን የምትኬ ፋይል ይምረጡ፦ የፈቀዷቸው ጣቢያዎች እና የራስዎ ማጣሪያዎች እዚህ ይታከላሉ። ምንም ነገር አይተካም።"
+  },
+  "opt_import_foreign_done": {
+    "message": "የተፈቀዱ ጣቢያዎች፦ $1 · የታከሉ ማጣሪያዎች፦ $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "የቀሩ (እዚህ ሊተገበሩ አይችሉም)፦ $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "ይህ ፋይል ልናነበው የምንችለው ምትኬ አይደለም።"
+  },
+  "welQuickTitle": {
+    "message": "የራስዎ ያድርጉት"
+  },
+  "welQuickSub": {
+    "message": "አማራጭ ነው፦ አስቀድሞ እየሠራ ነው። ከእነዚህ ውስጥ ማንኛውንም በኋላ በቅንብሮች ውስጥ መቀየር ይችላሉ።"
   }
 }

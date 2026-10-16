@@ -118,6 +118,27 @@
   "support": {
     "message": "Dəstək ol"
   },
+  "rate": {
+    "message": "Qiymətləndir"
+  },
+  "rateTitle": {
+    "message": "Supreme AdBlock-u Chrome Veb Mağazasında qiymətləndirin"
+  },
+  "reviewBlocked": {
+    "message": "İndiyədək $1 sorğu bloklanıb"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock sizə faydalıdırsa, Chrome Veb Mağazasında qısa rəy başqalarının onu tapmasına kömək edir."
+  },
+  "reviewLeave": {
+    "message": "Rəy yazın"
+  },
+  "reviewLater": {
+    "message": "İndi yox"
+  },
+  "reviewNever": {
+    "message": "Bir daha soruşma"
+  },
   "filtersCount": {
     "message": "$1+ filtr",
     "placeholders": {
@@ -205,7 +226,7 @@
     "message": "«Reklam blokerinizi söndürün» divarlarını gizlədir və səhifəni bərpa edir"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook və Instagram-da «Sponsorlu» paylaşımları gizlədir"
+    "message": "Facebook, Instagram və Threads-də «Sponsorlu» paylaşımları gizlədir"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Açdığınız keçidlərdən utm_*, fbclid, gclid və digər klik identifikatorlarını silir"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut ilə ianə et"
+  },
+  "opt_review": {
+    "message": "Rəy xatırlatmaları"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock pəncərəsinin aşağısında kiçik ★ keçidi və ən çoxu iki dəfə orada onu Chrome Veb Mağazasında qiymətləndirmək üçün qısa xahiş. Heç vaxt saytlarda, heç vaxt bildiriş kimi deyil."
   },
   "opt_made_by": {
     "message": "Carbon Stealth tərəfindən hazırlanıb"
@@ -643,5 +670,74 @@
   "welDone": {
     "message": "Aydındır",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "İcazəli · $1 dəq qalıb"
+  },
+  "hiddenHere": {
+    "message": "Burada gizlətdikləriniz: $1 · Sonuncunu qaytar"
+  },
+  "cmd_toggle_site": {
+    "message": "Bu saytda bloklamanı aç və ya bağla"
+  },
+  "cmd_pause": {
+    "message": "Qorumaya fasilə ver və ya davam etdir (30 dəqiqə)"
+  },
+  "cmd_picker": {
+    "message": "Bu səhifədə elementi gizlət"
+  },
+  "rep_fix_hour": {
+    "message": "Burada reklamlara 1 saat icazə ver"
+  },
+  "rep_done_hour": {
+    "message": "Bu saytda reklamlara 1 saatlıq icazə verildi. Yenidən yükləndi — düzəldi?"
+  },
+  "opt_last30": {
+    "message": "Son 30 gün"
+  },
+  "opt_last30_sum": {
+    "message": "Bloklanan: $1 · Kuki bannerləri: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Gündəlik yekunlarınız internetdə gəzdikcə burada görünəcək."
+  },
+  "opt_last30_sub": {
+    "message": "Yalnız gündəlik yekunlar, bu cihazda 30 gün saxlanılır. Sayt yox, ünvan yox."
+  },
+  "opt_gpc_sub": {
+    "message": "Daxil olduğunuz hər saytdan məlumatlarınızı satmamasını və ya paylaşmamasını xahiş edir (bəzi məxfilik qanunlarının saytları riayət etməyə məcbur etdiyi Sec-GPC siqnalı). İcazə verdiyiniz saytlarda göndərilmir."
+  },
+  "opt_shortcuts": {
+    "message": "Klaviatura qısayolları"
+  },
+  "opt_shortcuts_change": {
+    "message": "Qısayolları dəyiş"
+  },
+  "opt_shortcut_none": {
+    "message": "Təyin edilməyib"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox-da: Uzantılar və Mövzular → ⚙ → Uzantı qısayollarını idarə et."
+  },
+  "opt_import_foreign": {
+    "message": "Başqa reklam bloklayıcısından idxal et"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard və ya Adblock Plus-dan keçirsiniz? Onun ehtiyat nüsxə faylını seçin: icazə verdiyiniz saytlar və öz filtrləriniz bura əlavə olunur. Heç nə əvəz edilmir."
+  },
+  "opt_import_foreign_done": {
+    "message": "İcazəli saytlar: $1 · Əlavə edilən filtrlər: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Kənarda qalan (burada tətbiq edilə bilməz): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Bu fayl oxuya biləcəyimiz ehtiyat nüsxə deyil."
+  },
+  "welQuickTitle": {
+    "message": "Özünüzə uyğunlaşdırın"
+  },
+  "welQuickSub": {
+    "message": "İstəyə bağlı: artıq işləyir. Bunların hər birini sonra Ayarlarda dəyişə bilərsiniz."
   }
 }

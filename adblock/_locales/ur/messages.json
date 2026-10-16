@@ -118,6 +118,27 @@
   "support": {
     "message": "تعاون"
   },
+  "rate": {
+    "message": "ریٹ کریں"
+  },
+  "rateTitle": {
+    "message": "Chrome ویب اسٹور پر Supreme AdBlock کو ریٹ کریں"
+  },
+  "reviewBlocked": {
+    "message": "اب تک $1 درخواستیں بلاک کی گئیں"
+  },
+  "reviewAsk": {
+    "message": "اگر Supreme AdBlock آپ کے کام آتا ہے تو Chrome ویب اسٹور پر ایک مختصر جائزہ دوسروں کو اسے ڈھونڈنے میں مدد دیتا ہے۔"
+  },
+  "reviewLeave": {
+    "message": "جائزہ لکھیں"
+  },
+  "reviewLater": {
+    "message": "ابھی نہیں"
+  },
+  "reviewNever": {
+    "message": "دوبارہ نہ پوچھیں"
+  },
   "filtersCount": {
     "message": "$1+ فلٹرز",
     "placeholders": {
@@ -205,7 +226,7 @@
     "message": "“اپنا ایڈ بلاکر بند کریں” والی دیواریں چھپائیں اور صفحہ بحال کریں"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook اور Instagram پر “سپانسر شدہ” پوسٹس چھپائیں"
+    "message": "Facebook، Instagram اور Threads پر “سپانسر شدہ” پوسٹس چھپائیں"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "آپ کے کھولے گئے لنکس سے utm_*، fbclid، gclid اور دیگر کلک شناخت کنندگان ہٹائیں"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut کے ذریعے عطیہ دیں"
+  },
+  "opt_review": {
+    "message": "جائزے کی یاد دہانیاں"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock ونڈو کے نیچے ایک چھوٹا ★ لنک، اور زیادہ سے زیادہ دو بار وہیں Chrome ویب اسٹور پر اسے ریٹ کرنے کی مختصر درخواست۔ کبھی ویب سائٹس پر نہیں، کبھی اطلاع کے طور پر نہیں۔"
   },
   "opt_made_by": {
     "message": "Carbon Stealth کی تیار کردہ"
@@ -643,5 +670,74 @@
   "welDone": {
     "message": "ٹھیک ہے",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "اجازت ہے · $1 منٹ باقی"
+  },
+  "hiddenHere": {
+    "message": "یہاں چھپائے گئے عناصر: $1 · آخری واپس لائیں"
+  },
+  "cmd_toggle_site": {
+    "message": "اس سائٹ پر بلاکنگ آن/آف کریں"
+  },
+  "cmd_pause": {
+    "message": "تحفظ روکیں یا دوبارہ شروع کریں (30 منٹ)"
+  },
+  "cmd_picker": {
+    "message": "اس صفحے پر ایک عنصر چھپائیں"
+  },
+  "rep_fix_hour": {
+    "message": "یہاں 1 گھنٹے تک اشتہارات کی اجازت دیں"
+  },
+  "rep_done_hour": {
+    "message": "اس سائٹ پر 1 گھنٹے تک اشتہارات کی اجازت ہے۔ دوبارہ لوڈ ہو گیا — کیا مسئلہ حل ہو گیا؟"
+  },
+  "opt_last30": {
+    "message": "پچھلے 30 دن"
+  },
+  "opt_last30_sum": {
+    "message": "بلاک شدہ: $1 · کوکی بینرز: $2"
+  },
+  "opt_last30_empty": {
+    "message": "براؤز کرتے ہوئے آپ کے روزانہ کے مجموعے یہاں نظر آئیں گے۔"
+  },
+  "opt_last30_sub": {
+    "message": "صرف روزانہ کے مجموعے، جو اسی ڈیوائس پر 30 دن تک رکھے جاتے ہیں۔ نہ سائٹس، نہ پتے۔"
+  },
+  "opt_gpc_sub": {
+    "message": "آپ جس سائٹ پر بھی جائیں، اس سے درخواست کرتا ہے کہ آپ کا ڈیٹا نہ بیچے اور نہ شیئر کرے (Sec-GPC سگنل، جس کا احترام کچھ رازداری قوانین کے تحت سائٹس پر لازم ہے)۔ جن سائٹس کی آپ اجازت دیتے ہیں ان پر نہیں بھیجا جاتا۔"
+  },
+  "opt_shortcuts": {
+    "message": "کی بورڈ شارٹ کٹس"
+  },
+  "opt_shortcuts_change": {
+    "message": "شارٹ کٹس تبدیل کریں"
+  },
+  "opt_shortcut_none": {
+    "message": "سیٹ نہیں"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox میں: ایڈ آنز اور تھیمز → ⚙ → ایکسٹینشن شارٹ کٹس کا نظم کریں۔"
+  },
+  "opt_import_foreign": {
+    "message": "کسی اور ایڈ بلاکر سے درآمد کریں"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin، AdGuard یا Adblock Plus سے آ رہے ہیں؟ اس کی بیک اپ فائل منتخب کریں: آپ کی اجازت یافتہ سائٹس اور آپ کے اپنے فلٹرز یہاں شامل کر دیے جاتے ہیں۔ کچھ بھی تبدیل نہیں کیا جاتا۔"
+  },
+  "opt_import_foreign_done": {
+    "message": "اجازت یافتہ سائٹس: $1 · شامل کیے گئے فلٹرز: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "چھوڑ دیے گئے (یہاں لاگو نہیں ہو سکتے): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "یہ فائل ایسا بیک اپ نہیں جسے ہم پڑھ سکیں۔"
+  },
+  "welQuickTitle": {
+    "message": "اسے اپنے انداز میں ڈھالیں"
+  },
+  "welQuickSub": {
+    "message": "اختیاری: یہ پہلے ہی کام کر رہا ہے۔ ان میں سے کوئی بھی چیز بعد میں ترتیبات میں بدلی جا سکتی ہے۔"
   }
 }

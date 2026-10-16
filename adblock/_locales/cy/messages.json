@@ -118,6 +118,27 @@
   "support": {
     "message": "Cefnogi"
   },
+  "rate": {
+    "message": "Graddio"
+  },
+  "rateTitle": {
+    "message": "Graddio Supreme AdBlock ar y Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "$1 o geisiadau wedi’u rhwystro hyd yma"
+  },
+  "reviewAsk": {
+    "message": "Os yw Supreme AdBlock yn ddefnyddiol i chi, mae adolygiad byr ar y Chrome Web Store yn helpu eraill i ddod o hyd iddo."
+  },
+  "reviewLeave": {
+    "message": "Ysgrifennu adolygiad"
+  },
+  "reviewLater": {
+    "message": "Dim nawr"
+  },
+  "reviewNever": {
+    "message": "Peidiwch â gofyn eto"
+  },
   "filtersCount": {
     "message": "$1+ o hidlyddion",
     "placeholders": {
@@ -205,7 +226,7 @@
     "message": "Cuddio waliau “diffoddwch eich atalydd hysbysebion” ac adfer y dudalen"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Cuddio postiadau “Noddedig” ar Facebook ac Instagram"
+    "message": "Cuddio postiadau “Noddedig” ar Facebook, Instagram a Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Tynnu utm_*, fbclid, gclid a dynodwyr clicio eraill o’r dolenni rydych yn eu hagor"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Rhoi drwy Revolut"
+  },
+  "opt_review": {
+    "message": "Nodiadau atgoffa i adolygu"
+  },
+  "opt_review_sub": {
+    "message": "Dolen ★ fach ar waelod ffenestr Supreme AdBlock ac, ar y mwyaf ddwywaith, cais byr yno i’w raddio ar y Chrome Web Store. Byth ar wefannau, byth fel hysbysiad."
   },
   "opt_made_by": {
     "message": "gwnaed gan Carbon Stealth"
@@ -643,5 +670,74 @@
   "welDone": {
     "message": "Iawn",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Caniateir · $1 mun ar ôl"
+  },
+  "hiddenHere": {
+    "message": "Elfennau a guddiwyd yma: $1 · Dadwneud yr olaf"
+  },
+  "cmd_toggle_site": {
+    "message": "Troi’r rhwystro ymlaen neu i ffwrdd ar y wefan hon"
+  },
+  "cmd_pause": {
+    "message": "Oedi neu ailddechrau’r diogelu (30 munud)"
+  },
+  "cmd_picker": {
+    "message": "Cuddio elfen ar y dudalen hon"
+  },
+  "rep_fix_hour": {
+    "message": "Caniatáu hysbysebion yma am 1 awr"
+  },
+  "rep_done_hour": {
+    "message": "Mae hysbysebion yn cael eu caniatáu ar y wefan hon am 1 awr. Ail-lwythwyd — ydy e wedi’i drwsio?"
+  },
+  "opt_last30": {
+    "message": "Y 30 diwrnod diwethaf"
+  },
+  "opt_last30_sum": {
+    "message": "Rhwystrwyd: $1 · Baneri cwcis: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Bydd eich cyfansymiau dyddiol yn ymddangos yma wrth i chi bori."
+  },
+  "opt_last30_sub": {
+    "message": "Cyfansymiau dyddiol yn unig, wedi’u cadw ar y ddyfais hon am 30 diwrnod. Dim gwefannau, dim cyfeiriadau."
+  },
+  "opt_gpc_sub": {
+    "message": "Mae’n gofyn i bob gwefan rydych yn ymweld â hi beidio â gwerthu na rhannu eich data (y signal Sec-GPC, y mae rhai cyfreithiau preifatrwydd yn gwneud i wefannau ei barchu). Nid yw’n cael ei anfon ar wefannau rydych yn eu caniatáu."
+  },
+  "opt_shortcuts": {
+    "message": "Llwybrau byr bysellfwrdd"
+  },
+  "opt_shortcuts_change": {
+    "message": "Newid llwybrau byr"
+  },
+  "opt_shortcut_none": {
+    "message": "Heb ei osod"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Yn Firefox: Estyniadau a Themâu → ⚙ → Rheoli Estyniad Llwybrau Byr."
+  },
+  "opt_import_foreign": {
+    "message": "Mewnforio o rwystrwr hysbysebion arall"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Yn symud o uBlock Origin, AdGuard neu Adblock Plus? Dewiswch ei ffeil wrth gefn: bydd y gwefannau a ganiatawyd gennych a’ch hidlyddion eich hun yn cael eu hychwanegu yma. Does dim yn cael ei ddisodli."
+  },
+  "opt_import_foreign_done": {
+    "message": "Gwefannau a ganiateir: $1 · Hidlyddion a ychwanegwyd: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Wedi’u hepgor (ni ellir eu defnyddio yma): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Nid yw’r ffeil hon yn gopi wrth gefn y gallwn ei ddarllen."
+  },
+  "welQuickTitle": {
+    "message": "Addaswch e at eich dant"
+  },
+  "welQuickSub": {
+    "message": "Dewisol: mae eisoes yn gweithio. Gallwch newid unrhyw un o’r rhain yn nes ymlaen yn y Gosodiadau."
   }
 }

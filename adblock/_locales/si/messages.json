@@ -118,6 +118,27 @@
   "support": {
     "message": "සහාය වන්න"
   },
+  "rate": {
+    "message": "ශ්‍රේණිගත කරන්න"
+  },
+  "rateTitle": {
+    "message": "Chrome වෙබ් ගබඩාවේ Supreme AdBlock ශ්‍රේණිගත කරන්න"
+  },
+  "reviewBlocked": {
+    "message": "මේ දක්වා අවහිර කළ ඉල්ලීම්: $1"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock ඔබට ප්‍රයෝජනවත් නම්, Chrome වෙබ් ගබඩාවේ කෙටි සමාලෝචනයක් අන් අයට එය සොයා ගැනීමට උදව් වේ."
+  },
+  "reviewLeave": {
+    "message": "සමාලෝචනයක් ලියන්න"
+  },
+  "reviewLater": {
+    "message": "දැන් නොවේ"
+  },
+  "reviewNever": {
+    "message": "නැවත අසන්න එපා"
+  },
   "filtersCount": {
     "message": "$1+ පෙරහන්",
     "placeholders": {
@@ -205,7 +226,7 @@
     "message": "“ඔබේ ඇඩ්බ්ලොකරය අක්‍රිය කරන්න” බාධක සඟවා පිටුව යථා තත්ත්වයට පත් කරන්න"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook සහ Instagram හි “අනුග්‍රහය ලත්” පළ කිරීම් සඟවන්න"
+    "message": "Facebook, Instagram සහ Threads හි “අනුග්‍රහය ලත්” පළ කිරීම් සඟවන්න"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "ඔබ විවෘත කරන සබැඳිවලින් utm_*, fbclid, gclid සහ වෙනත් ක්ලික් හඳුනාගැනුම් ඉවත් කරන්න"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut හරහා පරිත්‍යාග කරන්න"
+  },
+  "opt_review": {
+    "message": "සමාලෝචන සිහිකැඳවීම්"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock කවුළුවේ පහළින් කුඩා ★ සබැඳියක් සහ වැඩිම වුවහොත් දෙවරක් එහිම Chrome වෙබ් ගබඩාවේ එය ශ්‍රේණිගත කරන ලෙස කෙටි ඉල්ලීමක්. කිසි විටෙක වෙබ් අඩවිවල නොවේ, කිසි විටෙක දැනුම්දීමක් ලෙස නොවේ."
   },
   "opt_made_by": {
     "message": "Carbon Stealth විසින් නිමවන ලදී"
@@ -643,5 +670,74 @@
   "welDone": {
     "message": "තේරුණා",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "ඉඩ දී ඇත · මිනි. $1 ඉතිරි"
+  },
+  "hiddenHere": {
+    "message": "මෙහි සැඟවූ මූලාංග: $1 · අවසන් එක නැවත පෙන්වන්න"
+  },
+  "cmd_toggle_site": {
+    "message": "මෙම අඩවියේ අවහිර කිරීම සක්‍රිය හෝ අක්‍රිය කරන්න"
+  },
+  "cmd_pause": {
+    "message": "ආරක්ෂාව විරාම කරන්න හෝ නැවත අරඹන්න (මිනිත්තු 30)"
+  },
+  "cmd_picker": {
+    "message": "මෙම පිටුවේ මූලාංගයක් සඟවන්න"
+  },
+  "rep_fix_hour": {
+    "message": "පැය 1ක් මෙහි දැන්වීම්වලට ඉඩ දෙන්න"
+  },
+  "rep_done_hour": {
+    "message": "මෙම අඩවියේ පැය 1ක් දැන්වීම්වලට ඉඩ දී ඇත. යළි පූරණය කළා — දැන් හරිද?"
+  },
+  "opt_last30": {
+    "message": "පසුගිය දින 30"
+  },
+  "opt_last30_sum": {
+    "message": "අවහිර කළ: $1 · කුකී බැනර: $2"
+  },
+  "opt_last30_empty": {
+    "message": "ඔබ බ්‍රවුස් කරන විට ඔබේ දෛනික මුළු ගණන් මෙහි දිස් වේ."
+  },
+  "opt_last30_sub": {
+    "message": "දෛනික මුළු ගණන් පමණි, මෙම උපාංගයේ දින 30ක් තබා ගැනේ. අඩවි නැත, ලිපින නැත."
+  },
+  "opt_gpc_sub": {
+    "message": "ඔබ පිවිසෙන සෑම අඩවියකින්ම ඔබේ දත්ත විකුණන්න හෝ බෙදා ගන්න එපා යැයි ඉල්ලයි (Sec-GPC සංඥාව; සමහර පෞද්ගලිකත්ව නීති යටතේ අඩවිවලට එය පිළිපැදීමට සිදු වේ). ඔබ ඉඩ දුන් අඩවිවලට එය නොයවයි."
+  },
+  "opt_shortcuts": {
+    "message": "යතුරුපුවරු කෙටිමං"
+  },
+  "opt_shortcuts_change": {
+    "message": "කෙටිමං වෙනස් කරන්න"
+  },
+  "opt_shortcut_none": {
+    "message": "සකසා නැත"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox හි: ඇඩෝන සහ තේමා → ⚙ → දිගු කෙටිමං කළමනාකරණය කරන්න."
+  },
+  "opt_import_foreign": {
+    "message": "වෙනත් දැන්වීම් අවහිරකයකින් ආයාත කරන්න"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard හෝ Adblock Plus වෙතින් මාරු වෙනවාද? එහි උපස්ථ ගොනුව තෝරන්න: ඔබ ඉඩ දුන් අඩවි සහ ඔබේම පෙරහන් මෙහි එක් කෙරේ. දැනට ඇති කිසිවක් ප්‍රතිස්ථාපනය නොකෙරේ."
+  },
+  "opt_import_foreign_done": {
+    "message": "ඉඩ දුන් අඩවි: $1 · එක් කළ පෙරහන්: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "මඟ හැරුණු පේළි (මෙහි යෙදිය නොහැකි): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "මෙම ගොනුව අපට කියවිය හැකි උපස්ථයක් නොවේ."
+  },
+  "welQuickTitle": {
+    "message": "ඔබට ගැළපෙන ලෙස සකසන්න"
+  },
+  "welQuickSub": {
+    "message": "විකල්පයි: එය දැනටමත් ක්‍රියා කරයි. මේ ඕනෑම එකක් පසුව සැකසීම් තුළ වෙනස් කළ හැක."
   }
 }

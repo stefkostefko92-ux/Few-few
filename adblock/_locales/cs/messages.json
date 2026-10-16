@@ -118,6 +118,27 @@
   "support": {
     "message": "Podpořit"
   },
+  "rate": {
+    "message": "Ohodnotit"
+  },
+  "rateTitle": {
+    "message": "Ohodnoťte Supreme AdBlock v Internetovém obchodě Chrome"
+  },
+  "reviewBlocked": {
+    "message": "Dosud zablokováno požadavků: $1"
+  },
+  "reviewAsk": {
+    "message": "Pokud je pro vás Supreme AdBlock užitečný, krátká recenze v Internetovém obchodě Chrome pomůže ostatním ho najít."
+  },
+  "reviewLeave": {
+    "message": "Napsat recenzi"
+  },
+  "reviewLater": {
+    "message": "Teď ne"
+  },
+  "reviewNever": {
+    "message": "Už se neptat"
+  },
   "filtersCount": {
     "message": "$1+ filtrů",
     "placeholders": {
@@ -205,7 +226,7 @@
     "message": "Skrývá zdi „Vypněte blokování reklam“ a obnovuje stránku"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Skrývá příspěvky „Sponzorováno“ na Facebooku a Instagramu"
+    "message": "Skrývá příspěvky „Sponzorováno“ na Facebooku, Instagramu a Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Odstraňuje utm_*, fbclid, gclid a další identifikátory kliknutí z odkazů, které otevíráte"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Přispět přes Revolut"
+  },
+  "opt_review": {
+    "message": "Připomenutí recenze"
+  },
+  "opt_review_sub": {
+    "message": "Malý odkaz ★ dole v okně Supreme AdBlock a nejvýše dvakrát krátká prosba o ohodnocení v Internetovém obchodě Chrome. Nikdy na webech, nikdy jako oznámení."
   },
   "opt_made_by": {
     "message": "vytvořila společnost Carbon Stealth"
@@ -643,5 +670,74 @@
   "welDone": {
     "message": "Rozumím",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Povoleno · zbývá $1 min"
+  },
+  "hiddenHere": {
+    "message": "Prvky skryté zde: $1 · Vrátit poslední"
+  },
+  "cmd_toggle_site": {
+    "message": "Zapnout nebo vypnout blokování na tomto webu"
+  },
+  "cmd_pause": {
+    "message": "Pozastavit nebo obnovit ochranu (30 minut)"
+  },
+  "cmd_picker": {
+    "message": "Skrýt prvek na této stránce"
+  },
+  "rep_fix_hour": {
+    "message": "Povolit reklamy zde na 1 hodinu"
+  },
+  "rep_done_hour": {
+    "message": "Reklamy jsou na tomto webu povoleny na 1 hodinu. Znovu načteno — je to opravené?"
+  },
+  "opt_last30": {
+    "message": "Posledních 30 dní"
+  },
+  "opt_last30_sum": {
+    "message": "Blokováno: $1 · Cookie lišty: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Vaše denní součty se zde objeví během prohlížení."
+  },
+  "opt_last30_sub": {
+    "message": "Pouze denní součty, uložené v tomto zařízení po dobu 30 dní. Žádné weby, žádné adresy."
+  },
+  "opt_gpc_sub": {
+    "message": "Žádá každý navštívený web, aby vaše údaje neprodával ani nesdílel (signál Sec-GPC, který podle některých zákonů o ochraně soukromí musí weby respektovat). Neodesílá se na webech, které jste povolili."
+  },
+  "opt_shortcuts": {
+    "message": "Klávesové zkratky"
+  },
+  "opt_shortcuts_change": {
+    "message": "Změnit zkratky"
+  },
+  "opt_shortcut_none": {
+    "message": "Nenastaveno"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Ve Firefoxu: Rozšíření a vzhledy → ⚙ → Správa klávesových zkratek pro rozšíření."
+  },
+  "opt_import_foreign": {
+    "message": "Importovat z jiného blokátoru reklam"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Přecházíte z uBlock Origin, AdGuard nebo Adblock Plus? Vyberte jeho záložní soubor: weby, které jste povolili, a vaše vlastní filtry se přidají sem. Nic se nenahradí."
+  },
+  "opt_import_foreign_done": {
+    "message": "Povolené weby: $1 · Přidané filtry: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Vynecháno (zde nelze použít): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Tento soubor není záloha, kterou umíme přečíst."
+  },
+  "welQuickTitle": {
+    "message": "Přizpůsobte si ho"
+  },
+  "welQuickSub": {
+    "message": "Volitelné: vše už funguje. Cokoli z toho můžete později změnit v nastavení."
   }
 }

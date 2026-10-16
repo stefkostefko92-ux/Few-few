@@ -118,6 +118,27 @@
   "support": {
     "message": "మద్దతివ్వండి"
   },
+  "rate": {
+    "message": "రేట్ చేయండి"
+  },
+  "rateTitle": {
+    "message": "Chrome వెబ్ స్టోర్‌లో Supreme AdBlockను రేట్ చేయండి"
+  },
+  "reviewBlocked": {
+    "message": "ఇప్పటివరకు $1 అభ్యర్థనలు బ్లాక్ అయ్యాయి"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock మీకు ఉపయోగపడితే, Chrome వెబ్ స్టోర్‌లో ఒక చిన్న సమీక్ష ఇతరులు దీన్ని కనుగొనడంలో సహాయపడుతుంది."
+  },
+  "reviewLeave": {
+    "message": "సమీక్ష రాయండి"
+  },
+  "reviewLater": {
+    "message": "ఇప్పుడు కాదు"
+  },
+  "reviewNever": {
+    "message": "మళ్లీ అడగవద్దు"
+  },
   "filtersCount": {
     "message": "$1+ ఫిల్టర్‌లు",
     "placeholders": {
@@ -205,7 +226,7 @@
     "message": "“మీ యాడ్‌బ్లాకర్‌ను ఆఫ్ చేయండి” గోడలను దాచి, పేజీని పునరుద్ధరిస్తుంది"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook & Instagramలో “స్పాన్సర్ చేయబడింది” పోస్ట్‌లను దాచుతుంది"
+    "message": "Facebook, Instagram & Threadsలో “స్పాన్సర్ చేయబడింది” పోస్ట్‌లను దాచుతుంది"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "మీరు తెరిచే లింక్‌ల నుండి utm_*, fbclid, gclid, ఇతర క్లిక్ ఐడెంటిఫైయర్‌లను తొలగిస్తుంది"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut ద్వారా విరాళం ఇవ్వండి"
+  },
+  "opt_review": {
+    "message": "సమీక్ష రిమైండర్‌లు"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock విండో దిగువన చిన్న ★ లింక్, గరిష్ఠంగా రెండుసార్లు అక్కడే Chrome వెబ్ స్టోర్‌లో రేట్ చేయమని చిన్న అభ్యర్థన. వెబ్‌సైట్‌లలో ఎప్పుడూ కాదు, నోటిఫికేషన్‌గా ఎప్పుడూ కాదు."
   },
   "opt_made_by": {
     "message": "Carbon Stealth రూపొందించింది"
@@ -643,5 +670,74 @@
   "welDone": {
     "message": "అర్థమైంది",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "అనుమతి · $1 ని. మిగిలింది"
+  },
+  "hiddenHere": {
+    "message": "ఇక్కడ దాచినవి: $1 · చివరిదాన్ని రద్దు చేయండి"
+  },
+  "cmd_toggle_site": {
+    "message": "ఈ సైట్‌లో బ్లాకింగ్‌ను ఆన్ లేదా ఆఫ్ చేయండి"
+  },
+  "cmd_pause": {
+    "message": "రక్షణను పాజ్ చేయండి లేదా కొనసాగించండి (30 నిమిషాలు)"
+  },
+  "cmd_picker": {
+    "message": "ఈ పేజీలో ఒక ఎలిమెంట్‌ను దాచండి"
+  },
+  "rep_fix_hour": {
+    "message": "ఇక్కడ 1 గంట పాటు ప్రకటనలను అనుమతించండి"
+  },
+  "rep_done_hour": {
+    "message": "ఈ సైట్‌లో 1 గంట పాటు ప్రకటనలు అనుమతించబడ్డాయి. రీలోడ్ అయింది — సమస్య తీరిందా?"
+  },
+  "opt_last30": {
+    "message": "గత 30 రోజులు"
+  },
+  "opt_last30_sum": {
+    "message": "బ్లాక్ చేసినవి: $1 · కుక్కీ బ్యానర్‌లు: $2"
+  },
+  "opt_last30_empty": {
+    "message": "మీరు బ్రౌజ్ చేస్తున్నప్పుడు మీ రోజువారీ మొత్తాలు ఇక్కడ కనిపిస్తాయి."
+  },
+  "opt_last30_sub": {
+    "message": "రోజువారీ మొత్తాలు మాత్రమే, ఈ పరికరంలో 30 రోజుల పాటు ఉంచబడతాయి. సైట్‌లు లేవు, చిరునామాలు లేవు."
+  },
+  "opt_gpc_sub": {
+    "message": "మీరు సందర్శించే ప్రతి సైట్‌ను మీ డేటాను అమ్మవద్దని లేదా షేర్ చేయవద్దని కోరుతుంది (Sec-GPC సిగ్నల్; కొన్ని గోప్యతా చట్టాల ప్రకారం సైట్‌లు దీన్ని పాటించాలి). మీరు అనుమతించిన సైట్‌లలో పంపబడదు."
+  },
+  "opt_shortcuts": {
+    "message": "కీబోర్డ్ షార్ట్‌కట్‌లు"
+  },
+  "opt_shortcuts_change": {
+    "message": "షార్ట్‌కట్‌లను మార్చండి"
+  },
+  "opt_shortcut_none": {
+    "message": "సెట్ చేయలేదు"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefoxలో: యాడ్-ఆన్‌లు మరియు థీమ్‌లు → ⚙ → ఎక్స్‌టెన్షన్ షార్ట్‌కట్‌లను నిర్వహించండి."
+  },
+  "opt_import_foreign": {
+    "message": "మరో యాడ్ బ్లాకర్ నుండి దిగుమతి చేయండి"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard లేదా Adblock Plus నుండి మారుతున్నారా? దాని బ్యాకప్ ఫైల్‌ను ఎంచుకోండి: మీరు అనుమతించిన సైట్‌లు, మీ సొంత ఫిల్టర్‌లు ఇక్కడ జోడించబడతాయి. ఏదీ భర్తీ చేయబడదు."
+  },
+  "opt_import_foreign_done": {
+    "message": "అనుమతించిన సైట్‌లు: $1 · జోడించిన ఫిల్టర్‌లు: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "వదిలివేయబడినవి (ఇక్కడ వర్తింపజేయలేము): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "ఈ ఫైల్ మేము చదవగలిగే బ్యాకప్ కాదు."
+  },
+  "welQuickTitle": {
+    "message": "మీకు నచ్చినట్లుగా మార్చుకోండి"
+  },
+  "welQuickSub": {
+    "message": "ఐచ్ఛికం: ఇది ఇప్పటికే పనిచేస్తోంది. వీటిలో దేనినైనా తర్వాత సెట్టింగ్‌లలో మార్చవచ్చు."
   }
 }
