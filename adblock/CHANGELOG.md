@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.5.0 — 2026-10-16
+## 5.2.0 — 2026-10-16
 
 **Крачка пред другите: почти целият синтаксис на uBlock, Threads, Global Privacy Control и внос от други блокери.**
 
@@ -52,7 +52,7 @@
   `llms.txt`; броят на рутините е 39 (сайтът казваше 19 и че директивите идват с ъпдейтите — от 5.1.4
   не идват). Политиката за поверителност описва GPC, дневните суми и вноса.
 - 23 нови и 2 обновени низа във всичките 73 локала.
-- Тестове: `tests/control55.test.mjs` (47), `tests/scriptlets55.test.mjs`, `tests/privacy55.test.mjs`,
+- Тестове: `tests/control52.test.mjs` (48), `tests/scriptlets52.test.mjs`, `tests/privacy52.test.mjs`,
   `tests/browser/scriptlets.browser.mjs`, `tests/browser/meta.browser.mjs`, `tests/browser/gpc.browser.mjs`.
 
 ## 5.1.8 — 2026-10-12
