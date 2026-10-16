@@ -431,6 +431,9 @@ async function applyState() {
 // and skip allowlisted sites. `world:"MAIN"` needs Chrome 111+ (min is 121).
 const SCRIPTLET_SCRIPT_ID = "sa-scriptlets";
 const UBO_CHUNK_PREFIX = "sa-ubo-";
+// uBO entity directives (example.*) ride in a manifest content script; while the uBO
+// list is off this one runs first and drops that data before the engine sees it.
+const UBO_ENTITIES_OFF_ID = "sa-ubo-entities-off";
 // youtube_main.js: MAIN world, document_start, YouTube hosts only — registered here
 // (not injected by the loader with a <script src>, which ran late and left a trace).
 // Off while the YouTube feature is off, the extension is off, or a YouTube session
@@ -476,9 +479,11 @@ async function doSyncScriptlets(on) {
   // page gets the engine twice.
   const uboScripts = [];
   const uboPatterns = [];
+  let uboOn = true;
   try {
     const { on: listsOn } = await listState();
-    if (listsOn.has("ubo")) {
+    uboOn = listsOn.has("ubo");
+    if (uboOn) {
       const index = await (await fetch(chrome.runtime.getURL("scriptlets/ubo_index.json"))).json();
       for (const c of index) {
         const m = /c(\d+)\.js$/.exec(c.file);
@@ -509,6 +514,12 @@ async function doSyncScriptlets(on) {
   if (excludeMatches.length || uboPatterns.length || ytBypass) script.excludeMatches = excludeMatches.concat(uboPatterns, ytBypass ? YT_PATTERNS : []);
 
   const all = [script, ...uboScripts];
+  if (!uboOn) {
+    all.unshift({
+      id: UBO_ENTITIES_OFF_ID, matches: ["<all_urls>"], js: ["scriptlets/entities-off.js"],
+      runAt: "document_start", allFrames: true, world: "MAIN", persistAcrossSessions: true,
+    });
+  }
   if (features.youtube !== false && !ytBypass) {
     all.push({
       id: YT_MAIN_SCRIPT_ID, matches: YT_PATTERNS, js: ["youtube_main.js"], runAt: "document_start",
