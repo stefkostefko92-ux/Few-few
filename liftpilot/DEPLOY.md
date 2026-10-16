@@ -98,7 +98,7 @@ Release-ът на 46а е комитът `d54580b14` — `b37c9bf92` с попр
    `liftpilot-backup` (`deploy/backup.sh`, `BACKUP_DAYS` = 30) трие всеки `.sql.gz` в папката след 30 дни, и
    `pre-deploy-*`: дъмпът е резерва най-много около 30 дни и без нов деплой. Файлът не е `.sql.gz` — нито ротацията на
    `deploy.sh`, нито нощното чистене го трият.
-4. Миграция 22 — комитът на D3 (последният комит на кръг 47): `REF=<SHA на D3> PROJECTS="liftpilot" bash
+4. Миграция 22 — комитът на D3 (последният комит на кръг 47): `REF=b8cf6ac69 PROJECTS="liftpilot" bash
    /opt/few-few/current/deploy/fetch-deploy.sh`; entrypoint-ът я пуска с `migrate deploy` (бекъп преди нея — както винаги).
    Заключването е за миг (`DROP COLUMN` не пренаписва таблицата).
 
