@@ -44,13 +44,18 @@ Google's image rules ("Supplying Images"), and how we meet them:
 - **Promo tile and marquee** — no text (they are not per-language), saturated colours, no large
   white or light-grey areas (the store puts them on light grey), the whole area filled, clear edges,
   readable at half size, the brand rather than a screenshot: the 3D shield struck by lightning.
-- **Screenshots** — 1280×800, square corners, full bleed, the real UI.
+- **Screenshots** — 1280×800, square corners, full bleed, the real UI. Minimal text (a kicker, a
+  two-part headline and one sentence, large enough to read at 640×400), and **locale-specific**:
+  every language the store lists gets its own five, with the real popup and settings strings in that
+  language and right-to-left layout for Arabic, Hebrew, Persian and Urdu.
 
 Regenerate: `python3 tools/generate_icons.py` (icons; the artwork is the brand shield from
 `store/brand/` — never a drawing made in-repo), `PW_ROOT=$(npm root -g) node tools/store_promo.mjs`
 (promo tile + marquee: the 3D shield from `tools/popup_shield3d.mjs --hero` and the landing page's
 storm), `python3 store/screenshots/build.py` (renders the real popup with demo numbers via headless
-Chromium; see that script's header).
+Chromium; see that script's header) and `python3 store/screenshots/build.py --locales` (the other
+62 store languages → `dist/store-screenshots/<locale>/`, JPEG; captions in
+`store/screenshots/i18n.json`; needs the Noto fonts for every script).
 
 ## 3. Listing fields (paste as-is)
 
@@ -201,7 +206,8 @@ so this is an **update of the existing item**, not a new one:
    language that has its own description** — a package update does NOT replace the
    live text, and an old localised description still saying "100% free" fails the
    review again. **Delete every old screenshot and tile, in every language**, then
-   upload the 5 screenshots + promo tiles (§2). The summary needs no edit: it is
+   upload the 5 screenshots + promo tiles (§2), and in every language its own 5 screenshots
+   (`supreme-adblock-<version>-screenshots.zip`). The summary needs no edit: it is
    `extDescription` from the package.
 3. **Video — not updated anymore** (owner's decision, 15 October 2026). Leave the listing's
    YouTube video field as it is; do not render or upload a new video for a release. The last
@@ -209,7 +215,7 @@ so this is an **update of the existing item**, not a new one:
    only a store cut — **never** the full or the social cut (they carry "Free" and a comparison
    with other blockers: the "Red Nickel" rejection again).
 4. **Store listing → URLs:** official URL `carbonstealth.eu` (the verified site), homepage
-   `https://adblock.carbonstealth.eu`, support `https://adblock.carbonstealth.eu/#faq`.
+   `https://adblock.carbonstealth.eu`, support `https://adblock.carbonstealth.eu/support`.
 5. Re-check the **Privacy practices** tab (§4) and paste the permission
    justifications (§5) — `tabs` was removed in 5.0.0, so delete its entry.
 6. **Publisher identity:** the product, manifest and privacy policy say
@@ -253,7 +259,7 @@ The **same zip** as Chrome (`dist/supreme-adblock-<version>.zip`) — Edge runs 
 
 1. Partner Center → <https://partner.microsoft.com/dashboard/microsoftedge/> → **Create new extension** → upload the zip.
 2. Availability: Public, all markets.
-3. Properties: category *Productivity*; privacy policy URL `https://adblock.carbonstealth.eu/privacy`; website `https://adblock.carbonstealth.eu`; support `https://adblock.carbonstealth.eu/#faq`.
+3. Properties: category *Productivity*; privacy policy URL `https://adblock.carbonstealth.eu/privacy`; website `https://adblock.carbonstealth.eu`; support `https://adblock.carbonstealth.eu/support`.
 4. Store listings: Edge asks for a listing **per language packaged in `_locales`**. Use
    `docs/listing/<lang>.txt` for every language — they never mention another browser
    (Edge policy 1.1.2 forbids it; the long texts in `docs/STORE_LISTING.md` do mention

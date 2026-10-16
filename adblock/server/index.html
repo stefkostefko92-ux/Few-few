@@ -356,7 +356,7 @@
       "primaryImageOfPage": "https://adblock.carbonstealth.eu/og.png",
       "inLanguage": "en",
       "datePublished": "2026-06-15",
-      "dateModified": "2026-10-12",
+      "dateModified": "2026-10-16",
       "speakable": { "@type": "SpeakableSpecification", "cssSelector": [".sub", ".lead"] }
     },
     {
@@ -397,6 +397,7 @@
       <a class="link" href="#features">Features</a>
       <a class="link" href="#how">How it works</a>
       <a class="link" href="#faq">FAQ</a>
+      <a class="link" href="/support">Support</a>
       <a class="link" href="/privacy">Privacy</a>
     </div>
     <button class="iconbtn" id="motion" type="button">
@@ -557,11 +558,13 @@
           <h3>How it blocks YouTube ads at the source</h3>
           <p>Most blockers remove YouTube ads after the player has already asked for them, which is when YouTube can push back with a fake-buffering delay. Supreme AdBlock works one step earlier: the ad entries are taken out of the player's data as it arrives, before the player reads it, and the page never sees a sign of a blocker — no altered functions, no failed playback reports. It never blocks YouTube's video servers, so clips keep loading.</p>
           <p>If YouTube refuses to play on an account it has flagged, the extension notices, steps aside for that session and reloads — the video plays (with ads) instead of leaving you with a spinner.</p>
+          <p><a href="/youtube-ad-blocker">More about the YouTube ad blocker</a></p>
         </div>
         <div class="item reveal">
           <h3>How it handles cookie banners — carefully</h3>
           <p>When a consent banner appears, Supreme AdBlock presses the banner's own <b>Reject</b> button if there is one, and <b>Accept</b> only when there is no other way to close it. It then clears whatever the banner left behind: a dimmed or blurred background, a scroll lock, a page made unclickable.</p>
           <p>It only ever presses a cookie banner's own buttons — never a sign-in, OAuth or payment button, never a button that submits a form, and never a link that leaves the page. Want a site to remember your own choices? Switch cookie handling off in Settings.</p>
+          <p><a href="/cookie-banner-blocker">More about the cookie banner blocker</a></p>
         </div>
         <div class="item reveal">
           <h3>What "signed updates, no remote code" means</h3>
@@ -616,7 +619,7 @@
         <div class="card reveal"><h3>Is it safe to install?</h3><p>Yes. On the Chrome Web Store, Supreme AdBlock carries the <a href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk" target="_blank" rel="noopener">Established Publisher</a> badge: Google has verified the publisher's identity, the listing is published by the owner of carbonstealth.eu, and the publisher has a good record with no history of policy violations. All of the extension's code ships in the package — nothing is downloaded and run — and your browsing data never leaves your device.</p></div>
         <div class="card reveal"><h3>Does it block YouTube ads?</h3><p>Yes. Ad entries are taken out of the player data before the player reads it, so video ads never start, and ads in the feed and search are removed too. If YouTube still refuses to play on an account it has flagged, the extension steps aside for that session so videos still play.</p></div>
         <div class="card reveal"><h3>Does it collect my data?</h3><p>Your browsing data never leaves your device: no account, no analytics, no telemetry. The only automatic request to us is the filter update, about twice a day (lists you add yourself refresh from their own address); like any download it reaches our EU server with your IP address, and that request is not logged. Details in the <a href="/privacy">privacy policy</a>.</p></div>
-        <div class="card reveal"><h3>Will it break websites?</h3><p>Rarely. If a site misbehaves, choose <b>Site broken?</b> in the popup: one click allows the site, or keeps network blocking and switches off only element hiding for that site, and a ready-made report lets you tell us about it.</p></div>
+        <div class="card reveal"><h3>Will it break websites?</h3><p>Rarely. If a site misbehaves, choose <b>Site broken?</b> in the popup: one click allows the site, or keeps network blocking and switches off only element hiding for that site, and a ready-made report lets you tell us about it. Step-by-step help is on the <a href="/support">support page</a>.</p></div>
         <div class="card reveal"><h3>Which languages does it speak?</h3><p>The interface is in 70 languages and follows your browser's language, right-to-left scripts included. Regional filter lists for 31 languages and regions are built in, and the one for your language turns on by itself; 4 more (Bulgarian, Polish, Nordic, Croatian) download from their authors when you switch them on.</p></div>
         <div class="card reveal"><h3>How does it handle cookie banners?</h3><p>It presses the banner's own Reject button when there is one, and Accept only when there is no other way to close it, then clears any leftover dimmed background or scroll lock. It only presses a cookie banner's own buttons — never a sign-in, OAuth or payment button, never one that submits a form. You can switch it off in Settings.</p></div>
         <div class="card reveal"><h3>Is it an alternative to uBlock Origin or AdGuard?</h3><p>Yes, as a Chrome extension. Like uBlock Origin Lite it is built on Manifest V3 with EasyList and EasyPrivacy; it adds signed filter-data updates twice a day, a dedicated YouTube pipeline, cookie-banner handling and list-free Smart Detection. AdGuard's desktop apps filter the whole system, which no browser extension can do.</p></div>
@@ -655,6 +658,9 @@
         </div>
       </div>
       <nav class="fl" aria-label="Footer">
+        <a href="/youtube-ad-blocker">YouTube ad blocker</a>
+        <a href="/cookie-banner-blocker">Cookie banner blocker</a>
+        <a href="/support">Support</a>
         <a href="/privacy">Privacy</a>
         <a href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk" target="_blank" rel="noopener">Chrome Web Store</a>
         <a href="https://carbonstealth.eu" target="_blank" rel="noopener">carbonstealth.eu</a>

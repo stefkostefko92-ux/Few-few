@@ -76,7 +76,14 @@ tools/                  build_filters.mjs (EasyList→DNR + каталога too
                         + e2e_redirect.mjs (истински Chromium през Playwright: DNR redirect → resources/*
                         smoke; `PW_ROOT=$(npm root -g) node tools/e2e_redirect.mjs "$PWD" <url> <global>`)
 tests/                  npm test — engine/билд/DNR/паритет на политиката (нула зависимости)
-store/ · docs/          store графики + листинг/submission текстове
+store/ · docs/          store графики + листинг/submission текстове. Скрийншотите: `python3 store/screenshots/build.py`
+                        (английските, комитват се) и `--locales` (другите 62 езика на магазина → dist/, JPEG,
+                        надписи в store/screenshots/i18n.json, нужни са Noto шрифтовете) — минимум текст, истинският
+                        popup на съответния език. store/cws-unlisted.json = 10-те езика, които магазинът не показва.
+server/                 сайтът adblock.carbonstealth.eu: index, privacy, support, youtube-ad-blocker,
+                        cookie-banner-blocker (+ sitemap, llms.txt, robots, filters.json). **Нова страница =**
+                        кратък адрес в nginx.conf И Caddyfile + файлът в списъка на deploy/autodeploy.sh + IndexNow
+                        `urlList` там + sitemap + llms.txt — `tests/site.test.mjs` гейтва всичко това.
 ```
 
 ## Качествен гейт (преди „готово")
