@@ -107,7 +107,9 @@ export function useSchedaForm(form: RefObject<HTMLFormElement | null>, initial: 
       radio.dataset.was = 'false';
     };
     // a number the browser cannot read (type=number) stops the submit with its own message; otherwise the values go, with
-    // the names still following their source (if the form comes back, the server marks them again)
+    // the names still following their source (if the form comes back, the server marks them again). The form stays dirty
+    // until the save is through (the page moves on to the sheet): a save that gets no answer — no signal, an expired
+    // session — leaves the question before leaving armed (rilievi's submit was a page load, which cleared it)
     const onSubmit = (e: SubmitEvent): void => {
       const bad = Array.from(el.querySelectorAll<HTMLInputElement>('input[type="number"]')).find((i) => i.validity.badInput);
       if (bad) {
@@ -118,8 +120,6 @@ export function useSchedaForm(form: RefObject<HTMLFormElement | null>, initial: 
       }
       const carrier = el.querySelector<HTMLInputElement>(`input[name="${AUTO_KEY}"]`);
       if (carrier) carrier.value = engine.followingNames().join(' ');
-      isDirty = false;
-      setDirty(false);
       sentRef.current(valuesOfForm(el));
     };
     const onLeave = (e: BeforeUnloadEvent): void => {

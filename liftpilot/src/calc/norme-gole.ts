@@ -56,6 +56,8 @@ export const VOCI_GOLE: readonly Voce[] = [
     rifFuoriNorma: `${U1}, appendice D.2 (formula)`,
     nota: 'obbligatoria solo quando i coefficienti di sicurezza minimi 12 e 16 sostituiscono il calcolo della UNI EN 81-50:2020, 5.12 (UNI '
       + '10411-1:2024, 14.1 c)–d)): il software calcola S_f secondo la 5.12 e riporta la pressione come informazione, come fa il progettista '
-      + 'per l’organismo di verifica; la gola a V con sottosquadro non ha una formula nella D.2 (il maggiore dei due è una scelta del software)',
+      + 'per l’organismo di verifica; la gola a V con sottosquadro non ha una formula nella D.2 (il maggiore dei due è una scelta del software). '
+      + 'Con il rapporto tra i carichi cambiato secondo la UNI 10411-1 (6.1) la stessa pressione è anche una verifica soddisfatta o no accanto '
+      + 'alla D.1 (voce rapporto.d2 del vano)',
   },
 ];

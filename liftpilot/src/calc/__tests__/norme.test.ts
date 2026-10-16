@@ -48,6 +48,7 @@ test('i testi delle voci riportano i numeri usati dal motore', () => {
     ['soccorso.meccanico', `(q − ${it(K.rescueLoadBand)})·Q`], ['soccorso.meccanico', `entro ${K.rescueHours} h`], ['soccorso.meccanico', `${it(K.rescueSpeed, 2)} m/s`],
     ['soccorso.forza', `${it(K.rescueSpeed, 2)} m/s`], ['soccorso.forza', `${it(K.rescueSpeedOld, 2)} m/s`],
     ['modello.velocita', `oltre ${it(K.vCompGuided)} m/s`], ['modello.velocita', `oltre ${K.vCompRopes} m/s`],
+    ['modello.velocita.minima', `oltre ${it(K.vRatedMin)} m/s`], ['modello.velocita.minima', `a ${it(K.vRatedMin)} m/s o meno`],
     ['funi.trattenuta', `più di ${K.retainBelow}°`], ['funi.trattenuta', `supera ${K.retainWrap}°`], ['funi.due', `con ${K.ropesMin} funi`],
     ['azionamento.accelerazione', `${K.accelTorqueRatioMax} volte`],
     ['azionamento.margine', `${Math.round(K.nearLimit * 100)}%`], ['modello.sensibilita', `P ±${Math.round(K.sensP * 100)}%`], ['modello.sensibilita', `k ±${it(K.sensK)}`],

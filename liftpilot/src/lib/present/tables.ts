@@ -36,7 +36,7 @@ export function techTables(P: Pres, X: Texts, a: Analysis): TableBlock[] {
   const { t, fmt } = P;
   const { ctx, res, old, sens, win: w } = a, { I, N } = ctx;
   const pill = (id: CheckId): Cell => { const s = statusOf(res, id); return s ? { text: X.st(s), status: s } : ''; };
-  const trRow = (id: CheckId, c: TractionCase | BrakeCase): Cell[] => [{ text: t(id), sub: X.caseText(c) || undefined }, fmt(c.mu, 4), fmt(c.f, 4),
+  const trRow = (id: CheckId, c: TractionCase | BrakeCase): Cell[] => [{ text: t(id), sub: X.caseText(c, true, id === 'tr_real') || undefined }, fmt(c.mu, 4), fmt(c.f, 4),
     fmt(c.efa, 3), fmt(c.T1, 0), fmt(c.T2, 0), fmt(c.ratio, 3), { text: fmt(c.util, 3), bar: c.util }, pill(id)];
   const withBar = (text: string, u: number | null): Cell => (u == null ? text : { text, bar: u });
   // the stalled cases, empty car at the top and at the bottom (UNI EN 81-50:2020, 5.11.2.2.3), each with its own result

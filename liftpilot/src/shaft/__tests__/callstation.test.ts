@@ -2,7 +2,7 @@
 // set; drawn on the landing face of the wall in the plans and in section A-A, with dimensions that change them.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { KV, callStationAt, defaultInputs, layout, planDims, planEntities, sectionDims, section, type DoorLayout } from '../index';
+import { KV, VOCI_VANO, callStationAt, defaultInputs, layout, planDims, planEntities, sectionDims, section, type DoorLayout } from '../index';
 
 const door = (wall: DoorLayout['wall']): DoorLayout => ({ side: 'A', wall, kind: 'T2', width: 800, height: 2000, u0: 400, u1: 1200, l0: 400, l1: 1200, frame0: 345, frame1: 1655, stack: 'high', op0: 375, op1: 1625 });
 
@@ -30,8 +30,11 @@ test('bottoniera in pianta e in sezione, con le sue quote', () => {
 test('pulsante più alto: la sua altezza è quella della bottoniera; con un caso del DM 236/1989 tra 1100 e 1400 mm', () => {
   const at = (height: number, access: 'none' | 'dm236_residential' = 'dm236_residential') =>
     layout({ ...defaultInputs(1600, 1850), access, callStation: { side: 'right', offset: 150, height } }).checks.find((c) => c.id === 'v_call');
-  // the default: the top button at 1100 mm, the height both DM 236/1989 and UNI EN 81-70:2005 allow
+  // the default: the top button at 1100 mm, the lower bound of DM 236/1989 8.1.12 (UNI EN 81-70:2021+A1:2022 to be checked)
   assert.equal(KV.callHeight, KV.callTopRange[0]);
+  const voce = VOCI_VANO.find((v) => v.id === 'porte.bottoniera');
+  assert.ok(voce && voce.riferimento.includes('DM 236/1989, 8.1.12') && voce.riferimento.includes('UNI EN 81-70:2021+A1:2022'));
+  assert.ok(!voce.riferimento.includes('2005') && voce.fonte.includes('letto'), 'nessuna edizione superata; la base letta');
   assert.equal(at(KV.callHeight)?.status, 'ok');
   assert.equal(at(1400)?.status, 'ok');
   assert.equal(at(1050)?.status, 'warn');

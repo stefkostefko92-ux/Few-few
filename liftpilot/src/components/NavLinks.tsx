@@ -13,6 +13,8 @@ export interface NavItem {
   href: string;
   label: string;
   icon: IconName;
+  /** a page outside the application (the public guide): opened in a new tab, this text said to screen readers */
+  newTab?: string;
 }
 
 export interface NavGroup {
@@ -43,9 +45,11 @@ export default function NavLinks({ groups, label }: { groups: NavGroup[]; label:
           <ul className="ws-nav" aria-labelledby={`ws-group-${gi}`}>
             {g.items.map((it) => (
               <li key={it.key}>
-                <Link href={it.href} aria-current={current === it.key ? navCurrent(it.key, pathname) : undefined}>
+                <Link href={it.href} aria-current={current === it.key ? navCurrent(it.key, pathname) : undefined}
+                  {...(it.newTab ? { target: '_blank', rel: 'noopener' } : {})}>
                   <Icon name={it.icon} size={20} />
-                  <span>{it.label}</span>
+                  <span>{it.label}{it.newTab ? <span className="sr-only"> ({it.newTab})</span> : null}</span>
+                  {it.newTab ? <Icon name="external-link" size={14} className="ws-nav-ext" /> : null}
                 </Link>
               </li>
             ))}

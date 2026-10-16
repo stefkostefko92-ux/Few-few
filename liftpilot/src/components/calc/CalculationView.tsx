@@ -9,6 +9,7 @@ import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import type { FormValues } from '@/calc/types';
 import type { Collaudo } from '@/lib/lift';
+import { calcExtra } from '@/lib/lift/calc-verdict';
 import type { TipoIntervento } from '@/lib/lift/intervento';
 import { analyse } from '@/lib/present/analysis';
 import { textsFor } from '@/lib/present/texts';
@@ -29,6 +30,8 @@ export default function CalculationView({ id, values, brand, collaudo, design = 
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
   const X = useMemo(() => textsFor(P), [P]);
   const a = useMemo(() => analyse(values, design), [values, design]);
+  // D.1 and D.2 with the ratio of the loads changed, counted in its result as its save counted them (calc-verdict.ts)
+  const extra = useMemo(() => calcExtra(collaudo, values), [collaudo, values]);
   const [mode, setMode] = useState<'simple' | 'expert'>('simple');
   const { t } = P;
   return (
@@ -45,9 +48,9 @@ export default function CalculationView({ id, values, brand, collaudo, design = 
       <div className="layout readonly">
         <section className="summary">
           <Diagram P={P} I={a.ctx.I} N={a.ctx.N} res={a.res} />
-          <Verdict id={id} P={P} X={X} a={a} badCount={0} resta={resta ? ti('argano_resta') : undefined} />
+          <Verdict id={id} P={P} X={X} a={a} badCount={0} resta={resta ? ti('argano_resta') : undefined} extra={extra} />
         </section>
-        {resta ? null : <Results P={P} X={X} a={a} mode={mode} badCount={0} brand={brand} collaudo={collaudo} tipo={tipo} />}
+        {resta ? null : <Results P={P} X={X} a={a} mode={mode} badCount={0} brand={brand} collaudo={collaudo} tipo={tipo} extra={extra} />}
       </div>
     </div>
   );

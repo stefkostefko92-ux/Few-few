@@ -70,6 +70,7 @@ html.ws-drawer-open { overflow: hidden; }
 .ws-nav a { min-height: 44px; display: flex; align-items: center; gap: 12px; padding: 8px 12px; border: 1px solid transparent; border-radius: 6px;
   color: var(--muted); font: 600 14px/1.25 var(--font-body); text-decoration: none; overflow-wrap: anywhere; }
 .ws-nav a .icon { opacity: .8; }
+.ws-nav a .ws-nav-ext { margin-left: auto; opacity: .6; }  /* a page in a new tab (the guide) */
 .ws-nav a:hover { color: var(--ink); background: var(--surface2); }
 .ws-nav a:hover .icon { opacity: 1; }
 .ws-nav a[aria-current] { color: var(--ink); border-color: var(--ws-sel-line); background: var(--ws-sel-bg); box-shadow: inset 2px 0 var(--accent); }

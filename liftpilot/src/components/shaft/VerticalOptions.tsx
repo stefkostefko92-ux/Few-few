@@ -10,6 +10,7 @@ import { BUFFER_TYPES, DEFAULT_VERTICAL, bufferStroke, bufferType, withBufferTyp
   type ShaftInputs, type VerticalInputs } from '@/shaft';
 import { screenOf, standOf } from '@/shaft/section';
 import { KV_VERT } from '@/shaft/norme-vert';
+import { K } from '@/calc/norme';
 import { filled, floorRemoved, floorsTo, type BlankKey } from '@/lib/lift/blank';
 import { NO_BLANK, StdBadge, fieldId, type FormBlank, type ShaftSet } from '../blank';
 import { DalRilievo } from '../collega/origine';
@@ -91,7 +92,7 @@ export default function VerticalOptions({ I, set, open = false, blank = NO_BLANK
             <span>{t('vt_v')}<span className="badge calcolo">{fixedV.label}</span></span>
             <input id={fieldId('v')} className="input num" type="number" value={fixedV.ms} readOnly aria-readonly="true" />
           </label>
-        ) : data('v', 0.1, 10, 0.05)}
+        ) : data('v', K.vRatedMin, 10, 0.05)}
         {data('pit', 100, 10000)}
         {data('headroom', 1000, 20000)}
         <label className={`field${is('floors') ? ' need' : ''}`}>

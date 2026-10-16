@@ -22,7 +22,11 @@ const MISURE: Row[] = [
   { id: 'm2', schedaId: 's1', fermata: 2, piano: 'T', lunghezzaMm: new Prisma.Decimal('300'), larghezzaMm: null, interasseSuperiore: null, interasseInferiore: null, display: false },
   { id: 'm1', schedaId: 's1', fermata: 1, piano: 'S1', lunghezzaMm: new Prisma.Decimal('320.5'), larghezzaMm: new Prisma.Decimal('105'), interasseSuperiore: '60 mm', interasseInferiore: null, display: true },
 ];
-let schedaArgs: Args | null = null, permArgs: Args | null = null;
+let schedaArgs: Args | null = null, permArgs: Args | null = null, feedbackArgs: Args | null = null;
+const FEEDBACK: Row[] = [
+  { id: 'f1', companyId: 'c1', userId: 'u1', kind: 'BUG', page: '/app/rilievi/nuovo', digest: '123', message: 'Il salvataggio non riesce', createdAt: new Date('2026-10-16T08:00:00Z'), handledAt: null },
+  { id: 'f9', companyId: 'c2', userId: 'u9', kind: 'IDEA', page: '/app', digest: null, message: 'altra azienda', createdAt: new Date('2026-10-16T08:00:00Z'), handledAt: null },
+];
 let companyArgs: { select?: Record<string, boolean> } | null = null;
 let projectArgs: { include?: Record<string, { select?: Record<string, unknown> }>; omit?: Record<string, boolean> } | null = null;
 const PERMS: Row[] = [
@@ -41,6 +45,7 @@ const db = {
   user: { findMany: none }, invite: { findMany: none }, companyLogo: { findMany: none },
   project: { findMany: async (args: typeof projectArgs) => { projectArgs = args; return []; } },
   priceItem: { findMany: none }, customPriceItem: { findMany: none }, auditLog: { findMany: none },
+  feedback: { findMany: async (args: Args) => { feedbackArgs = args; return FEEDBACK.filter((f) => f.companyId === args.where?.companyId).map((f) => without(f, args.omit)); } },
   companyRolePermission: {
     findMany: async (args: Args) => { permArgs = args; return PERMS.filter((p) => p.companyId === args.where?.companyId); },
   },
@@ -93,5 +98,9 @@ test('l’esportazione: ogni chiave del registro, e le schede di rilievo della p
   // omit needed, no key of it in an installation
   assert.equal(projectArgs?.omit, undefined);
   assert.ok((doc.projects as Row[]).every((p) => !('kind' in p)));
-  assert.equal(doc.formatVersion, 9);
+  // format 10 (round 48): the reports of «Segnala un problema», the company's own only, with their text
+  assert.deepEqual(feedbackArgs?.where, { companyId: 'c1' });
+  assert.deepEqual(feedbackArgs?.omit, { companyId: true }, 'every column but the company’s id (the file is the company’s)');
+  assert.deepEqual((doc.feedback as Row[]).map((f) => [f.id, f.kind, f.message]), [['f1', 'BUG', 'Il salvataggio non riesce']]);
+  assert.equal(doc.formatVersion, 10);
 });

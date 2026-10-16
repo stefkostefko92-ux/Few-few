@@ -77,7 +77,8 @@ export const KV = {
   lampOverFloor: 1500,
   lampUnderSlab: 80,
   // landing call station: 150 mm from the door's portal on the landing's right, its top button's middle 1100 mm over the
-  // floor (the height DM 236/1989 and UNI EN 81-70:2005 both allow); the panel 120 × 300 mm, 15 mm proud of the wall
+  // floor (within DM 236/1989 8.1.12, 1,10–1,40 m; UNI EN 81-70:2021+A1:2022 to be checked); the panel 120 × 300 mm,
+  // 15 mm proud of the wall
   callOffset: 150,
   callHeight: 1100,
   callPanel: [120, 300, 15],

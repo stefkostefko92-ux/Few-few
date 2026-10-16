@@ -131,7 +131,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   B.push(...limitiBlocks());
 
   // the machine on the lift design, its support's load and the checks that need it (build-design.ts)
-  const { machine, weighed, scheme, L, rope, ld, bed, beams } = designMachine(r, a, C, m);
+  const { machine, weighed, scheme, L, rope, ld, bed, beams, calc } = designMachine(r, a, C, m);
   if (r.design) {
     section('Vano e cabina');
     B.push(...shaftBlocks(r.design, I.Q, { fmt, st, when, head: [t('col_item'), t('col_val'), t('col_lim'), t('col_res'), 'Riferimento'] }, beams, C));
@@ -189,7 +189,7 @@ export function buildReport(r: ReportInput): ReportDoc {
     B.push({ t: 'p', style: 'note', text: 'Argano proposto dal dimensionamento del software su una griglia di calcolo, non su un catalogo: il modello reale va '
       + 'scelto con il costruttore con questi valori e la verifica ripetuta con i suoi dati di targa.' });
   }
-  B.push({ t: 'verdict', text: `${X.verdictText(res)} — ${t('indicative')}`, status: verdictStatus(res) });
+  B.push({ t: 'verdict', text: `Verifiche dell’argano: ${X.countsText(calc.fails, calc.warns)} — ${t('indicative')}`, status: calc.status });
   if (old) {
     B.push({ t: 'h3', text: `${t('g_old')} (confronto)` });
     B.push({ t: 'kv', rows: X.machineRows(ctx.O, old, true) });
@@ -223,7 +223,7 @@ export function buildReport(r: ReportInput): ReportDoc {
   B.push(...adempimentiBlocks(C, repl, kept, r.values));
 
   section("Aderenza: tutti i casi di calcolo");
-  B.push(...casesBlocks(P, I, N, res, (c) => X.caseText(c), st), ...d1Blocks(P, C, r.values));
+  B.push(...casesBlocks(P, I, N, res, (c, test) => X.caseText(c, true, test), st), ...d1Blocks(P, C, r.values));
 
   section('Dettaglio delle verifiche');
   const tables = techTables(P, X, a);

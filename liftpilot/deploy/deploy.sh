@@ -172,10 +172,14 @@ fi
 # 5b) a copy of the database every night, and no copy kept longer than 30 days, the ones above included
 #     (deploy/backup.sh; BACKUP_DAYS in src/lib/legal.ts: the privacy notice states it)
 install -m 755 deploy/backup.sh /usr/local/sbin/liftpilot-backup
-cat > /etc/cron.d/liftpilot-backup <<'CRON'
-# LiftPilot: nightly copy of the database, copies older than 30 days deleted (liftpilot/deploy/backup.sh)
+# LIFTPILOT_ENV: the secrets file the copy reads its heartbeat address from (LIFTPILOT_BACKUP_HEARTBEAT_URL), the
+# same one this deploy used
+cat > /etc/cron.d/liftpilot-backup <<CRON
+# LiftPilot: nightly copy of the database, copies older than 30 days deleted (liftpilot/deploy/backup.sh); a failure
+# goes to the system log (journalctl -t liftpilot-backup), a copy made pings LIFTPILOT_BACKUP_HEARTBEAT_URL when set
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+LIFTPILOT_ENV=$ENV_FILE
 17 3 * * * root /usr/local/sbin/liftpilot-backup
 CRON
 chmod 644 /etc/cron.d/liftpilot-backup

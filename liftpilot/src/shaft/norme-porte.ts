@@ -51,9 +51,10 @@ export const VOCI_PORTE: readonly VoceVano[] = [
     valore: 'accanto a ogni porta di piano, sul pianerottolo: per default a destra guardando la porta, il centro della pulsantiera a 150 mm '
       + 'dal vano della porta e il centro del pulsante più alto a 1100 mm dal pavimento; pulsantiera di 120 × 300 mm, sporgente 15 mm dal '
       + 'muro; lato, distanza e altezza modificabili su ogni progetto',
-    riferimento: 'DM 236/1989, 8.1.12 (pulsanti più alti tra 1,10 e 1,40 m); UNI EN 81-70:2005, prospetto 2 (sul pianerottolo il pulsante più '
-      + 'alto a non oltre 1,10 m, ogni pulsante ad almeno 0,90 m e ad almeno 0,50 m da un angolo fra pareti: da verificare in sito)',
-    fonte: 'scelta del software', stato: 'scelta',
+    riferimento: 'DM 236/1989, 8.1.12 (bottoniere interna ed esterna con i pulsanti più alti tra 1,10 e 1,40 m dal pavimento: i 1100 mm '
+      + 'stanno al limite inferiore); UNI EN 81-70:2021+A1:2022 (edizione fuori dall’archivio letto: altezze e distanze dei pulsanti sul '
+      + 'pianerottolo da verificare su quel testo e in sito)',
+    fonte: 'scelta del software, entro il DM 236/1989, 8.1.12, letto per intero su Normattiva il 2026-10-02 (ricerca, cap. 16, §4.1)', stato: 'scelta',
     costanti: ['callOffset', 'callHeight', 'callPanel'],
   },
   {

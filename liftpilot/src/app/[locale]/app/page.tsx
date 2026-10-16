@@ -7,6 +7,7 @@ import { recentRilievi, impiantiFigures, rilieviCounts } from '@/server/collega/
 import Icon from '@/components/Icon';
 import HomeKpis from '@/components/collega/HomeKpis';
 import RecentRilievi from '@/components/collega/RecentRilievi';
+import PrimiPassi, { emptyCompany } from '@/components/PrimiPassi';
 import '../../dashboard.css';
 
 export async function generateMetadata() {
@@ -20,7 +21,7 @@ const OLD_LIST = ['archived', 'kind', 'q', 'all'] as const;
 // The start page (round 44, the owner's plan of 2026-10-14: every job starts from the survey): the figures of the
 // surveys and of the installations they belong to, the recent surveys with their link and the way to the full list
 // (/app/rilievi, the 1:1 list of rilievi). Each block only for whoever may see it: a role without the surveys starts on
-// the installations (rbac.ts homeOf).
+// the installations (rbac.ts homeOf). A company with no installation and no sheet yet sees «Primi passi» first.
 export default async function HomePage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -30,8 +31,8 @@ export default async function HomePage({ params, searchParams }: { params: Promi
   const user = await requireUser(locale);
   if (!can(user, 'rilievi:view')) redirect(`/${locale}${homeOf(user)}`);
   const projects = can(user, 'projects:view');
-  const [t, counts, recent, figures] = await Promise.all([getTranslations('collega.home'), rilieviCounts(user), recentRilievi(user),
-    projects ? impiantiFigures(user) : Promise.resolve(null)]);
+  const [t, counts, recent, figures, empty] = await Promise.all([getTranslations('collega.home'), rilieviCounts(user), recentRilievi(user),
+    projects ? impiantiFigures(user) : Promise.resolve(null), emptyCompany(user)]);
   return (
     <main className="page dash lk-home">
       <header className="dash-head">
@@ -45,6 +46,8 @@ export default async function HomePage({ params, searchParams }: { params: Promi
           {projects ? <Link className="btn btn-ghost" href="/app/impianti">{t('impianti')}</Link> : null}
         </div>
       </header>
+      {/* a company with nothing yet: where to start (round 48) */}
+      {empty ? <PrimiPassi user={user} /> : null}
       <HomeKpis counts={counts} figures={figures} />
       <RecentRilievi rows={recent} total={counts.totali} projects={projects} canCreate={can(user, 'rilievi:edit')} />
     </main>

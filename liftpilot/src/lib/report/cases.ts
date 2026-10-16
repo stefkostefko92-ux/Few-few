@@ -1,8 +1,10 @@
 // The traction cases of the relazione, each with its tensions (UNI EN 81-50:2020, 5.11): the loading, the emergency
-// braking at the minimum deceleration and at the brake's real one (a warning; with the acceptance test of UNI EN
-// 81-20:2020, 6.3.3 b) among its cases), the stalled car or counterweight; the stability against slipping of UNI
+// braking at the minimum deceleration and at the brake's real one (a warning; with the acceptance tests of UNI EN
+// 81-20:2020, 6.3.3 a) — the empty car up at the top, among the eight — and b) — 1,25·Q down —, each row naming its own;
+// round 48), the stalled car or counterweight; the stability against slipping of UNI
 // 10411-1:2024 D.1 when a modification under it changes the ratio of the suspended loads (6.1, round 46: its two
-// cases, and its sentence in the data's «Variazione dei carichi»; round 47, D2: its point at the brake test, d1Sito); and
+// cases, and its sentence in the data's «Variazione dei carichi»; round 47, D2: its point at the brake test, d1Sito),
+// with the specific pressure of its D.2 (round 48: met or not, its table and its sentence); and
 // the limits of the calculation model stated before the checks. Pure.
 import { deg } from '@/calc/math';
 import { K, VOCI } from '@/calc/norme';
@@ -10,7 +12,7 @@ import type { BrakeCase, CheckStatus, FormValues, Machine, Plant, Results, Tract
 import { ambitoOf, type Collaudo } from '../lift/collaudo';
 import { D1_FORMULA, D1_NON_REGGE, D1_PROVA_FRENO } from '../lift/obblighi-variazioni';
 import type { PuntoInSito } from '../lift/punti';
-import { d1Di } from '../lift/rapporto';
+import { d1Di, d2Di } from '../lift/rapporto';
 import type { Pres } from '../present/tr';
 import type { BlockStatus, ReportBlock } from './model';
 
@@ -21,17 +23,21 @@ const STALL_W = [0.27, 0.07, 0.08, 0.08, 0.08, 0.09, 0.08, 0.08, 0.17];
 const utilStatus = (u: number, warnOnly = false): BlockStatus => (u > 1 && !warnOnly ? 'fail' : u > K.tractionWarn ? 'warn' : 'ok');
 
 /** Every traction case of the calculation, in tables. */
-export function casesBlocks(P: Pres, I: Plant, N: Machine, res: Results, caseText: (c: TractionCase | BrakeCase) => string, st: (s: CheckStatus) => string): ReportBlock[] {
+export function casesBlocks(P: Pres, I: Plant, N: Machine, res: Results, caseText: (c: TractionCase | BrakeCase, test?: boolean) => string,
+  st: (s: CheckStatus) => string): ReportBlock[] {
   const { t, fmt } = P, B: ReportBlock[] = [];
   const caseHead = ['Caso', 'α [°]', 'μ', 'f', 'e^(f·α)', 'T1 [N]', 'T2 [N]', 'T1/T2', 'Utilizzo'];
-  const caseRow = (c: TractionCase | BrakeCase): string[] => [caseText(c), fmt(deg(c.alpha), 1), fmt(c.mu, 4), fmt(c.f, 4), fmt(c.efa, 3), fmt(c.T1, 0), fmt(c.T2, 0), fmt(c.ratio, 3), fmt(c.util, 3)];
-  const cases = (title: string, list: readonly (TractionCase | BrakeCase)[], warnOnly = false): void => {
+  const caseRow = (test: boolean) => (c: TractionCase | BrakeCase): string[] => [caseText(c, test), fmt(deg(c.alpha), 1), fmt(c.mu, 4), fmt(c.f, 4), fmt(c.efa, 3), fmt(c.T1, 0),
+    fmt(c.T2, 0), fmt(c.ratio, 3), fmt(c.util, 3)];
+  // `test`: the braking with the brake's real torque, whose rows name the acceptance test's sub-case they are (6.3.3 a), b))
+  const cases = (title: string, list: readonly (TractionCase | BrakeCase)[], warnOnly = false, test = false): void => {
     B.push({ t: 'h3', text: title });
-    B.push({ t: 'grid', head: caseHead, rows: list.map(caseRow), status: list.map((c) => utilStatus(c.util, warnOnly)), widths: CASE_W });
+    B.push({ t: 'grid', head: caseHead, rows: list.map(caseRow(test)), status: list.map((c) => utilStatus(c.util, warnOnly)), widths: CASE_W });
   };
   cases(`${t('tr_load')} (UNI EN 81-50:2020, 5.11)`, res.loadCases);
   cases(`Frenatura di emergenza alla decelerazione minima di ${fmt(I.ae, 1)} m/s² (UNI EN 81-50:2020, 5.11.2.2.2)`, res.brk);
-  cases(`${t('tr_real')}: decelerazione data dal freno (${N.brakeSets} × ${fmt(N.brakeNm, 0)} N·m), con la prova di aderenza della UNI EN 81-20:2020, 6.3.3 b); solo avviso`, res.brkReal, true);
+  cases(`${t('tr_real')}: decelerazione data dal freno (${N.brakeSets} × ${fmt(N.brakeNm, 0)} N·m), con le prove di aderenza della UNI EN 81-20:2020, 6.3.3 a) e b); solo avviso`,
+    res.brkReal, true, true);
   B.push({ t: 'h3', text: `${t('tr_stall')} (UNI EN 81-50:2020, 5.11.2.2.3): cabina vuota nella posizione più alta e in quella più bassa` });
   const stalls = [res.stall, res.stallLow], stallStatus = stalls.map((s) => (s.ratio >= s.efa ? 'ok' : 'fail'));
   B.push({ t: 'grid', head: [...caseHead.slice(0, 8), 'Condizione'], rows: stalls.map((s, k) => [`${t(s.pos === 'b' ? 'st_car' : 'st_cw')}: ${t('cs_e')}, ${t(s.pos === 'b' ? 'at_b' : 'at_t')}`,
@@ -62,13 +68,31 @@ export function d1Blocks(P: Pres, C: Collaudo, V: FormValues): ReportBlock[] {
       + 'Quale decelerazione di frenatura della cabina intenda la D.1 la norma non lo precisa: il software prende quella della verifica di frenatura '
       + 'del calcolo; la frenatura con la coppia reale del freno (nei casi dell’aderenza) decelera di più e darebbe un C1 maggiore. L’esito vale con la '
       + `a indicata: la decelerazione da usare la conferma il soggetto della verifica${d.aLim !== null ? ', e oltre quella limite la condizione non regge' : ''}. `
-      + 'Con la D.1 servono la D.2 (pressione specifica nelle gole) e gli ammortizzatori secondo la UNI EN 81-20, 5.8 (voci modifica.d1 e rapporto.d1 del '
-      + 'registro).' },
+      + 'Con la D.1 servono la D.2 (pressione specifica nelle gole, verificata qui sotto) e gli ammortizzatori secondo la UNI EN 81-20, 5.8 (voci '
+      + 'modifica.d1, rapporto.d1 e rapporto.d2 del registro).' },
+    ...d2Blocks(P, C, V),
   ];
 }
 
-/** D.1 in one sentence (opened by a space) for the data's «Variazione dei carichi» (report/collaudo.ts); '' when not
- *  asked. */
+/** D.2 beside D.1 (round 48): the specific pressure with the car at the lowest landing loaded with the rated load against
+ *  its limit, met or not; none when not asked. */
+function d2Blocks(P: Pres, C: Collaudo, V: FormValues): ReportBlock[] {
+  const d = d2Di(C, V), { fmt } = P;
+  if (!d) return [];
+  const ok = d.p <= d.limit;
+  return [
+    { t: 'h3', text: 'Pressione specifica delle funi nelle gole con il rapporto tra i carichi cambiato (UNI 10411-1:2024, 6.1 e D.2)' },
+    { t: 'grid', head: ['Caso', 'T [N]', 'p [N/mm²]', 'Limite [N/mm²]', 'Esito'], widths: [0.4, 0.14, 0.14, 0.16, 0.16], align: ['l', 'r', 'r', 'r', 'l'],
+      rows: [['Cabina al piano più basso con la portata Q', fmt(d.T, 0), fmt(d.p, 2), `≤ ${fmt(d.limit, 2)}`, ok ? 'Soddisfatta' : 'Non soddisfatta']],
+      status: [ok ? 'ok' : 'fail'], statusCol: 4 },
+    { t: 'p', style: 'note', text: `Limite (${fmt(K.pressBase, 1)} + ${fmt(K.pressSpeed, 0)}·v_c)/(1 + v_c) con v_c la velocità delle funi alla velocità nominale; p con la `
+      + `formula della D.2 per la gola della macchina (voce gole.pressione). ${ok ? 'La D.2 è soddisfatta.' : 'La D.2 non è soddisfatta: il rapporto tra i carichi '
+        + 'non può cambiare così.'} Fuori da questa modifica la pressione resta un valore da dichiarare (verifiche dell’argano).` },
+  ];
+}
+
+/** D.1 in one sentence (opened by a space) for the data's «Variazione dei carichi» (report/collaudo.ts), with D.2 in
+ *  one more (round 48); '' when not asked. */
 export function d1Frase(C: Collaudo, V: FormValues | undefined): string {
   const d = V ? d1Di(C, V) : null, u = d?.worst.util;
   if (!d || u === undefined) return '';
@@ -77,8 +101,11 @@ export function d1Frase(C: Collaudo, V: FormValues | undefined): string {
   // the band minimum as a deceleration, and the limit deceleration for the soggetto della verifica (round 46 final check)
   const lim = d.aLim !== null ? `; regge fino a una decelerazione di frenatura di ${f2(d.aLim)} m/s², da confrontare con quella misurata alla prova del `
     + 'freno' : '; non regge nemmeno con il C1 minimo della fascia';
+  // D.2 with it (round 48): the specific pressure against its limit, met or not
+  const p = V ? d2Di(C, V) : null;
+  const d2 = p ? ` Pressione specifica nelle gole (D.2): ${f2(p.p)} N/mm² con il limite di ${f2(p.limit)} N/mm², ${p.p <= p.limit ? 'verificata' : '⚠ non verificata'}.` : '';
   return ` Stabilità allo scorrimento (D.1): utilizzo ${n} nel caso più sfavorevole con a = ${a} m/s² (il C1 minimo della fascia, ${f2(d.c1Min)}, equivale a una decelerazione di ${f2(d.aMin)} m/s²), `
-    + `${d1Ok(u) ? 'verificata con questa decelerazione' : '⚠ non verificata'}${lim}; da confermare con il soggetto della verifica.`;
+    + `${d1Ok(u) ? 'verificata con questa decelerazione' : '⚠ non verificata'}${lim}; da confermare con il soggetto della verifica.${d2}`;
 }
 
 /** D.1 at the brake test (round 47, owner's decision D2): the point to verify on site whenever tr_d1 applies — the

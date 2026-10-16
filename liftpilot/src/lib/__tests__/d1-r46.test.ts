@@ -21,7 +21,7 @@ import { dataSheet } from '../tavole/data';
 
 const DAY = new Date('2026-10-15T08:00:00Z');
 const project = { name: 'Impianto D.1', address: null, city: 'Monza', province: 'MB', plantNumber: null, client: null };
-const calc = { id: 'cmtestd1', label: null, createdAt: DAY, sha256: 'f'.repeat(64), engineVersion: '1.7.0', profileId: 'IT-2026.1', author: null };
+const calc = { id: 'cmtestd1', label: null, createdAt: DAY, sha256: 'f'.repeat(64), engineVersion: '1.8.0', profileId: 'IT-2026.1', author: null };
 const V: FormValues = { ...PRESETS.C, context: 'repl', compare: false };
 const ora = carichiOf(V) as Carichi;
 // the counterweight's documented ratio kept, the car 100 kg lighter: T* and P away from the documented proportion
@@ -59,10 +59,10 @@ test('D.1 nella relazione di calcolo senza progetto: i due casi, la frase, l’e
   assert.ok(with1.includes('Stabilità allo scorrimento con il rapporto tra i carichi cambiato (UNI 10411-1:2024, 6.1 e D.1)'));
   assert.ok(with1.includes('Cabina al piano più basso con 1,25·Q') && with1.includes('Cabina vuota al piano più alto'));
   assert.ok(with1.includes('Stabilità allo scorrimento (D.1): utilizzo'), 'la frase nella variazione dei carichi');
-  // counted under UNI 10411-1: one check more than the calculation's
+  // counted under UNI 10411-1: two checks more than the calculation's, D.1 and D.2 (round 48)
   const res = analyse(V).res, esiti = report(C).blocks.find((b) => b.t === 'grid' && b.head[0] === 'Normativa');
   assert.ok(esiti && esiti.t === 'grid');
-  assert.equal(esiti.rows[0]?.[2], String(res.checks.length + 1));
+  assert.equal(esiti.rows[0]?.[2], String(res.checks.length + 2));
   // the calculation's registry entry of D.1 among those used
   const voce = VOCI.find((v) => v.id === 'modifica.d1');
   assert.ok(voce && with1.includes(voce.titolo));

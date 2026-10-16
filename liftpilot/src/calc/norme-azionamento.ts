@@ -39,7 +39,7 @@ export const VOCI_AZIONAMENTO: readonly Voce[] = [
       + 'gravoso, l’inerzia della puleggia dal lato del lento sommata a '
       + 'quella delle funi (a favore di sicurezza); prova con 1,25·Q, |T1 − T2|·D/2; confrontata con il valore di catalogo se inserito; al '
       + 'costruttore si chiede il maggiore arrotondato per eccesso a 10 N·m',
-    riferimento: 'dato del costruttore; i casi delle verifiche di aderenza (UNI EN 81-50:2020, 5.11.2.2.1 e 5.11.2.2.2; UNI EN 81-20:2020, 6.3.3 b))', fonte: 'derivazione', stato: 'derivazione',
+    riferimento: 'dato del costruttore; i casi delle verifiche di aderenza (UNI EN 81-50:2020, 5.11.2.2.1 e 5.11.2.2.2; UNI EN 81-20:2020, 6.3.3 a) e b))', fonte: 'derivazione', stato: 'derivazione',
     verifiche: ['d_mp'],
     nota: 'fino al motore 1.4.0 la coppia contava solo l’accelerazione: in frenatura di emergenza con il freno reale la coppia sull’albero lento è '
       + 'di solito la maggiore (nell’esempio della revisione 1,9 volte)',

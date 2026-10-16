@@ -14,8 +14,8 @@ import { savedValues } from '@/lib/calc-saved';
 import { prisma } from '@/lib/db';
 import { log } from '@/lib/log';
 import { LIFT_ENGINE_VERSION, collaudoOf, collaudoVerdict, deriveLift, macchinaResta, tipoDaRivedere, type Collaudo, type LiftInputs, type TipoIntervento } from '@/lib/lift';
+import { calcVerdictOf } from '@/lib/lift/calc-verdict';
 import { liftHash } from '@/lib/lift-hash';
-import { verdictStatus } from '@/lib/present/texts';
 import { makeFmt } from '@/lib/present/tr';
 import { roomHash } from '@/lib/room-hash';
 import { deriveRoom } from '@/lib/room/derive';
@@ -57,11 +57,13 @@ export async function createCalculation(user: SessionUser, projectId: string, va
   const seen = visibleBad(ctx.bad, V);
   if (ctx.bad.length) return { ok: false, error: 'invalidInputs', fields: seen.length ? seen : [...new Set(ctx.bad)] };
   const snapshot = snapshotOf(V), res = compute(ctx.I, ctx.N);
+  // the calculation's own verdict: compute()'s checks with D.1 and D.2 when the ratio of the loads changes (round 48),
+  // under the test as stored (or, not stored, as it reads back: collaudoOf of the values)
+  const v = calcVerdictOf(res, collaudoOf(V, chosen ?? undefined), V);
   const calc = await prisma.calculation.create({
     data: {
       companyId: user.companyId, projectId, userId: user.id, label, engineVersion: snapshot.engine, profileId: snapshot.profile, inputs: snapshot.values ?? {},
-      results: snapshot.results, sha256: snapshotHash(snapshot), verdict: VERDICT[verdictStatus(res)], failCount: res.fails.length,
-      warnCount: res.checks.filter((c) => c.status === 'warn').length, summary: machineSummary(ctx.N),
+      results: snapshot.results, sha256: snapshotHash(snapshot), verdict: VERDICT[v.status], failCount: v.fails, warnCount: v.warns, summary: machineSummary(ctx.N),
       ...(chosen || !from ? { collaudo: { ...collaudoOf(V, chosen ?? undefined) } } : {}), ...(tipo ? { intervento: tipo } : {}),
     },
     select: { id: true },
@@ -96,6 +98,8 @@ export async function createLiftDesign(user: SessionUser, projectId: string, inp
   // the lift's verdict is its acceptance test's: the checks of the machine, of the shaft and of the beams under the
   // machine that the intervention touches (all of them for a new lift; collaudo.ts)
   const test = collaudoVerdict(d.collaudo, [...res.checks, ...mergeChecks(L.checks, d.supportChecks)]);
+  // the calculation's own verdict, as a «Calcolo argano» of the same values and test counts it (calc-verdict.ts)
+  const cv = calcVerdictOf(res, d.collaudo, d.values);
   const machine = machineSummary(d.analysis.ctx.N);
   const hash = liftHash({ engine: LIFT_ENGINE_VERSION, inputs: canon(inputs), shaft: shaftSha, calc: calcSha });
   const source$ = source ? (source as Prisma.InputJsonValue) : undefined;
@@ -112,8 +116,8 @@ export async function createLiftDesign(user: SessionUser, projectId: string, inp
     const calc = await tx.calculation.create({
       data: {
         companyId: user.companyId, projectId, userId: user.id, label, engineVersion: calcSnap.engine, profileId: calcSnap.profile, inputs: calcSnap.values ?? {},
-        results: calcSnap.results, sha256: calcSha, verdict: VERDICT[verdictStatus(res)], failCount: res.fails.length,
-        warnCount: res.checks.filter((c) => c.status === 'warn').length, summary: machine, shaftDesignId: shaft.id, collaudo: { ...d.collaudo },
+        results: calcSnap.results, sha256: calcSha, verdict: VERDICT[cv.status], failCount: cv.fails, warnCount: cv.warns,
+        summary: machine, shaftDesignId: shaft.id, collaudo: { ...d.collaudo },
         ...(base?.intervento ? { intervento: base.intervento } : {}),
       },
       select: { id: true },

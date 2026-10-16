@@ -5,6 +5,7 @@
 import assert from 'node:assert/strict';
 import { step } from './smoke-kit.mjs';
 import { headerFits } from './smoke-topbar.mjs';
+import { firstSteps } from './smoke-help.mjs';
 
 export async function secondCompany({ BASE, page, kit, ADMIN, stamp, urls }) {
   const { login, logout, hydrated } = kit;
@@ -31,8 +32,12 @@ export async function secondCompany({ BASE, page, kit, ADMIN, stamp, urls }) {
   await page.goto(`${BASE}/it/app`);
   await hydrated(page, 'main form:has(input[name="clauses"]) button');
   for (const k of ['accept', 'business', 'drafts', 'clauses']) await page.check(`main input[name="${k}"]`);
+  // the specific approval of the clauses is signed with the current password (round 48)
+  await page.fill('main form:has(input[name="clauses"]) input[name="password"]', ownerNext);
   await page.click('main form:has(input[name="clauses"]) button');
   await page.waitForSelector('main form:has(input[name="clauses"])', { state: 'detached' });
+  // a company with nothing yet: «Primi passi» on its Rilievi home (round 48)
+  await firstSteps({ BASE, page });
   await headerFits({ page, url: `${BASE}/it/app`, who: 'an owner' });
   // the company's data, all of it, without secrets (terms of use, «exit»)
   const exported = await page.request.get(`${BASE}/api/company/export`);

@@ -10,7 +10,8 @@
     "legal": "Privacy e condizioni",
     "provider": "Carbon Stealth VCC (Карбон Стелт ЕДПК), società unipersonale a capitale variabile di diritto bulgaro · ul. Samuil 3, 2670 Bobov Dol, Bulgaria · UIC (ЕИК) 208725180 · P. IVA BG208725180 · tel. +359 877 414 874, +39 379 296 9699 · info@carbonstealth.eu",
     "dataLink": "Dati e formati",
-    "pricingLink": "Prezzi"
+    "pricingLink": "Prezzi",
+    "guideLink": "Guida rapida"
   },
   "errors": {
     "notFoundTitle": "Pagina non trovata",
@@ -21,8 +22,15 @@
     "errorText": "L’operazione non è andata a buon fine. Riprova; se il problema continua, comunica il codice qui sotto.",
     "errorCode": "Codice: {code}",
     "retry": "Riprova",
+    "reportLink": "Segnala il problema",
+    "reportMail": "Se il problema continua puoi anche scrivere a {email}, indicando il codice e che cosa stavi facendo.",
+    "errorEyebrow": "Errore imprevisto",
     "invalidLogin": "E-mail o password non corretti.",
     "rateLimited": "Troppi tentativi. Riprova tra qualche minuto.",
+    "rateLimitedHour": "Troppi tentativi di registrazione da questa rete. Riprova tra un’ora.",
+    "inviteRequired": "Durante la beta ci si registra solo dal link di un invito e con l’indirizzo e-mail a cui è stato mandato. Se il link non funziona più, scrivi a info@carbonstealth.eu.",
+    "termsPasswordRequired": "Inserisci la tua password per approvare le clausole.",
+    "termsWrongPassword": "La password non è corretta: le condizioni non sono state accettate.",
     "forbidden": "Non hai i permessi per questa operazione.",
     "invalidFields": "Controlla i campi evidenziati.",
     "notFound": "Elemento non trovato.",
@@ -113,7 +121,11 @@
     "rilievi": "Rilievi",
     "rilieviAll": "Schede",
     "permessi": "Permessi",
-    "impianti": "Impianti"
+    "impianti": "Impianti",
+    "groupHelp": "Aiuto",
+    "guide": "Guida",
+    "feedback": "Segnala un problema",
+    "newTab": "si apre in una nuova scheda"
   },
   "roles": {
     "OWNER": "Titolare",
@@ -217,7 +229,7 @@
     "featLead": "Quattro passi nello stesso software: rilievo, calcolo argano, progetto, documenti e ordini. Il tipo di intervento — solo argano, ammodernamento o trasformazione completa — decide la norma del collaudo e che cosa si disegna; ogni valore ha fonte e stato nel registro delle norme.",
     "featCta": "Guarda cosa produce",
     "feat1T": "Calcolo argano",
-    "feat1P": "Solo argano, ammodernamento o trasformazione completa: aderenza nelle tre condizioni, funi, freno e motore secondo la UNI EN 81-50, collaudo secondo la UNI 10411 o la UNI EN 81-20; il confronto con l’argano esistente tiene le funi montate.",
+    "feat1P": "Solo argano, ammodernamento o trasformazione completa: aderenza nelle tre condizioni e funi secondo la UNI EN 81-50, freno secondo la UNI EN 81-20, motore con il modello di calcolo del software; collaudo secondo la UNI 10411 o la UNI EN 81-20. Il confronto con l’argano esistente tiene le funi montate.",
     "feat2T": "Progetto",
     "feat2P": "Il rilievo del locale macchina, o il vano disegnato sul calcolo argano: cabina, porte, guide e contrappeso, fossa e testata dal rilievo in DXF o DWG, con le verifiche della UNI EN 81-20 e la simulazione 3D.",
     "feat3T": "Tavole, DXF e DWG",
@@ -598,7 +610,30 @@
     "billing": "Abbonamento",
     "exempt": "Esenta dal pagamento",
     "bill": "Torna a pagamento",
-    "permissions": "Permessi"
+    "permissions": "Permessi",
+    "betaTitle": "Inviti alla beta",
+    "betaModeInvite": "La registrazione è su invito (REGISTRATION_MODE=invite): un’azienda si registra solo dal link del suo invito e con l’indirizzo invitato. Il link vale {days} giorni e serve per una sola azienda.",
+    "betaModeOpen": "La registrazione è aperta a tutti (REGISTRATION_MODE=open): gli inviti funzionano comunque e restano legati all’azienda che li usa.",
+    "betaEmail": "E-mail",
+    "betaNote": "Nota (facoltativa)",
+    "betaNoteHint": "Solo per te, al massimo 200 caratteri: al tester non arriva.",
+    "betaInvite": "Invita",
+    "betaLink": "Link di invito per {email}:",
+    "betaLinkNote": "L’abbiamo mandato per e-mail. Lo vedi solo ora: se serve, consegnalo anche in un altro modo.",
+    "betaLinkNoMail": "L’invio delle e-mail non è attivo: consegna tu questo link. Lo vedi solo ora.",
+    "betaState": "Stato",
+    "betaDates": "Date",
+    "betaActions": "Azioni",
+    "betaWaiting": "In attesa",
+    "betaUsedBy": "Usato — {company}",
+    "betaUsed": "Usato",
+    "betaExpired": "Scaduto",
+    "betaSent": "Inviato il {date}",
+    "betaUntil": "Valido fino al {date}",
+    "betaUsedOn": "Usato il {date}",
+    "betaResend": "Invia di nuovo",
+    "betaRevoke": "Revoca",
+    "betaNone": "Nessun invito finora."
   },
   "norme": {
     "title": "Registro delle norme",
@@ -678,7 +713,21 @@
       "PERMISSIONS_CHANGED": "Permessi cambiati",
       "COMPANY_SECTIONS_UPDATED": "Ordine delle sezioni della scheda cambiato",
       "SCHEDA_LINKED": "Rilievo collegato a un impianto",
-      "SCHEDA_UNLINKED": "Rilievo scollegato dall’impianto"
+      "SCHEDA_UNLINKED": "Rilievo scollegato dall’impianto",
+      "ENGINE_NOTICE_SENT": "Avviso di correzione del software inviato al Titolare",
+      "FEEDBACK_SENT": "Segnalazione inviata a LiftPilot",
+      "FEEDBACK_HANDLED": "Segnalazione segnata come gestita",
+      "FEEDBACK_REOPENED": "Segnalazione riaperta",
+      "BETA_INVITE_SENT": "Invito alla beta inviato",
+      "BETA_INVITE_RESENT": "Invito alla beta inviato di nuovo con un nuovo link",
+      "BETA_INVITE_REVOKED": "Invito alla beta revocato",
+      "INVITE_SENT": "Collega invitato",
+      "INVITE_REVOKED": "Invito di un collega revocato",
+      "USER_DELETED": "Utente eliminato",
+      "COMPANY_DELETED": "Azienda eliminata",
+      "INACTIVE_NOTICE_SENT": "Avviso di inattività inviato al Titolare",
+      "TERMS_NOTICE_SENT": "Avviso delle nuove condizioni inviato al Titolare",
+      "PROJECT_UPGRADED": "Impianto passato al progetto completo"
     },
     "entities": {
       "User": "Utente",
@@ -689,7 +738,11 @@
       "DrawingSet": "Tavole",
       "LiftDesign": "Progetto dell’impianto",
       "Scheda": "Scheda di rilievo",
-      "Permission": "Permesso"
+      "Permission": "Permesso",
+      "Feedback": "Segnalazione",
+      "BetaInvite": "Invito alla beta",
+      "Invite": "Invito di un collega",
+      "RoomDesign": "Rilievo del locale macchina"
     },
     "platform": "Piattaforma LiftPilot",
     "permissionRequest": "su richiesta del Titolare: {request}",
@@ -1077,6 +1130,7 @@
     "c_m_hexist": "Locale esistente: altezza libera sotto 2,0 m (UNI 10411, 9.2)",
     "c_sl_frame": "Arcata esistente con carichi oltre i limiti (T* o portata) o non documentati: da verificare per i nuovi carichi (UNI 10411, 6.9)",
     "c_tr_d1": "Rapporto tra i carichi cambiato: stabilità allo scorrimento delle funi, (T1/T2)·C1·C2 / e^(f·α) (UNI 10411-1, D.1)",
+    "c_tr_d2": "Rapporto tra i carichi cambiato: pressione specifica delle funi nelle gole, cabina con la portata (UNI 10411-1, D.2)",
     "c_m_holes": "Appoggi del nuovo basamento dal bordo delle aperture esistenti della soletta: distanza minima",
     "c_m_holes_kept": "Appoggi del basamento esistente (da rilevare) dal bordo delle aperture esistenti della soletta: distanza minima",
     "c_m_govdrop": "Funi del limitatore esistente attraverso la soletta: il loro foro sopra l’interno del vano, margine",
@@ -1564,6 +1618,12 @@
     "sentTitle": "Controlla la tua e-mail",
     "sentText": "Abbiamo scritto a {email}. Apri il link del messaggio e inserisci la password che hai scelto: così l’account si attiva. Il link vale {hours, plural, one {un’ora} other {# ore}}; se non arriva, controlla lo spam.",
     "haveAccount": "Hai già un account?",
+    "invitedEmail": "È l’indirizzo dell’invito: l’account si registra con questo.",
+    "clausesLater": "L’approvazione specifica delle clausole (artt. 1341 e 1342 del codice civile) la darai dopo, quando confermi l’indirizzo dal link dell’e-mail, con la password che scegli qui.",
+    "inviteOnlyTitle": "La registrazione è su invito durante la beta",
+    "inviteOnlyBadLink": "Il link di invito non è valido, è già stato usato o è scaduto.",
+    "inviteOnlyText": "Durante la beta LiftPilot è aperto alle aziende invitate: l’invito arriva per e-mail, con il link che apre la registrazione per l’indirizzo a cui è stato mandato.",
+    "inviteOnlyAsk": "Per chiedere un invito scrivi a {email}, indicando la ragione sociale e la città dell’azienda.",
     "login": "Accedi",
     "closed": "La registrazione non è ancora attiva: per un account scrivi a info@carbonstealth.eu.",
     "clauses": "Ai sensi degli artt. 1341 e 1342 del codice civile approvo specificamente le seguenti clausole delle condizioni d’uso: art. {accounts} (sospensione e recesso del fornitore), art. {license} (divieto di cessione e di messa a disposizione di terzi), art. {subscription} (rinnovo automatico, modifica del prezzo, nessun rimborso del periodo non usato, disattivazione dei colleghi in eccesso), art. {liability} (limiti di responsabilità e manleva), art. {exit} (cancellazione dei dati alla cessazione), art. {changes} (modifiche delle condizioni e del servizio, sola lettura fino all’accettazione), art. {misc} (cessione del contratto), art. {law} (legge applicabile e foro esclusivo).",
@@ -1581,7 +1641,10 @@
     "submit": "Conferma ed entra",
     "submitting": "Conferma…",
     "noLink": "Questa pagina si apre dal link dell’e-mail di registrazione. Se il link non funziona, accedi con e-mail e password: ne riceverai uno nuovo.",
-    "toLogin": "Vai all’accesso"
+    "toLogin": "Vai all’accesso",
+    "clausesTitle": "Approvazione specifica delle clausole",
+    "clausesLead": "Ultimo passo: leggi le clausole qui sotto, articoli delle <link>condizioni d’uso</link> che hai accettato registrandoti, e approvale specificamente con la password scelta alla registrazione. Il link dell’e-mail e la tua password valgono come firma elettronica dell’approvazione.",
+    "submitClauses": "Approvo le clausole e attivo l’account"
   },
   "forgot": {
     "title": "Password dimenticata",
@@ -1687,6 +1750,8 @@
     "gateLeadPending": "Abbiamo aggiornato le condizioni d’uso e l’informativa sulla privacy: versione {version} del {date}. Per la tua azienda entrano in vigore il {binding}: fino ad allora valgono quelle che hai accettato e LiftPilot funziona come sempre. Puoi accettarle già ora.",
     "gateLeadAnnounced": "Abbiamo aggiornato le condizioni d’uso e l’informativa sulla privacy: versione {version} del {date}. Per la tua azienda entreranno in vigore almeno {noticeDays} giorni dopo l’e-mail con cui te lo comunicheremo; fino ad allora valgono quelle che hai accettato. Puoi accettarle già ora.",
     "gateDeclinePending": "Non le accetti? Puoi disdire l’abbonamento senza costi (rimborsiamo la parte non usata su richiesta a info@carbonstealth.eu) e scaricare i dati dell’azienda.",
+    "gatePassword": "La tua password",
+    "gatePasswordNote": "Serve ad approvare specificamente le clausole (artt. 1341 e 1342 del codice civile): la password vale come firma elettronica dell’approvazione.",
     "archiveTitle": "Versioni precedenti",
     "archiveItem": "Versione {label} del {date}",
     "archiveLead": "Testo archiviato della versione {label} del {date}, parola per parola. Per un’azienda già registrata vale fino al giorno in cui entra in vigore la versione successiva che il Titolare ha accettato o che lo vincola (art. {changes}).",
@@ -1715,7 +1780,7 @@
     "existsIgnore": "Se la richiesta non è tua, ignora questo messaggio: il tuo account non è cambiato.",
     "linkHint": "Se il pulsante non funziona, copia questo indirizzo nel browser:",
     "footer": "LiftPilot · Carbon Stealth VCC · carbonstealth.eu — messaggio automatico: non rispondere a questo indirizzo, scrivici a info@carbonstealth.eu.",
-    "verifyTerms": "Registrandoti hai accettato le condizioni d’uso, versione {version} del {date}: {link}",
+    "verifyTerms": "Registrandoti hai accettato le condizioni d’uso, versione {version} del {date} ({link}); nella pagina del link approverai specificamente, con la tua password, le clausole indicate ai sensi degli artt. 1341 e 1342 del codice civile.",
     "inviteSubject": "Un invito per te su LiftPilot",
     "inviteIntro": "un’azienda che usa LiftPilot ti invita a lavorare con lei come collega. Apri il link qui sotto: vedrai quale azienda e il tuo ruolo, e sceglierai la tua password.",
     "inviteButton": "Apri l’invito",
@@ -1724,6 +1789,18 @@
     "inviteExistsSubject": "Un invito su LiftPilot per il tuo indirizzo",
     "inviteExistsIntro": "un’azienda su LiftPilot ha provato ad aggiungerti come collega, ma questo indirizzo ha già un account LiftPilot e un indirizzo appartiene a una sola azienda. Se vuoi lavorare anche con quell’azienda, chiedile di invitarti con un altro indirizzo.",
     "inviteExistsIgnore": "Non devi fare nulla: il tuo account non è cambiato.",
+    "betaInviteSubject": "Il tuo invito alla beta di LiftPilot",
+    "betaInviteIntro": "Carbon Stealth VCC ti invita a provare LiftPilot durante la beta: la verifica dell’argano, il progetto dell’impianto e la relazione di calcolo per le aziende di ascensori. Apri il link qui sotto per registrare la tua azienda con questo indirizzo e-mail.",
+    "betaInviteButton": "Registra la tua azienda",
+    "betaInviteTtl": "Il link vale {days, plural, one {un giorno} other {# giorni}} e apre la registrazione di una sola azienda, con questo indirizzo.",
+    "betaInviteIgnore": "Se non ti interessa, ignora questo messaggio: senza la registrazione non si crea nessun account.",
+    "feedbackSubject": "LiftPilot: è arrivata una segnalazione",
+    "feedbackIntro": "un utente di LiftPilot ha inviato una segnalazione ({kind}). La trovi nella pagina delle segnalazioni, riservata agli amministratori della piattaforma.",
+    "feedbackButton": "Apri le segnalazioni",
+    "feedbackNote": "Il testo della segnalazione non è in questa e-mail: resta nel database di LiftPilot.",
+    "feedbackKindBug": "un problema",
+    "feedbackKindIdea": "un suggerimento",
+    "feedbackKindQuestion": "una domanda",
     "privacy": "Come trattiamo i dati personali: {link}",
     "termsNoticeSubject": "LiftPilot: nuove condizioni d’uso in vigore dal {date}",
     "termsNoticeIntro": "Abbiamo aggiornato le condizioni d’uso e l’informativa sulla privacy di LiftPilot (versione {version}). Per la tua azienda entrano in vigore il {date}; fino ad allora valgono quelle che hai accettato.",
@@ -1734,7 +1811,14 @@
     "inactiveIntro": "Da {months} mesi nessuno della tua azienda accede a LiftPilot e non c’è un abbonamento in corso. Come prevede l’informativa sulla privacy, dal {date} cancelleremo l’azienda con i suoi utenti, i progetti, i documenti e il registro attività.",
     "inactiveButton": "Accedi per conservarla",
     "inactiveKeep": "Basta un accesso di chiunque della tua azienda prima del {date}: l’azienda e i suoi dati restano.",
-    "inactiveData": "Prima di allora puoi anche scaricare i dati dell’azienda (pagina Azienda, file JSON) e i documenti in PDF, DXF e DWG."
+    "inactiveData": "Prima di allora puoi anche scaricare i dati dell’azienda (pagina Azienda, file JSON) e i documenti in PDF, DXF e DWG.",
+    "engineNoticeSubject": "LiftPilot: una correzione del software cambia elaborati già salvati",
+    "engineNoticeIntro": "abbiamo corretto il software di calcolo di LiftPilot (versione attuale {engine}). Rispetto alla versione con cui sono stati salvati, è cambiato il risultato di {records, plural, one {un elaborato} other {# elaborati}} della tua azienda, su {impianti, plural, one {un impianto} other {# impianti}}: i documenti già emessi da questi elaborati non corrispondono più a quello che il software calcola oggi.",
+    "engineNoticeButton": "Apri gli impianti",
+    "engineNoticeWhat": "Che cosa abbiamo corretto: {motivo}",
+    "engineNoticeSteps": "Che cosa fare: apri ciascun impianto e, sugli elaborati segnati «da aggiornare», usa «Aggiorna con il software attuale»; la pagina del nuovo elaborato indica se il risultato è cambiato. Poi genera di nuovo i documenti (relazione, tavole, bozza d’ordine) dal nuovo elaborato.",
+    "engineNoticeSign": "I documenti già consegnati o depositati vanno sostituiti con quelli nuovi, verificati e firmati di nuovo dal tecnico abilitato che ne risponde.",
+    "engineNoticeMeanwhile": "Fino all’aggiornamento gli elaborati restano consultabili, ma i loro documenti non si scaricano; se i dati inseriti vanno corretti, il modulo si apre e indica che cosa manca."
   },
   "bom": {
     "title": "Distinta staffe Panev",
@@ -2348,6 +2432,7 @@
       "priceItems": "Il listino dell’azienda: il prezzo di ogni articolo dei cataloghi.",
       "customPrices": "Le voci libere del listino, con testo, prezzo e criterio di quantità.",
       "schede": "Le schede di rilievo (Rilievi), anche quelle nel cestino: ogni campo, le misure delle bottoniere per fermata e i moduli dei fornitori come compilati — l’ordine quadro (Pelazza o MoviLift, in ordineQuadro), il modulo rilievi dati argani (in preventivoArgano), il modulo 2SG di porte, sospensioni e operatore (in ordineSospensioni) —, la scelta di includerli nella stampa (riepilogoOrdini) e l’impronta delle differenze tra scheda e moduli confermate al salvataggio (discrepanzeConfermate), e l’impianto a cui è collegata (projectId, o null).",
+      "feedback": "Le segnalazioni che gli utenti dell’azienda hanno inviato a LiftPilot da «Segnala un problema»: tipo (BUG problema, IDEA suggerimento, QUESTION domanda), pagina, codice dell’errore, messaggio, chi e quando l’ha inviata, e quando è stata gestita.",
       "auditLog": "Il registro attività: chi, che cosa, quando."
     },
     "projectText": "Ogni progetto contiene i propri record, ciascuno con i dati inseriti, la versione del motore, i risultati e l’impronta SHA-256 che ne garantisce l’integrità:",
@@ -2381,7 +2466,8 @@
       "v6": "6 — dal {date}: in schede l’ubicazione della cassettina (ubicazioneCassettina) diventa un testo, non più un numero; si aggiungono sospensioni, sospensioniNumero, ordineSospensioni, riepilogoOrdini e discrepanzeConfermate; preventivoArgano contiene il modulo rilievi dati argani e ordineQuadro anche quello MoviLift; in company si aggiunge ordineSezioni.",
       "v7": "7 — dal {date}: in schede si aggiunge projectId, l’impianto a cui il rilievo è collegato (null se non è collegato).",
       "v8": "8 — dal {date}: in calculations si aggiunge intervento, il tipo di intervento dichiarato con il calcolo (SOLO_ARGANO, AMMODERNAMENTO o TRASFORMAZIONE_COMPLETA; null se il calcolo è stato salvato prima); in liftDesigns si aggiunge baseCalculationId, il calcolo argano su cui è stato disegnato il progetto (null se è un progetto del modulo unico di prima).",
-      "v9": "9 — dal {date}: in projects non c’è più kind (il modulo dell’impianto di prima): il tipo di intervento è quello dei suoi calcoli (calculations, intervento)."
+      "v9": "9 — dal {date}: in projects non c’è più kind (il modulo dell’impianto di prima): il tipo di intervento è quello dei suoi calcoli (calculations, intervento).",
+      "v10": "10 — dal {date}: si aggiunge feedback (le segnalazioni inviate da «Segnala un problema»)."
     },
     "apiTitle": "C’è un’interfaccia per l’esportazione?",
     "apiText": "Sì, gratuita e uguale per tutte le aziende: una richiesta GET a {base}/api/company/export restituisce il file JSON descritto sopra a chi ha effettuato l’accesso come Titolare o, se il Titolare glielo permette, come Capotecnico. È la stessa richiesta del pulsante della pagina Azienda, al massimo 6 volte all’ora per azienda. Il nuovo fornitore riceve il file dal Titolare; questa pagina descrive il formato per scrivere il programma che lo legge (art. 30, par. 2, del Data Act).",
@@ -2697,6 +2783,12 @@
       "tooManyTitle": "Troppe richieste",
       "tooMany": "Troppe richieste in poco tempo. Attendi un minuto e riprova.",
       "loginNeeded": "Sessione scaduta: accedi di nuovo.",
+      "sessionExpired": "La sessione è scaduta. <login>Accedi di nuovo in un’altra scheda</login>, poi torna qui e premi di nuovo Salva: i dati sono ancora nel modulo.",
+      "sessionExpiredAction": "La sessione è scaduta e non è cambiato niente. <login>Accedi di nuovo in un’altra scheda</login>, poi torna qui e riprova.",
+      "offline": "Connessione assente: i dati sono ancora nel modulo. Premi di nuovo Salva quando c’è segnale.",
+      "offlineAction": "Connessione assente: non è cambiato niente. Riprova quando c’è segnale.",
+      "failed": "Il server non ha risposto come previsto: i dati sono ancora nel modulo. Riprova tra poco; se il problema continua, scrivi a info@carbonstealth.eu.",
+      "failedAction": "Il server non ha risposto come previsto. Ricarica la pagina per vedere se l’operazione è avvenuta, poi riprova se serve.",
       "toSchede": "Torna alle schede"
     },
     "flash": {
@@ -3057,6 +3149,138 @@
       "linked": "collegato",
       "numero": "N° {n}",
       "matricola": "Matricola {n}"
+    }
+  },
+  "feedback": {
+    "title": "Segnala un problema",
+    "lead": "Un problema, un suggerimento o una domanda su LiftPilot: la segnalazione arriva agli amministratori della piattaforma (Carbon Stealth VCC), che la leggono e, se serve, ti rispondono all’indirizzo del tuo account.",
+    "kind": "Tipo",
+    "kinds": {
+      "BUG": "Problema",
+      "IDEA": "Suggerimento",
+      "QUESTION": "Domanda"
+    },
+    "message": "Messaggio",
+    "messageHint": "Che cosa stavi facendo, che cosa è successo e che cosa ti aspettavi. Al massimo {max} caratteri.",
+    "page": "Pagina",
+    "pageMenu": "dal menu",
+    "code": "Codice dell’errore",
+    "privacy": "Non inserire dati personali dei clienti se non servono: la segnalazione resta nel database di LiftPilot (server in Germania).",
+    "submit": "Invia la segnalazione",
+    "sentTitle": "Segnalazione inviata",
+    "sent": "Grazie: la segnalazione è arrivata agli amministratori di LiftPilot.",
+    "back": "Torna alla pagina",
+    "another": "Invia un’altra segnalazione",
+    "error": {
+      "invalid": "Controlla i campi evidenziati.",
+      "message": "Scrivi il messaggio: al massimo {max} caratteri.",
+      "kind": "Scegli il tipo.",
+      "page": "La pagina indicata non è valida: riapri «Segnala un problema» dal menu.",
+      "forbidden": "Prima scegli la tua password personale dalla pagina «Account».",
+      "rateLimited": "Hai già inviato {n} segnalazioni nell’ultima ora: riprova più tardi oppure scrivi a info@carbonstealth.eu.",
+      "sessionExpired": "La sessione è scaduta. <login>Accedi di nuovo in un’altra scheda</login>, poi torna qui e premi di nuovo «Invia la segnalazione»: il messaggio è ancora nel modulo.",
+      "offline": "Connessione assente: il messaggio è ancora nel modulo. Premi di nuovo «Invia la segnalazione» quando c’è segnale.",
+      "failed": "Il server non ha risposto come previsto: il messaggio è ancora nel modulo. Riprova tra poco oppure scrivi a info@carbonstealth.eu."
+    },
+    "admin": {
+      "title": "Segnalazioni",
+      "lead": "Quello che gli utenti hanno inviato da «Segnala un problema», dal più recente. Il testo resta qui: l’e-mail agli amministratori dice solo che è arrivata una segnalazione.",
+      "filterLabel": "Quali segnalazioni",
+      "filterOpen": "Da gestire",
+      "filterAll": "Tutte",
+      "date": "Data",
+      "company": "Azienda",
+      "user": "Utente",
+      "kind": "Tipo",
+      "page": "Pagina",
+      "code": "Codice",
+      "message": "Messaggio",
+      "status": "Stato",
+      "open": "da gestire",
+      "handled": "gestita il {date}",
+      "markHandled": "Segna come gestita",
+      "reopen": "Riapri",
+      "emptyOpen": "Nessuna segnalazione da gestire.",
+      "emptyAll": "Nessuna segnalazione.",
+      "limit": "Sono mostrate le {n} più recenti.",
+      "deletedUser": "utente eliminato",
+      "link": "Segnalazioni",
+      "linkCount": "{n, plural, =0 {nessuna da gestire} one {# da gestire} other {# da gestire}}"
+    }
+  },
+  "primiPassi": {
+    "title": "Primi passi",
+    "lead": "La tua azienda non ha ancora né impianti né schede di rilievo. Si parte così:",
+    "step1": "Il sopralluogo: compila la scheda di rilievo dell’impianto esistente, anche dal telefono sul posto; i moduli dei fornitori si compilano dai suoi dati.",
+    "step2": "L’impianto: crealo e collega la scheda; dalla sua pagina parte il «Calcolo argano», poi il Progetto e i documenti.",
+    "step3": "La guida: il percorso completo, con quello che resta da verificare e firmare al tecnico.",
+    "newImpianto": "Nuovo impianto",
+    "newScheda": "Nuova scheda di rilievo",
+    "guide": "Leggi la guida"
+  },
+  "guide": {
+    "metaTitle": "Guida rapida a LiftPilot: dal rilievo ai documenti",
+    "metaDescription": "Come si lavora con LiftPilot: azienda e colleghi, schede di rilievo e moduli dei fornitori, impianti, calcolo argano, progetto, documenti e ordini, e che cosa resta al tecnico che firma.",
+    "keywords": "Carbon Stealth, LiftPilot, guida LiftPilot, scheda di rilievo ascensore, calcolo argano, relazione di calcolo ascensore, sostituzione argano UNI 10411, progetto vano ascensore",
+    "eyebrow": "Guida rapida",
+    "title": "Come si lavora con LiftPilot",
+    "lead": "LiftPilot segue il lavoro dal sopralluogo ai documenti: la scheda di rilievo, l’impianto, il «Calcolo argano», il Progetto, i documenti e gli ordini. Ogni relazione e ogni tavola è una bozza che un tecnico abilitato verifica e firma.",
+    "tocLabel": "In questa guida",
+    "howTo": "Dal rilievo ai documenti con LiftPilot",
+    "azienda": {
+      "name": "L’azienda e i colleghi",
+      "q": "Come si prepara l’azienda?",
+      "a": "Il Titolare registra l’azienda (durante la beta, dal link dell’invito) e invita i colleghi da «Utenti» → «Invita un collega»: ognuno riceve un link per e-mail e sceglie da sé la propria password.",
+      "b": "Ogni collega ha uno dei quattro ruoli — Capotecnico, Progettista, Tecnico, Commerciale — e da «Permessi» il Titolare decide che cosa può fare ciascun ruolo, entro regole fisse: gli utenti, i permessi e l’abbonamento restano sempre al Titolare.",
+      "roles": "Con i permessi predefiniti:"
+    },
+    "rilievi": {
+      "name": "La scheda di rilievo",
+      "q": "Come si registra un sopralluogo?",
+      "a": "Da «Rilievi» → «Nuovo rilievo» si compila la scheda di rilievo dell’impianto esistente, anche dal telefono sul posto: identificazione e targa, ubicazione, tipologia, quadro, argano, funi, limitatore, cavi, serrature, allarme e note. Serve almeno uno tra indirizzo, matricola e numero dell’impianto.",
+      "b": "Un «Sì» a «Vuoi compilare la scheda per l'ordine quadro?», «Argano da sostituire?» o «Sospensioni da cambiare?» apre nella scheda il modulo del fornitore — l’ordine del quadro Pelazza o MoviLift secondo la marca, il modulo rilievi dati argani, il modulo 2SG di porte, sospensioni e operatore —, già compilato con i dati della scheda; ogni modulo si scarica come PDF a parte.",
+      "c": "Se manca il segnale o la sessione scade mentre salvi, i dati restano nel modulo: premi di nuovo «Salva scheda» quando torna la connessione, o dopo aver fatto di nuovo l’accesso in un’altra scheda del browser."
+    },
+    "impianti": {
+      "name": "L’impianto",
+      "q": "Che cos’è un impianto in LiftPilot?",
+      "a": "L’impianto è la cartella del lavoro: si crea da «Nuovo impianto» e raccoglie il rilievo di riferimento, i calcoli, il progetto e i documenti. La sua pagina mostra i passi — Rilievo, Calcolo argano, Progetto, Documenti e ordini — ciascuno «fatto», «da fare» o «da aggiornare».",
+      "b": "La scheda si collega all’impianto dal riquadro «Collegamento all’impianto»: il «Calcolo argano» e il Progetto partono allora con i dati del rilievo nei campi vuoti, e il confronto segnala dove rilievo e progetto non coincidono."
+    },
+    "calcolo": {
+      "name": "Calcolo argano",
+      "q": "Come si fa il calcolo dell’argano?",
+      "a": "Nel «Calcolo argano» si sceglie prima il tipo di intervento, che decide la norma del collaudo, le parti da verificare e che cosa si disegna nel Progetto:",
+      "b": "Poi, per ogni parte, «Sì» o «No»: sostituita o modificata. Una parte senza risposta non conta come «No», e velocità, portata e corsa le decidono i documenti dell’impianto — il libretto e i carichi documentati — quando ci sono.",
+      "c": "Con i dati dell’impianto e dell’argano il software verifica aderenza, funi, freno e motore secondo il collaudo (UNI 10411-1 o -11, oppure UNI EN 81-20/50) e prepara la «Relazione di calcolo (PDF)». Il calcolo salvato non cambia più: se cambia il software diventa «da aggiornare» e si rifà con «Aggiorna con il software attuale»."
+    },
+    "progetto": {
+      "name": "Progetto",
+      "q": "Che cosa si disegna nel Progetto?",
+      "a": "Il Progetto disegna sopra il calcolo salvato. Se si sostituisce l’argano in un locale macchina esistente, si rileva il locale e ne escono la relazione tecnica e le sue tavole; se cambia l’impianto, si disegna il vano — pianta, sezione con fossa e testata, porte e guide —, anche da un rilievo in DXF o DWG misurato nel browser: il disegno non lascia il tuo computer.",
+      "b": "La simulazione 3D mostra l’impianto in movimento con le verifiche nel tempo; da «Emetti le tavole» nasce un set numerato, con le sue revisioni."
+    },
+    "documenti": {
+      "name": "Documenti e ordini",
+      "q": "Quali documenti e ordini escono?",
+      "a": "Dagli stessi dati: la relazione di calcolo in PDF, le tavole in PDF, la pianta in DXF o DWG e la bozza d’ordine dell’argano in Word (DOCX) o PDF, con il consiglio tra i modelli SICOR e Montanari a catalogo, scelto solo sui dati tecnici.",
+      "b": "I prezzi del listino dell’azienda si vedono solo a schermo, a chi ha il permesso: non entrano mai nelle tavole né nella relazione."
+    },
+    "tecnico": {
+      "q": "Che cosa resta al tecnico?",
+      "a": "La firma, e quindi la verifica. LiftPilot prepara bozze: la relazione di calcolo, la relazione tecnica e le tavole le controlla e le firma un tecnico abilitato, che ne risponde. Il software rende evidenti i punti da guardare:",
+      "draftT": "Ogni relazione è una bozza",
+      "draft": "I valori stimati o scelti dal software sono segnati ⚠, e i punti da verificare in sito sono elencati nella relazione stessa.",
+      "brakeT": "«nessuna coppia tiene l’aderenza reale»",
+      "brake": "È un avviso per l’ingegnere, non un giudizio negativo sull’impianto. Vuol dire che, con la decelerazione reale del freno in un arresto di emergenza, nessuna coppia del freno per gruppo sta tra il minimo richiesto e il massimo che, nel calcolo, tiene l’aderenza delle funi. La UNI EN 81-50 (5.11.2.2.2) chiede di considerare la decelerazione reale ma non dice con quanti gruppi del freno: come contarla e come verificarla sull’impianto lo decide il tecnico.",
+      "listaT": "Le voci «da verificare»",
+      "lista": "Ogni valore che il software usa è nel registro delle norme, con documento, clausola e stato; le voci ancora «da verificare» vanno controllate sul testo della norma. Dentro LiftPilot, chi vede gli impianti scarica dalla pagina «Norme» la «Lista di verifica (Excel)»."
+    },
+    "segnala": {
+      "q": "Qualcosa non funziona?",
+      "a": "Dentro LiftPilot c’è «Segnala un problema», nel menu e nella pagina di errore: scegli il tipo, scrivi che cosa è successo e la segnalazione arriva agli amministratori, con la pagina da cui scrivi. Oppure scrivi a {email}.",
+      "button": "Segnala un problema",
+      "register": "Prova LiftPilot"
     }
   }
 }

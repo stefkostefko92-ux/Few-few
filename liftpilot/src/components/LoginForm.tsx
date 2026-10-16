@@ -5,16 +5,19 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { loginAction } from '@/server/auth-actions';
 import { initialFormState } from '@/server/form';
+import { useErrorFocus } from './useErrorFocus';
 
-/** `reset`: the person comes from choosing a new password through the e-mail link. */
+/** `reset`: the person comes from choosing a new password through the e-mail link. After a refusal the focus goes to the
+ *  message, so it is read at once and the page does not stay scrolled elsewhere. */
 export default function LoginForm({ reset = false }: { reset?: boolean }) {
   const t = useTranslations('auth'), te = useTranslations('errors'), locale = useLocale();
   const [state, action, pending] = useActionState(loginAction, initialFormState);
   const [email, setEmail] = useState('');
+  const { form, alert } = useErrorFocus(state);
   return (
-    <form action={action} className="panel" noValidate>
+    <form ref={form} action={action} className="panel" noValidate>
       <input type="hidden" name="locale" value={locale} />
-      {state.error ? <p className="alert alert-bad" role="alert">{te(state.error)}</p> : reset ? <p className="alert alert-ok" role="status">{t('resetDone')}</p> : null}
+      {state.error ? <p ref={alert} tabIndex={-1} className="alert alert-bad" role="alert">{te(state.error)}</p> : reset ? <p className="alert alert-ok" role="status">{t('resetDone')}</p> : null}
       <label className="field">
         <span>{t('email')}</span>
         <input className="input" type="email" name="email" autoComplete="username" required maxLength={254} value={email} onChange={(e) => setEmail(e.target.value)} />

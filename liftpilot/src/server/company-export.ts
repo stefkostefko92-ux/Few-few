@@ -3,7 +3,8 @@ import 'server-only';
 // the company, its users (never their password hashes or tokens), the rights it set for its colleagues' roles (only where
 // they differ from the default matrix, as stored: CompanyRolePermission, round 42), the projects with every calculation, shaft design,
 // lift design and drawing set and the drafts of their forms, the logos, the price list, the survey sheets (Rilievi, the
-// trashed ones too, with their measurements per stop and the suppliers' modules as filled in) and the activity log. The
+// trashed ones too, with their measurements per stop and the suppliers' modules as filled in), the reports its users sent
+// to LiftPilot («Segnala un problema», format 10) and the activity log. The
 // software's own data (catalogues, the standards register, the engines) are not the company's and stay out. Its format
 // is described in public (src/lib/export-format.ts, the page /<locale>/data).
 import { prisma } from '@/lib/db';
@@ -24,7 +25,7 @@ export async function companyExport(companyId: string): Promise<Record<string, u
       subscriptionStatus: true, seatPack: true, periodEnd: true, cancelAtPeriodEnd: true, trialEndsAt: true, ordineSezioni: true },
   });
   if (!company) return null;
-  const [users, invites, rolePermissions, logos, projects, priceItems, customPrices, schede, auditLog] = await Promise.all([
+  const [users, invites, rolePermissions, logos, projects, priceItems, customPrices, schede, feedback, auditLog] = await Promise.all([
     prisma.user.findMany({
       where: { companyId }, orderBy: { createdAt: 'asc' },
       select: { id: true, name: true, email: true, role: true, active: true, createdAt: true, lastLoginAt: true, emailVerifiedAt: true,
@@ -59,6 +60,8 @@ export async function companyExport(companyId: string): Promise<Record<string, u
     // search text is the software's index of the same values and stays out
     prisma.scheda.findMany({ where: { companyId }, orderBy: { createdAt: 'asc' }, omit: { searchText: true },
       include: { misureBottoniere: { orderBy: { fermata: 'asc' }, omit: { schedaId: true } } } }),
+    // what the company's users wrote to LiftPilot, and whether it was handled (the administrators' marks)
+    prisma.feedback.findMany({ where: { companyId }, orderBy: { createdAt: 'asc' }, omit: { companyId: true } }),
     prisma.auditLog.findMany({ where: { companyId }, orderBy: { createdAt: 'asc' }, select: { createdAt: true, userId: true, action: true, entity: true, entityId: true, meta: true } }),
   ]);
   const doc: Record<ExportKey, unknown> = {
@@ -66,7 +69,7 @@ export async function companyExport(companyId: string): Promise<Record<string, u
     note: 'Dati inseriti dall’azienda in LiftPilot (Carbon Stealth VCC). Importi in centesimi di euro senza IVA, lunghezze in millimetri salvo diversa indicazione, immagini in base64.',
     company, users, invites, rolePermissions, logos: logos.map(image),
     projects: projects.map(({ clientLogos, ...p }) => ({ ...p, clientLogos: clientLogos.map(image) })),
-    priceItems, customPrices, schede, auditLog,
+    priceItems, customPrices, schede, feedback, auditLog,
   };
   return doc;
 }

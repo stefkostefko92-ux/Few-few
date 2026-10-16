@@ -67,6 +67,8 @@ export const K = {
   retainBelow: 60,
   vCompGuided: 1.75,
   vCompRopes: 3,
+  // the rated speed over this (round 48): at or below it no lift (UNI EN 81-20:2020, 1.3 a) 2); DPR 162/1999, art. 1)
+  vRatedMin: 0.15,
   // rescue: UNI EN 81-20:2020, 5.9.2.3 (400 N raising the car with Q, 150 N to a landing with the car in (q ± 0,1)·Q,
   // the electric means and the emergency operation at 0,30 m/s, 1 h); UNI EN 81-1:2008, 12.5 and 14.2.1.4 (0,63 m/s)
   rescueForceMax: 400,
@@ -131,7 +133,7 @@ const D1_A_FASCE = K.c1Bands.map(([, c]) => ((K.g * (c - 1)) / (c + 1)).toFixed(
 
 export const PROFILO = {
   id: 'IT-2026.1',
-  titolo: "Italia — sostituzione dell’argano su impianto esistente",
+  titolo: "Italia — calcolo dell’argano e progetto dell’ascensore: solo argano, ammodernamento e trasformazione completa di impianti esistenti, impianto nuovo",
   documenti: [
     { sigla: 'Direttiva 2014/33/UE', ambito: 'requisiti essenziali di sicurezza (Allegato I)' },
     { sigla: 'DPR 162/1999 e s.m.i. (DPR 8/2015, DPR 23/2017)', ambito: 'sostituzione del macchinario come modifica costruttiva; verifica straordinaria (art. 14)' },
@@ -218,8 +220,9 @@ export const VOCI: readonly Voce[] = [
   {
     id: 'trazione.decelerazione.reale', gruppo: 'trazione', titolo: 'Aderenza alla decelerazione reale del freno',
     valore: 'Seconda verifica con la decelerazione data dal freno (tutti i gruppi, mai sotto il minimo), negli otto casi della verifica di '
-      + 'progetto e nella prova di aderenza: cabina con 1,25·Q in discesa verso il fondo della corsa; oggi solo avviso',
-    riferimento: 'UNI EN 81-50:2020, 5.11.2.2.2; UNI EN 81-20:2020, 6.3.3 b)', fonte: `${letto(T50, 'p. 40')}; ${letto(T20, 'p. 137')}`, stato: 'scelta',
+      + 'progetto (tra cui la prova di aderenza a): cabina vuota in salita nella parte alta della corsa) e nella prova di aderenza b): cabina con '
+      + '1,25·Q in discesa verso il fondo della corsa; oggi solo avviso; il caso mostrato dice quale delle due prove è',
+    riferimento: 'UNI EN 81-50:2020, 5.11.2.2.2; UNI EN 81-20:2020, 6.3.3 a) e b)', fonte: `${letto(T50, 'p. 40')}; ${letto(T20, 'p. 137')}`, stato: 'scelta',
     costanti: ['loadTestFactor'], verifiche: ['tr_real'],
     nota: 'La norma vuole ogni massa in moto con la sua accelerazione e una decelerazione di calcolo mai sotto 0,5 m/s²; non dice con quanti '
       + 'gruppi del freno. Se contarla come esito lo decide l’ingegnere: nell’esempio B del capitolo 7 l’utilizzo passa da 1,005 a 4,17. '

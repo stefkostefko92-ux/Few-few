@@ -14,11 +14,12 @@ import { useTranslations } from 'next-intl';
 import SectionTitle from '@/components/project/SectionTitle';
 import type { FormValues } from '@/calc/types';
 import { tipoDaRivedere, type Collaudo, type LiftDerived, type TipoIntervento } from '@/lib/lift';
+import { calcVerdictOf } from '@/lib/lift/calc-verdict';
 import { macchinaEsistente } from '@/lib/lift/kept';
 import { differenzeCalcolo, type DifferenzaKey } from '@/lib/lift/progetto';
 import { cabinaMassima } from '@/lib/lift/porta';
 import { analyse } from '@/lib/present/analysis';
-import { verdictStatus, type Texts } from '@/lib/present/texts';
+import type { Texts } from '@/lib/present/texts';
 import type { CalcKey, Pres } from '@/lib/present/tr';
 import { Pill } from '../calc/ui';
 
@@ -41,7 +42,9 @@ const DEC: Readonly<Record<DifferenzaKey, number>> = { H: 2, L0: 2, dx: 3, h: 3,
 export default function DifferenzeCalcolo({ P, X, base, derived, porta, pending, collaudo, tipo }: Props) {
   const t = useTranslations('progetto'), { fmt } = P;
   const rows = useMemo(() => differenzeCalcolo(base, derived.values, derived.headPulleys), [base, derived]);
-  const prima = useMemo(() => verdictStatus(analyse(base).res), [base]), ora = verdictStatus(derived.analysis.res);
+  // the calculation's own result on each side, D.1 and D.2 counted with the ratio of the loads changed (round 48)
+  const prima = useMemo(() => calcVerdictOf(analyse(base).res, collaudo, base).status, [base, collaudo]);
+  const ora = calcVerdictOf(derived.analysis.res, derived.collaudo, derived.values).status;
   const largest = useMemo(() => cabinaMassima(derived.shaft), [derived.shaft]);
   const differ = rows.some((r) => r.differs), rivedere = tipoDaRivedere(tipo, derived.collaudo);
   // the travel among the changed parts on the base's values and on the drawing's (the logbook's travel against each)

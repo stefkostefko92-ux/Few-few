@@ -42,7 +42,7 @@ export function compute(I: Plant, M: Machine): Results {
   // positions. The standard's check uses its minimum deceleration; a second pass uses the deceleration the brake
   // really gives with all its sets (never below that minimum), and predicts the acceptance test: with it also the car
   // with 1,25·Q moving down toward the bottom of the travel (UNI EN 81-20:2020, 6.3.3 b); its a) is the empty car up
-  // at the top, among the cases already).
+  // at the top, among the cases already — the texts name the sub-case each case is, present/texts.ts caseText).
   const Tb = M.brakeNm * M.brakeSets;
   const vf = I.v * r, muB = K.muBrakingBase / (1 + vf / K.muBrakingSpeed), fB = grooveF(muB, M.groove, 'braking');
   // tb null: the minimum deceleration of the standard; a number: the brake's own deceleration with that total torque

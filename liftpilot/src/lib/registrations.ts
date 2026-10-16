@@ -21,14 +21,15 @@ const DAY_MS = 24 * 3600_000;
 /** A link's end: its life, never beyond UNCONFIRMED_DAYS after the registration. */
 const linkEnd = (createdAt: Date, now: number): Date => new Date(Math.min(now + TOKEN_TTL_MS.VERIFY_EMAIL, createdAt.getTime() + UNCONFIRMED_DAYS * DAY_MS));
 
-/** A registration waiting for its address, with the token of its link (for the e-mail). */
-export async function addPending(d: RegisterInput, passwordHash: string, locale: Locale): Promise<string> {
+/** A registration waiting for its address, with the token of its link (for the e-mail); `betaInviteId` the beta
+ *  invitation it was made with (src/lib/beta-invites.ts), used up when the registration is confirmed. */
+export async function addPending(d: RegisterInput, passwordHash: string, locale: Locale, betaInviteId: string | null = null): Promise<string> {
   const { token, tokenHash } = newToken(), now = new Date();
   await prisma.$transaction(async (tx) => {
     await tx.pendingRegistration.create({
       data: {
         email: d.email, tokenHash, expiresAt: linkEnd(now, now.getTime()), passwordHash, name: d.name, company: d.company,
-        vatNumber: d.vatNumber, city: d.city, locale, termsVersion: TERMS_VERSION, termsSha256: legalSha256(locale), createdAt: now,
+        vatNumber: d.vatNumber, city: d.city, locale, termsVersion: TERMS_VERSION, termsSha256: legalSha256(locale), betaInviteId, createdAt: now,
       },
     });
     const older = await tx.pendingRegistration.findMany({ where: { email: d.email }, orderBy: { createdAt: 'desc' }, skip: PENDING_MAX, select: { id: true } });
@@ -65,12 +66,13 @@ export interface Released {
 
 export type Confirmed =
   | { ok: true; user: User; released: Released | null }
-  /** the link was used or is over */
+  /** the link was used or is over, or its beta invitation was used meanwhile */
   | { ok: false; reason: 'link' }
   /** the address has an account confirmed or used meanwhile: this registration ends */
   | { ok: false; reason: 'taken' };
 
-/** The registration confirmed (the password already checked against it): in one transaction the link is used, an
+/** The registration confirmed (the password already checked against it): in one transaction the link is used, the
+ *  beta invitation it was made with is used up (one company per invitation: already used, nothing is made), an
  *  account of the address never confirmed nor used is released (with its company when it was the last user), the
  *  other registrations of the address go, the company and its owner are made — signed in and confirmed now. The
  *  companies' invitations of the address stay until their end (taking one meets the account: one address, one
@@ -80,6 +82,11 @@ export async function confirmPending(p: PendingRegistration, token: string): Pro
   return prisma.$transaction(async (tx): Promise<Confirmed> => {
     const used = await tx.pendingRegistration.deleteMany({ where: { id: p.id, tokenHash: hashToken(token), expiresAt: { gt: now } } });
     if (used.count !== 1) return { ok: false, reason: 'link' };
+    // the invitation first, before anything is made: of two registrations confirmed at once with it, the row lock lets
+    // one through and the other finds it used
+    if (p.betaInviteId && (await tx.betaInvite.updateMany({ where: { id: p.betaInviteId, usedAt: null }, data: { usedAt: now } })).count !== 1) {
+      return { ok: false, reason: 'link' };
+    }
     const old = await tx.user.findUnique({ where: { email: p.email }, select: { id: true, companyId: true, emailVerifiedAt: true, lastLoginAt: true } });
     let released: Released | null = null;
     if (old) {
@@ -90,6 +97,7 @@ export async function confirmPending(p: PendingRegistration, token: string): Pro
     }
     await tx.pendingRegistration.deleteMany({ where: { email: p.email } });
     const c = await tx.company.create({ data: { name: p.company, vatNumber: p.vatNumber, city: p.city } });
+    if (p.betaInviteId) await tx.betaInvite.update({ where: { id: p.betaInviteId }, data: { companyId: c.id } });
     const user = await tx.user.create({
       data: {
         // a registration made in English or Bulgarian (before 2026-10-12) gives an account in Italian; the audit keeps the

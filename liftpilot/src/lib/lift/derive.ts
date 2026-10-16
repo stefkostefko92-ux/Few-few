@@ -31,7 +31,7 @@ import { catalogMachineOf, massModelOf, modelOf } from './known';
 import { dropSheaves, planFalls } from './direct';
 import { existingRoomCheck } from '@/shaft/room-above';
 import { slingCheck } from './arcata';
-import { d1Check } from './rapporto';
+import { rapportoChecks } from './rapporto';
 import { carichiOf } from './modifica';
 import { keptInputs } from './kept';
 
@@ -231,10 +231,10 @@ function deriveOnce(inp: LiftInputs): LiftDerived {
   // a modification: the existing room's height under 2,0 m (UNI 10411-1:2024, 9.2; registry locale.esistente.altezza)
   if (V.context === 'repl' && above && Lp.inputs.room) supportCk.push(existingRoomCheck(Lp.inputs.room));
   // a modification that keeps the sling under a new car or rated load: the sling for the new loads (arcata.ts); one under
-  // UNI 10411-1 that changes the ratio of the suspended loads: D.1 (rapporto.ts)
-  const collaudo = collaudoOf(V, inp.collaudo), sling = slingCheck(collaudo, carichiOf(V)), d1 = d1Check(collaudo, V);
+  // UNI 10411-1 that changes the ratio of the suspended loads: D.1 and D.2 (rapporto.ts)
+  const collaudo = collaudoOf(V, inp.collaudo), sling = slingCheck(collaudo, carichiOf(V));
   if (sling) supportCk.push(sling);
-  if (d1) supportCk.push(d1);
+  supportCk.push(...rapportoChecks(collaudo, V));
   const beams = above ? hebOf(Lp, machine, load) : null, chosenBy = Lp.inputs.room?.heb;
   const bottomGap = scheme && g && !g.fits ? { now: S.cwWallGap, need: bottomGapNeeded(S, scheme, N.D, I.Dp, N.n, N.d, I.r, sheaveHalfBelow(N.D, N.n, N.d, shape)) } : null;
   return {

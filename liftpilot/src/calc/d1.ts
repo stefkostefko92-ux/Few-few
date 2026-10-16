@@ -9,6 +9,7 @@
 // as information for the soggetto della verifica: the deceleration C1's band minimum stands for and the limit
 // deceleration up to which the condition still holds, a = gn·(C1 − 1)/(C1 + 1). Registry: modifica.d1. Pure.
 import { K } from './norme';
+import { groovePressure } from './compute';
 import { G, rad, ratio } from './math';
 import { wrapAngles } from './geometry';
 import { ropeModel } from './model';
@@ -97,4 +98,14 @@ export function d1Of(I: Plant, M: Machine, a: number = I.ae): D1Result {
   const lim = (c: D1Case): number => (Number.isFinite(c.ratio) && c.ratio > 0 ? c.efa / (c.ratio * C2) : 0), c1Lim = Math.min(lim(b), lim(t));
   return { v: I.v, a, c1Min: min, aMin: aOfC1(min), C1, C2, mu: K.muD1, f, cases: [b, t], worst: t.util > b.util ? t : b,
     c1Lim, aLim: c1Lim >= min - 1e-12 ? aOfC1(c1Lim) : null };
+}
+
+/** D.2 of UNI 10411-1:2024, which 6.1 asks together with D.1 when the ratio of the suspended loads changes (round 48):
+ *  the specific pressure in the grooves with the car at the lowest landing loaded with the rated load, against
+ *  (12,5 + 4·v_c)/(1 + v_c) — the same pull and the same formula as compute()'s g_press (groovePressure on the car side's
+ *  static pull of path(true)), so the value is g_press's bit for bit; there a value to state, here met or not. Registry:
+ *  rapporto.d2 (the check), gole.pressione (the formula and K). */
+export function d2Of(I: Plant, M: Machine): { T: number; p: number; limit: number } {
+  const { path, walk } = ropeModel(I, M);
+  return groovePressure(I, M, walk(I.P + I.Q, 0, path(true).car));
 }

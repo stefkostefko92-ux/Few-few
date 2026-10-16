@@ -21,6 +21,11 @@ export interface NormaInfo {
   citazione: string;
   /** a warning for the documents (an edition that gives no presumption, a scope that excludes the lift) */
   avviso?: string;
+  /** the points of the procedure of a lift placed on the market — a new one, or one tested as new («Trasformazione
+   *  completa»): the notified body's tests and technical file (round 48). Printed before `punti` only when the standard
+   *  is the base of such a test (ambitoNorme 'nuovo'), never for a modification, which goes through DPR 162/1999 art. 2
+   *  c.1 cc), art. 12 c.4–5 and the extraordinary verification of art. 14 (ADEMPIMENTI.modifica) */
+  nuovo?: readonly PuntoInSito[];
   punti: readonly PuntoInSito[];
 }
 
@@ -33,10 +38,14 @@ export const NORME_INFO: Readonly<Record<Norma, NormaInfo>> = {
   en81: {
     ambiti: MOD,
     citazione: 'Decisione (UE) 2021/76 (GU L 27 del 27/01/2021); valide come UNI fino al 23/07/2029. Le UNI EN ISO 8100-1/-2:2026 sono in vigore dal 23/07/2026 ma non risultano citate in GUUE (elenco del 26/11/2025)',
-    punti: [
+    // the procedure with a notified body: a new lift, or one tested as new — never a modification (round 48; research,
+    // chapter 16 §3.1 and §5.3)
+    nuovo: [
       ok('DPR 162/1999, All. V 3.3 (All. VIII 4)', 'prove dell’organismo notificato: funzionamento a vuoto e a pieno carico, in mancanza di energia, prova statica a 1,25 volte la portata e controllo che non restino deformazioni'),
       ok('DPR 162/1999, All. VIII 3 e), g), h)', 'documentazione tecnica con i risultati dei calcoli di progetto, le relazioni sulle prove e l’elenco delle norme armonizzate applicate, anche in parte'),
       ok('Regolamento (UE) 2023/1230, art. 51 par. 2', 'per gli ascensori dichiarati conformi dal 20/01/2027: requisiti dell’All. III del Regolamento macchine (tra cui 1.1.9 e 1.2.1), con una valutazione aggiuntiva per i requisiti nuovi o cambiati'),
+    ],
+    punti: [
       // in sito, in our words, read on the texts the client supplied (2026-10-06); EN 81-50 also from its public extract
       lt('UNI EN 81-50:2020, 5.12.1 e 5.12.2.1', 'il metodo del coefficiente di sicurezza delle funi vale solo per pulegge di acciaio o ghisa e funi d’acciaio secondo EN 12385-5; la flessione è semplice se il raggio della gola non supera 0,53 volte il diametro della fune: rilevare il materiale della puleggia e il raggio delle gole'),
       lt('UNI EN 81-20:2020, 5.6.2.2.1.2', 'tempo di risposta del limitatore di velocità: i suoi punti d’intervento distano al massimo 250 mm di corsa della fune del limitatore'),

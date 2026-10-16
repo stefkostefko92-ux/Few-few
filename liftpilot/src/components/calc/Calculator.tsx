@@ -23,7 +23,8 @@ import { savedValues } from '@/lib/calc-saved';
 import { segniResta } from '@/lib/calc-resta';
 import { calcDraftSchema } from '@/lib/draft-input';
 import { bozzaRilievo } from '@/lib/collega/formato';
-import { interventoDi, interventoTo, type Collaudo, type Parte, type TipoIntervento } from '@/lib/lift';
+import { collaudoOf, interventoDi, interventoTo, type Collaudo, type Parte, type TipoIntervento } from '@/lib/lift';
+import { calcExtra } from '@/lib/lift/calc-verdict';
 import { esempioCollaudo, esitoParte, partiDi } from '@/lib/lift/risposte';
 import MissingPanel from '@/components/MissingPanel';
 import { useDraft, type DraftTarget } from '@/components/draft/useDraft';
@@ -120,6 +121,9 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   const held = sheave && deferred.layout === 'top' ? sheave : null;
   const a = useMemo(() => (held ? { ...analysed, sizing: sizingWithSheave(analysed.ctx, held), hold: 'drop' as const } : analysed), [analysed, held]);
   const evaluate = useCallback((m: AdviceModel) => valuesCandidate(saved, a, m), [saved, a]);
+  // D.1 and D.2 with the ratio of the loads changed, counted in the result as the save counts them: on the values and
+  // the test as they are sent (save.ts: collaudoOf of the saved values and the test chosen)
+  const extra = useMemo(() => calcExtra(collaudoOf(saved, I.effective), saved), [saved, I.effective]);
   // the type and the parts still to answer first; the values still to enter are needed, not wrong: marked apart from
   // the ones out of range
   const missing = useMemo(() => calcMissing(deferred, a.ctx.bad, tipo, I.mancanti, I.mancaRegolazione), [a, deferred, tipo, I.mancanti, I.mancaRegolazione]);
@@ -218,7 +222,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
           {complete ? (
             <>
               <Diagram P={P} I={a.ctx.I} N={a.ctx.N} res={a.res} />
-              <Verdict P={P} X={X} a={a} badCount={bad.size} resta={resta ? ti('argano_resta') : undefined} />
+              <Verdict P={P} X={X} a={a} badCount={bad.size} resta={resta ? ti('argano_resta') : undefined} extra={extra} />
             </>
           ) : (
             <MissingPanel title={ready ? tb(resta ? 'keptTitle' : 'machineTitle') : tb('title')} lead={ready ? tb(resta ? 'keptLead' : 'machineLead') : tb('lead')}
@@ -226,7 +230,7 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
           )}
           {tipo ? <CollaudoOptions P={P} mode={MODE[tipo]} chosen={I.chosen} value={collaudo} set={I.setCollaudo} calc={values} /> : null}
         </section>
-        {ready && !resta ? <Results P={P} X={X} a={a} mode={mode} badCount={bad.size} brand={brand} collaudo={collaudo} tipo={tipo} onUse={onUse} propMsg={propMsg}
+        {ready && !resta ? <Results P={P} X={X} a={a} mode={mode} badCount={bad.size} brand={brand} collaudo={collaudo} tipo={tipo} extra={extra} onUse={onUse} propMsg={propMsg}
           proposalOnly={!complete} vincolo={held ? tc('porta.sheave', { D: held }) : undefined} /> : null}
       </div>
       {ready && !resta ? <MachineAdvice evaluate={evaluate} alternative={null} wall={valuesWall(saved)} fmt={P.fmt} inUse={machineInUse} onUse={takeMachine} where="calc" /> : null}

@@ -1,6 +1,7 @@
 // The checks behind a saved record's result: the ones it does not pass and the ones it passes with a warning, read the
 // way its stored counts were made (src/server/save.ts) so that the list says what the pill counts. A calculation and a
-// shaft design keep every check in their snapshot; a machine room keeps its checks and counts those its acceptance test
+// shaft design keep every check in their snapshot (a calculation of round 48 on also counts D.1 and D.2, derived again
+// from its values and test: calcList); a machine room keeps its checks and counts those its acceptance test
 // takes in (the standards chosen with its calculation); a lift design counts its calculation's, its shaft design's and
 // the beams under the machine (with the headroom over what hangs), which no record keeps: they are derived again only
 // while the running engines reproduce the design, else the list is what the stored records hold and says so. Pure.
@@ -99,11 +100,27 @@ const counted = (xs: readonly StoredRow[]) => xs.filter((r): r is StoredRow & { 
 /** Whether a check enters the acceptance test `C` (an id the software no longer knows: kept, the counts tell). */
 const applies = (C: Collaudo, id: string): boolean => (isCalcCheckId(id) || isShaftCheckId(id) ? ambitoOf(C, id) === 'applies' : true);
 
+/** The engine version from which a calculation's stored counts take D.1 and D.2 beside its snapshot's checks (round
+ *  48, src/lib/lift/calc-verdict.ts); a record saved before counts its snapshot's alone and stays as stored. */
+export const CALC_EXTRA_FROM = '1.8.0';
+const semver = (v: string): number[] | null => { const m = /^(\d+)\.(\d+)\.(\d+)$/.exec(v); return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null; };
+/** Whether a calculation saved with engine `version` counts the extra checks (an unreadable version: no). */
+export function countsExtra(version: string): boolean {
+  const a = semver(version), b = semver(CALC_EXTRA_FROM);
+  if (!a || !b) return false;
+  const i = a.findIndex((x, j) => x !== b[j]);
+  return i < 0 || (a[i] ?? 0) > (b[i] ?? 0);
+}
+
 /** A calculation: every check of its snapshot (results.res.checks) — failCount the failing ones, warnCount the warning
- *  ones, as saved. */
-export function calcList(results: unknown): CheckList {
+ *  ones, as saved — and, for one saved from CALC_EXTRA_FROM, the extra checks its verdict counted (D.1 and D.2 with the
+ *  ratio of the loads changed: calcExtra of its stored values and test, derived again — no record keeps them). */
+export function calcList(results: unknown, extra: readonly ShaftCheck[] = []): CheckList {
   const p = calcResults.safeParse(results);
-  return p.success ? split(counted(p.data.res.checks).map(fromCalcRow), 'stored') : UNREADABLE;
+  if (!p.success) return UNREADABLE;
+  const more = extra.filter((c) => isCounted(c.status))
+    .map((c): ListedCheck => ({ src: 'shaft', id: c.id, status: c.status === 'fail' ? 'fail' : 'warn', value: c.value, limit: c.limit, dec: c.dec, unit: c.unit }));
+  return split([...counted(p.data.res.checks).map(fromCalcRow), ...more], 'stored');
 }
 
 /** A shaft design: every check of its snapshot (results.checks), as saved. */

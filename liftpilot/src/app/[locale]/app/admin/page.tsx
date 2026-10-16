@@ -5,7 +5,10 @@ import { listCompanies } from '@/server/queries';
 import { Link } from '@/i18n/routing';
 import { setCompanyActiveAction, setCompanyExemptAction } from '@/server/user-actions';
 import CreateCompanyForm from '@/components/CreateCompanyForm';
+import BetaInvites from '@/components/admin/BetaInvites';
 import AccountHead from '@/components/AccountHead';
+import Icon from '@/components/Icon';
+import { openFeedbackCount } from '@/server/feedback';
 
 export async function generateMetadata() {
   const t = await getTranslations('admin');
@@ -16,11 +19,14 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   setRequestLocale(locale);
   const me = await requireCapability(locale, 'platform:admin');
-  const [t, tb, companies, lang] = await Promise.all([getTranslations('admin'), getTranslations('billing'), listCompanies(), getLocale()]);
+  const [t, tb, tf, companies, lang, openReports] = await Promise.all([getTranslations('admin'), getTranslations('billing'), getTranslations('feedback.admin'),
+    listCompanies(), getLocale(), openFeedbackCount()]);
   const fd = dateFormat(locale);
   return (
     <main className="page">
-      <AccountHead area="platform" title={t('title')} lead={t('lead')} />
+      {/* the reports of «Segnala un problema», with how many wait to be handled */}
+      <AccountHead area="platform" title={t('title')} lead={t('lead')}
+        actions={<Link className="btn" href="/app/admin/segnalazioni"><Icon name="message-circle" size={18} />{tf('link')} · {tf('linkCount', { n: openReports })}</Link>} />
       <div className="table-panel">
         <table className="data-table stack">
           <thead><tr><th>{t('company')}</th><th>{t('created')}</th><th className="text-right">{t('users')}</th><th className="text-right">{t('projects')}</th><th className="text-right">{t('calculations')}</th><th>{t('billing')}</th><th>{t('status')}</th></tr></thead>
@@ -67,6 +73,8 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
         </table>
       </div>
       <CreateCompanyForm />
+      {/* the beta by invitation: the testers' addresses, their links and what became of them */}
+      <BetaInvites locale={locale} />
     </main>
   );
 }

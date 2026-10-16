@@ -8,17 +8,19 @@ import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
 import { startSession } from '@/lib/auth';
 import { mailAccount } from '@/lib/account-mail';
-import { CONSENTS } from '@/lib/consents';
+import { betaInviteOf, type ValidBetaInvite } from '@/lib/beta-invites';
+import { REGISTER_CONSENTS } from '@/lib/consents';
+import { registrationMode } from '@/lib/env';
 import { log } from '@/lib/log';
 import { mailConfigured } from '@/lib/mail';
 import { hashPassword, verifyPassword } from '@/lib/password';
 import { pastConfirmDeadline, purgeStale } from '@/lib/purge';
 import { clientIp, rateLimit } from '@/lib/ratelimit';
 import { addPending, confirmPending, pendingOf, type Confirmed } from '@/lib/registrations';
-import { forgotSchema, inviteAcceptSchema, registerSchema, resetSchema, verifySchema, type RegisterInput } from '@/lib/schemas';
+import { betaTokenSchema, forgotSchema, inviteAcceptSchema, registerSchema, resetSchema, verifySchema, type RegisterInput } from '@/lib/schemas';
 import { inviteOfToken } from '@/lib/invites';
 import { hashToken } from '@/lib/token-hash';
-import { consumeToken, issueToken, tokenUser } from '@/lib/tokens';
+import { consumeToken, issueToken, tokenShapeOk, tokenUser } from '@/lib/tokens';
 import { lockCompany, seatAvailable } from './billing';
 import { str, type FormState } from './form';
 
@@ -37,18 +39,37 @@ function formError(issues: readonly { message: string; path: readonly (string | 
   return { error: issues.map((i) => i.message).find((m) => CODES.has(m)) ?? 'invalidFields', fields: [...new Set(issues.map((i) => String(i.path[0])))] };
 }
 
+// The limits of one network (src/lib/ratelimit.ts): five registrations an hour, counted only when the form is right, so a
+// tester who mistypes, or colleagues behind one NAT, are not locked out; the wrong submissions have their own, wider
+// count against abuse.
+const REGISTER_IP_MAX = 5, REGISTER_INVALID_MAX = 30;
+
+/** The beta invitation the form carries (`invito`, the token of the link's fragment), when it is good for this address: during the beta by invitation
+ *  (REGISTRATION_MODE=invite) one is required; with the registration open, a good one is still recorded. */
+async function invitationFor(fd: FormData, email: string): Promise<ValidBetaInvite | null> {
+  const token = betaTokenSchema.safeParse(str(fd, 'invito'));
+  const invite = token.success && token.data ? await betaInviteOf(token.data) : null;
+  // the invitation's address went through emailSchema when it was made: the same normalization as `email`
+  return invite && invite.email === email ? invite : null;
+}
+
 export async function registerAction(_prev: FormState, fd: FormData): Promise<FormState> {
   const locale = localeOf(fd);
   if (!mailConfigured()) return { error: 'mailUnavailable' };
-  if (!rateLimit(`register-ip:${await clientIp()}`, 5, HOUR)) return { error: 'rateLimited' };
+  const ip = await clientIp();
   const parsed = registerSchema.safeParse({
     company: str(fd, 'company'), vatNumber: str(fd, 'vatNumber'), city: str(fd, 'city'), name: str(fd, 'name'), email: str(fd, 'email'),
-    password: str(fd, 'password'), confirm: str(fd, 'confirm'), ...Object.fromEntries(CONSENTS.map((k) => [k, str(fd, k)])),
+    password: str(fd, 'password'), confirm: str(fd, 'confirm'), ...Object.fromEntries(REGISTER_CONSENTS.map((k) => [k, str(fd, k)])),
   });
-  if (!parsed.success) return formError(parsed.error.issues);
+  if (!parsed.success) return rateLimit(`register-invalid-ip:${ip}`, REGISTER_INVALID_MAX, HOUR) ? formError(parsed.error.issues) : { error: 'rateLimitedHour' };
   const d = parsed.data;
+  const invite = await invitationFor(fd, d.email);
+  if (!invite && registrationMode() === 'invite') {
+    return rateLimit(`register-invalid-ip:${ip}`, REGISTER_INVALID_MAX, HOUR) ? { error: 'inviteRequired' } : { error: 'rateLimitedHour' };
+  }
+  if (!rateLimit(`register-ip:${ip}`, REGISTER_IP_MAX, HOUR)) return { error: 'rateLimitedHour' };
   // at most three mails an hour to one address, whatever the reason; the page answers the same
-  if (rateLimit(`register-email:${d.email}`, 3, HOUR)) after(() => register(d, locale).catch(failed('registration failed')));
+  if (rateLimit(`register-email:${d.email}`, 3, HOUR)) after(() => register(d, locale, invite?.id ?? null).catch(failed('registration failed')));
   return { ok: true, message: d.email };
 }
 
@@ -56,31 +77,45 @@ export async function registerAction(_prev: FormState, fd: FormData): Promise<Fo
  *  it exists. Otherwise the registration waits for the proof of the address beside any other (src/lib/registrations.ts):
  *  nothing changes until the inbox's owner confirms one with its password — then, and only then, an account of the
  *  address never confirmed nor used (a colleague a company added) is released, and the e-mail says so beforehand. */
-async function register(d: RegisterInput, locale: Locale): Promise<void> {
+async function register(d: RegisterInput, locale: Locale, betaInviteId: string | null): Promise<void> {
   await purgeStale();
   const old = await prisma.user.findUnique({ where: { email: d.email }, select: { emailVerifiedAt: true, lastLoginAt: true } });
   if (old && (old.emailVerifiedAt || old.lastLoginAt)) {
     mailAccount(d.email, locale, { kind: 'exists' });
     return;
   }
-  const token = await addPending(d, await hashPassword(d.password), locale);
+  const token = await addPending(d, await hashPassword(d.password), locale, betaInviteId);
   mailAccount(d.email, locale, { kind: 'verify', token, terms: true, releases: old !== null });
+}
+
+/** What the link of the confirmation e-mail opens: a waiting registration (its page asks the specific approval of the
+ *  clauses with the password), an account's link (the password only), or nothing good. Reading it changes nothing; its
+ *  own count, so reading links never uses up the tries of confirming one. */
+export async function verifyInfoAction(token: unknown): Promise<'registration' | 'account' | 'invalid' | 'limited'> {
+  if (!rateLimit(`verify-info-ip:${await clientIp()}`, 40, WINDOW)) return 'limited';
+  if (typeof token !== 'string' || !tokenShapeOk(token)) return 'invalid';
+  if (await tokenUser(token, 'VERIFY_EMAIL')) return 'account';
+  return (await pendingOf(token)) ? 'registration' : 'invalid';
 }
 
 // The link of the e-mail and the password: the address is proven by the inbox, the account or the registration by the
 // password (a link alone would confirm what somebody else made with this address). A link of an account (a colleague
 // a company added, a registration from before they waited apart) confirms it; a link of a waiting registration makes
-// the company and its owner.
+// the company and its owner, with the specific approval of the clauses (arts. 1341–1342 c.c.) given there: the link
+// and the password are its simple electronic signature (docs/terms-changes.md).
 export async function verifyEmailAction(_prev: FormState, fd: FormData): Promise<FormState> {
   const locale = localeOf(fd);
   if (!rateLimit(`verify-ip:${await clientIp()}`, 20, WINDOW)) return { error: 'rateLimited' };
-  const parsed = verifySchema.safeParse({ token: str(fd, 'token'), password: str(fd, 'password') });
+  const parsed = verifySchema.safeParse({ token: str(fd, 'token'), password: str(fd, 'password'), clauses: str(fd, 'clauses') });
   if (!parsed.success) return { error: 'invalidLink' };
-  const { token, password } = parsed.data;
+  const { token, password, clauses } = parsed.data;
   const id = await tokenUser(token, 'VERIFY_EMAIL');
   if (id) return confirmAccount(id, token, password, locale);
   const pending = await pendingOf(token);
-  return pending ? confirmRegistration(pending, token, password, locale) : { error: 'invalidLink' };
+  if (!pending) return { error: 'invalidLink' };
+  // the approval before anything else: without it nothing is checked nor used
+  if (clauses !== 'on') return { error: 'consentRequired', fields: ['clauses'] };
+  return confirmRegistration(pending, token, password, locale);
 }
 
 async function confirmAccount(id: string, token: string, password: string, locale: Locale): Promise<FormState> {
@@ -113,12 +148,15 @@ async function confirmRegistration(p: PendingRegistration, token: string, passwo
     throw e;
   }
   if (!done.ok) return { error: done.reason === 'taken' ? 'emailTaken' : 'invalidLink' };
-  const { user, released } = done;
+  const { user, released } = done, approvedAt = new Date();
   // the company that had added the address hears why its colleague is gone
   if (released?.companyId) await audit({ companyId: released.companyId, userId: null, action: 'USER_RELEASED', entity: 'User', entityId: released.id });
-  // what was accepted at the registration, kept with the account
+  // what was accepted at the registration, and the clauses approved through the link with the password, kept with the
+  // account (the version is the registration's: an owner who registered under an earlier one accepts the one in force
+  // on the terms' page, src/lib/legal.ts termsStateOf)
   await audit({ companyId: user.companyId, userId: user.id, action: 'USER_REGISTERED', entity: 'User', entityId: user.id,
-    meta: { terms: p.termsVersion, sha256: p.termsSha256, locale: p.locale, consents: [...CONSENTS], registeredAt: p.createdAt.toISOString(), released: released !== null } });
+    meta: { terms: p.termsVersion, sha256: p.termsSha256, locale: p.locale, consents: [...REGISTER_CONSENTS], clausesApprovedAt: approvedAt.toISOString(),
+      clausesVia: 'email-link+password', registeredAt: p.createdAt.toISOString(), released: released !== null, betaInvite: p.betaInviteId !== null } });
   await audit({ companyId: user.companyId, userId: user.id, action: 'EMAIL_VERIFIED', entity: 'User', entityId: user.id });
   log.info({ userId: user.id }, 'registered');
   await startSession(user);
@@ -178,6 +216,17 @@ export async function inviteInfoAction(token: string): Promise<{ company: string
   if (!rateLimit(`invite-info-ip:${await clientIp()}`, 40, WINDOW)) return null;
   const invite = await inviteOfToken(token);
   return invite ? { company: invite.company.name, email: invite.email, name: invite.name, role: invite.role } : null;
+}
+
+/** What a beta invitation's link opens (src/components/RegisterEntry.tsx): the invited address, or null for a link that
+ *  is not good (unknown, used, past its end, malformed) or past this network's count. Reading it changes nothing; the
+ *  registration checks the invitation again (registerAction). */
+export async function betaInviteInfoAction(token: unknown): Promise<string | null> {
+  // its own count, like inviteInfoAction: reading links never uses up the tries of registering
+  if (!rateLimit(`beta-info-ip:${await clientIp()}`, 40, WINDOW)) return null;
+  const parsed = betaTokenSchema.safeParse(token);
+  if (!parsed.success || !parsed.data) return null;
+  return (await betaInviteOf(parsed.data))?.email ?? null;
 }
 
 class NoSeat extends Error {}

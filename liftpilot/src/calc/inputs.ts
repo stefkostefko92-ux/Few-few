@@ -44,7 +44,8 @@ export function readInputs(V: FormValues): ParsedInputs {
   const roping = blank(V.r) ? 1 : choice(V.r, [1, 2] as const) ?? (bad.push('r'), 1);
   const I: Plant = {
     context: (V.context === 'repl' ? 'repl' : 'new') as Context, Q: pos('Q', 630), P: pos('P', 700), k: field('k', 0.5, 0, 1, false), qeq: blank(V.qeq) ? 0 : nonneg('qeq', 0),
-    v: pos('v', 1), H: pos('H', 18), L0: field('L0', 2, 0.1, Infinity, false), r: roping, layout, alphaMode: (manual ? 'manual' : 'geo') as AlphaMode,
+    // the rated speed over K.vRatedMin: at it or below the apparatus is not a lift (UNI EN 81-20:2020, 1.3 a) 2))
+    v: field('v', 1, K.vRatedMin), H: pos('H', 18), L0: field('L0', 2, 0.1, Infinity, false), r: roping, layout, alphaMode: (manual ? 'manual' : 'geo') as AlphaMode,
     alphaManual: field('alphaManual', 180, 0, 360, true, manual), dx: nonneg('dx', 0.3), h: nonneg('h', 0.6),
     Hv: nonneg('Hv', 24), Dp: pos('Dp', 400), Jp: nonneg('Jp', 0), nps: count('nps', 0, 0, MAX_BENDS), npr: count('npr', 0, 0, MAX_BENDS), etaShaft: pos('etaShaft', 0.85, 1),
     // reduced-stroke buffers: the deceleration the engineer derives from their data (UNI EN 81-50:2020, 5.11.2.2.2), never

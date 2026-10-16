@@ -15,6 +15,9 @@ export const envSchema = z.object({
   PUBLIC_BASE_URL: z.string().url().default('http://localhost:3000'),
   /** search engines may index the public pages only after the owner's approval */
   ALLOW_INDEXING: z.enum(['true', 'false']).default('false'),
+  /** who may register a company: during the beta only the addresses the platform administrator invited (`invite`,
+   *  src/lib/beta-invites.ts), or anyone (`open`); an empty value is the default */
+  REGISTRATION_MODE: z.preprocess((v) => (typeof v === 'string' && v.trim() === '' ? undefined : v), z.enum(['invite', 'open']).default('invite')),
   PYTHON_BIN: z.string().min(1).default('python3'),
   REPORT_FONT_DIR: z.string().min(1).default('/usr/share/fonts/truetype/dejavu'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),

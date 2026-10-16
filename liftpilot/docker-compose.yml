@@ -37,6 +37,8 @@ services:
       AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET (at least 32 characters) in .env}
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?set PUBLIC_BASE_URL in .env}
       ALLOW_INDEXING: ${ALLOW_INDEXING:-false}
+      # the beta by invitation (invite) or the registration open to anyone (open)
+      REGISTRATION_MODE: ${REGISTRATION_MODE:-invite}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@carbonstealth.eu}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}

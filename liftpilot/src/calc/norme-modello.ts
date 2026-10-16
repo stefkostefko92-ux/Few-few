@@ -46,6 +46,14 @@ export const VOCI_MODELLO: readonly Voce[] = [
     costanti: ['vCompGuided', 'vCompRopes'], verifiche: ['v_comp'],
   },
   {
+    id: 'modello.velocita.minima', gruppo: 'modello', titolo: 'Velocità nominale minima: campo dell’ascensore',
+    valore: 'velocità nominale oltre 0,15 m/s; a 0,15 m/s o meno l’apparecchio non è un ascensore per la UNI EN 81-20 né per il DPR 162/1999 '
+      + 'e il software non lo calcola né lo progetta: il campo è segnato e il calcolo o il progetto non si salva',
+    riferimento: 'UNI EN 81-20:2020, 1.3 a) 2); DPR 162/1999 e s.m.i., art. 1 c.3 lett. a); Direttiva 2014/33/UE, art. 1 par. 2 lett. a)',
+    fonte: `${letto(T20, 'p. 15')}; DPR 162/1999 e Direttiva 2014/33/UE: testi ufficiali (ricerca, cap. 16, §2 e §4.6)`, stato: 'confermato',
+    costanti: ['vRatedMin'],
+  },
+  {
     id: 'modello.compensazione', gruppo: 'modello', titolo: 'Compensazione e cavo flessibile', valore: 'non modellati a parte: la loro massa sul lato cabina entra in P',
     riferimento: 'UNI EN 81-50:2020, 5.11.3', fonte: 'limite del modello attuale', stato: 'scelta',
     nota: 'Nella 5.11.3 la massa della compensazione (0,5·H ± y) e del cavo (0,25·H ± 0,5·y) dipende dalla posizione della cabina e c’è '

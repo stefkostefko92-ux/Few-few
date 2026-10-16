@@ -7,5 +7,8 @@ type Kind = 'VERIFY_EMAIL' | 'RESET_PASSWORD' | 'INVITE';
  *  waits a week. */
 export const TOKEN_TTL_MS: Readonly<Record<Kind, number>> = { VERIFY_EMAIL: 48 * 3600_000, RESET_PASSWORD: 3600_000, INVITE: 7 * 24 * 3600_000 };
 
+/** A beta invitation's link waits a month (src/lib/beta-invites.ts); sending it again starts the days anew. */
+export const BETA_INVITE_DAYS = 30;
+
 /** 32 random bytes in base64url: 43 characters of [A-Za-z0-9_-]. */
 export const tokenShapeOk = (token: string): boolean => /^[A-Za-z0-9_-]{43}$/.test(token);

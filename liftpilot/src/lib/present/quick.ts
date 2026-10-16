@@ -57,7 +57,9 @@ export function quickRows(P: Pres, X: Texts, N: Machine, res: Results, sens: rea
     const ids: CheckId[] = ['b_sets', 'b_all', 'b_one', 'b_up', 'b_amax'], s = worstOf(ids), w = brakeWindow(res);
     const text = s === 'fail' ? t('q_fail', { what: failed(ids) })
       : `${t('q_brake_ok', { lo: fmt(Math.ceil(w.lo / w.sets), 0) })}${w.hi == null ? ' ' + t('q_brake_nohi') : w.hi === Infinity ? '' : ' ' + t('q_brake_hi', { hi: fmt(Math.floor(w.hi / w.sets), 0) })}`;
-    rows.push({ key: 'c_brake', status: s, text });
+    // the window empty — no torque keeps the traction at the brake's real deceleration (tr_real warns): the row says
+    // «Attenzione», never «OK» beside that sentence (round 48; presentation only, the checks' verdicts unchanged)
+    rows.push({ key: 'c_brake', status: s === 'ok' && w.hi == null ? 'warn' : s, text });
   }
   {
     const s = worstOf(['s_shaft', 's_uplift']), sh = res.shaft;

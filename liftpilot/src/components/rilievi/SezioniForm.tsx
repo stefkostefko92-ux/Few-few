@@ -8,15 +8,28 @@
 // several places in a row, and the status line says where the section is now; after «Salva ordine» or «Ripristina…» it
 // goes back to that button, after a refusal to the message (the buttons are off while the server answers, which would
 // leave it nowhere). A refusal — no right, read-only, over the limit — keeps the order on screen, unsaved moves included
-// (an order the server cannot read comes back as the saved one, and says so). Only for 'company:edit' (the server checks
-// again); in read-only mode the order is shown.
+// (an order the server cannot read comes back as the saved one, and says so); so does a press that got no answer (no
+// signal, keep-on-failure.ts) or met an expired session. Only for 'company:edit' (the server checks again); in read-only
+// mode the order is shown.
 import { useActionState, useEffect, useRef } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { SectionKey } from '@/lib/rilievi/fields';
+import { parseOrdine } from '@/lib/rilievi/ordine';
 import { ordineSezioniAction, type SezioniState } from '@/server/rilievi/sezioni-actions';
 import Icon from '../Icon';
+import RefusalText from './RefusalText';
+import { useGuardedAction, type NoAnswer } from '../keep-on-failure';
 
 const idle: SezioniState = { status: 'idle' };
+
+/** A press that got no answer: nothing done, the order on screen stays (the one sent, or — the reset form sends none —
+ *  the one shown before), with its unsaved moves, as the server's own refusals keep it. */
+function noAnswer(why: NoAnswer, prev: SezioniState, fd: FormData): SezioniState {
+  const before = 'ordine' in prev ? prev.ordine : undefined;
+  const ordine = parseOrdine(fd.getAll('ordine')) ?? before;
+  const modificato = prev.status === 'moved' || (prev.status === 'error' && prev.modificato === true);
+  return ordine ? { status: 'error', error: why, ordine, modificato } : { status: 'error', error: why };
+}
 
 export default function SezioniForm({ fisse, ordine: saved, canEdit }: {
   /** the sections always on top («Impianto») */
@@ -26,7 +39,7 @@ export default function SezioniForm({ fisse, ordine: saved, canEdit }: {
   canEdit: boolean;
 }) {
   const t = useTranslations('rilievi'), locale = useLocale();
-  const [state, action, pending] = useActionState(ordineSezioniAction, idle);
+  const [state, action, pending] = useActionState(useGuardedAction(ordineSezioniAction, noAnswer), idle);
   const ordine = 'ordine' in state && state.ordine ? state.ordine : saved;
   // moves on screen not saved yet: after a move, and after a refusal that kept them
   const modificato = state.status === 'moved' || (state.status === 'error' && 'modificato' in state && state.modificato === true);
@@ -47,7 +60,7 @@ export default function SezioniForm({ fisse, ordine: saved, canEdit }: {
   }, [state]);
   // `readOnly` (the company went read-only after the page was opened) gets the panel's own words, not the sheets' ones
   const error = state.status === 'invalid' ? t('impostazioni.error')
-    : state.status === 'error' ? (state.error === 'readOnly' ? t('impostazioni.sezioni.readOnly') : t(`error.${state.error}`)) : null;
+    : state.status === 'error' ? (state.error === 'readOnly' ? t('impostazioni.sezioni.readOnly') : <RefusalText code={state.error} />) : null;
   const done = state.status === 'saved' ? t('flash.sezioniSaved') : state.status === 'reset' ? t('flash.sezioniReset') : null;
   // where the section moved is now (counting «Impianto»), then that it is not saved
   const where = state.status === 'moved'

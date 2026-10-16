@@ -149,3 +149,22 @@ test('i PDF: la scheda e il modulo compilato, da scaricare o da stampare; altrim
   assert.equal((await get(sheet, '', { id })).status, 401);
   assert.equal((await get(modulo, '', { id, modulo: 'altro' })).status, 404, 'an unknown module path: 404 before the sign-in and the download quota');
 });
+
+test('la sessione scaduta mentre si compila: la scheda risponde «sessionExpired» (i dati restano nel modulo), i pulsanti vanno al login', async () => {
+  const { createRilievoAction, updateRilievoAction, trashRilievoAction } = await actions();
+  const { ordineSezioniAction } = await import(src('server/rilievi/sezioni-actions.ts'));
+  const id = await created();
+  const before = schede.length, audited = audits.length;
+  signOut();
+  assert.deepEqual(await createRilievoAction({ status: 'idle' }, form(SHEET)), { status: 'error', error: 'sessionExpired' });
+  assert.deepEqual(await updateRilievoAction({ status: 'idle' }, form({ ...SHEET, scheda: id, base: '' })), { status: 'error', error: 'sessionExpired' });
+  assert.deepEqual(await ordineSezioniAction({ status: 'idle' }, form({ ordine: ['note'], salva: '1' })), { status: 'error', error: 'sessionExpired' },
+    'an order that cannot be read is not kept; nothing done');
+  assert.equal(schede.length, before, 'nothing written');
+  assert.equal(audits.length, audited);
+  // a button carries nothing typed: the sign-in page, as before
+  assert.equal(await redirected(trashRilievoAction({}, form({ id, locale: 'it' }))), '/it/login');
+  // signed in again (another tab): the same «Salva» goes through
+  as('u1', 'TECHNICIAN');
+  assert.match(await redirected(createRilievoAction({ status: 'idle' }, form(SHEET))), /ok=schedaCreated/);
+});

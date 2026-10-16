@@ -71,6 +71,7 @@ const VERIFICA_VANO: Record<ShaftCheckId, string> = {
   h_stand_rig: 'spazio di rifugio sul tetto di cabina fuori da ciò che pende sotto la soletta',
   sl_frame: 'modifica: arcata esistente con carichi oltre i limiti (T* o portata) o non documentati, da verificare per i nuovi carichi',
   tr_d1: 'modifica (UNI 10411-1): stabilità allo scorrimento delle funi con il rapporto tra i carichi cambiato (D.1)',
+  tr_d2: 'modifica (UNI 10411-1): pressione specifica delle funi nelle gole con il rapporto tra i carichi cambiato (D.2)',
 };
 const ORDER_VANO: readonly GruppoVano[] = ['cabina', 'distanze', 'accessibilita', 'porte', 'ingombri', 'sezione', 'locale', 'carichi', 'modello_vano'];
 const IMPIANTO = 'Impianto: valori calcolati dai dati inseriti una volta', SIMULAZIONE = 'Simulazione nel tempo (3D e grafici)';
@@ -92,7 +93,8 @@ const rows = [
   // the acceptance test: what DPR 162/1999 asks, then each standard's points checked on site (src/lib/lift/norme-collaudo.ts)
   ...[...(['nuovo', 'modifica'] as const).map((a) => ({ key: `adempimenti.${a}`, gruppo: `Collaudo: adempimenti del DPR 162/1999 (${a === 'nuovo' ? 'impianto nuovo' : 'modifica'})`, punti: ADEMPIMENTI[a], verifiche: '' })),
     ...[...NORME_COLLAUDO, ...NORME_AGGIUNTIVE.filter((n) => !NORME_COLLAUDO.some((b) => b === n))].map((n) => ({
-      key: n, gruppo: `Collaudo: ${NORMA_SIGLA[n]}`, punti: NORME_INFO[n].punti,
+      // round 48: the notified body's points first (a new lift or one tested as new only), then the rest, numbered as before
+      key: n, gruppo: `Collaudo: ${NORMA_SIGLA[n]}`, punti: [...(NORME_INFO[n].nuovo ?? []).map((p) => ({ ...p, testo: `${p.testo} (solo impianto nuovo o trasformazione completa)` })), ...NORME_INFO[n].punti],
       verifiche: (n === 'dm236' ? VERIFICHE_DM236 : n === 'ntc2018' ? VERIFICHE_NTC : []).map((c) => VERIFICA_VANO[c]).join('; '),
     })),
     // what each part of UNI 10411 asks of the parts replaced besides the machine (the relazione's adaptations), and of
@@ -121,8 +123,9 @@ const md: string[] = [
   'Per l’ingegnere incaricato: per ogni voce confrontare il valore usato dal software con il testo vigente del documento',
   'indicato e segnare l’esito (conforme, diverso con il valore corretto e la clausola esatta, non applicabile). Le voci',
   '«da verificare» vengono da fonti secondarie; «stima» e «scelta del software» sono decisioni del software da approvare',
-  'o correggere; «derivazione» è meccanica elementare; «confermato» vuol dire due fonti indipendenti o un caso pubblicato',
-  'riprodotto, e va comunque confrontato con il testo. Ogni correzione entra nel registro e cambia insieme motore di',
+  'o correggere; «derivazione» è meccanica elementare; «confermato» vuol dire letto sul testo della norma fornito dal',
+  'cliente (la fonte lo dice, con le pagine), oppure due fonti indipendenti o un caso pubblicato riprodotto, e va comunque',
+  'confrontato con il testo vigente. Ogni correzione entra nel registro e cambia insieme motore di',
   'calcolo, lista e relazione.',
   '',
   '## Documenti del profilo',

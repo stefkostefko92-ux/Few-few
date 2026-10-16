@@ -31,6 +31,7 @@ export function GET(): Response {
     `- [LiftPilot](${base}/it): ${l.metaDescription}`,
     `- [${it.register.title}](${base}/it/register): ${it.register.metaDescription}`,
     `- [${it.pricing.title}](${base}/it/pricing): ${it.pricing.metaDescription}`,
+    `- [${it.guide.title}](${base}/it/guida): ${it.guide.metaDescription}`,
     `- [${it.legal.title}](${base}/it/privacy): ${it.legal.metaDescription}`,
     `- [${it.dataPage.title}](${base}/it/data): ${it.dataPage.metaDescription}`,
     '',

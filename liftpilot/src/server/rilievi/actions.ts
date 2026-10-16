@@ -23,14 +23,17 @@ import { formStart } from './pages';
 import { getScheda } from './queries';
 import { createScheda, purgeScheda, restoreScheda, trashScheda, updateScheda } from './service';
 
-type Refusal = { error: 'forbidden' | 'readOnly' | 'tooMany' };
+type Refusal = { error: 'forbidden' | 'readOnly' | 'tooMany' | 'sessionExpired' };
 
-/** The signed-in user allowed to `capability`, within the write rate; the anonymous go to the login. A role that holds
- *  the right in a company that is read-only (no subscription, terms not accepted) is told so, not sent to the owner for a
- *  right it has (`readOnly`, as /app/permesso tells the two apart). */
-async function actor(fd: FormData, capability: Capability): Promise<{ user: SessionUser; base: string } | Refusal> {
+/** The signed-in user allowed to `capability`, within the write rate. A role that holds the right in a company that is
+ *  read-only (no subscription, terms not accepted) is told so, not sent to the owner for a right it has (`readOnly`, as
+ *  /app/permesso tells the two apart). Without a session (it expired while the sheet was being filled in, in a shaft or
+ *  a basement): a form holding typed data (`typed`) answers `sessionExpired` — the input stays on the screen, the person
+ *  signs in again in another tab and presses «Salva» again —; a button that carries nothing typed goes to the login. */
+async function actor(fd: FormData, capability: Capability, typed = false): Promise<{ user: SessionUser; base: string } | Refusal> {
   const l = str(fd, 'locale'), locale = isLocale(l) ? l : DEFAULT_LOCALE;
   const user = await getSessionUser();
+  if (!user && typed) return { error: 'sessionExpired' };
   if (!user) redirect(`/${locale}/login`);
   if (user.mustChangePassword) return { error: 'forbidden' };
   if (!can(user, capability)) return { error: holds(user, capability) ? 'readOnly' : 'forbidden' };
@@ -62,7 +65,7 @@ function confirmState(user: SessionUser, body: unknown, base: string): RilievoFo
 
 /** «Salva scheda»: a new sheet of the user's company. */
 export async function createRilievoAction(_prev: RilievoFormState, fd: FormData): Promise<RilievoFormState> {
-  const a = await actor(fd, 'rilievi:edit');
+  const a = await actor(fd, 'rilievi:edit', true);
   if ('error' in a) return { status: 'error', error: a.error };
   const body = bodyOf(fd);
   if (!body) return { status: 'error', error: 'tooLarge' };
@@ -77,7 +80,7 @@ export async function createRilievoAction(_prev: RilievoFormState, fd: FormData)
 
 /** «Salva modifiche»: the sheet `scheda`, over the version `base` the form was opened on. */
 export async function updateRilievoAction(_prev: RilievoFormState, fd: FormData): Promise<RilievoFormState> {
-  const a = await actor(fd, 'rilievi:edit');
+  const a = await actor(fd, 'rilievi:edit', true);
   if ('error' in a) return { status: 'error', error: a.error };
   const id = schedaIdSchema.safeParse(str(fd, SCHEDA_KEY));
   const scheda = id.success ? await getScheda(a.user.companyId, id.data) : null;

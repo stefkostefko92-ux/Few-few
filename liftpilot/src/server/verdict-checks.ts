@@ -12,6 +12,7 @@ import { formValuesSchema } from '@/lib/calc-input';
 import { prisma } from '@/lib/db';
 import { liftRecord } from '@/lib/lift-record';
 import { verificaKey } from '@/lib/lift/calata';
+import { calcExtra } from '@/lib/lift/calc-verdict';
 import type { Collaudo } from '@/lib/lift/collaudo';
 import { textsFor, type ShownMachine } from '@/lib/present/texts';
 import { makeFmt, makePres } from '@/lib/present/tr';
@@ -19,7 +20,7 @@ import { deriveRoom, roomCheckKey, type RoomDerived } from '@/lib/room/derive';
 import { surveySchema } from '@/lib/room/survey';
 import { shaftInputsReadSchema } from '@/lib/shaft-input';
 import {
-  agrees, calcList, isCalcCheckId, isShaftCheckId, liftListDerived, liftListStored, roomList, shaftList, type CheckList, type ListedCheck, type VerdictDetail, type VerdictKind, type VerdictRow,
+  agrees, calcList, countsExtra, isCalcCheckId, isShaftCheckId, liftListDerived, liftListStored, roomList, shaftList, type CheckList, type ListedCheck, type VerdictDetail, type VerdictKind, type VerdictRow,
 } from '@/lib/verdict-checks';
 import { isUpperLimit, layout, mergeChecks, shownValue } from '@/shaft';
 import type { ShaftCheck } from '@/shaft/types';
@@ -60,8 +61,13 @@ interface Listed {
 async function listOf(user: SessionUser, kind: VerdictKind, id: string): Promise<Listed | null> {
   const where = { id, companyId: user.companyId };
   if (kind === 'calc') {
-    const c = await prisma.calculation.findFirst({ where, select: { results: true, ...COUNTS } });
-    return c ? { list: calcList(c.results), counts: c, machine: machineOf(c.results), old: outdated.calc(c) } : null;
+    const c = await prisma.calculation.findFirst({ where, select: { results: true, inputs: true, collaudo: true, ...COUNTS } });
+    if (!c) return null;
+    // from round 48 the counts take D.1 and D.2 beside the snapshot's checks (calc-verdict.ts): derived again from the
+    // stored values and test, as the save made them; an older record stays as it was stored
+    const values = countsExtra(c.engineVersion) ? formValuesSchema.safeParse(c.inputs) : null;
+    const extra = values?.success ? attempt(() => calcExtra(storedCollaudo(values.data, c.collaudo), values.data)) ?? [] : [];
+    return { list: calcList(c.results, extra), counts: c, machine: machineOf(c.results), old: outdated.calc(c) };
   }
   if (kind === 'shaft') {
     const d = await prisma.shaftDesign.findFirst({ where, select: { inputs: true, results: true, ...COUNTS } });

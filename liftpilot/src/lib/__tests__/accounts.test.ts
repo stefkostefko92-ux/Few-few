@@ -5,17 +5,17 @@ import { randomBytes } from 'node:crypto';
 import { DEFAULT_LOCALE, LOCALES, isLocale } from '@/i18n/locales';
 import { accountMail } from '../mail-templates';
 import { forgotSchema, registerSchema, resetSchema, verifySchema } from '../schemas';
-import { CONSENTS } from '../consents';
+import { REGISTER_CONSENTS } from '../consents';
 import { hashToken } from '../token-hash';
-import { TOKEN_TTL_MS, tokenShapeOk } from '../token-shape';
+import { BETA_INVITE_DAYS, TOKEN_TTL_MS, tokenShapeOk } from '../token-shape';
 
 const form = {
   company: '  Elevatori Brianza srl ', vatNumber: '', city: 'Monza', name: 'Giulia Ferrari', email: ' Giulia@Example.COM ',
-  password: 'Ascensore2026sicuro', confirm: 'Ascensore2026sicuro', accept: 'on', business: 'on', drafts: 'on', clauses: 'on',
+  password: 'Ascensore2026sicuro', confirm: 'Ascensore2026sicuro', accept: 'on', business: 'on', drafts: 'on',
 };
 const codes = (r: { success: boolean; error?: { issues: { message: string }[] } }): string[] => r.error?.issues.map((i) => i.message) ?? [];
 
-test('registrazione: dati puliti, password secondo la regola, le quattro conferme obbligatorie', () => {
+test('registrazione: dati puliti, password secondo la regola, le tre conferme obbligatorie (le clausole dopo, dal link)', () => {
   const ok = registerSchema.safeParse(form);
   assert.ok(ok.success);
   assert.equal(ok.data.email, 'giulia@example.com');
@@ -24,7 +24,9 @@ test('registrazione: dati puliti, password secondo la regola, le quattro conferm
   assert.ok(codes(registerSchema.safeParse({ ...form, password: 'corta1', confirm: 'corta1' })).includes('weakPassword'));
   assert.ok(codes(registerSchema.safeParse({ ...form, password: 'solamentelettere', confirm: 'solamentelettere' })).includes('weakPassword'));
   assert.ok(codes(registerSchema.safeParse({ ...form, confirm: 'Ascensore2026diverso' })).includes('passwordMismatch'));
-  for (const k of CONSENTS) {
+  // the specific approval of the clauses is not asked here: it is given on the page of the e-mail link, with the password
+  assert.ok(registerSchema.safeParse({ ...form, clauses: '' }).success);
+  for (const k of REGISTER_CONSENTS) {
     assert.ok(codes(registerSchema.safeParse({ ...form, [k]: '' })).includes('consentRequired'), k);
     assert.ok(codes(registerSchema.safeParse({ ...form, [k]: 'yes' })).includes('consentRequired'), k);
   }
@@ -40,7 +42,8 @@ test('link: 32 byte casuali in base64url, solo l’hash nel database, vite di 48
   assert.notEqual(hashToken(token), token);
   assert.equal(TOKEN_TTL_MS.VERIFY_EMAIL, 48 * 3600_000);
   assert.equal(TOKEN_TTL_MS.RESET_PASSWORD, 3600_000);
-  assert.ok(verifySchema.safeParse({ token, password: 'x' }).success && !verifySchema.safeParse({ token: 'abc', password: 'x' }).success);
+  assert.ok(verifySchema.safeParse({ token, password: 'x', clauses: '' }).success && !verifySchema.safeParse({ token: 'abc', password: 'x', clauses: '' }).success);
+  assert.ok(verifySchema.safeParse({ token, password: 'x', clauses: 'on' }).success && !verifySchema.safeParse({ token, password: 'x', clauses: 'yes' }).success);
   assert.ok(codes(resetSchema.safeParse({ token: 'abc', next: 'Ascensore2026sicuro', confirm: 'Ascensore2026sicuro' })).includes('invalidLink'));
 });
 
@@ -62,6 +65,19 @@ test('e-mail in italiano: il link nel frammento, la durata dal codice, l’HTML 
   // what goes into the HTML is escaped: a quote in a translation cannot close an attribute
   const it = accountMail({ kind: 'verify', token }, 'it', 'https://x.example/"><b>');
   assert.ok(!it.html.includes('"><b>') && it.html.includes('&quot;&gt;&lt;b&gt;'));
+});
+
+test('invito alla beta: il link della registrazione con il token, la durata dal codice; la conferma annuncia le clausole', () => {
+  const token = randomBytes(32).toString('base64url'), base = 'https://liftpilot.example';
+  const m = accountMail({ kind: 'betaInvite', token }, 'it', base);
+  // the token in the fragment, like every e-mail link: never sent to the server, never in a log or a Referer
+  assert.ok(m.text.includes(`${base}/it/register#${token}`) && m.html.includes(`${base}/it/register#${token}`));
+  assert.ok(!m.text.includes('?invito=') && !m.html.includes('?invito='));
+  assert.ok(m.text.includes(`${BETA_INVITE_DAYS} giorni`) && m.subject.includes('LiftPilot'));
+  assert.ok(!/[{}]/.test(m.text) && !m.text.includes('undefined'));
+  const v = accountMail({ kind: 'verify', token, terms: true }, 'it', base);
+  assert.match(v.text, /approverai specificamente, con la tua password, le clausole/);
+  assert.ok(v.text.includes(`${base}/it/privacy#terms`));
 });
 
 test('una lingua salvata che non è più dell’interfaccia (en, bg) dà le e-mail in italiano', () => {

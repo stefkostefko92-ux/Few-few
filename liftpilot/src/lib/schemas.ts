@@ -30,12 +30,12 @@ export const registerSchema = z
     email: emailSchema,
     password: z.string().max(200),
     confirm: z.string().max(200),
-    /** the terms of use (with the processing agreement), the declaration of acting as a business, the results as drafts
-     *  and the specific approval of the clauses of arts. 1341–1342 c.c.: the four confirmations of src/lib/consents.ts */
+    /** the terms of use (with the processing agreement), the declaration of acting as a business and the results as
+     *  drafts (REGISTER_CONSENTS of src/lib/consents.ts); the clauses of arts. 1341–1342 c.c. are approved later, on the
+     *  page of the e-mail link with the password (verifySchema) */
     accept: checked,
     business: checked,
     drafts: checked,
-    clauses: checked,
   })
   .refine((v) => passwordPolicyOk(v.password), { path: ['password'], message: 'weakPassword' })
   .refine((v) => v.password === v.confirm, { path: ['confirm'], message: 'passwordMismatch' });
@@ -44,8 +44,16 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 
 export const forgotSchema = z.object({ email: emailSchema });
 
-/** The link of the registration and the password chosen there. */
-export const verifySchema = z.object({ token: linkToken, password: z.string().min(1).max(200) });
+/** The link of the registration and the password chosen there; `clauses` is the specific approval of the clauses
+ *  (arts. 1341–1342 c.c.), required when the link is a waiting registration's (src/server/account-actions.ts). */
+export const verifySchema = z.object({ token: linkToken, password: z.string().min(1).max(200), clauses: z.enum(['on', '']) });
+
+/** The token of a beta invitation (the fragment of its registration link, sent back as the form's `invito`,
+ *  src/lib/beta-invites.ts): absent, or a link's token. */
+export const betaTokenSchema = z.union([z.literal(''), linkToken]);
+
+/** The platform administrator's beta invitation: the tester's address and the administrator's own note on it. */
+export const betaInviteSchema = z.object({ email: emailSchema, note: optionalText(200) });
 
 /** The link of a colleague's invitation and the password the colleague chooses. */
 export const inviteAcceptSchema = z

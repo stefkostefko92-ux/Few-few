@@ -30,8 +30,9 @@ import { SHAFT_ENGINE_VERSION } from '@/shaft/snapshot';
  *  loadCabinaNuova) — pinned again at the same versions: the kit is still not deployed, round 47 ships with it; its review
  *  (the new car with the sling replaced too, loadCabinaArcata, and the shared words of the car's mass) — the same; its
  *  recheck (the speed «not changed» said as the two limits of 15.1 and 15.16, speedWithin50 with the speed after 50 Hz
- *  alone) — the same. */
-const PINNED = { sha256: '8a627d37bbc23ea397e75cb7f238cb249932e679515fb4ec79f661f2dd01e0d7', engine: '1.7.0', lift: '1.32.0', room: '1.16.0', shaft: '2.26.0' };
+ *  alone) — the same. Round 48: D.2 beside D.1 (tr_d2 in the scope and among the checks of UNI 10411-1 only), with the
+ *  four versions bumped (ENGINE 1.8.0, LIFT 1.33.0, ROOM 1.17.0, SHAFT 2.27.0). */
+const PINNED = { sha256: '2ac4c4c0988a657deb20e4cc0ab14b40418cea42e76d6becbb3ce59fef65bc7a', engine: '1.8.0', lift: '1.33.0', room: '1.17.0', shaft: '2.27.0' };
 
 /** The constants of a modification: the loads (6.1), the CE marking's day, the speed and the travel (15, 16). */
 const KL_MODIFICA = {
@@ -60,7 +61,7 @@ test('ambito-version: il perimetro del collaudo non cambia senza le versioni dei
   assert.deepEqual(still, [], `perimetro cambiato (${sha}) con le versioni ancora fissate: alzare ${still.join(', ')}, poi fissare la nuova chiave`);
 });
 
-test('ambito-version: le versioni fissate con la chiave sono quelle del kit (round 46)', () => {
+test('ambito-version: le versioni fissate con la chiave sono quelle del kit (round 48)', () => {
   // the key is taken with the versions in force: a pin left behind after a bump names the old ones
   assert.equal(SHAFT_ENGINE_VERSION, PINNED.shaft);
   assert.deepEqual([ENGINE_VERSION, LIFT_ENGINE_VERSION, ROOM_ENGINE_VERSION], [PINNED.engine, PINNED.lift, PINNED.room]);

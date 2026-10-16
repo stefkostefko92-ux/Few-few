@@ -117,14 +117,16 @@ export function textsFor(P: Pres) {
     t('v_rescue', { f: K.rescueForceMech, fmax: K.rescueForceMax }), t('v_eta'), t('v_inertia')];
 
   // which case a row is: "cabina vuota in salita, in alto, a 0,50 m/s² (minimo della norma)"; the acceptance test's
-  // 1,25·Q says which test it is
-  function caseText(c: TractionCase | BrakeCase | null | undefined, withA = true): string {
+  // 1,25·Q says which test it is (UNI EN 81-20:2020, 6.3.3 b)); `test`: a case of the braking with the brake's real
+  // torque, whose empty car going up at the top is the test's a) (round 48: the sub-case shown, never b) for it)
+  function caseText(c: TractionCase | BrakeCase | null | undefined, withA = true, test = false): string {
     if (!c || !c.pos) return '';
     const parts: string[] = [];
     if (isBrakeCase(c)) parts.push(`${t(c.load === 'q' ? 'cs_q' : c.load === 'q125' ? 'cs_q125' : 'cs_e')} ${t(c.dir === 'dn' ? 'dir_dn' : 'dir_up')}`);
     parts.push(t(c.pos === 'b' ? 'at_b' : 'at_t'));
     if (withA && isBrakeCase(c)) parts.push(`a ${fmt(c.aEff, 2)} m/s² (${t(c.fromBrake ? 'src_brake' : 'src_std')})`);
     if (isBrakeCase(c) && c.load === 'q125') parts.push(t('cs_test'));
+    else if (test && isBrakeCase(c) && c.load === 'e' && c.dir === 'up' && c.pos === 't') parts.push(t('cs_test_a'));
     return parts.join(', ');
   }
   const etaText = (M: Machine): string => `${fmt(M.etaI, 2)}${M.etaIest ? ` (${t('est')})` : ''}`;
@@ -150,7 +152,7 @@ export function textsFor(P: Pres) {
       : id.startsWith('b_') ? 'c_brake' : id === 's_force' || id === 's_fa' || id === 's_gravity' ? 'c_rescue' : 'c_shaft';
     return `${t(grp)} · ${t(id)}`;
   }
-  const checkText = (c: Check): string => `${checkLabel(c.id)}${c.cs ? ` — ${caseText(c.cs, c.id !== 'b_amax')}` : ''}`;
+  const checkText = (c: Check): string => `${checkLabel(c.id)}${c.cs ? ` — ${caseText(c.cs, c.id !== 'b_amax', c.id === 'tr_real')}` : ''}`;
   // a check's value and limit with their unit; the ropes as number × diameter (machine N), both are checked
   const unitOf = (id: CheckId): string => (CHECK_UNIT[id] ? `\u00a0${CHECK_UNIT[id]}` : '');
   // a value that does not meet its limit never reads as meeting it: more decimals when it would round onto it (what a
@@ -170,10 +172,10 @@ export function textsFor(P: Pres) {
     const sense = AT_LEAST.has(c.id) ? '≥' : '≤';
     return c.id === 'r_nd' ? `≥ ${K.ropesMin} × Ø${dText(K.ropeDiameterMin)}\u00a0mm` : `${sense} ${fmt(c.limit, c.dec)}${unitOf(c.id)}`;
   };
-  const verdictText = (r: Results): string => {
-    const n = r.fails.length, w = r.checks.filter((c) => c.status === 'warn').length;
-    return n ? (n === 1 ? t('verdict_ko1') : t('verdict_ko', { n })) : w ? (w === 1 ? t('verdict_warn1') : t('verdict_warn', { w })) : t('verdict_ok');
-  };
+  // the verdict from its counts: `n` checks not passed, `w` with «Attenzione» (the calculation's own: calc-verdict.ts)
+  const countsText = (n: number, w: number): string =>
+    n ? (n === 1 ? t('verdict_ko1') : t('verdict_ko', { n })) : w ? (w === 1 ? t('verdict_warn1') : t('verdict_warn', { w })) : t('verdict_ok');
+  const verdictText = (r: Results): string => countsText(r.fails.length, r.checks.filter((c) => c.status === 'warn').length);
 
   const sensLabel = (s: SensitivityVariant): string => (s.key === 'P' ? `P ${s.d > 0 ? '+' : '−'}10%` : `k ${s.d > 0 ? '+' : '−'}${fmt(Math.abs(s.d), 2)}`);
   // rows [variant, traction, real traction, S_f, power, shaft, result] for the data entered and each variant
@@ -193,7 +195,7 @@ export function textsFor(P: Pres) {
 
   return {
     st, alphaText, grooveAngles, grooveText, grooveLimit, grooveShort, proposalShort, machineShort, dText, noneText, critText, altText, proposalRows, proposalCells,
-    proposalHead, comparisonRows, verifyList, caseText, etaText, windowText, machineRows, checkLabel, checkText, checkValue, checkLimit, verdictText, sensLabel, sensRows,
+    proposalHead, comparisonRows, verifyList, caseText, etaText, windowText, machineRows, checkLabel, checkText, checkValue, checkLimit, countsText, verdictText, sensLabel, sensRows,
     sensHead, sensTitle, sensLine, sensChanges,
   };
 }

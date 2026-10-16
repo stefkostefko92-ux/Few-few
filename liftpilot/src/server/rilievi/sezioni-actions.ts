@@ -6,10 +6,9 @@
 // (the owner; the Capotecnico when the company gives it — round 42), within the company of the session; a role holding it
 // in a read-only company is told so (`readOnly`, as the sheets' actions), not sent to the owner for a right it has; 60
 // a minute per person, as rilievi's own limit on every write (src/http/limits.ts `writeLimiter`): a section moved to the
-// far end one step at a time takes up to ten presses. A refusal — no right, read-only, over the limit — does nothing and
+// far end one step at a time takes up to ten presses. A refusal — no right, read-only, over the limit, the session
+// expired while the page was open (`sessionExpired`: sign in again in another tab, then press again) — does nothing and
 // the order on screen stays, unsaved moves included.
-import { redirect } from 'next/navigation';
-import { DEFAULT_LOCALE, isLocale } from '@/i18n/locales';
 import { getSessionUser } from '@/lib/auth';
 import { can, holds } from '@/lib/rbac';
 import { rateLimit } from '@/lib/ratelimit';
@@ -28,7 +27,11 @@ export type SezioniState =
   | { status: 'moved'; ordine: SectionKey[]; focus: { key: SectionKey; verso: Verso } }
   | { status: 'saved' | 'reset'; ordine: SectionKey[] }
   | { status: 'invalid'; ordine: SectionKey[] }
-  | { status: 'error'; error: 'forbidden' | 'readOnly' | 'tooMany'; ordine?: SectionKey[]; modificato?: boolean };
+  | { status: 'error'; error: SezioniRefusal; ordine?: SectionKey[]; modificato?: boolean };
+
+/** Why nothing was done: the server's refusals; `offline` and `failed` are the browser's own, when no answer came
+ *  (src/components/keep-on-failure.ts). */
+type SezioniRefusal = 'forbidden' | 'readOnly' | 'tooMany' | 'sessionExpired' | 'offline' | 'failed';
 
 /** What the page showed before this press (the previous answer, as the browser hands it back — only for the screen,
  *  checked like a sent order): its order, and whether it held moves not saved yet. */
@@ -40,16 +43,15 @@ function shownBefore(prev: unknown): { ordine: SectionKey[] | null; modificato: 
 
 /** A refusal: nothing done, the order on screen stays — the one sent with the press, or (the reset form sends none) the
  *  one shown before —, with its unsaved moves. */
-function refused(error: 'forbidden' | 'readOnly' | 'tooMany', prev: unknown, fd: FormData): SezioniState {
+function refused(error: SezioniRefusal, prev: unknown, fd: FormData): SezioniState {
   const before = shownBefore(prev);
   const ordine = parseOrdine(fd.getAll('ordine')) ?? before.ordine;
   return ordine ? { status: 'error', error, ordine, modificato: before.modificato } : { status: 'error', error };
 }
 
 export async function ordineSezioniAction(prev: SezioniState, fd: FormData): Promise<SezioniState> {
-  const l = str(fd, 'locale'), locale = isLocale(l) ? l : DEFAULT_LOCALE;
   const user = await getSessionUser();
-  if (!user) redirect(`/${locale}/login`);
+  if (!user) return refused('sessionExpired', prev, fd);
   if (user.mustChangePassword) return refused('forbidden', prev, fd);
   if (!can(user, 'company:edit')) return refused(holds(user, 'company:edit') ? 'readOnly' : 'forbidden', prev, fd);
   if (!rateLimit(`rilievi-sezioni:${user.id}`, 60, 60 * 1000)) return refused('tooMany', prev, fd);

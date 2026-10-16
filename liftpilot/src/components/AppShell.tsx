@@ -54,11 +54,18 @@ export default async function AppShell({ user, banners, footer, children }: { us
     ...(can(user, 'audit:view') ? [{ key: '/app/audit', href: '/app/audit', label: t('audit'), icon: 'history' } as const] : []),
     ...(can(user, 'platform:admin') ? [{ key: '/app/admin', href: '/app/admin', label: t('admin'), icon: 'building-gear' } as const] : []),
   ];
+  // help, for every signed-in user whatever the rights (round 48): the public guide and the report to LiftPilot. The
+  // guide opens in a new tab: the work in progress stays where it is (no «leave the page?» over an unsaved sheet)
+  const help: NavItem[] = [
+    { key: 'guide', href: '/guida', label: t('guide'), icon: 'book-open', newTab: t('newTab') },
+    { key: '/app/segnala', href: '/app/segnala', label: t('feedback'), icon: 'message-circle' },
+  ];
   // a group shows only with something in it (a company may take every right of the work away from a role)
   const groups: NavGroup[] = [
     ...(work.length ? [{ label: t('groupWork'), items: work }] : []),
     ...(library.length ? [{ label: t('groupLibrary'), items: library }] : []),
     ...(manage.length ? [{ label: t('groupAdmin'), items: manage }] : []),
+    { label: t('groupHelp'), items: help },
   ];
   // pages outside the groups the top bar still names
   const extra = [{ key: '/app/account', label: ta('title') }, { key: '/app/terms', label: tl('gateTitleNew') }, { key: '/app/permesso', label: td('title') }];

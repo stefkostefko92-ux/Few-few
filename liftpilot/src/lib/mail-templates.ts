@@ -6,7 +6,7 @@ import { createTranslator } from 'next-intl';
 import type { Locale } from '@/i18n/locales';
 import it from '../../messages/it.json';
 import { MAIL_LOGO } from './brand';
-import { TOKEN_TTL_MS } from './token-shape';
+import { BETA_INVITE_DAYS, TOKEN_TTL_MS } from './token-shape';
 import { INACTIVE_MONTHS, TERMS_VERSION, dateText, legalValues, termsDateText } from './legal';
 
 export interface AccountMail {
@@ -25,14 +25,25 @@ export type AccountMailKind =
   | { kind: 'invite'; token: string }
   /** an invitation to an address that has an account in another company: a notice, nothing to take */
   | { kind: 'inviteExists' }
+  /** the platform administrator's invitation to the beta: the link opens the registration for this address only */
+  | { kind: 'betaInvite'; token: string }
   /** to the owner: a new version of the terms, what changes, and the day it binds the company (npm run legal:notice) */
   | { kind: 'termsNotice'; binding: Date }
+  /** to the owner: a correction of the engines changes the result of records the company saved (npm run engine:notice);
+   *  `motivo` is written by the platform's owner on the command line, never by a form */
+  | { kind: 'engineNotice'; engine: string; motivo: string; impianti: number; records: number }
   /** to the owner of a company inactive without a subscription: the day it will be deleted unless someone signs in */
-  | { kind: 'inactive'; deletion: Date };
+  | { kind: 'inactive'; deletion: Date }
+  /** to each platform administrator: a report («Segnala un problema») arrived — its type and the way to the list,
+   *  never its text (src/server/feedback.ts) */
+  | { kind: 'feedback'; type: 'BUG' | 'IDEA' | 'QUESTION' };
 
 const MESSAGES: Record<Locale, typeof it> = { it };
 const translatorFor = (locale: Locale) => createTranslator({ locale, messages: MESSAGES[locale], namespace: 'mail' });
 type Translate = ReturnType<typeof translatorFor>;
+
+/** The words of a report's type in the administrators' e-mail. */
+const FEEDBACK_KIND = { BUG: 'feedbackKindBug', IDEA: 'feedbackKindIdea', QUESTION: 'feedbackKindQuestion' } as const;
 
 const hours = (k: keyof typeof TOKEN_TTL_MS): number => TOKEN_TTL_MS[k] / 3600_000;
 const days = (k: keyof typeof TOKEN_TTL_MS): number => TOKEN_TTL_MS[k] / 86_400_000;
@@ -64,6 +75,9 @@ function parts(m: AccountMailKind, locale: Locale, base: string, t: Translate): 
     case 'invite':
       return { subject: t('inviteSubject'), intro: t('inviteIntro'), button: t('inviteButton'), link: `${page('invite')}#${m.token}`,
         notes: [t('inviteTtl', { days: days('INVITE') }), t('inviteIgnore')] };
+    case 'betaInvite':
+      return { subject: t('betaInviteSubject'), intro: t('betaInviteIntro'), button: t('betaInviteButton'), link: `${page('register')}#${m.token}`,
+        notes: [t('betaInviteTtl', { days: BETA_INVITE_DAYS }), t('betaInviteIgnore')] };
     case 'inviteExists':
       return { subject: t('inviteExistsSubject'), intro: t('inviteExistsIntro'), button: t('existsButton'), link: page('login'),
         notes: [t('inviteExistsIgnore')] };
@@ -72,11 +86,19 @@ function parts(m: AccountMailKind, locale: Locale, base: string, t: Translate): 
       return { subject: t('termsNoticeSubject', v), intro: t('termsNoticeIntro', v), button: t('termsNoticeButton'), link: `${page('privacy')}#terms`,
         notes: [...t('termsNoticeChanges', v).split('\n'), t('termsNoticeChoice', v)] };
     }
+    case 'engineNotice': {
+      const v = { engine: m.engine, impianti: m.impianti, records: m.records };
+      return { subject: t('engineNoticeSubject', v), intro: t('engineNoticeIntro', v), button: t('engineNoticeButton'), link: page('app/impianti'),
+        notes: [t('engineNoticeWhat', { motivo: m.motivo }), t('engineNoticeSteps'), t('engineNoticeSign'), t('engineNoticeMeanwhile')] };
+    }
     case 'inactive': {
       const v = { months: INACTIVE_MONTHS, date: dateText(locale, m.deletion) };
       return { subject: t('inactiveSubject', v), intro: t('inactiveIntro', v), button: t('inactiveButton'), link: page('login'),
         notes: [t('inactiveKeep', v), t('inactiveData')] };
     }
+    case 'feedback':
+      return { subject: t('feedbackSubject'), intro: t('feedbackIntro', { kind: t(FEEDBACK_KIND[m.type]) }), button: t('feedbackButton'),
+        link: page('app/admin/segnalazioni'), notes: [t('feedbackNote')] };
   }
 }
 

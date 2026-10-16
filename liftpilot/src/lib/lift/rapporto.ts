@@ -1,10 +1,11 @@
 // The ratio of the loads hung on the car side and on the counterweight side changed by a modification under UNI
 // 10411-1 (6.1; modifica.ts Variazione.rapporto): the stability against slipping of its appendix D.1 is to be shown
-// (calc/d1.ts), with D.2 (g_press) and the buffers to UNI EN 81-20 5.8. The check tr_d1 is emitted as the existing
-// sling's (arcata.ts): only in that case, among the lift design's checks, the relazione's and sheet 1's; it enters the
-// test under UNI 10411-1 only, with the load the changed ratio brings among the parts (ambito.ts SOLO_10411_1,
-// collaudoOf). Registry: modifica.d1 (the values), rapporto.d1 (the check). Pure.
-import { d1Of, type D1Result } from '@/calc/d1';
+// (calc/d1.ts), with D.2 — the specific pressure in the grooves, verified (round 48: a check met or not, tr_d2; g_press
+// stays a value to state everywhere else) — and the buffers to UNI EN 81-20 5.8. The checks tr_d1 and tr_d2 are emitted
+// together as the existing sling's (arcata.ts): only in that case, among the lift design's checks, the relazione's and
+// sheet 1's; they enter the test under UNI 10411-1 only, with the load the changed ratio brings among the parts
+// (ambito.ts SOLO_10411_1, collaudoOf). Registry: modifica.d1 (the values), rapporto.d1 and rapporto.d2 (the checks). Pure.
+import { d1Of, d2Of, type D1Result } from '@/calc/d1';
 import { readInputs } from '@/calc/inputs';
 import type { FormValues } from '@/calc/types';
 import { check } from '@/shaft/checks';
@@ -35,3 +36,21 @@ export function d1Check(C: Collaudo, V: FormValues): ShaftCheck | null {
   const u = d.worst.util;
   return check('tr_d1', u <= 1 + 1e-9, Number.isFinite(u) ? u : null, 1, 2, '');
 }
+
+/** D.2 of the calculation's values when the ratio changes: the specific pressure with the car loaded with the rated load
+ *  and its limit [N/mm²]; null otherwise. */
+export function d2Di(C: Collaudo, V: FormValues): { T: number; p: number; limit: number } | null {
+  if (!rapportoVariato(C, V)) return null;
+  const { I, N } = readInputs(V);
+  return d2Of(I, N);
+}
+
+/** tr_d2: the specific pressure of D.2 at most its limit (12,5 + 4·v_c)/(1 + v_c), met or not, as g_press compares them
+ *  (≤); null when D.1 is not asked. */
+export function d2Check(C: Collaudo, V: FormValues): ShaftCheck | null {
+  const d = d2Di(C, V);
+  return d ? check('tr_d2', d.p <= d.limit, d.p, d.limit, 2, 'MPa') : null;
+}
+
+/** The checks a changed ratio asks (6.1), D.1 then D.2, as every list takes them: none when the ratio stays. */
+export const rapportoChecks = (C: Collaudo, V: FormValues): ShaftCheck[] => [d1Check(C, V), d2Check(C, V)].filter((c): c is ShaftCheck => c !== null);

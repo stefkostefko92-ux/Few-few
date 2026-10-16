@@ -43,7 +43,7 @@ for testo in [
     "Nel foglio «Voci», per ogni riga confrontare il «Valore nel software» con il testo vigente del documento in «Dove verificare».",
     "Compilare solo le celle gialle: Esito (conforme / diverso / non applicabile), Valore corretto e Clausola esatta se diverso, Note, Verificato da, Data.",
     "La riga 2 è un ESEMPIO del formato: non è una voce e non entra nel riepilogo.",
-    "Stati: «da verificare» = fonte secondaria; «stima» e «scelta del software» = decisioni del software da approvare o correggere; «derivazione» = meccanica elementare; «confermato» = due fonti indipendenti o un caso pubblicato riprodotto, da confrontare comunque con il testo; «prassi di cantiere» = indicazione di Panev Ascensori.",
+    "Stati: «da verificare» = fonte secondaria; «stima» e «scelta del software» = decisioni del software da approvare o correggere; «derivazione» = meccanica elementare; «confermato» = letto sul testo della norma fornito dal cliente (la fonte lo dice, con le pagine), oppure due fonti indipendenti o un caso pubblicato riprodotto, da confrontare comunque con il testo vigente; «prassi di cantiere» = indicazione di Panev Ascensori.",
     "Ogni correzione viene riportata nel registro del software (liftpilot/src/calc/norme.ts) e cambia insieme motore di calcolo, lista e relazione di calcolo.",
     "Non trascrivere il testo delle norme in questo file: basta il valore e il numero di clausola.",
 ]:

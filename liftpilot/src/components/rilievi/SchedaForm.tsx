@@ -9,7 +9,9 @@
 // Whichever of them answers gets the focus, which brings it into view wherever the person pressed «Salva» (rilievi
 // answered with a new page, read from the top). The server decides (src/server/rilievi/actions.ts); after each answer
 // the form is drawn again from the values it sent back (or, after a refusal, from what was sent), as rilievi drew the
-// page again after a POST. The modules come as plain specs from the page (moduloSpec on the server), the links between
+// page again after a POST. A save that gets no answer (no signal in the shaft, keep-on-failure.ts) or meets an expired
+// session is such a refusal too: the form stays with every value, «Modifiche non salvate» and the question before
+// leaving stay on, and the next «Salva» sends it all again. The modules come as plain specs from the page (moduloSpec on the server), the links between
 // the sheet and the modules as plain data (collegatiData): the maps with the PDFs' coordinates stay off the browser.
 import { Fragment, memo, useActionState, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -30,13 +32,23 @@ import FieldInputPlain, { Cond } from './FieldInput';
 import MisureBlockPlain from './MisureBlock';
 import { DiffItem, type DiffLine } from './DiffItem';
 import ModuloBlockPlain from './ModuloBlock';
+import RefusalText from './RefusalText';
 import SectionIndex from './SectionIndex';
+import { useGuardedAction, type NoAnswer } from '../keep-on-failure';
 import { useSchedaForm } from './use-scheda-form';
 
 // the heavy parts are drawn again only when their own values change, not at every key typed elsewhere
 const FieldInput = memo(FieldInputPlain);
 const MisureBlock = memo(MisureBlockPlain);
 const ModuloBlock = memo(ModuloBlockPlain);
+
+/** A refusal keeps the version the form stood on (`base`), so that the next «Salva» is not taken for a conflict. */
+function keepBase(out: RilievoFormState, prev: RilievoFormState): RilievoFormState {
+  return out.status === 'error' && out.base === undefined && 'base' in prev && prev.base !== undefined ? { ...out, base: prev.base } : out;
+}
+
+/** The save that got no answer: a refusal of the browser's own, the form as it was sent. */
+const noAnswer = (why: NoAnswer): RilievoFormState => ({ status: 'error', error: why });
 
 /** A new key for each answer of the server: the form is drawn anew with the values that answer carries. */
 const keys = new WeakMap<object, number>();
@@ -189,7 +201,9 @@ export default function SchedaForm({ initial, edit, cancelHref, specs, order, co
 }) {
   const t = useTranslations('rilievi');
   const rt = t as unknown as RilieviT;
-  const [state, action, pending] = useActionState<RilievoFormState, FormData>(edit ? updateRilievoAction : createRilievoAction, initialRilievoFormState);
+  // the server action itself until hydration (the form works without JavaScript too), then the one kept from failing
+  const save = useGuardedAction<RilievoFormState>(edit ? updateRilievoAction : createRilievoAction, noAnswer, keepBase);
+  const [state, action, pending] = useActionState<RilievoFormState, FormData>(save, initialRilievoFormState);
   // what was sent last: after a refusal (too many, too large…) the form comes back with it, not empty
   const [sent, setSent] = useState<FormValues | null>(null);
   const onSent = useCallback((v: FormValues) => setSent(v), []);
@@ -202,7 +216,8 @@ export default function SchedaForm({ initial, edit, cancelHref, specs, order, co
     return initial;
   }, [state, sent, initial]);
   const errors: FieldErrors = state.status === 'invalid' ? state.errors : {};
-  const base = state.status === 'invalid' || state.status === 'conflict' || state.status === 'confirm' ? state.base : edit?.base ?? '';
+  const base = state.status === 'invalid' || state.status === 'conflict' || state.status === 'confirm' ? state.base
+    : state.status === 'error' && state.base !== undefined ? state.base : edit?.base ?? '';
   const lookup = useMemo(() => specLookup(specs), [specs]);
   const notice = useRef<HTMLDivElement>(null), refusal = useRef<HTMLParagraphElement>(null);
   const setLead = useSetEditLead();
@@ -218,7 +233,7 @@ export default function SchedaForm({ initial, edit, cancelHref, specs, order, co
   const titles = order.map((key) => ({ key, title: t(`scheda.section.${key}`) }));
   return (
     <>
-      {state.status === 'error' ? <p className="alert alert-bad rv-answer" role="alert" tabIndex={-1} ref={refusal}>{t(`error.${state.error}`)}</p> : null}
+      {state.status === 'error' ? <p className="alert alert-bad rv-answer" role="alert" tabIndex={-1} ref={refusal}><RefusalText code={state.error} form /></p> : null}
       {state.status === 'conflict' && edit ? (
         <div className="alert alert-warn rv-conflict rv-answer" role="alert" tabIndex={-1} ref={notice}>
           <p><strong>{t('schede.conflict.title')}</strong></p>

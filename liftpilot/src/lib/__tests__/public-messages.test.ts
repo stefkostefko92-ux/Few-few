@@ -24,7 +24,7 @@ function sources(dir: string): string[] {
 const ALL = [...sources(path.join(root, 'src')), ...sources(path.join(root, 'artifact'))];
 const LANDING = readdirSync(path.join(root, 'src/components/landing')).filter((f) => f.endsWith('.tsx')).map((f) => `src/components/landing/${f}`);
 const PUBLIC = [
-  'src/app/[locale]/page.tsx', 'src/app/[locale]/pricing/page.tsx', 'src/app/[locale]/data/page.tsx', 'src/app/[locale]/not-found.tsx',
+  'src/app/[locale]/page.tsx', 'src/app/[locale]/pricing/page.tsx', 'src/app/[locale]/guida/page.tsx', 'src/app/[locale]/data/page.tsx', 'src/app/[locale]/not-found.tsx',
   'src/components/SiteHeader.tsx', 'src/components/Footer.tsx', 'src/components/AuthPage.tsx',
 ];
 

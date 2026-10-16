@@ -1,6 +1,7 @@
 // Result column of the prototype v12 (renderResults): proposal, result in brief, then the technical tables
 // (folded in simple mode), UNI 10411-1 adaptations, values to check, copyable summary.
 import { useRef, useState, type ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { NORMA_SIGLA, adeguamentiDovuti, type Collaudo } from '@/lib/lift';
 import type { TipoIntervento } from '@/lib/lift/intervento';
 import { ADAPT } from '@/lib/present/adapt';
@@ -8,6 +9,7 @@ import type { Pres } from '@/lib/present/tr';
 import type { Analysis } from '@/lib/present/analysis';
 import { quickRows } from '@/lib/present/quick';
 import { summaryText } from '@/lib/present/summary';
+import type { ShaftCheck } from '@/shaft/types';
 import type { Texts } from '@/lib/present/texts';
 import { techCards } from './TechCards';
 import { Card, Flag, KV, Note, Pill } from './ui';
@@ -26,6 +28,8 @@ interface Props {
   /** the type of intervention chosen or declared (round 45; none: a calculation saved before it): the copied summary
    *  names it */
   tipo?: TipoIntervento | null;
+  /** D.1 and D.2 with the ratio of the loads changed (calc-verdict.ts calcExtra): the copied summary counts and lists them */
+  extra?: readonly ShaftCheck[];
   /** loads a proposal into the new-machine fields; absent on a saved calculation */
   onUse?: (key: UseKey) => void;
   propMsg?: string;
@@ -99,7 +103,7 @@ function CopyCard({ P, text }: { P: Pres; text: string }) {
 }
 
 export default function Results(props: Props) {
-  const { P, X, a, mode, badCount, brand } = props, { t } = P, { ctx, res, sens } = a, { I, N } = ctx;
+  const { P, X, a, mode, badCount, brand } = props, { t } = P, { ctx, res, sens } = a, { I, N } = ctx, ts = useTranslations('shaft');
   if (props.proposalOnly) return <div className="results"><ProposalCard P={P} X={X} a={a} onUse={props.onUse} propMsg={props.propMsg} vincolo={props.vincolo} /></div>;
   const quick = (
     <Card key="quick" title={t('q_title')}>
@@ -124,7 +128,8 @@ export default function Results(props: Props) {
     </Card>
   );
   const tech = techCards(P, X, a);
-  const copy = <CopyCard key="copy" P={P} text={summaryText(P, X, a, { badVisible: badCount, brand, rifacimento: C.rifacimento === true, intervento: props.tipo ? { tipo: props.tipo, collaudo: C } : null })} />;
+  const copy = <CopyCard key="copy" P={P} text={summaryText(P, X, a, { badVisible: badCount, brand, rifacimento: C.rifacimento === true, intervento: props.tipo ? { tipo: props.tipo, collaudo: C } : null,
+    extra: (props.extra ?? []).map((c) => ({ ...c, label: ts(`c_${c.id}`) })) })} />;
   const head: ReactNode[] = [<ProposalCard key="prop" P={P} X={X} a={a} onUse={props.onUse} propMsg={props.propMsg} vincolo={props.vincolo} />, quick];
   return (
     <div className="results">

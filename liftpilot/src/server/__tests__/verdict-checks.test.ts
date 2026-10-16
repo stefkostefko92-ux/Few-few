@@ -8,7 +8,8 @@ import { PRESETS } from '@/calc/presets';
 import type { FormValues } from '@/calc/types';
 import type { SessionUser } from '@/lib/auth';
 import { capsOf } from '@/lib/rbac';
-import { defaultLift, newLift, type LiftInputs } from '@/lib/lift';
+import { defaultLift, deriveLift, newLift, type LiftInputs } from '@/lib/lift';
+import { carichiOf, type Carichi } from '@/lib/lift/modifica';
 import { startSurvey } from '@/lib/room/survey';
 import it from '../../../messages/it.json';
 import calcIt from '../../../messages/calc/it.json';
@@ -134,6 +135,36 @@ test('locale macchina della sostituzione: le verifiche del collaudo scelto col c
   const d = await matches('room', 'roomDesign', made.id);
   // the drop's name says what the calculation's drops are (the diverting pulley's: room/derive.ts roomCheckKey)
   assert.ok(d.fails.some((x) => x.name === it.shaft.c_m_calata_defl), JSON.stringify(d.fails));
+});
+
+test('calcolo col rapporto tra i carichi cambiato (UNI 10411-1): l’esito conta la D.2, il pannello la elenca; uno di prima resta com’era', async () => {
+  const { createCalculation } = await save();
+  const { verdictDetail } = await verdict();
+  // the reviewers' case of round 48 (r48-engine.test.ts N1): D.1 met, D.2 not, the engine's own checks passed
+  const V: FormValues = { ...PRESETS.C, P: 900, n_n: 3, n_d: 10, n_D: 440, n_beta: 105, n_Fmin: 120, n_qf: 0.35, n_shaftMax: 4000, n_brakeNm: 70 };
+  const made = await createCalculation(user, 'p1', V, null, { norma: '10411-1', parti: ['machine'], documentato: { Q: 630, P: 700, Mcw: 700 + 0.5 * 630 } }, null);
+  assert.ok(made.ok, JSON.stringify(made));
+  const r = row('calculation', made.id);
+  assert.equal(r.verdict, 'FAIL');
+  assert.equal(r.failCount, 1);
+  const d = await matches('calc', 'calculation', made.id);
+  assert.deepEqual(d.fails.map((x) => x.name), [it.shaft.c_tr_d2]);
+  assert.match(d.fails[0]?.limit ?? '', /^≤ 8,25\u00a0MPa$/);
+  // a calculation of an earlier engine counted its snapshot's checks alone: its list stays the stored one
+  r.engineVersion = '1.7.3';
+  r.failCount = 0;
+  r.verdict = 'WARN';
+  const before = await verdictDetail(user, 'calc', made.id, 'it');
+  assert.equal(before?.fails.length, 0);
+  assert.equal(before?.warns.length, r.warnCount);
+  assert.equal(before?.note, it.verdictChecks.note_outdated);
+  // a lift design's own calculation with the ratio changed: counted as a «Calcolo argano» of its values and test
+  const { createLiftDesign } = await save();
+  const base: LiftInputs = { ...defaultLift(), calc: { ...defaultLift().calc, context: 'repl', keepRopes: false } };
+  const now = carichiOf(deriveLift({ ...base, collaudo: { norma: '10411-1', parti: ['machine'] } }).values) as Carichi;
+  const lift = await createLiftDesign(user, 'p1', { ...base, collaudo: { norma: '10411-1', parti: ['machine'], documentato: { Q: now.Q, P: now.P - 100, Mcw: now.Mcw } } }, null, null);
+  assert.ok(lift.ok, JSON.stringify(lift));
+  await matches('calc', 'calculation', String(row('liftDesign', lift.id).calculationId));
 });
 
 test('un record di un’altra ditta, o che non c’è: nessuna risposta, la stessa', async () => {

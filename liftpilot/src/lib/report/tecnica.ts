@@ -12,9 +12,10 @@ import { isUpperLimit, shownValue } from '@/shaft/checks';
 import { KV_VERT } from '@/shaft/norme-vert';
 import type { ShaftCheck } from '@/shaft/types';
 import { NORMA_SIGLA, ambitoOf, type Collaudo } from '../lift/collaudo';
+import { calcVerdictOf } from '../lift/calc-verdict';
 import { carichiOf } from '../lift/modifica';
 import type { Plant } from '../plant';
-import { textsFor, verdictStatus } from '../present/texts';
+import { textsFor } from '../present/texts';
 import { makePres } from '../present/tr';
 import { roomCheckKey, type RoomDerived } from '../room/derive';
 import type { Survey } from '../room/survey';
@@ -119,7 +120,9 @@ export function buildTecnica(r: TecnicaInput): ReportDoc {
   const S = d.made ? shapeOf(d.made.brand, d.made.model) : null;
   if (S) B.push({ t: 'kv', rows: shapeRows(S, N.D, fmt, d.M.rinvio ?? null) });
   B.push({ t: 'p', style: 'note', text: 'Confermare i dati del nuovo argano con la scheda tecnica e l’offerta del costruttore, da allegare.' });
-  B.push({ t: 'verdict', text: `Verifiche dell’argano nuovo: ${X.verdictText(res)}`, status: verdictStatus(res) });
+  // with the ratio of the loads changed, D.1 and D.2 count in the machine's result as in the relazione di calcolo (round 48)
+  const cv = calcVerdictOf(res, C, r.values);
+  B.push({ t: 'verdict', text: `Verifiche dell’argano nuovo: ${X.countsText(cv.fails, cv.warns)}`, status: cv.status });
 
   section('Sistemazione nel locale macchina');
   B.push({ t: 'kv', rows: roomRows(s, d, fmt) });

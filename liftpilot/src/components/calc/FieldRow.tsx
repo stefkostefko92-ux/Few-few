@@ -80,10 +80,12 @@ export default function FieldRow({ P, f, V, bad, set, auto = null, extra = null,
           <output id={f.id} className="num auto-value">{auto.value} <span className="badge">{auto.badge}</span></output>
         ) : (
           <input type="number" inputMode="decimal" id={f.id} step={f.step} value={String(V[f.id] ?? '')}
-            onChange={(e) => set(f.id, e.target.value)} aria-invalid={bad.has(f.id) || undefined} aria-required={need || undefined} />
+            onChange={(e) => set(f.id, e.target.value)} aria-invalid={bad.has(f.id) || undefined} aria-required={need || undefined}
+            aria-describedby={f.err && bad.has(f.id) ? `${f.id}-err` : undefined} />
         )}
         <span className="unit">{f.unit}</span>
       </div>
+      {f.err && bad.has(f.id) && !hidden ? <div className="hint bad" id={`${f.id}-err`} role="alert">{t(f.err)}</div> : null}
       {hint}
     </>
   );

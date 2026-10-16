@@ -3,6 +3,7 @@
 // ranges wide enough for any lift and narrow enough to refuse nonsense. A design saved before the vertical data
 // existed (engine 1) reads with the typical values of what it lacks.
 import { z } from 'zod';
+import { K } from '@/calc/norme';
 import { BASI_ESISTENTI, DEFAULTS, DEFAULT_VERTICAL, GOVERNORS, HEB_PROFILES, KV, KV_VERT, PROFILES, PROFILE_NAMES, RAIL_TYPES, SUPPORT_KINDS, hasProfile, layout, planOutside, profileOf, reasonText,
   type ShaftInputs } from '@/shaft';
 import { CW_CHOICES, DOOR_PAIRS } from '@/shaft/staffe-ids';
@@ -186,6 +187,11 @@ export const shaftInputsReadSchema = z.object({
 
 /** The shaft as the form saves it: the stored shape and the rules a new record must meet. */
 export const shaftInputsSchema = shaftInputsReadSchema.superRefine((S, ctx) => {
+  // the rated speed over K.vRatedMin (round 48): at it or below the apparatus is not a lift (UNI EN 81-20:2020, 1.3 a) 2);
+  // DPR 162/1999, art. 1 c.3 a)) — the calculator's readInputs flags the same bound; stored records read without it
+  if (!(S.vertical.v > K.vRatedMin)) {
+    ctx.addIssue({ code: z.ZodIssueCode.too_small, minimum: K.vRatedMin, inclusive: false, type: 'number', path: ['vertical', 'v'], message: 'not a lift' });
+  }
   // case c)'s reason goes into the relazione as written: no hidden characters (src/shaft/reason.ts)
   if (S.accessReason !== undefined && reasonText(S.accessReason) !== S.accessReason) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['accessReason'], message: 'hidden characters' });

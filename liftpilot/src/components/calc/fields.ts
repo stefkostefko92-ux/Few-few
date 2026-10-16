@@ -11,7 +11,8 @@ interface Base {
   /** hidden in simple mode */
   adv?: boolean;
 }
-export interface NumField extends Base { kind: 'num'; unit: string; step: number }
+/** `err`: the text shown under the field while it is flagged (the reason of a bound the engine refuses) */
+export interface NumField extends Base { kind: 'num'; unit: string; step: number; err?: CalcKey }
 export interface SelectField extends Base { kind: 'select'; options: readonly { value: string; label: CalcKey | string; literal?: boolean }[]; wide?: boolean }
 export interface CheckField extends Base { kind: 'check' }
 export type Field = NumField | SelectField | CheckField;
@@ -25,7 +26,7 @@ export const PLANT: readonly Field[] = [
   // the standard of a replacement's machine (UNI 10411-1:2024, 14.1 a) or b)): the rescue and the stalled check differ
   { id: 'machineStd', kind: 'select', options: [opt('en81-20', 'std_20'), opt('en81-1', 'std_1')], wide: true, hint: 'hint_machineStd' },
   num('Q', 'kg', 10), num('P', 'kg', 10, { hint: 'hint_P' }), num('k', '', 0.01),
-  num('qeq', 'kg', 5, { hint: 'hint_qeq' }), num('v', 'm/s', 0.05), num('H', 'm', 0.5),
+  num('qeq', 'kg', 5, { hint: 'hint_qeq' }), num('v', 'm/s', 0.05, { err: 'err_v' }), num('H', 'm', 0.5),
   num('L0', 'm', 0.5, { adv: true }), { id: 'r', kind: 'select', options: [lit('1', '1:1'), lit('2', '2:1')] },
 ];
 

@@ -11,6 +11,7 @@ import { COSTANTI_LIMITATORE, KV_GOV, VOCI_LIMITATORE } from './norme-limitatore
 import { COSTANTI_LOCALE, KV_LOCALE, VOCI_LOCALE } from './norme-locale';
 import { VOCI_SPAZI } from './norme-spazi';
 import { VOCI_AMMORTIZZATORI } from './norme-ammortizzatori';
+import { VOCI_CARICHI } from './norme-carichi';
 import { VOCI_SUPPORTO } from './norme-supporto';
 
 const T20 = 'UNI EN 81-20:2020', T50 = 'UNI EN 81-50:2020';
@@ -180,29 +181,7 @@ export const VOCI_VERT: readonly VoceVano[] = [
     riferimento: 'UNI EN 81-20:2020, 5.2.1.8.1 e appendice E.1 (informativa: l’effetto dinamico delle masse in moto con un fattore 2); il DPR '
       + '1497/1963, art. 5.1, per gli impianti costruiti secondo esso chiedeva 1,5 volte il carico statico delle funi', fonte: letto(T20, 'pp. 26, 148'), stato: 'confermato',
   },
-  {
-    id: 'arcata.carichi', gruppo: 'carichi', titolo: 'Arcata esistente sotto la cabina nuova o la portata nuova: verifica per i nuovi carichi',
-    valore: 'nella modifica che lascia l’arcata esistente e cambia la cabina o la portata, T* (cabina con arcata, porte e operatore più la portata) '
-      + 'e la portata si confrontano con i carichi documentati: se vanno oltre i limiti (con la UNI 10411-1 T* o la portata oltre il prospetto 1, con '
-      + 'la UNI 10411-11 qualunque aumento di T*) o non si possono confrontare perché i carichi documentati mancano, l’arcata va verificata per i '
-      + 'nuovi carichi con i dati del suo costruttore o il calcolo del tecnico; il software non ha il modello dell’arcata: «Attenzione» senza valore. '
-      + 'Con T* che diminuisce valgono gli ammortizzatori e il paracadute progressivo per i nuovi carichi (verifiche del carico nell’esito)',
-    riferimento: 'UNI 10411-1:2024, 6.1 e 6.9; UNI 10411-11:2024, 6.1, 6.9 e 22',
-    fonte: `${letto('UNI 10411-1:2024', 'pp. 7–8')}; ${letto('UNI 10411-11:2024', 'pp. 7–8 e 15')}`, stato: 'confermato',
-    verifiche: ['sl_frame'],
-    nota: 'la UNI 10411-11:2024 (6.1) esclude la 6.9 quando aumenta solo il carico lato contrappeso; con l’arcata sostituita la verifica non si fa',
-  },
-  {
-    id: 'rapporto.d1', gruppo: 'carichi', titolo: 'Rapporto tra i carichi cambiato (UNI 10411-1): stabilità allo scorrimento delle funi',
-    valore: 'nella modifica secondo la UNI 10411-1 il cui rapporto tra i carichi lato cabina e lato contrappeso cambia rispetto a quello documentato '
-      + '(voce impianto.variazione.carico), la condizione della D.1 con i valori della voce modifica.d1 del calcolo, nei suoi due casi: esito '
-      + 'l’utilizzo (T1/T2)·C1·C2 / e^(f·α) del caso più sfavorevole, al massimo 1; con la UNI 10411-11 o con il rapporto che resta la verifica non c’è. '
-      + 'Con la D.1 servono la D.2 (pressione specifica) e gli ammortizzatori secondo la UNI EN 81-20, 5.8',
-    riferimento: 'UNI 10411-1:2024, 6.1 e D.1', fonte: letto('UNI 10411-1:2024', 'pp. 6–7 e 33'), stato: 'confermato',
-    verifiche: ['tr_d1'], rifFuoriNorma: 'UNI 10411-1:2024, 6.1 e D.1 (verifica della sola UNI 10411-1)',
-    nota: 'con l’esito, come informazione, la decelerazione a cui equivale il C1 minimo della fascia e quella limite fino a cui la condizione '
-      + 'regge (voce modifica.d1), da confrontare con la prova del freno; l’esito non cambia',
-  },
+  ...VOCI_CARICHI,
   {
     id: 'carichi.cavi', gruppo: 'carichi', titolo: 'Massa dei cavi flessibili',
     valore: '0,5 kg/m per metà della corsa più 3 m (cavo piatto 24G0,75), sul basamento dell’argano, nella relazione e nel foglio 1',

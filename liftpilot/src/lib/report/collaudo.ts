@@ -6,7 +6,7 @@ import appIt from '../../../messages/it.json';
 import { PROFILO } from '@/calc/norme';
 import type { CheckId, FormValues, MachineStd } from '@/calc/types';
 import type { ShaftCheckId } from '@/shaft';
-import { NORMA_BREVE, NORMA_SIGLA, adeguamentiDovuti, ambitoOf, collaudoVerdict, esitiNorme, normeOf, type Collaudo, type Parte } from '../lift/collaudo';
+import { NORMA_BREVE, NORMA_SIGLA, adeguamentiDovuti, ambitoNorme, ambitoOf, collaudoVerdict, esitiNorme, normeOf, type Collaudo, type Parte } from '../lift/collaudo';
 import { ADEMPIMENTI, NORME_INFO, obblighiParti, type PuntoInSito } from '../lift/norme-collaudo';
 import { KL } from '../lift/norme';
 import { variazioneCarico, type Carichi, type Norma10411, type Variazione } from '../lift/modifica';
@@ -266,7 +266,9 @@ export function adempimentiBlocks(C: Collaudo, repl: boolean, resta = false, V?:
   for (const n of normeOf(C)) {
     // round 47 (D2): D.1 at the brake test, with tr_d1, among UNI 10411-1's points
     const info = NORME_INFO[n], d1 = n === '10411-1' && V ? d1Sito(C, V) : null;
-    const punti = [...(resta ? info.punti.filter((p) => !PUNTI_MACCHINA_NUOVA.includes(p.rif)).map(restaPunto) : info.punti), ...(d1 ? [d1] : [])];
+    // round 48: the notified body's procedure only for a lift tested as new (a new one, «Trasformazione completa»)
+    const nuovo = ambitoNorme(C) === 'nuovo' ? info.nuovo ?? [] : [];
+    const punti = [...nuovo, ...(resta ? info.punti.filter((p) => !PUNTI_MACCHINA_NUOVA.includes(p.rif)).map(restaPunto) : info.punti), ...(d1 ? [d1] : [])];
     out.push({ t: 'h3', text: NORMA_SIGLA[n] }, { t: 'p', style: 'note', text: `Citazione: ${info.citazione}.${info.avviso ? ` Attenzione: ${info.avviso}.` : ''}` });
     if (punti.length) out.push({ t: 'list', items: punti.map(punto) });
   }

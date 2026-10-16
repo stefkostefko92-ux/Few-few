@@ -15,7 +15,8 @@
 //   modules in the print (scripts/smoke-rilievi-sync.mjs) → a survey and its installation: created from it, prefilled, compared,
 //   linked by suggestion, unlinked; the home (scripts/smoke-collega.mjs) → new user who must change the password → a second
 //   company that cannot open the first company's calculation, shaft design, DXF, drawing set, lift design or survey sheet (nor its
-//   modules) → with MAILBOX_PORT: self-registration, confirmation, forgotten password (scripts/smoke-accounts.mjs), the rights
+//   modules) → with MAILBOX_PORT: the beta by invitation (/register without one, the administrator's invitations,
+//   scripts/smoke-beta.mjs), self-registration from the link, confirmation with the clauses, forgotten password (scripts/smoke-accounts.mjs), the rights
 //   matrix of that company (scripts/smoke-permessi.mjs), the server sending its mail to scripts/mail-sink.mjs on that port.
 // Usage: BASE_URL=http://localhost:3100 ADMIN_EMAIL=… ADMIN_PASSWORD=… [MAILBOX_PORT=2526] node scripts/smoke.mjs (Playwright: local or global).
 // With MAILBOX_PORT each full run needs a fresh server process (or an hour): it registers 3 times, the server takes 5 an hour per address.
@@ -30,6 +31,7 @@ import { ammodernamento, documentiNo } from './smoke-intervento.mjs';
 import { priceList } from './smoke-prices.mjs';
 import { progettoFlow } from './smoke-progetto.mjs';
 import { publicPages } from './smoke-public.mjs';
+import { guidePage, reportFlow, rilievoOffline } from './smoke-help.mjs';
 import { replacementRoom } from './smoke-replacement.mjs';
 import { rilieviFlow } from './smoke-rilievi.mjs';
 import { rilieviSync } from './smoke-rilievi-sync.mjs';
@@ -52,6 +54,7 @@ if (sink) await sink.ready;
 const browser = await chromium.launch();
 try {
   const { page, errors } = await publicPages({ BASE, browser, newPage });
+  await guidePage({ BASE, page });
 
   step('sign-in and installation');
   await login(page, ADMIN.email, ADMIN.password);
@@ -269,6 +272,8 @@ try {
   const rilievo = await rilieviFlow({ BASE, page, hydrated });
   const rilievoSync = await rilieviSync({ BASE, page, hydrated });
   await collegaFlow({ BASE, page, hydrated, stamp });
+  await rilievoOffline({ BASE, page, errors });
+  await reportFlow({ BASE, page, stamp, sink, ADMIN });
   assert.deepEqual(errors, [], 'browser errors');
 
   await technician({ BASE, page, errors, stamp, login, logout, hydrated, rilievoUrl: rilievo.sheetUrl });
