@@ -324,6 +324,13 @@ await test('launch SEO: GEO схема, robots disallows, IndexNow ключ', as
   assert.match(home, /max-image-preview:large/);
   const robots = await (await request('/robots.txt')).text();
   assert.match(robots, /Disallow: \/api\//);
+  // Страниците с noindex НЕ се блокират — иначе Google не вижда самия noindex.
+  for (const p of ['/login', '/register', '/forgot']) {
+    assert.ok(!robots.includes(`Disallow: ${p}\n`), `robots блокира ${p}`);
+    // Като Googlebot — без бисквитки (влязъл потребител би бил пренасочен).
+    const html = await (await fetch(base + p)).text();
+    assert.match(html, /<meta name="robots" content="noindex/, `${p} трябва да носи noindex`);
+  }
   assert.match(robots, /Disallow: \/p\/\*\/print/);
   // IndexNow ключов файл се сервира
   const key = await request('/testindexnowkey1234567890abcdef0.txt');

@@ -41,9 +41,10 @@ export function robotsTxt(base) {
   // Приватните/не-SEO пътища (RFC 9309: специфична група НЕ наследява правилата на `*`,
   // затова ги повтаряме и за AI-обучаващите ботове по-долу).
   const disallow = [
+    // /login, /register, /forgot НЕ са тук: те носят <meta robots noindex>, а забрана в
+    // robots.txt пречи на Google да прочете точно този noindex — Search Console ги
+    // отчиташе като „Блокирана от robots.txt“ (и URL-ът пак може да се индексира гол).
     'Disallow: /dashboard',
-    'Disallow: /login',
-    'Disallow: /register',
     'Disallow: /b/', // клик-редиректи на банери
     'Disallow: /api/', // печатно API
     'Disallow: /p/*/print', // печатни страници (нямат SEO стойност)
