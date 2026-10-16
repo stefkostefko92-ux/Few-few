@@ -1,4 +1,4 @@
-// 5.5.0 — новите scriptlet-и през ЕДИНСТВЕНИЯ валидатор (scriptlets/policy.js) и билда:
+// 5.2.0 — новите scriptlet-и през ЕДИНСТВЕНИЯ валидатор (scriptlets/policy.js) и билда:
 // какво пропускаме от списъка на uBO, какво никога (обработчици на събития, srcdoc, URL от
 // непозната стойност, прототипи на живо), граматиката на аргументите (кавички, „\,“),
 // „entity“ домейните (example.*) и „~host“ изключенията. Поведението им в истински
@@ -46,7 +46,7 @@ ok("remove-attr / remove-class: a when token", V("ra", ["href|target", "a[target
 ok("remove-cookie: when scroll keydown", V("cookie-remover", ["ad_", "when", "scroll keydown"]) && !V("remove-cookie", ["ad_", "when", "unload"]));
 ok("timers: a delay range in the baked list", V("nostif", ["", "2000-5000"]) && !V("nostif", ["", "2000-5000"], true));
 ok("argument-less defusers take no arguments", V("nofab", []) && V("nobab", []) && V("popads-dummy", []) && !V("nofab", ["x"]));
-ok("the 5.5.0 routines exist for the baked list only (no live channel)", !V("noeval-if", ["ads"], true) && !V("xml-prune", ["Ad"], true) && !V("set-attr", ["a", "x", "1"], true));
+ok("the 5.2.0 routines exist for the baked list only (no live channel)", !V("noeval-if", ["ads"], true) && !V("xml-prune", ["Ad"], true) && !V("set-attr", ["a", "x", "1"], true));
 
 // ---- the build: quoting, escaped commas, entities, ~host ----
 const dir = mkdtempSync(join(tmpdir(), "sa-55-"));

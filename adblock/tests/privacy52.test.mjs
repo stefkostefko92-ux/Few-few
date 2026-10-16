@@ -1,4 +1,4 @@
-// 5.5.0 — Global Privacy Control и дневните броячи (само числа, последните 30 дни).
+// 5.2.0 — Global Privacy Control и дневните броячи (само числа, последните 30 дни).
 // GPC: Sec-GPC: 1 (статичният рулсет rules/gpc.json) + navigator.globalPrivacyControl (gpc.js,
 // MAIN world) — включено по подразбиране, изключва се с превключвателя, не на разрешен сайт.
 import { readFileSync } from "node:fs";

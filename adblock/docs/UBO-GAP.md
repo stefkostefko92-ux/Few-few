@@ -124,7 +124,7 @@ HTML filtering `##^`/`filterResponseData`, `$replace=` (response body rewrite),
 - ✅ Добавени (v4.6.0): `href-sanitizer`, `remove-node-text`/`rmnt`, `nowebrtc`.
 - ✅ Добавени (v4.7.0): `abort-on-stack-trace`/`aost`, `set-cookie`, `remove-cookie` (последният
   само от печения списък). Roster: 18 scriptlet-а — пълен спрямо приоритетния uBO списък.
-- ✅ **5.5.0:** 39 имена (20 нови: `json-prune-fetch/xhr-response`, `xml-prune`, `m3u-prune`,
+- ✅ **5.2.0:** 39 имена (20 нови: `json-prune-fetch/xhr-response`, `xml-prune`, `m3u-prune`,
   `noeval(-if)`, `nano-stb/sib`, `set-local/session-storage-item`, `nobab/nofab`, `popads-dummy`,
   `popads.net`, `refresh-defuser`, `set-attr`, `no-requestAnimationFrame-if`, `prevent-innerHTML`,
   `window.name-defuser`, `alert-buster`); пътищата на uBO в json-prune (`[]`, `*`, `[-]`, `{-}`) —
