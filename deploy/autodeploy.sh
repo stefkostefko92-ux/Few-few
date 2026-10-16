@@ -1371,14 +1371,25 @@ project_given() {
 # След здрав деплой: истинският път (без symlink-ове — по него чистенето в т. 4 разпознава release-а) става последният
 # здрав, досегашният отива в .prev (целта на връщането), а LIFTPILOT_LINK сочи новия. Връзката се сменя атомарно
 # (mv -T на нова връзка), за да не остане миг без нея. Неуспех тук не проваля деплоя — приложението вече отговаря.
+# Връщане назад (RELEASE_DIR): досегашният last-good е лошият код, от който се връщаме — той НЕ става .prev (иначе
+# второ пускане на същата команда за връщане го разгръща наново), а отива в .rolled-back-from; .prev остава. Обикновен
+# деплой изтрива .rolled-back-from (вече не е за какво да напомня).
 liftpilot_mark_good() {
   local real old
   real="$(readlink -f "$1" 2>/dev/null || true)"
   [ -n "$real" ] || return 0
   install -d -m 700 "$(dirname "$LIFTPILOT_LAST_GOOD")"
   old="$(head -n 1 "$LIFTPILOT_LAST_GOOD" 2>/dev/null || true)"
-  if [ -n "$old" ] && [ "$old" != "$real" ]; then
-    printf '%s\n' "$old" > "$LIFTPILOT_LAST_GOOD.prev.tmp" && mv -f "$LIFTPILOT_LAST_GOOD.prev.tmp" "$LIFTPILOT_LAST_GOOD.prev" || true
+  if [ -n "${RELEASE_DIR:-}" ]; then
+    if [ -n "$old" ] && [ "$old" != "$real" ]; then
+      printf '%s\n' "$old" > "$LIFTPILOT_LAST_GOOD.rolled-back-from.tmp" \
+        && mv -f "$LIFTPILOT_LAST_GOOD.rolled-back-from.tmp" "$LIFTPILOT_LAST_GOOD.rolled-back-from" || true
+    fi
+  else
+    rm -f "$LIFTPILOT_LAST_GOOD.rolled-back-from" || true
+    if [ -n "$old" ] && [ "$old" != "$real" ]; then
+      printf '%s\n' "$old" > "$LIFTPILOT_LAST_GOOD.prev.tmp" && mv -f "$LIFTPILOT_LAST_GOOD.prev.tmp" "$LIFTPILOT_LAST_GOOD.prev" || true
+    fi
   fi
   printf '%s\n' "$real" > "$LIFTPILOT_LAST_GOOD.tmp" && mv -f "$LIFTPILOT_LAST_GOOD.tmp" "$LIFTPILOT_LAST_GOOD" || true
   if ln -sfn "$real" "$LIFTPILOT_LINK.tmp" && mv -Tf "$LIFTPILOT_LINK.tmp" "$LIFTPILOT_LINK"; then

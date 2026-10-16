@@ -39,6 +39,7 @@ export default async function SegnalazioniPage({ params, searchParams }: {
         <Link href="/app/admin/segnalazioni" aria-current={filter === 'open' ? 'page' : undefined}>{t('filterOpen')}</Link>
         <Link href="/app/admin/segnalazioni?stato=tutte" aria-current={filter === 'all' ? 'page' : undefined}>{t('filterAll')}</Link>
       </nav>
+      {filter === 'open' ? <p className="note">{t('handledHint')}</p> : null}
       {rows.length === 0 ? <p className="panel m-0">{filter === 'open' ? t('emptyOpen') : t('emptyAll')}</p> : (
         <ol className="flex flex-col gap-4 m-0 p-0 list-none" aria-label={t('title')}>
           {rows.map((r) => (

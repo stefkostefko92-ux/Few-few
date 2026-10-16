@@ -6,7 +6,7 @@ import { createTranslator } from 'next-intl';
 import type { Locale } from '@/i18n/locales';
 import it from '../../messages/it.json';
 import { MAIL_LOGO } from './brand';
-import { BETA_INVITE_DAYS, TOKEN_TTL_MS } from './token-shape';
+import { BETA_INVITE_DAYS, BETA_INVITE_KEEP_DAYS, TOKEN_TTL_MS } from './token-shape';
 import { INACTIVE_MONTHS, TERMS_VERSION, dateText, legalValues, termsDateText } from './legal';
 
 export interface AccountMail {
@@ -77,7 +77,9 @@ function parts(m: AccountMailKind, locale: Locale, base: string, t: Translate): 
         notes: [t('inviteTtl', { days: days('INVITE') }), t('inviteIgnore')] };
     case 'betaInvite':
       return { subject: t('betaInviteSubject'), intro: t('betaInviteIntro'), button: t('betaInviteButton'), link: `${page('register')}#${m.token}`,
-        notes: [t('betaInviteTtl', { days: BETA_INVITE_DAYS }), t('betaInviteIgnore')] };
+        // why we have the address, how long we keep it, and where to read more (the invitation is sent only on request)
+        notes: [t('betaInviteTtl', { days: BETA_INVITE_DAYS }), t('betaInviteIgnore'),
+          t('betaInvitePrivacy', { days: BETA_INVITE_KEEP_DAYS, link: page('privacy') })] };
     case 'inviteExists':
       return { subject: t('inviteExistsSubject'), intro: t('inviteExistsIntro'), button: t('existsButton'), link: page('login'),
         notes: [t('inviteExistsIgnore')] };

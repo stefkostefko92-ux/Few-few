@@ -28,11 +28,13 @@ interface Props {
 type NumKey = Exclude<keyof VerticalInputs, 'floors' | 'main' | 'topRefuge' | 'pitRefuge' | 'carBufferType' | 'cwBufferType'>;
 // an emptied field changes nothing (it is not a zero)
 const num = (s: string): number => (s.trim() === '' ? NaN : Number(s.replace(',', '.')));
+/** The lowest rated speed the field offers: the first hundredth over K.vRatedMin (the bound itself is not a lift). */
+const V_MIN_FIELD = Math.round(K.vRatedMin * 100 + 1) / 100;
 /** Values worked out until one is entered (missing in the inputs). */
 const WORKED_OUT: readonly NumKey[] = ['cwScreen', 'standW', 'standD'];
 
 export default function VerticalOptions({ I, set, open = false, blank = NO_BLANK, fixedV }: Props) {
-  const t = useTranslations('shaft'), tb = useTranslations('blank'), V = I.vertical, floors = V.floors, is = blank.is;
+  const t = useTranslations('shaft'), tb = useTranslations('blank'), tc = useTranslations('calc'), V = I.vertical, floors = V.floors, is = blank.is;
   const multi = !is('entrances') && I.entrances !== 'one';
   const put = (patch: Partial<VerticalInputs>, entered: readonly BlankKey[] = []): void => set({ vertical: { ...V, ...patch } }, (b) => filled(b, entered));
   // the buffers left to the software as the drawings have them: over 1 m/s the typical hydraulic one (buffers.ts); a size
@@ -46,14 +48,21 @@ export default function VerticalOptions({ I, set, open = false, blank = NO_BLANK
         onChange={(e) => { const v = num(e.target.value); if (Number.isFinite(v)) set({ vertical: withVerticalValue(V, key, Math.round(v)) }, (b) => filled(b, [])); }} />
     </label>
   );
-  // the project's own values: empty until entered
-  const data = (key: 'v' | 'pit' | 'headroom', min: number, max: number, step = 10) => (
-    <label className={`field${is(key) ? ' need' : ''}`} key={key}>
-      <span>{t(`vt_${key}`)}<DalRilievo id={key} value={is(key) ? '' : V[key]} /></span>
-      <input id={fieldId(key)} className="input num" type="number" inputMode="decimal" min={min} max={max} step={step} value={is(key) ? '' : V[key]}
-        aria-required={is(key) || undefined} onChange={(e) => { const v = num(e.target.value); if (Number.isFinite(v)) put({ [key]: key === 'v' ? v : Math.round(v) }, [key]); }} />
-    </label>
-  );
+  // the project's own values: empty until entered. The rated speed must be over K.vRatedMin (the server refuses it at or
+  // below, shaft-input.ts): the field starts at the first value allowed and says why at once, with the calculator's words
+  const slow = !is('v') && !(V.v > K.vRatedMin);
+  const data = (key: 'v' | 'pit' | 'headroom', min: number, max: number, step = 10) => {
+    const bad = key === 'v' && slow;
+    return (
+      <label className={`field${is(key) ? ' need' : ''}`} key={key}>
+        <span>{t(`vt_${key}`)}<DalRilievo id={key} value={is(key) ? '' : V[key]} /></span>
+        <input id={fieldId(key)} className="input num" type="number" inputMode="decimal" min={min} max={max} step={step} value={is(key) ? '' : V[key]}
+          aria-required={is(key) || undefined} aria-invalid={bad || undefined} aria-describedby={bad ? `${fieldId(key)}-err` : undefined}
+          onChange={(e) => { const v = num(e.target.value); if (Number.isFinite(v)) put({ [key]: key === 'v' ? v : Math.round(v) }, [key]); }} />
+        {bad ? <span className="note bad" id={`${fieldId(key)}-err`} role="alert">{tc('err_v')}</span> : null}
+      </label>
+    );
+  };
   // a buffer's type: a typical one of it, its support moved so the run-by stays; a pad's stroke follows its height
   const typeField = (side: 'car' | 'cw') => (
     <label className="field" key={`${side}-type`}>
@@ -92,7 +101,7 @@ export default function VerticalOptions({ I, set, open = false, blank = NO_BLANK
             <span>{t('vt_v')}<span className="badge calcolo">{fixedV.label}</span></span>
             <input id={fieldId('v')} className="input num" type="number" value={fixedV.ms} readOnly aria-readonly="true" />
           </label>
-        ) : data('v', K.vRatedMin, 10, 0.05)}
+        ) : data('v', V_MIN_FIELD, 10, 0.01)}
         {data('pit', 100, 10000)}
         {data('headroom', 1000, 20000)}
         <label className={`field${is('floors') ? ' need' : ''}`}>

@@ -86,8 +86,10 @@ function d2Blocks(P: Pres, C: Collaudo, V: FormValues): ReportBlock[] {
       rows: [['Cabina al piano più basso con la portata Q', fmt(d.T, 0), fmt(d.p, 2), `≤ ${fmt(d.limit, 2)}`, ok ? 'Soddisfatta' : 'Non soddisfatta']],
       status: [ok ? 'ok' : 'fail'], statusCol: 4 },
     { t: 'p', style: 'note', text: `Limite (${fmt(K.pressBase, 1)} + ${fmt(K.pressSpeed, 0)}·v_c)/(1 + v_c) con v_c la velocità delle funi alla velocità nominale; p con la `
-      + `formula della D.2 per la gola della macchina (voce gole.pressione). ${ok ? 'La D.2 è soddisfatta.' : 'La D.2 non è soddisfatta: il rapporto tra i carichi '
-        + 'non può cambiare così.'} Fuori da questa modifica la pressione resta un valore da dichiarare (verifiche dell’argano).` },
+      + `formula della D.2 per la gola della macchina (voce gole.pressione)${d.gola === 'VN' ? '; gola a V con sottosquadro: la D.2 non ha una formula; il '
+        + 'maggiore dei due valori è una scelta del software (voce gole.pressione), da confermare con il soggetto della verifica' : ''}. ${ok ? 'La D.2 è '
+        + 'soddisfatta.' : 'La D.2 non è soddisfatta: il rapporto tra i carichi non può cambiare così.'} Fuori da questa modifica la pressione resta un valore '
+      + 'da dichiarare (verifiche dell’argano).` },
   ];
 }
 

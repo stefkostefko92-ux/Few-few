@@ -31,7 +31,7 @@ import { ammodernamento, documentiNo } from './smoke-intervento.mjs';
 import { priceList } from './smoke-prices.mjs';
 import { progettoFlow } from './smoke-progetto.mjs';
 import { publicPages } from './smoke-public.mjs';
-import { guidePage, reportFlow, rilievoOffline } from './smoke-help.mjs';
+import { guidePage, helpAndSearch, notFoundPage, reportFlow, rilievoLostAnswer, rilievoOffline } from './smoke-help.mjs';
 import { replacementRoom } from './smoke-replacement.mjs';
 import { rilieviFlow } from './smoke-rilievi.mjs';
 import { rilieviSync } from './smoke-rilievi-sync.mjs';
@@ -55,6 +55,7 @@ const browser = await chromium.launch();
 try {
   const { page, errors } = await publicPages({ BASE, browser, newPage });
   await guidePage({ BASE, page });
+  await notFoundPage({ BASE, page, errors });
 
   step('sign-in and installation');
   await login(page, ADMIN.email, ADMIN.password);
@@ -274,6 +275,8 @@ try {
   await collegaFlow({ BASE, page, hydrated, stamp });
   await rilievoOffline({ BASE, page, errors });
   await reportFlow({ BASE, page, stamp, sink, ADMIN });
+  await rilievoLostAnswer({ BASE, page, errors });
+  await helpAndSearch({ BASE, page });
   assert.deepEqual(errors, [], 'browser errors');
 
   await technician({ BASE, page, errors, stamp, login, logout, hydrated, rilievoUrl: rilievo.sheetUrl });

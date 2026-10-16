@@ -47,7 +47,8 @@ export default function TermsGate({ date, state: terms, binding }: { date: strin
               aria-describedby={bad(k) ? 'terms-error' : undefined} />
             <span>{k === 'accept'
               ? tr.rich('accept', { ...values, link: (chunks) => <Link href="/privacy#terms" target="_blank">{chunks}</Link> })
-              : tr(k, values)}</span>
+              // the owner acts for a company that exists already: the same declaration, not «registering»
+              : k === 'business' ? t('gateBusiness') : tr(k, values)}</span>
           </label>
         ))}
         <label className="field">

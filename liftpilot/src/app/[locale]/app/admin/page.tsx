@@ -15,8 +15,8 @@ export async function generateMetadata() {
   return { title: t('title') };
 }
 
-export default async function AdminPage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
+export default async function AdminPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ revoca?: string | string[] }> }) {
+  const [{ locale }, { revoca }] = await Promise.all([params, searchParams]);
   setRequestLocale(locale);
   const me = await requireCapability(locale, 'platform:admin');
   const [t, tb, tf, companies, lang, openReports] = await Promise.all([getTranslations('admin'), getTranslations('billing'), getTranslations('feedback.admin'),
@@ -24,9 +24,14 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
   const fd = dateFormat(locale);
   return (
     <main className="page">
-      {/* the reports of «Segnala un problema», with how many wait to be handled */}
+      {/* the reports of «Segnala un problema», with how many wait to be handled, and the way to the beta invitations */}
       <AccountHead area="platform" title={t('title')} lead={t('lead')}
-        actions={<Link className="btn" href="/app/admin/segnalazioni"><Icon name="message-circle" size={18} />{tf('link')} · {tf('linkCount', { n: openReports })}</Link>} />
+        actions={<>
+          <Link className="btn" href="/app/admin/segnalazioni"><Icon name="message-circle" size={18} />{tf('link')} · {tf('linkCount', { n: openReports })}</Link>
+          <a className="btn" href="#inviti"><Icon name="mail" size={18} />{t('betaTitle')}</a>
+        </>} />
+      {/* the beta by invitation, first: the testers' addresses, their links and what became of them */}
+      <BetaInvites locale={locale} revoked={revoca === 'ok' || revoca === 'no' ? revoca : null} />
       <div className="table-panel">
         <table className="data-table stack">
           <thead><tr><th>{t('company')}</th><th>{t('created')}</th><th className="text-right">{t('users')}</th><th className="text-right">{t('projects')}</th><th className="text-right">{t('calculations')}</th><th>{t('billing')}</th><th>{t('status')}</th></tr></thead>
@@ -73,8 +78,6 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
         </table>
       </div>
       <CreateCompanyForm />
-      {/* the beta by invitation: the testers' addresses, their links and what became of them */}
-      <BetaInvites locale={locale} />
     </main>
   );
 }

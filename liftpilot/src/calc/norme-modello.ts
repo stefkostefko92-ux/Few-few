@@ -47,11 +47,14 @@ export const VOCI_MODELLO: readonly Voce[] = [
   },
   {
     id: 'modello.velocita.minima', gruppo: 'modello', titolo: 'Velocità nominale minima: campo dell’ascensore',
-    valore: 'velocità nominale oltre 0,15 m/s; a 0,15 m/s o meno l’apparecchio non è un ascensore per la UNI EN 81-20 né per il DPR 162/1999 '
-      + 'e il software non lo calcola né lo progetta: il campo è segnato e il calcolo o il progetto non si salva',
+    valore: 'velocità nominale oltre 0,15 m/s; a 0,15 m/s o meno l’apparecchio è fuori dal campo di applicazione della UNI EN 81-20 (1.3 a) 2)), '
+      + 'della Direttiva 2014/33/UE (art. 1 par. 2 a)) e del DPR 162/1999 (art. 1 c.3 a), testo vigente) e il software non lo calcola né lo '
+      + 'progetta: il campo è segnato e il calcolo o il progetto non si salva',
     riferimento: 'UNI EN 81-20:2020, 1.3 a) 2); DPR 162/1999 e s.m.i., art. 1 c.3 lett. a); Direttiva 2014/33/UE, art. 1 par. 2 lett. a)',
     fonte: `${letto(T20, 'p. 15')}; DPR 162/1999 e Direttiva 2014/33/UE: testi ufficiali (ricerca, cap. 16, §2 e §4.6)`, stato: 'confermato',
     costanti: ['vRatedMin'],
+    nota: 'nella modifica di un ascensore messo in servizio prima della Direttiva Ascensori le clausole citate non fissano da sole il limite (la '
+      + 'UNI EN 81-20 vale per gli impianti nuovi, la UNI 10411-1 non pone una velocità minima nel suo campo): lì il limite è una scelta del software',
   },
   {
     id: 'modello.compensazione', gruppo: 'modello', titolo: 'Compensazione e cavo flessibile', valore: 'non modellati a parte: la loro massa sul lato cabina entra in P',

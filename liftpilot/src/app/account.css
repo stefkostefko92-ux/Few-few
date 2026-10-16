@@ -38,3 +38,9 @@
 
 /* the platform's companies: the way to a company's rights matrix under its name */
 .admin-perm { margin-top: 8px; }
+/* «Inviti alla beta»: the actions of a row and the link shown once after «Invia di nuovo» stay inside their cell — at 390 px
+   the cell is narrower than the link, which wraps instead of running past the card */
+.beta-invites .beta-actions { min-width: 0; max-width: 100%; }
+.beta-invites .beta-actions > *, .beta-invites .beta-resend .alert { min-width: 0; max-width: 100%; }
+.beta-invites .beta-resend .alert > span { overflow-wrap: anywhere; }
+.beta-invites .beta-resend { flex: 1 1 100%; }

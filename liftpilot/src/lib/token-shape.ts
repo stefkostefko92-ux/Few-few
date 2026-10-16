@@ -10,5 +10,9 @@ export const TOKEN_TTL_MS: Readonly<Record<Kind, number>> = { VERIFY_EMAIL: 48 *
 /** A beta invitation's link waits a month (src/lib/beta-invites.ts); sending it again starts the days anew. */
 export const BETA_INVITE_DAYS = 30;
 
+/** An invitation never used is deleted this many days after its link ended (src/lib/purge.ts; the invitation's e-mail
+ *  says so): the address and the administrator's note go with it. */
+export const BETA_INVITE_KEEP_DAYS = 30;
+
 /** 32 random bytes in base64url: 43 characters of [A-Za-z0-9_-]. */
 export const tokenShapeOk = (token: string): boolean => /^[A-Za-z0-9_-]{43}$/.test(token);

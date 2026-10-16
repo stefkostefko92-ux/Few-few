@@ -2,21 +2,23 @@ import { getTranslations } from 'next-intl/server';
 import { dateFormat } from '@/lib/dates';
 import { BETA_INVITE_DAYS, listBetaInvites } from '@/lib/beta-invites';
 import { registrationMode } from '@/lib/env';
-import { revokeBetaInviteAction } from '@/server/beta-invite-actions';
-import BetaInviteForm, { BetaInviteResend } from './BetaInviteForm';
+import BetaInviteForm, { BetaInviteResend, BetaInviteRevoke } from './BetaInviteForm';
 
 const PILL = { waiting: 'warn', used: 'ok', expired: 'fail' } as const;
 
-// «Inviti alla beta» on the platform administrator's page (/app/admin, behind its platform:admin gate): the form, then
-// every invitation with its state — waiting, used by a company, past its end — and, while not used, «Invia di nuovo» and
-// «Revoca». The note is the administrator's own and never reaches the tester.
-export default async function BetaInvites({ locale }: { locale: string }) {
+// «Inviti alla beta» on the platform administrator's page (/app/admin, behind its platform:admin gate, first on it and
+// reached from its head by the anchor #inviti): what a revocation did (`revoked`, from ?revoca=), the form, then every
+// invitation with its state — waiting, used by a company, past its end — and, while not used, «Invia di nuovo» and
+// «Revoca» (asked twice). The note is the administrators' own: never sent to the tester, but personal data the tester
+// may ask for.
+export default async function BetaInvites({ locale, revoked }: { locale: string; revoked: 'ok' | 'no' | null }) {
   const [t, rows] = await Promise.all([getTranslations('admin'), listBetaInvites()]);
   const fd = dateFormat(locale);
   return (
-    <section className="panel beta-invites" aria-labelledby="beta-title">
+    <section id="inviti" className="panel beta-invites" aria-labelledby="beta-title">
       <h2 id="beta-title">{t('betaTitle')}</h2>
-      <p className="note long">{registrationMode() === 'invite' ? t('betaModeInvite', { days: BETA_INVITE_DAYS }) : t('betaModeOpen')}</p>
+      {revoked ? <p className={`alert ${revoked === 'ok' ? 'alert-ok' : 'alert-warn'}`} role="status">{revoked === 'ok' ? t('betaRevoked') : t('betaNotRevoked')}</p> : null}
+      <p className="note long">{registrationMode() === 'invite' ? t('betaModeInvite', { days: BETA_INVITE_DAYS }) : t('betaModeOpen')} {t('betaOnlyAsked')}</p>
       <BetaInviteForm />
       {rows.length ? (
         <div className="table-panel">
@@ -39,13 +41,9 @@ export default async function BetaInvites({ locale }: { locale: string }) {
                   </td>
                   <td data-label={t('betaActions')}>
                     {r.state === 'used' ? <span className="note">—</span> : (
-                      <div className="flex flex-wrap items-start gap-2">
+                      <div className="beta-actions flex flex-wrap items-start gap-2">
                         <BetaInviteResend id={r.id} email={r.email} />
-                        <form action={revokeBetaInviteAction}>
-                          <input type="hidden" name="locale" value={locale} />
-                          <input type="hidden" name="id" value={r.id} />
-                          <button type="submit" className="btn btn-sm btn-danger" aria-label={`${t('betaRevoke')} · ${r.email}`}>{t('betaRevoke')}</button>
-                        </form>
+                        <BetaInviteRevoke id={r.id} email={r.email} />
                       </div>
                     )}
                   </td>

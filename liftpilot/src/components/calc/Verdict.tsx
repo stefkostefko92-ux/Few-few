@@ -2,7 +2,8 @@
 // failures and warnings, key figures, sensitivity, existing machine. A modernisation that keeps the machine (round 45,
 // `resta`: its name) verifies it as it is: no proposal, the result under the kept machine's name. The result is the
 // calculation's own (round 48, calc-verdict.ts): with the ratio of the loads changed, D.1 and D.2 (`extra`) are counted
-// in it and named beside the engine's checks.
+// in it and named beside the engine's checks, each with its value against its limit (D.2's pressure in N/mm², the unit
+// of the relazione's table — the check carries MPa, the same number).
 import { useTranslations } from 'next-intl';
 import type { Check } from '@/calc/types';
 import Icon, { type IconName } from '@/components/Icon';
@@ -10,10 +11,20 @@ import { calcVerdict } from '@/lib/lift/calc-verdict';
 import type { Analysis } from '@/lib/present/analysis';
 import { verdictStatus, worstTraction, type Texts } from '@/lib/present/texts';
 import type { Pres } from '@/lib/present/tr';
+import { isUpperLimit, shownValue } from '@/shaft/checks';
 import type { ShaftCheck } from '@/shaft/types';
 import { Pill } from './ui';
 
 const CLASS = { fail: 'ko', warn: 'warn', ok: 'ok' } as const;
+
+/** An extra check's value against its limit, as the relazione prints them: «11,21 N/mm² > 8,25 N/mm²» (null without a
+ *  value — D.1 with a slack side). */
+function figure(c: ShaftCheck, fmt: (x: number, dec: number) => string): string | null {
+  if (c.value === null || c.limit === null) return null;
+  const unit = c.unit === 'MPa' ? '\u00a0N/mm²' : c.unit ? `\u00a0${c.unit}` : '';
+  const met = c.status !== 'fail', sign = isUpperLimit(c.id) ? (met ? '≤' : '>') : (met ? '≥' : '<');
+  return `${shownValue(c, fmt)}${unit} ${sign} ${fmt(c.limit, c.dec)}${unit}`;
+}
 
 /** `id`: the anchor of the checks it names (a saved calculation's: the result pill's panel leads there); `extra`: the
  *  checks beyond the engine's that the calculation counts (calcExtra: D.1 and D.2 with the ratio of the loads changed). */
@@ -25,8 +36,11 @@ export default function Verdict({ id, P, X, a, badCount, resta, extra = [] }: {
   const v = calcVerdict(res, extra);
   const warns = res.checks.filter((c) => c.status === 'warn');
   const pills = (list: readonly Check[], status: 'fail' | 'warn') => list.map((c) => <Pill key={c.id} status={status}>{X.checkLabel(c.id)}</Pill>);
-  // D.1 and D.2 under their names of the shaft's checks (messages shaft c_tr_d1, c_tr_d2)
-  const more = (status: 'fail' | 'warn') => extra.filter((c) => c.status === status).map((c) => <Pill key={c.id} status={status}>{ts(`c_${c.id}`)}</Pill>);
+  // D.1 and D.2 under their names of the shaft's checks (messages shaft c_tr_d1, c_tr_d2), with their figures
+  const more = (status: 'fail' | 'warn') => extra.filter((c) => c.status === status).map((c) => {
+    const fig = figure(c, fmt);
+    return <Pill key={c.id} status={status}>{ts(`c_${c.id}`)}{fig ? `: ${fig}` : null}</Pill>;
+  });
   const extraFails = extra.some((c) => c.status === 'fail'), extraWarns = extra.some((c) => c.status === 'warn');
   const head = badCount ? t('verdict_invalid') : X.countsText(v.fails, v.warns);
   const moved = sens.some((s) => s.changed.length);

@@ -39,5 +39,7 @@ export const VOCI_CARICHI: readonly VoceVano[] = [
       + 'UNI 10411-11 o con il rapporto che resta la verifica non c’è',
     riferimento: 'UNI 10411-1:2024, 6.1 e D.2', fonte: letto('UNI 10411-1:2024', 'pp. 6–7 e 34'), stato: 'confermato',
     verifiche: ['tr_d2'], rifFuoriNorma: 'UNI 10411-1:2024, 6.1 e D.2 (verifica della sola UNI 10411-1)',
+    nota: 'gola a V con sottosquadro: la D.2 non ha una formula; il maggiore dei due valori è una scelta del software (voce gole.pressione), '
+      + 'da confermare con il soggetto della verifica',
   },
 ];

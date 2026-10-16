@@ -46,3 +46,7 @@ export const SCHEDA_KEY = 'scheda';
 export type RilievoActionState = { error?: RilievoActionError };
 
 export const initialRilievoActionState: RilievoActionState = {};
+
+/** The write key of the sheet's form (round 48): one per form, the same on every attempt to save it, so that a save sent
+ *  again after its answer was lost finds the sheet it already made or updated (server/rilievi/service.ts). */
+export const WRITE_KEY = 'writeKey';

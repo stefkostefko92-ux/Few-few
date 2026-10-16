@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { registerAction } from '@/server/account-actions';
@@ -21,10 +21,13 @@ type Text = 'company' | 'vatNumber' | 'city' | 'name' | 'email';
 // the e-mail link and the password. `date` is the terms' day as the server writes it, `trialDays` the free trial when
 // the subscription is on (null: no billing on this server, the free beta); `invite` the beta invitation of the link
 // (its fragment, read by RegisterEntry): its address is the account's, not to be changed, and its token goes back with
-// the form (`invito`).
-export default function RegisterForm({ date, trialDays, invite }: { date: string; trialDays: number | null; invite: { token: string; email: string } | null }) {
+// the form (`invito`); `onSent` runs once the form was sent (RegisterEntry takes the invitation's link off the address).
+export default function RegisterForm({ date, trialDays, invite, onSent }: {
+  date: string; trialDays: number | null; invite: { token: string; email: string } | null; onSent?: () => void;
+}) {
   const t = useTranslations('register'), te = useTranslations('errors'), locale = useLocale();
   const [state, action, pending] = useActionState(registerAction, initialFormState);
+  useEffect(() => { if (state.ok) onSent?.(); }, [state.ok, onSent]);
   const [v, setV] = useState<Record<Text, string>>({ company: '', vatNumber: '', city: '', name: '', email: invite?.email ?? '' });
   const [agreed, setAgreed] = useState<Record<RegisterConsent, boolean>>({ accept: false, business: false, drafts: false });
   const { form, alert } = useErrorFocus(state);

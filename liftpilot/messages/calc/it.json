@@ -192,7 +192,7 @@
   "c_ucmp": "Impianto nuovo: protezione UCMP",
   "poles_short": "poli",
   "invalid": "Campi non validi (in rosso): il calcolo usa un valore predefinito.",
-  "err_v": "La velocità nominale deve superare 0,15 m/s: a 0,15 m/s o meno l’apparecchio non è un ascensore per la UNI EN 81-20 (1.3) né per il DPR 162/1999 (art. 1), e il software non lo calcola. Controllare il valore (per esempio 1,0 invece di 0,1).",
+  "err_v": "La velocità nominale deve superare 0,15 m/s: a 0,15 m/s o meno l’apparecchio è fuori dal campo di applicazione della UNI EN 81-20 (1.3 a) 2)), della Direttiva 2014/33/UE (art. 1 par. 2 a)) e del DPR 162/1999 (art. 1 c.3 a)), e il software non lo calcola. Controllare il valore (per esempio 1,0 invece di 0,1).",
   "g_geom": "Geometria della gola",
   "verdict_ko1": "1 verifica non superata",
   "verdict_warn1": "Verifiche superate, 1 con «Attenzione»",

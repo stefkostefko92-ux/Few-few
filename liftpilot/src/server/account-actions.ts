@@ -11,6 +11,7 @@ import { mailAccount } from '@/lib/account-mail';
 import { betaInviteOf, type ValidBetaInvite } from '@/lib/beta-invites';
 import { REGISTER_CONSENTS } from '@/lib/consents';
 import { registrationMode } from '@/lib/env';
+import { TERMS_VERSION } from '@/lib/legal';
 import { log } from '@/lib/log';
 import { mailConfigured } from '@/lib/mail';
 import { hashPassword, verifyPassword } from '@/lib/password';
@@ -89,40 +90,61 @@ async function register(d: RegisterInput, locale: Locale, betaInviteId: string |
 }
 
 /** What the link of the confirmation e-mail opens: a waiting registration (its page asks the specific approval of the
- *  clauses with the password), an account's link (the password only), or nothing good. Reading it changes nothing; its
- *  own count, so reading links never uses up the tries of confirming one. */
-export async function verifyInfoAction(token: unknown): Promise<'registration' | 'account' | 'invalid' | 'limited'> {
+ *  clauses with the password; `registrationNewTerms`: made under an earlier version of the terms, so the page asks to
+ *  accept the version in force too), a registration from before the beta by invitation that can no longer make a
+ *  company (`inviteOnly`), an account's link (the password only), or nothing good. Reading it changes nothing; its own
+ *  count, so reading links never uses up the tries of confirming one. */
+export type VerifyInfo = 'registration' | 'registrationNewTerms' | 'inviteOnly' | 'account' | 'invalid' | 'limited';
+
+export async function verifyInfoAction(token: unknown): Promise<VerifyInfo> {
   if (!rateLimit(`verify-info-ip:${await clientIp()}`, 40, WINDOW)) return 'limited';
   if (typeof token !== 'string' || !tokenShapeOk(token)) return 'invalid';
   if (await tokenUser(token, 'VERIFY_EMAIL')) return 'account';
-  return (await pendingOf(token)) ? 'registration' : 'invalid';
+  const p = await pendingOf(token);
+  if (!p) return 'invalid';
+  if (closedTo(p)) return 'inviteOnly';
+  return p.termsVersion === TERMS_VERSION ? 'registration' : 'registrationNewTerms';
 }
+
+/** During the beta by invitation (REGISTRATION_MODE=invite) a registration made without an invitation — before the
+ *  deploy that closed the registration — makes no company: its link answers so, and nothing is used. */
+const closedTo = (p: PendingRegistration): boolean => registrationMode() === 'invite' && p.betaInviteId === null;
+
+/** An empty password is a field to fill, never a bad link. */
+const NO_PASSWORD: FormState = { error: 'verifyPasswordRequired', fields: ['password'] };
 
 // The link of the e-mail and the password: the address is proven by the inbox, the account or the registration by the
 // password (a link alone would confirm what somebody else made with this address). A link of an account (a colleague
 // a company added, a registration from before they waited apart) confirms it; a link of a waiting registration makes
-// the company and its owner, with the specific approval of the clauses (arts. 1341–1342 c.c.) given there: the link
-// and the password are its simple electronic signature (docs/terms-changes.md).
+// the company and its owner, with the specific approval of the clauses (arts. 1341–1342 c.c.) given there — and, for a
+// registration made under an earlier version of the terms, the acceptance of the version in force: the link and the
+// password are its simple electronic signature (docs/terms-changes.md). Only a bad link is said to be one.
 export async function verifyEmailAction(_prev: FormState, fd: FormData): Promise<FormState> {
   const locale = localeOf(fd);
   if (!rateLimit(`verify-ip:${await clientIp()}`, 20, WINDOW)) return { error: 'rateLimited' };
-  const parsed = verifySchema.safeParse({ token: str(fd, 'token'), password: str(fd, 'password'), clauses: str(fd, 'clauses') });
-  if (!parsed.success) return { error: 'invalidLink' };
-  const { token, password, clauses } = parsed.data;
+  const parsed = verifySchema.safeParse({ token: str(fd, 'token'), password: str(fd, 'password'), clauses: str(fd, 'clauses'), accept: str(fd, 'accept') });
+  // a malformed link is a bad link; a password over the longest one allowed cannot be the right one
+  if (!parsed.success) return parsed.error.issues.some((i) => i.path[0] === 'token') ? { error: 'invalidLink' } : { error: 'verifyWrongPassword', fields: ['password'] };
+  const { token, password, clauses, accept } = parsed.data;
   const id = await tokenUser(token, 'VERIFY_EMAIL');
-  if (id) return confirmAccount(id, token, password, locale);
+  if (id) return password ? confirmAccount(id, token, password, locale) : NO_PASSWORD;
   const pending = await pendingOf(token);
   if (!pending) return { error: 'invalidLink' };
-  // the approval before anything else: without it nothing is checked nor used
-  if (clauses !== 'on') return { error: 'consentRequired', fields: ['clauses'] };
-  return confirmRegistration(pending, token, password, locale);
+  if (closedTo(pending)) return { error: 'registrationInviteOnly' };
+  // the approval (and the terms in force, for a registration under an earlier version) before anything else: without
+  // it nothing is checked nor used
+  const renewTerms = pending.termsVersion !== TERMS_VERSION;
+  const missing = [...(renewTerms && !accept ? ['accept'] : []), ...(clauses ? [] : ['clauses'])];
+  if (missing.length) return { error: 'consentRequired', fields: password ? missing : [...missing, 'password'] };
+  if (!password) return NO_PASSWORD;
+  return confirmRegistration(pending, token, password, locale, renewTerms);
 }
 
 async function confirmAccount(id: string, token: string, password: string, locale: Locale): Promise<FormState> {
   if (!rateLimit(`verify-user:${id}`, 8, WINDOW)) return { error: 'rateLimited' };
   const user = await prisma.user.findUnique({ where: { id }, include: { company: { select: { active: true } } } });
   if (!user || !user.active || !user.company.active) return { error: 'invalidLink' };
-  if (!(await verifyPassword(password, user.passwordHash))) return { error: 'verifyWrongPassword' };
+  if (!(await verifyPassword(password, user.passwordHash))) return { error: 'verifyWrongPassword', fields: ['password'] };
   const now = new Date();
   const done = await prisma.$transaction(async (tx) => {
     if ((await consumeToken(tx, token, 'VERIFY_EMAIL')) !== user.id) return false;
@@ -136,30 +158,22 @@ async function confirmAccount(id: string, token: string, password: string, local
   redirect(`/${locale}/app`);
 }
 
-async function confirmRegistration(p: PendingRegistration, token: string, password: string, locale: Locale): Promise<FormState> {
+/** The registration confirmed: the company, its owner and the proof of the approval in one transaction
+ *  (src/lib/registrations.ts confirmPending). */
+async function confirmRegistration(p: PendingRegistration, token: string, password: string, locale: Locale, renewTerms: boolean): Promise<FormState> {
   if (!rateLimit(`verify-pending:${p.id}`, 8, WINDOW)) return { error: 'rateLimited' };
-  if (!(await verifyPassword(password, p.passwordHash))) return { error: 'verifyWrongPassword' };
+  if (!(await verifyPassword(password, p.passwordHash))) return { error: 'verifyWrongPassword', fields: ['password'] };
   let done: Confirmed;
   try {
-    done = await confirmPending(p, token);
+    done = await confirmPending(p, token, { locale, renewTerms });
   } catch (e) {
     // two registrations of the address confirmed at the same moment: the other one made the account
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') return { error: 'emailTaken' };
     throw e;
   }
   if (!done.ok) return { error: done.reason === 'taken' ? 'emailTaken' : 'invalidLink' };
-  const { user, released } = done, approvedAt = new Date();
-  // the company that had added the address hears why its colleague is gone
-  if (released?.companyId) await audit({ companyId: released.companyId, userId: null, action: 'USER_RELEASED', entity: 'User', entityId: released.id });
-  // what was accepted at the registration, and the clauses approved through the link with the password, kept with the
-  // account (the version is the registration's: an owner who registered under an earlier one accepts the one in force
-  // on the terms' page, src/lib/legal.ts termsStateOf)
-  await audit({ companyId: user.companyId, userId: user.id, action: 'USER_REGISTERED', entity: 'User', entityId: user.id,
-    meta: { terms: p.termsVersion, sha256: p.termsSha256, locale: p.locale, consents: [...REGISTER_CONSENTS], clausesApprovedAt: approvedAt.toISOString(),
-      clausesVia: 'email-link+password', registeredAt: p.createdAt.toISOString(), released: released !== null, betaInvite: p.betaInviteId !== null } });
-  await audit({ companyId: user.companyId, userId: user.id, action: 'EMAIL_VERIFIED', entity: 'User', entityId: user.id });
-  log.info({ userId: user.id }, 'registered');
-  await startSession(user);
+  log.info({ userId: done.user.id }, 'registered');
+  await startSession(done.user);
   redirect(`/${locale}/app`);
 }
 

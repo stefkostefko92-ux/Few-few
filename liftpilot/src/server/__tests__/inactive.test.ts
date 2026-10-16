@@ -1,6 +1,7 @@
 // The companies inactive without a subscription (src/lib/inactive.ts): the owner is told by e-mail first and the
 // company goes only from the day the e-mail names, if still nobody signed in; a sign-in or a subscription in between
-// keeps it; never the platform's company, one never billed, or one whose owner could not be told.
+// keeps it; never the platform's company, one never billed, or one whose owner could not be told. The beta invitation
+// the company was made with goes in the same transaction (its address and the administrator's note).
 import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -10,7 +11,7 @@ interface U { role: string; lastLoginAt: Date | null; active: boolean; emailVeri
 interface C { id: string; billingExempt: boolean; createdAt: Date; subscriptionStatus: string | null; inactiveNoticeAt: Date | null; users: U[] }
 let companies: C[] = [];
 let mailOk = true, mailOn = true;
-const sent: string[] = [], audits: string[] = [];
+const sent: string[] = [], audits: string[] = [], betaInvitesGone: string[] = [];
 
 // a small evaluator of the where clauses src/lib/inactive.ts writes
 type W = Record<string, unknown>;
@@ -41,6 +42,7 @@ const db = {
     delete: async ({ where }: { where: { id: string } }) => { companies = companies.filter((c) => c.id !== where.id); },
   },
   auditLog: { deleteMany: async () => ({ count: 0 }) },
+  betaInvite: { deleteMany: async ({ where }: { where: { companyId: string } }) => { betaInvitesGone.push(where.companyId); return { count: 1 }; } },
   user: { deleteMany: async ({ where }: { where: { companyId: string } }) => { const c = companies.find((x) => x.id === where.companyId); if (c) c.users = []; return { count: 0 }; } },
   $queryRaw: async () => [],
 };
@@ -86,6 +88,7 @@ test('from the day named the company goes; a sign-in in between keeps it and end
   assert.equal(day.toISOString(), '2029-04-15T00:00:00.000Z');
   assert.deepEqual(await purgeInactive(day), { told: 0, deleted: 1 });
   assert.deepEqual(companies.map((c) => c.id), ['back']);
+  assert.deepEqual(betaInvitesGone, ['gone'], 'its beta invitation with it, and nobody else\'s');
   assert.equal(companies[0]?.inactiveNoticeAt, null, 'the sign-in ended the notice');
   assert.ok(audits.includes('COMPANY_DELETED:gone'));
 });

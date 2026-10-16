@@ -88,8 +88,8 @@ export const K = {
 export type Costante = keyof typeof K;
 
 /**
- * confermato: read on the text of the standard the client supplied, or two independent sources, or reproduced on a
- *   published case (✅ in the research);
+ * confermato: read on the text of the standard the client supplied, or on the official text of the act (Normattiva,
+ *   EUR-Lex), or two independent sources, or reproduced on a published case (✅ in the research);
  * da_verificare: secondary source, or a point the texts read do not settle: still to be checked (⚠);
  * stima: estimate used when a datum is missing, always shown as such;
  * derivazione: elementary mechanics, independent of the standard;
@@ -136,7 +136,9 @@ export const PROFILO = {
   titolo: "Italia — calcolo dell’argano e progetto dell’ascensore: solo argano, ammodernamento e trasformazione completa di impianti esistenti, impianto nuovo",
   documenti: [
     { sigla: 'Direttiva 2014/33/UE', ambito: 'requisiti essenziali di sicurezza (Allegato I)' },
-    { sigla: 'DPR 162/1999 e s.m.i. (DPR 8/2015, DPR 23/2017)', ambito: 'sostituzione del macchinario come modifica costruttiva; verifica straordinaria (art. 14)' },
+    { sigla: 'DPR 162/1999 e s.m.i. (DPR 8/2015, DPR 23/2017)', ambito: 'campo (art. 1); impianto nuovo con organismo notificato (All. V, VIII); modifica '
+      + 'costruttiva (art. 2 c.1 cc)) e verifica straordinaria (art. 14)' },
+    { sigla: 'Regolamento (UE) 2023/1230', ambito: 'art. 51 par. 2: ascensori dichiarati conformi dal 20/01/2027' },
     { sigla: 'UNI EN 81-20:2020', ambito: 'funi (5.5), freno (5.9.2.2), distanze nel vano (5.2.5) e superficie della cabina (5.4.2)' },
     { sigla: 'UNI EN 81-50:2020', ambito: 'aderenza (5.11) e coefficiente di sicurezza delle funi (5.12)' },
     { sigla: 'UNI 10411-1:2024', ambito: 'modifiche e sostituzioni su ascensori elettrici esistenti non conformi alla Direttiva Ascensori: collaudo delle parti modificate' },

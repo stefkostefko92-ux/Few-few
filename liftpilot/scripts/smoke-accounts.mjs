@@ -2,7 +2,8 @@
 // server sends its mail to scripts/mail-sink.mjs). During the beta (REGISTRATION_MODE=invite, the default) /register
 // without an invitation shows how to ask for one, and the platform administrator invites the testers
 // (scripts/smoke-beta.mjs); a company registers from its invitation's link, signs in only after confirming the address
-// with the newest link, the specific approval of the clauses and its own password (the tick kept after an error), invites a colleague who chooses the password from the link (an address with
+// with the newest link, the specific approval of the clauses and its own password (the tick kept after an error; an empty
+// password is a field to fill, never a bad link), invites a colleague who chooses the password from the link (an address with
 // an account elsewhere gets the same answer), forgets the password and sets a new one through the e-mail; a sign-out
 // ends the session on the server; a registration with the address of a waiting invitation leaves it waiting in the
 // inviting company — no company learns that the address joined another —; a second registration with the same address
@@ -43,7 +44,11 @@ async function registerInvited(page, url, address, fields) {
   // the form comes once the page has asked the server about the fragment's token
   await page.waitForFunction((a) => globalThis.document.querySelector('main input[name="email"]')?.value === a, address);
   assert.equal(await email.inputValue(), address, 'the invited address');
-  assert.equal(new URL(page.url()).hash, '', 'the token leaves the address bar');
+  // the token stays in the address bar while the form is on screen: a reload opens the invitation again
+  const token = new URL(url).hash;
+  assert.equal(new URL(page.url()).hash, token, 'the invitation kept in the address bar');
+  await page.reload();
+  await page.waitForFunction((a) => globalThis.document.querySelector('main input[name="email"]')?.value === a, address);
   assert.equal(await email.getAttribute('readonly'), '', 'not to be changed');
   assert.equal(await page.locator('main input[name="invito"][type="hidden"]').count(), 1, 'the invitation goes back with the form');
   assert.equal(await page.locator('main input[name="clauses"]').count(), 0, 'no tick for the clauses here');
@@ -52,6 +57,7 @@ async function registerInvited(page, url, address, fields) {
   for (const k of CONSENTS) await page.check(`input[name="${k}"]`);
   await page.click('main form button[type="submit"]');
   await registered(page);
+  assert.equal(new URL(page.url()).hash, '', 'the token leaves the address bar once the form was sent');
 }
 
 /** The page of a registration's link: the clauses, their tick and the password; in. */
@@ -121,7 +127,13 @@ export async function accountFlows({ BASE, stamp, step, newPage, sink, ADMIN_EMA
   await page.click('main form button[type="submit"]');
   await page.waitForFunction(() => /La password non è corretta/.test(globalThis.document.querySelector('main .alert-bad')?.textContent ?? ''));
   assert.equal(await page.isChecked('main input[name="clauses"]'), true, 'the tick kept after the error');
-  assert.equal(await page.evaluate(() => globalThis.document.activeElement?.id), 'verify-error', 'the focus on the message');
+  assert.equal(await page.evaluate(() => globalThis.document.activeElement?.getAttribute('name')), 'password', 'the focus on the password');
+  // the password left empty: a field to fill, not a bad link — and the link still works
+  await page.click('main form button[type="submit"]');
+  await page.waitForFunction(() => /Inserisci la tua password/.test(globalThis.document.querySelector('main .alert-bad')?.textContent ?? ''));
+  assert.doesNotMatch(await page.textContent('main .alert-bad'), /non è valido/, 'never «the link is not valid»');
+  assert.equal(await page.evaluate(() => globalThis.document.activeElement?.getAttribute('name')), 'password', 'the focus on the empty password');
+  assert.equal(await page.getAttribute('main input[name="password"]', 'aria-invalid'), 'true');
   await page.fill('main input[name="password"]', password);
   await Promise.all([page.waitForURL(/\/it\/app$/), page.click('main form button[type="submit"]')]);
   assert.match(await page.textContent('.ws-user'), new RegExp(`Ascensori ${stamp} srl`), 'signed in, in its own company');

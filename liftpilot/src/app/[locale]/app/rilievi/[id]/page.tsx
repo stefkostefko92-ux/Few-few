@@ -18,6 +18,7 @@ import RilieviHead from '@/components/rilievi/RilieviHead';
 import SectionIndex from '@/components/rilievi/SectionIndex';
 import { MisureTable, Plate } from '@/components/rilievi/parts';
 import LinkPanel from '@/components/collega/LinkPanel';
+import { searchQuery } from '@/lib/search-query';
 
 type SP = Promise<Record<string, string | string[] | undefined>>;
 
@@ -72,7 +73,7 @@ export default async function RilievoPage({ params, searchParams }: { params: Pr
       <Crumbs items={[{ href: '/app', label: tn('rilievi') }, { href: '/app/rilievi', label: tn('rilieviAll') }, ...(deleted ? [{ href: '/app/rilievi/cestino', label: t('trash.title') }] : []), { label: title }]} />
       <RilieviHead back={{ href: '/app/rilievi', label: t('schede.back') }} title={title} lead={t('scheda.dateLine', { date: fmt.day(scheda.data) })} actions={actions} />
       {flash ? <Flash text={t(`flash.${flash}`)} /> : null}
-      <LinkPanel user={user} scheda={scheda} cerca={typeof sp.impianto === 'string' ? sp.impianto : ''} flash={sp.lk} />
+      <LinkPanel user={user} scheda={scheda} cerca={searchQuery(sp.impianto)} flash={sp.lk} />
       <div className="rv-with-index">
         <SectionIndex label={t('scheda.index')} titles={sections.map((s) => ({ key: s.key, title: s.title }))} />
         <div className="rv-sheet">

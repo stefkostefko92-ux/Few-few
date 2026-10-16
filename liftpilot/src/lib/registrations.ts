@@ -2,8 +2,10 @@ import 'server-only';
 import type { PendingRegistration, User } from '@prisma/client';
 import { DEFAULT_LOCALE, isLocale, type Locale } from '@/i18n/locales';
 import { prisma } from './db';
+import { auditTx } from './audit';
+import { REGISTER_CONSENTS } from './consents';
 import { TERMS_VERSION, UNCONFIRMED_DAYS } from './legal';
-import { legalSha256 } from './legal-text';
+import { clausesProof, legalSha256 } from './legal-text';
 import type { RegisterInput } from './schemas';
 import { hashToken } from './token-hash';
 import { TOKEN_TTL_MS, newToken, tokenShapeOk } from './tokens';
@@ -71,14 +73,28 @@ export type Confirmed =
   /** the address has an account confirmed or used meanwhile: this registration ends */
   | { ok: false; reason: 'taken' };
 
+/** How the registration is confirmed at the link (src/server/account-actions.ts): the language of the page whose clauses
+ *  were approved, and whether the person accepted there the terms in force too — a registration made under an earlier
+ *  version, confirmed after a new one was published, takes the version in force (with its SHA-256) instead of its own,
+ *  so that the clauses approved and the terms accepted are the same text. */
+export interface Approval {
+  locale: Locale;
+  renewTerms: boolean;
+}
+
 /** The registration confirmed (the password already checked against it): in one transaction the link is used, the
  *  beta invitation it was made with is used up (one company per invitation: already used, nothing is made), an
- *  account of the address never confirmed nor used is released (with its company when it was the last user), the
- *  other registrations of the address go, the company and its owner are made — signed in and confirmed now. The
- *  companies' invitations of the address stay until their end (taking one meets the account: one address, one
- *  company), so no company learns of the registration. */
-export async function confirmPending(p: PendingRegistration, token: string): Promise<Confirmed> {
+ *  account of the address never confirmed nor used is released (with its company when it was the last user — and that
+ *  company's beta invitations), the other registrations of the address go, the company and its owner are made — signed
+ *  in, confirmed and with the clauses approved now —, and the proof of the approval is written in the activity log with
+ *  them (USER_REGISTERED: the terms, the consents, the SHA-256 of the clauses as shown and their articles): an account
+ *  never exists without it. The companies' invitations of the address stay until their end (taking one meets the
+ *  account: one address, one company), so no company learns of the registration. */
+export async function confirmPending(p: PendingRegistration, token: string, approval: Approval): Promise<Confirmed> {
   const now = new Date();
+  const terms = approval.renewTerms
+    ? { version: TERMS_VERSION, sha256: legalSha256(approval.locale), locale: approval.locale, acceptedAt: now }
+    : { version: p.termsVersion, sha256: p.termsSha256, locale: p.locale, acceptedAt: p.createdAt };
   return prisma.$transaction(async (tx): Promise<Confirmed> => {
     const used = await tx.pendingRegistration.deleteMany({ where: { id: p.id, tokenHash: hashToken(token), expiresAt: { gt: now } } });
     if (used.count !== 1) return { ok: false, reason: 'link' };
@@ -92,6 +108,8 @@ export async function confirmPending(p: PendingRegistration, token: string): Pro
     if (old) {
       const unused = !old.emailVerifiedAt && !old.lastLoginAt;
       if (!unused || (await tx.user.deleteMany({ where: { id: old.id, emailVerifiedAt: null, lastLoginAt: null } })).count !== 1) return { ok: false, reason: 'taken' };
+      // a company left without users goes, and its beta invitations with it (the address and the note are personal data)
+      await tx.betaInvite.deleteMany({ where: { companyId: old.companyId, company: { users: { none: {} } } } });
       const gone = (await tx.company.deleteMany({ where: { id: old.companyId, users: { none: {} } } })).count === 1;
       released = { id: old.id, companyId: gone ? null : old.companyId };
     }
@@ -101,12 +119,23 @@ export async function confirmPending(p: PendingRegistration, token: string): Pro
     const user = await tx.user.create({
       data: {
         // a registration made in English or Bulgarian (before 2026-10-12) gives an account in Italian; the audit keeps the
-        // language of the text accepted (account-actions.ts)
+        // language of the text accepted
         companyId: c.id, email: p.email, name: p.name, role: 'OWNER', passwordHash: p.passwordHash, mustChangePassword: false,
         locale: isLocale(p.locale) ? p.locale : DEFAULT_LOCALE,
-        emailVerifiedAt: now, lastLoginAt: now, termsAcceptedAt: p.createdAt, termsVersion: p.termsVersion,
+        emailVerifiedAt: now, lastLoginAt: now, termsAcceptedAt: terms.acceptedAt, termsVersion: terms.version, clausesApprovedAt: now,
       },
     });
+    // the company that had added the address hears why its colleague is gone
+    if (released?.companyId) await auditTx(tx, { companyId: released.companyId, userId: null, action: 'USER_RELEASED', entity: 'User', entityId: released.id });
+    // what was accepted at the registration (or, under an earlier version, at the link), and the clauses approved through
+    // the link with the password: the version, the SHA-256 of the terms and of the clauses as shown, their articles
+    await auditTx(tx, { companyId: c.id, userId: user.id, action: 'USER_REGISTERED', entity: 'User', entityId: user.id, meta: {
+      terms: terms.version, sha256: terms.sha256, locale: terms.locale, consents: [...REGISTER_CONSENTS],
+      ...(approval.renewTerms ? { termsAcceptedVia: 'email-link+password', registeredTerms: p.termsVersion, registeredSha256: p.termsSha256 } : {}),
+      clausesApprovedAt: now.toISOString(), clausesVia: 'email-link+password', clausesLocale: approval.locale, ...clausesProof(approval.locale),
+      registeredAt: p.createdAt.toISOString(), released: released !== null, betaInvite: p.betaInviteId !== null,
+    } });
+    await auditTx(tx, { companyId: c.id, userId: user.id, action: 'EMAIL_VERIFIED', entity: 'User', entityId: user.id });
     return { ok: true, user, released };
   });
 }

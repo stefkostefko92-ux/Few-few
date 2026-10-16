@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { isLocale } from '@/i18n/locales';
+import { termsDateText } from '@/lib/legal';
 import { pageMetadata } from '@/lib/seo';
 import AuthPage from '@/components/AuthPage';
 import VerifyEmailForm from '@/components/VerifyEmailForm';
@@ -17,5 +18,5 @@ export default async function VerifyEmailPage({ params }: { params: Promise<{ lo
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('verify');
-  return <AuthPage title={t('title')} lead={t('lead')}><VerifyEmailForm /></AuthPage>;
+  return <AuthPage title={t('title')} lead={t('lead')}><VerifyEmailForm date={termsDateText(locale)} /></AuthPage>;
 }

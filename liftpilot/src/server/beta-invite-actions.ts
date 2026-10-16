@@ -2,8 +2,10 @@
 // The platform administrator's invitations to the beta (/app/admin, «Inviti alla beta»): a tester's address with the
 // administrator's own note; the link goes by e-mail and is shown once on the screen, so the administrator can also hand
 // it over another way. Sent again: a new link and a new month, the earlier link stops. Withdrawn: the invitation and the
-// registrations waiting with it go. A used invitation stays as the record of the company it made.
+// registrations waiting with it go. A used invitation stays as the record of the company it made, and goes with it.
+// Invitations go only to whoever asked for one; the note records when and how.
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { DEFAULT_LOCALE, isLocale, type Locale } from '@/i18n/locales';
 import { prisma } from '@/lib/db';
 import { audit } from '@/lib/audit';
@@ -63,10 +65,15 @@ export async function resendBetaInviteAction(_prev: FormState, fd: FormData): Pr
   return { ok: true, secret: betaInviteLink(renewed.token), message: renewed.email, pending: !mailed };
 }
 
+/** Withdrawn (asked twice on the page, src/components/admin/BetaInviteForm.tsx BetaInviteRevoke): the page comes back
+ *  with what happened (`?revoca=ok`, or `no` when it was used or gone meanwhile) at the invitations. */
 export async function revokeBetaInviteAction(fd: FormData): Promise<void> {
   const me = await admin();
   const id = idSchema.safeParse(str(fd, 'id'));
   if (!me || !id.success) return;
-  if (await revokeBetaInvite(id.data)) await audit({ companyId: me.companyId, userId: me.id, action: 'BETA_INVITE_REVOKED', entity: 'BetaInvite', entityId: id.data });
-  revalidatePath(`/${localeOf(fd)}/app/admin`);
+  const done = await revokeBetaInvite(id.data);
+  if (done) await audit({ companyId: me.companyId, userId: me.id, action: 'BETA_INVITE_REVOKED', entity: 'BetaInvite', entityId: id.data });
+  const locale = localeOf(fd);
+  revalidatePath(`/${locale}/app/admin`);
+  redirect(`/${locale}/app/admin?revoca=${done ? 'ok' : 'no'}#inviti`);
 }

@@ -60,6 +60,28 @@ export default function NavLinks({ groups, label }: { groups: NavGroup[]; label:
   );
 }
 
+/** The help pinned at the sidebar's bottom (round 48): the public guide in a new tab and «Segnala un problema», which
+ *  takes the page the person is on (`?da=`, path only — feedback.ts pagePath checks it again) so that the administrator
+ *  sees the screen the report is about. On the report's own page it is marked and carries nothing. */
+export function HelpLinks({ label, guide, newTab, feedback }: { label: string; guide: string; newTab: string; feedback: string }) {
+  const pathname = usePathname();
+  const here = pathname === '/app/segnala';
+  const report = here ? '/app/segnala' : `/app/segnala?da=${encodeURIComponent(pathname)}`;
+  return (
+    <nav className="ws-help" aria-label={label}>
+      <Link href="/guida" target="_blank" rel="noopener">
+        <Icon name="book-open" size={16} />
+        <span>{guide}<span className="sr-only"> ({newTab})</span></span>
+        <Icon name="external-link" size={12} className="ws-nav-ext" />
+      </Link>
+      <Link href={report} aria-current={here ? 'page' : undefined}>
+        <Icon name="message-circle" size={16} />
+        <span>{feedback}</span>
+      </Link>
+    </nav>
+  );
+}
+
 /** A link of the shell to a page outside the groups (the account): marked when it is the page. */
 export function ShellLink({ href, className, title, children }: { href: string; className?: string; title?: string; children: ReactNode }) {
   const pathname = usePathname();

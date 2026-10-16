@@ -18,6 +18,7 @@
     "notFoundText": "L’indirizzo non esiste oppure non è accessibile con il tuo account.",
     "toProjects": "Vai agli impianti",
     "toHome": "Pagina iniziale",
+    "backHome": "Torna alla home",
     "errorTitle": "Si è verificato un errore",
     "errorText": "L’operazione non è andata a buon fine. Riprova; se il problema continua, comunica il codice qui sotto.",
     "errorCode": "Codice: {code}",
@@ -57,6 +58,8 @@
     "unverifiedExpired": "Questo account non è stato confermato in tempo e viene cancellato: registrati di nuovo, oppure chiedi al Titolare della tua azienda di aggiungerti di nuovo.",
     "tooManyReviews": "Questo calcolo ha già il numero massimo di visti (50).",
     "verifyWrongPassword": "La password non è corretta.",
+    "verifyPasswordRequired": "Inserisci la tua password.",
+    "registrationInviteOnly": "La registrazione è ora su invito: scrivi a {email} per partecipare.",
     "invalidLink": "Il link non è valido, è già stato usato o è scaduto: chiedine uno nuovo.",
     "mailUnavailable": "L’invio delle e-mail non è ancora attivo: riprova più tardi o scrivi a info@carbonstealth.eu.",
     "consentRequired": "Per continuare spunta tutte le conferme.",
@@ -400,7 +403,7 @@
       "SOLO_ARGANO": "Solo argano",
       "SOLO_ARGANO_lead": "Si sostituisce l’argano (e, se serve, le funi). Collaudo UNI 10411-1 o -11, verifica straordinaria.",
       "AMMODERNAMENTO": "Ammodernamento",
-      "AMMODERNAMENTO_lead": "Più parti sostituite o modificate, per ciascuna sì o no. Collaudo UNI 10411-1 o -11.",
+      "AMMODERNAMENTO_lead": "Più parti sostituite o modificate, per ciascuna sì o no. Collaudo UNI 10411-1 o -11, verifica straordinaria.",
       "TRASFORMAZIONE_COMPLETA": "Trasformazione completa",
       "TRASFORMAZIONE_COMPLETA_lead": "Tutto l’impianto progettato e collaudato come nuovo, UNI EN 81-20/50.",
       "daDefinire": "Intervento da definire",
@@ -612,15 +615,17 @@
     "bill": "Torna a pagamento",
     "permissions": "Permessi",
     "betaTitle": "Inviti alla beta",
-    "betaModeInvite": "La registrazione è su invito (REGISTRATION_MODE=invite): un’azienda si registra solo dal link del suo invito e con l’indirizzo invitato. Il link vale {days} giorni e serve per una sola azienda.",
-    "betaModeOpen": "La registrazione è aperta a tutti (REGISTRATION_MODE=open): gli inviti funzionano comunque e restano legati all’azienda che li usa.",
+    "betaModeInvite": "La registrazione è su invito: un’azienda si registra solo dal link del suo invito e con l’indirizzo invitato. Il link vale {days} giorni e serve per una sola azienda.",
+    "betaModeOpen": "La registrazione è aperta a tutti: gli inviti funzionano comunque e restano legati all’azienda che li usa.",
+    "betaOnlyAsked": "Gli inviti vanno solo a chi ha chiesto di partecipare alla beta: l’e-mail dell’invito dice al tester che l’ha chiesto e per quanto conserviamo il suo indirizzo.",
     "betaEmail": "E-mail",
     "betaNote": "Nota (facoltativa)",
-    "betaNoteHint": "Solo per te, al massimo 200 caratteri: al tester non arriva.",
+    "betaNoteHint": "Annota la richiesta (data e canale). È visibile solo agli amministratori; è un dato personale che il tester può chiedere: scrivi solo il necessario.",
     "betaInvite": "Invita",
     "betaLink": "Link di invito per {email}:",
     "betaLinkNote": "L’abbiamo mandato per e-mail. Lo vedi solo ora: se serve, consegnalo anche in un altro modo.",
     "betaLinkNoMail": "L’invio delle e-mail non è attivo: consegna tu questo link. Lo vedi solo ora.",
+    "betaLinkResent": "Il link precedente non vale più.",
     "betaState": "Stato",
     "betaDates": "Date",
     "betaActions": "Azioni",
@@ -633,6 +638,11 @@
     "betaUsedOn": "Usato il {date}",
     "betaResend": "Invia di nuovo",
     "betaRevoke": "Revoca",
+    "betaRevokeAsk": "Revocare l’invito? Il suo link smette di funzionare.",
+    "betaRevokeConfirm": "Sì, revoca",
+    "betaRevokeCancel": "Annulla",
+    "betaRevoked": "Invito revocato: il suo link non funziona più.",
+    "betaNotRevoked": "L’invito non è stato revocato: nel frattempo è stato usato o non esiste più.",
     "betaNone": "Nessun invito finora."
   },
   "norme": {
@@ -727,6 +737,7 @@
       "COMPANY_DELETED": "Azienda eliminata",
       "INACTIVE_NOTICE_SENT": "Avviso di inattività inviato al Titolare",
       "TERMS_NOTICE_SENT": "Avviso delle nuove condizioni inviato al Titolare",
+      "CLAUSES_APPROVED": "Clausole approvate specificamente con la password",
       "PROJECT_UPGRADED": "Impianto passato al progetto completo"
     },
     "entities": {
@@ -1623,6 +1634,7 @@
     "inviteOnlyTitle": "La registrazione è su invito durante la beta",
     "inviteOnlyBadLink": "Il link di invito non è valido, è già stato usato o è scaduto.",
     "inviteOnlyText": "Durante la beta LiftPilot è aperto alle aziende invitate: l’invito arriva per e-mail, con il link che apre la registrazione per l’indirizzo a cui è stato mandato.",
+    "inviteOnlyReopen": "Se hai ricevuto un invito, riapri il link dall’e-mail.",
     "inviteOnlyAsk": "Per chiedere un invito scrivi a {email}, indicando la ragione sociale e la città dell’azienda.",
     "login": "Accedi",
     "closed": "La registrazione non è ancora attiva: per un account scrivi a info@carbonstealth.eu.",
@@ -1643,8 +1655,10 @@
     "noLink": "Questa pagina si apre dal link dell’e-mail di registrazione. Se il link non funziona, accedi con e-mail e password: ne riceverai uno nuovo.",
     "toLogin": "Vai all’accesso",
     "clausesTitle": "Approvazione specifica delle clausole",
-    "clausesLead": "Ultimo passo: leggi le clausole qui sotto, articoli delle <link>condizioni d’uso</link> che hai accettato registrandoti, e approvale specificamente con la password scelta alla registrazione. Il link dell’e-mail e la tua password valgono come firma elettronica dell’approvazione.",
-    "submitClauses": "Approvo le clausole e attivo l’account"
+    "clausesLead": "Ultimo passo: le clausole elencate qui sotto, che trovi per intero nelle <link>condizioni d’uso</link>, vanno approvate specificamente con la password scelta alla registrazione. Il link dell’e-mail e la tua password valgono come firma elettronica dell’approvazione.",
+    "submitClauses": "Approvo le clausole e attivo l’account",
+    "termsTitle": "Condizioni d’uso in vigore",
+    "termsChanged": "Dopo la tua registrazione abbiamo pubblicato una nuova versione delle condizioni d’uso e dell’informativa sulla privacy: versione {version} del {date}. Per attivare l’account accetta quella in vigore; le clausole qui sotto sono le sue."
   },
   "forgot": {
     "title": "Password dimenticata",
@@ -1752,6 +1766,13 @@
     "gateDeclinePending": "Non le accetti? Puoi disdire l’abbonamento senza costi (rimborsiamo la parte non usata su richiesta a info@carbonstealth.eu) e scaricare i dati dell’azienda.",
     "gatePassword": "La tua password",
     "gatePasswordNote": "Serve ad approvare specificamente le clausole (artt. 1341 e 1342 del codice civile): la password vale come firma elettronica dell’approvazione.",
+    "gateBusiness": "Dichiaro di agire per conto dell’impresa o dello studio professionale titolare dell’account, di avere il potere di vincolarlo e di non operare come consumatore.",
+    "bannerClauses": "Manca un passo per le condizioni d’uso che hai accettato: l’approvazione specifica delle clausole (artt. 1341 e 1342 del codice civile) con la tua password. Puoi continuare a lavorare: serve un minuto.",
+    "bannerClausesAction": "Approva le clausole",
+    "clausesAgainLead": "Hai accettato le condizioni d’uso in vigore con una spunta. Le clausole elencate qui sotto, che trovi per intero nelle <link>condizioni d’uso</link>, vanno approvate specificamente: spunta e conferma con la tua password, che vale come firma elettronica dell’approvazione. Te lo chiediamo una sola volta.",
+    "clausesAgainSubmit": "Approvo le clausole",
+    "clausesAgainLater": "Nel frattempo LiftPilot funziona come sempre.",
+    "clausesAgainBack": "Più tardi",
     "archiveTitle": "Versioni precedenti",
     "archiveItem": "Versione {label} del {date}",
     "archiveLead": "Testo archiviato della versione {label} del {date}, parola per parola. Per un’azienda già registrata vale fino al giorno in cui entra in vigore la versione successiva che il Titolare ha accettato o che lo vincola (art. {changes}).",
@@ -1794,6 +1815,7 @@
     "betaInviteButton": "Registra la tua azienda",
     "betaInviteTtl": "Il link vale {days, plural, one {un giorno} other {# giorni}} e apre la registrazione di una sola azienda, con questo indirizzo.",
     "betaInviteIgnore": "Se non ti interessa, ignora questo messaggio: senza la registrazione non si crea nessun account.",
+    "betaInvitePrivacy": "Ti scriviamo perché hai chiesto di partecipare alla beta. Carbon Stealth VCC conserva questo indirizzo con l’invito fino alla registrazione o, se non ti registri, fino a {days} giorni dopo la scadenza del link; poi lo cancella. Come trattiamo i dati personali: {link}",
     "feedbackSubject": "LiftPilot: è arrivata una segnalazione",
     "feedbackIntro": "un utente di LiftPilot ha inviato una segnalazione ({kind}). La trovi nella pagina delle segnalazioni, riservata agli amministratori della piattaforma.",
     "feedbackButton": "Apri le segnalazioni",
@@ -2655,12 +2677,12 @@
         "lavoriExtra": "Lavori extra (buono di lavoro)",
         "quadroMarca": "Marca quadro",
         "quadroMarcaAltro": "Altra marca quadro",
-        "quadroOrdine": "Scheda per l'ordine quadro",
+        "quadroOrdine": "Scheda per l’ordine quadro",
         "arganoPreventivo": "Argano da sostituire"
       },
       "question": {
         "bottoniereMisure": "Vuoi inserire le misure delle bottoniere vecchie?",
-        "quadroOrdine": "Vuoi compilare la scheda per l'ordine quadro?",
+        "quadroOrdine": "Vuoi compilare la scheda per l’ordine quadro?",
         "arganoPreventivo": "Argano da sostituire?",
         "sospensioni": "Sospensioni da cambiare?"
       },
@@ -2785,8 +2807,8 @@
       "loginNeeded": "Sessione scaduta: accedi di nuovo.",
       "sessionExpired": "La sessione è scaduta. <login>Accedi di nuovo in un’altra scheda</login>, poi torna qui e premi di nuovo Salva: i dati sono ancora nel modulo.",
       "sessionExpiredAction": "La sessione è scaduta e non è cambiato niente. <login>Accedi di nuovo in un’altra scheda</login>, poi torna qui e riprova.",
-      "offline": "Connessione assente: i dati sono ancora nel modulo. Premi di nuovo Salva quando c’è segnale.",
-      "offlineAction": "Connessione assente: non è cambiato niente. Riprova quando c’è segnale.",
+      "offline": "Connessione assente o interrotta: i dati sono ancora nel modulo. Premi di nuovo Salva quando c’è segnale: se il salvataggio era già arrivato, non si crea una seconda scheda.",
+      "offlineAction": "Connessione assente o interrotta: l’operazione potrebbe essere arrivata oppure no. Quando c’è segnale ricarica la pagina per vedere com’è andata, poi riprova se serve.",
       "failed": "Il server non ha risposto come previsto: i dati sono ancora nel modulo. Riprova tra poco; se il problema continua, scrivi a info@carbonstealth.eu.",
       "failedAction": "Il server non ha risposto come previsto. Ricarica la pagina per vedere se l’operazione è avvenuta, poi riprova se serve.",
       "toSchede": "Torna alle schede"
@@ -3153,7 +3175,7 @@
   },
   "feedback": {
     "title": "Segnala un problema",
-    "lead": "Un problema, un suggerimento o una domanda su LiftPilot: la segnalazione arriva agli amministratori della piattaforma (Carbon Stealth VCC), che la leggono e, se serve, ti rispondono all’indirizzo del tuo account.",
+    "lead": "Un problema, un suggerimento o una domanda su LiftPilot: la leggono gli amministratori di LiftPilot (Carbon Stealth VCC) per risponderti, se serve all’indirizzo del tuo account, e correggere il servizio.",
     "kind": "Tipo",
     "kinds": {
       "BUG": "Problema",
@@ -3165,7 +3187,7 @@
     "page": "Pagina",
     "pageMenu": "dal menu",
     "code": "Codice dell’errore",
-    "privacy": "Non inserire dati personali dei clienti se non servono: la segnalazione resta nel database di LiftPilot (server in Germania).",
+    "privacy": "Il Titolare e chi vede il registro attività dell’azienda vedono che hai inviato una segnalazione e di che tipo; il testo è anche nell’esportazione dei dati dell’azienda. Conserviamo le segnalazioni nel database di LiftPilot (server in Germania) finché esiste l’azienda e le cancelliamo 24 mesi dopo che sono state gestite. Non inserire dati personali dei clienti se non servono.",
     "submit": "Invia la segnalazione",
     "sentTitle": "Segnalazione inviata",
     "sent": "Grazie: la segnalazione è arrivata agli amministratori di LiftPilot.",
@@ -3179,12 +3201,13 @@
       "forbidden": "Prima scegli la tua password personale dalla pagina «Account».",
       "rateLimited": "Hai già inviato {n} segnalazioni nell’ultima ora: riprova più tardi oppure scrivi a info@carbonstealth.eu.",
       "sessionExpired": "La sessione è scaduta. <login>Accedi di nuovo in un’altra scheda</login>, poi torna qui e premi di nuovo «Invia la segnalazione»: il messaggio è ancora nel modulo.",
-      "offline": "Connessione assente: il messaggio è ancora nel modulo. Premi di nuovo «Invia la segnalazione» quando c’è segnale.",
+      "offline": "Connessione assente o interrotta: il messaggio è ancora nel modulo. Premi di nuovo «Invia la segnalazione» quando c’è segnale; se la segnalazione era già partita, la riceveremo due volte.",
       "failed": "Il server non ha risposto come previsto: il messaggio è ancora nel modulo. Riprova tra poco oppure scrivi a info@carbonstealth.eu."
     },
     "admin": {
       "title": "Segnalazioni",
       "lead": "Quello che gli utenti hanno inviato da «Segnala un problema», dal più recente. Il testo resta qui: l’e-mail agli amministratori dice solo che è arrivata una segnalazione.",
+      "handledHint": "Una segnalazione segnata come gestita esce da questo elenco e resta in «Tutte», dove si può riaprire.",
       "filterLabel": "Quali segnalazioni",
       "filterOpen": "Da gestire",
       "filterAll": "Tutte",
@@ -3238,7 +3261,7 @@
       "name": "La scheda di rilievo",
       "q": "Come si registra un sopralluogo?",
       "a": "Da «Rilievi» → «Nuovo rilievo» si compila la scheda di rilievo dell’impianto esistente, anche dal telefono sul posto: identificazione e targa, ubicazione, tipologia, quadro, argano, funi, limitatore, cavi, serrature, allarme e note. Serve almeno uno tra indirizzo, matricola e numero dell’impianto.",
-      "b": "Un «Sì» a «Vuoi compilare la scheda per l'ordine quadro?», «Argano da sostituire?» o «Sospensioni da cambiare?» apre nella scheda il modulo del fornitore — l’ordine del quadro Pelazza o MoviLift secondo la marca, il modulo rilievi dati argani, il modulo 2SG di porte, sospensioni e operatore —, già compilato con i dati della scheda; ogni modulo si scarica come PDF a parte.",
+      "b": "Un «Sì» a «Vuoi compilare la scheda per l’ordine quadro?», «Argano da sostituire?» o «Sospensioni da cambiare?» apre nella scheda il modulo del fornitore — l’ordine del quadro Pelazza o MoviLift secondo la marca, il modulo rilievi dati argani, il modulo 2SG di porte, sospensioni e operatore —, già compilato con i dati della scheda; ogni modulo si scarica come PDF a parte.",
       "c": "Se manca il segnale o la sessione scade mentre salvi, i dati restano nel modulo: premi di nuovo «Salva scheda» quando torna la connessione, o dopo aver fatto di nuovo l’accesso in un’altra scheda del browser."
     },
     "impianti": {
@@ -3252,7 +3275,7 @@
       "q": "Come si fa il calcolo dell’argano?",
       "a": "Nel «Calcolo argano» si sceglie prima il tipo di intervento, che decide la norma del collaudo, le parti da verificare e che cosa si disegna nel Progetto:",
       "b": "Poi, per ogni parte, «Sì» o «No»: sostituita o modificata. Una parte senza risposta non conta come «No», e velocità, portata e corsa le decidono i documenti dell’impianto — il libretto e i carichi documentati — quando ci sono.",
-      "c": "Con i dati dell’impianto e dell’argano il software verifica aderenza, funi, freno e motore secondo il collaudo (UNI 10411-1 o -11, oppure UNI EN 81-20/50) e prepara la «Relazione di calcolo (PDF)». Il calcolo salvato non cambia più: se cambia il software diventa «da aggiornare» e si rifà con «Aggiorna con il software attuale»."
+      "c": "Con i dati dell’impianto e dell’argano il software verifica aderenza (tre condizioni) e funi secondo la UNI EN 81-50, freno secondo la UNI EN 81-20, motore con il modello di calcolo del software; il collaudo scelto (UNI 10411-1 o -11, oppure UNI EN 81-20/50) decide quali verifiche entrano nell’esito. Poi prepara la «Relazione di calcolo (PDF)». Il calcolo salvato non cambia più: se cambia il software diventa «da aggiornare» e si rifà con «Aggiorna con il software attuale»."
     },
     "progetto": {
       "name": "Progetto",
@@ -3272,9 +3295,9 @@
       "draftT": "Ogni relazione è una bozza",
       "draft": "I valori stimati o scelti dal software sono segnati ⚠, e i punti da verificare in sito sono elencati nella relazione stessa.",
       "brakeT": "«nessuna coppia tiene l’aderenza reale»",
-      "brake": "È un avviso per l’ingegnere, non un giudizio negativo sull’impianto. Vuol dire che, con la decelerazione reale del freno in un arresto di emergenza, nessuna coppia del freno per gruppo sta tra il minimo richiesto e il massimo che, nel calcolo, tiene l’aderenza delle funi. La UNI EN 81-50 (5.11.2.2.2) chiede di considerare la decelerazione reale ma non dice con quanti gruppi del freno: come contarla e come verificarla sull’impianto lo decide il tecnico.",
-      "listaT": "Le voci «da verificare»",
-      "lista": "Ogni valore che il software usa è nel registro delle norme, con documento, clausola e stato; le voci ancora «da verificare» vanno controllate sul testo della norma. Dentro LiftPilot, chi vede gli impianti scarica dalla pagina «Norme» la «Lista di verifica (Excel)»."
+      "brake": "È un avviso per l’ingegnere, non un giudizio negativo sull’impianto. Vuol dire che, con la decelerazione reale del freno in un arresto di emergenza, nessuna coppia del freno per gruppo sta tra il minimo richiesto e il massimo che, nel calcolo, tiene l’aderenza delle funi. La UNI EN 81-50 (5.11.2.2.2) chiede ogni massa in moto con la sua accelerazione e una decelerazione di calcolo mai sotto 0,5 m/s²; la decelerazione reale del freno è una verifica in più del software (un avviso) e la norma non dice con quanti gruppi del freno contarla: lo decide il tecnico, come la verifica sull’impianto.",
+      "listaT": "Il registro delle norme",
+      "lista": "Ogni valore normativo che il software usa è nel registro delle norme, con documento, clausola e stato, e ogni voce va confrontata con il testo vigente: le «da verificare» vengono da fonti secondarie, le «stima» e «scelta del software» vanno approvate o corrette dal tecnico. Dentro LiftPilot, chi vede gli impianti scarica dalla pagina «Norme» la «Lista di verifica (Excel)»."
     },
     "segnala": {
       "q": "Qualcosa non funziona?",

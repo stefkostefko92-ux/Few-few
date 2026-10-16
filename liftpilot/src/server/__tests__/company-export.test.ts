@@ -13,7 +13,7 @@ type Args = { where?: Row; orderBy?: unknown; omit?: Record<string, boolean>; in
 const SCHEDE: Row[] = [
   { id: 's1', companyId: 'c1', data: new Date('2026-10-12'), matricola: '0033871', portataKg: 630, funiDiametroMm: new Prisma.Decimal('10.5'),
     ordineQuadro: { modulo: 'pelazza-ordine-quadri-032026', valori: { ordine: true } }, preventivoArgano: null, searchText: '0033871',
-    deletedAt: null, createdAt: new Date('2026-10-12T09:00:00Z') },
+    writeKey: '0f9c2b1e-7d43-4c4a-9a51-3e1f2b6d8c70', deletedAt: null, createdAt: new Date('2026-10-12T09:00:00Z') },
   { id: 's2', companyId: 'c1', data: new Date('2026-10-11'), indirizzo: 'Via Verdi 14', searchText: 'via verdi 14', deletedAt: new Date('2026-10-12T10:00:00Z'),
     createdAt: new Date('2026-10-11T09:00:00Z') },
   { id: 's9', companyId: 'c2', data: new Date('2026-10-12'), matricola: '9', searchText: '9', deletedAt: null, createdAt: new Date('2026-10-12T08:00:00Z') },
@@ -78,6 +78,7 @@ test('l’esportazione: ogni chiave del registro, e le schede di rilievo della p
   const schede = doc.schede as Row[];
   assert.deepEqual(schede.map((s) => s.id), ['s2', 's1'], 'oldest first, the other company’s never');
   assert.ok(schede.every((s) => !('searchText' in s)), 'the search index is the software’s, not the company’s data');
+  assert.ok(schede.every((s) => !('writeKey' in s)), 'the write key guards a save sent twice: the software’s, not the company’s data');
   assert.ok(schede[0]?.deletedAt instanceof Date, 'a trashed sheet says when');
   const s1 = schede[1] as Row & { misureBottoniere: Row[] };
   assert.deepEqual(s1.misureBottoniere.map((m) => [m.fermata, m.piano, String(m.lunghezzaMm), m.display]), [[1, 'S1', '320.5', true], [2, 'T', '300', false]]);

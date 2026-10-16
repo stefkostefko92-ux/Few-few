@@ -57,8 +57,9 @@ export async function companyExport(companyId: string): Promise<Record<string, u
     prisma.priceItem.findMany({ where: { companyId }, orderBy: { key: 'asc' }, select: { key: true, cents: true, updatedById: true, updatedAt: true } }),
     prisma.customPriceItem.findMany({ where: { companyId }, orderBy: { position: 'asc' }, select: { text: true, cents: true, basis: true, scope: true, position: true, updatedById: true, updatedAt: true } }),
     // every column of the sheet (Decimal as text, the modules as stored, deletedAt for the trashed ones); the
-    // search text is the software's index of the same values and stays out
-    prisma.scheda.findMany({ where: { companyId }, orderBy: { createdAt: 'asc' }, omit: { searchText: true },
+    // search text is the software's index of the same values and the write key (round 48) the software's guard against a
+    // save sent twice: both stay out
+    prisma.scheda.findMany({ where: { companyId }, orderBy: { createdAt: 'asc' }, omit: { searchText: true, writeKey: true },
       include: { misureBottoniere: { orderBy: { fermata: 'asc' }, omit: { schedaId: true } } } }),
     // what the company's users wrote to LiftPilot, and whether it was handled (the administrators' marks)
     prisma.feedback.findMany({ where: { companyId }, orderBy: { createdAt: 'asc' }, omit: { companyId: true } }),

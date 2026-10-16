@@ -7,7 +7,7 @@
 // (ambito.ts SOLO_10411_1, collaudoOf). Registry: modifica.d1 (the values), rapporto.d1 and rapporto.d2 (the checks). Pure.
 import { d1Of, d2Of, type D1Result } from '@/calc/d1';
 import { readInputs } from '@/calc/inputs';
-import type { FormValues } from '@/calc/types';
+import type { FormValues, GrooveType } from '@/calc/types';
 import { check } from '@/shaft/checks';
 import type { ShaftCheck } from '@/shaft/types';
 import type { Collaudo } from './collaudo';
@@ -38,11 +38,12 @@ export function d1Check(C: Collaudo, V: FormValues): ShaftCheck | null {
 }
 
 /** D.2 of the calculation's values when the ratio changes: the specific pressure with the car loaded with the rated load
- *  and its limit [N/mm²]; null otherwise. */
-export function d2Di(C: Collaudo, V: FormValues): { T: number; p: number; limit: number } | null {
+ *  and its limit [N/mm²], with the machine's groove type (a V groove with undercut has no formula of its own in D.2:
+ *  the larger of the two is the software's choice, round 48 review); null otherwise. */
+export function d2Di(C: Collaudo, V: FormValues): { T: number; p: number; limit: number; gola: GrooveType } | null {
   if (!rapportoVariato(C, V)) return null;
   const { I, N } = readInputs(V);
-  return d2Of(I, N);
+  return { ...d2Of(I, N), gola: N.groove.type };
 }
 
 /** tr_d2: the specific pressure of D.2 at most its limit (12,5 + 4·v_c)/(1 + v_c), met or not, as g_press compares them

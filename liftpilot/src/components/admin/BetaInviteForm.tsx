@@ -1,21 +1,24 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { createBetaInviteAction, resendBetaInviteAction } from '@/server/beta-invite-actions';
+import { createBetaInviteAction, resendBetaInviteAction, revokeBetaInviteAction } from '@/server/beta-invite-actions';
 import { initialFormState, type FormState } from '@/server/form';
 import SecretOnce from '../SecretOnce';
 import { useErrorFocus } from '../useErrorFocus';
 
-/** The link of an invitation, shown once after it was made or sent again; `pending`: no e-mail went (mail off). */
-function LinkOnce({ state }: { state: FormState }) {
+/** The link of an invitation, shown once after it was made or sent again (`resent`: the earlier link no longer works);
+ *  `pending`: no e-mail went (mail off). */
+function LinkOnce({ state, resent = false }: { state: FormState; resent?: boolean }) {
   const t = useTranslations('admin');
   if (!state.ok || !state.secret) return null;
-  return <SecretOnce secret={state.secret} label={t('betaLink', { email: state.message ?? '' })} note={state.pending ? t('betaLinkNoMail') : t('betaLinkNote')} />;
+  const note = `${state.pending ? t('betaLinkNoMail') : t('betaLinkNote')}${resent ? ` ${t('betaLinkResent')}` : ''}`;
+  return <SecretOnce secret={state.secret} label={t('betaLink', { email: state.message ?? '' })} note={note} />;
 }
 
-// The platform administrator invites a tester to the beta: the address and the administrator's own note (never shown to
-// the tester); the link goes by e-mail and appears here once.
+// The platform administrator invites a tester to the beta — only whoever asked for it —: the address and the
+// administrator's own note on the request (visible to the administrators only; personal data the tester may ask for);
+// the link goes by e-mail and appears here once.
 export default function BetaInviteForm() {
   const t = useTranslations('admin'), te = useTranslations('errors'), locale = useLocale();
   const [state, action, pending] = useActionState(createBetaInviteAction, initialFormState);
@@ -43,17 +46,45 @@ export default function BetaInviteForm() {
   );
 }
 
+/** «Revoca» of one invitation, in two steps on the page: the first click asks, the second revokes (the page then says
+ *  «Invito revocato», src/components/admin/BetaInvites.tsx); «Annulla» goes back. */
+export function BetaInviteRevoke({ id, email }: { id: string; email: string }) {
+  const t = useTranslations('admin'), locale = useLocale();
+  const [asking, setAsking] = useState(false);
+  const confirm = useRef<HTMLButtonElement | null>(null), first = useRef<HTMLButtonElement | null>(null), asked = useRef(false);
+  // the focus follows the step: on the confirmation when it appears, back on «Revoca» after «Annulla»
+  useEffect(() => {
+    if (asking) confirm.current?.focus();
+    else if (asked.current) first.current?.focus();
+    asked.current = asking;
+  }, [asking]);
+  if (!asking) {
+    return <button ref={first} type="button" className="btn btn-sm btn-danger" onClick={() => setAsking(true)} aria-label={`${t('betaRevoke')} · ${email}`}>{t('betaRevoke')}</button>;
+  }
+  return (
+    <form action={revokeBetaInviteAction} className="cell-stack beta-revoke">
+      <input type="hidden" name="locale" value={locale} />
+      <input type="hidden" name="id" value={id} />
+      <span className="note">{t('betaRevokeAsk')}</span>
+      <div className="flex flex-wrap gap-2">
+        <button ref={confirm} type="submit" className="btn btn-sm btn-danger" aria-label={`${t('betaRevokeConfirm')} · ${email}`}>{t('betaRevokeConfirm')}</button>
+        <button type="button" className="btn btn-sm" onClick={() => setAsking(false)}>{t('betaRevokeCancel')}</button>
+      </div>
+    </form>
+  );
+}
+
 /** «Invia di nuovo» of one invitation: a new link and a new month; the link shows once under the button. */
 export function BetaInviteResend({ id, email }: { id: string; email: string }) {
   const t = useTranslations('admin'), te = useTranslations('errors'), locale = useLocale();
   const [state, action, pending] = useActionState(resendBetaInviteAction, initialFormState);
   return (
-    <form action={action} className="cell-stack">
+    <form action={action} className="cell-stack beta-resend">
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="id" value={id} />
       <button type="submit" className="btn btn-sm" disabled={pending} aria-label={`${t('betaResend')} · ${email}`}>{t('betaResend')}</button>
       {state.error ? <p className="alert alert-bad" role="alert">{te(state.error)}</p> : null}
-      <LinkOnce state={state} />
+      <LinkOnce state={state} resent />
     </form>
   );
 }

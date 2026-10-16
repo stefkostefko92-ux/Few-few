@@ -11,12 +11,14 @@
 // the form is drawn again from the values it sent back (or, after a refusal, from what was sent), as rilievi drew the
 // page again after a POST. A save that gets no answer (no signal in the shaft, keep-on-failure.ts) or meets an expired
 // session is such a refusal too: the form stays with every value, «Modifiche non salvate» and the question before
-// leaving stay on, and the next «Salva» sends it all again. The modules come as plain specs from the page (moduloSpec on the server), the links between
+// leaving stay on, and the next «Salva» sends it all again — with the same write key (one per form, made at its first
+// «Salva»): if the first had reached the server and only its answer was lost, the server answers with the sheet that
+// save made (or the version it wrote), never a second sheet or somebody else's change. The modules come as plain specs from the page (moduloSpec on the server), the links between
 // the sheet and the modules as plain data (collegatiData): the maps with the PDFs' coordinates stay off the browser.
 import { Fragment, memo, useActionState, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
-import { CONFERMA_KEY, initialRilievoFormState, SCHEDA_KEY, type RilievoFormBack, type RilievoFormState } from '@/lib/rilievi/action-state';
+import { CONFERMA_KEY, initialRilievoFormState, SCHEDA_KEY, WRITE_KEY, type RilievoFormBack, type RilievoFormState } from '@/lib/rilievi/action-state';
 import type { FieldErrors, FormValues } from '@/lib/rilievi/field-parsers';
 import { activeFields, IDENTIFIERS_ERROR_KEY, SECTIONS, type FieldDef, type SectionKey } from '@/lib/rilievi/fields';
 import { errorAnchorOf, errorLabelOf, errorTextOf, RIEPILOGO_KEY, specLookup, type ModuloLookup } from '@/lib/rilievi/form-help';
@@ -34,7 +36,7 @@ import { DiffItem, type DiffLine } from './DiffItem';
 import ModuloBlockPlain from './ModuloBlock';
 import RefusalText from './RefusalText';
 import SectionIndex from './SectionIndex';
-import { useGuardedAction, type NoAnswer } from '../keep-on-failure';
+import { newWriteKey, useGuardedAction, type NoAnswer } from '../keep-on-failure';
 import { useSchedaForm } from './use-scheda-form';
 
 // the heavy parts are drawn again only when their own values change, not at every key typed elsewhere
@@ -201,8 +203,15 @@ export default function SchedaForm({ initial, edit, cancelHref, specs, order, co
 }) {
   const t = useTranslations('rilievi');
   const rt = t as unknown as RilieviT;
+  // the form's write key: made at the first «Salva», then the same for every attempt while the form lives (a save that
+  // goes through moves on to the sheet; every other answer of the server wrote nothing with it)
+  const writeKey = useRef<string | null>(null);
+  const stamp = useCallback((fd: FormData) => {
+    writeKey.current ??= newWriteKey();
+    fd.set(WRITE_KEY, writeKey.current);
+  }, []);
   // the server action itself until hydration (the form works without JavaScript too), then the one kept from failing
-  const save = useGuardedAction<RilievoFormState>(edit ? updateRilievoAction : createRilievoAction, noAnswer, keepBase);
+  const save = useGuardedAction<RilievoFormState>(edit ? updateRilievoAction : createRilievoAction, noAnswer, keepBase, stamp);
   const [state, action, pending] = useActionState<RilievoFormState, FormData>(save, initialRilievoFormState);
   // what was sent last: after a refusal (too many, too large…) the form comes back with it, not empty
   const [sent, setSent] = useState<FormValues | null>(null);

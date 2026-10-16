@@ -2,7 +2,11 @@
 // invitation's token, with a bad one or with another address the registration is refused, with a good one it waits with
 // the invitation; open: as before, an invitation still recorded. The 5 registrations an hour of one network count only
 // the right forms, the wrong ones their own wider count. At the link the specific approval of the clauses is required
-// before anything is used, and the invitation is used up with the company: the same invitation never makes two.
+// before anything is used, and the invitation is used up with the company: the same invitation never makes two. The
+// proof of the approval is written with the company, in its transaction (the SHA-256 of the clauses shown and their
+// articles); a registration made under an earlier version of the terms accepts the one in force at the link; one made
+// before the beta by invitation makes nothing once the registration is by invitation; an empty password is a field to
+// fill, never a bad link.
 import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
@@ -16,8 +20,9 @@ interface Pending { id: string; email: string; tokenHash: string; expiresAt: Dat
   vatNumber: string | null; city: string | null; locale: string; termsVersion: string; termsSha256: string; betaInviteId: string | null; createdAt: Date }
 interface Beta { id: string; email: string; tokenHash: string; usedAt: Date | null; expiresAt: Date; companyId: string | null }
 
-let pendings: Pending[] = [], betas: Beta[] = [], companies: { id: string; name: string }[] = [], users: { id: string; email: string; companyId: string }[] = [];
-const audits: { action: string; meta?: Record<string, unknown> }[] = [], mails: { to: string; kind: string; token?: string }[] = [];
+interface Owner { id: string; email: string; companyId: string; termsVersion?: string; clausesApprovedAt?: Date | null }
+let pendings: Pending[] = [], betas: Beta[] = [], companies: { id: string; name: string }[] = [], users: Owner[] = [];
+const audits: { action: string; meta?: Record<string, unknown>; tx?: boolean }[] = [], mails: { to: string; kind: string; token?: string }[] = [];
 let mode: 'invite' | 'open' = 'invite', ip = '10.0.0.1';
 const waiting: Promise<unknown>[] = [];
 const later = (d: number) => new Date(Date.now() + d * 864e5);
@@ -29,7 +34,7 @@ const matches = (p: Pending, w: Where): boolean =>
 const db = {
   user: {
     findUnique: async ({ where }: { where: { email?: string; id?: string } }) => users.find((u) => u.email === where.email || u.id === where.id) ?? null,
-    create: async ({ data }: { data: { email: string; companyId: string } }) => {
+    create: async ({ data }: { data: Owner }) => {
       const u = { ...data, id: `u${users.length + 1}`, tokenVersion: 0 };
       users.push(u);
       return u;
@@ -55,6 +60,7 @@ const db = {
       return { count: b ? 1 : 0 };
     },
     update: async ({ where, data }: { where: { id: string }; data: Partial<Beta> }) => Object.assign(betas.find((x) => x.id === where.id) ?? {}, data),
+    deleteMany: async () => ({ count: 0 }),
   },
   company: {
     create: async ({ data }: { data: { name: string } }) => { const c = { id: `c${companies.length + 1}`, name: data.name }; companies.push(c); return c; },
@@ -68,12 +74,17 @@ mock.module(src('lib/env.ts'), { namedExports: {
 mock.module(src('lib/auth.ts'), { namedExports: { getSessionUser: async () => null, startSession: async () => {} } });
 mock.module(src('lib/mail.ts'), { namedExports: { mailConfigured: () => true } });
 mock.module(src('lib/account-mail.ts'), { namedExports: { mailAccount: (to: string, _l: string, m: { kind: string; token?: string }) => { mails.push({ to, ...m }); } } });
-mock.module(src('lib/audit.ts'), { namedExports: { audit: async (a: { action: string; meta?: Record<string, unknown> }) => { audits.push(a); } } });
+mock.module(src('lib/audit.ts'), { namedExports: {
+  audit: async (a: { action: string; meta?: Record<string, unknown> }) => { audits.push(a); },
+  auditTx: async (_tx: unknown, a: { action: string; meta?: Record<string, unknown> }) => { audits.push({ ...a, tx: true }); },
+} });
 mock.module(src('lib/password.ts'), { namedExports: {
   hashPassword: async (pw: string) => `h:${pw}`, verifyPassword: async (pw: string, hash: string) => hash === `h:${pw}`, temporaryPassword: () => 'x'.repeat(16),
 } });
 // the terms' text (next-intl, not loadable under react-server) is not what these tests are about: its hash is a stand-in
-mock.module(src('lib/legal-text.ts'), { namedExports: { legalSha256: () => 'sha-terms' } });
+mock.module(src('lib/legal-text.ts'), { namedExports: {
+  legalSha256: () => 'sha-terms', clausesProof: () => ({ clausesSha256: 'sha-clauses', clauseArticles: [4, 6, 7, 8, 10, 12, 13, 15] }),
+} });
 mock.module(src('lib/purge.ts'), { namedExports: { purgeStale: async () => {}, pastConfirmDeadline: () => false } });
 mock.module(src('lib/billing-config.ts'), { namedExports: { billingConfigured: () => false, billingConfig: () => null } });
 mock.module(pkg('next/server'), { namedExports: { after: (fn: () => unknown) => { waiting.push(Promise.resolve().then(fn)); } } });
@@ -83,6 +94,7 @@ mock.module(pkg('next/navigation'), { namedExports: { redirect: (to: string) => 
 
 const { hashToken } = await import(src('lib/token-hash.ts'));
 const { betaInviteInfoAction, registerAction, verifyEmailAction, verifyInfoAction } = await import(src('server/account-actions.ts'));
+const { TERMS_VERSION } = await import(src('lib/legal.ts'));
 const PASSWORD = 'Ascensore2026sicuro';
 
 /** A beta invitation of `email` with its token. */
@@ -178,9 +190,9 @@ test('rate limits: wrong forms do not use up the 5 registrations an hour, and ha
 
 /** The link of the newest registration e-mail to `to`. */
 const linkOf = (to: string): string => mails.filter((m) => m.to === to && m.kind === 'verify').at(-1)?.token ?? '';
-async function verify(token: string, password: string, clauses: '' | 'on') {
+async function verify(token: string, password: string, clauses: '' | 'on', accept: '' | 'on' = '') {
   const fd = new FormData();
-  fd.set('token', token); fd.set('password', password); fd.set('clauses', clauses); fd.set('locale', 'it');
+  fd.set('token', token); fd.set('password', password); fd.set('clauses', clauses); fd.set('accept', accept); fd.set('locale', 'it');
   return verifyEmailAction({}, fd).catch((e: Error) => e.message);
 }
 
@@ -196,7 +208,7 @@ test('at the link: the clauses approved with the password make the company and u
   assert.deepEqual(await verify(link, PASSWORD, ''), { error: 'consentRequired', fields: ['clauses'] });
   assert.equal(pendings.length, 1);
   assert.equal(companies.length, 0);
-  assert.deepEqual(await verify(link, 'AltraPassword2026', 'on'), { error: 'verifyWrongPassword' });
+  assert.deepEqual(await verify(link, 'AltraPassword2026', 'on'), { error: 'verifyWrongPassword', fields: ['password'] });
   assert.equal(pendings.length, 1, 'a wrong password uses nothing');
   assert.equal(await verify(link, PASSWORD, 'on'), 'redirect /it/app');
   assert.deepEqual(companies.map((c) => c.name), ['Ascensori Rossi srl']);
@@ -206,6 +218,15 @@ test('at the link: the clauses approved with the password make the company and u
   assert.deepEqual(registered?.meta?.consents, ['accept', 'business', 'drafts']);
   assert.equal(registered?.meta?.clausesVia, 'email-link+password');
   assert.match(String(registered?.meta?.clausesApprovedAt), /^\d{4}-\d\d-\d\dT/);
+  // the proof is written in the transaction that makes the company (auditTx), with what was approved
+  assert.equal(registered?.tx, true, 'USER_REGISTERED inside the transaction');
+  assert.equal(audits.find((a) => a.action === 'EMAIL_VERIFIED')?.tx, true);
+  assert.equal(registered?.meta?.clausesSha256, 'sha-clauses');
+  assert.deepEqual(registered?.meta?.clauseArticles, [4, 6, 7, 8, 10, 12, 13, 15]);
+  assert.equal(registered?.meta?.terms, TERMS_VERSION);
+  assert.equal(registered?.meta?.registeredTerms, undefined, 'registered under the version in force');
+  assert.ok(users[0]?.clausesApprovedAt instanceof Date, 'the account keeps when the clauses were approved');
+  assert.equal(users[0]?.termsVersion, TERMS_VERSION);
   assert.equal(await verify(link, PASSWORD, 'on').then((r) => (typeof r === 'string' ? r : r.error)), 'invalidLink', 'the link once');
 });
 
@@ -226,4 +247,55 @@ test('one company per invitation: a second registration with the invitation alre
   assert.deepEqual(await verify(second, PASSWORD, 'on'), { error: 'invalidLink' });
   assert.equal(companies.length, 1, 'one company');
   assert.equal(users.length, 1, 'one owner');
+});
+
+test('the password at the link: empty is a field to fill, never a bad link; only a bad link is called one', async () => {
+  reset('invite', '10.0.7.1');
+  await register('vuota@ditta.example', invitation('vuota@ditta.example', 'E'));
+  const link = linkOf('vuota@ditta.example');
+  assert.deepEqual(await verify(link, '', 'on'), { error: 'verifyPasswordRequired', fields: ['password'] });
+  assert.deepEqual(await verify(link, '', ''), { error: 'consentRequired', fields: ['clauses', 'password'] });
+  assert.deepEqual(await verify(link, 'x'.repeat(201), 'on'), { error: 'verifyWrongPassword', fields: ['password'] });
+  assert.equal(pendings.length, 1, 'nothing used');
+  assert.equal(companies.length, 0);
+  assert.deepEqual(await verify('non-un-token', '', 'on'), { error: 'invalidLink' });
+  assert.deepEqual(await verify('H'.repeat(43), '', 'on'), { error: 'invalidLink' }, 'a well-formed link that is not good');
+  assert.equal(await verify(link, PASSWORD, 'on'), 'redirect /it/app', 'the same link still works');
+});
+
+test('a registration made under an earlier version accepts the terms in force at the link, with the clauses', async () => {
+  reset('invite', '10.0.8.1');
+  await register('vecchia@ditta.example', invitation('vecchia@ditta.example', 'K'));
+  const pending = pendings[0];
+  assert.ok(pending);
+  pending.termsVersion = '4'; pending.termsSha256 = 'sha-v4';
+  const link = linkOf('vecchia@ditta.example');
+  assert.equal(await verifyInfoAction(link), 'registrationNewTerms', 'the page asks the terms in force too');
+  assert.deepEqual(await verify(link, PASSWORD, 'on'), { error: 'consentRequired', fields: ['accept'] });
+  assert.deepEqual(await verify(link, PASSWORD, ''), { error: 'consentRequired', fields: ['accept', 'clauses'] });
+  assert.equal(companies.length, 0, 'nothing made without them');
+  assert.equal(await verify(link, PASSWORD, 'on', 'on'), 'redirect /it/app');
+  assert.equal(users[0]?.termsVersion, TERMS_VERSION, 'the version in force, not the registration\'s');
+  const meta = audits.find((a) => a.action === 'USER_REGISTERED')?.meta;
+  assert.equal(meta?.terms, TERMS_VERSION);
+  assert.equal(meta?.sha256, 'sha-terms', 'the SHA-256 of the text in force');
+  assert.equal(meta?.registeredTerms, '4');
+  assert.equal(meta?.registeredSha256, 'sha-v4');
+  assert.equal(meta?.termsAcceptedVia, 'email-link+password');
+});
+
+test('invitation mode: a registration made before it (no invitation) makes no company, and nothing is used', async () => {
+  reset('open', '10.0.9.1');
+  await register('prima@ditta.example');
+  const link = linkOf('prima@ditta.example');
+  assert.equal(pendings[0]?.betaInviteId, null);
+  mode = 'invite';
+  assert.equal(await verifyInfoAction(link), 'inviteOnly');
+  assert.deepEqual(await verify(link, PASSWORD, 'on'), { error: 'registrationInviteOnly' });
+  assert.equal(pendings.length, 1, 'the registration waits untouched');
+  assert.equal(companies.length + users.length, 0, 'no company, no account');
+  // the registration open again: the same link makes it
+  mode = 'open';
+  assert.equal(await verifyInfoAction(link), 'registration');
+  assert.equal(await verify(link, PASSWORD, 'on'), 'redirect /it/app');
 });

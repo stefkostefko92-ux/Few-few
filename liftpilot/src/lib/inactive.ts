@@ -53,8 +53,10 @@ export async function purgeInactive(now: Date = new Date()): Promise<{ told: num
       const row = await tx.company.findFirst({ where: { id, ...inactive(cutoff), inactiveNoticeAt: { not: null } }, select: { inactiveNoticeAt: true } });
       if (!row?.inactiveNoticeAt) return null;
       // the users go first (their sessions and links with them; the records keep no author): the company may then go,
-      // and its projects, records, drawings, logos, price list and invitations with it
+      // and its projects, records, drawings, logos, price list and invitations with it — the beta invitation it was made
+      // with too (its address and the administrator's note), which would otherwise outlive it
       await tx.auditLog.deleteMany({ where: { companyId: id } });
+      await tx.betaInvite.deleteMany({ where: { companyId: id } });
       await tx.user.deleteMany({ where: { companyId: id } });
       await tx.company.delete({ where: { id } });
       return row.inactiveNoticeAt;

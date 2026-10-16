@@ -6,6 +6,7 @@ import { mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
+import { Prisma } from '@prisma/client';
 
 export const src = (p: string) => new URL(`../../${p}`, import.meta.url).href;
 const req = createRequire(import.meta.url);
@@ -33,10 +34,18 @@ const full = (s: Row): Row => ({
   company: { id: s.companyId, name: s.companyId === 'c1' ? 'Ascensori Rossi Srl' : 'Altra Ditta', ordineSezioni: companies[String(s.companyId)]?.ordineSezioni ?? [] },
 });
 export const companies: Record<string, { ordineSezioni: string[] }> = { c1: { ordineSezioni: [] }, c2: { ordineSezioni: [] } };
+/** The unique index (companyId, writeKey) of PostgreSQL: another row of the company with the key → P2002. */
+const keyTaken = (companyId: unknown, writeKey: unknown, self?: Row): void => {
+  if (writeKey === null || writeKey === undefined) return;
+  if (schede.some((r) => r !== self && r.companyId === companyId && r.writeKey === writeKey)) {
+    throw new Prisma.PrismaClientKnownRequestError('Unique constraint failed on the fields: (`companyId`,`writeKey`)', { code: 'P2002', clientVersion: 'test' });
+  }
+};
 const db = {
   scheda: {
     create: async ({ data }: { data: Row & { misureBottoniere: { createMany: { data: Row[] } } } }) => {
       const { misureBottoniere, ...rest } = data;
+      keyTaken(rest.companyId, rest.writeKey);
       const at = tick();
       const row: Row = { id: `cm${String(++seq).padStart(22, '0')}`, deletedAt: null, deletedById: null, createdAt: at, updatedAt: at, ...rest };
       schede.push(row);
@@ -46,6 +55,7 @@ const db = {
     findFirst: async ({ where }: { where: Row }) => { const s = schede.find((r) => matches(r, where)); return s ? full(s) : null; },
     updateMany: async ({ where, data }: { where: Row; data: Row }) => {
       const hit = schede.filter((r) => matches(r, where));
+      for (const r of hit) keyTaken(r.companyId, data.writeKey, r);
       for (const r of hit) Object.assign(r, data, { updatedAt: tick() });
       return { count: hit.length };
     },

@@ -75,6 +75,7 @@ export const SCHEDA: SchedaForPdf = {
   riepilogoOrdini: false,
   discrepanzeConfermate: null,
   searchText: '',
+  writeKey: null,
   companyId: 'cm0000000000000000000c01',
   projectId: null,
   createdById: null,

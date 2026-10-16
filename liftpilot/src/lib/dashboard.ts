@@ -3,6 +3,7 @@
 // filters by type, the initials on the avatar. The queries are in src/server/dashboard.ts and project-list.ts; nothing
 // here reads the database.
 import type { TipoIntervento } from '@/lib/lift/intervento';
+import { searchQuery } from '@/lib/search-query';
 
 /** The list's filters by type of intervention (round 45, ?tipo=): the three types and the installations without a
  *  «Calcolo argano» yet («Da definire»). */
@@ -21,10 +22,10 @@ export const idsDelTipo = (tipi: ReadonlyMap<string, TipoIntervento | null>, f: 
 export const SEARCH_MAX_CHARS = 80;
 export const SEARCH_MAX_WORDS = 5;
 
-/** The words of the top bar's search (`?q=`): trimmed, cut to 80 characters and 5 words; each must be found. */
+/** The words of the top bar's search (`?q=`): without control characters (search-query.ts), trimmed, cut to 80
+ *  characters and 5 words; each must be found. */
 export function searchWords(q: unknown): string[] {
-  if (typeof q !== 'string') return [];
-  return q.slice(0, SEARCH_MAX_CHARS).trim().split(/\s+/u).filter(Boolean).slice(0, SEARCH_MAX_WORDS);
+  return searchQuery(q).slice(0, SEARCH_MAX_CHARS).trim().split(/\s+/u).filter(Boolean).slice(0, SEARCH_MAX_WORDS);
 }
 
 /** A searched word as the text it is inside a LIKE pattern (Prisma's `contains` does not escape): `%` and `_` are

@@ -7,7 +7,7 @@ import { accountMail } from '../mail-templates';
 import { forgotSchema, registerSchema, resetSchema, verifySchema } from '../schemas';
 import { REGISTER_CONSENTS } from '../consents';
 import { hashToken } from '../token-hash';
-import { BETA_INVITE_DAYS, TOKEN_TTL_MS, tokenShapeOk } from '../token-shape';
+import { BETA_INVITE_DAYS, BETA_INVITE_KEEP_DAYS, TOKEN_TTL_MS, tokenShapeOk } from '../token-shape';
 
 const form = {
   company: '  Elevatori Brianza srl ', vatNumber: '', city: 'Monza', name: 'Giulia Ferrari', email: ' Giulia@Example.COM ',
@@ -42,8 +42,10 @@ test('link: 32 byte casuali in base64url, solo l’hash nel database, vite di 48
   assert.notEqual(hashToken(token), token);
   assert.equal(TOKEN_TTL_MS.VERIFY_EMAIL, 48 * 3600_000);
   assert.equal(TOKEN_TTL_MS.RESET_PASSWORD, 3600_000);
-  assert.ok(verifySchema.safeParse({ token, password: 'x', clauses: '' }).success && !verifySchema.safeParse({ token: 'abc', password: 'x', clauses: '' }).success);
-  assert.ok(verifySchema.safeParse({ token, password: 'x', clauses: 'on' }).success && !verifySchema.safeParse({ token, password: 'x', clauses: 'yes' }).success);
+  assert.ok(verifySchema.safeParse({ token, password: 'x', clauses: '', accept: '' }).success && !verifySchema.safeParse({ token: 'abc', password: 'x', clauses: '', accept: '' }).success);
+  // a tick counts only as 'on'; an empty password passes the schema — the action asks for it, never calls the link bad
+  assert.deepEqual(verifySchema.parse({ token, password: '', clauses: 'yes', accept: 'on' }), { token, password: '', clauses: false, accept: true });
+  assert.ok(!verifySchema.safeParse({ token, password: 'x'.repeat(201), clauses: 'on', accept: '' }).success, 'a password over 200 characters');
   assert.ok(codes(resetSchema.safeParse({ token: 'abc', next: 'Ascensore2026sicuro', confirm: 'Ascensore2026sicuro' })).includes('invalidLink'));
 });
 
@@ -75,6 +77,9 @@ test('invito alla beta: il link della registrazione con il token, la durata dal 
   assert.ok(!m.text.includes('?invito=') && !m.html.includes('?invito='));
   assert.ok(m.text.includes(`${BETA_INVITE_DAYS} giorni`) && m.subject.includes('LiftPilot'));
   assert.ok(!/[{}]/.test(m.text) && !m.text.includes('undefined'));
+  // why we have the address and how long we keep it, with the privacy page (art. 13 GDPR)
+  assert.match(m.text, /hai chiesto di partecipare alla beta/);
+  assert.ok(m.text.includes(`fino a ${BETA_INVITE_KEEP_DAYS} giorni dopo la scadenza del link`) && m.text.includes(`${base}/it/privacy`));
   const v = accountMail({ kind: 'verify', token, terms: true }, 'it', base);
   assert.match(v.text, /approverai specificamente, con la tua password, le clausole/);
   assert.ok(v.text.includes(`${base}/it/privacy#terms`));

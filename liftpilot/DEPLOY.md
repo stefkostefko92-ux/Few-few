@@ -29,10 +29,11 @@ REF=<SHA> PROJECTS="liftpilot" bash /root/deploy/fetch-deploy.sh
 
 `docker compose exec` (pdf:keep, legal:notice, engine:notice, възстановяване) иска папката `liftpilot/` на release-а,
 от който вървят контейнерите. **Не** `/opt/few-few/current/liftpilot`: `current` сочи последния деплой на който и да е
-продукт и след деплой на друг продукт от `main` там `liftpilot/` няма. От кръг 48 `autodeploy.sh` след всеки здрав
-деплой на LiftPilot пише пътя в `/opt/few-few/shared/liftpilot/last-good` (предишният — в `last-good.prev`, целта на
-връщането) и сменя връзката `/opt/few-few/liftpilot-current`; чистенето на старите releases (`KEEP_RELEASES`) не трие
-тези два. Навсякъде долу:
+продукт и след деплой на друг продукт от `main` там `liftpilot/` няма. От кръг 48 `autodeploy.sh` **на клона** след
+всеки здрав деплой на LiftPilot пише пътя в `/opt/few-few/shared/liftpilot/last-good` (предишният здрав — в
+`last-good.prev`) и сменя връзката `/opt/few-few/liftpilot-current`; неговото чистене на старите releases
+(`KEEP_RELEASES`) пази трите (last-good, `.prev` и целта на връзката). **`main` тази защита я няма** — виж следващия
+раздел. Навсякъде долу:
 
 ```bash
 LP="$(readlink -e /opt/few-few/liftpilot-current)" && cd "$LP"
@@ -49,6 +50,29 @@ LP="$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project.work
 Compose е по папката (`liftpilot`), значи командите стигат до същите контейнери:
 `cd "$(ls -dt /opt/few-few/releases/*/*/liftpilot | head -n 1)" && docker compose --env-file /opt/few-few/shared/liftpilot/.env exec -T app …`.
 Командите `docker exec liftpilot-app-1 …` (по името на контейнера) работят от всяка папка.
+
+### Деплой на друг продукт от `main` трие папката на LiftPilot (докато клонът не е влят)
+
+Деплой на друг продукт с `main` (`fetch-deploy.sh` без `REF`; или панелът vpsdash, когато `current` е release от
+`main` — панелът пуска `autodeploy.sh` от `current`) върви със **скрипта на `main`**: неговото чистене пази само последните `KEEP_RELEASES` (5) releases,
+`current` и паметта на Korpora — **не** и LiftPilot. След пет такива деплоя папката на работещия LiftPilot е изтрита и
+`liftpilot-current` виси (проверено със симулация и с теста `tools/vps/autodeploy-liftpilot.test.mjs`). Контейнерите
+продължават да вървят (томът на базата е именуван, nginx и cron са извън release-а); губят се командите от папката
+(`docker compose exec`, pdf:keep, възстановяването) и връщането назад от диска.
+
+- **Всеки деплой от `main`, докато клонът не е влят:** с `KEEP_RELEASES=50` (`fetch-deploy.sh` го подава на
+  `autodeploy.sh`): `KEEP_RELEASES=50 PROJECTS="<продукт>" bash /root/deploy/fetch-deploy.sh`. Мястото на диска:
+  `du -sh /opt/few-few/releases`; изтрий ръчно стари releases, които не са нито `last-good`, нито `last-good.prev`.
+  От панела vpsdash `KEEP_RELEASES` не се задава — до вливането деплоите на другите продукти са от командния ред.
+- **След всеки деплой на друг продукт** — проверка:
+  ```bash
+  readlink -e /opt/few-few/liftpilot-current || echo 'liftpilot-current виси'
+  for f in last-good last-good.prev; do d="$(head -n 1 /opt/few-few/shared/liftpilot/$f 2>/dev/null)"; [ -d "$d" ] && echo "$f: $d" || echo "$f: ЛИПСВА ($d)"; done
+  ```
+- **Ако виси:** папката се връща с деплой на същия комит, който работи (`REF=<SHA> PROJECTS="liftpilot"` с
+  `fetch-deploy.sh` от него — нов release от архива, бекъп преди миграциите, кратък рестарт; SHA-то е в името на
+  архива в `/root`, `few-few-<SHA>-<час>.tar.gz`, `fetch-deploy.sh` пази последните два — записвай го при всеки деплой).
+  Връщане към release, чиято папка е изтрита: същото с `REF=<SHA на целта>` („Връщане назад“).
 
 ## Първи деплой (веднъж)
 
@@ -86,7 +110,10 @@ Compose е по папката (`liftpilot`), значи командите ст
 5. **Вход:** `https://liftpilot.carbonstealth.eu/it/login` с `admin@carbonstealth.eu`.
 6. **Фирми:** в бетата регистрацията е само с покана (`REGISTRATION_MODE=invite`, по подразбиране): администраторът
    кани от `/app/admin` → „Inviti alla beta“; линкът отваря регистрацията само за този адрес (потвърждение с линк по
-   имейл и паролата). Администраторът може и да създаде фирма с титуляра ѝ („Aziende“), с временна парола, показана
+   имейл и паролата). **Покана — само при писмена молба** на човека (имейл до info@ — така казва и страницата на регистрацията): писмото с
+   поканата рекламира услугата, а търговско писмо без поискване до италиански адрес иска съгласие (art. 130 d.lgs.
+   196/2003). В бележката на поканата — препратка към молбата (дата и тема, напр. „richiesta e-mail del 12/10/2026“);
+   молбата остава в досието. Администраторът може и да създаде фирма с титуляра ѝ („Aziende“), с временна парола, показана
    веднъж. `REGISTRATION_MODE=open` в `.env` + деплой отваря регистрацията за всички (поканите пак работят).
 
 ## Всеки следващ деплой
@@ -145,29 +172,46 @@ docker exec liftpilot-app-1 npm run engine:notice -- --send --motivo "<какв�
 Всеки етап — жив и здрав (`/api/health`, вход, едно съоръжение отворено), преди следващия. `<SHA48>` е комитът на
 кръг 48 в клона на PR-а.
 
-0. **Проверки преди** (по-долу): има ли `/opt/few-few/shared/liftpilot/backups/pre-22-replacement-ids.txt` (иначе —
+0. **Проверки преди** (по-долу): `[ -s /opt/few-few/shared/liftpilot/backups/pre-22-replacement-ids.txt ] && wc -l
+   /opt/few-few/shared/liftpilot/backups/pre-22-replacement-ids.txt` — файлът е и не е празен (празен или липсващ —
    „Id-тата отпреди 22“ сега, докато дъмпът отпреди 22 още е на диска); SPF/DKIM/DMARC за поканите („Поща“);
-   наблюдението и сигналът на бекъпа („Наблюдение“) и копието извън сървъра („Копие извън сървъра“) — преди тестерите.
+   наблюдението и сигналът на бекъпа („Наблюдение“) и копието извън сървъра („Копие извън сървъра“) — преди тестерите;
+   регистрациите, които чакат потвърждение (кой е писал, преди поканите):
+   `docker exec liftpilot-db-1 psql -U liftpilot -d liftpilot -Atc 'SELECT email, "createdAt" FROM "PendingRegistration" WHERE "expiresAt" > now()'`
+   — след деплоя линкът им не прави фирма (т. 3).
 1. **PDF-ите на издадените комплекти, преди двигателите 1.8.0** — на работещия release (връзката я няма още, затова
    `LP` по етикета на Compose, по-горе):
    ```bash
    cd "$LP" && docker compose exec -T app npm run pdf:keep -- --dry-run
    docker compose exec -T app npm run pdf:keep
    ```
-2. **Деплоят:** `REF=<SHA48> PROJECTS="liftpilot"` (с `fetch-deploy.sh` от `<SHA48>`). Миграции `23_beta_invites` и
-   `24_feedback` са адитивни (нови таблици; нищо съществуващо не се пипа), entrypoint-ът ги пуска. Проверка:
-   `curl -fsS http://127.0.0.1:4330/api/health` → `"engine":"1.8.0"`; `readlink -e /opt/few-few/liftpilot-current` →
-   папката на новия release; `cat /opt/few-few/shared/liftpilot/last-good`.
+2. **Деплоят:** `REF=<SHA48> PROJECTS="liftpilot"` (с `fetch-deploy.sh` от `<SHA48>`). Миграциите `23_beta_invites`,
+   `24_feedback` и `25_clauses_write_key` са адитивни, entrypoint-ът ги пуска: 23 — нова таблица `BetaInvite` и нова
+   nullable колона `betaInviteId` в `PendingRegistration` (с външен ключ); 24 — нова таблица `Feedback` (и enum-ът
+   `FeedbackKind`); 25 — nullable
+   колони `User.clausesApprovedAt` и `Scheda.writeKey` и уникален индекс `(companyId, writeKey)` (всички съществуващи
+   редове са `NULL` — без конфликт). Никоя не трие и не пренаписва данни; старият код върви с тях („Връщане назад“).
+   Проверка: `curl -fsS http://127.0.0.1:4330/api/health` → `"engine":"1.8.0"`; `readlink -e
+   /opt/few-few/liftpilot-current` → папката на новия release; `cat /opt/few-few/shared/liftpilot/last-good`.
 3. **`REGISTRATION_MODE`:** по подразбиране `invite` (в `docker-compose.yml`) — регистрираните фирми не са засегнати
-   (влизат и работят както досега), нова фирма — само с покана. Тестерите се канят от `/app/admin` → „Inviti alla
-   beta“ (адрес + бележка); писмото е `betaInvite`, а линкът се показва и веднъж на екрана, за да се предаде и иначе.
-   Преди първата покана — DNS на пощата (т. 0).
+   (влизат и работят както досега), нова фирма — само с покана. **Регистрация, подадена преди деплоя без покана и още
+   непотвърдена** (списъкът от т. 0), вече не прави фирма: линкът ѝ казва, че регистрацията е с покана, и нищо не се
+   използва (`verifyEmailAction` — `registrationInviteOnly`); при писмена молба такъв човек получава покана. Тестерите се
+   канят от `/app/admin` → „Inviti alla beta“ (адрес + бележка с препратка към писмената молба — „Първи деплой“, т. 6);
+   писмото е `betaInvite`, а линкът се показва и веднъж на екрана, за да се предаде и иначе. Преди първата покана — DNS
+   на пощата (т. 0).
+   **Клаузите — веднъж:** собственик, приел действащите условия (v5) с отметка преди кръг 48, няма одобрение на клаузите
+   по чл. 1341–1342 c.c. с паролата (`User.clausesApprovedAt` е `NULL`): приложението му го иска **веднъж** — лента и
+   кратката форма на `/app/terms`, без да спира работата; записът е `CLAUSES_APPROVED` в регистъра (`docs/terms-changes.md`
+   §1в). Собственик, още на по-стара версия, ги одобрява с приемането на v5. Колко остават (на v5 без одобрение):
+   `docker exec liftpilot-db-1 psql -U liftpilot -d liftpilot -Atc "SELECT count(*) FROM \"User\" WHERE role = 'OWNER' AND active AND \"termsVersion\" = '5' AND \"clausesApprovedAt\" IS NULL"`.
 4. **Писмото за корекцията в двигателя** (по-горе): `npm run engine:notice` (списъкът), решение на собственика,
    после `-- --send --motivo "…"`. За 1.8.0: двигателят сам не сменя нито една присъда или проверка на записите от
    предишните версии (преизчисление на копието, `argano_r48`: 0 промени — сменя текста на документите: реда „Freno“,
    точките на CE маркировката при модификация, цитата 6.3.3 a)); списъкът показва разликите, натрупани от записи на
-   по-стари версии (на копието `argano_r48ops`: 2 фирми, 219 elaborati). Дали да се прати и с какъв текст — решава
-   собственикът (`docs/terms-changes.md` §8).
+   по-стари версии (на копието `argano_r48ops`: 2 фирми, 219 elaborati). **Ред от списъка, в който присъда или
+   проверка минава от OK/WARN към провал, прави писмото задължително** — праща се веднага след деплоя; собственикът
+   решава само текста на `--motivo` и дали да прати, когато провал няма (`docs/terms-changes.md` §8).
 
 ## Нова парола на администратора
 
@@ -246,8 +290,14 @@ LiftPilot го няма в панела на сървъра (vpsdash): нито 
   включена по подразбиране в 03:00) дъмпва всеки Postgres контейнер, и `liftpilot-db-1`, като
   `/opt/few-few/shared/db-dumps/liftpilot-<час>.sql.gz` (с `--clean --if-exists`); `backups.offsite.enabled: true` ги
   изнася към peer-а. Сроковете: локално vpsdash трие на `-mtime +30` (до ~31 дни) — затова `liftpilot-backup` трие и
-  `liftpilot-*.sql.gz` там до 30-ия ден, както своите (`-mtime +28`); на приемника `backups.offsite.keep` (10) пази **по брой**, не по
-  възраст: ако изнасянето спре, последните 10 остават завинаги — над 30-те дни на политиката. На приемника — cron:
+  `liftpilot-*.sql.gz` там до 30-ия ден, както своите (`-mtime +28`). **На приемника** копията са в
+  `/var/lib/vps-dashboard/offsite/<nodeId>/` (`<nodeId>` — `nodeId` от конфигурацията на изпращащия панел;
+  `vpsdash/src/backupsched.js`, `offsiteDir`, `receiveOffsite`), а `backups.offsite.keep` (по подразбиране 10, в
+  конфигурацията **на приемника**) е **общ брой за всички файлове на този възел** — всички бази, SQLite и томове, не 10
+  копия на LiftPilot: при ~10 файла на нощ от възела там остава само последната нощ. Размер: `keep` ≥ файловете на
+  една нощ от възела × нощите, които искаш (`ls /var/lib/vps-dashboard/offsite/<nodeId>/ | wc -l` след една нощ, при
+  `keep`, по-голям от тях). И `keep` пази **по брой**, не по възраст: ако изнасянето спре, последните остават завинаги —
+  над 30-те дни на политиката. Затова на приемника — cron по възраст:
   `17 4 * * * root find /var/lib/vps-dashboard/offsite -type f -name 'liftpilot-*.sql.gz' -mtime +28 -delete`
   (`/etc/cron.d/liftpilot-offsite-age`). Пробата за възстановяване на vpsdash (`backups.drillEnabled`, на 30 дни)
   проверява снимките му.
@@ -255,8 +305,23 @@ LiftPilot го няма в панела на сървъра (vpsdash): нито 
   месеца — над 30 дни. За LiftPilot — отделно хранилище и само последното нощно копие всяка нощ:
   `restic backup "$(ls -1t /opt/few-few/shared/liftpilot/backups/nightly-*.sql.gz | head -n 1)" --tag liftpilot`, после
   `restic forget --tag liftpilot --keep-within 29d --prune` (снимка на цялата папка би пазила 29-дневни дъмпове още 29 дни).
+  **`--keep-within` брои от най-новата снимка, не от днес** (документацията на restic): ако нощното `restic backup` спре,
+  снимките от последните 29 дни преди спирането остават завинаги. Затова отделно, по възраст спрямо днес — скрипт
+  `/usr/local/sbin/liftpilot-restic-age` от cron всяка нощ (средата на restic — `RESTIC_REPOSITORY`, паролата — както за
+  `restic backup`; `python3` чете JSON-а):
+  ```bash
+  #!/usr/bin/env bash
+  set -euo pipefail
+  # snapshots of LiftPilot older than 29 days by the calendar, whatever the newest one is
+  ids="$(restic snapshots --tag liftpilot --json | python3 -c 'import json,sys; c=sys.argv[1]; print(" ".join(s["id"] for s in json.load(sys.stdin) if s["time"][:10] < c))' "$(date -u -d '29 days ago' +%F)")"
+  [ -z "$ids" ] || restic forget --prune $ids
+  ```
+  (Изборът по дата е пробван с примерен JSON; самият restic тук не е пробван — няма го на машината за разработка.) И
+  наблюдение: ако `restic backup` не мине, сигнал (както `LIFTPILOT_BACKUP_HEARTBEAT_URL` по-горе).
 
-**Една проба за възстановяване** от отдалеченото копие (в отделна база, не в живата):
+**Една проба за възстановяване** от отдалеченото копие (в отделна база, не в живата). Копието първо се пренася на
+сървъра: при vpsdash — от приемника (другия VPS), напр. `scp root@<приемник>:/var/lib/vps-dashboard/offsite/<nodeId>/liftpilot-<час>.sql.gz /root/`;
+при restic — `restic restore <снимка> --target /root/restore-test` (пътят вътре е пълният път на нощното копие). После:
 
 ```bash
 cd "$(readlink -e /opt/few-few/liftpilot-current)"
@@ -264,6 +329,7 @@ docker compose exec -T db createdb -U liftpilot restore_test
 gunzip -c <копието>.sql.gz | docker compose exec -T db psql -q -v ON_ERROR_STOP=1 --single-transaction -U liftpilot -d restore_test
 docker compose exec -T db psql -U liftpilot -d restore_test -Atc 'SELECT count(*) FROM "Project"'
 docker compose exec -T db dropdb -U liftpilot restore_test
+rm -rf <копието>.sql.gz /root/restore-test     # пренесеното копие не остава на сървъра извън 30-те дни
 ```
 
 ## Проверка
@@ -276,42 +342,115 @@ cd "$(readlink -e /opt/few-few/liftpilot-current)" && docker compose ps && docke
 
 ## Връщане назад
 
-- **Код:** предишният здрав release е в `last-good.prev` (кръг 48 нататък); `autodeploy.sh` от текущия release го
-  разгръща без архив и записва паметта наново:
+**Първо — къде си** (кой release е последният здрав, кой е предишният, от коя папка вървят контейнерите):
+
+```bash
+cat /opt/few-few/shared/liftpilot/last-good /opt/few-few/shared/liftpilot/last-good.prev
+cat /opt/few-few/shared/liftpilot/last-good.rolled-back-from 2>/dev/null   # има го само след връщане
+readlink -e /opt/few-few/liftpilot-current
+docker inspect -f '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' liftpilot-app-1
+```
+
+Папките са `…/releases/<час>/<корен>/liftpilot`; `RELEASE_DIR` е папката **без** `/liftpilot` накрая. Командата е
+`autodeploy.sh` на `liftpilot-current` (последният здрав — най-новият скрипт), не на целта.
+
+- **Код — деплоят се провали** (`autodeploy.sh` излезе с грешка): `last-good` и `liftpilot-current` **не са мръднали** —
+  сочат последния здрав release. Ако `working_dir` от `docker inspect` е друг (провал след `docker compose up`, напр.
+  на здравната проверка: вървят новите контейнери), разгърни **last-good** — не `.prev`, той е с още една версия назад:
+  ```bash
+  PREV="$(dirname "$(head -n 1 /opt/few-few/shared/liftpilot/last-good)")"
+  sudo RELEASE_DIR="$PREV" PROJECTS="liftpilot" bash "$(readlink -e /opt/few-few/liftpilot-current)/../deploy/autodeploy.sh"
+  ```
+  Ако `working_dir` е самият last-good (провал преди `up`, напр. на build), предишният код още върви — няма какво да
+  се връща.
+- **Код — деплоят беше здрав, но новият код е лош** (`last-good` вече е новият): целта е `last-good.prev`:
   ```bash
   PREV="$(dirname "$(head -n 1 /opt/few-few/shared/liftpilot/last-good.prev)")"
   sudo RELEASE_DIR="$PREV" PROJECTS="liftpilot" bash "$(readlink -e /opt/few-few/liftpilot-current)/../deploy/autodeploy.sh"
   ```
-  `last-good.prev` има след втория здрав деплой с `autodeploy.sh` от кръг 48 нататък; дотогава `RELEASE_DIR` е папката
-  на предишния release (`ls -dt /opt/few-few/releases/*/*/liftpilot`, без `/liftpilot` накрая). Миграциите от 23 нататък
-  са адитивни: старият код върви с базата (`migrate deploy` на код без 23/24 срещу база с тях: „No pending
-  migrations“ — пробвано така за 22).
-- **База** — само ако данните трябва да се върнат (обикновено стига кодът). Дъмповете са без `--clean`: налят в живата,
-  непразна база, psql без `ON_ERROR_STOP` продължава след всяка грешка и излиза с 0 — получава се слята, наполовина
-  върната база, която изглежда успешна. Затова — в празна база, наведнъж:
-  ```bash
-  cd "$(readlink -e /opt/few-few/liftpilot-current)"
+  След връщането `last-good` е PREV, `.prev` **остава** същият (връщането с `RELEASE_DIR` не го пренаписва), а лошият
+  е записан в `last-good.rolled-back-from`; следващ обикновен деплой го маха. **Не пускай командата за връщане втори
+  път**: с `autodeploy.sh` от кръг 48 тя само разгръща PREV наново, а с по-стар — `.prev` вече е лошият и тя го връща.
+  Още стъпка назад: папката — сам, от `ls -dt /opt/few-few/releases/*/*/liftpilot`.
+- `last-good.prev` има след втория здрав деплой с `autodeploy.sh` от кръг 48 нататък; дотогава `RELEASE_DIR` е папката
+  на предишния release (`ls -dt /opt/few-few/releases/*/*/liftpilot`). **Папката на целта е изтрита** (чистенето на
+  `main` — „Деплой на друг продукт от `main`“): `REF=<SHA на целта> PROJECTS="liftpilot" bash /root/deploy/fetch-deploy.sh`
+  (с `fetch-deploy.sh` от същия SHA) — нов release от архива, с бекъп преди миграциите.
+
+**Преди връщане към по-стар код — какво носи то:**
+
+1. **Миграциите 23–25 са адитивни:** старият код върви с базата — `migrate deploy` на кода на кръг 47 срещу копие с 23
+   и 24: „No pending migrations to apply“ (пробвано при прегледа на кръг 48; така и за 22). За 25 — по построение
+   (две nullable колони, които старият клиент не чете, и уникален индекс, в който старият код пише само `NULL`);
+   не е пробвано.
+2. **Двигателите:** връщане към release с други версии на двигателите (отпреди кръг 48 — 1.7.x) прави комплект, издаден
+   под сегашните и още несвален, без PDF (409 — същото като „Преди деплой, който мени двигател“, в обратна посока).
+   Затова преди връщането, на текущия release: `cd "$(readlink -e /opt/few-few/liftpilot-current)" && docker compose
+   exec -T app npm run pdf:keep`.
+3. **Регистрацията:** release отпреди кръг 48 няма `REGISTRATION_MODE` — регистрацията е **отворена за всеки**. Затваря се
+   само с празен `SMTP_HOST`: старото `smtpConfigured()` иска само `SMTP_HOST` и `MAIL_FROM` (без `SMTP_USER`/`SMTP_PASS`
+   пощата пак се брои за настроена — регистрацията остава отворена, а писмата тихо падат в Brevo). В
+   `/opt/few-few/shared/liftpilot/.env` (600) редът става `SMTP_HOST=` (празен ред, не изтрит: деплой с
+   `LIFTPILOT_SMTP_*` слага стойността по подразбиране само на липсващ ред), после
+   `cd "$(readlink -e /opt/few-few/liftpilot-current)" && install -m 600 /opt/few-few/shared/liftpilot/.env .env && docker compose up -d app`.
+   Това спира и „забравена парола“ и всяко писмо за всички. Обратно: `SMTP_HOST=smtp-relay.brevo.com` и същата команда.
+   По-просто — по време на бетата не се връщай отпреди кръг 48.
+4. **`current` също се мести** — `autodeploy.sh` го насочва към release-а на връщането (а vpsdash взима
+   `autodeploy.sh` от `current`); следващият деплой от правилния ref го оправя.
+
+**База** — само ако данните трябва да се върнат (обикновено стига кодът). Дъмповете са без `--clean`: налят в живата,
+непразна база, psql без `ON_ERROR_STOP` продължава след всяка грешка и излиза с 0 — получава се слята, наполовина
+върната база, която изглежда успешна. Затова — в празна база, наведнъж. Блокът е в `( … )`: поставен в shell-а, той се
+прочита цял, `set -o pipefail` важи само вътре, а всяка разрушителна стъпка е в условие — интерактивният shell няма
+`set -e` и иначе следващият ред (`dropdb`) върви и след провал. Нищо не се трие, преди и дъмпът, и свежото копие на
+сегашното състояние да са **цели** (`gzip -t` доказва само архива; цял е дъмпът, чиито последни редове носят знака на
+`pg_dump` за край — на `pg_dump` 16.13 последният ред е `\unrestrict …`, затова се гледат последните 8):
+
+```bash
+( set -o pipefail
+  # дъмпът е цял, когато последните му редове носят знака на pg_dump за край (gzip -t доказва само архива)
+  whole() { gunzip -t "$1" && gunzip -c "$1" | tail -n 8 | grep -qx -- '-- PostgreSQL database dump complete'; }
+  LP="$(readlink -e /opt/few-few/liftpilot-current)" && cd "$LP" || exit 1
   B=/opt/few-few/shared/liftpilot/backups
   DUMP="$B/pre-deploy-<TS>.sql.gz"            # или $B/nightly-<YYYYMMDD>.sql.gz
-  gunzip -t "$DUMP"                            # архивът е цял
-  # 1) свеж дъмп на сегашното състояние (ако трябва да се върнеш и от връщането)
-  (umask 077; docker compose exec -T db pg_dump -U liftpilot liftpilot | gzip > "$B/before-restore-$(date -u +%Y%m%d-%H%M%S).sql.gz")
-  # 2) приложението спира (базата остава)
-  docker compose stop app
-  # 3) празна база (ако dropdb каже, че базата се ползва: dropdb --force)
-  docker compose exec -T db dropdb -U liftpilot liftpilot
-  docker compose exec -T db createdb -U liftpilot liftpilot
-  # 4) възстановяване: спира при първата грешка, една транзакция — всичко или нищо
-  gunzip -c "$DUMP" | docker compose exec -T db psql -q -v ON_ERROR_STOP=1 --single-transaction -U liftpilot -d liftpilot
-  # 5) приложението (entrypoint-ът пуска миграциите, които дъмпът няма) и проверка
-  docker compose start app
-  curl -fsS http://127.0.0.1:4330/api/health
-  ```
-  Ако т. 4 спре с грешка, базата е празна (транзакцията се връща цяла): т. 3–4 със свежия `before-restore-…`.
-  Пробвано на копие (`argano_r48ops` → нова празна база с тези флагове: всичките 28 таблици с еднакъв брой редове,
-  тригерите също; същият дъмп в непразна база — с флаговете спира с код 3 и не пише нищо, без тях — 243 грешки и код 0).
-  Дъмп отпреди 22 с код след 22: entrypoint-ът прилага 22 наново (колоната `kind` пада) — за връщане отпреди 22 виж
-  „Връщане след 22“.
+  NOW="$B/before-restore-$(date -u +%Y%m%d-%H%M%S).sql.gz"
+  # 1) дъмпът е цял, после свеж дъмп на сегашното състояние — и той цял (за връщане от връщането)
+  if whole "$DUMP" \
+    && (umask 077; docker compose exec -T db pg_dump -U liftpilot liftpilot | gzip > "$NOW") \
+    && whole "$NOW"; then
+    # 2) приложението спира, 3) празна база, 4) възстановяване — всяка стъпка само ако предишната е минала
+    if docker compose stop app \
+      && docker compose exec -T db dropdb -U liftpilot liftpilot \
+      && docker compose exec -T db createdb -U liftpilot liftpilot \
+      && gunzip -c "$DUMP" | docker compose exec -T db psql -q -v ON_ERROR_STOP=1 --single-transaction -U liftpilot -d liftpilot; then
+      # 5) приложението (entrypoint-ът пуска миграциите, които дъмпът няма) и проверка
+      docker compose start app
+      for i in $(seq 30); do curl -fsS http://127.0.0.1:4330/api/health && break; sleep 2; done
+    else
+      echo "СТОП: възстановяването спря — приложението е спряно; свежото копие: $NOW"
+    fi
+  else
+    whole "$NOW" 2>/dev/null || rm -f "$NOW"
+    echo "СТОП: дъмпът или свежото копие не е цял — базата не е пипана"
+  fi
+)
+```
+
+- **„СТОП: дъмпът или свежото копие не е цял“** — нищо не е пипано (приложението върви); избери друг дъмп или виж защо
+  `pg_dump` пада.
+- **„СТОП: възстановяването спря“** — приложението е **спряно** и не се пуска (иначе entrypoint-ът прави празна схема в
+  празната база). Ако е спряло на `dropdb` („базата се ползва“ — напр. снимката на vpsdash): същият блок с `dropdb
+  --force`. Ако е спряло на т. 4: базата е празна (транзакцията се връща цяла) — същият блок с `DUMP=` свежото копие
+  от съобщението връща състоянието отпреди.
+
+Пробвано (кръг 48, след прегледа) с точно този блок върху временни бази (`r48d_*`, после изтрити), с `docker` заглушен
+към локалния PostgreSQL 16.13: отрязан дъмп → стоп, базата непипната; провален `pg_dump` → стоп, базата непипната, без
+остатъчен файл; провал на т. 4 → стоп, приложението не е пуснато, базата празна; повторно пускане със свежото копие →
+базата се върна; успешно възстановяване → данните на дъмпа (396 проекта), таблица, добавена след дъмпа — няма я.
+По-рано (кръг 48): `argano_r48ops` → нова празна база с тези флагове: всичките 28 таблици с еднакъв брой редове,
+тригерите също; същият дъмп в непразна база — с флаговете спира с код 3 и не пише нищо, без тях — 243 грешки и код 0.
+Дъмп отпреди 22 с код след 22: entrypoint-ът прилага 22 наново (колоната `kind` пада) — за връщане отпреди 22 виж
+„Връщане след 22“.
 
 ## Кръг 47 — миграция 22, отделен release
 
@@ -326,9 +465,14 @@ SHA-тата са на клона на PR-а (`efa56c45f` — подготовк
 2. Release-ът на двигателите — кръг 46 B с кръг 47 D1, D2 и подготовката за D3 (`Project.kind @ignore`: клиентът вече
    не назовава колоната в нито една заявка, и в INSERT): `pdf:keep` още веднъж, после
    `REF=efa56c45f PROJECTS="liftpilot" bash /root/deploy/fetch-deploy.sh`. Без миграция.
-3. Преди 22 — id-тата на съоръженията с `REPLACEMENT` в отделен файл (нужни са само за връщане по-назад от т. 2):
-   `cd "$LP" && (umask 077; docker compose exec -T db psql -U liftpilot liftpilot -Atc "SELECT id FROM \"Project\" WHERE
-   kind = 'REPLACEMENT' ORDER BY id" > /opt/few-few/shared/liftpilot/backups/pre-22-replacement-ids.txt)`.
+3. Преди 22 — id-тата на съоръженията с `REPLACEMENT` в отделен файл (нужни са само за връщане по-назад от т. 2).
+   Първо във `.tmp`; на мястото — само ако заявката е минала и файлът не е празен (пренасочването създава файла, преди
+   `psql` да се провали — иначе остава празен файл, който изглежда като готов):
+   ```bash
+   F=/opt/few-few/shared/liftpilot/backups/pre-22-replacement-ids.txt
+   cd "$LP" && (umask 077; docker compose exec -T db psql -U liftpilot -d liftpilot -Atc "SELECT id FROM \"Project\" WHERE kind = 'REPLACEMENT' ORDER BY id" > "$F.tmp") \
+     && [ -s "$F.tmp" ] && mv "$F.tmp" "$F" || { rm -f "$F.tmp"; echo 'СТОП: заявката не мина или няма id-та — файлът не е записан'; }
+   ```
    Този файл е трайното копие: `pre-deploy-<TS>.sql.gz` на `deploy.sh` също ги има, но `deploy.sh` пази само
    последните 5 дъмпа, а нощният `liftpilot-backup` (`BACKUP_DAYS` = 30) трие всеки `.sql.gz` в папката на 30 дни, и
    `pre-deploy-*`. Файлът не е `.sql.gz` — нито ротацията на `deploy.sh`, нито нощното чистене го трият.
@@ -336,7 +480,8 @@ SHA-тата са на клона на PR-а (`efa56c45f` — подготовк
    /root/deploy/fetch-deploy.sh`; entrypoint-ът я пуска с `migrate deploy` (бекъп преди нея — както винаги).
    Заключването е за миг (`DROP COLUMN` не пренаписва таблицата).
 
-**Id-тата отпреди 22, ако файлът от т. 3 липсва** (`ls -l /opt/few-few/shared/liftpilot/backups/pre-22-replacement-ids.txt`).
+**Id-тата отпреди 22, ако файлът от т. 3 липсва или е празен** (`[ -s /opt/few-few/shared/liftpilot/backups/pre-22-replacement-ids.txt ]`
+не минава).
 Публичните файлове на продукцията носят времето на комита на 22, т.е. production най-вероятно вече е след 22 — тогава
 id-тата са само в `pre-deploy-<TS>.sql.gz`, направен точно преди 22 (най-новият с дата преди деплоя на `b8cf6ac69`), а той
 изтича: след още 5 деплоя (ротацията) или на 30 дни (нощното чистене). Извличане във временна база, сега:
@@ -346,11 +491,15 @@ cd "$LP"
 D=/opt/few-few/shared/liftpilot/backups/pre-deploy-<TS>.sql.gz    # дъмпът точно преди 22
 docker compose exec -T db createdb -U liftpilot tmp22
 gunzip -c "$D" | docker compose exec -T db psql -q -v ON_ERROR_STOP=1 --single-transaction -U liftpilot -d tmp22
-(umask 077; docker compose exec -T db psql -U liftpilot -d tmp22 -Atc "SELECT id FROM \"Project\" WHERE kind = 'REPLACEMENT' ORDER BY id" \
-  > /opt/few-few/shared/liftpilot/backups/pre-22-replacement-ids.txt)
+F=/opt/few-few/shared/liftpilot/backups/pre-22-replacement-ids.txt
+(umask 077; docker compose exec -T db psql -U liftpilot -d tmp22 -Atc "SELECT id FROM \"Project\" WHERE kind = 'REPLACEMENT' ORDER BY id" > "$F.tmp") \
+  && [ -s "$F.tmp" ] && mv "$F.tmp" "$F" || { rm -f "$F.tmp"; echo 'СТОП: заявката не мина или няма id-та — файлът не е записан'; }
 docker compose exec -T db dropdb -U liftpilot tmp22
-wc -l /opt/few-few/shared/liftpilot/backups/pre-22-replacement-ids.txt
+wc -l "$F"
 ```
+
+Заявка, която мине, но не върне нито един ред (в дъмпа няма `REPLACEMENT`), не записва файла — тогава запиши това
+ръчно (`echo 'nessun REPLACEMENT' > "$F"`), за да мине проверката на т. 0.
 
 Пробвано с дъмпа отпреди 22 на копието: 33 id-та, същите като файла, взет преди миграцията (`cmp` — еднакви).
 Колоната `kind` в дъмпа значи, че е отпреди 22; ако `SELECT` каже „column kind does not exist“ — дъмпът е след 22,

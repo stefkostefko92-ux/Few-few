@@ -44,9 +44,14 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 
 export const forgotSchema = z.object({ email: emailSchema });
 
-/** The link of the registration and the password chosen there; `clauses` is the specific approval of the clauses
- *  (arts. 1341–1342 c.c.), required when the link is a waiting registration's (src/server/account-actions.ts). */
-export const verifySchema = z.object({ token: linkToken, password: z.string().min(1).max(200), clauses: z.enum(['on', '']) });
+/** A tick of a form: ticked or not (anything but 'on' is not). */
+const tick = z.string().max(10).transform((v) => v === 'on');
+
+/** The link of the registration and what its page sends: the password chosen there (empty is a field to fill, which
+ *  the action says, never a bad link), `clauses` the specific approval of the clauses (arts. 1341–1342 c.c.), required
+ *  when the link is a waiting registration's, and `accept` the terms in force, required when that registration was made
+ *  under an earlier version (src/server/account-actions.ts). */
+export const verifySchema = z.object({ token: linkToken, password: z.string().max(200), clauses: tick, accept: tick });
 
 /** The token of a beta invitation (the fragment of its registration link, sent back as the form's `invito`,
  *  src/lib/beta-invites.ts): absent, or a link's token. */

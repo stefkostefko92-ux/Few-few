@@ -151,6 +151,9 @@ model User {
   /// the company only NOTICE_DAYS after it (src/lib/legal.ts)
   termsNoticeVersion String?
   termsNoticeAt      DateTime?
+  /// the owner approved the clauses of arts. 1341–1342 c.c. with the password (the e-mail link's page or the terms'
+  /// page, round 48): null — never so (a tick before round 48), the app asks for it once
+  clausesApprovedAt  DateTime?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   projectsCreated    Project[]           @relation("ProjectCreatedBy")
@@ -818,9 +821,13 @@ model Scheda {
   deletedAt               DateTime?
   deletedById             String?
   deletedBy               User?                       @relation("SchedeDeleted", fields: [deletedById], references: [id], onDelete: SetNull)
+  /// the key the form sent with the last write (round 48): a save sent again after its answer was lost finds the sheet
+  /// it already made or updated instead of making a second one or reading as somebody else's change
+  writeKey                String?
   createdAt               DateTime                    @default(now())
   updatedAt               DateTime                    @updatedAt
 
+  @@unique([companyId, writeKey])
   /// the list in its order (survey day, then creation, newest first; the trashed ones skipped), and the trash
   @@index([companyId, data(sort: Desc), createdAt(sort: Desc)])
   @@index([companyId, deletedAt])

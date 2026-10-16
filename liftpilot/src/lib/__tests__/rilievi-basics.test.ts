@@ -73,7 +73,7 @@ describe('the messages', () => {
     assert.equal(t('scheda.unit.persone', { n: 8 }), 'persone');
     assert.equal(t('scheda.errorSummary', { n: 2 }), 'Correggi 2 campi');
     assert.equal(t('schede.search.found', { n: 1, q: '987' }), '1 scheda per «987»');
-    assert.equal(t('scheda.question.quadroOrdine'), 'Vuoi compilare la scheda per l\'ordine quadro?');
+    assert.equal(t('scheda.question.quadroOrdine'), 'Vuoi compilare la scheda per l’ordine quadro?', 'the typographic apostrophe (round 48, review ux10)');
     assert.equal(t('collegati.conferma.title', { n: 1 }), 'Un dato non coincide tra scheda e ordini');
     assert.equal(t('collegati.conferma.title', { n: 2 }), '2 dati non coincidono tra scheda e ordini');
     assert.equal(t('scheda.option.tipoImpianto.GEARLESS'), 'MRL', 'a label only: the value stays GEARLESS');

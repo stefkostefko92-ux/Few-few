@@ -30,6 +30,14 @@ Premium и менюто „Rilievi“ в групата „Area di lavoro“; ф
 
 **Rilievo ↔ impianto** (кръг 44): началото `/app` е Rilievi (таблото на съоръженията — `/app/impianti`); картата се свързва със съоръжение (`Scheda.projectId`, `rilievi:link`, суров SQL без `updatedAt`), „Calcolo argano“ и /progetto започват от рилевото за справка само в празни полета (нов формуляр — и в стандартните; само с `rilievi:view`) („dal rilievo“), страницата на съоръжението има стъпките и сравнението (stato di fatto = грешка — позицията и с/без ролката на отклонение, когато листът „dati argano“ я казва; товар/лица/скорост = modifica prevista); архивираното съоръжение не губи рилевата си — `docs/rules.md` → „Rilievo e impianto“.
 
+
+**Бетата** (кръг 48): регистрация само с покана (`REGISTRATION_MODE=invite` по подразбиране; `BetaInvite`, «Inviti alla beta» в
+`/app/admin`, токенът — във фрагмента); клаузите по чл. 1341–1342 c.c. се одобряват на страницата от линка в имейла и в
+TermsGate с паролата (`User.clausesApprovedAt` + одит в същата транзакция); «Segnala un problema» (`Feedback`,
+`/app/segnala`, `/app/admin/segnalazioni` — текстът никога в имейл); ръководство `/guida`; повторен запис на лист за rilievo
+след изгубен отговор не прави втори (`Scheda.writeKey`); корекция в двигател, която сменя резултата на издаден документ —
+`npm run engine:notice` (`docs/terms-changes.md` §8). Подробно — `docs/rules.md`.
+
 **Подробностите:** структурата на кода — `docs/architecture.md`; правилата по модули (3D, симулация, подмяна, проект на
 асансьора, изпитване, чертежи и коти, каталози, машините каквито са, Panev, буфери, ролка, съвет и поръчка, акаунти,
 абонамент, листа, условия) — `docs/rules.md`. Прочети раздела на модула, преди да го пипаш; промяна в правило се
@@ -52,6 +60,7 @@ python3 -I scripts/brand-assets.py [--og]             # логото, ембле
 python3 -I scripts/icons-build.py                     # рисуваните икони → public/icons/*-48|96.webp + src/components/icon-names.ts
 python3 -I scripts/premium-images.py                  # илюстрациите на шаблона → public/img/premium/ (AVIF + WebP)
 npm run lista         # docs/lista-verifica-normativa.md + .json от регистъра
+npm run engine:notice -- [--send --motivo "…"]  # кои фирми имат документи, чиито резултати сменя двигателят; писмо до Titolare (§8)
 python3 scripts/lista-verifica-xlsx.py   # docs/lista-verifica-normativa.xlsx от .json (нужен openpyxl; след npm run lista)
 npm run artifact      # самостоятелната страница с двата инструмента → artifact/dist (claude.ai Artifact или статичен хост)
 npx tsx scripts/landing-drawings.ts                  # чертежите на началната страница (public/img/lp-plan|lp-section.svg) от ядрото

@@ -9,7 +9,11 @@
       },
       {
         "sigla": "DPR 162/1999 e s.m.i. (DPR 8/2015, DPR 23/2017)",
-        "ambito": "sostituzione del macchinario come modifica costruttiva; verifica straordinaria (art. 14)"
+        "ambito": "campo (art. 1); impianto nuovo con organismo notificato (All. V, VIII); modifica costruttiva (art. 2 c.1 cc)) e verifica straordinaria (art. 14)"
+      },
+      {
+        "sigla": "Regolamento (UE) 2023/1230",
+        "ambito": "art. 51 par. 2: ascensori dichiarati conformi dal 20/01/2027"
       },
       {
         "sigla": "UNI EN 81-20:2020",
@@ -244,11 +248,11 @@
       "gruppo": "Gole",
       "voce": "Pressione specifica nelle gole",
       "valore": "p = T/(n·d·D) · 8·cos(β/2)/(π − β − sin β) nella gola semicircolare (β = 0 senza sottosquadro), p = T/(n·d·D) · 4,5/sin(γ/2) nella gola a V, nella gola a V con sottosquadro il maggiore dei due; T tiro statico delle funi lato cabina alla puleggia di frizione, con la cabina al piano più basso con la portata; p ≤ (12,5 + 4·v_c)/(1 + v_c), v_c velocità delle funi alla velocità nominale: entro il limite informazione, oltre «Attenzione»",
-      "riferimento": "UNI 10411-1:2024, appendice D.2 e 14.1 c)–d)",
-      "fonte": "UNI 10411-1:2024, testo della norma, letto il 2026-10-06, pp. 13 e 34",
+      "riferimento": "UNI 10411-1:2024, appendice D.2, 6.1, 6.2 e 14.1 c)–d)",
+      "fonte": "UNI 10411-1:2024, testo della norma, letto il 2026-10-06, pp. 6–7, 13 e 34",
       "stato": "confermato",
       "verifiche": "pressione specifica nelle gole (informazione)",
-      "nota": "obbligatoria solo quando i coefficienti di sicurezza minimi 12 e 16 sostituiscono il calcolo della UNI EN 81-50:2020, 5.12 (UNI 10411-1:2024, 14.1 c)–d)): il software calcola S_f secondo la 5.12 e riporta la pressione come informazione, come fa il progettista per l’organismo di verifica; la gola a V con sottosquadro non ha una formula nella D.2 (il maggiore dei due è una scelta del software). Con il rapporto tra i carichi cambiato secondo la UNI 10411-1 (6.1) la stessa pressione è anche una verifica soddisfatta o no accanto alla D.1 (voce rapporto.d2 del vano)"
+      "nota": "obbligatoria quando i minimi 12 e 16 del coefficiente di sicurezza delle funi sostituiscono il calcolo della UNI EN 81-50:2020, 5.12 (UNI 10411-1:2024, 6.2 e 14.1 c)–d)) e quando cambia il rapporto tra i carichi (6.1, voce rapporto.d2 del vano). Il software calcola S_f secondo la 5.12 e fuori dal rapporto cambiato riporta la pressione come informazione, come fa il progettista per l’organismo di verifica; con il rapporto cambiato secondo la UNI 10411-1 (6.1) la stessa pressione è una verifica soddisfatta o no accanto alla D.1. La gola a V con sottosquadro non ha una formula nella D.2: il maggiore dei due valori è una scelta del software"
     },
     {
       "n": 19,
@@ -735,12 +739,12 @@
       "id": "modello.velocita.minima",
       "gruppo": "Modello di calcolo",
       "voce": "Velocità nominale minima: campo dell’ascensore",
-      "valore": "velocità nominale oltre 0,15 m/s; a 0,15 m/s o meno l’apparecchio non è un ascensore per la UNI EN 81-20 né per il DPR 162/1999 e il software non lo calcola né lo progetta: il campo è segnato e il calcolo o il progetto non si salva",
+      "valore": "velocità nominale oltre 0,15 m/s; a 0,15 m/s o meno l’apparecchio è fuori dal campo di applicazione della UNI EN 81-20 (1.3 a) 2)), della Direttiva 2014/33/UE (art. 1 par. 2 a)) e del DPR 162/1999 (art. 1 c.3 a), testo vigente) e il software non lo calcola né lo progetta: il campo è segnato e il calcolo o il progetto non si salva",
       "riferimento": "UNI EN 81-20:2020, 1.3 a) 2); DPR 162/1999 e s.m.i., art. 1 c.3 lett. a); Direttiva 2014/33/UE, art. 1 par. 2 lett. a)",
       "fonte": "UNI EN 81-20:2020, testo della norma, letto il 2026-10-06, p. 15; DPR 162/1999 e Direttiva 2014/33/UE: testi ufficiali (ricerca, cap. 16, §2 e §4.6)",
       "stato": "confermato",
       "verifiche": "",
-      "nota": ""
+      "nota": "nella modifica di un ascensore messo in servizio prima della Direttiva Ascensori le clausole citate non fissano da sole il limite (la UNI EN 81-20 vale per gli impianti nuovi, la UNI 10411-1 non pone una velocità minima nel suo campo): lì il limite è una scelta del software"
     },
     {
       "n": 60,
@@ -1724,7 +1728,7 @@
       "fonte": "UNI 10411-1:2024, testo della norma, letto il 2026-10-06, pp. 6–7 e 34",
       "stato": "confermato",
       "verifiche": "modifica (UNI 10411-1): pressione specifica delle funi nelle gole con il rapporto tra i carichi cambiato (D.2)",
-      "nota": ""
+      "nota": "gola a V con sottosquadro: la D.2 non ha una formula; il maggiore dei due valori è una scelta del software (voce gole.pressione), da confermare con il soggetto della verifica"
     },
     {
       "n": 142,

@@ -21,11 +21,12 @@ note() { logger -t liftpilot-backup -p "user.$1" -- "$2" 2>/dev/null || true; }
 fail() { echo "liftpilot-backup: $1" >&2; note err "$1"; status=1; }
 
 # the heartbeat's address: the environment first, else the secrets file (read as text, never sourced; a value written
-# in single quotes by deploy.sh loses them); only http(s)
+# in single quotes by deploy.sh, or in double quotes by hand, loses them); only http(s)
 heartbeat="${LIFTPILOT_BACKUP_HEARTBEAT_URL:-}"
 if [ -z "$heartbeat" ] && [ -r "$ENV_FILE" ]; then
   heartbeat="$(grep -E '^LIFTPILOT_BACKUP_HEARTBEAT_URL=' "$ENV_FILE" | head -n 1 | cut -d= -f2- || true)"
   heartbeat="${heartbeat#\'}"; heartbeat="${heartbeat%\'}"
+  heartbeat="${heartbeat#\"}"; heartbeat="${heartbeat%\"}"
 fi
 case "$heartbeat" in
   '' | https://* | http://*) ;;

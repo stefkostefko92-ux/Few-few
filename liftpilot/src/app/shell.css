@@ -77,6 +77,14 @@ html.ws-drawer-open { overflow: hidden; }
 .ws-nav a[aria-current] .icon { opacity: 1; filter: var(--ws-sel-glow); }
 
 .ws-bottom { flex: none; display: flex; flex-direction: column; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--rule); }
+/* the help pinned above the user's card (round 48): always in view, however long the sections and low the window */
+.ws-help { display: flex; flex-direction: column; gap: 2px; padding-bottom: 8px; border-bottom: 1px solid var(--rule); }
+.ws-help a { min-height: 36px; display: flex; align-items: center; gap: 10px; padding: 6px 12px; border: 1px solid transparent; border-radius: 6px;
+  color: var(--muted); font: 600 13.5px/1.25 var(--font-body); text-decoration: none; overflow-wrap: anywhere; }
+.ws-help a .icon { opacity: .8; }
+.ws-help a .ws-nav-ext { margin-left: auto; opacity: .6; }
+.ws-help a:hover { color: var(--ink); background: var(--surface2); }
+.ws-help a[aria-current] { color: var(--ink); border-color: var(--ws-sel-line); background: var(--ws-sel-bg); box-shadow: inset 2px 0 var(--accent); }
 .avatar { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 2px solid var(--ws-avatar-line);
   background: var(--ws-avatar); color: var(--ws-avatar-ink); font: 800 12.5px/1 var(--font-body); letter-spacing: .02em; }
 .ws-who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
@@ -99,6 +107,8 @@ html.ws-drawer-open { overflow: hidden; }
   .ws-group + .ws-group { margin-top: 14px; }
   .ws-nav { gap: 2px; }
   .ws-bottom { gap: 6px; margin-top: 8px; padding-top: 8px; }
+  .ws-help { padding-bottom: 4px; }
+  .ws-help a { min-height: 32px; padding-block: 4px; }
   .ws-bottom .ws-company { display: none; }
   .ws-user { padding-block: 3px; }
 }

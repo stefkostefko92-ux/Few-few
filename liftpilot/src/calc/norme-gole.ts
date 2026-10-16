@@ -50,14 +50,14 @@ export const VOCI_GOLE: readonly Voce[] = [
       + 'gola a V, nella gola a V con sottosquadro il maggiore dei due; T tiro statico delle funi lato cabina alla puleggia di frizione, con la '
       + 'cabina al piano più basso con la portata; p ≤ (12,5 + 4·v_c)/(1 + v_c), v_c velocità delle funi alla velocità nominale: entro il limite '
       + 'informazione, oltre «Attenzione»',
-    riferimento: 'UNI 10411-1:2024, appendice D.2 e 14.1 c)–d)', fonte: `${letto(U1, 'pp. 13 e 34')}`, stato: 'confermato',
+    riferimento: 'UNI 10411-1:2024, appendice D.2, 6.1, 6.2 e 14.1 c)–d)', fonte: `${letto(U1, 'pp. 6–7, 13 e 34')}`, stato: 'confermato',
     costanti: ['pressBase', 'pressSpeed', 'pressU', 'pressV'], verifiche: ['g_press'], rifVerifica: { g_press: `${U1}, appendice D.2` },
     // tested to another standard, the software still reports the pressure by this formula
     rifFuoriNorma: `${U1}, appendice D.2 (formula)`,
-    nota: 'obbligatoria solo quando i coefficienti di sicurezza minimi 12 e 16 sostituiscono il calcolo della UNI EN 81-50:2020, 5.12 (UNI '
-      + '10411-1:2024, 14.1 c)–d)): il software calcola S_f secondo la 5.12 e riporta la pressione come informazione, come fa il progettista '
-      + 'per l’organismo di verifica; la gola a V con sottosquadro non ha una formula nella D.2 (il maggiore dei due è una scelta del software). '
-      + 'Con il rapporto tra i carichi cambiato secondo la UNI 10411-1 (6.1) la stessa pressione è anche una verifica soddisfatta o no accanto '
-      + 'alla D.1 (voce rapporto.d2 del vano)',
+    nota: 'obbligatoria quando i minimi 12 e 16 del coefficiente di sicurezza delle funi sostituiscono il calcolo della UNI EN 81-50:2020, 5.12 '
+      + '(UNI 10411-1:2024, 6.2 e 14.1 c)–d)) e quando cambia il rapporto tra i carichi (6.1, voce rapporto.d2 del vano). Il software calcola '
+      + 'S_f secondo la 5.12 e fuori dal rapporto cambiato riporta la pressione come informazione, come fa il progettista per l’organismo di '
+      + 'verifica; con il rapporto cambiato secondo la UNI 10411-1 (6.1) la stessa pressione è una verifica soddisfatta o no accanto alla D.1. '
+      + 'La gola a V con sottosquadro non ha una formula nella D.2: il maggiore dei due valori è una scelta del software',
   },
 ];

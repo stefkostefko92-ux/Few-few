@@ -9,7 +9,7 @@ import { billingConfigured } from '@/lib/billing-config';
 import { EMBLEM } from '@/lib/brand';
 import { initials } from '@/lib/dashboard';
 import Icon from './Icon';
-import NavLinks, { ShellLink, type NavGroup, type NavItem } from './NavLinks';
+import NavLinks, { HelpLinks, ShellLink, type NavGroup, type NavItem } from './NavLinks';
 import { DrawerPanel, DrawerRoot, DrawerToggle } from './shell/Drawer';
 import ShellCrumbs from './shell/ShellCrumbs';
 import ShellSearch from './shell/ShellSearch';
@@ -54,21 +54,15 @@ export default async function AppShell({ user, banners, footer, children }: { us
     ...(can(user, 'audit:view') ? [{ key: '/app/audit', href: '/app/audit', label: t('audit'), icon: 'history' } as const] : []),
     ...(can(user, 'platform:admin') ? [{ key: '/app/admin', href: '/app/admin', label: t('admin'), icon: 'building-gear' } as const] : []),
   ];
-  // help, for every signed-in user whatever the rights (round 48): the public guide and the report to LiftPilot. The
-  // guide opens in a new tab: the work in progress stays where it is (no «leave the page?» over an unsaved sheet)
-  const help: NavItem[] = [
-    { key: 'guide', href: '/guida', label: t('guide'), icon: 'book-open', newTab: t('newTab') },
-    { key: '/app/segnala', href: '/app/segnala', label: t('feedback'), icon: 'message-circle' },
-  ];
   // a group shows only with something in it (a company may take every right of the work away from a role)
   const groups: NavGroup[] = [
     ...(work.length ? [{ label: t('groupWork'), items: work }] : []),
     ...(library.length ? [{ label: t('groupLibrary'), items: library }] : []),
     ...(manage.length ? [{ label: t('groupAdmin'), items: manage }] : []),
-    { label: t('groupHelp'), items: help },
   ];
-  // pages outside the groups the top bar still names
-  const extra = [{ key: '/app/account', label: ta('title') }, { key: '/app/terms', label: tl('gateTitleNew') }, { key: '/app/permesso', label: td('title') }];
+  // pages outside the groups the top bar still names («Segnala un problema»: the help is pinned at the bottom)
+  const extra = [{ key: '/app/account', label: ta('title') }, { key: '/app/terms', label: tl('gateTitleNew') }, { key: '/app/permesso', label: td('title') },
+    { key: '/app/segnala', label: t('feedback') }];
   const role = tr(user.role), avatar = <span className="avatar" aria-hidden="true">{initials(user.name)}</span>;
   const who = `${user.name} · ${role} · ${user.companyName}`, beta = !billingConfigured();
   return (
@@ -82,6 +76,10 @@ export default async function AppShell({ user, banners, footer, children }: { us
             <NavLinks groups={groups} label={t('label')} />
           </div>
           <div className="ws-bottom">
+            {/* help, for every signed-in user whatever the rights (round 48), pinned above the user's card so that it is
+                in view whatever the length of the sections and the height of the window: the public guide (a new tab —
+                the work in progress stays where it is) and the report to LiftPilot, which names the page it came from */}
+            <HelpLinks label={t('groupHelp')} guide={t('guide')} newTab={t('newTab')} feedback={t('feedback')} />
             <ShellLink href="/app/account" className="ws-user" title={who}>
               {avatar}
               <span className="ws-who"><b>{user.name}</b><small>{role}</small><small className="ws-company">{user.companyName}</small></span>
