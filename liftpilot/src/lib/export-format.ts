@@ -31,7 +31,7 @@ export const EXPORT_FORMAT_HISTORY = [
   // (migration 21_intervento, round 45)
   { version: 8, since: '2026-10-14' },
   // the installations no longer carry their module (Project.kind, read by no code since round 45: the type of
-  // intervention is each calculation's; ignored by the client in round 47, dropped by migration 22_drop_project_kind —
+  // intervention is each calculation's; dropped in round 47 by migration 22_drop_project_kind —
   // the format does not change)
   { version: 9, since: '2026-10-15' },
 ] as const;

@@ -35,7 +35,7 @@ export async function companyExport(companyId: string): Promise<Record<string, u
       select: { role: true, capability: true, granted: true, updatedById: true, updatedAt: true } }),
     prisma.companyLogo.findMany({ where: { companyId }, orderBy: { createdAt: 'asc' } }),
     // the installation's module of before round 45 (Project.kind) is no data of the company's any more (format 9; the
-    // client ignores the column since round 47)
+    // column is dropped by migration 22, round 47)
     prisma.project.findMany({
       where: { companyId }, orderBy: { createdAt: 'asc' },
       include: {

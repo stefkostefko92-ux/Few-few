@@ -444,9 +444,10 @@ prisma/              schema + migrations/0_init (тригер: без UPDATE н�
                      20_rilievi_impianti (Scheda.projectId → Project, ON DELETE SET NULL, индекс (projectId, data DESC);
                      ръчно писана, само добавя; връщането — в коментара ѝ), 21_intervento (кръг 45: TipoIntervento,
                      Calculation.intervento, LiftDesign.baseCalculationId с индекс и FK; адитивна; връщането — в
-                     docs/rules.md „Интервенцията и стъпките“). Project.kind (6_project_kind) — „deprecated“, кръг 47:
-                     @ignore в schema.prisma (клиентът не го назовава в нито една заявка, и в INSERT; тестът
-                     no-project-kind), пада с миграция 22 след потвърждението на собственика (отделен release).
+                     docs/rules.md „Интервенцията и стъпките“), 22_drop_project_kind (кръг 47, D3: Project.kind, индексът
+                     Project_companyId_kind_idx и enum-ът ProjectKind падат — разрушителна, отделен release след
+                     двигателите, предшественикът ѝ е @ignore в schema.prisma; връщането — в коментара ѝ; тестът
+                     no-project-kind).
 src/lib/rilievi/     Rilievi (кръг 41) — картите за оглед, чисто (и в браузъра): fields + field-types (ЕДИНСТВЕНИЯТ списък на
                      полетата, условията `when`, activeFields), field-parsers + validation (zod по вида, parseScheda,
                      formValuesFromBody), misure (бутониерите по спирки, mb-<спирка>-<колона>), format (displaySections,

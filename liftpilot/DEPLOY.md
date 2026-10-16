@@ -81,6 +81,35 @@ Release-ът на 46а е комитът `d54580b14` — `b37c9bf92` с попр
 Редът на сървъра: `REF=d54580b14 PROJECTS="liftpilot" bash /opt/few-few/current/deploy/fetch-deploy.sh`, двете
 команди `pdf:keep` по-горе, после — `pdf:keep` още веднъж и деплоят на двигателите (кръг 46 B, върхът на клона).
 
+**Кръг 47 — миграция 22, отделен release** (`22_drop_project_kind`: колоната `Project.kind`, индексът ѝ и enum-ът
+`ProjectKind` падат — първата разрушителна миграция). Редът, всеки етап — жив и здрав (`/api/health`, вход, едно
+съоръжение отворено), преди следващия. SHA-тата са на клона на PR-а (`efa56c45f` — подготовката за D3, върху
+поправките след прегледа, след повторната проверка и след последната сверка; клонът се влива без пренареждане):
+
+1. 46а — `REF=d54580b14` и двете `pdf:keep` (по-горе).
+2. Release-ът на двигателите — кръг 46 B с кръг 47 D1, D2 и подготовката за D3 (`Project.kind @ignore`: клиентът вече
+   не назовава колоната в нито една заявка, и в INSERT): `pdf:keep` още веднъж, после
+   `REF=efa56c45f PROJECTS="liftpilot" bash /opt/few-few/current/deploy/fetch-deploy.sh`. Без миграция.
+3. Преди 22 — id-тата на съоръженията с `REPLACEMENT` в отделен файл (нужни са само за връщане по-назад от т. 2):
+   `cd /opt/few-few/current/liftpilot && (umask 077; docker compose exec -T db psql -U liftpilot liftpilot -Atc "SELECT
+   id FROM \"Project\" WHERE kind = 'REPLACEMENT' ORDER BY id" > /opt/few-few/shared/liftpilot/backups/pre-22-replacement-ids.txt)`.
+   Този файл е трайното копие: `pre-deploy-<TS>.sql.gz` на `deploy.sh` също ги има (възстановен в отделна база, същата
+   заявка), но `deploy.sh` пази само последните 5 дъмпа — след още пет деплоя дъмпът отпреди 22 го няма, — а нощният
+   `liftpilot-backup` (`deploy/backup.sh`, `BACKUP_DAYS` = 30) трие всеки `.sql.gz` в папката след 30 дни, и
+   `pre-deploy-*`: дъмпът е резерва най-много около 30 дни и без нов деплой. Файлът не е `.sql.gz` — нито ротацията на
+   `deploy.sh`, нито нощното чистене го трият.
+4. Миграция 22 — комитът на D3 (последният комит на кръг 47): `REF=<SHA на D3> PROJECTS="liftpilot" bash
+   /opt/few-few/current/deploy/fetch-deploy.sh`; entrypoint-ът я пуска с `migrate deploy` (бекъп преди нея — както винаги).
+   Заключването е за миг (`DROP COLUMN` не пренаписва таблицата).
+
+**Връщане след 22.** До release-а от т. 2 — само кодът (`RELEASE_DIR=<release от т. 2>`): той не назовава колоната никъде
+(проба на `argano_r47` след миграцията: create/update/updateMany — наред). Release отпреди т. 2 (кръгове 45–46 — с
+глобалния `omit`, който пак пише `kind` във всеки INSERT; или по-стар) не може да създаде съоръжение без колоната
+(„The column `kind` does not exist“) — първо колоната, после кодът: заявките от коментара на `migration.sql` (enum-ът,
+колоната `NOT NULL DEFAULT 'FULL'`, `REPLACEMENT` по id-тата от т. 3, индексът, редът в `_prisma_migrations`) в една
+транзакция. Пробвано на копие: 39 `REPLACEMENT` / 348 `FULL` — както преди миграцията, `migrate diff` срещу схемата с
+`@ignore` — празен, клиентът на кръг 46 създава съоръжение.
+
 ## Проверка
 
 ```bash
@@ -93,7 +122,7 @@ cd /opt/few-few/current/liftpilot && docker compose ps && docker compose logs --
 
 - **Код:** `sudo RELEASE_DIR=<предишен release> PROJECTS="liftpilot" bash <release>/deploy/autodeploy.sh`.
 - **База:** `gunzip -c /opt/few-few/shared/liftpilot/backups/pre-deploy-<TS>.sql.gz | docker compose exec -T db psql -U liftpilot liftpilot`
-  (в празна база; миграциите са адитивни, затова обикновено стига връщане на кода).
+  (в празна база; миграциите до 21 са адитивни и обикновено стига връщане на кода; след 22 — „Връщане след 22“ по-горе).
 
 ## Публично пускане (след съгласуване и разрешения)
 
