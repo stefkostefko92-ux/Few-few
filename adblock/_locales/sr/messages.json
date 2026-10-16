@@ -226,7 +226,7 @@
     "message": "Скрива зидове „искључите блокатор реклама“ и враћа страницу"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Скрива објаве „Спонзорисано“ на Facebook-у и Instagram-у"
+    "message": "Скрива објаве „Спонзорисано“ на Facebook-у, Instagram-у и Threads-у"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Уклања utm_*, fbclid, gclid и друге идентификаторе кликова из линкова које отварате"
@@ -670,5 +670,74 @@
   "welDone": {
     "message": "Разумем",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Дозвољено · још $1 мин"
+  },
+  "hiddenHere": {
+    "message": "Овде сакривени елементи: $1 · Врати последњи"
+  },
+  "cmd_toggle_site": {
+    "message": "Укључи или искључи блокирање на овом сајту"
+  },
+  "cmd_pause": {
+    "message": "Паузирај или настави заштиту (30 минута)"
+  },
+  "cmd_picker": {
+    "message": "Сакриј елемент на овој страници"
+  },
+  "rep_fix_hour": {
+    "message": "Дозволи рекламе овде на 1 сат"
+  },
+  "rep_done_hour": {
+    "message": "Рекламе су дозвољене на овом сајту на 1 сат. Поново учитано — да ли је решено?"
+  },
+  "opt_last30": {
+    "message": "Последњих 30 дана"
+  },
+  "opt_last30_sum": {
+    "message": "Блокирано: $1 · Банери за колачиће: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Овде ће се приказивати ваши дневни збирови док прегледате сајтове."
+  },
+  "opt_last30_sub": {
+    "message": "Само дневни збирови, чувају се на овом уређају 30 дана. Без сајтова, без адреса."
+  },
+  "opt_gpc_sub": {
+    "message": "Тражи од сваког сајта који посетите да не продаје и не дели ваше податке (сигнал Sec-GPC, који сајтови према неким законима о приватности морају да поштују). Не шаље се на сајтовима које сте дозволили."
+  },
+  "opt_shortcuts": {
+    "message": "Пречице на тастатури"
+  },
+  "opt_shortcuts_change": {
+    "message": "Промени пречице"
+  },
+  "opt_shortcut_none": {
+    "message": "Није подешено"
+  },
+  "opt_shortcuts_ff": {
+    "message": "У Firefox-у: Додаци и теме → ⚙ → Управљај пречицама додатака."
+  },
+  "opt_import_foreign": {
+    "message": "Увези из другог блокатора реклама"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Прелазите са uBlock Origin, AdGuard или Adblock Plus? Изаберите његову резервну копију: сајтови које сте дозволили и ваши сопствени филтери додају се овде. Ништа се не замењује."
+  },
+  "opt_import_foreign_done": {
+    "message": "Дозвољени сајтови: $1 · Додати филтери: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Изостављено (не може да се примени овде): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Ова датотека није резервна копија коју можемо да прочитамо."
+  },
+  "welQuickTitle": {
+    "message": "Прилагодите га себи"
+  },
+  "welQuickSub": {
+    "message": "Опционо: већ ради. Све ово можете касније да промените у подешавањима."
   }
 }

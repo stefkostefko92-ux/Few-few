@@ -24,7 +24,7 @@ const bad = build([
   "##+js(eval, document.cookie)",
   "##+js(set-constant, foo.constructor.x, true)",
   "##+js(no-setTimeout-if, x, notanumber)",
-  "##+js(set-constant, foo)",
+  "##+js(set-constant, foo, notAToken)",                 // (chain) alone is valid since 5.2.0 (= undefined); an unknown token is not
   "badhost_no_tld##+js(set-constant, foo, true)",
   "##+js(remove-attr, onclick, </script><script>evil)",
   "##+js(remove-node-text, script)",

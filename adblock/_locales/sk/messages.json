@@ -226,7 +226,7 @@
     "message": "Skrýva steny „Vypnite blokovanie reklám“ a obnovuje stránku"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Skrýva príspevky „Sponzorované“ na Facebooku a Instagrame"
+    "message": "Skrýva príspevky „Sponzorované“ na Facebooku, Instagrame a Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Odstraňuje utm_*, fbclid, gclid a ďalšie identifikátory kliknutí z odkazov, ktoré otvárate"
@@ -670,5 +670,74 @@
   "welDone": {
     "message": "Rozumiem",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Povolené · zostáva $1 min"
+  },
+  "hiddenHere": {
+    "message": "Tu skryté prvky: $1 · Vrátiť posledný"
+  },
+  "cmd_toggle_site": {
+    "message": "Zapnúť alebo vypnúť blokovanie na tomto webe"
+  },
+  "cmd_pause": {
+    "message": "Pozastaviť alebo obnoviť ochranu (30 minút)"
+  },
+  "cmd_picker": {
+    "message": "Skryť prvok na tejto stránke"
+  },
+  "rep_fix_hour": {
+    "message": "Povoliť reklamy tu na 1 hodinu"
+  },
+  "rep_done_hour": {
+    "message": "Reklamy sú na tomto webe povolené na 1 hodinu. Znova načítané — je to opravené?"
+  },
+  "opt_last30": {
+    "message": "Posledných 30 dní"
+  },
+  "opt_last30_sum": {
+    "message": "Blokované: $1 · Cookie lišty: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Vaše denné súčty sa tu zobrazia počas prehliadania."
+  },
+  "opt_last30_sub": {
+    "message": "Iba denné súčty, uložené v tomto zariadení 30 dní. Žiadne weby, žiadne adresy."
+  },
+  "opt_gpc_sub": {
+    "message": "Žiada každý navštívený web, aby vaše údaje nepredával ani nezdieľal (signál Sec-GPC, ktorý podľa niektorých zákonov o ochrane súkromia musia weby rešpektovať). Neodosiela sa na weboch, ktoré ste povolili."
+  },
+  "opt_shortcuts": {
+    "message": "Klávesové skratky"
+  },
+  "opt_shortcuts_change": {
+    "message": "Zmeniť skratky"
+  },
+  "opt_shortcut_none": {
+    "message": "Nenastavené"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Vo Firefoxe: Rozšírenia a témy vzhľadu → ⚙ → Spravovať klávesové skratky pre rozšírenia."
+  },
+  "opt_import_foreign": {
+    "message": "Importovať z iného blokovača reklám"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Prechádzate z uBlock Origin, AdGuard alebo Adblock Plus? Vyberte jeho záložný súbor: weby, ktoré ste povolili, a vaše vlastné filtre sa pridajú sem. Nič sa nenahradí."
+  },
+  "opt_import_foreign_done": {
+    "message": "Povolené weby: $1 · Pridané filtre: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Vynechané (tu sa nedá použiť): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Tento súbor nie je záloha, ktorú vieme prečítať."
+  },
+  "welQuickTitle": {
+    "message": "Prispôsobte si ho"
+  },
+  "welQuickSub": {
+    "message": "Voliteľné: všetko už funguje. Čokoľvek z toho môžete neskôr zmeniť v nastaveniach."
   }
 }

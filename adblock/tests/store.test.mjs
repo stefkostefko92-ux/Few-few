@@ -10,17 +10,31 @@ import { ROOT, ok, done } from "./_harness.mjs";
 const BANNED = /\b(free|100\s*%|#\s*1|no\.?\s*1|number one|best|top[- ]rated|recommended|premium|first[- ]class|unique|brand[- ]new|new|exclusive|guaranteed?|award|fastest|faster than)\b/i;
 const OTHERS = /\b(ublock origin lite|ghostery|adguard|adblock plus|rule-based blockers|other blockers)\b/i;
 
-// Текстът на слайдовете: низовете в SLIDES в store/screenshots/build.py (без CSS/HTML атрибути).
+// Текстът на слайдовете: store/screenshots/i18n.json („en“ е източникът) + надзаглавията-марки в build.py.
 const build = readFileSync(join(ROOT, "store", "screenshots", "build.py"), "utf8");
-const slides = build.slice(build.indexOf("SLIDES = ["), build.indexOf("\n]\n", build.indexOf("SLIDES = [")));
-const strings = [...slides.matchAll(/"([^"\n]*)"|'([^'\n]*)'/g)].map((m) => (m[1] ?? m[2]).replace(/<[^>]+>/g, ""));
+const shotText = JSON.parse(readFileSync(join(ROOT, "store", "screenshots", "i18n.json"), "utf8"));
+const strings = Object.values(shotText.en);
 const bad = strings.filter((t) => BANNED.test(t) || OTHERS.test(t));
 ok(`store screenshots: no promotional keywords or other products in slide text (${bad.join(" | ") || "clean"})`, strings.length > 15 && bad.length === 0);
 
-// Панелите на екраните (features_panel/smartlog_panel) също са част от изображението.
-const panels = build.slice(build.indexOf("def features_panel"), build.indexOf("SLIDES = ["));
+// Google: „use locale-specific screenshots“ — всеки език от листинга има всичките надписи, а „free“
+// и „100%“ не влизат и в превода (5.1.2 беше отхвърлен заради „100% free“ на екран).
+const cwsUnlisted = JSON.parse(readFileSync(join(ROOT, "store", "cws-unlisted.json"), "utf8"));
+const storeLocales = readdirSync(join(ROOT, "_locales")).filter((l) => l !== "en" && !cwsUnlisted.includes(l));
+const keys = Object.keys(shotText.en).sort().join();
+const gaps = storeLocales.filter((l) => !shotText[l] || Object.keys(shotText[l]).sort().join() !== keys || Object.values(shotText[l]).some((v) => !String(v).trim()));
+ok(`store screenshots: every store language has every caption (${storeLocales.length} languages; ${gaps.join(",") || "complete"})`, gaps.length === 0);
+const lostN = storeLocales.filter((l) => shotText[l] && !(shotText[l].moreLists.includes("{n}") && shotText[l].allLists.includes("{n}") && /31|٣١|۳۱/.test(shotText[l].s4)));
+ok(`store screenshots: {n} and “31” survive the translation (${lostN.join(",") || "all"})`, lostN.length === 0);
+const FREE = /\b(free|gratis|gratuit|gratuita|gratuito|kostenlos|darmow\w*|zdarma|ingyen\w*|bezmaksas|nemokam\w*|tasuta|ilmai\w*|gratuït)\b|бесплатн|безплатн|безкоштовн|бесплатан|δωρεάν|ücretsiz|無料|免费|免費|무료|miễn phí|مجان|رایگان|חינם|मुफ़्त|100\s*%|#\s*1\b/i;
+const freeHits = storeLocales.filter((l) => shotText[l] && Object.values(shotText[l]).some((v) => FREE.test(v)));
+ok(`store screenshots: no “free” / “100%” / “#1” in any language (${freeHits.join(",") || "clean"})`, freeHits.length === 0);
+
+// Панелите на екраните (features_panel/smartlog_panel) също са част от изображението: истинските низове
+// на настройките, но никога „recommended …“ (листа от автора си носи значката „from its author“).
+const panels = build.slice(build.indexOf("def regional_for"), build.indexOf("def slides"));
 const panelText = panels.split("\n").filter((l) => !/^\s*#/.test(l)).join("\n").replace(/<[^>]+>/g, " ").replace(/\{[^}]*\}/g, " ");
-ok("store screenshots: panels carry no promotional keywords", !/\b(free|100\s*%|unique|recommended|brand[- ]new|#\s*1)\b/i.test(panelText));
+ok("store screenshots: panels carry no promotional keywords", !/\b(free|100\s*%|unique|recommended|brand[- ]new|#\s*1)\b/i.test(panelText) && !/opt_badge_recommended/.test(panels));
 
 // Клипът за магазина (--cut store): без „free“ и без сравнението с други блокери.
 const film = readFileSync(join(ROOT, "tools", "promo", "film.html"), "utf8");

@@ -226,7 +226,7 @@
     "message": "הסתרת חומות \"השביתו את חוסם הפרסומות\" ושחזור הדף"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "הסתרת פוסטים \"ממומנים\" ב-Facebook וב-Instagram"
+    "message": "הסתרת פוסטים \"ממומנים\" ב-Facebook, ב-Instagram וב-Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "הסרת utm_*, fbclid, gclid ומזהי קליקים נוספים מהקישורים שאתם פותחים"
@@ -670,5 +670,74 @@
   "welDone": {
     "message": "הבנתי",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "מותר · נותרו $1 דק׳"
+  },
+  "hiddenHere": {
+    "message": "רכיבים שהסתרתם כאן: $1 · ביטול האחרון"
+  },
+  "cmd_toggle_site": {
+    "message": "הפעלה או כיבוי של החסימה באתר הזה"
+  },
+  "cmd_pause": {
+    "message": "השהיה או חידוש של ההגנה (30 דקות)"
+  },
+  "cmd_picker": {
+    "message": "הסתרת רכיב בדף הזה"
+  },
+  "rep_fix_hour": {
+    "message": "התרת פרסומות כאן לשעה אחת"
+  },
+  "rep_done_hour": {
+    "message": "פרסומות מותרות באתר הזה לשעה אחת. הדף נטען מחדש — זה תוקן?"
+  },
+  "opt_last30": {
+    "message": "30 הימים האחרונים"
+  },
+  "opt_last30_sum": {
+    "message": "נחסמו: $1 · באנרים של עוגיות: $2"
+  },
+  "opt_last30_empty": {
+    "message": "הסיכומים היומיים שלכם יופיעו כאן בזמן הגלישה."
+  },
+  "opt_last30_sub": {
+    "message": "רק סיכומים יומיים, שנשמרים במכשיר הזה למשך 30 יום. בלי אתרים, בלי כתובות."
+  },
+  "opt_gpc_sub": {
+    "message": "מבקש מכל אתר שאתם מבקרים בו לא למכור או לשתף את הנתונים שלכם (אות Sec-GPC, שחלק מחוקי הפרטיות מחייבים אתרים לכבד). לא נשלח באתרים שהתרתם."
+  },
+  "opt_shortcuts": {
+    "message": "קיצורי מקלדת"
+  },
+  "opt_shortcuts_change": {
+    "message": "שינוי קיצורים"
+  },
+  "opt_shortcut_none": {
+    "message": "לא הוגדר"
+  },
+  "opt_shortcuts_ff": {
+    "message": "ב-Firefox: תוספות וערכות נושא → ⚙ → ניהול קיצורי מקלדת להרחבות."
+  },
+  "opt_import_foreign": {
+    "message": "ייבוא מחוסם פרסומות אחר"
+  },
+  "opt_import_foreign_sub": {
+    "message": "עוברים מ-uBlock Origin, מ-AdGuard או מ-Adblock Plus? בחרו את קובץ הגיבוי שלו: האתרים שהתרתם והמסננים שלכם יתווספו כאן. שום דבר לא יוחלף."
+  },
+  "opt_import_foreign_done": {
+    "message": "אתרים שהותרו: $1 · מסננים שנוספו: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "לא נכללו (אי אפשר להחיל כאן): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "הקובץ הזה אינו גיבוי שאנחנו יכולים לקרוא."
+  },
+  "welQuickTitle": {
+    "message": "התאימו אותו לעצמכם"
+  },
+  "welQuickSub": {
+    "message": "אופציונלי: הכול כבר עובד. אפשר לשנות כל אחד מאלה מאוחר יותר בהגדרות."
   }
 }

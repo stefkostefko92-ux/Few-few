@@ -226,7 +226,7 @@
     "message": "Peidab „keelake oma reklaamiblokeerija“ seinad ja taastab lehe"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Peidab „Sponsitud“ postitused Facebookis ja Instagramis"
+    "message": "Peidab „Sponsitud“ postitused Facebookis, Instagramis ja Threadsis"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Eemaldab avatavatest linkidest utm_*, fbclid, gclid ja muud klikitunnused"
@@ -670,5 +670,74 @@
   "welDone": {
     "message": "Selge",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Lubatud · $1 min jäänud"
+  },
+  "hiddenHere": {
+    "message": "Siin peidetud: $1 · Võta viimane tagasi"
+  },
+  "cmd_toggle_site": {
+    "message": "Lülita blokeerimine sellel saidil sisse või välja"
+  },
+  "cmd_pause": {
+    "message": "Peata või jätka kaitset (30 minutit)"
+  },
+  "cmd_picker": {
+    "message": "Peida element sellel lehel"
+  },
+  "rep_fix_hour": {
+    "message": "Luba reklaamid siin 1 tunniks"
+  },
+  "rep_done_hour": {
+    "message": "Reklaamid on sellel saidil 1 tunniks lubatud. Uuesti laaditud — kas probleem lahenes?"
+  },
+  "opt_last30": {
+    "message": "Viimased 30 päeva"
+  },
+  "opt_last30_sum": {
+    "message": "Blokeeritud: $1 · Küpsisebännerid: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Teie päevased kogusummad ilmuvad siia sirvimise ajal."
+  },
+  "opt_last30_sub": {
+    "message": "Ainult päevased kogusummad, mida hoitakse selles seadmes 30 päeva. Ei saite ega aadresse."
+  },
+  "opt_gpc_sub": {
+    "message": "Palub igal külastataval saidil teie andmeid mitte müüa ega jagada (Sec-GPC-signaal, mida mõned privaatsusseadused kohustavad saite järgima). Ei saadeta saitidele, mille olete lubanud."
+  },
+  "opt_shortcuts": {
+    "message": "Kiirklahvid"
+  },
+  "opt_shortcuts_change": {
+    "message": "Muuda kiirklahve"
+  },
+  "opt_shortcut_none": {
+    "message": "Määramata"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefoxis: Laiendused ja teemad → ⚙ → Halda laienduste kiirklahve."
+  },
+  "opt_import_foreign": {
+    "message": "Impordi teisest reklaamiblokeerijast"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Kas tulete üle uBlock Originist, AdGuardist või Adblock Plusist? Valige selle varukoopiafail: teie lubatud saidid ja omad filtrid lisatakse siia. Midagi ei asendata."
+  },
+  "opt_import_foreign_done": {
+    "message": "Lubatud saite: $1 · Lisatud filtreid: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Välja jäetud (siin ei saa rakendada): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "See fail ei ole varukoopia, mida saame lugeda."
+  },
+  "welQuickTitle": {
+    "message": "Kohandage enda järgi"
+  },
+  "welQuickSub": {
+    "message": "Valikuline: kõik juba töötab. Seadetes saate neid hiljem igal ajal muuta."
   }
 }

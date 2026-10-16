@@ -2,9 +2,11 @@ Supreme AdBlock blokeerib reklaamid kõikjal — YouTube'i videoreklaamid, bänn
 
 • YouTube'i reklaamid peatatakse juba allikas, nii et videod lihtsalt mängivad.
 • Sisse on ehitatud EasyList, EasyPrivacy ja teised avatud filtriloendid ning teie keele loend (31 piirkondlikku loendit).
+• Sponsitud postitused Facebookis, Instagramis ja Threadsis peidetakse.
 • Küpsisebännerid: vajutab teie eest „Keeldu“, eemaldab järelejäänud hägususe ja kerimislukustuse ega vajuta kunagi sisselogimis-, OAuth- ega maksenuppu.
 • Fookusrežiim: peidab vestlusmullid, uudiskirjahüpikud, teavituste päringud, sotsiaalmeedia vidinad, AI-hüpikud ja YouTube Shortsi.
 • Anti-adblock seinad ja pop-under aknad neutraliseeritakse.
 • Sait ei tööta? Üks klõps parandab selle — või andke meile teada; midagi ei saadeta enne, kui olete seda näinud.
+• Tulete üle uBlock Originist, AdGuardist või Adblock Plusist? Tooge oma lubatud saidid ja filtrid kaasa ühe failiga.
 • Allkirjastatud filtrivärskendused kaks korda päevas: uued reklaamivõrgud kaetakse tundidega, ilma kaugkoodita.
-• Ilma kontota, ilma telemeetriata, ilma andmekogumiseta.
+• Ilma kontota, ilma telemeetriata, ilma andmekogumiseta ning Global Privacy Control palub igal saidil teie andmeid mitte müüa ega jagada.

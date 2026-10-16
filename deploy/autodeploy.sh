@@ -1543,9 +1543,17 @@ deploy_adblock() {
   # затова не ползваме --delete: други файлове в root-а (ако има) остават непокътнати.
   mkdir -p "$ADBLOCK_WWW"
   # filters.json НЕ е тук: той се публикува ЗАЕДНО с подписа си (стъпка 1а).
-  for f in index.html privacy.html robots.txt sitemap.xml llms.txt \
+  for f in index.html privacy.html support.html youtube-ad-blocker.html cookie-banner-blocker.html \
+           robots.txt sitemap.xml llms.txt \
            og.png favicon-48.png apple-touch-icon.png icon-512.png shield-380.webp shield-96.webp popup-shot.webp; do
     [ -f "$d/$f" ] && rsync -a "$d/$f" "$ADBLOCK_WWW"/
+  done
+  # Езиковите страници (adblock/tools/site_lang.mjs): /<език>/index.html.
+  for l in bg de it es fr pt-br; do
+    [ -f "$d/$l/index.html" ] || continue
+    mkdir -p "$ADBLOCK_WWW/$l"
+    rsync -a "$d/$l/index.html" "$ADBLOCK_WWW/$l/"
+    chmod 755 "$ADBLOCK_WWW/$l"; chmod 644 "$ADBLOCK_WWW/$l/index.html"
   done
   # favicon.svg беше старото лого (заменено с бранд щита) — да не остане да виси.
   rm -f "$ADBLOCK_WWW/favicon.svg"
@@ -1724,7 +1732,7 @@ health() {
 indexnow_ping() {
   local key="$1"; [ -n "$key" ] || return 0
   local base="https://$ADBLOCK_DOMAIN"
-  local body='{"host":"'"$ADBLOCK_DOMAIN"'","key":"'"$key"'","keyLocation":"'"$base/$key.txt"'","urlList":["'"$base/"'","'"$base/privacy"'"]}'
+  local body='{"host":"'"$ADBLOCK_DOMAIN"'","key":"'"$key"'","keyLocation":"'"$base/$key.txt"'","urlList":["'"$base/"'","'"$base/youtube-ad-blocker"'","'"$base/cookie-banner-blocker"'","'"$base/support"'","'"$base/privacy"'","'"$base/bg/"'","'"$base/de/"'","'"$base/it/"'","'"$base/es/"'","'"$base/fr/"'","'"$base/pt-br/"'"]}'
   if curl -fsS -m 10 -H "Content-Type: application/json" -d "$body" https://api.indexnow.org/indexnow >/dev/null 2>&1; then
     ok "adblock: IndexNow уведоми Bing/Yandex/Seznam (submit)."
   else

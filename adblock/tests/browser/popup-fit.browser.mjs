@@ -1,5 +1,5 @@
 // Popup-ът на Chrome е най-много 600 px висок — всичко отгоре е скролбар. На всеки от 73-те локала (70 езика) (с
-// всичко видимо: сайт, бисквитки, „Сайтът е счупен?“, ★) съдържанието трябва да се събира, долната лента
+// всичко видимо: сайт, бисквитки, „Върни последния“, „Сайтът е счупен?“, ★) съдържанието трябва да се събира, долната лента
 // да не прелива (иначе — само икони), а картата за отзив да не покрива повече от половината popup.
 // Езикът се сменя с низовете от _locales (Chromium не сменя UI езика без рестарт) — после fitPopup(),
 // точно както popup.js след getStats. Не е в `npm test` — `PW_ROOT=$(npm root -g) npm run test:browser`.
@@ -44,11 +44,17 @@ try {
       document.getElementById("listDot").textContent = msg("filtersCount", "60,936");
       document.getElementById("siteHost").textContent = "news.example.com";
       document.getElementById("reportBtn").hidden = false;
+      // 5.2.0: what the picker hid here (Undo) and a site allowed for a while (the longer label)
+      document.getElementById("undoCount").textContent = "12"; document.getElementById("undoBtn").hidden = false;
+      document.getElementById("allowLabel").textContent = msg("allowedFor", "59");
       document.getElementById("rate").hidden = false;
       fitPopup();
       const foot = document.querySelector(".foot");
       const clipped = [...foot.querySelectorAll(".links a:not([hidden]) span")].some((s) => !foot.classList.contains("compact") && s.scrollWidth > s.clientWidth + 1);
-      const r = { bottom: Math.ceil(document.body.getBoundingClientRect().bottom), footOver: foot.scrollWidth > foot.clientWidth + 1 || clipped };
+      const site = document.querySelector(".site");
+      const undo = document.querySelector(".actions");
+      const r = { bottom: Math.ceil(document.body.getBoundingClientRect().bottom), footOver: foot.scrollWidth > foot.clientWidth + 1 || clipped,
+        siteOver: !!site && site.scrollWidth > site.clientWidth + 1, undoOver: undo.scrollWidth > undo.clientWidth + 1 };
       document.getElementById("reviewTitle").textContent = msg("reviewBlocked", "54,321");
       document.getElementById("review").hidden = false;
       r.card = Math.round(document.getElementById("review").getBoundingClientRect().height);
@@ -62,6 +68,8 @@ try {
 const over = rows.filter((r) => r.bottom > 600), foot = rows.filter((r) => r.footOver), big = rows.filter((r) => r.card > 300);
 ok(`every language fits the 600 px popup (${rows.length} locales, tallest ${Math.max(...rows.map((r) => r.bottom))} px${over.length ? "; over: " + over.map((r) => `${r.l} ${r.bottom}`).join(", ") : ""})`, rows.length >= 54 && !over.length);
 ok(`footer never overflows or clips a label (${foot.map((r) => r.l).join(", ") || "none"})`, !foot.length);
+const siteOver = rows.filter((r) => r.siteOver || r.undoOver);
+ok(`“Allowed · N min left” and ↶ N next to the picker fit their rows (${siteOver.map((r) => r.l).join(", ") || "none"})`, !siteOver.length);
 ok(`review card stays under half the popup (tallest ${Math.max(...rows.map((r) => r.card))} px${big.length ? "; " + big.map((r) => r.l).join(", ") : ""})`, !big.length);
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
