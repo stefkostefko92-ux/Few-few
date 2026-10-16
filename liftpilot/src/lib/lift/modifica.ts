@@ -5,7 +5,8 @@
 // verification's), brings the checks of the load: beyond the increases of prospetti 1 and 2 of UNI 10411-1 (6.1), any
 // increase under UNI 10411-11 (6.1); a load that decreases brings them too (the buffers, the progressive safety gear).
 // And (round 46) the changes of the rated speed and of the travel against what the logbook or a verbale documents
-// (UNI 10411-1/-11:2024, 15 and 16), with the speed regulation of the existing controller.
+// (UNI 10411-1/-11:2024, 15 and 16), with the speed regulation of the existing controller. Round 47: what the documents
+// say of each change both ways — brought, none, not decided (esitoDocumenti).
 // Registry: impianto.marcatura, impianto.variazione.carico, impianto.variazione.velocita, impianto.variazione.corsa. Pure.
 import { readInputs } from '@/calc/inputs';
 import type { FormValues } from '@/calc/types';
@@ -224,4 +225,35 @@ export function variazioniDi(norma: Norma10411, doc: { documentato?: Carichi; li
     speed: v !== null && !!variazioneVelocita(norma, lib, v)?.variata,
     travel: H !== null && !!variazioneCorsa(norma, lib, H)?.variata,
   };
+}
+
+/** What the documents of the existing lift say of a change (round 47, owner's decision D1): 'si' the rule brings it (the
+ *  same as variazioniDi), 'no' they show none, 'aperta' they do not decide it, 'attesa' they would once the
+ *  calculation's value is entered, null nothing documented for it. */
+export type EsitoDoc = 'si' | 'no' | 'aperta' | 'attesa' | null;
+
+/** Each change by the documents, both ways (round 47, D1): a «No» only where they show nothing changed — the speed under
+ *  UNI 10411-1 within 15.1 and 15.16 with the logbook's own speed given (with the one after 50 Hz alone a decrease
+ *  cannot be measured: 'aperta'), under -11 the documented one within the rounding; the travel within the rounding (a
+ *  shortening is a change, DPR 162/1999 cc) n. 3)); the loads the documented ones — rated load, T* and counterweight
+ *  within their roundings (an increase within the prospetti, or another rated load, is a change they do not decide:
+ *  'aperta'). */
+export function esitoDocumenti(norma: Norma10411, doc: { documentato?: Carichi; libretto?: Libretto }, V: FormValues): Record<'speed' | 'load' | 'travel', EsitoDoc> {
+  const lib = doc.libretto, rif = doc.documentato;
+  const speed = (): EsitoDoc => {
+    if (!(norma === '10411-11' ? lib?.v : lib?.v || lib?.v50)) return null;
+    const v = velocitaOf(V), x = v === null ? null : variazioneVelocita(norma, lib, v);
+    return !x ? 'attesa' : x.variata ? 'si' : norma === '10411-1' && !lib?.v ? 'aperta' : 'no';
+  };
+  const travel = (): EsitoDoc => {
+    if (!lib?.H) return null;
+    const H = corsaOf(V), x = H === null ? null : variazioneCorsa(norma, lib, H);
+    return !x ? 'attesa' : x.variata ? 'si' : 'no';
+  };
+  const load = (): EsitoDoc => {
+    if (!rif) return null;
+    const ora = carichiOf(V);
+    return !ora ? 'attesa' : caricoVariato(variazioneCarico(norma, rif, ora)) ? 'si' : carichiVariati(norma, rif, ora) || portataVariata(rif, ora) ? 'aperta' : 'no';
+  };
+  return { speed: speed(), load: load(), travel: travel() };
 }

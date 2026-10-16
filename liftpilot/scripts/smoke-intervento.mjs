@@ -126,3 +126,64 @@ export async function soloQuadro({ page, hydrated, soloUrl }) {
   assert.match(await page.textContent('.calc-ruolo'), /Ammodernamento/, 'saved as a modernisation');
   assert.match(await page.textContent('main'), /Quadro di manovra/, 'the controller among the parts');
 }
+
+/** Round 47 (owner's decision D1): a modernisation renewed with its existing sling («Rifacimento», Example C under UNI
+ *  10411-1, in an installation of its own). Without documents the speed, the load and the travel stay to answer, the
+ *  list of what is missing naming what is needed; the logbook and the documented loads equal to the design's answer
+ *  them «No» («dai documenti»), the answer stays the user's («Sì» against the documents says so); saved with the three
+ *  «No», opened again with the same marks; the travel beyond the logbook's locks «Sì». */
+export async function documentiNo({ BASE, page, hydrated, stamp }) {
+  step('Ammodernamento with «Rifacimento» (round 47, D1): the logbook and the documented loads within the limits answer speed, load and travel «No»; beyond them «Sì»');
+  await page.goto(`${BASE}/it/app/projects/new`);
+  await page.fill('input[name="name"]', `Documenti ${stamp}`);
+  await page.fill('input[name="city"]', 'Como');
+  await Promise.all([page.waitForURL(/\/projects\/[a-z0-9]+\/calc$/), page.click('main form button[type="submit"]')]);
+  await hydrated(page, '#Q');
+  await page.click('.controls button:has-text("Esempio C")');
+  await page.waitForSelector('.verdict .big');
+  await page.click('label.intervento-tipo[data-tipo="AMMODERNAMENTO"]');
+  await page.click('.parti-sino .rif-preset button');
+  await page.waitForSelector('.parti-sino .rif-preset button.on');
+  assert.match(await page.textContent('.parti-sino .rif-preset .note'), /Velocità, portata e corsa seguono i documenti/);
+  const VAR = ['speed', 'load', 'travel'];
+  for (const p of VAR) await page.waitForSelector(`.parti-sino li.da[data-part="${p}"]`);
+  const missing = await page.textContent('.missing-list');
+  assert.match(missing, /Velocità nominale variata: «Sì» o «No», oppure la velocità del libretto/, missing);
+  assert.match(missing, /Portata variata: «Sì» o «No», oppure i carichi documentati/, missing);
+  assert.match(missing, /Corsa variata: «Sì» o «No», oppure la corsa del primo collaudo/, missing);
+  // the logbook and the documented loads as Example C's design (1,00 m/s, 18 m; 630 / 700 / 700 + 0,5 · 630 kg)
+  await page.fill('.collaudo [data-lib="v"]', '1');
+  await page.fill('.collaudo [data-lib="H"]', '18');
+  const doc = page.locator('.collaudo fieldset.parti', { has: page.locator('legend', { hasText: 'Carichi documentati' }) }).locator('input');
+  for (const [i, x] of ['630', '700', '1015'].entries()) await doc.nth(i).fill(x);
+  for (const p of VAR) {
+    const li = `.parti-sino li[data-part="${p}"]`;
+    await page.waitForSelector(`${li} .parte-doc`);
+    assert.ok(await page.isChecked(`${li} input[value="no"]`), `${p}: «No» from the documents`);
+    assert.equal(await page.locator(`${li}.da`).count(), 0, `${p}: not still to answer`);
+  }
+  assert.match(await page.textContent('.parti-sino li[data-part="travel"] .parte-perche'), /Corsa uguale a quella documentata/);
+  assert.match(await page.textContent('.parti-sino li[data-part="speed"] .parte-perche'), /Velocità uguale a quella documentata/);
+  assert.match(await page.textContent('.parti-sino li[data-part="load"] .parte-perche'), /uguali a quelli documentati[\s\S]*cabina nuova/);
+  assert.equal(await page.getAttribute('.parti-sino li[data-part="travel"] .parte-scelta', 'aria-describedby'), 'parte-travel-perche');
+  // the answer stays the user's: «Sì» against the documents says so; «No» again
+  await page.click('.parti-sino li[data-part="travel"] label:has-text("Sì")');
+  await page.waitForSelector('.parti-sino li[data-part="travel"] .parte-contro');
+  assert.match(await page.textContent('.parti-sino li[data-part="travel"] .parte-contro'), /Contro i documenti/);
+  await page.click('.parti-sino li[data-part="travel"] label:has-text("No")');
+  await page.waitForSelector('.parti-sino li[data-part="travel"] .parte-doc');
+  assert.equal(await page.locator('.parti-sino .parte-contro').count(), 0);
+  // complete: saved with the three «No»
+  await page.waitForSelector('.savebar button.primary:not([disabled])');
+  await Promise.all([page.waitForURL(/\/calculations\/[a-z0-9]+$/, { timeout: 30000 }), page.click('.savebar button.primary')]);
+  assert.match(await page.textContent('.calc-ruolo'), /Ammodernamento/, 'saved as a modernisation');
+  assert.doesNotMatch(await page.textContent('main'), /velocità nominale \(variata\)|portata o carichi \(variati\)|corsa \(variata\)/i, 'none of the three among the parts');
+  // opened again («Nuovo calcolo da questi dati»): the record's «No» with the documents' marks; the travel beyond the logbook's locks «Sì»
+  await Promise.all([page.waitForURL(/\/calc\?from=/), page.click('.page-head a[href*="/calc?from="]')]);
+  await hydrated(page, '#Q');
+  for (const p of VAR) await page.waitForSelector(`.parti-sino li[data-part="${p}"] .parte-doc`);
+  await page.fill('#H', '19');
+  await page.waitForSelector('.parti-sino li[data-part="travel"] .parte-regola.si');
+  assert.match(await page.textContent('.parti-sino li[data-part="travel"] .parte-perche'), /\+1,00 m rispetto a 18,00 m del libretto: variata \(UNI 10411-1, 16\)/);
+  assert.ok(await page.locator('.parti-sino li[data-part="speed"] .parte-doc').count() === 1, 'the speed still «No» from the documents');
+}

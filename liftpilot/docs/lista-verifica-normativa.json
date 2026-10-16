@@ -3756,6 +3756,42 @@
     },
     {
       "n": 311,
+      "id": "collaudo.variazioni.10411-1.12",
+      "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-1:2024, 15.1 e 15.16",
+      "valore": "velocità indicata come variata, ma secondo i dati documentati quella del progetto non supera di oltre il 5 % il riferimento né, quando il libretto ne riporta la velocità, scende di oltre il 5 % sotto di essa: i punti da 15.2 a 15.15 (aumento) o 15.2 e 15.17 (riduzione) valgono solo se il tecnico accerta una variazione oltre questi limiti",
+      "riferimento": "UNI 10411-1:2024, 15.1 e 15.16",
+      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 312,
+      "id": "collaudo.variazioni.10411-1.13",
+      "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-1:2024, 16",
+      "valore": "corsa indicata come variata, ma quella del progetto coincide con la corsa del primo collaudo entro l’arrotondamento dei dati: le lettere a)–l) del punto 16 valgono solo se il tecnico accerta un allungamento (un accorciamento si valuta secondo il punto 4)",
+      "riferimento": "UNI 10411-1:2024, 16",
+      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 313,
+      "id": "collaudo.variazioni.10411-1.14",
+      "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-1:2024, 22 e 6.1",
+      "valore": "cabina nuova con i carichi del progetto uguali a quelli documentati: P va confermata come massa della cabina nuova completa (arcata, porte e operatore compresi); se cambia, i carichi si confrontano di nuovo con quelli documentati",
+      "riferimento": "UNI 10411-1:2024, 22 e 6.1",
+      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 314,
       "id": "collaudo.variazioni.10411-11.1",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 15 a)–k) e 4.3",
@@ -3767,7 +3803,7 @@
       "nota": ""
     },
     {
-      "n": 312,
+      "n": 315,
       "id": "collaudo.variazioni.10411-11.2",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 15 i)",
@@ -3779,7 +3815,7 @@
       "nota": ""
     },
     {
-      "n": 313,
+      "n": 316,
       "id": "collaudo.variazioni.10411-11.3",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1–6.13",
@@ -3791,7 +3827,7 @@
       "nota": ""
     },
     {
-      "n": 314,
+      "n": 317,
       "id": "collaudo.variazioni.10411-11.4",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1–6.13",
@@ -3803,7 +3839,7 @@
       "nota": ""
     },
     {
-      "n": 315,
+      "n": 318,
       "id": "collaudo.variazioni.10411-11.5",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1",
@@ -3815,7 +3851,7 @@
       "nota": ""
     },
     {
-      "n": 316,
+      "n": 319,
       "id": "collaudo.variazioni.10411-11.6",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 6.1",
@@ -3827,7 +3863,7 @@
       "nota": ""
     },
     {
-      "n": 317,
+      "n": 320,
       "id": "collaudo.variazioni.10411-11.7",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 16 a)–i) e 4.3",
@@ -3839,12 +3875,48 @@
       "nota": ""
     },
     {
-      "n": 318,
+      "n": 321,
       "id": "collaudo.variazioni.10411-11.8",
       "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-11:2024, 16 e 4.3",
       "valore": "corsa accorciata: il punto 16 tratta solo l’allungamento; la modifica (DPR 162/1999, art. 2 c.1 lett. cc) n. 3)) si valuta con la 4.3",
       "riferimento": "UNI 10411-11:2024, 16 e 4.3",
+      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 322,
+      "id": "collaudo.variazioni.10411-11.9",
+      "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-11:2024, 15 e 4.3",
+      "valore": "velocità indicata come variata, ma quella del progetto coincide con la documentata entro l’arrotondamento dei dati: le lettere a)–k) del punto 15 e la valutazione 4.3 valgono solo se il tecnico conferma una variazione; la protezione UCM (15 i)) con una variazione oltre il 5 % o dove la 5.6.7 era già applicata",
+      "riferimento": "UNI 10411-11:2024, 15 e 4.3",
+      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 323,
+      "id": "collaudo.variazioni.10411-11.10",
+      "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-11:2024, 16 e 4.3",
+      "valore": "corsa indicata come variata, ma quella del progetto coincide con la documentata entro l’arrotondamento dei dati: le lettere a)–i) del punto 16 e la valutazione 4.3 valgono solo se il tecnico accerta un allungamento (un accorciamento con la 4.3)",
+      "riferimento": "UNI 10411-11:2024, 16 e 4.3",
+      "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
+      "stato": "da verificare",
+      "verifiche": "",
+      "nota": ""
+    },
+    {
+      "n": 324,
+      "id": "collaudo.variazioni.10411-11.11",
+      "gruppo": "Collaudo: UNI 10411-11:2024, velocità, carichi e corsa variati",
+      "voce": "UNI 10411-11:2024, 22 e 6.1",
+      "valore": "cabina nuova con i carichi del progetto uguali a quelli documentati: P va confermata come massa della cabina nuova completa (arcata, porte e operatore compresi); se cambia, i carichi si confrontano di nuovo con quelli documentati",
+      "riferimento": "UNI 10411-11:2024, 22 e 6.1",
       "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
       "stato": "da verificare",
       "verifiche": "",

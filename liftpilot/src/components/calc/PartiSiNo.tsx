@@ -10,18 +10,24 @@
 // (src/lib/lift/risposte.ts). Round 46: under a new machine on the existing controller the controller's speed regulation
 // is asked (RegolazioneQuadro: under the ropes of a «Solo argano», under the controller of a modernisation), one or two
 // speeds locking the controller «Sì» in a modernisation (11.2.1 / 11.2); the optional parts are a group of their own
-// with «No» checked (AltreParti, owner's decision Q3).
+// with «No» checked (AltreParti, owner's decision Q3). Round 47 (owner's decision D1): where the documents show no
+// change of speed, load or travel the part starts answered «No» with the mark «dai documenti» and the why (the logbook's
+// sentence, frasi-libretto.ts; the loads the documented ones) — the answer stays the user's to change, and a «Sì» against
+// the documents says that the relazione leaves it for the engineer to confirm; a change the documents do not decide, or
+// none documented, stays to answer, the list of what is missing naming what is needed (mancaParte).
 // Each pair is two native radio buttons of one group (arrow keys move and answer, one tab stop per part, as the type
 // cards above); none is checked while the part is still to answer.
 import { useTranslations } from 'next-intl';
 import type { FormValues } from '@/calc/types';
 import { parteId } from '@/lib/calc-blank';
 import type { Collaudo, Parte } from '@/lib/lift';
-import { corsaOf, variazioneCorsa, variazioneVelocita, velocitaOf } from '@/lib/lift/modifica';
-import { bloccata, facoltativeDi, partiDi, type Bloccata } from '@/lib/lift/risposte';
+import { carichiOf, corsaOf, portataVariata, variazioneCorsa, variazioneVelocita, velocitaOf, type EsitoDoc } from '@/lib/lift/modifica';
+import { bloccata, esitoParte, facoltativeDi, partiDi, type Bloccata } from '@/lib/lift/risposte';
 import type { Fmt } from '@/lib/present/tr';
 import type { Regolazione } from '@/lib/lift/modifica';
+import { fraseCorsa, fraseVelocita } from '../lift/frasi-libretto';
 import AltreParti from './AltreParti';
+import { etichettaParte } from './etichette-parti';
 import RegolazioneQuadro from './RegolazioneQuadro';
 
 interface Props {
@@ -38,13 +44,6 @@ interface Props {
   /** the existing controller's speed regulation, when it is asked (risposte.ts chiediRegolazione) */
   regolazione?: { set(r: Regolazione): void } | null;
   fmt: Fmt;
-}
-
-const VARIATA: Partial<Record<Parte, string>> = { machine: 'parte_argano', speed: 'parte_speed_var', load: 'parte_load_var', travel: 'parte_travel_var' };
-
-/** A part's name in «Calcolo argano» — in its list and in the list of what is missing, the same words. */
-export function etichettaParte(t: (k: string) => string, tl: (k: string) => string, tipo: string | null, p: Parte): string {
-  return tipo === 'SOLO_ARGANO' && p === 'ropes' ? t('funi') : VARIATA[p] ? t(VARIATA[p]) : tl(`parte_${p}`);
 }
 
 export default function PartiSiNo({ tipo, chosen, value, V, risposte, answer, rifacimento, regolazione = null, fmt }: Props) {
@@ -69,22 +68,42 @@ export default function PartiSiNo({ tipo, chosen, value, V, risposte, answer, ri
   };
   const AUTO_LABEL: Partial<Record<Bloccata['perche'], string>> = { carichi: 'load_auto', velocita: 'velocita_auto', corsa: 'corsa_auto', arcata: 'sling_rif',
     inverter: 'quadro_auto' };
+  // why the documents answer «No», leave the change open, or wait for the calculation's value (round 47, D1)
+  const perDoc = (p: Parte, e: EsitoDoc): string | null => {
+    if (e === 'attesa') return t(`attesa_${p}`);
+    if (p === 'speed') {
+      if (e === 'aperta') return t('perche_velocita_aperta');
+      const f = fraseVelocita(norma, value.libretto, velocitaOf(V), fmt);
+      return f ? tl(f.key, f.values) : null;
+    }
+    if (p === 'travel') {
+      const f = fraseCorsa(norma, value.libretto, corsaOf(V), fmt);
+      return f ? tl(f.key, f.values) : null;
+    }
+    const doc = value.documentato, ora = carichiOf(V);
+    if (e === 'aperta') {
+      return doc && ora && portataVariata(doc, ora) ? t('perche_portata_aperta', { Q0: fmt(doc.Q, 0), Q: fmt(ora.Q, 0) }) : t('perche_carichi_aperta');
+    }
+    return `${t('perche_carichi_uguali')}${chosen.parti.includes('car') ? ` ${t('perche_carichi_cabina')}` : ''}`;
+  };
   // the regulation's question goes under the part it hangs on: the ropes of a «Solo argano», the controller otherwise
   const dopo: Parte = solo ? 'ropes' : 'controller';
   const domanda = regolazione ? <RegolazioneQuadro key="regolazione" value={chosen.regolazione} set={regolazione.set} norma={norma} /> : null;
   const row = (p: Parte) => {
     if (solo && p === 'machine') return <li key={p} className="parte fissa" data-part={p}><span className="parte-nome">{t('argano_fisso')}</span></li>;
-    const lock = bloccata(tipo, chosen, value, V, p), answered = risposte.includes(p) || lock !== null;
-    const si = lock ? lock.si : chosen.parti.includes(p), why = lock ? perche(lock) : null, whyId = `${parteId(p)}-perche`;
+    const lock = bloccata(tipo, chosen, value, V, p), e = lock ? null : esitoParte(tipo, value, V, p), doc = e === 'no';
+    const answered = risposte.includes(p) || lock !== null || doc, si = lock ? lock.si : chosen.parti.includes(p);
+    const why = lock ? perche(lock) : e ? perDoc(p, e) : null, whyId = `${parteId(p)}-perche`, controId = `${parteId(p)}-contro`;
+    const described = [why ? whyId : '', doc && si ? controId : ''].filter(Boolean).join(' ') || undefined;
     return (
-      <li key={p} className={`parte${answered ? '' : ' da'}`} data-part={p}>
+      <li key={p} className={`parte${answered || e === 'attesa' ? '' : ' da'}`} data-part={p} data-doc={e ?? undefined}>
         <span className="parte-nome" id={`${parteId(p)}-label`}>{label(p)}</span>
         {lock ? (
           <span className={`parte-regola ${lock.si ? 'si' : 'no'}`} aria-describedby={why ? whyId : undefined}>
             {t(AUTO_LABEL[lock.perche] ?? 'si')}
           </span>
         ) : (
-          <span className="seg-row parte-scelta" role="radiogroup" aria-labelledby={`${parteId(p)}-label`}>
+          <span className="seg-row parte-scelta" role="radiogroup" aria-labelledby={`${parteId(p)}-label`} aria-describedby={described}>
             {([true, false] as const).map((x) => (
               <label key={String(x)} className={answered && si === x ? 'on' : undefined}>
                 <input type="radio" name={parteId(p)} id={x ? parteId(p) : undefined} value={x ? 'si' : 'no'} checked={answered && si === x} onChange={() => answer(p, x)} />
@@ -93,7 +112,9 @@ export default function PartiSiNo({ tipo, chosen, value, V, risposte, answer, ri
             ))}
           </span>
         )}
-        {!answered ? <span className="parte-da">{t('da')}</span> : null}
+        {!answered && e !== 'attesa' ? <span className="parte-da">{t('da')}</span> : null}
+        {doc && !si ? <span className="parte-doc">{t('doc_no')}</span> : null}
+        {doc && si ? <span className="parte-contro" id={controId}>{t('contro_doc')}</span> : null}
         {why ? <span className="parte-perche" id={whyId}>{why}</span> : null}
       </li>
     );

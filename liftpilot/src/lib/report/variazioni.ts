@@ -4,7 +4,9 @@
 // sentence of sheet 1's COLLAUDO note, kept out of collaudo.ts (round 46, B5). Only with what the logbook documents
 // (Collaudo.libretto): a record without it prints nothing, as before. And (B6) the row of the existing controller's
 // speed regulation under a new machine — with a ⚠ when it was not answered (a record saved before the question): the
-// relazioni only, sheet 1 stays as issued. Our words with the clause numbers. Pure.
+// relazioni only, sheet 1 stays as issued. Round 47 (owner's decision D1): a speed or a travel the logbook shows
+// unchanged but answered «Sì» by hand — the row says so, for the engineer (sheet 1 unchanged). Our words with the
+// clause numbers. Pure.
 import type { FormValues } from '@/calc/types';
 import type { Collaudo } from '../lift/collaudo';
 import { ROUNDING_V, corsaOf, variazioneCorsa, variazioneVelocita, velocitaOf, type Norma10411 } from '../lift/modifica';
@@ -37,8 +39,10 @@ type Lib = NonNullable<Collaudo['libretto']>;
 /** Whose speed a comparison is against, named when the logbook gives both under -1. */
 const DI = { libretto: ' (libretto)', '50hz': ' (dopo 50 Hz)', documentata: '' } as const;
 const DPR_TECNICO = 'se sia comunque un cambio della velocità ai sensi del DPR 162/1999 lo valuta il tecnico';
+/** The change answered «Sì» by hand while the logbook shows none (round 47, D1). */
+const A_MANO = (cosa: 'velocità' | 'corsa'): string => `la ${cosa} è indicata comunque come variata nell’intervento: se e come cambi lo conferma il tecnico`;
 
-function velocita(n: Norma10411, lib: Lib, v: number): VariazioneDoc | null {
+function velocita(n: Norma10411, lib: Lib, v: number, mano: boolean): VariazioneDoc | null {
   const x = variazioneVelocita(n, lib, v);
   if (!x) return null;
   const doc = n === '10411-1'
@@ -52,33 +56,35 @@ function velocita(n: Norma10411, lib: Lib, v: number): VariazioneDoc | null {
   const contro = x.confronti.map((c) => `${pct(c.dv)} rispetto a ${num(c.rispetto, 2)} m/s${both ? DI[c.di] : ''}`).join(' e ');
   const head = `${doc}; progetto ${num(v, 2)} m/s, ${contro}`, label = VOCE_VARIAZIONE.velocita;
   if (n === '10411-11') {
-    if (!x.variata) return { voce: 'velocita', label, text: `${head}: invariata entro l’arrotondamento dei dati.`, nota: '' };
+    if (!x.variata) return { voce: 'velocita', label, text: `${head}: invariata entro l’arrotondamento dei dati${mano ? `; ${A_MANO('velocità')}` : ''}.`, nota: '' };
     // 15 i): over 5 % always; within 5 % where 5.6.7 was already applied (the obligations' line says the same)
     const ucm = x.ucm15i ? '; oltre il 5 % serve la protezione UCM della UNI EN 81-20, 5.6.7 (15 i))'
       : '; entro il 5 % la protezione UCM della UNI EN 81-20, 5.6.7 serve dove la 5.6.7 era già applicata (15 i)): lo conferma il tecnico';
     return { voce: 'velocita', label, text: `${head}: velocità variata, entra tra le parti modificate (UNI 10411-11, 15, valutazione 4.3)${ucm}.`,
       nota: ` Velocità ${num(x.rif, 2)} → ${num(v, 2)} m/s: variata (UNI 10411-11, 15)${x.ucm15i ? ', protezione UCM (15 i))' : ''}.` };
   }
+  // not a change by the rule: out of the parts, or (round 47) answered «Sì» by hand — for the engineer
+  const fuori = mano ? A_MANO('velocità') : `la velocità non entra tra le parti modificate; ${DPR_TECNICO}`;
   const what = x.aumento ? 'oltre il 5 % sopra il riferimento: velocità variata, entra tra le parti modificate (UNI 10411-1, 15.1: punti da 15.2 a 15.15)'
     : x.calo ? 'oltre il 5 % sotto la velocità iniziale o documentata: velocità variata, entra tra le parti modificate (UNI 10411-1, 15.16: punti 15.2 e 15.17)'
-      : x.uguale ? 'uguale alla velocità documentata entro l’arrotondamento dei dati: la velocità non cambia'
+      : x.uguale ? `uguale alla velocità documentata entro l’arrotondamento dei dati: ${mano ? A_MANO('velocità') : 'la velocità non cambia'}`
         : x.confronti.length > 1 && sopra50 ? 'sopra la velocità del libretto e sopra quella dopo il passaggio a 50 Hz, che è il riferimento, ma non oltre '
-          + `il 5 % da essa (UNI 10411-1, 15.1): la velocità non entra tra le parti modificate; ${DPR_TECNICO}`
+          + `il 5 % da essa (UNI 10411-1, 15.1): ${fuori}`
         : x.confronti.length > 1 ? 'tra la velocità del libretto e quella dopo il passaggio a 50 Hz: né oltre il 5 % sopra il riferimento (UNI 10411-1, 15.1) '
-          + `né oltre il 5 % sotto la velocità del libretto (15.16), la velocità non entra tra le parti modificate; ${DPR_TECNICO}`
+          + `né oltre il 5 % sotto la velocità del libretto (15.16), ${fuori}`
           : !lib.v && v < x.rif ? 'non oltre il 5 % sopra il riferimento (UNI 10411-1, 15.1); una riduzione (15.16) si misura dalla velocità iniziale del '
-            + `libretto, non indicata: la velocità non entra tra le parti modificate; ${DPR_TECNICO}`
-            : `entro il 5 % (UNI 10411-1, 15.1 e 15.16): la velocità non entra tra le parti modificate; ${DPR_TECNICO}`;
+            + `libretto, non indicata: ${fuori}`
+            : `entro il 5 % (UNI 10411-1, 15.1 e 15.16): ${fuori}`;
   return { voce: 'velocita', label, text: `${head}: ${what}.`,
     nota: x.variata && c0 ? ` Velocità ${num(c0.rispetto, 2)} → ${num(v, 2)} m/s (${pct(c0.dv)}): variata (UNI 10411-1, ${x.aumento ? '15.1' : '15.16'}).` : '' };
 }
 
-function corsa(n: Norma10411, lib: Lib, H: number): VariazioneDoc | null {
+function corsa(n: Norma10411, lib: Lib, H: number, mano: boolean): VariazioneDoc | null {
   const x = variazioneCorsa(n, lib, H);
   if (!x || !lib.H) return null;
   const label = n === '10411-1' ? VOCE_VARIAZIONE.corsa : VOCE_VARIAZIONE.corsa11;
   const head = `${num(lib.H, 2)} m (${n === '10411-1' ? 'primo collaudo' : 'documentata'}); progetto ${num(H, 2)} m, ${metri(x.dH)}`;
-  if (!x.variata) return { voce: 'corsa', label, text: `${head}: invariata entro l’arrotondamento dei dati.`, nota: '' };
+  if (!x.variata) return { voce: 'corsa', label, text: `${head}: invariata entro l’arrotondamento dei dati${mano ? `; ${A_MANO('corsa')}` : ''}.`, nota: '' };
   const what = x.accorciata
     ? `accorciata, la corsa entra tra le parti modificate (DPR 162/1999, art. 2 c.1 lett. cc) n. 3)); il punto 16 tratta solo l’allungamento: valutazione ${
       n === '10411-1' ? 'del punto 4' : '4.3'}`
@@ -89,12 +95,13 @@ function corsa(n: Norma10411, lib: Lib, H: number): VariazioneDoc | null {
 }
 
 /** The changes of speed and travel the documents print for a modification under UNI 10411 with what its logbook says
- *  (none otherwise), against the calculation's values `V`. */
-export function variazioniDoc(C: Pick<Collaudo, 'norma' | 'libretto'>, V: FormValues | null | undefined): VariazioneDoc[] {
-  const lib = C.libretto;
+ *  (none otherwise), against the calculation's values `V`; its parts (round 47) say a change answered «Sì» by hand. */
+export function variazioniDoc(C: Pick<Collaudo, 'norma' | 'libretto'> & { parti?: Collaudo['parti'] }, V: FormValues | null | undefined): VariazioneDoc[] {
+  const lib = C.libretto, has = (p: 'speed' | 'travel'): boolean => !!C.parti?.includes(p);
   if (C.norma === 'en81' || !lib || !V) return [];
   const v = lib.v || lib.v50 ? velocitaOf(V) : null, H = lib.H ? corsaOf(V) : null;
-  return [v !== null ? velocita(C.norma, lib, v) : null, H !== null ? corsa(C.norma, lib, H) : null].filter((x): x is VariazioneDoc => x !== null);
+  return [v !== null ? velocita(C.norma, lib, v, has('speed')) : null, H !== null ? corsa(C.norma, lib, H, has('travel')) : null]
+    .filter((x): x is VariazioneDoc => x !== null);
 }
 
 /** The rows of the relazione's data of the installation, one per change, in their order. */

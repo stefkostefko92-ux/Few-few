@@ -24,7 +24,7 @@ import { segniResta } from '@/lib/calc-resta';
 import { calcDraftSchema } from '@/lib/draft-input';
 import { bozzaRilievo } from '@/lib/collega/formato';
 import { interventoDi, interventoTo, type Collaudo, type Parte, type TipoIntervento } from '@/lib/lift';
-import { esempioCollaudo, partiDi } from '@/lib/lift/risposte';
+import { esempioCollaudo, esitoParte, partiDi } from '@/lib/lift/risposte';
 import MissingPanel from '@/components/MissingPanel';
 import { useDraft, type DraftTarget } from '@/components/draft/useDraft';
 import { saveCalculationAction } from '@/server/calc-actions';
@@ -39,7 +39,8 @@ import Verdict from './Verdict';
 import Results, { type UseKey } from './Results';
 import LegalNotice from './LegalNotice';
 import InterventoChoice from './InterventoChoice';
-import PartiSiNo, { etichettaParte } from './PartiSiNo';
+import PartiSiNo from './PartiSiNo';
+import { mancaParte } from './etichette-parti';
 import AvvisiIntervento from './AvvisiIntervento';
 import { useIntervento, type InterventoInit } from './useIntervento';
 import { OrigineProvider, type OrigineRilievo } from '../collega/origine';
@@ -176,7 +177,8 @@ export default function Calculator({ projectId, initial, preset: initialPreset, 
   // the hint speaks of the proposal: none while the machine stays
   const keepRopesHint = !keep || resta ? '' : mirror ? t('hint_keepRopes', { n: a.ctx.N.n, d: X.dText(a.ctx.N.d) }) : t('hint_keepRopes_free');
   const fieldLabel = (id: string): string => t((id.replace(/^[no]_/, '') as CalcKey)) + (id.startsWith('o_') ? ` (${t('g_old')})` : '');
-  const parteLabel = (p: Parte): string => etichettaParte(ti, tl, tipo, p);
+  // a change of speed, load or travel still to answer says what is needed (round 47: the document's value or «Sì»/«No»)
+  const parteLabel = (p: Parte): string => mancaParte(ti, tl, tipo, p, esitoParte(tipo, collaudo, values, p), collaudo.norma);
   const itemLabel = (id: string): string => (id === 'intervento' ? tb('intervento') : id === REGOLAZIONE_ID ? ti('reg_missing')
     : id.startsWith('parte-') ? parteLabel(id.slice(6) as Parte) : fieldLabel(id));
   const named = (keys: readonly string[]): string => keys.map((k) => ti(`err_${k}`)).join(', ');

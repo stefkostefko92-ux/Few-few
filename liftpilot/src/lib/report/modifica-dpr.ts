@@ -3,7 +3,7 @@
 // kept; and the points of UNI 10411 that only concern a new machine. Our words with the article's numbers. Pure.
 import type { FormValues } from '@/calc/types';
 import type { Collaudo, Parte } from '../lift/collaudo';
-import { carichiOf, carichiVariati, portataVariata } from '../lift/modifica';
+import { carichiOf, carichiVariati, corsaOf, portataVariata, variazioneCorsa, variazioneVelocita, velocitaOf } from '../lift/modifica';
 import type { PuntoInSito } from '../lift/norme-collaudo';
 
 /** The case of DPR 162/1999 art. 2 c.1 lett. cc) of each part a modification replaces or changes besides the machine
@@ -16,7 +16,9 @@ import type { PuntoInSito } from '../lift/norme-collaudo';
  *  while the documented loads are the design's is the answer for the engineer to confirm (round 46 recheck); the rated
  *  load changed on the documents is n. 2) even when the rule does not bring the load among the parts — T* and the
  *  counterweight within what UNI 10411 allows (round 46 final check); the car doors made sliding are the car doors
- *  already named, and the machine room is the building's, not a component (round 46 review). */
+ *  already named, and the machine room is the building's, not a component (round 46 review). The speed or the travel
+ *  answered «Sì» by hand while the design's is the documented one within the rounding: the answer for the engineer to
+ *  confirm, as the loads' (round 47, D1 — a speed within 5 % but not equal stays n. 1): the article has no tolerance). */
 const CC = 'DPR 162/1999, art. 2 c.1 lett. cc)';
 const CC_VARIAZIONE: readonly [Parte, string, string][] = [['speed', '1)', 'cambio della velocità nominale'], ['load', '2)', 'cambio della portata'],
   ['travel', '3)', 'cambio della corsa']];
@@ -29,6 +31,10 @@ const CARICHI_INVARIATI: PuntoInSito = { rif: `${CC} n. 2)`, stato: 'da_verifica
 const PORTATA_DOCUMENTATA = (norma: '10411-1' | '10411-11'): string => 'cambio della portata secondo i carichi documentati, anche se '
   + `${norma === '10411-1' ? 'T*, contrappeso e il loro rapporto non portano' : 'T* e contrappeso non portano'} le verifiche del carico (UNI ${norma}:2024, 6.1): `
   + 'modifica costruttiva';
+const UGUALE = (n: '1)' | '3)', cosa: string): PuntoInSito => ({ rif: `${CC} n. ${n}`, stato: 'da_verificare',
+  testo: `${cosa} indicata come variata, ma quella del progetto coincide con la documentata entro l’arrotondamento dei dati: se sia un cambio `
+    + `della ${cosa === 'velocità nominale' ? 'velocità' : 'corsa'} lo conferma il tecnico nella comunicazione` });
+const VELOCITA_UGUALE = UGUALE('1)', 'velocità nominale'), CORSA_UGUALE = UGUALE('3)', 'corsa');
 const LOCALE_CC: PuntoInSito = { rif: CC, stato: 'da_verificare',
   testo: 'locale del macchinario nuovo o modificato: un’opera dell’edificio, non un componente dell’impianto; se indicarlo nella comunicazione lo '
     + 'valuta il tecnico' };
@@ -44,9 +50,13 @@ export function altreModifiche(C: Collaudo, resta: boolean, nome: (p: Parte) => 
   const doc = C.documentato, ora = V && doc ? carichiOf(V) : null, norma = C.norma === 'en81' ? null : C.norma;
   const portata = !!doc && !!ora && !!norma && portataVariata(doc, ora);
   const carichi = !doc || !ora || !norma || portata ? null : carichiVariati(norma, doc, ora) ? CARICHI_SENZA_PORTATA : CARICHI_INVARIATI;
+  // the speed and the travel the documents show unchanged within the rounding (round 47, D1)
+  const lib = C.libretto, v = V && lib && norma ? velocitaOf(V) : null, H = V && lib?.H && norma ? corsaOf(V) : null;
+  const uguale = { speed: v !== null && !!norma && !!variazioneVelocita(norma, lib, v)?.uguale, travel: H !== null && !!norma && variazioneCorsa(norma, lib, H)?.variata === false };
   return [
     ...CC_VARIAZIONE.filter(([p]) => has(p) || (p === 'load' && portata)).map(([p, n, testo]): PuntoInSito => (p === 'load' && carichi ? carichi
-      : { rif: `${CC} n. ${n}`, stato: 'confermato', testo: p === 'load' && !has(p) && norma ? PORTATA_DOCUMENTATA(norma) : `${testo}: modifica costruttiva` })),
+      : p === 'speed' && uguale.speed ? VELOCITA_UGUALE : p === 'travel' && uguale.travel ? CORSA_UGUALE
+        : { rif: `${CC} n. ${n}`, stato: 'confermato', testo: p === 'load' && !has(p) && norma ? PORTATA_DOCUMENTATA(norma) : `${testo}: modifica costruttiva` })),
     ...(principali.length ? [{ rif: `${CC} n. 5)`, stato: 'confermato' as const,
       testo: `sostituzione ${resta ? 'di' : 'anche di'} ${principali.join(', ')}: modifica costruttiva` }] : []),
     ...(altri.length ? [{ rif: `${CC} n. 5)`, stato: 'da_verificare' as const,

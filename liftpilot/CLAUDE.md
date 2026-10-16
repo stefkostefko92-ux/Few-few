@@ -107,7 +107,10 @@ npx tsx --conditions=react-server scripts/landing-docs.ts   # страницит
   изчисление от стъпка 2, освен ако проект отпреди е по-нов от него (`src/server/calcolo-base.ts`, `legacyPiuNuovo`);
   машина, която остава („Argano: No“) — без предложение, съвет, цена и поръчка, Progetto — шахтата, не машинното; „подмяна → цял проект“ (`upgradeProjectAction`) вече няма.
   Скоростта и ходът по libretto са части по правило (кръг 46): «Solo argano», който ги получава — отказ и «Passa ad
-  Ammodernamento»; Progetto върху него с друг ход — `tipoDaRivedere` и «Porta nel calcolo». Табло без регулиране на
+  Ammodernamento»; документите решават скоростта, товара и хода и в двете посоки (кръг 47, D1): без смяна по тях частта
+  започва «No — dai documenti» (изведено при всяко изобразяване, никога записано; потребителят може да го смени — «Sì»
+  срещу документите оставя точка за инженера), без документи — за отговор, а списъкът на липсващото казва какво трябва
+  (`esitoDocumenti`, `esitoParte`, `mancaParte`); Progetto върху него с друг ход — `tipoDaRivedere` и «Porta nel calcolo». Табло без регулиране на
   скоростта под нова машина (11.2.1 / 11.2) — отказ 'inverter' и «Passa ad Ammodernamento con il quadro»; допълнителните
   части — група «Altre parti (facoltative)», «No» по подразбиране; сменено съотношение на товарите по -1 — проверката D.1
   (`src/calc/d1.ts`, `tr_d1`). Машината, която остава, се

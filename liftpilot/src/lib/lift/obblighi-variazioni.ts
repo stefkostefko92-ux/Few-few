@@ -3,15 +3,17 @@
 // loads beyond prospetto 1 or 2, decreased, or their ratio changed (6.1 with App. D) — answered «Sì» by hand while the
 // documented loads show none of these, a point for the engineer (round 46 final check); the travel lengthened (16, with
 // the ⚠ over 8 m) or shortened (point 4) —, under -11 any change of the speed (15 with 15 i)), of the loads (6.1–6.13)
-// and of the travel (16), each with the assessment 4.3. In our words with the clause numbers and values, read on the
-// standards' text — never their text (CEN-CENELEC and UNI copyright). obblighi.ts picks them by the documents of the
-// existing lift (modifica.ts). Pure.
+// and of the travel (16), each with the assessment 4.3. Round 47 (owner's decision D1): the speed or the travel answered
+// «Sì» by hand while the documents show no change, a point for the engineer as the loads' (speedDocumentati,
+// travelDocumentati); a new car whose design loads are the documented ones, the car's mass to confirm
+// (loadCabinaNuova). In our words with the clause numbers and values, read on the standards' text — never their text
+// (CEN-CENELEC and UNI copyright). obblighi.ts picks them by the documents of the existing lift (modifica.ts). Pure.
 import { lt, type PuntoInSito } from './punti';
 import type { Norma10411 } from './modifica';
 
 /** The cases of a change of speed, load or travel. */
 export type CasoVariazione = 'speedUp' | 'speedDown' | 'speedWithin' | 'speedUcm' | 'loadP1' | 'loadP2' | 'loadCalo' | 'loadRapporto'
-  | 'loadDocumentati' | 'travelUp' | 'travelOver8' | 'travelDown';
+  | 'loadDocumentati' | 'travelUp' | 'travelOver8' | 'travelDown' | 'speedDocumentati' | 'travelDocumentati' | 'loadCabinaNuova';
 
 const DA_VERIFICARE = (rif: string, testo: string): PuntoInSito => ({ rif, testo, stato: 'da_verificare' });
 
@@ -54,6 +56,17 @@ export const OBBLIGHI_VARIAZIONI: Readonly<Record<Norma10411, Partial<Readonly<R
       + 'nuova installazione; la procedura la conferma il tecnico con il soggetto che esegue la verifica'),
     travelDown: DA_VERIFICARE('UNI 10411-1:2024, 16 e 4', 'corsa accorciata: il punto 16 tratta solo l’allungamento; la modifica (DPR '
       + '162/1999, art. 2 c.1 lett. cc) n. 3)) si valuta secondo il punto 4'),
+    // round 47 (D1): the speed or the travel answered «Sì» by hand while the documents show no change, for the engineer
+    speedDocumentati: DA_VERIFICARE('UNI 10411-1:2024, 15.1 e 15.16', 'velocità indicata come variata, ma secondo i dati documentati quella '
+      + 'del progetto non supera di oltre il 5 % il riferimento né, quando il libretto ne riporta la velocità, scende di oltre il 5 % sotto di essa: '
+      + 'i punti da 15.2 a 15.15 (aumento) o 15.2 e 15.17 (riduzione) valgono solo se il tecnico accerta una variazione oltre questi limiti'),
+    travelDocumentati: DA_VERIFICARE('UNI 10411-1:2024, 16', 'corsa indicata come variata, ma quella del progetto coincide con la corsa del '
+      + 'primo collaudo entro l’arrotondamento dei dati: le lettere a)–l) del punto 16 valgono solo se il tecnico accerta un allungamento (un '
+      + 'accorciamento si valuta secondo il punto 4)'),
+    // a new car with the design's loads equal to the documented ones: the car's mass to confirm before the loads count as unchanged
+    loadCabinaNuova: DA_VERIFICARE('UNI 10411-1:2024, 22 e 6.1', 'cabina nuova con i carichi del progetto uguali a quelli documentati: P va '
+      + 'confermata come massa della cabina nuova completa (arcata, porte e operatore compresi); se cambia, i carichi si confrontano di nuovo con '
+      + 'quelli documentati'),
   },
   '10411-11': {
     speedUp: lt('UNI 10411-11:2024, 15 a)–k) e 4.3', 'velocità cambiata, in più o in meno: verificati per la nuova velocità ammortizzatori '
@@ -76,5 +89,14 @@ export const OBBLIGHI_VARIAZIONI: Readonly<Record<Norma10411, Partial<Readonly<R
       + 'nuovi con il punto 17 (g)), fune nuova del limitatore (h)), spazi liberi in fossa e in testata (i)); valutazione 4.3'),
     travelDown: DA_VERIFICARE('UNI 10411-11:2024, 16 e 4.3', 'corsa accorciata: il punto 16 tratta solo l’allungamento; la modifica (DPR '
       + '162/1999, art. 2 c.1 lett. cc) n. 3)) si valuta con la 4.3'),
+    speedDocumentati: DA_VERIFICARE('UNI 10411-11:2024, 15 e 4.3', 'velocità indicata come variata, ma quella del progetto coincide con la '
+      + 'documentata entro l’arrotondamento dei dati: le lettere a)–k) del punto 15 e la valutazione 4.3 valgono solo se il tecnico conferma una '
+      + 'variazione; la protezione UCM (15 i)) con una variazione oltre il 5 % o dove la 5.6.7 era già applicata'),
+    travelDocumentati: DA_VERIFICARE('UNI 10411-11:2024, 16 e 4.3', 'corsa indicata come variata, ma quella del progetto coincide con la '
+      + 'documentata entro l’arrotondamento dei dati: le lettere a)–i) del punto 16 e la valutazione 4.3 valgono solo se il tecnico accerta un '
+      + 'allungamento (un accorciamento con la 4.3)'),
+    loadCabinaNuova: DA_VERIFICARE('UNI 10411-11:2024, 22 e 6.1', 'cabina nuova con i carichi del progetto uguali a quelli documentati: P va '
+      + 'confermata come massa della cabina nuova completa (arcata, porte e operatore compresi); se cambia, i carichi si confrontano di nuovo con '
+      + 'quelli documentati'),
   },
 };

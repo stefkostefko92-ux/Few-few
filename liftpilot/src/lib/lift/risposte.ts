@@ -5,11 +5,15 @@
 // replaced; a load the documented loads count as changed is changed, and so are a speed and a travel the logbook counts
 // as changed (round 46, AUTO_PARTI); the renovation keeps the sling; a new machine on an existing controller without a
 // speed regulation replaces the controller in a modernisation (round 46, B6, 'inverter'). The optional parts (B7,
-// owner's decision Q3) are a group of their own, «No» unless answered. The test's parts
-// (Collaudo.parti) hold the «Sì» answers; which parts were answered is kept beside them (the form's draft). Pure.
+// owner's decision Q3) are a group of their own, «No» unless answered. Round 47 (owner's decision D1): the documents
+// decide the changes of speed, load and travel both ways — where they show none, the part starts answered «No» («dai
+// documenti», esitoParte), an answer the user can change; derived at each render from the documents and the values,
+// never stored. The test's parts (Collaudo.parti) hold the «Sì» answers; which parts were answered is kept beside them
+// (the form's draft). Pure.
 import type { FormValues } from '@/calc/types';
 import { AUTO_PARTI, PARTI, choiceOf, collaudoOf, type Collaudo, type Parte } from './collaudo';
 import { PARTI_FACOLTATIVE, PARTI_RIFACIMENTO, VARIAZIONI, regolazioneChiesta, senzaRegolazione, type TipoIntervento } from './intervento';
+import { esitoDocumenti, type EsitoDoc } from './modifica';
 
 /** An answer the rule gives (shown, not changeable): «Sì» or «No», and why. */
 export type Bloccata = { si: boolean; perche: 'funi' | 'carichi' | 'velocita' | 'corsa' | 'arcata' | 'inverter' };
@@ -63,9 +67,23 @@ export const partiDi = (t: TipoIntervento | null): readonly Parte[] =>
 export const facoltativeDi = (t: TipoIntervento | null, chosen: Collaudo | undefined): readonly Parte[] =>
   (t === 'AMMODERNAMENTO' ? PARTI_FACOLTATIVE.filter((p) => p !== 'slidingDoors' || !!chosen?.parti.includes('carDoors')) : []);
 
-/** The parts the user still has to answer, in their order: shown, not given by the rule, not answered. */
+/** What the documents of the existing lift say of a modernisation's change of speed, load or travel (round 47, D1;
+ *  modifica.ts esitoDocumenti): `C` the test as the documents read it (collaudoOf: its part of UNI 10411, its documented
+ *  loads and logbook). Null for any other part, type or standard. */
+export function esitoParte(t: TipoIntervento | null, C: Collaudo, V: FormValues, p: Parte): EsitoDoc {
+  if (t !== 'AMMODERNAMENTO' || (p !== 'speed' && p !== 'load' && p !== 'travel') || (C.norma !== '10411-1' && C.norma !== '10411-11')) return null;
+  return esitoDocumenti(C.norma, C, V)[p];
+}
+
+/** A change the documents show none of: answered «No» from them until the user answers it (round 47, D1). */
+export const dalDocumento = (t: TipoIntervento | null, C: Collaudo, V: FormValues, p: Parte): boolean => esitoParte(t, C, V, p) === 'no';
+
+/** The parts the user still has to answer, in their order: shown, not given by the rule, not answered — nor answered
+ *  «No» by the documents, nor waiting for the calculation's value the documents are read against (round 47: that value
+ *  is itself still to enter). */
 export function daIndicare(t: TipoIntervento | null, chosen: Collaudo | undefined, C: Collaudo, V: FormValues, risposte: readonly Parte[]): Parte[] {
-  return partiDi(t).filter((p) => !(t === 'SOLO_ARGANO' && p === 'machine') && !risposte.includes(p) && !bloccata(t, chosen, C, V, p));
+  return partiDi(t).filter((p) => !(t === 'SOLO_ARGANO' && p === 'machine') && !risposte.includes(p) && !bloccata(t, chosen, C, V, p)
+    && !['no', 'attesa'].includes(esitoParte(t, C, V, p) ?? ''));
 }
 
 /** The test with one part answered: «Sì» among its parts (in their order), «No» out of them; the car doors «No» take
@@ -89,7 +107,8 @@ export function risposteDopo(next: TipoIntervento, risposte: readonly Parte[]): 
 }
 
 /** The answers after «Rifacimento con l'arcata esistente»: on, every part it replaces answered with the sling (kept),
- *  the changes of speed, load and travel as they were; off, the machine alone. */
+ *  the changes of speed, load and travel as they were — unanswered, they follow the documents (round 47, D1:
+ *  esitoParte); off, the machine alone. */
 export function risposteRifacimento(on: boolean, risposte: readonly Parte[]): Parte[] {
   if (!on) return ['machine'];
   return PARTI.filter((p) => PARTI_RIFACIMENTO.includes(p) || p === 'sling' || (VARIAZIONI.includes(p) && risposte.includes(p)));

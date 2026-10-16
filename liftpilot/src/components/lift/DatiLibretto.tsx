@@ -6,14 +6,16 @@
 // the parts of the test (src/lib/lift/modifica.ts variazioneVelocita, variazioneCorsa), the line says it live, against
 // the speed each change is measured from (an increase the reference, a decrease the logbook's speed). Typed as
 // text; each value stored once it is a valid number (none: nothing stored), as CarichiDocumentati. The linked survey's
-// value only as a reference beside the field («nel rilievo: …»), never filled in.
+// value only as a reference beside the field («nel rilievo: …»), never filled in. Round 47: the live sentences are
+// frasi-libretto.ts's, said again beside a «No» from the documents.
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { FormValues } from '@/calc/types';
 import type { Collaudo } from '@/lib/lift';
-import { corsaOf, variazioneCorsa, variazioneVelocita, velocitaOf, type Libretto } from '@/lib/lift/modifica';
+import { corsaOf, velocitaOf, type Libretto } from '@/lib/lift/modifica';
 import type { Pres } from '@/lib/present/tr';
 import { useValoreRilievo } from '../collega/origine';
+import { fraseCorsa, fraseVelocita } from './frasi-libretto';
 
 type LibKey = keyof Libretto;
 /** The write schema's ranges (lift-input.ts libretto): speeds 0.1–10 m/s, travel 1–300 m. */
@@ -46,11 +48,8 @@ export default function DatiLibretto({ P, value, calc, set }: Props) {
   };
   const norma = uno ? '10411-1' : value.norma === '10411-11' ? '10411-11' : null, L = value.libretto;
   const v = calc && norma && L ? velocitaOf(calc) : null, H = calc && norma && L?.H ? corsaOf(calc) : null;
-  const xv = norma && v !== null ? variazioneVelocita(norma, L, v) : null, xh = norma && H !== null ? variazioneCorsa(norma, L, H) : null;
-  const pct = (x: number): string => `${x < 0 ? '−' : '+'}${P.fmt(Math.abs(x) * 100, 1)} %`, m = (x: number): string => `${x < 0 ? '−' : '+'}${P.fmt(Math.abs(x), 2)} m`;
-  const clausolaV = !uno ? 'UNI 10411-11, 15' : xv?.aumento ? 'UNI 10411-1, 15.1' : 'UNI 10411-1, 15.16';
-  // an increase against the reference (15.1), a decrease against the logbook's speed (15.16): the documents' comparisons
-  const [c0, c1] = xv?.confronti ?? [];
+  // the live sentences (frasi-libretto.ts, the same words beside a «No» from the documents in «Calcolo argano»)
+  const fv = norma ? fraseVelocita(norma, L, v, P.fmt) : null, fh = norma ? fraseCorsa(norma, L, H, P.fmt) : null;
   return (
     <fieldset className="parti libretto" id="libretto">
       <legend>{t('lib_title')}</legend>
@@ -64,18 +63,11 @@ export default function DatiLibretto({ P, value, calc, set }: Props) {
           </label>
         ))}
       </div>
-      {xv && c0 ? (
-        <p className={`note${xv.variata ? ' bad' : ''}`} role="status" data-var="velocita">
-          {xv.variata ? t('lib_v_variata', { dv: pct(c0.dv), rif: P.fmt(c0.rispetto, 2), clausola: clausolaV })
-            : !uno || xv.uguale ? t('lib_v_uguale')
-              : c1 ? t('lib_v_tra', { dv1: pct(c0.dv), v1: P.fmt(c0.rispetto, 2), dv2: pct(c1.dv), v2: P.fmt(c1.rispetto, 2) })
-                : !L?.v && c0.dv < 0 ? t('lib_v_sotto50', { dv: pct(c0.dv), rif: P.fmt(c0.rispetto, 2) }) : t('lib_v_entro', { dv: pct(c0.dv), rif: P.fmt(c0.rispetto, 2) })}
-        </p>
-      ) : null}
-      {xh && L?.H ? (
-        <p className={`note${xh.variata ? ' bad' : ''}`} role="status" data-var="corsa">
-          {xh.variata ? t('lib_H_variata', { dH: m(xh.dH), H: P.fmt(L.H, 2), clausola: uno ? 'UNI 10411-1, 16' : 'UNI 10411-11, 16' }) : t('lib_H_uguale')}
-          {xh.oltre8 ? <> {t('lib_H_8m')}</> : null}
+      {fv ? <p className={`note${fv.variata ? ' bad' : ''}`} role="status" data-var="velocita">{t(fv.key, fv.values)}</p> : null}
+      {fh ? (
+        <p className={`note${fh.variata ? ' bad' : ''}`} role="status" data-var="corsa">
+          {t(fh.key, fh.values)}
+          {fh.oltre8 ? <> {t('lib_H_8m')}</> : null}
         </p>
       ) : null}
       <p className="note">{t('lib_hint')}</p>

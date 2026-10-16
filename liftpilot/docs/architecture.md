@@ -37,12 +37,14 @@ src/lib/lift/        Единният формуляр: LiftInputs {shaft, calc,
                      скоростта и ходът по правило), modifica (CE маркировката → частта на UNI 10411; промяната на
                      документираните товари по прил. 1 и 2 на -1 и по -11, съотношението по -1 6.1 — rapporto; кръг 46 —
                      скоростта и ходът спрямо libretto: variazioneVelocita/variazioneCorsa, variazioniDi, Libretto,
-                     Regolazione; регистърът им — norme-variazioni), intervento (кръг 45:
+                     Regolazione; регистърът им — norme-variazioni; кръг 47 — esitoDocumenti: какво казват документите
+                     и в двете посоки, 'si'/'no'/'aperta'/'attesa'), intervento (кръг 45:
                      типът на интервенцията — TipoIntervento, interventoDi/interventoValido, disegnoDi (машинното или
                      шахтата), частите; и трите избора отпреди — interventoOf/interventoTo, PARTI_RIFACIMENTO; кръг 46 S5 —
                      PARTI_FACOLTATIVE, regolazioneChiesta/senzaRegolazione — 'inverter', 'porte'), risposte
                      (частите „Sì/No“ на „Calcolo argano“; S5 — effettiva, chiediRegolazione, facoltativeDi, заключването
-                     'inverter'), progetto (кръг 45: ProgettoInputs — само геометрията;
+                     'inverter'; кръг 47 — esitoParte/dalDocumento: «No» от документите, изведено, никога записано),
+                     progetto (кръг 45: ProgettoInputs — само геометрията;
                      liftInputsOf/progettoOf/composto — чертежът върху „Calcolo argano“), porta (кръг 45: „Porta nel
                      calcolo“ — chiaviDelDisegno/chiaviNascoste/portaNelCalcolo, cabinaMassima), drops (директно окачване:
                      кабината и противотежестта под калатите от рилевото), support (товарът на основата на
@@ -299,7 +301,9 @@ src/components/calc/ Калкулаторът в React (форма, схема, 
                      + CalcSaveBar (записът) + CalcRuolo (ролята на записа) + ProgettoPanel (Progetto на изчислението:
                      машинното или шахтата). Кръг 46: lift/DatiLibretto (скоростта и ходът по libretto в CollaudoOptions, до
                      CarichiDocumentati); S5 — RegolazioneQuadro (регулирането на таблото, под въжетата или под таблото) и
-                     AltreParti (допълнителните части, «No» по подразбиране) в PartiSiNo.
+                     AltreParti (допълнителните части, «No» по подразбиране) в PartiSiNo. Кръг 47: lift/frasi-libretto
+                     (изреченията на скоростта и хода — DatiLibretto и причината до «No» от документите), etichette-parti
+                     (имената на частите и mancaParte — какво трябва в списъка на липсващото; чисто, за тестовете).
 src/components/      blank (FormBlank, StdBadge, mmOf — празните полета на формулярите), MissingPanel (какво липсва, с линкове
                      към полетата), draft/ (useDraft — черновата 1,5 s след промяна; DraftBar — състоянието и изхвърлянето).
 src/components/shaft/ Шахтата в единния формуляр (записаният проект на шахтата — само за четене): SurveyPanel + CadViewer (canvas, pan/zoom, клик), опции (данните

@@ -49,6 +49,11 @@
 .parte-da, .parte-perche { grid-column: 1 / -1; font-size: 12px; line-height: 1.35; }
 .parte-da { color: var(--warn); }
 .parte-perche { color: var(--muted); }
+/* round 47: a «No» from the documents (a quiet mark beside the answer, the edge of an answered part) and a «Sì» against
+   them (the amber of something to confirm, no edge of what is missing) */
+.parte-doc, .parte-contro { grid-column: 1 / -1; font-size: 12px; line-height: 1.35; font-weight: 600; }
+.parte-doc { color: var(--accent); }
+.parte-contro { color: var(--warn); }
 /* round 46: the existing controller's speed regulation under a new machine — a question hanging on the row above it
    (the ropes of a «Solo argano», the controller of a modernisation), across the whole list, set in from its edge */
 .parte.regola { grid-column: 1 / -1; margin-left: 13px; }

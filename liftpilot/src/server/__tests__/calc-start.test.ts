@@ -132,3 +132,36 @@ test('il libretto e la regolazione del quadro tornano con il calcolo, con «Nuov
   assert.deepEqual([d.mode, d.intervento.collaudo?.libretto, d.intervento.collaudo?.regolazione], ['draft', known.libretto, '2v']);
   draft = null;
 });
+
+test('round 47 (D1): la bozza e il calcolo riaperto non salvano la risposta dai documenti, la ricalcolano', async () => {
+  const { calcStart } = await start();
+  const { collaudoOf } = await import('@/lib/lift');
+  const { carichiOf } = await import('@/lib/lift/modifica');
+  const { daIndicare, dalDocumento, effettiva } = await import('@/lib/lift/risposte');
+  const values: FormValues = { ...PRESETS.C, context: 'repl', keepRopes: true, v: 1.03, H: 18 };
+  const documentato = carichiOf(values);
+  assert.ok(documentato);
+  const docs = { libretto: { v: 1, H: 18 }, documentato };
+  const VAR = ['speed', 'load', 'travel'] as const;
+  const open = (s: { intervento: { tipo: string | null; collaudo: unknown; risposte: readonly string[] }; values: FormValues }) => {
+    const chosen = s.intervento.collaudo as Parameters<typeof effettiva>[1], t = s.intervento.tipo as Parameters<typeof effettiva>[0];
+    const value = collaudoOf(s.values, effettiva(t, chosen, s.values));
+    return { value, left: daIndicare(t, chosen, value, s.values, s.intervento.risposte as Parameters<typeof daIndicare>[4]) };
+  };
+  // the draft keeps the explicit answers only; the three come from its documents again
+  calcs = [];
+  draft = { values, collaudo: { norma: '10411-1', parti: ['machine'], ...docs }, intervento: 'AMMODERNAMENTO', risposte: ['machine'] };
+  const d = await must(calcStart(user, 'p1', null));
+  assert.deepEqual(d.intervento.risposte, ['machine'], 'nothing stored for the documents’ «No»');
+  const od = open(d);
+  assert.ok(VAR.every((p) => !od.left.includes(p) && dalDocumento('AMMODERNAMENTO', od.value, d.values, p)), od.left.join());
+  draft = null;
+  // a modernisation saved with its type, opened again («Nuovo calcolo da questi dati»): every part answered, its «No» the documents' too
+  const saved = calc({ inputs: values, intervento: 'AMMODERNAMENTO', collaudo: { norma: '10411-1', parti: ['machine'], ...docs } });
+  calcs = [saved];
+  const s = await must(calcStart(user, 'p1', saved.id));
+  const os = open(s);
+  assert.deepEqual(os.left, []);
+  assert.ok(VAR.every((p) => !os.value.parti.includes(p) && dalDocumento('AMMODERNAMENTO', os.value, s.values, p)));
+  calcs = [];
+});

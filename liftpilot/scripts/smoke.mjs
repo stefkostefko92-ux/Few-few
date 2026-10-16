@@ -3,7 +3,8 @@
 //   address: the 404 drawn in Italian → sign-in → «Nuovo impianto» → its «Calcolo argano», which starts empty
 //   (its draft kept, resumed, discarded; smoke-blank.mjs) → saved snapshot with reproduced hash → calculation report (PDF) → its
 //   machine room surveyed, the relazione tecnica and the drawing set (scripts/smoke-replacement.mjs) → the installation's page:
-//   its type, its sections → a «Calcolo argano» of a modernisation from the saved one (round 45: the renovation keeping the sling,
+//   its type, its sections → a modernisation of its own whose logbook and documented loads answer speed, load and travel
+//   «No» (round 47) → a «Calcolo argano» of a modernisation from the saved one (round 45: the renovation keeping the sling,
 //   UNI 10411-11; round 46: its logbook's speed locks «Velocità variata», scripts/smoke-intervento.mjs) → the Progetto drawn on it: its data entered (a draft taken up again), a distance of the plan, the landing door
 //   set apart from the car door and the car buffers changed on the drawings, live 3D simulation, the test of its base, saved
 //   in one go (shaft design and calculation together) with its documents → data of the installation, client and company
@@ -25,7 +26,7 @@ import { accountFlows } from './smoke-accounts.mjs';
 import { secondCompany } from './smoke-isolation.mjs';
 import { loadPlaywright, smokeKit, step } from './smoke-kit.mjs';
 import { blankCalc, blankSaves, projectData } from './smoke-blank.mjs';
-import { ammodernamento } from './smoke-intervento.mjs';
+import { ammodernamento, documentiNo } from './smoke-intervento.mjs';
 import { priceList } from './smoke-prices.mjs';
 import { progettoFlow } from './smoke-progetto.mjs';
 import { publicPages } from './smoke-public.mjs';
@@ -123,6 +124,8 @@ try {
   assert.match(await page.getAttribute('.page-head .actions a.btn-primary', 'href') ?? '', /\/progetto\?calc=/, 'the next step: the Progetto');
   assert.equal(await page.locator('button:has-text("Passa a progetto completo")').count(), 0, 'no upgrade any more');
 
+  // round 47 (D1): the documents answer speed, load and travel both ways, in an installation of its own
+  await documentiNo({ BASE, page, hydrated, stamp });
   // a «Calcolo argano» of a modernisation from the saved one, its logbook's speed locking «Velocità variata» (round 46)
   await ammodernamento({ page, hydrated, calcUrl });
 
