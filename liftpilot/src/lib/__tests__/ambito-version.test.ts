@@ -31,7 +31,7 @@ import { SHAFT_ENGINE_VERSION } from '@/shaft/snapshot';
  *  (the new car with the sling replaced too, loadCabinaArcata, and the shared words of the car's mass) — the same; its
  *  recheck (the speed «not changed» said as the two limits of 15.1 and 15.16, speedWithin50 with the speed after 50 Hz
  *  alone) — the same. */
-const PINNED = { sha256: '3a9563e5988a8fd6d5beb766b59e6f33468efd4209d7c44e6db861e80c874c85', engine: '1.7.0', lift: '1.32.0', room: '1.16.0', shaft: '2.26.0' };
+const PINNED = { sha256: '8a627d37bbc23ea397e75cb7f238cb249932e679515fb4ec79f661f2dd01e0d7', engine: '1.7.0', lift: '1.32.0', room: '1.16.0', shaft: '2.26.0' };
 
 /** The constants of a modification: the loads (6.1), the CE marking's day, the speed and the travel (15, 16). */
 const KL_MODIFICA = {

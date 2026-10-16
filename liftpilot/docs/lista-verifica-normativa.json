@@ -3663,7 +3663,7 @@
       "id": "collaudo.variazioni.10411-1.4",
       "gruppo": "Collaudo: UNI 10411-1:2024, velocità, carichi e corsa variati",
       "voce": "UNI 10411-1:2024, 15.1 e 15.16",
-      "valore": "velocità non oltre il 5 % sopra il riferimento, la velocità dopo il passaggio della rete a 50 Hz (15.1): i punti da 15.2 a 15.15 non si applicano; la riduzione dalla velocità iniziale (15.16) non si misura senza la velocità del libretto — indicata come non variata, i punti 15.2 e 15.17 valgono se il tecnico accerta sul libretto una riduzione di oltre il 5 %; se sia comunque un cambio della velocità ai sensi del DPR 162/1999 (art. 2 c.1 lett. cc) n. 1)) lo valuta il tecnico",
+      "valore": "velocità non oltre il 5 % sopra il riferimento, la velocità dopo il passaggio della rete a 50 Hz (15.1): i punti da 15.2 a 15.15 non si applicano; la riduzione dalla velocità iniziale (15.16) non si misura senza la velocità del libretto — indicata come non variata, i punti 15.2 e 15.17 valgono se il tecnico accerta sul libretto o su un verbale successivo una riduzione di oltre il 5 %; se sia comunque un cambio della velocità ai sensi del DPR 162/1999 (art. 2 c.1 lett. cc) n. 1)) lo valuta il tecnico",
       "riferimento": "UNI 10411-1:2024, 15.1 e 15.16",
       "fonte": "ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)",
       "stato": "da verificare",

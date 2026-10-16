@@ -44,8 +44,8 @@ export const OBBLIGHI_VARIAZIONI: Readonly<Record<Norma10411, Partial<Readonly<R
       + 'della velocità ai sensi del DPR 162/1999 (art. 2 c.1 lett. cc) n. 1)) lo valuta il tecnico'),
     speedWithin50: DA_VERIFICARE('UNI 10411-1:2024, 15.1 e 15.16', 'velocità non oltre il 5 % sopra il riferimento, la velocità dopo il passaggio '
       + 'della rete a 50 Hz (15.1): i punti da 15.2 a 15.15 non si applicano; la riduzione dalla velocità iniziale (15.16) non si misura senza la '
-      + 'velocità del libretto — indicata come non variata, i punti 15.2 e 15.17 valgono se il tecnico accerta sul libretto una riduzione di oltre '
-      + 'il 5 %; se sia comunque un cambio della velocità ai sensi del DPR 162/1999 (art. 2 c.1 lett. cc) n. 1)) lo valuta il tecnico'),
+      + 'velocità del libretto — indicata come non variata, i punti 15.2 e 15.17 valgono se il tecnico accerta sul libretto o su un '
+      + 'verbale successivo una riduzione di oltre il 5 %; se sia comunque un cambio della velocità ai sensi del DPR 162/1999 (art. 2 c.1 lett. cc) n. 1)) lo valuta il tecnico'),
     loadP1: lt('UNI 10411-1:2024, 6.1, 6.3–6.12 e 6.15', 'T* o portata oltre il prospetto 1: strutture dell’edificio secondo il punto 5 '
       + '(6.3), ammortizzatori secondo la UNI EN 81-20 5.8 (6.4), guide e ancoraggi (6.5), paracadute di cabina per i nuovi carichi (6.6), funi '
       + 'e attacchi (6.8), arcata (6.9), macchina (6.10) e altri componenti interessati (6.15); non calcolati dal software: controllo del carico '
