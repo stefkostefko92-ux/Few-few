@@ -111,7 +111,9 @@
     {
       "matches": [
         "*://*.facebook.com/*",
-        "*://*.instagram.com/*"
+        "*://*.instagram.com/*",
+        "*://*.threads.com/*",
+        "*://*.threads.net/*"
       ],
       "js": [
         "meta.js"
