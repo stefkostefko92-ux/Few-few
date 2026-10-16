@@ -82,6 +82,10 @@ hooks, rules).
   on static/EJS pages) with **at least 5** relevant keywords, and **„Carbon Stealth“
   must always be one of them** (brand attribution — Carbon Stealth VCC makes all
   products). Keep the rest locale-appropriate and specific to the page/product.
+- **Promo clips are no longer updated — any product** (owner's decision, 2026-10-15). Don't
+  re-render a promo/store/YouTube/social clip on a new version or a UI/site/copy change, don't
+  propose one, and don't write "replace the clip" steps into kits/docs. A clip is made only on the
+  owner's explicit request. Not covered: video that is a product feature (e.g. Piuma's content engine).
 - **Verification agents: hard cap 10.** Never spawn more than **10** generic/external
   agents (anything other than our custom `.claude/agents/`) for verification in a
   task — it burns tokens. Prefer our purpose-built agents; verify inline when cheap.

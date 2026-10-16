@@ -207,3 +207,7 @@
 {"t":"handoff","ts":"2026-10-12T08:12:13.110Z","id":"r443f2f96","from":"kodadjiyata","to":"hromadjiyata","status":"има бележки","run":"ca4f1757"}
 {"t":"start","ts":"2026-10-15T15:22:58.772Z","id":"rc417c27d","flow":"авто","lead":"tayniyat-agent","auto":true}
 {"t":"handoff","ts":"2026-10-15T15:22:58.773Z","id":"rc417c27d","from":"tayniyat-agent","to":"човек","status":"има бележки","run":"1ebd14a5"}
+{"t":"start","ts":"2026-10-16T07:24:56.127Z","id":"r0499b130","flow":"авто","lead":"prevodach","auto":true}
+{"t":"handoff","ts":"2026-10-16T07:24:56.128Z","id":"r0499b130","from":"prevodach","to":"човек","status":"има бележки","run":"0bccb9ad"}
+{"t":"handoff","ts":"2026-10-16T07:26:14.577Z","id":"r0499b130","from":"prevodach","to":"човек","status":"има бележки","run":"ba70199a"}
+{"t":"handoff","ts":"2026-10-16T07:26:26.480Z","id":"r0499b130","from":"prevodach","to":"човек","status":"има бележки","run":"fd1f5138"}
