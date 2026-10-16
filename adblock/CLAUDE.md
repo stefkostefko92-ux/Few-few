@@ -15,7 +15,9 @@ background.js           service worker — рулсети, allowlist, стати
 theme.js                прилага Carbon Stealth / светла тема
 content.js / .css       козметика (вкл. процедурни селектори) + Smart Detection
 cosmetic_generic.css    EasyList генерична козметика (гейтната с html[data-tbab-on])
-meta.js                 Facebook / Instagram sponsored постове
+meta.js                 Facebook / Instagram / Threads sponsored постове (етикетът за екранния четец, ~70 езика)
+gpc.js + rules/gpc.json Global Privacy Control: navigator.globalPrivacyControl (MAIN, регистриран от SW) +
+                        Sec-GPC: 1 (статичен рулсет, приоритет 1 — разрешен сайт/пауза са над него)
 cookies.js / .css       затваряне на cookie/consent банери (вкл. Shadow DOM)
 antiadblock.js / .css   махане на "disable adblocker" стени
 picker.js / .css        element picker (ръчно скриване) + zapper (еднократно)
@@ -31,6 +33,9 @@ youtube.css             скрива рекламните UI елементи н
 rules/                  DNR статични правила: ad_rules + youtube_rules +
                         easylist/easyprivacy/urlhaus/removeparam (билднати от
                         tools/build_filters.mjs) + козметичен bundle + counts
+lib/foreign.js          внос от uBlock Origin / AdGuard / Adblock Plus (Настройки + welcome): само разделя
+                        текста на сайтове и редове; SW проверява всичко отново (`importForeign` →
+                        parseImportedList — правило с път НИКОГА не става блок на целия домейн)
 lib/abp2dnr.js          ЕДИНСТВЕН ABP/uBO → DNR конвертор (класически скрипт, root.ABP2DNR):
                         билдът го ползва през vm, SW през importScripts (листите от автора)
 popup/ · options/       UI (popup + настройки; карти „Филтър-листи" и „Фокус"). Popup-ът има 3D щит:
@@ -42,6 +47,9 @@ popup/ · options/       UI (popup + настройки; карти „Филт�
                         Liquid Glass: стъклото е само CSS (backdrop-filter + маскиран ръб ::after + --mx/--my
                         от popup.js), сиянието е body::before; prefers-reduced-transparency → плътни панели.
                         НЕ ползвай localStorage в popup-а (първият достъп ~40 ms) и не връщай three.js в пакета.
+                        **↶ N** (5.5.0, отмяна на picker-а) е бутон до „Скрий елемент“, не отделен ред: пълното
+                        изречение е aria-label/title; ако редът прелее, `.actions.squeeze` оставя на Settings само
+                        зъбното колело (fitPopup()). Отделен ред за нещо ново = над 600 px на 9 езика (измерено).
                         **Таван 600 px** (Chrome): fitPopup() стяга отстоянията (`html.tight`) само ако съдържанието
                         го мине, а долната лента остава само с икони (`.foot.compact`); всичките 73 локала — гейт в
                         tests/browser/popup-fit.browser.mjs. Нещо ново в popup-а → провери там, не само на английски.
@@ -50,7 +58,8 @@ popup/ · options/       UI (popup + настройки; карти „Филт�
                         (`reviewDue`/`reviewUrl` — линк само при инсталация от CWS), popup-ът рисува; ключът
                         `reviewAsk` в Настройки маха всичко. БЕЗ стимули, без филтър по мнение, никога по сайтовете
                         или като известие (CWS Program Policies) — не добавяй „оцени с 5 звезди“ или награди.
-report/                 „Сайтът е счупен?" — бързи поправки + mailto доклад (нищо не се праща само)
+report/                 „Сайтът е счупен?" — бързи поправки (вкл. „за 1 час“ → allowUntil + аларма allow-expire) + mailto доклад
+welcome/                първо пускане: бързи избори (setFeatures/setList — features се праща ЦЯЛ), вносът, клавишите
 icons/ · _locales/      икони · локализация
 tools/                  build_filters.mjs (EasyList→DNR + каталога tools/lists.json → rules/list_<id>.json,
                         rules/cosmetic_<id>.json, rules/lists.json, THIRD_PARTY_NOTICES.txt; синхронизира
@@ -137,6 +146,11 @@ bash tools/package.sh                         # билд + самопровер�
   `tests/generate_rules.test.mjs` ребилдва във временна папка и сравнява байт по байт.
 - Всички `chrome.*.on*.addListener` се регистрират **синхронно на top level** в
   service worker-а.
+- **Клавишни комбинации** (manifest `commands`): само `Alt+Shift+<буква>` / `MacCtrl+Shift+<буква>`
+  (Option+Shift пише знаци на Mac). Никога буква, която Chrome пази и тихо отказва като suggested key
+  (B — лентата с отметки, C, P, W, X, Z; измерено в Chromium), нито менютата на Google Docs/Sheets/Slides
+  (F E V I O T H A N D X S R). Днес U (сайтът) и Q (пауза); picker-ът е без клавиш. Гейт в
+  `tests/control55.test.mjs`, реалното присвояване — в `tests/browser/control55.browser.mjs`.
 - Smart Detection крие само cross-origin iframe с точен IAB рекламен размер —
   консервативно, за да няма false positives.
 - **cookies.js кликва само CMP-специфични бутони глобално**; всичко генерично (текст,
@@ -150,7 +164,8 @@ bash tools/package.sh                         # билд + самопровер�
   текст не струват нищо, една `querySelectorAll` на списък, не на селектор.
 - **Content script ≠ страница на разширението:** SW приема от content script само
   `smartHit`, `getCosmetic`, `saveCustomSelector`, `ytBypass`, `cookieRejected`; всичко
-  друго — само от popup/options/report (`sender.url` на разширението).
+  друго (вкл. `undoHidden`, `importForeign`, `setAllow` с `minutes`) — само от popup/options/report/welcome
+  (`sender.url` на разширението).
 - **Листи: в пакета само ясно лицензирани.** Лист без лиценз за разпространение (BG, PL NC,
   Dandelicence) никога не влиза в пакета — сваля се от автора САМО при включване от
   потребителя, конвертира се локално като данни (динамични правила ≥ 200000). Един

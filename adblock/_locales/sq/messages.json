@@ -226,7 +226,7 @@
     "message": "Fsheh muret «çaktivizoni bllokuesin e reklamave» dhe e rikthen faqen"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Fsheh postimet «E sponsorizuar» në Facebook dhe Instagram"
+    "message": "Fsheh postimet «E sponsorizuar» në Facebook, Instagram dhe Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Heq utm_*, fbclid, gclid dhe identifikues të tjerë klikimesh nga lidhjet që hapni"
@@ -670,5 +670,74 @@
   "welDone": {
     "message": "E kuptova",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Lejuar · edhe $1 min"
+  },
+  "hiddenHere": {
+    "message": "Elemente të fshehura këtu: $1 · Rikthe të fundit"
+  },
+  "cmd_toggle_site": {
+    "message": "Aktivizo ose çaktivizo bllokimin në këtë sajt"
+  },
+  "cmd_pause": {
+    "message": "Vendos në pauzë ose rifillo mbrojtjen (30 minuta)"
+  },
+  "cmd_picker": {
+    "message": "Fshih një element në këtë faqe"
+  },
+  "rep_fix_hour": {
+    "message": "Lejo reklamat këtu për 1 orë"
+  },
+  "rep_done_hour": {
+    "message": "Reklamat lejohen në këtë sajt për 1 orë. U ringarkua — a u rregullua?"
+  },
+  "opt_last30": {
+    "message": "30 ditët e fundit"
+  },
+  "opt_last30_sum": {
+    "message": "Bllokuar: $1 · Banerat e kukive: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Totalet tuaja ditore shfaqen këtu ndërsa shfletoni."
+  },
+  "opt_last30_sub": {
+    "message": "Vetëm totale ditore, të ruajtura në këtë pajisje për 30 ditë. Pa sajte, pa adresa."
+  },
+  "opt_gpc_sub": {
+    "message": "I kërkon çdo sajti që vizitoni të mos i shesë ose ndajë të dhënat tuaja (sinjali Sec-GPC, të cilin sipas disa ligjeve të privatësisë sajtet duhet ta respektojnë). Nuk dërgohet në sajtet që lejoni."
+  },
+  "opt_shortcuts": {
+    "message": "Shkurtoret e tastierës"
+  },
+  "opt_shortcuts_change": {
+    "message": "Ndrysho shkurtoret"
+  },
+  "opt_shortcut_none": {
+    "message": "E pacaktuar"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Në Firefox: Zgjerime dhe tema → ⚙ → Administroni Shkurtore Zgjerimesh."
+  },
+  "opt_import_foreign": {
+    "message": "Importo nga bllokues tjetër reklamash"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Po kaloni nga uBlock Origin, AdGuard ose Adblock Plus? Zgjidhni skedarin e tij të kopjes rezervë: sajtet që keni lejuar dhe filtrat tuaj shtohen këtu. Asgjë nuk zëvendësohet."
+  },
+  "opt_import_foreign_done": {
+    "message": "Sajte të lejuara: $1 · Filtra të shtuar: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Të lëna jashtë (nuk mund të zbatohen këtu): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Ky skedar nuk është kopje rezervë që mund ta lexojmë."
+  },
+  "welQuickTitle": {
+    "message": "Bëjeni sipas dëshirës suaj"
+  },
+  "welQuickSub": {
+    "message": "Opsionale: tashmë funksionon. Secilën prej tyre mund ta ndryshoni më vonë te cilësimet."
   }
 }

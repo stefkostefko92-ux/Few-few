@@ -226,7 +226,7 @@
     "message": "Itago ang mga wall na “i-disable ang inyong adblocker” at ibalik ang page"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Itago ang mga “Sponsored” na post sa Facebook at Instagram"
+    "message": "Itago ang mga “Sponsored” na post sa Facebook, Instagram at Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Tanggalin ang utm_*, fbclid, gclid at iba pang click identifier sa mga link na binubuksan ninyo"
@@ -670,5 +670,74 @@
   "welDone": {
     "message": "Sige",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Pinayagan · $1m pa"
+  },
+  "hiddenHere": {
+    "message": "Itinago ninyo rito: $1 · Ibalik ang huli"
+  },
+  "cmd_toggle_site": {
+    "message": "I-on o i-off ang pag-block sa site na ito"
+  },
+  "cmd_pause": {
+    "message": "I-pause o ituloy ang proteksyon (30 minuto)"
+  },
+  "cmd_picker": {
+    "message": "Itago ang isang element sa page na ito"
+  },
+  "rep_fix_hour": {
+    "message": "Payagan ang ads dito nang 1 oras"
+  },
+  "rep_done_hour": {
+    "message": "Pinapayagan na ang ads sa site na ito nang 1 oras. Na-reload na — ayos na ba?"
+  },
+  "opt_last30": {
+    "message": "Huling 30 araw"
+  },
+  "opt_last30_sum": {
+    "message": "Na-block: $1 · Cookie banner: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Lalabas dito ang inyong mga kabuuan bawat araw habang nagba-browse kayo."
+  },
+  "opt_last30_sub": {
+    "message": "Mga kabuuan lang bawat araw, nakatago sa device na ito nang 30 araw. Walang site, walang address."
+  },
+  "opt_gpc_sub": {
+    "message": "Hinihiling sa bawat site na binibisita ninyo na huwag ibenta o ibahagi ang inyong data (ang Sec-GPC signal, na ayon sa ilang batas sa privacy ay dapat igalang ng mga site). Hindi ipinapadala sa mga site na pinayagan ninyo."
+  },
+  "opt_shortcuts": {
+    "message": "Mga keyboard shortcut"
+  },
+  "opt_shortcuts_change": {
+    "message": "Baguhin ang mga shortcut"
+  },
+  "opt_shortcut_none": {
+    "message": "Hindi naka-set"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Sa Firefox: Add-ons and themes → ⚙ → Manage Extension Shortcuts."
+  },
+  "opt_import_foreign": {
+    "message": "Mag-import mula sa ibang ad blocker"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Lilipat mula sa uBlock Origin, AdGuard o Adblock Plus? Piliin ang backup file nito: idaragdag dito ang mga site na pinayagan ninyo at ang sarili ninyong mga filter. Walang papalitan."
+  },
+  "opt_import_foreign_done": {
+    "message": "Mga site na pinayagan: $1 · Mga filter na idinagdag: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Hindi isinama (hindi magagamit dito): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Hindi ito backup na kaya naming basahin."
+  },
+  "welQuickTitle": {
+    "message": "I-customize ayon sa gusto ninyo"
+  },
+  "welQuickSub": {
+    "message": "Opsyonal: gumagana na ito. Mababago ninyo ang alinman dito sa Settings mamaya."
   }
 }

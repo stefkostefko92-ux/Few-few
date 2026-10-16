@@ -376,8 +376,77 @@ async function resumeNow() {
   await applyState();
 }
 
+// ---- Allow a site for a while (the repair page's "for 1 hour") ----
+// allowUntil = { host: expiry }; the host is in the allowlist meanwhile, and the
+// "allow-expire" alarm takes it out again at the earliest expiry (re-armed for the rest).
+async function expireAllows(now = Date.now()) {
+  const { allowUntil = {}, allowlist = [] } = await chrome.storage.local.get(["allowUntil", "allowlist"]);
+  const due = Object.keys(allowUntil).filter((h) => allowUntil[h] <= now);
+  if (!due.length) return armAllowAlarm(allowUntil);
+  const rest = { ...allowUntil };
+  for (const h of due) delete rest[h];
+  await chrome.storage.local.set({ allowUntil: rest, allowlist: allowlist.filter((d) => !due.includes(d)) });
+  await syncAllowRules();
+  await syncScriptlets();
+  armAllowAlarm(rest);
+}
+function armAllowAlarm(allowUntil) {
+  const next = Math.min(...Object.values(allowUntil || {}).filter((t) => t > 0));
+  if (Number.isFinite(next)) chrome.alarms.create("allow-expire", { when: Math.max(Date.now() + 1000, next) });
+  else chrome.alarms.clear("allow-expire");
+}
+
+// Add or remove one allowlist entry — the popup switch, the repair page, the keyboard
+// shortcut. `minutes` makes it temporary; a permanent choice clears any timer.
+async function setAllowHost(rawHost, allow, minutes) {
+  const { allowlist = [], allowUntil = {} } = await chrome.storage.local.get(["allowlist", "allowUntil"]);
+  let list = allowlist;
+  const h = typeof rawHost === "string" ? rawHost.trim().toLowerCase() : "";
+  if (!isHost(h)) return { ok: false, reason: "invalid host", allowlist: list };
+  const until = { ...allowUntil };
+  if (allow) {
+    if (!list.includes(h)) {
+      if (list.length >= ALLOW_RULE_MAX) return { ok: false, reason: "allowlist full", allowlist: list };
+      list = list.concat(h);
+    }
+    if (minutes > 0) until[h] = Date.now() + Math.min(minutes, 24 * 60) * 60000; else delete until[h];
+  } else {
+    // a host can be allowed through a parent entry (example.com covers news.example.com):
+    // "block here again" has to take that entry out, or the switch would change nothing
+    const covering = list.filter((d) => d === h || h.endsWith("." + d));
+    list = list.filter((d) => !covering.includes(d));
+    for (const d of covering.concat(h)) delete until[d];
+  }
+  await chrome.storage.local.set({ allowlist: list, allowUntil: until });
+  await syncAllowRules();
+  await syncScriptlets(); // refresh excludeMatches for the new allowlist
+  armAllowAlarm(until);
+  return { ok: true, allowlist: list };
+}
+
+// ---- Keyboard shortcuts (manifest "commands"; changed at chrome://extensions/shortcuts) ----
+async function runCommand(command, tab) {
+  if (!tab || tab.id == null) [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab || tab.id == null) return;
+  if (command === "pause") {
+    const { enabled, pausedUntil = 0 } = await chrome.storage.local.get(["enabled", "pausedUntil"]);
+    if (enabled === false || pausedUntil > Date.now()) await resumeNow(); else await pauseFor(30);
+    chrome.tabs.reload(tab.id);
+  } else if (command === "toggle-site") {
+    if (!/^https?:\/\//i.test(tab.url || "")) return;
+    const host = hostFromUrl(tab.url);
+    if (!host) return;
+    await setAllowHost(host, !(await isAllowlisted(host)));
+    chrome.tabs.reload(tab.id);
+  } else if (command === "picker") {
+    chrome.tabs.sendMessage(tab.id, { type: "activatePicker" }).catch(() => {});
+  }
+}
+chrome.commands?.onCommand.addListener((command, tab) => { runCommand(command, tab).catch(() => {}); });
+
 chrome.alarms.onAlarm.addListener((a) => {
   if (a.name === "resume") resumeNow();
+  if (a.name === "allow-expire") expireAllows();
   if (a.name === "config-update") fetchLiveConfig();
   if (a.name === "scriptlets-retry") syncScriptlets();
   if (a.name === "subs-refresh") { refreshAllSubscriptions(); syncRemoteLists(undefined, true); }
@@ -1458,7 +1527,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "getStats":
       chrome.storage.local.get(
-        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil", "autoUpdate", "liveConfig", "liveUpdated", "noCosmetics", "cookieRejections", "reviewAsk", "review", "installedAt", "daily"],
+        ["enabled", "blockedTotal", "savedBytes", "smartBlocked", "allowlist", "features", "theme", "sync", "pausedUntil", "autoUpdate", "liveConfig", "liveUpdated", "noCosmetics", "cookieRejections", "reviewAsk", "review", "installedAt", "daily", "customHidden", "allowUntil"],
         async (data) => {
           let host = null;
           let allowed = false;
@@ -1498,6 +1567,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             filterCount: bundled + fromLists + (live?.blockDomains?.length || 0),
             cookieRejections: data.cookieRejections || 0,
             daily: data.daily || {},
+            hiddenHere: host && data.customHidden && Array.isArray(data.customHidden[host]) ? data.customHidden[host].length : 0,
+            allowedUntil: host && data.allowUntil && data.allowUntil[host] > now ? data.allowUntil[host] : 0,
             smartBlocked: data.smartBlocked || 0,
             sync: !!data.sync,
             pausedUntil: data.pausedUntil || 0,
@@ -1552,23 +1623,52 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return true;
 
     case "setAllow":
-      chrome.storage.local.get("allowlist", async (data) => {
-        let list = data.allowlist || [];
-        const h = typeof msg.host === "string" ? msg.host.trim().toLowerCase() : "";
-        if (!isHost(h)) return sendResponse({ ok: false, reason: "invalid host", allowlist: list });
-        msg.host = h;
-        if (msg.allow) {
-          if (!list.includes(msg.host)) {
-            if (list.length >= ALLOW_RULE_MAX) return sendResponse({ ok: false, reason: "allowlist full", allowlist: list });
-            list.push(msg.host);
-          }
-        } else {
-          list = list.filter((d) => d !== msg.host);
+      setAllowHost(msg.host, !!msg.allow, typeof msg.minutes === "number" ? msg.minutes : 0).then(sendResponse);
+      return true;
+
+    // The popup's "Hidden here: N · Undo": the last element the picker hid on this site
+    // (or all of them) comes back; content.js re-applies from storage at once.
+    case "undoHidden":
+      chrome.storage.local.get("customHidden", async (data) => {
+        const map = { ...(data.customHidden || {}) };
+        const h = claimedHost(msg.host);
+        const list = Array.isArray(map[h]) ? map[h].slice() : [];
+        if (msg.all) list.length = 0; else list.pop();
+        if (list.length) map[h] = list; else delete map[h];
+        await chrome.storage.local.set({ customHidden: map });
+        sendResponse({ ok: true, left: list.length });
+      });
+      return true;
+
+    // Settings → "Import from another ad blocker": sites to allow and filter lines,
+    // already read from a uBlock Origin / AdGuard / Adblock Plus backup by lib/foreign.js.
+    // The file is someone else's data, so the same checks as a subscription: valid hosts
+    // only, the allowlist cap, and only the filter lines "My filters" can really apply —
+    // a whole-domain block or a safe ##selector (parseImportedList). A path rule, an
+    // exception, a scriptlet or an option is left out and counted, never widened into
+    // blocking its whole domain.
+    case "importForeign":
+      chrome.storage.local.get(["allowlist", "userFilters"], async (data) => {
+        const list = (data.allowlist || []).slice();
+        let sites = 0;
+        for (const raw of Array.isArray(msg.allowlist) ? msg.allowlist.slice(0, ALLOW_RULE_MAX) : []) {
+          const h = typeof raw === "string" ? raw.trim().toLowerCase().replace(/^www\./, "") : "";
+          if (!isHost(h) || list.includes(h) || list.length >= ALLOW_RULE_MAX) continue;
+          list.push(h);
+          sites++;
         }
-        await chrome.storage.local.set({ allowlist: list });
+        const lines = String(msg.filters || "").slice(0, SUB_BYTES_MAX).split("\n").map((l) => l.trim())
+          .filter((l) => l && !l.startsWith("!") && !l.startsWith("["));
+        const usable = parseImportedList(lines.join("\n"));
+        const have = new Set(String(data.userFilters || "").split("\n").map((l) => l.trim()).filter(Boolean));
+        const fresh = [];
+        for (const l of usable) if (!have.has(l)) { have.add(l); fresh.push(l); }
+        const userFilters = [String(data.userFilters || "").trim(), ...fresh].filter(Boolean).join("\n");
+        await chrome.storage.local.set({ allowlist: list, userFilters });
         await syncAllowRules();
-        await syncScriptlets(); // refresh excludeMatches for the new allowlist
-        sendResponse({ ok: true, allowlist: list });
+        await syncUserRules();
+        await syncScriptlets();
+        sendResponse({ ok: true, sites, filters: fresh.length, skipped: Math.max(0, lines.length - usable.length) });
       });
       return true;
 

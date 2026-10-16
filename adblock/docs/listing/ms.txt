@@ -2,9 +2,11 @@ Supreme AdBlock menyekat iklan di mana-mana — iklan video YouTube, sepanduk, t
 
 • Iklan YouTube dihentikan pada sumbernya, jadi video terus dimainkan.
 • EasyList, EasyPrivacy dan senarai penapis terbuka lain sudah terbina dalam, serta senarai untuk bahasa anda (31 senarai serantau).
+• Siaran tajaan pada Facebook, Instagram dan Threads disembunyikan.
 • Sepanduk kuki: menekan Tolak untuk anda, membersihkan kesan kabur dan kunci tatal yang tertinggal, dan tidak sekali-kali menekan butang log masuk, OAuth atau pembayaran.
 • Mod fokus: sembunyikan gelembung sembang, tetingkap timbul surat berita, gesaan pemberitahuan, widget sosial, tetingkap timbul AI dan YouTube Shorts.
 • Dinding anti-adblock dan pop-under dineutralkan.
 • Tapak rosak? Satu klik membaikinya, atau beritahu kami — tiada apa-apa yang dihantar tanpa anda melihatnya dahulu.
+• Beralih daripada uBlock Origin, AdGuard atau Adblock Plus? Bawa tapak yang anda benarkan dan penapis anda dengan satu fail.
 • Kemas kini penapis bertandatangan dua kali sehari: rangkaian iklan baharu ditangani dalam beberapa jam, tanpa kod jauh.
-• Tiada akaun, tiada telemetri, tiada pengumpulan data.
+• Tiada akaun, tiada telemetri, tiada pengumpulan data, dan Global Privacy Control meminta setiap tapak supaya tidak menjual atau berkongsi data anda.

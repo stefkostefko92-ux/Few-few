@@ -226,7 +226,7 @@
     "message": "隱藏「請停用廣告封鎖程式」牆並還原網頁"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "隱藏 Facebook 和 Instagram 上的「贊助」貼文"
+    "message": "隱藏 Facebook、Instagram 和 Threads 上的「贊助」貼文"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "從您開啟的連結中移除 utm_*、fbclid、gclid 等點擊識別碼"
@@ -670,5 +670,74 @@
   "welDone": {
     "message": "我知道了",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "已允許 · 剩餘 $1 分鐘"
+  },
+  "hiddenHere": {
+    "message": "您在這裡隱藏的元素：$1 · 復原最後一個"
+  },
+  "cmd_toggle_site": {
+    "message": "開啟或關閉這個網站的封鎖功能"
+  },
+  "cmd_pause": {
+    "message": "暫停或恢復防護（30 分鐘）"
+  },
+  "cmd_picker": {
+    "message": "隱藏這個網頁上的元素"
+  },
+  "rep_fix_hour": {
+    "message": "允許這個網站顯示廣告 1 小時"
+  },
+  "rep_done_hour": {
+    "message": "已允許這個網站顯示廣告 1 小時並重新載入。問題解決了嗎？"
+  },
+  "opt_last30": {
+    "message": "過去 30 天"
+  },
+  "opt_last30_sum": {
+    "message": "已封鎖：$1 · Cookie 橫幅：$2"
+  },
+  "opt_last30_empty": {
+    "message": "您瀏覽網頁時，每日總計會顯示在這裡。"
+  },
+  "opt_last30_sub": {
+    "message": "只保存每日總計，在這部裝置上保留 30 天。不記錄網站，也不記錄網址。"
+  },
+  "opt_gpc_sub": {
+    "message": "要求您造訪的每個網站不要出售或分享您的資料（即 Sec-GPC 訊號，部分隱私權法律要求網站遵守此訊號）。在您允許的網站上不會傳送。"
+  },
+  "opt_shortcuts": {
+    "message": "鍵盤快速鍵"
+  },
+  "opt_shortcuts_change": {
+    "message": "變更快速鍵"
+  },
+  "opt_shortcut_none": {
+    "message": "未設定"
+  },
+  "opt_shortcuts_ff": {
+    "message": "在 Firefox 中：附加元件和佈景主題 → ⚙ → 管理擴充套件快速鍵"
+  },
+  "opt_import_foreign": {
+    "message": "從其他廣告封鎖工具匯入"
+  },
+  "opt_import_foreign_sub": {
+    "message": "要從 uBlock Origin、AdGuard 或 Adblock Plus 轉移過來嗎？選擇它的備份檔：您允許的網站和您自己的過濾規則會新增到這裡，不會取代任何內容。"
+  },
+  "opt_import_foreign_done": {
+    "message": "已允許網站：$1 · 已新增過濾規則：$2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "已略過（無法在這裡套用）：$1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "這個檔案不是可讀取的備份。"
+  },
+  "welQuickTitle": {
+    "message": "依您的喜好設定"
+  },
+  "welQuickSub": {
+    "message": "可選：擴充功能已經開始運作。之後隨時可以在設定中變更這些選項。"
   }
 }

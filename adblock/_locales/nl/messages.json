@@ -226,7 +226,7 @@
     "message": "Verbergt muren als “schakel uw adblocker uit” en herstelt de pagina"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Verbergt “Gesponsord”-berichten op Facebook en Instagram"
+    "message": "Verbergt “Gesponsord”-berichten op Facebook, Instagram en Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Verwijdert utm_*, fbclid, gclid en andere klik-ID’s uit de links die u opent"
@@ -670,5 +670,74 @@
   "welDone": {
     "message": "Begrepen",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Toegestaan · nog $1 min"
+  },
+  "hiddenHere": {
+    "message": "Hier verborgen: $1 · Laatste ongedaan maken"
+  },
+  "cmd_toggle_site": {
+    "message": "Blokkeren op deze website aan- of uitzetten"
+  },
+  "cmd_pause": {
+    "message": "Bescherming pauzeren of hervatten (30 minuten)"
+  },
+  "cmd_picker": {
+    "message": "Een element op deze pagina verbergen"
+  },
+  "rep_fix_hour": {
+    "message": "Advertenties hier 1 uur toestaan"
+  },
+  "rep_done_hour": {
+    "message": "Advertenties zijn 1 uur toegestaan op deze website. Opnieuw geladen — is het opgelost?"
+  },
+  "opt_last30": {
+    "message": "Afgelopen 30 dagen"
+  },
+  "opt_last30_sum": {
+    "message": "Geblokkeerd: $1 · Cookiebanners: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Uw dagtotalen verschijnen hier terwijl u surft."
+  },
+  "opt_last30_sub": {
+    "message": "Alleen dagtotalen, 30 dagen bewaard op dit apparaat. Geen websites, geen adressen."
+  },
+  "opt_gpc_sub": {
+    "message": "Vraagt elke website die u bezoekt uw gegevens niet te verkopen of te delen (het Sec-GPC-signaal, dat websites volgens sommige privacywetten moeten respecteren). Wordt niet verzonden op websites die u toestaat."
+  },
+  "opt_shortcuts": {
+    "message": "Sneltoetsen"
+  },
+  "opt_shortcuts_change": {
+    "message": "Sneltoetsen wijzigen"
+  },
+  "opt_shortcut_none": {
+    "message": "Niet ingesteld"
+  },
+  "opt_shortcuts_ff": {
+    "message": "In Firefox: Extensies en thema’s → ⚙ → Extensiesneltoetsen beheren."
+  },
+  "opt_import_foreign": {
+    "message": "Importeren uit een andere adblocker"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Overstappen van uBlock Origin, AdGuard of Adblock Plus? Kies het back-upbestand ervan: de websites die u hebt toegestaan en uw eigen filters worden hier toegevoegd. Er wordt niets vervangen."
+  },
+  "opt_import_foreign_done": {
+    "message": "Websites toegestaan: $1 · Filters toegevoegd: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Weggelaten (hier niet toe te passen): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Dit bestand is geen back-up die we kunnen lezen."
+  },
+  "welQuickTitle": {
+    "message": "Maak het naar uw zin"
+  },
+  "welQuickSub": {
+    "message": "Optioneel: het werkt al. U kunt dit allemaal later wijzigen in Instellingen."
   }
 }

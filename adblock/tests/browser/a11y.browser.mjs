@@ -39,16 +39,18 @@ try {
   const site = await ctx.newPage(); await site.goto(`http://127.0.0.1:${srv.address().port}/news`);
   // popup+review: the review card is up (≥ 7 days, ≥ 1000 blocked) — the bottom sheet and what it makes inert
   const due = () => sw.evaluate(() => chrome.storage.local.set({ installedAt: Date.now() - 8 * 86400000, blockedTotal: 54321, review: {}, reviewAsk: true }));
-  const pages = [["popup", "popup/popup.html", 320, 600], ["popup+review", "popup/popup.html", 320, 600, due], ["settings", "options/options.html", 1280, 900], ["welcome", "welcome/welcome.html", 1280, 900], ["report", "report/report.html", 900, 900]];
+  // popup+undo: the picker hid something on this site — ↶ N next to the picker (5.5.0)
+  const undo = () => sw.evaluate(() => chrome.storage.local.set({ customHidden: { "127.0.0.1": [".x", ".y"] } }));
+  const pages = [["popup", "popup/popup.html", 320, 600], ["popup+review", "popup/popup.html", 320, 600, due, "review"], ["popup+undo", "popup/popup.html", 320, 600, undo, "undoBtn"], ["settings", "options/options.html", 1280, 900], ["welcome", "welcome/welcome.html", 1280, 900], ["report", "report/report.html", 900, 900]];
   for (const theme of ["carbon", "light"]) {
     await sw.evaluate((t) => chrome.storage.local.set({ theme: t, review: { never: true } }), theme);
-    for (const [name, path, w, h, seed] of pages) {
+    for (const [name, path, w, h, seed, mustShow] of pages) {
       if (seed) await seed();
       const p = await ctx.newPage(); await p.setViewportSize({ width: w, height: h });
       await p.goto(`chrome-extension://${id}/${path}`); await p.waitForTimeout(800);
       if (path.startsWith("popup/")) { await site.bringToFront(); await p.reload(); await p.waitForTimeout(800); }
-      if (seed && await p.evaluate(() => document.getElementById("review").hidden)) { ok(`${name} [${theme}]: the card is shown`, false); await p.close(); continue; }
-      if (seed) await sw.evaluate(() => chrome.storage.local.set({ review: { never: true } }));
+      if (seed && await p.evaluate((i) => document.getElementById(i).hidden, mustShow)) { ok(`${name} [${theme}]: #${mustShow} is shown`, false); await p.close(); continue; }
+      if (seed) await sw.evaluate(() => chrome.storage.local.set({ review: { never: true }, customHidden: {} }));
       await p.evaluate(AXE); // evaluate is not subject to the page's CSP (script-src 'self')
       const v = await p.evaluate(async () => (await axe.run(document, { runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"] } }))
         .violations.map((x) => `${x.id} ×${x.nodes.length} (${x.nodes[0].target.join(" ")})`));

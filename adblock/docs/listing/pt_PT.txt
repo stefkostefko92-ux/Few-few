@@ -2,9 +2,11 @@ O Supreme AdBlock bloqueia anúncios em todo o lado — anúncios em vídeo do Y
 
 • Os anúncios do YouTube são travados na origem, por isso os vídeos são simplesmente reproduzidos.
 • EasyList, EasyPrivacy e outras listas de filtros abertas vêm integradas, além da lista do seu idioma (31 listas regionais).
+• As publicações patrocinadas no Facebook, no Instagram e no Threads são ocultadas.
 • Avisos de cookies: carrega em «Rejeitar» por si, remove o desfoque e o bloqueio de deslocamento que ficam para trás e nunca carrega num botão de início de sessão, OAuth ou pagamento.
 • Modo Foco: oculte balões de chat, pop-ups de newsletter, pedidos de notificação, widgets sociais, pop-ups de IA e YouTube Shorts.
 • As barreiras anti-adblock e os pop-unders são neutralizados.
 • Site com problemas? Um clique resolve, ou avise-nos — nada é enviado sem que o veja primeiro.
+• Vem do uBlock Origin, AdGuard ou Adblock Plus? Traga os seus sites permitidos e filtros com um só ficheiro.
 • Atualizações de filtros assinadas duas vezes por dia: as novas redes de publicidade são tratadas em poucas horas, sem código remoto.
-• Sem conta, sem telemetria, sem recolha de dados.
+• Sem conta, sem telemetria, sem recolha de dados, e o Global Privacy Control pede a cada site que não venda nem partilhe os seus dados.

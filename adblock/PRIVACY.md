@@ -1,6 +1,6 @@
 # Privacy Policy, Supreme AdBlock
 
-_Last updated: 12 October 2026 · applies to the Supreme AdBlock browser extension and to adblock.carbonstealth.eu_
+_Last updated: 16 October 2026 · applies to the Supreme AdBlock browser extension and to adblock.carbonstealth.eu_
 
 <!-- Keep in sync with server/privacy.html (the Privacy Policy URL in the Chrome Web Store). -->
 
@@ -23,7 +23,7 @@ Kept in your browser's local extension storage; never sent to us. If you turn on
 *(sync)* to your own browser account via `storage.sync` — the browser vendor's
 servers, under your account, not ours. Turn sync off and they stay local only.
 
-- Your allowlisted sites *(sync)*
+- Your allowlisted sites *(sync)*, and for a site you allowed only for a while (the repair page's "for 1 hour"), when it goes back to blocking — on this device
 - Feature toggles and theme (cookie banners, anti-adblock, Meta posts, YouTube, …) *(sync)*
 - Which filter lists and Focus-mode items you turned on or off *(sync)*
 - Your own filter rules, including filter lists you subscribed to by URL, and the list of those URLs *(sync)*
@@ -31,6 +31,8 @@ servers, under your account, not ours. Turn sync off and they stay local only.
 - Whether protection is on, off or paused — per device, never synced
 - Elements you hid with the picker
 - Counters of how many requests were blocked (and the estimated data and time saved), and how many cookie banners were rejected for you — numbers only, no list of sites
+- The daily totals of the last 30 days for the chart in Settings: two numbers per day (requests blocked, cookie banners rejected), no sites and no addresses; older days are deleted
+- When you import a backup of another ad blocker, the file is read on your device and only the sites and filter lines taken from it are kept, with your own; the file itself is not stored or sent
 - A short log (last 50 entries) of sites where Smart Detection hid an ad-sized frame, shown in Settings so you can see why
 - The latest downloaded filter data, and the regional lists you downloaded from their authors (see below)
 - Whether review reminders are on *(sync)*; and, on this device only, when the extension was installed and whether the popup already asked you for a Chrome Web Store review (how many times, when, and whether you chose “Don't ask again”) — so it asks at most twice
@@ -69,6 +71,8 @@ extension.
 in the popup open the extension's Chrome Web Store page in a new tab, like any
 link. The extension itself sends nothing; what you write there is handled by
 Google under its own terms. You can switch these reminders off in Settings.
+
+**Global Privacy Control (on by default).** Unless you switch it off in Settings, your browser adds the header `Sec-GPC: 1` to its requests to the sites you visit, and pages can read `navigator.globalPrivacyControl`. It asks those sites not to sell or share your personal data. The signal is the same for everyone and carries no identifier, so it says nothing about you; it is not sent on sites you allowed or while protection is paused.
 
 There are no other requests: no analytics, no crash reports, no "phone home".
 
@@ -133,7 +137,8 @@ determine credit-worthiness or for lending, and no person reads it.
 
 ## Extension permissions
 
-- `declarativeNetRequest` — block ad and tracker requests using filter rules.
+- `declarativeNetRequest` — block ad and tracker requests using filter rules, and
+  add the Global Privacy Control header (`Sec-GPC: 1`) unless you switch it off.
 - `declarativeNetRequestFeedback` — read which of our own rules matched in the
   active tab (`getMatchedRules`) to show the blocked count and which lists
   matched; no URL is read, stored or sent.
