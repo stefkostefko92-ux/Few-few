@@ -22,6 +22,7 @@
 - [Cookie banner blocker](https://adblock.carbonstealth.eu/cookie-banner-blocker): how banners are answered (Reject first, Accept only as a last resort), the consent tools it knows, and the buttons it never presses
 - [Support](https://adblock.carbonstealth.eu/support): fixes for a broken site, a YouTube video that won't play, a missed ad or cookie banner; settings, sync, removal and contact
 - [Privacy policy](https://adblock.carbonstealth.eu/privacy): what stays on the device, the only network requests, GDPR rights
+- The same overview in other languages: [Български](https://adblock.carbonstealth.eu/bg/), [Deutsch](https://adblock.carbonstealth.eu/de/), [Italiano](https://adblock.carbonstealth.eu/it/), [Español](https://adblock.carbonstealth.eu/es/), [Français](https://adblock.carbonstealth.eu/fr/), [Português (Brasil)](https://adblock.carbonstealth.eu/pt-br/)
 
 ## What it does
 

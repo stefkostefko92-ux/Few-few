@@ -10,6 +10,14 @@
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 <meta name="theme-color" content="#030303" />
 <link rel="canonical" href="https://adblock.carbonstealth.eu/" />
+<link rel="alternate" hreflang="en" href="https://adblock.carbonstealth.eu/" />
+<link rel="alternate" hreflang="bg" href="https://adblock.carbonstealth.eu/bg/" />
+<link rel="alternate" hreflang="de" href="https://adblock.carbonstealth.eu/de/" />
+<link rel="alternate" hreflang="it" href="https://adblock.carbonstealth.eu/it/" />
+<link rel="alternate" hreflang="es" href="https://adblock.carbonstealth.eu/es/" />
+<link rel="alternate" hreflang="fr" href="https://adblock.carbonstealth.eu/fr/" />
+<link rel="alternate" hreflang="pt-BR" href="https://adblock.carbonstealth.eu/pt-br/" />
+<link rel="alternate" hreflang="x-default" href="https://adblock.carbonstealth.eu/" />
 <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
 <!-- Open Graph -->
@@ -261,6 +269,8 @@
   footer a{color:var(--muted);transition:color .2s}
   footer a:hover{color:var(--cyan)}
   footer .who a{text-decoration:underline;text-underline-offset:3px}
+  footer nav.langs{width:100%;margin:0;gap:8px 16px}
+  footer nav.langs a[aria-current="page"]{color:var(--cream)}
 
   /* motion off: OS setting or the Pause button. Entrance animations are
      dropped (paused at their first frame they would leave the text invisible);
@@ -672,6 +682,15 @@
         <a href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk" target="_blank" rel="noopener">Chrome Web Store</a>
         <a href="https://carbonstealth.eu" target="_blank" rel="noopener">carbonstealth.eu</a>
         <a href="https://revolut.me/vycanismajoris" target="_blank" rel="noopener">Donate</a>
+      </nav>
+      <nav class="fl langs" aria-label="Languages">
+        <a href="/" hreflang="en" lang="en" aria-current="page">English</a>
+        <a href="/bg/" hreflang="bg" lang="bg">Български</a>
+        <a href="/de/" hreflang="de" lang="de">Deutsch</a>
+        <a href="/it/" hreflang="it" lang="it">Italiano</a>
+        <a href="/es/" hreflang="es" lang="es">Español</a>
+        <a href="/fr/" hreflang="fr" lang="fr">Français</a>
+        <a href="/pt-br/" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a>
       </nav>
     </div>
   </footer>

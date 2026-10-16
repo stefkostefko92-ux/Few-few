@@ -93,6 +93,11 @@ server/                 сайтът adblock.carbonstealth.eu: index, privacy, s
                         cookie-banner-blocker (+ sitemap, llms.txt, robots, filters.json). **Нова страница =**
                         кратък адрес в nginx.conf И Caddyfile + файлът в списъка на deploy/autodeploy.sh + IndexNow
                         `urlList` там + sitemap + llms.txt — `tests/site.test.mjs` гейтва всичко това.
+                        **Езиковите страници** server/<bg|de|it|es|fr|pt-br>/index.html се ГЕНЕРИРАТ:
+                        `node tools/site_lang.mjs` от tools/site-lang/<език>.json (en.json е източникът) със стиловете
+                        на youtube-ad-blocker.html — не ги пипай на ръка (`--check` е в site.test). hreflang групата
+                        (английската + 6 + x-default) е взаимна; нов език = JSON + LANGS в генератора + `for l in`
+                        в autodeploy.sh + nginx/Caddy `/<език>` → `/<език>/` + IndexNow + sitemap + llms.txt.
 ```
 
 ## Качествен гейт (преди „готово")
