@@ -4,9 +4,10 @@ import type { SectionDef } from './field-types.js';
 /**
  * Разделът „Argano“ на картата (част от списъка в fields.ts) — не при хидравлична уредба (там е
  * централата). „Argano da sostituire?“: при Sì — листът с данните на машината, за всеки вид аргано
- * (src/ordini/); при No — какво се сменя или добавя на спирачката: челюстите и контактите, комплектът
- * за контрол на челюстите и контролът в таблото на управление — с вида им на ръка (собственикът,
- * октомври 2026). Бележките — винаги.
+ * (src/ordini/); при No — видът на аргано, което остава, и какво се сменя или добавя на спирачката:
+ * челюстите, комплектът за контрол на челюстите и контролът в таблото на управление — с вида им на ръка
+ * (собственикът, октомври 2026; контактите на спирачката не се питат от 17 октомври — колоната пази
+ * старите отговори). Бележките — винаги.
  */
 export const SEZIONE_ARGANO = {
   key: 'argano',
@@ -19,8 +20,8 @@ export const SEZIONE_ARGANO = {
       question: true,
       modulo: 'preventivoArgano',
     },
+    { key: 'arganoTipo', kind: 'text', maxLength: 120, when: no('arganoPreventivo') },
     { key: 'ganasceFreno', kind: 'yesno', when: no('arganoPreventivo') },
-    { key: 'contattiFreno', kind: 'yesno', when: no('arganoPreventivo') },
     { key: 'kitControlloGanasce', kind: 'yesno', when: no('arganoPreventivo') },
     {
       key: 'kitControlloGanasceTipo',

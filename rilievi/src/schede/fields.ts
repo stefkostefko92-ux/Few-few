@@ -22,8 +22,9 @@ export * from './field-options.js';
 
 import {
   ALTRA,
+  IDRAULICO,
   NON_IDRAULICO,
-  PORTE_CON_OPERATORE,
+  PORTE_AUTOMATICHE,
   PORTE_CON_PATTINO,
   PORTE_SCELTE,
   yes,
@@ -101,8 +102,9 @@ export const SECTIONS = [
   SEZIONE_ARGANO,
   SEZIONE_CENTRALINA,
   {
-    // „Funi e tiranti“: въжетата, после тирантите — брой и вид за кабината и за противотежестта
-    // (собственикът, октомври 2026).
+    // „Funi e tiranti“: въжетата, после тирантите — брой и вид за кабината и за противотежестта; при
+    // хидравлична уредба противотежест няма — вторите тиранти са закрепените в ямата (собственикът,
+    // октомври 2026).
     key: 'funi',
     fields: [
       { key: 'funiDiametroMm', kind: 'decimal', min: 0, max: 100, unit: 'mm' },
@@ -111,8 +113,10 @@ export const SECTIONS = [
       { key: 'funiLunghezzaM', kind: 'decimal', min: 0, max: 10_000, unit: 'm' },
       { key: 'tirantiCabinaNumero', kind: 'int', min: 0, max: 100 },
       { key: 'tirantiCabinaTipo', kind: 'text', maxLength: 120 },
-      { key: 'tirantiContrappesoNumero', kind: 'int', min: 0, max: 100 },
-      { key: 'tirantiContrappesoTipo', kind: 'text', maxLength: 120 },
+      { key: 'tirantiContrappesoNumero', kind: 'int', min: 0, max: 100, when: NON_IDRAULICO },
+      { key: 'tirantiContrappesoTipo', kind: 'text', maxLength: 120, when: NON_IDRAULICO },
+      { key: 'tirantiFossaNumero', kind: 'int', min: 0, max: 100, when: IDRAULICO },
+      { key: 'tirantiFossaTipo', kind: 'text', maxLength: 120, when: IDRAULICO },
     ],
   },
   {
@@ -135,9 +139,9 @@ export const SECTIONS = [
   },
   {
     // Брави и окачвания на вратите за смяна — само каквото е за вида врати от „Tipologia“ (собственикът,
-    // октомври 2026): бравите и шейната — при ръчни, окачванията — при автоматични, при полуавтоматични
-    // — всичко. Бравите — брой и вид; шейната — видът ѝ; окачванията — брой и листът 2SG, в който е и
-    // операторът на кабината (src/ordini/). Бележките — винаги.
+    // октомври 2026): бравите и шейната — при ръчни и полуавтоматични, окачванията — само при
+    // автоматични. Бравите — брой и вид; шейната — видът ѝ; окачванията — брой и листът 2SG, в който е
+    // и операторът на кабината (src/ordini/). Бележките — винаги.
     key: 'serrature',
     fields: [
       { key: 'serrature', kind: 'yesno', when: PORTE_CON_PATTINO },
@@ -158,7 +162,7 @@ export const SECTIONS = [
         wide: true,
         question: true,
         modulo: 'ordineSospensioni',
-        when: PORTE_CON_OPERATORE,
+        when: PORTE_AUTOMATICHE,
       },
       { key: 'sospensioniNumero', kind: 'int', min: 0, max: 999, when: yes('sospensioni') },
       { key: 'serratureNote', kind: 'textarea', maxLength: 4000, wide: true },
@@ -218,12 +222,14 @@ export const SEARCHABLE = [
   'buonoLavoro',
   'parcheggio',
   'quadroNote',
+  'arganoTipo',
   'kitControlloGanasceTipo',
   'controlloQuadroTipo',
   'arganoNote',
   'centralinaMarca',
   'tirantiCabinaTipo',
   'tirantiContrappesoTipo',
+  'tirantiFossaTipo',
   'limitatoreTipo',
   'tenditore',
   'serratureTipo',

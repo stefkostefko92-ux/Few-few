@@ -1,13 +1,24 @@
 // The doors, the argano that stays and the notes in a real browser (public/js/app.js): the locks and
-// the retiring cam come with manual (or semi-automatic) doors, the suspensions with automatic ones; the
-// type of the cam, the kind of the shoe check and the lighting note come with their "Sì"; the print
-// carries the new names and what was written.
+// the retiring cam come with manual or semi-automatic doors, the suspensions only with automatic ones;
+// the kind of the argano that stays, the type of the cam, the kind of the shoe check and the lighting
+// note come with their answer; the print carries the new names and what was written.
 import { fail, tick } from './helpers.mjs';
+
+const untick = (page, name, value) =>
+  page.locator(`input[name=${name}][value=${value}]`).evaluate((input) => {
+    if (input.checked) input.click();
+  });
 
 export async function fillDoorsAndChecks(page) {
   // The locks and the retiring cam follow the doors: manual (or semi-automatic) doors ask them,
   // automatic ones ask the suspensions; the type of the cam comes with "Sì".
   if (await page.locator('#f-serrature').isVisible()) fail('locks shown before the doors');
+  await tick(page, 'tipoPorte', 'SEMIAUTOMATICHE');
+  if (!(await page.locator('#f-serrature').isVisible()))
+    fail('locks not shown with semi-automatic doors');
+  if (await page.locator('#f-sospensioni').isVisible())
+    fail('suspensions shown with semi-automatic doors');
+  await untick(page, 'tipoPorte', 'SEMIAUTOMATICHE');
   await tick(page, 'tipoPorte', 'AUTOMATICHE');
   if (await page.locator('#f-pattinoRetrattile').isVisible())
     fail('retiring cam shown with automatic doors');
@@ -20,8 +31,10 @@ export async function fillDoorsAndChecks(page) {
   await page.fill('#f-serratureTipo', 'Elettromeccaniche');
   await tick(page, 'pattinoRetrattile', 'si');
   await page.fill('#f-pattinoRetrattileTipo', 'Wittur');
-  // The argano that stays: the shoe check kit, its kind with "Sì".
+  // The argano that stays: its kind, the shoe check kit with its kind on "Sì"; no brake contacts.
   await tick(page, 'arganoPreventivo', 'no');
+  await page.fill('#f-arganoTipo', 'A vite senza fine');
+  if (await page.locator('#f-contattiFreno').count()) fail('brake contacts still asked');
   if (await page.locator('#f-kitControlloGanasceTipo').isVisible())
     fail('kind of the shoe check shown before "Sì"');
   await tick(page, 'kitControlloGanasce', 'si');
@@ -43,5 +56,8 @@ export async function checkPrintedNotes(page) {
     'Plafoniere al 2° piano',
   ]) {
     if (!paper.includes(text)) fail(`print without "${text}"`);
+  }
+  for (const text of ['Contatti freno', 'tiranti in fossa']) {
+    if (paper.includes(text)) fail(`print with "${text}" (electric lift, no contacts asked)`);
   }
 }

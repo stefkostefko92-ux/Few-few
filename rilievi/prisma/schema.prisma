@@ -301,8 +301,8 @@ model Scheda {
   serrature                    Boolean?
   serratureNumero              Int?
   serratureTipo                String?                  @db.VarChar(120)
-  /// „Sospensioni da cambiare“ — при автоматични и полуавтоматични врати; при true броят и листът 2SG
-  /// (окачванията и операторът на кабината).
+  /// „Sospensioni da cambiare“ — само при автоматични врати (полуавтоматичните са само с брави); при
+  /// true броят и листът 2SG (окачванията и операторът на кабината).
   sospensioni                  Boolean?
   sospensioniNumero            Int?
   /// Листът 2SG: {modulo, valori}. Има свой PDF.
@@ -316,11 +316,14 @@ model Scheda {
   funiTrefoli                  Int?
   funiNumero                   Int?
   funiLunghezzaM               Decimal?                 @db.Decimal(8, 2)
-  /// Тирантите на въжетата („Funi e tiranti“) — брой и вид за кабината и за противотежестта.
+  /// Тирантите на въжетата („Funi e tiranti“) — брой и вид за кабината и за противотежестта; при
+  /// хидравлична уредба противотежест няма — вторите са тирантите в ямата (`tirantiFossa*`).
   tirantiCabinaNumero          Int?
   tirantiCabinaTipo            String?                  @db.VarChar(120)
   tirantiContrappesoNumero     Int?
   tirantiContrappesoTipo       String?                  @db.VarChar(120)
+  tirantiFossaNumero           Int?
+  tirantiFossaTipo             String?                  @db.VarChar(120)
   limitatoreTipo               String?                  @db.VarChar(120)
   funicellaDiametroMm          Decimal?                 @db.Decimal(6, 2)
   funicellaLunghezzaM          Decimal?                 @db.Decimal(8, 2)
@@ -364,8 +367,10 @@ model Scheda {
   /// Листът с данните на аргано (за всеки вид): {modulo, valori}. Има свой PDF. Записите с модула на
   /// Montanari не се четат повече (друг `modulo`).
   preventivoArgano             Json?
-  /// Аргано, което остава („Argano da sostituire?“ — No): сменят ли се челюстите и контактите на спирачката;
+  /// Аргано, което остава („Argano da sostituire?“ — No): видът му, сменят ли се челюстите на спирачката;
   /// комплект за контрол на челюстите и контрол в таблото на управление — при true видът им на ръка.
+  /// Контактите на спирачката не се питат от 17 октомври 2026 — колоната пази старите отговори.
+  arganoTipo                   String?                  @db.VarChar(120)
   ganasceFreno                 Boolean?
   contattiFreno                Boolean?
   kitControlloGanasce          Boolean?

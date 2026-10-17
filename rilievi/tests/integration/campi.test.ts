@@ -7,7 +7,7 @@ after(stopApp);
 
 /**
  * The fields of the second brief and of the owner's October pass, as the browser sends them (three
- * stops, two of them measured; semi-automatic doors ask the locks and the suspensions).
+ * stops, two of them measured; automatic and manual doors ask the suspensions and the locks).
  */
 const SECOND = {
   data: '2026-10-12',
@@ -15,10 +15,12 @@ const SECOND = {
   indirizzo: 'Via Torino 5, Milano',
   buonoLavoro: 'BL 2026/512',
   fermate: '3',
-  tipoPorte: ['SEMIAUTOMATICHE', 'MANUALI'],
+  tipoPorte: ['AUTOMATICHE', 'MANUALI'],
   doppioAccesso: 'no',
   quadroNote: 'Quadro nel sottoscala',
   arganoPreventivo: 'no',
+  arganoTipo: 'A vite senza fine',
+  contattiFreno: 'si',
   kitControlloGanasce: 'si',
   kitControlloGanasceTipo: 'Microinterruttori',
   controlloQuadro: 'no',
@@ -89,6 +91,8 @@ describe('the second brief', () => {
       [true, 'Microinterruttori', false],
     );
     assert.deepEqual([row.tirantiCabinaNumero, row.tirantiCabinaTipo], [4, 'Tiranti M12']);
+    assert.equal(row.arganoTipo, 'A vite senza fine');
+    assert.equal(row.contattiFreno, null, 'the brake contacts are no longer asked');
     assert.equal(row.sospensioni, true);
     assert.equal(row.sospensioniNumero, 4);
     assert.deepEqual(
@@ -237,6 +241,8 @@ describe('the second brief', () => {
       "the porter's lodge last",
     );
     assert.match(print.body, /<dt>Note luce vano<\/dt>\s*<dd>Plafoniere al 2° piano<\/dd>/);
+    assert.match(print.body, /<dt>Tipo argano esistente<\/dt>\s*<dd>A vite senza fine<\/dd>/);
+    assert.doesNotMatch(print.body, /Contatti freno|tiranti in fossa/);
     assert.match(print.body, /<table class="ptable">/);
     assert.match(
       print.body,

@@ -132,8 +132,16 @@ describe('a hydraulic lift', () => {
       arganoPreventivo: 'si',
       'pa-_': '1',
       'pa-pesoCabina': '650',
+      // No counterweight: the second tie rods are anchored in the pit.
+      tirantiContrappesoTipo: 'Tiranti M10',
+      tirantiFossaNumero: '2',
+      tirantiFossaTipo: 'Ancoraggio M16',
     });
     const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
+    assert.deepEqual(
+      [row.tirantiContrappesoTipo, row.tirantiFossaNumero, row.tirantiFossaTipo],
+      [null, 2, 'Ancoraggio M16'],
+    );
     assert.equal(row.centralinaDaFare, false);
     assert.equal(row.centralinaMarca, 'GMV');
     assert.equal(row.emendamentoA3, true);
@@ -143,6 +151,8 @@ describe('a hydraulic lift', () => {
     assert.match(print.body, /<h2>Centralina<\/h2>/);
     assert.match(print.body, /<dt>Emendamento A3 da fare<\/dt>/);
     assert.doesNotMatch(print.body, /<h2>Argano<\/h2>|<h2>Limitatore<\/h2>/);
+    assert.match(print.body, /<dt>Tipo tiranti in fossa<\/dt>\s*<dd>Ancoraggio M16<\/dd>/);
+    assert.doesNotMatch(print.body, /tiranti contrappeso/);
     assert.equal((await browser.get(`/schede/${id}/dati-argano`)).status, 404);
   });
 });

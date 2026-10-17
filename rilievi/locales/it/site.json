@@ -45,7 +45,7 @@
     "legend": {
       "title": "La scheda, sezione per sezione",
       "lead": "{fields} campi in {sections} sezioni, nell'ordine della scheda di carta. Ogni numero è anche nel disegno, nel punto dell'impianto che la sezione descrive.",
-      "extra": "Le domande che non riguardano l'impianto non si vedono: serrature e pattino retrattile compaiono con porte manuali o semiautomatiche, le sospensioni con porte automatiche o semiautomatiche, il numero delle serrature solo se ci sono."
+      "extra": "Le domande che non riguardano l'impianto non si vedono: serrature e pattino retrattile compaiono con porte manuali o semiautomatiche, le sospensioni solo con porte automatiche, i tiranti in fossa solo negli impianti idraulici."
     },
     "features": {
       "title": "Dal sopralluogo all'ufficio",

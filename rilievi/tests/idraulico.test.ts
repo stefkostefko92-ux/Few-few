@@ -107,16 +107,45 @@ describe('the panel, the brake and the emergency call', () => {
     assert.equal(data.testataRidotta, false);
   });
 
-  it('asks for the brake shoes and contacts only of an argano that stays', () => {
-    const brake = { ganasceFreno: 'si', contattiFreno: 'no' };
+  it('asks the kind of an argano that stays and its brake shoes, no longer the brake contacts', () => {
+    const brake = { arganoTipo: 'Montanari M83', ganasceFreno: 'si', contattiFreno: 'no' };
     const kept = parsedOrFail({ ...minimal, arganoPreventivo: 'no', ...brake });
+    assert.equal(kept.arganoTipo, 'Montanari M83');
     assert.equal(kept.ganasceFreno, true);
-    assert.equal(kept.contattiFreno, false);
+    assert.ok(
+      !('contattiFreno' in kept),
+      'taken off the sheet: the old answers stay in the database',
+    );
     const replaced = parsedOrFail({ ...minimal, arganoPreventivo: 'si', ...brake });
     assert.equal(replaced.ganasceFreno, null, 'a new argano comes with its own brake');
-    assert.equal(replaced.contattiFreno, null);
+    assert.equal(replaced.arganoTipo, null, 'the new one is in the argano sheet');
     const unanswered = parsedOrFail({ ...minimal, ...brake });
     assert.equal(unanswered.ganasceFreno, null);
+  });
+
+  it('asks the tie rods of the counterweight, or in the pit for a hydraulic lift', () => {
+    const rods = {
+      tirantiContrappesoNumero: '4',
+      tirantiContrappesoTipo: 'Tiranti M10',
+      tirantiFossaNumero: '2',
+      tirantiFossaTipo: 'Ancoraggio in fossa M16',
+    };
+    const electric = parsedOrFail({ ...minimal, tipoImpianto: 'ELETTRICO', ...rods });
+    assert.deepEqual(
+      [electric.tirantiContrappesoNumero, electric.tirantiFossaNumero, electric.tirantiFossaTipo],
+      [4, null, null],
+    );
+    const unticked = parsedOrFail({ ...minimal, ...rods });
+    assert.equal(unticked.tirantiContrappesoTipo, 'Tiranti M10', 'no kind ticked: a counterweight');
+    const hydraulic = parsedOrFail({ ...minimal, tipoImpianto: 'IDRAULICO', ...rods });
+    assert.deepEqual(
+      [
+        hydraulic.tirantiContrappesoNumero,
+        hydraulic.tirantiFossaNumero,
+        hydraulic.tirantiFossaTipo,
+      ],
+      [null, 2, 'Ancoraggio in fossa M16'],
+    );
   });
 
   it('asks what of the emergency call is to install, three yes/no', () => {

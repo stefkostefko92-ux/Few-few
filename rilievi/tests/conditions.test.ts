@@ -83,7 +83,7 @@ describe('conditions', () => {
 });
 
 describe('door details', () => {
-  it('ask the locks and the cam with manual doors, the suspensions with automatic ones', () => {
+  it('ask the locks and the cam with manual and semi-automatic doors, the suspensions with automatic ones', () => {
     const manual = parsedOrFail({ ...minimal, tipoPorte: 'MANUALI', ...DOORS });
     assert.deepEqual(
       LOCKS.map((key) => manual[key]),
@@ -96,11 +96,11 @@ describe('door details', () => {
       SUSPENSIONS.map((key) => automatic[key]),
       [true, 6],
     );
-    // Semi-automatic doors: manual landing doors with their locks, the car door on an operator.
+    // Semi-automatic doors have no suspensions, only locks (the owner, October 2026).
     const semi = parsedOrFail({ ...minimal, tipoPorte: 'SEMIAUTOMATICHE', ...DOORS });
     assert.deepEqual(
       [...LOCKS, ...SUSPENSIONS].map((key) => semi[key]),
-      [true, 4, 'Fermator', true, 'Wittur', true, 6],
+      [true, 4, 'Fermator', true, 'Wittur', null, null],
     );
     const mixed = parsedOrFail({ ...minimal, tipoPorte: ['AUTOMATICHE', 'MANUALI'], ...DOORS });
     assert.equal(mixed.serrature, true, 'manual doors among others still have their locks');
@@ -130,7 +130,7 @@ describe('door details', () => {
   it('keep the number and type of the locks, and the number of suspensions, only with "si"', () => {
     const no = parsedOrFail({
       ...minimal,
-      tipoPorte: 'SEMIAUTOMATICHE',
+      tipoPorte: ['AUTOMATICHE', 'MANUALI'],
       serrature: 'no',
       serratureNumero: '4',
       serratureTipo: 'Fermator',
@@ -142,7 +142,7 @@ describe('door details', () => {
     assert.equal(no.sospensioniNumero, null);
     const yes = parsedOrFail({
       ...minimal,
-      tipoPorte: 'SEMIAUTOMATICHE',
+      tipoPorte: ['AUTOMATICHE', 'MANUALI'],
       serrature: 'si',
       serratureNumero: '4',
       serratureTipo: 'Fermator',
@@ -164,7 +164,7 @@ describe('door details', () => {
   it('do not complain about a hidden field: what is not shown is not read', () => {
     const data = parsedOrFail({
       ...minimal,
-      tipoPorte: 'SEMIAUTOMATICHE',
+      tipoPorte: ['AUTOMATICHE', 'MANUALI'],
       sospensioni: 'no',
       sospensioniNumero: 'abc',
       serrature: 'no',
