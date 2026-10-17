@@ -226,13 +226,13 @@
     "message": "隐藏“请停用广告拦截器”墙并恢复页面"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "隐藏 Facebook 和 Instagram 上的“赞助”帖子"
+    "message": "隐藏 Facebook、Instagram 和 Threads 上的“赞助”帖子"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "从您打开的链接中去除 utm_*、fbclid、gclid 等点击标识符"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "拦截已知的恶意软件域名（abuse.ch 的 URLhaus 列表）"
+    "message": "在已知的恶意软件网站打开前发出警告，并拦截页面从此类网站加载的内容（abuse.ch 的 URLhaus 列表）。"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "在所有网站上停用 Google 的 Topics、FLoC 和 Protected Audience 广告 API"
@@ -670,5 +670,128 @@
   "welDone": {
     "message": "知道了",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "已允许 · 剩余 $1 分钟"
+  },
+  "hiddenHere": {
+    "message": "您在此隐藏的元素：$1 · 撤销最后一个"
+  },
+  "cmd_toggle_site": {
+    "message": "在此网站上开启或关闭拦截"
+  },
+  "cmd_pause": {
+    "message": "暂停或恢复保护（30 分钟）"
+  },
+  "cmd_picker": {
+    "message": "隐藏此页面上的元素"
+  },
+  "rep_fix_hour": {
+    "message": "允许此网站显示广告 1 小时"
+  },
+  "rep_done_hour": {
+    "message": "已允许此网站显示广告 1 小时并重新加载。问题解决了吗？"
+  },
+  "opt_last30": {
+    "message": "最近 30 天"
+  },
+  "opt_last30_sum": {
+    "message": "已拦截：$1 · Cookie 横幅：$2"
+  },
+  "opt_last30_empty": {
+    "message": "您浏览网页时，每日总计会显示在这里。"
+  },
+  "opt_last30_sub": {
+    "message": "仅保存每日总计，在此设备上保留 30 天。不记录网站，也不记录网址。"
+  },
+  "opt_gpc_sub": {
+    "message": "要求您访问的每个网站不要出售或共享您的数据（即 Sec-GPC 信号，部分隐私法律要求网站遵守该信号）。在您允许的网站上不会发送。"
+  },
+  "opt_shortcuts": {
+    "message": "键盘快捷键"
+  },
+  "opt_shortcuts_change": {
+    "message": "更改快捷键"
+  },
+  "opt_shortcut_none": {
+    "message": "未设置"
+  },
+  "opt_shortcuts_ff": {
+    "message": "在 Firefox 中：扩展和主题 → ⚙ → 管理扩展快捷键"
+  },
+  "opt_import_foreign": {
+    "message": "从其他广告拦截器导入"
+  },
+  "opt_import_foreign_sub": {
+    "message": "要从 uBlock Origin、AdGuard 或 Adblock Plus 迁移过来？选择它的备份文件：您允许的网站和您自己的过滤规则会添加到这里，不会替换任何内容。"
+  },
+  "opt_import_foreign_done": {
+    "message": "已允许网站：$1 · 已添加过滤规则：$2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "已略过（无法在此应用）：$1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "此文件不是可读取的备份。"
+  },
+  "welQuickTitle": {
+    "message": "按您的喜好设置"
+  },
+  "welQuickSub": {
+    "message": "可选：扩展程序已经在工作了。之后可随时在设置中更改这些选项。"
+  },
+  "blk_page_title": {
+    "message": "已拦截网站 — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "此网站可能会危害您的设备"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock 已阻止此页面，因为该网站已被列入 URLhaus（一份公开的传播恶意软件的地址列表）。"
+  },
+  "blk_back": {
+    "message": "返回"
+  },
+  "blk_continue": {
+    "message": "仍然继续"
+  },
+  "blk_note": {
+    "message": "继续后，在您关闭浏览器之前，仅放行此网站的页面。"
+  },
+  "blk_why": {
+    "message": "为什么会被列入？（URLhaus）"
+  },
+  "conn_title": {
+    "message": "此页面的连接"
+  },
+  "conn_empty": {
+    "message": "此页面未从其他网站加载任何内容。"
+  },
+  "conn_block": {
+    "message": "在此拦截"
+  },
+  "conn_blocked": {
+    "message": "已在此拦截"
+  },
+  "conn_hint": {
+    "message": "拦截此网站从 $1 加载的内容"
+  },
+  "opt_conn_title": {
+    "message": "您拦截的连接"
+  },
+  "opt_conn_sub": {
+    "message": "在 Supreme AdBlock 窗口的“此页面的连接”中拦截，每项仅在各自的网站上生效。"
+  },
+  "opt_empty_conn": {
+    "message": "尚未拦截任何内容。"
+  },
+  "opt_conn_remove": {
+    "message": "在 $2 上取消拦截 $1"
+  },
+  "opt_h_danger": {
+    "message": "恶意软件警告页面"
+  },
+  "opt_h_capacity": {
+    "message": "规则容量"
   }
 }

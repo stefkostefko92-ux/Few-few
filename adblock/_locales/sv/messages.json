@@ -226,13 +226,13 @@
     "message": "Dölj ”stäng av din annonsblockerare”-väggar och återställ sidan"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Dölj ”Sponsrat”-inlägg på Facebook och Instagram"
+    "message": "Dölj ”Sponsrat”-inlägg på Facebook, Instagram och Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Ta bort utm_*, fbclid, gclid och andra klick-id:n från länkarna du öppnar"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blockera kända skadliga domäner (URLhaus-listan från abuse.ch)"
+    "message": "Varna innan en känd skadlig webbplats öppnas, och blockera det som sidor läser in från sådana webbplatser (URLhaus-listan från abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Inaktivera annons-API:erna Google Topics, FLoC och Protected Audience på alla webbplatser"
@@ -670,5 +670,128 @@
   "welDone": {
     "message": "Jag förstår",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Tillåten · $1 min kvar"
+  },
+  "hiddenHere": {
+    "message": "Element du dolt här: $1 · Ångra det senaste"
+  },
+  "cmd_toggle_site": {
+    "message": "Slå på eller av blockering på den här webbplatsen"
+  },
+  "cmd_pause": {
+    "message": "Pausa eller återuppta skyddet (30 minuter)"
+  },
+  "cmd_picker": {
+    "message": "Dölj ett element på den här sidan"
+  },
+  "rep_fix_hour": {
+    "message": "Tillåt annonser här i 1 timme"
+  },
+  "rep_done_hour": {
+    "message": "Annonser är tillåtna på den här webbplatsen i 1 timme. Inläst igen – är det åtgärdat?"
+  },
+  "opt_last30": {
+    "message": "Senaste 30 dagarna"
+  },
+  "opt_last30_sum": {
+    "message": "Blockerade: $1 · Cookie-banners: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Dina dagliga summor visas här medan du surfar."
+  },
+  "opt_last30_sub": {
+    "message": "Bara dagliga summor, sparade på den här enheten i 30 dagar. Inga webbplatser, inga adresser."
+  },
+  "opt_gpc_sub": {
+    "message": "Ber alla webbplatser du besöker att inte sälja eller dela dina uppgifter (Sec-GPC-signalen, som vissa integritetslagar kräver att webbplatser respekterar). Skickas inte på webbplatser som du tillåter."
+  },
+  "opt_shortcuts": {
+    "message": "Kortkommandon"
+  },
+  "opt_shortcuts_change": {
+    "message": "Ändra kortkommandon"
+  },
+  "opt_shortcut_none": {
+    "message": "Inte angivet"
+  },
+  "opt_shortcuts_ff": {
+    "message": "I Firefox: Tillägg och teman → ⚙ → Hantera genvägar för tillägg."
+  },
+  "opt_import_foreign": {
+    "message": "Importera från en annan annonsblockerare"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Byter du från uBlock Origin, AdGuard eller Adblock Plus? Välj dess säkerhetskopia: webbplatserna du har tillåtit och dina egna filter läggs till här. Ingenting ersätts."
+  },
+  "opt_import_foreign_done": {
+    "message": "Webbplatser tillåtna: $1 · Filter tillagda: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Utelämnade (kan inte tillämpas här): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Den här filen är ingen säkerhetskopia som vi kan läsa."
+  },
+  "welQuickTitle": {
+    "message": "Gör det till ditt"
+  },
+  "welQuickSub": {
+    "message": "Valfritt: det fungerar redan. Du kan ändra allt detta senare i Inställningar."
+  },
+  "blk_page_title": {
+    "message": "Webbplats blockerad – Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Den här webbplatsen kan skada din enhet"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock stoppade den här sidan eftersom webbplatsen finns på URLhaus, en offentlig lista över adresser som sprider skadlig programvara."
+  },
+  "blk_back": {
+    "message": "Gå tillbaka"
+  },
+  "blk_continue": {
+    "message": "Fortsätt ändå"
+  },
+  "blk_note": {
+    "message": "Om du fortsätter släpps bara den här webbplatsens sidor igenom, tills du stänger webbläsaren."
+  },
+  "blk_why": {
+    "message": "Varför finns den på listan? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Anslutningar på den här sidan"
+  },
+  "conn_empty": {
+    "message": "Den här sidan läste inte in något från andra webbplatser."
+  },
+  "conn_block": {
+    "message": "Blockera här"
+  },
+  "conn_blocked": {
+    "message": "Blockerad här"
+  },
+  "conn_hint": {
+    "message": "Blockera det den här webbplatsen läser in från $1"
+  },
+  "opt_conn_title": {
+    "message": "Anslutningar du har blockerat"
+  },
+  "opt_conn_sub": {
+    "message": "Blockerade från ”Anslutningar på den här sidan” i Supreme AdBlock-fönstret, var och en bara på sin egen webbplats."
+  },
+  "opt_empty_conn": {
+    "message": "Inget blockerat än."
+  },
+  "opt_conn_remove": {
+    "message": "Avblockera $1 på $2"
+  },
+  "opt_h_danger": {
+    "message": "Varningssida för skadlig kod"
+  },
+  "opt_h_capacity": {
+    "message": "Regelkapacitet"
   }
 }

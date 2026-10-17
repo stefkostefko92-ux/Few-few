@@ -8,6 +8,8 @@ const FALLBACK = {
   on: "On", off: "Off", thisPage: "this page", filtersCount: "$1+ filters",
   logUnavailable: "Log unavailable right now (browser quota) — try again in a minute.",
   reviewBlocked: "$1 requests blocked so far",
+  allowedFor: "Allowed · $1 min left", hiddenHere: "Elements you hid here: $1 · Undo the last",
+  conn_block: "Block here", conn_blocked: "Blocked here", conn_hint: "Block what this site loads from $1",
 };
 
 const toggle = $("toggle");
@@ -26,6 +28,7 @@ const listDot = $("listDot");
 
 let currentHost = null;
 let currentTabId = null;
+let siteBlocked = []; // hosts blocked on this site from "Connections on this page"
 // What the 3D shield shows: protected / paused (timed) / off / allowed (this site is on the allowlist).
 const S = { enabled: true, paused: false, allowed: false };
 
@@ -78,12 +81,19 @@ function load() {
         cosmToggle.checked = !res.noCosmetics;
         setCosmLabel(!res.noCosmetics);
         cosmToggle.disabled = !!res.allowed;
+        // allowed for a while (the repair page's "for 1 hour"): the label says how long is left
+        if (res.allowed && res.allowedUntil > Date.now()) {
+          allowLabel.textContent = t("allowedFor", [String(Math.max(1, Math.round((res.allowedUntil - Date.now()) / 60000)))]);
+        }
       } else {
         siteHost.textContent = t("thisPage");
         allowToggle.disabled = true;
         cosmToggle.disabled = true;
       }
 
+      // what the picker hid on this site: one click brings the last one back
+      renderUndo(currentHost ? res.hiddenHere || 0 : 0);
+      siteBlocked = Array.isArray(res.siteBlocked) ? res.siteBlocked : [];
       // ★ преди мерене (заема място в долната лента), картата след него (покрива каквото покрива)
       renderRate(res.review);
       fitPopup();
@@ -159,6 +169,16 @@ function fitPopup() {
     foot.classList.add("compact");
     for (const s of labels) if (!s.parentElement.title) s.parentElement.title = s.textContent.trim();
   }
+  // ↶ N next to the picker: a one-word label that cannot wrap ("Կարգավորումներ", "Einstellungen")
+  // would push the row wider than the popup — then Settings shows only its gear (the word stays
+  // its name and tooltip), like the footer above
+  const actions = document.querySelector(".actions");
+  const settings = $("settingsBtn");
+  actions.classList.remove("squeeze");
+  if (actions.scrollWidth > actions.clientWidth + 1) {
+    actions.classList.add("squeeze");
+    if (!settings.title) settings.title = settings.textContent.trim();
+  }
 }
 
 function setAllowLabel(blocking) {
@@ -222,6 +242,86 @@ $("pickBtn").addEventListener("click", () => {
 });
 
 $("settingsBtn").addEventListener("click", () => chrome.runtime.openOptionsPage());
+
+// "Connections on this page": asked from the page only when the box is opened (no cost
+// otherwise). A blocked host loads nothing any more, so it is added from the stored list.
+function loadConnections() {
+  if (currentTabId == null || !currentHost) { $("conns").hidden = true; return; }
+  chrome.tabs.sendMessage(currentTabId, { type: "getConnections" }, { frameId: 0 }, (res) => {
+    void chrome.runtime.lastError; // no content script there (store pages, chrome://): just the stored ones
+    const rows = new Map();
+    for (const it of res && res.ok && Array.isArray(res.hosts) ? res.hosts : []) rows.set(it.host, it.n);
+    for (const h of siteBlocked) if (!rows.has(h)) rows.set(h, 0);
+    renderConnections([...rows]);
+  });
+}
+function renderConnections(rows) {
+  const ul = $("connList");
+  ul.textContent = "";
+  $("conns").hidden = false;
+  $("connEmpty").hidden = rows.length > 0;
+  for (const [host, n] of rows) {
+    const li = document.createElement("li");
+    const name = document.createElement("span");
+    name.className = "host";
+    name.textContent = host;
+    name.title = host;
+    const cnt = document.createElement("span");
+    cnt.className = "type";
+    cnt.textContent = n ? "×" + n.toLocaleString(UI_LANG) : "";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "conn-block";
+    const show = (blocked) => {
+      btn.setAttribute("aria-pressed", String(blocked));
+      btn.textContent = blocked ? t("conn_blocked") : t("conn_block");
+      btn.title = t("conn_hint", [host]);
+    };
+    show(siteBlocked.includes(host));
+    btn.addEventListener("click", () => {
+      const block = btn.getAttribute("aria-pressed") !== "true";
+      btn.disabled = true;
+      chrome.runtime.sendMessage({ type: "siteBlock", site: currentHost, host, block }, (r) => {
+        btn.disabled = false;
+        if (r && r.ok) { siteBlocked = r.hosts; show(block); }
+      });
+    });
+    if (n) li.append(name, cnt, btn); else li.append(name, btn);
+    ul.appendChild(li);
+  }
+}
+$("logBox").addEventListener("toggle", () => { if ($("logBox").open) loadConnections(); });
+
+function renderUndo(n) {
+  const b = $("undoBtn");
+  b.hidden = !n;
+  if (!n) return;
+  const count = n.toLocaleString(UI_LANG);
+  const label = t("hiddenHere", [count]);
+  $("undoCount").textContent = count;
+  b.title = label;
+  b.setAttribute("aria-label", label);
+}
+$("undoBtn").addEventListener("click", () => {
+  if (!currentHost) return;
+  chrome.runtime.sendMessage({ type: "undoHidden", host: currentHost }, (r) => {
+    renderUndo(r && r.ok ? r.left : 0);
+    fitPopup();
+    if ($("undoBtn").hidden) $("pickBtn").focus(); // the button the keyboard was on is gone
+  });
+});
+
+// Keyboard shortcuts in the tooltips (chrome.commands; the user may have changed or removed them).
+try {
+  chrome.commands.getAll((cmds) => {
+    const keys = {};
+    for (const c of cmds || []) if (c.shortcut) keys[c.name] = c.shortcut;
+    const hint = (el, name) => { if (el && keys[name]) el.title = (el.title || el.textContent.trim()) + " (" + keys[name] + ")"; };
+    hint(pauseBtn, "pause");
+    hint($("pickBtn"), "picker");
+    hint(allowToggle.closest("label"), "toggle-site");
+  });
+} catch {}
 
 document.addEventListener("DOMContentLoaded", load);
 

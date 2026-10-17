@@ -226,13 +226,13 @@
     "message": "Skrýva steny „Vypnite blokovanie reklám“ a obnovuje stránku"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Skrýva príspevky „Sponzorované“ na Facebooku a Instagrame"
+    "message": "Skrýva príspevky „Sponzorované“ na Facebooku, Instagrame a Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Odstraňuje utm_*, fbclid, gclid a ďalšie identifikátory kliknutí z odkazov, ktoré otvárate"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokuje známe škodlivé domény (zoznam URLhaus od abuse.ch)"
+    "message": "Varuje pred otvorením známeho škodlivého webu a blokuje to, čo stránky načítavajú z takých webov (zoznam URLhaus od abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Vypína reklamné API Google Topics, FLoC a Protected Audience na všetkých weboch"
@@ -670,5 +670,128 @@
   "welDone": {
     "message": "Rozumiem",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Povolené · zostáva $1 min"
+  },
+  "hiddenHere": {
+    "message": "Tu skryté prvky: $1 · Vrátiť posledný"
+  },
+  "cmd_toggle_site": {
+    "message": "Zapnúť alebo vypnúť blokovanie na tomto webe"
+  },
+  "cmd_pause": {
+    "message": "Pozastaviť alebo obnoviť ochranu (30 minút)"
+  },
+  "cmd_picker": {
+    "message": "Skryť prvok na tejto stránke"
+  },
+  "rep_fix_hour": {
+    "message": "Povoliť reklamy tu na 1 hodinu"
+  },
+  "rep_done_hour": {
+    "message": "Reklamy sú na tomto webe povolené na 1 hodinu. Znova načítané — je to opravené?"
+  },
+  "opt_last30": {
+    "message": "Posledných 30 dní"
+  },
+  "opt_last30_sum": {
+    "message": "Blokované: $1 · Cookie lišty: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Vaše denné súčty sa tu zobrazia počas prehliadania."
+  },
+  "opt_last30_sub": {
+    "message": "Iba denné súčty, uložené v tomto zariadení 30 dní. Žiadne weby, žiadne adresy."
+  },
+  "opt_gpc_sub": {
+    "message": "Žiada každý navštívený web, aby vaše údaje nepredával ani nezdieľal (signál Sec-GPC, ktorý podľa niektorých zákonov o ochrane súkromia musia weby rešpektovať). Neodosiela sa na weboch, ktoré ste povolili."
+  },
+  "opt_shortcuts": {
+    "message": "Klávesové skratky"
+  },
+  "opt_shortcuts_change": {
+    "message": "Zmeniť skratky"
+  },
+  "opt_shortcut_none": {
+    "message": "Nenastavené"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Vo Firefoxe: Rozšírenia a témy vzhľadu → ⚙ → Spravovať klávesové skratky pre rozšírenia."
+  },
+  "opt_import_foreign": {
+    "message": "Importovať z iného blokovača reklám"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Prechádzate z uBlock Origin, AdGuard alebo Adblock Plus? Vyberte jeho záložný súbor: weby, ktoré ste povolili, a vaše vlastné filtre sa pridajú sem. Nič sa nenahradí."
+  },
+  "opt_import_foreign_done": {
+    "message": "Povolené weby: $1 · Pridané filtre: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Vynechané (tu sa nedá použiť): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Tento súbor nie je záloha, ktorú vieme prečítať."
+  },
+  "welQuickTitle": {
+    "message": "Prispôsobte si ho"
+  },
+  "welQuickSub": {
+    "message": "Voliteľné: všetko už funguje. Čokoľvek z toho môžete neskôr zmeniť v nastaveniach."
+  },
+  "blk_page_title": {
+    "message": "Web zablokovaný — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Tento web môže poškodiť vaše zariadenie"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock zastavil túto stránku, pretože web je v zozname URLhaus — verejnom zozname adries, ktoré šíria malvér."
+  },
+  "blk_back": {
+    "message": "Späť"
+  },
+  "blk_continue": {
+    "message": "Napriek tomu pokračovať"
+  },
+  "blk_note": {
+    "message": "Ak budete pokračovať, prepustia sa len stránky tohto webu, a to do zatvorenia prehliadača."
+  },
+  "blk_why": {
+    "message": "Prečo je v zozname? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Pripojenia na tejto stránke"
+  },
+  "conn_empty": {
+    "message": "Táto stránka nenačítala nič z iných webov."
+  },
+  "conn_block": {
+    "message": "Blokovať tu"
+  },
+  "conn_blocked": {
+    "message": "Blokované tu"
+  },
+  "conn_hint": {
+    "message": "Blokovať, čo tento web načítava z $1"
+  },
+  "opt_conn_title": {
+    "message": "Vami blokované pripojenia"
+  },
+  "opt_conn_sub": {
+    "message": "Blokované v okne Supreme AdBlock v časti „Pripojenia na tejto stránke“, každé len na svojom webe."
+  },
+  "opt_empty_conn": {
+    "message": "Zatiaľ nie je nič blokované."
+  },
+  "opt_conn_remove": {
+    "message": "Odblokovať $1 na webe $2"
+  },
+  "opt_h_danger": {
+    "message": "Varovná stránka pred malvérom"
+  },
+  "opt_h_capacity": {
+    "message": "Kapacita pravidiel"
   }
 }

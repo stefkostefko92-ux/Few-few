@@ -226,13 +226,13 @@
     "message": "Oculta as barreiras «desative o seu bloqueador de anúncios» e restaura a página"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Oculta as publicações «Patrocinado» no Facebook e no Instagram"
+    "message": "Oculta as publicações «Patrocinado» no Facebook, no Instagram e no Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Remove utm_*, fbclid, gclid e outros identificadores de clique das ligações que abre"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Bloqueia domínios de malware conhecidos (lista URLhaus da abuse.ch)"
+    "message": "Avisa antes de se abrir um site de malware conhecido e bloqueia o que as páginas carregam a partir desses sites (lista URLhaus da abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Desativa as API de publicidade Google Topics, FLoC e Protected Audience em todos os sites"
@@ -670,5 +670,128 @@
   "welDone": {
     "message": "Percebi",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Permitido · faltam $1 min"
+  },
+  "hiddenHere": {
+    "message": "Elementos ocultos aqui: $1 · Desfazer o último"
+  },
+  "cmd_toggle_site": {
+    "message": "Ativar ou desativar o bloqueio neste site"
+  },
+  "cmd_pause": {
+    "message": "Pausar ou retomar a proteção (30 minutos)"
+  },
+  "cmd_picker": {
+    "message": "Ocultar um elemento nesta página"
+  },
+  "rep_fix_hour": {
+    "message": "Permitir anúncios aqui durante 1 hora"
+  },
+  "rep_done_hour": {
+    "message": "Os anúncios estão permitidos neste site durante 1 hora. Página recarregada: ficou resolvido?"
+  },
+  "opt_last30": {
+    "message": "Últimos 30 dias"
+  },
+  "opt_last30_sum": {
+    "message": "Bloqueados: $1 · Avisos de cookies: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Os seus totais diários aparecem aqui à medida que navega."
+  },
+  "opt_last30_sub": {
+    "message": "Apenas totais diários, guardados neste dispositivo durante 30 dias. Sem sites, sem endereços."
+  },
+  "opt_gpc_sub": {
+    "message": "Pede a cada site que visita que não venda nem partilhe os seus dados (o sinal Sec-GPC, que algumas leis de privacidade obrigam os sites a respeitar). Não é enviado nos sites que permite."
+  },
+  "opt_shortcuts": {
+    "message": "Atalhos de teclado"
+  },
+  "opt_shortcuts_change": {
+    "message": "Alterar atalhos"
+  },
+  "opt_shortcut_none": {
+    "message": "Não definido"
+  },
+  "opt_shortcuts_ff": {
+    "message": "No Firefox: Extensões e temas → ⚙ → Gerir atalhos de extensões."
+  },
+  "opt_import_foreign": {
+    "message": "Importar de outro bloqueador de anúncios"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Vem do uBlock Origin, AdGuard ou Adblock Plus? Escolha o ficheiro de cópia de segurança desse bloqueador: os sites que permitiu e os seus próprios filtros são adicionados aqui. Nada é substituído."
+  },
+  "opt_import_foreign_done": {
+    "message": "Sites permitidos: $1 · Filtros adicionados: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Linhas ignoradas (não aplicáveis aqui): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Este ficheiro não é uma cópia de segurança que consigamos ler."
+  },
+  "welQuickTitle": {
+    "message": "Personalize à sua maneira"
+  },
+  "welQuickSub": {
+    "message": "Opcional: já funciona. Pode alterar qualquer uma destas opções mais tarde nas Definições."
+  },
+  "blk_page_title": {
+    "message": "Site bloqueado — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Este site pode prejudicar o seu dispositivo"
+  },
+  "blk_text": {
+    "message": "O Supreme AdBlock travou esta página porque o site consta do URLhaus, uma lista pública de endereços que distribuem malware."
+  },
+  "blk_back": {
+    "message": "Voltar"
+  },
+  "blk_continue": {
+    "message": "Continuar mesmo assim"
+  },
+  "blk_note": {
+    "message": "Ao continuar, apenas as páginas deste site são deixadas passar, até fechar o navegador."
+  },
+  "blk_why": {
+    "message": "Porque está na lista? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Conexões nesta página"
+  },
+  "conn_empty": {
+    "message": "Esta página não carregou nada de outros sites."
+  },
+  "conn_block": {
+    "message": "Bloquear aqui"
+  },
+  "conn_blocked": {
+    "message": "Bloqueado aqui"
+  },
+  "conn_hint": {
+    "message": "Bloquear o que este site carrega de $1"
+  },
+  "opt_conn_title": {
+    "message": "Conexões que bloqueou"
+  },
+  "opt_conn_sub": {
+    "message": "Bloqueadas em «Conexões nesta página», na janela do Supreme AdBlock, cada uma apenas no respetivo site."
+  },
+  "opt_empty_conn": {
+    "message": "Ainda não bloqueou nada."
+  },
+  "opt_conn_remove": {
+    "message": "Desbloquear $1 em $2"
+  },
+  "opt_h_danger": {
+    "message": "Página de aviso de malware"
+  },
+  "opt_h_capacity": {
+    "message": "Capacidade de regras"
   }
 }

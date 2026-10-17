@@ -226,13 +226,13 @@
     "message": "Paslēpj sienas „atspējojiet reklāmu bloķētāju“ un atjauno lapu"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Paslēpj ziņas „Sponsorēts“ Facebook un Instagram"
+    "message": "Paslēpj ziņas „Sponsorēts“ Facebook, Instagram un Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Noņem utm_*, fbclid, gclid un citus klikšķu identifikatorus no saitēm, kuras atverat"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Bloķē zināmus ļaunprātīgus domēnus (abuse.ch URLhaus saraksts)"
+    "message": "Brīdina, pirms tiek atvērta zināma ļaunprātīga vietne, un bloķē to, ko lapas ielādē no šādām vietnēm (abuse.ch URLhaus saraksts)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Atspējo Google Topics, FLoC un Protected Audience reklāmu API katrā vietnē"
@@ -670,5 +670,128 @@
   "welDone": {
     "message": "Skaidrs",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Atļauts · atlikušas $1 min"
+  },
+  "hiddenHere": {
+    "message": "Šeit paslēpti elementi: $1 · Atsaukt pēdējo"
+  },
+  "cmd_toggle_site": {
+    "message": "Ieslēgt vai izslēgt bloķēšanu šajā vietnē"
+  },
+  "cmd_pause": {
+    "message": "Apturēt vai atsākt aizsardzību (30 minūtes)"
+  },
+  "cmd_picker": {
+    "message": "Paslēpt elementu šajā lapā"
+  },
+  "rep_fix_hour": {
+    "message": "Atļaut reklāmas šeit uz 1 stundu"
+  },
+  "rep_done_hour": {
+    "message": "Reklāmas šajā vietnē ir atļautas uz 1 stundu. Pārlādēts — vai salabots?"
+  },
+  "opt_last30": {
+    "message": "Pēdējās 30 dienas"
+  },
+  "opt_last30_sum": {
+    "message": "Bloķēts: $1 · Sīkdatņu paziņojumi: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Jūsu dienas kopsummas parādīsies šeit, kamēr pārlūkojat."
+  },
+  "opt_last30_sub": {
+    "message": "Tikai dienas kopsummas, kas 30 dienas glabājas šajā ierīcē. Bez vietnēm, bez adresēm."
+  },
+  "opt_gpc_sub": {
+    "message": "Lūdz katrai apmeklētajai vietnei nepārdot un nekopīgot jūsu datus (Sec-GPC signāls, kas saskaņā ar dažiem privātuma likumiem vietnēm jāievēro). Netiek sūtīts vietnēs, kuras atļaujat."
+  },
+  "opt_shortcuts": {
+    "message": "Īsinājumtaustiņi"
+  },
+  "opt_shortcuts_change": {
+    "message": "Mainīt īsinājumtaustiņus"
+  },
+  "opt_shortcut_none": {
+    "message": "Nav iestatīts"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Pārlūkā Firefox: Paplašinājumi un krāsu paletes → ⚙ → Pārvaldīt paplašinājumu īsinājumtaustiņus."
+  },
+  "opt_import_foreign": {
+    "message": "Importēt no cita reklāmu bloķētāja"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Pārejat no uBlock Origin, AdGuard vai Adblock Plus? Izvēlieties tā rezerves kopijas failu: jūsu atļautās vietnes un jūsu filtri tiks pievienoti šeit. Nekas netiek aizstāts."
+  },
+  "opt_import_foreign_done": {
+    "message": "Atļautas vietnes: $1 · Pievienoti filtri: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Izlaists (šeit nevar lietot): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Šis fails nav rezerves kopija, ko varam nolasīt."
+  },
+  "welQuickTitle": {
+    "message": "Pielāgojiet sev"
+  },
+  "welQuickSub": {
+    "message": "Neobligāti: viss jau darbojas. Jebko no šī vēlāk varat mainīt iestatījumos."
+  },
+  "blk_page_title": {
+    "message": "Vietne bloķēta — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Šī vietne var kaitēt jūsu ierīcei"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock apturēja šo lapu, jo vietne ir iekļauta URLhaus — publiskā sarakstā ar adresēm, kas izplata ļaunprogrammatūru."
+  },
+  "blk_back": {
+    "message": "Atgriezties"
+  },
+  "blk_continue": {
+    "message": "Tomēr turpināt"
+  },
+  "blk_note": {
+    "message": "Ja turpināsiet, tiks atļautas tikai šīs vietnes lapas, līdz aizvērsiet pārlūku."
+  },
+  "blk_why": {
+    "message": "Kāpēc tā ir sarakstā? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Savienojumi šajā lapā"
+  },
+  "conn_empty": {
+    "message": "Šī lapa neko neielādēja no citām vietnēm."
+  },
+  "conn_block": {
+    "message": "Bloķēt šeit"
+  },
+  "conn_blocked": {
+    "message": "Bloķēts šeit"
+  },
+  "conn_hint": {
+    "message": "Bloķēt to, ko šī vietne ielādē no $1"
+  },
+  "opt_conn_title": {
+    "message": "Jūsu bloķētie savienojumi"
+  },
+  "opt_conn_sub": {
+    "message": "Bloķēti paplašinājuma logā, sadaļā „Savienojumi šajā lapā“, katrs tikai savā vietnē."
+  },
+  "opt_empty_conn": {
+    "message": "Vēl nekas nav bloķēts."
+  },
+  "opt_conn_remove": {
+    "message": "Atbloķēt $1 vietnē $2"
+  },
+  "opt_h_danger": {
+    "message": "Ļaunprogrammatūras brīdinājums"
+  },
+  "opt_h_capacity": {
+    "message": "Noteikumu ietilpība"
   }
 }

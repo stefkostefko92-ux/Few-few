@@ -2,9 +2,13 @@ Supreme AdBlock bllokon reklamat kudo — reklamat video në YouTube, banerat, d
 
 • Reklamat në YouTube ndalen që në burim, kështu që videot thjesht luhen.
 • EasyList, EasyPrivacy dhe lista të tjera të hapura filtrash janë të integruara, plus lista për gjuhën tuaj (31 lista rajonale).
+• Postimet e sponsorizuara në Facebook, Instagram dhe Threads fshihen.
 • Banerat e kukive: shtyp «Refuzo» për ju, heq turbullimin dhe bllokimin e lëvizjes që mbeten, dhe nuk shtyp kurrë butona identifikimi, OAuth apo pagese.
 • Modaliteti Fokus: fsheh flluskat e bisedës, dritaret kërcyese të buletineve, kërkesat për njoftime, widget-et sociale, dritaret kërcyese të AI dhe YouTube Shorts.
 • Muret anti-adblock dhe dritaret pop-under neutralizohen.
+• Sajtet e rrezikshme: në vend të një sajti të njohur keqdashës hapet një faqe paralajmëruese dhe ju vendosni nëse do të vazhdoni.
 • Sajti nuk punon? Një klikim e rregullon — ose na tregoni; asgjë nuk dërgohet pa e parë ju më parë.
+• Po kaloni nga uBlock Origin, AdGuard ose Adblock Plus? Sillni sajtet e lejuara dhe filtrat me një skedar.
+• Shihni me cilat sajte të tjera lidhet një faqe dhe bllokoni njërin vetëm aty me një klikim.
 • Përditësime të nënshkruara të filtrave dy herë në ditë: rrjetet e reja të reklamave trajtohen brenda pak orësh, pa kod në distancë.
-• Pa llogari, pa telemetri, pa mbledhje të dhënash.
+• Pa llogari, pa telemetri, pa mbledhje të dhënash, dhe Global Privacy Control i kërkon çdo sajti të mos i shesë ose ndajë të dhënat tuaja.

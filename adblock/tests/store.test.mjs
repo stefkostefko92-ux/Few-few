@@ -10,17 +10,31 @@ import { ROOT, ok, done } from "./_harness.mjs";
 const BANNED = /\b(free|100\s*%|#\s*1|no\.?\s*1|number one|best|top[- ]rated|recommended|premium|first[- ]class|unique|brand[- ]new|new|exclusive|guaranteed?|award|fastest|faster than)\b/i;
 const OTHERS = /\b(ublock origin lite|ghostery|adguard|adblock plus|rule-based blockers|other blockers)\b/i;
 
-// Текстът на слайдовете: низовете в SLIDES в store/screenshots/build.py (без CSS/HTML атрибути).
+// Текстът на слайдовете: store/screenshots/i18n.json („en“ е източникът) + надзаглавията-марки в build.py.
 const build = readFileSync(join(ROOT, "store", "screenshots", "build.py"), "utf8");
-const slides = build.slice(build.indexOf("SLIDES = ["), build.indexOf("\n]\n", build.indexOf("SLIDES = [")));
-const strings = [...slides.matchAll(/"([^"\n]*)"|'([^'\n]*)'/g)].map((m) => (m[1] ?? m[2]).replace(/<[^>]+>/g, ""));
+const shotText = JSON.parse(readFileSync(join(ROOT, "store", "screenshots", "i18n.json"), "utf8"));
+const strings = Object.values(shotText.en);
 const bad = strings.filter((t) => BANNED.test(t) || OTHERS.test(t));
 ok(`store screenshots: no promotional keywords or other products in slide text (${bad.join(" | ") || "clean"})`, strings.length > 15 && bad.length === 0);
 
-// Панелите на екраните (features_panel/smartlog_panel) също са част от изображението.
-const panels = build.slice(build.indexOf("def features_panel"), build.indexOf("SLIDES = ["));
+// Google: „use locale-specific screenshots“ — всеки език от листинга има всичките надписи, а „free“
+// и „100%“ не влизат и в превода (5.1.2 беше отхвърлен заради „100% free“ на екран).
+const cwsUnlisted = JSON.parse(readFileSync(join(ROOT, "store", "cws-unlisted.json"), "utf8"));
+const storeLocales = readdirSync(join(ROOT, "_locales")).filter((l) => l !== "en" && !cwsUnlisted.includes(l));
+const keys = Object.keys(shotText.en).sort().join();
+const gaps = storeLocales.filter((l) => !shotText[l] || Object.keys(shotText[l]).sort().join() !== keys || Object.values(shotText[l]).some((v) => !String(v).trim()));
+ok(`store screenshots: every store language has every caption (${storeLocales.length} languages; ${gaps.join(",") || "complete"})`, gaps.length === 0);
+const lostN = storeLocales.filter((l) => shotText[l] && !(shotText[l].moreLists.includes("{n}") && shotText[l].allLists.includes("{n}") && /31|٣١|۳۱/.test(shotText[l].s4)));
+ok(`store screenshots: {n} and “31” survive the translation (${lostN.join(",") || "all"})`, lostN.length === 0);
+const FREE = /\b(free|gratis|gratuit|gratuita|gratuito|kostenlos|darmow\w*|zdarma|ingyen\w*|bezmaksas|nemokam\w*|tasuta|ilmai\w*|gratuït)\b|бесплатн|безплатн|безкоштовн|бесплатан|δωρεάν|ücretsiz|無料|免费|免費|무료|miễn phí|مجان|رایگان|חינם|मुफ़्त|100\s*%|#\s*1\b/i;
+const freeHits = storeLocales.filter((l) => shotText[l] && Object.values(shotText[l]).some((v) => FREE.test(v)));
+ok(`store screenshots: no “free” / “100%” / “#1” in any language (${freeHits.join(",") || "clean"})`, freeHits.length === 0);
+
+// Панелите на екраните (features_panel/smartlog_panel) също са част от изображението: истинските низове
+// на настройките, но никога „recommended …“ (листа от автора си носи значката „from its author“).
+const panels = build.slice(build.indexOf("def regional_for"), build.indexOf("def slides"));
 const panelText = panels.split("\n").filter((l) => !/^\s*#/.test(l)).join("\n").replace(/<[^>]+>/g, " ").replace(/\{[^}]*\}/g, " ");
-ok("store screenshots: panels carry no promotional keywords", !/\b(free|100\s*%|unique|recommended|brand[- ]new|#\s*1)\b/i.test(panelText));
+ok("store screenshots: panels carry no promotional keywords", !/\b(free|100\s*%|unique|recommended|brand[- ]new|#\s*1)\b/i.test(panelText) && !/opt_badge_recommended/.test(panels));
 
 // Клипът за магазина (--cut store): без „free“ и без сравнението с други блокери.
 const film = readFileSync(join(ROOT, "tools", "promo", "film.html"), "utf8");
@@ -67,13 +81,23 @@ const tight = Object.entries({ full: promoTL, ...promoTL.cuts }).filter(([, c]) 
 ok(`promo: lightning strikes ≥ 2 s apart in every cut (${tight.join(",") || "all"})`, tight.length === 0);
 
 // Сайтът: badge-ът „Established Publisher“ води към листинга (проверимо твърдение), а броят езици
-// на страницата и в llms.txt е броят на _locales (беше „70“ след 73).
+// на страницата, в llms.txt и в описанието за магазина е броят ЕЗИЦИ, не папки: 73 папки в _locales = 70 езика
+// (es/es_419, pt_BR/pt_PT, zh_CN/zh_TW са варианти). 5.1.5–5.1.8 казваха „73“ — грешно.
 const listing = "https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk";
 const pills = [...idxHtml.matchAll(/<a class="verified" href="([^"]+)"[\s\S]*?<\/a>/g)];
 ok("site: the Established Publisher mark links to the store listing", pills.length >= 1 && pills.every((m) => m[1] === listing && /Established Publisher/.test(m[0])));
 const llms = readFileSync(join(ROOT, "server", "llms.txt"), "utf8");
-const langClaims = [...(idxHtml + llms).matchAll(/(\d+) languages/g)].map((m) => +m[1]).filter((n) => n !== 31);
-ok(`site: “N languages” = ${locs.length} locales everywhere (${[...new Set(langClaims)].join(",")})`, langClaims.length >= 3 && langClaims.every((n) => n === locs.length));
+const storeListing = readFileSync(join(ROOT, "docs", "STORE_LISTING.md"), "utf8");
+const langCount = new Set(locs.map((l) => l.split("_")[0])).size;
+const langClaims = [...(idxHtml + llms + storeListing).matchAll(/(\d+) (?:languages|езика|lingue|Sprachen)/g)].map((m) => +m[1]).filter((n) => n !== 31);
+ok(`site + store listing: “N languages” = ${langCount} languages (${locs.length} locale folders) everywhere (${[...new Set(langClaims)].join(",")})`, langClaims.length >= 6 && langClaims.every((n) => n === langCount));
+
+// PageSpeed/Lighthouse тичат без GPU (SwiftShader): WebGL бурята там правеше ~4,9 s дълги задачи за 9 s при 4× CPU
+// (мобилно 75/100). Без GPU декоративната буря не тръгва изобщо — същото правило като щита в popup-а.
+ok("site: the WebGL storm detects a software renderer and skips all storm work without a GPU",
+  /var soft = \/swiftshader\|llvmpipe\|software\|basic render\/i\.test\(rend\)/.test(idxHtml) && /if \(soft\) \{ noGpu = true;/.test(idxHtml) && /if \(noGpu\) return;/.test(idxHtml));
+// Бутонът за движение: на телефон само икона, но с име (axe button-name); без aria-pressed, защото надписът се сменя (APG).
+ok("site: the motion button keeps its accessible name on phones and has no aria-pressed", !/\.iconbtn \.lbl\{display:none\}/.test(idxHtml) && !/id="motion"[^>]*aria-pressed/.test(idxHtml));
 
 // Графиките за магазина по правилата на Google („Supplying Images“): точните размери, а иконата 128
 // е 96×96 рисунка с ~16 px прозрачен отстъп (install диалогът и магазинът я ползват от пакета).

@@ -81,10 +81,11 @@ mock.store.set("features", { youtube: false, malware: true, topics: false, priva
 await bg.applyState();
 let last = mock.calls.rulesets.at(-1);
 ok("applyState: feature → ruleset table", ["ad_rules", "easylist", "easyprivacy", "surrogates", "removeparam", "urlhaus"].every((x) => last.enable.includes(x)) && ["youtube_rules", "headers", "privacy"].every((x) => last.disable.includes(x)));
+ok("applyState: Global Privacy Control is on unless switched off (Sec-GPC ruleset)", last.enable.includes("gpc"));
 mock.store.set("enabled", false);
 await bg.applyState();
 last = mock.calls.rulesets.at(-1);
-ok("applyState: global off disables every ruleset and unregisters the engine", last.enable.length === 0 && last.disable.length === 9 && mock.registered().length === 0);
+ok("applyState: global off disables every ruleset and unregisters the engine", last.enable.length === 0 && last.disable.length === 10 && mock.registered().length === 0);
 mock.store.set("enabled", true);
 
 // ---------- 4) health ----------

@@ -226,13 +226,13 @@
     "message": "Ukrywa blokady „Wyłącz blokowanie reklam” i przywraca stronę"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Ukrywa posty „Sponsorowane” na Facebooku i Instagramie"
+    "message": "Ukrywa posty „Sponsorowane” na Facebooku, Instagramie i Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Usuwa utm_*, fbclid, gclid i inne identyfikatory kliknięć z otwieranych linków"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokuje znane domeny ze złośliwym oprogramowaniem (lista URLhaus od abuse.ch)"
+    "message": "Ostrzega przed otwarciem znanej złośliwej witryny i blokuje to, co strony wczytują z takich witryn (lista URLhaus od abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Wyłącza reklamowe API Google Topics, FLoC i Protected Audience we wszystkich witrynach"
@@ -670,5 +670,128 @@
   "welDone": {
     "message": "Rozumiem",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Dozwolone · zostało $1 min"
+  },
+  "hiddenHere": {
+    "message": "Ukryte tu elementy: $1 · Przywróć ostatni"
+  },
+  "cmd_toggle_site": {
+    "message": "Włącz lub wyłącz blokowanie w tej witrynie"
+  },
+  "cmd_pause": {
+    "message": "Wstrzymaj lub wznów ochronę (30 minut)"
+  },
+  "cmd_picker": {
+    "message": "Ukryj element na tej stronie"
+  },
+  "rep_fix_hour": {
+    "message": "Zezwól na reklamy tutaj przez 1 godzinę"
+  },
+  "rep_done_hour": {
+    "message": "Reklamy w tej witrynie są dozwolone przez 1 godzinę. Strona przeładowana — czy teraz działa?"
+  },
+  "opt_last30": {
+    "message": "Ostatnie 30 dni"
+  },
+  "opt_last30_sum": {
+    "message": "Zablokowane: $1 · Banery cookies: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Twoje dzienne sumy pojawią się tutaj podczas przeglądania."
+  },
+  "opt_last30_sub": {
+    "message": "Tylko dzienne sumy, przechowywane na tym urządzeniu przez 30 dni. Bez witryn, bez adresów."
+  },
+  "opt_gpc_sub": {
+    "message": "Prosi każdą odwiedzaną witrynę, aby nie sprzedawała ani nie udostępniała Twoich danych (sygnał Sec-GPC, który według niektórych przepisów o ochronie prywatności witryny muszą respektować). Nie jest wysyłany w witrynach z listy dozwolonych."
+  },
+  "opt_shortcuts": {
+    "message": "Skróty klawiszowe"
+  },
+  "opt_shortcuts_change": {
+    "message": "Zmień skróty"
+  },
+  "opt_shortcut_none": {
+    "message": "Nie ustawiono"
+  },
+  "opt_shortcuts_ff": {
+    "message": "W przeglądarce Firefox: Rozszerzenia i motywy → ⚙ → Zarządzaj skrótami rozszerzeń."
+  },
+  "opt_import_foreign": {
+    "message": "Importuj z innego blokera reklam"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Przechodzisz z uBlock Origin, AdGuard lub Adblock Plus? Wybierz jego plik kopii zapasowej: dozwolone przez Ciebie witryny i Twoje własne filtry zostaną tu dodane. Nic nie zostanie zastąpione."
+  },
+  "opt_import_foreign_done": {
+    "message": "Dozwolone witryny: $1 · Dodane filtry: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Pominięte (nie da się tu zastosować): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Ten plik nie jest kopią zapasową, którą umiemy odczytać."
+  },
+  "welQuickTitle": {
+    "message": "Dostosuj do siebie"
+  },
+  "welQuickSub": {
+    "message": "Opcjonalnie: wszystko już działa. Każdą z tych opcji możesz później zmienić w ustawieniach."
+  },
+  "blk_page_title": {
+    "message": "Witryna zablokowana — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Ta witryna może zaszkodzić Twojemu urządzeniu"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock zatrzymał tę stronę, ponieważ witryna jest na liście URLhaus — publicznej liście adresów, które rozpowszechniają złośliwe oprogramowanie."
+  },
+  "blk_back": {
+    "message": "Wróć"
+  },
+  "blk_continue": {
+    "message": "Kontynuuj mimo to"
+  },
+  "blk_note": {
+    "message": "Jeśli kontynuujesz, przepuszczane będą tylko strony tej witryny — do zamknięcia przeglądarki."
+  },
+  "blk_why": {
+    "message": "Dlaczego jest na liście? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Połączenia na tej stronie"
+  },
+  "conn_empty": {
+    "message": "Ta strona nie wczytała niczego z innych witryn."
+  },
+  "conn_block": {
+    "message": "Blokuj tu"
+  },
+  "conn_blocked": {
+    "message": "Zablokowane tu"
+  },
+  "conn_hint": {
+    "message": "Blokuj to, co ta witryna wczytuje z $1"
+  },
+  "opt_conn_title": {
+    "message": "Zablokowane przez Ciebie połączenia"
+  },
+  "opt_conn_sub": {
+    "message": "Zablokowane w oknie Supreme AdBlock w sekcji „Połączenia na tej stronie”, każde tylko we własnej witrynie."
+  },
+  "opt_empty_conn": {
+    "message": "Na razie nic nie zablokowano."
+  },
+  "opt_conn_remove": {
+    "message": "Odblokuj $1 w witrynie $2"
+  },
+  "opt_h_danger": {
+    "message": "Ostrzeżenie o złośliwej witrynie"
+  },
+  "opt_h_capacity": {
+    "message": "Limit reguł"
   }
 }

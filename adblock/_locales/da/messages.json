@@ -226,13 +226,13 @@
     "message": "Skjul »slå din adblocker fra«-mure, og gendan siden"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Skjul »Sponsoreret«-opslag på Facebook og Instagram"
+    "message": "Skjul »Sponsoreret«-opslag på Facebook, Instagram og Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Fjern utm_*, fbclid, gclid og andre klik-id’er fra de links, du åbner"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Bloker kendte malware-domæner (URLhaus-listen fra abuse.ch)"
+    "message": "Advar, før et kendt malware-websted åbnes, og bloker det, som sider indlæser fra sådanne websteder (URLhaus-listen fra abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Deaktiver annonce-API’erne Google Topics, FLoC og Protected Audience på alle websteder"
@@ -670,5 +670,128 @@
   "welDone": {
     "message": "Forstået",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Tilladt · $1 min tilbage"
+  },
+  "hiddenHere": {
+    "message": "Elementer skjult her: $1 · Fortryd den seneste"
+  },
+  "cmd_toggle_site": {
+    "message": "Slå blokering til eller fra på dette websted"
+  },
+  "cmd_pause": {
+    "message": "Pause eller genoptag beskyttelse (30 minutter)"
+  },
+  "cmd_picker": {
+    "message": "Skjul et element på denne side"
+  },
+  "rep_fix_hour": {
+    "message": "Tillad annoncer her i 1 time"
+  },
+  "rep_done_hour": {
+    "message": "Annoncer er tilladt på dette websted i 1 time. Genindlæst — er det løst?"
+  },
+  "opt_last30": {
+    "message": "Seneste 30 dage"
+  },
+  "opt_last30_sum": {
+    "message": "Blokeret: $1 · Cookiebannere: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Dine daglige totaler vises her, mens du browser."
+  },
+  "opt_last30_sub": {
+    "message": "Kun daglige totaler, gemt på denne enhed i 30 dage. Ingen websteder, ingen adresser."
+  },
+  "opt_gpc_sub": {
+    "message": "Beder alle websteder, du besøger, om ikke at sælge eller dele dine data (Sec-GPC-signalet, som nogle love om privatliv pålægger websteder at respektere). Sendes ikke på websteder, du tillader."
+  },
+  "opt_shortcuts": {
+    "message": "Tastaturgenveje"
+  },
+  "opt_shortcuts_change": {
+    "message": "Skift genveje"
+  },
+  "opt_shortcut_none": {
+    "message": "Ikke angivet"
+  },
+  "opt_shortcuts_ff": {
+    "message": "I Firefox: Udvidelser og temaer → ⚙ → Håndter genveje til udvidelser."
+  },
+  "opt_import_foreign": {
+    "message": "Importer fra en anden adblocker"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Skifter du fra uBlock Origin, AdGuard eller Adblock Plus? Vælg dens sikkerhedskopifil: de websteder, du har tilladt, og dine egne filtre føjes til her. Intet erstattes."
+  },
+  "opt_import_foreign_done": {
+    "message": "Websteder tilladt: $1 · Filtre tilføjet: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Udeladt (kan ikke anvendes her): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Denne fil er ikke en sikkerhedskopi, vi kan læse."
+  },
+  "welQuickTitle": {
+    "message": "Gør den til din egen"
+  },
+  "welQuickSub": {
+    "message": "Valgfrit: det virker allerede. Du kan ændre alt dette senere i Indstillinger."
+  },
+  "blk_page_title": {
+    "message": "Websted blokeret — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Dette websted kan skade din enhed"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock har stoppet denne side, fordi webstedet er på URLhaus, en offentlig liste over adresser, der spreder malware."
+  },
+  "blk_back": {
+    "message": "Gå tilbage"
+  },
+  "blk_continue": {
+    "message": "Fortsæt alligevel"
+  },
+  "blk_note": {
+    "message": "Hvis du fortsætter, slippes kun dette websteds sider igennem, indtil du lukker browseren."
+  },
+  "blk_why": {
+    "message": "Hvorfor er det på listen? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Forbindelser på denne side"
+  },
+  "conn_empty": {
+    "message": "Denne side har ikke indlæst noget fra andre websteder."
+  },
+  "conn_block": {
+    "message": "Bloker her"
+  },
+  "conn_blocked": {
+    "message": "Blokeret her"
+  },
+  "conn_hint": {
+    "message": "Bloker det, dette websted indlæser fra $1"
+  },
+  "opt_conn_title": {
+    "message": "Forbindelser, du har blokeret"
+  },
+  "opt_conn_sub": {
+    "message": "Blokeret fra »Forbindelser på denne side« i Supreme AdBlock-vinduet, hver kun på sit eget websted."
+  },
+  "opt_empty_conn": {
+    "message": "Intet blokeret endnu."
+  },
+  "opt_conn_remove": {
+    "message": "Fjern blokering af $1 på $2"
+  },
+  "opt_h_danger": {
+    "message": "Advarselsside for malware"
+  },
+  "opt_h_capacity": {
+    "message": "Regelkapacitet"
   }
 }

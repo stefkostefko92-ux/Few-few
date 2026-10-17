@@ -226,13 +226,13 @@
     "message": "“अपना एडब्लॉकर बंद करें” वाली दीवारें छिपाएँ और पेज को पहले जैसा करें"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook और Instagram पर “प्रायोजित” पोस्ट छिपाएँ"
+    "message": "Facebook, Instagram और Threads पर “प्रायोजित” पोस्ट छिपाएँ"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "आपके खोले गए लिंक से utm_*, fbclid, gclid और अन्य क्लिक पहचानकर्ता हटाएँ"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "जाने-माने मैलवेयर डोमेन ब्लॉक करें (abuse.ch की URLhaus सूची)"
+    "message": "किसी जानी-मानी मैलवेयर साइट के खुलने से पहले चेतावनी दें, और पेज ऐसी साइटों से जो कुछ लोड करते हैं, उसे ब्लॉक करें (abuse.ch की URLhaus सूची)।"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "हर साइट पर Google Topics, FLoC और Protected Audience विज्ञापन API बंद करें"
@@ -670,5 +670,128 @@
   "welDone": {
     "message": "ठीक है",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "अनुमति है · $1 मिनट बाकी"
+  },
+  "hiddenHere": {
+    "message": "यहाँ छिपाए गए एलिमेंट: $1 · आख़िरी वापस लाएँ"
+  },
+  "cmd_toggle_site": {
+    "message": "इस साइट पर ब्लॉकिंग चालू या बंद करें"
+  },
+  "cmd_pause": {
+    "message": "सुरक्षा रोकें या फिर शुरू करें (30 मिनट)"
+  },
+  "cmd_picker": {
+    "message": "इस पेज पर कोई एलिमेंट छिपाएँ"
+  },
+  "rep_fix_hour": {
+    "message": "यहाँ 1 घंटे विज्ञापनों की अनुमति दें"
+  },
+  "rep_done_hour": {
+    "message": "इस साइट पर 1 घंटे के लिए विज्ञापनों की अनुमति है। पेज फिर से लोड हुआ — क्या अब ठीक है?"
+  },
+  "opt_last30": {
+    "message": "पिछले 30 दिन"
+  },
+  "opt_last30_sum": {
+    "message": "ब्लॉक किए: $1 · कुकी बैनर: $2"
+  },
+  "opt_last30_empty": {
+    "message": "ब्राउज़ करते समय आपके रोज़ के कुल आँकड़े यहाँ दिखेंगे।"
+  },
+  "opt_last30_sub": {
+    "message": "सिर्फ़ रोज़ के कुल आँकड़े, जो 30 दिनों तक इसी डिवाइस पर रखे जाते हैं। न कोई साइट, न कोई पता।"
+  },
+  "opt_gpc_sub": {
+    "message": "आपकी देखी जाने वाली हर साइट से अनुरोध करता है कि वह आपका डेटा न बेचे और न साझा करे (Sec-GPC सिग्नल, जिसे मानना कुछ निजता क़ानून साइटों के लिए ज़रूरी बनाते हैं)। जिन साइटों को आपने अनुमति दी है, उन पर यह नहीं भेजा जाता।"
+  },
+  "opt_shortcuts": {
+    "message": "कीबोर्ड शॉर्टकट"
+  },
+  "opt_shortcuts_change": {
+    "message": "शॉर्टकट बदलें"
+  },
+  "opt_shortcut_none": {
+    "message": "सेट नहीं है"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox में: ऐड-ऑन और थीम → ⚙ → एक्सटेंशन शॉर्टकट प्रबंधित करें।"
+  },
+  "opt_import_foreign": {
+    "message": "दूसरे एडब्लॉकर से इंपोर्ट करें"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard या Adblock Plus से आ रहे हैं? उसकी बैकअप फ़ाइल चुनें: आपकी अनुमति दी गई साइटें और आपके अपने फ़िल्टर यहाँ जोड़ दिए जाते हैं। मौजूदा कुछ भी नहीं बदला जाता।"
+  },
+  "opt_import_foreign_done": {
+    "message": "अनुमति दी गई साइटें: $1 · जोड़े गए फ़िल्टर: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "छोड़ी गई पंक्तियाँ (यहाँ लागू नहीं हो सकतीं): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "यह ऐसी बैकअप फ़ाइल नहीं है जिसे हम पढ़ सकें।"
+  },
+  "welQuickTitle": {
+    "message": "इसे अपने हिसाब से बनाएँ"
+  },
+  "welQuickSub": {
+    "message": "वैकल्पिक: यह पहले से काम कर रहा है। इनमें से कोई भी चीज़ बाद में सेटिंग में बदली जा सकती है।"
+  },
+  "blk_page_title": {
+    "message": "साइट ब्लॉक की गई — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "यह साइट आपके डिवाइस को नुकसान पहुँचा सकती है"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock ने यह पेज रोक दिया, क्योंकि यह साइट URLhaus पर दर्ज है, जो मैलवेयर फैलाने वाले पतों की एक सार्वजनिक सूची है।"
+  },
+  "blk_back": {
+    "message": "वापस जाएँ"
+  },
+  "blk_continue": {
+    "message": "फिर भी जारी रखें"
+  },
+  "blk_note": {
+    "message": "जारी रखने पर ब्राउज़र बंद करने तक सिर्फ़ इसी साइट के पेज खुलने दिए जाएँगे।"
+  },
+  "blk_why": {
+    "message": "यह सूची में क्यों है? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "इस पेज के कनेक्शन"
+  },
+  "conn_empty": {
+    "message": "इस पेज ने दूसरी साइटों से कुछ भी लोड नहीं किया।"
+  },
+  "conn_block": {
+    "message": "यहाँ ब्लॉक करें"
+  },
+  "conn_blocked": {
+    "message": "यहाँ ब्लॉक है"
+  },
+  "conn_hint": {
+    "message": "यह साइट $1 से जो लोड करती है, उसे ब्लॉक करें"
+  },
+  "opt_conn_title": {
+    "message": "आपके ब्लॉक किए गए कनेक्शन"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock विंडो के “इस पेज के कनेक्शन” से ब्लॉक किए गए, हर एक सिर्फ़ अपनी ही साइट पर।"
+  },
+  "opt_empty_conn": {
+    "message": "अभी तक कुछ भी ब्लॉक नहीं किया गया।"
+  },
+  "opt_conn_remove": {
+    "message": "$2 पर $1 का ब्लॉक हटाएँ"
+  },
+  "opt_h_danger": {
+    "message": "मैलवेयर चेतावनी पेज"
+  },
+  "opt_h_capacity": {
+    "message": "नियमों की क्षमता"
   }
 }
