@@ -1,0 +1,199 @@
+{
+  "scheda": {
+    "section": {
+      "impianto": "Impianto",
+      "ubicazione": "Ubicazione e accesso",
+      "tipologia": "Tipologia",
+      "quadro": "Quadro",
+      "argano": "Argano",
+      "centralina": "Centralina",
+      "funi": "Funi e tiranti",
+      "limitatore": "Limitatore",
+      "cavi": "Cavi",
+      "serrature": "Serrature o sospensioni",
+      "allarme": "Allarme e telesoccorso",
+      "note": "Note e lavori"
+    },
+    "field": {
+      "data": "Data",
+      "indirizzo": "Indirizzo",
+      "marca": "Marca impianto",
+      "matricola": "Matricola",
+      "numeroImpianto": "N° impianto",
+      "buonoLavoro": "Buono di lavoro",
+      "portataKg": "Portata",
+      "capienzaPersone": "Capienza",
+      "fermate": "Fermate",
+      "ubicazioneMacchina": "Ubicazione macchina",
+      "ubicazioneCassettina": "Ubicazione cassettina",
+      "parcheggio": "Parcheggio",
+      "tipoImpianto": "Tipo impianto",
+      "tipoPorte": "Tipo porte",
+      "doppioAccesso": "Accessi",
+      "serrature": "Serrature da cambiare",
+      "serratureNumero": "Numero serrature",
+      "serratureTipo": "Tipo serrature",
+      "pattinoRetrattile": "Pattino retrattile da cambiare",
+      "pattinoRetrattileTipo": "Tipo di pattino retrattile",
+      "sospensioni": "Sospensioni da cambiare",
+      "sospensioniNumero": "Numero sospensioni",
+      "serratureNote": "Note serrature e sospensioni",
+      "luceVanoSostituire": "Luce vano da sostituire",
+      "luceVanoNote": "Note luce vano",
+      "funiDiametroMm": "Diametro funi",
+      "funiTrefoli": "Trefoli funi",
+      "funiNumero": "Numero funi",
+      "funiLunghezzaM": "Lunghezza funi",
+      "tirantiCabinaNumero": "Quantità tiranti cabina",
+      "tirantiCabinaTipo": "Tipo tiranti cabina",
+      "tirantiContrappesoNumero": "Quantità tiranti contrappeso",
+      "tirantiContrappesoTipo": "Tipo tiranti contrappeso",
+      "tirantiFossaNumero": "Quantità tiranti in fossa",
+      "tirantiFossaTipo": "Tipo tiranti in fossa",
+      "limitatoreTipo": "Tipo limitatore",
+      "funicellaDiametroMm": "Diametro funicella",
+      "funicellaLunghezzaM": "Lunghezza funicella",
+      "tenditore": "Tenditore",
+      "caviNumero": "Numero cavi",
+      "caviConduttori": "Conduttori cavi",
+      "caviLunghezzaM": "Lunghezza cavi",
+      "allarmePortineria": "Allarme in portineria",
+      "displayPortineria": "Display in portineria",
+      "noteQuadretto": "Note quadretto elettrico",
+      "noteImpianto": "Note impianto",
+      "noteBottoniere": "Note bottoniere in opera",
+      "bottoniereMisure": "Misure bottoniere vecchie",
+      "lavoriExtra": "Lavori extra (buono di lavoro)",
+      "azienda": "Azienda",
+      "quadroMarca": "Marca quadro",
+      "quadroMarcaAltro": "Altra marca quadro",
+      "quadroOrdine": "Scheda per l'ordine quadro",
+      "quadroNote": "Note quadro",
+      "arganoPreventivo": "Argano da sostituire",
+      "quadroModello": "Tipologia quadro",
+      "fossaRidotta": "Fossa ridotta",
+      "testataRidotta": "Testata ridotta",
+      "arganoTipo": "Tipo argano esistente",
+      "ganasceFreno": "Ganasce freno da cambiare",
+      "kitControlloGanasce": "Kit controllo ganasce",
+      "kitControlloGanasceTipo": "Tipo controllo ganasce",
+      "controlloQuadro": "Controllo su quadro manovra",
+      "controlloQuadroTipo": "Tipo controllo",
+      "arganoNote": "Note argano",
+      "centralinaDaFare": "Centralina da fare",
+      "centralinaAzionamento": "Tipo di azionamento",
+      "centralinaParacadute": "Valvola di blocco (paracadute) sul cilindro",
+      "centralinaPistoni": "Numero pistoni",
+      "centralinaDiametroPistoneMm": "Diametro pistone (stelo)",
+      "centralinaCorsaM": "Corsa",
+      "centralinaVelocita": "Velocità nominale",
+      "centralinaPressioneBar": "Pressione statica a pieno carico",
+      "centralinaPortataPompa": "Portata pompa (targa attuale)",
+      "centralinaPotenzaKw": "Potenza motore",
+      "centralinaAlimentazione": "Alimentazione",
+      "centralinaAlimentazioneAltro": "Alimentazione (quale)",
+      "centralinaAvviamento": "Avviamento",
+      "centralinaTubazione": "Tubazione",
+      "centralinaTubazioneM": "Lunghezza tubazione",
+      "centralinaAttacco": "Ø attacco tubazione",
+      "centralinaDistanzaM": "Distanza locale macchina - vano",
+      "centralinaAccesso": "Accesso al locale macchina",
+      "centralinaCorseOra": "Corse/ora",
+      "centralinaNote": "Note centralina (marca/modello attuale, targa)",
+      "centralinaMarca": "Tipo / marca centralina",
+      "centralinaMotore": "Motore",
+      "centralinaBloccoValvole": "Blocco valvole (marca/modello)",
+      "emendamentoA3": "Emendamento A3 da fare",
+      "centralinaDiscesaEmergenza": "Discesa manuale di emergenza funzionante",
+      "centralinaOlioLivello": "Livello olio",
+      "centralinaOlioStato": "Stato olio",
+      "telesoccorsoInstallare": "Telesoccorso da installare",
+      "perifericaInstallare": "Periferica sotto cabina da installare",
+      "cornettaInstallare": "Cornetta nel locale da installare"
+    },
+    "question": {
+      "bottoniereMisure": "Vuoi inserire le misure delle bottoniere vecchie?",
+      "quadroOrdine": "Vuoi compilare la scheda per l'ordine quadro?",
+      "arganoPreventivo": "Argano da sostituire?",
+      "sospensioni": "Sospensioni da cambiare?",
+      "centralinaDaFare": "Centralina da fare?"
+    },
+    "option": {
+      "ubicazioneMacchina": {
+        "ALTO": "Alto",
+        "BASSO": "Basso"
+      },
+      "tipoImpianto": {
+        "ELETTRICO": "Elettrico",
+        "IDRAULICO": "Idraulico",
+        "GEARLESS": "MRL"
+      },
+      "tipoPorte": {
+        "AUTOMATICHE": "Automatiche",
+        "SEMIAUTOMATICHE": "Semiautomatiche",
+        "MANUALI": "Manuali"
+      },
+      "doppioAccesso": {
+        "no": "1",
+        "si": "2"
+      },
+      "quadroMarca": {
+        "PELAZZA": "Pelazza",
+        "MOVILIFT": "Movilift",
+        "DMG": "DMG",
+        "MASTECH": "Mastech",
+        "ALTRO": "Altro"
+      },
+      "quadroModello": {
+        "NG120": "NG120",
+        "QI_TOUCH": "QI Touch"
+      },
+      "centralinaAzionamento": {
+        "DIRETTO_LATERALE": "Diretto laterale",
+        "DIRETTO_CENTRALE": "Diretto centrale (interrato)",
+        "INDIRETTO_2_1": "Indiretto in taglia 2:1"
+      },
+      "centralinaAlimentazione": {
+        "TRIFASE_400": "400 V trifase",
+        "MONOFASE_230": "230 V monofase",
+        "ALTRO": "Altro"
+      },
+      "centralinaAvviamento": {
+        "DIRETTO": "Diretto",
+        "STELLA_TRIANGOLO": "Stella-triangolo",
+        "SOFT_STARTER": "Soft-starter",
+        "INVERTER": "Inverter"
+      },
+      "centralinaTubazione": {
+        "RIGIDA": "Rigida",
+        "FLESSIBILE": "Flessibile"
+      },
+      "centralinaMotore": {
+        "IMMERSO": "Immerso",
+        "ESTERNO": "Esterno"
+      },
+      "centralinaOlioLivello": {
+        "REGOLARE": "Regolare",
+        "BASSO": "Basso"
+      },
+      "centralinaOlioStato": {
+        "BUONO": "Buono",
+        "DA_SOSTITUIRE": "Da sostituire",
+        "PERDITE": "Perdite visibili"
+      }
+    },
+    "unit": {
+      "kg": "kg",
+      "persone": {
+        "one": "persona",
+        "other": "persone"
+      },
+      "mm": "mm",
+      "m": "m",
+      "bar": "bar",
+      "lmin": "l/min",
+      "kw": "kW",
+      "ms": "m/s"
+    }
+  }
+}

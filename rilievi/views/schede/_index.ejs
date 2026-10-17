@@ -1,0 +1,11 @@
+<%
+  // Индексът на разделите на картата — вляво на широк екран. Връзките водят до `#s-<раздел>`; app.js само
+  // отбелязва раздела, който е на екрана. Във формата разделът с условие (`when`) се скрива и тук, а
+  // номерата на видимите ги брои CSS-ът (sheet.css) — същите като на разделите.
+%><nav class="secindex" aria-label="<%= t('scheda.index') %>" data-secindex>
+  <p class="secindex__title"><%= t('scheda.index') %></p>
+  <ol>
+    <% titles.forEach((item) => { %><li<%- include('_when', { when: item.when, off: item.off }) %>><a href="#s-<%= item.key %>"><span class="secnum" aria-hidden="true"></span><span><%= item.title %></span></a></li>
+    <% }) %>
+  </ol>
+</nav>

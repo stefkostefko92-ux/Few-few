@@ -1,0 +1,1354 @@
+{
+  "id": "movilift-modulo-ordine-scelta-v2-6",
+  "fornitore": "MoviLift",
+  "titolo": "Modulo ordine quadro (Scelta v2.6)",
+  "fonte": "MODULO_ORDINE_MOVI.pdf caricato dal proprietario del portale il 13/10/2026 (cifratura RC4 rimossa con pypdf 6.17: l'autore consente la compilazione dei campi)",
+  "file": "movilift-modulo-ordine-scelta-v2-6.pdf",
+  "sha256": "13f698745c72bd52e5ae912ae6e552507b3a639d33b33db6ac6392c47c2a6c55",
+  "tipo": "acroform",
+  "gruppi": [
+    {
+      "titolo": "Dati cliente",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "riferimento",
+              "kind": "text",
+              "label": "Riferimento",
+              "acro": "Testo1",
+              "maxLength": 78,
+              "prefill": "rif"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "ragioneSociale",
+              "kind": "text",
+              "label": "Ragione Sociale",
+              "acro": "Testo2",
+              "maxLength": 78,
+              "prefill": "azienda"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "indirizzo",
+              "kind": "text",
+              "label": "Indirizzo",
+              "acro": "Testo3",
+              "maxLength": 78
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "citta",
+              "kind": "text",
+              "label": "Città",
+              "acro": "Testo4",
+              "maxLength": 52
+            },
+            {
+              "key": "prov",
+              "kind": "text",
+              "label": "Prov",
+              "acro": "Testo5",
+              "maxLength": 11
+            },
+            {
+              "key": "cap",
+              "kind": "text",
+              "label": "C.A.P",
+              "acro": "Testo6",
+              "maxLength": 11
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "telefono",
+              "kind": "text",
+              "label": "Telefono",
+              "acro": "Testo7",
+              "maxLength": 22
+            },
+            {
+              "key": "fax",
+              "kind": "text",
+              "label": "Fax",
+              "acro": "Testo8",
+              "maxLength": 20
+            },
+            {
+              "key": "email",
+              "kind": "text",
+              "label": "email",
+              "acro": "Testo9",
+              "maxLength": 38,
+              "prefill": "email"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Impianto",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "quantita",
+              "kind": "text",
+              "label": "Quantità",
+              "acro": "Testo10",
+              "maxLength": 20
+            },
+            {
+              "key": "velocita",
+              "kind": "text",
+              "label": "Velocità",
+              "acro": "Testo11",
+              "maxLength": 20
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "tipologia",
+              "kind": "text",
+              "label": "Tipologia",
+              "acro": "Testo12",
+              "maxLength": 20,
+              "prefill": "tipoImpianto"
+            },
+            {
+              "key": "fermate",
+              "kind": "text",
+              "label": "Fermate",
+              "acro": "Testo13",
+              "maxLength": 20
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "controllo",
+              "kind": "radio",
+              "label": "Controllo",
+              "acro": "Pulsante di scelta1",
+              "opzioni": [
+                {
+                  "valore": "plc",
+                  "label": "PLC",
+                  "widget": 0
+                },
+                {
+                  "valore": "scheda",
+                  "label": "SCHEDA",
+                  "widget": 1
+                }
+              ],
+              "predefinito": "scheda"
+            },
+            {
+              "key": "tipoPorte",
+              "kind": "text",
+              "label": "Tipo Porte",
+              "acro": "Testo14",
+              "maxLength": 20,
+              "prefill": "tipoPorte"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "portata",
+              "kind": "text",
+              "label": "Portata",
+              "acro": "Testo15",
+              "maxLength": 20
+            },
+            {
+              "key": "capienza",
+              "kind": "text",
+              "label": "Capienza",
+              "acro": "Testo16",
+              "maxLength": 20
+            },
+            {
+              "key": "nImpianto",
+              "kind": "text",
+              "label": "N° Impianto",
+              "acro": "Testo17",
+              "maxLength": 20
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "fornitura",
+              "kind": "radio",
+              "label": "Fornitura",
+              "labelNascosta": true,
+              "acro": "Pulsante di scelta2",
+              "opzioni": [
+                {
+                  "valore": "soloQuadro",
+                  "label": "Solo Quadro",
+                  "widget": 0
+                },
+                {
+                  "valore": "precablato",
+                  "label": "Precablato",
+                  "widget": 1
+                },
+                {
+                  "valore": "parteElettrica",
+                  "label": "Parte Elettrica Completa",
+                  "widget": 2
+                }
+              ],
+              "predefinito": "soloQuadro"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Specifiche",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "potMot",
+              "kind": "text",
+              "label": "Pot. Mot",
+              "acro": "Testo18",
+              "maxLength": 14
+            },
+            {
+              "key": "manovra",
+              "kind": "text",
+              "label": "Manovra",
+              "acro": "Testo19",
+              "maxLength": 36
+            },
+            {
+              "key": "inverter",
+              "kind": "text",
+              "label": "Inverter",
+              "acro": "Testo20",
+              "maxLength": 26
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "emergenza",
+              "kind": "text",
+              "label": "Emergenza",
+              "acro": "Testo21",
+              "maxLength": 61
+            },
+            {
+              "key": "manovraPompieri",
+              "kind": "check",
+              "label": "Manovra Pompieri",
+              "acro": "Casella di controllo1"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "avviamento",
+              "kind": "radio",
+              "label": "Avviamento",
+              "labelNascosta": true,
+              "acro": "Pulsante di scelta3",
+              "opzioni": [
+                {
+                  "valore": "diretto",
+                  "label": "Avv. Diretto",
+                  "widget": 0
+                },
+                {
+                  "valore": "stellaTriangolo",
+                  "label": "Stella - Triangolo",
+                  "widget": 1
+                },
+                {
+                  "valore": "softStart",
+                  "label": "Soft Start",
+                  "widget": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "rallOpPorte",
+              "kind": "check",
+              "label": "Rall. Op. Porte",
+              "acro": "Casella di controllo2"
+            },
+            {
+              "key": "sondaTemp",
+              "kind": "check",
+              "label": "Sonda Temp. Loc. Macchina",
+              "acro": "Casella di controllo7"
+            },
+            {
+              "key": "citofono",
+              "kind": "check",
+              "label": "Citofono Installato",
+              "acro": "Casella di controllo12"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "rallOpPorteRes",
+              "kind": "check",
+              "label": "Rall. Op. Porte con Res.",
+              "acro": "Casella di controllo3"
+            },
+            {
+              "key": "fondoMobile",
+              "kind": "check",
+              "label": "Fondo Mobile",
+              "acro": "Casella di controllo8"
+            },
+            {
+              "key": "combBidirezionale",
+              "kind": "check",
+              "label": "Comb. Bidirezionale 95/16",
+              "acro": "Casella di controllo13"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "elettrPattino",
+              "kind": "check",
+              "label": "Elettr. Pattino",
+              "acro": "Casella di controllo4",
+              "prefill": "pattinoRetrattile=si"
+            },
+            {
+              "key": "elettrPattinoV",
+              "kind": "text",
+              "label": "Elettr. Pattino V",
+              "acro": "Testo77",
+              "maxLength": 9,
+              "labelNascosta": true
+            },
+            {
+              "key": "schedaSeriale",
+              "kind": "check",
+              "label": "Scheda Seriale Tetto Cabina",
+              "acro": "Casella di controllo9"
+            },
+            {
+              "key": "fotocellula",
+              "kind": "check",
+              "label": "Fotocellula",
+              "acro": "Casella di controllo14"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "scivolettoFisso",
+              "kind": "check",
+              "label": "Scivoletto Fisso",
+              "acro": "Casella di controllo5"
+            },
+            {
+              "key": "elSerratura24V",
+              "kind": "check",
+              "label": "El. Serratura 24V",
+              "acro": "Casella di controllo10"
+            },
+            {
+              "key": "kitInfoVano",
+              "kind": "check",
+              "label": "Kit Info Vano",
+              "acro": "Casella di controllo15"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "ventolaRaffrMotore",
+              "kind": "check",
+              "label": "Ventola Raffr. Motore",
+              "acro": "Casella di controllo6"
+            },
+            {
+              "key": "cavoPiattoSpeciale",
+              "kind": "check",
+              "label": "Cavo Piatto Speciale",
+              "acro": "Casella di controllo11"
+            },
+            {
+              "key": "en8170",
+              "kind": "check",
+              "label": "EN81.70",
+              "acro": "Casella di controllo16"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Varie",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "ingressi",
+              "kind": "radio",
+              "label": "Ingressi",
+              "labelNascosta": true,
+              "acro": "Pulsante di scelta4",
+              "opzioni": [
+                {
+                  "valore": "unico",
+                  "label": "Operatore Unico",
+                  "widget": 0
+                },
+                {
+                  "valore": "doppio",
+                  "label": "Doppio Ingresso",
+                  "widget": 1
+                },
+                {
+                  "valore": "doppioSelezionato",
+                  "label": "Doppio Ingresso Selezionato",
+                  "widget": 2
+                }
+              ],
+              "predefinito": "unico"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "marcaOpA",
+              "kind": "select",
+              "label": "Marca Op (lato A)",
+              "acro": "Casella combinata1",
+              "opzioni": ["2SG", "CMM", "DAPA", "FIAM", "IGV", "PRISMA", "SELCOM", "VICTORY"],
+              "vuoto": "SCEGLI..."
+            },
+            {
+              "key": "voltA",
+              "kind": "select",
+              "label": "VOLT (lato A)",
+              "acro": "Casella combinata3",
+              "opzioni": ["24Vcc", "48Vcc", "96Vca", "125Vca", "220mono", "220tri"],
+              "vuoto": "VOLT"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "marcaOpB",
+              "kind": "select",
+              "label": "Marca Op (lato B)",
+              "acro": "Casella combinata2",
+              "opzioni": ["2SG", "CMM", "DAPA", "FIAM", "IGV", "PRISMA", "SELCOM", "VICTORY"],
+              "vuoto": "SCEGLI..."
+            },
+            {
+              "key": "voltB",
+              "kind": "select",
+              "label": "VOLT (lato B)",
+              "acro": "Casella combinata4",
+              "opzioni": ["24Vcc", "48Vcc", "96Vca", "125Vca", "220mono", "220tri"],
+              "vuoto": "VOLT"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "alimentazioneA",
+              "kind": "radio",
+              "label": "Operatore lato A",
+              "acro": "Pulsante di scelta12",
+              "opzioni": [
+                {
+                  "valore": "inMarcia",
+                  "label": "Oper. alimentato in Marcia",
+                  "widget": 0
+                },
+                {
+                  "valore": "conLimiti",
+                  "label": "Oper. con Limiti",
+                  "widget": 1
+                },
+                {
+                  "valore": "senzaLimiti",
+                  "label": "Oper. senza Limiti",
+                  "widget": 2
+                }
+              ],
+              "predefinito": "conLimiti"
+            },
+            {
+              "key": "alimentazioneB",
+              "kind": "radio",
+              "label": "Operatore lato B",
+              "acro": "Pulsante di scelta5",
+              "opzioni": [
+                {
+                  "valore": "inMarcia",
+                  "label": "Oper. Alimentato in Marcia",
+                  "widget": 1
+                },
+                {
+                  "valore": "conLimiti",
+                  "label": "Oper. con Limiti",
+                  "widget": 2
+                },
+                {
+                  "valore": "senzaLimiti",
+                  "label": "Oper. senza Limiti",
+                  "widget": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Denominazione Piani Lato A",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "pianoA1",
+              "kind": "text",
+              "label": "Piano 1",
+              "acro": "Testo22",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoA2",
+              "kind": "text",
+              "label": "Piano 2",
+              "acro": "Testo23",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoA3",
+              "kind": "text",
+              "label": "Piano 3",
+              "acro": "Testo24",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoA4",
+              "kind": "text",
+              "label": "Piano 4",
+              "acro": "Testo25",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoA5",
+              "kind": "text",
+              "label": "Piano 5",
+              "acro": "Testo26",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoA6",
+              "kind": "text",
+              "label": "Piano 6",
+              "acro": "Testo27",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoA7",
+              "kind": "text",
+              "label": "Piano 7",
+              "acro": "Testo28",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoA8",
+              "kind": "text",
+              "label": "Piano 8",
+              "acro": "Testo29",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoA9",
+              "kind": "text",
+              "label": "Piano 9",
+              "acro": "Testo30",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoA10",
+              "kind": "text",
+              "label": "Piano 10",
+              "acro": "Testo31",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoA11",
+              "kind": "text",
+              "label": "Piano 11",
+              "acro": "Testo32",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoA12",
+              "kind": "text",
+              "label": "Piano 12",
+              "acro": "Testo33",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoA13",
+              "kind": "text",
+              "label": "Piano 13",
+              "acro": "Testo34",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoA14",
+              "kind": "text",
+              "label": "Piano 14",
+              "acro": "Testo35",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoA15",
+              "kind": "text",
+              "label": "Piano 15",
+              "acro": "Testo36",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoA16",
+              "kind": "text",
+              "label": "Piano 16",
+              "acro": "Testo37",
+              "maxLength": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Denominazione Piani Lato B",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "pianoB1",
+              "kind": "text",
+              "label": "Piano 1",
+              "acro": "Testo38",
+              "maxLength": 2,
+              "predefinito": "-"
+            },
+            {
+              "key": "pianoB2",
+              "kind": "text",
+              "label": "Piano 2",
+              "acro": "Testo39",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoB3",
+              "kind": "text",
+              "label": "Piano 3",
+              "acro": "Testo40",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoB4",
+              "kind": "text",
+              "label": "Piano 4",
+              "acro": "Testo41",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoB5",
+              "kind": "text",
+              "label": "Piano 5",
+              "acro": "Testo42",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoB6",
+              "kind": "text",
+              "label": "Piano 6",
+              "acro": "Testo43",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoB7",
+              "kind": "text",
+              "label": "Piano 7",
+              "acro": "Testo44",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoB8",
+              "kind": "text",
+              "label": "Piano 8",
+              "acro": "Testo45",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoB9",
+              "kind": "text",
+              "label": "Piano 9",
+              "acro": "Testo46",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoB10",
+              "kind": "text",
+              "label": "Piano 10",
+              "acro": "Testo47",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoB11",
+              "kind": "text",
+              "label": "Piano 11",
+              "acro": "Testo48",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoB12",
+              "kind": "text",
+              "label": "Piano 12",
+              "acro": "Testo49",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoB13",
+              "kind": "text",
+              "label": "Piano 13",
+              "acro": "Testo50",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoB14",
+              "kind": "text",
+              "label": "Piano 14",
+              "acro": "Testo51",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoB15",
+              "kind": "text",
+              "label": "Piano 15",
+              "acro": "Testo52",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoB16",
+              "kind": "text",
+              "label": "Piano 16",
+              "acro": "Testo53",
+              "maxLength": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Vano e locale macchina",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "fossa",
+              "kind": "text",
+              "label": "Fossa mt",
+              "acro": "Testo54",
+              "maxLength": 10,
+              "widget": 0
+            },
+            {
+              "key": "testata",
+              "kind": "text",
+              "label": "Testata mt",
+              "acro": "Testo55",
+              "maxLength": 13,
+              "widget": 0
+            },
+            {
+              "key": "corsa",
+              "kind": "text",
+              "label": "Corsa mt",
+              "acro": "Testo56",
+              "maxLength": 11,
+              "widget": 0
+            },
+            {
+              "key": "distLocMacchina",
+              "kind": "text",
+              "label": "Dist. Loc. Macchina mt",
+              "acro": "Testo57",
+              "maxLength": 11,
+              "widget": 0
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "locMacc",
+              "kind": "radio",
+              "label": "Locale macchina",
+              "labelNascosta": true,
+              "acro": "Pulsante di scelta11",
+              "opzioni": [
+                {
+                  "valore": "alto",
+                  "label": "Loc. Macc. in ALTO",
+                  "widget": 0
+                },
+                {
+                  "valore": "basso",
+                  "label": "Loc. Macc. in BASSO",
+                  "widget": 1
+                }
+              ],
+              "predefinito": "alto"
+            },
+            {
+              "key": "cavoSchermato",
+              "kind": "text",
+              "label": "Cavo Schermato mt",
+              "acro": "Testo58",
+              "maxLength": 11
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "interpianiStandard",
+              "kind": "check",
+              "label": "Interpiani standard",
+              "acro": "Casella di controllo17",
+              "predefinito": true
+            },
+            {
+              "key": "pianoCorto",
+              "kind": "check",
+              "label": "Piano Corto",
+              "acro": "Casella di controllo18"
+            },
+            {
+              "key": "pianoCorto1",
+              "kind": "text",
+              "label": "Piano Corto (1)",
+              "acro": "Testo59",
+              "maxLength": 2
+            },
+            {
+              "key": "pianoCorto2",
+              "kind": "text",
+              "label": "Piano Corto (2)",
+              "acro": "Testo60",
+              "maxLength": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Fune",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "argano",
+              "kind": "text",
+              "label": "Argano",
+              "acro": "Testo61",
+              "maxLength": 11
+            },
+            {
+              "key": "freno",
+              "kind": "text",
+              "label": "Freno",
+              "acro": "Testo62",
+              "maxLength": 10
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "numGiri",
+              "kind": "text",
+              "label": "Num Giri",
+              "acro": "Testo63",
+              "maxLength": 10
+            },
+            {
+              "key": "encGm",
+              "kind": "text",
+              "label": "Enc g/m",
+              "acro": "Testo64",
+              "maxLength": 9
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "velocitaFune",
+              "kind": "text",
+              "label": "Velocità",
+              "acro": "Testo65",
+              "maxLength": 9
+            },
+            {
+              "key": "tensFune",
+              "kind": "text",
+              "label": "Tens.",
+              "acro": "Testo66",
+              "maxLength": 9
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "potMotFune",
+              "kind": "text",
+              "label": "Pot. Mot.",
+              "acro": "Testo67",
+              "maxLength": 9
+            },
+            {
+              "key": "amp",
+              "kind": "text",
+              "label": "Amp.",
+              "acro": "Testo68",
+              "maxLength": 8
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "encoderAnelloChiuso",
+              "kind": "check",
+              "label": "Encoder Anello Chiuso",
+              "acro": "Casella di controllo19"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Idraulico",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "centralina",
+              "kind": "text",
+              "label": "Centralina",
+              "acro": "Testo69",
+              "maxLength": 27
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "elettroValv",
+              "kind": "text",
+              "label": "ElettroValv.",
+              "acro": "Testo70",
+              "maxLength": 11
+            },
+            {
+              "key": "elettroValvN",
+              "kind": "text",
+              "label": "N°",
+              "acro": "Testo71",
+              "maxLength": 8
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "elettrovEmerg",
+              "kind": "text",
+              "label": "Elettrov. Emerg.",
+              "acro": "Testo72",
+              "maxLength": 22
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "potMotCentralina",
+              "kind": "text",
+              "label": "Pot. Mot.",
+              "acro": "Testo73",
+              "maxLength": 13
+            },
+            {
+              "key": "tensCentralina",
+              "kind": "text",
+              "label": "Tens",
+              "acro": "Testo74",
+              "maxLength": 8
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "termistori",
+              "kind": "check",
+              "label": "Termistori",
+              "acro": "Casella di controllo20"
+            },
+            {
+              "key": "termiche",
+              "kind": "check",
+              "label": "Termiche",
+              "acro": "Casella di controllo21"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Armadio",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "armadio",
+              "kind": "radio",
+              "label": "Armadio",
+              "labelNascosta": true,
+              "acro": "Pulsante di scelta6",
+              "opzioni": [
+                {
+                  "valore": "standard",
+                  "label": "Armadio Standard",
+                  "widget": 0
+                },
+                {
+                  "valore": "boxCentr",
+                  "label": "Armadio Box Centr.",
+                  "widget": 1
+                },
+                {
+                  "valore": "mrl",
+                  "label": "Armadio MRL",
+                  "widget": 2
+                }
+              ],
+              "predefinito": "standard"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "quadrDistribuzione",
+              "kind": "check",
+              "label": "Quadr. Distribuzione",
+              "acro": "Casella di controllo22"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "anta",
+              "kind": "radio",
+              "label": "Anta",
+              "labelNascosta": true,
+              "acro": "Pulsante di scelta7",
+              "opzioni": [
+                {
+                  "valore": "sx",
+                  "label": "Anta SX",
+                  "widget": 0
+                },
+                {
+                  "valore": "dx",
+                  "label": "Anta DX",
+                  "widget": 1
+                }
+              ],
+              "predefinito": "sx"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Uscita display",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "uscita",
+              "kind": "radio",
+              "label": "Uscita display",
+              "labelNascosta": true,
+              "acro": "Pulsante di scelta8",
+              "opzioni": [
+                {
+                  "valore": "poloPiano",
+                  "label": "1 Polo Piano",
+                  "widget": 0
+                },
+                {
+                  "valore": "setteSegmenti",
+                  "label": "7 Segmenti",
+                  "widget": 1
+                },
+                {
+                  "valore": "binario",
+                  "label": "Binario",
+                  "widget": 2
+                }
+              ],
+              "predefinito": "poloPiano"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "encoderDmg",
+              "kind": "check",
+              "label": "Encoder DMG",
+              "acro": "Casella di controllo23"
+            },
+            {
+              "key": "sintesiVoc",
+              "kind": "check",
+              "label": "Sintesi Voc.",
+              "acro": "Casella di controllo24"
+            },
+            {
+              "key": "frDirez",
+              "kind": "check",
+              "label": "Fr Direz",
+              "acro": "Casella di controllo25"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "comune",
+              "kind": "radio",
+              "label": "Comune",
+              "labelNascosta": true,
+              "acro": "Pulsante di scelta9",
+              "opzioni": [
+                {
+                  "valore": "pos",
+                  "label": "COM. POS",
+                  "widget": 0
+                },
+                {
+                  "valore": "neg",
+                  "label": "COM. NEG.",
+                  "widget": 1
+                }
+              ],
+              "predefinito": "neg"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "tensioneDisplay",
+              "kind": "text",
+              "label": "Tensione",
+              "acro": "Testo75",
+              "maxLength": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Segnalazioni",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "gong",
+              "kind": "check",
+              "label": "Gong",
+              "acro": "Casella di controllo26"
+            },
+            {
+              "key": "legge13",
+              "kind": "check",
+              "label": "Legge 13",
+              "acro": "Casella di controllo27"
+            },
+            {
+              "key": "sovraccarico",
+              "kind": "check",
+              "label": "Sovraccarico",
+              "acro": "Casella di controllo28"
+            },
+            {
+              "key": "fuoriServizio",
+              "kind": "check",
+              "label": "Fuori Servizio",
+              "acro": "Casella di controllo29"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "inArrivo",
+              "kind": "check",
+              "label": "In Arrivo",
+              "acro": "Casella di controllo30"
+            },
+            {
+              "key": "aiPiani",
+              "kind": "check",
+              "label": "Ai Piani",
+              "acro": "Casella di controllo33"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "suOccup",
+              "kind": "check",
+              "label": "Su Occup.",
+              "acro": "Casella di controllo31"
+            },
+            {
+              "key": "inCabina",
+              "kind": "check",
+              "label": "In Cabina",
+              "acro": "Casella di controllo34"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "occupatoLampeggiante",
+              "kind": "check",
+              "label": "Occupato Lampeggiante",
+              "acro": "Casella di controllo32"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Combinatore",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "combinatore",
+              "kind": "radio",
+              "label": "Combinatore",
+              "labelNascosta": true,
+              "acro": "Pulsante di scelta10",
+              "opzioni": [
+                {
+                  "valore": "microcall",
+                  "label": "Microcall",
+                  "widget": 0
+                },
+                {
+                  "valore": "teledif",
+                  "label": "Teledif",
+                  "widget": 1
+                },
+                {
+                  "valore": "predisposizione",
+                  "label": "Predisposizione",
+                  "widget": 2
+                }
+              ],
+              "predefinito": "predisposizione"
+            }
+          ]
+        },
+        {
+          "campi": [
+            {
+              "key": "tranquillo",
+              "kind": "check",
+              "label": "Tranquillo",
+              "acro": "Casella di controllo36"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titolo": "Note",
+      "righe": [
+        {
+          "campi": [
+            {
+              "key": "note",
+              "kind": "text",
+              "label": "Note",
+              "acro": "Testo76",
+              "maxLength": 103
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

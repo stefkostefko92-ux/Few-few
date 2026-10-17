@@ -1,0 +1,11 @@
+<%
+  // Мерките по спирки (src/schede/misure.ts) — на страницата (`mtable`) и на листа за печат (`ptable`).
+  // Всяка клетка носи заглавието на колоната (data-label): на телефон редът става карта.
+  const cls = typeof tableClass !== 'undefined' ? tableClass : 'mtable';
+%><table class="<%= cls %>">
+  <thead><tr><% for (const head of table.head) { %><th scope="col"><%= head %></th><% } %></tr></thead>
+  <tbody>
+  <% for (const row of table.rows) { %><tr><% row.forEach((cell, i) => { %><% if (i === 0) { %><th scope="row" data-label="<%= table.head[0] %>"><%= cell %></th><% } else if (cell) { %><td data-label="<%= table.head[i] %>"><%= cell %></td><% } else { %><td class="empty-value" data-label="<%= table.head[i] %>">—</td><% } %><% }) %></tr>
+  <% } %>
+  </tbody>
+</table>

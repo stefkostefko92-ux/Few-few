@@ -1,0 +1,36 @@
+<%
+  const pending = typeof newRequests !== 'undefined' ? newRequests : 0;
+  const navItems = [
+    { href: '/schede', key: 'nav.schede', icon: 'sheet', show: can('schede:read') },
+    { href: '/utenti', key: 'nav.utenti', icon: 'users', show: can('users:manage') },
+    { href: '/aziende', key: 'nav.aziende', icon: 'building', show: can('aziende:manage') },
+    { href: '/richieste', key: 'requests.nav', icon: 'inbox', show: can('requests:manage'), count: pending },
+    { href: '/cestino', key: 'nav.cestino', icon: 'trash', show: can('schede:trash') },
+    { href: '/registro', key: 'nav.registro', icon: 'log', show: can('audit:view') },
+    { href: '/impostazioni', key: 'nav.impostazioni', icon: 'settings', show: can('aziende:settings') },
+  ].filter((item) => item.show);
+  const current = (href) => path === href || path.startsWith(href + '/');
+  // Под името: Master; ролята и фирмата при една фирма; броят на фирмите при няколко.
+  const only = currentUser.memberships.length === 1 ? currentUser.memberships[0] : null;
+  const roleLine = currentUser.master
+    ? t('role.MASTER')
+    : only
+      ? t('role.' + only.role) + ', ' + only.aziendaName
+      : t('nav.aziendeCount', { n: currentUser.memberships.length });
+%><header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="/schede">
+      <%- include('brandmark') %>
+      <span class="brand__text"><span class="brand__name">Carbon Stealth VCC</span><span class="brand__product"><%= t('app.product') %></span></span>
+    </a>
+    <nav class="nav" aria-label="<%= t('nav.label') %>" data-count="<%= navItems.length %>">
+      <% for (const item of navItems) { %><a href="<%= item.href %>"<% if (current(item.href)) { %> aria-current="page"<% } %>><%- include('icon', { name: item.icon }) %><span><%= t(item.key) %></span><% if (item.count) { %><span class="nav__count"><%= item.count %></span><% } %></a>
+      <% } %>
+    </nav>
+    <div class="topbar__end">
+      <% if (can('schede:write')) { %><a class="btn btn--inverse btn--sm topbar__new" href="/schede/nuova"><%- include('icon', { name: 'plus' }) %><span class="btn__label"><%= t('schede.new') %></span></a><% } %>
+      <a class="who" href="/account"><span class="who__name"><%= currentUser.name %></span><span class="who__role"><%= roleLine %></span></a>
+      <a class="btn btn--bar btn--sm topbar__account" href="/account" aria-label="<%= t('nav.account') %>"><%- include('icon', { name: 'user' }) %></a>
+    </div>
+  </div>
+</header>

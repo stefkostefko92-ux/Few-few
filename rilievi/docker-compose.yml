@@ -1,0 +1,89 @@
+# Rilievi Impianti в продукция: база + приложение.
+#
+# TLS и публичният вход са на nginx-а на ХОСТА (Let's Encrypt) — конфигът е
+# `deploy/nginx/rilievi.carbonstealth.eu.conf` в това репо, не се пише на ръка на сървъра.
+#
+# Тайните НЕ са тук — идват от `.env` до този файл (mode 600 на сървъра, никога в репото; прави го
+# `deploy/setup-env.sh`). Задължителни: POSTGRES_PASSWORD (hex — влиза некодирана в DATABASE_URL) ·
+# JWT_SECRET · PUBLIC_BASE_URL. По избор: SMTP_HOST/SMTP_USER/SMTP_PASS (Brevo; без тях поканите се
+# копират от екрана), HTTP_PORT (4330).
+# В контейнера влиза само изброеното в `environment:` — нова настройка от `.env` се добавя и там.
+name: rilievi
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
+# Двата контейнера: файловата система е само за четене (пише се само в тома и в tmpfs), без Linux
+# capabilities (базата пази само нужните ѝ), без придобиване на права, с таван на памет и процеси.
+x-hardening: &hardening
+  read_only: true
+  security_opt:
+    - no-new-privileges:true
+  pids_limit: 256
+
+services:
+  db:
+    # закован по digest (същият като korpora); обновяване: `docker buildx imagetools inspect postgres:16-alpine`
+    image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+    <<: *hardening
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    tmpfs:
+      - /var/run/postgresql:size=4m
+      - /tmp:size=64m
+    mem_limit: 512m
+    cpus: 1
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: rilievi
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD}
+      POSTGRES_DB: rilievi
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U rilievi -d rilievi']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging: *logging
+
+  app:
+    build: .
+    <<: *hardening
+    cap_drop: [ALL]
+    tmpfs:
+      - /tmp:size=64m,noexec,nosuid
+    mem_limit: 512m
+    cpus: 1
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: '4330'
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://rilievi:${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD}@db:5432/rilievi
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?липсва PUBLIC_BASE_URL}
+      JWT_SECRET: ${JWT_SECRET:?липсва JWT_SECRET}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-2525}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      MAIL_FROM: ${MAIL_FROM:-Rilievi Impianti <no-reply@carbonstealth.eu>}
+      AUDIT_RETENTION_DAYS: ${AUDIT_RETENTION_DAYS:-730}
+      CONTACT_EMAIL: ${CONTACT_EMAIL:-}
+      PRIVACY_EMAIL: ${PRIVACY_EMAIL:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      # Портът е публикуван през Docker NAT: приложението вижда шлюза на мрежата, не 127.0.0.1.
+      # `uniquelocal` вярва само на nginx-а на хоста през тази мрежа; портът е вързан за 127.0.0.1.
+      TRUST_PROXY: ${TRUST_PROXY:-uniquelocal}
+    ports:
+      - '127.0.0.1:${HTTP_PORT:-4330}:4330'
+    depends_on:
+      db: { condition: service_healthy }
+    logging: *logging
+
+volumes:
+  db-data:

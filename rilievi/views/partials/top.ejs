@@ -1,0 +1,31 @@
+<%
+  // Заглавие на страницата < 60 знака: „<страница> — Rilievi Impianti“.
+  const pageTitle = (typeof title !== 'undefined' && title) ? title : t(titleKey);
+  const narrow = typeof narrowMain !== 'undefined' && narrowMain;
+  const bareMain = typeof bare !== 'undefined' && bare;
+  // Входът е без лентата на портала, но с чертежа на шахтата (shaft.css).
+  const sheets = ['base', 'buttons', 'shell', 'layout', 'plate', 'forms', 'pages', 'data', 'sheet', 'misure', 'moduli'].concat(bareMain ? ['shaft'] : []);
+%><!doctype html>
+<html lang="<%= locale %>"<% if (theme === 'LIGHT') { %> data-theme="light"<% } else if (theme === 'DARK') { %> data-theme="dark"<% } %>>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title><%= pageTitle %> — Rilievi Impianti</title>
+<meta name="description" content="<%= t('meta.description') %>">
+<meta name="keywords" content="<%= t('meta.keywords') %>">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/static/img/favicon.svg?v=<%= v %>" type="image/svg+xml">
+<link rel="stylesheet" href="/static/fonts/fonts.css?v=<%= v %>">
+<% for (const sheet of sheets) { %><link rel="stylesheet" href="/static/css/<%= sheet %>.css?v=<%= v %>">
+<% } %><script nonce="<%= cspNonce %>">document.documentElement.classList.add('js')</script>
+<script src="/static/js/app.js?v=<%= v %>" defer></script>
+<% for (const script of (typeof scripts !== 'undefined' ? scripts : [])) { %><script src="/static/js/<%= script %>.js?v=<%= v %>" defer></script>
+<% } %></head>
+<body>
+<a class="skip" href="#main"><%= t('nav.skip') %></a>
+<% if (currentUser && !bareMain) { %><%- include('header') %><% } %>
+<main id="main" class="<%= bareMain ? 'main-bare' : 'main' + (narrow ? ' main--narrow' : '') %>" tabindex="-1">
+<% if (!bareMain) { %><%- include('flash') %><% } %>
