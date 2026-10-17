@@ -139,13 +139,15 @@ export function decimalParser(field: { min: number; max: number }) {
   );
 }
 
-function checksParser<T extends string>(options: readonly string[]) {
+function checksParser<T extends string>(options: readonly string[], single: boolean) {
   return z.preprocess(
     (value) => (value === undefined ? [] : typeof value === 'string' ? [value] : value),
     z
       .array(str, { invalid_type_error: 'invalid' })
       .max(options.length * 2, 'invalid')
       .refine((values) => values.every((v) => options.includes(v)), 'option')
+      // Един избор (`single`): два избора праща само подправена или стара страница — грешка, не тих избор.
+      .refine((values) => !single || new Set(values).size <= 1, 'option')
       // Без повторения и в реда от заданието, каквото и да е подредил браузърът.
       .transform((values) => options.filter((option) => values.includes(option)) as T[]),
   );
@@ -220,8 +222,10 @@ export const digitsOf = (key: SchedaFieldKey) => digitsParser(defOf(key, ['digit
 export const intOf = (key: SchedaFieldKey) => intParser(defOf(key, ['int'], isNumberField));
 export const decimalOf = (key: SchedaFieldKey) =>
   decimalParser(defOf(key, ['decimal'], isNumberField));
-export const checksOf = <T extends string>(key: SchedaFieldKey) =>
-  checksParser<T>(defOf(key, ['checks'], isOptionsField).options);
+export function checksOf<T extends string>(key: SchedaFieldKey) {
+  const field = defOf(key, ['checks'], isOptionsField);
+  return checksParser<T>(field.options, field.single === true);
+}
 export const choiceOf = <T extends string>(key: SchedaFieldKey) =>
   choiceParser<T>(defOf(key, ['choice'], isOptionsField).options);
 

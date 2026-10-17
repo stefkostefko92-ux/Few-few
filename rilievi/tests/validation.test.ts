@@ -177,13 +177,25 @@ describe('parseScheda', () => {
   });
 
   it('keeps the ticked boxes in the brief order without repeats and refuses unknown values', () => {
-    const data = parsedOrFail({ ...minimal, tipoPorte: ['MANUALI', 'AUTOMATICHE', 'MANUALI'] });
-    assert.deepEqual(data.tipoPorte, ['AUTOMATICHE', 'MANUALI']);
+    const data = parsedOrFail({ ...minimal, ubicazioneMacchina: ['BASSO', 'ALTO', 'BASSO'] });
+    assert.deepEqual(data.ubicazioneMacchina, ['ALTO', 'BASSO']);
     assert.deepEqual(parsedOrFail({ ...minimal, ubicazioneMacchina: 'ALTO' }).ubicazioneMacchina, [
       'ALTO',
     ]);
     const unknown = parseScheda({ ...minimal, tipoImpianto: 'A_VAPORE' });
     assert.equal(!unknown.ok && unknown.errors.tipoImpianto, 'option');
+  });
+
+  it('takes one kind of lift and one kind of doors, kept as a list of one', () => {
+    const one = parsedOrFail({ ...minimal, tipoImpianto: 'GEARLESS', tipoPorte: ['MANUALI'] });
+    assert.deepEqual([one.tipoImpianto, one.tipoPorte], [['GEARLESS'], ['MANUALI']]);
+    const repeated = parsedOrFail({ ...minimal, tipoPorte: ['MANUALI', 'MANUALI'] });
+    assert.deepEqual(repeated.tipoPorte, ['MANUALI']);
+    for (const key of ['tipoImpianto', 'tipoPorte'] as const) {
+      const two = key === 'tipoImpianto' ? ['ELETTRICO', 'GEARLESS'] : ['AUTOMATICHE', 'MANUALI'];
+      const result = parseScheda({ ...minimal, [key]: two });
+      assert.equal(!result.ok && result.errors[key], 'option', `${key}: a page from before`);
+    }
   });
 
   it('keeps the number and type of locks only when "Serrature" is yes', () => {

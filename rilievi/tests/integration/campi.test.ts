@@ -7,7 +7,8 @@ after(stopApp);
 
 /**
  * The fields of the second brief and of the owner's October pass, as the browser sends them (three
- * stops, two of them measured; automatic and manual doors ask the suspensions and the locks).
+ * stops, two of them measured; manual doors ask the locks and the cam — the suspensions sent with them
+ * are read only when the doors become automatic).
  */
 const SECOND = {
   data: '2026-10-12',
@@ -15,7 +16,7 @@ const SECOND = {
   indirizzo: 'Via Torino 5, Milano',
   buonoLavoro: 'BL 2026/512',
   fermate: '3',
-  tipoPorte: ['AUTOMATICHE', 'MANUALI'],
+  tipoPorte: ['MANUALI'],
   doppioAccesso: 'no',
   quadroNote: 'Quadro nel sottoscala',
   arganoPreventivo: 'no',
@@ -93,12 +94,10 @@ describe('the second brief', () => {
     assert.deepEqual([row.tirantiCabinaNumero, row.tirantiCabinaTipo], [4, 'Tiranti M12']);
     assert.equal(row.arganoTipo, 'A vite senza fine');
     assert.equal(row.contattiFreno, null, 'the brake contacts are no longer asked');
-    assert.equal(row.sospensioni, true);
-    assert.equal(row.sospensioniNumero, 4);
     assert.deepEqual(
-      row.ordineSospensioni,
-      { modulo: '2sg-ordine-porte', valori: {} },
-      '"Sì" opens the 2SG sheet, empty when nothing is written in it',
+      [row.sospensioni, row.sospensioniNumero, row.ordineSospensioni],
+      [null, null, null],
+      'manual doors: no suspensions',
     );
     assert.equal(row.luceVanoSostituire, true);
     assert.deepEqual(
@@ -218,13 +217,32 @@ describe('the second brief', () => {
     assert.equal(await prisma.misuraBottoniera.count(), before);
   });
 
-  it('prints the locks, suspensions and skates to change, the alarm with the emergency call, the notes and the measurements table; the PDF carries them too', async () => {
+  it('saves and prints the suspensions and opens the 2SG sheet with automatic doors, without the locks', async () => {
+    const { browser } = await signedIn('TECNICO');
+    const id = await create(browser, { ...SECOND, tipoPorte: 'AUTOMATICHE' });
+    const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
+    assert.deepEqual(
+      [row.tipoPorte, row.sospensioni, row.sospensioniNumero],
+      [['AUTOMATICHE'], true, 4],
+    );
+    assert.deepEqual(
+      row.ordineSospensioni,
+      { modulo: '2sg-ordine-porte', valori: {} },
+      '"Sì" opens the 2SG sheet, empty when nothing is written in it',
+    );
+    assert.deepEqual([row.serrature, row.pattinoRetrattile], [null, null]);
+    const print = await browser.get(`/schede/${id}/stampa`);
+    assert.match(print.body, /<dt>Numero sospensioni<\/dt>\s*<dd>4<\/dd>/);
+    assert.doesNotMatch(print.body, /Serrature da cambiare|Pattino retrattile/);
+  });
+
+  it('prints the locks and skates to change, the alarm with the emergency call, the notes and the measurements table; the PDF carries them too', async () => {
     const { browser } = await signedIn('TECNICO');
     const id = await create(browser, SECOND);
     const print = await browser.get(`/schede/${id}/stampa`);
     assert.match(print.body, /<h2>Serrature o sospensioni<\/h2>/);
     assert.match(print.body, /<dt>Serrature da cambiare<\/dt>/);
-    assert.match(print.body, /<dt>Numero sospensioni<\/dt>\s*<dd>4<\/dd>/);
+    assert.doesNotMatch(print.body, /Numero sospensioni/, 'manual doors: no suspensions');
     assert.match(print.body, /Pattino retrattile da cambiare/);
     assert.match(print.body, /<dt>Tipo di pattino retrattile<\/dt>\s*<dd>Wittur<\/dd>/);
     assert.match(

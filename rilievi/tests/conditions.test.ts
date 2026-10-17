@@ -102,9 +102,6 @@ describe('door details', () => {
       [...LOCKS, ...SUSPENSIONS].map((key) => semi[key]),
       [true, 4, 'Fermator', true, 'Wittur', null, null],
     );
-    const mixed = parsedOrFail({ ...minimal, tipoPorte: ['AUTOMATICHE', 'MANUALI'], ...DOORS });
-    assert.equal(mixed.serrature, true, 'manual doors among others still have their locks');
-    assert.equal(mixed.sospensioni, true);
   });
 
   it('keep the double entrance with every door type, manual doors included', () => {
@@ -128,50 +125,34 @@ describe('door details', () => {
   });
 
   it('keep the number and type of the locks, and the number of suspensions, only with "si"', () => {
-    const no = parsedOrFail({
-      ...minimal,
-      tipoPorte: ['AUTOMATICHE', 'MANUALI'],
-      serrature: 'no',
-      serratureNumero: '4',
-      serratureTipo: 'Fermator',
-      sospensioni: 'no',
-      sospensioniNumero: '6',
-    });
-    assert.equal(no.serratureNumero, null);
-    assert.equal(no.serratureTipo, null);
-    assert.equal(no.sospensioniNumero, null);
-    const yes = parsedOrFail({
-      ...minimal,
-      tipoPorte: ['AUTOMATICHE', 'MANUALI'],
-      serrature: 'si',
-      serratureNumero: '4',
-      serratureTipo: 'Fermator',
-      sospensioni: 'si',
-      sospensioniNumero: '6',
-    });
+    const locks = { serratureNumero: '4', serratureTipo: 'Fermator' };
+    const no = parsedOrFail({ ...minimal, tipoPorte: 'MANUALI', serrature: 'no', ...locks });
+    assert.deepEqual([no.serratureNumero, no.serratureTipo], [null, null]);
+    const yes = parsedOrFail({ ...minimal, tipoPorte: 'MANUALI', serrature: 'si', ...locks });
     assert.deepEqual(
-      [
-        yes.serrature,
-        yes.serratureNumero,
-        yes.serratureTipo,
-        yes.sospensioni,
-        yes.sospensioniNumero,
-      ],
-      [true, 4, 'Fermator', true, 6],
+      [yes.serrature, yes.serratureNumero, yes.serratureTipo],
+      [true, 4, 'Fermator'],
     );
+    const auto = { ...minimal, tipoPorte: 'AUTOMATICHE', sospensioniNumero: '6' };
+    assert.equal(parsedOrFail({ ...auto, sospensioni: 'no' }).sospensioniNumero, null);
+    assert.equal(parsedOrFail({ ...auto, sospensioni: 'si' }).sospensioniNumero, 6);
   });
 
   it('do not complain about a hidden field: what is not shown is not read', () => {
     const data = parsedOrFail({
       ...minimal,
-      tipoPorte: ['AUTOMATICHE', 'MANUALI'],
-      sospensioni: 'no',
-      sospensioniNumero: 'abc',
+      tipoPorte: 'MANUALI',
       serrature: 'no',
       serratureNumero: '-5',
     });
-    assert.equal(data.sospensioniNumero, null);
     assert.equal(data.serratureNumero, null);
+    const auto = parsedOrFail({
+      ...minimal,
+      tipoPorte: 'AUTOMATICHE',
+      sospensioni: 'no',
+      sospensioniNumero: 'abc',
+    });
+    assert.equal(auto.sospensioniNumero, null);
     const doors = { ...minimal, tipoPorte: 'AUTOMATICHE' };
     const shown = parseScheda({ ...doors, sospensioni: 'si', sospensioniNumero: 'abc' });
     assert.equal(!shown.ok && shown.errors.sospensioniNumero, 'integer');
@@ -187,7 +168,7 @@ describe('door details', () => {
   it('no longer read the fields taken off the sheet (their old answers stay in the database)', () => {
     const data = parsedOrFail({
       ...minimal,
-      tipoPorte: ['MANUALI', 'AUTOMATICHE'],
+      tipoPorte: 'AUTOMATICHE',
       bloccaPortine: 'si',
       autolivellamento: 'si',
       pattinoRetrattileNumero: '2',

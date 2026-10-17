@@ -13,8 +13,10 @@
   const when = field.when ? ' data-when="' + field.when.field + '" data-when-values="' + field.when.values.join(' ') + '"' + (field.when.not ? ' data-when-not' : '') + (active.has(field.key) ? '' : ' data-off') : '';
   const list = Array.isArray(value) ? value : [];
   const text = typeof value === 'string' ? value : '';
-  // Sì/No със свои думи и ред (`risposte`, „Accessi: 1 / 2“) — иначе Sì, No.
-  const radios = field.kind === 'yesno' ? (field.risposte || ['si', 'no']) : field.kind === 'choice' ? field.options : [];
+  // Sì/No със свои думи и ред (`risposte`, „Accessi: 1 / 2“) — иначе Sì, No. Отметките с един избор
+  // (`single`) са радио; от стара карта с два избора е отметнат първият.
+  const radios = field.kind === 'yesno' ? (field.risposte || ['si', 'no']) : field.kind === 'choice' || field.single ? field.options : [];
+  const picked = field.single ? (list[0] || '') : text;
   const radioLabel = (option) => field.kind === 'yesno' && !field.risposte ? t(option === 'si' ? 'common.yes' : 'common.no') : t('scheda.option.' + field.key + '.' + option);
   // Попълнено от модул (свързаните данни) и още следва източника си: data-auto (public/js/collegati.js).
   const seguace = typeof collegati !== 'undefined' && collegati.auto.has(field.key);
@@ -23,10 +25,10 @@
 <fieldset class="choice <%= classes %>" id="<%= id %>" data-campo="<%= field.key %>"<%- when %><% if (errText) { %> aria-describedby="<%= errId %>"<% } %>>
   <legend><%= label %></legend>
   <div class="choice__opts">
-    <% if (field.kind === 'checks') { %><% for (const option of field.options) { %>
+    <% if (field.kind === 'checks' && !field.single) { %><% for (const option of field.options) { %>
     <label class="tick"><input type="checkbox" name="<%= field.key %>" value="<%= option %>"<% if (list.includes(option)) { %> checked<%- autoTick %><% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('scheda.option.' + field.key + '.' + option) %></span></label>
     <% } %><% } else { %><% for (const option of radios) { %>
-    <label class="tick"><input type="radio" name="<%= field.key %>" value="<%= option %>" data-clearable<% if (text === option) { %> checked<%- autoTick %><% } %>><span class="tick__box" aria-hidden="true"></span><span><%= radioLabel(option) %></span></label>
+    <label class="tick"><input type="radio" name="<%= field.key %>" value="<%= option %>" data-clearable<% if (picked === option) { %> checked<%- autoTick %><% } %>><span class="tick__box" aria-hidden="true"></span><span><%= radioLabel(option) %></span></label>
     <% } %><% } %>
   </div>
   <% if (errText) { %><p class="field__error" id="<%= errId %>"><%= errText %></p><% } %>

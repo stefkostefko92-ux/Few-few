@@ -199,6 +199,23 @@ describe('the sheet form, laid out like the printed sheet', () => {
       assert.ok(ascending(positions(form.body, ids)), question);
     }
   });
+
+  it('asks one kind of lift and one kind of doors; an old sheet with two shows the first', async () => {
+    const { browser } = await signedIn('TECNICO');
+    const form = await browser.get('/schede/nuova');
+    for (const name of ['tipoImpianto', 'tipoPorte']) {
+      assert.match(form.body, new RegExp(`<input type="radio" name="${name}" value="[A-Z]+"`));
+      assert.doesNotMatch(form.body, new RegExp(`type="checkbox" name="${name}"`), name);
+    }
+    const id = await create(browser);
+    // Saved before October 17, when both could be ticked.
+    await prisma.scheda.update({ where: { id }, data: { tipoPorte: ['AUTOMATICHE', 'MANUALI'] } });
+    const edit = await browser.get(`/schede/${id}/modifica`);
+    assert.match(edit.body, /name="tipoPorte" value="AUTOMATICHE" data-clearable checked/);
+    assert.doesNotMatch(edit.body, /name="tipoPorte" value="MANUALI" data-clearable checked/);
+    const print = await browser.get(`/schede/${id}/stampa`);
+    assert.match(print.body, /opt--on[^>]*><span class="opt__box"[^>]*><\/span>Manuali/);
+  });
 });
 
 describe('the head of the printed sheet', () => {

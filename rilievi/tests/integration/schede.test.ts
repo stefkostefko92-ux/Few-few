@@ -19,7 +19,7 @@ const FULL = {
   ubicazioneCassettina: 'Piano -1, vano contatori',
   parcheggio: 'Cortile interno',
   tipoImpianto: ['ELETTRICO'],
-  tipoPorte: ['AUTOMATICHE', 'SEMIAUTOMATICHE'],
+  tipoPorte: ['SEMIAUTOMATICHE'],
   serrature: 'si',
   serratureNumero: '6',
   serratureTipo: 'Elettromeccaniche',
@@ -68,7 +68,7 @@ describe('sheets', () => {
     assert.equal(row.matricola, '0033871');
     assert.equal(row.portataKg, 630);
     assert.equal(row.ubicazioneCassettina, 'Piano -1, vano contatori');
-    assert.deepEqual(row.tipoPorte, ['AUTOMATICHE', 'SEMIAUTOMATICHE']);
+    assert.deepEqual(row.tipoPorte, ['SEMIAUTOMATICHE']);
     assert.equal(row.serrature, true);
     assert.equal(row.serratureNumero, 6);
     assert.equal(row.funiDiametroMm?.toString(), '10.5');

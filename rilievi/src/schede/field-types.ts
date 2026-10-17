@@ -70,6 +70,12 @@ export interface NumberField extends BaseField {
 export interface OptionsField extends BaseField {
   kind: 'checks' | 'choice';
   options: readonly string[];
+  /**
+   * Отметки с един избор (радио — вид уредба, вид врати; собственикът, октомври 2026). Пазят се като
+   * списък от един: колоната остава масив, затова предишният код я чете; старите карти с два избора се
+   * показват както са записани, а във формата е отметнат първият.
+   */
+  single?: true;
 }
 
 export interface PlainField extends BaseField {

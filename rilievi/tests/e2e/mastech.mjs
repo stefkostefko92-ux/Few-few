@@ -62,7 +62,8 @@ export async function checkMastech(page, scheme, aziendaName) {
   if (!(await shown(page, '#f-centralinaPistoni'))) fail(`${scheme}: power unit data not shown`);
   await tick(page, 'centralinaDaFare', 'no');
   if (!(await shown(page, '#f-emendamentoA3'))) fail(`${scheme}: no A3 amendment for an old unit`);
-  await untick(page, 'tipoImpianto', 'IDRAULICO');
+  // One kind of lift at a time: ticking "Elettrico" takes "Idraulico" away.
+  await tick(page, 'tipoImpianto', 'ELETTRICO');
   if (!(await shown(page, '#s-argano')) || (await shown(page, '#s-centralina')))
     fail(`${scheme}: the argano does not come back for a traction lift`);
 

@@ -25,7 +25,7 @@ export async function checkMovilift(page, scheme) {
     '#f-om-fermate': '6',
     '#f-om-portata': '630',
     '#f-om-tipologia': 'Elettrico',
-    '#f-om-tipoPorte': 'Automatiche, Manuali',
+    '#f-om-tipoPorte': 'Automatiche',
   };
   for (const [selector, value] of Object.entries(expected)) {
     const actual = await page.inputValue(selector);

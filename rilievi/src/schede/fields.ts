@@ -65,8 +65,9 @@ export const SECTIONS = [
     // отговори, проверката не ги чете), шейната е при бравите.
     key: 'tipologia',
     fields: [
-      { key: 'tipoImpianto', kind: 'checks', options: TIPO_IMPIANTO },
-      { key: 'tipoPorte', kind: 'checks', options: TIPO_PORTE },
+      // Един вид уредба и един вид врати (собственикът, октомври 2026) — радио, пази се като списък.
+      { key: 'tipoImpianto', kind: 'checks', options: TIPO_IMPIANTO, single: true },
+      { key: 'tipoPorte', kind: 'checks', options: TIPO_PORTE, single: true },
       // „Accessi: 1 / 2“ — двойният достъп като брой достъпи.
       { key: 'doppioAccesso', kind: 'yesno', risposte: ['no', 'si'], when: PORTE_SCELTE },
     ],

@@ -118,7 +118,7 @@ describe('prefilling the MoviLift order', () => {
       portataKg: '630',
       capienzaPersone: '8',
       fermate: '6',
-      tipoImpianto: ['ELETTRICO', 'GEARLESS'],
+      tipoImpianto: ['GEARLESS'],
       tipoPorte: ['AUTOMATICHE'],
       // Taken off the sheet (October 2026): a page from before still sends them, they fill nothing.
       operatoreMarca: 'Selcom',
@@ -152,7 +152,7 @@ describe('prefilling the MoviLift order', () => {
       riferimento: 'N° 104552 — Via Verdi 14, Milano',
       ragioneSociale: 'Ascensori Rossi Srl',
       email: 'mario@example.it',
-      tipologia: 'Elettrico, MRL',
+      tipologia: 'MRL',
       tipoPorte: 'Automatiche',
       // The plant data, over the blank form ("Operatore Unico", "Loc. Macc. in ALTO").
       fermate: '6',
