@@ -29,9 +29,9 @@ export async function checkSettings(page, { base, aziendaId, sheetPath }) {
   const sections = await page
     .locator('fieldset.section[id^="s-"]')
     .evaluateAll((sets) => sets.map((set) => set.id.slice(2)));
-  // Moved up twice from the bottom: after "Serrature o sospensioni", before "Allarme".
+  // Moved up twice from the bottom: after "Cavi", before "Serrature o sospensioni".
   const at = (key) => sections.indexOf(key);
-  if (!(at('serrature') < at('note') && at('note') < at('allarme')))
+  if (!(at('cavi') < at('note') && at('note') < at('serrature')))
     fail(`settings: the form does not follow the saved order (${sections})`);
   await page.goto(`${base}/impostazioni?azienda=${aziendaId}`);
   await page.click('button[name=ripristina]');

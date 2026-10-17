@@ -1,6 +1,5 @@
 // The MoviLift panel order in a real browser (public/js/moduli.js, collegati.js): it opens with its
-// make and "Sì", filled from the sheet — the words of the ticked boxes, the list options for the door
-// operator, the plant data; its radio groups follow the sheet while nobody chooses there and go back to
+// make and "Sì", filled from the sheet — the words of the ticked boxes, the plant data; its radio groups follow the sheet while nobody chooses there and go back to
 // the blank form's answer when the sheet says nothing; a Pelazza panel hides it again.
 import { audit, fail, tick } from './helpers.mjs';
 
@@ -26,9 +25,7 @@ export async function checkMovilift(page, scheme) {
     '#f-om-fermate': '6',
     '#f-om-portata': '630',
     '#f-om-tipologia': 'Elettrico',
-    '#f-om-tipoPorte': 'Automatiche',
-    '#f-om-marcaOpA': 'SELCOM',
-    '#f-om-voltA': '24Vcc',
+    '#f-om-tipoPorte': 'Automatiche, Manuali',
   };
   for (const [selector, value] of Object.entries(expected)) {
     const actual = await page.inputValue(selector);

@@ -4,7 +4,7 @@ import { roleIn, spansAziende } from '../auth/scope.js';
 import { collegatiDelGruppo } from '../ordini/collegamenti.js';
 import { collegatiPerBrowser } from '../ordini/collegati-browser.js';
 import { discrepanzeDi, improntaDi } from '../ordini/collegati.js';
-import { moduloFieldOf, withPrefill } from '../ordini/form.js';
+import { moduliDopo, moduloFieldOf, withPrefill } from '../ordini/form.js';
 import { COLONNE, SLOTS } from '../ordini/registry.js';
 import { activeParts, SECTIONS } from '../schede/fields.js';
 import { MAX_MISURE, misuraOf, misuraTemplateRow, misureFormRows } from '../schede/misure.js';
@@ -79,6 +79,7 @@ export function renderForm(req: Request, res: Response, status: number, view: Fo
     maxMisure: MAX_MISURE,
     misuraOf,
     moduli: SLOTS,
+    moduliDopo,
     moduloFieldOf,
     collegati: {
       auto,

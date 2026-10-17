@@ -23,6 +23,7 @@ import { checkInvites } from './inviti.mjs';
 import { checkLinkedData, confirmDifferences } from './collegati.mjs';
 import { checkMastech } from './mastech.mjs';
 import { checkMovilift } from './movilift.mjs';
+import { checkPrintedNotes, fillDoorsAndChecks } from './porte.mjs';
 import { checkSettings } from './impostazioni.mjs';
 import { checkRealTime } from './tempo-reale.mjs';
 
@@ -109,22 +110,15 @@ try {
         noteBottoniere: 'Pulsante usurato al piano 2',
         lavoriExtra: 'Buono di lavoro n. 512',
         buonoLavoro: 'BL 2026/512',
-        operatoreMarca: 'Selcom',
-        lucePorte: '800 x 2000',
-        operatoreTensione: '24 V DC',
+        quadroNote: 'Quadro nel sottoscala',
+        tirantiCabinaNumero: '4',
+        tirantiCabinaTipo: 'Tiranti M12',
+        serratureNote: 'Contatti ossidati',
       };
-      // The door operator fields appear with automatic doors: tick first, then fill.
-      if (await page.locator('#f-operatoreMarca').isVisible())
-        fail('door operator shown too early');
-      await tick(page, 'tipoPorte', 'AUTOMATICHE');
       for (const [key, value] of Object.entries(fields)) await page.fill(`#f-${key}`, value);
       await tick(page, 'ubicazioneMacchina', 'ALTO');
       await tick(page, 'tipoImpianto', 'ELETTRICO');
-      await tick(page, 'doppioAccesso', 'si');
-      await tick(page, 'serrature', 'si');
-      await page.fill('#f-serratureNumero', '6');
-      await page.fill('#f-serratureTipo', 'Elettromeccaniche');
-      await tick(page, 'luceVanoSostituire', 'si');
+      await fillDoorsAndChecks(page);
       await tick(page, 'telesoccorsoInstallare', 'si');
       await tick(page, 'perifericaInstallare', 'no');
       await tick(page, 'allarmePortineria', 'no');
@@ -158,6 +152,8 @@ try {
       await tick(page, 'oq-ordine', 'si');
       await page.fill('#f-oq-quantita', '1');
       await tick(page, 'arganoPreventivo', 'si');
+      if (await page.locator('#f-kitControlloGanasce').isVisible())
+        fail('shoe check kit shown with a new argano');
       if ((await page.inputValue('#f-pa-portata')) !== '630') fail('argano sheet without the load');
       if ((await page.inputValue('#f-pa-indirizzo')) !== fields.indirizzo)
         fail('argano sheet without the address');
@@ -210,6 +206,7 @@ try {
         fail('print without the address in the head');
       if (!(await page.textContent('.paper__buono')).includes(fields.buonoLavoro))
         fail('print without the work order in the head');
+      await checkPrintedNotes(page);
       if (
         await page.locator('.paper__section h2', { hasText: /^(Impianto|Dati di targa)$/ }).count()
       )

@@ -16,7 +16,8 @@ describe('the field list', () => {
   it('keeps the sections in the order of the printed sheet the owner marked up (October 2026)', () => {
     // Section 1 is laid out like the head and the plate of the sheet: date, address and work order,
     // matricola and lift number, then load, persons, stops and make. The power unit of a hydraulic
-    // lift stands where its machine would; the emergency call comes after the alarm.
+    // lift stands where its machine would; the emergency call is with the alarm, the porter's lodge
+    // last; every section with a supplier form ends with its notes.
     assert.deepEqual(
       SECTIONS.map((section) => section.key),
       [
@@ -31,7 +32,6 @@ describe('the field list', () => {
         'cavi',
         'serrature',
         'allarme',
-        'telesoccorso',
         'note',
       ],
     );
@@ -52,25 +52,31 @@ describe('the field list', () => {
         'parcheggio',
         'tipoImpianto',
         'tipoPorte',
-        'operatoreMarca',
-        'lucePorte',
-        'operatoreTensione',
         'doppioAccesso',
-        'pattinoRetrattile',
         'quadroMarca',
         'quadroMarcaAltro',
         'quadroModello',
         'fossaRidotta',
         'testataRidotta',
         'quadroOrdine',
+        'quadroNote',
         'arganoPreventivo',
         'ganasceFreno',
         'contattiFreno',
+        'kitControlloGanasce',
+        'kitControlloGanasceTipo',
+        'controlloQuadro',
+        'controlloQuadroTipo',
+        'arganoNote',
         ...SEZIONE_CENTRALINA.fields.map((field) => field.key),
         'funiDiametroMm',
         'funiTrefoli',
         'funiNumero',
         'funiLunghezzaM',
+        'tirantiCabinaNumero',
+        'tirantiCabinaTipo',
+        'tirantiContrappesoNumero',
+        'tirantiContrappesoTipo',
         'limitatoreTipo',
         'funicellaDiametroMm',
         'funicellaLunghezzaM',
@@ -81,16 +87,20 @@ describe('the field list', () => {
         'serrature',
         'serratureNumero',
         'serratureTipo',
+        'pattinoRetrattile',
+        'pattinoRetrattileTipo',
         'sospensioni',
         'sospensioniNumero',
-        'allarmePortineria',
-        'displayPortineria',
+        'serratureNote',
         'telesoccorsoInstallare',
         'perifericaInstallare',
         'cornettaInstallare',
+        'allarmePortineria',
+        'displayPortineria',
         'noteQuadretto',
         'noteImpianto',
         'luceVanoSostituire',
+        'luceVanoNote',
         'noteBottoniere',
         'bottoniereMisure',
         'lavoriExtra',
@@ -177,6 +187,7 @@ describe('parseScheda', () => {
   it('keeps the number and type of locks only when "Serrature" is yes', () => {
     const yes = parsedOrFail({
       ...minimal,
+      tipoPorte: 'MANUALI',
       serrature: 'si',
       serratureNumero: '6',
       serratureTipo: 'A gancio',
@@ -186,6 +197,7 @@ describe('parseScheda', () => {
     assert.equal(yes.serratureTipo, 'A gancio');
     const no = parsedOrFail({
       ...minimal,
+      tipoPorte: 'MANUALI',
       serrature: 'no',
       serratureNumero: '6',
       serratureTipo: 'A gancio',

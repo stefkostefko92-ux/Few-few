@@ -134,14 +134,14 @@ describe('the panel, the brake and the emergency call', () => {
 
 describe('the sections of the print', () => {
   it('keeps the unticked sections as left out, and every section when the form has no list', () => {
-    const ticked = { 'stampa-_': '1', stampa: ['quadro', 'telesoccorso', 'note'] };
+    const ticked = { 'stampa-_': '1', stampa: ['quadro', 'allarme', 'note'] };
     const parsed = sezioniEscluseDi(ticked);
     assert.ok(parsed.success);
     assert.ok(parsed.success && parsed.data.includes('argano') && parsed.data.includes('funi'));
     assert.ok(parsed.success && !parsed.data.includes('quadro') && !parsed.data.includes('note'));
     assert.deepEqual(sezioniEscluseDi({ stampa: 'note' }), { success: true, data: [] });
     const none = sezioniEscluseDi({ 'stampa-_': '1' });
-    assert.ok(none.success && none.data.length === 12, 'nothing ticked: only the plate is printed');
+    assert.ok(none.success && none.data.length === 11, 'nothing ticked: only the plate is printed');
   });
 
   it('refuses a section the form does not have, and the fixed identification', () => {
@@ -155,9 +155,9 @@ describe('the sections of the print', () => {
 
   it('saves the choice with the sheet and gives it back when the form returns', () => {
     const data = parsedOrFail({ ...minimal, 'stampa-_': '1', stampa: ['quadro', 'note'] });
-    assert.ok(data.sezioniEscluse.includes('telesoccorso'));
+    assert.ok(data.sezioniEscluse.includes('allarme'));
     assert.deepEqual(stampaFromBody({ 'stampa-_': '1', stampa: 'note' }), ['note']);
-    assert.equal(stampaFromBody({}).length, 12, 'an old page without the list: all of them');
+    assert.equal(stampaFromBody({}).length, 11, 'an old page without the list: all of them');
   });
 
   it('prints neither the identification (it is in the header) nor the sections left out', () => {

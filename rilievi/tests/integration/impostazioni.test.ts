@@ -58,7 +58,7 @@ describe('the order of the sheet sections in the company settings', () => {
     assert.equal(moved.status, 200);
     assert.match(moved.body, /Modifiche non salvate/);
     const order = [...moved.body.matchAll(/name="ordine" value="([a-z]+)"/g)].map((m) => m[1]);
-    assert.deepEqual(order.slice(-2), ['note', 'telesoccorso']);
+    assert.deepEqual(order.slice(-2), ['note', 'allarme']);
     assert.match(
       moved.body,
       /value="note:su"[^>]*autofocus/,
@@ -142,7 +142,7 @@ describe('the order of the sheet sections in the company settings', () => {
       ascending(
         positions(print.body, [
           '<h2>Note e lavori</h2>',
-          '<h2>Allarme</h2>',
+          '<h2>Allarme e telesoccorso</h2>',
           '<h2>Ubicazione e accesso</h2>',
         ]),
       ),
@@ -178,13 +178,26 @@ describe('the sheet form, laid out like the printed sheet', () => {
     const legends = [
       ...form.body.matchAll(/<legend class="section__title"><span class="secnum"[^>]*><\/span>/g),
     ];
-    assert.equal(legends.length, 13);
+    assert.equal(legends.length, 12);
     assert.match(form.body, /<fieldset class="section"[^>]*id="s-centralina"[^>]*data-off/);
     assert.match(form.body, /<fieldset class="section"[^>]*id="s-argano"(?![^>]*data-off)[^>]*>/);
     const css = await browser.get('/static/css/sheet.css');
     assert.match(css.body, /counter-increment: sezione;/);
     assert.match(css.body, /\.secnum:empty::before \{\s*content: counter\(sezione\);/);
     assert.doesNotMatch(form.body, /id="s-targa"/);
+  });
+
+  it('puts each supplier form after its question and what follows from it, before the notes', async () => {
+    const { browser } = await signedIn('TECNICO');
+    const form = await browser.get('/schede/nuova');
+    for (const [question, last, modulo, note] of [
+      ['quadroOrdine', 'quadroOrdine', 'mq', 'quadroNote'],
+      ['arganoPreventivo', 'controlloQuadroTipo', 'pa', 'arganoNote'],
+      ['sospensioni', 'sospensioniNumero', 'sg', 'serratureNote'],
+    ] as const) {
+      const ids = [...new Set([question, last, modulo, note])].map((key) => `id="f-${key}"`);
+      assert.ok(ascending(positions(form.body, ids)), question);
+    }
   });
 });
 
@@ -197,7 +210,7 @@ describe('the head of the printed sheet', () => {
     assert.match(print.body, /<p class="paper__address">Corso Francia 9, Torino<\/p>/);
     assert.match(
       print.body,
-      /<p class="paper__buono"><span>Buono di riferimento<\/span><strong>BL 2026\/77<\/strong><\/p>/,
+      /<p class="paper__buono"><span>Buono di lavoro<\/span><strong>BL 2026\/77<\/strong><\/p>/,
     );
     // The identification and the plate data are in the head and on the plate only.
     assert.doesNotMatch(print.body, /<h2>Impianto<\/h2>|<h2>Dati di targa<\/h2>/);

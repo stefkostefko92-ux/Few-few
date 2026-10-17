@@ -214,3 +214,14 @@
     grid-column: 3 / 5;
   }
 }
+
+/* Въпрос „Sì/No“ с полето за вида до него — всеки на свой ред (собственикът, октомври 2026):
+   комплектът за контрол на челюстите, контролът в таблото, шейната; тирантите на кабината и на
+   противотежестта — брой и вид. На телефона полетата са едно под друго и това не променя нищо. */
+.grid > [data-campo='kitControlloGanasce'],
+.grid > [data-campo='controlloQuadro'],
+.grid > [data-campo='pattinoRetrattile'],
+.grid > [data-campo='tirantiCabinaNumero'],
+.grid > [data-campo='tirantiContrappesoNumero'] {
+  grid-column-start: 1;
+}

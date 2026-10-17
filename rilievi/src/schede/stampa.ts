@@ -40,12 +40,17 @@ export function riepilogoFromBody(source: Record<string, unknown>): string[] {
 /**
  * Разделите в печата и PDF-а: отметнатите (`stampa`, повтарящ се ключ). Списъкът е във формата, когато
  * има знака `stampa-_`; без него (стара страница) — всички. Пазят се изключените, затова нов раздел
- * влиза в печата сам. Ключ извън подвижните раздели е подправен.
+ * влиза в печата сам. Ключ извън подвижните раздели е подправен — освен раздел, слят в друг: страница,
+ * отворена преди сливането, още го праща („telesoccorso“ е в „allarme“ от октомври 2026).
  */
 export const STAMPA_KEY = 'stampa';
 export const STAMPA_MARK = 'stampa-_';
+const SLITE: readonly unknown[] = ['telesoccorso'];
 const stampaSchema = z.preprocess(
-  (value) => (value === undefined ? [] : typeof value === 'string' ? [value] : value),
+  (value) => {
+    const list = value === undefined ? [] : typeof value === 'string' ? [value] : value;
+    return Array.isArray(list) ? list.filter((key) => !SLITE.includes(key)) : list;
+  },
   z
     .array(z.string({ invalid_type_error: 'invalid' }), { invalid_type_error: 'invalid' })
     .max(ORDINABILI.length * 2, 'invalid')
@@ -66,11 +71,11 @@ export function sezioniEscluseDi(
     : { success: false };
 }
 
-/** Отметнатите раздели, както са пратени (формата се връща); без списъка във формата — всички. */
+/** Отметнатите раздели, както са пратени (формата се връща) — само познатите; без списъка — всички. */
 export function stampaFromBody(source: Record<string, unknown>): string[] {
   const stampa = source[STAMPA_KEY];
   if (source[STAMPA_MARK] !== '1') return [...ORDINABILI];
-  return (typeof stampa === 'string' ? [stampa] : Array.isArray(stampa) ? stampa : [])
-    .filter((key): key is string => typeof key === 'string')
-    .slice(0, ORDINABILI.length);
+  const list: unknown[] =
+    typeof stampa === 'string' ? [stampa] : Array.isArray(stampa) ? stampa : [];
+  return ORDINABILI.filter((key) => list.includes(key));
 }

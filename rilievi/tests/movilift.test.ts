@@ -99,11 +99,13 @@ describe('the MoviLift order form', () => {
   it('opens under the question of the panel order only for its own make', () => {
     assert.deepEqual(marcheOf('quadroOrdine'), ['PELAZZA', 'MOVILIFT', 'MASTECH']);
     assert.deepEqual(fieldByKey('quadroOrdine')?.when?.values, marcheOf('quadroOrdine'));
-    // The argano sheet and the 2SG sheet are for every make: their questions have no condition.
+    // The argano sheet and the 2SG sheet are for every make: no make in their condition (the 2SG
+    // sheet follows the doors with an operator, the argano sheet has none).
     for (const question of ['arganoPreventivo', 'sospensioni'] as const) {
       assert.deepEqual(marcheOf(question), [], question);
-      assert.equal(fieldByKey(question)?.when, undefined, question);
     }
+    assert.equal(fieldByKey('arganoPreventivo')?.when, undefined);
+    assert.equal(fieldByKey('sospensioni')?.when?.field, 'tipoPorte');
   });
 });
 
@@ -118,6 +120,7 @@ describe('prefilling the MoviLift order', () => {
       fermate: '6',
       tipoImpianto: ['ELETTRICO', 'GEARLESS'],
       tipoPorte: ['AUTOMATICHE'],
+      // Taken off the sheet (October 2026): a page from before still sends them, they fill nothing.
       operatoreMarca: 'Selcom',
       operatoreTensione: '24 V DC',
       doppioAccesso: 'si',
@@ -151,8 +154,6 @@ describe('prefilling the MoviLift order', () => {
       email: 'mario@example.it',
       tipologia: 'Elettrico, MRL',
       tipoPorte: 'Automatiche',
-      marcaOpA: 'SELCOM',
-      voltA: '24Vcc',
       // The plant data, over the blank form ("Operatore Unico", "Loc. Macc. in ALTO").
       fermate: '6',
       portata: '630',
@@ -169,8 +170,6 @@ describe('prefilling the MoviLift order', () => {
       values: { ...ctx.values, tipoPorte: ['MANUALI'], ubicazioneMacchina: [] },
     };
     const valori = prefillValori(MOVILIFT, manual);
-    assert.equal(valori.marcaOpA, undefined, 'no door operator with manual doors');
-    assert.equal(valori.voltA, undefined);
     assert.equal(valori.ingressi, 'doppio', 'the double entrance is asked with manual doors too');
     assert.equal(valori.locMacc, 'alto');
     assert.equal(valori.elettrPattino, true, 'the retractable skate is asked with manual doors');

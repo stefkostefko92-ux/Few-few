@@ -9,14 +9,14 @@ export const no = (field: string): Condition => ({ field, values: ['no'] });
 export const answered = (field: string): Condition => ({ field, values: ['si', 'no'] });
 /** „Altro“ при марката → коя. */
 export const ALTRA = (field: string): Condition => ({ field, values: ['ALTRO'] });
-/** Операторът на вратите има смисъл при автоматични и полуавтоматични врати. */
+/** Окачванията и листът 2SG (с оператора на кабината) — при автоматични и полуавтоматични врати. */
 export const PORTE_CON_OPERATORE: Condition = {
   field: 'tipoPorte',
   values: ['AUTOMATICHE', 'SEMIAUTOMATICHE'],
 };
 /** Двойният достъп — при всеки вид врати, и при ръчните (решение на собственика, октомври 2026). */
 export const PORTE_SCELTE: Condition = { field: 'tipoPorte', values: TIPO_PORTE };
-/** Прибиращата се шейна — при ръчни и при полуавтоматични врати. */
+/** Бравите и прибиращата се шейна — при ръчни и при полуавтоматични врати. */
 export const PORTE_CON_PATTINO: Condition = {
   field: 'tipoPorte',
   values: ['MANUALI', 'SEMIAUTOMATICHE'],

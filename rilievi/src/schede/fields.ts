@@ -1,10 +1,10 @@
 /**
  * Полетата на схемата — ЕДИНСТВЕНИЯТ източник: формата, проверката, страницата, печатът и PDF-ът се
  * строят оттук. Редът на разделите е този от отпечатаната карта, номериран от собственика (октомври
- * 2026): табелата, място, вид, табло, аргано (или централата при хидравлична уредба), въжета,
- * ограничител, кабели, брави и окачвания, аларма, аварийна връзка, бележки — фирмата може да го смени
- * (src/aziende/sezioni.ts); полетата в раздела остават в този ред. Модулите на доставчиците са в
- * src/ordini/. Етикетите са в речника: `scheda.field.<key>`, `scheda.section.<key>`,
+ * 2026): табелата, място, вид, табло, аргано (или централата при хидравлична уредба), въжета и
+ * тиранти, ограничител, кабели, брави и окачвания, аларма и аварийна връзка, бележки — фирмата може да
+ * го смени (src/aziende/sezioni.ts); полетата в раздела остават в този ред. Модулите на доставчиците са
+ * в src/ordini/. Етикетите са в речника: `scheda.field.<key>`, `scheda.section.<key>`,
  * `scheda.option.<key>.<СТОЙНОСТ>`, `scheda.question.<key>`; опциите — в field-options.ts.
  */
 
@@ -27,8 +27,8 @@ import {
   PORTE_CON_PATTINO,
   PORTE_SCELTE,
   yes,
-  no,
 } from './field-conditions.js';
+import { SEZIONE_ARGANO } from './fields-argano.js';
 import { SEZIONE_CENTRALINA } from './fields-centralina.js';
 
 export const SECTIONS = [
@@ -59,23 +59,21 @@ export const SECTIONS = [
     ],
   },
   {
+    // Видът на вратите решава какво се пита в „Serrature o sospensioni“. Марката, светлият отвор и
+    // напрежението на оператора — махнати (собственикът, октомври 2026; колоните остават със старите
+    // отговори, проверката не ги чете), шейната е при бравите.
     key: 'tipologia',
     fields: [
       { key: 'tipoImpianto', kind: 'checks', options: TIPO_IMPIANTO },
       { key: 'tipoPorte', kind: 'checks', options: TIPO_PORTE },
-      { key: 'operatoreMarca', kind: 'text', maxLength: 120, when: PORTE_CON_OPERATORE },
-      // Светлият отвор и напрежението — свободен текст („800 x 2000“, „24 V DC“).
-      { key: 'lucePorte', kind: 'text', maxLength: 60, when: PORTE_CON_OPERATORE },
-      { key: 'operatoreTensione', kind: 'text', maxLength: 60, when: PORTE_CON_OPERATORE },
       // „Accessi: 1 / 2“ — двойният достъп като брой достъпи.
       { key: 'doppioAccesso', kind: 'yesno', risposte: ['no', 'si'], when: PORTE_SCELTE },
-      // „Pattino retrattile da cambiare“. Блокировката, донивелирането и броят шейни — махнати (2026).
-      { key: 'pattinoRetrattile', kind: 'yesno', when: PORTE_CON_PATTINO },
     ],
   },
   {
     // Таблото за поръчка: марката (Mastech — и моделът); при Pelazza, MoviLift и Mastech — модулът им
-    // за поръчка (src/ordini/). Намалената яма и горното пространство — за таблото (октомври 2026).
+    // за поръчка (src/ordini/). Намалената яма и горното пространство — за таблото; бележките — след
+    // модула (октомври 2026).
     key: 'quadro',
     fields: [
       { key: 'quadroMarca', kind: 'choice', options: QUADRO_MARCA },
@@ -97,33 +95,24 @@ export const SECTIONS = [
         // Марките с модул за поръчка (src/ordini/registry.ts — тестът пази съвпадението).
         when: { field: 'quadroMarca', values: ['PELAZZA', 'MOVILIFT', 'MASTECH'] },
       },
+      { key: 'quadroNote', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },
-  {
-    // „Argano da sostituire?“ — при Sì листът с данните на машината, за всеки вид аргано (src/ordini/);
-    // при No — сменят ли се челюстите и контактите на спирачката. Не при хидравлична уредба.
-    key: 'argano',
-    when: NON_IDRAULICO,
-    fields: [
-      {
-        key: 'arganoPreventivo',
-        kind: 'yesno',
-        wide: true,
-        question: true,
-        modulo: 'preventivoArgano',
-      },
-      { key: 'ganasceFreno', kind: 'yesno', when: no('arganoPreventivo') },
-      { key: 'contattiFreno', kind: 'yesno', when: no('arganoPreventivo') },
-    ],
-  },
+  SEZIONE_ARGANO,
   SEZIONE_CENTRALINA,
   {
+    // „Funi e tiranti“: въжетата, после тирантите — брой и вид за кабината и за противотежестта
+    // (собственикът, октомври 2026).
     key: 'funi',
     fields: [
       { key: 'funiDiametroMm', kind: 'decimal', min: 0, max: 100, unit: 'mm' },
       { key: 'funiTrefoli', kind: 'int', min: 0, max: 100 },
       { key: 'funiNumero', kind: 'int', min: 0, max: 100 },
       { key: 'funiLunghezzaM', kind: 'decimal', min: 0, max: 10_000, unit: 'm' },
+      { key: 'tirantiCabinaNumero', kind: 'int', min: 0, max: 100 },
+      { key: 'tirantiCabinaTipo', kind: 'text', maxLength: 120 },
+      { key: 'tirantiContrappesoNumero', kind: 'int', min: 0, max: 100 },
+      { key: 'tirantiContrappesoTipo', kind: 'text', maxLength: 120 },
     ],
   },
   {
@@ -145,38 +134,47 @@ export const SECTIONS = [
     ],
   },
   {
-    // Брави и окачвания на вратите за смяна: бравите — брой и вид; окачванията — брой и листът 2SG,
-    // в който е и операторът на кабината (src/ordini/).
+    // Брави и окачвания на вратите за смяна — само каквото е за вида врати от „Tipologia“ (собственикът,
+    // октомври 2026): бравите и шейната — при ръчни, окачванията — при автоматични, при полуавтоматични
+    // — всичко. Бравите — брой и вид; шейната — видът ѝ; окачванията — брой и листът 2SG, в който е и
+    // операторът на кабината (src/ordini/). Бележките — винаги.
     key: 'serrature',
     fields: [
-      { key: 'serrature', kind: 'yesno' },
+      { key: 'serrature', kind: 'yesno', when: PORTE_CON_PATTINO },
       { key: 'serratureNumero', kind: 'int', min: 0, max: 999, when: yes('serrature') },
       { key: 'serratureTipo', kind: 'text', maxLength: 120, when: yes('serrature') },
+      // „Pattino retrattile da cambiare“ (беше в „Tipologia“). Блокировката, донивелирането и броят
+      // шейни — махнати (2026).
+      { key: 'pattinoRetrattile', kind: 'yesno', when: PORTE_CON_PATTINO },
+      {
+        key: 'pattinoRetrattileTipo',
+        kind: 'text',
+        maxLength: 120,
+        when: yes('pattinoRetrattile'),
+      },
       {
         key: 'sospensioni',
         kind: 'yesno',
         wide: true,
         question: true,
         modulo: 'ordineSospensioni',
+        when: PORTE_CON_OPERATORE,
       },
       { key: 'sospensioniNumero', kind: 'int', min: 0, max: 999, when: yes('sospensioni') },
+      { key: 'serratureNote', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },
   {
+    // „Allarme e telesoccorso“ — заедно, портиерната накрая (собственикът, октомври 2026). Аварийната
+    // връзка — какво има да се монтира; заменя „Telesoccorso esistente“ и състоянието му (колоните им
+    // остават със старите отговори, проверката не ги чете).
     key: 'allarme',
-    fields: [
-      { key: 'allarmePortineria', kind: 'yesno' },
-      { key: 'displayPortineria', kind: 'yesno' },
-    ],
-  },
-  {
-    // Аварийната връзка: какво има да се монтира (октомври 2026). Заменя „Telesoccorso esistente“ и
-    // състоянието му — колоните им остават със старите отговори, проверката не ги чете.
-    key: 'telesoccorso',
     fields: [
       { key: 'telesoccorsoInstallare', kind: 'yesno' },
       { key: 'perifericaInstallare', kind: 'yesno' },
       { key: 'cornettaInstallare', kind: 'yesno' },
+      { key: 'allarmePortineria', kind: 'yesno' },
+      { key: 'displayPortineria', kind: 'yesno' },
     ],
   },
   {
@@ -184,8 +182,16 @@ export const SECTIONS = [
     fields: [
       { key: 'noteQuadretto', kind: 'textarea', maxLength: 4000, wide: true },
       { key: 'noteImpianto', kind: 'textarea', maxLength: 4000, wide: true },
-      // „Luce vano da sostituire“ — в бележките (собственикът го премести от „Tipologia“).
+      // „Luce vano da sostituire“ — в бележките (собственикът го премести от „Tipologia“); при Sì —
+      // бележка на ръка (октомври 2026).
       { key: 'luceVanoSostituire', kind: 'yesno' },
+      {
+        key: 'luceVanoNote',
+        kind: 'textarea',
+        maxLength: 4000,
+        wide: true,
+        when: yes('luceVanoSostituire'),
+      },
       { key: 'noteBottoniere', kind: 'textarea', maxLength: 4000, wide: true },
       { key: 'bottoniereMisure', kind: 'yesno', wide: true, question: true, misure: true },
       { key: 'lavoriExtra', kind: 'textarea', maxLength: 4000, wide: true },
@@ -211,13 +217,21 @@ export const SEARCHABLE = [
   'marca',
   'buonoLavoro',
   'parcheggio',
-  'operatoreMarca',
-  'serratureTipo',
+  'quadroNote',
+  'kitControlloGanasceTipo',
+  'controlloQuadroTipo',
+  'arganoNote',
+  'centralinaMarca',
+  'tirantiCabinaTipo',
+  'tirantiContrappesoTipo',
   'limitatoreTipo',
   'tenditore',
-  'centralinaMarca',
+  'serratureTipo',
+  'pattinoRetrattileTipo',
+  'serratureNote',
   'noteQuadretto',
   'noteImpianto',
+  'luceVanoNote',
   'noteBottoniere',
   'lavoriExtra',
 ] as const satisfies readonly SchedaFieldKey[];

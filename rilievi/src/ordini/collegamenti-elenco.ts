@@ -13,8 +13,9 @@ import type { Collegamento } from './collegamenti.js';
  * връзките е редът в списъка с разминавания (и в отпечатъка на потвърждението) — новите са накрая.
  * Решено със собственика (октомври 2026): спирките, скоростта и видът ѝ, ходът, товарът, напрежението
  * на мотора и на спирачката, капацитетът, № на асансьора, входовете, вратите, достъпите, мястото на
- * машината, въжетата; после — адресът, матрикулата, марката, видът на уредбата, операторът и светлият
- * отвор, токът и оборотите на мотора; после — централата и Mastech (и в тези връзки).
+ * машината, въжетата; после — адресът, матрикулата, марката, видът на уредбата, операторът (между
+ * таблата), токът и оборотите на мотора; после — централата и Mastech (и в тези връзки). Марката,
+ * напрежението и светлият отвор на оператора в картата — махнати (собственикът, октомври 2026).
  */
 const BASE: readonly Collegamento[] = [
   {
@@ -244,34 +245,15 @@ const BASE: readonly Collegamento[] = [
     ],
   },
   {
-    // „Modello“ на Pelazza често е по-подробен от марката („Selcom Midi Supra“) — само попълване.
+    // Операторът — таблата помежду си, само при смяна на марката или модела (отворено е едно). „Modello“
+    // на Pelazza често е по-подробен от марката („Selcom Midi Supra“) — само попълване.
     key: 'operatoreMarca',
     tipo: 'numero',
     confronto: false,
     membri: [
-      { luogo: 'scheda', campo: 'operatoreMarca' },
       { luogo: 'oq', campo: 'opModello' },
       { luogo: 'om', campo: 'marcaOpA' },
       { luogo: 'mq', campo: 'modelloOperatore1' },
-    ],
-  },
-  {
-    key: 'operatoreTensione',
-    tipo: 'numero',
-    membri: [
-      { luogo: 'scheda', campo: 'operatoreTensione' },
-      { luogo: 'om', campo: 'voltA' },
-    ],
-  },
-  {
-    // „Luce porte“ на картата е свободен текст („800 x 2000“, „800“) — на 2SG е широчина x височина
-    // на вратата на кабината. Само попълване: „800“ срещу „800 x 2000“ не е разлика.
-    key: 'lucePorte',
-    tipo: 'numero',
-    confronto: false,
-    membri: [
-      { luogo: 'scheda', campo: 'lucePorte' },
-      { luogo: 'sg', campi: ['luceCabinaL', 'luceCabinaH'] },
     ],
   },
   {

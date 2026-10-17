@@ -1,4 +1,5 @@
 import type { FormValues } from '../schede/field-parsers.js';
+import type { FieldDef } from '../schede/field-types.js';
 import { AUTO_KEY, campiCollegati, NOMI_SEGUACI } from './collegamenti.js';
 import { prefillCollegati } from './collegati.js';
 import { fieldsOf, type ModuloField } from './moduli.js';
@@ -48,4 +49,25 @@ export function moduloFieldOf(name: string): { slot: ModuloSlot; field: ModuloFi
     if (field) return { slot, field };
   }
   return null;
+}
+
+/**
+ * След кое поле на раздела стои всеки модул във формата: след въпроса си и полетата, които зависят от
+ * него (и от тях — „Numero sospensioni“), преди следващото поле без връзка с въпроса — бележките на
+ * раздела са след модула. Ключът е полето, стойността — колоните на модулите след него.
+ */
+export function moduliDopo(fields: readonly FieldDef[]): Map<string, ModuloSlot['column'][]> {
+  const out = new Map<string, ModuloSlot['column'][]>();
+  fields.forEach((field, i) => {
+    if (!field.modulo) return;
+    const legati = new Set([field.key]);
+    let ultimo = field.key;
+    for (const next of fields.slice(i + 1)) {
+      if (!next.when || !legati.has(next.when.field)) continue;
+      legati.add(next.key);
+      ultimo = next.key;
+    }
+    out.set(ultimo, [...(out.get(ultimo) ?? []), field.modulo]);
+  });
+  return out;
 }

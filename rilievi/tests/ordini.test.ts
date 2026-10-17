@@ -186,7 +186,7 @@ describe('the questions that open the supplier forms', () => {
     assert.equal(no.ok && no.data.ordineQuadro, null);
   });
 
-  it('open the argano sheet for every machine and the 2SG sheet with the suspensions to change', () => {
+  it('open the argano sheet for every machine, the 2SG sheet with the suspensions to change', () => {
     const argano = { 'pa-_': '1', 'pa-pesoCabina': '650', 'pa-taglia12': 'si' };
     const yes = parseScheda({ ...minimal, arganoPreventivo: 'si', ...argano });
     assert.ok(yes.ok);
@@ -197,7 +197,8 @@ describe('the questions that open the supplier forms', () => {
     const no = parseScheda({ ...minimal, arganoPreventivo: 'no', ...argano });
     assert.equal(no.ok && no.data.preventivoArgano, null);
 
-    const sg = { 'sg-_': '1', 'sg-ordNo': '77', 'sg-sogliaH90': 'si' };
+    // The suspensions are asked with doors on an operator (automatic or semi-automatic).
+    const sg = { 'sg-_': '1', 'sg-ordNo': '77', 'sg-sogliaH90': 'si', tipoPorte: 'AUTOMATICHE' };
     const sospensioni = parseScheda({
       ...minimal,
       sospensioni: 'si',
@@ -213,6 +214,8 @@ describe('the questions that open the supplier forms', () => {
     const none = parseScheda({ ...minimal, sospensioni: 'no', sospensioniNumero: '6', ...sg });
     assert.equal(none.ok && none.data.sospensioniNumero, null, 'the number goes with "si"');
     assert.equal(none.ok && none.data.ordineSospensioni, null);
+    const manual = parseScheda({ ...minimal, ...sg, tipoPorte: 'MANUALI', sospensioni: 'si' });
+    assert.equal(manual.ok && manual.data.ordineSospensioni, null, 'no 2SG with manual doors');
   });
 
   it('report the errors of a sheet under its own names', () => {

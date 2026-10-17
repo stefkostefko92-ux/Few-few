@@ -24,12 +24,23 @@ function parsedOrFail(body: Record<string, unknown>) {
 
 /** Every door detail at once, as a browser with JavaScript off would send them. */
 const DOORS = {
-  operatoreMarca: 'Selcom',
-  lucePorte: '800 x 2000',
-  operatoreTensione: '24 V DC',
   doppioAccesso: 'si',
+  serrature: 'si',
+  serratureNumero: '4',
+  serratureTipo: 'Fermator',
   pattinoRetrattile: 'si',
+  pattinoRetrattileTipo: 'Wittur',
+  sospensioni: 'si',
+  sospensioniNumero: '6',
 };
+const LOCKS = [
+  'serrature',
+  'serratureNumero',
+  'serratureTipo',
+  'pattinoRetrattile',
+  'pattinoRetrattileTipo',
+] as const;
+const SUSPENSIONS = ['sospensioni', 'sospensioniNumero'] as const;
 
 /** A condition points at an earlier field and at answers that field really has. */
 function checkCondition(when: Condition, at: number, who: string) {
@@ -63,24 +74,37 @@ describe('conditions', () => {
     const active = activeFields((key) =>
       key === 'tipoPorte' ? ['AUTOMATICHE'] : key === 'pattinoRetrattile' ? 'si' : '',
     );
-    assert.ok(active.has('operatoreMarca'));
+    assert.ok(active.has('sospensioni'));
     assert.ok(active.has('doppioAccesso'));
     assert.ok(!active.has('pattinoRetrattile'), 'no retiring cam with automatic doors');
+    assert.ok(!active.has('pattinoRetrattileTipo'), 'nor its type, whatever was sent');
     assert.ok(!active.has('sospensioniNumero'), 'the number follows its yes/no');
   });
 });
 
 describe('door details', () => {
-  it('keep the operator (make, clear opening, voltage) for automatic and semi-automatic doors', () => {
-    for (const porte of ['AUTOMATICHE', 'SEMIAUTOMATICHE']) {
-      const data = parsedOrFail({ ...minimal, tipoPorte: porte, ...DOORS });
-      assert.equal(data.operatoreMarca, 'Selcom', porte);
-      assert.equal(data.lucePorte, '800 x 2000', porte);
-      assert.equal(data.operatoreTensione, '24 V DC', porte);
-    }
+  it('ask the locks and the cam with manual doors, the suspensions with automatic ones', () => {
     const manual = parsedOrFail({ ...minimal, tipoPorte: 'MANUALI', ...DOORS });
-    assert.equal(manual.operatoreMarca, null);
-    assert.equal(manual.lucePorte, null);
+    assert.deepEqual(
+      LOCKS.map((key) => manual[key]),
+      [true, 4, 'Fermator', true, 'Wittur'],
+    );
+    for (const key of SUSPENSIONS) assert.equal(manual[key], null, key);
+    const automatic = parsedOrFail({ ...minimal, tipoPorte: 'AUTOMATICHE', ...DOORS });
+    for (const key of LOCKS) assert.equal(automatic[key], null, key);
+    assert.deepEqual(
+      SUSPENSIONS.map((key) => automatic[key]),
+      [true, 6],
+    );
+    // Semi-automatic doors: manual landing doors with their locks, the car door on an operator.
+    const semi = parsedOrFail({ ...minimal, tipoPorte: 'SEMIAUTOMATICHE', ...DOORS });
+    assert.deepEqual(
+      [...LOCKS, ...SUSPENSIONS].map((key) => semi[key]),
+      [true, 4, 'Fermator', true, 'Wittur', true, 6],
+    );
+    const mixed = parsedOrFail({ ...minimal, tipoPorte: ['AUTOMATICHE', 'MANUALI'], ...DOORS });
+    assert.equal(mixed.serrature, true, 'manual doors among others still have their locks');
+    assert.equal(mixed.sospensioni, true);
   });
 
   it('keep the double entrance with every door type, manual doors included', () => {
@@ -90,13 +114,15 @@ describe('door details', () => {
     }
   });
 
-  it('keep the retiring cam to change for manual and semi-automatic doors only', () => {
-    const manual = parsedOrFail({ ...minimal, tipoPorte: 'MANUALI', ...DOORS });
-    assert.equal(manual.pattinoRetrattile, true);
-    const semi = parsedOrFail({ ...minimal, tipoPorte: 'SEMIAUTOMATICHE', ...DOORS });
-    assert.equal(semi.pattinoRetrattile, true);
-    const automatic = parsedOrFail({ ...minimal, tipoPorte: 'AUTOMATICHE', ...DOORS });
-    assert.equal(automatic.pattinoRetrattile, null);
+  it('ask the type of the retiring cam only when the cam is to change, and nothing without doors', () => {
+    const kept = parsedOrFail({
+      ...minimal,
+      tipoPorte: 'MANUALI',
+      ...DOORS,
+      pattinoRetrattile: 'no',
+    });
+    assert.equal(kept.pattinoRetrattile, false);
+    assert.equal(kept.pattinoRetrattileTipo, null);
     const none = parsedOrFail({ ...minimal, ...DOORS });
     for (const key of Object.keys(DOORS)) assert.equal(none[key as keyof typeof none], null, key);
   });
@@ -104,6 +130,7 @@ describe('door details', () => {
   it('keep the number and type of the locks, and the number of suspensions, only with "si"', () => {
     const no = parsedOrFail({
       ...minimal,
+      tipoPorte: 'SEMIAUTOMATICHE',
       serrature: 'no',
       serratureNumero: '4',
       serratureTipo: 'Fermator',
@@ -115,6 +142,7 @@ describe('door details', () => {
     assert.equal(no.sospensioniNumero, null);
     const yes = parsedOrFail({
       ...minimal,
+      tipoPorte: 'SEMIAUTOMATICHE',
       serrature: 'si',
       serratureNumero: '4',
       serratureTipo: 'Fermator',
@@ -136,6 +164,7 @@ describe('door details', () => {
   it('do not complain about a hidden field: what is not shown is not read', () => {
     const data = parsedOrFail({
       ...minimal,
+      tipoPorte: 'SEMIAUTOMATICHE',
       sospensioni: 'no',
       sospensioniNumero: 'abc',
       serrature: 'no',
@@ -143,24 +172,39 @@ describe('door details', () => {
     });
     assert.equal(data.sospensioniNumero, null);
     assert.equal(data.serratureNumero, null);
-    const shown = parseScheda({ ...minimal, sospensioni: 'si', sospensioniNumero: 'abc' });
+    const doors = { ...minimal, tipoPorte: 'AUTOMATICHE' };
+    const shown = parseScheda({ ...doors, sospensioni: 'si', sospensioniNumero: 'abc' });
     assert.equal(!shown.ok && shown.errors.sospensioniNumero, 'integer');
+    const manual = parsedOrFail({
+      ...minimal,
+      tipoPorte: 'MANUALI',
+      sospensioni: 'si',
+      sospensioniNumero: 'abc',
+    });
+    assert.equal(manual.sospensioni, null, 'no suspensions with manual doors');
   });
 
   it('no longer read the fields taken off the sheet (their old answers stay in the database)', () => {
     const data = parsedOrFail({
       ...minimal,
-      tipoPorte: 'MANUALI',
+      tipoPorte: ['MANUALI', 'AUTOMATICHE'],
       bloccaPortine: 'si',
       autolivellamento: 'si',
       pattinoRetrattileNumero: '2',
       arganoMarca: 'MONTANARI',
+      // The operator of the doors (October 2026): make, clear opening and voltage.
+      operatoreMarca: 'Selcom',
+      lucePorte: '800 x 2000',
+      operatoreTensione: '24 V DC',
     });
     for (const key of [
       'bloccaPortine',
       'autolivellamento',
       'pattinoRetrattileNumero',
       'arganoMarca',
+      'operatoreMarca',
+      'lucePorte',
+      'operatoreTensione',
     ]) {
       assert.ok(!(key in data), key);
     }
@@ -189,7 +233,7 @@ describe('alarm and the second brief', () => {
     assert.ok(!('telesoccorso' in data) && !('telesoccorsoStato' in data));
   });
 
-  it('takes the reference work order as optional free text and the shaft lighting as yes/no', () => {
+  it('takes the work order as optional free text and the shaft lighting as yes/no', () => {
     const data = parsedOrFail({
       ...minimal,
       buonoLavoro: ' BL 2026/512 ',
@@ -227,7 +271,12 @@ describe('the sheet page', () => {
     ]) {
       assert.ok(keys.includes(key), key);
     }
-    for (const key of ['operatoreMarca', 'lucePorte', 'sospensioniNumero', 'bloccaPortine']) {
+    for (const key of [
+      'sospensioni',
+      'sospensioniNumero',
+      'bloccaPortine',
+      'pattinoRetrattileTipo',
+    ]) {
       assert.ok(!keys.includes(key), key);
     }
     // A hydraulic lift: no machine, no governor — the power unit instead.

@@ -1,9 +1,9 @@
 // The same data in more than one place, filled in real time in a real browser (public/js/collegati.js,
 // moduli.js). A form first fills the sheet: the stops (and their measurement rows), the ropes, the load
 // written "1.000", the address. The sheet then fills the forms while it is typed: the reference with the
-// lift number, the date, the doors, the door operator as a list option, the door opening of the 2SG
-// sheet. One form fills the other, and the sheet's "Accessi" carries the entrances of the panel order to
-// the other make's order. A field typed by hand keeps its value and the difference is listed; on a saved
+// lift number, the date, the doors. One form fills the other — the door operator of one panel order is
+// a list option of the other make's — and the sheet's "Accessi" carries the entrances of the panel
+// order to the other make's order. A field typed by hand keeps its value and the difference is listed; on a saved
 // sheet a changed address is a difference to confirm, never a silent overwrite.
 import { fail, tick } from './helpers.mjs';
 
@@ -49,13 +49,10 @@ export async function checkRealTime(context, { base, aziendaName, sheetUrl, sche
   await tick(page, 'tipoPorte', 'AUTOMATICHE');
   if (!(await page.isChecked('#f-oq-porteAutomatiche')))
     fail(`${scheme} real time: the doors of the panel order do not follow the sheet`);
-  await page.fill('#f-operatoreMarca', 'Selcom');
-  await expect('#f-om-marcaOpA', 'SELCOM', 'the door operator of the MoviLift order');
-  await page.fill('#f-lucePorte', '800 x 2000');
-  await expect('#f-sg-luceCabinaL', '800', 'the width of the 2SG cabin door');
-  await expect('#f-sg-luceCabinaH', '2000', 'the height of the 2SG cabin door');
 
   // One form fills the other; the entrances reach the other make's order through the sheet.
+  await page.fill('#f-oq-opModello', 'Selcom');
+  await expect('#f-om-marcaOpA', 'SELCOM', 'the door operator of the MoviLift order');
   await page.fill('#f-oq-motIn', '12');
   await expect('#f-pa-ampere', '12', 'the motor current of the argano sheet');
   await page.fill('#f-oq-nAccessi', '2');

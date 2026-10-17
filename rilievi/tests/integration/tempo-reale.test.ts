@@ -46,7 +46,7 @@ describe('the same data in every place, filled in every direction', () => {
     assert.doesNotMatch(reply.body, /name="funiNumero"[^>]*data-auto/, 'typed by hand');
   });
 
-  it('opens the forms with the address, the plate, the doors, the door operator and its opening', async () => {
+  it('opens the forms with the address, the plate and the doors', async () => {
     const { browser } = await signedIn('TECNICO');
     const id = await create(browser, {
       ...SURVEY,
@@ -54,6 +54,7 @@ describe('the same data in every place, filled in every direction', () => {
       marca: 'Schindler',
       tipoImpianto: ['IDRAULICO'],
       tipoPorte: ['AUTOMATICHE'],
+      // Taken off the sheet (October 2026): a page from before still sends them, they fill nothing.
       operatoreMarca: 'Selcom',
       operatoreTensione: '24 V DC',
       lucePorte: '800 x 2000',
@@ -64,9 +65,6 @@ describe('the same data in every place, filled in every direction', () => {
       ['pa-indirizzo', 'Via Po 3, Torino'],
       ['pa-matricola', '0033871'],
       ['pa-marca', 'Schindler'],
-      ['oq-opModello', 'Selcom'],
-      ['sg-luceCabinaL', '800'],
-      ['sg-luceCabinaH', '2000'],
     ]) {
       assert.match(
         form.body,
@@ -75,17 +73,18 @@ describe('the same data in every place, filled in every direction', () => {
     }
     assert.match(form.body, /name="oq-tqIdraulico" value="si" checked data-auto="si"/);
     assert.match(form.body, /name="sg-automatico" value="si" checked data-auto="si"/);
-    assert.match(
-      form.body,
-      /name="om-marcaOpA" data-auto="SELCOM">[^]*?<option value="SELCOM" selected>/,
-    );
-    assert.match(
-      form.body,
-      /name="om-voltA" data-auto="24Vcc">[^]*?<option value="24Vcc" selected>/,
-    );
+    for (const name of [
+      'oq-opModello',
+      'sg-luceCabinaL',
+      'sg-luceCabinaH',
+      'om-marcaOpA',
+      'om-voltA',
+    ]) {
+      assert.doesNotMatch(form.body, new RegExp(`name="${name}"[^>]*data-auto`), name);
+    }
   });
 
-  it('asks to confirm a changed address, never a door operator model more precise than its make', async () => {
+  it('asks to confirm a changed address, never the operator make a page from before still sends', async () => {
     const { browser } = await signedIn('TECNICO');
     const asked = await browser.submit('/schede/nuova', '/schede', {
       ...SURVEY,

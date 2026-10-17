@@ -280,7 +280,8 @@ model Scheda {
   parcheggio                   String?                  @db.VarChar(300)
   tipoImpianto                 TipoImpianto[]
   tipoPorte                    TipoPorte[]
-  /// Операторът на вратите — само при автоматични/полуавтоматични врати (иначе null).
+  /// Марката, светлият отвор и напрежението на оператора на вратите не се питат от октомври 2026
+  /// (собственикът ги махна); колоните остават със старите отговори.
   operatoreMarca               String?                  @db.VarChar(120)
   lucePorte                    String?                  @db.VarChar(60)
   operatoreTensione            String?                  @db.VarChar(60)
@@ -290,24 +291,36 @@ model Scheda {
   /// ги махна от листа); колоните остават със старите отговори.
   bloccaPortine                Boolean?
   autolivellamento             Boolean?
-  /// „Pattino retrattile da cambiare“ — при ръчни и полуавтоматични врати.
+  /// „Pattino retrattile da cambiare“ — при ръчни и полуавтоматични врати; при true — видът на шейната
+  /// (от октомври 2026 в „Serrature o sospensioni“, след бравите).
   pattinoRetrattile            Boolean?
   pattinoRetrattileNumero      Int?
-  /// „Serrature da cambiare“ (до октомври 2026 — „Serrature/sospensioni“). numero/tipo — само при true.
+  pattinoRetrattileTipo        String?                  @db.VarChar(120)
+  /// „Serrature da cambiare“ (до октомври 2026 — „Serrature/sospensioni“) — при ръчни и полуавтоматични
+  /// врати. numero/tipo — само при true.
   serrature                    Boolean?
   serratureNumero              Int?
   serratureTipo                String?                  @db.VarChar(120)
-  /// „Sospensioni da cambiare“ — при true броят и листът 2SG (окачванията и операторът на кабината).
+  /// „Sospensioni da cambiare“ — при автоматични и полуавтоматични врати; при true броят и листът 2SG
+  /// (окачванията и операторът на кабината).
   sospensioni                  Boolean?
   sospensioniNumero            Int?
   /// Листът 2SG: {modulo, valori}. Има свой PDF.
   ordineSospensioni            Json?
-  /// Осветлението на шахтата е за смяна.
+  /// Бележките на раздела „Serrature o sospensioni“.
+  serratureNote                String?
+  /// Осветлението на шахтата е за смяна; при true — бележка на ръка.
   luceVanoSostituire           Boolean?
+  luceVanoNote                 String?
   funiDiametroMm               Decimal?                 @db.Decimal(6, 2)
   funiTrefoli                  Int?
   funiNumero                   Int?
   funiLunghezzaM               Decimal?                 @db.Decimal(8, 2)
+  /// Тирантите на въжетата („Funi e tiranti“) — брой и вид за кабината и за противотежестта.
+  tirantiCabinaNumero          Int?
+  tirantiCabinaTipo            String?                  @db.VarChar(120)
+  tirantiContrappesoNumero     Int?
+  tirantiContrappesoTipo       String?                  @db.VarChar(120)
   limitatoreTipo               String?                  @db.VarChar(120)
   funicellaDiametroMm          Decimal?                 @db.Decimal(6, 2)
   funicellaLunghezzaM          Decimal?                 @db.Decimal(8, 2)
@@ -321,7 +334,7 @@ model Scheda {
   telesoccorsoStato            TelesoccorsoStato?
   allarmePortineria            Boolean?
   displayPortineria            Boolean?
-  /// Раздел „Telesoccorso“: какво има да се монтира.
+  /// Аварийната връзка — какво има да се монтира (раздел „Allarme e telesoccorso“ от октомври 2026).
   telesoccorsoInstallare       Boolean?
   perifericaInstallare         Boolean?
   cornettaInstallare           Boolean?
@@ -342,6 +355,8 @@ model Scheda {
   quadroOrdine                 Boolean?
   /// Модулът за поръчка на Pelazza: {modulo, valori} — ключовете са в assets/moduli/*.json. Има свой PDF.
   ordineQuadro                 Json?
+  /// Бележките на раздела „Quadro“.
+  quadroNote                   String?
   arganoMarca                  ArganoMarca?
   arganoMarcaAltro             String?                  @db.VarChar(120)
   /// „Argano da sostituire?“ (до октомври 2026 — запитването към Montanari).
@@ -349,9 +364,16 @@ model Scheda {
   /// Листът с данните на аргано (за всеки вид): {modulo, valori}. Има свой PDF. Записите с модула на
   /// Montanari не се четат повече (друг `modulo`).
   preventivoArgano             Json?
-  /// Аргано, което остава („Argano da sostituire?“ — No): сменят ли се челюстите и контактите на спирачката.
+  /// Аргано, което остава („Argano da sostituire?“ — No): сменят ли се челюстите и контактите на спирачката;
+  /// комплект за контрол на челюстите и контрол в таблото на управление — при true видът им на ръка.
   ganasceFreno                 Boolean?
   contattiFreno                Boolean?
+  kitControlloGanasce          Boolean?
+  kitControlloGanasceTipo      String?                  @db.VarChar(120)
+  controlloQuadro              Boolean?
+  controlloQuadroTipo          String?                  @db.VarChar(120)
+  /// Бележките на раздела „Argano“.
+  arganoNote                   String?
   /// Централата на хидравличния асансьор (src/schede/fields-centralina.ts) — вместо аргано.
   centralinaDaFare             Boolean?
   centralinaAzionamento        CentralinaAzionamento?

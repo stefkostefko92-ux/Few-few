@@ -5,7 +5,10 @@ import { Browser, prisma, signedIn, startApp, stopApp } from './harness.js';
 before(startApp);
 after(stopApp);
 
-/** The fields of the second brief, as the browser sends them (three stops, two of them measured). */
+/**
+ * The fields of the second brief and of the owner's October pass, as the browser sends them (three
+ * stops, two of them measured; semi-automatic doors ask the locks and the suspensions).
+ */
 const SECOND = {
   data: '2026-10-12',
   matricola: '0045120',
@@ -13,17 +16,25 @@ const SECOND = {
   buonoLavoro: 'BL 2026/512',
   fermate: '3',
   tipoPorte: ['SEMIAUTOMATICHE', 'MANUALI'],
-  operatoreMarca: 'Selcom',
-  lucePorte: '800 x 2000',
-  operatoreTensione: '24 V DC',
   doppioAccesso: 'no',
-  pattinoRetrattile: 'si',
+  quadroNote: 'Quadro nel sottoscala',
+  arganoPreventivo: 'no',
+  kitControlloGanasce: 'si',
+  kitControlloGanasceTipo: 'Microinterruttori',
+  controlloQuadro: 'no',
+  arganoNote: 'Rumore sul cuscinetto',
+  tirantiCabinaNumero: '4',
+  tirantiCabinaTipo: 'Tiranti M12',
   serrature: 'si',
   serratureNumero: '3',
   serratureTipo: 'A gancio',
+  pattinoRetrattile: 'si',
+  pattinoRetrattileTipo: 'Wittur',
   sospensioni: 'si',
   sospensioniNumero: '4',
+  serratureNote: 'Contatti ossidati',
   luceVanoSostituire: 'si',
+  luceVanoNote: 'Plafoniere al 2° piano',
   telesoccorsoInstallare: 'si',
   perifericaInstallare: 'no',
   cornettaInstallare: 'si',
@@ -64,11 +75,20 @@ describe('the second brief', () => {
     const id = await create(browser, SECOND);
     const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
     assert.equal(row.buonoLavoro, 'BL 2026/512');
-    assert.equal(row.operatoreMarca, 'Selcom');
-    assert.equal(row.lucePorte, '800 x 2000');
     assert.equal(row.doppioAccesso, false);
     assert.equal(row.pattinoRetrattile, true);
+    assert.equal(row.pattinoRetrattileTipo, 'Wittur');
     assert.equal(row.serratureTipo, 'A gancio');
+    assert.equal(row.serratureNote, 'Contatti ossidati');
+    assert.deepEqual(
+      [row.quadroNote, row.arganoNote, row.luceVanoNote],
+      ['Quadro nel sottoscala', 'Rumore sul cuscinetto', 'Plafoniere al 2° piano'],
+    );
+    assert.deepEqual(
+      [row.kitControlloGanasce, row.kitControlloGanasceTipo, row.controlloQuadro],
+      [true, 'Microinterruttori', false],
+    );
+    assert.deepEqual([row.tirantiCabinaNumero, row.tirantiCabinaTipo], [4, 'Tiranti M12']);
     assert.equal(row.sospensioni, true);
     assert.equal(row.sospensioniNumero, 4);
     assert.deepEqual(
@@ -84,6 +104,7 @@ describe('the second brief', () => {
     assert.equal(row.displayPortineria, false);
     assert.equal(row.bottoniereMisure, true);
     assert.match(row.searchText, /bl 2026 512/);
+    assert.match(row.searchText, /wittur/, 'the type of the cam is searchable');
     const rows = await rowsOf(id);
     assert.deepEqual(
       rows.map((r) => [r.fermata, r.piano, r.lunghezzaMm?.toString() ?? null, r.display]),
@@ -126,8 +147,11 @@ describe('the second brief', () => {
     const auto = await edit(browser, id, { ...SECOND, tipoPorte: ['AUTOMATICHE'] });
     assert.equal(auto.status, 303);
     const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
-    assert.equal(row.operatoreMarca, 'Selcom');
-    assert.equal(row.pattinoRetrattile, null);
+    assert.deepEqual(
+      [row.serrature, row.serratureTipo, row.pattinoRetrattile, row.pattinoRetrattileTipo],
+      [null, null, null, null],
+    );
+    assert.deepEqual([row.sospensioni, row.serratureNote], [true, 'Contatti ossidati']);
   });
 
   it('keeps the old answers of the fields taken off the sheet when the sheet is saved again', async () => {
@@ -142,9 +166,14 @@ describe('the second brief', () => {
         arganoMarca: 'MONTANARI',
         telesoccorso: true,
         telesoccorsoStato: 'MANCA_PERIFERICA',
+        operatoreMarca: 'Selcom',
+        lucePorte: '800 x 2000',
+        operatoreTensione: '24 V DC',
       },
     });
-    assert.equal((await edit(browser, id, SECOND)).status, 303);
+    // A page opened before October 2026 still sends the operator of the doors: it is not read.
+    const old = { ...SECOND, operatoreMarca: 'Fermator', lucePorte: '900', operatoreTensione: '' };
+    assert.equal((await edit(browser, id, old)).status, 303);
     const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
     assert.deepEqual(
       [
@@ -154,11 +183,17 @@ describe('the second brief', () => {
         row.arganoMarca,
         row.telesoccorso,
         row.telesoccorsoStato,
+        row.operatoreMarca,
+        row.lucePorte,
+        row.operatoreTensione,
       ],
-      [true, false, 2, 'MONTANARI', true, 'MANCA_PERIFERICA'],
+      [true, false, 2, 'MONTANARI', true, 'MANCA_PERIFERICA', 'Selcom', '800 x 2000', '24 V DC'],
     );
     const page = await browser.get(`/schede/${id}`);
-    assert.doesNotMatch(page.body, /Blocca portine|Autolivellamento|Montanari|Manca periferica/);
+    assert.doesNotMatch(
+      page.body,
+      /Blocca portine|Autolivellamento|Montanari|Manca periferica|Marca operatore|Selcom/,
+    );
   });
 
   it('brings a wrong cell back next to it, with what was typed, and saves nothing', async () => {
@@ -179,7 +214,7 @@ describe('the second brief', () => {
     assert.equal(await prisma.misuraBottoniera.count(), before);
   });
 
-  it('prints the locks, suspensions and skates to change, the alarm and the measurements table; the PDF carries them too', async () => {
+  it('prints the locks, suspensions and skates to change, the alarm with the emergency call, the notes and the measurements table; the PDF carries them too', async () => {
     const { browser } = await signedIn('TECNICO');
     const id = await create(browser, SECOND);
     const print = await browser.get(`/schede/${id}/stampa`);
@@ -187,9 +222,21 @@ describe('the second brief', () => {
     assert.match(print.body, /<dt>Serrature da cambiare<\/dt>/);
     assert.match(print.body, /<dt>Numero sospensioni<\/dt>\s*<dd>4<\/dd>/);
     assert.match(print.body, /Pattino retrattile da cambiare/);
-    assert.match(print.body, /<h2>Allarme<\/h2>/);
-    assert.match(print.body, /<h2>Telesoccorso<\/h2>/);
-    assert.match(print.body, /<dt>Periferica sotto cabina da installare<\/dt>/);
+    assert.match(print.body, /<dt>Tipo di pattino retrattile<\/dt>\s*<dd>Wittur<\/dd>/);
+    assert.match(
+      print.body,
+      /<dt>Note serrature e sospensioni<\/dt>\s*<dd>Contatti ossidati<\/dd>/,
+    );
+    assert.match(print.body, /<h2>Funi e tiranti<\/h2>/);
+    assert.match(print.body, /<dt>Tipo tiranti cabina<\/dt>\s*<dd>Tiranti M12<\/dd>/);
+    assert.match(print.body, /<h2>Allarme e telesoccorso<\/h2>/);
+    assert.doesNotMatch(print.body, /<h2>(Allarme|Telesoccorso)<\/h2>/);
+    assert.match(
+      print.body,
+      /Periferica sotto cabina da installare[\s\S]*Cornetta nel locale[\s\S]*Allarme in portineria[\s\S]*Display in portineria/,
+      "the porter's lodge last",
+    );
+    assert.match(print.body, /<dt>Note luce vano<\/dt>\s*<dd>Plafoniere al 2° piano<\/dd>/);
     assert.match(print.body, /<table class="ptable">/);
     assert.match(
       print.body,
@@ -197,7 +244,8 @@ describe('the second brief', () => {
     );
     const show = await browser.get(`/schede/${id}`);
     assert.match(show.body, /<table class="mtable">/);
-    assert.match(show.body, /Buono di riferimento/);
+    assert.match(show.body, /Buono di lavoro/);
+    assert.doesNotMatch(show.body, /Buono di riferimento/);
     const pdf = await browser.get(`/schede/${id}/pdf`);
     assert.equal(pdf.status, 200);
     assert.equal(pdf.bytes.subarray(0, 5).toString(), '%PDF-');

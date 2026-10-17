@@ -150,7 +150,7 @@ describe('a hydraulic lift', () => {
 describe('the sections of the print', () => {
   it('prints only the ticked sections, on paper and in the PDF, and shows the choice again', async () => {
     const { browser } = await signedIn('TECNICO');
-    const keep = ['ubicazione', 'tipologia', 'quadro', 'allarme', 'telesoccorso'];
+    const keep = ['ubicazione', 'tipologia', 'quadro', 'allarme'];
     const id = await create(browser, {
       ...SURVEY,
       noteImpianto: 'Nota da non stampare',
@@ -161,7 +161,7 @@ describe('the sections of the print', () => {
     const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
     assert.ok(row.sezioniEscluse.includes('note') && !row.sezioniEscluse.includes('allarme'));
     const print = await browser.get(`/schede/${id}/stampa`);
-    assert.match(print.body, /<h2>Allarme<\/h2>/);
+    assert.match(print.body, /<h2>Allarme e telesoccorso<\/h2>/);
     assert.doesNotMatch(print.body, /Nota da non stampare/);
     const page = await browser.get(`/schede/${id}`);
     assert.match(page.body, /Nota da non stampare/, 'the page keeps every section');
