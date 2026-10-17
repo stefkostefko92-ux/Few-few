@@ -162,8 +162,10 @@ offline режимът работи.
 1. Панел → **Minecraft** → **Stop** (скриптът отказва при работещ сървър).
 2. На сървъра, с актуалната папка `minecraft/deploy/` (виж „Първи пробег“):
    ```bash
-   sudo bash /opt/few-few/current/minecraft/deploy/switch-flavor.sh
+   sudo MC_NAME="Custom Mafia" bash /opt/few-few/current/minecraft/deploy/switch-flavor.sh
    ```
+   `MC_NAME` е името на сървъра в панела (по подразбиране `Minecraft`; нашият е преименуван на
+   „Custom Mafia“). Описание, написано ръчно в панела, не се пипа.
    Скриптът: бекъп на панела → бекъп на **целия** сървър (свят + конфиги) в
    `/var/backups/minecraft-world/world-<uuid>-<час>.tar.gz` (пази последните 5, първо проверява
    мястото) → сменя egg-а на „Paper“ в панела (`MINECRAFT_VERSION=26.3`, `BUILD_NUMBER=200`) → Wings
