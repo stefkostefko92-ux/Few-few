@@ -19,49 +19,8 @@ set -euo pipefail
 umask 077
 
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-PANEL_FQDN="${PANEL_FQDN:-mc.carbonstealth.eu}"
-NODE_FQDN="${NODE_FQDN:-node-mc.carbonstealth.eu}"
-LE_EMAIL="${LE_EMAIL:-admin@carbonstealth.eu}"
-PANEL_PORT="${PANEL_PORT:-4330}"
-WINGS_PORT="${WINGS_PORT:-4331}"
-SFTP_PORT="${SFTP_PORT:-2022}"
-GAME_PORT="${GAME_PORT:-25565}"
-PELICAN_DIR="${PELICAN_DIR:-/opt/pelican}"
-PELICAN_SUBNET="${PELICAN_SUBNET:-10.240.30.0/24}"
-PELICAN_GATEWAY="${PELICAN_GATEWAY:-10.240.30.1}"
-# Мрежата на игровите контейнери (Wings). Подразбирането на Wings е 172.18.0.0/16 — там Docker
-# вече е сложил някой от другите compose стекове, затова е изместена.
-WINGS_SUBNET="${WINGS_SUBNET:-10.240.31.0/24}"
-WINGS_GATEWAY="${WINGS_GATEWAY:-10.240.31.1}"
-WINGS_VERSION="${WINGS_VERSION:-v1.0.0-rc.1}"
-# sha256 от checksums.txt на релийза (github.com/pelican/wings/releases/tag/v1.0.0-rc.1).
-WINGS_SHA256_amd64="19dda386e02041da1f1fbcc73f34e4bb01c1fbc2d499aac79a6be3a51ba7f0e8"
-WINGS_SHA256_arm64="ed7deafe0aef2acd3adae73103d2a01b57e8a7eaa56950194bdff11f87f37ff3"
-YQ_IMAGE="${YQ_IMAGE:-mikefarah/yq:4.44.3}"
-WINGS_CONFIG=/etc/pelican/config.yml
-HEALTH_WAIT="${HEALTH_WAIT:-240}"
-
-# Сървърът. Паметта е лимитът на контейнера; JVM взима 95 % от нея (startup на egg-а).
-MC_VERSION="${MC_VERSION:-26.3}"
-MC_NAME="${MC_NAME:-Minecraft}"
-MC_IMAGE="${MC_IMAGE:-ghcr.io/pelican-eggs/yolks:java_25}"
-MC_MEMORY="${MC_MEMORY:-4096}"
-MC_DISK="${MC_DISK:-16384}"
-MC_CPU="${MC_CPU:-0}"
-MC_BACKUPS="${MC_BACKUPS:-5}"
-NODE_NAME="${NODE_NAME:-carbonstealth-vps}"
-NODE_MEMORY="${NODE_MEMORY:-$((MC_MEMORY + 512))}"
-NODE_DISK="${NODE_DISK:-$((MC_DISK + 4096))}"
-GAME_IP="${GAME_IP:-0.0.0.0}"
-EGG_URL="${EGG_URL:-https://raw.githubusercontent.com/pelican-eggs/minecraft/refs/heads/main/java/vanilla/egg-vanilla-minecraft.yaml}"
-
-COMPOSE=(docker compose --project-name pelican --env-file "$PELICAN_DIR/.env" -f "$PELICAN_DIR/compose.yml")
-
-log()  { printf '\033[1;36m▸ minecraft: %s\033[0m\n' "$*"; }
-ok()   { printf '\033[32m✔ minecraft: %s\033[0m\n' "$*"; }
-warn() { printf '\033[33m⚠ minecraft: %s\033[0m\n' "$*" >&2; }
-fail() { printf '\033[31m✘ minecraft: %s\033[0m\n' "$*" >&2; exit 1; }
+# shellcheck source=common.sh
+. "$SRC_DIR/common.sh"
 
 # ── 0. Предпоставки ──────────────────────────────────────────────────────────
 preflight() {
@@ -326,21 +285,6 @@ setup_backup_timer() {
 }
 
 # ── 7. Настройка в панела (bootstrap.php) ───────────────────────────────────
-PANEL_ENV_IN_CONTAINER=/pelican-data/.env
-panel_installed() { "${COMPOSE[@]}" exec -T panel grep -q '^APP_INSTALLED=true' "$PANEL_ENV_IN_CONTAINER"; }
-
-bootstrap() {
-  local mode="$1"
-  "${COMPOSE[@]}" cp "$SRC_DIR/bootstrap.php" panel:/tmp/pelican-bootstrap.php >/dev/null 2>&1
-  "${COMPOSE[@]}" exec -T \
-    -e BOOTSTRAP_MODE="$mode" -e NODE_NAME="$NODE_NAME" -e NODE_FQDN="$NODE_FQDN" \
-    -e NODE_MEMORY="$NODE_MEMORY" -e NODE_DISK="$NODE_DISK" -e WINGS_PORT="$WINGS_PORT" \
-    -e SFTP_PORT="$SFTP_PORT" -e GAME_IP="$GAME_IP" -e GAME_PORT="$GAME_PORT" -e GAME_ALIAS="$PANEL_FQDN" \
-    -e EGG_URL="$EGG_URL" -e MC_NAME="$MC_NAME" -e MC_VERSION="$MC_VERSION" -e MC_IMAGE="$MC_IMAGE" \
-    -e MC_MEMORY="$MC_MEMORY" -e MC_DISK="$MC_DISK" -e MC_CPU="$MC_CPU" -e MC_BACKUPS="$MC_BACKUPS" \
-    panel php artisan tinker --execute="require '/tmp/pelican-bootstrap.php';"
-}
-
 # Конфигът носи токена на нода: отива направо във файла (600), не се печата.
 write_wings_config() {
   local node_id="$1" tmp
@@ -372,7 +316,7 @@ installer_step() {
   1. https://$PANEL_FQDN/installer → админ акаунт (после включи 2FA).
      Базата, кешът и опашката са вече попълнени — само потвърждаваш.
   2. Пусни отново: sudo bash $SRC_DIR/install.sh
-     → нод, алокация $GAME_PORT, egg, Wings и сървърът Minecraft $MC_VERSION.
+     → нод, алокация $GAME_PORT, egg, Wings и сървърът Minecraft $MC_VERSION ($MC_FLAVOR).
 ────────────────────────────────────────────────────────────────────
 EOF
 }
