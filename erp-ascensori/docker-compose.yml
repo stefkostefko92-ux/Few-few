@@ -98,6 +98,10 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_MITTENTE: ${SMTP_MITTENTE:-}
       SMTP_NOME: ${SMTP_NOME:-ERP Ascensori}
+      # Празно = задължителният втори фактор за MASTER/ADMIN е ВКЛЮЧЕН (както
+      # в продукция винаги). `0` е само за демо стенд с общи демо акаунти: там
+      # първият посетител, включил 2FA, би заключил акаунта за всички останали.
+      MFA_OBBLIGATORIA: ${MFA_OBBLIGATORIA:-}
       NOTIFICHE_LOTTO: ${NOTIFICHE_LOTTO:-50}
       NODE_ENV: production
     volumes:
