@@ -125,6 +125,8 @@ export function mfaObbligatorio(ruolo: string): boolean {
 export function mfaImposta(
   env: Record<string, string | undefined> = process.env,
 ): boolean {
+  // Демо стенд с общи акаунти (`demo.ts`): личен втори фактор там няма как.
+  if (env.DEMO === "1") return false;
   if (env.MFA_OBBLIGATORIA === "0") return false;
   if (env.MFA_OBBLIGATORIA === "1") return true;
   return env.NODE_ENV === "production";

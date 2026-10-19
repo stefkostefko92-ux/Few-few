@@ -12,6 +12,7 @@ import { filtroUtenti } from "@/lib/tenant";
 import { amministratoreCliente } from "@/lib/gestione-utenti";
 import { revocaTutte } from "@/lib/sessioni";
 import { mfaObbligatorio } from "@/lib/password-policy";
+import { vietaSeAccountDemo } from "@/lib/demo-guardia";
 
 const SELEZIONE_SICURA = {
   id: true,
@@ -59,6 +60,8 @@ export const GET = gestito(async (_req, ctx) => {
 export const PUT = gestito(async (req, ctx) => {
   const s = await richiedeRuolo("ADMIN");
   const { id } = await ctx.params;
+  // Демо стенд: общите акаунти не се пипат (`demo.ts`).
+  await vietaSeAccountDemo(id);
   const data = await corpoValidato(req, schemaUpdate);
   const prima = await prisma.user.findFirst({
     where: { id, ...filtroUtenti(s) },
@@ -141,6 +144,8 @@ export const PUT = gestito(async (req, ctx) => {
 export const DELETE = gestito(async (_req, ctx) => {
   const s = await richiedeRuolo("MASTER");
   const { id } = await ctx.params;
+  // Демо стенд: общите акаунти не се пипат (`demo.ts`).
+  await vietaSeAccountDemo(id);
   if (id === s.sub)
     throw new ErroreHttp(409, "Impossibile eliminare il proprio account");
   const prima = await prisma.user.findFirst({

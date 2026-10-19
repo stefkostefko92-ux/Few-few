@@ -13,6 +13,7 @@ import {
   TIPI_SOGGETTO,
   type TipoSoggetto,
 } from "@/lib/gdpr/piano";
+import { vietaSeAccountDemo } from "@/lib/demo-guardia";
 
 function tipoValido(tipo: string): TipoSoggetto {
   if (!(TIPI_SOGGETTO as readonly string[]).includes(tipo))
@@ -38,6 +39,8 @@ export const POST = gestito(async (req, ctx) => {
   const s = await richiedeRuolo("ADMIN");
   const { tipo, id } = (await ctx.params) as { tipo: string; id: string };
   const t = tipoValido(tipo);
+  // Демо стенд: анонимизиран демо акаунт = никой не влиза повече.
+  if (t === "utente") await vietaSeAccountDemo(id);
   await corpoValidato(req, schema);
 
   const esito = await anonimizza(

@@ -21,10 +21,13 @@ import { mfaObbligatorio } from "@/lib/password-policy";
 import { revocaTutte } from "@/lib/sessioni";
 import { qrSvg } from "@/lib/qr";
 import { consenti, LIMITI } from "@/lib/rate-limit";
+import { vietaSeAccountDemo } from "@/lib/demo-guardia";
 
 /** Подготовка: нова тайна + URI за QR. Още НЕ включва втория фактор. */
 export const GET = gestito(async () => {
   const s = await richiedeSessione();
+  // Демо стенд: общите акаунти не се пипат (`demo.ts`).
+  await vietaSeAccountDemo(s.sub);
   const u = await prisma.user.findUniqueOrThrow({
     where: { id: s.sub },
     select: { email: true, totpAttivo: true, totpSegreto: true },
@@ -52,6 +55,8 @@ const schemaAttiva = z.object({ codice: z.string().trim().min(6).max(10) });
 /** Включване след потвърждение с код. Връща резервните кодове ВЕДНЪЖ. */
 export const POST = gestito(async (req) => {
   const s = await richiedeSessione();
+  // Демо стенд: общите акаунти не се пипат (`demo.ts`).
+  await vietaSeAccountDemo(s.sub);
   // Честота и тук: сесията е нужна, но откраднатата сесия е точно случаят, в
   // който някой би пробвал кодове без край, за да върже СВОЕ устройство.
   if (!consenti(`mfa:${s.sub}`, 10, LIMITI.finestraMs))
@@ -101,6 +106,8 @@ const schemaDisattiva = z.object({ password: z.string().min(1).max(200) });
 /** Изключване — иска паролата отново. */
 export const DELETE = gestito(async (req) => {
   const s = await richiedeSessione();
+  // Демо стенд: общите акаунти не се пипат (`demo.ts`).
+  await vietaSeAccountDemo(s.sub);
   const { password } = await corpoValidato(req, schemaDisattiva);
   // Паролата се проверява тук извън входа — без таван откраднатата сесия би
   // налучквала паролата без край.

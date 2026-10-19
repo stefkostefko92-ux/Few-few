@@ -10,10 +10,13 @@ import { richiedeRuolo } from "@/lib/auth";
 import { scriviAudit } from "@/lib/audit";
 import { revocaTutte } from "@/lib/sessioni";
 import { utenteGestibile } from "@/lib/gestione-utenti";
+import { vietaSeAccountDemo } from "@/lib/demo-guardia";
 
 export const DELETE = gestito(async (_req, ctx) => {
   const s = await richiedeRuolo("ADMIN");
   const { id } = await ctx.params;
+  // Демо стенд: общите акаунти не се пипат (`demo.ts`).
+  await vietaSeAccountDemo(id);
   await utenteGestibile(s, id, { privilegiato: true });
   await prisma.user.update({
     where: { id },

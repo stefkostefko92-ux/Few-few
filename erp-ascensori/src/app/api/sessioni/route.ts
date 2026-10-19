@@ -3,6 +3,7 @@ import { ok, gestito } from "@/lib/api";
 import { richiedeSessione } from "@/lib/auth";
 import { elencoSessioni, revocaTutte } from "@/lib/sessioni";
 import { scriviAudit } from "@/lib/audit";
+import { vietaSeAccountDemo } from "@/lib/demo-guardia";
 
 export const GET = gestito(async () => {
   const s = await richiedeSessione();
@@ -18,6 +19,8 @@ export const GET = gestito(async () => {
  */
 export const DELETE = gestito(async (req) => {
   const s = await richiedeSessione();
+  // Демо стенд: общите акаунти не се пипат (`demo.ts`).
+  await vietaSeAccountDemo(s.sub);
   const altre = new URL(req.url).searchParams.get("altre") === "1";
   const quante = await revocaTutte(s.sub, altre ? s.sid : undefined);
   await scriviAudit({

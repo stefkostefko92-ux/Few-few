@@ -10,12 +10,15 @@ import { scriviAudit } from "@/lib/audit";
 import { utenteGestibile } from "@/lib/gestione-utenti";
 import { validaPassword, mfaObbligatorio } from "@/lib/password-policy";
 import { revocaTutte } from "@/lib/sessioni";
+import { vietaSeAccountDemo } from "@/lib/demo-guardia";
 
 const schema = z.object({ password: z.string().min(1).max(200) });
 
 export const POST = gestito(async (req, ctx) => {
   const s = await richiedeRuolo("ADMIN");
   const { id } = await ctx.params;
+  // Демо стенд: общите акаунти не се пипат (`demo.ts`).
+  await vietaSeAccountDemo(id);
   const { password } = await corpoValidato(req, schema);
   // Паролата на ДРУГ администратор — само MASTER: иначе единият ADMIN
   // заключва колегата си навън и влиза вместо него.

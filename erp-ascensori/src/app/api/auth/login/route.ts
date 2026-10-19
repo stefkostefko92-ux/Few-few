@@ -37,6 +37,7 @@ import {
   accessoBloccatoSenzaMfa,
   passwordScaduta,
 } from "@/lib/password-policy";
+import { accountBloccatoDemo } from "@/lib/demo";
 
 const schema = z.object({
   email: z.string().trim().toLowerCase().email().max(200),
@@ -165,7 +166,11 @@ export const POST = gestito(async (req) => {
     );
   }
 
+  // Демо стенд: паролата на демо акаунтите е публична — блокадата им би била
+  // бутон „спри демото за 15 минути" за всеки посетител (`demo.ts`).
+  const demo = accountBloccatoDemo(utente.email);
   if (
+    !demo &&
     eBloccato(
       { tentativi: utente.tentativi, bloccatoFino: utente.bloccatoFino },
       ora,
@@ -174,7 +179,9 @@ export const POST = gestito(async (req) => {
     return bloccato();
 
   if (!(await confronta(password, utente.password)))
-    return fallimento(utente.id, ora, "Credenziali non valide.");
+    return demo
+      ? errore(401, "Credenziali non valide.")
+      : fallimento(utente.id, ora, "Credenziali non valide.");
 
   // ── Втори фактор ────────────────────────────────────────────────────────
   // Проверява се СЛЕД паролата: иначе маршрутът издава кои акаунти имат MFA.

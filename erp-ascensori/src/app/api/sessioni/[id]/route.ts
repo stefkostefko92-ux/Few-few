@@ -3,9 +3,12 @@ import { ok, gestito } from "@/lib/api";
 import { richiedeSessione, ErroreHttp } from "@/lib/auth";
 import { revocaSessione } from "@/lib/sessioni";
 import { scriviAudit } from "@/lib/audit";
+import { vietaSeAccountDemo } from "@/lib/demo-guardia";
 
 export const DELETE = gestito(async (_req, ctx) => {
   const s = await richiedeSessione();
+  // Демо стенд: общите акаунти не се пипат (`demo.ts`).
+  await vietaSeAccountDemo(s.sub);
   const { id } = await ctx.params;
   // Обхватът по потребител е в самата заявка: чужда сесия не се прекратява
   // дори с познат идентификатор.

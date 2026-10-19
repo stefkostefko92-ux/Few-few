@@ -14,6 +14,7 @@ import { scriviAudit } from "@/lib/audit";
 import { validaPassword, mfaObbligatorio } from "@/lib/password-policy";
 import { revocaTutte } from "@/lib/sessioni";
 import { consenti, LIMITI } from "@/lib/rate-limit";
+import { vietaSeAccountDemo } from "@/lib/demo-guardia";
 
 const schema = z.object({
   attuale: z.string().min(1).max(200),
@@ -22,6 +23,8 @@ const schema = z.object({
 
 export const POST = gestito(async (req) => {
   const s = await richiedeSessione();
+  // Демо стенд: общите акаунти не се пипат (`demo.ts`).
+  await vietaSeAccountDemo(s.sub);
   const { attuale, nuova } = await corpoValidato(req, schema);
   // Същият таван като при изключването на втория фактор: без него сесията
   // налучква текущата парола без край.
