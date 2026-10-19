@@ -147,3 +147,11 @@ test("тъмната тема НЕ разваля контраста", async ({ 
   const v = await analizza(page);
   expect(v.length, `нарушения в тъмна тема:${descrivi(v)}`).toBe(0);
 });
+
+test("„Area cliente“ е достъпна", async ({ page }) => {
+  await entra(page, "cliente@erp-ascensori.local");
+  await page.waitForURL(/\/area-cliente$/);
+  await expect(page.getByRole("heading", { name: "Impianti" })).toBeVisible();
+  const v = await analizza(page);
+  expect(v, descrivi(v)).toEqual([]);
+});

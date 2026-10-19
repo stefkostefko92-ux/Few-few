@@ -156,6 +156,14 @@ async function main() {
     );
   }
 
+  // Демо клиентът е студиото на първия администратор: „Area cliente" показва
+  // неговите кондоминиуми, импианти и фактури. Връзката се слага само ако
+  // липсва — сийдът не пренаписва ръчно сменено.
+  await prisma.user.updateMany({
+    where: { email: "cliente@erp-ascensori.local", amministratoreId: null },
+    data: { amministratoreId: amministratori[0].id },
+  });
+
   // ── Condomini ────────────────────────────────────────────────────────────
   const datiCondomini = [
     // Данъчният номер и адресът за е-фактурата са НА КОНДОМИНИУМА: той е

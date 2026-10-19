@@ -50,6 +50,7 @@ import {
   List,
   X,
   SlidersHorizontal,
+  House,
 } from "@phosphor-icons/react";
 import { DIM } from "@/components/icone";
 import { haPermesso, type Ruolo, RUOLO_LABEL, isRuolo } from "@/lib/roles";
@@ -60,6 +61,8 @@ interface Voce {
   label: string;
   icona: React.ReactNode;
   minimo?: Ruolo;
+  /** Само за това ниво (клиентът има СВОЯ страница, не подмножество). */
+  solo?: Ruolo;
 }
 
 interface Gruppo {
@@ -71,6 +74,12 @@ const GRUPPI: Gruppo[] = [
   {
     label: null,
     voci: [
+      {
+        href: "/area-cliente",
+        label: "Area cliente",
+        icona: <House size={DIM.navigazione} />,
+        solo: "CLIENTE",
+      },
       {
         href: "/dashboard",
         label: "Dashboard",
@@ -410,7 +419,11 @@ export default function Sidebar() {
             const visibili = g.voci.filter(
               // Без изрично ниво — OPERATORE: всички вътрешни API-та отказват
               // CLIENTE, тоест връзка за него води само до грешки.
-              (v) => ruolo && haPermesso(ruolo, v.minimo ?? "OPERATORE"),
+              (v) =>
+                ruolo &&
+                (v.solo
+                  ? ruolo === v.solo
+                  : haPermesso(ruolo, v.minimo ?? "OPERATORE")),
             );
             if (visibili.length === 0) return null;
             return (

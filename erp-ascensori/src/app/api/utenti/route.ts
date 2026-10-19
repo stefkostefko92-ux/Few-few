@@ -9,6 +9,7 @@ import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { scriviAudit } from "@/lib/audit";
 import { RUOLI } from "@/lib/roles";
 import { filtroUtenti } from "@/lib/tenant";
+import { amministratoreCliente } from "@/lib/gestione-utenti";
 import { validaPassword, mfaObbligatorio } from "@/lib/password-policy";
 
 const SELEZIONE_SICURA = {
@@ -24,6 +25,7 @@ const SELEZIONE_SICURA = {
   aiConsentita: true,
   ultimoAccesso: true,
   tenantId: true,
+  amministratoreId: true,
   createdAt: true,
 } as const;
 
@@ -36,6 +38,8 @@ const schemaCreate = z.object({
   cognome: z.string().trim().min(1).max(100),
   ruolo: z.enum(RUOLI).optional(),
   tenantId: z.string().uuid().nullish(),
+  /** Само за CLIENTE: чии данни вижда в „Area cliente". */
+  amministratoreId: z.string().uuid().nullish(),
 });
 
 export const GET = gestito(async (req) => {
@@ -101,8 +105,15 @@ export const POST = gestito(async (req) => {
   if (!esitoPwd.valida)
     throw new ErroreHttp(400, esitoPwd.errore ?? "Password non valida");
 
+  const amministratoreId = await amministratoreCliente(
+    data.amministratoreId,
+    data.ruolo ?? "OPERATORE",
+    tenantId ?? null,
+  );
+
   const creato = await prisma.user.create({
     data: {
+      amministratoreId: amministratoreId ?? undefined,
       email: data.email,
       password: await bcrypt.hash(data.password, 10),
       nome: data.nome,

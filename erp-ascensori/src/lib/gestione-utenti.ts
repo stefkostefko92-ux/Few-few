@@ -32,3 +32,28 @@ export async function utenteGestibile(
     );
   return u;
 }
+
+/**
+ * Администраторът, с когото се свързва акаунт CLIENTE.
+ *
+ * Връзката решава какво вижда клиентът — затова администраторът трябва да е
+ * от СЪЩАТА фирма като акаунта (иначе клиент на едната фирма вижда данните на
+ * другата). За всяко друго ниво връзката се нулира: тя няма смисъл там, а
+ * останала след смяна на нивото, би се „съживила" при връщане към CLIENTE.
+ *
+ * `undefined` = без промяна; `null` = без връзка.
+ */
+export async function amministratoreCliente(
+  richiesto: string | null | undefined,
+  ruolo: string,
+  tenantId: string | null,
+): Promise<string | null | undefined> {
+  if (ruolo !== "CLIENTE") return null;
+  if (!richiesto) return richiesto;
+  const a = await prisma.amministratore.findFirst({
+    where: { id: richiesto, tenantId },
+    select: { id: true },
+  });
+  if (!a) throw new ErroreHttp(422, "Amministratore non trovato");
+  return a.id;
+}

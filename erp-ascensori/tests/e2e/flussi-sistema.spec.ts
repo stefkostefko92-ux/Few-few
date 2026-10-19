@@ -109,3 +109,33 @@ test("поверителност, conservazione, календар, рентаб�
 
   expect(problemi, problemi.join("\n")).toEqual([]);
 });
+
+test("клиент: влиза направо в „Area cliente“ и вижда само своето", async ({
+  page,
+}) => {
+  const problemi = sentinella(page);
+  await page.goto("/login");
+  await page.getByLabel("Email").fill("cliente@erp-ascensori.local");
+  await page.getByLabel("Password").fill("Ascensori!2026");
+  await page.getByRole("button", { name: "Accedi" }).click();
+  await page.waitForURL(/\/area-cliente$/);
+  await expect(page.getByText(/Studio Bianchi/).first()).toBeVisible();
+  await expect(page.getByRole("cell", { name: "MI-2024-0158" })).toBeVisible();
+  // Импиантът на другия администратор не е тук.
+  await expect(page.getByText("MB-2023-0044")).toHaveCount(0);
+  // Менюто е само неговата страница — без вътрешните модули.
+  await expect(
+    page.getByRole("navigation").getByRole("link", { name: "Fatture" }),
+  ).toHaveCount(0);
+  const pdf = await page.evaluate(async () => {
+    const a = document.querySelector<HTMLAnchorElement>(
+      'a[href^="/api/cliente/fatture/"]',
+    );
+    return a ? (await fetch(a.href)).status : 0;
+  });
+  expect(pdf).toBe(200);
+  // Таблото пренасочва клиента към неговата страница.
+  await page.goto("/dashboard");
+  await page.waitForURL(/\/area-cliente$/);
+  expect(problemi, problemi.join("\n")).toEqual([]);
+});

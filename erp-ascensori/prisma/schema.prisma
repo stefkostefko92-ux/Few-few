@@ -402,17 +402,22 @@ model User {
   /// Кога паролата е сменяна за последно — за политиката за срок.
   passwordCambiataAt DateTime?
   tenantId           String?   @db.Uuid
+  /// Само за ниво CLIENTE: администраторът, чиито кондоминиуми, импианти и
+  /// фактури вижда в „Area cliente". Без него клиентът не вижда нищо.
+  amministratoreId   String?   @db.Uuid
   note               String?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  tenant     Tenant?          @relation(fields: [tenantId], references: [id])
-  sessioni   SessioneAttiva[]
-  auditLogs  AuditLog[]
-  preventivi Preventivo[]
-  fatture    Fattura[]
-  documenti  Documento[]
+  tenant         Tenant?          @relation(fields: [tenantId], references: [id])
+  amministratore Amministratore?  @relation(fields: [amministratoreId], references: [id], onDelete: SetNull)
+  sessioni       SessioneAttiva[]
+  auditLogs      AuditLog[]
+  preventivi     Preventivo[]
+  fatture        Fattura[]
+  documenti      Documento[]
 
+  @@index([amministratoreId])
   @@map("users")
 }
 
@@ -765,11 +770,13 @@ model Amministratore {
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
-  condomini  Condominio[]
-  impianti   Impianto[]
-  preventivi Preventivo[]
-  fatture    Fattura[]
-  contratti  Contratto[]
+  condomini     Condominio[]
+  impianti      Impianto[]
+  preventivi    Preventivo[]
+  fatture       Fattura[]
+  contratti     Contratto[]
+  /// Акаунтите CLIENTE, свързани с този администратор.
+  utentiCliente User[]
 
   @@index([tenantId])
   @@map("amministratori")

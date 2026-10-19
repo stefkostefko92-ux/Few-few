@@ -9,6 +9,7 @@ import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { scriviAudit } from "@/lib/audit";
 import { RUOLI } from "@/lib/roles";
 import { filtroUtenti } from "@/lib/tenant";
+import { amministratoreCliente } from "@/lib/gestione-utenti";
 import { revocaTutte } from "@/lib/sessioni";
 import { mfaObbligatorio } from "@/lib/password-policy";
 
@@ -25,6 +26,7 @@ const SELEZIONE_SICURA = {
   aiConsentita: true,
   ultimoAccesso: true,
   tenantId: true,
+  amministratoreId: true,
   createdAt: true,
 } as const;
 
@@ -38,6 +40,8 @@ const schemaUpdate = z.object({
   /** ИИ асистентът за ТОЗИ акаунт (`politica.ts`, ключ 5). */
   aiConsentita: z.boolean().optional(),
   tenantId: z.string().uuid().nullish(),
+  /** Само за CLIENTE: чии данни вижда в „Area cliente". */
+  amministratoreId: z.string().uuid().nullish(),
 });
 
 export const GET = gestito(async (_req, ctx) => {
@@ -102,10 +106,16 @@ export const PUT = gestito(async (req, ctx) => {
       409,
       "Impossibile disattivare o cambiare il livello del proprio account",
     );
+  const amministratoreId = await amministratoreCliente(
+    data.amministratoreId,
+    data.ruolo ?? prima.ruolo,
+    data.tenantId === undefined ? prima.tenantId : data.tenantId,
+  );
   const dopo = await prisma.user.update({
     where: { id },
     data: {
       ...data,
+      amministratoreId,
       tenantId: data.tenantId === undefined ? undefined : data.tenantId,
       // деактивиране → сесиите падат веднага
       ...(data.attivo === false ? { refreshToken: null } : {}),

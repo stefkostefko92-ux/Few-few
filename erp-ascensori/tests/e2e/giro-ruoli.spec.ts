@@ -14,6 +14,7 @@ const RUOLI = {
   RESPONSABILE: "responsabile@erp-ascensori.local",
   TECNICO: UTENTI.TECNICO,
   OPERATORE: UTENTI.OPERATORE,
+  CLIENTE: "cliente@erp-ascensori.local",
 } as const;
 
 for (const [ruolo, email] of Object.entries(RUOLI)) {
@@ -25,14 +26,15 @@ for (const [ruolo, email] of Object.entries(RUOLI)) {
     // Менюто се рисува след `/api/me` (ролята решава кои връзки се виждат).
     await expect
       .poll(() => page.getByRole("navigation").getByRole("link").count())
-      .toBeGreaterThan(3);
+      // Клиентът има една страница — своята; вътрешните нива — менюто.
+      .toBeGreaterThan(ruolo === "CLIENTE" ? 0 : 3);
     const voci = await page
       .getByRole("navigation")
       .getByRole("link")
       .evaluateAll((a) =>
         (a as HTMLAnchorElement[]).map((x) => new URL(x.href).pathname),
       );
-    expect(voci.length).toBeGreaterThan(3);
+    expect(voci.length).toBeGreaterThan(ruolo === "CLIENTE" ? 0 : 3);
 
     const problemi: string[] = [];
     let corrente = "";

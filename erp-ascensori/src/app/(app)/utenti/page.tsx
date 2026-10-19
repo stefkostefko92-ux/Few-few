@@ -33,6 +33,7 @@ interface Utente {
   aiConsentita: boolean;
   ultimoAccesso: string | null;
   tenantId: string | null;
+  amministratoreId?: string | null;
 }
 
 interface Io {
@@ -656,8 +657,32 @@ function FormUtente({
     cognome: utente?.cognome ?? "",
     ruolo: utente?.ruolo ?? "OPERATORE",
     tenantId: (utente ? utente.tenantId : contesto) ?? "",
+    amministratoreId: utente?.amministratoreId ?? "",
   });
   const [errore, setErrore] = useState<string | null>(null);
+  /** Администраторите — за връзката на акаунт CLIENTE (чии данни вижда). */
+  const [amministratori, setAmministratori] = useState<
+    { id: string; etichetta: string }[]
+  >([]);
+  const cliente = form.ruolo === "CLIENTE";
+  useEffect(() => {
+    if (!cliente || amministratori.length) return;
+    void tutteLeRighe<{
+      id: string;
+      nome: string;
+      cognome: string | null;
+      ragioneSociale: string | null;
+    }>("/api/amministratori").then(({ ok, righe }) => {
+      if (ok)
+        setAmministratori(
+          righe.map((a) => ({
+            id: a.id,
+            etichetta:
+              a.ragioneSociale ?? `${a.nome} ${a.cognome ?? ""}`.trim(),
+          })),
+        );
+    });
+  }, [cliente, amministratori.length]);
 
   async function salva(e: React.FormEvent) {
     e.preventDefault();
@@ -668,6 +693,8 @@ function FormUtente({
       nome: form.nome,
       cognome: form.cognome,
       ruolo: form.ruolo,
+      // Връзката има смисъл само за клиента; за другите нива сървърът я нулира.
+      amministratoreId: cliente ? form.amministratoreId || null : null,
       // Фирмата се праща само от MASTER — на ADMIN сървърът я налага сам.
       ...(master ? { tenantId: form.tenantId || null } : {}),
     };
@@ -762,6 +789,36 @@ function FormUtente({
               ),
           )}
         </select>
+        {cliente && (
+          <>
+            <label className="label" htmlFor="utente-amministratore">
+              Amministratore collegato
+            </label>
+            <select
+              id="utente-amministratore"
+              className="input mb-1"
+              value={form.amministratoreId}
+              aria-describedby="utente-amministratore-aiuto"
+              onChange={(e) =>
+                setForm({ ...form, amministratoreId: e.target.value })
+              }
+            >
+              <option value="">Nessuno</option>
+              {amministratori.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.etichetta}
+                </option>
+              ))}
+            </select>
+            <p
+              id="utente-amministratore-aiuto"
+              className="mb-4 text-xs text-text-3"
+            >
+              Nell&apos;Area cliente vedrà solo condomìni, impianti, scadenze,
+              interventi e fatture di questo amministratore.
+            </p>
+          </>
+        )}
         {master && (
           <>
             <label className="label" htmlFor="utente-azienda">

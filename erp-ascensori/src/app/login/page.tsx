@@ -55,10 +55,13 @@ export default function LoginPage() {
       const da = new URLSearchParams(window.location.search).get("da");
       // Дължимият втори фактор — първо той: без него маршрутите с роля отказват.
       // Изтеклата парола — също там: страницата предлага смяната веднага.
+      // Клиентът има своя страница: таблото е на вътрешните нива.
       router.push(
         dati.mfaRichiesto || dati.passwordScaduta
           ? "/sicurezza"
-          : ritornoSicuro(da),
+          : dati.ruolo === "CLIENTE"
+            ? "/area-cliente"
+            : ritornoSicuro(da),
       );
       router.refresh();
     } catch {

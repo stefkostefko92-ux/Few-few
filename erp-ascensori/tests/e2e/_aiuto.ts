@@ -21,7 +21,7 @@ export async function entra(
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Accedi" }).click();
-  await page.waitForURL(/\/(dashboard|impianti|ordini|i\/)/, {
+  await page.waitForURL(/\/(dashboard|area-cliente|impianti|ordini|i\/)/, {
     timeout: 15_000,
   });
 }

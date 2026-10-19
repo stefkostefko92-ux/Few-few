@@ -6,6 +6,8 @@
 
 import { TIPO_SCADENZA } from "@/lib/enum-labels";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useRuolo } from "@/components/useRuolo";
 import Link from "next/link";
 import {
   GraficoCategorie,
@@ -139,6 +141,13 @@ interface Stats {
 }
 
 export default function Dashboard() {
+  // Клиентът няма табло (икономиката и ордините на фирмата не са негови) —
+  // води се към своята страница, вместо да вижда „Permessi insufficienti".
+  const ruoloUtente = useRuolo();
+  const routerCliente = useRouter();
+  useEffect(() => {
+    if (ruoloUtente === "CLIENTE") routerCliente.replace("/area-cliente");
+  }, [ruoloUtente, routerCliente]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [widgets, setWidgets] = useState<WidgetCfg[]>(PREDEFINITO);
   const [modifica, setModifica] = useState(false);
