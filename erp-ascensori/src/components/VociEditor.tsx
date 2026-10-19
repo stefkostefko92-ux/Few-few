@@ -27,6 +27,7 @@ export default function VociEditor({
   voci,
   conPrezzi,
   onCambiato,
+  bloccato,
 }: {
   /** базов път: /api/preventivi/<id>/voci */
   api: string;
@@ -34,6 +35,12 @@ export default function VociEditor({
   /** true за preventivo/fattura (цени+IVA); false за DDT (um/peso) */
   conPrezzi: boolean;
   onCambiato: () => void;
+  /**
+   * Защо редовете НЕ се менят (издадена фактура, приета оферта, DDT към
+   * фактура). Тогава няма бутони и форма: сървърът ги отказва, а бутон, който
+   * дава само грешка, е по-лош от липсващ.
+   */
+  bloccato?: string | null;
 }) {
   const vuoto: Record<string, string> = conPrezzi
     ? {
@@ -118,7 +125,7 @@ export default function VociEditor({
     <div>
       {/* Без този ред празният документ показва само гола форма и потребителят
           не разбира дали редовете липсват, или още не са се заредили. */}
-      {voci.length === 0 && (
+      {voci.length === 0 && !bloccato && (
         <p className="mb-4 rounded-md border border-dashed border-border px-3 py-4 text-center text-sm text-text-3">
           Nessuna riga presente: compilare il modulo qui sotto per aggiungere la
           prima.
@@ -142,7 +149,7 @@ export default function VociEditor({
                   <th className="py-2 pr-3 text-right">Peso (kg)</th>
                 </>
               )}
-              <th className="w-24 py-2 text-right">Azioni</th>
+              {!bloccato && <th className="w-24 py-2 text-right">Azioni</th>}
             </tr>
           </thead>
           <tbody>
@@ -177,31 +184,33 @@ export default function VociEditor({
                     </td>
                   </>
                 )}
-                <td className="py-2 text-right">
-                  <button
-                    className="btn-ghost h-7 px-2 text-xs"
-                    onClick={() => {
-                      setInModifica(v.id);
-                      setForm({
-                        descrizione: v.descrizione,
-                        quantita: v.quantita,
-                        prezzoUnitario: v.prezzoUnitario ?? "",
-                        aliquotaIva: v.aliquotaIva ?? "22",
-                        naturaIva: v.naturaIva ?? "",
-                        um: v.um ?? "",
-                        peso: v.peso ?? "",
-                      });
-                    }}
-                  >
-                    Modifica
-                  </button>
-                  <button
-                    className="btn-ghost h-7 px-2 text-xs text-danger-text"
-                    onClick={() => void elimina(v.id)}
-                  >
-                    Elimina
-                  </button>
-                </td>
+                {!bloccato && (
+                  <td className="py-2 text-right">
+                    <button
+                      className="btn-ghost h-7 px-2 text-xs"
+                      onClick={() => {
+                        setInModifica(v.id);
+                        setForm({
+                          descrizione: v.descrizione,
+                          quantita: v.quantita,
+                          prezzoUnitario: v.prezzoUnitario ?? "",
+                          aliquotaIva: v.aliquotaIva ?? "22",
+                          naturaIva: v.naturaIva ?? "",
+                          um: v.um ?? "",
+                          peso: v.peso ?? "",
+                        });
+                      }}
+                    >
+                      Modifica
+                    </button>
+                    <button
+                      className="btn-ghost h-7 px-2 text-xs text-danger-text"
+                      onClick={() => void elimina(v.id)}
+                    >
+                      Elimina
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -212,147 +221,156 @@ export default function VociEditor({
           без име, а щракването върху надписа не фокусира входа (WCAG 1.3.1 и
           3.3.2 — а EAA е закон в ЕС). Префиксът идва от адреса на подресурса,
           защото на един екран може да има два редактора. */}
-      <form onSubmit={salva} className="flex flex-wrap items-end gap-2">
-        <div className="min-w-64 flex-1">
-          <label className="label" htmlFor={`descrizione-${idForm}`}>
-            Descrizione
-          </label>
-          <input
-            id={`descrizione-${idForm}`}
-            className="input"
-            required
-            value={form.descrizione}
-            onChange={(e) => setForm({ ...form, descrizione: e.target.value })}
-          />
-          {/* Само където има цени: това са офертата и фактурата — документите,
+      {bloccato ? (
+        <p className="text-xs text-text-3" data-testid="voci-bloccate">
+          {voci.length === 0 ? "Nessuna riga. " : ""}
+          {bloccato}
+        </p>
+      ) : (
+        <form onSubmit={salva} className="flex flex-wrap items-end gap-2">
+          <div className="min-w-64 flex-1">
+            <label className="label" htmlFor={`descrizione-${idForm}`}>
+              Descrizione
+            </label>
+            <input
+              id={`descrizione-${idForm}`}
+              className="input"
+              required
+              value={form.descrizione}
+              onChange={(e) =>
+                setForm({ ...form, descrizione: e.target.value })
+              }
+            />
+            {/* Само където има цени: това са офертата и фактурата — документите,
               които клиентът чете. Редовете на DDT изброяват пренесена стока и
               не искат проза. */}
-          {conPrezzi && (
-            <ScriviConAi
-              compito="descrizione-voce"
-              valoreAttuale={form.descrizione}
-              onTesto={(t) => setForm({ ...form, descrizione: t })}
+            {conPrezzi && (
+              <ScriviConAi
+                compito="descrizione-voce"
+                valoreAttuale={form.descrizione}
+                onTesto={(t) => setForm({ ...form, descrizione: t })}
+              />
+            )}
+          </div>
+          <div className="w-20">
+            <label className="label" htmlFor={`quantita-${idForm}`}>
+              Qtà
+            </label>
+            <input
+              id={`quantita-${idForm}`}
+              className="input font-mono"
+              required
+              inputMode="decimal"
+              value={form.quantita}
+              onChange={(e) => setForm({ ...form, quantita: e.target.value })}
             />
-          )}
-        </div>
-        <div className="w-20">
-          <label className="label" htmlFor={`quantita-${idForm}`}>
-            Qtà
-          </label>
-          <input
-            id={`quantita-${idForm}`}
-            className="input font-mono"
-            required
-            inputMode="decimal"
-            value={form.quantita}
-            onChange={(e) => setForm({ ...form, quantita: e.target.value })}
-          />
-        </div>
-        {conPrezzi ? (
-          <>
-            <div className="w-28">
-              <label className="label" htmlFor={`prezzoUnitario-${idForm}`}>
-                Prezzo (€)
-              </label>
-              <input
-                id={`prezzoUnitario-${idForm}`}
-                className="input font-mono"
-                required
-                inputMode="decimal"
-                value={form.prezzoUnitario}
-                onChange={(e) =>
-                  setForm({ ...form, prezzoUnitario: e.target.value })
-                }
-              />
-            </div>
-            <div className="w-20">
-              <label className="label" htmlFor={`aliquotaIva-${idForm}`}>
-                IVA %
-              </label>
-              <input
-                id={`aliquotaIva-${idForm}`}
-                className="input font-mono"
-                inputMode="decimal"
-                value={form.aliquotaIva}
-                onChange={(e) =>
-                  setForm({ ...form, aliquotaIva: e.target.value })
-                }
-              />
-            </div>
-            {Number((form.aliquotaIva || "22").replace(",", ".")) === 0 && (
-              <div className="w-24">
-                <label
-                  className="label"
-                  htmlFor={`naturaIva-${idForm}`}
-                  title="Codice natura SdI dell'esenzione"
-                >
-                  Natura
+          </div>
+          {conPrezzi ? (
+            <>
+              <div className="w-28">
+                <label className="label" htmlFor={`prezzoUnitario-${idForm}`}>
+                  Prezzo (€)
                 </label>
                 <input
-                  id={`naturaIva-${idForm}`}
+                  id={`prezzoUnitario-${idForm}`}
                   className="input font-mono"
                   required
-                  placeholder="N2.2"
-                  value={form.naturaIva}
+                  inputMode="decimal"
+                  value={form.prezzoUnitario}
                   onChange={(e) =>
-                    setForm({ ...form, naturaIva: e.target.value })
+                    setForm({ ...form, prezzoUnitario: e.target.value })
                   }
                 />
               </div>
-            )}
-          </>
-        ) : (
-          <>
-            <div className="w-20">
-              <label className="label" htmlFor={`um-${idForm}`}>
-                UM
-              </label>
-              <input
-                id={`um-${idForm}`}
-                className="input"
-                value={form.um}
-                onChange={(e) => setForm({ ...form, um: e.target.value })}
-              />
-            </div>
-            <div className="w-28">
-              <label className="label" htmlFor={`peso-${idForm}`}>
-                Peso (kg)
-              </label>
-              <input
-                id={`peso-${idForm}`}
-                className="input font-mono"
-                inputMode="decimal"
-                value={form.peso}
-                onChange={(e) => setForm({ ...form, peso: e.target.value })}
-              />
-            </div>
-          </>
-        )}
-        <button
-          type="submit"
-          className="btn-primary inline-flex items-center gap-1.5"
-          disabled={inCorso}
-        >
-          {!inModifica && <IcoNuovoPiccolo />}
-          {inCorso
-            ? "Salvataggio…"
-            : inModifica
-              ? "Aggiorna riga"
-              : "Aggiungi riga"}
-        </button>
-        {inModifica && (
+              <div className="w-20">
+                <label className="label" htmlFor={`aliquotaIva-${idForm}`}>
+                  IVA %
+                </label>
+                <input
+                  id={`aliquotaIva-${idForm}`}
+                  className="input font-mono"
+                  inputMode="decimal"
+                  value={form.aliquotaIva}
+                  onChange={(e) =>
+                    setForm({ ...form, aliquotaIva: e.target.value })
+                  }
+                />
+              </div>
+              {Number((form.aliquotaIva || "22").replace(",", ".")) === 0 && (
+                <div className="w-24">
+                  <label
+                    className="label"
+                    htmlFor={`naturaIva-${idForm}`}
+                    title="Codice natura SdI dell'esenzione"
+                  >
+                    Natura
+                  </label>
+                  <input
+                    id={`naturaIva-${idForm}`}
+                    className="input font-mono"
+                    required
+                    placeholder="N2.2"
+                    value={form.naturaIva}
+                    onChange={(e) =>
+                      setForm({ ...form, naturaIva: e.target.value })
+                    }
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="w-20">
+                <label className="label" htmlFor={`um-${idForm}`}>
+                  UM
+                </label>
+                <input
+                  id={`um-${idForm}`}
+                  className="input"
+                  value={form.um}
+                  onChange={(e) => setForm({ ...form, um: e.target.value })}
+                />
+              </div>
+              <div className="w-28">
+                <label className="label" htmlFor={`peso-${idForm}`}>
+                  Peso (kg)
+                </label>
+                <input
+                  id={`peso-${idForm}`}
+                  className="input font-mono"
+                  inputMode="decimal"
+                  value={form.peso}
+                  onChange={(e) => setForm({ ...form, peso: e.target.value })}
+                />
+              </div>
+            </>
+          )}
           <button
-            type="button"
-            className="btn-secondary"
-            onClick={() => {
-              setInModifica(null);
-              setForm(vuoto);
-            }}
+            type="submit"
+            className="btn-primary inline-flex items-center gap-1.5"
+            disabled={inCorso}
           >
-            Annulla
+            {!inModifica && <IcoNuovoPiccolo />}
+            {inCorso
+              ? "Salvataggio…"
+              : inModifica
+                ? "Aggiorna riga"
+                : "Aggiungi riga"}
           </button>
-        )}
-      </form>
+          {inModifica && (
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => {
+                setInModifica(null);
+                setForm(vuoto);
+              }}
+            >
+              Annulla
+            </button>
+          )}
+        </form>
+      )}
       {errore && (
         <p
           role="alert"

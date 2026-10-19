@@ -128,9 +128,15 @@ export function rottaCollezione(cfg: CrudConfig) {
       ? {}
       : filtroTenant(s);
     if (q && cfg.searchFields?.length) {
-      where.OR = cfg.searchFields.map((f) => ({
-        [f]: { contains: q, mode: "insensitive" },
-      }));
+      // „impianto.matricola" търси в свързания запис: срокът се познава по
+      // матриколата на импианта, не по собствените си полета.
+      where.OR = cfg.searchFields.map((f) =>
+        f
+          .split(".")
+          .reduceRight<
+            Record<string, unknown>
+          >((dentro, parte) => ({ [parte]: dentro }), { contains: q, mode: "insensitive" }),
+      );
     }
     if (attivo !== undefined) where.attivo = attivo;
     for (const campo of cfg.filterFields ?? []) {

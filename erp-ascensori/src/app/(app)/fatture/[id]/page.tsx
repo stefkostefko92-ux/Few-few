@@ -505,6 +505,11 @@ export default function Pagina() {
           voci={f.voci}
           conPrezzi
           onCambiato={() => void carica()}
+          bloccato={
+            f.stato === "BOZZA"
+              ? null
+              : "Fattura emessa: le righe non si modificano. Per correggere serve una nota di credito."
+          }
         />
         {f.regimeBeniSignificativi && (
           <p className="mt-3 text-xs text-text-3">

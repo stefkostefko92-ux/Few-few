@@ -33,6 +33,7 @@ const config: EntityConfig = {
     {
       chiave: "tipo",
       label: "Tipo",
+      secondaria: true,
       render: (r) => etichetta(TIPO_FATTURA, String(r.tipo)),
     },
     {

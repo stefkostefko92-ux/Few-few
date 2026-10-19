@@ -15,11 +15,23 @@ export interface Riservati {
   campi: readonly string[];
 }
 
+/** Обикновен обект (литерал или ред от Prisma) — не Decimal, Date, Buffer.
+ *  Prisma `Decimal` е обект със собствени полета (`s`, `e`, `d`): обходен
+ *  като обикновен, той ставаше `{s,e,d}` в JSON-а, а формата го пращаше
+ *  обратно при „Modifica" → „Valore non valido" на всяко десетично поле. */
+function semplice(v: unknown): v is Record<string, unknown> {
+  if (!v || typeof v !== "object") return false;
+  const proto = Object.getPrototypeOf(v);
+  return proto === Object.prototype || proto === null;
+}
+
 /** Копие без запазените полета, на всяко ниво на вложеност. */
 export function oscuraRiservati<T>(dato: T, campi: ReadonlySet<string>): T {
+  // Нищо за криене — същата стойност, без обхождане.
+  if (campi.size === 0) return dato;
   if (Array.isArray(dato))
     return dato.map((x) => oscuraRiservati(x, campi)) as T;
-  if (dato && typeof dato === "object" && !(dato instanceof Date)) {
+  if (semplice(dato)) {
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(dato as Record<string, unknown>))
       if (!campi.has(k)) out[k] = oscuraRiservati(v, campi);

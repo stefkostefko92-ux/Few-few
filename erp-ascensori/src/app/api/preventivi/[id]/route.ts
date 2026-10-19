@@ -4,6 +4,7 @@ import { verificaRiferimenti } from "@/lib/riferimenti";
 import { ok, corpoValidato, gestito } from "@/lib/api";
 import { richiedeRuolo, ErroreHttp } from "@/lib/auth";
 import { filtroTenant } from "@/lib/tenant";
+import { haPermesso } from "@/lib/roles";
 import { scriviAudit } from "@/lib/audit";
 import { dettagliModifica, dettagliCancellazione } from "@/lib/audit-dettagli";
 import { preventivoSchema } from "@/lib/entities";
@@ -13,6 +14,7 @@ const include = {
   amministratore: true,
   utente: { select: { nome: true, cognome: true } },
   voci: { orderBy: { ordine: "asc" as const } },
+  ordiniLavoro: { select: { id: true, numero: true, stato: true } },
 };
 
 export const GET = gestito(async (_req, ctx) => {
@@ -20,7 +22,23 @@ export const GET = gestito(async (_req, ctx) => {
   const { id } = await ctx.params;
   const r = await prisma.preventivo.findFirst({
     where: { id, ...filtroTenant(s) },
-    include,
+    include: {
+      ...include,
+      // Фактурите са икономически данни — от DIREZIONE нагоре, като списъка им.
+      ...(haPermesso(s.ruolo, "DIREZIONE")
+        ? {
+            fatture: {
+              select: {
+                id: true,
+                numero: true,
+                stato: true,
+                totaleLordo: true,
+              },
+              orderBy: { data: "asc" as const },
+            },
+          }
+        : {}),
+    },
   });
   if (!r) throw new ErroreHttp(404, "Preventivo non trovato");
   return ok(r);

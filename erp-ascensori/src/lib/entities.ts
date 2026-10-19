@@ -451,6 +451,8 @@ export const scadenzeImpianti: CrudConfig = {
     impianto: { select: { matricola: true, marca: true, indirizzo: true } },
   },
   filterFields: ["impiantoId"],
+  // Без тях полето „Cerca" на страницата не правеше нищо.
+  searchFields: ["impianto.matricola", "impianto.indirizzo", "note"],
   orderBy: { dataScadenza: "asc" },
 };
 

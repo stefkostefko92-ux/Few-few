@@ -4,6 +4,7 @@
 
 import { STATO_LABEL } from "@/lib/enum-labels";
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Badge, ScheletroDettaglio } from "@/components/ui";
 import { IcoIndietro, IcoStampa } from "@/components/icone";
@@ -30,7 +31,18 @@ interface Preventivo {
     ragioneSociale: string | null;
   } | null;
   voci: VoceRiga[];
+  ordiniLavoro: { id: string; numero: string; stato: string }[];
+  /** Само от DIREZIONE нагоре (икономически данни). */
+  fatture?: {
+    id: string;
+    numero: string;
+    stato: string;
+    totaleLordo: string;
+  }[];
 }
+
+/** Редовете се менят само докато офертата не е приета или отказана. */
+const STATI_MODIFICABILI = ["BOZZA", "INVIATO"];
 
 export default function Pagina() {
   const { id } = useParams<{ id: string }>();
@@ -77,6 +89,33 @@ export default function Pagina() {
       return;
     }
     void carica();
+  }
+
+  /** Оферта → ордин/фактура: новият документ се отваря веднага. */
+  async function genera(cosa: "ordine" | "fattura") {
+    if (inCorso || !p) return;
+    if (
+      cosa === "fattura" &&
+      p.fatture?.some((f) => f.stato !== "STORNATA") &&
+      !confirm(
+        `Esistono già fatture per questo preventivo (${p.fatture
+          .map((f) => f.numero)
+          .join(", ")}). Creare un'altra fattura in bozza con tutte le righe?`,
+      )
+    )
+      return;
+    setInCorso(true);
+    setErroreAzione(null);
+    const r = await apiFetch<{ id?: string; error?: string }>(
+      `/api/preventivi/${id}/${cosa}`,
+      { method: "POST" },
+    );
+    setInCorso(false);
+    if (!r.ok || !r.dati.id) {
+      setErroreAzione(r.dati.error ?? "Errore");
+      return;
+    }
+    router.push(`/${cosa === "ordine" ? "ordini" : "fatture"}/${r.dati.id}`);
   }
 
   if (errore) return <p className="text-text-3">{errore}</p>;
@@ -159,8 +198,70 @@ export default function Pagina() {
           voci={p.voci}
           conPrezzi
           onCambiato={() => void carica()}
+          bloccato={
+            STATI_MODIFICABILI.includes(p.stato)
+              ? null
+              : `Preventivo «${STATO_LABEL[p.stato] ?? p.stato}»: le righe non si modificano più.`
+          }
         />
       </div>
+
+      {p.stato === "APPROVATO" && (
+        <section className="card mb-6 p-5" aria-labelledby="t-generati">
+          <h2 id="t-generati" className="text-lg font-semibold text-text-1">
+            Dal preventivo approvato
+          </h2>
+          <p className="mt-1 text-sm text-text-3">
+            Il cliente ha accettato: l&apos;ordine di lavoro e la fattura
+            nascono con i dati e le righe di questo preventivo.
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {p.ordiniLavoro.length ? (
+              p.ordiniLavoro.map((o) => (
+                <Link
+                  key={o.id}
+                  href={`/ordini/${o.id}`}
+                  className="btn-secondary inline-flex items-center gap-2"
+                >
+                  <span className="font-mono">{o.numero}</span>
+                  <Badge valore={o.stato} />
+                </Link>
+              ))
+            ) : (
+              <button
+                type="button"
+                className="btn-primary"
+                disabled={inCorso}
+                onClick={() => void genera("ordine")}
+              >
+                Crea ordine di lavoro
+              </button>
+            )}
+            {p.fatture && (
+              <>
+                {p.fatture.map((f) => (
+                  <Link
+                    key={f.id}
+                    href={`/fatture/${f.id}`}
+                    className="btn-secondary inline-flex items-center gap-2"
+                  >
+                    <span className="font-mono">{f.numero}</span>
+                    <Badge valore={f.stato} />
+                  </Link>
+                ))}
+                <button
+                  type="button"
+                  className={p.fatture.length ? "btn-secondary" : "btn-primary"}
+                  disabled={inCorso}
+                  onClick={() => void genera("fattura")}
+                >
+                  {p.fatture.length ? "Nuova fattura" : "Crea fattura"}
+                </button>
+              </>
+            )}
+          </div>
+        </section>
+      )}
 
       <div className="card ml-auto max-w-xs p-5">
         <dl className="space-y-2 text-sm">

@@ -138,49 +138,52 @@ export default function Pagina() {
         ) : righe.length === 0 ? (
           <Vuoto messaggio="Nessun movimento registrato" />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-surface-2 text-left text-xs font-medium uppercase tracking-wide text-text-3">
-                <th className="px-3 py-2.5">Data</th>
-                <th className="px-3 py-2.5">Articolo</th>
-                <th className="px-3 py-2.5">Tipo</th>
-                <th className="px-3 py-2.5 text-right">Quantità</th>
-                <th className="px-3 py-2.5">Causale</th>
-              </tr>
-            </thead>
-            <tbody>
-              {righe.map((m) => (
-                <tr
-                  key={m.id}
-                  className="border-b border-border last:border-0 hover:bg-surface-2"
-                >
-                  <td className="px-3 py-2.5 text-text-2">
-                    {dataOraIt(m.createdAt)}
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <span className="font-mono">{m.articolo.codice}</span> ·{" "}
-                    {m.articolo.nome}
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <span
-                      className={`inline-flex rounded-sm px-2 py-0.5 text-xs font-medium ${STILE_TIPO[m.tipo]}`}
-                    >
-                      {TIPO_MOVIMENTO[m.tipo] ?? m.tipo}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2.5 text-right font-mono">
-                    {/* Корекцията е ПОДПИСАНА: знакът идва от стойността. */}
-                    {m.tipo === "USCITA"
-                      ? `−${Math.abs(m.quantita)}`
-                      : m.tipo === "ENTRATA"
-                        ? `+${Math.abs(m.quantita)}`
-                        : `${m.quantita < 0 ? "−" : "+"}${Math.abs(m.quantita)}`}
-                  </td>
-                  <td className="px-3 py-2.5 text-text-2">{m.nota ?? "—"}</td>
+          // Скрол в кадъра на таблицата, не на цялата страница (телефон).
+          <div className="relative overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-surface-2 text-left text-xs font-medium uppercase tracking-wide text-text-3">
+                  <th className="px-3 py-2.5">Data</th>
+                  <th className="px-3 py-2.5">Articolo</th>
+                  <th className="px-3 py-2.5">Tipo</th>
+                  <th className="px-3 py-2.5 text-right">Quantità</th>
+                  <th className="px-3 py-2.5">Causale</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {righe.map((m) => (
+                  <tr
+                    key={m.id}
+                    className="border-b border-border last:border-0 hover:bg-surface-2"
+                  >
+                    <td className="px-3 py-2.5 text-text-2">
+                      {dataOraIt(m.createdAt)}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <span className="font-mono">{m.articolo.codice}</span> ·{" "}
+                      {m.articolo.nome}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <span
+                        className={`inline-flex rounded-sm px-2 py-0.5 text-xs font-medium ${STILE_TIPO[m.tipo]}`}
+                      >
+                        {TIPO_MOVIMENTO[m.tipo] ?? m.tipo}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5 text-right font-mono">
+                      {/* Корекцията е ПОДПИСАНА: знакът идва от стойността. */}
+                      {m.tipo === "USCITA"
+                        ? `−${Math.abs(m.quantita)}`
+                        : m.tipo === "ENTRATA"
+                          ? `+${Math.abs(m.quantita)}`
+                          : `${m.quantita < 0 ? "−" : "+"}${Math.abs(m.quantita)}`}
+                    </td>
+                    <td className="px-3 py-2.5 text-text-2">{m.nota ?? "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
         <Paginazione
           page={page}

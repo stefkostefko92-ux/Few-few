@@ -28,6 +28,8 @@ interface DdtDettaglio {
   /** Реквизитите по чл. 1, ал. 3 D.P.R. 472/1996, смятани на сървъра. */
   controllo: { problemi: string[]; avvisi: string[] };
   ordineLavoro: { numero: string; oggetto: string } | null;
+  /** Прикачен към фактура = замразен (фактурата го цитира в XML-а). */
+  fatturaId: string | null;
   righe: VoceRiga[];
   movimenti: {
     id: string;
@@ -149,6 +151,11 @@ export default function Pagina() {
           voci={d.righe}
           conPrezzi={false}
           onCambiato={() => void carica()}
+          bloccato={
+            d.fatturaId
+              ? "Documento collegato a una fattura: la merce trasportata non si modifica."
+              : null
+          }
         />
       </div>
 

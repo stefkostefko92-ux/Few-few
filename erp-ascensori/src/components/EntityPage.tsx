@@ -33,7 +33,15 @@ export interface Colonna {
   label: string;
   render?: (r: Riga) => ReactNode;
   className?: string;
+  /**
+   * Скрита под 1400 px. Иначе на лаптоп последната колона — „Azioni" — излиза
+   * извън кадъра на таблицата и бутоните се стигат само с хоризонтален скрол.
+   */
+  secondaria?: boolean;
 }
+
+const classeColonna = (c: Colonna) =>
+  `px-3 py-2.5 ${c.secondaria ? "hidden min-[1400px]:table-cell" : ""} ${c.className ?? ""}`;
 
 export interface Opzione {
   value: string;
@@ -309,10 +317,7 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
               <thead>
                 <tr className="border-b border-border-strong bg-surface-2 text-left text-xs font-medium uppercase tracking-wide text-text-3">
                   {config.colonne.map((c) => (
-                    <th
-                      key={c.chiave}
-                      className={`px-3 py-2.5 ${c.className ?? ""}`}
-                    >
+                    <th key={c.chiave} className={classeColonna(c)}>
                       {c.label}
                     </th>
                   ))}
@@ -334,10 +339,7 @@ export default function EntityPage({ config }: { config: EntityConfig }) {
                         ? c.render(r)
                         : String(valoreAnnidato(r, c.chiave) ?? "—");
                       return (
-                        <td
-                          key={c.chiave}
-                          className={`px-3 py-2.5 ${c.className ?? ""}`}
-                        >
+                        <td key={c.chiave} className={classeColonna(c)}>
                           {/* ПЪРВАТА клетка е истинска връзка, когато редът води
                               към детайл. Кликът върху целия ред остава удобство,
                               но той е `onClick` върху `<tr>` — с мишка работи, с

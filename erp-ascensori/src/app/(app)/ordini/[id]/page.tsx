@@ -3,7 +3,10 @@
 // Детайл на ордина: позволени преходи като бутони + пълна хронология (storico).
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useRuolo } from "@/components/useRuolo";
+import { haPermesso } from "@/lib/roles";
 import { Badge, ScheletroDettaglio } from "@/components/ui";
 import { IcoIndietro, IcoTransizione, IcoVerso } from "@/components/icone";
 import { STATO_LABEL, etichetta } from "@/lib/enum-labels";
@@ -50,6 +53,7 @@ export default function Pagina() {
   const [errore, setErrore] = useState<string | null>(null);
   const [erroreAzione, setErroreAzione] = useState<string | null>(null);
   const [inCorso, setInCorso] = useState(false);
+  const ruolo = useRuolo();
 
   const carica = useCallback(async () => {
     const r = await apiFetch<Ordine & { error?: string }>(`/api/ordini/${id}`);
@@ -89,10 +93,42 @@ export default function Pagina() {
     void carica();
   }
 
+  /** Ордин → фактура/DDT: новият документ се отваря веднага. */
+  async function genera(cosa: "fattura" | "ddt") {
+    if (inCorso || !o) return;
+    if (
+      cosa === "fattura" &&
+      o.fatture.some((f) => f.stato !== "STORNATA") &&
+      !confirm(
+        `L'ordine ha già ${o.fatture.map((f) => f.numero).join(", ")}. Creare un'altra fattura in bozza?`,
+      )
+    )
+      return;
+    setInCorso(true);
+    setErroreAzione(null);
+    const r = await apiFetch<{
+      id?: string;
+      error?: string;
+      senzaPrezzo?: string[];
+    }>(`/api/ordini/${id}/${cosa}`, { method: "POST" });
+    setInCorso(false);
+    if (!r.ok || !r.dati.id) {
+      setErroreAzione(r.dati.error ?? "Errore");
+      return;
+    }
+    if (r.dati.senzaPrezzo?.length)
+      alert(
+        `Articoli senza prezzo di vendita, inseriti a 0 € nella bozza: ${r.dati.senzaPrezzo.join(", ")}. Completare il prezzo prima di emettere la fattura.`,
+      );
+    router.push(`/${cosa === "fattura" ? "fatture" : "ddt"}/${r.dati.id}`);
+  }
+
   if (errore) return <p className="text-text-3">{errore}</p>;
   if (!o) return <ScheletroDettaglio />;
 
   const ammesse = TRANSIZIONI[o.stato] ?? [];
+  const direzione = ruolo !== null && haPermesso(ruolo, "DIREZIONE");
+  const operatore = ruolo !== null && haPermesso(ruolo, "OPERATORE");
 
   return (
     <div>
@@ -210,26 +246,66 @@ export default function Pagina() {
             </dl>
           </div>
 
-          {(o.fatture.length > 0 || o.ddt.length > 0) && (
-            <div className="card p-5">
-              <h2 className="mb-3 text-lg font-semibold text-text-1">
-                Documenti collegati
-              </h2>
-              <ul className="space-y-1 text-sm">
-                {o.fatture.map((f) => (
-                  <li key={f.id} className="flex items-center gap-2">
-                    <span className="font-mono">{f.numero}</span>{" "}
-                    <Badge valore={f.stato} />
-                  </li>
-                ))}
-                {o.ddt.map((d) => (
-                  <li key={d.id} className="font-mono">
-                    {d.numero} · {dataIt(d.data)}
-                  </li>
-                ))}
-              </ul>
+          <div className="card p-5">
+            <h2 className="mb-3 text-lg font-semibold text-text-1">
+              Documenti collegati
+            </h2>
+            {o.fatture.length === 0 && o.ddt.length === 0 && (
+              <p className="text-sm text-text-3">
+                Nessuna fattura e nessun DDT per questo ordine.
+              </p>
+            )}
+            <ul className="space-y-1 text-sm">
+              {o.fatture.map((f) => (
+                <li key={f.id} className="flex items-center gap-2">
+                  {direzione ? (
+                    <Link
+                      href={`/fatture/${f.id}`}
+                      className="font-mono underline"
+                    >
+                      {f.numero}
+                    </Link>
+                  ) : (
+                    <span className="font-mono">{f.numero}</span>
+                  )}{" "}
+                  <Badge valore={f.stato} />
+                </li>
+              ))}
+              {o.ddt.map((d) => (
+                <li key={d.id}>
+                  <Link href={`/ddt/${d.id}`} className="font-mono underline">
+                    {d.numero}
+                  </Link>{" "}
+                  · {dataIt(d.data)}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {/* Фактурата — DIREZIONE+ и не от чернова или анулиран ордин
+                  (същото правило като маршрута). */}
+              {direzione && !["BOZZA", "ANNULLATO"].includes(o.stato) && (
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  disabled={inCorso}
+                  onClick={() => void genera("fattura")}
+                >
+                  Crea fattura
+                </button>
+              )}
+              {operatore && (
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  disabled={inCorso}
+                  onClick={() => void genera("ddt")}
+                  title="DDT con i materiali registrati nei rapportini"
+                >
+                  Crea DDT dei materiali
+                </button>
+              )}
             </div>
-          )}
+          </div>
 
           <TempiIntervento ordineId={id} />
 

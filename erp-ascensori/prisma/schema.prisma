@@ -954,6 +954,7 @@ model Preventivo {
   utente         User?            @relation(fields: [utenteId], references: [id])
   voci           VocePreventivo[]
   ordiniLavoro   OrdineLavoro[]
+  fatture        Fattura[]
 
   @@unique([tenantId, numero])
   @@index([tenantId])
@@ -1262,6 +1263,8 @@ model Fattura {
   condominioId     String?      @db.Uuid
   amministratoreId String?      @db.Uuid
   ordineLavoroId   String?      @db.Uuid
+  /// От коя оферта е родена (аванс + салдо = няколко фактури на оферта).
+  preventivoId     String?      @db.Uuid
   /// Попълва се, когато фактурата е за canone по договор.
   contrattoId      String?      @db.Uuid
   utenteId         String?      @db.Uuid
@@ -1319,6 +1322,7 @@ model Fattura {
   condominio     Condominio?     @relation(fields: [condominioId], references: [id])
   amministratore Amministratore? @relation(fields: [amministratoreId], references: [id])
   ordineLavoro   OrdineLavoro?   @relation(fields: [ordineLavoroId], references: [id])
+  preventivo     Preventivo?     @relation(fields: [preventivoId], references: [id])
   contratto      Contratto?      @relation(fields: [contrattoId], references: [id])
   utente         User?           @relation(fields: [utenteId], references: [id])
   voci           VoceFattura[]
@@ -1337,6 +1341,7 @@ model Fattura {
   @@index([tenantId, statoSdi, data(sort: Desc)])
   @@index([tenantId, statoPagamento, dataScadenza])
   @@index([condominioId])
+  @@index([preventivoId])
   @@map("fatture")
 }
 

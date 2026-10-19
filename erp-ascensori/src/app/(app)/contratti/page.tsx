@@ -68,6 +68,7 @@ const config: EntityConfig = {
     {
       chiave: "periodicitaFatturazione",
       label: "Fatturazione",
+      secondaria: true,
       render: (r) =>
         PERIODICITA_LABEL[r.periodicitaFatturazione as Periodicita] ?? "—",
     },

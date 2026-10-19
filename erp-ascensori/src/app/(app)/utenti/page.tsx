@@ -279,31 +279,35 @@ export default function Pagina() {
                 <td className="whitespace-nowrap px-3 py-2.5 text-text-2">
                   {dataOraIt(u.ultimoAccesso)}
                 </td>
-                <td className="whitespace-nowrap px-3 py-2.5 text-right">
-                  {gestibile(u) && (
-                    <button
-                      className="btn-ghost h-7 px-2 text-xs"
-                      onClick={() => setModale(u)}
-                    >
-                      Modifica
-                    </button>
-                  )}
-                  {gestibile(u) && passwordAmmessa(u) && (
-                    <button
-                      className="btn-ghost h-7 px-2 text-xs"
-                      onClick={() => setReset(u)}
-                    >
-                      Password
-                    </button>
-                  )}
-                  {gestibile(u) && (
-                    <button
-                      className="btn-ghost h-7 px-2 text-xs"
-                      onClick={() => setSicurezza(u)}
-                    >
-                      Sicurezza
-                    </button>
-                  )}
+                <td className="px-3 py-2.5 text-right">
+                  {/* Трите действия се пренасят на втори ред, вместо да
+                      излизат извън кадъра на таблицата на лаптоп. */}
+                  <div className="flex flex-wrap justify-end gap-1">
+                    {gestibile(u) && (
+                      <button
+                        className="btn-ghost h-7 px-2 text-xs"
+                        onClick={() => setModale(u)}
+                      >
+                        Modifica
+                      </button>
+                    )}
+                    {gestibile(u) && passwordAmmessa(u) && (
+                      <button
+                        className="btn-ghost h-7 px-2 text-xs"
+                        onClick={() => setReset(u)}
+                      >
+                        Password
+                      </button>
+                    )}
+                    {gestibile(u) && (
+                      <button
+                        className="btn-ghost h-7 px-2 text-xs"
+                        onClick={() => setSicurezza(u)}
+                      >
+                        Sicurezza
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

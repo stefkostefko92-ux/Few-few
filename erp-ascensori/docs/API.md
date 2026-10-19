@@ -119,13 +119,15 @@ DELETE /api/<entita>/:id      изтриване (RESPONSABILE)
 
 ### Preventivi
 
-| Маршрут                            | Метод                | Достъп                   | Описание                          |
-| ---------------------------------- | -------------------- | ------------------------ | --------------------------------- |
-| `/api/preventivi`                  | `GET`/`POST`         | OPERATORE                |                                   |
-| `/api/preventivi/:id`              | `GET`/`PUT`/`DELETE` | OPERATORE / RESPONSABILE |                                   |
-| `/api/preventivi/:id/voci`         | `GET`/`POST`         | OPERATORE                | редове; тоталите се преизчисляват |
-| `/api/preventivi/:id/voci/:voceId` | `PUT`/`DELETE`       | OPERATORE                |                                   |
-| `/api/preventivi/:id/stato`        | `PATCH`              | RESPONSABILE             | `{ stato }`                       |
+| Маршрут                            | Метод                | Достъп                   | Описание                           |
+| ---------------------------------- | -------------------- | ------------------------ | ---------------------------------- |
+| `/api/preventivi`                  | `GET`/`POST`         | OPERATORE                |                                    |
+| `/api/preventivi/:id`              | `GET`/`PUT`/`DELETE` | OPERATORE / RESPONSABILE |                                    |
+| `/api/preventivi/:id/voci`         | `GET`/`POST`         | OPERATORE                | редове; тоталите се преизчисляват  |
+| `/api/preventivi/:id/voci/:voceId` | `PUT`/`DELETE`       | OPERATORE                |                                    |
+| `/api/preventivi/:id/stato`        | `PATCH`              | RESPONSABILE             | `{ stato }`                        |
+| `/api/preventivi/:id/ordine`       | `POST`               | OPERATORE                | само `APPROVATO`; един ордин (409) |
+| `/api/preventivi/:id/fattura`      | `POST`               | DIREZIONE                | чернова с редовете на офертата     |
 
 Преходи: `BOZZA → INVIATO`; `INVIATO → APPROVATO | RIFIUTATO | SCADUTO`;
 `SCADUTO → INVIATO` (преиздаване); `APPROVATO` и `RIFIUTATO` са финални.
@@ -133,15 +135,17 @@ DELETE /api/<entita>/:id      изтриване (RESPONSABILE)
 
 ### Ordini di lavoro
 
-| Маршрут                      | Метод                | Достъп                                                |
-| ---------------------------- | -------------------- | ----------------------------------------------------- |
-| `/api/ordini`                | `GET`/`POST`         | OPERATORE                                             |
-| `/api/ordini/:id`            | `GET`/`PUT`/`DELETE` | OPERATORE / RESPONSABILE                              |
-| `/api/ordini/:id/stato`      | `PATCH`              | `TECNICO`; за `ANNULLATO` и `CHIUSO` — `RESPONSABILE` |
-| `/api/ordini/:id/rapportini` | `GET`/`POST`         | TECNICO                                               |
-| `/api/rapportini/:id`        | `GET`/`PUT`          | TECNICO                                               |
-| `/api/rapportini/:id/firma`  | `POST`               | TECNICO                                               |
-| `/api/rapportini/:id/pdf`    | `GET`                | TECNICO                                               |
+| Маршрут                      | Метод                | Достъп                                                                                       |
+| ---------------------------- | -------------------- | -------------------------------------------------------------------------------------------- |
+| `/api/ordini`                | `GET`/`POST`         | OPERATORE                                                                                    |
+| `/api/ordini/:id`            | `GET`/`PUT`/`DELETE` | OPERATORE / RESPONSABILE                                                                     |
+| `/api/ordini/:id/stato`      | `PATCH`              | `TECNICO`; за `ANNULLATO` и `CHIUSO` — `RESPONSABILE`                                        |
+| `/api/ordini/:id/rapportini` | `GET`/`POST`         | TECNICO                                                                                      |
+| `/api/ordini/:id/fattura`    | `POST`               | DIREZIONE; не от `BOZZA`/`ANNULLATO` — редове от офертата, иначе материалите (`senzaPrezzo`) |
+| `/api/ordini/:id/ddt`        | `POST`               | OPERATORE; DDT на вложените материали (409 без материали), без ново изписване                |
+| `/api/rapportini/:id`        | `GET`/`PUT`          | TECNICO                                                                                      |
+| `/api/rapportini/:id/firma`  | `POST`               | TECNICO                                                                                      |
+| `/api/rapportini/:id/pdf`    | `GET`                | TECNICO                                                                                      |
 
 Рапортичката се създава от ТЕХНИКА на място — това е неговият документ и неговите
 часове. След подпис на клиента е НЕПРОМЕНИМА (`409`): иначе подписът не доказва

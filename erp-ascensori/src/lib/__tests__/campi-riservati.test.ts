@@ -42,3 +42,29 @@ test("писането на запазено поле се хваща; undefined
   assert.deepEqual(scritturaVietata({ costoOrario: undefined }, n), []);
   assert.deepEqual(scritturaVietata(null, n), []);
 });
+
+test("Decimal и Buffer минават непокътнати (не стават `{s,e,d}`)", () => {
+  // Prisma Decimal е обект със собствени полета — обходен като литерал, той
+  // излизаше в JSON като {s,e,d} и „Modifica" връщаше „Valore non valido".
+  class Dec {
+    s = 1;
+    e = 2;
+    d = [100];
+    toJSON() {
+      return "100";
+    }
+  }
+  const prezzo = new Dec();
+  const logo = Buffer.from("x");
+  const riga = { costoOrario: new Dec(), prezzo, logo, voci: [{ prezzo }] };
+  const nascosti = oscuraRiservati(riga, new Set(["costoOrario"]));
+  assert.equal(nascosti.prezzo, prezzo);
+  assert.equal(nascosti.logo, logo);
+  assert.equal(nascosti.voci[0].prezzo, prezzo);
+  assert.equal(
+    JSON.stringify(nascosti),
+    '{"prezzo":"100","logo":{"type":"Buffer","data":[120]},"voci":[{"prezzo":"100"}]}',
+  );
+  // Нищо за криене — същият обект, без копие.
+  assert.equal(oscuraRiservati(riga, new Set()), riga);
+});

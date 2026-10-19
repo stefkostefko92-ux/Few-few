@@ -78,6 +78,7 @@ const config: EntityConfig = {
   descrizione:
     "Revisioni, certificazioni e manutenzioni con avvisi a 90 / 60 / 30 giorni",
   api: "/api/scadenze",
+  cerca: "Cerca per matricola, indirizzo, note…",
   extraAzioni: <BottoneControllo />,
   colonne: [
     {
