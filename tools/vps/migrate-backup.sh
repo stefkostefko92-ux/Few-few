@@ -30,7 +30,8 @@
 # липсва. Без него архивът не се отваря — пази копие ИЗВЪН сървъра.
 #
 # Други: EXTRA_PATHS="/mnt/data …" добавя пътища · STOP_EXCLUDE="unit …" пази
-# услуга от FINAL · SAVE_IMAGES=1 добавя локално построените Docker образи ·
+# услуга от FINAL · SAVE_IMAGES=1 добавя образите на контейнерите (без закачените
+# по @sha256 — те се теглят по същия digest) — така новият сървър не билдва нищо ·
 # VERIFY=0 пропуска пробното отваряне · YES=1 без въпрос във FINAL ·
 # FORCE=1 продължава при малко свободно място.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -166,18 +167,25 @@ db_kind(){
 
 is_running(){ [ "$(docker inspect -f '{{.State.Running}}' "$1" 2>/dev/null || true)" = true ]; }
 declare -A CKIND=() CRUN=() LIVE_DB_SRC=() VOL_USERS=()
-CONTAINERS=(); BINDS=(); VOLS=(); INC_VOLS=(); SKIP_VOLS=()
+CONTAINERS=(); BINDS=(); VOLS=(); INC_VOLS=(); SKIP_VOLS=(); WORKDIRS=(); PG_HELPERS=()
 if [ "$DOCKER" = 1 ]; then
   while IFS= read -r c; do
     [ -n "$c" ] || continue
     CONTAINERS+=("$c")
     CKIND[$c]="$(db_kind "$c")"
     CRUN[$c]="$(docker inspect -f '{{.State.Running}}' "$c")"
+    # Образ на Postgres без жив сървър вътре (напр. бекъп помощник с pg_dump) не е
+    # база: дъмп от него е невъзможен и би дал фалшив провал.
+    if [ "${CKIND[$c]}" = pg ] && [ "${CRUN[$c]}" = true ] && ! docker exec "$c" pg_isready -q >/dev/null 2>&1; then
+      CKIND[$c]=app; PG_HELPERS+=("$c")
+    fi
+    # Папката на compose проекта държи compose файла, .env и относителните bind-ове.
+    WORKDIRS+=("$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' "$c")")
     while IFS='|' read -r mtype mname msrc; do
       [ -n "$mtype" ] || continue
       [ "$mtype" = volume ] && VOL_USERS[$mname]="${VOL_USERS[$mname]:-}$c "
       [ "$mtype" = bind ] && BINDS+=("$msrc")
-      if [ "${CKIND[$c]}" != app ] && [ "${CRUN[$c]}" = true ]; then LIVE_DB_SRC[$msrc]=1; fi
+      case "${CKIND[$c]}" in pg|my|mongo) if [ "${CRUN[$c]}" = true ]; then LIVE_DB_SRC[$msrc]=1; fi;; esac
     done < <(docker inspect -f '{{range .Mounts}}{{.Type}}|{{.Name}}|{{.Source}}{{println}}{{end}}' "$c")
   done < <(docker ps -a --format '{{.Names}}')
   while IFS= read -r v; do
@@ -200,7 +208,7 @@ for f in /etc/systemd/system/*.service /etc/systemd/system/*.timer; do
   u="${f##*/}"
   case "$u" in snap.*|*@.service|*@.timer) continue;; esac
   UNITS+=("$u")
-  systemctl is-active --quiet "$u" 2>/dev/null || continue
+  case "$(systemctl is-active "$u" 2>/dev/null || true)" in active|activating|reloading) ;; *) continue;; esac
   # Обвивка около docker compose: спирането ѝ би пуснало `compose down` и би махнало
   # и базата ПРЕДИ дъмпа. Нейните контейнери се спират поотделно по-долу.
   if systemctl cat "$u" 2>/dev/null | grep -qiE '^[[:space:]]*Exec(Start|Stop)[^=]*=.*(docker|podman)'; then
@@ -224,13 +232,18 @@ done
 # ╔═ ОТКРИВАНЕ: пътища ══════════════════════════════════════════════════════════
 EXCL_ANCH=(root/.cache root/.npm 'root/.pm2/logs' 'home/*/.cache' 'home/*/.npm' 'root/few-few-*' 'root/Few-few*.zip')
 EXCL_NAME=(node_modules .next .turbo .pnpm-store)
-# Старите releases са само код (идва наново от git); пазим current и последния
-# работещ на korpora. Техните .env-ове все пак влизат — виж „secrets“ по-долу.
+# Старите releases са само код (идва наново от git); пазим current, последния
+# работещ на korpora и ВСЕКИ release, от който върви контейнер или идва bind —
+# compose проектите живеят в различни releases и `current` не е единственият жив.
+# .env-овете на пропуснатите все пак влизат — виж „secrets“ по-долу.
 KEEP_REL=()
 rel_of(){ local p; p="$(readlink -f "$1" 2>/dev/null || true)"; case "$p" in "$RELEASES_DIR"/*) p="${p#"$RELEASES_DIR"/}"; printf '%s\n' "${p%%/*}";; esac; }
 if [ -e "$CURRENT_LINK" ]; then KEEP_REL+=("$(rel_of "$CURRENT_LINK")"); fi
 for lg in /opt/few-few/shared/*/last-good; do
   if [ -f "$lg" ]; then KEEP_REL+=("$(rel_of "$(head -n 1 "$lg")")"); fi
+done
+for p in "${WORKDIRS[@]}" "${BINDS[@]}"; do
+  if [ -n "$p" ]; then KEEP_REL+=("$(rel_of "$p")"); fi
 done
 OLD_REL=()
 if [ -d "$RELEASES_DIR" ]; then
@@ -304,15 +317,21 @@ if [ "$DOCKER" = 1 ]; then
     state=да; case " ${SKIP_VOLS[*]} " in *" $v "*) state="не (жива база — дъмпът е копието)";; esac
     inv "$v · $(du -sh "$mp" 2>/dev/null | cut -f1) · ${VOL_USERS[$v]:-нищо} · $state"
   done
-  sect "Docker образи, построени локално (без registry digest — билдват се наново)"
-  for c in "${CONTAINERS[@]}"; do docker inspect -f '{{.Config.Image}}' "$c"; done | sort -u | while IFS= read -r img; do
-    if [ "$(docker image inspect -f '{{len .RepoDigests}}' "$img" 2>/dev/null || echo 0)" = 0 ]; then printf '%s\n' "$img"; fi
-  done >> "$INV"
+  if [ "${#PG_HELPERS[@]}" -gt 0 ]; then inv "образ на Postgres без сървър (помощни, броят се за приложения): ${PG_HELPERS[*]}"; fi
+  sect "Образи на контейнерите (образ · размер · SAVE_IMAGES)"
+  IMG_KB=0
+  while IFS= read -r img; do
+    [ -n "$img" ] || continue
+    sz="$(docker image inspect -f '{{.Size}}' "$img" 2>/dev/null || echo 0)"
+    case "$img" in *@sha256:*) how="тегли се по digest";; *) how="влиза при SAVE_IMAGES=1"; IMG_KB=$((IMG_KB + sz / 1024));; esac
+    inv "$img · $(kb_h "$((sz / 1024))") · $how"
+  done < <(for c in "${CONTAINERS[@]}"; do docker inspect -f '{{.Config.Image}}' "$c"; done | sort -u)
+  sect "Compose проекти"
   docker compose ls -a 2>/dev/null >> "$INV" || true
 fi
 
 sect "Домейни (nginx server_name · Caddy адреси)"
-{ grep -rhoE '^[[:space:]]*server_name[[:space:]]+[^;]+' /etc/nginx/sites-enabled /etc/nginx/conf.d 2>/dev/null \
+{ grep -RhoE '^[[:space:]]*server_name[[:space:]]+[^;]+' /etc/nginx/sites-enabled /etc/nginx/conf.d 2>/dev/null \
     | sed -E 's/^[[:space:]]*server_name[[:space:]]+//' | tr ' ' '\n'
   cat /etc/caddy/Caddyfile /etc/caddy/sites/*.caddy 2>/dev/null | grep -E '^[^#[:space:]({][^{]*\{[[:space:]]*$' | sed -E 's/[[:space:]]*\{[[:space:]]*$//' | tr ', ' '\n\n'
 } | grep -vE '^(_|)$' | sort -u >> "$INV" || true
@@ -360,6 +379,7 @@ done
 inv "пропуснати стари releases: ${#OLD_REL[@]} (кодът идва от git; .env-овете им влизат)"
 inv "изключени имена: ${EXCL_NAME[*]}"
 FREE="$(df -Pk "$OUT_DIR" | awk 'NR==2{print $4}')"
+if [ "$SAVE_IMAGES" = 1 ]; then EST=$((EST + ${IMG_KB:-0})); inv "образи (SAVE_IMAGES=1) · $(kb_h "${IMG_KB:-0}")"; fi
 inv "общо ≈ $(kb_h "$EST") · свободно в $OUT_DIR: $(kb_h "$FREE")"
 
 if [ "$MODE" = plan ]; then
@@ -597,11 +617,13 @@ if [ "$DOCKER" = 1 ]; then
   # inspect носи средата на контейнерите (тайни) — затова е САМО вътре в шифрования архив.
   if [ "${#CONTAINERS[@]}" -gt 0 ]; then docker inspect "${CONTAINERS[@]}" > "$STAGE/docker/inspect.json"; fi
   if [ "$SAVE_IMAGES" = 1 ]; then
-    mapfile -t LOCAL_IMGS < <(for c in "${CONTAINERS[@]}"; do docker inspect -f '{{.Config.Image}}' "$c"; done | sort -u \
-      | while IFS= read -r img; do if [ "$(docker image inspect -f '{{len .RepoDigests}}' "$img" 2>/dev/null || echo 1)" = 0 ]; then printf '%s\n' "$img"; fi; done)
-    if [ "${#LOCAL_IMGS[@]}" -gt 0 ]; then
-      inf "docker save на ${#LOCAL_IMGS[@]} локални образа…"
-      docker save "${LOCAL_IMGS[@]}" -o "$STAGE/docker/local-images.tar" || fail "docker save не мина"
+    # По име:таг, за да се заредят със същото име. Закачените по @sha256 не се пазят:
+    # docker save не ги приема така, а на новия сървър се теглят по същия digest.
+    mapfile -t SAVE_IMGS < <(for c in "${CONTAINERS[@]}"; do docker inspect -f '{{.Config.Image}}' "$c"; done | sort -u | grep -v '@sha256:' || true)
+    if [ "${#SAVE_IMGS[@]}" -gt 0 ]; then
+      inf "docker save на ${#SAVE_IMGS[@]} образа…"
+      if docker save -o "$STAGE/docker/images.tar" "${SAVE_IMGS[@]}" 2>"$ERR"; then ok "Образи: $(du -h "$STAGE/docker/images.tar" | cut -f1)"
+      else fail "docker save не мина — $(errline)"; fi
     fi
   fi
 fi
