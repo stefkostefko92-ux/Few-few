@@ -32,6 +32,7 @@
 # Други: EXTRA_PATHS="/mnt/data …" добавя пътища · STOP_EXCLUDE="unit …" пази
 # услуга от FINAL · SAVE_IMAGES=1 добавя образите на контейнерите (без закачените
 # по @sha256 — те се теглят по същия digest) — така новият сървър не билдва нищо ·
+# RECOVER_BINDS=1 връща от живия контейнер bind път, изтрит на хоста ·
 # VERIFY=0 пропуска пробното отваряне · YES=1 без въпрос във FINAL ·
 # FORCE=1 продължава при малко свободно място.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -48,6 +49,7 @@ YES="${YES:-0}"
 VERIFY="${VERIFY:-1}"
 FORCE="${FORCE:-0}"
 SAVE_IMAGES="${SAVE_IMAGES:-0}"
+RECOVER_BINDS="${RECOVER_BINDS:-0}"
 # Пътищата, които влизат в архива цели. ROOTS се подменя само за тест.
 ROOTS="${ROOTS:-/etc /opt /srv /home /root /var/www /var/backups /var/spool/cron /var/lib/vps-dashboard /var/lib/caddy /var/lib/redis /usr/local}"
 EXTRA_PATHS="${EXTRA_PATHS:-}"
@@ -167,7 +169,7 @@ db_kind(){
 
 is_running(){ [ "$(docker inspect -f '{{.State.Running}}' "$1" 2>/dev/null || true)" = true ]; }
 declare -A CKIND=() CRUN=() LIVE_DB_SRC=() VOL_USERS=()
-CONTAINERS=(); BINDS=(); VOLS=(); INC_VOLS=(); SKIP_VOLS=(); WORKDIRS=(); PG_HELPERS=()
+CONTAINERS=(); BINDS=(); VOLS=(); INC_VOLS=(); SKIP_VOLS=(); WORKDIRS=(); PG_HELPERS=(); GONE_BINDS=()
 if [ "$DOCKER" = 1 ]; then
   while IFS= read -r c; do
     [ -n "$c" ] || continue
@@ -181,12 +183,17 @@ if [ "$DOCKER" = 1 ]; then
     fi
     # Папката на compose проекта държи compose файла, .env и относителните bind-ове.
     WORKDIRS+=("$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' "$c")")
-    while IFS='|' read -r mtype mname msrc; do
+    while IFS='|' read -r mtype mname msrc mdst; do
       [ -n "$mtype" ] || continue
       [ "$mtype" = volume ] && VOL_USERS[$mname]="${VOL_USERS[$mname]:-}$c "
       [ "$mtype" = bind ] && BINDS+=("$msrc")
+      # Изтрит на хоста bind източник живее САМО в mount-а на работещия контейнер:
+      # копирането на хоста не го вижда, а рестартът на контейнера го губи завинаги
+      # (Docker създава празна папка на мястото му). Реален случай: release папка,
+      # изтрита при чистенето, докато zabobovdol-nginx и -backup още вървят от нея.
+      if [ "$mtype" = bind ] && [ "${CRUN[$c]}" = true ] && [ ! -e "$msrc" ]; then GONE_BINDS+=("$c|$msrc|$mdst"); fi
       case "${CKIND[$c]}" in pg|my|mongo) if [ "${CRUN[$c]}" = true ]; then LIVE_DB_SRC[$msrc]=1; fi;; esac
-    done < <(docker inspect -f '{{range .Mounts}}{{.Type}}|{{.Name}}|{{.Source}}{{println}}{{end}}' "$c")
+    done < <(docker inspect -f '{{range .Mounts}}{{.Type}}|{{.Name}}|{{.Source}}|{{.Destination}}{{println}}{{end}}' "$c")
   done < <(docker ps -a --format '{{.Names}}')
   while IFS= read -r v; do
     [ -n "$v" ] || continue
@@ -318,6 +325,13 @@ if [ "$DOCKER" = 1 ]; then
     inv "$v · $(du -sh "$mp" 2>/dev/null | cut -f1) · ${VOL_USERS[$v]:-нищо} · $state"
   done
   if [ "${#PG_HELPERS[@]}" -gt 0 ]; then inv "образ на Postgres без сървър (помощни, броят се за приложения): ${PG_HELPERS[*]}"; fi
+  if [ "${#GONE_BINDS[@]}" -gt 0 ]; then
+    sect "Bind пътища, ИЗТРИТИ на хоста, но живи в контейнер (контейнер · път на хоста · път вътре)"
+    for x in "${GONE_BINDS[@]}"; do IFS='|' read -r gc gs gd <<<"$x"; inv "$gc · $gs · $gd"; done
+    if [ "$RECOVER_BINDS" != 1 ]; then
+      warn "${#GONE_BINDS[@]} bind пътя са изтрити на хоста и живеят само в работещи контейнери — пусни с RECOVER_BINDS=1, за да се върнат от контейнера (само липсващите, нищо не се презаписва)."
+    fi
+  fi
   sect "Образи на контейнерите (образ · размер · SAVE_IMAGES)"
   IMG_KB=0
   while IFS= read -r img; do
@@ -391,6 +405,22 @@ fi
 
 if [ "$FREE" -lt "$EST" ] && [ "$FORCE" != 1 ]; then
   die "Свободни $(kb_h "$FREE") в $OUT_DIR при ≈ $(kb_h "$EST") данни преди компресия. Компресията обикновено сваля 30–60 %: FORCE=1 опитва все пак, или OUT_DIR=<друг диск>."
+fi
+
+# ╔═ ВРЪЩАНЕ НА ИЗТРИТИ BIND ПЪТИЩА ═══════════════════════════════════════════════
+# Чете се през /proc/<pid>/root на работещия контейнер — неговият изглед на mount-а.
+# Създава САМО липсващото. Файл с отворен дескриптор се връща цял; папка, изтрита с
+# `rm -rf`, се връща празна (съдържанието е изчезнало още при триенето) — казва се.
+if [ "$RECOVER_BINDS" = 1 ] && [ "$MODE" != plan ]; then
+  for x in "${GONE_BINDS[@]}"; do
+    IFS='|' read -r gc gs gd <<<"$x"
+    [ -e "$gs" ] && continue
+    gpid="$(docker inspect -f '{{.State.Pid}}' "$gc" 2>/dev/null || echo 0)"
+    if [ "$gpid" -gt 0 ] && mkdir -p "$(dirname "$gs")" && cp -a "/proc/$gpid/root$gd" "$gs"; then
+      if [ -d "$gs" ] && [ -z "$(ls -A "$gs" 2>/dev/null)" ]; then warn "Върнат, но ПРАЗЕН: $gs ($gc:$gd) — съдържанието е изтрито; вземи го от git/бекъп."
+      else ok "Върнат: $gs ($gc:$gd)"; fi
+    else fail "Не се върна: $gs ($gc:$gd)"; fi
+  done
 fi
 
 if [ "$PM2_LIVE" = 1 ]; then pm2 save --force >/dev/null 2>&1 || warn "pm2 save не мина"; fi
