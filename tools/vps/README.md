@@ -70,6 +70,22 @@ bash tools/vps/backup-verify.sh verify   # restic check + test-restore (бекъ
 ```
 Cron: дневен `backup`, месечен `verify`. Off-site backend (S3/B2), append-only.
 
+## Преместване на нов сървър — `migrate-backup.sh`
+Пълен шифриран архив на VPS, без да се предполага какво върви на него: открива наши systemd
+услуги, Docker контейнери/томове, Postgres/MySQL/Redis (в контейнер или на хоста), SQLite,
+nginx/Caddy, сертификати, крон. Хваща и продукти извън монорепото.
+```bash
+PLAN=1 bash tools/vps/migrate-backup.sh    # само инвентар + размери + какво би спрял FINAL
+bash tools/vps/migrate-backup.sh           # горещ архив (репетиция, без прекъсване)
+FINAL=1 bash tools/vps/migrate-backup.sh   # замразяване: спира писачите → дъмпове → спира базите → архив
+```
+Изход в `/var/migrate`: `<хост>-<режим>-<час>.tar.{zst,gz}.gpg` (AES256, ключ `/root/migrate.pass`,
+създава се при липса), `.sha256` и `.inventory.txt` (БЕЗ тайни — по него се планира новият
+сървър). Всеки Postgres дъмп се проверява с `pg_restore -l`, SQLite се копира през backup API
+(`quick_check`), а архивът се дешифрира и прочита целият, преди да се обяви за готов. FINAL
+оставя сървъра спрян и пише `restart-<час>.sh` за връщане. Пускай го в `tmux`. Тестван
+(`migrate-backup.test.mjs`).
+
 ## Мониторинг (леко)
 ```bash
 docker compose -f tools/vps/monitoring/docker-compose.monitoring.yml up -d
