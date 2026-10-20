@@ -60,7 +60,23 @@ backup_world() {
   WORLD_BACKUP="$out"
 }
 
-# MC_BUILD=latest → най-новият STABLE build на MC_VERSION и неговият sha256 от Paper API.
+# Преинсталацията е заявка от контейнера на панела към Wings през https://$NODE_FQDN. Проверява се
+# преди бекъпа: 401 от /api/system = Wings е жив и nginx го вижда (API-то иска токена на панела).
+panel_reaches_wings() {
+  local status
+  # shellcheck disable=SC2016 # PHP кодът се изпълнява в контейнера; $argv/$http_response_header са негови.
+  status="$("${COMPOSE[@]}" exec -T panel php -r '
+    $ctx = stream_context_create(["http" => ["timeout" => 10, "ignore_errors" => true]]);
+    $body = @file_get_contents("https://" . $argv[1] . "/api/system", false, $ctx);
+    echo $body === false ? "грешка: " . (error_get_last()["message"] ?? "няма връзка") : ($http_response_header[0] ?? "без отговор");
+  ' "$NODE_FQDN" 2>&1 | tail -n 1)" || true
+  case "$status" in
+    *" 401"*) ok "панелът стига до Wings през https://$NODE_FQDN" ;;
+    *) fail "панелът не стига до Wings през https://$NODE_FQDN ($status) — нищо не е пипано. Виж README → „Отстраняване на проблеми“ → „панелът не стига до Wings“" ;;
+  esac
+}
+
+# MC_BUILD=latest →най-новият STABLE build на MC_VERSION и неговият sha256 от Paper API.
 # В панела се записва конкретният номер, така че следващ reinstall сваля същия jar.
 resolve_latest_build() {
   [ "$MC_FLAVOR" = paper ] && [ "$MC_BUILD" = latest ] || return 0
@@ -117,6 +133,7 @@ main() {
   fi
   [ -f "$vol/world/level.dat" ] || warn "няма $vol/world/level.dat — светът е с друго име (level-name) или още не е създаван"
 
+  panel_reaches_wings
   resolve_latest_build
   if [ "$MC_FLAVOR" = paper ] && [ -z "$PAPER_SHA256" ]; then
     warn "PAPER_SHA256 е празно — jar-ът няма да бъде проверен"

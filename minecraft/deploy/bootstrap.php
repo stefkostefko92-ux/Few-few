@@ -33,6 +33,7 @@ use App\Services\Eggs\Sharing\EggImporterService;
 use App\Services\Servers\ReinstallServerService;
 use App\Services\Servers\ServerCreationService;
 use App\Services\Servers\StartupModificationService;
+use Illuminate\Support\Facades\DB;
 
 $env = static function (string $key): string {
     $value = getenv($key);
@@ -109,25 +110,30 @@ if ($mode === 'info' || $mode === 'switch') {
         return;
     }
 
-    $server = app(StartupModificationService::class)
-        ->setUserLevel(User::USER_LEVEL_ADMIN)
-        ->handle($server, [
-            'egg_id' => $egg->id,
-            'environment' => $environment,
-            'docker_image' => $env('MC_IMAGE'),
-            'startup' => $egg->startup_commands['Default'] ?? reset($egg->startup_commands),
-            'skip_scripts' => false,
-        ]);
-    // Стойностите на стария egg (напр. VANILLA_VERSION) не са нужни на новия.
-    ServerVariable::query()
-        ->where('server_id', $server->id)
-        ->whereNotIn('variable_id', $variableIds->values())
-        ->delete();
-    // Описанието се сменя само ако е нашето автоматично — написаното ръчно в панела остава.
-    if (preg_match('/^(Vanilla Minecraft|Paper) \d/', (string) $server->description) === 1) {
-        $server->forceFill(['description' => $description()])->save();
-    }
-    app(ReinstallServerService::class)->handle($server);
+    // Една транзакция: ако Wings откаже преинсталацията, в панела не остава нищо сменено.
+    $server = DB::transaction(function () use ($server, $egg, $environment, $env, $variableIds, $description) {
+        $server = app(StartupModificationService::class)
+            ->setUserLevel(User::USER_LEVEL_ADMIN)
+            ->handle($server, [
+                'egg_id' => $egg->id,
+                'environment' => $environment,
+                'docker_image' => $env('MC_IMAGE'),
+                'startup' => $egg->startup_commands['Default'] ?? reset($egg->startup_commands),
+                'skip_scripts' => false,
+            ]);
+        // Стойностите на стария egg (напр. VANILLA_VERSION) не са нужни на новия.
+        ServerVariable::query()
+            ->where('server_id', $server->id)
+            ->whereNotIn('variable_id', $variableIds->values())
+            ->delete();
+        // Описанието се сменя само ако е нашето автоматично — написаното ръчно в панела остава.
+        if (preg_match('/^(Vanilla Minecraft|Paper) \d/', (string) $server->description) === 1) {
+            $server->forceFill(['description' => $description()])->save();
+        }
+        app(ReinstallServerService::class)->handle($server);
+
+        return $server;
+    });
     echo "сървър '{$server->name}' е на '{$egg->name}', преинсталира се\n";
     echo "SWITCH=reinstalling\n";
 

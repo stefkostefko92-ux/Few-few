@@ -269,6 +269,7 @@ $C up -d && curl -fsS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:4330/up
 | Нодът е червен в панела | `journalctl -u wings -n 80`; `curl -s https://node-mc.carbonstealth.eu/healthz` → трябва `ok` (502 = Wings е спрян) |
 | vpsdash: „Продукт не отговаря: node-mc… → статус 401“ | проверката сочи `/` (там Wings винаги отговаря 401); в vpsdash → healthChecks адресът да е `https://node-mc.carbonstealth.eu/healthz` |
 | Конзолата не се свързва | същото — WebSocket минава през `node-mc` (nginx `Upgrade`) |
+| `switch-flavor.sh`: „панелът не стига до Wings“ | контейнерът на панела вика Wings през `https://node-mc.carbonstealth.eu` (публичния IP → nginx). На хоста: `systemctl is-active nginx wings`; `curl -s -o /dev/null -w '%{http_code}' https://node-mc.carbonstealth.eu/api/system` → `401`. От контейнера на панела: `getent ahosts node-mc.carbonstealth.eu` → IPv4 на VPS-а; `ufw status` — 443/tcp отворен и за мрежата на панела `10.240.30.0/24` |
 | `switch-flavor.sh`: „сървърът върви“ | Панел → Stop, после пак скрипта |
 | `switch-flavor.sh`: „sha256 не съвпада“ | Wings е свалил друг build — Console показва лога на инсталатора; не пускай, оправи `MC_BUILD`/`PAPER_SHA256` и пусни пак |
 | Първият старт на Paper „виси“ 30 s с `! ALERT !` | очаквано — миграция на света, веднъж |
