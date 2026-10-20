@@ -52,6 +52,11 @@ services:
     ports:
       # Само localhost: nginx на хоста терминира TLS за ${PANEL_FQDN}.
       - "127.0.0.1:${PANEL_PORT:-4330}:80"
+    # Панелът вика Wings през https://<нод>. Без този ред името минава през resolver-а на хоста, а
+    # там може да е 127.0.0.1 (/etc/hosts) — в контейнера това е самият той → „Connection refused“.
+    # Шлюзът на мрежата е хостът: nginx слуша на 0.0.0.0:443 и TLS е за същото име.
+    extra_hosts:
+      - "${NODE_FQDN:-node-mc.carbonstealth.eu}:${PELICAN_GATEWAY:-10.240.30.1}"
     volumes:
       - pelican-data:/pelican-data
       - pelican-logs:/var/www/html/storage/logs
