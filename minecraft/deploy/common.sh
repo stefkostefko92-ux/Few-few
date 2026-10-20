@@ -33,10 +33,10 @@ HEALTH_WAIT="${HEALTH_WAIT:-240}"
 # MC_FLAVOR: paper (по подразбиране — плъгини, по-бърз) или vanilla (чистият jar на Mojang).
 MC_FLAVOR="${MC_FLAVOR:-paper}"
 MC_VERSION="${MC_VERSION:-26.3}"
-# Paper build — закачен, не `latest`. sha256 е от fill.papermc.io/v3/projects/paper/versions/26.3/builds/200;
+# Paper build — закачен, не `latest`. sha256 е от fill.papermc.io/v3/projects/paper/versions/26.3/builds/207;
 # при смяна на MC_VERSION/MC_BUILD се сменя и PAPER_SHA256 (празно = без проверка, с предупреждение).
-MC_BUILD="${MC_BUILD:-200}"
-PAPER_SHA256="${PAPER_SHA256-0e104a19ad818f05266a4571c0a9b0cada241c2016ee64883e5d38435332fa8d}"
+MC_BUILD="${MC_BUILD:-207}"
+PAPER_SHA256="${PAPER_SHA256-2df3b846f70716907d380915cc026667a9cadedf99b1ec680b0c5ff0e6132526}"
 # Paper API иска User-Agent с контакт (docs.papermc.io/misc/downloads-service).
 PAPER_USER_AGENT="${PAPER_USER_AGENT:-carbonstealth-minecraft/1.0 ($LE_EMAIL)}"
 MC_NAME="${MC_NAME:-Minecraft}"

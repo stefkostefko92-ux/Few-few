@@ -4,7 +4,9 @@
 # без да губи свят, админи (ops.json), whitelist, банове и server.properties. Идемпотентен.
 #
 #   sudo bash minecraft/deploy/switch-flavor.sh                    # → Paper (MC_VERSION/MC_BUILD от common.sh)
+#   sudo MC_BUILD=latest bash minecraft/deploy/switch-flavor.sh    # → най-новият STABLE build на Paper
 #   sudo MC_FLAVOR=vanilla bash minecraft/deploy/switch-flavor.sh  # → обратно на Vanilla (виж README.md)
+# Сървърът се избира по име в панела: MC_NAME="…" (по подразбиране „Minecraft“).
 #
 # Ред: сървърът трябва да е спрян → бекъп на панела (backup.sh) → бекъп на целия сървър (свят + конфиги)
 # в /var/backups/minecraft-world → egg-ът в панела се сменя (bootstrap.php switch) → Wings преинсталира:
@@ -58,6 +60,27 @@ backup_world() {
   WORLD_BACKUP="$out"
 }
 
+# MC_BUILD=latest → най-новият STABLE build на MC_VERSION и неговият sha256 от Paper API.
+# В панела се записва конкретният номер, така че следващ reinstall сваля същия jar.
+resolve_latest_build() {
+  [ "$MC_FLAVOR" = paper ] && [ "$MC_BUILD" = latest ] || return 0
+  command -v python3 >/dev/null || fail "за MC_BUILD=latest трябва python3"
+  local json line
+  json="$(curl -fsS -m 30 -A "$PAPER_USER_AGENT" "https://fill.papermc.io/v3/projects/paper/versions/$MC_VERSION/builds")" \
+    || fail "Paper API не отговори за версия $MC_VERSION"
+  line="$(printf '%s' "$json" | python3 -I -c '
+import json, sys
+builds = [b for b in json.load(sys.stdin) if b.get("channel") == "STABLE"]
+if builds:
+    b = max(builds, key=lambda b: b["id"])
+    print(b["id"], b["downloads"]["server:default"]["checksums"]["sha256"])
+')"
+  [[ "$line" =~ ^[0-9]+\ [0-9a-f]{64}$ ]] || fail "няма STABLE build на Paper за $MC_VERSION"
+  MC_BUILD="${line% *}"
+  PAPER_SHA256="${line#* }"
+  ok "най-новият STABLE build: Paper $MC_VERSION-$MC_BUILD"
+}
+
 wait_install() {
   local i status=installing
   log "Wings преинсталира (до ${INSTALL_WAIT}s): сваля се новият jar"
@@ -94,6 +117,7 @@ main() {
   fi
   [ -f "$vol/world/level.dat" ] || warn "няма $vol/world/level.dat — светът е с друго име (level-name) или още не е създаван"
 
+  resolve_latest_build
   if [ "$MC_FLAVOR" = paper ] && [ -z "$PAPER_SHA256" ]; then
     warn "PAPER_SHA256 е празно — jar-ът няма да бъде проверен"
   fi

@@ -10,7 +10,9 @@
   `deploy/common.sh` (от `checksums.txt` на релийза в `github.com/pelican/wings`). Никога `latest`.
   Minecraft: `MC_VERSION` + Paper `MC_BUILD` + `PAPER_SHA256` в `deploy/common.sh` (от
   `fill.papermc.io/v3/projects/paper/versions/<v>/builds`, само STABLE) + образ `yolks:java_<N>` според
-  `java.version.minimum` на версията — 26.x иска Java 25.
+  `java.version.minimum` на версията — 26.x иска Java 25. `MC_BUILD=latest` е позволено само в
+  `switch-flavor.sh`: резолвира се при пуска до конкретен STABLE номер + sha256 от API-то и в панела
+  се записва номерът, не `latest`.
 - **Смяна Vanilla ⇄ Paper и ъпдейт на build** само през `deploy/switch-flavor.sh`: иска спрян сървър,
   прави бекъп на целия сървър преди да пипне панела, проверява jar-а по sha256. Инсталаторите на двата
   egg-а сменят само `server.jar` — светът, ops/whitelist и `server.properties` не се пипат.

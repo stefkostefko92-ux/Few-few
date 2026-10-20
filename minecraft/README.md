@@ -13,7 +13,7 @@ SFTP, бекъпи по график, потребители и права, мо
 | SFTP | `sftp://node-mc.carbonstealth.eu:2022` |
 
 > **Версии:** Pelican Panel и Wings `v1.0.0-rc.1` — първият release candidate на 1.0 (стабилен 1.0 още
-> няма). Paper `26.3` build `200` (STABLE, 16.10.2026). Всичко е закачено по таг/build и sha256, не по
+> няма). Paper `26.3` build `207` (STABLE, 20.10.2026). Всичко е закачено по таг/build и sha256, не по
 > `latest`.
 >
 > **Paper, не Vanilla:** Paper е наследникът на Spigot/Bukkit — пуска плъгини (Bukkit/Spigot/Paper),
@@ -99,7 +99,7 @@ sudo bash /opt/few-few/current/minecraft/deploy/install.sh   # същата ко
 Сега скриптът сам: създава нода `carbonstealth-vps` (HTTPS зад proxy, 4608 MB, 20 GB) и алокация
 `0.0.0.0:25565` с име `mc.carbonstealth.eu` → импортира egg „Paper“ от `pelican-eggs` → взима
 конфига на Wings от панела, втвърдява го и пуска Wings → създава сървъра **„Minecraft“**:
-`MINECRAFT_VERSION=26.3`, `BUILD_NUMBER=200`, образ `ghcr.io/pelican-eggs/yolks:java_25`, 4096 MB RAM,
+`MINECRAFT_VERSION=26.3`, `BUILD_NUMBER=207`, образ `ghcr.io/pelican-eggs/yolks:java_25`, 4096 MB RAM,
 16 GB диск, до 5 бекъпа. Wings сваля `server.jar` (Paper) от `fill.papermc.io`. С `MC_FLAVOR=vanilla` —
 egg „Vanilla Minecraft“ и jar-ът на Mojang.
 
@@ -168,8 +168,8 @@ offline режимът работи.
    „Custom Mafia“). Описание, написано ръчно в панела, не се пипа.
    Скриптът: бекъп на панела → бекъп на **целия** сървър (свят + конфиги) в
    `/var/backups/minecraft-world/world-<uuid>-<час>.tar.gz` (пази последните 5, първо проверява
-   мястото) → сменя egg-а на „Paper“ в панела (`MINECRAFT_VERSION=26.3`, `BUILD_NUMBER=200`) → Wings
-   преинсталира → проверява, че `server.jar` е точно Paper build 200 (sha256). Сървърът **не** се пуска.
+   мястото) → сменя egg-а на „Paper“ в панела (`MINECRAFT_VERSION=26.3`, `BUILD_NUMBER=207`) → Wings
+   преинсталира → проверява, че `server.jar` е точно Paper build 207 (sha256). Сървърът **не** се пуска.
 3. Панел → **Start**. При **първия** старт Paper показва `[WorldFolderMigration] ! ALERT !` и чака 30 s,
    после сам пренарежда файловете на света (веднъж, за секунди). Бекъпът вече е направен — остави го да
    продължи. После `Done (…)! For help, type "help"`.
@@ -204,10 +204,14 @@ Server → Files → `plugins/` (или SFTP) → качи `.jar` → **Restart*
 
 ## Ъпдейт
 
-**Paper build (същата версия):** нов build и неговият sha256 от
-`https://fill.papermc.io/v3/projects/paper/versions/26.3/builds` → `MC_BUILD` и `PAPER_SHA256` в
-`common.sh` (PR) → спри сървъра → `switch-flavor.sh`: вижда, че jar-ът е друг, прави бекъп и
-преинсталира.
+**Paper build (същата версия)** — когато конзолата пише `*** Currently you are N builds behind ***`:
+спри сървъра от панела, после
+```bash
+sudo MC_NAME="Custom Mafia" MC_BUILD=latest bash /opt/few-few/current/minecraft/deploy/switch-flavor.sh
+```
+Скриптът взима най-новия STABLE build и неговия sha256 от `fill.papermc.io`, прави бекъп на целия
+сървър, преинсталира само `server.jar` и проверява jar-а. Светът, админите, whitelist-ът, плъгините
+и настройките остават. Без `MC_BUILD=latest` се ползва закаченият build от `common.sh`.
 
 **Minecraft (напр. 26.4):** чак когато Paper има STABLE build за нея: `MC_VERSION`, `MC_BUILD`,
 `PAPER_SHA256` в `common.sh` → `switch-flavor.sh` (бекъпът е вграден). Ръчно през панела: бекъп
