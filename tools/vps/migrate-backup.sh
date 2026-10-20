@@ -15,6 +15,9 @@
 #   FINAL=1  замразяване за преместването: спира писачите (наши услуги, таймери,
 #            крон, контейнери без базите) → дъмпове → спира и базите → архив с
 #            всичко. Сървърът ОСТАВА спрян; връщане: restart-<час>.sh до архива.
+#   DUMP_TO=<папка>  само дъмповете на базите + списъкът с пътища за бекъп, без
+#            архив и без шифриране — за offsite-backup.sh (restic шифрира сам).
+#            Папката се подменя цялата накрая, атомарно.
 #
 # Употреба (като root, в tmux — голям сървър отнема десетки минути):
 #   PLAN=1 bash migrate-backup.sh
@@ -49,6 +52,7 @@ YES="${YES:-0}"
 VERIFY="${VERIFY:-1}"
 FORCE="${FORCE:-0}"
 SAVE_IMAGES="${SAVE_IMAGES:-0}"
+DUMP_TO="${DUMP_TO:-}"
 RECOVER_BINDS="${RECOVER_BINDS:-0}"
 # Пътищата, които влизат в архива цели. ROOTS се подменя само за тест.
 ROOTS="${ROOTS:-/etc /opt /srv /home /root /var/www /var/backups /var/spool/cron /var/lib/vps-dashboard /var/lib/caddy /var/lib/redis /usr/local}"
@@ -70,13 +74,18 @@ case "${1:-}" in -h|--help) sed -n '2,/^# ─\{10,\}$/p' "$0" | sed 's/^# \{0,1\
 
 [ "$(id -u)" -eq 0 ] || die "Пусни като root (sudo -i)."
 case "$PLAN:$FINAL" in
-  0:0) MODE=hot;;
+  0:0) if [ -n "$DUMP_TO" ]; then MODE=dumps; else MODE=hot; fi;;
   0:1) MODE=final;;
   1:0|1:1) MODE=plan;;
   *) die "PLAN и FINAL приемат само 0 или 1.";;
 esac
 
 case "$OUT_DIR" in /?*) ;; *) die "OUT_DIR трябва да е абсолютен път, различен от /.";; esac
+if [ "$MODE" = dumps ]; then
+  case "$DUMP_TO" in /?*/*) DUMP_TO="${DUMP_TO%/}";; *) die "DUMP_TO трябва да е абсолютен път поне две нива навътре.";; esac
+  # Образите не са нощна работа: гигабайти всяка нощ, а на новия сървър се билдват/теглят.
+  SAVE_IMAGES=0
+fi
 OUT_DIR="${OUT_DIR%/}"
 for r in $ROOTS $EXTRA_PATHS; do
   case "$OUT_DIR/" in "${r%/}/"*)
@@ -94,7 +103,7 @@ elif command -v pigz >/dev/null 2>&1; then COMP=(pigz -6); DECOMP=(pigz -dc); EX
 else COMP=(gzip -6); DECOMP=(gzip -dc); EXT=tar.gz; fi
 OUT="$OUT_DIR/$NAME.$EXT.gpg"
 command -v tar >/dev/null 2>&1 || die "Липсва tar."
-if [ "$MODE" != plan ]; then
+if [ "$MODE" = hot ] || [ "$MODE" = final ]; then
   command -v gpg >/dev/null 2>&1 || die "Липсва gpg: apt-get install -y gnupg"
 fi
 
@@ -130,7 +139,7 @@ under_roots(){ local p=$1 r; for r in $ROOTS $EXTRA_PATHS; do case "$p/" in "${r
 has_root_under(){ local p=${1%/} r; for r in $ROOTS $EXTRA_PATHS; do case "${r%/}/" in "$p"/*) return 0;; esac; done; return 1; }
 
 # ╔═ КЛЮЧ ═══════════════════════════════════════════════════════════════════════
-if [ "$MODE" != plan ]; then
+if [ "$MODE" = hot ] || [ "$MODE" = final ]; then
   if [ ! -s "$PASS_FILE" ]; then
     install -d -m 700 "$(dirname "$PASS_FILE")"
     head -c 48 /dev/urandom | base64 -w0 > "$PASS_FILE"
@@ -382,14 +391,19 @@ inv "docker обвивки (не се спират — контейнерите 
 sect "Архивът (пътища · размер преди компресия)"
 EST=0
 DU_EXCL=(); for n in "${EXCL_NAME[@]}"; do DU_EXCL+=("--exclude=$n"); done
-for p in "${TAR_PATHS[@]}"; do
-  s="$(du -sxk "${DU_EXCL[@]}" "/$p" 2>/dev/null | cut -f1 || true)"
-  EST=$((EST + ${s:-0}))
-  inv "/$p · $(kb_h "${s:-0}")"
-done
-for p in /opt /srv /home /var/www; do
-  if [ -d "$p" ] && under_roots "$p"; then du -sxh "${DU_EXCL[@]}" "$p"/* 2>/dev/null | sed 's/^/  /' >> "$INV" || true; fi
-done
+# Нощният режим не мери: du обхожда всичко второ път, а restic и без това го прави.
+if [ "$MODE" != dumps ]; then
+  for p in "${TAR_PATHS[@]}"; do
+    s="$(du -sxk "${DU_EXCL[@]}" "/$p" 2>/dev/null | cut -f1 || true)"
+    EST=$((EST + ${s:-0}))
+    inv "/$p · $(kb_h "${s:-0}")"
+  done
+  for p in /opt /srv /home /var/www; do
+    if [ -d "$p" ] && under_roots "$p"; then du -sxh "${DU_EXCL[@]}" "$p"/* 2>/dev/null | sed 's/^/  /' >> "$INV" || true; fi
+  done
+else
+  for p in "${TAR_PATHS[@]}"; do inv "/$p"; done
+fi
 inv "пропуснати стари releases: ${#OLD_REL[@]} (кодът идва от git; .env-овете им влизат)"
 inv "изключени имена: ${EXCL_NAME[*]}"
 FREE="$(df -Pk "$OUT_DIR" | awk 'NR==2{print $4}')"
@@ -403,7 +417,7 @@ if [ "$MODE" = plan ]; then
   exit 0
 fi
 
-if [ "$FREE" -lt "$EST" ] && [ "$FORCE" != 1 ]; then
+if [ "$MODE" != dumps ] && [ "$FREE" -lt "$EST" ] && [ "$FORCE" != 1 ]; then
   die "Свободни $(kb_h "$FREE") в $OUT_DIR при ≈ $(kb_h "$EST") данни преди компресия. Компресията обикновено сваля 30–60 %: FORCE=1 опитва все пак, или OUT_DIR=<друг диск>."
 fi
 
@@ -610,13 +624,17 @@ backup_sqlite(){
 }
 inf "SQLite бази…"
 SQL_DIRS=()
+# Копията от миналата нощ (offsite-backup.sh) са SQLite файлове в /var/backups —
+# без това всяка нощ ги копира наново, една папка по-надълбоко.
+DUMPS_SEEN="${DUMP_TO:-/var/backups/offsite-dumps}"
 for r in $ROOTS $EXTRA_PATHS /var/lib; do if [ -d "$r" ]; then SQL_DIRS+=("$r"); fi; done
 while IFS= read -r -d '' f; do
   [ "$(head -c 15 "$f" 2>/dev/null)" = "SQLite format 3" ] || continue
   backup_sqlite "$f"
 done < <(find "${SQL_DIRS[@]}" -xdev \( -path /var/lib/docker -o -path /var/lib/containerd -o -path /var/lib/postgresql \
            -o -path /var/lib/mysql -o -path /var/lib/snapd -o -path /var/lib/apt -o -path /var/lib/dpkg \
-           -o -path "$RELEASES_DIR" -o -path "$OUT_DIR" -o -name node_modules -o -name .cache -o -name .npm \) -prune \
+           -o -path "$RELEASES_DIR" -o -path "$OUT_DIR" -o -path "$DUMPS_SEEN" -o -path "$DUMPS_SEEN.*" \
+           -o -name node_modules -o -name .cache -o -name .npm \) -prune \
            -o -type f \( -name '*.db' -o -name '*.sqlite' -o -name '*.sqlite3' -o -name '*.db3' \) -size +0 -print0 2>/dev/null \
          | sort -zu)
 ok "SQLite: ${#SQLITES[@]} бази"
@@ -680,6 +698,35 @@ for x in "${SQLITES[@]}"; do inv "$x"; done
 sect "Предупреждения и провали"
 for w in "${WARNS[@]}"; do inv "⚠ $w"; done
 for x in "${FAILS[@]}"; do inv "✘ $x"; done
+
+# ╔═ САМО ДЪМПОВЕ (DUMP_TO) ═══════════════════════════════════════════════════════
+# Без архив: restic в offsite-backup.sh шифрира и дедуплицира. Списъкът с пътища
+# и изключения е СЪЩИЯТ, по който се прави архивът — една логика, не две.
+if [ "$MODE" = dumps ]; then
+  # Дъмповете влизат по свой път, освен ако вече са под СЪЩЕСТВУВАЩ корен —
+  # корен, който още липсва (празен сървър), не е в TAR_PATHS и не покрива нищо.
+  covered=0
+  for p in "${TAR_PATHS[@]}"; do
+    case "$DUMP_TO/" in "/${p%/}/"*) covered=1;; esac
+    printf '/%s\n' "$p"
+  done > "$STAGE/paths.txt"
+  if [ "$covered" = 0 ]; then printf '%s\n' "$DUMP_TO" >> "$STAGE/paths.txt"; fi
+  { for x in "${EXCL_ANCH[@]}"; do printf '/%s\n' "$x"; done
+    for x in "${EXCL_NAME[@]}"; do printf '%s\n' "$x"; done; } > "$STAGE/excludes.txt"
+  install -d -m 700 "$(dirname "$DUMP_TO")"
+  rm -rf -- "$DUMP_TO.new" "$DUMP_TO.old"
+  # STAGE и DUMP_TO са на един диск по подразбиране → mv е преименуване, не копие.
+  mv "$STAGE" "$DUMP_TO.new"
+  if [ -d "$DUMP_TO" ]; then mv "$DUMP_TO" "$DUMP_TO.old"; fi
+  mv "$DUMP_TO.new" "$DUMP_TO" && rm -rf -- "$DUMP_TO.old"
+  chmod 700 "$DUMP_TO"
+  ok "Дъмпове: $DUMP_TO ($(du -sh "$DUMP_TO" | cut -f1)), пътища за бекъп: $(wc -l < "$DUMP_TO/paths.txt")"
+  if [ "${#FAILS[@]}" -gt 0 ]; then
+    for x in "${FAILS[@]}"; do printf '   ✘ %s\n' "$x"; done
+    exit 2
+  fi
+  exit 0
+fi
 
 # ╔═ АРХИВ ══════════════════════════════════════════════════════════════════════
 STAGE_KB="$(du -sk "$WORK" | cut -f1)"

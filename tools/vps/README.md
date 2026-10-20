@@ -69,6 +69,7 @@ RESTIC_REPOSITORY=... RESTIC_PASSWORD=... bash tools/vps/backup-verify.sh backup
 bash tools/vps/backup-verify.sh verify   # restic check + test-restore (бекъп ≠ restore-tested!)
 ```
 Cron: дневен `backup`, месечен `verify`. Off-site backend (S3/B2), append-only.
+Покрива само zabobovdol и medqr (панелът го вика оттук); целият сървър — `offsite-backup.sh` по-долу.
 
 ## Преместване на нов сървър — `migrate-backup.sh`
 Пълен шифриран архив на VPS, без да се предполага какво върви на него: открива наши systemd
@@ -85,6 +86,44 @@ FINAL=1 bash tools/vps/migrate-backup.sh   # замразяване: спира 
 (`quick_check`), а архивът се дешифрира и прочита целият, преди да се обяви за готов. FINAL
 оставя сървъра спрян и пише `restart-<час>.sh` за връщане. Пускай го в `tmux`. Тестван
 (`migrate-backup.test.mjs`).
+
+С `DUMP_TO=<папка>` прави само дъмповете + списъка с пътища и изключения (без архив и gpg) —
+това е основата на нощния бекъп по-долу. Една логика за „какво е важно на сървъра“, не две.
+
+## Бекъп извън машината — `offsite-backup.sh` (restic)
+Целият сървър, всяка нощ, в хранилище при ДРУГ доставчик (Hetzner Storage Box през SFTP, порт 23).
+Покрива всичко, което `migrate-backup.sh` открива — не само zabobovdol и medqr като
+`backup-verify.sh`.
+```bash
+offsite-backup.sh init        # еднократно: създава хранилището
+offsite-backup.sh backup      # дъмпове (DUMP_TO) → restic backup → forget --prune
+offsite-backup.sh verify      # restic check (5% от данните) + пробно възстановяване на дъмповете
+offsite-backup.sh snapshots
+```
+Конфиг `/etc/offsite-backup.env` (root, 600) — редове `КЛЮЧ=стойност`, четат се по затворен
+списък, НЕ се изпълняват като shell (`&` в адреса на Uptime Kuma иначе тихо изтрива полето):
+```
+RESTIC_REPOSITORY=sftp:storagebox:restic/<хост>
+RESTIC_PASSWORD_FILE=/root/.restic-offsite.pass
+HEALTHCHECK_URL=https://…          # по избор: пинг след backup, …/fail при провал
+HEALTHCHECK_VERIFY_URL=https://…   # по избор: отделен адрес за verify
+KEEP_DAILY=7
+KEEP_WEEKLY=4
+KEEP_MONTHLY=6
+```
+Скриптът и `migrate-backup.sh` трябва да са в ЕДНА папка; единиците (`systemd/`) ги викат от
+`/usr/local/sbin`:
+```bash
+apt-get install -y restic postgresql-client python3
+install -m 700 /opt/few-few/current/tools/vps/{offsite,migrate}-backup.sh /usr/local/sbin/
+install -m 644 /opt/few-few/current/tools/vps/systemd/offsite-{backup,verify}.{service,timer} /etc/systemd/system/
+systemctl daemon-reload && systemctl enable --now offsite-backup.timer offsite-verify.timer
+```
+Нощем в 04:10 UTC (след местните бекъпи на продуктите), пробата — неделя 07:40 UTC; двете държат
+едно заключване. Ключът на restic се пази и ИЗВЪН сървъра — без него снимките не се отварят.
+`verify` хваща СТРУКТУРНО повредена SQLite и нечетим Postgres дъмп; бит, сменен в данните на
+SQLite, не (тя няма контролни суми) — гниенето в самото хранилище хваща `restic check`.
+Тестван (`offsite-backup.test.mjs`: init → backup → verify, повредена снимка, пинговете).
 
 ## Мониторинг (леко)
 ```bash
