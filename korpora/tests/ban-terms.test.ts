@@ -46,22 +46,22 @@ function sectionsIn(text: string, locale: Locale): string[] {
   );
 }
 
-test('the no-refund rule came with the terms of 2026-10-10 and keeps that date', () => {
+test('the no-refund rule came with the terms of 2026-10-21 and keeps that date', () => {
   // When the terms change again, LEGAL_UPDATED.terms moves on, but the old orders got the rule with this
   // version (or with the day it was really published): write that date into BAN_RULE_TERMS in
   // src/company.ts instead of LEGAL_UPDATED.terms, then change it here.
-  assert.equal(BAN_RULE_TERMS, '2026-10-10');
+  assert.equal(BAN_RULE_TERMS, '2026-10-21');
   assert.ok(BAN_RULE_TERMS <= LEGAL_UPDATED.terms);
 });
 
 test('the dates of the transition are computed from the version, 30 days apart, in every language', async () => {
-  // the oracle is written out: 10 October 2026 + 30 days = 9 November 2026
+  // the oracle is written out: 21 October 2026 + 30 days = 20 November 2026
   const expected = {
-    bg: ['преди 10 октомври 2026 г., правилото', 'важи от 9 ноември 2026 г. Дотогава'],
-    en: ['before 10 October 2026, the rule', 'applies from 9 November 2026. Until then'],
+    bg: ['преди 21 октомври 2026 г., правилото', 'важи от 20 ноември 2026 г. Дотогава'],
+    en: ['before 21 October 2026, the rule', 'applies from 20 November 2026. Until then'],
     it: [
-      'prima del giorno 10 ottobre 2026, la regola',
-      'dal giorno 9 novembre 2026. Fino ad allora',
+      'prima del giorno 21 ottobre 2026, la regola',
+      'dal giorno 20 novembre 2026. Fino ad allora',
     ],
   } as const;
   assert.equal(TERMS_NOTICE_DAYS, 30);
@@ -174,18 +174,18 @@ test('the blocking mail names the four sections, the end of the contract and the
 test('the blocking mail to an order under the old terms: the dates of the terms and the refund', () => {
   const said = {
     bg: [
-      'отпреди 10 октомври 2026 г., а за такива поръчки',
-      'важи от 9 ноември 2026 г. (раздел „Блокиране“)',
+      'отпреди 21 октомври 2026 г., а за такива поръчки',
+      'важи от 20 ноември 2026 г. (раздел „Блокиране“)',
       'връщаме неизползваната част от цената',
     ],
     en: [
-      'in force before 10 October 2026, and for such orders',
-      'applies from 9 November 2026 (section “Blocking”)',
+      'in force before 21 October 2026, and for such orders',
+      'applies from 20 November 2026 (section “Blocking”)',
       'we refund the unused part of the price',
     ],
     it: [
-      'in vigore prima del giorno 10 ottobre 2026 e per questi ordini',
-      'a decorrere dal giorno 9 novembre 2026 (sezione «Blocco»)',
+      'in vigore prima del giorno 21 ottobre 2026 e per questi ordini',
+      'a decorrere dal giorno 20 novembre 2026 (sezione «Blocco»)',
       'vi rimborsiamo la parte di prezzo non utilizzata',
     ],
   } as const;

@@ -11,10 +11,10 @@ const { translate } = await import('../../src/i18n.js');
 
 const REASON = 'Споделен акаунт (раздел „Акаунт“): вход от две фирми в един ден.';
 const PREMIUM_UNTIL = new Date('2027-01-10T21:59:59.999Z');
-/** In the transition: the rule came on 10 October 2026 and reaches older orders on 9 November 2026. */
-const IN_TRANSITION = new Date('2026-10-20T10:00:00Z');
-/** Midnight of 9 November in Sofia (winter time, UTC+2): from here on the rule holds for older orders too. */
-const RULE_REACHES_OLD = new Date('2026-11-08T22:00:00Z');
+/** In the transition: the rule came on 21 October 2026 and reaches older orders on 20 November 2026. */
+const IN_TRANSITION = new Date('2026-10-31T10:00:00Z');
+/** Midnight of 20 November in Sofia (winter time, UTC+2): from here on the rule holds for older orders too. */
+const RULE_REACHES_OLD = new Date('2026-11-19T22:00:00Z');
 
 /**
  * A verified customer whose plan came from an activated order accepted with the terms of `termsVersion` —
@@ -76,8 +76,8 @@ test('an order under the old terms, blocked before the rule reaches it: the mail
 
   const mail = await mailTo(email, /блокиран/);
   const paidOld = translate('bg', 'mail.banned.paidOld', {
-    since: '10 октомври 2026 г.',
-    from: '9 ноември 2026 г.',
+    since: '21 октомври 2026 г.',
+    from: '20 ноември 2026 г.',
   });
   assert.ok(mail.text.includes(paidOld), 'the transition with the dates of the terms');
   assert.ok(
@@ -100,13 +100,13 @@ test('an order under the old terms, blocked before the rule reaches it: the mail
     flash: 'flash.bannedRefund',
   });
   const en = await mailTo(lifeEmail, /blocked/);
-  assert.match(en.text, /in force before 10 October 2026, and for such orders/);
-  assert.match(en.text, /applies from 9 November 2026 \(section “Blocking”\)/);
+  assert.match(en.text, /in force before 21 October 2026, and for such orders/);
+  assert.match(en.text, /applies from 20 November 2026 \(section “Blocking”\)/);
   assert.match(en.text, /\/en\/terms#blocking\n/);
   assert.ok(!en.text.includes(translate('en', 'mail.banned.paid')));
 });
 
-test('from 9 November an old order is not refunded; an order under the new terms never is', async () => {
+test('from 20 November an old order is not refunded; an order under the new terms never is', async () => {
   const support = await staff('SUPPORT', 'old-orders-support-after@example.test');
   const late = await orderedPlan('old-order-late@example.test', '2026-10-09');
   assert.deepEqual(await banAccount(support.actor, late, { reason: REASON }, RULE_REACHES_OLD), {
@@ -117,7 +117,7 @@ test('from 9 November an old order is not refunded; an order under the new terms
   assert.doesNotMatch(lateMail.text, /връщаме неизползваната част/);
   assert.deepEqual(await banDetail(late), { reason: REASON });
 
-  const fresh = await orderedPlan('new-order@example.test', '2026-10-10');
+  const fresh = await orderedPlan('new-order@example.test', '2026-10-21');
   assert.deepEqual(await banAccount(support.actor, fresh, { reason: REASON }, IN_TRANSITION), {
     ok: true,
   });

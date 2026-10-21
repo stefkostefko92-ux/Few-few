@@ -39,7 +39,7 @@ export const PRODUCT_URL = 'https://korpora.carbonstealth.eu';
 export const CONTENT_UPDATED = '2026-10-10';
 
 /** Последна промяна на всеки правен текст — показва се на страницата и отива в sitemap. */
-export const LEGAL_UPDATED = { privacy: '2026-10-09', terms: '2026-10-10' } as const;
+export const LEGAL_UPDATED = { privacy: '2026-10-09', terms: '2026-10-21' } as const;
 
 /**
  * Наш избор — „поне 30 дни“ от раздел „Промени в условията“ на общите условия: толкова дни преди съществена

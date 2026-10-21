@@ -80,11 +80,11 @@ test('the audit reads a ban that owes the unused part of an order under the old 
   assert.deepEqual(auditDetail('admin.account.banned', { reason: 'R' }, format), ['причина: „R“']);
 });
 
-test('the no-refund rule came on 10 October 2026 and reaches older orders on 9 November 2026', () => {
-  // the oracle is written out: 10 October 2026 + 30 days = 9 November 2026
+test('the no-refund rule came on 21 October 2026 and reaches older orders on 20 November 2026', () => {
+  // the oracle is written out: 21 October 2026 + 30 days = 20 November 2026
   const { since, oldOrders } = banRuleDays();
-  assert.equal(new Date(since).toISOString(), '2026-10-10T00:00:00.000Z');
-  assert.equal(new Date(oldOrders).toISOString(), '2026-11-09T00:00:00.000Z');
+  assert.equal(new Date(since).toISOString(), '2026-10-21T00:00:00.000Z');
+  assert.equal(new Date(oldOrders).toISOString(), '2026-11-20T00:00:00.000Z');
 });
 
 const premiumUntil = new Date('2027-01-10T21:59:59.999Z');
@@ -95,7 +95,7 @@ const oldOrder = {
   createdAt: new Date('2026-10-05T09:00:00Z'),
   termsVersion: '2026-10-09',
 } as const;
-const inTransition = new Date('2026-10-20T10:00:00Z');
+const inTransition = new Date('2026-10-31T10:00:00Z');
 
 test('an order under the old terms, blocked before the rule reaches it: the unused part is refunded', () => {
   assert.equal(refundsUnderOldTerms(premium, [oldOrder], inTransition), true);
@@ -104,13 +104,13 @@ test('an order under the old terms, blocked before the rule reaches it: the unus
     refundsUnderOldTerms(premium, [{ ...oldOrder, termsVersion: null }], inTransition),
     true,
   );
-  // 8 November ends at 22:00 UTC in Sofia (winter time): the last moment is still before, midnight is not
-  assert.equal(refundsUnderOldTerms(premium, [oldOrder], new Date('2026-11-08T21:59:59Z')), true);
-  assert.equal(refundsUnderOldTerms(premium, [oldOrder], new Date('2026-11-08T22:00:00Z')), false);
+  // 19 November ends at 22:00 UTC in Sofia (winter time): the last moment is still before, midnight is not
+  assert.equal(refundsUnderOldTerms(premium, [oldOrder], new Date('2026-11-19T21:59:59Z')), true);
+  assert.equal(refundsUnderOldTerms(premium, [oldOrder], new Date('2026-11-19T22:00:00Z')), false);
 });
 
 test('nothing is owed: new terms, a used-up order, no running paid plan, a plan without an order', () => {
-  const newTerms = { ...oldOrder, termsVersion: '2026-10-10' };
+  const newTerms = { ...oldOrder, termsVersion: '2026-10-21' };
   assert.equal(refundsUnderOldTerms(premium, [newTerms], inTransition), false);
   // the old order's months ran out; what runs now came with an order under the new terms
   const usedUp = { ...oldOrder, toExpiresAt: new Date('2026-10-15T21:59:59.999Z') };
