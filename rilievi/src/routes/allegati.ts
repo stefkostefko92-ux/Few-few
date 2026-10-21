@@ -141,7 +141,11 @@ allegatiRouter.post(
         principalOf(req).user.id,
       );
       if (esito.ok) caricati = esito.ids.length;
-      else avvisi.push({ key: 'allegati.errore.limite', params: { max: MAX_PER_SCHEDA } });
+      // Картата е отишла в кошчето (или е изтрита), докато файловете са се качвали.
+      else if (esito.error === 'scheda') return notFound(req, res);
+      else if (esito.error === 'limite')
+        avvisi.push({ key: 'allegati.errore.limite', params: { max: MAX_PER_SCHEDA } });
+      else avvisi.push({ key: 'allegati.errore.caricamento' });
     }
     await rispondi(req, res, scheda, sezione, {
       avvisi,

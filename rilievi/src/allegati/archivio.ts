@@ -58,9 +58,30 @@ export async function spazioLibero(): Promise<number> {
   return info.bavail * info.bsize;
 }
 
-/** Има ли място за още `byte`, без да падне под минимума (`MEDIA_MIN_FREE_MB`). */
-export async function spazioSufficiente(byte: number): Promise<boolean> {
-  return (await spazioLibero()) - byte >= mediaConfig().MEDIA_MIN_FREE_MB * 1024 * 1024;
+/** Байтовете на качванията, които още текат в процеса — свободното място на диска още не ги вижда. */
+let riservati = 0;
+
+/**
+ * Място за още `byte`, без дискът да падне под минимума (`MEDIA_MIN_FREE_MB`), заедно с качванията,
+ * които още текат: запазва се ПРЕДИ проверката (няколко едновременни качвания не минават поотделно) и
+ * се освобождава с върнатата функция (когато отговорът свърши). null — няма място.
+ */
+export async function riservaSpazio(byte: number): Promise<(() => void) | null> {
+  riservati += byte;
+  let libero = false;
+  const rilascia = (): void => {
+    if (libero) return;
+    libero = true;
+    riservati -= byte;
+  };
+  try {
+    if ((await spazioLibero()) - riservati >= mediaConfig().MEDIA_MIN_FREE_MB * 1024 * 1024)
+      return rilascia;
+  } catch {
+    // Томът не се чете — както без място.
+  }
+  rilascia();
+  return null;
 }
 
 export async function rimuoviFile(p: Percorsi): Promise<void> {

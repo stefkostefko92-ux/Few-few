@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { readdir } from 'node:fs/promises';
+import { readdir, writeFile } from 'node:fs/promises';
 import { request } from 'node:http';
 import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
@@ -239,36 +239,98 @@ describe('photos and videos of a sheet', () => {
     await processAll();
   });
 
-  it('stops a body over the cap before reading it', async () => {
+  it('stops a body over the cap, or of unknown size, before reading it', async () => {
     const { browser } = await signedIn('TECNICO');
     const id = await newScheda(browser);
     const cookie = [...browser.cookies].map(([name, value]) => `${name}=${value}`).join('; ');
-    const status = await new Promise<number>((resolve, reject) => {
-      const req = request(
-        {
-          port: PORT,
-          host: '127.0.0.1',
-          method: 'POST',
-          path: `/schede/${id}/allegati`,
-          headers: {
-            cookie,
-            origin: BASE,
-            'x-partial': '1',
-            'x-forwarded-for': browser.ip,
-            'content-type': 'multipart/form-data; boundary=x',
-            'content-length': String(27 * 1024 * 1024),
+    const send = (size: Record<string, string>) =>
+      new Promise<number>((resolve, reject) => {
+        const req = request(
+          {
+            port: PORT,
+            host: '127.0.0.1',
+            method: 'POST',
+            path: `/schede/${id}/allegati`,
+            headers: {
+              cookie,
+              origin: BASE,
+              'x-partial': '1',
+              'x-forwarded-for': browser.ip,
+              'content-type': 'multipart/form-data; boundary=x',
+              ...size,
+            },
           },
-        },
-        (res) => {
-          res.resume();
-          resolve(res.statusCode ?? 0);
-          req.destroy();
-        },
-      );
-      req.on('error', (error) => (req.destroyed ? undefined : reject(error)));
-      req.write(Buffer.alloc(1024));
-    });
-    assert.equal(status, 413);
+          (res) => {
+            res.resume();
+            resolve(res.statusCode ?? 0);
+            req.destroy();
+          },
+        );
+        req.on('error', (error) => (req.destroyed ? undefined : reject(error)));
+        req.write(Buffer.alloc(1024));
+      });
+    assert.equal(await send({ 'content-length': String(27 * 1024 * 1024) }), 413);
+    // A chunked body says nothing of its size: no way to check the cap or the free space first.
+    assert.equal(await send({ 'transfer-encoding': 'chunked' }), 411);
+    await arriviEmpty();
+  });
+
+  it('keeps room on the disk for the uploads still running', async () => {
+    const { riservaSpazio, spazioLibero } = await import('../../src/allegati/archivio.js');
+    const min = 100 * 1024 * 1024;
+    const room = (await spazioLibero()) - min;
+    assert.ok(room > 64 * 1024 * 1024, 'the test needs some free space');
+    const first = await riservaSpazio(room - 32 * 1024 * 1024);
+    assert.ok(first, 'one upload fits');
+    assert.equal(
+      await riservaSpazio(64 * 1024 * 1024),
+      null,
+      'a second one at the same time does not',
+    );
+    first();
+    first();
+    const second = await riservaSpazio(64 * 1024 * 1024);
+    assert.ok(second, 'released once, and only once');
+    second();
+  });
+
+  it('keeps the files of one upload in their order, and a sheet trashed meanwhile takes nothing', async () => {
+    const { browser, user } = await signedIn('TECNICO');
+    const id = await newScheda(browser);
+    await upload(browser, id, 'note', [
+      await photo('c.jpg'),
+      await photo('a.jpg'),
+      await photo('b.jpg'),
+    ]);
+    const order = (
+      await prisma.allegato.findMany({
+        where: { schedaId: id },
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+      })
+    ).map((a) => a.nomeOriginale);
+    assert.deepEqual(order, ['c.jpg', 'a.jpg', 'b.jpg']);
+    await processAll();
+
+    // The upload ran for minutes and the sheet went to the trash meanwhile: no row, no file.
+    const { aggiungiAllegati } = await import('../../src/allegati/service.js');
+    const temp = join(media(), 'arrivi', 'late-upload');
+    await writeFile(temp, (await photo()).bytes);
+    const scheda = await prisma.scheda.update({ where: { id }, data: { deletedAt: new Date() } });
+    const late = await aggiungiAllegati(
+      scheda,
+      'note',
+      null,
+      [{ temp, nome: 'tardi.jpg', byte: 10, tipo: 'FOTO' }],
+      user.id,
+    );
+    assert.deepEqual(late, { ok: false, error: 'scheda' });
+    assert.equal(await prisma.allegato.count({ where: { schedaId: id } }), 3);
+    assert.ok(!existsSync(temp));
+    assert.equal(
+      (await readdir(folder(id))).filter((name) => name.endsWith('.orig')).length,
+      0,
+      'nothing waiting on the volume',
+    );
   });
 
   it('saves only a changed caption, and deletes a file after asking, files included', async () => {

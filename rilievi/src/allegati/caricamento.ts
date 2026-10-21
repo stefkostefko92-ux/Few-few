@@ -4,7 +4,7 @@ import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import multer from 'multer';
 import { sendError } from '../auth/guards.js';
 import { mediaConfig } from '../config.js';
-import { cartellaArrivi, spazioSufficiente } from './archivio.js';
+import { cartellaArrivi, riservaSpazio } from './archivio.js';
 import { leggiFirma, riconosci } from './formati.js';
 import { nomeSicuro, type Caricato } from './service.js';
 
@@ -67,26 +67,43 @@ export function multipart(req: Request, res: Response, next: NextFunction): void
   });
 }
 
+/** Размерът на тялото от Content-Length — без него (chunked) размерът не се знае предварително. */
+const dimensioneDi = (req: Request): number | null => {
+  const raw = req.get('content-length');
+  return raw && /^\d{1,15}$/.test(raw) ? Number(raw) : null;
+};
+
 /**
  * Цялото качване е до тавана за клип (+16 MB за опаковката на формата) — пращат се или един клип, или
- * няколко по-малки; повече се казва, преди тялото да тръгне към диска. Таванът на nginx е над това.
+ * няколко по-малки; повече се казва, преди тялото да тръгне към диска. Тяло без Content-Length (браузърът
+ * винаги го праща) — отказ: размерът му не може да се провери. Таванът на nginx е над това.
  */
 export function limiteCorpo(req: Request, res: Response, next: NextFunction): void {
-  const length = Number(req.get('content-length')) || 0;
-  if (length > (mediaConfig().MEDIA_MAX_VIDEO_MB + 16) * MB) {
+  const length = dimensioneDi(req);
+  if (length === null || length > (mediaConfig().MEDIA_MAX_VIDEO_MB + 16) * MB) {
     res.set('Connection', 'close');
-    return sendError(req, res, 413, 'error.title', 'allegati.errore.totale');
+    return sendError(
+      req,
+      res,
+      length === null ? 411 : 413,
+      'error.title',
+      length === null ? 'allegati.errore.caricamento' : 'allegati.errore.totale',
+    );
   }
   next();
 }
 
-/** Под минимума свободно място (заедно с това, което идва) — отказ, преди да се пише. */
+/**
+ * Под минимума свободно място (заедно с това, което идва, и с качванията, които още текат) — отказ,
+ * преди да се пише. Мястото остава запазено, докато отговорът свърши.
+ */
 export async function spazio(req: Request, res: Response, next: NextFunction): Promise<void> {
-  const length = Number(req.get('content-length')) || 0;
-  if (!(await spazioSufficiente(length))) {
+  const rilascia = await riservaSpazio(dimensioneDi(req) ?? 0);
+  if (!rilascia) {
     res.set('Connection', 'close');
     return sendError(req, res, 507, 'error.title', 'allegati.errore.spazio');
   }
+  res.on('close', rilascia);
   next();
 }
 

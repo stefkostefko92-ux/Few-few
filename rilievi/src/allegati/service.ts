@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { mkdir, rename, rm } from 'node:fs/promises';
 import type { Allegato, TipoAllegato } from '@prisma/client';
 import { z } from 'zod';
@@ -117,11 +118,26 @@ export interface Caricato {
   tipo: TipoAllegato;
 }
 
-export type EsitoCarica = { ok: true; ids: string[] } | { ok: false; error: 'limite' };
+export type EsitoCarica =
+  { ok: true; ids: string[] } | { ok: false; error: 'limite' | 'scheda' | 'spostamento' };
 
 /**
- * Записът: редовете (в опашката) и одитът — в една транзакция; после каченото отива на мястото си.
- * Файл, който не може да се премести, не оставя ред след себе си.
+ * Id на нов файл от приложението (малки букви и цифри, като тези на Prisma): времето отпред и редът в
+ * качването след него — файловете от едно качване (един и същ `createdAt`) остават в реда си.
+ */
+function nuoviId(n: number): string[] {
+  const tempo = Date.now().toString(36);
+  return Array.from(
+    { length: n },
+    (_, i) => `c${tempo}${String(i).padStart(2, '0')}${randomBytes(8).toString('hex')}`,
+  );
+}
+
+/**
+ * Записът: каченото отива първо на мястото си, после редовете (в опашката) и одитът — в една
+ * транзакция. Така фоновият процес никога не вижда ред без файла му. Картата се проверява пак вътре
+ * (`FOR SHARE` — окончателното ѝ изтриване чака): качване, което е текло минути, не стига до карта,
+ * преместена междувременно в кошчето или изтрита. Отказаното не оставя нито ред, нито файл.
  */
 export async function aggiungiAllegati(
   scheda: { id: string; aziendaId: string },
@@ -130,26 +146,38 @@ export async function aggiungiAllegati(
   files: readonly Caricato[],
   actorId: string,
 ): Promise<EsitoCarica> {
-  const created = await prisma.$transaction(async (tx) => {
-    const count = await tx.allegato.count({ where: { schedaId: scheda.id } });
-    if (count + files.length > MAX_PER_SCHEDA) return null;
-    const rows = [];
-    for (const file of files) {
-      rows.push(
-        await tx.allegato.create({
-          data: {
-            schedaId: scheda.id,
-            sezione,
-            tipo: file.tipo,
-            didascalia,
-            nomeOriginale: file.nome,
-            byteOriginali: file.byte,
-            caricatoDaId: actorId,
-          },
-          select: { id: true, schedaId: true, tipo: true },
-        }),
-      );
+  await mkdir(cartellaScheda(scheda.id), { recursive: true });
+  const ids = nuoviId(files.length);
+  const spostati: Array<{ file: Caricato; id: string; originale: string }> = [];
+  for (const [i, file] of files.entries()) {
+    const id = ids[i]!;
+    const originale = percorsi({ id, schedaId: scheda.id, tipo: file.tipo }).originale;
+    try {
+      await rename(file.temp, originale);
+      spostati.push({ file, id, originale });
+    } catch {
+      await rm(file.temp, { force: true });
     }
+  }
+  if (spostati.length === 0) return { ok: false, error: 'spostamento' };
+  const esito = await prisma.$transaction(async (tx) => {
+    const viva = await tx.$queryRaw<Array<{ id: string }>>`
+      SELECT id FROM "Scheda" WHERE id = ${scheda.id} AND "deletedAt" IS NULL FOR SHARE`;
+    if (viva.length === 0) return 'scheda' as const;
+    const count = await tx.allegato.count({ where: { schedaId: scheda.id } });
+    if (count + spostati.length > MAX_PER_SCHEDA) return 'limite' as const;
+    await tx.allegato.createMany({
+      data: spostati.map(({ file, id }) => ({
+        id,
+        schedaId: scheda.id,
+        sezione,
+        tipo: file.tipo,
+        didascalia,
+        nomeOriginale: file.nome,
+        byteOriginali: file.byte,
+        caricatoDaId: actorId,
+      })),
+    });
     await writeAudit(
       {
         actorId,
@@ -159,27 +187,19 @@ export async function aggiungiAllegati(
         targetId: scheda.id,
         meta: {
           sezione,
-          foto: files.filter((f) => f.tipo === 'FOTO').length,
-          video: files.filter((f) => f.tipo === 'VIDEO').length,
+          foto: spostati.filter((s) => s.file.tipo === 'FOTO').length,
+          video: spostati.filter((s) => s.file.tipo === 'VIDEO').length,
         },
       },
       tx,
     );
-    return rows;
+    return 'ok' as const;
   });
-  if (!created) return { ok: false, error: 'limite' };
-  await mkdir(cartellaScheda(scheda.id), { recursive: true });
-  const ids: string[] = [];
-  for (const [i, row] of created.entries()) {
-    try {
-      await rename(files[i]!.temp, percorsi(row).originale);
-      ids.push(row.id);
-    } catch {
-      await prisma.allegato.deleteMany({ where: { id: row.id } });
-      await rm(files[i]!.temp, { force: true });
-    }
+  if (esito !== 'ok') {
+    await Promise.all(spostati.map((s) => rm(s.originale, { force: true })));
+    return { ok: false, error: esito };
   }
-  return { ok: true, ids };
+  return { ok: true, ids: spostati.map((s) => s.id) };
 }
 
 /**

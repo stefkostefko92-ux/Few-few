@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { z } from 'zod';
 
 const hexKey = (name: string) =>
@@ -18,7 +19,12 @@ const optionalEmail = (fallback: string) =>
  * фоновият процес чете само тях: тайните на приложението (JWT_SECRET, пощата) не влизат в контейнера му.
  */
 const mediaSchema = z.object({
-  MEDIA_DIR: z.string().min(1).default('/data/media'),
+  /** Абсолютен път (`./media` локално става пълен — файловете се сервират само от такъв). */
+  MEDIA_DIR: z
+    .string()
+    .min(1)
+    .default('/data/media')
+    .transform((dir) => resolve(dir)),
   MEDIA_MAX_PHOTO_MB: z.coerce.number().int().min(1).max(200).default(40),
   MEDIA_MAX_VIDEO_MB: z.coerce.number().int().min(10).max(2000).default(1024),
   /** Най-дългият клип в минути — по-дълъг се отказва при обработката (ffprobe). */

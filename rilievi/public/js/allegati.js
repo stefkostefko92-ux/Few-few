@@ -51,17 +51,32 @@
   };
 
   // Tiles whose state did not change are kept as they are (a caption being typed stays, a video keeps
-  // playing); `force` are the tiles to take from the server anyway (the caption just saved).
+  // playing); `force` are the tiles to take from the server anyway (the caption just saved). A tile
+  // whose file got compressed meanwhile is the server's, but what was being typed in it goes along.
   const swap = (box, html, force = []) => {
     const template = document.createElement('template');
     template.innerHTML = html;
+    let focus = null;
     template.content.querySelectorAll('[data-allegato]').forEach((tile) => {
       const id = tile.dataset.allegato;
       const old = box.querySelector(`[data-allegato="${id}"]`);
-      if (old && old.dataset.stato === tile.dataset.stato && !force.includes(id))
+      if (!old || force.includes(id)) return;
+      if (old.dataset.stato === tile.dataset.stato) {
         tile.replaceWith(old);
+        return;
+      }
+      const typed = old.querySelector(`[name="didascalia-${id}"]`);
+      const before = old.querySelector(`[name="prima-${id}"]`);
+      const field = tile.querySelector(`[name="didascalia-${id}"]`);
+      if (!typed || !field) return;
+      if (before && typed.value !== before.value) field.value = typed.value;
+      if (document.activeElement === typed) focus = field;
     });
     box.replaceChildren(template.content);
+    if (focus) {
+      focus.focus();
+      focus.setSelectionRange(focus.value.length, focus.value.length);
+    }
     schedule(box);
   };
 

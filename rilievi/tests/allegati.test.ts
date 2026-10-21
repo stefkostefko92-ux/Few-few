@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { isAbsolute, join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
 import sharp from 'sharp';
 import { riconosci } from '../src/allegati/formati.js';
@@ -15,6 +15,7 @@ import {
   leggiProbe,
   type InfoVideo,
 } from '../src/allegati/video.js';
+import { loadMediaConfig } from '../src/config.js';
 import { fotoFromBody, fotoStampateDi } from '../src/schede/stampa.js';
 
 const ftyp = (brand: string) =>
@@ -135,21 +136,24 @@ const valueAfter = (args: string[], flag: string) => args[args.indexOf(flag) + 1
 
 describe('the video compression', () => {
   it('reads only the file, with the container it was recognised as, never a playlist', () => {
-    const args = argomentiVideo(info(), 'mov', '/m/a.orig', '/m/a.part', true);
+    const args = argomentiVideo(info(), 'mov', '/m/a.orig', '/m/a.part', true, 600);
     const input = args.indexOf('-i');
     assert.equal(valueAfter(args, '-protocol_whitelist'), 'file');
     assert.ok(args.indexOf('-protocol_whitelist') < input);
     assert.equal(args[input - 2], '-f');
     assert.equal(args[input - 1], 'mov');
     assert.equal(args[input + 1], '/m/a.orig');
-    assert.equal(valueAfter(argomentiVideo(info(), 'webm', 's', 'u', false), '-f'), 'matroska');
-    assert.equal(valueAfter(argomentiVideo(info(), 'avi', 's', 'u', false), '-f'), 'avi');
+    assert.equal(
+      valueAfter(argomentiVideo(info(), 'webm', 's', 'u', false, 600), '-f'),
+      'matroska',
+    );
+    assert.equal(valueAfter(argomentiVideo(info(), 'avi', 's', 'u', false, 600), '-f'), 'avi');
     assert.equal(valueAfter(argomentiProbe('/m/a.orig', '3gp'), '-f'), 'mov');
     assert.equal(valueAfter(argomentiProbe('/m/a.orig', 'webm'), '-protocol_whitelist'), 'file');
   });
 
   it('makes H.264 up to 1080p and 30 fps, AAC sound, no metadata, ready to play while loading', () => {
-    const args = argomentiVideo(info(), 'mp4', 's', '/m/out.mp4', true);
+    const args = argomentiVideo(info(), 'mp4', 's', '/m/out.mp4', true, 600);
     const filters = valueAfter(args, '-vf')!;
     assert.match(filters, /min\(iw,1920\)/);
     assert.match(filters, /min\(ih,1080\)/);
@@ -161,6 +165,9 @@ describe('the video compression', () => {
     assert.equal(valueAfter(args, '-c:a'), 'aac');
     assert.equal(valueAfter(args, '-map_metadata'), '-1');
     assert.equal(valueAfter(args, '-movflags'), '+faststart');
+    // The cap holds even when the container does not say how long the clip is.
+    assert.equal(valueAfter(args, '-t'), '600');
+    assert.ok(args.indexOf('-t') > args.indexOf('-i'), '-t limits the output, after the input');
     assert.equal(args.at(-1), '/m/out.mp4');
     assert.doesNotMatch(filters, /tonemap/, 'SDR stays as it is');
   });
@@ -168,10 +175,13 @@ describe('the video compression', () => {
   it('turns HDR from a phone into SDR when ffmpeg can, and leaves it alone when it cannot', () => {
     const hdr = info({ hdr: true });
     assert.match(
-      valueAfter(argomentiVideo(hdr, 'mov', 's', 'u', true), '-vf')!,
+      valueAfter(argomentiVideo(hdr, 'mov', 's', 'u', true, 600), '-vf')!,
       /tonemap=tonemap=hable/,
     );
-    assert.doesNotMatch(valueAfter(argomentiVideo(hdr, 'mov', 's', 'u', false), '-vf')!, /tonemap/);
+    assert.doesNotMatch(
+      valueAfter(argomentiVideo(hdr, 'mov', 's', 'u', false, 600), '-vf')!,
+      /tonemap/,
+    );
   });
 
   it('trusts only what it checked in the ffprobe answer', () => {
@@ -195,6 +205,15 @@ describe('the video compression', () => {
       })?.durataMs,
       0,
     );
+  });
+});
+
+describe('the media settings', () => {
+  it('make a relative folder absolute (files are only served from an absolute path)', () => {
+    const cfg = loadMediaConfig({ MEDIA_DIR: './media' });
+    assert.ok(isAbsolute(cfg.MEDIA_DIR));
+    assert.equal(cfg.MEDIA_DIR, join(process.cwd(), 'media'));
+    assert.equal(loadMediaConfig({}).MEDIA_DIR, '/data/media');
   });
 });
 

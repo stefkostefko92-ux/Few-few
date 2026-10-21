@@ -96,6 +96,7 @@ export function argomentiVideo(
   sorgente: string,
   uscita: string,
   zscale: boolean,
+  maxSecondi: number,
 ): string[] {
   const filtri = [
     `scale=w='if(gte(iw,ih),min(iw,${LATO_LUNGO}),min(iw,${LATO_CORTO}))'` +
@@ -160,6 +161,9 @@ export function argomentiVideo(
     '+faststart',
     '-threads',
     '2',
+    // Таванът и за клип, чийто контейнер не казва дължината си (WebM от браузър, подправен файл).
+    '-t',
+    String(maxSecondi),
     '-f',
     'mp4',
     uscita,
@@ -247,13 +251,16 @@ export async function comprimiVideo(
   opts: { maxMinuti: number; signal: AbortSignal },
 ): Promise<EsitoVideo> {
   const info = await probe(strumenti, sorgente, formato, opts.signal);
-  if (info.durataMs > opts.maxMinuti * 60_000) throw new ErroreVideo('troppoLungo');
-  // На едно ядро 1080p „medium“ върви около половин реално време: времето е с голям запас.
-  const timeoutMs = 10 * 60_000 + info.durataMs * 8;
-  await esegui(strumenti.ffmpeg, argomentiVideo(info, formato, sorgente, file, strumenti.zscale), {
-    timeoutMs,
-    signal: opts.signal,
-  });
+  const maxMs = opts.maxMinuti * 60_000;
+  if (info.durataMs > maxMs) throw new ErroreVideo('troppoLungo');
+  // На едно ядро 1080p „medium“ върви около половин реално време: времето е с голям запас. Без
+  // дължина в контейнера — колкото за най-дългия позволен клип (ffmpeg спира там, `-t`).
+  const timeoutMs = 10 * 60_000 + (info.durataMs || maxMs) * 8;
+  await esegui(
+    strumenti.ffmpeg,
+    argomentiVideo(info, formato, sorgente, file, strumenti.zscale, maxMs / 1000),
+    { timeoutMs, signal: opts.signal },
+  );
   const out = await probe(strumenti, file, 'mp4-uscita', opts.signal);
   const at = Math.min(1, out.durataMs / 3000).toFixed(2);
   const frame = await esegui(
