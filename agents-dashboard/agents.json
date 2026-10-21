@@ -15867,7 +15867,7 @@
           "DPR 162/1999 · DM 236/1989 · DM 23/07/2009",
           "Индекс без съдържание: research/norme-ascensori/README.md (нормите — в частното репо)"
         ],
-        "lessons": 181
+        "lessons": 182
       },
       "evolution": [
         {
@@ -15911,9 +15911,20 @@
           "date": "2026-10-21",
           "event": "v18.2 — учене",
           "detail": "Научи: UNI EN 81-21:2022 5.8.2 b) 2) impone il blocco della porta di cabina; con UNI EN 81-20:…"
+        },
+        {
+          "version": "18.3.0",
+          "date": "2026-10-21",
+          "event": "v18.3 — учене",
+          "detail": "Научи: UNI EN 81-21:2022 5.8.2 b) 3)–4) — nessun tempo fissato per l'estensione a rete assente…"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-21",
+          "type": "learning",
+          "summary": "Научи: „UNI EN 81-21:2022 5.8.2 b) 3)–4) — nessun tempo fissato per l'estensione a rete assente…\""
+        },
         {
           "date": "2026-10-21",
           "type": "learning",
