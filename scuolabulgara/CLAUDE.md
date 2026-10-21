@@ -5,6 +5,10 @@ panel, for the Qui Bulgaria association (Bulgarian language & culture centre in
 Milan). **Primary user-facing language: Italian** (source), plus BG/EN. Root
 rules live in the repo-root `CLAUDE.md`.
 
+Live at **https://www.scuolabulgaramilano.it** — the domain is only `SITE_URL` in the server `.env`
+(canonical, hreflang, sitemap, robots, llms.txt follow it per request). `nginx/` holds the real server
+blocks: apex → www, old WordPress URLs → their section (301), `scuolabg.carbonstealth.eu` → 301.
+
 _Stack: Next.js (App Router) · React · **TypeScript** · Prisma + **SQLite** (file
 DB, images on disk — no mandatory external service); auth via `jose` + `bcryptjs`;
 `nodemailer`, `sharp`. VPS/Docker._

@@ -21,7 +21,7 @@ file holds only what is true across all products. Keep it that way.
 | `Gaming/` | АСО — premium browser gaming portal | TS monorepo (`apps/api·marketing·web`) | multi-lang |
 | `Minyor/` | ФК „Миньор“ Бобов дол — клубен сайт | Next.js · React · TS · Prisma | BG |
 | `Nexus/` | Nexus Dominion — браузър игра (клиент) | React · Vite · Three.js · TS | — |
-| `scuolabulgara/` | Qui Bulgaria — бълг. училище Милано (CMS) | Next.js · React · TS · Prisma | IT/BG multilingue |
+| `scuolabulgara/` | Qui Bulgaria — бълг. училище Милано (CMS) | Next.js · React · TS · Prisma | IT/BG/EN · www.scuolabulgaramilano.it |
 | `panev/` | Panev Ascensori — сайт + e-commerce | Express · SQLite · Stripe | IT |
 | `kebab/` | Uylas Kebap Center — сайт | static | IT |
 | `Ivan/` | sklad — складов backend | Express · Prisma | — |
@@ -82,6 +82,10 @@ hooks, rules).
   on static/EJS pages) with **at least 5** relevant keywords, and **„Carbon Stealth“
   must always be one of them** (brand attribution — Carbon Stealth VCC makes all
   products). Keep the rest locale-appropriate and specific to the page/product.
+- **Promo clips are no longer updated — any product** (owner's decision, 2026-10-15). Don't
+  re-render a promo/store/YouTube/social clip on a new version or a UI/site/copy change, don't
+  propose one, and don't write "replace the clip" steps into kits/docs. A clip is made only on the
+  owner's explicit request. Not covered: video that is a product feature (e.g. Piuma's content engine).
 - **Verification agents: hard cap 10.** Never spawn more than **10** generic/external
   agents (anything other than our custom `.claude/agents/`) for verification in a
   task — it burns tokens. Prefer our purpose-built agents; verify inline when cheap.

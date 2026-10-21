@@ -8,7 +8,7 @@
     <meta name="color-scheme" content="dark" />
     <link rel="icon" href="/favicon.svg" />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#0b0f14" />
+    <meta name="theme-color" content="#030604" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="CS VPS" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
@@ -47,8 +47,17 @@
       <main class="main">
         <header class="topbar">
           <button id="menu-toggle" class="icon-btn" aria-label="Меню"><img class="ico-img" src="/icons/ui-menu.png" alt="" /></button>
-          <h1 id="section-title">Обзор</h1>
+          <!-- „Къде съм": името на възела стои ПРЕД секцията. Панелът управлява две
+               машини — бутон, натиснат на грешната, рестартира грешния сървър. -->
+          <div class="where">
+            <span class="node-chip"><span id="host-badge"></span><span class="remote-tag">отдалечен</span></span>
+            <h1 id="section-title">Обзор</h1>
+          </div>
           <div class="topbar-right">
+            <!-- Главна сигнализация (master caution): активните аларми на ТЕКУЩИЯ
+                 възел, видими от всяка секция. Иначе „всичко гори" се разбира само
+                 ако случайно отвориш „Аларми". -->
+            <button id="annun" class="annun hidden" title="Активни аларми на този възел"></button>
             <span id="stale-banner" class="stale hidden"></span>
             <!-- Живо състояние на повишените права. Дотук те бяха НЕВИДИМИ: даваш
                  парола за едно действие и оставаш с отключен панел още пет минути,
@@ -59,7 +68,6 @@
               <span id="sudo-left" class="sudo-left"></span>
               <button id="sudo-lock" class="sudo-lock" title="Заключи сега">Заключи</button>
             </span>
-            <span id="host-badge" class="badge"></span>
             <button id="btn-palette" class="icon-btn" title="Команди (Ctrl+K)"><img class="ico-img" src="/icons/ui-palette.png" alt="" /></button>
             <span id="conn-dot" class="dot" title="Връзка на живо"></span>
             <span id="conn-sr" class="sr-only" aria-live="polite"></span>

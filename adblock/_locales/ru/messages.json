@@ -118,6 +118,27 @@
   "support": {
     "message": "Поддержать"
   },
+  "rate": {
+    "message": "Оценить"
+  },
+  "rateTitle": {
+    "message": "Оцените Supreme AdBlock в Интернет-магазине Chrome"
+  },
+  "reviewBlocked": {
+    "message": "Уже заблокировано запросов: $1"
+  },
+  "reviewAsk": {
+    "message": "Если Supreme AdBlock вам полезен, короткий отзыв в Интернет-магазине Chrome поможет другим его найти."
+  },
+  "reviewLeave": {
+    "message": "Оставить отзыв"
+  },
+  "reviewLater": {
+    "message": "Не сейчас"
+  },
+  "reviewNever": {
+    "message": "Больше не спрашивать"
+  },
   "filtersCount": {
     "message": "$1+ фильтров",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "Скрывает стены «Отключите блокировщик рекламы» и восстанавливает страницу"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Скрывает публикации с пометкой «Реклама» в Facebook и Instagram"
+    "message": "Скрывает публикации с пометкой «Реклама» в Facebook, Instagram и Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Удаляет utm_*, fbclid, gclid и другие идентификаторы кликов из ссылок, которые вы открываете"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Блокирует известные вредоносные домены (список URLhaus от abuse.ch)"
+    "message": "Предупреждает перед открытием известного вредоносного сайта и блокирует то, что страницы загружают с таких сайтов (список URLhaus от abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Отключает рекламные API Google Topics, FLoC и Protected Audience на всех сайтах"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Пожертвовать через Revolut"
+  },
+  "opt_review": {
+    "message": "Напоминания об отзыве"
+  },
+  "opt_review_sub": {
+    "message": "Маленькая ссылка ★ внизу окна Supreme AdBlock и не больше двух раз короткая просьба там оценить его в Интернет-магазине Chrome. Никогда на сайтах, никогда в виде уведомления."
   },
   "opt_made_by": {
     "message": "создано Carbon Stealth"
@@ -643,5 +670,128 @@
   "welDone": {
     "message": "Понятно",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Разрешено · еще $1 мин"
+  },
+  "hiddenHere": {
+    "message": "Скрыто здесь элементов: $1 · Вернуть последний"
+  },
+  "cmd_toggle_site": {
+    "message": "Включить или выключить блокировку на этом сайте"
+  },
+  "cmd_pause": {
+    "message": "Приостановить или возобновить защиту (30 минут)"
+  },
+  "cmd_picker": {
+    "message": "Скрыть элемент на этой странице"
+  },
+  "rep_fix_hour": {
+    "message": "Разрешить рекламу здесь на 1 час"
+  },
+  "rep_done_hour": {
+    "message": "Реклама на этом сайте разрешена на 1 час. Страница перезагружена — проблема решена?"
+  },
+  "opt_last30": {
+    "message": "Последние 30 дней"
+  },
+  "opt_last30_sum": {
+    "message": "Заблокировано: $1 · Баннеры cookie: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Здесь появятся ваши итоги за каждый день, пока вы просматриваете сайты."
+  },
+  "opt_last30_sub": {
+    "message": "Только итоги за день, которые хранятся на этом устройстве 30 дней. Никаких сайтов и адресов."
+  },
+  "opt_gpc_sub": {
+    "message": "Просит каждый сайт, который вы посещаете, не продавать и не передавать ваши данные (сигнал Sec-GPC; некоторые законы о конфиденциальности обязывают сайты его соблюдать). Не отправляется на сайтах, которые вы разрешили."
+  },
+  "opt_shortcuts": {
+    "message": "Сочетания клавиш"
+  },
+  "opt_shortcuts_change": {
+    "message": "Изменить сочетания клавиш"
+  },
+  "opt_shortcut_none": {
+    "message": "Не задано"
+  },
+  "opt_shortcuts_ff": {
+    "message": "В Firefox: Расширения и темы → ⚙ → Управление горячими клавишами расширений."
+  },
+  "opt_import_foreign": {
+    "message": "Импорт из другого блокировщика рекламы"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Переходите с uBlock Origin, AdGuard или Adblock Plus? Выберите его файл резервной копии: разрешенные вами сайты и ваши собственные фильтры будут добавлены сюда. Ничего не заменяется."
+  },
+  "opt_import_foreign_done": {
+    "message": "Разрешено сайтов: $1 · Добавлено фильтров: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Пропущено (здесь нельзя применить): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Этот файл не является резервной копией, которую мы можем прочитать."
+  },
+  "welQuickTitle": {
+    "message": "Настройте под себя"
+  },
+  "welQuickSub": {
+    "message": "Необязательно: всё уже работает. Любой из этих параметров можно позже изменить в настройках."
+  },
+  "blk_page_title": {
+    "message": "Сайт заблокирован — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Этот сайт может навредить вашему устройству"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock остановил открытие этой страницы, потому что сайт есть в URLhaus — общедоступном списке адресов, через которые распространяется вредоносное ПО."
+  },
+  "blk_back": {
+    "message": "Вернуться назад"
+  },
+  "blk_continue": {
+    "message": "Всё равно продолжить"
+  },
+  "blk_note": {
+    "message": "Если продолжить, пропускаться будут только страницы этого сайта — пока вы не закроете браузер."
+  },
+  "blk_why": {
+    "message": "Почему он в списке? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Соединения на этой странице"
+  },
+  "conn_empty": {
+    "message": "Эта страница ничего не загружала с других сайтов."
+  },
+  "conn_block": {
+    "message": "Блокировать тут"
+  },
+  "conn_blocked": {
+    "message": "Заблокировано"
+  },
+  "conn_hint": {
+    "message": "Блокировать то, что этот сайт загружает с $1"
+  },
+  "opt_conn_title": {
+    "message": "Заблокированные вами соединения"
+  },
+  "opt_conn_sub": {
+    "message": "Заблокированы в окне Supreme AdBlock через «Соединения на этой странице», каждое — только на своем сайте."
+  },
+  "opt_empty_conn": {
+    "message": "Пока ничего не заблокировано."
+  },
+  "opt_conn_remove": {
+    "message": "Разблокировать $1 на сайте $2"
+  },
+  "opt_h_danger": {
+    "message": "Предупреждение о вредоносном ПО"
+  },
+  "opt_h_capacity": {
+    "message": "Лимит правил"
   }
 }

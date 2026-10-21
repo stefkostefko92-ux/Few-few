@@ -223,59 +223,55 @@ def fit(rgba, w, h, size, pad=0.0):
 
 
 # ---- Store graphics ------------------------------------------------------
-def carbon_bg(w, h):
-    buf = bytearray(w * h * 4)
-    for y in range(h):
-        t = y / h
-        base = (int(18 + (9 - 18) * t), int(20 + (10 - 20) * t), int(24 + (12 - 24) * t))
-        for x in range(w):
-            weave = math.sin((x + y) * 0.6) * 3 + math.sin((x - y) * 0.6) * 3
-            i = (y * w + x) * 4
-            buf[i] = int(max(0, min(255, base[0] + weave)))
-            buf[i + 1] = int(max(0, min(255, base[1] + weave)))
-            buf[i + 2] = int(max(0, min(255, base[2] + weave)))
-            buf[i + 3] = 255
-    return buf
+def outer_glow(rgba, size, radius=3, strength=0.45, color=(255, 255, 255)):
+    """A soft light halo just outside the artwork, under it. Google's icon guideline: a mostly dark
+    icon should get "a subtle white outer glow so it'll look good against dark backgrounds"."""
+    alpha = [rgba[i * 4 + 3] / 255.0 for i in range(size * size)]
 
+    def box(src, horizontal):
+        out = [0.0] * (size * size)
+        for line in range(size):
+            idx = (lambda k: line * size + k) if horizontal else (lambda k: k * size + line)
+            acc = sum(src[idx(min(size - 1, max(0, k)))] for k in range(-radius, radius + 1))
+            for k in range(size):
+                out[idx(k)] = acc / (2 * radius + 1)
+                acc += src[idx(min(size - 1, k + radius + 1))] - src[idx(max(0, k - radius))]
+        return out
 
-def light_bg(w, h):
-    """Light card for the promo tile: the supplied lockup has a NAVY wordmark, so
-    it is only legible on a light ground (on carbon the 'AdBlock' half vanishes)."""
-    buf = bytearray(w * h * 4)
-    for y in range(h):
-        t = y / h
-        base = (int(255 + (233 - 255) * t), int(255 + (238 - 255) * t), int(255 + (244 - 255) * t))
-        for x in range(w):
-            weave = math.sin((x + y) * 0.6) * 1.5 + math.sin((x - y) * 0.6) * 1.5
-            i = (y * w + x) * 4
-            buf[i] = int(max(0, min(255, base[0] + weave)))
-            buf[i + 1] = int(max(0, min(255, base[1] + weave)))
-            buf[i + 2] = int(max(0, min(255, base[2] + weave)))
-            buf[i + 3] = 255
-    return buf
+    # Only around the OUTER silhouette: the narrow transparent gaps inside the mark (between the
+    # frame and the blade) must stay see-through, or the logo itself changes. A morphological
+    # closing (dilate, then erode) seals gaps narrower than ~2·radius; the glow lives outside that.
+    solid = [1 if a > 0.12 else 0 for a in alpha]
 
+    def morph(src, grow):
+        out = src[:]
+        for _ in range(radius):
+            nxt = out[:]
+            for i in range(size * size):
+                x, y = i % size, i // size
+                nb = [out[j] for j in ((i - 1) if x else i, (i + 1) if x < size - 1 else i, (i - size) if y else i, (i + size) if y < size - 1 else i)]
+                nxt[i] = max(nb + [out[i]]) if grow else min(nb + [out[i]])
+            out = nxt
+        return out
 
-def composite(bg, w, h, fg, fw, fh, ox, oy):
-    for y in range(fh):
-        for x in range(fw):
-            si = (y * fw + x) * 4
-            a = fg[si + 3]
-            if not a:
-                continue
-            dx, dy = ox + x, oy + y
-            if 0 <= dx < w and 0 <= dy < h:
-                di = (dy * w + dx) * 4
-                af = a / 255.0
-                for c in range(3):
-                    bg[di + c] = int(fg[si + c] * af + bg[di + c] * (1 - af))
-                bg[di + 3] = 255
-
-
-def bar(buf, w, h, x0, y0, x1, y1, color):
-    for y in range(max(0, y0), min(h, y1)):
-        for x in range(max(0, x0), min(w, x1)):
-            i = (y * w + x) * 4
-            buf[i : i + 3] = bytes(color)
+    closed = morph(morph(solid, True), False)
+    outside = [not c for c in closed]
+    halo = [0.0 if outside[i] else 1.0 for i in range(size * size)]
+    for _ in range(3):  # three box passes ≈ a gaussian
+        halo = box(box(halo, True), False)
+    out = bytearray(rgba)
+    for i in range(size * size):
+        ia = alpha[i]
+        if not outside[i] and ia < 0.12:
+            continue  # an inner gap: leave it transparent
+        ga = min(1.0, halo[i] * strength) * (1.0 - ia)  # only outside / at the soft edge
+        oa = ia + ga
+        if oa <= 0:
+            continue
+        for c in range(3):
+            out[i * 4 + c] = int(round((rgba[i * 4 + c] * ia + color[c] * ga) / oa))
+        out[i * 4 + 3] = int(round(oa * 255))
+    return bytes(out)
 
 
 # ---- Build ---------------------------------------------------------------
@@ -296,36 +292,20 @@ def main():
 
     shield, sw, sh = load_shield()
 
-    # Toolbar/extension icons: the shield fills the square, a hair of padding so
-    # the anti-aliased edge is never clipped by Chrome's own rounding.
-    for size in (16, 32, 48, 128):
+    # Toolbar icons (16/32/48): the shield fills the square, a hair of padding so the
+    # anti-aliased edge is never clipped by Chrome's own rounding.
+    for size in (16, 32, 48):
         write_png(os.path.join(icons, f"icon{size}.png"), size, size, fit(shield, sw, sh, size, pad=0.02))
         print("icon", size)
 
-    # Store icon: artwork inside 96x96 with 16px transparent padding on 128x128.
-    write_png(os.path.join(store, "store_icon_128.png"), 128, 128, fit(shield, sw, sh, 128, pad=0.125))
-    print("store icon 128")
-
-    # Small promo tile: the full lockup (shield + wordmark), downscaled.
-    lw, lh, lockup = read_png(os.path.join(store, "brand", "logo-transparent.png"))
-    lockup, lw, lh = trim(lockup, lw, lh)
-    w, h = 440, 280
-    bg = light_bg(w, h)
-    bar(bg, w, h, 0, h - 6, w, h, (0, 229, 255))
-    tw = 372
-    th = max(1, int(round(lh * tw / lw)))
-    composite(bg, w, h, resize(lockup, lw, lh, tw, th), tw, th, (w - tw) // 2, (h - th) // 2 - 4)
-    write_png(os.path.join(store, "promo_small_440x280.png"), w, h, bg)
-    print("promo 440x280")
-
-    # Marquee: the shield alone, large — still a downscale from the 512 master.
-    w, h = 1400, 560
-    bg = carbon_bg(w, h)
-    bar(bg, w, h, 0, h - 10, w, h, (0, 229, 255))
-    composite(bg, w, h, fit(shield, sw, sh, 380), 380, 380, 130, (h - 380) // 2)
-    write_png(os.path.join(store, "marquee_1400x560.png"), w, h, bg)
-    print("marquee 1400x560")
-
+    # 128: the install dialog, chrome://extensions and the store. Google's rule: 96x96 artwork with
+    # 16px of transparent padding per side, plus a subtle light glow for dark backgrounds. The store
+    # icon is the same image.
+    icon128 = outer_glow(fit(shield, sw, sh, 128, pad=0.125), 128)
+    for path in (os.path.join(icons, "icon128.png"), os.path.join(store, "store_icon_128.png")):
+        write_png(path, 128, 128, icon128)
+    print("icon 128 + store icon 128 (96px artwork, 16px padding, light glow)")
+    # The promo tile (440x280) and the marquee (1400x560) are rendered by tools/store_promo.mjs.
 
 if __name__ == "__main__":
     main()

@@ -71,12 +71,17 @@ async function launchAccount(acc, opts) {
     `--load-extension=${EXT_PATH}`,
     '--no-first-run', '--no-default-browser-check'
   ];
+  // Stop pressed while we were still launching: honour it once the browser
+  // exists (the slot says 'stopped'), instead of flipping back to 'running'.
+  const cancelled = () => registry.get(acc.id)?.status !== 'launching';
   const context = await chromium.launchPersistentContext(profileDir, {
     headless: opts.headless,
     args,
     viewport: { width: 1280, height: 800 },
     proxy: acc.proxy ? { server: acc.proxy } : undefined
   });
+
+  if (cancelled()) { await context.close().catch(() => {}); return; }
 
   // Push this account's settings into the extension's storage.
   const sw = context.serviceWorkers()[0] || await context.waitForEvent('serviceworker', { timeout: 15000 }).catch(() => null);
@@ -88,6 +93,7 @@ async function launchAccount(acc, opts) {
   const page = context.pages()[0] || await context.newPage();
   await page.goto(acc.world, { waitUntil: 'domcontentloaded' }).catch(() => {});
 
+  if (cancelled()) { await context.close().catch(() => {}); return; }
   registry.set(acc.id, { account: acc, status: 'running', context, page, sw, startedAt: Date.now(), lastStats: {} });
   console.log(`[${acc.id}] launched -> ${acc.world}`);
 }
@@ -125,6 +131,15 @@ function startDashboard(cfg, opts) {
     console.warn('Dashboard token was missing/"change-me" - generated a random one for this session.');
   }
   const server = http.createServer(async (req, res) => {
+    // One malformed request (e.g. "GET http://[") must never take the whole
+    // controller - and every running account with it - down.
+    try { await serve(req, res); } catch (err) {
+      console.error(`dashboard request failed: ${err.message}`);
+      if (!res.headersSent) { res.writeHead(400, { 'Content-Type': 'text/plain' }); }
+      res.end('bad request');
+    }
+  });
+  async function serve(req, res) {
     const u = new URL(req.url, 'http://localhost');
     const views = () => [...registry.values()].map((e) => accountView(e));
     const r = dashboardResponse({
@@ -146,7 +161,7 @@ function startDashboard(cfg, opts) {
     if (r.action === 'stop') { await stopAccount(r.id); }
     res.writeHead(r.status, { 'Content-Type': r.contentType });
     res.end(r.body);
-  });
+  }
   server.listen(port, '127.0.0.1', () => console.log(`Dashboard: http://127.0.0.1:${port}?token=${token}`));
 }
 

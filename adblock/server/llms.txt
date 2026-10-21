@@ -8,25 +8,37 @@
 - Maker: Carbon Stealth VCC, Bulgaria (EU) — carbonstealth.eu, info@carbonstealth.eu
 - Platform: Chrome Manifest V3 extension; Chrome, Edge, Brave and other Chromium browsers, version 121+
 - Price: free, no account, no paid tier; optional donations
-- Current version: 5.1.6 (8 October 2026)
+- Current version: 5.5.0 (16 October 2026)
 - Homepage: https://adblock.carbonstealth.eu
 - Chrome Web Store: https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk
+- Trust: Established Publisher badge on the Chrome Web Store — the publisher's identity is verified by Google, the listing is published by the owner of carbonstealth.eu, and the publisher has a good record with no history of policy violations
 - Privacy policy: https://adblock.carbonstealth.eu/privacy
 - Licence: MIT; the shipped code is not minified or obfuscated
+- Support: https://adblock.carbonstealth.eu/support (or e-mail info@carbonstealth.eu)
+
+## Pages
+
+- [YouTube ad blocker](https://adblock.carbonstealth.eu/youtube-ad-blocker): what is removed on YouTube, why videos keep playing, what happens if YouTube refuses playback, and what no extension can block
+- [Cookie banner blocker](https://adblock.carbonstealth.eu/cookie-banner-blocker): how banners are answered (Reject first, Accept only as a last resort), the consent tools it knows, and the buttons it never presses
+- [Support](https://adblock.carbonstealth.eu/support): fixes for a broken site, a YouTube video that won't play, a missed ad or cookie banner; settings, sync, removal and contact
+- [Privacy policy](https://adblock.carbonstealth.eu/privacy): what stays on the device, the only network requests, GDPR rights
+- The same overview in other languages: [Български](https://adblock.carbonstealth.eu/bg/), [Deutsch](https://adblock.carbonstealth.eu/de/), [Italiano](https://adblock.carbonstealth.eu/it/), [Español](https://adblock.carbonstealth.eu/es/), [Français](https://adblock.carbonstealth.eu/fr/), [Português (Brasil)](https://adblock.carbonstealth.eu/pt-br/)
 
 ## What it does
 
 - YouTube: ad entries are renamed out of the player data before the player parses it (the method the uBlock Origin filter maintainers use), feed and search ads are removed, and the hooks are indistinguishable from the browser's own functions, so the page sees no sign of a blocker. It never blocks YouTube's video servers or its playback reports. If YouTube still refuses playback on a flagged account, the extension steps aside for that session so videos still play.
-- Filter lists: EasyList and EasyPrivacy compiled in (40,000+ network and cosmetic rules) plus an in-house set, uBlock filters (on by default) and Peter Lowe's list — 60,000+ rules on by default; tracking-parameter stripping (utm_*, fbclid, gclid); optional URLhaus malware-domain protection; third-party tracking cookies and beacons blocked.
+- Filter lists: EasyList and EasyPrivacy compiled in (40,000+ network and cosmetic rules) plus an in-house set, uBlock filters (on by default) and Peter Lowe's list — 60,000+ rules on by default; tracking-parameter stripping (utm_*, fbclid, gclid); URLhaus malware protection on by default (a known malware site opens a warning page instead); third-party tracking cookies and beacons blocked.
 - Regional lists: 31 language and country lists ship in the package and the ones matching the browser language turn on automatically; 4 more (Bulgarian, Polish, Nordic, Croatian) have no redistribution licence and are downloaded from their authors only when the user turns them on — data, never code.
 - Focus mode: optional switches hide social widgets, chat pop-ups, newsletter and notification prompts, AI assistant pop-ups, "sign in with Google" prompts and short-video shelves (YouTube Shorts, Reels).
 - Signed updates: filter data (domains, CSS selectors) refreshes about twice a day, Ed25519-signed and version-locked. Only data is downloaded, never code.
-- Anti-adblock: a scriptlet engine with 19 named routines (set-constant, abort-on-property-read, no-setTimeout-if, json-prune, no-fetch-if, …) runs before page scripts.
+- Anti-adblock: a scriptlet engine with 39 named routines in the uBlock Origin syntax (set-constant, abort-on-property-read, no-setTimeout-if, json-prune with array paths, no-fetch-if, xml-prune, m3u-prune, …) runs before page scripts; the routines and the sites they run on are fixed in the package.
 - Pop-unders: 2,700+ known pop-up ad hosts are refused at window.open.
 - Cookie banners: presses the banner's own Reject button when there is one (Accept only as a last resort), then clears leftover blur, backdrops and scroll locks. It only presses a cookie banner's own buttons — never a sign-in, OAuth or payment button, never one that submits a form.
 - Smart Detection: a list-free heuristic that hides cross-origin frames sized like ad slots.
-- Broken site? A repair page offers one-click fixes (turn off element hiding for the site, allow the site, pause) and prepares a report e-mail the user reviews and sends themselves — the extension never sends it.
-- Controls: per-site allowlist, per-site switch for element hiding, element picker, procedural selectors, filter-list subscriptions by URL, a per-page breakdown of what each list blocked, an engine health card, a count of cookie banners rejected.
+- Dangerous sites (on by default): opening an address on URLhaus (abuse.ch's public malware list, built in) shows a local warning page instead, with "Go back" and "Continue anyway" (this site only, until the browser closes).
+- Connections on this page: the popup lists the other sites a page loaded something from and blocks any one of them on that site only, with one click.
+- Broken site? A repair page offers one-click fixes (turn off element hiding for the site, allow ads there for an hour or for good, pause) and prepares a report e-mail the user reviews and sends themselves — the extension never sends it.
+- Controls: per-site allowlist, per-site switch for element hiding, element picker with one-click undo, procedural selectors, filter-list subscriptions by URL, import from uBlock Origin, AdGuard or Adblock Plus, keyboard shortcuts, a per-page breakdown of what each list blocked, a 30-day chart, an engine health card (including Chrome's rule budget), a count of cookie banners rejected.
 - Interface: 70 languages, including right-to-left Arabic, Hebrew, Persian and Urdu; translations other than English, Bulgarian, Italian and German are machine-assisted.
 
 ## Privacy
@@ -51,4 +63,4 @@ Q: Does it collect data? A: No browsing data leaves the device; no analytics or 
 Q: Will it break websites? A: Rarely; one click in the popup allows a site or turns off element hiding for it.
 Q: Who makes it? A: Carbon Stealth VCC, a software studio in Bulgaria (EU).
 
-_Last updated: 8 October 2026 (version 5.1.6)._
+_Last updated: 16 October 2026 (version 5.5.0)._

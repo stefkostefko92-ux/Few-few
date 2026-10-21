@@ -13,6 +13,9 @@
 | `supreme-adblock-promo-<версия>.mp4` | 1920×1080 (16:9), 43 s | YouTube, сайтът, X, LinkedIn |
 | `supreme-adblock-promo-<версия>-store.mp4` | 1920×1080, 35 s | **Само** за Chrome Web Store |
 
+> **Клиповете не се обновяват повече** (решение на собственика, 2026-10-15): нито за нова версия, нито
+> при промени. Публикуват се вече рендерираните; командите долу са само за изрично искане на собственика.
+
 ```bash
 PW_ROOT=$(npm root -g) PYTHONPATH=<numpy> FFMPEG=$(command -v ffmpeg) node tools/promo/render.mjs --cut social
 PW_ROOT=$(npm root -g) PYTHONPATH=<numpy> FFMPEG=$(command -v ffmpeg) node tools/promo/render.mjs              # 16:9
