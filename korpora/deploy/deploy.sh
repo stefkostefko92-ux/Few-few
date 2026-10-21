@@ -28,9 +28,14 @@ NGINX_LINK="${KORPORA_NGINX_LINK:-/etc/nginx/sites-enabled/korpora}"
 LE_DIR="${KORPORA_LE_DIR:-/etc/letsencrypt}"
 HEALTH_WAIT="${KORPORA_HEALTH_WAIT:-90}"
 KEEP_BACKUPS="${KORPORA_KEEP_BACKUPS:-5}"
+# дъмповете преди миграция (некриптирани) живеят най-много толкова дни, а снимките преди възстановяване —
+# толкова седмици без един ден, колкото дневните бекъпи (backup.sh, expire_snapshots)
+PREDEPLOY_DAYS="${KORPORA_PREDEPLOY_DAYS:-30}"
+BACKUP_WEEKS="${KORPORA_BACKUP_WEEKLY:-8}"
 INDEXNOW="${KORPORA_INDEXNOW:-1}"
 SKIP_BACKUP="${KORPORA_SKIP_BACKUP:-0}"
 LAST_GOOD="${KORPORA_LAST_GOOD:-$SHARED/last-good}"
+MAINT_DIR="${KORPORA_MAINT_DIR:-/var/www/korpora}"
 TS="$(date +%Y%m%d-%H%M%S)"
 
 log()  { printf '\033[1;36m▸ korpora: %s\033[0m\n' "$*"; }
@@ -133,6 +138,15 @@ backup_db() {
   fi
   find "$dir" -maxdepth 1 -name 'pre-deploy-*.sql.gz' -printf '%T@ %p\n' | sort -rn |
     tail -n "+$((KEEP_BACKUPS + 1))" | cut -d' ' -f2- | xargs -r rm -f
+  # Таван и по възраст: при рядък деплой петте дъмпа (некриптирани) иначе стигат месеци назад и изтрит
+  # акаунт остава в тях — трият се по-старите от $PREDEPLOY_DAYS дни без един (освен току-що направения), а
+  # шифрованите снимки преди --live възстановяване (backup-restore.sh) и сумите им — по-старите от
+  # $BACKUP_WEEKS седмици без един ден, колкото обещава политиката. Между два деплоя същото налага дневният
+  # korpora-backup (backup.sh, expire_snapshots) — без изключението за най-новия дъмп.
+  find "$dir" -maxdepth 1 -type f \( \( -name 'pre-deploy-*.sql.gz' -mmin "+$(((PREDEPLOY_DAYS - 1) * 1440))" ! -name "$(basename "$file")" \) \
+    -o \( \( -name 'pre-restore-*.dump.age' -o -name 'pre-restore-*.dump.age.sha256' \) \
+    -mmin "+$(((BACKUP_WEEKS * 7 - 1) * 1440))" \) \) -delete ||
+    warn "старите дъмпове в $dir не се изтриха докрай — провери правата"
 }
 
 # Код 200 сам не казва КОЙ отговаря на порта: чака се маркерът на Korpora и база, която отговаря.
@@ -166,6 +180,22 @@ remember_live() {
     printf '%s\n' "$real" >"$LAST_GOOD.tmp" && mv -f "$LAST_GOOD.tmp" "$LAST_GOOD"
 }
 
+# Всеки build тагва образа отново като korpora-app: при класическото хранилище на Docker предишният
+# остава висящ (<none>) и се трупа на диска. След успешната сонда се махат само висящите образи на
+# този compose проект — чужди образи и build кешът (от него откатът се билдва бързо) остават.
+prune_images() {
+  docker image prune -f --filter label=com.docker.compose.project=korpora >/dev/null
+}
+
+# Страницата, която nginx показва, докато приложението не отговаря (error_page във vhost-а). Слага се
+# преди `up`, за да я има още при рестарта на този деплой. Чете я nginx (www-data) — затова 755/644
+# въпреки umask 077 на скрипта; в нея няма нищо тайно.
+install_maint() {
+  local page="$APP_DIR/deploy/nginx/maintenance.html"
+  [ -f "$page" ] || return 1
+  (umask 022 && install -d -m 755 "$MAINT_DIR" && install -m 644 "$page" "$MAINT_DIR/maintenance.html")
+}
+
 # Vhost-ът е файл в репото: щом има сертификат, сървърът носи точно него, с порта от HTTP_PORT (nginx -t,
 # после reload; при грешка се връща старият). Сертификатът се взема веднъж на ръка, когато DNS вече
 # сочи насам. Тече след сондата: всяка грешка е предупреждение и код ≠ 0 само към main.
@@ -183,6 +213,12 @@ sync_nginx() {
   if [ ! -f "$conf" ]; then
     warn "няма $conf в release-а — nginx не е пипан"
     return 0
+  fi
+  # error_page сочи файл: без него nginx при спряно приложение връща 404 вместо 502 — подвежда
+  # мониторинга и търсачките („няма я страницата“ вместо „временна грешка“)
+  if grep -q '/maintenance\.html' "$conf" && [ ! -s "$MAINT_DIR/maintenance.html" ]; then
+    warn "няма $MAINT_DIR/maintenance.html — vhost-ът с error_page не се слага (иначе 502 става 404); nginx не е пипан"
+    return 1
   fi
   # vhost-ът в репото е за 127.0.0.1:4320; друг HTTP_PORT се вписва тук — иначе домейнът би сочил порт,
   # на който не е Korpora (чуждо приложение или 502)
@@ -282,6 +318,7 @@ main() {
   plan_backup
   check_catalog
   backup_db
+  install_maint || warn "страницата за поддръжка не е в $MAINT_DIR — ако vhost-ът с error_page вече е сложен, докато приложението тръгва, nginx връща 404 вместо 502"
   log "up (entrypoint-ът прилага миграциите)…"
   docker compose up -d --remove-orphans || fail 4 "docker compose up се провали."
   wait_healthy "$port" ||
@@ -290,6 +327,7 @@ main() {
   # Новият код вече работи: оттук нататък нищо не сменя изхода 0 (за autodeploy 1 значи „спрян преди
   # смяната“, а това вече не е вярно).
   remember_live || warn "не записах $LAST_GOOD — откатът и DEPLOY.md сочат предишния release"
+  prune_images || warn "старите образи на korpora не са изчистени — docker image ls --filter dangling=true"
   (source "$APP_DIR/deploy/backup-install.sh" && install_backup) || warn "дневният шифрован бекъп не е готов — DEPLOY.md, т. 9"
   sync_nginx "$port" || warn "nginx не е обновен — Korpora е жив на 127.0.0.1:$port"
   ping_indexnow "$port" || warn "IndexNow не мина — следващият деплой опитва пак"

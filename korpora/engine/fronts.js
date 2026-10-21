@@ -68,7 +68,8 @@ function mountHinges(ctx, o, door, carcassPanel, { onPartition, zEnd, hingeSides
   const variant = onPartition ? 'half' : 'full';
   const faceX = left ? carcassPanel.box.max[0] : carcassPanel.box.min[0];
   const wanted = Math.round(Math.abs(faceX - edgeX) * 10) / 10;
-  const sol = solveOverlay(sys, variant, wanted);
+  // the cup keeps MIN_WEB of board to the cut edge, under the edge band of the hinge edge
+  const sol = solveOverlay(sys, variant, wanted, (door.bands[left ? '-x' : '+x'] || 0) + MIN_WEB);
   if (!sol) {
     ctx.warn('error', `${sys.name}: няма вариант за ${VARIANT_BG[variant]}.`);
     return;

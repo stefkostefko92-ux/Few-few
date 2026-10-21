@@ -180,7 +180,7 @@ export const LANDING_TRANSLATIONS = {
     tiers: {
       free: { name: "Free", price: "0 €", per: "/ Monat, für immer", tagline: "Bring heute einen echten Ticket- und Bewerbungs-Flow live. 0 €, für immer.", bullets: ["1 Ticket-Panel", "2 Formulare (je 5 Fragen)", "1 Verifizierungs-Panel", "Unbegrenzte Umfragen & Gewinnspiele", "Dauerhafte Transkripte (30 Tage Aufbewahrung)"], cta: "Kostenlos starten" },
       premium: { name: "Premium", badge: "Empfohlen", price: "4,99 €", per: "/Monat", tagline: "Für Server, auf denen Support ein Job ist, keine Nebensache.", bullets: ["50 Panels · 50 Formulare · 50 Fragen", "Mathe-Captcha + Kontoalter-Prüfung", "Claim · Eskalation · Round-Robin", "Sticky- + geplante + wiederkehrende Nachrichten", "Gewinnspiele, Umfragen & Analytics", "KI-Antworten", "Webhooks (HMAC) + öffentliche REST-API", "Unbegrenzte Transkript-Aufbewahrung", "Das volle Spiel: alle Begleiter, 3 Quests, tägliches Trivia"], cta: "Premium holen" },
-      whitelabel: { name: "White-Label", price: "9,99 €", per: "/Monat", tagline: "Betreibe Supreme unter deiner eigenen Marke.", bullets: ["Alles aus Premium", "White-Label-Bot (dein Discord-Token)", "Läuft mit deinem Namen & Avatar"], cta: "White-Label holen" },
+      whitelabel: { name: "White-Label", price: "9,99 €", per: "/Monat", tagline: "Betreibe Supreme unter deiner eigenen Marke.", bullets: ["Alles aus Premium", "White-Label-Bot (deine eigene Discord-Bot-Anwendung)", "Läuft mit deinem Namen & Avatar"], cta: "White-Label holen" },
     },
     finalH: "Bereit zu konsolidieren?",
     finalSub: "Dauert 60 Sekunden. Mit Discord anmelden, Server wählen, kostenlos starten.",
@@ -272,7 +272,7 @@ export const LANDING_TRANSLATIONS = {
     tiers: {
       free: { name: "Gratis", price: "0 €", per: "/ mes, para siempre", tagline: "Pon en marcha hoy un flujo real de tickets y solicitudes. 0 €, para siempre.", bullets: ["1 panel de tickets", "2 formularios (5 preguntas cada uno)", "1 panel de verificación", "Encuestas y sorteos ilimitados", "Transcripciones persistentes (retención de 30 días)"], cta: "Empieza gratis" },
       premium: { name: "Premium", badge: "Recomendado", price: "4,99 €", per: "/mes", tagline: "Para servidores donde el soporte es un trabajo, no una tarea secundaria.", bullets: ["50 paneles · 50 formularios · 50 preguntas", "Captcha matemático + antigüedad de cuenta", "Reclamar · escalar · round-robin", "Mensajes fijados + programados + recurrentes", "Sorteos, encuestas y analíticas", "Respuestas IA", "Webhooks (HMAC) + API REST pública", "Retención ilimitada de transcripciones", "El juego completo: todos los compañeros, 3 misiones, trivia diaria"], cta: "Obtener Premium" },
-      whitelabel: { name: "White-label", price: "9,99 €", per: "/mes", tagline: "Ejecuta Supreme bajo tu propia marca.", bullets: ["Todo lo de Premium", "Bot white-label (tu token de Discord)", "Funciona con tu nombre y avatar"], cta: "Obtener White-label" },
+      whitelabel: { name: "White-label", price: "9,99 €", per: "/mes", tagline: "Ejecuta Supreme bajo tu propia marca.", bullets: ["Todo lo de Premium", "Bot white-label (tu propia aplicación de bot de Discord)", "Funciona con tu nombre y avatar"], cta: "Obtener White-label" },
     },
     finalH: "¿Listo para consolidar?",
     finalSub: "Tarda 60 segundos. Inicia sesión con Discord, elige un servidor y empieza gratis.",
@@ -364,7 +364,7 @@ export const LANDING_TRANSLATIONS = {
     tiers: {
       free: { name: "Gratuit", price: "0 €", per: "/ mois, pour toujours", tagline: "Lancez dès aujourd'hui un vrai flux de tickets et de candidatures. 0 €, pour toujours.", bullets: ["1 panneau de tickets", "2 formulaires (5 questions chacun)", "1 panneau de vérification", "Sondages et concours illimités", "Transcriptions persistantes (conservées 30 jours)"], cta: "Commencer gratuitement" },
       premium: { name: "Premium", badge: "Recommandé", price: "4,99 €", per: "/mois", tagline: "Pour les serveurs où le support est un métier, pas une tâche secondaire.", bullets: ["50 panneaux · 50 formulaires · 50 questions", "Captcha mathématique + ancienneté de compte", "Prise en charge · escalade · round-robin", "Messages épinglés + programmés + récurrents", "Concours, sondages et analytics", "Réponses IA", "Webhooks (HMAC) + API REST publique", "Transcriptions conservées sans limite", "Le jeu complet : tous les compagnons, 3 quêtes, trivia quotidien"], cta: "Obtenir Premium" },
-      whitelabel: { name: "White-label", price: "9,99 €", per: "/mois", tagline: "Faites tourner Supreme sous votre propre marque.", bullets: ["Tout Premium inclus", "Bot white-label (votre token Discord)", "Fonctionne avec votre nom et avatar"], cta: "Obtenir White-label" },
+      whitelabel: { name: "White-label", price: "9,99 €", per: "/mois", tagline: "Faites tourner Supreme sous votre propre marque.", bullets: ["Tout Premium inclus", "Bot white-label (votre propre application de bot Discord)", "Fonctionne avec votre nom et avatar"], cta: "Obtenir White-label" },
     },
     finalH: "Prêt à consolider ?",
     finalSub: "60 secondes suffisent. Connectez-vous avec Discord, choisissez un serveur, démarrez gratuitement.",
@@ -426,7 +426,7 @@ export const LANDING_TRANSLATIONS = {
     faq: [
       { q: "Come si paga Premium?", a: "Solo tramite Discord. Apri lo store Discord di Supreme Bot, scegli Premium o White-label per il tuo server e completa il pagamento in Discord. Il venditore è Discord: mostra il prezzo finale IVA inclusa, ti addebita l'importo e invia la ricevuta — non vediamo mai la tua carta. Gli abbonamenti sono mensili; annulla quando vuoi da Impostazioni utente → Abbonamenti in Discord e mantieni l'accesso fino alla fine del periodo pagato." },
       { q: "Dove vengono archiviati i miei dati?", a: "Tutti i dati sono archiviati nell'UE (Germania, Hetzner). Alcuni sub-responsabili — Discord, Google (facoltativo, per le risposte IA) e Sentry — si trovano negli USA; tali trasferimenti sono regolati dalle Clausole Contrattuali Tipo (vedi Informativa privacy, §5-6). I token dei bot sono cifrati con AES-256-GCM." },
-      { q: "Posso usare il mio bot Discord?", a: "Sì — con il piano White-label (9,99 €/mese, tramite Discord) puoi caricare il tuo token per un'esperienza white-label con il tuo nome e avatar." },
+      { q: "Posso usare il mio bot Discord?", a: "Sì — con il piano White-label (9,99 €/mese, tramite Discord) puoi collegare il token della tua applicazione bot Discord per un'esperienza white-label con il tuo nome e avatar." },
       { q: "Cosa succede se annullo?", a: "Nessun vincolo. Annulla in qualsiasi momento su Discord (Impostazioni utente → Abbonamenti) — l'accesso resta attivo fino alla fine del periodo pagato, poi il server torna al piano gratuito. Pannelli, moduli e impostazioni restano; gli archivi dei ticket chiusi da più di 30 giorni vengono eliminati. Scarica ciò che ti serve prima che il periodo scada." },
       { q: "Sono supportati più server?", a: "Sì — collega server Discord illimitati da un unico account. Ogni server ha impostazioni e fatturazione indipendenti." },
       { q: "Come ottengo supporto?", a: "Unisciti al nostro server Discord — supporto diretto dal team che ha creato Supreme Bot." },
@@ -456,7 +456,7 @@ export const LANDING_TRANSLATIONS = {
     tiers: {
       free: { name: "Gratuito", price: "0 €", per: "/ mese, per sempre", tagline: "Attiva oggi stesso un vero flusso di ticket e candidature. 0 €, per sempre.", bullets: ["1 pannello ticket", "2 moduli (5 domande ciascuno)", "1 pannello di verifica", "Sondaggi e giveaway illimitati", "Trascrizioni persistenti (conservate 30 giorni)"], cta: "Inizia gratis" },
       premium: { name: "Premium", badge: "Consigliato", price: "4,99 €", per: "/mese", tagline: "Per i server dove il supporto è un lavoro, non un'attività secondaria.", bullets: ["50 pannelli · 50 moduli · 50 domande", "Captcha matematico + età account", "Presa in carico · escalation · round-robin", "Messaggi fissati + programmati + ricorrenti", "Giveaway, sondaggi e analytics", "Risposte IA", "Webhook (HMAC) + API REST pubblica", "Trascrizioni conservate senza limiti", "Il gioco completo: tutti i compagni, 3 missioni, trivia giornaliera"], cta: "Ottieni Premium" },
-      whitelabel: { name: "White-label", price: "9,99 €", per: "/mese", tagline: "Fai girare Supreme con il tuo brand.", bullets: ["Tutto di Premium", "Bot white-label (il tuo token Discord)", "Gira con il tuo nome e avatar"], cta: "Ottieni White-label" },
+      whitelabel: { name: "White-label", price: "9,99 €", per: "/mese", tagline: "Fai girare Supreme con il tuo brand.", bullets: ["Tutto di Premium", "Bot white-label (la tua applicazione bot Discord)", "Gira con il tuo nome e avatar"], cta: "Ottieni White-label" },
     },
     finalH: "Pronto a consolidare?",
     finalSub: "Bastano 60 secondi. Accedi con Discord, scegli un server e inizia gratis.",
@@ -548,7 +548,7 @@ export const LANDING_TRANSLATIONS = {
     tiers: {
       free: { name: "Gratis", price: "€0", per: "/ maand, voor altijd", tagline: "Zet vandaag een echte ticket- en sollicitatieflow live. €0, voor altijd.", bullets: ["1 ticketpanel", "2 formulieren (elk 5 vragen)", "1 verificatiepanel", "Onbeperkte polls & giveaways", "Blijvende transcripties (30 dagen bewaring)"], cta: "Gratis starten" },
       premium: { name: "Premium", badge: "Aanbevolen", price: "€4,99", per: "/maand", tagline: "Voor servers waar support een baan is, geen bijzaak.", bullets: ["50 panels · 50 formulieren · 50 vragen", "Wiskunde-captcha + accountleeftijd", "Claimen · escaleren · round-robin", "Sticky- + geplande + terugkerende berichten", "Giveaways, polls & analytics", "AI-antwoorden", "Webhooks (HMAC) + publieke REST-API", "Onbeperkte transcript-bewaring", "Het volledige spel: alle metgezellen, 3 quests, dagelijkse trivia"], cta: "Kies Premium" },
-      whitelabel: { name: "White-label", price: "€9,99", per: "/maand", tagline: "Draai Supreme onder je eigen merk.", bullets: ["Alles van Premium", "White-label-bot (je eigen Discord-token)", "Draait met je eigen naam & avatar"], cta: "Kies White-label" },
+      whitelabel: { name: "White-label", price: "€9,99", per: "/maand", tagline: "Draai Supreme onder je eigen merk.", bullets: ["Alles van Premium", "White-label-bot (je eigen Discord-botapplicatie)", "Draait met je eigen naam & avatar"], cta: "Kies White-label" },
     },
     finalH: "Klaar om te consolideren?",
     finalSub: "Duurt 60 seconden. Log in met Discord, kies een server en start gratis.",
@@ -640,7 +640,7 @@ export const LANDING_TRANSLATIONS = {
     tiers: {
       free: { name: "Darmowy", price: "0 €", per: "/ miesiąc, na zawsze", tagline: "Uruchom prawdziwy proces ticketów i rekrutacji już dziś. 0 €, na zawsze.", bullets: ["1 panel ticketów", "2 formularze (po 5 pytań)", "1 panel weryfikacji", "Nielimitowane ankiety i konkursy", "Trwałe transkrypcje (przechowywanie 30 dni)"], cta: "Zacznij za darmo" },
       premium: { name: "Premium", badge: "Polecany", price: "4,99 €", per: "/mies.", tagline: "Dla serwerów, gdzie wsparcie to praca, nie zajęcie na boku.", bullets: ["50 paneli · 50 formularzy · 50 pytań", "Captcha matematyczna + wiek konta", "Przejmowanie · eskalacja · round-robin", "Przypięte + zaplanowane + cykliczne wiadomości", "Konkursy, ankiety i analityka", "Odpowiedzi AI", "Webhooks (HMAC) + publiczne API REST", "Nielimitowane przechowywanie transkrypcji", "Pełna gra: wszyscy towarzysze, 3 misje, codzienna trivia"], cta: "Wybierz Premium" },
-      whitelabel: { name: "White-label", price: "9,99 €", per: "/mies.", tagline: "Uruchom Supreme pod własną marką.", bullets: ["Wszystko z Premium", "Bot white-label (Twój token Discord)", "Działa z Twoją nazwą i awatarem"], cta: "Wybierz White-label" },
+      whitelabel: { name: "White-label", price: "9,99 €", per: "/mies.", tagline: "Uruchom Supreme pod własną marką.", bullets: ["Wszystko z Premium", "Bot white-label (Twoja własna aplikacja bota Discord)", "Działa z Twoją nazwą i awatarem"], cta: "Wybierz White-label" },
     },
     finalH: "Gotowy na konsolidację?",
     finalSub: "Zajmie to 60 sekund. Zaloguj się przez Discord, wybierz serwer i zacznij za darmo.",

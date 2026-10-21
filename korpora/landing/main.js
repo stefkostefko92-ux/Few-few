@@ -4,6 +4,23 @@
 // three.js and the engine) takes the stage over. Anything that fails leaves the stills.
 import { storyT, stepOf } from './timeline.js';
 
+// The phone's section menu opens without script; with it, the menu also closes once a section is picked, on Escape
+// and on a press outside it — otherwise it would stay open over the hero when the reader scrolls back up.
+const menu = document.querySelector('.site-menu');
+if (menu) {
+  menu.addEventListener('click', (e) => {
+    if (e.target instanceof Element && e.target.closest('a')) menu.open = false;
+  });
+  addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !menu.open) return;
+    menu.open = false;
+    menu.querySelector('summary')?.focus();
+  });
+  addEventListener('pointerdown', (e) => {
+    if (menu.open && !(e.target instanceof Node && menu.contains(e.target))) menu.open = false;
+  });
+}
+
 const stage = document.querySelector('[data-story]');
 const steps = [...document.querySelectorAll('[data-story-step]')];
 if (stage && steps.length) init();
