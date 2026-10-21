@@ -7,6 +7,9 @@
 публични. Без тайни/лични данни.
 
 ## Проверени поуки (verified)
+- **2026-10-21:** UNI EN 81-20:2020 5.6.7.5 d) — ≥ 1,0 m fra soglia di cabina e architrave di piano: limita la corsa UCM in salita a H_porta − 1,0 m anche con grembiule esteso (81-21:2022 5.8.2 b) 6)) _(grembiule retrattile, UCM, nuovo ascensore in edificio esistente; verified; ../norme-ascensori/uni-en-81-20-2020.md:753; re-verify: 2027-04-21)_
+- **2026-10-21:** UNI EN 81-21:2022 5.x.2.5.2 a) — senza rete gli AM automatici si attivano: nessun organo irreversibile (vite senza fine) può trattenerli in posizione ritratta _(verifica concept arresti mobili, testata e fossa; verified; ../norme-ascensori/uni-en-81-21-2022.md:137)_
+- **2026-10-21:** UNI EN 81-20:2020 5.2.5.7.3 — superfici ≥ 0,12 m² con lato > 0,25 m anche sugli apparecchi del tetto contano come posto in piedi (altezza del rifugio sopra di esse) _(calcolo quote di testata ridotta; verified; ../norme-ascensori/uni-en-81-20-2020.md:238)_
 - **2026-10-21:** UNI EN 81-21:2022 5.5.2.2.2.1–5.5.2.2.2.3 — testata: AM su contrappeso in discesa (frizione), su cabina in salita (argano agganciato), esterni al pistone (idraulici) _(nuovi dispositivi per testata ridotta; nuovo ascensore in edificio esistente; verified; ../norme-ascensori/uni-en-81-21-2022.md:115-117; re-verify: 2027-04-21)_
 - **2026-10-21:** UNI EN 81-21:2022 B.4.3 — distanza di frenatura massima caso peggiore → posizione del DS; minima → decelerazione massima _(progetto e esame del sistema di arresto preattivato; verified; ../norme-ascensori/uni-en-81-21-2022.md:341; re-verify: 2027-04-21)_
 - **2026-10-21:** UNI EN 81-20:2020 5.12.1.5.2.1 f) — ispezione ≤ 0,30 m/s con ≤ 2,0 m sopra un posto in piedi (tetto o fossa) _(testata/fossa ridotte, fine corsa d'ispezione 81-21 5.5.3.4/5.7.3.4; verified; ../norme-ascensori/uni-en-81-20-2020.md:1112)_
