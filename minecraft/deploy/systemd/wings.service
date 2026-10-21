@@ -1,0 +1,24 @@
+# Pelican Wings — демонът, който пуска Minecraft сървърите като Docker контейнери.
+# Инсталира се от minecraft/deploy/install.sh в /etc/systemd/system/wings.service.
+# Конфигът (/etc/pelican/config.yml) идва от панела; install.sh го втвърдява (127.0.0.1, без
+# презапис от панела) и чак тогава пуска услугата.
+[Unit]
+Description=Pelican Wings Daemon
+After=docker.service network-online.target
+Wants=network-online.target
+Requires=docker.service
+PartOf=docker.service
+StartLimitIntervalSec=180
+StartLimitBurst=30
+
+[Service]
+User=root
+WorkingDirectory=/etc/pelican
+LimitNOFILE=4096
+PIDFile=/var/run/wings/daemon.pid
+ExecStart=/usr/local/bin/wings
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
