@@ -1,5 +1,5 @@
 <% if (langUrl(locale) !== null) { %>
 <nav class="langs" aria-label="<%= t('common.language') %>">
-  <% for (const l of locales) { %><a href="<%= langUrl(l) %>" hreflang="<%= l %>" lang="<%= l %>" aria-current="<%= l === locale ? 'true' : 'false' %>"><%= l.toUpperCase() %></a><% } %>
+  <% for (const l of locales) { %><a href="<%= langUrl(l) %>" hreflang="<%= l %>" lang="<%= l %>" aria-label="<%= l.toUpperCase() %>, <%= localeLabel[l] %>" aria-current="<%= l === locale ? 'true' : 'false' %>"><%= l.toUpperCase() %></a><% } %>
 </nav>
 <% } %>

@@ -5,6 +5,7 @@
     "save": "Save",
     "copied": "Copied",
     "unknown": "Unknown",
+    "back": "Go back",
     "hours": {
       "one": "1 hour",
       "other": "{n} hours"
@@ -16,6 +17,10 @@
     "days": {
       "one": "1 day",
       "other": "{n} days"
+    },
+    "weeks": {
+      "one": "1 week",
+      "other": "{n} weeks"
     }
   },
   "company": {
@@ -24,6 +29,7 @@
     "region": "Kyustendil Province",
     "country": "Bulgaria",
     "areaServed": "European Union",
+    "knowsAbout": "panel furniture design, panel cutting lists, edge banding, drilling maps, furniture hardware, CNC, DXF, G-code",
     "legalName": "Carbon Stealth VCC",
     "legalForm": "variable capital company (VCC) under Bulgarian law",
     "eikLabel": "Company no. (EIK)",
@@ -99,14 +105,17 @@
     "cncBlockedTitle": "The CNC files are withheld",
     "cncBlockedText": "The construction checks found errors, and G-code and DXF must never be wrong. Fix them in the editor — the download unlocks as soon as the errors are gone. The editor and the error list are in Bulgarian.",
     "toProject": "Back to the project",
-    "tooLarge": "What was sent is too large."
+    "tooLarge": "What was sent is too large.",
+    "tooManyIn": "Too many requests came from this network. Try again in {minutes}."
   },
   "flash": {
     "accountCreated": "The account has been created.",
     "accountDeleted": "The account has been deleted.",
     "accountSaved": "Changes saved.",
     "banned": "The account is blocked and all its sessions have ended.",
+    "bannedRefund": "The account is blocked and all its sessions have ended. Its paid plan was ordered under the terms in force before the no-refund rule, and the transition is still running (section “Blocking”): we owe the person the unused part of the price. The email to them says so.",
     "codeMismatch": "The code does not match. Try again.",
+    "deviceConsentWithdrawn": "Consent withdrawn; the fingerprint we kept is deleted.",
     "emailChangeSent": "We sent a link to the new address. The email changes when you open it.",
     "passwordChanged": "Password changed. Other sessions have ended.",
     "passwordReset": "Password changed. Sign in with the new one.",
@@ -134,7 +143,8 @@
     "verificationResent": "We sent a new confirmation link.",
     "wrongCode": "Wrong code.",
     "wrongPassword": "Wrong password.",
-    "withdrawn": "Your withdrawal has been received. We have emailed you a confirmation."
+    "withdrawn": "Your withdrawal has been received. We have emailed you a confirmation.",
+    "requestSentReplaces": "Your order has been accepted and replaces order no. {ids}, which is cancelled. We have emailed you a confirmation; the invoice with the payment details follows."
   },
   "furniture": {
     "base": "Base cabinet",

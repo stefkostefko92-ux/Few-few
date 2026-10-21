@@ -3,21 +3,59 @@ import { PRE_CSRF_MAX_AGE_MS } from '../auth/guards.js';
 import { MAX_SESSION_MS, SESSION_LIMITS } from '../auth/sessions.js';
 import { FLASH_MAX_AGE_MS } from '../http/flash.js';
 import { LOCALE_COOKIE_MAX_AGE_MS } from '../http/locale.js';
+import { viewHelpers } from '../http/view.js';
 import { translatorFor, type Locale } from '../i18n.js';
-import { TRIAL_DAYS, TRIAL_REMINDER_DAYS } from '../plans/plan.js';
-import { formatLifetimeTimes, priceTable, VAT_BG_PERCENT } from '../plans/pricing.js';
+import { BAN_REPLY_DAYS, BAN_WARNING_DAYS, banRuleDays } from '../plans/ban.js';
+import { PREMIUM_REMINDER_DAYS, TRIAL_DAYS, TRIAL_REMINDER_DAYS } from '../plans/plan.js';
+import {
+  formatLifetimeTimes,
+  LIFETIME_BASIS_MONTHS,
+  LIFETIME_NOTICE_MONTHS,
+  lifetimeMonthShareCents,
+  priceTable,
+  VAT_BG_PERCENT,
+} from '../plans/pricing.js';
 import { REFUND_DAYS, WITHDRAWAL_DAYS } from '../plans/withdrawal.js';
 import {
+  BACKUP_KEEP_DAILY,
+  BACKUP_KEEP_WEEKLY,
   durationText,
   LOGIN_RETENTION_DAYS,
+  ordersKeptText,
+  PRE_DEPLOY_BACKUPS_KEPT,
+  PRE_DEPLOY_MAX_DAYS,
   retentionText,
   UNVERIFIED_RETENTION_DAYS,
 } from '../retention.js';
+import { HOUR } from '../time.js';
+
+/**
+ * Датите в преходното изречение на раздел „Блокиране“: версията на условията с правилото за невръщане на
+ * платеното и денят, от който то важи и за поръчките отпреди нея (plans/ban.ts — оттам ги взима и писмото
+ * при блокиране). Форматът е като на „Последна промяна“ над условията; пладне UTC е същата дата и по София.
+ */
+export function banRuleDates(locale: Locale) {
+  const fmt = viewHelpers(locale);
+  const days = banRuleDays();
+  return {
+    banRuleSince: fmt.date(new Date(days.since + 12 * HOUR)),
+    banRuleOldOrders: fmt.date(new Date(days.oldOrders + 12 * HOUR)),
+  };
+}
 
 /** Числата в правните текстове — едни и същи за страницата на сайта и за копието към писмото. */
 export function legalNumbers(locale: Locale) {
+  const t = translatorFor(locale);
   return {
+    // блокиране: предупреждението и отговорът на възражение (наш избор — plans/ban.ts) и преходът
+    banWarning: t('common.days', { n: BAN_WARNING_DAYS }),
+    banReply: t('common.days', { n: BAN_REPLY_DAYS }),
+    ...banRuleDates(locale),
     lifetimeTimes: formatLifetimeTimes(locale),
+    // Lifetime: предизвестието преди спиране и базата за част от цената му („30 месеца“, 30 € / 25 €)
+    lifetimeNotice: t('plan.months', { n: LIFETIME_NOTICE_MONTHS }),
+    lifetimeBasis: t('plan.months', { n: LIFETIME_BASIS_MONTHS }),
+    lifetimeShare: lifetimeMonthShareCents(),
     trialDays: TRIAL_DAYS,
     prices: priceTable(),
     vatPercent: VAT_BG_PERCENT,
@@ -29,13 +67,15 @@ export function legalNumbers(locale: Locale) {
 
 /**
  * Сроковете в политиката за поверителност, които държи кодът: изтриването на непотвърдена
- * регистрация, сесиите, бисквитките, напомнянето за края на тестовия период и заключването на входа.
+ * регистрация, поръчките на изтрит акаунт, сесиите, бисквитките, напомнянето за края на тестовия период, заключването на входа и
+ * резервните копия на базата.
  * Всеки идва от константата, по която работи кодът, като готов текст на езика („30 дни“, „24 часа“).
  */
 export function privacyNumbers(locale: Locale) {
   const t = translatorFor(locale);
   return {
     unverifiedKept: retentionText(UNVERIFIED_RETENTION_DAYS, t),
+    ordersKept: ordersKeptText(t),
     sessionMax: durationText(MAX_SESSION_MS, t),
     customerSession: durationText(SESSION_LIMITS.customer.absoluteMs, t),
     customerIdle: durationText(SESSION_LIMITS.customer.idleMs, t),
@@ -43,7 +83,12 @@ export function privacyNumbers(locale: Locale) {
     preCsrfKept: durationText(PRE_CSRF_MAX_AGE_MS, t),
     langKept: durationText(LOCALE_COOKIE_MAX_AGE_MS, t),
     flashKept: durationText(FLASH_MAX_AGE_MS, t),
+    backupDaily: retentionText(BACKUP_KEEP_DAILY, t),
+    backupWeekly: t('common.weeks', { n: BACKUP_KEEP_WEEKLY }),
+    preDeployKept: PRE_DEPLOY_BACKUPS_KEPT,
+    preDeployMax: retentionText(PRE_DEPLOY_MAX_DAYS, t),
     trialReminder: t('common.days', { n: TRIAL_REMINDER_DAYS }),
+    premiumReminder: t('common.days', { n: PREMIUM_REMINDER_DAYS }),
     failedLogins: MAX_FAILED_LOGINS,
     lockFor: t('common.minutes', { n: LOCK_MINUTES }),
   };

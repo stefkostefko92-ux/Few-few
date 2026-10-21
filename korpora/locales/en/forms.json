@@ -1,0 +1,10 @@
+{
+  "form": {
+    "required": "Fill in this field.",
+    "check": "Tick this box to continue.",
+    "choose": "Choose one of the options.",
+    "tooShort": "Too short — at least {n} characters.",
+    "tooLong": "Too long — at most {n} characters.",
+    "invalid": "Check what you entered in this field."
+  }
+}

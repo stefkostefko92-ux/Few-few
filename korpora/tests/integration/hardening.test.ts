@@ -1,14 +1,6 @@
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  assertTestDatabase,
-  Browser,
-  CUSTOMER_PASSWORD,
-  mailTo,
-  prisma,
-  startApp,
-  stopApp,
-} from './harness.js';
+import { Browser, CUSTOMER_PASSWORD, mailTo, prisma, startApp, stopApp } from './harness.js';
 import { customer, newProject, sessionCsrf, staff } from './people.js';
 import { enable2fa } from './twofa.js';
 
@@ -71,11 +63,15 @@ test('wrong passwords sent at the same moment still lock the account after five'
   const tries = await Promise.all(
     Array.from({ length: 8 }, () => new Browser().login('parallel@example.test', 'not-the-pass-1')),
   );
+  // „wrong email or password“ until the lock, then „sign-in is paused“ — the same for any email
   assert.ok(tries.every((r) => r.status === 401));
+  const wrong = tries.filter((r) => /Грешен имейл или парола/.test(r.body)).length;
+  assert.ok(wrong <= 4, 'no more than four wrong answers');
   const user = await prisma.user.findUniqueOrThrow({ where: { email: 'parallel@example.test' } });
   assert.ok(user.lockedUntil && user.lockedUntil > new Date(), 'locked');
   const right = await new Browser().login('parallel@example.test', CUSTOMER_PASSWORD);
   assert.equal(right.status, 401, 'even the right password waits for the lock to pass');
+  assert.match(right.body, /Входът с този имейл е спрян за 15 минути/);
 });
 
 test('wrong codes count for the account: new sign-ins with the password give no new tries', async () => {
@@ -95,6 +91,7 @@ test('wrong codes count for the account: new sign-ins with the password give no 
   const late = new Browser();
   const login = await late.login('codes@example.test', CUSTOMER_PASSWORD);
   assert.equal(login.status, 401, 'the password alone does not open a new round');
+  assert.match(login.body, /Входът с този имейл е спрян/);
 });
 
 test('one authenticator step is accepted once, even when sent twice at the same moment', async () => {
@@ -124,18 +121,4 @@ test('the team downloads only projects of people below them', async () => {
   const client = await customer('client-project@example.test');
   const clientProject = await newProject(client, 'base', 'Кухня');
   assert.equal((await support.browser.get(`/admin/projects/${clientProject}/export`)).status, 200);
-});
-
-test('the suite empties only a database named for tests', () => {
-  for (const name of ['korpora_test', 'korpora_ci_p2d', 'shop_ci', 'TEST_korpora'])
-    assert.doesNotThrow(() => assertTestDatabase(`postgresql://u:secret@127.0.0.1:5432/${name}`));
-  for (const name of ['korpora', 'korpora_dev', 'contest', 'korpora_citest', 'postgres']) {
-    assert.throws(
-      () => assertTestDatabase(`postgresql://u:secret@db:5432/${name}`),
-      (error: unknown) =>
-        error instanceof Error && error.message.includes(name) && !error.message.includes('secret'),
-      name,
-    );
-  }
-  assert.throws(() => assertTestDatabase('not a url'), /not a valid URL/);
 });

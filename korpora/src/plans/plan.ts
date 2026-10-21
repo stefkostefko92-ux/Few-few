@@ -9,6 +9,8 @@ export const TRIAL_DAYS = 30;
  * Може да остават и по-малко (кратък период, зададен от екипа, или престой), затова писмото казва датата.
  */
 export const TRIAL_REMINDER_DAYS = 3;
+/** Premium не се подновява сам: толкова дни преди края човекът получава писмо (services/maintenance.ts). */
+export const PREMIUM_REMINDER_DAYS = 7;
 
 export type PlanState = 'staff' | 'pending' | 'active' | 'expired';
 

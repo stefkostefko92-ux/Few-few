@@ -2,7 +2,7 @@
    с пътя на фрезата и отворите в цветовете на операциите — същите като на витрината. */
 .b-bed {
   position: relative;
-  padding: 6mm 6mm 4mm;
+  padding: 5mm 5mm 3.5mm;
   border-radius: 4mm;
   background: var(--mdf);
 }
@@ -39,10 +39,14 @@
   font-family: var(--f-mono);
   font-weight: 500;
   fill: var(--ink-3);
+  stroke: var(--panel);
+  stroke-width: 9;
+  stroke-linejoin: round;
+  paint-order: stroke;
 }
 .sheet-art .cut {
   fill: none;
-  stroke-width: 7;
+  stroke-width: 5;
   stroke-linecap: round;
 }
 .sheet-art .hole {
