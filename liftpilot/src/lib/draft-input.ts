@@ -2,8 +2,9 @@
 // drawing's geometry, the «Calcolo argano» it is drawn on and the values still to enter — a draft of the one form before
 // it no longer reads, and is overwritten by the next one), «Calcolo argano» (its values as typed, the type of intervention, the parts
 // answered and the standards of its test), a calculation's machine room survey (its measures and those still to
-// enter). The inputs are kept in the ranges a record accepts: a value being typed out of range is not kept until it is
-// back in range.
+// enter), the relazione tecnica di modifica of an installation (round 49: its inputs as typed, and the issued RT a
+// revision is being prepared of). The inputs are kept in the ranges a record accepts: a value being typed out of range is
+// not kept until it is back in range.
 import { z } from 'zod';
 import { formValuesSchema } from './calc-input';
 import { collaudoSchema, progettoInputsReadSchema } from './lift-input';
@@ -11,9 +12,11 @@ import { isBlankKey, type BlankKey } from './lift/blank';
 import { PARTI } from './lift/collaudo';
 import { TIPI_INTERVENTO } from './lift/intervento';
 import { isSurveyField, surveySchema, type SurveyField } from './room/survey';
+import { rtDraftSchema } from './rt/input';
 
-/** "lift" (the Progetto's drawing), "calc" («Calcolo argano»), "room:<calculation>" (its machine room's survey). */
-export const draftScopeSchema = z.union([z.literal('lift'), z.literal('calc'), z.string().regex(/^room:[a-z0-9]{1,40}$/i)]);
+/** "lift" (the Progetto's drawing), "calc" («Calcolo argano»), "room:<calculation>" (its machine room's survey), "rt"
+ *  (the installation's relazione tecnica di modifica, round 49). */
+export const draftScopeSchema = z.union([z.literal('lift'), z.literal('calc'), z.literal('rt'), z.string().regex(/^room:[a-z0-9]{1,40}$/i)]);
 export type DraftScope = z.infer<typeof draftScopeSchema>;
 
 /** The fields of the form still marked «dal rilievo» (round 44): the start reads them again only where the value is
@@ -45,8 +48,14 @@ export const surveyDraftSchema = z.object({
   blank: z.array(z.custom<SurveyField>((s) => typeof s === 'string' && isSurveyField(s))).max(40),
 }).strict();
 
+/** The relazione tecnica di modifica's draft (round 49): its inputs as typed (src/lib/rt/input.ts rtDraftSchema) and,
+ *  while a revision is prepared, the issued RT it revises. */
+export const rtDraftDataSchema = z.object({ inputs: rtDraftSchema, revisionOf: z.string().regex(/^[a-z0-9]{1,40}$/i).optional() }).strict();
+export type RtDraftData = z.infer<typeof rtDraftDataSchema>;
+
 /** The schema of a scope's draft. */
-export const draftSchemaOf = (scope: DraftScope) => (scope === 'lift' ? liftDraftSchema : scope === 'calc' ? calcDraftSchema : surveyDraftSchema);
+export const draftSchemaOf = (scope: DraftScope) => (scope === 'lift' ? liftDraftSchema : scope === 'calc' ? calcDraftSchema : scope === 'rt' ? rtDraftDataSchema
+  : surveyDraftSchema);
 
 /** The largest draft kept [characters of its JSON]. */
 export const DRAFT_MAX = 200_000;

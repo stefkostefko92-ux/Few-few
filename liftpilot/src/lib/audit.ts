@@ -20,7 +20,12 @@ export type AuditAction =
   | 'SCHEDA_CREATED' | 'SCHEDA_UPDATED' | 'SCHEDA_TRASHED' | 'SCHEDA_RESTORED' | 'SCHEDA_PURGED' | 'COMPANY_SECTIONS_UPDATED'
   | 'SCHEDA_LINKED' | 'SCHEDA_UNLINKED'
   | 'PERMISSIONS_CHANGED'
-  | 'FEEDBACK_SENT' | 'FEEDBACK_HANDLED' | 'FEEDBACK_REOPENED';
+  | 'FEEDBACK_SENT' | 'FEEDBACK_HANDLED' | 'FEEDBACK_REOPENED'
+  // round 49, the relazione tecnica di modifica: the plant registry (Project.anagrafica), the uploaded files (meta never
+  // carries the file name: it may hold personal data), the issued reports
+  | 'ANAGRAFICA_UPDATED'
+  | 'ATTACHMENT_UPLOADED' | 'ATTACHMENT_EDITED' | 'ATTACHMENT_DELETED'
+  | 'TECHNICAL_REPORT_ISSUED' | 'TECHNICAL_REPORT_REVISED';
 
 interface AuditInput {
   companyId: string | null;

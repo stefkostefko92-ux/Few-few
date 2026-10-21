@@ -4,7 +4,8 @@
 // changes (the route answers 409). This walks every DrawingSet without a DrawingSetPdf: one the running engines still
 // draw (the hash of its drawing) is drawn and kept as its first download would keep it (compose → keepSetPdf), one at a
 // time (the renderers take at most two at once), trying again while they are busy; the sets no longer drawn are listed
-// for the owner. It writes nothing else (no audit, no record). Run it with a release that does not change an engine,
+// for the owner; then (round 49) the bodies of the relazioni tecniche di modifica the same way (keep-rt-pdfs.ts, loaded only
+// when the script runs). It writes nothing else (no audit, no record). Run it with a release that does not change an engine,
 // before the one that does (DEPLOY.md): `npm run pdf:keep [-- --dry-run]` — in the container
 // `docker compose exec -T app npm run pdf:keep`. It needs the server's environment (DATABASE_URL, AUTH_SECRET…) and the
 // renderer (python3 with ReportLab, the fonts). --dry-run: only the list, nothing drawn. Idempotent.
@@ -89,8 +90,15 @@ async function main(): Promise<void> {
     + `${dryRun ? `to keep ${count('listed')}, ` : ''}no longer drawn by the running engines ${count('stale')} (listed above as "stale": the owner issues a `
     + `new revision where one is needed), not found or not drawn for another reason ${count('notFound')}, failed ${count('failed')} (the reason on `
     + `each line)\n`);
+  // the relazioni tecniche di modifica (round 49): their bodies, kept the same way
+  const { keepRtPdfs } = await import('./keep-rt-pdfs');
+  const rts = await keepRtPdfs({ dryRun, report: (l) => process.stdout.write(`rt ${l.outcome}\t${l.id}\tRT ${l.number} R${l.revision}\t${l.company}${l.sha256 ? `\t${l.sha256}` : ''}${l.error ? `\t${l.error}` : ''}\n`) });
+  const rtCount = (k: (typeof rts)[number]['outcome']): number => rts.filter((l) => l.outcome === k).length;
+  process.stdout.write(`relazioni tecniche without a kept body: ${rts.length} — kept ${rtCount('kept')}, kept meanwhile ${rtCount('already')}, `
+    + `${dryRun ? `to keep ${rtCount('listed')}, ` : ''}no longer reproduced ${rtCount('stale')} (a new revision makes them again), not found ${rtCount('notFound')}, `
+    + `failed ${rtCount('failed')}\n`);
   await prisma.$disconnect();
-  if (count('failed')) process.exitCode = 1;
+  if (count('failed') || rtCount('failed')) process.exitCode = 1;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();

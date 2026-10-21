@@ -2,9 +2,9 @@
 // the existing ones, ropes of the calculation's own number and diameter new everywhere whatever the test's parts
 // (collaudo.ts ropesKept; W2-L1a-02); with the machine under the pit the counterweight's safety gear is a check of the
 // relazione too, counted in its result (W2-L1b-03); P4 «DA FORNITORE» and where P4 and P9 act by the scheme
-// (W2-L3a2-03); an issued set drawn with other data of the installation than the ones the relazione reads is named,
-// in the relazione (only the fields its rails and loads read) and in the relazione tecnica, with the fingerprint of the
-// data (W2-G1-01).
+// (W2-L3a2-03); an issued set drawn with other data of the installation than the ones the relazione reads is named in
+// the relazione, only the fields its rails and loads read (W2-G1-01; the relazione tecnica di modifica names them too:
+// report-rt-locale.test.ts, round 49 — the old relazione tecnica of the machine room is gone).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import calcIt from '../../../messages/calc/it.json';
@@ -28,9 +28,6 @@ import { makePres } from '../present/tr';
 import { buildReport } from '../report/build';
 import { plantChanged, type IssuedSet } from '../report/elaborati';
 import type { ReportBlock, ReportDoc } from '../report/model';
-import { buildTecnica } from '../report/tecnica';
-import { deriveRoom } from '../room/derive';
-import { startSurvey } from '../room/survey';
 import { storedInput } from '../tavole/compose';
 import { dataSheet } from '../tavole/data';
 import { GOVERNOR_LOAD_UNSET, loadPlaces } from '../tavole/loads';
@@ -234,18 +231,4 @@ test('dati dell’impianto: GUIDE_PLANT_FIELDS sono tutti e soli i campi che la 
       }
     }
   }
-});
-
-test('relazione tecnica: le tavole emesse con altri dati dell’impianto nominate negli allegati, con l’impronta dei dati', () => {
-  const DIRECT: FormValues = { ...PRESETS.C }, s = startSurvey(600), d = deriveRoom(DIRECT, s);
-  const tecnica = (plant: Plant, sets: { number: string; revision: number; plant?: Plant }[]) => buildTecnica({
-    room: { id: 'r', label: null, createdAt: DAY, sha256: '0'.repeat(64), engineVersion: 'x', author: null },
-    calc: { id: 'c', label: null, createdAt: DAY, sha256: '1'.repeat(64), engineVersion: 'x', profileId: 'it' },
-    project, company: 'S', values: DIRECT, survey: s, derived: d, collaudo: { norma: '10411-1', parti: ['machine'] }, plant, sets, plantSha256: 'c'.repeat(64),
-  });
-  const box = (doc: ReportDoc) => doc.blocks.find((b) => b.t === 'box' && b.text.startsWith('⚠ DATI DELL’IMPIANTO MODIFICATI'));
-  assert.equal(box(tecnica({ governorLoad: 300 }, [{ number: '26-195', revision: 0, plant: { governorLoad: 300 } }])), undefined);
-  const b = box(tecnica({ governorLoad: 400 }, [{ number: '26-195', revision: 0, plant: {} }]));
-  assert.ok(b && b.t === 'box' && b.text.includes('DIS. N° 26-195 (carico del limitatore sulla soletta P4)'), b && 'text' in b ? b.text : 'nessuna nota');
-  assert.ok(all(tecnica({}, [])).some((x) => x.includes(`dati dell’impianto ${'c'.repeat(64)}`)));
 });

@@ -3,6 +3,9 @@ import { z } from 'zod';
 import { PASSWORD_MIN_LENGTH, passwordPolicyOk } from './password-policy';
 
 const trimmed = (max: number) => z.string().trim().max(max);
+/** A name printed on one line (a document's header, a PDF's information): a control character pasted into it (a tab,
+ *  U+0085) becomes a space before the trim and the length. */
+const oneLine = (max: number, min: number) => z.string().transform((s) => s.replace(/\p{Cc}+/gu, ' ')).pipe(trimmed(max).min(min));
 const optionalText = (max: number) => trimmed(max).transform((s) => (s === '' ? null : s));
 
 export const emailSchema = z.string().trim().toLowerCase().email().max(254);
@@ -23,10 +26,10 @@ const checked = z.literal('on', { errorMap: () => ({ message: 'consentRequired' 
 /** Self-registration: the company and its owner; the address is confirmed by a link before the first sign-in. */
 export const registerSchema = z
   .object({
-    company: trimmed(160).min(2),
+    company: oneLine(160, 2),
     vatNumber: optionalText(40),
     city: optionalText(120),
-    name: trimmed(120).min(2),
+    name: oneLine(120, 2),
     email: emailSchema,
     password: z.string().max(200),
     confirm: z.string().max(200),
@@ -73,7 +76,7 @@ export const resetSchema = z
   .refine((v) => v.next === v.confirm, { path: ['confirm'], message: 'passwordMismatch' });
 
 export const projectSchema = z.object({
-  name: trimmed(160).min(1),
+  name: oneLine(160, 1),
   address: optionalText(200),
   city: optionalText(120),
   province: optionalText(40),
@@ -86,16 +89,16 @@ export const roleSchema = z.enum(['CHIEF_TECHNICIAN', 'ENGINEER', 'TECHNICIAN', 
 
 export const userCreateSchema = z.object({
   email: emailSchema,
-  name: trimmed(120).min(1),
+  name: oneLine(120, 1),
   role: roleSchema,
 });
 
 export const companyCreateSchema = z.object({
-  name: trimmed(160).min(1),
+  name: oneLine(160, 1),
   vatNumber: optionalText(40),
   city: optionalText(120),
   ownerEmail: emailSchema,
-  ownerName: trimmed(120).min(1),
+  ownerName: oneLine(120, 1),
 });
 
 export const reviewSchema = z.object({ note: optionalText(1000) });

@@ -5,7 +5,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { PRESETS } from '@/calc/presets';
 import { deriveLift, newLift } from '../lift';
@@ -66,14 +66,18 @@ test('nessun documento scrive il momento dello scaricamento: la relazione, la re
   const o = buildOrder(order());
   assert.ok(o.blocks.some((b) => b.t === 'sub' && b.text.startsWith('Milano, 30 settembre 2026')));
   assert.equal(o.meta.footer, 'LiftPilot · bozza del 30 settembre 2026');
-  // the technical relazione's source writes no download date either (its record is the survey)
-  const src = readFileSync(path.join(process.cwd(), 'src', 'lib', 'report', 'tecnica.ts'), 'utf8');
-  assert.ok(!src.includes('Documento generato il') && !src.includes('generatedAt'));
+  // the relazione tecnica di modifica's sources write no download date either (its record is the issue)
+  const dir = path.join(process.cwd(), 'src', 'lib', 'report', 'rt');
+  for (const f of readdirSync(dir).filter((n) => n.endsWith('.ts'))) {
+    const src = readFileSync(path.join(dir, f), 'utf8');
+    assert.ok(!src.includes('Documento generato il') && !src.includes('generatedAt'), f);
+  }
 });
 
 test('lo scaricamento sul server non legge l’orologio: le date sono quelle dei record', () => {
   const files = ['server/project-export.ts', 'server/room-export.ts', 'server/set-cad.ts', 'server/order-export.ts', 'server/drawing-pdf.ts',
-    'app/api/calculations/[id]/relazione/route.ts', 'app/api/shaft-designs/[id]/dxf/route.ts', 'app/api/drawing-sets/[id]/pdf/route.ts'];
+    'app/api/calculations/[id]/relazione/route.ts', 'app/api/shaft-designs/[id]/dxf/route.ts', 'app/api/drawing-sets/[id]/pdf/route.ts',
+    'app/api/relazioni/[id]/pdf/route.ts', 'server/rt/pdf.ts', 'server/rt/record.ts'];
   for (const f of files) {
     const src = readFileSync(path.join(process.cwd(), 'src', f), 'utf8');
     assert.ok(!/new Date\(\)|Date\.now\(/.test(src), f);

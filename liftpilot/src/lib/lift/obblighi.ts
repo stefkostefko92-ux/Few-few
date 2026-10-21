@@ -94,6 +94,9 @@ function casi(C: Pick<Collaudo, 'norma' | 'parti' | 'documentato' | 'libretto'>,
     : xh?.oltre8 ? ['travelOver8', 'travelUp'] : ['travelUp'];
   return { speed, load, travel };
 }
+/** The cases of the changes of speed, load and travel (casi above), for the sections of the relazione tecnica di
+ *  modifica (round 49, src/lib/rt/sezioni.ts): the same function, exported. */
+export const casiVariazione = casi;
 type Variata = 'speed' | 'load' | 'travel';
 const isVariata = (p: Parte): p is Variata => p === 'speed' || p === 'load' || p === 'travel';
 const it = (x: number, d: number): string => x.toFixed(d).replace('.', ',');

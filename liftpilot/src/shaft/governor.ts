@@ -158,6 +158,10 @@ export function governorSpot(L: Layout): GovernorSpot | null {
   return byHand || y2 + G.R < D - 80 ? { side, x, y1, y2, G, rail, lever } : null;
 }
 
+/** v_govdd: the governor's sheave pitch diameter over its rope's, `dd`, at least KV_GOV.govSheaveRatio (registry
+ *  limitatore.fune). */
+export const govSheaveCheck = (dd: number): ShaftCheck => check('v_govdd', dd >= KV_GOV.govSheaveRatio - 1e-9, dd, KV_GOV.govSheaveRatio, 1, '');
+
 /** The checks of the governor and its rope (registry limitatore.posto, limitatore.fune): v_govdd, its sheave's pitch
  *  diameter over the rope's; in plan v_gov, the least distance of its strands from the car, the walls and the car rail
  *  with its bracket and the sling's upright, and v_govrail, the clamped strand from the car rail's axis, within the
@@ -165,7 +169,7 @@ export function governorSpot(L: Layout): GovernorSpot | null {
  *  the governor is to be placed by hand. */
 export function governorChecks(L: Layout): ShaftCheck[] {
   const G = govSize(L.inputs.vertical.v, L.inputs.governor), dd = G.R / G.rope;
-  const ratio = check('v_govdd', dd >= KV_GOV.govSheaveRatio - 1e-9, dd, KV_GOV.govSheaveRatio, 1, '');
+  const ratio = govSheaveCheck(dd);
   const g = governorSpot(L);
   if (!g) return [ratio, check('v_gov', false, null, KV_GOV.govGap, 0, 'mm', true)];
   const { W, D, carRail } = L.inputs, r = g.G.rope, c = L.car, half = Math.max(RAILS[carRail].b / 2, KV_GOV.govStile);

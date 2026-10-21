@@ -4,7 +4,7 @@ B2B софтуер за монтажници в Италия (марка LiftPil
 и четирите стъпки** (кръг 45; до кръг 44 — двата модула на `Project.kind`): всяко съоръжение минава Rilievo → **Calcolo
 argano** (`/app/projects/<id>/calc`: първо типът — Solo argano, Ammodernamento, Trasformazione completa —, частите
 „Sì/No“, изпитването, изчислението на машината и relazione di calcolo; типът е факт на изчислението,
-`Calculation.intervento`) → **Progetto**, който само чертае върху него (рилевото на машинното с relazione tecnica и
+`Calculation.intervento`) → **Progetto**, който само чертае върху него (рилевото на машинното с
 комплект от 3 листа (4, когато проверките не се събират на лист 1), или шахтата — `/progetto` с 3D симулация, от който
 стават проектът на шахтата, изчислението, relazione, DXF/DWG и комплектът чертежи) → Documenti e ordini. Съветът между моделите на SICOR и Montanari е само по данни (без цени), с чернова на поръчка (DOCX/PDF).
 Нормативен профил: DPR 162/1999 (с DPR 23/2017), UNI EN 81-20/50:2020, UNI 10411-1/-11:2024. Изследването е в
@@ -42,6 +42,17 @@ TermsGate с паролата (`User.clausesApprovedAt` + одит в същат
 след изгубен отговор не прави втори (`Scheda.writeKey`); корекция в двигател, която сменя резултата на издаден документ —
 `npm run engine:notice` (`docs/terms-changes.md` §8). Подробно — `docs/rules.md`.
 
+**Relazione tecnica di modifica** (кръг 49 Б, `/it/app/projects/<id>/relazione-tecnica`, `src/lib/rt/`, `src/lib/report/rt/`,
+`src/server/rt/`): една relazione за всяка модификация на съществуващ асансьор — «Solo argano» и «Ammodernamento», по пътя
+на машинното (основа `RoomDesign`) и по пътя на шахтата (`LiftDesign`); «Trasformazione completa» — не. Анаграфиката на
+съоръжението (`Project.anagrafica`), разделите на компонентите — автоматично по UNI 10411-1/-11 (`SEZIONI_PER_CASO`) и
+добавени от техника с мотив, проверките `rt_*` (отделен двигател `RT_ENGINE_VERSION`, свой регистър `KR`/`VOCI_RT`),
+подписите «Redatto da» и «Verificato da» (инженер: Ordine, провинция, номер), качените документи (PDF, JPEG, PNG —
+`Attachment`/`AttachmentBlob`, `src/lib/allegati/`), изброени и приложени към PDF-а. Издадената (`TechnicalReport`, номер
+ГГ-NNN и ревизии, `drawings:issue`) е неизменима и пази тялото на PDF-а си (`TechnicalReportPdf`); файловете се прилагат
+при всяко сваляне (`report/pdf-tool.mjs`, отделен процес). Никакви имейли и известия. Старата relazione tecnica на
+машинното я няма (404). Подробно — `docs/rules.md` → „Relazione tecnica di modifica“ и „Качените документи“.
+
 **Подробностите:** структурата на кода — `docs/architecture.md`; правилата по модули (3D, симулация, подмяна, проект на
 асансьора, изпитване, чертежи и коти, каталози, машините каквито са, Panev, буфери, ролка, съвет и поръчка, акаунти,
 абонамент, листа, условия) — `docs/rules.md`. Прочети раздела на модула, преди да го пипаш; промяна в правило се
@@ -60,6 +71,7 @@ ADMIN_PASSWORD=… npm run admin:create                 # администрат
 BASE_URL=… ADMIN_PASSWORD=… npm run smoke             # e2e в браузъра срещу пуснат сървър (Playwright не е в package.json — трябва локален или глобален)
 MAILBOX_PORT=2526 … npm run smoke                     # + регистрация, потвърждение, нова парола: сървърът с SMTP_HOST=127.0.0.1 SMTP_PORT=2526 MAIL_FROM=…
                                                       # всеки пълен прогон — нов процес на сървъра (или час): 3 регистрации, таванът е 5 на час от адрес (в паметта)
+BASE_URL=… ADMIN_PASSWORD=… node scripts/smoke-allegati.mjs   # качените файлове: откази, права, изолация (сървърът с PUBLIC_BASE_URL = BASE_URL)
 python3 -I scripts/brand-assets.py [--og]             # логото, емблемата, favicon/иконите (и с --og og-it.png) от brand/premium/
 python3 -I scripts/icons-build.py                     # рисуваните икони → public/icons/*-48|96.webp + src/components/icon-names.ts
 python3 -I scripts/premium-images.py                  # илюстрациите на шаблона → public/img/premium/ (AVIF + WebP)
@@ -86,7 +98,8 @@ npx tsx --conditions=react-server scripts/landing-docs.ts   # страницит
   да пуснеш golden теста (разлика в 7-ия знак го чупи). Оптимизация дава същите изходи бит в бит (сравни SHA-256 преди/след).
 - **Записите са неизменими и се правят само на сървъра** (`src/server/save.ts`): изчисление (`Calculation`), проект на
   шахтата, проект на асансьора (`LiftDesign` — шахтата и изчислението в една транзакция), машинно на подмяната
-  (`RoomDesign`), издаден комплект (`DrawingSet` + `DrawingSetPdf`). Входът се валидира със zod, всичко се извежда наново
+  (`RoomDesign`), издаден комплект (`DrawingSet` + `DrawingSetPdf`), издадена relazione tecnica di modifica
+  (`TechnicalReport` + файловете ѝ + `TechnicalReportPdf`, `src/server/rt/issue.ts`; кръг 49). Входът се валидира със zod, всичко се извежда наново
   с текущите двигатели (нищо изчислено в браузъра), пази се snapshot + SHA-256; тригерите в базата забраняват UPDATE;
   вариант = нов запис.
 - **Хешът покрива версията на двигателя** (`ENGINE_VERSION`, `SHAFT_ENGINE_VERSION`, `LIFT_ENGINE_VERSION`,
@@ -113,7 +126,12 @@ npx tsx --conditions=react-server scripts/landing-docs.ts   # страницит
   пази въведеното, докато формулярът се попълва, трие се със записа или с „Scarta la bozza“. Подробно — `docs/rules.md`.
 - **Издаденият комплект пази PDF-а си** (`DrawingSetPdf`, `src/server/drawing-pdf.ts`): рисува се веднъж — след
   издаването, извън отговора, или при първото сваляне, докато двигателите дават същия хеш на чертежа — и после се сваля
-  винаги, и след смяна на двигател. Листовете на екрана и ревизията искат същия хеш.
+  винаги, и след смяна на двигател. Листовете на екрана и ревизията искат същия хеш. Същото — тялото на издадената
+  relazione tecnica di modifica (`TechnicalReportPdf`, `rtRecord`: основата се възпроизвежда и хешът е същият; без
+  „Aggiorna“ — след смяна на двигател нова ревизия); `npm run pdf:keep` пази и двете.
+- **Качените файлове** (кръг 49): видът само по байтовете, метаданните на снимките махнати преди запис, PDF само в
+  отделен процес, таван 20 MiB / 60 файла на съоръжение / 500 MiB на фирма под заключване, сваляне само като прикачен файл
+  със `sandbox` CSP; редът и байтовете неизменими, файл в издадена relazione не се трие (`docs/rules.md`).
 - **Calcolo argano смята, Progetto чертае** (кръг 45): типът на интервенцията, изпитването, машината, Q, v, P, въжетата
   и окачването са на „Calcolo argano“; Progetto праща само геометрията (`ProgettoInputs`) и коя е основата, сървърът
   сглобява (`liftInputsOf`) и пише `LiftDesign.baseCalculationId`. Съоръжението не пази тип — чете го от последното
@@ -162,7 +180,9 @@ npx tsx --conditions=react-server scripts/landing-docs.ts   # страницит
   5 +50 %, 10 +80 %, неограничено +100 % от месечната цена.
 - **Условията:** текстът се мени само с нова `TERMS_VERSION` + `npm run legal:archive` (`legal.test.ts` пада иначе) и
   писмо 30 дни преди (`docs/terms-changes.md`); `register.clauses` и `mail.termsNoticeChanges` са извън хеша — менят се
-  на ръка със същата версия. Версия 5 (2026-10-14, `TERMS_EFFECTIVE` 2026-11-16): само италиански (`legal/terms/5/it.txt`),
+  на ръка със същата версия. Версия 6 (2026-10-21, кръг 49): само данните на relazione tecnica di modifica (качените
+  документи и данните на техниците в чл. 9, в износа по чл. 10 и в регистъра на дейността), **без писмо** (решение на
+  собственика); приелите v5 остават на нея. Версия 5 (2026-10-14, `TERMS_EFFECTIVE` 2026-11-16): само италиански (`legal/terms/5/it.txt`),
   четирите роли и правата им, Rilievi; регистърът на дейността — наш за сигурността (чл. 6(1)(е)), а кои колеги го виждат и
   изнасят — на фирмата (чл. 28, чл. 9); ролята е „Titolare“ с главна буква, администраторът по ОРЗД — винаги „titolare del
   trattamento“ (`legal.test.ts`); езиците по чл. 11 DSA (български, английски) и „Карбон Стелт ЕДПК“ остават.

@@ -1,6 +1,7 @@
 import 'server-only';
-// A form's draft (FormDraft): what the installation's one form, a replacement's calculator or a calculation's machine
-// room survey held when it last changed, read back when the form opens again (a draft that no longer reads as the form
+// A form's draft (FormDraft): what the installation's one form, a replacement's calculator, a calculation's machine
+// room survey or the installation's relazione tecnica di modifica (round 49; its files deleted since are dropped on
+// read: src/server/rt/queries.ts readRtDraft) held when it last changed, read back when the form opens again (a draft that no longer reads as the form
 // sends it counts as none); deleted when the form's record is saved. Always the user's company.
 import type { z } from 'zod';
 import { prisma } from '@/lib/db';

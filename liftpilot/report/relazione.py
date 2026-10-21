@@ -22,6 +22,7 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase import pdfmetrics
 from reportlab.platypus import CondPageBreak, Image, KeepTogether, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
+import firme
 import fonts
 import stamp
 from images import decodable
@@ -174,6 +175,9 @@ def room_under(blocks, i):
 
 def flow(blocks):
     out = []
+    # the list bullet: ReportLab draws it in Helvetica unless told otherwise; the documents with signatures (the relazione
+    # tecnica di modifica, round 49) draw it in DejaVu like every other glyph, the earlier documents keep their bytes
+    bullet = {"bulletFontName": "DejaVu"} if any(x["t"] == "firme" for x in blocks) else {}
     for i, b in enumerate(blocks):
         kind = b["t"]
         # a heading never ends a page: room for it and a table head with its first rows, or for the plan under it
@@ -198,7 +202,7 @@ def flow(blocks):
             out.append(Spacer(1, 3))
         elif kind == "list":
             for item in b["items"]:
-                out.append(Paragraph(markup(item), ParagraphStyle("li", parent=BODY, leftIndent=9, bulletIndent=0), bulletText="•"))
+                out.append(Paragraph(markup(item), ParagraphStyle("li", parent=BODY, leftIndent=9, bulletIndent=0, **bullet), bulletText="•"))
         elif kind == "verdict":
             out.append(p(b["text"], ParagraphStyle("v", parent=VERDICT, textColor=STATUS.get(b.get("status"), INK))))
         elif kind == "sign":
@@ -207,6 +211,8 @@ def flow(blocks):
             out += [Spacer(1, 4), Plan(b, FRAME_W, DRAWING), Spacer(1, 4)]
         elif kind == "letterhead":
             out += letterhead(b)
+        elif kind == "firme":
+            out.append(firme.block(b, FRAME_W, p, H3, BODY, INK, MUTED))
         else:
             raise ValueError("unknown block " + kind)
     return out
@@ -225,14 +231,16 @@ def numbered_canvas(meta):
             self._startPage()
 
         def save(self):
-            total = len(self._saved)
+            # the pages appended after the body (a fascicolo's attachments, report/pdf-tool.mjs) count in the total
+            body = len(self._saved)
+            total = body + max(0, int(meta.get("extraPages") or 0))
             for state in self._saved:
                 self.__dict__.update(state)
-                self.draw_frame(total)
+                self.draw_frame(total, body)
                 canvas.Canvas.showPage(self)
             canvas.Canvas.save(self)
 
-        def draw_frame(self, total):
+        def draw_frame(self, total, body):
             self.saveState()
             self.setFont("DejaVu", 7.2)
             self.setFillColor(MUTED)
@@ -258,6 +266,12 @@ def numbered_canvas(meta):
             self.drawString(MARGIN, y[1], meta["code"])
             if notice:
                 self.drawString(MARGIN, y[2], notice)
+            # a fascicolo says on page 1, under the page number, how many pages the body and the attachments make
+            fascicolo = meta.get("fascicolo")
+            if fascicolo and self._pageNumber == 1:
+                self.setFillColor(INK)
+                line = fascicolo.replace("{B}", str(body)).replace("{A}", str(total - body)).replace("{N}", str(total))
+                self.drawRightString(PAGE_W - MARGIN, top - 5.6 * mm, line)
             self.restoreState()
 
     return NumberedCanvas

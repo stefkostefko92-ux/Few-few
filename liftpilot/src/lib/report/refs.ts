@@ -4,8 +4,7 @@
 // concerns (an entry about another type is not cited) and for the reduced-stroke buffers (only with them); only the UNI
 // 10411 part the lift is tested to (none for a new lift: UNI EN 81-20/50), with the edition of UNI EN 81-1 that part
 // names; then the clauses of one document merged into one reference, each once, in the standard's order. Pure.
-import type { CheckId, GrooveType, MachineStd } from '@/calc/types';
-import type { ShaftCheckId } from '@/shaft/types';
+import type { GrooveType, MachineStd } from '@/calc/types';
 import type { BufferType } from '@/shaft/vertical';
 import type { Collaudo } from '../lift/collaudo';
 
@@ -98,7 +97,8 @@ interface Entry {
   riferimento: string;
   stato: string;
   verifiche?: readonly string[];
-  rifVerifica?: Partial<Readonly<Record<CheckId | ShaftCheckId, string>>>;
+  /** by check id (the calculation's, the shaft's or the relazione tecnica di modifica's own) */
+  rifVerifica?: Partial<Readonly<Record<string, string>>>;
   rifGola?: Partial<Readonly<Record<GrooveType, string>>>;
   rifStd?: Partial<Readonly<Record<MachineStd, string>>>;
   /** the clauses cited when none of the entry's is of the lift's test standard (the other part's formula, a check of

@@ -136,7 +136,9 @@ Brevo: същата команда с новите `LIFTPILOT_SMTP_USER`/`LIFTPI
 
 **Нова версия на условията** (`TERMS_VERSION`, `docs/terms-changes.md`): веднага след деплоя
 `docker exec liftpilot-app-1 npm run legal:notice` (кой ще получи писмо), после същото с `-- --send`. Без писмото
-новата версия не обвързва вече регистрираните фирми. **За версия 3** преди деплоя: изключено проследяване на
+новата версия не обвързва вече регистрираните фирми. **Версия 6 (кръг 49) — без писмо** (решение на собственика: фирми
+за уведомяване няма): `legal:notice -- --send` не се пуска; новите фирми приемат v6, приелите v5 остават на нея
+(`docs/terms-changes.md` §1, т. 9). **За версия 3** преди деплоя: изключено проследяване на
 отварянията и кликовете в Brevo (текстът го обещава) — подробно в `docs/terms-changes.md`, „Какво още решава
 собственикът“.
 
@@ -150,7 +152,10 @@ pdf:keep` — рисува един по един и пази PDF-а на все
 продължава с останалите). Идемпотентно и бързо: втори пробег не рисува нищо. Нищо друго не пише. **Пусни `npm run
 pdf:keep` отново точно преди деплоя на release-а, който мени двигател**: комплект, издаден между първия пробег и този
 деплой, несвалян и чийто фонов рендер се е отказал (`RendererBusy` — „първото сваляне го пази“), иначе губи PDF-а си при
-вдигането на версиите.
+вдигането на версиите. От кръг 49 същата команда пази и тялото на всяка издадена relazione tecnica di modifica без пазен
+PDF (`TechnicalReportPdf`, `scripts/keep-rt-pdfs.ts`): рисува я, докато текущите двигатели я възпроизвеждат (един и същ
+SHA-256), невъзпроизводимите изброява като `stale` („relazioni tecniche“ в изхода) — за тях е нужна нова ревизия.
+Качените файлове не се рисуват: те се прилагат към тялото при всяко сваляне.
 
 **След деплой, който мени двигател — писмото за корекцията** (`npm run engine:notice`, `docs/terms-changes.md` §8):
 записите на фирмите, направени с по-стари двигатели, се изчисляват наново и се сравняват с каквото са записали
@@ -166,6 +171,63 @@ docker exec liftpilot-app-1 npm run engine:notice -- --send --motivo "<какв�
 Писмото е веднъж за версиите на четирите двигателя (`ENGINE_NOTICE_SENT` в регистъра на фирмата): повторно пускане
 не праща на вече уведомените, а неизпратените (грешка на релея) се пращат при следващото. Без пощенски настройки
 `--send` спира, без да праща.
+
+## Кръг 49 — редът на деплоя (Rilievi до `988f3cf37` и relazione tecnica di modifica)
+
+Един release с двете части на кръга. Миграциите — `26_rilievi_sync_2` (кръг 49 А), после `27_relazione_modifica` (кръг 49
+Б) и `28_rt_tavole_citate` (поправките на кръг 49: една nullable колона `TechnicalReport.citedSetIds`); entrypoint-ът ги
+пуска в този ред (`prisma migrate deploy`), 27 никога без 26, 28 никога без 27. Двигателите на записите не се сменят
+(ENGINE 1.8.0, LIFT 1.33.0, ROOM 1.17.0, SHAFT 2.27.0 — никой издаден документ не мени хеша си); новият двигател на
+relazione tecnica е отделен (`RT_ENGINE_VERSION` 1.0.0). **Писма няма** — нито за условията, нито за двигателите (решение
+на собственика).
+
+0. **Преди:** мястото на диска и размерът на базата (по-долу, „Размерът на базата“) — качените файлове живеят в базата и
+   във всяко нейно копие. По желание `pdf:keep` на работещия release (двигателите не се сменят, затова не е задължително;
+   идемпотентно и бързо).
+1. **Деплоят:** `REF=<SHA на кръг 49> PROJECTS="liftpilot"` (с `fetch-deploy.sh` от същия SHA). Бекъпът преди
+   миграциите е на скрипта (`pre-deploy-*.sql.gz`). Миграция 27 е адитивна: enum `AttachmentKind`, шест нови таблици
+   (`Attachment`, `AttachmentBlob`, `TechnicalReport`, `TechnicalReportCounter`, `TechnicalReportAttachment`,
+   `TechnicalReportPdf`), петте им тригера за неизменимост, CHECK-ове и nullable колона `Project.anagrafica`; не пренаписва
+   ред (пробвано на копие: броят и съдържанието на всяка стара таблица — същите; връщането — от коментара на миграцията,
+   пробвано на второ копие). Проверка:
+   ```bash
+   curl -fsS http://127.0.0.1:4330/api/health
+   docker exec liftpilot-db-1 psql -U liftpilot -d liftpilot -Atc 'SELECT migration_name FROM "_prisma_migrations" ORDER BY finished_at DESC LIMIT 3'   # 28_rt_tavole_citate, 27_relazione_modifica, 26_rilievi_sync_2
+   ```
+2. **nginx — адресът за качване:** `deploy/deploy.sh` пише vhost-а от release-а — нов `location` за
+   `POST /api/projects/<id>/allegati` с `client_max_body_size 21m` (навсякъде другаде остава 1 MB) — и прави `nginx -t &&
+   systemctl reload nginx`. Ако изходът казва „the new nginx config is invalid: the previous one is back“, деплоят
+   продължава със стария vhost и всяко качване над 1 MB получава 413 от nginx. След деплоя:
+   ```bash
+   nginx -T 2>/dev/null | grep -A1 'allegati\$'      # location … allegati$ { client_max_body_size 21m;
+   head -c 2000000 /dev/zero | curl -s -o /dev/null -w '%{http_code}\n' -X POST \
+     -H 'Content-Type: multipart/form-data; boundary=x' --data-binary @- https://liftpilot.carbonstealth.eu/api/projects/x/allegati
+   ```
+   `403` — отговори приложението (заявка без `Origin`): адресът с 21 MB работи. `413` — nginx отказа с 1 MB: `nginx -t`
+   казва защо; поправи и `systemctl reload nginx`. (С `LIFTPILOT_TLS=0` vhost-ът е твой — добави location-а на ръка.)
+   nginx държи тялото на качването във временен файл (`proxy_request_buffering on`), до 21 MB на качване.
+3. **Условията v6 и двигателите — без писма:** не пускай нито `npm run legal:notice -- --send`, нито `engine:notice` с
+   `--send` (собственикът: в този кръг никакви имейли и известия). `engine:notice` без `--send` може да се пусне — показва
+   само натрупаното от по-стари версии; кръг 49 не добавя нищо към него.
+4. **IndexNow:** ръководството (`/guida`) е сменено (relazione tecnica di modifica), но докато индексирането е спряно
+   (`ALLOW_INDEXING=false`) — нищо. При включено индексиране — командата от „Публично пускане“.
+
+### Размерът на базата (качените файлове, кръг 49)
+
+Файловете са в базата (`AttachmentBlob`, байтовете; `TechnicalReportPdf`, пазените тела): таван 20 MiB на файл и 500 MiB
+на фирма (`src/lib/allegati/limits.ts`). Всяко копие на базата ги носи — нощните (30 дни) и тези преди деплой (последните
+5) — а PDF и JPEG почти не се свиват с gzip. Свободното място трябва да побере около **35 пъти** размера на базата, плюс
+самата база. Наблюдение (и преди деплоя, и редовно):
+
+```bash
+docker exec liftpilot-db-1 psql -U liftpilot -d liftpilot -Atc "SELECT pg_size_pretty(pg_database_size('liftpilot')), pg_size_pretty(pg_total_relation_size('\"AttachmentBlob\"')), pg_size_pretty(pg_total_relation_size('\"TechnicalReportPdf\"'))"
+docker exec liftpilot-db-1 psql -U liftpilot -d liftpilot -Atc "SELECT \"companyId\", pg_size_pretty(sum(size)::bigint), count(*) FROM \"Attachment\" GROUP BY 1 ORDER BY sum(size) DESC LIMIT 10"
+du -sh /opt/few-few/shared/liftpilot/backups; df -h /opt/few-few/shared /var/lib/docker
+```
+
+Ако мястото не стига: по-малко копия на същия диск (копието извън сървъра — „Копие извън сървъра“), по-голям диск или
+по-нисък таван на фирма (константата, после деплой) — **решение на собственика**. Изтриване на файлове няма по време
+(те си отиват със съоръжението или с фирмата).
 
 ## Кръг 48 — редът на деплоя
 
@@ -280,6 +342,8 @@ LiftPilot го няма в панела на сървъра (vpsdash): нито 
    `LIFTPILOT_BACKUP_HEARTBEAT_URL=https://…` в `.env` (600; приложението не го чете — само скриптът). Тя алармира, ако
    нощното копие не стане (и ако cron изобщо не тръгне). Провал се вижда и тук:
    `journalctl -t liftpilot-backup --since -2d` (причината), а изходът на скрипта е ненулев.
+4. **Дискът** (от кръг 49 качените файлове са в базата и в копията ѝ): алармата на vpsdash за заетия диск, и веднъж
+   седмично размерът на базата и на `AttachmentBlob` (командите — „Размерът на базата“ в „Кръг 49 — редът на деплоя“).
 
 ## Копие извън сървъра
 
@@ -379,7 +443,7 @@ docker inspect -f '{{index .Config.Labels "com.docker.compose.project.working_di
 
 **Преди връщане към по-стар код — какво носи то:**
 
-1. **Миграциите 23–26 са адитивни:** старият код върви с базата — `migrate deploy` на кода на кръг 47 срещу копие с 23
+1. **Миграциите 23–28 са адитивни:** старият код върви с базата — `migrate deploy` на кода на кръг 47 срещу копие с 23
    и 24: „No pending migrations to apply“ (пробвано при прегледа на кръг 48; така и за 22). За 25 — по построение
    (две nullable колони, които старият клиент не чете, и уникален индекс, в който старият код пише само `NULL`);
    не е пробвано. За 26 (`26_rilievi_sync_2`: енум и 33 колони, NULL или празен списък) — пробвано в кръг 49: клиентът
@@ -387,7 +451,13 @@ docker inspect -f '{{index .Config.Labels "com.docker.compose.project.working_di
    същия отпечатък `2995daa5c76ba085` и записва, променя и трие карта по старата форма. **След връщане към кръг 48 не
    редактирай карти с марка на таблото Mastech, записани от кръг 49:** старият код не пита „Ordine quadro“ при Mastech и
    при запис изпразва `quadroOrdine` и поръчката (`ordineQuadro` става NULL); новите колони оцеляват, защото старият код
-   не ги пише.
+   не ги пише. За 27 (`27_relazione_modifica`) — по построение (нови таблици и една nullable колона, които старият код не
+   чете; не е пробвано със стария код): качените файлове и издадените relazioni tecniche остават в базата, невидими, и
+   се връщат с новия код; изтриването на съоръжение или фирма със стария код ги изтрива и тях (каскада в базата,
+   пробвано на копие в кръг 49). Махането на самата миграция (командите в коментара на
+   `prisma/migrations/27_relazione_modifica/migration.sql`, пробвани на копие) трие тези данни — само с бекъп и по решение
+   на собственика; не е нужно за връщане на кода. 28 (`28_rt_tavole_citate`) — една nullable колона, която старият код не
+   чете (по построение); без нея новият код не върви (издаването я пише).
 2. **Двигателите:** връщане към release с други версии на двигателите (отпреди кръг 48 — 1.7.x) прави комплект, издаден
    под сегашните и още несвален, без PDF (409 — същото като „Преди деплой, който мени двигател“, в обратна посока).
    Затова преди връщането, на текущия release: `cd "$(readlink -e /opt/few-few/liftpilot-current)" && docker compose

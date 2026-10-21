@@ -21,7 +21,6 @@ import { ROOM_LEGEND } from '@/lib/tavole/room-legend';
 import { fallSlants, slantText, surveySheetData } from '@/lib/tavole/survey-data';
 import { roomRows } from '@/lib/report/tecnica-room';
 import type { SurveyTavoleInput } from '@/lib/tavole/survey-input';
-import { buildTecnica } from '@/lib/report/tecnica';
 import { designRoomBlocks } from '@/lib/report/tecnica-site';
 import { supportLoad } from '@/lib/lift/support';
 import { roomGeo } from '@/shaft/machine-room';
@@ -98,22 +97,8 @@ test('foglio 1 della sostituzione: calate col tiro diretto, rilievo in sito, gan
   assert.ok(!withGov.checks.some(([l]) => l.endsWith('(limitatore non rilevato)')));
 });
 
-test('relazione tecnica della sostituzione: punto 5 della UNI 10411-1, fori con il centro, gancio e masse, P4', () => {
-  const s = surveyed({ existingSupport: { kind: 'beams', keep: false } }), d = deriveRoom(DIRECT, s);
-  const doc = buildTecnica({
-    room: { id: 'r', label: null, createdAt: new Date('2026-10-08T10:00:00Z'), sha256: '0'.repeat(64), engineVersion: 'x', author: null },
-    calc: { id: 'c', label: null, createdAt: new Date('2026-10-08T10:00:00Z'), sha256: '0'.repeat(64), engineVersion: 'x', profileId: 'it' },
-    project: { name: 'R', address: null, city: null, province: null, plantNumber: null, client: null }, company: 'S',
-    values: DIRECT, survey: s, derived: d, collaudo: { norma: '10411-1', parti: ['machine'] }, plant: {}, sets: [],
-  });
-  const all = JSON.stringify(doc.blocks);
-  assert.ok(all.includes('UNI 10411-1:2024, punto 5') && all.includes('da confermare dal tecnico'), 'punto 5');
-  assert.ok(all.includes('Centro x') && all.includes('Centro y'), 'fori con il centro');
-  assert.ok(all.includes('Gancio di sollevamento sopra il baricentro'), 'gancio');
-  assert.ok(all.includes('Carico P4 non indicato'), 'P4');
-  assert.ok(all.includes('Inclinazione delle funi della nuova puleggia'), 'calate');
-  assert.ok(all.includes('Antivibranti e fissaggi'), 'antivibranti');
-});
+// (the old relazione tecnica of the replacement — point 5, the openings with their centre, the hook, P4, the falls, the
+// mounts — is the relazione tecnica di modifica's «Locale del macchinario» since round 49: report-rt-locale.test.ts)
 
 test('relazione del progetto: aperture con il centro, gancio, reazioni e antivibranti', () => {
   const d = deriveLift(base), L = d.layout, G = roomGeo(L, d.machine);

@@ -17,4 +17,17 @@ export const ANSWER = {
   machineKept: e.machineKept,
   failed: e.documentFailed,
   busy: e.rendererBusy,
+  /** the installation is archived: nothing can be uploaded to it (round 49) */
+  archived: e.archived,
+  // round 49, the uploaded files (POST /api/projects/[id]/allegati): refused before or while the bytes are read
+  fileTooLarge: e.fileTooLarge,
+  fileInvalid: e.fileInvalid,
+  pdfProtected: e.pdfProtected,
+  pdfForm: e.pdfForm,
+  quotaExceeded: e.quotaExceeded,
+  // round 49, the relazione tecnica di modifica (its preview and its PDF): no eligible base, a base the running engines
+  // no longer reproduce, data still missing
+  rtNotEligible: e.rtNotEligible,
+  rtBaseOutdated: e.rtBaseOutdated,
+  rtIncomplete: e.rtIncomplete,
 } as const;

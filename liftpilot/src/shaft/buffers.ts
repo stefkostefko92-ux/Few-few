@@ -28,10 +28,15 @@ export function bufferStroke(V: VerticalInputs, side: 'car' | 'cw'): number {
   return bufferType(V, side) === 'pu' ? Math.round(KV_VERT.puStroke * h) : side === 'car' ? V.carBufferStroke : V.cwBufferStroke;
 }
 
-/** The least stroke the rated speed needs [mm]; 0: none by formula (a pad's certificate gives its masses). */
-export function strokeNeeded(V: VerticalInputs, t: BufferType): number {
-  const v2 = V.v * V.v * 1000;
+/** The least stroke the rated speed v [m/s] needs [mm]; 0: none by formula (a pad's certificate gives its masses). */
+export function strokeFor(v: number, t: BufferType): number {
+  const v2 = v * v * 1000;
   return t === 'pu' ? 0 : t === 'oil' ? KV_VERT.oilStrokeK * v2 : Math.max(KV_VERT.strokeMin, KV_VERT.strokeK * v2);
+}
+
+/** The least stroke the rated speed of the vertical data needs [mm] (strokeFor). */
+export function strokeNeeded(V: VerticalInputs, t: BufferType): number {
+  return strokeFor(V.v, t);
 }
 
 /** The highest rated speed the type allows [m/s]; null: any. */

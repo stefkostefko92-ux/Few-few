@@ -38,69 +38,73 @@ enum Verdict {
 }
 
 model Company {
-  id                   String                  @id @default(cuid())
-  name                 String
-  vatNumber            String?
-  city                 String?
-  active               Boolean                 @default(true)
+  id                      String                   @id @default(cuid())
+  name                    String
+  vatNumber               String?
+  city                    String?
+  active                  Boolean                  @default(true)
   /// the logo in the title block of the drawing sets (one of the company's logos; null = the name in letters)
-  logoId               String?                 @unique
-  logo                 CompanyLogo?            @relation("CurrentLogo", fields: [logoId], references: [id], onDelete: SetNull)
+  logoId                  String?                  @unique
+  logo                    CompanyLogo?             @relation("CurrentLogo", fields: [logoId], references: [id], onDelete: SetNull)
   /// the subscription (Stripe): the customer and the subscription, their state as Stripe last gave it (webhook or API
   /// with the server's key), the slots for colleagues it pays, the end of the paid period; the trial's end (null: not
   /// started — it starts at the company's first sign-in with billing on)
-  stripeCustomerId     String?                 @unique
-  stripeSubscriptionId String?                 @unique
-  subscriptionStatus   String?
-  seatPack             SeatPack                @default(NONE)
-  periodEnd            DateTime?
-  cancelAtPeriodEnd    Boolean                 @default(false)
-  trialEndsAt          DateTime?
+  stripeCustomerId        String?                  @unique
+  stripeSubscriptionId    String?                  @unique
+  subscriptionStatus      String?
+  seatPack                SeatPack                 @default(NONE)
+  periodEnd               DateTime?
+  cancelAtPeriodEnd       Boolean                  @default(false)
+  trialEndsAt             DateTime?
   /// the platform's own company: never billed
-  billingExempt        Boolean                 @default(false)
+  billingExempt           Boolean                  @default(false)
   /// when the owner was told that the company, inactive without a subscription, will be deleted (src/lib/inactive.ts);
   /// cleared when someone signs in again or a subscription starts
-  inactiveNoticeAt     DateTime?
+  inactiveNoticeAt        DateTime?
   /// the order of the sections of the survey sheets (Rilievi; the keys of src/lib/rilievi/fields.ts, «impianto» always
   /// first); empty — the default order. Set on the company page by whoever has 'company:edit'.
-  ordineSezioni        String[]                @default([])
-  createdAt            DateTime                @default(now())
-  updatedAt            DateTime                @updatedAt
-  users                User[]
-  priceItems           PriceItem[]
-  customPrices         CustomPriceItem[]
-  roomDesigns          RoomDesign[]
-  projects             Project[]
-  calculations         Calculation[]
-  shaftDesigns         ShaftDesign[]
-  auditLogs            AuditLog[]
-  logos                CompanyLogo[]           @relation("CompanyLogos")
-  clientLogos          ClientLogo[]
-  drawingSets          DrawingSet[]
-  drawingCounters      DrawingCounter[]
-  liftDesigns          LiftDesign[]
-  formDrafts           FormDraft[]
-  invites              Invite[]
-  schede               Scheda[]
-  rolePermissions      CompanyRolePermission[]
-  betaInvites          BetaInvite[]
-  feedback             Feedback[]
+  ordineSezioni           String[]                 @default([])
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  users                   User[]
+  priceItems              PriceItem[]
+  customPrices            CustomPriceItem[]
+  roomDesigns             RoomDesign[]
+  projects                Project[]
+  calculations            Calculation[]
+  shaftDesigns            ShaftDesign[]
+  auditLogs               AuditLog[]
+  logos                   CompanyLogo[]            @relation("CompanyLogos")
+  clientLogos             ClientLogo[]
+  drawingSets             DrawingSet[]
+  drawingCounters         DrawingCounter[]
+  liftDesigns             LiftDesign[]
+  formDrafts              FormDraft[]
+  invites                 Invite[]
+  schede                  Scheda[]
+  rolePermissions         CompanyRolePermission[]
+  betaInvites             BetaInvite[]
+  feedback                Feedback[]
+  attachments             Attachment[]
+  technicalReports        TechnicalReport[]
+  technicalReportCounters TechnicalReportCounter[]
 }
 
 /// A logo uploaded by a company, immutable: a drawing set keeps the one it was issued with. PNG or JPEG, checked by
 /// its magic bytes and size on upload; the bytes stay in the database, never on the filesystem.
 model CompanyLogo {
-  id          String       @id @default(cuid())
-  companyId   String
-  company     Company      @relation("CompanyLogos", fields: [companyId], references: [id], onDelete: Cascade)
-  mime        String
-  data        Bytes
-  sha256      String
-  width       Int
-  height      Int
-  createdAt   DateTime     @default(now())
-  current     Company?     @relation("CurrentLogo")
-  drawingSets DrawingSet[]
+  id               String            @id @default(cuid())
+  companyId        String
+  company          Company           @relation("CompanyLogos", fields: [companyId], references: [id], onDelete: Cascade)
+  mime             String
+  data             Bytes
+  sha256           String
+  width            Int
+  height           Int
+  createdAt        DateTime          @default(now())
+  current          Company?          @relation("CurrentLogo")
+  drawingSets      DrawingSet[]
+  technicalReports TechnicalReport[]
 
   @@index([companyId, createdAt])
 }
@@ -170,6 +174,8 @@ model User {
   schedeDeleted      Scheda[]            @relation("SchedeDeleted")
   betaInvitesCreated BetaInvite[]        @relation("BetaInvitesCreated")
   feedback           Feedback[]
+  attachmentsCreated Attachment[]        @relation("AttachmentsCreated")
+  technicalReports   TechnicalReport[]
 
   @@index([companyId])
 }
@@ -296,36 +302,43 @@ enum TipoIntervento {
 /// A lift installation (impianto) of a company; its type of intervention is read from its calculations, never stored
 /// (its module of before round 45, "kind", dropped by migration 22_drop_project_kind, round 47).
 model Project {
-  id           String        @id @default(cuid())
-  companyId    String
-  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  name         String
-  address      String?
-  city         String?
-  province     String?
-  plantNumber  String?
-  client       String?
-  notes        String?
+  id               String            @id @default(cuid())
+  companyId        String
+  company          Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name             String
+  address          String?
+  city             String?
+  province         String?
+  plantNumber      String?
+  client           String?
+  notes            String?
   /// data of the installation for the drawing sets (src/lib/plant.ts): control, doors, rails, governor, masses…
-  plant        Json?
+  plant            Json?
+  /// the plant registry for the relazione tecnica di modifica (src/lib/rt/anagrafica.ts, round 49): owner, maintainer,
+  /// construction number, year, approval law, the documented «before» persons, stops and car area; mutable, snapshotted
+  /// into each issued report
+  anagrafica       Json?
   /// the logo of the client who commissioned the project, in the title block next to its name (one of the project's
   /// client logos; null = the name alone)
-  clientLogoId String?       @unique
-  clientLogo   ClientLogo?   @relation("CurrentClientLogo", fields: [clientLogoId], references: [id], onDelete: SetNull)
-  clientLogos  ClientLogo[]  @relation("ProjectClientLogos")
-  createdById  String?
-  createdBy    User?         @relation("ProjectCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  archivedAt   DateTime?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  calculations Calculation[]
-  shaftDesigns ShaftDesign[]
-  drawingSets  DrawingSet[]
-  liftDesigns  LiftDesign[]
-  roomDesigns  RoomDesign[]
-  formDrafts   FormDraft[]
+  clientLogoId     String?           @unique
+  clientLogo       ClientLogo?       @relation("CurrentClientLogo", fields: [clientLogoId], references: [id], onDelete: SetNull)
+  clientLogos      ClientLogo[]      @relation("ProjectClientLogos")
+  createdById      String?
+  createdBy        User?             @relation("ProjectCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  archivedAt       DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  calculations     Calculation[]
+  shaftDesigns     ShaftDesign[]
+  drawingSets      DrawingSet[]
+  liftDesigns      LiftDesign[]
+  roomDesigns      RoomDesign[]
+  formDrafts       FormDraft[]
   /// the survey sheets linked to the installation (round 44): its history, the newest the reference
-  schede       Scheda[]
+  schede           Scheda[]
+  /// the files uploaded for the installation and its issued relazioni tecniche di modifica (round 49)
+  attachments      Attachment[]
+  technicalReports TechnicalReport[]
 
   @@index([companyId, archivedAt])
   @@index([createdById])
@@ -352,41 +365,42 @@ model FormDraft {
 
 /// Immutable snapshot: the values entered, the engine and profile versions, the canonical results and their hash.
 model Calculation {
-  id            String              @id @default(cuid())
-  companyId     String
-  company       Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  projectId     String
-  project       Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  userId        String?
-  user          User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
-  label         String?
-  engineVersion String
-  profileId     String
-  inputs        Json
-  results       Json
-  sha256        String
-  verdict       Verdict
-  failCount     Int
-  warnCount     Int
+  id               String              @id @default(cuid())
+  companyId        String
+  company          Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  projectId        String
+  project          Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId           String?
+  user             User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  label            String?
+  engineVersion    String
+  profileId        String
+  inputs           Json
+  results          Json
+  sha256           String
+  verdict          Verdict
+  failCount        Int
+  warnCount        Int
   /// machine in one line, e.g. "D 520 mm · 4 × Ø11 · 1:39 · 7,5 kW"
-  summary       String
+  summary          String
   /// the standards of the acceptance test as chosen ({norma, aggiuntive?, parti}, src/lib/lift/collaudo.ts; null: the
   /// default by the context): what the report sets out, not the physics, so outside the hash; as immutable as the row
-  collaudo      Json?
+  collaudo         Json?
   /// the intervention declared in «Calcolo argano» (round 45, src/lib/lift/intervento.ts): like the test, outside the
   /// snapshot and its hash — what the documents declare, not the physics —, as immutable as the row; a lift design's
   /// calculation takes its base calculation's. NULL: saved before round 45, read by its shape (interventoDi)
-  intervento    TipoIntervento?
+  intervento       TipoIntervento?
   /// shaft design the calculation was started from (its plan goes into the report)
-  shaftDesignId String?
-  shaftDesign   ShaftDesign?        @relation(fields: [shaftDesignId], references: [id], onDelete: NoAction)
-  createdAt     DateTime            @default(now())
-  reviews       CalculationReview[]
-  drawingSets   DrawingSet[]
-  liftDesign    LiftDesign?         @relation("LiftDesignCalc")
+  shaftDesignId    String?
+  shaftDesign      ShaftDesign?        @relation(fields: [shaftDesignId], references: [id], onDelete: NoAction)
+  createdAt        DateTime            @default(now())
+  reviews          CalculationReview[]
+  drawingSets      DrawingSet[]
+  liftDesign       LiftDesign?         @relation("LiftDesignCalc")
   /// the lift designs drawn on this «Calcolo argano» (LiftDesign.baseCalculationId, round 45)
-  progetti      LiftDesign[]        @relation("LiftDesignBase")
-  roomDesigns   RoomDesign[]
+  progetti         LiftDesign[]        @relation("LiftDesignBase")
+  roomDesigns      RoomDesign[]
+  technicalReports TechnicalReport[]
 
   @@index([projectId, createdAt])
   @@index([companyId])
@@ -433,27 +447,27 @@ model ShaftDesign {
 /// of the derivation and the SHA-256 of the canonical record. The 3D simulation replays it; the report, the DXF and
 /// the drawing sets come from its calculation and shaft design, which keep their own hashes.
 model LiftDesign {
-  id                String       @id @default(cuid())
+  id                String            @id @default(cuid())
   companyId         String
-  company           Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company           Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
   projectId         String
-  project           Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project           Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
   userId            String?
-  user              User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user              User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   label             String?
   /// { shaft, calc, auto } as entered (src/lib/lift-input.ts)
   inputs            Json
   /// where the shaft's dimensions come from (null: typed in), as for a shaft design
   source            Json?
-  shaftDesignId     String       @unique
-  shaftDesign       ShaftDesign  @relation(fields: [shaftDesignId], references: [id], onDelete: NoAction)
-  calculationId     String       @unique
-  calculation       Calculation  @relation("LiftDesignCalc", fields: [calculationId], references: [id], onDelete: NoAction)
+  shaftDesignId     String            @unique
+  shaftDesign       ShaftDesign       @relation(fields: [shaftDesignId], references: [id], onDelete: NoAction)
+  calculationId     String            @unique
+  calculation       Calculation       @relation("LiftDesignCalc", fields: [calculationId], references: [id], onDelete: NoAction)
   /// the «Calcolo argano» the design was drawn on (round 45: Q, v, the machine, the ropes and the test come from it,
   /// src/lib/lift/progetto.ts): provenance, outside the hash. NULL: a design of the one form before round 45 (or made
   /// again from one)
   baseCalculationId String?
-  baseCalculation   Calculation? @relation("LiftDesignBase", fields: [baseCalculationId], references: [id], onDelete: NoAction)
+  baseCalculation   Calculation?      @relation("LiftDesignBase", fields: [baseCalculationId], references: [id], onDelete: NoAction)
   /// version of the derivation from the one form (src/lib/lift/version.ts)
   engineVersion     String
   sha256            String
@@ -462,7 +476,8 @@ model LiftDesign {
   warnCount         Int
   /// e.g. "Vano 1600 × 1750 · 600 kg · 0,63 m/s · D 520 · 4 × Ø10 · 1:63 · 4 kW"
   summary           String
-  createdAt         DateTime     @default(now())
+  createdAt         DateTime          @default(now())
+  technicalReports  TechnicalReport[]
 
   @@index([projectId, createdAt])
   @@index([companyId])
@@ -475,29 +490,30 @@ model LiftDesign {
 /// derivation and the SHA-256 of the canonical record (src/lib/room). The replacement's drawing set and its relazione
 /// tecnica are drawn from it and from its calculation.
 model RoomDesign {
-  id            String       @id @default(cuid())
-  companyId     String
-  company       Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  projectId     String
-  project       Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  calculationId String
-  calculation   Calculation  @relation(fields: [calculationId], references: [id], onDelete: NoAction)
-  userId        String?
-  user          User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  label         String?
+  id               String            @id @default(cuid())
+  companyId        String
+  company          Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  projectId        String
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  calculationId    String
+  calculation      Calculation       @relation(fields: [calculationId], references: [id], onDelete: NoAction)
+  userId           String?
+  user             User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  label            String?
   /// the survey as entered (src/lib/room/survey.ts)
-  inputs        Json
+  inputs           Json
   /// what the derivation gives: the machine placed, the drops, the checks, the load (src/lib/room/snapshot.ts)
-  results       Json
-  engineVersion String
-  sha256        String
-  verdict       Verdict
-  failCount     Int
-  warnCount     Int
+  results          Json
+  engineVersion    String
+  sha256           String
+  verdict          Verdict
+  failCount        Int
+  warnCount        Int
   /// e.g. "Locale 3000 × 3000 · SICOR SH140 su telaio con rinvio · calate 780 mm"
-  summary       String
-  createdAt     DateTime     @default(now())
-  drawingSets   DrawingSet[]
+  summary          String
+  createdAt        DateTime          @default(now())
+  drawingSets      DrawingSet[]
+  technicalReports TechnicalReport[]
 
   @@index([projectId, createdAt])
   @@index([companyId])
@@ -973,4 +989,179 @@ model Feedback {
   @@index([companyId])
   @@index([userId])
   @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Relazione tecnica di modifica (round 49, migration 27_relazione_modifica): the files uploaded for an installation and
+// the issued reports. Records as the drawing sets: made only on the server, immutable by database triggers (an
+// attachment's title, kind and component excepted), isolated by company.
+
+/// What an uploaded file is (the expected documents of src/lib/rt/documenti.ts match on it).
+enum AttachmentKind {
+  /// EU/CE declaration of conformity (machine, controller, governor, locks, buffers, alarm…)
+  DICHIARAZIONE_UE
+  /// EU type-examination certificate of a safety component
+  CERTIFICATO_ESAME_TIPO
+  /// rope certificate, buffer data sheet, door fire classification, other component papers
+  CERTIFICATO_COMPONENTE
+  SCHEMA_ELETTRICO
+  /// the owner's statement on the building's suitability (UNI 10411-1:2024, 5), the rail anchorages
+  DICHIARAZIONE_IDONEITA
+  /// the inverter's frequency setting for the declared rated speed
+  RELAZIONE_TARATURA
+  /// a copy of the logbook or of the last inspection report
+  LIBRETTO_VERBALE
+  DISEGNO
+  FOTO
+  ALTRO
+}
+
+/// A file uploaded for an installation: PDF, JPEG or PNG recognised by its bytes (image metadata removed before it is
+/// stored). Title, kind and component may change (trigger); everything else never does. The bytes are in AttachmentBlob,
+/// so a list of files never loads them.
+model Attachment {
+  id          String                      @id @default(cuid())
+  companyId   String
+  company     Company                     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  projectId   String
+  project     Project                     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  kind        AttachmentKind
+  /// 1..160 characters (CHECK)
+  title       String
+  /// the section of the report it belongs to (a SezioneKey of src/lib/rt/sezioni.ts, 'impianto' or 'edificio'; zod)
+  component   String?
+  /// the uploaded file's name, cleaned to a base name, for display only: 1..120 characters (CHECK)
+  fileName    String
+  /// application/pdf, image/jpeg or image/png (CHECK)
+  mime        String
+  /// bytes stored, 1..20 MiB (CHECK)
+  size        Int
+  /// SHA-256 of the stored bytes (lower-case hex, CHECK)
+  sha256      String
+  /// pages of a PDF (1..200, CHECK); 1 for a picture
+  pages       Int
+  width       Int?
+  height      Int?
+  /// the JPEG's EXIF orientation 1..8, read before the metadata is removed, applied when the file is appended
+  orientation Int?
+  createdById String?
+  createdBy   User?                       @relation("AttachmentsCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime                    @default(now())
+  blob        AttachmentBlob?
+  reports     TechnicalReportAttachment[]
+
+  @@unique([projectId, sha256])
+  @@index([companyId])
+  @@index([projectId, createdAt])
+  @@index([createdById])
+}
+
+/// The bytes of an uploaded file, never changed (trigger).
+model AttachmentBlob {
+  attachmentId String     @id
+  attachment   Attachment @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
+  data         Bytes
+}
+
+/// Last report number given by a company in a year (26-001, 26-002, …), incremented in the transaction of the issue.
+model TechnicalReportCounter {
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  year      Int
+  last      Int     @default(0)
+
+  @@id([companyId, year])
+}
+
+/// An issued relazione tecnica di modifica, immutable like a drawing set: the number YY-NNN of the company and year, the
+/// revision (0 = first issue; a revision is a new row with the same number), the base it is made from (a room design or
+/// a lift design — exactly one, CHECK — and its calculation), the inputs, the registry, the project, the installation
+/// and the company as printed, the derived results, the RT engine's version and the SHA-256 of the canonical snapshot.
+model TechnicalReport {
+  id            String                      @id @default(cuid())
+  companyId     String
+  company       Company                     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  projectId     String
+  project       Project                     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          User?                       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  /// e.g. 26-004 (printed «RT 26-004»)
+  number        String
+  year          Int
+  seq           Int
+  revision      Int
+  /// [{ mark: 'R0' | 'R1' …, text, date }] up to this revision
+  revisions     Json
+  calculationId String
+  calculation   Calculation                 @relation(fields: [calculationId], references: [id], onDelete: NoAction)
+  roomDesignId  String?
+  roomDesign    RoomDesign?                 @relation(fields: [roomDesignId], references: [id], onDelete: NoAction)
+  liftDesignId  String?
+  liftDesign    LiftDesign?                 @relation(fields: [liftDesignId], references: [id], onDelete: NoAction)
+  /// the inputs of the report as entered (src/lib/rt/input.ts)
+  inputs        Json
+  /// Project.anagrafica, Project's own data (name, address, city, province, plantNumber, client) and Project.plant at issue
+  anagrafica    Json
+  projectData   Json
+  plant         Json
+  companyName   String
+  logoId        String?
+  logo          CompanyLogo?                @relation(fields: [logoId], references: [id], onDelete: SetNull)
+  /// what the derivation gives (src/lib/rt/snapshot.ts)
+  results       Json
+  /// RT_ENGINE_VERSION (src/lib/rt/version.ts)
+  engineVersion String
+  sha256        String
+  verdict       Verdict
+  failCount     Int
+  warnCount     Int
+  /// e.g. "Solo argano · 7 sezioni · 5 allegati · R0"
+  summary       String
+  createdAt     DateTime                    @default(now())
+  /// the ids of the drawing sets the report cites (src/server/rt/compose.ts), read back by id; NULL: issued before
+  /// migration 28 (development databases only), read by time as then
+  citedSetIds   Json?
+  pdf           TechnicalReportPdf?
+  attachments   TechnicalReportAttachment[]
+
+  @@unique([companyId, year, seq, revision])
+  @@index([projectId, createdAt])
+  @@index([calculationId])
+  @@index([roomDesignId])
+  @@index([liftDesignId])
+  @@index([userId])
+  @@index([logoId])
+}
+
+/// The files of an issued report in their order («Allegato n»), as they were at issue (snapshot); never changed. A file
+/// in use cannot be deleted: the foreign key on attachmentId is NO ACTION, DEFERRABLE INITIALLY DEFERRED (checked at the
+/// commit, migration 27 — Prisma does not model it), so deleting the installation or the company still removes both.
+model TechnicalReportAttachment {
+  reportId     String
+  report       TechnicalReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  /// 1..40 (CHECK)
+  position     Int
+  attachmentId String
+  attachment   Attachment      @relation(fields: [attachmentId], references: [id], onDelete: NoAction)
+  title        String
+  kind         AttachmentKind
+  component    String?
+  sha256       String
+  pages        Int
+
+  @@id([reportId, position])
+  @@unique([reportId, attachmentId])
+  @@index([attachmentId])
+}
+
+/// The body of an issued report (ReportLab) as first rendered while the running engines reproduced it; served from then
+/// on, after an engine's change too (as DrawingSetPdf). The appended files are added at each download. Immutable.
+model TechnicalReportPdf {
+  reportId  String          @id
+  report    TechnicalReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  /// SHA-256 of the PDF's bytes
+  sha256    String
+  pages     Int
+  data      Bytes
+  createdAt DateTime        @default(now())
 }

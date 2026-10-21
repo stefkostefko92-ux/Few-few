@@ -11,7 +11,8 @@ import { archivedLanguages } from '../legal-archive';
 
 const ARCHIVE = join(process.cwd(), 'legal', 'terms');
 
-/** Every file of every earlier version, as accepted (sha256sum of the files at commit 60e01b91b, 2026-10-14). */
+/** Every file of every earlier version, as accepted (sha256sum of the files at commit 60e01b91b, 2026-10-14; version 5 —
+ *  Italian only — when version 6 came into force, round 49, 2026-10-21). */
 const PINNED: Record<string, string> = {
   '2026-10-02/it.txt': '652877268b2041f584805ed3962d8e345a04da81cffa4709edddd7485869b912',
   '2026-10-02/en.txt': 'c1a46b29e920f24cfdd48c8d93124555a92998afbd7e4fcaaee2f48453186817',
@@ -25,6 +26,7 @@ const PINNED: Record<string, string> = {
   '4/it.txt': 'bd05f71572c41c16307a9ab9e54d5e572c74f3989e8e15ad77c2105981651696',
   '4/en.txt': '865c71e36f8d08c80f0b2efecf57f0d1b20ffd4989f6dfb6bac6be8cdda12a45',
   '4/bg.txt': 'b6ab31300f4f11a7287148a6d44d77531bb908e99f304f61ebfa7cb56f739f3a',
+  '5/it.txt': 'd057d88b094d26ac76810d884382318bf6a2034968ccb7cd266f1d988c18047e',
 };
 
 test('le versioni precedenti restano parola per parola: ogni file con la sua impronta, nessuno in più', () => {
@@ -37,6 +39,7 @@ test('le versioni precedenti restano parola per parola: ogni file con la sua imp
 
 test('i testi in inglese e in bulgaro: solo delle versioni che li avevano, mai di quella in vigore, mai fuori dall’archivio', () => {
   for (const v of ['2026-10-02', '2', '3', '4']) assert.deepEqual(archivedLanguages(v).map((a) => a.lang), ['en', 'bg'], v);
-  for (const v of [TERMS_VERSION, '1', '6', '../4', '4/..', '', 'constructor']) assert.deepEqual(archivedLanguages(v), [], `«${v}»`);
+  // version 5 was published in Italian only: no other language to link
+  for (const v of [TERMS_VERSION, '5', '1', '7', '../4', '4/..', '', 'constructor']) assert.deepEqual(archivedLanguages(v), [], `«${v}»`);
   for (const a of archivedLanguages('4')) assert.ok(a.file.startsWith(join(ARCHIVE, '4')) && a.file.endsWith(`${a.lang}.txt`), a.file);
 });

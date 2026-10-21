@@ -14,8 +14,8 @@ export type DraftResult = { ok: true; at: string } | { ok: false; error: 'unauth
 
 type Target = { user: SessionUser; projectId: string; scope: DraftScope };
 
-/** Who fills the form a draft belongs to: the calculator's, whoever makes the calculations; the one form's and the
- *  machine room's survey, whoever draws the project. */
+/** Who fills the form a draft belongs to: the calculator's, whoever makes the calculations; the one form's, the
+ *  machine room's survey and the relazione tecnica di modifica's (round 49), whoever draws the project. */
 const formRight = (scope: DraftScope): Capability => (scope === 'calc' ? 'calc:create' : 'progetto:edit');
 
 async function target(input: { projectId: unknown; scope: unknown }, limit: string): Promise<Target | Exclude<DraftResult, { ok: true }>> {

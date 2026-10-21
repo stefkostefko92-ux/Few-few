@@ -3,7 +3,8 @@ import 'server-only';
 // page, route and action. A calculation's documents (report, order, drawing set, export) need the calculation, the shaft
 // design it was made from and the lift design it belongs to all reproduced; a record that is not keeps its page, and its
 // documents wait for a new save (the button «Aggiorna con il software attuale»). An issued drawing set is kept as the PDF
-// it was (DrawingSetPdf) and never needs this.
+// it was (DrawingSetPdf) and never needs this; an issued relazione tecnica di modifica keeps its body the same way
+// (TechnicalReportPdf; its rule — base reproduced and its own hash — is src/server/rt/record.ts rtRecord).
 import { ENGINE_VERSION } from '@/calc/snapshot';
 import type { FormValues } from '@/calc/types';
 import { formValuesSchema } from '@/lib/calc-input';
@@ -13,6 +14,7 @@ import { collaudoReadSchema } from '@/lib/lift-input';
 import { liftRecord, type LiftRecord } from '@/lib/lift-record';
 import { LIFT_ENGINE_VERSION } from '@/lib/lift/version';
 import { ROOM_ENGINE_VERSION } from '@/lib/room/snapshot';
+import { RT_ENGINE_VERSION } from '@/lib/rt/version';
 import type { ReportDesign } from '@/lib/report/shaft';
 import { reproduceDesign, type StoredDesign } from '@/lib/shaft-hash';
 import { verifyStored } from '@/lib/snapshot-hash';
@@ -66,6 +68,9 @@ export function recordMarks(rec: CalcRecord, rawCollaudo: unknown): ValueMarks {
 
 type Versioned = { engineVersion: string };
 const oldCalc = (c: Versioned) => c.engineVersion !== ENGINE_VERSION, oldShaft = (d: Versioned) => d.engineVersion !== SHAFT_ENGINE_VERSION;
+const oldLift = (d: Versioned & { calculation: Versioned; shaftDesign: Versioned }): boolean =>
+  d.engineVersion !== LIFT_ENGINE_VERSION || oldCalc(d.calculation) || oldShaft(d.shaftDesign);
+const oldRoom = (r: Versioned & { calculation: Versioned }): boolean => r.engineVersion !== ROOM_ENGINE_VERSION || oldCalc(r.calculation);
 
 /** A record the running engines no longer reproduce, told by the engine versions stored with it and with the records it
  *  is made of (every hash covers its engine's version, and a change of an engine bumps it): the lists mark it «da
@@ -74,7 +79,10 @@ export const outdated = {
   calc: (c: Versioned & { shaftDesign?: Versioned | null; liftDesign?: Versioned | null }): boolean =>
     oldCalc(c) || (!!c.shaftDesign && oldShaft(c.shaftDesign)) || (!!c.liftDesign && c.liftDesign.engineVersion !== LIFT_ENGINE_VERSION),
   shaft: oldShaft,
-  lift: (d: Versioned & { calculation: Versioned; shaftDesign: Versioned }): boolean =>
-    d.engineVersion !== LIFT_ENGINE_VERSION || oldCalc(d.calculation) || oldShaft(d.shaftDesign),
-  room: (r: Versioned & { calculation: Versioned }): boolean => r.engineVersion !== ROOM_ENGINE_VERSION || oldCalc(r.calculation),
+  lift: oldLift,
+  room: oldRoom,
+  /** an issued relazione tecnica di modifica (round 49): its RT engine, or the base it was made from (the machine room or
+   *  the lift design with their records); its kept PDF stays downloadable, a new revision makes it again */
+  rt: (r: Versioned & { roomDesign: (Versioned & { calculation: Versioned }) | null; liftDesign: (Versioned & { calculation: Versioned; shaftDesign: Versioned }) | null }): boolean =>
+    r.engineVersion !== RT_ENGINE_VERSION || (!!r.roomDesign && oldRoom(r.roomDesign)) || (!!r.liftDesign && oldLift(r.liftDesign)),
 };

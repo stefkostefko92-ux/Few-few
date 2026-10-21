@@ -2,14 +2,14 @@
 //   health → public page (no console or CSP errors, in Italian, the only language) → /en and /bg sent for good to /it → an unknown
 //   address: the 404 drawn in Italian → sign-in → «Nuovo impianto» → its «Calcolo argano», which starts empty
 //   (its draft kept, resumed, discarded; smoke-blank.mjs) → saved snapshot with reproduced hash → calculation report (PDF) → its
-//   machine room surveyed, the relazione tecnica and the drawing set (scripts/smoke-replacement.mjs) → the installation's page:
+//   machine room surveyed, the drawing set and its relazione tecnica di modifica (scripts/smoke-replacement.mjs) → the installation's page:
 //   its type, its sections → a modernisation of its own whose logbook and documented loads answer speed, load and travel
 //   «No» (round 47) → a «Calcolo argano» of a modernisation from the saved one (round 45: the renovation keeping the sling,
 //   UNI 10411-11; round 46: its logbook's speed locks «Velocità variata», scripts/smoke-intervento.mjs) → the Progetto drawn on it: its data entered (a draft taken up again), a distance of the plan, the landing door
 //   set apart from the car door and the car buffers changed on the drawings, live 3D simulation, the test of its base, saved
 //   in one go (shaft design and calculation together) with its documents → data of the installation, client and company
 //   logos, drawing set issued from it (sheets, PDF) and its revision → the installations' result pill opens the checks behind its number
-//   (scripts/smoke-verdict.mjs) → a «Trasformazione completa»: its Progetto leads to the calculation, the calculation fixed to
+//   (scripts/smoke-verdict.mjs) → the Progetto's relazione tecnica di modifica (scripts/smoke-rt.mjs) → a «Trasformazione completa»: its Progetto leads to the calculation, the calculation fixed to
 //   UNI EN 81-20/50, the Progetto drawn on it, its set (scripts/smoke-progetto.mjs) → the survey sheets: a sheet with its conditions, stops, modules, search, PDFs, print, conflict,
 //   trash (scripts/smoke-rilievi.mjs), the company's order of the sections, the linked data with the confirmation, MoviLift, the
 //   modules in the print (scripts/smoke-rilievi-sync.mjs), Mastech, the hydraulic lift, the print's choices (smoke-rilievi-sync2.mjs)
@@ -35,6 +35,7 @@ import { publicPages } from './smoke-public.mjs';
 import { guidePage, helpAndSearch, notFoundPage, reportFlow, rilievoLostAnswer, rilievoOffline } from './smoke-help.mjs';
 import { replacementRoom } from './smoke-replacement.mjs';
 import { rilieviFlow } from './smoke-rilievi.mjs';
+import { rtTrasformazione, rtVano } from './smoke-rt.mjs';
 import { rilieviSync } from './smoke-rilievi-sync.mjs';
 import { rilieviSync2 } from './smoke-rilievi-sync2.mjs';
 import { collegaFlow } from './smoke-collega.mjs';
@@ -103,7 +104,7 @@ try {
   step('draft order of the advised machine (Word and PDF)');
   assert.match(await page.textContent('main'), /l’argano verificato in questo calcolo/, 'the order is for the machine the calculation verified');
   await orderFiles(page, '/api/calculations/');
-  const { roomUrl, roomId } = await replacementRoom({ BASE, page, hydrated, calcUrl, stamp });
+  const { roomUrl, roomId, rt } = await replacementRoom({ BASE, page, hydrated, calcUrl, stamp });
 
   step('the top bar searches the installations on the server: every word, in the name, the address or the plant number');
   await page.fill('.ws-search-wide input[name="q"]', `Smoke ${stamp}`);
@@ -266,12 +267,11 @@ try {
   assert.match(await page.textContent('h1'), / R1$/, 'revision R1');
   await page.goto(projectUrl);
   await page.waitForSelector('.lift-home .lift-facts');
-
+  await rtVano({ page, hydrated, stamp, projectUrl });
   assert.deepEqual(errors, [], 'browser errors');
   await archivedReadOnly({ page, hydrated, projectUrl, errors });
-
   await priceList({ BASE, page, hydrated, stamp, liftUrl, roomUrl });
-  await progettoFlow({ BASE, page, hydrated, stamp });
+  await rtTrasformazione({ page, projectUrl: (await progettoFlow({ BASE, page, hydrated, stamp })).projectUrl });
   const rilievo = await rilieviFlow({ BASE, page, hydrated });
   const rilievoSync = await rilieviSync({ BASE, page, hydrated });
   const mastech = await rilieviSync2({ BASE, page, hydrated });
@@ -288,7 +288,7 @@ try {
   assert.deepEqual(errors, [], 'browser errors');
   await secondCompany({ BASE, page, kit: { login, logout, hydrated }, ADMIN, stamp,
     urls: { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref, roomUrl, roomId, rilievoUrl: rilievo.sheetUrl, rilievoId: rilievo.id,
-      rilievoMovilift: rilievoSync.id, rilievoMastech: mastech.id } });
+      rilievoMovilift: rilievoSync.id, rilievoMastech: mastech.id, rt } });
 
   if (sink) await accountFlows({ BASE, stamp, step, sink, newPage: () => newPage(browser), ADMIN_EMAIL: ADMIN.email, ADMIN, kit: { login, logout, hydrated } });
   else step('accounts without an administrator: skipped (no MAILBOX_PORT)');

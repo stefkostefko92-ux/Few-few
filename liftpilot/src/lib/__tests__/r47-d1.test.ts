@@ -12,12 +12,9 @@ import { carichiOf, type Carichi } from '../lift/modifica';
 import { D1_NON_REGGE, D1_PROVA_FRENO } from '../lift/obblighi-variazioni';
 import { d1Check, d1Di } from '../lift/rapporto';
 import { NO_MARKS } from '../lift/marks';
-import { deriveRoom } from '../room/derive';
-import { startSurvey } from '../room/survey';
 import { buildReport } from '../report/build';
 import { d1Sito } from '../report/cases';
 import { adempimentiBlocks } from '../report/collaudo';
-import { buildTecnica } from '../report/tecnica';
 
 const DAY = new Date('2026-10-16T08:00:00Z');
 const project = { name: 'Impianto D.1', address: null, city: 'Monza', province: 'MB', plantNumber: null, client: null };
@@ -75,17 +72,12 @@ test('D.1 alla prova del freno: il punto c’è esattamente quando tr_d1 si appl
   }
 });
 
-test('D.1 alla prova del freno: nelle due relazioni e nella lista di verifica', () => {
+// (the relazione tecnica di modifica prints the same point: report-rt-locale.test.ts, round 49)
+test('D.1 alla prova del freno: nella relazione di calcolo e nella lista di verifica', () => {
   const Vx = V(), C = test1(Vx, spostato(Vx)), d = d1Di(C, Vx);
   assert.ok(d && d.aLim !== null);
   const rel = JSON.stringify(buildReport({ calc, project, company: 'Ditta di prova', values: Vx, reviews: [], marks: { ...NO_MARKS, collaudo: C } }).blocks);
   assert.ok(rel.includes(`${PREFIX}alla prova del freno`) && rel.includes(it2(d.aLim)), 'relazione di calcolo');
-  const s = startSurvey(600), tec = buildTecnica({
-    room: { id: 'r', label: null, createdAt: DAY, sha256: '0'.repeat(64), engineVersion: 'x', author: null },
-    calc: { id: 'c', label: null, createdAt: DAY, sha256: '0'.repeat(64), engineVersion: 'x', profileId: 'it' },
-    project, company: 'S', values: Vx, survey: s, derived: deriveRoom(Vx, s), collaudo: C, plant: {}, sets: [],
-  });
-  assert.ok(JSON.stringify(tec.blocks).includes(`${PREFIX}alla prova del freno`), 'relazione tecnica');
   // the list of verification names both templates, in the changes of UNI 10411-1
   const lista = readFileSync(new URL('../../../docs/lista-verifica-normativa.json', import.meta.url), 'utf8');
   for (const p of [D1_PROVA_FRENO, D1_NON_REGGE]) assert.ok(lista.includes(JSON.stringify(p.testo).slice(1, 60)), p.testo);

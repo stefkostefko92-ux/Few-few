@@ -27,3 +27,21 @@ export async function downloader(key: string, max: number, capability: Capabilit
   if (!rateLimit(`${key}:${user.id}`, max, 10 * 60 * 1000)) return { refused: text(429, ANSWER.rateLimited) };
   return { user };
 }
+
+/** Downloads under way, by user and kind: a rate limit counts requests, not how many run at once. */
+const flying = new Map<string, number>();
+
+/** A place among at most `max` downloads of `key` under way at once — its release (idempotent) — or null when they are
+ *  all taken. */
+export function inFlight(key: string, max: number): (() => void) | null {
+  const n = flying.get(key) ?? 0;
+  if (n >= max) return null;
+  flying.set(key, n + 1);
+  let done = false;
+  return () => {
+    if (done) return;
+    done = true;
+    const left = (flying.get(key) ?? 1) - 1;
+    if (left > 0) flying.set(key, left); else flying.delete(key);
+  };
+}

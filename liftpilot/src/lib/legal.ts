@@ -10,11 +10,15 @@ import { INTL_LOCALE, isLocale } from '@/i18n/locales';
 import { TOKEN_TTL_MS } from './token-shape';
 
 /** The version in force for new companies, the day it was published, and the earliest day it binds the others. */
-export const TERMS_VERSION = '5';
-export const TERMS_DATE = '2026-10-14';
-// the earliest day termsBinding allows for an e-mail sent on TERMS_DATE is 2026-11-14 (a Saturday); the Monday after
-// leaves two days to deploy and send the e-mails (npm run legal:notice) without moving the day
-export const TERMS_EFFECTIVE = '2026-11-16';
+// Version 6 (round 49): the relazione tecnica di modifica — the uploaded documents and the data of the engineers who
+// write and check the reports in art. 9, the documents and the issued reports in the export (art. 10) and in the
+// activity log. Published without the e-mail of art. 12 (the owner's decision: no companies to tell): a company that
+// accepted version 5 stays bound by it, and version 6 binds the companies that register from TERMS_DATE on.
+export const TERMS_VERSION = '6';
+export const TERMS_DATE = '2026-10-21';
+// the earliest day termsBinding allows for an e-mail sent on TERMS_DATE is 2026-11-21 (a Saturday); the Monday after
+// leaves two days to deploy and send the e-mails, should they ever be sent (npm run legal:notice), without moving the day
+export const TERMS_EFFECTIVE = '2026-11-23';
 
 /** Every version kept in legal/terms/<version>/, oldest first: the day it was published and the number the pages call it
  *  by (the first one was named after its day). The last is the version in force; an owner who has not accepted it yet
@@ -24,6 +28,7 @@ export const TERMS_HISTORY: readonly { version: string; label: string; date: str
   { version: '2', label: '2', date: '2026-10-02' },
   { version: '3', label: '3', date: '2026-10-06' },
   { version: '4', label: '4', date: '2026-10-06' },
+  { version: '5', label: '5', date: '2026-10-14' },
   { version: TERMS_VERSION, label: TERMS_VERSION, date: TERMS_DATE },
 ];
 

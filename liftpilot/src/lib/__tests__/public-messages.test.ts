@@ -1,6 +1,7 @@
 // The pages read their texts through getTranslations / useTranslations, and next-intl does not fail on a missing key: it
 // prints «namespace.key» on the page and logs an error. tsc does not see it either. So every key the code asks for
-// literally must exist in messages/it.json (Italian is the only language), and every key built from a template
+// literally must exist in messages/it.json (Italian is the only language) or in the message file registered under its
+// namespace (src/i18n/request.ts: calc, and since round 49 rt and allegati), and every key built from a template
 // (`faq${n}q`) must match at least one key of its namespace. The landing and the public pages are named apart: there a
 // missing key is what every visitor sees first.
 import { test } from 'node:test';
@@ -9,9 +10,15 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import it from '../../../messages/it.json';
 import calc from '../../../messages/calc/it.json';
+import rt from '../../../messages/rt/ui.json';
+import allegati from '../../../messages/rt/allegati.json';
 
 const root = path.resolve(new URL('../../..', import.meta.url).pathname);
-const MESSAGES: Record<string, unknown> = { ...it, calc };
+const MESSAGES: Record<string, unknown> = { ...it, calc, rt, allegati };
+/** The message files of the pages besides it.json, by the namespace request.ts gives each one. */
+const NAMESPACED: Record<string, string> = { calc: 'messages/calc/it.json', rt: 'messages/rt/ui.json', allegati: 'messages/rt/allegati.json' };
+/** The texts of a document, imported by its builder (src/lib/report/rt/), never by a page: not registered. */
+const DOCUMENT_TEXTS = ['messages/rt/doc.json'];
 
 /** Every source file of the application and of the standalone page (not the tests, not the built page). */
 function sources(dir: string): string[] {
@@ -123,6 +130,31 @@ test('messages: every key the landing and the public pages ask for exists in it.
   const { missing, checked } = check([...LANDING, ...PUBLIC]);
   assert.deepEqual(missing, []);
   assert.ok(checked > 150, `only ${checked} keys checked: the parser lost the translators`);
+});
+
+/** The .json files under messages/, as paths from the product's root. */
+function messageFiles(dir: string): string[] {
+  return readdirSync(dir).flatMap((f) => {
+    const p = path.join(dir, f);
+    if (statSync(p).isDirectory()) return messageFiles(p);
+    return f.endsWith('.json') ? [path.relative(root, p)] : [];
+  });
+}
+
+test('messages: every message file of the pages is registered in request.ts under its own namespace', () => {
+  const request = readFileSync(path.join(root, 'src/i18n/request.ts'), 'utf8');
+  const files = messageFiles(path.join(root, 'messages')).filter((f) => f !== 'messages/it.json' && !DOCUMENT_TEXTS.includes(f));
+  assert.deepEqual(files.sort(), Object.values(NAMESPACED).sort(), 'a new message file is registered here and in request.ts');
+  // `messages: { ...app, calc, rt, allegati }` — a namespace by its import's name, or `ns: name`
+  const entries = (/messages:\s*\{([^}]*)\}/.exec(request)?.[1] ?? '').split(',').map((s) => s.trim()).filter((s) => s && !s.startsWith('...'));
+  const registered = new Map(entries.map((s) => { const [ns, name] = s.split(':').map((x) => x.trim()); return [ns ?? '', name ?? ns ?? '']; }));
+  for (const [ns, file] of Object.entries(NAMESPACED)) {
+    const name = new RegExp(`^import (\\w+) from '\\.\\./\\.\\./${file.replace(/[.]/g, '\\.')}';$`, 'm').exec(request)?.[1];
+    assert.ok(name, `${file} imported by src/i18n/request.ts`);
+    assert.equal(registered.get(ns), name, `${file} registered as «${ns}»`);
+    assert.ok(!(ns in it), `«${ns}» is not also a namespace of it.json`);
+  }
+  assert.equal(registered.size, Object.keys(NAMESPACED).length, 'no other namespace registered');
 });
 
 test('messages: every key the application asks for exists in it.json', () => {

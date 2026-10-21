@@ -3,17 +3,18 @@
 // these keys, so a key added or removed there fails the typecheck until the register says so — and then the version
 // goes up.
 export const EXPORT_FORMAT = 'liftpilot-company-export';
-export const EXPORT_FORMAT_VERSION = 11;
+export const EXPORT_FORMAT_VERSION = 12;
 
-/** The top-level keys: the envelope, then the data (each one described on the page, messages: dataPage.keys.<key>). */
+/** The top-level keys: the envelope, then the data (each one described on the page, messages: dataPage.keys.<key>).
+ *  The uploaded files come last: the route writes them one at a time after the rest (src/server/company-export.ts). */
 export const EXPORT_ENVELOPE = ['format', 'formatVersion', 'exportedAt', 'termsVersion', 'note'] as const;
 export const EXPORT_DATA = ['company', 'users', 'invites', 'rolePermissions', 'logos', 'projects', 'priceItems', 'customPrices', 'schede', 'feedback',
-  'auditLog'] as const;
+  'auditLog', 'attachments'] as const;
 
 export type ExportKey = (typeof EXPORT_ENVELOPE)[number] | (typeof EXPORT_DATA)[number];
 
 /** What a project carries inside the export (messages: dataPage.project.<key>). */
-export const EXPORT_PROJECT = ['calculations', 'shaftDesigns', 'liftDesigns', 'roomDesigns', 'drawingSets', 'formDrafts', 'clientLogos'] as const;
+export const EXPORT_PROJECT = ['calculations', 'shaftDesigns', 'liftDesigns', 'roomDesigns', 'drawingSets', 'technicalReports', 'formDrafts', 'clientLogos'] as const;
 
 /** Every version of the format, oldest first (messages: dataPage.history.v<version>): the day it began, null for the
  *  first. The last is EXPORT_FORMAT_VERSION. */
@@ -40,6 +41,10 @@ export const EXPORT_FORMAT_HISTORY = [
   // the sheets as rilievi 988f3cf37 keeps them: the power unit, Mastech's model, the tie rods, the notes, the emergency
   // call to install, the print choices (migration 26_rilievi_sync_2, round 49)
   { version: 11, since: '2026-10-21' },
+  // the relazione tecnica di modifica (migration 27_relazione_modifica, round 49): each installation's registry
+  // (anagrafica), its issued reports with their revisions and their files as listed at issue, and the uploaded files
+  // with their bytes in base64 (attachments, written last, one at a time)
+  { version: 12, since: '2026-10-21' },
 ] as const;
 
 /** The day the register last changed (the page shows it). */

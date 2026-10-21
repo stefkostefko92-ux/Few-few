@@ -54,8 +54,9 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
   if (!parsedId.success) notFound();
   const d = await getLiftDesign(user, parsedId.data);
   if (!d) notFound();
-  const [t, tp, tt, ta, tg, ti, tc, before, base, latest] = await Promise.all([getTranslations('lift'), getTranslations('projects'), getTranslations('tavole'),
-    getTranslations('advice'), getTranslations('progetto'), getTranslations('calculations.intervento'), getTranslations('calculations'), refreshedFrom(user, 'liftDesign', (await searchParams).da, d.project.id),
+  const [t, tp, tt, ta, tg, ti, tc, trt, before, base, latest] = await Promise.all([getTranslations('lift'), getTranslations('projects'), getTranslations('tavole'),
+    getTranslations('advice'), getTranslations('progetto'), getTranslations('calculations.intervento'), getTranslations('calculations'), getTranslations('rt'),
+    refreshedFrom(user, 'liftDesign', (await searchParams).da, d.project.id),
     d.baseCalculationId ? prisma.calculation.findFirst({ where: { id: d.baseCalculationId, companyId: user.companyId }, select: { id: true, createdAt: true, inputs: true, collaudo: true, intervento: true } }) : null,
     calcoloBase(user, d.project.id)]);
   const fd = dateFormat(locale);
@@ -136,6 +137,8 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
             {can(user, 'report:download') ? <a className="btn" href={`/api/shaft-designs/${d.shaftDesign.id}/dxf`}><Icon name="file-dxf" size={18} />{t('doc_dxf')}</a> : null}
             <Link className="btn" href={`/app/calculations/${d.calculation.id}`}><Icon name="calculator" size={18} />{t('doc_calc')}</Link>
             <Link className="btn" href={`/app/shaft-designs/${d.shaftDesign.id}`}><Icon name="floor-plan" size={18} />{t('doc_shaft')}</Link>
+            {/* a modification of an existing lift (UNI 10411): its relazione tecnica di modifica, round 49 */}
+            {dv && dv.collaudo.norma !== 'en81' ? <Link className="btn" href={`/app/projects/${d.project.id}/relazione-tecnica`}><Icon name="file-text" size={18} />{trt('apri')}</Link> : null}
           </div>
         ) : <p className="note">{t('docs_refused')}</p>}
         {same && can(user, 'report:download') ? (

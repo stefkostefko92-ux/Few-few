@@ -217,7 +217,8 @@ src/lib/present/     Текстовете и таблиците на прото�
 src/lib/report/      build.ts — моделът на relazione (италиански, с бланка: логото, името и градът на фирмата); shaft.ts —
                      секцията „Vano e cabina“ с плана (ядрото); advice.ts — разделът със съвета (информативен); render.ts —
                      вика report/relazione.py, report/tavole.py или report/raster.py (чертежите като PNG за DOCX);
-                     tecnica.ts + tecnica-room.ts — relazione tecnica на подмяната (машината и машинното, 13 раздела).
+                     tecnica-room.ts — блоковете на машинното на подмяната (до кръг 49 — с tecnica.ts самостоятелна relazione
+                     tecnica; от кръг 49 — разделът «Locale del macchinario» на relazione tecnica di modifica, rt/locale.ts).
                      variazioni.ts (кръг 46) — редовете и изречението на лист 1 за промяната на скоростта и хода спрямо
                      libretto (само с него) и редът на регулирането на таблото под нова машина (S5, regolazioneRows — с ⚠
                      без отговор, само в relazioni); modifica-dpr.ts (след прегледа, извън collaudo.ts) altreModifiche —
@@ -227,7 +228,14 @@ src/lib/report/      build.ts — моделът на relazione (италиан�
                      с a_lim, C1 на присъдата и изхода ѝ с думи в «Adempimenti», при UNI 10411-1 на adempimentiBlocks).
                      Кръг 36: build-parts (части на build.ts), guide („Guide e carichi sulle strutture“ — водачите и товарите от
                      sheet-loads), refs (клаузите в колоната „Riferimento“), elaborati (издадените комплекти в relazione),
-                     tecnica-site (отворите, товарите и закрепването в relazione tecnica).
+                     tecnica-site (отворите, товарите и закрепването — в relazione tecnica di modifica от кръг 49).
+                     Кръг 49 Б: rt/ — relazione tecnica di modifica (`buildRelazioneModifica` → ReportDoc<PdfBlock>): build,
+                     contesto, testi (doc.json), righe (ред на проверка с „Riferimento“), sezione (общият раздел на компонент:
+                     защо, данни с източник, проверки, задължения, обект, документи), intestazione, impianto, prima-dopo,
+                     regole, strutture, quadro-cabina, funi-argano, guide, ammortizzatori, limitatore-porte, contrappeso-vano,
+                     locale, esito, allegati-firme (файловете, подписите, долният ред на приложената страница); model.ts —
+                     FirmeBlock/PdfBlock, `meta.extraPages`, `meta.fascicolo`; pdf-tool.ts — inspectFile, assembleFascicolo,
+                     PDF_TOOL_LIMITS/FASCICOLO_LIMITS; render.ts — runPdfTool (същите места като рендерите).
                      Кръг 37: build-design (`designMachine`: машината на проекта, товарът на опората и проверките, които я искат —
                      изнесени от build.ts), label-case (етикетите на лист 1 в relazioni: малки букви, обозначенията се пазят), payload
                      (документът и датата на записа за рендера на report/), refs (`checkRefs`: клаузата на всяка проверка, по частта на
@@ -273,12 +281,13 @@ src/server/          Server actions ('use server') и заявки, винаги
                      пакета, порталът на Stripe), prices + price-actions (листата на фирмата), terms-actions (приемането),
                      company-export (всички данни на фирмата в JSON, `/api/company/export`, и картите на Rilievi — `schede`,
                      с връзката им към съоръжението `projectId` от формат 7, с колоните на синхрона до 988f3cf37 от
-                     формат 11 — регистърът е src/lib/export-format.ts);
+                     формат 11; формат 12 — анаграфиката, издадените relazioni tecniche и качените файлове: `exportStream`
+                     пише отговора на парчета, файловете един по един в base64 — регистърът е src/lib/export-format.ts);
                      account-actions — регистрация, потвърждение на адреса, забравена и нова парола; project-export
                      (записаният проект в PDF/DXF/DWG); order-export + order-route (черновата на поръчка от записан проект или
                      изчисление в DOCX/PDF); client-logo-actions (логото на възложителя на проекта); room-actions (записът на
-                     заснемането), room-compose (машинното и комплектът му от записа), room-export (relazione tecnica, чернова
-                     PDF, DXF, DWG на записаното машинно). records (едното правило на документите: записът и всичко, от
+                     заснемането), room-compose (машинното и комплектът му от записа), room-export (чернова PDF, DXF, DWG на
+                     записаното машинно; relazione tecnica — от кръг 49 няма, маршрутът дава 404). records (едното правило на документите: записът и всичко, от
                      което е направен, възпроизведени от текущите двигатели — calcRecord, recordMarks; `outdated` — „da
                      aggiornare“ по версиите), save (записите: изчисление, проект на асансьора, машинно — от формите и от
                      обновяването), refresh-actions («Aggiorna con il software attuale»), drawing-pdf (PDF-ът на издадения
@@ -409,15 +418,26 @@ src/components/lift/ Екранът Progetto (кръг 45; до него LiftWor
 src/app/             [locale]/… страниците, api/ (health, logout — „Esci“ като обикновен POST само от страниците на приложението
                      (`lib/same-origin.ts`), billing/webhook — Stripe с проверен подпис, relazione PDF, DXF на проект, PDF на комплект, lista-verifica,
                      lift-designs/<id>/pdf|dxf|dwg — износ на записания проект, lift-designs|calculations/<id>/order/docx|pdf —
-                     чернова на поръчка на машината, room-designs/<id>/relazione|pdf|dxf|dwg — документите на подмяната), robots,
+                     чернова на поръчка на машината, room-designs/<id>/pdf|dxf|dwg — документите на подмяната (relazione — 404
+                     от кръг 49); кръг 49 Б: relazioni/<id>/pdf — relazione tecnica di modifica с приложените файлове,
+                     projects/<id>/relazione-tecnica/anteprima — черновата, projects/<id>/allegati (POST) — качването,
+                     allegati/<id> — свалянето на файл), robots,
                      terms/<версия>/<en|bg> — приетият текст на условията до версия 4 на английски или български (text/plain,
                      noindex), sitemap, llms.txt; [locale]/pricing — цената от Stripe (`monthlyPrice`, отговорът се пази 10 минути;
                      след грешка — „su richiesta“ за минута), пакетите места и FAQ с JSON-LD.
-messages/            it.json — приложението; messages/calc/it.json — речникът на прототипа v12 (425 ключа). Само италиански
+messages/            it.json — приложението; messages/calc/it.json — речникът на прототипа v12 (425 ключа); кръг 49 Б:
+                     messages/rt/ui.json (`rt`) и allegati.json (`allegati`), регистрирани в request.ts, и rt/doc.json —
+                     текстовете на PDF-а на relazione tecnica di modifica (внася ги построителят, не request.ts). Само италиански
                      (от 2026-10-12): src/i18n/locales.ts (LOCALES = ['it']), legacy.ts (/en и /bg → 301 към /it,
                      в src/middleware.ts преди next-intl), request.ts (статичните it.json), routing.ts (без hreflang и
                      без бисквитка за езика).
-report/relazione.py  PDF с ReportLab + DejaVu (никога Helvetica/Times); само подрежда подаден модел.
+report/relazione.py  PDF с ReportLab + DejaVu (никога Helvetica/Times); само подрежда подаден модел. Кръг 49 Б: блокът
+                     `firme` (report/firme.py), „Pagina k di N“ с `meta.extraPages`, редът на фасцикула на стр. 1.
+report/pdf-tool.mjs  Кръг 49 Б (plain ESM, `// @ts-check`, pdf-lib + fontkit): `inspect` — проверката на качен PDF/JPEG/PNG
+                     (криптиран, XFA, формуляр, страници, размер, 64 MiB съдържание), `assemble` — тялото на relazione + всяка
+                     страница на файловете, изравнена и вградена в рамка с печата; pdf-place.mjs — чистите помощници
+                     (EXIF/Rotate, разполагане, печат, белите страници, чистене на действията). Пуска се само като отделен процес
+                     (`runPdfTool`: `--max-old-space-size=1024`, без shell, таймаут, таван на изхода, временна папка 0700).
 report/raster.py     Чертежите на модела като PNG 300 dpi (Pillow, същият модел на щрихите, шрифтовете DejaVu) за DOCX.
 report/stamp.py      Датата на записа в PDF (CreationDate/ModDate, /ID от `SOURCE_DATE_EPOCH`) и `/Lang it-IT` — сваляният на запис е
                      едни и същи байтове.
@@ -455,7 +475,13 @@ prisma/              schema + migrations/0_init (тригер: без UPDATE н�
                      26_rilievi_sync_2 (кръг 49, синхронът с rilievi до 988f3cf37: RilievoQuadroModello и 33-те живи
                      колони — моделът на Mastech, централата, тирантите, бележките, moduliStampati и sezioniEscluse
                      TEXT[]; мъртвите 24 колони и 7 енума на rilievi — не, списъкът е в коментара на Scheda; ръчно
-                     писана, само добавя; връщането — в коментара ѝ).
+                     писана, само добавя; връщането — в коментара ѝ), 27_relazione_modifica (кръг 49 Б: Project.anagrafica,
+                     AttachmentKind, Attachment + AttachmentBlob — файлът и байтовете му, TechnicalReport +
+                     TechnicalReportCounter, TechnicalReportAttachment — файловете на издадената, както са при издаването
+                     (FK към файла DEFERRABLE INITIALLY DEFERRED), TechnicalReportPdf — пазеното тяло; пет тригера за
+                     неизменимост, CHECK-ове; адитивна, само след 26; връщането — в коментара ѝ), 28_rt_tavole_citate
+                     (кръг 49, поправките: TechnicalReport.citedSetIds — id-тата на цитираните комплекти, JSON масив или
+                     NULL за редовете отпреди; адитивна, само след 27).
 src/lib/rilievi/     Rilievi (кръг 41) — картите за оглед, чисто (и в браузъра): fields + field-types (ЕДИНСТВЕНИЯТ списък на
                      полетата, условията `when`/`not` на полетата и разделите, activeParts → видимите раздели и полета,
                      activeFields; кръг 49 — разделени на fields-argano, fields-centralina, field-options,
@@ -569,4 +595,42 @@ brand/premium/       Изходниците на облика LiftPilot Premium:
 artifact/            Самостоятелната страница: калкулаторът и проектът със 3D симулацията и листовете на чертежите, изцяло в
                      браузъра, със същите компоненти и двигатели; шимове за next-intl (use-intl), routing и server actions
                      (нищо не се записва). scripts/build-artifact.mjs я сглобява (esbuild + Tailwind, шрифтовете до нея).
+```
+
+## Relazione tecnica di modifica и качените файлове (кръг 49 Б)
+
+```
+src/lib/rt/          Двигателят на relazione tecnica di modifica (чист, TS strict; RT_ENGINE_VERSION — version.ts): types
+                     (договорът: SezioneKey, Motivo, RtCheck, RtBase, RtResults, RtDerived), norme + norme-voci (KR, VOCI_RT),
+                     regimi (законите на одобрението и годините им, regimeOf), anagrafica (zod на анаграфиката и четенето ѝ),
+                     fonte (източникът на ръчно въведеното), input + input-componenti (RtInputs за издаване, rtDraftSchema
+                     за черновата, mancantiEmissione), sezioni (SEZIONI_PER_CASO, sezioniOf, idoneoRt), documenti
+                     (очакваните документи по приложение C на -1 / A на -11, struttureRt), componenti/ (проверките rt_* и
+                     данните на всеки раздел: quadro, cabina, funi-argano, guide, guide-cw, ammortizzatori, limitatore, porte,
+                     contrappeso; comune, punti, geometria), prima-dopo, regole, derive (deriveRt), snapshot (rtVerdict,
+                     rtSnapshot — без имената на файловете, с позициите им). src/lib/rt-hash.ts (server-only) — rtHash,
+                     rtDocSha.
+src/lib/allegati/    limits (числата, = CHECK-овете на базата и текстовете на грешките), sniff (видът по байтовете), strip
+                     (махането на метаданните; копието минава същия sniff), kinds (zod на качването и на промяната,
+                     cleanFileName).
+src/server/rt/       base (rtBaseOf, roomBase, liftBase), compose (composeRt — едната композиция за издаване, преглед и
+                     възпроизвеждане; allegatiRt, setsCitati), record (rtRecord — едното правило; partsOf), issue (emettiRt:
+                     издаване и ревизия в една транзакция), actions (rtPreviewAction, issue/reviseTechnicalReportAction),
+                     anagrafica-actions, preview, summary (каквото показва работното място), workspace (началният вход),
+                     queries (getRt, listProjectRts, latestVerificato, readRtDraft, rilievoHints), pdf (пазеното тяло,
+                     keepRtPdf, фасцикулът през assembleFascicolo), file-name (rtFileName — без помощниците на сесията, за да
+                     го чете и `pdf:keep`). src/server/records.ts — `outdated.rt`.
+src/server/allegati/ upload (handleUpload — редът на проверките на качването), inspect (отговорът на PDF инструмента),
+                     quota (storeAttachment под заключване на фирмата, removeAttachment), queries (ATTACHMENT_ROW — без
+                     байтовете, listAttachments, attachmentFile), actions ('use server': промяна и изтриване).
+src/app/[locale]/app/projects/[id]/relazione-tecnica  Работното място (5 карти: анаграфика, модификация, раздели и
+                     компоненти, файлове, подписи и издаване); src/app/[locale]/app/relazioni/[id] — издадената.
+src/components/rt/   Картите на работното място (CardAnagrafica + AnagraficaForm, CardModifica, CardSezioni + Campo + campi,
+                     CardAllegati, CardFirme), RtWorkspace (състоянието, живото обобщение, диалогът за издаване), RtEsito,
+                     BaseStato, RelazioniEmesse (списъкът в TavoleSection), rt.css.
+src/components/allegati/ AllegatiPanel (картата: качване, таван, списък), AllegatoUpload (формата с напредък, XHR),
+                     AllegatiList (таблицата, промяна на място, изтриване в две стъпки), options (видовете и разделите).
+scripts/             keep-rt-pdfs.ts (пазените тела на relazioni при `npm run pdf:keep`), rt-golden-export.ts (golden на
+                     двигателя), smoke-rt.mjs (двата пътя и Trasformazione), smoke-allegati.mjs (качването и свалянето,
+                     отказите, правата, изолацията).
 ```

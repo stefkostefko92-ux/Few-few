@@ -19,8 +19,8 @@ import type { Parte } from './collaudo';
 const TRACTION: readonly Parte[] = ['machine', 'ropes', 'car', 'cw', 'load', 'travel', 'speed'];
 const ROPES: readonly Parte[] = ['machine', 'ropes', 'load'];
 const DRIVE: readonly Parte[] = ['machine', 'speed', 'load', 'car', 'cw', 'travel'];
-const HEAD: readonly Parte[] = ['car', 'sling', 'cw', 'buffers', 'speed', 'rails', 'travel'];
-const PIT: readonly Parte[] = ['car', 'sling', 'buffers', 'speed', 'travel'];
+export const HEAD: readonly Parte[] = ['car', 'sling', 'cw', 'buffers', 'speed', 'rails', 'travel'];
+export const PIT: readonly Parte[] = ['car', 'sling', 'buffers', 'speed', 'travel'];
 // the rails with the car, its frame and its rated load, the speed and the added travel
 const RAILS: readonly Parte[] = ['rails', 'car', 'sling', 'load', 'speed', 'travel'];
 const BUFFERS: readonly Parte[] = ['buffers', 'speed', 'car', 'cw', 'load'];

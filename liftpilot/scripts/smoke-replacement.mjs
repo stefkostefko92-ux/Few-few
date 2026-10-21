@@ -1,13 +1,15 @@
 // The smoke test's machine replacement project (only the machine and the machine room), in an installation of its own:
 // the main calculation has the machine below (no machine room to draw); the calculator starts from the machine over the
 // shaft (its example asked for: a new calculation starts empty), a «Solo argano» with its ropes replaced, whose room is
-// surveyed measure by measure and saved with a reproduced hash; its relazione tecnica, the drawing set as a draft
-// (PDF), the plan and section in DXF and DWG; a drawing set issued from it, its PDF and a revision from the same survey;
+// surveyed measure by measure and saved with a reproduced hash; the drawing set as a draft (PDF), the plan and section
+// in DXF and DWG (its relazione tecnica is the installation's relazione tecnica di modifica since round 49: smoke-rt.mjs); a drawing set issued from it, its PDF and a revision from the same survey;
 // the whole drawing — still possible on a «Solo argano» (round 45: no more «Passa a progetto completo») — starts from the
-// survey; a modernisation keeping the machine is verified as it is and draws the shaft.
+// survey; a modernisation keeping the machine is verified as it is and draws the shaft. Before that, the machine room's
+// relazione tecnica di modifica (scripts/smoke-rt.mjs rtRoom).
 import assert from 'node:assert/strict';
 import { blankCalc, blankSurvey, projectData } from './smoke-blank.mjs';
 import { keptProgetto } from './smoke-progetto.mjs';
+import { rtRoom } from './smoke-rt.mjs';
 import { step } from './smoke-kit.mjs';
 
 export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) {
@@ -51,8 +53,9 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   assert.equal(await page.locator('main > .alert-warn').count(), 0, 'the running engines reproduce the machine room');
   assert.equal(await page.locator('figure.sheet-view .draw-stage svg').count(), 2, 'plan and section of the machine room');
 
-  step('replacement: relazione tecnica, drawing set draft, DXF and DWG');
-  for (const [format, magic] of [['relazione', '%PDF-'], ['pdf', '%PDF-'], ['dxf', '  0\nSECTION'], ['dwg', 'AC1015']]) {
+  step('replacement: drawing set draft, DXF and DWG (no relazione of the machine room any more)');
+  assert.equal((await page.request.get(`${BASE}/api/room-designs/${roomId}/relazione`)).status(), 404, 'relazione: the relazione tecnica di modifica');
+  for (const [format, magic] of [['pdf', '%PDF-'], ['dxf', '  0\nSECTION'], ['dwg', 'AC1015']]) {
     const res = await page.request.get(`${BASE}/api/room-designs/${roomId}/${format}`);
     assert.equal(res.status(), 200, format);
     assert.equal((await res.body()).subarray(0, magic.length).toString('latin1'), magic, format);
@@ -77,6 +80,9 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   await page.goto(roomCalcUrl);
   assert.equal(await page.locator('section[aria-labelledby="calc-progetto"] a[href*="/room-designs/"]').count(), 1, 'machine room on the calculation');
 
+  // the relazione tecnica di modifica on this machine room, while its «Solo argano» is the installation's latest calculation
+  const rt = await rtRoom({ BASE, page, hydrated, stamp, roomUrl, roomId });
+
   step('replacement: the whole drawing on the same «Calcolo argano» starts from the survey');
   await page.goto(roomProjectUrl);
   assert.equal(await page.locator('button:has-text("Passa a progetto completo")').count(), 0, 'no upgrade any more');
@@ -91,7 +97,7 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   // before the save (no «Calata» against the existing sheave)
   assert.equal(await page.locator('.lift-work .savebar button.btn-primary').isDisabled(), false, 'the drawing saves without a calata to fix');
   await keptMachine({ BASE, page, hydrated, roomCalcUrl });
-  return { roomUrl, roomId, roomSetUrl };
+  return { roomUrl, roomId, roomSetUrl, rt };
 }
 
 /** A modernisation keeping the machine (round 45, «Argano: No»): verified as it is — no proposal, advice, machine priced

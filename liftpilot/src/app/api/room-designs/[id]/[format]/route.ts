@@ -12,8 +12,9 @@ export const dynamic = 'force-dynamic';
 
 const formatSchema = z.enum(ROOM_FORMATS);
 
-// A saved machine room of a replacement as files: the relazione tecnica, the drawing set as a PDF draft, the plan and
-// section in DXF or DWG; 409 when the running engines no longer reproduce it or its calculation (a new survey is needed).
+// A saved machine room of a replacement as files: the drawing set as a PDF draft, the plan and section in DXF or DWG; 409
+// when the running engines no longer reproduce it or its calculation (a new survey is needed). Its old relazione tecnica
+// (format `relazione`) is gone with round 49 — 404 —: the installation's relazione tecnica di modifica replaces it.
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string; format: string }> }): Promise<Response> {
   try {
     const d = await downloader('export', 30);
@@ -23,7 +24,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     if (!id.success || !format.success) return text(404, ANSWER.notFound);
     const r = await exportRoomDesign(user, id.data, format.data);
     if (!r.ok) return r.error === 'engineChanged' ? text(409, ANSWER.stale) : text(404, ANSWER.notFound);
-    await audit({ companyId: user.companyId, userId: user.id, action: format.data === 'relazione' ? 'REPORT_DOWNLOADED' : 'PROJECT_EXPORTED', entity: 'RoomDesign', entityId: id.data, meta: { format: format.data } });
+    await audit({ companyId: user.companyId, userId: user.id, action: 'PROJECT_EXPORTED', entity: 'RoomDesign', entityId: id.data, meta: { format: format.data } });
     return attachment(r.body, r.mime, r.name);
   } catch (err) {
     if (err instanceof RendererBusy) return busyResponse();

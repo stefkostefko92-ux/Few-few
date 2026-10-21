@@ -39,8 +39,9 @@ export async function generateMetadata() {
 const AREA = { x0: 0, y0: 0, x1: 190, y1: 190 };
 
 // A saved machine room of a replacement: its result, its plan and section, the checks (those of the parts that stay
-// marked "esistente"), the documents — the relazione tecnica, the drawing set as a draft, DXF and DWG — and the drawing
-// sets issued from it, with the issue of a new one. Drawn again from the stored survey and calculation only when the
+// marked "esistente"), the documents — the drawing set as a draft, DXF and DWG; its relazione tecnica is the
+// installation's relazione tecnica di modifica (round 49), reached from here — and the drawing sets issued from it, with
+// the issue of a new one. Drawn again from the stored survey and calculation only when the
 // running engines reproduce them; else «Aggiorna con il software attuale» saves it again.
 export default async function RoomDesignPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ da?: string }> }) {
   const { locale, id } = await params;
@@ -48,8 +49,8 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
   const user = await requireCapability(locale, 'calc:view');
   const r = await getRoomDesign(user, id);
   if (!r) notFound();
-  const [t, tp, tc, tt, ts, before] = await Promise.all([getTranslations('room'), getTranslations('projects'), getTranslations('calculations'), getTranslations('tavole'),
-    getTranslations('shaft'), refreshedFrom(user, 'roomDesign', (await searchParams).da, r.projectId)]);
+  const [t, tp, tc, tt, ts, trt, before] = await Promise.all([getTranslations('room'), getTranslations('projects'), getTranslations('calculations'), getTranslations('tavole'),
+    getTranslations('shaft'), getTranslations('rt'), refreshedFrom(user, 'roomDesign', (await searchParams).da, r.projectId)]);
   const rep = reproduceRoomRecord(r, r.calculation), d = rep.ok ? rep.derived : null;
   const fd = dateFormat(locale), fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']), lead = (await roomSummaryLine())(r);
   // a machine room is surveyed on a «Calcolo argano» of an existing lift (round 45: whatever the installation was called);
@@ -77,7 +78,7 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
       <div className="page-head">
         <div className="titles"><h1>{t('viewTitle')}{r.label ? `\u00a0· ${r.label}` : ''}</h1><p className="lead">{lead}</p></div>
         <div className="actions">
-          {download ? <a className="btn btn-primary" href={`/api/room-designs/${r.id}/relazione`}>{t('docTecnica')}</a> : null}
+          <Link className="btn btn-primary" href={`/app/projects/${r.projectId}/relazione-tecnica`}>{trt('apri')}</Link>
           {editable && replacement ? <Link className="btn" href={`/app/calculations/${r.calculationId}/locale?from=${r.id}`}>{t('newFrom')}</Link> : null}
         </div>
       </div>
@@ -96,7 +97,7 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
           <SectionTitle id="room-docs" icon="file-export">{t('docsTitle')}</SectionTitle>
           <p className="note">{t('docsLead')}</p>
           <div className="doc-links">
-            <a className="btn" href={`/api/room-designs/${r.id}/relazione`}><Icon name="file-pdf" size={18} />{t('docTecnica')}</a>
+            <Link className="btn" href={`/app/projects/${r.projectId}/relazione-tecnica`}><Icon name="file-text" size={18} />{trt('apri')}</Link>
             <a className="btn" href={`/api/room-designs/${r.id}/pdf`}><Icon name="file-pdf" size={18} />{t('docDraft')}</a>
             <a className="btn" href={`/api/room-designs/${r.id}/dxf`}><Icon name="file-dxf" size={18} />DXF</a>
             <a className="btn" href={`/api/room-designs/${r.id}/dwg`}><Icon name="file-dwg" size={18} />DWG</a>

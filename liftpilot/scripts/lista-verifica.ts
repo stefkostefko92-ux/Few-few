@@ -1,5 +1,7 @@
 // Generates the verification checklist for the engineer from the registries (src/calc/norme.ts, src/shaft/norme.ts, the
-// values filled in from the one form in src/lib/lift/norme.ts, the simulation's in src/sim/norme.ts):
+// values filled in from the one form in src/lib/lift/norme.ts, the simulation's in src/sim/norme.ts, the relazione
+// tecnica di modifica's in src/lib/rt/norme-voci.ts — round 49, appended after the rest so the numbers of the rows before
+// stay):
 // docs/lista-verifica-normativa.md (in the repository) and docs/lista-verifica-normativa.json (for the spreadsheet).
 // Run: npm run lista
 import { writeFileSync } from 'node:fs';
@@ -12,6 +14,9 @@ import { ADEMPIMENTI, NORME_INFO, OBBLIGHI_PARTI, type PuntoInSito } from '../sr
 import { D1_NON_REGGE, D1_PROVA_FRENO, OBBLIGHI_VARIAZIONI } from '../src/lib/lift/obblighi-variazioni';
 import { NORMA_SIGLA, NORME_AGGIUNTIVE, NORME_COLLAUDO, VERIFICHE_DM236, VERIFICHE_NTC } from '../src/lib/lift/collaudo';
 import { VOCI_SIM } from '../src/sim/norme';
+import { GRUPPO_RT } from '../src/lib/rt/norme';
+import { VOCI_RT } from '../src/lib/rt/norme-voci';
+import type { RtNewCheckId } from '../src/lib/rt/types';
 
 const STATO: Record<Stato, string> = {
   confermato: 'confermato', da_verificare: 'da verificare', stima: 'stima', derivazione: 'derivazione', scelta: 'scelta del software', prassi: 'prassi di cantiere',
@@ -75,6 +80,16 @@ const VERIFICA_VANO: Record<ShaftCheckId, string> = {
 };
 const ORDER_VANO: readonly GruppoVano[] = ['cabina', 'distanze', 'accessibilita', 'porte', 'ingombri', 'sezione', 'locale', 'carichi', 'modello_vano'];
 const IMPIANTO = 'Impianto: valori calcolati dai dati inseriti una volta', SIMULAZIONE = 'Simulazione nel tempo (3D e grafici)';
+// the relazione tecnica di modifica (round 49): its own checks
+const VERIFICA_RT: Record<RtNewCheckId, string> = {
+  rt_ctrl_voltage: 'quadro nuovo: tensione dei circuiti di comando e di sicurezza', rt_lock_voltage: 'quadro nuovo: tensione dei contatti delle serrature di piano esistenti',
+  rt_area_kept: 'cabina che resta: superficie utile per la nuova portata', rt_cw_run: 'guide del contrappeso in marcia',
+  rt_buf_spring: 'ammortizzatori a molla: forza a corsa completa', rt_buf_mass: 'ammortizzatori in poliuretano e idraulici: masse del certificato',
+  rt_buf_speed: 'ammortizzatori in poliuretano e idraulici: velocità d’urto del certificato', rt_gov_trip: 'limitatore: velocità d’intervento di targa',
+  rt_gov_origin: 'limitatore: limite della norma in vigore all’installazione', rt_gov_force: 'limitatore: forza sulla fune all’intervento',
+  rt_gov_rope_sf: 'fune del limitatore: carico di rottura', rt_door_fire: 'porte di piano nuove: resistenza al fuoco', rt_door_height: 'porte di piano nuove: altezza',
+};
+const gruppoRt = (v: (typeof VOCI_RT)[number]): string => `Relazione tecnica di modifica: ${GRUPPO_RT[v.gruppo]}`;
 const cell = (s: string): string => s.replace(/\|/g, '\\|').replace(/\n/g, ' ');
 
 const rows = [
@@ -110,8 +125,13 @@ const rows = [
     id: `collaudo.${key}.${i + 1}`, gruppo, voce: p.rif, valore: p.testo, riferimento: p.rif, fonte: p.fonte ?? 'ricerca, cap. 16 (testi ufficiali e schede UNI, 2026-10-02)',
     stato: STATO[p.stato], verifiche, nota: '',
   }))),
+  // the relazione tecnica di modifica (round 49), last: the rows before keep their numbers
+  ...VOCI_RT.map((v) => ({
+    id: `rt.${v.id}`, gruppo: gruppoRt(v), voce: v.titolo, valore: v.valore, riferimento: v.riferimento, fonte: v.fonte, stato: STATO[v.stato],
+    verifiche: (v.verifiche ?? []).map((c) => VERIFICA_RT[c]).join('; '), nota: v.nota ?? '',
+  })),
 ].map((r, j) => ({ n: j + 1, ...r }));
-const ALL = [...VOCI, ...VOCI_VANO, ...VOCI_IMPIANTO, ...VOCI_SIM];
+const ALL = [...VOCI, ...VOCI_VANO, ...VOCI_IMPIANTO, ...VOCI_SIM, ...VOCI_RT];
 const PUNTI = rows.filter((r) => r.id.startsWith('collaudo.'));
 const count = (s: Stato): number => ALL.filter((v) => v.stato === s).length;
 
@@ -132,12 +152,13 @@ const md: string[] = [
   '',
   ...PROFILO.documenti.map((d) => `- **${d.sigla}** — ${d.ambito}`),
   '',
-  `Voci: ${ALL.length} (argano ${VOCI.length}, vano ${VOCI_VANO.length}, impianto ${VOCI_IMPIANTO.length}, simulazione ${VOCI_SIM.length}) — da verificare ${count('da_verificare')}, confermate ${count('confermato')}, scelte del software ${count('scelta')}, ` +
+  `Voci: ${ALL.length} (argano ${VOCI.length}, vano ${VOCI_VANO.length}, impianto ${VOCI_IMPIANTO.length}, simulazione ${VOCI_SIM.length}, relazione tecnica di modifica ${VOCI_RT.length}) — da verificare ${count('da_verificare')}, confermate ${count('confermato')}, scelte del software ${count('scelta')}, ` +
     `stime ${count('stima')}, derivazioni ${count('derivazione')}, prassi ${count('prassi')}. Collaudo: ${PUNTI.length} punti da verificare in sito per normativa ` +
     `(${PUNTI.filter((r) => r.stato === STATO.confermato).length} letti sul testo ufficiale), riportati nella relazione per le normative scelte.`,
   '',
 ];
-for (const title of [...ORDER.map((g) => GRUPPO[g]), ...ORDER_VANO.map((g) => GRUPPO_VANO[g]), IMPIANTO, SIMULAZIONE, ...new Set(PUNTI.map((r) => r.gruppo))]) {
+for (const title of [...ORDER.map((g) => GRUPPO[g]), ...ORDER_VANO.map((g) => GRUPPO_VANO[g]), IMPIANTO, SIMULAZIONE, ...new Set(PUNTI.map((r) => r.gruppo)),
+  ...new Set(VOCI_RT.map(gruppoRt))]) {
   const group = rows.filter((r) => r.gruppo === title);
   if (!group.length) continue;
   md.push(`## ${title}`, '', '| N. | Voce | Valore nel software | Dove verificare | Fonte attuale | Stato | Verifiche interessate |', '|---|---|---|---|---|---|---|');
