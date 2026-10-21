@@ -76,6 +76,8 @@ export async function startApp(): Promise<void> {
 }
 
 export async function stopApp(): Promise<void> {
+  // A request a test left open (a body that never ends) must not keep the run alive after a failure.
+  server?.closeAllConnections();
   await new Promise<void>((resolve) => (server ? server.close(() => resolve()) : resolve()));
   await prisma.$disconnect();
 }

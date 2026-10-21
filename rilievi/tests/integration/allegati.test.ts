@@ -239,41 +239,46 @@ describe('photos and videos of a sheet', () => {
     await processAll();
   });
 
-  it('stops a body over the cap, or of unknown size, before reading it', async () => {
-    const { browser } = await signedIn('TECNICO');
-    const id = await newScheda(browser);
-    const cookie = [...browser.cookies].map(([name, value]) => `${name}=${value}`).join('; ');
-    const send = (size: Record<string, string>) =>
-      new Promise<number>((resolve, reject) => {
-        const req = request(
-          {
-            port: PORT,
-            host: '127.0.0.1',
-            method: 'POST',
-            path: `/schede/${id}/allegati`,
-            headers: {
-              cookie,
-              origin: BASE,
-              'x-partial': '1',
-              'x-forwarded-for': browser.ip,
-              'content-type': 'multipart/form-data; boundary=x',
-              ...size,
+  // Without the 411 the server waits for the rest of the chunked body: the timeout makes that a failure.
+  it(
+    'stops a body over the cap, or of unknown size, before reading it',
+    { timeout: 15_000 },
+    async () => {
+      const { browser } = await signedIn('TECNICO');
+      const id = await newScheda(browser);
+      const cookie = [...browser.cookies].map(([name, value]) => `${name}=${value}`).join('; ');
+      const send = (size: Record<string, string>) =>
+        new Promise<number>((resolve, reject) => {
+          const req = request(
+            {
+              port: PORT,
+              host: '127.0.0.1',
+              method: 'POST',
+              path: `/schede/${id}/allegati`,
+              headers: {
+                cookie,
+                origin: BASE,
+                'x-partial': '1',
+                'x-forwarded-for': browser.ip,
+                'content-type': 'multipart/form-data; boundary=x',
+                ...size,
+              },
             },
-          },
-          (res) => {
-            res.resume();
-            resolve(res.statusCode ?? 0);
-            req.destroy();
-          },
-        );
-        req.on('error', (error) => (req.destroyed ? undefined : reject(error)));
-        req.write(Buffer.alloc(1024));
-      });
-    assert.equal(await send({ 'content-length': String(27 * 1024 * 1024) }), 413);
-    // A chunked body says nothing of its size: no way to check the cap or the free space first.
-    assert.equal(await send({ 'transfer-encoding': 'chunked' }), 411);
-    await arriviEmpty();
-  });
+            (res) => {
+              res.resume();
+              resolve(res.statusCode ?? 0);
+              req.destroy();
+            },
+          );
+          req.on('error', (error) => (req.destroyed ? undefined : reject(error)));
+          req.write(Buffer.alloc(1024));
+        });
+      assert.equal(await send({ 'content-length': String(27 * 1024 * 1024) }), 413);
+      // A chunked body says nothing of its size: no way to check the cap or the free space first.
+      assert.equal(await send({ 'transfer-encoding': 'chunked' }), 411);
+      await arriviEmpty();
+    },
+  );
 
   it('keeps room on the disk for the uploads still running', async () => {
     const { riservaSpazio, spazioLibero } = await import('../../src/allegati/archivio.js');
