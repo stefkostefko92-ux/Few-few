@@ -151,11 +151,14 @@ sed -e "s/vizitka-bg\.com/$DOMAIN/g" \
     -e "s|127\.0\.0\.1:3105|127.0.0.1:$PORT_VAL|g" \
     "$HERE/nginx/vizitka.conf" > /etc/nginx/sites-available/vizitka.conf
 
+# Webroot-ът на ACME трябва да съществува ВИНАГИ, не само при първото издаване: certbot.timer
+# подновява през същия път, а постоянният vhost го сервира на порт 80 (виж vizitka.conf).
+mkdir -p /var/www/html
+
 if [[ ! -d "/etc/letsencrypt/live/$DOMAIN" ]]; then
   # Chicken-and-egg: пълният vhost сочи още несъществуващ сертификат и чупи `nginx -t`
   # (значи и `certbot --nginx`). Затова първо вдигаме временен HTTP-only блок само за
   # ACME проверката, вземаме сертификата през webroot, после активираме пълния 443 vhost.
-  mkdir -p /var/www/html
   cat > /etc/nginx/sites-available/vizitka-acme.conf <<NG
 server {
     listen 80;
