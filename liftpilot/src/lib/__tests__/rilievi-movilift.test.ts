@@ -1,5 +1,6 @@
-// Rilievi — MoviLift's panel order, ported from rilievi's tests/movilift.test.ts (commit ae6329cb6), the pure part: it
-// opens only for its make, with the answers of the blank form, the survey and the linked data; its lists take an option
+// Rilievi — MoviLift's panel order, ported from rilievi's tests/movilift.test.ts (commit 988f3cf37), the pure part: it
+// opens only for its make, with the answers of the blank form, the survey and the linked data (no e-mail since
+// 21 October 2026); its lists take an option
 // by its word or by its numbers; it carries the Pelazza order's data over when the make changes and is compared with the
 // sheet, never with what is left of a Pelazza order; it keeps only its own options; it comes into the sheet's print with
 // its choices as the paper words them. The PDF: src/server/__tests__/rilievi-moduli.test.ts.
@@ -20,13 +21,13 @@ const t = rilieviTranslator();
 
 describe('the MoviLift order form', () => {
   it('opens under the question of the panel order only for its own make', () => {
-    assert.deepEqual(marcheOf('quadroOrdine'), ['PELAZZA', 'MOVILIFT']);
+    assert.deepEqual(marcheOf('quadroOrdine'), ['PELAZZA', 'MOVILIFT', 'MASTECH']);
     assert.deepEqual(fieldByKey('quadroOrdine')?.when?.values, marcheOf('quadroOrdine'));
-    // the argano sheet and the 2SG sheet are for every make: their questions have no condition
-    for (const question of ['arganoPreventivo', 'sospensioni'] as const) {
-      assert.deepEqual(marcheOf(question), [], question);
-      assert.equal(fieldByKey(question)?.when, undefined, question);
-    }
+    // the argano sheet and the 2SG sheet are for every make: no make in their condition (the 2SG sheet follows the doors
+    // with an operator, the argano sheet has none)
+    for (const question of ['arganoPreventivo', 'sospensioni'] as const) assert.deepEqual(marcheOf(question), [], question);
+    assert.equal(fieldByKey('arganoPreventivo')?.when, undefined);
+    assert.equal(fieldByKey('sospensioni')?.when?.field, 'tipoPorte');
   });
 });
 
@@ -34,7 +35,10 @@ describe('prefilling the MoviLift order', () => {
   const ctx = {
     values: {
       data: '2026-10-12', numeroImpianto: '104552', indirizzo: 'Via Verdi 14, Milano', portataKg: '630', capienzaPersone: '8', fermate: '6',
-      tipoImpianto: ['ELETTRICO', 'GEARLESS'], tipoPorte: ['AUTOMATICHE'], operatoreMarca: 'Selcom', operatoreTensione: '24 V DC', doppioAccesso: 'si',
+      tipoImpianto: ['GEARLESS'], tipoPorte: ['AUTOMATICHE'],
+      // taken off the sheet (October 2026): a page from before still sends them, they fill nothing
+      operatoreMarca: 'Selcom', operatoreTensione: '24 V DC',
+      doppioAccesso: 'si',
       ubicazioneMacchina: ['BASSO'],
       // hidden with automatic doors: says nothing
       pattinoRetrattile: 'si',
@@ -52,8 +56,8 @@ describe('prefilling the MoviLift order', () => {
       controllo: 'scheda', fornitura: 'soloQuadro', alimentazioneA: 'conLimiti', pianoB1: '-', interpianiStandard: true, armadio: 'standard', anta: 'sx',
       uscita: 'poloPiano', comune: 'neg', combinatore: 'predisposizione',
       // the survey and the person writing
-      riferimento: 'N° 104552 — Via Verdi 14, Milano', ragioneSociale: 'Ascensori Rossi Srl', email: 'mario@example.it', tipologia: 'Elettrico, MRL',
-      tipoPorte: 'Automatiche', marcaOpA: 'SELCOM', voltA: '24Vcc',
+      riferimento: 'N° 104552 — Via Verdi 14, Milano', ragioneSociale: 'Ascensori Rossi Srl', tipologia: 'MRL',
+      tipoPorte: 'Automatiche',
       // the plant data, over the blank form («Operatore Unico», «Loc. Macc. in ALTO»)
       fermate: '6', portata: '630', capienza: '8', nImpianto: '104552', ingressi: 'doppio', locMacc: 'basso',
     });
@@ -61,8 +65,6 @@ describe('prefilling the MoviLift order', () => {
 
   it('takes nothing from a hidden field of the survey', () => {
     const valori = prefillValori(MOVILIFT, { ...ctx, values: { ...ctx.values, tipoPorte: ['MANUALI'], ubicazioneMacchina: [] } });
-    assert.equal(valori.marcaOpA, undefined, 'no door operator with manual doors');
-    assert.equal(valori.voltA, undefined);
     assert.equal(valori.ingressi, 'doppio', 'the double entrance is asked with manual doors too');
     assert.equal(valori.locMacc, 'alto');
     assert.equal(valori.elettrPattino, true, 'the retractable skate is asked with manual doors');
@@ -129,7 +131,9 @@ describe('saving the MoviLift order', () => {
   it('comes into the sheet print with its choices as the paper words them', () => {
     const scheda = {
       riepilogoOrdini: true,
+      moduliStampati: [] as string[],
       quadroMarca: 'MOVILIFT' as const,
+      quadroModello: null,
       quadroOrdine: true,
       // «-» is the blank form's own text on side B: not written by anyone, not printed
       ordineQuadro: { modulo: MOVILIFT.id, valori: { controllo: 'scheda', fornitura: 'soloQuadro', fermate: '6', marcaOpA: 'SELCOM', pianoB1: '-' } },

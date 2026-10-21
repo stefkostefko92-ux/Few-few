@@ -1,7 +1,7 @@
 // The values the sheet and the modules share, read the Italian way: «1.000» is a thousand, «1,6» and «1.6» are the same,
 // the units do not count («400 V» = «400»); two lines for one thing («LUCE PORTA: [800] x [2000]») and back. Pure and
 // light: the server's rules (collegati.ts) and the browser's (collegati-client.ts) use these same functions — rilievi kept
-// one copy in src/ordini/collegati.ts and one in public/js/valori.js (commit ae6329cb6).
+// one copy in src/ordini/collegati.ts and one in public/js/valori.js (commit 988f3cf37).
 
 const NUMERO = /[1-9]\d{0,2}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?/g;
 const MIGLIAIA = /^[1-9]\d{0,2}(?:\.\d{3})+(?:,\d+)?$/;

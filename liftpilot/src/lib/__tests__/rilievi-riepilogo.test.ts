@@ -1,15 +1,18 @@
 // Rilievi — what the suppliers' modules hold in the sheet's print and PDF, ported from rilievi's tests/riepilogo.test.ts
-// (commit ae6329cb6): only when the sheet asks for it, only what is filled in, by the module's groups, the argano sheet
-// by its title alone.
+// (commit 988f3cf37): only the modules the sheet asks for, each on its own, only what is filled in, by the module's
+// groups, the argano sheet by its title alone; the choice as the form sends it.
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { ARGANI, nomeModulo, PELAZZA, SG } from '@/lib/rilievi/ordini/moduli';
-import { riepilogoModuli } from '@/lib/rilievi/ordini/riepilogo';
+import { moduliStampatiDi, riepilogoModuli } from '@/lib/rilievi/ordini/riepilogo';
+import { riepilogoFromBody, riepilogoSchema } from '@/lib/rilievi/stampa';
 
 describe('the orders in the sheet print', () => {
   const scheda = {
     riepilogoOrdini: true,
+    moduliStampati: [] as string[],
     quadroMarca: 'PELAZZA' as const,
+    quadroModello: null,
     quadroOrdine: true,
     ordineQuadro: { modulo: PELAZZA.id, valori: { ordine: true, velocita: '1,0', nFermate: '5', note: 'Consegna in cantiere' } },
     arganoPreventivo: false,
@@ -44,5 +47,42 @@ describe('the orders in the sheet print', () => {
         ],
       },
     ]);
+  });
+});
+
+describe('each order chosen for the sheet print on its own', () => {
+  const tutti = {
+    riepilogoOrdini: true,
+    moduliStampati: [] as string[],
+    quadroMarca: 'PELAZZA' as const,
+    quadroModello: null,
+    quadroOrdine: true,
+    ordineQuadro: { modulo: PELAZZA.id, valori: { ordine: true } },
+    arganoPreventivo: true,
+    preventivoArgano: { modulo: ARGANI.id, valori: { taglia12: true } },
+    sospensioni: true,
+    ordineSospensioni: { modulo: SG.id, valori: { automatico: true } },
+  };
+  const nomi = (scheda: typeof tutti) => riepilogoModuli(scheda).map((modulo) => modulo.nome);
+
+  it('prints only the ticked ones, in the order of the sheet', () => {
+    assert.deepEqual(nomi({ ...tutti, moduliStampati: ['preventivoArgano'] }), ['Modulo rilievi dati argani']);
+    assert.deepEqual(nomi({ ...tutti, moduliStampati: ['ordineSospensioni', 'ordineQuadro'] }), [nomeModulo(PELAZZA), nomeModulo(SG)]);
+    assert.deepEqual(nomi({ ...tutti, riepilogoOrdini: false, moduliStampati: ['ordineQuadro'] }), []);
+  });
+
+  it('keeps all three for a sheet saved with the one box of before', () => {
+    assert.deepEqual(moduliStampatiDi(tutti), ['ordineQuadro', 'preventivoArgano', 'ordineSospensioni']);
+    assert.equal(nomi(tutti).length, 3);
+  });
+
+  it('reads the ticked boxes of the form, the one box of an old page, and nothing forged', () => {
+    const parse = (value: unknown) => riepilogoSchema.safeParse(value);
+    assert.deepEqual(parse(['ordineSospensioni', 'ordineQuadro']).data, ['ordineQuadro', 'ordineSospensioni']);
+    assert.deepEqual(parse('preventivoArgano').data, ['preventivoArgano']);
+    assert.deepEqual(parse(undefined).data, []);
+    assert.deepEqual(parse('1').data, ['ordineQuadro', 'preventivoArgano', 'ordineSospensioni']);
+    for (const forged of ['yes', 'constructor', ['ordineQuadro', 'note'], { a: 1 }]) assert.equal(parse(forged).success, false, JSON.stringify(forged));
+    assert.deepEqual(riepilogoFromBody({ riepilogoOrdini: ['ordineSospensioni', 'x'] }), ['ordineSospensioni']);
   });
 });

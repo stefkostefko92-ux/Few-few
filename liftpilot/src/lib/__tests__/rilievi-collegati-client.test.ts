@@ -1,6 +1,6 @@
 // Rilievi — the linked data and the modules' survey fields in the browser (collegati-client.ts, prefill-client.ts),
-// ported from rilievi's e2e tests tempo-reale.mjs, collegati.mjs and movilift.mjs (commit ae6329cb6) over a form made of
-// plain controls as the page draws them (the sheet's fields, the four modules, data-auto, data-predefinito, the hidden
+// ported from rilievi's e2e tests tempo-reale.mjs, collegati.mjs and movilift.mjs (commit 988f3cf37) over a form made of
+// plain controls as the page draws them (the sheet's fields, the six modules, data-auto, data-predefinito, the hidden
 // ones): a module fills the sheet, the sheet fills the modules while it is typed, one module the other, the sheet's
 // «Accessi» carries the entrances to the other make's order; a field typed by hand keeps its value and the difference is
 // listed; the Pelazza order carries over to MoviLift when the make changes; a radio goes back to the blank module's answer
@@ -171,12 +171,11 @@ describe('the same data in every place, filled in real time', () => {
     assert.equal(p.value('oq-data'), '14/10/2026');
     p.tick('tipoPorte', 'AUTOMATICHE');
     assert.deepEqual(p.chosen('oq-porteAutomatiche'), ['si'], 'the doors of the panel order follow the sheet');
-    p.fill('operatoreMarca', 'Selcom');
-    assert.equal(p.value('om-marcaOpA'), 'SELCOM', 'the door operator of the MoviLift order, a list option');
-    p.fill('lucePorte', '800 x 2000');
-    assert.equal(p.value('sg-luceCabinaL'), '800');
-    assert.equal(p.value('sg-luceCabinaH'), '2000');
 
+    // one form fills the other — the door operator of one panel order is a list option of the other make's (the sheet
+    // no longer asks the operator, October 2026: rilievi's tests/e2e/tempo-reale.mjs, 988f3cf37)
+    p.fill('oq-opModello', 'Selcom');
+    assert.equal(p.value('om-marcaOpA'), 'SELCOM', 'the door operator of the MoviLift order, a list option');
     p.fill('oq-motIn', '12');
     assert.equal(p.value('pa-ampere'), '12', 'the motor current of the argano sheet');
     p.fill('oq-nAccessi', '2');
@@ -208,13 +207,16 @@ describe('the same data in every place, filled in real time', () => {
   });
 
   it('carries the Pelazza order over to MoviLift when the make changes; a radio goes back to the blank form', () => {
+    // the operator's make and voltage: a page from before still sends them, they fill nothing (off the sheet, October 2026)
     const p = page({ ...emptyFormValues('2026-10-12'), fermate: '6', portataKg: '630', tipoImpianto: ['ELETTRICO'], tipoPorte: ['AUTOMATICHE'], operatoreMarca: 'Selcom', operatoreTensione: '24 V DC', doppioAccesso: 'si', ubicazioneMacchina: ['ALTO'] });
     p.tick('quadroMarca', 'PELAZZA');
     p.tick('quadroOrdine', 'si');
     p.fill('oq-velocita', '1,6');
+    p.fill('oq-opModello', 'Selcom');
     p.tick('quadroMarca', 'MOVILIFT');
     assert.equal(p.value('om-velocita'), '1,6', 'the speed of the Pelazza order carried over');
-    for (const [name, value] of [['om-fermate', '6'], ['om-portata', '630'], ['om-tipologia', 'Elettrico'], ['om-tipoPorte', 'Automatiche'], ['om-marcaOpA', 'SELCOM'], ['om-voltA', '24Vcc']]) assert.equal(p.value(name ?? ''), value, name);
+    for (const [name, value] of [['om-fermate', '6'], ['om-portata', '630'], ['om-tipologia', 'Elettrico'], ['om-tipoPorte', 'Automatiche'], ['om-marcaOpA', 'SELCOM']]) assert.equal(p.value(name ?? ''), value, name);
+    assert.equal(p.value('om-voltA'), '', 'the operator voltage is no longer taken from the sheet');
     assert.deepEqual([p.chosen('om-ingressi'), p.chosen('om-locMacc'), p.chosen('om-controllo')], [['doppio'], ['alto'], ['scheda']]);
     // the machine room follows the sheet; with nothing there, the blank form's «in ALTO» again
     p.tick('ubicazioneMacchina', 'ALTO', false);

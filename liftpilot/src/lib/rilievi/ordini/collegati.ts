@@ -4,7 +4,7 @@
 //   empty is no statement and is not compared; the hidden (a field with a condition, a closed module) — neither; a
 //   "prefill only" link (`confronto: false`) — never.
 // The browser does the same while typing (collegati-client.ts) — there the sheet's empty field follows the modules too
-// (collegati-browser.ts gives it the list). Ported 1:1 from rilievi (src/ordini/collegati.ts, commit ae6329cb6).
+// (collegati-browser.ts gives it the list). Ported 1:1 from rilievi (src/ordini/collegati.ts, commit 988f3cf37).
 import { createHash } from 'node:crypto';
 import type { FormValues } from '../field-parsers';
 import { activeFields, fieldByKey } from '../fields';

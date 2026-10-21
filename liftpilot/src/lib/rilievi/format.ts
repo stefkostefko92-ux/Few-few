@@ -1,14 +1,15 @@
 // What the page, the print and the PDF show of a sheet; the sheet back in the shape of its form; its title; an empty
-// form. Ported 1:1 from rilievi (src/schede/format.ts, commit ae6329cb6); the numbers and dates are fmt.ts (Italian).
+// form. Ported 1:1 from rilievi (src/schede/format.ts, commit 988f3cf37); the numbers and dates are fmt.ts (Italian).
 import type { Scheda } from '@prisma/client';
 import { dayFromDate } from './time';
 import { fmt, toNumber } from './fmt';
-import { activeFields, SECTIONS, type FieldDef, type SectionKey } from './fields';
+import { activeParts, SECTIONS, type FieldDef, type SectionKey } from './fields';
 import type { FormValues } from './field-parsers';
 import { misureFromRows, misureTable, type MisuraRow, type TableView } from './misure';
-import { sezioniOrdinate } from './ordine';
+import { ORDINABILI, sezioniOrdinate } from './ordine';
 import { nomeModulo } from './ordini/moduli';
 import { slotAperto, SLOTS } from './ordini/registry';
+import { moduliStampatiDi } from './ordini/riepilogo';
 import { moduloFormValues, storedValori } from './ordini/valori';
 import type { RilieviT } from './t';
 
@@ -110,13 +111,13 @@ function optionsView(field: FieldDef, raw: unknown, t: RilieviT): OptionView[] |
 
 /**
  * The sections with their values for the page, the print and the PDF — in the company's order (`ordine`, its setting;
- * empty — the default). The fields with a condition (fields.ts, `when`) are shown only when it holds — "Numero serrature"
- * with "Serrature: No" does not exist.
+ * empty — the default). The fields and the sections with a condition (fields.ts, `when`) are shown only when it holds —
+ * "Numero serrature" with "Serrature: No" and «Argano» with a hydraulic lift do not exist.
  */
 export function displaySections(scheda: SchedaShown, t: RilieviT, ordine: readonly string[] = []): DisplaySection[] {
   const values = scheda as unknown as Values;
-  const active = activeFields((key) => values[key]);
-  return sezioniOrdinate(SECTIONS, ordine).map((section) => ({
+  const { fields: active, sections: attive } = activeParts((key) => values[key]);
+  return sezioniOrdinate(SECTIONS, ordine).filter((section) => attive.has(section.key)).map((section) => ({
     key: section.key,
     title: t(`scheda.section.${section.key}`),
     fields: (section.fields as readonly FieldDef[])
@@ -150,7 +151,8 @@ export function formValuesFromScheda(scheda: SchedaShown): FormValues {
     const valori = storedValori(slot.modulo, values[slot.column]);
     if (valori) Object.assign(out, moduloFormValues(slot.modulo, slot.prefix, valori));
   }
-  out.riepilogoOrdini = scheda.riepilogoOrdini ? '1' : '';
+  out.riepilogoOrdini = moduliStampatiDi(scheda);
+  out.stampa = ORDINABILI.filter((key) => !scheda.sezioniEscluse.includes(key));
   for (const section of SECTIONS) {
     for (const field of section.fields as readonly FieldDef[]) {
       const raw = values[field.key];
@@ -193,7 +195,7 @@ export const tabTitle = (ident: string): string => (ident.length > 40 ? `${ident
 
 /** An empty form: today in Rome, everything else empty. */
 export function emptyFormValues(today: string): FormValues {
-  const out: FormValues = { riepilogoOrdini: '' };
+  const out: FormValues = { riepilogoOrdini: [], stampa: [...ORDINABILI] };
   for (const section of SECTIONS) {
     for (const field of section.fields as readonly FieldDef[]) out[field.key] = field.kind === 'checks' ? [] : field.kind === 'date' ? today : '';
   }

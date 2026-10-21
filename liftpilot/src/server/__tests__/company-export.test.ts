@@ -103,5 +103,8 @@ test('l’esportazione: ogni chiave del registro, e le schede di rilievo della p
   assert.deepEqual(feedbackArgs?.where, { companyId: 'c1' });
   assert.deepEqual(feedbackArgs?.omit, { companyId: true }, 'every column but the company’s id (the file is the company’s)');
   assert.deepEqual((doc.feedback as Row[]).map((f) => [f.id, f.kind, f.message]), [['f1', 'BUG', 'Il salvataggio non riesce']]);
-  assert.equal(doc.formatVersion, 10);
+  // format 11 (round 49): the sheets carry rilievi 988f3cf37's new columns — every column of the row is exported (only
+  // searchText and writeKey are left out), so no select to keep up to date
+  assert.deepEqual(schedaArgs?.omit, { searchText: true, writeKey: true });
+  assert.equal(doc.formatVersion, 11);
 });

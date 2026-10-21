@@ -1,5 +1,5 @@
 'use server';
-// The company setting «Ordine delle sezioni della scheda» (rilievi's POST /impostazioni/sezioni, commit ae6329cb6): the
+// The company setting «Ordine delle sezioni della scheda» (rilievi's POST /impostazioni/sezioni, commit 988f3cf37): the
 // whole order is sent every time (`ordine`, repeated, the movable sections); a section's «up/down» button (`sposta` =
 // «funi:su») answers with the new order unsaved — so the page works without JavaScript too —, «Salva ordine» (`salva` =
 // '1') saves it, «Ripristina l'ordine predefinito» (`ripristina` = '1') goes back to the default. Only 'company:edit'

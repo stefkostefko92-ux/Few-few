@@ -81,9 +81,10 @@
 /* the boxes of the paper: ☐ empty, ticked when chosen */
 .rv-opts-p { display: flex; flex-wrap: wrap; gap: 2px 14px; }
 .rv-opt { display: inline-flex; align-items: center; gap: 5px; }
-.rv-opt-box { position: relative; width: 11pt; height: 11pt; border: 1.2pt solid #000; border-radius: 1.5pt; }
-.rv-opt.on .rv-opt-box::after { content: ""; position: absolute; left: 3pt; top: 0.5pt; width: 3.3pt; height: 6.4pt; border: solid #000;
-  border-width: 0 1.4pt 1.4pt 0; transform: rotate(45deg); }
+.rv-opt-box { position: relative; width: 11pt; height: 11pt; border: 1.4pt solid #000; border-radius: 1.5pt; }
+/* the tick — solid (the owner, 21 October 2026; rilievi print.css, commit 988f3cf37) */
+.rv-opt.on .rv-opt-box::after { content: ""; position: absolute; left: 2.6pt; top: 0; width: 4pt; height: 6.9pt; border: solid #000;
+  border-width: 0 2.1pt 2.1pt 0; transform: rotate(45deg); }
 .rv-opt.on { font-weight: 600; }
 /* what is written in a supplier's module (the sheet's summary): «Corsa Mt.: 12» one after the other */
 .rv-pairs { display: flex; flex-wrap: wrap; gap: 2px 18px; }

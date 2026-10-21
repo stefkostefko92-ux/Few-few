@@ -1,9 +1,10 @@
-// Rilievi — the sheet's field list and its check, ported from rilievi's tests/validation.test.ts (commit ae6329cb6):
-// the order of the printed sheet, the kinds, the identifiers, digits, decimals, whole numbers, ticks, dates, text cleaning,
-// forged forms and every error at once.
+// Rilievi — the sheet's field list and its check, ported from rilievi's tests/validation.test.ts (commit 988f3cf37):
+// the order of the printed sheet, the kinds, the identifiers, digits, decimals, whole numbers, ticks and the single
+// choices, dates, text cleaning, forged forms and every error at once.
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { FIELDS, SECTIONS } from '@/lib/rilievi/fields';
+import { SEZIONE_CENTRALINA } from '@/lib/rilievi/fields-centralina';
 import { formValuesFromBody, parseScheda } from '@/lib/rilievi/validation';
 
 const minimal = { data: '2026-10-12', matricola: '33871' };
@@ -17,24 +18,33 @@ function parsedOrFail(body: Record<string, unknown>) {
 describe('the field list', () => {
   it('keeps the sections in the order of the printed sheet the owner marked up (October 2026)', () => {
     // section 1 is laid out like the head and the plate of the sheet: date, address and work order, matricola and lift
-    // number, then load, persons, stops and make
-    assert.deepEqual(SECTIONS.map((section) => section.key), ['impianto', 'ubicazione', 'tipologia', 'quadro', 'argano', 'funi', 'limitatore', 'cavi', 'serrature', 'allarme', 'note']);
+    // number, then load, persons, stops and make. The power unit of a hydraulic lift stands where its machine would; the
+    // emergency call is with the alarm, the porter's lodge last; every section with a supplier form ends with its notes
+    assert.deepEqual(SECTIONS.map((section) => section.key), [
+      'impianto', 'ubicazione', 'tipologia', 'quadro', 'argano', 'centralina', 'funi', 'limitatore', 'cavi', 'serrature', 'allarme', 'note',
+    ]);
     assert.deepEqual(
       FIELDS.map((field) => field.key),
       [
         'data', 'indirizzo', 'buonoLavoro', 'matricola', 'numeroImpianto', 'portataKg', 'capienzaPersone', 'fermate', 'marca',
         'ubicazioneMacchina', 'ubicazioneCassettina', 'parcheggio',
-        'tipoImpianto', 'tipoPorte', 'operatoreMarca', 'lucePorte', 'operatoreTensione', 'doppioAccesso', 'pattinoRetrattile',
-        'quadroMarca', 'quadroMarcaAltro', 'quadroOrdine',
-        'arganoPreventivo',
+        'tipoImpianto', 'tipoPorte', 'doppioAccesso',
+        'quadroMarca', 'quadroMarcaAltro', 'quadroModello', 'fossaRidotta', 'testataRidotta', 'quadroOrdine', 'quadroNote',
+        'arganoPreventivo', 'arganoTipo', 'ganasceFreno', 'kitControlloGanasce', 'kitControlloGanasceTipo', 'controlloQuadro', 'controlloQuadroTipo', 'arganoNote',
+        ...SEZIONE_CENTRALINA.fields.map((field) => field.key),
         'funiDiametroMm', 'funiTrefoli', 'funiNumero', 'funiLunghezzaM',
+        'tirantiCabinaNumero', 'tirantiCabinaTipo', 'tirantiContrappesoNumero', 'tirantiContrappesoTipo', 'tirantiFossaNumero', 'tirantiFossaTipo',
         'limitatoreTipo', 'funicellaDiametroMm', 'funicellaLunghezzaM', 'tenditore',
         'caviNumero', 'caviConduttori', 'caviLunghezzaM',
-        'serrature', 'serratureNumero', 'serratureTipo', 'sospensioni', 'sospensioniNumero',
-        'telesoccorso', 'telesoccorsoStato', 'allarmePortineria', 'displayPortineria',
-        'noteQuadretto', 'noteImpianto', 'luceVanoSostituire', 'noteBottoniere', 'bottoniereMisure', 'lavoriExtra',
+        'serrature', 'serratureNumero', 'serratureTipo', 'pattinoRetrattile', 'pattinoRetrattileTipo', 'sospensioni', 'sospensioniNumero', 'serratureNote',
+        'telesoccorsoInstallare', 'perifericaInstallare', 'cornettaInstallare', 'allarmePortineria', 'displayPortineria',
+        'noteQuadretto', 'noteImpianto', 'luceVanoSostituire', 'luceVanoNote', 'noteBottoniere', 'bottoniereMisure', 'lavoriExtra',
       ],
     );
+    assert.equal(FIELDS.length, 75, 'rilievi 988f3cf37: 75 fields in 12 sections');
+    assert.deepEqual(SEZIONE_CENTRALINA.fields.map((field) => field.key), [
+      'centralinaDaFare', 'centralinaMarca', 'emendamentoA3', 'tuboFlessibile', 'tuboFlessibileDiametroMm', 'tuboFlessibileLunghezzaM', 'tuboFlessibileNote', 'centralinaNote',
+    ]);
   });
 
   it('gives every number a kind the brief asked for: the identifiers are digits, never numbers', () => {
@@ -98,19 +108,31 @@ describe('parseScheda', () => {
   });
 
   it('keeps the ticked boxes in the brief order without repeats and refuses unknown values', () => {
-    const data = parsedOrFail({ ...minimal, tipoPorte: ['MANUALI', 'AUTOMATICHE', 'MANUALI'] });
-    assert.deepEqual(data.tipoPorte, ['AUTOMATICHE', 'MANUALI']);
+    const data = parsedOrFail({ ...minimal, ubicazioneMacchina: ['BASSO', 'ALTO', 'BASSO'] });
+    assert.deepEqual(data.ubicazioneMacchina, ['ALTO', 'BASSO']);
     assert.deepEqual(parsedOrFail({ ...minimal, ubicazioneMacchina: 'ALTO' }).ubicazioneMacchina, ['ALTO']);
     const unknown = parseScheda({ ...minimal, tipoImpianto: 'A_VAPORE' });
     assert.equal(!unknown.ok && unknown.errors.tipoImpianto, 'option');
   });
 
+  it('takes one kind of lift and one kind of doors, kept as a list of one', () => {
+    const one = parsedOrFail({ ...minimal, tipoImpianto: 'GEARLESS', tipoPorte: ['MANUALI'] });
+    assert.deepEqual([one.tipoImpianto, one.tipoPorte], [['GEARLESS'], ['MANUALI']]);
+    const repeated = parsedOrFail({ ...minimal, tipoPorte: ['MANUALI', 'MANUALI'] });
+    assert.deepEqual(repeated.tipoPorte, ['MANUALI']);
+    for (const key of ['tipoImpianto', 'tipoPorte'] as const) {
+      const two = key === 'tipoImpianto' ? ['ELETTRICO', 'GEARLESS'] : ['AUTOMATICHE', 'MANUALI'];
+      const result = parseScheda({ ...minimal, [key]: two });
+      assert.equal(!result.ok && result.errors[key], 'option', `${key}: a page from before`);
+    }
+  });
+
   it('keeps the number and type of locks only when "Serrature" is yes', () => {
-    const yes = parsedOrFail({ ...minimal, serrature: 'si', serratureNumero: '6', serratureTipo: 'A gancio' });
+    const yes = parsedOrFail({ ...minimal, tipoPorte: 'MANUALI', serrature: 'si', serratureNumero: '6', serratureTipo: 'A gancio' });
     assert.equal(yes.serrature, true);
     assert.equal(yes.serratureNumero, 6);
     assert.equal(yes.serratureTipo, 'A gancio');
-    const no = parsedOrFail({ ...minimal, serrature: 'no', serratureNumero: '6', serratureTipo: 'A gancio' });
+    const no = parsedOrFail({ ...minimal, tipoPorte: 'MANUALI', serrature: 'no', serratureNumero: '6', serratureTipo: 'A gancio' });
     assert.equal(no.serrature, false);
     assert.equal(no.serratureNumero, null);
     assert.equal(no.serratureTipo, null);
@@ -147,23 +169,30 @@ describe('formValuesFromBody', () => {
     assert.equal(values.fermate, '');
   });
 
-  it('keeps the print choice as «1» or nothing and the names still following, cut to 4000 characters', () => {
+  it('keeps the print choices as the known modules and sections ticked, and the names still following, cut to 4000 characters', () => {
     const values = formValuesFromBody({ riepilogoOrdini: 'yes', 'collegati-auto': `fermate ${'x'.repeat(5000)}` });
-    assert.equal(values.riepilogoOrdini, '');
-    assert.equal(formValuesFromBody({ riepilogoOrdini: '1' }).riepilogoOrdini, '1');
+    assert.deepEqual(values.riepilogoOrdini, []);
+    assert.deepEqual(formValuesFromBody({ riepilogoOrdini: '1' }).riepilogoOrdini, ['ordineQuadro', 'preventivoArgano', 'ordineSospensioni'], 'a page from before: all of them');
+    assert.deepEqual(formValuesFromBody({ riepilogoOrdini: ['ordineSospensioni', 'x'] }).riepilogoOrdini, ['ordineSospensioni']);
+    assert.equal(values.stampa?.length, 11, 'without the list: every section but the identification');
+    assert.deepEqual(formValuesFromBody({ 'stampa-_': '1', stampa: ['note', 'nonEsiste', 'quadro'] }).stampa, ['quadro', 'note']);
     assert.equal(String(values['collegati-auto']).length, 4000);
     assert.equal(formValuesFromBody({ 'collegati-auto': ['a'] })['collegati-auto'], '');
   });
 });
 
 describe('the print of the modules with the sheet', () => {
-  it('is «1» or nothing; anything else is forged and named', () => {
-    assert.equal(parsedOrFail({ ...minimal, riepilogoOrdini: '1' }).riepilogoOrdini, true);
-    assert.equal(parsedOrFail(minimal).riepilogoOrdini, false);
+  it('takes the modules one by one, «1» of a page from before as all of them; anything else is forged and named', () => {
+    const one = parsedOrFail({ ...minimal, riepilogoOrdini: 'preventivoArgano' });
+    assert.deepEqual([one.riepilogoOrdini, one.moduliStampati], [true, ['preventivoArgano']]);
+    const all = parsedOrFail({ ...minimal, riepilogoOrdini: '1' });
+    assert.deepEqual([all.riepilogoOrdini, all.moduliStampati], [true, ['ordineQuadro', 'preventivoArgano', 'ordineSospensioni']]);
+    const none = parsedOrFail(minimal);
+    assert.deepEqual([none.riepilogoOrdini, none.moduliStampati, none.sezioniEscluse], [false, [], []]);
     assert.equal(parsedOrFail({ ...minimal, riepilogoOrdini: '' }).riepilogoOrdini, false);
-    for (const forged of ['yes', 'on', ['1', '1'], null]) {
+    for (const forged of ['yes', 'on', ['1', 'note'], null, { a: 1 }]) {
       const result = parseScheda({ ...minimal, riepilogoOrdini: forged });
-      assert.equal(!result.ok && result.errors.riepilogoOrdini, 'invalid', String(forged));
+      assert.equal(!result.ok && result.errors.riepilogoOrdini, 'invalid', JSON.stringify(forged));
     }
   });
 });

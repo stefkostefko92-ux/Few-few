@@ -1,20 +1,22 @@
 // The linked data — THE LIST: one and the same thing of the plant written in more than one place — in the sheet, in the
-// panel order (Pelazza `oq` or MoviLift `om` — by the make, never both), in the argano data sheet (`pa`) and in 2SG's
-// sheet (`sg`). Every place the person has not typed in is filled from the others — in every direction and while typing
-// (collegati-client.ts in the browser); different values are compared (collegati.ts). The types and the start check are
-// in collegamenti.ts.
+// panel order (Pelazza `oq`, MoviLift `om`, Mastech NG120 `mn` or QI Touch `mq` — by the make and the model, never two), in
+// the argano data sheet (`pa`) and in 2SG's sheet (`sg`). Every place the person has not typed in is filled from the
+// others — in every direction and while typing (collegati-client.ts in the browser); different values are compared
+// (collegati.ts). The types and the start check are in collegamenti.ts; the links added later — in
+// collegamenti-aggiunti.ts (after these).
 //
-// The order of the places is the order of the sources: first the sheet, then the panel, the argano and 2SG. The order of
+// The order of the places is the order of the sources: first the sheet, then the panels, the argano and 2SG. The order of
 // the links is the order in the list of discrepancies (and in the fingerprint of the confirmation) — new ones go last.
 // Decided with the owner (October 2026): the stops, the speed and its kind, the travel, the load, the motor's and the
-// brake's voltage — plus the earlier prefill from the sheet (doors, accesses, machine position, ropes). MoviLift and the
-// argano sheet write the capacity and the lift's number too; MoviLift — the car's entrances too. Then (October 2026,
-// "every field with the same parameters"): the address, the matricola and the make (the argano sheet), the kind of plant
-// (Pelazza «Idraulico»), 2SG's doors, the operator (make, voltage) and the clear opening, the motor's current and speed.
-// Ported 1:1 from rilievi (src/ordini/collegamenti-elenco.ts, commit ae6329cb6).
+// brake's voltage, the capacity, the lift's number, the entrances, the doors, the accesses, the machine's position, the
+// ropes; then — the address, the matricola, the make, the kind of plant, the operator (between the panels), the motor's
+// current and speed; then — the hydraulic power unit and Mastech (in these links too). The operator's make, voltage and
+// clear opening in the sheet — taken off (the owner, October 2026). Ported 1:1 from rilievi
+// (src/ordini/collegamenti-elenco.ts, commit 988f3cf37).
+import { AGGIUNTI } from './collegamenti-aggiunti';
 import type { Collegamento } from './collegamenti';
 
-export const COLLEGAMENTI: readonly Collegamento[] = [
+const BASE: readonly Collegamento[] = [
   {
     // «Piani n°» of the argano sheet are the stops.
     key: 'fermate',
@@ -23,15 +25,20 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
       { luogo: 'scheda', campo: 'fermate' },
       { luogo: 'oq', campo: 'nFermate' },
       { luogo: 'om', campo: 'fermate' },
+      { luogo: 'mn', campo: 'nFermate' },
+      { luogo: 'mq', campo: 'numeroFermate' },
       { luogo: 'pa', campo: 'piani' },
     ],
   },
   {
+    // The speed: until 21 October 2026 also in the sheet's power unit (taken off — the owner).
     key: 'velocita',
     tipo: 'numero',
     membri: [
       { luogo: 'oq', campo: 'velocita' },
       { luogo: 'om', campo: 'velocita' },
+      { luogo: 'mn', campo: 'velocita' },
+      { luogo: 'mq', campo: 'velocita' },
       { luogo: 'pa', campo: 'velocita' },
     ],
   },
@@ -41,15 +48,19 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     tipo: 'scelta',
     membri: [
       { luogo: 'oq', voci: { tq1Velocita: '1V', tq2Velocita: '2V', tqVvvfAperto: 'VVVF', tqVvvfChiuso: 'VVVF' } },
+      { luogo: 'mn', voci: { velocita1: '1V', velocita2: '2V', vvvf: 'VVVF' } },
       { luogo: 'pa', voci: { motoreAc1: '1V', motoreAc2: '2V', motoreInverter: 'VVVF' } },
     ],
   },
   {
+    // The travel in metres; QI Touch's «Corsa [mm]» is in millimetres — not here. The travel of the sheet's power unit —
+    // taken off (21 October 2026).
     key: 'corsa',
     tipo: 'numero',
     membri: [
       { luogo: 'oq', campo: 'corsa' },
       { luogo: 'om', campo: 'corsa' },
+      { luogo: 'mn', campo: 'corsa' },
       { luogo: 'pa', campo: 'corsa' },
     ],
   },
@@ -59,6 +70,7 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'portataKg' },
       { luogo: 'om', campo: 'portata' },
+      { luogo: 'mq', campo: 'portataNominale' },
       { luogo: 'pa', campo: 'portata' },
     ],
   },
@@ -94,6 +106,8 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     tipo: 'numero',
     membri: [
       { luogo: 'oq', campo: 'circuitoFrenoVcc' },
+      { luogo: 'mn', campo: 'tensioneFreno' },
+      { luogo: 'mq', campo: 'tensioneFreno' },
       { luogo: 'pa', campo: 'tensioneFreno' },
     ],
   },
@@ -104,6 +118,8 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'tipoPorte', voci: { AUTOMATICHE: 'AUTOMATICHE', SEMIAUTOMATICHE: 'SEMIAUTOMATICHE', MANUALI: 'MANUALI' } },
       { luogo: 'oq', voci: { porteAutomatiche: 'AUTOMATICHE', porteSemiautomatiche: 'SEMIAUTOMATICHE', porteManuali: 'MANUALI' } },
+      // NG120: «Tipo di Operatore 1» — the doors of the first access.
+      { luogo: 'mn', voci: { op1Automatico: 'AUTOMATICHE', op1Semiautomatico: 'SEMIAUTOMATICHE', op1Manuale: 'MANUALI' } },
       { luogo: 'sg', voci: { automatico: 'AUTOMATICHE', semiautomatico: 'SEMIAUTOMATICHE' } },
     ],
   },
@@ -114,6 +130,7 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     membri: [
       { luogo: 'scheda', campo: 'doppioAccesso', valori: { si: '2', no: '1' } },
       { luogo: 'oq', campo: 'nAccessi' },
+      { luogo: 'mq', campo: 'numeroAccessi' },
     ],
   },
   {
@@ -193,33 +210,15 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     ],
   },
   {
-    // Pelazza's «Modello» is often more detailed than the make («Selcom Midi Supra») — prefill only.
+    // The operator — the panels among themselves, only when the make or the model changes (one is open). Pelazza's
+    // «Modello» is often more detailed than the make («Selcom Midi Supra») — prefill only.
     key: 'operatoreMarca',
     tipo: 'numero',
     confronto: false,
     membri: [
-      { luogo: 'scheda', campo: 'operatoreMarca' },
       { luogo: 'oq', campo: 'opModello' },
       { luogo: 'om', campo: 'marcaOpA' },
-    ],
-  },
-  {
-    key: 'operatoreTensione',
-    tipo: 'numero',
-    membri: [
-      { luogo: 'scheda', campo: 'operatoreTensione' },
-      { luogo: 'om', campo: 'voltA' },
-    ],
-  },
-  {
-    // The sheet's «Luce porte» is free text («800 x 2000», «800») — on 2SG it is width x height of the car door. Prefill
-    // only: «800» against «800 x 2000» is no difference.
-    key: 'lucePorte',
-    tipo: 'numero',
-    confronto: false,
-    membri: [
-      { luogo: 'scheda', campo: 'lucePorte' },
-      { luogo: 'sg', campi: ['luceCabinaL', 'luceCabinaH'] },
+      { luogo: 'mq', campo: 'modelloOperatore1' },
     ],
   },
   {
@@ -229,6 +228,8 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     membri: [
       { luogo: 'oq', campo: 'motIn' },
       { luogo: 'om', campo: 'amp' },
+      { luogo: 'mn', campo: 'correnteNominale' },
+      { luogo: 'mq', campo: 'correnteMotore' },
       { luogo: 'pa', campo: 'ampere' },
     ],
   },
@@ -241,3 +242,5 @@ export const COLLEGAMENTI: readonly Collegamento[] = [
     ],
   },
 ];
+
+export const COLLEGAMENTI: readonly Collegamento[] = [...BASE, ...AGGIUNTI];

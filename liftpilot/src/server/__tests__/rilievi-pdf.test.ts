@@ -1,7 +1,8 @@
-// Rilievi — the sheet's PDF (pdfkit with DejaVu Sans), ported from rilievi's tests/pdf.test.ts (commit ae6329cb6):
+// Rilievi — the sheet's PDF (pdfkit with DejaVu Sans), ported from rilievi's tests/pdf.test.ts (commit 988f3cf37):
 // a valid A4 document with Cyrillic and accents, a long work order onto a second page, the measurements' table over
-// the next pages, the company's logo top left (PNG with its transparency, JPEG), the suppliers' modules only when the
-// sheet asks for them (the sections in the company's order: rilievi-sezioni.test.ts).
+// the next pages, the company's logo top left (PNG with its transparency, JPEG), the suppliers' modules the sheet asks
+// for, each on its own, the sections it leaves out not printed (the sections in the company's order:
+// rilievi-sezioni.test.ts; the boxes drawn with lines: rilievi-spunte.test.ts).
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { describe, it } from 'node:test';
@@ -51,9 +52,19 @@ describe('the sheet PDF', { skip: !fontsHere && 'DejaVu fonts are not installed 
   it('adds what the orders hold at the end only when the sheet asks for it', async () => {
     const ordine = { ...SCHEDA, quadroMarca: 'PELAZZA' as const, quadroOrdine: true, ordineQuadro: { modulo: 'pelazza-ordine-quadri-032026', valori: { ordine: true, velocita: '1,0', note: 'Consegna in cantiere' } } };
     const without = await renderSchedaPdf({ ...ordine, riepilogoOrdini: false }, options);
-    const withOrders = await renderSchedaPdf({ ...ordine, riepilogoOrdini: true }, options);
+    const withOrders = await renderSchedaPdf({ ...ordine, riepilogoOrdini: true, moduliStampati: ['ordineQuadro'] }, options);
     assert.equal(withOrders.subarray(0, 5).toString(), '%PDF-');
-    assert.ok(withOrders.length > without.length, 'the orders add their own sections');
+    assert.ok(withOrders.length > without.length, 'the order adds its own section');
+    // only the argano sheet ticked: the panel order stays out (it is its own PDF)
+    const otherOnly = await renderSchedaPdf({ ...ordine, riepilogoOrdini: true, moduliStampati: ['preventivoArgano'] }, options);
+    assert.ok(otherOnly.length < withOrders.length, 'the unticked panel order is not printed');
+  });
+
+  it('leaves out the sections the sheet takes off the print', async () => {
+    const short = { ...SCHEDA, lavoriExtra: null };
+    const all = await renderSchedaPdf(short, options);
+    const fewer = await renderSchedaPdf({ ...short, sezioniEscluse: ['funi', 'cavi', 'serrature', 'tipologia'] }, options);
+    assert.ok(fewer.length < all.length, 'four sections fewer, a shorter document');
   });
 
   it('says who made it and refuses to draw without the fonts', async () => {

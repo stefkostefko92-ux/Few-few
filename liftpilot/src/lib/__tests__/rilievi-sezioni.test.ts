@@ -1,5 +1,5 @@
 // Rilievi — the order of the sheet's sections in a company, ported from rilievi's tests/sezioni.test.ts (commit
-// ae6329cb6): «Impianto» stays first, a stored order is cleaned, the form, the page, the print and the PDF sort alike, a
+// 988f3cf37): «Impianto» stays first, a stored order is cleaned, the form, the page, the print and the PDF sort alike, a
 // sent order is taken only whole, a move is one step.
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
@@ -51,7 +51,7 @@ describe('the order of the sheet sections in a company', () => {
     assert.equal(parseMossa('impianto:su'), null, 'the identification does not move');
     assert.equal(parseMossa('funi:lato'), null);
     assert.equal(parseMossa(['funi:su']), null);
-    // as rilievi (src/schede/ordine.ts, ae6329cb6: `const [key, verso] = raw.split(':')`): the parts after the second are ignored
+    // as rilievi (src/schede/ordine.ts, 988f3cf37: `const [key, verso] = raw.split(':')`): the parts after the second are ignored
     assert.deepEqual(parseMossa('funi:su:x'), { key: 'funi', verso: 'su' });
     assert.deepEqual(parseMossa('funi:su:giu'), { key: 'funi', verso: 'su' });
     const extra = parseMossa('funi:su:x');

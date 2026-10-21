@@ -1,7 +1,7 @@
 import 'server-only';
 // What the modules' PDFs share (modulo-pdf.ts — the flat sheets, pdf-form.ts — the forms): opening the official module
 // with our font and the place of the text. The font is DejaVu Sans (accents, Cyrillic) — never pdf-lib's built-in
-// Helvetica. Ported 1:1 from rilievi (src/ordini/pdf-testo.ts, commit ae6329cb6); only the Producer says «LiftPilot
+// Helvetica. Ported 1:1 from rilievi (src/ordini/pdf-testo.ts, commit 988f3cf37); only the Producer says «LiftPilot
 // Rilievi».
 import { readFileSync } from 'node:fs';
 import fontkit from '@pdf-lib/fontkit';
@@ -11,6 +11,12 @@ import { moduloPdf } from './moduli-pdf';
 import { pdfFontPaths } from './pdf';
 
 const MIN_SIZE = 5;
+
+/**
+ * The thickness of the mark in a box (the cross and the circle of the flat sheets, the form's tick) — solid on paper too:
+ * the owner asked for clearer ticks (21 October 2026; until then 1.1 pt).
+ */
+export const SEGNO = 1.7;
 
 /**
  * The blank official module (checked by SHA-256) with DejaVu Sans embedded. A scanned sheet upside down (`ruota`, 2SG)

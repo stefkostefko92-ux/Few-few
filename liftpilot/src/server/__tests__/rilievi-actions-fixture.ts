@@ -1,7 +1,8 @@
 // The survey sheets' server over an in-memory database, for rilievi-actions.test.ts and rilievi-collegati-actions.test.ts
-// (rilievi's integration tests, commit ae6329cb6): the module mocks are set up on import — the database, the session,
-// the environment, Next.js' headers and redirect —; `as` signs a user in (the role's default rights, or `caps` as the
-// company set them), `session()` is that user as the pages take it, `signOut()` leaves no one signed in.
+// (rilievi's integration tests, commit ae6329cb6; the sheet as at 988f3cf37): the module mocks are set up on import — the
+// database, the session, the environment, Next.js' headers and redirect —; `as` signs a user in (the role's default
+// rights, or `caps` as the company set them), `session()` is that user as the pages take it, `signOut()` leaves no one
+// signed in.
 import { mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';

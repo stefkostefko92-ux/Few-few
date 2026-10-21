@@ -685,9 +685,11 @@ model CustomPriceItem {
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Rilievi (round 41): the survey sheets of an existing lift (schede di rilievo), ported 1:1 from the standalone rilievi
-// portal (commit 174a1e3aa). The field list is src/lib/rilievi/fields.ts; every column mirrors rilievi's Scheda (type,
-// nullability, precision); the company, the authors and the trash are LiftPilot's. Not immutable records: a sheet is
-// edited in place, guarded by updatedAt (optimistic concurrency, src/server/rilievi/service.ts).
+// portal (commit 174a1e3aa, synchronised up to 988f3cf37). The field list is src/lib/rilievi/fields.ts; every column
+// LiftPilot has mirrors rilievi's Scheda (type, nullability, precision) — the columns rilievi added for answers it no
+// longer asks and LiftPilot never stored are not mirrored (the list is on the model); the company, the installation link
+// (projectId, round 44), the write key (writeKey, round 48), the authors and the trash are LiftPilot's. Not immutable
+// records: a sheet is edited in place, guarded by updatedAt (optimistic concurrency, src/server/rilievi/service.ts).
 
 enum RilievoUbicazioneMacchina {
   ALTO
@@ -707,6 +709,8 @@ enum RilievoTipoPorte {
   MANUALI
 }
 
+/// The existing emergency call: complete or without the peripheral — not asked since October 2026 (replaced by the three
+/// «da installare»); the column keeps the old answers.
 enum RilievoTelesoccorsoStato {
   COMPLETO
   MANCA_PERIFERICA
@@ -720,6 +724,12 @@ enum RilievoQuadroMarca {
   ALTRO
 }
 
+/// Mastech's panel to order: NG120 or QI Touch — each with its own order module (src/lib/rilievi/ordini/registry.ts).
+enum RilievoQuadroModello {
+  NG120
+  QI_TOUCH
+}
+
 /// The argano's make — not asked since October 2026 (the data sheet is for every kind of machine); the column keeps the
 /// old answers.
 enum RilievoArganoMarca {
@@ -729,103 +739,180 @@ enum RilievoArganoMarca {
 
 /// A survey sheet of a company. `searchText` is written only by src/server/rilievi/service.ts (the searchable fields,
 /// normalised); the supplier modules are JSON {modulo, valori} or a real SQL NULL; deletedAt set = in the trash.
+/// A save writes null over every answer whose condition does not hold (src/lib/rilievi/validation.ts): an old sheet's
+/// answers that the round-49 conditions hide — the locks and the cam with automatic or no doors, the suspensions and
+/// 2SG's sheet with manual, semi-automatic or no doors, the argano, its sheet and the governor on a hydraulic lift —
+/// stay until its next save, as in rilievi.
+/// Not mirrored from rilievi (round 49, the owner's decision): the 24 columns rilievi added on 15 October 2026 for the
+/// first «Centralina» section and the brake contacts, which it stopped asking on 17 and 21 October and keeps only for
+/// its own old answers — `contattiFreno`, `centralinaAzionamento`, `centralinaParacadute`, `centralinaPistoni`,
+/// `centralinaDiametroPistoneMm`, `centralinaCorsaM`, `centralinaVelocita`, `centralinaPressioneBar`,
+/// `centralinaPortataPompa`, `centralinaPotenzaKw`, `centralinaTubazioneM`, `centralinaDistanzaM`,
+/// `centralinaAlimentazione`, `centralinaAlimentazioneAltro`, `centralinaAvviamento`, `centralinaTubazione`,
+/// `centralinaAttacco`, `centralinaAccesso`, `centralinaCorseOra`, `centralinaMotore`, `centralinaBloccoValvole`,
+/// `centralinaDiscesaEmergenza`, `centralinaOlioLivello`, `centralinaOlioStato` — and their seven enums. LiftPilot never
+/// asked them, so no sheet has an answer there; the sheet, its print and its PDF never read them.
 model Scheda {
-  id                      String                      @id @default(cuid())
-  data                    DateTime                    @db.Date
-  indirizzo               String?                     @db.VarChar(200)
-  marca                   String?                     @db.VarChar(120)
-  matricola               String?                     @db.VarChar(20)
-  numeroImpianto          String?                     @db.VarChar(20)
-  buonoLavoro             String?                     @db.VarChar(60)
-  portataKg               Int?
-  capienzaPersone         Int?
-  fermate                 Int?
-  ubicazioneMacchina      RilievoUbicazioneMacchina[]
+  id                       String                      @id @default(cuid())
+  data                     DateTime                    @db.Date
+  indirizzo                String?                     @db.VarChar(200)
+  marca                    String?                     @db.VarChar(120)
+  matricola                String?                     @db.VarChar(20)
+  numeroImpianto           String?                     @db.VarChar(20)
+  /// the work order the survey was made for («Buono di lavoro»; optional)
+  buonoLavoro              String?                     @db.VarChar(60)
+  portataKg                Int?
+  capienzaPersone          Int?
+  fermate                  Int?
+  ubicazioneMacchina       RilievoUbicazioneMacchina[]
   /// where the box is — free text (an integer, the floor, until migration 18_rilievi_sync)
-  ubicazioneCassettina    String?                     @db.VarChar(120)
-  parcheggio              String?                     @db.VarChar(300)
-  tipoImpianto            RilievoTipoImpianto[]
-  tipoPorte               RilievoTipoPorte[]
-  operatoreMarca          String?                     @db.VarChar(120)
-  lucePorte               String?                     @db.VarChar(60)
-  operatoreTensione       String?                     @db.VarChar(60)
+  ubicazioneCassettina     String?                     @db.VarChar(120)
+  parcheggio               String?                     @db.VarChar(300)
+  /// one kind of lift and one kind of doors since October 2026 (a radio), still a list (of one): the code before reads
+  /// it; an old sheet with two keeps both until its next save, which keeps the first (the form ticks it) — and the
+  /// answers of the branch that no longer applies are nulled then (as in rilievi)
+  tipoImpianto             RilievoTipoImpianto[]
+  tipoPorte                RilievoTipoPorte[]
+  /// the door operator's make, clear opening and voltage are not asked since October 2026 (the owner took them off the
+  /// sheet); the columns keep the old answers
+  operatoreMarca           String?                     @db.VarChar(120)
+  lucePorte                String?                     @db.VarChar(60)
+  operatoreTensione        String?                     @db.VarChar(60)
   /// «Accessi: 1 / 2» on the sheet — true is 2 accesses (double access), false one
-  doppioAccesso           Boolean?
+  doppioAccesso            Boolean?
   /// the door blocking, the self-levelling and the number of retiring cams are not asked since October 2026 (the owner
   /// took them off the sheet); the columns keep the old answers
-  bloccaPortine           Boolean?
-  autolivellamento        Boolean?
-  /// «Pattino retrattile da cambiare» — with manual and semi-automatic doors
-  pattinoRetrattile       Boolean?
-  pattinoRetrattileNumero Int?
-  /// «Serrature da cambiare» (until October 2026 «Serrature/sospensioni»); number and kind only with true
-  serrature               Boolean?
-  serratureNumero         Int?
-  serratureTipo           String?                     @db.VarChar(120)
-  /// «Sospensioni da cambiare» — with true the number and 2SG's sheet (the suspensions and the car operator)
-  sospensioni             Boolean?
-  sospensioniNumero       Int?
+  bloccaPortine            Boolean?
+  autolivellamento         Boolean?
+  /// «Pattino retrattile da cambiare» — in «Serrature o sospensioni» since October 2026, with manual and semi-automatic
+  /// doors; with true its kind
+  pattinoRetrattile        Boolean?
+  pattinoRetrattileNumero  Int?
+  pattinoRetrattileTipo    String?                     @db.VarChar(120)
+  /// «Serrature da cambiare» (until October 2026 «Serrature/sospensioni») — with manual and semi-automatic doors; number
+  /// and kind only with true
+  serrature                Boolean?
+  serratureNumero          Int?
+  serratureTipo            String?                     @db.VarChar(120)
+  /// «Sospensioni da cambiare» — only with automatic doors (the semi-automatic have locks only); with true the number
+  /// and 2SG's sheet (the suspensions and the car operator)
+  sospensioni              Boolean?
+  sospensioniNumero        Int?
   /// 2SG's sheet {modulo, valori} (src/lib/rilievi/ordini/), or SQL NULL; it has its own PDF
-  ordineSospensioni       Json?
-  luceVanoSostituire      Boolean?
-  funiDiametroMm          Decimal?                    @db.Decimal(6, 2)
-  funiTrefoli             Int?
-  funiNumero              Int?
-  funiLunghezzaM          Decimal?                    @db.Decimal(8, 2)
-  limitatoreTipo          String?                     @db.VarChar(120)
-  funicellaDiametroMm     Decimal?                    @db.Decimal(6, 2)
-  funicellaLunghezzaM     Decimal?                    @db.Decimal(8, 2)
-  tenditore               String?                     @db.VarChar(120)
-  caviNumero              Int?
-  caviConduttori          Int?
-  caviLunghezzaM          Decimal?                    @db.Decimal(8, 2)
-  telesoccorso            Boolean?
-  telesoccorsoStato       RilievoTelesoccorsoStato?
-  allarmePortineria       Boolean?
-  displayPortineria       Boolean?
-  noteQuadretto           String?
-  noteImpianto            String?
-  noteBottoniere          String?
-  bottoniereMisure        Boolean?
-  misureBottoniere        MisuraBottoniera[]
-  lavoriExtra             String?
-  quadroMarca             RilievoQuadroMarca?
-  quadroMarcaAltro        String?                     @db.VarChar(120)
-  quadroOrdine            Boolean?
-  /// the panel's order form {modulo, valori} — Pelazza's or MoviLift's, by the make (src/lib/rilievi/ordini/), or SQL NULL
-  ordineQuadro            Json?
-  arganoMarca             RilievoArganoMarca?
-  arganoMarcaAltro        String?                     @db.VarChar(120)
-  /// «Argano da sostituire?» (until October 2026 the Montanari quotation request)
-  arganoPreventivo        Boolean?
+  ordineSospensioni        Json?
+  /// the notes of the section «Serrature o sospensioni»
+  serratureNote            String?
+  /// the shaft lighting to replace; with true a note by hand
+  luceVanoSostituire       Boolean?
+  luceVanoNote             String?
+  funiDiametroMm           Decimal?                    @db.Decimal(6, 2)
+  funiTrefoli              Int?
+  funiNumero               Int?
+  funiLunghezzaM           Decimal?                    @db.Decimal(8, 2)
+  /// the tie rods of the ropes («Funi e tiranti») — number and kind for the car and for the counterweight; a hydraulic
+  /// lift has no counterweight: its second tie rods are those in the pit (`tirantiFossa*`)
+  tirantiCabinaNumero      Int?
+  tirantiCabinaTipo        String?                     @db.VarChar(120)
+  tirantiContrappesoNumero Int?
+  tirantiContrappesoTipo   String?                     @db.VarChar(120)
+  tirantiFossaNumero       Int?
+  tirantiFossaTipo         String?                     @db.VarChar(120)
+  limitatoreTipo           String?                     @db.VarChar(120)
+  funicellaDiametroMm      Decimal?                    @db.Decimal(6, 2)
+  funicellaLunghezzaM      Decimal?                    @db.Decimal(8, 2)
+  tenditore                String?                     @db.VarChar(120)
+  caviNumero               Int?
+  caviConduttori           Int?
+  caviLunghezzaM           Decimal?                    @db.Decimal(8, 2)
+  /// the existing emergency call and its state are not asked since October 2026 (replaced by the three «da
+  /// installare»); the columns keep the old answers
+  telesoccorso             Boolean?
+  telesoccorsoStato        RilievoTelesoccorsoStato?
+  allarmePortineria        Boolean?
+  displayPortineria        Boolean?
+  /// the emergency call — what is to install (section «Allarme e telesoccorso» since October 2026)
+  telesoccorsoInstallare   Boolean?
+  perifericaInstallare     Boolean?
+  cornettaInstallare       Boolean?
+  noteQuadretto            String?
+  noteImpianto             String?
+  noteBottoniere           String?
+  bottoniereMisure         Boolean?
+  misureBottoniere         MisuraBottoniera[]
+  lavoriExtra              String?
+  quadroMarca              RilievoQuadroMarca?
+  quadroMarcaAltro         String?                     @db.VarChar(120)
+  /// Mastech: NG120 or QI Touch — each with its own order module (in `ordineQuadro`)
+  quadroModello            RilievoQuadroModello?
+  /// a reduced pit and a reduced headroom — for the panel
+  fossaRidotta             Boolean?
+  testataRidotta           Boolean?
+  quadroOrdine             Boolean?
+  /// the panel's order form {modulo, valori} — one of four by the make and Mastech's model: Pelazza, MoviLift, Mastech
+  /// NG120, Mastech QI Touch (src/lib/rilievi/ordini/) —, or SQL NULL
+  ordineQuadro             Json?
+  /// the notes of the section «Quadro»
+  quadroNote               String?
+  arganoMarca              RilievoArganoMarca?
+  arganoMarcaAltro         String?                     @db.VarChar(120)
+  /// «Argano da sostituire?» (until October 2026 the Montanari quotation request); asked only without a hydraulic lift
+  arganoPreventivo         Boolean?
   /// the argano's data sheet (every kind of machine) {modulo, valori}, or SQL NULL; the stored Montanari requests (another
   /// `modulo`) are not read any more
-  preventivoArgano        Json?
-  /// the sheet's print and PDF carry what is filled in the modules too — the choice is kept with the sheet
-  riepilogoOrdini         Boolean                     @default(false)
+  preventivoArgano         Json?
+  /// an argano that stays («Argano da sostituire?» — No): its kind, whether the brake shoes are to change; the shoe check
+  /// kit and the check on the control panel — with true their kind by hand
+  arganoTipo               String?                     @db.VarChar(120)
+  ganasceFreno             Boolean?
+  kitControlloGanasce      Boolean?
+  kitControlloGanasceTipo  String?                     @db.VarChar(120)
+  controlloQuadro          Boolean?
+  controlloQuadroTipo      String?                     @db.VarChar(120)
+  /// the notes of the section «Argano»
+  arganoNote               String?
+  /// the power unit of a hydraulic lift (src/lib/rilievi/fields-centralina.ts) — instead of the argano: «Centralina da
+  /// sostituire?», its make and model with either answer, with «No» the A3 amendment to install and with it a flexible
+  /// hose (diameter, length, notes); the notes of the section
+  centralinaDaFare         Boolean?
+  centralinaMarca          String?                     @db.VarChar(120)
+  emendamentoA3            Boolean?
+  tuboFlessibile           Boolean?
+  tuboFlessibileDiametroMm Decimal?                    @db.Decimal(8, 2)
+  tuboFlessibileLunghezzaM Decimal?                    @db.Decimal(8, 2)
+  tuboFlessibileNote       String?
+  centralinaNote           String?
+  /// the sheet's print and PDF carry what is filled in at least one module (the one choice of before — read by the
+  /// previous code; the current one writes it as «at least one»)
+  riepilogoOrdini          Boolean                     @default(false)
+  /// which modules come into the print and the PDF — their columns (`ordineQuadro`, `preventivoArgano`,
+  /// `ordineSospensioni`); empty with `riepilogoOrdini` true — a sheet from before the choice one by one: all three
+  moduliStampati           String[]                    @default([])
+  /// the sections NOT in the print and the PDF (the choice at the end of the form) — the excluded ones are kept, so that
+  /// a new section is printed on the old sheets too
+  sezioniEscluse           String[]                    @default([])
   /// the fingerprint of the discrepancies sheet ↔ modules confirmed at the last save (src/lib/rilievi/ordini/collegati.ts):
   /// the same differences are not asked again, new or changed ones are; null — none confirmed
-  discrepanzeConfermate   String?                     @db.VarChar(32)
-  searchText              String                      @default("")
-  companyId               String
-  company                 Company                     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  discrepanzeConfermate    String?                     @db.VarChar(32)
+  searchText               String                      @default("")
+  companyId                String
+  company                  Company                     @relation(fields: [companyId], references: [id], onDelete: Cascade)
   /// the installation the survey belongs to (round 44, src/server/collega/): many surveys per installation — its history,
   /// the newest by `data` then `createdAt` the reference —; null: not linked. Written only by src/server/collega/service.ts,
   /// always within one company, without touching `updatedAt` (the link is not the sheet's content nor its version)
-  projectId               String?
-  project                 Project?                    @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  createdById             String?
-  createdBy               User?                       @relation("SchedeCreated", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedById             String?
-  updatedBy               User?                       @relation("SchedeUpdated", fields: [updatedById], references: [id], onDelete: SetNull)
-  deletedAt               DateTime?
-  deletedById             String?
-  deletedBy               User?                       @relation("SchedeDeleted", fields: [deletedById], references: [id], onDelete: SetNull)
+  projectId                String?
+  project                  Project?                    @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  createdById              String?
+  createdBy                User?                       @relation("SchedeCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById              String?
+  updatedBy                User?                       @relation("SchedeUpdated", fields: [updatedById], references: [id], onDelete: SetNull)
+  deletedAt                DateTime?
+  deletedById              String?
+  deletedBy                User?                       @relation("SchedeDeleted", fields: [deletedById], references: [id], onDelete: SetNull)
   /// the key the form sent with the last write (round 48): a save sent again after its answer was lost finds the sheet
   /// it already made or updated instead of making a second one or reading as somebody else's change
-  writeKey                String?
-  createdAt               DateTime                    @default(now())
-  updatedAt               DateTime                    @updatedAt
+  writeKey                 String?
+  createdAt                DateTime                    @default(now())
+  updatedAt                DateTime                    @updatedAt
 
   @@unique([companyId, writeKey])
   /// the list in its order (survey day, then creation, newest first; the trashed ones skipped), and the trash

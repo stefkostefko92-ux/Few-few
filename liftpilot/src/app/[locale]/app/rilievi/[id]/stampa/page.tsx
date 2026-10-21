@@ -18,14 +18,15 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: title ?? t('scheda.title') };
 }
 
-// The sheet on A4 paper (rilievi print.ejs + print-head.css, commit ae6329cb6): on top the company's logo (the drawing
+// The sheet on A4 paper (rilievi print.ejs + print-head.css, commit 988f3cf37): on top the company's logo (the drawing
 // sets' one; without a logo its name) and, on the right, the day and who filled it in, large; the title in the middle;
-// under it the address on the left (bold, as big as the title) and the «Buono di riferimento» on the right; the plate
+// under it the address on the left (bold, as big as the title) and the «Buono di lavoro» on the right; the plate
 // (matricola, number, specs — the address is in the head). «Impianto» is not printed as a section: all of it is in the
-// head and the plate. Then the sections in the company's order with every option as a box, ticked or not, the
-// measurements per stop as a table; what is filled in the suppliers' modules only when the sheet asks for it
-// («Includi i dati dei moduli…»); the footer with who printed it and when. White paper on the screen too, with the bar
-// to print it, download its PDF or go back; on paper only the sheet.
+// head and the plate. Then the sections in the company's order (without those the sheet leaves out — «Sezioni nella
+// stampa e nel PDF») with every option as a box, ticked or not, the measurements per stop as a table; what is filled in
+// the suppliers' modules the sheet asks for, each on its own («Dati dei moduli nella stampa e nel PDF»); the footer with
+// who printed it and when. White paper on the screen too, with the bar to print it, download its PDF or go back; on
+// paper only the sheet.
 export default async function PrintRilievoPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
@@ -95,7 +96,7 @@ export default async function PrintRilievoPage({ params }: { params: Promise<{ l
             </dl>
           </section>
         ))}
-        {/* what is filled in the suppliers' modules — only when the sheet asks for it (riepilogoOrdini) */}
+        {/* what is filled in the suppliers' modules — only in those the sheet asks for (moduliStampati) */}
         {riepilogo.map((modulo) => (
           <section key={modulo.nome} className="rv-paper-sec">
             <h2>{modulo.nome}</h2>

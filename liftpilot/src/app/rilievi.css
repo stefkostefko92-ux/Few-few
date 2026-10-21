@@ -80,6 +80,14 @@
 .rv-index a[aria-current="true"] { color: var(--ink); font-weight: 700; background: var(--surface2); }
 .rv-index a[aria-current="true"] .rv-secnum { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }
 
+/* the index's numbers count its visible lines (rilievi sheet.css): in the form a section hidden by its condition hides
+   here too (form-dom.ts) and leaves no gap — the same numbers as the sections'. Without JavaScript every line shows. */
+.rv-index ol { counter-reset: sezione-indice; }
+.rv-index li { counter-increment: sezione-indice; }
+.rv-index .rv-secnum:empty::before { content: counter(sezione-indice); }
+.rv-index [data-when][data-off] { display: none; }
+@media (scripting: none) { .rv-index li[data-when][data-off] { display: list-item; } }
+
 /* the section's number: the same on the form, the sheet and the index (the paper form's order) */
 .rv-secnum { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 26px; height: 26px;
   border: 1.5px solid var(--accent-line); border-radius: 50%; color: var(--accent-2); font: 500 12.5px/1 var(--font-mono); }

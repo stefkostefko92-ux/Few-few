@@ -1,8 +1,9 @@
 // Rilievi — the linked data between the sheet and the suppliers' modules, MoviLift and the company's order of the sheet's
 // sections, end to end over the in-memory database (rilievi-actions-fixture.ts), as rilievi's integration tests
-// (collegati, movilift, tempo-reale, impostazioni; commit ae6329cb6): the discrepancies confirmed before the save and
-// remembered after it, a forged answer that breaks nothing, the modules in the print only when the sheet asks, the
-// MoviLift order and its PDF by the make, the order of the sections only for whoever holds 'company:edit'.
+// (collegati, movilift, mastech, tempo-reale, impostazioni; commit 988f3cf37): the discrepancies confirmed before the save
+// and remembered after it, a forged answer that breaks nothing, the modules in the print only when the sheet asks, the
+// MoviLift order and its PDF by the make, the Mastech orders by the make and the type, the sections the print leaves out,
+// the order of the sections only for whoever holds 'company:edit'.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { capsOf } from '@/lib/rbac';
@@ -130,6 +131,61 @@ test('l’ordine quadro MoviLift: salvato con la scheda, il suo PDF; con Pelazza
   assert.equal((await get(id, 'ordine-quadro-movilift')).status, 404);
   r = await get(id, 'ordine-quadro');
   assert.equal(r.status, 200);
+});
+
+test('gli ordini Mastech: il modulo del tipo scelto, solo il suo PDF; al cambio del tipo l’altro', async () => {
+  const { createRilievoAction, updateRilievoAction } = await actions();
+  const modulo = await import(src('app/api/rilievi/[id]/[modulo]/route.ts'));
+  const { moduliDi } = await import(src('lib/collega/moduli.ts'));
+  const get = (id: string, path: string) => modulo.GET(new Request('http://x/api'), { params: Promise.resolve({ id, modulo: path }) });
+  as('u1', 'TECHNICIAN');
+  // the NG120 order, as the browser sends it: the QI Touch form is on the page too, hidden
+  const sheet = {
+    data: '2026-10-14', numeroImpianto: '880044', indirizzo: 'Via Novara 3, Milano', fermate: '6', tipoPorte: 'AUTOMATICHE',
+    quadroMarca: 'MASTECH', quadroModello: 'NG120', quadroOrdine: 'si',
+    'mn-_': '1', 'mn-en811': 'si', 'mn-nFermate': '6', 'mn-pianoA0': 'si', 'mn-pianoAAltro1': '9', 'mn-note': 'Quadro nel locale macchina',
+    'mq-_': '1', 'mq-numeroFermate': '6',
+  };
+  const id = idOf(await redirected(createRilievoAction({ status: 'idle' }, form(sheet))));
+  const row = schede.find((s) => s.id === id);
+  assert.equal(row?.quadroModello, 'NG120');
+  assert.deepEqual(row?.ordineQuadro, { modulo: 'mastech-ng120', valori: { en811: true, nFermate: '6', pianoA0: true, pianoAAltro1: '9', note: 'Quadro nel locale macchina' } });
+  let r = await get(id, 'ordine-quadro-mastech-ng120');
+  assert.equal(r.status, 200);
+  assert.equal(r.headers.get('Content-Type'), 'application/pdf');
+  assert.equal(r.headers.get('Content-Disposition'), 'attachment; filename="ordine-quadro-mastech-ng120-880044-2026-10-14.pdf"');
+  assert.equal((await get(id, 'ordine-quadro-mastech-qi-touch')).status, 404, 'the other type: no PDF');
+  assert.equal((await get(id, 'ordine-quadro')).status, 404);
+  assert.deepEqual(moduliDi(row).map((m: { path: string }) => m.path), ['ordine-quadro-mastech-ng120'], 'the installation page lists its own only');
+  // the type changes to QI Touch: the order is the QI Touch form, the NG120 PDF is gone
+  const base = (row?.updatedAt as Date).toISOString();
+  await redirected(updateRilievoAction({ status: 'idle' }, form({ ...sheet, quadroModello: 'QI_TOUCH', scheda: id, base })));
+  assert.deepEqual(schede.find((s) => s.id === id)?.ordineQuadro, { modulo: 'mastech-qi-touch', valori: { numeroFermate: '6' } });
+  r = await get(id, 'ordine-quadro-mastech-qi-touch');
+  assert.equal(r.status, 200);
+  assert.equal((await get(id, 'ordine-quadro-mastech-ng120')).status, 404);
+  // «Sì» without the type: the error is on the type, what was typed stays
+  const missing = await createRilievoAction({ status: 'idle' }, form({ ...sheet, quadroModello: '' }));
+  assert.ok(missing.status === 'invalid' && missing.errors.quadroModello === 'modelloNeeded' && missing.values['mn-nFermate'] === '6');
+});
+
+test('le sezioni della stampa: solo quelle spuntate, sulla carta e nel PDF; la pagina della scheda le ha tutte', async () => {
+  const { createRilievoAction } = await actions();
+  const { printView, sheetView } = await pages();
+  const { getScheda } = await import(src('server/rilievi/queries.ts'));
+  as('u1', 'TECHNICIAN');
+  const id = idOf(await redirected(createRilievoAction({ status: 'idle' }, form({
+    ...SURVEY, noteImpianto: 'Nota da non stampare', allarmePortineria: 'si', 'stampa-_': '1', stampa: ['ubicazione', 'tipologia', 'quadro', 'allarme'],
+  }))));
+  const row = schede.find((s) => s.id === id);
+  const escluse = row?.sezioniEscluse as string[];
+  assert.ok(escluse.includes('note') && !escluse.includes('allarme'));
+  const scheda = await getScheda('c1', id);
+  const keys = (list: { key: string }[]) => list.map((s) => s.key);
+  assert.deepEqual(keys(printView(scheda).printed), ['ubicazione', 'tipologia', 'quadro', 'allarme']);
+  assert.ok(keys(sheetView(scheda).sections).includes('note'), 'the page keeps every section');
+  const forged = await createRilievoAction({ status: 'idle' }, form({ ...SURVEY, 'stampa-_': '1', stampa: ['note', 'impianto'] }));
+  assert.equal(forged.status, 'invalid');
 });
 
 test('l’ordine delle sezioni: solo chi modifica l’azienda; sposta senza salvare, salva con il registro, ripristina', async () => {

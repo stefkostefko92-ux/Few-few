@@ -1,16 +1,18 @@
-// The smoke test's survey sheets (Rilievi, round 41, synced with rilievi ae6329cb6), in the browser as a technician would
+// The smoke test's survey sheets (Rilievi, round 41, synced with rilievi 988f3cf37), in the browser as a technician would
 // use them: the menu item, a new sheet that opens on «Impianto» (the sheet's head and plate), its conditional fields in a
-// chain (doors → «Pattino retrattile da cambiare», «Accessi 1 / 2»; locks and suspensions to change → their numbers),
-// the text «Ubicazione cassettina», three stops with their old push-button panels' measurements, three suppliers' modules
-// (Pelazza's order, the argano data sheet, 2SG's sheet) filled from the survey and following it while it is typed;
+// chain (one kind of doors at a time; manual or semi-automatic doors → the locks and the retiring cam, automatic ones →
+// the suspensions; «Accessi 1 / 2»; locks, cam and suspensions to change → their number or kind; no door operator any
+// more), the text «Ubicazione cassettina», three stops with their old push-button panels' measurements, three suppliers'
+// modules (Pelazza's order, the argano data sheet, 2SG's sheet) filled from the survey and following it while it is typed;
 // saved; found again by its matricola with the live search; its PDF and the modules' PDFs (the other make's 404); the A4
 // print page with the new head (the address under the title, the work order, the plate without the address); a field
 // refused with its error and the input kept; two windows saving the same sheet (the second sees the conflict, keeps its
 // input, saves knowingly, the notice focused); leaving a form with unsaved changes through the app's links, «Esci» or the
 // top bar's search asks first; the page after a save opens at its top; the whole row of the list opens the sheet; the
 // tab named after the sheet; the activity log; to the trash and back. The linked data, the confirmation, MoviLift, the
-// modules in the print and the company's order of the sections are smoke-rilievi-sync.mjs. Returns the sheet's address
-// for the isolation check.
+// modules in the print and the company's order of the sections are smoke-rilievi-sync.mjs; Mastech, the hydraulic lift,
+// the print's choices and an emptied module field are smoke-rilievi-sync2.mjs. Returns the sheet's address for the
+// isolation check.
 import assert from 'node:assert/strict';
 import { step } from './smoke-kit.mjs';
 
@@ -39,9 +41,11 @@ export async function rilieviFlow({ BASE, page, hydrated }) {
   for (const id of ['#f-data', '#f-indirizzo', '#f-buonoLavoro', '#f-matricola', '#f-numeroImpianto', '#f-portataKg', '#f-fermate', '#f-marca']) {
     assert.equal(await page.locator(`#s-impianto ${id}`).count(), 1, `${id} in «Impianto» (the head and the plate)`);
   }
-  for (const id of ['#f-operatoreMarca', '#f-pattinoRetrattile', '#f-doppioAccesso', '#f-serratureNumero', '#f-sospensioniNumero', '#f-misure', '#f-oq', '#f-om', '#f-pa', '#f-sg']) {
+  for (const id of ['#f-serrature', '#f-pattinoRetrattile', '#f-sospensioni', '#f-doppioAccesso', '#f-serratureNumero', '#f-sospensioniNumero', '#f-misure',
+    '#f-quadroModello', '#f-oq', '#f-om', '#f-mn', '#f-mq', '#f-pa', '#f-sg', '#s-centralina']) {
     assert.equal(await page.isVisible(id), false, `${id} hidden at first`);
   }
+  assert.equal(await page.locator('#f-operatoreMarca, #f-lucePorte, #f-operatoreTensione, #f-telesoccorso').count(), 0, 'the door operator and the old emergency call not asked any more');
   await page.fill('#f-numeroImpianto', numero);
   await page.fill('#f-matricola', matricola);
   await page.fill('#f-indirizzo', 'Via Giuseppe Verdi 14, Milano');
@@ -49,18 +53,26 @@ export async function rilieviFlow({ BASE, page, hydrated }) {
   await page.fill('#f-portataKg', '630');
   await page.fill('#f-fermate', '3');
   await page.fill('#f-ubicazioneCassettina', 'Piano -1, vano contatori');
+  // the doors: one kind at a time; the locks and the retiring cam with manual or semi-automatic doors, the suspensions
+  // only with automatic ones (rilievi tests/e2e/porte.mjs)
+  await tick(page, 'tipoPorte', 'SEMIAUTOMATICHE');
+  await page.waitForSelector('#f-serrature', { state: 'visible' });
+  assert.equal(await page.isVisible('#f-sospensioni'), false, 'no suspensions with semi-automatic doors');
   await tick(page, 'tipoPorte', 'MANUALI');
-  await page.waitForSelector('#f-pattinoRetrattile', { state: 'visible' });
-  assert.equal(await page.isVisible('#f-operatoreMarca'), false, 'no operator with manual doors');
+  assert.deepEqual(await page.$$eval('input[name="tipoPorte"]:checked', (els) => els.map((e) => e.value)), ['MANUALI'], 'one kind of doors');
   assert.deepEqual(await page.$$eval('#f-doppioAccesso label', (ls) => ls.map((l) => l.textContent.trim())), ['1', '2'], '«Accessi»: 1 / 2');
-  await tick(page, 'pattinoRetrattile', 'si');
   await tick(page, 'doppioAccesso', 'si');
-  await tick(page, 'tipoPorte', 'AUTOMATICHE');
-  await page.waitForSelector('#f-operatoreMarca', { state: 'visible' });
-  await page.fill('#f-operatoreMarca', 'Wittur');
   await tick(page, 'serrature', 'si');
   await page.waitForSelector('#f-serratureNumero', { state: 'visible' });
   await page.fill('#f-serratureNumero', '4');
+  await tick(page, 'pattinoRetrattile', 'si');
+  await page.waitForSelector('#f-pattinoRetrattileTipo', { state: 'visible' });
+  await page.fill('#f-pattinoRetrattileTipo', 'Wittur');
+  // automatic doors at last (the panel order and 2SG's sheet follow them): the locks and the cam go, the suspensions come
+  await tick(page, 'tipoPorte', 'AUTOMATICHE');
+  await page.waitForSelector('#f-sospensioni', { state: 'visible' });
+  assert.equal(await page.isVisible('#f-pattinoRetrattile') || await page.isVisible('#f-serrature'), false, 'no locks nor cam with automatic doors');
+  assert.equal(await page.isVisible('#f-doppioAccesso'), true, '«Accessi» with every kind of doors');
   await tick(page, 'bottoniereMisure', 'si');
   await page.waitForSelector('#f-misure', { state: 'visible' });
   assert.equal(await page.locator('fieldset[data-misura]:visible').count(), 3, 'a row per stop');
@@ -73,11 +85,12 @@ export async function rilieviFlow({ BASE, page, hydrated }) {
   assert.equal(await page.isVisible('#f-om'), false, 'MoviLift closed with Pelazza');
   assert.equal(await page.inputValue('#f-oq-nFermate'), '3', 'Pelazza: the stops from the survey');
   assert.equal(await page.inputValue('#f-oq-nAccessi'), '2', 'Pelazza: the accesses from «Accessi»');
-  assert.ok(await page.isChecked('#f-oq-porteManuali') && await page.isChecked('#f-oq-porteAutomatiche'), 'Pelazza: the doors ticked');
+  assert.ok(await page.isChecked('#f-oq-porteAutomatiche') && !(await page.isChecked('#f-oq-porteManuali')), 'Pelazza: the doors of the sheet ticked');
   assert.match(await page.inputValue('#f-oq-rifImpianto'), new RegExp(`N° ${numero} — Matr\\. ${matricola}`), 'Pelazza: the reference');
   assert.notEqual(await page.inputValue('#f-oq-cliente'), '', 'Pelazza: the company');
   await tick(page, 'arganoPreventivo', 'si');
   await page.waitForSelector('#f-pa', { state: 'visible' });
+  assert.equal(await page.isVisible('#f-kitControlloGanasce') || await page.isVisible('#f-arganoTipo'), false, 'the argano that stays: not with a new one');
   assert.equal(await page.inputValue('#f-pa-portata'), '630', 'the argano sheet: the load');
   assert.equal(await page.inputValue('#f-pa-matricola'), matricola, 'the argano sheet: the matricola');
   await tick(page, 'sospensioni', 'si');
@@ -95,7 +108,9 @@ export async function rilieviFlow({ BASE, page, hydrated }) {
   assert.equal((await page.textContent('h1'))?.trim(), `Impianto n° ${numero}`);
   assert.deepEqual(await page.locator('.rv-plate .rv-plate-big').allTextContents(), [matricola, numero], 'the plate: the matricola, then the number');
   assert.equal(await page.locator('.rv-mtable tbody tr').count(), 3, 'the measurements per stop');
-  assert.ok((await page.textContent('#s-tipologia'))?.includes('Pattino retrattile'), 'the chain stored');
+  const serrature = (await page.textContent('#s-serrature')) ?? '';
+  assert.ok(serrature.includes('Sospensioni da cambiare') && !serrature.includes('Pattino retrattile') && !serrature.includes('Serrature da cambiare'),
+    'the chain stored: the doors\' branch that holds, not the one left behind');
   assert.ok((await page.textContent('#s-ubicazione'))?.includes('Piano -1, vano contatori'), 'the box\'s place as text');
   for (const path of ['ordine-quadro', 'dati-argano', 'sospensioni-2sg']) assert.equal(await page.locator(`a[href="/api/rilievi/${id}/${path}"]`).count(), 1, `link to ${path}`);
   assert.equal(await page.locator('.rv-diffnote').count(), 0, 'no data that disagree');

@@ -2,15 +2,18 @@
 // the lift's reference, the company and the person writing, the sheet's ticks as words, a tick of the sheet («Pattino
 // retrattile da cambiare: Sì» → MoviLift's «Elettr. Pattino»). Each follows the sheet in real time while nobody has typed
 // in it — empty, or still holding what was put there for it (`auto`); fields of one kind follow the first one typed in
-// when the sheet says nothing. The server fills them when a module first opens. The plant data that sit in more than one
-// place (stops, address, speed…) are collegati-client.ts. Pure: rilievi's public/js/moduli.js (commit ae6329cb6) over
-// the survey's values (FormValues — `valuesOfForm`) and an adapter of the modules' controls. Run it after the conditions
-// are synced, before collegati-client's `settle`, on load and after every input or change (marking a module's control
-// the person changed as touched first).
+// when the sheet says nothing. The server fills them when a module first opens; one the person emptied in a module
+// already filled in stays empty (`data-scritto` — ordini/form.ts withPrefill `scritti`, and `scrittiInviati` below for the
+// form the browser brings back itself). The plant data that sit in more than one place (stops, address, speed…) are
+// collegati-client.ts. Pure: rilievi's public/js/moduli.js (commit 988f3cf37) over the survey's values (FormValues —
+// `valuesOfForm`) and an adapter of the modules' controls. Run it after the conditions are synced, before
+// collegati-client's `settle`, on load and after every input or change (marking a module's control the person changed as
+// touched first).
 import type { FormValues } from './field-parsers';
 import { activeFields } from './fields';
 import type { Ctl } from './collegati-client';
 import type { ContestoBrowser } from './ordini/collegati-browser';
+import type { ModuloSpec } from './ordini/form';
 import { rifImpianto } from './ordini/rif';
 import { optionFor } from './valori-client';
 
@@ -54,6 +57,29 @@ export function surveyTicked(token: string, values: FormValues, active: Readonly
   return Array.isArray(v) ? v.includes(option) : v === option;
 }
 
+/**
+ * The survey's fields the person emptied in the modules the form already showed (`<prefix>-_` = '1'): a field with a
+ * value from the survey that is empty — the browser does not fill it again (ordini/form.ts withPrefill `scritti`, the
+ * same rule). For the form the browser brings back itself after a refusal, without the server's answer.
+ */
+export function scrittiInviati(specs: readonly ModuloSpec[], values: FormValues, ctx: SurveyContext): string[] {
+  const active = activeFields((key) => values[key]);
+  const fromSurvey = (f: ModuloSpec['gruppi'][number]['righe'][number]['campi'][number], token: string): boolean => {
+    if (token.includes('=')) return surveyTicked(token, values, active);
+    const text = surveyText(token, values, ctx, active);
+    return f.kind === 'select' ? optionFor((f.opzioni ?? []).map((o) => o.valore), text) !== '' : text !== '';
+  };
+  return specs.flatMap((spec) =>
+    values[spec.shownName] !== '1'
+      ? []
+      : spec.gruppi.flatMap((g) =>
+          g.righe.flatMap((r) =>
+            r.campi.filter((f) => f.prefill !== null && fromSurvey(f, f.prefill) && (values[f.name] ?? '') === '').map((f) => f.name),
+          ),
+        ),
+  );
+}
+
 /** What the engine asks the form about the modules' survey controls. */
 export interface PrefillHost<E extends Ctl> {
   /** every control of a module with a `prefill` token, in page order (rilievi: `[data-modulo] [data-prefill]`) */
@@ -66,7 +92,8 @@ export interface PrefillHost<E extends Ctl> {
   optionsOf(el: E): readonly string[] | null;
 }
 
-const touched = (el: Ctl): boolean => el.dataset.touched === '1';
+/** Typed in by the person, or a survey field they emptied in a module already filled in (moduli.js `touched`). */
+const touched = (el: Ctl): boolean => el.dataset.touched === '1' || 'scritto' in el.dataset;
 const follows = (el: Ctl): boolean =>
   !touched(el) && (el.type === 'checkbox' ? el.checked !== true || el.dataset.auto === 'si' : el.value === '' || el.value === el.dataset.auto);
 

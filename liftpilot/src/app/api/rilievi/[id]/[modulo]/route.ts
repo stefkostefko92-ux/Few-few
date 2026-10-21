@@ -1,7 +1,7 @@
 import { env } from '@/lib/env';
 import { log } from '@/lib/log';
 import { moduloFileName } from '@/lib/rilievi/form-help';
-import { slotByPath } from '@/lib/rilievi/ordini/registry';
+import { sceltoNellaScheda, slotByPath } from '@/lib/rilievi/ordini/registry';
 import { storedValori } from '@/lib/rilievi/ordini/valori';
 import { attachment, downloader, text } from '@/server/download';
 import { renderModulo } from '@/server/rilievi/modulo-pdf';
@@ -12,9 +12,10 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 // A supplier's module filled in on a survey sheet (rilievi's GET /schede/:id/ordine-quadro, /ordine-quadro-movilift,
-// /dati-argano and /sospensioni-2sg, commit ae6329cb6): the official PDF with the stored values on it, apart from the
-// sheet's PDF. The same rights as the sheet; a sheet of another company, unknown, without the module answered «Sì» and
-// stored, or of another make (the panel's Pelazza order on a MoviLift sheet) is 404. A blank module whose SHA-256 is not
+// /ordine-quadro-mastech-ng120, /ordine-quadro-mastech-qi-touch, /dati-argano and /sospensioni-2sg, commit 988f3cf37): the
+// official PDF with the stored values on it, apart from the sheet's PDF. The same rights as the sheet; a sheet of another
+// company, unknown, without the module answered «Sì» and stored, or of another make or model (the panel's Pelazza order
+// on a MoviLift sheet, the NG120 order on a QI Touch sheet) is 404. A blank module whose SHA-256 is not
 // its map's pin makes no PDF (500). `?inline=1` opens it in the browser (to print), otherwise it is saved. An unknown
 // module path is 404 before anything else (rilievi never routed it), so it spends no download of the person's quota.
 export async function GET(req: Request, { params }: { params: Promise<{ id: string; modulo: string }> }): Promise<Response> {
@@ -25,7 +26,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     if ('refused' in d) return d.refused;
     const { user } = d;
     const scheda = await sheetToShow(user, p.id);
-    if (!scheda || scheda[slot.question] !== true || (slot.marca && scheda[slot.marca.field] !== slot.marca.value)) return text(404, ANSWER.notFound);
+    if (!scheda || scheda[slot.question] !== true || !sceltoNellaScheda(slot, (key) => scheda[key as keyof typeof scheda])) {
+      return text(404, ANSWER.notFound);
+    }
     const valori = storedValori(slot.modulo, scheda[slot.column]);
     if (!valori) return text(404, ANSWER.notFound);
     const pdf = await renderModulo(slot.modulo, valori, env().REPORT_FONT_DIR);

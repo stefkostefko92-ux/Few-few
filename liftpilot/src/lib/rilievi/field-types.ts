@@ -1,5 +1,5 @@
 // The kinds of fields of the survey sheet and their checks — what fields.ts (the list), the form and the PDF share.
-// Ported 1:1 from rilievi (src/schede/field-types.ts, commit ae6329cb6).
+// Ported 1:1 from rilievi (src/schede/field-types.ts, commit 988f3cf37).
 
 export type FieldKind =
   | 'date' // today by default
@@ -25,15 +25,18 @@ export type SectionKey =
   | 'allarme'
   | 'note'
   | 'quadro'
-  | 'argano';
+  | 'argano'
+  | 'centralina';
 
 /**
- * When a field makes sense: an earlier field of the form has one of `values` — for Sì/No that is 'si', for ticks one of
- * those listed is enough. Otherwise the field is not shown and not stored (null).
+ * When a field (or a section) makes sense: an earlier field of the form has one of `values` — for Sì/No that is 'si' or
+ * 'no', for ticks one of those listed is enough. `not` — the opposite: the field has none of them (the empty and the
+ * hidden one too). Otherwise the field is not shown and not stored (null).
  */
 export interface Condition {
   field: string;
   values: readonly string[];
+  not?: true;
 }
 
 interface BaseField {
@@ -65,6 +68,12 @@ export interface NumberField extends BaseField {
 export interface OptionsField extends BaseField {
   kind: 'checks' | 'choice';
   options: readonly string[];
+  /**
+   * Ticks with one choice (a radio — kind of lift, kind of doors; the owner, October 2026). Stored as a list of one: the
+   * column stays an array, so the previous code reads it; the old sheets with two choices are shown as stored, and in
+   * the form the first one is ticked.
+   */
+  single?: true;
 }
 
 export interface PlainField extends BaseField {
@@ -78,6 +87,8 @@ export type FieldDef = TextField | NumberField | OptionsField | PlainField;
 
 export interface SectionDef {
   key: SectionKey;
+  /** The whole section makes sense only under this condition («Argano» — not with a hydraulic lift). */
+  when?: Condition;
   fields: readonly FieldDef[];
 }
 

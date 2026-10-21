@@ -1,7 +1,7 @@
 // The linked data for the browser (collegati-client.ts and prefill-client.ts): the links with their names and places,
 // nothing of the sheet's data. Plain data a server page hands to the form as a prop (no inline script: the CSP allows
 // none); rilievi put the same object, as JSON, in a <script type="application/json"> (src/ordini/collegati-browser.ts,
-// commit ae6329cb6).
+// commit 988f3cf37).
 import { fieldByKey, type FieldKind } from '../fields';
 import type { RilieviT } from '../t';
 import { COLLEGAMENTI, confrontato, type Luogo, type MembroNumero, type MembroScelta } from './collegamenti';

@@ -1,7 +1,7 @@
 // The linked data: the kinds of places, their fields in the form and the check at the start. The list is in
-// collegamenti-elenco.ts; the rules on it (prefill, discrepancies) — in collegati.ts; the same list reaches the browser as
-// plain data (collegati-browser.ts) and collegati-client.ts does the same while typing. Ported 1:1 from rilievi
-// (src/ordini/collegamenti.ts, commit ae6329cb6).
+// collegamenti-elenco.ts (and collegamenti-aggiunti.ts after it); the rules on it (prefill, discrepancies) — in
+// collegati.ts; the same list reaches the browser as plain data (collegati-browser.ts) and collegati-client.ts does the
+// same while typing. Ported 1:1 from rilievi (src/ordini/collegamenti.ts, commit 988f3cf37).
 import { fieldByKey } from '../fields';
 import { COLLEGAMENTI } from './collegamenti-elenco';
 import { fieldsOf, type ModuloField } from './moduli';
@@ -23,8 +23,9 @@ export type MembroNumero =
   | { luogo: Prefisso; campi: readonly [string, string] };
 
 /**
- * A choice: which value is which category. In the sheet — the ticks of a field (`checks`) or «Sì/No» (`yesno`); in the
- * module — its ticks (their keys) or the options of a radio group (`campo`, the keys are `valore`).
+ * A choice: which value is which category. In the sheet — the ticks of a field (`checks`), one choice (`choice`) or
+ * «Sì/No» (`yesno`); in the module — its ticks (their keys) or the options of a radio group (`campo`, the keys are
+ * `valore`).
  */
 export type MembroScelta =
   | { luogo: 'scheda'; campo: string; voci: Readonly<Record<string, string>> }
@@ -77,7 +78,8 @@ function verifica(): void {
       luoghi.add(m.luogo);
       if (m.luogo === 'scheda') {
         const field = fieldByKey(m.campo);
-        const opzioni: readonly string[] = field?.kind === 'checks' ? field.options : field?.kind === 'yesno' ? ['si', 'no'] : [];
+        const opzioni: readonly string[] =
+          field?.kind === 'checks' || field?.kind === 'choice' ? field.options : field?.kind === 'yesno' ? ['si', 'no'] : [];
         const ok = link.tipo === 'scelta'
           ? 'voci' in m && opzioni.length > 0 && Object.keys(m.voci).every((v) => opzioni.includes(v))
           : field !== undefined && (NUMERO_SCHEDA.includes(field.kind) || (field.kind === 'yesno' && 'valori' in m && m.valori !== undefined));

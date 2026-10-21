@@ -2453,7 +2453,7 @@
       "projects": "Gli impianti, ciascuno con i propri record (sotto); il tipo di intervento è quello dei suoi calcoli.",
       "priceItems": "Il listino dell’azienda: il prezzo di ogni articolo dei cataloghi.",
       "customPrices": "Le voci libere del listino, con testo, prezzo e criterio di quantità.",
-      "schede": "Le schede di rilievo (Rilievi), anche quelle nel cestino: ogni campo, le misure delle bottoniere per fermata e i moduli dei fornitori come compilati — l’ordine quadro (Pelazza o MoviLift, in ordineQuadro), il modulo rilievi dati argani (in preventivoArgano), il modulo 2SG di porte, sospensioni e operatore (in ordineSospensioni) —, la scelta di includerli nella stampa (riepilogoOrdini) e l’impronta delle differenze tra scheda e moduli confermate al salvataggio (discrepanzeConfermate), e l’impianto a cui è collegata (projectId, o null).",
+      "schede": "Le schede di rilievo (Rilievi), anche quelle nel cestino: ogni campo, le misure delle bottoniere per fermata e i moduli dei fornitori come compilati — l’ordine quadro (Pelazza, MoviLift o Mastech NG120 o QI Touch, in ordineQuadro), il modulo rilievi dati argani (in preventivoArgano), il modulo 2SG di porte, sospensioni e operatore (in ordineSospensioni) —, che cosa va nella stampa e nel PDF della scheda (i moduli in moduliStampati, con riepilogoOrdini vero se ce n’è almeno uno — vuoto con riepilogoOrdini vero, in una scheda di prima, vuol dire tutti e tre —; le sezioni lasciate fuori in sezioniEscluse), l’impronta delle differenze tra scheda e moduli confermate al salvataggio (discrepanzeConfermate) e l’impianto a cui è collegata (projectId, o null).",
       "feedback": "Le segnalazioni che gli utenti dell’azienda hanno inviato a LiftPilot da «Segnala un problema»: tipo (BUG problema, IDEA suggerimento, QUESTION domanda), pagina, codice dell’errore, messaggio, chi e quando l’ha inviata, e quando è stata gestita.",
       "auditLog": "Il registro attività: chi, che cosa, quando."
     },
@@ -2489,7 +2489,8 @@
       "v7": "7 — dal {date}: in schede si aggiunge projectId, l’impianto a cui il rilievo è collegato (null se non è collegato).",
       "v8": "8 — dal {date}: in calculations si aggiunge intervento, il tipo di intervento dichiarato con il calcolo (SOLO_ARGANO, AMMODERNAMENTO o TRASFORMAZIONE_COMPLETA; null se il calcolo è stato salvato prima); in liftDesigns si aggiunge baseCalculationId, il calcolo argano su cui è stato disegnato il progetto (null se è un progetto del modulo unico di prima).",
       "v9": "9 — dal {date}: in projects non c’è più kind (il modulo dell’impianto di prima): il tipo di intervento è quello dei suoi calcoli (calculations, intervento).",
-      "v10": "10 — dal {date}: si aggiunge feedback (le segnalazioni inviate da «Segnala un problema»)."
+      "v10": "10 — dal {date}: si aggiunge feedback (le segnalazioni inviate da «Segnala un problema»).",
+      "v11": "11 — dal {date}: in schede si aggiungono quadroModello (NG120 o QI_TOUCH, il modello del quadro Mastech), fossaRidotta, testataRidotta e quadroNote; arganoTipo, ganasceFreno, kitControlloGanasce, kitControlloGanasceTipo, controlloQuadro, controlloQuadroTipo e arganoNote (l’argano che resta); la centralina dell’impianto idraulico (centralinaDaFare, centralinaMarca, emendamentoA3, tuboFlessibile, tuboFlessibileDiametroMm, tuboFlessibileLunghezzaM, tuboFlessibileNote, centralinaNote); i tiranti (tirantiCabinaNumero, tirantiCabinaTipo, tirantiContrappesoNumero, tirantiContrappesoTipo, tirantiFossaNumero, tirantiFossaTipo); pattinoRetrattileTipo, serratureNote e luceVanoNote; telesoccorsoInstallare, perifericaInstallare e cornettaInstallare; moduliStampati (i moduli nella stampa e nel PDF) e sezioniEscluse (le sezioni lasciate fuori). ordineQuadro può contenere anche i moduli Mastech NG120 e QI Touch. operatoreMarca, lucePorte, operatoreTensione, telesoccorso e telesoccorsoStato restano con le risposte date prima, ma la scheda non li chiede più."
     },
     "apiTitle": "C’è un’interfaccia per l’esportazione?",
     "apiText": "Sì, gratuita e uguale per tutte le aziende: una richiesta GET a {base}/api/company/export restituisce il file JSON descritto sopra a chi ha effettuato l’accesso come Titolare o, se il Titolare glielo permette, come Capotecnico. È la stessa richiesta del pulsante della pagina Azienda, al massimo 6 volte all’ora per azienda. Il nuovo fornitore riceve il file dal Titolare; questa pagina descrive il formato per scrivere il programma che lo legge (art. 30, par. 2, del Data Act).",
@@ -2601,7 +2602,7 @@
       "titleMatricola": "Matricola {n}",
       "dateLine": "Rilievo del {date}",
       "noAddress": "Indirizzo non indicato",
-      "buonoRiferimento": "Buono di riferimento",
+      "buonoRiferimento": "Buono di lavoro",
       "plateLabel": "Dati di targa",
       "identifiers": "Identificazione",
       "identifiersHint": "Compila almeno uno tra indirizzo, matricola e n° impianto: servono per ritrovare la scheda.",
@@ -2620,14 +2621,15 @@
         "impianto": "Impianto",
         "ubicazione": "Ubicazione e accesso",
         "tipologia": "Tipologia",
-        "funi": "Funi",
+        "quadro": "Quadro",
+        "argano": "Argano",
+        "centralina": "Centralina",
+        "funi": "Funi e tiranti",
         "limitatore": "Limitatore",
         "cavi": "Cavi",
         "serrature": "Serrature o sospensioni",
         "allarme": "Allarme e telesoccorso",
-        "note": "Note e lavori",
-        "quadro": "Quadro",
-        "argano": "Argano"
+        "note": "Note e lavori"
       },
       "field": {
         "data": "Data",
@@ -2635,7 +2637,7 @@
         "marca": "Marca impianto",
         "matricola": "Matricola",
         "numeroImpianto": "N° impianto",
-        "buonoLavoro": "Buono di riferimento",
+        "buonoLavoro": "Buono di lavoro",
         "portataKg": "Portata",
         "capienzaPersone": "Capienza",
         "fermate": "Fermate",
@@ -2644,21 +2646,27 @@
         "parcheggio": "Parcheggio",
         "tipoImpianto": "Tipo impianto",
         "tipoPorte": "Tipo porte",
-        "operatoreMarca": "Marca operatore",
-        "lucePorte": "Luce porte",
-        "operatoreTensione": "Tensione operatore",
         "doppioAccesso": "Accessi",
-        "pattinoRetrattile": "Pattino retrattile da cambiare",
         "serrature": "Serrature da cambiare",
         "serratureNumero": "Numero serrature",
         "serratureTipo": "Tipo serrature",
+        "pattinoRetrattile": "Pattino retrattile da cambiare",
+        "pattinoRetrattileTipo": "Tipo di pattino retrattile",
         "sospensioni": "Sospensioni da cambiare",
         "sospensioniNumero": "Numero sospensioni",
+        "serratureNote": "Note serrature e sospensioni",
         "luceVanoSostituire": "Luce vano da sostituire",
+        "luceVanoNote": "Note luce vano",
         "funiDiametroMm": "Diametro funi",
         "funiTrefoli": "Trefoli funi",
         "funiNumero": "Numero funi",
         "funiLunghezzaM": "Lunghezza funi",
+        "tirantiCabinaNumero": "Quantità tiranti cabina",
+        "tirantiCabinaTipo": "Tipo tiranti cabina",
+        "tirantiContrappesoNumero": "Quantità tiranti contrappeso",
+        "tirantiContrappesoTipo": "Tipo tiranti contrappeso",
+        "tirantiFossaNumero": "Quantità tiranti in fossa",
+        "tirantiFossaTipo": "Tipo tiranti in fossa",
         "limitatoreTipo": "Tipo limitatore",
         "funicellaDiametroMm": "Diametro funicella",
         "funicellaLunghezzaM": "Lunghezza funicella",
@@ -2666,8 +2674,6 @@
         "caviNumero": "Numero cavi",
         "caviConduttori": "Conduttori cavi",
         "caviLunghezzaM": "Lunghezza cavi",
-        "telesoccorso": "Telesoccorso esistente",
-        "telesoccorsoStato": "Stato telesoccorso",
         "allarmePortineria": "Allarme in portineria",
         "displayPortineria": "Display in portineria",
         "noteQuadretto": "Note quadretto elettrico",
@@ -2678,13 +2684,36 @@
         "quadroMarca": "Marca quadro",
         "quadroMarcaAltro": "Altra marca quadro",
         "quadroOrdine": "Scheda per l’ordine quadro",
-        "arganoPreventivo": "Argano da sostituire"
+        "quadroNote": "Note quadro",
+        "arganoPreventivo": "Argano da sostituire",
+        "quadroModello": "Tipologia quadro",
+        "fossaRidotta": "Fossa ridotta",
+        "testataRidotta": "Testata ridotta",
+        "arganoTipo": "Tipo argano esistente",
+        "ganasceFreno": "Ganasce freno da cambiare",
+        "kitControlloGanasce": "Kit controllo ganasce",
+        "kitControlloGanasceTipo": "Tipo controllo ganasce",
+        "controlloQuadro": "Controllo su quadro manovra",
+        "controlloQuadroTipo": "Tipo controllo",
+        "arganoNote": "Note argano",
+        "centralinaDaFare": "Centralina da sostituire",
+        "centralinaMarca": "Marca e modello centralina",
+        "emendamentoA3": "Emendamento A3 da installare",
+        "tuboFlessibile": "Installare tubo flessibile",
+        "tuboFlessibileDiametroMm": "Diametro tubo flessibile",
+        "tuboFlessibileLunghezzaM": "Lunghezza tubo flessibile",
+        "tuboFlessibileNote": "Note tubo flessibile",
+        "centralinaNote": "Note centralina",
+        "telesoccorsoInstallare": "Telesoccorso da installare",
+        "perifericaInstallare": "Periferica sotto cabina da installare",
+        "cornettaInstallare": "Cornetta nel locale da installare"
       },
       "question": {
         "bottoniereMisure": "Vuoi inserire le misure delle bottoniere vecchie?",
         "quadroOrdine": "Vuoi compilare la scheda per l’ordine quadro?",
         "arganoPreventivo": "Argano da sostituire?",
-        "sospensioni": "Sospensioni da cambiare?"
+        "sospensioni": "Sospensioni da cambiare?",
+        "centralinaDaFare": "Centralina da sostituire?"
       },
       "option": {
         "ubicazioneMacchina": {
@@ -2705,16 +2734,16 @@
           "no": "1",
           "si": "2"
         },
-        "telesoccorsoStato": {
-          "COMPLETO": "Completo",
-          "MANCA_PERIFERICA": "Manca periferica"
-        },
         "quadroMarca": {
           "PELAZZA": "Pelazza",
           "MOVILIFT": "Movilift",
           "DMG": "DMG",
           "MASTECH": "Mastech",
           "ALTRO": "Altro"
+        },
+        "quadroModello": {
+          "NG120": "NG120",
+          "QI_TOUCH": "QI Touch"
         }
       },
       "unit": {
@@ -2748,7 +2777,8 @@
         "decimalPlaces": "Al massimo 2 decimali.",
         "range": "Inserisci un valore tra {min} e {max}.",
         "option": "Scelta non valida.",
-        "identifierNeeded": "Compila almeno indirizzo, matricola o n° impianto."
+        "identifierNeeded": "Compila almeno indirizzo, matricola o n° impianto.",
+        "modelloNeeded": "Scegli la tipologia del quadro (NG120 o QI Touch) per compilare il suo modulo d’ordine."
       },
       "compiledBy": "Compilata da",
       "index": "Sezioni della scheda"
@@ -2830,6 +2860,8 @@
         "scheda": "Scheda",
         "oq": "Ordine quadro",
         "om": "Ordine quadro",
+        "mn": "Ordine quadro",
+        "mq": "Ordine quadro",
         "pa": "Dati argano",
         "sg": "Ordine 2SG"
       },
@@ -2854,10 +2886,16 @@
       "marca": "Marca impianto",
       "tipoImpianto": "Tipo impianto",
       "operatoreMarca": "Marca operatore",
-      "operatoreTensione": "Tensione operatore",
-      "lucePorte": "Luce porte",
       "correnteMotore": "Corrente motore (A)",
       "giriMotore": "Giri motore (giri/min)",
+      "servizi": "Servizi",
+      "poli": "Poli motore",
+      "potenzaMotore": "Potenza motore (kW)",
+      "taglia": "Taglia",
+      "diametroPuleggia": "Diametro puleggia (mm)",
+      "rapportoRiduzione": "Rapporto di riduzione",
+      "tensionePattino": "Tensione pattino retrattile",
+      "centralina": "Marca centralina",
       "diversi": "Dati diversi tra scheda e ordini",
       "conferma": {
         "title": "{n, plural, one {Un dato non coincide tra scheda e ordini} other {{n} dati non coincidono tra scheda e ordini}}",
@@ -2868,8 +2906,15 @@
     },
     "riepilogo": {
       "title": "Stampa e PDF",
-      "label": "Includi i dati dei moduli (quadro, argano, 2SG) nella stampa e nel PDF della scheda",
-      "hint": "Entra solo quello che è compilato nei moduli. I moduli restano anche come PDF a parte."
+      "moduli": "Dati dei moduli nella stampa e nel PDF",
+      "modulo": {
+        "ordineQuadro": "Ordine quadro",
+        "preventivoArgano": "Dati argano",
+        "ordineSospensioni": "Ordine 2SG (operatori e sospensioni)"
+      },
+      "hint": "Spunta i moduli da aggiungere in fondo al foglio: entra solo quello che è compilato. I moduli restano anche come PDF a parte.",
+      "sezioni": "Sezioni nella stampa e nel PDF",
+      "sezioniHint": "Togli la spunta alle sezioni da lasciare fuori dal foglio stampato. L’intestazione con indirizzo, matricola e n° impianto c’è sempre."
     },
     "impostazioni": {
       "error": "L'ordine inviato non è valido. Ecco quello salvato: riprova.",
@@ -3260,8 +3305,8 @@
     "rilievi": {
       "name": "La scheda di rilievo",
       "q": "Come si registra un sopralluogo?",
-      "a": "Da «Rilievi» → «Nuovo rilievo» si compila la scheda di rilievo dell’impianto esistente, anche dal telefono sul posto: identificazione e targa, ubicazione, tipologia, quadro, argano, funi, limitatore, cavi, serrature, allarme e note. Serve almeno uno tra indirizzo, matricola e numero dell’impianto.",
-      "b": "Un «Sì» a «Vuoi compilare la scheda per l’ordine quadro?», «Argano da sostituire?» o «Sospensioni da cambiare?» apre nella scheda il modulo del fornitore — l’ordine del quadro Pelazza o MoviLift secondo la marca, il modulo rilievi dati argani, il modulo 2SG di porte, sospensioni e operatore —, già compilato con i dati della scheda; ogni modulo si scarica come PDF a parte.",
+      "a": "Da «Rilievi» → «Nuovo rilievo» si compila la scheda di rilievo dell’impianto esistente, anche dal telefono sul posto: identificazione e targa, ubicazione e accesso, tipologia, quadro, argano, funi e tiranti, limitatore, cavi, serrature o sospensioni, allarme e telesoccorso, note e lavori. Le domande seguono l’impianto: in un impianto idraulico la centralina prende il posto di argano e limitatore; serrature e pattino retrattile si chiedono con porte manuali o semiautomatiche, le sospensioni solo con porte automatiche. Serve almeno uno tra indirizzo, matricola e numero dell’impianto.",
+      "b": "Un «Sì» a «Vuoi compilare la scheda per l’ordine quadro?», «Argano da sostituire?» o «Sospensioni da cambiare?» apre nella scheda il modulo del fornitore — l’ordine del quadro Pelazza, MoviLift o Mastech secondo la marca (per Mastech secondo il modello, NG120 o QI Touch), il modulo rilievi dati argani, il modulo 2SG di porte, sospensioni e operatore —, già compilato con i dati della scheda; ogni modulo si scarica come PDF a parte. In fondo alla scheda si scelgono le sezioni e i moduli da mettere nella stampa e nel PDF della scheda.",
       "c": "Se manca il segnale o la sessione scade mentre salvi, i dati restano nel modulo: premi di nuovo «Salva scheda» quando torna la connessione, o dopo aver fatto di nuovo l’accesso in un’altra scheda del browser."
     },
     "impianti": {

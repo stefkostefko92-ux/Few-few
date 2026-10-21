@@ -1,4 +1,4 @@
-// Rilievi — the basics (rilievi's tests/basics.test.ts and i18n.test.ts, commit ae6329cb6, Italian only): the day of a
+// Rilievi — the basics (rilievi's tests/basics.test.ts and i18n.test.ts, commit 988f3cf37, Italian only): the day of a
 // `@db.Date`, today in Rome, the numbers; every label the field list asks for is in messages/it.json; the plurals; the
 // form read as rilievi's server read it; the helpers the form shows its errors with; the browser's prefill rules.
 import assert from 'node:assert/strict';
@@ -56,8 +56,10 @@ describe('the messages', () => {
     }
     // every linked datum and every place by name, the confirmation, the print of the modules, the company setting
     for (const link of COLLEGAMENTI) assert.ok(has(`collegati.${link.key}`), link.key);
-    for (const luogo of ['scheda', 'oq', 'om', 'pa', 'sg']) assert.ok(has(`collegati.luogo.${luogo}`), luogo);
-    for (const key of ['collegati.diversi', 'collegati.banner', 'collegati.conferma.text', 'collegati.conferma.submit', 'riepilogo.title', 'riepilogo.label', 'riepilogo.hint',
+    for (const luogo of ['scheda', 'oq', 'om', 'mn', 'mq', 'pa', 'sg']) assert.ok(has(`collegati.luogo.${luogo}`), luogo);
+    for (const column of ['ordineQuadro', 'preventivoArgano', 'ordineSospensioni']) assert.ok(has(`riepilogo.modulo.${column}`), column);
+    for (const key of ['collegati.diversi', 'collegati.banner', 'collegati.conferma.text', 'collegati.conferma.submit', 'riepilogo.title', 'riepilogo.moduli', 'riepilogo.hint',
+      'riepilogo.sezioni', 'riepilogo.sezioniHint', 'scheda.error.modelloNeeded',
       'impostazioni.error', 'impostazioni.sezioni.title', 'impostazioni.sezioni.save', 'impostazioni.sezioni.reset', 'flash.sezioniSaved', 'flash.sezioniReset', 'scheda.buonoRiferimento']) assert.ok(has(key), key);
     assert.ok('COMPANY_SECTIONS_UPDATED' in it_.audit.actions);
     for (const section of SECTIONS) assert.ok(has(`scheda.section.${section.key}`), section.key);
@@ -116,7 +118,13 @@ describe('the form’s helpers', () => {
     assert.equal(errorLabelOf('oq-quantita', t, moduloLookup), 'Quantità: (Pelazza Peppino)');
     assert.equal(errorLabelOf('oq-quantita', t, specLookup(moduloSpecs())), 'Quantità: (Pelazza Peppino)', 'the form’s specs say the same as the maps');
     assert.equal(errorLabelOf('portataKg', t), 'Portata');
-    assert.equal(errorLabelOf('riepilogoOrdini', t), 'Stampa e PDF');
+    // the print choices (rilievi form.ejs, 988f3cf37): the modules one by one, the sections; Mastech without its model
+    assert.equal(errorLabelOf('riepilogoOrdini', t), 'Dati dei moduli nella stampa e nel PDF');
+    assert.equal(errorLabelOf('stampa', t), 'Sezioni nella stampa e nel PDF');
+    assert.equal(errorTextOf('stampa', 'option', t), 'Scelta non valida.');
+    assert.equal(errorLabelOf('quadroModello', t), 'Tipologia quadro');
+    assert.equal(errorAnchorOf('quadroModello'), '#f-quadroModello');
+    assert.equal(errorTextOf('quadroModello', 'modelloNeeded', t), 'Scegli la tipologia del quadro (NG120 o QI Touch) per compilare il suo modulo d’ordine.');
     assert.equal(errorLabelOf('pa-pesoCabina', t, moduloLookup), 'Peso cabina (KG) (Modulo rilievi dati argani)', 'a sheet without a supplier is named by its title');
     assert.equal(errorLabelOf('pa-pesoCabina', t, specLookup(moduloSpecs())), 'Peso cabina (KG) (Modulo rilievi dati argani)');
     assert.equal(errorAnchorOf('mb-2-lunghezzaMm'), '#f-mb-2-lunghezzaMm');

@@ -13,7 +13,7 @@ const PAGES: readonly { path: string; modified: string; priority: number }[] = [
   { path: '', modified: '2026-10-14', priority: 1 },
   { path: '/register', modified: '2026-10-14', priority: 0.6 },
   { path: '/pricing', modified: '2026-10-12', priority: 0.7 },
-  { path: '/guida', modified: '2026-10-16', priority: 0.6 },
+  { path: '/guida', modified: '2026-10-21', priority: 0.6 },
   { path: '/privacy', modified: TERMS_DATE, priority: 0.3 },
   { path: '/data', modified: EXPORT_REGISTER_DATE, priority: 0.3 },
 ];

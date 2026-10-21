@@ -3,13 +3,15 @@
 // MoviLift's form. The PDF that comes out is the original itself with our values on it, so the PDF is pinned by SHA-256
 // (src/server/rilievi/moduli-pdf.ts): another version of the module means other coordinates. Where each blank module comes
 // from — `fonte` in its map (MoviLift — the copy without the encryption; the argano sheet — a Word file converted to PDF;
-// 2SG — scanned). This file is pure (the maps are imported and checked here); reading the PDFs is the server's. Ported 1:1
-// from rilievi (src/ordini/moduli.ts, commit ae6329cb6).
+// 2SG and the two Mastech sheets — scanned). This file is pure (the maps are imported and checked here); reading the PDFs
+// is the server's. Ported 1:1 from rilievi (src/ordini/moduli.ts, commit 988f3cf37).
 import { z } from 'zod';
 import pelazzaMap from '../../../../assets/moduli/pelazza-ordine-quadri-032026.json';
 import arganiMap from '../../../../assets/moduli/rilievo-dati-argani.json';
 import moviliftMap from '../../../../assets/moduli/movilift-modulo-ordine-scelta-v2-6.json';
 import sgMap from '../../../../assets/moduli/2sg-ordine-porte.json';
+import mastechNg120Map from '../../../../assets/moduli/mastech-ng120.json';
+import mastechQiMap from '../../../../assets/moduli/mastech-qi-touch.json';
 
 /**
  * Where the prefilled value of a field that is in no link comes from (prefill.ts on the server, prefill-client.ts in the
@@ -52,6 +54,8 @@ const overlayField = z.discriminatedUnion('kind', [
     prefill: checkPrefill,
     /** The inside of the box: x0, y0 (from the top), x1, y1 — in points. */
     box: z.tuple([num, num, num, num]),
+    /** A circle around the printed word instead of a cross — NG120's floors are marked by their number. */
+    segno: z.literal('cerchio').optional(),
   }),
   z.object({
     ...base,
@@ -89,6 +93,10 @@ const acroField = z.discriminatedUnion('kind', [
     /** The field has a button in a foreign place too (an error of the module: MoviLift's «Fossa» is also in the first box
      *  of «Piano Corto») — only this button comes out on the sheet. */
     widget: z.number().int().min(0).optional(),
+    /** The field is not in the form but the sheet waits for it (MoviLift's «Fotocellula … V»): it is made at filling time
+     *  — x, y (from the bottom), width and height in points, on the page of the field `come`, with its font, size and
+     *  colour (src/server/rilievi/pdf-form.ts). */
+    crea: z.object({ rect: z.tuple([num, num, num, num]), come: z.string().min(1) }).optional(),
   }),
   z.object({ ...base, kind: z.literal('textarea'), prefill: textPrefill, maxLength, acro: z.string().min(1) }),
   z.object({
@@ -129,8 +137,13 @@ function moduloSchema<F extends z.ZodTypeAny, T extends string>(field: F, tipo: 
     gruppi: z.array(
       z.object({
         titolo: z.string().min(1),
+        /** The page of the sheet the group is on (QI Touch has two); without it — the first. */
+        pagina: z.number().int().min(1).max(4).optional(),
         righe: z.array(
           z.object({
+            /** The row's printed heading («Norme di riferimento»), when the ticks alone do not say what they are for
+             *  («6V», «12V»): in the form it stands before them, in the summary before each. */
+            titolo: z.string().min(1).max(80).optional(),
             campi: z.array(field).min(1),
             /** The arrow on paper: after this many fields of the row. */
             freccia: z.number().int().min(1).optional(),
@@ -177,9 +190,11 @@ export const PELAZZA: ModuloOverlay = load('pelazza-ordine-quadri-032026.json', 
 export const ARGANI: ModuloOverlay = load('rilievo-dati-argani.json', arganiMap, moduloSchema(overlayField, 'overlay'));
 export const MOVILIFT: ModuloAcro = load('movilift-modulo-ordine-scelta-v2-6.json', moviliftMap, moduloSchema(acroField, 'acroform'));
 export const SG: ModuloOverlay = load('2sg-ordine-porte.json', sgMap, moduloSchema(overlayField, 'overlay'));
+export const MASTECH_NG120: ModuloOverlay = load('mastech-ng120.json', mastechNg120Map, moduloSchema(overlayField, 'overlay'));
+export const MASTECH_QI: ModuloOverlay = load('mastech-qi-touch.json', mastechQiMap, moduloSchema(overlayField, 'overlay'));
 
 /** Every module, in the order rilievi checks them at the start (moduli-pdf.ts assertModuli). */
-export const MODULI: readonly Modulo[] = [PELAZZA, MOVILIFT, ARGANI, SG];
+export const MODULI: readonly Modulo[] = [PELAZZA, MOVILIFT, ARGANI, SG, MASTECH_NG120, MASTECH_QI];
 
 /** «Modulo ordine quadro (Scelta v2.6) · MoviLift» — without a supplier the title alone. */
 export function nomeModulo(modulo: Pick<Modulo, 'titolo' | 'fornitore'>): string {

@@ -32,14 +32,24 @@ export function specLookup(specs: readonly ModuloSpec[]): ModuloLookup {
   return (name) => byName.get(name) ?? null;
 }
 
-/** The form's key of the tick «Includi i dati dei moduli … nella stampa e nel PDF» (validation.ts RIEPILOGO_KEY). */
+/** The form's key of the modules ticked for the print and the PDF (a repeated key, their columns — stampa.ts). */
 export const RIEPILOGO_KEY = 'riepilogoOrdini';
 
-/** The label of an error's key in the summary: «Identificazione», «Stampa e PDF», «Lunghezza, fermata 2», «Quantità:
- *  (Pelazza Peppino)», or the field's label. */
+/** The modules' columns the form ticks for the print, one per module (the panel's four makes are one), in the order of
+ *  the specs — the registry's (ordini/registry.ts COLONNE, which the browser does not get). */
+export const colonneDi = (specs: readonly ModuloSpec[]): ModuloSpec['column'][] => [...new Set(specs.map((s) => s.column))];
+
+/** The form's key of the sections ticked for the print and the PDF (a repeated key — stampa.ts), and the mark that says
+ *  the form has that list (a page without it — every section). */
+export const STAMPA_KEY = 'stampa';
+export const STAMPA_MARK = 'stampa-_';
+
+/** The label of an error's key in the summary: «Identificazione», «Dati dei moduli nella stampa e nel PDF», «Sezioni
+ *  nella stampa e nel PDF», «Lunghezza, fermata 2», «Quantità: (Pelazza Peppino)», or the field's label. */
 export function errorLabelOf(key: string, t: RilieviT, modulo: ModuloLookup = noModulo): string {
   if (key === IDENTIFIERS_ERROR_KEY) return t('scheda.identifiers');
-  if (key === RIEPILOGO_KEY) return t('riepilogo.title');
+  if (key === RIEPILOGO_KEY) return t('riepilogo.moduli');
+  if (key === STAMPA_KEY) return t('riepilogo.sezioni');
   const moduloField = modulo(key);
   if (moduloField) return t('ordini.errorLabel', { label: moduloField.label, fornitore: moduloField.fornitore });
   const misura = misuraOf(key);

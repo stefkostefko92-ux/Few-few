@@ -2,15 +2,17 @@ import 'server-only';
 // What the survey sheets' pages ask the server for, with the rights decided here as in rilievi's routes: a sheet of the
 // company (a trashed one only for whoever manages the trash), the form's starting values (the suppliers' modules
 // prefilled at their first opening from the survey, the other module, the company and the person writing; the fields
-// still following their source; the discrepancies sheet ↔ modules), the linked data for the browser, the company's order
-// of the sections, the sheet's page and print in that order (with the modules' summary), the list or the trash.
+// still following their source; the survey's fields the person emptied; the discrepancies sheet ↔ modules), the linked
+// data for the browser, the company's order of the sections, the sheet's page and print in that order (the print without
+// the sections the sheet leaves out, with the modules' summary of the modules it asks for), the list or the trash.
+// rilievi's routes/schede-form.ts and schede.ts, commit 988f3cf37.
 import { cache } from 'react';
 import { getSessionUser, type SessionUser } from '@/lib/auth';
 import { can } from '@/lib/rbac';
 import { displaySections, emptyFormValues, formValuesFromScheda, schedaTitle, tabTitle, type DisplaySection } from '@/lib/rilievi/format';
 import type { FormValues } from '@/lib/rilievi/field-parsers';
 import { SECTIONS, type SectionKey } from '@/lib/rilievi/fields';
-import { FISSE, sezioniOrdinate } from '@/lib/rilievi/ordine';
+import { sezioniOrdinate, sezioniStampate } from '@/lib/rilievi/ordine';
 import { collegatiPerBrowser, type CollegatiDati, type ContestoBrowser } from '@/lib/rilievi/ordini/collegati-browser';
 import { discrepanzeDi, type Discrepanza } from '@/lib/rilievi/ordini/collegati';
 import { withPrefill } from '@/lib/rilievi/ordini/form';
@@ -35,17 +37,25 @@ export function prefillContext(user: SessionUser): Omit<PrefillContext, 'values'
 }
 
 /** What the form opens with: the values (the modules prefilled where they were never shown), the names that still
- *  follow their source (`auto`), and what the sheet and the modules say differently (the lists under the groups). */
+ *  follow their source (`auto`), the survey's fields of a module already filled in that the person emptied (`scritti` —
+ *  rilievi's data-scritto: the browser does not fill them again), and what the sheet and the modules say differently (the
+ *  lists under the groups). */
 export interface RilievoFormStart {
   values: FormValues;
   auto: string[];
+  scritti: string[];
   discrepanze: Discrepanza[];
 }
 
 /** The form over these values (a new sheet, a stored one, or what was sent and comes back). */
 export function formStart(user: SessionUser, values: FormValues): RilievoFormStart {
   const prefilled = withPrefill(values, prefillContext(user));
-  return { values: prefilled.values, auto: [...prefilled.auto], discrepanze: discrepanzeDi(prefilled.values, rilieviTranslator()) };
+  return {
+    values: prefilled.values,
+    auto: [...prefilled.auto],
+    scritti: [...prefilled.scritti],
+    discrepanze: discrepanzeDi(prefilled.values, rilieviTranslator()),
+  };
 }
 
 /** A new sheet's form: today in Rome, everything else empty, the modules prefilled. */
@@ -71,10 +81,11 @@ export function sheetView(scheda: SchedaFull, t: RilieviT = rilieviTranslator())
 }
 
 /** The sheet's print: its sections in the company's order, those printed under the head (without «Impianto» — it is in
- *  the head and the plate), and what is filled in the modules when the sheet asks for it (`riepilogoOrdini`). */
+ *  the head and the plate — and without the ones the sheet leaves out, `sezioniEscluse`), and what is filled in the
+ *  modules the sheet asks for (`moduliStampati`). */
 export function printView(scheda: SchedaFull, t: RilieviT = rilieviTranslator()): { sections: DisplaySection[]; printed: DisplaySection[]; riepilogo: RiepilogoModulo[] } {
   const sections = displaySections(scheda, t, scheda.company.ordineSezioni);
-  return { sections, printed: sections.filter((section) => !FISSE.includes(section.key)), riepilogo: riepilogoModuli(scheda) };
+  return { sections, printed: sezioniStampate(sections, scheda.sezioniEscluse), riepilogo: riepilogoModuli(scheda) };
 }
 
 /** One read of a sheet per request, however many parts of the page ask (its metadata, the page). */

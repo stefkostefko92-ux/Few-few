@@ -1,7 +1,7 @@
 // Values in the sheet's form, shared by the browser's rules for the modules' survey fields (prefill-client.ts) and for
 // the linked data (collegati-client.ts): numbers the Italian way, the option of a list for a text, what a field of the
 // sheet takes. Pure (no maps, no DOM). The same rules as the server's: numeri.ts (stessoValore, coppiaDi) and
-// ordini/opzioni.ts (opzioneDi). Ported 1:1 from rilievi (public/js/valori.js, commit ae6329cb6).
+// ordini/opzioni.ts (opzioneDi). Ported 1:1 from rilievi (public/js/valori.js, commit 988f3cf37).
 import type { FieldKind } from './field-types';
 import { numeriDi, stessoValore, coppiaDi } from './ordini/numeri';
 import { opzioneDi } from './ordini/opzioni';

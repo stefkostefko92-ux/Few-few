@@ -1,7 +1,7 @@
 import 'server-only';
 // The top of the PDF's first page: the header band and the plate. The section «Impianto» is not printed on its own —
 // everything of it is here: the date, the address, the work order, the make, the matricola, the number and the plate's
-// data. Ported 1:1 from rilievi (src/schede/pdf-head.ts, commit ae6329cb6): every constant, font size and offset is
+// data. Ported 1:1 from rilievi (src/schede/pdf-head.ts, commit 988f3cf37): every constant, font size and offset is
 // rilievi's.
 import type { DisplayField } from '@/lib/rilievi/format';
 import { CONTENT_WIDTH, GAP, INK, MARGIN, MUTED, RULE, SIZE, type PdfContext } from './pdf-layout';

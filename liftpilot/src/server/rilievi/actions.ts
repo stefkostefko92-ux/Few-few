@@ -5,7 +5,7 @@
 // written within the company of the session. On success they redirect with `?ok=<flash key>`; otherwise they answer
 // with the state the form shows (action-state.ts). A sheet of another company is "not found". When the sheet and the
 // suppliers' modules say different things (ordini/collegati.ts), the save waits for the confirmation of exactly those
-// differences (rilievi's schede-form.ts controlloDiscrepanze, commit ae6329cb6): the fingerprint sent with «Salva
+// differences (rilievi's schede-form.ts controlloDiscrepanze, commit 988f3cf37): the fingerprint sent with «Salva
 // comunque», or the one confirmed at the sheet's last save — new or changed differences are asked again. The form sends
 // its write key with every attempt (round 48, WRITE_KEY): a save sent again because its answer was lost on the way back
 // is answered as the save it was — the sheet it made, or the version it wrote — never a second sheet or a conflict.

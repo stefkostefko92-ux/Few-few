@@ -272,7 +272,8 @@ src/server/          Server actions ('use server') и заявки, винаги
                      billing (синхрон на абонамента от Stripe, местата и тяхното налагане), billing-actions (Checkout, смяна на
                      пакета, порталът на Stripe), prices + price-actions (листата на фирмата), terms-actions (приемането),
                      company-export (всички данни на фирмата в JSON, `/api/company/export`, и картите на Rilievi — `schede`,
-                     с връзката им към съоръжението `projectId` от формат 7);
+                     с връзката им към съоръжението `projectId` от формат 7, с колоните на синхрона до 988f3cf37 от
+                     формат 11 — регистърът е src/lib/export-format.ts);
                      account-actions — регистрация, потвърждение на адреса, забравена и нова парола; project-export
                      (записаният проект в PDF/DXF/DWG); order-export + order-route (черновата на поръчка от записан проект или
                      изчисление в DOCX/PDF); client-logo-actions (логото на възложителя на проекта); room-actions (записът на
@@ -450,45 +451,66 @@ prisma/              schema + migrations/0_init (тригер: без UPDATE н�
                      docs/rules.md „Интервенцията и стъпките“), 22_drop_project_kind (кръг 47, D3: Project.kind, индексът
                      Project_companyId_kind_idx и enum-ът ProjectKind падат — разрушителна, отделен release след
                      двигателите, предшественикът ѝ е @ignore в schema.prisma; връщането — в коментара ѝ; тестът
-                     no-project-kind).
+                     no-project-kind), 23_beta_invites, 24_feedback, 25_clauses_write_key (кръг 48 — docs/rules.md),
+                     26_rilievi_sync_2 (кръг 49, синхронът с rilievi до 988f3cf37: RilievoQuadroModello и 33-те живи
+                     колони — моделът на Mastech, централата, тирантите, бележките, moduliStampati и sezioniEscluse
+                     TEXT[]; мъртвите 24 колони и 7 енума на rilievi — не, списъкът е в коментара на Scheda; ръчно
+                     писана, само добавя; връщането — в коментара ѝ).
 src/lib/rilievi/     Rilievi (кръг 41) — картите за оглед, чисто (и в браузъра): fields + field-types (ЕДИНСТВЕНИЯТ списък на
-                     полетата, условията `when`, activeFields), field-parsers + validation (zod по вида, parseScheda,
-                     formValuesFromBody), misure (бутониерите по спирки, mb-<спирка>-<колона>), format (displaySections,
-                     formValuesFromScheda, schedaTitle, emptyFormValues), search (нормализаторът, думите, highlight), fmt
+                     полетата, условията `when`/`not` на полетата и разделите, activeParts → видимите раздели и полета,
+                     activeFields; кръг 49 — разделени на fields-argano, fields-centralina, field-options,
+                     field-conditions), field-parsers + validation (zod по вида, `single` — един избор, modelloNeeded,
+                     parseScheda, formValuesFromBody), stampa (кръг 49: изборът за печата — модулите `riepilogoOrdini` →
+                     moduliStampati, разделите `stampa` → sezioniEscluse; ключовете са във form-help, за браузъра), misure
+                     (бутониерите по спирки, mb-<спирка>-<колона>), format (displaySections, formValuesFromScheda,
+                     schedaTitle, emptyFormValues), search (нормализаторът, думите, highlight), fmt
                      (датите и числата на rilievi с фиксирани разделители), time (денят в Рим), inputs (bodyOf — формата
                      като urlencoded на rilievi; id, base, търсене, страница), form-help (етикетите и текстовете на грешките —
                      полетата на модулите през ModuloLookup: specLookup върху спецификациите във формата, moduloLookup върху
-                     картите на сървъра —, имената на PDF-ите, флаш ключовете, tabTitle в format), prefill-client (правилата на
-                     браузъра за модулите: surveyText, prefillFill върху PrefillHost; rifImpianto от ordini/rif, без картите),
+                     картите на сървъра —, имената на PDF-ите, флаш ключовете, tabTitle в format; colonneDi — колоните на
+                     модулите за печата, без регистъра), prefill-client (правилата на браузъра за модулите: surveyText,
+                     prefillFill върху PrefillHost, `data-scritto`, scrittiInviati — правилото на withPrefill за отговора
+                     без сървър; rifImpianto от ordini/rif, без картите),
                      collegati-client (свързаните данни в реално време върху CollegatiHost — collegati.js на rilievi),
                      valori-client (радио/падащ списък и „Sì/No“ ↔ модул в браузъра), ordine (редът на разделите: FISSE,
-                     ORDINABILI, ordineEffettivo, parseOrdine, parseMossa, sposta), action-state (отговорите на действията:
+                     ORDINABILI, ordineEffettivo, parseOrdine, parseMossa, sposta, sezioniStampate), action-state (отговорите на действията:
                      invalid/conflict/confirm{base, impronta}/error; CONFERMA_KEY, SCHEDA_KEY), t + i18n (преводачът на `rilievi` през
-                     use-intl/core); ordini/ — moduli (картите на полетата на Pelazza, MoviLift, листа за аргано и 2SG, zod;
-                     MODULI, nomeModulo), registry (SLOTS по марка, slotAperto, slotByPath/Prefix), valori, opzioni, numeri,
-                     collegamenti-elenco (ЕДИНСТВЕНИЯТ списък на връзките) + collegamenti (видовете места, проверката при
-                     зареждане) + collegati (discrepanzeDi, improntaDi, prefillCollegati) + collegati-browser (JSON-ът за
-                     браузъра) + auto-key (името `collegati-auto`, без картите), riepilogo (модулите в печата на картата), prefill, form (withPrefill, moduloSpec(s) за формата).
+                     use-intl/core); ordini/ — moduli (картите на полетата на шестте модула — Pelazza, MoviLift, Mastech
+                     NG120 и QI Touch, листа за аргано и 2SG —, zod: `pagina`, `segno`, `crea`, имената на редовете;
+                     MODULI, nomeModulo), registry (SLOTS по марка и модел, COLONNE, sceltaDi, sceltoNellaScheda,
+                     slotAperto, slotByPath/Prefix), valori, opzioni, numeri, collegamenti-elenco (`BASE`) +
+                     collegamenti-aggiunti (`AGGIUNTI`, след тях; заедно — ЕДИНСТВЕНИЯТ списък на връзките) + collegamenti
+                     (видовете места, проверката при зареждане) + collegati (discrepanzeDi, improntaDi, prefillCollegati) +
+                     collegati-browser (JSON-ът за браузъра) + auto-key (името `collegati-auto`, без картите), riepilogo
+                     (модулите в печата на картата, moduliStampatiDi), prefill, form (withPrefill → values, auto, scritti;
+                     moduloSpec(s) за формата), dopo (moduliDopo — след кое поле е всеки модул; само типове, за браузъра).
 src/server/rilievi/  queries (списък и търсене със SQL параметри, getScheda — по фирма, логото на фирмата), service (запис с
                      мерките и одита в една транзакция, base → конфликт, кошче, окончателно), pages (каквото страниците
                      искат: картата по правата, formStart/newForm/editForm със свързаните данни за браузъра, formSections,
                      sheetView и printView с реда на разделите и разликите, списъкът и кошчето), actions ('use server':
                      създаване, промяна с потвърждение на разликите, кошче, възстановяване, окончателно), sezioni +
                      sezioni-actions (редът на разделите на фирмата, 'company:edit', одит COMPANY_SECTIONS_UPDATED), pdf +
-                     pdf-head (главата и табелата) + pdf-layout + pdf-table (PDF-ът на картата, pdfkit + DejaVu), moduli-pdf
-                     (празните PDF-и, SHA-256), modulo-pdf (плоските листове) + pdf-form (формулярът на MoviLift) + pdf-testo
-                     (шрифтът, мястото на текста, изправянето на 2SG), pdf-lib. Маршрутите: src/app/api/rilievi/[id]/pdf и
-                     [id]/[modulo] (ordine-quadro, ordine-quadro-movilift, dati-argano, sospensioni-2sg; чужда марка → 404). assets/moduli/ — празните формуляри на доставчиците + картите им
+                     pdf-head (главата и табелата) + pdf-layout + pdf-table + pdf-spunte (кутийките и отметките, рисувани с
+                     линии) (PDF-ът на картата, pdfkit + DejaVu), moduli-pdf (празните PDF-и, SHA-256), modulo-pdf (плоските
+                     листове: страница на групата, кръстче или кръг) + pdf-form (формулярът на MoviLift: `crea`, ✔/■) +
+                     pdf-testo (шрифтът, мястото на текста, изправянето на 2SG, SEGNO), pdf-lib. Маршрутите:
+                     src/app/api/rilievi/[id]/pdf и [id]/[modulo] (ordine-quadro, ordine-quadro-movilift,
+                     ordine-quadro-mastech-ng120, ordine-quadro-mastech-qi-touch, dati-argano, sospensioni-2sg; чужда марка
+                     или модел → 404). assets/moduli/ — празните формуляри на доставчиците + картите им
                      (двоични за git). src/instrumentation.ts → instrumentation-node.ts: при старта на Node сървъра —
                      шрифтът DejaVu и SHA-256 на модулите (иначе всяка заявка дава 500).
 src/app/[locale]/app/rilievi/  Екраните на Rilievi: списък и търсене (page), nuovo, [id] (картата), [id]/modifica, [id]/stampa
                      (листът A4), [id]/elimina (към кошчето), cestino и cestino/[id]/elimina; layout.tsx носи rilievi.css,
                      rilievi-form.css и rilievi-print.css. Пунктът „Rilievi“ е в AppShell (Area di lavoro).
-src/components/rilievi/  SchedaForm (формата: разделите в реда на фирмата, отговорите на действията, обобщението на
-                     грешките, конфликтът, потвърждението на разликите със «Salva comunque» след «Salva», фокусът на
-                     отговора; модулите като спецификации от страницата, връзките като данни) + EditLead (редът „Ultima
+src/components/rilievi/  SchedaForm (формата: отговорите на действията, конфликтът, потвърждението на разликите със
+                     «Salva comunque» след «Salva», фокусът на отговора, индексът с видимите раздели; модулите като
+                     спецификации от страницата, връзките като данни) + SchedaFormBody (разделите в реда на фирмата с
+                     условието им, модулите след веригата си — moduliDopo, `data-scritto`) + StampaScelta (изборът за
+                     печата в края) + FormSummaries (обобщението на грешките и на разликите) + when (whenAttrs — атрибутите
+                     на условието, `_when.ejs` на rilievi) + EditLead (редът „Ultima
                      modifica“ в главата на промяната, обновен при конфликт) + FieldInput,
-                     MisureBlock, ModuloBlock (обвивките за марка и «Sì», радио/падащ списък, разликите под групата),
+                     MisureBlock, ModuloBlock (обвивките за марка, модел и «Sì», редовете с име, радио/падащ списък,
+                     разликите под групата),
                      DiffItem (една разлика — и на сървъра, и в браузъра), use-scheda-form (правилата на app.js, moduli.js
                      и collegati.js на rilievi върху формата; връзките на приложението и другите формуляри при непазени
                      промени — пълно зареждане, за да пита браузърът; `lib/rilievi/leave.ts`) + form-dom (условията върху

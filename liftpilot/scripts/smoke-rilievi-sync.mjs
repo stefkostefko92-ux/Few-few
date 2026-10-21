@@ -1,11 +1,12 @@
-// The smoke test's survey sheets, what came with the sync with rilievi ae6329cb6: the company's order of the sections,
-// set on the company page from the keyboard (the focus stays on the arrow pressed), saved, followed by the form, the
-// sheet's page and its print, then put back; the linked data in real time in both directions (a module fills the sheet,
-// the sheet fills a module), the difference listed under the module's group; Pelazza's order carried over to MoviLift
-// when the make changes; the modules asked in the print; the save asking to confirm the difference («Salva comunque»
-// after «Salva»: Enter asks again, never confirms), the fields still following on the returned form; the sheet's banner;
-// the PDFs of the open modules only (the other make's 404); an edit of another field saved without asking (remembered),
-// a changed difference asked again. Returns the sheet saved with MoviLift's order (for the other company's check).
+// The smoke test's survey sheets, what came with the sync with rilievi ae6329cb6 (as rilievi 988f3cf37 has it): the
+// company's order of the sections, set on the company page from the keyboard (the focus stays on the arrow pressed), saved,
+// followed by the form, the sheet's page and its print, then put back; the linked data in real time in both directions (a
+// module fills the sheet, the sheet fills a module), the difference listed under the module's group; Pelazza's order
+// carried over to MoviLift when the make changes, without the e-mail of the person writing; the panel order and the argano
+// sheet asked in the print, one by one (2SG's not); the save asking to confirm the difference («Salva comunque» after
+// «Salva»: Enter asks again, never confirms), the fields still following on the returned form; the sheet's banner; the
+// PDFs of the open modules only (the other make's 404); an edit of another field saved without asking (remembered), a
+// changed difference asked again. Returns the sheet saved with MoviLift's order (for the other company's check).
 import assert from 'node:assert/strict';
 import { step } from './smoke-kit.mjs';
 
@@ -44,13 +45,14 @@ export async function rilieviSync({ BASE, page, hydrated }) {
   await hydrated(page, 'button[name="salva"]');
   const before = await order(page);
   assert.equal(before.at(-1), 'note', 'the default order ends with «Note e lavori»');
+  assert.deepEqual(before.slice(3, 6), ['argano', 'centralina', 'funi'], '«Centralina» after «Argano» in the default order');
   assert.equal(await page.locator('.rv-order-item.pinned').textContent().then((s) => s?.includes('Impianto')), true, '«Impianto» fixed on top');
   await page.focus('button[name="sposta"][value="note:su"]');
   await page.keyboard.press('Enter');
   await page.waitForFunction(() => [...globalThis.document.querySelectorAll('input[name="ordine"]')].map((e) => e.value).at(-1) === 'allarme');
   assert.equal(await page.evaluate(() => globalThis.document.activeElement?.getAttribute('value')), 'note:su', 'the focus stays on the arrow pressed');
   assert.equal(await page.isVisible('.rv-order-dirty'), true, 'moved, not saved yet');
-  assert.equal((await page.textContent('.rv-order-dirty'))?.trim(), '«Note e lavori» ora è la 10ª sezione. Modifiche non salvate',
+  assert.equal((await page.textContent('.rv-order-dirty'))?.trim(), '«Note e lavori» ora è la 11ª sezione. Modifiche non salvate',
     'the status line says where the section is now');
   await page.focus('button[name="salva"]');
   await page.keyboard.press('Enter');
@@ -90,8 +92,11 @@ export async function rilieviSync({ BASE, page, hydrated }) {
     }), true, 'MoviLift open: no sideways scroll');
     assert.equal(await page.inputValue('#f-om-velocita'), '1,6', 'the order carries over to MoviLift');
     assert.notEqual(await page.inputValue('#f-om-ragioneSociale'), '', 'MoviLift: the company');
+    assert.equal(await page.inputValue('#f-om-email'), '', 'MoviLift: not the e-mail of the person writing (rilievi 988f3cf37)');
     assert.equal(await page.isChecked('input[name="om-ingressi"][value="unico"]'), true, 'MoviLift: the blank form\'s own answer');
-    await page.click('form[data-scheda-form] label:has(> input[name="riepilogoOrdini"])');
+    // the modules in the print are chosen one by one: the panel order and the argano sheet, not 2SG's
+    await tick(page, 'riepilogoOrdini', 'ordineQuadro');
+    await tick(page, 'riepilogoOrdini', 'preventivoArgano');
 
     step('Rilievi: the save asks to confirm the difference; Enter asks again; «Salva comunque» saves');
     await submitBack(page, () => page.click('form[data-scheda-form] .savebar button[type="submit"]'));
@@ -124,6 +129,7 @@ export async function rilieviSync({ BASE, page, hydrated }) {
     await page.waitForSelector('.rv-paper');
     const printed = await titles(page, '.rv-paper-sec h2');
     assert.ok(printed.includes('Modulo ordine quadro (Scelta v2.6) · MoviLift') && printed.includes('Modulo rilievi dati argani'), 'the modules in the print, asked');
+    assert.ok(!printed.some((title) => title.includes('2SG')), '2SG\'s sheet not asked (nor open)');
     assert.ok(printed.indexOf('Note e lavori') < printed.indexOf('Allarme e telesoccorso'), 'the print in the company\'s order');
 
     step('Rilievi: an edit of another field saves without asking (remembered); a changed difference asks again');

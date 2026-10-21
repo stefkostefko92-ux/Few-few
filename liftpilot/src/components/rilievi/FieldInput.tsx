@@ -1,34 +1,40 @@
 'use client';
 
-// One field of the sheet by its kind (rilievi _field.ejs, fields.ts, commit ae6329cb6): the inputs are uncontrolled (their
+// One field of the sheet by its kind (rilievi _field.ejs, fields.ts, commit 988f3cf37): the inputs are uncontrolled (their
 // values are the browser's until the form is sent, as in rilievi), their attributes those of rilievi — a date in
 // 1950–2099, digits as text with a numeric keyboard, a whole number with a sign as type=number, decimals as text («6,5»),
-// the unit inside the field; Sì/No with words and an order of its own when the field has them («Accessi: 1 / 2»). A field
-// filled from a module that still follows its source carries `data-auto` (the linked data, collegati-client.ts). A field
-// with a condition (`when`) sits in a wrapper the form hides while the condition does not hold.
+// the unit inside the field; Sì/No with words and an order of its own when the field has them («Accessi: 1 / 2»); ticks
+// with one choice (`single` — «Tipo impianto», «Tipo porte») as radios a second click clears, the first of an old sheet's
+// two choices ticked. A field filled from a module that still follows its source carries `data-auto` (the linked data,
+// collegati-client.ts). A field with a condition (`when`, `not` too) sits in a wrapper the form hides while the condition
+// does not hold.
 import type { ReactNode } from 'react';
 import type { FieldErrorCode } from '@/lib/rilievi/field-parsers';
+import type { Condition } from '@/lib/rilievi/field-types';
 import { isOptionsField, type FieldDef } from '@/lib/rilievi/fields';
 import { errorTextOf, unitTextOf } from '@/lib/rilievi/form-help';
 import type { RilieviT } from '@/lib/rilievi/t';
+import { whenAttrs, type WhenAttrs } from './when';
 
 /** A wrapper for what shows only under a condition (fields.ts `when`, the measurements): `off` is how it opens; the form
  *  shows and hides it afterwards as the answers change (form-dom.ts syncConditions). */
-export function Cond({ when, values, off, children }: { when?: string; values?: readonly string[]; off: boolean; children: ReactNode }) {
+export function Cond({ when, off, children }: { when?: Condition; off: boolean; children: ReactNode }) {
   if (!when) return <>{children}</>;
-  return <div className="rv-cond" data-when={when} data-when-values={values?.join(' ')} data-off={off ? '' : undefined}>{children}</div>;
+  return <div className="rv-cond" {...whenAttrs(when, off)}>{children}</div>;
 }
 
 /** Sì/No and single choices can be cleared: a click on the ticked box unticks it (the form's behaviour, data-clearable).
- *  `auto`: ticked by the linked data and still following (data-auto="si"); `predefinito`: the blank module's own answer. */
-export function Tick({ type, name, value, checked, label, id, small, clearable, prefill, auto, predefinito }: {
+ *  `auto`: ticked by the linked data and still following (data-auto="si"); `predefinito`: the blank module's own answer;
+ *  `scritto`: a survey tick the person unticked in a module already filled in — the survey never ticks it again; `cond`:
+ *  the tick's own condition (a section's tick among those to print hides with the section). */
+export function Tick({ type, name, value, checked, label, id, small, clearable, prefill, scritto, auto, predefinito, cond }: {
   type: 'checkbox' | 'radio'; name: string; value: string; checked: boolean; label: string; id?: string; small?: boolean; clearable?: boolean;
-  prefill?: string; auto?: boolean; predefinito?: boolean;
+  prefill?: string; scritto?: boolean; auto?: boolean; predefinito?: boolean; cond?: WhenAttrs;
 }) {
   return (
-    <label className={small ? 'rv-tick sm' : 'rv-tick'}>
+    <label className={small ? 'rv-tick sm' : 'rv-tick'} {...cond}>
       <input type={type} id={id} name={name} value={value} defaultChecked={checked} data-clearable={clearable ? '' : undefined} data-prefill={prefill}
-        data-auto={auto && checked ? 'si' : undefined} data-predefinito={predefinito ? '' : undefined} />
+        data-scritto={scritto ? '' : undefined} data-auto={auto && checked ? 'si' : undefined} data-predefinito={predefinito ? '' : undefined} />
       <span className="rv-box" aria-hidden="true" />
       <span>{label}</span>
     </label>
@@ -47,6 +53,9 @@ export default function FieldInput({ field, value, error, auto, t }: {
   const unit = unitTextOf(field.key, t);
   const list = Array.isArray(value) ? value : typeof value === 'string' && field.kind === 'checks' ? [value] : [];
   const text = typeof value === 'string' ? value : '';
+  // one choice of the ticks: a radio, the first of an old sheet's two ticked
+  const single = isOptionsField(field) && field.single === true;
+  const picked = single ? (list[0] ?? '') : text;
   const errLine = errText ? <p className="rv-error" id={errId}>{errText}</p> : null;
 
   if (field.kind === 'checks' || field.kind === 'choice' || field.kind === 'yesno') {
@@ -61,9 +70,9 @@ export default function FieldInput({ field, value, error, auto, t }: {
       <fieldset className={cls} id={id} data-campo={field.key} aria-describedby={errText ? errId : undefined}>
         <legend>{label}</legend>
         <div className="rv-opts">
-          {options.map((o) => (field.kind === 'checks'
+          {options.map((o) => (field.kind === 'checks' && !single
             ? <Tick key={o} type="checkbox" name={field.key} value={o} checked={list.includes(o)} label={optionLabel(o)} auto={auto} />
-            : <Tick key={o} type="radio" name={field.key} value={o} checked={text === o} label={optionLabel(o)} clearable auto={auto} />))}
+            : <Tick key={o} type="radio" name={field.key} value={o} checked={picked === o} label={optionLabel(o)} clearable auto={auto} />))}
         </div>
         {errLine}
       </fieldset>

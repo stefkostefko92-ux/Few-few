@@ -1,6 +1,6 @@
 'use client';
 
-// «Ordine delle sezioni della scheda» on the company page (rilievi impostazioni.ejs, commit ae6329cb6): «Impianto» first,
+// «Ordine delle sezioni della scheda» on the company page (rilievi impostazioni.ejs, commit 988f3cf37): «Impianto» first,
 // always; the other sections in the company's order, each with «up» and «down». Every button sends the whole order (the
 // hidden `ordine` fields) and the server answers with the new order, unsaved — so it works without JavaScript too, as
 // in rilievi —; «Salva ordine» saves it, «Ripristina l'ordine predefinito» goes back to the default. The focus stays on

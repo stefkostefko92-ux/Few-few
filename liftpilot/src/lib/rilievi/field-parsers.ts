@@ -1,7 +1,8 @@
 // The check of one field by its kind — zod, from the definitions in fields.ts (the bounds are there, not here). The
 // input is the form as urlencoded (src/lib/rilievi/body.ts): everything is a string, a repeated key (the ticks) comes as
 // an array; anything else is forged and fails with `invalid`. The error is a code (`FieldErrorCode`), its text is in
-// messages/it.json (`rilievi.scheda.error.<code>`). Ported 1:1 from rilievi (src/schede/field-parsers.ts).
+// messages/it.json (`rilievi.scheda.error.<code>`). Ported 1:1 from rilievi (src/schede/field-parsers.ts, commit
+// 988f3cf37).
 import { z } from 'zod';
 import { dateFromDay } from './time';
 import { fieldByKey, isNumberField, isOptionsField, isTextField, type FieldDef, type FieldKind, type SchedaFieldKey } from './fields';
@@ -17,7 +18,9 @@ export type FieldErrorCode =
   | 'decimalPlaces'
   | 'range'
   | 'option'
-  | 'identifierNeeded';
+  | 'identifierNeeded'
+  /** Mastech: «Sì» to the panel order without the model (NG120 or QI Touch). */
+  | 'modelloNeeded';
 
 export type FieldErrors = Partial<Record<string, FieldErrorCode>>;
 
@@ -36,6 +39,7 @@ export const ERROR_CODES: ReadonlySet<string> = new Set<FieldErrorCode>([
   'range',
   'option',
   'identifierNeeded',
+  'modelloNeeded',
 ]);
 
 /** A missing field is an empty string; an array or an object where a string belongs is a forged input. */
@@ -120,13 +124,15 @@ export function decimalParser(field: { min: number; max: number }) {
   );
 }
 
-function checksParser<T extends string>(options: readonly string[]) {
+function checksParser<T extends string>(options: readonly string[], single: boolean) {
   return z.preprocess(
     (value) => (value === undefined ? [] : typeof value === 'string' ? [value] : value),
     z
       .array(str, { invalid_type_error: 'invalid' })
       .max(options.length * 2, 'invalid')
       .refine((values) => values.every((v) => options.includes(v)), 'option')
+      // One choice (`single`): two choices come only from a forged or an old page — an error, not a silent choice.
+      .refine((values) => !single || new Set(values).size <= 1, 'option')
       // No repeats and in the order of the brief, however the browser ordered them.
       .transform((values) => options.filter((option) => values.includes(option)) as T[]),
   );
@@ -189,7 +195,10 @@ export function textOf(key: SchedaFieldKey) {
 export const digitsOf = (key: SchedaFieldKey) => digitsParser(defOf(key, ['digits'], isTextField));
 export const intOf = (key: SchedaFieldKey) => intParser(defOf(key, ['int'], isNumberField));
 export const decimalOf = (key: SchedaFieldKey) => decimalParser(defOf(key, ['decimal'], isNumberField));
-export const checksOf = <T extends string>(key: SchedaFieldKey) => checksParser<T>(defOf(key, ['checks'], isOptionsField).options);
+export function checksOf<T extends string>(key: SchedaFieldKey) {
+  const field = defOf(key, ['checks'], isOptionsField);
+  return checksParser<T>(field.options, field.single === true);
+}
 export const choiceOf = <T extends string>(key: SchedaFieldKey) => choiceParser<T>(defOf(key, ['choice'], isOptionsField).options);
 
 export function yesNoOf(key: SchedaFieldKey) {

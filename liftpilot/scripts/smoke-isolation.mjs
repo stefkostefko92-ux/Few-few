@@ -9,7 +9,7 @@ import { firstSteps } from './smoke-help.mjs';
 
 export async function secondCompany({ BASE, page, kit, ADMIN, stamp, urls }) {
   const { login, logout, hydrated } = kit;
-  const { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref, roomUrl, roomId, rilievoUrl, rilievoId, rilievoMovilift } = urls;
+  const { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref, roomUrl, roomId, rilievoUrl, rilievoId, rilievoMovilift, rilievoMastech } = urls;
   step('second company cannot see the first one');
   await login(page, ADMIN.email, ADMIN.password);
   await headerFits({ page, url: `${BASE}/it/app`, who: 'the platform’s administrator' });
@@ -61,8 +61,9 @@ export async function secondCompany({ BASE, page, kit, ADMIN, stamp, urls }) {
   // the survey sheet: its page, its edit and print pages, its PDF and its modules' PDFs (Rilievi)
   for (const sub of ['', '/modifica', '/stampa', '/elimina']) assert.equal((await page.goto(`${rilievoUrl}${sub}`)).status(), 404, `survey sheet${sub} of another company`);
   // each module's PDF on a sheet where that module is open (200 for its own company): Pelazza, argano, 2SG on the first,
-  // MoviLift (and argano) on the sync's
-  for (const [id, pdfs] of [[rilievoId, ['pdf', 'ordine-quadro', 'dati-argano', 'sospensioni-2sg']], [rilievoMovilift, ['pdf', 'ordine-quadro-movilift', 'dati-argano']]]) {
+  // MoviLift (and argano) on the sync's, Mastech NG120 on the hydraulic one
+  for (const [id, pdfs] of [[rilievoId, ['pdf', 'ordine-quadro', 'dati-argano', 'sospensioni-2sg']], [rilievoMovilift, ['pdf', 'ordine-quadro-movilift', 'dati-argano']],
+    [rilievoMastech, ['pdf', 'ordine-quadro-mastech-ng120']]]) {
     for (const pdf of pdfs) assert.equal((await page.request.get(`${BASE}/api/rilievi/${id}/${pdf}`)).status(), 404, `survey sheet ${pdf} of another company`);
   }
 }

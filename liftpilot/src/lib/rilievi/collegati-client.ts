@@ -3,7 +3,7 @@
 // follows the others in real time, in every direction — empty, or still holding what was put there for it (`auto`): a
 // module takes what the sheet says, the sheet what a module says, one module the other. A place someone typed in keeps its
 // value; places that say different things are listed under their group, and the server asks to confirm them on save.
-// Pure: the rules of rilievi's public/js/collegati.js (commit ae6329cb6) over an adapter of the form's controls, so the
+// Pure: the rules of rilievi's public/js/collegati.js (commit 988f3cf37) over an adapter of the form's controls, so the
 // component plugs the DOM (or React state) and the tests plug plain objects. The server fills a module when it first opens
 // and checks on save (ordini/form.ts, ordini/collegati.ts) — this only shows.
 //
@@ -19,7 +19,8 @@ import { forSheet, optionFor, pairOf, same, splitPair } from './valori-client';
 
 /** A control of the form — an input, a select or a textarea (a DOM element fits as it is). `dataset.auto` is rilievi's
  *  data-auto (the value put there for it), `dataset.touched` = '1' once the person changed it, `dataset.predefinito` is
- *  set on the radio button of the blank module's own answer. */
+ *  set on the radio button of the blank module's own answer, `dataset.scritto` on a survey field of a module the person
+ *  emptied (prefill-client.ts — rilievi's data-scritto, commit 988f3cf37). */
 export interface Ctl {
   readonly name: string;
   /** 'checkbox' | 'radio' | 'text' | 'select-one' | 'textarea' … */
@@ -28,7 +29,7 @@ export interface Ctl {
   checked?: boolean;
   /** an input's or a textarea's maxlength (-1 or 0: none) */
   readonly maxLength?: number;
-  readonly dataset: { auto?: string; touched?: string; predefinito?: string };
+  readonly dataset: { auto?: string; touched?: string; predefinito?: string; scritto?: string };
 }
 
 /** What the engine asks the form. */

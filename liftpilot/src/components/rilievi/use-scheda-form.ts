@@ -1,12 +1,13 @@
 'use client';
 
-// The sheet form's behaviour in the browser, rilievi's public/js (commit ae6329cb6) ported to one hook on the form
-// element, in rilievi's order of events: app.js — the conditional fields shown and hidden at once (form-dom.ts), the rows
-// per stop following «Fermate», the Sì/No and choices a second click clears, the «unsaved changes» hint and the warning
-// before leaving, no half-typed number sent; moduli.js — the modules' survey fields following the sheet while nobody has
-// typed in them (prefill-client.ts); collegati.js — the same plant data in the sheet and in the modules following each
-// other in real time, in every direction, the differences listed under the modules' groups, the names still following
-// sent with the form (collegati-client.ts). The control the person changes is theirs from then on. What the linked data
+// The sheet form's behaviour in the browser, rilievi's public/js (commit 988f3cf37) ported to one hook on the form
+// element, in rilievi's order of events: app.js — the conditional fields and sections shown and hidden at once, the index
+// beside the form too (form-dom.ts), the rows per stop following «Fermate», the Sì/No and the single choices a second
+// click clears, the «unsaved changes» hint and the warning before leaving, no half-typed number sent; moduli.js — the
+// modules' survey fields following the sheet while nobody has typed in them nor emptied them (prefill-client.ts);
+// collegati.js — the same plant data in the sheet and in the modules following each other in real time, in every
+// direction, the differences listed under the modules' groups, the names still following sent with the form
+// (collegati-client.ts). The control the person changes is theirs from then on. What the linked data
 // fill in the sheet is told to the page as typing would (its conditions, its rows, the survey fields) — those events are
 // the form's own: they mark nothing as typed and settle nothing again. The server decides everything again on submit.
 // A form that came back unsaved (refused, a conflict, differences to confirm) opens dirty: in rilievi the page drawn

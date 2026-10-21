@@ -1,7 +1,8 @@
 // The order of the sheet's sections (without a database — tested alone): «Impianto» is the identification of the plant
 // and its plate — always first; the others are ordered per company (`Company.ordineSezioni`, set on the company page by
 // whoever has 'company:edit', src/server/rilievi/sezioni-actions.ts). Empty — the order of fields.ts. It holds for the
-// form, the sheet's page, the print and the PDF. Ported 1:1 from rilievi (src/schede/ordine.ts, commit ae6329cb6).
+// form, the sheet's page, the print and the PDF. A section added later (a stored order without it — «Centralina» since
+// round 49) comes last, as in rilievi. Ported 1:1 from rilievi (src/schede/ordine.ts, commit 988f3cf37).
 import { z } from 'zod';
 import { SECTIONS, type SectionKey } from './fields';
 
@@ -65,3 +66,11 @@ export function sposta(ordine: readonly SectionKey[], key: SectionKey, verso: Ve
 
 /** Whether an order is the default one — then the company keeps it empty (a future section takes its own place). */
 export const ordinePredefinito = (ordine: readonly SectionKey[] | null): boolean => ordine === null || ordine.every((key, i) => key === ORDINABILI[i]);
+
+/**
+ * The sections of the sheet's print and PDF: without the identification — it is in the head band and in the plate — and
+ * without the ones the sheet leaves out (the choice at the end of the form, `sezioniEscluse`).
+ */
+export function sezioniStampate<T extends { key: SectionKey }>(sections: readonly T[], escluse: readonly string[]): T[] {
+  return sections.filter((section) => !FISSE.includes(section.key) && !escluse.includes(section.key));
+}

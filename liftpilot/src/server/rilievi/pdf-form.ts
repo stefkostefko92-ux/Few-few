@@ -1,11 +1,62 @@
 import 'server-only';
 // MoviLift's form: the fields are filled by name and the form is locked (flatten). Every field of the map gets our value —
 // the empty one and the unticked too: MoviLift's blank module has ticks and choices by default, and what the person
-// removed must not stay on the sheet. Ported 1:1 from rilievi (src/ordini/pdf-form.ts, commit ae6329cb6).
-import { PDFHexString, PDFName, PDFRef, PDFString, type PDFDocument, type PDFField, type PDFFont, type PDFForm, type PDFTextField } from 'pdf-lib';
+// removed must not stay on the sheet. The ticks and the chosen radio buttons are drawn by us (segnoMarcato); a field the
+// sheet waits for but the form lacks is made at filling time (creaCampi). Ported 1:1 from rilievi (src/ordini/pdf-form.ts,
+// commit 988f3cf37).
+import {
+  decodePDFRawStream,
+  PDFArray,
+  PDFDict,
+  PDFHexString,
+  PDFName,
+  PDFRawStream,
+  PDFRef,
+  PDFString,
+  type PDFDocument,
+  type PDFField,
+  type PDFFont,
+  type PDFForm,
+  type PDFTextField,
+  type PDFWidgetAnnotation,
+} from 'pdf-lib';
 import { fieldsOf, type AcroField, type ModuloAcro } from '@/lib/rilievi/ordini/moduli';
 import type { Valori } from '@/lib/rilievi/ordini/valori';
-import { apriModulo, fitBlock, fitLine } from './pdf-testo';
+import { apriModulo, fitBlock, fitLine, SEGNO } from './pdf-testo';
+
+const n = (value: number): string => value.toFixed(2);
+
+/**
+ * The "on" look of a box or a radio button: the frame from the author's "off" look and on it our mark drawn with lines — a
+ * solid tick (✔) or a square (■). The author writes the mark with the non-embedded ZapfDingbats — thin, and where the
+ * font is missing nothing comes out (the owner, 21 October 2026: clearer ticks).
+ */
+function segnoMarcato(form: PDFForm, widget: PDFWidgetAnnotation, forma: 'spunta' | 'quadrato'): void {
+  const on = widget.getOnValue();
+  const states = widget.dict.lookupMaybe(PDFName.of('AP'), PDFDict);
+  const normal = states?.lookupMaybe(PDFName.of('N'), PDFDict);
+  const off = normal?.lookup(PDFName.of('Off'));
+  const bbox = off instanceof PDFRawStream ? off.dict.lookupMaybe(PDFName.of('BBox'), PDFArray) : null;
+  if (!on || !normal || !(off instanceof PDFRawStream) || !bbox) return;
+  const { x, y, width, height } = bbox.asRectangle();
+  const side = Math.min(width, height);
+  const [cx, cy] = [x + width / 2, y + height / 2];
+  const segno =
+    forma === 'spunta'
+      ? `0 G ${n(Math.max(SEGNO, side * 0.13))} w 1 J 1 j ` +
+        `${n(cx - side * 0.36)} ${n(cy)} m ${n(cx - side * 0.1)} ${n(cy - side * 0.26)} l ` +
+        `${n(cx + side * 0.36)} ${n(cy + side * 0.28)} l S`
+      : `0 g ${n(cx - side * 0.21)} ${n(cy - side * 0.21)} ${n(side * 0.42)} ${n(side * 0.42)} re f`;
+  const cornice = Buffer.from(decodePDFRawStream(off).decode()).toString('latin1');
+  const matrix = off.dict.get(PDFName.of('Matrix'));
+  const stream = form.doc.context.flateStream(`${cornice}\nq\n${segno}\nQ\n`, {
+    Type: 'XObject',
+    Subtype: 'Form',
+    BBox: [x, y, x + width, y + height],
+    ...(matrix ? { Matrix: matrix } : {}),
+  });
+  normal.set(on, form.doc.context.register(stream));
+}
 
 /** A radio group: the button of the chosen option (by its order in the PDF), every other — off. */
 function selectRadio(form: PDFForm, field: Extract<AcroField, { kind: 'radio' }>, value: unknown): void {
@@ -17,7 +68,9 @@ function selectRadio(form: PDFForm, field: Extract<AcroField, { kind: 'radio' }>
   group.acroField.dict.set(PDFName.of('V'), on ?? PDFName.of('Off'));
   widgets.forEach((widget, i) => {
     const own = widget.getOnValue();
-    widget.setAppearanceState(chosen && i === chosen.widget && own ? own : PDFName.of('Off'));
+    const selected = chosen !== undefined && i === chosen.widget && own !== undefined;
+    widget.setAppearanceState(selected ? own : PDFName.of('Off'));
+    if (selected) segnoMarcato(form, widget, 'quadrato');
   });
 }
 
@@ -85,16 +138,49 @@ function fillText(form: PDFForm, field: Extract<AcroField, { kind: 'text' | 'tex
   textField.updateAppearances(font);
 }
 
+/**
+ * The fields the form lacks but the sheet waits for (`crea` in the map: MoviLift's photocell voltage before the printed
+ * «V»): a new text field without border or background, on its model's page and with its look (DA) — then filled like any
+ * other.
+ */
+function creaCampi(form: PDFForm, modulo: ModuloAcro, font: PDFFont): void {
+  for (const field of fieldsOf(modulo)) {
+    if (!('crea' in field) || !field.crea || form.getFieldMaybe(field.acro)) continue;
+    const come = form.getTextField(field.crea.come).acroField;
+    const pageRef = come.getWidgets()[0]?.P();
+    const page = form.doc.getPages().find((p) => p.ref === pageRef);
+    if (!page) throw new Error(`${modulo.id}: ${field.crea.come} has no page`);
+    const created = form.createTextField(field.acro);
+    const da = come.getDefaultAppearance();
+    if (da) created.acroField.setDefaultAppearance(da);
+    const [x, y, width, height] = field.crea.rect;
+    created.addToPage(page, {
+      x,
+      y,
+      width,
+      height,
+      font,
+      textColor: undefined,
+      backgroundColor: undefined,
+      borderColor: undefined,
+      borderWidth: 0,
+    });
+  }
+}
+
 /** Every field of the map gets our value (without locking — that comes after). */
 export function compilaAcroform(form: PDFForm, modulo: ModuloAcro, valori: Valori, font: PDFFont): void {
+  creaCampi(form, modulo, font);
   for (const field of fieldsOf(modulo)) {
     if (!('acro' in field)) continue;
     const value = valori[field.key];
     switch (field.kind) {
       case 'check': {
         const box = form.getCheckBox(field.acro);
-        if (value === true) box.check();
-        else if (box.isChecked()) box.uncheck();
+        if (value === true) {
+          box.check();
+          for (const widget of box.acroField.getWidgets()) segnoMarcato(form, widget, 'spunta');
+        } else if (box.isChecked()) box.uncheck();
         break;
       }
       case 'radio':

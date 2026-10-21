@@ -1,7 +1,7 @@
 import 'server-only';
 // The order of the survey sheet's sections in the company (`Company.ordineSezioni`, src/lib/rilievi/ordine.ts): whoever
 // has 'company:edit' sets it on the company page; it holds for the form, the sheet's page, the print and the PDF.
-// rilievi's company setting (src/aziende/sezioni.ts, commit ae6329cb6; there the company's ADMIN, `aziende:settings`).
+// rilievi's company setting (src/aziende/sezioni.ts, commit 988f3cf37; there the company's ADMIN, `aziende:settings`).
 import { prisma } from '@/lib/db';
 import { auditTx } from '@/lib/audit';
 import type { SectionKey } from '@/lib/rilievi/fields';

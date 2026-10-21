@@ -157,6 +157,9 @@ export function confronto(x: ConfrontoInput): Riga[] {
   // SOLO CONFRONTO
   const fun = side(P, 'funicella');
   rows.push(row('marca', 'info', r.marca, null, null, null));
+  // the sheet no longer asks the door operator's make and the clear opening (rilievi 988f3cf37, round 49): these two rows
+  // read the old columns as they are — an older survey still shows its answer, a newer one nothing (the owner's decision:
+  // no other source is read in their place)
   rows.push(row('operatore', 'info', r.operatoreMarca, null, side(P, 'operatore'), null));
   rows.push(row('porte', 'info', r.lucePorte, null, side(P, 'porte'), null));
   rows.push(row('limitatore', 'info', r.limitatoreTipo, null, fun?.nome ?? null, null));

@@ -2,8 +2,11 @@
 // survey, from the other module and from the person writing; afterwards with what was typed or stored. `auto` are the
 // fields filled so (the linked ones — also with the blank module's value: «Loc. Macc. in ALTO»), or sent back by the
 // browser as still following (and fields of the sheet filled from a module): the browser leads them after their source
-// until the person types in them (collegati-client.ts, prefill-client.ts). Ported 1:1 from rilievi (src/ordini/form.ts,
-// commit ae6329cb6), plus the plain description of a module the form renders (`moduloSpec`).
+// until the person types in them (collegati-client.ts, prefill-client.ts). `scritti` are the survey's fields of a module
+// already being filled in (stored or sent back) that are empty although the survey has a value for them: the person
+// emptied them — the browser does not fill them again (the owner, 21 October 2026: MoviLift's deleted e-mail came back).
+// Ported 1:1 from rilievi (src/ordini/form.ts, commit 988f3cf37), plus the plain description of a module the form renders
+// (`moduloSpec`).
 import type { FormValues } from '../field-parsers';
 import type { ModuloLookup } from '../form-help';
 import { AUTO_KEY, campiCollegati, collegatiDelGruppo, NOMI_SEGUACI } from './collegamenti';
@@ -13,15 +16,27 @@ import { predefiniti, prefillToken, type PrefillContext } from './prefill';
 import { SLOTS, type ModuloSlot, type Prefisso } from './registry';
 import { moduloFormValues, nameOf, shownName } from './valori';
 
-export function withPrefill(values: FormValues, ctx: Omit<PrefillContext, 'values'>): { values: FormValues; auto: Set<string> } {
+export { moduliDopo } from './dopo';
+
+export function withPrefill(
+  values: FormValues,
+  ctx: Omit<PrefillContext, 'values'>,
+): { values: FormValues; auto: Set<string>; scritti: Set<string> } {
   const out: FormValues = { ...values };
   const claimed = values[AUTO_KEY];
   const auto = new Set<string>(typeof claimed === 'string' ? claimed.split(' ').filter((name) => NOMI_SEGUACI.has(name)) : []);
+  const scritti = new Set<string>();
   for (const slot of SLOTS) {
-    if (values[shownName(slot.prefix)] === '1') continue;
+    const token = prefillToken(slot.modulo, { ...ctx, values });
+    if (values[shownName(slot.prefix)] === '1') {
+      for (const key of Object.keys(token)) {
+        const name = nameOf(slot.prefix, key);
+        if (values[name] === undefined || values[name] === '') scritti.add(name);
+      }
+      continue;
+    }
     const linked = prefillCollegati(slot.prefix, values);
     const predefinito = predefiniti(slot.modulo);
-    const token = prefillToken(slot.modulo, { ...ctx, values });
     for (const key of campiCollegati(slot.prefix)) {
       if (Object.hasOwn(linked, key) || Object.hasOwn(predefinito, key)) auto.add(nameOf(slot.prefix, key));
     }
@@ -29,7 +44,7 @@ export function withPrefill(values: FormValues, ctx: Omit<PrefillContext, 'value
     const valori = { ...predefinito, ...token, ...linked };
     Object.assign(out, moduloFormValues(slot.modulo, slot.prefix, valori));
   }
-  return { values: out, auto };
+  return { values: out, auto, scritti };
 }
 
 /** A module's field by its name in the form (`oq-cliente`) — for the summary of the errors. */
@@ -69,13 +84,16 @@ export interface ModuloFieldSpec {
 }
 
 /** A module as the form renders it, plain data (serialisable from a server component to a client one): its groups and
- *  rows in the order of the paper, the arrow before the field `freccia` of a row, and under each group the compared links
- *  with a field in it (`diff`, the keys of collegati-browser.ts — the list of discrepancies goes under the group). */
+ *  rows in the order of the paper, the row's printed heading (`titolo`, «Norme di riferimento» — before its fields, a group
+ *  for screen readers), the arrow before the field `freccia` of a row, and under each group the compared links with a
+ *  field in it (`diff`, the keys of collegati-browser.ts — the list of discrepancies goes under the group). */
 export interface ModuloSpec {
   column: ModuloSlot['column'];
   question: ModuloSlot['question'];
-  /** the make it opens with (the panel: Pelazza or MoviLift under one question), or null — with every make */
+  /** the make it opens with (the panel: Pelazza, MoviLift or Mastech under one question), or null — with every make */
   marca: { field: 'quadroMarca'; value: string } | null;
+  /** and the panel's model under the make (Mastech: NG120 or QI Touch — a second wrapper), or null */
+  modello: { field: 'quadroModello'; value: string } | null;
   prefix: Prefisso;
   /** the hidden input `<prefix>-_` = '1', always rendered inside the module */
   shownName: string;
@@ -86,7 +104,7 @@ export interface ModuloSpec {
   fornitore: string | null;
   /** «Titolo · Fornitore» or the title alone (moduli.ts nomeModulo) */
   nome: string;
-  gruppi: { titolo: string; diff: string[]; righe: { freccia: number | null; campi: ModuloFieldSpec[] }[] }[];
+  gruppi: { titolo: string; diff: string[]; righe: { titolo: string | null; freccia: number | null; campi: ModuloFieldSpec[] }[] }[];
 }
 
 function fieldSpec(prefix: string, f: ModuloField): ModuloFieldSpec {
@@ -101,17 +119,21 @@ function fieldSpec(prefix: string, f: ModuloField): ModuloFieldSpec {
 export function moduloSpec(slot: ModuloSlot): ModuloSpec {
   const { modulo } = slot;
   return {
-    column: slot.column, question: slot.question, marca: slot.marca ?? null, prefix: slot.prefix, shownName: shownName(slot.prefix), path: slot.path,
+    column: slot.column, question: slot.question, marca: slot.marca ?? null, modello: slot.modello ?? null, prefix: slot.prefix, shownName: shownName(slot.prefix), path: slot.path,
     id: modulo.id, titolo: modulo.titolo, fornitore: modulo.fornitore ?? null, nome: modulo.fornitore ? `${modulo.titolo} · ${modulo.fornitore}` : modulo.titolo,
     gruppi: modulo.gruppi.map((g) => ({
       titolo: g.titolo,
       diff: collegatiDelGruppo(slot.prefix, g.righe.flatMap((r) => (r.campi as ModuloField[]).map((f) => f.key))),
-      righe: g.righe.map((r) => ({ freccia: r.freccia ?? null, campi: (r.campi as ModuloField[]).map((f) => fieldSpec(slot.prefix, f)) })),
+      righe: g.righe.map((r) => ({
+        titolo: r.titolo ?? null,
+        freccia: r.freccia ?? null,
+        campi: (r.campi as ModuloField[]).map((f) => fieldSpec(slot.prefix, f)),
+      })),
     })),
   };
 }
 
-/** Every module, in the order of the registry (the panel's Pelazza and MoviLift, the argano sheet, 2SG's sheet). The form
- *  puts each at the end of its question's section (rilievi form.ejs: after the question's fields — the number of the
- *  suspensions). */
+/** Every module, in the order of the registry (the panel's Pelazza, MoviLift, Mastech NG120 and QI Touch, the argano
+ *  sheet, 2SG's sheet). The form puts each after the last field of its question's chain (`moduliDopo` — rilievi form.ejs:
+ *  before the section's notes). */
 export const moduloSpecs = (): ModuloSpec[] => SLOTS.map(moduloSpec);

@@ -1,9 +1,11 @@
 import 'server-only';
 // The layout of the sheet's PDF page: A4, 40 pt margins, three columns, a bottom line with the page number (the header
-// band and the plate — pdf-head.ts). Drawing only — the data and the texts come ready (format.ts, the messages). Ported 1:1
-// from rilievi (src/schede/pdf-layout.ts, commit ae6329cb6): every constant, font size and offset is rilievi's.
-import type { DisplayField } from '@/lib/rilievi/format';
+// band and the plate — pdf-head.ts; the boxes of the choices — pdf-spunte.ts). Drawing only — the data and the texts come
+// ready (format.ts, the messages). Ported 1:1 from rilievi (src/schede/pdf-layout.ts, commit 988f3cf37): every constant,
+// font size and offset is rilievi's.
+import type { DisplayField, OptionView } from '@/lib/rilievi/format';
 import type { RilieviT } from '@/lib/rilievi/t';
+import { drawSpunte, layoutSpunte } from './pdf-spunte';
 
 const PAGE = { width: 595.28, height: 841.89 };
 export const MARGIN = 40;
@@ -42,39 +44,56 @@ export function ensureSpace(ctx: PdfContext, needed: number): boolean {
   return true;
 }
 
-/** A cell's value: the ticks as ☑/☐, the empty as a dash. */
-function cellText(field: DisplayField): string {
-  if (field.options) return field.options.map((o) => `${o.checked ? '☑' : '☐'} ${o.label}`).join('    ');
-  return field.value || '—';
+/** A field of the sheet; `testo` — what is written in a module after its ticks («Corsa Mt.: 12», pdf.ts). */
+export type PdfField = DisplayField & { testo?: string };
+
+/** Under the label: the ticks (pdf-spunte.ts), then the text; a field without ticks — the text or a dash. */
+function valueOf(field: PdfField): { spunte: readonly OptionView[]; testo: string | null } {
+  if (!field.options) return { spunte: [], testo: field.value || '—' };
+  return { spunte: field.options, testo: field.testo || null };
 }
 
-function cellHeight(ctx: PdfContext, field: DisplayField, width: number): number {
+function valueHeight(ctx: PdfContext, field: PdfField, width: number): number {
+  const { doc } = ctx;
+  const { spunte, testo } = valueOf(field);
+  const ticks = spunte.length ? layoutSpunte(doc, spunte, width, SIZE.value).height : 0;
+  doc.font('Sans').fontSize(SIZE.value);
+  const text = testo ? doc.heightOfString(testo, { width }) : 0;
+  return ticks + (ticks && text ? 2 : 0) + text;
+}
+
+function cellHeight(ctx: PdfContext, field: PdfField, width: number): number {
   const { doc } = ctx;
   doc.font('Sans').fontSize(SIZE.label);
   const label = doc.heightOfString(field.label, { width });
-  doc.font('Sans').fontSize(SIZE.value);
-  const value = doc.heightOfString(cellText(field), { width });
-  return label + 2 + value;
+  return label + 2 + valueHeight(ctx, field, width);
 }
 
-function drawCell(ctx: PdfContext, field: DisplayField, x: number, y: number, width: number): void {
+function drawCell(ctx: PdfContext, field: PdfField, x: number, y: number, width: number): void {
   const { doc } = ctx;
   doc.font('Sans').fontSize(SIZE.label).fillColor(MUTED).text(field.label, x, y, { width });
-  const valueY = doc.y + 2;
+  let valueY = doc.y + 2;
+  const { spunte, testo } = valueOf(field);
+  if (spunte.length) {
+    const layout = layoutSpunte(doc, spunte, width, SIZE.value);
+    drawSpunte(doc, layout, x, valueY, SIZE.value);
+    valueY += layout.height + 2;
+  }
+  if (!testo) return;
   doc
     .font('Sans')
     .fontSize(SIZE.value)
     .fillColor(field.value || field.options ? INK : MUTED)
-    .text(cellText(field), x, valueY, { width });
+    .text(testo, x, valueY, { width });
 }
 
 /** On a whole row: the address, the notes and the ticks (the boxes do not shrink); Sì/No fits a column. */
-function isWide(field: DisplayField): boolean {
+function isWide(field: PdfField): boolean {
   return field.wide || (field.options !== undefined && field.kind !== 'yesno');
 }
 
 /** The fields in three columns; the wide ones on a whole row. */
-export function drawFields(ctx: PdfContext, fields: DisplayField[]): void {
+export function drawFields(ctx: PdfContext, fields: readonly PdfField[]): void {
   const { doc } = ctx;
   const columns = 3;
   const colWidth = (CONTENT_WIDTH - GAP * (columns - 1)) / columns;
@@ -82,7 +101,7 @@ export function drawFields(ctx: PdfContext, fields: DisplayField[]): void {
   while (i < fields.length) {
     const first = fields[i];
     if (!first) break;
-    const row: DisplayField[] = [first];
+    const row: PdfField[] = [first];
     if (!isWide(first)) {
       for (let next = fields[i + 1]; row.length < columns && next && !isWide(next); next = fields[i + row.length]) row.push(next);
     }

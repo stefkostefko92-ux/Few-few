@@ -66,7 +66,8 @@ export interface RilievoDati {
   argano: ArganoDati | null;
 }
 
-/** The columns of a sheet the installation reads. */
+/** The columns of a sheet the installation reads. `operatoreMarca` and `lucePorte` are no longer asked by the sheet (rilievi
+ *  988f3cf37, round 49): only older surveys fill them, and the comparison shows them as they are (confronto.ts). */
 export const RILIEVO_SELECT = {
   id: true, data: true, createdAt: true, updatedAt: true, indirizzo: true, matricola: true, numeroImpianto: true, marca: true, portataKg: true, capienzaPersone: true,
   fermate: true, ubicazioneMacchina: true, tipoImpianto: true, funiNumero: true, funiDiametroMm: true, funicellaDiametroMm: true,

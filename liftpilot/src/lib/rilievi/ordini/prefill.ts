@@ -2,7 +2,7 @@
 // company and the person writing (the module's map, `prefill`), and the plant data from the sheet or from the other
 // module (collegati.ts) — in this order, each over the one before. The server puts them at the module's first opening;
 // afterwards the browser leads them (prefill-client.ts and collegati-client.ts — the same rules) until the person types
-// in the field. Ported 1:1 from rilievi (src/ordini/prefill.ts, commit ae6329cb6).
+// in the field. Ported 1:1 from rilievi (src/ordini/prefill.ts, commit 988f3cf37).
 import type { FormValues } from '../field-parsers';
 import { activeFields, fieldByKey } from '../fields';
 import { prefillCollegati } from './collegati';

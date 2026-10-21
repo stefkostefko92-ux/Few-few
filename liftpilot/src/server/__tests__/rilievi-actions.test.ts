@@ -1,10 +1,11 @@
 // Rilievi — the server side of the survey sheets end to end over an in-memory database (rilievi-actions-fixture.ts), as
-// rilievi's integration tests (schede, campi, ordini, aziende; commit ae6329cb6) for what does not need PostgreSQL: a
-// sheet saved within the company with its author, conditional chain, measurements and supplier modules, one audit row
-// without content; the errors keep the input; who writes by the rights matrix and the read-only mode; the version guard
-// (409: the input stays, nothing overwritten, the next save knowingly wins); another company's sheet is "not found"
-// everywhere; the trash by the rights of each role; the PDFs' answers. The linked data, MoviLift and the company's order
-// of the sections: rilievi-collegati-actions.test.ts.
+// rilievi's integration tests (schede, campi, ordini, aziende; commit ae6329cb6, the sheet as at 988f3cf37) for what does
+// not need PostgreSQL: a sheet saved within the company with its author, conditional chain, measurements and supplier
+// modules, one audit row without content; the old answers of the questions taken off the sheet kept; the errors keep the
+// input; who writes by the rights matrix and the read-only mode; the version guard (409: the input stays, nothing
+// overwritten, the next save knowingly wins); another company's sheet is "not found" everywhere; the trash by the rights
+// of each role; the PDFs' answers. The linked data, MoviLift and the company's order of the sections:
+// rilievi-collegati-actions.test.ts.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Prisma } from '@prisma/client';
@@ -22,9 +23,11 @@ test('una scheda nuova: nella propria azienda, con l’autore, la catena, le mis
   assert.equal(row.updatedById, 'u1');
   assert.equal(row.pattinoRetrattile, true, 'the conditional chain is kept: MANUALI → pattino sì');
   for (const key of ['pattinoRetrattileNumero', 'arganoMarca']) assert.ok(!(key in row), `${key}: taken off the sheet, never written`);
-  assert.equal(row.sospensioniNumero, 5);
-  assert.deepEqual(row.ordineSospensioni, { modulo: '2sg-ordine-porte', valori: { ordNo: '77' } });
+  // manual doors ask the locks and the cam; the suspensions and 2SG's sheet sent with them are not read (rilievi
+  // 47c065bdf: only automatic doors)
+  assert.deepEqual([row.sospensioni, row.sospensioniNumero, row.ordineSospensioni], [null, null, Prisma.DbNull]);
   assert.equal(row.riepilogoOrdini, false);
+  assert.deepEqual([row.moduliStampati, row.sezioniEscluse], [[], []], 'an old page without the print choices: no module, every section');
   assert.equal(row.discrepanzeConfermate, null, 'nothing to confirm');
   assert.match(String(row.searchText), /^104552 0033871 via giuseppe verdi 14 milano schindler$/);
   assert.deepEqual(row.ordineQuadro, { modulo: 'pelazza-ordine-quadri-032026', valori: { ordine: true, nFermate: '3' } });
@@ -79,6 +82,23 @@ test('la versione aperta: chi salva su una versione superata riceve il conflitto
   assert.match(await redirected(updateRilievoAction({ status: 'idle' }, form({ ...SHEET, scheda: id, base: r.status === 'conflict' ? r.base : '', marca: 'Kone' }))), /ok=schedaSaved/);
   assert.equal(schede.find((s) => s.id === id)?.marca, 'Kone');
   assert.equal((await updateRilievoAction({ status: 'idle' }, form({ ...SHEET, scheda: id, base: 'non-una-data' }))).status, 'conflict');
+});
+
+test('le domande tolte dalla scheda (ottobre 2026): le risposte di prima restano, una pagina di prima che le manda non le scrive', async () => {
+  const { updateRilievoAction } = await actions();
+  const id = await created();
+  const row = schede.find((s) => s.id === id);
+  assert.ok(row);
+  // a sheet saved before round 49: the door operator and the existing emergency call answered
+  Object.assign(row, { operatoreMarca: 'Selcom', lucePorte: '800 x 2000', operatoreTensione: '24 V DC', telesoccorso: true, telesoccorsoStato: 'MANCA_PERIFERICA' });
+  // a page opened before the deploy still sends them, with other answers: not read (rilievi 988f3cf37, campi.test.ts)
+  const old = { ...SHEET, scheda: id, base: (row.updatedAt as Date).toISOString(), operatoreMarca: 'Fermator', lucePorte: '900', operatoreTensione: '',
+    telesoccorso: 'no', telesoccorsoStato: 'COMPLETO' };
+  assert.match(await redirected(updateRilievoAction({ status: 'idle' }, form(old))), new RegExp(`/rilievi/${id}\\?ok=schedaSaved$`));
+  const after = schede.find((s) => s.id === id);
+  assert.deepEqual([after?.operatoreMarca, after?.lucePorte, after?.operatoreTensione, after?.telesoccorso, after?.telesoccorsoStato],
+    ['Selcom', '800 x 2000', '24 V DC', true, 'MANCA_PERIFERICA'], 'the old answers stay in their columns');
+  assert.deepEqual([after?.moduliStampati, after?.sezioniEscluse], [[], []], 'a page without the print choices: no module, every section');
 });
 
 test('la scheda di un’altra azienda non esiste: modifica, cestino, pagina, PDF', async () => {
@@ -138,9 +158,14 @@ test('i PDF: la scheda e il modulo compilato, da scaricare o da stampare; altrim
   assert.equal((await get(modulo, '', { id, modulo: 'dati-argano' })).status, 404, 'answered «No»: no module');
   assert.equal((await get(modulo, '', { id, modulo: 'preventivo-argano' })).status, 404, 'the Montanari request is gone');
   assert.equal((await get(modulo, '', { id, modulo: 'ordine-quadro-movilift' })).status, 404, 'a Pelazza panel: no MoviLift order');
-  r = await get(modulo, '', { id, modulo: 'sospensioni-2sg' });
+  assert.equal((await get(modulo, '', { id, modulo: 'sospensioni-2sg' })).status, 404, 'manual doors: no suspensions, no 2SG sheet');
+  const { createRilievoAction } = await actions();
+  as('u1', 'TECHNICIAN');
+  const automatic = idOf(await redirected(createRilievoAction({ status: 'idle' }, form({ ...SHEET, numeroImpianto: '104553', tipoPorte: 'AUTOMATICHE' }))));
+  as('u4', 'SALES');
+  r = await get(modulo, '', { id: automatic, modulo: 'sospensioni-2sg' });
   assert.equal(r.status, 200);
-  assert.equal(r.headers.get('Content-Disposition'), 'attachment; filename="sospensioni-2sg-104552-2026-10-12.pdf"');
+  assert.equal(r.headers.get('Content-Disposition'), 'attachment; filename="sospensioni-2sg-104553-2026-10-12.pdf"');
   assert.equal((await get(modulo, '', { id, modulo: 'altro' })).status, 404);
   as('u9', 'OWNER', 'c2');
   assert.equal((await get(sheet, '', { id })).status, 404);

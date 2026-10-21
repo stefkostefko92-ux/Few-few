@@ -12,8 +12,9 @@
 //   (scripts/smoke-verdict.mjs) → a «Trasformazione completa»: its Progetto leads to the calculation, the calculation fixed to
 //   UNI EN 81-20/50, the Progetto drawn on it, its set (scripts/smoke-progetto.mjs) → the survey sheets: a sheet with its conditions, stops, modules, search, PDFs, print, conflict,
 //   trash (scripts/smoke-rilievi.mjs), the company's order of the sections, the linked data with the confirmation, MoviLift, the
-//   modules in the print (scripts/smoke-rilievi-sync.mjs) → a survey and its installation: created from it, prefilled, compared,
-//   linked by suggestion, unlinked; the home (scripts/smoke-collega.mjs) → new user who must change the password → a second
+//   modules in the print (scripts/smoke-rilievi-sync.mjs), Mastech, the hydraulic lift, the print's choices (smoke-rilievi-sync2.mjs)
+//   → a survey and its installation: created from it, prefilled, compared, linked by suggestion, unlinked; the home
+//   (scripts/smoke-collega.mjs) → new user who must change the password → a second
 //   company that cannot open the first company's calculation, shaft design, DXF, drawing set, lift design or survey sheet (nor its
 //   modules) → with MAILBOX_PORT: the beta by invitation (/register without one, the administrator's invitations,
 //   scripts/smoke-beta.mjs), self-registration from the link, confirmation with the clauses, forgotten password (scripts/smoke-accounts.mjs), the rights
@@ -35,6 +36,7 @@ import { guidePage, helpAndSearch, notFoundPage, reportFlow, rilievoLostAnswer, 
 import { replacementRoom } from './smoke-replacement.mjs';
 import { rilieviFlow } from './smoke-rilievi.mjs';
 import { rilieviSync } from './smoke-rilievi-sync.mjs';
+import { rilieviSync2 } from './smoke-rilievi-sync2.mjs';
 import { collegaFlow } from './smoke-collega.mjs';
 import { archivedReadOnly, technician } from './smoke-roles.mjs';
 import { verdictPopover } from './smoke-verdict.mjs';
@@ -272,6 +274,7 @@ try {
   await progettoFlow({ BASE, page, hydrated, stamp });
   const rilievo = await rilieviFlow({ BASE, page, hydrated });
   const rilievoSync = await rilieviSync({ BASE, page, hydrated });
+  const mastech = await rilieviSync2({ BASE, page, hydrated });
   await collegaFlow({ BASE, page, hydrated, stamp });
   await rilievoOffline({ BASE, page, errors });
   await reportFlow({ BASE, page, stamp, sink, ADMIN });
@@ -285,7 +288,7 @@ try {
   assert.deepEqual(errors, [], 'browser errors');
   await secondCompany({ BASE, page, kit: { login, logout, hydrated }, ADMIN, stamp,
     urls: { calcUrl, href, designUrl, dxfHref, setUrl, setPdfHref, liftUrl, liftRelHref, roomUrl, roomId, rilievoUrl: rilievo.sheetUrl, rilievoId: rilievo.id,
-      rilievoMovilift: rilievoSync.id } });
+      rilievoMovilift: rilievoSync.id, rilievoMastech: mastech.id } });
 
   if (sink) await accountFlows({ BASE, stamp, step, sink, newPage: () => newPage(browser), ADMIN_EMAIL: ADMIN.email, ADMIN, kit: { login, logout, hydrated } });
   else step('accounts without an administrator: skipped (no MAILBOX_PORT)');

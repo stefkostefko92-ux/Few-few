@@ -20,9 +20,10 @@ Ricerca: `../research/argano-geared/` (nella radice del monorepo). Storia dello 
   (pagina Permessi, `src/lib/rbac.ts`), impianti, calcolatore con i risultati in tempo reale, calcoli salvati come
   snapshot immutabili con impronta SHA-256 (il server ricalcola sempre, non si fida del browser), visto interno di chi
   ne ha il permesso, registro attività.
-- **Rilievi**: schede di rilievo degli impianti esistenti e moduli dei fornitori (ordine quadri Pelazza o MoviLift,
-  modulo rilievi dati argani, modulo 2SG di porte e sospensioni), con i dati collegati fra scheda e moduli, l'ordine
-  delle sezioni scelto dall'azienda, stampa e PDF.
+- **Rilievi**: schede di rilievo degli impianti esistenti e moduli dei fornitori (ordine quadri Pelazza, MoviLift o
+  Mastech (NG120 / QI Touch), modulo rilievi dati argani, modulo 2SG di porte e sospensioni), con la centralina per gli
+  impianti idraulici, i dati collegati fra scheda e moduli, l'ordine delle sezioni scelto dall'azienda, stampa e PDF con
+  la scelta delle sezioni e dei moduli.
 - **Relazione di calcolo in PDF** (in italiano) da ogni calcolo salvato: dati, verifiche con le
   clausole, tutti i casi di aderenza, tabelle di dettaglio, sensibilità, stato delle voci normative,
   avvertenza e spazio per la firma. Resta una bozza finché il tecnico incaricato non la firma.

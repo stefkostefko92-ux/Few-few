@@ -36,7 +36,7 @@ export function MisureTable({ table, className = 'rv-mtable' }: { table: TableVi
 /** The plate's four specs, in rilievi's order: load, persons, stops, make. */
 const PLATE_SPECS = ['portataKg', 'capienzaPersone', 'fermate', 'marca'] as const;
 
-/** The lift's plate (rilievi partials/plate.ejs, commit ae6329cb6): the matricola on the left and the number on the right,
+/** The lift's plate (rilievi partials/plate.ejs, commit 988f3cf37): the matricola on the left and the number on the right,
  *  big, the address, then the specs. On the print the address is in the head (`withAddress` false). */
 export function Plate({ scheda, sections, t, withAddress = true }: {
   scheda: { numeroImpianto: string | null; matricola: string | null; indirizzo: string | null };

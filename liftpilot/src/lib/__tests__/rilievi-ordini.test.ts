@@ -1,5 +1,5 @@
 // Rilievi — the suppliers' modules (Pelazza's and MoviLift's order forms for control panels, the argano data sheet,
-// 2SG's sheet for the suspensions and the car operator), ported from rilievi's tests/ordini.test.ts (commit ae6329cb6),
+// 2SG's sheet for the suspensions and the car operator), ported from rilievi's tests/ordini.test.ts (commit 988f3cf37),
 // the pure part: the maps (fields, boxes and lines on the page), the values (a tick only "si", text cleaned and bounded,
 // only the module's keys read back), the prefill from the survey, the questions that open them. The official PDFs, their
 // SHA-256 and the filled PDFs: src/server/__tests__/rilievi-moduli.test.ts; MoviLift: rilievi-movilift.test.ts.
@@ -23,15 +23,19 @@ describe('the supplier forms', () => {
     assert.equal(ARGANI.sha256, 'a724e51afca123545b5ff2e2f55e5ef743ef0b913a5d2fe0678c4a0f0062fa05');
     assert.equal(SG.sha256, 'c199143b61c7a1fac02dc81083a40f2243fff089d6fc0808cc32b2ff7a605bc6');
     assert.equal(fieldsOf(PELAZZA).length, 152);
-    assert.equal(fieldsOf(MOVILIFT).length, 128);
+    assert.equal(fieldsOf(MOVILIFT).length, 129);
     assert.equal(fieldsOf(ARGANI).length, 36);
     assert.equal(fieldsOf(SG).length, 89);
-    assert.deepEqual(MODULI.map((m) => m.id), ['pelazza-ordine-quadri-032026', 'movilift-modulo-ordine-scelta-v2-6', 'rilievo-dati-argani', '2sg-ordine-porte']);
-    assert.deepEqual(SLOTS.map((s) => [s.column, s.question, s.prefix, s.path, s.modulo.id, s.marca?.value ?? null]), [
-      ['ordineQuadro', 'quadroOrdine', 'oq', 'ordine-quadro', 'pelazza-ordine-quadri-032026', 'PELAZZA'],
-      ['ordineQuadro', 'quadroOrdine', 'om', 'ordine-quadro-movilift', 'movilift-modulo-ordine-scelta-v2-6', 'MOVILIFT'],
-      ['preventivoArgano', 'arganoPreventivo', 'pa', 'dati-argano', 'rilievo-dati-argani', null],
-      ['ordineSospensioni', 'sospensioni', 'sg', 'sospensioni-2sg', '2sg-ordine-porte', null],
+    assert.deepEqual(MODULI.map((m) => m.id), [
+      'pelazza-ordine-quadri-032026', 'movilift-modulo-ordine-scelta-v2-6', 'rilievo-dati-argani', '2sg-ordine-porte', 'mastech-ng120', 'mastech-qi-touch',
+    ]);
+    assert.deepEqual(SLOTS.map((s) => [s.column, s.question, s.prefix, s.path, s.modulo.id, s.marca?.value ?? null, s.modello?.value ?? null]), [
+      ['ordineQuadro', 'quadroOrdine', 'oq', 'ordine-quadro', 'pelazza-ordine-quadri-032026', 'PELAZZA', null],
+      ['ordineQuadro', 'quadroOrdine', 'om', 'ordine-quadro-movilift', 'movilift-modulo-ordine-scelta-v2-6', 'MOVILIFT', null],
+      ['ordineQuadro', 'quadroOrdine', 'mn', 'ordine-quadro-mastech-ng120', 'mastech-ng120', 'MASTECH', 'NG120'],
+      ['ordineQuadro', 'quadroOrdine', 'mq', 'ordine-quadro-mastech-qi-touch', 'mastech-qi-touch', 'MASTECH', 'QI_TOUCH'],
+      ['preventivoArgano', 'arganoPreventivo', 'pa', 'dati-argano', 'rilievo-dati-argani', null, null],
+      ['ordineSospensioni', 'sospensioni', 'sg', 'sospensioni-2sg', '2sg-ordine-porte', null, null],
     ]);
     assert.equal(slotByPath('ordine-quadro')?.modulo.id, PELAZZA.id);
     assert.equal(slotByPath('preventivo-argano'), undefined, 'the Montanari request is gone');
@@ -86,6 +90,7 @@ describe('the supplier forms', () => {
     const spec = moduloSpec(slot);
     assert.equal(spec.shownName, 'oq-_');
     assert.deepEqual(spec.marca, { field: 'quadroMarca', value: 'PELAZZA' });
+    assert.equal(spec.modello, null);
     assert.equal(spec.gruppi[0]?.titolo, 'Intestazione');
     assert.deepEqual(spec.gruppi[0]?.righe[0]?.campi.map((c) => [c.name, c.kind, c.label, c.prefill]), [
       ['oq-offerta', 'check', 'OFFERTA', null],
@@ -94,8 +99,15 @@ describe('the supplier forms', () => {
     ]);
     assert.equal(spec.gruppi.flatMap((g) => g.righe.flatMap((r) => r.campi)).length, 152);
     assert.ok(spec.gruppi.flatMap((g) => g.righe).some((r) => r.freccia === 1));
-    assert.deepEqual(spec.gruppi.find((g) => g.titolo === 'Porte')?.diff, ['fermate', 'velocita', 'corsa', 'porte', 'accessi'], 'the discrepancies listed under the group');
-    const [, movilift, argani] = moduloSpecs();
+    assert.deepEqual(spec.gruppi.find((g) => g.titolo === 'Porte')?.diff, ['fermate', 'velocita', 'corsa', 'porte', 'accessi', 'servizi'], 'the discrepancies listed under the group');
+    const specs = moduloSpecs();
+    assert.deepEqual(specs.map((s) => s.prefix), ['oq', 'om', 'mn', 'mq', 'pa', 'sg']);
+    // Mastech: the model is a second wrapper; a row heading («Norme di riferimento») stands before its ticks
+    const ng120 = specs.find((s) => s.prefix === 'mn');
+    assert.deepEqual(ng120?.modello, { field: 'quadroModello', value: 'NG120' });
+    assert.ok(ng120?.gruppi.some((g) => g.righe.some((r) => r.titolo === 'Norme di riferimento')));
+    assert.ok(spec.gruppi.every((g) => g.righe.every((r) => r.titolo === null)), 'Pelazza has no row headings');
+    const [movilift, argani] = ['om', 'pa'].map((prefix) => specs.find((spec) => spec.prefix === prefix));
     assert.equal(argani?.fornitore, null);
     assert.equal(argani?.nome, 'Modulo rilievi dati argani');
     const controllo = movilift?.gruppi.flatMap((g) => g.righe.flatMap((r) => r.campi)).find((c) => c.key === 'controllo');
@@ -209,7 +221,7 @@ describe('the questions that open the supplier forms', () => {
     assert.equal(no.ok && no.data.ordineQuadro, null);
   });
 
-  it('open the argano sheet for every machine and the 2SG sheet with the suspensions to change', () => {
+  it('open the argano sheet for every machine, the 2SG sheet with the suspensions to change', () => {
     const argano = { 'pa-_': '1', 'pa-pesoCabina': '650', 'pa-taglia12': 'si' };
     const yes = parseScheda({ ...minimal, arganoPreventivo: 'si', ...argano });
     assert.ok(yes.ok);
@@ -217,7 +229,8 @@ describe('the questions that open the supplier forms', () => {
     const no = parseScheda({ ...minimal, arganoPreventivo: 'no', ...argano });
     assert.equal(no.ok && no.data.preventivoArgano, null);
 
-    const sg = { 'sg-_': '1', 'sg-ordNo': '77', 'sg-sogliaH90': 'si' };
+    // the suspensions are asked with automatic doors only (rilievi 47c065bdf)
+    const sg = { 'sg-_': '1', 'sg-ordNo': '77', 'sg-sogliaH90': 'si', tipoPorte: 'AUTOMATICHE' };
     const sospensioni = parseScheda({ ...minimal, sospensioni: 'si', sospensioniNumero: '6', ...sg });
     assert.ok(sospensioni.ok);
     assert.equal(sospensioni.ok && sospensioni.data.sospensioniNumero, 6);
@@ -225,6 +238,8 @@ describe('the questions that open the supplier forms', () => {
     const none = parseScheda({ ...minimal, sospensioni: 'no', sospensioniNumero: '6', ...sg });
     assert.equal(none.ok && none.data.sospensioniNumero, null, 'the number goes with "si"');
     assert.equal(none.ok && none.data.ordineSospensioni, null);
+    const manual = parseScheda({ ...minimal, ...sg, tipoPorte: 'MANUALI', sospensioni: 'si' });
+    assert.equal(manual.ok && manual.data.ordineSospensioni, null, 'no 2SG with manual doors');
   });
 
   it('report the errors of a sheet under its own names', () => {

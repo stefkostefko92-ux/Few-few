@@ -24,8 +24,8 @@ export function moduloPdf(modulo: Modulo): Uint8Array {
   return copy;
 }
 
-/** The start check: every module (Pelazza, MoviLift, the argano sheet, 2SG) is in place and exactly the version of its
- *  map. */
+/** The start check: every module (Pelazza, MoviLift, the argano sheet, 2SG, Mastech NG120 and QI Touch) is in place and
+ *  exactly the version of its map. */
 export function assertModuli(): void {
   for (const modulo of MODULI) moduloPdf(modulo);
 }

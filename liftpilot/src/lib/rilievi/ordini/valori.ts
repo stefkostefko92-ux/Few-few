@@ -1,7 +1,7 @@
 // The values of a supplier's module: the ticked boxes (true), the filled lines (text), the chosen option of a radio group
 // (its `valore`) and of a drop-down list (the option itself). Nothing empty is stored. In the form the fields are named
 // `<prefix>-<key>`; the hidden `<prefix>-_` says the module has been on the screen (then it is not prefilled again from the
-// survey). Ported 1:1 from rilievi (src/ordini/valori.ts, commit ae6329cb6).
+// survey). Ported 1:1 from rilievi (src/ordini/valori.ts, commit 988f3cf37).
 import { z } from 'zod';
 import { ERROR_CODES, textParser, type FieldErrorCode, type FieldErrors, type FormValues } from '../field-parsers';
 import { fieldsOf, type Modulo, type ModuloField } from './moduli';

@@ -1,7 +1,7 @@
 import 'server-only';
 // The table of the old push-button panels' measurements in the PDF: a row per stop, on the whole width. The head row is
 // repeated on every new page; a row never splits over two pages. Ported 1:1 from rilievi (src/schede/pdf-table.ts, commit
-// ae6329cb6).
+// 988f3cf37).
 import type { TableView } from '@/lib/rilievi/misure';
 import { CONTENT_WIDTH, ensureSpace, INK, MARGIN, MUTED, RULE, SIZE, type PdfContext } from './pdf-layout';
 

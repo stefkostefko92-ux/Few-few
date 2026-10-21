@@ -1,20 +1,21 @@
 import 'server-only';
 // The sheet's PDF, A4, black on white — the same content as the print page. The font is DejaVu Sans (Italian accents,
-// Cyrillic, ☑/☐) from the font directory of LiftPilot's reports (REPORT_FONT_DIR), embedded as a subset; the built-in
-// Helvetica/Times are never used. The sections in the company's order; what the suppliers' modules hold comes in at the
-// end only when the sheet asks for it (`riepilogoOrdini`; the modules themselves are their own PDFs: modulo-pdf.ts).
-// Ported 1:1 from rilievi (src/schede/pdf.ts, commit ae6329cb6); the logo is the company's logo of the drawing sets,
+// Cyrillic) from the font directory of LiftPilot's reports (REPORT_FONT_DIR), embedded as a subset; the built-in
+// Helvetica/Times are never used. The boxes and the ticks are drawn with lines (pdf-spunte.ts). The sections in the
+// company's order, without those the sheet leaves out (`sezioniEscluse`); what the suppliers' modules hold comes in at the
+// end, of the modules the sheet asks for (`moduliStampati`; the modules themselves are their own PDFs: modulo-pdf.ts).
+// Ported 1:1 from rilievi (src/schede/pdf.ts, commit 988f3cf37); the logo is the company's logo of the drawing sets,
 // «Compilata da» the sheet's author.
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import PDFDocument from 'pdfkit';
 import { displaySections, type DisplayField, type SchedaShown } from '@/lib/rilievi/format';
 import { fmt } from '@/lib/rilievi/fmt';
-import { FISSE } from '@/lib/rilievi/ordine';
+import { sezioniStampate } from '@/lib/rilievi/ordine';
 import { riepilogoModuli, type RiepilogoGruppo } from '@/lib/rilievi/ordini/riepilogo';
 import type { RilieviT } from '@/lib/rilievi/t';
 import { drawHeader, drawPlate } from './pdf-head';
-import { drawFields, drawFooters, drawSectionTitle, MARGIN, type PdfContext } from './pdf-layout';
+import { drawFields, drawFooters, drawSectionTitle, MARGIN, type PdfContext, type PdfField } from './pdf-layout';
 import { drawTable } from './pdf-table';
 
 const FONT_FILES = { regular: 'DejaVuSans.ttf', bold: 'DejaVuSans-Bold.ttf' } as const;
@@ -98,8 +99,8 @@ export function renderSchedaPdf(scheda: SchedaForPdf, options: PdfOptions): Prom
   });
 
   drawPlate(ctx, scheda, byKey);
-  // «Impianto» is in the header band and the plate already
-  for (const section of sections.filter((s) => !FISSE.includes(s.key))) {
+  // «Impianto» is in the header band and the plate already; the sections the sheet leaves out do not come in
+  for (const section of sezioniStampate(sections, scheda.sezioniEscluse)) {
     drawSectionTitle(ctx, section.title);
     // the measurements' table stands right under its field: the fields are drawn in pieces around it
     let chunk: DisplayField[] = [];
@@ -113,7 +114,7 @@ export function renderSchedaPdf(scheda: SchedaForPdf, options: PdfOptions): Prom
     }
     drawFields(ctx, chunk);
   }
-  // what is filled in the suppliers' modules — only when the sheet asks for it (`riepilogoOrdini`)
+  // what is filled in the suppliers' modules — only in those the sheet asks for (`moduliStampati`)
   for (const modulo of riepilogoModuli(scheda)) {
     drawSectionTitle(ctx, modulo.nome);
     drawFields(ctx, modulo.gruppi.map(gruppoField));
@@ -123,8 +124,15 @@ export function renderSchedaPdf(scheda: SchedaForPdf, options: PdfOptions): Prom
   return done;
 }
 
-/** A module's group as a cell on a whole row: the ticked with ☑, then the written («Corsa Mt.: 12»). */
-function gruppoField(gruppo: RiepilogoGruppo, index: number): DisplayField {
-  const parts = [...gruppo.spunte.map((label) => `☑ ${label}`), ...gruppo.testi.map(({ label, value }) => `${label}: ${value}`)];
-  return { key: `modulo-${index}`, label: gruppo.titolo, value: parts.join('    '), kind: 'text', wide: true };
+/** A module's group as a cell on a whole row: the ticked, then the written («Corsa Mt.: 12»). */
+function gruppoField(gruppo: RiepilogoGruppo, index: number): PdfField {
+  return {
+    key: `modulo-${index}`,
+    label: gruppo.titolo,
+    value: '',
+    kind: 'text',
+    wide: true,
+    options: gruppo.spunte.map((label) => ({ value: label, label, checked: true })),
+    testo: gruppo.testi.map(({ label, value }) => `${label}: ${value}`).join('    '),
+  };
 }

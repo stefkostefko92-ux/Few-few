@@ -9,11 +9,13 @@ export type RilievoActionError = 'forbidden' | 'readOnly' | 'notFound' | 'tooMan
 
 /** What every answer that brings the form back carries besides its values: the names that still follow their source
  *  (`auto` — rilievi's data-auto: the browser keeps filling them from the sheet or the other module until the person
- *  types in them; ordini/form.ts withPrefill) and what the sheet and the modules say differently now (the lists under the
- *  modules' groups, ordini/collegati.ts discrepanzeDi). */
+ *  types in them; ordini/form.ts withPrefill), the survey's fields of a module the person emptied (`scritti` — rilievi's
+ *  data-scritto: the browser does not fill them again) and what the sheet and the modules say differently now (the lists
+ *  under the modules' groups, ordini/collegati.ts discrepanzeDi). */
 export interface RilievoFormBack {
   values: FormValues;
   auto: string[];
+  scritti: string[];
   discrepanze: Discrepanza[];
 }
 

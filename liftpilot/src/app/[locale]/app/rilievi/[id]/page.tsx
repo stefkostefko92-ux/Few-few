@@ -40,7 +40,7 @@ function ModuloLinks({ id, modulo, t }: { id: string; modulo: NonNullable<Displa
   );
 }
 
-// A survey sheet (rilievi show.ejs, commit ae6329cb6): its title (the lift's number, else the matricola, else the
+// A survey sheet (rilievi show.ejs, commit 988f3cf37): its title (the lift's number, else the matricola, else the
 // address), the day of the survey, the actions the user may take; the data the sheet and its modules say differently
 // (saved with the confirmation, or from before the check); the plate; the sections in the company's order with only the
 // fields that apply, the measurements per stop as a table, the suppliers' modules as links to their PDFs; who wrote it

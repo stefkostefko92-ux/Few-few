@@ -1,7 +1,8 @@
 // Rilievi — the linked data between the sheet and the suppliers' modules, ported from rilievi's tests/collegati.test.ts
-// (commit ae6329cb6): the numbers read the Italian way, what disagrees (only what is shown, a choice only without a
+// (commit 988f3cf37): the numbers read the Italian way, what disagrees (only what is shown, a choice only without a
 // category in common), the fingerprint of exactly these differences, the prefill from the sheet and from the other
-// module, a forged answer that is no answer, the fields that keep following when the form comes back, the names.
+// module, a forged answer that is no answer, the fields that keep following when the form comes back and the survey
+// fields emptied in a filled form, the names.
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { rilieviTranslator } from '@/lib/rilievi/i18n';
@@ -13,9 +14,9 @@ import { ARGANI, PELAZZA } from '@/lib/rilievi/ordini/moduli';
 
 const t = rilieviTranslator();
 
-/** A sheet with the Pelazza order and the argano sheet open, as the browser sends it: the MoviLift form is on the page
- *  too, hidden, and it has been filled when the page was first served. */
-const open = { data: '2026-10-12', matricola: '33871', quadroMarca: 'PELAZZA', quadroOrdine: 'si', 'oq-_': '1', 'om-_': '1', arganoPreventivo: 'si', 'pa-_': '1' };
+/** A sheet with the Pelazza order and the argano sheet open, as the browser sends it: the MoviLift and the two Mastech
+ *  forms are on the page too, hidden, and they have been filled when the page was first served. */
+const open = { data: '2026-10-12', matricola: '33871', quadroMarca: 'PELAZZA', quadroOrdine: 'si', 'oq-_': '1', 'om-_': '1', 'mn-_': '1', 'mq-_': '1', arganoPreventivo: 'si', 'pa-_': '1' };
 
 describe('numbers in the data the sheet and the orders share', () => {
   it('reads them the Italian way: decimal comma or dot, dotted thousands, units around them', () => {
@@ -112,12 +113,36 @@ describe('filling a form from the sheet and from the other form', () => {
 });
 
 describe('a form that comes back (an error, the confirmation)', () => {
+  const ctx = { azienda: 'Prova', utente: 'Prova', ruolo: 'Tecnico', email: 'p@rilievi.test', etichetta: (campo: string, valore: string) => t(`scheda.option.${campo}.${valore}`) };
+
   it('keeps as following only the fields the browser says still follow, of the sheet or a form', () => {
-    const ctx = { azienda: 'Prova', utente: 'Prova', ruolo: 'Tecnico', email: 'p@rilievi.test', etichetta: (campo: string, valore: string) => t(`scheda.option.${campo}.${valore}`) };
     // linked fields, a survey field of a form, a field of the sheet filled from a form: they follow; a name the form does
     // not have, or a field that never follows, is dropped
     const { auto } = withPrefill({ ...open, 'sg-_': '1', [AUTO_KEY]: 'oq-nFermate pa-motoreAc2 oq-cliente oq-nonEsiste fermate oq-note buonoLavoro' }, ctx);
     assert.deepEqual([...auto].sort(), ['fermate', 'oq-cliente', 'oq-nFermate', 'pa-motoreAc2']);
+  });
+
+  it('keeps empty a survey field emptied in a filled form, not one that had nothing to take', () => {
+    const { values, scritti } = withPrefill({
+      ...open,
+      quadroMarca: 'MOVILIFT',
+      tipoImpianto: ['GEARLESS'],
+      // emptied by hand: the company, and the kind of lift the sheet calls «Gearless» (MRL)
+      'om-ragioneSociale': '',
+      'om-tipologia': '',
+      // written by hand
+      'om-riferimento': 'Commessa 77',
+      // nothing to take: the sheet has no kind of doors ticked
+      'om-tipoPorte': '',
+    }, ctx);
+    const movilift = [...scritti].filter((name) => name.startsWith('om-')).sort();
+    assert.deepEqual(movilift, ['om-ragioneSociale', 'om-tipologia']);
+    assert.equal(values['om-ragioneSociale'], '', 'nothing is put back');
+    assert.equal(values['om-riferimento'], 'Commessa 77');
+    // a form opened for the first time is filled, nothing in it is «emptied»
+    const { values: first, scritti: none } = withPrefill({ data: '2026-10-12', matricola: '33871', quadroMarca: 'MOVILIFT', quadroOrdine: 'si' }, ctx);
+    assert.equal(first['om-ragioneSociale'], 'Prova');
+    assert.deepEqual([...none], []);
   });
 });
 
@@ -125,12 +150,15 @@ describe('the linked data themselves', () => {
   it('name every linked datum and every place in the messages', () => {
     for (const link of COLLEGAMENTI) assert.notEqual(t(`collegati.${link.key}`), `rilievi.collegati.${link.key}`, link.key);
     const dati = collegatiPerBrowser(t, { azienda: 'A', utente: 'U', ruolo: 'R', email: 'e@x.it' });
-    assert.deepEqual(dati.luoghi, { scheda: 'Scheda', oq: 'Ordine quadro', om: 'Ordine quadro', pa: 'Dati argano', sg: 'Ordine 2SG' });
-    assert.deepEqual(dati.colonne, { oq: 'ordineQuadro', om: 'ordineQuadro', pa: 'preventivoArgano', sg: 'ordineSospensioni' });
+    assert.deepEqual(dati.luoghi, { scheda: 'Scheda', oq: 'Ordine quadro', om: 'Ordine quadro', mn: 'Ordine quadro', mq: 'Ordine quadro', pa: 'Dati argano', sg: 'Ordine 2SG' });
+    assert.deepEqual(dati.colonne, { oq: 'ordineQuadro', om: 'ordineQuadro', mn: 'ordineQuadro', mq: 'ordineQuadro', pa: 'preventivoArgano', sg: 'ordineSospensioni' });
     assert.equal(dati.gruppi.length, COLLEGAMENTI.length);
     const fermate = dati.gruppi.find((g) => g.key === 'fermate');
     assert.deepEqual([fermate?.nome, fermate?.confronto, fermate?.membri[0]], ['Fermate', true, { luogo: 'scheda', campo: 'fermate', kind: 'int', min: 0, max: 300 }]);
-    assert.equal(dati.gruppi.find((g) => g.key === 'lucePorte')?.confronto, false, 'prefill only');
+    assert.equal(dati.gruppi.find((g) => g.key === 'operatoreMarca')?.confronto, false, 'prefill only');
+    // the door operator's make, voltage and clear opening are off the sheet (October 2026): no link names them there
+    for (const key of ['operatoreTensione', 'lucePorte']) assert.equal(dati.gruppi.find((g) => g.key === key), undefined, key);
+    assert.ok(COLLEGAMENTI.every((link) => link.membri.every((m) => m.luogo !== 'scheda' || !['operatoreMarca', 'lucePorte', 'operatoreTensione'].includes(m.campo))));
   });
 
   it('put the list of differences under the group of the form where the field is', () => {
@@ -139,9 +167,9 @@ describe('the linked data themselves', () => {
       assert.ok(group, titolo);
       return group.righe.flatMap((row) => row.campi.map((field) => field.key));
     };
-    assert.deepEqual(collegatiDelGruppo('oq', groupOf('Porte', PELAZZA)), ['fermate', 'velocita', 'corsa', 'porte', 'accessi']);
-    assert.deepEqual(collegatiDelGruppo('pa', groupOf('Motore', ARGANI)), ['tipoVelocita', 'tensioneFreno', 'correnteMotore', 'giriMotore']);
-    assert.deepEqual(collegatiDelGruppo('pa', groupOf('Trazione e funi', ARGANI)), ['funiNumero', 'funiDiametro', 'funiTrefoli']);
+    assert.deepEqual(collegatiDelGruppo('oq', groupOf('Porte', PELAZZA)), ['fermate', 'velocita', 'corsa', 'porte', 'accessi', 'servizi']);
+    assert.deepEqual(collegatiDelGruppo('pa', groupOf('Motore', ARGANI)), ['tipoVelocita', 'tensioneFreno', 'correnteMotore', 'giriMotore', 'poli', 'potenzaMotore']);
+    assert.deepEqual(collegatiDelGruppo('pa', groupOf('Trazione e funi', ARGANI)), ['funiNumero', 'funiDiametro', 'funiTrefoli', 'diametroPuleggia', 'rapportoRiduzione']);
     assert.deepEqual(collegatiDelGruppo('oq', groupOf('Accessori', PELAZZA)), []);
   });
 });
