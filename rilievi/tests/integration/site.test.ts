@@ -63,14 +63,13 @@ describe('the public pages', () => {
     assert.equal(privacy.headers.get('cache-control'), 'no-store');
   });
 
-  it('let the back button restore them for a visitor, but never a shared cache', async () => {
+  it('let the back button restore the policy for a visitor, but never a shared cache', async () => {
     const browser = new Browser();
-    for (const path of ['/', '/privacy']) {
-      const page = await browser.get(path);
-      assert.equal(page.headers.get('cache-control'), 'private, no-cache', path);
-    }
-    // The pages around them stay out of every cache.
-    for (const path of ['/accesso', '/richiesta-inviata']) {
+    const privacy = await browser.get('/privacy');
+    assert.equal(privacy.headers.get('cache-control'), 'private, no-cache');
+    // The landing page carries the request form's token (its cookie lasts 2 hours): a copy restored
+    // later would be refused. It and the pages around it stay out of every cache.
+    for (const path of ['/', '/accesso', '/richiesta-inviata']) {
       assert.equal((await browser.get(path)).headers.get('cache-control'), 'no-store', path);
     }
   });
