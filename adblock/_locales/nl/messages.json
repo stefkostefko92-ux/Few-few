@@ -118,6 +118,27 @@
   "support": {
     "message": "Steunen"
   },
+  "rate": {
+    "message": "Beoordelen"
+  },
+  "rateTitle": {
+    "message": "Supreme AdBlock beoordelen in de Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "Tot nu toe $1 verzoeken geblokkeerd"
+  },
+  "reviewAsk": {
+    "message": "Als Supreme AdBlock nuttig voor u is, helpt een korte review in de Chrome Web Store anderen om het te vinden."
+  },
+  "reviewLeave": {
+    "message": "Review schrijven"
+  },
+  "reviewLater": {
+    "message": "Niet nu"
+  },
+  "reviewNever": {
+    "message": "Niet meer vragen"
+  },
   "filtersCount": {
     "message": "$1+ filters",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "Verbergt muren als “schakel uw adblocker uit” en herstelt de pagina"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Verbergt “Gesponsord”-berichten op Facebook en Instagram"
+    "message": "Verbergt “Gesponsord”-berichten op Facebook, Instagram en Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Verwijdert utm_*, fbclid, gclid en andere klik-ID’s uit de links die u opent"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokkeert bekende malwaredomeinen (URLhaus-lijst van abuse.ch)"
+    "message": "Waarschuwt voordat een bekende malwarewebsite wordt geopend en blokkeert wat pagina’s van zulke websites laden (URLhaus-lijst van abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Schakelt de advertentie-API’s Google Topics, FLoC en Protected Audience uit op elke website"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Doneren via Revolut"
+  },
+  "opt_review": {
+    "message": "Herinneringen voor een review"
+  },
+  "opt_review_sub": {
+    "message": "Een kleine ★-link onder in het venster van Supreme AdBlock en hooguit twee keer een kort verzoek om het te beoordelen in de Chrome Web Store. Nooit op websites, nooit als melding."
   },
   "opt_made_by": {
     "message": "gemaakt door Carbon Stealth"
@@ -643,5 +670,128 @@
   "welDone": {
     "message": "Begrepen",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Toegestaan · nog $1 min"
+  },
+  "hiddenHere": {
+    "message": "Hier verborgen: $1 · Laatste ongedaan maken"
+  },
+  "cmd_toggle_site": {
+    "message": "Blokkeren op deze website aan- of uitzetten"
+  },
+  "cmd_pause": {
+    "message": "Bescherming pauzeren of hervatten (30 minuten)"
+  },
+  "cmd_picker": {
+    "message": "Een element op deze pagina verbergen"
+  },
+  "rep_fix_hour": {
+    "message": "Advertenties hier 1 uur toestaan"
+  },
+  "rep_done_hour": {
+    "message": "Advertenties zijn 1 uur toegestaan op deze website. Opnieuw geladen — is het opgelost?"
+  },
+  "opt_last30": {
+    "message": "Afgelopen 30 dagen"
+  },
+  "opt_last30_sum": {
+    "message": "Geblokkeerd: $1 · Cookiebanners: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Uw dagtotalen verschijnen hier terwijl u surft."
+  },
+  "opt_last30_sub": {
+    "message": "Alleen dagtotalen, 30 dagen bewaard op dit apparaat. Geen websites, geen adressen."
+  },
+  "opt_gpc_sub": {
+    "message": "Vraagt elke website die u bezoekt uw gegevens niet te verkopen of te delen (het Sec-GPC-signaal, dat websites volgens sommige privacywetten moeten respecteren). Wordt niet verzonden op websites die u toestaat."
+  },
+  "opt_shortcuts": {
+    "message": "Sneltoetsen"
+  },
+  "opt_shortcuts_change": {
+    "message": "Sneltoetsen wijzigen"
+  },
+  "opt_shortcut_none": {
+    "message": "Niet ingesteld"
+  },
+  "opt_shortcuts_ff": {
+    "message": "In Firefox: Extensies en thema’s → ⚙ → Extensiesneltoetsen beheren."
+  },
+  "opt_import_foreign": {
+    "message": "Importeren uit een andere adblocker"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Overstappen van uBlock Origin, AdGuard of Adblock Plus? Kies het back-upbestand ervan: de websites die u hebt toegestaan en uw eigen filters worden hier toegevoegd. Er wordt niets vervangen."
+  },
+  "opt_import_foreign_done": {
+    "message": "Websites toegestaan: $1 · Filters toegevoegd: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Weggelaten (hier niet toe te passen): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Dit bestand is geen back-up die we kunnen lezen."
+  },
+  "welQuickTitle": {
+    "message": "Maak het naar uw zin"
+  },
+  "welQuickSub": {
+    "message": "Optioneel: het werkt al. U kunt dit allemaal later wijzigen in Instellingen."
+  },
+  "blk_page_title": {
+    "message": "Website geblokkeerd — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Deze website kan uw apparaat schaden"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock heeft deze pagina tegengehouden omdat de website op URLhaus staat, een openbare lijst van adressen die malware verspreiden."
+  },
+  "blk_back": {
+    "message": "Ga terug"
+  },
+  "blk_continue": {
+    "message": "Toch doorgaan"
+  },
+  "blk_note": {
+    "message": "Als u doorgaat, worden alleen de pagina’s van deze website doorgelaten, totdat u de browser sluit."
+  },
+  "blk_why": {
+    "message": "Waarom staat deze website op de lijst? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Verbindingen op deze pagina"
+  },
+  "conn_empty": {
+    "message": "Deze pagina heeft niets van andere websites geladen."
+  },
+  "conn_block": {
+    "message": "Hier blokkeren"
+  },
+  "conn_blocked": {
+    "message": "Hier geblokkeerd"
+  },
+  "conn_hint": {
+    "message": "Blokkeer wat deze website van $1 laadt"
+  },
+  "opt_conn_title": {
+    "message": "Verbindingen die u hebt geblokkeerd"
+  },
+  "opt_conn_sub": {
+    "message": "Geblokkeerd via “Verbindingen op deze pagina” in het venster van Supreme AdBlock, elk alleen op de eigen website."
+  },
+  "opt_empty_conn": {
+    "message": "Nog niets geblokkeerd."
+  },
+  "opt_conn_remove": {
+    "message": "$1 deblokkeren op $2"
+  },
+  "opt_h_danger": {
+    "message": "Waarschuwingspagina voor malware"
+  },
+  "opt_h_capacity": {
+    "message": "Regelcapaciteit"
   }
 }

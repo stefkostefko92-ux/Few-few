@@ -2,7 +2,7 @@
 
 A fast, private Chrome extension (Manifest V3) that blocks **every kind of ad**
 everywhere, **YouTube video ads** (pre-roll / mid-roll), banners, pop-ups,
-native "recommended" ads, **Facebook & Instagram sponsored posts**, trackers,
+native "recommended" ads, **Facebook, Instagram & Threads sponsored posts**, trackers,
 cookie prompts and anti-adblock walls.
 
 Free for everyone. No account, no telemetry, no data collection, everything
@@ -20,8 +20,12 @@ stays on your device.
   payloads (`adPlacements`, `playerAds`, `adSlots`, `adConfig`) and the
   feed/search responses lose their ad renderers, so promoted results never
   render. An auto-skip fallback handles anything that slips through.
-- **Meta sponsored posts**, hides "Sponsored" posts in the Facebook and
-  Instagram feeds (toggleable).
+- **Meta sponsored posts**, hides "Sponsored" posts in the Facebook, Instagram
+  and Threads feeds (toggleable), from the label a screen reader announces: in
+  ~70 languages, through `aria-labelledby`, SVG `<use>` and shuffled letters.
+- **Global Privacy Control**, sends `Sec-GPC: 1` and sets
+  `navigator.globalPrivacyControl` on every site (on by default, not on allowed
+  sites).
 - **Cosmetic filtering**, EasyList's cosmetic rules ship in the package
   (generic ones as native CSS, domain-specific ones applied per site) on top of
   the built-in selectors, including lazily injected ads (via
@@ -31,12 +35,24 @@ stays on your device.
   in "My filters" and in the live filter update.
 - **Tracking-parameter removal**, strips `utm_*`, `fbclid`, `gclid` and other
   click identifiers from the links you open (toggleable).
-- **Malware protection**, optionally blocks known malware domains (URLhaus by
-  abuse.ch).
+- **Malware protection** (on by default), a known malware site (URLhaus by
+  abuse.ch) opens a warning page instead (`blocked/blocked.html`: “Go back” or
+  “Continue anyway”, checked in the service worker), and what pages load from
+  such sites is blocked.
 - **Cookie / consent banners**, auto-dismisses them, preferring "Reject".
 - **Anti-adblock bypass**, removes "disable your adblocker" walls and restores
   page scrolling.
-- **Element picker**, click any element to hide it permanently on that site.
+- **Element picker**, click any element to hide it permanently on that site;
+  the popup's ↶ N takes the last one back at once, no reload.
+- **Connections on this page**, the popup lists the other sites a page loaded
+  something from (Resource Timing, read when you open the box) and blocks one on
+  that site only (a dynamic rule with `initiatorDomains`, priority 5000).
+- **Import from another ad blocker**, the allowed sites and own filters of a
+  uBlock Origin, AdGuard or Adblock Plus backup (`lib/foreign.js`, checked
+  again in the service worker; a rule it cannot apply is left out, never
+  widened).
+- **Keyboard shortcuts**, Alt+Shift+U (blocking on this site), Alt+Shift+Q
+  (pause), the picker unassigned; change them at `chrome://extensions/shortcuts`.
 - **Per-site allowlist**, allow ads on sites you want to support.
 - **Curated built-in filters**, EasyList + EasyPrivacy + in-house rules
   bundled with the extension, plus an optional daily **signed** (Ed25519)

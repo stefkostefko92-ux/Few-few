@@ -118,6 +118,27 @@
   "support": {
     "message": "Apoiar"
   },
+  "rate": {
+    "message": "Valorar"
+  },
+  "rateTitle": {
+    "message": "Valorar Supreme AdBlock na Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "$1 solicitudes bloqueadas ata agora"
+  },
+  "reviewAsk": {
+    "message": "Se Supreme AdBlock lle resulta útil, unha recensión breve na Chrome Web Store axuda a que outras persoas o atopen."
+  },
+  "reviewLeave": {
+    "message": "Escribir unha recensión"
+  },
+  "reviewLater": {
+    "message": "Agora non"
+  },
+  "reviewNever": {
+    "message": "Non volver preguntar"
+  },
   "filtersCount": {
     "message": "$1+ filtros",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "Oculta os muros «desactive o seu bloqueador de anuncios» e restaura a páxina"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Oculta as publicacións «Patrocinado» en Facebook e Instagram"
+    "message": "Oculta as publicacións «Patrocinado» en Facebook, Instagram e Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Quita utm_*, fbclid, gclid e outros identificadores de clic das ligazóns que abre"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Bloquea dominios maliciosos coñecidos (lista URLhaus de abuse.ch)"
+    "message": "Avisa antes de que se abra un sitio malicioso coñecido e bloquea o que as páxinas cargan desde eses sitios (lista URLhaus de abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Desactiva as API publicitarias Google Topics, FLoC e Protected Audience en todos os sitios"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Doar con Revolut"
+  },
+  "opt_review": {
+    "message": "Lembranzas de recensión"
+  },
+  "opt_review_sub": {
+    "message": "Unha pequena ligazón ★ na parte inferior da xanela de Supreme AdBlock e, como moito dúas veces, unha breve petición alí para valoralo na Chrome Web Store. Nunca nos sitios web, nunca como notificación."
   },
   "opt_made_by": {
     "message": "feito por Carbon Stealth"
@@ -643,5 +670,128 @@
   "welDone": {
     "message": "Entendido",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Permitido · quedan $1 min"
+  },
+  "hiddenHere": {
+    "message": "Elementos ocultos aquí: $1 · Desfacer o último"
+  },
+  "cmd_toggle_site": {
+    "message": "Activar ou desactivar o bloqueo neste sitio"
+  },
+  "cmd_pause": {
+    "message": "Pausar ou retomar a protección (30 minutos)"
+  },
+  "cmd_picker": {
+    "message": "Ocultar un elemento nesta páxina"
+  },
+  "rep_fix_hour": {
+    "message": "Permitir anuncios aquí durante 1 hora"
+  },
+  "rep_done_hour": {
+    "message": "Os anuncios están permitidos neste sitio durante 1 hora. Páxina recargada: solucionouse?"
+  },
+  "opt_last30": {
+    "message": "Últimos 30 días"
+  },
+  "opt_last30_sum": {
+    "message": "Bloqueados: $1 · Avisos de cookies: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Os seus totais diarios aparecerán aquí a medida que navegue."
+  },
+  "opt_last30_sub": {
+    "message": "Só totais diarios, gardados neste dispositivo durante 30 días. Nin sitios nin enderezos."
+  },
+  "opt_gpc_sub": {
+    "message": "Pide a cada sitio que visita que non venda nin comparta os seus datos (o sinal Sec-GPC, que algunhas leis de privacidade obrigan os sitios a respectar). Non se envía nos sitios que vostede permite."
+  },
+  "opt_shortcuts": {
+    "message": "Atallos de teclado"
+  },
+  "opt_shortcuts_change": {
+    "message": "Cambiar atallos"
+  },
+  "opt_shortcut_none": {
+    "message": "Sen asignar"
+  },
+  "opt_shortcuts_ff": {
+    "message": "No Firefox: Extensións e temas → ⚙ → Xestionar atallos de extensións."
+  },
+  "opt_import_foreign": {
+    "message": "Importar doutro bloqueador de anuncios"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Vén de uBlock Origin, AdGuard ou Adblock Plus? Escolla o ficheiro de copia de seguranza dese bloqueador: os sitios que permitiu e os seus propios filtros engádense aquí. Non se substitúe nada."
+  },
+  "opt_import_foreign_done": {
+    "message": "Sitios permitidos: $1 · Filtros engadidos: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Liñas omitidas (non aplicables aquí): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Este ficheiro non é unha copia de seguranza que poidamos ler."
+  },
+  "welQuickTitle": {
+    "message": "Adápteo ao seu gusto"
+  },
+  "welQuickSub": {
+    "message": "Opcional: xa funciona. Pode cambiar calquera destas opcións máis adiante nos Axustes."
+  },
+  "blk_page_title": {
+    "message": "Sitio bloqueado — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Este sitio pode danar o seu dispositivo"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock detivo esta páxina porque o sitio figura en URLhaus, unha lista pública de enderezos que difunden software malicioso."
+  },
+  "blk_back": {
+    "message": "Volver atrás"
+  },
+  "blk_continue": {
+    "message": "Continuar igualmente"
+  },
+  "blk_note": {
+    "message": "Se continúa, só se deixan pasar as páxinas deste sitio, ata que peche o navegador."
+  },
+  "blk_why": {
+    "message": "Por que está na lista? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Conexións desta páxina"
+  },
+  "conn_empty": {
+    "message": "Esta páxina non cargou nada doutros sitios."
+  },
+  "conn_block": {
+    "message": "Bloquear aquí"
+  },
+  "conn_blocked": {
+    "message": "Bloqueado aquí"
+  },
+  "conn_hint": {
+    "message": "Bloquear o que este sitio carga desde $1"
+  },
+  "opt_conn_title": {
+    "message": "Conexións que bloqueou"
+  },
+  "opt_conn_sub": {
+    "message": "Bloqueadas desde «Conexións desta páxina» na xanela de Supreme AdBlock, cada unha só no seu propio sitio."
+  },
+  "opt_empty_conn": {
+    "message": "Aínda non bloqueou nada."
+  },
+  "opt_conn_remove": {
+    "message": "Desbloquear $1 en $2"
+  },
+  "opt_h_danger": {
+    "message": "Aviso de sitios maliciosos"
+  },
+  "opt_h_capacity": {
+    "message": "Capacidade de regras"
   }
 }
