@@ -14,67 +14,6 @@
   padding-inline: var(--gutter);
 }
 
-/* top bar */
-.site-bar {
-  border-bottom: 1px solid var(--rule);
-  background: var(--paper);
-}
-.site-bar .wrap {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 26px;
-  padding-block: 12px;
-}
-.site-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px 18px;
-  font-size: 0.95rem;
-}
-.site-nav a {
-  color: var(--ink-2);
-  text-decoration: none;
-}
-.site-nav a:hover {
-  color: var(--ink);
-  text-decoration: underline;
-}
-.site-bar-end {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 8px 14px;
-  flex-wrap: wrap;
-}
-.site-bar-end .login {
-  color: var(--ink);
-  font-weight: 550;
-}
-/* the beta tag next to the name in the top bar */
-.beta-tag {
-  margin-left: -16px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--gold);
-  color: var(--gold-ink);
-  font-size: 0.78rem;
-  font-weight: 600;
-  line-height: 1.4;
-}
-/* narrow: the section links take their own row and wrap; a scroll strip would cut the last word in half */
-@media (max-width: 900px) {
-  .site-nav {
-    order: 3;
-    width: 100%;
-    gap: 0 18px;
-  }
-  .site-nav a {
-    padding-block: 5px;
-    white-space: nowrap;
-  }
-}
-
 /* hero */
 .hero h1 {
   font-size: clamp(3.1rem, 8.6vw, 6.6rem);
@@ -171,10 +110,15 @@
   font-family: var(--f-mono);
   font-weight: 500;
   fill: #6f6963;
+  /* a halo of the part's own paper keeps the router path and the groove from running through the label */
+  stroke: #fbfbf8;
+  stroke-width: 9;
+  stroke-linejoin: round;
+  paint-order: stroke;
 }
 .sheet-art .cut {
   fill: none;
-  stroke-width: 7;
+  stroke-width: 5;
   stroke-linecap: round;
   stroke-linejoin: round;
 }

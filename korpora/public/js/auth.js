@@ -1,5 +1,7 @@
-// Device signals for account security (login, registration): written into the hidden "fp" field on submit.
-// The server keeps only a hash of the hardware part ("HWID" in the admin panel) and a readable summary.
+// Device fingerprint, read only with consent: on the sign-up form only when its separate consent
+// box is ticked; the sign-in form carries data-fingerprint only in a browser of consenting
+// accounts. Written into the hidden "fp" field on submit; the server keeps a hash of the hardware
+// part ("HWID") and a summary.
 (function () {
   'use strict';
 
@@ -49,7 +51,9 @@
   Array.prototype.forEach.call(forms, function (form) {
     form.addEventListener('submit', function () {
       var field = form.querySelector('input[name="fp"]');
-      if (field) field.value = collect();
+      if (!field) return;
+      var consent = form.querySelector('input[name="deviceConsent"]');
+      field.value = consent && !consent.checked ? '' : collect();
     });
   });
 })();
