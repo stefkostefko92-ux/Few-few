@@ -1,14 +1,13 @@
 // Photos and videos of each section (views/schede/_allegati.ejs, src/routes/allegati.ts). Without this
 // file every control still works: the upload form posts and comes back to its section, a caption is
 // saved by its button, deleting goes through the confirmation page. Here the same requests run in the
-// background (X-Partial): the upload shows its progress, the section's gallery is swapped in place, and
-// a gallery with files still being compressed refreshes itself until they are ready.
+// background (X-Partial): the section's gallery is swapped in place, and a gallery with files still
+// being compressed refreshes itself until they are ready. The upload itself is carica.js.
 (() => {
   'use strict';
 
   const boxes = Array.from(document.querySelectorAll('[data-galleria]'));
   if (!boxes.length) return;
-  const MB = 1024 * 1024;
   const FIRST_WAIT = 3000;
   const LONGEST_WAIT = 20000;
 
@@ -140,90 +139,18 @@
     }
   };
 
-  // Upload: checked here first (count, size by kind), then sent with its progress.
-  document.querySelectorAll('form[data-carica]').forEach((form) => {
-    const sezione = form.dataset.carica;
-    const box = boxOf(sezione);
-    const input = form.elements.namedItem('file');
-    const caption = form.elements.namedItem('didascalia');
-    const progress = document.querySelector(`[data-progress="${sezione}"]`);
-    const button = document.querySelector(`button[form="${form.id}"]`);
-    if (!box || !input) return;
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const texts = textsOf(sezione);
-      const files = Array.from(input.files || []);
-      if (!files.length) return notice(sezione, [texts.msgNessuno], true);
-      if (files.length > Number(texts.maxFile)) return notice(sezione, [texts.msgTroppi], true);
-      // An unknown kind gets the larger limit: the server knows it from the bytes.
-      const limitOf = (file) =>
-        Number(file.type.startsWith('image/') ? texts.maxFoto : texts.maxVideo);
-      const total = files.reduce((sum, file) => sum + file.size, 0);
-      if (total > Number(texts.maxVideo) * MB) return notice(sezione, [texts.msgTotale], true);
-      const tooBig = files.filter((file) => file.size > limitOf(file) * MB);
-      if (tooBig.length)
-        return notice(
-          sezione,
-          tooBig.map((file) => fill(texts.msgGrande, { nome: file.name, mb: limitOf(file) })),
-          true,
-        );
-
-      const xhr = new XMLHttpRequest();
-      let told = -1;
-      const done = () => {
-        if (button) button.disabled = false;
-        if (progress) progress.hidden = true;
-      };
-      if (button) button.disabled = true;
-      if (progress) {
-        progress.value = 0;
-        progress.hidden = false;
-      }
-      notice(sezione, [fill(texts.msgCaricamento, { pct: 0 })]);
-      xhr.upload.addEventListener('progress', (step) => {
-        if (!step.lengthComputable) return;
-        const pct = Math.round((step.loaded / step.total) * 100);
-        if (progress) progress.value = pct;
-        // The live region speaks at every quarter, not at every packet.
-        const quarter = Math.floor(pct / 25);
-        if (quarter !== told) {
-          told = quarter;
-          notice(sezione, [fill(texts.msgCaricamento, { pct })]);
-        }
-      });
-      xhr.addEventListener('load', async () => {
-        done();
-        let result = null;
-        try {
-          const response = new Response(xhr.response, {
-            status: xhr.status,
-            headers: { 'content-type': xhr.getResponseHeader('content-type') || '' },
-          });
-          result = await read(response, sezione);
-        } catch {
-          notice(sezione, [texts.msgErrore], true);
-        }
-        if (!result) return;
-        if (result.ok) {
-          input.value = '';
-          if (caption) caption.value = '';
-        }
-        waits.delete(box);
-        swap(box, result.html);
-        notice(sezione, [result.ok, ...result.avvisi], result.avvisi.length > 0);
-        // All of it went in: the new tiles say the rest, the upload folds away.
-        const fold = input.closest('details');
-        if (fold && result.ok && !result.avvisi.length) fold.open = false;
-      });
-      xhr.addEventListener('error', () => {
-        done();
-        notice(sezione, [texts.msgRete], true);
-      });
-      xhr.open('POST', form.action);
-      xhr.setRequestHeader('X-Partial', '1');
-      xhr.send(new FormData(form));
-    });
-  });
+  // The upload (carica.js, loaded next) answers with the same gallery and messages.
+  window.rilieviAllegati = {
+    boxOf,
+    textsOf,
+    fill,
+    notice,
+    read,
+    show: (box, html) => {
+      waits.delete(box);
+      swap(box, html);
+    },
+  };
 
   // Captions and deleting: one shared form outside the sheet's form (`allegati-azione`).
   const azione = document.getElementById('allegati-azione');

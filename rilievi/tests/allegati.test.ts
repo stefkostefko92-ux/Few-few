@@ -5,7 +5,7 @@ import { isAbsolute, join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
 import sharp from 'sharp';
 import { riconosci } from '../src/allegati/formati.js';
-import { comprimiFoto, LATO_FOTO, LATO_MINI } from '../src/allegati/foto.js';
+import { comprimiFoto, LATO_FOTO, LATO_MINI, RIQUADRO } from '../src/allegati/foto.js';
 import { didascaliaSchema, modificheDi, nomeSicuro } from '../src/allegati/service.js';
 import type { AllegatoVista } from '../src/allegati/service.js';
 import { fotoPerStampa } from '../src/allegati/stampa.js';
@@ -60,6 +60,11 @@ describe('the photo compression', () => {
     dir = await mkdtemp(join(tmpdir(), 'rilievi-foto-'));
   });
   after(() => rm(dir, { recursive: true, force: true }));
+  const outputs = (name: string) => ({
+    file: join(dir, `${name}.jpg`),
+    mini: join(dir, `${name}.mini.jpg`),
+    riquadro: join(dir, `${name}.riquadro.jpg`),
+  });
 
   it('turns the phone photo upright and drops EXIF with the GPS position and the phone model', async () => {
     const source = join(dir, 'phone.orig');
@@ -75,12 +80,7 @@ describe('the photo compression', () => {
     assert.equal(before.orientation, 6);
     assert.ok(before.exif, 'the test photo carries EXIF');
 
-    const result = await comprimiFoto(
-      source,
-      'jpeg',
-      join(dir, 'phone.jpg'),
-      join(dir, 'phone.mini.jpg'),
-    );
+    const result = await comprimiFoto(source, 'jpeg', outputs('phone'));
     assert.deepEqual([result.larghezza, result.altezza], [300, 400], 'rotated by the EXIF tag');
     const out = await sharp(join(dir, 'phone.jpg')).metadata();
     assert.equal(out.format, 'jpeg');
@@ -88,9 +88,12 @@ describe('the photo compression', () => {
     assert.equal(out.orientation, undefined);
     const mini = await sharp(join(dir, 'phone.mini.jpg')).metadata();
     assert.deepEqual([mini.width, mini.height], [300, 400], 'never enlarged');
+    const tile = await sharp(join(dir, 'phone.riquadro.jpg')).metadata();
+    assert.deepEqual([tile.width, tile.height], [300, 400], 'the tile is never enlarged either');
+    assert.equal(tile.exif, undefined);
   });
 
-  it('shrinks a big photo to 2560 px and its thumbnail to 960 px; transparency goes on white', async () => {
+  it('shrinks a big photo to 2560 px, its thumbnail to 960 px and its tile to the box; transparency goes on white', async () => {
     const source = join(dir, 'big.orig');
     await sharp({
       create: {
@@ -102,15 +105,13 @@ describe('the photo compression', () => {
     })
       .png()
       .toFile(source);
-    const result = await comprimiFoto(
-      source,
-      'png',
-      join(dir, 'big.jpg'),
-      join(dir, 'big.mini.jpg'),
-    );
+    const result = await comprimiFoto(source, 'png', outputs('big'));
     assert.deepEqual([result.larghezza, result.altezza], [LATO_FOTO, 1920]);
     const mini = await sharp(join(dir, 'big.mini.jpg')).metadata();
     assert.deepEqual([mini.width, mini.height], [LATO_MINI, 720]);
+    // 4:3 like the gallery's box: the box itself (the height decides: 368 / 1920 × 2560 = 490.7).
+    const tile = await sharp(join(dir, 'big.riquadro.jpg')).metadata();
+    assert.deepEqual([tile.width, tile.height], [RIQUADRO.width + 1, RIQUADRO.height]);
     const { data } = await sharp(join(dir, 'big.jpg')).raw().toBuffer({ resolveWithObject: true });
     assert.ok(data[0]! > 240 && data[1]! > 240 && data[2]! > 240, 'transparent becomes white');
   });
@@ -120,7 +121,22 @@ describe('the photo compression', () => {
     await sharp({ create: { width: 20, height: 20, channels: 3, background: '#000' } })
       .png()
       .toFile(source);
-    await assert.rejects(comprimiFoto(source, 'jpeg', join(dir, 'f.jpg'), join(dir, 'f.mini.jpg')));
+    await assert.rejects(comprimiFoto(source, 'jpeg', outputs('f')));
+  });
+
+  it('makes the tile cover the gallery box whatever the shape: a portrait by its width, a wide one by its height', async () => {
+    for (const [name, width, height, expected] of [
+      ['portrait', 3024, 4032, [RIQUADRO.width, 653]],
+      ['wide', 3840, 2160, [654, RIQUADRO.height]],
+    ] as const) {
+      const source = join(dir, `${name}.orig`);
+      await sharp({ create: { width, height, channels: 3, background: '#808080' } })
+        .jpeg()
+        .toFile(source);
+      await comprimiFoto(source, 'jpeg', outputs(name));
+      const tile = await sharp(join(dir, `${name}.riquadro.jpg`)).metadata();
+      assert.deepEqual([tile.width, tile.height], expected, name);
+    }
   });
 });
 

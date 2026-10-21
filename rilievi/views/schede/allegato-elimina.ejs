@@ -10,7 +10,7 @@
     <p class="page-head__sub"><%= t('allegati.eliminaTesto') %></p>
   </div>
   <div class="notice allegato-conferma">
-    <% if (allegato.stato === 'PRONTO') { %><img class="allegato-conferma__mini" src="<%= base %>?mini=1" alt="" width="160" height="120"><% } %>
+    <% if (allegato.stato === 'PRONTO') { %><img class="allegato-conferma__mini" src="<%= base %>?riquadro=1" alt="" width="160" height="120"><% } %>
     <div>
       <p><strong><%= allegato.nomeOriginale %></strong></p>
       <p class="muted"><%= t('scheda.section.' + allegato.sezione) %><% if (allegato.didascalia) { %>: <%= allegato.didascalia %><% } %></p>

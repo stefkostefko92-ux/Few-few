@@ -39,6 +39,11 @@
 <meta name="ICBM" content="<%= company.geo.latitude %>, <%= company.geo.longitude %>">
 <% } %><link rel="icon" href="/static/img/favicon.svg?v=<%= v %>" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png?v=<%= v %>">
+<%# Двата шрифта, които пренареждат текста, ако дойдат след първото рисуване (CLS) — основният текст
+   (400) и заглавията (Condensed 600) — тръгват веднага с HTML-а, не чак след fonts.css; адресът е
+   точно този от fonts.css. На портала не трябват: там текстът не се мести, а шрифтовете са в кеша. %>
+<link rel="preload" href="/static/fonts/fira-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/static/fonts/fira-sans-condensed-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/static/fonts/fonts.css?v=<%= v %>">
 <% for (const sheet of sheets) { %><link rel="stylesheet" href="/static/css/<%= sheet %>.css?v=<%= v %>">
 <% } %><% if (typeof jsonLd !== 'undefined' && jsonLd) { %><script type="application/ld+json" nonce="<%= cspNonce %>"><%- jsonLd %></script>

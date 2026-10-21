@@ -59,6 +59,20 @@ describe('the public pages', () => {
     const privacy = await browser.get('/privacy');
     assert.equal(privacy.status, 200);
     assert.match(privacy.body, /href="\/schede"/);
+    // Signed in, a page is the portal's: kept nowhere.
+    assert.equal(privacy.headers.get('cache-control'), 'no-store');
+  });
+
+  it('let the back button restore them for a visitor, but never a shared cache', async () => {
+    const browser = new Browser();
+    for (const path of ['/', '/privacy']) {
+      const page = await browser.get(path);
+      assert.equal(page.headers.get('cache-control'), 'private, no-cache', path);
+    }
+    // The pages around them stay out of every cache.
+    for (const path of ['/accesso', '/richiesta-inviata']) {
+      assert.equal((await browser.get(path)).headers.get('cache-control'), 'no-store', path);
+    }
   });
 
   it('publish the privacy policy with the controller and the real retention times', async () => {

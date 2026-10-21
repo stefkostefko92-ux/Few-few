@@ -2,14 +2,14 @@ import { spawn } from 'node:child_process';
 import { stat } from 'node:fs/promises';
 import { z } from 'zod';
 import type { FormatoVideo } from './formati.js';
-import { miniatura } from './foto.js';
+import { miniature, type Uscite } from './foto.js';
 
 /**
  * Клипът: до 1080p (дългата страна до 1920, късата до 1080 — портретът обратно; никога по-голям),
  * до 30 кадъра в секунда, H.264 (CRF 27, таван 4,5 Mbps — 10–20 MB на минута вместо 100–400) и AAC 96k,
  * `faststart` (пуска се, докато се тегли), без метаданни (мястото по GPS, телефонът) — гледа се на всеки
  * телефон и браузър. HDR от iPhone (HLG/PQ) става SDR (tonemap), ако ffmpeg има `zscale`; кадърът от
- * първата секунда е миниатюрата. Входът е само файл (`-protocol_whitelist file`) и само разпознатият
+ * първата секунда е миниатюрата и плочката. Входът е само файл (`-protocol_whitelist file`) и само разпознатият
  * контейнер (`-f`) — вграден плейлист не може да накара ffmpeg да чете чужди файлове или адреси.
  */
 
@@ -246,8 +246,7 @@ export async function comprimiVideo(
   strumenti: Strumenti,
   sorgente: string,
   formato: FormatoVideo,
-  file: string,
-  mini: string,
+  uscite: Uscite,
   opts: { maxMinuti: number; signal: AbortSignal },
 ): Promise<EsitoVideo> {
   const info = await probe(strumenti, sorgente, formato, opts.signal);
@@ -258,10 +257,10 @@ export async function comprimiVideo(
   const timeoutMs = 10 * 60_000 + (info.durataMs || maxMs) * 8;
   await esegui(
     strumenti.ffmpeg,
-    argomentiVideo(info, formato, sorgente, file, strumenti.zscale, maxMs / 1000),
+    argomentiVideo(info, formato, sorgente, uscite.file, strumenti.zscale, maxMs / 1000),
     { timeoutMs, signal: opts.signal },
   );
-  const out = await probe(strumenti, file, 'mp4-uscita', opts.signal);
+  const out = await probe(strumenti, uscite.file, 'mp4-uscita', opts.signal);
   const at = Math.min(1, out.durataMs / 3000).toFixed(2);
   const frame = await esegui(
     strumenti.ffmpeg,
@@ -277,7 +276,7 @@ export async function comprimiVideo(
       '-f',
       'mov',
       '-i',
-      file,
+      uscite.file,
       '-frames:v',
       '1',
       '-f',
@@ -288,7 +287,7 @@ export async function comprimiVideo(
     ],
     { timeoutMs: 120_000, signal: opts.signal, maxStdout: 64 * 1024 * 1024 },
   );
-  await miniatura(frame, mini);
-  const { size } = await stat(file);
+  await miniature(frame, uscite);
+  const { size } = await stat(uscite.file);
   return { byte: size, larghezza: out.larghezza, altezza: out.altezza, durataMs: out.durataMs };
 }

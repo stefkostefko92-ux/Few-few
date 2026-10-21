@@ -67,25 +67,35 @@
   // with "Serrature: Sì", the door operator with automatic doors, the power unit of a hydraulic lift
   // and no machine there (`data-when-not`: none of the values). A field inside something hidden says
   // nothing, so what depends on it hides too; a second pass settles a section moved above the field it
-  // depends on (the company's order). The server ignores them too.
-  const conditional = Array.from(document.querySelectorAll('[data-when]'));
-  const syncConditions = () => {
+  // depends on (the company's order). The server ignores them too. What each condition reads is looked
+  // up once (a long form has thousands of elements and a hundred conditions); a change to a field no
+  // condition reads changes nothing here.
+  const answers = new Map();
+  const conditions = Array.from(document.querySelectorAll('[data-when]'), (el) => {
+    const name = el.dataset.when;
+    if (!answers.has(name))
+      answers.set(name, Array.from(document.querySelectorAll(`input[name="${name}"]`)));
+    return {
+      el,
+      control: document.getElementById(`f-${name}`),
+      inputs: answers.get(name),
+      values: (el.dataset.whenValues || '').split(' '),
+      not: 'whenNot' in el.dataset,
+    };
+  });
+  const syncConditions = (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement) || !answers.has(target.name)) return;
     for (let pass = 0; pass < 2; pass += 1) {
-      conditional.forEach((el) => {
-        const control = document.getElementById(`f-${el.dataset.when}`);
-        const values = (el.dataset.whenValues || '').split(' ');
-        const chosen = Array.from(
-          document.querySelectorAll(`input[name="${el.dataset.when}"]:checked`),
-          (input) => input.value,
-        );
+      conditions.forEach(({ el, control, inputs, values, not }) => {
         const has =
           !(control && control.closest('[data-off]')) &&
-          chosen.some((value) => values.includes(value));
-        el.toggleAttribute('data-off', 'whenNot' in el.dataset ? has : !has);
+          inputs.some((input) => input.checked && values.includes(input.value));
+        el.toggleAttribute('data-off', not ? has : !has);
       });
     }
   };
-  if (conditional.length) document.addEventListener('change', syncConditions);
+  if (conditions.length) document.addEventListener('change', syncConditions);
 
   // Old push-button panels: one row per stop, as many as "Fermate" says. New rows come from the
   // template; rows above the number are hidden, never removed, so a typo in the number loses nothing.

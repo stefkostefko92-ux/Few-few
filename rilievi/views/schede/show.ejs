@@ -1,6 +1,6 @@
 <%
   const byKey = Object.fromEntries(sections.flatMap((s) => s.fields).map((f) => [f.key, f]));
-%><%- include('../partials/top', { title: ident.length > 40 ? ident.slice(0, 39) + '…' : ident, scripts: ['allegati'] }) %>
+%><%- include('../partials/top', { title: ident.length > 40 ? ident.slice(0, 39) + '…' : ident, scripts: ['allegati', 'carica'] }) %>
 <div class="page-head">
   <div>
     <a href="/schede"><%= t('schede.back') %></a>

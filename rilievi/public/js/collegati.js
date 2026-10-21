@@ -23,8 +23,16 @@
   const hasOwn = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
 
   // The places of each group: a field of the sheet or of a form, read as one value (a number group) or
-  // as the categories of its ticks, its Sì/No or its radio group (a choice group).
-  const byName = (name) => Array.from(form.querySelectorAll(`[name="${name}"]`));
+  // as the categories of its ticks, its Sì/No or its radio group (a choice group). The form's fields by
+  // name are collected in one pass — the form has thousands of elements and the groups hundreds of
+  // places (the rows of the stops added later are in no group).
+  const named = new Map();
+  form.querySelectorAll('[name]').forEach((el) => {
+    const name = el.getAttribute('name');
+    if (named.has(name)) named.get(name).push(el);
+    else named.set(name, [el]);
+  });
+  const byName = (name) => named.get(name) || [];
   const nameOf = (m, key) => (m.luogo === 'scheda' ? key : `${m.luogo}-${key}`);
   const placeOf = (group, m) => {
     const sheet = m.luogo === 'scheda';
@@ -40,11 +48,12 @@
       els = byName(nameOf(m, m.campo));
       kind = 'radio';
     } else {
+      const isInput = (el) => el instanceof HTMLInputElement;
       els = Object.keys(m.voci)
         .map((key) =>
-          form.querySelector(
-            sheet ? `input[name="${m.campo}"][value="${key}"]` : `input[name="${m.luogo}-${key}"]`,
-          ),
+          sheet
+            ? byName(m.campo).find((el) => isInput(el) && el.getAttribute('value') === key)
+            : byName(`${m.luogo}-${key}`).find(isInput),
         )
         .filter(Boolean);
       kind = 'boxes';
@@ -269,7 +278,7 @@
   form.addEventListener('submit', () => {
     const names = new Set(Array.from(form.querySelectorAll('[data-auto]'), (el) => el.name));
     const following = [...names].filter((name) => {
-      const els = byName(name);
+      const els = Array.from(form.querySelectorAll(`[name="${name}"]`));
       return (
         !els.some(touched) &&
         els.some((el) => (isTick(el) ? el.checked : el.value !== '')) &&

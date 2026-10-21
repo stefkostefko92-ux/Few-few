@@ -1,3 +1,4 @@
+import { access } from 'node:fs/promises';
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { percorsi } from '../allegati/archivio.js';
 import {
@@ -162,13 +163,23 @@ allegatiRouter.get('/schede/:id/allegati/sezione/:sezione', read, async (req, re
   res.type('html').send(await galleria(req, res, scheda, sezione, ritornoDa(req.query.ritorno)));
 });
 
-/** Компресираният файл (`?mini=1` — миниатюрата; `?scarica=1` — за сваляне), с Range за клиповете. */
+/**
+ * Компресираният файл (`?mini=1` — миниатюрата за печата; `?riquadro=1` — плочката на галерията, а на
+ * файл, обработен преди плочките, миниатюрата; `?scarica=1` — за сваляне), с Range за клиповете.
+ */
 allegatiRouter.get('/schede/:id/allegati/:aid', read, async (req, res) => {
   const scheda = await schedaLeggibile(req);
   const allegato = scheda ? await allegatoDi(scheda.id, String(req.params.aid)) : null;
   if (!scheda || !allegato || allegato.stato !== 'PRONTO') return notFound(req, res);
   const p = percorsi(allegato);
-  const mini = req.query.mini === '1';
+  const riquadro =
+    req.query.riquadro === '1'
+      ? await access(p.riquadro).then(
+          () => p.riquadro,
+          () => p.mini,
+        )
+      : null;
+  const mini = riquadro !== null || req.query.mini === '1';
   const estensione = mini || allegato.tipo === 'FOTO' ? 'jpg' : 'mp4';
   const nome = `${allegato.nomeOriginale.replace(/\.[^.]{1,8}$/, '')}.${estensione}`;
   const ascii = nome.replace(/[^\x20-\x7e]/g, '_').replace(/["\\]/g, '_');
@@ -179,7 +190,7 @@ allegatiRouter.get('/schede/:id/allegati/:aid', read, async (req, res) => {
   );
   const disposition = req.query.scarica === '1' ? 'attachment' : 'inline';
   res.sendFile(
-    mini ? p.mini : p.file,
+    riquadro ?? (mini ? p.mini : p.file),
     {
       headers: {
         'Content-Disposition': `${disposition}; filename="${ascii}"; filename*=UTF-8''${utf8}`,

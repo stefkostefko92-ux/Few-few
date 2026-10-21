@@ -9,6 +9,7 @@
     "didascaliaHint": "Facoltativa, vale per tutti i file caricati insieme (es. «quadro, lato sinistro»).",
     "didascaliaPlaceholder": "Aggiungi una didascalia",
     "carica": "Carica",
+    "preparazione": "Preparazione delle foto…",
     "caricamento": "Caricamento in corso… {pct}%",
     "avanzamento": "Avanzamento del caricamento",
     "rete": "Caricamento interrotto: controlla la connessione e riprova.",

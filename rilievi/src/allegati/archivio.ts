@@ -7,8 +7,9 @@ import { mediaConfig } from '../config.js';
 /**
  * Файловете на снимките и клиповете (`MEDIA_DIR`): `arrivi/` — каченото, докато заявката не свърши;
  * `schede/<карта>/` — на всеки файл оригиналът до обработката (`<id>.orig`), после компресираният
- * (`<id>.jpg` или `<id>.mp4`) и миниатюрата (`<id>.mini.jpg`). Пътят е само от id-тата (cuid) — името
- * на качения файл никога не стига до диска.
+ * (`<id>.jpg` или `<id>.mp4`), миниатюрата (`<id>.mini.jpg`) и плочката на галерията
+ * (`<id>.riquadro.jpg`). Пътят е само от id-тата (cuid) — името на качения файл никога не стига до
+ * диска.
  */
 
 const ID = /^[a-z0-9]{20,40}$/;
@@ -31,8 +32,13 @@ export interface Percorsi {
   originale: string;
   /** Компресираното: JPEG за снимка, MP4 (H.264) за клип. */
   file: string;
-  /** Миниатюрата (JPEG): галерията, кадърът на клипа, печатът и PDF-ът. */
+  /** Миниатюрата (JPEG, до 960 px): печатът и PDF-ът. */
   mini: string;
+  /**
+   * Плочката на галерията (JPEG, 490 × 368 покрити): снимката и кадърът на клипа в галерията и в
+   * потвърждението за изтриване. Файл, обработен преди нея, я няма — тогава се сервира миниатюрата.
+   */
+  riquadro: string;
 }
 
 export function percorsi(allegato: { id: string; schedaId: string; tipo: TipoAllegato }): Percorsi {
@@ -41,6 +47,7 @@ export function percorsi(allegato: { id: string; schedaId: string; tipo: TipoAll
     originale: `${base}.orig`,
     file: `${base}.${allegato.tipo === 'VIDEO' ? 'mp4' : 'jpg'}`,
     mini: `${base}.mini.jpg`,
+    riquadro: `${base}.riquadro.jpg`,
   };
 }
 
@@ -85,7 +92,9 @@ export async function riservaSpazio(byte: number): Promise<(() => void) | null> 
 }
 
 export async function rimuoviFile(p: Percorsi): Promise<void> {
-  await Promise.all([p.originale, p.file, p.mini].map((file) => rm(file, { force: true })));
+  await Promise.all(
+    [p.originale, p.file, p.mini, p.riquadro].map((file) => rm(file, { force: true })),
+  );
 }
 
 /** Папката на картата — при окончателното ѝ изтриване. */

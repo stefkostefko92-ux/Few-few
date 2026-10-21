@@ -87,9 +87,9 @@ export async function elabora(
     const formato = riconosci(await leggiFirma(p.originale));
     let esito: EsitoFoto | EsitoVideo;
     if (lavoro.tipo === 'FOTO' && formato?.tipo === 'FOTO') {
-      esito = await comprimiFoto(p.originale, formato.formato, p.file, p.mini);
+      esito = await comprimiFoto(p.originale, formato.formato, p);
     } else if (lavoro.tipo === 'VIDEO' && formato?.tipo === 'VIDEO') {
-      esito = await comprimiVideo(strumenti, p.originale, formato.formato, p.file, p.mini, {
+      esito = await comprimiVideo(strumenti, p.originale, formato.formato, p, {
         maxMinuti: mediaConfig().MEDIA_MAX_VIDEO_MIN,
         signal,
       });
@@ -120,7 +120,7 @@ export async function elabora(
         where: { id: lavoro.id, stato: 'IN_LAVORAZIONE' },
         data: { stato: 'IN_CODA', tentativi: { decrement: 1 } },
       });
-      await Promise.all([rm(p.file, { force: true }), rm(p.mini, { force: true })]);
+      await Promise.all([p.file, p.mini, p.riquadro].map((file) => rm(file, { force: true })));
       return 'IN_CODA';
     }
     logger.warn({ id: lavoro.id, err: errorMessage(error) }, 'allegato: обработката не успя');

@@ -7,91 +7,22 @@ import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
 import { PDFDocument } from 'pdf-lib';
 import sharp from 'sharp';
+import { BASE, makeAzienda, PORT, prisma, signedIn, startApp, stopApp } from './harness.js';
 import {
-  BASE,
-  Browser,
-  makeAzienda,
-  PORT,
-  prisma,
-  signedIn,
-  startApp,
-  stopApp,
-  type UploadFile,
-} from './harness.js';
-
-const { elabora, prendiProssimo, verificaStrumenti } = await import('../../src/allegati/coda.js');
+  answer,
+  arriviEmpty,
+  folder,
+  media,
+  newScheda,
+  photo,
+  processAll,
+  upload,
+  verificaStrumenti,
+  XP,
+} from './media.js';
 
 before(startApp);
 after(stopApp);
-
-const XP = { 'x-partial': '1' };
-const media = () => process.env.MEDIA_DIR!;
-const folder = (id: string) => join(media(), 'schede', id);
-
-const photo = async (name = 'quadro.jpg', width = 640, height = 480): Promise<UploadFile> => ({
-  field: 'file',
-  name,
-  type: 'image/jpeg',
-  bytes: await sharp({ create: { width, height, channels: 3, background: '#3060a0' } })
-    .withExif({ IFD0: { Make: 'TestPhone', Model: 'Model 9' } })
-    .jpeg()
-    .toBuffer(),
-});
-
-async function newScheda(browser: Browser): Promise<string> {
-  const reply = await browser.submit('/schede/nuova', '/schede', {
-    data: '2026-10-21',
-    indirizzo: 'Via Roma 1, Milano',
-    matricola: '0012345',
-  });
-  assert.equal(reply.status, 303, `create failed with ${reply.status}`);
-  return /^\/schede\/([a-z0-9]+)$/.exec(reply.location)![1]!;
-}
-
-function upload(
-  browser: Browser,
-  id: string,
-  sezione: string,
-  files: UploadFile | UploadFile[],
-  headers: Record<string, string> = XP,
-) {
-  return browser.upload(
-    `/schede/${id}`,
-    `/schede/${id}/allegati`,
-    { sezione, ritorno: 'scheda' },
-    files,
-    headers,
-  );
-}
-
-interface Answer {
-  html: string;
-  avvisi: string[];
-  ok: string | null;
-}
-const answer = (body: string) => JSON.parse(body) as Answer;
-
-/** What a refused upload left in `arrivi/` goes when the response closes — a moment later. */
-async function arriviEmpty(): Promise<void> {
-  let left: string[] = [];
-  for (let i = 0; i < 40; i += 1) {
-    left = await readdir(join(media(), 'arrivi'));
-    if (left.length === 0) return;
-    await new Promise((resolve) => setTimeout(resolve, 25));
-  }
-  assert.deepEqual(left, [], 'nothing left behind in arrivi/');
-}
-
-/** The worker, until the queue is empty (photos need no ffmpeg). */
-async function processAll(
-  strumenti = { ffmpeg: 'ffmpeg', ffprobe: 'ffprobe', zscale: false },
-): Promise<string[]> {
-  const done: string[] = [];
-  for (let lavoro = await prendiProssimo(); lavoro; lavoro = await prendiProssimo()) {
-    done.push(await elabora(lavoro, strumenti, new AbortController().signal));
-  }
-  return done;
-}
 
 describe('photos and videos of a sheet', () => {
   it('a photo goes into its section, waits for the worker, then is served compressed and without EXIF', async () => {
@@ -136,7 +67,7 @@ describe('photos and videos of a sheet', () => {
     assert.match(download.headers.get('content-disposition') ?? '', /^attachment;/);
 
     const page = await browser.get(`/schede/${id}`);
-    assert.match(page.body, new RegExp(`/schede/${id}/allegati/${row.id}\\?mini=1`));
+    assert.match(page.body, new RegExp(`/schede/${id}/allegati/${row.id}\\?riquadro=1`));
     const gallery = await browser.get(`/schede/${id}/allegati/sezione/quadro?ritorno=scheda`);
     assert.equal(gallery.status, 200);
     assert.match(gallery.body, /data-stato="PRONTO"/);
@@ -384,8 +315,8 @@ describe('photos and videos of a sheet', () => {
     assert.equal(gone.status, 303);
     assert.equal(gone.location, `/schede/${id}/modifica#a-cavi`);
     assert.equal(await prisma.allegato.count({ where: { id: a.id } }), 0);
-    assert.ok(!existsSync(join(folder(id), `${a.id}.jpg`)));
-    assert.ok(!existsSync(join(folder(id), `${a.id}.mini.jpg`)));
+    for (const kind of ['jpg', 'mini.jpg', 'riquadro.jpg'])
+      assert.ok(!existsSync(join(folder(id), `${a.id}.${kind}`)), kind);
     assert.ok(existsSync(join(folder(id), `${b.id}.jpg`)), 'the other file stays');
   });
 
@@ -513,7 +444,7 @@ describe('a video', { skip: !ffmpeg && 'ffmpeg is not installed here' }, () => {
     assert.equal(part.status, 206);
     assert.equal(part.bytes.length, 100);
     assert.match(part.headers.get('content-range') ?? '', /^bytes 0-99\//);
-    const poster = await browser.get(`/schede/${id}/allegati/${row.id}?mini=1`);
+    const poster = await browser.get(`/schede/${id}/allegati/${row.id}?riquadro=1`);
     assert.equal(poster.headers.get('content-type'), 'image/jpeg');
   });
 });

@@ -28,10 +28,17 @@
     const el = document.getElementById(`f-${id}`);
     return el && shown(el) ? el.value.trim() : '';
   };
+  // The boxes of a field of the sheet, looked up once: this runs on every key typed in the form.
+  const boxes = new Map();
+  const boxesOf = (name) => {
+    if (!boxes.has(name))
+      boxes.set(name, Array.from(document.querySelectorAll(`input[name="${name}"]`)));
+    return boxes.get(name);
+  };
   // Ticked boxes of the sheet as words ("Automatiche, Manuali"), as their labels read.
   const surveyTicks = (name) =>
-    Array.from(document.querySelectorAll(`input[name="${name}"]:checked`))
-      .filter(shown)
+    boxesOf(name)
+      .filter((input) => input.checked && shown(input))
       .map((input) => {
         const label = input.closest('label');
         return label ? label.textContent.trim() : input.value;
@@ -65,7 +72,7 @@
   // A tick of the sheet ("pattinoRetrattile=si").
   const surveyTick = (token) => {
     const [name, value] = token.split('=');
-    const box = document.querySelector(`input[name="${name}"][value="${value}"]`);
+    const box = boxesOf(name).find((input) => input.getAttribute('value') === value);
     return Boolean(box && box.checked && shown(box));
   };
 

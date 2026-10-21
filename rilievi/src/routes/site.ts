@@ -85,6 +85,15 @@ function siteLocals(req: Request, path: string | null) {
   };
 }
 
+/**
+ * Витрината и политиката на невписан човек — без лични данни: браузърът може да ги върне мигновено с
+ * „назад“ (bfcache; `no-store` го забранява), но ги пита отново при всяко отваряне, а прокси не ги
+ * пази (`private` — във формата е токенът на бисквитката). На вписания — като целия портал (`no-store`).
+ */
+function publicCache(req: Request, res: Response): void {
+  if (!req.principal) res.set('Cache-Control', 'private, no-cache');
+}
+
 interface RequestForm {
   values: RequestValues;
   errors: RequestErrors;
@@ -121,10 +130,12 @@ siteRouter.get(HOME_PATH, (req, res) => {
     res.redirect('/schede');
     return;
   }
+  publicCache(req, res);
   renderLanding(req, res, 200, { values: emptyRequestValues(), errors: {}, formError: null });
 });
 
 siteRouter.get(PRIVACY_PATH, (req, res) => {
+  publicCache(req, res);
   const locals = siteLocals(req, PRIVACY_PATH);
   res.render('site/privacy', {
     ...locals,
