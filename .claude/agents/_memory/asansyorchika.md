@@ -7,6 +7,10 @@
 публични. Без тайни/лични данни.
 
 ## Проверени поуки (verified)
+- **2026-10-21:** UNI EN 81-21:2022 5.5.2.2.2.1–5.5.2.2.2.3 — testata: AM su contrappeso in discesa (frizione), su cabina in salita (argano agganciato), esterni al pistone (idraulici) _(nuovi dispositivi per testata ridotta; nuovo ascensore in edificio esistente; verified; ../norme-ascensori/uni-en-81-21-2022.md:115-117; re-verify: 2027-04-21)_
+- **2026-10-21:** UNI EN 81-21:2022 B.4.3 — distanza di frenatura massima caso peggiore → posizione del DS; minima → decelerazione massima _(progetto e esame del sistema di arresto preattivato; verified; ../norme-ascensori/uni-en-81-21-2022.md:341; re-verify: 2027-04-21)_
+- **2026-10-21:** UNI EN 81-20:2020 5.12.1.5.2.1 f) — ispezione ≤ 0,30 m/s con ≤ 2,0 m sopra un posto in piedi (tetto o fossa) _(testata/fossa ridotte, fine corsa d'ispezione 81-21 5.5.3.4/5.7.3.4; verified; ../norme-ascensori/uni-en-81-20-2020.md:1112)_
+- **2026-10-21:** Processo: D.M. 19/03/2015 (accordo preventivo all. I 2.2) è solo nella bibliografia di UNI 10411-11:2024 — non appreso; nessun esame di tipo per SAP/AM in UNI EN 81-50:2020 _(kakvo ne e nauchено — testata/fossa ridotte; verified; ../norme-ascensori/uni-10411-11-2024.md:489)_
 - **2026-10-06:** UNI EN 81-20:2020 5.9.2.3.1 a) — механично средство само при сила ≤ 150 N, товар (q±0,1)Q; 5.9.2.3.1 b) — 1 h, ≤ 0,30 m/s; 5.9.2.3.3 — > 400 N нагоре с Q или без механично средство → 5.12.1.6 (≤ 0,30 m/s) _(аварийна маневра, нов асансьор и 10411 14.1 a); reverify при EN ISO 8100; verified; ../norme-ascensori/uni-en-81-20-2020.md:861)_
 - **2026-10-06:** UNI EN 81-1:2008 12.5.1/12.5.2 — праг само 400 N (нагоре с Q); електрическа маневра 14.2.1.4 ≤ 0,63 m/s; без праг 150 N и без 1 h _(асансьори с CE по EN 81-1 преди A3; verified; ../norme-ascensori/uni-en-81-1-2008.md:528)_
 - **2026-10-06:** UNI 10411-1:2024 14.4 g) / 10411-11:2024 14.3 b) — суровият текст казва „двата“ механични елемента (entrambi), не „всеки“; изключване ≤ целевия етаж, ръчен reset _(подмяна на машина без UCM; тълкуванието решава инженерът; verified; ../norme-ascensori/uni-10411-1-2024.md:290)_
