@@ -20,8 +20,8 @@ import { CASI_TESTO, SEZIONI, SEZIONI_PER_CASO } from '../rt/sezioni';
 import { RT_ENGINE_VERSION } from '../rt/version';
 
 /** The key and the version it was pinned at (round 49, S3: the first RT engine; re-pinned at 1.0.0 in the fix step after
- *  the norm review — never released, no RT issued in production). */
-const PINNED = { sha256: '38a751f924af8b21cd543e5889eda16cecc5f81f849c2402f730ebce3e36f770', version: '1.0.0' };
+ *  the norm review and after the text of guide.sospensione — never released, no RT issued in production). */
+const PINNED = { sha256: '41b0a4368398962ae958532f977bebcf38a154187522023f9aae8fd00767a37c', version: '1.0.0' };
 
 const golden = JSON.parse(readFileSync(new URL('./fixtures/rt/golden.json', import.meta.url), 'utf8')) as { engine: string; cases: { nome: string; resultsSha: string }[] };
 

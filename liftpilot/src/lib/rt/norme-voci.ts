@@ -133,8 +133,8 @@ export const VOCI_RT: readonly VoceRt[] = [
   },
   {
     id: 'guide.sospensione', gruppo: 'guide', titolo: 'Punto di sospensione della cabina nelle forze sulle guide',
-    valore: 'in marcia e al carico al piano le forze sulle guide si calcolano rispetto al punto di sospensione (xS, yS): non dato, al centro della cabina '
-      + '(sospensione al centro, scelta del software stampata come ipotesi); con l’arcata a zaino il centro della cabina e il punto di sospensione vanno '
+    valore: 'in marcia e al carico al piano le forze sulle guide si calcolano rispetto al punto di sospensione (xS, yS): non dato, sull’asse delle guide '
+      + '(con il centro della cabina sullo stesso asse, scelta del software stampata come ipotesi); con l’arcata a zaino il centro della cabina e il punto di sospensione vanno '
       + 'inseriti; all’intervento del paracadute il punto di sospensione non entra',
     riferimento: `${T20}, 5.7.2.3.1; ${T50}, appendice C`, fonte: `${letto(T20, 'p. 94')}; ${letto(T50, 'pp. 77–78')}`, stato: 'scelta',
   },

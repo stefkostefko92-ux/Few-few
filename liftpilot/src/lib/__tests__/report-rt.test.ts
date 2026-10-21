@@ -31,7 +31,7 @@ const PINNED = {
   version: '1.0.0',
   docSha: {
     'locale-solo-argano': 'fd763562ab3adf248cd87fab7e46904a3b5a69d6561d4c77036ec0bf11c7d843',
-    'locale-solo-argano-p1': '3eb99a492bd6d6da8e92f21fcb344801adc4b6d97c63b6703536f14d8d6aca5c',
+    'locale-solo-argano-p1': '6ef795922260c338ec18e1dc710fbc26e7da994626c319e50644ed186d80c3e6',
     'vano-ammodernamento-velocita': 'a2f8d0730d1392e8b1fda659d1bb74983d87dd416fcd33740307084a4e9b7188',
     'vano-ce-carico': '271522534a26adbd18001d2195e2ddada2ed90681c14d0954a2047238912302c',
   } as Readonly<Record<string, string>>,
