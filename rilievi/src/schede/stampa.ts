@@ -115,13 +115,19 @@ export function fotoInStampaDi(
   };
 }
 
-/** Отметнатите снимки, както са пратени (формата се връща); без иконките — undefined (от базата). */
-export function fotoFromBody(source: Record<string, unknown>): string[] | undefined {
-  if (typeof source[FOTO_MOSTRATE] !== 'string') return undefined;
-  const list = scelte(source[FOTO_KEY]);
-  return Array.isArray(list)
-    ? list
-        .filter((id): id is string => typeof id === 'string' && ID_FOTO.test(id))
-        .slice(0, MAX_PER_SCHEDA)
-    : [];
+/**
+ * Изборът, както е пратен (формата се връща): показаните и отметнатите от тях — само с вида на id-тата.
+ * Без иконките — undefined (от базата).
+ */
+export function fotoFromBody(source: Record<string, unknown>): SceltaFoto | undefined {
+  const shown = source[FOTO_MOSTRATE];
+  if (typeof shown !== 'string') return undefined;
+  const ids = (list: unknown): string[] =>
+    Array.isArray(list)
+      ? list
+          .filter((id): id is string => typeof id === 'string' && ID_FOTO.test(id))
+          .slice(0, MAX_PER_SCHEDA)
+      : [];
+  const mostrate = ids(shown.split(/\s+/));
+  return { mostrate, scelte: ids(scelte(source[FOTO_KEY])).filter((id) => mostrate.includes(id)) };
 }

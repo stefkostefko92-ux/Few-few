@@ -68,9 +68,11 @@ export async function renderForm(
   const ordine = view.scheda?.azienda.ordineSezioni ?? view.ordineSezioni ?? [];
   // Снимките и клиповете по раздели — само на записана карта (формата я взима в обхвата за запис).
   const allegati = view.scheda ? await allegatiDi(view.scheda.id) : [];
-  // Иконките за печата: отметнатите — пратените (формата се връща), иначе записаните на снимките.
+  // Иконките за печата: показаните при изпращането — както са пратени (формата се връща); другите
+  // (качени или станали готови междувременно) и при първото отваряне — записаното на снимките.
   const stampa = Array.isArray(values.stampa) ? values.stampa : [...ORDINABILI];
-  const pratese = values.fotoStampa;
+  const viste = new Set(Array.isArray(values.fotoMostrate) ? values.fotoMostrate : []);
+  const pratese = new Set(Array.isArray(values.fotoStampa) ? values.fotoStampa : []);
   const fotoStampa = {
     gruppi: gruppiScelta(
       sezioniFoto(ordine, t),
@@ -81,7 +83,7 @@ export async function renderForm(
       ),
     ),
     scelte: new Set(
-      Array.isArray(pratese) ? pratese : allegati.filter((a) => a.inStampa).map((a) => a.id),
+      allegati.filter((a) => (viste.has(a.id) ? pratese.has(a.id) : a.inStampa)).map((a) => a.id),
     ),
   };
   res.status(status).render('schede/form', {

@@ -306,10 +306,13 @@ describe('the photos on the print and the PDF', () => {
     assert.equal(fotoInStampaDi({ fotoMostrate: `${a} ../x` }).success, false);
     assert.equal(fotoInStampaDi({ fotoMostrate: a, fotoStampa: 'SELECT' }).success, false);
     assert.equal(fotoInStampaDi({ fotoMostrate: a, fotoStampa: { x: 1 } }).success, false);
-    // The form that comes back keeps what was ticked; without the icons — the saved choice.
+    // The form that comes back keeps what was shown and ticked; without the icons — the saved choice.
     assert.equal(fotoFromBody({ fotoStampa: a }), undefined);
-    assert.deepEqual(fotoFromBody({ fotoMostrate: a, fotoStampa: [a, 'bad'] }), [a]);
-    assert.deepEqual(fotoFromBody({ fotoMostrate: '' }), []);
+    assert.deepEqual(fotoFromBody({ fotoMostrate: ` ${a} ../x ${b}`, fotoStampa: [a, c, 'bad'] }), {
+      mostrate: [a, b],
+      scelte: [a],
+    });
+    assert.deepEqual(fotoFromBody({ fotoMostrate: '' }), { mostrate: [], scelte: [] });
   });
 
   let n = 0;

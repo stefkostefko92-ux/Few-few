@@ -145,6 +145,49 @@ describe('the photos to print, chosen as icons at the end of the form', () => {
     assert.deepEqual(await inStampa(id), [mine.id], 'nothing changed');
   });
 
+  it('keep the choice of a photo the person did not see when the form comes back', async () => {
+    const { browser, user } = await signedIn('TECNICO');
+    const id = await newScheda(browser);
+    await upload(browser, id, 'quadro', await photo('vista.jpg'));
+    await processAll();
+    const seen = await prisma.allegato.findFirstOrThrow({ where: { schedaId: id } });
+    const old = (await browser.get(`/schede/${id}/modifica`)).body;
+    const stale = /name="base" value="([^"]+)"/.exec(old)![1]!;
+    // Meanwhile a colleague uploads a photo, ticks it and saves.
+    const colleague = (await signedIn('TECNICO', user.aziendaId!)).browser;
+    await upload(colleague, id, 'argano', await photo('nuova.jpg'));
+    await processAll();
+    const fresh = await prisma.allegato.findFirstOrThrow({
+      where: { schedaId: id, sezione: 'argano' },
+    });
+    const theirs = await salva(colleague, id, {
+      fotoMostrate: `${seen.id} ${fresh.id}`,
+      fotoStampa: fresh.id,
+    });
+    assert.equal(theirs.status, 303);
+
+    // Saved from the old page: the conflict brings the form back and saves nothing.
+    const back = await salva(browser, id, {
+      base: stale,
+      fotoMostrate: seen.id,
+      fotoStampa: seen.id,
+    });
+    assert.equal(back.status, 409);
+    assert.deepEqual(await inStampa(id), [fresh.id]);
+    assert.match(back.body, new RegExp(`value="${seen.id}" checked>`), 'what was ticked stays');
+    assert.match(back.body, new RegExp(`value="${fresh.id}" checked>`), 'the unseen photo: saved');
+
+    // Saving the page that came back keeps the colleague's choice.
+    const shown = /name="fotoMostrate" value="([^"]*)"/.exec(back.body)![1]!;
+    const ticked = [...back.body.matchAll(/name="fotoStampa" value="([a-z0-9]+)" checked/g)];
+    const again = await salva(browser, id, {
+      fotoMostrate: shown,
+      fotoStampa: ticked.map((m) => m[1]!),
+    });
+    assert.equal(again.status, 303);
+    assert.deepEqual((await inStampa(id)).sort(), [seen.id, fresh.id].sort());
+  });
+
   it('come again from the server for those who write the sheet, and for no one else', async () => {
     const { browser, user } = await signedIn('TECNICO');
     const id = await newScheda(browser);

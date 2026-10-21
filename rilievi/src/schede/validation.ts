@@ -33,6 +33,7 @@ import {
   fotoFromBody,
   fotoInStampaDi,
   FOTO_KEY,
+  FOTO_MOSTRATE,
   sezioniEscluseDi,
   stampaFromBody,
   type SceltaFoto,
@@ -246,7 +247,10 @@ export function formValuesFromBody(body: unknown): FormValues {
   values[RIEPILOGO_KEY] = riepilogoFromBody(source);
   values[STAMPA_KEY] = stampaFromBody(source);
   const foto = fotoFromBody(source);
-  if (foto) values[FOTO_KEY] = foto;
+  if (foto) {
+    values[FOTO_MOSTRATE] = foto.mostrate;
+    values[FOTO_KEY] = foto.scelte;
+  }
   // Кои свързани полета още следват източника си (collegati.js) — form.ts приема само истинските имена.
   values[AUTO_KEY] = typeof source[AUTO_KEY] === 'string' ? source[AUTO_KEY].slice(0, 4000) : '';
   for (const field of FIELDS) {
