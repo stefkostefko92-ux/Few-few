@@ -6,6 +6,8 @@ import type { ViewHelpers } from '../http/view.js';
 import { riepilogoModuli, type RiepilogoGruppo } from '../ordini/riepilogo.js';
 import { displaySections, type DisplayField } from './format.js';
 import { sezioniStampate } from './ordine.js';
+import type { GruppoFotoPdf } from '../allegati/stampa.js';
+import { drawFoto } from './pdf-foto.js';
 import { drawHeader, drawPlate } from './pdf-head.js';
 import {
   drawFields,
@@ -47,6 +49,8 @@ export interface PdfOptions {
   fontDir: string;
   /** Логото на фирмата на картата (вече прекодирано при качването) или null. */
   logo: Buffer | null;
+  /** Снимките на разделите в края (отметката на картата, src/allegati/stampa.ts). */
+  foto?: readonly GruppoFotoPdf[];
 }
 
 export function renderSchedaPdf(scheda: SchedaFull, options: PdfOptions): Promise<Buffer> {
@@ -123,6 +127,7 @@ export function renderSchedaPdf(scheda: SchedaFull, options: PdfOptions): Promis
     drawSectionTitle(ctx, modulo.nome);
     drawFields(ctx, modulo.gruppi.map(gruppoField));
   }
+  drawFoto(ctx, options.foto ?? []);
   drawFooters(ctx, t('pdf.generated', { at: fmt.dateTime(new Date()), name: options.generatedBy }));
   doc.end();
   return done;

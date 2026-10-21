@@ -195,6 +195,45 @@
   color: var(--muted);
 }
 
+/* Снимките на разделите: от нова страница, по две на ред, до четири на лист A4; цялата снимка (без
+   изрязване), с надписа отдолу. */
+.paper__foto {
+  break-before: page;
+}
+
+.paper__foto-titolo {
+  margin: 12px 0 6px;
+  font-size: 11pt;
+  break-after: avoid;
+}
+
+.paper__foto-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+  align-items: start;
+}
+
+.paper__figura {
+  margin: 0;
+  break-inside: avoid;
+}
+
+.paper__figura img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 100mm;
+  border: 0.5pt solid #bdbdbd;
+}
+
+.paper__figura figcaption {
+  margin-top: 3px;
+  font-size: 10pt;
+  overflow-wrap: anywhere;
+}
+
 @media print {
   .print-body {
     background: #ffffff;

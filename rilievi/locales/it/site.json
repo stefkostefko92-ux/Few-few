@@ -221,6 +221,12 @@
         "basis": "Per conto dell'azienda titolare (art. 28 GDPR)",
         "kept": "Finché l'account esiste; le sessioni fino all'uscita o alla scadenza"
       },
+      "media": {
+        "data": "Foto e video caricati nelle schede: compressi sul server e senza i metadati del file (posizione GPS, modello del telefono, data dello scatto); il file originale non viene conservato",
+        "why": "Documentare il sopralluogo dell'impianto nella scheda dell'azienda",
+        "basis": "Per conto dell'azienda titolare (art. 28 GDPR)",
+        "kept": "Finché esistono il file e la scheda; eliminandoli (la scheda: dal cestino) vengono cancellati anche dal server"
+      },
       "audit": {
         "data": "Registro delle attività: chi ha fatto cosa e quando (senza il contenuto delle schede e senza indirizzi IP)",
         "why": "Responsabilità delle operazioni e tutela in caso di contestazione",

@@ -1,4 +1,4 @@
-# Rilievi Impianti в продукция: база + приложение.
+# Rilievi Impianti в продукция: база + приложение + фоновият процес на снимките и клиповете.
 #
 # TLS и публичният вход са на nginx-а на ХОСТА (Let's Encrypt) — конфигът е
 # `deploy/nginx/rilievi.carbonstealth.eu.conf` в това репо, не се пише на ръка на сървъра.
@@ -6,7 +6,8 @@
 # Тайните НЕ са тук — идват от `.env` до този файл (mode 600 на сървъра, никога в репото; прави го
 # `deploy/setup-env.sh`). Задължителни: POSTGRES_PASSWORD (hex — влиза некодирана в DATABASE_URL) ·
 # JWT_SECRET · PUBLIC_BASE_URL. По избор: SMTP_HOST/SMTP_USER/SMTP_PASS (Brevo; без тях поканите се
-# копират от екрана), HTTP_PORT (4330).
+# копират от екрана), HTTP_PORT (4330), MEDIA_MAX_PHOTO_MB/MEDIA_MAX_VIDEO_MB/MEDIA_MAX_VIDEO_MIN/
+# MEDIA_MIN_FREE_MB (таваните на снимките и клиповете, src/config.ts).
 # В контейнера влиза само изброеното в `environment:` — нова настройка от `.env` се добавя и там.
 name: rilievi
 
@@ -16,7 +17,7 @@ x-logging: &logging
     max-size: '10m'
     max-file: '3'
 
-# Двата контейнера: файловата система е само за четене (пише се само в тома и в tmpfs), без Linux
+# Контейнерите: файловата система е само за четене (пише се само в тома и в tmpfs), без Linux
 # capabilities (базата пази само нужните ѝ), без придобиване на права, с таван на памет и процеси.
 x-hardening: &hardening
   read_only: true
@@ -51,7 +52,9 @@ services:
     logging: *logging
 
   app:
-    build: .
+    build:
+      context: .
+      target: runner
     <<: *hardening
     cap_drop: [ALL]
     tmpfs:
@@ -79,11 +82,47 @@ services:
       # Портът е публикуван през Docker NAT: приложението вижда шлюза на мрежата, не 127.0.0.1.
       # `uniquelocal` вярва само на nginx-а на хоста през тази мрежа; портът е вързан за 127.0.0.1.
       TRUST_PROXY: ${TRUST_PROXY:-uniquelocal}
+      # Снимките и клиповете: каченото се пише право в тома (arrivi/), компресира го `worker`.
+      MEDIA_DIR: /data/media
+      MEDIA_MAX_PHOTO_MB: ${MEDIA_MAX_PHOTO_MB:-40}
+      MEDIA_MAX_VIDEO_MB: ${MEDIA_MAX_VIDEO_MB:-1024}
+      MEDIA_MAX_VIDEO_MIN: ${MEDIA_MAX_VIDEO_MIN:-10}
+      MEDIA_MIN_FREE_MB: ${MEDIA_MIN_FREE_MB:-2048}
+    volumes:
+      - media:/data/media
     ports:
       - '127.0.0.1:${HTTP_PORT:-4330}:4330'
     depends_on:
       db: { condition: service_healthy }
     logging: *logging
 
+  # Компресира снимките и клиповете от опашката в базата (src/worker.ts): един файл наведнъж, ffmpeg с
+  # две нишки, таван на процесора и паметта — машината е обща. Без порт и без тайните на приложението
+  # (JWT, пощата): само базата и томът. Тръгва, след като приложението е приложило миграциите.
+  worker:
+    build:
+      context: .
+      target: worker
+    <<: *hardening
+    cap_drop: [ALL]
+    tmpfs:
+      - /tmp:size=64m,noexec,nosuid
+    mem_limit: 1g
+    cpus: 1
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://rilievi:${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD}@db:5432/rilievi
+      MEDIA_DIR: /data/media
+      MEDIA_MAX_VIDEO_MIN: ${MEDIA_MAX_VIDEO_MIN:-10}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    volumes:
+      - media:/data/media
+    depends_on:
+      app: { condition: service_healthy }
+    logging: *logging
+
 volumes:
   db-data:
+  # Снимките и клиповете (компресирани). Бекъпът му е отделно от дъмпа на базата — DEPLOY.md, т. 6.
+  media:

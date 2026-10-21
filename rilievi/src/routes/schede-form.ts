@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { allegatiDi } from '../allegati/service.js';
 import { principalOf } from '../auth/guards.js';
 import { roleIn, spansAziende } from '../auth/scope.js';
 import { collegatiDelGruppo } from '../ordini/collegamenti.js';
@@ -36,7 +37,12 @@ export interface FormView {
   ordineSezioni?: readonly string[];
 }
 
-export function renderForm(req: Request, res: Response, status: number, view: FormView): void {
+export async function renderForm(
+  req: Request,
+  res: Response,
+  status: number,
+  view: FormView,
+): Promise<void> {
   const user = principalOf(req).user;
   const t = res.locals.t;
   // Модулите на доставчиците: при първото отваряне — от огледа, от другия модул, от фирмата и от
@@ -89,6 +95,9 @@ export function renderForm(req: Request, res: Response, status: number, view: Fo
       json: collegatiPerBrowser(t, contesto),
     },
     conferma: view.conferma ? { discrepanze, impronta: improntaDi(discrepanze) } : null,
+    // Снимките и клиповете по раздели — само на записана карта (формата я взима в обхвата за запис).
+    allegati: view.scheda ? await allegatiDi(view.scheda.id) : [],
+    modifica: view.scheda !== null,
   });
 }
 

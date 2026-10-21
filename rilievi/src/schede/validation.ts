@@ -30,6 +30,9 @@ import {
   riepilogoFromBody,
   riepilogoSchema,
   STAMPA_KEY,
+  fotoFromBody,
+  fotoStampateDi,
+  FOTO_KEY,
   sezioniEscluseDi,
   stampaFromBody,
 } from './stampa.js';
@@ -153,6 +156,8 @@ export type SchedaData = z.output<typeof schedaSchema> & {
   moduliStampati: string[];
   /** Разделите, които не влизат в печата и PDF-а (изборът в края на формата). */
   sezioniEscluse: string[];
+  /** Снимките в края на печата и PDF-а; undefined — страница без отметката (записът не я пипа). */
+  fotoStampate?: boolean;
   /** Отпечатъкът на потвърдените разминавания — слага го маршрутът при запис (schede-form.ts). */
   discrepanzeConfermate: string | null;
 };
@@ -209,6 +214,7 @@ export function parseScheda(
         riepilogoOrdini: riepilogo.data.length > 0,
         moduliStampati: riepilogo.data,
         sezioniEscluse: stampa.data,
+        fotoStampate: fotoStampateDi(raw),
         discrepanzeConfermate: null,
       },
     };
@@ -235,6 +241,7 @@ export function formValuesFromBody(body: unknown): FormValues {
   for (const slot of SLOTS) Object.assign(values, moduloFromBody(slot.modulo, slot.prefix, source));
   values[RIEPILOGO_KEY] = riepilogoFromBody(source);
   values[STAMPA_KEY] = stampaFromBody(source);
+  values[FOTO_KEY] = fotoFromBody(source);
   // Кои свързани полета още следват източника си (collegati.js) — form.ts приема само истинските имена.
   values[AUTO_KEY] = typeof source[AUTO_KEY] === 'string' ? source[AUTO_KEY].slice(0, 4000) : '';
   for (const field of FIELDS) {

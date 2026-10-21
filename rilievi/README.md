@@ -95,10 +95,12 @@ npm ci
 #   PUBLIC_BASE_URL=http://127.0.0.1:4330
 #   DATABASE_URL=postgresql://rilievi:…@127.0.0.1:5432/rilievi
 #   JWT_SECRET=<openssl rand -hex 32>
+#   MEDIA_DIR=./media   (снимките и клиповете; папката е в .gitignore)
 npx prisma migrate deploy
 npm run build
 OWNER_EMAIL=… OWNER_NAME=… OWNER_PASSWORD=… node --env-file=.env dist/scripts/create-owner.js
 npm run dev            # http://127.0.0.1:4330
+npm run worker         # компресията на качените снимки и клипове (иска ffmpeg и ffprobe в PATH)
 ```
 
 Без SMTP (по подразбиране локално) поканите и връзките за нова парола се показват на екрана.

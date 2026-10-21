@@ -70,6 +70,23 @@
     </dl>
   </section>
   <% } %>
+  <%# Снимките на разделите — накрая, от нова страница, само при отметката на картата (клиповете
+     остават в портала). Миниатюрите (до 960 px) стигат за половин A4; без lazy — печатът ги чака. %>
+  <% if (foto.length) { %>
+  <section class="paper__section paper__foto">
+    <h2><%= t('allegati.stampa.titolo') %></h2>
+    <% for (const gruppo of foto) { %>
+    <h3 class="paper__foto-titolo"><%= gruppo.section.title %></h3>
+    <div class="paper__foto-grid">
+      <% for (const f of gruppo.foto) { %><figure class="paper__figura">
+        <img src="/schede/<%= scheda.id %>/allegati/<%= f.id %>?mini=1" alt="<%= f.didascalia || t('allegati.foto', { nome: f.nomeOriginale }) %>"<% if (f.larghezza && f.altezza) { %> width="<%= f.larghezza %>" height="<%= f.altezza %>"<% } %>>
+        <% if (f.didascalia) { %><figcaption><%= f.didascalia %></figcaption><% } %>
+      </figure>
+      <% } %>
+    </div>
+    <% } %>
+  </section>
+  <% } %>
   <footer class="paper__foot"><%= t('pdf.generated', { at: fmt.dateTime(new Date()), name: currentUser.name }) %> — Created and Designed by Carbon Stealth VCC — carbonstealth.eu</footer>
 </article>
 </body>

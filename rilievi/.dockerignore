@@ -11,3 +11,4 @@ test-results
 Dockerfile
 docker-compose.yml
 deploy
+media

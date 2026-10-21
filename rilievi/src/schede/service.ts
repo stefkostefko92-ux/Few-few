@@ -1,5 +1,7 @@
 import { Prisma, type Scheda } from '@prisma/client';
 import { prisma } from '../db.js';
+import { rimuoviScheda } from '../allegati/archivio.js';
+import { errorMessage, logger } from '../logger.js';
 import { writeAudit } from '../audit.js';
 import { inScope, schedaScope, type Scope } from '../auth/scope.js';
 import { searchTextOf } from './search.js';
@@ -181,9 +183,12 @@ export async function restoreScheda(scope: Scope, id: string, actorId: string): 
   });
 }
 
-/** Окончателно — само от кошчето, само ADMIN и нагоре (маршрутът го проверява). */
+/**
+ * Окончателно — само от кошчето, само ADMIN и нагоре (маршрутът го проверява). Снимките и клиповете
+ * падат с картата (каскада), папката им — след записа (грешка на диска не връща картата).
+ */
 export async function purgeScheda(scope: Scope, id: string, actorId: string): Promise<boolean> {
-  return prisma.$transaction(async (tx) => {
+  const purged = await prisma.$transaction(async (tx) => {
     const aziendaId = await aziendaOf(tx, scope, id);
     if (!aziendaId) return false;
     const removed = await tx.scheda.deleteMany({
@@ -196,4 +201,10 @@ export async function purgeScheda(scope: Scope, id: string, actorId: string): Pr
     );
     return true;
   });
+  if (purged) {
+    await rimuoviScheda(id).catch((error: unknown) => {
+      logger.error({ err: errorMessage(error), scheda: id }, 'папката на картата не се изтри');
+    });
+  }
+  return purged;
 }

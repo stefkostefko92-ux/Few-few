@@ -49,7 +49,8 @@ COPY locales ./locales
 COPY package.json ./package.json
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 # Кодът остава на root, node само го чете — процесът няма право да пише собствения си код.
-RUN chmod 755 ./docker-entrypoint.sh
+# Снимките и клиповете — томът `media` (docker-compose.yml); новият том поема собственика от образа.
+RUN chmod 755 ./docker-entrypoint.sh && install -d -o node -g node -m 750 /data/media
 USER node
 EXPOSE 4330
 # /health пита базата; при недостъпна база връща 503 и контейнерът се маркира нездрав.
@@ -57,3 +58,18 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||4330)+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", "dist/index.js"]
+
+# --- Фоновият процес на снимките и клиповете (src/worker.ts) ---
+# Същият код и същите зависимости + ffmpeg (H.264/AAC, zscale за HDR). Само тук: приложението, което
+# приема заявките от мрежата, няма ffmpeg. Миграциите ги прилага приложението — тук entrypoint няма.
+FROM runner AS worker
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \
+  && rm -rf /var/lib/apt/lists/* \
+  && ffmpeg -hide_banner -encoders | grep -q libx264
+USER node
+# Жив е, докато докосва файла си (на 15 s и на всеки цикъл); увиснал — Docker го маркира нездрав.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD node -e "const f=require('node:path').join(require('node:os').tmpdir(),'rilievi-worker.alive');process.exit(Date.now()-require('node:fs').statSync(f).mtimeMs<60000?0:1)"
+ENTRYPOINT []
+CMD ["node", "dist/worker.js"]

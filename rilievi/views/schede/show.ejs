@@ -1,6 +1,6 @@
 <%
   const byKey = Object.fromEntries(sections.flatMap((s) => s.fields).map((f) => [f.key, f]));
-%><%- include('../partials/top', { title: ident.length > 40 ? ident.slice(0, 39) + '…' : ident }) %>
+%><%- include('../partials/top', { title: ident.length > 40 ? ident.slice(0, 39) + '…' : ident, scripts: ['allegati'] }) %>
 <div class="page-head">
   <div>
     <a href="/schede"><%= t('schede.back') %></a>
@@ -47,6 +47,7 @@
       </div>
       <% } %>
     </dl>
+    <%- include('_allegati', { section, ritorno: 'scheda' }) %>
   </section>
   <% }) %>
   <p class="sheet__meta">
@@ -55,5 +56,6 @@
     <span><%= t('scheda.meta.updated', { name: scheda.updatedBy ? scheda.updatedBy.name : '—', at: fmt.dateTime(scheda.updatedAt) }) %></span>
   </p>
 </div>
+<% if (modifica) { %><%- include('_allegati-forms', { ritorno: 'scheda' }) %><% } %>
 </div>
 <%- include('../partials/bottom') %>

@@ -33,7 +33,8 @@ jobs:
           cache: npm
           cache-dependency-path: rilievi/package-lock.json
       # DejaVu Sans — шрифтът на PDF-а (в образа е fonts-dejavu-core); без него PDF тестът не се пропуска тихо.
-      - run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends fonts-dejavu-core
+      # ffmpeg — компресията на клиповете (в образа на `worker`); в CI тестът на клипа е задължителен.
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends fonts-dejavu-core ffmpeg
       - run: npm ci
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
@@ -73,7 +74,8 @@ jobs:
           cache: npm
           cache-dependency-path: rilievi/package-lock.json
       # DejaVu Sans — шрифтът на PDF-а (в образа е fonts-dejavu-core); без него PDF тестът не се пропуска тихо.
-      - run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends fonts-dejavu-core
+      # ffmpeg — компресията на клиповете (в образа на `worker`); в CI тестът на клипа е задължителен.
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends fonts-dejavu-core ffmpeg
       - run: npm ci
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'

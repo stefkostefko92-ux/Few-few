@@ -1,0 +1,36 @@
+<%
+  // Снимките и клиповете на раздела (src/allegati/): галерията и качването. Полетата за качване са в
+  // раздела, но са на своя форма извън формата на картата (`form="carica-<раздел>"`,
+  // _allegati-forms.ejs): качването не праща картата, картата не праща файловете. С JavaScript всичко
+  // върви без презареждане и с ход на качването (allegati.js); без него формата се праща и се връща тук
+  // (`ritorno`). Без файлове разделът показва само „Aggiungi foto o video“ (сгънато); само за четене —
+  // нищо. Нова карта — още няма къде: първо записът.
+  const sezione = section.key;
+  const qui = allegati.filter((a) => a.sezione === sezione);
+%><% if (!scheda) { %><p class="allegati allegati--nota"><%- include('../partials/icon', { name: 'camera' }) %><span><%= t('allegati.dopoSalvataggio') %></span></p>
+<% } else if (modifica || qui.length) { %><div class="allegati" id="a-<%= sezione %>" data-allegati="<%= sezione %>">
+  <div class="allegati__galleria" data-galleria="<%= sezione %>" data-aggiorna="/schede/<%= scheda.id %>/allegati/sezione/<%= sezione %>?ritorno=<%= ritorno %>" tabindex="-1"><%- include('_allegati-galleria', { allegati: qui, modifica, ritorno }) %></div>
+  <p class="allegati__avvisi" data-avvisi="<%= sezione %>" role="status" aria-live="polite"></p>
+  <% if (modifica) { %>
+  <details class="allegati__aggiungi">
+    <summary><%- include('../partials/icon', { name: 'upload' }) %><span><%= t('allegati.aggiungi') %></span></summary>
+    <div class="allegati__carica" data-carica-campi="<%= sezione %>" data-max-foto="<%= limitiAllegati.foto %>" data-max-video="<%= limitiAllegati.video %>" data-msg-caricamento="<%= t('allegati.caricamento') %>" data-msg-rete="<%= t('allegati.rete') %>" data-msg-nessuno="<%= t('allegati.errore.nessuno') %>" data-max-file="<%= limitiAllegati.file %>" data-msg-troppi="<%= t('allegati.errore.troppi', { n: limitiAllegati.file }) %>" data-msg-grande="<%= t('allegati.errore.dimensioneFile') %>" data-msg-totale="<%= t('allegati.errore.totale') %>" data-msg-errore="<%= t('allegati.errore.caricamento') %>">
+      <div class="field allegati__file">
+        <label class="field__label" for="up-<%= sezione %>"><%= t('allegati.scegli') %></label>
+        <input class="file-input" id="up-<%= sezione %>" type="file" name="file" form="carica-<%= sezione %>" accept="image/jpeg,image/png,image/webp,image/avif,video/*" multiple aria-describedby="up-hint-<%= sezione %>">
+        <p class="field__hint" id="up-hint-<%= sezione %>"><%= t('allegati.scegliHint', limitiAllegati) %></p>
+      </div>
+      <div class="field allegati__testo">
+        <label class="field__label" for="upd-<%= sezione %>"><%= t('allegati.didascalia') %></label>
+        <input class="input" id="upd-<%= sezione %>" type="text" name="didascalia" form="carica-<%= sezione %>" maxlength="200" autocomplete="off" aria-describedby="upd-hint-<%= sezione %>">
+        <p class="field__hint" id="upd-hint-<%= sezione %>"><%= t('allegati.didascaliaHint') %></p>
+      </div>
+      <div class="allegati__invia">
+        <button class="btn" type="submit" form="carica-<%= sezione %>"><%- include('../partials/icon', { name: 'upload' }) %><%= t('allegati.carica') %></button>
+        <progress class="allegati__progress" max="100" value="0" data-progress="<%= sezione %>" aria-label="<%= t('allegati.avanzamento') %>" hidden></progress>
+      </div>
+    </div>
+  </details>
+  <% } %>
+</div>
+<% } %>

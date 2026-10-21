@@ -5,7 +5,10 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
+import { mkdtemp } from 'node:fs/promises';
 import type { Server } from 'node:http';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import type { Role } from '@prisma/client';
 
 export const PORT = 4398;
@@ -36,11 +39,17 @@ process.env.JWT_SECRET = randomBytes(32).toString('hex');
 process.env.LOG_LEVEL = 'silent';
 process.env.PDF_FONT_DIR ??= '/usr/share/fonts/truetype/dejavu';
 delete process.env.SMTP_HOST;
+// Photos and videos: a fresh folder per run; small caps so the limits can be tested with small files.
+process.env.MEDIA_DIR = await mkdtemp(join(tmpdir(), 'rilievi-media-'));
+process.env.MEDIA_MAX_PHOTO_MB = '1';
+process.env.MEDIA_MAX_VIDEO_MB = '10';
+process.env.MEDIA_MIN_FREE_MB = '100';
 
 const { prisma } = await import('../../src/db.js');
 const { createServer } = await import('../../src/server.js');
 const { hashPassword } = await import('../../src/auth/password.js');
 const { outbox } = await import('../../src/mail/mailer.js');
+const { preparaArchivio } = await import('../../src/allegati/archivio.js');
 export { prisma, outbox };
 
 let server: Server | null = null;
@@ -56,6 +65,7 @@ export async function startApp(): Promise<void> {
     );
   }
   defaultAzienda = null;
+  await preparaArchivio();
   await new Promise<void>((resolve, reject) => {
     const app = createServer().listen(PORT, '127.0.0.1', () => resolve());
     app.once('error', (error) =>
@@ -117,6 +127,13 @@ export interface Reply {
   headers: Headers;
 }
 
+export interface UploadFile {
+  field: string;
+  name: string;
+  type: string;
+  bytes: Uint8Array;
+}
+
 let ipCounter = 0;
 
 /** A browser: its own cookie jar and its own IP behind the proxy (per-IP limits stay per test). */
@@ -176,21 +193,32 @@ export class Browser {
     };
   }
 
-  /** POST a multipart form (a file upload), with the session's CSRF token taken from `formPage`. */
+  /**
+   * POST a multipart form (one or more files), with the session's CSRF token taken from `formPage`.
+   * `headers` go on top (X-Partial for the photo uploads, another Origin).
+   */
   async upload(
     formPage: string,
     action: string,
     fields: Record<string, string>,
-    file?: { field: string; name: string; type: string; bytes: Uint8Array },
+    file?: UploadFile | UploadFile[],
+    headers: Record<string, string> = {},
   ): Promise<Reply> {
     const _csrf = await this.csrf(formPage);
     const form = new FormData();
     form.append('_csrf', _csrf);
     for (const [key, value] of Object.entries(fields)) form.append(key, value);
-    if (file) form.append(file.field, new Blob([file.bytes], { type: file.type }), file.name);
+    for (const one of Array.isArray(file) ? file : file ? [file] : []) {
+      form.append(one.field, new Blob([one.bytes], { type: one.type }), one.name);
+    }
     const response = await fetch(BASE + action, {
       method: 'POST',
-      headers: { 'x-forwarded-for': this.ip, cookie: this.cookieHeader(), origin: BASE },
+      headers: {
+        'x-forwarded-for': this.ip,
+        cookie: this.cookieHeader(),
+        origin: BASE,
+        ...headers,
+      },
       body: form,
       redirect: 'manual',
     });

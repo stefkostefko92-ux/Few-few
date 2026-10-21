@@ -79,3 +79,19 @@ export function stampaFromBody(source: Record<string, unknown>): string[] {
     typeof stampa === 'string' ? [stampa] : Array.isArray(stampa) ? stampa : [];
   return ORDINABILI.filter((key) => list.includes(key));
 }
+
+/**
+ * Снимките на разделите в края на печата и PDF-а — отметка (`stampaFoto`). Знакът `stampaFoto-_` казва,
+ * че отметката е във формата; без него (страница отпреди нея) изборът не се пипа (undefined).
+ */
+export const FOTO_KEY = 'stampaFoto';
+export const FOTO_MARK = 'stampaFoto-_';
+
+export function fotoStampateDi(raw: Record<string, unknown>): boolean | undefined {
+  return raw[FOTO_MARK] === '1' ? raw[FOTO_KEY] === 'si' : undefined;
+}
+
+/** Отметката, както е пратена (формата се връща). */
+export function fotoFromBody(source: Record<string, unknown>): string {
+  return source[FOTO_KEY] === 'si' ? 'si' : '';
+}

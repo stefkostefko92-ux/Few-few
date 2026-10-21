@@ -16,7 +16,7 @@
   };
   const anchorOf = (key) => key === identifiersErrorKey ? '#f-indirizzo' : '#f-' + key;
   const paramsOf = (key) => { const misura = misuraOf(key); const moduloField = moduloFieldOf(key); const f = misura ? misura.column : moduloField ? moduloField.field : (fieldMap[key] || {}); return { min: f.min, max: f.max, maxLength: f.maxLength }; };
-%><%- include('../partials/top', { titleKey: isEdit ? 'schede.edit.title' : 'schede.create.title', scripts: ['valori', 'moduli', 'collegati'] }) %>
+%><%- include('../partials/top', { titleKey: isEdit ? 'schede.edit.title' : 'schede.create.title', scripts: ['valori', 'moduli', 'collegati', 'allegati'] }) %>
 <div class="page-head">
   <div>
     <h1><%= t(isEdit ? 'schede.edit.title' : 'schede.create.title') %></h1>
@@ -87,6 +87,8 @@
       <% for (const slot of moduli.filter((s) => (dopo.get(field.key) || []).includes(s.column))) { %><%- include('_modulo', { slot }) %><% } %>
       <% } %>
     </div>
+    <%# Снимките и клиповете на раздела — на свои форми извън тази (_allegati-forms.ejs). %>
+    <%- include('_allegati', { section, ritorno: 'modifica' }) %>
   </fieldset>
   <% }) %>
   <fieldset class="section" id="s-riepilogo">
@@ -114,6 +116,15 @@
         <p class="field__hint" id="riepilogo-hint"><%= t('riepilogo.hint') %></p>
         <% if (errors.riepilogoOrdini) { %><p class="field__error" id="err-riepilogoOrdini"><%= t('scheda.error.' + errors.riepilogoOrdini) %></p><% } %>
       </fieldset>
+      <%# Снимките на разделите — в края на печата и PDF-а, по избор (клиповете остават в портала). %>
+      <fieldset class="choice field field--wide" id="f-stampaFoto" aria-describedby="foto-hint">
+        <legend><%= t('allegati.stampa.legenda') %></legend>
+        <input type="hidden" name="stampaFoto-_" value="1">
+        <div class="choice__opts">
+          <label class="tick"><input type="checkbox" name="stampaFoto" value="si"<% if (values.stampaFoto === 'si') { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('allegati.stampa.opzione') %></span></label>
+        </div>
+        <p class="field__hint" id="foto-hint"><%= t('allegati.stampa.hint') %></p>
+      </fieldset>
     </div>
   </fieldset>
   <div class="actions">
@@ -125,6 +136,7 @@
   </div>
 </form>
 <script type="application/json" id="collegati-dati" nonce="<%= cspNonce %>"><%- collegati.json %></script>
+<% if (isEdit) { %><%- include('_allegati-forms', { ritorno: 'modifica' }) %><% } %>
 </div>
 <% } %>
 </div>

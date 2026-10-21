@@ -1,0 +1,37 @@
+<%
+  // Галерията на раздела (src/routes/allegati.ts) — и парчето, което allegati.js слага след качване,
+  // надпис или изтриване. Снимката води към себе си в цял размер; клипът се пуска на място (миниатюрата
+  // е първият кадър, тегли се чак при пускане). Файл в обработка — `data-in-corso`: allegati.js
+  // презарежда галерията, докато стане готов, и пази плочките, чието състояние не се е сменило (и
+  // надписа, който се пише в тях). Надписът е на общата форма извън формата на картата
+  // (`form="allegati-azione"`, _allegati-forms.ejs); `prima-…` е надписът при отварянето — записват се
+  // само сменените (без JavaScript Enter праща всички). Изтриването е връзка към потвърждението.
+  const inCorso = allegati.some((a) => a.stato === 'IN_CODA' || a.stato === 'IN_LAVORAZIONE');
+  const base = '/schede/' + scheda.id + '/allegati/';
+  const durata = (ms) => {
+    const s = Math.round((ms || 0) / 1000);
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  };
+%><% if (allegati.length) { %><h3 class="allegati__title"><%- include('../partials/icon', { name: 'camera' }) %><span><%= t('allegati.titolo') %></span></h3>
+<ul class="galleria"<% if (inCorso) { %> data-in-corso<% } %>>
+  <% for (const a of allegati) {
+       const label = a.didascalia || t(a.tipo === 'FOTO' ? 'allegati.foto' : 'allegati.video', { nome: a.nomeOriginale }); %>
+  <li class="galleria__item" data-allegato="<%= a.id %>" data-stato="<%= a.stato %>">
+    <% if (a.stato === 'PRONTO' && a.tipo === 'FOTO') { %><a class="galleria__media" href="<%= base + a.id %>" target="_blank" rel="noopener"><img src="<%= base + a.id %>?mini=1" alt="<%= label %>" loading="lazy" decoding="async"<% if (a.larghezza && a.altezza) { %> width="<%= a.larghezza %>" height="<%= a.altezza %>"<% } %>></a>
+    <% } else if (a.stato === 'PRONTO') { %><div class="galleria__media galleria__media--video"><video controls preload="none" playsinline poster="<%= base + a.id %>?mini=1" aria-label="<%= label %>"<% if (a.larghezza && a.altezza) { %> width="<%= a.larghezza %>" height="<%= a.altezza %>"<% } %>><source src="<%= base + a.id %>" type="video/mp4"></video></div>
+    <% } else if (a.stato === 'ERRORE') { %><div class="galleria__stato galleria__stato--errore" role="note"><%- include('../partials/icon', { name: 'alert' }) %><span><%= a.nomeOriginale %>: <%= t('allegati.errore.' + (a.errore || 'illeggibile'), { minuti: limitiAllegati.minuti }) %> <%= t('allegati.erroreRicarica') %></span></div>
+    <% } else { %><div class="galleria__stato"><span class="spinner" aria-hidden="true"></span><span><%= a.nomeOriginale %>: <%= t(a.stato === 'IN_CODA' ? 'allegati.inCoda' : 'allegati.inLavorazione') %></span></div>
+    <% } %>
+    <% if (a.tipo === 'VIDEO' && a.stato === 'PRONTO') { %><p class="galleria__info"><%= t('allegati.durata', { durata: durata(a.durataMs) }) %></p><% } %>
+    <% if (modifica) { %><div class="galleria__azioni">
+      <label class="visually-hidden" for="d-<%= a.id %>"><%= t('allegati.didascalia') %>: <%= label %></label>
+      <input class="input galleria__didascalia" id="d-<%= a.id %>" type="text" name="didascalia-<%= a.id %>" form="allegati-azione" value="<%= a.didascalia || '' %>" maxlength="200" placeholder="<%= t('allegati.didascaliaPlaceholder') %>" autocomplete="off">
+      <input type="hidden" name="prima-<%= a.id %>" form="allegati-azione" value="<%= a.didascalia || '' %>">
+      <div class="galleria__bottoni">
+        <button class="btn btn--sm" type="submit" form="allegati-azione" formaction="<%= base + a.id %>/didascalia" data-salva="<%= a.id %>"><%= t('allegati.salvaDidascalia') %><span class="visually-hidden">: <%= label %></span></button>
+        <a class="btn btn--sm btn--ghost" href="<%= base + a.id %>/elimina?ritorno=<%= ritorno %>" data-elimina="<%= a.id %>" data-conferma="<%= t('allegati.eliminaConferma', { nome: a.nomeOriginale }) %>"><%- include('../partials/icon', { name: 'trash' }) %><span class="visually-hidden"><%= t('allegati.elimina') %>: <%= label %></span></a>
+      </div>
+    </div><% } else if (a.didascalia) { %><p class="galleria__didascalia-testo"><%= a.didascalia %></p><% } %>
+  </li>
+  <% } %>
+</ul><% } -%>

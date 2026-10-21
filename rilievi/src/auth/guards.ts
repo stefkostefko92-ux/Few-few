@@ -102,6 +102,18 @@ function fromOurOrigin(req: Request, referer: boolean): boolean {
 }
 
 /**
+ * Само от нашите страници — ПРЕДИ тялото на заявката да се чете (качването на файлове): чужда страница
+ * не може да накара сървъра да пише на диска. Токенът (requireCsrf) се проверява след това.
+ */
+export function requireSameOrigin(req: Request, res: Response, next: NextFunction): void {
+  if (!fromOurOrigin(req, true)) {
+    sendError(req, res, 403, 'error.forbiddenTitle', 'error.csrf');
+    return;
+  }
+  next();
+}
+
+/**
  * CSRF: synchronizer token, вързан за сесията (скрито поле `_csrf` или `x-csrf-token`), плюс
  * проверка на Origin/Referer спрямо нашия адрес.
  */

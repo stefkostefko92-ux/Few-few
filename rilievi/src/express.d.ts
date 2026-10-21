@@ -23,6 +23,8 @@ declare global {
       currentUser: SessionUser | null;
       csrfToken: string;
       flash: Flash | null;
+      /** Таваните на снимките и клиповете — подсказката до качването (config.ts). */
+      limitiAllegati: { file: number; foto: number; video: number; minuti: number };
     }
   }
 }

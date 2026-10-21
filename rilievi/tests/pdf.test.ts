@@ -148,6 +148,52 @@ describe('the sheet PDF', { skip: !fontsHere && 'DejaVu fonts are not installed 
     );
     assert.ok(fewer.length < all.length, 'four sections fewer, a shorter document');
   });
+
+  it('puts the photos of the sections at the end, from a new page, only when there are some', async () => {
+    const options = {
+      t: translatorFor('it'),
+      fmt: viewHelpers('it'),
+      generatedBy: 'Prova',
+      fontDir,
+      logo: null,
+    };
+    const short = { ...scheda, lavoriExtra: null };
+    const landscape = await sharp({
+      create: { width: 960, height: 720, channels: 3, background: '#406080' },
+    })
+      .jpeg()
+      .toBuffer();
+    const portrait = await sharp({
+      create: { width: 720, height: 960, channels: 3, background: '#804060' },
+    })
+      .jpeg()
+      .toBuffer();
+    const plain = await renderSchedaPdf(short, options);
+    const none = await renderSchedaPdf(short, { ...options, foto: [] });
+    assert.equal(pages(none), pages(plain));
+    const withPhotos = await renderSchedaPdf(short, {
+      ...options,
+      foto: [
+        {
+          titolo: 'Impianto',
+          foto: [{ immagine: landscape, larghezza: 960, altezza: 720, didascalia: 'Ingresso' }],
+        },
+        {
+          titolo: 'Quadro',
+          foto: [1, 2, 3, 4, 5].map(() => ({
+            immagine: portrait,
+            larghezza: 720,
+            altezza: 960,
+            didascalia: 'Targa del quadro',
+          })),
+        },
+      ],
+    });
+    // A new page for the photos; upright ones go two rows of two to a page: one landscape row and one
+    // upright row on the first, the other two upright rows on the second.
+    assert.equal(pages(withPhotos) - pages(plain), 2);
+    assert.ok((withPhotos.toString('latin1').match(/\/Subtype \/Image/g) ?? []).length >= 2);
+  });
 });
 
 const pages = (pdf: Buffer) => (pdf.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length;

@@ -132,7 +132,9 @@
   if (schedaForm) {
     let dirty = false;
     const hint = schedaForm.querySelector('[data-dirty-hint]');
-    const markDirty = () => {
+    // The photo controls (file, caption) sit inside the sections but belong to their own forms (`form=`).
+    const markDirty = (event) => {
+      if (event.target.form && event.target.form !== schedaForm) return;
       dirty = true;
       if (hint) hint.hidden = false;
     };
@@ -190,7 +192,18 @@
     url.searchParams.delete('auto');
     history.replaceState(null, '', url.pathname + url.search);
     const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
-    fontsReady.then(() => setTimeout(() => window.print(), 250));
+    // The section photos at the end must be on the paper too: wait for every image (loaded or failed).
+    const imagesReady = Promise.all(
+      Array.from(document.images, (img) =>
+        img.complete
+          ? null
+          : new Promise((resolve) => {
+              img.addEventListener('load', resolve, { once: true });
+              img.addEventListener('error', resolve, { once: true });
+            }),
+      ),
+    );
+    Promise.all([fontsReady, imagesReady]).then(() => setTimeout(() => window.print(), 250));
   }
 
   // Section index of a long sheet: marks the first section on screen. The links work without this.

@@ -5,9 +5,10 @@
 #   sudo bash /opt/few-few/current/rilievi/deploy/deploy.sh    # ръчно (DEPLOY.md)
 #   deploy/autodeploy.sh го вика за всеки release с rilievi/   # автоматично — същият път
 #
-# Ред: тайните от стабилния път → build → бекъп на базата преди миграция (след build-а: дъмпът е
-# отпреди самата смяна) → up (entrypoint-ът прилага `prisma migrate deploy`) → чака, докато на порта
-# отговори именно Rilievi → дневният бекъп → vhost-ът от репото, щом има сертификат → подсказки.
+# Ред: тайните от стабилния път → build (приложението и фоновият процес на снимките) → бекъп на
+# базата преди миграция (след build-а: дъмпът е отпреди самата смяна) → up (entrypoint-ът прилага
+# `prisma migrate deploy`) → чака, докато на порта отговори именно Rilievi → фоновият процес върви →
+# дневният бекъп → vhost-ът от репото, щом има сертификат → подсказки.
 #
 # Тайни не се измислят. Изход: 0 — жив; 3 — няма .env (машината не е настроена); 4 — контейнерите са
 # сменени, но Rilievi не отговаря (autodeploy връща предишния код); 1 — спрян преди смяната
@@ -126,6 +127,17 @@ wait_healthy() {
   done
 }
 
+# Фоновият процес на снимките (worker) тръгва след приложението. Без него порталът работи, само
+# каченото стои в опашката — затова предупреждение, не провал на деплоя.
+check_worker() {
+  local deadline=$((SECONDS + 30))
+  while :; do
+    docker compose ps --status running --services 2>/dev/null | grep -qx worker && return 0
+    [ "$SECONDS" -lt "$deadline" ] || return 1
+    sleep 3
+  done
+}
+
 # Последният release, който е отговорил — целта на отката. Истинският път, без symlink-а current.
 remember_live() {
   local real
@@ -210,7 +222,7 @@ main() {
   port="${port:-4330}"
   plan_backup
   log "build…"
-  docker compose build app || fail 1 "build се провали — работещите контейнери не са пипани."
+  docker compose build app worker || fail 1 "build се провали — работещите контейнери не са пипани."
   backup_db
   log "up (entrypoint-ът прилага миграциите)…"
   docker compose up -d --remove-orphans || fail 4 "docker compose up се провали."
@@ -219,6 +231,7 @@ main() {
   ok "жив на 127.0.0.1:$port"
   # Новият код вече работи: оттук нататък нищо не сменя изхода 0.
   remember_live || warn "не записах $LAST_GOOD — откатът сочи предишния release"
+  check_worker || warn "фоновият процес на снимките не върви — каченото чака в опашката. Виж: cd $APP_DIR && docker compose logs --tail=80 worker"
   install_backup_timer || warn "дневният бекъп не е сложен — DEPLOY.md, т. 6"
   sync_nginx "$port" || warn "nginx не е обновен — Rilievi е жив на 127.0.0.1:$port"
   hints || true

@@ -16,7 +16,9 @@ import { readFlash } from './http/flash.js';
 import { writeLimiter } from './http/limits.js';
 import { applyPrefs, attachPrefs, themeUrl } from './http/prefs.js';
 import { PASSWORD_MIN_LENGTH } from './auth/password.js';
+import { MAX_FILE_PER_VOLTA } from './allegati/caricamento.js';
 import { accountRouter } from './routes/account.js';
+import { allegatiRouter } from './routes/allegati.js';
 import { auditRouter } from './routes/audit.js';
 import { authRouter } from './routes/auth.js';
 import { aziendeRouter } from './routes/aziende.js';
@@ -64,6 +66,13 @@ function baseLocals(req: Request, res: Response): void {
   res.locals.canIn = (capability: Capability, aziendaId: string | null): boolean =>
     user ? canIn(user, capability, aziendaId) : false;
   res.locals.mailEnabled = mailEnabled();
+  const cfg = config();
+  res.locals.limitiAllegati = {
+    file: MAX_FILE_PER_VOLTA,
+    foto: cfg.MEDIA_MAX_PHOTO_MB,
+    video: cfg.MEDIA_MAX_VIDEO_MB,
+    minuti: cfg.MEDIA_MAX_VIDEO_MIN,
+  };
   res.locals.passwordMin = PASSWORD_MIN_LENGTH;
   res.locals.path = req.path;
   // Витрината — входът води към заявката за достъп.
@@ -193,6 +202,7 @@ export function createServer(): Express {
   app.use(authRouter);
   app.use(accountRouter);
   app.use(schedeRouter);
+  app.use(allegatiRouter);
   app.use(cestinoRouter);
   app.use(ordiniRouter);
   app.use(usersRouter);

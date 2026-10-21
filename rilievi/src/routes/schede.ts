@@ -1,7 +1,9 @@
 import { Router, type Request } from 'express';
+import { allegatiDi } from '../allegati/service.js';
+import { fotoPerPdf, fotoPerStampa } from '../allegati/stampa.js';
 import { config } from '../config.js';
 import { isPartial, principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
-import { spansAziende } from '../auth/scope.js';
+import { canIn, spansAziende } from '../auth/scope.js';
 import { ordineSezioniDi } from '../aziende/sezioni.js';
 import { sezioniStampate } from '../schede/ordine.js';
 import { aziendaLogo } from '../aziende/service.js';
@@ -68,7 +70,7 @@ schedeRouter.get('/schede/nuova', write, async (req, res) => {
   const azienda =
     only?.id ??
     (choices.some((a) => a.id === preset) ? preset : choices.length === 1 ? choices[0]!.id : '');
-  renderForm(req, res, 200, {
+  await renderForm(req, res, 200, {
     scheda: null,
     values: emptyFormValues(businessDay()),
     errors: {},
@@ -91,7 +93,7 @@ schedeRouter.post('/schede', write, requireCsrf, async (req, res) => {
   const ordineSezioni = await ordineSezioniDi(azienda?.id ?? null);
   if (!parsed.ok || !azienda) {
     const errors: FieldErrors = azienda ? {} : { [AZIENDA_ERROR_KEY]: 'azienda' };
-    renderForm(req, res, 422, {
+    await renderForm(req, res, 422, {
       scheda: null,
       values: formValuesFromBody(body),
       errors: { ...errors, ...(parsed.ok ? {} : parsed.errors) },
@@ -106,7 +108,7 @@ schedeRouter.post('/schede', write, requireCsrf, async (req, res) => {
   const discrepanze = controlloDiscrepanze(res, body, null);
   if (discrepanze.manca) {
     // Картата и модулите казват различни неща: записът чака потвърждение на точно тези разлики.
-    renderForm(req, res, 422, {
+    await renderForm(req, res, 422, {
       scheda: null,
       values: formValuesFromBody(body),
       errors: {},
@@ -133,6 +135,9 @@ schedeRouter.get('/schede/:id', read, async (req, res) => {
   if (!scheda) return notFound(req, res);
   res.render('schede/show', {
     scheda,
+    // Снимките и клиповете по раздели; качва, надписва и трие който пише във фирмата (не в кошчето).
+    allegati: await allegatiDi(scheda.id),
+    modifica: !scheda.deletedAt && canIn(principalOf(req).user, 'schede:write', scheda.aziendaId),
     showAzienda: spansAziende(scope(req, 'schede:read')),
     ident: schedaTitle(scheda, res.locals.t),
     sections: displaySections(scheda, res.locals.t, res.locals.fmt, scheda.azienda.ordineSezioni),
@@ -144,7 +149,7 @@ schedeRouter.get('/schede/:id', read, async (req, res) => {
 schedeRouter.get('/schede/:id/modifica', write, async (req, res) => {
   const scheda = await getScheda(scope(req, 'schede:write'), String(req.params.id));
   if (!scheda) return notFound(req, res);
-  renderForm(req, res, 200, {
+  await renderForm(req, res, 200, {
     scheda,
     values: formValuesFromScheda(scheda, res.locals.fmt),
     errors: {},
@@ -163,7 +168,7 @@ schedeRouter.post('/schede/:id', write, requireCsrf, async (req, res) => {
   const parsed = parseScheda(body);
   const formView = { scheda, base, aziende: [], azienda: scheda.aziendaId };
   if (!parsed.ok) {
-    renderForm(req, res, 422, {
+    await renderForm(req, res, 422, {
       ...formView,
       values: formValuesFromBody(body),
       errors: parsed.errors,
@@ -174,7 +179,7 @@ schedeRouter.post('/schede/:id', write, requireCsrf, async (req, res) => {
   // Потвърдените при последния запис разлики не се питат пак — само нови или променени.
   const discrepanze = controlloDiscrepanze(res, body, scheda.discrepanzeConfermate);
   if (discrepanze.manca) {
-    renderForm(req, res, 422, {
+    await renderForm(req, res, 422, {
       ...formView,
       values: formValuesFromBody(body),
       errors: {},
@@ -193,7 +198,7 @@ schedeRouter.post('/schede/:id', write, requireCsrf, async (req, res) => {
   if (outcome === 'missing') return notFound(req, res);
   if (outcome === 'conflict') {
     // Въведеното остава на екрана; човекът решава след като види новата версия.
-    renderForm(req, res, 409, {
+    await renderForm(req, res, 409, {
       ...formView,
       values: formValuesFromBody(body),
       errors: {},
@@ -223,6 +228,8 @@ schedeRouter.get('/schede/:id/stampa', read, async (req, res) => {
     printed: sezioniStampate(sections, scheda.sezioniEscluse),
     // Попълненото в модулите — само в тези, които картата иска (`moduliStampati`).
     riepilogo: riepilogoModuli(scheda),
+    // Снимките на разделите накрая — само при отметката на картата.
+    foto: fotoPerStampa(scheda, sections, scheda.fotoStampate ? await allegatiDi(scheda.id) : []),
     autoPrint: req.query.auto === '1',
   });
 });
@@ -231,12 +238,20 @@ schedeRouter.get('/schede/:id/pdf', read, pdfLimiter, async (req, res) => {
   const scheda = await loadScheda(req);
   if (!scheda) return notFound(req, res);
   const logo = scheda.azienda.logoType ? await aziendaLogo(scheda.aziendaId) : null;
+  const foto = scheda.fotoStampate
+    ? await fotoPerPdf(
+        scheda,
+        displaySections(scheda, res.locals.t, res.locals.fmt, scheda.azienda.ordineSezioni),
+        await allegatiDi(scheda.id),
+      )
+    : [];
   const pdf = await renderSchedaPdf(scheda, {
     t: res.locals.t,
     fmt: res.locals.fmt,
     generatedBy: principalOf(req).user.name,
     fontDir: config().PDF_FONT_DIR,
     logo: logo?.data ?? null,
+    foto,
   });
   const name = pdfFileName(scheda);
   res

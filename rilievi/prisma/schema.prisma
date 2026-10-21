@@ -135,17 +135,18 @@ model User {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  invitedUsers    User[]          @relation("InvitedUsers")
-  memberships     Membership[]
-  sessions        Session[]
-  invitesSent     Invite[]        @relation("InvitesSent")
-  resets          PasswordReset[] @relation("ResetsFor")
-  resetsCreated   PasswordReset[] @relation("ResetsCreated")
-  schedeCreated   Scheda[]        @relation("SchedeCreated")
-  schedeUpdated   Scheda[]        @relation("SchedeUpdated")
-  schedeDeleted   Scheda[]        @relation("SchedeDeleted")
-  auditEntries    AuditLog[]
-  requestsDecided AccessRequest[] @relation("AccessRequestsDecided")
+  invitedUsers     User[]          @relation("InvitedUsers")
+  memberships      Membership[]
+  sessions         Session[]
+  invitesSent      Invite[]        @relation("InvitesSent")
+  resets           PasswordReset[] @relation("ResetsFor")
+  resetsCreated    PasswordReset[] @relation("ResetsCreated")
+  schedeCreated    Scheda[]        @relation("SchedeCreated")
+  schedeUpdated    Scheda[]        @relation("SchedeUpdated")
+  schedeDeleted    Scheda[]        @relation("SchedeDeleted")
+  allegatiCaricati Allegato[]      @relation("AllegatiCaricati")
+  auditEntries     AuditLog[]
+  requestsDecided  AccessRequest[] @relation("AccessRequestsDecided")
 
   @@index([invitedById])
   @@index([master])
@@ -347,6 +348,7 @@ model Scheda {
   /// „Мерки на старите бутониери?“ — при true редовете са в MisuraBottoniera.
   bottoniereMisure             Boolean?
   misureBottoniere             MisuraBottoniera[]
+  allegati                     Allegato[]
   lavoriExtra                  String?
   quadroMarca                  QuadroMarca?
   quadroMarcaAltro             String?                  @db.VarChar(120)
@@ -424,6 +426,8 @@ model Scheda {
   /// Разделите, които НЕ влизат в печата и PDF-а (изборът в края на формата) — пазят се изключените, за
   /// да е новият раздел включен и в старите карти.
   sezioniEscluse               String[]                 @default([])
+  /// Печатът и PDF-ът включват снимките на разделите (изборът в края на формата; клиповете — никога).
+  fotoStampate                 Boolean                  @default(false)
   /// Отпечатъкът на разминаванията карта ↔ модули, потвърдени при последния запис (src/ordini/collegati.ts):
   /// същите разлики не се питат пак, нови или променени — да. null — няма потвърдени.
   discrepanzeConfermate        String?                  @db.VarChar(32)
@@ -491,6 +495,53 @@ model MisuraBottoniera {
   display            Boolean?
 
   @@unique([schedaId, fermata])
+}
+
+/// Снимка или клип към раздел на картата (src/allegati/). Файловете са на диска (`MEDIA_DIR`, пътят е
+/// само от id-тата), тук — описанието и докъде е обработката (фоновият процес, src/worker.ts). Изтриват
+/// се с картата; окончателното ѝ изтриване маха и папката ѝ.
+model Allegato {
+  id            String        @id @default(cuid())
+  schedaId      String
+  scheda        Scheda        @relation(fields: [schedaId], references: [id], onDelete: Cascade)
+  /// Разделът на картата (ключът му от src/schede/fields.ts).
+  sezione       String        @db.VarChar(20)
+  tipo          TipoAllegato
+  stato         StatoAllegato @default(IN_CODA)
+  /// Надписът по избор („quadro, lato sinistro“).
+  didascalia    String?       @db.VarChar(200)
+  /// Името на качения файл — само за показ и за името при сваляне, никога за път на диска.
+  nomeOriginale String        @db.VarChar(200)
+  /// Байтовете преди и след компресията.
+  byteOriginali Int
+  byte          Int?
+  larghezza     Int?
+  altezza       Int?
+  durataMs      Int?
+  /// Защо обработката не успя — ключ от речника (`allegati.errore.<…>`), никога текст на грешка.
+  errore        String?       @db.VarChar(40)
+  tentativi     Int           @default(0)
+  caricatoDaId  String?
+  caricatoDa    User?         @relation("AllegatiCaricati", fields: [caricatoDaId], references: [id], onDelete: SetNull)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([schedaId, sezione, createdAt])
+  @@index([stato, createdAt])
+  @@index([caricatoDaId])
+}
+
+enum TipoAllegato {
+  FOTO
+  VIDEO
+}
+
+/// В опашката → обработва се → готов (компресиран) или грешка (файлът не се чете, клипът е твърде дълъг).
+enum StatoAllegato {
+  IN_CODA
+  IN_LAVORAZIONE
+  PRONTO
+  ERRORE
 }
 
 /// Mastech: моделът на таблото — всеки със свой модул за поръчка.

@@ -1,0 +1,28 @@
+<%
+  // Потвърждението на изтриването без JavaScript (с него — диалогът в allegati.js). Изтритият файл не
+  // минава през кошчето: файлът на диска се трие веднага.
+  const base = '/schede/' + scheda.id + '/allegati/' + allegato.id;
+  const indietro = (ritorno === 'modifica' ? '/schede/' + scheda.id + '/modifica' : '/schede/' + scheda.id) + '#a-' + allegato.sezione;
+%><%- include('../partials/top', { titleKey: 'allegati.eliminaTitolo', narrowMain: true }) %>
+<div class="stack-gap">
+  <div>
+    <h1><%= t('allegati.eliminaTitolo') %></h1>
+    <p class="page-head__sub"><%= t('allegati.eliminaTesto') %></p>
+  </div>
+  <div class="notice allegato-conferma">
+    <% if (allegato.stato === 'PRONTO') { %><img class="allegato-conferma__mini" src="<%= base %>?mini=1" alt="" width="160" height="120"><% } %>
+    <div>
+      <p><strong><%= allegato.nomeOriginale %></strong></p>
+      <p class="muted"><%= t('scheda.section.' + allegato.sezione) %><% if (allegato.didascalia) { %>: <%= allegato.didascalia %><% } %></p>
+    </div>
+  </div>
+  <form method="post" action="<%= base %>/elimina">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="ritorno" value="<%= ritorno %>">
+    <div class="toolbar">
+      <button class="btn btn--danger" type="submit"><%- include('../partials/icon', { name: 'trash' }) %><%= t('allegati.eliminaDefinitivo') %></button>
+      <a class="btn" href="<%= indietro %>"><%= t('common.cancel') %></a>
+    </div>
+  </form>
+</div>
+<%- include('../partials/bottom') %>

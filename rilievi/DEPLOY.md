@@ -45,14 +45,26 @@ sudo REF=main PROJECTS="rilievi" bash /opt/few-few/current/deploy/fetch-deploy.s
 `deploy/deploy.sh` (вика го autodeploy; същият е и за ръчен деплой от папката на release-а):
 
 1. `.env` от `/opt/few-few/shared/rilievi/` в release-а; проверка на паролата и ключа;
-2. `docker compose build app` — провал тук не пипа работещите контейнери (код 1);
+2. `docker compose build app worker` (приложението и фоновият процес на снимките — той с ffmpeg) —
+   провал тук не пипа работещите контейнери (код 1);
 3. бекъп на базата ПРЕДИ миграцията (`backups/pre-deploy-*.sql.gz`, последните 5) — без бекъп няма
    миграция;
 4. `docker compose up` — entrypoint-ът пуска `prisma migrate deploy` (никога `db push`);
 5. чака `/health` да върне `{"status":"ok","app":"rilievi"}`; иначе код 4 и autodeploy връща
    последния работещ release;
-6. записва release-а в `/opt/few-few/shared/rilievi/last-good`, слага дневния бекъп и vhost-а в nginx
-   (`nginx -t`, после reload; при грешка връща стария).
+6. записва release-а в `/opt/few-few/shared/rilievi/last-good`; проверява, че фоновият процес на
+   снимките (`worker`) върви — без него порталът работи, но каченото чака в опашката (предупреждение,
+   не провал); слага дневния бекъп и vhost-а в nginx (`nginx -t`, после reload; при грешка връща
+   стария).
+
+### Снимки и клипове
+
+Каченото се пише право в тома `rilievi_media` (`/data/media` в контейнерите): `arrivi/` — докато се
+качва, `schede/<карта>/` — компресираното (снимка JPEG до 2560 px, клип H.264 до 1080p, миниатюра).
+Компресира ги контейнерът `worker` (src/worker.ts): един файл наведнъж, 1 процесор и 1 GB памет;
+оригиналът се трие след компресията. Качването спира, когато на диска остават под `MEDIA_MIN_FREE_MB`
+(2048 MB). Таваните (`MEDIA_MAX_*`, `.env.example`) — клип над 1024 MB иска и по-висок
+`client_max_body_size` във vhost-а (`deploy/nginx/`). Дневникът: `docker compose logs --tail=80 worker`.
 
 ## 4. Първият MASTER (веднъж)
 
@@ -92,15 +104,19 @@ Google не поддържа IndexNow — там sitemap-ът се открив�
   Ръчно: `sudo bash "$(sudo cat /opt/few-few/shared/rilievi/last-good)/deploy/backup.sh"`.
 - Бекъп на същия диск не пази от загуба на диска: копирай `backups/daily/` извън сървъра (VPS
   Dashboard, Storage Box или `rsync` към друг сървър).
+- Снимките и клиповете НЕ са в дъмпа на базата — те са в тома `rilievi_media` и се копират извън
+  сървъра отделно (само `schede/`; `arrivi/` е временно). Пътят на тома на хоста:
+  `sudo docker volume inspect -f '{{.Mountpoint}}' rilievi_media`. Дъмп, възстановен без тях, не
+  чупи нищо: липсващ файл е 404 в галерията и не влиза в PDF-а.
 
 Възстановяване (дъмпът е с `--clean --if-exists` — заменя съществуващите таблици):
 
 ```bash
 cd "$(sudo cat /opt/few-few/shared/rilievi/last-good)"
-sudo docker compose stop app
+sudo docker compose stop worker app
 zcat /opt/few-few/shared/rilievi/backups/daily/rilievi-<дата>.sql.gz |
   sudo docker compose exec -T db psql -v ON_ERROR_STOP=1 -q -U rilievi -d rilievi
-sudo docker compose start app
+sudo docker compose start app worker
 ```
 
 ## 7. Провалена миграция

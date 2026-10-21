@@ -7,7 +7,9 @@ A4 и PDF. Модулите: при табло Pelazza / MoviLift / Mastech (NG1
 (поръчката), „Argano da sostituire?“ (листът с данни за аргано) и „Sospensioni da cambiare?“ (листът на
 2SG за оператора и окачванията) се попълва самият модул и излиза като отделен PDF — оригиналът с данните
 върху него. Редът на разделите на картата се избира за всяка фирма (настройките на администратора ѝ);
-кои раздели влизат в печата и PDF-а — за всяка карта (в края на формата).
+кои раздели влизат в печата и PDF-а — за всяка карта (в края на формата). Снимки и клипове — във
+всеки раздел на картата, компресирани от фонов процес (`worker`); снимките — по избор в края на печата и
+PDF-а.
 Многофирмен: всяка фирма (клиент на портала) има свои хора, свои карти и свое лого на листа. Един човек
 може да е в няколко фирми, с различна роля във всяка (слага го само MASTER).
 Бранд Carbon Stealth VCC, монохромен (бяло/черно, светла и тъмна тема). Самостоятелен продукт —
@@ -19,7 +21,8 @@ Node ≥22 · TypeScript strict (ESM, `NodeNext`) · Express 5 · EJS (сърв�
 `style-src-attr 'none'`) · Prisma 6 + PostgreSQL 16 (`pg_trgm`) · zod на всеки външен вход · pino (без
 PII и токени) · Argon2id · JWT (jose, HS256) в HttpOnly бисквитка, проверяван срещу сесия в базата ·
 pdfkit + DejaVu Sans (PDF с кирилица) · pdf-lib + @pdf-lib/fontkit (модулите на доставчиците, попълнени
-с DejaVu) · multer + sharp (логото на фирмата, прекодирано) · Fira Sans /
+с DejaVu) · multer + sharp (логото на фирмата, прекодирано; снимките) · ffmpeg (клиповете — само в
+контейнера `worker`) · Fira Sans /
 Fira Sans Condensed от @fontsource (без CDN).
 UI: **само италиански** (решение на собственика) — един речник в `locales/it/`, без избор на език.
 
@@ -33,6 +36,7 @@ npm run test:integration # реален PostgreSQL: TEST_DATABASE_URL (имет�
 npm run test:e2e         # Chromium + axe (WCAG 2.1 AA) срещу работещ портал: RILIEVI_URL, E2E_EMAIL, E2E_PASSWORD
                          # (MASTER акаунт); създава фирма, карти и покани — само локално/staging
 npm run dev              # локално на :4330, чете .env (README, „Локално“)
+npm run worker           # компресията на снимките и клиповете (иска ffmpeg/ffprobe; MEDIA_DIR=./media)
 npm run build            # prisma generate + tsc + шрифтовете в public/fonts (scripts/fonts.mjs)
 npm run owner:create     # първият MASTER от OWNER_EMAIL/OWNER_NAME/OWNER_PASSWORD (на сървъра: deploy/create-master.sh)
 ```
@@ -69,17 +73,22 @@ src/
   requests/          заявките за достъп: form.ts (публичната форма) · service.ts (запис, решение, срок)
   site/ · seo/       витрината: landing.ts (разделите и ролите от кода) · paths.ts · structured-data.ts
                      (JSON-LD) · files.ts (robots, sitemap, llms.txt) · company.ts (данните на фирмата)
+  allegati/          снимките и клиповете на картата: archivio.ts (пътищата в тома — само от id-тата) ·
+                     formati.ts (видът по байтовете) · caricamento.ts (тялото на качването, таваните) ·
+                     service.ts (запис, надписи, изтриване, одит) · coda.ts (опашката в базата) ·
+                     foto.ts (sharp) · video.ts (ffmpeg/ffprobe) · stampa.ts (снимките в печата и PDF-а)
+  worker.ts          фоновият процес (контейнерът `worker`): компресира опашката, файл „жив съм“
 assets/moduli/       празните PDF-и на Pelazza, MoviLift, листа за аргано (Word-ът на собственика, в PDF),
                      2SG (сканиран, обърнат) и Mastech NG120 / QI Touch (сканирани; QI Touch — две
                      страници) + картата на полетата им (JSON)
 views/               EJS: partials/ (горна и долна лента, табелата, филтърът по фирма), site/ (витрината,
                      чертежът на шахтата, политиката), requests/, auth/, schede/, users/, aziende/,
-                     account/, audit/
-locales/it/          common · auth · schede · users · aziende · requests · site · mail (.json) — единственият
+                     account/, audit/; снимките — schede/_allegati*.ejs, allegato-elimina.ejs
+locales/it/          common · auth · schede · users · aziende · requests · site · mail · allegati (.json) — единственият
 public/              css/ (портал: base, buttons, shell, layout, plate, forms, pages, data, sheet, misure,
-                     moduli, print; витрина: site, shaft, site-hero, site-parts, site-request), js/app.js +
-                     js/valori.js + js/moduli.js + js/collegati.js (последните три — само във формата на
-                     картата, в този ред),
+                     moduli, allegati, print; витрина: site, shaft, site-hero, site-parts, site-request),
+                     js/app.js + js/valori.js + js/moduli.js + js/collegati.js (последните три — само във
+                     формата на картата, в този ред) + js/allegati.js (формата и страницата на картата),
                      img/ (og.png и apple-touch-icon.png — `npm run brand:images`), indexnow-key.txt
 tests/               unit · integration/ (реален Postgres) · e2e/run.mjs (Playwright + axe)
 deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh · nginx/ · systemd/
@@ -292,6 +301,24 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   грешки. Единственото изображение е чертежът на шахтата (`views/site/_shaft.ejs`): маркерите са
   номерата на разделите на картата (всеки раздел сочи своята част — `spots` по ключ); единственото движение — кабината се качва веднъж във витрината
   (кадрите в `shaft.css` са сметнати от координатите на чертежа), неподвижно при reduced motion.
+- **Снимки и клипове** (`src/allegati/`, `src/routes/allegati.ts`, решение на собственика, 21 октомври
+  2026): качват се във всеки раздел на записана карта (нова — след първия запис), до 10 файла наведнъж,
+  с общ надпис; само хората, които пишат във фирмата, и не в кошчето. Формите са ИЗВЪН формата на картата
+  (`form=…`, `_allegati-forms.ejs`): качването не праща картата, а app.js не брои техните полета за
+  промяна. Преди тялото: вход, Origin, таван (клип + 16 MB), картата в обхвата, свободно място
+  (`MEDIA_MIN_FREE_MB`); тялото — право в тома (`arrivi/`), после CSRF; видът — по байтовете
+  (JPEG/PNG/WebP/AVIF; MP4/MOV/3GP/WebM/AVI; HEIC — отказ с подсказка). Редът е в опашката (`Allegato`,
+  `IN_CODA`); компресира го `worker` (един наведнъж, `SKIP LOCKED`, до 3 опита): снимка — изправена, до
+  2560 px, JPEG q82, без метаданни; клип — H.264 до 1080p/30 fps, AAC, `faststart`, HDR → SDR, без
+  метаданни; миниатюра до 960 px; оригиналът се трие. Галерията се опреснява сама, докато има файл в
+  обработка (allegati.js пази плочките, чието състояние не е сменено, и надписа, който се пише).
+  Надписът се записва само ако е сменен спрямо отворената страница (`prima-…`, `modificheDi`) — не
+  връща чужд по-нов; изтриването е окончателно, с потвърждение (диалог или страница без JavaScript).
+  Файлът се сервира само на виждащите картата, с `nosniff` и Range. Снимките в края на печата и PDF-а
+  — отметка „Includi le foto“ (`fotoStampate`; без знака `stampaFoto-_` записът не пипа избора), по
+  разделите на листа без изключените, от нова страница, по две на ред; клиповете — само в портала.
+  Окончателно изтритата карта взима и папката си. Снимките са съдържание, не украса — правилото за
+  визията по-долу не ги засяга.
 - Коментарите в `src/`, `views/`, `deploy/` — на български; тестовете и `scripts/` — на английски. В
   изгледите коментарите са EJS (`<%# … %>`), никога HTML (`<!-- … -->`): страницата е само на италиански и
   няма кирилица дори в изходния код (пазят го тестовете — unit, integration и e2e).
@@ -301,7 +328,8 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
 
 ## Деплой
 
-Docker Compose (db + app на 127.0.0.1:4330) + nginx на хоста — `DEPLOY.md`. Веднъж: `deploy/setup-env.sh`
+Docker Compose (db + app на 127.0.0.1:4330 + `worker` с ffmpeg; томовете `db-data` и `media`) + nginx на
+хоста — `DEPLOY.md` (снимките не са в дъмпа на базата — копират се отделно, т. 6). Веднъж: `deploy/setup-env.sh`
 (тайните в `/opt/few-few/shared/rilievi/.env`, 600), сертификат, после `deploy/create-master.sh`. Един
 път за ръчния и автоматичния деплой: `deploy/deploy.sh` (вика го `deploy/autodeploy.sh`, проект
 `rilievi`): бекъп преди миграция, сонда с маркер `"app":"rilievi"`, `last-good`, дневен бекъп

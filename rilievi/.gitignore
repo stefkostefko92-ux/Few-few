@@ -7,3 +7,5 @@ dist/
 public/fonts/
 test-results/
 tests/e2e/shots/
+# Снимките и клиповете при локална разработка (MEDIA_DIR=./media).
+media/
