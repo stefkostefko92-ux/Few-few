@@ -201,14 +201,15 @@ describe('filling a form from the sheet and from the other form', () => {
 });
 
 describe('a form that comes back (an error, the confirmation)', () => {
+  const ctx = {
+    azienda: 'Prova',
+    utente: 'Prova',
+    ruolo: 'Tecnico',
+    email: 'p@rilievi.test',
+    etichetta: (campo: string, valore: string) => t(`scheda.option.${campo}.${valore}`),
+  };
+
   it('keeps as following only the fields the browser says still follow, of the sheet or a form', () => {
-    const ctx = {
-      azienda: 'Prova',
-      utente: 'Prova',
-      ruolo: 'Tecnico',
-      email: 'p@rilievi.test',
-      etichetta: (campo: string, valore: string) => t(`scheda.option.${campo}.${valore}`),
-    };
     // Linked fields, a survey field of a form, a field of the sheet filled from a form: they follow.
     // A name the form does not have, or a field that never follows, is dropped.
     const { auto } = withPrefill(
@@ -220,6 +221,35 @@ describe('a form that comes back (an error, the confirmation)', () => {
       ctx,
     );
     assert.deepEqual([...auto].sort(), ['fermate', 'oq-cliente', 'oq-nFermate', 'pa-motoreAc2']);
+  });
+
+  it('keeps empty a survey field emptied in a filled form, not one that had nothing to take', () => {
+    const { values, scritti } = withPrefill(
+      {
+        ...open,
+        quadroMarca: 'MOVILIFT',
+        tipoImpianto: ['GEARLESS'],
+        // Emptied by hand: the company, and the kind of lift the sheet calls "Gearless" (MRL).
+        'om-ragioneSociale': '',
+        'om-tipologia': '',
+        // Written by hand.
+        'om-riferimento': 'Commessa 77',
+        // Nothing to take: the sheet has no kind of doors ticked.
+        'om-tipoPorte': '',
+      },
+      ctx,
+    );
+    const movilift = [...scritti].filter((name) => name.startsWith('om-')).sort();
+    assert.deepEqual(movilift, ['om-ragioneSociale', 'om-tipologia']);
+    assert.equal(values['om-ragioneSociale'], '', 'nothing is put back');
+    assert.equal(values['om-riferimento'], 'Commessa 77');
+    // A form opened for the first time is filled, nothing in it is "emptied".
+    const { values: first, scritti: none } = withPrefill(
+      { data: '2026-10-12', matricola: '33871', quadroMarca: 'MOVILIFT', quadroOrdine: 'si' },
+      ctx,
+    );
+    assert.equal(first['om-ragioneSociale'], 'Prova');
+    assert.deepEqual([...none], []);
   });
 });
 

@@ -13,22 +13,31 @@ import { moduloFormValues, nameOf, shownName } from './valori.js';
  * записано. `auto` са полетата, попълнени така (свързаните — и със стойността на празния модул: „Loc.
  * Macc. in ALTO“), или върнати от браузъра като още следващи (и полета на картата, попълнени от
  * модул): браузърът ги води след източника им, докато човекът не пише в тях (public/js/collegati.js,
- * moduli.js).
+ * moduli.js). `scritti` са полетата от огледа на вече попълван модул (записан или върнат), които са
+ * празни, макар огледът да има стойност за тях: човекът ги е изпразнил — браузърът не ги пълни наново
+ * (собственикът, 21 октомври 2026: изтритият имейл на MoviLift се връщаше).
  */
 export function withPrefill(
   values: FormValues,
   ctx: Omit<PrefillContext, 'values'>,
-): { values: FormValues; auto: Set<string> } {
+): { values: FormValues; auto: Set<string>; scritti: Set<string> } {
   const out: FormValues = { ...values };
   const claimed = values[AUTO_KEY];
   const auto = new Set<string>(
     typeof claimed === 'string' ? claimed.split(' ').filter((name) => NOMI_SEGUACI.has(name)) : [],
   );
+  const scritti = new Set<string>();
   for (const slot of SLOTS) {
-    if (values[shownName(slot.prefix)] === '1') continue;
+    const token = prefillToken(slot.modulo, { ...ctx, values });
+    if (values[shownName(slot.prefix)] === '1') {
+      for (const key of Object.keys(token)) {
+        const name = nameOf(slot.prefix, key);
+        if (values[name] === undefined || values[name] === '') scritti.add(name);
+      }
+      continue;
+    }
     const linked = prefillCollegati(slot.prefix, values);
     const predefinito = predefiniti(slot.modulo);
-    const token = prefillToken(slot.modulo, { ...ctx, values });
     for (const key of campiCollegati(slot.prefix)) {
       if (Object.hasOwn(linked, key) || Object.hasOwn(predefinito, key)) {
         auto.add(nameOf(slot.prefix, key));
@@ -38,7 +47,7 @@ export function withPrefill(
     const valori = { ...predefinito, ...token, ...linked };
     Object.assign(out, moduloFormValues(slot.modulo, slot.prefix, valori));
   }
-  return { values: out, auto };
+  return { values: out, auto, scritti };
 }
 
 /** Поле от модул по името му във формата (`oq-cliente`) — за обобщението на грешките. */

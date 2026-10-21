@@ -13,14 +13,15 @@ import {
   drawSectionTitle,
   MARGIN,
   type PdfContext,
+  type PdfField,
 } from './pdf-layout.js';
 import { drawTable } from './pdf-table.js';
 import type { SchedaFull } from './service.js';
 
 /**
  * PDF на схемата, A4, черно на бяло — същото съдържание като страницата за печат. Шрифтът е DejaVu Sans
- * (кирилица, италиански ударения, ☑/☐), вграден като подмножество; Helvetica/Times не се ползват —
- * те нямат кирилица, а бележките може да са на български.
+ * (кирилица, италиански ударения), вграден като подмножество; Helvetica/Times не се ползват — те нямат
+ * кирилица, а бележките може да са на български. Квадратчетата и отметките са с линии (pdf-spunte.ts).
  */
 
 const FONT_FILES = { regular: 'DejaVuSans.ttf', bold: 'DejaVuSans-Bold.ttf' } as const;
@@ -127,18 +128,16 @@ export function renderSchedaPdf(scheda: SchedaFull, options: PdfOptions): Promis
   return done;
 }
 
-/** Група от модул като клетка на цял ред: отметнатото с ☑, после написаното („Corsa Mt.: 12“). */
-function gruppoField(gruppo: RiepilogoGruppo, index: number): DisplayField {
-  const parts = [
-    ...gruppo.spunte.map((label) => `☑ ${label}`),
-    ...gruppo.testi.map(({ label, value }) => `${label}: ${value}`),
-  ];
+/** Група от модул като клетка на цял ред: отметнатото, после написаното („Corsa Mt.: 12“). */
+function gruppoField(gruppo: RiepilogoGruppo, index: number): PdfField {
   return {
     key: `modulo-${index}`,
     label: gruppo.titolo,
-    value: parts.join('    '),
+    value: '',
     kind: 'text',
     wide: true,
+    options: gruppo.spunte.map((label) => ({ value: label, label, checked: true })),
+    testo: gruppo.testi.map(({ label, value }) => `${label}: ${value}`).join('    '),
   };
 }
 

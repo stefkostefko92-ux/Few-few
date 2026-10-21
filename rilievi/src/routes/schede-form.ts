@@ -52,7 +52,7 @@ export function renderForm(req: Request, res: Response, status: number, view: Fo
     ruolo: role ? t(`role.${role}`) : '',
     email: user.email,
   };
-  const { values, auto } = withPrefill(view.values, {
+  const { values, auto, scritti } = withPrefill(view.values, {
     ...contesto,
     etichetta: (campo, valore) => t(`scheda.option.${campo}.${valore}`),
   });
@@ -83,6 +83,7 @@ export function renderForm(req: Request, res: Response, status: number, view: Fo
     moduloFieldOf,
     collegati: {
       auto,
+      scritti,
       discrepanze: new Map(discrepanze.map((d) => [d.key, d])),
       delGruppo: collegatiDelGruppo,
       json: collegatiPerBrowser(t, contesto),

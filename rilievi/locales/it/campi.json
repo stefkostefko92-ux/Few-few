@@ -80,33 +80,14 @@
       "controlloQuadro": "Controllo su quadro manovra",
       "controlloQuadroTipo": "Tipo controllo",
       "arganoNote": "Note argano",
-      "centralinaDaFare": "Centralina da fare",
-      "centralinaAzionamento": "Tipo di azionamento",
-      "centralinaParacadute": "Valvola di blocco (paracadute) sul cilindro",
-      "centralinaPistoni": "Numero pistoni",
-      "centralinaDiametroPistoneMm": "Diametro pistone (stelo)",
-      "centralinaCorsaM": "Corsa",
-      "centralinaVelocita": "Velocità nominale",
-      "centralinaPressioneBar": "Pressione statica a pieno carico",
-      "centralinaPortataPompa": "Portata pompa (targa attuale)",
-      "centralinaPotenzaKw": "Potenza motore",
-      "centralinaAlimentazione": "Alimentazione",
-      "centralinaAlimentazioneAltro": "Alimentazione (quale)",
-      "centralinaAvviamento": "Avviamento",
-      "centralinaTubazione": "Tubazione",
-      "centralinaTubazioneM": "Lunghezza tubazione",
-      "centralinaAttacco": "Ø attacco tubazione",
-      "centralinaDistanzaM": "Distanza locale macchina - vano",
-      "centralinaAccesso": "Accesso al locale macchina",
-      "centralinaCorseOra": "Corse/ora",
-      "centralinaNote": "Note centralina (marca/modello attuale, targa)",
-      "centralinaMarca": "Tipo / marca centralina",
-      "centralinaMotore": "Motore",
-      "centralinaBloccoValvole": "Blocco valvole (marca/modello)",
-      "emendamentoA3": "Emendamento A3 da fare",
-      "centralinaDiscesaEmergenza": "Discesa manuale di emergenza funzionante",
-      "centralinaOlioLivello": "Livello olio",
-      "centralinaOlioStato": "Stato olio",
+      "centralinaDaFare": "Centralina da sostituire",
+      "centralinaMarca": "Marca e modello centralina",
+      "emendamentoA3": "Emendamento A3 da installare",
+      "tuboFlessibile": "Installare tubo flessibile",
+      "tuboFlessibileDiametroMm": "Diametro tubo flessibile",
+      "tuboFlessibileLunghezzaM": "Lunghezza tubo flessibile",
+      "tuboFlessibileNote": "Note tubo flessibile",
+      "centralinaNote": "Note centralina",
       "telesoccorsoInstallare": "Telesoccorso da installare",
       "perifericaInstallare": "Periferica sotto cabina da installare",
       "cornettaInstallare": "Cornetta nel locale da installare"
@@ -116,7 +97,7 @@
       "quadroOrdine": "Vuoi compilare la scheda per l'ordine quadro?",
       "arganoPreventivo": "Argano da sostituire?",
       "sospensioni": "Sospensioni da cambiare?",
-      "centralinaDaFare": "Centralina da fare?"
+      "centralinaDaFare": "Centralina da sostituire?"
     },
     "option": {
       "ubicazioneMacchina": {
@@ -147,39 +128,6 @@
       "quadroModello": {
         "NG120": "NG120",
         "QI_TOUCH": "QI Touch"
-      },
-      "centralinaAzionamento": {
-        "DIRETTO_LATERALE": "Diretto laterale",
-        "DIRETTO_CENTRALE": "Diretto centrale (interrato)",
-        "INDIRETTO_2_1": "Indiretto in taglia 2:1"
-      },
-      "centralinaAlimentazione": {
-        "TRIFASE_400": "400 V trifase",
-        "MONOFASE_230": "230 V monofase",
-        "ALTRO": "Altro"
-      },
-      "centralinaAvviamento": {
-        "DIRETTO": "Diretto",
-        "STELLA_TRIANGOLO": "Stella-triangolo",
-        "SOFT_STARTER": "Soft-starter",
-        "INVERTER": "Inverter"
-      },
-      "centralinaTubazione": {
-        "RIGIDA": "Rigida",
-        "FLESSIBILE": "Flessibile"
-      },
-      "centralinaMotore": {
-        "IMMERSO": "Immerso",
-        "ESTERNO": "Esterno"
-      },
-      "centralinaOlioLivello": {
-        "REGOLARE": "Regolare",
-        "BASSO": "Basso"
-      },
-      "centralinaOlioStato": {
-        "BUONO": "Buono",
-        "DA_SOSTITUIRE": "Da sostituire",
-        "PERDITE": "Perdite visibili"
       }
     },
     "unit": {
@@ -189,11 +137,7 @@
         "other": "persone"
       },
       "mm": "mm",
-      "m": "m",
-      "bar": "bar",
-      "lmin": "l/min",
-      "kw": "kW",
-      "ms": "m/s"
+      "m": "m"
     }
   }
 }

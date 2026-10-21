@@ -78,4 +78,32 @@ export async function checkRealTime(context, { base, aziendaName, sheetUrl, sche
   if (!(await edit.locator('#f-pa [data-diff]:visible', { hasText: 'Indirizzo' }).count()))
     fail(`${scheme} real time: the changed address is not listed as a difference`);
   await edit.close();
+
+  // What someone empties in a form stays empty when the saved sheet opens again (the e-mail of the
+  // MoviLift order kept coming back); the voltage of the photocell is written like that of the skate.
+  const movilift = await context.newPage();
+  movilift.on('pageerror', (error) => fail(`${scheme} emptied: page error ${error.message}`));
+  await movilift.goto(`${base}/schede/nuova`);
+  await movilift.selectOption('#f-azienda', { label: aziendaName });
+  await movilift.fill('#f-numeroImpianto', '880012');
+  await tick(movilift, 'quadroMarca', 'MOVILIFT');
+  await tick(movilift, 'quadroOrdine', 'si');
+  if ((await movilift.inputValue('#f-om-email')) !== '')
+    fail(`${scheme} emptied: the MoviLift order still gets the e-mail of the person writing`);
+  if ((await movilift.inputValue('#f-om-ragioneSociale')) !== aziendaName)
+    fail(`${scheme} emptied: the MoviLift order without the company`);
+  await movilift.fill('#f-om-ragioneSociale', '');
+  await tick(movilift, 'om-fotocellula', 'si');
+  await movilift.fill('#f-om-fotocellulaV', '24');
+  await movilift.click('.actions button[type=submit]');
+  await movilift.waitForURL(/\/schede\/[a-z0-9]+$/);
+  await movilift.goto(`${movilift.url()}/modifica`);
+  await movilift.fill('#f-numeroImpianto', '880013');
+  if ((await movilift.inputValue('#f-om-ragioneSociale')) !== '')
+    fail(`${scheme} emptied: the company emptied in the MoviLift order came back`);
+  if ((await movilift.inputValue('#f-om-riferimento')) !== 'N° 880012')
+    fail(`${scheme} emptied: the saved reference of the order followed the sheet`);
+  if ((await movilift.inputValue('#f-om-fotocellulaV')) !== '24')
+    fail(`${scheme} emptied: the voltage of the photocell was not saved`);
+  await movilift.close();
 }

@@ -126,9 +126,13 @@ describe('a hydraulic lift', () => {
       ...SURVEY,
       tipoImpianto: 'IDRAULICO',
       centralinaDaFare: 'no',
-      centralinaAzionamento: 'DIRETTO_LATERALE',
       centralinaMarca: 'GMV',
       emendamentoA3: 'si',
+      tuboFlessibile: 'si',
+      tuboFlessibileDiametroMm: '25',
+      tuboFlessibileLunghezzaM: '6,5',
+      tuboFlessibileNote: 'Passaggio sotto il pavimento',
+      centralinaNote: 'Perdita alla valvola',
       arganoPreventivo: 'si',
       'pa-_': '1',
       'pa-pesoCabina': '650',
@@ -145,11 +149,25 @@ describe('a hydraulic lift', () => {
     assert.equal(row.centralinaDaFare, false);
     assert.equal(row.centralinaMarca, 'GMV');
     assert.equal(row.emendamentoA3, true);
+    assert.deepEqual(
+      [
+        row.tuboFlessibile,
+        String(row.tuboFlessibileDiametroMm),
+        String(row.tuboFlessibileLunghezzaM),
+      ],
+      [true, '25', '6.5'],
+    );
+    assert.equal(row.centralinaNote, 'Perdita alla valvola');
     assert.equal(row.arganoPreventivo, null);
     assert.equal(row.preventivoArgano, null);
     const print = await browser.get(`/schede/${id}/stampa`);
     assert.match(print.body, /<h2>Centralina<\/h2>/);
-    assert.match(print.body, /<dt>Emendamento A3 da fare<\/dt>/);
+    assert.match(print.body, /<dt>Emendamento A3 da installare<\/dt>/);
+    assert.match(print.body, /<dt>Lunghezza tubo flessibile<\/dt>\s*<dd>6,5\sm<\/dd>/);
+    assert.match(print.body, /<dt>Note centralina<\/dt>\s*<dd>Perdita alla valvola<\/dd>/);
+    // A sheet with the power unit notes is found by them.
+    const found = await browser.get('/schede?q=valvola');
+    assert.match(found.body, new RegExp(`href="/schede/${id}"`));
     assert.doesNotMatch(print.body, /<h2>Argano<\/h2>|<h2>Limitatore<\/h2>/);
     assert.match(print.body, /<dt>Tipo tiranti in fossa<\/dt>\s*<dd>Ancoraggio M16<\/dd>/);
     assert.doesNotMatch(print.body, /tiranti contrappeso/);

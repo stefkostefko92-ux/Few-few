@@ -238,7 +238,11 @@ describe('the sheet page', () => {
       serratureNumero: 4,
       tipoImpianto: ['IDRAULICO'],
       centralinaDaFare: false,
-      centralinaOlioStato: 'PERDITE',
+      centralinaMarca: 'GMV 3010',
+      emendamentoA3: true,
+      tuboFlessibile: false,
+      quadroMarca: 'MASTECH',
+      quadroModello: 'QI_TOUCH',
       sezioniEscluse: [],
       misureBottoniere: [],
     } as unknown as SchedaShown;
@@ -248,7 +252,10 @@ describe('the sheet page', () => {
       'doppioAccesso',
       'pattinoRetrattile',
       'serratureNumero',
-      'centralinaOlioStato',
+      'centralinaMarca',
+      'emendamentoA3',
+      'tuboFlessibile',
+      'centralinaNote',
     ]) {
       assert.ok(keys.includes(key), key);
     }
@@ -257,6 +264,8 @@ describe('the sheet page', () => {
       'sospensioniNumero',
       'bloccaPortine',
       'pattinoRetrattileTipo',
+      'tuboFlessibileDiametroMm',
+      'tuboFlessibileNote',
     ]) {
       assert.ok(!keys.includes(key), key);
     }
@@ -264,14 +273,13 @@ describe('the sheet page', () => {
     const titles = sections.map((s) => s.key);
     assert.ok(titles.includes('centralina'));
     assert.ok(!titles.includes('argano') && !titles.includes('limitatore'));
-    const stato = sections.flatMap((s) => s.fields).find((f) => f.key === 'centralinaOlioStato');
-    assert.equal(stato?.value, 'Perdite visibili');
+    const modello = sections.flatMap((s) => s.fields).find((f) => f.key === 'quadroModello');
+    assert.equal(modello?.value, 'QI Touch');
     assert.deepEqual(
-      stato?.options?.map((o) => [o.label, o.checked]),
+      modello?.options?.map((o) => [o.label, o.checked]),
       [
-        ['Buono', false],
-        ['Da sostituire', false],
-        ['Perdite visibili', true],
+        ['NG120', false],
+        ['QI Touch', true],
       ],
     );
   });

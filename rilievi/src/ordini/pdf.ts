@@ -1,7 +1,7 @@
 import { rgb, type PDFFont, type PDFPage } from 'pdf-lib';
 import type { Modulo, ModuloOverlay } from './moduli.js';
 import { renderAcroform } from './pdf-form.js';
-import { apriModulo, fitBlock, fitLine, fitRighe } from './pdf-testo.js';
+import { apriModulo, fitBlock, fitLine, fitRighe, SEGNO } from './pdf-testo.js';
 import type { Valori } from './valori.js';
 
 /**
@@ -17,14 +17,14 @@ const INK = rgb(0, 0, 0);
 function cross(page: PDFPage, box: readonly [number, number, number, number]): void {
   const height = page.getHeight();
   const [x0, top, x1, bottom] = box;
-  const inset = 1.3;
+  const inset = 1.6;
   const low = { x: x0 + inset, y: height - bottom + inset };
   const high = { x: x1 - inset, y: height - top - inset };
-  page.drawLine({ start: low, end: high, thickness: 1.1, color: INK });
+  page.drawLine({ start: low, end: high, thickness: SEGNO, color: INK });
   page.drawLine({
     start: { x: low.x, y: high.y },
     end: { x: high.x, y: low.y },
-    thickness: 1.1,
+    thickness: SEGNO,
     color: INK,
   });
 }
@@ -37,7 +37,7 @@ function circle(page: PDFPage, box: readonly [number, number, number, number]): 
     y: page.getHeight() - (top + bottom) / 2,
     xScale: (x1 - x0) / 2,
     yScale: (bottom - top) / 2,
-    borderWidth: 1.1,
+    borderWidth: SEGNO,
     borderColor: INK,
   });
 }

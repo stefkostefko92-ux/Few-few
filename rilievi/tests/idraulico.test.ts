@@ -1,7 +1,8 @@
 // The October 2026 brief: a hydraulic lift has no argano, governor, tensioner or governor rope but a
-// power unit ("Centralina da fare?"), the emergency call is three things to install, the panel section
-// asks for a reduced pit and headroom, a kept argano asks for its brake, and the end of the form chooses
-// the sections of the print.
+// power unit ("Centralina da sostituire?" since October 21: its make and model, the A3 amendment and a
+// flexible hose to install), the emergency call is three things to install, the panel section asks for a
+// reduced pit and headroom, a kept argano asks for its brake, and the end of the form chooses the
+// sections of the print.
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { activeParts, type SectionKey } from '../src/schede/fields.js';
@@ -50,53 +51,100 @@ describe('the kind of lift', () => {
     assert.equal(data.tenditore, null);
   });
 
-  it('asks the power unit questions of the "Sì" branch, or those of the "No" branch', () => {
+  it('asks the make and model of the power unit with either answer, the A3 amendment with "No"', () => {
     const unit = {
       ...minimal,
       tipoImpianto: 'IDRAULICO',
-      centralinaAzionamento: 'INDIRETTO_2_1',
-      centralinaParacadute: 'si',
-      centralinaPistoni: '1',
-      centralinaVelocita: '0,63',
-      centralinaPotenzaKw: '7,5',
-      centralinaAvviamento: 'SOFT_STARTER',
-      centralinaMarca: 'GMV',
+      centralinaMarca: 'GMV 3010',
       emendamentoA3: 'si',
-      centralinaOlioStato: 'PERDITE',
+      tuboFlessibile: 'si',
+      tuboFlessibileDiametroMm: '25,4',
+      tuboFlessibileLunghezzaM: '6',
+      tuboFlessibileNote: 'Raccordi da 1"',
+      centralinaNote: 'Perdita alla valvola',
     };
-    const nuova = parsedOrFail({ ...unit, centralinaDaFare: 'si' });
-    assert.equal(nuova.centralinaAzionamento, 'INDIRETTO_2_1');
-    assert.equal(nuova.centralinaParacadute, true);
-    assert.equal(nuova.centralinaPistoni, 1);
-    assert.equal(String(nuova.centralinaVelocita), '0.63');
-    assert.equal(nuova.centralinaAvviamento, 'SOFT_STARTER');
-    assert.equal(nuova.centralinaMarca, null, 'the make of the old unit goes with "No"');
-    assert.equal(nuova.emendamentoA3, null);
-
     const vecchia = parsedOrFail({ ...unit, centralinaDaFare: 'no' });
-    assert.equal(vecchia.centralinaAzionamento, 'INDIRETTO_2_1', 'asked in both branches');
-    assert.equal(vecchia.centralinaMarca, 'GMV');
+    assert.equal(vecchia.centralinaMarca, 'GMV 3010');
     assert.equal(vecchia.emendamentoA3, true);
-    assert.equal(vecchia.centralinaOlioStato, 'PERDITE');
-    assert.equal(vecchia.centralinaPistoni, null);
-    assert.equal(vecchia.centralinaAvviamento, null);
+    assert.equal(vecchia.tuboFlessibile, true);
+    assert.equal(Number(vecchia.tuboFlessibileDiametroMm), 25.4);
+    assert.equal(Number(vecchia.tuboFlessibileLunghezzaM), 6);
+    assert.equal(vecchia.tuboFlessibileNote, 'Raccordi da 1"');
+    assert.equal(vecchia.centralinaNote, 'Perdita alla valvola');
 
-    const traction = parsedOrFail({ ...unit, tipoImpianto: 'ELETTRICO', centralinaDaFare: 'si' });
+    const nuova = parsedOrFail({ ...unit, centralinaDaFare: 'si' });
+    assert.equal(nuova.centralinaMarca, 'GMV 3010', 'the make and model of the new unit');
+    assert.equal(nuova.emendamentoA3, null, 'a new unit comes with the amendment');
+    assert.equal(nuova.tuboFlessibile, null);
+    assert.equal(nuova.tuboFlessibileDiametroMm, null);
+    assert.equal(nuova.tuboFlessibileNote, null);
+    assert.equal(nuova.centralinaNote, 'Perdita alla valvola', 'the notes are always asked');
+
+    const unanswered = parsedOrFail(unit);
+    assert.equal(unanswered.centralinaMarca, null);
+    assert.equal(unanswered.emendamentoA3, null);
+    assert.equal(unanswered.centralinaNote, 'Perdita alla valvola');
+
+    const traction = parsedOrFail({ ...unit, tipoImpianto: 'ELETTRICO', centralinaDaFare: 'no' });
     assert.equal(traction.centralinaDaFare, null, 'no power unit on a traction lift');
-    assert.equal(traction.centralinaPistoni, null);
+    assert.equal(traction.centralinaMarca, null);
+    assert.equal(traction.centralinaNote, null);
   });
 
-  it('checks the numbers of the power unit like every other number of the sheet', () => {
-    const result = parseScheda({
+  it('asks the size of the flexible hose only when it is to install', () => {
+    const hose = {
+      ...minimal,
+      tipoImpianto: 'IDRAULICO',
+      centralinaDaFare: 'no',
+      emendamentoA3: 'si',
+      tuboFlessibileDiametroMm: '25',
+      tuboFlessibileLunghezzaM: '6',
+      tuboFlessibileNote: 'Sotto il pavimento',
+    };
+    const no = parsedOrFail({ ...hose, tuboFlessibile: 'no' });
+    assert.equal(no.tuboFlessibile, false);
+    assert.deepEqual(
+      [no.tuboFlessibileDiametroMm, no.tuboFlessibileLunghezzaM, no.tuboFlessibileNote],
+      [null, null, null],
+    );
+    const noAmendment = parsedOrFail({ ...hose, emendamentoA3: 'no', tuboFlessibile: 'si' });
+    assert.equal(noAmendment.tuboFlessibile, null, 'the hose comes with the A3 amendment');
+    assert.equal(noAmendment.tuboFlessibileLunghezzaM, null);
+  });
+
+  it('no longer asks the data of the power unit taken off the sheet', () => {
+    const data = parsedOrFail({
       ...minimal,
       tipoImpianto: 'IDRAULICO',
       centralinaDaFare: 'si',
+      centralinaAzionamento: 'INDIRETTO_2_1',
       centralinaPistoni: '9',
       centralinaPressioneBar: 'molta',
+      centralinaOlioStato: 'PERDITE',
+    });
+    for (const key of [
+      'centralinaAzionamento',
+      'centralinaPistoni',
+      'centralinaPressioneBar',
+      'centralinaOlioStato',
+    ]) {
+      assert.ok(!(key in data), `${key}: the old answers stay in the database`);
+    }
+  });
+
+  it('checks the size of the flexible hose like every other number of the sheet', () => {
+    const result = parseScheda({
+      ...minimal,
+      tipoImpianto: 'IDRAULICO',
+      centralinaDaFare: 'no',
+      emendamentoA3: 'si',
+      tuboFlessibile: 'si',
+      tuboFlessibileDiametroMm: 'largo',
+      tuboFlessibileLunghezzaM: '5000',
     });
     assert.equal(result.ok, false);
-    assert.equal(!result.ok && result.errors.centralinaPistoni, 'range');
-    assert.equal(!result.ok && result.errors.centralinaPressioneBar, 'decimal');
+    assert.equal(!result.ok && result.errors.tuboFlessibileDiametroMm, 'decimal');
+    assert.equal(!result.ok && result.errors.tuboFlessibileLunghezzaM, 'range');
   });
 });
 

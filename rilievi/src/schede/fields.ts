@@ -228,6 +228,8 @@ export const SEARCHABLE = [
   'controlloQuadroTipo',
   'arganoNote',
   'centralinaMarca',
+  'tuboFlessibileNote',
+  'centralinaNote',
   'tirantiCabinaTipo',
   'tirantiContrappesoTipo',
   'tirantiFossaTipo',

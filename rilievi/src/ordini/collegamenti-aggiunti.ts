@@ -4,7 +4,8 @@ import type { Collegamento } from './collegamenti.js';
  * Свързаните данни, добавени след първите (collegamenti-elenco.ts) — в реда на добавянето: редът е
  * редът на разминаванията и на отпечатъка на потвърждението, затова нова връзка е винаги в края.
  * Октомври 2026 (централата и Mastech): таблата помежду си (сервизи), машината (полюси, мощност,
- * окачване, шайба, предавателно число), шейната, централата (мощност, пускане, марка).
+ * окачване, шайба, предавателно число), шейната, марката на централата. Мощността и пускането на
+ * централата на картата са махнати (21 октомври) — и връзките им с MoviLift.
  */
 export const AGGIUNTI: readonly Collegamento[] = [
   {
@@ -68,37 +69,6 @@ export const AGGIUNTI: readonly Collegamento[] = [
       { luogo: 'om', campo: 'elettrPattinoV' },
       { luogo: 'mn', campo: 'tensionePattino' },
       { luogo: 'mq', campo: 'tensionePattino' },
-    ],
-  },
-  {
-    // Централата (картата при хидравлична уредба) ↔ „Idraulico“ на MoviLift: мощността на мотора ѝ.
-    key: 'potenzaCentralina',
-    tipo: 'numero',
-    membri: [
-      { luogo: 'scheda', campo: 'centralinaPotenzaKw' },
-      { luogo: 'om', campo: 'potMotCentralina' },
-    ],
-  },
-  {
-    // Пускането на мотора на централата; „Inverter“ няма своя бутон на MoviLift.
-    key: 'avviamento',
-    tipo: 'scelta',
-    membri: [
-      {
-        luogo: 'scheda',
-        campo: 'centralinaAvviamento',
-        voci: {
-          DIRETTO: 'DIRETTO',
-          STELLA_TRIANGOLO: 'STELLA_TRIANGOLO',
-          SOFT_STARTER: 'SOFT',
-          INVERTER: 'INVERTER',
-        },
-      },
-      {
-        luogo: 'om',
-        campo: 'avviamento',
-        voci: { diretto: 'DIRETTO', stellaTriangolo: 'STELLA_TRIANGOLO', softStart: 'SOFT' },
-      },
     ],
   },
   {

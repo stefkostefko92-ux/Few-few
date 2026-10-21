@@ -126,19 +126,20 @@
   position: relative;
   width: 11pt;
   height: 11pt;
-  border: 1.2pt solid #000000;
+  border: 1.4pt solid #000000;
   border-radius: 1.5pt;
 }
 
+/* Отметката — плътна (собственикът, 21 октомври 2026). */
 .opt--on .opt__box::after {
   content: '';
   position: absolute;
-  left: 3pt;
-  top: 0.5pt;
-  width: 3.3pt;
-  height: 6.4pt;
+  left: 2.6pt;
+  top: 0;
+  width: 4pt;
+  height: 6.9pt;
   border: solid #000000;
-  border-width: 0 1.4pt 1.4pt 0;
+  border-width: 0 2.1pt 2.1pt 0;
   transform: rotate(45deg);
 }
 

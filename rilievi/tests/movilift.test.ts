@@ -3,14 +3,18 @@ import { existsSync, readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 import fontkit from '@pdf-lib/fontkit';
 import {
+  decodePDFRawStream,
   PDFCheckBox,
+  PDFDict,
   PDFDocument,
   PDFDropdown,
   PDFName,
   PDFRadioGroup,
+  PDFRawStream,
   PDFRef,
   PDFTextField,
   type PDFForm,
+  type PDFWidgetAnnotation,
 } from 'pdf-lib';
 import { translatorFor } from '../src/i18n.js';
 import { discrepanzeDi, prefillCollegati } from '../src/ordini/collegati.js';
@@ -43,7 +47,7 @@ describe('the MoviLift order form', () => {
   it('maps every field of the official PDF but its two printed labels, each of its own kind', async () => {
     const form = await blankForm();
     const fields = fieldsOf(MOVILIFT);
-    assert.equal(fields.length, 128);
+    assert.equal(fields.length, 129);
     const kinds = {
       text: PDFTextField,
       textarea: PDFTextField,
@@ -54,6 +58,11 @@ describe('the MoviLift order form', () => {
     const mapped = new Set<string>();
     for (const field of fields) {
       assert.ok('acro' in field, field.key);
+      if ('crea' in field && field.crea) {
+        // The voltage of the photocell: the paper prints its "V", the form has no field for it.
+        assert.equal(form.getFieldMaybe(field.acro), undefined, field.key);
+        continue;
+      }
       assert.ok(form.getField(field.acro) instanceof kinds[field.kind], field.key);
       mapped.add(field.acro);
     }
@@ -151,7 +160,6 @@ describe('prefilling the MoviLift order', () => {
       // The survey and the person writing.
       riferimento: 'N° 104552 — Via Verdi 14, Milano',
       ragioneSociale: 'Ascensori Rossi Srl',
-      email: 'mario@example.it',
       tipologia: 'MRL',
       tipoPorte: 'Automatiche',
       // The plant data, over the blank form ("Operatore Unico", "Loc. Macc. in ALTO").
@@ -409,7 +417,73 @@ describe('the MoviLift PDF', { skip: !fontsHere && 'DejaVu fonts are not install
     for (const f of own) {
       assert.equal(form.getTextField(f.acro).acroField.getWidgets().length, 1, f.key);
     }
-    assert.equal(before - annots(), 4, 'the four stray buttons are off the page');
+    // One button is added: the voltage of the photocell.
+    assert.equal(before + 1 - annots(), 4, 'the four stray buttons are off the page');
+  });
+
+  it('writes the voltage of the photocell before its printed "V", like that of the skate', async () => {
+    const doc = await PDFDocument.load(moduloPdf(MOVILIFT));
+    doc.registerFontkit(fontkit);
+    const font = await doc.embedFont(readFileSync(pdfFontPaths(fontDir).regular), { subset: true });
+    const form = doc.getForm();
+    const valori = {
+      fotocellula: true,
+      fotocellulaV: '24 V DC',
+      elettrPattinoV: '24 V DC',
+    } as const;
+    compilaAcroform(form, MOVILIFT, valori, font);
+    const photocell = form.getTextField('FotocellulaV');
+    const skate = form.getTextField('Testo77');
+    assert.equal(photocell.getText(), '24 V DC');
+    const [own, model] = [photocell, skate].map((f) => f.acroField.getWidgets()[0]!);
+    assert.equal(own!.P(), model!.P(), 'on the page of the skate voltage');
+    const rect = own!.getRectangle();
+    const box = model!.getRectangle();
+    const size = (r: typeof rect) => [r.y, r.width, r.height].map((n) => n.toFixed(1));
+    assert.deepEqual(size(rect), size(box));
+    // Between "Fotocellula" (ends at 461 pt) and its "V" (from 530 pt), as the skate before its own.
+    assert.ok(rect.x > 461 && rect.x + rect.width < 530, `${rect.x} + ${rect.width}`);
+    assert.equal(own!.getBorderStyle()?.getWidth(), 0, 'no frame');
+    assert.equal(own!.getAppearanceCharacteristics()?.getBackgroundColor(), undefined);
+    const look = (f: PDFTextField) => {
+      const da = f.acroField.getDefaultAppearance() ?? '';
+      const size = Number(/(\d+(?:\.\d+)?) Tf/.exec(da)?.[1]);
+      return { font: da.replace(/\d+(?:\.\d+)? Tf/, 'Tf'), size };
+    };
+    const [mine, theirs] = [look(photocell), look(skate)];
+    assert.equal(mine.font, theirs.font, 'the same font and colour');
+    assert.ok(Math.abs(mine.size - theirs.size) < 0.05, `${mine.size} pt, as ${theirs.size} pt`);
+    assert.match(mine.font, /0 0 1 rg/, 'blue, as MoviLift writes');
+    // Filled again (the same document twice): one field, not two.
+    compilaAcroform(form, MOVILIFT, valori, font);
+    assert.equal(form.getFields().filter((f) => f.getName() === 'FotocellulaV').length, 1);
+  });
+
+  it('marks a ticked box and a chosen button with bold lines, not with ZapfDingbats', async () => {
+    const doc = await PDFDocument.load(moduloPdf(MOVILIFT));
+    doc.registerFontkit(fontkit);
+    const font = await doc.embedFont(readFileSync(pdfFontPaths(fontDir).regular), { subset: true });
+    const form = doc.getForm();
+    const look = (widget: PDFWidgetAnnotation, state: PDFName) => {
+      const normal = widget.dict.lookup(PDFName.of('AP'), PDFDict).lookup(PDFName.of('N'), PDFDict);
+      const stream = normal.lookup(state);
+      assert.ok(stream instanceof PDFRawStream, String(state));
+      return Buffer.from(decodePDFRawStream(stream).decode()).toString('latin1');
+    };
+    const box = form.getCheckBox('Casella di controllo14').acroField.getWidgets()[0]!;
+    const plc = form.getRadioGroup(radio('controllo').acro).acroField.getWidgets()[
+      radio('controllo').opzioni.find((o) => o.valore === 'plc')!.widget
+    ]!;
+    assert.match(look(box, box.getOnValue()!), /ZaDb/, 'the author writes the tick with a font');
+    compilaAcroform(form, MOVILIFT, { fotocellula: true, controllo: 'plc' }, font);
+    const off = look(box, PDFName.of('Off'));
+    const tick = look(box, box.getOnValue()!);
+    assert.ok(tick.startsWith(off), 'the frame of the box as the author drew it');
+    assert.doesNotMatch(tick, /ZaDb|Tj/);
+    assert.match(tick, /\b1\.70 w 1 J 1 j [\d. ]+ m [\d. ]+ l [\d. ]+ l S/);
+    const chosen = look(plc, plc.getOnValue()!);
+    assert.doesNotMatch(chosen, /ZaDb|Tj/);
+    assert.match(chosen, /0 g [\d. ]+ re f/, 'a filled square');
   });
 
   it('is the official form, one A4 page, filled and locked', async () => {

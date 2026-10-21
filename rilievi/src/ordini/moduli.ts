@@ -103,6 +103,12 @@ const acroField = z.discriminatedUnion('kind', [
      * „Piano Corto“) — на листа излиза само този бутон.
      */
     widget: z.number().int().min(0).optional(),
+    /**
+     * Полето го няма във формуляра, а листът го чака („Fotocellula … V“ на MoviLift): създава се при
+     * попълването — x, y (от долу), ширина и височина в точки, на страницата на полето `come`, с неговия
+     * шрифт, размер и цвят (pdf-form.ts).
+     */
+    crea: z.object({ rect: z.tuple([num, num, num, num]), come: z.string().min(1) }).optional(),
   }),
   z.object({
     ...base,

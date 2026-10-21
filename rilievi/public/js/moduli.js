@@ -2,7 +2,8 @@
 // date, the reference of the lift, the company and the person writing, the ticked boxes of the sheet as
 // words. Each follows the sheet in real time while nobody has typed in it — empty, or still holding what
 // was put there for it (data-auto); fields of one kind follow the first one typed in when the sheet says
-// nothing. The server fills them when a form first opens. The plant data that sits in more than one
+// nothing. The server fills them when a form first opens; one emptied by someone in a saved form stays
+// empty (data-scritto, src/ordini/form.ts). The plant data that sits in more than one
 // place (stops, address, speed...) is collegati.js. Loaded after app.js: its conditions are synced first.
 (() => {
   'use strict';
@@ -68,7 +69,7 @@
     return Boolean(box && box.checked && shown(box));
   };
 
-  const touched = (el) => el.dataset.touched === '1';
+  const touched = (el) => el.dataset.touched === '1' || 'scritto' in el.dataset;
   const follows = (el) =>
     !touched(el) &&
     (el.type === 'checkbox'

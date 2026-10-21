@@ -32,11 +32,10 @@ const BASE: readonly Collegamento[] = [
     ],
   },
   {
-    // Скоростта на хидравличния асансьор е в централата (картата).
+    // Скоростта: до 21 октомври 2026 и в централата на картата (махната — собственикът).
     key: 'velocita',
     tipo: 'numero',
     membri: [
-      { luogo: 'scheda', campo: 'centralinaVelocita' },
       { luogo: 'oq', campo: 'velocita' },
       { luogo: 'om', campo: 'velocita' },
       { luogo: 'mn', campo: 'velocita' },
@@ -58,11 +57,11 @@ const BASE: readonly Collegamento[] = [
     ],
   },
   {
-    // Ходът в метри; „Corsa [mm]“ на QI Touch е в милиметри — не е тук.
+    // Ходът в метри; „Corsa [mm]“ на QI Touch е в милиметри — не е тук. Ходът на централата на картата —
+    // махнат (21 октомври 2026).
     key: 'corsa',
     tipo: 'numero',
     membri: [
-      { luogo: 'scheda', campo: 'centralinaCorsaM' },
       { luogo: 'oq', campo: 'corsa' },
       { luogo: 'om', campo: 'corsa' },
       { luogo: 'mn', campo: 'corsa' },

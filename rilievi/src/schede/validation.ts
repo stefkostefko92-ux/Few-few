@@ -1,16 +1,9 @@
 import { z } from 'zod';
 import type {
-  CentralinaAlimentazione,
-  CentralinaAvviamento,
-  CentralinaAzionamento,
-  CentralinaMotore,
-  OlioLivello,
-  OlioStato,
   QuadroMarca,
   QuadroModello,
   TipoImpianto,
   TipoPorte,
-  Tubazione,
   UbicazioneMacchina,
 } from '@prisma/client';
 import { AUTO_KEY } from '../ordini/collegamenti.js';
@@ -55,32 +48,13 @@ export const IDENTIFIERS_ERROR_KEY = 'identifiers';
 /** Централата на хидравличния асансьор (fields-centralina.ts). */
 const centralinaSchema = {
   centralinaDaFare: yesNoOf('centralinaDaFare'),
-  centralinaAzionamento: choiceOf<CentralinaAzionamento>('centralinaAzionamento'),
-  centralinaParacadute: yesNoOf('centralinaParacadute'),
-  centralinaPistoni: intOf('centralinaPistoni'),
-  centralinaDiametroPistoneMm: decimalOf('centralinaDiametroPistoneMm'),
-  centralinaCorsaM: decimalOf('centralinaCorsaM'),
-  centralinaVelocita: decimalOf('centralinaVelocita'),
-  centralinaPressioneBar: decimalOf('centralinaPressioneBar'),
-  centralinaPortataPompa: decimalOf('centralinaPortataPompa'),
-  centralinaPotenzaKw: decimalOf('centralinaPotenzaKw'),
-  centralinaAlimentazione: choiceOf<CentralinaAlimentazione>('centralinaAlimentazione'),
-  centralinaAlimentazioneAltro: textOf('centralinaAlimentazioneAltro'),
-  centralinaAvviamento: choiceOf<CentralinaAvviamento>('centralinaAvviamento'),
-  centralinaTubazione: choiceOf<Tubazione>('centralinaTubazione'),
-  centralinaTubazioneM: decimalOf('centralinaTubazioneM'),
-  centralinaAttacco: textOf('centralinaAttacco'),
-  centralinaDistanzaM: decimalOf('centralinaDistanzaM'),
-  centralinaAccesso: textOf('centralinaAccesso'),
-  centralinaCorseOra: intOf('centralinaCorseOra'),
-  centralinaNote: textOf('centralinaNote'),
   centralinaMarca: textOf('centralinaMarca'),
-  centralinaMotore: choiceOf<CentralinaMotore>('centralinaMotore'),
-  centralinaBloccoValvole: textOf('centralinaBloccoValvole'),
   emendamentoA3: yesNoOf('emendamentoA3'),
-  centralinaDiscesaEmergenza: yesNoOf('centralinaDiscesaEmergenza'),
-  centralinaOlioLivello: choiceOf<OlioLivello>('centralinaOlioLivello'),
-  centralinaOlioStato: choiceOf<OlioStato>('centralinaOlioStato'),
+  tuboFlessibile: yesNoOf('tuboFlessibile'),
+  tuboFlessibileDiametroMm: decimalOf('tuboFlessibileDiametroMm'),
+  tuboFlessibileLunghezzaM: decimalOf('tuboFlessibileLunghezzaM'),
+  tuboFlessibileNote: textOf('tuboFlessibileNote'),
+  centralinaNote: textOf('centralinaNote'),
 };
 
 export const schedaSchema = z

@@ -13,8 +13,7 @@ export type FieldKind =
   | 'choice' // един избор от няколко (или неотбелязано)
   | 'yesno'; // Sì / No / неотбелязано
 
-/** `lmin` — l/min, `kw` — kW, `ms` — m/s (централата на хидравличния асансьор). */
-export type Unit = 'kg' | 'persone' | 'mm' | 'm' | 'bar' | 'lmin' | 'kw' | 'ms';
+export type Unit = 'kg' | 'persone' | 'mm' | 'm';
 
 export type SectionKey =
   | 'impianto'

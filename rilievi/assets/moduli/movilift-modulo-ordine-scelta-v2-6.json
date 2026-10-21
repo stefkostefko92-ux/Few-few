@@ -91,8 +91,7 @@
               "kind": "text",
               "label": "email",
               "acro": "Testo9",
-              "maxLength": 38,
-              "prefill": "email"
+              "maxLength": 38
             }
           ]
         }
@@ -370,6 +369,18 @@
               "kind": "check",
               "label": "Fotocellula",
               "acro": "Casella di controllo14"
+            },
+            {
+              "key": "fotocellulaV",
+              "kind": "text",
+              "label": "Fotocellula V",
+              "acro": "FotocellulaV",
+              "maxLength": 9,
+              "labelNascosta": true,
+              "crea": {
+                "rect": [481.7, 501.3, 46.4, 11],
+                "come": "Testo77"
+              }
             }
           ]
         },

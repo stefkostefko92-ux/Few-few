@@ -380,6 +380,9 @@ model Scheda {
   /// Бележките на раздела „Argano“.
   arganoNote                   String?
   /// Централата на хидравличния асансьор (src/schede/fields-centralina.ts) — вместо аргано.
+  /// `centralinaDaFare` е „Centralina da sostituire?“ (21 октомври 2026); от тогава се питат само марката
+  /// и моделът (`centralinaMarca`), „Emendamento A3 da installare“ с гъвкавата тръба и бележките
+  /// (`centralinaNote`) — другите колони пазят старите отговори.
   centralinaDaFare             Boolean?
   centralinaAzionamento        CentralinaAzionamento?
   centralinaParacadute         Boolean?
@@ -404,6 +407,11 @@ model Scheda {
   centralinaMotore             CentralinaMotore?
   centralinaBloccoValvole      String?                  @db.VarChar(120)
   emendamentoA3                Boolean?
+  /// При „Emendamento A3 da installare“: гъвкава тръба за монтиране — диаметър, дължина, бележки.
+  tuboFlessibile               Boolean?
+  tuboFlessibileDiametroMm     Decimal?                 @db.Decimal(8, 2)
+  tuboFlessibileLunghezzaM     Decimal?                 @db.Decimal(8, 2)
+  tuboFlessibileNote           String?
   centralinaDiscesaEmergenza   Boolean?
   centralinaOlioLivello        OlioLivello?
   centralinaOlioStato          OlioStato?

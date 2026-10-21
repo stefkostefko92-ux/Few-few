@@ -31,7 +31,12 @@ describe('the same data in every place, filled in every direction', () => {
     // The date, the company and the person writing: the forms follow the sheet until someone types.
     assert.match(page.body, /name="oq-data"[^>]*value="(\d{2}\/\d{2}\/\d{4})" data-auto="\1"/);
     assert.match(page.body, /name="sg-mittente"[^>]*data-auto="([^"]+)"[^>]*>\1<\/textarea>/);
-    assert.match(page.body, /name="om-email"[^>]*data-auto="[^"@]+@[^"]+"/);
+    assert.match(
+      page.body,
+      /name="om-ragioneSociale"[^>]*value="([^"]+)" data-auto="\1" data-prefill="azienda"/,
+    );
+    // The e-mail of the person writing is no longer put in the MoviLift order (October 21, 2026).
+    assert.match(page.body, /name="om-email"[^>]*value=""(?![^>]*data-prefill)[^>]*>/);
     // The stops of the sheet came from the panel order and still follow it when the form comes back.
     const reply = await browser.submit('/schede/nuova', '/schede', {
       ...PANEL,
@@ -82,6 +87,27 @@ describe('the same data in every place, filled in every direction', () => {
     ]) {
       assert.doesNotMatch(form.body, new RegExp(`name="${name}"[^>]*data-auto`), name);
     }
+  });
+
+  it('keeps empty, when the sheet opens again, a survey field someone emptied in a saved form', async () => {
+    const { browser } = await signedIn('TECNICO');
+    const id = await create(browser, {
+      ...SURVEY,
+      quadroMarca: 'MOVILIFT',
+      quadroOrdine: 'si',
+      'om-_': '1',
+      'om-ragioneSociale': '',
+      'om-riferimento': 'Commessa 77',
+    });
+    const form = await browser.get(`/schede/${id}/modifica`);
+    // The company was emptied by hand: the page tells the browser not to fill it again.
+    assert.match(
+      form.body,
+      /name="om-ragioneSociale"[^>]*value="" data-prefill="azienda" data-scritto/,
+    );
+    assert.match(form.body, /name="om-riferimento"[^>]*value="Commessa 77" data-prefill="rif">/);
+    // No kind of doors on the sheet: nothing to take, the field still follows the sheet.
+    assert.match(form.body, /name="om-tipoPorte"[^>]*value="" data-prefill="tipoPorte">/);
   });
 
   it('asks to confirm a changed address, never the operator make a page from before still sends', async () => {

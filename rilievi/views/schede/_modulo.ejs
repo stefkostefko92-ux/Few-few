@@ -4,7 +4,8 @@
   // се превеждат. Отваря се при своята марка (и модел — Mastech) и „Sì“ на въпроса над него (обвивки с
   // data-when — таблото има четири модула под един въпрос); data-prefill — попълване от огледа
   // (moduli.js); data-auto — поле, попълнено от огледа, от картата, от другия модул или със стойността на
-  // празния модул: следва източника си, докато човекът не пише в него (moduli.js, collegati.js). Под
+  // празния модул: следва източника си, докато човекът не пише в него (moduli.js, collegati.js);
+  // data-scritto — поле от огледа, изпразнено от човека в записания модул: остава празно (form.ts). Под
   // всяка група — разминаванията на нейните свързани данни; редът с надпис („Norme di riferimento“) е
   // група за четеца на екрана.
   const name = (key) => slot.prefix + '-' + key;
@@ -36,7 +37,9 @@
            const errText = error ? t('scheda.error.' + error, { maxLength: field.maxLength }) : null;
            const value = values[name(field.key)];
            const text = typeof value === 'string' ? value : '';
-           const prefill = field.prefill ? ' data-prefill="' + field.prefill + '"' : '';
+           const prefill = field.prefill
+             ? ' data-prefill="' + field.prefill + '"' + (collegati.scritti.has(name(field.key)) ? ' data-scritto' : '')
+             : '';
            const aria = errText ? ' aria-invalid="true" aria-describedby="' + errId + '"' : '';
            const auto = collegati.auto.has(name(field.key));
       %><% if (row.freccia && i === row.freccia) { %><span class="modulo__arrow" aria-hidden="true">→</span><% } %><% if (field.kind === 'check') { %><label class="tick tick--sm"><input type="checkbox" id="<%= id %>" name="<%= name(field.key) %>" value="si"<% if (value === 'si') { %> checked<% } %><% if (auto && value === 'si') { %> data-auto="si"<% } %><%- prefill %>><span class="tick__box" aria-hidden="true"></span><span><%= field.label %></span></label><% } else if (field.kind === 'radio') { %><fieldset class="modulo__radio" id="<%= id %>"<% if (errText) { %> aria-describedby="<%= errId %>"<% } %>>

@@ -51,17 +51,29 @@ export async function checkMastech(page, scheme, aziendaName) {
   }
   await audit(page, `${scheme} mastech`);
 
-  // A hydraulic lift: the power unit in place of the argano and the governor; a "Sì" opens its data.
+  // A hydraulic lift: the power unit in place of the argano and the governor — its make and model with
+  // either answer, the A3 amendment with "No" and, with the amendment, the flexible hose.
   await tick(page, 'tipoImpianto', 'IDRAULICO');
   if ((await shown(page, '#s-argano')) || (await shown(page, '#s-limitatore')))
     fail(`${scheme}: argano or governor shown for a hydraulic lift`);
   if (!(await shown(page, '#s-centralina'))) fail(`${scheme}: no power unit for a hydraulic lift`);
-  if (!(await shown(page, '#s-centralina >> text=Centralina da fare?')))
-    fail(`${scheme}: the power unit does not ask "Centralina da fare?"`);
+  if (!(await shown(page, '#s-centralina >> text=Centralina da sostituire?')))
+    fail(`${scheme}: the power unit does not ask "Centralina da sostituire?"`);
+  if (!(await shown(page, '#f-centralinaNote'))) fail(`${scheme}: no notes for the power unit`);
   await tick(page, 'centralinaDaFare', 'si');
-  if (!(await shown(page, '#f-centralinaPistoni'))) fail(`${scheme}: power unit data not shown`);
+  if (!(await shown(page, '#f-centralinaMarca'))) fail(`${scheme}: no make for a new unit`);
+  if (await shown(page, '#f-emendamentoA3')) fail(`${scheme}: A3 amendment asked for a new unit`);
   await tick(page, 'centralinaDaFare', 'no');
+  if (!(await shown(page, '#f-centralinaMarca'))) fail(`${scheme}: no make for an old unit`);
   if (!(await shown(page, '#f-emendamentoA3'))) fail(`${scheme}: no A3 amendment for an old unit`);
+  if (await shown(page, '#f-tuboFlessibile')) fail(`${scheme}: hose asked without the amendment`);
+  await tick(page, 'emendamentoA3', 'si');
+  await tick(page, 'tuboFlessibile', 'si');
+  for (const key of ['tuboFlessibileDiametroMm', 'tuboFlessibileLunghezzaM', 'tuboFlessibileNote'])
+    if (!(await shown(page, `#f-${key}`))) fail(`${scheme}: ${key} not shown for the hose`);
+  await tick(page, 'tuboFlessibile', 'no');
+  if (await shown(page, '#f-tuboFlessibileLunghezzaM'))
+    fail(`${scheme}: the hose length stays for "No"`);
   // One kind of lift at a time: ticking "Elettrico" takes "Idraulico" away.
   await tick(page, 'tipoImpianto', 'ELETTRICO');
   if (!(await shown(page, '#s-argano')) || (await shown(page, '#s-centralina')))
