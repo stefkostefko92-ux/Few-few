@@ -40,11 +40,49 @@
       </li>
     </ol>
 
+    <section class="card quick" aria-labelledby="quickTitle">
+      <h2 id="quickTitle" data-i18n="welQuickTitle">Make it yours</h2>
+      <p class="sub" data-i18n="welQuickSub">Optional: it already works. Settings can change any of these later.</p>
+      <label class="opt">
+        <span><b data-i18n="opt_cookie_consent_banners">Cookie / consent banners</b><small data-i18n="opt_automatically_dismiss_accept_cookies_pro">Automatically dismiss “Accept cookies” prompts</small></span>
+        <input type="checkbox" data-feature="cookies" />
+      </label>
+      <label class="opt">
+        <span><b data-i18n="opt_focus_newsletters">Newsletter and sign-up pop-ups</b><small data-i18n="opt_focus_newsletters_desc">“Subscribe to our newsletter” boxes and overlays.</small></span>
+        <input type="checkbox" data-list="focus-newsletters" />
+      </label>
+      <label class="opt">
+        <span><b data-i18n="opt_focus_chat">Chat and support widgets</b><small data-i18n="opt_focus_chat_desc">The floating chat bubbles in the corner of the page.</small></span>
+        <input type="checkbox" data-list="focus-chat" />
+      </label>
+      <label class="opt">
+        <span><b data-i18n="opt_focus_notifications">Notification prompts</b><small data-i18n="opt_focus_notifications_desc">“Allow notifications?” boxes that sites show before the browser asks.</small></span>
+        <input type="checkbox" data-list="focus-notifications" />
+      </label>
+      <label class="opt">
+        <span><b data-i18n="opt_focus_shorts">YouTube Shorts</b><small data-i18n="opt_focus_shorts_desc">The Shorts shelves, tab and suggestions on YouTube.</small></span>
+        <input type="checkbox" data-list="focus-shorts" />
+      </label>
+    </section>
+
+    <section class="card" id="importCard">
+      <p class="sub" data-i18n="opt_import_foreign_sub">Moving from uBlock Origin, AdGuard or Adblock Plus? Choose its backup file: the sites you allowed and your own filters are added here. Nothing is replaced.</p>
+      <button id="foreignBtn" class="btn ghost" type="button" data-i18n="opt_import_foreign">Import from another ad blocker</button>
+      <input type="file" id="foreignFile" accept=".txt,.json,text/plain,application/json" hidden />
+      <p id="foreignHint" class="hint" role="status"></p>
+    </section>
+
+    <section class="card" id="keysCard" hidden>
+      <h2 data-i18n="opt_shortcuts">Keyboard shortcuts</h2>
+      <ul id="keysList" class="keys"></ul>
+    </section>
+
     <div class="actions">
       <button id="done" class="btn" type="button" data-i18n="welDone">Got it</button>
       <button id="settings" class="btn ghost" type="button" data-i18n="welSettings">Open settings</button>
     </div>
   </main>
+  <script src="../lib/foreign.js"></script>
   <script src="welcome.js"></script>
 </body>
 </html>

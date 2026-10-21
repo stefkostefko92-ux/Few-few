@@ -118,6 +118,27 @@
   "support": {
     "message": "Podpri"
   },
+  "rate": {
+    "message": "Oceni"
+  },
+  "rateTitle": {
+    "message": "Ocenite Supreme AdBlock v Spletni trgovini Chrome"
+  },
+  "reviewBlocked": {
+    "message": "Doslej blokirane zahteve: $1"
+  },
+  "reviewAsk": {
+    "message": "Če vam je Supreme AdBlock koristen, kratka ocena v Spletni trgovini Chrome pomaga drugim, da ga najdejo."
+  },
+  "reviewLeave": {
+    "message": "Napišite oceno"
+  },
+  "reviewLater": {
+    "message": "Ne zdaj"
+  },
+  "reviewNever": {
+    "message": "Ne sprašuj več"
+  },
   "filtersCount": {
     "message": "$1+ filtrov",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "Skrije zidove „Izklopite blokator oglasov“ in obnovi stran"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Skrije objave „Sponzorirano“ na Facebooku in Instagramu"
+    "message": "Skrije objave „Sponzorirano“ na Facebooku, Instagramu in Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Iz povezav, ki jih odprete, odstrani utm_*, fbclid, gclid in druge identifikatorje klikov"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokira znane zlonamerne domene (seznam URLhaus, abuse.ch)"
+    "message": "Opozori pred odprtjem znanega zlonamernega spletnega mesta in blokira, kar strani nalagajo s takšnih spletnih mest (seznam URLhaus, abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Na vseh spletnih mestih onemogoči oglaševalske API-je Google Topics, FLoC in Protected Audience"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Donacija prek storitve Revolut"
+  },
+  "opt_review": {
+    "message": "Opomniki za oceno"
+  },
+  "opt_review_sub": {
+    "message": "Majhna povezava ★ na dnu okna Supreme AdBlock in največ dvakrat kratka prošnja tam, da ga ocenite v Spletni trgovini Chrome. Nikoli na spletnih mestih, nikoli kot obvestilo."
   },
   "opt_made_by": {
     "message": "izdelal Carbon Stealth"
@@ -643,5 +670,128 @@
   "welDone": {
     "message": "Razumem",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Dovoljeno · še $1 min"
+  },
+  "hiddenHere": {
+    "message": "Tu skriti elementi: $1 · Povrni zadnjega"
+  },
+  "cmd_toggle_site": {
+    "message": "Vklopi ali izklopi blokiranje na tem spletnem mestu"
+  },
+  "cmd_pause": {
+    "message": "Začasno ustavi ali nadaljuj zaščito (30 minut)"
+  },
+  "cmd_picker": {
+    "message": "Skrij element na tej strani"
+  },
+  "rep_fix_hour": {
+    "message": "Dovoli oglase tukaj za 1 uro"
+  },
+  "rep_done_hour": {
+    "message": "Oglasi so na tem spletnem mestu dovoljeni za 1 uro. Stran je znova naložena — je težava odpravljena?"
+  },
+  "opt_last30": {
+    "message": "Zadnjih 30 dni"
+  },
+  "opt_last30_sum": {
+    "message": "Blokirano: $1 · Obvestila o piškotkih: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Vaši dnevni seštevki se bodo prikazali tukaj med brskanjem."
+  },
+  "opt_last30_sub": {
+    "message": "Samo dnevni seštevki, shranjeni v tej napravi 30 dni. Brez spletnih mest, brez naslovov."
+  },
+  "opt_gpc_sub": {
+    "message": "Vsako spletno mesto, ki ga obiščete, prosi, naj vaših podatkov ne prodaja in ne deli (signal Sec-GPC, ki ga morajo spletna mesta po nekaterih zakonih o zasebnosti upoštevati). Ni poslan na spletnih mestih, ki ste jih dovolili."
+  },
+  "opt_shortcuts": {
+    "message": "Bližnjice na tipkovnici"
+  },
+  "opt_shortcuts_change": {
+    "message": "Spremeni bližnjice"
+  },
+  "opt_shortcut_none": {
+    "message": "Ni nastavljeno"
+  },
+  "opt_shortcuts_ff": {
+    "message": "V Firefoxu: Razširitve in teme → ⚙ → Upravljanje bližnjic razširitev."
+  },
+  "opt_import_foreign": {
+    "message": "Uvozi iz drugega blokatorja oglasov"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Prehajate z uBlock Origin, AdGuard ali Adblock Plus? Izberite njegovo varnostno kopijo: spletna mesta, ki ste jih dovolili, in vaši lastni filtri bodo dodani sem. Nič ne bo zamenjano."
+  },
+  "opt_import_foreign_done": {
+    "message": "Dovoljena spletna mesta: $1 · Dodani filtri: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Izpuščeno (tu ni mogoče uporabiti): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Ta datoteka ni varnostna kopija, ki bi jo lahko prebrali."
+  },
+  "welQuickTitle": {
+    "message": "Prilagodite si ga"
+  },
+  "welQuickSub": {
+    "message": "Neobvezno: že deluje. Vse to lahko pozneje spremenite v nastavitvah."
+  },
+  "blk_page_title": {
+    "message": "Spletno mesto blokirano — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "To spletno mesto lahko škoduje vaši napravi"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock je ustavil to stran, ker je spletno mesto na seznamu URLhaus — javnem seznamu naslovov, ki širijo zlonamerno programsko opremo."
+  },
+  "blk_back": {
+    "message": "Nazaj"
+  },
+  "blk_continue": {
+    "message": "Vseeno nadaljuj"
+  },
+  "blk_note": {
+    "message": "Če nadaljujete, bodo prepuščene le strani tega spletnega mesta, dokler ne zaprete brskalnika."
+  },
+  "blk_why": {
+    "message": "Zakaj je na seznamu? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Povezave na tej strani"
+  },
+  "conn_empty": {
+    "message": "Ta stran ni naložila ničesar z drugih spletnih mest."
+  },
+  "conn_block": {
+    "message": "Blokiraj tukaj"
+  },
+  "conn_blocked": {
+    "message": "Blokirano tukaj"
+  },
+  "conn_hint": {
+    "message": "Blokiraj, kar to spletno mesto nalaga z gostitelja $1"
+  },
+  "opt_conn_title": {
+    "message": "Povezave, ki ste jih blokirali"
+  },
+  "opt_conn_sub": {
+    "message": "Blokirane v oknu Supreme AdBlock v razdelku „Povezave na tej strani“, vsaka samo na svojem spletnem mestu."
+  },
+  "opt_empty_conn": {
+    "message": "Še nič ni blokirano."
+  },
+  "opt_conn_remove": {
+    "message": "Odblokiraj $1 na spletnem mestu $2"
+  },
+  "opt_h_danger": {
+    "message": "Opozorilo o zlonamernem mestu"
+  },
+  "opt_h_capacity": {
+    "message": "Zmogljivost pravil"
   }
 }

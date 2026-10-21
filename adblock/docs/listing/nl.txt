@@ -2,9 +2,13 @@ Supreme AdBlock blokkeert overal advertenties — YouTube-videoadvertenties, ban
 
 • YouTube-advertenties worden bij de bron tegengehouden, zodat video’s gewoon afspelen.
 • EasyList, EasyPrivacy en andere open filterlijsten zijn ingebouwd, plus de lijst voor uw taal (31 regionale lijsten).
+• Gesponsorde berichten op Facebook, Instagram en Threads worden verborgen.
 • Cookiebanners: de extensie klikt voor u op Weigeren, verwijdert de achtergebleven vervaging en scrollblokkering, en klikt nooit op een knop voor inloggen, OAuth of betalen.
 • Focusmodus: verberg chatbubbels, pop-ups voor nieuwsbrieven, meldingsverzoeken, sociale widgets, AI-pop-ups en YouTube Shorts.
 • Anti-adblockmuren en pop-unders worden geneutraliseerd.
+• Gevaarlijke websites: een bekende malwarewebsite opent in plaats daarvan een waarschuwingspagina, en u beslist of u verdergaat.
 • Website kapot? Eén klik lost het op, of laat het ons weten — er wordt niets verzonden zonder dat u het eerst ziet.
+• Overstappen van uBlock Origin, AdGuard of Adblock Plus? Neem uw toegestane websites en filters mee met één bestand.
+• Zie met welke andere websites een pagina verbinding maakt, en blokkeer er een met één klik, alleen op die website.
 • Ondertekende filterupdates twee keer per dag: nieuwe advertentienetwerken worden binnen enkele uren aangepakt, zonder externe code.
-• Geen account, geen telemetrie, geen gegevensverzameling.
+• Geen account, geen telemetrie, geen gegevensverzameling, en Global Privacy Control vraagt elke website uw gegevens niet te verkopen of te delen.

@@ -25,7 +25,8 @@ const TL = CUT === "full" ? TL0 : Object.assign({}, TL0, TL0.cuts[CUT]);
 // a cut may bring its own composition (the vertical one for Reels/TikTok/Shorts) and size
 const FILM = TL.film || "film.html";
 const ver = JSON.parse(readFileSync(join(ROOT, "manifest.json"), "utf8")).version;
-const LANGS = readdirSync(join(ROOT, "_locales")).filter((d) => !d.startsWith(".")).length;
+// езиците, не папките: 73 папки в _locales = 70 езика (es/es_419, pt_BR/pt_PT, zh_CN/zh_TW са варианти)
+const LANGS = new Set(readdirSync(join(ROOT, "_locales")).filter((d) => !d.startsWith(".")).map((d) => d.split("_")[0])).size;
 const OUT = join(ROOT, "dist", "promo"), FR = join(OUT, CUT === "full" ? "frames" : "frames-" + CUT), FONTS = join(OUT, "fonts");
 mkdirSync(FR, { recursive: true }); mkdirSync(FONTS, { recursive: true });
 
@@ -50,13 +51,14 @@ const page = readFileSync(join(ROOT, "server", "index.html"), "utf8");
 let storm = page.slice(page.indexOf("  function glStorm(grid) {"), page.indexOf("  // 3b) Fallback"));
 const patch = (a, b) => { if (!storm.includes(a)) throw new Error("storm patch failed: " + a); storm = storm.replace(a, b); };
 patch("preserveDrawingBuffer: false", "preserveDrawingBuffer: true");
+patch("var soft = /swiftshader", "var soft = false && /swiftshader"); // офлайн рендер: SwiftShader е нарочно, кадрите не бързат
 patch("var dt = Math.min(0.05, now - (frame.p || now));", "F = Math.max(F, window.__amb || 0);\n      var dt = Math.min(0.05, now - (frame.p || now));");
 patch("if (!strikes.length && !sparks.length) {", "if (!strikes.length && !sparks.length && !(window.__amb > 0)) {");
 patch("      el: cv,\n", "      el: cv,\n      kick: function () { if (!running) { running = true; requestAnimationFrame(frame); } },\n");
 const film = readFileSync(join(HERE, FILM), "utf8").replace("/*__STORM__*/", () => "window.PROMO_TIMELINE = " + JSON.stringify(TL) + ";\nwindow.PROMO_CUT = " + JSON.stringify(CUT) + ";\n" + storm)
   .replace('<b id="ver" style="font-weight:300">5.1</b>', () => `<b id="ver" style="font-weight:300">${ver}</b>`)
-  // броят езици — от пакета, не написан на ръка (беше „70“ след 73)
-  .replace('<b id="langs" style="font-weight:inherit">73</b>', () => `<b id="langs" style="font-weight:inherit">${LANGS}</b>`);
+  // броят езици — от пакета, не написан на ръка
+  .replace('<b id="langs" style="font-weight:inherit">70</b>', () => `<b id="langs" style="font-weight:inherit">${LANGS}</b>`);
 
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".webp": "image/webp", ".png": "image/png", ".woff2": "font/woff2" };
 const srv = http.createServer((q, r) => {

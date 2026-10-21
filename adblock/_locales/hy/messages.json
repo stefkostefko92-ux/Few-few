@@ -118,6 +118,27 @@
   "support": {
     "message": "Աջակցել"
   },
+  "rate": {
+    "message": "Գնահատել"
+  },
+  "rateTitle": {
+    "message": "Գնահատեք Supreme AdBlock-ը Chrome վեբ խանութում"
+  },
+  "reviewBlocked": {
+    "message": "Մինչ այժմ արգելափակված հարցումներ՝ $1"
+  },
+  "reviewAsk": {
+    "message": "Եթե Supreme AdBlock-ն օգտակար է ձեզ, Chrome վեբ խանութում կարճ կարծիքն օգնում է ուրիշներին գտնել այն։"
+  },
+  "reviewLeave": {
+    "message": "Թողնել կարծիք"
+  },
+  "reviewLater": {
+    "message": "Ոչ հիմա"
+  },
+  "reviewNever": {
+    "message": "Այլևս չհարցնել"
+  },
   "filtersCount": {
     "message": "$1+ զտիչ",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "Թաքցնում է «անջատեք գովազդի արգելափակիչը» պատերը և վերականգնում էջը"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Թաքցնում է «Հովանավորվող» գրառումները Facebook-ում և Instagram-ում"
+    "message": "Թաքցնում է «Հովանավորվող» գրառումները Facebook-ում, Instagram-ում և Threads-ում"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Հեռացնում է utm_*, fbclid, gclid և սեղմումների այլ նույնացուցիչներ ձեր բացած հղումներից"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Արգելափակում է հայտնի վնասակար տիրույթները (abuse.ch-ի URLhaus ցուցակ)"
+    "message": "Զգուշացնում է նախքան հայտնի վնասակար կայքի բացվելը և արգելափակում այն, ինչ էջերը բեռնում են նման կայքերից (abuse.ch-ի URLhaus ցուցակ)։"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Անջատում է Google Topics, FLoC և Protected Audience գովազդային API-ները բոլոր կայքերում"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Նվիրաբերել Revolut-ով"
+  },
+  "opt_review": {
+    "message": "Կարծիքի հիշեցումներ"
+  },
+  "opt_review_sub": {
+    "message": "Փոքրիկ ★ հղում Supreme AdBlock-ի պատուհանի ներքևում և առավելագույնը երկու անգամ այնտեղ կարճ խնդրանք՝ գնահատելու այն Chrome վեբ խանութում։ Երբեք կայքերում, երբեք որպես ծանուցում։"
   },
   "opt_made_by": {
     "message": "ստեղծել է Carbon Stealth-ը"
@@ -643,5 +670,128 @@
   "welDone": {
     "message": "Հասկանալի է",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Թույլատրված · մնաց $1 րոպե"
+  },
+  "hiddenHere": {
+    "message": "Այստեղ թաքցրած տարրեր՝ $1 · Չեղարկել վերջինը"
+  },
+  "cmd_toggle_site": {
+    "message": "Միացնել/անջատել արգելափակումն այս կայքում"
+  },
+  "cmd_pause": {
+    "message": "Դադարեցնել կամ վերսկսել պաշտպանությունը (30 րոպե)"
+  },
+  "cmd_picker": {
+    "message": "Թաքցնել տարրն այս էջում"
+  },
+  "rep_fix_hour": {
+    "message": "Թույլատրել գովազդն այս կայքում 1 ժամով"
+  },
+  "rep_done_hour": {
+    "message": "Գովազդն այս կայքում թույլատրված է 1 ժամով։ Վերաբեռնվեց — շտկվե՞ց"
+  },
+  "opt_last30": {
+    "message": "Վերջին 30 օրը"
+  },
+  "opt_last30_sum": {
+    "message": "Արգելափակված՝ $1 · Քուքիների բաններներ՝ $2"
+  },
+  "opt_last30_empty": {
+    "message": "Օրական հանրագումարները կհայտնվեն այստեղ, մինչ դուք զննարկում եք։"
+  },
+  "opt_last30_sub": {
+    "message": "Միայն օրական հանրագումարներ, որոնք պահվում են այս սարքում 30 օր։ Ոչ կայքեր, ոչ հասցեներ։"
+  },
+  "opt_gpc_sub": {
+    "message": "Խնդրում է ձեր այցելած յուրաքանչյուր կայքի չվաճառել և չփոխանցել ձեր տվյալները (Sec-GPC ազդանշանը, որը որոշ գաղտնիության օրենքներ կայքերին պարտավորեցնում են հարգել)։ Չի ուղարկվում ձեր թույլատրած կայքերում։"
+  },
+  "opt_shortcuts": {
+    "message": "Ստեղնաշարի դյուրանցումներ"
+  },
+  "opt_shortcuts_change": {
+    "message": "Փոխել դյուրանցումները"
+  },
+  "opt_shortcut_none": {
+    "message": "Նշված չէ"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox-ում՝ Հավելումներ և թեմաներ → ⚙ → Կառավարել ընդլայնումների դյուրանցումները"
+  },
+  "opt_import_foreign": {
+    "message": "Ներմուծել գովազդի այլ արգելափակիչից"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Անցնո՞ւմ եք uBlock Origin-ից, AdGuard-ից կամ Adblock Plus-ից։ Ընտրեք դրա պահուստային ֆայլը. ձեր թույլատրած կայքերը և ձեր սեփական զտիչներն ավելացվում են այստեղ։ Ոչինչ չի փոխարինվում։"
+  },
+  "opt_import_foreign_done": {
+    "message": "Թույլատրված կայքեր՝ $1 · Ավելացված զտիչներ՝ $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Բաց թողնված (այստեղ հնարավոր չէ կիրառել)՝ $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Այս ֆայլը մեզ համար ընթեռնելի պահուստային պատճեն չէ։"
+  },
+  "welQuickTitle": {
+    "message": "Հարմարեցրեք ձեզ"
+  },
+  "welQuickSub": {
+    "message": "Ըստ ցանկության. ամեն ինչ արդեն աշխատում է։ Այս ամենը հետո կարող եք փոխել Կարգավորումներում։"
+  },
+  "blk_page_title": {
+    "message": "Կայքն արգելափակված է — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Այս կայքը կարող է վնասել ձեր սարքը"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock-ը կասեցրեց այս էջը, քանի որ կայքը ներառված է URLhaus-ում՝ վնասաբեր ծրագրեր տարածող հասցեների հանրային ցուցակում։"
+  },
+  "blk_back": {
+    "message": "Վերադառնալ"
+  },
+  "blk_continue": {
+    "message": "Միևնույն է՝ շարունակել"
+  },
+  "blk_note": {
+    "message": "Եթե շարունակեք, մինչև դիտարկիչը փակելը կթույլատրվեն միայն այս կայքի էջերը։"
+  },
+  "blk_why": {
+    "message": "Ինչո՞ւ է այն ցուցակում (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Այս էջի կապերը"
+  },
+  "conn_empty": {
+    "message": "Այս էջը ոչինչ չի բեռնել այլ կայքերից։"
+  },
+  "conn_block": {
+    "message": "Արգելել այստեղ"
+  },
+  "conn_blocked": {
+    "message": "Արգելված այստեղ"
+  },
+  "conn_hint": {
+    "message": "Արգելափակել այն, ինչ այս կայքը բեռնում է այստեղից՝ $1"
+  },
+  "opt_conn_title": {
+    "message": "Ձեր արգելափակած կապերը"
+  },
+  "opt_conn_sub": {
+    "message": "Արգելափակված են Supreme AdBlock-ի պատուհանի «Այս էջի կապերը» բաժնից, յուրաքանչյուրը՝ միայն իր կայքում։"
+  },
+  "opt_empty_conn": {
+    "message": "Դեռ ոչինչ արգելափակված չէ։"
+  },
+  "opt_conn_remove": {
+    "message": "Հանել $1-ի արգելափակումը $2 կայքում"
+  },
+  "opt_h_danger": {
+    "message": "Վնասաբեր ծրագրի զգուշացման էջ"
+  },
+  "opt_h_capacity": {
+    "message": "Կանոնների տարողություն"
   }
 }

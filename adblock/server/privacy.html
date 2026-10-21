@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Privacy Policy — Supreme AdBlock</title>
-<meta name="description" content="Supreme AdBlock privacy policy: your browsing data stays on your device. No account, no analytics, no telemetry — what it stores, what it requests, your GDPR rights." />
+<meta name="description" content="Supreme AdBlock privacy policy: your browsing data stays on your device. No account, no analytics, no telemetry. What it stores and requests, your GDPR rights." />
 <meta name="keywords" content="Supreme AdBlock privacy policy, Carbon Stealth, ad blocker privacy, GDPR, no telemetry, browser extension privacy" />
 <meta name="robots" content="index, follow" />
 <link rel="canonical" href="https://adblock.carbonstealth.eu/privacy" />
@@ -14,6 +14,44 @@
 <meta property="og:description" content="Your browsing data never leaves your device. No account, no analytics, no telemetry." />
 <meta property="og:url" content="https://adblock.carbonstealth.eu/privacy" />
 <meta property="og:image" content="https://adblock.carbonstealth.eu/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Supreme AdBlock shield by Carbon Stealth — YouTube ads killed at the source, EasyList built in" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Supreme AdBlock — Carbon Stealth" />
+<meta property="og:locale" content="en_US" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Privacy Policy — Supreme AdBlock" />
+<meta name="twitter:description" content="Your browsing data never leaves your device. No account, no analytics, no telemetry." />
+<meta name="twitter:image" content="https://adblock.carbonstealth.eu/og.png" />
+<meta name="twitter:image:alt" content="Supreme AdBlock shield by Carbon Stealth — YouTube ads killed at the source, EasyList built in" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://adblock.carbonstealth.eu/privacy#webpage",
+      "url": "https://adblock.carbonstealth.eu/privacy",
+      "name": "Privacy Policy — Supreme AdBlock",
+      "inLanguage": "en",
+      "isPartOf": { "@id": "https://adblock.carbonstealth.eu/#site" },
+      "about": { "@id": "https://adblock.carbonstealth.eu/#app" },
+      "publisher": { "@id": "https://carbonstealth.eu/#organization" },
+      "breadcrumb": { "@id": "https://adblock.carbonstealth.eu/privacy#breadcrumb" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://adblock.carbonstealth.eu/privacy#breadcrumb",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Supreme AdBlock", "item": "https://adblock.carbonstealth.eu/" },
+        { "@type": "ListItem", "position": 2, "name": "Privacy Policy", "item": "https://adblock.carbonstealth.eu/privacy" }
+      ]
+    }
+  ]
+}
+</script>
 <style>
   :root { color-scheme: dark; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -38,7 +76,7 @@
 <body>
 <main>
   <header><img src="/shield-96.webp" alt="" width="30" height="30" /><h1>Supreme AdBlock — Privacy Policy</h1></header>
-  <div class="sub">Last updated: 10 October 2026 · applies to the Supreme AdBlock browser extension and to this website</div>
+  <div class="sub">Last updated: 16 October 2026 · applies to the Supreme AdBlock browser extension and to this website</div>
 
   <div class="tldr"><p><strong>In short:</strong> your browsing data never leaves your device. The extension has no account, no analytics and no telemetry. The only automatic network request to us is a filter update about twice a day; like any download it reaches our server with your IP address, and we do not log it. Lists you choose to add (a subscription, or a regional list from its author) are also refreshed from their own address.</p></div>
 
@@ -48,23 +86,30 @@
   <h2 id="device">What the extension keeps on your device</h2>
   <p>Kept in your browser's local extension storage; never sent to us. If you turn on <strong>Sync across devices</strong> (off by default), your browser copies the items marked <i>(sync)</i> to your own browser account via <code>storage.sync</code> — the browser vendor's servers, under your account, not ours. Turn sync off and they stay local only.</p>
   <ul>
-    <li>Your allowlisted sites <i>(sync)</i></li>
+    <li>Your allowlisted sites <i>(sync)</i>, and for a site you allowed only for a while (the repair page's “for 1 hour”), when it goes back to blocking — on this device</li>
     <li>Feature toggles and theme (cookie banners, anti-adblock, Meta posts, YouTube, …) <i>(sync)</i></li>
     <li>Which filter lists and Focus-mode items you turned on or off <i>(sync)</i></li>
     <li>Your own filter rules, including filter lists you subscribed to by URL, and the list of those URLs <i>(sync)</i></li>
     <li>Sites where you switched off element hiding <i>(sync)</i></li>
+    <li>Hosts you blocked on a site from the popup's “Connections on this page” <i>(sync)</i></li>
     <li>Whether protection is on, off or paused — per device, never synced</li>
     <li>Elements you hid with the picker</li>
     <li>Counters of how many requests were blocked (and the estimated data and time saved), and how many cookie banners were rejected for you — numbers only, no list of sites</li>
+    <li>The daily totals of the last 30 days for the chart in Settings: two numbers per day (requests blocked, cookie banners rejected), no sites and no addresses; older days are deleted</li>
+    <li>When you import a backup of another ad blocker, the file is read on your device and only the sites and filter lines taken from it are kept, with your own; the file itself is not stored or sent</li>
     <li>A short log (last 50 entries) of sites where Smart Detection hid an ad-sized frame, shown in Settings so you can see why</li>
     <li>The latest downloaded filter data, and the regional lists you downloaded from their authors (see below)</li>
+    <li>Whether review reminders are on <i>(sync)</i>; and, on this device only, when the extension was installed and whether the popup already asked you for a Chrome Web Store review (how many times, when, and whether you chose “Don't ask again”) — so it asks at most twice</li>
   </ul>
-  <p>The popup's "Blocked on this page" view is built on the spot from which of our filter lists matched in that tab; it is not stored and never sent anywhere. You can clear everything from the extension's Settings, or by removing the extension.</p>
+  <p>The popup's “Connections on this page” list (the other sites a page loaded something from) is read from that page when you open it, from the browser's own record of what the page loaded; it is not stored and never sent anywhere. The popup's "Blocked on this page" view is built on the spot from which of our filter lists matched in that tab; it is not stored and never sent anywhere. You can clear everything from the extension's Settings, or by removing the extension.</p>
 
   <h2 id="requests">Network requests the extension makes</h2>
   <p><strong>1. Filter updates (automatic, about twice a day).</strong> The extension downloads <code>filters.json</code> and its signature <code>filters.json.sig</code> from <code>adblock.carbonstealth.eu</code> so blocking keeps up with new ad networks. The request carries no identifier, no cookie and no browsing data. As with any download, our server necessarily sees your IP address and browser user agent to answer it; <strong>these requests are not logged</strong>. The file is data only — domain names and CSS selectors — and no downloaded code is ever executed. You can turn auto-update off in Settings.</p>
   <p><strong>2. Filter lists you add yourself (only if you do).</strong> If you subscribe to a filter list by URL, the extension downloads it as plain text from the address you gave — once when you add it, then about once a day until you remove it. The site hosting the list sees an ordinary request from your browser (IP address and user agent), exactly as if you opened that URL yourself. We are not involved in that request.</p>
   <p><strong>3. Regional lists from their authors (only if you turn one on).</strong> Most filter lists are built into the extension, so turning them on downloads nothing. A few lists that we may not redistribute — the Bulgarian list (stanev.org), the Polish, Nordic and Serbo-Croatian lists (raw.githubusercontent.com) — are downloaded by your browser from their author's address when you turn one on, and then about once a day while it stays on. That server sees an ordinary request (IP address and user agent), as if you opened the list yourself. We are not involved in that request. Settings marks these lists "from its author".</p>
+  <p><strong>Leaving a review (only if you click).</strong> The small ★ link and the review request in the popup open the extension's Chrome Web Store page in a new tab, like any link. The extension itself sends nothing; what you write there is handled by Google under its own terms. You can switch these reminders off in Settings.</p>
+  <p id="danger"><strong>Dangerous sites (on by default).</strong> When you open an address on URLhaus (abuse.ch's public list of malware sites, built into the extension), a warning page of the extension opens instead; the address is checked on your device and nothing is sent. Only if you click <em>Why is it listed?</em> does your browser open that site's URLhaus entry on urlhaus.abuse.ch. You can switch this off in Settings (Malware protection).</p>
+  <p id="gpc"><strong>Global Privacy Control (on by default).</strong> Unless you switch it off in Settings, your browser adds the header <code>Sec-GPC: 1</code> to its requests to the sites you visit, and pages can read <code>navigator.globalPrivacyControl</code>. It asks those sites not to sell or share your personal data. The signal is the same for everyone and carries no identifier, so it says nothing about you; it is not sent on sites you allowed or while protection is paused.</p>
   <p>There are no other requests: no analytics, no crash reports, no "phone home".</p>
 
   <h2 id="report">Reporting a broken site</h2>
@@ -88,7 +133,7 @@
 
   <h2 id="permissions">Extension permissions</h2>
   <ul>
-    <li><code>declarativeNetRequest</code> — block ad and tracker requests using filter rules.</li>
+    <li><code>declarativeNetRequest</code> — block ad and tracker requests using filter rules, and add the Global Privacy Control header (<code>Sec-GPC: 1</code>) unless you switch it off.</li>
     <li><code>declarativeNetRequestFeedback</code> — read which of our own rules matched in the active tab (<code>getMatchedRules</code>) to show the blocked count and which lists matched; no URL is read, stored or sent.</li>
     <li><code>storage</code> — keep your settings and counters on your device.</li>
     <li><code>alarms</code> — schedule filter updates and the pause timer.</li>
@@ -100,7 +145,7 @@
   <h2 id="changes">Changes</h2>
   <p>If this policy changes, the new version is published here with a new date. Material changes are also noted in the extension's changelog.</p>
 
-  <footer>Supreme AdBlock, by Carbon Stealth VCC · <a href="/">adblock.carbonstealth.eu</a> · Released under the MIT License.</footer>
+  <footer>Supreme AdBlock, by Carbon Stealth VCC · <a href="/">adblock.carbonstealth.eu</a> · <a href="/support">Support</a> · Released under the MIT License.</footer>
 </main>
 </body>
 </html>

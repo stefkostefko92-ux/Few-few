@@ -118,6 +118,27 @@
   "support": {
     "message": "תמיכה"
   },
+  "rate": {
+    "message": "דירוג"
+  },
+  "rateTitle": {
+    "message": "דרגו את Supreme AdBlock בחנות האינטרנט של Chrome"
+  },
+  "reviewBlocked": {
+    "message": "נחסמו עד כה $1 בקשות"
+  },
+  "reviewAsk": {
+    "message": "אם Supreme AdBlock מועיל לכם, ביקורת קצרה בחנות האינטרנט של Chrome עוזרת לאחרים למצוא אותו."
+  },
+  "reviewLeave": {
+    "message": "כתבו ביקורת"
+  },
+  "reviewLater": {
+    "message": "לא עכשיו"
+  },
+  "reviewNever": {
+    "message": "לא לשאול שוב"
+  },
   "filtersCount": {
     "message": "$1+ מסננים",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "הסתרת חומות \"השביתו את חוסם הפרסומות\" ושחזור הדף"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "הסתרת פוסטים \"ממומנים\" ב-Facebook וב-Instagram"
+    "message": "הסתרת פוסטים \"ממומנים\" ב-Facebook, ב-Instagram וב-Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "הסרת utm_*, fbclid, gclid ומזהי קליקים נוספים מהקישורים שאתם פותחים"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "חסימת דומיינים זדוניים ידועים (רשימת URLhaus של abuse.ch)"
+    "message": "אזהרה לפני שנפתח אתר זדוני ידוע, וחסימה של מה שדפים טוענים מאתרים כאלה (רשימת URLhaus של abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "השבתת ממשקי הפרסום Google Topics, FLoC ו-Protected Audience בכל אתר"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "תרומה דרך Revolut"
+  },
+  "opt_review": {
+    "message": "תזכורות לביקורת"
+  },
+  "opt_review_sub": {
+    "message": "קישור ★ קטן בתחתית החלון של Supreme AdBlock ולכל היותר פעמיים, בקשה קצרה שם לדרג אותו בחנות האינטרנט של Chrome. אף פעם לא באתרים, אף פעם לא כהתראה."
   },
   "opt_made_by": {
     "message": "נוצר על ידי Carbon Stealth"
@@ -643,5 +670,128 @@
   "welDone": {
     "message": "הבנתי",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "מותר · נותרו $1 דק׳"
+  },
+  "hiddenHere": {
+    "message": "רכיבים שהסתרתם כאן: $1 · ביטול האחרון"
+  },
+  "cmd_toggle_site": {
+    "message": "הפעלה או כיבוי של החסימה באתר הזה"
+  },
+  "cmd_pause": {
+    "message": "השהיה או חידוש של ההגנה (30 דקות)"
+  },
+  "cmd_picker": {
+    "message": "הסתרת רכיב בדף הזה"
+  },
+  "rep_fix_hour": {
+    "message": "התרת פרסומות כאן לשעה אחת"
+  },
+  "rep_done_hour": {
+    "message": "פרסומות מותרות באתר הזה לשעה אחת. הדף נטען מחדש — זה תוקן?"
+  },
+  "opt_last30": {
+    "message": "30 הימים האחרונים"
+  },
+  "opt_last30_sum": {
+    "message": "נחסמו: $1 · באנרים של עוגיות: $2"
+  },
+  "opt_last30_empty": {
+    "message": "הסיכומים היומיים שלכם יופיעו כאן בזמן הגלישה."
+  },
+  "opt_last30_sub": {
+    "message": "רק סיכומים יומיים, שנשמרים במכשיר הזה למשך 30 יום. בלי אתרים, בלי כתובות."
+  },
+  "opt_gpc_sub": {
+    "message": "מבקש מכל אתר שאתם מבקרים בו לא למכור או לשתף את הנתונים שלכם (אות Sec-GPC, שחלק מחוקי הפרטיות מחייבים אתרים לכבד). לא נשלח באתרים שהתרתם."
+  },
+  "opt_shortcuts": {
+    "message": "קיצורי מקלדת"
+  },
+  "opt_shortcuts_change": {
+    "message": "שינוי קיצורים"
+  },
+  "opt_shortcut_none": {
+    "message": "לא הוגדר"
+  },
+  "opt_shortcuts_ff": {
+    "message": "ב-Firefox: תוספות וערכות נושא → ⚙ → ניהול קיצורי מקלדת להרחבות."
+  },
+  "opt_import_foreign": {
+    "message": "ייבוא מחוסם פרסומות אחר"
+  },
+  "opt_import_foreign_sub": {
+    "message": "עוברים מ-uBlock Origin, מ-AdGuard או מ-Adblock Plus? בחרו את קובץ הגיבוי שלו: האתרים שהתרתם והמסננים שלכם יתווספו כאן. שום דבר לא יוחלף."
+  },
+  "opt_import_foreign_done": {
+    "message": "אתרים שהותרו: $1 · מסננים שנוספו: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "לא נכללו (אי אפשר להחיל כאן): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "הקובץ הזה אינו גיבוי שאנחנו יכולים לקרוא."
+  },
+  "welQuickTitle": {
+    "message": "התאימו אותו לעצמכם"
+  },
+  "welQuickSub": {
+    "message": "אופציונלי: הכול כבר עובד. אפשר לשנות כל אחד מאלה מאוחר יותר בהגדרות."
+  },
+  "blk_page_title": {
+    "message": "האתר נחסם — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "האתר הזה עלול להזיק למכשיר שלכם"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock עצר את הדף הזה כי האתר מופיע ב-URLhaus, רשימה ציבורית של כתובות שמפיצות תוכנות זדוניות."
+  },
+  "blk_back": {
+    "message": "חזרה"
+  },
+  "blk_continue": {
+    "message": "להמשיך בכל זאת"
+  },
+  "blk_note": {
+    "message": "המשך יאפשר מעבר רק לדפים של האתר הזה, עד שתסגרו את הדפדפן."
+  },
+  "blk_why": {
+    "message": "למה הוא ברשימה? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "חיבורים בדף הזה"
+  },
+  "conn_empty": {
+    "message": "הדף הזה לא טען דבר מאתרים אחרים."
+  },
+  "conn_block": {
+    "message": "חסימה כאן"
+  },
+  "conn_blocked": {
+    "message": "נחסם כאן"
+  },
+  "conn_hint": {
+    "message": "חסימת מה שהאתר הזה טוען מ-$1"
+  },
+  "opt_conn_title": {
+    "message": "חיבורים שחסמתם"
+  },
+  "opt_conn_sub": {
+    "message": "נחסמו דרך \"חיבורים בדף הזה\" בחלון של התוסף, כל אחד רק באתר שלו."
+  },
+  "opt_empty_conn": {
+    "message": "עדיין לא נחסם דבר."
+  },
+  "opt_conn_remove": {
+    "message": "ביטול החסימה של $1 ב-$2"
+  },
+  "opt_h_danger": {
+    "message": "דף אזהרה מפני תוכנות זדוניות"
+  },
+  "opt_h_capacity": {
+    "message": "קיבולת כללים"
   }
 }
