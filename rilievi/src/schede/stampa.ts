@@ -1,11 +1,13 @@
 import { z } from 'zod';
+import { MAX_PER_SCHEDA } from '../allegati/service.js';
 import { COLONNE } from '../ordini/registry.js';
 import { ORDINABILI } from './ordine.js';
 
 /**
  * Какво влиза в печата и PDF-а на картата — изборите в края на формата: попълненото в модулите, всеки
- * поотделно (`riepilogoOrdini`) и разделите (`stampa`). Проверката на пратеното е тук; записът — в
- * validation.ts, печатът и PDF-ът — ordine.ts (`sezioniStampate`) и src/ordini/riepilogo.ts.
+ * поотделно (`riepilogoOrdini`), разделите (`stampa`) и снимките (`fotoStampa`). Проверката на
+ * пратеното е тук; записът — в validation.ts и service.ts, печатът и PDF-ът — ordine.ts
+ * (`sezioniStampate`), src/ordini/riepilogo.ts и src/allegati/stampa.ts.
  */
 
 /** Страница отпреди отделния избор праща една отметка „1“ за всички модули. */
@@ -81,17 +83,45 @@ export function stampaFromBody(source: Record<string, unknown>): string[] {
 }
 
 /**
- * Снимките на разделите в края на печата и PDF-а — отметка (`stampaFoto`). Знакът `stampaFoto-_` казва,
- * че отметката е във формата; без него (страница отпреди нея) изборът не се пипа (undefined).
+ * Снимките в края на печата и PDF-а — иконките в края на формата: `fotoMostrate` са показаните (id-та,
+ * с интервал), `fotoStampa` — отметнатите от тях (повтарящ се ключ). Записът пипа само показаните:
+ * снимка, качена междувременно, остава каквато е; без `fotoMostrate` (нова карта или страница отпреди
+ * иконките) — нищо. Отметнато, което не е показано, не се брои; id извън вида на id-тата е подправено;
+ * чуждо id не пипа нищо (записът е само в снимките на картата, schede/service.ts).
  */
-export const FOTO_KEY = 'stampaFoto';
-export const FOTO_MARK = 'stampaFoto-_';
+export const FOTO_KEY = 'fotoStampa';
+export const FOTO_MOSTRATE = 'fotoMostrate';
+const ID_FOTO = /^[a-z0-9]{20,40}$/;
+const idsSchema = z.array(z.string().regex(ID_FOTO)).max(MAX_PER_SCHEDA);
 
-export function fotoStampateDi(raw: Record<string, unknown>): boolean | undefined {
-  return raw[FOTO_MARK] === '1' ? raw[FOTO_KEY] === 'si' : undefined;
+export interface SceltaFoto {
+  mostrate: string[];
+  scelte: string[];
 }
 
-/** Отметката, както е пратена (формата се връща). */
-export function fotoFromBody(source: Record<string, unknown>): string {
-  return source[FOTO_KEY] === 'si' ? 'si' : '';
+/** Изборът от пратеното: undefined — без иконки (не се пипа); неуспех — подправен списък. */
+export function fotoInStampaDi(
+  raw: Record<string, unknown>,
+): { success: true; data: SceltaFoto | undefined } | { success: false } {
+  const shown = raw[FOTO_MOSTRATE];
+  if (typeof shown !== 'string') return { success: true, data: undefined };
+  const mostrate = idsSchema.safeParse(shown.split(/\s+/).filter(Boolean));
+  const ticked = idsSchema.safeParse(scelte(raw[FOTO_KEY]));
+  if (!mostrate.success || !ticked.success) return { success: false };
+  const visti = new Set(mostrate.data);
+  return {
+    success: true,
+    data: { mostrate: [...visti], scelte: [...new Set(ticked.data)].filter((id) => visti.has(id)) },
+  };
+}
+
+/** Отметнатите снимки, както са пратени (формата се връща); без иконките — undefined (от базата). */
+export function fotoFromBody(source: Record<string, unknown>): string[] | undefined {
+  if (typeof source[FOTO_MOSTRATE] !== 'string') return undefined;
+  const list = scelte(source[FOTO_KEY]);
+  return Array.isArray(list)
+    ? list
+        .filter((id): id is string => typeof id === 'string' && ID_FOTO.test(id))
+        .slice(0, MAX_PER_SCHEDA)
+    : [];
 }

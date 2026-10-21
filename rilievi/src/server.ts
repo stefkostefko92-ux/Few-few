@@ -156,8 +156,9 @@ export function createServer(): Express {
     }),
   );
   // Четири бележки по 4000 знака на кирилица са ~100 KB urlencoded, мерките на бутониерите — до 300
-  // спирки × 6 полета (~1800 параметъра, ~300 KB). Таванът е над това, не повече.
-  app.use(express.urlencoded({ extended: false, limit: '1mb', parameterLimit: 2500 }));
+  // спирки (измерено: формата праща ~1950 параметъра с 300 спирки), отметките на снимките за печата —
+  // до 300 (`MAX_PER_SCHEDA`). Таванът е над това, не повече.
+  app.use(express.urlencoded({ extended: false, limit: '1mb', parameterLimit: 3000 }));
   app.use(cookieParser());
   app.use(
     '/static',

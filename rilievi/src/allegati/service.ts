@@ -29,6 +29,7 @@ export type AllegatoVista = Pick<
   | 'altezza'
   | 'durataMs'
   | 'errore'
+  | 'inStampa'
   | 'createdAt'
 >;
 
@@ -43,6 +44,7 @@ const VISTA = {
   altezza: true,
   durataMs: true,
   errore: true,
+  inStampa: true,
   createdAt: true,
 } as const;
 

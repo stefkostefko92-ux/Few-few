@@ -31,10 +31,11 @@ import {
   riepilogoSchema,
   STAMPA_KEY,
   fotoFromBody,
-  fotoStampateDi,
+  fotoInStampaDi,
   FOTO_KEY,
   sezioniEscluseDi,
   stampaFromBody,
+  type SceltaFoto,
 } from './stampa.js';
 
 export type { FieldErrorCode, FieldErrors, FormValues } from './field-parsers.js';
@@ -156,8 +157,8 @@ export type SchedaData = z.output<typeof schedaSchema> & {
   moduliStampati: string[];
   /** Разделите, които не влизат в печата и PDF-а (изборът в края на формата). */
   sezioniEscluse: string[];
-  /** Снимките в края на печата и PDF-а; undefined — страница без отметката (записът не я пипа). */
-  fotoStampate?: boolean;
+  /** Снимките в края на печата и PDF-а (показаните и отметнатите); undefined — без иконките. */
+  fotoInStampa?: SceltaFoto;
   /** Отпечатъкът на потвърдените разминавания — слага го маршрутът при запис (schede-form.ts). */
   discrepanzeConfermate: string | null;
 };
@@ -182,6 +183,7 @@ export function parseScheda(
   );
   const riepilogo = riepilogoSchema.safeParse(raw[RIEPILOGO_KEY]);
   const stampa = sezioniEscluseDi(raw);
+  const foto = fotoInStampaDi(raw);
   // Mastech: „Sì“ на поръчката без модел — човекът да избере NG120 или QI Touch.
   const modello = modelloMancante(active, (key) => raw[key]);
   const extraErrors: FieldErrors = Object.assign(
@@ -191,6 +193,7 @@ export function parseScheda(
     ...moduli.map((modulo) => modulo?.errors ?? {}),
     riepilogo.success ? {} : { [RIEPILOGO_KEY]: 'invalid' },
     stampa.success ? {} : { [STAMPA_KEY]: 'option' },
+    foto.success ? {} : { [FOTO_KEY]: 'option' },
   );
 
   const parsed = schedaSchema.safeParse(input);
@@ -198,6 +201,7 @@ export function parseScheda(
     parsed.success &&
     riepilogo.success &&
     stampa.success &&
+    foto.success &&
     Object.keys(extraErrors).length === 0
   ) {
     // Колоната на отворения модул (таблото — Pelazza или MoviLift, никога и двата).
@@ -214,7 +218,7 @@ export function parseScheda(
         riepilogoOrdini: riepilogo.data.length > 0,
         moduliStampati: riepilogo.data,
         sezioniEscluse: stampa.data,
-        fotoStampate: fotoStampateDi(raw),
+        fotoInStampa: foto.data,
         discrepanzeConfermate: null,
       },
     };
@@ -241,7 +245,8 @@ export function formValuesFromBody(body: unknown): FormValues {
   for (const slot of SLOTS) Object.assign(values, moduloFromBody(slot.modulo, slot.prefix, source));
   values[RIEPILOGO_KEY] = riepilogoFromBody(source);
   values[STAMPA_KEY] = stampaFromBody(source);
-  values[FOTO_KEY] = fotoFromBody(source);
+  const foto = fotoFromBody(source);
+  if (foto) values[FOTO_KEY] = foto;
   // Кои свързани полета още следват източника си (collegati.js) — form.ts приема само истинските имена.
   values[AUTO_KEY] = typeof source[AUTO_KEY] === 'string' ? source[AUTO_KEY].slice(0, 4000) : '';
   for (const field of FIELDS) {

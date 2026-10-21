@@ -180,7 +180,7 @@ export function formValuesFromScheda(scheda: SchedaShown, fmt: ViewHelpers): For
   }
   out.riepilogoOrdini = moduliStampatiDi(scheda);
   out.stampa = ORDINABILI.filter((key) => !scheda.sezioniEscluse.includes(key));
-  out.stampaFoto = scheda.fotoStampate ? 'si' : '';
+  // Отметнатите снимки за печата са на всяка снимка (`Allegato.inStampa`) — формата ги взима оттам.
   for (const section of SECTIONS) {
     for (const field of section.fields as readonly FieldDef[]) {
       const raw = values[field.key];
@@ -223,7 +223,7 @@ export function schedaTitle(
 
 /** Празна форма: днешната дата по Рим, всичко друго празно. */
 export function emptyFormValues(today: string): FormValues {
-  const out: FormValues = { riepilogoOrdini: [], stampa: [...ORDINABILI], stampaFoto: '' };
+  const out: FormValues = { riepilogoOrdini: [], stampa: [...ORDINABILI] };
   for (const section of SECTIONS) {
     for (const field of section.fields as readonly FieldDef[]) {
       out[field.key] = field.kind === 'checks' ? [] : field.kind === 'date' ? today : '';

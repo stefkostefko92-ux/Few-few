@@ -3,11 +3,12 @@
 // background with its progress, the tile that waits for the compression and turns into the photo (the
 // worker must run next to the portal: `npm run worker`), a caption saved with Enter on the edit page
 // without marking the sheet as changed, a file deleted after the browser's own confirmation, and the
-// photos on the print when the sheet asks for them.
+// photos chosen for the print as icons at the end of the form (stampa-foto.js: "all", "none", the count,
+// the mark of a section out of the print, the icons again after a change in a gallery).
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import sharp from 'sharp';
-import { fail, tick } from './helpers.mjs';
+import { fail } from './helpers.mjs';
 
 const READY_WAIT = 60_000;
 
@@ -103,8 +104,28 @@ export async function checkAttachments(page, { sheetUrl, shots }) {
     () => document.querySelectorAll('[data-galleria="quadro"] [data-allegato]').length === 1,
   );
 
-  // The photos on the print: only with the tick at the end of the form.
-  await tick(page, 'stampaFoto', 'si');
+  // The photos on the print: icons at the end of the form. The deleted photo leaves them too (the
+  // icons come again after a change in a gallery); none is ticked until chosen.
+  const icons = page.locator('[data-foto-stampa] input[name="fotoStampa"]');
+  const counted = () => page.textContent('[data-foto-conteggio]');
+  await page.waitForFunction(
+    () => document.querySelectorAll('[data-foto-stampa] input[name="fotoStampa"]').length === 1,
+  );
+  if ((await icons.first().isChecked()) || !(await counted()).startsWith('0 di 1'))
+    fail('a new photo is ticked for the print before anyone chose it');
+  await page.click('[data-foto-tutte]');
+  if (!(await icons.first().isChecked()) || !(await counted()).startsWith('1 di 1'))
+    fail('"select all" did not tick the photo');
+  await page.click('[data-foto-nessuna]');
+  if (await icons.first().isChecked()) fail('"none" left the photo ticked');
+  await icons.first().check();
+  // A section out of the print is marked at once, and back.
+  const group = page.locator('[data-foto-stampa] [data-sezione="quadro"]');
+  const toggle = () => page.locator('input[name=stampa][value=quadro]').evaluate((i) => i.click());
+  await toggle();
+  if ((await group.getAttribute('data-esclusa')) === null) fail('section out of print not marked');
+  await toggle();
+  if ((await group.getAttribute('data-esclusa')) !== null) fail('mark stays on a printed section');
   await page.click('.actions button[type=submit]');
   await page.waitForURL(/\/schede\/[a-z0-9]+$/);
   await page.goto(`${sheetUrl}/stampa`);

@@ -52,7 +52,15 @@
   // Tiles whose state did not change are kept as they are (a caption being typed stays, a video keeps
   // playing); `force` are the tiles to take from the server anyway (the caption just saved). A tile
   // whose file got compressed meanwhile is the server's, but what was being typed in it goes along.
+  // Which files a gallery shows and how far along they are: when it changes, the photos to print at
+  // the end of the form come again (stampa-foto.js).
+  const tiles = (root) =>
+    Array.from(
+      root.querySelectorAll('[data-allegato]'),
+      (t) => t.dataset.allegato + t.dataset.stato,
+    );
   const swap = (box, html, force = []) => {
+    const before = tiles(box).join();
     const template = document.createElement('template');
     template.innerHTML = html;
     let focus = null;
@@ -76,6 +84,7 @@
       focus.focus();
       focus.setSelectionRange(focus.value.length, focus.value.length);
     }
+    if (tiles(box).join() !== before) document.dispatchEvent(new CustomEvent('rilievi:galleria'));
     schedule(box);
   };
 

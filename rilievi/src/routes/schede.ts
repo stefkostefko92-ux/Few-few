@@ -1,6 +1,6 @@
 import { Router, type Request } from 'express';
 import { allegatiDi } from '../allegati/service.js';
-import { fotoPerPdf, fotoPerStampa } from '../allegati/stampa.js';
+import { fotoPerPdf, fotoPerStampa, sezioniFoto } from '../allegati/stampa.js';
 import { config } from '../config.js';
 import { isPartial, principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
 import { canIn, spansAziende } from '../auth/scope.js';
@@ -228,8 +228,11 @@ schedeRouter.get('/schede/:id/stampa', read, async (req, res) => {
     printed: sezioniStampate(sections, scheda.sezioniEscluse),
     // Попълненото в модулите — само в тези, които картата иска (`moduliStampati`).
     riepilogo: riepilogoModuli(scheda),
-    // Снимките на разделите накрая — само при отметката на картата.
-    foto: fotoPerStampa(scheda, sections, scheda.fotoStampate ? await allegatiDi(scheda.id) : []),
+    // Снимките накрая — отметнатите в иконките в края на формата, по разделите.
+    foto: fotoPerStampa(
+      sezioniFoto(scheda.azienda.ordineSezioni, res.locals.t),
+      await allegatiDi(scheda.id),
+    ),
     autoPrint: req.query.auto === '1',
   });
 });
@@ -238,13 +241,11 @@ schedeRouter.get('/schede/:id/pdf', read, pdfLimiter, async (req, res) => {
   const scheda = await loadScheda(req);
   if (!scheda) return notFound(req, res);
   const logo = scheda.azienda.logoType ? await aziendaLogo(scheda.aziendaId) : null;
-  const foto = scheda.fotoStampate
-    ? await fotoPerPdf(
-        scheda,
-        displaySections(scheda, res.locals.t, res.locals.fmt, scheda.azienda.ordineSezioni),
-        await allegatiDi(scheda.id),
-      )
-    : [];
+  const foto = await fotoPerPdf(
+    scheda,
+    sezioniFoto(scheda.azienda.ordineSezioni, res.locals.t),
+    await allegatiDi(scheda.id),
+  );
   const pdf = await renderSchedaPdf(scheda, {
     t: res.locals.t,
     fmt: res.locals.fmt,

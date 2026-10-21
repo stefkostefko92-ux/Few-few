@@ -16,7 +16,7 @@
   };
   const anchorOf = (key) => key === identifiersErrorKey ? '#f-indirizzo' : '#f-' + key;
   const paramsOf = (key) => { const misura = misuraOf(key); const moduloField = moduloFieldOf(key); const f = misura ? misura.column : moduloField ? moduloField.field : (fieldMap[key] || {}); return { min: f.min, max: f.max, maxLength: f.maxLength }; };
-%><%- include('../partials/top', { titleKey: isEdit ? 'schede.edit.title' : 'schede.create.title', scripts: ['valori', 'moduli', 'collegati', 'allegati', 'carica'] }) %>
+%><%- include('../partials/top', { titleKey: isEdit ? 'schede.edit.title' : 'schede.create.title', scripts: ['valori', 'moduli', 'collegati', 'allegati', 'carica', 'stampa-foto'] }) %>
 <div class="page-head">
   <div>
     <h1><%= t(isEdit ? 'schede.edit.title' : 'schede.create.title') %></h1>
@@ -116,14 +116,13 @@
         <p class="field__hint" id="riepilogo-hint"><%= t('riepilogo.hint') %></p>
         <% if (errors.riepilogoOrdini) { %><p class="field__error" id="err-riepilogoOrdini"><%= t('scheda.error.' + errors.riepilogoOrdini) %></p><% } %>
       </fieldset>
-      <%# Снимките на разделите — в края на печата и PDF-а, по избор (клиповете остават в портала). %>
-      <fieldset class="choice field field--wide" id="f-stampaFoto" aria-describedby="foto-hint">
+      <%# Снимките в края на печата и PDF-а — малки иконки по раздели с отметка (_foto-stampa.ejs);
+         клиповете остават в портала. Нова карта — още няма снимки. %>
+      <fieldset class="choice field field--wide" id="f-fotoStampa" aria-describedby="foto-hint<%= errors.fotoStampa ? ' err-fotoStampa' : '' %>">
         <legend><%= t('allegati.stampa.legenda') %></legend>
-        <input type="hidden" name="stampaFoto-_" value="1">
-        <div class="choice__opts">
-          <label class="tick"><input type="checkbox" name="stampaFoto" value="si"<% if (values.stampaFoto === 'si') { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('allegati.stampa.opzione') %></span></label>
-        </div>
-        <p class="field__hint" id="foto-hint"><%= t('allegati.stampa.hint') %></p>
+        <% if (scheda) { %><%- include('_foto-stampa') %><% } %>
+        <p class="field__hint" id="foto-hint"><%= t(scheda ? 'allegati.stampa.hint' : 'allegati.dopoSalvataggio') %></p>
+        <% if (errors.fotoStampa) { %><p class="field__error" id="err-fotoStampa"><%= t('scheda.error.' + errors.fotoStampa) %></p><% } %>
       </fieldset>
     </div>
   </fieldset>

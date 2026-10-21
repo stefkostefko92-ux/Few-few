@@ -426,7 +426,8 @@ model Scheda {
   /// Разделите, които НЕ влизат в печата и PDF-а (изборът в края на формата) — пазят се изключените, за
   /// да е новият раздел включен и в старите карти.
   sezioniEscluse               String[]                 @default([])
-  /// Печатът и PDF-ът включват снимките на разделите (изборът в края на формата; клиповете — никога).
+  /// Поне една снимка влиза в печата и PDF-а — за предишния код (той печаташе всички при `true`). От 21
+  /// октомври изборът е на всяка снимка (`Allegato.inStampa`); тази колона само го следва.
   fotoStampate                 Boolean                  @default(false)
   /// Отпечатъкът на разминаванията карта ↔ модули, потвърдени при последния запис (src/ordini/collegati.ts):
   /// същите разлики не се питат пак, нови или променени — да. null — няма потвърдени.
@@ -520,6 +521,9 @@ model Allegato {
   durataMs      Int?
   /// Защо обработката не успя — ключ от речника (`allegati.errore.<…>`), никога текст на грешка.
   errore        String?       @db.VarChar(40)
+  /// Снимката влиза в края на печата и PDF-а — иконките в края на формата (по подразбиране не;
+  /// клиповете — никога).
+  inStampa      Boolean       @default(false)
   tentativi     Int           @default(0)
   caricatoDaId  String?
   caricatoDa    User?         @relation("AllegatiCaricati", fields: [caricatoDaId], references: [id], onDelete: SetNull)

@@ -5,6 +5,7 @@ import { errorMessage, logger } from '../logger.js';
 import { writeAudit } from '../audit.js';
 import { inScope, schedaScope, type Scope } from '../auth/scope.js';
 import { searchTextOf } from './search.js';
+import type { SceltaFoto } from './stampa.js';
 import type { SchedaData } from './validation.js';
 
 /**
@@ -55,6 +56,7 @@ function persisted(
 ): Omit<Prisma.SchedaUncheckedCreateInput, 'createdById' | 'aziendaId'> {
   const {
     misureBottoniere: _rows,
+    fotoInStampa: _foto,
     ordineQuadro,
     preventivoArgano,
     ordineSospensioni,
@@ -107,6 +109,34 @@ async function aziendaOf(
   return row?.aziendaId ?? null;
 }
 
+/**
+ * Снимките в печата (иконките в края на формата): само показаните — отметнатите влизат, другите не;
+ * снимка, качена междувременно, остава каквато е. Само снимките на тази карта. `fotoStampate` следва
+ * избора („поне една“) за предишния код — без да мести `updatedAt` на картата.
+ */
+async function salvaFotoInStampa(
+  tx: Prisma.TransactionClient,
+  schedaId: string,
+  { mostrate, scelte }: SceltaFoto,
+): Promise<void> {
+  if (mostrate.length === 0) return;
+  await tx.allegato.updateMany({
+    where: { schedaId, id: { in: mostrate } },
+    data: { inStampa: false },
+  });
+  if (scelte.length > 0) {
+    await tx.allegato.updateMany({
+      where: { schedaId, tipo: 'FOTO', id: { in: scelte } },
+      data: { inStampa: true },
+    });
+  }
+  await tx.$executeRaw`
+    UPDATE "Scheda" SET "fotoStampate" = EXISTS (
+      SELECT 1 FROM "Allegato" WHERE "schedaId" = ${schedaId} AND tipo = 'FOTO' AND "inStampa"
+    )
+    WHERE id = ${schedaId}`;
+}
+
 export type UpdateOutcome = 'ok' | 'conflict' | 'missing';
 
 /**
@@ -140,6 +170,7 @@ export async function updateScheda(
         data: data.misureBottoniere.map((row) => ({ ...row, schedaId: id })),
       });
     }
+    if (data.fotoInStampa) await salvaFotoInStampa(tx, id, data.fotoInStampa);
     await writeAudit(
       { actorId, action: 'SCHEDA_UPDATE', aziendaId, targetType: 'scheda', targetId: id },
       tx,

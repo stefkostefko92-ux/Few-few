@@ -5,7 +5,6 @@ import { readdir, writeFile } from 'node:fs/promises';
 import { request } from 'node:http';
 import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
-import { PDFDocument } from 'pdf-lib';
 import sharp from 'sharp';
 import { BASE, makeAzienda, PORT, prisma, signedIn, startApp, stopApp } from './harness.js';
 import {
@@ -337,43 +336,6 @@ describe('photos and videos of a sheet', () => {
       await new Promise((r) => setTimeout(r, 50));
     assert.ok(!existsSync(folder(id)));
     assert.ok(user);
-  });
-
-  it('puts the photos at the end of the print and the PDF only when the sheet asks for it', async () => {
-    const { browser } = await signedIn('TECNICO');
-    const id = await newScheda(browser);
-    await upload(browser, id, 'impianto', await photo('ingresso.jpg'));
-    await processAll();
-    const row = await prisma.allegato.findFirstOrThrow({ where: { schedaId: id } });
-    const pages = async () =>
-      (await PDFDocument.load((await browser.get(`/schede/${id}/pdf`)).bytes)).getPageCount();
-    const before = await pages();
-    assert.doesNotMatch((await browser.get(`/schede/${id}/stampa`)).body, /paper__foto/);
-
-    const save = async (form: Record<string, string>) => {
-      const edit = await browser.get(`/schede/${id}/modifica`);
-      const base = /name="base" value="([^"]+)"/.exec(edit.body)![1]!;
-      const reply = await browser.submit(`/schede/${id}/modifica`, `/schede/${id}`, {
-        base,
-        data: '2026-10-21',
-        indirizzo: 'Via Roma 1, Milano',
-        matricola: '0012345',
-        ...form,
-      });
-      assert.equal(reply.status, 303, `save failed with ${reply.status}`);
-      return (await prisma.scheda.findUniqueOrThrow({ where: { id } })).fotoStampate;
-    };
-    assert.equal(await save({ 'stampaFoto-_': '1', stampaFoto: 'si' }), true);
-    assert.equal(await save({}), true, 'a page without the tick leaves the choice alone');
-
-    const print = await browser.get(`/schede/${id}/stampa`);
-    assert.match(print.body, /class="paper__section paper__foto"/);
-    assert.match(print.body, new RegExp(`/schede/${id}/allegati/${row.id}\\?mini=1`));
-    assert.equal(await pages(), before + 1, 'the photos start on a page of their own');
-
-    assert.equal(await save({ 'stampaFoto-_': '1' }), false);
-    assert.doesNotMatch((await browser.get(`/schede/${id}/stampa`)).body, /paper__foto/);
-    assert.equal(await pages(), before);
   });
 });
 

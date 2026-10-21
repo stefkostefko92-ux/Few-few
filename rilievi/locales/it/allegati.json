@@ -47,9 +47,13 @@
       "ripetuto": "la compressione si è interrotta più volte."
     },
     "stampa": {
-      "legenda": "Foto delle sezioni",
-      "opzione": "Includi le foto",
-      "hint": "Le foto vanno in fondo alla stampa e al PDF, sezione per sezione; i video restano nel portale.",
+      "legenda": "Foto da stampare",
+      "hint": "Le foto selezionate vanno in fondo alla stampa e al PDF, sezione per sezione, anche quelle di una sezione non stampata; i video restano nel portale.",
+      "nessuna": "Nessuna foto pronta: si aggiungono nelle sezioni della scheda.",
+      "tutte": "Seleziona tutte",
+      "nessunaAzione": "Deseleziona tutte",
+      "conteggio": "{n} di {totale} selezionate",
+      "esclusa": "sezione non stampata",
       "titolo": "Foto"
     }
   }

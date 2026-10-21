@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { allegatiDi } from '../allegati/service.js';
+import { gruppiScelta, nelFoglioDi, sezioniFoto } from '../allegati/stampa.js';
 import { principalOf } from '../auth/guards.js';
 import { roleIn, spansAziende } from '../auth/scope.js';
 import { collegatiDelGruppo } from '../ordini/collegamenti.js';
@@ -9,7 +10,7 @@ import { moduliDopo, moduloFieldOf, withPrefill } from '../ordini/form.js';
 import { COLONNE, SLOTS } from '../ordini/registry.js';
 import { activeParts, SECTIONS } from '../schede/fields.js';
 import { MAX_MISURE, misuraOf, misuraTemplateRow, misureFormRows } from '../schede/misure.js';
-import { FISSE, sezioniOrdinate } from '../schede/ordine.js';
+import { FISSE, ORDINABILI, sezioniOrdinate } from '../schede/ordine.js';
 import type { SchedaFull } from '../schede/service.js';
 import {
   formValuesFromBody,
@@ -64,14 +65,30 @@ export async function renderForm(
   });
   const discrepanze = discrepanzeDi(values, t);
   const shown = activeParts((key) => view.values[key]);
+  const ordine = view.scheda?.azienda.ordineSezioni ?? view.ordineSezioni ?? [];
+  // Снимките и клиповете по раздели — само на записана карта (формата я взима в обхвата за запис).
+  const allegati = view.scheda ? await allegatiDi(view.scheda.id) : [];
+  // Иконките за печата: отметнатите — пратените (формата се връща), иначе записаните на снимките.
+  const stampa = Array.isArray(values.stampa) ? values.stampa : [...ORDINABILI];
+  const pratese = values.fotoStampa;
+  const fotoStampa = {
+    gruppi: gruppiScelta(
+      sezioniFoto(ordine, t),
+      allegati,
+      nelFoglioDi(
+        shown.sections,
+        ORDINABILI.filter((key) => !stampa.includes(key)),
+      ),
+    ),
+    scelte: new Set(
+      Array.isArray(pratese) ? pratese : allegati.filter((a) => a.inStampa).map((a) => a.id),
+    ),
+  };
   res.status(status).render('schede/form', {
     ...view,
     showAzienda: spansAziende(scope(req, 'schede:read')),
     values,
-    sections: sezioniOrdinate(
-      SECTIONS,
-      view.scheda?.azienda.ordineSezioni ?? view.ordineSezioni ?? [],
-    ),
+    sections: sezioniOrdinate(SECTIONS, ordine),
     identifiersErrorKey: IDENTIFIERS_ERROR_KEY,
     aziendaErrorKey: AZIENDA_ERROR_KEY,
     // Кои полета и раздели с условие се виждат при отварянето (app.js ги следи после, докато се пише).
@@ -95,8 +112,8 @@ export async function renderForm(
       json: collegatiPerBrowser(t, contesto),
     },
     conferma: view.conferma ? { discrepanze, impronta: improntaDi(discrepanze) } : null,
-    // Снимките и клиповете по раздели — само на записана карта (формата я взима в обхвата за запис).
-    allegati: view.scheda ? await allegatiDi(view.scheda.id) : [],
+    allegati,
+    fotoStampa,
     modifica: view.scheda !== null,
   });
 }

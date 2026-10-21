@@ -8,7 +8,7 @@ import { riconosci } from '../src/allegati/formati.js';
 import { comprimiFoto, LATO_FOTO, LATO_MINI, RIQUADRO } from '../src/allegati/foto.js';
 import { didascaliaSchema, modificheDi, nomeSicuro } from '../src/allegati/service.js';
 import type { AllegatoVista } from '../src/allegati/service.js';
-import { fotoPerStampa } from '../src/allegati/stampa.js';
+import { fotoPerStampa, gruppiScelta, nelFoglioDi } from '../src/allegati/stampa.js';
 import {
   argomentiProbe,
   argomentiVideo,
@@ -16,7 +16,7 @@ import {
   type InfoVideo,
 } from '../src/allegati/video.js';
 import { loadMediaConfig } from '../src/config.js';
-import { fotoFromBody, fotoStampateDi } from '../src/schede/stampa.js';
+import { fotoFromBody, fotoInStampaDi } from '../src/schede/stampa.js';
 
 const ftyp = (brand: string) =>
   Buffer.concat([
@@ -282,53 +282,114 @@ describe('captions and names', () => {
 });
 
 describe('the photos on the print and the PDF', () => {
-  it('are a choice of the sheet; a page without the tick leaves the saved choice alone', () => {
-    assert.equal(fotoStampateDi({}), undefined);
-    assert.equal(fotoStampateDi({ stampaFoto: 'si' }), undefined);
-    assert.equal(fotoStampateDi({ 'stampaFoto-_': '1' }), false);
-    assert.equal(fotoStampateDi({ 'stampaFoto-_': '1', stampaFoto: 'si' }), true);
-    assert.equal(fotoFromBody({ stampaFoto: 'si' }), 'si');
-    assert.equal(fotoFromBody({ stampaFoto: 'yes' }), '');
+  const a = 'cm00000000000000000000aa';
+  const b = 'cm00000000000000000000bb';
+  const c = 'cm00000000000000000000cc';
+
+  it('are chosen one by one among the icons shown; a page without the icons leaves the choice alone', () => {
+    assert.deepEqual(fotoInStampaDi({}), { success: true, data: undefined });
+    assert.deepEqual(fotoInStampaDi({ fotoStampa: a }), { success: true, data: undefined });
+    assert.deepEqual(fotoInStampaDi({ fotoMostrate: '' }), {
+      success: true,
+      data: { mostrate: [], scelte: [] },
+    });
+    // Ticked and not shown does not count; repeated ids count once.
+    assert.deepEqual(fotoInStampaDi({ fotoMostrate: `${a} ${b}  ${a}`, fotoStampa: [b, c, b] }), {
+      success: true,
+      data: { mostrate: [a, b], scelte: [b] },
+    });
+    assert.deepEqual(fotoInStampaDi({ fotoMostrate: a, fotoStampa: a }), {
+      success: true,
+      data: { mostrate: [a], scelte: [a] },
+    });
+    // Something that is not an id is tampered with.
+    assert.equal(fotoInStampaDi({ fotoMostrate: `${a} ../x` }).success, false);
+    assert.equal(fotoInStampaDi({ fotoMostrate: a, fotoStampa: 'SELECT' }).success, false);
+    assert.equal(fotoInStampaDi({ fotoMostrate: a, fotoStampa: { x: 1 } }).success, false);
+    // The form that comes back keeps what was ticked; without the icons — the saved choice.
+    assert.equal(fotoFromBody({ fotoStampa: a }), undefined);
+    assert.deepEqual(fotoFromBody({ fotoMostrate: a, fotoStampa: [a, 'bad'] }), [a]);
+    assert.deepEqual(fotoFromBody({ fotoMostrate: '' }), []);
   });
 
-  it('take the ready photos of the printed sections, in the order of the sheet', () => {
-    let n = 0;
-    const file = (sezione: string, over: Partial<AllegatoVista> = {}): AllegatoVista => ({
-      id: `cm${String(++n).padStart(22, '0')}`,
-      sezione,
-      tipo: 'FOTO',
-      stato: 'PRONTO',
-      didascalia: null,
-      nomeOriginale: `${sezione}.jpg`,
-      larghezza: 800,
-      altezza: 600,
-      durataMs: null,
-      errore: null,
-      createdAt: new Date('2026-10-21T08:00:00Z'),
-      ...over,
-    });
+  let n = 0;
+  const file = (sezione: string, over: Partial<AllegatoVista> = {}): AllegatoVista => ({
+    id: `cm${String(++n).padStart(22, '0')}`,
+    sezione,
+    tipo: 'FOTO',
+    stato: 'PRONTO',
+    didascalia: null,
+    nomeOriginale: `${sezione}.jpg`,
+    larghezza: 800,
+    altezza: 600,
+    durataMs: null,
+    errore: null,
+    inStampa: true,
+    createdAt: new Date('2026-10-21T08:00:00Z'),
+    ...over,
+  });
+
+  it('take the ticked ready photos, in the order of the sheet, also from a section not printed', () => {
     const quadro = file('quadro');
     const impianto = file('impianto');
+    const argano = file('argano');
     const allegati = [
       quadro,
+      file('quadro', { inStampa: false }),
       file('quadro', { tipo: 'VIDEO' }),
       file('quadro', { stato: 'IN_CODA' }),
-      file('argano'),
+      argano,
       impianto,
       file('porte'),
     ];
-    const sections = [{ key: 'impianto' }, { key: 'quadro' }, { key: 'argano' }];
-    const scheda = { fotoStampate: true, sezioniEscluse: ['argano'] };
+    // The order of the company: the photos follow it.
+    const sections = [{ key: 'impianto' }, { key: 'argano' }, { key: 'quadro' }];
     assert.deepEqual(
-      fotoPerStampa(scheda, sections, allegati).map((g) => [
-        g.section.key,
-        g.foto.map((f) => f.id),
-      ]),
+      fotoPerStampa(sections, allegati).map((g) => [g.section.key, g.foto.map((f) => f.id)]),
       [
         ['impianto', [impianto.id]],
+        ['argano', [argano.id]],
         ['quadro', [quadro.id]],
       ],
     );
-    assert.deepEqual(fotoPerStampa({ ...scheda, fotoStampate: false }, sections, allegati), []);
+    assert.deepEqual(
+      fotoPerStampa(
+        sections,
+        allegati.map((f) => ({ ...f, inStampa: false })),
+      ),
+      [],
+    );
+  });
+
+  it('show every ready photo as an icon, marking the sections that are not on the sheet', () => {
+    const quadro = file('quadro', { inStampa: false });
+    const argano = file('argano');
+    const allegati = [
+      quadro,
+      argano,
+      file('quadro', { stato: 'IN_LAVORAZIONE' }),
+      file('cavi', { tipo: 'VIDEO' }),
+    ];
+    const sections = [
+      { key: 'impianto' as const, title: 'Impianto' },
+      { key: 'quadro' as const, title: 'Quadro' },
+      { key: 'argano' as const, title: 'Argano' },
+      { key: 'cavi' as const, title: 'Cavi' },
+    ];
+    // "Argano" excluded from the print by the sheet; a section hidden by a condition is off too.
+    const nelFoglio = nelFoglioDi(new Set(['impianto', 'quadro', 'argano', 'cavi']), ['argano']);
+    assert.deepEqual(
+      gruppiScelta(sections, allegati, nelFoglio).map((g) => [
+        g.key,
+        g.esclusa,
+        g.foto.map((f) => f.id),
+      ]),
+      [
+        ['quadro', false, [quadro.id]],
+        ['argano', true, [argano.id]],
+      ],
+    );
+    assert.equal(nelFoglioDi(new Set(['impianto']), [])('quadro'), false);
+    assert.equal(nelFoglioDi(new Set(['impianto']), [])('impianto'), true);
   });
 });

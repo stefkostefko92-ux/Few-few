@@ -1,6 +1,7 @@
 import { access } from 'node:fs/promises';
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { percorsi } from '../allegati/archivio.js';
+import { gruppiScelta, nelFoglioDi, sezioniFoto } from '../allegati/stampa.js';
 import {
   limiteCorpo,
   multipart,
@@ -29,7 +30,7 @@ import {
 } from '../auth/guards.js';
 import { canIn } from '../auth/scope.js';
 import { setFlash } from '../http/flash.js';
-import type { SectionKey } from '../schede/fields.js';
+import { activeParts, type SectionKey } from '../schede/fields.js';
 import { getScheda, type SchedaFull } from '../schede/service.js';
 import { notFound, scope } from './schede-shared.js';
 
@@ -154,6 +155,28 @@ allegatiRouter.post(
     });
   },
 );
+
+/**
+ * Иконките за печата в края на формата — записаното в базата (stampa-foto.js ги взима след качване или
+ * изтриване и пази отметнатото, но още незаписано). Само за който пише в картата, като формата.
+ */
+allegatiRouter.get('/schede/:id/foto-stampa', write, async (req, res) => {
+  const scheda = await getScheda(scope(req, 'schede:write'), String(req.params.id));
+  if (!scheda) return notFound(req, res);
+  const allegati = await allegatiDi(scheda.id);
+  const valori = scheda as unknown as Record<string, unknown>;
+  res.render('schede/_foto-stampa', {
+    scheda,
+    fotoStampa: {
+      gruppi: gruppiScelta(
+        sezioniFoto(scheda.azienda.ordineSezioni, res.locals.t),
+        allegati,
+        nelFoglioDi(activeParts((key) => valori[key]).sections, scheda.sezioniEscluse),
+      ),
+      scelte: new Set(allegati.filter((a) => a.inStampa).map((a) => a.id)),
+    },
+  });
+});
 
 /** Галерията на раздела (за JavaScript: докато файловете се обработват). */
 allegatiRouter.get('/schede/:id/allegati/sezione/:sezione', read, async (req, res) => {
