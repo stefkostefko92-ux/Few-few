@@ -474,7 +474,7 @@ export default {
   "premium.feat.prem7": "Webhooks (HMAC) + REST API pública",
   "premium.feat.prem8": "Retención ilimitada de transcripciones + exportación CSV/PDF",
   "premium.feat.wl1": "Todo lo de Premium",
-  "premium.feat.wl2": "Bot personalizado White-label — sube tu propio token",
+  "premium.feat.wl2": "Bot personalizado White-label — conecta tu propia aplicación de bot de Discord",
   "premium.feat.wl3": "Funciona con tu propia marca (nombre y avatar)",
   "webhooks.title": "Webhooks",
   "webhooks.subtitle": "Suscribe servicios externos a los eventos de Supreme Bot. Cada webhook recibe un HTTP POST con un payload JSON. Si estableces un secret, los payloads se firman con X-SupremeBot-Signature: sha256=… (HMAC-SHA256 del cuerpo). Los webhooks con 10 fallos consecutivos se desactivan automáticamente.",
