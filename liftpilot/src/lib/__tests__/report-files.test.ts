@@ -77,7 +77,9 @@ test('nessun documento scrive il momento dello scaricamento: la relazione, la re
 test('lo scaricamento sul server non legge l’orologio: le date sono quelle dei record', () => {
   const files = ['server/project-export.ts', 'server/room-export.ts', 'server/set-cad.ts', 'server/order-export.ts', 'server/drawing-pdf.ts',
     'app/api/calculations/[id]/relazione/route.ts', 'app/api/shaft-designs/[id]/dxf/route.ts', 'app/api/drawing-sets/[id]/pdf/route.ts',
-    'app/api/relazioni/[id]/pdf/route.ts', 'server/rt/pdf.ts', 'server/rt/record.ts'];
+    'app/api/relazioni/[id]/pdf/route.ts', 'server/rt/pdf.ts', 'server/rt/record.ts',
+    // round 50: the SVG files, dated as their records too
+    'server/shaft-export.ts', 'server/svg-fonts.ts', 'app/api/shaft-designs/[id]/svg/route.ts', 'lib/cad/svg.ts', 'lib/cad/svg-font.ts', 'lib/cad/svg-files.ts'];
   for (const f of files) {
     const src = readFileSync(path.join(process.cwd(), 'src', f), 'utf8');
     assert.ok(!/new Date\(\)|Date\.now\(/.test(src), f);

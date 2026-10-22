@@ -54,6 +54,7 @@
 - Деветнадесетият кръг: „Anche la sostituzione dell’argano e basta ha bisogno del progetto e della relazione tecnica. Implementali nella sola sostituzione argano per solo argano e locale macchine.“ В същия кръг: „Aggiungi anche prezzo quadro, prezzo cavi, fili, bottoniere di piano, bottoniere di cabina, quadro, tamponi, supporto tamponi, molle, supporto molle, canalina, bottoniera di manutenzione, stop fossa, stop locale, quadretto elettrico completo, luce di emergenza, luce vano, cottimista, arcata, pattini scorrimento cabina, pulizia guide, sirene di allarme, telesoccorso completo + aggiungi voce a stesura libera con prezzo tutto quanto calcolato automaticamente.“
 
 - Четиридесет и осмият кръг: „Какво остава за да бъде завършен и готов за бета тестинг този продукт? Пропуснал ли си нещо?“, после „Давай напред с всичко което можеш да направиш.“
+- Петдесетият кръг (по смисъл): „Изнасяй чертежите и всичко останало не само в DWG/DXF, а и в SVG. Да се качват и ръчно нарисувани rilievi на шахтата и на машинното в различни формати, а после машинното и размерът на шахтата да се чертаят автоматично.“ Решенията на собственика (2026-10-22): SVG за всеки чертеж, който днес се сваля в DXF/DWG (издаден комплект, проект на асансьора, машинно, план на шахтата), един SVG на лист, ZIP при повече листове; качване — JPEG, PNG, HEIC, PDF, DXF, DWG; схицата се чете от Claude през Vertex AI в ЕС, а техникът потвърждава или поправя всяка стойност.
 
 ## Намерено по пътя
 
@@ -3333,6 +3334,38 @@ sospensione той е на оста на водачите (както смята
 срещу копие на `argano_visual`: entrypoint-ът прилага 26–28, health 200, `smoke-allegati` — „all good“, пълният smoke — 94
 стъпки, „all good“ (третият опит; първият спря на вход по време на успореден `npm test` на 4-те ядра, вторият — на
 `net::ERR_INSUFFICIENT_RESOURCES` при диск на 99% от кеша на Docker; и двата — средата на пробата, не приложението).
+
+### Кръг 50 — SVG и ръчните схици (rilievi a mano)
+
+**Заявката:** чертежите и в SVG, не само в DXF/DWG; ръчно нарисуваните rilievi на шахтата и на машинното — качени, прочетени
+и начертани от двигателите (решенията на собственика от 2026-10-22 — в „Заявки“).
+
+**А — SVG.** Всеки чертеж, който се сваля в DXF/DWG, се сваля и в SVG: издаденият комплект
+(`/api/drawing-sets/<id>/svg` — листовете на същия `doc` като пазения PDF, със същата проверка на хеша, иначе 409),
+черновите на проекта на асансьора и на машинното (`/api/lift-designs|room-designs/<id>/svg` — листовете на PDF черновата,
+**с лист 1 и проверките**, за разлика от черновия DXF; текстът на страницата го казва) и планът на проекта на шахтата
+(нов маршрут `/api/shaft-designs/<id>/svg` до `/dxf` — същият изглед като DXF-а при 1:20, `export.ts shaftPlanView`,
+на лист с неговия размер и редовете под него; DXF и DWG байт в байт както преди — сравнени преди/след). Един лист →
+`.svg`, повече → `<база>-svg.zip` с `<база>-foglio-NN.svg` (`zipStore`, датиран със записа). Сериализаторът е чист
+низ (`lib/cad/svg.ts`; route handler не може да рендерира React под `react-server`) със същата геометрия като `ShapesSvg`
+— тестът сравнява атрибут по атрибут с `renderToStaticMarkup` за всеки лист на истински комплект. Файлът има размер в
+mm (печата се в мащаба), `<title>`/`<desc>` (номер, ревизия, SHA-256), екранирани текстове без забранените в XML знаци,
+ореоли като копие с щрих под буквите (не `paint-order`), логата с `href` и `xlink:href`, бетона като `<pattern>` само при
+нужда и положен като в PDF (от долния ляв ъгъл — на екрана шарката е отместена), реда на PDF под рамката, без
+`class`/`data-*`. **Шрифтът е вграден:** подмножество на DejaVu Sans (обикновен и/или получер) само с глифовете на листа
+— fontkit реже глифовете, а cmap, OS/2, name (авторското право и лицензът на Bitstream Vera) и post се добавят в
+`svg-font.ts`; Chromium го зарежда (`document.fonts`: „loaded“), fontTools го чете с проверени контролни суми, ширините
+на глифовете са тези на метриките на ядрото. Около 80–220 KB на лист. Отговорът е прикачен файл със
+`Content-Security-Policy: sandbox; default-src 'none'`; лимитите, 409 и одитът — както на DXF (`meta.format = 'svg'`;
+планът — новото действие `SVG_DOWNLOADED`, „SVG scaricato“, без миграция). Бутон „SVG“ до всяка двойка DXF/DWG
+(комплект, проект на асансьора — и планът на шахтата там, машинно, проект на шахтата); текстовете, които изброяват
+форматите, и `/data` (`dataPage.files.drawings.format`, извън хешираните условия) казват „DXF, DWG e SVG“. Визуално:
+листовете на примерен комплект (12 листа, с лого) в Chromium до страниците на PDF-а от `pdftoppm` при 180 dpi — едни и
+същи (разлика само в изглаждането); единствената намерена разлика — фазата на бетонната шарка — е поправена. Двигателите,
+`DrawingDoc`, `tavoleHash` и екранът не се менят; никоя версия не се вдига. Тестове: `svg.test.ts`, `svg-files.test.ts`
+(и в друга часова зона — `svg-tz-child.ts`), `svg-routes.test.ts`, `set-cad-route.test.ts`, `report-files.test.ts`;
+smoke — `smoke-svg.mjs` (износите на проекта, планът, комплектът), машинното в `smoke-replacement.mjs`, 404 за чужда
+фирма в `smoke-isolation.mjs`.
 
 ## Проверки
 

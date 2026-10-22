@@ -52,13 +52,15 @@ export async function secondCompany({ BASE, page, kit, ADMIN, stamp, urls }) {
   assert.equal(otherPdf.status(), 404, 'report of another company');
   assert.equal((await page.goto(designUrl)).status(), 404, 'shaft design of another company');
   assert.equal((await page.request.get(`${BASE}${dxfHref}`)).status(), 404, 'DXF of another company');
+  assert.equal((await page.request.get(`${BASE}${dxfHref.replace(/\/dxf$/, '/svg')}`)).status(), 404, 'plan SVG of another company');
   assert.equal((await page.goto(setUrl)).status(), 404, 'drawing set of another company');
   assert.equal((await page.request.get(`${BASE}${setPdfHref}`)).status(), 404, 'drawing set PDF of another company');
+  for (const format of ['dxf', 'dwg', 'svg']) assert.equal((await page.request.get(`${BASE}${setPdfHref.replace(/\/pdf$/, `/${format}`)}`)).status(), 404, `drawing set ${format} of another company`);
   assert.equal((await page.goto(liftUrl)).status(), 404, 'lift design of another company');
   assert.equal((await page.request.get(`${BASE}${liftRelHref}`)).status(), 404, 'report of the lift design of another company');
-  for (const format of ['pdf', 'dxf', 'dwg']) assert.equal((await page.request.get(`${BASE}${new URL(liftUrl).pathname.replace(/^\/it\/app/, '/api')}/${format}`)).status(), 404, `${format} export of another company`);
+  for (const format of ['pdf', 'dxf', 'dwg', 'svg']) assert.equal((await page.request.get(`${BASE}${new URL(liftUrl).pathname.replace(/^\/it\/app/, '/api')}/${format}`)).status(), 404, `${format} export of another company`);
   assert.equal((await page.goto(roomUrl)).status(), 404, 'machine room of another company');
-  for (const format of ['relazione', 'pdf', 'dxf', 'dwg']) assert.equal((await page.request.get(`${BASE}/api/room-designs/${roomId}/${format}`)).status(), 404, `machine room ${format} of another company`);
+  for (const format of ['relazione', 'pdf', 'dxf', 'dwg', 'svg']) assert.equal((await page.request.get(`${BASE}/api/room-designs/${roomId}/${format}`)).status(), 404, `machine room ${format} of another company`);
   // the relazione tecnica di modifica: its page, its PDF, the installation's workspace and the draft's PDF
   assert.equal((await page.goto(rt.rtUrl)).status(), 404, 'RT page of another company');
   assert.equal((await page.request.get(`${BASE}/api/relazioni/${rt.rtId}/pdf`)).status(), 404, 'RT PDF of another company');

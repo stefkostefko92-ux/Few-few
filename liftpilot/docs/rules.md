@@ -560,8 +560,10 @@
   свалянето. DXF/DWG — `$TDCREATE`/`$TDUPDATE` (местно време в Италия), `$TDUCREATE`/`$TDUUPDATE` (UTC) и GUID-овете (от
   датата и редовете под първия изглед; `cad/stamp.ts` — еднакви при всяка часова зона на машината); PDF — CreationDate/
   ModDate и /ID от `SOURCE_DATE_EPOCH` (`report/stamp.py`; датата минава към рендера през `report/payload.ts`); DOCX и ZIP —
-  също. Всеки PDF носи `/Lang it-IT`. Relazione и relazione tecnica не пишат кога са свалени; черновата на поръчката и
-  черновите PDF са с датата на записа. Тестове: `cad-files.test.ts`, `report-files.test.ts`.
+  също (ZIP-ът на SVG листовете — с датата на записа в UTC, кръг 50); SVG няма дата в себе си, а шрифтът в него е
+  подмножество, подредено по знаците — едни и същи глифове дават едни и същи байтове. Всеки PDF носи `/Lang it-IT`.
+  Relazione и relazione tecnica не пишат кога са свалени; черновата на поръчката и черновите PDF са с датата на записа.
+  Тестове: `cad-files.test.ts`, `report-files.test.ts`, `svg-files.test.ts` (и в друга часова зона: `svg-tz-child.ts`).
 - **Картушът и лентата** (кръг 36; `lib/tavole/title-block.ts`, `title-data.ts`): думите, които се сменят от комплект на
   комплект, са `titleFields` (DIS_N, REVISIONE, REV_n, MATRICOLA…) — PDF ги изписва, CAD ги прави атрибути; рамката е
   `titleFrame`. R0 е датата на ред 0 на номера (`server/set-identity.ts`); черновата няма R0; матрикулата без номер —
@@ -614,6 +616,31 @@
   acad-ts 3.2.0 пише атрибутите в DXF грешно — оправя ги `mendAttributes`; ъгълът на щриха в DXF е в градуси, в DWG в
   радиани; DXF и DWG са с `$ANGDIR 0` (ъглите в CAD програмата вървят обратно на часовниковата стрелка, както в шаблоните
   на AutoCAD).
+- **SVG** (кръг 50, решение на собственика от 2026-10-22: всеки чертеж, който се сваля в DXF/DWG, и в SVG; един SVG на
+  лист, ZIP при повече листове). Издаден комплект (`/api/drawing-sets/<id>/svg`) — листовете на същия `doc` като пазения
+  PDF, със същата проверка на хеша (иначе 409 като DXF); черновите на проекта на асансьора и на машинното
+  (`/api/lift-designs|room-designs/<id>/svg`) — листовете на PDF черновата (`composeFromCalculation`/`composeFromRoom`,
+  номер BOZZA), **с лист 1 и проверките** — за разлика от черновия DXF, който носи само изгледите (текстът на страницата го
+  казва); планът на проекта на шахтата (`/api/shaft-designs/<id>/svg`, до `/dxf`) — същият изглед като DXF-а
+  (`export.ts shaftPlanView`: планът на основния етаж с котите при 1:20), на лист с неговия размер и редовете под него
+  (заглавие, „Scala di stampa 1:20“). Един лист → `.svg` (`image/svg+xml`), повече → `<база>-svg.zip` с
+  `<база>-foglio-NN.svg` (`zipStore`, съхранени, датирани със записа). Сериализаторът е чист низ (`lib/cad/svg.ts`; маршрут
+  не може да рендерира React до markup под условието `react-server`) със **същата геометрия като `ShapesSvg`** (тестът
+  `svg.test.ts` сравнява атрибут по атрибут с `renderToStaticMarkup` за истински листове): y нагоре, дъгите, завъртането,
+  `textLength` от метриките на DejaVu с `lengthAdjust="spacingAndGlyphs"`. Разлики от екрана, нарочно: `width`/`height` в
+  mm (печата се в мащаба), `<title>` и `<desc>` (номер, ревизия, SHA-256 — каквото носи и CAD надписът), ореолите — копие
+  на текста с щрих в цвета на хартията **под** буквите (не `paint-order`), логата с `href` и `xlink:href`, бетонът като
+  `<pattern>` само ако се ползва и положен от долния ляв ъгъл на листа като в PDF, без `class`/`data-*`, редът на PDF под
+  рамката („Elaborato generato con LiftPilot…“, `report/tavole.py NOTICE` — тестът ги сравнява дума по дума) на всеки лист
+  на комплект/чернова (не на плана на шахтата — и DXF-ът му го няма). Текстът е екраниран (`& < > " '`) и без знаците,
+  които XML 1.0 забранява; лого, което не е base64, не влиза. **Шрифтът е вграден**: подмножество на DejaVu Sans (обикновен
+  и получер — само теглото, което листът ползва) с глифовете на листа (`svg-font.ts`: fontkit реже глифовете, а cmap, OS/2,
+  name — само Windows Unicode записите, авторското право и лицензът на Bitstream Vera сред тях — и post се добавят тук;
+  контролните суми — наново), в `@font-face` (`LiftPilotDejaVu`, после обичайните шрифтове) в `<style>` на файла; байтовете
+  на шрифта четат сървърът от `REPORT_FONT_DIR` (`server/svg-fonts.ts`, веднъж). Отговорът е прикачен файл със
+  `Content-Security-Policy: sandbox; default-src 'none'` (SVG е активно съдържание; `download.ts sandboxed`). Същите
+  лимити (`export` 30 за 10 мин; планът — кофата на DXF, 60), същите 409, одит `meta.format = 'svg'` (планът —
+  `SVG_DOWNLOADED`). Двигателите, `DrawingDoc`, `tavoleHash` и екранът не се менят.
 - **Размерите се сменят там, където са начертани:** всяка верига в `plan-dims`/`section-dims`/`room-view` казва за всеки
   сегмент кой вход сменя (`edit(key, base, k)`: новият вход = base + k · новата дължина, с половин mm закръглен така,
   че котата да чете написаното; `also` държи на място това, от което котата се мери; коса дължина — `across`/`plus`:
@@ -895,15 +922,15 @@
 - **Логото на фирмата** е PNG или JPEG, познато по магическите байтове, до 300 KB (`src/lib/logo.ts`); пази се в базата.
   **Логото на възложителя** (`ClientLogo`, на проекта) — същите правила; всяко качване е нов ред (тригер: неизменим),
   махането само отвързва проекта; издаденият комплект пази своето в `DrawingSet.clientLogoId` (в `images.client` на лист 1).
-- **Износ на записания проект** (`/api/lift-designs/<id>/pdf|dxf|dwg`, `report:download`, 30 за 10 мин): PDF е комплектът
-  с номер „BOZZA“ (неиздаден); DXF (AC1021, UTF-8) и DWG (AC1015, AutoCAD 2000 — текстовете в cp1252, ≥ ≤ и подобни
-  с ASCII замени, гръцките букви с имената си: λ → lambda, ω → omega, δ → delta; нито един знак на листовете не става „?“,
+- **Износ на записания проект** (`/api/lift-designs/<id>/pdf|dxf|dwg|svg`, `report:download`, 30 за 10 мин): PDF е
+  комплектът с номер „BOZZA“ (неиздаден), SVG — неговите листове (кръг 50, по-горе); DXF (AC1021, UTF-8) и DWG (AC1015,
+  AutoCAD 2000 — текстовете в cp1252, ≥ ≤ и подобни с ASCII замени, гръцките букви с имената си: λ → lambda, ω → omega, δ → delta; нито един знак на листовете не става „?“,
   `cad-files.test.ts`) носят всички изгледи един до друг в mm, надписите — по мащаба на листа, с каквото листът рисува около
   всеки (легенди, знаци, бележки), подзаглавието и номера на листа; без лист 1 и без листовете без изглед — затова под първия
   изглед втори ред „BOZZA: i fogli e i valori citati sono quelli del PDF <файлът на PDF черновата>“ (`cad/project.ts
   draftCaption`): „Foglio n“ и „VALORI NEL FOGLIO 1“ в черновата сочат листовете на PDF черновата. Същото за DXF/DWG на
-  машинното на подмяната (`/api/room-designs/<id>/dxf|dwg`, `server/room-export.ts`). Двигател, който не
-  възпроизвежда записа → 409 (нов запис). DWG е проверен с acad-ts и LibreDWG, не в AutoCAD.
+  машинното на подмяната (`/api/room-designs/<id>/dxf|dwg`, `server/room-export.ts`; `svg` — листовете на PDF
+  черновата). Двигател, който не възпроизвежда записа → 409 (нов запис). DWG е проверен с acad-ts и LibreDWG, не в AutoCAD.
 - **Буферите в приямъка** (`pit.ts`): позицията им е ръчен размер на плана (`plan.bufX`, `bufY`, `bufSpan`, `cwBufPos`) или
   тази на софтуера (един в средата на кабината; два и повече на 160 mm от страните на платформата, на средната ѝ линия,
   по-навън, докато плочите излязат от убежището — стъпката им (`bufferFoot`) никога извън платформата, където са водачите
@@ -1543,7 +1570,7 @@
     revisione“). Черновата и прегледът ѝ (`FormDraft` `rt`, `rtPreviewAction`, `/api/projects/<id>/relazione-tecnica/
     anteprima`) — `progetto:edit`; работното място (`/projects/<id>/relazione-tecnica`), страницата на издадената
     (`/relazioni/<id>`) и списъкът на файловете — `projects:view`.
-  - `report:download` — всяко сваляне през `downloader` (relazione, DXF/DWG/PDF, комплект, CAD, поръчка) и бутоните им;
+  - `report:download` — всяко сваляне през `downloader` (relazione, DXF/DWG/SVG/PDF, комплект, CAD, поръчка) и бутоните им;
     от кръг 49 — PDF-ът на relazione tecnica di modifica (`/api/relazioni/<id>/pdf`, 10 за 10 мин) и всеки качен файл
     (`/api/allegati/<id>`, 60 за 10 мин), и в режим само за четене.
   - `prices:view` — `/app/prices`, цените на екрана и в поръчката; `prices:edit` — `savePricesAction`, свободните редове.

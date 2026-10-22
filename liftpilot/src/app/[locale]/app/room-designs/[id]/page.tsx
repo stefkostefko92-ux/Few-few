@@ -101,6 +101,7 @@ export default async function RoomDesignPage({ params, searchParams }: { params:
             <a className="btn" href={`/api/room-designs/${r.id}/pdf`}><Icon name="file-pdf" size={18} />{t('docDraft')}</a>
             <a className="btn" href={`/api/room-designs/${r.id}/dxf`}><Icon name="file-dxf" size={18} />DXF</a>
             <a className="btn" href={`/api/room-designs/${r.id}/dwg`}><Icon name="file-dwg" size={18} />DWG</a>
+            <a className="btn" href={`/api/room-designs/${r.id}/svg`}><Icon name="file-image" size={18} />SVG</a>
             <a className="btn" href={`/api/calculations/${r.calculationId}/relazione`}><Icon name="file-pdf" size={18} />{tc('downloadReport')}</a>
           </div>
         </section>

@@ -45,6 +45,7 @@ export default async function ShaftDesignPage({ params }: { params: Promise<{ lo
         <div className="titles"><h1>{t('title')}{d.label ? ` · ${d.label}` : ''}</h1></div>
         <div className="actions">
           {same && can(user, 'report:download') ? <a className="btn btn-primary" href={`/api/shaft-designs/${d.id}/dxf`}>{t('downloadDxf')}</a> : null}
+          {same && can(user, 'report:download') ? <a className="btn" href={`/api/shaft-designs/${d.id}/svg`}>{t('downloadSvg')}</a> : null}
           {d.liftDesign ? <Link className="btn" href={`/app/lift-designs/${d.liftDesign.id}`}>{t('openLift')}</Link>
             : open ? <Link className="btn" href={`/app/projects/${d.projectId}/progetto`}>{t('openForm')}</Link> : null}
         </div>

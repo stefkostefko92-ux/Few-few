@@ -100,6 +100,7 @@ export default async function DrawingSetPage({ params, searchParams }: { params:
           <div className="doc-links">
             <a className="btn" href={`/api/drawing-sets/${s.id}/dxf`}><Icon name="file-dxf" size={18} />{t('cadDxf')}</a>
             <a className="btn" href={`/api/drawing-sets/${s.id}/dwg`}><Icon name="file-dwg" size={18} />{t('cadDwg')}</a>
+            <a className="btn" href={`/api/drawing-sets/${s.id}/svg`}><Icon name="file-image" size={18} />{t('cadSvg')}</a>
           </div>
         </section>
       ) : null}

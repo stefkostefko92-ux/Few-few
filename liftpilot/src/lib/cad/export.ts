@@ -12,7 +12,7 @@
 // any time zone of the host (stamp.ts). The
 // plan of a shaft design alone here, every view of a project in project.ts, an issued set with its sheet 1 and its
 // other paper sheets in set-export.ts.
-import { COND, moveShapes, renderView, shapeBox, union, type Box, type Entity, type Fill, type Pt, type Shape } from '@/drawing';
+import { COND, moveShapes, renderView, shapeBox, union, type Box, type Entity, type Fill, type Pt, type Shape, type TextShape } from '@/drawing';
 import { planDims, planEntities, type Layout } from '@/shaft';
 import { acad } from './acad';
 import { stamp } from './stamp';
@@ -90,6 +90,12 @@ export function laidOut(v: CadView): { parts: Shape[][]; notes: Shape[]; extent:
   return { parts, notes, extent: b };
 }
 
+/** Under a view (paper millimetres, below its extent): the title, the subtitle, the sheet and the scale, then `under`
+ *  (under the first view of a file, what the file is). */
+export const viewCaption = (v: CadView, extent: Box, under: readonly string[]): TextShape[] =>
+  [v.title, ...(v.subtitle ? [v.subtitle] : []), `${v.sheet ? `Foglio ${v.sheet} · ` : ''}Scala di stampa 1:${v.scale}`, ...under]
+    .map((text, k): TextShape => ({ t: 'text', at: [extent.x0, extent.y0 - 8 - 5 * k], text, size: k ? 2.5 : 3.5, cond: false }));
+
 /** The two files: DXF in the AutoCAD 2007 format, DWG in the AutoCAD 2000 one. */
 export type CadFormat = 'dxf' | 'dwg';
 const VERSION: Readonly<Record<CadFormat, acad.ACadVersion>> = { dxf: acad.ACadVersion.AC1021, dwg: acad.ACadVersion.AC1015 };
@@ -133,9 +139,7 @@ export function cadDocument(views: readonly CadView[], title: Caption, format: C
       for (const s of parts[k] ?? []) emit(s, l);
     });
     for (const s of notes) emit(s, noteLayer(s));
-    // under it all: the title, the subtitle, the sheet and the scale (and under the first view what the file is)
-    const lines = [v.title, ...(v.subtitle ? [v.subtitle] : []), `${v.sheet ? `Foglio ${v.sheet} · ` : ''}Scala di stampa 1:${v.scale}`, ...(i === 0 ? under : [])];
-    lines.forEach((text, k) => emit({ t: 'text', at: [extent.x0, extent.y0 - 8 - 5 * k], text, size: k ? 2.5 : 3.5, cond: false }, 'TESTI'));
+    for (const s of viewCaption(v, extent, i === 0 ? under : [])) emit(s, 'TESTI');
     cursor = extent.x1 * v.scale + dx + GAP;
   });
   return doc;
@@ -250,8 +254,11 @@ export const toDxf = (views: readonly CadView[], title: Caption, at: Date): stri
 /** DWG bytes (AutoCAD 2000), dated `at`. */
 export const toDwg = (views: readonly CadView[], title: Caption, at: Date): Uint8Array => acad.DwgWriter.writeToBuffer(cadDocument(views, title, 'dwg', at));
 
-/** The plan of a shaft design at its main floor, at 1:scale, dated `at` (the design's saving). */
-export function planToDxf(L: Layout, title: string, at: Date, scale = 20): string {
+/** The plan of a shaft design at its main floor with its dimensions, at 1:scale: its DXF's and its SVG's view. */
+export function shaftPlanView(L: Layout, title: string, scale = 20): CadView {
   const V = L.inputs.vertical, f = Math.min(V.main, V.floors.length - 1), label = V.floors[f]?.label ?? '';
-  return toDxf([{ title, scale, entities: [...planEntities(L, 'main', f), ...planDims(L, 'main', f, { level: `piano "${label}"` })] }], '', at);
+  return { title, scale, entities: [...planEntities(L, 'main', f), ...planDims(L, 'main', f, { level: `piano "${label}"` })] };
 }
+
+/** The plan of a shaft design at its main floor, at 1:scale, dated `at` (the design's saving). */
+export const planToDxf = (L: Layout, title: string, at: Date, scale = 20): string => toDxf([shaftPlanView(L, title, scale)], '', at);

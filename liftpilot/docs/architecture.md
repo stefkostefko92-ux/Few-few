@@ -210,6 +210,11 @@ src/lib/cad/         DXF/DWG: model (отсечки по слоеве), read (ac
                      set-export (CAD файловете на издаден комплект — същият като подписания PDF).
                      Кръг 37: stamp (датите и GUID-овете на CAD файла от записа — еднакви при всяка часова зона), project
                      `draftCaption` (под първия изглед на черновите „BOZZA“: кой PDF носи листовете, към които сочат).
+                     Кръг 50: svg (сериализаторът на листовете в SVG 1.1 като низ — геометрията на ShapesSvg, ореолите
+                     като копие под буквите, екраниране), svg-font (подмножество на DejaVu Sans с глифовете на листа:
+                     fontkit + cmap/OS/2/name/post, контролните суми), svg-files (лист → .svg, повече листове → ZIP с
+                     датата на записа; изглед сам — планът на шахтата — на лист с неговия размер); export `shaftPlanView`
+                     (едният изглед на DXF и SVG на плана) и `viewCaption` (редовете под изгледа).
 src/lib/present/     Текстовете и таблиците на прототипа v12 като чисти функции: ползват ги и екранът, и PDF-ът; advice.ts — думите
                      на съвета, общи за екрана и документите (името, отклонението на скоростта, стойностите на причината,
                      отпадналите модели); adapt.ts — адаптациите на UNI 10411-1:2024, 14 (един списък за екрана, формуляра и
@@ -286,9 +291,10 @@ src/server/          Server actions ('use server') и заявки, винаги
                      страница до последния ред отпреди износа, файловете един по един в base64; текстът е същият като
                      на всичко наведнъж — регистърът е src/lib/export-format.ts);
                      account-actions — регистрация, потвърждение на адреса, забравена и нова парола; project-export
-                     (записаният проект в PDF/DXF/DWG); order-export + order-route (черновата на поръчка от записан проект или
+                     (записаният проект в PDF/DXF/DWG/SVG); shaft-export (планът на проекта на шахтата в DXF или SVG, кръг
+                     50) и svg-fonts (DejaVu от REPORT_FONT_DIR, прочетен веднъж); order-export + order-route (черновата на поръчка от записан проект или
                      изчисление в DOCX/PDF); client-logo-actions (логото на възложителя на проекта); room-actions (записът на
-                     заснемането), room-compose (машинното и комплектът му от записа), room-export (чернова PDF, DXF, DWG на
+                     заснемането), room-compose (машинното и комплектът му от записа), room-export (чернова PDF, SVG, DXF, DWG на
                      записаното машинно; relazione tecnica — от кръг 49 няма, маршрутът дава 404). records (едното правило на документите: записът и всичко, от
                      което е направен, възпроизведени от текущите двигатели — calcRecord, recordMarks; `outdated` — „da
                      aggiornare“ по версиите), save (записите: изчисление, проект на асансьора, машинно — от формите и от
@@ -418,9 +424,10 @@ src/components/lift/ Екранът Progetto (кръг 45; до него LiftWor
                      (картите, причината, таблицата с всички и отпадналите, алтернативата с ролка; само за четене на записаните
                      проект и изчисление).
 src/app/             [locale]/… страниците, api/ (health, logout — „Esci“ като обикновен POST само от страниците на приложението
-                     (`lib/same-origin.ts`), billing/webhook — Stripe с проверен подпис, relazione PDF, DXF на проект, PDF на комплект, lista-verifica,
-                     lift-designs/<id>/pdf|dxf|dwg — износ на записания проект, lift-designs|calculations/<id>/order/docx|pdf —
-                     чернова на поръчка на машината, room-designs/<id>/pdf|dxf|dwg — документите на подмяната (relazione — 404
+                     (`lib/same-origin.ts`), billing/webhook — Stripe с проверен подпис, relazione PDF, DXF и SVG на проект
+                     на шахтата (shaft-designs/<id>/dxf|svg), PDF и dxf|dwg|svg на комплект, lista-verifica,
+                     lift-designs/<id>/pdf|dxf|dwg|svg — износ на записания проект, lift-designs|calculations/<id>/order/docx|pdf —
+                     чернова на поръчка на машината, room-designs/<id>/pdf|dxf|dwg|svg — документите на подмяната (relazione — 404
                      от кръг 49); кръг 49 Б: relazioni/<id>/pdf — relazione tecnica di modifica с приложените файлове,
                      projects/<id>/relazione-tecnica/anteprima — черновата, projects/<id>/allegati (POST) — качването,
                      allegati/<id> — свалянето на файл), robots,

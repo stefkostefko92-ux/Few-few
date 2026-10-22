@@ -1,8 +1,8 @@
 // The smoke test's machine replacement project (only the machine and the machine room), in an installation of its own:
 // the main calculation has the machine below (no machine room to draw); the calculator starts from the machine over the
 // shaft (its example asked for: a new calculation starts empty), a «Solo argano» with its ropes replaced, whose room is
-// surveyed measure by measure and saved with a reproduced hash; the drawing set as a draft (PDF), the plan and section
-// in DXF and DWG (its relazione tecnica is the installation's relazione tecnica di modifica since round 49: smoke-rt.mjs); a drawing set issued from it, its PDF and a revision from the same survey;
+// surveyed measure by measure and saved with a reproduced hash; the drawing set as a draft (PDF, and its sheets in SVG),
+// the plan and section in DXF and DWG (its relazione tecnica is the installation's relazione tecnica di modifica since round 49: smoke-rt.mjs); a drawing set issued from it, its PDF and a revision from the same survey;
 // the whole drawing — still possible on a «Solo argano» (round 45: no more «Passa a progetto completo») — starts from the
 // survey; a modernisation keeping the machine is verified as it is and draws the shaft. Before that, the machine room's
 // relazione tecnica di modifica (scripts/smoke-rt.mjs rtRoom).
@@ -11,6 +11,7 @@ import { blankCalc, blankSurvey, projectData } from './smoke-blank.mjs';
 import { keptProgetto } from './smoke-progetto.mjs';
 import { rtRoom } from './smoke-rt.mjs';
 import { step } from './smoke-kit.mjs';
+import { ZIP, fetchFile, setSvg } from './smoke-svg.mjs';
 
 export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) {
   step('replacement: a calculation with the machine above, the survey of its machine room, saved');
@@ -53,12 +54,11 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   assert.equal(await page.locator('main > .alert-warn').count(), 0, 'the running engines reproduce the machine room');
   assert.equal(await page.locator('figure.sheet-view .draw-stage svg').count(), 2, 'plan and section of the machine room');
 
-  step('replacement: drawing set draft, DXF and DWG (no relazione of the machine room any more)');
+  step('replacement: drawing set draft (PDF and its sheets in SVG), DXF and DWG (no relazione of the machine room any more)');
   assert.equal((await page.request.get(`${BASE}/api/room-designs/${roomId}/relazione`)).status(), 404, 'relazione: the relazione tecnica di modifica');
-  for (const [format, magic] of [['pdf', '%PDF-'], ['dxf', '  0\nSECTION'], ['dwg', 'AC1015']]) {
-    const res = await page.request.get(`${BASE}/api/room-designs/${roomId}/${format}`);
-    assert.equal(res.status(), 200, format);
-    assert.equal((await res.body()).subarray(0, magic.length).toString('latin1'), magic, format);
+  for (const [format, magic] of [['pdf', '%PDF-'], ['dxf', '  0\nSECTION'], ['dwg', 'AC1015'], ['svg', ZIP]]) {
+    assert.ok(await page.locator(`.doc-links a[href="/api/room-designs/${roomId}/${format}"]`).count(), `${format} button`);
+    await fetchFile(page, `${BASE}/api/room-designs/${roomId}/${format}`, magic, format);
   }
 
   step('replacement: drawing set issued from the machine room, its PDF and a revision');
@@ -70,6 +70,7 @@ export async function replacementRoom({ BASE, page, hydrated, calcUrl, stamp }) 
   const pdf = await page.request.get(`${BASE}${await page.getAttribute('a[href$="/pdf"]', 'href')}`);
   assert.equal(pdf.status(), 200);
   assert.equal((await pdf.body()).subarray(0, 5).toString('latin1'), '%PDF-');
+  await setSvg({ BASE, page, sheets: 3 });
   await page.fill('main form input[maxlength="120"]', 'Seconda emissione di prova');
   await page.fill('main form:has(input[maxlength="120"]) input[maxlength="12"]', 'S.T.');
   const setPath = new URL(roomSetUrl).pathname;

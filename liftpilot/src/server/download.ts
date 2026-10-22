@@ -19,6 +19,13 @@ export const attachment = (body: BodyInit, mime: string, name: string, dispositi
   headers: { 'Content-Type': mime, 'Content-Disposition': `${disposition}; filename="${name}"`, 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' },
 });
 
+/** A file a browser could run if opened (an SVG, an archive of them): sandboxed, no source allowed — no script, plugin,
+ *  request or frame —, besides the attachment's headers. */
+export function sandboxed(res: Response): Response {
+  res.headers.set('Content-Security-Policy', "sandbox; default-src 'none'");
+  return res;
+}
+
 /** The user allowed to download (`capability`) at most `max` times in 10 minutes per `key`, or the answer refusing. */
 export async function downloader(key: string, max: number, capability: Capability = 'report:download'): Promise<{ user: SessionUser } | { refused: Response }> {
   const user = await getSessionUser();

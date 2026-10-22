@@ -135,6 +135,7 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
           <div className="doc-links">
             {can(user, 'report:download') ? <a className="btn" href={`/api/calculations/${d.calculation.id}/relazione`}><Icon name="file-pdf" size={18} />{t('doc_relazione')}</a> : null}
             {can(user, 'report:download') ? <a className="btn" href={`/api/shaft-designs/${d.shaftDesign.id}/dxf`}><Icon name="file-dxf" size={18} />{t('doc_dxf')}</a> : null}
+            {can(user, 'report:download') ? <a className="btn" href={`/api/shaft-designs/${d.shaftDesign.id}/svg`}><Icon name="file-image" size={18} />{t('doc_svg_plan')}</a> : null}
             <Link className="btn" href={`/app/calculations/${d.calculation.id}`}><Icon name="calculator" size={18} />{t('doc_calc')}</Link>
             <Link className="btn" href={`/app/shaft-designs/${d.shaftDesign.id}`}><Icon name="floor-plan" size={18} />{t('doc_shaft')}</Link>
             {/* a modification of an existing lift (UNI 10411): its relazione tecnica di modifica, round 49 */}
@@ -149,6 +150,7 @@ export default async function LiftDesignPage({ params, searchParams }: { params:
               <a className="btn" href={`/api/lift-designs/${d.id}/pdf`}><Icon name="file-pdf" size={18} />{t('doc_pdf')}</a>
               <a className="btn" href={`/api/lift-designs/${d.id}/dxf`}><Icon name="file-dxf" size={18} />{t('doc_dxf_all')}</a>
               <a className="btn" href={`/api/lift-designs/${d.id}/dwg`}><Icon name="file-dwg" size={18} />{t('doc_dwg')}</a>
+              <a className="btn" href={`/api/lift-designs/${d.id}/svg`}><Icon name="file-image" size={18} />{t('doc_svg')}</a>
             </div>
           </div>
         ) : null}

@@ -1,5 +1,5 @@
-// The CAD files of an issued drawing set over the download rules: only DXF or DWG, another company's set is "not
-// found", the sign-in and the rate come before any work, nothing is drawn or audited for a refused request.
+// The CAD files of an issued drawing set over the download rules: only DXF, DWG or SVG (round 50), another company's
+// set is "not found", the sign-in and the rate come before any work, nothing is drawn or audited for a refused request.
 import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
@@ -26,18 +26,21 @@ const ask = async (format: string, id = 'cmuzcb2tz001x7do03nkvjbfb') => {
   return GET(new Request('http://x/api'), { params: Promise.resolve({ id, format }) }) as Promise<Response>;
 };
 
-test('un formato che non è DXF o DWG, o un id non valido: 404 senza cercare la serie', async () => {
+test('un formato che non è DXF, DWG o SVG, o un id non valido: 404 senza cercare la serie', async () => {
   user = signedIn('s-format');
   const before = lookups;
-  for (const f of ['pdf', 'svg', '../dxf', 'DXF']) assert.equal((await ask(f)).status, 404, f);
-  assert.equal((await ask('dxf', '../etc')).status, 404);
+  for (const f of ['pdf', 'zip', '../dxf', 'DXF', 'SVG', 'svgz']) assert.equal((await ask(f)).status, 404, f);
+  assert.equal((await ask('svg', '../etc')).status, 404);
   assert.equal(lookups, before);
+  // SVG is a format of the set: its lookup is made (and finds nothing here)
+  assert.equal((await ask('svg')).status, 404);
+  assert.equal(lookups, before + 1);
 });
 
 test('la serie di un’altra ditta: 404, nessun registro', async () => {
   user = signedIn('s-other', 'c-other');
   const before = audits.length;
-  for (const f of ['dxf', 'dwg']) {
+  for (const f of ['dxf', 'dwg', 'svg']) {
     const r = await ask(f);
     assert.equal(r.status, 404, f);
     assert.equal(r.headers.get('Cache-Control'), 'no-store');

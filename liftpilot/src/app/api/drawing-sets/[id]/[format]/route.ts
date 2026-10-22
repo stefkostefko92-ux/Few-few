@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { idSchema } from '@/lib/schemas';
 import { audit } from '@/lib/audit';
 import { log } from '@/lib/log';
-import { attachment, downloader, text } from '@/server/download';
+import { attachment, downloader, sandboxed, text } from '@/server/download';
 import { SET_CAD_FORMATS, exportDrawingSet } from '@/server/set-cad';
 import { ANSWER } from '@/lib/answers';
 
@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 
 const formatSchema = z.enum(SET_CAD_FORMATS);
 
-// An issued drawing set in DXF or DWG (its PDF: ../pdf): drawn again from what it was made of, only when the running
+// An issued drawing set in DXF, DWG or SVG (its PDF: ../pdf): drawn again from what it was made of, only when the running
 // engines give the same drawing (the stored hash); otherwise 409: a new revision must be issued.
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string; format: string }> }): Promise<Response> {
   try {
@@ -23,7 +23,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     const r = await exportDrawingSet(user, id.data, format.data);
     if (!r.ok) return r.error === 'engineChanged' ? text(409, ANSWER.stale) : text(404, ANSWER.notFound);
     await audit({ companyId: user.companyId, userId: user.id, action: 'DRAWING_SET_DOWNLOADED', entity: 'DrawingSet', entityId: r.setId, meta: { format: format.data } });
-    return attachment(r.body, r.mime, r.name);
+    // an SVG (or a ZIP of them) is active content: sandboxed if opened
+    const res = attachment(r.body, r.mime, r.name);
+    return format.data === 'svg' ? sandboxed(res) : res;
   } catch (err) {
     log.error({ err }, 'drawing set cad failed');
     return text(500, ANSWER.failed);

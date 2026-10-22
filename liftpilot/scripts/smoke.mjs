@@ -34,6 +34,7 @@ import { progettoFlow } from './smoke-progetto.mjs';
 import { publicPages } from './smoke-public.mjs';
 import { guidePage, helpAndSearch, notFoundPage, reportFlow, rilievoLostAnswer, rilievoOffline } from './smoke-help.mjs';
 import { replacementRoom } from './smoke-replacement.mjs';
+import { liftExports, setSvg } from './smoke-svg.mjs';
 import { rilieviFlow } from './smoke-rilievi.mjs';
 import { rtTrasformazione, rtVano } from './smoke-rt.mjs';
 import { rilieviSync } from './smoke-rilievi-sync.mjs';
@@ -204,12 +205,8 @@ try {
   // the draft order of the machine the design verified
   assert.match(await page.textContent('main'), /l’argano verificato in questo progetto/, 'the order is for the machine the design verified');
   await orderFiles(page, '/api/lift-designs/');
-  // the saved project exported: the drawing set as a draft PDF, every view as DXF and DWG
-  for (const [format, magic] of [['pdf', '%PDF-'], ['dxf', '  0\nSECTION'], ['dwg', 'AC1015']]) {
-    const res = await page.request.get(`${BASE}${await page.getAttribute(`a[href^="/api/lift-designs/"][href$="/${format}"]`, 'href')}`);
-    assert.equal(res.status(), 200, format);
-    assert.equal((await res.body()).subarray(0, magic.length).toString('latin1'), magic, format);
-  }
+  // the saved project exported: the drawing set as a draft PDF and its sheets in SVG, every view as DXF and DWG
+  await liftExports({ BASE, page });
 
   await verdictPopover({ BASE, page, hydrated });
 
@@ -258,6 +255,7 @@ try {
   const setPdf = await page.request.get(`${BASE}${setPdfHref}`);
   assert.equal(setPdf.status(), 200);
   assert.equal((await setPdf.body()).subarray(0, 5).toString('latin1'), '%PDF-');
+  await setSvg({ BASE, page, sheets });
   await page.goto(`${setUrl}?p=5`);
   await page.waitForSelector('.sheet-page svg.sheet-svg');
   await page.fill('main form input[maxlength="120"]', 'Seconda emissione di prova');
