@@ -8,6 +8,7 @@ import type { Dictionary } from '@/i18n';
 import type { Locale } from '@/i18n/config';
 import { formatPlayers, type FrameworkId } from '@/lib/fivem';
 import { FRAMEWORK_ICON, STATUS_ICON } from '@/lib/icons';
+import { serverTitle } from '@/lib/server-identity';
 import { isFeatured, type PublicServer } from '@/lib/servers';
 
 /**
@@ -36,6 +37,9 @@ export function ServerRow({
   rank: number;
 }) {
   const featured = isFeatured(server);
+  // Марката, не суровият hostname с рекламата — същото име като на страницата
+  // и в ItemList JSON-LD.
+  const title = serverTitle(server.name, 60, t.server.fallbackName);
   const status = formatPlayers(
     { outcome: server.lastProbe, players: server.players, maxPlayers: server.maxPlayers },
     t.status,
@@ -57,7 +61,7 @@ export function ServerRow({
               href={`/${locale}/servers/${server.slug}`}
               className="rounded transition-colors hover:text-cyan-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
             >
-              {server.name}
+              {title}
             </Link>
             {featured && (
               <span className="flex items-center gap-1 rounded bg-cyan-700/25 px-2 py-0.5 text-xs font-normal text-cyan-200">
@@ -128,7 +132,7 @@ export function ServerRow({
 
         <Link
           href={`/${locale}/servers/${server.slug}`}
-          aria-label={`${server.name} — ${t.home.rowOpen}`}
+          aria-label={`${title} — ${t.home.rowOpen}`}
           className="hidden shrink-0 rounded text-cyan-300 transition-colors hover:text-cyan-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 sm:block"
         >
           <svg

@@ -163,6 +163,30 @@ export const bg = {
       'Имената идват от самия сървър и се презаписват при всяка проверка — не пазим история. Ако си в списъка и не желаеш да те показваме, пиши ни и те махаме.',
     chartEmpty: 'Още няма достатъчно история за този сървър.',
     lastChecked: 'Последна проверка',
+    // ── Факти, които отличават страницата (всички са полета от базата) ──
+    lastOnline: 'Последно онлайн',
+    onlineNow: 'сега',
+    neverOnline: 'не е виждан',
+    slots: 'Слотове',
+    listedSince: 'В директорията от',
+    /** Пълното име, както сървърът сам се обявява — под чистото заглавие. */
+    cfxName: 'Име в списъка на Cfx.re',
+    /** Заместител, когато от чуждото име не остане нищо четимо. */
+    fallbackName: 'FiveM сървър',
+    // ── <title> и meta description (`src/lib/server-meta.ts`) ──
+    titleSuffix: 'FiveM RP сървър',
+    titleSuffixFramework: 'FiveM сървър',
+    metaWhitelist: 'с whitelist',
+    metaOpen: 'свободен вход',
+    metaSlots: 'слота',
+    metaOnline: 'Онлайн при последната проверка',
+    metaHidden: 'Собственикът е скрил публичния статус',
+    metaLastOnline: 'Последно онлайн',
+    metaNotSeen: 'Още не е виждан онлайн',
+    metaPeak: 'Пик за последните 24 ч.',
+    metaPlayers: 'играчи',
+    metaDiscord: 'Има Discord',
+    metaReviews: 'Ревюта от посетители',
   },
   frameworks: {
     ESX: 'ESX',
@@ -325,6 +349,11 @@ export const bg = {
   },
   common: {
     breadcrumbLabel: 'Пътека',
+    pagination: 'Страници',
+    page: 'Страница',
+    prev: 'Предишна',
+    next: 'Следваща',
+    pageOf: 'от',
   },
 };
 

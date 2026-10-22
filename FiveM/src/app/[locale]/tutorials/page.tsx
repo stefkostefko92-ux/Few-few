@@ -4,7 +4,7 @@ import { JsonLd } from '@/components/JsonLd';
 import { Badge } from '@/components/Badge';
 import { getContent } from '@/content';
 import { getDictionary, resolveLocale } from '@/i18n';
-import { breadcrumbJsonLd, howToJsonLd, pageMetadata } from '@/lib/seo';
+import { howToJsonLd, pageMetadata } from '@/lib/seo';
 
 export const revalidate = 86_400;
 
@@ -100,10 +100,9 @@ export default async function TutorialsPage({ params }: Props) {
         </Link>
       </p>
 
-      <JsonLd data={breadcrumbJsonLd(locale, [
-              { name: t.nav.servers, path: '/servers' },
-              { name: t.tutorials.h1, path: '/tutorials' },
-            ])} />
+      {/* БЕЗ BreadcrumbList: страницата няма видима пътека, а обявената
+          („Сървъри › …“) беше и невярна — разделът не е под каталога.
+          Структурираните данни описват каквото се вижда, не повече. */}
     </article>
   );
 }

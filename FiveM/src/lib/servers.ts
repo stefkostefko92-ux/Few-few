@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client';
+import { cache } from 'react';
 
 import { prisma } from './db';
 import { compareFeatured, compareServers } from './rating';
@@ -43,11 +44,21 @@ export type ServerFilter = {
   sort?: ServerSort;
 };
 
+/**
+ * Таван на списъка — предпазител, не страниране. Страниците (`?page=`) режат
+ * подредения списък, затова той трябва да е ЦЕЛИЯТ: при таван 200 сървърите
+ * след 200-ния нямаха нито един вътрешен линк (838 от 1038 на живо) и стигаха
+ * до търсачката само през sitemap-а.
+ */
+export const MAX_LISTED = 2000;
+
 export async function listPublicServers(filter: ServerFilter = {}): Promise<PublicServer[]> {
   try {
     const rows = await prisma.server.findMany({
       where: {
         status: 'APPROVED',
+        // Псевдонимите са същият сървър под стар Cfx код — един сървър, един ред.
+        canonicalId: null,
         ...(filter.framework ? { framework: filter.framework } : {}),
         ...(filter.whitelist === undefined ? {} : { whitelist: filter.whitelist }),
         ...(filter.query ? { name: { contains: filter.query, mode: 'insensitive' as const } } : {}),
@@ -62,7 +73,7 @@ export async function listPublicServers(filter: ServerFilter = {}): Promise<Publ
         { players: 'desc' },
         { name: 'asc' },
       ],
-      take: 200,
+      take: MAX_LISTED,
     });
     // Крайната подредба е в `compareServers`: SQL-ът не може да изрази
     // „промотиран, но само докато е валидно“, а `featuredUntil DESC` вдига и
@@ -86,14 +97,44 @@ export async function listPublicServers(filter: ServerFilter = {}): Promise<Publ
 }
 
 /**
+ * Колко КАНОНИЧНИ сървъра има по рамка и с whitelist. Страница-филтър без
+ * нито един сървър е празна страница: `noindex, follow` и извън sitemap-а
+ * (на живо `/servers/whitelist` и `/servers/framework/ox_core` бяха точно
+ * такива). `ok: false` — базата не отговори; тогава НЕ крием нищо.
+ */
+export const listingCounts = cache(async function listingCounts(): Promise<{
+  ok: boolean;
+  frameworks: Partial<Record<PublicServer['framework'], number>>;
+  whitelist: number;
+}> {
+  try {
+    const where = { status: 'APPROVED' as const, canonicalId: null };
+    const [byFramework, whitelist] = await Promise.all([
+      prisma.server.groupBy({ by: ['framework'], where, _count: { _all: true } }),
+      prisma.server.count({ where: { ...where, whitelist: true } }),
+    ]);
+    return {
+      ok: true,
+      frameworks: Object.fromEntries(byFramework.map((row) => [row.framework, row._count._all])),
+      whitelist,
+    };
+  } catch (error) {
+    console.error('[servers] броят по филтри не се прочете', error);
+    return { ok: false, frameworks: {}, whitelist: 0 };
+  }
+});
+
+/**
  * Обобщението се смята с отделен `aggregate` върху ВСИЧКИ одобрени ревюта.
  * Ако се четеше от `reviews.length`, числото щеше да е капнато на `take` —
  * тоест сайтът щеше публично да твърди „4.6 / 5 от 20“ при 100 ревюта.
  */
-export async function reviewSummary(serverId: string): Promise<{ average: number | null; count: number }> {
+export async function reviewSummary(serverIds: readonly string[]): Promise<{ average: number | null; count: number }> {
   try {
     const result = await prisma.review.aggregate({
-      where: { serverId, status: 'APPROVED' },
+      // Цялата група (каноничният + псевдонимите): ревю, писано на стария адрес
+      // на същия сървър, си остава ревю за него.
+      where: { serverId: { in: [...serverIds] }, status: 'APPROVED' },
       _avg: { rating: true },
       _count: { _all: true },
     });
@@ -111,42 +152,96 @@ export async function reviewSummary(serverId: string): Promise<{ average: number
 /** Колко ревюта показваме на страницата (обобщението не зависи от това). */
 export const REVIEWS_SHOWN = 20;
 
-export async function getPublicServer(slug: string) {
+/** Полетата на страницата на сървър — `publicServerSelect` плюс онова, което стои само там. */
+const serverPageSelect = {
+  ...publicServerSelect,
+  id: true,
+  description: true,
+  discordUrl: true,
+  websiteUrl: true,
+  cfxJoinCode: true,
+  address: true,
+  createdAt: true,
+  lastCheckedAt: true,
+  lastSeenInListAt: true,
+  lastActiveAt: true,
+  contentUpdatedAt: true,
+  canonicalId: true,
+  canonical: { select: { slug: true, status: true } },
+  aliases: { where: { status: 'APPROVED' }, select: { id: true, lastActiveAt: true } },
+} satisfies Prisma.ServerSelect;
+
+type ServerPageRow = Prisma.ServerGetPayload<{ select: typeof serverPageSelect }>;
+
+export type ServerPage =
+  /** Псевдоним — страницата пренасочва (308) към каноничния адрес. */
+  | { kind: 'alias'; canonicalSlug: string }
+  | {
+      kind: 'server';
+      server: Omit<ServerPageRow, 'canonical' | 'aliases'>;
+      /** Каноничният + псевдонимите: за ревютата, графиката и активността. */
+      groupIds: string[];
+      /** Последната активност на ЦЕЛИЯ сървър (всички регистрации). */
+      groupLastActiveAt: Date | null;
+      reviews: Array<{
+        id: string;
+        rating: number;
+        body: string | null;
+        authorAlias: string | null;
+        createdAt: Date;
+        reply: string | null;
+        repliedAt: Date | null;
+      }>;
+    };
+
+/**
+ * Страницата на сървър по slug. `cache` — `generateMetadata` и страницата я
+ * искат в една и съща заявка; без него двете четения бяха две отделни заявки
+ * към базата.
+ */
+export const getPublicServer = cache(async function getPublicServer(slug: string): Promise<ServerPage | null> {
   try {
-    return await prisma.server.findFirst({
-      where: { slug, status: 'APPROVED' },
+    const row = await prisma.server.findFirst({ where: { slug, status: 'APPROVED' }, select: serverPageSelect });
+    if (!row) return null;
+
+    // Псевдоним на ОДОБРЕН каноничен → пренасочване. Свален междувременно
+    // каноничен (до следващото откриване) не скрива псевдонима: показваме го
+    // сам, докато планът не прегрупира.
+    if (row.canonicalId && row.canonical?.status === 'APPROVED') {
+      return { kind: 'alias', canonicalSlug: row.canonical.slug };
+    }
+
+    const { canonical: _canonical, aliases, ...server } = row;
+    void _canonical;
+    const groupIds = [server.id, ...aliases.map((alias) => alias.id)];
+    const groupLastActiveAt = [server.lastActiveAt, ...aliases.map((alias) => alias.lastActiveAt)].reduce<Date | null>(
+      (max, at) => (at && (!max || at > max) ? at : max),
+      null,
+    );
+
+    const reviews = await prisma.review.findMany({
+      where: { serverId: { in: groupIds }, status: 'APPROVED' },
       select: {
-        ...publicServerSelect,
         id: true,
-        description: true,
-        discordUrl: true,
-        websiteUrl: true,
-        cfxJoinCode: true,
-        address: true,
-        updatedAt: true,
-        reviews: {
-          where: { status: 'APPROVED' },
-          select: {
-            id: true,
-            rating: true,
-            body: true,
-            authorAlias: true,
-            createdAt: true,
-            // Отговорът на сървъра — обещан в Общите условия, значи трябва да
-            // напусне базата, за да се покаже под ревюто.
-            reply: true,
-            repliedAt: true,
-          },
-          orderBy: { createdAt: 'desc' },
-          take: REVIEWS_SHOWN,
-        },
+        rating: true,
+        body: true,
+        authorAlias: true,
+        createdAt: true,
+        // Отговорът на сървъра — обещан в Общите условия, значи трябва да
+        // напусне базата, за да се покаже под ревюто.
+        reply: true,
+        repliedAt: true,
       },
+      orderBy: { createdAt: 'desc' },
+      take: REVIEWS_SHOWN,
     });
+
+    return { kind: 'server', server, groupIds, groupLastActiveAt, reviews };
   } catch (error) {
     console.error('[servers] сървърът не се прочете', error);
     return null;
   }
-}
+});
 
 /**
  * Историята на играчите за последните 24 часа, свита в кофи по час.
@@ -157,14 +252,16 @@ export async function getPublicServer(slug: string) {
  * графиката да покаже стойност под грешен час.
  */
 export async function playersLastDay(
-  serverId: string,
+  serverIds: readonly string[],
   locale = 'bg',
 ): Promise<{ values: number[]; labels: string[] }> {
   const now = new Date();
   try {
     const since = new Date(now.getTime() - 24 * HOUR_MS);
     const rows = await prisma.serverSnapshot.findMany({
-      where: { serverId, at: { gte: since } },
+      // Цялата група: в часа на пререгистрацията снимките са по двата реда.
+      // Кофата взема МАКСИМУМА, значи две регистрации не се събират двойно.
+      where: { serverId: { in: [...serverIds] }, at: { gte: since } },
       select: { at: true, players: true },
       orderBy: { at: 'asc' },
     });
@@ -174,5 +271,20 @@ export async function playersLastDay(
     return { values: [], labels: [] };
   }
 }
+
+/**
+ * Всичко за страницата на сървър наведнъж, кеширано за заявката по
+ * (slug, език) — `generateMetadata` иска същите факти като страницата
+ * (ревюта, пик за 24 ч.) за описанието и за `robots`.
+ */
+export const getServerPageData = cache(async function getServerPageData(slug: string, locale: string) {
+  const page = await getPublicServer(slug);
+  if (!page || page.kind === 'alias') return page;
+  const [summary, history] = await Promise.all([
+    reviewSummary(page.groupIds),
+    playersLastDay(page.groupIds, locale),
+  ]);
+  return { ...page, summary, history };
+});
 
 export { averageRating, compareFeatured, compareServers, isFeatured } from './rating';

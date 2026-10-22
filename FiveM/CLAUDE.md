@@ -76,8 +76,23 @@ src/lib/streamers-query.ts  МРЕЖАТА към Twitch/Kick/YouTube. Липс�
                         пропусната платформа, не грешка.
 src/lib/streamers-db.ts Публичните заявки за стриймъри (само APPROVED).
 scripts/discover-streamers.ts  Cron: живи излъчвания по платформа.
-src/lib/seo.ts          SITE_URL, BASE_KEYWORDS, pageMetadata (canonical+OG),
+src/lib/seo.ts          SITE_URL, BASE_KEYWORDS, pageMetadata (canonical+OG,
+                        `noindex`+`follow`), alternateLanguages (ЕДИН hreflang
+                        набор с x-default за страницата И sitemap-а),
                         siteJsonLd/serverListJsonLd/faqJsonLd, jsonLdString.
+src/lib/server-identity.ts  ЧИСТО: serverTitle (марката от чуждия hostname —
+                        без цветни кодове, емоджи, реклама, опашка на рецептата,
+                        ≤60 знака), serverIdentityKey/isGenericServerName,
+                        planIdentities (кой ред е каноничен), indexDecision —
+                        ПРАВИЛОТО ЗА ИНДЕКСИРАНЕ, buildServerSlug.
+src/lib/server-meta.ts  ЧИСТО: <title> (≤49 + „ · FiveM BG“) и meta description
+                        от фактите на сървъра; formatDay/formatMoment (София).
+src/lib/server-registry.ts  Prisma: applyIdentityPlan (пише canonicalId),
+                        rebindRegistration (живият Cfx код → каноничния ред),
+                        serverIndexDecisions (за sitemap-а). Клиентът се подава.
+src/lib/pagination.ts   ЧИСТО: ?page= за каталога (48 на страница).
+scripts/dedupe-servers.ts  Преглед на плана и на броя индексирани (само чете;
+                        `--apply` пише). `npm run servers:dedupe`.
 src/app/[locale]/page.tsx        LANDING „ПЛАКАТ“: герой на цяла ширина (кадър + хром
                         заглавие + трикольорът като носеща греда), живи числа в
                         един ред с тънки черти, КЛАСАЦИЯ от 6 сървъра
@@ -150,6 +165,26 @@ scripts/prune.ts        Cron: изтрива по обявените в /privacy
 
 ## Правила на продукта
 
+- **Един сървър — един адрес.** Cfx.re дава НОВ код при всяка нова регистрация
+  на сървъра, а откриването прави ред за всеки код — на живо (22.10.2026) един
+  сървър стоеше под до 12 адреса. Редовете с една и съща МАРКА
+  (`serverIdentityKey`) са една група: каноничният е подаденият от собственика,
+  иначе НАЙ-СТАРИЯТ (адресът не бива да се мени); останалите са псевдоними
+  (`canonicalId`) → 308 към каноничния, извън списъците, sitemap-а и пингването.
+  Пререгистрира ли се сървърът, живият код се МЕСТИ към каноничния ред
+  (`rebindRegistration`), а не обратното. Общи/развойни имена („Dev“, „default
+  FXServer“, „… DEV“, „Test Server“) НЕ сливат редове. Свалените (`REJECTED`)
+  не участват — модераторското решение не се разширява автоматично.
+- **Индексира се само страница със собствена стойност** (`indexDecision`):
+  каноничен ред с име, което идентифицира нещо, И поне едно от: съдържание от
+  собственика (подаден листинг, описание, tagline), одобрено ревю, или поне
+  един играч през последните 30 дни (`lastActiveAt`). Всичко друго е
+  `noindex, follow` и извън sitemap-а, но остава в каталога за посетителя.
+  Празна страница-филтър (whitelist, рамка без сървъри) — също.
+- **`lastmod` е `contentUpdatedAt`, не `updatedAt`** — cron-ът пипа `updatedAt`
+  на 3 мин. Вдига се САМО при видима промяна: редакция с промяна, одобрено/
+  свалено ревю, отговор, нова рамка, нов Cfx код, връщане към активност след
+  30 дни сън. Живият брой играчи НЕ е промяна на съдържанието.
 - **От `players.json` се четат САМО имената — идентификаторите НИКОГА.**
   Правилото се смени на 02.08.2026 по решение на собственика: списъкът „кой
   играе“ е обявена функция. Онова, което НЕ се смени, е по-важното: същият

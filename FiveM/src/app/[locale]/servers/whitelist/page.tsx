@@ -1,14 +1,18 @@
 import Link from 'next/link';
 
+import { notFound } from 'next/navigation';
+
 import { JsonLd } from '@/components/JsonLd';
+import { Pagination } from '@/components/Pagination';
 import { ServerCard } from '@/components/ServerCard';
 import { getDictionary, resolveLocale } from '@/i18n';
+import { paginate, pageHref, parsePage } from '@/lib/pagination';
 import { breadcrumbJsonLd, pageMetadata, serverListJsonLd } from '@/lib/seo';
-import { listPublicServers } from '@/lib/servers';
+import { listingCounts, listPublicServers } from '@/lib/servers';
 
 export const dynamic = 'force-dynamic';
 
-type Props = { params: Promise<{ locale: string }> };
+type Props = { params: Promise<{ locale: string }>; searchParams: Promise<{ page?: string }> };
 
 const COPY = {
   bg: {
@@ -33,25 +37,35 @@ const COPY = {
   },
 } as const;
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params, searchParams }: Props) {
   const { locale: raw } = await params;
   const locale = resolveLocale(raw);
+  const t = getDictionary(locale);
   const copy = COPY[locale];
+  const page = parsePage((await searchParams).page);
+  const counts = await listingCounts();
+  // Без нито един whitelist сървър страницата е празна (така е на живо):
+  // `noindex, follow` и извън sitemap-а, докато не се появи първият.
+  const suffix = page > 1 ? ` — ${t.common.page} ${page}` : '';
   return pageMetadata({
     locale,
-    title: copy.title,
-    description: copy.description,
-    path: '/servers/whitelist',
+    title: `${copy.title}${suffix}`,
+    description: page > 1 ? `${copy.description} ${t.common.page} ${page}.` : copy.description,
+    path: pageHref('/servers/whitelist', page),
     keywords: [...copy.keywords],
+    noindex: counts.ok && counts.whitelist === 0,
+    follow: true,
   });
 }
 
-export default async function WhitelistPage({ params }: Props) {
+export default async function WhitelistPage({ params, searchParams }: Props) {
   const { locale: raw } = await params;
   const locale = resolveLocale(raw);
   const t = getDictionary(locale);
   const copy = COPY[locale];
   const servers = await listPublicServers({ whitelist: true });
+  const current = paginate(servers, parsePage((await searchParams).page));
+  if (current.outOfRange) notFound();
 
   return (
     <div>
@@ -80,13 +94,19 @@ export default async function WhitelistPage({ params }: Props) {
         </p>
       ) : (
         <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {servers.map((server) => (
+          {current.items.map((server) => (
             <ServerCard key={server.slug} server={server} locale={locale} t={t} />
           ))}
         </ul>
       )}
+      <Pagination
+        base={`/${locale}/servers/whitelist`}
+        page={current.page}
+        pages={current.pages}
+        labels={t.common}
+      />
 
-      <JsonLd data={serverListJsonLd(locale, servers)} />
+      <JsonLd data={serverListJsonLd(locale, current.items, current.offset)} />
       <JsonLd data={breadcrumbJsonLd(locale, [
               { name: t.server.breadcrumb, path: '/servers' },
               { name: t.filters.whitelist, path: '/servers/whitelist' },

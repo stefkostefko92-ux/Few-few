@@ -1,10 +1,9 @@
 import Link from 'next/link';
 
-import { JsonLd } from '@/components/JsonLd';
 import { Badge } from '@/components/Badge';
 import { Icon } from '@/components/Icon';
 import { getDictionary, resolveLocale } from '@/i18n';
-import { breadcrumbJsonLd, pageMetadata } from '@/lib/seo';
+import { pageMetadata } from '@/lib/seo';
 import { PUBLISHER } from '@/lib/site';
 import { PLATFORM_BADGE, type StreamPlatformId } from '@/lib/streamers';
 import { listPublicStreamers, streamerCounts, type PublicStreamer } from '@/lib/streamers-db';
@@ -108,10 +107,9 @@ export default async function StreamersPage({ params }: Props) {
         </p>
       </section>
 
-      <JsonLd data={breadcrumbJsonLd(locale, [
-              { name: t.nav.servers, path: '/servers' },
-              { name: t.streamers.h1, path: '/streamers' },
-            ])} />
+      {/* БЕЗ BreadcrumbList: страницата няма видима пътека, а обявената
+          („Сървъри › …“) беше и невярна — разделът не е под каталога.
+          Структурираните данни описват каквото се вижда, не повече. */}
     </div>
   );
 }

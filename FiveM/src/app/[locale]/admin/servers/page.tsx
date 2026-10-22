@@ -28,6 +28,7 @@ export default async function AdminServers({ params, searchParams }: Props) {
     // `nulls: 'last'` — Postgres подрежда NULL ПЪРВО при DESC, тоест при над 60
     // сървъра промотираните излизаха извън списъка. Капанът от `CLAUDE.md`.
     orderBy: [{ featuredUntil: { sort: 'desc', nulls: 'last' } }, { players: 'desc' }, { name: 'asc' }],
+    include: { canonical: { select: { slug: true } } },
     take: 60,
   });
 
@@ -63,6 +64,13 @@ export default async function AdminServers({ params, searchParams }: Props) {
                 </span>
               )}
             </div>
+            {server.canonical && (
+              // Псевдонимът няма своя страница — редакция тук не се вижда никъде.
+              <p className="mt-2 text-sm text-amber-300">
+                Стара регистрация на същия сървър — адресът пренасочва към{' '}
+                <code className="text-xs">{server.canonical.slug}</code>. Редактирай каноничния ред.
+              </p>
+            )}
 
             {server.source === 'DISCOVERED' ? (
               <p className="mt-3 text-sm text-silver-500">

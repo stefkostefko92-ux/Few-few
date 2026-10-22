@@ -19,7 +19,8 @@ import {
   isPrivatePlaceholder,
   parseServerAddress,
 } from '../src/lib/fivem';
-import { isValidSlug, slugify } from '../src/lib/slug';
+import { buildServerSlug, INDEXABLE_ACTIVE_DAYS } from '../src/lib/server-identity';
+import { applyIdentityPlan } from '../src/lib/server-registry';
 
 const prisma = new PrismaClient();
 
@@ -33,20 +34,6 @@ function pickAddress(server: CfxServer): string | null {
     if (parsed) return formatServerAddress(parsed);
   }
   return null;
-}
-
-/**
- * Уникален slug. Името идва от чужд сървър, тоест може да е емоджи, цветни
- * кодове или дубликат — затова: чистене, после проверка, после суфикс с Cfx
- * кода, който е гарантирано уникален.
- */
-function buildSlug(server: CfxServer, taken: Set<string>): string {
-  const base = slugify(displayName(server.hostname, ''));
-  const candidate = isValidSlug(base) ? base : `server-${server.endPoint}`;
-  if (!taken.has(candidate)) return candidate;
-
-  const suffixed = `${candidate}-${server.endPoint}`.slice(0, 60);
-  return taken.has(suffixed) ? `server-${server.endPoint}` : suffixed;
 }
 
 async function main() {
@@ -64,6 +51,8 @@ async function main() {
   const known = new Map(existing.filter((s) => s.cfxJoinCode).map((s) => [s.cfxJoinCode!, s.slug]));
 
   const now = new Date();
+  /** Активен преди повече от прозореца → страницата се връща в индекса. */
+  const dormantBefore = new Date(now.getTime() - INDEXABLE_ACTIVE_DAYS * 86_400_000);
   let created = 0;
   let updated = 0;
 
@@ -83,6 +72,8 @@ async function main() {
       online: true,
       lastProbe: 'ONLINE' as const,
       ...(address ? { address } : {}),
+      // Поне един играч в списъка = реална активност (правилото за индексиране).
+      ...(server.clients > 0 ? { lastActiveAt: now } : {}),
     } satisfies Prisma.ServerUpdateInput;
 
     if (known.has(server.endPoint)) {
@@ -93,6 +84,19 @@ async function main() {
       // списъка на Cfx.re, и обновяването му вдигаше `updatedAt` на всеки
       // пробег — а `prune.ts` брои шестте месеца до изтриването на ревютата
       // именно от `updatedAt`, тоест срокът не изтичаше никога.
+      // Сървър, спал по-дълго от прозореца на активност, се връща в индекса —
+      // това Е промяна на страницата и `lastmod` трябва да я каже, иначе
+      // търсачката няма причина да мине пак. Само тогава, не при всеки пробег.
+      if (server.clients > 0) {
+        await prisma.server.updateMany({
+          where: {
+            cfxJoinCode: server.endPoint,
+            status: { not: 'REJECTED' },
+            OR: [{ lastActiveAt: null }, { lastActiveAt: { lt: dormantBefore } }],
+          },
+          data: { contentUpdatedAt: now },
+        });
+      }
       await prisma.server.updateMany({
         where: { cfxJoinCode: server.endPoint, status: { not: 'REJECTED' } },
         data: fromList,
@@ -101,7 +105,7 @@ async function main() {
       continue;
     }
 
-    const slug = buildSlug(server, taken);
+    const slug = buildServerSlug(server.hostname, server.endPoint, taken);
     taken.add(slug);
 
     await prisma.server.create({
@@ -120,8 +124,16 @@ async function main() {
     created += 1;
   }
 
+  // ЕДИН адрес на сървър. Новата регистрация на вече познат сървър (нов Cfx
+  // код) е ред-псевдоним на стария, а живият код се мести към стария адрес —
+  // виж `applyIdentityPlan`. Тук, а не в отделен cron: точно този пробег е
+  // създал новите редове.
+  const identity = await applyIdentityPlan(prisma, now);
+
   console.log(
-    `Открити ${discovered.length} български сървъра: ${created} нови, ${updated} обновени.`,
+    `Открити ${discovered.length} български сървъра: ${created} нови, ${updated} обновени. ` +
+      `Идентичност: ${identity.groups} сървъра с повече от една регистрация, ` +
+      `${identity.aliases} псевдонима (${identity.changed} сменени), ${identity.rebound} преместени живи кода.`,
   );
 }
 

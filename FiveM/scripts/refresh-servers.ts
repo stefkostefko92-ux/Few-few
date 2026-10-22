@@ -16,6 +16,7 @@ import {
 } from '../src/lib/fivem';
 import { readEnv } from '../src/lib/env';
 import { probeServer, resolveJoinCode } from '../src/lib/fivem-query';
+import { INDEXABLE_ACTIVE_DAYS } from '../src/lib/server-identity';
 
 const prisma = new PrismaClient();
 
@@ -33,13 +34,19 @@ async function inBatches<T>(items: readonly T[], size: number, run: (item: T) =>
 
 async function main() {
   const servers = await prisma.server.findMany({
-    where: { status: 'APPROVED' },
+    // Псевдонимите (`canonicalId`) НЕ се пингват: това са старите регистрации
+    // на същия сървър, обикновено със същия адрес — „ODYSSEY RolePlay“ беше
+    // пингван 12 пъти на всеки 3 минути. Живостта им се вижда от списъка на
+    // Cfx.re (`lastSeenInListAt`), а страницата им пренасочва.
+    where: { status: 'APPROVED', canonicalId: null },
     select: {
       id: true,
       slug: true,
       address: true,
       cfxJoinCode: true,
       lastSeenInListAt: true,
+      framework: true,
+      lastActiveAt: true,
     },
   });
 
@@ -69,8 +76,9 @@ async function main() {
       // сървърът ще изглежда офлайн почти винаги.
       const trusted = listSaysOnline(server.lastSeenInListAt, now);
       if (trusted) online += 1;
-      await prisma.server.update({
-        where: { id: server.id },
+      // Същото условие по кода като долу — виж бележката при пингването.
+      await prisma.server.updateMany({
+        where: { id: server.id, cfxJoinCode: server.cfxJoinCode },
         data: {
           lastCheckedAt: now,
           ...(poisoned ? { address: null } : {}),
@@ -84,9 +92,23 @@ async function main() {
     const now = new Date();
     if (status.online) online += 1;
 
+    const active = status.online && status.players > 0;
+    // Видима промяна на страницата → `lastmod`: разпозната нова рамка, или
+    // сървър, спал по-дълго от прозореца за индексиране, който пак има хора.
+    // Живият брой играчи НЕ е такава промяна — иначе всеки адрес е „сега“.
+    const frameworkChanged = status.framework !== 'UNKNOWN' && status.framework !== server.framework;
+    const reactivated =
+      active &&
+      (!server.lastActiveAt ||
+        now.getTime() - server.lastActiveAt.getTime() > INDEXABLE_ACTIVE_DAYS * 86_400_000);
+
     await prisma.$transaction([
-      prisma.server.update({
-        where: { id: server.id },
+      // `updateMany` със СЪЩИЯ код в условието: откриването може междувременно
+      // да е преместило живата регистрация към този ред (`rebindRegistration`).
+      // Тогава резултатът от пингването е за стария адрес и не бива да я
+      // презапише; следващият пробег след 3 мин пингва новия.
+      prisma.server.updateMany({
+        where: { id: server.id, cfxJoinCode: server.cfxJoinCode },
         data: {
           address: status.address,
           online: status.online,
@@ -107,6 +129,8 @@ async function main() {
           ...(status.online && status.playerNames
             ? { playerNames: status.playerNames, playersSeenAt: now }
             : { playerNames: [], playersSeenAt: null }),
+          ...(active ? { lastActiveAt: now } : {}),
+          ...(frameworkChanged || reactivated ? { contentUpdatedAt: now } : {}),
         },
       }),
       prisma.serverSnapshot.create({

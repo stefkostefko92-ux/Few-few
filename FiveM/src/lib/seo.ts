@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 
 import { DEFAULT_LOCALE, LOCALES, OG_LOCALE, type Locale } from '@/i18n/config';
 import { readEnv } from '@/lib/env';
+import { serverTitle } from '@/lib/server-identity';
 import { DISCORD_INVITE } from '@/lib/site';
 
 export const SITE_NAME = 'FiveM BG';
@@ -58,6 +59,18 @@ export function localeUrl(locale: Locale, path = '/'): string {
   return `${SITE_URL}/${locale}${clean}`;
 }
 
+/**
+ * Езиковите близнаци на път — ЕДИН източник за `<link hreflang>` на страницата
+ * и за `xhtml:link` в sitemap-а. Досега sitemap-ът ги изброяваше без
+ * `x-default`, а страницата — с него: два различни набора за един адрес.
+ */
+export function alternateLanguages(path = '/'): Record<string, string> {
+  const languages: Record<string, string> = {};
+  for (const other of LOCALES) languages[other] = localeUrl(other, path);
+  languages['x-default'] = localeUrl(DEFAULT_LOCALE, path);
+  return languages;
+}
+
 type PageMetaInput = {
   locale: Locale;
   title: string;
@@ -66,6 +79,13 @@ type PageMetaInput = {
   path?: string;
   keywords?: string[];
   noindex?: boolean;
+  /**
+   * При `noindex`: да следва ли търсачката линковете от страницата. По
+   * подразбиране НЕ (404, сигнал). Страница на сървър без собствено съдържание
+   * е `noindex, follow` — не се предлага сама, но линковете от нея към
+   * каталога и към другите сървъри остават пътища за обхождане.
+   */
+  follow?: boolean;
   /**
    * Страницата съществува САМО на своя език (новините: `getPost` филтрира по
    * `locale`). Тогава hreflang изброява само нея — иначе обявява близнак, който
@@ -86,24 +106,18 @@ export function pageMetadata({
   path = '/',
   keywords = [],
   noindex = false,
+  follow = false,
   singleLocale = false,
 }: PageMetaInput): Metadata {
   const url = localeUrl(locale, path);
-
-  const languages: Record<string, string> = {};
-  if (singleLocale) {
-    languages[locale] = url;
-  } else {
-    for (const other of LOCALES) languages[other] = localeUrl(other, path);
-    languages['x-default'] = localeUrl(DEFAULT_LOCALE, path);
-  }
+  const languages: Record<string, string> = singleLocale ? { [locale]: url } : alternateLanguages(path);
 
   return {
     title,
     description,
     keywords: Array.from(new Set([...keywords, ...BASE_KEYWORDS[locale]])),
     alternates: { canonical: url, languages },
-    robots: noindex ? { index: false, follow: false } : undefined,
+    robots: noindex ? { index: false, follow } : undefined,
     openGraph: {
       type: 'website',
       siteName: SITE_NAME,
@@ -138,7 +152,9 @@ export function siteJsonLd(locale: Locale) {
         '@type': 'Organization',
         '@id': `${SITE_URL}/#organization`,
         name: SITE_NAME,
-        url: SITE_URL,
+        // Началната на основния език, НЕ голият корен: `/` е само 307 към
+        // `/bg` (или `/en` по Accept-Language), тоест не е страница.
+        url: localeUrl(DEFAULT_LOCALE),
         logo: absoluteUrl('/brand/logo-square.png'),
         // `sameAs` е сигналът, по който търсачките свързват сайта с профилите
         // му. Досега липсваше, защото нямаше какво да сочи.
@@ -166,10 +182,15 @@ export function siteJsonLd(locale: Locale) {
   };
 }
 
-/** Списъкът със сървъри — това е, което AI отговарачите цитират. */
+/**
+ * Списъкът със сървъри — това е, което AI отговарачите цитират. Обявява САМО
+ * показаните (една страница от каталога), с позиция от началото на целия
+ * списък, и със СЪЩОТО име, което се вижда на картата (`serverTitle`).
+ */
 export function serverListJsonLd(
   locale: Locale,
   servers: ReadonlyArray<{ slug: string; name: string }>,
+  offset = 0,
 ) {
   return {
     '@context': 'https://schema.org',
@@ -178,8 +199,8 @@ export function serverListJsonLd(
     numberOfItems: servers.length,
     itemListElement: servers.map((server, index) => ({
       '@type': 'ListItem',
-      position: index + 1,
-      name: server.name,
+      position: offset + index + 1,
+      name: serverTitle(server.name, 60, locale === 'bg' ? 'FiveM сървър' : 'FiveM server'),
       url: localeUrl(locale, `/servers/${server.slug}`),
     })),
   };

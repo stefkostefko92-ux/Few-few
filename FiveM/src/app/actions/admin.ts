@@ -24,6 +24,7 @@ import {
   formatServerAddress,
 } from '@/lib/fivem';
 import { MAX_FEATURED_DAYS } from '@/lib/rating';
+import { rebindRegistration } from '@/lib/server-registry';
 import { isValidSlug, slugify } from '@/lib/slug';
 import { channelKey, normalizeChannel, profileUrl, STREAM_PLATFORMS } from '@/lib/streamers';
 
@@ -149,18 +150,39 @@ export async function editServerAction(formData: FormData): Promise<void> {
   });
   if (!parsed.success) return;
 
+  const next = {
+    tagline: parsed.data.tagline ?? null,
+    description: parsed.data.description ?? null,
+    discordUrl: parsed.data.discordUrl ?? null,
+    websiteUrl: parsed.data.websiteUrl ?? null,
+    framework: parsed.data.framework,
+    whitelist: parsed.data.whitelist,
+    tags: parsed.data.tags,
+    status: parsed.data.status,
+  };
+  const before = await prisma.server.findUnique({
+    where: { id },
+    select: {
+      tagline: true,
+      description: true,
+      discordUrl: true,
+      websiteUrl: true,
+      framework: true,
+      whitelist: true,
+      tags: true,
+      status: true,
+    },
+  });
+  if (!before) return;
+  // `lastmod` в sitemap-а е „кога се смени съдържанието“ — запис без промяна
+  // (повторно „Запази“) не е промяна и не бива да лъже търсачката.
+  const changed = (Object.keys(next) as Array<keyof typeof next>).some(
+    (key) => JSON.stringify(before[key]) !== JSON.stringify(next[key]),
+  );
+
   const server = await prisma.server.update({
     where: { id },
-    data: {
-      tagline: parsed.data.tagline ?? null,
-      description: parsed.data.description ?? null,
-      discordUrl: parsed.data.discordUrl ?? null,
-      websiteUrl: parsed.data.websiteUrl ?? null,
-      framework: parsed.data.framework,
-      whitelist: parsed.data.whitelist,
-      tags: parsed.data.tags,
-      status: parsed.data.status,
-    },
+    data: { ...next, ...(changed ? { contentUpdatedAt: new Date() } : {}) },
     select: { slug: true },
   });
 
@@ -177,7 +199,17 @@ export async function moderateReviewAction(formData: FormData): Promise<void> {
   const decision = String(formData.get('decision') ?? '');
   if (!id || (decision !== 'APPROVED' && decision !== 'REJECTED')) return;
 
-  await prisma.review.update({ where: { id }, data: { status: decision } });
+  const before = await prisma.review.findUnique({ where: { id }, select: { status: true } });
+  const reviewed = await prisma.review.update({
+    where: { id },
+    data: { status: decision },
+    select: { serverId: true },
+  });
+  // Ревю, което се появява на страницата или изчезва от нея, е промяна на
+  // съдържанието (`lastmod`). Отказ на чакащо ревю — не е.
+  if (before && (before.status === 'APPROVED') !== (decision === 'APPROVED')) {
+    await prisma.server.update({ where: { id: reviewed.serverId }, data: { contentUpdatedAt: new Date() } });
+  }
   await audit('review', id, decision);
   revalidatePath('/', 'layout');
 }
@@ -202,10 +234,15 @@ export async function replyToReviewAction(formData: FormData): Promise<void> {
   // управляващите и двупосочните символи, но пази абзаците; таванът е 1000.
   const reply = cleanText(String(formData.get('reply') ?? ''), 1000, { multiline: true }) || null;
 
-  await prisma.review.update({
+  const replied = await prisma.review.update({
     where: { id },
     data: { reply: reply || null, repliedAt: reply ? new Date() : null },
+    select: { serverId: true, status: true },
   });
+  // Отговорът се вижда само под ОДОБРЕНО ревю — тогава е промяна на страницата.
+  if (replied.status === 'APPROVED') {
+    await prisma.server.update({ where: { id: replied.serverId }, data: { contentUpdatedAt: new Date() } });
+  }
   await audit('review-reply', id, reply ? 'публикуван отговор' : 'отговорът е свален');
   revalidatePath('/', 'layout');
 }
@@ -262,16 +299,27 @@ export async function approveSubmissionAction(formData: FormData): Promise<void>
     });
     if (claimed.count === 0) return null;
 
-    const existing = joinCode
-      ? await tx.server.findUnique({ where: { cfxJoinCode: joinCode }, select: { id: true } })
+    const found = joinCode
+      ? await tx.server.findUnique({ where: { cfxJoinCode: joinCode }, select: { id: true, canonicalId: true } })
       : address
-        ? await tx.server.findFirst({ where: { address }, select: { id: true } })
+        ? await tx.server.findFirst({ where: { address }, select: { id: true, canonicalId: true } })
         : null;
+
+    // Кодът е на ред-ПСЕВДОНИМ (стара регистрация на сървъра)? Тогава се поема
+    // КАНОНИЧНИЯТ ред — неговият адрес е страницата на сървъра, — а кодът от
+    // заявката се мести там. Иначе поемането правеше подадения листинг
+    // каноничен под стария, грозен адрес с код в края.
+    let existing = found;
+    if (found?.canonicalId) {
+      const moved = await rebindRegistration(tx, found.canonicalId, found.id);
+      if (moved) existing = { id: found.canonicalId, canonicalId: null };
+    }
 
     if (existing) {
       await tx.server.update({
         where: { id: existing.id },
         data: {
+          contentUpdatedAt: new Date(),
           name,
           ...(address ? { address } : {}),
           ...(submission.discordUrl ? { discordUrl: submission.discordUrl } : {}),

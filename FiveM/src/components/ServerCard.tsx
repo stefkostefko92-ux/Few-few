@@ -8,6 +8,7 @@ import type { Dictionary } from '@/i18n';
 import type { Locale } from '@/i18n/config';
 import { formatPlayers, type FrameworkId } from '@/lib/fivem';
 import { FRAMEWORK_ICON, STATUS_ICON, tagIcon } from '@/lib/icons';
+import { serverTitle } from '@/lib/server-identity';
 import { isFeatured, type PublicServer } from '@/lib/servers';
 
 export function ServerCard({
@@ -20,6 +21,9 @@ export function ServerCard({
   t: Dictionary;
 }) {
   const featured = isFeatured(server);
+  // Марката, не суровият hostname с рекламата — същото име като на страницата
+  // и в ItemList JSON-LD.
+  const title = serverTitle(server.name, 60, t.server.fallbackName);
   const status = formatPlayers(
     { outcome: server.lastProbe, players: server.players, maxPlayers: server.maxPlayers },
     t.status,
@@ -37,7 +41,7 @@ export function ServerCard({
               а не 13-пикселова черта, която на този фон изчезва. */}
           <Badge name={FRAMEWORK_ICON[server.framework as FrameworkId]} size={28} />
           <Link href={`/${locale}/servers/${server.slug}`} className="hover:text-cyan-300">
-            {server.name}
+            {title}
           </Link>
         </h2>
         {featured && (

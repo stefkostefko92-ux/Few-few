@@ -2,7 +2,16 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { averageRating, compareFeatured, compareServers, isFeatured } from '../rating';
-import { BASE_KEYWORDS, faqJsonLd, isOurUrl, jsonLdString, pageMetadata, serverListJsonLd } from '../seo';
+import {
+  alternateLanguages,
+  BASE_KEYWORDS,
+  faqJsonLd,
+  isOurUrl,
+  jsonLdString,
+  pageMetadata,
+  serverListJsonLd,
+  siteJsonLd,
+} from '../seo';
 
 test('правилото на репото: ≥5 ключови думи, една е „Carbon Stealth“ — на ВСЕКИ език', () => {
   for (const locale of ['bg', 'en'] as const) {
@@ -36,6 +45,38 @@ test('noindex се задава само когато е поискан', () => 
     index: false,
     follow: false,
   });
+});
+
+test('noindex, follow — за страница без собствено съдържание', () => {
+  assert.deepEqual(pageMetadata({ locale: 'bg', title: 'T', description: 'D', noindex: true, follow: true }).robots, {
+    index: false,
+    follow: true,
+  });
+});
+
+test('hreflang: страницата и sitemap-ът ползват ЕДИН набор, с x-default към /bg', () => {
+  const languages = alternateLanguages('/servers/x');
+  assert.deepEqual(Object.keys(languages).sort(), ['bg', 'en', 'x-default']);
+  assert.match(languages['x-default'], /\/bg\/servers\/x$/);
+  const meta = pageMetadata({ locale: 'en', title: 'T', description: 'D', path: '/servers/x' });
+  assert.deepEqual(meta.alternates?.languages, languages);
+  // Каноничният адрес е самата страница, на нейния език.
+  assert.match(String(meta.alternates?.canonical), /\/en\/servers\/x$/);
+});
+
+test('началната: canonical и x-default сочат /bg, не голия корен (той е само 307)', () => {
+  const meta = pageMetadata({ locale: 'bg', title: 'T', description: 'D', path: '/' });
+  assert.match(String(meta.alternates?.canonical), /\/bg$/);
+  const languages = meta.alternates?.languages as Record<string, string>;
+  assert.match(languages['x-default'], /\/bg$/);
+  const org = siteJsonLd('en')['@graph'][0] as { url: string };
+  assert.match(org.url, /\/bg$/);
+});
+
+test('ItemList: името е като на картата, позицията — от началото на целия списък', () => {
+  const ld = serverListJsonLd('bg', [{ slug: 'balkan-rp', name: 'BALKAN RP | 💸 $50 000 START BONUS 💸' }], 48);
+  assert.equal(ld.itemListElement[0].name, 'BALKAN RP');
+  assert.equal(ld.itemListElement[0].position, 49);
 });
 
 test('JSON-LD не може да затвори <script> (XSS от име на сървър)', () => {

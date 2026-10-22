@@ -2,12 +2,14 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { JsonLd } from '@/components/JsonLd';
+import { Pagination } from '@/components/Pagination';
 import { ServerCard } from '@/components/ServerCard';
 import { getDictionary, resolveLocale } from '@/i18n';
 import { type Locale } from '@/i18n/config';
 import type { FrameworkId } from '@/lib/fivem';
+import { paginate, pageHref, parsePage } from '@/lib/pagination';
 import { breadcrumbJsonLd, pageMetadata, serverListJsonLd } from '@/lib/seo';
-import { listPublicServers } from '@/lib/servers';
+import { listingCounts, listPublicServers } from '@/lib/servers';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +48,10 @@ const FILTERS: Record<string, { id: FrameworkId; intro: Record<Locale, string> }
   },
 };
 
-type Props = { params: Promise<{ locale: string; framework: string }> };
+type Props = {
+  params: Promise<{ locale: string; framework: string }>;
+  searchParams: Promise<{ page?: string }>;
+};
 
 function titleFor(locale: Locale, id: FrameworkId): string {
   const label = getDictionary(locale).frameworks[id];
@@ -62,22 +67,31 @@ function filterFor(framework: string) {
   return Object.hasOwn(FILTERS, framework) ? FILTERS[framework] : null;
 }
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params, searchParams }: Props) {
   const { locale: raw, framework } = await params;
   const locale = resolveLocale(raw);
+  const t = getDictionary(locale);
   const filter = filterFor(framework);
   if (!filter) return pageMetadata({ locale, title: '404', description: '', noindex: true });
 
+  const page = parsePage((await searchParams).page);
+  const counts = await listingCounts();
+  // Филтър без нито един сървър е празна страница — не се предлага на
+  // търсачката (и я няма в sitemap-а), но остава за посетителя.
+  const empty = counts.ok && !counts.frameworks[filter.id];
+  const suffix = page > 1 ? ` — ${t.common.page} ${page}` : '';
   return pageMetadata({
     locale,
-    title: titleFor(locale, filter.id),
-    description: filter.intro[locale],
-    path: `/servers/framework/${framework}`,
+    title: `${titleFor(locale, filter.id)}${suffix}`,
+    description: page > 1 ? `${filter.intro[locale]} ${t.common.page} ${page}.` : filter.intro[locale],
+    path: pageHref(`/servers/framework/${framework}`, page),
     keywords: [`${titleFor(locale, filter.id)}`, `FiveM ${filter.id}`],
+    noindex: empty,
+    follow: true,
   });
 }
 
-export default async function FrameworkPage({ params }: Props) {
+export default async function FrameworkPage({ params, searchParams }: Props) {
   const { locale: raw, framework } = await params;
   const locale = resolveLocale(raw);
   const t = getDictionary(locale);
@@ -85,6 +99,8 @@ export default async function FrameworkPage({ params }: Props) {
   if (!filter) notFound();
 
   const servers = await listPublicServers({ framework: filter.id });
+  const current = paginate(servers, parsePage((await searchParams).page));
+  if (current.outOfRange) notFound();
   const title = titleFor(locale, filter.id);
 
   return (
@@ -114,13 +130,19 @@ export default async function FrameworkPage({ params }: Props) {
         </p>
       ) : (
         <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {servers.map((server) => (
+          {current.items.map((server) => (
             <ServerCard key={server.slug} server={server} locale={locale} t={t} />
           ))}
         </ul>
       )}
+      <Pagination
+        base={`/${locale}/servers/framework/${framework}`}
+        page={current.page}
+        pages={current.pages}
+        labels={t.common}
+      />
 
-      <JsonLd data={serverListJsonLd(locale, servers)} />
+      <JsonLd data={serverListJsonLd(locale, current.items, current.offset)} />
       <JsonLd data={breadcrumbJsonLd(locale, [
               { name: t.server.breadcrumb, path: '/servers' },
               { name: t.frameworks[filter.id], path: `/servers/framework/${framework}` },

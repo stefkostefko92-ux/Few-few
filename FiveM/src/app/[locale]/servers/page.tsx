@@ -1,9 +1,12 @@
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
 import { JsonLd } from '@/components/JsonLd';
 import { Badge } from '@/components/Badge';
+import { Pagination } from '@/components/Pagination';
 import { ServerCard } from '@/components/ServerCard';
 import { getDictionary, resolveLocale } from '@/i18n';
+import { paginate, pageHref, parsePage } from '@/lib/pagination';
 import { pageMetadata, serverListJsonLd } from '@/lib/seo';
 import { listPublicServers } from '@/lib/servers';
 
@@ -12,7 +15,7 @@ export const dynamic = 'force-dynamic';
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string; sort?: string }>;
+  searchParams: Promise<{ q?: string; sort?: string; page?: string }>;
 };
 
 /**
@@ -24,15 +27,23 @@ type Props = {
  * дотогава просто липсваше, тоест `/servers` беше 404 между собствените си
  * подстраници.
  */
-export async function generateMetadata({ params }: Pick<Props, 'params'>) {
+export async function generateMetadata({ params, searchParams }: Props) {
   const { locale: raw } = await params;
   const locale = resolveLocale(raw);
   const t = getDictionary(locale);
+  const { q, page: rawPage } = await searchParams;
+  const page = parsePage(rawPage);
+  // Страница 2+ е САМОСТОЯТЕЛЕН адрес със свой canonical (друг списък
+  // сървъри); подредбата (`sort`) не е — тя пренарежда същите. Резултатите от
+  // търсене (`q`) са `noindex, follow`: вътрешно търсене не е съдържание.
+  // Страница 2+ носи краткото име (h1) + номера — иначе заглавието минава 60.
   return pageMetadata({
     locale,
-    title: t.servers.title,
-    description: t.servers.description,
-    path: '/servers',
+    title: page > 1 ? `${t.servers.h1} — ${t.common.page} ${page}` : t.servers.title,
+    description: page > 1 ? `${t.servers.description} ${t.common.page} ${page}.` : t.servers.description,
+    path: pageHref('/servers', page),
+    noindex: Boolean(q?.trim()),
+    follow: true,
     keywords:
       locale === 'bg'
         ? ['директория FiveM сървъри', 'онлайн статус FiveM', 'кой сървър е онлайн', 'whitelist сървъри']
@@ -45,12 +56,15 @@ export default async function ServersPage({ params, searchParams }: Props) {
   const locale = resolveLocale(raw);
   const t = getDictionary(locale);
 
-  const { q, sort } = await searchParams;
+  const { q, sort, page: rawPage } = await searchParams;
   const query = q?.trim().slice(0, 60) || undefined;
   const chosen = sort === 'players' || sort === 'name' ? sort : 'default';
   const servers = await listPublicServers({ query, sort: chosen });
   const online = servers.filter((server) => server.online);
   const totalPlayers = online.reduce((sum, server) => sum + server.players, 0);
+  const current = paginate(servers, parsePage(rawPage));
+  if (current.outOfRange) notFound();
+  const keep = { q: query, sort: chosen === 'default' ? undefined : chosen };
 
   const filters = [
     { href: `/${locale}/servers/framework/esx`, label: 'ESX', badge: 'esx' },
@@ -146,14 +160,21 @@ export default async function ServersPage({ params, searchParams }: Props) {
           </p>
         ) : (
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {servers.map((server) => (
+            {current.items.map((server) => (
               <ServerCard key={server.slug} server={server} locale={locale} t={t} />
             ))}
           </ul>
         )}
+        <Pagination
+          base={`/${locale}/servers`}
+          page={current.page}
+          pages={current.pages}
+          params={keep}
+          labels={t.common}
+        />
       </section>
 
-      <JsonLd data={serverListJsonLd(locale, servers)} />
+      <JsonLd data={serverListJsonLd(locale, current.items, current.offset)} />
     </>
   );
 }

@@ -25,7 +25,14 @@ export function middleware(request: NextRequest) {
   const locale = bestLocale(request.headers.get('accept-language'));
   const url = request.nextUrl.clone();
   url.pathname = `/${locale}${pathname === '/' ? '' : pathname}`;
-  return NextResponse.redirect(url);
+  // ВРЕМЕННО (307), не постоянно: целта зависи от езика на браузъра, а
+  // постоянното пренасочване се кешира и би заковало първия избор завинаги.
+  // `/` затова НЕ е страница — няма го в sitemap-а, `x-default` сочи `/bg`, а
+  // никоя наша връзка не води към голия корен. `Vary` казва на кешовете по
+  // пътя, че отговорът зависи от `Accept-Language`.
+  const response = NextResponse.redirect(url, 307);
+  response.headers.set('Vary', 'Accept-Language');
+  return response;
 }
 
 export const config = {

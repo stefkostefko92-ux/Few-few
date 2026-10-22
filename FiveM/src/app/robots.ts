@@ -10,6 +10,7 @@ export default function robots(): MetadataRoute.Robots {
       disallow: ['/admin', '/bg/admin', '/en/admin', '/api/', '/bg/report', '/en/report'] },
     ],
     sitemap: absoluteUrl('/sitemap.xml'),
-    host: absoluteUrl('/'),
+    // БЕЗ `Host:` — нестандартна директива (само старият Yandex), а стойността
+    // ѝ беше голият корен `/`, който е пренасочване, не страница.
   };
 }

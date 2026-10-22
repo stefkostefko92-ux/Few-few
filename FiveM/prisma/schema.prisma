@@ -59,15 +59,15 @@ model Server {
   /// `EndPoint` от списъка на Cfx.re.
   cfxJoinCode String? @unique
 
-  source ServerSource @default(SUBMITTED)
+  source           ServerSource @default(SUBMITTED)
   /// Версията на иконата от списъка на Cfx.re — без нея URL-ът на иконата не
   /// може да се построи.
-  iconVersion Int?
+  iconVersion      Int?
   /// Кога сървърът последно е бил видян в публичния списък на Cfx.re.
   lastSeenInListAt DateTime?
   /// Резолвиран адрес „host:port“ (по подразбиране порт 30120). Може да е
   /// въведен ръчно, ако сървърът няма Cfx код.
-  address     String?
+  address          String?
 
   discordUrl String?
   websiteUrl String?
@@ -79,17 +79,17 @@ model Server {
   /// Свободни етикети: „heavy-rp“, „икономика“, „drift“, „нов“ …
   tags      String[]  @default([])
 
-  status   ModerationStatus @default(PENDING)
+  status        ModerationStatus @default(PENDING)
   /// Платено/промотирано подреждане най-отгоре, докато не изтече.
   featuredUntil DateTime?
 
   // ── Жив статус (пише се само от scripts/refresh-servers.ts) ───────────────
-  online     Boolean      @default(false)
-  lastProbe  ProbeOutcome @default(OFFLINE)
-  players    Int          @default(0)
-  maxPlayers Int          @default(0)
+  online        Boolean      @default(false)
+  lastProbe     ProbeOutcome @default(OFFLINE)
+  players       Int          @default(0)
+  maxPlayers    Int          @default(0)
   /// Последният момент, в който сървърът е отговорил успешно.
-  lastOnlineAt DateTime?
+  lastOnlineAt  DateTime?
   /// Последният опит за пингване (успешен или не).
   lastCheckedAt DateTime?
 
@@ -97,10 +97,30 @@ model Server {
   /// ЛИЧНИ ДАННИ: презаписва се цяло при всяко опресняване (на 3 мин) — не
   /// пазим история и не пазим `identifiers` (steam:/license:/discord:), които
   /// същият отговор съдържа. Виж `readPlayerNames` и `/privacy`.
-  playerNames   String[] @default([])
+  playerNames   String[]  @default([])
   /// Кога списъкът с имена е потвърден. `null` значи „нямаме видимост“ —
   /// различно от празен списък, който значи „проверено, няма никого“.
   playersSeenAt DateTime?
+
+  /// Последният момент, в който сървърът е имал ПОНЕ ЕДИН играч (от
+  /// опресняването или от списъка на Cfx.re). Без него „реална активност“ в
+  /// правилото за индексиране щеше да е агрегат върху ServerSnapshot (стотици
+  /// хиляди реда) при всяка заявка към sitemap-а. Виж `indexDecision`.
+  lastActiveAt DateTime?
+
+  /// Кога се е сменило СЪДЪРЖАНИЕТО на страницата: име, описание, връзки,
+  /// рамка, достъп, етикети, одобрено ревю или отговор, нов Cfx код, връщане
+  /// към активност. Това е `lastmod` в sitemap-а. `updatedAt` НЕ става: cron-ът
+  /// го пипа на всеки 3 минути, тоест всеки адрес казваше „променен сега“.
+  contentUpdatedAt DateTime @default(now())
+
+  /// Ред-ПСЕВДОНИМ: същият сървър под друг Cfx код (Cfx.re дава нов код при
+  /// всяка нова регистрация). `null` — редът сам е каноничният. Страницата на
+  /// псевдонима пренасочва (308) към каноничната, а sitemap-ът и списъците го
+  /// пропускат. Пише се САМО от `applyIdentityPlan` (`src/lib/server-registry.ts`).
+  canonicalId String?
+  canonical   Server?  @relation("ServerAlias", fields: [canonicalId], references: [id], onDelete: SetNull)
+  aliases     Server[] @relation("ServerAlias")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -110,6 +130,7 @@ model Server {
 
   @@index([status, online, players])
   @@index([status, featuredUntil])
+  @@index([canonicalId])
 }
 
 /// Снимка на посещаемостта при всяко пингване (на 3 мин) — графиката я свива в кофи по час.
@@ -138,8 +159,8 @@ model Review {
   serverId String
   server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
-  rating     Int
-  body       String?
+  rating      Int
+  body        String?
   /// Свободен псевдоним, въведен от автора. Не е акаунт, не е верифициран.
   authorAlias String?
 
@@ -151,10 +172,10 @@ model Review {
   /// поле нямаше — тоест обещавахме процедурно право без изпълнител. Точно то
   /// е противотежестта, която прави непроверените отзиви защитими по
   /// чл. 6(1)(ж) и чл. 7(6) от Дир. 2005/29/ЕО.
-  reply       String?
+  reply     String?
   /// Кога е публикуван отговорът — показва се до него, за да е ясно, че е
   /// по-късен от ревюто.
-  repliedAt   DateTime?
+  repliedAt DateTime?
 
   @@index([serverId, status])
 }
@@ -162,13 +183,13 @@ model Review {
 /// Заявка за листване/партньорство от собственик на сървър. Имейлът е
 /// единствената лична данна тук — за връзка по повод заявката.
 model Submission {
-  id          String  @id @default(cuid())
-  serverName  String
-  cfxJoinCode String?
-  address     String?
-  discordUrl  String?
+  id           String  @id @default(cuid())
+  serverName   String
+  cfxJoinCode  String?
+  address      String?
+  discordUrl   String?
   contactEmail String
-  note        String?
+  note         String?
 
   status    ModerationStatus @default(PENDING)
   createdAt DateTime         @default(now())
@@ -183,9 +204,9 @@ model Report {
   id String @id @default(cuid())
 
   /// Точният адрес на съдържанието (чл. 16(2)(б)).
-  targetUrl String
+  targetUrl        String
   /// Защо подателят смята съдържанието за незаконно (чл. 16(2)(а)).
-  reason    String
+  reason           String
   /// Име и имейл на подателя (чл. 16(2)(в)).
   ///
   /// ПО ИЗБОР, не задължителни — чл. 16(2)(в) изрично изключва изискването при
@@ -193,13 +214,13 @@ model Report {
   /// задължително поле е по-ограничително от закона и възпира точно най-тежкия
   /// сигнал. Формата ги иска по подразбиране и ги освобождава само при
   /// отметнато `anonymousAllowed`.
-  reporterName  String?
-  reporterEmail String?
+  reporterName     String?
+  reporterEmail    String?
   /// Подателят е заявил, че сигналът е по чл. 3–7 от Дир. 2011/93/ЕС и затова
   /// не дава контакти. Пази се, за да е видимо ЗАЩО липсват.
   anonymousAllowed Boolean @default(false)
   /// Декларация за добросъвестност и точност (чл. 16(2)(г)).
-  goodFaith Boolean
+  goodFaith        Boolean
 
   status    ModerationStatus @default(PENDING)
   createdAt DateTime         @default(now())
@@ -212,11 +233,11 @@ model Report {
 /// Сесия на администратора. В базата стои само SHA-256 на токена — открадната
 /// база не дава валидна сесия. Ротира се при вход (session fixation).
 model AdminSession {
-  id        String   @id @default(cuid())
-  tokenHash String   @unique
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  tokenHash  String   @unique
+  createdAt  DateTime @default(now())
   lastSeenAt DateTime @default(now())
-  expiresAt DateTime
+  expiresAt  DateTime
 
   @@index([expiresAt])
 }
@@ -226,10 +247,10 @@ model AdminSession {
 /// 86 400 опита на ден. IP-то се пази само като хеш и само за сигурност
 /// (чл. 6, ал. 1, б. „е“), 24 часа — обявено е в политиката.
 model LoginAttempt {
-  id       String   @id @default(cuid())
-  ipHash   String
-  at       DateTime @default(now())
-  ok       Boolean  @default(false)
+  id     String   @id @default(cuid())
+  ipHash String
+  at     DateTime @default(now())
+  ok     Boolean  @default(false)
 
   @@index([ipHash, at])
 }
@@ -267,15 +288,15 @@ enum StreamPlatform {
 ///    го връща обратно. Изтриване без този запис би било безсмислено: следващият
 ///    пробег на cron-а щеше да го възкреси до 10 минути.
 model Streamer {
-  id       String         @id @default(cuid())
-  platform StreamPlatform
+  id          String         @id @default(cuid())
+  platform    StreamPlatform
   /// Идентификаторът на канала в платформата, без „@“ и без URL. Регистърът се
   /// ПАЗИ, защото при YouTube `UCabc` и `ucabc` са различни адреси.
-  channel  String
+  channel     String
   /// Същото, но винаги с малки букви — ТОВА е ключът за уникалност. Ако
   /// уникалността беше по `channel`, свален по чл. 21 канал можеше да се върне
   /// с друг регистър на буквите: нов ред, нов статус, отпаднало възражение.
-  channelKey String
+  channelKey  String
   /// Показваното име, както лицето само го е задало.
   displayName String
   /// Адресът на канала. Строи се от `channel`, но се пази, защото TikTok се
@@ -285,21 +306,21 @@ model Streamer {
   /// Езикът, обявен ОТ ПЛАТФОРМАТА за това излъчване. Празно значи „не знаем“.
   language String?
 
-  status ModerationStatus @default(PENDING)
+  status     ModerationStatus @default(PENDING)
   /// Добавен на ръка от панела (TikTok няма публично откриване).
-  manual Boolean @default(false)
+  manual     Boolean          @default(false)
   /// Кога ЧОВЕК последно е гледал този запис. Не е козметика: свободният чужд
   /// текст (`streamTitle`) се показва само след това — иначе заглавие на чуждо
   /// предаване влиза на наша страница, без никой да го е видял.
   reviewedAt DateTime?
 
   // ── Жив статус (пише се само от scripts/discover-streamers.ts) ────────────
-  live       Boolean @default(false)
-  viewers    Int     @default(0)
+  live        Boolean   @default(false)
+  viewers     Int       @default(0)
   /// Заглавието на текущото предаване — чужд текст, минава през `displayName`.
   streamTitle String?
-  lastLiveAt DateTime?
-  lastSeenAt DateTime?
+  lastLiveAt  DateTime?
+  lastSeenAt  DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

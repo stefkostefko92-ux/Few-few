@@ -1,23 +1,20 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 
 import { submitReviewAction } from '@/app/actions/review';
 import { JsonLd } from '@/components/JsonLd';
 import { Badge } from '@/components/Badge';
 import { Icon } from '@/components/Icon';
-import { getDictionary, resolveLocale } from '@/i18n';
+import { getDictionary, resolveLocale, type Dictionary } from '@/i18n';
+import type { Locale } from '@/i18n/config';
 import { cfxJoinUrl, formatPlayers, type FrameworkId } from '@/lib/fivem';
 import { errorMessage } from '@/lib/messages';
 import { breadcrumbJsonLd, localeUrl, pageMetadata } from '@/lib/seo';
 import { FRAMEWORK_ICON, STATUS_ICON, tagIcon } from '@/lib/icons';
-import {
-  getPublicServer,
-  isFeatured,
-  playersLastDay,
-  REVIEWS_SHOWN,
-  reviewSummary,
-} from '@/lib/servers';
+import { indexDecision, serverFullName, serverTitle } from '@/lib/server-identity';
+import { formatDay, formatMoment, serverMetaDescription, serverPageTitle } from '@/lib/server-meta';
+import { getServerPageData, isFeatured, REVIEWS_SHOWN } from '@/lib/servers';
 import { PlayerList } from '@/components/PlayerList';
 import { PlayersChart } from '@/components/PlayersChart';
 import { Stars } from '@/components/Stars';
@@ -29,23 +26,83 @@ type Props = {
   searchParams: Promise<{ review?: string; error?: string }>;
 };
 
+type PageData = Extract<NonNullable<Awaited<ReturnType<typeof getServerPageData>>>, { kind: 'server' }>;
+
+/** Етикетът на рамката САМО когато е разпозната — „Собствена рамка FiveM сървър“ не е заглавие. */
+function knownFramework(framework: string, t: Dictionary): string | null {
+  return framework === 'ESX' || framework === 'QBCORE' || framework === 'QBOX' || framework === 'OX_CORE'
+    ? t.frameworks[framework as FrameworkId]
+    : null;
+}
+
+/** Последното доказателство, че сървърът работи: пингване ИЛИ живият списък на Cfx.re. */
+function lastOnline(server: PageData['server']): Date | null {
+  const { lastOnlineAt, lastSeenInListAt } = server;
+  if (!lastOnlineAt) return lastSeenInListAt;
+  if (!lastSeenInListAt) return lastOnlineAt;
+  return lastOnlineAt > lastSeenInListAt ? lastOnlineAt : lastSeenInListAt;
+}
+
+/** Всичко, което `<head>` казва за страницата — от фактите на САМИЯ сървър. */
+function headFor(data: PageData, locale: Locale, t: Dictionary) {
+  const { server } = data;
+  const name = serverTitle(server.name, 60, t.server.fallbackName);
+  const framework = knownFramework(server.framework, t);
+  const seen = lastOnline(server);
+  const peak = Math.max(0, ...data.history.values);
+  return {
+    name,
+    title: serverPageTitle(name, framework, t.server),
+    description: serverMetaDescription(
+      {
+        name,
+        frameworkLabel: framework,
+        whitelist: server.whitelist,
+        maxPlayers: server.maxPlayers,
+        lastProbe: server.lastProbe,
+        lastOnlineLabel: seen ? formatDay(seen, locale) : null,
+        peak24h: peak,
+        hasDiscord: Boolean(server.discordUrl),
+        approvedReviews: data.summary.count,
+        tagline: server.tagline,
+      },
+      t.server,
+    ),
+    // ПРАВИЛОТО ЗА ИНДЕКСИРАНЕ — същото, по което sitemap-ът избира адресите.
+    decision: indexDecision({
+      name: server.name,
+      source: server.source,
+      description: server.description,
+      tagline: server.tagline,
+      lastActiveAt: data.groupLastActiveAt,
+      approvedReviews: data.summary.count,
+      canonicalId: null,
+    }),
+  };
+}
+
 export async function generateMetadata({ params }: Pick<Props, 'params'>) {
   const { locale: raw, slug } = await params;
   const locale = resolveLocale(raw);
   const t = getDictionary(locale);
-  const server = await getPublicServer(slug);
-  if (!server) {
+  const data = await getServerPageData(slug, locale);
+  if (!data) {
     return pageMetadata({ locale, title: t.news.notFound, description: '', noindex: true });
   }
+  // Псевдонимът няма свои метаданни — страницата пренасочва постоянно (308).
+  if (data.kind === 'alias') permanentRedirect(`/${locale}/servers/${data.canonicalSlug}`);
 
+  const head = headFor(data, locale, t);
   return pageMetadata({
     locale,
-    title: `${server.name} — FiveM RP`,
-    description:
-      server.tagline ??
-      `${server.name}: ${t.frameworks[server.framework as FrameworkId]}. ${t.home.description}`,
-    path: `/servers/${server.slug}`,
-    keywords: [server.name, `${server.name} FiveM`],
+    title: head.title,
+    description: head.description,
+    path: `/servers/${data.server.slug}`,
+    keywords: [head.name, `${head.name} FiveM`],
+    // Без собствено съдържание: остава за посетителя, не се предлага на
+    // търсачката, но линковете от нея се следват (`noindex, follow`).
+    noindex: !head.decision.index,
+    follow: true,
   });
 }
 
@@ -55,13 +112,16 @@ export default async function ServerPage({ params, searchParams }: Props) {
   const t = getDictionary(locale);
   const { review, error } = await searchParams;
 
-  const server = await getPublicServer(slug);
-  if (!server) notFound();
+  const data = await getServerPageData(slug, locale);
+  if (!data) notFound();
+  // Същият сървър под стар Cfx код → един адрес. 308 е постоянното
+  // пренасочване, което пази метода; за търсачката е равно на 301.
+  if (data.kind === 'alias') permanentRedirect(`/${locale}/servers/${data.canonicalSlug}`);
 
-  const [summary, history] = await Promise.all([
-    reviewSummary(server.id),
-    playersLastDay(server.id, locale),
-  ]);
+  const { server, summary, history } = data;
+  const head = headFor(data, locale, t);
+  const fullName = serverFullName(server.name);
+  const seen = lastOnline(server);
   const joinUrl = server.cfxJoinCode ? cfxJoinUrl(server.cfxJoinCode) : null;
   const iconUrl =
     server.cfxJoinCode && server.iconVersion !== null
@@ -79,9 +139,9 @@ export default async function ServerPage({ params, searchParams }: Props) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    name: server.name,
+    name: head.name,
     url: localeUrl(locale, `/servers/${server.slug}`),
-    description: server.tagline ?? undefined,
+    description: head.description,
     inLanguage: locale,
   };
 
@@ -103,7 +163,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
           {t.server.breadcrumb}
         </Link>
         <span aria-hidden="true" className="mx-2 text-silver-500">/</span>
-        <span aria-current="page">{server.name}</span>
+        <span aria-current="page">{head.name}</span>
       </nav>
 
       <header className="mt-5 flex items-start gap-4 sm:gap-5">
@@ -118,7 +178,15 @@ export default async function ServerPage({ params, searchParams }: Props) {
           unoptimized
         />
         <div className="min-w-0">
-          <h1 className="page-title break-words">{server.name}</h1>
+          <h1 className="page-title break-words">{head.name}</h1>
+          {/* Пълното име, както сървърът САМ се обявява в Cfx.re — с рекламата и
+              емоджитата. Заглавието е само марката (`serverTitle`); тук стои
+              останалото, обозначено като чуждо, за да не се губи нищо. */}
+          {fullName && fullName !== head.name && (
+            <p className="mt-2 max-w-2xl break-words text-sm text-silver-400">
+              <span className="text-silver-500">{t.server.cfxName}:</span> {fullName}
+            </p>
+          )}
           {(featured || server.source === 'DISCOVERED') && (
             <div className="mt-2 flex flex-wrap gap-2">
               {featured && (
@@ -230,6 +298,40 @@ export default async function ServerPage({ params, searchParams }: Props) {
                 {server.whitelist ? t.server.whitelisted : t.server.open}
               </dd>
             </div>
+            {/* Фактите, които отличават ТАЗИ страница от другите — всеки е поле
+                от базата, нищо не се извежда и нищо не се закръгля. */}
+            {server.maxPlayers > 0 && (
+              <div className="flex items-center justify-between gap-4 py-3">
+                <dt className="text-silver-400">{t.server.slots}</dt>
+                <dd className="text-right tabular-nums text-silver-100">{server.maxPlayers}</dd>
+              </div>
+            )}
+            <div className="flex items-center justify-between gap-4 py-3">
+              <dt className="text-silver-400">{t.server.lastOnline}</dt>
+              <dd className="text-right text-silver-100">
+                {server.lastProbe === 'ONLINE' ? (
+                  t.server.onlineNow
+                ) : seen ? (
+                  <time dateTime={seen.toISOString()}>{formatDay(seen, locale)}</time>
+                ) : (
+                  t.server.neverOnline
+                )}
+              </dd>
+            </div>
+            {server.lastCheckedAt && (
+              <div className="flex items-center justify-between gap-4 py-3">
+                <dt className="text-silver-400">{t.server.lastChecked}</dt>
+                <dd className="text-right text-silver-100">
+                  <time dateTime={server.lastCheckedAt.toISOString()}>{formatMoment(server.lastCheckedAt, locale)}</time>
+                </dd>
+              </div>
+            )}
+            <div className="flex items-center justify-between gap-4 py-3">
+              <dt className="text-silver-400">{t.server.listedSince}</dt>
+              <dd className="text-right text-silver-100">
+                <time dateTime={server.createdAt.toISOString()}>{formatDay(server.createdAt, locale)}</time>
+              </dd>
+            </div>
             {/* `dl > div > dt + dd + dd` — без вложен div: той е невалиден в `dl`. */}
             <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 py-3">
               <dt className="text-silver-400">{t.server.rating}</dt>
@@ -332,12 +434,12 @@ export default async function ServerPage({ params, searchParams }: Props) {
               </p>
             )}
 
-            {server.reviews.length === 0 ? (
+            {data.reviews.length === 0 ? (
               <p className="mt-4 text-silver-400">{t.server.reviewsEmpty}</p>
             ) : (
               <>
                 <ul className="mt-5 divide-y divide-white/10 border-y border-white/10">
-                  {server.reviews.map((item) => (
+                  {data.reviews.map((item) => (
                     <li key={item.id} className="py-5">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <p className="flex items-center gap-2.5 text-sm text-silver-300">
@@ -467,7 +569,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
       <JsonLd
         data={breadcrumbJsonLd(locale, [
           { name: t.server.breadcrumb, path: '/servers' },
-          { name: server.name, path: `/servers/${server.slug}` },
+          { name: head.name, path: `/servers/${server.slug}` },
         ])}
       />
     </article>
