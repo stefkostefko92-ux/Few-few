@@ -48,4 +48,4 @@ export const EXPORT_FORMAT_HISTORY = [
 ] as const;
 
 /** The day the register last changed (the page shows it). */
-export const EXPORT_REGISTER_DATE = '2026-10-21';
+export const EXPORT_REGISTER_DATE = '2026-10-22';

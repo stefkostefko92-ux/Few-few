@@ -31,6 +31,10 @@ relazioni в износа (чл. 10) и в регистъра на дейнос�
   същото казва чл. 1229, ал. 1 c.c. Таван 0 € при лека небрежност в безплатна бета изглежда допустим и по двете права:
   **минимумът е избор за съразмерност** (по-ясна и по-лесна за защита клауза, по-добро отношение с тестерите), не
   правна необходимост. Клаузата е сред одобряваните изрично (`register.clauses`, чл. „liability“).
+- **Google Cloud Vertex AI (кръг 50):** автоматичното четене на схиците на рилевото е готово и **изключено**. Ако
+  собственикът го включи преди v7 (по `docs/terms-changes.md` §3 — писмото 30 дни преди, CDPA, без логване на заявките),
+  v7 вписва Google в чл. 9, в „Natura e finalità“ (четенето по искане на потребителя), в мерките (сървърът в Германия;
+  четенето — в регион на Google Cloud в ЕС) и в `legal.recipientsText` (§2.1). Ако не е включено — нищо от това.
 
 **Кога:** v7 обвързва вече регистрираните фирми не по-рано от 30 дни след писмото (`legal:notice`) и не по-рано от
 `TERMS_EFFECTIVE`. Докато v5 още не обвързва старите фирми (до 16.11.2026), нова версия трупа втора поредица писма и
@@ -48,6 +52,12 @@ relazioni в износа (чл. 10) и в регистъра на дейнос�
 
 Предложение:
 > Sub-responsabili autorizzati in via generale: Hetzner Online GmbH (Germania, server a Norimberga), Sendinblue SAS — Brevo (Francia, e-mail di servizio) e Register S.p.A. (Italia, custodisce la casella info@carbonstealth.eu, dove arrivano le richieste e le segnalazioni delle aziende).
+
+Ако четенето на схиците е включено преди v7 (§1), към списъка се добавя:
+> …; Google Cloud EMEA Limited — Google Cloud Vertex AI (Irlanda; il modello Claude di Anthropic nella regione UE di Google Cloud), solo per la lettura degli schizzi di rilievo chiesta dall’utente.
+
+(Името на дружеството — по CDPA, приет в конзолата; провери го там преди v7.) И в „Natura e finalità“ на чл. 9: „…,
+lettura assistita degli schizzi di rilievo su richiesta dell’utente“.
 
 Същото в `legal.dpaText` и `legal.recipientsText`; страницата `/data` (`dataPage.*`) и `docs/ropa.md` се обновяват още при
 добавянето по чл. 9 от v5 (§1), без да чакат v7.

@@ -81,6 +81,7 @@ BASE_URL=… ADMIN_PASSWORD=… npm run smoke             # e2e в браузъ�
 MAILBOX_PORT=2526 … npm run smoke                     # + регистрация, потвърждение, нова парола: сървърът с SMTP_HOST=127.0.0.1 SMTP_PORT=2526 MAIL_FROM=…
                                                       # всеки пълен прогон — нов процес на сървъра (или час): 3 регистрации, таванът е 5 на час от адрес (в паметта)
 BASE_URL=… ADMIN_PASSWORD=… node scripts/smoke-allegati.mjs   # качените файлове: откази, права, изолация (сървърът с PUBLIC_BASE_URL = BASE_URL)
+BASE_URL=… ADMIN_PASSWORD=… node scripts/smoke-schizzi.mjs    # схиците: PNG/HEIC, прегледът, четенето изключено (503), панелът, DXF → машинното, Tecnico 403, друга фирма 404 (нужни heif-convert и pdftoppm)
 python3 -I scripts/brand-assets.py [--og]             # логото, емблемата, favicon/иконите (и с --og og-it.png) от brand/premium/
 python3 -I scripts/icons-build.py                     # рисуваните икони → public/icons/*-48|96.webp + src/components/icon-names.ts
 python3 -I scripts/premium-images.py                  # илюстрациите на шаблона → public/img/premium/ (AVIF + WebP)
