@@ -1,11 +1,25 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { retiredGuideTarget } from "@/lib/guide-redirects";
 
-// Пази /admin/* (без /admin/login). Проверката тук е първа линия; всяка
-// сериозна операция допълнително проверява сесията на сървъра.
+const GUIDE_PREFIX = "/kak-da/";
+
+// 1) Оттеглените (дублирани) ръководства водят с постоянно пренасочване 301
+//    към каноничното — така Google обединява сигналите на двата адреса.
+// 2) Пази /admin/* (без /admin/login). Проверката тук е първа линия; всяка
+//    сериозна операция допълнително проверява сесията на сървъра.
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  if (pathname.startsWith(GUIDE_PREFIX)) {
+    const target = retiredGuideTarget(pathname.slice(GUIDE_PREFIX.length));
+    if (!target) return NextResponse.next();
+    const url = req.nextUrl.clone();
+    url.pathname = `${GUIDE_PREFIX}${target}`;
+    return NextResponse.redirect(url, 301);
+  }
+
   if (!pathname.startsWith("/admin")) return NextResponse.next();
   if (pathname === "/admin/login") return NextResponse.next();
 
@@ -28,5 +42,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/kak-da/:slug"],
 };

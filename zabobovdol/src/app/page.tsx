@@ -1,10 +1,11 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { SITE, PRIMARY_NAV } from "@/lib/site";
 import { SearchBar } from "@/components/SearchBar";
 import { Section, EmptyState } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
-import { faqPageLd } from "@/lib/seo";
+import { canonical, itemListLd } from "@/lib/seo";
 import { plainText } from "@/lib/markdown";
 import { SERVICE_CATEGORY_LABELS } from "@/lib/categories";
 import { BannerCard, BannerEmptySlot } from "@/components/BannerCard";
@@ -89,6 +90,12 @@ const COLOR: Record<string, { chip: string; title: string }> = {
 
 export const dynamic = "force-dynamic";
 
+// Заглавието, описанието и Open Graph идват от коренния layout; canonical е
+// само тук, за да не го наследяват другите страници.
+export const metadata: Metadata = {
+  alternates: { canonical: canonical("/") },
+};
+
 function formatDate(d: Date): string {
   return new Intl.DateTimeFormat("bg-BG", {
     day: "numeric",
@@ -140,13 +147,14 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* Карти-връзки към ръководствата (въпрос + кратък откъс), а не страница с
+          въпроси и пълни отговори — затова ItemList, не FAQPage (структурираните
+          данни трябва да съвпадат с видимото съдържание). */}
       {topFaqs.length > 0 && (
         <JsonLd
-          data={faqPageLd(
-            topFaqs.map((f) => ({
-              question: f.question,
-              answerText: plainText(f.answer, 300),
-            })),
+          data={itemListLd(
+            topFaqs.map((f) => ({ name: f.question, path: `/kak-da/${f.slug}` })),
+            "Популярни въпроси „Как да…“",
           )}
         />
       )}

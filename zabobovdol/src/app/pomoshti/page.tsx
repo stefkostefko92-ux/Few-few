@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Coins, Flame, HeartPulse, FileText, Phone, Soup, ArrowRight } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
 import { PageHero } from "@/components/ui";
-import { buildMetadata, faqPageLd } from "@/lib/seo";
+import { buildMetadata, itemListLd } from "@/lib/seo";
 import { plainText } from "@/lib/markdown";
 import { JsonLd } from "@/components/JsonLd";
 import { PrintButton } from "@/components/PrintButton";
@@ -71,13 +71,14 @@ export default async function AidPage() {
 
   return (
     <>
+      {/* Ръководствата тук са карти-връзки (въпрос + кратък откъс), не въпроси с
+          пълни отговори — затова ItemList, не FAQPage: структурираните данни
+          трябва да съвпадат с видимото съдържание. */}
       {guides.length > 0 && (
         <JsonLd
-          data={faqPageLd(
-            guides.slice(0, 12).map((g) => ({
-              question: g.question,
-              answerText: plainText(g.answer, 280),
-            })),
+          data={itemListLd(
+            guides.map((g) => ({ name: g.question, path: `/kak-da/${g.slug}` })),
+            "Стъпка по стъпка",
           )}
         />
       )}

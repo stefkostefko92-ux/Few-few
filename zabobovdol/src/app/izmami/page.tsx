@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { ShieldCheck, AlertTriangle, PhoneOff, Ban, Lock, CheckCircle2 } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
 import { PageHero, Prose } from "@/components/ui";
-import { buildMetadata, faqPageLd } from "@/lib/seo";
+import { buildMetadata, itemListLd } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { JsonLd } from "@/components/JsonLd";
 import { SITE } from "@/lib/site";
@@ -76,13 +76,14 @@ export default async function ScamProtectionPage() {
 
   return (
     <>
+      {/* Ръководствата тук са карти-връзки (въпрос + кратък откъс), не въпроси с
+          пълни отговори — затова ItemList, не FAQPage: структурираните данни
+          трябва да съвпадат с видимото съдържание. */}
       {guides.length > 0 && (
         <JsonLd
-          data={faqPageLd(
-            guides.slice(0, 12).map((g) => ({
-              question: g.question,
-              answerText: plainText(g.answer, 280),
-            })),
+          data={itemListLd(
+            guides.map((g) => ({ name: g.question, path: `/kak-da/${g.slug}` })),
+            "Подробни обяснения",
           )}
         />
       )}
