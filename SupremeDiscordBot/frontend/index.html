@@ -40,9 +40,8 @@
        and declared statically in sitemap.xml — keep all three in sync. -->
 
   <!-- ═══════════════════════════════════════════════════════════════ -->
-  <!-- GEO TAGS — Carbon Stealth HQ in Bobov Dol, BG.                  -->
-  <!-- An additional office in Sofia (BG) is declared as a separate    -->
-  <!-- LocalBusiness entity in the JSON-LD @graph below.               -->
+  <!-- GEO TAGS — registered address of Carbon Stealth VCC (Bobov Dol, -->
+  <!-- BG), the same address the footer and the Terms show.           -->
   <!-- ═══════════════════════════════════════════════════════════════ -->
   <meta name="geo.region" content="BG-10" />
   <meta name="geo.placename" content="Bobov Dol, Kyustendil, Bulgaria" />
@@ -92,20 +91,23 @@
 
   <!-- ═══════════════════════════════════════════════════════════════ -->
   <!-- JSON-LD STRUCTURED DATA — Organization + WebSite + Software     -->
-  <!-- + Service + LocalBusiness (Bobov Dol, Sofia) +                  -->
-  <!-- BreadcrumbList + WebPage (speakable) + FAQPage (for AEO)        -->
+  <!-- + Service + BreadcrumbList + WebPage (speakable).               -->
   <!--                                                                 -->
-  <!-- Note: Google deprecated FAQPage rich results on 2026-05-07      -->
-  <!-- (now restricted to gov/health sites). FAQPage schema retained   -->
-  <!-- because AI engines (ChatGPT, Claude, Perplexity) and other      -->
-  <!-- search engines (Bing, DuckDuckGo) still parse it for AEO.       -->
+  <!-- This @graph describes the HOME page. scripts/prerender.mjs      -->
+  <!-- copies only the site-wide nodes (Organization, WebSite; plus    -->
+  <!-- Software + Service on the localized landings) into the other    -->
+  <!-- routes, and adds the home FAQPage from src/data/landingFaqEn.js -->
+  <!-- (the SAME list Login.jsx renders) — Google requires marked-up   -->
+  <!-- FAQ content to be visible on the page that carries it.          -->
+  <!-- No LocalBusiness: Supreme Bot is an online SaaS, not a place    -->
+  <!-- customers visit (Google LocalBusiness guidelines).              -->
   <!-- ═══════════════════════════════════════════════════════════════ -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": ["Organization", "ProfessionalService"],
+        "@type": "Organization",
         "@id": "https://carbonstealth.eu/#organization",
         "name": "Carbon Stealth VCC",
         "legalName": "Carbon Stealth VCC",
@@ -288,76 +290,6 @@
         ]
       },
       {
-        "@type": "FAQPage",
-        "@id": "https://supremebot.carbonstealth.eu/#faq",
-        "mainEntity": [
-          {
-            "@type": "Question",
-            "name": "What is Supreme Bot?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Supreme Bot is a multi-tenant Discord bot SaaS platform built by Carbon Stealth VCC. It provides ticket systems, application forms, panel buttons, AI auto-replies, white-label bots, and per-server subscriptions sold through Discord's Premium Apps store, managed from a modern web dashboard. It is designed for Discord communities, gaming servers, support teams, and agencies."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "How much does Supreme Bot cost?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Supreme Bot has a free tier with 1 ticket panel, 2 application forms with up to 5 questions each, 1 verification panel, and persistent HTML transcripts (30-day retention). Premium costs 4.99 EUR per server per month and includes up to 50 panels, 50 forms and 50 questions per form, AI auto-replies, round-robin ticket assignment, webhooks, a public REST API, unlimited transcript retention and the full Server Season game (100 level roles, 50 shop items, every companion rarity, 3 server quests, daily and knowledge-base trivia). The White-label tier costs 9.99 EUR per server per month and adds a white-label custom bot with your own name, avatar and token. Subscriptions are monthly and sold only through the Discord store — Discord is the seller of record, shows the final price with VAT and handles cancellation; there are no annual plans and no free trial, but the Free tier is free forever."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Is Supreme Bot secure?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Yes. Supreme Bot uses AES-256-GCM encryption for custom bot tokens stored in the database, Discord OAuth2 for user authentication (no passwords stored), HTTP-only secure cookies with SameSite protection, rate limiting on all endpoints, HSTS headers, Helmet.js security middleware, full GDPR compliance with self-service data export and deletion, and EU-hosted infrastructure with data residency in Germany (Hetzner)."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Can I use my own bot token with Supreme Bot?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Yes. Servers on the White-label tier (€9.99 per server per month, bought through the Discord store) can provide their own Discord bot token through the dashboard. This allows servers to use their own branded bot with a custom name and avatar — called a white-label bot. Tokens are encrypted with AES-256-GCM before being stored and are never exposed back to users."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "How do I install the Supreme Bot in my Discord server?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Visit the Supreme Bot dashboard at supremebot.carbonstealth.eu, log in with your Discord account, then click the invite link to add the bot to any Discord server where you have Manage Server permission. The bot registers slash commands automatically and is ready to use in under 60 seconds."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "How does the AI auto-reply feature work?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Premium servers can enable AI auto-replies, which use AI (currently Google Gemini Flash) to generate a friendly initial response when a new support ticket is created. The AI response includes a prominent disclosure per EU AI Act Article 50 informing the user that they are interacting with an AI. Server owners can provide their own system prompt to control the AI's tone and behavior. The feature is opt-in and can be disabled per panel."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Where is Supreme Bot hosted?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Supreme Bot infrastructure is hosted in the European Union with data residency in Germany (Hetzner) and operational headquarters in Bulgaria. Some sub-processors — Discord, Google (optional, for AI replies) and Sentry — are located in the United States; those transfers are governed by Standard Contractual Clauses, as set out in the Privacy Policy."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "What happens to my ticket transcripts when a Discord channel is deleted?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "When a ticket is closed, the full conversation is archived as HTML and remains accessible via a private link. Premium retains transcripts indefinitely; the Free tier keeps them for 30 days after a ticket is closed. In both cases the transcript survives Discord channel deletion, server reset, and bot removal."
-            }
-          }
-        ]
-      },
-      {
         "@type": "BreadcrumbList",
         "@id": "https://supremebot.carbonstealth.eu/#breadcrumbs",
         "itemListElement": [
@@ -374,67 +306,6 @@
             "item": "https://supremebot.carbonstealth.eu/"
           }
         ]
-      },
-      {
-        "@type": "LocalBusiness",
-        "@id": "https://carbonstealth.eu/#bobov-dol",
-        "name": "Carbon Stealth VCC — Bobov Dol HQ",
-        "image": "https://carbonstealth.eu/logo.svg",
-        "url": "https://carbonstealth.eu/",
-        "email": "admin@carbonstealth.eu",
-        "telephone": "+359-877-414-874",
-        "priceRange": "€€",
-        "address": {
-          "@type": "PostalAddress",
-          "streetAddress": "ul. Samuil 3",
-          "addressLocality": "Bobov Dol",
-          "addressRegion": "Kyustendil",
-          "postalCode": "2670",
-          "addressCountry": "BG"
-        },
-        "geo": {
-          "@type": "GeoCoordinates",
-          "latitude": 42.3539,
-          "longitude": 23.0050
-        },
-        "openingHoursSpecification": [
-          {
-            "@type": "OpeningHoursSpecification",
-            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-            "opens": "09:00",
-            "closes": "18:00"
-          }
-        ],
-        "areaServed": [
-          { "@type": "Country", "name": "Bulgaria" },
-          { "@type": "Country", "name": "Italy" },
-          { "@type": "Country", "name": "European Union" }
-        ],
-        "parentOrganization": { "@id": "https://carbonstealth.eu/#organization" }
-      },
-      {
-        "@type": "LocalBusiness",
-        "@id": "https://carbonstealth.eu/#sofia",
-        "name": "Carbon Stealth VCC — Sofia Office",
-        "image": "https://carbonstealth.eu/logo.svg",
-        "url": "https://carbonstealth.eu/",
-        "email": "admin@carbonstealth.eu",
-        "telephone": "+359-877-414-874",
-        "priceRange": "€€",
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "Sofia",
-          "addressRegion": "Sofia City",
-          "postalCode": "1000",
-          "addressCountry": "BG"
-        },
-        "geo": {
-          "@type": "GeoCoordinates",
-          "latitude": 42.6977,
-          "longitude": 23.3219
-        },
-        "areaServed": { "@type": "Country", "name": "Bulgaria" },
-        "parentOrganization": { "@id": "https://carbonstealth.eu/#organization" }
       },
       {
         "@type": "Service",
@@ -512,7 +383,8 @@
        Contains the key facts in plain HTML for crawlers + accessibility. -->
   <noscript>
     <div style="max-width:720px;margin:48px auto;padding:24px;background:#000;color:#f0f0eb;border:1px solid #8fe600;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;">
-      <h1>Supreme Bot — Discord Bot SaaS Platform</h1>
+      <!-- Не е заглавие h1: единственото h1 на всяка страница е в пререндерираната снимка в #root. -->
+      <p class="font-display font-extrabold text-4xl lg:text-5xl tracking-tight-4">Supreme Bot — Discord Bot SaaS Platform</p>
       <p>Supreme Bot is a multi-tenant Discord bot management dashboard by Carbon Stealth VCC. It requires JavaScript to run.</p>
       <p>Features include ticket panels, logic-branching application forms, AI auto-replies, white-label bots, and per-server subscriptions billed through Discord.</p>
       <p>Visit <a href="https://carbonstealth.eu" style="color:#8fe600;">carbonstealth.eu</a> for more Carbon Stealth products.</p>

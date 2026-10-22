@@ -10,9 +10,11 @@ Target: maximum Google visibility across Europe.
 | Feature pages `/features` + `/features/*` (13) | `src/data/featurePages.js` → `pages/FeaturePage.jsx` + `scripts/prerender.mjs` + `components/FeatureLinks.jsx` | One page per feature people search for as a separate bot (ticket system, application forms, verification, reaction roles, giveaways, welcome/autorole, logging, sticky/scheduled, polls, leveling game — „discord leveling bot / xp bot / counting bot / trivia bot / mee6 alternative", AI support desk, white-label). Answer-first paragraph, steps, Free/Premium table (numbers gated against `backend/src/lib/premium.js`), FAQ, WebPage + BreadcrumbList + FAQPage JSON-LD. Query set from live Google/Bing/DuckDuckGo suggestions (18.09.2026). Gate: `featurePages.test.js` |
 | Localized landing pages | `/bg /de /es /fr /it /nl /pl` (`LandingLocalized.jsx`) | EN at `/`; translated hero, features, FAQ, pricing |
 | hreflang | `components/Seo.jsx` (rendered DOM) + `public/sitemap.xml` (`xhtml:link`) | Bidirectional cluster incl. `x-default` |
-| Per-route canonical/title/description | `components/Seo.jsx` on every public page | 404 page emits `noindex` |
+| Per-route canonical/title/description | `components/Seo.jsx` on every public page | One `<h1>` per page (build gate in `scripts/prerender.mjs`) |
+| Real HTTP 404 for unknown paths | `frontend/nginx.conf` (`try_files $uri $uri/index.html =404` + `error_page 404 /404.html`) + `dist/404.html` from `scripts/prerender.mjs` | No „Soft 404“: only prerendered pages, files and the `/dashboard…` app shell answer 200; the 404 page is `noindex` (meta + `X-Robots-Tag`), no canonical. The build fails if a sitemap URL or a public route in `App.jsx` has no prerendered file. Gates: `nginx-conf.test.js` (runs a real nginx when installed), `deploy/smoke.sh` |
 | Localized FAQPage JSON-LD | `LandingLocalized.jsx` | Visible FAQ keeps content parity (Google requirement) |
-| Org/Software/FAQ/LocalBusiness JSON-LD | `index.html` `@graph` | Geo coordinates for Bobov Dol / Sofia |
+| English FAQPage JSON-LD (`/` only) | `src/data/landingFaqEn.js` → `Login.jsx` + `scripts/prerender.mjs` | Same list feeds the visible FAQ and the markup |
+| Org/WebSite/Software/Service JSON-LD | `index.html` `@graph` | Full graph on `/`; other routes keep only the nodes true for them (prerender). No `LocalBusiness` — online SaaS, no premises customers visit. Gate: `searchEssentials.test.js` |
 | og-image.png 1200×630 + PNG favicons | `public/` | Social scrapers don't render SVG |
 | robots.txt with AI-crawler policy | `public/robots.txt` | GPTBot/ClaudeBot/PerplexityBot allowed; CCBot/Bytespider blocked |
 | llms.txt (AEO) | `public/llms.txt` | Per llmstxt.org |
@@ -59,5 +61,7 @@ claiming otherwise is selling snake oil.
 curl -s https://supremebot.carbonstealth.eu/robots.txt | head
 curl -s https://supremebot.carbonstealth.eu/sitemap.xml | xmllint --noout -   # validates XML
 curl -sI https://supremebot.carbonstealth.eu/og-image.png                     # 200 + image/png
-curl -sI https://supremebot.carbonstealth.eu/de                               # 200 (SPA fallback)
+curl -sI https://supremebot.carbonstealth.eu/de                               # 200 (prerendered page)
+curl -sI https://supremebot.carbonstealth.eu/no-such-page                     # 404 + x-robots-tag: noindex
+curl -sI https://supremebot.carbonstealth.eu/dashboard                        # 200 (app shell)
 ```
