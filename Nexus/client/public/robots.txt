@@ -1,5 +1,8 @@
-# Marketing pages (`/`, `/login`, `/register`, `/terms`, `/privacy`) are
-# public; the authed app (`/app/*`) and admin (`/admin/*`) are explicitly
+# Indexable pages: `/` with its language versions `/?lang=it` and
+# `/?lang=bg`, plus `/terms` and `/privacy` (all listed in the sitemap).
+# `/login` and `/register` stay crawlable ON PURPOSE — they carry
+# `noindex`, and a crawler can only see that tag if it may fetch the page.
+# The authed app (`/app/*`) and admin (`/admin/*`) are explicitly
 # disallowed for every crawler. Search robots, answer-engine robots and
 # AI-training robots are split below so we can opt in to citations while
 # opting out of training corpora.

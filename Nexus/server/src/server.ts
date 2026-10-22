@@ -55,6 +55,7 @@ import dsaRoutes from './routes/dsa';
 import seasonRoutes from './routes/season';
 import { getDb } from './db';
 import { geoBlock, getGeoInfo } from './middleware/geo';
+import { mountSpa } from './seo/pages';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
@@ -224,27 +225,11 @@ app.use('/api/mythic-plus', mythicPlusRoutes);
 app.use('/api/dsa', dsaRoutes);
 app.use('/api/season', seasonRoutes);
 
-// Serve client build if present (production)
+// Клиентският билд (production): статичните файлове (вкл. robots.txt,
+// sitemap.xml, llms.txt), SPA маршрутите със сървърно рендирани SEO
+// метаданни и истински 404 за всичко непознато — виж seo/pages.ts.
 const clientDist = path.resolve(__dirname, '../../client/dist');
-app.use(express.static(clientDist));
-
-// SEO routes — explicit so the content-type is set correctly and the SPA
-// fallback below never swallows them.
-app.get('/robots.txt', (_req, res) => {
-  res.set('Content-Type', 'text/plain; charset=utf-8');
-  res.sendFile(path.join(clientDist, 'robots.txt'));
-});
-app.get('/sitemap.xml', (_req, res) => {
-  res.set('Content-Type', 'application/xml; charset=utf-8');
-  res.sendFile(path.join(clientDist, 'sitemap.xml'));
-});
-
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api')) return next();
-  res.sendFile(path.join(clientDist, 'index.html'), (err) => {
-    if (err) next();
-  });
-});
+mountSpa(app, { clientDist });
 
 // Global JSON error handler — anything uncaught in a route lands here.
 // Without this Express returns an HTML stack trace, which is both ugly to
