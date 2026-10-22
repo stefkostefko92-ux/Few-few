@@ -11,6 +11,7 @@
 -- Rollback (the reports issued after it would be read by time again):
 --   ALTER TABLE "TechnicalReport" DROP CONSTRAINT "TechnicalReport_citedSetIds_check";
 --   ALTER TABLE "TechnicalReport" DROP COLUMN "citedSetIds";
+--   DELETE FROM "_prisma_migrations" WHERE "migration_name" = '28_rt_tavole_citate';
 
 ALTER TABLE "TechnicalReport" ADD COLUMN "citedSetIds" JSONB;
 ALTER TABLE "TechnicalReport" ADD CONSTRAINT "TechnicalReport_citedSetIds_check" CHECK ("citedSetIds" IS NULL OR jsonb_typeof("citedSetIds") = 'array');
