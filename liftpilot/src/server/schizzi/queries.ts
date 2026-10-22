@@ -55,10 +55,11 @@ export function progettoDi(user: SessionUser, projectId: string) {
   return prisma.project.findFirst({ where: { id: projectId, companyId: user.companyId }, select: { id: true, archivedAt: true } });
 }
 
-/** A file shown as a preview: any uploaded file of the company (the preview is no download; projects:view). */
+/** A file shown as a preview (projects:view): a sketch of the company only — any other uploaded file is downloaded with
+ *  'report:download', a right the company may take from a role, never seen through its preview. */
 export function fileDaMostrare(user: SessionUser, attachmentId: string) {
   return prisma.attachment.findFirst({
-    where: { id: attachmentId, companyId: user.companyId, blob: { isNot: null } },
+    where: { id: attachmentId, companyId: user.companyId, kind: 'SCHIZZO', blob: { isNot: null } },
     select: { id: true, sha256: true, mime: true, size: true, pages: true, orientation: true },
   });
 }

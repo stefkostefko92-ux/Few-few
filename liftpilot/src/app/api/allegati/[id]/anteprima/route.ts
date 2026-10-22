@@ -1,27 +1,26 @@
 import { ANSWER } from '@/lib/answers';
 import { TYPE_OF, isAllegatoMime } from '@/lib/allegati/limits';
 import { log } from '@/lib/log';
-import { SCHIZZO_PAGINE, previewOf } from '@/lib/report/image-tool';
+import { SCHIZZO_PAGINE } from '@/lib/report/image-tool';
 import { RendererBusy, busyResponse } from '@/lib/report/render';
 import { idSchema } from '@/lib/schemas';
-import { downloader, inFlight, text } from '@/server/download';
-import { bytesOf, fileDaMostrare } from '@/server/schizzi/queries';
+import { downloader, text } from '@/server/download';
+import { ANTEPRIMA_LIMITS, anteprimaDi } from '@/server/schizzi/anteprime';
+import { fileDaMostrare } from '@/server/schizzi/queries';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-/** Previews per user and 10 minutes (a PDF sketch's pages, the panel's zoom: a few each time). */
-const PER_10_MIN = 120;
-
-// The preview of an uploaded file beside a form (round 50, the survey sketches; any uploaded file of the company):
-// whoever sees the installations ('projects:view'), 120 in 10 minutes and two at a time per user, another company's id
-// «not found». Never the uploaded bytes: a picture made again by us (src/lib/report/image-tool.ts) — a JPEG or PNG
-// turned the way the phone held it and at most 1600 px on its longest side, in its own format; a PDF's page
-// ?pagina=N (1..4, at most its pages) drawn as a PNG — inline, cached by the browser for 5 minutes (the bytes never
-// change), sandboxed like every file the product serves. X-Pagine says the file's pages (of a PDF, only the first
-// four are shown).
+// The preview of a survey sketch beside a form (round 50): whoever sees the installations ('projects:view'), of a file of
+// kind SCHIZZO only — any other uploaded file, another company's id «not found» (the others are downloaded with
+// 'report:download', a right the company may take from a role) —, 30 in 10 minutes per user. Never the uploaded bytes: a
+// picture made again by us (src/lib/report/image-tool.ts) — a JPEG or PNG turned the way the phone held it and at most
+// 1600 px on its longest side, in its own format; a PDF's page ?pagina=N (1..4, at most its pages) drawn as a PNG —, kept
+// in memory once drawn, one drawn at a time in the server and one under way per company (src/server/schizzi/
+// anteprime.ts: else 503 with Retry-After), inline, cached by the browser for 5 minutes (the bytes never change),
+// sandboxed like every file the product serves. X-Pagine says the file's pages (of a PDF, only the first four are shown).
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }): Promise<Response> {
-  const d = await downloader('anteprima', PER_10_MIN, 'projects:view');
+  const d = await downloader('anteprima', ANTEPRIMA_LIMITS.perUser10Min, 'projects:view');
   if ('refused' in d) return d.refused;
   const id = idSchema.safeParse((await params).id);
   if (!id.success) return text(404, ANSWER.notFound);
@@ -34,10 +33,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     page = Number(asked);
     if (page > Math.min(f.pages, SCHIZZO_PAGINE)) return text(404, ANSWER.notFound);
   }
-  const release = inFlight(`anteprima:${d.user.id}`, 2);
-  if (!release) return text(429, ANSWER.rateLimited);
   try {
-    const pic = await previewOf({ load: () => bytesOf(f.id, f.size), type, orientation: f.orientation }, page);
+    const pic = await anteprimaDi(d.user, f, type, page);
+    if (!pic) return text(429, ANSWER.rateLimited);
     return new Response(new Uint8Array(pic.bytes), {
       headers: {
         'Content-Type': pic.mime,
@@ -53,7 +51,5 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     if (e instanceof RendererBusy) return busyResponse();
     log.warn({ companyId: d.user.companyId, attachmentId: f.id, type, detail: e instanceof Error ? e.message.slice(0, 200) : 'preview failed' }, 'preview failed');
     return text(500, ANSWER.failed);
-  } finally {
-    release();
   }
 }

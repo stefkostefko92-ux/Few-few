@@ -1,6 +1,7 @@
 // The preview beside a form (round 50, GET /api/allegati/[id]/anteprima) and the list of an installation's sketches
 // (GET /api/projects/[id]/schizzi), over the in-memory database with the real image tools: whoever sees the
-// installations, another company's file «not found»; a picture made again by us — a JPEG turned upright, a PDF's page as
+// installations, a sketch only (another kind, another company's file «not found»; the limits and the memory of the
+// previews: schizzi-anteprima-limiti.test.ts); a picture made again by us — a JPEG turned upright, a PDF's page as
 // a PNG (pages 1..4 within its own) —, inline, sandboxed, cached privately for 5 minutes, its pages in X-Pagine; the
 // list of the SCHIZZO files only, newest first, and whether the reading is on.
 import { test } from 'node:test';
@@ -51,9 +52,12 @@ test('anteprima: la pagina di un PDF in PNG (1..4, dentro le sue pagine); un’a
   assert.deepEqual([type, Math.max(w, h)], ['png', 1600]);
   for (const q of ['?pagina=5', '?pagina=0', '?pagina=abc', '?pagina=-1', '?pagina=1e1']) assert.equal((await get(f.id, q)).res.status, 404, q);
   const two = await pdf(2);
-  const g = seedFile({ projectId: 'p1', size: two.length, mime: 'application/pdf', data: two, pages: 2 });
+  const g = seedFile({ projectId: 'p1', size: two.length, kind: 'SCHIZZO', mime: 'application/pdf', data: two, pages: 2 });
   assert.equal((await get(g.id, '?pagina=3')).res.status, 404, 'past its own pages');
-  const theirs = seedFile({ projectId: 'pother', size: JPEG.length, mime: 'image/jpeg', data: JPEG });
+  assert.equal((await get(g.id, '?pagina=2')).res.status, 200);
+  const altro = seedFile({ projectId: 'p1', size: two.length, mime: 'application/pdf', data: two, pages: 2 });
+  assert.equal((await get(altro.id, '?pagina=1')).res.status, 404, 'a file of another kind: no preview');
+  const theirs = seedFile({ projectId: 'pother', size: JPEG.length, kind: 'SCHIZZO', mime: 'image/jpeg', data: JPEG });
   assert.equal((await get(theirs.id)).res.status, 404);
   as('OWNER', { companyId: 'c2' });
   assert.equal((await get(f.id)).res.status, 404);

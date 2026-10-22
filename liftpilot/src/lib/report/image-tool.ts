@@ -26,7 +26,9 @@ export const MODEL_BYTES = 3_750_000;
 
 /** The child's data segment at most this (a 40-megapixel picture decodes in a few hundred megabytes). */
 const DATA_LIMIT = 1024 * 1024 * 1024;
-const TIMEOUT: Readonly<Record<'heif' | 'pdf' | 'pillow', number>> = { heif: 30_000, pdf: 20_000, pillow: 20_000 };
+/** A preview's page is cut short sooner (`previewPdf`): it is drawn while someone waits beside a form, and one heavy page
+ *  must not hold a renderer's slot that every company's documents share; the pictures sent to be read keep `pdf`. */
+const TIMEOUT: Readonly<Record<'heif' | 'pdf' | 'previewPdf' | 'pillow', number>> = { heif: 30_000, pdf: 20_000, previewPdf: 8_000, pillow: 20_000 };
 /** No picture a tool writes is larger than this (a 40-megapixel JPEG at quality 92 is about 15 MB). */
 const MAX_OUT = 32 * 1024 * 1024;
 
@@ -91,9 +93,10 @@ async function pillow(dir: string, jobs: PillowJob[]): Promise<void> {
   await run(PYTHON_BIN, [path.join(process.cwd(), 'report', 'schizzo.py')], TIMEOUT.pillow, JSON.stringify({ dir, jobs }));
 }
 
-/** pdftoppm on pages `first`..`last` scaled to `edge` px on their longest side: the PNG files it wrote, in page order. */
-async function pdfPages(dir: string, first: number, last: number, edge: number): Promise<string[]> {
-  await run('pdftoppm', ['-f', String(first), '-l', String(last), '-scale-to', String(edge), '-png', path.join(dir, 'in.pdf'), path.join(dir, 'p')], TIMEOUT.pdf);
+/** pdftoppm on pages `first`..`last` scaled to `edge` px on their longest side, killed past `timeoutMs`: the PNG files
+ *  it wrote, in page order. */
+async function pdfPages(dir: string, first: number, last: number, edge: number, timeoutMs: number): Promise<string[]> {
+  await run('pdftoppm', ['-f', String(first), '-l', String(last), '-scale-to', String(edge), '-png', path.join(dir, 'in.pdf'), path.join(dir, 'p')], timeoutMs);
   const pages = (await readdir(dir)).map((f) => /^p-(\d+)\.png$/.exec(f)).filter((m): m is RegExpExecArray => m !== null)
     .sort((a, b) => Number(a[1]) - Number(b[1])).map((m) => m[0]);
   if (pages.length !== last - first + 1) throw new ImageToolError(`pdftoppm wrote ${pages.length} pages, ${last - first + 1} expected`);
@@ -104,14 +107,15 @@ const EXT: Readonly<Record<AllegatoType, string>> = { pdf: 'pdf', jpeg: 'jpg', p
 
 /**
  * The preview of a sketch beside the form: a picture turned upright and at most PREVIEW_EDGE px on its longest side, in
- * its own format (a JPEG at quality 85, a PNG); a PDF's page `page` (1-based) drawn by pdftoppm as a PNG. Throws
- * RendererBusy when the renderers are busy, ImageToolError (or the child's error) when the file cannot be drawn.
+ * its own format (a JPEG at quality 85, a PNG); a PDF's page `page` (1-based) drawn by pdftoppm as a PNG within 8 s.
+ * Throws RendererBusy when the renderers are busy, ImageToolError (or the child's error) when the file cannot be drawn.
+ * The route keeps the previews it made and draws one at a time (src/server/schizzi/anteprime.ts).
  */
 export function previewOf(f: StoredPicture, page: number): Promise<{ bytes: Buffer; mime: 'image/png' | 'image/jpeg' }> {
   return inSlot(async (dir) => {
     await writeFile(path.join(dir, `in.${EXT[f.type]}`), await f.load(), { mode: 0o600, flag: 'wx' });
     if (f.type === 'pdf') {
-      const [png] = await pdfPages(dir, page, page, PREVIEW_EDGE);
+      const [png] = await pdfPages(dir, page, page, PREVIEW_EDGE, TIMEOUT.previewPdf);
       return { bytes: await output(path.join(dir, png ?? 'p-1.png')), mime: 'image/png' };
     }
     const format = f.type === 'png' ? 'png' : 'jpeg', out = `out.${f.type === 'png' ? 'png' : 'jpg'}`;
@@ -128,7 +132,7 @@ export function previewOf(f: StoredPicture, page: number): Promise<{ bytes: Buff
 export function modelImages(f: StoredPicture, pages: number): Promise<Buffer[]> {
   return inSlot(async (dir) => {
     await writeFile(path.join(dir, `in.${EXT[f.type]}`), await f.load(), { mode: 0o600, flag: 'wx' });
-    const sources = f.type === 'pdf' ? await pdfPages(dir, 1, Math.max(1, Math.min(SCHIZZO_PAGINE, pages)), MODEL_EDGE) : [`in.${EXT[f.type]}`];
+    const sources = f.type === 'pdf' ? await pdfPages(dir, 1, Math.max(1, Math.min(SCHIZZO_PAGINE, pages)), MODEL_EDGE, TIMEOUT.pdf) : [`in.${EXT[f.type]}`];
     const jobs: PillowJob[] = sources.map((src, i) => ({
       in: src, out: `m${i + 1}.jpg`, orientation: f.type === 'pdf' ? null : f.orientation, maxEdge: MODEL_EDGE, maxPixels: MODEL_PIXELS,
       format: 'jpeg', quality: 90, maxBytes: MODEL_BYTES,
