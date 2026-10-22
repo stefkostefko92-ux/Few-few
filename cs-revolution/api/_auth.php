@@ -23,6 +23,10 @@ if (isset($_SERVER['SCRIPT_FILENAME']) &&
     exit;
 }
 
+// API responses are data, never search results: keep every endpoint that includes this
+// file out of Google/Bing indexes (crawling stays allowed, so the SPA still renders for bots).
+if (!headers_sent()) header('X-Robots-Tag: noindex, nofollow');
+
 
 if (!function_exists('cs_admin_token')) {
 

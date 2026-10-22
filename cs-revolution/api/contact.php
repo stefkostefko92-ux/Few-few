@@ -211,7 +211,7 @@ if ($hasPM) {
         $sent = true;
         // Auto-reply
         $m->clearAddresses(); $m->clearReplyTos();
-        $m->addAddress($email, $name);
+        $m->addAddress($email);   // no visitor-typed display name in the To: of our own auto-reply
         $m->setFrom(SMTP_FROM, SMTP_FROM_NAME);
         $m->Subject = $ar['sub'];
         $m->isHTML(false);

@@ -4,8 +4,8 @@
 <meta charset="UTF-8"><script id="cs-ads-npa">(function(){var a=window.adsbygoogle=window.adsbygoogle||[];try{if(localStorage.getItem("cs_cookie")!=="accepted")a.requestNonPersonalizedAds=1}catch(e){a.requestNonPersonalizedAds=1}})()</script><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9580994554261732" crossorigin="anonymous"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Free Website Analysis | Carbon Stealth VCC</title>
-<meta name="description" content="Find out if your website is losing customers. Free analysis of speed, SEO, Core Web Vitals and AI-readiness in 30 seconds. Powered by Google PageSpeed Insights.">
-<meta name="keywords" content="free website analysis, your website is losing customers.let&#x27;s find out together, web design agency, website development, web development company, web agency Italy Bulgaria, Carbon Stealth">
+<meta name="description" content="Free 30-second analysis of your website: speed, SEO, Core Web Vitals and AI-readiness, with data from Google PageSpeed Insights.">
+<meta name="keywords" content="free website analysis, website speed test, Core Web Vitals, free SEO check, web agency, Carbon Stealth">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://carbonstealth.eu/en/test/">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -13,8 +13,8 @@
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="Free Website Analysis — Find Out If You're Losing Customers">
-<meta property="og:description" content="30 seconds. Speed, SEO, AEO, security. Let's find out where your site is leaking money.">
+<meta property="og:title" content="Free Website Analysis — Speed, SEO and Core Web Vitals">
+<meta property="og:description" content="30 seconds. Speed, SEO, AEO and security of your site, with data from Google PageSpeed Insights.">
 <meta property="og:image" content="https://carbonstealth.eu/og-image-en.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://carbonstealth.eu/og-image-en.png">
@@ -386,7 +386,7 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 
 <section class="hero">
   <div class="eyebrow">FREE ANALYSIS · 30 SECONDS</div>
-  <h1>Your website <span class="gradient">is losing customers</span>.<br>Let's find out together.</h1>
+  <h1>How fast is <span class="gradient">your website</span>?<br>Let's find out in 30 seconds.</h1>
   <p class="subtitle">
     Enter the URL. We analyze <strong>speed</strong>, <strong>SEO</strong>, <strong>Core Web Vitals</strong>, <strong>AI-readiness</strong> and security.
     Free. No signup. No fluff.
@@ -429,7 +429,7 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 
 <footer>
   Carbon Stealth VCC · <a href="/">carbonstealth.eu</a> · EIK 208725180 · Bobov Dol, Bulgaria<br>
-  Powered by <a href="https://pagespeed.web.dev/" target="_blank" rel="noopener">Google PageSpeed Insights</a>
+  Speed data: <a href="https://pagespeed.web.dev/" target="_blank" rel="noopener">Google PageSpeed Insights</a> (public API)
 </footer>
 
 <script>
@@ -437,14 +437,14 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 const AB_VARIANTS = {
   A: {
     eyebrow: 'FREE ANALYSIS · 30 SECONDS',
-    h1: 'Your website <span class="gradient">is losing customers</span>.<br>Let\'s find out together.',
+    h1: 'How fast is <span class="gradient">your website</span>?<br>Let\'s find out in 30 seconds.',
     sub: 'Enter the URL. We analyze <strong>speed</strong>, <strong>SEO</strong>, <strong>Core Web Vitals</strong>, <strong>AI-readiness</strong> and security.<br>Free. No signup. No fluff.',
     cta: 'Analyze Now'
   },
   B: {
     eyebrow: 'FREE · NO SIGNUP REQUIRED',
     h1: 'How fast is <span class="gradient">your website</span>?<br>We\'ll tell you in 30 seconds.',
-    sub: 'Google penalizes slow sites. Find your <strong>real score</strong> on speed, SEO, security and AI-readiness.<br>100% free. Zero spam.',
+    sub: 'Speed matters to visitors and to Google. Find your <strong>real score</strong> on speed, SEO, security and AI-readiness.<br>100% free. Zero spam.',
     cta: 'Get Your Score'
   }
 };
@@ -603,24 +603,18 @@ function renderResults(d) {
   const bpM = psi_m.best_practices ?? 0;
   const overall = Math.round((perfM + seoM + accM + bpM) / 4);
 
-  // Shock stat: estimated visitors lost
-  // Google/Akamai: every +1s load time = 7% conversion loss
-  // Bounce rate jumps from 32% (1s) → 90% (5s)
+  // Measured mobile LCP from PageSpeed Insights (no estimated or invented percentages)
   const lcp = psi_m.lcp_ms || 0;
   const lcpSec = lcp / 1000;
-  let lostPct = 0;
-  if (lcpSec > 2.5) lostPct = Math.min(90, Math.round(7 * (lcpSec - 2.5) + 20));
-  else if (lcpSec > 1.5) lostPct = Math.min(50, Math.round(7 * (lcpSec - 1.5) + 5));
-  else lostPct = Math.max(0, Math.round(5 * lcpSec));
 
-  let verdictClass = 'bad', verdictLabel = 'CRITICAL';
-  let verdictTitle = 'Your website is losing money every day.';
+  let verdictClass = 'bad', verdictLabel = 'NEEDS FIXING';
+  let verdictTitle = 'Your website has important issues to fix.';
   if (overall >= 80) {
     verdictClass = 'good'; verdictLabel = 'EXCELLENT';
     verdictTitle = 'Your website is in good shape.';
   } else if (overall >= 55) {
     verdictClass = 'warn'; verdictLabel = 'NEEDS WORK';
-    verdictTitle = 'Your site has problems that cost you conversions.';
+    verdictTitle = 'Your website has room for improvement.';
   }
 
   let html_out = '';
@@ -641,12 +635,11 @@ function renderResults(d) {
   // === VERDICT ===
   if (psiAvailable) {
   html_out += `
-    <div class="verdict ${verdictClass}" style="${verdictClass === 'good' ? 'animation: pulse-glow-good 3s ease-in-out infinite' : verdictClass === 'bad' ? 'animation: pulse-glow 3s ease-in-out infinite' : ''}">
+    <div class="verdict ${verdictClass}" style="${verdictClass === 'good' ? 'animation: pulse-glow-good 3s ease-in-out 3' : verdictClass === 'bad' ? 'animation: pulse-glow 3s ease-in-out 3' : ''}">
       <div class="label">${verdictLabel}</div>
       <h2 class="glitch-text" data-text="${escapeHtml(verdictTitle)}">${verdictTitle}</h2>
-      <div class="shock">With an LCP of <strong>${lcpSec.toFixed(1)}s</strong> you're losing an estimated</div>
-      <div class="shock-big" data-target="${lostPct}" style="animation: counter-pop 0.8s ease-out">0%</div>
-      <div class="shock-sub">of potential customers who bounce before the page loads<br><small style="opacity:0.6">Source: Google/Akamai — every +1s of LCP = 7% lost conversions</small></div>
+      <div class="shock">LCP measured by Google (mobile): <strong>${lcpSec.toFixed(1)} s</strong> — Google's “good” threshold is 2.5 s</div>
+      <div class="shock-sub">Google: as page load time goes from 1 to 3 seconds, the probability of a visitor bouncing increases by 32%.<br><small style="opacity:0.6">Source: Think with Google, 2017 · LCP thresholds: web.dev/lcp</small></div>
     </div>
   `;
   } else {
@@ -763,7 +756,7 @@ function renderResults(d) {
 
   // Counter animation for shock-big number
   setTimeout(() => {
-    const el = $('.shock-big');
+    const el = $('.shock-big[data-target]');
     if (el) {
       const target = parseInt(el.getAttribute('data-target'));
       let current = 0;

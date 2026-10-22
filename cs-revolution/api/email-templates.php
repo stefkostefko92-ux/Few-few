@@ -15,10 +15,10 @@ if (isset($_SERVER['SCRIPT_FILENAME']) &&
 
 
 function getLeadAutoResponse($name, $testedUrl, $lang = 'it') {
-    // Both values come from the visitor and go into an HTML email sent to an address the
-    // visitor chose: escape the name, and keep the URL only if it is a real http(s) URL.
-    $firstName = cs_eh(explode(' ', trim($name))[0] ?: 'there');
-    $testedUrl = (filter_var($testedUrl, FILTER_VALIDATE_URL) && preg_match('#^https?://#i', $testedUrl)) ? cs_eh($testedUrl) : '';
+    // The form is public and the recipient is whatever address the visitor typed, so nothing the
+    // visitor wrote goes back into this email — no name, no URL. Echoing them let anyone use our
+    // no-reply address to send a Carbon Stealth-branded email with their own text and link to a
+    // stranger (the classic phishing relay). $name/$testedUrl stay in the signature for the caller.
     
     $templates = [
         'it' => [
@@ -27,7 +27,7 @@ function getLeadAutoResponse($name, $testedUrl, $lang = 'it') {
 <div style=\"font-family:'Inter Tight',-apple-system,sans-serif;max-width:600px;margin:0 auto;background:#0a0a0c;color:#f0f0eb\">
 <div style=\"padding:32px;border-bottom:2px solid #00e5ff\">
 <img src=\"https://carbonstealth.eu/logo.png\" alt=\"Carbon Stealth\" style=\"height:36px;margin-bottom:16px\">
-<h1 style=\"font-size:24px;font-weight:900;margin:0 0 8px;color:#fff\">Ciao {$firstName}!</h1>
+<h1 style=\"font-size:24px;font-weight:900;margin:0 0 8px;color:#fff\">Ciao!</h1>
 <p style=\"color:#aaa;margin:0;font-size:15px;line-height:1.6\">Abbiamo ricevuto la tua richiesta di consulenza gratuita. Il nostro team la sta già analizzando.</p>
 </div>
 <div style=\"padding:32px\">
@@ -39,10 +39,6 @@ function getLeadAutoResponse($name, $testedUrl, $lang = 'it') {
 <li>Ti contatteremo entro <strong style=\"color:#00e5ff\">24 ore</strong> per la consulenza gratuita di 15 minuti</li>
 </ol>
 </div>
-" . ($testedUrl ? "<div style=\"background:#0e0e14;border-radius:8px;padding:16px;margin-bottom:24px\">
-<div style=\"color:#666;font-size:11px;letter-spacing:1px;margin-bottom:4px\">SITO ANALIZZATO</div>
-<a href=\"{$testedUrl}\" style=\"color:#00e5ff;text-decoration:none;font-weight:700\">{$testedUrl}</a>
-</div>" : "") . "
 <p style=\"color:#888;font-size:13px;line-height:1.6\">Nel frattempo, puoi esplorare il nostro <a href=\"https://carbonstealth.eu/portfolio/\" style=\"color:#00e5ff\">portfolio</a> o leggere il nostro <a href=\"https://carbonstealth.eu/blog/\" style=\"color:#00e5ff\">blog</a> su SEO e sviluppo web.</p>
 </div>
 <div style=\"padding:24px 32px;border-top:1px solid #1a1a22;text-align:center\">
@@ -57,7 +53,7 @@ function getLeadAutoResponse($name, $testedUrl, $lang = 'it') {
 <div style=\"font-family:'Inter Tight',-apple-system,sans-serif;max-width:600px;margin:0 auto;background:#0a0a0c;color:#f0f0eb\">
 <div style=\"padding:32px;border-bottom:2px solid #00e5ff\">
 <img src=\"https://carbonstealth.eu/logo.png\" alt=\"Carbon Stealth\" style=\"height:36px;margin-bottom:16px\">
-<h1 style=\"font-size:24px;font-weight:900;margin:0 0 8px;color:#fff\">Hi {$firstName}!</h1>
+<h1 style=\"font-size:24px;font-weight:900;margin:0 0 8px;color:#fff\">Hi!</h1>
 <p style=\"color:#aaa;margin:0;font-size:15px;line-height:1.6\">We've received your free consultation request. Our team is already reviewing it.</p>
 </div>
 <div style=\"padding:32px\">
@@ -69,10 +65,6 @@ function getLeadAutoResponse($name, $testedUrl, $lang = 'it') {
 <li>We'll contact you within <strong style=\"color:#00e5ff\">24 hours</strong> for your free 15-minute consultation</li>
 </ol>
 </div>
-" . ($testedUrl ? "<div style=\"background:#0e0e14;border-radius:8px;padding:16px;margin-bottom:24px\">
-<div style=\"color:#666;font-size:11px;letter-spacing:1px;margin-bottom:4px\">ANALYZED SITE</div>
-<a href=\"{$testedUrl}\" style=\"color:#00e5ff;text-decoration:none;font-weight:700\">{$testedUrl}</a>
-</div>" : "") . "
 <p style=\"color:#888;font-size:13px;line-height:1.6\">Meanwhile, explore our <a href=\"https://carbonstealth.eu/en/portfolio/\" style=\"color:#00e5ff\">portfolio</a> or read our <a href=\"https://carbonstealth.eu/en/blog/\" style=\"color:#00e5ff\">blog</a> about SEO and web development.</p>
 </div>
 <div style=\"padding:24px 32px;border-top:1px solid #1a1a22;text-align:center\">
@@ -87,7 +79,7 @@ function getLeadAutoResponse($name, $testedUrl, $lang = 'it') {
 <div style=\"font-family:'Inter Tight',-apple-system,sans-serif;max-width:600px;margin:0 auto;background:#0a0a0c;color:#f0f0eb\">
 <div style=\"padding:32px;border-bottom:2px solid #00e5ff\">
 <img src=\"https://carbonstealth.eu/logo.png\" alt=\"Carbon Stealth\" style=\"height:36px;margin-bottom:16px\">
-<h1 style=\"font-size:24px;font-weight:900;margin:0 0 8px;color:#fff\">Здравей {$firstName}!</h1>
+<h1 style=\"font-size:24px;font-weight:900;margin:0 0 8px;color:#fff\">Здравей!</h1>
 <p style=\"color:#aaa;margin:0;font-size:15px;line-height:1.6\">Получихме заявката ти за безплатна консултация. Екипът ни вече я анализира.</p>
 </div>
 <div style=\"padding:32px\">
@@ -99,10 +91,6 @@ function getLeadAutoResponse($name, $testedUrl, $lang = 'it') {
 <li>Ще се свържем в рамките на <strong style=\"color:#00e5ff\">24 часа</strong> за безплатна 15-минутна консултация</li>
 </ol>
 </div>
-" . ($testedUrl ? "<div style=\"background:#0e0e14;border-radius:8px;padding:16px;margin-bottom:24px\">
-<div style=\"color:#666;font-size:11px;letter-spacing:1px;margin-bottom:4px\">АНАЛИЗИРАН САЙТ</div>
-<a href=\"{$testedUrl}\" style=\"color:#00e5ff;text-decoration:none;font-weight:700\">{$testedUrl}</a>
-</div>" : "") . "
 <p style=\"color:#888;font-size:13px;line-height:1.6\">Междувременно разгледай нашето <a href=\"https://carbonstealth.eu/bg/portfolio/\" style=\"color:#00e5ff\">портфолио</a> или прочети нашия <a href=\"https://carbonstealth.eu/bg/blog/\" style=\"color:#00e5ff\">блог</a> за SEO и уеб разработка.</p>
 </div>
 <div style=\"padding:24px 32px;border-top:1px solid #1a1a22;text-align:center\">

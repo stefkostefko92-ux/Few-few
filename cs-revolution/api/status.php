@@ -34,6 +34,7 @@ header('Content-Type: application/json; charset=UTF-8');
 header('X-Content-Type-Options: nosniff');
 header('Cache-Control: public, max-age=60');
 header('Referrer-Policy: no-referrer');
+header('X-Robots-Tag: noindex, nofollow');
 
 // ── FIXED allowlist — OUR domains only. Hard-coded. No user input. ──────────
 // Mirrors the `sites` array in src/App.jsx. Editing THIS array is the only way

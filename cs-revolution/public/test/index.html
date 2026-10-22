@@ -4,8 +4,8 @@
 <meta charset="UTF-8"><script id="cs-ads-npa">(function(){var a=window.adsbygoogle=window.adsbygoogle||[];try{if(localStorage.getItem("cs_cookie")!=="accepted")a.requestNonPersonalizedAds=1}catch(e){a.requestNonPersonalizedAds=1}})()</script><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9580994554261732" crossorigin="anonymous"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Analisi Gratuita del Tuo Sito | Carbon Stealth VCC</title>
-<meta name="description" content="Scopri se il tuo sito perde clienti. Analisi gratuita di velocità, SEO, Core Web Vitals e AI-readiness in 30 secondi. Powered by Google PageSpeed Insights.">
-<meta name="keywords" content="analisi gratuita del tuo sito, il tuo sito sta perdendo clienti.scopriamolo insieme, web agency, realizzazione siti web, sviluppo siti web, agenzia web Italia, Carbon Stealth">
+<meta name="description" content="Analisi gratuita del tuo sito in 30 secondi: velocità, SEO, Core Web Vitals e AI-readiness, con i dati di Google PageSpeed Insights.">
+<meta name="keywords" content="analisi gratuita del sito, test velocità sito, Core Web Vitals, analisi SEO gratuita, web agency, Carbon Stealth">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://carbonstealth.eu/test/">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -13,8 +13,8 @@
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="Analisi Gratuita del Tuo Sito — Scopri se Perdi Clienti">
-<meta property="og:description" content="30 secondi. Velocità, SEO, AEO, sicurezza. Vediamo dove sta perdendo soldi il tuo sito.">
+<meta property="og:title" content="Analisi Gratuita del Tuo Sito — Velocità, SEO e Core Web Vitals">
+<meta property="og:description" content="30 secondi. Velocità, SEO, AEO e sicurezza del tuo sito, con i dati di Google PageSpeed Insights.">
 <meta property="og:image" content="https://carbonstealth.eu/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://carbonstealth.eu/og-image.png">
@@ -386,7 +386,7 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 
 <section class="hero">
   <div class="eyebrow">ANALISI GRATUITA · 30 SECONDI</div>
-  <h1>Il tuo sito <span class="gradient">sta perdendo clienti</span>.<br>Scopriamolo insieme.</h1>
+  <h1>Quanto è veloce <span class="gradient">il tuo sito</span>?<br>Scopriamolo in 30 secondi.</h1>
   <p class="subtitle">
     Inserisci l'URL. Analizziamo <strong>velocità</strong>, <strong>SEO</strong>, <strong>Core Web Vitals</strong>, <strong>AI-readiness</strong> e sicurezza.
     Gratis. Senza registrazione. Nessun fronzolo.
@@ -429,7 +429,7 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 
 <footer>
   Carbon Stealth VCC · <a href="/">carbonstealth.eu</a> · EIK 208725180 · Bobov Dol, Bulgaria<br>
-  Powered by <a href="https://pagespeed.web.dev/" target="_blank" rel="noopener">Google PageSpeed Insights</a>
+  Dati di velocità: <a href="https://pagespeed.web.dev/" target="_blank" rel="noopener">Google PageSpeed Insights</a> (API pubblica)
 </footer>
 
 <script>
@@ -437,14 +437,14 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 const AB_VARIANTS = {
   A: {
     eyebrow: 'ANALISI GRATUITA · 30 SECONDI',
-    h1: 'Il tuo sito <span class="gradient">sta perdendo clienti</span>.<br>Scopriamolo insieme.',
+    h1: 'Quanto è veloce <span class="gradient">il tuo sito</span>?<br>Scopriamolo in 30 secondi.',
     sub: 'Inserisci l\'URL. Analizziamo <strong>velocità</strong>, <strong>SEO</strong>, <strong>Core Web Vitals</strong>, <strong>AI-readiness</strong> e sicurezza.<br>Gratis. Senza registrazione. Nessun fronzolo.',
     cta: 'Analizza Ora'
   },
   B: {
     eyebrow: 'GRATIS · NESSUNA REGISTRAZIONE',
     h1: 'Quanto veloce è <span class="gradient">il tuo sito</span>?<br>Te lo diciamo in 30 secondi.',
-    sub: 'Google ti penalizza se il sito è lento. Scopri il tuo <strong>punteggio reale</strong> su velocità, SEO, sicurezza e AI-readiness.<br>100% gratuito. Zero spam.',
+    sub: 'La velocità conta per i visitatori e per Google. Scopri il tuo <strong>punteggio reale</strong> su velocità, SEO, sicurezza e AI-readiness.<br>100% gratuito. Zero spam.',
     cta: 'Scopri il Punteggio'
   }
 };
@@ -606,24 +606,18 @@ function renderResults(d) {
   const bpM = psi_m.best_practices ?? 0;
   const overall = Math.round((perfM + seoM + accM + bpM) / 4);
 
-  // Shock stat: estimated visitors lost
-  // Google/Akamai: every +1s load time = 7% conversion loss
-  // Bounce rate jumps from 32% (1s) → 90% (5s)
+  // Measured mobile LCP from PageSpeed Insights (no estimated or invented percentages)
   const lcp = psi_m.lcp_ms || 0;
   const lcpSec = lcp / 1000;
-  let lostPct = 0;
-  if (lcpSec > 2.5) lostPct = Math.min(90, Math.round(7 * (lcpSec - 2.5) + 20));
-  else if (lcpSec > 1.5) lostPct = Math.min(50, Math.round(7 * (lcpSec - 1.5) + 5));
-  else lostPct = Math.max(0, Math.round(5 * lcpSec));
 
-  let verdictClass = 'bad', verdictLabel = 'CRITICO';
-  let verdictTitle = 'Il tuo sito sta perdendo soldi ogni giorno.';
+  let verdictClass = 'bad', verdictLabel = 'DA CORREGGERE';
+  let verdictTitle = 'Il tuo sito ha problemi importanti da correggere.';
   if (overall >= 80) {
     verdictClass = 'good'; verdictLabel = 'ECCELLENTE';
     verdictTitle = 'Il tuo sito è in buono stato.';
   } else if (overall >= 55) {
     verdictClass = 'warn'; verdictLabel = 'DA MIGLIORARE';
-    verdictTitle = 'Il tuo sito ha problemi che costano conversioni.';
+    verdictTitle = 'Il tuo sito ha margini di miglioramento.';
   }
 
   let html_out = '';
@@ -645,12 +639,11 @@ function renderResults(d) {
   if (psiAvailable) {
     const verdictGlow = verdictClass === 'good' ? 'pulse-glow-good' : verdictClass === 'bad' ? 'pulse-glow' : '';
     html_out += `
-      <div class="verdict ${verdictClass}" style="${verdictGlow ? 'animation: ' + verdictGlow + ' 3s ease-in-out infinite' : ''}">
+      <div class="verdict ${verdictClass}" style="${verdictGlow ? 'animation: ' + verdictGlow + ' 3s ease-in-out 3' : ''}">
         <div class="label">${verdictLabel}</div>
         <h2 class="glitch-text" data-text="${escapeHtml(verdictTitle)}">${verdictTitle}</h2>
-        <div class="shock">Con un LCP di <strong>${lcpSec.toFixed(1)}s</strong> stai perdendo stimati</div>
-        <div class="shock-big" data-target="${lostPct}" style="animation: counter-pop 0.8s ease-out">0%</div>
-        <div class="shock-sub">di potenziali clienti che abbandonano prima del caricamento completo<br><small style="opacity:0.6">Fonte: Google/Akamai — ogni +1s di LCP = 7% conversioni perse</small></div>
+        <div class="shock">LCP misurato da Google (mobile): <strong>${lcpSec.toFixed(1).replace('.', ',')} s</strong> — la soglia «buono» di Google è 2,5 s</div>
+        <div class="shock-sub">Google: quando il caricamento passa da 1 a 3 secondi, la probabilità che il visitatore abbandoni la pagina aumenta del 32%.<br><small style="opacity:0.6">Fonte: Think with Google, 2017 · soglie LCP: web.dev/lcp</small></div>
       </div>
     `;
   } else {
@@ -768,7 +761,7 @@ function renderResults(d) {
 
   // Counter animation for shock-big number
   setTimeout(() => {
-    const el = $('.shock-big');
+    const el = $('.shock-big[data-target]');
     if (el) {
       const target = parseInt(el.getAttribute('data-target'));
       let current = 0;

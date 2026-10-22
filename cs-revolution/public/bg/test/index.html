@@ -4,8 +4,8 @@
 <meta charset="UTF-8"><script id="cs-ads-npa">(function(){var a=window.adsbygoogle=window.adsbygoogle||[];try{if(localStorage.getItem("cs_cookie")!=="accepted")a.requestNonPersonalizedAds=1}catch(e){a.requestNonPersonalizedAds=1}})()</script><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9580994554261732" crossorigin="anonymous"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Безплатен Анализ на Сайта | Carbon Stealth VCC</title>
-<meta name="description" content="Разбери дали сайтът ти губи клиенти. Безплатен анализ на скорост, SEO, Core Web Vitals и AI-готовност за 30 секунди.">
-<meta name="keywords" content="безплатен анализ на сайта, сайтът ти губи клиенти.да разберем заедно, уеб агенция, изработка на сайт, уеб дизайн, изработка на онлайн магазин, Carbon Stealth">
+<meta name="description" content="Безплатен анализ на сайта ти за 30 секунди: скорост, SEO, Core Web Vitals и AI-готовност, с данни от Google PageSpeed Insights.">
+<meta name="keywords" content="безплатен анализ на сайта, тест за скорост на сайт, Core Web Vitals, безплатна SEO проверка, уеб агенция, Carbon Stealth">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://carbonstealth.eu/bg/test/">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -13,8 +13,8 @@
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="Безплатен Анализ на Сайта — Разбери дали Губиш Клиенти">
-<meta property="og:description" content="30 секунди. Скорост, SEO, AEO, сигурност. Да видим къде сайтът ти губи пари.">
+<meta property="og:title" content="Безплатен Анализ на Сайта — Скорост, SEO и Core Web Vitals">
+<meta property="og:description" content="30 секунди. Скорост, SEO, AEO и сигурност на сайта ти, с данни от Google PageSpeed Insights.">
 <meta property="og:image" content="https://carbonstealth.eu/og-image-bg.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://carbonstealth.eu/og-image-bg.png">
@@ -386,7 +386,7 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 
 <section class="hero">
   <div class="eyebrow">БЕЗПЛАТЕН АНАЛИЗ · 30 СЕКУНДИ</div>
-  <h1>Сайтът ти <span class="gradient">губи клиенти</span>.<br>Да разберем заедно.</h1>
+  <h1>Колко бърз е <span class="gradient">твоят сайт</span>?<br>Да разберем за 30 секунди.</h1>
   <p class="subtitle">
     Въведи URL. Анализираме <strong>скорост</strong>, <strong>SEO</strong>, <strong>Core Web Vitals</strong>, <strong>AI-готовност</strong> и сигурност.
     Безплатно. Без регистрация. Без глупости.
@@ -429,7 +429,7 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 
 <footer>
   Carbon Stealth VCC · <a href="/">carbonstealth.eu</a> · EIK 208725180 · Bobov Dol, Bulgaria<br>
-  Powered by <a href="https://pagespeed.web.dev/" target="_blank" rel="noopener">Google PageSpeed Insights</a>
+  Данни за скоростта: <a href="https://pagespeed.web.dev/" target="_blank" rel="noopener">Google PageSpeed Insights</a> (публично API)
 </footer>
 
 <script>
@@ -437,14 +437,14 @@ body::after{content:'';position:fixed;left:0;right:0;top:0;height:2px;z-index:10
 const AB_VARIANTS = {
   A: {
     eyebrow: 'БЕЗПЛАТЕН АНАЛИЗ · 30 СЕКУНДИ',
-    h1: 'Сайтът ти <span class="gradient">губи клиенти</span>.<br>Да разберем заедно.',
+    h1: 'Колко бърз е <span class="gradient">твоят сайт</span>?<br>Да разберем за 30 секунди.',
     sub: 'Въведи URL. Анализираме <strong>скорост</strong>, <strong>SEO</strong>, <strong>Core Web Vitals</strong>, <strong>AI-готовност</strong> и сигурност.<br>Безплатно. Без регистрация. Без глупости.',
     cta: 'Анализирай Сега'
   },
   B: {
     eyebrow: 'БЕЗПЛАТНО · БЕЗ РЕГИСТРАЦИЯ',
     h1: 'Колко бърз е <span class="gradient">твоят сайт</span>?<br>Казваме ти за 30 секунди.',
-    sub: 'Google наказва бавните сайтове. Разбери <strong>реалния си резултат</strong> за скорост, SEO, сигурност и AI-готовност.<br>100% безплатно. Без спам.',
+    sub: 'Скоростта е важна за посетителите и за Google. Разбери <strong>реалния си резултат</strong> за скорост, SEO, сигурност и AI-готовност.<br>100% безплатно. Без спам.',
     cta: 'Виж Резултата'
   }
 };
@@ -603,24 +603,18 @@ function renderResults(d) {
   const bpM = psi_m.best_practices ?? 0;
   const overall = Math.round((perfM + seoM + accM + bpM) / 4);
 
-  // Shock stat: estimated visitors lost
-  // Google/Akamai: every +1s load time = 7% conversion loss
-  // Bounce rate jumps from 32% (1s) → 90% (5s)
+  // Measured mobile LCP from PageSpeed Insights (no estimated or invented percentages)
   const lcp = psi_m.lcp_ms || 0;
   const lcpSec = lcp / 1000;
-  let lostPct = 0;
-  if (lcpSec > 2.5) lostPct = Math.min(90, Math.round(7 * (lcpSec - 2.5) + 20));
-  else if (lcpSec > 1.5) lostPct = Math.min(50, Math.round(7 * (lcpSec - 1.5) + 5));
-  else lostPct = Math.max(0, Math.round(5 * lcpSec));
 
-  let verdictClass = 'bad', verdictLabel = 'КРИТИЧНО';
-  let verdictTitle = 'Сайтът ти губи пари всеки ден.';
+  let verdictClass = 'bad', verdictLabel = 'ЗА ПОПРАВЯНЕ';
+  let verdictTitle = 'Сайтът ти има важни проблеми за поправяне.';
   if (overall >= 80) {
     verdictClass = 'good'; verdictLabel = 'ОТЛИЧНО';
     verdictTitle = 'Сайтът ти е в добро състояние.';
   } else if (overall >= 55) {
     verdictClass = 'warn'; verdictLabel = 'ТРЯБВА РАБОТА';
-    verdictTitle = 'Сайтът ти има проблеми, които ти струват конверсии.';
+    verdictTitle = 'Сайтът ти има какво да подобри.';
   }
 
   let html_out = '';
@@ -641,12 +635,11 @@ function renderResults(d) {
   // === VERDICT ===
   if (psiAvailable) {
   html_out += `
-    <div class="verdict ${verdictClass}" style="${verdictClass === 'good' ? 'animation: pulse-glow-good 3s ease-in-out infinite' : verdictClass === 'bad' ? 'animation: pulse-glow 3s ease-in-out infinite' : ''}">
+    <div class="verdict ${verdictClass}" style="${verdictClass === 'good' ? 'animation: pulse-glow-good 3s ease-in-out 3' : verdictClass === 'bad' ? 'animation: pulse-glow 3s ease-in-out 3' : ''}">
       <div class="label">${verdictLabel}</div>
       <h2 class="glitch-text" data-text="${escapeHtml(verdictTitle)}">${verdictTitle}</h2>
-      <div class="shock">С LCP от <strong>${lcpSec.toFixed(1)}s</strong> губиш оценено</div>
-      <div class="shock-big" data-target="${lostPct}" style="animation: counter-pop 0.8s ease-out">0%</div>
-      <div class="shock-sub">от потенциални клиенти, които си тръгват преди да се зареди страницата<br><small style="opacity:0.6">Източник: Google/Akamai — всяка +1s LCP = 7% загубени конверсии</small></div>
+      <div class="shock">LCP, измерен от Google (мобилен): <strong>${lcpSec.toFixed(1).replace('.', ',')} s</strong> — прагът „добър“ на Google е 2,5 s</div>
+      <div class="shock-sub">Google: когато зареждането се удължи от 1 на 3 секунди, вероятността посетителят да напусне страницата нараства с 32%.<br><small style="opacity:0.6">Източник: Think with Google, 2017 · прагове за LCP: web.dev/lcp</small></div>
     </div>
   `;
   } else {
@@ -763,7 +756,7 @@ function renderResults(d) {
 
   // Counter animation for shock-big number
   setTimeout(() => {
-    const el = $('.shock-big');
+    const el = $('.shock-big[data-target]');
     if (el) {
       const target = parseInt(el.getAttribute('data-target'));
       let current = 0;
