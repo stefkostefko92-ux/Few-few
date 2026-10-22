@@ -131,3 +131,21 @@ test('istruzioni: lo schizzo è un dato, ogni campo è elencato con il suo inter
   assert.equal(objects.length, 3);
   for (const o of objects) assert.equal(o.additionalProperties, false);
 });
+
+test('istruzioni: unità o riferimento incerti danno un’affidabilità sotto 0,6; immagini che non mostrano la parte danno nessun campo e un avviso', () => {
+  assert.notEqual(PROMPT_VERSION, 'schizzi-2026-10-22.1', 'the instructions changed: so does the key of the readings kept');
+  for (const target of TARGETS) {
+    const text = instruction(target), confidence = text.split('\n').find((l) => l.startsWith('- "confidence"')) ?? '';
+    // the 0.6–0.9 band is for the handwriting only; a doubt on the unit or on the wall or corner goes below 0.6
+    assert.doesNotMatch(confidence, /0\.6-0\.9 when it is legible but its unit or its reference/);
+    assert.match(confidence, /0\.6-0\.9 only when .*handwriting/);
+    assert.match(confidence, /below 0\.6 whenever its unit or its reference \(which wall, which corner it is measured from\) is uncertain/);
+    // what is not legible or not attributable goes to notRead; an uncertain reference is no reason to leave a value out
+    assert.doesNotMatch(text, /not legible, or ambiguous stays out/);
+    // the images checked first: not the part asked, nothing proposed and one warning
+    assert.match(text, /If they do not show .* at all.* an empty "fields" list, an empty "notRead" list and exactly one warning/);
+  }
+  assert.match(instruction('vano'), /do not show the lift shaft/);
+  assert.match(instruction('locale'), /do not show the machine room/);
+  assert.match(instruction('locale'), /Lo schizzo non mostra il locale macchina/);
+});

@@ -3502,6 +3502,14 @@
       "anteprimaErrore": "Anteprima non disponibile in questo momento: riprova fra poco.",
       "aiOff": "Lettura automatica non attiva: inserisci le misure guardando lo schizzo.",
       "leggi": "Leggi lo schizzo",
+      "altraParte": {
+        "vano": "Questo schizzo è del locale macchina: leggendolo per il vano verranno proposti solo i valori che vi compaiono.",
+        "locale": "Questo schizzo è del vano: leggendolo per il locale macchina verranno proposti solo i valori che vi compaiono."
+      },
+      "nonDellaParte": {
+        "vano": "Questo schizzo non è indicato come schizzo del vano: leggendolo verranno proposti solo i valori del vano che vi compaiono.",
+        "locale": "Questo schizzo non è indicato come schizzo del locale macchina: leggendolo verranno proposti solo i valori del locale che vi compaiono."
+      },
       "inLettura": "Lettura dello schizzo in corso: può richiedere fino a due minuti.",
       "secondi": "{s} s",
       "annulla": "Annulla",

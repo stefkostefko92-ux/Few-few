@@ -3,12 +3,13 @@
 // «Leggi lo schizzo» (round 50): the sketch sent to the reading route (POST …/schizzi/<id>/lettura, Claude through
 // Vertex AI in the EU, src/server/schizzi/lettura.ts), which may take up to two minutes — the seconds shown (out of the
 // live region), a button to give up (the request aborted) —, then the proposal in the confirm table, under the AI Act notice (art. 50: the
-// values are the model's until confirmed), with the units it read, the measures it could not read and its warnings.
+// values are the model's until confirmed), with the units it read, the measures it could not read and its warnings. A
+// sketch drawn for another part than the one read says so over the button.
 // Only the proposal's shape is taken from the answer (zod): the server already kept it within the catalog.
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
-import type { Target } from '@/lib/schizzi/campi';
+import { isTarget, type Target } from '@/lib/schizzi/campi';
 import { UNITA, chiaveNonLetto, type Proposta } from '@/lib/schizzi/proposta';
 import type { SchizzoView } from '@/server/schizzi/queries';
 import { BY_STATUS } from '../allegati/send';
@@ -87,9 +88,12 @@ export default function LetturaSchizzo({ projectId, schizzo, target, modulo, qua
   };
 
   const reading = stato.at === 'reading';
+  // a sketch drawn for another part (or for none said): only what it shows of this one will be proposed
+  const altraParte = schizzo.component === target ? null : isTarget(schizzo.component) ? 'altraParte' : 'nonDellaParte';
   return (
     <div className="schizzo-lettura">
       <p className="alert alert-info schizzo-ai" role="note">{t('aiNotice')}</p>
+      {altraParte ? <p className="note schizzo-altra" data-schizzi="altra-parte">{t(`pannello.${altraParte}.${target}`)}</p> : null}
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" className="btn btn-primary" onClick={() => void leggi()} disabled={reading} data-schizzi="leggi">{t('pannello.leggi')}</button>
         {reading ? <InLettura secondi={Math.max(0, Math.round((now - stato.since) / 1000))} onAnnulla={() => ctrl.current?.abort()} /> : null}

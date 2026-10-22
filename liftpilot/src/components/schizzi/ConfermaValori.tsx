@@ -2,10 +2,12 @@
 
 // The confirm table of measures proposed for a form (round 50): read on a survey sketch by the model, or measured on a
 // DXF/DWG drawing. Each row: the measure, what was read (or «measured on the drawing»), the proposed value in a field
-// of its kind and range (editable; the form's value beside it when it differs), the confidence, «Confermo». A row the
-// model was unsure of (under 0.6) starts unchecked and empty — the text read stays as the hint. «Applica i valori
-// confermati» puts only the checked, valid rows into the form (src/lib/schizzi/applica.ts) and says how many went in
-// and why any did not. Nothing is saved here: the form saves as before.
+// of its kind and range (editable; the form's value beside it when it differs), the confidence, «Confermo». A value the
+// model read starts unchecked — the technician ticks each one he checked on the sketch (or types it: a valid value
+// typed ticks its row) —, filled in from a confidence of 0.6 up, empty under it with the text read as the hint; a
+// measure taken on a drawing starts checked. «Applica i valori confermati» puts only the checked, valid rows into the
+// form (src/lib/schizzi/applica.ts) and says how many went in and why any did not. Nothing is saved here: the form
+// saves as before.
 import { useId, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { campoDi, valoreValido, type Target, type TipoCampo } from '@/lib/schizzi/campi';
@@ -28,12 +30,18 @@ export interface Modulo {
   applica(valori: Valore[]): { applied: string[]; refused: { id: string; code: Rifiuto }[] };
 }
 
-/** Below this the model's value is not proposed as it is: the field starts empty and unchecked. */
+/** Below this the model's value is not proposed as it is: the field starts empty. */
 export const AFFIDABILITA_MINIMA = 0.6;
 
 type Stato = { on: boolean; text: string; done: boolean };
 
 const asText = (v: ValoreCampo): string => String(v);
+/** A row as the table opens: a value read by the model never checked (each one is the technician's), filled only from
+ *  AFFIDABILITA_MINIMA up; a measure on a drawing checked with its value. */
+function iniziale(r: Riga, fonte: 'ai' | 'cad'): Stato {
+  const unsure = r.confidence !== null && r.confidence < AFFIDABILITA_MINIMA;
+  return { on: fonte === 'cad', text: unsure ? '' : asText(r.value), done: false };
+}
 /** The value a field's text gives, or null when there is none. */
 function valoreDi(tipo: TipoCampo, text: string): ValoreCampo | null {
   const s = text.trim();
@@ -70,10 +78,7 @@ export default function ConfermaValori({ target, righe, fonte, modulo, caption, 
   applicati(n: number): string;
 }) {
   const t = useTranslations('schizzi'), uid = useId(), { etichetta, mostra } = useTestiCampo(target);
-  const [stato, setStato] = useState<Record<string, Stato>>(() => Object.fromEntries(righe.map((r) => {
-    const unsure = r.confidence !== null && r.confidence < AFFIDABILITA_MINIMA;
-    return [r.id, { on: !unsure, text: unsure ? '' : asText(r.value), done: false }];
-  })));
+  const [stato, setStato] = useState<Record<string, Stato>>(() => Object.fromEntries(righe.map((r) => [r.id, iniziale(r, fonte)])));
   const [esito, setEsito] = useState<{ ok: string | null; refused: string[] } | null>(null);
   const of = (id: string): Stato => stato[id] ?? { on: false, text: '', done: false };
   const put = (id: string, patch: Partial<Stato>): void => setStato((s) => ({ ...s, [id]: { ...of(id), ...s[id], ...patch } }));
