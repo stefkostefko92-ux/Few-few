@@ -7,7 +7,8 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import CadViewer from './CadViewer';
 import { MM_PER_UNIT, type CadModel, type CadUnits } from '@/lib/cad/model';
-import { castRays, dominantAngle, shaftSize, type DoorSide, type Survey } from '@/lib/cad/measure';
+import { shaftSize, type DoorSide, type Survey } from '@/lib/cad/measure';
+import { cadReadError, pickSurvey } from '@/lib/cad/pick';
 import type { ShaftSource } from '@/lib/shaft-input';
 
 export interface SurveyResult { W: number; D: number; source: ShaftSource }
@@ -55,8 +56,8 @@ export default function SurveyPanel({ onSurvey }: { onSurvey(r: SurveyResult): v
       setUnits(m.units === 'unknown' ? 'mm' : m.units);
       setHidden(new Set(m.layers.flatMap((l, i) => (l.hidden ? [i] : []))));
     } catch (e) {
-      const code = e instanceof Error && 'code' in e ? String(e.code) : 'unreadable', detail = e instanceof Error && 'detail' in e ? String(e.detail) : '';
-      setError(t(`err_${['tooLarge', 'dwgVersion', 'unreadable', 'empty'].includes(code) ? code : 'unreadable'}`, { version: detail }));
+      const { code, detail } = cadReadError(e);
+      setError(t(`err_${code}`, { version: detail }));
     } finally {
       setReading(false);
     }
@@ -64,8 +65,7 @@ export default function SurveyPanel({ onSurvey }: { onSurvey(r: SurveyResult): v
 
   const onPick = useCallback((x: number, y: number): void => {
     if (!model) return;
-    const k = MM_PER_UNIT[units], visible = (i: number): boolean => !hidden.has(i);
-    const s = castRays(model, visible, x, y, dominantAngle(model, visible, x, y, 3000 / k), 30000 / k);
+    const s = pickSurvey(model, (i) => !hidden.has(i), x, y, MM_PER_UNIT[units]);
     setError(s ? null : t('notClosed'));
     setSurvey(s);
     if (s) report(s, door, units, model, hash);

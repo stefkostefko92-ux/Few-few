@@ -4,12 +4,13 @@
 // mirrored entities (extrusion 0,0,−1) turned back into world coordinates.
 import { acad } from './acad';
 import { dwgVersion, isAnnotationLayer, unitsOf, type CadLayer, type CadModel } from './model';
+import type { CadReadErrorCode } from './pick';
 
 export const MAX_SEGMENTS = 400_000;
 export const MAX_BYTES = 60 * 1024 * 1024;
 const DWG_READABLE = new Set(['AC1014', 'AC1015', 'AC1018', 'AC1021', 'AC1024', 'AC1027', 'AC1032']);
 
-export type CadReadErrorCode = 'tooLarge' | 'dwgVersion' | 'unreadable' | 'empty';
+export type { CadReadErrorCode };
 export class CadReadError extends Error {
   constructor(readonly code: CadReadErrorCode, readonly detail = '') {
     super(`${code}${detail ? `: ${detail}` : ''}`);
