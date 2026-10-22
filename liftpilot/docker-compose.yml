@@ -62,7 +62,8 @@ services:
       BILLING_START: ${BILLING_START:-}
       # the automatic reading of the survey sketches (Claude on Google Cloud Vertex AI, EU only): off unless the project
       # is set and the service account's key is in the mounted directory below (a file of the container's user, mode
-      # 600: src/server/schizzi/config.ts, DEPLOY.md); the region is eu or a europe-* one, nothing else starts
+      # 600: src/server/schizzi/config.ts, DEPLOY.md); the region is eu or an EU-27 europe-* one (VERTEX_REGIONS in
+      # src/lib/env-schema.ts: not London europe-west2, not Zurich europe-west6), nothing else starts
       VERTEX_PROJECT_ID: ${VERTEX_PROJECT_ID:-}
       VERTEX_REGION: ${VERTEX_REGION:-eu}
       VERTEX_CREDENTIALS_FILE: ${VERTEX_CREDENTIALS_FILE:-/run/vertex/service-account.json}

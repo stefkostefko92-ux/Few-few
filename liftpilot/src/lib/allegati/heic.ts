@@ -1,11 +1,12 @@
 // A HEIC/HEIF picture (an iPhone's photo, round 50) recognised by its bytes before anything decodes it: the `ftyp` box
 // first, with a HEIF brand (heic, heix, hevc, hevx, heim, heis, mif1, msf1), then the `meta` box walked for what the
-// decoder would do — the image items (HEVC coded, a grid, a derived identity or overlay; AVIF and the others are not
-// taken), their sizes (`ispe`, every image item's, tiles and thumbnails too: none past 40 megapixels or 12 000 px a
-// side), the primary item (`pitm`) and the top-level images libheif lists: not hidden, not a thumbnail (`thmb`), not an
-// auxiliary image (`auxl`), in the order of their item ids (libheif's map of the `infe` boxes; heif-convert writes them
-// as out-1, out-2 … in that order). The product never stores the HEIC: heif-convert turns its primary image into a JPEG
-// (src/lib/report/image-tool.ts), which then goes through prepareFile like any upload. Pure, no dependency.
+// decoder would do — the image items (HEVC coded, a grid, a derived identity or overlay; a file with an item of AVIF or
+// another codec that is not hidden is not taken), the sizes (every `ispe` of the file — of each image item, tiles and
+// thumbnails too, and of none —: none past 40 megapixels or 12 000 px a side), the primary item (`pitm`) and the
+// top-level images libheif lists: not hidden, not a thumbnail (`thmb`), not an auxiliary image (`auxl`), in the order
+// of their item ids (libheif's map of the `infe` boxes; heif-convert writes them as out-1, out-2 … in that order). The
+// product never stores the HEIC: heif-convert turns its primary image into a JPEG (src/lib/report/image-tool.ts), which
+// then goes through prepareFile like any upload. Pure, no dependency.
 import { ALLEGATI_LIMITS } from './limits';
 
 export type HeicRefusal = 'structure' | 'dimensions' | 'type';
@@ -112,14 +113,18 @@ function references(b: Uint8Array, iref: Box): { type: string; from: number; to:
   });
 }
 
-/** Each item's `ispe` (width, height) through `ipco` and `ipma`. */
-function sizes(b: Uint8Array, iprp: Box): Map<number, [number, number]> {
+/** Each item's `ispe` (width, height) through `ipco` and `ipma`, and every `ispe` of `ipco`, tied to an item or not. */
+function sizes(b: Uint8Array, iprp: Box): { byItem: Map<number, [number, number]>; every: [number, number][] } {
   const kids = boxes(b, iprp.body, iprp.end);
   need(kids !== null);
   const ipco = kids?.find((k) => k.type === 'ipco'), ipmas = kids?.filter((k) => k.type === 'ipma') ?? [];
   need(ipco !== undefined && ipmas.length > 0);
   const props = ipco ? boxes(b, ipco.body, ipco.end) : null;
   need(props !== null);
+  const every = (props ?? []).filter((p) => p.type === 'ispe').map((p): [number, number] => {
+    need(p.body + 12 <= p.end);
+    return [u32(b, p.body + 4), u32(b, p.body + 8)];
+  });
   const out = new Map<number, [number, number]>();
   for (const ipma of ipmas) {
     const v = b[ipma.body], wideIndex = (b[ipma.body + 3] & 1) === 1;
@@ -143,7 +148,7 @@ function sizes(b: Uint8Array, iprp: Box): Map<number, [number, number]> {
       }
     }
   }
-  return out;
+  return { byItem: out, every };
 }
 
 const fits = (w: number, h: number): boolean => {
@@ -152,10 +157,11 @@ const fits = (w: number, h: number): boolean => {
 };
 
 /**
- * What a HEIF image file holds for the conversion, or why it is refused: 'type' (no image the product decodes: AVIF and
- * the other codecs), 'structure' (a box running past its parent, no `meta`/`pitm`/`iinf`/`ipma`, an image item without
- * its size, a primary that is not a top-level image, more than HEIC_MAX_IMAGES of them), 'dimensions' (an image item
- * past 40 megapixels or 12 000 px a side). Null when the bytes are not a HEIF file at all.
+ * What a HEIF image file holds for the conversion, or why it is refused: 'type' (no image the product decodes, or an
+ * image item of another codec that is not hidden — libheif would decode it as a top-level image: AVIF, JPEG and the
+ * others), 'structure' (a box running past its parent, no `meta`/`pitm`/`iinf`/`ipma`, an image item without its size, a
+ * primary that is not a top-level image, more than HEIC_MAX_IMAGES of them), 'dimensions' (an `ispe` of the file — of
+ * any item, or of none — past 40 megapixels or 12 000 px a side). Null when the bytes are not a HEIF file at all.
  */
 export function sniffHeic(b: Uint8Array): HeicSniff | null {
   if (!isHeif(b)) return null;
@@ -181,17 +187,16 @@ function walk(b: Uint8Array): HeicSniff {
   need(pitm.body + 6 <= pitm.end);
   const primaryId = b[pitm.body] === 0 ? u16(b, pitm.body + 4) : u32(b, pitm.body + 4);
   const all = items(b, iinf);
-  if (all.some((x) => OTHER_IMAGES.has(x.type)) && !all.some((x) => IMAGE_TYPES.has(x.type))) return { ok: false, reason: 'type' };
+  // an image of another codec that libheif would decode as a top-level image (beside a HEVC primary too): not a HEIC
+  if (all.some((x) => OTHER_IMAGES.has(x.type) && !x.hidden)) return { ok: false, reason: 'type' };
   const images = all.filter((x) => IMAGE_TYPES.has(x.type));
   if (images.length === 0) return { ok: false, reason: 'type' };
   // the primary of another codec (an AVIF with a HEVC thumbnail): not a HEIC
   if (all.some((x) => x.id === primaryId && OTHER_IMAGES.has(x.type))) return { ok: false, reason: 'type' };
-  const size = sizes(b, iprp);
-  for (const x of images) {
-    const s = size.get(x.id);
-    need(s !== undefined);
-    if (s && !fits(s[0], s[1])) return { ok: false, reason: 'dimensions' };
-  }
+  const { byItem: size, every } = sizes(b, iprp);
+  for (const x of images) need(size.get(x.id) !== undefined);
+  // every size the decoder may meet, whatever item it belongs to (a hidden tile of another codec, one tied to none)
+  if (every.some(([w, h]) => !fits(w, h))) return { ok: false, reason: 'dimensions' };
   const refs = iref ? references(b, iref) : [];
   const notTop = new Set(refs.filter((r) => r.type === 'thmb' || r.type === 'auxl').map((r) => r.from));
   const topLevel = images.filter((x) => !x.hidden && !notTop.has(x.id)).sort((p, q) => p.id - q.id);

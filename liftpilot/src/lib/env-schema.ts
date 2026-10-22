@@ -6,6 +6,10 @@ import { dayStart } from './billing';
 
 /** Docker Compose passes an unset variable as an empty string: both mean "not configured". */
 const optional = z.string().optional().transform((v) => (v?.trim() ? v.trim() : undefined));
+/** The Vertex AI regions of the sketches' reading: the multi-region `eu` and the europe-* regions in the 27 countries of
+ *  the European Union, one by one (London europe-west2 and Zurich europe-west6 are in Europe, not in the EU). */
+export const VERTEX_REGIONS = ['eu', 'europe-west1', 'europe-west3', 'europe-west4', 'europe-west8', 'europe-west9', 'europe-west10',
+  'europe-west12', 'europe-north1', 'europe-north2', 'europe-central2', 'europe-southwest1'] as const;
 export const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   AUTH_SECRET: z
@@ -43,10 +47,11 @@ export const envSchema = z.object({
    *  before (docs/terms-changes.md, 1a): without it, or before it, the subscription stays off whatever Stripe's values */
   BILLING_START: optional.pipe(z.string().refine((s) => dayStart(s) !== null, 'a day written YYYY-MM-DD').optional()),
   /** the reading of the survey sketches (round 50): Claude on Google Cloud Vertex AI, in the EU only — the multi-region
-   *  `eu` or a single europe-* region (never global or another continent). Off unless the project, the service
-   *  account's key file (a regular file, mode 600: src/server/schizzi/config.ts) and the model are there */
+   *  `eu` or one of the EU-27 regions of VERTEX_REGIONS (never global, another continent, the UK or Switzerland). Off
+   *  unless the project, the service account's key file (a regular file, mode 600: src/server/schizzi/config.ts) and the
+   *  model are there */
   VERTEX_PROJECT_ID: optional.pipe(z.string().regex(/^[a-z][a-z0-9-]{4,28}[a-z0-9]$/, 'a Google Cloud project id').optional()),
-  VERTEX_REGION: optional.pipe(z.string().regex(/^(eu|europe-[a-z]+\d+)$/, 'an EU region: eu or europe-…').optional()).transform((v) => v ?? 'eu'),
+  VERTEX_REGION: optional.pipe(z.enum(VERTEX_REGIONS, { message: `an EU region: ${VERTEX_REGIONS.join(', ')}` }).optional()).transform((v): string => v ?? 'eu'),
   VERTEX_CREDENTIALS_FILE: optional.pipe(z.string().regex(/^\/[^\0]{1,500}$/, 'an absolute path').optional()),
   SKETCH_MODEL: optional.pipe(z.string().regex(/^claude-[a-z0-9-]{1,60}(?:@\d{8})?$/, 'a Claude model id').optional()).transform((v) => v ?? 'claude-opus-5-5'),
 });
