@@ -15,11 +15,16 @@ const TRAINING = ['GPTBot', 'ClaudeBot', 'CCBot', 'Google-Extended', 'Applebot-E
 /** Crawlers of AI search and assistants that cite and link the pages: open like the search engines. */
 const ANSWERS = ['OAI-SearchBot', 'ChatGPT-User', 'Claude-SearchBot', 'Claude-User', 'PerplexityBot', 'Perplexity-User', 'meta-webindexer'];
 
-// Until the owner approves the public release everything is closed; afterwards only the public pages are open, to the
-// search engines and to the AI search crawlers, and closed to the training crawlers. A crawler obeys the group that
-// names it and ignores the others, so every open group repeats the private paths.
+/** Search engines that must READ a page to drop it: a page blocked here never shows them its noindex, so Google keeps a
+ *  linked address as "Indexed, though blocked by robots.txt" (Search Console counts it as "Blocked by robots.txt"). */
+const SEARCH = ['Googlebot', 'Bingbot'];
+
+// Until the owner approves the public release the site stays out of every index: Google and Bing may read the public
+// pages only to see their noindex (layout.tsx / pageMetadata), every other crawler is shut out. Afterwards only the
+// public pages are open, to the search engines and to the AI search crawlers, and closed to the training crawlers. A
+// crawler obeys the group that names it and ignores the others, so every open group repeats the private paths.
 export default function robots(): MetadataRoute.Robots {
-  if (!indexingAllowed()) return { rules: [{ userAgent: '*', disallow: '/' }] };
+  if (!indexingAllowed()) return { rules: [{ userAgent: SEARCH, allow: '/', disallow: PRIVATE }, { userAgent: '*', disallow: '/' }] };
   return {
     rules: [
       { userAgent: TRAINING, disallow: '/' },
