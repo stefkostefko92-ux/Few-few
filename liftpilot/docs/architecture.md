@@ -668,3 +668,25 @@ src/app/api/projects/[id]/schizzi/[allegatoId]/lettura POST — автомати
 src/app/api/allegati/[id]/anteprima                   GET — прегледът (картина, направена от нас; ?pagina=1..4 за PDF).
 prisma/migrations/29_schizzi  AttachmentKind += SCHIZZO преди ALTRO.
 ```
+
+Част В — панелът до формулярите:
+
+```
+src/lib/schizzi/applica.ts  applicaVano / valoreVano (+ applica-locale.ts: applicaLocale / valoreLocale; applica-base.ts:
+                     типовете и общите помощници): потвърдените стойности във формуляра като написани (през floorsTo,
+                     entrancesTo, roomAdded; таблото на ръка; keptPlan), отказите с причина; valore* — какво има
+                     формулярът (null: за въвеждане или не се иска). Чисто; тестове schizzi-applica.
+src/lib/cad/locale.ts misuraLocale: машинното и шахтата от два клика на DXF/DWG (рамката на рилевото, предната стена по
+                     избор); тест cad-locale (и на завъртян план).
+src/lib/dates.ts     romeDate — датата на схицата, еднаква на сървъра и в браузъра.
+src/components/schizzi/ SchizzoPanel (списъкът, качването, прегледът, четенето; SchizziStart от страницата), SchizzoUpload
+                     (kind SCHIZZO, «Usalo come schizzo» за същите байтове от друг вид), SchizzoAnteprima (страница, мащаб),
+                     LetturaSchizzo (дълга заявка с «Annulla», AI Act бележката, непрочетеното, предупрежденията),
+                     ConfermaValori (таблицата за потвърждение, обща с CAD; Modulo = attuale + applica), schizzi.css.
+src/components/room/LocaleCad.tsx  Машинното от DXF/DWG в браузъра (CadViewer с втори правоъгълник, castRays, misuraLocale).
+src/components/allegati/send.ts    XHR качването с напредъка (общо за AllegatoUpload и панела).
+src/components/room/RoomSurvey.tsx, src/components/lift/ProgettoWorkspace.tsx  Mодул (attuale/applica) към формуляра;
+                     страниците подават schizziOf + правата (projects:edit за качване, progetto:edit за четене).
+scripts/smoke-schizzi.mjs  PNG и HEIC, прегледите, 503 sketchOff, панелът на двете страници, CAD → формулярът, Tecnico 403,
+                     друга фирма 404 (самостоятелен).
+```

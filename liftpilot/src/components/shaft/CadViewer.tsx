@@ -2,7 +2,8 @@
 
 // Canvas view of an imported drawing: drag to pan, wheel, buttons or two fingers to zoom; a click (or a tap) inside
 // the shaft asks the designer to survey it there. The surveyed rectangle, its four rays and the landing wall are drawn
-// over the drawing; layers left out of the survey are drawn faint. Colours from the theme.
+// over the drawing; layers left out of the survey are drawn faint; a second rectangle measured (the machine room's
+// shaft, round 50) dashed. Colours from the theme.
 import { useCallback, useEffect, useRef } from 'react';
 import type { CadModel } from '@/lib/cad/model';
 import { surveyCorners, type DoorSide, type Survey } from '@/lib/cad/measure';
@@ -12,6 +13,8 @@ interface Props {
   hidden: ReadonlySet<number>;
   survey: Survey | null;
   door: DoorSide;
+  /** another rectangle measured, drawn dashed without its rays (the machine room's shaft beside the room) */
+  extra?: Survey | null;
   onPick(x: number, y: number): void;
   labels: { fit: string; zoomIn: string; zoomOut: string; canvas: string };
 }
@@ -20,11 +23,11 @@ interface View { s: number; tx: number; ty: number }
 
 const SIDE: Record<DoorSide, [number, number]> = { down: [0, 1], right: [1, 2], up: [2, 3], left: [3, 0] };
 
-export default function CadViewer({ model, hidden, survey, door, onPick, labels }: Props) {
+export default function CadViewer({ model, hidden, survey, door, extra = null, onPick, labels }: Props) {
   const wrap = useRef<HTMLDivElement>(null), canvas = useRef<HTMLCanvasElement>(null);
   const view = useRef<View>({ s: 1, tx: 0, ty: 0 }), size = useRef({ w: 1, h: 1, dpr: 1 });
   const paths = useRef<{ shown: Path2D; faint: Path2D } | null>(null);
-  const overlay = useRef<{ survey: Survey | null; door: DoorSide }>({ survey, door });
+  const overlay = useRef<{ survey: Survey | null; door: DoorSide; extra: Survey | null }>({ survey, door, extra });
 
   const draw = useCallback((): void => {
     const c = canvas.current, ctx = c?.getContext('2d');
@@ -43,9 +46,23 @@ export default function CadViewer({ model, hidden, survey, door, onPick, labels 
     ctx.globalAlpha = 0.85;
     ctx.stroke(paths.current.shown);
     ctx.globalAlpha = 1;
-    const sv = overlay.current.survey;
+    const sv = overlay.current.survey, ex = overlay.current.extra, accent = color('--accent', '#1d3271');
+    if (ex) {
+      ctx.beginPath();
+      surveyCorners(ex).forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+      ctx.closePath();
+      ctx.fillStyle = accent;
+      ctx.globalAlpha = 0.08;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 2 / v.s;
+      ctx.setLineDash([8 / v.s, 5 / v.s]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
     if (!sv) return;
-    const accent = color('--accent', '#1d3271'), k = surveyCorners(sv);
+    const k = surveyCorners(sv);
     ctx.beginPath();
     k.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
     ctx.closePath();
@@ -104,7 +121,7 @@ export default function CadViewer({ model, hidden, survey, door, onPick, labels 
   }, [model, hidden, draw]);
 
   useEffect(() => {
-    overlay.current = { survey, door };
+    overlay.current = { survey, door, extra };
     if (survey) {
       // a new measure on a whole floor plan: bring the shaft into view, about a third of the width
       const k = surveyCorners(survey), xs = k.map((p) => p[0]), ys = k.map((p) => p[1]), v = view.current, { w, h } = size.current;
@@ -115,7 +132,7 @@ export default function CadViewer({ model, hidden, survey, door, onPick, labels 
       }
     }
     draw();
-  }, [survey, door, draw]);
+  }, [survey, door, extra, draw]);
 
   // size with the container; the first size fits the drawing
   useEffect(() => {

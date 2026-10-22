@@ -11,36 +11,11 @@ import { useRouter } from '@/i18n/routing';
 import { titleFromName, type AllegatoKind, type Componente } from '@/lib/allegati/kinds';
 import { MAX_FILE_BYTES } from '@/lib/allegati/limits';
 import type { Option } from './options';
+import { BY_STATUS, send, type UploadAnswer, type UploadPhase as Phase } from './send';
 
 export interface UploadPreset { kind?: AllegatoKind; component?: Componente; title?: string }
 
-type Answer = { ok: true; duplicate: boolean; attachment: { title: string } } | { ok: false; error: string };
-type Phase = { at: 'idle' } | { at: 'sending'; pct: number } | { at: 'checking' };
-
-// the answer's key, or the HTTP status when nginx or the network answered instead of the application
-const BY_STATUS: Readonly<Record<number, string>> = { 401: 'unauthorized', 403: 'forbidden', 404: 'notFound', 413: 'fileTooLarge', 429: 'rateLimited', 503: 'rendererBusy' };
-
-function send(url: string, body: FormData, onProgress: (pct: number) => void, onSent: () => void): Promise<{ status: number; answer: Answer | null }> {
-  return new Promise((resolve) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', url);
-    xhr.responseType = 'text';
-    xhr.upload.onprogress = (e) => { if (e.lengthComputable) onProgress(Math.min(100, Math.round((e.loaded / e.total) * 100))); };
-    xhr.upload.onload = onSent;
-    xhr.onload = () => {
-      let answer: Answer | null = null;
-      try {
-        const parsed: unknown = JSON.parse(xhr.responseText);
-        if (parsed && typeof parsed === 'object' && 'ok' in parsed) answer = parsed as Answer;
-      } catch {
-        answer = null;
-      }
-      resolve({ status: xhr.status, answer });
-    };
-    xhr.onerror = () => resolve({ status: 0, answer: null });
-    xhr.send(body);
-  });
-}
+type Answer = UploadAnswer<{ title: string }>;
 
 export default function AllegatoUpload({ projectId, kinds, components, preset, legend }: {
   projectId: string; kinds: readonly Option<AllegatoKind>[]; components: readonly Option<Componente>[]; preset?: UploadPreset; legend?: string;
@@ -75,7 +50,7 @@ export default function AllegatoUpload({ projectId, kinds, components, preset, l
     if (component) fd.set('component', component);
     setMsg(null);
     setPhase({ at: 'sending', pct: 0 });
-    const r = await send(`/api/projects/${encodeURIComponent(projectId)}/allegati`, fd, (pct) => setPhase({ at: 'sending', pct }), () => setPhase({ at: 'checking' }));
+    const r = await send<Answer>(`/api/projects/${encodeURIComponent(projectId)}/allegati`, fd, (pct) => setPhase({ at: 'sending', pct }), () => setPhase({ at: 'checking' }));
     setPhase({ at: 'idle' });
     if (r.answer?.ok) {
       setMsg({ ok: true, text: t(r.answer.duplicate ? 'duplicate' : 'uploaded', { title: r.answer.attachment.title }) });

@@ -24,3 +24,12 @@ export function romeTime(d: Date): string {
   const parts = ROME_TIME.formatToParts(d), of = (t: Intl.DateTimeFormatPartTypes): string => parts.find((p) => p.type === t)?.value ?? '00';
   return `${of('hour')}:${of('minute')}`;
 }
+
+const ROME_DATE = new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Rome' });
+
+/** «22/10/2026»: the day in Italy, the same text in Node and in any browser (round 50: a sketch's date in the panel,
+ *  drawn on the server and in the browser alike); only the digits are taken from Intl. */
+export function romeDate(d: Date): string {
+  const parts = ROME_DATE.formatToParts(d), of = (t: Intl.DateTimeFormatPartTypes): string => parts.find((p) => p.type === t)?.value ?? '00';
+  return `${of('day')}/${of('month')}/${of('year')}`;
+}

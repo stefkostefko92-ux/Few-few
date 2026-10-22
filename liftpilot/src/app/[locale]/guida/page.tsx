@@ -24,7 +24,7 @@ const STEPS = [
   { key: 'progetto', icon: 'drafting-compass' },
   { key: 'documenti', icon: 'file-pdf' },
 ] as const satisfies readonly { key: string; icon: IconName }[];
-const PARAGRAPHS = { azienda: ['a', 'b'], rilievi: ['a', 'b', 'c'], impianti: ['a', 'b'], calcolo: ['a'], progetto: ['a', 'b'], documenti: ['a', 'b'] } as const;
+const PARAGRAPHS = { azienda: ['a', 'b'], rilievi: ['a', 'b', 'c'], impianti: ['a', 'b'], calcolo: ['a'], progetto: ['a', 'b', 'c'], documenti: ['a', 'b'] } as const;
 const INTERVENTI = ['SOLO_ARGANO', 'AMMODERNAMENTO', 'TRASFORMAZIONE_COMPLETA'] as const;
 const loc = (l: string): Locale => (isLocale(l) ? l : 'it');
 

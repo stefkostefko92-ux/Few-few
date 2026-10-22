@@ -17,6 +17,8 @@ import RilievoAvviso from '@/components/collega/RilievoAvviso';
 import { avvioProgetto } from '@/server/collega/forms';
 import { pitchesOf } from '@/lib/plant';
 import { openedByRefresh } from '@/lib/refresh-form';
+import { schizziOf } from '@/server/schizzi/queries';
+import '@/components/schizzi/schizzi.css';
 
 export async function generateMetadata() {
   const t = await getTranslations('lift');
@@ -33,6 +35,7 @@ export async function generateMetadata() {
 // so on top — the whole drawing stays possible. The drawing starts from a saved design (?from=), its draft, the latest
 // design, the installation's records, else empty (src/server/progetto-start.ts); with a linked survey its stops come
 // from it, marked «dal rilievo» (round 44). Opened by «Aggiorna con il software attuale» (&aggiorna=1), it says why on top.
+// The installation's survey sketches go beside the form (round 50, SchizzoPanel).
 export default async function ProgettoPage({ params, searchParams }: {
   params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ from?: string; calc?: string; aggiorna?: string; usa?: string }>;
 }) {
@@ -103,6 +106,8 @@ export default async function ProgettoPage({ params, searchParams }: {
   const mode = from.success || (!start.draftAt && start.blank.length === 0) ? null : start.draftAt || start.carried ? 'draft' : 'new';
   const avvio = await avvioProgetto(user, p.id, start, mode, sp.usa, start.draftAt ? start : undefined);
   const soloLocale = disegnoDi(base.tipo, base.collaudo, base.values) === 'locale';
+  const sk = await schizziOf(user, p.id);
+  const schizzi = sk ? { projectId: p.id, initial: sk.schizzi, aiEnabled: sk.aiEnabled, canUpload: can(user, 'projects:edit'), canRead: can(user, 'progetto:edit') } : null;
   return (
     <main className="page page-wide">
       {head}
@@ -116,7 +121,7 @@ export default async function ProgettoPage({ params, searchParams }: {
         base={{ id: base.id, createdAt: base.createdAt.toISOString(), values: base.values, collaudo: base.collaudo, tipo: base.tipo }} when={fd.dateTime(base.createdAt)}
         canCalc={canCalc} prices={await visiblePrices(user)} origine={avvio.origine} pitches={pitchesOf(p.plant)}
         draft={{ projectId: p.id, scope: 'lift', resumed: start.draftAt ? fd.dateTime(new Date(start.draftAt)) : null }}
-        refresh={from.success && openedByRefresh(sp)} />
+        refresh={from.success && openedByRefresh(sp)} schizzi={schizzi} />
     </main>
   );
 }

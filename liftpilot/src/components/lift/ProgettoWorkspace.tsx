@@ -7,7 +7,9 @@
 // it saves — the server never takes the calculation from the browser. A new drawing starts empty: until its data are in
 // the right side lists what is still to enter and nothing is worked out or drawn. Its draft is kept as it is filled in.
 // What the drawing completes of the calculation is set beside it (DifferenzeCalcolo); «Porta nel calcolo» keeps the
-// draft at once and opens the calculation with the drawing's values (?dal=progetto), for whoever makes it.
+// draft at once and opens the calculation with the drawing's values (?dal=progetto), for whoever makes it. Round 50: the
+// installation's survey sketches head the right side (SchizzoPanel); what is confirmed from one enters the form as if
+// typed (src/lib/schizzi/applica.ts) — a new size of the shaft drops the CAD measure, as typing it does.
 import { useDeferredValue, useEffect, useImperativeHandle, useMemo, useRef, useState, useTransition, type Ref } from 'react';
 import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
@@ -27,6 +29,7 @@ import { bozzaRilievo } from '@/lib/collega/formato';
 import { valoreLift } from '@/lib/collega/prefill';
 import type { ShaftSource } from '@/lib/shaft-input';
 import { editShaft } from '@/lib/shaft-edit';
+import { applicaVano, valoreVano } from '@/lib/schizzi/applica';
 import { saveLiftDesignAction } from '@/server/lift-actions';
 import { editValue, keptPlan, type ShaftInputs } from '@/shaft';
 import { asCalcDict } from '../calc/dict';
@@ -38,6 +41,8 @@ import { useDraft, type DraftTarget } from '../draft/useDraft';
 import { OrigineProvider, type OrigineRilievo } from '../collega/origine';
 import PanevBom from '../shaft/PanevBom';
 import PlanEditor from '../shaft/PlanEditor';
+import type { Modulo } from '../schizzi/ConfermaValori';
+import SchizzoPanel, { type SchizziStart } from '../schizzi/SchizzoPanel';
 import type { Refusal } from '../drawing/EditableDrawing';
 import type { SurveyResult } from '../shaft/SurveyPanel';
 import type { BaseProgetto } from './DalCalcolo';
@@ -73,6 +78,8 @@ interface Props {
   refresh?: boolean;
   /** the installation's survey the values «dal rilievo» come from (round 44); absent: none */
   origine?: OrigineRilievo | null;
+  /** the installation's survey sketches beside the form (round 50); absent: none shown (the standalone page) */
+  schizzi?: SchizziStart | null;
 }
 
 /** The largest height of the diverting pulley under the sheave a drawing may set [mm]. */
@@ -83,7 +90,7 @@ export interface WorkspaceApi {
   edit(e: Edit, length: number): Refusal | null;
 }
 
-export default function ProgettoWorkspace({ projectId, base, when, canCalc, initial, onDerived, api, prices, pitches, draft = null, refresh = false, origine = null }: Props) {
+export default function ProgettoWorkspace({ projectId, base, when, canCalc, initial, onDerived, api, prices, pitches, draft = null, refresh = false, origine = null, schizzi = null }: Props) {
   const locale = useLocale(), messages = useMessages(), t = useTranslations('lift'), ts = useTranslations('shaft'), te = useTranslations('errors'), tb = useTranslations('blank');
   const router = useRouter();
   const P = useMemo(() => makePres(asCalcDict(messages.calc), INTL_LOCALE[isLocale(locale) ? locale : 'it']), [messages.calc, locale]);
@@ -191,6 +198,18 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
     setShaft({ W: r.W, D: r.D });
     setSource(r.source);
   };
+  // the measures confirmed from a sketch, into the drawing as typed (the CAD measure dropped with a new size)
+  const modulo: Modulo = {
+    attuale: (id) => valoreVano(composed, id),
+    applica: (valori) => {
+      const r = applicaVano(composed, valori);
+      if (r.applied.length) {
+        change(() => r.draft);
+        if (r.applied.includes('W') || r.applied.includes('D')) setSource(null);
+      }
+      return { applied: r.applied, refused: r.refused };
+    },
+  };
   // the save sends the drawing and its base: only once what is shown has caught up with it, with nothing left to enter
   const settled = deferred === composed;
   const save = (): void => {
@@ -213,6 +232,7 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
         texts={texts} source={source} setShaft={setShaft} setSize={setSize} onSurvey={onSurvey} setAuto={setAuto} setBottom={setBottom}
         porta={porta ? { go: porta, pending: leaving } : null} calate={calate} />
       <div className="lift-main">
+        {schizzi ? <SchizzoPanel start={schizzi} target="vano" modulo={modulo} open={initial.blank.length > 0 || schizzi.initial.length > 0} /> : null}
         {!derived ? <MissingPanel title={tb('title')} lead={tb('lead')} items={items(missing)} /> : (
           <>
             <LiftFacts derived={derived} X={X} fmt={P.fmt} />

@@ -5,7 +5,9 @@
 // survey starts empty (src/lib/room/survey.ts): the measures still to enter are listed and nothing is placed until each
 // is entered. Then the new machine is placed and checked live with the same code as the save (src/lib/room/derive.ts);
 // its drawings change where they are; what stops a record is said with what to do. The form's draft is kept as it is
-// filled in. The save sends the survey only: the server derives everything again.
+// filled in. The save sends the survey only: the server derives everything again. Round 50: the survey sketch beside the
+// measures (SchizzoPanel, sticky on a wide screen) and the room measured on a DXF/DWG plan (LocaleCad); what either
+// proposes enters the form only once confirmed (src/lib/schizzi/applica.ts), as if typed.
 import { useMemo, useState, useTransition } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import SectionTitle from '@/components/project/SectionTitle';
@@ -18,12 +20,16 @@ import { makeFmt } from '@/lib/present/tr';
 import { deriveRoom, roomCheckKey } from '@/lib/room/derive';
 import type { SurveyDraft, SurveyField } from '@/lib/room/survey';
 import { isUpperLimit, shownValue } from '@/shaft/checks';
+import { applicaLocale, valoreLocale } from '@/lib/schizzi/applica';
 import { saveRoomDesignAction } from '@/server/room-actions';
 import MissingPanel from '../MissingPanel';
 import { mmOf } from '../blank';
 import DraftBar from '../draft/DraftBar';
 import { useDraft, type DraftTarget } from '../draft/useDraft';
 import RoomFields from '../shaft/RoomFields';
+import type { Modulo } from '../schizzi/ConfermaValori';
+import SchizzoPanel, { type SchizziStart } from '../schizzi/SchizzoPanel';
+import LocaleCad from './LocaleCad';
 import SurveyDrawings from './SurveyDrawings';
 import SurveyFound from './SurveyFound';
 
@@ -33,10 +39,13 @@ interface Props {
   initial: SurveyDraft;
   /** where the form's draft is kept */
   draft?: DraftTarget | null;
+  /** the installation's survey sketches beside the form (round 50); absent: none shown */
+  schizzi?: SchizziStart | null;
 }
 
-export default function RoomSurvey({ calculationId, values, initial, draft = null }: Props) {
+export default function RoomSurvey({ calculationId, values, initial, draft = null, schizzi = null }: Props) {
   const t = useTranslations('room'), ts = useTranslations('shaft'), tb = useTranslations('blank'), te = useTranslations('errors'), locale = useLocale(), router = useRouter();
+  const tz = useTranslations('schizzi');
   const fmt = makeFmt(INTL_LOCALE[isLocale(locale) ? locale : 'it']);
   const [form, setForm] = useState<SurveyDraft>(initial);
   const [label, setLabel] = useState('');
@@ -72,32 +81,50 @@ export default function RoomSurvey({ calculationId, values, initial, draft = nul
     if (head === 'shaft') return sub === 'wall' ? t('wall') : ts(sub ?? '');
     return t(`${head}${(sub ?? '').toUpperCase()}`);
   };
+  // the measures confirmed from a sketch or a drawing, into the form as typed
+  const modulo: Modulo = {
+    attuale: (id) => valoreLocale(form, id),
+    applica: (valori) => {
+      const r = applicaLocale(form, valori);
+      if (r.applied.length) setForm(r.draft);
+      return { applied: r.applied, refused: r.refused };
+    },
+  };
   const issue = (k: string): string => (k === 'rinvio' && d ? t('issue_rinvio', { h: Math.round(d.M.h), hMin: d.hMin ?? 0 }) : t(`issue_${k}`));
   return (
     <div className="flex flex-col gap-4">
-      <section className="panel" aria-labelledby="room-fields">
-        <SectionTitle id="room-fields" icon="building-gear">{t('roomTitle')}</SectionTitle>
-        <RoomFields R={s.room} put={(patch, entered = []) => change({ ...s, room: { ...s.room, ...patch } }, entered.map((k) => `room.${k}` as SurveyField))}
-          blank={(k) => is(`room.${k}` as SurveyField)} choose={tb('choose')}
-          machine={d ? { D: d.M.D, shimsAxis: KL.sheaveAxisPerD * d.M.D, shape: d.M.shape ?? null, rinvio: d.M.rinvio ?? null, heb: d.heb, turn: d.G?.dir } : undefined} />
-        <h3>{t('shaftTitle')}</h3>
-        <div className="form-grid">
-          {num('shaft.W', ts('W'), s.shaft.W, (v) => ({ ...s, shaft: { ...s.shaft, W: v } }), 500)}
-          {num('shaft.D', ts('D'), s.shaft.D, (v) => ({ ...s, shaft: { ...s.shaft, D: v } }), 500)}
-          {num('shaft.wall', t('wall'), s.shaft.wall, (v) => ({ ...s, shaft: { ...s.shaft, wall: v } }), 50, 1000)}
+      <div className="schizzo-layout">
+        <div className="flex flex-col gap-4 schizzo-form">
+          <section className="panel" aria-labelledby="room-fields">
+            <SectionTitle id="room-fields" icon="building-gear">{t('roomTitle')}</SectionTitle>
+            <details className="survey locale-cad-box">
+              <summary>{tz('cad.titolo')}</summary>
+              <LocaleCad modulo={modulo} />
+            </details>
+            <RoomFields R={s.room} put={(patch, entered = []) => change({ ...s, room: { ...s.room, ...patch } }, entered.map((k) => `room.${k}` as SurveyField))}
+              blank={(k) => is(`room.${k}` as SurveyField)} choose={tb('choose')}
+              machine={d ? { D: d.M.D, shimsAxis: KL.sheaveAxisPerD * d.M.D, shape: d.M.shape ?? null, rinvio: d.M.rinvio ?? null, heb: d.heb, turn: d.G?.dir } : undefined} />
+            <h3>{t('shaftTitle')}</h3>
+            <div className="form-grid">
+              {num('shaft.W', ts('W'), s.shaft.W, (v) => ({ ...s, shaft: { ...s.shaft, W: v } }), 500)}
+              {num('shaft.D', ts('D'), s.shaft.D, (v) => ({ ...s, shaft: { ...s.shaft, D: v } }), 500)}
+              {num('shaft.wall', t('wall'), s.shaft.wall, (v) => ({ ...s, shaft: { ...s.shaft, wall: v } }), 50, 1000)}
+            </div>
+            <h3>{t('dropsTitle')}</h3>
+            <p className="note">{t('dropsHint')}</p>
+            <div className="form-grid">
+              {num('car.x', t('carX'), s.car.x, (v) => ({ ...s, car: { ...s.car, x: v } }))}
+              {num('car.y', t('carY'), s.car.y, (v) => ({ ...s, car: { ...s.car, y: v } }))}
+              {num('cw.x', t('cwX'), s.cw.x, (v) => ({ ...s, cw: { ...s.cw, x: v } }))}
+              {num('cw.y', t('cwY'), s.cw.y, (v) => ({ ...s, cw: { ...s.cw, y: v } }))}
+            </div>
+            {d ? <p className="note" role="status">{t('calata', { calc: fmt(Math.round(d.calata.calc), 0), measured: fmt(Math.round(d.calata.measured), 0) })}</p> : null}
+            <SurveyFound survey={s} onChange={(next) => change(next, [])} />
+          </section>
+          {d ? null : <MissingPanel title={tb('title')} lead={tb('lead')} items={blank.map((k) => ({ id: `bk-${k.replace('.', '-')}`, label: labelOf(k) }))} />}
         </div>
-        <h3>{t('dropsTitle')}</h3>
-        <p className="note">{t('dropsHint')}</p>
-        <div className="form-grid">
-          {num('car.x', t('carX'), s.car.x, (v) => ({ ...s, car: { ...s.car, x: v } }))}
-          {num('car.y', t('carY'), s.car.y, (v) => ({ ...s, car: { ...s.car, y: v } }))}
-          {num('cw.x', t('cwX'), s.cw.x, (v) => ({ ...s, cw: { ...s.cw, x: v } }))}
-          {num('cw.y', t('cwY'), s.cw.y, (v) => ({ ...s, cw: { ...s.cw, y: v } }))}
-        </div>
-        {d ? <p className="note" role="status">{t('calata', { calc: fmt(Math.round(d.calata.calc), 0), measured: fmt(Math.round(d.calata.measured), 0) })}</p> : null}
-        <SurveyFound survey={s} onChange={(next) => change(next, [])} />
-      </section>
-      {d ? null : <MissingPanel title={tb('title')} lead={tb('lead')} items={blank.map((k) => ({ id: `bk-${k.replace('.', '-')}`, label: labelOf(k) }))} />}
+        {schizzi ? <SchizzoPanel start={schizzi} target="locale" modulo={modulo} /> : null}
+      </div>
       {d?.issues.length ? <ul className="alert alert-bad" role="alert">{d.issues.map((k) => <li key={k}>{issue(k)}</li>)}</ul> : null}
       {d?.G ? <SurveyDrawings survey={s} derived={d} onChange={(next) => change(next, [])} id="survey" /> : null}
       {d?.checks.length ? (
