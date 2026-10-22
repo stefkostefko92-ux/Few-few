@@ -3,6 +3,7 @@
 // the file that is a document — the engineer's choice, else the one file of its kind and component when no other open
 // document could take it; the structures never an unconditional «no change».
 import { test } from 'node:test';
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { $Enums } from '@prisma/client';
 import { PRESETS } from '@/calc/presets';
@@ -32,6 +33,14 @@ test('rt-documenti: il registro dei documenti attesi; i tipi dei file sono quell
     assert.match(d.clausola['10411-1'], /^UNI 10411-1:2024, /);
     assert.match(d.clausola['10411-11'], /^UNI 10411-11:2024, /);
   }
+});
+
+test('rt-documenti: lo schizzo di rilievo (migrazione 29) prima di ALTRO, nello schema e nella migrazione, solo aggiunto', () => {
+  assert.deepEqual(ALLEGATO_KINDS.slice(-3), ['FOTO', 'SCHIZZO', 'ALTRO']);
+  const sql = readFileSync(new URL('../../../prisma/migrations/29_schizzi/migration.sql', import.meta.url), 'utf8');
+  const statements = sql.split('\n').filter((l) => l.trim() && !l.trim().startsWith('--'));
+  assert.deepEqual(statements, [`ALTER TYPE "AttachmentKind" ADD VALUE IF NOT EXISTS 'SCHIZZO' BEFORE 'ALTRO';`]);
+  assert.match(sql, /-- Rollback/);
 });
 
 test('rt-documenti: per parti, casi e sezioni', () => {

@@ -116,6 +116,11 @@ if [ -z "$(env_get STRIPE_SECRET_KEY)" ] || [ -z "$(env_get STRIPE_WEBHOOK_SECRE
 elif [ -z "$(env_get BILLING_START)" ]; then
   warn "Stripe is set but BILLING_START is not: the free beta goes on until the day of the owners' e-mail is set"
 fi
+# the directory of the Vertex key next to the secrets (docker-compose.yml mounts VERTEX_DIR read-only; step 3b makes it)
+env_default VERTEX_DIR "$SHARED/vertex"
+if [ -n "$(env_get VERTEX_PROJECT_ID)" ] && [ ! -f "$SHARED/vertex/service-account.json" ]; then
+  warn "VERTEX_PROJECT_ID is set but $SHARED/vertex/service-account.json is missing: the reading of the sketches stays off"
+fi
 PORT="$(env_get APP_PORT | tr -dc '0-9' || true)"
 PORT="${PORT:-4330}"
 DOMAIN="$(env_get PUBLIC_BASE_URL | sed -E 's#^https?://##; s#[/:].*$##' || true)"
@@ -139,6 +144,11 @@ if [ -n "$(docker compose ps -q db 2>/dev/null || true)" ]; then
     die "backup failed: not migrating without it"
   fi
 fi
+
+# 3b) the directory of the Vertex key (the automatic reading of the survey sketches, round 50), mounted read-only into
+#     the container: owned by the container's user (node, uid 1000), closed to the others; empty, the feature stays off.
+#     The key is never put here by this script (DEPLOY.md, «Lettura degli schizzi»)
+install -d -m 700 -o 1000 -g 1000 "$SHARED/vertex"
 
 # 4) build and start; the entrypoint applies the migrations and creates the administrator once
 log "docker compose build"

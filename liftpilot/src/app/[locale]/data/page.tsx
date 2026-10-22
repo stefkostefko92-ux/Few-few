@@ -6,6 +6,7 @@ import { publicBaseUrl } from '@/lib/env';
 import { BACKUP_DAYS, dateText, legalValues } from '@/lib/legal';
 import { EXPORT_DATA, EXPORT_ENVELOPE, EXPORT_FORMAT, EXPORT_FORMAT_HISTORY, EXPORT_FORMAT_VERSION, EXPORT_PROJECT, EXPORT_REGISTER_DATE } from '@/lib/export-format';
 import { HOSTING, PROVIDER } from '@/lib/provider';
+import { aiEnabled } from '@/server/schizzi/config';
 import { SITE_NAME, breadcrumbLd, ldJson, organizationLd, pageMetadata, websiteLd } from '@/lib/seo';
 import SiteHeader from '@/components/SiteHeader';
 import Footer from '@/components/Footer';
@@ -14,7 +15,8 @@ import LegalPage, { type TocItem } from '@/components/LegalPage';
 // The register the Data Act asks of a data processing service (Regulation (EU) 2023/2854): what a company can take with
 // it and in which formats, the structure of its JSON export (art. 26(b), kept with src/lib/export-format.ts), how to
 // switch and through which interface (art. 25 and 30(2)), where the servers are and under which law, and what keeps
-// third-country authorities out (art. 28 and 32).
+// third-country authorities out (art. 28 and 32). The sub-processor of the automatic reading of the survey sketches
+// (Google Cloud Vertex AI, round 50) is named only while the feature is on on this server (src/server/schizzi/config.ts).
 // The terms of use point here (article «exit»).
 const loc = (l: string): Locale => (isLocale(l) ? l : 'it');
 const FILES = ['reports', 'order', 'drawings', 'company'] as const;
@@ -40,6 +42,7 @@ export default async function DataPage({ params }: { params: Promise<{ locale: s
   const toc: TocItem[] = [{ id: 'q-files', label: t('filesTitle') }, { id: 'q-json', label: t('jsonTitle') },
     ...SECTIONS.map((k) => ({ id: `q-${k}`, label: t(`${k}Title`) }))];
   const paras = (s: string) => s.split('\n\n').map((p, i) => <p key={i}>{p}</p>);
+  const sketches = aiEnabled();
   return (
     <>
       <SiteHeader />
@@ -86,6 +89,7 @@ export default async function DataPage({ params }: { params: Promise<{ locale: s
           <section key={k} aria-labelledby={`q-${k}`}>
             <h2 id={`q-${k}`}>{t(`${k}Title`)}</h2>
             {paras(t(`${k}Text`, v))}
+            {k === 'where' && sketches && <p>{t('whereSketches')}</p>}
           </section>
         ))}
       </LegalPage>

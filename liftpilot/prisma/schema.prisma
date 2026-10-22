@@ -1013,6 +1013,8 @@ enum AttachmentKind {
   LIBRETTO_VERBALE
   DISEGNO
   FOTO
+  /// a hand-drawn survey sketch of the shaft or of the machine room (round 50; `component` says which: vano | locale)
+  SCHIZZO
   ALTRO
 }
 

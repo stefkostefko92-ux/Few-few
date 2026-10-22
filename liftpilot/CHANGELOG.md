@@ -3367,6 +3367,53 @@ mm (печата се в мащаба), `<title>`/`<desc>` (номер, реви
 smoke — `smoke-svg.mjs` (износите на проекта, планът, комплектът), машинното в `smoke-replacement.mjs`, 404 за чужда
 фирма в `smoke-isolation.mjs`.
 
+**Б — схиците: видът, HEIC, прегледът и четенето (сървърът).** Решението на собственика (2026-10-22): ръчно начертаната
+схица на шахтата или на машинното се качва; Claude през Vertex AI в ЕС предлага мерките, техникът ги вижда до схицата и
+потвърждава или поправя всяка; без ключ на сървъра остава само ръчният път. Двигателите, версиите, хешовете и
+golden/snapshot тестовете не мърдат.
+
+- **Видът** `SCHIZZO` (миграция `29_schizzi`: само `ALTER TYPE "AttachmentKind" ADD VALUE IF NOT EXISTS 'SCHIZZO' BEFORE
+  'ALTRO'`, с бележка за връщането); същият ред в `schema.prisma` и `ALLEGATO_KINDS`; в `SOLO_SU_SCELTA` — никога сам в
+  relazione tecnica; целта (`vano` | `locale`) — в досегашното поле `component`; CHECK-ът на mime не се сменя.
+- **HEIC от iPhone** при всяко качване на снимка: `src/lib/allegati/heic.ts` чете кутиите (`ftyp` с марките heic, heix,
+  hevc, hevx, heim, heis, mif1, msf1; `pitm`, `iinf`, `iref`, `ipma`, `ispe`) и отказва преди декодиране — AVIF и други
+  кодеци, изображение над 12 000 px на страна или 40 MP (всяко, не само основното), повече от 4 изображения от горно ниво,
+  счупени кутии; `heif-convert` в отделен процес (`src/lib/report/image-tool.ts`: фиксирани аргументи, своя папка 0700,
+  време, `prlimit`, слот на рендерера) дава JPEG-а на основното изображение, обърнат от libheif; той минава през
+  `prepareFile` (метаданните — вън: EXIF-ът с GPS и име на фикстурата изчезва) и се пази като `image/jpeg` с
+  `orientation = null`. Същият HEIC втори път — същият JPEG, редът вече е там.
+- **Прегледът** `GET /api/allegati/<id>/anteprima?pagina=N`: правото `projects:view`, изолация по фирма (404), лимит и
+  най-много 2 наведнъж; растер, направен от нас (Pillow — `report/schizzo.py`, с ориентацията, до 1600 px; PDF —
+  `pdftoppm` страница N от 1 до 4 като PNG), `inline`, `nosniff`, `private, max-age=300`, `Content-Security-Policy:
+  sandbox; default-src 'none'`; броят на страниците — в `X-Pagine`. Единственото изключение от „свалянето — само като
+  прикачен файл“.
+- **Четенето** `POST /api/projects/<id>/schizzi/<allegatoId>/lettura` (`{target}`), списъкът `GET
+  /api/projects/<id>/schizzi` (`{schizzi, aiEnabled}`): същият произход, сесия, `progetto:edit` (не и само за четене),
+  проект на фирмата и не архивиран, файл на проекта от вида `SCHIZZO`; 20 на потребител на час, 100 на фирма на ден, 2
+  наведнъж в целия сървър, кеш 24 h / 200 по (фирма, SHA-256, цел, модел, `PROMPT_VERSION`); одит `SKETCH_READ` само с id,
+  SHA-256, цел, модел, брой полета и `cached`. До 4 картинки за модела (JPEG ≤ 2576 px, ≤ 3,75 MP), `output_config`
+  `{effort: 'high', format: json_schema}`, без `thinking`, `temperature` и `budget_tokens`; `stop_reason` `refusal` → 422,
+  `max_tokens` → 502; `betaRefusalFallbackMiddleware` с резервен модел `claude-opus-5`. Каталогът на полетата
+  (`src/lib/schizzi/campi.ts`, общ с интерфейса) взема границите от zod схемите на формулярите (тест ги пришпилва);
+  `src/lib/schizzi/proposta.ts` приема отговора като недоверени данни: непознато поле — вън, грешен тип или извън
+  интервала — „не е прочетено“ с причината (никога не се приближава), броят спирки ограничава `rise.N`/`fdoor.N`/`main`,
+  текстовете — чисти и къси.
+- **Изключено по подразбиране:** включва се само с `VERTEX_PROJECT_ID`, регион `eu`/`europe-*` и ключ на сметката с
+  `(mode & 0o077) === 0` в монтираната само за четене папка (`docker-compose.yml`, `deploy/deploy.sh`, `.env.example`);
+  иначе 503 и нищо в интерфейса; nginx — `proxy_read_timeout 150s` само за четенето. Образът: `poppler-utils
+  libheif-examples`. Зависимости (точни): `@anthropic-ai/sdk` 0.128.0, `@anthropic-ai/vertex-sdk` 0.19.11,
+  `google-auth-library` 10.9.1.
+- **Право и документи** (без хешираните `legal.*` и без нова версия на условията): `/data` назовава Google Cloud Vertex AI
+  като подобработващ само докато четенето е включено; `docs/ropa.md`, `docs/terms-changes.md` §3 (30-дневното известие,
+  CDPA на Google и изключеното логване на заявките — задължителни преди ключа), `DEPLOY.md`, `SECURITY.md`,
+  `docs/rules.md` („Схиците“), `docs/architecture.md`; текстът по чл. 50 от AI Act — `schizzi.aiNotice`.
+- **Тестове** (31 нови): кутиите на HEIC и отказите, превръщането, прегледът и картинките за модела с истинските
+  `heif-convert`, `pdftoppm` и Pillow, качването на HEIC през route-а, каталогът срещу схемите, предложението, четенето
+  (права, изолация, вид, изключено, лимити, кеш, отказ, невалиден JSON, извън интервала) с фалшив модел, редът на вида и
+  миграцията. Миграцията 29 — пробвана върху копие на `argano_visual` (`migrate deploy`, `_prisma_migrations`, `migrate
+  diff` без разлика), копието изтрито. По пътя: `rt-records.test.ts` падаше без `DATABASE_URL`/`AUTH_SECRET` в средата
+  (и на базовия комит) — `rt-db.ts` слага заместители като `allegati-db.ts`.
+
 ## Проверки
 
 - [x] Пуснах пълния quality gate на засегнатия продукт `liftpilot/` (до кръг 6 — `argano/`): lint, typecheck, test (250/250, със схемите, токените и писмата на акаунтите на трите езика, с тестовете за хлабината на вратите, хода на кабината и противотежестта при трите схеми с машина долу, планките на Panev, кабелния канал, редакцията на всеки размер на плана и на разреза, каталога на машините, ограничителите, нишите, етажните табла и имената на котите на трите езика), build. **Зелен.**

@@ -621,7 +621,8 @@ src/lib/rt/          Двигателят на relazione tecnica di modifica (ч
                      rtDocSha.
 src/lib/allegati/    limits (числата, = CHECK-овете на базата и текстовете на грешките), sniff (видът по байтовете), strip
                      (махането на метаданните; копието минава същия sniff), kinds (zod на качването и на промяната,
-                     cleanFileName).
+                     cleanFileName), heic (кръг 50: HEIC/HEIF по кутиите — марка, ispe на всяка картина, основната сред
+                     тези от първо ниво; нищо не декодира).
 src/server/rt/       base (rtBaseOf, roomBase, liftBase), compose (composeRt — едната композиция за издаване, преглед и
                      възпроизвеждане; allegatiRt, setsCitati), record (rtRecord — едното правило; partsOf), issue (emettiRt:
                      издаване и ревизия в една транзакция), actions (rtPreviewAction, issue/reviseTechnicalReportAction),
@@ -629,7 +630,8 @@ src/server/rt/       base (rtBaseOf, roomBase, liftBase), compose (composeRt —
                      queries (getRt, listProjectRts, latestVerificato, readRtDraft, rilievoHints), pdf (пазеното тяло,
                      keepRtPdf, фасцикулът през assembleFascicolo), file-name (rtFileName — без помощниците на сесията, за да
                      го чете и `pdf:keep`). src/server/records.ts — `outdated.rt`.
-src/server/allegati/ upload (handleUpload — редът на проверките на качването), inspect (отговорът на PDF инструмента),
+src/server/allegati/ upload (handleUpload — редът на проверките на качването), heic (кръг 50: HEIC → JPEG на основната
+                     картина преди prepareFile, без ориентация), inspect (отговорът на PDF инструмента),
                      quota (storeAttachment под заключване на фирмата, removeAttachment), queries (ATTACHMENT_ROW — без
                      байтовете, listAttachments, attachmentFile), actions ('use server': промяна и изтриване).
 src/app/[locale]/app/projects/[id]/relazione-tecnica  Работното място (5 карти: анаграфика, модификация, раздели и
@@ -642,4 +644,27 @@ src/components/allegati/ AllegatiPanel (картата: качване, тава
 scripts/             keep-rt-pdfs.ts (пазените тела на relazioni при `npm run pdf:keep`), rt-golden-export.ts (golden на
                      двигателя), smoke-rt.mjs (двата пътя и Trasformazione), smoke-allegati.mjs (качването и свалянето,
                      отказите, правата, изолацията).
+```
+
+## Схиците на рилевото (кръг 50 Б)
+
+```
+src/lib/schizzi/     campi (каталогът по цел vano | locale: ид-тата на формулярите, вид, обхватът — прочетен от zod схемите
+                     на формулярите, етикет schizzi.campi.*, описание за модела; campoDi, valoreValido; чист, споделен с
+                     UI), prompt (PROMPT_VERSION, SYSTEM — схицата е данни, instruction(target), ANSWER_SCHEMA за
+                     structured outputs), proposta (propostaDa: свободен разбор на JSON-а на модела → Proposta;
+                     непознатото вън, извън обхвата — в notRead, текстовете — изчистени и къси).
+src/lib/report/image-tool.ts  Инструментите за картините (server-only, в слотовете на рендерите, своя 0700 папка, таймаут,
+                     prlimit): heicToJpeg (heif-convert), previewOf (преглед ≤ 1600 px; PDF — pdftoppm), modelImages (до 4
+                     JPEG ≤ 2576 px / 3,75 MP за модела). report/schizzo.py — Pillow: завъртане по ориентацията, бяло под
+                     прозрачното, смаляване, повторно кодиране.
+src/server/schizzi/  config (sketchState/aiEnabled: включено само с проект, ЕС регион и ключ 600 — иначе изключено),
+                     model (SketchModel: AnthropicVertex + GoogleAuth(keyFile) + betaRefusalFallbackMiddleware; грешките →
+                     busy | unavailable | failed; тестовете го подменят), lettura (handleLettura — проверките, паметта
+                     24 ч / 200, таваните, одит SKETCH_READ), queries (schizziOf — списъкът и aiEnabled за страниците,
+                     schizzoDaLeggere, fileDaMostrare, bytesOf).
+src/app/api/projects/[id]/schizzi                     GET — схиците на съоръжението и aiEnabled.
+src/app/api/projects/[id]/schizzi/[allegatoId]/lettura POST — автоматичното четене (nginx: 150 s на този адрес).
+src/app/api/allegati/[id]/anteprima                   GET — прегледът (картина, направена от нас; ?pagina=1..4 за PDF).
+prisma/migrations/29_schizzi  AttachmentKind += SCHIZZO преди ALTRO.
 ```

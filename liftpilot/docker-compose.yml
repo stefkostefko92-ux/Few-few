@@ -60,12 +60,23 @@ services:
       BILLING_TRIAL_DAYS: ${BILLING_TRIAL_DAYS:-14}
       # the first day of paid use (YYYY-MM-DD): before it, or without it, the beta goes on whatever Stripe's values
       BILLING_START: ${BILLING_START:-}
+      # the automatic reading of the survey sketches (Claude on Google Cloud Vertex AI, EU only): off unless the project
+      # is set and the service account's key is in the mounted directory below (a file of the container's user, mode
+      # 600: src/server/schizzi/config.ts, DEPLOY.md); the region is eu or a europe-* one, nothing else starts
+      VERTEX_PROJECT_ID: ${VERTEX_PROJECT_ID:-}
+      VERTEX_REGION: ${VERTEX_REGION:-eu}
+      VERTEX_CREDENTIALS_FILE: ${VERTEX_CREDENTIALS_FILE:-/run/vertex/service-account.json}
+      SKETCH_MODEL: ${SKETCH_MODEL:-claude-opus-5-5}
       TZ: UTC
+    # read-only: the directory of the Vertex key on the host (deploy/deploy.sh makes it, empty: the feature off)
+    volumes:
+      - ${VERTEX_DIR:-/opt/few-few/shared/liftpilot/vertex}:/run/vertex:ro
     ports:
       - "127.0.0.1:${APP_PORT:-4330}:3000"
     security_opt:
       - no-new-privileges:true
-    # a Node process on an unprivileged port needs no capability; the renderers (report/*.py) are bounded in number by
+    # a Node process on an unprivileged port needs no capability; the renderers (report/*.py, and the image tools of the
+    # survey sketches: pdftoppm, heif-convert) are bounded in number by
     # the application (two at a time) and here in memory and processes, so a burst cannot starve the rest of the host
     cap_drop:
       - ALL

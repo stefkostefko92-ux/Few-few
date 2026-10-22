@@ -40,8 +40,8 @@ export const state = {
 };
 let seq = 0;
 
-type Where = Partial<Record<'id' | 'companyId' | 'projectId' | 'sha256', string>> & { blob?: { isNot: null } };
-const KEYS = ['id', 'companyId', 'projectId', 'sha256'] as const;
+type Where = Partial<Record<'id' | 'companyId' | 'projectId' | 'sha256' | 'kind', string>> & { blob?: { isNot: null } };
+const KEYS = ['id', 'companyId', 'projectId', 'sha256', 'kind'] as const;
 // `blob: { isNot: null }` (the download's): every file here has its bytes
 const match = (f: FileRow, w: Where): boolean => KEYS.every((k) => w[k] === undefined || f[k] === w[k]);
 const view = (f: FileRow) => ({

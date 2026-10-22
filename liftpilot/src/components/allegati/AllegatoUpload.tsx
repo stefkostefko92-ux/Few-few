@@ -95,7 +95,7 @@ export default function AllegatoUpload({ projectId, kinds, components, preset, l
         <label className="field">
           <span>{t('file')}</span>
           <input ref={fileRef} id={`${id}-file`} className="input" type="file" name="file" required onChange={chosen} disabled={busy}
-            accept="application/pdf,image/jpeg,image/png,.pdf,.jpg,.jpeg,.png" aria-describedby={`${id}-file-hint`} />
+            accept="application/pdf,image/jpeg,image/png,image/heic,image/heif,.pdf,.jpg,.jpeg,.png,.heic,.heif" aria-describedby={`${id}-file-hint`} />
           <span id={`${id}-file-hint`} className="hint">{t('fileHint')}</span>
         </label>
         <label className="field">

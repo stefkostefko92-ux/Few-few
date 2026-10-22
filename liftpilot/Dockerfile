@@ -1,5 +1,7 @@
 # LiftPilot: Next.js 15 + Prisma (PostgreSQL) + the report renderer (Python ReportLab with the DejaVu fonts; Pillow
-# rasterizes the drawings the Word draft order carries).
+# rasterizes the drawings the Word draft order carries and the survey sketches' previews). Round 50: poppler-utils
+# (pdftoppm: a PDF sketch's pages as pictures) and libheif-examples (heif-convert: an iPhone's HEIC upload to JPEG; on
+# bookworm libheif1 1.15 decodes HEVC through libde265, a dependency it pulls in even with --no-install-recommends).
 FROM node:22-bookworm-slim AS base
 ENV TZ=UTC NEXT_TELEMETRY_DISABLED=1
 RUN apt-get update \
@@ -20,7 +22,7 @@ RUN npx prisma generate && npx next build
 FROM base AS runner
 ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0 PYTHON_BIN=python3 REPORT_FONT_DIR=/usr/share/fonts/truetype/dejavu
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3 python3-reportlab python3-pil fonts-dejavu-core \
+  && apt-get install -y --no-install-recommends python3 python3-reportlab python3-pil fonts-dejavu-core poppler-utils libheif-examples \
   && rm -rf /var/lib/apt/lists/*
 # the dependencies belong to root (the application only reads them); .next to the application, as Next.js writes its cache
 COPY --from=build /app/node_modules ./node_modules

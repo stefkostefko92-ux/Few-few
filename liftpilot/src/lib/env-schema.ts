@@ -42,6 +42,13 @@ export const envSchema = z.object({
   /** the first day of paid use (YYYY-MM-DD, from 00:00 UTC), the day stated in the owners' e-mail at least 30 days
    *  before (docs/terms-changes.md, 1a): without it, or before it, the subscription stays off whatever Stripe's values */
   BILLING_START: optional.pipe(z.string().refine((s) => dayStart(s) !== null, 'a day written YYYY-MM-DD').optional()),
+  /** the reading of the survey sketches (round 50): Claude on Google Cloud Vertex AI, in the EU only — the multi-region
+   *  `eu` or a single europe-* region (never global or another continent). Off unless the project, the service
+   *  account's key file (a regular file, mode 600: src/server/schizzi/config.ts) and the model are there */
+  VERTEX_PROJECT_ID: optional.pipe(z.string().regex(/^[a-z][a-z0-9-]{4,28}[a-z0-9]$/, 'a Google Cloud project id').optional()),
+  VERTEX_REGION: optional.pipe(z.string().regex(/^(eu|europe-[a-z]+\d+)$/, 'an EU region: eu or europe-…').optional()).transform((v) => v ?? 'eu'),
+  VERTEX_CREDENTIALS_FILE: optional.pipe(z.string().regex(/^\/[^\0]{1,500}$/, 'an absolute path').optional()),
+  SKETCH_MODEL: optional.pipe(z.string().regex(/^claude-[a-z0-9-]{1,60}(?:@\d{8})?$/, 'a Claude model id').optional()).transform((v) => v ?? 'claude-opus-5-5'),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -14,8 +14,9 @@ import { previewOf } from './preview';
 import { latestVerificato, listProjectRts, readRtDraft } from './queries';
 import { confermaOf, summaryOf, type Conferma, type RtSummary } from './summary';
 
-/** The kinds a new relazione does not take on its own: the technician adds them («Allega»). */
-export const SOLO_SU_SCELTA: ReadonlySet<string> = new Set(['FOTO', 'ALTRO']);
+/** The kinds a new relazione does not take on its own: the technician adds them («Allega»). A survey sketch (round 50)
+ *  is a working paper of the forms: handwriting, names, notes — never sent to the owner unless chosen. */
+export const SOLO_SU_SCELTA: ReadonlySet<string> = new Set(['FOTO', 'SCHIZZO', 'ALTRO']);
 
 export interface WorkspaceData {
   state: RtBaseState;

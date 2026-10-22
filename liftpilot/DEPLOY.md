@@ -172,6 +172,45 @@ docker exec liftpilot-app-1 npm run engine:notice -- --send --motivo "<какв�
 не праща на вече уведомените, а неизпратените (грешка на релея) се пращат при следващото. Без пощенски настройки
 `--send` спира, без да праща.
 
+## Кръг 50 Б — схиците: HEIC, прегледът и четенето (Vertex AI), изключено по подразбиране
+
+Миграция `29_schizzi` — само нова стойност `SCHIZZO` в enum-а `AttachmentKind` (пробвана на копие на базата:
+`prisma migrate deploy`, `_prisma_migrations` и `prisma migrate diff` без разлика; връщането — в коментара ѝ).
+Образът получава `poppler-utils` (`pdftoppm`) и `libheif-examples` (`heif-convert`; в bookworm `libheif1` 1.15 декодира
+HEVC през `libde265`, който влиза като зависимост и с `--no-install-recommends`). Проверка след деплоя:
+
+```bash
+docker compose exec app sh -c 'command -v heif-convert pdftoppm && heif-convert --list-decoders'   # трябва да има HEVC (libde265)
+docker compose exec app python3 -c 'import PIL; print(PIL.__version__)'
+docker exec liftpilot-db-1 psql -U liftpilot -d liftpilot -Atc 'SELECT migration_name FROM "_prisma_migrations" ORDER BY finished_at DESC LIMIT 1'   # 29_schizzi
+nginx -T 2>/dev/null | grep -A9 'schizzi/' | grep proxy_read_timeout    # proxy_read_timeout 150s;
+```
+
+**Четенето на схиците (Claude през Google Cloud Vertex AI, ЕС) остава изключено**, докато в
+`/opt/few-few/shared/liftpilot/vertex/` няма ключ: качването (и HEIC), прегледът и ръчното въвеждане работят без него.
+Включване — **само след** т. 1–3 на `docs/terms-changes.md` §3 (писмото 30 дни преди до всеки Titolare, приетият Cloud
+Data Processing Addendum, изключеното request-response logging):
+
+1. **Google Cloud:** отделен проект; включен Vertex AI API; в Model Garden — Claude Opus 5.5 (и Claude Opus 5, моделът за
+   отказ по политика) разрешени в региона `eu` (многорегионът; единичните `europe-*` нямат Opus 5.x, `global` е забранен).
+2. **Service account** само с ролята `roles/aiplatform.user`; JSON ключът се слага на сървъра като
+   `/opt/few-few/shared/liftpilot/vertex/service-account.json`, собственик uid 1000 (потребителят `node` в контейнера),
+   `chmod 600`. Папката я прави `deploy/deploy.sh` (`700`, собственик uid 1000) и я монтира само за четене като
+   `/run/vertex`. Ключът **никога** във файла със секретите (кавичките и новите редове спират деплоя) и никога в git;
+   копието, от което е качен, се изтрива.
+3. **Променливите** във файла със секретите на сървъра: `VERTEX_PROJECT_ID=<id на проекта>` (празно = изключено);
+   `VERTEX_REGION=eu` (по подразбиране; друго освен `eu`/`europe-*` спира старта); `SKETCH_MODEL=claude-opus-5-5`
+   (по подразбиране); `VERTEX_CREDENTIALS_FILE` не се пипа (`/run/vertex/service-account.json`). После деплой (или само
+   `docker compose up -d app` от папката на release-а: контейнерът чете средата при старта; ключът се проверява при всяко
+   четене, без рестарт).
+4. **Проверка:** `curl -fsS http://127.0.0.1:4330/api/health` — отговорът не се мени (здравето не зависи от Vertex).
+   Включено ли е: `docker compose logs app | grep 'sketch reading'` — `sketch reading on` (с региона и модела) или
+   `sketch reading off` с причината (`unset`, `noCredentials`, `notAFile`, `openMode` — ключът е отворен за другите:
+   `chmod 600`); на `/it/data` се появява абзацът за Vertex AI; в съоръжение — бутонът «Leggi lo schizzo». Пробно четене
+   на схица без лични данни; в регистъра на дейността — `SKETCH_READ`.
+5. **Изключване:** махни ключа (или празно `VERTEX_PROJECT_ID` и рестарт) — следващото четене получава 503 и панелът
+   показва схицата за ръчно въвеждане; `/data` престава да назовава Vertex.
+
 ## Кръг 49 — редът на деплоя (Rilievi до `988f3cf37` и relazione tecnica di modifica)
 
 Един release с двете части на кръга. Миграциите — `26_rilievi_sync_2` (кръг 49 А), после `27_relazione_modifica` (кръг 49

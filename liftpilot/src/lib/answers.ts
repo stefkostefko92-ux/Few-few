@@ -30,4 +30,10 @@ export const ANSWER = {
   rtNotEligible: e.rtNotEligible,
   rtBaseOutdated: e.rtBaseOutdated,
   rtIncomplete: e.rtIncomplete,
+  // round 50, the reading of a survey sketch (POST /api/projects/[id]/schizzi/[allegatoId]/lettura): off on this server,
+  // too many readings at once, the model declined, the reading failed
+  sketchOff: e.sketchOff,
+  sketchBusy: e.sketchBusy,
+  sketchRefused: e.sketchRefused,
+  sketchFailed: e.sketchFailed,
 } as const;

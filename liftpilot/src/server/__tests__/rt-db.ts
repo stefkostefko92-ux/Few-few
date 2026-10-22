@@ -23,6 +23,9 @@ import { formValuesSchema } from '@/lib/calc-input';
 export const src = (p: string) => new URL(`../../${p}`, import.meta.url).href;
 const req = createRequire(import.meta.url);
 const pkg = (m: string) => pathToFileURL(req.resolve(m)).href;
+// the PDF tool reads the server configuration (env()) when it spawns: placeholders, so no real one is needed
+process.env.DATABASE_URL ??= 'postgresql://rt-test/none';
+process.env.AUTH_SECRET ??= 'rt-test-secret-that-is-long-enough-000';
 
 export type Row = Record<string, unknown>;
 

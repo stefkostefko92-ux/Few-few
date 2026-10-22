@@ -1,9 +1,9 @@
 {
   "title": "Documenti caricati",
   "lead": "Dichiarazioni, certificati, schemi e fotografie dell’impianto. La relazione tecnica di modifica li elenca e li allega in coda, nell’ordine che scegli.",
-  "privacy": "Il tipo del file si riconosce dal contenuto: PDF, JPEG o PNG, fino a 20 MB. Dalle fotografie si tolgono i metadati (posizione GPS, fotocamera, autore) prima di conservarle, perciò l’impronta SHA-256 indicata è quella della copia conservata. I PDF si conservano come caricati, compresi i loro metadati (autore, programma): toglili prima del caricamento se devono restare riservati. Non caricare fotografie con persone riconoscibili né documenti con dati sanitari.",
+  "privacy": "Il tipo del file si riconosce dal contenuto: PDF, JPEG, PNG o HEIC (le foto HEIC dell’iPhone si convertono in JPEG), fino a 20 MB. Dalle fotografie si tolgono i metadati (posizione GPS, fotocamera, autore) prima di conservarle, perciò l’impronta SHA-256 indicata è quella della copia conservata. I PDF si conservano come caricati, compresi i loro metadati (autore, programma): toglili prima del caricamento se devono restare riservati. Non caricare fotografie con persone riconoscibili né documenti con dati sanitari.",
   "file": "File",
-  "fileHint": "PDF, JPEG o PNG, al massimo 20 MB.",
+  "fileHint": "PDF, JPEG, PNG o HEIC (iPhone), al massimo 20 MB.",
   "kind": "Tipo di documento",
   "kindChoose": "Scegli il tipo…",
   "component": "Sezione della relazione",
@@ -60,6 +60,7 @@
     "LIBRETTO_VERBALE": "Libretto o verbale",
     "DISEGNO": "Disegno",
     "FOTO": "Fotografia",
+    "SCHIZZO": "Schizzo di rilievo (a mano)",
     "ALTRO": "Altro documento"
   }
 }

@@ -25,9 +25,10 @@ export const isSezioneKey = (x: unknown): x is SezioneKey => SEZIONE_KEYS.some((
 export const COMPONENTI = [...SEZIONE_KEYS, 'impianto', 'edificio'] as const;
 export type Componente = (typeof COMPONENTI)[number];
 
-/** The kinds of an uploaded file: the database's enum AttachmentKind (migration 27), the same names. */
+/** The kinds of an uploaded file: the database's enum AttachmentKind (migration 27; SCHIZZO, a hand-drawn survey sketch,
+ *  migration 29), the same names in the same order. */
 export const ALLEGATO_KINDS = ['DICHIARAZIONE_UE', 'CERTIFICATO_ESAME_TIPO', 'CERTIFICATO_COMPONENTE', 'SCHEMA_ELETTRICO', 'DICHIARAZIONE_IDONEITA',
-  'RELAZIONE_TARATURA', 'LIBRETTO_VERBALE', 'DISEGNO', 'FOTO', 'ALTRO'] as const;
+  'RELAZIONE_TARATURA', 'LIBRETTO_VERBALE', 'DISEGNO', 'FOTO', 'SCHIZZO', 'ALTRO'] as const;
 export type AllegatoKind = (typeof ALLEGATO_KINDS)[number];
 
 /** The documents the RT expects by the parts and cases of the modification (documenti.ts: titles, kinds, clauses). */

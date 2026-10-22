@@ -25,7 +25,10 @@ export type AuditAction =
   // carries the file name: it may hold personal data), the issued reports
   | 'ANAGRAFICA_UPDATED'
   | 'ATTACHMENT_UPLOADED' | 'ATTACHMENT_EDITED' | 'ATTACHMENT_DELETED'
-  | 'TECHNICAL_REPORT_ISSUED' | 'TECHNICAL_REPORT_REVISED';
+  | 'TECHNICAL_REPORT_ISSUED' | 'TECHNICAL_REPORT_REVISED'
+  // round 50, the automatic reading of a survey sketch: meta holds the file's id and SHA-256, the target, the model, how
+  // many values were proposed and whether the answer came from the cache — never the picture or what was read on it
+  | 'SKETCH_READ';
 
 interface AuditInput {
   companyId: string | null;

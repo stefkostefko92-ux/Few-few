@@ -125,7 +125,7 @@ const OUT_FILE = 'fascicolo.pdf';
 /** The tool's data segment at most this (prlimit, where the system has it): the V8 heap flag does not bound the
  *  ArrayBuffers pdf-lib decodes into. */
 const TOOL_DATA_LIMIT = 1536 * 1024 * 1024;
-const PRLIMIT = ['/usr/bin/prlimit', '/bin/prlimit'].find((p) => existsSync(p)) ?? null;
+export const PRLIMIT = ['/usr/bin/prlimit', '/bin/prlimit'].find((p) => existsSync(p)) ?? null;
 
 /** A file the tool reads: its name (ours only) and its bytes, whole or in pieces (an RT's file read from the database a
  *  slice at a time, never held whole). */
@@ -209,9 +209,11 @@ export function assembleToFile(manifest: Record<string, unknown>, files: Readonl
   }));
 }
 
-interface Child { bin: string; args: string[]; env: NodeJS.ProcessEnv; input: string; ok: (b: Buffer) => boolean; timeoutMs: number; maxBytes: number }
+export interface Child { bin: string; args: string[]; env: NodeJS.ProcessEnv; input: string; ok: (b: Buffer) => boolean; timeoutMs: number; maxBytes: number }
 
-function spawnChild(c: Child): Promise<Buffer> {
+/** A child process with fixed arguments and its own environment: its stdout (at most `maxBytes`, recognised by `ok`),
+ *  killed past `timeoutMs`; also the image tools of the sketches (image-tool.ts). */
+export function spawnChild(c: Child): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const child = spawn(c.bin, c.args, { stdio: ['pipe', 'pipe', 'pipe'], env: c.env });
     const out: Buffer[] = [], err: Buffer[] = [];

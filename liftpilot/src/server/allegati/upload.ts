@@ -5,8 +5,9 @@ import 'server-only';
 // a read-only company), the installation's id, 60 uploads an hour per user, the declared size, the installation (of
 // the company, not archived), a free reading slot; then the body is read with a byte counter (stopped past 20 MiB +
 // the envelope, whatever Content-Length said), its form parsed, the file recognised by its bytes and its metadata
-// removed (src/lib/allegati), the same bytes on the installation answered with the row already there, the file put
-// through the PDF tool (pages, protection, forms), and stored within the limits under the company's lock (quota.ts).
+// removed (src/lib/allegati; a HEIC turned into the JPEG of its primary image first, round 50: heic.ts), the same bytes
+// on the installation answered with the row already there, the file put through the PDF tool (pages, protection,
+// forms), and stored within the limits under the company's lock (quota.ts).
 // Every answer is JSON — { ok: true, duplicate, attachment } or { ok: false, error } with an errors.* key — never cached.
 import { createHash } from 'node:crypto';
 import { audit } from '@/lib/audit';
@@ -20,6 +21,7 @@ import { rateLimit } from '@/lib/ratelimit';
 import { RendererBusy } from '@/lib/report/render';
 import { sameOriginPost } from '@/lib/same-origin';
 import { idSchema } from '@/lib/schemas';
+import { fromHeic } from './heic';
 import { inspectUpload } from './inspect';
 import { existing, storeAttachment } from './quota';
 import { uploadTarget, viewOf } from './queries';
@@ -126,7 +128,10 @@ async function receive(req: Request, ctx: { userId: string; companyId: string; p
   if (!meta.success) return refuse('invalidFields');
   if (form.file.size === 0) return refuse('fileInvalid');
   if (form.file.size > MAX_FILE_BYTES) return refuse('fileTooLarge');
-  const file = prepareFile(new Uint8Array(await form.file.arrayBuffer()));
+  // a HEIC (an iPhone's photo) becomes the JPEG of its primary image first, upright: stored without an orientation
+  const bytes = new Uint8Array(await form.file.arrayBuffer()), heic = await fromHeic(bytes, ctx);
+  if (heic.heic && !heic.ok) return refuse(heic.error);
+  const file = prepareFile(heic.heic ? heic.data : bytes);
   if (!file.ok) return refuse('fileInvalid');
   const sha256 = createHash('sha256').update(file.data).digest('hex');
   const same = await existing(ctx.projectId, sha256, ctx.companyId);
@@ -143,7 +148,7 @@ async function receive(req: Request, ctx: { userId: string; companyId: string; p
   const fileName = cleanFileName(form.file.name, file.type);
   const stored = await storeAttachment({
     ...ctx, kind: meta.data.kind, title: meta.data.title ?? titleFromName(fileName), component: meta.data.component ?? null,
-    fileName, mime: file.mime, data: file.data, sha256, pages, width: file.width, height: file.height, orientation: file.orientation,
+    fileName, mime: file.mime, data: file.data, sha256, pages, width: file.width, height: file.height, orientation: heic.heic ? null : file.orientation,
   });
   if (!stored.ok) return refuse(stored.error);
   if (!stored.duplicate) {
