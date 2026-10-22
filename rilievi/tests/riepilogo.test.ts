@@ -19,6 +19,7 @@ describe('the orders in the sheet print', () => {
     arganoPreventivo: false,
     preventivoArgano: { modulo: ARGANI.id, valori: { taglia12: true } },
     sospensioni: null,
+    operatore: null,
     ordineSospensioni: null,
   };
 
@@ -81,7 +82,8 @@ describe('each order chosen for the sheet print on its own', () => {
     ordineQuadro: { modulo: PELAZZA.id, valori: { ordine: true } },
     arganoPreventivo: true,
     preventivoArgano: { modulo: ARGANI.id, valori: { taglia12: true } },
-    sospensioni: true,
+    sospensioni: true as boolean | null,
+    operatore: null as boolean | null,
     ordineSospensioni: { modulo: SG.id, valori: { automatico: true } },
   };
   const nomi = (scheda: typeof tutti) => riepilogoModuli(scheda).map((modulo) => modulo.nome);
@@ -97,6 +99,16 @@ describe('each order chosen for the sheet print on its own', () => {
     assert.deepEqual(
       nomi({ ...tutti, riepilogoOrdini: false, moduliStampati: ['ordineQuadro'] }),
       [],
+    );
+  });
+
+  it('prints the 2SG sheet of a semi-automatic lift (the operator) once', () => {
+    const semi = { ...tutti, sospensioni: null, operatore: true };
+    assert.deepEqual(nomi({ ...semi, moduliStampati: ['ordineSospensioni'] }), [nomeModulo(SG)]);
+    assert.deepEqual(
+      nomi({ ...tutti, operatore: true, moduliStampati: ['ordineSospensioni'] }),
+      [nomeModulo(SG)],
+      'one column, one sheet',
     );
   });
 

@@ -63,10 +63,11 @@ export function moduloFieldOf(name: string): { slot: ModuloSlot; field: ModuloFi
 /**
  * След кое поле на раздела стои всеки модул във формата: след въпроса си и полетата, които зависят от
  * него (и от тях — „Numero sospensioni“), преди следващото поле без връзка с въпроса — бележките на
- * раздела са след модула. Ключът е полето, стойността — колоните на модулите след него.
+ * раздела са след модула. Ключът е полето, стойността — въпросите, чиито модули са след него: листът
+ * 2SG има два въпроса (окачванията и операторът), всеки със свой слот на свое място.
  */
-export function moduliDopo(fields: readonly FieldDef[]): Map<string, ModuloSlot['column'][]> {
-  const out = new Map<string, ModuloSlot['column'][]>();
+export function moduliDopo(fields: readonly FieldDef[]): Map<string, string[]> {
+  const out = new Map<string, string[]>();
   fields.forEach((field, i) => {
     if (!field.modulo) return;
     const legati = new Set([field.key]);
@@ -76,7 +77,7 @@ export function moduliDopo(fields: readonly FieldDef[]): Map<string, ModuloSlot[
       legati.add(next.key);
       ultimo = next.key;
     }
-    out.set(ultimo, [...(out.get(ultimo) ?? []), field.modulo]);
+    out.set(ultimo, [...(out.get(ultimo) ?? []), field.key]);
   });
   return out;
 }

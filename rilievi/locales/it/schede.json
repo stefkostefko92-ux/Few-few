@@ -136,7 +136,8 @@
       "mn": "Ordine quadro",
       "mq": "Ordine quadro",
       "pa": "Dati argano",
-      "sg": "Ordine 2SG"
+      "sg": "Ordine 2SG",
+      "so": "Ordine 2SG"
     },
     "fermate": "Fermate",
     "velocita": "Velocità (m/s)",

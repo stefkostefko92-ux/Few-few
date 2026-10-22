@@ -30,6 +30,7 @@ const DOORS = {
   serratureTipo: 'Fermator',
   pattinoRetrattile: 'si',
   pattinoRetrattileTipo: 'Wittur',
+  operatore: 'si',
   sospensioni: 'si',
   sospensioniNumero: '6',
 };
@@ -83,24 +84,25 @@ describe('conditions', () => {
 });
 
 describe('door details', () => {
-  it('ask the locks and the cam with manual and semi-automatic doors, the suspensions with automatic ones', () => {
+  it('ask the locks and the cam with manual and semi-automatic doors, the operator with semi-automatic, the suspensions with automatic ones', () => {
     const manual = parsedOrFail({ ...minimal, tipoPorte: 'MANUALI', ...DOORS });
     assert.deepEqual(
       LOCKS.map((key) => manual[key]),
       [true, 4, 'Fermator', true, 'Wittur'],
     );
-    for (const key of SUSPENSIONS) assert.equal(manual[key], null, key);
+    for (const key of ['operatore', ...SUSPENSIONS] as const) assert.equal(manual[key], null, key);
     const automatic = parsedOrFail({ ...minimal, tipoPorte: 'AUTOMATICHE', ...DOORS });
-    for (const key of LOCKS) assert.equal(automatic[key], null, key);
+    for (const key of [...LOCKS, 'operatore'] as const) assert.equal(automatic[key], null, key);
     assert.deepEqual(
       SUSPENSIONS.map((key) => automatic[key]),
       [true, 6],
     );
-    // Semi-automatic doors have no suspensions, only locks (the owner, October 2026).
+    // Semi-automatic: locks on the landings, an automatic car door on an operator — no suspensions
+    // (the owner, October 2026), the operator (22 October 2026).
     const semi = parsedOrFail({ ...minimal, tipoPorte: 'SEMIAUTOMATICHE', ...DOORS });
     assert.deepEqual(
-      [...LOCKS, ...SUSPENSIONS].map((key) => semi[key]),
-      [true, 4, 'Fermator', true, 'Wittur', null, null],
+      [...LOCKS, 'operatore', ...SUSPENSIONS].map((key) => semi[key as keyof typeof semi]),
+      [true, 4, 'Fermator', true, 'Wittur', true, null, null],
     );
   });
 

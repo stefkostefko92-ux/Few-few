@@ -147,6 +147,7 @@ const BASE: readonly Collegamento[] = [
         },
       },
       { luogo: 'sg', voci: { automatico: 'AUTOMATICHE', semiautomatico: 'SEMIAUTOMATICHE' } },
+      { luogo: 'so', voci: { automatico: 'AUTOMATICHE', semiautomatico: 'SEMIAUTOMATICHE' } },
     ],
   },
   {

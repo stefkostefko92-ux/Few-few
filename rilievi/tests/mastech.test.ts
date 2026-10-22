@@ -204,6 +204,7 @@ describe('the Mastech orders and the sheet', () => {
       arganoPreventivo: null,
       preventivoArgano: null,
       sospensioni: null,
+      operatore: null,
       ordineSospensioni: null,
     };
     assert.deepEqual(riepilogoModuli(scheda), [

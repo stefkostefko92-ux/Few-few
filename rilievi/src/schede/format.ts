@@ -154,9 +154,10 @@ export function displaySections(
           };
           const options = optionsView(field, values[field.key], t);
           if (options) view.options = options;
+          // Слотът на въпроса — колоната на 2SG има два (окачванията и операторът).
           const slot = SLOTS.find(
             (s) =>
-              s.column === field.modulo &&
+              s.question === field.key &&
               slotAperto(s, active, (key) => values[key]) &&
               storedValori(s.modulo, values[s.column]),
           );

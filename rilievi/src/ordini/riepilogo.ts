@@ -55,6 +55,7 @@ type SchedaModuli = Pick<
   | 'arganoPreventivo'
   | 'preventivoArgano'
   | 'sospensioni'
+  | 'operatore'
   | 'ordineSospensioni'
 >;
 
@@ -73,12 +74,15 @@ export function moduliStampatiDi(
 export function riepilogoModuli(scheda: SchedaModuli): RiepilogoModulo[] {
   const stampati = moduliStampatiDi(scheda);
   const out: RiepilogoModulo[] = [];
+  // Една колона — един модул в листа, и когато два слота я пишат (2SG: окачванията и операторът).
+  const viste = new Set<ModuloSlot['column']>();
   for (const slot of SLOTS) {
-    if (!stampati.includes(slot.column)) continue;
+    if (!stampati.includes(slot.column) || viste.has(slot.column)) continue;
     if (scheda[slot.question] !== true) continue;
     if (!sceltoNellaScheda(slot, (key) => scheda[key as keyof SchedaModuli])) continue;
     const valori = storedValori(slot.modulo, scheda[slot.column]);
     if (!valori) continue;
+    viste.add(slot.column);
     const groups: readonly Gruppo[] = slot.modulo.gruppi;
     const gruppi = groups
       .map((gruppo): RiepilogoGruppo => {

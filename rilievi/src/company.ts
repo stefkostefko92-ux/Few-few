@@ -20,7 +20,7 @@ export const COMPANY = {
 } as const;
 
 /** Последната промяна на публичната страница — сменя се ръчно с текста ѝ; отива в sitemap и JSON-LD. */
-export const CONTENT_UPDATED = '2026-10-17';
+export const CONTENT_UPDATED = '2026-10-22';
 
 /** Последната промяна на политиката за поверителност — показва се на страницата и отива в sitemap. */
 export const PRIVACY_UPDATED = '2026-10-21';

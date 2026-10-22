@@ -35,6 +35,7 @@
       "serratureTipo": "Tipo serrature",
       "pattinoRetrattile": "Pattino retrattile da cambiare",
       "pattinoRetrattileTipo": "Tipo di pattino retrattile",
+      "operatore": "Operatore da cambiare",
       "sospensioni": "Sospensioni da cambiare",
       "sospensioniNumero": "Numero sospensioni",
       "serratureNote": "Note serrature e sospensioni",
@@ -96,6 +97,7 @@
       "bottoniereMisure": "Vuoi inserire le misure delle bottoniere vecchie?",
       "quadroOrdine": "Vuoi compilare la scheda per l'ordine quadro?",
       "arganoPreventivo": "Argano da sostituire?",
+      "operatore": "Operatore da cambiare?",
       "sospensioni": "Sospensioni da cambiare?",
       "centralinaDaFare": "Centralina da sostituire?"
     },

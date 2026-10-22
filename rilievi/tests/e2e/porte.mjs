@@ -1,5 +1,6 @@
 // The doors, the argano that stays and the notes in a real browser (public/js/app.js): one kind of
 // doors at a time (radio); the locks and the retiring cam come with manual or semi-automatic doors, the
+// operator (and on "Sì" its 2SG sheet, the doors ticked in it) with semi-automatic ones, the
 // suspensions only with automatic ones; the kind of the argano that stays, the type of the cam, the kind
 // of the shoe check and the lighting note come with their answer; the print carries the new names and
 // what was written.
@@ -14,7 +15,18 @@ export async function fillDoorsAndChecks(page) {
     fail('locks not shown with semi-automatic doors');
   if (await page.locator('#f-sospensioni').isVisible())
     fail('suspensions shown with semi-automatic doors');
+  // Semi-automatic: the car door is automatic, on an operator — its question, and on "Sì" the 2SG
+  // sheet right after it, with the kind of doors already ticked (the linked data).
+  if (!(await page.locator('#f-operatore').isVisible()))
+    fail('operator not asked with semi-automatic doors');
+  if (await page.locator('#f-so').isVisible()) fail('2SG sheet of the operator shown before "Sì"');
+  await tick(page, 'operatore', 'si');
+  if (!(await page.locator('#f-so').isVisible())) fail('no 2SG sheet of the operator on "Sì"');
+  if (!(await page.isChecked('#f-so-semiautomatico')))
+    fail('the 2SG sheet of the operator without the semi-automatic doors');
   await tick(page, 'tipoPorte', 'MANUALI');
+  if (await page.locator('#f-operatore').isVisible()) fail('operator asked with manual doors');
+  if (await page.locator('#f-so').isVisible()) fail('2SG sheet of the operator with manual doors');
   if ((await page.locator('input[name=tipoPorte]:checked').count()) !== 1)
     fail('more than one kind of doors ticked');
   await tick(page, 'doppioAccesso', 'si');
@@ -30,6 +42,7 @@ export async function fillDoorsAndChecks(page) {
     fail('retiring cam shown with automatic doors');
   if (!(await page.locator('#f-sospensioni').isVisible()))
     fail('suspensions not shown with automatic doors');
+  if (await page.locator('#f-operatore').isVisible()) fail('operator asked with automatic doors');
   // The argano that stays: its kind, the shoe check kit with its kind on "Sì"; no brake contacts.
   await tick(page, 'arganoPreventivo', 'no');
   await page.fill('#f-arganoTipo', 'A vite senza fine');

@@ -305,10 +305,13 @@ model Scheda {
   serrature                    Boolean?
   serratureNumero              Int?
   serratureTipo                String?                  @db.VarChar(120)
-  /// „Sospensioni da cambiare“ — само при автоматични врати (полуавтоматичните са само с брави); при
-  /// true броят и листът 2SG (окачванията и операторът на кабината).
+  /// „Sospensioni da cambiare“ — само при автоматични врати; при true броят и листът 2SG (окачванията и
+  /// операторът на кабината).
   sospensioni                  Boolean?
   sospensioniNumero            Int?
+  /// „Operatore da cambiare“ — само при полуавтоматични врати: на етажите са бравите, кабината е с
+  /// оператор (собственикът, 22 октомври 2026); при true — листът 2SG, в същата колона.
+  operatore                    Boolean?
   /// Листът 2SG: {modulo, valori}. Има свой PDF.
   ordineSospensioni            Json?
   /// Бележките на раздела „Serrature o sospensioni“.

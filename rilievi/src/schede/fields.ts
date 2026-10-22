@@ -20,17 +20,10 @@ import type { Condition, FieldDef, SectionDef, SectionKey } from './field-types.
 export * from './field-types.js';
 export * from './field-options.js';
 
-import {
-  ALTRA,
-  IDRAULICO,
-  NON_IDRAULICO,
-  PORTE_AUTOMATICHE,
-  PORTE_CON_PATTINO,
-  PORTE_SCELTE,
-  yes,
-} from './field-conditions.js';
+import { ALTRA, IDRAULICO, NON_IDRAULICO, PORTE_SCELTE, yes } from './field-conditions.js';
 import { SEZIONE_ARGANO } from './fields-argano.js';
 import { SEZIONE_CENTRALINA } from './fields-centralina.js';
+import { SEZIONE_SERRATURE } from './fields-serrature.js';
 
 export const SECTIONS = [
   {
@@ -138,37 +131,7 @@ export const SECTIONS = [
       { key: 'caviLunghezzaM', kind: 'decimal', min: 0, max: 10_000, unit: 'm' },
     ],
   },
-  {
-    // Брави и окачвания на вратите за смяна — само каквото е за вида врати от „Tipologia“ (собственикът,
-    // октомври 2026): бравите и шейната — при ръчни и полуавтоматични, окачванията — само при
-    // автоматични. Бравите — брой и вид; шейната — видът ѝ; окачванията — брой и листът 2SG, в който е
-    // и операторът на кабината (src/ordini/). Бележките — винаги.
-    key: 'serrature',
-    fields: [
-      { key: 'serrature', kind: 'yesno', when: PORTE_CON_PATTINO },
-      { key: 'serratureNumero', kind: 'int', min: 0, max: 999, when: yes('serrature') },
-      { key: 'serratureTipo', kind: 'text', maxLength: 120, when: yes('serrature') },
-      // „Pattino retrattile da cambiare“ (беше в „Tipologia“). Блокировката, донивелирането и броят
-      // шейни — махнати (2026).
-      { key: 'pattinoRetrattile', kind: 'yesno', when: PORTE_CON_PATTINO },
-      {
-        key: 'pattinoRetrattileTipo',
-        kind: 'text',
-        maxLength: 120,
-        when: yes('pattinoRetrattile'),
-      },
-      {
-        key: 'sospensioni',
-        kind: 'yesno',
-        wide: true,
-        question: true,
-        modulo: 'ordineSospensioni',
-        when: PORTE_AUTOMATICHE,
-      },
-      { key: 'sospensioniNumero', kind: 'int', min: 0, max: 999, when: yes('sospensioni') },
-      { key: 'serratureNote', kind: 'textarea', maxLength: 4000, wide: true },
-    ],
-  },
+  SEZIONE_SERRATURE,
   {
     // „Allarme e telesoccorso“ — заедно, портиерната накрая (собственикът, октомври 2026). Аварийната
     // връзка — какво има да се монтира; заменя „Telesoccorso esistente“ и състоянието му (колоните им

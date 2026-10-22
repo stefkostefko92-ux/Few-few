@@ -45,7 +45,7 @@
     "legend": {
       "title": "La scheda, sezione per sezione",
       "lead": "{fields} campi in {sections} sezioni, nell'ordine della scheda di carta. Ogni numero è anche nel disegno, nel punto dell'impianto che la sezione descrive.",
-      "extra": "Le domande che non riguardano l'impianto non si vedono: serrature e pattino retrattile compaiono con porte manuali o semiautomatiche, le sospensioni solo con porte automatiche, i tiranti in fossa solo negli impianti idraulici."
+      "extra": "Le domande che non riguardano l'impianto non si vedono: serrature e pattino retrattile compaiono con porte manuali o semiautomatiche, l'operatore della cabina con porte semiautomatiche, le sospensioni solo con porte automatiche, i tiranti in fossa solo negli impianti idraulici."
     },
     "features": {
       "title": "Dal sopralluogo all'ufficio",
@@ -63,7 +63,7 @@
       },
       "orders": {
         "title": "Moduli d'ordine dal rilievo",
-        "text": "Con un quadro Pelazza, Movilift o Mastech (NG120 o QI Touch) la scheda compila il modulo d'ordine originale; con l'argano da sostituire, la scheda dati dell'argano; con le sospensioni da cambiare, il modulo 2SG per operatori e sospensioni. Ogni modulo esce come PDF a parte, identico all'originale. Pelazza, Movilift, Mastech e 2SG sono marchi dei rispettivi titolari."
+        "text": "Con un quadro Pelazza, Movilift o Mastech (NG120 o QI Touch) la scheda compila il modulo d'ordine originale; con l'argano da sostituire, la scheda dati dell'argano; con le sospensioni o l'operatore da cambiare, il modulo 2SG per operatori e sospensioni. Ogni modulo esce come PDF a parte, identico all'originale. Pelazza, Movilift, Mastech e 2SG sono marchi dei rispettivi titolari."
       },
       "misure": {
         "title": "Misuri le bottoniere piano per piano",

@@ -10,10 +10,14 @@ export const answered = (field: string): Condition => ({ field, values: ['si', '
 /** „Altro“ при марката → коя. */
 export const ALTRA = (field: string): Condition => ({ field, values: ['ALTRO'] });
 /**
- * Окачванията и листът 2SG (с оператора на кабината) — само при автоматични врати: полуавтоматичните
- * са само с брави (собственикът, октомври 2026).
+ * Окачванията и листът 2SG (с оператора на кабината) — при автоматични врати.
  */
 export const PORTE_AUTOMATICHE: Condition = { field: 'tipoPorte', values: ['AUTOMATICHE'] };
+/**
+ * Полуавтоматичните: на етажите — ръчни врати с брави, кабината — автоматична врата с оператор; затова
+ * и тук листът 2SG, отворен от „Operatore da cambiare?“ (собственикът, 22 октомври 2026).
+ */
+export const PORTE_SEMIAUTOMATICHE: Condition = { field: 'tipoPorte', values: ['SEMIAUTOMATICHE'] };
 /** Двойният достъп — при всеки вид врати, и при ръчните (решение на собственика, октомври 2026). */
 export const PORTE_SCELTE: Condition = { field: 'tipoPorte', values: TIPO_PORTE };
 /** Бравите и прибиращата се шейна — при ръчни и при полуавтоматични врати. */

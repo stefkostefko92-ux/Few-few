@@ -4,8 +4,8 @@
 29-те полета от заданието и полетата от второто (врати, аларма, работна карта, мерки на старите
 бутониери по спирки), търсене (№ на асансьора, матрикула, адрес, марка, работна карта, бележки), печат
 A4 и PDF. Модулите: при табло Pelazza / MoviLift / Mastech (NG120 или QI Touch — втори избор)
-(поръчката), „Argano da sostituire?“ (листът с данни за аргано) и „Sospensioni da cambiare?“ (листът на
-2SG за оператора и окачванията) се попълва самият модул и излиза като отделен PDF — оригиналът с данните
+(поръчката), „Argano da sostituire?“ (листът с данни за аргано) и „Sospensioni da cambiare?“ /
+„Operatore da cambiare?“ (листът на 2SG за оператора и окачванията) се попълва самият модул и излиза като отделен PDF — оригиналът с данните
 върху него. Редът на разделите на картата се избира за всяка фирма (настройките на администратора ѝ);
 кои раздели влизат в печата и PDF-а — за всяка карта (в края на формата). Снимки и клипове — във
 всеки раздел на картата, компресирани от фонов процес (`worker`); снимките — избрани като иконки в края
@@ -54,8 +54,9 @@ src/
                      sezioni.ts (редът на разделите на фирмата — запис, одит) · funzioni.ts (функциите
                      по избор: скицникът — само MASTER, с одит)
   services/          вход, покани, потребители, членства (фирми и роли), токени (в базата само SHA-256)
-  schede/            fields.ts (ЕДИНСТВЕНИЯТ списък полета и условията им) + fields-centralina.ts +
-                     field-conditions.ts + field-options.ts · field-parsers.ts (zod по вид) ·
+  schede/            fields.ts (ЕДИНСТВЕНИЯТ списък полета и условията им) + fields-argano.ts +
+                     fields-centralina.ts + fields-serrature.ts (разделите им) + field-conditions.ts +
+                     field-options.ts · field-parsers.ts (zod по вид) ·
                      validation.ts · stampa.ts (разделите и модулите в печата) · misure.ts (мерките по
                      спирки) · search.ts · service.ts +
                      list.ts (списъкът и търсенето) · ordine.ts (редът на разделите, без база) ·
@@ -166,7 +167,9 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   „Buono di lavoro“ (беше „Buono di riferimento“); операторът на вратите (марка, светъл отвор,
   напрежение) — махнат; „Serrature o sospensioni“ пита само каквото е за вида врати — бравите и шейната
   (тя е тук, след бравите, с „Tipo di pattino retrattile“) при ръчни и полуавтоматични, окачванията и 2SG
-  — само при автоматични (`PORTE_CON_PATTINO`/`PORTE_AUTOMATICHE`; без отметнат вид — нито едното);
+  — само при автоматични (`PORTE_CON_PATTINO`/`PORTE_AUTOMATICHE`; без отметнат вид — нито едното), а от
+  22 октомври при полуавтоматични — и операторът на кабината („Operatore da cambiare?“ след шейната,
+  `PORTE_SEMIAUTOMATICHE`: на етажите са бравите, кабината е автоматична врата с оператор);
   бележки в „Quadro“, „Argano“ (`fields-argano.ts`) и „Serrature o sospensioni“ — винаги; при „Argano da
   sostituire? No“ — „Tipo argano esistente“ (на ръка), челюстите, „Kit controllo ganasce“ и „Controllo su
   quadro manovra“, всеки с вида си на ръка при „Sì“ (контактите на спирачката — махнати); „Funi e
@@ -201,13 +204,16 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   „Argano da sostituire?“ + „Sì“ →
   „Modulo rilievi dati argani“ (Word-ът на собственика, за всеки вид аргано — без марка и без
   доставчик); „Sospensioni da cambiare?“ + „Sì“ → брой и листът на 2SG за оператора на кабината и
-  окачванията (сканиран с главата надолу — `ruota: 180`: PDF-ът го слага изправен на нова страница,
+  окачванията, а при полуавтоматични врати „Operatore da cambiare?“ + „Sì“ → целият същият лист (същата
+  колона `ordineSospensioni`, втори слот: префикс `so`, свой PDF; двата въпроса никога не са видими
+  заедно — видът врати е един; в печата на картата колоната излиза веднъж) (сканиран с главата надолу — `ruota: 180`: PDF-ът го слага изправен на нова страница,
   координатите в картата са на изправения лист). Полетата и редът им са дословно от модула (италиански,
   не се превеждат). Пазят се като JSON (`ordineQuadro`, `preventivoArgano`, `ordineSospensioni`:
   `{modulo, valori}` — `modulo` е id-то на картата, затова записът на Pelazza никога не се чете като
   MoviLift, нито старото запитване към Montanari като листа за аргано) и излизат като свой PDF
   (`/schede/:id/ordine-quadro`, `/ordine-quadro-movilift`, `/ordine-quadro-mastech-ng120`,
-  `/ordine-quadro-mastech-qi-touch`, `/dati-argano`, `/sospensioni-2sg`; затворен модул → 404). В печата
+  `/ordine-quadro-mastech-qi-touch`, `/dati-argano`, `/sospensioni-2sg`, `/operatore-2sg`; затворен
+  модул → 404). В печата
   и PDF-а на картата влизат САМО модулите, които картата иска — всеки поотделно (таблото, аргано, 2SG:
   отметките `riepilogoOrdini` в края на формата, пазят се в `moduliStampati`; `riepilogoOrdini` в базата е
   „поне един“ за предишния код, а карта с него и без списък включва и трите, както преди) — само

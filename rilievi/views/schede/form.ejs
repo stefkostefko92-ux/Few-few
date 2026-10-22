@@ -85,7 +85,7 @@
     <div class="grid<%= section.key === 'impianto' ? ' grid--testa' : '' %>">
       <% for (const field of section.fields) { %><%- include('_field', { field, value: values[field.key], error: errors[field.key] }) %>
       <% if (field.misure) { %><%- include('_misure') %><% } %>
-      <% for (const slot of moduli.filter((s) => (dopo.get(field.key) || []).includes(s.column))) { %><%- include('_modulo', { slot }) %><% } %>
+      <% for (const slot of moduli.filter((s) => (dopo.get(field.key) || []).includes(s.question))) { %><%- include('_modulo', { slot }) %><% } %>
       <% } %>
     </div>
     <%# Снимките и клиповете на раздела — на свои форми извън тази (_allegati-forms.ejs). %>

@@ -11,6 +11,7 @@ import {
 } from '../src/ordini/collegati.js';
 import { withPrefill } from '../src/ordini/form.js';
 import { ARGANI, PELAZZA } from '../src/ordini/moduli.js';
+import { SLOTS } from '../src/ordini/registry.js';
 
 const t = translatorFor('it');
 
@@ -216,6 +217,7 @@ describe('a form that comes back (an error, the confirmation)', () => {
       {
         ...open,
         'sg-_': '1',
+        'so-_': '1',
         [AUTO_KEY]: 'oq-nFermate pa-motoreAc2 oq-cliente oq-nonEsiste fermate oq-note buonoLavoro',
       },
       ctx,
@@ -258,7 +260,7 @@ describe('the linked data themselves', () => {
     for (const link of COLLEGAMENTI) {
       assert.notEqual(t(`collegati.${link.key}`), `collegati.${link.key}`, link.key);
     }
-    for (const luogo of ['scheda', 'oq', 'om', 'mn', 'mq', 'pa', 'sg']) {
+    for (const luogo of ['scheda', ...SLOTS.map((slot) => slot.prefix)]) {
       assert.notEqual(t(`collegati.luogo.${luogo}`), `collegati.luogo.${luogo}`);
     }
   });

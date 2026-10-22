@@ -166,9 +166,14 @@ describe('the supplier forms in the form', () => {
   it('stand after their question and what follows from it, before the notes of the section', () => {
     const after = (key: string) =>
       Object.fromEntries(moduliDopo(SECTIONS.find((s) => s.key === key)!.fields));
-    assert.deepEqual(after('quadro'), { quadroOrdine: ['ordineQuadro'] });
-    assert.deepEqual(after('argano'), { controlloQuadroTipo: ['preventivoArgano'] });
-    assert.deepEqual(after('serrature'), { sospensioniNumero: ['ordineSospensioni'] });
+    assert.deepEqual(after('quadro'), { quadroOrdine: ['quadroOrdine'] });
+    assert.deepEqual(after('argano'), { controlloQuadroTipo: ['arganoPreventivo'] });
+    // The 2SG sheet twice, each after its own question: the operator (semi-automatic doors) and the
+    // suspensions (automatic doors).
+    assert.deepEqual(after('serrature'), {
+      operatore: ['operatore'],
+      sospensioniNumero: ['sospensioni'],
+    });
     assert.deepEqual(after('note'), {});
     for (const key of ['quadro', 'argano', 'serrature']) {
       assert.equal(fieldsOf(key).at(-1), `${key}Note`, key);

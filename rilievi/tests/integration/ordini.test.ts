@@ -150,6 +150,73 @@ describe('supplier forms', () => {
     assert.match(form.body, /name="sg-automatico" value="si" checked/);
   });
 
+  it('give a semi-automatic lift the 2SG sheet from the operator, prefilled, with its own PDF', async () => {
+    const { browser } = await signedIn('TECNICO');
+    const semi = { ...SURVEY, tipoPorte: ['SEMIAUTOMATICHE'] };
+    const id = await create(browser, semi);
+    // The question after the locks and the cam, its sheet right after it, before the suspensions.
+    const form = await browser.get(`/schede/${id}/modifica`);
+    const at = (pattern: string) => form.body.indexOf(pattern);
+    assert.ok(at('name="pattinoRetrattile"') < at('name="operatore"'));
+    assert.ok(at('name="operatore"') < at('id="f-so"'));
+    assert.ok(at('id="f-so"') < at('name="sospensioni"'));
+    assert.match(form.body, /id="f-so" data-when="operatore" data-when-values="si" data-off/);
+    assert.match(form.body, /name="so-semiautomatico" value="si" checked/);
+    assert.doesNotMatch(form.body, /name="so-automatico" value="si" checked/);
+    assert.match(form.body, /name="so-data"[^>]*value="12\/10\/2026"/);
+    const base = /name="base" value="([^"]+)"/.exec(form.body)![1]!;
+    const saved = await browser.submit(`/schede/${id}/modifica`, `/schede/${id}`, {
+      ...semi,
+      base,
+      operatore: 'si',
+      'so-_': '1',
+      'so-ordNo': '78',
+      'so-semiautomatico': 'si',
+      // Not asked with semi-automatic doors: what the suspensions' sheet sends is not read.
+      sospensioni: 'si',
+      'sg-_': '1',
+      'sg-ordNo': '77',
+      riepilogoOrdini: ['ordineSospensioni'],
+    });
+    assert.equal(saved.status, 303);
+    const row = await prisma.scheda.findUniqueOrThrow({ where: { id } });
+    assert.equal(row.operatore, true);
+    assert.equal(row.sospensioni, null);
+    assert.deepEqual(row.ordineSospensioni, {
+      modulo: '2sg-ordine-porte',
+      valori: { ordNo: '78', semiautomatico: true },
+    });
+    const pdf = await browser.get(`/schede/${id}/operatore-2sg`);
+    assert.equal(pdf.status, 200);
+    assert.equal(
+      pdf.headers.get('content-disposition'),
+      'attachment; filename="operatore-2sg-880011-2026-10-12.pdf"',
+    );
+    assert.equal((await browser.get(`/schede/${id}/sospensioni-2sg`)).status, 404);
+    const page = await browser.get(`/schede/${id}`);
+    assert.match(page.body, /Operatore da cambiare/);
+    assert.match(page.body, new RegExp(`href="/schede/${id}/operatore-2sg"`));
+    assert.doesNotMatch(page.body, /sospensioni-2sg/);
+    // In the print: the sheet once, with what was filled in.
+    const print = await browser.get(`/schede/${id}/stampa`);
+    assert.equal((print.body.match(/ORD No: <strong>78<\/strong>/g) ?? []).length, 1);
+    assert.equal((print.body.match(/SEMIAUTOMATICO/g) ?? []).length, 1);
+
+    // Automatic doors again: the operator is not asked, its sheet and its PDF are gone.
+    const again = await browser.get(`/schede/${id}/modifica`);
+    const changed = await browser.submit(`/schede/${id}/modifica`, `/schede/${id}`, {
+      ...SURVEY,
+      base: /name="base" value="([^"]+)"/.exec(again.body)![1]!,
+      operatore: 'si',
+      'so-_': '1',
+      'so-ordNo': '78',
+    });
+    assert.equal(changed.status, 303);
+    const reverted = await prisma.scheda.findUniqueOrThrow({ where: { id } });
+    assert.deepEqual([reverted.operatore, reverted.ordineSospensioni], [null, null]);
+    assert.equal((await browser.get(`/schede/${id}/operatore-2sg`)).status, 404);
+  });
+
   it('stay inside the company: another company gets 404 for every PDF', async () => {
     const { browser } = await signedIn('TECNICO');
     const id = await create(browser, { ...SURVEY, ...ORDERS });

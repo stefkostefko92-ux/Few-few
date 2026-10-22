@@ -91,6 +91,7 @@ describe('the field list', () => {
         'serratureTipo',
         'pattinoRetrattile',
         'pattinoRetrattileTipo',
+        'operatore',
         'sospensioni',
         'sospensioniNumero',
         'serratureNote',

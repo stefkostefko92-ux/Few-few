@@ -92,6 +92,7 @@ export const schedaSchema = z
     serratureTipo: textOf('serratureTipo'),
     pattinoRetrattile: yesNoOf('pattinoRetrattile'),
     pattinoRetrattileTipo: textOf('pattinoRetrattileTipo'),
+    operatore: yesNoOf('operatore'),
     sospensioni: yesNoOf('sospensioni'),
     sospensioniNumero: intOf('sospensioniNumero'),
     serratureNote: textOf('serratureNote'),

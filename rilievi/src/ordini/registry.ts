@@ -6,13 +6,16 @@ import { ARGANI, MASTECH_NG120, MASTECH_QI, MOVILIFT, PELAZZA, SG, type Modulo }
  * `/schede/:id/<path>`. Таблото има четири модула в една колона и под един въпрос — Pelazza, MoviLift и
  * двата на Mastech (NG120 и QI Touch — по втория избор, модела); марката и моделът са по един, затова
  * отворен е най-много единият. Листът с данни за аргано (за всеки вид аргано) и листът на 2SG за
- * оператора и окачванията са без марка.
+ * оператора и окачванията са без марка. Листът на 2SG има два въпроса — „Sospensioni da cambiare?“ при
+ * автоматични врати и „Operatore da cambiare?“ при полуавтоматични — и затова два слота (свой префикс и
+ * свой път на PDF-а) в една колона; видът на вратите е един, затова отворен е най-много единият.
  */
 /**
  * Префиксът във формата: `oq` — таблото Pelazza, `om` — таблото MoviLift, `mn` и `mq` — таблото
- * Mastech NG120 и QI Touch, `pa` — листът за аргано, `sg` — листът на 2SG.
+ * Mastech NG120 и QI Touch, `pa` — листът за аргано, `sg` и `so` — листът на 2SG (окачванията при
+ * автоматични врати, операторът при полуавтоматични).
  */
-export type Prefisso = 'oq' | 'om' | 'mn' | 'mq' | 'pa' | 'sg';
+export type Prefisso = 'oq' | 'om' | 'mn' | 'mq' | 'pa' | 'sg' | 'so';
 
 export interface ModuloSlot {
   /** Марката, при която модулът се отваря; без нея — при всяка. */
@@ -20,7 +23,7 @@ export interface ModuloSlot {
   /** И моделът на таблото под марката (Mastech: NG120 или QI Touch). */
   modello?: { field: 'quadroModello'; value: string };
   column: 'ordineQuadro' | 'preventivoArgano' | 'ordineSospensioni';
-  question: 'quadroOrdine' | 'arganoPreventivo' | 'sospensioni';
+  question: 'quadroOrdine' | 'arganoPreventivo' | 'sospensioni' | 'operatore';
   prefix: Prefisso;
   path: string;
   modulo: Modulo;
@@ -73,6 +76,13 @@ export const SLOTS: readonly ModuloSlot[] = [
     question: 'sospensioni',
     prefix: 'sg',
     path: 'sospensioni-2sg',
+    modulo: SG,
+  },
+  {
+    column: 'ordineSospensioni',
+    question: 'operatore',
+    prefix: 'so',
+    path: 'operatore-2sg',
     modulo: SG,
   },
 ];
