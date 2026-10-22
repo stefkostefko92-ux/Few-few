@@ -2,7 +2,7 @@
 // (it read an untrusted picture), so it is parsed loosely and then kept only as far as the catalog allows — a field the
 // target does not have is dropped, a value of the wrong type or out of the form's range is moved to «not read» with the
 // reason (never clamped: a clamped value would look read), a stop beyond the stops read likewise, a field given twice
-// keeps its first value; the confidence is brought within 0..1, the texts are made plain (no control or direction
+// keeps its first value that can be used (one «given twice» line for it); the confidence is brought within 0..1, the texts are made plain (no control or direction
 // characters), cut to 120 characters (the warnings to 200, at most 10). Nothing here is stored. Pure: the server makes
 // it, the panel shows it.
 import { z } from 'zod';
@@ -41,6 +41,10 @@ export interface Proposta {
   promptVersion: string;
 }
 
+/** The list key of a line «not read»: one field may have two (a value refused and a later one given twice, or kept and
+ *  then beyond the stops read). */
+export const chiaveNonLetto = (n: NonLetto, i: number): string => `${n.id}:${n.code}:${i}`;
+
 const TEXT_MAX = 120, WARNING_MAX = 200, WARNINGS = 10, NOT_READ_MAX = 200;
 
 /** A text as the product shows it: plain, one line, at most `n` characters (code points). */
@@ -60,7 +64,7 @@ const shown = (v: unknown): string => testo(typeof v === 'string' ? v : JSON.str
 const REASON: Readonly<Record<Exclude<MotivoNonLetto, 'nonLetto'>, (v: unknown, range: string) => string>> = {
   tipo: (v) => `Valore letto non utilizzabile (${shown(v)}).`,
   fuoriIntervallo: (v, range) => `Valore ${shown(v)} fuori dall’intervallo ammesso${range ? ` (${range})` : ''}.`,
-  doppio: () => 'Indicato più volte: vale il primo.',
+  doppio: () => 'Indicato più volte: vale il primo valore utilizzabile.',
 };
 
 /** The catalog's order of an id (indexed ones by their index), for a stable list. */
@@ -87,11 +91,14 @@ export function propostaDa(raw: unknown, target: Target, model: string, promptVe
     if (typeof f.id !== 'string') continue;
     const id = f.id.trim(), c = campoDi(target, id);
     if (!c) continue; // a field the target does not have
-    if (seen.has(id)) { skip(id, 'doppio', f.value); continue; }
-    seen.add(id);
+    if (seen.has(id)) {
+      if (!notRead.some((x) => x.id === id && x.code === 'doppio')) skip(id, 'doppio', f.value);
+      continue;
+    }
     const ok = valoreValido(c.campo.tipo, f.value), t = c.campo.tipo;
     const range = t.kind === 'mm' || t.kind === 'int' ? `${t.min}–${t.max}` : t.kind === 'enum' ? t.values.join(', ') : '';
     if (ok !== 'ok') { skip(id, ok, f.value, range); continue; }
+    seen.add(id); // only a value kept counts: a later one may still replace a value that cannot be used
     const value = f.value as number | string | boolean, note = testo(f.note, TEXT_MAX);
     fields.push({ id, value, confidence: confidenceOf(f.confidence), read: testo(f.read, TEXT_MAX), ...(note ? { note } : {}) });
   }

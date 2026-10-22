@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
 import type { Target } from '@/lib/schizzi/campi';
-import { UNITA, type Proposta } from '@/lib/schizzi/proposta';
+import { UNITA, chiaveNonLetto, type Proposta } from '@/lib/schizzi/proposta';
 import type { SchizzoView } from '@/server/schizzi/queries';
 import { BY_STATUS } from '../allegati/send';
 import ConfermaValori, { useTestiCampo, type Modulo } from './ConfermaValori';
@@ -101,7 +101,7 @@ export default function LetturaSchizzo({ projectId, schizzo, target, modulo, qua
           {stato.proposta.notRead.length ? (
             <div className="schizzo-elenco">
               <h4>{t('tabella.nonLetti')}</h4>
-              <ul>{stato.proposta.notRead.map((n) => <li key={n.id}>{etichetta(n.id)}: {n.reason || t(`motivi.${n.code}`)}</li>)}</ul>
+              <ul>{stato.proposta.notRead.map((n, i) => <li key={chiaveNonLetto(n, i)}>{etichetta(n.id)}: {n.reason || t(`motivi.${n.code}`)}</li>)}</ul>
             </div>
           ) : null}
           {stato.proposta.warnings.length ? (
