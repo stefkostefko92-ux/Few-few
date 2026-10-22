@@ -2,9 +2,13 @@ Supreme AdBlock huzuia matangazo kila mahali — matangazo ya video ya YouTube, 
 
 • Matangazo ya YouTube yanazuiwa kwenye chanzo, kwa hivyo video zinacheza tu.
 • EasyList, EasyPrivacy na orodha nyingine huria za vichujio zimejumuishwa, pamoja na orodha ya lugha yako (orodha 31 za kikanda).
+• Machapisho yaliyofadhiliwa kwenye Facebook, Instagram na Threads yanafichwa.
 • Mabango ya vidakuzi: inabofya “Kataa” kwa niaba yako, inaondoa ukungu na kufuli ya kusogeza vilivyobaki, na kamwe haibofyi kitufe cha kuingia, OAuth au malipo.
 • Hali ya umakini: ficha viputo vya gumzo, madirisha ibukizi ya majarida, maombi ya arifa, wijeti za mitandao ya kijamii, madirisha ibukizi ya AI na YouTube Shorts.
 • Kuta za anti-adblock na madirisha ya pop-under hudhibitiwa.
+• Tovuti hatari: tovuti hasidi inayojulikana hufungua ukurasa wa onyo badala yake, nawe unaamua kama uendelee.
 • Tovuti ina hitilafu? Mbofyo mmoja unairekebisha, au tuambie — hakuna kinachotumwa kabla hujakiona kwanza.
+• Unahamia kutoka uBlock Origin, AdGuard au Adblock Plus? Leta tovuti zako zilizoruhusiwa na vichujio vyako kwa faili moja.
+• Ona tovuti nyingine ambazo ukurasa unaunganisha nazo, na uzuie mojawapo hapo tu kwa mbofyo mmoja.
 • Masasisho ya vichujio yaliyotiwa sahihi mara mbili kwa siku: mitandao mipya ya matangazo hushughulikiwa ndani ya saa chache, bila msimbo wa mbali.
-• Hakuna akaunti, hakuna telemetria, hakuna ukusanyaji wa data.
+• Hakuna akaunti, hakuna telemetria, hakuna ukusanyaji wa data, na Global Privacy Control inaomba kila tovuti isiuze wala kushiriki data yako.

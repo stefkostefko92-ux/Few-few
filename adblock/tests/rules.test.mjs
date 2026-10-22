@@ -141,4 +141,16 @@ ok("popup hosts are baked into shipped main.js", readFileSync(join(ROOT, "script
     !blocks.some((f) => /ptracking|stats\/atr|stats\/qoe|stats\/watchtime|log_event/.test(f)) && blocks.some((f) => /stats\/ads/.test(f)));
 }
 
+// Breakage fix: EasyPrivacy's ||facebook.com/platform/plugin/page/logging/ made the Facebook
+// Page Plugin throw for logged-in visitors (posts never load on any site that embeds it).
+{
+  const ad = JSON.parse(readFileSync(join(ROOT, "rules", "ad_rules.json"), "utf8"));
+  const ep = JSON.parse(readFileSync(join(ROOT, "rules", "easyprivacy.json"), "utf8"));
+  const fix = ad.find((r) => r.action.type === "allow" && r.condition.urlFilter === "||facebook.com/platform/plugin/page/logging/");
+  const topBlock = Math.max(...ep.filter((r) => r.action.type === "block").map((r) => r.priority || 1));
+  ok("ad_rules: the Facebook Page Plugin's logging is allowed from Facebook's own frame only, above every EasyPrivacy block",
+    !!fix && fix.priority > topBlock && JSON.stringify(fix.condition.initiatorDomains) === JSON.stringify(["facebook.com"]) &&
+    !fix.condition.resourceTypes.includes("main_frame") && !fix.condition.resourceTypes.includes("script"));
+}
+
 done();

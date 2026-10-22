@@ -143,3 +143,23 @@ describe("без шаблонни надзаглавия", () => {
     expect(DEFAULT_CONTENT.some((r) => r.key === "stats")).toBe(false);
   });
 });
+
+describe("вграденото произношение", async () => {
+  const { bundledWordAudio } = await import("../defaults");
+  const { safeAudio } = await import("../cms");
+  it("всяка стандартна дума има свой запис, който реално съществува", () => {
+    const row = DEFAULT_CONTENT.find((r) => r.key === "alphabet")!;
+    const files = new Set<string>();
+    for (const l of (row.it as { letters: { word: string }[] }).letters) {
+      const a = bundledWordAudio(l.word);
+      expect(a, l.word).toMatch(/^\/assets\/audio\/alphabet\/\d\d-[a-z]+\.mp3$/);
+      expect(existsSync(join(PUBLIC, a)), a).toBe(true);
+      expect(safeAudio(a)).toBe(a);
+      files.add(a);
+    }
+    expect(files.size).toBe(30);
+  });
+  it("сменена дума не получава чуждия запис", () => {
+    expect(bundledWordAudio("крава")).toBe("");
+  });
+});

@@ -29,8 +29,13 @@ export async function termsCopy(
     publicBase,
     updated: LEGAL_UPDATED.terms,
   });
+  return termsCopyFile(LEGAL_UPDATED.terms, locale, content);
+}
+
+/** Файлът към писмото — от току-що събраното копие или от пазеното за по-стара версия. */
+export function termsCopyFile(version: string, locale: Locale, content: string): MailAttachment {
   return {
-    filename: `korpora-terms-${LEGAL_UPDATED.terms}-${locale}.html`,
+    filename: `korpora-terms-${version}-${locale}.html`,
     content,
     contentType: 'text/html; charset=utf-8',
   };

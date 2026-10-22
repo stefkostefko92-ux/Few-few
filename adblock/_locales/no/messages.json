@@ -118,6 +118,27 @@
   "support": {
     "message": "Støtt"
   },
+  "rate": {
+    "message": "Vurder"
+  },
+  "rateTitle": {
+    "message": "Vurder Supreme AdBlock i Chrome Nettmarked"
+  },
+  "reviewBlocked": {
+    "message": "$1 forespørsler blokkert så langt"
+  },
+  "reviewAsk": {
+    "message": "Hvis Supreme AdBlock er nyttig for deg, hjelper en kort anmeldelse i Chrome Nettmarked andre med å finne det."
+  },
+  "reviewLeave": {
+    "message": "Skriv en anmeldelse"
+  },
+  "reviewLater": {
+    "message": "Ikke nå"
+  },
+  "reviewNever": {
+    "message": "Ikke spør igjen"
+  },
   "filtersCount": {
     "message": "$1+ filtre",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "Skjul «slå av annonseblokkeringen»-vegger og gjenopprett siden"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Skjul «Sponset»-innlegg på Facebook og Instagram"
+    "message": "Skjul «Sponset»-innlegg på Facebook, Instagram og Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Fjern utm_*, fbclid, gclid og andre klikk-ID-er fra lenkene du åpner"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokker kjente skadevaredomener (URLhaus-listen fra abuse.ch)"
+    "message": "Advar før et kjent skadevarenettsted åpnes, og blokker det sider laster inn fra slike nettsteder (URLhaus-listen fra abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Slå av annonse-API-ene Google Topics, FLoC og Protected Audience på alle nettsteder"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Doner via Revolut"
+  },
+  "opt_review": {
+    "message": "Påminnelser om anmeldelse"
+  },
+  "opt_review_sub": {
+    "message": "En liten ★-lenke nederst i Supreme AdBlock-vinduet og høyst to ganger en kort forespørsel der om å vurdere det i Chrome Nettmarked. Aldri på nettsteder, aldri som varsel."
   },
   "opt_made_by": {
     "message": "laget av Carbon Stealth"
@@ -643,5 +670,128 @@
   "welDone": {
     "message": "Skjønner",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Tillatt · $1 min igjen"
+  },
+  "hiddenHere": {
+    "message": "Elementer skjult her: $1 · Angre det siste"
+  },
+  "cmd_toggle_site": {
+    "message": "Slå blokkering av eller på for dette nettstedet"
+  },
+  "cmd_pause": {
+    "message": "Pause eller fortsett beskyttelsen (30 minutter)"
+  },
+  "cmd_picker": {
+    "message": "Skjul et element på denne siden"
+  },
+  "rep_fix_hour": {
+    "message": "Tillat annonser her i 1 time"
+  },
+  "rep_done_hour": {
+    "message": "Annonser er tillatt på dette nettstedet i 1 time. Lastet inn på nytt – er det fikset?"
+  },
+  "opt_last30": {
+    "message": "Siste 30 dager"
+  },
+  "opt_last30_sum": {
+    "message": "Blokkert: $1 · Cookie-bannere: $2"
+  },
+  "opt_last30_empty": {
+    "message": "De daglige totalene dine vises her mens du surfer."
+  },
+  "opt_last30_sub": {
+    "message": "Bare daglige totaler, lagret på denne enheten i 30 dager. Ingen nettsteder, ingen adresser."
+  },
+  "opt_gpc_sub": {
+    "message": "Ber alle nettsteder du besøker om ikke å selge eller dele dataene dine (Sec-GPC-signalet, som enkelte personvernlover krever at nettsteder respekterer). Sendes ikke på nettsteder du tillater."
+  },
+  "opt_shortcuts": {
+    "message": "Hurtigtaster"
+  },
+  "opt_shortcuts_change": {
+    "message": "Endre hurtigtaster"
+  },
+  "opt_shortcut_none": {
+    "message": "Ikke angitt"
+  },
+  "opt_shortcuts_ff": {
+    "message": "I Firefox: Utvidelser og temaer → ⚙ → Håndter snarveier for utvidelser."
+  },
+  "opt_import_foreign": {
+    "message": "Importer fra en annen annonseblokkerer"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Bytter du fra uBlock Origin, AdGuard eller Adblock Plus? Velg sikkerhetskopifilen derfra: nettstedene du har tillatt og dine egne filtre legges til her. Ingenting erstattes."
+  },
+  "opt_import_foreign_done": {
+    "message": "Nettsteder tillatt: $1 · Filtre lagt til: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Utelatt (kan ikke brukes her): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Denne filen er ikke en sikkerhetskopi vi kan lese."
+  },
+  "welQuickTitle": {
+    "message": "Gjør den til din egen"
+  },
+  "welQuickSub": {
+    "message": "Valgfritt: den virker allerede. Du kan endre alt dette senere i Innstillinger."
+  },
+  "blk_page_title": {
+    "message": "Nettsted blokkert – Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Dette nettstedet kan skade enheten din"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock stoppet denne siden fordi nettstedet står på URLhaus, en offentlig liste over adresser som sprer skadevare."
+  },
+  "blk_back": {
+    "message": "Gå tilbake"
+  },
+  "blk_continue": {
+    "message": "Fortsett likevel"
+  },
+  "blk_note": {
+    "message": "Hvis du fortsetter, slippes bare sidene på dette nettstedet gjennom, til du lukker nettleseren."
+  },
+  "blk_why": {
+    "message": "Hvorfor står det på listen? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Tilkoblinger på denne siden"
+  },
+  "conn_empty": {
+    "message": "Denne siden har ikke lastet inn noe fra andre nettsteder."
+  },
+  "conn_block": {
+    "message": "Blokker her"
+  },
+  "conn_blocked": {
+    "message": "Blokkert her"
+  },
+  "conn_hint": {
+    "message": "Blokker det dette nettstedet laster inn fra $1"
+  },
+  "opt_conn_title": {
+    "message": "Tilkoblinger du har blokkert"
+  },
+  "opt_conn_sub": {
+    "message": "Blokkert fra «Tilkoblinger på denne siden» i Supreme AdBlock-vinduet, hver bare på sitt eget nettsted."
+  },
+  "opt_empty_conn": {
+    "message": "Ingenting blokkert ennå."
+  },
+  "opt_conn_remove": {
+    "message": "Opphev blokkering av $1 på $2"
+  },
+  "opt_h_danger": {
+    "message": "Advarselsside for skadevare"
+  },
+  "opt_h_capacity": {
+    "message": "Regelkapasitet"
   }
 }

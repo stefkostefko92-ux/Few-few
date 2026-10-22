@@ -8,59 +8,108 @@ export const THREAD = {
   red: "#b3171d",
   wine: "#7a0e12",
   black: "#1c1917",
+  brown: "#3a1810",
+  white: "#f4eee3",
   linen: "#f1ece2",
   green: "#1f5e3b",
   gold: "#c8932f",
 } as const;
 
 export type Cell = { x: number; y: number; c: string };
-export type Motif = { w: number; h: number; cells: Cell[] };
+/** `outline`: the colour of a back-stitched contour around the motif, if any. */
+export type Motif = { w: number; h: number; cells: Cell[]; outline?: string };
 
-/**
- * The eight-pointed star (осмолъчна звезда) of Bulgarian embroidery: the union
- * of a square and the same square turned 45°, so four points come from the
- * corners and four from the tips. `a` is the square's half-side in stitches.
- */
-export function star(a: number, body: string = THREAD.red, heart: string = THREAD.black): Motif {
-  const b = Math.round(a * Math.SQRT2);
-  const inside = (x: number, y: number) => Math.max(Math.abs(x), Math.abs(y)) <= a || Math.abs(x) + Math.abs(y) <= b;
+// ---------------------------------------------------------------------------
+// Motifs of Divotino (Pernik, Shopluk), from a tablecloth of the 1930s.
+// Transcribed stitch by stitch from photographs by Vassia Atanassova on
+// Wikimedia Commons (Divotino-traditional-embroidery-1 and -5, CC BY-SA 3.0):
+// a grid fitted to the stitches, each cell's thread read off the photo, the
+// nine rosettes on the cloth voted together, and the hand's small
+// irregularities evened out by the motif's own symmetry. The designs are
+// traditional; only the grids are ours. No generated geometry.
+// ---------------------------------------------------------------------------
+
+/** One letter per stitch: r red, v wine, w white, b brown, k black, "." bare cloth. */
+const LETTER: Record<string, string> = { r: THREAD.red, v: THREAD.wine, w: THREAD.white, b: THREAD.brown, k: THREAD.black };
+
+/** A motif from rows of letters, as an embroiderer reads a chart. */
+export function fromChart(rows: readonly string[], outline?: string): Motif {
   const cells: Cell[] = [];
-  for (let y = -b; y <= b; y++) {
-    for (let x = -b; x <= b; x++) {
-      if (!inside(x, y)) continue;
-      const d = Math.abs(x) + Math.abs(y);
-      const edge = !inside(x + 1, y) || !inside(x - 1, y) || !inside(x, y + 1) || !inside(x, y - 1);
-      let c: string | null = null;
-      if (edge) c = body;
-      else if (d === a - 1) c = heart; // the dark rhombus inside
-      else if (d <= Math.max(0, a - 4)) c = body; // and its red heart
-      if (c) cells.push({ x: x + b, y: y + b, c });
-    }
-  }
-  return { w: 2 * b + 1, h: 2 * b + 1, cells };
+  rows.forEach((row, y) => [...row].forEach((ch, x) => { if (LETTER[ch]) cells.push({ x, y, c: LETTER[ch] }); }));
+  return { w: Math.max(...rows.map((r) => r.length)), h: rows.length, cells, outline };
 }
 
-/**
- * One repeat of the border band: a chain of rhombi (the oldest motif, a sown
- * field) joined by small black crosses, between two lines of running stitch.
- */
-export function bandTile(): Motif {
-  const w = 14, h = 11, cx = 7, cy = 5;
-  const cells: Cell[] = [];
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const d = Math.abs(x - cx) + Math.abs(y - cy);
-      let c: string | null = null;
-      if ((y === 0 || y === h - 1) && x % 2 === 0) c = THREAD.red;
-      else if (d === 4) c = THREAD.red;
-      else if (d === 2) c = THREAD.black;
-      else if (d === 0) c = THREAD.red;
-      else if (y === cy && (x === 0 || x === 1 || x === w - 1)) c = THREAD.black;
-      else if (x === 0 && Math.abs(y - cy) === 1) c = THREAD.black;
-      if (c) cells.push({ x, y, c });
-    }
+/** The rosette: a wine-red heart with four white stitches, a red frame, two
+ *  petals on every side, the whole contoured in black back-stitch. */
+const ROSETTE = [
+  "......r......r......",
+  ".....rrr....rrr.....",
+  ".....rrrr..rrrr.....",
+  ".....rrrr..rrrr.....",
+  "....rrrrrrrrrrrr....",
+  ".rrrrrrrrrrrrrrrrrr.",
+  "rrrrrrvvvvvvvvrrrrrr",
+  ".rrrrrvvvvvvvvrrrrr.",
+  "..rrrrvvwvvwvvrrrr..",
+  "....rrvvvvvvvvrr....",
+  "....rrvvvvvvvvrr....",
+  "..rrrrvvwvvwvvrrrr..",
+  ".rrrrrvvvvvvvvrrrrr.",
+  "rrrrrrvvvvvvvvrrrrrr",
+  ".rrrrrrrrrrrrrrrrrr.",
+  "....rrrrrrrrrrrr....",
+  ".....rrrr..rrrr.....",
+  ".....rrrr..rrrr.....",
+  ".....rrr....rrr.....",
+  "......r......r......",
+] as const;
+
+export const rosette = (): Motif => fromChart(ROSETTE, THREAD.black);
+
+/** One repeat of the border: red teeth hanging from a red line and dark-brown
+ *  ones rising between them (вълчи зъби), closed by a second red line. The
+ *  tooth is centred on the tile's edge, so the repeat joins without a seam. */
+const BORDER = [
+  "rrrrrrrrrrrrrr",
+  "..............",
+  "rrrrrr...rrrrr",
+  "rrrrr.....rrrr",
+  "rrrr.......rrr",
+  "rrr....b....rr",
+  "rr....bbb....r",
+  "r....bbbbb....",
+  "....bbbbbbb...",
+  "..............",
+  "rrrrrrrrrrrrrr",
+] as const;
+
+export const borderTile = (): Motif => fromChart(BORDER);
+
+/** Back-stitch (назад бод): the dark contour Shopluk embroiderers sew round a
+ *  motif — one short stitch along every cell edge where thread meets bare cloth,
+ *  so it runs in the holes between the crosses and the linen. */
+export function outlinePath(cells: Cell[], size: number): string {
+  const on = new Set(cells.map((c) => `${c.x},${c.y}`));
+  const bare = (x: number, y: number) => !on.has(`${x},${y}`);
+  const r = (n: number) => Math.round(n * 100) / 100;
+  const g = size * 0.1; // each stitch ends in a hole — the contour reads as stitches, not a drawn line
+  const d: string[] = [];
+  for (const { x, y } of cells) {
+    const x0 = x * size, y0 = y * size, x1 = x0 + size, y1 = y0 + size;
+    if (bare(x, y - 1)) d.push(`M${r(x0 + g)} ${r(y0)}L${r(x1 - g)} ${r(y0)}`);
+    if (bare(x, y + 1)) d.push(`M${r(x0 + g)} ${r(y1)}L${r(x1 - g)} ${r(y1)}`);
+    if (bare(x - 1, y)) d.push(`M${r(x0)} ${r(y0 + g)}L${r(x0)} ${r(y1 - g)}`);
+    if (bare(x + 1, y)) d.push(`M${r(x1)} ${r(y0 + g)}L${r(x1)} ${r(y1 - g)}`);
   }
-  return { w, h, cells };
+  return d.join("");
+}
+
+/** Mix two #rrggbb colours: t = 0 gives a, t = 1 gives b. For the light and
+ *  shade of a thread. */
+export function mixHex(a: string, b: string, t: number): string {
+  const p = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const [x, y] = [p(a), p(b)];
+  return "#" + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, "0")).join("");
 }
 
 /** SVG path data for a set of stitches, one path per thread colour. Each stitch

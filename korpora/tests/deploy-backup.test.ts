@@ -7,7 +7,9 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  rmSync,
   statSync,
+  utimesSync,
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
@@ -48,7 +50,7 @@ test(
       assert.equal(check.status, 0, 'the checksum file verifies with sha256sum -c');
       // the same stream was read through by pg_restore while it was encrypted
       assert.match(logOf(box), /docker exec -i dbid pg_restore -f \/dev\/null\n/);
-      assert.match(logOf(box), /docker exec -i dbid pg_dump -Fc -U korpora -d korpora\n/);
+      assert.match(logOf(box), /docker exec dbid pg_dump -Fc -U korpora -d korpora\n/);
       assert.deepEqual(
         readdirSync(box.daily).filter((n) => n.startsWith('.work')),
         [],
@@ -205,6 +207,78 @@ test(
   },
 );
 
+test('the dumps before a deploy go after 30 days and the snapshots before a restore after 8 weeks less a day, even when no backup can run', () => {
+  withBox((box) => {
+    const dir = join(box.shared, 'backups');
+    const put = (name: string, days: number) => {
+      const file = join(dir, name);
+      writeFileSync(file, 'old');
+      const at = new Date(Date.now() - days * 86_400_000);
+      utimesSync(file, at, at);
+    };
+    // the timer runs once a day: past 30 days (the unencrypted dumps) or 8 weeks (the snapshots) less a day,
+    // nothing outlives the periods of the policy
+    put('pre-deploy-19990101-000001.sql.gz', 29.1);
+    put('pre-restore-19990101-000001.dump.age', 55.1);
+    put('pre-restore-19990101-000001.dump.age.sha256', 55.1);
+    put('pre-deploy-19990101-000002.sql.gz', 28.9);
+    put('pre-restore-19990101-000002.dump.age', 54.9);
+    put('notes.txt', 100);
+    // no recipient: no backup is made, but the old dumps still go
+    rmSync(box.recipients, { force: true });
+    const r = backup(box);
+    assert.notEqual(r.status, 0);
+    assert.deepEqual(readdirSync(dir).sort(), [
+      'notes.txt',
+      'pre-deploy-19990101-000002.sql.gz',
+      'pre-restore-19990101-000002.dump.age',
+    ]);
+    assert.match(r.stdout, /изтрих 3 стари снимки отпреди деплой или възстановяване/);
+  });
+});
+
+test(
+  'between two deploys the daily backup drops dumps past the age cap, the newest one too',
+  { skip },
+  () => {
+    withBox((box) => {
+      const top = join(box.shared, 'backups');
+      const aged = (name: string, days: number) => {
+        writeFileSync(join(top, name), 'old');
+        const at = new Date(Date.now() - days * 86_400_000);
+        utimesSync(join(top, name), at, at);
+      };
+      // the only pre-deploy dump, 31 days old: deploy.sh would have spared it as the newest
+      aged('pre-deploy-20260101-000000.sql.gz', 31);
+      aged('pre-deploy-20260301-000000.sql.gz', 20);
+      aged('pre-restore-20260101-000000.dump.age', 56);
+      aged('pre-restore-20260101-000000.dump.age.sha256', 56);
+      aged('pre-restore-20260301-000000.dump.age', 54);
+      aged('pre-restore-20260301-000000.dump.age.sha256', 54);
+      aged('notes.txt', 90);
+
+      // the age cap does not wait for a good backup: a failed one already drops them, the daily ones stay
+      const failed = backup(box, { DUMP_RC: '1' });
+      assert.equal(failed.status, 1);
+      assert.ok(!existsSync(join(top, 'pre-deploy-20260101-000000.sql.gz')));
+
+      const r = backup(box);
+      assert.equal(r.status, 0, r.stderr);
+      const left = readdirSync(top).filter((n) => n !== 'daily');
+      assert.deepEqual(
+        left.sort(),
+        [
+          'notes.txt',
+          'pre-deploy-20260301-000000.sql.gz',
+          'pre-restore-20260301-000000.dump.age',
+          'pre-restore-20260301-000000.dump.age.sha256',
+        ].sort(),
+      );
+      assert.equal(backups(box.daily).length, 1, 'the new backup itself is there');
+    });
+  },
+);
+
 test(
   'restore refuses before touching anything: no mode, a live restore without --yes-i-know, a bad name',
   { skip },
@@ -240,3 +314,29 @@ test('restore from a file checks its checksum first', { skip }, () => {
     assert.doesNotMatch(logOf(box), /psql/, 'no database is created for a damaged file');
   });
 });
+
+test(
+  'a dump streamed on stdin reaches pg_restore whole: no docker exec before it eats the input',
+  { skip },
+  () => {
+    // DEPLOY.md, т. 10: the owner decrypts at home and pipes the dump in over ssh. `docker exec -i`
+    // copies stdin into the container even when the command never reads it, so a psql -c or pg_dump
+    // with -i before the restore would swallow the start of the dump.
+    const dump = Buffer.concat([Buffer.from('PGDMP'), Buffer.alloc(20000, 'x')]);
+    withBox((box) => {
+      const drill = restore(box, ['--into', 'korpora_restore_t', '-'], {}, dump);
+      assert.equal(drill.status, 0, drill.stderr);
+      assert.match(drill.stdout, /възстановено в korpora_restore_t: 12 таблици/);
+      assert.match(drill.stdout, /репетицията мина/);
+      const live = restore(box, ['--live', '--yes-i-know', '-'], {}, dump);
+      assert.equal(live.status, 0, live.stderr);
+      assert.match(live.stdout, /възстановено в korpora: 12 таблици/);
+      assert.match(logOf(box), /docker stop appid\n[\s\S]*docker start appid\n/);
+      // stdin goes only to the restore itself (pg_restore and the psql that reads its SQL)
+      for (const line of logOf(box)
+        .split('\n')
+        .filter((l) => l.startsWith('docker exec -i ')))
+        assert.match(line, /^docker exec -i dbid (pg_restore -f |psql .* -f -$)/, line);
+    });
+  },
+);

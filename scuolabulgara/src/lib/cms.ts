@@ -4,7 +4,7 @@
 /** Page sections that the admin can reorder and switch on/off. The hero and its
  *  strip of facts are deliberately excluded: they always open the page. */
 export const SECTION_KEYS = [
-  "about", "alphabet", "school", "courses", "dance", "facebook", "gallery", "faq", "contact", "cta",
+  "about", "alphabet", "school", "teachers", "courses", "dance", "facebook", "gallery", "documents", "faq", "contact", "cta",
 ] as const;
 export type SectionKey = (typeof SECTION_KEYS)[number];
 export const isSectionKey = (k: string): k is SectionKey => (SECTION_KEYS as readonly string[]).includes(k);
@@ -112,7 +112,9 @@ const SHARED = new Set([
   "icon", "phone", "phoneHref", "email", "facebookUrl", "facebookPageHref", "mapUrl",
   "latitude", "longitude", "foundingDate", "postalCode", "country", "updated",
   // the alphabet: the letter, its transliteration and the Bulgarian word
-  "letter", "latin", "word",
+  "letter", "latin", "word", "audio",
+  // a document (statute, newspaper issue) is one file for every language
+  "file",
 ]);
 export const isImageKey = (k: string) => k === "src" || k === "logo" || /^(image|photo)$/i.test(k) || /(Image|Photo)$/.test(k);
 export const isSharedKey = (k: string) => SHARED.has(k) || isImageKey(k);
@@ -199,3 +201,83 @@ export function finalKeywords(list: string[], fallback: string[]): string[] {
   if (!seen.has(BRAND_KEYWORD.toLowerCase())) out.push(BRAND_KEYWORD);
   return out;
 }
+
+// ---- Audio (pronunciation of the alphabet words) ---------------------------
+export const AUDIO_EXT = ["mp3", "m4a", "ogg", "webm", "wav"] as const;
+/** Field holding a sound file; like a picture, the same in every language. */
+export const isAudioKey = (k: string) => k === "audio";
+/** Only sound files uploaded to this site (no external URLs, no traversal). */
+export function safeAudio(v: unknown): string {
+  if (typeof v !== "string") return "";
+  const s = v.trim();
+  if (!(s.startsWith("/uploads/") || s.startsWith("/assets/audio/")) || s.includes("..") || s.includes("//")) return "";
+  return new RegExp(`\\.(${AUDIO_EXT.join("|")})$`, "i").test(s) ? s : "";
+}
+
+// ---- Documents (PDF: statute, forms, the school newspaper) -----------------
+/** Field holding a PDF; like a picture, the same in every language. */
+export const isFileKey = (k: string) => k === "file";
+/** A PDF of this site (uploaded or bundled), or a plain https link to one —
+ *  e.g. an issue still on the school's previous website. Nothing else. */
+export function safeFile(v: unknown): string {
+  if (typeof v !== "string") return "";
+  const s = v.trim();
+  if (/^https:\/\/[^\s"'<>]+$/i.test(s)) return s;
+  if (!(s.startsWith("/uploads/") || s.startsWith("/assets/docs/")) || s.includes("..") || s.includes("//")) return "";
+  return /\.pdf$/i.test(s) ? s : "";
+}
+
+// ---- Items not yet translated -----------------------------------------------
+// The editor adds a list item to all three languages at once, empty in the two
+// it wasn't written in. Hiding such an item made new content look lost („пише,
+// че е на сайта, но не се показва“). Instead it shows in the language it was
+// written in until someone translates it.
+
+/** No text of its own in this language: every text field empty (pictures,
+ *  icons and other shared fields don't count). */
+export function isBlankItem(v: unknown): boolean {
+  if (typeof v === "string") return v.trim() === "";
+  if (Array.isArray(v)) return v.every(isBlankItem);
+  if (!isPlainObject(v)) return true;
+  return Object.entries(v).every(([k, x]) => isSharedKey(k) || isBlankItem(x));
+}
+
+const copyText = (into: Record<string, unknown>, from: Record<string, unknown>) => {
+  for (const k of Object.keys(into)) {
+    if (isSharedKey(k)) continue;
+    const src = from[k];
+    if (typeof src === "string" || Array.isArray(src)) into[k] = structuredClone(src);
+  }
+};
+
+function fillArray(arr: unknown[], others: unknown[][]): unknown[] {
+  return arr.map((v, i) => {
+    const alt = others.map((o) => o?.[i]).filter((x) => x !== undefined && !isBlankItem(x));
+    if (typeof v === "string") return v.trim() === "" && typeof alt[0] === "string" ? alt[0] : v;
+    if (!isPlainObject(v)) return v;
+    const out: Record<string, unknown> = { ...v };
+    if (isBlankItem(v) && isPlainObject(alt[0])) {
+      copyText(out, alt[0]);
+      return out;
+    }
+    // A translated item may still hold a newly added bullet or paragraph.
+    for (const [k, x] of Object.entries(out)) {
+      if (Array.isArray(x)) out[k] = fillArray(x, others.map((o) => (isPlainObject(o?.[i]) ? (o[i] as Record<string, unknown>)[k] as unknown[] : [])));
+    }
+    return out;
+  });
+}
+
+/** Every list in `doc` (one language), with untranslated items filled from the
+ *  first other language that has them. Plain fields are left alone: emptying
+ *  one is how an editor hides it. */
+export function fillUntranslated(doc: Record<string, unknown>, others: Record<string, unknown>[]): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...doc };
+  for (const [k, v] of Object.entries(doc)) {
+    if (Array.isArray(v)) out[k] = fillArray(v, others.map((o) => (Array.isArray(o[k]) ? (o[k] as unknown[]) : [])));
+  }
+  return out;
+}
+
+/** Keys whose lists are per-language on purpose (search keywords). */
+export const NO_FALLBACK = new Set(["seo", "ui"]);

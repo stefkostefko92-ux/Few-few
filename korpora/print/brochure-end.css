@@ -96,7 +96,7 @@
 /* 6 — prices, the trial and how to start */
 .b-trial-big {
   max-width: 155mm;
-  margin-bottom: 6mm;
+  margin-bottom: 3.5mm;
   font-size: 13pt;
   font-weight: 600;
   line-height: 1.4;
@@ -147,7 +147,7 @@
   display: grid;
   gap: 1.2mm;
   max-width: 168mm;
-  margin: 5mm 0 0;
+  margin: 3.5mm 0 0;
   padding-left: 4.5mm;
   font-size: 8.4pt;
   color: var(--ink-2);
@@ -156,7 +156,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6mm;
-  margin: 7mm 0 0;
+  margin: 4mm 0 0;
 }
 .b-faq dt {
   margin-bottom: 1mm;
@@ -173,7 +173,7 @@
   gap: 8mm;
   align-items: center;
   margin-top: auto;
-  padding: 6mm;
+  padding: 4mm 6mm;
   border-radius: 3mm;
   background: var(--green-soft);
 }
@@ -199,7 +199,7 @@
   display: flex;
   justify-content: space-between;
   gap: 6mm;
-  margin-top: 5mm;
+  margin-top: 3mm;
   padding-top: 2.4mm;
   border-top: 0.3mm solid var(--rule-strong);
   font-size: 7.4pt;

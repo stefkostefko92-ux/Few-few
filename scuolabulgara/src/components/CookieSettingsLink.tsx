@@ -12,6 +12,7 @@ export default function CookieSettingsLink({ locale }: { locale: Locale }) {
     try {
       localStorage.removeItem("qb-cookie-ack");
       localStorage.removeItem("qb-fb-consent");
+      localStorage.removeItem("qb-map-consent");
     } catch {}
     window.dispatchEvent(new Event("qb:cookie-settings"));
   };

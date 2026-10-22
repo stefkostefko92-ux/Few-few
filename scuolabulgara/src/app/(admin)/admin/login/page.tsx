@@ -10,8 +10,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const session = await getSession();
   if (session) redirect(safeNext);
   return (
-    <div className="ad-login">
-      <div className="ad-login__card">
+    <div className="qba-login">
+      <div className="qba-login__card">
         <img src="/assets/img/brand/logo.webp" alt="Qui Bulgaria" />
         <h1>Административен панел</h1>
         <p>Влезте, за да управлявате съдържанието, снимките и запитванията на сайта.</p>

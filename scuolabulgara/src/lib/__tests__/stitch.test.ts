@@ -1,30 +1,76 @@
 import { describe, it, expect } from "vitest";
-import { bandTile, hash2, nearestSkein, SKEINS, star, stitchChance, stitchPaths, THREAD } from "../stitch";
+import { borderTile, fromChart, hash2, nearestSkein, outlinePath, rosette, SKEINS, stitchChance, stitchPaths, THREAD } from "../stitch";
 
-describe("звездата", () => {
-  it("е симетрична в осемте посоки", () => {
-    const m = star(5);
-    const key = new Set(m.cells.map((c) => `${c.x},${c.y},${c.c}`));
-    const n = m.w - 1;
-    for (const c of m.cells) {
-      expect(key.has(`${n - c.x},${c.y},${c.c}`)).toBe(true); // огледално
-      expect(key.has(`${c.y},${c.x},${c.c}`)).toBe(true); // по диагонала
+const at = (m: ReturnType<typeof rosette>) => {
+  const map = new Map(m.cells.map((c) => [`${c.x},${c.y}`, c.c]));
+  return (x: number, y: number) => map.get(`${x},${y}`);
+};
+
+describe("розетката от Дивотино", () => {
+  it("е 20 × 20 бода и симетрична в осемте посоки (както на покривката)", () => {
+    const m = rosette(), c = at(m), n = m.w - 1;
+    expect([m.w, m.h]).toEqual([20, 20]);
+    for (const p of m.cells) {
+      expect(c(n - p.x, p.y)).toBe(p.c); // огледално
+      expect(c(p.x, n - p.y)).toBe(p.c);
+      expect(c(p.y, p.x)).toBe(p.c); // по диагонала
     }
   });
 
-  it("има осем лъча: четирите оси и четирите диагонала стигат до края", () => {
-    const m = star(5), c = (m.w - 1) / 2;
-    const at = (x: number, y: number) => m.cells.some((p) => p.x === x && p.y === y);
-    expect(at(c, 0) && at(0, c) && at(m.w - 1, c) && at(c, m.w - 1)).toBe(true);
-    expect(at(c - 5, c - 5) && at(c + 5, c + 5)).toBe(true);
+  it("има винено сърце 8 × 8 с четири бели бода и червена рамка", () => {
+    const m = rosette(), c = at(m);
+    const whites = m.cells.filter((p) => p.c === THREAD.white).map((p) => `${p.x},${p.y}`).sort();
+    expect(whites).toEqual(["11,11", "11,8", "8,11", "8,8"]);
+    for (let y = 6; y <= 13; y++) for (let x = 6; x <= 13; x++) expect([THREAD.wine, THREAD.white]).toContain(c(x, y));
+    expect(c(5, 9)).toBe(THREAD.red);
+    expect(c(9, 4)).toBe(THREAD.red);
+  });
+
+  it("по два листа от всяка страна, разделени с празно", () => {
+    const c = at(rosette());
+    expect(c(6, 0)).toBe(THREAD.red); // връх на левия лист
+    expect(c(13, 0)).toBe(THREAD.red); // и на десния
+    expect(c(9, 2) ?? c(10, 2)).toBeUndefined(); // между тях — платно
+  });
+
+  it("е обшита с черен назад бод", () => {
+    expect(rosette().outline).toBe(THREAD.black);
   });
 });
 
-describe("бордюрът", () => {
-  it("се повтаря без шев: левият и десният край съвпадат", () => {
-    const t = bandTile();
-    const col = (x: number) => t.cells.filter((c) => c.x === x).map((c) => `${c.y}${c.c}`).sort().join();
-    expect(col(1)).toBe(col(t.w - 1));
+describe("назад бодът", () => {
+  it("минава само по ръба между конец и платно", () => {
+    const one = outlinePath([{ x: 0, y: 0, c: THREAD.red }], 10);
+    expect((one.match(/M/g) || []).length).toBe(4); // самотен бод — четирите страни
+    const two = outlinePath([{ x: 0, y: 0, c: THREAD.red }, { x: 1, y: 0, c: THREAD.red }], 10);
+    expect((two.match(/M/g) || []).length).toBe(6); // общата страна не се шие
+  });
+});
+
+describe("бордюрът (вълчи зъби)", () => {
+  it("се повтаря без шев: зъбът е огледален около ръба на плочката", () => {
+    const t = borderTile(), c = at(t);
+    for (const p of t.cells) expect(c((t.w - p.x) % t.w, p.y)).toBe(p.c);
+  });
+
+  it("червените зъби слизат, кафявите се качват — и не се докосват", () => {
+    const t = borderTile(), c = at(t);
+    const teeth = [...Array(t.h).keys()].map((y) => [...Array(t.w).keys()].filter((x) => y > 0 && y < t.h - 1 && c(x, y) === THREAD.red).length);
+    const rising = [...Array(t.h).keys()].map((y) => [...Array(t.w).keys()].filter((x) => c(x, y) === THREAD.brown).length);
+    expect(teeth.slice(2, 8)).toEqual([11, 9, 7, 5, 3, 1]);
+    expect(rising.slice(5, 9)).toEqual([1, 3, 5, 7]);
+    for (const p of t.cells.filter((q) => q.c === THREAD.brown)) {
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]) {
+        expect(c((p.x + dx + t.w) % t.w, p.y + dy)).not.toBe(THREAD.red);
+      }
+    }
+  });
+});
+
+describe("fromChart", () => {
+  it("чете схемата ред по ред; точката е голо платно", () => {
+    const m = fromChart(["r.", ".v"]);
+    expect(m).toEqual({ w: 2, h: 2, outline: undefined, cells: [{ x: 0, y: 0, c: THREAD.red }, { x: 1, y: 1, c: THREAD.wine }] });
   });
 });
 

@@ -44,25 +44,25 @@ export default function SectionOrder({ initial }: { initial: Item[] }) {
 
   return (
     <>
-      <ol className="ad-order">
+      <ol className="qba-order">
         {items.map((s, i) => (
-          <li className="ad-order__item" key={s.key}>
-            <span className="ad-order__num" aria-hidden="true">{i + 1}</span>
-            <div className="ad-order__name">
+          <li className="qba-order__item" key={s.key}>
+            <span className="qba-order__num" aria-hidden="true">{i + 1}</span>
+            <div className="qba-order__name">
               <b>{s.label}</b>
             </div>
-            <div className="ad-order__actions">
-              <button type="button" className="ad-btn ad-btn--ghost ad-btn--icon" disabled={i === 0} onClick={() => move(i, -1)} aria-label={`${s.label} — нагоре`} title="Нагоре">↑</button>
-              <button type="button" className="ad-btn ad-btn--ghost ad-btn--icon" disabled={i === items.length - 1} onClick={() => move(i, 1)} aria-label={`${s.label} — надолу`} title="Надолу">↓</button>
+            <div className="qba-order__actions">
+              <button type="button" className="qba-btn qba-btn--ghost qba-btn--icon" disabled={i === 0} onClick={() => move(i, -1)} aria-label={`${s.label} — нагоре`} title="Нагоре">↑</button>
+              <button type="button" className="qba-btn qba-btn--ghost qba-btn--icon" disabled={i === items.length - 1} onClick={() => move(i, 1)} aria-label={`${s.label} — надолу`} title="Надолу">↓</button>
               <EnableToggle contentKey={s.key} enabled={s.enabled} />
-              <a className="ad-btn ad-btn--ghost" href={s.preview} target="_blank" rel="noopener">Преглед</a>
-              <Link className="ad-btn ad-btn--primary" href={`/admin/content/${s.key}`}>Редактирай</Link>
+              <a className="qba-btn qba-btn--ghost" href={s.preview} target="_blank" rel="noopener">Преглед</a>
+              <Link className="qba-btn qba-btn--primary" href={`/admin/content/${s.key}`}>Редактирай</Link>
             </div>
           </li>
         ))}
       </ol>
-      <div className="ad-save-bar ad-save-bar--inline">
-        <button type="button" className="ad-btn ad-btn--primary" onClick={save} disabled={!dirty || saving}>
+      <div className="qba-save-bar qba-save-bar--inline">
+        <button type="button" className="qba-btn qba-btn--primary" onClick={save} disabled={!dirty || saving}>
           {saving ? "Запазване…" : dirty ? "Запази подредбата" : "Подредбата е запазена"}
         </button>
         <span className={`status ${status.cls}`} role="status" aria-live="polite">{status.msg}</span>

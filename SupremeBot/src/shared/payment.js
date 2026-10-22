@@ -10,12 +10,10 @@
  *   - After that, the bot requires an active subscription, paid via Revolut at
  *     PRICE_EUR per BILLING_PERIOD_DAYS.
  *   - The seller issues a signed license key (see tools/genkey.mjs) that
- *     encodes an expiry date; the extension verifies it offline with
- *     LICENSE_SECRET (HMAC-SHA256).
- *
- * NOTE: because the secret ships inside the extension, offline verification is
- * a deterrent, not bullet-proof DRM. For production-grade enforcement, move
- * key validation behind a server and have this client call it. See README.
+ *     encodes an expiry date. Keys are signed with ECDSA P-256 using a PRIVATE
+ *     key that only the seller holds (never in this repo). The extension and
+ *     the licence server carry only the PUBLIC key below, so they can verify a
+ *     key but nobody can mint one from the extension's code.
  */
 
 export const PRICE_EUR = 4;             // monthly subscription
@@ -34,11 +32,13 @@ export const REVOLUT_PAYMENT_URL = 'https://revolut.me/vycanismajoris';
 // also add this origin to the manifest's host_permissions.
 export const LICENSE_SERVER_URL = '';
 
-// Shared secret used to sign/verify license keys. CHANGE THIS to your own
-// random value and keep the same value in tools/genkey.mjs.
-export const LICENSE_SECRET = 'TZ-b0d6632a1a185b2714f94eee965390232c763380df811d59-stealth';
+// PUBLIC verification key (ECDSA P-256, SPKI DER, base64url). Public by design:
+// it can only CHECK a signature. The matching private key signs keys with
+// tools/genkey.mjs and must stay off the repo. Rotate both together with
+// `node tools/genkey.mjs --new-keypair <dir outside the repo>`.
+export const LICENSE_PUBLIC_KEY = 'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEsoxllU7kFnMtCT_g1-6fmCcN2lPiQxJp9OaTvYmVy2VChIrdwwphkkfE1nedXHL3CaLZ4JFypbAo7tjJzU7rnQ';
 
-export const LICENSE_PREFIX = 'TZ1';
+export const LICENSE_PREFIX = 'TZ2';
 
 // Merchant identity + legal document URLs shown in the purchase UI (EU
 // pre-contractual info / impressum). Point these at your hosted policy pages.

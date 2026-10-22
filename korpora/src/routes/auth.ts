@@ -2,8 +2,14 @@ import type { Role } from '@prisma/client';
 import { Router, type Request, type Response } from 'express';
 import { config, isProduction } from '../config.js';
 import { safeEqual } from '../crypto.js';
-import { deviceCookieHash, ensureDeviceCookie, parseFingerprint } from '../auth/device.js';
 import {
+  deviceCookieHash,
+  ensureDeviceCookie,
+  parseFingerprint,
+  readDeviceCookie,
+} from '../auth/device.js';
+import {
+  fromOurOrigin,
   isPreCsrfToken,
   newPreCsrfToken,
   PRE_CSRF_COOKIE,
@@ -12,9 +18,11 @@ import {
 } from '../auth/guards.js';
 import { clearSessionCookie, destroySessionById, setSessionCookie } from '../auth/sessions.js';
 import { isStaff } from '../auth/rbac.js';
-import { linkHours } from '../auth/tokens.js';
+import { LOCK_MINUTES, MAX_FAILED_LOGINS } from '../auth/lock.js';
+import { linkHours, spentLinkState } from '../auth/tokens.js';
 import { readCookie } from '../http/cookies.js';
 import { setFlash } from '../http/flash.js';
+import { errorMessage, logger } from '../logger.js';
 import {
   forgotLimiter,
   loginLimiter,
@@ -30,6 +38,7 @@ import { attemptLogin, completeMfa } from '../services/login.js';
 import { emailLinkKind, registerAccount, verifyEmailToken } from '../services/registration.js';
 import { requestPasswordReset, resetPassword, resetTokenValid } from '../services/security.js';
 import { customerActor } from '../services/auth-common.js';
+import { signInMayReadFingerprint } from '../services/device-consent.js';
 import type { DeviceContext } from '../services/devices.js';
 
 export const authRouter: Router = Router();
@@ -71,17 +80,17 @@ function landing(role: Role, next: string): string {
 
 /* -------------------------------------- вход -------------------------------------- */
 
-authRouter.get('/login', (req, res) => {
+authRouter.get('/login', async (req, res) => {
   if (req.principal?.session.mfaPassed) {
     res.redirect(safeNext(req.query.next));
     return;
   }
-  ensureDeviceCookie(req, res);
   authPage(res, 'auth/login', {
     pre: preCsrf(req, res),
     next: safeNext(req.query.next, ''),
     email: '',
     error: null,
+    fingerprint: await signInMayReadFingerprint(readDeviceCookie(req)),
   });
 });
 
@@ -89,18 +98,23 @@ authRouter.post('/login', loginLimiter, requirePreAuthCsrf, async (req, res) => 
   const meta = requestMeta(req);
   const email = stringField(req.body, 'email', 254);
   const next = safeNext(stringField(req.body, 'next', 300));
-  const result = await attemptLogin(
-    email,
-    rawField(req.body, 'password'),
-    meta,
-    deviceContext(req, res),
-  );
+  const device = deviceContext(req, res);
+  const result = await attemptLogin(email, rawField(req.body, 'password'), meta, device);
   const again = (error: string, status: number, extra: Record<string, unknown> = {}) =>
     authPage(res, 'auth/login', { pre: preCsrf(req, res), next, email, error, ...extra }, status);
 
   switch (result.kind) {
     case 'invalid':
       again('auth.errors.invalid', 401);
+      return;
+    case 'locked':
+      // „Забравена парола“ отключва веднага; текстът и кодът (401, като грешна парола) са еднакви с и без акаунт
+      again('auth.errors.locked', 401, {
+        errorParams: {
+          minutes: res.locals.t('common.minutes', { n: LOCK_MINUTES }),
+          n: MAX_FAILED_LOGINS,
+        },
+      });
       return;
     case 'throttled':
       again('auth.errors.throttled', 429);
@@ -164,8 +178,13 @@ authRouter.post('/login/2fa', mfaLimiter, async (req, res) => {
 
 authRouter.post('/logout', async (req, res) => {
   const principal = req.principal;
-  // Сесията пада винаги, и с остаряла форма (токенът е сменен в друг раздел): SameSite=Strict не пуска
-  // бисквитката от чужд сайт, така че изход от чужда ръка няма principal.
+  // Сесията пада и с остаряла форма (токенът е сменен в друг раздел), затова токенът не се иска. Пази
+  // Origin: SameSite=Strict пуска бисквитката и от съседен поддомейн (същият сайт), така че заявка от
+  // чужд адрес само връща към входа, без да трие сесията.
+  if (!fromOurOrigin(req, true)) {
+    res.redirect('/login');
+    return;
+  }
   if (principal) {
     await destroySessionById(principal.session.id);
     await audit(customerActor(principal.user, requestMeta(req)), {
@@ -185,12 +204,10 @@ authRouter.get('/register', (req, res) => {
     res.redirect('/app');
     return;
   }
-  ensureDeviceCookie(req, res);
   authPage(res, 'auth/register', {
     pre: preCsrf(req, res),
-    values: { email: '', name: '' },
-    error: null,
-    field: null,
+    values: { email: '', name: '', deviceConsent: false },
+    errors: {},
   });
 });
 
@@ -198,6 +215,7 @@ authRouter.post('/register', registerLimiter, requirePreAuthCsrf, async (req, re
   const values = {
     email: stringField(req.body, 'email', 254),
     name: stringField(req.body, 'name', 80),
+    deviceConsent: stringField(req.body, 'deviceConsent') === 'yes',
   };
   const result = await registerAccount(
     {
@@ -210,12 +228,7 @@ authRouter.post('/register', registerLimiter, requirePreAuthCsrf, async (req, re
     res.locals.locale,
   );
   if (!result.ok) {
-    authPage(
-      res,
-      'auth/register',
-      { pre: preCsrf(req, res), values, error: result.key, field: result.field },
-      400,
-    );
+    authPage(res, 'auth/register', { pre: preCsrf(req, res), values, errors: result.errors }, 400);
     return;
   }
   authPage(res, 'auth/check-email', { email: values.email, hours: linkHours('VERIFY_EMAIL') });
@@ -227,10 +240,11 @@ authRouter.post('/register', registerLimiter, requirePreAuthCsrf, async (req, re
  */
 authRouter.get('/verify-email', async (req, res) => {
   const token = typeof req.query.token === 'string' ? req.query.token : '';
-  ensureDeviceCookie(req, res);
   const kind = token ? await emailLinkKind(token) : null;
   if (!kind) {
-    authPage(res, 'auth/verified', { result: { ok: false } }, 400);
+    // по-старо писмо или вече използвана връзка: страницата казва какво е станало, не само „не работи“
+    const state = token ? await spentLinkState(token) : null;
+    authPage(res, 'auth/verified', { result: { ok: false, state } }, 400);
     return;
   }
   authPage(res, 'auth/verify-email', { pre: preCsrf(req, res), token, kind });
@@ -249,7 +263,14 @@ authRouter.post('/verify-email', verifyLimiter, requirePreAuthCsrf, async (req, 
   }
   // токенът вече е изразходван: същият адрес с друг език би показал „връзката не работи“
   res.locals.hideLangs = true;
-  authPage(res, 'auth/verified', { result }, result.ok ? 200 : 400);
+  authPage(
+    res,
+    'auth/verified',
+    {
+      result: result.ok ? result : { ok: false, state: token ? await spentLinkState(token) : null },
+    },
+    result.ok ? 200 : 400,
+  );
 });
 
 /* ---------------------------------- нова парола ---------------------------------- */
@@ -262,8 +283,14 @@ function forgotPage(req: Request, res: Response, sent: boolean): void {
 
 authRouter.get('/forgot', (req, res) => forgotPage(req, res, false));
 
-authRouter.post('/forgot', forgotLimiter, requirePreAuthCsrf, async (req, res) => {
-  await requestPasswordReset(stringField(req.body, 'email', 254), requestMeta(req));
+/**
+ * Отговорът не чака работата: за познат имейл тя е по-дълга (връзка, писмо, одит), а времето на отговора
+ * не бива да казва дали има акаунт. Грешка в нея отива в лога, не в отговора.
+ */
+authRouter.post('/forgot', forgotLimiter, requirePreAuthCsrf, (req, res) => {
+  void requestPasswordReset(stringField(req.body, 'email', 254), requestMeta(req)).catch(
+    (error: unknown) => logger.error({ err: errorMessage(error) }, 'нова парола: заявката не мина'),
+  );
   forgotPage(req, res, true);
 });
 

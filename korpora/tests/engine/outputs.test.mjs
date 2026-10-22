@@ -3,14 +3,12 @@
 // above the spoilboard limit, DXF structure — and, when Python with ezdxf is available, a DXF audit.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { registerFixtures, FIXTURE } from './fixtures.mjs';
+import { registerFixtures, FIXTURE, OUTPUT_SPECS as specs, outputMeta as metaOf } from './fixtures.mjs';
 import { buildModel, SHEET_TRIM } from '../../engine/model.js';
-import { TYPE_ORDER } from '../../engine/types.js';
 import { buildBom, csvCell, cutListCsv, hardwareCsv } from '../../engine/bom.js';
 import { drillCsv, hardwareCards, partHoles } from '../../engine/drill.js';
 import { nest } from '../../engine/nest.js';
@@ -18,7 +16,6 @@ import { toGcode } from '../../engine/cam.js';
 import { toDxf } from '../../engine/dxf.js';
 import { cutSize } from '../../engine/panel.js';
 import { STOCK } from '../../engine/materials.js';
-import { canonicalJson } from '../../engine/util.js';
 
 registerFixtures();
 
@@ -69,17 +66,6 @@ function checkGcode(text, sheet, T, tool) {
   assert.ok(lines.some((l) => l.startsWith('M30')), 'missing M30');
 }
 
-const specs = TYPE_ORDER.map((type) => ({ type }));
-specs.push(
-  { type: 'wardrobe', width: 3000, post: 'grbl', tool: 8, onion: false, hinge: 'fx:hettich' },
-  { type: 'bed', mattressW: 900, footHeight: 0 },
-  { type: 'kitchen', modules: 6, bandCompensation: false, hinge: 'fx:gtv' },
-  { type: 'wardrobe', hinge: 'fx:salice' },
-  { type: 'bookcase', columns: 3, hinge: 'fx:gtv' },
-);
-
-const metaOf = (model) => ({ product: 'Korpora', hash: createHash('sha256').update(canonicalJson(model.spec)).digest('hex'), owner: 'Carbon Stealth VCC', date: '2026-10-02' });
-
 for (const [ci, input] of specs.entries()) {
   test(`outputs ${ci + 1}: ${input.type}${Object.keys(input).length > 1 ? ' variant' : ''}`, () => {
     const model = buildModel(input);
@@ -125,7 +111,8 @@ for (const [ci, input] of specs.entries()) {
         assert.ok(p.x >= edge && p.y >= edge && p.x + p.w <= sh.w - edge && p.y + p.h <= sh.h - edge, `${label}: placement outside trim: ${p.name}`);
         const part = model.parts.find((q) => q.id === p.partId);
         if (part.grain) assert.equal(p.rot, false, `${label}: ${p.name} rotated against grain`);
-        assert.equal(p.rot ? p.w : p.h, cutSize(part, model.spec.bandCompensation).W, `${label}: placement size mismatch`);
+        const cut = cutSize(part, model.spec.bandCompensation);
+        assert.deepEqual(p.rot ? [p.h, p.w] : [p.w, p.h], [cut.L, cut.W], `${label}: ${p.name} placed at the wrong cut size`);
       }
       for (let i = 0; i < pls.length; i++) {
         for (let j = i + 1; j < pls.length; j++) {

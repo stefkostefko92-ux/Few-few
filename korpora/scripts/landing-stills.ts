@@ -50,10 +50,11 @@ try {
   });
   await page.addInitScript('window.__korporaStills = true;');
   await page.goto(`${base}/`, { waitUntil: 'networkidle' });
-  // the stage alone, filling the frame, without the read-out and the old stills
+  // the stage alone, filling the frame, without the read-out and the old stills; the top bar is a stacking layer of its
+  // own (its menu opens over the page), so it is taken out too, or it would be painted into the still
   await page.addStyleTag({
     content:
-      '.stage-frame{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;margin:0!important;border-radius:0!important;z-index:99}.stage-hud,.still{display:none!important}',
+      '.stage-frame{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;margin:0!important;border-radius:0!important;z-index:99}.stage-hud,.still,.site-bar{display:none!important}',
   });
   await page.evaluate('window.korporaStory.start()');
   await page.waitForFunction("'still' in (window.korporaStory ?? {})", null, { timeout: 180_000 });
