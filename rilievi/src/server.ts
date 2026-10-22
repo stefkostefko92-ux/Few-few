@@ -164,14 +164,16 @@ export function createServer(): Express {
   // Четири бележки по 4000 знака на кирилица са ~100 KB urlencoded, мерките на бутониерите — до 300
   // спирки (измерено: формата праща ~1950 параметъра с 300 спирки), отметките на снимките за печата —
   // до 300 (`MAX_PER_SCHEDA`). Таванът е над това, не повече. Само формата на картата носи и листовете
-  // на скицника (до MAX_FOGLI по MAX_JSON_FOGLIO, src/schizzi/model.ts — с кодирането до ~3 MB): там
-  // таванът е по-висок; вторият парсер пропуска вече прочетеното тяло.
-  const formaScheda = express.urlencoded({ extended: false, limit: '4mb', parameterLimit: 3000 });
+  // на скицника (до MAX_FOGLI по MAX_FOGLIO_CODIFICATO, src/schizzi/model.ts — 3,5 MB): тялото ѝ се
+  // чете след сесията, до 4 MB само за влязъл човек (по-долу).
+  const forma = (limit: string) =>
+    express.urlencoded({ extended: false, limit, parameterLimit: 3000 });
+  const formaComune = forma('1mb');
+  const formaScheda = forma('4mb');
   app.use((req, res, next) => {
-    if (req.method === 'POST' && FORMA_SCHEDA.test(req.path)) formaScheda(req, res, next);
-    else next();
+    if (req.method === 'POST' && FORMA_SCHEDA.test(req.path)) next();
+    else formaComune(req, res, next);
   });
-  app.use(express.urlencoded({ extended: false, limit: '1mb', parameterLimit: 3000 }));
   app.use(cookieParser());
   app.use(
     '/static',
@@ -185,6 +187,11 @@ export function createServer(): Express {
 
   // Всичко отвъд статиката: сесия → речник и тема → еднократно съобщение → общото за шаблоните.
   app.use(attachSession);
+  // Записът на картата: до 4 MB само за влязъл човек (листовете на скицника), иначе — до 1 MB.
+  app.use((req, res, next) => {
+    if (req.method !== 'POST' || !FORMA_SCHEDA.test(req.path)) return next();
+    (req.principal ? formaScheda : formaComune)(req, res, next);
+  });
   app.use(attachPrefs);
   app.use(readFlash);
   app.use((req: Request, res: Response, next: NextFunction) => {

@@ -184,7 +184,7 @@ describe('the sketch pad', () => {
     assert.equal((await fogli(await nuova(browser))).length, 1);
   });
 
-  it('takes a large drawing on the sheet form, and only there', async () => {
+  it('takes a large drawing on the sheet form, and only there and signed in', async () => {
     const { browser, user } = await signedIn('TECNICO', (await makeAzienda()).id);
     await conSchizzi(user.aziendaId!, true);
     const id = await newScheda(browser);
@@ -195,5 +195,8 @@ describe('the sketch pad', () => {
     assert.equal((await fogli(id)).length, 8);
     const altrove = await browser.submit('/account', '/account', { name: 'x'.repeat(1_200_000) });
     assert.equal(altrove.status, 413);
+    // Without a session the sheet form takes no more than any other.
+    assert.equal((await new Browser().post('/schede', { schizzo: grande })).status, 413);
+    assert.equal((await new Browser().post(`/schede/${id}`, { schizzo: grande })).status, 413);
   });
 });

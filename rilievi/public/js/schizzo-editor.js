@@ -9,10 +9,8 @@
   const dialog = document.querySelector('[data-schizzo-editor]');
   const shared = window.rilieviSchizzo;
   if (!dialog || !shared || typeof dialog.showModal !== 'function') return;
-  const { view, paint, paintMark, simplify, strokesOf, shapeOf, hitOf, pointOn, cleanText } =
-    shared;
-  const W = view.larghezza;
-  const H = view.altezza;
+  const { view, paint, paintMark, paintPaper, fitCanvases, simplify, strokesOf } = shared;
+  const { shapeOf, hitOf, pointOn, cleanText, fits, historyOf } = shared;
   const canvas = dialog.querySelector('[data-schizzo-tela]');
   const area = dialog.querySelector('[data-schizzo-area]');
   const title = dialog.querySelector('#schizzo-titolo');
@@ -25,13 +23,11 @@
   // The committed elements, painted again only when they change; what is being drawn goes on top.
   const base = document.createElement('canvas');
   const baseCtx = base.getContext('2d');
-  const grid = new Path2D(view.griglia);
   const ERASER = 14;
   const SIMPLIFY = 1.2;
 
   let elements = [];
-  let history = [];
-  let at = 0;
+  let history = historyOf([]);
   let initial = '';
   let closed = null;
   let current = null;
@@ -44,6 +40,7 @@
   let penSeen = false;
   let scale = 1;
   let frame = 0;
+  let stale = false;
 
   const choice = (name) => dialog.querySelector(`input[name="schizzo-${name}"]:checked`).value;
   const tool = () => choice('strumento');
@@ -52,6 +49,7 @@
 
   const draw = () => {
     frame = 0;
+    if (stale) paintLayer();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.drawImage(base, 0, 0);
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
@@ -62,60 +60,43 @@
     if (!frame) frame = requestAnimationFrame(draw);
   };
 
-  const paintBase = () => {
+  const paintLayer = () => {
+    stale = false;
     baseCtx.setTransform(scale, 0, 0, scale, 0, 0);
-    baseCtx.fillStyle = '#ffffff';
-    baseCtx.fillRect(0, 0, W, H);
-    baseCtx.lineWidth = 1;
-    baseCtx.strokeStyle = view.coloreGriglia;
-    baseCtx.stroke(grid);
+    paintPaper(baseCtx);
     (showing || elements).forEach((el) => paint(baseCtx, el));
+  };
+  const paintBase = () => {
+    paintLayer();
     draw();
   };
 
-  // The biggest sheet that fits the free space (inside the area's padding), sharp on the screen's pixels.
   const fit = () => {
-    const style = getComputedStyle(area);
-    const free = (size, a, b) => size - parseFloat(style[a]) - parseFloat(style[b]);
-    const room = free(area.clientWidth, 'paddingLeft', 'paddingRight');
-    const tall = free(area.clientHeight, 'paddingTop', 'paddingBottom');
-    const width = Math.max(1, Math.min(room, tall * (W / H)));
-    const ratio = window.devicePixelRatio || 1;
-    canvas.style.width = `${Math.floor(width)}px`;
-    canvas.style.height = `${Math.floor(width * (H / W))}px`;
-    canvas.width = base.width = Math.round(width * ratio);
-    canvas.height = base.height = Math.round(width * (H / W) * ratio);
-    scale = canvas.width / W;
+    scale = fitCanvases(area, [canvas, base]);
     paintBase();
   };
 
   const buttons = () => {
-    undoButton.disabled = at === 0;
-    redoButton.disabled = at >= history.length - 1;
+    undoButton.disabled = !history.canUndo();
+    redoButton.disabled = !history.canRedo();
   };
-  // A new state of the sheet, if it still fits what the server takes; undo goes back 200 steps.
+  // A new state of the sheet, if it still fits what the server takes.
   const commit = (next) => {
-    if (next.length > view.maxElementi || JSON.stringify({ e: next }).length > view.maxJson) {
+    if (!fits(next)) {
       status.textContent = dialog.dataset.msgPieno;
       paintBase();
       return false;
     }
-    history = history
-      .slice(0, at + 1)
-      .concat([next])
-      .slice(-200);
-    at = history.length - 1;
-    elements = next;
+    elements = history.push(next);
     status.textContent = '';
     paintBase();
     buttons();
     return true;
   };
   const step = (delta) => {
-    const next = at + delta;
-    if (next < 0 || next >= history.length) return;
-    at = next;
-    elements = history[at];
+    const state = history.step(delta);
+    if (!state) return;
+    elements = state;
     paintBase();
     buttons();
   };
@@ -125,7 +106,9 @@
     if (!took.length) return;
     took.forEach((el) => erased.add(el));
     showing = elements.filter((el) => !erased.has(el));
-    paintBase();
+    // At most once a frame: a stylus reports far more often than the screen draws.
+    stale = true;
+    schedule();
   };
 
   canvas.addEventListener('pointerdown', (event) => {
@@ -247,12 +230,13 @@
       if (elements.length && window.confirm(dialog.dataset.msgPulisci)) commit([]);
     }
   });
-  // Esc asks like "Discard"; a dialog the browser closes anyway leaves the sheet as it was.
+  // Esc asks like "Discard". A dialog the browser closes anyway (a second Esc or "back" right after)
+  // keeps what was drawn: it is saved only with the sheet, and "Discard" stays the way to drop it.
   dialog.addEventListener('cancel', (event) => {
     event.preventDefault();
     discard();
   });
-  dialog.addEventListener('close', () => close(false));
+  dialog.addEventListener('close', () => close(true));
   dialog.addEventListener('keydown', (event) => {
     if (event.target === textInput) {
       if (event.key === 'Enter') {
@@ -276,8 +260,7 @@
   document.addEventListener('rilievi:schizzo-apri', (event) => {
     const { foglio, n, chiuso } = event.detail;
     elements = Array.isArray(foglio.e) ? foglio.e.slice() : [];
-    history = [elements];
-    at = 0;
+    history = historyOf(elements);
     initial = JSON.stringify(elements);
     closed = chiuso;
     current = null;

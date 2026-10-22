@@ -18,6 +18,11 @@ export const MAX_ELEMENTI = 3000;
 export const MAX_SEGMENTI = 4000;
 /** Един лист, както идва от формата (JSON) — същия таван има и браузърът. */
 export const MAX_JSON_FOGLIO = 200_000;
+/**
+ * Един лист, кодиран за формата (urlencoded) — вторият таван на браузъра: надписите с ударения и кавички
+ * тежат до 9 байта на знак, а десет листа трябва да се съберат в 4 MB на формата (src/server.ts).
+ */
+export const MAX_FOGLIO_CODIFICATO = 350_000;
 export const MAX_TESTO = 120;
 
 export type Colore = 'k' | 'r' | 'b';
@@ -54,6 +59,7 @@ export const VISTA_SCHIZZO = {
   maxElementi: MAX_ELEMENTI,
   maxSegmenti: MAX_SEGMENTI,
   maxJson: MAX_JSON_FOGLIO,
+  maxCodificato: MAX_FOGLIO_CODIFICATO,
   maxTesto: MAX_TESTO,
 } as const;
 
@@ -63,9 +69,10 @@ const nelFoglio = (d: string): boolean => {
   const [x = Infinity, y = Infinity] = d.slice(1).split(/[ l]/, 2).map(Number);
   return x <= LARGHEZZA && y <= ALTEZZA;
 };
+// Без управляващи, невидими и самотни сурогатни знаци (половин емоджи — базата не го приема).
 const pulito = (value: string): string =>
   value
-    .replace(/[\p{Cc}\p{Cf}]/gu, ' ')
+    .replace(/[\p{Cc}\p{Cf}\p{Cs}]/gu, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 

@@ -66,6 +66,16 @@ describe('a sketch sheet', () => {
     assert.equal(el?.t === 'x' ? el.v : null, 'Vano 1600 × 1400');
   });
 
+  it('drops half an emoji (the database refuses it) and keeps a whole one', () => {
+    const v = (text: string) => {
+      const el = foglioDa(JSON.stringify({ e: [testo(text)] }))?.e[0];
+      return el?.t === 'x' ? el.v : null;
+    };
+    assert.equal(v('Vano \ud83d'), 'Vano');
+    assert.equal(v('\ude00Vano'), 'Vano');
+    assert.equal(v('Vano 😀'), 'Vano 😀');
+  });
+
   it('is drawn on squared paper, a line every 50 units', () => {
     assert.equal((GRIGLIA.match(/M/g) ?? []).length, 27 + 19);
   });

@@ -39,6 +39,35 @@
     }
   };
 
+  // White paper with the faint grid, in sheet units (the target is already scaled to them).
+  const grid = new Path2D(view.griglia);
+  const paintPaper = (target) => {
+    target.fillStyle = '#ffffff';
+    target.fillRect(0, 0, view.larghezza, view.altezza);
+    target.lineWidth = 1;
+    target.strokeStyle = view.coloreGriglia;
+    target.stroke(grid);
+  };
+
+  // The biggest sheet that fits the free space of `area` (inside its padding), sharp on the screen's
+  // pixels: sizes the canvases (the first one is on the page) and gives device pixels per sheet unit.
+  const fitCanvases = (area, canvases) => {
+    const style = getComputedStyle(area);
+    const free = (size, a, b) => size - parseFloat(style[a]) - parseFloat(style[b]);
+    const room = free(area.clientWidth, 'paddingLeft', 'paddingRight');
+    const tall = free(area.clientHeight, 'paddingTop', 'paddingBottom');
+    const ratio = view.altezza / view.larghezza;
+    const width = Math.max(1, Math.min(room, tall / ratio));
+    const dpr = window.devicePixelRatio || 1;
+    canvases[0].style.width = `${Math.floor(width)}px`;
+    canvases[0].style.height = `${Math.floor(width * ratio)}px`;
+    canvases.forEach((c) => {
+      c.width = Math.round(width * dpr);
+      c.height = Math.round(width * ratio * dpr);
+    });
+    return canvases[0].width / view.larghezza;
+  };
+
   // A small cross where the next text goes.
   const paintMark = (target, p, colour) => {
     target.lineWidth = 3;
@@ -62,10 +91,11 @@
     };
   };
 
-  // The text as the server keeps it: no control or invisible characters, single spaces, the limit.
+  // The text as the server keeps it: no control, invisible or lone surrogate characters, single
+  // spaces, the limit.
   const cleanText = (value) =>
     value
-      .replace(/[\p{Cc}\p{Cf}]/gu, ' ')
+      .replace(/[\p{Cc}\p{Cf}\p{Cs}]/gu, ' ')
       .replace(/\s+/g, ' ')
       .trim()
       .slice(0, view.maxTesto);
@@ -184,10 +214,46 @@
     );
   };
 
+  // Does the sheet still fit what the server takes: the elements, the JSON, and its size as the form
+  // sends it (encodeURIComponent counts a space as 3 bytes, the form as 1 — on the safe side).
+  const fits = (sheet) => {
+    const json = JSON.stringify({ e: sheet });
+    return (
+      sheet.length <= view.maxElementi &&
+      json.length <= view.maxJson &&
+      encodeURIComponent(json).length <= view.maxCodificato
+    );
+  };
+
+  // Undo and redo over whole states of the sheet (the arrays share their elements), 200 steps back.
+  const historyOf = (first) => {
+    let states = [first];
+    let at = 0;
+    return {
+      push(next) {
+        states = states
+          .slice(0, at + 1)
+          .concat([next])
+          .slice(-200);
+        at = states.length - 1;
+        return next;
+      },
+      step(delta) {
+        if (at + delta < 0 || at + delta >= states.length) return null;
+        at += delta;
+        return states[at];
+      },
+      canUndo: () => at > 0,
+      canRedo: () => at < states.length - 1,
+    };
+  };
+
   window.rilieviSchizzo = Object.freeze({
     view,
     paint,
     paintMark,
+    paintPaper,
+    fitCanvases,
     pointOn,
     cleanText,
     svgOf,
@@ -195,5 +261,7 @@
     strokesOf,
     shapeOf,
     hitOf,
+    fits,
+    historyOf,
   });
 })();
