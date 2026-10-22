@@ -175,12 +175,15 @@ docker exec liftpilot-app-1 npm run engine:notice -- --send --motivo "<какв�
 ## Кръг 50 Б — схиците: HEIC, прегледът и четенето (Vertex AI), изключено по подразбиране
 
 Миграция `29_schizzi` — само нова стойност `SCHIZZO` в enum-а `AttachmentKind` (пробвана на копие на базата:
-`prisma migrate deploy`, `_prisma_migrations` и `prisma migrate diff` без разлика; връщането — в коментара ѝ).
+`prisma migrate deploy`, `_prisma_migrations` и `prisma migrate diff` без разлика; връщането — в коментара ѝ). Ако
+кръг 49 още не е разгърнат, един release носи 26–29 (entrypoint-ът ги пуска в ред): пробвано (2026-10-22) с образа на
+`c05116a7b` срещу копие в състоянието на кръг 48 (миграция 25) — 26–29 приложени, health 200, проверките долу, пълният smoke
+(94 стъпки), `smoke-allegati` и `smoke-schizzi` — „all good“; `nginx -t` на новия vhost минава.
 Образът получава `poppler-utils` (`pdftoppm`) и `libheif-examples` (`heif-convert`; в bookworm `libheif1` 1.15 декодира
 HEVC през `libde265`, който влиза като зависимост и с `--no-install-recommends`). Проверка след деплоя:
 
 ```bash
-docker compose exec app sh -c 'command -v heif-convert pdftoppm && heif-convert --list-decoders'   # трябва да има HEVC (libde265)
+docker compose exec app sh -c 'command -v heif-convert && command -v pdftoppm && heif-convert --list-decoders'   # двата пътя и HEVC (libde265); sh в образа е dash: `command -v a b` проверява само a
 docker compose exec app python3 -c 'import PIL; print(PIL.__version__)'
 docker exec liftpilot-db-1 psql -U liftpilot -d liftpilot -Atc 'SELECT migration_name FROM "_prisma_migrations" ORDER BY finished_at DESC LIMIT 1'   # 29_schizzi
 nginx -T 2>/dev/null | grep -A9 'schizzi/' | grep proxy_read_timeout    # proxy_read_timeout 150s;
@@ -487,7 +490,7 @@ docker inspect -f '{{index .Config.Labels "com.docker.compose.project.working_di
 
 **Преди връщане към по-стар код — какво носи то:**
 
-1. **Миграциите 23–28 са адитивни:** старият код върви с базата — `migrate deploy` на кода на кръг 47 срещу копие с 23
+1. **Миграциите 23–29 са адитивни:** старият код върви с базата — `migrate deploy` на кода на кръг 47 срещу копие с 23
    и 24: „No pending migrations to apply“ (пробвано при прегледа на кръг 48; така и за 22). За 25 — по построение
    (две nullable колони, които старият клиент не чете, и уникален индекс, в който старият код пише само `NULL`);
    не е пробвано. За 26 (`26_rilievi_sync_2`: енум и 33 колони, NULL или празен списък) — пробвано в кръг 49: клиентът
@@ -505,6 +508,10 @@ docker inspect -f '{{index .Config.Labels "com.docker.compose.project.working_di
    26) е пробвано на копие на `argano_visual` (2026-10-22): схемата и всеки стар ред — като преди 26, после `migrate deploy`
    ги пуска отново без разлика със схемата. Всеки коментар трие и реда на миграцията си в `_prisma_migrations` — без него
    повторният деплой прескача миграцията (така беше в коментара на 28 до тази дата: колоната липсваше след връщане и нов деплой).
+   29 (`29_schizzi`, само стойност на enum-а на качените файлове, които кодът на кръг 48 не чете) — пробвано (2026-10-22): на
+   копие на `argano_visual` с приложени 26–29 стъпките на entrypoint-а на кръг 48 (`4215e1f67`) дават „No pending migrations to
+   apply“, клиентът на Prisma от схемата му чете всичките 27 модела и създава проект и карта, обновява карта (транзакция,
+   върната накрая). Връщане към кръг 49 (`8acce1dde`) при качени схици — непробвано: клиентът му не познава `SCHIZZO`.
 2. **Двигателите:** връщане към release с други версии на двигателите (отпреди кръг 48 — 1.7.x) прави комплект, издаден
    под сегашните и още несвален, без PDF (409 — същото като „Преди деплой, който мени двигател“, в обратна посока).
    Затова преди връщането, на текущия release: `cd "$(readlink -e /opt/few-few/liftpilot-current)" && docker compose
