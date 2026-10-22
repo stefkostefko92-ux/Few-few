@@ -3,13 +3,15 @@ import 'server-only';
 // measures the model proposes, which the technician confirms or corrects one by one before they enter a form (nothing
 // here is saved: neither the pictures sent nor the proposal). In order, each step before any costlier one: the request
 // comes from the application's own pages (Origin = PUBLIC_BASE_URL), the session, the right ('progetto:edit': whoever
-// draws the shaft and the machine room; never a read-only company), the ids, the body ({ target: 'vano' | 'locale' },
-// strict), the installation (of the company, not archived), the file (of that installation, kind SCHIZZO: anything else
-// is «not found»), the feature on (src/server/schizzi/config.ts: else 503); a reading already made of the same bytes for
-// the same target, model and instructions is answered from memory (24 h, 200 readings) and costs nothing; else 20
-// readings an hour per user and 100 a day per company, at most 2 under way in the server, the pictures made by us in
-// the renderers' slots (src/lib/report/image-tool.ts) and sent to the model (model.ts) within 140 s in all (nginx waits
-// 150 s on this path), the answer checked against the catalog (src/lib/schizzi/proposta.ts). The activity log keeps
+// draws the shaft and the machine room; never a read-only company), 60 calls in 10 minutes per user (every call, one
+// answered from memory too: each writes the activity log), the ids, the body ({ target: 'vano' | 'locale' }, strict),
+// the installation (of the company, not archived), the file (of that installation, kind SCHIZZO: anything else is «not
+// found»), the feature on (src/server/schizzi/config.ts: else 503); a reading already made of the same bytes for the
+// same target, model and instructions is answered from memory (24 h — past them it is forgotten, as new readings come
+// and every hour —, 200 readings) and costs nothing; else at most 2 under way in the server (busy: refused before the
+// quotas count it), 20 readings an hour per user and 100 a day per company, the pictures made by us in the renderers'
+// slots (src/lib/report/image-tool.ts) and sent to the model (model.ts) within 140 s in all (nginx waits 150 s on this
+// path), the answer checked against the catalog (src/lib/schizzi/proposta.ts). The activity log keeps
 // the file's id and SHA-256, the target, the model, how many values and whether from memory — never the picture or
 // what was read; the log the same, with the time taken. Every answer is JSON, never cached: { ok: true, proposta,
 // cached } or { ok: false, error, message } (error: an errors.* key, message: its Italian text).
@@ -35,13 +37,16 @@ import { bytesOf, progettoDi, schizzoDaLeggere } from './queries';
 import it from '../../../messages/it.json';
 
 export const LETTURA_LIMITS = {
+  /** calls of a user in 10 minutes, whatever their answer (one from memory too) */
+  callsPer10Min: 60,
   perUserHour: 20,
   perCompanyDay: 100,
   /** readings under way in the server at once (each holds up to four pictures and waits for the model) */
   inFlight: 2,
-  /** readings kept in memory, and for how long */
+  /** readings kept in memory, for how long, and how often the ones past it are swept away */
   cacheEntries: 200,
   cacheMs: 24 * 60 * 60 * 1000,
+  sweepMs: 60 * 60 * 1000,
   /** the whole reading, pictures and model, within this (nginx: proxy_read_timeout 150s on the path) */
   deadlineMs: 140_000,
 } as const;
@@ -80,17 +85,32 @@ function recall(key: string): Proposta | null {
   }
   return structuredClone(hit.proposta);
 }
+/** The readings past 24 hours forgotten: the oldest first — the map keeps them in the order they were made —, up to the
+ *  first one still valid. */
+export function sweepReadings(now: number = Date.now()): void {
+  for (const [key, hit] of memory) {
+    if (now - hit.at <= LETTURA_LIMITS.cacheMs) break;
+    memory.delete(key);
+  }
+}
+let sweeper: ReturnType<typeof setInterval> | null = null;
 function remember(key: string, proposta: Proposta): void {
+  const now = Date.now();
+  sweepReadings(now);
   memory.delete(key);
-  memory.set(key, { at: Date.now(), proposta: structuredClone(proposta) });
+  memory.set(key, { at: now, proposta: structuredClone(proposta) });
   while (memory.size > LETTURA_LIMITS.cacheEntries) {
     const oldest = memory.keys().next().value;
     if (oldest === undefined) break;
     memory.delete(oldest);
   }
+  // a server with no new readings forgets them all the same, every hour (the timer never keeps the process alive)
+  sweeper ??= setInterval(() => sweepReadings(), LETTURA_LIMITS.sweepMs).unref();
 }
 /** The readings kept in memory forgotten (the tests; a change of the instructions does it by PROMPT_VERSION). */
 export const forgetReadings = (): void => memory.clear();
+/** How many readings are kept in memory (the tests). */
+export const keptReadings = (): number => memory.size;
 
 let reading = 0;
 
@@ -100,6 +120,8 @@ export async function handleLettura(req: Request, rawProject: string, rawAttachm
   const user = await getSessionUser();
   if (!user || user.mustChangePassword) return refuse('unauthorized');
   if (!can(user, 'progetto:edit')) return refuse('forbidden');
+  // every call, before the database and the memory: an answer from memory costs no model but writes the activity log
+  if (!rateLimit(`schizzi-call:${user.id}`, LETTURA_LIMITS.callsPer10Min, 10 * 60 * 1000)) return refuse('rateLimited');
   const projectId = idSchema.safeParse(rawProject), attachmentId = idSchema.safeParse(rawAttachment);
   if (!projectId.success || !attachmentId.success) return refuse('notFound');
   if (!/^application\/json\b/i.test(req.headers.get('content-type') ?? '')) return refuse('invalidFields');
@@ -132,9 +154,10 @@ export async function handleLettura(req: Request, rawProject: string, rawAttachm
 
   const key = keyOf(user.companyId, file.sha256, target, config.model), known = recall(key);
   if (known) return answer(known, true);
+  // busy first: a reading the server cannot start now uses up no quota
+  if (reading >= LETTURA_LIMITS.inFlight) return refuse('sketchBusy');
   if (!rateLimit(`schizzi-user:${user.id}`, LETTURA_LIMITS.perUserHour, 60 * 60 * 1000)) return refuse('rateLimited');
   if (!rateLimit(`schizzi-company:${user.companyId}`, LETTURA_LIMITS.perCompanyDay, 24 * 60 * 60 * 1000)) return refuse('rateLimited');
-  if (reading >= LETTURA_LIMITS.inFlight) return refuse('sketchBusy');
   reading++;
   try {
     let pictures: Buffer[];

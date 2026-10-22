@@ -86,15 +86,31 @@ async function vertexModel(cfg: SketchConfig): Promise<SketchModel> {
   };
 }
 
+/** What makes the model of a configuration: Vertex AI (the tests pass a fake: no network). */
+export type ModelFactory = (cfg: SketchConfig) => Promise<SketchModel>;
+
 let cached: { key: string; model: Promise<SketchModel> } | null = null;
 
-/** The model for this configuration (made once per configuration: the key file or the project changed, a new one). */
-export function sketchModel(cfg: SketchConfig): Promise<SketchModel> {
-  const key = JSON.stringify([cfg.projectId, cfg.region, cfg.credentialsFile]);
-  if (!cached || cached.key !== key) {
-    const model = vertexModel(cfg);
-    model.catch(() => { if (cached?.model === model) cached = null; });
-    cached = { key, model };
-  }
-  return cached.model;
+/**
+ * The model for this configuration, made once per configuration — the project, the region, the key file and the key
+ * itself (its time, size and inode: a key replaced at the same path makes a new one, Google's auth library keeps the
+ * key it read first). A key the API refuses ('unavailable': revoked, its account disabled, the model not enabled)
+ * forgets it, so that the next reading makes it again from the key in place then.
+ */
+export function sketchModel(cfg: SketchConfig, make: ModelFactory = vertexModel): Promise<SketchModel> {
+  const key = JSON.stringify([cfg.projectId, cfg.region, cfg.credentialsFile, cfg.key.mtimeMs, cfg.key.size, cfg.key.ino]);
+  if (cached?.key === key) return cached.model;
+  const model: Promise<SketchModel> = make(cfg).then((made) => ({
+    async read(req, signal) {
+      try {
+        return await made.read(req, signal);
+      } catch (e) {
+        if (e instanceof SketchModelError && e.kind === 'unavailable' && cached?.model === model) cached = null;
+        throw e;
+      }
+    },
+  }));
+  model.catch(() => { if (cached?.model === model) cached = null; });
+  cached = { key, model };
+  return model;
 }

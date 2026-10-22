@@ -4,13 +4,16 @@ import 'server-only';
 // any other) and the service account's key file (VERTEX_CREDENTIALS_FILE, in the directory mounted read-only into the
 // container: a regular file readable by its owner only, mode 600). Anything missing or wrong turns it off — fail
 // closed: the panel shows the sketch beside the form and the measures are typed by hand. Checked at each use (a key
-// put in place or taken away needs no restart); the reason it is off is logged once per change, never the path or
-// the key's content.
+// put in place, replaced at the same path or taken away needs no restart: the key file's time, size and inode are part
+// of the configuration, and the model's client is made again when they change); the reason it is off is logged once
+// per change, never the path or the key's content.
 import { statSync } from 'node:fs';
 import { env } from '@/lib/env';
 import { log } from '@/lib/log';
 
-export interface SketchConfig { projectId: string; region: string; credentialsFile: string; model: string }
+/** The key file as found at this use: another key at the same path differs in one of these. */
+export interface SketchKey { mtimeMs: number; size: number; ino: number }
+export interface SketchConfig { projectId: string; region: string; credentialsFile: string; key: SketchKey; model: string }
 export type SketchOff = 'unset' | 'noCredentials' | 'notAFile' | 'openMode';
 export type SketchState = { on: true; config: SketchConfig } | { on: false; reason: SketchOff };
 
@@ -40,7 +43,13 @@ export function sketchState(): SketchState {
   }
   if (!st.isFile() || st.size === 0 || st.size > 64 * 1024) return note({ on: false, reason: 'notAFile' });
   if ((st.mode & 0o077) !== 0) return note({ on: false, reason: 'openMode' });
-  return note({ on: true, config: { projectId: e.VERTEX_PROJECT_ID, region: e.VERTEX_REGION, credentialsFile: e.VERTEX_CREDENTIALS_FILE, model: e.SKETCH_MODEL } });
+  return note({
+    on: true,
+    config: {
+      projectId: e.VERTEX_PROJECT_ID, region: e.VERTEX_REGION, credentialsFile: e.VERTEX_CREDENTIALS_FILE,
+      key: { mtimeMs: st.mtimeMs, size: st.size, ino: st.ino }, model: e.SKETCH_MODEL,
+    },
+  });
 }
 
 /** Whether the pages offer «Leggi lo schizzo» (and /data names the sub-processor). */

@@ -4,8 +4,10 @@
 // file of another installation or of another kind «not found»; a strict body; an archived installation refused; the
 // feature off without a usable key (a key open to others is no key: fail closed); the proposal checked against the
 // catalog (out of range and wrong types not read, unknown ids dropped); the same bytes read once (memory, audited as
-// such); 20 readings an hour per user; at most 2 under way; a refusal, a cut answer, an answer that is not the JSON,
-// the API busy or refusing the key, each with its answer; the activity log with ids, SHA-256 and counts only.
+// such) and forgotten past 24 hours without being asked again; 60 calls in 10 minutes per user, from memory too; at most
+// 2 under way (refused before the quotas count it); 20 readings an hour per user; a refusal, a cut answer, an answer
+// that is not the JSON, the API busy or refusing the key, each with its answer; the activity log with ids, SHA-256 and
+// counts only.
 import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { chmodSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
@@ -56,7 +58,7 @@ mock.module(src('lib/report/image-tool.ts'), {
 });
 
 const { POST } = await import('../../app/api/projects/[id]/schizzi/[allegatoId]/lettura/route');
-const { forgetReadings } = await import('../schizzi/lettura');
+const { LETTURA_LIMITS, forgetReadings, keptReadings, sweepReadings } = await import('../schizzi/lettura');
 
 const OWN = { origin: BASE, host: 'liftpilot.example', 'sec-fetch-site': 'same-origin', 'content-type': 'application/json' };
 interface Answer { ok: boolean; error?: string; message?: string; cached?: boolean; proposta?: { fields: { id: string; value: unknown }[]; notRead: { id: string; code: string }[]; model: string; units: string } }
@@ -209,10 +211,49 @@ test('lettura: al massimo 2 in corso nel server, 20 l’ora per utente', async (
   for (const w of waits) w();
   assert.deepEqual([(await a).status, (await b).status], [200, 200]);
   model.reply = () => okText([]);
-  // 3 readings counted so far (the third was refused after the rate limits): 17 more pass, the 21st is refused
-  for (let i = 0; i < 17; i++) assert.equal((await leggi(sketch().id)).status, 200, `reading ${i + 4}`);
+  // 2 readings counted so far (the third, refused as busy, is not counted): 18 more pass, the 21st is refused
+  for (let i = 0; i < 18; i++) assert.equal((await leggi(sketch().id)).status, 200, `reading ${i + 3}`);
   const over = await leggi(sketch().id);
   assert.deepEqual([over.status, over.body.error], [429, 'rateLimited']);
   // a reading kept in memory costs nothing: still answered
   assert.equal((await leggi(state.files[0]?.id ?? '')).body.cached, true);
+});
+
+test('lettura: 60 chiamate ogni 10 minuti per utente, anche dalla memoria (ognuna nel registro attività)', async () => {
+  fresh();
+  as('OWNER', { id: 'u-chiamate' });
+  const f = sketch();
+  assert.equal((await leggi(f.id)).body.cached, false);
+  for (let i = 0; i < 59; i++) assert.equal((await leggi(f.id)).body.cached, true, `call ${i + 2}`);
+  const over = await leggi(f.id);
+  assert.deepEqual([over.status, over.body.error], [429, 'rateLimited']);
+  assert.deepEqual([model.calls.length, state.audits.length], [1, 60], 'one reading, 60 answers in the activity log, the 61st refused before it');
+  assert.equal((await leggi('nessuno')).status, 429, 'every call counts, before the database');
+  as('OWNER', { id: 'u-collega' });
+  assert.equal((await leggi(f.id)).body.cached, true, 'a colleague has calls of their own');
+});
+
+test('lettura: una lettura in memoria da più di 24 ore se ne va da sola, senza che la si chieda di nuovo', async () => {
+  fresh();
+  as('OWNER', { id: 'u-memoria' });
+  const a = sketch(), b = sketch();
+  await leggi(a.id);
+  assert.equal(keptReadings(), 1);
+  sweepReadings(Date.now());
+  assert.equal(keptReadings(), 1, 'still valid: kept');
+  // a day and a little later another file is read: the old reading goes as the new one is kept
+  const later = Date.now() + LETTURA_LIMITS.cacheMs + 1000;
+  mock.method(Date, 'now', () => later);
+  try {
+    assert.equal((await leggi(b.id)).body.cached, false);
+    assert.equal(keptReadings(), 1, 'only the new one');
+  } finally {
+    mock.restoreAll();
+  }
+  // the hourly sweep: nothing new read, the readings past 24 h go all the same
+  forgetReadings();
+  await leggi(a.id);
+  assert.equal(keptReadings(), 1);
+  sweepReadings(Date.now() + LETTURA_LIMITS.cacheMs + 1);
+  assert.equal(keptReadings(), 0);
 });
