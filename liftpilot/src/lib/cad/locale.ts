@@ -10,7 +10,9 @@
 // left inner wall to the shaft's left inner face, room.shaftY from the room's front inner wall to the shaft's
 // entrance-A face). Millimetres, rounded; nothing is checked here — the confirm table checks every value against the
 // form's range. Pure.
-import { shaftSize, surveyCorners, type DoorSide, type Survey } from './measure';
+import { aVista, shaftSize, surveyCorners, type DoorSide, type Survey } from './measure';
+
+export { aVista };
 
 export interface MisuraLocale {
   values: { id: string; value: number }[];
@@ -20,14 +22,6 @@ export interface MisuraLocale {
 
 /** Beyond this the shaft's walls are said not parallel to the room's [rad] (half a degree). */
 const SKEW = (0.5 * Math.PI) / 180;
-
-/** A survey named from the screen: the same rectangle with its first axis the walls' direction nearer the horizontal
- *  (an angle in (−45°, 45°]), so its sides down, up, left and right are the ones drawn at the bottom, top, left, right. */
-export function aVista(s: Survey): Survey {
-  if (s.angle <= Math.PI / 4) return s;
-  // turned back a quarter: the first axis was the old −v, the second the old u
-  return { ...s, angle: s.angle - Math.PI / 2, right: s.down, left: s.up, up: s.right, down: s.left };
-}
 
 /** A point of the drawing in the room's frame: x from the left inner wall along the front wall, y from the front inner
  *  wall into the room [drawing units], for the room's front side on the drawing. */

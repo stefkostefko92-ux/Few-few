@@ -8,7 +8,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as acad from '@node-projects/acad-ts';
 import { readCad } from '../cad/read';
-import { SIDE_CORNERS, castRays, dominantAngle, surveyCorners, type DoorSide, type Survey } from '../cad/measure';
+import { SIDE_CORNERS, castRays, dominantAngle, latoMisurato, shaftSize, surveyCorners, type DoorSide, type Survey } from '../cad/measure';
 import { aVista, misuraLocale } from '../cad/locale';
 
 const rot = (x: number, y: number, a: number): [number, number] => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
@@ -116,4 +116,19 @@ test('locale dal DXF: il lato evidenziato sul disegno è quello scelto, come si 
   const sorted = (s: Survey): string[] => surveyCorners(s).map(([x, y]) => `${Math.round(x)},${Math.round(y)}`).sort();
   assert.deepEqual(sorted(seen), sorted(raw));
   assert.equal(aVista(seen), seen, 'once is enough');
+});
+
+test('vano dal DXF (/progetto): larghezza e profondità come si vedono, anche col disegno girato di poco in senso orario', () => {
+  // the shaft 1600 × 1750 (the 1600 side horizontal before the turn), the landing doors on the side drawn at the bottom
+  // (a plan turned −10° came back at 80° and swapped W and D before round 50); the source keeps the
+  // survey as measured (angle in [0°, 90°)) and the door side in that frame, and gives the same size again
+  for (const deg of [-10, -1, 0, 10, 30, 44, 60, 89]) {
+    const raw = surveys((deg * Math.PI) / 180, 0, true).shaft;
+    assert.ok(raw.angle >= 0 && raw.angle < Math.PI / 2, `${deg}°: the source's angle stays in [0°, 90°)`);
+    // the wall drawn at the bottom is the one nearer the horizontal: the 1600 one up to a 45° turn, then the 1750 one
+    const seen = shaftSize(aVista(raw), 1, 'down'), kept = shaftSize(raw, 1, latoMisurato(raw, 'down'));
+    assert.deepEqual(seen, Math.abs(deg) <= 45 ? { W: 1600, D: 1750 } : { W: 1750, D: 1600 }, `${deg}°: W along the side drawn at the bottom`);
+    assert.deepEqual(kept, seen, `${deg}°: the stored source gives the same size`);
+    for (const side of ['up', 'left', 'right'] as const) assert.deepEqual(shaftSize(raw, 1, latoMisurato(raw, side)), shaftSize(aVista(raw), 1, side), `${deg}° ${side}`);
+  }
 });

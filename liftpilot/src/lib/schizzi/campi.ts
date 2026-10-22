@@ -13,6 +13,7 @@ import { surveySchema } from '@/lib/room/survey';
 /** What a sketch is read for: the shaft (/progetto) or the machine room of a replacement (/calculations/<id>/locale). */
 export const TARGETS = ['vano', 'locale'] as const;
 export type Target = (typeof TARGETS)[number];
+export const isTarget = (x: unknown): x is Target => TARGETS.some((t) => t === x);
 
 export type TipoCampo =
   | { kind: 'mm'; min: number; max: number }

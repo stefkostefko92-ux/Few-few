@@ -199,10 +199,10 @@ Data Processing Addendum, изключеното request-response logging):
    `/run/vertex`. Ключът **никога** във файла със секретите (кавичките и новите редове спират деплоя) и никога в git;
    копието, от което е качен, се изтрива.
 3. **Променливите** във файла със секретите на сървъра: `VERTEX_PROJECT_ID=<id на проекта>` (празно = изключено);
-   `VERTEX_REGION=eu` (по подразбиране; друго освен `eu`/`europe-*` спира старта); `SKETCH_MODEL=claude-opus-5-5`
+   `VERTEX_REGION=eu` (по подразбиране; освен `eu` се приемат само регионите `europe-*` в ЕС-27 от `VERTEX_REGIONS` в `src/lib/env-schema.ts` — `europe-west2` (Лондон), `europe-west6` (Цюрих) и всичко друго спират старта); `SKETCH_MODEL=claude-opus-5-5`
    (по подразбиране); `VERTEX_CREDENTIALS_FILE` не се пипа (`/run/vertex/service-account.json`). После деплой (или само
-   `docker compose up -d app` от папката на release-а: контейнерът чете средата при старта; ключът се проверява при всяко
-   четене, без рестарт).
+   `docker compose up -d app` от папката на release-а: контейнерът чете средата при старта; ключът се проверява при
+   всяко четене, без рестарт — и нов ключ на същия път (нов файл върху стария) влиза със следващото четене).
 4. **Проверка:** `curl -fsS http://127.0.0.1:4330/api/health` — отговорът не се мени (здравето не зависи от Vertex).
    Включено ли е: `docker compose logs app | grep 'sketch reading'` — `sketch reading on` (с региона и модела) или
    `sketch reading off` с причината (`unset`, `noCredentials`, `notAFile`, `openMode` — ключът е отворен за другите:

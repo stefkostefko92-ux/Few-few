@@ -660,12 +660,16 @@ src/lib/report/image-tool.ts  Инструментите за картините
                      прозрачното, смаляване, повторно кодиране.
 src/server/schizzi/  config (sketchState/aiEnabled: включено само с проект, ЕС регион и ключ 600 — иначе изключено),
                      model (SketchModel: AnthropicVertex + GoogleAuth(keyFile) + betaRefusalFallbackMiddleware; грешките →
-                     busy | unavailable | failed; тестовете го подменят), lettura (handleLettura — проверките, паметта
-                     24 ч / 200, таваните, одит SKETCH_READ), queries (schizziOf — списъкът и aiEnabled за страниците,
-                     schizzoDaLeggere, fileDaMostrare, bytesOf).
+                     busy | unavailable | failed; тестовете го подменят; клиентът — по проекта, региона и ключа:
+                     времето, размерът и inode-ът на файла; отказ на ключа го забравя), lettura (handleLettura —
+                     проверките, 60 извиквания / 10 мин, паметта 24 ч / 200 с метене на изтеклото, заетостта преди
+                     квотите, таваните, одит SKETCH_READ), anteprime (anteprimaDi — прегледът на схица: паметта 48 /
+                     48 MB по SHA-256, страница, ориентация и размер; един рисуван в сървъра, един на фирма, два на
+                     човек; byteLru), queries (schizziOf — списъкът и aiEnabled за страниците, schizzoDaLeggere,
+                     fileDaMostrare — само SCHIZZO, bytesOf).
 src/app/api/projects/[id]/schizzi                     GET — схиците на съоръжението и aiEnabled.
 src/app/api/projects/[id]/schizzi/[allegatoId]/lettura POST — автоматичното четене (nginx: 150 s на този адрес).
-src/app/api/allegati/[id]/anteprima                   GET — прегледът (картина, направена от нас; ?pagina=1..4 за PDF).
+src/app/api/allegati/[id]/anteprima                   GET — прегледът на схица (само SCHIZZO; картина, направена от нас; ?pagina=1..4 за PDF; src/server/schizzi/anteprime.ts).
 prisma/migrations/29_schizzi  AttachmentKind += SCHIZZO преди ALTRO.
 ```
 
@@ -677,12 +681,18 @@ src/lib/schizzi/applica.ts  applicaVano / valoreVano (+ applica-locale.ts: appli
                      entrancesTo, roomAdded; таблото на ръка; keptPlan), отказите с причина; valore* — какво има
                      формулярът (null: за въвеждане или не се иска). Чисто; тестове schizzi-applica.
 src/lib/cad/locale.ts misuraLocale: машинното и шахтата от два клика на DXF/DWG (рамката на рилевото, предната стена по
-                     избор); тест cad-locale (и на завъртян план).
+                     избор, страните — както се виждат на екрана: aVista); тест cad-locale (−10°…89°, и шахтата на
+                     /progetto).
+src/lib/cad/measure.ts aVista (мерене, назовано от екрана — първата ос по-близката до хоризонталата), latoMisurato
+                     (страната от екрана в рамката на мерката — за записания източник на /progetto).
+src/lib/cad/pick.ts  pickSurvey (кликът с четирите лъча: ANGLE_PROBE_MM 3000, RAY_MAX_MM 30000 в mm), cadReadError
+                     (грешката на четенето → shaft.err_*); общи за SurveyPanel и LocaleCad; тест cad-pick.
 src/lib/dates.ts     romeDate — датата на схицата, еднаква на сървъра и в браузъра.
 src/components/schizzi/ SchizzoPanel (списъкът, качването, прегледът, четенето; SchizziStart от страницата), SchizzoUpload
                      (kind SCHIZZO, «Usalo come schizzo» за същите байтове от друг вид), SchizzoAnteprima (страница, мащаб),
                      LetturaSchizzo (дълга заявка с «Annulla», AI Act бележката, непрочетеното, предупрежденията),
-                     ConfermaValori (таблицата за потвърждение, обща с CAD; Modulo = attuale + applica), schizzi.css.
+                     ConfermaValori (таблицата за потвърждение, обща с CAD; Modulo = attuale + applica + fermata — етикетът на спирката;
+                     редовете на AI започват неотметнати), schizzi.css.
 src/components/room/LocaleCad.tsx  Машинното от DXF/DWG в браузъра (CadViewer с втори правоъгълник, castRays, misuraLocale).
 src/components/allegati/send.ts    XHR качването с напредъка (общо за AllegatoUpload и панела).
 src/components/room/RoomSurvey.tsx, src/components/lift/ProgettoWorkspace.tsx  Mодул (attuale/applica) към формуляра;

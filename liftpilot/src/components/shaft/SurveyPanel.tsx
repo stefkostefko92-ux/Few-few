@@ -2,12 +2,14 @@
 
 // Survey of the shaft on a DXF or DWG drawing, entirely in the browser: the file is read with acad-ts (loaded only
 // here), hashed with SHA-256 and shown; a click inside the shaft measures it; the user picks the side of the landing
-// doors and the layers that are walls. Only the resulting size and the description of the measure leave the page.
+// doors and the layers that are walls. Only the resulting size and the description of the measure leave the page. The
+// side of the doors is the one seen on screen whatever the plan's turn (measure.ts aVista: the rays fold the walls'
+// direction into [0°, 90°), and a plan turned a few degrees clockwise would otherwise swap W and D).
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import CadViewer from './CadViewer';
 import { MM_PER_UNIT, type CadModel, type CadUnits } from '@/lib/cad/model';
-import { shaftSize, type DoorSide, type Survey } from '@/lib/cad/measure';
+import { aVista, latoMisurato, shaftSize, type DoorSide, type Survey } from '@/lib/cad/measure';
 import { cadReadError, pickSurvey } from '@/lib/cad/pick';
 import type { ShaftSource } from '@/lib/shaft-input';
 
@@ -34,9 +36,9 @@ export default function SurveyPanel({ onSurvey }: { onSurvey(r: SurveyResult): v
   const [open, setOpen] = useState(false);
 
   const report = useCallback((s: Survey, side: DoorSide, u: Exclude<CadUnits, 'unknown'>, m: CadModel, h: string): void => {
-    const k = MM_PER_UNIT[u], { W, D } = shaftSize(s, k, side);
+    const k = MM_PER_UNIT[u], { W, D } = shaftSize(aVista(s), k, side);
     onSurvey({ W, D, source: { file: m.name.slice(0, 200), sha256: h, format: m.format, version: m.version.slice(0, 20), units: m.units, mmPerUnit: k,
-      point: [s.x, s.y], angle: s.angle, rays: { right: s.right, left: s.left, up: s.up, down: s.down }, door: side } });
+      point: [s.x, s.y], angle: s.angle, rays: { right: s.right, left: s.left, up: s.up, down: s.down }, door: latoMisurato(s, side) } });
   }, [onSurvey]);
 
   const onFile = async (file: File | undefined): Promise<void> => {
@@ -85,7 +87,8 @@ export default function SurveyPanel({ onSurvey }: { onSurvey(r: SurveyResult): v
     setUnits(u);
     if (survey && model) report(survey, door, u, model, hash);
   };
-  const size = useMemo(() => (survey ? shaftSize(survey, MM_PER_UNIT[units], door) : null), [survey, units, door]);
+  const seen = useMemo(() => (survey ? aVista(survey) : null), [survey]);
+  const size = useMemo(() => (seen ? shaftSize(seen, MM_PER_UNIT[units], door) : null), [seen, units, door]);
 
   return (
     <div className="survey">
@@ -121,7 +124,7 @@ export default function SurveyPanel({ onSurvey }: { onSurvey(r: SurveyResult): v
           </div>
           {model.units === 'unknown' ? <p className="alert alert-warn">{t('unitsUnknown')}</p> : null}
           <p className="note" role="status">{size ? t('measured', { W: size.W, D: size.D }) : t('clickHint')}</p>
-          <CadViewer model={model} hidden={hidden} survey={survey} door={door} onPick={onPick}
+          <CadViewer model={model} hidden={hidden} survey={seen} door={door} onPick={onPick}
             labels={{ fit: t('fit'), zoomIn: t('zoomIn'), zoomOut: t('zoomOut'), canvas: t('canvas') }} />
           <details className="layers" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
             <summary>{t('layers')} ({model.layers.length - hidden.size}/{model.layers.length})</summary>

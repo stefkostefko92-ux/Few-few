@@ -19,6 +19,22 @@ export interface Survey {
 /** Wall of the surveyed rectangle holding the landing doors, in the frame of the survey. */
 export type DoorSide = 'down' | 'up' | 'left' | 'right';
 
+/** A survey named from the screen: the same rectangle with its first axis the walls' direction nearer the horizontal
+ *  (an angle in (−45°, 45°]), so its sides down, up, left and right are the ones drawn at the bottom, top, left, right.
+ *  The rays fold the walls' direction into [0°, 90°): a plan turned a few degrees clockwise (walls at −10°) comes back
+ *  at 80°, its «down» the wall drawn on the right. */
+export function aVista(s: Survey): Survey {
+  if (s.angle <= Math.PI / 4) return s;
+  // turned back a quarter: the first axis was the old −v, the second the old u
+  return { ...s, angle: s.angle - Math.PI / 2, right: s.down, left: s.up, up: s.right, down: s.left };
+}
+
+/** The side of a survey as measured (its angle in [0°, 90°)) that is `side` as seen on screen (aVista). */
+export function latoMisurato(s: Survey, side: DoorSide): DoorSide {
+  if (s.angle <= Math.PI / 4) return side;
+  return side === 'down' ? 'left' : side === 'left' ? 'up' : side === 'up' ? 'right' : 'down';
+}
+
 type Visible = (layer: number) => boolean;
 
 function distToSegment(px: number, py: number, x1: number, y1: number, x2: number, y2: number): number {
