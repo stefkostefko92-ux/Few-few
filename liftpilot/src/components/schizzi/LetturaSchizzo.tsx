@@ -1,8 +1,8 @@
 'use client';
 
 // «Leggi lo schizzo» (round 50): the sketch sent to the reading route (POST …/schizzi/<id>/lettura, Claude through
-// Vertex AI in the EU, src/server/schizzi/lettura.ts), which may take up to two minutes — the seconds shown, a button
-// to give up (the request aborted) —, then the proposal in the confirm table, under the AI Act notice (art. 50: the
+// Vertex AI in the EU, src/server/schizzi/lettura.ts), which may take up to two minutes — the seconds shown (out of the
+// live region), a button to give up (the request aborted) —, then the proposal in the confirm table, under the AI Act notice (art. 50: the
 // values are the model's until confirmed), with the units it read, the measures it could not read and its warnings.
 // Only the proposal's shape is taken from the answer (zod): the server already kept it within the catalog.
 import { useEffect, useRef, useState } from 'react';
@@ -31,6 +31,19 @@ const rispostaSchema = z.object({
 const erroreSchema = z.object({ ok: z.literal(false), error: z.string(), message: z.string().optional() });
 
 type Stato = { at: 'idle' } | { at: 'reading'; since: number } | { at: 'done'; proposta: Proposta; cached: boolean; n: number } | { at: 'error'; text: string };
+
+/** A reading under way: a fixed sentence in the live region (a screen reader says it once), the seconds beside it shown
+ *  but not announced — they change every second —, and the button to give up. */
+export function InLettura({ secondi, onAnnulla }: { secondi: number; onAnnulla(): void }) {
+  const t = useTranslations('schizzi');
+  return (
+    <>
+      <span className="note" role="status">{t('pannello.inLettura')}</span>
+      <span className="note" aria-hidden="true">{t('pannello.secondi', { s: secondi })}</span>
+      <button type="button" className="btn btn-sm" onClick={onAnnulla}>{t('pannello.annulla')}</button>
+    </>
+  );
+}
 
 export default function LetturaSchizzo({ projectId, schizzo, target, modulo, quando }: {
   projectId: string; schizzo: SchizzoView; target: Target; modulo: Modulo;
@@ -79,12 +92,7 @@ export default function LetturaSchizzo({ projectId, schizzo, target, modulo, qua
       <p className="alert alert-info schizzo-ai" role="note">{t('aiNotice')}</p>
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" className="btn btn-primary" onClick={() => void leggi()} disabled={reading} data-schizzi="leggi">{t('pannello.leggi')}</button>
-        {reading ? (
-          <>
-            <span className="note" role="status">{t('pannello.lettura', { s: Math.max(0, Math.round((now - stato.since) / 1000)) })}</span>
-            <button type="button" className="btn btn-sm" onClick={() => ctrl.current?.abort()}>{t('pannello.annulla')}</button>
-          </>
-        ) : null}
+        {reading ? <InLettura secondi={Math.max(0, Math.round((now - stato.since) / 1000))} onAnnulla={() => ctrl.current?.abort()} /> : null}
         {stato.at === 'error' ? <span className="note bad" role="alert">{stato.text}</span> : null}
       </div>
       {stato.at === 'done' ? (
