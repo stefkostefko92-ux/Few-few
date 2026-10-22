@@ -194,12 +194,14 @@ relazione tecnica е отделен (`RT_ENGINE_VERSION` 1.0.0). **Писма н
    curl -fsS http://127.0.0.1:4330/api/health
    docker exec liftpilot-db-1 psql -U liftpilot -d liftpilot -Atc 'SELECT migration_name FROM "_prisma_migrations" ORDER BY finished_at DESC LIMIT 3'   # 28_rt_tavole_citate, 27_relazione_modifica, 26_rilievi_sync_2
    ```
-2. **nginx — адресът за качване:** `deploy/deploy.sh` пише vhost-а от release-а — нов `location` за
-   `POST /api/projects/<id>/allegati` с `client_max_body_size 21m` (навсякъде другаде остава 1 MB) — и прави `nginx -t &&
+2. **nginx — адресът за качване и PDF-ът на relazione:** `deploy/deploy.sh` пише vhost-а от release-а — нов `location` за
+   `POST /api/projects/<id>/allegati` с `client_max_body_size 21m` (навсякъде другаде остава 1 MB) и един за
+   `GET /api/relazioni/<id>/pdf` с `proxy_read_timeout 150s` (сглобяването с качените файлове може да мине 60 s) — и прави `nginx -t &&
    systemctl reload nginx`. Ако изходът казва „the new nginx config is invalid: the previous one is back“, деплоят
    продължава със стария vhost и всяко качване над 1 MB получава 413 от nginx. След деплоя:
    ```bash
    nginx -T 2>/dev/null | grep -A1 'allegati\$'      # location … allegati$ { client_max_body_size 21m;
+   nginx -T 2>/dev/null | grep -A9 'relazioni/' | grep proxy_read_timeout   # proxy_read_timeout 150s;
    head -c 2000000 /dev/zero | curl -s -o /dev/null -w '%{http_code}\n' -X POST \
      -H 'Content-Type: multipart/form-data; boundary=x' --data-binary @- https://liftpilot.carbonstealth.eu/api/projects/x/allegati
    ```
@@ -215,14 +217,17 @@ relazione tecnica е отделен (`RT_ENGINE_VERSION` 1.0.0). **Писма н
 ### Размерът на базата (качените файлове, кръг 49)
 
 Файловете са в базата (`AttachmentBlob`, байтовете; `TechnicalReportPdf`, пазените тела): таван 20 MiB на файл и 500 MiB
-на фирма (`src/lib/allegati/limits.ts`). Всяко копие на базата ги носи — нощните (30 дни) и тези преди деплой (последните
-5) — а PDF и JPEG почти не се свиват с gzip. Свободното място трябва да побере около **35 пъти** размера на базата, плюс
-самата база. Наблюдение (и преди деплоя, и редовно):
+на фирма (`src/lib/allegati/limits.ts`). Всяко копие на базата ги носи — нощните на LiftPilot (30 дни,
+`/opt/few-few/shared/liftpilot/backups`), тези преди деплой (последните 5) и снимките на vpsdash (включени по подразбиране,
+веднъж на ден, 30 дни: `/opt/few-few/shared/db-dumps/liftpilot-*.sql.gz`, „Наблюдение (vpsdash)“) — а PDF и JPEG почти не
+се свиват с gzip. Свободното място трябва да побере около **65 пъти** размера на базата (30 + 5 + 30), плюс самата база;
+без снимките на vpsdash — около 35. Наблюдение (и преди деплоя, и редовно):
 
 ```bash
 docker exec liftpilot-db-1 psql -U liftpilot -d liftpilot -Atc "SELECT pg_size_pretty(pg_database_size('liftpilot')), pg_size_pretty(pg_total_relation_size('\"AttachmentBlob\"')), pg_size_pretty(pg_total_relation_size('\"TechnicalReportPdf\"'))"
 docker exec liftpilot-db-1 psql -U liftpilot -d liftpilot -Atc "SELECT \"companyId\", pg_size_pretty(sum(size)::bigint), count(*) FROM \"Attachment\" GROUP BY 1 ORDER BY sum(size) DESC LIMIT 10"
-du -sh /opt/few-few/shared/liftpilot/backups; df -h /opt/few-few/shared /var/lib/docker
+du -sh /opt/few-few/shared/liftpilot/backups; du -ch /opt/few-few/shared/db-dumps/liftpilot-*.sql.gz 2>/dev/null | tail -n 1
+df -h /opt/few-few/shared /var/lib/docker
 ```
 
 Ако мястото не стига: по-малко копия на същия диск (копието извън сървъра — „Копие извън сървъра“), по-голям диск или

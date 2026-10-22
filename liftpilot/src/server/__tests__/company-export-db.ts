@@ -75,6 +75,8 @@ const picked = (row: Row, select: Record<string, boolean> | undefined): Row => (
 export type PageArgs = { where?: Row; orderBy?: unknown; take?: number; select?: Record<string, boolean>; omit?: Record<string, boolean>; include?: Args['include'] & Row };
 const LAST_ORDER = [{ createdAt: 'desc' }, { id: 'desc' }];
 const PAGE_ORDER = [{ createdAt: 'asc' }, { id: 'asc' }];
+/** Holds the next page query of any paged table until the test lets it go (one query only). */
+export const gate: { wait: Promise<void> | null } = { wait: null };
 /** A paged table: its last row (findFirst, newest first) and its pages (findMany, oldest first, `take` rows). */
 const paged = (rows: Row[], shape: (r: Row, args: PageArgs) => Row = (r) => r, seen: PageArgs[] = []) => ({
   findFirst: async (args: PageArgs) => {
@@ -84,6 +86,11 @@ const paged = (rows: Row[], shape: (r: Row, args: PageArgs) => Row = (r) => r, s
   },
   findMany: async (args: PageArgs) => {
     seen.push(args);
+    if (gate.wait) {
+      const wait = gate.wait;
+      gate.wait = null;
+      await wait;
+    }
     assert.deepEqual(args.orderBy, PAGE_ORDER, 'oldest first, then by id: createdAt alone can tie');
     return rows.filter((x) => matches(x, args.where ?? {})).sort(oldest).slice(0, args.take).map((r) => shape(picked(r, args.select), args));
   },
@@ -98,7 +105,7 @@ export const PROJECTS: Row[] = [{ id: 'p1', companyId: 'c1', name: 'Via Roma 1',
 export const AUDIT: Row[] = [{ id: 'e1', companyId: 'c1', userId: 'u1', action: 'PROJECT_CREATED', entity: 'Project', entityId: 'p1', meta: { name: 'Via Roma 1' },
   createdAt: new Date('2026-10-02T08:00:00Z') }, { id: 'e9', companyId: 'c2', userId: 'u9', action: 'LOGIN', entity: 'User', entityId: 'u9', meta: null,
   createdAt: new Date('2026-10-02T08:00:00Z') }];
-export const projectPages: PageArgs[] = [], schedaPages: PageArgs[] = [], auditPages: PageArgs[] = [];
+export const logoPages: PageArgs[] = [], projectPages: PageArgs[] = [], schedaPages: PageArgs[] = [], auditPages: PageArgs[] = [];
 const db = {
   company: {
     findUnique: async (args: { select?: Record<string, boolean> }) => {
@@ -107,7 +114,7 @@ const db = {
     },
   },
   user: { findMany: none }, invite: { findMany: none },
-  companyLogo: paged(LOGOS),
+  companyLogo: paged(LOGOS, (r) => r, logoPages),
   project: paged(PROJECTS, (r) => r, projectPages),
   priceItem: { findMany: none }, customPriceItem: { findMany: none },
   auditLog: paged(AUDIT, (r) => r, auditPages),
@@ -143,6 +150,9 @@ const db = {
   }), schedaPages),
 };
 mock.module(src('lib/db.ts'), { namedExports: { prisma: db } });
+// what the export logs as an error (the stream failing), to tell a real failure from a client that went away
+export const loggedErrors: unknown[] = [];
+mock.module(src('lib/log.ts'), { namedExports: { log: { info: () => undefined, warn: () => undefined, error: (...a: unknown[]) => { loggedErrors.push(a); } } } });
 
 export const read = async (stream: ReadableStream<Uint8Array>): Promise<{ text: string; chunks: number }> => {
   const parts: Buffer[] = [], reader = stream.getReader();

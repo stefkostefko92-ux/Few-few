@@ -199,18 +199,24 @@ async function* exportText({ data, ends }: CompanyExport, companyId: string): As
 export function exportStream(head: CompanyExport, companyId: string): ReadableStream<Uint8Array> {
   const enc = new TextEncoder();
   const pieces = exportText(head, companyId);
+  // the client went away (a closed tab, a timeout) while a piece was being read: nothing more is read, and the piece
+  // that arrives after is dropped quietly — the closed stream refusing it is not an error of the export
+  let cancelled = false;
   return new ReadableStream<Uint8Array>({
     async pull(c) {
       try {
         const r = await pieces.next();
+        if (cancelled) return;
         if (r.done) c.close();
         else c.enqueue(enc.encode(r.value));
       } catch (err) {
+        if (cancelled) return;
         log.error({ err, companyId }, 'company export stream failed');
         c.error(err);
       }
     },
     async cancel() {
+      cancelled = true;
       await pieces.return(undefined);
     },
   });

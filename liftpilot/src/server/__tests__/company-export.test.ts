@@ -9,7 +9,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { AUDIT, LOGOS, PROJECTS, SCHEDE, fileReads, projectPages, read, schedaPages, seen, sliceReads, src, type Doc, type Row } from './company-export-db';
+import { AUDIT, LOGOS, PROJECTS, SCHEDE, auditPages, fileReads, gate, logoPages, loggedErrors, projectPages, read, schedaPages, seen, sliceReads, src, type Doc, type Row } from './company-export-db';
 
 test('l’esportazione: ogni chiave del registro, e le schede di rilievo della propria azienda, anche nel cestino, con le misure', async () => {
   const { companyExport, exportStream } = await import(src('server/company-export.ts'));
@@ -116,4 +116,28 @@ test('l’esportazione di un’azienda senza righe: liste vuote, lo stesso JSON'
   const { text } = await read(exportStream({ data, ends: { logos: null, projects: null, schede: null, auditLog: null } } as never, 'c-none'));
   const empty = Object.fromEntries([...EXPORT_ENVELOPE, ...EXPORT_DATA].map((k) => [k, k in data ? data[k] : []]));
   assert.equal(text, JSON.stringify(empty, null, 2));
+});
+
+test('l’esportazione interrotta dal client: niente più letture, nessun errore nel log', async () => {
+  const { companyExport, exportStream } = await import(src('server/company-export.ts'));
+  const head = await companyExport('c1');
+  assert.ok(head);
+  loggedErrors.length = logoPages.length = projectPages.length = auditPages.length = 0;
+  let release = (): void => undefined;
+  gate.wait = new Promise<void>((r) => { release = r; });
+  const reader = exportStream(head, 'c1').getReader();
+  // read until the first paged list (the logos) is being read, held at the gate: the client goes away then
+  const reads: Promise<unknown>[] = [];
+  for (let i = 0; logoPages.length === 0 && i < 100; i++) {
+    reads.push(reader.read());
+    await new Promise((r) => setTimeout(r, 0));
+  }
+  assert.equal(logoPages.length, 1, 'the logos’ page is being read');
+  const cancelled = reader.cancel();
+  release();
+  await cancelled;
+  await Promise.all(reads);
+  await new Promise((r) => setTimeout(r, 20));
+  assert.deepEqual(loggedErrors, [], 'a client that goes away is not a failure of the export');
+  assert.equal(logoPages.length + projectPages.length + auditPages.length, 1, 'no page is read after the client went away');
 });
