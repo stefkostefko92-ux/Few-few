@@ -1,0 +1,48 @@
+{
+  "schizzi": {
+    "title": "Schizzi",
+    "hint": "Fogli da disegnare a mano su carta a quadretti: penna, linee, rettangoli e testo. Si salvano con la scheda.",
+    "vuoto": "Nessun foglio: aggiungine uno per disegnare.",
+    "nuovo": "Nuovo foglio",
+    "foglio": "Foglio {n}",
+    "disegna": "Disegna",
+    "elimina": "Elimina foglio",
+    "eliminaConferma": "Eliminare il foglio {n}? Il disegno sparisce quando salvi la scheda.",
+    "massimo": "Al massimo {n} fogli per scheda.",
+    "nojs": "Per disegnare serve JavaScript attivo nel browser; i fogli già disegnati restano come sono.",
+    "stampa": {
+      "legenda": "Schizzi",
+      "opzione": "Stampa gli schizzi",
+      "hint": "Alla fine del foglio, prima delle foto. I fogli vuoti non si stampano."
+    },
+    "editor": {
+      "titolo": "Schizzo — foglio {n}",
+      "area": "Foglio da disegnare",
+      "strumenti": "Strumento",
+      "penna": "Penna",
+      "linea": "Linea",
+      "rettangolo": "Rettangolo",
+      "testo": "Testo",
+      "gomma": "Gomma",
+      "colore": "Colore",
+      "nero": "Nero",
+      "rosso": "Rosso",
+      "blu": "Blu",
+      "spessore": "Spessore",
+      "sottile": "Sottile",
+      "spesso": "Spesso",
+      "annulla": "Annulla",
+      "ripeti": "Ripeti",
+      "pulisci": "Cancella tutto",
+      "pulisciConferma": "Cancellare tutto il foglio?",
+      "fatto": "Fatto",
+      "scarta": "Scarta le modifiche",
+      "scartaConferma": "Chiudere il foglio senza tenere le modifiche fatte ora?",
+      "testoLabel": "Testo",
+      "testoAiuto": "Tocca il foglio dove va il testo, poi scrivi e premi Inserisci.",
+      "inserisci": "Inserisci",
+      "pieno": "Il foglio è pieno: continua su un nuovo foglio.",
+      "ruota": "Ruota il telefono per un foglio più grande."
+    }
+  }
+}

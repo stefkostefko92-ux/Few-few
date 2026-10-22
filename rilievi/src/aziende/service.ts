@@ -23,6 +23,7 @@ const SUMMARY = {
   logoHeight: true,
   logoUpdatedAt: true,
   deactivatedAt: true,
+  schizzi: true,
   createdAt: true,
 } satisfies Prisma.AziendaSelect;
 

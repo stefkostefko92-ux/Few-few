@@ -34,6 +34,8 @@ export const AUDIT_ACTIONS = [
   'AZIENDA_DEACTIVATE',
   'AZIENDA_REACTIVATE',
   'AZIENDA_SEZIONI',
+  'AZIENDA_SCHIZZI_ON',
+  'AZIENDA_SCHIZZI_OFF',
   // Старите записи от времето с една фирма на човек — само за показ, нови не се пишат.
   'USER_AZIENDA',
   'MEMBERSHIP_ADD',

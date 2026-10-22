@@ -121,6 +121,8 @@
       "AZIENDA_DEACTIVATE": "Azienda disattivata",
       "AZIENDA_REACTIVATE": "Azienda riattivata",
       "AZIENDA_SEZIONI": "Ordine delle sezioni della scheda cambiato",
+      "AZIENDA_SCHIZZI_ON": "Schizzi a mano libera attivati per l'azienda",
+      "AZIENDA_SCHIZZI_OFF": "Schizzi a mano libera disattivati per l'azienda",
       "USER_AZIENDA": "Account spostato in un'altra azienda",
       "ACCESS_REQUEST": "Richiesta di accesso ricevuta",
       "ACCESS_REQUEST_UPDATE": "Richiesta di accesso aggiornata dal richiedente",

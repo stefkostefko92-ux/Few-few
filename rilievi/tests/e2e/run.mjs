@@ -6,7 +6,8 @@
 // company settings (impostazioni.mjs), the same data filled in real time in every direction
 // (tempo-reale.mjs), the company ADMIN invited by the MASTER and a technician invited by that ADMIN
 // who sees the company's sheets (inviti.mjs), photos in a section of the sheet (allegati.mjs — the worker
-// must run next to the portal: `npm run worker`), and accessibility (axe-core, WCAG 2.1 AA) on every page,
+// must run next to the portal: `npm run worker`), the sketch pad turned on for the company and drawn in its
+// full-screen editor (schizzi.mjs), and accessibility (axe-core, WCAG 2.1 AA) on every page,
 // in the light and the dark theme. Screenshots land in tests/e2e/shots/ (git-ignored).
 //
 //   RILIEVI_URL=http://127.0.0.1:4330 E2E_EMAIL=… E2E_PASSWORD=… npm run test:e2e
@@ -27,6 +28,7 @@ import { checkMovilift } from './movilift.mjs';
 import { checkPrintedNotes, fillDoorsAndChecks } from './porte.mjs';
 import { checkSettings } from './impostazioni.mjs';
 import { checkAttachments } from './allegati.mjs';
+import { checkSketches } from './schizzi.mjs';
 import { checkRealTime } from './tempo-reale.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -221,6 +223,7 @@ try {
       });
       await checkRealTime(context, { base, aziendaName, sheetUrl, scheme });
       await checkAttachments(page, { sheetUrl, shots });
+      await checkSketches(page, { base, aziendaPath, sheetUrl, shots, scheme });
     }
 
     for (const [name, path] of [

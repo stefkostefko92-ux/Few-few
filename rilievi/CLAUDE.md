@@ -9,7 +9,8 @@ A4 и PDF. Модулите: при табло Pelazza / MoviLift / Mastech (NG1
 върху него. Редът на разделите на картата се избира за всяка фирма (настройките на администратора ѝ);
 кои раздели влизат в печата и PDF-а — за всяка карта (в края на формата). Снимки и клипове — във
 всеки раздел на картата, компресирани от фонов процес (`worker`); снимките — избрани като иконки в края
-на формата, в края на печата и PDF-а.
+на формата, в края на печата и PDF-а. Скицник (функция, която MASTER включва за фирма): листове, нарисувани
+на ръка в края на картата, в печата и PDF-а.
 Многофирмен: всяка фирма (клиент на портала) има свои хора, свои карти и свое лого на листа. Един човек
 може да е в няколко фирми, с различна роля във всяка (слага го само MASTER).
 Бранд Carbon Stealth VCC, монохромен (бяло/черно, светла и тъмна тема). Самостоятелен продукт —
@@ -50,7 +51,8 @@ src/
   auth/              роли (7 нива), scope.ts (обхватът по фирма и способност), manage.ts (кой управлява
                      кого), memberships.ts, пароли, JWT сесии, заключване, CSRF
   aziende/           service.ts (фирмите) · logo.ts (проверка по байтове + прекодиране през sharp) ·
-                     sezioni.ts (редът на разделите на фирмата — запис, одит)
+                     sezioni.ts (редът на разделите на фирмата — запис, одит) · funzioni.ts (функциите
+                     по избор: скицникът — само MASTER, с одит)
   services/          вход, покани, потребители, членства (фирми и роли), токени (в базата само SHA-256)
   schede/            fields.ts (ЕДИНСТВЕНИЯТ списък полета и условията им) + fields-centralina.ts +
                      field-conditions.ts + field-options.ts · field-parsers.ts (zod по вид) ·
@@ -58,7 +60,10 @@ src/
                      спирки) · search.ts · service.ts +
                      list.ts (списъкът и търсенето) · ordine.ts (редът на разделите, без база) ·
                      format.ts · pdf.ts + pdf-head.ts (заглавната лента, табелата) + pdf-layout.ts +
-                     pdf-spunte.ts (квадратчетата и отметките, с линии) + pdf-table.ts
+                     pdf-spunte.ts (квадратчетата и отметките, с линии) + pdf-table.ts + pdf-foto.ts +
+                     pdf-schizzi.ts (листовете на скицника, векторно)
+  schizzi/           скицникът: model.ts (видът на листа — пътища и надписи, таваните, мрежата, zod;
+                     пратеното от формата) · service.ts (четене и запис в транзакцията на картата)
   ordini/            модулите: moduli.ts (картите от assets/moduli, SHA-256) · registry.ts (марка ↔
                      колона ↔ въпрос ↔ модул) · valori.ts · prefill.ts · opzioni.ts (опцията на падащ
                      списък за текст) · collegamenti-elenco.ts (списъкът на свързаните данни) +
@@ -69,7 +74,8 @@ src/
                      (формулярът на MoviLift) + pdf-testo.ts (шрифтът, мястото на текста, изправянето на
                      обърнатия лист) — pdf-lib
   routes/            тънки рутери: проверка → услуга → изглед (витрината · заявките · картите ·
-                     кошчето · модулите · хора · фирми · настройките · одит)
+                     печатът и PDF-ът на картата (schede-stampa.ts) · кошчето · модулите · хора · фирми ·
+                     настройките · одит)
   requests/          заявките за достъп: form.ts (публичната форма) · service.ts (запис, решение, срок)
   site/ · seo/       витрината: landing.ts (разделите и ролите от кода) · paths.ts · structured-data.ts
                      (JSON-LD) · files.ts (robots, sitemap, llms.txt) · company.ts (данните на фирмата)
@@ -83,15 +89,19 @@ assets/moduli/       празните PDF-и на Pelazza, MoviLift, листа 
                      страници) + картата на полетата им (JSON)
 views/               EJS: partials/ (горна и долна лента, табелата, филтърът по фирма), site/ (витрината,
                      чертежът на шахтата, политиката), requests/, auth/, schede/, users/, aziende/,
-                     account/, audit/; снимките — schede/_allegati*.ejs, allegato-elimina.ejs
-locales/it/          common · auth · schede · users · aziende · requests · site · mail · allegati (.json) — единственият
+                     account/, audit/; снимките — schede/_allegati*.ejs, allegato-elimina.ejs; скицникът —
+                     schede/_schizzo.ejs (листът като SVG), _schizzo-foglio.ejs, _schizzo-editor.ejs
+locales/it/          common · auth · schede · users · aziende · requests · site · mail · allegati · schizzi
+                     (.json) — единственият
 public/              css/ (портал: base, buttons, shell, layout, plate, forms, pages, data, sheet, misure,
-                     moduli, allegati, foto-stampa, print; витрина: site, shaft, site-hero, site-parts,
+                     moduli, allegati, foto-stampa, schizzi, schizzo-editor, print; витрина: site, shaft,
+                     site-hero, site-parts,
                      site-request),
                      js/app.js + js/valori.js + js/moduli.js + js/collegati.js (последните три — само във
                      формата на картата, в този ред) + js/allegati.js (галерията) + js/carica.js
                      (качването, умаляването на снимките в браузъра) — формата и страницата на картата
-                     + js/stampa-foto.js (иконките за печата — само във формата),
+                     + js/stampa-foto.js (иконките за печата) + js/schizzo-tratti.js (общото на скицника)
+                     + js/schizzi.js (листовете) + js/schizzo-editor.js (редакторът) — само във формата,
                      img/ (og.png и apple-touch-icon.png — `npm run brand:images`), indexnow-key.txt
 tests/               unit · integration/ (реален Postgres) · e2e/run.mjs (Playwright + axe)
 deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh · nginx/ · systemd/
@@ -339,6 +349,21 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   снимки на картите с досегашната отметка „Includi le foto“.
   Окончателно изтритата карта взима и папката си. Снимките са съдържание, не украса — правилото за
   визията по-долу не ги засяга.
+- **Скицникът** (`src/schizzi/`, решение на собственика, 22 октомври 2026): функция по фирма — включва и
+  изключва я само MASTER (страницата на фирмата, `AZIENDA_SCHIZZI_ON/OFF` в одита). В края на формата,
+  преди „Riepilogo“: листове (до 10) с преглед; рисуват се в редактор на цял екран (`<dialog>`, платно
+  1400 × 1000 единици с мрежа на 50): молив в 2 дебелини, права линия, правоъгълник, текст, гума (маха
+  цял елемент), черно/червено/синьо, назад/напред (200 стъпки), „изчисти“; пръст, писалка и мишка, а
+  след писалка пръстите не рисуват. Листът е JSON в скрито поле и се записва С КАРТАТА (същата
+  транзакция, след успешния ѝ запис — 409 не пипа нищо; върнатата форма пази нарисуваното): само
+  пътища (SVG — „M x y“, относителни „l“, „z“ за правоъгълника) и надписи, проверени в
+  `model.ts` (zod, тавани: 3000 елемента, 4000 отсечки на път, 200 KB на лист); празните листове
+  отпадат. Записва се само във фирма със скицника и само ако блокът е на страницата (`schizzi-_`) — стара
+  страница и изключена фирма не пипат листовете. Изключената фирма губи полето, но нарисуваното остава и
+  се печата (отметката „Schizzi“ в „Riepilogo“ остава, докато има листове). В печата и PDF-а — след
+  модулите, преди снимките, по два листа на страница A4, векторно (същите пътища в SVG, на платното и
+  в pdfkit), при отметката `Scheda.schizziStampati` (по подразбиране да). Само формата на картата
+  (`POST /schede`, `/schede/<id>`) приема тяло до 4 MB (приложение и nginx), всичко друго — до 1 MB.
 - **Бързината на формата на картата** (хиляди полета с модулите, телефон в шахтата; октомври 2026):
   полетата на всеки раздел (`.form > .section > .grid`) и модулите са с `content-visibility: auto` —
   извън екрана не се подреждат и не се рисуват. Затова вътре в `.grid` няма CSS броячи (номерът на

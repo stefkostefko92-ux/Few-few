@@ -8,6 +8,7 @@
     if (key === identifiersErrorKey) return t('scheda.identifiers');
     if (key === 'riepilogoOrdini') return t('riepilogo.moduli');
     if (key === 'stampa') return t('riepilogo.sezioni');
+    if (key === 'schizzo') return t('schizzi.title');
     const moduloField = moduloFieldOf(key);
     if (moduloField) return t('ordini.errorLabel', { label: moduloField.field.label, fornitore: moduloField.slot.modulo.fornitore || moduloField.slot.modulo.titolo });
     const misura = misuraOf(key);
@@ -16,7 +17,7 @@
   };
   const anchorOf = (key) => key === identifiersErrorKey ? '#f-indirizzo' : '#f-' + key;
   const paramsOf = (key) => { const misura = misuraOf(key); const moduloField = moduloFieldOf(key); const f = misura ? misura.column : moduloField ? moduloField.field : (fieldMap[key] || {}); return { min: f.min, max: f.max, maxLength: f.maxLength }; };
-%><%- include('../partials/top', { titleKey: isEdit ? 'schede.edit.title' : 'schede.create.title', scripts: ['valori', 'moduli', 'collegati', 'allegati', 'carica', 'stampa-foto'] }) %>
+%><%- include('../partials/top', { titleKey: isEdit ? 'schede.edit.title' : 'schede.create.title', scripts: ['valori', 'moduli', 'collegati', 'allegati', 'carica', 'stampa-foto', 'schizzo-tratti', 'schizzi', 'schizzo-editor'] }) %>
 <div class="page-head">
   <div>
     <h1><%= t(isEdit ? 'schede.edit.title' : 'schede.create.title') %></h1>
@@ -54,7 +55,7 @@
 </div>
 <% } else { %>
 <div class="with-index">
-<%- include('_index', { titles: sections.map((s) => ({ key: s.key, title: t('scheda.section.' + s.key), when: s.when, off: !activeSections.has(s.key) })) }) %>
+<%- include('_index', { titles: sections.map((s) => ({ key: s.key, title: t('scheda.section.' + s.key), when: s.when, off: !activeSections.has(s.key) })).concat(schizzi.attivo ? [{ key: 'schizzi', title: t('schizzi.title'), per: schizzi.per, nascosto: schizzi.nascosto }] : []) }) %>
 <form class="form" method="post" action="<%= action %>" novalidate data-scheda-form>
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <% if (!isEdit && aziende.length > 0) { %>
@@ -91,6 +92,28 @@
     <%- include('_allegati', { section, ritorno: 'modifica' }) %>
   </fieldset>
   <% }) %>
+  <% if (schizzi.attivo) { %>
+  <%# Скицникът (функция на фирмата, src/schizzi/): листовете с прегледа им; рисуват се в редактора на цял
+     екран (schizzi.js, schizzo-editor.js) и се записват с картата — всеки лист е JSON в скрито поле. На нова
+     карта с избор на фирма блокът следва избраната (`data-schizzi-per`). %>
+  <fieldset class="section schizzi" id="s-schizzi" data-schizzi<% if (schizzi.per) { %> data-schizzi-per="<%= schizzi.per %>"<% } %><% if (schizzi.nascosto) { %> hidden<% } %> data-msg-foglio="<%= t('schizzi.foglio') %>" data-msg-elimina="<%= t('schizzi.eliminaConferma') %>" aria-describedby="schizzi-hint<%= errors.schizzo ? ' err-schizzo' : '' %>">
+    <legend class="section__title"><span class="secnum" aria-hidden="true"></span><%= t('schizzi.title') %></legend>
+    <ol class="schizzi__fogli" id="f-schizzo" data-schizzi-fogli>
+      <% schizzi.fogli.forEach((f, i) => { %><%- include('_schizzo-foglio', { foglio: f.foglio, json: f.json, n: i + 1 }) %>
+      <% }) %>
+    </ol>
+    <p class="muted" data-schizzi-vuoto<% if (schizzi.fogli.length) { %> hidden<% } %>><%= t('schizzi.vuoto') %></p>
+    <div class="toolbar" data-schizzi-azioni hidden>
+      <button class="btn" type="button" data-schizzi-nuovo><%- include('../partials/icon', { name: 'plus' }) %><%= t('schizzi.nuovo') %></button>
+      <span class="muted" data-schizzi-massimo hidden><%= t('schizzi.massimo', { n: schizzoVista.maxFogli }) %></span>
+    </div>
+    <p class="field__hint" id="schizzi-hint"><%= t('schizzi.hint') %> <span data-schizzi-nojs><%= t('schizzi.nojs') %></span></p>
+    <% if (errors.schizzo) { %><p class="field__error" id="err-schizzo"><%= t('scheda.error.' + errors.schizzo) %></p><% } %>
+    <%# Знакът на блока — не веднага след легендата: там CSS-ът изчиства плаващата лента (forms.css). %>
+    <input type="hidden" name="schizzi-_" value="1" data-schizzi-segno>
+    <template data-foglio-modello><%- include('_schizzo-foglio', { foglio: { e: [] }, json: '{"e":[]}', n: 0 }) %></template>
+  </fieldset>
+  <% } %>
   <fieldset class="section" id="s-riepilogo">
     <legend class="section__title"><%= t('riepilogo.title') %></legend>
     <div class="grid">
@@ -116,6 +139,16 @@
         <p class="field__hint" id="riepilogo-hint"><%= t('riepilogo.hint') %></p>
         <% if (errors.riepilogoOrdini) { %><p class="field__error" id="err-riepilogoOrdini"><%= t('scheda.error.' + errors.riepilogoOrdini) %></p><% } %>
       </fieldset>
+      <% if (schizzi.attivo || schizzi.fogli.length) { %>
+      <%# Скиците в печата и PDF-а — накрая, преди снимките; една отметка за всички листове. Вижда се и при
+         изключен скицник, ако картата има листове (нарисуваното остава и се печата). %>
+      <fieldset class="choice field field--wide" id="f-schizziStampati"<% if (schizzi.per) { %> data-schizzi-per="<%= schizzi.per %>"<% } %><% if (schizzi.nascosto) { %> hidden<% } %> aria-describedby="schizzi-stampa-hint">
+        <legend><%= t('schizzi.stampa.legenda') %></legend>
+        <input type="hidden" name="schizziStampati-_" value="1">
+        <div class="choice__opts"><label class="tick"><input type="checkbox" name="schizziStampati" value="1"<% if (schizzi.stampati) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('schizzi.stampa.opzione') %></span></label></div>
+        <p class="field__hint" id="schizzi-stampa-hint"><%= t('schizzi.stampa.hint') %></p>
+      </fieldset>
+      <% } %>
       <%# Снимките в края на печата и PDF-а — малки иконки по раздели с отметка (_foto-stampa.ejs);
          клиповете остават в портала. Нова карта — още няма снимки. %>
       <fieldset class="choice field field--wide" id="f-fotoStampa" aria-describedby="foto-hint<%= errors.fotoStampa ? ' err-fotoStampa' : '' %>">
@@ -135,6 +168,7 @@
   </div>
 </form>
 <script type="application/json" id="collegati-dati" nonce="<%= cspNonce %>"><%- collegati.json %></script>
+<% if (schizzi.attivo) { %><%- include('_schizzo-editor') %><% } %>
 <% if (isEdit) { %><%- include('_allegati-forms', { ritorno: 'modifica' }) %><% } %>
 </div>
 <% } %>

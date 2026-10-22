@@ -9,6 +9,7 @@ import {
   sendError,
 } from '../auth/guards.js';
 import { inScope, scopeFor } from '../auth/scope.js';
+import { setSchizzi } from '../aziende/funzioni.js';
 import { LOGO_MAX_BYTES, normalizeLogo, type Logo } from '../aziende/logo.js';
 import {
   aziendaLogo,
@@ -24,7 +25,8 @@ import { setFlash } from '../http/flash.js';
 
 /**
  * Фирмите — само за MASTER (`aziende:manage`): създаване с име и лого, ново име, ново лого или без
- * лого, деактивиране. Логото се показва на хората на фирмата (листът за печат) и на MASTER.
+ * лого, функциите по избор (скицникът), деактивиране. Логото се показва на хората на фирмата (листът за
+ * печат) и на MASTER.
  */
 export const aziendeRouter: Router = Router();
 const manage = requireCapability('aziende:manage');
@@ -146,6 +148,16 @@ aziendeRouter.post('/aziende/:id/logo/rimuovi', manage, requireCsrf, async (req,
   const id = String(req.params.id);
   if (!(await setAziendaLogo(principalOf(req).user, id, null))) return notFound(req, res);
   setFlash(res, 'ok', 'flash.logoRemoved');
+  res.redirect(303, `/aziende/${encodeURIComponent(id)}`);
+});
+
+aziendeRouter.post('/aziende/:id/schizzi', manage, requireCsrf, async (req, res) => {
+  const id = String(req.params.id);
+  const attivi = (req.body as Record<string, unknown>).attivi === '1';
+  if (!isAziendaId(id) || !(await setSchizzi(principalOf(req).user, id, attivi))) {
+    return notFound(req, res);
+  }
+  setFlash(res, 'ok', attivi ? 'flash.schizziOn' : 'flash.schizziOff');
   res.redirect(303, `/aziende/${encodeURIComponent(id)}`);
 });
 

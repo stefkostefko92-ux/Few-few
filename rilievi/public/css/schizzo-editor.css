@@ -1,0 +1,250 @@
+/* Редакторът на лист от скицника (views/schede/_schizzo-editor.ejs, public/js/schizzo-editor.js): на цял
+   екран; листът е бял като хартия и в тъмната тема. */
+
+/* `hidden` печели и над елементите със собствен `display` (полето за текст). */
+.schizzo-editor [hidden] {
+  display: none;
+}
+
+/* Редакторът: на цял екран, лентата горе, инструментите, после листът — колкото се побере. */
+.schizzo-editor {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--bg);
+  color: var(--fg);
+  overscroll-behavior: contain;
+}
+
+.schizzo-editor[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.schizzo-editor::backdrop {
+  background: var(--bg);
+}
+
+.schizzo-editor__testa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 8px var(--gutter);
+  border-bottom: 1px solid var(--line);
+}
+
+.schizzo-editor__titolo {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.schizzo-editor__corpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.schizzo-editor__strumenti {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 8px var(--gutter);
+  border-bottom: 1px solid var(--line);
+}
+
+.schizzo-editor__azioni {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.schizzo-editor__testo {
+  display: grid;
+  flex-basis: 100%;
+  gap: 4px;
+}
+
+.schizzo-editor__riga {
+  display: flex;
+  gap: 8px;
+}
+
+.schizzo-editor__riga .input {
+  flex: 1;
+  min-width: 0;
+}
+
+.schizzo-editor__avviso {
+  margin: 0;
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.schizzo-editor__avviso:empty {
+  display: none;
+}
+
+.schizzo-editor__area {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  min-height: 0;
+  padding: 8px;
+  background: var(--wash);
+}
+
+.schizzo-editor__tela {
+  display: block;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px var(--line-strong);
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.schizzo-editor__tela[data-strumento='gomma'] {
+  cursor: cell;
+}
+
+.schizzo-editor__tela[data-strumento='testo'] {
+  cursor: text;
+}
+
+.schizzo-editor__ruota {
+  display: none;
+  margin: 0;
+  padding: 6px var(--gutter);
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* Изборите (инструмент, цвят, дебелина): радиобутони като сегменти — клавиатурата ги минава със
+   стрелките, избраният е обърнат. */
+.seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--field-line);
+  border-radius: var(--radius);
+}
+
+.seg__opt {
+  position: relative;
+  display: inline-flex;
+}
+
+.seg__opt input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.seg__face {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 10px;
+  font-size: 0.9rem;
+}
+
+.seg__opt + .seg__opt .seg__face {
+  border-left: 1px solid var(--field-line);
+}
+
+.seg__opt input:checked + .seg__face {
+  background: var(--mark-bg);
+  color: var(--mark-fg);
+}
+
+.seg__opt input:focus-visible + .seg__face {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
+
+.seg__colore {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  outline: 1.5px solid currentColor;
+  outline-offset: 1.5px;
+}
+
+.seg__colore--k {
+  background: #000000;
+}
+
+.seg__colore--r {
+  background: #c62828;
+}
+
+.seg__colore--b {
+  background: #1565c0;
+}
+
+.seg__spessore {
+  width: 18px;
+  border-radius: 3px;
+  background: currentColor;
+}
+
+.seg__spessore--1 {
+  height: 2px;
+}
+
+.seg__spessore--2 {
+  height: 6px;
+}
+
+/* Телефон (изправен или легнал): само иконите — името остава за екранния четец. */
+@media (max-width: 760px), (orientation: landscape) and (max-height: 560px) {
+  .schizzo-editor .seg__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+@media (orientation: portrait) and (max-width: 640px) {
+  .schizzo-editor__ruota {
+    display: block;
+  }
+}
+
+/* Нисък хоризонтален екран (телефон легнал): инструментите в колона вляво, листът взима височината. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .schizzo-editor__testa {
+    padding-block: 4px;
+  }
+
+  .schizzo-editor__corpo {
+    flex-direction: row;
+  }
+
+  .schizzo-editor__strumenti {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    max-width: 45%;
+    overflow-y: auto;
+    border-right: 1px solid var(--line);
+    border-bottom: 0;
+  }
+}

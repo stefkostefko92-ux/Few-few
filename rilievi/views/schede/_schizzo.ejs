@@ -1,0 +1,5 @@
+<%#
+  Лист от скицника като SVG (src/schizzi/model.ts): картата, печатът и прегледът във формата. Листът е
+  бял като хартия и в тъмната тема, мрежата — бледа; елементите — в реда, в който са нарисувани. Пътят и
+  надписите са проверени при запис, а EJS ги екранира в атрибута и в текста.
+%><% const v = schizzoVista; %><svg class="schizzo" viewBox="0 0 <%= v.larghezza %> <%= v.altezza %>" role="img" aria-label="<%= titolo %>"><rect width="<%= v.larghezza %>" height="<%= v.altezza %>" fill="#ffffff"/><path d="<%= v.griglia %>" stroke="<%= v.coloreGriglia %>" stroke-width="1" fill="none"/><% for (const el of foglio.e) { %><% if (el.t === 'p') { %><path d="<%= el.d %>" stroke="<%= v.colori[el.c] %>" stroke-width="<%= v.spessori[el.s] %>" fill="none" stroke-linecap="round" stroke-linejoin="round"/><% } else { %><text x="<%= el.x %>" y="<%= el.y %>" fill="<%= v.colori[el.c] %>" font-size="<%= v.corpi[el.s] %>" font-family="Fira Sans, sans-serif" font-weight="500"><%= el.v %></text><% } %><% } %></svg>

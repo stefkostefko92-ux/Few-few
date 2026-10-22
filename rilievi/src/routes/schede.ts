@@ -1,33 +1,22 @@
-import { Router, type Request } from 'express';
+import { Router } from 'express';
 import { allegatiDi } from '../allegati/service.js';
-import { fotoPerPdf, fotoPerStampa, sezioniFoto } from '../allegati/stampa.js';
-import { config } from '../config.js';
 import { isPartial, principalOf, requireCapability, requireCsrf } from '../auth/guards.js';
 import { canIn, spansAziende } from '../auth/scope.js';
+import { aziendeConSchizzi } from '../aziende/funzioni.js';
 import { ordineSezioniDi } from '../aziende/sezioni.js';
-import { sezioniStampate } from '../schede/ordine.js';
-import { aziendaLogo } from '../aziende/service.js';
 import { setFlash } from '../http/flash.js';
-import { pdfLimiter } from '../http/limits.js';
 import { businessDay } from '../time.js';
 import { discrepanzeDi } from '../ordini/collegati.js';
-import { riepilogoModuli } from '../ordini/riepilogo.js';
 import {
   displaySections,
   emptyFormValues,
   formValuesFromScheda,
   schedaTitle,
 } from '../schede/format.js';
-import { pdfFileName, renderSchedaPdf } from '../schede/pdf.js';
+import { fogliDi } from '../schizzi/service.js';
 import { listSchede } from '../schede/list.js';
 import { highlight } from '../schede/search.js';
-import {
-  createScheda,
-  getScheda,
-  trashScheda,
-  updateScheda,
-  type SchedaFull,
-} from '../schede/service.js';
+import { createScheda, getScheda, trashScheda, updateScheda } from '../schede/service.js';
 import { formValuesFromBody, parseScheda, type FieldErrors } from '../schede/validation.js';
 import {
   AZIENDA_ERROR_KEY,
@@ -35,7 +24,14 @@ import {
   controlloDiscrepanze,
   renderForm,
 } from './schede-form.js';
-import { aziendaFilterOf, aziendeOf, notFound, queryOf, scope } from './schede-shared.js';
+import {
+  aziendaFilterOf,
+  aziendeOf,
+  loadScheda,
+  notFound,
+  queryOf,
+  scope,
+} from './schede-shared.js';
 
 export const schedeRouter: Router = Router();
 
@@ -58,11 +54,6 @@ schedeRouter.get('/schede', read, async (req, res) => {
   }
   res.render('schede/list', view);
 });
-
-/** Картата от адреса, в обхвата; изтритата — само за тези, които виждат кошчето на нейната фирма. */
-async function loadScheda(req: Request): Promise<SchedaFull | null> {
-  return getScheda(scope(req, 'schede:read'), String(req.params.id), scope(req, 'schede:trash'));
-}
 
 schedeRouter.get('/schede/nuova', write, async (req, res) => {
   const { choices, only } = await aziendeForNew(req);
@@ -121,8 +112,14 @@ schedeRouter.post('/schede', write, requireCsrf, async (req, res) => {
     });
     return;
   }
+  // Листовете на скицника — само във фирма, която го има; иначе пратеното се пренебрегва.
+  const conSchizzi = (await aziendeConSchizzi([azienda.id])).has(azienda.id);
   const scheda = await createScheda(
-    { ...parsed.data, discrepanzeConfermate: discrepanze.impronta },
+    {
+      ...parsed.data,
+      schizzi: conSchizzi ? parsed.data.schizzi : undefined,
+      discrepanzeConfermate: discrepanze.impronta,
+    },
     user.id,
     azienda.id,
   );
@@ -143,6 +140,8 @@ schedeRouter.get('/schede/:id', read, async (req, res) => {
     sections: displaySections(scheda, res.locals.t, res.locals.fmt, scheda.azienda.ordineSezioni),
     // Записани с потвърждение (или отпреди проверката) — да се виждат и след записа.
     discrepanze: discrepanzeDi(formValuesFromScheda(scheda, res.locals.fmt), res.locals.t),
+    // Листовете на скицника — и когато фирмата вече го е изключила (нарисуваното остава).
+    schizzi: await fogliDi(scheda.id),
   });
 });
 
@@ -192,7 +191,12 @@ schedeRouter.post('/schede/:id', write, requireCsrf, async (req, res) => {
     scope(req, 'schede:write'),
     scheda.id,
     base,
-    { ...parsed.data, discrepanzeConfermate: discrepanze.impronta },
+    {
+      ...parsed.data,
+      // Фирма без скицника: листовете не се пипат (нарисуваното преди изключването остава).
+      schizzi: scheda.azienda.schizzi ? parsed.data.schizzi : undefined,
+      discrepanzeConfermate: discrepanze.impronta,
+    },
     principalOf(req).user.id,
   );
   if (outcome === 'missing') return notFound(req, res);
@@ -208,62 +212,6 @@ schedeRouter.post('/schede/:id', write, requireCsrf, async (req, res) => {
   }
   setFlash(res, 'ok', 'flash.schedaSaved');
   res.redirect(303, `/schede/${scheda.id}`);
-});
-
-schedeRouter.get('/schede/:id/stampa', read, async (req, res) => {
-  const scheda = await loadScheda(req);
-  if (!scheda) return notFound(req, res);
-  const sections = displaySections(
-    scheda,
-    res.locals.t,
-    res.locals.fmt,
-    scheda.azienda.ordineSezioni,
-  );
-  res.render('schede/print', {
-    scheda,
-    ident: schedaTitle(scheda, res.locals.t),
-    sections,
-    // „Impianto“ е в заглавната лента и в табелата — не се печата втори път; изключените в картата —
-    // никак.
-    printed: sezioniStampate(sections, scheda.sezioniEscluse),
-    // Попълненото в модулите — само в тези, които картата иска (`moduliStampati`).
-    riepilogo: riepilogoModuli(scheda),
-    // Снимките накрая — отметнатите в иконките в края на формата, по разделите.
-    foto: fotoPerStampa(
-      sezioniFoto(scheda.azienda.ordineSezioni, res.locals.t),
-      await allegatiDi(scheda.id),
-    ),
-    autoPrint: req.query.auto === '1',
-  });
-});
-
-schedeRouter.get('/schede/:id/pdf', read, pdfLimiter, async (req, res) => {
-  const scheda = await loadScheda(req);
-  if (!scheda) return notFound(req, res);
-  const logo = scheda.azienda.logoType ? await aziendaLogo(scheda.aziendaId) : null;
-  const foto = await fotoPerPdf(
-    scheda,
-    sezioniFoto(scheda.azienda.ordineSezioni, res.locals.t),
-    await allegatiDi(scheda.id),
-  );
-  const pdf = await renderSchedaPdf(scheda, {
-    t: res.locals.t,
-    fmt: res.locals.fmt,
-    generatedBy: principalOf(req).user.name,
-    fontDir: config().PDF_FONT_DIR,
-    logo: logo?.data ?? null,
-    foto,
-  });
-  const name = pdfFileName(scheda);
-  res
-    .status(200)
-    .set({
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': `${req.query.inline === '1' ? 'inline' : 'attachment'}; filename="${name}"`,
-      'Content-Length': String(pdf.length),
-      'Cache-Control': 'no-store',
-    })
-    .end(pdf);
 });
 
 schedeRouter.get('/schede/:id/elimina', remove, async (req, res) => {

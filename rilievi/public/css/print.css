@@ -195,6 +195,27 @@
   color: var(--muted);
 }
 
+/* Листовете на скицника: два на страница A4 (като в PDF-а), бели като хартия, цели. */
+.paper__schizzo {
+  max-width: 152mm;
+  margin: 0 auto 10px;
+  break-inside: avoid;
+}
+
+.paper__schizzo figcaption {
+  margin-bottom: 3px;
+  font-size: 10pt;
+  font-weight: 600;
+}
+
+.paper__schizzo .schizzo {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 0.6pt solid #000000;
+  background: #ffffff;
+}
+
 /* Снимките на разделите: от нова страница, по две на ред, до четири на лист A4; цялата снимка (без
    изрязване), с надписа отдолу. */
 .paper__foto {

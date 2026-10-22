@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { allegatiDi } from '../allegati/service.js';
+import { aziendeConSchizzi } from '../aziende/funzioni.js';
 import { gruppiScelta, nelFoglioDi, sezioniFoto } from '../allegati/stampa.js';
 import { principalOf } from '../auth/guards.js';
 import { roleIn, spansAziende } from '../auth/scope.js';
@@ -11,6 +12,8 @@ import { COLONNE, SLOTS } from '../ordini/registry.js';
 import { activeParts, SECTIONS } from '../schede/fields.js';
 import { MAX_MISURE, misuraOf, misuraTemplateRow, misureFormRows } from '../schede/misure.js';
 import { FISSE, ORDINABILI, sezioniOrdinate } from '../schede/ordine.js';
+import { foglioDa, SCHIZZI_STAMPA_KEY, SCHIZZO_KEY, type Foglio } from '../schizzi/model.js';
+import { fogliDi } from '../schizzi/service.js';
 import type { SchedaFull } from '../schede/service.js';
 import {
   formValuesFromBody,
@@ -116,8 +119,48 @@ export async function renderForm(
     conferma: view.conferma ? { discrepanze, impronta: improntaDi(discrepanze) } : null,
     allegati,
     fotoStampa,
+    schizzi: await schizziDelForm(view, values),
     modifica: view.scheda !== null,
   });
+}
+
+/**
+ * Скицникът във формата — при фирма, която го има; на нова карта с избор на фирма — фирмите с него,
+ * а блокът следва избраната (schizzi.js). Листовете — пратените (формата се връща), иначе записаните;
+ * отметката за печата се вижда и при изключен скицник, ако картата има листове (те остават в печата).
+ */
+async function schizziDelForm(view: FormView, values: FormValues) {
+  const scelta = !view.scheda && view.aziende.length > 0;
+  const candidate = view.scheda
+    ? [view.scheda.aziendaId]
+    : scelta
+      ? view.aziende.map((a) => a.id)
+      : view.azienda
+        ? [view.azienda]
+        : [];
+  const per = view.scheda
+    ? view.scheda.azienda.schizzi
+      ? candidate
+      : []
+    : [...(await aziendeConSchizzi(candidate))];
+  const pratesi = values[SCHIZZO_KEY];
+  const fogli: Foglio[] = Array.isArray(pratesi)
+    ? pratesi.flatMap((json) => {
+        const foglio = foglioDa(json);
+        return foglio ? [foglio] : [];
+      })
+    : view.scheda
+      ? await fogliDi(view.scheda.id)
+      : [];
+  const stampati = values[SCHIZZI_STAMPA_KEY];
+  return {
+    attivo: per.length > 0,
+    per: scelta ? per.join(' ') : '',
+    nascosto: scelta && !per.includes(view.azienda),
+    fogli: fogli.map((foglio) => ({ foglio, json: JSON.stringify(foglio) })),
+    stampati:
+      typeof stampati === 'string' ? stampati === '1' : (view.scheda?.schizziStampati ?? true),
+  };
 }
 
 /**

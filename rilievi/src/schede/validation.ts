@@ -24,6 +24,14 @@ import {
   type FieldErrors,
   type FormValues,
 } from './field-parsers.js';
+import {
+  schizziDi,
+  schizziFromBody,
+  schizziStampatiDi,
+  SCHIZZI_STAMPA_KEY,
+  SCHIZZO_KEY,
+  type Foglio,
+} from '../schizzi/model.js';
 import { misureCount, misureFromBody, parseMisure, type MisuraData } from './misure.js';
 import {
   RIEPILOGO_KEY,
@@ -160,6 +168,9 @@ export type SchedaData = z.output<typeof schedaSchema> & {
   sezioniEscluse: string[];
   /** Снимките в края на печата и PDF-а (показаните и отметнатите); undefined — без иконките. */
   fotoInStampa?: SceltaFoto;
+  /** Листовете на скицника и отметката им за печата; undefined — не са на страницата (не се пипат). */
+  schizzi?: Foglio[];
+  schizziStampati?: boolean;
   /** Отпечатъкът на потвърдените разминавания — слага го маршрутът при запис (schede-form.ts). */
   discrepanzeConfermate: string | null;
 };
@@ -185,6 +196,7 @@ export function parseScheda(
   const riepilogo = riepilogoSchema.safeParse(raw[RIEPILOGO_KEY]);
   const stampa = sezioniEscluseDi(raw);
   const foto = fotoInStampaDi(raw);
+  const schizzi = schizziDi(raw);
   // Mastech: „Sì“ на поръчката без модел — човекът да избере NG120 или QI Touch.
   const modello = modelloMancante(active, (key) => raw[key]);
   const extraErrors: FieldErrors = Object.assign(
@@ -195,6 +207,7 @@ export function parseScheda(
     riepilogo.success ? {} : { [RIEPILOGO_KEY]: 'invalid' },
     stampa.success ? {} : { [STAMPA_KEY]: 'option' },
     foto.success ? {} : { [FOTO_KEY]: 'option' },
+    schizzi.success ? {} : { [SCHIZZO_KEY]: 'invalid' },
   );
 
   const parsed = schedaSchema.safeParse(input);
@@ -203,6 +216,7 @@ export function parseScheda(
     riepilogo.success &&
     stampa.success &&
     foto.success &&
+    schizzi.success &&
     Object.keys(extraErrors).length === 0
   ) {
     // Колоната на отворения модул (таблото — Pelazza или MoviLift, никога и двата).
@@ -220,6 +234,8 @@ export function parseScheda(
         moduliStampati: riepilogo.data,
         sezioniEscluse: stampa.data,
         fotoInStampa: foto.data,
+        schizzi: schizzi.data,
+        schizziStampati: schizziStampatiDi(raw),
         discrepanzeConfermate: null,
       },
     };
@@ -251,6 +267,10 @@ export function formValuesFromBody(body: unknown): FormValues {
     values[FOTO_MOSTRATE] = foto.mostrate;
     values[FOTO_KEY] = foto.scelte;
   }
+  const fogli = schizziFromBody(source);
+  if (fogli) values[SCHIZZO_KEY] = fogli;
+  const stampati = schizziStampatiDi(source);
+  if (stampati !== undefined) values[SCHIZZI_STAMPA_KEY] = stampati ? '1' : '';
   // Кои свързани полета още следват източника си (collegati.js) — form.ts приема само истинските имена.
   values[AUTO_KEY] = typeof source[AUTO_KEY] === 'string' ? source[AUTO_KEY].slice(0, 4000) : '';
   for (const field of FIELDS) {

@@ -70,6 +70,17 @@
     </dl>
   </section>
   <% } %>
+  <%# Листовете на скицника — при отметката на картата, след модулите, всеки на цялата ширина. %>
+  <% if (schizzi.length) { %>
+  <section class="paper__section paper__schizzi">
+    <h2><%= t('schizzi.title') %></h2>
+    <% schizzi.forEach((foglio, i) => { %><figure class="paper__schizzo">
+      <% if (schizzi.length > 1) { %><figcaption><%= t('schizzi.foglio', { n: i + 1 }) %></figcaption><% } %>
+      <%- include('_schizzo', { foglio, titolo: t('schizzi.foglio', { n: i + 1 }) }) %>
+    </figure>
+    <% }) %>
+  </section>
+  <% } %>
   <%# Снимките на разделите — накрая, от нова страница, само при отметката на картата (клиповете
      остават в портала). Миниатюрите (до 960 px) стигат за половин A4; без lazy — печатът ги чака. %>
   <% if (foto.length) { %>

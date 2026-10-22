@@ -99,6 +99,9 @@ model Azienda {
   /// Редът на разделите на картата във фирмата (ключовете от src/schede/fields.ts); празно — редът по
   /// подразбиране. Подрежда го администраторът ѝ (src/aziende/sezioni.ts).
   ordineSezioni String[]  @default([])
+  /// Скицникът в края на картата (листове за рисуване на ръка, src/schizzi/) — включва го само MASTER.
+  /// Изключен: полето изчезва от формата, а нарисуваното остава и се печата.
+  schizzi       Boolean   @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -349,6 +352,7 @@ model Scheda {
   bottoniereMisure             Boolean?
   misureBottoniere             MisuraBottoniera[]
   allegati                     Allegato[]
+  schizzi                      Schizzo[]
   lavoriExtra                  String?
   quadroMarca                  QuadroMarca?
   quadroMarcaAltro             String?                  @db.VarChar(120)
@@ -429,6 +433,8 @@ model Scheda {
   /// Поне една снимка влиза в печата и PDF-а — за предишния код (той печаташе всички при `true`). От 21
   /// октомври изборът е на всяка снимка (`Allegato.inStampa`); тази колона само го следва.
   fotoStampate                 Boolean                  @default(false)
+  /// Листовете на скицника влизат в печата и PDF-а (отметката „Schizzi“ в края на формата).
+  schizziStampati              Boolean                  @default(true)
   /// Отпечатъкът на разминаванията карта ↔ модули, потвърдени при последния запис (src/ordini/collegati.ts):
   /// същите разлики не се питат пак, нови или променени — да. null — няма потвърдени.
   discrepanzeConfermate        String?                  @db.VarChar(32)
@@ -533,6 +539,21 @@ model Allegato {
   @@index([schedaId, sezione, createdAt])
   @@index([stato, createdAt])
   @@index([caricatoDaId])
+}
+
+/// Лист от скицника на картата: нарисуваното (линии и надписи) в JSON, проверено при запис
+/// (src/schizzi/model.ts). Записва се с картата, в същата транзакция; пада с нея.
+model Schizzo {
+  id        String   @id @default(cuid())
+  schedaId  String
+  scheda    Scheda   @relation(fields: [schedaId], references: [id], onDelete: Cascade)
+  /// Мястото на листа в картата (0, 1, 2…).
+  ordine    Int
+  elementi  Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([schedaId, ordine])
 }
 
 enum TipoAllegato {

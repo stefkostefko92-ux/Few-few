@@ -4,6 +4,7 @@ import type { Capability } from '../auth/roles.js';
 import { inScope, scopeFor, spansAziende, type Scope } from '../auth/scope.js';
 import { activeAziende, allAziendeNames, isAziendaId } from '../aziende/service.js';
 import { MAX_QUERY_LENGTH } from '../schede/search.js';
+import { getScheda, type SchedaFull } from '../schede/service.js';
 
 /** Общото на маршрутите за карти и кошчето: обхватът на човека, заявката, филтърът, 404. */
 
@@ -47,4 +48,9 @@ export async function writableAziende(req: Request): Promise<Array<{ id: string;
 /** Чужда или липсваща карта — „няма такава“, не „забранено“. */
 export function notFound(req: Request, res: Response): void {
   sendError(req, res, 404, 'error.notFoundTitle', 'error.notFound');
+}
+
+/** Картата от адреса, в обхвата; изтритата — само за тези, които виждат кошчето на нейната фирма. */
+export async function loadScheda(req: Request): Promise<SchedaFull | null> {
+  return getScheda(scope(req, 'schede:read'), String(req.params.id), scope(req, 'schede:trash'));
 }

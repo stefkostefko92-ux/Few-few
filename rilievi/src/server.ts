@@ -17,6 +17,7 @@ import { writeLimiter } from './http/limits.js';
 import { applyPrefs, attachPrefs, themeUrl } from './http/prefs.js';
 import { PASSWORD_MIN_LENGTH } from './auth/password.js';
 import { MAX_FILE_PER_VOLTA } from './allegati/caricamento.js';
+import { VISTA_SCHIZZO } from './schizzi/model.js';
 import { accountRouter } from './routes/account.js';
 import { allegatiRouter } from './routes/allegati.js';
 import { auditRouter } from './routes/audit.js';
@@ -28,11 +29,15 @@ import { healthRouter } from './routes/health.js';
 import { impostazioniRouter } from './routes/impostazioni.js';
 import { requestsRouter } from './routes/requests.js';
 import { schedeRouter } from './routes/schede.js';
+import { schedeStampaRouter } from './routes/schede-stampa.js';
 import { siteRouter } from './routes/site.js';
 import { usersRouter } from './routes/users.js';
 import { usersManageRouter } from './routes/users-manage.js';
 import { countNewRequests } from './requests/service.js';
 import { HOME_PATH } from './seo/paths.js';
+
+/** Записът на картата: нова (`/schede`) и промяна (`/schede/<id>`). */
+const FORMA_SCHEDA = /^\/schede(?:\/[a-z0-9]{20,40})?$/;
 
 /** Кратък отпечатък на статичните файлове — сменя адреса на CSS/JS при всяка промяна (кешът е дълъг). */
 function assetVersion(): string {
@@ -74,6 +79,7 @@ function baseLocals(req: Request, res: Response): void {
     minuti: cfg.MEDIA_MAX_VIDEO_MIN,
   };
   res.locals.passwordMin = PASSWORD_MIN_LENGTH;
+  res.locals.schizzoVista = VISTA_SCHIZZO;
   res.locals.path = req.path;
   // Витрината — входът води към заявката за достъп.
   res.locals.landingPath = HOME_PATH;
@@ -157,7 +163,14 @@ export function createServer(): Express {
   );
   // Четири бележки по 4000 знака на кирилица са ~100 KB urlencoded, мерките на бутониерите — до 300
   // спирки (измерено: формата праща ~1950 параметъра с 300 спирки), отметките на снимките за печата —
-  // до 300 (`MAX_PER_SCHEDA`). Таванът е над това, не повече.
+  // до 300 (`MAX_PER_SCHEDA`). Таванът е над това, не повече. Само формата на картата носи и листовете
+  // на скицника (до MAX_FOGLI по MAX_JSON_FOGLIO, src/schizzi/model.ts — с кодирането до ~3 MB): там
+  // таванът е по-висок; вторият парсер пропуска вече прочетеното тяло.
+  const formaScheda = express.urlencoded({ extended: false, limit: '4mb', parameterLimit: 3000 });
+  app.use((req, res, next) => {
+    if (req.method === 'POST' && FORMA_SCHEDA.test(req.path)) formaScheda(req, res, next);
+    else next();
+  });
   app.use(express.urlencoded({ extended: false, limit: '1mb', parameterLimit: 3000 }));
   app.use(cookieParser());
   app.use(
@@ -203,6 +216,7 @@ export function createServer(): Express {
   app.use(authRouter);
   app.use(accountRouter);
   app.use(schedeRouter);
+  app.use(schedeStampaRouter);
   app.use(allegatiRouter);
   app.use(cestinoRouter);
   app.use(ordiniRouter);

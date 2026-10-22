@@ -4,7 +4,7 @@
   const narrow = typeof narrowMain !== 'undefined' && narrowMain;
   const bareMain = typeof bare !== 'undefined' && bare;
   // Входът е без лентата на портала, но с чертежа на шахтата (shaft.css).
-  const sheets = ['base', 'buttons', 'shell', 'layout', 'plate', 'forms', 'pages', 'data', 'sheet', 'misure', 'moduli', 'allegati', 'foto-stampa'].concat(bareMain ? ['shaft'] : []);
+  const sheets = ['base', 'buttons', 'shell', 'layout', 'plate', 'forms', 'pages', 'data', 'sheet', 'misure', 'moduli', 'allegati', 'foto-stampa', 'schizzi', 'schizzo-editor'].concat(bareMain ? ['shaft'] : []);
 %><!doctype html>
 <html lang="<%= locale %>"<% if (theme === 'LIGHT') { %> data-theme="light"<% } else if (theme === 'DARK') { %> data-theme="dark"<% } %>>
 <head>

@@ -1,88 +1,12 @@
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
 import { describe, it } from 'node:test';
 import { Prisma } from '@prisma/client';
 import sharp from 'sharp';
 import { viewHelpers } from '../src/http/view.js';
 import { translatorFor } from '../src/i18n.js';
-import { pdfFileName, pdfFontPaths, renderSchedaPdf } from '../src/schede/pdf.js';
+import { pdfFileName, renderSchedaPdf } from '../src/schede/pdf.js';
 import type { SchedaFull } from '../src/schede/service.js';
-
-const fontDir = process.env.PDF_FONT_DIR ?? '/usr/share/fonts/truetype/dejavu';
-const fontsHere = existsSync(pdfFontPaths(fontDir).regular);
-
-const scheda = {
-  id: 'cm0000000000000000000001',
-  data: new Date('2026-10-12T00:00:00.000Z'),
-  indirizzo: 'Via Giuseppe Verdi 14, Milano',
-  marca: 'Schindler',
-  matricola: '0033871',
-  numeroImpianto: '104552',
-  buonoLavoro: 'BL 2026/512',
-  portataKg: 630,
-  capienzaPersone: 8,
-  fermate: 6,
-  ubicazioneMacchina: ['ALTO'],
-  ubicazioneCassettina: 'Piano -1, vano contatori',
-  parcheggio: null,
-  tipoImpianto: ['ELETTRICO'],
-  tipoPorte: ['AUTOMATICHE', 'MANUALI'],
-  operatoreMarca: 'Selcom',
-  lucePorte: '800 x 2000',
-  operatoreTensione: '24 V DC',
-  doppioAccesso: false,
-  bloccaPortine: true,
-  autolivellamento: null,
-  pattinoRetrattile: true,
-  pattinoRetrattileNumero: 1,
-  serrature: true,
-  serratureNumero: 6,
-  serratureTipo: 'Elettromeccaniche',
-  luceVanoSostituire: true,
-  funiDiametroMm: new Prisma.Decimal('10.50'),
-  funiTrefoli: 8,
-  funiNumero: 4,
-  funiLunghezzaM: new Prisma.Decimal('42.75'),
-  limitatoreTipo: null,
-  funicellaDiametroMm: null,
-  funicellaLunghezzaM: null,
-  tenditore: null,
-  caviNumero: 2,
-  caviConduttori: 24,
-  caviLunghezzaM: null,
-  telesoccorsoInstallare: true,
-  perifericaInstallare: false,
-  cornettaInstallare: null,
-  allarmePortineria: false,
-  displayPortineria: null,
-  noteQuadretto: null,
-  noteImpianto: 'Бележка на български, città, perché.',
-  noteBottoniere: null,
-  bottoniereMisure: false,
-  misureBottoniere: [],
-  lavoriExtra: 'x '.repeat(1500),
-  sezioniEscluse: [],
-  moduliStampati: [],
-  searchText: '',
-  createdById: null,
-  updatedById: null,
-  deletedAt: null,
-  deletedById: null,
-  createdAt: new Date('2026-10-12T09:00:00.000Z'),
-  updatedAt: new Date('2026-10-12T09:30:00.000Z'),
-  aziendaId: 'cm0000000000000000000a01',
-  createdBy: { name: 'Tecnico Uno' },
-  updatedBy: { name: 'Tecnico Due' },
-  deletedBy: null,
-  azienda: {
-    id: 'cm0000000000000000000a01',
-    name: 'Ascensori Rossi Srl',
-    logoType: null,
-    logoWidth: null,
-    logoHeight: null,
-    logoUpdatedAt: null,
-  },
-} as unknown as SchedaFull;
+import { fontDir, fontsHere, pages, scheda } from './scheda-pdf.js';
 
 describe('the sheet PDF', { skip: !fontsHere && 'DejaVu fonts are not installed here' }, () => {
   it('renders a valid A4 PDF, Cyrillic notes included', async () => {
@@ -195,8 +119,6 @@ describe('the sheet PDF', { skip: !fontsHere && 'DejaVu fonts are not installed 
     assert.ok((withPhotos.toString('latin1').match(/\/Subtype \/Image/g) ?? []).length >= 2);
   });
 });
-
-const pages = (pdf: Buffer) => (pdf.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length;
 
 describe(
   'the old push-button panels on the PDF',

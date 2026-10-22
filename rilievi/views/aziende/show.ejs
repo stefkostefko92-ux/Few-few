@@ -46,6 +46,17 @@
     <form method="post" action="/aziende/<%= azienda.id %>/logo/rimuovi"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><div class="toolbar"><button class="btn btn--ghost" type="submit"><%- include('../partials/icon', { name: 'trash' }) %><%= t('aziende.logoRemove') %></button></div></form>
     <% } %>
   </section>
+  <section aria-labelledby="h-funzioni">
+    <h2 class="section__title" id="h-funzioni"><%= t('aziende.funzioniTitle') %></h2>
+    <h3><%= t('aziende.schizzi') %></h3>
+    <p class="muted"><%= t('aziende.schizziText') %></p>
+    <p><%= t('aziende.schizziStato', { stato: t(azienda.schizzi ? 'aziende.schizziAttivi' : 'aziende.schizziSpenti') }) %><% if (azienda.schizzi) { %> <%= t('aziende.schizziSpegniText') %><% } %></p>
+    <form method="post" action="/aziende/<%= azienda.id %>/schizzi">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="attivi" value="<%= azienda.schizzi ? '0' : '1' %>">
+      <div class="toolbar"><button class="btn<%= azienda.schizzi ? '' : ' btn--primary' %>" type="submit"><%= t(azienda.schizzi ? 'aziende.schizziDisattiva' : 'aziende.schizziAttiva') %></button></div>
+    </form>
+  </section>
   <section aria-labelledby="h-access">
     <h2 class="section__title" id="h-access"><%= t('aziende.accessTitle') %></h2>
     <p class="muted"><%= t(azienda.deactivatedAt ? 'aziende.reactivateText' : 'aziende.deactivateText') %></p>

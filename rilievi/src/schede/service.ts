@@ -4,6 +4,7 @@ import { rimuoviScheda } from '../allegati/archivio.js';
 import { errorMessage, logger } from '../logger.js';
 import { writeAudit } from '../audit.js';
 import { inScope, schedaScope, type Scope } from '../auth/scope.js';
+import { salvaSchizzi } from '../schizzi/service.js';
 import { searchTextOf } from './search.js';
 import type { SceltaFoto } from './stampa.js';
 import type { SchedaData } from './validation.js';
@@ -28,6 +29,7 @@ const WITH_PEOPLE = {
       logoHeight: true,
       logoUpdatedAt: true,
       ordineSezioni: true,
+      schizzi: true,
     },
   },
 } satisfies Prisma.SchedaInclude;
@@ -57,6 +59,7 @@ function persisted(
   const {
     misureBottoniere: _rows,
     fotoInStampa: _foto,
+    schizzi: _schizzi,
     ordineQuadro,
     preventivoArgano,
     ordineSospensioni,
@@ -88,6 +91,7 @@ export async function createScheda(
         misureBottoniere: { createMany: { data: data.misureBottoniere } },
       },
     });
+    if (data.schizzi) await salvaSchizzi(tx, scheda.id, data.schizzi);
     await writeAudit(
       { actorId, action: 'SCHEDA_CREATE', aziendaId, targetType: 'scheda', targetId: scheda.id },
       tx,
@@ -171,6 +175,7 @@ export async function updateScheda(
       });
     }
     if (data.fotoInStampa) await salvaFotoInStampa(tx, id, data.fotoInStampa);
+    if (data.schizzi) await salvaSchizzi(tx, id, data.schizzi);
     await writeAudit(
       { actorId, action: 'SCHEDA_UPDATE', aziendaId, targetType: 'scheda', targetId: id },
       tx,

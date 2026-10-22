@@ -15,7 +15,7 @@
   </div>
 </div>
 <div class="with-index">
-<%- include('_index', { titles: sections.map((s) => ({ key: s.key, title: s.title })) }) %>
+<%- include('_index', { titles: sections.map((s) => ({ key: s.key, title: s.title })).concat(schizzi.length ? [{ key: 'schizzi', title: t('schizzi.title') }] : []) }) %>
 <div class="sheet">
   <% if (scheda.deletedAt) { %>
   <div class="banner" role="status">
@@ -50,6 +50,16 @@
     <%- include('_allegati', { section, ritorno: 'scheda' }) %>
   </section>
   <% }) %>
+  <%# Листовете на скицника — и когато фирмата вече го е изключила (нарисуваното остава). %>
+  <% if (schizzi.length) { %>
+  <section class="sheet__section" id="s-schizzi" aria-labelledby="h-schizzi">
+    <h2 class="sheet__title" id="h-schizzi"><span class="secnum" aria-hidden="true"><%= sections.length + 1 %></span><%= t('schizzi.title') %></h2>
+    <ol class="schizzi__fogli">
+      <% schizzi.forEach((foglio, i) => { %><li class="schizzi__foglio"><figure class="schizzi__figura"><%- include('_schizzo', { foglio, titolo: t('schizzi.foglio', { n: i + 1 }) }) %><figcaption class="schizzi__nome"><%= t('schizzi.foglio', { n: i + 1 }) %></figcaption></figure></li>
+      <% }) %>
+    </ol>
+  </section>
+  <% } %>
   <p class="sheet__meta">
     <% if (showAzienda) { %><span><%= t('scheda.field.azienda') %>: <%= scheda.azienda.name %></span><% } %>
     <span><%= t('scheda.meta.created', { name: scheda.createdBy ? scheda.createdBy.name : '—', at: fmt.dateTime(scheda.createdAt) }) %></span>
