@@ -6,7 +6,7 @@
 // shaft, round 50) dashed. Colours from the theme.
 import { useCallback, useEffect, useRef } from 'react';
 import type { CadModel } from '@/lib/cad/model';
-import { surveyCorners, type DoorSide, type Survey } from '@/lib/cad/measure';
+import { SIDE_CORNERS, surveyCorners, type DoorSide, type Survey } from '@/lib/cad/measure';
 
 interface Props {
   model: CadModel;
@@ -20,8 +20,6 @@ interface Props {
 }
 
 interface View { s: number; tx: number; ty: number }
-
-const SIDE: Record<DoorSide, [number, number]> = { down: [0, 1], right: [1, 2], up: [2, 3], left: [3, 0] };
 
 export default function CadViewer({ model, hidden, survey, door, extra = null, onPick, labels }: Props) {
   const wrap = useRef<HTMLDivElement>(null), canvas = useRef<HTMLCanvasElement>(null);
@@ -73,7 +71,7 @@ export default function CadViewer({ model, hidden, survey, door, extra = null, o
     ctx.strokeStyle = accent;
     ctx.lineWidth = 2 / v.s;
     ctx.stroke();
-    const [i, j] = SIDE[overlay.current.door];
+    const [i, j] = SIDE_CORNERS[overlay.current.door];
     ctx.lineWidth = 6 / v.s;
     ctx.beginPath();
     ctx.moveTo(...k[i]);

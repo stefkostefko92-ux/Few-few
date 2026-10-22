@@ -118,6 +118,9 @@ export function shaftSize(s: Survey, mmPerUnit: number, door: DoorSide): { W: nu
   return door === 'down' || door === 'up' ? { W: Math.round(across), D: Math.round(along) } : { W: Math.round(along), D: Math.round(across) };
 }
 
+/** The two corners (indexes into surveyCorners) of each side of the surveyed rectangle, in the frame of the survey. */
+export const SIDE_CORNERS: Readonly<Record<DoorSide, readonly [number, number]>> = { down: [0, 1], right: [1, 2], up: [2, 3], left: [3, 0] };
+
 /** Corners of the surveyed rectangle in drawing units, counter-clockwise from the lower left. */
 export function surveyCorners(s: Survey): [number, number][] {
   const ux = Math.cos(s.angle), uy = Math.sin(s.angle), vx = -uy, vy = ux;

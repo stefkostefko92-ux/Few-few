@@ -1,13 +1,15 @@
 // The machine room measured on a DXF plan in the browser (round 50, src/lib/cad/locale.ts): a click in the room (the
 // shaft's outline below left out of the measure by its layer) and one in the shaft give the room's clear size, the
 // shaft's and where the shaft lies from the room's left and front inner walls — the drawing's bottom as the front wall,
-// or the side chosen —, also on a plan turned by 30°; a shaft not parallel to the room is said.
+// or the side chosen —, also on a plan turned by 30°; a shaft not parallel to the room is said. The sides are the ones
+// seen on screen whatever the turn (a plan turned a few degrees clockwise has its walls folded to 80°): «In basso» is the
+// side drawn at the bottom, and the side the viewer highlights.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as acad from '@node-projects/acad-ts';
 import { readCad } from '../cad/read';
-import { castRays, dominantAngle, type Survey } from '../cad/measure';
-import { misuraLocale } from '../cad/locale';
+import { SIDE_CORNERS, castRays, dominantAngle, surveyCorners, type DoorSide, type Survey } from '../cad/measure';
+import { aVista, misuraLocale } from '../cad/locale';
 
 const rot = (x: number, y: number, a: number): [number, number] => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
 
@@ -79,4 +81,39 @@ test('locale dal DXF: solo il vano, e un vano non parallelo al locale', () => {
   const turned = surveys(0, (2 * Math.PI) / 180, true), t = misuraLocale(turned.room, turned.shaft, 1, 'down');
   assert.equal(t.skew, true);
   assert.deepEqual([byId(t)['shaft.W'], byId(t)['shaft.D']], [1600, 1750], 'its own size, whatever its turn');
+});
+
+test('locale dal DXF: «in basso» è il lato disegnato in basso a ogni rotazione (−10°, 10°, 30°, 60°, 89°)', () => {
+  // turned by up to 45° the room's 3000 mm wall stays the one seen across; beyond, the 2800 mm wall is, and the shaft
+  // lies 450 mm from the wall seen on the left (the room's 2800 mm wall at the top before the turn) and 500 mm up
+  const across = { 'room.W': 3000, 'room.D': 2800, 'shaft.W': 1600, 'shaft.D': 1750, 'room.shaftX': 500, 'room.shaftY': 600 };
+  const upright = { 'room.W': 2800, 'room.D': 3000, 'shaft.W': 1750, 'shaft.D': 1600, 'room.shaftX': 450, 'room.shaftY': 500 };
+  for (const [deg, want] of [[-10, across], [10, across], [30, across], [60, upright], [89, upright]] as const) {
+    const { room, shaft } = surveys((deg * Math.PI) / 180), r = misuraLocale(room, shaft, 1, 'down');
+    assert.deepEqual(byId(r), want, `${deg}°`);
+    assert.equal(r.skew, false, `${deg}°`);
+    // the shaft alone too
+    assert.deepEqual(byId(misuraLocale(null, shaft, 1, 'down')), { 'shaft.W': want['shaft.W'], 'shaft.D': want['shaft.D'] }, `${deg}°: the shaft alone`);
+  }
+});
+
+test('locale dal DXF: il lato evidenziato sul disegno è quello scelto, come si vede sullo schermo', () => {
+  // the middle of a side of the rectangle as the viewer draws it (SIDE_CORNERS of surveyCorners)
+  const middle = (s: Survey, side: DoorSide): [number, number] => {
+    const k = surveyCorners(s), [i, j] = SIDE_CORNERS[side], a = k[i], b = k[j];
+    assert.ok(a && b);
+    return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  };
+  for (const deg of [-10, 10, 30, 60, 89]) {
+    const room = aVista(surveys((deg * Math.PI) / 180).room), m = (side: DoorSide): [number, number] => middle(room, side);
+    assert.ok(room.angle > -Math.PI / 4 && room.angle <= Math.PI / 4, `${deg}°: the first axis the nearer the horizontal`);
+    assert.ok(m('down')[1] < m('up')[1] && m('down')[1] < m('left')[1] && m('down')[1] < m('right')[1], `${deg}°: «In basso» is the lowest side`);
+    assert.ok(m('left')[0] < m('right')[0] && m('left')[0] < m('up')[0] && m('left')[0] < m('down')[0], `${deg}°: «A sinistra» is the leftmost side`);
+  }
+  // the same rectangle, only named from the screen
+  const raw = surveys((-10 * Math.PI) / 180).room, seen = aVista(raw);
+  assert.ok(raw.angle > Math.PI / 4, 'folded to 80°');
+  const sorted = (s: Survey): string[] => surveyCorners(s).map(([x, y]) => `${Math.round(x)},${Math.round(y)}`).sort();
+  assert.deepEqual(sorted(seen), sorted(raw));
+  assert.equal(aVista(seen), seen, 'once is enough');
 });

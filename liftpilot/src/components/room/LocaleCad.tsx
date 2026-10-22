@@ -3,15 +3,15 @@
 // The machine room measured on a DXF or DWG plan (round 50), entirely in the browser as the shaft on /progetto
 // (SurveyPanel): the file read with acad-ts (loaded only here), shown, a click inside the room and one inside the shaft
 // below measured with the four rays (castRays) — the room with the shaft's layer left out —, the side of the drawing that
-// is the room's front wall chosen (the bottom by default). The measures (src/lib/cad/locale.ts) go into the same confirm
-// table as a sketch's reading, «dal disegno CAD»; nothing of the drawing leaves the page and nothing of it is kept: the
-// survey stores the measures only.
+// is the room's front wall chosen (the bottom by default, as seen on screen whatever the plan's turn). The measures
+// (src/lib/cad/locale.ts) go into the same confirm table as a sketch's reading, «dal disegno CAD»; nothing of the
+// drawing leaves the page and nothing of it is kept: the survey stores the measures only.
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { MM_PER_UNIT, type CadModel, type CadUnits } from '@/lib/cad/model';
 import type { DoorSide, Survey } from '@/lib/cad/measure';
 import { cadReadError, pickSurvey } from '@/lib/cad/pick';
-import { misuraLocale } from '@/lib/cad/locale';
+import { aVista, misuraLocale } from '@/lib/cad/locale';
 import CadViewer from '../shaft/CadViewer';
 import ConfermaValori, { type Modulo } from '../schizzi/ConfermaValori';
 
@@ -58,7 +58,8 @@ export default function LocaleCad({ modulo }: { modulo: Modulo }) {
 
   const onPick = useCallback((x: number, y: number): void => {
     if (!model) return;
-    const s = pickSurvey(model, (i) => !hidden.has(i), x, y, MM_PER_UNIT[units]);
+    // named from the screen: the side chosen is the one drawn there, and the one highlighted
+    const found = pickSurvey(model, (i) => !hidden.has(i), x, y, MM_PER_UNIT[units]), s = found && aVista(found);
     setError(s ? null : t('notClosed'));
     if (!s) return;
     setRound((n) => n + 1);

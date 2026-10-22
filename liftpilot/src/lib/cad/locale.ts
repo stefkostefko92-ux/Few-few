@@ -1,11 +1,15 @@
 // The machine room measured on a DXF/DWG plan (round 50), in the browser like the shaft (measure.ts): a click inside the
 // room and one inside the shaft below give two clear rectangles; the room's front wall is a side of the room's
-// rectangle as the drawing shows it (the bottom by default: the plan seen from the front wall, its left the room's
-// left), the side of entrance A of the shaft (the survey's frame, src/lib/room/survey.ts). From them: the room's clear
-// size (room.W along the front wall, room.D into the room), the shaft's (shaft.W along the entrance-A wall — the front
-// wall's direction —, shaft.D across) and where the shaft lies (room.shaftX from the room's left inner wall to the
-// shaft's left inner face, room.shaftY from the room's front inner wall to the shaft's entrance-A face). Millimetres,
-// rounded; nothing is checked here — the confirm table checks every value against the form's range. Pure.
+// rectangle as the drawing shows it on screen (the bottom by default: the plan seen from the front wall, its left the
+// room's left), the side of entrance A of the shaft (the survey's frame, src/lib/room/survey.ts). The rays come back
+// with the walls' direction folded into [0°, 90°) (measure.ts) — a plan turned a few degrees clockwise, its walls at
+// −10°, comes back at 80°, the survey's «down» then the wall drawn on the right —: each survey is first named from the
+// screen (aVista), so «In basso» is the side drawn at the bottom whatever the turn, and the side the viewer highlights.
+// From them: the room's clear size (room.W along the front wall, room.D into the room), the shaft's (shaft.W along the
+// entrance-A wall — the front wall's direction —, shaft.D across) and where the shaft lies (room.shaftX from the room's
+// left inner wall to the shaft's left inner face, room.shaftY from the room's front inner wall to the shaft's
+// entrance-A face). Millimetres, rounded; nothing is checked here — the confirm table checks every value against the
+// form's range. Pure.
 import { shaftSize, surveyCorners, type DoorSide, type Survey } from './measure';
 
 export interface MisuraLocale {
@@ -16,6 +20,14 @@ export interface MisuraLocale {
 
 /** Beyond this the shaft's walls are said not parallel to the room's [rad] (half a degree). */
 const SKEW = (0.5 * Math.PI) / 180;
+
+/** A survey named from the screen: the same rectangle with its first axis the walls' direction nearer the horizontal
+ *  (an angle in (−45°, 45°]), so its sides down, up, left and right are the ones drawn at the bottom, top, left, right. */
+export function aVista(s: Survey): Survey {
+  if (s.angle <= Math.PI / 4) return s;
+  // turned back a quarter: the first axis was the old −v, the second the old u
+  return { ...s, angle: s.angle - Math.PI / 2, right: s.down, left: s.up, up: s.right, down: s.left };
+}
 
 /** A point of the drawing in the room's frame: x from the left inner wall along the front wall, y from the front inner
  *  wall into the room [drawing units], for the room's front side on the drawing. */
@@ -42,7 +54,8 @@ function relative(a: Survey, b: Survey): { diff: number; quarter: boolean } {
 }
 
 /** The measures the clicks give so far (the room's, the shaft's, and the shaft's place once both are measured). */
-export function misuraLocale(room: Survey | null, shaft: Survey | null, mmPerUnit: number, front: DoorSide): MisuraLocale {
+export function misuraLocale(roomRaw: Survey | null, shaftRaw: Survey | null, mmPerUnit: number, front: DoorSide): MisuraLocale {
+  const room = roomRaw && aVista(roomRaw), shaft = shaftRaw && aVista(shaftRaw);
   const mm = (x: number): number => Math.round(x * mmPerUnit), values: MisuraLocale['values'] = [];
   const across = front === 'down' || front === 'up';
   if (room) {
