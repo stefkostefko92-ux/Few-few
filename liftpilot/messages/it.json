@@ -3464,6 +3464,7 @@
       "mixed": "unità diverse",
       "unknown": "unità non indicate"
     },
+    "fermataDalBasso": "{label} (n. {i} dal basso)",
     "motivi": {
       "nonLetto": "Non letto sullo schizzo",
       "tipo": "Valore non utilizzabile",
@@ -3530,6 +3531,7 @@
       "conferma": "Confermo",
       "confermaDi": "Confermo: {campo}",
       "nelModulo": "Nel modulo: {value}",
+      "fermata": "Fermata {fermata}",
       "bassa": "bassa",
       "inserisci": "Inserisci il valore guardando lo schizzo.",
       "invalido": "Valore non valido ({range}).",

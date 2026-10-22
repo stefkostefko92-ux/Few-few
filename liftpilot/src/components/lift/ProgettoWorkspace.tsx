@@ -209,6 +209,8 @@ export default function ProgettoWorkspace({ projectId, base, when, canCalc, init
       }
       return { applied: r.applied, refused: r.refused };
     },
+    // the stops by the names the form gives them (the main stop stays an index from the bottom)
+    fermata: (i) => composed.inputs.shaft.vertical.floors[i]?.label ?? String(i),
   };
   // the save sends the drawing and its base: only once what is shown has caught up with it, with nothing left to enter
   const settled = deferred === composed;

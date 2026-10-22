@@ -17,7 +17,7 @@ Object.assign(globalThis, { React });
 
 /** A component's markup with the Italian texts, as the application's pages render it. */
 function html<P extends object>(c: React.ComponentType<P>, props: P): string {
-  return renderToStaticMarkup(React.createElement(NextIntlClientProvider, { locale: 'it', messages: it, timeZone: 'Europe/Rome' }, React.createElement(c, props)));
+  return renderToStaticMarkup(React.createElement(NextIntlClientProvider, { locale: 'it', messages: it, timeZone: 'Europe/Rome', children: React.createElement(c, props) }));
 }
 
 test('lettura in corso: la regione live ha un testo fisso, i secondi stanno fuori dal lettore di schermo', () => {
@@ -71,4 +71,27 @@ test('lettura: uno schizzo di un’altra parte lo dice sopra «Leggi lo schizzo�
     const page = lettura(target, target);
     for (const text of [...Object.values(testi.altraParte), ...Object.values(testi.nonDellaParte)]) assert.ok(!page.includes(text), `${target}: its own sketch, no note`);
   }
+});
+
+test('conferma: le fermate si chiamano come nel modulo — la principale col suo nome e il numero dal basso, il valore resta l’indice', () => {
+  const nomi = ['S1', 'T', '1', '2'];
+  const modulo: Modulo = { ...NESSUNO, attuale: (id) => (id === 'main' ? 1 : null), fermata: (i) => nomi[i] ?? String(i) };
+  const page = html(ConfermaValori, {
+    target: 'vano', fonte: 'ai', modulo, caption: 'c', applicati: () => '',
+    righe: [{ id: 'rise.0', value: 3000, confidence: 0.9, read: '300' }, { id: 'fdoor.1', value: 'AB', confidence: 0.9, read: 'A+B' }, { id: 'main', value: 2, confidence: 0.9, read: 'PT' }],
+  });
+  assert.match(row(page, 'rise.0'), /<td class="row-title">Dalla fermata S1 a quella sopra<\/td>/);
+  assert.match(row(page, 'fdoor.1'), /<td class="row-title">Accesso della fermata T<\/td>/);
+  const main = row(page, 'main');
+  assert.match(main, /type="number"[^>]*value="2"/, 'the value is the index from the bottom');
+  assert.ok(main.includes('Fermata 1 (n. 2 dal basso)'), 'the proposed stop by its name');
+  assert.ok(main.includes('Nel modulo: T (n. 1 dal basso)'), 'the form’s main stop by its name');
+  // the default names are the indexes: nothing more to say
+  const plain = html(ConfermaValori, {
+    target: 'vano', fonte: 'ai', modulo: { ...NESSUNO, attuale: (id) => (id === 'main' ? 1 : null), fermata: String }, caption: 'c', applicati: () => '',
+    righe: [{ id: 'rise.0', value: 3000, confidence: 0.9, read: '300' }, { id: 'main', value: 2, confidence: 0.9, read: '2' }],
+  });
+  assert.match(row(plain, 'rise.0'), /Dalla fermata 0 a quella sopra/);
+  assert.doesNotMatch(plain, /dal basso/);
+  assert.ok(row(plain, 'main').includes('Nel modulo: 1'));
 });

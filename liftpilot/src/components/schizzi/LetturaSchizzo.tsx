@@ -51,7 +51,7 @@ export default function LetturaSchizzo({ projectId, schizzo, target, modulo, qua
   /** the sketch's upload date as the page writes it */
   quando: string;
 }) {
-  const t = useTranslations('schizzi'), te = useTranslations('errors'), { etichetta } = useTestiCampo(target);
+  const t = useTranslations('schizzi'), te = useTranslations('errors'), { etichetta } = useTestiCampo(target, modulo.fermata);
   const [stato, setStato] = useState<Stato>({ at: 'idle' });
   const [now, setNow] = useState(0);
   const ctrl = useRef<AbortController | null>(null), runs = useRef(0);

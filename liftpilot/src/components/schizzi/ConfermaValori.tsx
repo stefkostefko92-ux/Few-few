@@ -24,10 +24,12 @@ export interface Riga {
   note?: string;
 }
 
-/** The form the values go into: what it holds for an id (null: nothing entered) and the confirmed values put in. */
+/** The form the values go into: what it holds for an id (null: nothing entered), the confirmed values put in and, on
+ *  /progetto, the name the form gives a stop (its label; the index when it has none). */
 export interface Modulo {
   attuale(id: string): ValoreCampo | null;
   applica(valori: Valore[]): { applied: string[]; refused: { id: string; code: Rifiuto }[] };
+  fermata?(i: number): string;
 }
 
 /** Below this the model's value is not proposed as it is: the field starts empty. */
@@ -58,15 +60,19 @@ function valoreDi(tipo: TipoCampo, text: string): ValoreCampo | null {
 }
 const intervallo = (tipo: TipoCampo): string => (tipo.kind === 'mm' ? `${tipo.min}–${tipo.max} mm` : tipo.kind === 'int' ? `${tipo.min}–${tipo.max}` : '');
 
-/** A measure's label and a value as the panel writes them. */
-export function useTestiCampo(target: Target) {
+/** A measure's label and a value as the panel writes them: the stops by the form's names (the technician thinks in
+ *  them), the main stop — an index from the bottom — with its place when its name differs from it. */
+export function useTestiCampo(target: Target, fermata?: (i: number) => string) {
   const t = useTranslations('schizzi');
+  const nome = (i: number): string => fermata?.(i) ?? String(i);
+  const stop = (i: number): string => (nome(i) === String(i) ? String(i) : t('fermataDalBasso', { label: nome(i), i }));
   const etichetta = (id: string): string => {
     const c = campoDi(target, id);
-    return c ? t(`campi.${c.campo.label}`, c.index === null ? {} : { n: c.index }) : id;
+    return c ? t(`campi.${c.campo.label}`, c.index === null ? {} : { n: nome(c.index) }) : id;
   };
   const mostra = (id: string, v: ValoreCampo): string => {
     const c = campoDi(target, id);
+    if (c?.campo.id === 'main' && typeof v === 'number') return stop(v);
     return c?.campo.tipo.kind === 'mm' ? `${v} mm` : typeof v === 'number' ? String(v) : t(`valori.${String(v)}`);
   };
   return { etichetta, mostra };
@@ -77,7 +83,7 @@ export default function ConfermaValori({ target, righe, fonte, modulo, caption, 
   /** the message once n values went in */
   applicati(n: number): string;
 }) {
-  const t = useTranslations('schizzi'), uid = useId(), { etichetta, mostra } = useTestiCampo(target);
+  const t = useTranslations('schizzi'), uid = useId(), { etichetta, mostra } = useTestiCampo(target, modulo.fermata);
   const [stato, setStato] = useState<Record<string, Stato>>(() => Object.fromEntries(righe.map((r) => [r.id, iniziale(r, fonte)])));
   const [esito, setEsito] = useState<{ ok: string | null; refused: string[] } | null>(null);
   const of = (id: string): Stato => stato[id] ?? { on: false, text: '', done: false };
@@ -154,6 +160,7 @@ export default function ConfermaValori({ target, righe, fonte, modulo, caption, 
                   <td data-label={t('tabella.valore')}>
                     <div>
                       {field(r)}
+                      {c?.campo.id === 'main' && v !== null && mostra(r.id, v) !== String(v) ? <span className="note">{t('tabella.fermata', { fermata: mostra(r.id, v) })}</span> : null}
                       {cur !== null && (v === null || cur !== v) ? <span className="note">{t('tabella.nelModulo', { value: mostra(r.id, cur) })}</span> : null}
                       {unsure && !s.text ? <span className="note">{t('tabella.inserisci')}</span> : null}
                       {s.text.trim() !== '' && v === null && c ? <span className="note bad">{t('tabella.invalido', { range: intervallo(c.campo.tipo) || t('tabella.scegli') })}</span> : null}
