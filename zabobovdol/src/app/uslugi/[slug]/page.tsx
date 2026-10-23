@@ -7,6 +7,9 @@ import { buildMetadata, localBusinessLd } from "@/lib/seo";
 import { renderMarkdown } from "@/lib/markdown";
 import { SERVICE_CATEGORY_LABELS, labelFor } from "@/lib/categories";
 import { PrintButton } from "@/components/PrintButton";
+import { ShareButton } from "@/components/ShareButton";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { PhoneReportButton, TelLink } from "@/components/PhoneReportButton";
 
 export const dynamic = "force-dynamic";
 
@@ -35,13 +38,23 @@ export async function generateMetadata({
   const { slug } = await params;
   const s = await getService(slug);
   if (!s) return buildMetadata({ title: "Не е намерено", noindex: true });
-  return buildMetadata({
-    title: s.seoTitle || `${s.name} — телефон и информация`,
-    description:
-      s.seoDescription ||
-      `${s.name} в Бобов дол. ${s.address ? "Адрес: " + s.address + ". " : ""}${s.phone ? "Телефон: " + s.phone + "." : ""}`,
-    path: `/uslugi/${s.slug}`,
-  });
+  return {
+    ...buildMetadata({
+      title: s.seoTitle || `${s.name} — телефон и информация`,
+      description:
+        s.seoDescription ||
+        `${s.name} в Бобов дол. ${s.address ? "Адрес: " + s.address + ". " : ""}${s.phone ? "Телефон: " + s.phone + "." : ""}`,
+      path: `/uslugi/${s.slug}`,
+    }),
+    keywords: [
+      s.name,
+      `${s.name} телефон`,
+      `${labelFor(SERVICE_CATEGORY_LABELS, s.category)} Бобов дол`,
+      "телефони Бобов дол",
+      "услуги Бобов дол",
+      "Carbon Stealth",
+    ],
+  };
 }
 
 export default async function ServicePage({
@@ -85,8 +98,13 @@ export default async function ServicePage({
               <Prose html={renderMarkdown(s.description)} />
             </div>
           )}
-          <div className="mt-6 no-print">
+          <div className="mt-6 no-print flex flex-wrap items-start gap-3">
             <PrintButton variant="secondary" />
+            <ShareButton
+              title={`${s.name} — За Бобов дол`}
+              text={`${s.name}${s.phone ? ` — телефон ${s.phone}` : ""}`}
+              path={`/uslugi/${s.slug}`}
+            />
           </div>
         </div>
         <aside className="space-y-3">
@@ -94,18 +112,24 @@ export default async function ServicePage({
             {s.phone && (
               <div>
                 <div className="text-xs uppercase text-slate-600">Телефон</div>
-                <a href={`tel:${s.phone}`} className="text-lg font-semibold text-brand-700">
+                <TelLink phone={s.phone} className="text-lg font-semibold text-brand-700">
                   {s.phone}
-                </a>
+                </TelLink>
               </div>
             )}
             {s.phone2 && (
               <div>
                 <div className="text-xs uppercase text-slate-600">Втори телефон</div>
-                <a href={`tel:${s.phone2}`} className="font-semibold text-brand-700">
+                <TelLink phone={s.phone2} className="font-semibold text-brand-700">
                   {s.phone2}
-                </a>
+                </TelLink>
               </div>
+            )}
+            {(s.phone || s.phone2) && (
+              <>
+                <VerifiedBadge at={s.verifiedAt} source={s.verifiedSource} />
+                <PhoneReportButton serviceId={s.id} serviceName={s.name} />
+              </>
             )}
             {s.address && (
               <div>
