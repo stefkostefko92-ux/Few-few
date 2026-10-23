@@ -42,6 +42,7 @@ const settingsSchema = z.object({
   triviaSchedule: z.enum(["daily", "weekly"]).nullable().optional(),
   questChannelId: snowflakeOrNull,
   questEnabled: z.boolean().optional(),
+  battlesEnabled: z.boolean().optional(),
 });
 
 // ─── GET /api/game/:serverId — настройки + лимити + обзор ────────────────────

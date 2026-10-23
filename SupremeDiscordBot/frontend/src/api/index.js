@@ -334,6 +334,9 @@ export const openApplicationDiscussion = (sid, appId) =>
   api.post(`/applications/${sid}/${appId}/discuss`).then((r) => r.data);
 
 // ─── v50 Server Season (dashboard) ───────────────────────────────────────────
+// v52 — канал-стръв за спам ботове (пътят /honeypot е вътрешното име от v52)
+export const getBait           = (sid) => api.get(`/honeypot/${sid}`).then((r) => r.data);
+export const updateBait        = (sid, data) => api.put(`/honeypot/${sid}`, data).then((r) => r.data);
 export const getGame           = (sid) => api.get(`/game/${sid}`).then((r) => r.data);
 export const updateGameSettings= (sid, data) => api.put(`/game/${sid}/settings`, data).then((r) => r.data);
 export const getGameShop       = (sid) => api.get(`/game/${sid}/shop`).then((r) => r.data);

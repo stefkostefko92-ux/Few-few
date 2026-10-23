@@ -4,12 +4,19 @@
 // changes and bumps the version, banner reappears.
 
 import { useState, useEffect } from "react";
-import { Cookie, X, Check } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { Cookie, Check } from "lucide-react";
+import { useT } from "../contexts/I18nContext";
+import { COOKIE_CONSENT, cookieConsentLocale } from "../i18n/cookieConsent";
 
 const CONSENT_KEY = "supreme-bot-cookie-consent";
 const CURRENT_VERSION = 1; // Bump this when privacy policy materially changes
 
 export default function CookieConsent() {
+  // Банерът е в рутера, но извън <Routes> — useLocation следи и смяната на страницата.
+  const { pathname } = useLocation();
+  const { lang } = useT();
+  const L = COOKIE_CONSENT[cookieConsentLocale(pathname, lang)];
   const [show, setShow] = useState(false);
   const [showPrefs, setShowPrefs] = useState(false);
   const [prefs, setPrefs] = useState({
@@ -75,19 +82,18 @@ export default function CookieConsent() {
   return (
     <div
       role="dialog"
-      aria-label="Cookie consent"
+      aria-label={L.dialog}
       aria-describedby="cookie-consent-description"
       className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-md z-[100] cs-card !p-5 border-cs-cyan/40 shadow-2xl shadow-cs-cyan/20 bg-cs-bg/95 backdrop-blur-md"
     >
       <div className="flex items-start gap-3 mb-3">
-        <Cookie className="w-5 h-5 text-cs-cyan flex-shrink-0 mt-0.5" />
+        <Cookie className="w-5 h-5 text-cs-cyan flex-shrink-0 mt-0.5" aria-hidden="true" />
         <div className="flex-1">
-          <h3 className="font-display font-bold text-sm text-cs-text mb-1">We use cookies</h3>
+          <h3 className="font-display font-bold text-sm text-cs-text mb-1">{L.title}</h3>
           <p id="cookie-consent-description" className="text-xs text-cs-muted leading-relaxed">
-            We use essential cookies for authentication and session management.
-            No tracking, no ads.{" "}
+            {L.body}{" "}
             <a href="/cookies" className="text-cs-cyan underline">
-              Read our Cookie Policy
+              {L.policy}
             </a>
           </p>
         </div>
@@ -96,52 +102,55 @@ export default function CookieConsent() {
       {showPrefs && (
         <div className="mb-4 space-y-2 border-t border-cs-border pt-3">
           <PrefRow
-            label="Essential cookies"
-            description="Required for login, sessions, CSRF protection"
+            label={L.essential}
+            description={L.essentialDesc}
+            requiredLabel={L.required}
             checked={true}
             disabled
           />
           <PrefRow
-            label="Analytics cookies"
-            description="Help us understand usage patterns (not currently used)"
+            label={L.analytics}
+            description={L.analyticsDesc}
             checked={prefs.analytics}
             onChange={(v) => setPrefs({ ...prefs, analytics: v })}
           />
           <PrefRow
-            label="Marketing cookies"
-            description="Personalized content (not currently used)"
+            label={L.marketing}
+            description={L.marketingDesc}
             checked={prefs.marketing}
             onChange={(v) => setPrefs({ ...prefs, marketing: v })}
           />
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2">
+      {/* На телефон един под друг: преведените надписи („Отказвам незадължителните“)
+          не се събират в половин ред. Двата избора остават еднакво видими. */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <button
           onClick={acceptAll}
-          className="cs-btn-primary text-xs flex-1 min-w-[100px]"
+          className="cs-btn-primary text-xs whitespace-normal text-center"
         >
-          <Check className="w-3.5 h-3.5" /> Accept all
+          <Check className="w-3.5 h-3.5" aria-hidden="true" /> {L.acceptAll}
         </button>
         <button
           onClick={rejectNonEssential}
-          className="cs-btn-primary text-xs flex-1 min-w-[100px]"
+          className="cs-btn-primary text-xs whitespace-normal text-center"
         >
-          Reject non-essential
+          {L.reject}
         </button>
         {showPrefs ? (
           <button
             onClick={saveCustom}
-            className="cs-btn-ghost text-xs w-full"
+            className="cs-btn-ghost text-xs w-full sm:col-span-2"
           >
-            Save preferences
+            {L.save}
           </button>
         ) : (
           <button
             onClick={() => setShowPrefs(true)}
-            className="cs-btn-ghost text-xs w-full"
+            className="cs-btn-ghost text-xs w-full sm:col-span-2"
           >
-            Customize
+            {L.customize}
           </button>
         )}
       </div>
@@ -149,7 +158,7 @@ export default function CookieConsent() {
   );
 }
 
-function PrefRow({ label, description, checked, onChange, disabled }) {
+function PrefRow({ label, description, checked, onChange, disabled, requiredLabel }) {
   return (
     <label className={`flex items-start gap-3 cursor-${disabled ? "not-allowed" : "pointer"}`}>
       <input
@@ -160,7 +169,7 @@ function PrefRow({ label, description, checked, onChange, disabled }) {
         className="mt-0.5 accent-cs-cyan"
       />
       <div className="flex-1">
-        <div className="text-xs font-semibold text-cs-text">{label}{disabled && <span className="text-cs-dim ml-2">(required)</span>}</div>
+        <div className="text-xs font-semibold text-cs-text">{label}{disabled && <span className="text-cs-dim ml-2">{requiredLabel}</span>}</div>
         <div className="text-[10px] text-cs-dim">{description}</div>
       </div>
     </label>

@@ -69,7 +69,7 @@ export default {
     // add/remove/claim/unclaim → само support екипа; close → екип ИЛИ създателят.
     let panel = ticket?.panel || null;
     if (!panel && ticket?.panelId) {
-      panel = await api.get(`/bot/panel/${ticket.panelId}`).then((r) => r.data).catch(() => null);
+      panel = await api.get(`/bot/panel/${ticket.panelId}`, { params: { serverId: interaction.guildId } }).then((r) => r.data).catch(() => null);
     }
     const hasSupportRole = (panel?.supportRoleIds || []).some((r) =>
       interaction.member?.roles?.cache?.has(r)

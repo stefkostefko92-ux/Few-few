@@ -33,7 +33,7 @@ function ServerPicker({ value, onChange }) {
       <div className="flex flex-wrap items-center gap-3">
         <Server className="w-4 h-4 text-cs-cyan" aria-hidden="true" />
         <span className="text-cs-text font-medium">{value.name}</span>
-        <span className="font-mono text-[10px] text-cs-dim">{value.id}</span>
+        <span className="font-mono text-[11px] text-cs-dim">{value.id}</span>
         <button type="button" className="cs-btn-ghost cs-btn-sm" onClick={() => onChange(null)}>Change server</button>
       </div>
     );
@@ -50,7 +50,7 @@ function ServerPicker({ value, onChange }) {
           <li key={s.id}>
             <button type="button" className="w-full text-left px-3 py-2 hover:bg-cs-panel/60 flex items-center justify-between gap-3" onClick={() => onChange({ id: s.id, name: s.name })}>
               <span className="truncate">{s.name}</span>
-              <span className="font-mono text-[10px] text-cs-dim shrink-0">{s.id}</span>
+              <span className="font-mono text-[11px] text-cs-dim shrink-0">{s.id}</span>
             </button>
           </li>
         ))}
@@ -113,12 +113,12 @@ function GameMembers({ server }) {
             {!members.length && <tr><td colSpan={8} className="text-cs-dim">{q ? "No player matches." : "Nobody has played on this server yet."}</td></tr>}
             {members.map((m) => (
               <tr key={m.userId}>
-                <td className="min-w-[10rem]">{m.username || <span className="text-cs-dim">unknown name</span>}<div className="font-mono text-[10px] text-cs-dim">{m.userId}</div></td>
-                <td className="font-mono">{m.level}</td>
-                <td className="font-mono text-xs">{m.xp.toLocaleString()}</td>
-                <td className="font-mono text-xs">✨ {m.sparks.toLocaleString()}</td>
-                <td className="font-mono text-xs">{m.companions}</td>
-                <td className="font-mono text-xs">{m.streak}</td>
+                <td className="min-w-[10rem]">{m.username || <span className="text-cs-dim">unknown name</span>}<div className="font-mono text-[11px] text-cs-dim">{m.userId}</div></td>
+                <td className="tabular-nums">{m.level}</td>
+                <td className="tabular-nums text-xs">{m.xp.toLocaleString()}</td>
+                <td className="tabular-nums text-xs">✨ {m.sparks.toLocaleString()}</td>
+                <td className="tabular-nums text-xs">{m.companions}</td>
+                <td className="tabular-nums text-xs">{m.streak}</td>
                 <td className="text-xs">{fmt(m.updatedAt)}</td>
                 <td className="text-right whitespace-nowrap">
                   <button type="button" className="cs-btn-ghost cs-btn-sm" onClick={() => setAdjusting(m)} aria-label={`Adjust XP and sparks for ${m.username || m.userId}`}><SlidersHorizontal className="w-3.5 h-3.5" aria-hidden="true" /> Adjust</button>
@@ -219,8 +219,8 @@ function CompanionsModal({ server, userId, label, onClose, onDone }) {
             {!rows.length && <tr><td colSpan={5} className="text-cs-dim">No companions.</td></tr>}
             {rows.map((c) => (
               <tr key={c.id}>
-                <td>{c.rarityEmoji} {c.name}{c.seasonId && <span className="font-mono text-[10px] text-cs-dim"> · {c.seasonId}</span>}</td>
-                <td className="font-mono">{c.stage}</td><td className="font-mono text-xs">{c.fed}</td><td className="text-xs">{fmt(c.caughtAt)}</td>
+                <td>{c.rarityEmoji} {c.name}{c.seasonId && <span className="font-mono text-[11px] text-cs-dim"> · {c.seasonId}</span>}</td>
+                <td className="tabular-nums">{c.stage}</td><td className="tabular-nums text-xs">{c.fed}</td><td className="text-xs">{fmt(c.caughtAt)}</td>
                 <td className="text-right">
                   {revoking === c.id
                     ? <button type="button" className="cs-btn-danger cs-btn-sm" disabled={!reasonOk || revoke.isPending} onClick={() => revoke.mutate(c.id)}>{reasonOk ? "Confirm" : "Add a reason"}</button>
@@ -342,11 +342,11 @@ function TicketsList({ serverId, q }) {
             {!rows.length && <tr><td colSpan={7} className="text-cs-dim">No tickets match.</td></tr>}
             {rows.map((t) => (
               <tr key={t.id}>
-                <td className="min-w-[8rem]">#{t.number ?? "—"}{t.panel?.name && <span className="text-cs-dim"> · {t.panel.name}</span>}<div className="font-mono text-[10px] text-cs-dim">{t.id}</div></td>
-                <td className="min-w-[8rem]">{t.server?.name}<div className="font-mono text-[10px] text-cs-dim">{t.serverId}</div></td>
+                <td className="min-w-[8rem]">#{t.number ?? "—"}{t.panel?.name && <span className="text-cs-dim"> · {t.panel.name}</span>}<div className="font-mono text-[11px] text-cs-dim">{t.id}</div></td>
+                <td className="min-w-[8rem]">{t.server?.name}<div className="font-mono text-[11px] text-cs-dim">{t.serverId}</div></td>
                 <td>{t.creator?.username || t.creator?.id}</td>
-                <td><span className={STATUS_BADGE[t.status] || "cs-badge"}>{t.status.toLowerCase()}</span>{t.hasTranscript && <div className="font-mono text-[10px] text-cs-dim">transcript</div>}</td>
-                <td className="font-mono text-xs">{t._count?.messages ?? 0}</td>
+                <td><span className={STATUS_BADGE[t.status] || "cs-badge"}>{t.status.toLowerCase()}</span>{t.hasTranscript && <div className="text-[11px] text-cs-dim">transcript</div>}</td>
+                <td className="tabular-nums text-xs">{t._count?.messages ?? 0}</td>
                 <td className="text-xs">{fmt(t.createdAt)}</td>
                 <td className="text-right whitespace-nowrap">
                   <Link className="cs-btn-ghost cs-btn-sm" to={`/dashboard/${t.serverId}/tickets`} title="Open the server's ticket page (transcripts, replies)"><ExternalLink className="w-3.5 h-3.5" aria-hidden="true" /> Open</Link>
@@ -398,10 +398,10 @@ function PanelsList({ serverId, q }) {
             {!rows.length && <tr><td colSpan={6} className="text-cs-dim">No panels match.</td></tr>}
             {rows.map((p) => (
               <tr key={p.id}>
-                <td>{p.name}<div className="font-mono text-[10px] text-cs-dim">{p.id}</div></td>
-                <td>{p.server?.name}<div className="font-mono text-[10px] text-cs-dim">{p.serverId}</div></td>
+                <td>{p.name}<div className="font-mono text-[11px] text-cs-dim">{p.id}</div></td>
+                <td>{p.server?.name}<div className="font-mono text-[11px] text-cs-dim">{p.serverId}</div></td>
                 <td className="text-xs">{p.messageId ? "yes" : "no"}</td>
-                <td className="font-mono text-xs">{p._count?.tickets ?? 0}</td>
+                <td className="tabular-nums text-xs">{p._count?.tickets ?? 0}</td>
                 <td className="text-xs">{fmt(p.createdAt)}</td>
                 <td className="text-right whitespace-nowrap">
                   <Link className="cs-btn-ghost cs-btn-sm" to={`/dashboard/${p.serverId}/panels`}><ExternalLink className="w-3.5 h-3.5" aria-hidden="true" /> Edit</Link>
@@ -450,10 +450,10 @@ function FormsList({ serverId, q }) {
             {!rows.length && <tr><td colSpan={6} className="text-cs-dim">No forms match.</td></tr>}
             {rows.map((f) => (
               <tr key={f.id}>
-                <td>{f.name}<div className="font-mono text-[10px] text-cs-dim">{f.id}</div></td>
-                <td>{f.server?.name}<div className="font-mono text-[10px] text-cs-dim">{f.serverId}</div></td>
-                <td className="font-mono text-xs">{f._count?.questions ?? 0}</td>
-                <td className="font-mono text-xs">{f._count?.applications ?? 0}</td>
+                <td>{f.name}<div className="font-mono text-[11px] text-cs-dim">{f.id}</div></td>
+                <td>{f.server?.name}<div className="font-mono text-[11px] text-cs-dim">{f.serverId}</div></td>
+                <td className="tabular-nums text-xs">{f._count?.questions ?? 0}</td>
+                <td className="tabular-nums text-xs">{f._count?.applications ?? 0}</td>
                 <td className="text-xs">{fmt(f.createdAt)}</td>
                 <td className="text-right whitespace-nowrap">
                   <Link className="cs-btn-ghost cs-btn-sm" to={`/dashboard/${f.serverId}/forms`}><ExternalLink className="w-3.5 h-3.5" aria-hidden="true" /> Edit</Link>

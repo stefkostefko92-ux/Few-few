@@ -5,9 +5,11 @@
 // has a manual close button (WCAG 2.2.2 — no timing trap, user control).
 import { CheckCircle2, AlertCircle, X } from "lucide-react";
 import { useToastList } from "../contexts/ToastContext";
+import { useT } from "../contexts/I18nContext";
 
 export default function ToastHost() {
   const ctx = useToastList();
+  const { t } = useT();
   if (!ctx || ctx.toasts.length === 0) return null;
 
   return (
@@ -16,22 +18,22 @@ export default function ToastHost() {
       aria-live="polite"
       aria-atomic="false"
     >
-      {ctx.toasts.map((t) => (
+      {ctx.toasts.map((item) => (
         <div
-          key={t.id}
+          key={item.id}
           role="status"
           className={`pointer-events-auto cs-card !p-3 flex items-start gap-2.5 shadow-cs-lift border-2 ${
-            t.type === "error" ? "border-danger/50 bg-danger/10" : "border-success/50 bg-success/10"
+            item.type === "error" ? "border-danger/50 bg-danger/10" : "border-success/50 bg-success/10"
           }`}
         >
-          {t.type === "error"
+          {item.type === "error"
             ? <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" aria-hidden="true" />
             : <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" aria-hidden="true" />}
-          <p className="text-cs-text text-sm flex-1 min-w-0 break-words">{typeof t.message === "string" ? t.message : String(t.message?.message || "Something went wrong")}</p>
+          <p className="text-cs-text text-sm flex-1 min-w-0 break-words">{typeof item.message === "string" ? item.message : String(item.message?.message || t("toast.fallback"))}</p>
           <button
             type="button"
-            onClick={() => ctx.dismiss(t.id)}
-            aria-label="Dismiss notification"
+            onClick={() => ctx.dismiss(item.id)}
+            aria-label={t("toast.dismiss")}
             className="text-cs-dim hover:text-white p-0.5 -m-0.5 flex-shrink-0"
           >
             <X className="w-4 h-4" aria-hidden="true" />

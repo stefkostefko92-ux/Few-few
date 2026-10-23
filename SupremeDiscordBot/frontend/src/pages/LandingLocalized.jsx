@@ -4,58 +4,41 @@
 // own title/description/canonical/hreflang plus a translated FAQPage JSON-LD
 // (the visible FAQ below keeps content parity with the structured data, as
 // Google requires).
-import { useMemo, useState, useRef, lazy, Suspense } from "react";
-import {
-  Ticket, FileText, ShieldCheck, BarChart3, Gift, Pin, CalendarClock,
-  Webhook, Sparkles, Check, Star, Zap, Crown, ArrowRight, Globe,
-  SmilePlus, ScrollText, UserPlus, BookOpen, ClipboardList, Gamepad2,
-} from "lucide-react";
+import { useMemo, useRef, lazy, Suspense } from "react";
+import { Check } from "lucide-react";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo, { SITE, landingPath } from "../components/Seo";
 import GameShowcase from "../components/GameShowcase";
-import FeatureLinks from "../components/FeatureLinks";
+import LandingNav from "../components/LandingNav";
+import FeatureGroups from "../components/FeatureGroups";
+import DeferredSections from "../components/DeferredSections";
+import {
+  ConceptHero, BotsSection, FeaturesSection, DemoCard, PlansSection, PlanCard, FaqSection, DiscordIcon,
+} from "../components/LandingConcept";
+import { LANDING_UI } from "../i18n/landingUi";
+import { LANDING_CONCEPT } from "../i18n/landingConcept";
+const TicketShowcase = lazy(() => import("../components/TicketShowcase"));
+const ProductTour = lazy(() => import("../components/ProductTour"));
+// Под сгъвката и със собствен текст на 8 езика → собствен чънк (бюджет 30 KB).
+const BaitShowcase = lazy(() => import("../components/BaitShowcase"));
+import { LandingFooter } from "../components/LandingParts";
 import { LANDING_TRANSLATIONS } from "../i18n/landing";
 import { useScrollReveal } from "../hooks/useScrollReveal";
-import { useMagnetic, useTiltCard } from "../hooks/useMicroInteractions";
-
-// Own chunk — this whole page is already lazy-loaded from App.jsx, so the
-// extra split just keeps the WebGL code out of the locale's initial chunk
-// until the hero is actually near the viewport (see ShaderHero.jsx).
-const ShaderHero = lazy(() => import("../components/ShaderHero"));
 
 const COMPANY_NAME = import.meta.env.VITE_COMPANY_NAME || "Carbon Stealth VCC";
 const SUPPORT_URL = import.meta.env.VITE_SUPPORT_URL || "https://discord.gg/wpCRpy8B";
+const BOT_INVITE_URL = `https://discord.com/oauth2/authorize?client_id=${import.meta.env.VITE_CLIENT_ID}&permissions=361045814416&scope=bot+applications.commands`;
 
-// Иконите се търсят по КЛЮЧ, не по позиция. Преди беше позиционен масив и
-// точно това се счупи: добавихме карта в средата на преводите и всяка следваща
-// получи чуждата икона (верификацията излезе с графика, анкетите с подарък).
-// С ключ пренареждането или добавянето на карта е безобидно, а непозната
-// стойност пада на Sparkles вместо да размести всичко след себе си.
-const FEATURE_ICONS = {
-  ticket: Ticket,
-  forms: FileText,
-  reactionRoles: SmilePlus,
-  verification: ShieldCheck,
-  polls: BarChart3,
-  giveaways: Gift,
-  sticky: Pin,
-  scheduled: CalendarClock,
-  webhooks: Webhook,
-  ai: Sparkles,
-  activityLog: ScrollText,
-  welcomer: UserPlus,
-  knowledgeBase: BookOpen,
-  canned: ClipboardList,
-  game: Gamepad2,
-};
-
+// Същата разметка като английския (одобрената концепция, 10.10.2026):
+// текстовете на концепцията — LANDING_CONCEPT[locale]; функциите, тарифите,
+// въпросите и сравнението — LANDING_TRANSLATIONS[locale] (i18n/landing.js).
 export default function LandingLocalized({ locale }) {
   const t = LANDING_TRANSLATIONS[locale];
+  const c = LANDING_CONCEPT[locale] || LANDING_CONCEPT.en;
+  const ui = LANDING_UI[locale] || LANDING_UI.en;
 
   const rootRef = useRef(null);
   useScrollReveal(rootRef);
-  const heroCtaRef = useMagnetic();
-  const finalCtaRef = useMagnetic();
 
   const handleLogin = () => {
     window.location.href = `${import.meta.env.VITE_API_URL || "/api"}/auth/login`;
@@ -90,7 +73,7 @@ export default function LandingLocalized({ locale }) {
   if (!t) return null;
 
   return (
-    <div ref={rootRef} className="relative min-h-screen bg-transparent overflow-hidden">
+    <div ref={rootRef} className="relative min-h-screen bg-transparent overflow-x-clip">
       <Seo
         title={t.title}
         description={t.description}
@@ -99,88 +82,112 @@ export default function LandingLocalized({ locale }) {
         hreflang
         jsonLd={jsonLd}
       />
-      <div aria-hidden className="absolute inset-0 grid-bg opacity-30" />
-      <div aria-hidden className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-cs-cyan/10 rounded-full blur-[120px] animate-pulse-slow" />
-      <div aria-hidden className="absolute top-0 left-0 right-0 h-px bg-cs-cyan/40" />
+      <div aria-hidden className="hero-backdrop absolute inset-x-0 top-0 h-[140vh] overflow-hidden pointer-events-none">
+        <div className="hero-aurora" />
+        <div className="grid-bg hero-grid-mask absolute inset-0" />
+      </div>
 
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* HEADER */}
-        <header className="px-6 sm:px-8 py-6 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-3 group">
-            <SupremeLogo size={52} />
-            <div>
+        <header className="relative max-w-6xl w-full mx-auto px-6 sm:px-8 xl:px-0 py-5 flex items-center justify-between gap-4">
+          <a href="/" className="flex items-center gap-3 group no-underline">
+            <SupremeLogo size={48} />
+            <div className="hidden sm:block">
               <SupremeWordmark className="text-lg leading-none" />
-              <div className="hidden sm:block font-mono text-[9px] tracking-[0.3em] uppercase text-cs-dim mt-0.5 group-hover:text-cs-cyan transition-colors">
+              <div className="text-xs text-cs-dim mt-0.5 group-hover:text-cs-cyan transition-colors">
                 by {COMPANY_NAME}
               </div>
             </div>
           </a>
-          <div className="flex items-center gap-4">
-            <LanguageSwitcher current={locale} />
-            <button onClick={handleLogin} className="cs-btn-primary text-xs whitespace-nowrap">SIGN IN →</button>
-          </div>
+          <LandingNav
+            ui={ui.nav}
+            onSignIn={handleLogin}
+            inviteUrl={BOT_INVITE_URL}
+            addLabel={c.add}
+            extra={<LanguageSwitcher current={locale} />}
+            menuFooter={<LanguageSwitcher current={locale} inMenu />}
+            links={[
+              { href: "#features", label: ui.nav.features },
+              { href: "#pricing", label: ui.nav.pricing },
+              { href: "#tour", label: c.nav.showcase },
+              { href: "/commands", label: c.nav.docs },
+              { href: SUPPORT_URL, label: c.nav.support, external: true },
+            ]}
+          />
         </header>
 
-        {/* HERO — WebGL is scoped to just this section (see Login.jsx for the
-            full rationale). */}
-        <section className="relative px-6 sm:px-8 pt-16 pb-24 flex items-center justify-center overflow-hidden">
-          <Suspense fallback={null}>
-            <ShaderHero />
-          </Suspense>
-          <div className="relative z-10 w-full max-w-4xl text-center">
-            <div className="cs-eyebrow mb-4 justify-center flex">{t.eyebrow}</div>
-            <h1 className="font-display font-black text-5xl sm:text-7xl tracking-tight-4 text-balance text-cs-text leading-[0.95] mb-6">
-              {t.h1a}<br />
-              <span className="text-cs-cyan">{t.h1b}</span>
-            </h1>
-            <p className="text-cs-muted text-lg sm:text-xl leading-relaxed mb-10 text-pretty max-w-2xl mx-auto">
-              {t.sub}
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <button ref={heroCtaRef} onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
-                <span>{t.cta}</span>
-                <ArrowRight className="w-4 h-4 ml-1" />
-              </button>
-              <a href="#pricing" className="text-cs-muted hover:text-cs-cyan transition-colors text-sm font-mono uppercase tracking-wider">
-                {t.seePricing}
-              </a>
-            </div>
-            <p className="text-xs text-cs-dim mt-6 font-mono">{t.ctaNote}</p>
-          </div>
-        </section>
+        <ConceptHero c={c} inviteUrl={BOT_INVITE_URL} onDashboard={handleLogin} />
 
-        {/* FEATURES */}
-        <section id="features" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
-          <div className="max-w-6xl mx-auto">
-            <div data-reveal className="text-center mb-16">
-              <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
-                {t.featuresHeading}
-              </h2>
-              <p className="text-cs-muted max-w-2xl mx-auto">{t.featuresSub}</p>
-            </div>
-            <div data-reveal className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {t.features.map((f, i) => {
-                const Icon = FEATURE_ICONS[f.key] || Sparkles;
-                return <FeatureTile key={f.title} icon={Icon} title={f.title} desc={f.desc} />;
-              })}
-            </div>
-          </div>
-        </section>
+        {/* Всичко под героя — след първото рисуване, на порции (TBT). */}
+        <DeferredSections>
+        <BotsSection c={c} />
+
+        <FeaturesSection c={c}>
+          <FeatureGroups features={t.features} ui={ui} aside={<DemoCard c={c} />} />
+        </FeaturesSection>
+
+        {/* Живо демо на тикетите */}
+        <Suspense fallback={null}><TicketShowcase locale={locale} /></Suspense>
 
         {/* SERVER SEASON — играта (текстът по локал, картинките общи) */}
         {t.game && <GameShowcase heading={t.game.heading} sub={t.game.sub} bullets={t.game.bullets} link={t.game.link} />}
 
-        {/* EU TRUST */}
-        <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
-          <div data-reveal className="max-w-3xl mx-auto text-center">
-            <Globe className="w-8 h-8 text-cs-cyan mx-auto mb-4" />
-            <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-8">
-              {t.euHeading}
-            </h2>
-            <ul className="space-y-3 text-left max-w-xl mx-auto">
+        {/* v52 — канал-стръв за спам ботове (текстът по локал) */}
+        <Suspense fallback={null}><BaitShowcase locale={locale} /></Suspense>
+
+        {/* Снимки от таблото — както на английския */}
+        <Suspense fallback={null}><ProductTour locale={locale} /></Suspense>
+
+        {/* PRICING + ЕС хостинг; сравнението Free/Premium е под картите (паритет с prerender) */}
+        <PlansSection
+          c={c}
+          /* Преддоговорна информация (чл. 6(1)(д),(о) Дир. 2011/83): ДДС в
+             цената + авто-подновяване — задължителна на ВСЕКИ език, не само EN. */
+          note={t.priceNote || null}
+          after={t.compare && (
+            <details className="group mt-8 cs-card !p-0">
+              <summary className="flex items-center justify-between gap-4 px-5 py-4 cursor-pointer list-none select-none">
+                <span className="font-semibold text-cs-text">{t.compare.heading}</span>
+                <span className="text-cs-cyan text-xl leading-none group-open:rotate-45 transition-transform" aria-hidden="true">+</span>
+              </summary>
+              <div className="overflow-x-auto border-t border-cs-line">
+                <table className="cs-table w-full">
+                  <thead>
+                    <tr>
+                      <th>{t.compare.colCap}</th>
+                      <th>{t.compare.colFree}</th>
+                      <th className="!text-cs-cyan">{t.compare.colPremium}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {t.compare.rows.map(([cap, free, prem]) => (
+                      <tr key={cap}>
+                        <td className="text-cs-text font-medium">{cap}</td>
+                        <td className="text-cs-muted">{free}</td>
+                        <td className="text-cs-text">{prem}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          )}
+        >
+          <TierCard tier={t.tiers.free} per={c.perServer} onCta={handleLogin} />
+          <TierCard tier={t.tiers.premium} per={c.perServer} onCta={handleLogin} highlighted />
+          <TierCard tier={t.tiers.whitelabel} per={c.perServer} onCta={handleLogin} />
+        </PlansSection>
+
+        {/* ЕС — какво точно се случва с данните (без „никога не напуска ЕС“) */}
+        <section className="px-6 sm:px-8 py-16 sm:py-20">
+          <div data-reveal className="max-w-6xl mx-auto grid lg:grid-cols-[1fr_1.2fr] gap-10 items-start">
+            <h2 className="cs-section-title">{t.euHeading}</h2>
+            <ul className="space-y-4">
               {t.euBullets.map((b) => (
                 <li key={b} className="flex items-start gap-3 text-cs-muted">
-                  <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                  <span className="cs-icon-tile !w-7 !h-7 !rounded-md mt-0.5">
+                    <Check className="w-4 h-4" aria-hidden="true" />
+                  </span>
                   <span>{b}</span>
                 </li>
               ))}
@@ -188,231 +195,55 @@ export default function LandingLocalized({ locale }) {
           </div>
         </section>
 
-        {/* FAQ — visible content parity with the FAQPage JSON-LD above */}
-        <section id="faq" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
-          <div className="max-w-3xl mx-auto">
-            <div data-reveal className="text-center mb-12">
-              <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-4">
-                {t.faqHeading}
-              </h2>
-            </div>
-            <div data-reveal className="space-y-3">
-              {t.faq.map(({ q, a }) => (
-                <details key={q} className="cs-card group cursor-pointer hover:border-cs-cyan/50 transition-colors">
-                  <summary className="flex items-center justify-between gap-4 list-none select-none">
-                    <span className="text-cs-text font-semibold text-sm sm:text-base">{q}</span>
-                    <span className="text-cs-cyan text-xl group-open:rotate-45 transition-transform flex-shrink-0">+</span>
-                  </summary>
-                  <p className="text-sm text-cs-muted leading-relaxed mt-4 pt-4 border-t border-cs-border/50">{a}</p>
-                </details>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* COMPARE — Free vs Premium (content parity with prerender + Login.jsx EN) */}
-        {t.compare && (
-          <section className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
-            <div className="max-w-3xl mx-auto">
-              <div data-reveal className="text-center mb-10">
-                <h2 className="font-display font-black text-3xl sm:text-4xl text-cs-text mb-4">
-                  {t.compare.heading}
-                </h2>
-              </div>
-              <div data-reveal className="cs-card overflow-x-auto">
-                <table className="w-full text-sm border-collapse">
-                  <thead>
-                    <tr className="border-b border-cs-border text-left">
-                      <th className="py-3 pr-4 text-cs-muted font-semibold">{t.compare.colCap}</th>
-                      <th className="py-3 px-4 text-cs-muted font-semibold">{t.compare.colFree}</th>
-                      <th className="py-3 pl-4 text-cs-cyan font-semibold">{t.compare.colPremium}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {t.compare.rows.map(([cap, free, prem]) => (
-                      <tr key={cap} className="border-b border-cs-border/40">
-                        <td className="py-3 pr-4 text-cs-text font-medium">{cap}</td>
-                        <td className="py-3 px-4 text-cs-muted">{free}</td>
-                        <td className="py-3 pl-4 text-cs-text">{prem}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* PRICING */}
-        <section id="pricing" className="px-6 sm:px-8 pb-24 border-t border-cs-border/50 pt-20">
-          <div className="max-w-5xl mx-auto">
-            <div data-reveal className="text-center mb-10">
-              <h2 className="font-display font-black text-4xl sm:text-5xl text-cs-text mb-4">
-                {t.pricingHeading}
-              </h2>
-              <p className="text-cs-muted">{t.pricingSub}</p>
-            </div>
-            <div data-reveal className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <TierCard icon={Zap} tier={t.tiers.free} onCta={handleLogin} />
-              <TierCard icon={Star} tier={t.tiers.premium} onCta={handleLogin} highlighted />
-              <TierCard icon={Crown} tier={t.tiers.whitelabel} onCta={handleLogin} />
-            </div>
-            {/* Преддоговорна информация (чл. 6(1)(д),(о) Дир. 2011/83): ДДС в
-                цената + авто-подновяване — задължителна на ВСЕКИ език, не само EN. */}
-            {t.priceNote && (
-              <p className="text-center text-xs text-cs-dim font-mono mt-8">{t.priceNote}</p>
-            )}
-          </div>
-        </section>
+        {/* FAQ — видимото съдържание пази паритета с FAQPage JSON-LD горе */}
+        <FaqSection c={c} items={t.faq} />
 
         {/* FINAL CTA */}
-        <section data-reveal className="px-6 sm:px-8 py-20 border-t border-cs-border/50 text-center">
-          <h2 className="font-display font-black text-3xl sm:text-5xl text-cs-text mb-6">
-            {t.finalH}
-          </h2>
-          <p className="text-cs-muted mb-8 max-w-lg mx-auto">{t.finalSub}</p>
-          <button ref={finalCtaRef} onClick={handleLogin} className="cs-btn-primary text-base px-8 py-4">
-            <span>{t.finalCta}</span>
-            <ArrowRight className="w-4 h-4 ml-1" />
-          </button>
-        </section>
-
-        {/* FOOTER */}
-        <footer className="px-6 sm:px-8 py-10 border-t border-cs-border/50">
-          <div className="max-w-6xl mx-auto flex flex-col gap-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-              <div className="flex items-center gap-3">
-                <SupremeLogo size={36} />
-                <div className="flex flex-col leading-tight">
-                  <SupremeWordmark className="text-base" />
-                  <span className="font-mono text-[9px] tracking-[0.25em] uppercase text-cs-dim mt-1">
-                    © 2026 {COMPANY_NAME} · EIK 208725180 · VAT BG208725180 · EU-hosted
-                  </span>
-                  <span className="font-mono text-[9px] tracking-[0.12em] text-cs-dim mt-1">
-                    Carbon Stealth VCC · ul. Samuil 3, 2670 Bobov dol, Bulgaria ·{" "}
-                    <a href="mailto:legal@carbonstealth.eu" className="text-cs-cyan underline">legal@carbonstealth.eu</a>
-                  </span>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-4 font-mono text-xs text-cs-dim">
-                <a href="/terms" className="hover:text-cs-cyan transition-colors uppercase">{t.footer.terms}</a>
-                <a href="/privacy" className="hover:text-cs-cyan transition-colors uppercase">{t.footer.privacy}</a>
-                <a href="/cookies" className="hover:text-cs-cyan transition-colors uppercase">{t.footer.cookies}</a>
-                <a href="/accessibility" className="hover:text-cs-cyan transition-colors uppercase">{t.footer.accessibility || "Accessibility"}</a>
-                <a href="/status" className="hover:text-cs-cyan transition-colors uppercase">{t.footer.status}</a>
-                <a href={SUPPORT_URL} target="_blank" rel="noopener" className="hover:text-cs-cyan transition-colors">DISCORD</a>
-              </div>
-            </div>
-            {/* Ръководства и сравнения. Дотук тези пет страници се стигаха САМО
-                отвътре в таблото (тоест иска вход), една от друга и от
-                sitemap.xml — посетител на началната страница нямаше НИКАКЪВ път
-                до тях. Документацията беше невидима точно за хората, за които е
-                писана, а страница без вътрешни връзки не получава и тежест при
-                обхождането. Съдържанието на самите страници е на английски;
-                етикетите тук са на езика на посетителя, за да се разбира какво
-                отваря. (Собственикът, 12.08.2026) */}
-            {t.guides && (
-              <nav aria-label={t.guides.heading}
-                   className="flex flex-wrap items-center justify-center gap-4 font-mono text-[10px] text-cs-dim border-t border-cs-border/30 pt-4">
-                <span className="text-cs-muted uppercase tracking-[0.15em]">{t.guides.heading}</span>
-                <a href="/guides/ticket-panel-setup" className="hover:text-cs-cyan transition-colors">{t.guides.panel}</a>
-                <a href="/guides/best-discord-ticket-bot" className="hover:text-cs-cyan transition-colors">{t.guides.best}</a>
-                <a href="/guides/gdpr-discord-bot" className="hover:text-cs-cyan transition-colors">{t.guides.gdpr}</a>
-                <a href="/compare/ticket-tool-alternative" className="hover:text-cs-cyan transition-colors">{t.guides.vsTicketTool}</a>
-                <a href="/compare/appy-alternative" className="hover:text-cs-cyan transition-colors">{t.guides.vsAppy}</a>
-              </nav>
-            )}
-            <FeatureLinks heading={t.guides?.features || "Features"} />
-
-            <div className="text-center text-xs font-mono text-cs-dim border-t border-cs-border/30 pt-4">
-              Created and Designed by{" "}
-              <a href="https://carbonstealth.eu" target="_blank" rel="noopener" className="text-cs-cyan underline">
-                Carbon Stealth VCC
-              </a>
-            </div>
+        <section data-reveal className="px-6 sm:px-8 py-20 sm:py-24 text-center">
+          <h2 className="cs-section-title !text-4xl sm:!text-5xl">{t.finalH}</h2>
+          <p className="text-cs-muted mt-4 mb-8 max-w-lg mx-auto">{t.finalSub}</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a href={BOT_INVITE_URL} target="_blank" rel="noopener noreferrer" className="cs-btn-primary cs-btn-lg no-underline">
+              <DiscordIcon />
+              <span>{c.add}</span>
+            </a>
+            <button type="button" onClick={handleLogin} className="cs-btn-secondary cs-btn-lg">{c.dashboard}</button>
           </div>
-        </footer>
+        </section>
+        </DeferredSections>
+
+        {/* FOOTER — общ с английския (components/LandingParts.jsx) */}
+        <LandingFooter lang={locale} ui={ui.footer} nav={ui.nav} guides={t.guides} supportUrl={SUPPORT_URL} company={COMPANY_NAME} />
       </div>
-    </div>
-  );
-}
-
-
-// One feature card in the grid — real 3D pointer tilt (skipped under
-// reduced-motion / touch, see useTiltCard in useMicroInteractions.js).
-function FeatureTile({ icon: Icon, title, desc }) {
-  const tiltRef = useTiltCard();
-  return (
-    <div ref={tiltRef} className="cs-card hover:border-cs-cyan/50 hover:shadow-cs-cyan-sm transition-colors">
-      <Icon className="w-6 h-6 text-cs-cyan mb-3" />
-      <h3 className="text-cs-text font-bold mb-2">{title}</h3>
-      <p className="text-sm text-cs-muted leading-relaxed">{desc}</p>
     </div>
   );
 }
 
 // v3.3 — само месечни цени: Discord Premium Apps не поддържа годишни абонаменти.
-function TierCard({ icon: Icon, tier, onCta, ctaHref, highlighted = false, compact = false }) {
-  const tiltRef = useTiltCard(highlighted ? 6 : 4);
-  const price = tier.price;
-  const per = tier.per;
-  const cardCls = highlighted
-    ? "cs-card flex flex-col border-2 border-cs-gold/50 bg-cs-gold/5 relative shadow-cs-gold-sm"
-    : "cs-card flex flex-col";
+function TierCard({ tier, per, onCta, highlighted = false }) {
   return (
-    <div ref={tiltRef} className={cardCls}>
-      {highlighted && tier.badge && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-cs-gold text-black text-[10px] font-bold uppercase tracking-wider">
-          {tier.badge}
-        </div>
-      )}
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <Icon className={`w-5 h-5 ${highlighted ? "text-cs-gold fill-current" : "text-cs-cyan"}`} />
-          <h3 className="text-xl font-bold text-cs-text">{tier.name}</h3>
-        </div>
-        {tier.seats && (
-          <div className="font-mono text-[10px] uppercase tracking-wider text-cs-cyan mb-1">{tier.seats}</div>
-        )}
-        <p className="text-sm text-cs-muted">{tier.tagline}</p>
-      </div>
-      <div className="mb-6" aria-live="polite">
-        <div className="font-display text-4xl font-black text-cs-text">{price}</div>
-        <div className="text-xs text-cs-dim font-mono">{per}</div>
-      </div>
-      <ul className={`space-y-2 text-sm text-cs-text flex-1 ${compact ? "mb-6" : "mb-8"}`}>
-        {tier.bullets.map((b) => (
-          <li key={b} className="flex items-start gap-2">
-            <Check className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
-            <span>{b}</span>
-          </li>
-        ))}
-      </ul>
-      {ctaHref ? (
-        <a href={ctaHref} className="cs-btn-secondary w-full text-center">{tier.cta}</a>
-      ) : (
-        <button
-          onClick={onCta}
-          className={highlighted
-            ? "cs-btn-primary w-full bg-cs-gold hover:bg-cs-goldDim text-black border-cs-gold"
-            : "cs-btn-secondary w-full"}
-        >
-          {tier.cta}
-        </button>
-      )}
-    </div>
+    <PlanCard
+      name={tier.name}
+      price={tier.price}
+      per={per}
+      bullets={tier.bullets}
+      cta={tier.cta}
+      onCta={onCta}
+      badge={tier.badge}
+      highlighted={highlighted}
+    />
   );
 }
 
 // Visible cross-links between language versions — crawlable <a href> links so
 // Google discovers every locale even without reading hreflang.
-function LanguageSwitcher({ current }) {
+function LanguageSwitcher({ current, inMenu = false }) {
   const locales = [
     ["en", "EN"], ["bg", "БГ"], ["de", "DE"], ["es", "ES"],
     ["fr", "FR"], ["it", "IT"], ["nl", "NL"], ["pl", "PL"],
   ];
   return (
-    <nav aria-label="Language" className="hidden md:flex items-center gap-1 font-mono text-[10px] text-cs-dim">
+    <nav aria-label="Language" className={`${inMenu ? "flex flex-wrap px-2 py-2 border-t border-cs-border/60 mt-1" : "hidden xl:flex"} items-center gap-1 font-mono text-xs text-cs-dim`}>
       {locales.map(([loc, label]) => (
         <a
           key={loc}

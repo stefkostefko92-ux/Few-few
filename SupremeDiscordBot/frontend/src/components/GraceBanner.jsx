@@ -49,7 +49,7 @@ export default function GraceBanner() {
         </div>
         <Link
           to={`/dashboard/${serverId}/premium`}
-          className="px-4 py-1.5 rounded-full bg-warning hover:bg-warning/80 text-cs-bg text-xs font-bold uppercase tracking-wider transition-colors"
+          className="px-4 py-1.5 rounded-full bg-warning hover:bg-warning/80 text-cs-bg text-xs font-bold transition-colors"
         >
           {t("grace.renew")}
         </Link>

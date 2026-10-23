@@ -107,3 +107,33 @@ describe("клиентът е fail-open", () => {
     expect(sel).toMatch(/picker\.unknownKept/);
   });
 });
+
+// ─── v53 — имената на членовете за страницата „Игра“ ─────────────────────────
+// Нова повърхност: имена на хора от ЧУЖД сървър. Пазим я тясна: само за
+// поискани снежинки (до 100), само displayName, никога целият списък.
+describe("ботът: имена на членове само за поискани ID", () => {
+  const bot = code("../../bot/src/index.js");
+  const start = bot.indexOf('app.get("/internal/guild/:guildId/members"');
+  const fn = bot.slice(start, bot.indexOf("app.", start + 10));
+
+  it("съществува и е зад изискването за тайна", () => {
+    expect(start).toBeGreaterThan(0);
+    expect(bot.indexOf("app.use(requireBotSecret)")).toBeLessThan(start);
+  });
+
+  it("само снежинки, до 100; извън кеша — по един ID (до 25), никога целият списък", () => {
+    expect(fn).toMatch(/\\d\{17,20\}/);
+    expect(fn).toMatch(/slice\(0, 100\)/);
+    expect(fn).toMatch(/missing\.slice\(0, 25\)/);
+    expect(fn).toMatch(/members\.fetch\(id\)/);
+    expect(fn, "fetch() без id или с обект дърпа много членове наведнъж").not.toMatch(/members\.fetch\(\s*(\)|\{)/);
+    expect(fn).not.toMatch(/members\.list|query:/);
+  });
+
+  it("излиза само displayName — без роли, аватари, присъствие, дата на влизане", () => {
+    for (const leak of ["roles", "avatar", "presence", "joinedAt", "permissions", "user.username", "email"]) {
+      expect(fn, `изнася ${leak}`).not.toContain(leak);
+    }
+    expect(fn).toMatch(/displayName/);
+  });
+});

@@ -146,8 +146,9 @@ Members**. **Presence НЕ се иска** и не се включва — ня�
 > restore must happen *at the moment* a member joins or leaves — there is no
 > interaction to hook into and no user id to look up in advance. On-demand
 > lookups (Get Guild Member, interaction member payloads) are already used
-> wherever they suffice (permission checks, verification, forms) and do not
-> require the intent. The full member list is never requested and never cached
+> wherever they suffice (permission checks, verification, forms, and the
+> display names of game players on the operator's own dashboard, looked up per
+> id and never stored) and do not require the intent. The full member list is never requested and never cached
 > (`members.fetch` is used only for a single id).
 
 **Data handling:**

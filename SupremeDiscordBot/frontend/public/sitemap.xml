@@ -207,7 +207,7 @@
 
   <url>
     <loc>https://supremebot.carbonstealth.eu/cookies</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
@@ -254,6 +254,13 @@
   <url>
     <loc>https://supremebot.carbonstealth.eu/features/discord-verification-bot</loc>
     <lastmod>2026-09-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://supremebot.carbonstealth.eu/features/discord-anti-spam-bait-channel</loc>
+    <lastmod>2026-10-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -315,7 +322,7 @@
   </url>
   <url>
     <loc>https://supremebot.carbonstealth.eu/features/discord-leveling-game</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-10-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

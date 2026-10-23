@@ -109,13 +109,17 @@ export async function submitApplication(serverId, formId, userId, answers, revie
 // `withSiblings` иска и останалите панели от СЪЩОТО групово съобщение — нужно
 // САМО при редакция (пресглобяване). НЕ го ползвай на горещия път (клик на
 // бутон): там всяка допълнителна заявка яде от 3-секундния ack бюджет.
-export async function getPanel(panelId, { withSiblings = false } = {}) {
-  const { data } = await api.get(`/bot/panel/${panelId}${withSiblings ? "?siblings=1" : ""}`);
+// `serverId` е ЗАДЪЛЖИТЕЛЕН: backend-ът търси панела по (id, serverId) — id от
+// друг сървър връща 404 (червен екип, 10.10.2026: `/panel spawn` с чужд id).
+export async function getPanel(panelId, { withSiblings = false, serverId } = {}) {
+  const params = { serverId };
+  if (withSiblings) params.siblings = "1";
+  const { data } = await api.get(`/bot/panel/${panelId}`, { params });
   return data;
 }
 
-export async function markPanelSpawned(panelId, channelId, messageId) {
-  const { data } = await api.patch(`/bot/panel/${panelId}/spawned`, { channelId, messageId });
+export async function markPanelSpawned(panelId, channelId, messageId, serverId) {
+  const { data } = await api.patch(`/bot/panel/${panelId}/spawned`, { serverId, channelId, messageId });
   return data;
 }
 

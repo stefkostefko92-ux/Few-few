@@ -247,6 +247,10 @@ model Server {
   companionTrades      CompanionTrade[]
   serverQuests         ServerQuest[]
   triviaRounds         TriviaRound[]
+  // v52 — капан за спам ботове
+  honeypot             HoneypotConfig?
+  // v53 — битки между спътници
+  companionBattles     CompanionBattle[]
 
   @@index([agencyId])
   @@index([trialEndsAt])
@@ -1116,6 +1120,8 @@ model GameSettings {
   triviaSchedule     String? // "daily" | "weekly" | null
   questChannelId     String?
   questEnabled       Boolean  @default(true)
+  // v53 — битки между спътници (/companion attack); изключено = никой не напада
+  battlesEnabled     Boolean  @default(true)
   // Последният затворен сезон (етап 4): сезонното XP се нулира веднъж на сезон.
   lastSeasonId       String?
   createdAt          DateTime @default(now())
@@ -1124,6 +1130,32 @@ model GameSettings {
   server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
   @@map("game_settings")
+}
+
+// v52 — канал-стръв за спам ботове (/bait; „honeypot“ е само вътрешното име
+// на модела и таблицата): канал, в който хора не пишат, а
+// спам ботовете пишат навсякъде. Който напише там, бива изгонен/баннат/заглушен
+// (изпълнява ботът — bot/src/utils/bait.js). Тук няма лични данни: само
+// настройки и брояч; кой е хванат отива само в канала за лог на сървъра.
+model HoneypotConfig {
+  serverId         String    @id
+  enabled          Boolean   @default(false)
+  channelId        String?
+  // "softban" (бан + веднага разбан — Discord трие съобщенията му от последния
+  // час, човекът може да се върне) | "ban" | "timeout" (24 ч без писане)
+  action           String    @default("softban")
+  logChannelId     String?
+  dmUser           Boolean   @default(true)
+  // Предупреждението в канала („не пиши тук“) — ботът го пази и обновява брояча.
+  warningMessageId String?
+  caughtCount      Int       @default(0)
+  lastCaughtAt     DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@map("honeypot_configs")
 }
 
 // Сезоните на играта — ГЛОБАЛНИ (не по сървър), управлявани от админ конзолата
@@ -1158,6 +1190,8 @@ model MemberProgress {
   messages          Int       @default(0)
   voiceMinutes      Int       @default(0)
   activeCompanionId String?
+  // v53 — „не ме нападай“ (/companion pvp off): нито нападаш, нито те нападат
+  pvpOptOut         Boolean   @default(false)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
@@ -1244,6 +1278,13 @@ model MemberCompanion {
   companionId String // ключ в каталога (backend/src/lib/game/companions.js)
   stage       Int      @default(1) // 1..3
   fed         Int      @default(0) // искри, вложени в текущата форма
+  // v53 — нивата на четирите статистики (тренират се с искри, lib/game/battles.js) и рекордът
+  atkLevel    Int      @default(0)
+  defLevel    Int      @default(0)
+  spdLevel    Int      @default(0)
+  hpLevel     Int      @default(0)
+  wins        Int      @default(0)
+  losses      Int      @default(0)
   nickname    String?
   seasonId    String?
   caughtAt    DateTime @default(now())
@@ -1292,6 +1333,38 @@ model CompanionTrade {
   @@index([fromUserId])
   @@index([toUserId])
   @@map("companion_trades")
+}
+
+// v53 — битка между спътници (/companion attack). Редът е и одитът (зърното и
+// снимката на статистиките повтарят битката), и източникът на охлажданията и
+// дневните лимити (lib/game/battleOps.js). Наградата е само за нападател, който
+// победи; загубилият (нападател или защитник) губи 1–3 % от искрите си (v54).
+model CompanionBattle {
+  id                  String   @id @default(cuid())
+  serverId            String
+  attackerId          String
+  defenderId          String
+  attackerOwnedId     String // MemberCompanion.id в момента на битката
+  defenderOwnedId     String
+  attackerCompanionId String // ключ в каталога
+  defenderCompanionId String
+  attackerStats       Json // { atk, def, spd, hp, power } в момента на битката
+  defenderStats       Json
+  attackerWon         Boolean
+  turns               Int
+  seed                Int
+  rewardSparks        Int      @default(0)
+  lostSparks          Int      @default(0) // v54 — колко искри е изгубил загубилият
+  createdAt           DateTime @default(now())
+
+  server Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@index([serverId, attackerId, createdAt])
+  @@index([serverId, defenderId, createdAt])
+  @@index([attackerId])
+  @@index([defenderId])
+  @@index([createdAt])
+  @@map("companion_battles")
 }
 
 // ─── Етап 3: сървърни куестове и trivia ─────────────────────────────────────

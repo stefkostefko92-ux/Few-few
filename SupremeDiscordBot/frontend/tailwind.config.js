@@ -10,11 +10,17 @@ export default {
         // THE accent) so the whole UI re-skins from these values alone.
         cs: {
           black:    "#000000",
-          bg:       "#070a06",   // base background — near-black, green tint
-          surface:  "#0d130b",   // cards / panels
-          panel:    "#141d10",   // raised / hover surface
-          border:   "#4b5a44",   // thin dividers — ≥3:1 for WCAG 1.4.11 (UI component contrast)
-          borderHi: "#5d7052",   // hover / focus border
+          // Фоновете — по одобрената концепция (reference-locked, 10.10.2026):
+          // почти черно със зелено-синкав оттенък, мерено от пикселите ѝ.
+          bg:       "#030807",   // base background — near-black, teal-green tint
+          deep:     "#010504",   // страничната лента и футърът на таблото (концепцията: #010709)
+          surface:  "#061010",   // cards / panels
+          panel:    "#0b1a17",   // raised / hover surface
+          line:     "#1b2e25",   // фина рамка на картите (декоративна; полетата ползват `border`)
+          // ≥3:1 спрямо bg, surface и panel (3.70 / 3.53 / 3.28) — WCAG 1.4.11 за
+          // рамката на полетата. Декоративните карти ползват `line`.
+          border:   "#5b6f55",   // UI component borders (inputs, controls)
+          borderHi: "#748b6c",   // hover / focus border
           text:     "#f0f0eb",   // primary text (cream white)
           muted:    "#aaaaaa",   // secondary text (≈8.5:1)
           dim:      "#9a9a9a",   // tertiary — ≈6:1, passes WCAG 1.4.3 for body text
@@ -38,9 +44,9 @@ export default {
           800: "#335500", 900: "#1a2b00",
         },
         dark: {
-          100: "#141d10",
-          200: "#0d130b",
-          300: "#070a06",
+          100: "#0b1a17",
+          200: "#061010",
+          300: "#030807",
           400: "#000000",
         },
         stealth: {
@@ -48,8 +54,8 @@ export default {
           600: "#6cb000", 700: "#4e8000",
         },
         carbon: {
-          400: "#24301e", 500: "#141d10", 600: "#0d130b",
-          700: "#070a06", 800: "#000000",
+          400: "#24301e", 500: "#0b1a17", 600: "#061010",
+          700: "#030807", 800: "#000000",
         },
         accent: {
           cyan:   "#8fe600",
@@ -64,6 +70,8 @@ export default {
         sans: ['"Inter Tight"', "Inter", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
         mono: ['"Space Mono"', '"JetBrains Mono"', "Consolas", "monospace"],
         display: ['"Inter Tight"', "Inter", "sans-serif"],
+        // Широките заглавия от концепцията (Montserrat 800/900, OFL; с кирилица).
+        wide: ['"Montserrat"', '"Inter Tight"', "sans-serif"],
       },
       letterSpacing: {
         "tight-2": "-0.02em",

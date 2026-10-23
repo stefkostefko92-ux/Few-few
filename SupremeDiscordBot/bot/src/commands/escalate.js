@@ -63,7 +63,7 @@ export default {
     // Load target panel
     let targetPanel;
     try {
-      const { data } = await api.get(`/bot/panel/${targetPanelId}`);
+      const { data } = await api.get(`/bot/panel/${targetPanelId}`, { params: { serverId: interaction.guildId } });
       targetPanel = data;
     } catch { return interaction.editReply("❌ Target panel not found."); }
 

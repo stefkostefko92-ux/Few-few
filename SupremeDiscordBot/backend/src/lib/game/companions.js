@@ -186,5 +186,7 @@ export function pickSpawn({ isPremium = false, now = new Date(), rand = Math.ran
 export function publicCompanion(c, stage = 1, season = null) {
   if (!c) return null;
   const r = rarityMeta(c.rarity);
-  return { id: c.id, name: c.name, family: c.familyName, rarity: c.rarity, rarityLabel: r.label, rarityEmoji: r.emoji, ring: r.ring, seasonId: isSeasonal(c.id, season) ? season.code : null, blurb: c.blurb, imageUrl: imageUrl(c.id, stage) };
+  // `familyKey` (lime, ember…) — ботът превежда семейството и описанието на езика
+  // на сървъра; `family`, `rarityLabel` и `blurb` остават английският резервен вариант.
+  return { id: c.id, name: c.name, family: c.familyName, familyKey: c.family, rarity: c.rarity, rarityLabel: r.label, rarityEmoji: r.emoji, ring: r.ring, seasonId: isSeasonal(c.id, season) ? season.code : null, blurb: c.blurb, imageUrl: imageUrl(c.id, stage) };
 }

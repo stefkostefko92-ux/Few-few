@@ -26,8 +26,8 @@ export function authErrorMessage(code) {
 export default function AuthErrorNotice({ code }) {
   if (!code) return null;
   return (
-    <div role="alert" className="mb-6 max-w-md mx-auto lg:mx-0 border border-danger/40 bg-danger/5 px-4 py-3 text-left">
-      <div className="font-mono text-[10px] uppercase tracking-wider text-danger mb-1">✕ Auth Error</div>
+    <div role="alert" className="mb-6 max-w-md mx-auto lg:mx-0 rounded-lg border border-danger/40 bg-danger/5 px-4 py-3 text-left">
+      <div className="text-xs font-semibold text-danger mb-1">Sign-in failed</div>
       <div className="text-sm text-cs-text">{authErrorMessage(code)}</div>
     </div>
   );

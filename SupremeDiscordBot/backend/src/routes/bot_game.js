@@ -14,6 +14,7 @@ import {
 import { contribute } from "../lib/game/questOps.js";
 import { companionById, publicCompanion } from "../lib/game/companions.js";
 import { getCurrentSeason } from "../lib/game/seasons.js";
+import { statSheet } from "../lib/game/battles.js";
 
 const router = Router();
 router.use(requireBotSecret);
@@ -121,7 +122,7 @@ router.get("/game/profile/:serverId/:userId", async (req, res, next) => {
       : null;
     // Ботът показва име + картинка, не вътрешния id (одит 19.09.2026).
     const active = activeRow
-      ? { ...publicCompanion(companionById(activeRow.companionId), activeRow.stage, await getCurrentSeason()), ...activeRow }
+      ? { ...publicCompanion(companionById(activeRow.companionId), activeRow.stage, await getCurrentSeason()), ...activeRow, sheet: statSheet(activeRow) }
       : null;
     const nextDailyAt = row?.lastDailyAt ? new Date(new Date(row.lastDailyAt).getTime() + 24 * 3600 * 1000) : null;
     res.json({
@@ -136,6 +137,9 @@ router.get("/game/profile/:serverId/:userId", async (req, res, next) => {
       rank, players,
       companions,
       activeCompanion: active,
+      // v53 — битки: включени ли са на сървъра и участва ли членът
+      battlesEnabled: settings.battlesEnabled !== false,
+      pvp: !row?.pvpOptOut,
       nextDailyAt,
     });
   } catch (err) { next(err); }

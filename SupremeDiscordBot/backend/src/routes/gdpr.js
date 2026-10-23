@@ -10,6 +10,7 @@ import { prisma } from "../lib/prisma.js";
 import { gameDataFor, gameEraseSteps } from "../lib/game/privacy.js";
 import { requireAuth, loadUser } from "../middleware/auth.js";
 import { redisStore } from "../lib/rateLimitStore.js";
+import { ipKey } from "../lib/ipKey.js";
 
 const router = Router();
 router.use(requireAuth, loadUser);
@@ -27,7 +28,7 @@ const subjectRightsLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 5,
   store: redisStore("rl:gdpr"),
-  keyGenerator: (req) => req.user?.id || req.ip,
+  keyGenerator: (req) => req.user?.id || ipKey(req.ip),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many data-subject requests. Try again in an hour." },

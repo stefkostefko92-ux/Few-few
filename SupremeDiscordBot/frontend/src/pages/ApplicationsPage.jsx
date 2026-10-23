@@ -1,5 +1,6 @@
 // frontend/src/pages/ApplicationsPage.jsx
 import { useState } from "react";
+import { ChannelName } from "../components/DiscordPicker";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle, XCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Trash2, MessageSquare, Users, History } from "lucide-react";
@@ -8,6 +9,7 @@ import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
 import { useT } from "../contexts/I18nContext";
+import PageHeader from "../components/PageHeader";
 import { useToast } from "../contexts/ToastContext";
 
 const STATUS_COLORS = {
@@ -74,14 +76,14 @@ export default function ApplicationsPage() {
       setDiscussMessage({
         type: "status",
         text: data.alreadyExists
-          ? `💬 Discussion channel already open (#${data.channelId}). Check your Discord server.`
-          : `✅ Discussion channel opened (#${data.channelId}). Check your Discord server.`,
+          ? t("apps.discussExists", { channel: data.channelId })
+          : t("apps.discussOpened", { channel: data.channelId }),
       });
     },
     onError: (err) => {
       setDiscussMessage({
         type: "alert",
-        text: `Failed to open discussion: ${err?.response?.data?.error || err.message}`,
+        text: t("apps.discussFailed", { error: err?.response?.data?.error || err.message }),
       });
     },
   });
@@ -98,23 +100,23 @@ export default function ApplicationsPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-cs-text">{t("apps.title")}</h1>
-          <p className="text-cs-muted text-sm mt-1">{t("apps.totalCount", { n: data?.total ?? 0 })}</p>
-        </div>
-        <select
-          className="cs-input w-40"
-          value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          aria-label={t("apps.filterByStatus")}
-        >
-          <option value="">All</option>
-          <option value="PENDING">{t("appStatus.pending")}</option>
-          <option value="APPROVED">{t("appStatus.approved")}</option>
-          <option value="DENIED">{t("appStatus.denied")}</option>
-        </select>
-      </div>
+      <PageHeader
+        title={t("apps.title")}
+        subtitle={t("apps.totalCount", { n: data?.total ?? 0 })}
+        actions={(
+          <select
+            className="cs-input w-40"
+            value={statusFilter}
+            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+            aria-label={t("apps.filterByStatus")}
+          >
+            <option value="">{t("tickets.tab.all")}</option>
+            <option value="PENDING">{t("appStatus.pending")}</option>
+            <option value="APPROVED">{t("appStatus.approved")}</option>
+            <option value="DENIED">{t("appStatus.denied")}</option>
+          </select>
+        )}
+      />
 
       {discussMessage && (
         <div
@@ -146,7 +148,7 @@ export default function ApplicationsPage() {
         </div>
       ) : isError ? (
         <div role="alert" className="cs-card text-center py-16 text-danger">
-          Couldn't load applications — please retry.
+          {t("apps.loadError")}
         </div>
       ) : applications.length === 0 ? (
         statusFilter ? (
@@ -196,7 +198,7 @@ export default function ApplicationsPage() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-cs-text">{app.user?.username ?? "Unknown"}</span>
+                      <span className="font-semibold text-cs-text">{app.user?.username ?? t("common.unknownUser")}</span>
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-xl ${STATUS_COLORS[app.status]}`}>
                         {app.status}
                       </span>
@@ -273,7 +275,7 @@ export default function ApplicationsPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {questions.map((q) => (
                           <div key={q.id} className="bg-cs-bg rounded-lg p-3">
-                            <p className="text-xs font-semibold text-cs-muted uppercase tracking-wide mb-1">
+                            <p className="text-xs font-semibold text-cs-muted mb-1">
                               {q.label}
                             </p>
                             <p className="text-sm text-cs-text whitespace-pre-wrap">
@@ -320,7 +322,7 @@ export default function ApplicationsPage() {
                                   </p>
                                 )}
                               </div>
-                              <time className="text-xs text-cs-dim font-mono whitespace-nowrap"
+                              <time className="text-xs text-cs-dim tabular-nums whitespace-nowrap"
                                     dateTime={h.createdAt}>
                                 {new Date(h.createdAt).toLocaleDateString()}
                               </time>
@@ -337,7 +339,7 @@ export default function ApplicationsPage() {
                     {fullApp?.ticket && (
                       <div className="mt-3 flex items-center gap-2 text-sm">
                         <span className="text-cs-muted">{t("apps.linkedTicket")}</span>
-                        <span className="text-cs-muted">#{fullApp.ticket.channelId}</span>
+                        <ChannelName id={fullApp.ticket.channelId} className="text-cs-muted" />
                       </div>
                     )}
                   </div>
@@ -351,21 +353,21 @@ export default function ApplicationsPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-6 text-sm text-cs-muted">
-          <span>Page {page} of {totalPages}</span>
+          <span>{t("common.pageOf", { page, total: totalPages })}</span>
           <div className="flex gap-2">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
               className="cs-btn-ghost py-1 px-3 disabled:opacity-40 flex items-center gap-1"
             >
-              <ChevronLeft className="w-4 h-4" /> Prev
+              <ChevronLeft className="w-4 h-4" aria-hidden="true" /> {t("common.prev")}
             </button>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               className="cs-btn-ghost py-1 px-3 disabled:opacity-40 flex items-center gap-1"
             >
-              Next <ChevronRight className="w-4 h-4" />
+              {t("common.next")} <ChevronRight className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -375,7 +377,7 @@ export default function ApplicationsPage() {
       <Modal
         open={!!reviewingId}
         onClose={() => setReviewingId(null)}
-        title={reviewAction === "approve" ? "✅ Approve Application" : reviewAction === "deny" ? "❌ Deny Application" : t("apps.review")}
+        title={reviewAction === "approve" ? t("apps.approveTitle") : reviewAction === "deny" ? t("apps.denyTitle") : t("apps.review")}
         maxWidth="max-w-md"
       >
         <p className="text-sm text-cs-muted mb-4">
@@ -413,7 +415,7 @@ export default function ApplicationsPage() {
                 : "cs-btn-primary"
             }
           >
-            {reviewMut.isPending ? t("common.processing") : reviewAction ? `Confirm ${reviewAction.charAt(0).toUpperCase() + reviewAction.slice(1)}` : "Confirm"}
+            {reviewMut.isPending ? t("common.processing") : reviewAction === "approve" ? t("apps.confirmApprove") : reviewAction === "deny" ? t("apps.confirmDeny") : t("common.confirm")}
           </button>
         </div>
       </Modal>

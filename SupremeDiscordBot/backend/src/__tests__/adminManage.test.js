@@ -51,6 +51,33 @@ beforeEach(() => {
   prismaMock.server.findUnique.mockResolvedValue({ id: SID, name: "Test server" });
 });
 
+describe("играчите: имената на хората без вход в таблото идват от бота", () => {
+  it("users първо; липсващите — живо от бота (само те); непознат остава null", async () => {
+    const U2 = "444444444444444444", U3 = "555555555555555555";
+    prismaMock.memberProgress.findMany.mockResolvedValueOnce([UID, U2, U3].map((userId, i) => ({ userId, xp: 100 - i, level: 1, seasonXp: 0, sparks: 0, streak: 0, messages: 0, voiceMinutes: 0, activeCompanionId: null, updatedAt: new Date() })));
+    prismaMock.memberProgress.count.mockResolvedValueOnce(3);
+    prismaMock.user.findMany.mockResolvedValueOnce([{ id: UID, username: "stefan", avatar: null }]);
+    prismaMock.memberCompanion.groupBy.mockResolvedValueOnce([]);
+    axiosGet.mockResolvedValueOnce({ data: { ok: true, members: { [U2]: "Иван", [UID]: "НЕ бива да замени users" } } });
+    const r = await request(app).get(`/api/admin/game/servers/${SID}/members`);
+    expect(r.status).toBe(200);
+    expect(r.body.members.map((m) => m.username)).toEqual(["stefan", "Иван", null]);
+    const [url, opts] = axiosGet.mock.calls.at(-1);
+    expect(url).toMatch(new RegExp(`/internal/guild/${SID}/members$`));
+    expect(opts.params.ids.split(",").sort()).toEqual([U2, U3]);
+  });
+  it("ботът е недостъпен → списъкът пак излиза, само без имената", async () => {
+    prismaMock.memberProgress.findMany.mockResolvedValueOnce([{ userId: UID, xp: 1, level: 0, seasonXp: 0, sparks: 0, streak: 0, messages: 0, voiceMinutes: 0, activeCompanionId: null, updatedAt: new Date() }]);
+    prismaMock.memberProgress.count.mockResolvedValueOnce(1);
+    prismaMock.user.findMany.mockResolvedValueOnce([]);
+    prismaMock.memberCompanion.groupBy.mockResolvedValueOnce([]);
+    axiosGet.mockRejectedValueOnce(new Error("ECONNREFUSED"));
+    const r = await request(app).get(`/api/admin/game/servers/${SID}/members`);
+    expect(r.status).toBe(200);
+    expect(r.body.members[0]).toMatchObject({ userId: UID, username: null });
+  });
+});
+
 describe("гардове", () => {
   it("без потвърден втори фактор → 403 MFA_REQUIRED дори на четене", async () => {
     SESSION = {};
@@ -112,19 +139,19 @@ describe("играта по сървъри", () => {
     expect(prismaMock.memberCompanion.delete).not.toHaveBeenCalled();
   });
   it("нулиране „all“: трие магазина и настройките, но НЕ покупките; ботът научава", async () => {
-    for (const m of ["companionTrade", "companionSpawn", "memberCompanion", "gameXpGrant", "memberProgress", "triviaRound", "serverQuest", "shopItem", "gameSettings"]) {
+    for (const m of ["companionTrade", "companionSpawn", "memberCompanion", "gameXpGrant", "memberProgress", "companionBattle", "triviaRound", "serverQuest", "shopItem", "gameSettings"]) {
       prismaMock[m].deleteMany.mockResolvedValue({ count: 2 });
     }
     const r = await request(app).post(`/api/admin/game/servers/${SID}/reset`).send({ scope: "all", confirm: true, reason: "нов старт" });
     expect(r.status).toBe(200);
-    expect(r.body.counts).toMatchObject({ members: 2, shopItems: 2, settings: 2 });
+    expect(r.body.counts).toMatchObject({ members: 2, battles: 2, shopItems: 2, settings: 2 });
     expect(prismaMock.shopPurchase.deleteMany).not.toHaveBeenCalled();
     expect(notifyBot).toHaveBeenCalledWith("GAME_SETTINGS_CHANGED", { serverId: SID });
   });
   it("нулиране „progress“ не пипа магазина; без confirm → 400", async () => {
     let r = await request(app).post(`/api/admin/game/servers/${SID}/reset`).send({ scope: "progress", reason: "тест" });
     expect(r.status).toBe(400);
-    for (const m of ["companionTrade", "companionSpawn", "memberCompanion", "gameXpGrant", "memberProgress"]) prismaMock[m].deleteMany.mockResolvedValue({ count: 1 });
+    for (const m of ["companionTrade", "companionSpawn", "memberCompanion", "gameXpGrant", "memberProgress", "companionBattle"]) prismaMock[m].deleteMany.mockResolvedValue({ count: 1 });
     r = await request(app).post(`/api/admin/game/servers/${SID}/reset`).send({ scope: "progress", confirm: true, reason: "тест" });
     expect(r.status).toBe(200);
     expect(prismaMock.shopItem.deleteMany).not.toHaveBeenCalled();

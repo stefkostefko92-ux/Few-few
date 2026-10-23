@@ -44,7 +44,7 @@ EXPOSE 3000
 
 # Health check — used by Docker for restart logic
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD wget -q -O /dev/null http://localhost:3000/api/health || exit 1
+  CMD wget -q -O /dev/null http://127.0.0.1:3000/api/health || exit 1
 
 # tini ensures proper signal handling for graceful shutdown
 ENTRYPOINT ["/sbin/tini", "--", "/app/docker-entrypoint.sh"]
