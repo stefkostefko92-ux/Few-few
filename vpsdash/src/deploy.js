@@ -7,15 +7,21 @@ import { request as httpRequest } from 'node:http';
 import { request as httpsRequest } from 'node:https';
 
 const PROJECT_RX = /^[\w-]+$/;
+// Сверява се с `case "$p" in` в deploy/autodeploy.sh (test/deployfiles.test.js).
+// Изостаналият списък криеше panev, piuma и korpora: от панела не можеше да се
+// деплойне само един от тях — оставаше „всички" или SSH.
 export const KNOWN_PROJECTS = [
   'zabobovdol',
   'medqr',
   'vizitka',
+  'panev',
   'ospedali',
   'nexus',
   'mastilko',
   'SupremeDiscordBot',
   'eternaltouch',
+  'piuma',
+  'korpora',
   'adblock',
   'vpsdashboard',
 ];

@@ -166,3 +166,19 @@ test('install.sh не може да изтрие системна папка', (
   assert.match(sh, /\.service\.d/, 'локалните пътища трябва да са drop-in, не sed върху unit-а');
   assert.ok(!/sed -e "s#\^ExecStart=/.test(sh), 'sed върху unit файла се заличава при първия деплой');
 });
+
+test('деплой: списъкът проекти в панела съвпада с autodeploy.sh (нищо не е скрито)', async () => {
+  // Изостаналият KNOWN_PROJECTS криеше panev, piuma и korpora — от панела не
+  // можеше да се деплойне само един от тях. Сверява се с `case "$p" in`.
+  const { KNOWN_PROJECTS } = await import('../src/deploy.js');
+  const sh = fs.readFileSync(path.join(ROOT, '..', 'deploy', 'autodeploy.sh'), 'utf8');
+  const block = sh.slice(sh.indexOf('for p in $PROJECTS; do'));
+  const names = [...block.matchAll(/^\s+([\w|-]+)\)\s+deploy_\w+/gm)].map((m) => m[1].split('|'));
+  assert.ok(names.length >= 10, 'case блокът е намерен');
+  for (const aliases of names) {
+    assert.ok(aliases.some((a) => KNOWN_PROJECTS.includes(a)), `autodeploy.sh познава „${aliases.join('|')}", а панелът — не`);
+  }
+  for (const p of KNOWN_PROJECTS) {
+    assert.ok(names.some((a) => a.includes(p)), `панелът предлага „${p}", а autodeploy.sh не го познава`);
+  }
+});
