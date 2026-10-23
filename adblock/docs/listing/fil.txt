@@ -1,10 +1,14 @@
 Bina-block ng Supreme AdBlock ang ads kahit saan — mga video ad sa YouTube, banner, pop-up at tracker — nang hindi binabantayan ang ginagawa ninyo.
 
+• Signed na filter update dalawang beses sa isang araw: napapangasiwaan ang mga bagong ad network sa loob ng ilang oras, walang remote code.
 • Pinipigilan ang ads sa YouTube mula mismo sa pinagmulan, kaya tuloy-tuloy lang ang pag-play ng mga video.
-• Built-in ang EasyList, EasyPrivacy at iba pang open filter list, kasama ang list para sa inyong wika (31 regional list).
 • Cookie banner: pinipindot nito ang Reject para sa inyo, inaalis ang natirang blur at scroll lock, at hindi kailanman pumipindot ng sign-in, OAuth o payment button.
+• Walang account, walang telemetry, walang pangongolekta ng data, at walang ad na pinalulusot kapalit ng bayad. Hinihiling ng Global Privacy Control sa mga site na binibisita ninyo na huwag ibenta o ibahagi ang inyong data.
+• Built-in ang EasyList, EasyPrivacy at iba pang open filter list, kasama ang list para sa inyong wika (31 regional list).
+• Nakatago ang mga sponsored post sa Facebook, Instagram at Threads.
 • Focus mode: itago ang mga chat bubble, newsletter pop-up, prompt ng notification, social widget, AI pop-up at YouTube Shorts.
 • Nine-neutralize ang mga anti-adblock wall at pop-under.
+• Mga mapanganib na site: page ng babala ang bubukas sa halip na ang kilalang malware site, at kayo ang magpapasya kung itutuloy.
 • Sira ang site? Isang click lang para maayos, o sabihin sa amin — walang ipinapadala hangga't hindi ninyo muna nakikita.
-• Signed na filter update dalawang beses sa isang araw: napapangasiwaan ang mga bagong ad network sa loob ng ilang oras, walang remote code.
-• Walang account, walang telemetry, walang pangongolekta ng data.
+• Lilipat mula sa uBlock Origin, AdGuard o Adblock Plus? Dalhin ang inyong mga pinayagang site at filter gamit ang isang file.
+• Tingnan kung saang ibang site kumokonekta ang isang page, at i-block ang isa roon lang sa isang click.

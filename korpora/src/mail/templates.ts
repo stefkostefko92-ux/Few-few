@@ -1,62 +1,13 @@
-import type { TokenPurpose } from '@prisma/client';
 import { config } from '../config.js';
 import { LOCK_MINUTES } from '../auth/lock.js';
-import { linkHours } from '../auth/tokens.js';
-import { translate, type Locale } from '../i18n.js';
-import { UNVERIFIED_RETENTION_DAYS } from '../retention.js';
-import { sendMail, type MailAttachment } from './mailer.js';
+import { translate, translatorFor, type Locale } from '../i18n.js';
+import { BAN_REPLY_DAYS } from '../plans/ban.js';
+import { ordersKeptText, UNVERIFIED_RETENTION_DAYS } from '../retention.js';
+import { legalPath } from '../seo/paths.js';
+import { link, period, send, validFor } from './compose.js';
 
-/**
- * Писмата към човека. Текстът идва от речниците (`mail.*`) на езика на акаунта; връзките са
- * абсолютни от PUBLIC_BASE_URL и носят езика (`lang=`), за да се отворят на същия език и на друго
- * устройство. Само обикновен текст — нищо не се зарежда от чужд сървър.
- */
-function link(path: string, locale: Locale): string {
-  return `${config().PUBLIC_BASE_URL}${path}${path.includes('?') ? '&' : '?'}lang=${locale}`;
-}
-
-/** Срок от кода с формата за брой на езика („1 час“, „15 минути“, „7 дни“) — не написан в речника. */
-function period(locale: Locale, unit: 'hours' | 'minutes' | 'days', n: number): string {
-  return translate(locale, `common.${unit}`, { n });
-}
-
-/** Колко важи връзката („48 часа“, „1 час“) — от срока на токена. */
-function validFor(locale: Locale, purpose: TokenPurpose): string {
-  return period(locale, 'hours', linkHours(purpose));
-}
-
-function signature(locale: Locale): string {
-  return translate(locale, 'mail.signature', { contact: config().CONTACT_EMAIL });
-}
-
-/**
- * Името влиза само в писмо до адрес, който акаунтът е потвърдил: името е свободен текст на човека, а
- * непотвърден адрес може да е чужд — нашето писмо не бива да носи текст, написан от някой друг.
- */
-export function greetingName(user: { name: string; emailVerifiedAt: Date | null }): string | null {
-  return user.emailVerifiedAt ? user.name : null;
-}
-
-async function send(
-  to: string,
-  locale: Locale,
-  key: string,
-  params: Record<string, string | number>,
-  name: string | null,
-  attachments: MailAttachment[] = [],
-): Promise<boolean> {
-  const subject = translate(locale, `mail.${key}.subject`, params);
-  const greeting = name
-    ? translate(locale, 'mail.greeting', { name })
-    : translate(locale, 'mail.greetingPlain');
-  const body = translate(locale, `mail.${key}.body`, params);
-  return sendMail({
-    to,
-    subject,
-    text: `${greeting}\n\n${body}\n\n${signature(locale)}\n`,
-    ...(attachments.length ? { attachments } : {}),
-  });
-}
+/* Писмата по повод: какво казва всяко и кое е основното му действие (бутонът в HTML варианта). */
+export { greetingName, link, send } from './compose.js';
 
 /** До адрес, който още никой не е потвърдил — без име. */
 export function mailVerifyEmail(to: string, locale: Locale, token: string): Promise<boolean> {
@@ -70,6 +21,7 @@ export function mailVerifyEmail(to: string, locale: Locale, token: string): Prom
       days: period(locale, 'days', UNVERIFIED_RETENTION_DAYS),
     },
     null,
+    { action: { param: 'link', label: 'confirmEmail' } },
   );
 }
 
@@ -84,6 +36,7 @@ export function mailAlreadyRegistered(
     'alreadyRegistered',
     { login: link('/login', locale), reset: link('/forgot', locale) },
     name,
+    { action: { param: 'login', label: 'signIn' } },
   );
 }
 
@@ -99,6 +52,7 @@ export function mailResetPassword(
     'reset',
     { link: link(`/reset?token=${token}`, locale), hours: validFor(locale, 'RESET_PASSWORD') },
     name,
+    { action: { param: 'link', label: 'newPassword' } },
   );
 }
 
@@ -118,6 +72,7 @@ export function mailInvite(to: string, locale: Locale, token: string): Promise<b
       reset: link('/forgot', locale),
     },
     null,
+    { action: { param: 'link', label: 'setPassword' } },
   );
 }
 
@@ -126,7 +81,9 @@ export function mailPasswordChanged(
   locale: Locale,
   name: string | null,
 ): Promise<boolean> {
-  return send(to, locale, 'passwordChanged', { reset: link('/forgot', locale) }, name);
+  return send(to, locale, 'passwordChanged', { reset: link('/forgot', locale) }, name, {
+    action: { param: 'reset', label: 'newPassword' },
+  });
 }
 
 /**
@@ -142,7 +99,9 @@ export function mailLocked(
   name: string | null,
 ): Promise<boolean> {
   const minutes = period(locale, 'minutes', LOCK_MINUTES);
-  return send(to, locale, kind, { reset: link('/forgot', locale), minutes }, name);
+  return send(to, locale, kind, { reset: link('/forgot', locale), minutes }, name, {
+    action: { param: 'reset', label: 'newPassword' },
+  });
 }
 
 export function mailNewDevice(
@@ -157,6 +116,7 @@ export function mailNewDevice(
     'newDevice',
     { ...params, security: link('/account/security', locale) },
     name,
+    { action: { param: 'security', label: 'security' } },
   );
 }
 
@@ -172,6 +132,7 @@ export function mailTwoFactor(
     enabled ? 'twoFactorOn' : 'twoFactorOff',
     { security: link('/account/security', locale) },
     name,
+    { action: { param: 'security', label: 'security' } },
   );
 }
 
@@ -186,6 +147,7 @@ export function mailChangeEmail(to: string, locale: Locale, token: string): Prom
       hours: validFor(locale, 'CHANGE_EMAIL'),
     },
     null,
+    { action: { param: 'link', label: 'confirmNewEmail' } },
   );
 }
 
@@ -202,6 +164,7 @@ export function mailEmailChangeNotice(
     'emailChangeNotice',
     { email: newEmail, security: link('/account/security', locale) },
     name,
+    { action: { param: 'security', label: 'security' } },
   );
 }
 
@@ -221,7 +184,21 @@ export function mailTrialEnding(
   name: string | null,
   date: string,
 ): Promise<boolean> {
-  return send(to, locale, 'trialEnding', { date, plan: link('/account/plan', locale) }, name);
+  return send(to, locale, 'trialEnding', { date, plan: link('/account/plan', locale) }, name, {
+    action: { param: 'plan', label: 'plans' },
+  });
+}
+
+/** Premium свършва след няколко дни и не се подновява сам — връзката води към плана. */
+export function mailPlanEnding(
+  to: string,
+  locale: Locale,
+  name: string | null,
+  date: string,
+): Promise<boolean> {
+  return send(to, locale, 'planEnding', { date, plan: link('/account/plan', locale) }, name, {
+    action: { param: 'plan', label: 'renew' },
+  });
 }
 
 export function mailPlanChanged(
@@ -230,59 +207,62 @@ export function mailPlanChanged(
   name: string | null,
   params: { plan: string; until: string },
 ): Promise<boolean> {
-  return send(to, locale, 'planChanged', { ...params, account: link('/account', locale) }, name);
+  return send(to, locale, 'planChanged', { ...params, account: link('/account', locale) }, name, {
+    action: { param: 'account', label: 'account' },
+  });
 }
 
+/**
+ * Блокиран достъп — мотивите по чл. 17, пар. 3 от Регламент (ЕС) 2022/2065: какво е ограничено, фактите
+ * (причината от екипа), правилото в общите условия, че решението е на човек и как се възразява. По общите
+ * условия („Блокиране“) — и последицата за платения план, срокът за мотивиран отговор и удължаването при
+ * грешка. `oldTerms` — поръчка по условията отпреди правилото за невръщане, блокирана преди то да важи за нея
+ * (plans/ban.ts, refundsUnderOldTerms): тогава писмото казва преходът и че неизползваната част се връща, а
+ * не „не се връща“. Датите са от services/legal-numbers.ts — същите като в условията.
+ */
+export function mailBanned(
+  to: string,
+  locale: Locale,
+  name: string | null,
+  reason: string,
+  oldTerms: { banRuleSince: string; banRuleOldOrders: string } | null,
+): Promise<boolean> {
+  const paid = oldTerms
+    ? translate(locale, 'mail.banned.paidOld', {
+        since: oldTerms.banRuleSince,
+        from: oldTerms.banRuleOldOrders,
+      })
+    : translate(locale, 'mail.banned.paid');
+  return send(
+    to,
+    locale,
+    'banned',
+    {
+      reason,
+      paid,
+      // направо в раздела — правилото, по което е блокиран акаунтът
+      terms: `${config().PUBLIC_BASE_URL}${legalPath(locale, 'terms')}#blocking`,
+      contact: config().CONTACT_EMAIL,
+      reply: period(locale, 'days', BAN_REPLY_DAYS),
+    },
+    name,
+  );
+}
+
+/**
+ * Изтритият акаунт. `hadOrders` — поръчките остават само с данните на договора; писмото казва какво остава
+ * и до кога (срокът е от кода, src/retention.ts).
+ */
 export function mailAccountDeleted(
   to: string,
   locale: Locale,
   name: string | null,
+  hadOrders: boolean,
 ): Promise<boolean> {
-  return send(to, locale, 'accountDeleted', {}, name);
-}
-
-/**
- * Потвърждението на договора на траен носител (чл. 8, пар. 7 от Директива 2011/83): какво е поръчано,
- * цената, плащането, правото на отказ с образеца и общите условия към деня на поръчката (приложени
- * като файл). Текстовете на частите и копието на условията са сглобени в `services/order-mail.ts`.
- */
-export function mailOrderConfirmed(
-  to: string,
-  locale: Locale,
-  name: string | null,
-  params: Record<string, string>,
-  attachments: MailAttachment[] = [],
-): Promise<boolean> {
-  return send(
-    to,
-    locale,
-    'order',
-    { ...params, orders: link('/account/plan', locale) },
-    name,
-    attachments,
-  );
-}
-
-/** Потвърждението, че изявлението за отказ е получено — със съдържанието и часа му (чл. 11а, пар. 4). */
-export function mailWithdrawalReceived(
-  to: string,
-  locale: Locale,
-  name: string | null,
-  params: Record<string, string>,
-): Promise<boolean> {
-  return send(to, locale, 'withdrawn', { ...params, orders: link('/account/plan', locale) }, name);
-}
-
-/** Известие до екипа (CONTACT_EMAIL), на български: нова поръчка или отказ със срок за връщане. */
-export function mailStaffNotice(
-  kind: 'staffOrder' | 'staffWithdrawal',
-  params: Record<string, string>,
-): Promise<boolean> {
-  return send(
-    config().CONTACT_EMAIL,
-    'bg',
-    kind,
-    { ...params, admin: `${config().PUBLIC_BASE_URL}/admin/requests?status=all` },
-    null,
-  );
+  const orders = hadOrders
+    ? `\n\n${translate(locale, 'mail.accountDeleted.orders', {
+        kept: ordersKeptText(translatorFor(locale)),
+      })}`
+    : '';
+  return send(to, locale, 'accountDeleted', { orders }, name);
 }

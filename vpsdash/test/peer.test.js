@@ -7,7 +7,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
-import { peerStatus, nodesStatus } from '../src/nodes.js';
+import { peerStatus, nodesStatus, verifyPeer, INSTANCE } from '../src/nodes.js';
 
 function fakePeer(handler) {
   const srv = http.createServer(handler);
@@ -102,4 +102,34 @@ test('съсед: грешка ПРИ ПОДГОТОВКАТА на заявка
   });
   assert.equal(r.local.up, true, 'и локалният възел пак се вижда');
   assert.equal(r.peers[0].up, false);
+});
+
+test('съсед, който се оказва САМИЯТ НИЕ, не минава за жив и не получава копия', async () => {
+  // На живо: двата VPS бяха сменени с един, DNS на стария `vps2.…` остана и сочеше
+  // към новия сървър. Отговаряше същият процес — с чуждо или СЪЩОТО име в конфига.
+  // Разпознава се по отпечатъка на процеса, не по имената.
+  for (const nodeId of ['vps2', 'аз']) {
+    const { srv, port } = await fakePeer((req, res) => {
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ nodeId, instance: INSTANCE }));
+    });
+    const peer = { id: 'vps2', name: 'VPS Две', url: `http://127.0.0.1:${port}`, token: 'ok' };
+    const p = await peerStatus(peer);
+    const v = await verifyPeer(peer);
+    srv.close();
+    assert.equal(p.up, false, `${nodeId}: самите ние не сме съсед`);
+    assert.equal(p.self, true);
+    assert.match(p.error, /ТАЗИ машина/);
+    assert.equal(v.ok, false, 'копие на същия диск не е копие извън машината');
+    assert.match(v.error, /същия диск/);
+  }
+  // Две РАЗЛИЧНИ машини с подразбиращото се `nodeId: "local"` не са една.
+  const { srv, port } = await fakePeer((req, res) => {
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ nodeId: 'local', instance: 'друг-процес' }));
+  });
+  const other = await peerStatus({ id: 'local', name: 'Друг', url: `http://127.0.0.1:${port}`, token: 'ok' });
+  srv.close();
+  assert.equal(other.up, true);
+  assert.equal(other.self, undefined);
 });

@@ -126,39 +126,43 @@ export function lintShell(src, rel) {
   //
   // Ловим само subshell, който ИЗПЪЛНЯВА нещо съществено (`bash …`/`npm …`), не
   // всяко `( cd … && ls )`; и само когато скриптът наистина е под `set -e`.
+  //
+  // ПОКРИТИЕ НА ЦЕЛИЯ ФАЙЛ (одит 25.09.2026): първата версия ловеше многоредовата
+  // форма с мързелив регекс `\( cd … [\s\S]*? ^\)` — той започваше от ЕДНОРЕДОВ
+  // subshell (`( cd "$x" && … ) \`) и се „разтягаше“ до първия ред, започващ с `)`,
+  // стотици редове по-надолу. С флаг `g` търсенето продължаваше СЛЕД това, тоест
+  // всичко между тях беше невидимо: в autodeploy.sh три слепи участъка (≈225–390,
+  // 415–921, 991–1284), а в един от тях стоеше истинско нарушение — неохраненият
+  // билд на mastilko. Сега краят на всеки subshell се намира с брояч на скоби,
+  // който знае за кавички, `$( … )` и коментари, и ВСЕКИ `( cd` се оценява поотделно.
   if (/set\s+-[a-z]*e/.test(src)) {
     const unguarded = [];
-    // Две форми: многоредова (затварящата скоба е в начало на ред) и едноредова.
-    // И в двата случая гледаме какво следва СЛЕД затварящата скоба.
-    const FORMS = [
-      /^[ \t]*\(\s*cd\s[\s\S]*?^[ \t]*\)(.*)$/gm,   // ( cd …\n  bash …\n)
-      /^[ \t]*\(\s*cd\s[^)\n]*\)(.*)$/gm,           // ( cd … && bash … )
-    ];
-    for (const re of FORMS) {
-      let m;
-      while ((m = re.exec(src)) !== null) {
-        const body = m[0];
-        let after = m[1] || "";
-        if (!/\b(bash|sh|npm|pnpm|yarn|docker)\b/.test(body)) continue;  // тривиален subshell
-        // Гардът често е пренесен на следващ ред: `) \` + `  || { … }`.
-        // Първата версия на това правило не следваше пренасянето и обяви пет
-        // напълно защитени блока за нарушители — синтаксис, не съдържание.
-        let tail = src.slice(m.index + m[0].length);
-        while (/\\\s*$/.test(after)) {
-          const nl = tail.indexOf("\n");
-          if (nl === -1) break;
-          const next = tail.slice(nl + 1, tail.indexOf("\n", nl + 1) === -1 ? undefined : tail.indexOf("\n", nl + 1));
-          after = next;
-          tail = tail.slice(nl + 1);
-        }
-        if (/\|\||&&\s*\{|;\s*then/.test(after)) continue;               // има гард
-        const head = body.split("\n")[0].trim();
-        if (!unguarded.includes(head)) unguarded.push(head);
+    const RX = /^[ \t]*\(\s*cd\s/gm;
+    let m;
+    while ((m = RX.exec(src)) !== null) {
+      const open = src.indexOf("(", m.index);
+      const close = subshellEnd(src, open);
+      if (close === -1) continue;                                       // незатворен — не гадаем
+      const body = src.slice(open, close + 1);
+      if (!/\b(bash|sh|npm|pnpm|yarn|docker)\b/.test(body)) continue;  // тривиален subshell
+      const eol = src.indexOf("\n", close);
+      let after = src.slice(close + 1, eol === -1 ? undefined : eol);
+      // Гардът често е пренесен на следващ ред: `) \` + `  || { … }`.
+      // Първата версия на това правило не следваше пренасянето и обяви пет
+      // напълно защитени блока за нарушители — синтаксис, не съдържание.
+      let pos = eol;
+      while (/\\\s*$/.test(after) && pos !== -1) {
+        const nextEol = src.indexOf("\n", pos + 1);
+        after = src.slice(pos + 1, nextEol === -1 ? undefined : nextEol);
+        pos = nextEol;
       }
+      if (/\|\||&&\s*\{|;\s*then/.test(after)) continue;               // има гард
+      const n = src.slice(0, m.index).split("\n").length;
+      unguarded.push(`${n}: ${src.slice(m.index, src.indexOf("\n", m.index)).trim().slice(0, 60)}`);
     }
     if (unguarded.length)
       add("HIGH", "unguarded-subshell",
-        `Subshell с деплой команда без \`|| { … }\` при \`set -e\` (${unguarded.length} бр.) — провалът на един продукт прекратява целия autodeploy и оставя следващите неразгърнати. Добави \`|| { warn …; deploy_failed=1; return; }\`.`);
+        `Subshell с деплой команда без \`|| { … }\` при \`set -e\` (${unguarded.length} бр.) — провалът на един продукт прекратява целия autodeploy и оставя следващите неразгърнати. Добави \`|| { warn …; deploy_failed=1; return; }\`. Места: ${unguarded.join(" · ")}`);
   }
 
   // ── Чистене с `ls <шаблон>` при `set -euo pipefail` ─────────────────────────
@@ -266,6 +270,37 @@ export function lintShell(src, rel) {
   }
 
   return out;
+}
+
+// Индексът на `)`, която затваря subshell-а, отворен с `(` на позиция `open`; -1 ако
+// няма. Минимален shell лексер: единични кавички (буквални), двойни (с `$( … )` вътре),
+// `\` екраниране, `#` коментар в началото на дума. `case` шаблони (`x)`) вътре в
+// subshell не се различават — приемлива евристика за деплой скриптове.
+export function subshellEnd(src, open) {
+  const stack = ["N"];
+  for (let i = open + 1; i < src.length; i++) {
+    const c = src[i];
+    const top = stack[stack.length - 1];
+    if (top === "S") { if (c === "'") stack.pop(); continue; }
+    if (c === "\\") { i++; continue; }
+    if (top === "D") {
+      if (c === '"') stack.pop();
+      else if (c === "$" && src[i + 1] === "(") { stack.push("N"); i++; }
+      continue;
+    }
+    // top === "N"
+    if (c === "#" && (i === 0 || /[\s;(]/.test(src[i - 1]))) {
+      const nl = src.indexOf("\n", i);
+      if (nl === -1) return -1;
+      i = nl - 1;
+      continue;
+    }
+    if (c === "'") stack.push("S");
+    else if (c === '"') stack.push("D");
+    else if (c === "(") stack.push("N");
+    else if (c === ")") { stack.pop(); if (!stack.length) return i; }
+  }
+  return -1;
 }
 
 function walk(dir, acc = []) {

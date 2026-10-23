@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "บล็อกโฆษณาวิดีโอ YouTube แบนเนอร์ ป๊อปอัป ตัวติดตาม การแจ้งเตือนคุกกี้ และกำแพงต่อต้านการบล็อกโฆษณา"
+    "message": "ตัวบล็อกโฆษณาสำหรับ YouTube และเว็บ: โฆษณาวิดีโอ แบนเนอร์ ป๊อปอัป ตัวติดตาม แบนเนอร์คุกกี้ (“ปฏิเสธ”) และกำแพงต่อต้านตัวบล็อกโฆษณา"
   },
   "byCarbon": {
     "message": "โดย Carbon Stealth"
@@ -118,6 +118,27 @@
   "support": {
     "message": "สนับสนุน"
   },
+  "rate": {
+    "message": "ให้คะแนน"
+  },
+  "rateTitle": {
+    "message": "ให้คะแนน Supreme AdBlock ใน Chrome เว็บสโตร์"
+  },
+  "reviewBlocked": {
+    "message": "บล็อกคำขอไปแล้ว $1 รายการ"
+  },
+  "reviewAsk": {
+    "message": "หาก Supreme AdBlock มีประโยชน์กับคุณ รีวิวสั้นๆ ใน Chrome เว็บสโตร์จะช่วยให้คนอื่นค้นพบได้"
+  },
+  "reviewLeave": {
+    "message": "เขียนรีวิว"
+  },
+  "reviewLater": {
+    "message": "ไว้ทีหลัง"
+  },
+  "reviewNever": {
+    "message": "ไม่ต้องถามอีก"
+  },
   "filtersCount": {
     "message": "$1+ ตัวกรอง",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "ซ่อนกำแพง “ปิดตัวบล็อกโฆษณาของคุณ” และกู้คืนหน้าเว็บ"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "ซ่อนโพสต์ “ได้รับการสนับสนุน” บน Facebook และ Instagram"
+    "message": "ซ่อนโพสต์ “ได้รับการสนับสนุน” บน Facebook, Instagram และ Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "ลบ utm_*, fbclid, gclid และตัวระบุการคลิกอื่นๆ ออกจากลิงก์ที่คุณเปิด"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "บล็อกโดเมนมัลแวร์ที่รู้จัก (รายการ URLhaus โดย abuse.ch)"
+    "message": "เตือนก่อนเปิดเว็บไซต์มัลแวร์ที่รู้จัก และบล็อกสิ่งที่หน้าเว็บโหลดจากเว็บไซต์ดังกล่าว (รายการ URLhaus โดย abuse.ch)"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "ปิดใช้ API โฆษณา Google Topics, FLoC และ Protected Audience ในทุกเว็บไซต์"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "บริจาคผ่าน Revolut"
+  },
+  "opt_review": {
+    "message": "การเตือนให้รีวิว"
+  },
+  "opt_review_sub": {
+    "message": "ลิงก์ ★ เล็กๆ ที่ด้านล่างของหน้าต่าง Supreme AdBlock และคำขอสั้นๆ ตรงนั้นให้ช่วยให้คะแนนใน Chrome เว็บสโตร์ ไม่เกินสองครั้ง ไม่แสดงบนเว็บไซต์และไม่แสดงเป็นการแจ้งเตือน"
   },
   "opt_made_by": {
     "message": "สร้างโดย Carbon Stealth"
@@ -620,6 +647,12 @@
     "message": "คลิกไอคอนรูปจิ๊กซอว์ข้างแถบที่อยู่ แล้วปักหมุด Supreme AdBlock จากนั้นคลิกเดียวก็จะเห็นว่ามีอะไรถูกบล็อกในหน้านั้น",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "ปักหมุดส่วนขยายไว้ที่แถบเครื่องมือแล้ว"
+  },
+  "welPinnedText": {
+    "message": "คลิกไอคอนของส่วนขยายครั้งเดียวก็จะเห็นว่ามีอะไรถูกบล็อกในหน้านั้น"
+  },
   "welBrokenTitle": {
     "message": "หากเว็บไซต์แสดงผลผิดปกติ",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -643,5 +676,128 @@
   "welDone": {
     "message": "เข้าใจแล้ว",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "อนุญาต · เหลือ $1 นาที"
+  },
+  "hiddenHere": {
+    "message": "ซ่อนองค์ประกอบที่นี่แล้ว: $1 · เลิกทำอันล่าสุด"
+  },
+  "cmd_toggle_site": {
+    "message": "เปิดหรือปิดการบล็อกในเว็บไซต์นี้"
+  },
+  "cmd_pause": {
+    "message": "หยุดการป้องกันชั่วคราวหรือทำงานต่อ (30 นาที)"
+  },
+  "cmd_picker": {
+    "message": "ซ่อนองค์ประกอบในหน้านี้"
+  },
+  "rep_fix_hour": {
+    "message": "อนุญาตโฆษณาที่นี่ 1 ชั่วโมง"
+  },
+  "rep_done_hour": {
+    "message": "อนุญาตโฆษณาในเว็บไซต์นี้ 1 ชั่วโมงแล้ว โหลดใหม่แล้ว — แก้ไขได้หรือยัง"
+  },
+  "opt_last30": {
+    "message": "30 วันที่ผ่านมา"
+  },
+  "opt_last30_sum": {
+    "message": "บล็อกแล้ว: $1 · แบนเนอร์คุกกี้: $2"
+  },
+  "opt_last30_empty": {
+    "message": "ยอดรวมรายวันของคุณจะแสดงที่นี่ขณะที่คุณท่องเว็บ"
+  },
+  "opt_last30_sub": {
+    "message": "เก็บเฉพาะยอดรวมรายวันไว้ในอุปกรณ์นี้ 30 วัน ไม่มีเว็บไซต์ ไม่มีที่อยู่"
+  },
+  "opt_gpc_sub": {
+    "message": "ขอให้ทุกเว็บไซต์ที่คุณเข้าชมไม่ขายหรือแชร์ข้อมูลของคุณ (สัญญาณ Sec-GPC ซึ่งกฎหมายความเป็นส่วนตัวบางฉบับกำหนดให้เว็บไซต์ต้องปฏิบัติตาม) ไม่ส่งในเว็บไซต์ที่คุณอนุญาต"
+  },
+  "opt_shortcuts": {
+    "message": "แป้นพิมพ์ลัด"
+  },
+  "opt_shortcuts_change": {
+    "message": "เปลี่ยนแป้นพิมพ์ลัด"
+  },
+  "opt_shortcut_none": {
+    "message": "ยังไม่ได้ตั้ง"
+  },
+  "opt_shortcuts_ff": {
+    "message": "ใน Firefox: ส่วนเสริมและชุดตกแต่ง → ⚙ → จัดการทางลัดส่วนขยาย"
+  },
+  "opt_import_foreign": {
+    "message": "นำเข้าจากตัวบล็อกโฆษณาอื่น"
+  },
+  "opt_import_foreign_sub": {
+    "message": "ย้ายมาจาก uBlock Origin, AdGuard หรือ Adblock Plus ใช่ไหม เลือกไฟล์สำรองข้อมูลของตัวนั้น แล้วเว็บไซต์ที่คุณอนุญาตและตัวกรองของคุณเองจะถูกเพิ่มที่นี่ ไม่มีอะไรถูกแทนที่"
+  },
+  "opt_import_foreign_done": {
+    "message": "เว็บไซต์ที่อนุญาต: $1 · ตัวกรองที่เพิ่ม: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "ข้ามไป (ใช้ที่นี่ไม่ได้): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "ไฟล์นี้ไม่ใช่ไฟล์สำรองข้อมูลที่เราอ่านได้"
+  },
+  "welQuickTitle": {
+    "message": "ปรับให้เป็นแบบของคุณ"
+  },
+  "welQuickSub": {
+    "message": "ไม่บังคับ: ส่วนขยายทำงานอยู่แล้ว คุณเปลี่ยนตัวเลือกเหล่านี้ได้ภายหลังในการตั้งค่า"
+  },
+  "blk_page_title": {
+    "message": "บล็อกเว็บไซต์แล้ว — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "เว็บไซต์นี้อาจเป็นอันตรายต่ออุปกรณ์ของคุณ"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock หยุดหน้านี้ไว้ เนื่องจากเว็บไซต์นี้อยู่ใน URLhaus ซึ่งเป็นรายการสาธารณะของที่อยู่ที่แพร่กระจายมัลแวร์"
+  },
+  "blk_back": {
+    "message": "ย้อนกลับ"
+  },
+  "blk_continue": {
+    "message": "ไปต่ออยู่ดี"
+  },
+  "blk_note": {
+    "message": "การไปต่อจะอนุญาตเฉพาะหน้าของเว็บไซต์นี้ จนกว่าคุณจะปิดเบราว์เซอร์"
+  },
+  "blk_why": {
+    "message": "ทำไมจึงอยู่ในรายการ (URLhaus)"
+  },
+  "conn_title": {
+    "message": "การเชื่อมต่อในหน้านี้"
+  },
+  "conn_empty": {
+    "message": "หน้านี้ไม่ได้โหลดสิ่งใดจากเว็บไซต์อื่น"
+  },
+  "conn_block": {
+    "message": "บล็อกที่นี่"
+  },
+  "conn_blocked": {
+    "message": "บล็อกที่นี่แล้ว"
+  },
+  "conn_hint": {
+    "message": "บล็อกสิ่งที่เว็บไซต์นี้โหลดจาก $1"
+  },
+  "opt_conn_title": {
+    "message": "การเชื่อมต่อที่คุณบล็อก"
+  },
+  "opt_conn_sub": {
+    "message": "บล็อกจาก “การเชื่อมต่อในหน้านี้” ในป๊อปอัป แต่ละรายการมีผลเฉพาะในเว็บไซต์ของตัวเอง"
+  },
+  "opt_empty_conn": {
+    "message": "ยังไม่มีสิ่งใดถูกบล็อก"
+  },
+  "opt_conn_remove": {
+    "message": "เลิกบล็อก $1 ใน $2"
+  },
+  "opt_h_danger": {
+    "message": "หน้าคำเตือนมัลแวร์"
+  },
+  "opt_h_capacity": {
+    "message": "ความจุของกฎ"
   }
 }

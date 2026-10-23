@@ -1,6 +1,6 @@
 # Eternal Touch — Deployment
 
-Target: VPS `178.104.77.242` (Ubuntu 24.04) · Domain: `eternaltouch.it`
+Target: the Carbon Stealth server (`vps.carbonstealth.eu`; its IP: `dig +short vps.carbonstealth.eu`) · Domain: `eternaltouch.it`
 
 ---
 
@@ -114,11 +114,11 @@ apt-get install -y nginx certbot python3-certbot-nginx
 
 ## DNS
 
-Point these records to the VPS:
+Point these records to the server's IP (`dig +short vps.carbonstealth.eu`):
 
 ```
-eternaltouch.it       A  178.104.77.242
-www.eternaltouch.it   A  178.104.77.242
+eternaltouch.it       A  <server IP>
+www.eternaltouch.it   A  <server IP>
 ```
 
 ## Useful commands

@@ -52,10 +52,27 @@ docker compose up -d --build
 > file `.env`, genera un hash con `npm run hash -- "password"` e impostalo in
 > `ADMIN_PASSWORD_HASH` (lasciando vuoto `ADMIN_PASSWORD`).
 
-## 4. nginx + lingua per IP (importante)
+## 4. nginx
 
-La selezione automatica della lingua usa il **paese** del visitatore. Il modo
-consigliato su VPS è il modulo **GeoIP2** di nginx, che imposta l'header
+`nginx/scuolabulgaramilano.conf` è pronto per il server: `scuolabulgaramilano.it` →
+`www`, le vecchie pagine WordPress (`/chi-siamo/`, `/bg/za-nas/`, gli articoli,
+i PDF in `/wp-content/uploads/`…) → la sezione corrispondente con un 301, il resto
+all'app su `127.0.0.1:3110` (= `QB_PORT` in `.env`; cambia la porta se è diversa).
+
+```bash
+cp nginx/scuolabulgaramilano.conf /etc/nginx/sites-available/scuolabulgaramilano
+ln -s /etc/nginx/sites-available/scuolabulgaramilano /etc/nginx/sites-enabled/
+nginx -t && systemctl reload nginx
+```
+
+Il dominio dell'app (canonical, hreflang, sitemap, robots, llms.txt) è solo
+`SITE_URL` in `.env`; dopo averlo cambiato: `docker compose up -d`.
+`nginx/scuolabg.carbonstealth.eu.conf` manda il vecchio indirizzo al nuovo (301).
+
+### Lingua per IP (facoltativo)
+
+Senza nulla, l'app sceglie la lingua dal browser. Per usare il **paese** del
+visitatore serve il modulo **GeoIP2** di nginx, che imposta l'header
 `X-Country` letto dall'app.
 
 ```bash
@@ -73,13 +90,8 @@ geoip2 /etc/nginx/geoip/GeoLite2-Country.mmdb {
 }
 ```
 
-Copia il server block di esempio e attivalo:
-
-```bash
-cp nginx/scuolabulgaramilano.conf /etc/nginx/sites-available/scuolabulgaramilano
-ln -s /etc/nginx/sites-available/scuolabulgaramilano /etc/nginx/sites-enabled/
-nginx -t && systemctl reload nginx
-```
+e nel `location /` di `/etc/nginx/sites-available/scuolabulgaramilano`:
+`proxy_set_header X-Country $geoip2_country_code;`
 
 > **Alternativa senza MaxMind:** metti **Cloudflare** (gratuito) davanti al
 > dominio. Cloudflare invia `CF-IPCountry`, che l'app legge automaticamente —
@@ -88,10 +100,17 @@ nginx -t && systemctl reload nginx
 
 ## 5. HTTPS
 
+Prima: nel DNS, `@` e `www` con il solo record **A** verso il server — nessun
+**AAAA** verso il vecchio hosting (Let's Encrypt prova prima l'IPv6). MX e SPF della
+posta restano come sono.
+
 ```bash
 apt install -y certbot python3-certbot-nginx
-certbot --nginx -d scuolabulgaramilano.it -d www.scuolabulgaramilano.it
+certbot certonly --nginx --dry-run -d www.scuolabulgaramilano.it -d scuolabulgaramilano.it
+certbot --nginx --redirect -d www.scuolabulgaramilano.it -d scuolabulgaramilano.it
 ```
+
+Certbot aggiunge da solo le righe 443 e il redirect http → https al file.
 
 ## 5b. Notifiche email (facoltativo)
 

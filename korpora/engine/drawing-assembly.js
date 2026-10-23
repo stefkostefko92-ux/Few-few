@@ -83,7 +83,7 @@ export function drawingAssembly(model, meta) {
     const cut = p.box.min[0] <= xc;
     g += `<rect class="${cut ? 'd-cut' : 'd-vis'}" ${cut ? 'fill="url(#HATCH)"' : ''} x="${Z(p.box.min[2])}" y="${Y(p.box.max[1])}" width="${(p.box.max[2] - p.box.min[2]) * k}" height="${(p.box.max[1] - p.box.min[1]) * k}"/>`;
   }
-  for (const s of symbols.filter((sy) => sy.type === 'rail' && sy.x0 <= xc && sy.x1 >= xc)) g += `<circle class="d-out" cx="${Z(s.z)}" cy="${Y(s.y)}" r="${Math.max(0.8, 15 * k)}"/>`;
+  for (const s of symbols.filter((sy) => sy.type === 'rail' && sy.x0 <= xc && sy.x1 >= xc)) g += `<circle class="d-out" cx="${Z(s.z)}" cy="${Y(s.y)}" r="${Math.max(0.8, (s.h / 2) * k)}"/>`;
   for (const s of symbols.filter((sy) => sy.type === 'worktop' && sy.x0 <= xc && sy.x1 >= xc)) g += `<rect class="d-vis" x="${Z(s.z0)}" y="${Y(s.y + s.t)}" width="${(s.z1 - s.z0) * k}" height="${s.t * k}"/>`;
   g += `<line class="d-gnd" x1="${Z(ext.z0) - 6}" y1="${Y(0)}" x2="${Z(ext.z1) + 6}" y2="${Y(0)}"/>`;
   // the carcass depth (what the title gives) and, with the fronts, the overall depth

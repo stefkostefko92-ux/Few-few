@@ -1,6 +1,7 @@
 // Applies chrome.i18n messages to the extension's own pages (popup/options).
 // Markup opts in with data-i18n="key" (textContent), data-i18n-title="key"
-// (title attribute) and data-i18n-placeholder="key". Missing messages leave the
+// (title attribute), data-i18n-aria-label="key" (accessible name) and
+// data-i18n-placeholder="key". Missing messages leave the
 // bundled English text untouched, so a half-translated locale never blanks UI.
 (function () {
   function t(key, subs) {
@@ -14,6 +15,10 @@
     root.querySelectorAll("[data-i18n-title]").forEach(function (el) {
       var m = t(el.getAttribute("data-i18n-title"));
       if (m) el.setAttribute("title", m);
+    });
+    root.querySelectorAll("[data-i18n-aria-label]").forEach(function (el) {
+      var m = t(el.getAttribute("data-i18n-aria-label"));
+      if (m) el.setAttribute("aria-label", m);
     });
     root.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
       var m = t(el.getAttribute("data-i18n-placeholder"));

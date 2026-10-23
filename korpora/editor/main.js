@@ -10,6 +10,8 @@ import { $, $$, sha256, localDate } from './dom.js';
 import {
   renderTypes,
   renderParams,
+  showType,
+  bindTypebox,
   renderHardwareOptions,
   writeForm,
   bindForm,
@@ -25,7 +27,9 @@ import { bindPanels } from './bind-panels.js';
 import { renderCatalog, bindCatalog } from './render-catalog.js';
 import { createViewer } from './bind-view.js';
 import { bindFullscreens } from './fullscreen.js';
+import { bindMenus } from './menus.js';
 import { createSaver } from './saver.js';
+import { explainProblems } from './problems.js';
 import {
   loadCatalog,
   driftOf,
@@ -37,8 +41,8 @@ import {
   guardLeaving,
 } from './session.js';
 import { renderHeader } from './header.js';
+import { TABS, showTab, bindTabs, followHash } from './tabs.js';
 
-const TABS = ['view', 'bom', 'drill', 'nest', 'draw', 'cnc', 'cat'];
 const boot = JSON.parse($('#boot').textContent);
 const root = $('#main');
 const csrf = root.dataset.csrf;
@@ -60,6 +64,7 @@ const state = {
   savedAt: boot.updatedAt, // the version this editor opened: the server saves only over it
   saving: false,
   conflict: false,
+  problem: null, // why the server refused the last save, until a save goes through: 'session', 'plan'…
   blockers: [],
   drift: [], // hardware and decors of the saved project that have left the catalog, until it is saved
 };
@@ -92,7 +97,7 @@ function renderTab(id) {
 /* ---------- saving ---------- */
 
 // A change still waiting for its recompute is applied first, so Ctrl+S right after typing saves the new value.
-const { isDirty, showState, save } = createSaver({
+const saver = createSaver({
   state,
   boot,
   csrf,
@@ -103,7 +108,11 @@ const { isDirty, showState, save } = createSaver({
     showDrift([]);
     void recompute();
   },
+  onProblem: (kind) => explain(kind),
 });
+const { isDirty, showState, save } = saver;
+// a refused save says why and offers the way out (a copy, a sign-in in a new tab, the plans)
+const explain = explainProblems({ state, saver, text });
 
 /* ---------- model ---------- */
 
@@ -124,13 +133,15 @@ async function recompute(writeFocused = false) {
     bom = buildBom(model);
     blockers = cncBlockers(model, nesting);
   } catch {
-    // a value the engine cannot build is undone, so it is never saved; a first load has nothing to fall back to
-    showError(text.engineFailed);
-    if (!state.model) lockForReadingOnce(text.engineFailed);
-    else {
-      state.spec = state.model.spec;
-      writeForm(form, state.spec, true);
+    // a first load has nothing to fall back to: the project opens for reading only (no value was changed)
+    if (!state.model) {
+      lockForReadingOnce(text.openFailed);
+      return;
     }
+    // a value the engine cannot build is undone, so it is never saved
+    showError(text.engineFailed);
+    state.spec = state.model.spec;
+    writeForm(form, state.spec, true);
     return;
   }
   try {
@@ -173,14 +184,7 @@ async function flushPending() {
 
 function selectTab(id, focus = false) {
   state.tab = id;
-  for (const t of $$('[role="tab"]')) {
-    const on = t.dataset.tab === id;
-    t.setAttribute('aria-selected', String(on));
-    t.tabIndex = on ? 0 : -1;
-    if (on && focus) t.focus();
-  }
-  for (const p of $$('[role="tabpanel"]')) p.hidden = p.id !== `panel-${id}`;
-  if (history.replaceState) history.replaceState(null, '', `#${id}`);
+  showTab(id, focus);
   if (id !== 'cnc') stopSim();
   renderTab(id);
   if (id === 'view') viewer?.resize();
@@ -189,13 +193,16 @@ function selectTab(id, focus = false) {
 function bindUi() {
   renderTypes($('#type-picker'));
   renderParams($('#param-fields'), state.spec.type);
+  showType(state.spec.type);
   renderHardwareOptions();
   bindRailbox($('.railbox', form));
+  bindTypebox($('.typebox', form));
   bindForm(form, (key, value, commit) => {
     if (readOnly) return;
     if (key === 'type') {
       state.spec = withType(state.spec, value);
       renderParams($('#param-fields'), value);
+      showType(value);
       void recompute(true);
       return;
     }
@@ -226,22 +233,15 @@ function bindUi() {
     void recompute(true);
   });
 
-  for (const t of $$('[role="tab"]')) {
-    t.addEventListener('click', () => selectTab(t.dataset.tab));
-    t.addEventListener('keydown', (ev) => {
-      const i = TABS.indexOf(t.dataset.tab);
-      if (ev.key === 'ArrowRight') selectTab(TABS[(i + 1) % TABS.length], true);
-      else if (ev.key === 'ArrowLeft') selectTab(TABS[(i + TABS.length - 1) % TABS.length], true);
-      else return;
-      ev.preventDefault();
-    });
-  }
+  bindTabs(selectTab);
 
   bindPanels(state, meta);
   bindCatalog(CATALOG);
 
   // 3D, and full screen for it and the drawings
   viewer = createViewer(text);
+  for (const b of $$('[data-tab-go]'))
+    b.addEventListener('click', () => selectTab(b.dataset.tabGo, true));
   bindFullscreens(text);
 
   // saving and downloads
@@ -259,7 +259,8 @@ function bindUi() {
     // a change still waiting for its recompute counts too
     guardLeaving(() => isDirty() || pending !== null || state.saving);
   }
-  bindDownloads({ save, onBlocked: () => selectTab('cnc', true) });
+  bindDownloads({ save, onBlocked: () => selectTab('cnc', true), text });
+  bindMenus($$('.ed-actions details'));
 }
 
 let locked = false;
@@ -267,7 +268,7 @@ function lockForReadingOnce(message) {
   if (locked) return;
   locked = true;
   readOnly = true;
-  lockForReading(message);
+  lockForReading(message, text.readOnlyState);
 }
 
 /* ---------- boot ---------- */
@@ -282,12 +283,7 @@ async function start() {
   if (!catalog.ok && !readOnly) lockForReadingOnce(text.catalogFailed);
   showDrift(state.drift, { title: text.driftTitle, text: text.driftText });
   writeForm(form, state.spec, true);
-  const tabOfHash = () => location.hash.replace('#', '');
-  selectTab(TABS.includes(tabOfHash()) ? tabOfHash() : 'view');
-  // a link or the address bar can change the tab later too (replaceState in selectTab fires no hashchange)
-  window.addEventListener('hashchange', () => {
-    if (TABS.includes(tabOfHash()) && tabOfHash() !== state.tab) selectTab(tabOfHash());
-  });
+  followHash(selectTab, () => state.tab);
   await recompute(true);
   // what was just loaded counts as saved, even if this browser's catalog normalizes it slightly differently
   state.savedHash = state.hash;

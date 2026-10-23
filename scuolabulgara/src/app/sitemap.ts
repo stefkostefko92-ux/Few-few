@@ -3,6 +3,9 @@ import { LOCALES, LOCALE_META } from "@/lib/i18n";
 
 const PATHS = ["", "/privacy", "/cookie", "/termini"];
 
+// Built per request, not at build time: SITE_URL (the domain) comes from the server .env.
+export const dynamic = "force-dynamic";
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = process.env.SITE_URL || "https://www.scuolabulgaramilano.it";
   const entries: MetadataRoute.Sitemap = [];

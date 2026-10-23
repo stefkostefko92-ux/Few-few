@@ -1,10 +1,14 @@
 Supreme AdBlock blokkerer annonser overalt – YouTube-videoannonser, bannere, popup-vinduer og sporere – uten å følge med på hva du gjør.
 
+• Signerte filteroppdateringer to ganger om dagen: nye annonsenettverk håndteres innen få timer, uten fjernkode.
 • YouTube-annonser stoppes ved kilden, så videoene bare spilles av.
-• EasyList, EasyPrivacy og andre åpne filterlister er innebygd, i tillegg til listen for ditt språk (31 regionale lister).
 • Cookie-bannere: den trykker på Avvis for deg, fjerner gjenværende uskarphet og rullelås, og trykker aldri på en påloggings-, OAuth- eller betalingsknapp.
+• Ingen konto, ingen telemetri, ingen datainnsamling, og ingen annonse slippes gjennom mot betaling. Global Privacy Control ber alle nettsteder om ikke å selge eller dele dataene dine.
+• EasyList, EasyPrivacy og andre åpne filterlister er innebygd, i tillegg til listen for ditt språk (31 regionale lister).
+• Sponsede innlegg på Facebook, Instagram og Threads skjules.
 • Fokusmodus: skjul chatbobler, popup-vinduer for nyhetsbrev, forespørsler om varsler, sosiale moduler, KI-popup-vinduer og YouTube Shorts.
 • Anti-adblock-vegger og pop-unders nøytraliseres.
+• Farlige nettsteder: et kjent skadevarenettsted åpner en advarselsside i stedet, og du bestemmer om du vil gå videre.
 • Virker ikke nettstedet? Ett klikk fikser det, eller si fra til oss – ingenting sendes uten at du ser det først.
-• Signerte filteroppdateringer to ganger om dagen: nye annonsenettverk håndteres innen få timer, uten fjernkode.
-• Ingen konto, ingen telemetri, ingen datainnsamling.
+• Bytter du fra uBlock Origin, AdGuard eller Adblock Plus? Ta med de tillatte nettstedene og filtrene dine i én fil.
+• Se hvilke andre nettsteder en side kobler seg til, og blokker ett av dem bare der med ett klikk.

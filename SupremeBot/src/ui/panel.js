@@ -25,17 +25,24 @@
     if (g.theme === 'light') root.classList.add('tb-light');
     if (g.panelPosition === 'left') root.classList.add('tb-left');
 
+    // Liquid-glass lens: displaces the backdrop near the panel's edges (see panel.css
+    // `--glass-bf`). Purely decorative; if the filter or its data: map is blocked the
+    // glass still works, just without the edge refraction.
+    const LENS_MAP = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='700' viewBox='0 0 340 700' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='x' x1='0' x2='1' y1='0' y2='0'%3E%3Cstop offset='0' stop-color='%23f00'/%3E%3Cstop offset='.06' stop-color='%23800'/%3E%3Cstop offset='.94' stop-color='%23800'/%3E%3Cstop offset='1' stop-color='%23000'/%3E%3C/linearGradient%3E%3ClinearGradient id='y' x1='0' x2='0' y1='0' y2='1'%3E%3Cstop offset='0' stop-color='%230f0'/%3E%3Cstop offset='.03' stop-color='%23080'/%3E%3Cstop offset='.97' stop-color='%23080'/%3E%3Cstop offset='1' stop-color='%23000'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='%23000'/%3E%3Crect width='100%25' height='100%25' fill='url(%23x)'/%3E%3Crect width='100%25' height='100%25' fill='url(%23y)' style='mix-blend-mode:screen'/%3E%3C/svg%3E";
+
     root.innerHTML = `
+      <svg class="tb-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs><filter id="tb-lens-9f3a" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feImage href="${LENS_MAP}" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="m"/><feDisplacementMap in="SourceGraphic" in2="m" scale="44" xChannelSelector="R" yChannelSelector="G"/></filter></defs></svg>
       <div class="tb-header">
-        <span class="tb-dot"></span>
+        <svg class="tb-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><defs><radialGradient id="tbm-pnl9f3a-glow" cx="16" cy="14" r="17" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#27e08a" stop-opacity=".34"/><stop offset="1" stop-color="#27e08a" stop-opacity="0"/></radialGradient><linearGradient id="tbm-pnl9f3a-blade" x1="12.8" y1="0" x2="19.2" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#cdd6dc"/><stop offset=".47" stop-color="#fff"/><stop offset=".5" stop-color="#7f8a94"/><stop offset="1" stop-color="#b6c0c8"/></linearGradient><linearGradient id="tbm-pnl9f3a-brass" x1="0" y1="17.4" x2="0" y2="20.6" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffe9a0"/><stop offset=".55" stop-color="#e2b246"/><stop offset="1" stop-color="#9a6a1a"/></linearGradient><linearGradient id="tbm-pnl9f3a-grip" x1="14.4" y1="0" x2="17.6" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#4b3223"/><stop offset=".45" stop-color="#a77852"/><stop offset="1" stop-color="#3a271b"/></linearGradient><radialGradient id="tbm-pnl9f3a-gem" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#d9ffec"/><stop offset=".35" stop-color="#27e08a"/><stop offset="1" stop-color="#087a49"/></radialGradient></defs><rect x=".6" y=".6" width="30.8" height="30.8" rx="8" fill="#0a0b0d" stroke="#27e08a" stroke-opacity=".7" stroke-width="1.1"/><rect x=".6" y=".6" width="30.8" height="30.8" rx="8" fill="url(#tbm-pnl9f3a-glow)"/><g><path d="M16 2.3 L19.2 8 V17.6 H12.8 V8 Z" fill="url(#tbm-pnl9f3a-blade)"/><path d="M16 5.2 V15.8" stroke="#56626c" stroke-width=".6" stroke-opacity=".75" stroke-linecap="round"/><rect x="4.6" y="17.4" width="22.8" height="3.2" rx="1.6" fill="url(#tbm-pnl9f3a-brass)"/><rect x="4.6" y="19.6" width="22.8" height="1" rx=".5" fill="#4a2f06" opacity=".45"/><rect x="14.4" y="20.4" width="3.2" height="5" rx=".8" fill="url(#tbm-pnl9f3a-grip)"/><path d="M14.4 22.1 L17.6 21.2 M14.4 23.7 L17.6 22.8 M14.4 25.3 L17.6 24.4" stroke="#1d1109" stroke-width=".6" opacity=".85"/><circle cx="16" cy="27" r="2.9" fill="#e2b246"/><circle cx="16" cy="27" r="2.1" fill="url(#tbm-pnl9f3a-gem)"/><circle cx="15.3" cy="26.3" r=".55" fill="#fff" opacity=".9"/></g></svg>
+        <span class="tb-dot" aria-hidden="true"></span>
         <span class="tb-title">${I18n.t('extName')}</span>
-        <button class="tb-icon-btn" data-act="collapse" title="${I18n.t('uiCollapse')}">-</button>
-        <button class="tb-icon-btn" data-act="hide" title="${I18n.t('uiHide')}">×</button>
+        <button class="tb-icon-btn" data-act="collapse" title="${I18n.t('uiCollapse')}" aria-label="${I18n.t('uiCollapse')}">\u2013</button>
+        <button class="tb-icon-btn" data-act="hide" title="${I18n.t('uiHide')}" aria-label="${I18n.t('uiHide')}">×</button>
       </div>
       <div class="tb-body">
         <div class="tb-license" data-el="license">
           <span data-el="license-text"></span>
-          <a class="tb-link" data-act="subscribe">${I18n.t('uiSubscribe')}</a>
+          <a class="tb-link" data-act="subscribe" role="button" tabindex="0">${I18n.t('uiSubscribe')}</a>
         </div>
         <div class="tb-paywall">
           <h3>${I18n.t('paywallTitle')}</h3>
@@ -49,25 +56,25 @@
           <input class="tb-key" data-el="key" placeholder="${I18n.t('uiKeyPlaceholder')}" />
           <button class="tb-activate" data-act="activate">${I18n.t('uiActivate')}</button>
           <div class="tb-pay-msg" data-el="pay-msg"></div>
-          <div class="tb-legal"><span data-el="merchant"></span> · <a class="tb-link" data-act="open-terms">${I18n.t('legalTerms')}</a> · <a class="tb-link" data-act="open-privacy">${I18n.t('legalPrivacy')}</a></div>
-          <a class="tb-link" data-act="paywall-close" style="cursor:pointer;font-size:11px">${I18n.t('uiClose')}</a>
+          <div class="tb-legal"><span data-el="merchant"></span> · <a class="tb-link" data-act="open-terms" role="button" tabindex="0">${I18n.t('legalTerms')}</a> · <a class="tb-link" data-act="open-privacy" role="button" tabindex="0">${I18n.t('legalPrivacy')}</a></div>
+          <a class="tb-link" data-act="paywall-close" role="button" tabindex="0">${I18n.t('uiClose')}</a>
         </div>
         <div class="tb-controls">
           <button class="tb-btn tb-start" data-act="start">${I18n.t('uiStart')}</button>
           <button class="tb-btn tb-pause" data-act="pause" disabled>${I18n.t('uiPause')}</button>
           <button class="tb-btn tb-stop" data-act="stop" disabled>${I18n.t('uiStop')}</button>
         </div>
-        <div class="tb-status" data-el="status">${I18n.t('uiIdle')}</div>
+        <div class="tb-status" data-el="status" role="status">${I18n.t('uiIdle')}</div>
         <div class="tb-stats" data-el="stats"></div>
         <div class="tb-modules" data-el="modules"></div>
         <div class="tb-inputs">
           <input class="tb-input" data-el="in-pvp" placeholder="${I18n.t('uiPvpPlaceholder')}" />
           <input class="tb-input" data-el="in-circle" placeholder="${I18n.t('uiCirclePlaceholder')}" />
         </div>
-        <div class="tb-log" data-el="log"></div>
+        <div class="tb-log" data-el="log" role="log" tabindex="0"></div>
         <div class="tb-footer">
           <span data-el="proto">${I18n.t('uiProtoWaiting')}</span>
-          <a data-act="options">${I18n.t('uiOptions')}</a>
+          <a data-act="options" role="button" tabindex="0">${I18n.t('uiOptions')}</a>
         </div>
       </div>`;
 
@@ -75,6 +82,13 @@
     logEl = root.querySelector('[data-el="log"]');
 
     root.addEventListener('click', onClick);
+    // Keyboard: Enter/Space activates the non-<button> controls (chips, text actions).
+    root.addEventListener('keydown', (ev) => {
+      const t = ev.target;
+      if ((ev.key === 'Enter' || ev.key === ' ') && t && t.getAttribute && t.getAttribute('data-act') && t.tagName !== 'BUTTON') {
+        ev.preventDefault(); t.click();
+      }
+    });
     makeDraggable(root.querySelector('.tb-header'), root);
 
     renderModules();
@@ -171,7 +185,7 @@
       const mer = root.querySelector('[data-el="merchant"]');
       if (mer) mer.textContent = I18n.t('legalMerchant', [lic.payment.merchant || 'Carbon Stealth VCC']);
     }
-    bar.classList.toggle('tb-lic-expired', lic.status === 'expired' || lic.wrongDevice);
+    bar.classList.toggle('tb-lic-expired', !!(lic.status === 'expired' || lic.wrongDevice));
     if (lic.wrongDevice) text.innerHTML = `<b>${I18n.t('licWrongDevice')}</b>`;
     else if (lic.status === 'lifetime') text.innerHTML = I18n.t('licLifetime');
     else if (lic.status === 'active') text.innerHTML = I18n.t('licActive', [String(lic.daysLeft)]);
@@ -183,6 +197,8 @@
   function hide() {
     root.style.display = 'none';
     const fab = el('div'); fab.id = 'tanoth-bot-fab'; fab.textContent = I18n.t('extNameShort');
+    fab.setAttribute('role', 'button'); fab.tabIndex = 0;
+    fab.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); fab.click(); } });
     fab.onclick = () => { root.style.display = ''; fab.remove(); };
     document.body.appendChild(fab);
   }
@@ -193,7 +209,7 @@
     settings[id].enabled = !settings[id].enabled;
     await Storage.save(settings);
     renderModules();
-    Logger.info(I18n.t(settings[id].enabled ? 'logModuleOn' : 'logModuleOff', [id]));
+    Logger.info(I18n.t(settings[id].enabled ? 'logModuleOn' : 'logModuleOff', [I18n.t('mod_' + id)]));
   }
 
   function setupInputs() {
@@ -238,6 +254,9 @@
       const on = settings[id]?.enabled;
       const chip = el('span', 'tb-chip' + (on ? ' tb-on' : ''), I18n.t('mod_' + id));
       chip.setAttribute('data-act', 'mod:' + id);
+      chip.setAttribute('role', 'switch');
+      chip.setAttribute('aria-checked', on ? 'true' : 'false');
+      chip.tabIndex = 0;
       wrap.appendChild(chip);
     });
   }
@@ -258,8 +277,11 @@
   }
 
   function renderStatus(st) {
-    root.classList.toggle('tb-running', st.running && !st.paused);
-    root.classList.toggle('tb-paused', st.paused);
+    // On a break the engine is "running" but idle by design: show it as its own
+    // calm state, never with the live running glow.
+    root.classList.toggle('tb-running', !!(st.running && !st.paused && !st.onBreak));
+    root.classList.toggle('tb-paused', !!st.paused);
+    root.classList.toggle('tb-break', !!(st.running && !st.paused && st.onBreak));
     const startBtn = root.querySelector('[data-act="start"]');
     const stopBtn = root.querySelector('[data-act="stop"]');
     const pauseBtn = root.querySelector('[data-act="pause"]');
@@ -270,12 +292,18 @@
 
     const status = root.querySelector('[data-el="status"]');
     const returnAt = TB.State.get().adventureReturnAt || 0;
-    const waiting = returnAt > Date.now();
+    // "Next action in" = the earliest moment the next action CAN happen: the
+    // scheduler's next evaluation (programmed interval / humanized delay), but
+    // never before the game's busy timer ends - while the character is on a
+    // 14-minute task the scheduler's idle polls are not actions and must not
+    // be shown as "in 8s".
+    const nextTick = st.nextAt || 0;
+    const nextAt = returnAt > Date.now() ? Math.max(returnAt, nextTick) : (nextTick > Date.now() ? nextTick : 0);
     if (!st.running) status.textContent = I18n.t('uiIdle');
     else if (st.onBreak) status.textContent = I18n.t('uiOnBreak');
     else if (st.paused) status.textContent = I18n.t('uiPaused');
     else if (st.currentAction) status.innerHTML = I18n.t('uiRunningAction', [I18n.t('mod_' + st.currentAction)]);
-    else if (waiting) status.innerHTML = I18n.t('uiNextIn', [`<b>${fmtDuration(returnAt - Date.now())}</b>`]);
+    else if (nextAt) status.innerHTML = I18n.t('uiNextIn', [`<b>${fmtDuration(nextAt - Date.now())}</b>`]);
     else status.textContent = I18n.t('uiRunning');
   }
 
@@ -330,6 +358,7 @@
   }
 
   function formatNum(n) {
+    if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
     if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
     if (n >= 1e3) return (n / 1e3).toFixed(1) + 'k';
     return String(n);

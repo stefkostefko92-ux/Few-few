@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokkolja a hirdetéseket mindenhol: YouTube-videóreklámok, bannerek, felugró ablakok, nyomkövetők, cookie-sávok és adblock-falak."
+    "message": "Reklámblokkoló YouTube-hoz és a webhez: videóreklámok, bannerek, felugrók, nyomkövetők, cookie-sávok (Elutasítás) és adblock-falak."
   },
   "byCarbon": {
     "message": "készítette: Carbon Stealth"
@@ -118,6 +118,27 @@
   "support": {
     "message": "Támogatás"
   },
+  "rate": {
+    "message": "Értékelés"
+  },
+  "rateTitle": {
+    "message": "Értékelje a Supreme AdBlockot a Chrome Internetes áruházban"
+  },
+  "reviewBlocked": {
+    "message": "Eddig blokkolt kérések: $1"
+  },
+  "reviewAsk": {
+    "message": "Ha a Supreme AdBlock hasznos Önnek, egy rövid értékelés a Chrome Internetes áruházban segít másoknak megtalálni."
+  },
+  "reviewLeave": {
+    "message": "Értékelés írása"
+  },
+  "reviewLater": {
+    "message": "Most nem"
+  },
+  "reviewNever": {
+    "message": "Ne kérdezze újra"
+  },
   "filtersCount": {
     "message": "$1+ szűrő",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "Elrejti a „kapcsolja ki a reklámblokkolót” falakat, és helyreállítja az oldalt"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Elrejti a „Szponzorált” bejegyzéseket a Facebookon és az Instagramon"
+    "message": "Elrejti a „Szponzorált” bejegyzéseket a Facebookon, az Instagramon és a Threadsen"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Eltávolítja az utm_*, fbclid, gclid és más kattintásazonosítókat a megnyitott linkekből"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokkolja az ismert kártevő domaineket (az abuse.ch URLhaus listája)"
+    "message": "Figyelmeztet, mielőtt egy ismert kártevő webhely megnyílna, és blokkolja, amit az oldalak ilyen webhelyekről töltenek be (az abuse.ch URLhaus listája)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Letiltja a Google Topics, FLoC és Protected Audience hirdetési API-kat minden webhelyen"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Adományozás Revoluttal"
+  },
+  "opt_review": {
+    "message": "Értékelési emlékeztetők"
+  },
+  "opt_review_sub": {
+    "message": "Egy kis ★ hivatkozás a Supreme AdBlock ablakának alján, és legfeljebb kétszer egy rövid kérés ugyanott, hogy értékelje a Chrome Internetes áruházban. Soha nem webhelyeken, soha nem értesítésként."
   },
   "opt_made_by": {
     "message": "készítette: Carbon Stealth"
@@ -620,6 +647,12 @@
     "message": "Kattintson a címsor melletti puzzle-darab ikonra, és rögzítse a Supreme AdBlockot. Ezután egy kattintással láthatja, mit blokkolt a bővítmény az oldalon.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Rögzítve az eszköztáron"
+  },
+  "welPinnedText": {
+    "message": "Egy kattintás az ikonjára megmutatja, mit blokkolt a bővítmény az oldalon."
+  },
   "welBrokenTitle": {
     "message": "Ha egy webhely hibásan jelenik meg",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -643,5 +676,128 @@
   "welDone": {
     "message": "Értem",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Megengedve · még $1 perc"
+  },
+  "hiddenHere": {
+    "message": "Itt elrejtett elemek: $1 · Utolsó visszavonása"
+  },
+  "cmd_toggle_site": {
+    "message": "Blokkolás be- vagy kikapcsolása ezen a webhelyen"
+  },
+  "cmd_pause": {
+    "message": "Védelem szüneteltetése vagy folytatása (30 perc)"
+  },
+  "cmd_picker": {
+    "message": "Elem elrejtése ezen az oldalon"
+  },
+  "rep_fix_hour": {
+    "message": "Hirdetések engedélyezése itt 1 órára"
+  },
+  "rep_done_hour": {
+    "message": "A hirdetések 1 órára engedélyezve vannak ezen a webhelyen. Újratöltve – megjavult?"
+  },
+  "opt_last30": {
+    "message": "Az elmúlt 30 nap"
+  },
+  "opt_last30_sum": {
+    "message": "Blokkolt: $1 · Cookie-sávok: $2"
+  },
+  "opt_last30_empty": {
+    "message": "A napi összesítései böngészés közben itt jelennek meg."
+  },
+  "opt_last30_sub": {
+    "message": "Csak napi összesítések, 30 napig ezen az eszközön tárolva. Se webhelyek, se címek."
+  },
+  "opt_gpc_sub": {
+    "message": "Minden meglátogatott webhelyet megkér, hogy ne adja el és ne ossza meg az adatait (a Sec-GPC jelzés, amelynek betartására egyes adatvédelmi törvények kötelezik a webhelyeket). Az Ön által engedélyezett webhelyekre nem küldi el."
+  },
+  "opt_shortcuts": {
+    "message": "Billentyűparancsok"
+  },
+  "opt_shortcuts_change": {
+    "message": "Billentyűparancsok módosítása"
+  },
+  "opt_shortcut_none": {
+    "message": "Nincs beállítva"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefoxban: Kiegészítők és témák → ⚙ → Kiegészítő-gyorsbillentyűk kezelése."
+  },
+  "opt_import_foreign": {
+    "message": "Importálás másik hirdetésblokkolóból"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Az uBlock Originről, az AdGuardról vagy az Adblock Plusról vált át? Válassza ki annak biztonsági mentési fájlját: az Ön által engedélyezett webhelyek és a saját szűrői ide kerülnek. Semmi sem íródik felül."
+  },
+  "opt_import_foreign_done": {
+    "message": "Engedélyezett webhelyek: $1 · Hozzáadott szűrők: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Kihagyva (itt nem alkalmazható): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Ez a fájl nem olyan biztonsági mentés, amelyet be tudunk olvasni."
+  },
+  "welQuickTitle": {
+    "message": "Szabja személyre"
+  },
+  "welQuickSub": {
+    "message": "Nem kötelező: már most is működik. Bármelyiket később módosíthatja a Beállításokban."
+  },
+  "blk_page_title": {
+    "message": "Webhely blokkolva – Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Ez a webhely kárt tehet az eszközében"
+  },
+  "blk_text": {
+    "message": "A Supreme AdBlock megállította ezt az oldalt, mert a webhely szerepel az URLhaus listán, amely a kártevőket terjesztő címek nyilvános listája."
+  },
+  "blk_back": {
+    "message": "Vissza"
+  },
+  "blk_continue": {
+    "message": "Folytatás mindenképp"
+  },
+  "blk_note": {
+    "message": "Ha folytatja, csak ennek a webhelynek az oldalai jutnak át, amíg be nem zárja a böngészőt."
+  },
+  "blk_why": {
+    "message": "Miért szerepel a listán? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Kapcsolatok ezen az oldalon"
+  },
+  "conn_empty": {
+    "message": "Ez az oldal semmit sem töltött be más webhelyekről."
+  },
+  "conn_block": {
+    "message": "Blokkolás itt"
+  },
+  "conn_blocked": {
+    "message": "Itt blokkolva"
+  },
+  "conn_hint": {
+    "message": "Blokkolja, amit ez a webhely innen tölt be: $1"
+  },
+  "opt_conn_title": {
+    "message": "Ön által blokkolt kapcsolatok"
+  },
+  "opt_conn_sub": {
+    "message": "A bővítmény ablakának „Kapcsolatok ezen az oldalon” részéből blokkolva, mindegyik csak a saját webhelyén."
+  },
+  "opt_empty_conn": {
+    "message": "Még semmi sincs blokkolva."
+  },
+  "opt_conn_remove": {
+    "message": "$1 blokkolásának feloldása itt: $2"
+  },
+  "opt_h_danger": {
+    "message": "Kártevő-figyelmeztető oldal"
+  },
+  "opt_h_capacity": {
+    "message": "Szabálykapacitás"
   }
 }
