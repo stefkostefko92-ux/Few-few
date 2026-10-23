@@ -56,7 +56,23 @@ echo -e "${GREEN}  ✓ No placeholder values found${NC}"
 
 # ─── 2. Build and start ──────────────────────────────────────────────────────
 echo -e "\n${YELLOW}[2/4] Building and starting Docker services...${NC}"
-docker compose up -d --build
+# Свежи базови образи (23.10.2026). `up -d --build` НЕ тегли по-нов
+# postgres/redis и билдва върху КЕШИРАНИТЕ node/nginx — сървърът оставаше на
+# образите от първия деплой и пропускаше корекциите по сигурността в Alpine,
+# Postgres и Redis. Мек опит: без мрежа деплоят върви със заредените образи и
+# го казва — не пада заради Docker Hub.
+if docker compose pull --quiet postgres redis; then
+  echo -e "${GREEN}  ✓ postgres/redis — най-новият образ за тага (16-alpine / 7-alpine)${NC}"
+else
+  echo -e "${YELLOW}  ⚠ postgres/redis не се изтеглиха (мрежа?) — продължавам със заредените образи${NC}"
+fi
+if docker compose build --pull; then
+  echo -e "${GREEN}  ✓ backend/bot/frontend — билднати върху свежи базови образи${NC}"
+else
+  echo -e "${YELLOW}  ⚠ build --pull се провали — билдвам върху кешираните базови образи${NC}"
+  docker compose build
+fi
+docker compose up -d
 # Compose понякога оставя стария контейнер („Running“), макар образът да е
 # пребилднат (деплой 07.10.2026: ботът остана на кода от предния ден, а
 # командите се регистрираха от него → /honeypot вместо /bait). Сверяваме

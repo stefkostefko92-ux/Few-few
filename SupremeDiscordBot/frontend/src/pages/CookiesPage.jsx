@@ -7,7 +7,7 @@ export default function CookiesPage() {
   const EMAIL      = import.meta.env.VITE_CONTACT_EMAIL || "legal@carbonstealth.eu";
 
   return (
-    <LegalPage title="Cookie Policy" updated="7 August 2026">
+    <LegalPage title="Cookie Policy" updated="23 October 2026">
       <Seo
         title="Cookie Policy — Supreme Bot"
         description="Cookie Policy for Supreme Bot: a single strictly-necessary session cookie, no advertising or tracking cookies."
@@ -51,7 +51,7 @@ export default function CookiesPage() {
             </thead>
             <tbody className="text-cs-muted">
               <Tr>
-                <Td><code className="bg-cs-panel px-1 rounded">sid</code></Td>
+                <Td><code className="bg-cs-panel px-1 rounded">__Host-sid</code></Td>
                 <Td>Strictly necessary, HTTP-only, Secure</Td>
                 <Td>{COMPANY} (first-party)</Td>
                 <Td>
@@ -77,7 +77,8 @@ export default function CookiesPage() {
           <li><strong>HttpOnly</strong> — The cookie cannot be accessed by JavaScript, protecting against XSS attacks;</li>
           <li><strong>Secure</strong> — The cookie is only transmitted over HTTPS connections;</li>
           <li><strong>SameSite=Lax</strong> — The cookie is not sent with most cross-site requests, mitigating CSRF while remaining compatible with the Discord OAuth login redirect;</li>
-          <li><strong>Path=/</strong> — The cookie is scoped to the entire domain.</li>
+          <li><strong>Path=/</strong> — The cookie is sent for every page of this site;</li>
+          <li><strong>__Host- prefix</strong> — Your browser accepts the cookie only from this exact host, over HTTPS, with Path=/ and without a Domain attribute, so no other site or subdomain can set or overwrite it.</li>
         </ul>
       </S>
 
@@ -166,7 +167,7 @@ export default function CookiesPage() {
       <S title="6. How to Control and Delete Cookies">
         <p>
           You can control cookies through your browser settings. Note that deleting the
-          session cookie (<code className="bg-cs-panel px-1 rounded text-xs">sid</code>) will
+          session cookie (<code className="bg-cs-panel px-1 rounded text-xs">__Host-sid</code>) will
           log you out of the Service.
         </p>
         <p>Browser cookie management guides:</p>

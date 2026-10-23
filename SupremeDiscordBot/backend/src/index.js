@@ -134,6 +134,7 @@ import "./services/scheduler.js"; // Start background jobs
 import { prisma } from "./lib/prisma.js";
 import { csrfOriginGuard } from "./middleware/csrfOrigin.js";
 import { ipKeyGenerator } from "./lib/ipKey.js";
+import { sessionCookieName, sessionCookieOptions, clearLegacySessionCookie } from "./lib/sessionCookie.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -200,6 +201,7 @@ app.use(
 
 const PgSession = connectPgSimple(session);
 
+app.use(clearLegacySessionCookie());
 app.use(
   session({
     store: new PgSession({
@@ -208,14 +210,12 @@ app.use(
       createTableIfMissing: true,
       pruneSessionInterval: 60 * 60, // prune expired sessions every hour (seconds)
     }),
-    name: "sid",
+    name: sessionCookieName(), // „__Host-sid“ в продукция (lib/sessionCookie.js)
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      sameSite: "lax", // "lax" works correctly with OAuth redirects; "strict" breaks them
+      ...sessionCookieOptions(),
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     },
   })

@@ -121,3 +121,38 @@ describe("Redis: паролата не е в argv на health check-а", () => {
     expect(test).toMatch(/grep -q PONG/);
   });
 });
+
+// ─── Втвърдяване 23.10.2026 ─────────────────────────────────────────────────
+describe("контейнерите: без излишни портове, read-only, свежи образи", () => {
+  const compose = readFileSync(join(ROOT, "docker-compose.yml"), "utf8");
+  const live = compose.split("\n").filter((l) => !l.trim().startsWith("#")).join("\n");
+  const block = (svc) => {
+    const start = live.indexOf(`\n  ${svc}:`);
+    const next = live.slice(start + 1).search(/\n {2}[a-z]+:\n/);
+    return live.slice(start, next === -1 ? undefined : start + 1 + next);
+  };
+
+  it("Postgres и Redis НЕ се публикуват на хоста (стига се през docker exec)", () => {
+    for (const svc of ["postgres", "redis"]) {
+      expect(block(svc), `${svc} няма блок — гейтът е сляп`).toContain("image:");
+      expect(block(svc), `${svc} публикува порт`).not.toMatch(/^\s+ports:/m);
+    }
+    // Единственият публикуван порт остава 127.0.0.1:8080 на frontend.
+    expect([...live.matchAll(/^\s+- "([^"]+):\d+"/gm)].map((m) => m[1])).toEqual(["127.0.0.1:8080"]);
+  });
+
+  it("backend, bot и frontend са read-only с /tmp в паметта", () => {
+    for (const svc of ["backend", "bot", "frontend"]) {
+      const b = block(svc);
+      expect(b, svc).toMatch(/^\s+read_only: true$/m);
+      expect(b, `${svc} без tmpfs /tmp — ще падне при първото писане`).toMatch(/tmpfs:\s*\n\s+- \/tmp:rw,noexec,nosuid,size=\d+m/);
+    }
+  });
+
+  it("деплоят тегли свежи базови образи (иначе корекциите по сигурността не идват)", () => {
+    const deploy = readFileSync(join(ROOT, "deploy.sh"), "utf8").split("\n").filter((l) => !l.trim().startsWith("#")).join("\n");
+    expect(deploy).toMatch(/docker compose pull --quiet postgres redis/);
+    expect(deploy).toMatch(/docker compose build --pull/);
+    expect(deploy, "старият `up -d --build` билдваше върху кеша").not.toMatch(/docker compose up -d --build/);
+  });
+});
