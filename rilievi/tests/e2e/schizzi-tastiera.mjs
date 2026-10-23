@@ -88,6 +88,21 @@ export async function checkKeyboard(page, dialog, reopen) {
   if ((await forme.evaluate((d) => d.open)) || !(await active()).summary)
     fail('sketch menus: Enter on a shape does not close "Forme" back to its face');
 
+  // Esc in the middle of a dimension (its two points set): back to its start, the editor stays.
+  await dialog.locator('label[for="schizzo-strumento-quota"]').click();
+  const box = await dialog.locator('canvas').boundingBox();
+  await page.mouse.move(box.x + box.width * 0.1, box.y + box.height * 0.95);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.3, box.y + box.height * 0.95, { steps: 8 });
+  await page.mouse.up();
+  const hint = () => dialog.locator('[data-schizzo-suggerimento]').textContent();
+  const offset = await hint();
+  await page.keyboard.press('Escape');
+  if (!(await dialog.isVisible())) {
+    fail('sketch editor: Esc in a dimension closed the editor');
+    await reopen();
+  } else if ((await hint()) === offset) fail('sketch editor: Esc did not drop the dimension');
+
   const stile = dialog.locator('details[data-schizzo-menu="stile"]');
   await stile.locator('summary').click();
   await page.keyboard.press('Escape');
@@ -144,9 +159,11 @@ export async function checkLayouts(page, editUrl) {
       await tab.mouse.click(...at(0.35, 0.7));
       await onScreen(tab, dialog.locator('#schizzo-valore'), `sketch ${name}: value`);
       await onScreen(tab, dialog.locator('[data-schizzo-valore-ok]'), `sketch ${name}: OK`);
-      const hint = await dialog.locator('.schizzo-editor__suggerimento').boundingBox();
-      const tools = await dialog.locator('.seg--strumenti').boundingBox();
-      if (hint.y + hint.height > tools.y + 1) fail(`sketch ${name}: the hint covers the tools`);
+      // The hint over the tools: its text spills out of its row onto them.
+      const spills = await dialog
+        .locator('.schizzo-editor__suggerimento')
+        .evaluate((p) => p.scrollHeight > p.clientHeight + 1);
+      if (spills) fail(`sketch ${name}: the hint covers the tools`);
       // The soft keyboard leaves the top of the screen: the field and OK stay in it.
       await dialog.evaluate((d) => d.style.setProperty('--vvh', '170px'));
       for (const what of ['#schizzo-valore', '[data-schizzo-valore-ok]']) {
