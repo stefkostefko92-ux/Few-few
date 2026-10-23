@@ -90,6 +90,29 @@ main {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+/* the pin tip: highlighted while the icon isn't pinned, ticked once it is (welcome.js) */
+.steps li {
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.steps li[data-pin="todo"] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--panel));
+}
+.steps .ic-done,
+.steps li[data-pin="done"] .ic-todo {
+  display: none;
+}
+.steps li[data-pin="done"] .ic-done {
+  display: block;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 .steps b {
   display: block;
   font-size: 15px;
@@ -206,7 +229,7 @@ kbd {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .opt input, .opt input::before { transition: none; }
+  .opt input, .opt input::before, .steps li { transition: none; }
 }
 /* Windows high contrast: the system draws a real checkbox; outlines stay visible */
 @media (forced-colors: active) {

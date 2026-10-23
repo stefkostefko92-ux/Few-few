@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-5.5.0.zip
+bash tools/package.sh      # → dist/supreme-adblock-5.5.1.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -59,9 +59,9 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
 
 ## 3. Listing fields (paste as-is)
 
-- **Name:** `Supreme AdBlock`
+- **Name:** `Supreme AdBlock – Ad Blocker` (= `extName` in `_locales/en`; bg/de/it carry one generic word after the dash, every other language stays `Supreme AdBlock`; the store takes it from the package)
 - **Summary (132 max):**
-  `Blocks ads everywhere: YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls.` (= `extDescription` in `_locales/en`; the store takes it from the package)
+  `Ad blocker for YouTube and the web: video ads, banners, pop-ups, trackers, cookie banners (Reject) and anti-adblock walls.` (= `extDescription` in `_locales/en`; the store takes it from the package)
 - **Category:** Privacy & Security (the store's category for ad and tracker blockers; the live
   listing still says *Tools* — change it in the dashboard, see §6)
 - **Language:** English
@@ -197,6 +197,11 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
 > file on the device and keeps only allowed sites and plain domain / `##` filter
 > lines; nothing is sent anywhere.
 >
+> **Uninstall page and the pin tip (5.5.1).** `runtime.setUninstallURL` points to a fixed,
+> static page, `https://adblock.carbonstealth.eu/bye` (help for a broken site, a reinstall
+> link, an email address), with no parameters: no version, id or reason. The welcome page
+> reads `action.getUserSettings().isOnToolbar` only to show whether its "pin it" tip is done.
+>
 > **Review request (5.1.8).** The popup has a small ★ “Rate” link in its footer
 > and, at most twice (no earlier than 7 days after install and 1,000 blocked
 > requests, at least 60 days apart), a dismissible card asking for a Chrome Web
@@ -229,7 +234,7 @@ so this is an **update of the existing item**, not a new one:
    the privacy policy with Google's Limited Use statement goes live, and `filters.json`
    (data only — no `scriptlets` key) is published with a fresh Ed25519 signature. Check
    `https://adblock.carbonstealth.eu/privacy` shows the Limited Use section before you submit.
-1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.5.0.zip`.
+1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.5.1.zip`.
 2. Refresh the listing (§3: description + the new feature bullets) **in every
    language that has its own description** — a package update does NOT replace the
    live text, and an old localised description still saying "100% free" fails the
@@ -266,7 +271,7 @@ so this is an **update of the existing item**, not a new one:
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (5.5.0)
+- [ ] `manifest.json` and `package.json` versions match (5.5.1)
 - [ ] `npm test` (tests/) and `node tools/build_scriptlets.mjs --check` are green
 - [ ] `PW_ROOT=$(npm root -g) npm run test:browser` is green — real Chromium, including the
       back/forward-cache check (the page is restored on Back, with the extension on)

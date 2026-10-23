@@ -267,12 +267,30 @@ export function panelFindings(cfg = {}) {
   return findings;
 }
 
+// Копие ИЗВЪН машината. Дълго то идваше даром от втория VPS (изнасяне към съседа)
+// — и при смяната на двата сървъра с един изчезна БЕЗ нито една аларма: нощният
+// дъмп продължава да минава, възрастта е наред, всичко е зелено, а умре ли дискът
+// (или вземе ли някой root), бекъпът си отива заедно с данните. Чиста функция:
+// `restic` е отделен вход, за да се тества без файловата система.
+export function offsiteFindings(cfg = {}, { restic = false } = {}) {
+  const viaPeer = (cfg.peers || []).length > 0 && Boolean(cfg.backups?.offsite?.enabled);
+  if (viaPeer || restic) return [];
+  return [{
+    id: 'backup-no-offsite',
+    severity: 'high',
+    title: 'Бекъпите живеят само на тази машина',
+    why: 'Няма нито съсед, към който да се изнася копие, нито restic хранилище. Умре ли дискът — или вземе ли някой root — бекъпът си отива заедно с данните. 3-2-1 иска поне едно копие ИЗВЪН машината.',
+    fix: 'Хранилище в ЕС (напр. Hetzner Storage Box) + restic: `RESTIC_REPOSITORY` и `RESTIC_PASSWORD` в /etc/vps-dashboard/restic.env (mode 600), после „Бекъпи“ → restic бекъп и проверка. Или втори сървър като съсед с включено изнасяне.',
+  }];
+}
+
 export async function posture(cfg = {}) {
   const findings = [];
   const add = (f) => findings.push(f);
 
   // Самият панел ПЪРВИ: най-правата услуга на машината.
   for (const f of panelFindings(cfg)) add(f);
+  for (const f of offsiteFindings(cfg, { restic: fs.existsSync('/etc/vps-dashboard/restic.env') })) add(f);
 
   const [sshd, ufw, unattended, listen, f2b, sudoers, passwd] = await Promise.all([
     run('sshd', ['-T'], { timeout: 10000 }),

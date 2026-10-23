@@ -14,6 +14,8 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SRV = join(ROOT, "server");
 const BASE = "https://adblock.carbonstealth.eu";
 const STORE = "https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk";
+// every link to the store carries the closed UTM vocabulary of docs/METRICS.md: site / home_<language>
+const storeOf = (code) => `${STORE}?utm_source=site&amp;utm_medium=home_${code.replace(/-/g, "_")}`;
 const DATE = "2026-10-16";
 
 // path segment, hreflang, the language's own name (for the switcher)
@@ -31,7 +33,7 @@ const urlOf = (code) => BASE + (code ? `/${code}/` : "/");
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 // only <b> survives from the data; {store} becomes the store link
 const rich = (s, d) => esc(s).replace(/&lt;(\/?)b&gt;/g, "<$1b>")
-  .replace("{store}", `<a href="${STORE}" target="_blank" rel="noopener">${esc(d.storeName)}</a>`);
+  .replace("{store}", `<a href="${d._store}" target="_blank" rel="noopener">${esc(d.storeName)}</a>`);
 const plain = (s) => String(s).replace(/<\/?b>/g, "").replace("{store}", "Chrome Web Store");
 
 function check(d, code) {
@@ -65,6 +67,7 @@ const EXTRA_CSS = `
   footer .langs a[aria-current="page"]{color:var(--cream);text-decoration:none}`;
 
 function page(L, d) {
+  d = { ...d, _store: storeOf(L.code) };
   const url = urlOf(L.code);
   const alternates = ALL.map((a) => `<link rel="alternate" hreflang="${a.hreflang}" href="${urlOf(a.code)}" />`).join("\n")
     + `\n<link rel="alternate" hreflang="x-default" href="${BASE}/" />`;
@@ -82,7 +85,7 @@ function page(L, d) {
       },
     ],
   };
-  const cta = `<a class="btn primary" href="${STORE}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4 13.2h6.1L9 22l10.5-11.6h-6.4z"/></svg>${esc(d.cta)}</a>`;
+  const cta = `<a class="btn primary" href="${d._store}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4 13.2h6.1L9 22l10.5-11.6h-6.4z"/></svg>${esc(d.cta)}</a>`;
   const langLinks = ALL.map((a) => `<a href="${a.code ? `/${a.code}/` : "/"}" hreflang="${a.hreflang}" lang="${a.hreflang}"${a.code === L.code ? ' aria-current="page"' : ""}>${esc(a.name)}</a>`).join("\n        ");
   return `<!DOCTYPE html>
 <html lang="${L.hreflang}">
@@ -152,7 +155,7 @@ ${EXTRA_CSS}
             ${cta}
             <a class="btn ghost" href="#features">${esc(d.ctaMore)}</a>
           </div>
-          <a class="verified" href="${STORE}" target="_blank" rel="noopener">
+          <a class="verified" href="${d._store}" target="_blank" rel="noopener">
             <svg class="seal" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12.00,0.80 14.43,2.92 17.60,2.30 18.65,5.35 21.70,6.40 21.08,9.57 23.20,12.00 21.08,14.43 21.70,17.60 18.65,18.65 17.60,21.70 14.43,21.08 12.00,23.20 9.57,21.08 6.40,21.70 5.35,18.65 2.30,17.60 2.92,14.43 0.80,12.00 2.92,9.57 2.30,6.40 5.35,5.35 6.40,2.30 9.57,2.92"/><path d="M7.7 12.3l2.8 2.8 5.8-6"/></svg>
             <span class="vt"><b lang="en">Established Publisher</b> <small>${esc(d.verifiedSmall)}</small></span>
             <svg class="ext" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3h7v7M13 3 4 12"/></svg>

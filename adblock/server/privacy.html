@@ -64,7 +64,7 @@
   .tldr { border: 1px solid #22252c; border-left: 3px solid #00e5ff; border-radius: 10px; padding: 14px 18px; background: #0b0c0f; margin: 18px 0 8px; }
   h2 { font-size: 18px; margin: 34px 0 10px; color: #00e5ff; }
   p { color: #d9d9d2; margin: 10px 0; }
-  ul { margin: 10px 0 10px 22px; color: #d9d9d2; }
+  ul, ol { margin: 10px 0 10px 22px; color: #d9d9d2; }
   li { margin: 4px 0; }
   strong { color: #f5f5f0; }
   code { background: #14161a; border: 1px solid #262a31; border-radius: 4px; padding: 1px 6px; font-size: 14px; }
@@ -76,7 +76,7 @@
 <body>
 <main>
   <header><img src="/shield-96.webp" alt="" width="30" height="30" /><h1>Supreme AdBlock — Privacy Policy</h1></header>
-  <div class="sub">Last updated: 16 October 2026 · applies to the Supreme AdBlock browser extension and to this website</div>
+  <div class="sub">Last updated: 23 October 2026 · applies to the Supreme AdBlock browser extension and to this website</div>
 
   <div class="tldr"><p><strong>In short:</strong> your browsing data never leaves your device. The extension has no account, no analytics and no telemetry. The only automatic network request to us is a filter update about twice a day; like any download it reaches our server with your IP address, and we do not log it. Lists you choose to add (a subscription, or a regional list from its author) are also refreshed from their own address.</p></div>
 
@@ -110,7 +110,18 @@
   <p><strong>Leaving a review (only if you click).</strong> The small ★ link and the review request in the popup open the extension's Chrome Web Store page in a new tab, like any link. The extension itself sends nothing; what you write there is handled by Google under its own terms. You can switch these reminders off in Settings.</p>
   <p id="danger"><strong>Dangerous sites (on by default).</strong> When you open an address on URLhaus (abuse.ch's public list of malware sites, built into the extension), a warning page of the extension opens instead; the address is checked on your device and nothing is sent. Only if you click <em>Why is it listed?</em> does your browser open that site's URLhaus entry on urlhaus.abuse.ch. You can switch this off in Settings (Malware protection).</p>
   <p id="gpc"><strong>Global Privacy Control (on by default).</strong> Unless you switch it off in Settings, your browser adds the header <code>Sec-GPC: 1</code> to its requests to the sites you visit, and pages can read <code>navigator.globalPrivacyControl</code>. It asks those sites not to sell or share your personal data. The signal is the same for everyone and carries no identifier, so it says nothing about you; it is not sent on sites you allowed or while protection is paused.</p>
+  <p id="uninstall"><strong>The page after removal.</strong> When you remove the extension, your browser opens adblock.carbonstealth.eu/bye in a new tab: a static page with fixes for common problems, a link to install it again and our email address. The address is the same for everyone and carries no identifier, no version and no reason; like the rest of this website, the visit is not logged and the page sets no cookies.</p>
   <p>There are no other requests: no analytics, no crash reports, no "phone home".</p>
+
+  <h2 id="verify">Check it yourself</h2>
+  <p>You do not have to take our word for any of this. In Chrome, Edge or Brave:</p>
+  <ol>
+    <li>Open <code>chrome://extensions</code> (in Edge, <code>edge://extensions</code>) and switch on <strong>Developer mode</strong>.</li>
+    <li>Under Supreme AdBlock, next to <strong>Inspect views</strong>, click <strong>service worker</strong>. The browser's developer tools open for the extension itself.</li>
+    <li>Choose the <strong>Network</strong> tab and keep it open. In the extension's Settings, click <strong>Update now</strong>: you will see exactly two requests to us, <code>filters.json</code> and <code>filters.json.sig</code>, with no cookie and nothing about you in the address. Browse as usual: nothing else appears, unless you added a filter list or turned one on from its author, which then comes from that list's own address.</li>
+    <li>Open <a href="/filters.json">filters.json</a> in a tab to read what was downloaded: plain JSON with domain names, CSS selectors and YouTube field names. Its Ed25519 signature is <code>filters.json.sig</code>, next to it; the public keys that check it are in <code>background.js</code> (<code>SIG_PUBKEYS_B64</code>).</li>
+  </ol>
+  <p>The code itself is in the package, not minified, and readable from the same developer tools (<strong>Sources</strong>). The source is also public, with the tests that check these promises: <a href="https://github.com/stefkostefko92-ux/Few-few/tree/main/adblock">github.com/stefkostefko92-ux/Few-few</a> (folder <code>adblock</code>).</p>
 
   <h2 id="report">Reporting a broken site</h2>
   <p>The "Site broken?" page first offers fixes that stay on your device. If you choose to tell us, the extension sends nothing: it opens a message in <strong>your own email app</strong>, and you see every word before you send it — the site name (the full address only if you tick it), your description, the extension and browser version, and which lists and features are on. What you send reaches <a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a> with your email address; we use it only to fix the site and answer you, and delete it within 12 months. Legal basis: our legitimate interest in keeping the extension working, Art. 6(1)(f) GDPR.</p>

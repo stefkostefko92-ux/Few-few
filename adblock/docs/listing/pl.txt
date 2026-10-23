@@ -1,14 +1,14 @@
 Supreme AdBlock blokuje reklamy wszędzie — reklamy wideo na YouTube, banery, wyskakujące okna i trackery — i nie śledzi tego, co robisz.
 
+• Podpisane aktualizacje filtrów dwa razy dziennie: nowe sieci reklamowe są obsługiwane w ciągu kilku godzin, bez zdalnego kodu.
 • Reklamy na YouTube są zatrzymywane u źródła, więc filmy po prostu się odtwarzają.
+• Banery cookies: rozszerzenie klika za Ciebie „Odrzuć”, usuwa pozostałe rozmycie i blokadę przewijania i nigdy nie klika przycisku logowania, OAuth ani płatności.
+• Bez konta, bez telemetrii, bez zbierania danych i żadna reklama nie jest przepuszczana za opłatą. Global Privacy Control prosi każdą witrynę, aby nie sprzedawała ani nie udostępniała Twoich danych.
 • Wbudowane są EasyList, EasyPrivacy i inne otwarte listy filtrów, a także lista dla Twojego języka (31 list regionalnych).
 • Posty sponsorowane na Facebooku, Instagramie i Threads są ukrywane.
-• Banery cookies: rozszerzenie klika za Ciebie „Odrzuć”, usuwa pozostałe rozmycie i blokadę przewijania i nigdy nie klika przycisku logowania, OAuth ani płatności.
 • Tryb skupienia: ukrywa dymki czatu, wyskakujące okna newsletterów, prośby o powiadomienia, widżety społecznościowe, wyskakujących asystentów AI i YouTube Shorts.
 • Blokady adblocka i okna pop-under są neutralizowane.
 • Niebezpieczne witryny: zamiast znanej złośliwej witryny otwiera się strona z ostrzeżeniem, a Ty decydujesz, czy przejść dalej.
 • Strona nie działa? Jedno kliknięcie ją naprawia — albo daj nam znać; nic nie zostanie wysłane, zanim tego nie zobaczysz.
 • Przechodzisz z uBlock Origin, AdGuard lub Adblock Plus? Przenieś dozwolone witryny i filtry jednym plikiem.
 • Zobacz, z jakimi innymi witrynami łączy się strona, i zablokuj dowolną z nich tylko tam jednym kliknięciem.
-• Podpisane aktualizacje filtrów dwa razy dziennie: nowe sieci reklamowe są obsługiwane w ciągu kilku godzin, bez zdalnego kodu.
-• Bez konta, bez telemetrii, bez zbierania danych, a Global Privacy Control prosi każdą witrynę, aby nie sprzedawała ani nie udostępniała Twoich danych.
