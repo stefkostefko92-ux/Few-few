@@ -51,6 +51,11 @@ export default async function BiznesPage({
         crumbs={[{ name: "Местен бизнес", path: "/biznes" }]}
       />
       <div className="container-content py-10">
+        <div className="mb-6">
+          <Link href="/biznes/nova" className="btn-primary min-h-[44px]">
+            Добавете своя бизнес — безплатно
+          </Link>
+        </div>
         <div className="mb-6 flex flex-wrap gap-2">
           <Link
             href="/biznes"
