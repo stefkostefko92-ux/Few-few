@@ -24,11 +24,17 @@ future addition, or left out on purpose.
 | Guild donation | `Guild_SpendGold` |
 | Auto-login | session-fault detection + reload |
 
-## Read-only / support
+Cave and Dragon only run when they are **free**: when the details report a
+`bloodstone_cost` above 0 the run is skipped. `BuyLiberationEnergy` (paid in
+bloodstones) only runs if you switch on *Buy energy with bloodstones*.
 
-`GetPvpData`, `GetHighscore`, `GetGuildHighscore`, `GetShortUserdata`,
-`GetShortGuilddata`, `GetGuild`, `GetParty`, `GetPartyItems`, `GetMount`,
-`GetCompanionData`, `GetAuctionItem`, `GetAuctionDetails`.
+## Not used yet (read-only)
+
+The bot does **not** call these today. They are harmless reads, listed so it is
+clear what the client offers: `GetPvpData`, `GetHighscore`,
+`GetGuildHighscore`, `GetShortUserdata`, `GetShortGuilddata`, `GetGuild`,
+`GetParty`, `GetPartyItems`, `GetMount`, `GetCompanionData`, `GetAuctionItem`,
+`GetAuctionDetails`.
 
 ## Possible future additions
 
@@ -59,6 +65,8 @@ value model, before they can be done well:
 | Cancel tasks | `CancelAdventure`, `CancelDragon`, `CancelIllusionCave`, `CancelLiberation`, `CancelWork`, `CancelEventQuest` | the bot waits tasks out |
 
 Every repeatable activity that yields gold, xp or loot is automated. What's left
-out is money/bloodstone spending, anything that touches other players, account
+out is money spending, bloodstone spending you did not switch on yourself
+(extra adventures, circle in bloodstones, arena cooldown skips and energy are
+all opt-in), anything that touches other players, account
 operations, and a handful of gear/merchant conveniences that need a live
 response to wire up.

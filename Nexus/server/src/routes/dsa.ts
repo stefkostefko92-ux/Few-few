@@ -46,6 +46,9 @@ const router = Router();
     );
     CREATE INDEX IF NOT EXISTS idx_dsa_status ON dsa_notices(status, created_at DESC);
   `);
+  // Чл. 16(5): кога подателят е уведомен за решението (NULL = не е/няма имейл).
+  const cols = new Set((db.prepare('PRAGMA table_info(dsa_notices)').all() as { name: string }[]).map((c) => c.name));
+  if (!cols.has('notifier_notified_at')) db.exec('ALTER TABLE dsa_notices ADD COLUMN notifier_notified_at INTEGER');
 }
 
 const noticeSchema = z.object({
@@ -82,7 +85,10 @@ router.post('/notice', (req, res) => {
       data.description,
       data.notifierEmail || null,
       data.notifierName || null,
-      (req as any).ipCountry || null,
+      // Държавата от гео мидълуера (middleware/geo.ts → detectedCountry) —
+      // по нея се избира езикът на уведомлението по чл. 16(5). Преди се
+      // четеше несъществуващото req.ipCountry → винаги NULL.
+      /^[A-Z]{2}$/.test(req.detectedCountry || '') && req.detectedCountry !== 'XX' ? req.detectedCountry : null,
       Date.now(),
     );
   const ticketId = info.lastInsertRowid as number;
@@ -104,6 +110,7 @@ router.post('/notice', (req, res) => {
     statementOfReasons:
       'Thank you. Your notice has been logged and will be reviewed by our trust & safety team. ' +
       'If the reported content is acted on, the affected user receives a statement of reasons per DSA Art. 17. ' +
+      'If you left an email address, we will notify you of our decision (DSA Art. 16(5)). ' +
       'You may contact us about this notice using the reference above.',
   });
 });

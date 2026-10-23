@@ -1,10 +1,14 @@
 Supreme AdBlock bloķē reklāmas visur — YouTube video reklāmas, banerus, uznirstošos logus un izsekotājus — un nevēro, ko jūs darāt.
 
 • YouTube reklāmas tiek apturētas jau avotā, tāpēc video vienkārši tiek atskaņoti.
-• Iebūvēti EasyList, EasyPrivacy un uBlock Origin filtri, kā arī jūsu valodas saraksts (31 reģionālais saraksts).
+• Iebūvēti EasyList, EasyPrivacy un citi atvērti filtru saraksti, kā arī jūsu valodas saraksts (31 reģionālais saraksts).
+• Sponsorētās ziņas Facebook, Instagram un Threads tiek paslēptas.
 • Sīkdatņu paziņojumi: jūsu vietā nospiež „Noraidīt“, notīra palikušo aizmiglojumu un ritināšanas bloķēšanu un nekad nenospiež pierakstīšanās, OAuth vai maksājuma pogu.
 • Fokusa režīms: paslēpj tērzēšanas burbuļus, jaunumu vēstuļu uznirstošos logus, paziņojumu pieprasījumus, sociālo tīklu logrīkus, uznirstošos AI asistentus un YouTube Shorts.
 • Anti-adblock sienas un pop-under logi tiek neitralizēti.
+• Bīstamas vietnes: zināmas ļaunprātīgas vietnes vietā tiek atvērta brīdinājuma lapa, un jūs izlemjat, vai turpināt.
 • Vietne nedarbojas? Viens klikšķis to salabo — vai pastāstiet mums; nekas netiek nosūtīts, pirms jūs to neesat redzējis.
+• Pārejat no uBlock Origin, AdGuard vai Adblock Plus? Pārnesiet atļautās vietnes un filtrus ar vienu failu.
+• Redziet, ar kurām citām vietnēm lapa savienojas, un ar vienu klikšķi bloķējiet kādu no tām tikai tur.
 • Parakstīti filtru atjauninājumi divreiz dienā: jaunie reklāmu tīkli tiek apstrādāti dažu stundu laikā, bez attāla koda.
-• Bez konta, bez telemetrijas, bez datu vākšanas. Bezmaksas, ar brīvprātīgu ziedojumu; uznirstošajā logā ir viena maza kartīte ar atzīmi „Reklāma“ par izstrādātāju Carbon Stealth.
+• Bez konta, bez telemetrijas, bez datu vākšanas, un Global Privacy Control lūdz katrai vietnei nepārdot un nekopīgot jūsu datus.

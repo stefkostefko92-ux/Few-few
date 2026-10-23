@@ -44,8 +44,14 @@ if (m.options_ui?.page) refs.add(m.options_ui.page);
 // explicitly — otherwise a forgotten `build_scriptlets.mjs` ships without it.
 refs.add("scriptlets/main.js");
 refs.add("scriptlets/policy.js"); // importScripts() in the service worker
+refs.add("youtube_main.js");          // registered by the service worker (MAIN world, YouTube)
 refs.add("lib/abp2dnr.js");       // importScripts() — author-hosted lists
+refs.add("gpc.js");               // registered by the service worker (MAIN world, Global Privacy Control)
+refs.add("scriptlets/entities-off.js"); // registered by the SW while the uBO list is off
+refs.add("lib/foreign.js");       // Settings + welcome: import from another ad blocker
+refs.add("blocked/blocked.js"); refs.add("blocked/blocked.css"); // the warning page instead of a malware site
 refs.add("report/report.html");   // opened from the popup
+refs.add("welcome/welcome.html"); refs.add("welcome/welcome.js"); refs.add("welcome/welcome.css"); // first install
 refs.add("THIRD_PARTY_NOTICES.txt"); // linked from Settings; list licences ask for it
 refs.add("licenses/*");            // the licence texts the notices point to
 const zipFiles = zip.split("\n").filter(Boolean);

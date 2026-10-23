@@ -5,6 +5,7 @@ import { authRequired } from '../middleware/auth';
 import type { Character, Item } from '../types/domain';
 import { logFromRequest } from '../lib/logger';
 import { trackBattlePass } from './battlepass';
+import { getSetting } from '../game/settings';
 
 const router = Router();
 router.use(authRequired);
@@ -13,9 +14,15 @@ function getChar(uid: number): Character | undefined {
   return getDb().prepare('SELECT * FROM characters WHERE user_id = ?').get(uid) as Character | undefined;
 }
 
-const MARKET_FEE_PCT = 5;       // seller pays 5% on completion
+// Таксата и таванът на цената са админ настройки (game/settings.ts:
+// market_fee_pct / market_max_price) — преди бяха твърди константи и
+// админ панелът ги „променяше" без ефект.
 const PRICE_MIN = 1;
-const PRICE_MAX = 1_000_000;
+/** Таксата на пазара, удържана от продавача (цяло злато, закръглено нагоре). */
+export function marketFee(gross: number): number {
+  const pct = getSetting<number>('market_fee_pct');
+  return Math.ceil(gross * pct / 100);
+}
 
 /* ===== Browse ===== */
 router.get('/', (req, res) => {
@@ -76,12 +83,14 @@ router.get('/mine', (req, res) => {
 /* ===== List for sale ===== */
 const sellSchema = z.object({
   inventoryId: z.number().int(),
-  priceGold: z.number().int().min(PRICE_MIN).max(PRICE_MAX),
+  priceGold: z.number().int().min(PRICE_MIN),
 });
 
 router.post('/sell', (req, res) => {
   const parse = sellSchema.safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+  const maxPrice = getSetting<number>('market_max_price');
+  if (parse.data.priceGold > maxPrice) { res.status(400).json({ error: `Price cannot exceed ${maxPrice}g.` }); return; }
   const char = getChar(req.auth!.uid);
   if (!char) { res.status(404).json({ error: 'No character' }); return; }
   const db = getDb();
@@ -100,11 +109,22 @@ router.post('/sell', (req, res) => {
   if (row.category === 'potion') { res.status(400).json({ error: 'Consumables cannot be listed.' }); return; }
 
   const now = Date.now();
-  db.prepare(
-    `INSERT INTO marketplace_listings (inventory_id, item_id, seller_id, price_gold, status, listed_at)
-     VALUES (?, ?, ?, ?, 'active', ?)`,
-  ).run(row.inv_id, row.id, char.id, parse.data.priceGold, now);
-  db.prepare('UPDATE inventory SET listed = 1 WHERE id = ?').run(row.inv_id);
+  // CAS: две паралелни /sell заявки за един и същ ред минаваха проверката
+  // „Already listed" и създаваха ДВЕ обяви за един предмет → продавачът
+  // взимаше парите два пъти, а вторият купувач „отнемаше" предмета от
+  // първия. Сега флагът се вдига атомарно и само победителят създава обява.
+  const listed = db.transaction(() => {
+    const flag = db.prepare(
+      'UPDATE inventory SET listed = 1 WHERE id = ? AND character_id = ? AND listed = 0 AND equipped = 0 AND soul_bound = 0 AND vaulted_guild_id = 0',
+    ).run(row.inv_id, char.id);
+    if (flag.changes !== 1) return false;
+    db.prepare(
+      `INSERT INTO marketplace_listings (inventory_id, item_id, seller_id, price_gold, status, listed_at)
+       VALUES (?, ?, ?, ?, 'active', ?)`,
+    ).run(row.inv_id, row.id, char.id, parse.data.priceGold, now);
+    return true;
+  }).immediate();
+  if (!listed) { res.status(409).json({ error: 'Already listed.' }); return; }
   logFromRequest(req, {
     category: 'market',
     action: 'listing_created',
@@ -142,7 +162,8 @@ router.post('/buy', (req, res) => {
     return;
   }
 
-  const sellerCut = listing.price_gold - Math.ceil(listing.price_gold * MARKET_FEE_PCT / 100);
+  const feePct = getSetting<number>('market_fee_pct');
+  const sellerCut = listing.price_gold - marketFee(listing.price_gold);
   const now = Date.now();
   const tx = db.transaction(() => {
     // Atomic check-then-debit: only spend if the buyer still has enough gold
@@ -160,8 +181,10 @@ router.post('/buy', (req, res) => {
     // and purchase (e.g. shattered in the forge) the tx rolls back instead
     // of charging the buyer for nothing. Clear any stale vault linkage so a
     // vault-listed item can't be double-owned.
-    const moved = db.prepare(`UPDATE inventory SET character_id = ?, equipped = 0, slot = '', listed = 0, soul_bound = 1, vaulted_guild_id = 0 WHERE id = ?`)
-      .run(char.id, listing.inventory_id);
+    // Предметът трябва още да е на продавача и обявен — иначе (стара/дублирана
+    // обява) купувачът би „отнел" чужд предмет.
+    const moved = db.prepare(`UPDATE inventory SET character_id = ?, equipped = 0, slot = '', listed = 0, soul_bound = 1, vaulted_guild_id = 0 WHERE id = ? AND character_id = ? AND listed = 1`)
+      .run(char.id, listing.inventory_id, listing.seller_id);
     if (moved.changes !== 1) throw new Error('Item is no longer available');
     db.prepare('DELETE FROM guild_vault WHERE inventory_id = ?').run(listing.inventory_id);
     // Mail the seller a notification
@@ -170,7 +193,7 @@ router.post('/buy', (req, res) => {
         listing.seller_id,
         'Player Market',
         `Sale — ${item.name}`,
-        `Your listing of ${item.name} sold for ${listing.price_gold}g. After the ${MARKET_FEE_PCT}% market fee you received ${sellerCut}g.`,
+        `Your listing of ${item.name} sold for ${listing.price_gold}g. After the ${feePct}% market fee you received ${sellerCut}g.`,
         Date.now(),
       );
   });
@@ -187,7 +210,7 @@ router.post('/buy', (req, res) => {
     message: `${char.name} bought ${item.name} for ${listing.price_gold}g`,
     meta: {
       listing_id: listing.id, item_id: item.id, item_name: item.name, rarity: item.rarity,
-      price_gold: listing.price_gold, seller_id: listing.seller_id, seller_cut: sellerCut, market_fee_pct: MARKET_FEE_PCT,
+      price_gold: listing.price_gold, seller_id: listing.seller_id, seller_cut: sellerCut, market_fee_pct: feePct,
     },
   });
   res.json({ ok: true, item_name: item.name, paid: listing.price_gold });
@@ -207,11 +230,15 @@ router.post('/cancel', (req, res) => {
     .get(parse.data.listingId) as any;
   if (!listing) { res.status(404).json({ error: 'Listing not found' }); return; }
   if (listing.seller_id !== char.id) { res.status(403).json({ error: 'Not your listing' }); return; }
-  const tx = db.transaction(() => {
-    db.prepare(`UPDATE marketplace_listings SET status = 'cancelled' WHERE id = ?`).run(listing.id);
-    db.prepare('UPDATE inventory SET listed = 0 WHERE id = ?').run(listing.inventory_id);
-  });
-  tx();
+  // CAS: само АКТИВНА обява се отменя (паралелна покупка може да я е
+  // продала междувременно — тогава не пипаме нито статуса, нито предмета).
+  const cancelled = db.transaction(() => {
+    const c = db.prepare(`UPDATE marketplace_listings SET status = 'cancelled' WHERE id = ? AND status = 'active'`).run(listing.id);
+    if (c.changes !== 1) return false;
+    db.prepare('UPDATE inventory SET listed = 0 WHERE id = ? AND character_id = ?').run(listing.inventory_id, char.id);
+    return true;
+  }).immediate();
+  if (!cancelled) { res.status(409).json({ error: 'Listing is no longer active' }); return; }
   logFromRequest(req, {
     category: 'market',
     action: 'listing_cancelled',

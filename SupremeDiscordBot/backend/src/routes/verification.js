@@ -5,6 +5,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
+import { grantXpOnce, XP_REWARDS } from "../lib/game/xp.js";
 import { requireAuth, loadUser, requireServerAdmin, requireBotSecret } from "../middleware/auth.js";
 import { notifyBot, notifyBotVerbose } from "../services/botNotifier.js";
 import { check, recordFailure, recordSuccess } from "../lib/bruteForce.js";
@@ -92,6 +93,8 @@ router.post("/bot/:panelId/attempt", requireBotSecret, async (req, res, next) =>
     // пъти и после е решил задачата, не бива да носи наказание.
     if (success) await recordSuccess(vScope, vKey);
     else await recordFailure(vScope, vKey);
+    // v50 — XP за успешна верификация: веднъж на панел.
+    if (success) grantXpOnce(panel.serverId, userId, `verify:${panel.id}`, XP_REWARDS.VERIFIED).catch(() => {});
 
     await prisma.verificationAttempt.create({
       data: {

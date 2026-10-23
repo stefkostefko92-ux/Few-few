@@ -11,6 +11,21 @@ import { loadState, saveState, rollDay } from './state.js';
 import { tradeRecord, recordTrade } from './journal.js';
 import { log, audit } from './logger.js';
 
+// Слага стопа; при отказ позицията остава отбелязана `unprotected`, kill-switch-ът се включва (без нови
+// входове) и грешката отива в лога/одита — следващият tick опитва стопа наново. Записва state.
+export async function protect(place, state, symbol) {
+  const pos = state.position ?? null;
+  try {
+    await place();
+    if (pos) delete pos.unprotected;
+  } catch (e) {
+    state.killed = true;
+    log.error(`⛔ ${symbol}: стопът НЕ е поставен (${e.message}) — позицията е без защита на борсата. KILL-SWITCH включен; повторен опит следващия tick. Провери ръчно.`);
+    audit('stop.failed', { symbol, error: String(e.message).slice(0, 200) });
+  }
+  saveState(state);
+}
+
 export async function runOnce(ex, cfg, market, state) {
   const price = await currentPrice(ex, cfg.symbol);
   const warmup = Math.max(cfg.emaTrend, cfg.emaSlow, cfg.smaSlow, cfg.atrPeriod, cfg.rsiPeriod) + 5;
@@ -79,16 +94,24 @@ export async function runOnce(ex, cfg, market, state) {
     return state;
   }
 
+  // Незащитена позиция (стопът е бил отказан или отменен без заместител) → всеки tick опитва наново.
+  if (hasPosition && state.position?.unprotected) {
+    const qty = cfg.live ? baseTotal : state.position.qty;
+    await protect(() => placeStopLoss({ ex, cfg, market, symbol: cfg.symbol, quantity: qty, stopPrice: state.position.stopPrice }), state, cfg.symbol);
+  }
+
   // Trailing stop: ако сме в позиция и цената се вдигна, качваме стопа НАГОРЕ (никога надолу).
-  if (hasPosition && cfg.useTrailing && state.position) {
+  if (hasPosition && cfg.useTrailing && state.position && !state.position.unprotected) {
     const newStop = price - stopDistance(ctx, i, price);
     if (newStop > (state.position.stopPrice ?? 0) * 1.001) {
       log.info(`Trailing: качвам стоп ${(state.position.stopPrice ?? 0).toFixed(2)} → ${newStop.toFixed(2)}`);
+      // Старият стоп се маха преди новия → между двете позицията е гола. Отбелязваме го на диска.
+      state.position.unprotected = true;
+      saveState(state);
       await cancelAllOpen({ ex, cfg, symbol: cfg.symbol });
       const trailQty = cfg.live ? baseTotal : state.position.qty;
-      await placeStopLoss({ ex, cfg, market, symbol: cfg.symbol, quantity: trailQty, stopPrice: newStop });
       state.position.stopPrice = newStop;
-      saveState(state);
+      await protect(() => placeStopLoss({ ex, cfg, market, symbol: cfg.symbol, quantity: trailQty, stopPrice: newStop }), state, cfg.symbol);
     }
   }
 
@@ -126,11 +149,19 @@ export async function runOnce(ex, cfg, market, state) {
     log.info(`Сигнал ВХОД → купувам ~${qty} @${price}, стоп @${stopPrice.toFixed(2)}`);
     const buy = await marketBuy({ ex, cfg, market, symbol: cfg.symbol, quantity: qty, price });
     const filled = buy.filled ?? qty;
-    // Веднага защитен стоп на БОРСАТА (не 'ментален').
-    if (filled > 0) await placeStopLoss({ ex, cfg, market, symbol: cfg.symbol, quantity: filled, stopPrice });
-    state.position = { qty: filled, entry: buy.average ?? price, stopPrice };
+    if (!(filled > 0)) {
+      // expired/0 fill: няма позиция → нито запис, нито брояч, нито фалшив -1R в дневника.
+      log.warn('Покупката не се изпълни (filled 0) — няма позиция.');
+      audit('entry.unfilled', { symbol: cfg.symbol, status: buy.status ?? null });
+      return state;
+    }
+    // Позицията се записва ПРЕДИ стопа: ако борсата откаже стопа, ботът пак знае за нея
+    // (Трейдъра + Изпитателя, 2026-09-24 — преди отказан стоп губеше напълно позицията).
+    state.position = { qty: filled, entry: buy.average ?? price, stopPrice, unprotected: true };
     state.dayTradeCount = (state.dayTradeCount ?? 0) + 1; // за дневния лимит сделки
     saveState(state);
+    // Веднага защитен стоп на БОРСАТА (не 'ментален').
+    await protect(() => placeStopLoss({ ex, cfg, market, symbol: cfg.symbol, quantity: filled, stopPrice }), state, cfg.symbol);
     return state;
   }
 
@@ -142,11 +173,18 @@ export async function startBot(cfg) {
   const ex = makeExchange(cfg);
   const market = await loadMarket(ex, cfg.symbol);
   const state = loadState();
+  if (state.stateError) {
+    log.error(`⛔ ${state.stateError} — KILL-SWITCH включен (fail closed). Запазено за разбор: ${state.stateKept || 'не успях да го преместя'}. Провери позициите на борсата ръчно.`);
+    audit('state.corrupt', { error: state.stateError, kept: state.stateKept });
+    delete state.stateError; delete state.stateKept; // kill-switch-ът остава в state; бележката — само в лога
+  }
   if (state.killed) log.warn('⛔ KILL-SWITCH е активен от предишна сесия. Ботът няма да отваря позиции. Изчисти data/state.json след разбор, за да го нулираш.');
 
   log.info(`Стартиран. Цикъл на всеки ${cfg.loopSeconds}s. Ctrl+C за спиране.`);
   let stop = false;
-  process.on('SIGINT', () => { log.info('Спиране…'); stop = true; });
+  // SIGTERM идва от systemctl stop / docker stop / kill — без него ботът умираше по средата на цикъла,
+  // между поръчка към борсата и saveState. Сега и двата сигнала довършват текущия цикъл.
+  for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { log.info(`Спиране (${sig})…`); stop = true; });
 
   while (!stop) {
     try {

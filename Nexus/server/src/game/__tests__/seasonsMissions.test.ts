@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert';
 import { getDb } from '../../db';
 import { addSeasonPoints, finalizePrevSeasonIfDue, seasonKeyFor, prevSeasonKey, rewardForRank } from '../seasons';
-import { trackGuildMission, missionsForGuild, GUILD_MISSIONS, currentWeekIndex } from '../guildMissions';
+import { trackGuildMission, missionsForGuild, GUILD_MISSIONS, currentWeekIndex, MISSION_TENURE_MS } from '../guildMissions';
 
 let seq = 0;
 function mkChar(): number {
@@ -58,15 +58,16 @@ test('rewardForRank е монотонно намаляваща и нулева �
 
 /* ===== Гилдийни мисии ===== */
 
-function mkGuild(): { guildId: number; charA: number; charB: number } {
+// Членовете по подразбиране са в гилдията от 2 дни (над MISSION_TENURE_MS).
+function mkGuild(joinedAgoMs = 2 * 86_400_000): { guildId: number; charA: number; charB: number } {
   const db = getDb();
   const charA = mkChar(); const charB = mkChar();
   const g = db.prepare(`INSERT INTO guilds (name, tag, leader_id, created_at) VALUES (?, ?, ?, ?)`)
     .run(`Guild_${seq}`, `G${seq}`, charA, Date.now());
   const guildId = g.lastInsertRowid as number;
   const mem = db.prepare('INSERT INTO guild_members (guild_id, character_id, role, joined_at) VALUES (?, ?, ?, ?)');
-  mem.run(guildId, charA, 'leader', Date.now());
-  mem.run(guildId, charB, 'member', Date.now());
+  mem.run(guildId, charA, 'leader', Date.now() - joinedAgoMs);
+  mem.run(guildId, charB, 'member', Date.now() - joinedAgoMs);
   return { guildId, charA, charB };
 }
 
@@ -85,6 +86,20 @@ test('мисийният прогрес е общ и наградата се р�
   assert.equal(mission.completed, true);
   const goldAfter = (db.prepare('SELECT gold FROM characters WHERE id = ?').get(charB) as { gold: number }).gold;
   assert.equal(goldAfter - goldBefore, def.reward_gold, 'член B получи наградата точно веднъж');
+});
+
+test('анти guild-hop: член с под 24 ч стаж НЕ получава наградата на мисията', () => {
+  const db = getDb();
+  const { guildId, charA, charB } = mkGuild();
+  // B се „присъединява" току-що — точно преди целта.
+  db.prepare('UPDATE guild_members SET joined_at = ? WHERE character_id = ?').run(Date.now() - MISSION_TENURE_MS / 2, charB);
+  const def = GUILD_MISSIONS.find((m) => m.key === 'tower_floors')!;
+  const gold = (id: number) => (db.prepare('SELECT gold FROM characters WHERE id = ?').get(id) as { gold: number }).gold;
+  const a0 = gold(charA); const b0 = gold(charB);
+  for (let i = 0; i < def.target; i++) trackGuildMission(db, charA, 'tower_floors');
+  assert.equal(missionsForGuild(db, guildId).missions.find((m) => m.key === 'tower_floors')!.completed, true);
+  assert.equal(gold(charA) - a0, def.reward_gold, 'ветеранът получава');
+  assert.equal(gold(charB) - b0, 0, 'новодошлият (guild-hop) не получава');
 });
 
 test('герой без гилдия не чупи нищо (no-op)', () => {

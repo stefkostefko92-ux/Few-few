@@ -3,6 +3,7 @@ import { REST, Routes, Events } from "discord.js";
 import crypto from "crypto";
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { reportShardingPressure } from "../utils/shardingWatch.js";
+import { startXpFlusher } from "../utils/game.js";
 
 // Configurable so Docker Compose can bind-mount a volume here — a plain /tmp
 // path is lost on every container restart, which forces a needless global
@@ -15,6 +16,8 @@ export default {
   name: Events.ClientReady,
   once: true,
   async execute(client) {
+    // v50 — Server Season: партидите XP към backend-а на всеки 30 s (utils/game.js).
+    startXpFlusher(client);
     console.log(`✅ Logged in as ${client.user.tag}`);
     client.user.setActivity("Managing Tickets & Applications", { type: 3 });
 

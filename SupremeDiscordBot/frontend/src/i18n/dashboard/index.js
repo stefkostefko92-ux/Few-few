@@ -1,15 +1,24 @@
 // frontend/src/i18n/dashboard/index.js
-// Обединява всички dashboard locale-и. Английският е канонът и fallback.
+// Английският е канонът и fallback — в главния чънк. Другите 7 се зареждат
+// при нужда (динамичен import → собствен чънк): преди и осемте влизаха в
+// първото зареждане на ВСЯКА страница, включително публичния лендинг, който
+// не ползва нито един от тях (~120 KB gzip; бюджет на бъндъла, 26.09.2026).
+// За тестове с всички езици наведнъж: ./all.js.
 import en from "./en.js";
-import bg from "./bg.js";
-import de from "./de.js";
-import es from "./es.js";
-import fr from "./fr.js";
-import it from "./it.js";
-import nl from "./nl.js";
-import pl from "./pl.js";
 
-export const DASHBOARD_LOCALES = { en, bg, de, es, fr, it, nl, pl };
+export const DASHBOARD_EN = en;
+
+export const LOCALE_LOADERS = {
+  bg: () => import("./bg.js"),
+  de: () => import("./de.js"),
+  es: () => import("./es.js"),
+  fr: () => import("./fr.js"),
+  it: () => import("./it.js"),
+  nl: () => import("./nl.js"),
+  pl: () => import("./pl.js"),
+};
+
+export const SUPPORTED_LOCALES = ["en", ...Object.keys(LOCALE_LOADERS)];
 
 // Списъкът за превключвателя — редът е англ. + азбучен по локален етикет.
 export const LANGUAGE_OPTIONS = [

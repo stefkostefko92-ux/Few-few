@@ -187,6 +187,19 @@ export default function ShaderHero({ className = "" }) {
   const canvasRef = useRef(null);
   const [eligible, setEligible] = useState(false);
   const [visible, setVisible] = useState(false);
+  // Изгубен WebGL контекст Chrome рисува като БЯЛО поле с икона — не прозрачно.
+  // Затова всеки отказ (софтуерен рендер, шейдър, watchdog, GPU reset) маха
+  // canvas-а изцяло и остава CSS постерът (визуален одит 25.09.2026: hero-то на
+  // всички локали излизаше бяло на машина без GPU).
+  const [off, setOff] = useState(false);
+  const glRef = useRef(null);
+
+  // Контекстът се освобождава само при истински unmount. Преди cleanup-ът на
+  // ефекта по-долу го губеше при всяко излизане от viewport-а — и при скрол
+  // обратно getContext() връщаше същия ИЗГУБЕН контекст: бяло поле за всички.
+  useEffect(() => () => {
+    glRef.current?.getExtension("WEBGL_lose_context")?.loseContext();
+  }, []);
 
   // Eligibility: motion welcome, no data-saver, not a tiny/low-power screen.
   useEffect(() => {
@@ -214,7 +227,7 @@ export default function ShaderHero({ className = "" }) {
   }, [eligible]);
 
   useEffect(() => {
-    if (!eligible || !visible) return;
+    if (!eligible || !visible || off) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -224,11 +237,15 @@ export default function ShaderHero({ className = "" }) {
       powerPreference: "low-power",
       failIfMajorPerformanceCaveat: true,
     });
-    if (!gl) return; // no WebGL2 → CSS poster stays the whole experience
+    if (!gl || gl.isContextLost()) { setOff(true); return; } // CSS постерът остава
+    glRef.current = gl;
     if (isSoftwareRenderer(gl)) {
       gl.getExtension("WEBGL_lose_context")?.loseContext();
-      return;        // CSS постерът е целият визуал — и е проектиран за това
+      setOff(true);  // CSS постерът е целият визуал — и е проектиран за това
+      return;
     }
+    const onLost = () => setOff(true); // GPU reset/драйвер — също към постера
+    canvas.addEventListener("webglcontextlost", onLost);
 
     let program;
     try {
@@ -242,6 +259,8 @@ export default function ShaderHero({ className = "" }) {
         throw new Error(gl.getProgramInfoLog(program) || "link failed");
       }
     } catch {
+      canvas.removeEventListener("webglcontextlost", onLost);
+      setOff(true);
       return; // fail closed — never throw into the render tree
     }
 
@@ -291,7 +310,7 @@ export default function ShaderHero({ className = "" }) {
       cancelAnimationFrame(raf);
       const ext = gl.getExtension("WEBGL_lose_context");
       ext?.loseContext();
-      canvas.style.display = "none"; // CSS aurora underneath remains visible
+      setOff(true); // canvas-ът се маха; CSS aurora отдолу остава
     }
 
     function frame(now) {
@@ -340,12 +359,15 @@ export default function ShaderHero({ className = "" }) {
       degraded = true;
       cancelAnimationFrame(raf);
       ro.disconnect();
-      const ext = gl.getExtension("WEBGL_lose_context");
-      ext?.loseContext();
+      canvas.removeEventListener("webglcontextlost", onLost);
+      // Контекстът живее до unmount; програмата и буферът се пресъздават при
+      // следващото влизане във viewport-а, затова се трият тук.
+      gl.deleteBuffer(buf);
+      gl.deleteProgram(program);
     };
-  }, [eligible, visible]);
+  }, [eligible, visible, off]);
 
-  if (!eligible) return null;
+  if (!eligible || off) return null;
 
   return (
     <canvas

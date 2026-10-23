@@ -1,0 +1,58 @@
+{
+  "name": "agentgw",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Агентски шлюз на Carbon Stealth — публичните агенти живеят на собствения ЕС сървър и сайтовете ги ползват чрез агентски ключове; Claude се вика през Google Vertex AI само в ЕС.",
+  "license": "UNLICENSED",
+  "author": "Carbon Stealth VCC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stefkostefko92-ux/Few-few.git",
+    "directory": "agentgw"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "Carbon Stealth",
+    "ai-agent-gateway",
+    "claude-vertex-ai",
+    "eu-data-residency",
+    "chat-widget",
+    "api-keys"
+  ],
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "key": "node dist/cli/key.js",
+    "lint": "prettier --check . && node scripts/check-profiles.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json",
+    "format": "prettier --write .",
+    "test": "tsx --test tests/*.test.ts",
+    "profiles": "node scripts/gen-profiles.mjs",
+    "profiles:check": "node scripts/check-profiles.mjs",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy",
+    "gate": "npm run lint && npm run typecheck && npm test && npm run build"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.128.0",
+    "@anthropic-ai/vertex-sdk": "^0.19.11",
+    "@prisma/client": "^6.19.3",
+    "express": "^5.2.1",
+    "prisma": "^6.19.3",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.20.4",
+    "prettier": "^3.9.9",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3"
+  },
+  "overrides": {
+    "deepmerge-ts": "^8.0.0"
+  }
+}

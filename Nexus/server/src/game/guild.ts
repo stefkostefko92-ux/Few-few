@@ -24,6 +24,7 @@
  */
 
 import { getDb } from '../db';
+import { getSetting } from './settings';
 
 export type TrackKey =
   | 'attr' | 'power' | 'defence' | 'exp_bonus' | 'gold_bonus' | 'gold_protected';
@@ -116,7 +117,11 @@ export function loadGuildBuffsForCharacter(characterId: number): GuildBuffs | nu
 
 /* ───────── Legacy guild-create constants the rest of the code already uses ─ */
 
-export const GUILD_CREATE_COST = 1000;
+/** Цена за основаване на гилдия — админ настройка guild_create_cost_gold
+ *  (по подразбиране 1000; преди твърда константа, която настройката не пипаше). */
+export function guildCreateCost(): number {
+  return getSetting<number>('guild_create_cost_gold');
+}
 export const GUILD_CREATE_LEVEL_REQ = 5;
 
 /** Member-slot tier XP gates (kept for the existing member-slots upgrade). */
@@ -126,3 +131,72 @@ export const MEMBER_SLOT_TIER_XP: Record<number, number> = {
 export const MEMBER_SLOT_TIER_GEMS: Record<number, number> = {
   2: 0, 3: 0, 4: 200, 5: 600,
 };
+
+/* ───────── Напускане на гилдия (leave / изтриване на герой / акаунт) ───────── */
+
+type Db = ReturnType<typeof getDb>;
+
+export interface GuildDetachResult {
+  guildId: number | null;
+  /** Новият лидер, ако напусналият беше лидер и има кой да поеме. */
+  newLeaderId: number | null;
+  /** Гилдията е разпусната (нямаше други членове). */
+  disbanded: boolean;
+}
+
+/**
+ * Единственото място, където герой излиза от гилдията си. Вика се от
+ * `/guild/leave`, от изтриването на ГЕРОЙ (`/account/delete-character`) и от
+ * изтриването на АКАУНТ (lib/erasure.ts). Изпълни ВЪТРЕ в транзакция и ПРЕДИ
+ * `DELETE FROM characters`.
+ *
+ * Преди: изтриването на герой-лидер се проваляше с FK грешка
+ * (guilds.leader_id е RESTRICT) — героят не можеше да бъде изтрит; а
+ * изтриването на акаунт РАЗПУСКАШЕ гилдията заедно с всички други членове и
+ * трезора им (дарените предмети оставаха „вързани" към несъществуваща
+ * гилдия и изчезваха от инвентара завинаги).
+ *
+ * Сега: лидерството се прехвърля на най-високия по ранг (officer → member →
+ * recruit), при равенство — с най-голям стаж (joined_at), после приноса.
+ * Празна гилдия се разпуска, а предметите в трезора ѝ се връщат на
+ * притежателите им. При `deleting` дарените от героя предмети в трезора
+ * остават в гилдията (прехвърлят се на лидера), вместо да изчезнат с героя.
+ */
+export function detachFromGuild(db: Db, characterId: number, opts: { deleting?: boolean } = {}): GuildDetachResult {
+  const m = db.prepare('SELECT guild_id, role FROM guild_members WHERE character_id = ?').get(characterId) as
+    | { guild_id: number; role: string } | undefined;
+  if (!m) return { guildId: null, newLeaderId: null, disbanded: false };
+  const guildId = m.guild_id;
+  const guild = db.prepare('SELECT leader_id FROM guilds WHERE id = ?').get(guildId) as { leader_id: number } | undefined;
+  const isLeader = m.role === 'leader' || guild?.leader_id === characterId;
+  const successor = db.prepare(
+    `SELECT character_id FROM guild_members WHERE guild_id = ? AND character_id != ?
+     ORDER BY CASE role WHEN 'leader' THEN 0 WHEN 'officer' THEN 1 WHEN 'member' THEN 2 ELSE 3 END,
+              joined_at ASC, contribution DESC, id ASC
+     LIMIT 1`,
+  ).get(guildId, characterId) as { character_id: number } | undefined;
+
+  if (!successor) {
+    // Последният член → разпусни; трезорът се връща на притежателите.
+    db.prepare('UPDATE inventory SET vaulted_guild_id = 0 WHERE vaulted_guild_id = ?').run(guildId);
+    db.prepare('DELETE FROM guild_members WHERE character_id = ?').run(characterId);
+    db.prepare('DELETE FROM guilds WHERE id = ?').run(guildId);
+    return { guildId, newLeaderId: null, disbanded: true };
+  }
+
+  let newLeaderId: number | null = null;
+  if (isLeader) {
+    newLeaderId = successor.character_id;
+    db.prepare(`UPDATE guild_members SET role = 'leader' WHERE character_id = ?`).run(newLeaderId);
+    db.prepare('UPDATE guilds SET leader_id = ? WHERE id = ?').run(newLeaderId, guildId);
+  }
+  if (opts.deleting) {
+    const heir = newLeaderId ?? guild?.leader_id ?? successor.character_id;
+    db.prepare('UPDATE inventory SET character_id = ? WHERE character_id = ? AND vaulted_guild_id = ?').run(heir, characterId, guildId);
+    // guild_vault.deposited_by е ON DELETE CASCADE → без това редът в
+    // трезора изчезва с героя и предметът става невидим.
+    db.prepare('UPDATE guild_vault SET deposited_by = ? WHERE deposited_by = ? AND guild_id = ?').run(heir, characterId, guildId);
+  }
+  db.prepare('DELETE FROM guild_members WHERE character_id = ?').run(characterId);
+  return { guildId, newLeaderId, disbanded: false };
+}

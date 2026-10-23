@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "YouTube ਵੀਡੀਓ ਵਿਗਿਆਪਨ, ਬੈਨਰ, ਪੌਪ-ਅੱਪ, ਟਰੈਕਰ, ਕੁਕੀ ਸੁਨੇਹੇ ਅਤੇ ਐਂਟੀ-ਐਡਬਲੌਕ ਕੰਧਾਂ ਹਰ ਥਾਂ ਬਲੌਕ ਕਰੋ। ਮੁਫ਼ਤ, ਤੇਜ਼ ਅਤੇ ਨਿੱਜੀ।"
+    "message": "YouTube ਵੀਡੀਓ ਵਿਗਿਆਪਨ, ਬੈਨਰ, ਪੌਪ-ਅੱਪ, ਟਰੈਕਰ, ਕੁਕੀ ਸੁਨੇਹੇ ਅਤੇ ਐਂਟੀ-ਐਡਬਲੌਕ ਕੰਧਾਂ ਹਰ ਥਾਂ ਬਲੌਕ ਕਰੋ।"
   },
   "byCarbon": {
     "message": "Carbon Stealth ਵੱਲੋਂ"
@@ -118,6 +118,27 @@
   "support": {
     "message": "ਸਹਿਯੋਗ ਦਿਓ"
   },
+  "rate": {
+    "message": "ਰੇਟਿੰਗ ਦਿਓ"
+  },
+  "rateTitle": {
+    "message": "Chrome ਵੈੱਬ ਸਟੋਰ 'ਤੇ Supreme AdBlock ਨੂੰ ਰੇਟਿੰਗ ਦਿਓ"
+  },
+  "reviewBlocked": {
+    "message": "ਹੁਣ ਤੱਕ $1 ਬੇਨਤੀਆਂ ਬਲੌਕ ਕੀਤੀਆਂ ਗਈਆਂ"
+  },
+  "reviewAsk": {
+    "message": "ਜੇ Supreme AdBlock ਤੁਹਾਡੇ ਕੰਮ ਆਉਂਦਾ ਹੈ, ਤਾਂ Chrome ਵੈੱਬ ਸਟੋਰ 'ਤੇ ਇੱਕ ਛੋਟੀ ਸਮੀਖਿਆ ਹੋਰਾਂ ਨੂੰ ਇਸਨੂੰ ਲੱਭਣ ਵਿੱਚ ਮਦਦ ਕਰਦੀ ਹੈ।"
+  },
+  "reviewLeave": {
+    "message": "ਸਮੀਖਿਆ ਲਿਖੋ"
+  },
+  "reviewLater": {
+    "message": "ਹੁਣ ਨਹੀਂ"
+  },
+  "reviewNever": {
+    "message": "ਦੁਬਾਰਾ ਨਾ ਪੁੱਛੋ"
+  },
   "filtersCount": {
     "message": "$1+ ਫਿਲਟਰ",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "“ਆਪਣਾ ਐਡਬਲੌਕਰ ਬੰਦ ਕਰੋ” ਵਾਲੀਆਂ ਕੰਧਾਂ ਲੁਕਾਓ ਅਤੇ ਪੰਨਾ ਮੁੜ ਠੀਕ ਕਰੋ"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook ਅਤੇ Instagram ’ਤੇ “ਸਪਾਂਸਰ ਕੀਤੀਆਂ” ਪੋਸਟਾਂ ਲੁਕਾਓ"
+    "message": "Facebook, Instagram ਅਤੇ Threads ’ਤੇ “ਸਪਾਂਸਰ ਕੀਤੀਆਂ” ਪੋਸਟਾਂ ਲੁਕਾਓ"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "ਤੁਹਾਡੇ ਵੱਲੋਂ ਖੋਲ੍ਹੇ ਲਿੰਕਾਂ ਤੋਂ utm_*, fbclid, gclid ਅਤੇ ਹੋਰ ਕਲਿੱਕ ਪਛਾਣਕਰਤਾ ਹਟਾਓ"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "ਜਾਣੇ-ਪਛਾਣੇ ਮਾਲਵੇਅਰ ਡੋਮੇਨ ਬਲੌਕ ਕਰੋ (abuse.ch ਦੀ URLhaus ਸੂਚੀ)"
+    "message": "ਕਿਸੇ ਜਾਣੀ-ਪਛਾਣੀ ਮਾਲਵੇਅਰ ਸਾਈਟ ਦੇ ਖੁੱਲ੍ਹਣ ਤੋਂ ਪਹਿਲਾਂ ਚੇਤਾਵਨੀ ਦਿਓ, ਅਤੇ ਪੰਨੇ ਅਜਿਹੀਆਂ ਸਾਈਟਾਂ ਤੋਂ ਜੋ ਲੋਡ ਕਰਦੇ ਹਨ, ਉਸਨੂੰ ਬਲੌਕ ਕਰੋ (abuse.ch ਦੀ URLhaus ਸੂਚੀ)।"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "ਹਰ ਸਾਈਟ ’ਤੇ Google Topics, FLoC ਅਤੇ Protected Audience ਵਿਗਿਆਪਨ API ਬੰਦ ਕਰੋ"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut ਰਾਹੀਂ ਦਾਨ ਕਰੋ"
+  },
+  "opt_review": {
+    "message": "ਸਮੀਖਿਆ ਰਿਮਾਈਂਡਰ"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock ਵਿੰਡੋ ਦੇ ਹੇਠਾਂ ਇੱਕ ਛੋਟਾ ★ ਲਿੰਕ, ਅਤੇ ਵੱਧ ਤੋਂ ਵੱਧ ਦੋ ਵਾਰ ਉੱਥੇ ਹੀ Chrome ਵੈੱਬ ਸਟੋਰ 'ਤੇ ਇਸਨੂੰ ਰੇਟਿੰਗ ਦੇਣ ਦੀ ਛੋਟੀ ਬੇਨਤੀ। ਵੈੱਬਸਾਈਟਾਂ 'ਤੇ ਕਦੇ ਨਹੀਂ, ਸੂਚਨਾ ਵਜੋਂ ਕਦੇ ਨਹੀਂ।"
   },
   "opt_made_by": {
     "message": "Carbon Stealth ਵੱਲੋਂ ਬਣਾਇਆ ਗਿਆ"
@@ -599,5 +626,172 @@
   },
   "opt_notices": {
     "message": "ਫਿਲਟਰ ਸੂਚੀਆਂ ਦੇ ਲਾਇਸੈਂਸ"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock ਵਿੱਚ ਤੁਹਾਡਾ ਸੁਆਗਤ ਹੈ",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "ਤੁਸੀਂ ਸੁਰੱਖਿਅਤ ਹੋ",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock ਹੁਣ ਤੁਹਾਡੇ ਵੱਲੋਂ ਖੋਲ੍ਹੀ ਹਰ ਸਾਈਟ ’ਤੇ ਵਿਗਿਆਪਨ ਅਤੇ ਟਰੈਕਰ ਬਲੌਕ ਕਰ ਰਿਹਾ ਹੈ। ਕੁਝ ਵੀ ਸੈੱਟ ਕਰਨ ਦੀ ਲੋੜ ਨਹੀਂ।",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "ਐਕਸਟੈਂਸ਼ਨ ਨੂੰ ਟੂਲਬਾਰ ’ਤੇ ਪਿੰਨ ਕਰੋ",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "ਪਤਾ ਬਾਰ ਦੇ ਨਾਲ ਵਾਲੇ ਪਹੇਲੀ ਦੇ ਟੁਕੜੇ ਵਾਲੇ ਆਈਕਨ ’ਤੇ ਕਲਿੱਕ ਕਰੋ ਅਤੇ Supreme AdBlock ਨੂੰ ਪਿੰਨ ਕਰੋ। ਫਿਰ ਇੱਕ ਕਲਿੱਕ ਨਾਲ ਦਿਸਦਾ ਹੈ ਕਿ ਪੰਨੇ ’ਤੇ ਕੀ ਬਲੌਕ ਹੋਇਆ।",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "ਜੇ ਕੋਈ ਸਾਈਟ ਠੀਕ ਨਾ ਦਿਸੇ",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "ਐਕਸਟੈਂਸ਼ਨ ਖੋਲ੍ਹੋ ਅਤੇ ਉਸ ਸਾਈਟ ਲਈ ਬਲੌਕਿੰਗ ਬੰਦ ਕਰੋ, ਜਾਂ ਤੁਰੰਤ ਹੱਲ ਲਈ “ਸਾਈਟ ਠੀਕ ਨਹੀਂ ਚੱਲ ਰਹੀ?” ਚੁਣੋ।",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "ਤੁਹਾਡੀ ਬ੍ਰਾਊਜ਼ਿੰਗ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ’ਤੇ ਹੀ ਰਹਿੰਦੀ ਹੈ",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "ਫਿਲਟਰਿੰਗ ਸਥਾਨਕ ਤੌਰ ’ਤੇ ਹੁੰਦੀ ਹੈ। ਐਕਸਟੈਂਸ਼ਨ ਕੋਈ ਨਿੱਜੀ ਡਾਟਾ ਇਕੱਠਾ ਨਹੀਂ ਕਰਦੀ ਅਤੇ ਤੁਹਾਡੇ ਵੱਲੋਂ ਖੋਲ੍ਹੇ ਪੰਨਿਆਂ ਬਾਰੇ ਕੁਝ ਨਹੀਂ ਭੇਜਦੀ।",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "ਠੀਕ ਹੈ",
+    "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "ਇਜਾਜ਼ਤ ਹੈ · $1 ਮਿੰਟ ਬਾਕੀ"
+  },
+  "hiddenHere": {
+    "message": "ਇੱਥੇ ਲੁਕਾਏ ਤੱਤ: $1 · ਆਖ਼ਰੀ ਵਾਪਸ ਲਿਆਓ"
+  },
+  "cmd_toggle_site": {
+    "message": "ਇਸ ਸਾਈਟ ’ਤੇ ਬਲੌਕਿੰਗ ਚਾਲੂ ਜਾਂ ਬੰਦ ਕਰੋ"
+  },
+  "cmd_pause": {
+    "message": "ਸੁਰੱਖਿਆ ਰੋਕੋ ਜਾਂ ਮੁੜ ਚਾਲੂ ਕਰੋ (30 ਮਿੰਟ)"
+  },
+  "cmd_picker": {
+    "message": "ਇਸ ਪੰਨੇ ’ਤੇ ਕੋਈ ਤੱਤ ਲੁਕਾਓ"
+  },
+  "rep_fix_hour": {
+    "message": "1 ਘੰਟੇ ਲਈ ਇੱਥੇ ਵਿਗਿਆਪਨਾਂ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ"
+  },
+  "rep_done_hour": {
+    "message": "ਇਸ ਸਾਈਟ ’ਤੇ 1 ਘੰਟੇ ਲਈ ਵਿਗਿਆਪਨਾਂ ਦੀ ਇਜਾਜ਼ਤ ਹੈ। ਮੁੜ ਲੋਡ ਕੀਤਾ — ਕੀ ਹੁਣ ਠੀਕ ਹੈ?"
+  },
+  "opt_last30": {
+    "message": "ਪਿਛਲੇ 30 ਦਿਨ"
+  },
+  "opt_last30_sum": {
+    "message": "ਬਲੌਕ ਕੀਤੇ: $1 · ਕੁਕੀ ਬੈਨਰ: $2"
+  },
+  "opt_last30_empty": {
+    "message": "ਜਿਵੇਂ-ਜਿਵੇਂ ਤੁਸੀਂ ਬ੍ਰਾਊਜ਼ ਕਰੋਗੇ, ਤੁਹਾਡੇ ਰੋਜ਼ਾਨਾ ਕੁੱਲ ਅੰਕੜੇ ਇੱਥੇ ਦਿਸਣਗੇ।"
+  },
+  "opt_last30_sub": {
+    "message": "ਸਿਰਫ਼ ਰੋਜ਼ਾਨਾ ਕੁੱਲ ਅੰਕੜੇ, ਜੋ ਇਸੇ ਡਿਵਾਈਸ ’ਤੇ 30 ਦਿਨਾਂ ਲਈ ਰੱਖੇ ਜਾਂਦੇ ਹਨ। ਕੋਈ ਸਾਈਟ ਨਹੀਂ, ਕੋਈ ਪਤਾ ਨਹੀਂ।"
+  },
+  "opt_gpc_sub": {
+    "message": "ਤੁਸੀਂ ਜਿਸ ਵੀ ਸਾਈਟ ’ਤੇ ਜਾਂਦੇ ਹੋ, ਉਸਨੂੰ ਤੁਹਾਡਾ ਡਾਟਾ ਨਾ ਵੇਚਣ ਜਾਂ ਸਾਂਝਾ ਨਾ ਕਰਨ ਲਈ ਕਹਿੰਦਾ ਹੈ (Sec-GPC ਸਿਗਨਲ, ਜਿਸਨੂੰ ਕੁਝ ਨਿੱਜਤਾ ਕਾਨੂੰਨਾਂ ਤਹਿਤ ਸਾਈਟਾਂ ਨੂੰ ਮੰਨਣਾ ਪੈਂਦਾ ਹੈ)। ਜਿਨ੍ਹਾਂ ਸਾਈਟਾਂ ਨੂੰ ਤੁਸੀਂ ਇਜਾਜ਼ਤ ਦਿੱਤੀ ਹੈ, ਉਨ੍ਹਾਂ ’ਤੇ ਇਹ ਨਹੀਂ ਭੇਜਿਆ ਜਾਂਦਾ।"
+  },
+  "opt_shortcuts": {
+    "message": "ਕੀਬੋਰਡ ਸ਼ਾਰਟਕੱਟ"
+  },
+  "opt_shortcuts_change": {
+    "message": "ਸ਼ਾਰਟਕੱਟ ਬਦਲੋ"
+  },
+  "opt_shortcut_none": {
+    "message": "ਸੈੱਟ ਨਹੀਂ"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox ਵਿੱਚ: ਐਡ-ਆਨ ਅਤੇ ਥੀਮ → ⚙ → ਐਕਸਟੈਂਸ਼ਨ ਸ਼ਾਰਟਕੱਟਾਂ ਦਾ ਪ੍ਰਬੰਧ ਕਰੋ।"
+  },
+  "opt_import_foreign": {
+    "message": "ਕਿਸੇ ਹੋਰ ਐਡਬਲੌਕਰ ਤੋਂ ਆਯਾਤ ਕਰੋ"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard ਜਾਂ Adblock Plus ਤੋਂ ਆ ਰਹੇ ਹੋ? ਉਸਦੀ ਬੈਕਅੱਪ ਫ਼ਾਈਲ ਚੁਣੋ: ਤੁਹਾਡੇ ਵੱਲੋਂ ਇਜਾਜ਼ਤ ਦਿੱਤੀਆਂ ਸਾਈਟਾਂ ਅਤੇ ਤੁਹਾਡੇ ਆਪਣੇ ਫਿਲਟਰ ਇੱਥੇ ਸ਼ਾਮਲ ਕੀਤੇ ਜਾਂਦੇ ਹਨ। ਮੌਜੂਦਾ ਕੁਝ ਵੀ ਨਹੀਂ ਬਦਲਿਆ ਜਾਂਦਾ।"
+  },
+  "opt_import_foreign_done": {
+    "message": "ਮਨਜ਼ੂਰ ਕੀਤੀਆਂ ਸਾਈਟਾਂ: $1 · ਸ਼ਾਮਲ ਕੀਤੇ ਫਿਲਟਰ: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "ਛੱਡੀਆਂ ਗਈਆਂ ਲਾਈਨਾਂ (ਇੱਥੇ ਲਾਗੂ ਨਹੀਂ ਹੋ ਸਕਦੀਆਂ): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "ਇਹ ਫ਼ਾਈਲ ਅਜਿਹਾ ਬੈਕਅੱਪ ਨਹੀਂ ਜਿਸਨੂੰ ਅਸੀਂ ਪੜ੍ਹ ਸਕੀਏ।"
+  },
+  "welQuickTitle": {
+    "message": "ਇਸਨੂੰ ਆਪਣੇ ਮੁਤਾਬਕ ਬਣਾਓ"
+  },
+  "welQuickSub": {
+    "message": "ਵਿਕਲਪਿਕ: ਇਹ ਪਹਿਲਾਂ ਹੀ ਕੰਮ ਕਰ ਰਿਹਾ ਹੈ। ਇਨ੍ਹਾਂ ਵਿੱਚੋਂ ਕੁਝ ਵੀ ਬਾਅਦ ਵਿੱਚ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਬਦਲਿਆ ਜਾ ਸਕਦਾ ਹੈ।"
+  },
+  "blk_page_title": {
+    "message": "ਸਾਈਟ ਬਲੌਕ ਕੀਤੀ ਗਈ — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "ਇਹ ਸਾਈਟ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਨੂੰ ਨੁਕਸਾਨ ਪਹੁੰਚਾ ਸਕਦੀ ਹੈ"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock ਨੇ ਇਹ ਪੰਨਾ ਰੋਕ ਦਿੱਤਾ, ਕਿਉਂਕਿ ਇਹ ਸਾਈਟ URLhaus ’ਤੇ ਹੈ — ਮਾਲਵੇਅਰ ਫੈਲਾਉਣ ਵਾਲੇ ਪਤਿਆਂ ਦੀ ਇੱਕ ਜਨਤਕ ਸੂਚੀ।"
+  },
+  "blk_back": {
+    "message": "ਵਾਪਸ ਜਾਓ"
+  },
+  "blk_continue": {
+    "message": "ਫਿਰ ਵੀ ਜਾਰੀ ਰੱਖੋ"
+  },
+  "blk_note": {
+    "message": "ਜਾਰੀ ਰੱਖਣ ’ਤੇ, ਬ੍ਰਾਊਜ਼ਰ ਬੰਦ ਕਰਨ ਤੱਕ ਸਿਰਫ਼ ਇਸ ਸਾਈਟ ਦੇ ਪੰਨੇ ਖੁੱਲ੍ਹਣ ਦਿੱਤੇ ਜਾਣਗੇ।"
+  },
+  "blk_why": {
+    "message": "ਇਹ ਸੂਚੀ ਵਿੱਚ ਕਿਉਂ ਹੈ? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "ਇਸ ਪੰਨੇ ਦੇ ਕਨੈਕਸ਼ਨ"
+  },
+  "conn_empty": {
+    "message": "ਇਸ ਪੰਨੇ ਨੇ ਹੋਰ ਸਾਈਟਾਂ ਤੋਂ ਕੁਝ ਵੀ ਲੋਡ ਨਹੀਂ ਕੀਤਾ।"
+  },
+  "conn_block": {
+    "message": "ਇੱਥੇ ਬਲੌਕ ਕਰੋ"
+  },
+  "conn_blocked": {
+    "message": "ਇੱਥੇ ਬਲੌਕ ਕੀਤਾ"
+  },
+  "conn_hint": {
+    "message": "ਇਹ ਸਾਈਟ $1 ਤੋਂ ਜੋ ਲੋਡ ਕਰਦੀ ਹੈ, ਉਸਨੂੰ ਬਲੌਕ ਕਰੋ"
+  },
+  "opt_conn_title": {
+    "message": "ਤੁਹਾਡੇ ਵੱਲੋਂ ਬਲੌਕ ਕੀਤੇ ਕਨੈਕਸ਼ਨ"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock ਵਿੰਡੋ ਦੇ “ਇਸ ਪੰਨੇ ਦੇ ਕਨੈਕਸ਼ਨ” ਤੋਂ ਬਲੌਕ ਕੀਤੇ, ਹਰੇਕ ਸਿਰਫ਼ ਆਪਣੀ ਸਾਈਟ ’ਤੇ।"
+  },
+  "opt_empty_conn": {
+    "message": "ਹਾਲੇ ਕੁਝ ਵੀ ਬਲੌਕ ਨਹੀਂ ਕੀਤਾ ਗਿਆ।"
+  },
+  "opt_conn_remove": {
+    "message": "$2 ’ਤੇ $1 ਨੂੰ ਅਨਬਲੌਕ ਕਰੋ"
+  },
+  "opt_h_danger": {
+    "message": "ਮਾਲਵੇਅਰ ਚੇਤਾਵਨੀ ਪੰਨਾ"
+  },
+  "opt_h_capacity": {
+    "message": "ਨਿਯਮਾਂ ਦੀ ਸਮਰੱਥਾ"
   }
 }

@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "ទប់ស្កាត់ពាណិជ្ជកម្មវីដេអូ YouTube បដា ផ្ទាំងលោត កម្មវិធីតាមដាន និងផ្ទាំងខូគី។ ឥតគិតថ្លៃ រហ័ស និងឯកជន។"
+    "message": "ទប់ស្កាត់ពាណិជ្ជកម្មវីដេអូ YouTube បដា ផ្ទាំងលោត កម្មវិធីតាមដាន និងផ្ទាំងខូគី។"
   },
   "byCarbon": {
     "message": "ដោយ Carbon Stealth"
@@ -118,6 +118,27 @@
   "support": {
     "message": "គាំទ្រ"
   },
+  "rate": {
+    "message": "វាយតម្លៃ"
+  },
+  "rateTitle": {
+    "message": "វាយតម្លៃ Supreme AdBlock នៅលើ Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "បានទប់ស្កាត់សំណើ $1 រហូតមកដល់ពេលនេះ"
+  },
+  "reviewAsk": {
+    "message": "ប្រសិនបើ Supreme AdBlock មានប្រយោជន៍សម្រាប់អ្នក ការវាយតម្លៃខ្លីមួយនៅលើ Chrome Web Store ជួយឱ្យអ្នកដទៃរកឃើញវា។"
+  },
+  "reviewLeave": {
+    "message": "សរសេរការវាយតម្លៃ"
+  },
+  "reviewLater": {
+    "message": "មិនមែនឥឡូវនេះទេ"
+  },
+  "reviewNever": {
+    "message": "កុំសួរម្ដងទៀត"
+  },
   "filtersCount": {
     "message": "តម្រង $1+",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "លាក់ជញ្ជាំង «បិទកម្មវិធីទប់ស្កាត់ពាណិជ្ជកម្មរបស់អ្នក» ហើយស្ដារទំព័រឡើងវិញ"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "លាក់ការបង្ហោះ «បានឧបត្ថម្ភ» នៅលើ Facebook និង Instagram"
+    "message": "លាក់ការបង្ហោះ «បានឧបត្ថម្ភ» នៅលើ Facebook, Instagram និង Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "ដក utm_*, fbclid, gclid និងលេខសម្គាល់ការចុចផ្សេងទៀតចេញពីតំណដែលអ្នកបើក"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "ទប់ស្កាត់ដែនមេរោគដែលគេស្គាល់ (បញ្ជី URLhaus ដោយ abuse.ch)"
+    "message": "ព្រមានមុនពេលគេហទំព័រមេរោគដែលគេស្គាល់បើក ហើយទប់ស្កាត់អ្វីដែលទំព័រផ្ទុកពីគេហទំព័របែបនេះ (បញ្ជី URLhaus ដោយ abuse.ch)។"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "បិទ API ពាណិជ្ជកម្ម Google Topics, FLoC និង Protected Audience នៅគ្រប់គេហទំព័រ"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "បរិច្ចាគតាម Revolut"
+  },
+  "opt_review": {
+    "message": "ការរំលឹកអំពីការវាយតម្លៃ"
+  },
+  "opt_review_sub": {
+    "message": "តំណ ★ តូចមួយនៅផ្នែកខាងក្រោមនៃផ្ទាំង Supreme AdBlock ហើយយ៉ាងច្រើនពីរដង សំណើខ្លីមួយនៅទីនោះ ដើម្បីវាយតម្លៃវានៅលើ Chrome Web Store។ មិនដែលនៅលើគេហទំព័រ មិនដែលជាការជូនដំណឹងឡើយ។"
   },
   "opt_made_by": {
     "message": "បង្កើតដោយ Carbon Stealth"
@@ -599,5 +626,172 @@
   },
   "opt_notices": {
     "message": "អាជ្ញាបណ្ណនៃបញ្ជីតម្រង"
+  },
+  "welPageTitle": {
+    "message": "សូមស្វាគមន៍មកកាន់ Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "អ្នកត្រូវបានការពារ",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "ឥឡូវនេះ Supreme AdBlock កំពុងទប់ស្កាត់ពាណិជ្ជកម្ម និងកម្មវិធីតាមដាននៅលើគ្រប់គេហទំព័រដែលអ្នកចូលមើល។ មិនចាំបាច់កំណត់អ្វីទេ។",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "ខ្ទាស់កម្មវិធីបន្ថែមនៅលើរបារឧបករណ៍",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "ចុចរូបតំណាងបំណែកល្បែងផ្គុំរូបនៅក្បែររបារអាសយដ្ឋាន ហើយខ្ទាស់ Supreme AdBlock។ បន្ទាប់មក ការចុចតែម្ដងនឹងបង្ហាញអ្វីដែលត្រូវបានទប់ស្កាត់នៅលើទំព័រ។",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "ប្រសិនបើគេហទំព័រមើលទៅខូច",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "បើកកម្មវិធីបន្ថែម ហើយបិទការទប់ស្កាត់សម្រាប់គេហទំព័រនោះ ឬជ្រើសរើស «គេហទំព័រខូច?» សម្រាប់ការជួសជុលរហ័ស។",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "ការរុករករបស់អ្នកនៅតែលើឧបករណ៍របស់អ្នក",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "ការត្រងធ្វើឡើងនៅលើឧបករណ៍ផ្ទាល់។ កម្មវិធីបន្ថែមមិនប្រមូលទិន្នន័យផ្ទាល់ខ្លួនទេ ហើយមិនផ្ញើអ្វីអំពីទំព័រដែលអ្នកចូលមើលទេ។",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "បើកការកំណត់",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "យល់ហើយ",
+    "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "បានអនុញ្ញាត · $1 នាទីទៀត"
+  },
+  "hiddenHere": {
+    "message": "បានលាក់នៅទីនេះ៖ $1 · បង្ហាញធាតុចុងក្រោយវិញ"
+  },
+  "cmd_toggle_site": {
+    "message": "បើក ឬបិទការទប់ស្កាត់នៅគេហទំព័រនេះ"
+  },
+  "cmd_pause": {
+    "message": "ផ្អាក ឬបន្តការការពារ (30 នាទី)"
+  },
+  "cmd_picker": {
+    "message": "លាក់ធាតុមួយនៅលើទំព័រនេះ"
+  },
+  "rep_fix_hour": {
+    "message": "អនុញ្ញាតពាណិជ្ជកម្មនៅទីនេះរយៈពេល 1 ម៉ោង"
+  },
+  "rep_done_hour": {
+    "message": "ពាណិជ្ជកម្មត្រូវបានអនុញ្ញាតនៅគេហទំព័រនេះរយៈពេល 1 ម៉ោង។ បានផ្ទុកឡើងវិញ — តើបានជួសជុលហើយឬនៅ?"
+  },
+  "opt_last30": {
+    "message": "30 ថ្ងៃចុងក្រោយ"
+  },
+  "opt_last30_sum": {
+    "message": "បានទប់ស្កាត់៖ $1 · បដាខូគី៖ $2"
+  },
+  "opt_last30_empty": {
+    "message": "ចំនួនសរុបប្រចាំថ្ងៃរបស់អ្នកនឹងបង្ហាញនៅទីនេះ នៅពេលអ្នករុករក។"
+  },
+  "opt_last30_sub": {
+    "message": "មានតែចំនួនសរុបប្រចាំថ្ងៃប៉ុណ្ណោះ ដែលរក្សាទុកនៅលើឧបករណ៍នេះរយៈពេល 30 ថ្ងៃ។ គ្មានគេហទំព័រ គ្មានអាសយដ្ឋាន។"
+  },
+  "opt_gpc_sub": {
+    "message": "ស្នើសុំគ្រប់គេហទំព័រដែលអ្នកចូលមើល កុំលក់ ឬចែករំលែកទិន្នន័យរបស់អ្នក (សញ្ញា Sec-GPC ដែលច្បាប់ឯកជនភាពមួយចំនួនតម្រូវឱ្យគេហទំព័រគោរព)។ មិនផ្ញើនៅលើគេហទំព័រដែលអ្នកអនុញ្ញាតទេ។"
+  },
+  "opt_shortcuts": {
+    "message": "ផ្លូវកាត់ក្ដារចុច"
+  },
+  "opt_shortcuts_change": {
+    "message": "ប្ដូរផ្លូវកាត់"
+  },
+  "opt_shortcut_none": {
+    "message": "មិនទាន់កំណត់"
+  },
+  "opt_shortcuts_ff": {
+    "message": "នៅក្នុង Firefox៖ កម្មវិធីបន្ថែម និងរូបរាង → ⚙ → គ្រប់គ្រងផ្លូវកាត់កម្មវិធីបន្ថែម។"
+  },
+  "opt_import_foreign": {
+    "message": "នាំចូលពីកម្មវិធីទប់ស្កាត់ផ្សេងទៀត"
+  },
+  "opt_import_foreign_sub": {
+    "message": "កំពុងប្ដូរពី uBlock Origin, AdGuard ឬ Adblock Plus មែនទេ? សូមជ្រើសរើសឯកសារបម្រុងទុករបស់វា៖ គេហទំព័រដែលអ្នកបានអនុញ្ញាត និងតម្រងផ្ទាល់ខ្លួនរបស់អ្នកនឹងត្រូវបានបន្ថែមនៅទីនេះ។ គ្មានអ្វីត្រូវបានជំនួសទេ។"
+  },
+  "opt_import_foreign_done": {
+    "message": "គេហទំព័របានអនុញ្ញាត៖ $1 · តម្រងបានបន្ថែម៖ $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "បានរំលង (មិនអាចអនុវត្តនៅទីនេះបាន)៖ $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "ឯកសារនេះមិនមែនជាការបម្រុងទុកដែលយើងអាចអានបានទេ។"
+  },
+  "welQuickTitle": {
+    "message": "កែតម្រូវតាមចិត្តអ្នក"
+  },
+  "welQuickSub": {
+    "message": "ជាជម្រើស៖ វាដំណើរការរួចហើយ។ អ្នកអាចប្ដូររបស់ទាំងនេះនៅពេលក្រោយក្នុងការកំណត់។"
+  },
+  "blk_page_title": {
+    "message": "បានទប់ស្កាត់គេហទំព័រ — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "គេហទំព័រនេះអាចបង្កគ្រោះថ្នាក់ដល់ឧបករណ៍របស់អ្នក"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock បានបញ្ឈប់ទំព័រនេះ ដោយសារគេហទំព័រនេះមាននៅក្នុង URLhaus ដែលជាបញ្ជីសាធារណៈនៃអាសយដ្ឋានដែលចែកចាយមេរោគ។"
+  },
+  "blk_back": {
+    "message": "ត្រឡប់ក្រោយ"
+  },
+  "blk_continue": {
+    "message": "បន្តទោះយ៉ាងណាក៏ដោយ"
+  },
+  "blk_note": {
+    "message": "ការបន្តនឹងអនុញ្ញាតតែទំព័ររបស់គេហទំព័រនេះប៉ុណ្ណោះ រហូតដល់អ្នកបិទកម្មវិធីរុករក។"
+  },
+  "blk_why": {
+    "message": "ហេតុអ្វីបានជាវាស្ថិតក្នុងបញ្ជី? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "ការតភ្ជាប់នៅទំព័រនេះ"
+  },
+  "conn_empty": {
+    "message": "ទំព័រនេះមិនបានផ្ទុកអ្វីពីគេហទំព័រផ្សេងទេ។"
+  },
+  "conn_block": {
+    "message": "ទប់ស្កាត់នៅទីនេះ"
+  },
+  "conn_blocked": {
+    "message": "បានទប់ស្កាត់"
+  },
+  "conn_hint": {
+    "message": "ទប់ស្កាត់អ្វីដែលគេហទំព័រនេះផ្ទុកពី $1"
+  },
+  "opt_conn_title": {
+    "message": "ការតភ្ជាប់ដែលអ្នកបានទប់ស្កាត់"
+  },
+  "opt_conn_sub": {
+    "message": "បានទប់ស្កាត់ពី «ការតភ្ជាប់នៅទំព័រនេះ» ក្នុងផ្ទាំងលោត ហើយនីមួយៗមានឥទ្ធិពលតែលើគេហទំព័ររបស់វាប៉ុណ្ណោះ។"
+  },
+  "opt_empty_conn": {
+    "message": "មិនទាន់មានអ្វីត្រូវបានទប់ស្កាត់នៅឡើយទេ។"
+  },
+  "opt_conn_remove": {
+    "message": "ឈប់ទប់ស្កាត់ $1 នៅលើ $2"
+  },
+  "opt_h_danger": {
+    "message": "ទំព័រព្រមានអំពីមេរោគ"
+  },
+  "opt_h_capacity": {
+    "message": "ចំណុះច្បាប់"
   }
 }

@@ -9,6 +9,7 @@ import { notifyBot } from "../services/botNotifier.js";
 import { pickRandom } from "../lib/shuffle.js";
 import { findBestMatch } from "../lib/kbMatch.js";
 import { getServerTier, planHasFeature } from "../lib/premium.js";
+import { grantXpOnce, XP_REWARDS } from "../lib/game/xp.js";
 
 const router = Router();
 router.use(requireBotSecret);
@@ -87,6 +88,8 @@ router.post("/poll/:id/vote", async (req, res, next) => {
 
     await prisma.pollVote.create({ data: { pollId: poll.id, userId, option } });
     const counts = await recountPoll(poll.id, poll.options.length);
+    // v50 — XP за глас: веднъж на анкета (ключът пази от toggle-фермене).
+    grantXpOnce(poll.serverId, userId, `poll:${poll.id}`, XP_REWARDS.POLL_VOTE).catch(() => {});
     res.json({ toggled: "on", counts });
   } catch (err) { next(err); }
 });
@@ -186,6 +189,8 @@ router.post("/giveaway/:id/enter", async (req, res, next) => {
 
     await prisma.giveawayEntry.create({ data: { giveawayId: g.id, userId } });
     const entryCount = await prisma.giveawayEntry.count({ where: { giveawayId: g.id } });
+    // v50 — XP за участие: веднъж на подарък.
+    grantXpOnce(g.serverId, userId, `giveaway:${g.id}`, XP_REWARDS.GIVEAWAY_ENTER).catch(() => {});
     res.json({ entered: true, entryCount, requiredRoleIds: g.requiredRoleIds });
   } catch (err) { next(err); }
 });

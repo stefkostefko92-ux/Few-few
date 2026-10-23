@@ -6,6 +6,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import { getSetting } from './game/settings';
 
 import authRoutes from './routes/auth';
 import characterRoutes from './routes/character';
@@ -25,6 +26,7 @@ import bestiaryRoutes from './routes/bestiary';
 import statsRoutes from './routes/stats';
 import adminRoutes from './routes/admin';
 import setsRoutes from './routes/sets';
+import publicSetsRoutes from './routes/publicSets';
 import profileRoutes from './routes/profile';
 import guildRoutes from './routes/guild';
 import socialRoutes from './routes/social';
@@ -127,22 +129,36 @@ const apiLimiter = rateLimit({
 });
 app.use('/api', apiLimiter);
 
-const authLimiter = rateLimit({ windowMs: 60_000, max: 20 });
+// Лимитът е админ настройка (login_rate_max_per_min) — чете се при всяка
+// заявка (кеширано), затова промяна в панела важи веднага.
+const authLimiter = rateLimit({ windowMs: 60_000, limit: () => getSetting<number>('login_rate_max_per_min') });
 app.use('/api/auth', authLimiter);
 
 // Tighter per-IP throttling on the abuse-prone auth endpoints. /register
 // + /forgot + /reset are rare; capping them an order of magnitude lower
 // than the general auth pool blocks credential-stuffing and password-
 // reset spamming without affecting normal login traffic.
-const sensitiveAuthLimiter = rateLimit({ windowMs: 60 * 60_000, max: 8, standardHeaders: true });
+// Hard-coded (NOT the settings-backed authLimiter above) on purpose — an
+// admin fat-fingering a setting must never be able to reopen the abuse
+// window. The ONLY override is a non-production env var for local e2e
+// runs (Nexus/e2e/ registers many isolated test users per run, easily
+// >8/hour) — refused outright in production regardless of the env var.
+const sensitiveAuthMax = process.env.NODE_ENV !== 'production' && process.env.NEXUS_E2E_AUTH_RATE_MAX
+  ? Number(process.env.NEXUS_E2E_AUTH_RATE_MAX) || 8
+  : 8;
+const sensitiveAuthLimiter = rateLimit({ windowMs: 60 * 60_000, max: sensitiveAuthMax, standardHeaders: true });
 app.use('/api/auth/register', sensitiveAuthLimiter);
 app.use('/api/auth/forgot',   sensitiveAuthLimiter);
 app.use('/api/auth/reset',    sensitiveAuthLimiter);
 
 // Audit #12: admin routes get their own tighter limiter. A leaked
 // admin token shouldn't translate to unlimited gold-minting.
-const adminLimiter = rateLimit({ windowMs: 60_000, max: 60, standardHeaders: true });
-app.use('/api/admin', adminLimiter);
+// Четенето (опресняване на таблата/таблиците) и промените имат отделни
+// тавани: с един общ 60/мин нормалната работа в панела удряше 429.
+// Разрушителните действия имат и свой по-строг лимит в routes/admin.ts.
+const adminReadLimiter = rateLimit({ windowMs: 60_000, max: 300, standardHeaders: true, skip: (req) => req.method !== 'GET' });
+const adminWriteLimiter = rateLimit({ windowMs: 60_000, max: 60, standardHeaders: true, skip: (req) => req.method === 'GET' });
+app.use('/api/admin', adminReadLimiter, adminWriteLimiter);
 
 // Audit #11: the public /profile lookup is the username-enumeration
 // oracle when combined with /auth/forgot (which always returns 200).
@@ -180,6 +196,9 @@ app.use('/api/bestiary', bestiaryRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/sets', setsRoutes);
+// Без authRequired — виж бележката в routes/publicSets.ts (само статично
+// игрово съдържание, за 3D витрината на публичния лендинг).
+app.use('/api/public/sets', publicSetsRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/guild', guildRoutes);
 app.use('/api/social', socialRoutes);

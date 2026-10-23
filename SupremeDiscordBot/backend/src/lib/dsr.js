@@ -23,6 +23,7 @@
 // Никога не хвърля заради липсващ модел (Promise.resolve().then), за да не може
 // едно ново поле да счупи правото на изтриване (урок от routes/gdpr.js).
 
+import { gameEraseSteps } from "./game/privacy.js";
 import { prisma } from "./prisma.js";
 import { writeAudit } from "./auditLog.js";
 import { generateHtmlTranscript } from "../utils/archive.js";
@@ -37,7 +38,7 @@ const safeCount = (fn) => Promise.resolve().then(fn).catch(() => 0);
 /** Какво пазим за този Discord ID — само бройки, без съдържание. */
 export async function summarizeDiscordUser(userId) {
   const uid = String(userId);
-  const [user, tickets, messages, applications, roleSnapshots, verificationAttempts, memberships, sessions, apiKeys, auditRows, ownedServers] =
+  const [user, tickets, messages, applications, roleSnapshots, verificationAttempts, memberships, sessions, apiKeys, auditRows, ownedServers, gameProfiles, companions, purchases, questContributions, triviaAnswers] =
     await Promise.all([
       prisma.user.findUnique({ where: { id: uid }, select: { id: true, username: true, globalRole: true, isBlacklisted: true, createdAt: true, email: true, mfaEnabledAt: true } }).catch(() => null),
       safeCount(() => prisma.ticket.count({ where: { creatorId: uid } })),
@@ -50,12 +51,18 @@ export async function summarizeDiscordUser(userId) {
       safeCount(() => prisma.apiKey.count({ where: { userId: uid, revokedAt: null } })),
       safeCount(() => prisma.auditLog.count({ where: { OR: [{ actorId: uid }, { targetId: uid }] } })),
       safeCount(() => prisma.server.count({ where: { ownerId: uid } })),
+      // v50 — Server Season
+      safeCount(() => prisma.memberProgress.count({ where: { userId: uid } })),
+      safeCount(() => prisma.memberCompanion.count({ where: { userId: uid } })),
+      safeCount(() => prisma.shopPurchase.count({ where: { userId: uid } })),
+      safeCount(() => prisma.questContribution.count({ where: { userId: uid } })),
+      safeCount(() => prisma.triviaAnswer.count({ where: { userId: uid } })),
     ]);
   return {
     userId: uid,
     registered: !!user,
     user: user ? { username: user.username, globalRole: user.globalRole, isBlacklisted: user.isBlacklisted, createdAt: user.createdAt, hasEmail: !!user.email, mfaEnabled: !!user.mfaEnabledAt } : null,
-    counts: { tickets, messages, applications, roleSnapshots, verificationAttempts, memberships, sessions, apiKeys, auditRows, ownedServers },
+    counts: { tickets, messages, applications, roleSnapshots, verificationAttempts, memberships, sessions, apiKeys, auditRows, ownedServers, gameProfiles, companions, purchases, questContributions, triviaAnswers },
   };
 }
 
@@ -133,6 +140,9 @@ export async function eraseDiscordUser(userId, { scope = "identity", via = "admi
     await c("roleSnapshots", () => tx.memberRoleSnapshot.deleteMany({ where: { userId: uid } }));
     await c("verificationAttempts", () => tx.verificationAttempt.deleteMany({ where: { userId: uid } }));
     await c("memberships", () => tx.serverMember.deleteMany({ where: { userId: uid } }));
+    // v50 — Server Season: общите стъпки (lib/game/privacy.js) — същите и за
+    // изтриването от таблото (routes/gdpr.js).
+    for (const [name, step] of gameEraseSteps(tx, uid)) await c(name, step);
 
     if (scope === "full") {
       await c("messageContent", () => tx.ticketMessage.updateMany({

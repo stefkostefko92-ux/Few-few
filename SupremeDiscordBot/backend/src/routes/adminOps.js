@@ -25,6 +25,8 @@ import { billingConfig } from "../lib/billing.js";
 import { discordSubscriptionLabel } from "../lib/discordSubscription.js";
 import { summarizeDiscordUser, eraseDiscordUser } from "../lib/dsr.js";
 import { aiTrainingAttested } from "../services/aiReply.js";
+import { COMPANIONS, publicCompanion } from "../lib/game/companions.js";
+import { getCurrentSeason, listSeasons, createSeason, updateSeason, publicSeason } from "../lib/game/seasons.js";
 
 const router = Router();
 router.use(requireAuth, loadUser, adminIpAllowlist, requireSuperUser, requireMfa);
@@ -133,7 +135,10 @@ router.get("/security", async (req, res, next) => {
       prisma.auditLog.findMany({
         where: { createdAt: { gte: since }, action: { in: [
           "MFA_ENABLED", "MFA_DISABLED", "MFA_VERIFY_FAILED", "MFA_BACKUP_CODE_USED", "MFA_BACKUP_CODES_REGENERATED",
-          "BRUTE_FORCE_BLOCK", "ROLE_CHANGED", "USER_BLACKLISTED", "USER_UNBLACKLISTED", "DSR_ERASED", "SECURITY_UNBLOCK", "API_KEY_REVOKED_ADMIN",
+          // Имената са каквото РЕАЛНО се пише (одит 26.09.2026: ROLE_CHANGED и
+          // BRUTE_FORCE_BLOCK не съществуваха → табът не показваше тези събития).
+          "SECURITY_BRUTE_FORCE_BLOCK", "USER_ROLE_CHANGED", "USER_BLACKLISTED", "USER_UNBLACKLISTED", "DSR_ERASED", "SECURITY_UNBLOCK", "API_KEY_REVOKED_ADMIN",
+          "MFA_RESET_BY_ADMIN", "USER_SESSIONS_REVOKED", "WHITELABEL_TOKEN_REMOVED_BY_ADMIN",
         ] } },
         orderBy: { createdAt: "desc" }, take: 100,
         include: { actor: { select: { id: true, username: true } } },
@@ -274,13 +279,61 @@ router.post("/fleet/reconcile", requireMainOwner, stepUp, async (req, res, next)
   } catch (err) { next(err); }
 });
 
+// ─── Server Season: сезоните (v50) ───────────────────────────────────────────
+// Глобални за платформата — затова са тук, не в таблото на сървъра. Четене за
+// staff; създаване/промяна = MAIN_OWNER + step-up (сменя кои спътници се
+// появяват във ВСИЧКИ сървъри). Логиката/валидацията е в lib/game/seasons.js.
+const seasonSchema = z.object({
+  code: z.string().min(1).max(16).optional(),
+  name: z.string().min(1).max(80).optional(),
+  startsAt: z.string().datetime({ offset: true }).optional(),
+  endsAt: z.string().datetime({ offset: true }).optional(),
+  companionIds: z.array(z.string().min(1).max(60)).max(100).optional(),
+});
+
+router.get("/game/season", async (_req, res, next) => {
+  try {
+    const now = new Date();
+    const [current, all] = await Promise.all([getCurrentSeason({ now, fresh: true }), listSeasons()]);
+    res.json({
+      current: publicSeason(current, now),
+      seasons: all.map((s) => publicSeason(s, now)),
+      catalog: COMPANIONS.map((c) => { const p = publicCompanion(c, 1, current); return { id: p.id, name: p.name, rarity: p.rarity, rarityEmoji: p.rarityEmoji, family: p.family, imageUrl: p.imageUrl, seasonal: !!p.seasonId }; }),
+    });
+  } catch (err) { next(err); }
+});
+
+router.post("/game/season", requireMainOwner, stepUp, async (req, res, next) => {
+  const parsed = seasonSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+  const { code, name, startsAt, endsAt, companionIds = [] } = parsed.data;
+  if (!code || !name || !startsAt || !endsAt) return res.status(400).json({ error: "code, name, startsAt и endsAt са задължителни" });
+  try {
+    const out = await createSeason({ code, name, startsAt, endsAt, companionIds });
+    if (!out.ok) return res.status(["DUPLICATE", "OVERLAP", "ENDED"].includes(out.code) ? 409 : 400).json({ error: out.error, code: out.code });
+    await writeAudit({ actorId: req.user.id, action: "GAME_SEASON_CREATED", targetId: out.season.code, metadata: { name: out.season.name, startsAt: out.season.startsAt, endsAt: out.season.endsAt, companions: out.season.companionIds.length } });
+    res.status(201).json(publicSeason(out.season));
+  } catch (err) { next(err); }
+});
+
+router.put("/game/season/:code", requireMainOwner, stepUp, async (req, res, next) => {
+  const parsed = seasonSchema.omit({ code: true }).safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+  try {
+    const out = await updateSeason(req.params.code, parsed.data);
+    if (!out.ok) return res.status(out.code === "NOT_FOUND" ? 404 : ["OVERLAP", "ENDED"].includes(out.code) ? 409 : 400).json({ error: out.error, code: out.code });
+    await writeAudit({ actorId: req.user.id, action: "GAME_SEASON_UPDATED", targetId: out.season.code, metadata: { keys: Object.keys(parsed.data) } });
+    res.json(publicSeason(out.season));
+  } catch (err) { next(err); }
+});
+
 // ─── Compliance / DSR ────────────────────────────────────────────────────────
 const discordId = z.string().regex(/^\d{5,25}$/);
 
 router.get("/dsr/requests", async (_req, res, next) => {
   try {
     const rows = await prisma.auditLog.findMany({
-      where: { action: { in: ["DSR_ERASED", "GDPR_ACCOUNT_DELETED", "GDPR_EXPORT", "GDPR_CONSENT_WITHDRAWN"] } },
+      where: { action: { in: ["DSR_ERASED", "GDPR_ACCOUNT_DELETED", "GDPR_DATA_EXPORT", "GDPR_CONSENT_WITHDRAWN"] } },
       orderBy: { createdAt: "desc" }, take: 200,
       include: { actor: { select: { id: true, username: true } } },
     });

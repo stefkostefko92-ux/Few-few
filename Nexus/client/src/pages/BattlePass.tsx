@@ -133,6 +133,11 @@ export default function BattlePass(): React.ReactElement {
       </div>
 
       <div className="panel">
+        {/* .table-scroll — таблицата с фиксирани колони (50+90+120+280+280px)
+            е много по-широка от 360px мобилен viewport; без обвивка с
+            overflow-x:auto цялата страница получава хоризонтален скрол
+            (потвърдено, scrollWidth до 606px). Виж и Leaderboard.tsx. */}
+        <div className="table-scroll">
         <table className="bp-table">
           <thead>
             <tr>
@@ -190,6 +195,7 @@ export default function BattlePass(): React.ReactElement {
             })}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

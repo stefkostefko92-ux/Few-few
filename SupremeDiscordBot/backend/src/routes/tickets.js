@@ -3,6 +3,7 @@ import { Router } from "express";
 import { sealTranscript, openTranscript } from "../lib/transcriptAtRest.js";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
+import { awardTicketSlaXp } from "../lib/game/xp.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
 import { generateHtmlTranscript } from "../utils/archive.js";
 import { notifyBot, notifyBotVerbose, sendTicketReply } from "../services/botNotifier.js";
@@ -170,6 +171,7 @@ router.post("/:serverId/:ticketId/close", requireServerAdmin, async (req, res, n
         // Нужен на транскрипта: при white-label бот брандът в архива е на
         // клиента, а нашето име не се появява (виж utils/archive.js).
         server: { select: { name: true, customBotName: true } },
+        panel: { select: { slaFirstResponseMinutes: true, slaResolutionMinutes: true } },
       },
     });
 
@@ -177,6 +179,8 @@ router.post("/:serverId/:ticketId/close", requireServerAdmin, async (req, res, n
     if (ticket.status === "CLOSED" || ticket.status === "ARCHIVED") {
       return res.status(400).json({ error: "Ticket is already closed" });
     }
+    // v50 — XP за staff, затворил тикет БЕЗ пробив на SLA (само панели със SLA; веднъж на тикет).
+    awardTicketSlaXp(ticket, req.user.id).catch(() => {});
 
     // Generate HTML transcript
     const html = generateHtmlTranscript(ticket);

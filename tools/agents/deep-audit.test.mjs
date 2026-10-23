@@ -47,9 +47,9 @@ test("brokenToolRefs не се подлъгва по не-.mjs или по пр�
   assert.deepEqual(brokenToolRefs("tools/seo/README.md"), [], "само .mjs");
 });
 
-test("всеки агент с WebFetch/WebSearch има инжекционен spec (проверено срещу ДЕФИНИЦИЯТА)", () => {
+test("всеки агент с WebFetch/WebSearch/MCP има инжекционен spec (проверено срещу ДЕФИНИЦИЯТА)", () => {
   const ids = agentIds();
-  const web = ids.filter((id) => /WebFetch|WebSearch/.test(
+  const web = ids.filter((id) => /WebFetch|WebSearch|mcp__/.test(
     (readFileSync(join(ROOT, ".claude", "agents", id + ".md"), "utf8").match(/^tools:\s*(.+)$/m) || [])[1] || ""));
   assert.ok(web.length >= 20, `очаквам голяма външна повърхност, намерих ${web.length}`);
   for (const id of web)

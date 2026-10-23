@@ -30,8 +30,20 @@ const SMTP_TLS_SERVERNAME = process.env.SMTP_TLS_SERVERNAME || '';
 // част от приложението (Stripe/geo използват PUBLIC_BASE_URL).
 const SITE_URL = (process.env.PUBLIC_BASE_URL || process.env.SITE_URL || 'https://nexus.carbonstealth.eu').replace(/\/$/, '');
 
+/** Минималният интерфейс, който ползваме от транспорта (за мок в тестове). */
+export type MailTransport = Pick<Transporter, 'sendMail'> & Partial<Pick<Transporter, 'verify'>>;
+
 let _transporter: Transporter | null = null;
+let _override: MailTransport | null | undefined; // undefined = няма подмяна
+
+/** Тестове: подмени транспорта (мок) или null = „SMTP не е конфигуриран";
+ *  undefined връща реалния. Никога не се ползва в продукция. */
+export function setMailTransportForTests(t: MailTransport | null | undefined): void {
+  _override = t;
+}
+
 function getTransporter(): Transporter | null {
+  if (_override !== undefined) return _override as Transporter | null;
   if (_transporter) return _transporter;
   if (!SMTP_USER || !SMTP_PASS) {
     console.warn('[email] SMTP_USER / SMTP_PASS не са конфигурирани — имейли НЯМА да се пращат (записът в БД остава).');
@@ -145,10 +157,47 @@ export async function sendPasswordResetEmail(to: string, username: string, token
       text: resetText(username, resetUrl),
       html: resetHtml(username, resetUrl),
     });
-    console.log(`[email] ✓ reset изпратен на ${to}`);
+    console.log(`[email] ✓ reset изпратен на ${maskEmail(to)}`);
     return true;
   } catch (err: any) {
     console.warn(`[email] reset провал: ${err?.message || err}`);
+    return false;
+  }
+}
+
+/** Маскира адрес за лога (GDPR: пълният имейл не влиза в логовете). */
+export function maskEmail(addr: string): string {
+  const [user, domain] = String(addr || '').split('@');
+  if (!domain) return '***';
+  return `${user.slice(0, 1)}***@${domain}`;
+}
+
+export interface MailMessage {
+  to: string;
+  subject: string;
+  text: string;
+  html?: string;
+}
+
+/**
+ * Обща функция за пращане (транзакционни съобщения: DSA решения и т.н.).
+ * Същата SMTP конфигурация от env (SMTP_* — без тайни в кода). Никога не
+ * хвърля: ако SMTP не е конфигуриран (dev) — пише в лога и връща false;
+ * при грешка при пращане — също false. Адресът в лога е маскиран.
+ */
+export async function sendMail(msg: MailMessage): Promise<boolean> {
+  if (!msg.to || !msg.subject) return false;
+  const t = getTransporter();
+  if (!t) {
+    console.info(`[email] (не е изпратен — SMTP не е конфигуриран) до ${maskEmail(msg.to)}: „${msg.subject}"`);
+    return false;
+  }
+  try {
+    await t.sendMail({ from: SMTP_FROM, to: msg.to, subject: msg.subject, text: msg.text, ...(msg.html ? { html: msg.html } : {}) });
+    console.log(`[email] ✓ „${msg.subject}" изпратен до ${maskEmail(msg.to)}`);
+    return true;
+  } catch (err: any) {
+    console.warn(`[email] провал („${msg.subject}" до ${maskEmail(msg.to)}): ${err?.message || err}`);
     return false;
   }
 }

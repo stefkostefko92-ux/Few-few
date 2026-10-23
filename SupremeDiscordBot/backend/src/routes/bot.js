@@ -2,7 +2,9 @@
 // Internal routes called BY the Discord bot to interact with the backend API
 // (separate from the bot-notifier that calls the bot)
 import { Router } from "express";
+import { isBlacklistActive, BLACKLIST_SELECT } from "../lib/blacklist.js";
 import { prisma } from "../lib/prisma.js";
+import { awardTicketSlaXp } from "../lib/game/xp.js";
 import { requireBotSecret } from "../middleware/auth.js";
 import { generateHtmlTranscript } from "../utils/archive.js";
 import { ensureArchiveToken, tokenizedArchiveUrl } from "../lib/archiveToken.js";
@@ -124,10 +126,12 @@ router.get("/server/:serverId/token", async (req, res, next) => {
   try {
     const server = await prisma.server.findUnique({
       where: { id: req.params.serverId },
-      select: { customBotToken: true },
+      select: { customBotToken: true, customBotPausedAt: true },
     });
 
     if (!server) return res.status(404).json({ error: "Server not found" });
+    // v51: спрян от админ конзолата → като без токен (ботът сваля клиента и не го вдига).
+    if (server.customBotPausedAt) return res.json({ token: null, paused: true });
     // White-label bot runs only while the server holds the White-label / Agency
     // tier (getServerTier resolves own plan, active trial and agency seats).
     const { hasWhiteLabel } = await getServerTier(req.params.serverId);
@@ -594,10 +598,12 @@ router.post("/ticket/:ticketId/close", async (req, res, next) => {
       include: {
         messages: { orderBy: { createdAt: "asc" } },
         creator: true, assignee: true,
-        panel: { select: { transcriptChannelId: true, name: true } },
+        panel: { select: { transcriptChannelId: true, name: true, slaFirstResponseMinutes: true, slaResolutionMinutes: true } },
         server: { select: { archiveChannelId: true } },
       },
     });
+    // v50 — XP за staff, затворил тикет БЕЗ пробив на SLA (само панели със SLA; веднъж на тикет).
+    awardTicketSlaXp(ticket, closedById).catch(() => {});
 
     // Generate HTML archive
     const html = generateHtmlTranscript(ticket);
@@ -606,7 +612,10 @@ router.post("/ticket/:ticketId/close", async (req, res, next) => {
     const archiveUrl = tokenizedArchiveUrl(ticket.id, token);
     await prisma.ticket.update({
       where: { id: ticket.id },
-      data: { archiveHtml: html, archiveUrl },
+      // Discord Developer Terms §5(c)(i) — транскриптът при покой е шифриран
+      // (lib/transcriptAtRest.js). Основният път на затваряне пишеше открит
+      // текст, докато таблото и DSR минаваха през sealTranscript (одит 26.09.2026).
+      data: { archiveHtml: sealTranscript(html), archiveUrl },
     });
 
     // Build full URL — prefer env var, fallback to request headers (for auto-detection)
@@ -781,8 +790,10 @@ router.post("/ticket/:ticketId/delete", async (req, res, next) => {
           assignee: true,
         },
     });
+      // Само новогенерираният се шифрира — заварен archiveHtml вече е във
+      // формата при покой и повторно sealTranscript би го шифрирал двойно.
       if (fullTicket) {
-        archiveHtml = generateHtmlTranscript(fullTicket);
+        archiveHtml = sealTranscript(generateHtmlTranscript(fullTicket));
       }
     }
 
@@ -826,7 +837,7 @@ router.post("/ticket/:ticketId/transcript", async (req, res, next) => {
     const token = await ensureArchiveToken(ticket.id, ticket.archiveToken);
     await prisma.ticket.update({
       where: { id: ticket.id },
-      data: { archiveHtml: html, archiveUrl: tokenizedArchiveUrl(ticket.id, token) },
+      data: { archiveHtml: sealTranscript(html), archiveUrl: tokenizedArchiveUrl(ticket.id, token) },
     });
 
     const url = `${process.env.FRONTEND_URL || ""}${tokenizedArchiveUrl(ticket.id, token)}`;
@@ -989,9 +1000,9 @@ router.get("/user/:userId/blacklisted", async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.params.userId },
-      select: { isBlacklisted: true },
+      select: BLACKLIST_SELECT,
     });
-    res.json({ blacklisted: user?.isBlacklisted || false });
+    res.json({ blacklisted: isBlacklistActive(user) });
   } catch (err) {
     next(err);
   }
@@ -1214,7 +1225,7 @@ router.get("/servers/with-custom-tokens", async (req, res, next) => {
     // решава и при `/token`. Множеството е малко по конструкция — токен имат
     // само white-label/agency клиенти. (Одит 07.08.2026)
     const candidates = await prisma.server.findMany({
-      where: { customBotToken: { not: null } },
+      where: { customBotToken: { not: null }, customBotPausedAt: null },
       select: { id: true, name: true },
     });
 

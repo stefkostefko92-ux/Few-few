@@ -26,6 +26,8 @@ export function makeChrome(opts = {}) {
     runtime: {
       id: "test-ext",
       getURL: (p) => "chrome-extension://test-ext/" + p,
+      // разархивиран пакет по подразбиране (без update_url); тестът подменя за CWS/Edge/Firefox
+      getManifest: () => structuredClone(opts.manifest || { manifest_version: 3, version: "0.0.0" }),
       onInstalled: { addListener: (f) => listeners.installed.push(f) },
       onStartup: { addListener: (f) => listeners.startup.push(f) },
       onMessage: { addListener: (f) => listeners.message.push(f) },

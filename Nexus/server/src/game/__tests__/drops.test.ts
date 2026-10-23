@@ -7,17 +7,18 @@ import { getDb } from '../../db';
 import { ITEM_SEED } from '../../seed/items';
 import { grantDrop, tierForEffectiveLevel } from '../drops';
 
-// Посей РЕАЛНИТЕ предмети (214) — тестът пази реалната дроп таблица, не мостра.
+// Посей РЕАЛНИТЕ предмети (вкл. частите на сетовете с set_slug/class_req) — тестът пази реалната дроп таблица, не мостра.
 const db = getDb();
 const ins = db.prepare(
-  `INSERT INTO items (slug, name, category, tier, level_req, class_req, sell_price, atk_min, atk_max, defense)
-   VALUES (@slug, @name, @category, @tier, @level_req, @class_req, @sell_price, 0, 0, 0)`,
+  `INSERT INTO items (slug, name, category, tier, level_req, class_req, buy_price, sell_price, atk_min, atk_max, defense, set_slug)
+   VALUES (@slug, @name, @category, @tier, @level_req, @class_req, @buy_price, @sell_price, 0, 0, 0, @set_slug)`,
 );
 for (const it of ITEM_SEED as any[]) {
   ins.run({
     slug: it.slug, name: it.name, category: it.category,
     tier: it.tier ?? 1, level_req: it.level_req ?? 1,
-    class_req: it.class_req ?? '', sell_price: it.sell_price ?? 10,
+    // buy_price е значим: generic клонът тегли само общата (магазинна) екипировка — уникатите не падат случайно.
+    class_req: it.class_req ?? '', buy_price: it.buy_price ?? 0, sell_price: it.sell_price ?? 10, set_slug: it.set_slug ?? '',
   });
 }
 

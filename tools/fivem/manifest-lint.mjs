@@ -9,7 +9,7 @@
 // Изход: 0 = чисто/само INFO, 1 = има HIGH находки. Евристичен помощник, не заместител на ревю/тест.
 
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
-import { join, extname, basename } from "node:path";
+import { join, extname } from "node:path";
 
 // Тайни: Steam Web API ключ, generic токен в конфиг. (FiveM license key живее в server.cfg, не в ресурс.)
 const SECRET_RE = /(steam_webApiKey|sv_licenseKey|api[_-]?key|token|secret)\s*[:=]\s*["'][A-Za-z0-9_\-]{16,}["']/i;
@@ -20,8 +20,11 @@ export function lintFile(src, rel) {
   const out = [];
   const add = (sev, code, msg) => out.push({ sev, code, msg, where: rel });
   const isManifest = /fxmanifest\.lua$|__resource\.lua$/.test(rel);
-  const isServer = /server|sv_/i.test(basename(rel));
-  const isClient = /client|cl_/i.test(basename(rel));
+  // Целият относителен път, не само името: най-честата подредба е `server/main.lua` / `client/main.lua`,
+  // а basename „main.lua“ изключваше и двете HIGH проверки (Геймъра, 2026-09-24).
+  const path = String(rel).replace(/\\/g, "/");
+  const isServer = /server|sv_/i.test(path) && !/(?:^|\/)client\//i.test(path);
+  const isClient = /client|cl_/i.test(path) && !/(?:^|\/)server\//i.test(path);
   const isSample = /example|sample|\.md$/i.test(rel);
 
   if (isManifest) {
@@ -44,8 +47,9 @@ export function lintFile(src, rel) {
       add("HIGH", "no-source-check", "Сървърен net event handler без проверка на `source` — всеки клиент може да го trigger-не със спуфнати аргументи. Валидирай `source` и всички входни данни server-side.");
   }
 
-  // SQL чрез конкатенация вместо параметри (oxmysql/mysql-async)
-  if (/(MySQL|oxmysql|exports\.oxmysql|Query|Execute|Scalar)/.test(src) && /["'`][^"'`]*(SELECT|INSERT|UPDATE|DELETE)[^"'`]*["'`]\s*\.\.\s*/i.test(src))
+  // SQL чрез конкатенация вместо параметри (oxmysql/mysql-async). Кавички ВЪТРЕ в низа
+  // (`"… SET x='" .. x .. "'"`) не прекъсват съвпадението — преди даваха фалшиво „чисто“.
+  if (/(MySQL|oxmysql|exports\.oxmysql|Query|Execute|Scalar)/.test(src) && /["'`][^\n]*?\b(SELECT|INSERT|UPDATE|DELETE)\b[^\n]*?["'`]\s*\.\./i.test(src))
     add("HIGH", "sql-concat", "SQL заявка чрез конкатенация (`..`) — SQL инжекция. Ползвай параметри: `MySQL.query('... WHERE id = ?', { id })`.");
 
   // Native в плътен цикъл без кеш (производителност — server tick/thread)

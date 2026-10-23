@@ -15,6 +15,20 @@ export type EnchantBonuses = Partial<Record<
   number
 >>;
 
+/** Категория на предмета → слот на тялото. Един източник за играча
+ *  (routes/inventory.ts) и за админ панела (екипиране от името на героя). */
+export const SLOT_FOR_CATEGORY: Record<string, string> = {
+  weapon: 'weapon',
+  shield: 'offhand',
+  helm: 'helm',
+  armor: 'armor',
+  gloves: 'gloves',
+  boots: 'boots',
+  ring: 'ring',
+  amulet: 'amulet',
+  cloak: 'cloak',
+};
+
 export interface EquippedSlot {
   item: Item;
   entry: InventoryEntry;

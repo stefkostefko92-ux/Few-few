@@ -11,12 +11,14 @@
  *   8. Set slugs on items -> sets exist
  *   9. Realm boss drop slugs minted on boot
  *  10. Tier/level_req sanity on items
+ *  11. Item sets: unique pieces exist, each piece in exactly one set, every piece is obtainable
  */
 import { MONSTER_SEED, REGION_BANDS } from '../src/seed/monsters';
 import { ITEM_SEED } from '../src/seed/items';
 import { QUEST_SEED } from '../src/seed/quests';
 import { DUNGEONS } from '../src/seed/dungeons';
 import { ITEM_SETS } from '../src/seed/sets';
+import { itemSources } from '../src/game/setSources';
 
 let failures = 0;
 function fail(msg: string) { failures++; console.error('  ✗ ' + msg); }
@@ -129,8 +131,9 @@ if (failures === qFails) ok('all item set_slugs resolve');
 section('9. Item stat sanity');
 qFails = failures;
 for (const i of ITEM_SEED as any[]) {
-  if (i.tier < 1 || i.tier > 10) fail(`item ${i.slug} has out-of-range tier: ${i.tier}`);
-  if (i.level_req < 0 || i.level_req > 350) fail(`item ${i.slug} has out-of-range level_req: ${i.level_req}`);
+  // Границите следват съдържанието „отвъд Края" (tier 11–12, lv до 500).
+  if (i.tier < 1 || i.tier > 12) fail(`item ${i.slug} has out-of-range tier: ${i.tier}`);
+  if (i.level_req < 0 || i.level_req > 500) fail(`item ${i.slug} has out-of-range level_req: ${i.level_req}`);
   if (i.buy_price < 0 || i.sell_price < 0) fail(`item ${i.slug} has negative price`);
   if (i.category === 'weapon' && i.atk_max <= 0) fail(`weapon ${i.slug} has no attack`);
   if (i.atk_max < i.atk_min) fail(`item ${i.slug} atk_max < atk_min`);
@@ -144,9 +147,23 @@ for (const m of MONSTER_SEED) {
   if (m.atk_max < m.atk_min) fail(`monster ${m.slug} atk_max < atk_min`);
   if (m.xp_reward <= 0) fail(`monster ${m.slug} pays no XP`);
   if (m.gold_max < m.gold_min) fail(`monster ${m.slug} gold_max < gold_min`);
-  if (m.level < 1 || m.level > 350) fail(`monster ${m.slug} out-of-range level: ${m.level}`);
+  if (m.level < 1 || m.level > 500) fail(`monster ${m.slug} out-of-range level: ${m.level}`);
 }
 if (failures === qFails) ok(`all ${MONSTER_SEED.length} monsters pass stat sanity`);
+
+section('11. Item sets');
+qFails = failures;
+const owner = new Map<string, string>();
+for (const s of ITEM_SETS) {
+  if (s.pieces.length < 4) fail(`set ${s.slug} has only ${s.pieces.length} pieces`);
+  for (const p of s.pieces) {
+    if (!itemSlugs.has(p)) fail(`set ${s.slug} piece missing from seed: ${p}`);
+    if (owner.has(p)) fail(`piece ${p} is in two sets: ${owner.get(p)} + ${s.slug}`);
+    owner.set(p, s.slug);
+    if (itemSources(p).length === 0) fail(`set ${s.slug} piece ${p} has no acquisition source`);
+  }
+}
+if (failures === qFails) ok(`all ${ITEM_SETS.length} sets: unique, existing and obtainable pieces`);
 
 console.log('\n' + (failures === 0 ? '✓ ALL CHECKS PASSED' : `✗ ${failures} FAILURES`));
 process.exit(failures === 0 ? 0 : 1);

@@ -8,10 +8,10 @@ import {
   Zap, BookOpen, Lightbulb,
   LineChart, Key,
   Menu, X as CloseIcon, MessageSquareText,
- KeyRound } from "lucide-react";
+ KeyRound, Gamepad2 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useT } from "../contexts/I18nContext";
-import { getServers, logout } from "../api";
+import { getServers, getServer, logout } from "../api";
 import LanguageSwitcher from "./LanguageSwitcher";
 import PremiumToast from "./PremiumToast";
 import ToastHost from "./ToastHost";
@@ -36,12 +36,23 @@ export default function Layout() {
   const { t } = useT();
   const navigate = useNavigate();
 
-  const { data: servers = [] } = useQuery({
+  const { data: servers = [], isSuccess: serversLoaded } = useQuery({
     queryKey: ["servers"],
     queryFn: getServers,
   });
 
   const currentServer = servers.find((s) => s.id === serverId);
+  const isPlatformAdmin = ["MAIN_OWNER", "SUPER_USER"].includes(user?.globalRole);
+  // Платформен админ в чужд сървър (от админ конзолата → „Open dashboard“):
+  // сървърът не е в неговия списък, затова името се взима отделно, а горе
+  // стои ясна лента, че работи от чуждо име (одит 26.09.2026).
+  const foreignServer = isPlatformAdmin && !!serverId && serversLoaded && !currentServer;
+  const { data: foreignInfo } = useQuery({
+    queryKey: ["server", serverId],
+    queryFn: () => getServer(serverId),
+    enabled: foreignServer,
+  });
+  const serverName = currentServer?.name || foreignInfo?.name || "Server";
 
   const handleLogout = async () => {
     await logout();
@@ -185,7 +196,7 @@ export default function Layout() {
             </>
           ) : (
             <>
-              <SectionLabel truncate>{currentServer?.name || "Server"}</SectionLabel>
+              <SectionLabel truncate>{serverName}</SectionLabel>
               <NavItem to={`/dashboard/${serverId}`}              icon={LayoutDashboard} end>{t("nav.overview")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/panels`}       icon={LayoutIcon}>{t("nav.panels")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/forms`}        icon={FileText}>{t("nav.forms")}</NavItem>
@@ -193,6 +204,7 @@ export default function Layout() {
               <NavItem to={`/dashboard/${serverId}/applications`} icon={Users}>{t("nav.applications")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/verification`} icon={ShieldCheck}>{t("nav.verification")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/automation`} icon={Zap}>{t("nav.automation")}</NavItem>
+              <NavItem to={`/dashboard/${serverId}/game`} icon={Gamepad2}>{t("nav.game")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/analytics`} icon={LineChart}>{t("nav.analytics")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/apikeys`} icon={Key}>{t("nav.apikeys")}</NavItem>
               <NavItem to={`/dashboard/${serverId}/commands`} icon={BookOpen}>{t("nav.commands")}</NavItem>
@@ -309,6 +321,12 @@ export default function Layout() {
         <PastDueBanner />
         {/* v40 — отменен, но платен до края: показваме докога работи. */}
         <GraceBanner />
+        {foreignServer && (
+          <div className="border-b border-premium/40 bg-premium/10 px-4 sm:px-6 py-2 text-xs text-premium flex items-center gap-2" role="status">
+            <Shield className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+            <span>{t("nav.adminView")}</span>
+          </div>
+        )}
         <div className="flex-1">
           <Outlet />
         </div>

@@ -56,6 +56,14 @@ described in the previous version of this file. They live alongside
 the equipment icons in this folder. See the git history for the
 prior full mapping.
 
+`icon-anvil.jpg` is Diego Velázquez, *The Forge of Vulcan* (1630),
+Museo del Prado — public domain, Wikimedia Commons
+(<https://commons.wikimedia.org/wiki/Category:La_Fragua_de_Vulcano>).
+As of the Phase-1 landing overhaul it is reused as the full-bleed
+background for the "The Forge" mid-page band on the marketing
+landing page (`Landing.tsx`), replacing a modern-day blacksmith video
+clip that broke the medieval setting.
+
 ## Why these sources
 
 The user feedback that drove this swap was that museum photographs of

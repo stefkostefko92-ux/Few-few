@@ -102,6 +102,50 @@ await test('getUserAttributes captures character name / guild / level into State
   assert.equal(s.level, 42);
 });
 
+// A duel answer shaped like the real one: gold/xp, both combatants, and the
+// rounds. NB "self" appears twice at different depths: the player struct and
+// the flag inside every round (0 = the player takes the hit).
+const rnd = (self, damage, magic = 0) =>
+  `<value><struct>${m('self', 'i4', self)}${m('damage', 'i4', damage)}${m('magicDamage', 'i4', magic)}</struct></value>`;
+const hpStruct = (name, hp) => `<member><name>${name}</name><value><struct>${m('hitpoints', 'i4', hp)}</struct></value></member>`;
+const duel = ({ myHp, rounds, gold = 120, xp = 35, withRounds = true }) => resp(
+  `<member><name>answer</name><value><struct>${m('robbed_gold', 'i4', gold)}${m('xp', 'i4', xp)}${hpStruct('self', myHp)}${hpStruct('opponent', 80)}` +
+  (withRounds ? `<member><name>fightrounds</name><value><array><data>${rounds.join('')}</data></array></value></member>` : '') +
+  `</struct></value></member>`);
+
+await test('fight: win = player HP stays above 0 after the rounds (client logic); gold/xp from robbed_gold/xp', async () => {
+  const a = makeApi();
+  a.setXml(duel({ myHp: 100, rounds: [rnd(1, 30), rnd(0, 20), rnd(1, 40)] }));
+  const r = await a.TB.Api.fight('Bob');
+  assert.equal(r.won, true, '100 - 20 = 80 > 0');
+  assert.equal(r.gold, 120, 'robbed_gold, not the non-existent reward_gold');
+  assert.equal(r.exp, 35, 'xp, not reward_exp');
+});
+
+await test('fight: loss when the damage taken (magicDamage first) brings HP to 0 or below', async () => {
+  const a = makeApi();
+  a.setXml(duel({ myHp: 100, rounds: [rnd(0, 60), rnd(0, 10, 50)] }));   // 60 + 50 (magic wins over damage) = 110
+  assert.equal((await a.TB.Api.fight('Bob')).won, false);
+});
+
+await test('fight: an unreadable answer is unknown (null), never silently a defeat', async () => {
+  const a = makeApi();
+  a.setXml(duel({ myHp: 100, rounds: [], withRounds: false }));
+  assert.equal((await a.TB.Api.fight('Bob')).won, null);
+});
+
+await test('directText reads the item\'s OWN field, not a socketed gem\'s same-named field', async () => {
+  const a = makeApi();
+  const { DOMParser: DP } = await import('linkedom');
+  // The gem (nested) comes BEFORE the item's own is_equipped in document order.
+  const xml = resp(`<member><name>gem_set</name><value><struct><member><name>gem_1</name><value><struct>${m('is_equipped', 'i4', 1)}</struct></value></member></struct></value></member>` + m('is_equipped', 'i4', 0) + m('id', 'i4', 42));
+  const doc = new DP().parseFromString(xml, 'text/xml');
+  assert.equal(a.TB.Api.directText(doc, 'is_equipped'), '0', 'the item itself is NOT equipped');
+  assert.equal(a.TB.Api.findValue(doc, 'is_equipped', 'i4'), '1', 'a descendant search would have read the gem');
+  assert.equal(a.TB.Api.directNum(doc, 'id'), 42);
+  assert.equal(a.TB.Api.directNum(doc, 'missing'), null);
+});
+
 await test('getUserAttributes tolerates <int> type tags (not just <i4>)', async () => {
   const a = makeApi();
   a.setXml(resp(
@@ -153,6 +197,38 @@ await test('fault: ordinary faultString -> FAULT (does not flip session)', async
   a.setXml(`<?xml version="1.0"?><methodResponse><fault><value><struct>${m('faultString','string','Not enough gold')}</struct></value></fault></methodResponse>`);
   await assert.rejects(a.TB.Api.miniUpdate(), /^Error: FAULT:/);
   assert.equal(a.TB.State.get().loggedIn, true, 'ordinary fault must NOT log the user out');
+});
+
+// The game's REAL error convention: a normal response whose top-level struct has
+// an `error` string (TanothHtml5.js Model._handleResponse: if(!response.error)).
+await test('in-band error "no_valid_session" -> SESSION_EXPIRED + sessionLost (auto-login fires)', async () => {
+  const a = makeApi();
+  a.TB.State.patch({ loggedIn: true });
+  a.setXml(resp(m('error', 'string', 'no_valid_session')));
+  await assert.rejects(a.TB.Api.miniUpdate(), /SESSION_EXPIRED:no_valid_session/);
+  assert.equal(a.TB.State.get().loggedIn, false);
+  assert.ok(a.TB.State.get().sessionLost > 0);
+});
+
+await test('in-band error "insufficient_gold" is a FAULT, never a silent success', async () => {
+  const a = makeApi();
+  a.TB.State.patch({ loggedIn: true });
+  a.setXml(resp(m('error', 'string', 'insufficient_gold')));
+  await assert.rejects(a.TB.Api.raiseAttribute('STR'), /^Error: FAULT:insufficient_gold/);
+  assert.equal(a.TB.State.get().loggedIn, true, 'a refused purchase does not log you out');
+});
+
+await test('errors the game itself ignores -> GAME_INFO (not counted toward the error stop)', async () => {
+  const a = makeApi();
+  a.setXml(resp(m('error', 'string', 'max_dungeon_level_reached')));
+  await assert.rejects(a.TB.Api.startDungeon(), /^Error: GAME_INFO:max_dungeon_level_reached/);
+});
+
+await test('empty error string and a nested "error" field are NOT errors', async () => {
+  const a = makeApi();
+  a.setXml(resp(m('error', 'string', '') + m('gold', 'i4', 50) + `<member><name>item</name><value><struct>${m('error', 'string', 'x')}</struct></value></member>`));
+  const r = await a.TB.Api.miniUpdate();
+  assert.equal(r.gold, 50);
 });
 
 console.log(`\n${pass} api checks passed.`);

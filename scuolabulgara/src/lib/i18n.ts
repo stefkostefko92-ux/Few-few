@@ -3,7 +3,9 @@
 
 export const LOCALES = ["it", "bg", "en"] as const;
 export type Locale = (typeof LOCALES)[number];
-export const DEFAULT_LOCALE: Locale = "en";
+// Italian is the default: a school in Milan. Bulgarian is chosen automatically
+// only for a clear Bulgarian signal; English only when the visitor picks it.
+export const DEFAULT_LOCALE: Locale = "it";
 
 export const LOCALE_META: Record<Locale, { label: string; flag: string; htmlLang: string }> = {
   it: { label: "Italiano", flag: "🇮🇹", htmlLang: "it" },
@@ -17,14 +19,11 @@ export function isLocale(value: string | undefined | null): value is Locale {
 
 // Map an ISO country code to the locale we serve to that audience.
 export function localeForCountry(country: string | undefined | null): Locale {
-  const c = (country || "").toUpperCase();
-  if (c === "IT") return "it";
-  if (c === "BG") return "bg";
-  return "en";
+  return (country || "").toUpperCase() === "BG" ? "bg" : DEFAULT_LOCALE;
 }
 
 // UI strings (navigation, buttons, labels). Content lives in the DB.
-type Dict = Record<string, string>;
+export type Dict = Record<string, string>;
 export const UI: Record<Locale, Dict> = {
   it: {
     "nav.about": "Chi siamo",
@@ -33,6 +32,7 @@ export const UI: Record<Locale, Dict> = {
     "nav.dance": "Danza",
     "nav.facebook": "Facebook",
     "nav.contact": "Contatti",
+    "nav.alphabet": "Alfabeto",
     "nav.enroll": "Iscriviti",
     "skip": "Vai al contenuto",
     "cta.discover": "Scopri i corsi",
@@ -48,25 +48,41 @@ export const UI: Record<Locale, Dict> = {
     "fb.show": "Mostra i post",
     "fb.consent": "Per mostrarti i contenuti carichiamo il feed da Facebook, che potrebbe impostare cookie sul tuo dispositivo.",
     "fb.open": "Apri la pagina Facebook",
+    "fb.blocked": "Il tuo browser o un’estensione (ad esempio un blocco pubblicità) non lascia caricare Facebook qui. I nostri post li trovi direttamente sulla nostra pagina.",
     "lang.label": "Lingua",
     "phone": "Telefono",
     "addr": "Sede",
     "credit": "Creato, disegnato e donato da",
+    "footer.site": "In questa pagina",
     "legal.heading": "Note legali",
     "legal.privacy": "Privacy",
     "legal.cookie": "Cookie",
     "legal.terms": "Termini",
     "rights": "Tutti i diritti riservati.",
     "photoCredit": "Foto della rosa bulgara:",
-    "faq.eyebrow": "Domande frequenti",
-    "faq.title": "Le risposte alle domande più comuni",
-    "cookie.text": "Usiamo cookie tecnici e, solo con il tuo consenso, il plugin di Facebook.",
+    "cookie.text": "Usiamo cookie tecnici e, solo con il tuo consenso, Facebook e Google Maps.",
+    "map.title": "Mappa: come raggiungerci",
+    "map.consent": "Per mostrarti la mappa carichiamo Google Maps, che potrebbe impostare cookie sul tuo dispositivo.",
+    "map.show": "Mostra la mappa",
+    "map.open": "Apri in Google Maps",
     "cookie.accept": "Ho capito",
     "cookie.reject": "Rifiuta",
     "cookie.more": "Maggiori informazioni",
     "cookie.manage": "Preferenze cookie",
+    "gallery.open": "Apri la foto",
+    "gallery.close": "Chiudi",
+    "gallery.prev": "Foto precedente",
+    "gallery.next": "Foto successiva",
+    "alpha.pick": "Scegli una lettera",
+    "alpha.latin": "Traslitterazione",
+    "alpha.meaning": "Significato",
+    "alpha.listen": "Ascolta la pronuncia",
     "updated": "Ultimo aggiornamento",
     "backHome": "Torna alla home",
+    "nav.home": "Home",
+    "nav.label": "Menu principale",
+    "nav.menu": "Menu",
+    "notfound.text": "Pagina non trovata: il link potrebbe essere errato o non più valido.",
   },
   bg: {
     "nav.about": "За нас",
@@ -75,6 +91,7 @@ export const UI: Record<Locale, Dict> = {
     "nav.dance": "Танци",
     "nav.facebook": "Facebook",
     "nav.contact": "Контакти",
+    "nav.alphabet": "Азбуката",
     "nav.enroll": "Запиши се",
     "skip": "Към съдържанието",
     "cta.discover": "Виж курсовете",
@@ -90,25 +107,41 @@ export const UI: Record<Locale, Dict> = {
     "fb.show": "Покажи публикациите",
     "fb.consent": "За да покажем съдържанието, зареждаме емисията от Facebook, която може да зададе бисквитки на вашето устройство.",
     "fb.open": "Отвори страницата във Facebook",
+    "fb.blocked": "Браузърът или разширение в него (например блокер на реклами) не позволява Facebook да се зареди тук. Публикациите ни ще намерите направо на страницата ни.",
     "lang.label": "Език",
     "phone": "Телефон",
     "addr": "Адрес",
     "credit": "Създадено, проектирано и дарено от",
+    "footer.site": "На тази страница",
     "legal.heading": "Правна информация",
     "legal.privacy": "Поверителност",
     "legal.cookie": "Бисквитки",
     "legal.terms": "Условия",
     "rights": "Всички права запазени.",
     "photoCredit": "Снимка на българската роза:",
-    "faq.eyebrow": "Често задавани въпроси",
-    "faq.title": "Отговори на най-честите въпроси",
-    "cookie.text": "Използваме технически бисквитки и — само с ваше съгласие — плъгина на Facebook.",
+    "cookie.text": "Използваме технически бисквитки и — само с ваше съгласие — Facebook и Google Maps.",
+    "map.title": "Карта: как да ни намерите",
+    "map.consent": "За да ви покажем картата, зареждаме Google Maps, който може да зададе бисквитки на устройството ви.",
+    "map.show": "Покажи картата",
+    "map.open": "Отвори в Google Maps",
     "cookie.accept": "Разбрах",
     "cookie.reject": "Откажи",
     "cookie.more": "Повече информация",
     "cookie.manage": "Настройки на бисквитките",
+    "gallery.open": "Отвори снимката",
+    "gallery.close": "Затвори",
+    "gallery.prev": "Предишна снимка",
+    "gallery.next": "Следваща снимка",
+    "alpha.pick": "Изберете буква",
+    "alpha.latin": "На латиница",
+    "alpha.meaning": "На италиански",
+    "alpha.listen": "Чуйте произношението",
     "updated": "Последна актуализация",
     "backHome": "Към началото",
+    "nav.home": "Начало",
+    "nav.label": "Основно меню",
+    "nav.menu": "Меню",
+    "notfound.text": "Страницата не е намерена.",
   },
   en: {
     "nav.about": "About",
@@ -117,6 +150,7 @@ export const UI: Record<Locale, Dict> = {
     "nav.dance": "Dance",
     "nav.facebook": "Facebook",
     "nav.contact": "Contact",
+    "nav.alphabet": "Alphabet",
     "nav.enroll": "Enrol",
     "skip": "Skip to content",
     "cta.discover": "Explore the courses",
@@ -132,28 +166,47 @@ export const UI: Record<Locale, Dict> = {
     "fb.show": "Show the posts",
     "fb.consent": "To show the posts we load the feed from Facebook, which may set cookies on your device.",
     "fb.open": "Open the Facebook page",
+    "fb.blocked": "Your browser or an extension (such as an ad blocker) won’t let Facebook load here. You’ll find our posts directly on our page.",
     "lang.label": "Language",
     "phone": "Phone",
     "addr": "Address",
     "credit": "Created, designed and donated by",
+    "footer.site": "On this page",
     "legal.heading": "Legal",
     "legal.privacy": "Privacy",
     "legal.cookie": "Cookies",
     "legal.terms": "Terms",
     "rights": "All rights reserved.",
     "photoCredit": "Bulgarian rose photo:",
-    "faq.eyebrow": "Frequently asked questions",
-    "faq.title": "Answers to the most common questions",
-    "cookie.text": "We use technical cookies and, only with your consent, the Facebook plugin.",
+    "cookie.text": "We use technical cookies and, only with your consent, Facebook and Google Maps.",
+    "map.title": "Map: how to find us",
+    "map.consent": "To show you the map we load Google Maps, which may set cookies on your device.",
+    "map.show": "Show the map",
+    "map.open": "Open in Google Maps",
     "cookie.accept": "Got it",
     "cookie.reject": "Decline",
     "cookie.more": "Learn more",
     "cookie.manage": "Cookie preferences",
+    "gallery.open": "Open photo",
+    "gallery.close": "Close",
+    "gallery.prev": "Previous photo",
+    "gallery.next": "Next photo",
+    "alpha.pick": "Choose a letter",
+    "alpha.latin": "Transliteration",
+    "alpha.meaning": "Meaning",
+    "alpha.listen": "Listen to the pronunciation",
     "updated": "Last updated",
     "backHome": "Back to home",
+    "nav.home": "Home",
+    "nav.label": "Main menu",
+    "nav.menu": "Menu",
+    "notfound.text": "Page not found: the link may be wrong or out of date.",
   },
 };
 
-export function t(locale: Locale, key: string): string {
-  return UI[locale]?.[key] ?? UI[DEFAULT_LOCALE][key] ?? key;
+/** Interface wording. `ui` carries the admin's overrides for this locale; an
+ *  override left empty falls back to the built-in text rather than blanking a
+ *  button or menu item. */
+export function t(locale: Locale, key: string, ui?: Dict): string {
+  return (ui && ui[key]) || (UI[locale]?.[key] ?? UI[DEFAULT_LOCALE][key] ?? key);
 }

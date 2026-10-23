@@ -22,6 +22,7 @@
   var nativeParse = JSON.parse;
   var nativeStringify = JSON.stringify;
   var nativeSlice = Array.prototype.slice;
+  var nativeSplice = Array.prototype.splice;
   var nativeIsArray = Array.isArray;
   var nativeHasOwn = Object.prototype.hasOwnProperty;
   var nativeRAF = typeof requestAnimationFrame === "function" ? requestAnimationFrame : null;
@@ -74,7 +75,32 @@ var SA_POLICY = (function () {
     "nowebrtc": "nowebrtc",
     "no-xhr-if": "no-xhr-if", "prevent-xhr": "no-xhr-if",
     "set-cookie": "set-cookie",
-    "remove-cookie": "remove-cookie",
+    "remove-cookie": "remove-cookie", "cookie-remover": "remove-cookie",
+    // 5.5.0 — the uBO routines the bundled lists use most that we did not run yet.
+    // Same rule as above: our own implementations, baked data only, never trusted-*.
+    "prevent-fetch": "no-fetch-if", "prevent-window-open": "no-window-open-if",
+    "prevent-setTimeout": "no-setTimeout-if", "prevent-setInterval": "no-setInterval-if",
+    "prevent-addEventListener": "addEventListener-defuser",
+    "json-prune-fetch-response": "json-prune-fetch-response",
+    "json-prune-xhr-response": "json-prune-xhr-response",
+    "noeval-if": "noeval-if", "prevent-eval-if": "noeval-if",
+    "noeval": "noeval", "noeval-silent": "noeval", "silent-noeval": "noeval",
+    "nano-setTimeout-booster": "nano-stb", "nano-stb": "nano-stb", "adjust-setTimeout": "nano-stb",
+    "nano-setInterval-booster": "nano-sib", "nano-sib": "nano-sib", "adjust-setInterval": "nano-sib",
+    "set-local-storage-item": "set-local-storage-item",
+    "set-session-storage-item": "set-session-storage-item",
+    "nobab": "nobab", "bab-defuser": "nobab",
+    "nofab": "nofab", "fuckadblock.js-3.2.0": "nofab",
+    "popads-dummy": "popads-dummy", "popads.net": "popads.net",
+    "xml-prune": "xml-prune",
+    "m3u-prune": "m3u-prune",
+    "refresh-defuser": "refresh-defuser", "prevent-refresh": "refresh-defuser",
+    "set-attr": "set-attr",
+    "no-requestAnimationFrame-if": "no-requestAnimationFrame-if", "norafif": "no-requestAnimationFrame-if",
+    "prevent-requestAnimationFrame": "no-requestAnimationFrame-if",
+    "prevent-innerHTML": "prevent-innerHTML",
+    "window.name-defuser": "window.name-defuser",
+    "alert-buster": "alert-buster",
   };
   var CANON = {};
   for (var k in ALIASES) if (hasOwn.call(ALIASES, k)) CANON[ALIASES[k]] = true;
@@ -83,11 +109,26 @@ var SA_POLICY = (function () {
   var LIVE_SCRIPTLET_MAX = 500;      // max live directives per filters.json (SW and engine agree)
   // dotted property chain; may start with "_" or "$" (`_sp_`, jQuery `$`) —
   // __proto__/constructor/prototype stay out via argSafe().
-  var NAME_RE = /^[a-zA-Z_$][\w.$-]{0,60}$/;
+  var NAME_RE = /^[a-zA-Z_$][\w.$-]{0,120}$/;
 
   // set-constant values: fixed dictionary or a plain integer — never code.
+  // "{}"/"[]"/'""' are how the uBO lists spell emptyObj/emptyArr/emptyStr; throwFunc throws.
   var SETCONST_VALUES = ["false", "true", "null", "undefined", "noopFunc", "trueFunc",
-    "falseFunc", "", "emptyStr", "emptyArr", "emptyObj", "''"];
+    "falseFunc", "throwFunc", "", "emptyStr", "emptyArr", "emptyObj", "''", '""', "{}", "[]"];
+  // set-local-storage-item / set-session-storage-item: what may be written — inert words
+  // and small numbers (the uBO dictionary), or "$remove$" to delete the key. Never markup.
+  var STORAGE_VALUES = ["undefined", "null", "false", "true", "on", "off", "yes", "no", "accept",
+    "reject", "accepted", "rejected", "allowed", "denied", "''", '""', "", "{}", "[]", "emptyObj",
+    "emptyArr", "emptyStr", "$remove$"];
+  var STORAGE_KEY = /^"?[\w.$:@#/|\-\[\] ]{1,128}"?$/;
+  // no-fetch-if / no-xhr-if: what a refused request answers with.
+  var FETCH_BODY = /^(|true|emptyObj|emptyArr|emptyStr|length:\d{1,6}(-\d{1,6})?|war:[\w.-]{1,80})$/;
+  var FETCH_TYPES = ["", "basic", "cors", "default", "error", "opaque"];
+  // Chains through a prototype (`Object.prototype.hideAds`, `String.prototype.charCodeAt`) are
+  // how the lists reach a whole class of objects. Allowed in the baked list for the property
+  // routines only; __proto__ and constructor stay banned everywhere.
+  var PROTO_ROUTINES = { "set-constant": 1, "abort-on-property-read": 1, "abort-on-property-write": 1,
+    "abort-current-script": 1, "abort-on-stack-trace": 1 };
 
   // set-cookie: name charset, a denylist of names that are never a consent
   // cookie (session/auth/CSRF/tracking IDs, __Host-/__Secure- prefixes — the
@@ -139,6 +180,46 @@ var SA_POLICY = (function () {
     return typeof a === "string" && a.length <= ARG_MAX &&
       !/__proto__|constructor|prototype/.test(a) &&
       !/<\/?script|<\/?style|-->/i.test(a);
+  }
+  // The baked list's property chains may go through a prototype (see PROTO_ROUTINES).
+  function argSafeProto(a) {
+    return typeof a === "string" && a.length <= ARG_MAX && !/__proto__|constructor/.test(a) &&
+      !/<\/?script|<\/?style|-->/i.test(a);
+  }
+  // uBO varargs after the fixed arguments: "key, value" pairs from a fixed set of keys.
+  function varargsOk(args, from, keys) {
+    if ((args.length - from) % 2) return false;
+    for (var i = from; i < args.length; i += 2) if (keys.indexOf(args[i]) < 0) return false;
+    return true;
+  }
+  function fetchTypeOk(t) {
+    if (FETCH_TYPES.indexOf(t) >= 0) return true;
+    if (t.charAt(0) !== "{") return false;
+    var o;
+    try { o = JSON.parse(t); } catch (e) { return false; }
+    if (!o || typeof o !== "object" || Array.isArray(o)) return false;
+    for (var k in o) {
+      if (!hasOwn.call(o, k)) continue;
+      if (k === "ok" && typeof o[k] === "boolean") continue;
+      if (k === "type" && FETCH_TYPES.indexOf(o[k]) >= 0) continue;
+      if (k === "statusText" && typeof o[k] === "string" && /^[\w ]{0,40}$/.test(o[k])) continue;
+      return false;
+    }
+    return true;
+  }
+  function storageValueOk(v) {
+    return STORAGE_VALUES.indexOf(v) >= 0 || COOKIE_VALUES.indexOf(v) >= 0 || (/^-?\d{1,5}$/.test(v) && Math.abs(+v) <= 32767);
+  }
+  // set-attr: the attribute and what it may be set to (uBO dictionary). URL-bearing
+  // attributes may only take a copy of another attribute of the same element
+  // (`src` ← `[data-src]`, a lazy loader); event handlers and srcdoc never.
+  var SET_ATTR_URLISH = /^(src|href|data|action|formaction|poster|background|codebase|cite|xlink:href)$/i;
+  function setAttrOk(attr, value) {
+    if (!/^[a-zA-Z][\w:-]{0,40}$/.test(attr) || /^on/i.test(attr) || /^(srcdoc|style)$/i.test(attr)) return false;
+    var copy = /^\[[a-zA-Z][\w:-]{0,40}\]$/.test(value);
+    if (SET_ATTR_URLISH.test(attr)) return copy;
+    return copy || value === "" || value === "''" || value === "true" || value === "false" ||
+      (/^\d{1,5}$/.test(value) && +value < 32768);
   }
   function styleOk(decl) {
     return typeof decl === "string" && decl.length <= ARG_MAX && !STYLE_DENY.test(decl);
@@ -204,6 +285,7 @@ var SA_POLICY = (function () {
   function setConstOk(v) {
     return SETCONST_VALUES.indexOf(v) >= 0 || /^-?\d+$/.test(v);
   }
+  var RUN_AT = ["loading", "interactive", "complete", "idle", "asap", "stay", "asap stay", "end"];
   // Resolve a set-constant token to a concrete value (engine use).
   function tokenValue(raw) {
     switch (raw) {
@@ -214,10 +296,14 @@ var SA_POLICY = (function () {
       case "noopFunc": return { ok: true, v: function () {} };
       case "trueFunc": return { ok: true, v: function () { return true; } };
       case "falseFunc": return { ok: true, v: function () { return false; } };
+      case "throwFunc": return { ok: true, v: function () { throw new Error(""); } };
       case "":
       case "emptyStr":
+      case '""':
       case "''": return { ok: true, v: "" };
+      case "[]":
       case "emptyArr": return { ok: true, v: [] };
+      case "{}":
       case "emptyObj": return { ok: true, v: {} };
       default:
         if (/^-?\d+$/.test(raw)) return { ok: true, v: parseInt(raw, 10) };
@@ -239,12 +325,19 @@ var SA_POLICY = (function () {
   // validateDirective(name, args, live) — name must be CANONICAL.
   function validateDirective(name, args, live) {
     if (typeof name !== "string" || !hasOwn.call(CANON, name)) return false;
-    if (!args || typeof args.length !== "number" || args.length > 3) return false;
+    // The response pruners take uBO varargs ("propsToMatch, …"); everything else ≤ 3 (+runAt for set-constant).
+    var maxArgs = name === "json-prune-fetch-response" || name === "json-prune-xhr-response" ? 6 : name === "set-constant" || name === "remove-cookie" ? 4 : 3;
+    if (!args || typeof args.length !== "number" || args.length > maxArgs) return false;
     var n = args.length;
-    for (var i = 0; i < n; i++) if (!argSafe(args[i])) return false;
+    var proto = !live && hasOwn.call(PROTO_ROUTINES, name);
+    for (var i = 0; i < n; i++) if (!(proto && i === 0 ? argSafeProto(args[i]) : argSafe(args[i]))) return false;
+    // The 5.5.0 routines exist for the baked uBO list only (there is no live scriptlet channel).
+    if (live && /^(json-prune-(fetch|xhr)-response|noeval(-if)?|nano-(stb|sib)|set-(local|session)-storage-item|nobab|nofab|popads-dummy|popads\.net|xml-prune|m3u-prune|refresh-defuser|set-attr|no-requestAnimationFrame-if|prevent-innerHTML|window\.name-defuser|alert-buster)$/.test(name)) return false;
     switch (name) {
       case "set-constant":
-        return n === 2 && NAME_RE.test(args[0]) && setConstOk(args[1]);
+        // (chain) = undefined; (chain, value); (chain, value, "runAt", when)
+        return NAME_RE.test(args[0]) && (n === 1 || (n === 2 && setConstOk(args[1])) ||
+          (n === 4 && !live && setConstOk(args[1]) && args[2] === "runAt" && RUN_AT.indexOf(args[3]) >= 0));
       case "abort-on-property-read":
       case "abort-on-property-write":
         return n === 1 && NAME_RE.test(args[0]);
@@ -254,20 +347,61 @@ var SA_POLICY = (function () {
         return n === 2 && NAME_RE.test(args[0]);
       case "no-setTimeout-if":
       case "no-setInterval-if":
-        return n >= 1 && n <= 2 && (n < 2 || /^\d{1,7}$/.test(args[1]));
+        // delay: exact ms, or a range "2000-5000" (baked lists)
+        return n >= 1 && n <= 2 && (n < 2 || args[1] === "" || /^\d{1,7}$/.test(args[1]) || (!live && /^\d{1,7}-\d{1,7}$/.test(args[1])));
       case "no-fetch-if":
+        // (conditions[, body[, type]]) — what the refused request answers with
+        return n >= 1 && (n === 1 || !live) && (n < 2 || FETCH_BODY.test(args[1])) && (n < 3 || fetchTypeOk(args[2]));
       case "no-xhr-if":
-        return n === 1;
+        return n >= 1 && n <= 2 && (n === 1 || !live) && (n < 2 || FETCH_BODY.test(args[1]));
       case "no-window-open-if":
         // No argument = every window.open on that site (uBO): baked lists only.
-        return n === 1 || (!live && n === 0);
+        // (needle, seconds, "obj"|"blank"): hand the page a decoy window instead of null.
+        return (n === 1 || (!live && n === 0)) ||
+          (!live && n >= 2 && /^\d{0,3}$/.test(args[1]) && (n < 3 || args[2] === "" || args[2] === "obj" || args[2] === "blank"));
       case "addEventListener-defuser":
+        return n >= 1 && n <= 2;
       case "json-prune":
+        // (props[, needles[, stack needle]])
+        return n >= 1 && n <= (live ? 2 : 3);
+      case "json-prune-fetch-response":
+      case "json-prune-xhr-response":
+        return n >= 1 && args[0] !== "" && varargsOk(args, 2, ["propsToMatch", "stackToMatch"]);
+      case "noeval-if":
+        return n === 1 && args[0] !== "";
+      case "noeval":
+      case "nobab":
+      case "nofab":
+      case "popads-dummy":
+      case "popads.net":
+      case "window.name-defuser":
+      case "alert-buster":
+        return n === 0;
+      case "nano-stb":
+      case "nano-sib":
+        // (needle, delay | "*", boost 0.02–50)
+        return n <= 3 && (n < 2 || args[1] === "" || args[1] === "*" || /^\d{1,7}$/.test(args[1])) &&
+          (n < 3 || args[2] === "" || /^\d{0,2}(\.\d{1,4})?$/.test(args[2])); // 0 → the 0.02 floor
+      case "set-local-storage-item":
+      case "set-session-storage-item":
+        return n === 2 && STORAGE_KEY.test(args[0]) && storageValueOk(args[1]);
+      case "xml-prune":
+        return n >= 1 && args[0] !== "";
+      case "m3u-prune":
+        return n >= 1 && n <= 2 && args[0] !== "";
+      case "refresh-defuser":
+        return n === 0 || (n === 1 && /^\d{0,4}(\.\d{1,3})?$/.test(args[0]));
+      case "set-attr":
+        return (n === 2 || n === 3) && args[0] !== "" && setAttrOk(args[1], n === 3 ? args[2] : "");
+      case "no-requestAnimationFrame-if":
+        return n === 1 && args[0] !== "";
+      case "prevent-innerHTML":
         return n >= 1 && n <= 2;
       case "remove-attr":
-        return n >= 1 && n <= 2 && (!live || attrsOk(args[0])) && (n < 2 || !live || safeSelector(args[1]));
+        // 3rd: when to act ("stay", "complete", "asap"…) — we always act now and on every change
+        return n >= 1 && n <= 3 && (n < 3 || (!live && RUN_AT.indexOf(args[2]) >= 0)) && (!live || attrsOk(args[0])) && (n < 2 || !live || safeSelector(args[1]));
       case "remove-class":
-        return n >= 1 && n <= 2 && (n < 2 || !live || safeSelector(args[1]));
+        return n >= 1 && n <= 3 && (n < 3 || (!live && RUN_AT.indexOf(args[2]) >= 0)) && (n < 2 || !live || safeSelector(args[1]));
       case "href-sanitizer":
         return n >= 1 && n <= 2 && (!live || safeSelector(args[0]));
       case "remove-node-text":
@@ -277,7 +411,8 @@ var SA_POLICY = (function () {
       case "set-cookie":
         return n === 2 && COOKIE_NAME.test(args[0]) && !COOKIE_NAME_DENY.test(args[0]) && cookieValueOk(args[1]);
       case "remove-cookie":
-        return !live && n === 1; // baked list only — it can log a user out of a site
+        // baked list only — it can log a user out of a site. (needle[, "when", "scroll keydown"])
+        return !live && (n === 1 || (n === 3 && args[1] === "when" && /^(scroll|keydown|load|click)( (scroll|keydown|load|click))*$/.test(args[2])));
       default:
         return false;
     }
@@ -285,7 +420,9 @@ var SA_POLICY = (function () {
 
   return {
     ALIASES: ALIASES, CANON: CANON, NAME_RE: NAME_RE, ARG_MAX: ARG_MAX, LIVE_SCRIPTLET_MAX: LIVE_SCRIPTLET_MAX,
-    SETCONST_VALUES: SETCONST_VALUES, COOKIE_NAME: COOKIE_NAME,
+    SETCONST_VALUES: SETCONST_VALUES, COOKIE_NAME: COOKIE_NAME, STORAGE_VALUES: STORAGE_VALUES,
+    STORAGE_KEY: STORAGE_KEY, FETCH_BODY: FETCH_BODY, storageValueOk: storageValueOk, setAttrOk: setAttrOk,
+    fetchTypeOk: fetchTypeOk, RUN_AT: RUN_AT,
     COOKIE_NAME_DENY: COOKIE_NAME_DENY, COOKIE_VALUES: COOKIE_VALUES,
     UNSAFE_SELECTORS: UNSAFE_SELECTORS, FORM_TARGET: FORM_TARGET, FORM_ATTR: FORM_ATTR,
     UNIVERSAL: UNIVERSAL, ATTR_DENY: ATTR_DENY, TAG_OK: TAG_OK, TAG_DENY: TAG_DENY,
@@ -307,7 +444,8 @@ var SA_POLICY = (function () {
   function toReg(s) {
     if (s === undefined || s === null || s === "") return null;
     s = String(s);
-    var m = /^\/(.+)\/([a-z]*)$/.exec(s);
+    // Only real flags make a regex: "/api/feed" is a path, not /api/ with flags "feed".
+    var m = /^\/(.+)\/([dgimsuy]*)$/.exec(s);
     if (m) {
       var body = m[1];
       // ReDoS guard: cap length, cap quantifiers (INCLUDING "?") and reject ANY
@@ -350,25 +488,188 @@ var SA_POLICY = (function () {
     return { owner: owner, prop: parts[parts.length - 1] };
   }
 
-  function findPath(obj, path) {
-    var parts = path.split(".");
-    var cur = obj;
-    for (var i = 0; i < parts.length; i++) {
-      if (cur === null || typeof cur !== "object") return false;
-      cur = cur[parts[i]];
-      if (cur === undefined) return false;
+  // Property paths in the uBO grammar: "a.b.0.c", plus four tokens —
+  //   []   every item of an array        *    every own property of an object
+  //   [-]  remove the array item whose remaining path exists
+  //   {-}  remove the property whose remaining path exists
+  // (`feed.edges.[-].node.sponsored_data` drops each ad edge, keeps the rest.)
+  // Own properties only: a path can never walk into __proto__ or the prototype chain.
+  function hasPathAt(o, parts, i) {
+    if (i === parts.length) return true;
+    if (o === null || typeof o !== "object") return false;
+    var t = parts[i], k;
+    if (t === "[]" || t === "[-]") {
+      if (!nativeIsArray(o)) return false;
+      for (k = 0; k < o.length; k++) if (hasPathAt(o[k], parts, i + 1)) return true;
+      return false;
     }
-    return true;
+    if (t === "*" || t === "{-}") {
+      for (k in o) if (nativeHasOwn.call(o, k) && hasPathAt(o[k], parts, i + 1)) return true;
+      return false;
+    }
+    return nativeHasOwn.call(o, t) && hasPathAt(o[t], parts, i + 1);
+  }
+  function findPath(obj, path) { return hasPathAt(obj, String(path).split("."), 0); }
+
+  // Returns true when something was removed.
+  function prunePathAt(o, parts, i) {
+    if (o === null || typeof o !== "object") return false;
+    var t = parts[i], last = i === parts.length - 1, k, hit = false;
+    if (t === "[-]") {
+      if (!nativeIsArray(o)) return false;
+      for (k = o.length - 1; k >= 0; k--) if (hasPathAt(o[k], parts, i + 1)) { nativeSplice.call(o, k, 1); hit = true; }
+      return hit;
+    }
+    if (t === "{-}") {
+      for (k in o) if (nativeHasOwn.call(o, k) && hasPathAt(o[k], parts, i + 1)) { try { delete o[k]; hit = true; } catch (e) {} }
+      return hit;
+    }
+    if (t === "[]") {
+      if (!nativeIsArray(o)) return false;
+      if (last) { hit = o.length > 0; o.length = 0; return hit; }
+      for (k = 0; k < o.length; k++) if (prunePathAt(o[k], parts, i + 1)) hit = true;
+      return hit;
+    }
+    if (t === "*") {
+      for (k in o) {
+        if (!nativeHasOwn.call(o, k)) continue;
+        if (last) { try { delete o[k]; hit = true; } catch (e) {} } else if (prunePathAt(o[k], parts, i + 1)) hit = true;
+      }
+      return hit;
+    }
+    if (!nativeHasOwn.call(o, t)) return false;
+    if (last) { try { delete o[t]; return true; } catch (e) { return false; } }
+    return prunePathAt(o[t], parts, i + 1);
+  }
+  function deletePath(obj, path) { return prunePathAt(obj, String(path).split("."), 0); }
+
+  // json-prune and its fetch/XHR twins share one pass: every `needle` path must be
+  // present, then every `prop` path is removed. Returns true if the object changed.
+  function pruneObject(obj, props, needles) {
+    if (!obj || typeof obj !== "object") return false;
+    for (var i = 0; i < needles.length; i++) if (!findPath(obj, needles[i])) return false;
+    var hit = false;
+    for (var j = 0; j < props.length; j++) if (deletePath(obj, props[j])) hit = true;
+    return hit;
+  }
+  function words(raw) { return raw ? String(raw).split(/\s+/).filter(Boolean) : []; }
+
+  // The call stack without our own frames (chrome-extension://…), for stack needles.
+  function pageStack() {
+    try {
+      return String(new Error().stack || "").split("\n").filter(function (l) {
+        return l.indexOf("chrome-extension://") < 0;
+      }).join("\n");
+    } catch (e) { return ""; }
   }
 
-  function deletePath(obj, path) {
-    var parts = path.split(".");
-    var cur = obj;
-    for (var i = 0; i < parts.length - 1; i++) {
-      if (cur === null || typeof cur !== "object") return;
-      cur = cur[parts[i]];
-    }
-    if (cur && typeof cur === "object") { try { delete cur[parts[parts.length - 1]]; } catch (e) {} }
+  // uBO varargs ("propsToMatch", "url:/api method:POST", "stackToMatch", "x") → object.
+  function varargs(list) {
+    var o = {};
+    for (var i = 0; i + 1 < list.length; i += 2) o[list[i]] = list[i + 1];
+    return o;
+  }
+  // propsToMatch for a request: bare tokens / "url:" match the URL, "name:value" an
+  // init option (method:POST). Every token must match; none given = every request.
+  function requestMatcher(raw) {
+    var conds = words(raw).map(function (c) {
+      var m = /^([a-zA-Z]+):(.*)$/.exec(c);
+      if (m && m[1] !== "url" && !/^https?$/.test(m[1])) return { key: m[1], test: needleMatcher(m[2]) };
+      return { key: "url", test: needleMatcher(m && m[1] === "url" ? m[2] : c) };
+    });
+    return function (props) {
+      for (var i = 0; i < conds.length; i++) {
+        var v = props[conds[i].key];
+        if (v === undefined || !conds[i].test(String(v))) return false;
+      }
+      return true;
+    };
+  }
+  function fetchProps(input, init) {
+    var o = { url: "", method: "GET" };
+    try {
+      if (typeof input === "string") o.url = input;
+      else if (input && typeof input === "object") { o.url = String(input.url || input.href || input); if (input.method) o.method = input.method; }
+      else o.url = String(input);
+      if (init && typeof init === "object") for (var k in init) if (nativeHasOwn.call(init, k) && typeof init[k] !== "object") o[k] = init[k];
+    } catch (e) {}
+    return o;
+  }
+  // A Response that looks like the original (status, headers, url, type) with a new body.
+  function rebuildResponse(resp, body) {
+    var out = new Response(body, { status: resp.status, statusText: resp.statusText, headers: resp.headers });
+    try {
+      Object.defineProperties(out, {
+        url: { value: resp.url }, redirected: { value: resp.redirected }, type: { value: resp.type },
+      });
+    } catch (e) {}
+    return out;
+  }
+  // fetch() responses we may rewrite: same-origin/CORS bodies we can read (not opaque).
+  function wrapFetchResponse(match, transform) {
+    var origFetch = window.fetch;
+    if (typeof origFetch !== "function" || typeof Response !== "function") return;
+    window.fetch = cloak(function (input, init) {
+      var pending = nativeReflectApply(origFetch, this, arguments);
+      var wanted = false;
+      try { wanted = match(fetchProps(input, init)); } catch (e) {}
+      if (!wanted) return pending;
+      return pending.then(function (resp) {
+        if (!resp || resp.type === "opaque" || resp.bodyUsed) return resp;
+        return resp.clone().text().then(function (text) {
+          var out;
+          try { out = transform(text, resp); } catch (e) { out = null; }
+          return typeof out === "string" && out !== text ? rebuildResponse(resp, out) : resp;
+        }, function () { return resp; });
+      });
+    }, origFetch);
+  }
+  // XMLHttpRequest responses we may rewrite: the page reads response/responseText
+  // through our getters, which run the transform once per finished request.
+  function wrapXhrResponse(match, transform) {
+    var X = window.XMLHttpRequest;
+    if (typeof X !== "function" || !X.prototype) return;
+    var P = X.prototype, origOpen = P.open;
+    var dRespText = Object.getOwnPropertyDescriptor(P, "responseText");
+    var dResp = Object.getOwnPropertyDescriptor(P, "response");
+    if (!dRespText || !dRespText.get || !dResp || !dResp.get) return;
+    var wanted = new WeakMap(), done = new WeakMap();
+    P.open = cloak(function (method, url) {
+      try { if (match({ url: String(url), method: String(method || "GET") })) wanted.set(this, 1); else wanted.delete(this); } catch (e) {}
+      return nativeReflectApply(origOpen, this, arguments);
+    }, origOpen);
+    var result = function (xhr) {
+      if (done.has(xhr)) return done.get(xhr);
+      var text = null;
+      try {
+        var type = xhr.responseType;
+        if (type === "" || type === "text") text = nativeReflectApply(dRespText.get, xhr, []);
+        else if (type === "json") { var obj = nativeReflectApply(dResp.get, xhr, []); text = obj == null ? null : nativeStringify(obj); }
+      } catch (e) {}
+      if (text === null) return null;
+      var out = null;
+      try { out = transform(text); } catch (e) {}
+      var r = typeof out === "string" && out !== text ? { text: out, type: xhr.responseType } : null;
+      done.set(xhr, r);
+      return r;
+    };
+    var ready = function (xhr) { try { return wanted.has(xhr) && xhr.readyState === 4; } catch (e) { return false; } };
+    Object.defineProperty(P, "responseText", { configurable: true, enumerable: dRespText.enumerable, get: cloak(function () {
+      if (ready(this)) { var r = result(this); if (r) return r.text; }
+      return nativeReflectApply(dRespText.get, this, []);
+    }, dRespText.get) });
+    Object.defineProperty(P, "response", { configurable: true, enumerable: dResp.enumerable, get: cloak(function () {
+      if (ready(this)) { var r = result(this); if (r) { if (r.type === "json") { try { return nativeParse(r.text); } catch (e) {} } else return r.text; } }
+      return nativeReflectApply(dResp.get, this, []);
+    }, dResp.get) });
+  }
+  // A JSON text → pruned JSON text (null when it is not JSON or nothing changed).
+  function pruneText(props, needles) {
+    return function (text) {
+      var obj;
+      try { obj = nativeParse(text); } catch (e) { return null; }
+      return pruneObject(obj, props, needles) ? nativeStringify(obj) : null;
+    };
   }
 
   // Run fn now and on DOM mutations (for DOM-touching scriptlets). Mutation
@@ -403,6 +704,34 @@ var SA_POLICY = (function () {
 
   // Compile a uBO needle with optional leading "!" negation into a matcher.
   // A missing/empty needle matches everything; "!" inverts the result.
+  // Every native we replace is a Proxy of the native, and Function.prototype.toString
+  // answers for the native: fn.toString() stays "function fetch() { [native code] }".
+  // Anti-adblock scripts (YouTube's included) compare exactly that; a plain
+  // replacement function gave us away on every site that checks.
+  var NativeProxy = typeof Proxy === "function" ? Proxy : null;
+  var nativeReflectApply = typeof Reflect === "object" && Reflect ? Reflect.apply : null;
+  var cloakMap = typeof WeakMap === "function" ? new WeakMap() : null;
+  var cloakedToString = false;
+  function cloak(impl, orig) {
+    if (!NativeProxy || !nativeReflectApply || !cloakMap || typeof orig !== "function" || typeof impl !== "function") return impl;
+    try {
+      if (!cloakedToString) {
+        cloakedToString = true;
+        var ts = Function.prototype.toString;
+        var tsP = new NativeProxy(ts, { apply: function (t, self, args) {
+          var o = self, n = 0;
+          while (n++ < 8 && cloakMap.has(o)) o = cloakMap.get(o); // a native wrapped twice (two scriptlets) still answers as itself
+          return nativeReflectApply(t, o, args);
+        } });
+        cloakMap.set(tsP, ts);
+        Function.prototype.toString = tsP;
+      }
+      var p = new NativeProxy(orig, { apply: function (t, self, args) { return nativeReflectApply(impl, self, args); } });
+      cloakMap.set(p, orig);
+      return p;
+    } catch (e) { return impl; }
+  }
+
   function needleMatcher(raw) {
     var neg = typeof raw === "string" && raw.charAt(0) === "!";
     var body = neg ? raw.slice(1) : raw;
@@ -420,17 +749,19 @@ var SA_POLICY = (function () {
   // callback source matches `search` (and, if given, whose delay equals `delay`).
   function defuseTimer(prop, search, delay) {
     var match = needleMatcher(search);
-    var wanted = delay !== undefined && delay !== "" ? parseInt(delay, 10) : NaN;
+    var range = /^(\d+)-(\d+)$/.exec(String(delay || ""));
+    var wanted = !range && delay !== undefined && delay !== "" ? parseInt(delay, 10) : NaN;
     var orig = window[prop];
     if (typeof orig !== "function") return;
     window[prop] = function (fn, t) {
       try {
         var src = typeof fn === "function" ? fn.toString() : String(fn);
-        var mDelay = isNaN(wanted) || wanted === t;
+        var mDelay = range ? (+t >= +range[1] && +t <= +range[2]) : isNaN(wanted) || wanted === t;
         if (match(src) && mDelay) return 0;
       } catch (e) {}
       return orig.apply(this, arguments);
     };
+    window[prop] = cloak(window[prop], orig);
   }
   // DOM-touching scriptlets: apply fn to every element matching sel, now and on mutation.
   function forEachMatch(sel, fn) {
@@ -439,17 +770,130 @@ var SA_POLICY = (function () {
     });
   }
 
+  // What a refused fetch()/XHR answers with: "" (default), "true" (10 random
+  // characters), emptyObj/emptyArr/emptyStr, "length:a-b" (random text of that
+  // length) or "war:<resource>" (a small stand-in for that resource).
+  var WAR_TEXT = { "noop.json": "{}", "noop.txt": "", "noop.js": "(function(){})();", "noop.css": "", "noop.html": "<!DOCTYPE html>",
+    "noop-vast2.xml": '<VAST version="2.0"></VAST>', "noop-vast3.xml": '<VAST version="3.0"></VAST>', "noop-vast4.xml": '<VAST version="4.0"></VAST>',
+    "noop-vmap1.xml": '<vmap:VMAP xmlns:vmap="http://www.iab.net/videosuite/vmap" version="1.0"></vmap:VMAP>' };
+  function randomText(n) {
+    var abc = "abcdefghijklmnopqrstuvwxyz0123456789", out = "";
+    n = Math.min(500000, Math.max(0, n | 0));
+    for (var i = 0; i < n; i++) out += abc.charAt((Math.random() * abc.length) | 0);
+    return out;
+  }
+  function fakeBody(raw) {
+    if (raw === undefined || raw === "" || raw === "emptyStr") return "";
+    if (raw === "true") return randomText(10);
+    if (raw === "emptyObj") return "{}";
+    if (raw === "emptyArr") return "[]";
+    var m = /^length:(\d+)(?:-(\d+))?$/.exec(raw);
+    if (m) { var lo = +m[1], hi = m[2] ? +m[2] : lo; return randomText(lo + Math.floor(Math.random() * (Math.max(lo, hi) - lo + 1))); }
+    m = /^war:([\w.-]+)$/.exec(raw);
+    if (m) return nativeHasOwn.call(WAR_TEXT, m[1]) ? WAR_TEXT[m[1]] : /\.js$/.test(m[1]) ? "(function(){})();" : "";
+    return "";
+  }
+  function fakeResponse(url, rawBody, rawType) {
+    var props = {};
+    if (rawType) {
+      if (rawType.charAt(0) === "{") { try { props = nativeParse(rawType) || {}; } catch (e) { props = {}; } }
+      else props = { type: rawType };
+    }
+    var r = new Response(fakeBody(rawBody), { status: 200, statusText: typeof props.statusText === "string" ? props.statusText : "OK" });
+    try {
+      var def = { url: { value: String(url || "") }, redirected: { value: false } };
+      if (props.type) def.type = { value: String(props.type) };
+      if (typeof props.ok === "boolean") def.ok = { value: props.ok };
+      if (props.type === "opaque") { def.status = { value: 0 }; def.ok = { value: false }; def.statusText = { value: "" }; }
+      Object.defineProperties(r, def);
+    } catch (e) {}
+    return r;
+  }
+  // nano-stb / nano-sib share one booster (see IMPL).
+  function boostTimer(prop, needle, rawDelay, rawBoost) {
+    var match = needleMatcher(needle || "");
+    var any = rawDelay === "*";
+    var wanted = any ? NaN : rawDelay === undefined || rawDelay === "" ? 1000 : parseInt(rawDelay, 10);
+    var boost = parseFloat(rawBoost);
+    if (!(boost > 0)) boost = 0.05;
+    boost = Math.min(50, Math.max(0.02, boost));
+    var orig = window[prop];
+    if (typeof orig !== "function") return;
+    window[prop] = cloak(function (fn, t) {
+      try {
+        if ((any || +t === wanted) && match(typeof fn === "function" ? fn.toString() : String(fn))) {
+          var args = nativeSlice.call(arguments);
+          args[1] = (+t || 0) * boost;
+          return nativeReflectApply(orig, this, args);
+        }
+      } catch (e) {}
+      return nativeReflectApply(orig, this, arguments);
+    }, orig);
+  }
+  function setStorageItem(name, rawKey, rawValue) {
+    var store = null;
+    try { store = window[name]; } catch (e) { return; }
+    if (!store) return;
+    var key = String(rawKey).replace(/^"([\s\S]*)"$/, "$1");
+    try {
+      if (rawValue === "$remove$") { store.removeItem(key); return; }
+      var map = { "''": "", '""': "", "emptyStr": "", "emptyObj": "{}", "emptyArr": "[]" };
+      store.setItem(key, nativeHasOwn.call(map, rawValue) ? map[rawValue] : String(rawValue));
+    } catch (e) {}
+  }
+  // The FuckAdBlock / BlockAdBlock API, answering "not detected" (nofab / nobab).
+  function stubDetectors(names) {
+    var Stub = function () {};
+    var p = Stub.prototype;
+    var later = function (fn) { if (typeof fn === "function") setTimeout(function () { try { fn(); } catch (e) {} }, 1); };
+    p.setOption = function () { return this; };
+    p.check = function () { return false; };
+    p.emitEvent = function () { return this; };
+    p.clearEvent = function () {};
+    p.on = function (detected, fn) { if (!detected) later(fn); return this; };
+    p.onDetected = function () { return this; };
+    p.onNotDetected = function (fn) { later(fn); return this; };
+    var inst = new Stub();
+    names.forEach(function (n) {
+      var lower = n.charAt(0).toLowerCase() + n.slice(1);
+      [[n, Stub], [lower, inst]].forEach(function (pair) {
+        try {
+          Object.defineProperty(window, pair[0], { get: function () { return pair[1]; }, set: function () {}, configurable: false });
+        } catch (e) {}
+      });
+    });
+  }
+  // xml-prune: CSS selector, or xpath(expression) (attributes included).
+  function xmlSelect(doc, sel) {
+    var m = /^xpath\(([\s\S]+)\)$/.exec(String(sel).trim());
+    if (!m) { try { return nativeSlice.call(doc.querySelectorAll(sel)); } catch (e) { return []; } }
+    var out = [];
+    try {
+      var r = doc.evaluate(m[1], doc, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+      for (var i = 0; i < r.snapshotLength; i++) out.push(r.snapshotItem(i));
+    } catch (e) {}
+    return out;
+  }
+
   // ---- scriptlet implementations -----------------------------------------
   // Each is keyed by its canonical name (the build maps uBO aliases to these).
 
   var IMPL = {
     // set-constant(chain, value): pin window.<chain> to a constant from the
     // value dictionary; later writes are ignored (or preserved if identical).
-    "set-constant": function (chain, rawValue) {
-      var t = SA_POLICY.tokenValue(rawValue);
+    "set-constant": function (chain, rawValue, runAtKey, runAt) {
+      var t = rawValue === undefined ? { ok: true, v: undefined } : SA_POLICY.tokenValue(rawValue);
       if (!t.ok) return;
       var value = t.v;
       var parts = chain.split(".");
+      // "runAt, interactive|complete": pin it once the document has got that far.
+      if (runAtKey === "runAt" && (runAt === "interactive" || runAt === "complete" || runAt === "end")) {
+        var later = function () { IMPL["set-constant"](chain, rawValue); };
+        if (document.readyState === "loading" || (runAt === "complete" && document.readyState !== "complete")) {
+          try { (runAt === "complete" ? window : document).addEventListener(runAt === "complete" ? "load" : "DOMContentLoaded", later, { once: true }); } catch (e) {}
+          return;
+        }
+      }
       (function define(owner, i) {
         var prop = parts[i];
         if (i === parts.length - 1) {
@@ -560,36 +1004,37 @@ var SA_POLICY = (function () {
         } catch (e) {}
         return orig.apply(this, arguments);
       };
+      proto.addEventListener = cloak(proto.addEventListener, orig);
     },
 
-    // json-prune(props, needle): delete dotted `props` from every JSON.parse /
-    // Response.json result, but only when all `needle` paths are present.
-    "json-prune": function (rawProps, rawNeedle) {
-      var props = rawProps ? String(rawProps).split(/\s+/).filter(Boolean) : [];
-      var needles = rawNeedle ? String(rawNeedle).split(/\s+/).filter(Boolean) : [];
+    // json-prune(props, needle, stack): delete `props` (uBO path grammar, see
+    // prunePathAt) from every JSON.parse / Response.json result, but only when all
+    // `needle` paths are present and, if given, the caller's stack matches `stack`.
+    "json-prune": function (rawProps, rawNeedle, rawStack) {
+      var props = words(rawProps);
+      var needles = words(rawNeedle);
       if (!props.length) return;
+      var stackOk = rawStack ? needleMatcher(rawStack) : null;
       var prune = function (obj) {
         try {
-          if (!obj || typeof obj !== "object") return obj;
-          var ok = needles.length === 0 || needles.every(function (n) { return findPath(obj, n); });
-          if (ok) props.forEach(function (p) { deletePath(obj, p); });
+          if (obj && typeof obj === "object" && (!stackOk || stackOk(pageStack()))) pruneObject(obj, props, needles);
         } catch (e) {}
         return obj;
       };
       var origParse = JSON.parse;
-      JSON.parse = function () { return prune(origParse.apply(this, arguments)); };
+      JSON.parse = cloak(function () { return prune(origParse.apply(this, arguments)); }, origParse);
       try {
         var origJson = Response.prototype.json;
-        Response.prototype.json = function () {
+        Response.prototype.json = cloak(function () {
           return origJson.apply(this, arguments).then(prune);
-        };
+        }, origJson);
       } catch (e) {}
     },
 
     // no-fetch-if(conditions): resolve matching fetch() calls with an empty 200
     // instead of hitting the network. Conditions are space-separated URL
     // needles; `method:GET` matches the verb; `*` matches everything.
-    "no-fetch-if": function (rawCond) {
+    "no-fetch-if": function (rawCond, rawBody, rawType) {
       var conds = rawCond ? String(rawCond).split(/\s+/).filter(Boolean) : [];
       var origFetch = window.fetch;
       if (typeof origFetch !== "function" || typeof Response !== "function") return;
@@ -603,16 +1048,17 @@ var SA_POLICY = (function () {
             var re = toReg(c);
             return re ? re.test(url) : String(url).indexOf(c) >= 0;
           });
-          if (match) return Promise.resolve(new Response("", { status: 200, statusText: "OK" }));
+          if (match) return Promise.resolve(fakeResponse(url, rawBody, rawType));
         } catch (e) {}
         return origFetch.apply(this, arguments);
       };
+      window.fetch = cloak(window.fetch, origFetch);
     },
 
     // no-xhr-if(cond): the XMLHttpRequest twin of no-fetch-if — a matching request
     // (URL needle / "method:X" / "*") is never sent and completes as an empty 200,
     // which is what anti-adblock probes ("can I load ads.js?") are told.
-    "no-xhr-if": function (rawCond) {
+    "no-xhr-if": function (rawCond, rawBody) {
       var conds = rawCond ? String(rawCond).split(/\s+/).filter(Boolean) : [];
       var X = window.XMLHttpRequest;
       if (typeof X !== "function" || !X.prototype) return;
@@ -631,11 +1077,13 @@ var SA_POLICY = (function () {
         } catch (e) {}
         return origOpen.apply(this, arguments);
       };
+      P.open = cloak(P.open, origOpen);
       P.send = function () {
         if (!held.has(this)) return origSend.apply(this, arguments);
         var xhr = this, u = held.get(this);
         try {
-          var fixed = { readyState: 4, status: 200, statusText: "OK", response: "", responseText: "", responseURL: u };
+          var body = fakeBody(rawBody);
+          var fixed = { readyState: 4, status: 200, statusText: "OK", response: body, responseText: body, responseURL: u };
           for (var k in fixed) Object.defineProperty(xhr, k, { value: fixed[k], configurable: true });
           setTimeout(function () {
             try {
@@ -648,23 +1096,42 @@ var SA_POLICY = (function () {
           return origSend.apply(this, arguments);
         }
       };
+      P.send = cloak(P.send, origSend);
     },
 
     // no-window-open-if(search): block window.open() for matching URLs (leading
     // "!" inverts). Neutralises pop-under / pop-up ad launchers.
-    "no-window-open-if": function (rawSearch) {
+    "no-window-open-if": function (rawSearch, rawDelay, rawDecoy) {
       // needleMatcher, not a hand-rolled copy: a needle REJECTED by the ReDoS
       // guard must match nothing — a copy that mapped null→"match all" would
       // block every window.open on the host.
       var match = needleMatcher(rawSearch);
       var orig = window.open;
       if (typeof orig !== "function") return;
+      // (needle, seconds[, "obj"]): some launchers treat `null` as "a blocker is here"
+      // and retry or nag; hand them an invisible blank frame's window that goes away
+      // after `seconds` — a window that never shows anything.
+      var decoySeconds = rawDelay !== undefined && rawDelay !== "" ? parseInt(rawDelay, 10) : NaN;
+      var decoy = function () {
+        if (isNaN(decoySeconds)) return null;
+        try {
+          var el = document.createElement(rawDecoy === "obj" ? "object" : "iframe");
+          if (rawDecoy === "obj") el.setAttribute("data", "about:blank"); else el.setAttribute("src", "about:blank");
+          el.style.setProperty("display", "none", "important");
+          (document.body || document.documentElement).appendChild(el);
+          var w = el.contentWindow;
+          if (decoySeconds > 0) setTimeout(function () { try { el.remove(); } catch (e) {} }, decoySeconds * 1000);
+          return w || null;
+        } catch (e) { return null; }
+      };
       window.open = function (url) {
         try {
-          if (match(String(url || ""))) return null;
+          var all = nativeSlice.call(arguments).map(String).join(" ");
+          if (match(all) || match(String(url || ""))) return decoy();
         } catch (e) {}
         return orig.apply(this, arguments);
       };
+      window.open = cloak(window.open, orig);
     },
 
     // remove-attr(attrs, selector): strip the given attributes (space/comma/pipe
@@ -786,7 +1253,7 @@ var SA_POLICY = (function () {
     // remove-cookie(needle): expire first-party cookies whose NAME matches the
     // needle (now + at DOMContentLoaded), on every domain level. Baked-list
     // only — the live channel refuses it (it can log a user out of a site).
-    "remove-cookie": function (needle) {
+    "remove-cookie": function (needle, whenKey, whenList) {
       if (!needle) return;
       var match = needleMatcher(needle);
       var run = function () {
@@ -809,6 +1276,220 @@ var SA_POLICY = (function () {
       };
       run();
       try { document.addEventListener("DOMContentLoaded", run, { once: true }); } catch (e) {}
+      // ("when", "scroll keydown"): also shortly after the visitor scrolls / types / clicks.
+      if (whenKey === "when" && whenList) {
+        var t = 0, later = function () { if (t) return; t = setTimeout(function () { t = 0; run(); }, 500); };
+        String(whenList).split(/\s+/).forEach(function (ev) {
+          try {
+            if (ev === "load") window.addEventListener("load", run, { once: true });
+            else if (/^(scroll|keydown|click)$/.test(ev)) window.addEventListener(ev, later, { passive: true, capture: true });
+          } catch (e) {}
+        });
+      }
+    },
+
+    // ---- 5.5.0: the uBO routines the bundled lists use most ------------------
+
+    // json-prune-fetch-response(props, needles, "propsToMatch", "url:/api …",
+    // "stackToMatch", "needle"): json-prune for the JSON body of matching fetch()
+    // responses — before the page reads it, without touching anything else.
+    "json-prune-fetch-response": function (rawProps, rawNeedle) {
+      var o = varargs(nativeSlice.call(arguments, 2));
+      var props = words(rawProps), needles = words(rawNeedle);
+      if (!props.length) return;
+      var req = requestMatcher(o.propsToMatch), st = o.stackToMatch ? needleMatcher(o.stackToMatch) : null;
+      wrapFetchResponse(function (p) { return req(p) && (!st || st(pageStack())); }, pruneText(props, needles));
+    },
+
+    // json-prune-xhr-response(...): the same for XMLHttpRequest responses.
+    "json-prune-xhr-response": function (rawProps, rawNeedle) {
+      var o = varargs(nativeSlice.call(arguments, 2));
+      var props = words(rawProps), needles = words(rawNeedle);
+      if (!props.length) return;
+      var req = requestMatcher(o.propsToMatch), st = o.stackToMatch ? needleMatcher(o.stackToMatch) : null;
+      wrapXhrResponse(function (p) { return req(p) && (!st || st(pageStack())); }, pruneText(props, needles));
+    },
+
+    // noeval-if(needle): code strings handed to window.eval that match the needle
+    // are not run (anti-adblock and pop-up loaders that unpack themselves that way).
+    "noeval-if": function (needle) {
+      var match = needleMatcher(needle);
+      var orig = window.eval;
+      if (typeof orig !== "function") return;
+      window.eval = cloak(function (code) {
+        try { if (match(String(code))) return undefined; } catch (e) {}
+        return nativeReflectApply(orig, this, arguments);
+      }, orig);
+    },
+
+    // noeval(): nothing handed to window.eval runs on this site (listed sites only).
+    "noeval": function () {
+      var orig = window.eval;
+      if (typeof orig !== "function") return;
+      window.eval = cloak(function () { return undefined; }, orig);
+    },
+
+    // nano-stb(needle, delay, boost) / nano-sib(...): matching timers (callback
+    // source ~ needle, delay = `delay` ms, default 1000, "*" = any) fire `boost`
+    // times their delay (default 0.05 = 20× sooner; 0.02–50) — the "wait 30
+    // seconds" countdowns in front of a download.
+    "nano-stb": function (needle, delay, boost) { boostTimer("setTimeout", needle, delay, boost); },
+    "nano-sib": function (needle, delay, boost) { boostTimer("setInterval", needle, delay, boost); },
+
+    // set-local-storage-item(key, value) / set-session-storage-item(…): write an
+    // inert value from the policy dictionary ("$remove$" deletes the key) — e.g. the
+    // "ad blocker warning already shown" flag a site keeps for itself.
+    "set-local-storage-item": function (key, value) { setStorageItem("localStorage", key, value); },
+    "set-session-storage-item": function (key, value) { setStorageItem("sessionStorage", key, value); },
+
+    // nofab(): FuckAdBlock / BlockAdBlock / SniffAdBlock (the open-source detector
+    // libraries, both capitalisations) answer "no ad blocker" — their onNotDetected
+    // callbacks run, onDetected ones never do.
+    "nofab": function () { stubDetectors(["FuckAdBlock", "BlockAdBlock", "SniffAdBlock"]); },
+
+    // nobab(): the obfuscated BlockAdBlock service — the same stubs, plus its
+    // payload (recognisable by the library's bait classes) is never unpacked.
+    "nobab": function () {
+      stubDetectors(["BlockAdBlock"]);
+      IMPL["noeval-if"]("/pub_300x250|text-ad-links|BlockAdBlock|blockAdBlock/");
+    },
+
+    // popads-dummy(): the PopAds launcher finds its globals already taken (inert objects).
+    "popads-dummy": function () {
+      ["PopAds", "popns"].forEach(function (n) {
+        try { delete window[n]; Object.defineProperty(window, n, { value: {}, writable: false, configurable: false }); } catch (e) {}
+      });
+    },
+
+    // popads.net(): the launcher's own assignment throws (abort-on-property-write).
+    "popads.net": function () {
+      IMPL["abort-on-property-write"]("PopAds");
+      IMPL["abort-on-property-write"]("popns");
+    },
+
+    // xml-prune(selector, documentSelector, url): remove XML nodes (CSS selector, or
+    // xpath(…), attributes included) from matching fetch/XHR responses — the ad
+    // periods of a DASH manifest, the ad of a VAST answer — before the player reads them.
+    "xml-prune": function (selector, docSel, url) {
+      if (!selector || typeof DOMParser !== "function" || typeof XMLSerializer !== "function") return;
+      var urlOk = url ? needleMatcher(url) : function () { return true; };
+      var transform = function (text) {
+        if (!/^\s*</.test(text)) return null;
+        var doc = new DOMParser().parseFromString(text, "text/xml");
+        if (!doc || doc.getElementsByTagName("parsererror").length) return null;
+        if (docSel && !xmlSelect(doc, docSel).length) return null;
+        var nodes = xmlSelect(doc, selector);
+        if (!nodes.length) return null;
+        nodes.forEach(function (n) {
+          try {
+            if (n.nodeType === 2) { if (n.ownerElement) n.ownerElement.removeAttributeNode(n); }
+            else if (n.parentNode) n.parentNode.removeChild(n);
+          } catch (e) {}
+        });
+        return new XMLSerializer().serializeToString(doc);
+      };
+      var m = function (p) { return urlOk(p.url); };
+      wrapFetchResponse(m, transform);
+      wrapXhrResponse(m, transform);
+    },
+
+    // m3u-prune(pattern, url): drop ad segments from matching HLS playlists (.m3u8):
+    // a line that matches goes, with the #EXTINF that describes it. A /…/m regex is
+    // run over the whole text instead (blocks between two #EXT-X-DISCONTINUITY).
+    "m3u-prune": function (pattern, url) {
+      if (!pattern) return;
+      var urlOk = url ? needleMatcher(url) : function () { return true; };
+      var m = /^\/([\s\S]+)\/([dgimsuy]*)$/.exec(pattern), re = null, whole = false;
+      if (m) {
+        try { re = new RegExp(m[1], m[2].replace(/[^gimsuy]/g, "")); } catch (e) { return; }
+        whole = m[2].indexOf("m") >= 0;
+      }
+      var transform = function (text) {
+        if (!/^\s*#EXTM3U/.test(text)) return null;
+        if (re && whole) return text.replace(re.global ? re : new RegExp(re.source, re.flags + "g"), "");
+        var lines = text.split("\n"), out = [];
+        for (var i = 0; i < lines.length; i++) {
+          var l = lines[i];
+          if (!(re ? re.test(l) : l.indexOf(pattern) >= 0)) { out.push(l); continue; }
+          if (l.charAt(0) === "#") {
+            if (/^#EXTINF/.test(l) && i + 1 < lines.length && lines[i + 1].charAt(0) !== "#") i++;
+          } else if (out.length && /^#EXTINF/.test(out[out.length - 1])) out.pop();
+        }
+        return out.join("\n");
+      };
+      var mm = function (p) { return urlOk(p.url); };
+      wrapFetchResponse(mm, transform);
+      wrapXhrResponse(mm, transform);
+    },
+
+    // refresh-defuser(seconds): a <meta http-equiv="refresh"> (to an ad, a pop-under
+    // or a "please disable your blocker" page) is stopped just before it fires.
+    "refresh-defuser": function (rawSec) {
+      var go = function () {
+        var meta = document.querySelector('meta[http-equiv="refresh" i][content]');
+        if (!meta) return;
+        var sec = rawSec !== undefined && rawSec !== "" ? parseFloat(rawSec) : parseFloat(meta.getAttribute("content"));
+        if (!(sec >= 0)) sec = 0;
+        setTimeout(function () { try { window.stop(); } catch (e) {} }, Math.max(0, sec * 1000 - 1));
+      };
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go, { once: true });
+      else go();
+    },
+
+    // set-attr(selector, attribute, value): set an attribute to an inert value from
+    // the policy dictionary, or to a copy of another of its attributes ("[data-src]"
+    // — what a lazy loader left out). Never an event handler, never srcdoc.
+    "set-attr": function (selector, attr, rawValue) {
+      if (!selector || !attr) return;
+      var v = rawValue === undefined || rawValue === "''" ? "" : String(rawValue);
+      var copy = /^\[([a-zA-Z][\w:-]*)\]$/.exec(v);
+      forEachMatch(selector, function (el) {
+        var nv = copy ? el.getAttribute(copy[1]) : v;
+        if (nv !== null && el.getAttribute(attr) !== nv) el.setAttribute(attr, nv);
+      });
+    },
+
+    // no-requestAnimationFrame-if(needle): drop animation-frame callbacks whose
+    // source matches (a leading "!" inverts) — loops that rebuild an ad or a wall.
+    "no-requestAnimationFrame-if": function (needle) {
+      var match = needleMatcher(needle);
+      var orig = window.requestAnimationFrame;
+      if (typeof orig !== "function") return;
+      window.requestAnimationFrame = cloak(function (fn) {
+        try { if (match(typeof fn === "function" ? fn.toString() : String(fn))) return 0; } catch (e) {}
+        return nativeReflectApply(orig, this, arguments);
+      }, orig);
+    },
+
+    // prevent-innerHTML(selector, pattern): an innerHTML assignment to a matching
+    // element (e.g. a <script> an ad loader fills in) whose value matches is ignored.
+    "prevent-innerHTML": function (selector, pattern) {
+      var match = needleMatcher(pattern || "");
+      var d = Object.getOwnPropertyDescriptor(Element.prototype, "innerHTML");
+      if (!d || !d.set) return;
+      var origSet = d.set;
+      try {
+        Object.defineProperty(Element.prototype, "innerHTML", {
+          configurable: true, enumerable: d.enumerable, get: d.get,
+          set: cloak(function (v) {
+            try { if ((!selector || this.matches(selector)) && match(String(v))) return; } catch (e) {}
+            return nativeReflectApply(origSet, this, arguments);
+          }, origSet),
+        });
+      } catch (e) {}
+    },
+
+    // window.name-defuser(): a top page starts with an empty window.name (some
+    // pop-under scripts pass state through it between pages).
+    "window.name-defuser": function () {
+      try { if (window === window.top) window.name = ""; } catch (e) {}
+    },
+
+    // alert-buster(): alert() boxes ("disable your ad blocker!") go to the console.
+    "alert-buster": function () {
+      var orig = window.alert;
+      if (typeof orig !== "function") return;
+      window.alert = cloak(function (msg) { try { console.info(String(msg)); } catch (e) {} }, orig);
     },
   };
 
@@ -822,14 +1503,22 @@ var SA_POLICY = (function () {
   // guaranteed order. Picked up and removed in this tick, before any page script
   // exists; each entry is re-checked against the build profile of the policy.
   var EXTRA = null;
+  // uBO "entity" directives (example.* = example on any public suffix) come from
+  // scriptlets/ubo/entities.js, which the manifest injects before this file only
+  // where its globs match; the real hostname decides below (entityKeys).
+  var ENT = null;
   try {
     var chunkKey = "__tbabScriptletChunk";
     var chunkDesc = Object.getOwnPropertyDescriptor(document, chunkKey);
     if (chunkDesc && chunkDesc.value && typeof chunkDesc.value === "object") EXTRA = chunkDesc.value;
     delete document[chunkKey];
+    var entKey = "__tbabScriptletEntities";
+    var entDesc = Object.getOwnPropertyDescriptor(document, entKey);
+    if (entDesc && entDesc.value && typeof entDesc.value === "object") ENT = entDesc.value;
+    delete document[entKey];
   } catch (e) {}
   // EasyList $popup domains (baked by the build): popunder/popup launchers.
-  var POPUP_HOSTS = ["07c225f3.online","0i0i0i0.com","11x11.com","123-stream.org","123vidz.com","142.91.159.107","142.91.159.127","142.91.159.136","142.91.159.139","142.91.159.146","142.91.159.147","142.91.159.164","142.91.159.169","142.91.159.179","142.91.159.220","142.91.159.223","142.91.159.244","143.244.184.39","146.59.223.83","157.90.183.248","158.247.208.115","167.71.252.38","172.255.103.171","172.255.6.135","172.255.6.137","172.255.6.139","172.255.6.150","172.255.6.152","172.255.6.199","172.255.6.2","172.255.6.217","172.255.6.228","172.255.6.248","172.255.6.254","172.255.6.59","176.31.68.242","185.147.34.126","188.42.84.110","188.42.84.159","188.42.84.160","188.42.84.162","188.42.84.199","188.42.84.21","188.42.84.23","1asb.com","1betandgonow.com","1jutu5nnx.com","1lzz.com","1ts11.top","1ts17.top","1winpb.com","1x001.com","1xlite-522762.top","203.195.121.0","203.195.121.103","203.195.121.119","203.195.121.134","203.195.121.184","203.195.121.195","203.195.121.209","203.195.121.217","203.195.121.219","203.195.121.224","203.195.121.229","203.195.121.24","203.195.121.28","203.195.121.29","203.195.121.34","203.195.121.36","203.195.121.40","203.195.121.70","203.195.121.72","203.195.121.73","203.195.121.74","212.117.186.252","22bettracking.online","22media.world","23.109.121.254","23.109.150.101","23.109.150.208","23.109.170.19","23.109.170.198","23.109.170.228","23.109.170.241","23.109.170.255","23.109.170.60","23.109.248.129","23.109.248.130","23.109.248.135","23.109.248.139","23.109.248.14","23.109.248.149","23.109.248.174","23.109.248.183","23.109.248.247","23.109.248.29","23.109.82.104","23.109.82.119","23.109.82.173","23.109.82.222","23.109.82.44","23.109.82.74","23.109.87.101","23.109.87.118","23.109.87.123","23.109.87.127","23.109.87.139","23.109.87.14","23.109.87.15","23.109.87.182","23.109.87.192","23.109.87.213","23.109.87.217","23.109.87.42","23.109.87.47","23.109.87.71","23.109.87.74","23.83.67.164","24-sportnews.com","2477april2024.com","24affiliates.com","24click.top","24x7report.com","2annalea.com","2qj7mq3w4uxe.com","2smarttracker.com","2track.info","34.102.137.201","35.227.234.222","35.232.188.118","358g46.fun","367p.com","37.1.213.100","3xyy.com","4dsply.com","5.45.79.15","5.61.55.143","51.178.195.171","51.195.115.102","51.89.115.13","554koaylwga7.top","567bets10.com","5dimes.com","5mno3.com","5vbs96dea.com","6-partner.com","62ad.com","6angebot.ch","735pwa.com","79pa4bxa86.com","7ca78m3csgbrid7ge.com","88.42.84.136","888media.net","888promos.com","89sa.com","8s5s.com","900bets10.com","905trk.com","95urbehxy2dh.top","9gg23.com","9l3s3fnhl.com","9t5.me","a-ads.com","a1087.b.akamai.net","a64x.com","aagm.link","abadit5rckb.com","abadit5rckd.com","ablogica.com","aboveredirect.top","abtrcker.com","acacdn.com","acam-2.com","accecmtrk.com","acceptableredheadcaviar.com","access-the-website.com","accomplishedpersuadedprinter.com","acdcdn.com","acedirect.net","achcdn.com","aclktrkr.com","actiondesk.com","activate-game.com","aculturerpa.info","ad-block-offer.com","ad-free.info","ad-maven.com","ad.22betpartners.com","ad.pornimg.xyz","ad.soicos.com","ad.ymcdn.org","ad4game.com","ad6media.fr","adbetclickin.pink","adblock-360.com","adblock-guru.com","adblock-one-protection.com","adblock-zen.com","adblocker-sentinel.net","adblockeromega.com","adblockersentinel.com","adblockstream.com","adblockstrtape.link","adblockstrtech.link","adboost.it","adbooth.com","adca.st","adcash.com","adcdnx.com","adcell.com","adcleanerpage.com","adclickbyte.com","addefenderplus.info","addotnet.com","adentifi.com","adexchangecloud.com","adexchangegate.com","adexchangeguru.com","adexchangemachine.com","adexchangeprediction.com","adexchangetracker.com","adexmedias.com","adextrem.com","adfgetlink.net","adform.net","adfpoint.com","adglare.net","adhealers.com","adhoc2.net","aditsafeweb.com","adjuggler.net","adk2x.com","adkmbc.com","adlogists.com","adlserq.com","adltserv.com","admachina.com","admediatex.net","admedit.net","admeerkat.com","admeking.com","admeridianads.com","admitad.com","admjmp.com","admobe.com","admothreewallent.com","adnanny.com","adnetworkperformance.com","adnium.com","adnotebook.com","adnxs-simple.com","adonweb.ru","adop.co","adplxmd.com","adpool.bet","adport.io","adreactor.com","adrealclick.com","adright.co","adrunnr.com","ads.planetwin365affiliate.com","ads.sexier.com","ads4trk.com","adsb4trk.com","adsblockersentinel.info","adsbreak.com","adsbtrk.com","adsco.re","adserverplus.com","adserving.unibet.com","adsession.com","adshostnet.com","adskeeper.co.uk","adskeeper.com","adskpak.com","adsmarket.com","adsplex.com","adspredictiv.com","adspyglass.com","adsquash.info","adsquasher.com","adsrv4k.com","adstean.com","adstik.click","adsupply.com","adsupplyads.com","adsupplyads.net","adsurve.com","adtelligent.com","adtng.com","adtrace.org","adtraction.com","advancedadblocker.pro","advertiserurl.com","advertserve.com","advmedialtd.com","advotionhot.com","adw9.com","adx-t.com","adx.io","adxpansion.com","adxpartner.com","adzblockersentinel.net","adzerk.net","aeeg5idiuenbi7erger.com","aeelookithdifyf.com","aetvellt.net","afcpatrk.com","aff-handler.com","aff-track.net","affbuzzads.com","affcpatrk.com","affflow.com","affforce.com","affidavitheadfirstonward.com","affili.st","affiliate-wg.com","affiliateboutiquenetwork.com","affiliates.fantasticbet.com","affiliatestonybet.com","affiliride.com","affilirise.com","affinity.net","afflat3a1.com","afflat3d2.com","afflat3e1.com","affluentarmyequator.com","affpa.top","affstreck.com","afilliatetraff.com","afodreet.net","afront.io","aftrk1.com","aftrk3.com","agacelebir.com","agalumineonr.com","agl001.bid","aglobally.com","ahadsply.com","ahbdsply.com","ahscdn.com","aigeno.com","aimging.com","aimukreegee.net","aitsatho.com","aj1070.online","ajrkmx1.com","ajrkmx9.com","ajump1.com","ajump2.com","ajxx98.online","ak-is2.net","akhoondathecae.shop","akmxts.com","akumeha.onelink.me","akutapro.com","albonsa.com","alexatracker.com","algocashmaster.com","alibabatraffic.com","alitems.co","alitems.site","alleviatepracticableaddicted.com","allhypefeed.com","allowseshehasn.com","allsportsflix.best","allsporttv.com","almstda.tv","aloatchuraimti.net","alpenridge.top","alpheratzscheat.top","alpine-vpn.com","alpinedrct.com","alternads.info","alternativecpmgate.com","alxbgo.com","am15.net","amatrck.com","amazing-dating.com","amazon-adsystem.com","ambiliarcarwin.com","amelatrina.com","amesgraduatel.xyz","anamuel-careslie.com","angege.com","aniltramps.top","animeloundry.com","animemeat.com","anmdr.link","annihilativefaltermillion.com","annoyingnightmareedit.com","annual-gamers-choice.com","annulmentequitycereals.com","antiadblocksystems.com","antjgr.com","apapuacauthong.com","apiecelee.com","applstr.com","appoineditardwide.com","appointeeivyspongy.com","appslime.com","apptjmp.com","aquete.com","arborerplanful.shop","ardslediana.com","argrowlitheor.com","arkdcz.com","arminius.io","arrogancedanderuntruth.com","articlepawn.com","arwobaton.com","asdasdad.net","asensoithecb.com","asgclickpp.com","ashoupsu.com","aslnk.link","aso1.net","asqconn.com","astjigglypuffchan.com","astrokompas.com","astrologybacklightsinless.com","atala-apw.com","atas.io","atentherel.org","atinsolutions.com","atsg.me","attacheatableoverlabor.com","attachedkneel.com","attirecideryeah.com","audrte.com","auforau.com","augailou.com","august15download.com","aungudie.com","austeemsa.com","authognu.com","avlmy.com","avocams.com","avthelkp.net","awecrptjmp.com","awejmp.com","awempire.com","awesome-blocker.com","awptjmp.com","awsclic.com","b.link","backgroundrunway.com","backspinreentryupright.com","baggyrepackingrocky.com","baipahanoop.net","baitenthenaga.com","bakjaqa.net","ballyhoopla.club","banners.cams.com","banners.livepartners.com","bannisterflaskputdown.com","banquetunarmedgrater.com","barometercorrodingunease.com","batchzoo.com","batheunits.com","bayshorline.com","bbcrgate.com","bbrdbr.com","bbuni.com","becomeapartner.io","becoquin.com","becorsolaom.com","befirstcdn.com","belavoplay.com","believemefly.com","belovedset.com","bemachopor.com","bemobpath.com","bemobtrcks.com","bemobtrk.com","benaughty.com","bend-me-over.com","beniluuxen.com","benoopto.com","benumelan.com","berapt-medii.com","best-global-apps.com","best-offer-for-you.com","best-vpn-app.com","best4fuck.com","bestadsforyou.com","bestanimegame.com","bestchainconnection.com","bestcleaner.online","bestcontentaccess.top","bestcontentfood.top","bestconvertor.club","bestmoviesflix.xyz","bestonlinecasino.club","bestplaceforall.com","bestproducttesters.com","bestrevenuenetwork.com","bestsurferprotector.com","betforakiea.com","betoga.com","betotodilea.com","betpupitarr.com","betshucklean.com","bettentacruela.com","betteradsystem.com","betterdomino.com","bettraff.com","betzapdoson.com","betzone2000.com","beyourxfriend.com","bfpartners.click","bidverdrd.com","bidverdrs.com","bidvertiser.com","bigbasketshop.com","bigelowcleaning.com","billilia.com","bimbim.com","binance.com","binaryoptionsgame.com","bincatracs.com","bindirect.click","bingohall.ag","binomlink.com","binomnet.com","binomnet3.com","biphic.com","bit.ly","bitadexchange.com","bitdefender.top","bitskins.com","bitterstrawberry.com","biturl.co","bitzv.com","blackandwhite-temporary.com","blacklinknow.com","blahlivedsnowdrop.com","blancoshrimp.com","blcdog.com","bleandworldw.org","blehcourt.com","blendfencingprune.com","blinksbobblepadding.com","block-ad.com","blockadsnot.com","blockchaintop.nl","blogostock.com","blue-ribbonmacadamizeprovide.com","blueistheneworanges.com","bluelinknow.com","blueparrot.media","blurbreimbursetrombone.com","blzz.xyz","bmmads.com","bmndx.com","bngpt.com","bngtrak.com","bobabillydirect.org","bobgames-prolister.com","bodrumshuttle.net","boloptrex.com","bonafides.club","bongacams.com","bongacams10.com","bongacams11.com","bonuscaf.com","bonzuna.com","boobausauhipsa.net","bookmakers.click","booster-vax.com","boskodating.com","bot-checker.com","bouhoagy.net","bounceads.net","boustahe.com","brainberries.co","brandreachsys.com","brationalfilarded.com","brazzerssurvey.com","brieflizard.com","brigadedelegatesandbox.com","brightadnetwork.com","bringmesports.com","brisknessdebtordismiss.com","britishinquisitive.com","brllllantsdates.com","broadensilkslush.com","broadlyjukeboxunrevised.com","browse-boost.com","browsekeeper.com","brutishlylifevoicing.com","btccasinoexpert.com","btent.stre4mpay.one","btpnav.com","buffooncountabletreble.com","buikolered.com","bukusukses.com","bullfeeding.com","bulochka.xyz","bunintruder.com","bunth.net","buqkrzbrucz.com","busterry.com","buy404s.com","buyadvupfor24.com","buyeasy.by","buzzadnetwork.com","buzzonclick.com","bvmbnr.xyz","bwredir.com","byvngx98ssphwzkrrtsjhnbyz5zss81dxygxvlqd05.com","byvue.com","c0nect.com","c3j7rk-rtbix.top","c43a3cd8f99413891.com","c4tracking01.com","cabbagereporterpayroll.com","cactusheadroomscaling.com","callyourinformer.com","calvali.com","camliveshow.xyz","candellume.shop","candyoffers.com","canyoublockit.com","cardboardcrispyrover.com","careerjournalonline.com","cashgzb.com","casino.betsson.com","casiyouaffiliates.com","casumoaffiliates.com","catchtheclick.com","catsnbootsncats2020.com","cbdedibles.site","cdclub.net","cddtsecure.com","cdn.optmd.com","cdn4ads.com","cdnondemand.org","cdnquality.com","cdntechone.com","cdrvrs.com","celeritascdn.com","centent.stemplay.cc","ceremonioustakeintoaccountcustomer.com","chaintopdom.nl","chalkplayground.co","chargeit.baby","chaturbate.com","cheap-jewelry-online.com","checkcdn.net","chekrilsoumpoab.net","cherrytv.media","chestgoingpunch.com","chetchoa.com","chicks4date.com","chl7rysobc3ol6xla.com","choseing.com","chpadblock.com","chrantary-vocking.com","chrysostrck.com","cijoorsairgusa.com","cityofsin3d.com","cjewz.com","ckre.net","ckrf1.com","clbanners16.com","clbjmp.com","clcktrck.com","cld5r.com","clean-1-clean.club","clean-blocker.com","clean-browsing.com","clearwatch.tv","clentrk.com","click-cdn.com","click-for-preview.com","click.ggpickyaff.com","click.quk.com","clickadsource.com","clickdaly.com","clickfilter.co","clickfuse.com","clickmetertracking.com","clickmobad.net","clickppcbuzz.com","clickprotects.com","clickpunch.icu","clickpupbit.com","clicks4tc.com","clicksgear.com","clicksor.com","clicksor.net","clicktripz.com","clicktrixredirects.com","clickwork7secure.com","clictrck.com","clixcrafts.com","clkfeed.com","clkmon.com","clkpback3.com","clkrev.com","clobberprocurertightwad.com","clodsplit.com","closercopy.cfd","cloudpsh.top","cloudtrack-camp.com","cloudtraff.com","cloudvideosa.com","clunen.com","clunkyentirelinked.com","cm-trk2.com","cm-trk6.com","cm65.com","cmpgns.net","cms100.xyz","cmtrkg.com","cn846.com","cngcpy.com","co5457chu.com","code4us.com","codedexchange.com","codeonclick.com","coffee2play.com","coldflownews.com","colonistnobilityheroic.com","colossalanswer.com","comfortablepossibilitycarlos.com","concealmentmimic.com","concedederaserskyline.com","condles-temark.com","connexity.net","conqueredallrightswell.com","consali.com","constructpreachystopper.com","content-loader.com","contentabc.com","convertmb.com","cooch.tv","coolserving.com","coosync.com","coppercranberrylamp.com","cor8ni3shwerex.com","cordinghology.info","correry.com","coticoffee.com","cotrck.com","countabledawdlerunaudited.com","countertrck.com","cpacrack.com","cpalabtracking.com","cpm20.com","cpmclktrk.online","cpmterra.com","cpvadvertise.com","cpxdeliv.com","cr-brands.net","crbbgate.com","crbck.link","crdefault.link","crdefault1.com","crdefault2.com","creaseinprofitst.com","creativecdn.com","creepy-frame.com","crentexgate.com","cretgate.com","crevicedepressingpumpkin.com","crisp-freedom.com","cristochris.com","crjpgate.com","crjpingate.com","crjugate.com","crlcw.link","crmapt.livejasmin.com","crmt.livejasmin.com","crn77.com","crpdt.livejasmin.com","crpop.livejasmin.com","crprt.livejasmin.com","crptentry.com","crptgate.com","crt.livejasmin.com","cruel-love.com","crummydevioussucculent.com","cruzswim.org","cryptokhoj.com","cryptopuffs.io","cryptowheel.net","crystal-blocker.com","csgfst.com","css-load.com","ctcdwm.com","ctosrd.com","ctrdwm.com","ctwmed.com","cuddlethehyena.com","cuevastrck.com","cullemple-motline.com","cute-cursor.com","cuteab.com","cvastico.com","cwn0drtrk.com","cyan92010.com","cyberlink.pro","cyberprivacy.pro","cybkit.com","czh5aa.xyz","dadsats.com","dafabet.odds.am","dagnar.com","daichoho.com","daily-guard.net","dailyc24.com","daleelerah.info","dark-reader.com","data-px.services","datacluster.club","datatechdrift.com","datatechone.com","date-for-more.com","date-till-late.us","date2024.com","date4sex.pro","datedate.today","dateguys.online","datemefast.com","dateyou2024.com","datingshall.life","datingstyle.top","datingtoday.top","datingtorrid.top","datoporn.com","dc-rotator.com","dddomainccc.com","debaucky.com","dedating.online","deebcards-themier.com","defas.site","deghooda.net","deloplen.com","deloton.com","demowebcode.online","dendrito.name","denza.pro","derevya2sh8ka09.com","desertsutilizetopless.com","desklks.com","devaluequalmrelative.com","dexpredict.com","dfuybl-bclxb.love","di7stero.com","diagramjawlineunhappy.com","dianomi.com","diffusedpassionquaking.com","difice-milton.com","digitaldsp.com","directcpmfwr.com","directdexchange.com","directrev.com","directtrck.com","dirty-messenger.com","dirty-tinder.com","disdainsneeze.com","dishleyinsite.shop","displayvertising.com","disprovefacilityjolt.com","dithodackee.com","dive77kt.com","dlrectdates.com","dmiredindeed.com","dmzjmp.com","doct-umb.org","dogsprotectedfeed.info","dolatiaschan.com","dolohen.com","dompeterapp.com","donecperficiam.net","donorstuffed.com","doood.cam","doostozoa.net","dopaleads.com","dopansearor.com","dope.autos","doruffleton.com","dotyruntchan.com","doubleadserve.com","doubleclick.net","doublepimp.com","douglasjamestraining.com","down-paradise.com","download-file.org","download-performance.com","downloadboutique.com","downlon.com","dpuppers.com","dradvice.in","dreamteamaffiliates.com","dreamytabs.com","droci.buzz","drsmediaexchange.com","dsb68d.com","dsp.wtf","dsp5stero.com","dspultra.com","dtssrv.com","dubzenom.com","dukingdraon.com","dwlv.xyz","dxtv1.com","dynsrvtbg.com","dynsrvwer.com","dyptanaza.com","dzhjmp.com","ea6c0ac4.xyz","eaaratte.net","eabids.com","eacdn.com","eagamerz.com","ealeo.com","earlinessone.xyz","easelegbike.com","eastrk-dn.com","easyconverts.com","easysearch.click","eclinerybelfast.org","eclkmpsa.com","ectozoaquagga.top","edalloverwiththinl.info","edonhisdhi.com","edttmar.com","eeco.xyz","eehuzaih.com","eergortu.net","eessoong.com","eetspaae.net","effectivecpmcontent.com","effectivecpmnetwork.com","effectiveratecpm.com","efficientorbit.co","egmyz.com","egraglauvoathog.com","eiteribesshaints.com","elephant-ads.com","eliwitensirg.net","embarkvision.top","emotomalf.com","encouragedmemistress.com","endlessloveonline.online","endorico.com","enloweb.com","ennedranorway.top","enrtx.com","entainpartners.com","entjgcr.com","entterto.com","eofst.com","eonsmedia.com","eontappetito.com","epicgameads.com","era67hfo92w.com","eralway.com","ero-advertising.com","eroge.com","errumoso.xyz","escortlist.pro","eshkol.io","eshkol.one","eskimi.com","esports1x.com","ever8trk.com","everyview.info","ewesmedia.com","ewhareey.com","ewogloarge.com","excellingvista.com","exceptional-ingress.life","exclkplat.com","exclplatmain.com","exclusivesearch.online","exdynsrv.com","exnesstrack.com","exoclick.com","exodusjailhousetarantula.com","exosrv.com","expdirclk.com","explorads.com","explore-site.com","exporder-patuility.com","exrtbsrv.com","extensions-media.com","externalfavlink.com","extractionatticpillowcase.com","extsoft.info","exxtended-access.com","ey43.com","eyauknalyticafra.info","ezadblocker.com","ezcgojaamg.com","ezdownloadpro.info","ezmob.com","faiverty-station.com","familyborn.com","fapcandy.com","fardasub.xyz","fast-redirecting.com","fastclick.net","fastdntrk.com","fastgolbalserver.com","fastincognitomode.com","fastlnd.com","fbmedia-ckl.com","fbpbpmjjg-f.club","fbpqvs.com","februaryinjectionproudly.com","feed-xml.com","feedyourheadmag.com","fefinegoldforeyes.com","fenacheaverage.com","fentent.stre4mplay.one","fer2oxheou4nd.com","feuageepitoke.com","fhserve.com","fiinnancesur.com","filestube.com","filthygracefulspinach.com","finance-hot-news.com","finanvideos.com","findbetterresults.com","finreporter.net","firstclass-download.com","firstload.de","fitcenterz.com","fittingcentermondaysunday.com","flagads.net","flairadscpc.com","flashtalking.com","fleamx.com","flingforyou.com","flowerdicks.com","flrdra.com","flyingadvert.com","fodsoack.com","fontdeterminer.com","for-j.com","foraketene.com","forarchenchan.com","forflygonom.com","forgetnet.xyz","forooqso.tv","fortyphlosiona.com","forzubatr.com","fourwhenstatistics.com","fpctraffic2.com","fpctraffic3.com","fpgedsewst.com","fractionfridgejudiciary.com","fralstamp-genglyric.icu","freeadblockerbrowser.com","freecamsexposed.com","freegamefinder.com","freegamezone.net","freehookupaffair.com","freetrckr.com","freewebcams.com","frequentjam.com","freshpops.net","friendfinder.com","friendlyduck.com","frs2c.com","frtya.com","frtyb.com","frtye.com","frtyi.com","fstsrv.com","fstsrv5.com","fstsrv9.com","funkydaters.com","funmatrix.net","funuzai.ru","fuse-cloud.com","fusetracking.com","fwbntw.com","fwmrm.net","fzev75-rtbix.top","g2afse.com","g33ktr4ck.com","gabbartmiotics.top","gadlt.nl","gadssystems.com","gagheroinintact.com","gajinifreedomain.fun","galaxypush.com","galotop1.com","gamerhit.co","gamezon.top","gaming-adult.com","gamingadlt.com","gammamkt.com","gangwaynumberprivacy.com","ganja.com","gb1aff.com","gdeigri.com","gdmconvtrck.com","genishury.pro","geniusdexchange.com","gensonal.com","gentent.stre4mplay.one","geotrkclknow.com","get-express-vpn.online","get-express-vpns.com","get-gx.net","get.stoplocker.com","getdirectbonus.com","getfinefile.com","getflowads.net","getgx.net","getmatchedlocally.com","getmyads.com","getsmartyapp.com","getsthis.com","getthisappnow.com","gettopple.com","gfdfhdh5t5453.com","gfstrck.com","gg.bet","ggbet-online.net","ggbetapk.com","ggbetpromo.com","ghostnewz.com","giftandgamecentral.com","girls.xyz","gkrtmc.com","glamorous-mail.com","glassmilheart.com","gleagainedam.info","glimpsemankind.com","gliraimsofu.net","glizauvo.net","global-adblocker.com","globaladblocker.com","globaladblocker.net","globeofnews.com","globwo.online","gloogruk.com","glowingnews.com","glsfreeads.com","gml-grp.com","gmxvmvptfm.com","go-srv.com","go-to-website.com","go.aff.7k-partners.com","go.aff.betplays.com","go.aff.estrelabetpartners.com","go.camterest.com","go.clickwhore.com","go.nsfwlivechat.com","go.playlg.com","go.roobet.com","go.thunder.partners","go.xhamsterlive.com","go2affise.com","go2bdmbet.com","go2crystalroll.com","go2linkfast.com","go2offer-1.com","go2oh.net","go2rph.com","goads.pro","goaffmy.com","goapoachowoovol.net","goaserv.com","goathaga.top","godkc.com","godpvqnszo.com","gold2762.com","goobakocaup.com","goonsupper.com","goosebomb.com","gophykopta.com","gositego.live","gotibetho.pro","gotohouse1.club","gotoplaymillion.com","gotrackier.com","grabclix.com","graitsie.com","grapseex.com","grazingmarrywomanhood.com","greatdexchange.com","greatlifebargains2024.com","greenadblocker.com","greenlinknow.com","greenplasticdua.com","greewepi.net","grefutiwhe.com","greygrid.net","grtya.com","grtyj.com","grtyv.com","grunoaph.net","gtbdhr.com","guesswhatnews.com","gvcaffiliates.com","h5xzcrigf541b0fzxj.fun","h74v6kerf.com","hai8g.com","hauchiwu.com","haveameet.com","hazoopso.net","hbloveinfo.com","heavenfull.com","helicient.com","helmethomicidal.com","hentaifap.land","heptix.net","heratheacle.com","heresanothernicemess.com","hetadinh.com","hetaint.com","hetapus.com","hetartwg.com","hetarust.com","hetaruvg.com","heyserves.com","hhbypdoecp.com","hiasor.com","hibids10.com","hicpm10.com","hiend.xyz","highcpmgate.com","highmaidfhr.com","highperformancecpm.com","highperformancecpmgate.com","highperformancecpmnetwork.com","highperformancedformats.com","highperformanceformat.com","highperformancegate.com","highratecpm.com","highrevenuecpmnetwork.com","highrevenuegate.com","highrevenuenetwork.com","highwaycpmrevenue.com","hiiona.com","hilltopads.com","hilltopads.net","hilove.life","hiltonbett.com","himunpractical.com","hintonjour.com","historyactorabsolutely.com","hisurnhuh.com","hitcpm.com","hkl4h1trk.com","hnrgmc.com","hoadaphagoar.net","hoctor-pharity.xyz","hoktrips.com","holahupa.com","hollysocialspuse.com","holputy.shop","hooliganapps.com","hooligapps.com","hooligs.app","hopghpfa.com","hornymatches.com","hot-growngames.life","hottest-girls-online.com","hoveltran.xyz","howboxmaa.site","howsliferightnow.com","hpyjmp.com","hpyrdr.com","hqtrk.com","hrtya.com","hrtye.com","hrtyh.com","html-load.cc","html-load.com","htmonster.com","hue2b.com","hue2n.com","hue4c.com","hueads.com","hugeedate.com","hugregregy.pro","huluads.info","hungryrise.com","hurlmedia.design","hyenadata.com","ibeeckaidse.net","icepbns.com","icgirls.com","icodstatus.shop","icubeswire.co","idescargarapk.com","ientent.stre4mplay.one","ifdnzact.com","ifigent.com","ignals.com","ilaterdeallyig.info","imaxcash.com","img-load.com","imghst-de.com","imkirh.com","impactserving.com","improvebin.xyz","inabsolor.com","indianfriendfinder.com","infeebasr.com","inflectionquake.com","infopicked.com","infra.systems","inncreasukedrev.info","innovid.com","inouva.com","inpagepush.com","insideofnews.com","insideoftech.com","insigit.com","install-check.com","installupdate.online","instancesflushedslander.com","instantpaydaynetwork.com","intab.fun","intellipopup.com","interclics.com","internewsweb.com","internodeid.com","interpersonalskillse.info","intorterraon.com","inumbreonr.com","investigationsuperbprone.com","invle.co","invol.co","iogjhbnoypg.com","iopiopiop.net","irrigatenotwithstandingcommit.com","irtya.com","isawthenews.com","ismlks.com","isolatedovercomepasted.com","istipaumophy.com","istlnkcl.com","itespurrom.com","itgiblean.com","itponytaa.com","itrustzone.site","itskiddien.club","itstuffnews.com","ittontrinevengre.info","iwanttodeliver.com","iwantusingle.com","iyfnz.com","iyfnzgb.com","iyfsearch.com","izeeto.com","ja2n2u30a6rgyd.com","jaavnacsdw.com","jads.co","jashautchord.com","jasmin.com","java8.xyz","jegiopad.top","jepsauveel.net","jerboasjourney.com","jeroud.com","jfjle4g5l.com","jiuwert.online","jizzy.org","joinpropeller.com","joohugreene.net","joudauhee.com","jrpkizae.com","js-check.com","jsmentry.com","jsmjmp.com","jsmptjmp.com","judebelii.com","juiceadv.com","juicyads.com","jump-path1.com","junbi-tracker.com","junkyadexchange.com","junmediadclikrmdi.com","justonemorenews.com","jwalf.com","jwalkin.com","kagonst.com","kaigaidoujin.com","kaminari.systems","kanoodle.com","karafutem.com","karoon.xyz","katecrochetvanity.com","keenmagwife.live","keewoach.net","kektds.com","kentent.stre4mplay.one","ker2clk.com","kettakihome.com","kgfjrb711.com","kgorilla.net","kiksajex.com","kindredplc.com","king3rsc7ol9e3ge.com","kingtrck1.com","kirteexe.tv","kirujh.com","kitchiepreppie.com","kllpelaa.net","klrtspet.net","kolkwi4tzicraamabilis.com","koogreep.com","korexo.com","krjxhvyyzp.com","ku2d3a7pa8mdi.com","ku42hjr2e.com","kunvertads.com","kzt2afc1rp52.com","kzvcggahkgm.com","lactasetooth.shop","lamplynx.com","land.pixelsee.app","landerhq.com","landing.candynetwork.ai","landing1.brazzersnetwork.com","lanesusanne.com","lavatorydownybasket.com","lavender64369.com","lby2kd27c.com","leadsecnow.com","leapretrieval.com","lechosabode.shop","leesaushoah.net","leewibaijoa.com","lenkmio.com","leonbetvouum.com","leoyard.com","lepetitdiary.com","letitnews.com","letitredir.com","letshareus.com","liaoptse.net","libertystmedia.com","lickingimprovementpropulsion.com","lidsaich.net","lifeporn.net","ligatus.com","liglomsoltuwhax.net","lindychat.com","link.365av.net","link.advancedsystemrepairpro.com","linkadvdirect.com","linkonclick.com","linkredirect.biz","linksprf.com","liquidfire.mobi","liveadexchanger.com","livecams.com","livejasmin.com","livepromotools.com","livezombymil.com","lizebruisiaculi.info","ljline.com","lkcoffe.com","lkstrck2.com","llpgpro.com","lmp3.org","lnk8j7.com","lnkgt.com","localelover.com","locked-link.com","locooler-ageneral.com","locopar.com","lody24.com","logicdate.com","logicschort.com","lolapelisse.cyou","lone-pack.com","loodauni.com","loohaiturigavik.net","lookandfind.me","looksmart.com","loosebelt.com","losingoldfry.com","loveaholics.com","loverevenue.com","lp247p.com","lplimjxiyx.com","lpmediastorage.com","lpquizzhubon.com","lptrak.com","luckyads.pro","luckyforbet.com","luvaihoo.com","luxetalks.com","luxq8.com","lwnbts.com","lwonclbench.com","lycheenews.com","lyconery-readset.com","ma3ion.com","macan-native.com","madeupice.com","madurird.com","mafroad.com","magicads.nl","magsrv.com","mainadcenter.com","mainexclkdir.com","making.party","manbycus.com","manconsider.com","maper.info","maredpt.com","marketdeathly.com","masklink.org","massivebelieved.com","matchjunkie.com","matildawu.online","maxickedpantents.com","maxigamma.com","maybejanuarycosmetics.com","mb-npltfpro.com","mb01.com","mb102.com","mb103.com","mb104.com","mb223.com","mb38.com","mb57.com","mbjrkm2.com","mbjrkmms.com","mbreviews.info","mbsrv2.com","mbsspads.com","mbvlmz.com","mbvsm.com","mcfstats.com","mcpuwpsh.com","mcurrentlysea.info","mddsp.info","mdmexclusives.com","me4track.com","meantimesubside.com","media-412.com","mediahell.world","mediasama.com","mediaxchange.co","meenetiy.com","meetradar.com","meetsexygirls.org","meetstorages.com","meetwebclub.com","megacot.com","megaffiliates.com","megdexchange.com","meherdewogoud.com","menepe.com","menews.org","meofmukindwoul.info","mercurybest.com","merterpazar.com","mesqwrte.net","messagereceiver.com","messenger-notify.xyz","metatrckpixel.com","metrica-yandex.com","mghkpg.com","mgid.com","mhiiopll.net","millustry.top","mimosaavior.top","miserly-phone.com","misspkl.com","mistysteel.co","mk-ads.com","mkaff.com","mkjsqrpmxqdf.com","mladedda.net","mlatrmae.net","mmentorapp.com","mnaspm.com","mndsrv.com","moartraffic.com","mob1ledev1ces.com","mobagent.com","mobileraffles.com","mobiletracking.ru","mobipromote.com","mobreach.com","mobsuitem.com","modificationdispatch.com","moksoxos.com","moleconcern.com","molypsigry.pro","momotrk.com","moncoerbb.com","monetag.com","monsterofnews.com","moonlighthathel.org","moonrocketaffiliates.com","mordoops.com","mosrtaek.net","mourny-clostheme.com","moustachepoke.com","movfull.com","moviemediahub.com","movingfwd.co","mowcoordinateegypt.com","mplayeranyd.info","mptentry.com","mqdownload.com","msok-bayqa.icu","mtypitea.net","muvflix.com","mvmbs.com","my-promo7.com","myadcash.com","myaffpartners.com","myafriend.com","mybestdc.com","mydailynewz.com","myeasetrack.com","myemailtracking.com","myjollyrudder.com","mylot.com","mynutraresearch.com","myperfect2give.com","myreqdcompany.com","mysagagame.com","mywondertrip.com","n4sredirect.com","n91hg.com","nabauxou.net","naiwoalooca.net","nalraughaksie.net","nan0cns.com","nanoadexchange.com","narilyhukelpfulin.com","nasosettoourm.com","nasssmedia.com","natregs.com","naughtydate.com","navigatingnautical.xyz","naxadrug.com","ndcomemunica.com","nectsideaments.com","neeceeglogu.net","needlive.com","nemppa.com","neptuntrack.com","nereu-gdr.com","nersionitsumpute.com","nessainy.net","netcpms.com","netund.com","network.nutaku.net","never2never.com","newbluetrue.xyz","newjulads.com","newmytrp.com","newscadence.com","newsforyourmood.com","newsfrompluto.com","newsignites.com","newslikemeds.com","newstemptation.com","newsyour.net","newtab-media.com","nextoptim.com","nextyourcontent.com","ngfruitiesmatc.info","nicatethebene.info","nicerisle.com","nightbesties.com","nigroopheert.com","nimrute.com","ninetyninesec.com","nn125.com","noavoahevugrib.com","nomadsbrand.com","nomadsfit.com","noohapou.com","noolt.com","north-verification.com","northdownload.com","nossairt.net","notifpushnext.net","notimoti.com","notmil.com","nougacoush.com","noughttrustthreshold.com","novibet.partners","novitrk7.com","novitrk8.com","nozoakamsaun.net","npcad.com","nreg.world","nrs6ffl9w.com","nsmpydfe.net","nsultingcoe.net","ntoftheusysia.info","ntoftheusysianedt.info","ntrfr.leovegas.com","ntrftrk.com","ntrftrksec.com","ntvpforever.com","nukeluck.net","numbertrck.com","nutchaungong.com","nv3tosjqd.com","nwwrtbbit.com","nxt-psh.com","nya2.com","nythingamglad.com","nznoxxx.com","o18.click","o333o.com","oabaubsutha.com","oalsauwy.net","oaphoace.net","oassackegh.net","obqj2.com","ockremarkedon.com","ocmhood.com","odalrevaursartu.net","offaces-butional.com","offergate-ecommerce-cdn5.com","offergate-games-download1.com","offergate-software11.com","offernow24.com","offers.cam4tracking.com","offershub.net","offerstrack.net","offersuperhub.com","officetablntry.org","offshuppetchan.com","ofredirect.com","ofseedotom.com","oghqvffmnt.com","oglalavoodoo.world","ogtrk.net","ohrdsplu.com","okueroskynt.com","omciecoa37tw4.com","omegaadblock.net","omegadblocker.com","omg10.com","omgpm.com","omgt3.com","omgt4.com","omgt5.com","omklefkior.com","omzal.com","onad.eu","onatallcolumn.com","oncesets.com","onclckpop.com","onclickads.net","onclickalgo.com","onclickclear.com","onclickgenius.com","onclickmax.com","onclickmega.com","onclickperformance.com","onclickprediction.com","onclicksuper.com","onclicktop.com","one-name-studio.com","onlinecashmethod.com","onlinefinanceworld.com","onlinepuonline.com","onmantineer.com","onstunkyr.com","ontrklnk.com","oodrampi.com","oopatet.com","openadserving.com","openmindter.com","ophoacit.com","opoxv.com","opparasecton.com","opportunitysearch.net","opptmzpops.com","optimizesrv.com","optnx.com","optvz.com","optyruntchan.com","opus-whisky.com","oraubsoux.net","organicowner.com","orgassme.com","orhassagvaqw.com","orlowedonhisdhilt.info","osarmapa.net","osfultrbriolenai.info","ossshucklean.com","ostlon.com","otieu.com","otnolatrnup.com","otoadom.com","oulsools.com","oundhertobeconsist.org","oungimuk.net","ourcommonnews.com","outhulem.net","outlookabsorb.com","outoctillerytor.com","outwingullom.com","ovardu.com","ovdimin.buzz","overcrowdsillyturret.com","overninetalesor.com","oversolosisor.com","ow5a.net","owrkwilxbw.com","oxbbzxqfnv.com","oxtsale1.com","oyi9f1kbaj.com","ozcarcupboard.com","p12acx.com","pa5ka.com","paaeeets.net","paeastei.net","paehceman.com","pagerrentablespotlight.com","paid.outbrain.com","paikapiglauthi.com","palmmalice.com","panelghostscontractor.com","parisjeroleinpg.com","partitiveretinstitution.com","passeura.com","passfixx.com","passtechusa.com","pasxfixs.com","paulastroid.com","paxsfiss.com","paxxfiss.com","payvclick.com","pclk.name","pcmclks.com","pctsrv.com","peethach.com","peezette-intial.com","pejzeexukxo.com","pelis-123.org","pemsrv.com","peopleloves.me","pereliaastroid.com","perfecttoolmedia.com","performancetrustednetwork.com","perispro.com","perryvolleyball.com","pertersacstyli.com","pertlouv.com","petendereruk.com","pexu.com","pgmediaserve.com","pheniter.com","phoognol.com","phumpauk.com","pickaflick.co","pierisrapgae.com","pilotstracking.com","pipaffiliates.com","pipsol.net","pisism.com","pitchedfurs.com","pixellitomedia.com","pk910324e.com","placetobeforever.com","planetarium-planet.com","play-lg.com","playafterdark.com","playamopartners.com","playerswhisper.com","playgirl.com","playrainbet.com","playstretch.host","playvideoclub.com","pleasetrack.com","plexop.net","plinksplanet.com","pllsadrp.net","plorexdry.com","pnperf.com","poawooptugroo.com","podefr2.net","pointclicktrack.com","pointroll.com","poisism.com","polosanitizertrusting.com","polyh-nce.com","pomxd.com","pon-prairie.com","pooksys.site","popads.net","popblockergold.info","popcash.net","popcornvod.com","poperblocker.com","popgoldblocker.info","popmyads.com","popped.biz","popunder.bid","popunderjs.com","popupblockergold.com","popupsblocker.org","pornhb.me","postaffiliatepro.com","postback1win.com","potawe.com","potsaglu.net","potskolu.net","poweredbyliquidfire.mobi","ppcmate.com","ppcnt.co","ppcnt.eu","ppcnt.us","ppcnwt.com","ppwpn.com","prdredir.com","precisejoker.com","predictiondexchange.com","predictiondisplay.com","predictionds.com","predictivadnetwork.com","predictivadvertising.com","predictivdisplay.com","premium-members.com","press-here-to-continue.com","pressyour.com","pretrackings.com","prfwhite.com","prime-vpnet.com","prmtracking.com","pro-adblocker.com","proceedflow.com","prodtraff.com","profitablecpmgate.com","profitablecpmratenetwork.com","profitableexactly.com","profitablegate.com","profitablegatecpm.com","profitablegatetocontent.com","profitabletrustednetwork.com","promerycergerful.com","promo-bc.com","promo.pixelsee.app","pronovosty.org","propadsviews.com","propbn.com","propellerads.com","propellerclick.com","propellerpops.com","propertyofnews.com","protect-your-privacy.net","protected-redirect.click","protectflow.life","protrckit.com","provenpixel.com","prpops.com","prtord.com","prtrackings.com","prwave.info","psaltauw.net","psaugourtauy.com","psaussasta.net","psauwaun.com","psegeevalrat.net","psma02.com","psoabojaksou.net","psockapa.net","pssy.xyz","pteemsolrirgegi.com","ptistyvymi.com","ptoakrok.net","ptongouh.net","pttraffic.online","ptwmcd.com","ptwmjmp.com","ptyalinbrattie.com","pubdirecte.com","pubtrky.com","puldhukelpmet.com","pulseonclick.com","punsong.com","pupspu.com","pureadexchange.com","purpleads.io","push-sense.com","push1000.top","pushclk.com","pushking.net","pushmobilenews.com","pushtorm.net","pushub.net","pushwelcome.com","pussl3.com","pussl48.com","putchumt.com","pvclouds.com","pwrgamerz.com","pzcwk-sfend.top","q8ntfhfngm.com","qertewrt.com","qjvksieybn.vip","qnp16tstw.com","qsiyfgazubcu.top","quadrinhoseroticos.net","qualiclicks.com","qualitydating.top","quantumadblocker.com","quarterbackchangeless.com","quilladot.org","quixoticzest.com","qwikln.com","qxdownload.com","qz496amxfh87mst.com","r3f.technology","rallantynethebra.com","random-affiliate.atimaze.com","rankpeers.com","raordukinarilyhuk.com","raosmeac.net","rapidhits.net","rapolok.com","rbtfit.com","rbxtrk.com","rcdn-web.com","rdsa2012.com","rdsrv.com","rdtk.io","rdtracer.com","rdvinfidele.club","readserv.com","realcfadsblog.com","realsh.xyz","realsrv.com","realtime-bid.com","realxavounow.com","reclod.com","recompensecombinedlooks.com","record.commissionkings.ag","record.rizk.com","record.royalreelspartners.com","recyclingbees.com","red-direct-n.com","redaffil.com","redirect-ads.com","redirect-path1.com","redirecting.online","redirectingat.com","redirectvoluum.com","redrotou.net","reduau.top","redwingmagazine.com","reebr.com","refpa.top","refpa4293501.top","refpaikgai.top","refpamjeql.top","refpasrasw.world","refundsreisner.life","rehvbghwe.cc","rel-s.com","relationshipcourseably.com","reliablemore.com","remembergirl.com","reminews.com","remv43-rtbix.top","rencessedessations.com","reopenshelly.cfd","reporo.net","resentreaccotia.com","restedpealimagine.com","resterent.com","restorationbowelsunflower.com","retgspondingco.com","revenuenetwork.com","reviewdollars.com","revimedia.com","revmasters.com","rewardtk.com","rexsrv.com","rhinoaffiliates.com","rhudsplm.com","rhvdsplm.com","rhxdsplm.com","riftharp.com","riverhit.com","rm358.com","rmaticalacm.info","rmhfrtnd.com","rmzsglng.com","rndhaunteran.com","rndskittytor.com","roadcontagion.com","roastoup.com","rochestertrend.com","rocketmedia24.com","rocoads.com","rolltrk4.com","rolltrk9.com","roobetaffiliates.com","roots.baby","rootzaffiliates.com","rose2919.com","roudoduor.com","roundflow.net","routes.name","routeumber.com","roverinvolv.bid","rovno.xyz","royalcactus.com","rozamimo9za10.com","rsppartners.com","rtbbhub.com","rtbbpowaq.com","rtbix.xyz","rtbreachads.com","rtbsuperhub.com","rtmark.net","rtoukfareputfe.info","rtyznd.com","rubylife.go2cloud.org","rudderwebmy.com","runtnc.net","rvetreyu.net","rx.link","s.click.aliexpress.com","s.id","s0cool.net","s0fast.net","s20dh7e9dh.com","s3g6.com","sa33491sxa.com","safe-connection21.com","samage-bility.icu","sasontnwc.net","savinist.com","scaredframe.com","screenov.site","sealthatleak.com","searchmulty.com","searchsecurer.com","seatrackingdomain.com","secthatlead.com","securecloud-smart.com","securecloud-sml.com","secureclouddt-cd.com","securedsmcd.com","securedt-sm.com","securegfm.com","secureleadsrn.com","sedodna.com","seethisinaction.com","semqraso.net","senzapudore.it","seo-overview.com","ser678uikl.xyz","sereanstanza.com","serve.prestigecasino.com","serve.williamhillcasino.com","servetean.site","servsserverz.com","setoinc.com","setravieso.com","sevenbuzz.com","sex-and-flirt.com","sexad.net","sexemulator.com","sexfamilysim.net","sexflirtbook.com","sexintheuk.com","sexmotors.com","sez88e.fun","shakingtacklingunpeeled.com","sharpofferlinks.com","shaugacakro.net","shauladubhe.com","shauladubhe.top","she-want-fuck.com","sheecmimty.net","sheegiwo.com","sherouscolvered.com","shinebliss.com","shoagloumtoamir.net","shoopusahealth.com","shopeasy.by","short.bitchute.com","shortpixel.ai","shotgunchancecruel.com","showcasead.com","shuanshu.com.com","signamentswithd.com","simple-isl.com","singledatetime.com","singlesexdates.com","singlewomenmeet.com","sixft-apart.com","skated.co","skipvideoads.com","skycheats.com","skylindo.com","skymobi.agency","skyscrapertowel.com","slashstar.net","slatecharm.co","slavicprophetyontherm.com","slcuse.com","slideff.com","slimspots.com","sloto.live","smallfunnybears.com","smart-wp.com","smartadtags.com","smartblocker.org","smartcj.com","smartcpatrack.com","smartmnews.pro","smarttds.org","smarttopchain.nl","smentbrads.info","smlypotr.net","smrt-content.com","snammar-jumntal.com","snapcheat16s.com","sneakyadministration.com","snowdayonline.xyz","snugglethesheep.com","sobakenchmaphk.com","socialsex.biz","socialsex.com","sodefender.pro","sofinpushpile.com","solaranalytics.org","soldierreproduceadmiration.com","solispartner.com","somebestgamesus.com","soocaips.com","sotchoum.com","sousefulhead.com","souszhi.com","sowve.com","spacecatholicpalmful.com","spacetraff.com","spanpromo-link.com","sparkstudios.com","sparta-tracking.xyz","spdate.com","special-offers.online","special-promotions.online","special-trending-news.com","speedsupermarketdonut.com","sperans-beactor.com","sperebnf.click","spicygirlshere.life","spin83qr.com","spinforluck.blog","spklmis.com","sports-tab.com","spotofspawn.com","spotscenered.info","spreadingsinew.com","sprinlof.com","sptrkr.com","spunorientation.com","spygenix.xyz","sr7pv7n5x.com","srtrak.com","srvpcn.com","srvqck27.com","srvqck3.com","srvtrck.com","ssteeraa.net","staaqwe.com","staletraffic.com","stardomcoit.com","starmobmedia.com","starry-galaxy.com","starsallowyear.com","statsmobi.com","stawhoph.com","steerensout.net","stemboastfulrattle.com","stenexeb.xyz","sthoutte.com","stikroltiltoowi.net","stimaariraco.info","stoorgel.com","stop-adblocker.info","stopads-now.com","stopadzblock.net","stopblockads.com","storader.com","stortla.com","storyunicornupper.com","stream-all.com","streamereasy.click","streamsearchclub.com","streamyourvid.com","strenuoustarget.com","strettechoco.com","strtgic.com","stuffedbeforehand.com","stvbiopr.net","stvkr.com","sudukrirga.net","summertisaridicu.org","sunflowerbright106.io","superadexchange.com","superfastcdn.com","superfasti.co","supersedeforbes.com","supertracker200.com","supremeadblocker.com","suptraf.com","surge.systems","surveyspaid.com","swinity.com","sxlflt.com","synccora.com","syncedvision.com","synonymdetected.com","systeme-business.online","systemleadb.com","szqxvo.com","t.co","t.ly","t2lgo.com","taghaugh.com","taginova.xyz","tagsd.com","takecareproduct.com","tapdb.net","targeta41.net","targetingnow.com","targetmatch.co","targhe.info","taroads.com","tatrck.com","tbeiu658gftk.com","tcare.today","teamsoutspoken.com","techiteration.com","techreviewtech.com","tegleebs.com","teksishe.net","telyn610zoanthropy.com","temksrtd.net","temperrunnersdale.com","temu.com","tencableplug.com","tenlets.com","terbit2.com","terpenwordman.top","tgp1.brazzersnetwork.com","thairoob.com","thanosofcos5.com","thaudray.com","the-binary-trader.biz","thebestgame2020.com","thecarconnections.com","theepsie.com","theerrortool.com","theextensionexpert.com","thefacux.com","theirbellstudio.co","theonesstoodtheirground.com","thesafersearch.com","thesurferprotector.com","thetoptrust.com","theyellownewtab.com","thinkaction.com","thofteert.com","thomasalthoughhear.com","thouptoorg.com","tigerbrluck.com","tikva-1.com","tilttrk.com","tiltwin.com","timot-cvk.info","tingswifing.click","tinsus.com","tisaneata.com","tjoomo.com","tjwsg.com","tl2go.com","tm-offers.gamingadult.com","tmb5trk.com","tmtrck.com","tnctrx.com","tnkexchange.com","together2night.com","toiletpaper.life","tomatoqqamber.click","tomladvert.com","tomlldahehun.org","tomoll.com","tonefuse.com","tonsilsuggestedtortoise.com","toonujoops.net","toopsoug.net","toourmarketingef.com","topblockchainsolutions.nl","topclickguru.com","topdealad.com","topfdeals.com","topgurudeals.com","topodat.info","toprevenuegate.com","toptdspup.com","toptrendyinc.com","torrent-protection.com","toscytheran.com","totaladblock.com","totaladperformance.com","totlnkcl.com","tourukaustoglee.net","toxtren.com","tozoruaon.com","tpmr.com","tr-boost.com","tr-bouncer.com","tr-monday.xyz","tr-rollers.xyz","tr-usual.com","tracemonitorusa.life","track-campaing.club","track-victoriadates.com","track.cam4tracking.com","track.kinetiksoft.com","track.livesportnet.com","track.totalav.com","track4ref.com","trackcherry.com","trackclicks00.com","tracker-2.com","tracker-tds.info","trackerflw.com","trackerrr.com","tracking-aws-5.com","trackingtraffo.com","trackmundo.com","tracks20.com","tracksfaster.com","trackstracker.com","tracktds.com","tracktilldeath.club","trackvoluum.com","trackwilltrk.com","tracot.com","tradeadexchange.com","traffic-c.com","traffic.club","trafficbass.com","trafficborder.com","trafficbroker.com","trafficdecisions.com","trafficdok.com","trafficforce.com","traffichaus.com","trafficholder.com","traffichunt.com","trafficinvest.com","trafficlide.com","trafficmagnates.com","trafficmoon.com","trafficmoose.com","trafficstars.com","trafforsrv.com","traffrout.com","trafyield.com","trakaff.net","traktortds.com","trasupr.com","trck.wargaming.net","trcklks.com","trckswrm.com","treesmajestic.com","trellian.com","trentbereal.com","trftopp.biz","trigsfrisky.shop","trilema.com","trk-access.com","trk-vod.com","trk301.com","trkbc.com","trkbng.com","trkings.com","trkless.com","trklnks.com","trknk.com","trknovi.com","trksmorestreacking.com","trmobc.com","troopsassistedstupidity.com","trpool.org","trustedcpmrevenue.com","trustedgatetocontent.com","trustedpeach.com","trustedzone.info","trustyable.com","trustzonevpn.info","truthtraff.com","trw12.com","try.opera.com","tsml.fun","tsyndicate.com","ttoc8ok.com","tubeadvertising.eu","tubecup.net","tubroaffs.org","tuffoonincaged.com","tundrafolder.com","turndynamicforbes.com","turnhub.net","turnstileunavailablesite.com","tutvp.com","tvas-b.pw","twigwisp.com","twinfill.com","twinkle-fun.net","twinrdengine.com","twinrdsrv.com","twinrdsyn.com","twinrdsyte.com","txzaazmdhtw.com","tychon.bid","typical-hub.com","tyrotation.com","tyserving.com","tzaqkp.com","tzvpn.site","ubilinkbin.com","ublockpop.com","uel-uel-fie.com","ufpcdn.com","ugroocuw.net","uhpdsplo.com","uilts.com","uitopadxdy.com","ukoffzeh.com","ultimate-captcha.com","ultrapartners.com","unblockedapi.com","uncernedasesiumw.org","unclesnewspaper.com","unicornpride123.com","unreshiramor.com","untimburra.com","unwoobater.com","updateenow.com","updatephone.club","upgiveunsteps.shop","upgliscorom.com","uponomanytetor.com","uptimecdn.com","uptopopunder.com","upuplet.net","upuplets.com","urtyert.com","urxox-iqx.online","usheebainaut.com","usingageghoaft.net","utarget.ru","uthorner.info","utlservice.com","utm-campaign.com","utopicmobile.com","v6rxv5coo5.com","vaatmetu.net","vague-key.com","vaitotoo.net","vampyrejibmen.com","vasstycom.com","vasteeds.net","vax-now.com","vbnmsilenitmanby.info","vcdc.com","vcommission.com","vebv8me7q.com","velocitycdn.com","vengeful-egg.com","venturead.com","verdecasino-offers.com","verooperofthewo.com","vertoz.com","vespymedia.com","vfghc.com","vfgtb.com","vfgte.com","vfgtg.com","viapawniarda.com","viatechonline.com","viatepigan.com","victoryslam.com","vid-adblocker.com","videocampaign.co","viensvoircesite.com","vigorouslymicrophone.com","viiadaof.com","viiczfvm.com","viidsyej.com","viijxyqp.com","viiyxefb.com","vilytaku.com","viralnewsbd.xyz","virelon.com","visit-website.com","visitstats.com","vizoalygrenn.com","vjkyw.vip","vkcdnservice.com","vkgtrack.com","vlexokrako.com","vlmjm1.com","vodobyve.pro","vokut.com","volform.online","volumntime.com","voluumtrk.com","voluumtrk3.com","voruftuiov.com","vpn-offers.org","vprtrfc.com","vq4b0q.fun","vrkonefd.buzz","vs3.com","vtabnalp.net","vulkan-bt.com","vulkanbet.me","w0we.com","wahoha.com","waisheph.com","walter-larence.com","wannaknowmysecret.com","wantatop.com","wargaming-aff.com","wasqimet.net","watchadsfree.com","watchcpm.com","watchvideoplayer.com","waufooke.com","wbamedia.com","wbhwwnzptf.club","wbidder.online","wbidder2.com","wbidder3.com","wbilvnmool.com","wboux.com","wct.link","we-offer.com","weaveradrenaline.com","web-adblocker.com","webatam.com","webgains.com","webmedrtb.com","webpuppweb.com","wecouldle.com","weezoptez.net","welcomeneat.pro","welfarefit.com","wellhello.com","wendelstein-1b.com","westcoa.com","wetrackgames.com","wewearegogogo.com","wg-aff.com","wgpartner.com","whairtoa.com","whataboutnews.com","whatisuptodaynow.com","wheceelt.net","wheebsadree.com","wherevertogo.com","whirlwindofnews.com","whitenoisenews.com","whitepark9.com","whoucheehy.net","whouphesaussums.net","whoursie.com","whulsaux.com","widow5blackfr.com","wifescamara.click","wigetmedia.com","wimsedas.xyz","winnersofvouchers.com","wintrck.com","witalfieldt.com","witnessjacket.com","wlafx4trk.com","wmptengate.com","wmtten.com","wnt-s0me-push.net","woafoame.net","woevr.com","woffxxx.com","wolsretet.net","wonder.xhamster.com","workback.net","wounofoarausooy.net","wovensur.com","wowshortvideos.com","wpnetwork.eu","wriestunvote.com","wuujae.com","wwija.com","wwwpromoter.com","wxhiojortldjyegtkx.bid","x-ozwpiqlb.rocks","x2tsa.com","x3os.com","x7i0.com","xadsmart.com","xarvilo.com","xaxoro.com","xbidflare.com","xdgeslibgbim.icu","xdtraffic.com","xliirdr.com","xlirdr.com","xlivrdr.com","xlviiirdr.com","xlviirdr.com","xlx1.com","xmatch.com","xml-api.online","xml.pops.gg","xmlrtb.com","xpeeps.com","xpobbwxzhe-l.site","xpvv0rkn.fun","xszpuvwr7.com","xtendmedia.com","xxxjmp.com","xxxmatch.com","xxxvjmp.com","y1jxiqds7v.com","yavli.com","ybb-network.com","ybbserver.com","yeesshh.com","yellowbahama.com","yewfjsdi.it.com","yhbcii.com","yieldtraffic.com","ylih6ftygq7.com","yonbearticor.com","yonsandileer.com","your-sugar-girls.com","youradexchange.com","youweepingt.org","ysesials.net","yukclick.me","z5x.net","zedo.com","zeechoog.net","zeepartners.com","zenaps.com","zendplace.pro","zeroredirect1.com","zetaframes.com","zikroarg.com","zlink1.com","zlink2.com","zlink6.com","zlink8.com","zlink9.com","zlinkb.com","zlinkm.com","zog.link","zononi.com","zonupiza.com","zrlqm.com","zryydi.com","zunsoach.com","zwqzxh.com","zybrdr.com"];
+  var POPUP_HOSTS = ["07c225f3.online","0i0i0i0.com","11x11.com","123-stream.org","123vidz.com","142.91.159.107","142.91.159.127","142.91.159.136","142.91.159.139","142.91.159.146","142.91.159.147","142.91.159.164","142.91.159.169","142.91.159.179","142.91.159.220","142.91.159.223","142.91.159.244","143.244.184.39","146.59.223.83","157.90.183.248","158.247.208.115","167.71.252.38","172.255.103.171","172.255.6.135","172.255.6.137","172.255.6.139","172.255.6.150","172.255.6.152","172.255.6.199","172.255.6.2","172.255.6.217","172.255.6.228","172.255.6.248","172.255.6.254","172.255.6.59","176.31.68.242","185.147.34.126","188.42.84.110","188.42.84.159","188.42.84.160","188.42.84.162","188.42.84.199","188.42.84.21","188.42.84.23","1asb.com","1betandgonow.com","1jutu5nnx.com","1lzz.com","1ts11.top","1ts17.top","1winpb.com","1x001.com","1xlite-522762.top","203.195.121.0","203.195.121.103","203.195.121.119","203.195.121.134","203.195.121.184","203.195.121.195","203.195.121.209","203.195.121.217","203.195.121.219","203.195.121.224","203.195.121.229","203.195.121.24","203.195.121.28","203.195.121.29","203.195.121.34","203.195.121.36","203.195.121.40","203.195.121.70","203.195.121.72","203.195.121.73","203.195.121.74","212.117.186.252","22bettracking.online","22media.world","23.109.121.254","23.109.150.101","23.109.150.208","23.109.170.19","23.109.170.198","23.109.170.228","23.109.170.241","23.109.170.255","23.109.170.60","23.109.248.129","23.109.248.130","23.109.248.135","23.109.248.139","23.109.248.14","23.109.248.149","23.109.248.174","23.109.248.183","23.109.248.247","23.109.248.29","23.109.82.104","23.109.82.119","23.109.82.173","23.109.82.222","23.109.82.44","23.109.82.74","23.109.87.101","23.109.87.118","23.109.87.123","23.109.87.127","23.109.87.139","23.109.87.14","23.109.87.15","23.109.87.182","23.109.87.192","23.109.87.213","23.109.87.217","23.109.87.42","23.109.87.47","23.109.87.71","23.109.87.74","23.83.67.164","24-sportnews.com","2477april2024.com","24affiliates.com","24click.top","24x7report.com","2annalea.com","2qj7mq3w4uxe.com","2smarttracker.com","2track.info","34.102.137.201","35.227.234.222","35.232.188.118","358g46.fun","367p.com","37.1.213.100","3xyy.com","4dsply.com","5.45.79.15","5.61.55.143","51.178.195.171","51.195.115.102","51.89.115.13","554koaylwga7.top","567bets10.com","5dimes.com","5mno3.com","5vbs96dea.com","6-partner.com","62ad.com","6angebot.ch","735pwa.com","79pa4bxa86.com","7ca78m3csgbrid7ge.com","88.42.84.136","888media.net","888promos.com","89sa.com","8s5s.com","900bets10.com","905trk.com","95urbehxy2dh.top","9gg23.com","9l3s3fnhl.com","9t5.me","a-ads.com","a1087.b.akamai.net","a64x.com","aagm.link","abadit5rckb.com","abadit5rckd.com","ablogica.com","aboveredirect.top","abtrcker.com","acacdn.com","acam-2.com","accecmtrk.com","acceptableredheadcaviar.com","access-the-website.com","accomplishedpersuadedprinter.com","acdcdn.com","acedirect.net","achcdn.com","aclktrkr.com","actiondesk.com","activate-game.com","aculturerpa.info","ad-block-offer.com","ad-free.info","ad-maven.com","ad.22betpartners.com","ad.pornimg.xyz","ad.soicos.com","ad.ymcdn.org","ad4game.com","ad6media.fr","adbetclickin.pink","adblock-360.com","adblock-guru.com","adblock-one-protection.com","adblock-zen.com","adblocker-sentinel.net","adblockeromega.com","adblockersentinel.com","adblockstream.com","adblockstrtape.link","adblockstrtech.link","adboost.it","adbooth.com","adca.st","adcash.com","adcdnx.com","adcell.com","adcleanerpage.com","adclickbyte.com","addefenderplus.info","addotnet.com","adentifi.com","adexchangecloud.com","adexchangegate.com","adexchangeguru.com","adexchangemachine.com","adexchangeprediction.com","adexchangetracker.com","adexmedias.com","adextrem.com","adfgetlink.net","adform.net","adfpoint.com","adglare.net","adhealers.com","adhoc2.net","aditsafeweb.com","adjuggler.net","adk2x.com","adkmbc.com","adlogists.com","adlserq.com","adltserv.com","admachina.com","admediatex.net","admedit.net","admeerkat.com","admeking.com","admeridianads.com","admitad.com","admjmp.com","admobe.com","admothreewallent.com","adnanny.com","adnetworkperformance.com","adnium.com","adnotebook.com","adnxs-simple.com","adonweb.ru","adop.co","adplxmd.com","adpool.bet","adport.io","adreactor.com","adrealclick.com","adright.co","adrunnr.com","ads-tracking.com","ads.planetwin365affiliate.com","ads.sexier.com","ads4trk.com","adsb4trk.com","adsblockersentinel.info","adsbreak.com","adsbtrk.com","adsco.re","adscoreip.com","adserverplus.com","adserving.unibet.com","adsession.com","adshostnet.com","adskeeper.co.uk","adskeeper.com","adskpak.com","adsmarket.com","adsplex.com","adspredictiv.com","adspyglass.com","adsquash.info","adsquasher.com","adsrv4k.com","adstean.com","adstik.click","adsupply.com","adsupplyads.com","adsupplyads.net","adsurve.com","adtelligent.com","adtng.com","adtrace.org","adtraction.com","advancedadblocker.pro","advertiserurl.com","advertserve.com","advmedialtd.com","advotionhot.com","adw9.com","adx-t.com","adx.io","adxpansion.com","adxpartner.com","adzblockersentinel.net","adzerk.net","aeeg5idiuenbi7erger.com","aeelookithdifyf.com","aetvellt.net","afcpatrk.com","aff-handler.com","aff-track.net","affbuzzads.com","affcpatrk.com","affflow.com","affforce.com","affidavitheadfirstonward.com","affili.st","affiliate-wg.com","affiliateboutiquenetwork.com","affiliates.fantasticbet.com","affiliatestonybet.com","affiliride.com","affilirise.com","affinity.net","afflat3a1.com","afflat3d2.com","afflat3e1.com","affluentarmyequator.com","affpa.top","affstreck.com","afilliatetraff.com","afodreet.net","afront.io","aftrk1.com","aftrk3.com","agacelebir.com","agalumineonr.com","agl001.bid","aglobally.com","ahadsply.com","ahbdsply.com","ahscdn.com","aigeno.com","aimging.com","aimukreegee.net","aitsatho.com","aj1070.online","ajrkmx1.com","ajrkmx9.com","ajump1.com","ajump2.com","ajxx98.online","ak-is2.net","akhoondathecae.shop","akmxts.com","akumeha.onelink.me","akutapro.com","akxttaqmivp.in","albonsa.com","alexatracker.com","algocashmaster.com","alibabatraffic.com","alitems.co","alitems.site","alleviatepracticableaddicted.com","allhypefeed.com","allowseshehasn.com","allsportsflix.best","allsporttv.com","almstda.tv","aloatchuraimti.net","alpenridge.top","alpheratzscheat.top","alpine-vpn.com","alpinedrct.com","alternads.info","alternativecpmgate.com","alxbgo.com","am15.net","amatrck.com","amazing-dating.com","amazon-adsystem.com","ambiliarcarwin.com","amelatrina.com","amesgraduatel.xyz","anamuel-careslie.com","angege.com","aniltramps.top","animeloundry.com","animemeat.com","anmdr.link","annihilativefaltermillion.com","annoyingnightmareedit.com","annual-gamers-choice.com","annulmentequitycereals.com","antiadblocksystems.com","antjgr.com","apapuacauthong.com","apiecelee.com","applstr.com","appoineditardwide.com","appointeeivyspongy.com","appslime.com","apptjmp.com","aquete.com","arborerplanful.shop","ardslediana.com","argrowlitheor.com","arkdcz.com","arminius.io","arrogancedanderuntruth.com","articlepawn.com","arwobaton.com","asdasdad.net","asensoithecb.com","asgclickpp.com","ashoupsu.com","aslnk.link","aso1.net","asqconn.com","astjigglypuffchan.com","astrokompas.com","astrologybacklightsinless.com","atala-apw.com","atas.io","atentherel.org","atinsolutions.com","atsg.me","attacheatableoverlabor.com","attachedkneel.com","attirecideryeah.com","audrte.com","auforau.com","augailou.com","august15download.com","aungudie.com","austeemsa.com","authognu.com","avlmy.com","avocams.com","avthelkp.net","awecrptjmp.com","awejmp.com","awempire.com","awesome-blocker.com","awptjmp.com","awsclic.com","b.link","backgroundrunway.com","backspinreentryupright.com","baggyrepackingrocky.com","baipahanoop.net","baitenthenaga.com","bakjaqa.net","ballyhoopla.club","banners.cams.com","banners.livepartners.com","bannisterflaskputdown.com","banquetunarmedgrater.com","barometercorrodingunease.com","batchzoo.com","batheunits.com","bayshorline.com","bbcrgate.com","bbrdbr.com","bbuni.com","becomeapartner.io","becoquin.com","becorsolaom.com","befirstcdn.com","belavoplay.com","believemefly.com","belovedset.com","bemachopor.com","bemobpath.com","bemobtrcks.com","bemobtrk.com","benaughty.com","bend-me-over.com","beniluuxen.com","benoopto.com","benumelan.com","berapt-medii.com","best-global-apps.com","best-offer-for-you.com","best-vpn-app.com","best4fuck.com","bestadsforyou.com","bestanimegame.com","bestchainconnection.com","bestcleaner.online","bestcontentaccess.top","bestcontentfood.top","bestconvertor.club","bestmoviesflix.xyz","bestonlinecasino.club","bestplaceforall.com","bestproducttesters.com","bestrevenuenetwork.com","bestsurferprotector.com","betforakiea.com","betoga.com","betotodilea.com","betpupitarr.com","betshucklean.com","bettentacruela.com","betteradsystem.com","betterdomino.com","bettraff.com","betzapdoson.com","betzone2000.com","beyourxfriend.com","bfpartners.click","bidverdrd.com","bidverdrs.com","bidvertiser.com","bigbasketshop.com","bigelowcleaning.com","billilia.com","bimbim.com","binance.com","binaryoptionsgame.com","bincatracs.com","bindirect.click","bingohall.ag","binomlink.com","binomnet.com","binomnet3.com","biphic.com","bit.ly","bitadexchange.com","bitdefender.top","bitskins.com","bitterstrawberry.com","biturl.co","bitzv.com","blackandwhite-temporary.com","blacklinknow.com","blahlivedsnowdrop.com","blancoshrimp.com","blcdog.com","bleandworldw.org","blehcourt.com","blendfencingprune.com","blinksbobblepadding.com","block-ad.com","blockadsnot.com","blockchaintop.nl","blogostock.com","blue-ribbonmacadamizeprovide.com","blueistheneworanges.com","bluelinknow.com","blueparrot.media","blurbreimbursetrombone.com","blzz.xyz","bmmads.com","bmndx.com","bngpt.com","bngtrak.com","bobabillydirect.org","bobgames-prolister.com","bodrumshuttle.net","boloptrex.com","bonafides.club","bongacams.com","bongacams10.com","bongacams11.com","bonuscaf.com","bonzuna.com","boobausauhipsa.net","bookmakers.click","booster-vax.com","boskodating.com","bot-checker.com","bouhoagy.net","bounceads.net","boustahe.com","brainberries.co","brandreachsys.com","brationalfilarded.com","brazzerssurvey.com","brieflizard.com","brigadedelegatesandbox.com","brightadnetwork.com","bringmesports.com","brisknessdebtordismiss.com","britishinquisitive.com","brllllantsdates.com","brn7myitt56fpb99p.cyou","broadensilkslush.com","broadlyjukeboxunrevised.com","browse-boost.com","browsekeeper.com","brutishlylifevoicing.com","btccasinoexpert.com","btent.stre4mpay.one","btpnav.com","budgetezy.org","buffooncountabletreble.com","buikolered.com","bukusukses.com","bullfeeding.com","bulochka.xyz","bunintruder.com","bunth.net","buqkrzbrucz.com","busterry.com","buy404s.com","buyadvupfor24.com","buyeasy.by","buzzadnetwork.com","buzzonclick.com","bvmbnr.xyz","bwredir.com","byvngx98ssphwzkrrtsjhnbyz5zss81dxygxvlqd05.com","byvue.com","c0nect.com","c3j7rk-rtbix.top","c43a3cd8f99413891.com","c4tracking01.com","cabbagereporterpayroll.com","cactusheadroomscaling.com","callyourinformer.com","calvali.com","camliveshow.xyz","candellume.shop","candyoffers.com","canyoublockit.com","cardboardcrispyrover.com","careerjournalonline.com","cashgzb.com","casino.betsson.com","casiyouaffiliates.com","casumoaffiliates.com","catchtheclick.com","catsnbootsncats2020.com","cbdedibles.site","cdclub.net","cddtsecure.com","cdn.optmd.com","cdn4ads.com","cdnondemand.org","cdnquality.com","cdntechone.com","cdrvrs.com","celeritascdn.com","centent.stemplay.cc","ceremonioustakeintoaccountcustomer.com","chaintopdom.nl","chalkplayground.co","chargeit.baby","chaturbate.com","cheap-jewelry-online.com","checkcdn.net","chekrilsoumpoab.net","cherrytv.media","chestgoingpunch.com","chetchoa.com","chicks4date.com","chl7rysobc3ol6xla.com","choseing.com","chpadblock.com","chrantary-vocking.com","chrysostrck.com","cijoorsairgusa.com","cityofsin3d.com","cjewz.com","ckre.net","ckrf1.com","clbanners16.com","clbjmp.com","clcktrck.com","cld5r.com","clean-1-clean.club","clean-blocker.com","clean-browsing.com","clearwatch.tv","clentrk.com","click-cdn.com","click-for-preview.com","click.ggpickyaff.com","click.quk.com","clickadsource.com","clickdaly.com","clickfilter.co","clickfuse.com","clickmetertracking.com","clickmobad.net","clickppcbuzz.com","clickprotects.com","clickpunch.icu","clickpupbit.com","clicks4tc.com","clicksgear.com","clicksor.com","clicksor.net","clicktripz.com","clicktrixredirects.com","clickwork7secure.com","clictrck.com","clixcrafts.com","clkfeed.com","clkmon.com","clkpback3.com","clkrev.com","clobberprocurertightwad.com","clodsplit.com","closercopy.cfd","cloudpsh.top","cloudtrack-camp.com","cloudtraff.com","cloudvideosa.com","clunen.com","clunkyentirelinked.com","cm-trk2.com","cm-trk6.com","cm65.com","cmpgns.net","cms100.xyz","cmtrkg.com","cn846.com","cngcpy.com","co5457chu.com","code4us.com","codedexchange.com","codeonclick.com","coffee2play.com","coldflownews.com","colonistnobilityheroic.com","colossalanswer.com","comfortablepossibilitycarlos.com","concealmentmimic.com","concedederaserskyline.com","condles-temark.com","connexity.net","conqueredallrightswell.com","consali.com","constructpreachystopper.com","content-loader.com","contentabc.com","convertmb.com","cooch.tv","coolserving.com","coosync.com","coppercranberrylamp.com","cor8ni3shwerex.com","cordinghology.info","correry.com","coticoffee.com","cotrck.com","countabledawdlerunaudited.com","countertrck.com","cpacrack.com","cpalabtracking.com","cpm20.com","cpmclktrk.online","cpmterra.com","cpvadvertise.com","cpxdeliv.com","cr-brands.net","crbbgate.com","crbck.link","crdefault.link","crdefault1.com","crdefault2.com","creaseinprofitst.com","creativecdn.com","creepy-frame.com","crentexgate.com","cretgate.com","crevicedepressingpumpkin.com","crisp-freedom.com","cristochris.com","crjpgate.com","crjpingate.com","crjugate.com","crlcw.link","crmapt.livejasmin.com","crmt.livejasmin.com","crn77.com","crpdt.livejasmin.com","crpop.livejasmin.com","crprt.livejasmin.com","crptentry.com","crptgate.com","crt.livejasmin.com","cruel-love.com","crummydevioussucculent.com","cruzswim.org","cryptokhoj.com","cryptopuffs.io","cryptowheel.net","crystal-blocker.com","csgfst.com","css-load.com","ctcdwm.com","ctosrd.com","ctrdwm.com","ctwmed.com","cuddlethehyena.com","cuevastrck.com","cullemple-motline.com","cute-cursor.com","cuteab.com","cvastico.com","cwn0drtrk.com","cyan92010.com","cyberlink.pro","cyberprivacy.pro","cybkit.com","czh5aa.xyz","dadsats.com","dafabet.odds.am","dagnar.com","daichoho.com","daily-guard.net","dailyc24.com","daleelerah.info","dark-reader.com","data-px.services","datacluster.club","datatechdrift.com","datatechone.com","date-for-more.com","date-till-late.us","date2024.com","date4sex.pro","datedate.today","dateguys.online","datemefast.com","dateyou2024.com","datingshall.life","datingstyle.top","datingtoday.top","datingtorrid.top","datoporn.com","dc-rotator.com","dddomainccc.com","debaucky.com","dedating.online","deebcards-themier.com","defas.site","deghooda.net","deloplen.com","deloton.com","demowebcode.online","dendrito.name","denza.pro","dependablemountain.com","derevya2sh8ka09.com","desertsutilizetopless.com","desklks.com","devaluequalmrelative.com","dexpredict.com","dfuybl-bclxb.love","di7stero.com","diagramjawlineunhappy.com","dianomi.com","diffusedpassionquaking.com","difice-milton.com","digitaldsp.com","directcpmfwr.com","directdexchange.com","directrev.com","directtrck.com","dirty-messenger.com","dirty-tinder.com","disdainsneeze.com","dishleyinsite.shop","displayvertising.com","disprovefacilityjolt.com","dithodackee.com","dive77kt.com","dlrectdates.com","dmiredindeed.com","dmzjmp.com","doct-umb.org","dogsprotectedfeed.info","dolatiaschan.com","dolohen.com","dompeterapp.com","donecperficiam.net","donorstuffed.com","doood.cam","doostozoa.net","dopaleads.com","dopansearor.com","dope.autos","doruffleton.com","dotyruntchan.com","doubleadserve.com","doubleclick.net","doublepimp.com","douglasjamestraining.com","down-paradise.com","download-file.org","download-performance.com","downloadboutique.com","downlon.com","dpuppers.com","dradvice.in","dreamteamaffiliates.com","dreamytabs.com","droci.buzz","drsmediaexchange.com","dsb68d.com","dsp.wtf","dsp5stero.com","dspultra.com","dtssrv.com","dubzenom.com","dukingdraon.com","dwlv.xyz","dxtv1.com","dynsrvtbg.com","dynsrvwer.com","dyptanaza.com","dzhjmp.com","ea6c0ac4.xyz","eaaratte.net","eabids.com","eacdn.com","eagamerz.com","ealeo.com","earlinessone.xyz","easelegbike.com","eastrk-dn.com","easyconverts.com","easysearch.click","eclinerybelfast.org","eclkmpsa.com","ectozoaquagga.top","edalloverwiththinl.info","edonhisdhi.com","edttmar.com","eeco.xyz","eehuzaih.com","eergortu.net","eessoong.com","eetspaae.net","effectivecpmcontent.com","effectivecpmnetwork.com","effectiveratecpm.com","efficientorbit.co","egmyz.com","egraglauvoathog.com","eiteribesshaints.com","elephant-ads.com","eliwitensirg.net","embarkvision.top","emotomalf.com","encouragedmemistress.com","endlessloveonline.online","endorico.com","enloweb.com","ennedranorway.top","enrtx.com","entainpartners.com","entjgcr.com","entterto.com","eofst.com","eonsmedia.com","eontappetito.com","epicgameads.com","era67hfo92w.com","eralway.com","ero-advertising.com","eroge.com","errumoso.xyz","escortlist.pro","eshkol.io","eshkol.one","eskimi.com","esports1x.com","ever8trk.com","everyview.info","ewesmedia.com","ewhareey.com","ewogloarge.com","excellingvista.com","exceptional-ingress.life","exclkplat.com","exclplatmain.com","exclusivesearch.online","exdynsrv.com","exnesstrack.com","exoclick.com","exodusjailhousetarantula.com","exosrv.com","expdirclk.com","explorads.com","explore-site.com","exporder-patuility.com","exrtbsrv.com","extensions-media.com","externalfavlink.com","extractionatticpillowcase.com","extsoft.info","exxtended-access.com","ey43.com","eyauknalyticafra.info","ezadblocker.com","ezcgojaamg.com","ezdownloadpro.info","ezmob.com","faiverty-station.com","familyborn.com","fapcandy.com","fardasub.xyz","fast-redirecting.com","fastclick.net","fastdntrk.com","fastgolbalserver.com","fastincognitomode.com","fastlnd.com","fbmedia-ckl.com","fbpbpmjjg-f.club","fbpqvs.com","februaryinjectionproudly.com","feed-xml.com","feedyourheadmag.com","fefinegoldforeyes.com","fenacheaverage.com","fentent.stre4mplay.one","fer2oxheou4nd.com","feuageepitoke.com","fhserve.com","fiinnancesur.com","filestube.com","filthygracefulspinach.com","finance-hot-news.com","finanvideos.com","findbetterresults.com","finreporter.net","firstclass-download.com","firstload.de","fitcenterz.com","fittingcentermondaysunday.com","flagads.net","flairadscpc.com","flashtalking.com","fleamx.com","flingforyou.com","flowerdicks.com","flrdra.com","flyingadvert.com","fodsoack.com","fontdeterminer.com","for-j.com","foraketene.com","forarchenchan.com","forflygonom.com","forgetnet.xyz","forooqso.tv","fortyphlosiona.com","foruftuiov.com","forzubatr.com","fourwhenstatistics.com","fpctraffic2.com","fpctraffic3.com","fpgedsewst.com","fractionfridgejudiciary.com","fralstamp-genglyric.icu","freeadblockerbrowser.com","freecamsexposed.com","freegamefinder.com","freegamezone.net","freehookupaffair.com","freetrckr.com","freewebcams.com","frequentjam.com","freshpops.net","friendfinder.com","friendlyduck.com","frs2c.com","frtya.com","frtyb.com","frtye.com","frtyi.com","fstsrv.com","fstsrv5.com","fstsrv9.com","funkydaters.com","funmatrix.net","funuzai.ru","fuse-cloud.com","fusetracking.com","fwbntw.com","fwmrm.net","fzev75-rtbix.top","g2afse.com","g33ktr4ck.com","gabbartmiotics.top","gadlt.nl","gadssystems.com","gagheroinintact.com","gajinifreedomain.fun","galaxypush.com","galotop1.com","gamerhit.co","gamezon.top","gaming-adult.com","gamingadlt.com","gammamkt.com","gangwaynumberprivacy.com","ganja.com","gb1aff.com","gdeigri.com","gdmconvtrck.com","genishury.pro","geniusdexchange.com","gensonal.com","gentent.stre4mplay.one","geotrkclknow.com","get-express-vpn.online","get-express-vpns.com","get-gx.net","get.stoplocker.com","getdirectbonus.com","getfinefile.com","getflowads.net","getgx.net","getmatchedlocally.com","getmyads.com","getsmartyapp.com","getsthis.com","getthisappnow.com","gettopple.com","gfdfhdh5t5453.com","gfstrck.com","gg.bet","ggbet-online.net","ggbetapk.com","ggbetpromo.com","ghostnewz.com","giftandgamecentral.com","girls.xyz","gkrtmc.com","glamorous-mail.com","glassmilheart.com","gleagainedam.info","glimpsemankind.com","gliraimsofu.net","glizauvo.net","global-adblocker.com","globaladblocker.com","globaladblocker.net","globeofnews.com","globwo.online","gloogruk.com","glowingnews.com","glsfreeads.com","gml-grp.com","gmxvmvptfm.com","go-srv.com","go-to-website.com","go.aff.7k-partners.com","go.aff.betplays.com","go.aff.estrelabetpartners.com","go.camterest.com","go.clickwhore.com","go.nsfwlivechat.com","go.playlg.com","go.roobet.com","go.thunder.partners","go.xhamsterlive.com","go2affise.com","go2bdmbet.com","go2crystalroll.com","go2linkfast.com","go2offer-1.com","go2oh.net","go2rph.com","goads.pro","goaffmy.com","goapoachowoovol.net","goaserv.com","goathaga.top","godkc.com","godpvqnszo.com","gold2762.com","goobakocaup.com","goonsupper.com","goosebomb.com","gophykopta.com","gositego.live","gotibetho.pro","gotohouse1.club","gotoplaymillion.com","gotrackier.com","grabclix.com","graitsie.com","grapseex.com","grazingmarrywomanhood.com","greatdexchange.com","greatlifebargains2024.com","greenadblocker.com","greenlinknow.com","greenplasticdua.com","greewepi.net","grefutiwhe.com","greygrid.net","grtya.com","grtyj.com","grtyv.com","grunoaph.net","gtbdhr.com","guesswhatnews.com","gvcaffiliates.com","h5xzcrigf541b0fzxj.fun","h74v6kerf.com","hai8g.com","hauchiwu.com","haveameet.com","hazoopso.net","hbloveinfo.com","heavenfull.com","helicient.com","helmethomicidal.com","hentaifap.land","heptix.net","heratheacle.com","heresanothernicemess.com","hetadinh.com","hetaint.com","hetapus.com","hetartwg.com","hetarust.com","hetaruvg.com","heyserves.com","hhbypdoecp.com","hiasor.com","hibids10.com","hicpm10.com","hiend.xyz","highcpmgate.com","highmaidfhr.com","highperformancecpm.com","highperformancecpmgate.com","highperformancecpmnetwork.com","highperformancedformats.com","highperformanceformat.com","highperformancegate.com","highratecpm.com","highrevenuecpmnetwork.com","highrevenuegate.com","highrevenuenetwork.com","highwaycpmrevenue.com","hiiona.com","hilltopads.com","hilltopads.net","hilove.life","hiltonbett.com","himunpractical.com","hintonjour.com","historyactorabsolutely.com","hisurnhuh.com","hitcpm.com","hkl4h1trk.com","hnrgmc.com","hoadaphagoar.net","hoctor-pharity.xyz","hoktrips.com","holahupa.com","hollysocialspuse.com","holputy.shop","hooliganapps.com","hooligapps.com","hooligs.app","hopghpfa.com","hornymatches.com","hot-growngames.life","hottest-girls-online.com","hoveltran.xyz","howboxmaa.site","howsliferightnow.com","hpyjmp.com","hpyrdr.com","hqtrk.com","hrtya.com","hrtye.com","hrtyh.com","html-load.cc","html-load.com","htmonster.com","hue2b.com","hue2n.com","hue4c.com","hueads.com","hugeedate.com","hugregregy.pro","huluads.info","hungryrise.com","hurlmedia.design","hyenadata.com","ibeeckaidse.net","icepbns.com","icgirls.com","icodstatus.shop","icubeswire.co","idescargarapk.com","ientent.stre4mplay.one","ifdnzact.com","ifigent.com","ignals.com","ilaterdeallyig.info","imaxcash.com","img-load.com","imghst-de.com","imkirh.com","impactserving.com","improvebin.xyz","inabsolor.com","indianfriendfinder.com","infeebasr.com","inflectionquake.com","infopicked.com","infra.systems","inncreasukedrev.info","innovid.com","inouva.com","inpagepush.com","insideofnews.com","insideoftech.com","insigit.com","install-check.com","installupdate.online","instancesflushedslander.com","instantpaydaynetwork.com","intab.fun","intellipopup.com","interclics.com","internewsweb.com","internodeid.com","interpersonalskillse.info","intorterraon.com","inumbreonr.com","investigationsuperbprone.com","invle.co","invol.co","iogjhbnoypg.com","iopiopiop.net","irrigatenotwithstandingcommit.com","irtya.com","isawthenews.com","ismlks.com","isolatedovercomepasted.com","istipaumophy.com","istlnkcl.com","itespurrom.com","itgiblean.com","itponytaa.com","itrustzone.site","itskiddien.club","itstuffnews.com","ittontrinevengre.info","iwanttodeliver.com","iwantusingle.com","iyfnz.com","iyfnzgb.com","iyfsearch.com","izeeto.com","ja2n2u30a6rgyd.com","jaavnacsdw.com","jads.co","jashautchord.com","jasmin.com","java8.xyz","jegiopad.top","jepsauveel.net","jerboasjourney.com","jeroud.com","jfjle4g5l.com","jiuwert.online","jizzy.org","joinpropeller.com","joohugreene.net","joudauhee.com","jrpkizae.com","js-check.com","jsmentry.com","jsmjmp.com","jsmptjmp.com","judebelii.com","juiceadv.com","juicyads.com","jump-path1.com","junbi-tracker.com","junkyadexchange.com","junmediadclikrmdi.com","justonemorenews.com","jwalf.com","jwalkin.com","kagonst.com","kaigaidoujin.com","kaminari.systems","kanoodle.com","karafutem.com","karoon.xyz","katecrochetvanity.com","keenmagwife.live","keewoach.net","kektds.com","kentent.stre4mplay.one","ker2clk.com","kettakihome.com","kgfjrb711.com","kgorilla.net","kiksajex.com","kindredplc.com","king3rsc7ol9e3ge.com","kingtrck1.com","kirteexe.tv","kirujh.com","kitchiepreppie.com","kllpelaa.net","klrtspet.net","kolkwi4tzicraamabilis.com","koogreep.com","korexo.com","krjxhvyyzp.com","ku2d3a7pa8mdi.com","ku42hjr2e.com","kunvertads.com","kzt2afc1rp52.com","kzvcggahkgm.com","lactasetooth.shop","lamplynx.com","land.pixelsee.app","landerhq.com","landing.candynetwork.ai","landing1.brazzersnetwork.com","lanesusanne.com","lavatorydownybasket.com","lavender64369.com","lby2kd27c.com","leadsecnow.com","leapretrieval.com","lechosabode.shop","leesaushoah.net","leewibaijoa.com","lenkmio.com","leonbetvouum.com","leoyard.com","lepetitdiary.com","letitnews.com","letitredir.com","letshareus.com","liaoptse.net","libertystmedia.com","lickingimprovementpropulsion.com","lidsaich.net","lifeporn.net","ligatus.com","liglomsoltuwhax.net","lindychat.com","link.365av.net","link.advancedsystemrepairpro.com","linkadvdirect.com","linkonclick.com","linkredirect.biz","linksprf.com","liquidfire.mobi","liveadexchanger.com","livecams.com","livejasmin.com","livepromotools.com","livezombymil.com","lizebruisiaculi.info","ljline.com","lkcoffe.com","lkstrck2.com","llpgpro.com","lmp3.org","lnk8j7.com","lnkgt.com","localelover.com","locked-link.com","locooler-ageneral.com","locopar.com","lody24.com","logicdate.com","logicschort.com","lolapelisse.cyou","lone-pack.com","loodauni.com","loohaiturigavik.net","lookandfind.me","looksmart.com","loosebelt.com","losingoldfry.com","loveaholics.com","loverevenue.com","lp247p.com","lplimjxiyx.com","lpmediastorage.com","lpquizzhubon.com","lptrak.com","luckyads.pro","luckyforbet.com","luvaihoo.com","luxetalks.com","luxq8.com","lwnbts.com","lwonclbench.com","lycheenews.com","lyconery-readset.com","ma3ion.com","macan-native.com","madeupice.com","madurird.com","mafroad.com","magicads.nl","magsrv.com","mainadcenter.com","mainexclkdir.com","making.party","manbycus.com","manconsider.com","maper.info","maredpt.com","marketdeathly.com","masklink.org","massivebelieved.com","matchjunkie.com","matildawu.online","maxickedpantents.com","maxigamma.com","maybejanuarycosmetics.com","mb-npltfpro.com","mb01.com","mb102.com","mb103.com","mb104.com","mb223.com","mb38.com","mb57.com","mbjrkm2.com","mbjrkmms.com","mbreviews.info","mbsrv2.com","mbsspads.com","mbvlmz.com","mbvsm.com","mcfstats.com","mcpuwpsh.com","mcurrentlysea.info","mddsp.info","mdmexclusives.com","me4track.com","meantimesubside.com","media-412.com","mediahell.world","mediasama.com","mediaxchange.co","meenetiy.com","meetradar.com","meetsexygirls.org","meetstorages.com","meetwebclub.com","megacot.com","megaffiliates.com","megdexchange.com","meherdewogoud.com","menepe.com","menews.org","meofmukindwoul.info","mercurybest.com","merterpazar.com","mesqwrte.net","messagereceiver.com","messenger-notify.xyz","metatrckpixel.com","metrica-yandex.com","mghkpg.com","mgid.com","mhiiopll.net","millustry.top","mimosaavior.top","miserly-phone.com","misspkl.com","mistysteel.co","mk-ads.com","mkaff.com","mkjsqrpmxqdf.com","mladedda.net","mlatrmae.net","mmentorapp.com","mnaspm.com","mndsrv.com","moartraffic.com","mob1ledev1ces.com","mobagent.com","mobileraffles.com","mobiletracking.ru","mobipromote.com","mobreach.com","mobsuitem.com","modificationdispatch.com","moksoxos.com","moleconcern.com","molypsigry.pro","momotrk.com","moncoerbb.com","monetag.com","monsterofnews.com","moonlighthathel.org","moonrocketaffiliates.com","mordoops.com","mosrtaek.net","mourny-clostheme.com","moustachepoke.com","movfull.com","moviemediahub.com","movingfwd.co","mowcoordinateegypt.com","mplayeranyd.info","mptentry.com","mqdownload.com","msok-bayqa.icu","mtypitea.net","muvflix.com","mvmbs.com","my-promo7.com","myadcash.com","myaffpartners.com","myafriend.com","mybestdc.com","mydailynewz.com","myeasetrack.com","myemailtracking.com","myjollyrudder.com","mylot.com","mynutraresearch.com","myperfect2give.com","myreqdcompany.com","mysagagame.com","mywondertrip.com","n4sredirect.com","n91hg.com","nabauxou.net","naiwoalooca.net","nalraughaksie.net","nan0cns.com","nanoadexchange.com","narilyhukelpfulin.com","nasosettoourm.com","nasssmedia.com","natregs.com","naughtydate.com","navigatingnautical.xyz","naxadrug.com","ndcomemunica.com","nectsideaments.com","neeceeglogu.net","needlive.com","nemppa.com","neptuntrack.com","nereu-gdr.com","nersionitsumpute.com","nessainy.net","netcpms.com","netund.com","network.nutaku.net","never2never.com","newbluetrue.xyz","newjulads.com","newmytrp.com","newscadence.com","newsforyourmood.com","newsfrompluto.com","newsignites.com","newslikemeds.com","newstemptation.com","newsyour.net","newtab-media.com","nextoptim.com","nextyourcontent.com","ngfruitiesmatc.info","nicatethebene.info","nicerisle.com","nightbesties.com","nigroopheert.com","nimrute.com","ninetyninesec.com","nn125.com","noavoahevugrib.com","nomadsbrand.com","nomadsfit.com","noohapou.com","noolt.com","north-verification.com","northdownload.com","nossairt.net","notifpushnext.net","notimoti.com","notmil.com","nougacoush.com","noughttrustthreshold.com","novibet.partners","novitrk7.com","novitrk8.com","nozoakamsaun.net","npcad.com","nreg.world","nrs6ffl9w.com","nsmpydfe.net","nsultingcoe.net","ntoftheusysia.info","ntoftheusysianedt.info","ntrfr.leovegas.com","ntrftrk.com","ntrftrksec.com","ntvpforever.com","nukeluck.net","numbertrck.com","nutchaungong.com","nv3tosjqd.com","nwwrtbbit.com","nxt-psh.com","nya2.com","nythingamglad.com","nznoxxx.com","o18.click","o333o.com","oabaubsutha.com","oalsauwy.net","oaphoace.net","oassackegh.net","obqj2.com","ockremarkedon.com","ocmhood.com","odalrevaursartu.net","offaces-butional.com","offergate-ecommerce-cdn5.com","offergate-games-download1.com","offergate-software11.com","offernow24.com","offers.cam4tracking.com","offershub.net","offerstrack.net","offersuperhub.com","officetablntry.org","offshuppetchan.com","ofredirect.com","ofseedotom.com","oghqvffmnt.com","oglalavoodoo.world","ogtrk.net","ohrdsplu.com","okueroskynt.com","omciecoa37tw4.com","omegaadblock.net","omegadblocker.com","omg10.com","omgpm.com","omgt3.com","omgt4.com","omgt5.com","omklefkior.com","omzal.com","onad.eu","onatallcolumn.com","oncesets.com","onclckpop.com","onclickads.net","onclickalgo.com","onclickclear.com","onclickgenius.com","onclickmax.com","onclickmega.com","onclickperformance.com","onclickprediction.com","onclicksuper.com","onclicktop.com","one-name-studio.com","onlinecashmethod.com","onlinefinanceworld.com","onlinepuonline.com","onmantineer.com","onstunkyr.com","ontrklnk.com","oodrampi.com","oopatet.com","openadserving.com","openmindter.com","ophoacit.com","opoxv.com","opparasecton.com","opportunitysearch.net","opptmzpops.com","optimizesrv.com","optnx.com","optvz.com","optyruntchan.com","opus-whisky.com","oraubsoux.net","organicowner.com","orgassme.com","orhassagvaqw.com","orlowedonhisdhilt.info","osarmapa.net","osfultrbriolenai.info","ossshucklean.com","ostlon.com","otieu.com","otnolatrnup.com","otoadom.com","oulsools.com","oundhertobeconsist.org","oungimuk.net","ourcommonnews.com","outhulem.net","outlookabsorb.com","outoctillerytor.com","outwingullom.com","ovardu.com","ovdimin.buzz","overcrowdsillyturret.com","overninetalesor.com","oversolosisor.com","ow5a.net","owrkwilxbw.com","oxbbzxqfnv.com","oxtsale1.com","oyi9f1kbaj.com","ozcarcupboard.com","p12acx.com","pa5ka.com","paaeeets.net","pactioneastlin.com","paeastei.net","paehceman.com","pagerrentablespotlight.com","paid.outbrain.com","paikapiglauthi.com","palmmalice.com","panelghostscontractor.com","parisjeroleinpg.com","partitiveretinstitution.com","passeura.com","passfixx.com","passtechusa.com","pasxfixs.com","paulastroid.com","paxsfiss.com","paxxfiss.com","payvclick.com","pclk.name","pcmclks.com","pctsrv.com","peethach.com","peezette-intial.com","pejzeexukxo.com","pelis-123.org","pemsrv.com","peopleloves.me","pereliaastroid.com","perfecttoolmedia.com","performancetrustednetwork.com","perispro.com","perryvolleyball.com","pertersacstyli.com","pertlouv.com","petendereruk.com","pexu.com","pgmediaserve.com","pheniter.com","phiglerdail.net","phoognol.com","phumpauk.com","pickaflick.co","pierisrapgae.com","pilotstracking.com","pipaffiliates.com","pipsol.net","pisism.com","pitchedfurs.com","pixellitomedia.com","pk910324e.com","placetobeforever.com","planetarium-planet.com","play-lg.com","playafterdark.com","playamopartners.com","playerswhisper.com","playgirl.com","playrainbet.com","playstretch.host","playvideoclub.com","pleasetrack.com","plexop.net","plinksplanet.com","pllsadrp.net","plorexdry.com","pnperf.com","poawooptugroo.com","podefr2.net","pointclicktrack.com","pointroll.com","poisism.com","polosanitizertrusting.com","polyh-nce.com","pomxd.com","pon-prairie.com","pooksys.site","popads.net","popblockergold.info","popcash.net","popcornvod.com","poperblocker.com","popgoldblocker.info","popmyads.com","popped.biz","popunder.bid","popunderjs.com","popupblockergold.com","popupsblocker.org","pornhb.me","postaffiliatepro.com","postback1win.com","potawe.com","potsaglu.net","potskolu.net","poweredbyliquidfire.mobi","ppcmate.com","ppcnt.co","ppcnt.eu","ppcnt.us","ppcnwt.com","ppwpn.com","prdredir.com","precisejoker.com","predictiondexchange.com","predictiondisplay.com","predictionds.com","predictivadnetwork.com","predictivadvertising.com","predictivdisplay.com","premium-members.com","press-here-to-continue.com","pressyour.com","pretrackings.com","prfwhite.com","prime-vpnet.com","prmtracking.com","pro-adblocker.com","proceedflow.com","prodtraff.com","profitablecpmgate.com","profitablecpmratenetwork.com","profitableexactly.com","profitablegate.com","profitablegatecpm.com","profitablegatetocontent.com","profitabletrustednetwork.com","promerycergerful.com","promo-bc.com","promo.pixelsee.app","pronovosty.org","propadsviews.com","propbn.com","propellerads.com","propellerclick.com","propellerpops.com","propertyofnews.com","protect-your-privacy.net","protected-redirect.click","protectflow.life","protrckit.com","provenpixel.com","prpops.com","prtord.com","prtrackings.com","prwave.info","psaltauw.net","psaugourtauy.com","psaussasta.net","psauwaun.com","psegeevalrat.net","psma02.com","psoabojaksou.net","psockapa.net","pssy.xyz","pteemsolrirgegi.com","ptistyvymi.com","ptoakrok.net","ptongouh.net","pttraffic.online","ptwmcd.com","ptwmjmp.com","ptyalinbrattie.com","pubdirecte.com","pubtrky.com","puldhukelpmet.com","pulseonclick.com","punsong.com","pupspu.com","pureadexchange.com","purpleads.io","push-sense.com","push1000.top","pushclk.com","pushking.net","pushmobilenews.com","pushtorm.net","pushub.net","pushwelcome.com","pussl3.com","pussl48.com","putchumt.com","pvclouds.com","pwrgamerz.com","pzcwk-sfend.top","q8ntfhfngm.com","qertewrt.com","qjvksieybn.vip","qnp16tstw.com","qsiyfgazubcu.top","quadrinhoseroticos.net","qualiclicks.com","qualitydating.top","quantumadblocker.com","quarterbackchangeless.com","quilladot.org","quixoticzest.com","qwikln.com","qxdownload.com","qz496amxfh87mst.com","r3f.technology","rallantynethebra.com","random-affiliate.atimaze.com","rankpeers.com","raordukinarilyhuk.com","raosmeac.net","rapidhits.net","rapolok.com","rbtfit.com","rbxtrk.com","rcdn-web.com","rdsa2012.com","rdsrv.com","rdtk.io","rdtracer.com","rdvinfidele.club","readserv.com","realcfadsblog.com","realsh.xyz","realsrv.com","realtime-bid.com","realxavounow.com","reclod.com","recompensecombinedlooks.com","record.commissionkings.ag","record.rizk.com","record.royalreelspartners.com","recyclingbees.com","red-direct-n.com","redaffil.com","redirect-ads.com","redirect-path1.com","redirecting.online","redirectingat.com","redirectvoluum.com","redrotou.net","reduau.top","redwingmagazine.com","reebr.com","refpa.top","refpa4293501.top","refpaikgai.top","refpamjeql.top","refpasrasw.world","refundsreisner.life","rehvbghwe.cc","rel-s.com","relationshipcourseably.com","reliablemore.com","remembergirl.com","reminews.com","remv43-rtbix.top","rencessedessations.com","reopenshelly.cfd","reporo.net","resentreaccotia.com","restedpealimagine.com","resterent.com","restorationbowelsunflower.com","retgspondingco.com","revenuenetwork.com","reviewdollars.com","revimedia.com","revmasters.com","rewardtk.com","rexsrv.com","rhinoaffiliates.com","rhudsplm.com","rhvdsplm.com","rhxdsplm.com","riftharp.com","riverhit.com","rm358.com","rmaticalacm.info","rmhfrtnd.com","rmzsglng.com","rndhaunteran.com","rndskittytor.com","roadcontagion.com","roastoup.com","rochestertrend.com","rocketmedia24.com","rocoads.com","rolltrk4.com","rolltrk9.com","roobetaffiliates.com","roots.baby","rootzaffiliates.com","rose2919.com","roudoduor.com","roundflow.net","routes.name","routeumber.com","roverinvolv.bid","rovno.xyz","royalcactus.com","rozamimo9za10.com","rsppartners.com","rtbbhub.com","rtbbpowaq.com","rtbix.xyz","rtbreachads.com","rtbsuperhub.com","rtmark.net","rtoukfareputfe.info","rtyznd.com","rubylife.go2cloud.org","rudderwebmy.com","runtnc.net","rvetreyu.net","rx.link","s.click.aliexpress.com","s.id","s0cool.net","s0fast.net","s20dh7e9dh.com","s3g6.com","sa33491sxa.com","safe-connection21.com","samage-bility.icu","sasontnwc.net","savinist.com","scaredframe.com","screenov.site","sealthatleak.com","searchmulty.com","searchsecurer.com","seatrackingdomain.com","secthatlead.com","securecloud-smart.com","securecloud-sml.com","secureclouddt-cd.com","securedsmcd.com","securedt-sm.com","securegfm.com","secureleadsrn.com","sedodna.com","seethisinaction.com","semqraso.net","senzapudore.it","seo-overview.com","ser678uikl.xyz","sereanstanza.com","serve.prestigecasino.com","serve.williamhillcasino.com","servetean.site","servsserverz.com","setoinc.com","setravieso.com","sevenbuzz.com","sex-and-flirt.com","sexad.net","sexemulator.com","sexfamilysim.net","sexflirtbook.com","sexintheuk.com","sexmotors.com","sez88e.fun","shakingtacklingunpeeled.com","sharpofferlinks.com","shaugacakro.net","shauladubhe.com","shauladubhe.top","she-want-fuck.com","sheecmimty.net","sheegiwo.com","sherouscolvered.com","shinebliss.com","shoagloumtoamir.net","shoopusahealth.com","shopeasy.by","short.bitchute.com","shortpixel.ai","shotgunchancecruel.com","showcasead.com","shuanshu.com.com","signamentswithd.com","simple-isl.com","singledatetime.com","singlesexdates.com","singlewomenmeet.com","sixft-apart.com","skated.co","skipvideoads.com","skycheats.com","skylindo.com","skymobi.agency","skyscrapertowel.com","slashstar.net","slatecharm.co","slavicprophetyontherm.com","slcuse.com","slideff.com","slimspots.com","sloto.live","smallfunnybears.com","smart-wp.com","smartadtags.com","smartblocker.org","smartcj.com","smartcpatrack.com","smartmnews.pro","smarttds.org","smarttopchain.nl","smentbrads.info","smlypotr.net","smrt-content.com","snammar-jumntal.com","snapcheat16s.com","sneakyadministration.com","snowdayonline.xyz","snugglethesheep.com","sobakenchmaphk.com","socialsex.biz","socialsex.com","sodefender.pro","sofinpushpile.com","solaranalytics.org","soldierreproduceadmiration.com","solispartner.com","somebestgamesus.com","soocaips.com","sotchoum.com","sousefulhead.com","souszhi.com","sowve.com","spacecatholicpalmful.com","spacetraff.com","spanpromo-link.com","sparkstudios.com","sparta-tracking.xyz","spdate.com","special-offers.online","special-promotions.online","special-trending-news.com","speedsupermarketdonut.com","sperans-beactor.com","sperebnf.click","spicygirlshere.life","spin83qr.com","spinforluck.blog","spklmis.com","sports-tab.com","spotofspawn.com","spotscenered.info","spreadingsinew.com","sprinlof.com","sptrkr.com","spunorientation.com","spygenix.xyz","sr7pv7n5x.com","srtrak.com","srvpcn.com","srvqck27.com","srvqck3.com","srvtrck.com","ssteeraa.net","staaqwe.com","staletraffic.com","stardomcoit.com","starmobmedia.com","starry-galaxy.com","starsallowyear.com","statsmobi.com","stawhoph.com","steerensout.net","stemboastfulrattle.com","stenexeb.xyz","sthoutte.com","stikroltiltoowi.net","stimaariraco.info","stoorgel.com","stop-adblocker.info","stopads-now.com","stopadzblock.net","stopblockads.com","storader.com","stortla.com","storyunicornupper.com","stream-all.com","streamereasy.click","streamsearchclub.com","streamyourvid.com","strenuoustarget.com","strettechoco.com","strtgic.com","stuffedbeforehand.com","stvbiopr.net","stvkr.com","sudukrirga.net","summertisaridicu.org","sunflowerbright106.io","superadexchange.com","superfastcdn.com","superfasti.co","supersedeforbes.com","supertracker200.com","supremeadblocker.com","suptraf.com","surge.systems","surveyspaid.com","swinity.com","sxlflt.com","synccora.com","syncedvision.com","synonymdetected.com","systeme-business.online","systemleadb.com","szqxvo.com","t.co","t.ly","t2lgo.com","taghaugh.com","taginova.xyz","tagsd.com","takecareproduct.com","tapdb.net","targeta41.net","targetingnow.com","targetmatch.co","targhe.info","taroads.com","tatrck.com","tbeiu658gftk.com","tcare.today","teamsoutspoken.com","techiteration.com","techreviewtech.com","tegleebs.com","teksishe.net","telyn610zoanthropy.com","temksrtd.net","temperrunnersdale.com","temu.com","tencableplug.com","tenlets.com","terbit2.com","terpenwordman.top","tgp1.brazzersnetwork.com","thairoob.com","thanosofcos5.com","thaudray.com","the-binary-trader.biz","thebestgame2020.com","thecarconnections.com","theepsie.com","theerrortool.com","theextensionexpert.com","thefacux.com","theirbellstudio.co","theonesstoodtheirground.com","thesafersearch.com","thesurferprotector.com","thetoptrust.com","theyellownewtab.com","thinkaction.com","thofteert.com","thomasalthoughhear.com","thouptoorg.com","tigerbrluck.com","tikva-1.com","tilttrk.com","tiltwin.com","timot-cvk.info","tingswifing.click","tinsus.com","tisaneata.com","tjoomo.com","tjwsg.com","tl2go.com","tm-offers.gamingadult.com","tmb5trk.com","tmtrck.com","tnctrx.com","tnkexchange.com","together2night.com","toiletpaper.life","tomatoqqamber.click","tomladvert.com","tomlldahehun.org","tomoll.com","tonefuse.com","tonsilsuggestedtortoise.com","toonujoops.net","toopsoug.net","toourmarketingef.com","topblockchainsolutions.nl","topclickguru.com","topdealad.com","topfdeals.com","topgurudeals.com","topodat.info","toprevenuegate.com","toptdspup.com","toptrendyinc.com","torrent-protection.com","toruftuiov.com","toscytheran.com","totaladblock.com","totaladperformance.com","totlnkcl.com","tourukaustoglee.net","toxtren.com","tozoruaon.com","tpmr.com","tr-boost.com","tr-bouncer.com","tr-monday.xyz","tr-rollers.xyz","tr-usual.com","tracemonitorusa.life","track-campaing.club","track-victoriadates.com","track.cam4tracking.com","track.kinetiksoft.com","track.livesportnet.com","track.totalav.com","track4ref.com","trackcherry.com","trackclicks00.com","tracker-2.com","tracker-tds.info","trackerflw.com","trackerrr.com","tracking-aws-5.com","trackingtraffo.com","trackmundo.com","tracks20.com","tracksfaster.com","trackstracker.com","tracktds.com","tracktilldeath.club","trackvoluum.com","trackwilltrk.com","tracot.com","tradeadexchange.com","traffic-c.com","traffic.club","trafficbass.com","trafficborder.com","trafficbroker.com","trafficdecisions.com","trafficdok.com","trafficforce.com","traffichaus.com","trafficholder.com","traffichunt.com","trafficinvest.com","trafficlide.com","trafficmagnates.com","trafficmoon.com","trafficmoose.com","trafficstars.com","trafforsrv.com","traffrout.com","trafyield.com","trakaff.net","traktortds.com","trasupr.com","trck.wargaming.net","trcklks.com","trckswrm.com","treesmajestic.com","trellian.com","trentbereal.com","trftopp.biz","trigsfrisky.shop","trilema.com","trk-access.com","trk-vod.com","trk301.com","trkbc.com","trkbng.com","trkings.com","trkless.com","trklnks.com","trknk.com","trknovi.com","trksmorestreacking.com","trmobc.com","troopsassistedstupidity.com","trpool.org","trustedcpmrevenue.com","trustedgatetocontent.com","trustedpeach.com","trustedzone.info","trustyable.com","trustzonevpn.info","truthtraff.com","trw12.com","try.opera.com","tsml.fun","tsyndicate.com","ttoc8ok.com","tubeadvertising.eu","tubecup.net","tubroaffs.org","tuffoonincaged.com","tundrafolder.com","turndynamicforbes.com","turnhub.net","turnstileunavailablesite.com","tutvp.com","tvas-b.pw","twigwisp.com","twinfill.com","twinkle-fun.net","twinrdengine.com","twinrdsrv.com","twinrdsyn.com","twinrdsyte.com","txzaazmdhtw.com","tychon.bid","typical-hub.com","tyrotation.com","tyserving.com","tzaqkp.com","tzvpn.site","ubilinkbin.com","ublockpop.com","uel-uel-fie.com","ufpcdn.com","ugroocuw.net","uhpdsplo.com","uilts.com","uitopadxdy.com","ukoffzeh.com","ultimate-captcha.com","ultrapartners.com","unblockedapi.com","uncernedasesiumw.org","unclesnewspaper.com","unicornpride123.com","unreshiramor.com","untimburra.com","unwoobater.com","updateenow.com","updatephone.club","upgiveunsteps.shop","upgliscorom.com","uponomanytetor.com","uptimecdn.com","uptopopunder.com","upuplet.net","upuplets.com","urtyert.com","urxox-iqx.online","usheebainaut.com","usingageghoaft.net","utarget.ru","uthorner.info","utlservice.com","utm-campaign.com","utopicmobile.com","v6rxv5coo5.com","vaatmetu.net","vague-key.com","vaitotoo.net","vampyrejibmen.com","vasstycom.com","vasteeds.net","vax-now.com","vbnmsilenitmanby.info","vcdc.com","vcommission.com","vebv8me7q.com","velocitycdn.com","vengeful-egg.com","venturead.com","verdecasino-offers.com","verooperofthewo.com","vertoz.com","vespymedia.com","vfghc.com","vfgtb.com","vfgte.com","vfgtg.com","viapawniarda.com","viatechonline.com","viatepigan.com","victoryslam.com","vid-adblocker.com","videocampaign.co","viensvoircesite.com","vigorouslymicrophone.com","viiadaof.com","viiczfvm.com","viidsyej.com","viijxyqp.com","viiyxefb.com","vilytaku.com","viralnewsbd.xyz","virelon.com","visit-website.com","visitstats.com","vizoalygrenn.com","vjkyw.vip","vkcdnservice.com","vkgtrack.com","vlexokrako.com","vlmjm1.com","vodobyve.pro","vokut.com","volform.online","volumntime.com","voluumtrk.com","voluumtrk3.com","voruftuiov.com","vpn-offers.org","vprtrfc.com","vq4b0q.fun","vrkonefd.buzz","vs3.com","vtabnalp.net","vulkan-bt.com","vulkanbet.me","w0we.com","w1fky.com","wahoha.com","waisheph.com","walter-larence.com","wannaknowmysecret.com","wantatop.com","wargaming-aff.com","wasqimet.net","watchadsfree.com","watchcpm.com","watchvideoplayer.com","waufooke.com","wbamedia.com","wbhwwnzptf.club","wbidder.online","wbidder2.com","wbidder3.com","wbilvnmool.com","wboux.com","wct.link","we-offer.com","weaveradrenaline.com","web-adblocker.com","webatam.com","webgains.com","webmedrtb.com","webpuppweb.com","wecouldle.com","weezoptez.net","welcomeneat.pro","welfarefit.com","wellhello.com","wendelstein-1b.com","westcoa.com","wetrackgames.com","wewearegogogo.com","wg-aff.com","wgpartner.com","whairtoa.com","whataboutnews.com","whatisuptodaynow.com","wheceelt.net","wheebsadree.com","wherevertogo.com","whirlwindofnews.com","whitenoisenews.com","whitepark9.com","whoucheehy.net","whouphesaussums.net","whoursie.com","whulsaux.com","widow5blackfr.com","wifescamara.click","wigetmedia.com","wimsedas.xyz","winnersofvouchers.com","wintrck.com","witalfieldt.com","witnessjacket.com","wlafx4trk.com","wmptengate.com","wmtten.com","wnt-s0me-push.net","woafoame.net","woevr.com","woffxxx.com","wolsretet.net","wonder.xhamster.com","workback.net","wounofoarausooy.net","wovensur.com","wowshortvideos.com","wpnetwork.eu","wriestunvote.com","wuujae.com","wvdme.com","wwija.com","wwwpromoter.com","wxhiojortldjyegtkx.bid","x-ozwpiqlb.rocks","x2tsa.com","x3os.com","x7i0.com","xadsmart.com","xarvilo.com","xaxoro.com","xbidflare.com","xdgeslibgbim.icu","xdtraffic.com","xliirdr.com","xlirdr.com","xlivrdr.com","xlviiirdr.com","xlviirdr.com","xlx1.com","xmatch.com","xml-api.online","xml.pops.gg","xmlrtb.com","xpeeps.com","xpobbwxzhe-l.site","xpvv0rkn.fun","xszpuvwr7.com","xtendmedia.com","xxxjmp.com","xxxmatch.com","xxxvjmp.com","y1jxiqds7v.com","yavli.com","ybb-network.com","ybbserver.com","yeesshh.com","yellowbahama.com","yewfjsdi.it.com","yhbcii.com","yieldtraffic.com","ylih6ftygq7.com","yonbearticor.com","yonsandileer.com","your-sugar-girls.com","youradexchange.com","youweepingt.org","ysesials.net","yukclick.me","z5x.net","zedo.com","zeechoog.net","zeepartners.com","zenaps.com","zendplace.pro","zeroredirect1.com","zetaframes.com","zikroarg.com","zlink1.com","zlink2.com","zlink6.com","zlink8.com","zlink9.com","zlinkb.com","zlinkm.com","zog.link","zononi.com","zonupiza.com","zrlqm.com","zryydi.com","zunsoach.com","zwqzxh.com","zybrdr.com"];
 
   // ---- bootstrap ----------------------------------------------------------
 
@@ -840,10 +1529,23 @@ var SA_POLICY = (function () {
     if (host) {
       var parts = host.split(".");
       // nativeSlice: a page-replaced Array.prototype.slice must not corrupt the
-      // host chain (it would silently drop every live directive for this frame).
+      // host chain (it would silently drop every baked directive for this frame).
       for (var i = 0; i < parts.length - 1; i++) chain.push(nativeSlice.call(parts, i).join("."));
     }
     return chain;
+  }
+
+  // "www.example.co.uk" → example.*, www.example.*, example.co.* … — every way to
+  // split off a public suffix, without a suffix list (a key that is not a real
+  // entity simply never exists in the data).
+  function entityKeys() {
+    var host = "";
+    try { host = location.hostname; } catch (e) {}
+    var parts = host ? host.split(".") : [], out = [];
+    for (var i = 0; i < parts.length - 1; i++) {
+      for (var j = i; j < parts.length - 1; j++) out.push(nativeSlice.call(parts, i, j + 1).join(".") + ".*");
+    }
+    return out;
   }
 
   function runDirective(d) {
@@ -855,87 +1557,43 @@ var SA_POLICY = (function () {
     try { fn.apply(null, nativeSlice.call(d, 1)); } catch (e) {}
   }
 
-  // ---- live directives (Level 2) -----------------------------------------
-  // Delivered by our ISOLATED content script from the Ed25519-signed,
-  // anti-rollback filters.json as a JSON STRING on a DOM event (objects don't
-  // cross worlds). Re-validated HERE against the same rules as the service
-  // worker (name allowlist = IMPL keys, argument safety, set-constant
-  // dictionary, selector/attribute/tag policy) — the engine never trusts a
-  // DOM message blindly. Threat model, stated honestly: a page can dispatch
-  // the same event, but only with directives we already allow, only against
-  // ITSELF in its own frame — no privilege escalation, no code/network sink.
-  // A cooperating page CAN opt itself out (pre-apply + restore its own APIs);
-  // it cannot reach other frames or other sites. The channel is therefore for
-  // non-timing-critical directives; timing-critical ones are baked into MAP.
-  // Live directives always carry an explicit host and never run on core
-  // video/CDN hosts (YouTube has dedicated handling).
-  // Live profile of the single policy (see SA_POLICY above): selector/attr/tag
-  // rules, cookie-name denylist, remove-cookie refused. IMPL membership is
-  // re-checked here as belt and braces (IMPL keys == policy CANON, gated by tests).
-  function directiveOk(d) {
-    if (!nativeIsArray(d) || d.length < 1) return false;
-    var name = d[0];
-    if (typeof name !== "string" || !nativeHasOwn.call(IMPL, name)) return false;
-    return SA_POLICY.validateDirective(name, nativeSlice.call(d, 1), true);
-  }
-  var liveSeen = Object.create(null);
-  function applyLive(raw) {
-    var items;
-    try { items = nativeParse(String(raw)); } catch (e) { return; }
-    if (!nativeIsArray(items)) return;
-    var chain = hostChain();
-    for (var p = 0; p < chain.length; p++) if (SA_POLICY.NEVER_LIVE.indexOf(chain[p]) >= 0) return;
-    for (var i = 0; i < items.length && i < SA_POLICY.LIVE_SCRIPTLET_MAX; i++) {
-      var it = items[i];
-      if (!it || typeof it !== "object") continue;
-      // Read once and materialise: a poisoned getter can't swap values between
-      // validation and execution.
-      var h = it.h, d = it.d;
-      if (typeof h !== "string" || h === "" || chain.indexOf(h) < 0) continue; // explicit host only
-      if (!nativeIsArray(d)) continue;
-      d = nativeSlice.call(d);   // native, so a page-replaced slice cannot split validate/execute
-      if (!directiveOk(d)) continue;
-      var key = nativeStringify(d);
-      if (liveSeen[key]) continue;                 // dedupe: re-delivery / replay
-      liveSeen[key] = true;
-      runDirective(d);
-    }
-  }
-  try {
-    // Capture listener on window: registered at document_start (before any
-    // page script), it fires before any document-level listener, and the page
-    // holds no reference to remove it. content.js dispatches on document; the
-    // capture phase runs regardless of `bubbles`.
-    window.addEventListener("sa-scriptlets", function (ev) {
-      try { applyLive(ev && ev.detail); } catch (e) {}
-    }, true);
-  } catch (e) {}
-
   // ---- bootstrap: baked directives — LAST, once every helper above is
   // initialised (var hoisting only hoists declarations; a helper used by an
   // IMPL but assigned later would be undefined here). Same synchronous tick.
   try {
     var chain = hostChain();
-    // uBO exceptions (["#@", name, …args]) anywhere on the host chain cancel that
-    // directive for this page, including one inherited from a parent domain.
+    var ekeys = entityKeys();
+    // uBO exceptions (["#@", name, …args]) anywhere on the host chain (or under one
+    // of this host's entity keys) cancel that directive for this page, including one
+    // inherited from a parent domain or an entity.
     var skip = Object.create(null);
-    for (var k = 0; EXTRA && k < chain.length; k++) {
-      var ex = chain[k] && EXTRA[chain[k]];
-      if (ex && nativeIsArray(ex)) for (var y = 0; y < ex.length; y++) {
-        if (nativeIsArray(ex[y]) && ex[y][0] === "#@") skip[nativeSlice.call(ex[y], 1).join("\u0001")] = 1;
-      }
-    }
-    for (var i = 0; i < chain.length; i++) {
-      var list = MAP[chain[i]];
-      if (list) for (var j = 0; j < list.length; j++) runDirective(list[j]);
-      var extra = EXTRA && chain[i] && EXTRA[chain[i]];
-      if (extra && nativeIsArray(extra)) {
-        for (var x = 0; x < extra.length; x++) {
-          var ed = extra[x];
-          if (!nativeIsArray(ed) || !ed.length || ed[0] === "#@" || skip[ed.join("\u0001")]) continue;
-          if (SA_POLICY.validateDirective(ed[0], nativeSlice.call(ed, 1), false)) runDirective(ed);
+    var collect = function (src, keys) {
+      for (var k = 0; src && k < keys.length; k++) {
+        var ex = keys[k] && src[keys[k]];
+        if (ex && nativeIsArray(ex)) for (var y = 0; y < ex.length; y++) {
+          if (nativeIsArray(ex[y]) && ex[y][0] === "#@") skip[nativeSlice.call(ex[y], 1).join("\u0001")] = 1;
         }
       }
+    };
+    collect(MAP, chain);
+    collect(MAP, ekeys);
+    collect(EXTRA, chain);
+    collect(ENT, ekeys);
+    var runData = function (list) {
+      if (!list || !nativeIsArray(list)) return;
+      for (var x = 0; x < list.length; x++) {
+        var ed = list[x];
+        if (!nativeIsArray(ed) || !ed.length || ed[0] === "#@" || skip[ed.join("\u0001")]) continue;
+        if (SA_POLICY.validateDirective(ed[0], nativeSlice.call(ed, 1), false)) runDirective(ed);
+      }
+    };
+    for (var i = 0; i < chain.length; i++) {
+      runData(MAP[chain[i]]);
+      if (EXTRA && chain[i]) runData(EXTRA[chain[i]]);
+    }
+    for (var e2 = 0; e2 < ekeys.length; e2++) {
+      runData(MAP[ekeys[e2]]);
+      if (ENT) runData(ENT[ekeys[e2]]);
     }
   } catch (e) {}
   // ---- popup / popunder blocker ------------------------------------------
@@ -961,6 +1619,7 @@ var SA_POLICY = (function () {
         } catch (e) {}
         return nativeOpen.apply(this, arguments);
       };
+      window.open = cloak(window.open, nativeOpen);
     }
   } catch (e) {}
 })();

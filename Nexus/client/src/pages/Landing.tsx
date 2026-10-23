@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Logo from '../components/Logo';
+import LandingDuel from '../components/LandingDuel';
+import LandingSetShowcase from '../components/LandingSetShowcase';
 import LandingEffects from '../components/LandingEffects';
 import CinematicIntro from '../components/CinematicIntro';
 import LanguageSelector from '../components/LanguageSelector';
@@ -79,6 +81,7 @@ export default function Landing(): React.ReactElement {
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute('content', loc.description);
   }, []);
+
   return (
     <div className="landing">
       {showIntro && <CinematicIntro onDone={() => setShowIntro(false)} />}
@@ -103,33 +106,39 @@ export default function Landing(): React.ReactElement {
         </div>
       </header>
 
-      {/* HERO — full-bleed video background instead of SVG sprites.
-          Drone aerial of Rhuddlan Castle (CC BY-SA 4.0, Wikimedia
-          Commons; see /assets/video/CREDITS.md). poster fallback for
-          autoplay-restricted iOS. */}
+      {/* HERO — „The Bard“, John Martin (1817), обществено достояние
+          (/assets/bg/CREDITS.md). Заменя дрон видеото на Rhuddlan: в кадъра
+          имаше модерен град и коли, които не се изрязваха. Статично <img> =
+          по-бърз LCP от видео; бавното приближаване е CSS (спира при
+          prefers-reduced-motion). */}
       <section className="hero hero-video">
-        <video
-          className="hero-video-bg"
-          src="/assets/video/hero.mp4"
-          poster="/assets/video/hero-poster.jpg"
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="metadata"
+        <img
+          className="hero-video-bg hero-painting"
+          src="/assets/bg/default.jpg"
+          alt=""
           aria-hidden
-        >
-          <source src="/assets/video/hero.webm" type="video/webm" />
-          <source src="/assets/video/hero.mp4"  type="video/mp4" />
-        </video>
+          fetchPriority="high"
+          decoding="async"
+        />
         <div className="hero-video-shade" aria-hidden />
         <div className="hero-video-vignette" aria-hidden />
+        {/* boy-език: лека мъгла по хоризонта + филмово зърно + "film slate"
+            HUD етикет (моно, hairline рамка) — кинематографичен слой без
+            тежко WebGL (CSS/SVG само, нулево влияние върху LCP). */}
+        <div className="hero-mist" aria-hidden />
+        <div className="hero-grain" aria-hidden />
+        {/* Скъсено — „Scene I · The Call" беше измислен филмов реквизит
+            (среднa точка + произволен номер на сцена, нищо реално). Единственият
+            останал ред е буквално вярно твърдение (сървърът наистина работи),
+            не декорация. */}
+        <div className="hero-slate" aria-hidden>
+          <span className="rec">{t('landing.slateLive')}</span>
+        </div>
 
         <div className="hero-content">
           <div className="hero-logo" data-parallax="20">
             <Logo size={120} />
           </div>
-          <div className="hero-eyebrow">{t('landing.heroEyebrow')}</div>
           <h1 className="hero-title">
             <SplitText text="Nexus Dominion" />
             <em><SplitText text={t('landing.heroTagline')} /></em>
@@ -141,8 +150,12 @@ export default function Landing(): React.ReactElement {
             <Link to="/register" className="btn btn-primary btn-hero">{t('landing.heroCtaPlay')}</Link>
             <a href="#features" className="btn btn-hero">{t('landing.heroCtaHow')}</a>
           </div>
+          {/* Трите факта от старото eyebrow чипче (браузър/безплатно/без
+              инсталация) — вече без pill+среднa точка, просто тиха реплика
+              под CTA-то, в тона на диегетичния slate. */}
+          <p className="hero-facts" data-reveal>{t('landing.heroEyebrow')}</p>
           <div className="hero-credit">
-            {t('landing.footageBy', { author: 'Llywelyn2000' })} · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">CC BY-SA 4.0</a>
+            {t('landing.artBy', { author: 'John Martin · Yale Center for British Art' })} · <a href="/assets/bg/CREDITS.md" target="_blank" rel="noreferrer">{t('landing.publicDomain', { defaultValue: 'Public domain' })}</a>
           </div>
         </div>
       </section>
@@ -150,63 +163,78 @@ export default function Landing(): React.ReactElement {
       {/* Stats strip */}
       <section className="stats-strip" data-reveal data-reveal-stagger>
         <Stat num="4" label={t('landing.statClasses')} />
-        <Stat num="8" label={t('landing.statSets')} />
+        <Stat num="58" label={t('landing.statSets')} />
         <Stat num="12+12" label={t('landing.statCosmetics')} />
         <Stat num="∞" label={t('landing.statGuildWars')} />
         <Stat num="3" label={t('landing.statRaidBosses')} />
         <Stat num="27" label={t('landing.statAchievements')} />
       </section>
 
-      {/* Features */}
-      <section id="features" className="section">
-        <div className="section-eyebrow" data-reveal>{t('landing.featuresEyebrow')}</div>
-        <h2 className="section-title" data-reveal>{t('landing.featuresTitle')}</h2>
-        <p className="section-lead" data-reveal>
-          {t('landing.featuresLead')}
-        </p>
-        <div className="feature-grid" data-reveal-stagger>
-          <FeatureCard iconSrc="/assets/icons/sword-t6.jpg" title={t('landing.featCombatTitle')}>
-            {t('landing.featCombatBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/shield-t6.jpg" title={t('landing.featGuildsTitle')}>
-            {t('landing.featGuildsBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/dagger-t4.jpg" title={t('landing.featQuestsTitle')}>
-            {t('landing.featQuestsBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-portal.jpg" title={t('landing.featDungeonsTitle')}>
-            {t('landing.featDungeonsBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/cloak-t8.jpg" title={t('landing.featCosmeticsTitle')}>
-            {t('landing.featCosmeticsBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/helm-t6.jpg" title={t('landing.featProfilesTitle')}>
-            {t('landing.featProfilesBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/bow-t6.jpg" title={t('landing.featHuntingTitle')}>
-            {t('landing.featHuntingBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/sword-t10.jpg" title={t('landing.featArenaTitle')}>
-            {t('landing.featArenaBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-flame.jpg" title={t('landing.featDailyTitle')}>
-            {t('landing.featDailyBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-vortex.jpg" title={t('landing.featWheelTitle')}>
-            {t('landing.featWheelBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/gem-t8.jpg" title={t('landing.featAchievementsTitle')}>
-            {t('landing.featAchievementsBody')}
-          </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/ring-t8.jpg" title={t('landing.featSetsTitle')}>
-            {t('landing.featSetsBody')}
-          </FeatureCard>
+      {/* Features — прегрупирани по ритъм на деня (не 12 еднакви карти 3×4,
+          виж PLAN.md „Twelve loops"): всяка група има ЕДНА водеща карта
+          (по-тежка) + 3 компактни реда, вместо еднаква тежест навсякъде.
+          Заглавният блок е ляво подравнен (асиметрия), не поредният
+          центриран stack. */}
+      <section id="features" className="section section-asym">
+        <div className="section-head-split" data-reveal>
+          <h2 className="section-title">{t('landing.featuresTitle')}</h2>
+          <p className="section-lead">{t('landing.featuresLead')}</p>
+        </div>
+        <div className="loop-groups" data-reveal-stagger>
+          <LoopGroup when={t('landing.loopQuick')}>
+            <FeatureCard lead iconSrc="/assets/icons/sword-t6.jpg" title={t('landing.featCombatTitle')}>
+              {t('landing.featCombatBody')}
+            </FeatureCard>
+            <CompactFeature iconSrc="/assets/icons/bow-t6.jpg" title={t('landing.featHuntingTitle')}>
+              {t('landing.featHuntingBody')}
+            </CompactFeature>
+            <CompactFeature iconSrc="/assets/icons/potion-green.jpg" title={t('landing.featDailyTitle')}>
+              {t('landing.featDailyBody')}
+            </CompactFeature>
+            <CompactFeature iconSrc="/assets/icons/potion-purple.jpg" title={t('landing.featWheelTitle')}>
+              {t('landing.featWheelBody')}
+            </CompactFeature>
+          </LoopGroup>
+
+          <LoopGroup when={t('landing.loopSession')}>
+            <FeatureCard lead iconSrc="/assets/icons/mace-t6.jpg" title={t('landing.featDungeonsTitle')}>
+              {t('landing.featDungeonsBody')}
+            </FeatureCard>
+            <CompactFeature iconSrc="/assets/icons/dagger-t4.jpg" title={t('landing.featQuestsTitle')}>
+              {t('landing.featQuestsBody')}
+            </CompactFeature>
+            <CompactFeature iconSrc="/assets/icons/sword-t10.jpg" title={t('landing.featArenaTitle')}>
+              {t('landing.featArenaBody')}
+            </CompactFeature>
+            <CompactFeature iconSrc="/assets/icons/helm-t6.jpg" title={t('landing.featProfilesTitle')}>
+              {t('landing.featProfilesBody')}
+            </CompactFeature>
+          </LoopGroup>
+
+          <LoopGroup when={t('landing.loopLong')}>
+            <FeatureCard lead iconSrc="/assets/icons/shield-t6.jpg" title={t('landing.featGuildsTitle')}>
+              {t('landing.featGuildsBody')}
+            </FeatureCard>
+            <CompactFeature iconSrc="/assets/icons/cloak-t8.jpg" title={t('landing.featCosmeticsTitle')}>
+              {t('landing.featCosmeticsBody')}
+            </CompactFeature>
+            <CompactFeature iconSrc="/assets/icons/gem-t8.jpg" title={t('landing.featAchievementsTitle')}>
+              {t('landing.featAchievementsBody')}
+            </CompactFeature>
+            <CompactFeature iconSrc="/assets/icons/ring-t8.jpg" title={t('landing.featSetsTitle')}>
+              {t('landing.featSetsBody')}
+            </CompactFeature>
+          </LoopGroup>
         </div>
       </section>
 
+      {/* Живият двубой — най-запомнящото се нещо в играта (новият боен
+          двигател, boy-езикът). Мързеливо: нищо тежко се качва преди клик,
+          виж LandingDuel.tsx (IntersectionObserver + постер + бутон). */}
+      <LandingDuel />
+
       {/* Classes */}
       <section id="classes" className="section">
-        <div className="section-eyebrow" data-reveal>{t('landing.classesEyebrow')}</div>
         <h2 className="section-title" data-reveal>{t('landing.classesTitle')}</h2>
         <p className="section-lead" data-reveal>
           {t('landing.classesLead')}
@@ -221,12 +249,16 @@ export default function Landing(): React.ReactElement {
 
       {/* Item Sets — имената на комплектите са игрови данни и не се превеждат. */}
       <section id="sets" className="section">
-        <div className="section-eyebrow" data-reveal>{t('landing.setsEyebrow')}</div>
         <h2 className="section-title" data-reveal>{t('landing.setsTitle')}</h2>
         <p className="section-lead" data-reveal>
           {t('landing.setsLead')}
         </p>
-        <div className="set-grid" data-reveal-stagger>
+        {/* Втора 3D точка — „завърти рицаря" (виж LandingSetShowcase.tsx),
+            бутонът, не картата, е тежкото тук. Old set-grid по-долу става
+            тих вторичен списък (radius-md вместо -lg), а не повторение на
+            същото внимание. */}
+        <LandingSetShowcase />
+        <div className="set-grid set-grid-secondary" data-reveal-stagger>
           <SetCard rarity="common"    name="Wayfarer's Garb"     tier={t('landing.setWayfarerTier')}  iconSrc="/assets/icons/boots-t1.jpg"  lore={t('landing.setWayfarerLore')} bonuses={[['2', '+8 HP, +1 DEX'], ['4', '+18 HP, +2 DEX, +2 DEF']]} />
           <SetCard rarity="uncommon"  name="Ironguard Plate"     tier={t('landing.setIronguardTier')} iconSrc="/assets/icons/armor-t2.jpg"  lore={t('landing.setIronguardLore')} bonuses={[['2', '+25 HP, +2 STR'], ['4', '+55 HP, +6 DEF, +3 STR'], ['6', '+100 HP, +12 DEF, +5 STR, +4 ATK']]} />
           <SetCard rarity="uncommon"  name="Sylvan Marshal"      tier={t('landing.setSylvanTier')}    iconSrc="/assets/icons/bow-t2.jpg"    lore={t('landing.setSylvanLore')} bonuses={[['2', '+3 DEX, +3% Crit'], ['4', '+5 DEX, +4% Dodge, +3 ATK']]} />
@@ -240,55 +272,54 @@ export default function Landing(): React.ReactElement {
 
       {/* Endgame loops */}
       <section id="endgame" className="section">
-        <div className="section-eyebrow" data-reveal>{t('landing.endgameEyebrow')}</div>
         <h2 className="section-title" data-reveal>{t('landing.endgameTitle')}</h2>
         <p className="section-lead" data-reveal>
           {t('landing.endgameLead')}
         </p>
         <div className="feature-grid" data-reveal-stagger>
-          <FeatureCard iconSrc="/assets/icons/monster-dragon.jpg" title={t('landing.egRealmBossTitle')}>
+          <FeatureCard iconSrc="/assets/icons/axe-t10.jpg" title={t('landing.egRealmBossTitle')}>
             {t('landing.egRealmBossBody')}
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-coin.jpg" title={t('landing.egFactionTitle')}>
+          <FeatureCard iconSrc="/assets/icons/boots-t6.jpg" title={t('landing.egFactionTitle')}>
             {t('landing.egFactionBody')}
           </FeatureCard>
           <FeatureCard iconSrc="/assets/icons/sword-t10.jpg" title={t('landing.egApexTitle')}>
             {t('landing.egApexBody')}
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-flame.jpg" title={t('landing.egTowerTitle')}>
+          <FeatureCard iconSrc="/assets/icons/staff-t8.jpg" title={t('landing.egTowerTitle')}>
             {t('landing.egTowerBody')}
           </FeatureCard>
           <FeatureCard iconSrc="/assets/icons/gem-t8.jpg" title={t('landing.egCacheTitle')}>
             {t('landing.egCacheBody')}
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-vortex.jpg" title={t('landing.egAuctionTitle')}>
+          <FeatureCard iconSrc="/assets/icons/ring-t9.jpg" title={t('landing.egAuctionTitle')}>
             {t('landing.egAuctionBody')}
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-portal.jpg" title={t('landing.egMythicTitle')}>
+          <FeatureCard iconSrc="/assets/icons/axe-t9.jpg" title={t('landing.egMythicTitle')}>
             {t('landing.egMythicBody')}
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-flame.jpg" title={t('landing.egEventsTitle')}>
+          <FeatureCard iconSrc="/assets/icons/potion-red.jpg" title={t('landing.egEventsTitle')}>
             {t('landing.egEventsBody')}
           </FeatureCard>
         </div>
       </section>
 
       {/* Mid-page rhythm break — second cinematic plate.
-          Working blacksmith at Möhkö Ironworks (CC BY 3.0, Wikimedia
-          Commons; see /assets/video/CREDITS.md). 21:9 stripe so it
-          reads as a band, not a second hero. Looped, muted, no audio
-          decoded. */}
+          БЪГ (докладван визуално): предишният клип показваше модерен мъж с
+          тениска в тухлена работилница — чупи потапянето в средновековния
+          сетинг. Заменено с "The Forge of Vulcan" (Диего Веласкес, 1630,
+          Museo del Prado) — платно с обществено достояние, вече в репото
+          (/assets/icons/icon-anvil.jpg, виж CREDITS.md), тематично точно за
+          раздел "The Forge". 21:9 лента, статично изображение — по-леко от
+          видео и без риск от нов „модерен“ кадър при loop. */}
       <section className="forge-band" aria-label={t('landing.forgeName')}>
-        <video
+        <img
           className="forge-band-bg"
-          src="/assets/video/forge.mp4"
-          poster="/assets/video/forge-poster.jpg"
-          autoPlay loop muted playsInline preload="metadata"
+          src="/assets/icons/icon-anvil.jpg"
+          alt=""
+          loading="lazy"
           aria-hidden
-        >
-          <source src="/assets/video/forge.webm" type="video/webm" />
-          <source src="/assets/video/forge.mp4"  type="video/mp4" />
-        </video>
+        />
         <div className="forge-band-shade" aria-hidden />
         <div className="forge-band-copy">
           <div className="section-eyebrow">{t('landing.forgeName')}</div>
@@ -297,14 +328,13 @@ export default function Landing(): React.ReactElement {
             {t('landing.forgeLead')}
           </p>
           <div className="forge-band-credit">
-            {t('landing.footageBy', { author: 'Antti Makkonen' })} · <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noreferrer">CC BY 3.0</a>
+            {t('landing.artBy', { author: 'Diego Velázquez · Museo del Prado' })} · <a href="https://commons.wikimedia.org/wiki/Category:La_Fragua_de_Vulcano" target="_blank" rel="noreferrer">{t('landing.publicDomain', { defaultValue: 'Public domain' })}</a>
           </div>
         </div>
       </section>
 
       {/* Guilds */}
-      <section id="guilds" className="section">
-        <div className="section-eyebrow" data-reveal>{t('landing.guildsEyebrow')}</div>
+      <section id="guilds" className="section" data-tone="steel">
         <h2 className="section-title" data-reveal>{t('landing.guildsTitle')}</h2>
         <p className="section-lead" data-reveal>
           {t('landing.guildsLead')}
@@ -319,21 +349,20 @@ export default function Landing(): React.ReactElement {
           <FeatureCard iconSrc="/assets/icons/axe-t7.jpg" title={t('landing.gWarsTitle')}>
             {t('landing.gWarsBody')}
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/monster-dragon.jpg" title={t('landing.gRaidsTitle')}>
+          <FeatureCard iconSrc="/assets/icons/mace-t8.jpg" title={t('landing.gRaidsTitle')}>
             {t('landing.gRaidsBody')}
           </FeatureCard>
           <FeatureCard iconSrc="/assets/icons/shield-t10.jpg" title={t('landing.gCrestTitle')}>
             {t('landing.gCrestBody')}
           </FeatureCard>
-          <FeatureCard iconSrc="/assets/icons/icon-coin.jpg" title={t('landing.gTreasuryTitle')}>
+          <FeatureCard iconSrc="/assets/icons/gem-t9.jpg" title={t('landing.gTreasuryTitle')}>
             {t('landing.gTreasuryBody')}
           </FeatureCard>
         </div>
       </section>
 
       {/* World — имената на регионите са игрови данни и не се превеждат. */}
-      <section id="world" className="section">
-        <div className="section-eyebrow" data-reveal>{t('landing.worldEyebrow')}</div>
+      <section id="world" className="section" data-tone="steel">
         <h2 className="section-title" data-reveal>{t('landing.worldTitle')}</h2>
         <p className="section-lead" data-reveal>
           {t('landing.worldLead')}
@@ -355,13 +384,20 @@ export default function Landing(): React.ReactElement {
           <RegionCard color="#a0b8d0" art="/assets/regions/crystal_caverns.jpg"  name="Mooncradle"        range="Lv 261 – 290">{t('landing.regionMooncradleBody')}</RegionCard>
           <RegionCard color="#8a6a3a" art="/assets/regions/ashen_wastes.jpg"     name="The Worldspine"    range="Lv 291 – 320">{t('landing.regionWorldspineBody')}</RegionCard>
           <RegionCard color="#1a1a1a" art="/assets/regions/shadowfell.jpg"       name="The Eternal Throne" range="Lv 321 – 350">{t('landing.regionEternalBody')}</RegionCard>
-          <RegionCard color="#fff1b8" art="/assets/regions/shadowfell.jpg"       name="Beyond the End"     range="Lv 351 – 500">{t('landing.regionBeyondBody')}</RegionCard>
+          {/* Последните 5 от 21-те реални региона (server/src/seed/monsters.ts
+              REGION_BANDS) — заместват старата измислена сборна карта „Beyond
+              the End“ (Lv 351–500), която не отговаряше на нито едно истинско
+              владение. Виж PLAN.md „Факти" (втори проход). */}
+          <RegionCard color="#5a4a5a" art="/assets/regions/shadowfell.jpg"       name="The Ashen Veil"    range="Lv 351 – 381">{t('landing.regionAshenVeilBody')}</RegionCard>
+          <RegionCard color="#4a2a7a" art="/assets/regions/crystal_caverns.jpg"  name="Starfall Abyss"    range="Lv 381 – 411">{t('landing.regionStarfallBody')}</RegionCard>
+          <RegionCard color="#c78a2a" art="/assets/regions/ashen_wastes.jpg"     name="The Forge of Dawn" range="Lv 411 – 441">{t('landing.regionForgeOfDawnBody')}</RegionCard>
+          <RegionCard color="#3a0a14" art="/assets/regions/shadowfell.jpg"       name="Crown of Night"    range="Lv 441 – 471">{t('landing.regionCrownOfNightBody')}</RegionCard>
+          <RegionCard color="#f0e2b6" art="/assets/regions/crystal_caverns.jpg"  name="The First Light"   range="Lv 471 – 501">{t('landing.regionFirstLightBody')}</RegionCard>
         </div>
       </section>
 
       {/* Roadmap */}
       <section id="roadmap" className="section">
-        <div className="section-eyebrow" data-reveal>{t('landing.roadmapEyebrow')}</div>
         <h2 className="section-title" data-reveal>{t('landing.roadmapTitle')}</h2>
         <div className="roadmap-track" data-reveal>
           <RoadmapStop state="shipped" when={t('landing.whenShipped')} what={t('landing.rmCoreTitle')}>
@@ -453,15 +489,46 @@ function Stat({ num, label }: { num: string; label: string }) {
   );
 }
 
-function FeatureCard({ iconSrc, title, children }: { iconSrc: string; title: string; children: React.ReactNode }) {
+function FeatureCard({ iconSrc, title, children, lead }: { iconSrc: string; title: string; children: React.ReactNode; lead?: boolean }) {
   const { t } = useTranslation();
   return (
-    <div className="feature-card" data-tilt>
+    <div className={`feature-card${lead ? ' feature-card-lead' : ''}`} data-tilt>
       <div className="feature-icon feature-icon-img">
         <img src={iconSrc} alt={t('landing.iconAlt', { title })} loading="lazy" />
       </div>
       <h3 className="feature-title">{title}</h3>
       <p className="feature-desc">{children}</p>
+    </div>
+  );
+}
+
+/** Компактен ред за вторичните 3 в група (виж LoopGroup) — една снимка+ред
+    текст, не пълна карта; носи тежестта надолу от водещата FeatureCard. */
+function CompactFeature({ iconSrc, title, children }: { iconSrc: string; title: string; children: React.ReactNode }) {
+  const { t } = useTranslation();
+  return (
+    <div className="loop-compact">
+      <img className="loop-compact-icon" src={iconSrc} alt={t('landing.iconAlt', { title })} loading="lazy" />
+      <div className="loop-compact-body">
+        <h4>{title}</h4>
+        <p>{children}</p>
+      </div>
+    </div>
+  );
+}
+
+/** Група по ритъм на деня — първото дете е водещата (по-тежка) карта,
+    останалите се редят като компактен списък до нея. Виж PLAN.md
+    „Twelve loops" (втори проход) — не 12 еднакви карти 3×4. */
+function LoopGroup({ when, children }: { when: string; children: React.ReactNode }) {
+  const items = React.Children.toArray(children);
+  return (
+    <div className="loop-group">
+      <div className="loop-group-when">{when}</div>
+      <div className="loop-group-grid">
+        {items[0]}
+        <div className="loop-compact-list">{items.slice(1)}</div>
+      </div>
     </div>
   );
 }

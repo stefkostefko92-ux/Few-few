@@ -35,10 +35,25 @@
         title: opts.title || I18n.t('extName'),
         message: opts.message,
         level: opts.level,
+        desktop: opts.desktop,          // false -> webhooks only, no Chrome popup
+        heroKey: Storage.heroKey(),     // this hero's own alert settings
         fields: fields.concat(opts.fields || [])
       }).catch(() => {});
     } catch (_) {}
   };
+
+  // Bind this tab to its hero ("<server>:<name>") once the name is known.
+  async function ensureHero() {
+    const s = State.get();
+    if (Storage.heroKey() || !s.name) return;
+    const server = serverLabel();
+    const key = `${server}:${String(s.name).slice(0, 64)}`;
+    const r = await Storage.bindHero(key, String(s.name), server);
+    if (!r) return;
+    Logger.info(I18n.t(r.isNew ? 'logHeroNew' : 'logHeroSettings', [String(s.name)]));
+    Panel.refreshModules();
+    Scheduler.nudge();
+  }
 
   async function boot() {
     await Storage.load();
@@ -55,19 +70,25 @@
     // Once the gateway + session are discovered, mark logged in, pull the first
     // resource snapshot and optionally auto-start the engine.
     let primed = false;
+    // Read BEFORE the session is up: the page may first show the login screen,
+    // and the flag has to survive until the player is actually back in.
+    const resumeAfterReload = TB.Autologin ? TB.Autologin.peekResume() : false;
     Bridge.onContext((ctx) => {
       if (!primed && ctx && ctx.url && ctx.hasSession) {
         primed = true;
         State.patch({ loggedIn: true });
         Logger.success(I18n.t('logProtocolReady'));
         Api.refresh().catch(() => {});
-        // Pull the character identity (name / guild / level) so notifications
-        // can name the hero even before any activity runs.
-        Api.getUserAttributes().catch(() => {});
-        if ((Storage.section('general') || {}).startOnLoad) {
-          Logger.info(I18n.t('logAutoStart'));
-          Scheduler.start();
-        }
+        // Pull the character identity (name / guild / level), switch to THIS
+        // hero's own saved settings, and only then decide whether to start -
+        // so every hero runs with his settings from the very first action.
+        if (resumeAfterReload) TB.Autologin.clearResume();
+        Api.getUserAttributes().catch(() => {}).then(ensureHero).then(() => {
+          if ((Storage.section('general') || {}).startOnLoad || resumeAfterReload) {
+            Logger.info(I18n.t('logAutoStart'));
+            Scheduler.start();
+          }
+        });
       }
     });
 
@@ -78,8 +99,22 @@
     // the panel. Without this, modules see a stale gold value (e.g. right after
     // an adventure reward) and wrongly decide "not enough gold". Only polls
     // while the engine is actually running, so an idle Tanoth tab stays quiet.
+    // Every 5 minutes also re-read the character (name / guild / level): it is
+    // the only source of the level, so without this level-up alerts and the
+    // "Lv" in notifications only ever updated when training ran.
+    let lastCharAt = Date.now();
     setInterval(() => {
-      if (Bridge.ready() && Scheduler.isRunning()) Api.refresh().catch(() => {});
+      if (!(Bridge.ready() && Scheduler.isRunning())) return;
+      const before = State.get();
+      const was = { at: before.adventureReturnAt || 0, gold: before.gold };
+      Api.refresh().then(() => {
+        const now = State.get();
+        // A task ended earlier / a new timer appeared, or gold changed: let the
+        // scheduler re-plan instead of sleeping on a stale timer.
+        // (the task end is recomputed as now + remaining, so allow a little drift)
+        if (Math.abs((now.adventureReturnAt || 0) - was.at) > 2000 || now.gold !== was.gold) Scheduler.nudge();
+      }).catch(() => {});
+      if (Date.now() - lastCharAt >= 5 * 60000) { lastCharAt = Date.now(); Api.getUserAttributes().then(ensureHero).catch(() => {}); }
     }, 30000);
 
     // Optional periodic activity report to the webhooks (0 = off): tells you
@@ -87,17 +122,17 @@
     let lastStatusAt = 0;
     setInterval(() => {
       if (!Bridge.ready() || !Scheduler.isRunning()) return;
-      const g = Storage.section('general') || {};
       const w = Storage.section('webhooks') || {};
       const mins = Number(w.statusMinutes) || 0;
-      if (!g.notifications || mins <= 0) return;
+      if (mins <= 0) return;
       if (Date.now() - lastStatusAt < mins * 60000) return;
       lastStatusAt = Date.now();
       const st = State.get();
       const fields = [];
       if (st.gold != null) fields.push({ name: I18n.t('nfGold'), value: String(st.gold), inline: true });
       if (st.freeAdventures != null) fields.push({ name: I18n.t('statAdventures'), value: String(st.freeAdventures), inline: true });
-      TB.notify({ message: I18n.t('notifyStatus'), level: 'info', fields });
+      // Periodic status is a webhook-only report (no Chrome popups).
+      TB.notify({ message: I18n.t('notifyStatus'), level: 'info', desktop: false, fields });
     }, 60000);
 
     // Orphan check: when the extension is reloaded/updated, this copy of the
@@ -131,10 +166,16 @@
         return false;
 
       case 'SETTINGS_UPDATED':
+        // Only the settings of the hero this tab runs (or the shared defaults
+        // while the hero is still unknown). Another hero's change is ignored.
+        if ((msg.heroKey || null) !== (Storage.heroKey() || null)) { sendResponse({ ok: true, ignored: true }); return false; }
         Storage._set(msg.settings);
         if ((Storage.section('general') || {}).enabled === false && Scheduler.isRunning()) {
           Scheduler.stop(I18n.t('logMasterOff'));
         }
+        // New settings (module on/off, interval, active hours) take effect now,
+        // not at the next planned wake.
+        Scheduler.nudge();
         Panel.refreshModules();
         sendResponse({ ok: true });
         return false;
@@ -143,6 +184,7 @@
         sendResponse({
           ok: true,
           status: Scheduler.status(),
+          heroKey: Storage.heroKey(),
           state: {
             loggedIn: State.get().loggedIn,
             name: State.get().name,

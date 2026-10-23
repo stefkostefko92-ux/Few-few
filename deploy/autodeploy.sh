@@ -21,7 +21,7 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -30,7 +30,9 @@ KEEP_RELEASES="${KEEP_RELEASES:-5}"
 # medqr (systemd модел)
 MEDQR_DIR="${MEDQR_DIR:-/opt/medqr}"
 MEDQR_SERVICE="${MEDQR_SERVICE:-medqr}"
-MEDQR_HEALTH_URL="${MEDQR_HEALTH_URL:-http://127.0.0.1:3000/}"
+MEDQR_HEALTH_URL="${MEDQR_HEALTH_URL:-http://127.0.0.1:3000/healthz}"
+# Маркер за идентичност: „/“ зад HTTPS редиректа даваше 308 и гейтът минаваше за всеки процес на порта.
+MEDQR_HEALTH_EXPECT="${MEDQR_HEALTH_EXPECT:-\"app\":\"medqr\"}"
 
 # ВНИМАНИЕ за всяко присвояване по-долу, което чете ПО ИЗБОР налична стойност:
 # `X="$(cmd 2>/dev/null | head -1)"` при `set -euo pipefail` УБИВА скрипта, ако
@@ -51,6 +53,10 @@ VIZITKA_PORT="${VIZITKA_PORT:-$(sed -n 's/^PORT=//p' /etc/vizitka/vizitka.env 2>
 VIZITKA_PORT="${VIZITKA_PORT:-3105}"
 # /healthz връща и ИМЕТО на приложението — само код 200 не доказва кой отговаря.
 VIZITKA_HEALTH_URL="${VIZITKA_HEALTH_URL:-http://127.0.0.1:${VIZITKA_PORT}/healthz}"
+# node-ът, с който тръгва услугата (ExecStart в vizitka.service) — с него се проверява
+# нативният модул след npm ci.
+VIZITKA_NODE="${VIZITKA_NODE:-$(sed -n 's#^ExecStart=\([^ ]*node\) .*#\1#p' /etc/systemd/system/vizitka.service 2>/dev/null | head -1 || true)}"
+VIZITKA_NODE="${VIZITKA_NODE:-/usr/bin/node}"
 
 # panev (Panev Ascensori — systemd модел, като medqr/vizitka). Express сервира
 # предварително генерираните статични страници (корен + en/ + bg/) + /api/contact
@@ -82,7 +88,17 @@ NEXUS_HEALTH_URL="${NEXUS_HEALTH_URL:-http://127.0.0.1:4000/api/health}"
 # zabobovdol (Docker Compose модел) — портът се авто-засича от неговия .env (HTTP_PORT),
 # освен ако ZBD_HEALTH_URL не е зададен изрично.
 ZBD_HEALTH_URL_SET="${ZBD_HEALTH_URL:+1}"
-ZBD_HEALTH_URL="${ZBD_HEALTH_URL:-http://127.0.0.1:80/}"
+# /api/health прави SELECT 1 към базата и връща {"ok":true}. Докато сондата гледаше „/“, 200 от
+# страница, рендирана без база (или от ДРУГО приложение на порта), минаваше за жив деплой.
+ZBD_HEALTH_URL="${ZBD_HEALTH_URL:-http://127.0.0.1:80/api/health}"
+ZBD_HEALTH_EXPECT='"ok":true'
+# СТАБИЛЕН дом на тайните на zabobovdol, ИЗВЪН releases/ (600). Реалният риск: .env се пренасяше
+# само от `current`; ако липсва (current сочи release без zabobovdol), setup-env.sh генерираше НОВ
+# POSTGRES_PASSWORD, който не пасва на съществуващата база → продукцията пада след миграцията.
+ZBD_ENV="${ZBD_ENV:-/opt/few-few/shared/zabobovdol/.env}"
+ZBD_BACKUPS="${ZBD_BACKUPS:-/opt/few-few/shared/zabobovdol/backups}"
+ZBD_SITE="${ZBD_SITE:-https://zabobovdol.carbonstealth.eu}"
+ZBD_INDEXNOW="${ZBD_INDEXNOW:-1}"
 FORCE_SEED="${FORCE_SEED:-0}"
 
 # mastilko (systemd модел, като medqr) — Next.js, билд на сървъра, порт 3200
@@ -132,6 +148,14 @@ PIUMA_HEALTH_URL="${PIUMA_HEALTH_URL:-http://127.0.0.1:4310/health}"
 # сочи към release без piuma/, тоест „пренеси от текущия" няма откъде; без този път
 # инструкцията „сложи го в current/piuma/.env" сочеше папка, която още не съществува.
 PIUMA_ENV="${PIUMA_ENV:-/opt/few-few/shared/piuma/.env}"
+
+# korpora (Korpora — Docker Compose: db + app на 127.0.0.1:4320 зад nginx на хоста). Стъпките са
+# в korpora/deploy/deploy.sh — същият скрипт и за ръчния деплой, затова двата пътя не се разминават:
+# тайните от /opt/few-few/shared/korpora/.env, бекъп преди миграция, сонда с маркер, vhost-ът от
+# репото, IndexNow при променен sitemap. Тук остава откатът: пътят на последния release, който е
+# отговорил, стои на стабилно място извън releases/ (чистенето в т. 4 не трие този release).
+KORPORA_SHARED="${KORPORA_SHARED:-/opt/few-few/shared/korpora}"
+KORPORA_LAST_GOOD="${KORPORA_LAST_GOOD:-$KORPORA_SHARED/last-good}"
 
 # vps-dashboard (Carbon Stealth VPS Dashboard — systemd, Node ≥20, нула runtime
 # зависимости). Панелът управлява СЪРВЪРА → върви като root (виж service unit-а),
@@ -258,18 +282,98 @@ carry_env() {
 }
 
 # ── 3a) zabobovdol — Docker Compose ───────────────────────────────────────────
+# Откъде да дойде .env: стабилният дом → current → най-новият release, който го има. Печата пътя.
+zbd_env_source() {
+  local cand
+  for cand in "$ZBD_ENV" "$CURRENT_LINK/zabobovdol/.env"; do
+    if [ -f "$cand" ]; then printf '%s\n' "$cand"; return 0; fi
+  done
+  cand="$(find "$RELEASES_DIR" -maxdepth 4 -path '*/zabobovdol/.env' 2>/dev/null | sort -r | head -1 || true)"
+  [ -n "$cand" ] || return 1
+  printf '%s\n' "$cand"
+}
+
+# Има ли следи от съществуваща инсталация (дъмп или Docker volume)? Тогава нов .env е ОПАСЕН.
+zbd_has_data() {
+  # Всеки шаблон поотделно: `ls a b c` пада, ако дори един няма съвпадение — тогава наличен .dump
+  # не се виждаше и скриптът генерираше нови тайни (хванато от autodeploy-zbd.test.mjs).
+  # Всеки непразен видим файл е следа: backup-db.sh пише *.sql.gz.age / *.sql.gz.gpg, а тесен глоб
+  # (.dump/.sql/.sql.gz) ги пропускаше → нови тайни при миграция (Разбивача, 2026-09-24).
+  # Търси се рекурсивно и през симлинкове (поддиректории, скрити файлове); само *.partial
+  # (незавършен запис от backup-db.sh) не се брои (Разбивача, мисия 4).
+  if [ -d "$ZBD_BACKUPS" ] && [ -n "$(find -L "$ZBD_BACKUPS" -type f -size +0 ! -name '*.partial' -print -quit 2>/dev/null)" ]; then
+    return 0
+  fi
+  # Неуспешна проверка = „има данни“: спрян Docker демон не бива да води до нови тайни.
+  if command -v docker >/dev/null 2>&1; then
+    local vols
+    vols="$(docker volume ls -q 2>/dev/null)" || return 0
+    printf '%s\n' "$vols" | grep -q 'zabobovdol' && return 0
+  fi
+  return 1
+}
+
+# Огледай .env в стабилния дом (600). Идемпотентно; никога не печата съдържание.
+zbd_persist_env() {
+  local from="$1"
+  [ -f "$from" ] || return 0
+  install -d -m 700 "$(dirname "$ZBD_ENV")"
+  cmp -s "$from" "$ZBD_ENV" 2>/dev/null || cp -a "$from" "$ZBD_ENV"
+  chmod 600 "$ZBD_ENV"
+}
+
+# URL-ът на сондата: изричният ZBD_HEALTH_URL побеждава; иначе портът от .env (HTTP_PORT).
+zbd_health_url() {
+  local envf="$1" p
+  if [ -z "${ZBD_HEALTH_URL_SET:-}" ] && [ -f "$envf" ]; then
+    p="$(grep -E '^HTTP_PORT=' "$envf" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9' || true)"
+    [ -n "$p" ] && { printf 'http://127.0.0.1:%s/api/health\n' "$p"; return 0; }
+  fi
+  printf '%s\n' "$ZBD_HEALTH_URL"
+}
+
+# Откат САМО на кода: вдига предишния release на zabobovdol със същото compose име. Базата не се
+# пипа — миграциите са адитивни по правило (prisma-migrate skill), значи старият код работи с нея.
+zbd_rollback() {
+  local prev="$1"
+  [ -n "$prev" ] && [ -d "$prev" ] || { warn "zabobovdol: няма предишен release за откат — оставям както е."; return 1; }
+  warn "zabobovdol: връщам предишния код ($prev)…"
+  ( cd "$prev" && if docker compose version >/dev/null 2>&1; then docker compose up -d --build; else docker-compose up -d --build; fi ) \
+    || { warn "zabobovdol: откатът не вдигна предишния код — нужен е човек."; return 1; }
+  return 0
+}
+
+zbd_ping_indexnow() {
+  [ "$ZBD_INDEXNOW" = "1" ] || return 0
+  ( cd "$SRC" && node tools/seo/indexnow.mjs "$ZBD_SITE" --key-location "$ZBD_SITE/indexnow-key.txt" ) \
+    || warn "zabobovdol: IndexNow подаването пропадна — не е фатално (ключът се сервира от /indexnow-key.txt)."
+}
+
 deploy_zabobovdol() {
   local d="$SRC/zabobovdol"
   [ -d "$d" ] || { warn "Няма zabobovdol/ в архива — пропускам."; return; }
   log "Разгръщам zabobovdol (Docker Compose)…"
-  # Пренеси съществуващия .env (тайните живеят на сървъра, не в архива).
-  carry_env zabobovdol "$d"
+  # Предишният работещ код (за откат) — current още сочи стария release, мести се само при успех.
+  local prev=""
+  [ -d "$CURRENT_LINK/zabobovdol" ] && prev="$(readlink -f "$CURRENT_LINK/zabobovdol" || true)"
+  [ "$prev" = "$(readlink -f "$d")" ] && prev=""
+  # Тайните живеят на сървъра, не в архива: стабилен дом → current → най-нов release.
+  if [ ! -f "$d/.env" ]; then
+    local src_env; src_env="$(zbd_env_source || true)"
+    if [ -n "$src_env" ]; then
+      cp -a "$src_env" "$d/.env"; chmod 600 "$d/.env"; ok "Пренесох zabobovdol/.env"
+    elif zbd_has_data; then
+      # Fail closed: нов .env = нова парола за СЪЩЕСТВУВАЩА база → продукцията пада.
+      warn "zabobovdol: .env липсва навсякъде, а има данни от предишна инсталация — НЕ генерирам нови тайни. Възстанови $ZBD_ENV (600) и пусни пак."
+      deploy_failed=1; return
+    fi
+  fi
   # Бекъпите живеят на СТАБИЛЕН път извън releases — иначе умират с прочистването
   # на старите releases (KEEP_RELEASES) и историята се губи при всеки деплой.
-  mkdir -p /opt/few-few/shared/zabobovdol/backups
+  mkdir -p "$ZBD_BACKUPS"
   rm -rf "$d/backups"
-  ln -sfnT /opt/few-few/shared/zabobovdol/backups "$d/backups"
-  ok "zabobovdol/backups -> /opt/few-few/shared/zabobovdol/backups"
+  ln -sfnT "$ZBD_BACKUPS" "$d/backups"
+  ok "zabobovdol/backups -> $ZBD_BACKUPS"
   # `|| { … return; }` НЕ е украса: скриптът върви под `set -euo pipefail`, значи
   # ненулев изход от subshell-а убива ЦЕЛИЯ autodeploy насред пробега — всички
   # следващи проекти в $PROJECTS остават неразгърнати, symlink-ът и резюмето се
@@ -280,18 +384,18 @@ deploy_zabobovdol() {
       local args=(); [ "$FORCE_SEED" = "1" ] && args+=(--seed)
       bash scripts/deploy.sh "${args[@]}"        # строи, вдига и сийдва (1-ви път)
     else
-      warn "Няма zabobovdol/.env — пускам setup-env.sh интерактивно."
+      warn "Няма zabobovdol/.env и няма следи от данни — първа инсталация: пускам setup-env.sh."
       bash scripts/setup-env.sh && bash scripts/deploy.sh
     fi
-  ) || { warn "zabobovdol: deploy.sh се провали — продължавам с останалите проекти."; deploy_failed=1; return; }
-  carry_env zabobovdol "$d"   # .env от интерактивния setup → стабилния път
-  # Авто-засичане на порта от .env (HTTP_PORT), освен ако не е зададен изрично.
-  local url="$ZBD_HEALTH_URL"
-  if [ -z "${ZBD_HEALTH_URL_SET:-}" ] && [ -f "$d/.env" ]; then
-    local p; p="$(grep -E '^HTTP_PORT=' "$d/.env" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9' || true)"
-    [ -n "$p" ] && url="http://127.0.0.1:${p}/"
+  ) || { warn "zabobovdol: deploy.sh се провали — продължавам с останалите проекти."; zbd_rollback "$prev" || true; deploy_failed=1; return; }
+  zbd_persist_env "$d/.env"
+  local url; url="$(zbd_health_url "$d/.env")"
+  if health "$url" "zabobovdol" "$ZBD_HEALTH_EXPECT"; then
+    zbd_ping_indexnow
+  else
+    zbd_rollback "$prev" && health "$(zbd_health_url "$prev/.env")" "zabobovdol (предишен код)" "$ZBD_HEALTH_EXPECT" || true
+    deploy_failed=1
   fi
-  health "$url" "zabobovdol" || deploy_failed=1
 }
 
 # ── 3b) medqr — systemd ───────────────────────────────────────────────────────
@@ -318,9 +422,11 @@ deploy_medqr() {
     sudo -u medqr sqlite3 "$db" ".backup '$dbbak'" || cp -a "$db" "$dbbak"
     log "Снимка на базата преди миграция: $dbbak"
   fi
-  systemctl restart "$MEDQR_SERVICE"
+  # Провал на рестарта решава health check-ът долу (той води до отката) — иначе
+  # set -e прекратява целия пробег ПРЕДИ отката. (одит 25.09.2026)
+  systemctl restart "$MEDQR_SERVICE" || warn "medqr: restart върна грешка — решава health check-ът."
   sleep 2
-  if health "$MEDQR_HEALTH_URL" "medqr"; then
+  if health "$MEDQR_HEALTH_URL" "medqr" "$MEDQR_HEALTH_EXPECT"; then
     rm -rf "${MEDQR_DIR}.bak-$TS"
     # Пазим последните няколко pre-миграционни снимки; чистим по-старите.
     ls -1t "${db}".pre-* 2>/dev/null | tail -n +6 | xargs -r rm -f || true
@@ -347,7 +453,7 @@ medqr_rollback() {
     rsync -a --delete --exclude data/ "${MEDQR_DIR}.bak-$TS"/ "$MEDQR_DIR"/
     chown -R medqr:medqr "$MEDQR_DIR"
   fi
-  systemctl restart "$MEDQR_SERVICE"
+  systemctl restart "$MEDQR_SERVICE" || warn "medqr: и откатът не тръгна — иска ръчна намеса."
 }
 
 # ── 3b') vizitka — systemd (огледално на medqr) ───────────────────────────────
@@ -379,7 +485,16 @@ deploy_vizitka() {
   # При провал на npm ci кодът на диска ВЕЧЕ е новият, а node_modules — полуподменени:
   # „старата услуга остава жива“ важеше само до следващия рестарт (ъпдейт, OOM, reboot),
   # който щеше да вдигне счупена комбинация. Затова връщаме и кода.
-  if ! ( cd "$VIZITKA_DIR" && sudo -u vizitka npm ci --omit=dev ); then
+  # `npm ls` след това НЕ е излишен: npm понякога се срива („Exit handler never called!“)
+  # с изход 0 и оставя node_modules непълни (хванато на генерална репетиция — рестартът
+  # вдигаше код без express, а само health проверката го връщаше, след секунди престой).
+  # Последната проверка зарежда нативния модул (better-sqlite3) със СЪЩИЯ node, с който
+  # тръгва услугата (ExecStart). npm ci компилира за node-а от PATH на sudo; ако на
+  # машината има две версии, модулът е за грешната (NODE_MODULE_VERSION) и услугата
+  # умира при старт — пак хванато на репетиция, пак с престой до отката.
+  if ! ( cd "$VIZITKA_DIR" && sudo -u vizitka npm ci --omit=dev \
+    && sudo -u vizitka npm ls --omit=dev --depth=0 >/dev/null \
+    && sudo -u vizitka "$VIZITKA_NODE" -e "new (require('better-sqlite3'))(':memory:').close()" ); then
     warn "vizitka: npm ci се провали — връщам предишния код; услугата не е рестартирана."
     vizitka_restore_code
     deploy_failed=1; return
@@ -400,7 +515,9 @@ deploy_vizitka() {
     fi
     log "Снимка на базата преди миграция: $dbbak"
   fi
-  systemctl restart "$VIZITKA_SERVICE"
+  # Провал на рестарта решава health check-ът долу (той води до отката) — иначе
+  # set -e прекратява целия пробег ПРЕДИ отката. (одит 25.09.2026)
+  systemctl restart "$VIZITKA_SERVICE" || warn "vizitka: restart върна грешка — решава health check-ът."
   sleep 2
   if health "$VIZITKA_HEALTH_URL" "vizitka" '"app":"vizitka"'; then
     rm -rf "$bak"
@@ -415,7 +532,7 @@ deploy_vizitka() {
       chown vizitka:vizitka "$db"
     fi
     vizitka_restore_code
-    systemctl restart "$VIZITKA_SERVICE"
+    systemctl restart "$VIZITKA_SERVICE" || warn "vizitka: и откатът не тръгна — иска ръчна намеса."
   fi
 }
 
@@ -511,7 +628,9 @@ EOF
   install -m 644 "$PANEV_DIR/deploy/systemd/panev.service" /etc/systemd/system/panev.service
   systemctl daemon-reload
   systemctl enable "$PANEV_SERVICE" >/dev/null 2>&1 || true
-  systemctl restart "$PANEV_SERVICE"
+  # Провал на рестарта решава health check-ът долу (той води до отката) — иначе
+  # set -e прекратява целия пробег ПРЕДИ отката. (одит 25.09.2026)
+  systemctl restart "$PANEV_SERVICE" || warn "panev: restart върна грешка — решава health check-ът."
   sleep 2
   if health "$PANEV_HEALTH_URL" "panev"; then
     rm -rf "${PANEV_DIR}.bak-$TS"
@@ -580,7 +699,9 @@ deploy_ospedali() {
   install -m 644 "$OSPEDALI_DIR/deploy/systemd/ospedali.service" /etc/systemd/system/ospedali.service
   systemctl daemon-reload
   systemctl enable "$OSPEDALI_SERVICE" >/dev/null 2>&1 || true
-  systemctl restart "$OSPEDALI_SERVICE"
+  # Провал на рестарта решава health check-ът долу (той води до отката) — иначе
+  # set -e прекратява целия пробег ПРЕДИ отката. (одит 25.09.2026)
+  systemctl restart "$OSPEDALI_SERVICE" || warn "ospedali: restart върна грешка — решава health check-ът."
   sleep 2
   if health "$OSPEDALI_HEALTH_URL" "ospedali"; then
     rm -rf "${OSPEDALI_DIR}.bak-$TS"
@@ -600,7 +721,7 @@ deploy_ospedali() {
       rsync -a --delete --exclude server/.env --exclude server/.state/ \
         "${OSPEDALI_DIR}.bak-$TS"/ "$OSPEDALI_DIR"/
       chown -R www-data:www-data "$OSPEDALI_DIR"
-      systemctl restart "$OSPEDALI_SERVICE"
+      systemctl restart "$OSPEDALI_SERVICE" || warn "ospedali: и откатът не тръгна — иска ръчна намеса."
     fi
   fi
 }
@@ -703,42 +824,44 @@ deploy_mastilko() {
   # Системен потребител — самосъздаващ се, идемпотентно.
   id mastilko >/dev/null 2>&1 || useradd --system --create-home --home-dir "$MASTILKO_DIR" \
     --shell /usr/sbin/nologin mastilko
+  # Всяка стъпка оттук нататък е ОХРАНЕНА: под `set -euo pipefail` неохранен провал
+  # (най-често `npm run build`) прекратяваше ЦЕЛИЯ пробег — следващите продукти
+  # оставаха неразгърнати, а кодът на mastilko — сменен и без node_modules.
+  # Сега провалът вдига deploy_failed, връща бекъпа и пробегът продължава.
+  # (VPS-аджията, одит 25.09.2026 — H1; регресия: tools/vps/autodeploy-mastilko.test.mjs)
   # Бекъп на текущия код (.env остава — rsync exclude го пази и от --delete).
-  [ -d "$MASTILKO_DIR" ] && cp -a "$MASTILKO_DIR" "${MASTILKO_DIR}.bak-$TS"
+  if [ -d "$MASTILKO_DIR" ]; then
+    cp -a "$MASTILKO_DIR" "${MASTILKO_DIR}.bak-$TS" \
+      || { warn "mastilko: бекъпът на текущия код не мина (диск?) — пропускам mastilko, нищо не е сменено."; deploy_failed=1; return; }
+  fi
   mkdir -p "$MASTILKO_DIR"
   rsync -a --delete \
     --exclude node_modules/ --exclude .next/ --exclude .env --exclude data/ \
-    "$d"/ "$MASTILKO_DIR"/
+    "$d"/ "$MASTILKO_DIR"/ \
+    || { warn "mastilko: rsync на кода се провали — връщам предишния код."; mastilko_rollback; deploy_failed=1; return; }
   # Версията в service worker-а = този релийз, иначе `activate` не чисти
   # старите кешове (филтрира по неизменен литерал) и статичният кеш расте.
   sed -i "s|^const VERSION = \".*\";|const VERSION = \"mastilko-$TS\";|" \
     "$MASTILKO_DIR/public/sw.js" 2>/dev/null || warn "sw.js: версията не е пренаписана"
-  chown -R mastilko:mastilko "$MASTILKO_DIR"
+  chown -R mastilko:mastilko "$MASTILKO_DIR" \
+    || { warn "mastilko: chown се провали — връщам предишния код."; mastilko_rollback; deploy_failed=1; return; }
   # Билд на сървъра: пълни зависимости → next build → сваляне до продукционни.
-  # `|| { … return; }` НЕ е украса: под `set -euo pipefail` паднал билд убиваше
-  # ЦЕЛИЯ autodeploy (следващите продукти не се разгръщаха), а mastilko оставаше
-  # с новия код, но без билд. Сега връщаме предишния код и продължаваме.
   ( cd "$MASTILKO_DIR" \
     && sudo -u mastilko npm ci \
     && sudo -u mastilko npm run build \
-    && sudo -u mastilko npm prune --omit=dev ) || {
-    deploy_failed=1
-    warn "mastilko билд провал — връщам предишния код (услугата не е рестартирана)."
-    if [ -d "${MASTILKO_DIR}.bak-$TS" ]; then
-      rsync -a --delete --exclude .env --exclude data/ "${MASTILKO_DIR}.bak-$TS"/ "$MASTILKO_DIR"/
-      chown -R mastilko:mastilko "$MASTILKO_DIR"
-    fi
-    return
-  }
+    && sudo -u mastilko npm prune --omit=dev ) \
+    || { warn "mastilko: билдът се провали — връщам предишния код; продължавам с останалите проекти."; mastilko_rollback; deploy_failed=1; return; }
   # ReadWritePaths в unit-а изисква пътищата да съществуват при старт.
   # data/ пази JSON-а на рекламните банери — НЕ се трие при деплой (rsync
   # exclude), за да оцелее между версиите като .env.
-  sudo -u mastilko mkdir -p "$MASTILKO_DIR/.next/cache" "$MASTILKO_DIR/data"
   # systemd unit — самоинсталиращ се/обновяващ се при всеки деплой.
-  install -m 644 "$MASTILKO_DIR/deploy/mastilko.service" /etc/systemd/system/mastilko.service
-  systemctl daemon-reload
+  { sudo -u mastilko mkdir -p "$MASTILKO_DIR/.next/cache" "$MASTILKO_DIR/data" \
+    && install -m 644 "$MASTILKO_DIR/deploy/mastilko.service" /etc/systemd/system/mastilko.service \
+    && systemctl daemon-reload; } \
+    || { warn "mastilko: подготовката на systemd unit-а се провали — връщам предишния код."; mastilko_rollback; deploy_failed=1; return; }
   systemctl enable "$MASTILKO_SERVICE" >/dev/null 2>&1 || true
-  systemctl restart "$MASTILKO_SERVICE"
+  # Провал на рестарта решава health check-ът долу (той води до отката).
+  systemctl restart "$MASTILKO_SERVICE" || warn "mastilko: restart върна грешка — решава health check-ът."
   sleep 2
   if health "$MASTILKO_HEALTH_URL" "mastilko"; then
     rm -rf "${MASTILKO_DIR}.bak-$TS"
@@ -751,12 +874,21 @@ deploy_mastilko() {
   else
     deploy_failed=1
     warn "mastilko health провал — връщам предишния код."
-    systemctl stop "$MASTILKO_SERVICE" || true
-    if [ -d "${MASTILKO_DIR}.bak-$TS" ]; then
-      rsync -a --delete --exclude .env --exclude data/ "${MASTILKO_DIR}.bak-$TS"/ "$MASTILKO_DIR"/
-      chown -R mastilko:mastilko "$MASTILKO_DIR"
-      systemctl restart "$MASTILKO_SERVICE"
-    fi
+    mastilko_rollback
+  fi
+}
+
+# Откатът на mastilko — общ за провален health и за провал ПРЕДИ рестарта (rsync,
+# билд, unit). Самият той не бива да убива пробега: всяка стъпка е охранена.
+mastilko_rollback() {
+  systemctl stop "$MASTILKO_SERVICE" >/dev/null 2>&1 || true
+  if [ -d "${MASTILKO_DIR}.bak-$TS" ]; then
+    { rsync -a --delete --exclude .env --exclude data/ "${MASTILKO_DIR}.bak-$TS"/ "$MASTILKO_DIR"/ \
+      && chown -R mastilko:mastilko "$MASTILKO_DIR" \
+      && systemctl restart "$MASTILKO_SERVICE"; } \
+      || warn "mastilko: и откатът не мина — иска ръчна намеса (бекъп: ${MASTILKO_DIR}.bak-$TS)."
+  else
+    warn "mastilko: първи деплой — няма предишна версия; услугата остава спряна (виж: journalctl -u $MASTILKO_SERVICE -b)."
   fi
 }
 
@@ -813,7 +945,9 @@ deploy_supreme() {
     # Собственият deploy.sh: проверява .env-ите, билдва, вдига, чака backend health
     # (миграциите се пускат автоматично в backend entrypoint-а) и регистрира
     # slash командите. Ако нещо липсва, той се проваля с ясна грешка.
-    bash deploy.sh
+    # IndexNow се подава от ТОЗИ скрипт, и то само след зелен smoke — не от
+    # deploy.sh преди health (одит на VPS-аджията 25.09.2026).
+    SUPREME_SKIP_INDEXNOW=1 bash deploy.sh
   ) || { warn "SupremeDiscordBot: deploy.sh се провали."; deploy_failed=1; supreme_rollback_hint "$d"; return; }
   # Health на публичния frontend порт (8080). Останалите services са вътрешни
   # и се валидират от Docker healthcheck-овете + от собствения deploy.sh.
@@ -825,6 +959,7 @@ deploy_supreme() {
     # (Одит, 07.08.2026)
     if bash "$d/deploy/smoke.sh"; then
       ok "SupremeDiscordBot: smoke мина"
+      supreme_ping_indexnow "$d"   # търсачките — само към работещ release
     else
       warn "SupremeDiscordBot: smoke ПАДНА — деплоят е горе, но нещо не работи."
       deploy_failed=1
@@ -832,7 +967,6 @@ deploy_supreme() {
     fi
     supreme_install_backup_timer "$d"
     supreme_install_restore_drill_timer "$d"
-    supreme_ping_indexnow "$d"
   else
     deploy_failed=1
     supreme_rollback_hint "$d"
@@ -848,14 +982,20 @@ deploy_supreme() {
 #
 # (VPS-аджията, одит 07.08.2026 — дотогава провалът само вдигаше флаг и мълчеше.)
 supreme_rollback_hint() {
-  local prev
-  prev="$(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | sed -n 2p || true)"
+  # Работещият release е този, към който сочи `current` — при провал на Supreme
+  # `current` НЕ се мести. Преди тук стоеше „вторият най-нов release“ (грешен при
+  # повторен опит), път без вложената папка на архива и без PROJECTS — командата
+  # щеше да върне назад и останалите продукти (одит на VPS-аджията 25.09.2026).
+  local live
+  live="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
   warn "Supreme НЯМА автоматичен откат (Compose + вече мигрирана база)."
-  if [ -n "$prev" ]; then
-    warn "Предишен release: ${prev%/}"
-    warn "Откат на КОДА:  RELEASE_DIR='${prev%/}' bash '${prev%/}/deploy/autodeploy.sh'"
+  if [ -n "$live" ] && [ -f "$live/deploy/autodeploy.sh" ]; then
+    warn "Работещ release (current): $live"
+    warn "Откат на КОДА:  sudo RELEASE_DIR='$live' PROJECTS='SupremeDiscordBot' bash '$live/deploy/autodeploy.sh'"
+    warn "Ако старият код е преди v3.5.0 и базата вече е мигрирана до v50: първо"
+    warn "  SKIP_SCHEMA_CHECK=1 в $SUPREME_ENV_DIR/backend/.env (разликата е само 13 излишни таблици)."
   else
-    warn "Няма предишен release — това е първият деплой."
+    warn "Няма работещ release в $CURRENT_LINK — това е първият деплой."
   fi
   warn "ВНИМАНИЕ: миграциите вече са приложени. Ако новата схема е несъвместима"
   warn "със стария код, първо провери 'npx prisma migrate status' в backend контейнера."
@@ -916,17 +1056,18 @@ UNIT
 }
 
 # Откъде да пренесем .env файловете на Supreme — ТРИ източника, по ред на доверие:
-#   1) $CURRENT_LINK/SupremeDiscordBot — там ги редактира човекът (документите
-#      сочат „backend/.env на сървъра" = текущия release), значи е най-пресният;
-#   2) $SUPREME_ENV_DIR — огледалото от последния пробег на този скрипт (оцелява
-#      местене на `current` от друг продукт и чистене на releases);
+#   1) $SUPREME_ENV_DIR — каноничното копие; преди всеки пробег в него се слива
+#      по-пресният файл от current (редакцията може да е и на двете места);
+#   2) $CURRENT_LINK/SupremeDiscordBot — ако shared още не съществува;
 #   3) най-новият release под $RELEASES_DIR, който ги има — резерва за сървър,
 #      деплойван само със стария скрипт (преди shared да съществува).
 # Критерий за „има ги" е backend/.env — той е задължителен и никога не се
 # генерира. Печата ПЪТ, не съдържание; при нищо намерено връща 1.
 supreme_env_source() {
   local cand
-  for cand in "$CURRENT_LINK/SupremeDiscordBot" "$SUPREME_ENV_DIR"; do
+  # shared ПЪРВО: огледалото преди всеки пробег (supreme_persist_env от current)
+  # вече е слело по-пресния от двата файла там — shared е каноничното копие.
+  for cand in "$SUPREME_ENV_DIR" "$CURRENT_LINK/SupremeDiscordBot"; do
     if [ -f "$cand/backend/.env" ]; then printf '%s\n' "$cand"; return 0; fi
   done
   # releases/<TS>/<корен-от-ZIP>/SupremeDiscordBot/backend/.env → 5 нива; сортът по
@@ -945,7 +1086,11 @@ supreme_persist_env() {
   install -d -m 700 "$SUPREME_ENV_DIR" "$SUPREME_ENV_DIR/backend" "$SUPREME_ENV_DIR/bot" "$SUPREME_ENV_DIR/frontend"
   for f in $SUPREME_ENV_FILES; do
     [ -f "$from/$f" ] || continue
-    if ! cmp -s "$from/$f" "$SUPREME_ENV_DIR/$f"; then
+    # По-ПРЕСНИЯТ печели (одит на VPS-аджията 25.09.2026): бележките за 3.5.0
+    # казват „редактирай в shared/“, старите — „в current/“. Безусловното копие
+    # current → shared триеше прясна редакция в shared (напр. SKU-тата) със
+    # старото копие. `cp -a` пази mtime, затова огледалото не се „осъвременява“.
+    if [ ! -f "$SUPREME_ENV_DIR/$f" ] || { ! cmp -s "$from/$f" "$SUPREME_ENV_DIR/$f" && [ "$from/$f" -nt "$SUPREME_ENV_DIR/$f" ]; }; then
       cp -a "$from/$f" "$SUPREME_ENV_DIR/$f"
     fi
     chmod 600 "$SUPREME_ENV_DIR/$f"
@@ -1206,6 +1351,89 @@ deploy_piuma() {
   fi
 }
 
+# ── 3й) korpora — Docker Compose (db + app); стъпките са в korpora/deploy/deploy.sh ──
+# Кодовете на deploy.sh: 0 — жив; 3 — няма .env (машината още не е настроена: пропуск, не провал,
+# както при piuma); 4 — контейнерите са сменени, но Korpora не отговаря → откат; друго — спрян
+# преди смяната на контейнерите (работещите не са пипани).
+deploy_korpora() {
+  local d="$SRC/korpora" rc=0
+  [ -d "$d" ] || { warn "Няма korpora/ в архива — пропускам."; return; }
+  [ -f "$d/deploy/deploy.sh" ] || { warn "korpora: няма deploy/deploy.sh в архива — пропускам."; return; }
+  log "Разгръщам korpora (Docker Compose)…"
+  # `|| rc=$?`, не голо извикване: под `set -e` ненулев изход тук би убил ЦЕЛИЯ autodeploy.
+  bash "$d/deploy/deploy.sh" || rc=$?
+  case "$rc" in
+    0)
+      # Истинският път (без symlink-ове): с него чистенето в т. 4 разпознава release-а и не го трие.
+      install -d -m 700 "$(dirname "$KORPORA_LAST_GOOD")"
+      printf '%s\n' "$(readlink -f "$d")" > "$KORPORA_LAST_GOOD.tmp" && mv -f "$KORPORA_LAST_GOOD.tmp" "$KORPORA_LAST_GOOD"
+      ;;
+    3) warn "korpora: тази машина още не е настроена (няма .env) — пропускам, не е провал." ;;
+    4)
+      deploy_failed=1
+      if korpora_migration_failed "$d"; then
+        korpora_migration_help
+      else
+        korpora_rollback "$d" || true
+      fi
+      ;;
+    *) deploy_failed=1; warn "korpora: деплоят спря преди смяната на контейнерите (код $rc) — работи предишният код." ;;
+  esac
+}
+
+# Провалена миграция личи по кода на Prisma в лога на app: P3018 при самия опит, P3009 при всеки
+# следващ старт. Тогава откат само на кода не помага — entrypoint-ът на стария release пуска същия
+# `prisma migrate deploy` и спира на P3009 (Prisma отказва, докато в базата има неуредена миграция).
+korpora_migration_failed() {
+  docker compose -f "$1/docker-compose.yml" logs --no-color --tail 300 app 2>/dev/null | grep -qE 'P3009|P3018'
+}
+
+# Базата не се пипа автоматично: възстановяването от бекъп е решение на човек. Тук само казваме кой
+# дъмп е отпреди миграцията и къде е процедурата.
+korpora_migration_help() {
+  local dump good
+  dump="$(ls -1t "$KORPORA_SHARED/backups"/pre-deploy-*.sql.gz 2>/dev/null | head -n 1 || true)"
+  good="$(head -n 1 "$KORPORA_LAST_GOOD" 2>/dev/null || true)"
+  warn "korpora: миграцията на базата се провали — откат само на кода не помага (старият код спира на P3009)."
+  warn "korpora: бекъпът отпреди миграцията: ${dump:-(няма — виж $KORPORA_SHARED/backups)}"
+  # Първо а): PostgreSQL връща паднала миграция цялата, затова възстановяването (б) не е обичайният път.
+  warn "korpora: нужен е човек — korpora/DEPLOY.md, „Провалена миграция“, от ${good:-папката на последния работещ release}:"
+  warn "korpora:   а) данните са цели (обичайното): migrate resolve --rolled-back <миграцията>;"
+  warn "korpora:   б) данните трябва да се върнат: възстановяване от бекъпа по-горе;"
+  warn "korpora:   после deploy.sh оттам с KORPORA_SKIP_BACKUP=1."
+}
+
+# Откат САМО на кода: deploy.sh на последния release, който е отговорил, вдига неговия код със същото
+# compose име. Миграциите са адитивни по правило (skill prisma-migrate), значи старият код работи с
+# базата — освен ако миграцията се е провалила (виж korpora_migration_failed; тогава не стигаме дотук).
+# Кандидат: пътят от KORPORA_LAST_GOOD; `current` само ако памет още няма (първи деплой по autodeploy
+# след ръчен) — непроверен код не се вдига „за откат“. Никога провалилият се release.
+# KORPORA_SKIP_BACKUP=1: откатът не прави нов дъмп — иначе всеки провал гори слот от ротацията и
+# изтласква дъмпа отпреди счупената миграция.
+korpora_rollback() {
+  local failed prev="" cand
+  failed="$(readlink -f "$1" || true)"
+  if [ -f "$KORPORA_LAST_GOOD" ]; then
+    cand="$(cat "$KORPORA_LAST_GOOD" 2>/dev/null || true)"
+  else
+    cand="$CURRENT_LINK/korpora"
+  fi
+  if [ -n "$cand" ] && [ -f "$cand/deploy/deploy.sh" ] && [ "$(readlink -f "$cand" || true)" != "$failed" ]; then
+    prev="$cand"
+  fi
+  if [ -z "$prev" ]; then
+    warn "korpora: няма предишен работещ release за откат — нужен е човек (cd $1 && docker compose logs app)."
+    return 1
+  fi
+  warn "korpora: връщам предишния код ($prev)…"
+  if KORPORA_SKIP_BACKUP=1 bash "$prev/deploy/deploy.sh"; then
+    ok "korpora: предишният код отговаря."
+  else
+    warn "korpora: откатът не тръгна — нужен е човек (cd $prev && docker compose logs app)."
+    return 1
+  fi
+}
+
 # ── 3и) vps-dashboard — systemd (Node, нула runtime зависимости) ──────────────
 # Панелът обслужва себе си (public/ статика + src/ API). Деплоят е rsync на кода +
 # рестарт. Конфигът (/etc/vps-dashboard/config.json) и state (/var/lib/vps-dashboard)
@@ -1266,13 +1494,25 @@ deploy_vpsdashboard() {
     return
   fi
 
-  systemctl restart "$VPSDASH_SERVICE"
+  # Провал на рестарта решава пробата долу (тя води до отката) — иначе set -e
+  # прекратява целия пробег ПРЕДИ отката.
+  systemctl restart "$VPSDASH_SERVICE" || warn "vps-dashboard: restart върна грешка — решава пробата."
   sleep 2
   # /api/ping без сесия връща 401 → това е „жив". health() приема само 2xx/3xx,
   # затова третираме 401 отделно като успех.
-  local code
-  code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "$VPSDASH_HEALTH_URL" 2>/dev/null || echo 000)"
-  if [ "$code" = "401" ] || [ "$code" = "200" ]; then
+  # 403 също е „жив", но САМО с нашия текст: при включен списък с адреси (allowIps)
+  # пробата от 127.0.0.1 се отказва ПРЕДИ рутера. Без това всеки деплой на възел,
+  # достъпен само за съседа, връщаше панела към предишния код — тихо, с „health
+  # провал (403)". Текстът доказва, че отговаря НАШИЯТ нов процес, не нещо друго
+  # на порта.
+  local code body
+  body="$(curl -s -w '\n%{http_code}' --max-time 5 "$VPSDASH_HEALTH_URL" 2>/dev/null || true)"
+  code="${body##*$'\n'}"
+  case "$code" in [0-9][0-9][0-9]) ;; *) code=000 ;; esac
+  if [ "$code" = "403" ] && printf '%s' "$body" | grep -q 'Достъпът от този адрес не е разрешен'; then
+    code="403 (allowIps)"
+  fi
+  if [ "$code" = "401" ] || [ "$code" = "200" ] || [ "$code" = "403 (allowIps)" ]; then
     ok "vps-dashboard е жив ($VPSDASH_HEALTH_URL → $code)"
     rm -rf "${VPSDASH_DIR}.bak-$TS"
     ls -1dt "${VPSDASH_DIR}".bak-* 2>/dev/null | tail -n +3 | xargs -r rm -rf || true
@@ -1281,8 +1521,9 @@ deploy_vpsdashboard() {
     warn "vps-dashboard health провал ($code) — връщам предишния код."
     systemctl stop "$VPSDASH_SERVICE" || true
     if [ -d "${VPSDASH_DIR}.bak-$TS" ]; then
-      rsync -a --delete --exclude .state/ "${VPSDASH_DIR}.bak-$TS"/ "$VPSDASH_DIR"/
-      systemctl restart "$VPSDASH_SERVICE"
+      rsync -a --delete --exclude .state/ "${VPSDASH_DIR}.bak-$TS"/ "$VPSDASH_DIR"/ \
+        && systemctl restart "$VPSDASH_SERVICE" \
+        || warn "vps-dashboard: и откатът не тръгна — иска ръчна намеса (SSH)."
     fi
   fi
 }
@@ -1302,9 +1543,17 @@ deploy_adblock() {
   # затова не ползваме --delete: други файлове в root-а (ако има) остават непокътнати.
   mkdir -p "$ADBLOCK_WWW"
   # filters.json НЕ е тук: той се публикува ЗАЕДНО с подписа си (стъпка 1а).
-  for f in index.html privacy.html robots.txt sitemap.xml llms.txt \
+  for f in index.html privacy.html support.html youtube-ad-blocker.html cookie-banner-blocker.html \
+           robots.txt sitemap.xml llms.txt \
            og.png favicon-48.png apple-touch-icon.png icon-512.png shield-380.webp shield-96.webp popup-shot.webp; do
     [ -f "$d/$f" ] && rsync -a "$d/$f" "$ADBLOCK_WWW"/
+  done
+  # Езиковите страници (adblock/tools/site_lang.mjs): /<език>/index.html.
+  for l in bg de it es fr pt-br; do
+    [ -f "$d/$l/index.html" ] || continue
+    mkdir -p "$ADBLOCK_WWW/$l"
+    rsync -a "$d/$l/index.html" "$ADBLOCK_WWW/$l/"
+    chmod 755 "$ADBLOCK_WWW/$l"; chmod 644 "$ADBLOCK_WWW/$l/index.html"
   done
   # favicon.svg беше старото лого (заменено с бранд щита) — да не остане да виси.
   rm -f "$ADBLOCK_WWW/favicon.svg"
@@ -1483,7 +1732,7 @@ health() {
 indexnow_ping() {
   local key="$1"; [ -n "$key" ] || return 0
   local base="https://$ADBLOCK_DOMAIN"
-  local body='{"host":"'"$ADBLOCK_DOMAIN"'","key":"'"$key"'","keyLocation":"'"$base/$key.txt"'","urlList":["'"$base/"'","'"$base/privacy"'"]}'
+  local body='{"host":"'"$ADBLOCK_DOMAIN"'","key":"'"$key"'","keyLocation":"'"$base/$key.txt"'","urlList":["'"$base/"'","'"$base/youtube-ad-blocker"'","'"$base/cookie-banner-blocker"'","'"$base/support"'","'"$base/privacy"'","'"$base/bg/"'","'"$base/de/"'","'"$base/it/"'","'"$base/es/"'","'"$base/fr/"'","'"$base/pt-br/"'"]}'
   if curl -fsS -m 10 -H "Content-Type: application/json" -d "$body" https://api.indexnow.org/indexnow >/dev/null 2>&1; then
     ok "adblock: IndexNow уведоми Bing/Yandex/Seznam (submit)."
   else
@@ -1509,6 +1758,7 @@ for p in $PROJECTS; do
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
     piuma)      deploy_piuma ;;
+    korpora)   deploy_korpora ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
     *)          warn "Непознат проект: $p" ;;
@@ -1536,22 +1786,30 @@ fi
 # стария release, а той може да е достатъчно назад, за да попадне под ножа. Тогава
 # щяхме да изтрием кода, който в момента обслужва продукцията.
 # (VPS-аджията, одит 07.08.2026)
-KEEP_REL="$(cd "$SRC" && pwd -P)"
-LIVE_REL="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
-while read -r old; do
-  [ -n "$old" ] || continue
-  old_real="$(cd "$old" 2>/dev/null && pwd -P || true)"
-  [ -n "$old_real" ] || continue
-  keep=0
-  for protected in "$KEEP_REL" "$LIVE_REL"; do
-    [ -n "$protected" ] || continue
-    case "$protected" in
-      "$old_real"|"$old_real"/*) keep=1 ;;
-    esac
-  done
-  [ "$keep" = "1" ] && continue
-  rm -rf "$old"
-done < <(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | tail -n +$((KEEP_RELEASES + 1)))
+# Третото: release-ът, към който сочи паметта на Korpora за последния работещ (KORPORA_LAST_GOOD).
+# Без него няколко деплоя без korpora (PROJECTS="piuma") изтриваха целта на отката и той падаше към
+# код, който никога не е разгръщан за Korpora.
+prune_releases() {
+  local keep_rel live_rel lg_rel old old_real keep protected
+  keep_rel="$(cd "$SRC" && pwd -P)"
+  live_rel="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
+  lg_rel="$(readlink -f "$(cat "$KORPORA_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
+  while read -r old; do
+    [ -n "$old" ] || continue
+    old_real="$(cd "$old" 2>/dev/null && pwd -P || true)"
+    [ -n "$old_real" ] || continue
+    keep=0
+    for protected in "$keep_rel" "$live_rel" "$lg_rel"; do
+      [ -n "$protected" ] || continue
+      case "$protected" in
+        "$old_real"|"$old_real"/*) keep=1 ;;
+      esac
+    done
+    [ "$keep" = "1" ] && continue
+    rm -rf "$old"
+  done < <(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | tail -n +$((KEEP_RELEASES + 1)))
+}
+prune_releases
 
 if [ "$deploy_failed" = "0" ]; then
   ok "Деплой готов ($TS). Проекти: $PROJECTS"
