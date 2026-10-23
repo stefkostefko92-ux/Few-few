@@ -95,7 +95,8 @@ async function main() {
     await prisma.memory.upsert({
       where: { slug: m.slug },
       update: { ...m },
-      create: { ...m, published: true },
+      // Примерният спомен е само за формата — не се показва на посетителите.
+      create: { ...m, published: !m.content.startsWith("Това е примерен спомен") },
     });
   }
   console.log(

@@ -1,5 +1,6 @@
 "use server";
 
+import { notifyOnPublish } from "@/lib/push";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -22,6 +23,8 @@ const URL_FIELDS = new Set([
   "facebook",
   "coverImage",
   "sourceUrl",
+  "photoUrl",
+  "target",
 ]);
 function isSafeUrl(value: string): boolean {
   const v = value.trim();
@@ -43,7 +46,7 @@ function delegate(model: string): Delegate {
   return (prisma as unknown as Record<string, Delegate>)[model];
 }
 
-const NULLABLE_NUMBERS = new Set(["lat", "lng"]);
+const NULLABLE_NUMBERS = new Set(["lat", "lng", "birthYear"]);
 
 function coerce(field: Field, raw: FormDataEntryValue | null): unknown {
   switch (field.type) {
@@ -157,6 +160,7 @@ export async function saveRecord(
 
   const title = String(data[resource.titleField] ?? slug ?? "запис");
 
+  let savedId = id;
   if (id) {
     await delegate(resource.model).update({ where: { id }, data });
     await logAudit(user, {
@@ -167,6 +171,7 @@ export async function saveRecord(
     });
   } else {
     const created = await delegate(resource.model).create({ data });
+    savedId = created.id;
     await logAudit(user, {
       action: "CREATE",
       entity: resource.model,
@@ -174,6 +179,9 @@ export async function saveRecord(
       summary: `Създаване: ${resource.labelSingular} „${title}“`,
     });
   }
+
+  // Известие до абонатите при публикувано прекъсване/измама/новина (веднъж).
+  if (savedId && data.published === true) await notifyOnPublish(resource.model, savedId);
 
   revalidatePath("/", "layout");
   redirect(`/admin/${resource.key}?saved=1`);
@@ -227,6 +235,7 @@ export async function togglePublish(
     entityId: id,
     summary: `${next ? "Публикуване" : "Скриване"}: ${resource.labelSingular}`,
   });
+  if (next) await notifyOnPublish(resource.model, id);
 
   revalidatePath("/", "layout");
   redirect(`/admin/${resource.key}`);
