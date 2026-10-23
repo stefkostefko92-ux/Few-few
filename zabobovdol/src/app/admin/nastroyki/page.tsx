@@ -3,6 +3,7 @@ import {
   getAdSettings,
   getDutyInfo,
   getFacebookUrl,
+  getViberChannelUrl,
   getChurchServices,
   getWasteSchedule,
 } from "@/lib/settings";
@@ -10,6 +11,7 @@ import {
   saveAdSettings,
   saveDutyInfo,
   saveContactSettings,
+  saveViberChannel,
   saveChurchServices,
   saveWasteSchedule,
 } from "@/lib/admin/settings-actions";
@@ -23,10 +25,11 @@ export default async function AdminSettingsPage({
 }) {
   await requireAdmin();
   const { saved, error } = await searchParams;
-  const [ad, dutyInfo, facebookUrl, churchServices, wasteSchedule] = await Promise.all([
+  const [ad, dutyInfo, facebookUrl, viberUrl, churchServices, wasteSchedule] = await Promise.all([
     getAdSettings(),
     getDutyInfo(),
     getFacebookUrl(),
+    getViberChannelUrl(),
     getChurchServices(),
     getWasteSchedule(),
   ]);
@@ -101,7 +104,31 @@ export default async function AdminSettingsPage({
         </button>
       </form>
 
-      <form action={saveDutyInfo} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+      <form action={saveViberChannel} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+        <h2 className="text-lg font-semibold text-slate-900">Viber канал</h2>
+        <p className="text-sm text-slate-600">
+          Адрес на Viber канала за известия. Ако е попълнен, на страница „Известия“ се показва бутон „Абонирай се във
+          Viber“. Оставете празно, за да го скриете.
+        </p>
+        <div>
+          <label className="label" htmlFor="viberChannelUrl">
+            Viber канал (адрес)
+          </label>
+          <input
+            id="viberChannelUrl"
+            name="viberChannelUrl"
+            type="url"
+            defaultValue={viberUrl}
+            className="input"
+            placeholder="https://invite.viber.com/..."
+          />
+        </div>
+        <button type="submit" className="btn-primary">
+          Запази
+        </button>
+      </form>
+
+      <form action={saveDutyInfo}className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
         <h2 className="text-lg font-semibold text-slate-900">Дежурна аптека / лекар</h2>
         <p className="text-sm text-slate-600">
           Този текст се показва на страницата „Дежурна аптека“. Обновявайте го,

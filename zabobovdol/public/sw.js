@@ -109,3 +109,53 @@ self.addEventListener("fetch", (event) => {
     })(),
   );
 });
+
+// ---------------------------------------------------------------------------
+// Известия (web push). Товарът е JSON {title, body, url}; url е САМО вътрешен път.
+// ---------------------------------------------------------------------------
+function safePath(u) {
+  if (typeof u !== "string") return "/";
+  if (!u.startsWith("/") || u.startsWith("//") || u.includes("\\")) return "/";
+  return u;
+}
+
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = {};
+  }
+  const title = (data.title && String(data.title).slice(0, 120)) || "За Бобов дол";
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: data.body ? String(data.body).slice(0, 300) : "",
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      lang: "bg",
+      data: { url: safePath(data.url) },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const path = safePath(event.notification.data && event.notification.data.url);
+  const target = new URL(path, self.location.origin).href;
+  event.waitUntil(
+    (async () => {
+      const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      for (const c of all) {
+        if (c.url.startsWith(self.location.origin) && "focus" in c) {
+          try {
+            if ("navigate" in c) await c.navigate(target);
+            return await c.focus();
+          } catch {
+            /* пробваме да отворим нов прозорец */
+          }
+        }
+      }
+      return self.clients.openWindow(target);
+    })(),
+  );
+});
