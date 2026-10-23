@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { SITE } from "@/lib/site";
 import { buildMetadata } from "@/lib/seo";
@@ -6,12 +7,41 @@ import { PrintButton } from "@/components/PrintButton";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = buildMetadata({
-  title: "Важни телефони за печат — Бобов дол",
-  description:
-    "Списък с важни телефони за Бобов дол, готов за печат и закачане у дома. С QR код към сайта за повече информация.",
-  path: "/pechat",
-});
+export const metadata: Metadata = {
+  ...buildMetadata({
+    title: "Важни телефони за печат — Бобов дол",
+    description:
+      "Списък с важни телефони за Бобов дол, готов за печат и закачане у дома. С QR код към сайта за повече информация.",
+    path: "/pechat",
+  }),
+  keywords: [
+    "важни телефони Бобов дол",
+    "телефони за печат",
+    "седмицата в Бобов дол",
+    "плакат Бобов дол",
+    "За Бобов дол",
+    "Carbon Stealth",
+  ],
+};
+
+// Другите листове за печат — за хората без смартфон и за таблата в града.
+const MORE_PRINT = [
+  {
+    href: "/pechat/sedmitsa",
+    title: "Седмицата в Бобов дол",
+    text: "Дежурни аптеки, спиране на ток и вода, новини и измами — едър шрифт, за таблото.",
+  },
+  {
+    href: "/pechat/plakat",
+    title: "Плакат с QR код",
+    text: "За аптеката, пощата, кметството или спирката.",
+  },
+  {
+    href: "/pechat/avtobus",
+    title: "Разписание на автобусите",
+    text: "За спирката или у дома.",
+  },
+];
 
 export default async function PrintPage() {
   const services = await prisma.service.findMany({
@@ -34,6 +64,23 @@ export default async function PrintPage() {
         </div>
         <PrintButton />
       </div>
+
+      <nav aria-label="Още листове за печат" className="no-print mb-6">
+        <h2 className="text-lg font-semibold text-slate-800">Още за печат</h2>
+        <ul className="mt-2 grid gap-3 sm:grid-cols-3">
+          {MORE_PRINT.map((m) => (
+            <li key={m.href}>
+              <Link
+                href={m.href}
+                className="card block h-full"
+              >
+                <span className="block font-semibold text-brand-700">{m.title}</span>
+                <span className="mt-1 block text-slate-600">{m.text}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
       {/* Лист за печат (A4) */}
       <div className="print-sheet mx-auto max-w-2xl rounded-xl border border-slate-300 bg-white p-8 shadow-sm">
