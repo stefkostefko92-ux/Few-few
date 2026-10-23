@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Phone, Mail } from "@/components/icons";
 import { SITE, PRIMARY_NAV, FOOTER_NAV } from "@/lib/site";
 import { getFacebookUrl, getPlayStoreUrl } from "@/lib/settings";
+import { TrustCard } from "@/components/TrustCard";
+import { TelLink } from "@/components/PhoneReportButton";
 
 // Вградена иконка на Google Play.
 function GooglePlayIcon({ className }: { className?: string }) {
@@ -84,21 +86,21 @@ export async function SiteFooter() {
               {SITE.emergency.map((e) => (
                 <li key={e.phone} className="text-slate-700">
                   {e.label}:{" "}
-                  <a href={`tel:${e.phone}`} className="font-bold text-brand-700">
+                  <TelLink phone={e.phone} className="font-bold text-brand-700">
                     {e.phone}
-                  </a>
+                  </TelLink>
                 </li>
               ))}
             </ul>
             {SITE.contact.phone && (
               <p className="mt-3 flex items-center gap-2 text-sm text-slate-700">
                 <Phone className="h-4 w-4 shrink-0 text-brand-700" aria-hidden />
-                <a
-                  href={`tel:${SITE.contact.phone.replace(/\s/g, "")}`}
+                <TelLink
+                  phone={SITE.contact.phone}
                   className="font-semibold text-brand-700 hover:underline"
                 >
                   {SITE.contact.phone}
-                </a>
+                </TelLink>
               </p>
             )}
             {SITE.contact.email && (
@@ -136,6 +138,8 @@ export async function SiteFooter() {
             )}
           </div>
         </div>
+        {/* Кратката „истински адрес / никога не искаме“ — на всяка страница. */}
+        <TrustCard variant="compact" className="mt-8" />
         <div className="mt-8 flex flex-col items-start justify-between gap-3 border-t border-slate-200 pt-6 text-sm text-slate-600 sm:flex-row sm:items-center">
           <div className="space-y-1">
             <p>

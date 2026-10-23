@@ -2,14 +2,22 @@ import Link from "next/link";
 import { AlertTriangle } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
 
+// Датата е важна: без нея старо предупреждение изглежда като днешно.
+const DATE_FMT = new Intl.DateTimeFormat("bg-BG", {
+  timeZone: "Europe/Sofia",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
+
 // Показва закачено предупреждение за измама като видна лента (ако има активно).
 export async function ScamBanner() {
-  let alert: { title: string; summary: string } | null = null;
+  let alert: { title: string; summary: string; createdAt: Date } | null = null;
   try {
     alert = await prisma.scamAlert.findFirst({
       where: { published: true, pinned: true },
       orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-      select: { title: true, summary: true },
+      select: { title: true, summary: true, createdAt: true },
     });
   } catch {
     alert = null;
@@ -27,6 +35,10 @@ export async function ScamBanner() {
           <strong className="font-bold">Внимание, измама: </strong>
           {alert.title}
           {alert.summary ? ` — ${alert.summary}` : ""}
+          <span className="whitespace-nowrap">
+            {" "}
+            · публикувано на {DATE_FMT.format(alert.createdAt)}
+          </span>
           <span className="ml-1 whitespace-nowrap font-semibold underline">
             Виж как да се пазите →
           </span>
