@@ -18,13 +18,11 @@
     "featureLangTitle": "Multilingv din naștere",
     "featureLangBody": "O singură pagină, multe limbi: vizitatorii îți văd profilul automat în propria lor limbă.",
     "featureFeeTitle": "Comisioane reduse",
-    "featureFeeBody": "Doar 8% la planul gratuit, 4% la Pro și 0% la Business și Founder — față de 12% și 9% în altă parte.",
     "featureAnalyticsTitle": "Analiză fără cookie-uri",
     "featureAnalyticsBody": "Numărăm clicurile, nu oamenii. Fără date personale și fără banner de consimțământ.",
     "featureTrustTitle": "Oameni, nu interdicții",
     "featureTrustBody": "Moderare transparentă, cu notificare și drept de contestație. Niciodată un banner rușinos pe pagina ta.",
     "featureEuTitle": "Găzduit în UE",
-    "featureEuBody": "Datele tale rămân în Uniunea Europeană. GDPR în mod implicit.",
     "featureDomainTitle": "Domeniul tău",
     "featureDomainBody": "Domenii proprii la planurile plătite — reputația ta nu depinde niciodată de abuzul altcuiva.",
     "featureAiTitle": "Traducere AI cu un clic",
@@ -48,8 +46,6 @@
     "faqTitle": "Întrebări frecvente",
     "faq1q": "Ce este Linketto?",
     "faq1a": "Linketto este o pagină link in bio: un singur link care adună toate linkurile, produsele și contactele tale. Ce e unic: pagina ta vorbește limba fiecărui vizitator — o creezi o dată și apare în toate cele 24 de limbi oficiale ale UE.",
-    "faq2q": "Prin ce este Linketto mai bun decât Linktree?",
-    "faq2a": "Patru lucruri: profilul tău este multilingv (Linktree e doar în engleză), este găzduit în UE cu GDPR în mod implicit, analiza este fără cookie-uri și fără date personale, iar comisioanele la vânzări sunt 8/4/0/0% în funcție de plan — față de 12% și 9% la Linktree.",
     "faq3q": "Cât costă Linketto?",
     "faq3a": "Planul gratuit este cu adevărat gratuit — linkuri nelimitate și 2 versiuni lingvistice. Pro costă €4/lună (toate limbile, domeniu propriu), Business costă €9/lună (0% comision, până la 5 profiluri), iar Founder este o plată unică de €49 — Pro pe veci, cu 0% comision.",
     "faq4q": "Cum funcționează profilul multilingv?",
@@ -113,8 +109,7 @@
     "noAccount": "Nu ai cont? Înregistrează-te.",
     "errorInvalid": "E-mail sau parolă greșite.",
     "errorExists": "Există deja un cont cu acest e-mail.",
-    "errorGeneric": "Ceva n-a mers. Încearcă din nou.",
-    "referredBanner": "Te înregistrezi printr-o invitație — prietenul tău primește un bonus dacă alegi un plan plătit."
+    "errorGeneric": "Ceva n-a mers. Încearcă din nou."
   },
   "dashboard": {
     "title": "Panoul tău",

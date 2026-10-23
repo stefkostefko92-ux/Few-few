@@ -18,13 +18,11 @@
     "featureLangTitle": "Multilingüe de nacimiento",
     "featureLangBody": "Una página, muchos idiomas: el visitante ve tu perfil en su propio idioma, automáticamente.",
     "featureFeeTitle": "Comisiones reducidas",
-    "featureFeeBody": "Solo un 8% en el plan gratuito, un 4% en Pro y un 0% en Business y Founder — frente al 12% y 9% en otros sitios.",
     "featureAnalyticsTitle": "Analítica sin cookies",
     "featureAnalyticsBody": "Contamos clics, no personas. Sin datos personales y sin banner de consentimiento.",
     "featureTrustTitle": "Personas, no baneos",
     "featureTrustBody": "Moderación transparente con aviso previo y derecho a apelar. Nunca un banner vergonzoso en tu página.",
     "featureEuTitle": "Alojado en la UE",
-    "featureEuBody": "Tus datos se quedan en la Unión Europea. RGPD por defecto.",
     "featureDomainTitle": "Tu propio dominio",
     "featureDomainBody": "Dominio personalizado en los planes de pago — tu reputación no depende de los abusos de otros.",
     "featureAiTitle": "Traducción con IA en un clic",
@@ -48,8 +46,6 @@
     "faqTitle": "Preguntas frecuentes",
     "faq1q": "¿Qué es Linketto?",
     "faq1a": "Linketto es una página de link in bio: un solo enlace que reúne todos tus enlaces, productos y contactos. Lo único: tu página habla el idioma de cada visitante — la creas una vez y se muestra en los 24 idiomas oficiales de la UE.",
-    "faq2q": "¿En qué es mejor Linketto que Linktree?",
-    "faq2a": "Cuatro cosas: tu perfil es multilingüe (Linktree solo está en inglés), está alojado en la UE con RGPD por defecto, la analítica no usa cookies ni datos personales, y las comisiones sobre ventas son 8/4/0/0% según el plan — frente al 12% y 9% de Linktree.",
     "faq3q": "¿Cuánto cuesta Linketto?",
     "faq3a": "El plan gratuito es realmente gratis: enlaces ilimitados y 2 versiones de idioma. Pro cuesta 4 €/mes (todos los idiomas, dominio propio), Business 9 €/mes (0% de comisión, hasta 5 perfiles) y Founder es un pago único de 49 € — Pro para siempre con 0% de comisión.",
     "faq4q": "¿Cómo funciona el perfil multilingüe?",
@@ -113,8 +109,7 @@
     "noAccount": "¿No tienes cuenta? Regístrate.",
     "errorInvalid": "Correo o contraseña incorrectos.",
     "errorExists": "Ya existe una cuenta con este correo.",
-    "errorGeneric": "Algo salió mal. Inténtalo de nuevo.",
-    "referredBanner": "Te estás registrando mediante una invitación — tu amigo recibe un bono si eliges un plan de pago."
+    "errorGeneric": "Algo salió mal. Inténtalo de nuevo."
   },
   "dashboard": {
     "title": "Tu panel",

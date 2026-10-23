@@ -17,11 +17,14 @@ import {
   deleteLinkAction,
   updateProfileAction,
   updateStyleAction,
+  applyTemplateAction,
   uploadImageAction,
   upsertLinkTranslationAction,
   upsertProfileTranslationAction,
 } from '@/app/actions/profile';
-import { parseStyle } from '@/lib/style';
+import { backgroundCss, buttonCss, parseStyle } from '@/lib/style';
+import { profileUrl } from '@/lib/profile-url';
+import { NICHE_TEMPLATES, TEMPLATE_IDS } from '@/lib/templates';
 import { languageDemand } from '@/lib/language-gap';
 import { ReferralCard } from '@/components/ReferralCard';
 import {
@@ -45,6 +48,8 @@ import {
   startCheckoutAction,
 } from '@/app/actions/billing';
 import { aiGenerateBioAction, aiTranslateAction } from '@/app/actions/ai';
+import { importLinktreeAction } from '@/app/actions/import';
+import { setDigestAction } from '@/app/actions/digest';
 import { sendBroadcastAction } from '@/app/actions/newsletter';
 import { resolveBookingAction } from '@/app/actions/booking';
 import {
@@ -82,6 +87,7 @@ export default async function DashboardPage({
     payout?: string;
     broadcast?: string;
     upgraded?: string;
+    imported?: string;
     p?: string;
   }>;
 }) {
@@ -94,6 +100,7 @@ export default async function DashboardPage({
     payout,
     broadcast,
     upgraded,
+    imported,
     p,
   } = await searchParams;
   const user = await getSessionUser();
@@ -346,7 +353,9 @@ export default async function DashboardPage({
                                             ? t('errorStripe')
                                             : error === 'plan'
                                               ? t('errorPlan')
-                                              : t('errorGeneric')}
+                                              : error === 'import'
+                                                ? t('errorImport')
+                                                : t('errorGeneric')}
           </p>
         )}
         {upgraded && plan.id === 'FREE' && (
@@ -395,6 +404,17 @@ export default async function DashboardPage({
             className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
           >
             {t('broadcastSent', { count: broadcast })}
+          </p>
+        )}
+        {imported && (
+          <p
+            role="status"
+            className="rounded-lg bg-green-50 p-3 text-sm text-green-700"
+          >
+            {t('importedOk', { count: Number(imported) || 0 })}{' '}
+            <a href="#languages" className="font-semibold underline">
+              {t('importedTranslate')}
+            </a>
           </p>
         )}
 
@@ -450,7 +470,7 @@ export default async function DashboardPage({
         {!profile ? (
           <section className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
             <p className="font-medium">{t('noProfile')}</p>
-            <form action={createProfileAction} className="mt-4 flex gap-3">
+            <form action={createProfileAction} className="mt-4 flex flex-wrap gap-3">
               <input type="hidden" name="uiLocale" value={locale} />
               <input
                 type="text"
@@ -465,6 +485,19 @@ export default async function DashboardPage({
                 placeholder={t('displayName')}
                 className="flex-1 rounded-lg border border-slate-300 px-3 py-2"
               />
+              <select
+                name="template"
+                defaultValue=""
+                aria-label={t('templatesTitle')}
+                className="rounded-lg border border-slate-300 px-3 py-2"
+              >
+                <option value="">{t('templateNone')}</option>
+                {TEMPLATE_IDS.map((id) => (
+                  <option key={id} value={id}>
+                    {t(`template_${id}`)}
+                  </option>
+                ))}
+              </select>
               <button
                 type="submit"
                 className="rounded-full bg-linketto-600 px-5 py-2 font-semibold text-white hover:bg-linketto-700"
@@ -479,10 +512,11 @@ export default async function DashboardPage({
               <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
                 <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('profileSection')}</h2>
                 <a
-                  href={`/u/${profile.slug}`}
+                  href={profileUrl(profile.slug)}
                   className="text-sm font-medium text-linketto-700 hover:underline"
                 >
-                  {t('viewPublic')} → /u/{profile.slug}
+                  {t('viewPublic')} →{' '}
+                  {profileUrl(profile.slug).replace(/^https?:\/\//, '')}
                 </a>
               </div>
               <form
@@ -564,6 +598,52 @@ export default async function DashboardPage({
             <section id="style" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
               <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('styleSection')}</h2>
               <p className="mt-1 text-sm text-slate-500">{t('styleHint')}</p>
+              {/* Шаблони по ниша — готов вид за 1 клик (съдържанието се пази) */}
+              <div className="mt-4">
+                <p className="text-sm font-semibold text-slate-700">
+                  {t('templatesTitle')}
+                </p>
+                <ul className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                  {TEMPLATE_IDS.map((id) => {
+                    const preset = NICHE_TEMPLATES[id];
+                    const look = parseStyle(preset.style);
+                    return (
+                      <li key={id}>
+                        <form action={applyTemplateAction}>
+                          <input type="hidden" name="uiLocale" value={locale} />
+                          <input type="hidden" name="profileId" value={profile.id} />
+                          <input type="hidden" name="template" value={id} />
+                          <button
+                            type="submit"
+                            className="group w-full rounded-xl border border-slate-200 p-1.5 text-left transition hover:-translate-y-0.5 hover:border-linketto-400 hover:shadow-md"
+                          >
+                            <span
+                              aria-hidden="true"
+                              className="flex h-20 flex-col items-center justify-center gap-1.5 rounded-lg px-3"
+                              style={{
+                                ...backgroundCss(look),
+                                color: look.textColor ?? '#ffffff',
+                              }}
+                            >
+                              <span
+                                className={`h-3 w-full border-2 ${look.buttonShape === 'square' ? '' : 'rounded-full'}`}
+                                style={buttonCss(look, preset.accent)}
+                              />
+                              <span
+                                className={`h-3 w-full border-2 ${look.buttonShape === 'square' ? '' : 'rounded-full'}`}
+                                style={buttonCss(look, preset.accent)}
+                              />
+                            </span>
+                            <span className="mt-1.5 block px-1 text-xs font-semibold text-slate-700 group-hover:text-linketto-700">
+                              {t(`template_${id}`)}
+                            </span>
+                          </button>
+                        </form>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
               {(() => {
                 const styleCfg = parseStyle(profile.style);
                 const selectClass =
@@ -978,6 +1058,41 @@ export default async function DashboardPage({
 
             <section id="links" className="dash-card rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
               <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('linksSection')}</h2>
+              {/* Пренасяне от Linktree за минута — най-ниската бариера за смяна */}
+              <details
+                className="group mt-4 rounded-xl border border-dashed border-linketto-300 bg-linketto-50/60 p-4"
+                open={profile.links.length === 0}
+              >
+                <summary className="cursor-pointer text-sm font-semibold text-linketto-800">
+                  {t('importTitle')}
+                </summary>
+                <p className="mt-2 text-sm text-slate-600">{t('importHint')}</p>
+                <form
+                  action={importLinktreeAction}
+                  className="mt-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center"
+                >
+                  <input type="hidden" name="uiLocale" value={locale} />
+                  <input type="hidden" name="profileId" value={profile.id} />
+                  <input
+                    type="text"
+                    name="source"
+                    required
+                    placeholder="linktr.ee/maria"
+                    aria-label={t('importTitle')}
+                    className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                  />
+                  <label className="flex items-center gap-2 text-sm text-slate-700">
+                    <input type="checkbox" name="own" required />
+                    {t('importOwn')}
+                  </label>
+                  <button
+                    type="submit"
+                    className="rounded-full bg-linketto-600 px-5 py-2 text-sm font-semibold text-white hover:bg-linketto-700"
+                  >
+                    {t('importCta')}
+                  </button>
+                </form>
+              </details>
               <div className="mt-4 space-y-6">
                 {profile.links.map((link) => (
                   <div
@@ -1398,6 +1513,27 @@ export default async function DashboardPage({
                 <h2 className="text-lg font-bold tracking-tight text-slate-900">{t('gapSection')}</h2>
               </div>
               <p className="mt-1 text-sm text-slate-500">{t('gapHint')}</p>
+              {/* Седмичният отчет по имейл — отказ с 1 клик и тук, и от имейла */}
+              <form
+                action={setDigestAction}
+                className="mt-3 flex flex-wrap items-center gap-3 rounded-xl bg-slate-50 px-4 py-3"
+              >
+                <input type="hidden" name="uiLocale" value={locale} />
+                <label className="flex flex-1 items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    name="digest"
+                    defaultChecked={!user.digestOptOut}
+                  />
+                  {t('digestToggle')}
+                </label>
+                <button
+                  type="submit"
+                  className="rounded-full border border-slate-300 px-4 py-1.5 text-xs font-semibold text-slate-700 hover:bg-white"
+                >
+                  {t('save')}
+                </button>
+              </form>
               {!gap || gap.mappedVisitors === 0 ? (
                 <p className="mt-4 text-sm text-slate-500">{t('gapNoData')}</p>
               ) : (

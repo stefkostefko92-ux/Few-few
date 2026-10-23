@@ -5,6 +5,8 @@ import { getTranslations } from 'next-intl/server';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { safeJsonLd } from '@/lib/jsonld';
+import { profileUrl } from '@/lib/profile-url';
+import { SITE_URL } from '@/lib/seo';
 import {
   DIALECT_LOCALES,
   dirFor,
@@ -100,6 +102,8 @@ export async function loadProfileBy(where: Prisma.ProfileWhereUniqueInput) {
           stripeAccountId: true,
           stripeChargesEnabled: true,
           isTrader: true,
+          // Баджът „Създай своя“ носи реферала на собственика (вирусна верига).
+          referralCode: true,
         },
       },
     },
@@ -135,7 +139,13 @@ export function profileMetadata(
   }
   languages['x-default'] = path;
   const title = `${main?.displayName ?? profile.slug} · Linketto`;
-  const style = parseStyle(profile.style);
+  // Генерирана social карта 1200×630 на гледания език (/u/<slug>/og).
+  const ogImage = {
+    url: `${path}/og${activeLocale ? `?hl=${activeLocale}` : ''}`,
+    width: 1200,
+    height: 630,
+    alt: main?.displayName ?? profile.slug,
+  };
   // Профили с 18+ линкове не се индексират (защита на непълнолетни).
   const hasSensitive = profile.links.some((link) => isSensitiveUrl(link.url));
   return {
@@ -149,9 +159,9 @@ export function profileMetadata(
       title: main?.displayName ?? profile.slug,
       description: main?.bio ?? undefined,
       url: canonical,
-      ...(style.avatarUrl ? { images: [{ url: style.avatarUrl }] } : {}),
+      images: [ogImage],
     },
-    twitter: { card: 'summary' },
+    twitter: { card: 'summary_large_image', images: [ogImage.url] },
   };
 }
 
@@ -314,7 +324,9 @@ export async function ProfileScreen({
     .map((word) => Array.from(word)[0] ?? '')
     .join('')
     .toUpperCase();
-  const shareUrl = `${process.env.PUBLIC_BASE_URL ?? ''}/u/${slug}`;
+  // Споделянето ползва краткия линк (PROFILE_HOST); JSON-LD — canonical.
+  const shareUrl = profileUrl(slug);
+  const canonicalUrl = `${SITE_URL}/u/${slug}`;
 
   // GEO: създателят като субект — Person/ProfilePage JSON-LD, sameAs от
   // публичните линкове (само истински http(s) цели, без tel:/vcard).
@@ -328,10 +340,10 @@ export async function ProfileScreen({
     inLanguage: viewLocale,
     mainEntity: {
       '@type': 'Person',
-      '@id': `${shareUrl}#person`,
+      '@id': `${canonicalUrl}#person`,
       name: translation.displayName,
       description: translation.bio ?? undefined,
-      url: shareUrl,
+      url: canonicalUrl,
       ...(styleCfg.avatarUrl ? { image: styleCfg.avatarUrl } : {}),
       ...(sameAs.length > 0 ? { sameAs } : {}),
     },
@@ -1180,14 +1192,32 @@ export async function ProfileScreen({
             </section>
           )}
 
+        {/* Вирусната верига: посетител → своя безплатна страница, с реферала
+            на собственика (бонус при платен план). Абсолютен URL — работи и
+            на собствен/кратък домейн. Скрива се само на платени планове. */}
         {!styleCfg.hideBadge && (
           <p className="mt-12 text-center">
-            <Link
-              href="/"
-              className="inline-block rounded-full border border-current px-3 py-1 text-[11px] uppercase tracking-widest opacity-70 transition hover:opacity-100"
+            <a
+              href={`${SITE_URL}/${viewLocale}/register${
+                profile.user.referralCode
+                  ? `?ref=${encodeURIComponent(profile.user.referralCode)}`
+                  : ''
+              }`}
+              className="group inline-flex max-w-full flex-col items-center rounded-2xl border border-current px-5 py-2 opacity-75 transition hover:opacity-100"
             >
-              Linketto
-            </Link>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.25em] opacity-80">
+                Linketto
+              </span>
+              <span className="mt-0.5 text-sm font-semibold">
+                {t('badgeCta')}{' '}
+                <span
+                  aria-hidden="true"
+                  className="inline-block transition-transform group-hover:translate-x-0.5"
+                >
+                  →
+                </span>
+              </span>
+            </a>
           </p>
         )}
         {/* DSA чл. 16: път за сигнали — дискретен, но винаги наличен */}

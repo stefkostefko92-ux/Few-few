@@ -18,13 +18,11 @@
     "featureLangTitle": "Multilingwi mit-twelid",
     "featureLangBody": "Paġna waħda, ħafna lingwi: il-viżitatur jara l-profil tiegħek fil-lingwa tiegħu stess, awtomatikament.",
     "featureFeeTitle": "Kummissjonijiet imnaqqsa",
-    "featureFeeBody": "Biss 8% fuq il-pjan b'xejn, 4% fuq Pro u 0% fuq Business u Founder — kontra 12% u 9% band'oħra.",
     "featureAnalyticsTitle": "Analitika bla cookies",
     "featureAnalyticsBody": "Ngħoddu l-clicks, mhux in-nies. L-ebda dejta personali u l-ebda banner ta' kunsens.",
     "featureTrustTitle": "Bnedmin, mhux projbizzjonijiet",
     "featureTrustBody": "Moderazzjoni trasparenti b'avviż u d-dritt tal-appell. Qatt banner tal-mistħija fuq il-paġna tiegħek.",
     "featureEuTitle": "Ospitat fl-UE",
-    "featureEuBody": "Id-dejta tiegħek tibqa' fl-Unjoni Ewropea. GDPR b'mod awtomatiku.",
     "featureDomainTitle": "Id-dominju tiegħek",
     "featureDomainBody": "Dominji personalizzati fuq il-pjanijiet imħallsa — ir-reputazzjoni tiegħek qatt ma tiddependi mill-abbuż ta' ħaddieħor.",
     "featureAiTitle": "Traduzzjoni AI b'klikk waħda",
@@ -48,8 +46,6 @@
     "faqTitle": "Mistoqsijiet frekwenti",
     "faq1q": "X'inhu Linketto?",
     "faq1a": "Linketto huwa paġna „link in bio“: link wieħed li jiġbor il-links, il-prodotti u l-kuntatti tiegħek kollha. Il-parti unika: il-paġna tiegħek titkellem il-lingwa ta' kull viżitatur — ibnieha darba u tidher fl-24 lingwa uffiċjali kollha tal-UE.",
-    "faq2q": "Kif Linketto huwa aħjar minn Linktree?",
-    "faq2a": "Erba' affarijiet: il-profil tiegħek huwa multilingwi (Linktree huwa biss bl-Ingliż), huwa ospitat fl-UE b'GDPR awtomatiku, l-analitika hija bla cookies u mingħajr dejta personali, u l-kummissjonijiet fuq il-bejgħ huma 8/4/0/0% skont il-pjan — kontra 12% u 9% ma' Linktree.",
     "faq3q": "Kemm jiswa Linketto?",
     "faq3a": "Il-pjan b'xejn huwa tabilħaqq b'xejn — links bla limitu u 2 verżjonijiet tal-lingwa. Pro huwa €4/xahar (kull lingwa, dominju proprju), Business huwa €9/xahar (0% kummissjoni, sa 5 profili), u Founder huwa ħlas ta' darba ta' €49 — Pro għal dejjem b'0% kummissjoni.",
     "faq4q": "Kif jaħdem il-profil multilingwi?",
@@ -113,8 +109,7 @@
     "noAccount": "Għad m'għandekx kont? Irreġistra.",
     "errorInvalid": "Email jew password ħażin.",
     "errorExists": "Diġà jeżisti kont b'dan l-email.",
-    "errorGeneric": "Xi ħaġa marret ħażin. Erġa' pprova.",
-    "referredBanner": "Qed tirreġistra permezz ta' stedina — il-ħabib tiegħek jaqla' bonus jekk tieħu pjan imħallas."
+    "errorGeneric": "Xi ħaġa marret ħażin. Erġa' pprova."
   },
   "dashboard": {
     "title": "Id-dashboard tiegħek",

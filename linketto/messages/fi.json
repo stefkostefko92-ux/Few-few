@@ -18,13 +18,11 @@
     "featureLangTitle": "Monikielinen syntymästä asti",
     "featureLangBody": "Yksi sivu, monta kieltä: kävijä näkee profiilisi omalla kielellään, automaattisesti.",
     "featureFeeTitle": "Pienemmät palkkiot",
-    "featureFeeBody": "Vain 8 % ilmaispaketissa, 4 % Pro-paketissa ja 0 % Business- ja Perustaja-paketeissa — muualla 12 % ja 9 %.",
     "featureAnalyticsTitle": "Analytiikka ilman evästeitä",
     "featureAnalyticsBody": "Laskemme klikkauksia, emme ihmisiä. Ei henkilötietoja eikä suostumusbanneria.",
     "featureTrustTitle": "Ihmisiä, ei porttikieltoja",
     "featureTrustBody": "Läpinäkyvä moderointi ennakkoilmoituksella ja valitusoikeudella. Ei koskaan noloa banneria sivullasi.",
     "featureEuTitle": "Isännöity EU:ssa",
-    "featureEuBody": "Tietosi pysyvät Euroopan unionissa. GDPR oletuksena.",
     "featureDomainTitle": "Oma verkkotunnuksesi",
     "featureDomainBody": "Oma verkkotunnus maksullisissa paketeissa — maineesi ei koskaan riipu muiden väärinkäytöksistä.",
     "featureAiTitle": "Tekoälykäännös yhdellä klikkauksella",
@@ -48,8 +46,6 @@
     "faqTitle": "Usein kysytyt kysymykset",
     "faq1q": "Mikä Linketto on?",
     "faq1a": "Linketto on link-in-bio-sivu: yksi linkki, joka kokoaa kaikki linkkisi, tuotteesi ja yhteystietosi. Ainutlaatuista: sivusi puhuu jokaisen kävijän kieltä — rakenna se kerran ja se näkyy kaikilla EU:n 24 virallisella kielellä.",
-    "faq2q": "Miten Linketto on parempi kuin Linktree?",
-    "faq2a": "Neljä asiaa: profiilisi on monikielinen (Linktree on vain englanniksi), se on isännöity EU:ssa GDPR oletuksena, analytiikka on evästeetön ja ilman henkilötietoja, ja myyntipalkkiot ovat 8/4/0/0 % paketin mukaan — Linktreessä 12 % ja 9 %.",
     "faq3q": "Paljonko Linketto maksaa?",
     "faq3a": "Ilmaispaketti on aidosti ilmainen — rajattomasti linkkejä ja 2 kieliversiota. Pro maksaa 4 €/kk (kaikki kielet, oma verkkotunnus), Business maksaa 9 €/kk (0 % palkkio, enintään 5 profiilia), ja Perustaja on kertamaksu 49 € — Pro ikuisesti 0 % palkkiolla.",
     "faq4q": "Miten monikielinen profiili toimii?",
@@ -113,8 +109,7 @@
     "noAccount": "Eikö sinulla ole vielä tiliä? Rekisteröidy.",
     "errorInvalid": "Väärä sähköposti tai salasana.",
     "errorExists": "Tällä sähköpostilla on jo tili.",
-    "errorGeneric": "Jokin meni pieleen. Yritä uudelleen.",
-    "referredBanner": "Rekisteröidyt kutsun kautta — ystäväsi saa bonuksen, jos otat maksullisen paketin."
+    "errorGeneric": "Jokin meni pieleen. Yritä uudelleen."
   },
   "dashboard": {
     "title": "Hallintapaneelisi",

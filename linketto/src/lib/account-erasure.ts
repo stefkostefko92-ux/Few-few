@@ -22,11 +22,14 @@ export type ErasureResult = 'deleted' | 'anonymized';
 export async function eraseUser(userId: string): Promise<ErasureResult> {
   // Пазят се и покупките (OSS/Н-18), и платеният достъп на купувачите
   // (членствата са Entitlement БЕЗ Purchase) — и двата FK са Restrict.
-  const [purchases, entitlements] = await Promise.all([
+  // Изплатените/заявени реферални бонуси са разход в счетоводството (10 г.) —
+  // ReferralPayout е Cascade към User, затова при тях акаунтът се анонимизира.
+  const [purchases, entitlements, payouts] = await Promise.all([
     prisma.purchase.count({ where: { product: { profile: { userId } } } }),
     prisma.entitlement.count({ where: { product: { profile: { userId } } } }),
+    prisma.referralPayout.count({ where: { userId } }),
   ]);
-  if (purchases + entitlements === 0) {
+  if (purchases + entitlements + payouts === 0) {
     await prisma.user.delete({ where: { id: userId } });
     return 'deleted';
   }
@@ -90,6 +93,7 @@ export async function eraseUser(userId: string): Promise<ErasureResult> {
         referralCreditCents: 0,
         stripeCustomerId: null,
         stripeChargesEnabled: false,
+        digestOptOut: true,
       },
     }),
   ]);

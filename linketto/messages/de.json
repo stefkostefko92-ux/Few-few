@@ -18,13 +18,11 @@
     "featureLangTitle": "Mehrsprachig von Geburt an",
     "featureLangBody": "Eine Seite, viele Sprachen: Besucher sehen dein Profil automatisch in ihrer eigenen Sprache.",
     "featureFeeTitle": "Reduzierte Provisionen",
-    "featureFeeBody": "Nur 8 % im Gratis-Plan, 4 % bei Pro und 0 % bei Business und Founder — statt 12 % und 9 % anderswo.",
     "featureAnalyticsTitle": "Analytik ohne Cookies",
     "featureAnalyticsBody": "Wir zählen Klicks, keine Menschen. Keine personenbezogenen Daten, kein Consent-Banner.",
     "featureTrustTitle": "Menschen statt Sperrungen",
     "featureTrustBody": "Transparente Moderation mit Vorankündigung und Widerspruchsrecht. Nie ein beschämendes Banner auf deiner Seite.",
     "featureEuTitle": "Gehostet in der EU",
-    "featureEuBody": "Deine Daten bleiben in der Europäischen Union. DSGVO als Standard.",
     "featureDomainTitle": "Deine eigene Domain",
     "featureDomainBody": "Eigene Domain in den Bezahlplänen — dein Ruf hängt nie vom Missbrauch anderer ab.",
     "featureAiTitle": "KI-Übersetzung mit einem Klick",
@@ -48,8 +46,6 @@
     "faqTitle": "Häufige Fragen",
     "faq1q": "Was ist Linketto?",
     "faq1a": "Linketto ist eine Link-in-Bio-Seite: ein Link, der alle deine Links, Produkte und Kontakte bündelt. Das Besondere: deine Seite spricht die Sprache jedes Besuchers — einmal erstellt, erscheint sie in allen 24 Amtssprachen der EU.",
-    "faq2q": "Was macht Linketto besser als Linktree?",
-    "faq2a": "Vier Dinge: dein Profil ist mehrsprachig (Linktree ist nur auf Englisch), es wird in der EU mit DSGVO als Standard gehostet, die Analytik kommt ohne Cookies und ohne persönliche Daten aus, und die Verkaufsprovisionen liegen je nach Plan bei 8/4/0/0% — gegenüber 12% und 9% bei Linktree.",
     "faq3q": "Was kostet Linketto?",
     "faq3a": "Der Free-Plan ist wirklich kostenlos — unbegrenzte Links und 2 Sprachversionen. Pro kostet 4 €/Monat (alle Sprachen, eigene Domain), Business 9 €/Monat (0% Provision, bis zu 5 Profile) und Founder ist eine Einmalzahlung von 49 € — Pro für immer mit 0% Provision.",
     "faq4q": "Wie funktioniert das mehrsprachige Profil?",
@@ -113,8 +109,7 @@
     "noAccount": "Noch kein Konto? Registrieren.",
     "errorInvalid": "Falsche E-Mail oder falsches Passwort.",
     "errorExists": "Mit dieser E-Mail existiert bereits ein Konto.",
-    "errorGeneric": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
-    "referredBanner": "Du registrierst dich über eine Einladung — dein Freund erhält einen Bonus, wenn du einen kostenpflichtigen Plan wählst."
+    "errorGeneric": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
   },
   "dashboard": {
     "title": "Dein Dashboard",

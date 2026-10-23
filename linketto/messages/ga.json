@@ -18,13 +18,11 @@
     "featureLangTitle": "Il-teangach ó dhúchas",
     "featureLangBody": "Leathanach amháin, mórán teangacha: feiceann an cuairteoir do phróifíl ina theanga féin, go huathoibríoch.",
     "featureFeeTitle": "Coimisiúin laghdaithe",
-    "featureFeeBody": "Gan ach 8% ar an bplean saor in aisce, 4% ar Pro agus 0% ar Business agus Founder — i gcoinne 12% agus 9% in áiteanna eile.",
     "featureAnalyticsTitle": "Anailísíocht gan fianáin",
     "featureAnalyticsBody": "Comhairimid na cliceanna, ní na daoine. Gan sonraí pearsanta agus gan meirge toilithe.",
     "featureTrustTitle": "Daoine, ní coscanna",
     "featureTrustBody": "Modhnóireacht thrédhearcach le fógra agus an ceart achomhairc. Meirge náireach ar do leathanach — riamh.",
     "featureEuTitle": "Óstáilte san AE",
-    "featureEuBody": "Fanann do chuid sonraí san Aontas Eorpach. GDPR mar réamhshocrú.",
     "featureDomainTitle": "D'fhearann féin",
     "featureDomainBody": "Fearainn shaincheaptha ar na pleananna íoctha — ní bhraitheann do chlú ar mhí-úsáid duine eile riamh.",
     "featureAiTitle": "Aistriúchán AI le cliceáil amháin",
@@ -48,8 +46,6 @@
     "faqTitle": "Ceisteanna coitianta",
     "faq1q": "Cad é Linketto?",
     "faq1a": "Is leathanach „link in bio“ é Linketto: nasc amháin a bhailíonn do naisc, do tháirgí agus do theagmhálacha go léir. Is é an rud uathúil: labhraíonn do leathanach teanga gach cuairteora — déan uair amháin é agus taispeántar é i ngach ceann de 24 theanga oifigiúla an AE.",
-    "faq2q": "Cén chaoi a bhfuil Linketto níos fearr ná Linktree?",
-    "faq2a": "Ceithre rud: tá do phróifíl il-teangach (níl Linktree ach i mBéarla), tá sé óstáilte san AE le GDPR mar réamhshocrú, tá an anailísíocht saor ó fhianáin gan sonraí pearsanta, agus is 8/4/0/0% de réir plean iad na coimisiúin díolacháin — i gcoinne 12% agus 9% ag Linktree.",
     "faq3q": "Cé mhéad a chosnaíonn Linketto?",
     "faq3a": "Tá an plean saor in aisce saor go fírinneach — naisc gan teorainn agus 2 leagan teanga. Tá Pro €4/mí (gach teanga, fearann féin), tá Business €9/mí (0% coimisiún, suas le 5 phróifíl), agus is íocaíocht aonuaire €49 é Founder — Pro go deo le 0% coimisiún.",
     "faq4q": "Conas a oibríonn an phróifíl il-teangach?",
@@ -113,8 +109,7 @@
     "noAccount": "Gan cuntas fós? Cláraigh.",
     "errorInvalid": "Ríomhphost nó pasfhocal mícheart.",
     "errorExists": "Tá cuntas leis an ríomhphost seo ann cheana.",
-    "errorGeneric": "Chuaigh rud éigin amú. Bain triail eile as.",
-    "referredBanner": "Tá tú ag clárú trí chuireadh — tuilleann do chara bónas má thógann tú plean íoctha."
+    "errorGeneric": "Chuaigh rud éigin amú. Bain triail eile as."
   },
   "dashboard": {
     "title": "Do dheais",

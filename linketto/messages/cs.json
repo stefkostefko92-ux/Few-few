@@ -18,13 +18,11 @@
     "featureLangTitle": "Vícejazyčný od narození",
     "featureLangBody": "Jedna stránka, mnoho jazyků: návštěvník vidí tvůj profil ve svém jazyce, automaticky.",
     "featureFeeTitle": "Nižší provize",
-    "featureFeeBody": "Jen 8 % v bezplatném plánu, 4 % v Pro a 0 % v Business a Founder — oproti 12 % a 9 % jinde.",
     "featureAnalyticsTitle": "Analytika bez cookies",
     "featureAnalyticsBody": "Počítáme kliknutí, ne lidi. Bez osobních údajů a bez lišty se souhlasem.",
     "featureTrustTitle": "Lidé, ne bany",
     "featureTrustBody": "Transparentní moderace s upozorněním a právem na odvolání. Nikdy ostudná cedule na tvé stránce.",
     "featureEuTitle": "Hostovaný v EU",
-    "featureEuBody": "Tvá data zůstávají v Evropské unii. GDPR ve výchozím nastavení.",
     "featureDomainTitle": "Tvá vlastní doména",
     "featureDomainBody": "Vlastní doména v placených plánech — tvá reputace nikdy nezávisí na cizím zneužití.",
     "featureAiTitle": "AI překlad jedním kliknutím",
@@ -48,8 +46,6 @@
     "faqTitle": "Časté dotazy",
     "faq1q": "Co je Linketto?",
     "faq1a": "Linketto je stránka „link in bio”: jeden odkaz, který sdružuje všechny tvé odkazy, produkty a kontakty. Jedinečné je, že tvá stránka mluví jazykem každého návštěvníka — vytvoř ji jednou a zobrazí se ve všech 24 úředních jazycích EU.",
-    "faq2q": "Čím je Linketto lepší než Linktree?",
-    "faq2a": "Čtyři věci: tvůj profil je vícejazyčný (Linktree je jen anglicky), je hostovaný v EU s GDPR ve výchozím nastavení, analytika je bez cookies a bez osobních údajů a provize z prodejů jsou 8/4/0/0 % podle plánu — oproti 12 % a 9 % u Linktree.",
     "faq3q": "Kolik Linketto stojí?",
     "faq3a": "Bezplatný plán je opravdu zdarma — neomezené odkazy a 2 jazykové verze. Pro je €4/měs. (všechny jazyky, vlastní doména), Business je €9/měs. (0 % provize, až 5 profilů) a Founder je jednorázově €49 — Pro navždy s 0 % provizí.",
     "faq4q": "Jak funguje vícejazyčný profil?",
@@ -113,8 +109,7 @@
     "noAccount": "Nemáš účet? Registruj se.",
     "errorInvalid": "Nesprávný e-mail nebo heslo.",
     "errorExists": "Účet s tímto e-mailem už existuje.",
-    "errorGeneric": "Něco se pokazilo. Zkus to znovu.",
-    "referredBanner": "Registruješ se z pozvánky — tvůj přítel dostane bonus, pokud si vezmeš placený plán."
+    "errorGeneric": "Něco se pokazilo. Zkus to znovu."
   },
   "dashboard": {
     "title": "Tvá nástěnka",

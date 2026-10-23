@@ -18,13 +18,11 @@
     "featureLangTitle": "Multilingue dalla nascita",
     "featureLangBody": "Una pagina, tante lingue: il visitatore vede il tuo profilo nella propria lingua, automaticamente.",
     "featureFeeTitle": "Commissioni ridotte",
-    "featureFeeBody": "Solo l'8% sul piano gratuito, il 4% su Pro e lo 0% su Business e Founder — contro il 12% e il 9% altrove.",
     "featureAnalyticsTitle": "Analisi senza cookie",
     "featureAnalyticsBody": "Contiamo i clic, non le persone. Nessun dato personale e nessun banner di consenso.",
     "featureTrustTitle": "Persone, non ban",
     "featureTrustBody": "Moderazione trasparente con preavviso e diritto di ricorso. Mai un banner umiliante sulla tua pagina.",
     "featureEuTitle": "Ospitato nell'UE",
-    "featureEuBody": "I tuoi dati restano nell'Unione Europea. GDPR di default.",
     "featureDomainTitle": "Il tuo dominio",
     "featureDomainBody": "Dominio personalizzato sui piani a pagamento — la tua reputazione non dipende dagli abusi altrui.",
     "featureAiTitle": "Traduzione AI con un clic",
@@ -48,8 +46,6 @@
     "faqTitle": "Domande frequenti",
     "faq1q": "Che cos’è Linketto?",
     "faq1a": "Linketto è una pagina link in bio: un unico link che raccoglie tutti i tuoi link, prodotti e contatti. La parte unica: la pagina parla la lingua di ogni visitatore — la crei una volta e appare in tutte le 24 lingue ufficiali dell’UE.",
-    "faq2q": "In cosa Linketto è meglio di Linktree?",
-    "faq2a": "Quattro cose: il profilo è multilingue (Linktree è solo in inglese), è ospitato nell’UE con GDPR di default, le analisi sono senza cookie e senza dati personali, e le commissioni sulle vendite sono 8/4/0/0% per piano — contro il 12% e il 9% di Linktree.",
     "faq3q": "Quanto costa Linketto?",
     "faq3a": "Il piano Free è davvero gratuito — link illimitati e 2 versioni linguistiche. Pro costa €4/mese (tutte le lingue, dominio personalizzato), Business €9/mese (0% di commissioni, fino a 5 profili) e Founder è un pagamento unico di €49 — Pro per sempre con 0% di commissioni.",
     "faq4q": "Come funziona il profilo multilingue?",
@@ -113,8 +109,7 @@
     "noAccount": "Non hai un account? Registrati.",
     "errorInvalid": "Email o password errata.",
     "errorExists": "Esiste già un account con questa email.",
-    "errorGeneric": "Qualcosa è andato storto. Riprova.",
-    "referredBanner": "Ti stai registrando tramite un invito — il tuo amico riceve un bonus se scegli un piano a pagamento."
+    "errorGeneric": "Qualcosa è andato storto. Riprova."
   },
   "dashboard": {
     "title": "Il tuo pannello",

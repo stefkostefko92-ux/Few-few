@@ -18,13 +18,11 @@
     "featureLangTitle": "Mitmekeelne sünnist saati",
     "featureLangBody": "Üks leht, palju keeli: külastaja näeb sinu profiili automaatselt oma keeles.",
     "featureFeeTitle": "Vähendatud vahendustasud",
-    "featureFeeBody": "Ainult 8% tasuta paketis, 4% Pro’s ja 0% Business’is ja Founder’is — võrreldes 12% ja 9%-ga mujal.",
     "featureAnalyticsTitle": "Küpsisteta analüütika",
     "featureAnalyticsBody": "Loeme klikke, mitte inimesi. Ei mingeid isikuandmeid ega nõusolekuriba.",
     "featureTrustTitle": "Inimesed, mitte bännid",
     "featureTrustBody": "Läbipaistev modereerimine etteteatamise ja edasikaebeõigusega. Mitte kunagi häbimärki sinu lehel.",
     "featureEuTitle": "Majutatud ELis",
-    "featureEuBody": "Sinu andmed jäävad Euroopa Liitu. GDPR vaikimisi.",
     "featureDomainTitle": "Sinu oma domeen",
     "featureDomainBody": "Oma domeen tasulistes pakettides — sinu maine ei sõltu kunagi kellegi teise kuritarvitusest.",
     "featureAiTitle": "Ühe klikiga AI-tõlge",
@@ -48,8 +46,6 @@
     "faqTitle": "Korduma kippuvad küsimused",
     "faq1q": "Mis on Linketto?",
     "faq1a": "Linketto on „link in bio“ leht: üks link, mis koondab kõik su lingid, tooted ja kontaktid. Erilisus: sinu leht räägib iga külastaja keelt — ehita see üks kord ja see kuvatakse kõigis 24 ELi ametlikus keeles.",
-    "faq2q": "Miks on Linketto Linktree’st parem?",
-    "faq2a": "Neli asja: sinu profiil on mitmekeelne (Linktree on ainult inglise keeles), see on majutatud ELis GDPR-iga vaikimisi, analüütika on küpsisteta ja isikuandmeteta ning müügivahendustasud on paketi järgi 8/4/0/0% — võrreldes Linktree 12% ja 9%-ga.",
     "faq3q": "Kui palju Linketto maksab?",
     "faq3a": "Tasuta pakett on tõeliselt tasuta — piiramatud lingid ja 2 keeleversiooni. Pro on €4/kuus (kõik keeled, oma domeen), Business on €9/kuus (0% vahendustasu, kuni 5 profiili) ja Founder on ühekordne €49 — Pro igavesti 0% vahendustasuga.",
     "faq4q": "Kuidas mitmekeelne profiil töötab?",
@@ -113,8 +109,7 @@
     "noAccount": "Pole veel kontot? Registreeru.",
     "errorInvalid": "Vale e-post või parool.",
     "errorExists": "Selle e-postiga konto on juba olemas.",
-    "errorGeneric": "Midagi läks valesti. Palun proovi uuesti.",
-    "referredBanner": "Sa registreerud kutse kaudu — su sõber teenib boonuse, kui valid tasulise paketi."
+    "errorGeneric": "Midagi läks valesti. Palun proovi uuesti."
   },
   "dashboard": {
     "title": "Sinu töölaud",

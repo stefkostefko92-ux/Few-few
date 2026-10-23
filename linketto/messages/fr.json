@@ -18,13 +18,11 @@
     "featureLangTitle": "Multilingue de naissance",
     "featureLangBody": "Une page, plusieurs langues : le visiteur voit votre profil dans sa propre langue, automatiquement.",
     "featureFeeTitle": "Commissions réduites",
-    "featureFeeBody": "Seulement 8 % sur le plan gratuit, 4 % sur Pro et 0 % sur Business et Founder — contre 12 % et 9 % ailleurs.",
     "featureAnalyticsTitle": "Statistiques sans cookies",
     "featureAnalyticsBody": "Nous comptons les clics, pas les personnes. Aucune donnée personnelle, aucun bandeau de consentement.",
     "featureTrustTitle": "Des humains, pas des bannissements",
     "featureTrustBody": "Modération transparente avec préavis et droit de recours. Jamais de bannière humiliante sur votre page.",
     "featureEuTitle": "Hébergé dans l'UE",
-    "featureEuBody": "Vos données restent dans l'Union européenne. RGPD par défaut.",
     "featureDomainTitle": "Votre propre domaine",
     "featureDomainBody": "Domaine personnalisé sur les plans payants — votre réputation ne dépend jamais des abus des autres.",
     "featureAiTitle": "Traduction IA en un clic",
@@ -48,8 +46,6 @@
     "faqTitle": "Questions fréquentes",
     "faq1q": "Qu’est-ce que Linketto ?",
     "faq1a": "Linketto est une page « link in bio » : un seul lien qui rassemble tous vos liens, produits et contacts. Sa particularité : votre page parle la langue de chaque visiteur — créez-la une fois, elle s’affiche dans les 24 langues officielles de l’UE.",
-    "faq2q": "En quoi Linketto est-il meilleur que Linktree ?",
-    "faq2a": "Quatre choses : votre profil est multilingue (Linktree n’existe qu’en anglais), il est hébergé dans l’UE avec le RGPD par défaut, les statistiques se passent de cookies et de données personnelles, et les commissions sur les ventes sont de 8/4/0/0 % selon le plan — contre 12 % et 9 % chez Linktree.",
     "faq3q": "Combien coûte Linketto ?",
     "faq3a": "Le plan gratuit est vraiment gratuit — liens illimités et 2 versions linguistiques. Pro coûte 4 €/mois (toutes les langues, domaine personnalisé), Business 9 €/mois (0 % de commission, jusqu’à 5 profils) et Founder est un paiement unique de 49 € — Pro à vie avec 0 % de commission.",
     "faq4q": "Comment fonctionne le profil multilingue ?",
@@ -113,8 +109,7 @@
     "noAccount": "Pas encore de compte ? Inscrivez-vous.",
     "errorInvalid": "E-mail ou mot de passe incorrect.",
     "errorExists": "Un compte existe déjà avec cet e-mail.",
-    "errorGeneric": "Une erreur est survenue. Veuillez réessayer.",
-    "referredBanner": "Tu t'inscris via une invitation — ton ami reçoit un bonus si tu choisis un plan payant."
+    "errorGeneric": "Une erreur est survenue. Veuillez réessayer."
   },
   "dashboard": {
     "title": "Votre tableau de bord",

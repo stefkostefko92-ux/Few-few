@@ -103,8 +103,11 @@ DATABASE_URL="postgresql://…" npx prisma migrate deploy
 | `STRIPE_PRICE_FOUNDER` | Stripe → Products → Prices | еднократно плащане |
 | `DATA_DIR` | абсолютна папка извън release-а, напр. `/var/lib/linketto` | **ЗАДЪЛЖИТЕЛНА на сървъра** — качените аватари/фонове (`DATA_DIR/uploads`); по подразбиране `./data` се губи при всеки нов release |
 | `RESEND_API_KEY` + `EMAIL_FROM` | resend.com | **ЗАДЪЛЖИТЕЛНИ** — без тях курсовете (достъп през magic-link имейл) са НЕДОСТАВИМИ и разписките/доставките не тръгват; **подпиши DPA + EU регион** |
-| `GEMINI_API_KEY` | aistudio.google.com | „Преведи с AI"; за ЕС ползвай **платен tier + DPA** (иначе входът се ползва за обучение) |
+| `GEMINI_API_KEY` | aistudio.google.com | „Преведи с AI", „Генерирай био“ и публичният `/tools/bio`; за ЕС условията на Gemini API позволяват **само платен tier + DPA** (иначе входът се ползва за обучение) |
+| `GEMINI_PAID_TIER` | ти | `1` = потвърждаваш, че ключът е на **платен** акаунт с DPA. Без него всички AI функции са изключени (fail-closed) — бутоните връщат „не е наличен“ |
 | `ADMIN_EMAILS` | ти | запетая-разделени имейли с достъп до `/admin` |
+| `PROFILE_HOST` | кратък домейн, напр. `lnkt.to` | по избор — линковете за споделяне, QR и vCard стават `https://<хост>/<slug>` (middleware пренаписва към `/u/<slug>`; всичко друго на хоста отива на основния сайт). Нужни: DNS A/AAAA към сървъра, TLS сертификат и Nginx `server_name` за хоста. Canonical/sitemap остават на `PUBLIC_BASE_URL` |
+| `CRON_SECRET` | `openssl rand -hex 32` | седмичният отчет „езикова дупка“ (§9) и подписът на линка за отписване; ≥24 знака; без него маршрутът е изключен (503); смяната обезсилва старите линкове за отписване |
 
 ## 3. Stripe webhook
 
@@ -213,6 +216,23 @@ Health probe: `GET /api/health` → `{"status":"ok","db":"up"}` (503 при па
   DELETE FROM "BuyerSession"   WHERE "expiresAt" < now();
   DELETE FROM "Session"        WHERE "expiresAt" < now();
   ```
+
+- **Cron за седмичния отчет (дневно, напр. 08:10):** `POST /api/cron/digest`
+  с хедър `Authorization: Bearer <CRON_SECRET>` (стойността — от `.env` на
+  сървъра, mode 600; никога в crontab в чист текст на споделена машина —
+  чети я от файла). Дневното пускане е нарочно: всеки получава най-много 1
+  отчет на ~седмица (`User.lastDigestAt`), партида до 300 на пускане; пращат
+  се само при реални посещения. Отказ — с 1 клик от имейла (RFC 8058
+  `List-Unsubscribe-Post`) или от таблото (секция „Езикова дупка“).
+- **Кратък домейн (`PROFILE_HOST`, по избор):** след DNS + TLS провери, че
+  `https://<хост>/<съществуващ slug>` показва профила, а `https://<хост>/`
+  пренасочва към основния сайт.
+- **IndexNow след деплой** (нови страници `/tools`, `/tools/qr`, `/tools/bio`,
+  `/vs/linktree`, `/vs/beacons` + sitemap):
+  `node tools/seo/indexnow.mjs https://linketto.carbonstealth.eu`.
+- **Сравнителните страници (`/vs/*`):** фактите за конкурентите са в
+  `src/lib/comparisons.ts` с дата на проверка — преглеждай ги поне веднъж на
+  тримесечие (цените им се менят; остарял факт = подвеждаща сравнителна реклама).
 
 - **Правен преглед:** текстовете в `messages/*.json` (`legal.*`) са изрядни, но
   минават през жив юрист/DPO преди масов трафик.

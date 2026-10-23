@@ -14,6 +14,7 @@ import { requestIp } from '@/lib/admin';
 import { prisma } from '@/lib/db';
 import { RETENTION_DAYS, daysAgo } from '@/lib/retention-days';
 import { generateReferralCode } from '@/lib/referral';
+import { isValidSlug, normalizeSlug } from '@/lib/slug';
 
 // Сигурност на входа (декларирано в политиката): IP при успешен вход,
 // пази се 90 дни. Чисти се при всяко ново записване — без отделен cron.
@@ -42,12 +43,21 @@ function localeFrom(formData: FormData): string {
 
 export async function registerAction(formData: FormData): Promise<void> {
   const locale = localeFrom(formData);
+  // При грешка пазим реферала и запазеното име — иначе се губят с формата.
+  const keep = new URLSearchParams();
+  for (const key of ['ref', 'handle'] as const) {
+    const value = String(formData.get(key) ?? '').trim().slice(0, 64);
+    if (value) keep.set(key, value);
+  }
+  const kept = keep.toString();
+  const back = (error: string) =>
+    `/${locale}/register?error=${error}${kept ? `&${kept}` : ''}`;
   const parsed = credentialsSchema.safeParse({
     email: formData.get('email'),
     password: formData.get('password'),
   });
   if (!parsed.success) {
-    redirect(`/${locale}/register?error=generic`);
+    redirect(back('generic'));
   }
   const name = String(formData.get('name') ?? '').trim().slice(0, 100) || null;
   const user = await registerUser(
@@ -57,7 +67,7 @@ export async function registerAction(formData: FormData): Promise<void> {
     locale,
   );
   if (!user) {
-    redirect(`/${locale}/register?error=exists`);
+    redirect(back('exists'));
   }
 
   // Реферал: ако идва през нечий линк (?ref=CODE), запомняме поканилия.
@@ -77,6 +87,25 @@ export async function registerAction(formData: FormData): Promise<void> {
         referrer && referrer.id !== user.id ? referrer.id : undefined,
     },
   });
+
+  // „Запази си името“: профилът с избрания адрес се създава веднага, за да
+  // не го вземе някой друг между регистрацията и първото влизане в таблото.
+  // Зает/невалиден адрес → без профил (таблото предлага създаване).
+  const handle = normalizeSlug(String(formData.get('handle') ?? '').slice(0, 64));
+  if (handle && isValidSlug(handle)) {
+    await prisma.profile
+      .create({
+        data: {
+          userId: user.id,
+          slug: handle,
+          defaultLocale: locale,
+          translations: {
+            create: { locale, displayName: name ?? handle },
+          },
+        },
+      })
+      .catch(() => undefined); // уникалността на slug е в базата (P2002)
+  }
 
   await logLoginIp(user.id);
   await createSession(user.id);

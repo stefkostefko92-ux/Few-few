@@ -11,6 +11,7 @@ import { planFor } from '@/lib/plans';
 import { parseBlockInput } from '@/lib/blocks';
 import { parseStyle, styleSchema } from '@/lib/style';
 import { saveUploadedImage } from '@/lib/media';
+import { applyTemplate, isTemplateId, NICHE_TEMPLATES } from '@/lib/templates';
 import type { Prisma } from '@prisma/client';
 
 const THEMES = ['aurora', 'mono', 'dusk'] as const;
@@ -46,14 +47,46 @@ export async function createProfileAction(formData: FormData): Promise<void> {
   if (existing) {
     redirect(await dash(uiLocale, '?error=slug'));
   }
+  // По избор: шаблон по ниша още при създаването.
+  const template = String(formData.get('template') ?? '');
+  const preset = isTemplateId(template)
+    ? {
+        accent: NICHE_TEMPLATES[template].accent,
+        style: applyTemplate(parseStyle(null), template),
+      }
+    : {};
   await prisma.profile.create({
     data: {
       userId: user.id,
       slug,
       defaultLocale: user.locale,
+      ...preset,
       translations: {
         create: { locale: user.locale, displayName },
       },
+    },
+  });
+  redirect(await dash(uiLocale));
+}
+
+// Шаблон по ниша върху съществуващ профил — визуален пресет за 1 клик;
+// аватарът, фоновата снимка и платените настройки се пазят.
+export async function applyTemplateAction(formData: FormData): Promise<void> {
+  const uiLocale = localeFrom(formData);
+  const user = await requireUser(uiLocale);
+  const profileId = String(formData.get('profileId') ?? '');
+  const template = String(formData.get('template') ?? '');
+  if (!isTemplateId(template)) redirect(await dash(uiLocale, '?error=style'));
+  const profile = await prisma.profile.findFirst({
+    where: { id: profileId, userId: user.id },
+    select: { style: true },
+  });
+  if (!profile) redirect(await dash(uiLocale, '?error=generic'));
+  await prisma.profile.update({
+    where: { id: profileId },
+    data: {
+      accent: NICHE_TEMPLATES[template].accent,
+      style: applyTemplate(parseStyle(profile.style), template),
     },
   });
   redirect(await dash(uiLocale));

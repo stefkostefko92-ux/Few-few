@@ -5,6 +5,8 @@ import { getTranslations } from 'next-intl/server';
 import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
 import { safeJsonLd } from '@/lib/jsonld';
 import { CursorGlow } from '@/components/CursorGlow';
+import { ClaimHandle } from '@/components/ClaimHandle';
+import { profileUrl } from '@/lib/profile-url';
 import { faqJsonLd, pageMetadata, siteJsonLd } from '@/lib/seo';
 import {
   CheckIcon,
@@ -211,19 +213,36 @@ export default async function HomePage({
                 <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-slate-300 lg:mx-0">
                   {t('heroSubtitle')}
                 </p>
-                <div className="mt-9 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:gap-4 lg:justify-start">
-                  <Link
-                    href={`/${locale}/register`}
-                    className="btn-shine w-full rounded-full bg-white px-7 py-3.5 text-center font-semibold text-slate-900 sm:w-auto shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-sky-400/30"
-                  >
-                    {t('ctaPrimary')}
-                  </Link>
-                  <a
-                    href="#pricing"
-                    className="w-full rounded-full border border-white/30 px-7 py-3.5 text-center font-semibold text-white backdrop-blur sm:w-auto transition hover:border-white/60 hover:bg-white/5"
-                  >
-                    {t('ctaSecondary')}
-                  </a>
+                {/* „Запази си името“ — от първия екран право към своя адрес */}
+                <div className="mt-9">
+                  <ClaimHandle
+                    locale={locale}
+                    prefix={profileUrl('').replace(/^https?:\/\//, '')}
+                    labels={{
+                      label: t('claimLabel'),
+                      placeholder: t('claimPlaceholder'),
+                      cta: t('claimCta'),
+                      checking: t('claimChecking'),
+                      available: t.raw('claimAvailable') as string,
+                      taken: t.raw('claimTaken') as string,
+                      invalid: t('claimInvalid'),
+                      reserved: t.raw('claimTaken') as string,
+                    }}
+                  />
+                  <div className="mt-1 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm lg:justify-start">
+                    <a
+                      href="#pricing"
+                      className="font-semibold text-sky-200 underline-offset-4 transition hover:text-white hover:underline"
+                    >
+                      {t('ctaSecondary')}
+                    </a>
+                    <Link
+                      href={`/${locale}/tools`}
+                      className="font-semibold text-sky-200 underline-offset-4 transition hover:text-white hover:underline"
+                    >
+                      {t('claimTools')}
+                    </Link>
+                  </div>
                 </div>
               </div>
 

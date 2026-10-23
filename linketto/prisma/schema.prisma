@@ -32,6 +32,8 @@ model User {
   referralCode         String?   @unique // личен реферален код (за поканите)
   referredById         String?   // кой е поканил този потребител
   referralCreditCents  Int       @default(0) // натрупан бонус от рефералите
+  digestOptOut         Boolean   @default(false) // отказ от седмичния отчет („езикова дупка“)
+  lastDigestAt         DateTime? // кога cron-ът на отчета е обработил потребителя последно (въртене на партидата)
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
   sessions             Session[]

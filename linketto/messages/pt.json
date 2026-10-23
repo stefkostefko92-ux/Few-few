@@ -18,13 +18,11 @@
     "featureLangTitle": "Multilingue à nascença",
     "featureLangBody": "Uma página, muitos idiomas: os visitantes veem o teu perfil no seu próprio idioma, automaticamente.",
     "featureFeeTitle": "Comissões reduzidas",
-    "featureFeeBody": "Apenas 8% no plano gratuito, 4% no Pro e 0% no Business e Founder — contra 12% e 9% noutros sítios.",
     "featureAnalyticsTitle": "Análises sem cookies",
     "featureAnalyticsBody": "Contamos cliques, não pessoas. Sem dados pessoais e sem banner de consentimento.",
     "featureTrustTitle": "Pessoas, não banimentos",
     "featureTrustBody": "Moderação transparente, com aviso e direito de recurso. Nunca um banner vergonhoso na tua página.",
     "featureEuTitle": "Alojado na UE",
-    "featureEuBody": "Os teus dados ficam na União Europeia. GDPR por predefinição.",
     "featureDomainTitle": "O teu próprio domínio",
     "featureDomainBody": "Domínios personalizados nos planos pagos — a tua reputação nunca depende do abuso de outra pessoa.",
     "featureAiTitle": "Tradução por IA com um clique",
@@ -48,8 +46,6 @@
     "faqTitle": "Perguntas frequentes",
     "faq1q": "O que é o Linketto?",
     "faq1a": "O Linketto é uma página link in bio: um único link que reúne todos os teus links, produtos e contactos. O que o torna único: a tua página fala o idioma de cada visitante — cria-a uma vez e ela aparece nos 24 idiomas oficiais da UE.",
-    "faq2q": "Em que é que o Linketto é melhor do que o Linktree?",
-    "faq2a": "Quatro coisas: o teu perfil é multilingue (o Linktree é só em inglês), é alojado na UE com GDPR por predefinição, as análises não têm cookies nem dados pessoais, e as comissões sobre vendas são de 8/4/0/0% consoante o plano — contra 12% e 9% no Linktree.",
     "faq3q": "Quanto custa o Linketto?",
     "faq3a": "O plano gratuito é mesmo gratuito — links ilimitados e 2 versões de idioma. O Pro custa €4/mês (todos os idiomas, domínio próprio), o Business custa €9/mês (0% de comissão, até 5 perfis) e o Founder é um pagamento único de €49 — Pro para sempre com 0% de comissão.",
     "faq4q": "Como funciona o perfil multilingue?",
@@ -113,8 +109,7 @@
     "noAccount": "Ainda não tens conta? Cria uma.",
     "errorInvalid": "E-mail ou palavra-passe incorretos.",
     "errorExists": "Já existe uma conta com este e-mail.",
-    "errorGeneric": "Algo correu mal. Tenta novamente.",
-    "referredBanner": "Estás a registar-te através de um convite — o teu amigo ganha um bónus se escolheres um plano pago."
+    "errorGeneric": "Algo correu mal. Tenta novamente."
   },
   "dashboard": {
     "title": "O teu painel",

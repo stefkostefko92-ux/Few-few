@@ -1,5 +1,5 @@
 import 'server-only';
-import { cleanBio } from './ai-text';
+import { cleanBio, geminiAllowed } from './ai-text';
 
 // AI превод на профила с един клик — Gemini Flash (същият подход като
 // mastilko): ключът е САМО server-side env, клиентът никога не говори с
@@ -22,8 +22,12 @@ export type TranslatedByLocale = Record<
   }
 >;
 
+// Fail-closed без платен tier (условията на Gemini API за ЕИП) — ai-text.ts.
 export function aiConfigured(): boolean {
-  return Boolean(process.env.GEMINI_API_KEY);
+  return geminiAllowed({
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    GEMINI_PAID_TIER: process.env.GEMINI_PAID_TIER,
+  });
 }
 
 const GEMINI_URL = (model: string) =>
@@ -39,7 +43,7 @@ export async function generateBio(input: {
   locale: string;
 }): Promise<string | null> {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return null;
+  if (!apiKey || !aiConfigured()) return null;
   const keywords = input.keywords.trim().slice(0, 300);
   if (!keywords) return null;
   const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
@@ -94,7 +98,7 @@ export async function translateProfileContent(
   fromLocale: string,
   toLocales: string[],
 ): Promise<TranslatedByLocale | null> {
-  if (!process.env.GEMINI_API_KEY || toLocales.length === 0) return null;
+  if (!aiConfigured() || toLocales.length === 0) return null;
   const merged: TranslatedByLocale = {};
   for (let i = 0; i < toLocales.length; i += TRANSLATE_BATCH) {
     const part = await translateBatch(

@@ -18,13 +18,11 @@
     "featureLangTitle": "Multilengua 'a quanno nasce",
     "featureLangBody": "Na paggena, tanta lengue: 'o visitatore vede 'o profilo tuoje int'â lengua soja, automaticamente.",
     "featureFeeTitle": "Commissione cchiù vasce",
-    "featureFeeBody": "Sulo ll'8% ncopp'ô piano gratis, 'o 4% ncopp'a Pro e 'o 0% ncopp'a Business e Founder — contro 'o 12% e 'o 9% 'e ll'ate.",
     "featureAnalyticsTitle": "Analise senza cookie",
     "featureAnalyticsBody": "Cuntammo 'e click, no 'e perzone. Nisciuno dato personale e nisciuno banner 'e consenso.",
     "featureTrustTitle": "Perzone, no ban",
     "featureTrustBody": "Moderazione trasparente cu avviso e deritto 'e ricorzo. Maje nu banner 'e vriogna ncopp'â paggena toja.",
     "featureEuTitle": "Ospitato int'â UE",
-    "featureEuBody": "'E date tuoje restano int'â Unione Europea. GDPR pe' default.",
     "featureDomainTitle": "'O dominio tuoje",
     "featureDomainBody": "Dominio personalizzato ncopp'ê piane a pavà — 'a reputazione toja nun dipenne maje 'a ll'abbuse 'e ll'ate.",
     "featureAiTitle": "Traduzione AI cu nu click",
@@ -48,8 +46,6 @@
     "faqTitle": "Dimanne frequente",
     "faq1q": "Che cos'è Linketto?",
     "faq1a": "Linketto è na paggena link in bio: nu solo link ca arrecoglie tutte 'e link, 'e prudotte e 'e cuntatte tuoje. 'A cosa uneca: 'a paggena parla 'a lengua 'e ogne visitatore — 'a fabbriche na vota e essa cumpare int'a tutte 'e 24 lengue ufficiale d'a UE.",
-    "faq2q": "Int'a che ccosa Linketto è meglio 'e Linktree?",
-    "faq2a": "Quatto cose: 'o profilo è multilengua (Linktree è sulo n'inglese), è ospitato int'â UE cu GDPR pe' default, ll'analise so' senza cookie e senza date personale, e 'e commissione ncopp'ê vennete so' 8/4/0/0% pe' piano — contro 'o 12% e 'o 9% 'e Linktree.",
     "faq3q": "Quanto costa Linketto?",
     "faq3a": "'O piano Free è overamente gratis — link senza limite e 2 versione 'e lengua. Pro costa €4/mese (tutte 'e lengue, dominio personalizzato), Business €9/mese (0% 'e commissione, fino a 5 profile) e Founder è nu pagamento unico 'e €49 — Pro pe' sempe cu 0% 'e commissione.",
     "faq4q": "Comme funziona 'o profilo multilengua?",
@@ -113,8 +109,7 @@
     "noAccount": "Nun tiene nu cunto? Registrate.",
     "errorInvalid": "Email o password sbagliata.",
     "errorExists": "Esiste già nu cunto cu chesta email.",
-    "errorGeneric": "Quaccosa è ghiuto storto. Prova n'ata vota.",
-    "referredBanner": "Te staje registranno cu n'invito — ll'amico tuoje guaragna nu bonus si piglie nu piano a pavà."
+    "errorGeneric": "Quaccosa è ghiuto storto. Prova n'ata vota."
   },
   "dashboard": {
     "title": "'O pannello tuoje",

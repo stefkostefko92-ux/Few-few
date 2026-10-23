@@ -18,13 +18,11 @@
     "featureLangTitle": "Viacjazyčný od narodenia",
     "featureLangBody": "Jedna stránka, veľa jazykov: návštevník vidí tvoj profil vo svojom jazyku, automaticky.",
     "featureFeeTitle": "Nižšie provízie",
-    "featureFeeBody": "Len 8 % v bezplatnom pláne, 4 % v Pro a 0 % v Business a Founder — oproti 12 % a 9 % inde.",
     "featureAnalyticsTitle": "Analytika bez cookies",
     "featureAnalyticsBody": "Počítame kliknutia, nie ľudí. Bez osobných údajov a bez lišty so súhlasom.",
     "featureTrustTitle": "Ľudia, nie bany",
     "featureTrustBody": "Transparentná moderácia s upozornením a právom na odvolanie. Nikdy hanebná ceduľa na tvojej stránke.",
     "featureEuTitle": "Hostovaný v EÚ",
-    "featureEuBody": "Tvoje dáta zostávajú v Európskej únii. GDPR v predvolenom nastavení.",
     "featureDomainTitle": "Tvoja vlastná doména",
     "featureDomainBody": "Vlastná doména v platených plánoch — tvoja reputácia nikdy nezávisí od cudzieho zneužitia.",
     "featureAiTitle": "AI preklad jedným kliknutím",
@@ -48,8 +46,6 @@
     "faqTitle": "Časté otázky",
     "faq1q": "Čo je Linketto?",
     "faq1a": "Linketto je stránka „link in bio”: jeden odkaz, ktorý združuje všetky tvoje odkazy, produkty a kontakty. Jedinečné je, že tvoja stránka hovorí jazykom každého návštevníka — vytvor ju raz a zobrazí sa vo všetkých 24 úradných jazykoch EÚ.",
-    "faq2q": "Čím je Linketto lepšie ako Linktree?",
-    "faq2a": "Štyri veci: tvoj profil je viacjazyčný (Linktree je len po anglicky), je hostovaný v EÚ s GDPR v predvolenom nastavení, analytika je bez cookies a bez osobných údajov a provízie z predajov sú 8/4/0/0 % podľa plánu — oproti 12 % a 9 % u Linktree.",
     "faq3q": "Koľko Linketto stojí?",
     "faq3a": "Bezplatný plán je naozaj zadarmo — neobmedzené odkazy a 2 jazykové verzie. Pro je €4/mes. (všetky jazyky, vlastná doména), Business je €9/mes. (0 % provízia, až 5 profilov) a Founder je jednorazovo €49 — Pro navždy s 0 % províziou.",
     "faq4q": "Ako funguje viacjazyčný profil?",
@@ -113,8 +109,7 @@
     "noAccount": "Nemáš účet? Zaregistruj sa.",
     "errorInvalid": "Nesprávny e-mail alebo heslo.",
     "errorExists": "Účet s týmto e-mailom už existuje.",
-    "errorGeneric": "Niečo sa pokazilo. Skús to znova.",
-    "referredBanner": "Registruješ sa z pozvánky — tvoj priateľ dostane bonus, ak si vezmeš platený plán."
+    "errorGeneric": "Niečo sa pokazilo. Skús to znova."
   },
   "dashboard": {
     "title": "Tvoja nástenka",

@@ -3,9 +3,8 @@
 > Linketto is the multilingual "link in bio" page: all your links, products
 > and contacts on one page that speaks every visitor's language (27 interface
 > locales: all 24 official EU languages plus Neapolitan, Sicilian and Lombard dialects, chosen manually). EU-hosted,
-> GDPR by default, cookie-free analytics, sales commissions 8/4/0/0% by plan
-> (vs 12%/9% at Linktree). A product of Carbon Stealth VCC (Bulgaria, EU) —
-> https://carbonstealth.eu.
+> GDPR by default, cookie-free analytics, sales commissions 8/4/0/0% by plan.
+> A product of Carbon Stealth VCC (Bulgaria, EU) — https://carbonstealth.eu.
 
 ## Main pages
 
@@ -23,6 +22,12 @@
 - Analytics without cookies: no IP addresses, no user agents, no personal data
 - Public profiles: https://linketto.carbonstealth.eu/u/<name>, automatic visitor-language selection
 - Digital product shop via Stripe Connect; delivery only after confirmed payment
+
+## Free tools and comparisons
+
+- [Free QR code generator](https://linketto.carbonstealth.eu/en/tools/qr): in the browser, no sign-up, no watermark
+- [Free AI bio generator](https://linketto.carbonstealth.eu/en/tools/bio): a short "link in bio" text in 24 languages
+- [Linketto vs Linktree](https://linketto.carbonstealth.eu/en/vs/linktree) and [Linketto vs Beacons](https://linketto.carbonstealth.eu/en/vs/beacons): verified facts with sources and date
 
 ## Legal
 

@@ -18,13 +18,11 @@
     "featureLangTitle": "Meertalig van nature",
     "featureLangBody": "Eén pagina, veel talen: bezoekers zien je profiel automatisch in hun eigen taal.",
     "featureFeeTitle": "Lagere commissies",
-    "featureFeeBody": "Slechts 8% op het gratis abonnement, 4% op Pro en 0% op Business en Founder — tegenover 12% en 9% elders.",
     "featureAnalyticsTitle": "Analytics zonder cookies",
     "featureAnalyticsBody": "We tellen kliks, geen mensen. Geen persoonsgegevens en geen cookiebanner.",
     "featureTrustTitle": "Mensen, geen bans",
     "featureTrustBody": "Transparante moderatie met kennisgeving en recht op bezwaar. Nooit een beschamende banner op je pagina.",
     "featureEuTitle": "Gehost in de EU",
-    "featureEuBody": "Je gegevens blijven in de Europese Unie. GDPR standaard.",
     "featureDomainTitle": "Je eigen domein",
     "featureDomainBody": "Eigen domeinen op betaalde abonnementen — je reputatie hangt nooit af van het misbruik van iemand anders.",
     "featureAiTitle": "AI-vertaling met één klik",
@@ -48,8 +46,6 @@
     "faqTitle": "Veelgestelde vragen",
     "faq1q": "Wat is Linketto?",
     "faq1a": "Linketto is een link-in-bio-pagina: één link die al je links, producten en contacten bundelt. Het unieke: je pagina spreekt de taal van elke bezoeker — maak hem één keer en hij verschijnt in alle 24 officiële talen van de EU.",
-    "faq2q": "Waarom is Linketto beter dan Linktree?",
-    "faq2a": "Vier dingen: je profiel is meertalig (Linktree is alleen Engels), het is gehost in de EU met GDPR standaard, de analytics zijn cookievrij zonder persoonsgegevens, en de verkoopcommissies zijn 8/4/0/0% per abonnement — tegenover 12% en 9% bij Linktree.",
     "faq3q": "Wat kost Linketto?",
     "faq3a": "Het gratis abonnement is echt gratis — onbeperkte links en 2 taalversies. Pro kost €4/mnd (alle talen, eigen domein), Business kost €9/mnd (0% commissie, tot 5 profielen) en Founder is een eenmalige €49 — Pro voor altijd met 0% commissie.",
     "faq4q": "Hoe werkt het meertalige profiel?",
@@ -113,8 +109,7 @@
     "noAccount": "Nog geen account? Registreer je.",
     "errorInvalid": "Onjuist e-mailadres of wachtwoord.",
     "errorExists": "Er bestaat al een account met dit e-mailadres.",
-    "errorGeneric": "Er ging iets mis. Probeer het opnieuw.",
-    "referredBanner": "Je registreert je via een uitnodiging — je vriend krijgt een bonus als je een betaald abonnement neemt."
+    "errorGeneric": "Er ging iets mis. Probeer het opnieuw."
   },
   "dashboard": {
     "title": "Je dashboard",

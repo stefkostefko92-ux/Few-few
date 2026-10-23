@@ -18,13 +18,11 @@
     "featureLangTitle": "Flersproget fra fødslen",
     "featureLangBody": "Én side, mange sprog: den besøgende ser din profil på sit eget sprog, automatisk.",
     "featureFeeTitle": "Lavere gebyrer",
-    "featureFeeBody": "Kun 8 % på gratisplanen, 4 % på Pro og 0 % på Business og Grundlægger — mod 12 % og 9 % andre steder.",
     "featureAnalyticsTitle": "Statistik uden cookies",
     "featureAnalyticsBody": "Vi tæller klik, ikke mennesker. Ingen personoplysninger og ingen samtykkebanner.",
     "featureTrustTitle": "Mennesker, ikke bans",
     "featureTrustBody": "Gennemsigtig moderation med varsel og ret til at klage. Aldrig en pinlig banner på din side.",
     "featureEuTitle": "Hostet i EU",
-    "featureEuBody": "Dine data bliver i Den Europæiske Union. GDPR som standard.",
     "featureDomainTitle": "Dit eget domæne",
     "featureDomainBody": "Eget domæne på betalingsplanerne — dit omdømme afhænger aldrig af andres misbrug.",
     "featureAiTitle": "AI-oversættelse med ét klik",
@@ -48,8 +46,6 @@
     "faqTitle": "Ofte stillede spørgsmål",
     "faq1q": "Hvad er Linketto?",
     "faq1a": "Linketto er en link-in-bio-side: ét link, der samler alle dine links, produkter og kontakter. Det unikke: din side taler hver besøgendes sprog — byg den én gang, og den vises på alle 24 officielle EU-sprog.",
-    "faq2q": "Hvordan er Linketto bedre end Linktree?",
-    "faq2a": "Fire ting: din profil er flersproget (Linktree er kun på engelsk), den er hostet i EU med GDPR som standard, statistikken er uden cookies og uden personoplysninger, og salgsgebyrerne er 8/4/0/0 % pr. plan — mod 12 % og 9 % hos Linktree.",
     "faq3q": "Hvad koster Linketto?",
     "faq3a": "Gratisplanen er ægte gratis — ubegrænsede links og 2 sprogversioner. Pro koster 4 €/md. (alle sprog, eget domæne), Business koster 9 €/md. (0 % gebyr, op til 5 profiler), og Grundlægger er en engangsbetaling på 49 € — Pro for altid med 0 % gebyr.",
     "faq4q": "Hvordan fungerer den flersprogede profil?",
@@ -113,8 +109,7 @@
     "noAccount": "Ingen konto endnu? Opret en.",
     "errorInvalid": "Forkert e-mail eller adgangskode.",
     "errorExists": "Der findes allerede en konto med denne e-mail.",
-    "errorGeneric": "Noget gik galt. Prøv igen.",
-    "referredBanner": "Du tilmelder dig via en invitation — din ven får en bonus, hvis du vælger en betalingsplan."
+    "errorGeneric": "Noget gik galt. Prøv igen."
   },
   "dashboard": {
     "title": "Dit panel",

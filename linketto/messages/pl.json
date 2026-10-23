@@ -18,13 +18,11 @@
     "featureLangTitle": "Wielojęzyczny od urodzenia",
     "featureLangBody": "Jedna strona, wiele języków: odwiedzający widzi Twój profil w swoim języku, automatycznie.",
     "featureFeeTitle": "Niższe prowizje",
-    "featureFeeBody": "Tylko 8% w planie darmowym, 4% w Pro i 0% w Business oraz Founder — wobec 12% i 9% u innych.",
     "featureAnalyticsTitle": "Analityka bez ciasteczek",
     "featureAnalyticsBody": "Liczymy kliknięcia, nie ludzi. Bez danych osobowych i bez banera zgody.",
     "featureTrustTitle": "Ludzie, nie bany",
     "featureTrustBody": "Przejrzysta moderacja z uprzedzeniem i prawem do odwołania. Nigdy wstydliwego banera na Twojej stronie.",
     "featureEuTitle": "Hostowany w UE",
-    "featureEuBody": "Twoje dane zostają w Unii Europejskiej. GDPR w standardzie.",
     "featureDomainTitle": "Twoja własna domena",
     "featureDomainBody": "Własna domena w planach płatnych — Twoja reputacja nigdy nie zależy od cudzych nadużyć.",
     "featureAiTitle": "Tłumaczenie AI jednym kliknięciem",
@@ -48,8 +46,6 @@
     "faqTitle": "Najczęstsze pytania",
     "faq1q": "Czym jest Linketto?",
     "faq1a": "Linketto to strona „link in bio”: jeden link, który zbiera wszystkie Twoje linki, produkty i kontakty. To, co wyjątkowe: Twoja strona mówi językiem każdego odwiedzającego — stwórz ją raz, a wyświetla się we wszystkich 24 oficjalnych językach UE.",
-    "faq2q": "Dlaczego Linketto jest lepsze od Linktree?",
-    "faq2a": "Cztery rzeczy: Twój profil jest wielojęzyczny (Linktree jest tylko po angielsku), hostowany w UE z GDPR w standardzie, analityka jest bez ciasteczek i bez danych osobowych, a prowizje od sprzedaży wynoszą 8/4/0/0% zależnie od planu — wobec 12% i 9% w Linktree.",
     "faq3q": "Ile kosztuje Linketto?",
     "faq3a": "Plan darmowy jest naprawdę darmowy — nieograniczone linki i 2 wersje językowe. Pro to €4/mies. (wszystkie języki, własna domena), Business to €9/mies. (0% prowizji, do 5 profili), a Founder to jednorazowe €49 — Pro na zawsze z 0% prowizji.",
     "faq4q": "Jak działa wielojęzyczny profil?",
@@ -113,8 +109,7 @@
     "noAccount": "Nie masz konta? Zarejestruj się.",
     "errorInvalid": "Błędny e-mail lub hasło.",
     "errorExists": "Konto z tym e-mailem już istnieje.",
-    "errorGeneric": "Coś poszło nie tak. Spróbuj ponownie.",
-    "referredBanner": "Rejestrujesz się z zaproszenia — Twój znajomy dostaje bonus, jeśli wybierzesz plan płatny."
+    "errorGeneric": "Coś poszło nie tak. Spróbuj ponownie."
   },
   "dashboard": {
     "title": "Twój panel",

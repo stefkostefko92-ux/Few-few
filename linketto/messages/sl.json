@@ -18,13 +18,11 @@
     "featureLangTitle": "Večjezičen že od rojstva",
     "featureLangBody": "Ena stran, več jezikov: obiskovalec vidi tvoj profil v svojem jeziku, samodejno.",
     "featureFeeTitle": "Nižje provizije",
-    "featureFeeBody": "Samo 8 % na brezplačnem paketu, 4 % na Pro in 0 % na Business ter Founder — v primerjavi z 12 % in 9 % drugje.",
     "featureAnalyticsTitle": "Analitika brez piškotkov",
     "featureAnalyticsBody": "Štejemo klike, ne ljudi. Brez osebnih podatkov in brez pasice za privolitev.",
     "featureTrustTitle": "Ljudje, ne izključitve",
     "featureTrustBody": "Pregledna moderacija z opozorilom in pravico do pritožbe. Nikoli sramotne pasice na tvoji strani.",
     "featureEuTitle": "Gostovan v EU",
-    "featureEuBody": "Tvoji podatki ostanejo v Evropski uniji. GDPR privzeto.",
     "featureDomainTitle": "Tvoja lastna domena",
     "featureDomainBody": "Lastna domena na plačljivih paketih — tvoj ugled nikoli ni odvisen od tuje zlorabe.",
     "featureAiTitle": "Prevod z UI z enim klikom",
@@ -48,8 +46,6 @@
     "faqTitle": "Pogosta vprašanja",
     "faq1q": "Kaj je Linketto?",
     "faq1a": "Linketto je stran „link in bio”: ena povezava, ki zbere vse tvoje povezave, izdelke in stike. Edinstveno je, da tvoja stran govori jezik vsakega obiskovalca — ustvari jo enkrat in prikaže se v vseh 24 uradnih jezikih EU.",
-    "faq2q": "Zakaj je Linketto boljši od Linktree?",
-    "faq2a": "Štiri stvari: tvoj profil je večjezičen (Linktree je samo v angleščini), gostovan je v EU z GDPR privzeto, analitika je brez piškotkov in brez osebnih podatkov, provizije od prodaje pa so 8/4/0/0 % glede na paket — v primerjavi z 12 % in 9 % pri Linktree.",
     "faq3q": "Koliko stane Linketto?",
     "faq3a": "Brezplačni paket je zares brezplačen — neomejene povezave in 2 jezikovni različici. Pro je €4/mes. (vsi jeziki, lastna domena), Business je €9/mes. (0 % provizija, do 5 profilov), Founder pa je enkratnih €49 — Pro za vedno z 0 % provizijo.",
     "faq4q": "Kako deluje večjezični profil?",
@@ -113,8 +109,7 @@
     "noAccount": "Nimaš računa? Registriraj se.",
     "errorInvalid": "Napačna e-pošta ali geslo.",
     "errorExists": "Račun s to e-pošto že obstaja.",
-    "errorGeneric": "Nekaj je šlo narobe. Poskusi znova.",
-    "referredBanner": "Registriraš se prek povabila — tvoj prijatelj dobi bonus, če izbereš plačljiv paket."
+    "errorGeneric": "Nekaj je šlo narobe. Poskusi znova."
   },
   "dashboard": {
     "title": "Tvoja nadzorna plošča",

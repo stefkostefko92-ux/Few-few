@@ -18,13 +18,11 @@
     "featureLangTitle": "Daudzvalodu no dzimšanas",
     "featureLangBody": "Viena lapa, daudzas valodas: apmeklētājs redz tavu profilu savā valodā automātiski.",
     "featureFeeTitle": "Samazinātas komisijas",
-    "featureFeeBody": "Tikai 8% bezmaksas plānā, 4% Pro un 0% Business un Founder — pretstatā 12% un 9% citur.",
     "featureAnalyticsTitle": "Analītika bez sīkdatnēm",
     "featureAnalyticsBody": "Skaitām klikšķus, nevis cilvēkus. Nekādu personas datu un piekrišanas joslas.",
     "featureTrustTitle": "Cilvēki, nevis bani",
     "featureTrustBody": "Caurskatāma moderācija ar brīdinājumu un apelācijas tiesībām. Nekad kaunpilna karoga uz tavas lapas.",
     "featureEuTitle": "Mitināts ES",
-    "featureEuBody": "Tavi dati paliek Eiropas Savienībā. GDPR pēc noklusējuma.",
     "featureDomainTitle": "Tavs domēns",
     "featureDomainBody": "Pašu domēns maksas plānos — tava reputācija nekad nav atkarīga no kāda cita ļaunprātīgas izmantošanas.",
     "featureAiTitle": "AI tulkojums ar vienu klikšķi",
@@ -48,8 +46,6 @@
     "faqTitle": "Biežāk uzdotie jautājumi",
     "faq1q": "Kas ir Linketto?",
     "faq1a": "Linketto ir „link in bio“ lapa: viena saite, kas apvieno visas tavas saites, produktus un kontaktus. Unikālais: tava lapa runā katra apmeklētāja valodā — izveido to vienreiz, un tā tiek rādīta visās 24 ES oficiālajās valodās.",
-    "faq2q": "Ar ko Linketto ir labāks par Linktree?",
-    "faq2a": "Četras lietas: tavs profils ir daudzvalodu (Linktree ir tikai angļu valodā), tas ir mitināts ES ar GDPR pēc noklusējuma, analītika ir bez sīkdatnēm un bez personas datiem, un pārdošanas komisijas ir 8/4/0/0% pēc plāna — pretstatā 12% un 9% Linktree.",
     "faq3q": "Cik maksā Linketto?",
     "faq3a": "Bezmaksas plāns ir patiesi bezmaksas — neierobežotas saites un 2 valodu versijas. Pro ir €4/mēn (visas valodas, pašu domēns), Business ir €9/mēn (0% komisija, līdz 5 profiliem), un Founder ir vienreizējs €49 — Pro mūžīgi ar 0% komisiju.",
     "faq4q": "Kā darbojas daudzvalodu profils?",
@@ -113,8 +109,7 @@
     "noAccount": "Vēl nav konta? Reģistrējies.",
     "errorInvalid": "Nepareizs e-pasts vai parole.",
     "errorExists": "Konts ar šo e-pastu jau pastāv.",
-    "errorGeneric": "Kaut kas nogāja greizi. Lūdzu, mēģini vēlreiz.",
-    "referredBanner": "Tu reģistrējies pēc uzaicinājuma — tavs draugs saņem bonusu, ja izvēlies maksas plānu."
+    "errorGeneric": "Kaut kas nogāja greizi. Lūdzu, mēģini vēlreiz."
   },
   "dashboard": {
     "title": "Tavs panelis",

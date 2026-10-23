@@ -18,13 +18,11 @@
     "featureLangTitle": "Multilingua dâ nascita",
     "featureLangBody": "Na pàggina, tanti lingui: lu visitaturi vidi lu tò prufilu nta la sò lingua, automaticamenti.",
     "featureFeeTitle": "Cummissioni cchiù vasci",
-    "featureFeeBody": "Sulu l'8% supra lu pianu gratis, lu 4% supra Pro e lu 0% supra Business e Founder — cuntra lu 12% e lu 9% ntê autri.",
     "featureAnalyticsTitle": "Analisi senza cookie",
     "featureAnalyticsBody": "Cuntamu li click, no li pirsuni. Nuddu datu pirsunali e nuddu banner di cunsensu.",
     "featureTrustTitle": "Pirsuni, no ban",
     "featureTrustBody": "Muderazioni trasparenti cu avvisu e drittu di ricursu. Mai un banner di vrigogna supra la tò pàggina.",
     "featureEuTitle": "Ospitatu nta l'UE",
-    "featureEuBody": "Li tò dati arrèstanu nta l'Unioni Europea. GDPR pi default.",
     "featureDomainTitle": "Lu tò duminiu",
     "featureDomainBody": "Duminiu pirsunalizzatu ntê piani a pagamentu — la tò riputazioni nun dipenni mai di l'abbusi di l'autri.",
     "featureAiTitle": "Traduzioni AI cu un click",
@@ -48,8 +46,6 @@
     "faqTitle": "Dumanni frequenti",
     "faq1q": "Chi è Linketto?",
     "faq1a": "Linketto è na pàggina link in bio: un sulu link chi arricogghi tutti li tò linki, prudutti e cuntatti. La cosa unica: la pàggina parra la lingua di ogni visitaturi — la fai na vota e cumpari nta tutti li 24 lingui ufficiali dâ UE.",
-    "faq2q": "Nta chi Linketto è megghiu di Linktree?",
-    "faq2a": "Quattru cosi: lu prufilu è multilingua (Linktree è sulu 'n inglisi), è ospitatu nta l'UE cu GDPR pi default, l'analisi sunnu senza cookie e senza dati pirsunali, e li cummissioni supra li vinniti sunnu 8/4/0/0% pi pianu — cuntra lu 12% e lu 9% di Linktree.",
     "faq3q": "Quantu costa Linketto?",
     "faq3a": "Lu pianu Free è veramenti gratis — linki senza limiti e 2 virsioni di lingua. Pro costa €4/misi (tutti li lingui, duminiu pirsunalizzatu), Business €9/misi (0% di cummissioni, finu a 5 prufili) e Founder è un pagamentu unicu di €49 — Pro pi sempri cu 0% di cummissioni.",
     "faq4q": "Comu funziona lu prufilu multilingua?",
@@ -113,8 +109,7 @@
     "noAccount": "Non hai un cuntu? Registrati.",
     "errorInvalid": "Email o password sbagghiata.",
     "errorExists": "Esisti già un cuntu cu chista email.",
-    "errorGeneric": "Quarchi cosa jìu storta. Torna a prova.",
-    "referredBanner": "Ti stai registrannu cu un invitu — lu tò amicu guadagna un bonus si pigghi un pianu a pagamentu."
+    "errorGeneric": "Quarchi cosa jìu storta. Torna a prova."
   },
   "dashboard": {
     "title": "Lu tò panneddu",

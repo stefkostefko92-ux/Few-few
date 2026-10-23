@@ -18,13 +18,11 @@
     "featureLangTitle": "Višejezičan od rođenja",
     "featureLangBody": "Jedna stranica, mnogo jezika: posjetitelji vide tvoj profil na svom jeziku, automatski.",
     "featureFeeTitle": "Smanjene provizije",
-    "featureFeeBody": "Samo 8 % na besplatnom planu, 4 % na Pro i 0 % na Business i Founder — naspram 12 % i 9 % drugdje.",
     "featureAnalyticsTitle": "Analitika bez kolačića",
     "featureAnalyticsBody": "Brojimo klikove, ne ljude. Bez osobnih podataka i bez banera za pristanak.",
     "featureTrustTitle": "Ljudi, ne zabrane",
     "featureTrustBody": "Transparentna moderacija uz obavijest i pravo na žalbu. Nikad sramotan baner na tvojoj stranici.",
     "featureEuTitle": "Hostano u EU-u",
-    "featureEuBody": "Tvoji podaci ostaju u Europskoj uniji. GDPR po zadanom.",
     "featureDomainTitle": "Tvoja domena",
     "featureDomainBody": "Vlastita domena na plaćenim planovima — tvoj ugled nikad ne ovisi o tuđim zloporabama.",
     "featureAiTitle": "AI prijevod jednim klikom",
@@ -48,8 +46,6 @@
     "faqTitle": "Česta pitanja",
     "faq1q": "Što je Linketto?",
     "faq1a": "Linketto je „link in bio“ stranica: jedan link koji okuplja sve tvoje linkove, proizvode i kontakte. Ono jedinstveno: tvoja stranica govori jezik svakog posjetitelja — napraviš je jednom, a prikazuje se na sva 24 službena jezika EU-a.",
-    "faq2q": "Po čemu je Linketto bolji od Linktreea?",
-    "faq2a": "Četiri stvari: tvoj profil je višejezičan (Linktree je samo na engleskom), hostan je u EU-u s GDPR-om po zadanom, analitika je bez kolačića i bez osobnih podataka, a provizije na prodaju su 8/4/0/0 % po planu — naspram 12 % i 9 % kod Linktreea.",
     "faq3q": "Koliko Linketto košta?",
     "faq3a": "Besplatan plan je stvarno besplatan — neograničeni linkovi i 2 jezične verzije. Pro je €4/mj (svi jezici, vlastita domena), Business je €9/mj (0 % provizije, do 5 profila), a Founder je jednokratnih €49 — Pro zauvijek uz 0 % provizije.",
     "faq4q": "Kako radi višejezični profil?",
@@ -113,8 +109,7 @@
     "noAccount": "Nemaš račun? Registriraj se.",
     "errorInvalid": "Pogrešna e-pošta ili lozinka.",
     "errorExists": "Račun s ovom e-poštom već postoji.",
-    "errorGeneric": "Nešto je pošlo po zlu. Pokušaj ponovno.",
-    "referredBanner": "Registriraš se putem pozivnice — tvoj prijatelj dobiva bonus ako uzmeš plaćeni plan."
+    "errorGeneric": "Nešto je pošlo po zlu. Pokušaj ponovno."
   },
   "dashboard": {
     "title": "Tvoja nadzorna ploča",

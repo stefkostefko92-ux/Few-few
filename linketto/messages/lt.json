@@ -18,13 +18,11 @@
     "featureLangTitle": "Daugiakalbis nuo gimimo",
     "featureLangBody": "Vienas puslapis, daug kalbų: lankytojas mato tavo profilį savo kalba automatiškai.",
     "featureFeeTitle": "Sumažinti komisiniai",
-    "featureFeeBody": "Tik 8% nemokamame plane, 4% Pro ir 0% Business bei Founder — palyginti su 12% ir 9% kitur.",
     "featureAnalyticsTitle": "Analitika be slapukų",
     "featureAnalyticsBody": "Skaičiuojame paspaudimus, o ne žmones. Jokių asmens duomenų ir jokios sutikimo juostos.",
     "featureTrustTitle": "Žmonės, o ne banai",
     "featureTrustBody": "Skaidri moderacija su įspėjimu ir teise apskųsti. Niekada gėdinga vėliava ant tavo puslapio.",
     "featureEuTitle": "Talpinamas ES",
-    "featureEuBody": "Tavo duomenys lieka Europos Sąjungoje. GDPR pagal nutylėjimą.",
     "featureDomainTitle": "Tavo domenas",
     "featureDomainBody": "Nuosavas domenas mokamuose planuose — tavo reputacija niekada nepriklauso nuo kažkieno kito piktnaudžiavimo.",
     "featureAiTitle": "AI vertimas vienu paspaudimu",
@@ -48,8 +46,6 @@
     "faqTitle": "Dažnai užduodami klausimai",
     "faq1q": "Kas yra Linketto?",
     "faq1a": "Linketto yra „link in bio“ puslapis: viena nuoroda, apjungianti visas tavo nuorodas, produktus ir kontaktus. Išskirtinumas: tavo puslapis kalba kiekvieno lankytojo kalba — sukurk jį kartą ir jis rodomas visomis 24 oficialiosiomis ES kalbomis.",
-    "faq2q": "Kuo Linketto geresnis už Linktree?",
-    "faq2a": "Keturi dalykai: tavo profilis yra daugiakalbis (Linktree tik angliškas), jis talpinamas ES su GDPR pagal nutylėjimą, analitika be slapukų ir be asmens duomenų, o pardavimo komisiniai yra 8/4/0/0% pagal planą — palyginti su 12% ir 9% Linktree.",
     "faq3q": "Kiek kainuoja Linketto?",
     "faq3a": "Nemokamas planas yra tikrai nemokamas — neribotos nuorodos ir 2 kalbų versijos. Pro kainuoja €4/mėn (visos kalbos, nuosavas domenas), Business €9/mėn (0% komisiniai, iki 5 profilių), o Founder yra vienkartinis €49 — Pro visam laikui su 0% komisiniais.",
     "faq4q": "Kaip veikia daugiakalbis profilis?",
@@ -113,8 +109,7 @@
     "noAccount": "Dar neturi paskyros? Registruokis.",
     "errorInvalid": "Neteisingas el. paštas arba slaptažodis.",
     "errorExists": "Paskyra su šiuo el. paštu jau egzistuoja.",
-    "errorGeneric": "Kažkas nepavyko. Bandyk dar kartą.",
-    "referredBanner": "Registruojiesi pagal pakvietimą — tavo draugas gauna premiją, jei pasirinksi mokamą planą."
+    "errorGeneric": "Kažkas nepavyko. Bandyk dar kartą."
   },
   "dashboard": {
     "title": "Tavo skydelis",

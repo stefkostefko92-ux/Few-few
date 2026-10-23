@@ -103,6 +103,18 @@ export async function SiteFooter({
         </nav>
         <div className="flex flex-col items-start gap-2.5">
           <Link
+            href={`/${locale}/tools`}
+            className="transition hover:text-white"
+          >
+            {t('tools')}
+          </Link>
+          <Link
+            href={`/${locale}/vs/linktree`}
+            className="transition hover:text-white"
+          >
+            {t('compare')}
+          </Link>
+          <Link
             href={`/${locale}/privacy`}
             className="transition hover:text-white"
           >

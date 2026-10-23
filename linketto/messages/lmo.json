@@ -18,13 +18,11 @@
     "featureLangTitle": "Multilengua de la nassita",
     "featureLangBody": "Ona pagina, tanti lengu: el visitador el vede el tò profil in la soa lengua, in automatich.",
     "featureFeeTitle": "Commission pussee bass",
-    "featureFeeBody": "Domà l'8% sul pian gratis, el 4% su Pro e el 0% su Business e Founder — contra el 12% e el 9% di alter.",
     "featureAnalyticsTitle": "Analisi senza cookie",
     "featureAnalyticsBody": "Cuntom i click, minga i person. Nissun dato personal e nissun banner de consens.",
     "featureTrustTitle": "Person, minga ban",
     "featureTrustBody": "Moderazion trasparent con avvis e diritt de ricors. Mai on banner de vergogna su la tua pagina.",
     "featureEuTitle": "Ospitaa in la UE",
-    "featureEuBody": "I tò dati resten in la Union Europea. GDPR de default.",
     "featureDomainTitle": "El tò domini",
     "featureDomainBody": "Domini personalizzaa sui pian a pagament — la tua reputazion la depend mai di abus di alter.",
     "featureAiTitle": "Traduzion AI con on click",
@@ -48,8 +46,6 @@
     "faqTitle": "Domand frequent",
     "faq1q": "Cos'è Linketto?",
     "faq1a": "Linketto l'è ona pagina link in bio: on link sol che el mett insema tucc i tò link, prodott e contatt. La roba unica: la pagina la parla la lengua de ogni visitador — ti la fett vunna volta e la ven foeura in tutt i 24 lengu ufficiai de l'UE.",
-    "faq2q": "In cosa Linketto l'è mej de Linktree?",
-    "faq2a": "Quatter robb: el profil l'è multilengua (Linktree l'è domà in ingles), l'è ospitaa in la UE con GDPR de default, i analisi hinn senza cookie e senza dati personal, e i commission su i vendit hinn 8/4/0/0% per pian — contra el 12% e el 9% de Linktree.",
     "faq3q": "Quant costa Linketto?",
     "faq3a": "El pian Free l'è davvera gratis — link senza limit e 2 version de lengua. Pro el costa €4/mes (tutt i lengu, domini personalizzaa), Business €9/mes (0% de commission, fin a 5 profil) e Founder l'è on pagament unich de €49 — Pro per semper con 0% de commission.",
     "faq4q": "Come funziona el profil multilengua?",
@@ -113,8 +109,7 @@
     "noAccount": "Te g'hee minga on cont? Registret.",
     "errorInvalid": "Email o password sbagliada.",
     "errorExists": "Esist giamò on cont con questa email.",
-    "errorGeneric": "Quaicoss l'è andaa stort. Prova ancamò.",
-    "referredBanner": "Te se registret con on invid — el tò amis el guadagna on bonus se te ciappet on pian a pagament."
+    "errorGeneric": "Quaicoss l'è andaa stort. Prova ancamò."
   },
   "dashboard": {
     "title": "El tò panell",
