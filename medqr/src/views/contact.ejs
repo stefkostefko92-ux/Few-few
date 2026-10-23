@@ -10,7 +10,7 @@
 
   <dl class="profile-view">
     <dt><%= lang === 'en' ? 'Provider' : 'Доставчик' %></dt>
-    <dd><%= company.name %></dd>
+    <dd><%= lang === 'en' ? company.name : company.nameBg + ' (' + company.name + ')' %></dd>
     <dt><%= lang === 'en' ? 'General' : 'Общи' %></dt>
     <dd><a href="mailto:<%= company.email %>"><%= company.email %></a></dd>
     <dt><%= lang === 'en' ? 'Privacy / data protection' : 'Поверителност / защита на данните' %></dt>

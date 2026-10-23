@@ -35,7 +35,11 @@
   <h2 id="imprint"><%= lang === 'en' ? 'Imprint (service provider)' : 'Импресум (доставчик на услугата)' %></h2>
   <dl class="profile-view">
     <dt><%= lang === 'en' ? 'Company' : 'Дружество' %></dt>
-    <dd><%= company.name %> — <%= company.legalForm %></dd>
+    <% if (lang === 'en') { %>
+    <dd><%= company.name %> (Bulgarian name: <span lang="bg"><%= company.nameBg %></span>) — <%= company.legalFormEn %></dd>
+    <% } else { %>
+    <dd><%= company.nameBg %> (<%= company.name %>) — <%= company.legalForm %></dd>
+    <% } %>
     <dt><%= lang === 'en' ? 'UIC (ЕИК)' : 'ЕИК' %></dt>
     <dd><%= company.uic %></dd>
     <dt><%= lang === 'en' ? 'VAT No.' : 'ДДС №' %></dt>
@@ -49,7 +53,7 @@
     <dt><%= lang === 'en' ? 'Phone' : 'Телефон' %></dt>
     <dd><a href="tel:<%= company.phone.replace(/\s/g, '') %>"><%= company.phone %></a></dd>
     <dt><%= lang === 'en' ? 'Registered in' : 'Регистрация' %></dt>
-    <dd><%= lang === 'en' ? 'Commercial Register (Registry Agency), Bulgaria — EU' : 'Търговски регистър (Агенция по вписванията), България — ЕС' %></dd>
+    <dd><%= lang === 'en' ? 'Commercial Register and Register of Non-Profit Legal Entities (Registry Agency), Bulgaria — EU' : 'Търговски регистър и регистър на ЮЛНЦ (Агенция по вписванията), България — ЕС' %></dd>
   </dl>
 
   <p class="center" style="margin-top:1.5rem">
