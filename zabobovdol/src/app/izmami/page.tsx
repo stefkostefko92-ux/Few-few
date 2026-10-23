@@ -8,16 +8,38 @@ import { renderMarkdown, plainText } from "@/lib/markdown";
 import { JsonLd } from "@/components/JsonLd";
 import { SITE } from "@/lib/site";
 import { PrintButton } from "@/components/PrintButton";
+import { ShareButton } from "@/components/ShareButton";
+import { TrustCard } from "@/components/TrustCard";
+import { TelLink } from "@/components/PhoneReportButton";
+import { sourceLink } from "@/components/VerifiedBadge";
 
 export const dynamic = "force-dynamic";
 
 const GUIDE_CATEGORY = "Измами и безопасност";
 
-export const metadata: Metadata = buildMetadata({
-  title: "Пази се от измами — как да разпознаеш телефонни и онлайн измами",
-  description:
-    "Прости правила, които пазят възрастните хора от телефонни и онлайн измами: фалшиви обаждания от „банка“, схемата с „внуче в беда“, измамни SMS и награди. Какво да направите, ако вече сте били измамени.",
-  path: "/izmami",
+export const metadata: Metadata = {
+  ...buildMetadata({
+    title: "Пази се от измами — как да разпознаеш телефонни и онлайн измами",
+    description:
+      "Прости правила, които пазят възрастните хора от телефонни и онлайн измами: фалшиви обаждания от „банка“, схемата с „внуче в беда“, измамни SMS и награди. Какво да направите, ако вече сте били измамени.",
+    path: "/izmami",
+  }),
+  keywords: [
+    "измами Бобов дол",
+    "телефонни измами",
+    "фалшиви обаждания от банка",
+    "измами с възрастни хора",
+    "как да разпознаем измама",
+    "Carbon Stealth",
+  ],
+};
+
+// Без дата старо предупреждение изглежда като днешно.
+const DATE_FMT = new Intl.DateTimeFormat("bg-BG", {
+  timeZone: "Europe/Sofia",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
 });
 
 // Цветове според нивото на предупреждението.
@@ -102,6 +124,9 @@ export default async function ScamProtectionPage() {
             <div className="space-y-4">
               {alerts.map((a) => {
                 const s = SEVERITY[a.severity] ?? SEVERITY.warning;
+                const srcUrl = a.sourceUrl ? sourceLink(a.sourceUrl) : null;
+                const srcLabel =
+                  a.source.trim() || (srcUrl ? srcUrl.hostname.replace(/^www\./, "") : "");
                 return (
                   <article key={a.id} className={"rounded-xl border p-5 " + s.box}>
                     <div className="flex items-start gap-3">
@@ -121,6 +146,26 @@ export default async function ScamProtectionPage() {
                           </span>
                           <h3 className="text-lg font-bold text-slate-900">{a.title}</h3>
                         </div>
+                        <p className="mt-1 text-sm text-slate-700">
+                          Публикувано на {DATE_FMT.format(a.createdAt)}
+                          {srcLabel && (
+                            <>
+                              {" · "}източник:{" "}
+                              {srcUrl ? (
+                                <a
+                                  href={srcUrl.toString()}
+                                  target="_blank"
+                                  rel="noopener noreferrer nofollow"
+                                  className="font-semibold text-brand-700 underline underline-offset-2"
+                                >
+                                  {srcLabel}
+                                </a>
+                              ) : (
+                                <span className="font-semibold">{srcLabel}</span>
+                              )}
+                            </>
+                          )}
+                        </p>
                         {a.summary && (
                           <p className="mt-1.5 text-slate-700">{a.summary}</p>
                         )}
@@ -159,6 +204,9 @@ export default async function ScamProtectionPage() {
           </div>
         </section>
 
+        {/* Кои сме ние наистина — до златните правила, за да не ни имитират. */}
+        <TrustCard />
+
         {/* Какво да направя, ако вече съм измамен */}
         <section className="rounded-2xl border border-crimson-200 bg-crimson-50 p-6">
           <div className="flex items-center gap-2">
@@ -184,9 +232,9 @@ export default async function ScamProtectionPage() {
             ))}
           </ol>
           <div className="mt-5 flex flex-wrap gap-3">
-            <a href="tel:112" className="btn-primary">
+            <TelLink phone="112" className="btn-primary">
               Спешност 112
-            </a>
+            </TelLink>
             <Link href="/uslugi?cat=EMERGENCY" className="btn-secondary">
               Важни телефони
             </Link>
@@ -213,16 +261,21 @@ export default async function ScamProtectionPage() {
           </section>
         )}
 
-        <div className="no-print">
+        <div className="no-print flex flex-wrap items-start gap-3">
           <PrintButton variant="secondary" label="Принтирай тези съвети" />
+          <ShareButton
+            title="Пази се от измами — За Бобов дол"
+            text="Прости правила срещу телефонни и онлайн измами. Изпратете ги на близките си."
+            path="/izmami"
+          />
         </div>
 
         <p className="text-sm text-slate-600">
           Имате съмнение за измама или искате да предупредите съседите? Обадете
           ни се на{" "}
-          <a href={`tel:${SITE.contact.phone}`} className="font-medium text-brand-700 hover:underline">
+          <TelLink phone={SITE.contact.phone} className="font-medium text-brand-700 hover:underline">
             {SITE.contact.phone}
-          </a>
+          </TelLink>
           .
         </p>
       </div>
