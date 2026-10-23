@@ -49,7 +49,12 @@ UTM-ите са само в линковете **към** магазина; ст
 | `cookie` | /cookie-banner-blocker |
 | `support` | /support |
 | `bye` | /bye (след деинсталиране) |
-| `status` | /status (когато я има) |
+| `status` | /status |
+| `accessibility` | /accessibility |
+| `it_admins` | /for-it-admins |
+| `ubo_alternative` | /ublock-origin-alternative |
+| `method` | /how-we-measure |
+| `press` | /press (и fact sheet-ът) |
 | `readme` | README.md |
 | `llms` | llms.txt |
 | `post` · `comment` · `profile` · `listing` | външните места: пост, коментар, профил, запис в каталог (напр. `utm_source=hn&utm_medium=post`) |
