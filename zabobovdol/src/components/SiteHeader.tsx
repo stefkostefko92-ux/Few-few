@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { SITE, PRIMARY_NAV } from "@/lib/site";
+import { SITE, PRIMARY_NAV, QUICK_NAV } from "@/lib/site";
 import { SearchBar } from "@/components/SearchBar";
 
 export function SiteHeader() {
@@ -55,7 +55,7 @@ export function SiteHeader() {
 
           <button
             type="button"
-            className="rounded-md border border-slate-300 p-2 lg:hidden"
+            className="grid h-11 w-11 place-items-center rounded-md border border-slate-300 lg:hidden"
             aria-label="Меню"
             aria-expanded={open}
             aria-controls="mobile-nav"
@@ -82,7 +82,16 @@ export function SiteHeader() {
         </div>
 
         {open && (
-          <div id="mobile-nav" className="animate-fade-in border-t border-slate-200 py-3 lg:hidden">
+          /* Хедърът е „залепен“ горе, затова дългото меню се превърта само в
+             себе си — иначе долните раздели остават под ръба на екрана.
+             4.25rem = лентата (h-1) + редът с логото (h-16). Без
+             overscroll-contain: в края на менюто превъртането минава към
+             страницата, лентата за достъпност отгоре се скрива и се вижда
+             и последният ред. */
+          <div
+            id="mobile-nav"
+            className="animate-fade-in max-h-[calc(100dvh-4.25rem)] overflow-y-auto border-t border-slate-200 py-3 lg:hidden"
+          >
             <div className="mb-3">
               <SearchBar />
             </div>
@@ -100,6 +109,18 @@ export function SiteHeader() {
                       {item.description}
                     </span>
                   )}
+                </Link>
+              ))}
+            </nav>
+            <nav className="mt-3 grid gap-1 border-t border-slate-200 pt-3" aria-label="Още полезно">
+              {QUICK_NAV.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="flex min-h-[44px] items-center rounded-md px-3 text-base font-medium text-slate-700 hover:bg-slate-100"
+                >
+                  {item.label}
                 </Link>
               ))}
             </nav>

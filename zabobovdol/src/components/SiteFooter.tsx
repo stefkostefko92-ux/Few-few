@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Phone, Mail } from "@/components/icons";
-import { SITE, PRIMARY_NAV, FOOTER_NAV } from "@/lib/site";
-import { getFacebookUrl, getPlayStoreUrl } from "@/lib/settings";
+import { SITE, PRIMARY_NAV, FOOTER_NAV, isFeedHref } from "@/lib/site";
+import { getFacebookUrl, getPlayStoreUrl, getViberChannelUrl } from "@/lib/settings";
 import { TrustCard } from "@/components/TrustCard";
-import { TelLink } from "@/components/PhoneReportButton";
+import { TelLink } from "@/components/TelLink";
+import { ViberButton } from "@/components/ViberButton";
 
 // Вградена иконка на Google Play.
 function GooglePlayIcon({ className }: { className?: string }) {
@@ -28,9 +29,10 @@ function FacebookIcon({ className }: { className?: string }) {
 
 export async function SiteFooter() {
   const year = new Date().getFullYear();
-  const [facebookUrl, playStoreUrl] = await Promise.all([
+  const [facebookUrl, playStoreUrl, viberUrl] = await Promise.all([
     getFacebookUrl(),
     getPlayStoreUrl(),
+    getViberChannelUrl(),
   ]);
   return (
     <footer className="mt-16 border-t border-slate-200 bg-slate-50">
@@ -71,9 +73,21 @@ export async function SiteFooter() {
             <ul className="mt-4 space-y-2.5 text-base">
               {FOOTER_NAV.map((i) => (
                 <li key={i.href}>
-                  <Link href={i.href} className="text-slate-700 underline-offset-4 hover:text-brand-700 hover:underline">
-                    {i.label}
-                  </Link>
+                  {/* RSS е канал, не страница — обикновена връзка, без
+                      предварително зареждане от Next. */}
+                  {isFeedHref(i.href) ? (
+                    <a
+                      href={i.href}
+                      type="application/rss+xml"
+                      className="text-slate-700 underline-offset-4 hover:text-brand-700 hover:underline"
+                    >
+                      {i.label}
+                    </a>
+                  ) : (
+                    <Link href={i.href} className="text-slate-700 underline-offset-4 hover:text-brand-700 hover:underline">
+                      {i.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -124,6 +138,12 @@ export async function SiteFooter() {
                 <FacebookIcon className="h-4 w-4" />
                 Последвайте ни във Facebook
               </a>
+            )}
+            {/* Viber каналът — само ако е зададен в /admin/nastroyki. */}
+            {viberUrl && (
+              <div className="mt-3">
+                <ViberButton url={viberUrl} />
+              </div>
             )}
             {playStoreUrl && (
               <a

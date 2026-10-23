@@ -480,4 +480,72 @@ html.bt li {
     box-shadow: none !important;
     border: none !important;
   }
+
+  /* Тъмният режим НЕ важи на хартия: правилата html.dark по-горе правят
+     текста светъл (и кутиите тъмни), а браузърът не печата тъмния фон —
+     листовете излизаха със светъл, почти невидим текст на бяло. Връщаме
+     светлите стойности на Tailwind. Високият контраст (html.hc) само
+     потъмнява текста — на хартия това помага, затова не се пипа. */
+  html.dark {
+    color-scheme: light;
+  }
+  html.dark body {
+    color: #0f172a !important;
+  }
+  html.dark .bg-white,
+  html.dark .page-hero {
+    background: #ffffff !important;
+  }
+  html.dark .bg-slate-50 { background-color: #f8fafc !important; }
+  html.dark .bg-slate-100 { background-color: #f1f5f9 !important; }
+  html.dark .bg-brand-50,
+  html.dark .bg-brand-50\/50 { background-color: #eef1fb !important; }
+  html.dark .bg-gold-50 { background-color: #fff8e6 !important; }
+  html.dark .bg-red-50 { background-color: #fef2f2 !important; }
+  html.dark .bg-red-100 { background-color: #fee2e2 !important; }
+  html.dark .bg-green-50 { background-color: #f0fdf4 !important; }
+  html.dark .bg-amber-50 { background-color: #fffbeb !important; }
+  html.dark .bg-crimson-50 { background-color: #fdeced !important; }
+  html.dark .text-slate-900 { color: #0f172a !important; }
+  html.dark .text-slate-800 { color: #1e293b !important; }
+  html.dark .text-slate-700 { color: #334155 !important; }
+  html.dark .text-slate-600 { color: #475569 !important; }
+  html.dark .text-slate-500 { color: #64748b !important; }
+  html.dark .text-slate-400 { color: #94a3b8 !important; }
+  html.dark .text-brand-600 { color: #2a3da6 !important; }
+  html.dark .text-brand-700 { color: #212f8a !important; }
+  html.dark .text-brand-800 { color: #1a2575 !important; }
+  html.dark .text-brand-900 { color: #141b57 !important; }
+  html.dark .text-red-600 { color: #dc2626 !important; }
+  html.dark .text-red-700 { color: #b91c1c !important; }
+  html.dark .text-red-800 { color: #991b1b !important; }
+  html.dark .text-green-700 { color: #15803d !important; }
+  html.dark .text-amber-900 { color: #78350f !important; }
+  html.dark .text-crimson-700 { color: #921616 !important; }
+  html.dark .border-slate-100 { border-color: #f1f5f9 !important; }
+  html.dark .border-slate-200,
+  html.dark .border-slate-200\/70,
+  html.dark .border-slate-200\/80 { border-color: #e2e8f0 !important; }
+  html.dark .border-slate-300 { border-color: #cbd5e1 !important; }
+  html.dark .border-brand-200 { border-color: #b6c4ec !important; }
+  html.dark .border-red-300 { border-color: #fca5a5 !important; }
+  html.dark .border-crimson-200 { border-color: #f5abad !important; }
+  html.dark .prose-content :where(h2),
+  html.dark .prose-content :where(h3),
+  html.dark .prose-content :where(h4),
+  html.dark .prose-content :where(strong) {
+    color: #0f172a !important;
+  }
+  html.dark .prose-content :where(a) {
+    color: #212f8a !important;
+  }
+  html.dark .input,
+  html.dark input,
+  html.dark textarea,
+  html.dark select,
+  html.dark .btn-secondary {
+    background-color: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+  }
 }

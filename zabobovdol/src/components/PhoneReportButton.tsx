@@ -2,39 +2,15 @@
 
 // Клиентските части около телефонните номера:
 //  • TelLink — обикновена tel: връзка, която брои обаждането (tel_click);
+//    живее в ./TelLink.tsx, тук е само ре-експорт за старите импорти;
 //  • PhoneReportButton — „Този номер е сгрешен“: кратък сигнал към админа.
 // И двете не пазят нищо за човека — само брой на ден и текста на сигнала.
 
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { PhoneOff } from "@/components/icons";
 import { track } from "@/lib/events";
 
-export function TelLink({
-  phone,
-  className,
-  children,
-  "aria-label": ariaLabel,
-}: {
-  phone: string;
-  className?: string;
-  children?: ReactNode;
-  "aria-label"?: string;
-}) {
-  // В tel: остават само цифрите и „+“ — интервалите и думите („централа“)
-  // объркват някои телефони.
-  const digits = phone.replace(/[^\d+]/g, "");
-  if (!digits) return <span className={className}>{children ?? phone}</span>;
-  return (
-    <a
-      href={`tel:${digits}`}
-      className={className}
-      aria-label={ariaLabel}
-      onClick={() => track("tel_click")}
-    >
-      {children ?? phone}
-    </a>
-  );
-}
+export { TelLink } from "@/components/TelLink";
 
 type Status = "idle" | "open" | "sending" | "sent";
 

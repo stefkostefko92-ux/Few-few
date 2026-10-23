@@ -78,10 +78,11 @@ export function classifyPageRequest(req: PageRequest): ViewDecision {
 // скенери „/wp-admin“…) отива в „/other“. Така таблицата не расте безкрайно
 // от боклук, а броят на посещенията пак е верен.
 // ⚠ Нов публичен раздел → добави го тук (иначе се брои като „/other“).
+//   Пази го тестът src/lib/__tests__/directory-nav.test.ts.
 export const KNOWN_SECTIONS = new Set([
   "biskvitki", "biznes", "danaci-srokove", "dezhurna-apteka", "dobrovolci",
   "dostapnost", "evroto", "galeriya", "grada", "grafik-smetosabirane", "imen-den",
-  "instaliraj", "istoriya", "izmami", "kak-da", "kak-da-polzvam-sayta", "kontakti",
+  "instaliraj", "istoriya", "izmami", "izvestiya", "kak-da", "kak-da-polzvam-sayta", "kontakti",
   "novini", "obyavi", "pechat", "pomeni", "pomoshti", "poveritelnost", "pravila",
   "prekysvaniya", "prozrachnost", "reklama", "sabitiya", "signali", "smetishta",
   "spodeleno-patuvane", "spomeni", "tarsene", "transport", "uslugi", "za-blizkite",

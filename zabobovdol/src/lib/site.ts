@@ -81,6 +81,7 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: "/transport", label: "Транспорт", description: "Такси, влак, автобуси и споделено пътуване" },
   { href: "/prekysvaniya", label: "Прекъсвания на ток и вода", description: "Планови и аварийни спирания на ток и вода" },
   { href: "/novini", label: "Новини", description: "Актуални съобщения" },
+  { href: "/pomeni", label: "Некролози и помени", description: "Тъжни вести и възпоменания, подадени от близките" },
   { href: "/signali", label: "Сигнали до общината", description: "Подайте оплакване или сигнал" },
   { href: "/prozrachnost", label: "Прозрачност", description: "Къде отиват парите на общината (обществени поръчки)" },
   { href: "/smetishta", label: "Нерегламентирани сметища", description: "Подайте сигнал за незаконно сметище" },
@@ -96,6 +97,10 @@ export const PRIMARY_NAV: NavItem[] = [
 export const FOOTER_NAV: NavItem[] = [
   { href: "/za-nas", label: "За проекта" },
   { href: "/kak-da-polzvam-sayta", label: "Как да ползвам сайта" },
+  { href: "/instaliraj", label: "Сложи на телефона" },
+  { href: "/izvestiya", label: "Известия" },
+  { href: "/za-blizkite", label: "За близките" },
+  { href: "/novini/rss.xml", label: "RSS новини" },
   { href: "/dostapnost", label: "Достъпност" },
   { href: "/izmami", label: "Пази се от измами" },
   { href: "/dezhurna-apteka", label: "Дежурна аптека" },
@@ -118,8 +123,36 @@ export const FOOTER_NAV: NavItem[] = [
   { href: "/kontakti", label: "Контакти" },
   { href: "/pechat", label: "Телефони за печат" },
   { href: "/pechat/plakat", label: "Плакат за разпечатване" },
+  { href: "/pechat/sedmitsa", label: "Седмицата за печат" },
+  { href: "/biznes/nova", label: "Добавете бизнес" },
   { href: "/reklama", label: "Реклама" },
   { href: "/pravila", label: "Общи условия" },
   { href: "/poveritelnost", label: "Поверителност" },
   { href: "/biskvitki", label: "Бисквитки" },
 ];
+
+// Кратък списък под мобилното меню — нещата, които иначе са само във футъра,
+// а са най-полезни точно на телефона.
+export const QUICK_NAV: NavItem[] = [
+  { href: "/izvestiya", label: "Известия на телефона" },
+  { href: "/instaliraj", label: "Сложи на телефона" },
+  { href: "/za-blizkite", label: "За близките" },
+  { href: "/kontakti", label: "Контакти" },
+];
+
+/** Адрес, който е файл/канал (RSS), а не страница — за него е обикновен <a>. */
+export function isFeedHref(href: string): boolean {
+  return /\.xml$/i.test(href);
+}
+
+/**
+ * Български номер за четене от човек: „+359877414874“ → „0877 414 874“.
+ * Непознат формат се връща непроменен (в tel: така или иначе отиват цифрите).
+ */
+export function localPhone(phone: string): string {
+  const digits = phone.replace(/[^\d+]/g, "");
+  const national = digits.startsWith("+359") ? "0" + digits.slice(4) : digits.startsWith("00359") ? "0" + digits.slice(5) : digits;
+  // Мобилни: 08X/09X + 7 цифри → „0877 414 874“.
+  const m = /^(0[89]\d{2})(\d{3})(\d{3})$/.exec(national);
+  return m ? `${m[1]} ${m[2]} ${m[3]}` : phone;
+}
