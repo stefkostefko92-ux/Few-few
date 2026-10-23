@@ -23,7 +23,8 @@ test('a live deploy installs the backup script and the timer, with the shared pa
     );
     assert.equal(mode(script), '700');
     const unit = readFileSync(join(L.systemd, 'korpora-backup.service'), 'utf8');
-    assert.match(unit, new RegExp(`^ReadWritePaths=${L.shared}/backups/daily$`, 'm'));
+    // the daily backups and, next to them, the dumps before a deploy or a restore it expires
+    assert.match(unit, new RegExp(`^ReadWritePaths=${L.shared}/backups$`, 'm'));
     assert.match(unit, new RegExp(`^Environment=KORPORA_SHARED=${L.shared}$`, 'm'));
     assert.match(unit, /^ExecStart=\/usr\/local\/sbin\/korpora-backup$/m);
     assert.match(unit, /^CapabilityBoundingSet=$/m, 'no capabilities');

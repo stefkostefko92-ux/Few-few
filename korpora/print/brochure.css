@@ -21,6 +21,12 @@
   --f-text: 'Geologica', 'DejaVu Sans', sans-serif;
   --f-mono: 'JetBrains Mono', 'DejaVu Sans Mono', monospace;
 }
+/* Bulgarian cursive letter shapes (locl) off, as on the site: „код“ must not read as „kog“; every element, since the
+   `font` shorthand resets font-feature-settings */
+:lang(bg),
+:lang(bg) * {
+  font-feature-settings: 'locl' 0 !important;
+}
 @page {
   size: A4;
   margin: 0;
@@ -150,9 +156,12 @@ figcaption {
   height: 12mm;
   width: auto;
 }
+.b-cover {
+  padding-top: 11mm;
+}
 .b-cover h1 {
-  margin: 15mm 0 6mm;
-  font-size: 50pt;
+  margin: 7mm 0 4.5mm;
+  font-size: 46pt;
   line-height: 0.92;
   letter-spacing: -0.045em;
   font-weight: 760;
@@ -168,14 +177,14 @@ figcaption {
 }
 .b-for {
   max-width: 132mm;
-  margin-bottom: 7mm;
+  margin-bottom: 5mm;
   color: var(--ink-2);
 }
 .b-trial {
   display: flex;
   gap: 2.5mm;
   max-width: 150mm;
-  margin-top: 6mm;
+  margin-top: 4.5mm;
   font-size: 11pt;
   font-weight: 600;
   line-height: 1.4;

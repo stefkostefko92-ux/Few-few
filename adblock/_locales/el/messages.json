@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Αποκλείει διαφημίσεις παντού: βίντεο στο YouTube, banner, αναδυόμενα, ιχνηλάτες και τείχη anti-adblock."
+    "message": "Πρόγραμμα αποκλεισμού διαφημίσεων για YouTube και web: βίντεο, banner, pop-up, ιχνηλάτες, banner cookie και τείχη anti-adblock."
   },
   "byCarbon": {
     "message": "από την Carbon Stealth"
@@ -118,6 +118,27 @@
   "support": {
     "message": "Στηρίξτε"
   },
+  "rate": {
+    "message": "Αξιολογήστε"
+  },
+  "rateTitle": {
+    "message": "Αξιολογήστε το Supreme AdBlock στο Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "Αποκλείστηκαν μέχρι στιγμής αιτήματα: $1"
+  },
+  "reviewAsk": {
+    "message": "Αν το Supreme AdBlock σάς είναι χρήσιμο, μια σύντομη κριτική στο Chrome Web Store βοηθά και άλλους να το βρουν."
+  },
+  "reviewLeave": {
+    "message": "Γράψτε κριτική"
+  },
+  "reviewLater": {
+    "message": "Όχι τώρα"
+  },
+  "reviewNever": {
+    "message": "Να μην ξαναρωτηθώ"
+  },
   "filtersCount": {
     "message": "$1+ φίλτρα",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "Κρύβει τα τείχη «απενεργοποιήστε το πρόγραμμα αποκλεισμού διαφημίσεων» και επαναφέρει τη σελίδα"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Κρύβει τις αναρτήσεις «Χορηγούμενη» στο Facebook και στο Instagram"
+    "message": "Κρύβει τις αναρτήσεις «Χορηγούμενη» στο Facebook, στο Instagram και στο Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Αφαιρεί τα utm_*, fbclid, gclid και άλλα αναγνωριστικά κλικ από τους συνδέσμους που ανοίγετε"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Αποκλείει γνωστούς κακόβουλους τομείς (λίστα URLhaus της abuse.ch)"
+    "message": "Σας προειδοποιεί πριν ανοίξει ένας γνωστός κακόβουλος ιστότοπος και αποκλείει ό,τι φορτώνουν οι σελίδες από τέτοιους ιστότοπους (λίστα URLhaus της abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Απενεργοποιεί τα διαφημιστικά API Google Topics, FLoC και Protected Audience σε κάθε ιστότοπο"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Δωρεά μέσω Revolut"
+  },
+  "opt_review": {
+    "message": "Υπενθυμίσεις κριτικής"
+  },
+  "opt_review_sub": {
+    "message": "Ένας μικρός σύνδεσμος ★ στο κάτω μέρος του παραθύρου του Supreme AdBlock και, το πολύ δύο φορές, ένα σύντομο αίτημα εκεί να το αξιολογήσετε στο Chrome Web Store. Ποτέ σε ιστότοπους, ποτέ ως ειδοποίηση."
   },
   "opt_made_by": {
     "message": "από την Carbon Stealth"
@@ -620,6 +647,12 @@
     "message": "Κάντε κλικ στο εικονίδιο με το κομμάτι παζλ δίπλα στη γραμμή διευθύνσεων και καρφιτσώστε το Supreme AdBlock. Έτσι, με ένα κλικ βλέπετε τι αποκλείστηκε στη σελίδα.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Καρφιτσωμένη στη γραμμή εργαλείων"
+  },
+  "welPinnedText": {
+    "message": "Ένα κλικ στο εικονίδιό της δείχνει τι αποκλείστηκε στη σελίδα."
+  },
   "welBrokenTitle": {
     "message": "Αν ένας ιστότοπος δεν εμφανίζεται σωστά",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -643,5 +676,128 @@
   "welDone": {
     "message": "Εντάξει",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Επιτρέπεται · ακόμη $1 λ."
+  },
+  "hiddenHere": {
+    "message": "Κρυμμένα στοιχεία εδώ: $1 · Αναίρεση τελευταίου"
+  },
+  "cmd_toggle_site": {
+    "message": "Εναλλαγή αποκλεισμού σε αυτόν τον ιστότοπο"
+  },
+  "cmd_pause": {
+    "message": "Παύση ή συνέχιση προστασίας (30 λεπτά)"
+  },
+  "cmd_picker": {
+    "message": "Απόκρυψη στοιχείου σε αυτή τη σελίδα"
+  },
+  "rep_fix_hour": {
+    "message": "Επιτρέψτε διαφημίσεις εδώ για 1 ώρα"
+  },
+  "rep_done_hour": {
+    "message": "Οι διαφημίσεις επιτρέπονται σε αυτόν τον ιστότοπο για 1 ώρα. Έγινε επαναφόρτωση — διορθώθηκε;"
+  },
+  "opt_last30": {
+    "message": "Τελευταίες 30 ημέρες"
+  },
+  "opt_last30_sum": {
+    "message": "Αποκλεισμοί: $1 · Banner cookie: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Τα ημερήσια σύνολά σας εμφανίζονται εδώ καθώς περιηγείστε."
+  },
+  "opt_last30_sub": {
+    "message": "Μόνο ημερήσια σύνολα, αποθηκευμένα σε αυτή τη συσκευή για 30 ημέρες. Χωρίς ιστότοπους, χωρίς διευθύνσεις."
+  },
+  "opt_gpc_sub": {
+    "message": "Ζητά από κάθε ιστότοπο που επισκέπτεστε να μην πουλά ούτε να κοινοποιεί τα δεδομένα σας (το σήμα Sec-GPC, το οποίο ορισμένοι νόμοι περί απορρήτου υποχρεώνουν τους ιστότοπους να τηρούν). Δεν αποστέλλεται στους ιστότοπους που επιτρέπετε."
+  },
+  "opt_shortcuts": {
+    "message": "Συντομεύσεις πληκτρολογίου"
+  },
+  "opt_shortcuts_change": {
+    "message": "Αλλαγή συντομεύσεων"
+  },
+  "opt_shortcut_none": {
+    "message": "Δεν έχει οριστεί"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Στο Firefox: Επεκτάσεις και θέματα → ⚙ → Διαχείριση συντομεύσεων επεκτάσεων."
+  },
+  "opt_import_foreign": {
+    "message": "Εισαγωγή από άλλο πρόγραμμα αποκλεισμού"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Έρχεστε από το uBlock Origin, το AdGuard ή το Adblock Plus; Επιλέξτε το αρχείο αντιγράφου ασφαλείας του: οι ιστότοποι που επιτρέψατε και τα δικά σας φίλτρα προστίθενται εδώ. Τίποτα δεν αντικαθίσταται."
+  },
+  "opt_import_foreign_done": {
+    "message": "Επιτρεπόμενοι ιστότοποι: $1 · Φίλτρα που προστέθηκαν: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Παραλείφθηκαν (δεν εφαρμόζονται εδώ): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Αυτό το αρχείο δεν είναι αντίγραφο ασφαλείας που μπορούμε να διαβάσουμε."
+  },
+  "welQuickTitle": {
+    "message": "Προσαρμόστε το στα μέτρα σας"
+  },
+  "welQuickSub": {
+    "message": "Προαιρετικά: λειτουργεί ήδη. Μπορείτε να αλλάξετε οποιοδήποτε από αυτά αργότερα στις Ρυθμίσεις."
+  },
+  "blk_page_title": {
+    "message": "Ο ιστότοπος αποκλείστηκε — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Αυτός ο ιστότοπος μπορεί να βλάψει τη συσκευή σας"
+  },
+  "blk_text": {
+    "message": "Το Supreme AdBlock σταμάτησε αυτή τη σελίδα επειδή ο ιστότοπος βρίσκεται στο URLhaus, μια δημόσια λίστα διευθύνσεων που διαδίδουν κακόβουλο λογισμικό."
+  },
+  "blk_back": {
+    "message": "Επιστροφή"
+  },
+  "blk_continue": {
+    "message": "Συνέχεια παρ’ όλα αυτά"
+  },
+  "blk_note": {
+    "message": "Αν συνεχίσετε, επιτρέπονται μόνο οι σελίδες αυτού του ιστότοπου, μέχρι να κλείσετε το πρόγραμμα περιήγησης."
+  },
+  "blk_why": {
+    "message": "Γιατί είναι στη λίστα; (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Συνδέσεις σε αυτή τη σελίδα"
+  },
+  "conn_empty": {
+    "message": "Αυτή η σελίδα δεν φόρτωσε τίποτα από άλλους ιστότοπους."
+  },
+  "conn_block": {
+    "message": "Αποκλεισμός εδώ"
+  },
+  "conn_blocked": {
+    "message": "Αποκλείεται εδώ"
+  },
+  "conn_hint": {
+    "message": "Αποκλεισμός όσων φορτώνει αυτός ο ιστότοπος από το $1"
+  },
+  "opt_conn_title": {
+    "message": "Συνδέσεις που αποκλείσατε"
+  },
+  "opt_conn_sub": {
+    "message": "Αποκλείστηκαν από το «Συνδέσεις σε αυτή τη σελίδα» στο παράθυρο της επέκτασης, η καθεμία μόνο στον δικό της ιστότοπο."
+  },
+  "opt_empty_conn": {
+    "message": "Δεν έχει αποκλειστεί τίποτα ακόμη."
+  },
+  "opt_conn_remove": {
+    "message": "Άρση αποκλεισμού του $1 στο $2"
+  },
+  "opt_h_danger": {
+    "message": "Προειδοποίηση κακόβουλων τομέων"
+  },
+  "opt_h_capacity": {
+    "message": "Χωρητικότητα κανόνων"
   }
 }

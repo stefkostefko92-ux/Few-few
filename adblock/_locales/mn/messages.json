@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Хаа сайгүй зар хаана: YouTube-ийн видео зар, баннер, гарч ирэх цонх, мөрдөгч, adblock-ийн эсрэг хана."
+    "message": "Зар хаагч (YouTube болон вэб): видео зар, баннер, попап, мөрдөгч, күүкийн баннер болон adblock-ийн эсрэг хана."
   },
   "byCarbon": {
     "message": "Carbon Stealth-ээс"
@@ -118,6 +118,27 @@
   "support": {
     "message": "Дэмжих"
   },
+  "rate": {
+    "message": "Үнэлэх"
+  },
+  "rateTitle": {
+    "message": "Supreme AdBlock-ийг Chrome Вэб Дэлгүүрт үнэлэх"
+  },
+  "reviewBlocked": {
+    "message": "Одоогоор хаасан хүсэлт: $1"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock танд хэрэгтэй бол Chrome Вэб Дэлгүүрт үлдээсэн богино сэтгэгдэл бусдад үүнийг олоход тусална."
+  },
+  "reviewLeave": {
+    "message": "Сэтгэгдэл бичих"
+  },
+  "reviewLater": {
+    "message": "Одоо биш"
+  },
+  "reviewNever": {
+    "message": "Дахин бүү асуу"
+  },
   "filtersCount": {
     "message": "$1+ шүүлтүүр",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "«Зар хаагчаа унтраана уу» ханыг нууж, хуудсыг сэргээх"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook болон Instagram дээрх «Ивээн тэтгэсэн» нийтлэлийг нуух"
+    "message": "Facebook, Instagram болон Threads дээрх «Ивээн тэтгэсэн» нийтлэлийг нуух"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Таны нээж буй холбоосоос utm_*, fbclid, gclid болон бусад товшилтын танигчийг арилгах"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Мэдэгдэж буй хортой домэйнуудыг хаах (abuse.ch-ийн URLhaus жагсаалт)"
+    "message": "Мэдэгдэж буй хортой сайт нээгдэхээс өмнө анхааруулж, хуудсууд ийм сайтаас ачаалдаг зүйлийг хаана (abuse.ch-ийн URLhaus жагсаалт)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Бүх сайт дээр Google Topics, FLoC болон Protected Audience зарын API-г идэвхгүй болгох"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut-ээр хандив өгөх"
+  },
+  "opt_review": {
+    "message": "Сэтгэгдлийн сануулга"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock-ийн цонхны доод хэсэгт жижиг ★ холбоос, мөн хамгийн ихдээ хоёр удаа тэнд нь Chrome Вэб Дэлгүүрт үнэлэхийг хүссэн богино хүсэлт. Хэзээ ч вэбсайт дээр, хэзээ ч мэдэгдэл хэлбэрээр биш."
   },
   "opt_made_by": {
     "message": "Carbon Stealth бүтээв"
@@ -620,6 +647,12 @@
     "message": "Хаягийн мөрний хажууд байрлах эвлүүлгийн хэсгийн дүрс тэмдэг дээр дарж, Supreme AdBlock-г бэхлээрэй. Ингэснээр нэг товшилтоор хуудсан дээр юу хаагдсаныг харна.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Хэрэгслийн самбарт бэхлэгдсэн"
+  },
+  "welPinnedText": {
+    "message": "Дүрс тэмдэг дээр нь нэг товшиход хуудсан дээр юу хаагдсаныг харуулна."
+  },
   "welBrokenTitle": {
     "message": "Сайт эвдэрсэн мэт харагдвал",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -643,5 +676,128 @@
   "welDone": {
     "message": "Ойлголоо",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Зөвшөөрсөн · $1 мин үлдсэн"
+  },
+  "hiddenHere": {
+    "message": "Энд нуусан элемент: $1 · Сүүлийнхийг буцаах"
+  },
+  "cmd_toggle_site": {
+    "message": "Энэ сайт дээр хаалтыг асаах эсвэл унтраах"
+  },
+  "cmd_pause": {
+    "message": "Хамгаалалтыг түр зогсоох эсвэл үргэлжлүүлэх (30 минут)"
+  },
+  "cmd_picker": {
+    "message": "Энэ хуудсан дээрх элементийг нуух"
+  },
+  "rep_fix_hour": {
+    "message": "Энэ сайт дээр зарыг 1 цаг зөвшөөрөх"
+  },
+  "rep_done_hour": {
+    "message": "Энэ сайт дээр зарыг 1 цаг зөвшөөрлөө. Дахин ачааллаа — засагдсан уу?"
+  },
+  "opt_last30": {
+    "message": "Сүүлийн 30 хоног"
+  },
+  "opt_last30_sum": {
+    "message": "Хаасан: $1 · Күүкийн баннер: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Таныг вэб үзэх явцад өдөр тутмын нийлбэр энд харагдана."
+  },
+  "opt_last30_sub": {
+    "message": "Зөвхөн өдөр тутмын нийлбэрийг энэ төхөөрөмж дээр 30 хоног хадгална. Сайт ч, хаяг ч хадгалахгүй."
+  },
+  "opt_gpc_sub": {
+    "message": "Таны зочилсон сайт бүрээс таны өгөгдлийг худалдахгүй, хуваалцахгүй байхыг хүснэ (Sec-GPC дохио; зарим нууцлалын хууль сайтуудаас үүнийг дагахыг шаарддаг). Таны зөвшөөрсөн сайтуудад илгээхгүй."
+  },
+  "opt_shortcuts": {
+    "message": "Гарын товчлол"
+  },
+  "opt_shortcuts_change": {
+    "message": "Товчлолыг өөрчлөх"
+  },
+  "opt_shortcut_none": {
+    "message": "Тохируулаагүй"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox дээр: Нэмэлтүүд ба загварууд → ⚙ → Өргөтгөлийн товчлолыг удирдах"
+  },
+  "opt_import_foreign": {
+    "message": "Өөр зар хаагчаас импортлох"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard эсвэл Adblock Plus-аас шилжиж байна уу? Түүний нөөц файлыг сонгоорой: таны зөвшөөрсөн сайтууд болон өөрийн шүүлтүүрүүд энд нэмэгдэнэ. Юу ч солигдохгүй."
+  },
+  "opt_import_foreign_done": {
+    "message": "Зөвшөөрсөн сайт: $1 · Нэмсэн шүүлтүүр: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Орхисон (энд хэрэглэх боломжгүй): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Энэ файл бидний уншиж чадах нөөц биш байна."
+  },
+  "welQuickTitle": {
+    "message": "Өөртөө тохируулаарай"
+  },
+  "welQuickSub": {
+    "message": "Заавал биш: аль хэдийн ажиллаж байна. Эдгээрийг дараа нь Тохиргоо хэсгээс хүссэн үедээ өөрчилж болно."
+  },
+  "blk_page_title": {
+    "message": "Сайт хаагдсан — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Энэ сайт таны төхөөрөмжид хор хөнөөл учруулж болзошгүй"
+  },
+  "blk_text": {
+    "message": "Энэ сайт хортой програм тараадаг хаягуудын нийтийн жагсаалт болох URLhaus-д орсон тул Supreme AdBlock энэ хуудсыг зогсоолоо."
+  },
+  "blk_back": {
+    "message": "Буцах"
+  },
+  "blk_continue": {
+    "message": "Гэсэн ч үргэлжлүүлэх"
+  },
+  "blk_note": {
+    "message": "Үргэлжлүүлбэл хөтчөө хаах хүртэл зөвхөн энэ сайтын хуудсуудыг нэвтрүүлнэ."
+  },
+  "blk_why": {
+    "message": "Яагаад жагсаалтад орсон бэ? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Энэ хуудасны холболтууд"
+  },
+  "conn_empty": {
+    "message": "Энэ хуудас бусад сайтаас юу ч ачаалаагүй."
+  },
+  "conn_block": {
+    "message": "Энд хаах"
+  },
+  "conn_blocked": {
+    "message": "Энд хаасан"
+  },
+  "conn_hint": {
+    "message": "Энэ сайтын $1-ээс ачаалдаг зүйлийг хаах"
+  },
+  "opt_conn_title": {
+    "message": "Таны хаасан холболтууд"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock-ийн цонхны «Энэ хуудасны холболтууд» хэсгээс хаасан, тус бүр зөвхөн өөрийн сайт дээр."
+  },
+  "opt_empty_conn": {
+    "message": "Одоогоор юу ч хаагаагүй."
+  },
+  "opt_conn_remove": {
+    "message": "Хаалтыг цуцлах: $1 ($2 дээр)"
+  },
+  "opt_h_danger": {
+    "message": "Хортой сайтын анхааруулах хуудас"
+  },
+  "opt_h_capacity": {
+    "message": "Дүрмийн багтаамж"
   }
 }

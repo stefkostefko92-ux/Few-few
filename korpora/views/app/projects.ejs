@@ -20,13 +20,15 @@
 </section>
 <% } %>
 
+<%# Изтекъл план или непотвърден имейл: формата не се показва — съобщението отгоре води към плана. %>
+<% if (plan.canCreate) { %>
 <section class="newproj" aria-labelledby="new-title">
   <h2 id="new-title"><%= t('app.newTitle') %></h2>
   <form method="post" action="/app/projects" class="newproj-form">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class="field">
       <label for="type"><%= t('app.type') %></label>
-      <select id="type" name="type" required<%= plan.canCreate ? '' : ' disabled' %>>
+      <select id="type" name="type" required>
         <% let group = null; for (const ty of types) { if (ty.group !== group) { if (group !== null) { %></optgroup><% } group = ty.group; %><optgroup label="<%= ty.group %>"><% } %>
           <option value="<%= ty.id %>"><%= ty.label %></option>
         <% } if (group !== null) { %></optgroup><% } %>
@@ -34,16 +36,17 @@
     </div>
     <div class="field">
       <label for="pname"><%= t('app.name') %></label>
-      <input id="pname" name="name" type="text" maxlength="80" placeholder="<%= t('app.namePlaceholder') %>"<%= plan.canCreate ? '' : ' disabled' %>>
+      <input id="pname" name="name" type="text" maxlength="80" placeholder="<%= t('app.namePlaceholder') %>">
     </div>
-    <button class="btn btn-primary" type="submit"<%= plan.canCreate ? '' : ' disabled' %>><%- include('../partials/icon', { name: 'plus' }) %><%= t('app.create') %></button>
+    <button class="btn btn-primary" type="submit"><%- include('../partials/icon', { name: 'plus' }) %><%= t('app.create') %></button>
   </form>
 </section>
+<% } %>
 
 <section aria-labelledby="list-title">
   <h2 id="list-title"><%= t('app.listTitle', { n: projects.length }) %></h2>
   <% if (!projects.length) { %>
-    <p class="empty"><%= t('app.empty') %></p>
+    <p class="empty"><%= t(plan.canCreate ? 'app.empty' : 'app.emptyLocked') %></p>
   <% } else { %>
   <ul class="projlist">
     <% for (const p of projects) { %>

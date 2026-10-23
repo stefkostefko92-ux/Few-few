@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Жарнаманы барлық жерде бұғаттайды: YouTube бейнежарнамалары, баннерлер, қалқымалы терезелер, трекерлер, cookie сұраулары."
+    "message": "Жарнама бұғаттағышы (YouTube пен веб): бейнежарнама, баннер, қалқымалы терезе, трекер, cookie баннері, анти-адблок қабырғасы."
   },
   "byCarbon": {
     "message": "Carbon Stealth әзірлеген"
@@ -118,6 +118,27 @@
   "support": {
     "message": "Қолдау"
   },
+  "rate": {
+    "message": "Бағалау"
+  },
+  "rateTitle": {
+    "message": "Supreme AdBlock-ты Chrome веб-дүкенінде бағалаңыз"
+  },
+  "reviewBlocked": {
+    "message": "Осы уақытқа дейін бұғатталған сұраулар: $1"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock сізге пайдалы болса, Chrome веб-дүкеніндегі қысқа пікір басқаларға оны табуға көмектеседі."
+  },
+  "reviewLeave": {
+    "message": "Пікір жазу"
+  },
+  "reviewLater": {
+    "message": "Қазір емес"
+  },
+  "reviewNever": {
+    "message": "Қайта сұрамау"
+  },
   "filtersCount": {
     "message": "$1+ сүзгі",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "«Жарнама блокаторын өшіріңіз» қабырғаларын жасырып, бетті қалпына келтіреді"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook пен Instagram-дағы «Демеушілік» жазбаларын жасырады"
+    "message": "Facebook, Instagram және Threads-тегі «Демеушілік» жазбаларын жасырады"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Ашқан сілтемелеріңізден utm_*, fbclid, gclid және басқа басу идентификаторларын алып тастайды"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Белгілі зиянды домендерді бұғаттайды (abuse.ch ұсынған URLhaus тізімі)"
+    "message": "Белгілі зиянды сайт ашылмас бұрын ескертеді және беттер осындай сайттардан жүктейтін нәрселерді бұғаттайды (abuse.ch ұсынған URLhaus тізімі)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Барлық сайтта Google Topics, FLoC және Protected Audience жарнамалық API-ларын өшіреді"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut арқылы қайырымдылық жасау"
+  },
+  "opt_review": {
+    "message": "Пікір туралы еске салғыштар"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock терезесінің төменгі жағындағы шағын ★ сілтемесі және ең көбі екі рет сол жерде оны Chrome веб-дүкенінде бағалау туралы қысқа өтініш. Ешқашан сайттарда емес, ешқашан хабарландыру ретінде емес."
   },
   "opt_made_by": {
     "message": "Carbon Stealth жасаған"
@@ -620,6 +647,12 @@
     "message": "Мекенжай жолағының жанындағы пазл белгішесін басып, Supreme AdBlock-ты бекітіңіз. Сонда бір басу арқылы беттегі не бұғатталғанын көресіз.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Құралдар тақтасына бекітілді"
+  },
+  "welPinnedText": {
+    "message": "Белгішесін бір басу беттегі не бұғатталғанын көрсетеді."
+  },
   "welBrokenTitle": {
     "message": "Сайт дұрыс көрсетілмесе",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -643,5 +676,128 @@
   "welDone": {
     "message": "Түсінікті",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Рұқсат · $1 мин қалды"
+  },
+  "hiddenHere": {
+    "message": "Мұнда жасырған элементтер: $1 · Соңғысын қайтару"
+  },
+  "cmd_toggle_site": {
+    "message": "Осы сайтта бұғаттауды қосу немесе өшіру"
+  },
+  "cmd_pause": {
+    "message": "Қорғауды кідірту немесе жалғастыру (30 минут)"
+  },
+  "cmd_picker": {
+    "message": "Осы беттегі элементті жасыру"
+  },
+  "rep_fix_hour": {
+    "message": "Мұнда жарнамаға 1 сағатқа рұқсат беру"
+  },
+  "rep_done_hour": {
+    "message": "Бұл сайтта жарнамаға 1 сағатқа рұқсат берілді. Қайта жүктелді — түзелді ме?"
+  },
+  "opt_last30": {
+    "message": "Соңғы 30 күн"
+  },
+  "opt_last30_sum": {
+    "message": "Бұғатталды: $1 · Cookie баннерлері: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Сайттарды шолған сайын күнделікті жиынтықтар осында көрінеді."
+  },
+  "opt_last30_sub": {
+    "message": "Тек күнделікті жиынтықтар, осы құрылғыда 30 күн сақталады. Сайттар да, мекенжайлар да жоқ."
+  },
+  "opt_gpc_sub": {
+    "message": "Сіз кіретін әр сайттан деректеріңізді сатпауды және бөліспеуді сұрайды (Sec-GPC сигналы; кейбір құпиялылық заңдары сайттардан оны орындауды талап етеді). Сіз рұқсат еткен сайттарда жіберілмейді."
+  },
+  "opt_shortcuts": {
+    "message": "Пернетақта таңбашалары"
+  },
+  "opt_shortcuts_change": {
+    "message": "Таңбашаларды өзгерту"
+  },
+  "opt_shortcut_none": {
+    "message": "Орнатылмаған"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox-та: Қосымшалар мен темалар → ⚙ → Кеңейтім таңбашаларын басқару"
+  },
+  "opt_import_foreign": {
+    "message": "Басқа жарнама бұғаттағышынан импорттау"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard немесе Adblock Plus-тан көшіп жатырсыз ба? Оның сақтық көшірме файлын таңдаңыз: сіз рұқсат еткен сайттар мен өз сүзгілеріңіз осында қосылады. Ештеңе ауыстырылмайды."
+  },
+  "opt_import_foreign_done": {
+    "message": "Рұқсат етілген сайттар: $1 · Қосылған сүзгілер: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Қалдырылды (мұнда қолдану мүмкін емес): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Бұл файл біз оқи алатын сақтық көшірме емес."
+  },
+  "welQuickTitle": {
+    "message": "Өзіңізге бейімдеңіз"
+  },
+  "welQuickSub": {
+    "message": "Міндетті емес: бәрі қазірдің өзінде жұмыс істейді. Мұның кез келгенін кейін Параметрлерде өзгертуге болады."
+  },
+  "blk_page_title": {
+    "message": "Сайт бұғатталды — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Бұл сайт құрылғыңызға зиян келтіруі мүмкін"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock бұл бетті тоқтатты, себебі сайт URLhaus тізімінде бар — бұл зиянды бағдарламалар тарататын мекенжайлардың жария тізімі."
+  },
+  "blk_back": {
+    "message": "Артқа қайту"
+  },
+  "blk_continue": {
+    "message": "Бәрібір жалғастыру"
+  },
+  "blk_note": {
+    "message": "Жалғастырсаңыз, браузерді жапқанша тек осы сайттың беттеріне рұқсат беріледі."
+  },
+  "blk_why": {
+    "message": "Неліктен тізімде? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Осы беттің байланыстары"
+  },
+  "conn_empty": {
+    "message": "Бұл бет басқа сайттардан ештеңе жүктемеді."
+  },
+  "conn_block": {
+    "message": "Мұнда бұғаттау"
+  },
+  "conn_blocked": {
+    "message": "Мұнда бұғатталды"
+  },
+  "conn_hint": {
+    "message": "Осы сайттың $1 сайтынан жүктейтінін бұғаттау"
+  },
+  "opt_conn_title": {
+    "message": "Сіз бұғаттаған байланыстар"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock терезесіндегі «Осы беттің байланыстары» бөлімінен бұғатталған, әрқайсысы тек өз сайтында ғана."
+  },
+  "opt_empty_conn": {
+    "message": "Әзірге ештеңе бұғатталмады."
+  },
+  "opt_conn_remove": {
+    "message": "$2 сайтында $1 үшін бұғаттауды алып тастау"
+  },
+  "opt_h_danger": {
+    "message": "Зиянды сайт туралы ескерту беті"
+  },
+  "opt_h_capacity": {
+    "message": "Ережелер сыйымдылығы"
   }
 }

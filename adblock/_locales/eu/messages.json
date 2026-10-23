@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokeatu iragarkiak nonahi: YouTube, bannerrak, laster-leihoak, jarraipen-elementuak, cookie-oharrak eta anti-adblock hesiak."
+    "message": "Iragarki-blokeatzailea YouTube eta webrako: bideoak, laster-leihoak, jarraipen-elementuak, cookie-bannerrak eta anti-adblock hesiak."
   },
   "byCarbon": {
     "message": "Carbon Stealth-ek egina"
@@ -118,6 +118,27 @@
   "support": {
     "message": "Lagundu"
   },
+  "rate": {
+    "message": "Baloratu"
+  },
+  "rateTitle": {
+    "message": "Baloratu Supreme AdBlock Chrome Web Store-n"
+  },
+  "reviewBlocked": {
+    "message": "Orain arte blokeatutako eskaerak: $1"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock baliagarria bazaizu, Chrome Web Store-ko iruzkin labur batek beste batzuei aurkitzen laguntzen die."
+  },
+  "reviewLeave": {
+    "message": "Idatzi iruzkina"
+  },
+  "reviewLater": {
+    "message": "Orain ez"
+  },
+  "reviewNever": {
+    "message": "Ez galdetu berriro"
+  },
   "filtersCount": {
     "message": "$1+ iragazki",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "Ezkutatu «desaktibatu zure iragarki-blokeatzailea» hesiak eta leheneratu orria"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Ezkutatu «Babestua» argitalpenak Facebook-en eta Instagram-en"
+    "message": "Ezkutatu «Babestua» argitalpenak Facebook-en, Instagram-en eta Threads-en"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Kendu utm_*, fbclid, gclid eta beste klik-identifikatzaile batzuk irekitzen dituzun esteketatik"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokeatu malware-domeinu ezagunak (abuse.ch-ren URLhaus zerrenda)"
+    "message": "Abisatu malware-webgune ezagun bat ireki aurretik, eta blokeatu orriek horrelako webguneetatik kargatzen dutena (abuse.ch-ren URLhaus zerrenda)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Desgaitu Google Topics, FLoC eta Protected Audience iragarki-APIak webgune guztietan"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Egin dohaintza Revolut bidez"
+  },
+  "opt_review": {
+    "message": "Iruzkinen gogorarazpenak"
+  },
+  "opt_review_sub": {
+    "message": "★ esteka txiki bat Supreme AdBlock leihoaren behealdean eta, gehienez bi aldiz, eskaera labur bat bertan Chrome Web Store-n baloratzeko. Inoiz ez webguneetan, inoiz ez jakinarazpen gisa."
   },
   "opt_made_by": {
     "message": "Carbon Stealth-ek egina"
@@ -620,6 +647,12 @@
     "message": "Egin klik helbide-barraren ondoko puzzle-piezaren ikonoan eta ainguratu Supreme AdBlock. Gero, klik bakarrarekin ikusiko duzu zer blokeatu den orrian.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Gehigarria tresna-barran ainguratuta"
+  },
+  "welPinnedText": {
+    "message": "Bere ikonoan klik bakarrarekin ikusiko duzu zer blokeatu den orrian."
+  },
   "welBrokenTitle": {
     "message": "Webgune bat hautsita badago",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -643,5 +676,128 @@
   "welDone": {
     "message": "Ulertuta",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Baimenduta · $1 min falta"
+  },
+  "hiddenHere": {
+    "message": "Hemen ezkutatu dituzunak: $1 · Desegin azkena"
+  },
+  "cmd_toggle_site": {
+    "message": "Aktibatu/desaktibatu blokeoa webgune honetan"
+  },
+  "cmd_pause": {
+    "message": "Pausatu edo berrekin babesa (30 minutu)"
+  },
+  "cmd_picker": {
+    "message": "Ezkutatu elementu bat orri honetan"
+  },
+  "rep_fix_hour": {
+    "message": "Baimendu iragarkiak hemen ordubetez"
+  },
+  "rep_done_hour": {
+    "message": "Iragarkiak ordubetez baimenduta daude webgune honetan. Berriro kargatuta — konpondu da?"
+  },
+  "opt_last30": {
+    "message": "Azken 30 egunak"
+  },
+  "opt_last30_sum": {
+    "message": "Blokeatuak: $1 · Cookie-bannerrak: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Eguneko guztizkoak hemen agertuko dira nabigatu ahala."
+  },
+  "opt_last30_sub": {
+    "message": "Eguneko guztizkoak soilik, gailu honetan 30 egunez gordeta. Webgunerik ez, helbiderik ez."
+  },
+  "opt_gpc_sub": {
+    "message": "Bisitatzen duzun webgune bakoitzari eskatzen dio zure datuak ez saltzeko eta ez partekatzeko (Sec-GPC seinalea; pribatutasun-lege batzuek webguneak behartzen dituzte hura errespetatzera). Ez da bidaltzen baimentzen dituzun webguneetan."
+  },
+  "opt_shortcuts": {
+    "message": "Laster-teklak"
+  },
+  "opt_shortcuts_change": {
+    "message": "Aldatu laster-teklak"
+  },
+  "opt_shortcut_none": {
+    "message": "Ezarri gabe"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox-en: Gehigarriak eta itxurak → ⚙ → Kudeatu hedapenen laster-teklak."
+  },
+  "opt_import_foreign": {
+    "message": "Inportatu beste blokeatzaile batetik"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard edo Adblock Plus-etik zatoz? Aukeratu haren babeskopia-fitxategia: baimendu dituzun webguneak eta zure iragazkiak hemen gehitzen dira. Ez da ezer ordezten."
+  },
+  "opt_import_foreign_done": {
+    "message": "Baimendutako webguneak: $1 · Gehitutako iragazkiak: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Kanpoan utzita (ezin dira hemen aplikatu): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Fitxategi hau ez da guk irakur dezakegun babeskopia bat."
+  },
+  "welQuickTitle": {
+    "message": "Egokitu zure erara"
+  },
+  "welQuickSub": {
+    "message": "Aukerakoa: dagoeneko badabil. Hauetako edozein geroago alda dezakezu Ezarpenetan."
+  },
+  "blk_page_title": {
+    "message": "Webgunea blokeatuta — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Webgune honek zure gailua kalte dezake"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock-ek orri hau geldiarazi du webgunea URLhaus-en zerrendatuta dagoelako; malwarea zabaltzen duten helbideen zerrenda publiko bat da URLhaus."
+  },
+  "blk_back": {
+    "message": "Itzuli"
+  },
+  "blk_continue": {
+    "message": "Jarraitu hala ere"
+  },
+  "blk_note": {
+    "message": "Jarraitzen baduzu, webgune honen orriei soilik utziko zaie pasatzen, nabigatzailea itxi arte."
+  },
+  "blk_why": {
+    "message": "Zergatik dago zerrendan? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Orri honetako konexioak"
+  },
+  "conn_empty": {
+    "message": "Orri honek ez du ezer kargatu beste webguneetatik."
+  },
+  "conn_block": {
+    "message": "Blokeatu hemen"
+  },
+  "conn_blocked": {
+    "message": "Hemen blokeatuta"
+  },
+  "conn_hint": {
+    "message": "Blokeatu webgune honek $1 helbidetik kargatzen duena"
+  },
+  "opt_conn_title": {
+    "message": "Blokeatu dituzun konexioak"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock leihoko «Orri honetako konexioak» ataletik blokeatuak, bakoitza bere webgunean soilik."
+  },
+  "opt_empty_conn": {
+    "message": "Oraindik ez da ezer blokeatu."
+  },
+  "opt_conn_remove": {
+    "message": "Desblokeatu $1 $2 webgunean"
+  },
+  "opt_h_danger": {
+    "message": "Malware-abisuaren orria"
+  },
+  "opt_h_capacity": {
+    "message": "Arauen edukiera"
   }
 }

@@ -232,8 +232,9 @@ test('Italian elides the article before 1, 8 and 11', () => {
     "fino all'8 ottobre 2026",
   );
   assert.equal(
+    // after the „expired“ chip: only the date, without repeating „scaduto“
     translate('it', 'plan.endedOn', { date: '11 marzo 2026' }),
-    "scaduto l'11 marzo 2026",
+    "l'11 marzo 2026",
   );
   assert.equal(
     translate('it', 'plan.endsOn', { date: '18 aprile 2026' }),

@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "YouTube ವೀಡಿಯೊ ಜಾಹೀರಾತುಗಳು, ಬ್ಯಾನರ್‌ಗಳು, ಪಾಪ್-ಅಪ್‌ಗಳು, ಟ್ರ್ಯಾಕರ್‌ಗಳು, ಕುಕೀ ಪ್ರಾಂಪ್ಟ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸುತ್ತದೆ."
+    "message": "ಜಾಹೀರಾತು ಬ್ಲಾಕರ್: YouTube, ವೆಬ್ ಜಾಹೀರಾತುಗಳು, ಪಾಪ್-ಅಪ್‌ಗಳು, ಟ್ರ್ಯಾಕರ್‌ಗಳು, ಕುಕೀ ಬ್ಯಾನರ್‌ಗಳು, ಆ್ಯಂಟಿ-ಆ್ಯಡ್‌ಬ್ಲಾಕ್ ಗೋಡೆಗಳು."
   },
   "byCarbon": {
     "message": "Carbon Stealth ಅವರಿಂದ"
@@ -118,6 +118,27 @@
   "support": {
     "message": "ಬೆಂಬಲಿಸಿ"
   },
+  "rate": {
+    "message": "ರೇಟ್ ಮಾಡಿ"
+  },
+  "rateTitle": {
+    "message": "Chrome ವೆಬ್ ಅಂಗಡಿಯಲ್ಲಿ Supreme AdBlock ಅನ್ನು ರೇಟ್ ಮಾಡಿ"
+  },
+  "reviewBlocked": {
+    "message": "ಇಲ್ಲಿಯವರೆಗೆ $1 ವಿನಂತಿಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock ನಿಮಗೆ ಉಪಯುಕ್ತವಾಗಿದ್ದರೆ, Chrome ವೆಬ್ ಅಂಗಡಿಯಲ್ಲಿ ಒಂದು ಚಿಕ್ಕ ವಿಮರ್ಶೆ ಇತರರು ಇದನ್ನು ಹುಡುಕಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ."
+  },
+  "reviewLeave": {
+    "message": "ವಿಮರ್ಶೆ ಬರೆಯಿರಿ"
+  },
+  "reviewLater": {
+    "message": "ಈಗ ಬೇಡ"
+  },
+  "reviewNever": {
+    "message": "ಮತ್ತೆ ಕೇಳಬೇಡಿ"
+  },
   "filtersCount": {
     "message": "$1+ ಫಿಲ್ಟರ್‌ಗಳು",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "“ನಿಮ್ಮ ಆ್ಯಡ್‌ಬ್ಲಾಕರ್ ಆಫ್ ಮಾಡಿ” ಗೋಡೆಗಳನ್ನು ಮರೆಮಾಡಿ ಪುಟವನ್ನು ಮರುಸ್ಥಾಪಿಸುತ್ತದೆ"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook & Instagram ನಲ್ಲಿ “ಪ್ರಾಯೋಜಿತ” ಪೋಸ್ಟ್‌ಗಳನ್ನು ಮರೆಮಾಡುತ್ತದೆ"
+    "message": "Facebook, Instagram & Threads ನಲ್ಲಿ “ಪ್ರಾಯೋಜಿತ” ಪೋಸ್ಟ್‌ಗಳನ್ನು ಮರೆಮಾಡುತ್ತದೆ"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "ನೀವು ತೆರೆಯುವ ಲಿಂಕ್‌ಗಳಿಂದ utm_*, fbclid, gclid ಮತ್ತು ಇತರ ಕ್ಲಿಕ್ ಗುರುತಿಸುವಿಕೆಗಳನ್ನು ತೆಗೆದುಹಾಕುತ್ತದೆ"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "ತಿಳಿದಿರುವ ಮಾಲ್‌ವೇರ್ ಡೊಮೇನ್‌ಗಳನ್ನು ನಿರ್ಬಂಧಿಸುತ್ತದೆ (abuse.ch ನ URLhaus ಪಟ್ಟಿ)"
+    "message": "ತಿಳಿದಿರುವ ಮಾಲ್‌ವೇರ್ ಸೈಟ್ ತೆರೆಯುವ ಮೊದಲು ಎಚ್ಚರಿಸುತ್ತದೆ, ಮತ್ತು ಅಂತಹ ಸೈಟ್‌ಗಳಿಂದ ಪುಟಗಳು ಲೋಡ್ ಮಾಡುವುದನ್ನು ನಿರ್ಬಂಧಿಸುತ್ತದೆ (abuse.ch ನ URLhaus ಪಟ್ಟಿ)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "ಪ್ರತಿ ಸೈಟ್‌ನಲ್ಲಿ Google Topics, FLoC ಮತ್ತು Protected Audience ಜಾಹೀರಾತು API ಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut ಮೂಲಕ ದೇಣಿಗೆ ನೀಡಿ"
+  },
+  "opt_review": {
+    "message": "ವಿಮರ್ಶೆಯ ಜ್ಞಾಪನೆಗಳು"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock ವಿಂಡೋದ ಕೆಳಭಾಗದಲ್ಲಿ ಚಿಕ್ಕ ★ ಲಿಂಕ್ ಮತ್ತು ಹೆಚ್ಚೆಂದರೆ ಎರಡು ಬಾರಿ ಅಲ್ಲೇ Chrome ವೆಬ್ ಅಂಗಡಿಯಲ್ಲಿ ಇದನ್ನು ರೇಟ್ ಮಾಡುವಂತೆ ಚಿಕ್ಕ ವಿನಂತಿ. ಎಂದಿಗೂ ವೆಬ್‌ಸೈಟ್‌ಗಳಲ್ಲಿ ಅಲ್ಲ, ಎಂದಿಗೂ ಅಧಿಸೂಚನೆಯಾಗಿ ಅಲ್ಲ."
   },
   "opt_made_by": {
     "message": "Carbon Stealth ನಿರ್ಮಿಸಿದೆ"
@@ -620,6 +647,12 @@
     "message": "ವಿಳಾಸ ಪಟ್ಟಿಯ ಪಕ್ಕದಲ್ಲಿರುವ ಒಗಟಿನ ತುಣುಕಿನ ಐಕಾನ್ ಕ್ಲಿಕ್ ಮಾಡಿ ಮತ್ತು Supreme AdBlock ಅನ್ನು ಪಿನ್ ಮಾಡಿ. ನಂತರ ಒಂದೇ ಕ್ಲಿಕ್‌ನಲ್ಲಿ ಪುಟದಲ್ಲಿ ಏನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ ಎಂದು ನೋಡಬಹುದು.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "ವಿಸ್ತರಣೆಯನ್ನು ಟೂಲ್‌ಬಾರ್‌ಗೆ ಪಿನ್ ಮಾಡಲಾಗಿದೆ"
+  },
+  "welPinnedText": {
+    "message": "ಅದರ ಐಕಾನ್ ಮೇಲೆ ಒಂದೇ ಕ್ಲಿಕ್‌ನಲ್ಲಿ ಪುಟದಲ್ಲಿ ಏನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ ಎಂದು ನೋಡಬಹುದು."
+  },
   "welBrokenTitle": {
     "message": "ಯಾವುದಾದರೂ ಸೈಟ್ ಸರಿಯಾಗಿ ಕಾಣಿಸದಿದ್ದರೆ",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -643,5 +676,128 @@
   "welDone": {
     "message": "ಅರ್ಥವಾಯಿತು",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "ಅನುಮತಿ · $1 ನಿ. ಬಾಕಿ"
+  },
+  "hiddenHere": {
+    "message": "ಇಲ್ಲಿ ಮರೆಮಾಡಿದ ಅಂಶಗಳು: $1 · ಕೊನೆಯದನ್ನು ರದ್ದುಮಾಡಿ"
+  },
+  "cmd_toggle_site": {
+    "message": "ಈ ಸೈಟ್‌ನಲ್ಲಿ ನಿರ್ಬಂಧಿಸುವಿಕೆಯನ್ನು ಆನ್ ಅಥವಾ ಆಫ್ ಮಾಡಿ"
+  },
+  "cmd_pause": {
+    "message": "ರಕ್ಷಣೆಗೆ ವಿರಾಮ ನೀಡಿ ಅಥವಾ ಪುನರಾರಂಭಿಸಿ (30 ನಿಮಿಷ)"
+  },
+  "cmd_picker": {
+    "message": "ಈ ಪುಟದಲ್ಲಿ ಒಂದು ಅಂಶವನ್ನು ಮರೆಮಾಡಿ"
+  },
+  "rep_fix_hour": {
+    "message": "ಇಲ್ಲಿ 1 ಗಂಟೆ ಜಾಹೀರಾತುಗಳನ್ನು ಅನುಮತಿಸಿ"
+  },
+  "rep_done_hour": {
+    "message": "ಈ ಸೈಟ್‌ನಲ್ಲಿ 1 ಗಂಟೆ ಜಾಹೀರಾತುಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ. ಮರುಲೋಡ್ ಆಗಿದೆ — ಸರಿಯಾಯಿತೇ?"
+  },
+  "opt_last30": {
+    "message": "ಕಳೆದ 30 ದಿನಗಳು"
+  },
+  "opt_last30_sum": {
+    "message": "ನಿರ್ಬಂಧಿತ: $1 · ಕುಕೀ ಬ್ಯಾನರ್‌ಗಳು: $2"
+  },
+  "opt_last30_empty": {
+    "message": "ನೀವು ಬ್ರೌಸ್ ಮಾಡಿದಂತೆ ನಿಮ್ಮ ದೈನಂದಿನ ಒಟ್ಟು ಮೊತ್ತಗಳು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ."
+  },
+  "opt_last30_sub": {
+    "message": "ದೈನಂದಿನ ಒಟ್ಟು ಮೊತ್ತಗಳು ಮಾತ್ರ, ಈ ಸಾಧನದಲ್ಲಿ 30 ದಿನಗಳವರೆಗೆ ಇರಿಸಲಾಗುತ್ತದೆ. ಸೈಟ್‌ಗಳಿಲ್ಲ, ವಿಳಾಸಗಳಿಲ್ಲ."
+  },
+  "opt_gpc_sub": {
+    "message": "ನೀವು ಭೇಟಿ ನೀಡುವ ಪ್ರತಿಯೊಂದು ಸೈಟ್‌ಗೆ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಮಾರಾಟ ಮಾಡಬೇಡಿ ಅಥವಾ ಹಂಚಿಕೊಳ್ಳಬೇಡಿ ಎಂದು ಕೇಳುತ್ತದೆ (Sec-GPC ಸಂಕೇತ; ಕೆಲವು ಗೌಪ್ಯತಾ ಕಾನೂನುಗಳ ಪ್ರಕಾರ ಸೈಟ್‌ಗಳು ಇದನ್ನು ಪಾಲಿಸಬೇಕು). ನೀವು ಅನುಮತಿಸಿದ ಸೈಟ್‌ಗಳಲ್ಲಿ ಕಳುಹಿಸಲಾಗುವುದಿಲ್ಲ."
+  },
+  "opt_shortcuts": {
+    "message": "ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು"
+  },
+  "opt_shortcuts_change": {
+    "message": "ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಿ"
+  },
+  "opt_shortcut_none": {
+    "message": "ಹೊಂದಿಸಿಲ್ಲ"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox ನಲ್ಲಿ: ಆ್ಯಡ್-ಆನ್‌ಗಳು ಮತ್ತು ಥೀಮ್‌ಗಳು → ⚙ → ವಿಸ್ತರಣೆ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ."
+  },
+  "opt_import_foreign": {
+    "message": "ಬೇರೆ ಜಾಹೀರಾತು ಬ್ಲಾಕರ್‌ನಿಂದ ಆಮದು ಮಾಡಿ"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard ಅಥವಾ Adblock Plus ನಿಂದ ಬದಲಾಯಿಸುತ್ತಿದ್ದೀರಾ? ಅದರ ಬ್ಯಾಕಪ್ ಫೈಲ್ ಆಯ್ಕೆಮಾಡಿ: ನೀವು ಅನುಮತಿಸಿದ ಸೈಟ್‌ಗಳು ಮತ್ತು ನಿಮ್ಮ ಸ್ವಂತ ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಇಲ್ಲಿ ಸೇರಿಸಲಾಗುತ್ತದೆ. ಯಾವುದನ್ನೂ ಬದಲಿಸಲಾಗುವುದಿಲ್ಲ."
+  },
+  "opt_import_foreign_done": {
+    "message": "ಅನುಮತಿಸಿದ ಸೈಟ್‌ಗಳು: $1 · ಸೇರಿಸಿದ ಫಿಲ್ಟರ್‌ಗಳು: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "ಬಿಟ್ಟುಬಿಡಲಾಗಿದೆ (ಇಲ್ಲಿ ಅನ್ವಯಿಸಲು ಆಗದು): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "ಈ ಫೈಲ್ ನಾವು ಓದಬಹುದಾದ ಬ್ಯಾಕಪ್ ಅಲ್ಲ."
+  },
+  "welQuickTitle": {
+    "message": "ನಿಮಗೆ ಬೇಕಾದಂತೆ ಹೊಂದಿಸಿ"
+  },
+  "welQuickSub": {
+    "message": "ಐಚ್ಛಿಕ: ಇದು ಈಗಾಗಲೇ ಕೆಲಸ ಮಾಡುತ್ತಿದೆ. ಇವುಗಳಲ್ಲಿ ಯಾವುದನ್ನಾದರೂ ನಂತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಬದಲಾಯಿಸಬಹುದು."
+  },
+  "blk_page_title": {
+    "message": "ಸೈಟ್ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "ಈ ಸೈಟ್ ನಿಮ್ಮ ಸಾಧನಕ್ಕೆ ಹಾನಿ ಮಾಡಬಹುದು"
+  },
+  "blk_text": {
+    "message": "ಈ ಸೈಟ್ URLhaus ನಲ್ಲಿರುವುದರಿಂದ Supreme AdBlock ಈ ಪುಟವನ್ನು ತಡೆದಿದೆ. URLhaus ಎಂಬುದು ಮಾಲ್‌ವೇರ್ ಹರಡುವ ವಿಳಾಸಗಳ ಸಾರ್ವಜನಿಕ ಪಟ್ಟಿ."
+  },
+  "blk_back": {
+    "message": "ಹಿಂದಕ್ಕೆ ಹೋಗಿ"
+  },
+  "blk_continue": {
+    "message": "ಆದರೂ ಮುಂದುವರಿಸಿ"
+  },
+  "blk_note": {
+    "message": "ಮುಂದುವರಿದರೆ, ನೀವು ಬ್ರೌಸರ್ ಮುಚ್ಚುವವರೆಗೆ ಈ ಸೈಟ್‌ನ ಪುಟಗಳನ್ನು ಮಾತ್ರ ಅನುಮತಿಸಲಾಗುತ್ತದೆ."
+  },
+  "blk_why": {
+    "message": "ಇದು ಪಟ್ಟಿಯಲ್ಲಿ ಏಕಿದೆ? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "ಈ ಪುಟದಲ್ಲಿನ ಸಂಪರ್ಕಗಳು"
+  },
+  "conn_empty": {
+    "message": "ಈ ಪುಟ ಇತರ ಸೈಟ್‌ಗಳಿಂದ ಏನನ್ನೂ ಲೋಡ್ ಮಾಡಿಲ್ಲ."
+  },
+  "conn_block": {
+    "message": "ಇಲ್ಲಿ ನಿರ್ಬಂಧಿಸಿ"
+  },
+  "conn_blocked": {
+    "message": "ಇಲ್ಲಿ ನಿರ್ಬಂಧಿತ"
+  },
+  "conn_hint": {
+    "message": "ಈ ಸೈಟ್ $1 ನಿಂದ ಲೋಡ್ ಮಾಡುವುದನ್ನು ನಿರ್ಬಂಧಿಸಿ"
+  },
+  "opt_conn_title": {
+    "message": "ನೀವು ನಿರ್ಬಂಧಿಸಿದ ಸಂಪರ್ಕಗಳು"
+  },
+  "opt_conn_sub": {
+    "message": "ಪಾಪ್-ಅಪ್‌ನ “ಈ ಪುಟದಲ್ಲಿನ ಸಂಪರ್ಕಗಳು” ನಿಂದ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ, ಪ್ರತಿಯೊಂದೂ ಅದರ ಸ್ವಂತ ಸೈಟ್‌ನಲ್ಲಿ ಮಾತ್ರ."
+  },
+  "opt_empty_conn": {
+    "message": "ಇನ್ನೂ ಏನನ್ನೂ ನಿರ್ಬಂಧಿಸಿಲ್ಲ."
+  },
+  "opt_conn_remove": {
+    "message": "$2 ನಲ್ಲಿ $1 ನ ನಿರ್ಬಂಧ ತೆಗೆಯಿರಿ"
+  },
+  "opt_h_danger": {
+    "message": "ಮಾಲ್‌ವೇರ್ ಎಚ್ಚರಿಕೆ ಪುಟ"
+  },
+  "opt_h_capacity": {
+    "message": "ನಿಯಮಗಳ ಸಾಮರ್ಥ್ಯ"
   }
 }

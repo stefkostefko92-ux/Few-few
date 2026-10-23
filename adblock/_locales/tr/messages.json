@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Reklam engelleyici: YouTube reklamları, banner'lar, pop-up'lar, izleyiciler, çerez uyarıları, anti-adblock duvarları."
+    "message": "Reklam engelleyici: YouTube ve webde video reklam, banner, pop-up, izleyici, çerez banner'ı ve anti-adblock duvarı."
   },
   "byCarbon": {
     "message": "Carbon Stealth tarafından"
@@ -118,6 +118,27 @@
   "support": {
     "message": "Destek ol"
   },
+  "rate": {
+    "message": "Puan ver"
+  },
+  "rateTitle": {
+    "message": "Supreme AdBlock'a Chrome Web Mağazası'nda puan verin"
+  },
+  "reviewBlocked": {
+    "message": "Şimdiye kadar $1 istek engellendi"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock işinize yarıyorsa, Chrome Web Mağazası'nda kısa bir yorum başkalarının onu bulmasına yardımcı olur."
+  },
+  "reviewLeave": {
+    "message": "Yorum yaz"
+  },
+  "reviewLater": {
+    "message": "Şimdi değil"
+  },
+  "reviewNever": {
+    "message": "Bir daha sorma"
+  },
   "filtersCount": {
     "message": "$1+ filtre",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "“Reklam engelleyicinizi devre dışı bırakın” duvarlarını gizler ve sayfayı geri getirir"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook ve Instagram'daki “Sponsorlu” gönderileri gizler"
+    "message": "Facebook, Instagram ve Threads'teki “Sponsorlu” gönderileri gizler"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Açtığınız bağlantılardan utm_*, fbclid, gclid ve diğer tıklama tanımlayıcılarını kaldırır"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Bilinen kötü amaçlı alan adlarını engeller (abuse.ch'nin URLhaus listesi)"
+    "message": "Bilinen kötü amaçlı bir site açılmadan önce uyarır ve sayfaların bu tür sitelerden yüklediklerini engeller (abuse.ch'nin URLhaus listesi)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Her sitede Google Topics, FLoC ve Protected Audience reklam API'lerini devre dışı bırakır"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut ile bağış yap"
+  },
+  "opt_review": {
+    "message": "Yorum hatırlatmaları"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock penceresinin altında küçük bir ★ bağlantısı ve en fazla iki kez orada, Chrome Web Mağazası'nda puan vermeniz için kısa bir rica. Asla web sitelerinde, asla bildirim olarak değil."
   },
   "opt_made_by": {
     "message": "Carbon Stealth tarafından yapıldı"
@@ -620,6 +647,12 @@
     "message": "Adres çubuğunun yanındaki yapboz parçası simgesini tıklayın ve Supreme AdBlock'u sabitleyin. Böylece tek tıkla sayfada nelerin engellendiğini görürsünüz.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Araç çubuğuna sabitlendi"
+  },
+  "welPinnedText": {
+    "message": "Simgesine tek tıklama, sayfada nelerin engellendiğini gösterir."
+  },
   "welBrokenTitle": {
     "message": "Bir site bozuk görünüyorsa",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -643,5 +676,128 @@
   "welDone": {
     "message": "Anladım",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "İzinli · $1 dk kaldı"
+  },
+  "hiddenHere": {
+    "message": "Burada gizlenen öğeler: $1 · Sonuncuyu geri al"
+  },
+  "cmd_toggle_site": {
+    "message": "Bu sitede engellemeyi aç veya kapat"
+  },
+  "cmd_pause": {
+    "message": "Korumayı duraklat veya devam ettir (30 dakika)"
+  },
+  "cmd_picker": {
+    "message": "Bu sayfada bir öğeyi gizle"
+  },
+  "rep_fix_hour": {
+    "message": "Burada reklamlara 1 saat izin ver"
+  },
+  "rep_done_hour": {
+    "message": "Bu sitede reklamlara 1 saatliğine izin verildi. Yeniden yüklendi — düzeldi mi?"
+  },
+  "opt_last30": {
+    "message": "Son 30 gün"
+  },
+  "opt_last30_sum": {
+    "message": "Engellenen: $1 · Çerez banner'ları: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Gezindikçe günlük toplamlarınız burada görünür."
+  },
+  "opt_last30_sub": {
+    "message": "Yalnızca günlük toplamlar, 30 gün boyunca bu cihazda saklanır. Site yok, adres yok."
+  },
+  "opt_gpc_sub": {
+    "message": "Ziyaret ettiğiniz her siteden verilerinizi satmamasını veya paylaşmamasını ister (bazı gizlilik yasalarının sitelere uymayı zorunlu kıldığı Sec-GPC sinyali). İzin verdiğiniz sitelerde gönderilmez."
+  },
+  "opt_shortcuts": {
+    "message": "Klavye kısayolları"
+  },
+  "opt_shortcuts_change": {
+    "message": "Kısayolları değiştir"
+  },
+  "opt_shortcut_none": {
+    "message": "Atanmamış"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox'ta: Uzantılar ve temalar → ⚙ → Uzantı kısayollarını yönet."
+  },
+  "opt_import_foreign": {
+    "message": "Başka reklam engelleyiciden içe aktar"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard veya Adblock Plus'tan mı geçiyorsunuz? Onun yedek dosyasını seçin: izin verdiğiniz siteler ve kendi filtreleriniz buraya eklenir. Hiçbir şeyin üzerine yazılmaz."
+  },
+  "opt_import_foreign_done": {
+    "message": "İzin verilen siteler: $1 · Eklenen filtreler: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Dışarıda bırakılan (burada uygulanamaz): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Bu dosya okuyabildiğimiz bir yedek değil."
+  },
+  "welQuickTitle": {
+    "message": "Kendinize göre ayarlayın"
+  },
+  "welQuickSub": {
+    "message": "İsteğe bağlı: zaten çalışıyor. Bunların hepsini daha sonra Ayarlar'dan değiştirebilirsiniz."
+  },
+  "blk_page_title": {
+    "message": "Site engellendi — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Bu site cihazınıza zarar verebilir"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock bu sayfayı durdurdu, çünkü site, kötü amaçlı yazılım yayan adreslerin herkese açık listesi olan URLhaus'ta yer alıyor."
+  },
+  "blk_back": {
+    "message": "Geri dön"
+  },
+  "blk_continue": {
+    "message": "Yine de devam et"
+  },
+  "blk_note": {
+    "message": "Devam ederseniz, tarayıcıyı kapatana kadar yalnızca bu sitenin sayfalarına izin verilir."
+  },
+  "blk_why": {
+    "message": "Neden listede? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Bu sayfadaki bağlantılar"
+  },
+  "conn_empty": {
+    "message": "Bu sayfa diğer sitelerden hiçbir şey yüklemedi."
+  },
+  "conn_block": {
+    "message": "Burada engelle"
+  },
+  "conn_blocked": {
+    "message": "Burada engelli"
+  },
+  "conn_hint": {
+    "message": "Bu sitenin $1 kaynağından yüklediklerini engelle"
+  },
+  "opt_conn_title": {
+    "message": "Engellediğiniz bağlantılar"
+  },
+  "opt_conn_sub": {
+    "message": "Uzantı penceresindeki “Bu sayfadaki bağlantılar” bölümünden engellendi, her biri yalnızca kendi sitesinde."
+  },
+  "opt_empty_conn": {
+    "message": "Henüz hiçbir şey engellenmedi."
+  },
+  "opt_conn_remove": {
+    "message": "$2 sitesinde $1 için engeli kaldır"
+  },
+  "opt_h_danger": {
+    "message": "Kötü amaçlı site uyarı sayfası"
+  },
+  "opt_h_capacity": {
+    "message": "Kural kapasitesi"
   }
 }

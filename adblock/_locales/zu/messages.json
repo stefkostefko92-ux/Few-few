@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Ivimba izikhangiso zevidiyo ze-YouTube, amabhena, ama-pop-up, abalandeleli nezindonga ze-anti-adblock yonke indawo."
+    "message": "Isivimbi sezikhangiso se-YouTube newebhu: amabhena, ama-pop-up, abalandeleli, amabhena amakhukhi nezindonga ze-anti-adblock."
   },
   "byCarbon": {
     "message": "ngu-Carbon Stealth"
@@ -118,6 +118,27 @@
   "support": {
     "message": "Sekela"
   },
+  "rate": {
+    "message": "Linganisela"
+  },
+  "rateTitle": {
+    "message": "Linganisela i-Supreme AdBlock ku-Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "Izicelo ezivinjiwe kuze kube manje: $1"
+  },
+  "reviewAsk": {
+    "message": "Uma i-Supreme AdBlock ikusiza, isibuyekezo esifushane ku-Chrome Web Store sisiza abanye bayithole."
+  },
+  "reviewLeave": {
+    "message": "Bhala isibuyekezo"
+  },
+  "reviewLater": {
+    "message": "Hhayi manje"
+  },
+  "reviewNever": {
+    "message": "Ungaphinde ubuze"
+  },
   "filtersCount": {
     "message": "Izihlungi ezingu-$1+",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "Fihla izindonga ezithi “vala i-adblocker yakho” futhi ubuyisele ikhasi"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Fihla okuthunyelwe okuthi “Kuxhasiwe” ku-Facebook naku-Instagram"
+    "message": "Fihla okuthunyelwe okuthi “Kuxhasiwe” ku-Facebook, ku-Instagram naku-Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Susa i-utm_*, i-fbclid, i-gclid nezinye izihlonzi zokuchofoza kumalinki owavulayo"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Vimba izizinda ze-malware ezaziwayo (uhlu lwe-URLhaus lwe-abuse.ch)"
+    "message": "Xwayisa ngaphambi kokuba kuvuleke isayithi ye-malware eyaziwayo, futhi uvimbe lokho amakhasi akulayisha kumasayithi anjalo (uhlu lwe-URLhaus lwe-abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Khubaza ama-API ezikhangiso e-Google Topics, FLoC ne-Protected Audience kuyo yonke isayithi"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Nikela nge-Revolut"
+  },
+  "opt_review": {
+    "message": "Izikhumbuzi zesibuyekezo"
+  },
+  "opt_review_sub": {
+    "message": "Isixhumanisi esincane se-★ ngezansi kwewindi le-Supreme AdBlock futhi, okungadluli kabili, isicelo esifushane lapho sokuyilinganisela ku-Chrome Web Store. Akukaze kube kumawebhusayithi, akukaze kube yisaziso."
   },
   "opt_made_by": {
     "message": "yenziwe ngu-Carbon Stealth"
@@ -620,6 +647,12 @@
     "message": "Chofoza isithonjana sengcezu yephazili eduze kwebha yekheli bese uphina i-Supreme AdBlock. Ngemva kwalokho, ukuchofoza okukodwa kukhombisa okuvinjiwe ekhasini.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Isandiso siphiniwe kubha yamathuluzi"
+  },
+  "welPinnedText": {
+    "message": "Ukuchofoza okukodwa esithonjaneni saso kukhombisa okuvinjiwe ekhasini."
+  },
   "welBrokenTitle": {
     "message": "Uma isayithi libukeka lonakele",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -643,5 +676,128 @@
   "welDone": {
     "message": "Ngiyezwa",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Kuvunyelwe · kusele $1 min"
+  },
+  "hiddenHere": {
+    "message": "Owafihle lapha: $1 · Buyisa elokugcina"
+  },
+  "cmd_toggle_site": {
+    "message": "Vula noma vala ukuvimba kule sayithi"
+  },
+  "cmd_pause": {
+    "message": "Misa noma uqhubeke nokuvikela (imizuzu engu-30)"
+  },
+  "cmd_picker": {
+    "message": "Fihla i-elementi kuleli khasi"
+  },
+  "rep_fix_hour": {
+    "message": "Vumela izikhangiso lapha ihora elilodwa"
+  },
+  "rep_done_hour": {
+    "message": "Izikhangiso zivunyelwe kule sayithi ihora elilodwa. Kulayishwe kabusha — kulungile manje?"
+  },
+  "opt_last30": {
+    "message": "Izinsuku ezingu-30 ezedlule"
+  },
+  "opt_last30_sum": {
+    "message": "Kuvinjiwe: $1 · Amabhena amakhukhi: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Izibalo zakho zansuku zonke zizovela lapha njengoba uphequlula."
+  },
+  "opt_last30_sub": {
+    "message": "Izibalo zansuku zonke kuphela, zigcinwa kule divayisi izinsuku ezingu-30. Awekho amasayithi, awekho amakheli."
+  },
+  "opt_gpc_sub": {
+    "message": "Icela yonke isayithi oyivakashelayo ukuthi ingadayisi noma yabelane ngedatha yakho (isignali ye-Sec-GPC, eminye imithetho yobumfihlo iphoqa amasayithi ukuthi ayihloniphe). Ayithunyelwa kumasayithi owavumelayo."
+  },
+  "opt_shortcuts": {
+    "message": "Izinqamuleli zekhibhodi"
+  },
+  "opt_shortcuts_change": {
+    "message": "Shintsha izinqamuleli"
+  },
+  "opt_shortcut_none": {
+    "message": "Akusethiwe"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Ku-Firefox: Izengezo nezingqikithi → ⚙ → Phatha izinqamuleli zezandiso."
+  },
+  "opt_import_foreign": {
+    "message": "Ngenisa kwesinye isivimbi sezikhangiso"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Ushintsha usuka ku-uBlock Origin, ku-AdGuard noma ku-Adblock Plus? Khetha ifayela laso lesipele: amasayithi owavumelayo nezihlungi zakho zengezwa lapha. Akukho okushintshwayo."
+  },
+  "opt_import_foreign_done": {
+    "message": "Amasayithi avunyelwe: $1 · Izihlungi ezengeziwe: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Okushiyiwe (akukwazi ukusetshenziswa lapha): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Leli fayela akusona isipele esingakwazi ukusifunda."
+  },
+  "welQuickTitle": {
+    "message": "Kwenze kube ngokwakho"
+  },
+  "welQuickSub": {
+    "message": "Kungokuzikhethela: sekuvele kuyasebenza. Noma yikuphi kwalokhu kungashintshwa kamuva ezilungiselelweni."
+  },
+  "blk_page_title": {
+    "message": "Isayithi ivinjiwe — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Le sayithi ingalimaza idivayisi yakho"
+  },
+  "blk_text": {
+    "message": "I-Supreme AdBlock imise leli khasi ngoba isayithi isohlwini lwe-URLhaus, uhlu lomphakathi lwamakheli asakaza i-malware."
+  },
+  "blk_back": {
+    "message": "Buyela emuva"
+  },
+  "blk_continue": {
+    "message": "Qhubeka noma kunjalo"
+  },
+  "blk_note": {
+    "message": "Ukuqhubeka kuvumela amakhasi ale sayithi kuphela, uze uvale isiphequluli."
+  },
+  "blk_why": {
+    "message": "Kungani isohlwini? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Uxhumano kuleli khasi"
+  },
+  "conn_empty": {
+    "message": "Leli khasi alilayishanga lutho kwamanye amasayithi."
+  },
+  "conn_block": {
+    "message": "Vimba lapha"
+  },
+  "conn_blocked": {
+    "message": "Kuvinjwe lapha"
+  },
+  "conn_hint": {
+    "message": "Vimba lokho le sayithi ekulayisha ku-$1"
+  },
+  "opt_conn_title": {
+    "message": "Uxhumano oluvimbile"
+  },
+  "opt_conn_sub": {
+    "message": "Kuvinjwe engxenyeni ethi “Uxhumano kuleli khasi” ewindini le-Supreme AdBlock, ngalunye kusayithi yalo kuphela."
+  },
+  "opt_empty_conn": {
+    "message": "Akukho okuvinjiwe okwamanje."
+  },
+  "opt_conn_remove": {
+    "message": "Susa ukuvimba kwe-$1 ku-$2"
+  },
+  "opt_h_danger": {
+    "message": "Ikhasi lesixwayiso se-malware"
+  },
+  "opt_h_capacity": {
+    "message": "Umthamo wemithetho"
   }
 }

@@ -90,6 +90,29 @@ main {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+/* the pin tip: highlighted while the icon isn't pinned, ticked once it is (welcome.js) */
+.steps li {
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.steps li[data-pin="todo"] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--panel));
+}
+.steps .ic-done,
+.steps li[data-pin="done"] .ic-todo {
+  display: none;
+}
+.steps li[data-pin="done"] .ic-done {
+  display: block;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 .steps b {
   display: block;
   font-size: 15px;
@@ -129,4 +152,94 @@ main {
 .btn:focus-visible {
   outline: 2px solid var(--accent-2);
   outline-offset: 2px;
+}
+
+/* optional choices, import, shortcuts — cards like the steps */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+}
+.card h2 {
+  font-size: 15px;
+  margin-block-end: 4px;
+}
+.sub {
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+  margin-block-end: 10px;
+}
+.opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 0;
+  border-block-start: 1px solid var(--line);
+  cursor: pointer;
+}
+.opt[hidden] { display: none; }
+.opt b { display: block; font-size: 14px; }
+.opt small { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.45; margin-block-start: 2px; }
+/* a native checkbox drawn as a switch: still a checkbox for the keyboard and screen readers */
+.opt input {
+  appearance: none;
+  flex: none;
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.opt input::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 2px;
+  inset-inline-start: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--text);
+  transition: transform 0.15s;
+}
+.opt input:checked { background: var(--accent); border-color: var(--accent); }
+.opt input:checked::before { transform: translateX(18px); background: var(--on-accent); }
+[dir="rtl"] .opt input:checked::before { transform: translateX(-18px); }
+.opt input:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+.opt input:disabled { opacity: 0.6; }
+#importCard .btn { margin-block-start: 2px; }
+.hint { font-size: 13px; margin-block-start: 8px; }
+.hint:empty { display: none; }
+.keys { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-block-start: 8px; }
+.keys li { display: flex; align-items: center; gap: 12px; font-size: 13.5px; color: var(--muted); }
+kbd {
+  flex: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--text);
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-block-end-width: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opt input, .opt input::before, .steps li { transition: none; }
+}
+/* Windows high contrast: the system draws a real checkbox; outlines stay visible */
+@media (forced-colors: active) {
+  .opt input { appearance: auto; width: 20px; height: 20px; }
+  .opt input::before { content: none; }
+  .card, .steps li, kbd { border-color: CanvasText; }
+}
+/* "more contrast" asked by the system: muted text darkens/lightens toward the main text */
+@media (prefers-contrast: more) {
+  html[data-theme] { --muted: var(--text); }
+  .card, .steps li, .opt, kbd, .btn.ghost { border-color: var(--text); }
+  .opt input:not(:checked) { border-color: var(--text); }
 }

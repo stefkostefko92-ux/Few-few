@@ -69,7 +69,7 @@ App runs on `http://localhost:4300`.
 
 ---
 
-## Deployment to VPS (178.104.77.242)
+## Deployment to the server (`vps.carbonstealth.eu`)
 
 See **[DEPLOYMENT.md](./DEPLOYMENT.md)** for the complete one-shot deployment script.
 
