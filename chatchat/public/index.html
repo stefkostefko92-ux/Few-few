@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ChatChat — Workspace tecnico | Carbon Stealth</title>
+    <meta
+      name="description"
+      content="ChatChat: assistenza tecnica AI per quadri di manovra di ascensori. Diagnosi con fonti verificabili, controlli di sicurezza ed escalation al supporto umano."
+    />
+    <meta name="robots" content="noindex" />
+    <meta
+      name="keywords"
+      content="ChatChat, Carbon Stealth, assistenza tecnica ascensori, quadri di manovra, diagnostica guasti, supporto tecnico AI"
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#0b5a8c" />
+    <link rel="stylesheet" href="/app/styles.css" />
+    <script type="module" src="/app/main.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#conversation" data-i18n="a11y.skip">Vai alla conversazione</a>
+    <div id="announcer" class="sr-only" role="status" aria-live="polite"></div>
+
+    <noscript>
+      <p class="noscript">
+        ChatChat richiede JavaScript. / ChatChat изисква JavaScript. / ChatChat requires JavaScript.
+      </p>
+    </noscript>
+
+    <!-- Accesso -->
+    <main id="login-view" class="login" hidden>
+      <div class="login-card">
+        <h1 class="brand brand-lg">ChatChat</h1>
+        <p class="login-sub" data-i18n="app.subtitle">Workspace tecnico</p>
+        <p class="login-ai" data-i18n="login.aiNotice"></p>
+        <form id="login-form" novalidate>
+          <div class="field">
+            <label for="login-email" data-i18n="login.email">Email</label>
+            <input
+              id="login-email"
+              name="email"
+              type="email"
+              autocomplete="username"
+              inputmode="email"
+              autocapitalize="none"
+              spellcheck="false"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="login-password" data-i18n="login.password">Password</label>
+            <input
+              id="login-password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+          <p id="login-error" class="form-error" role="alert" hidden></p>
+          <button id="login-submit" class="btn btn-primary btn-block" type="submit">
+            <span data-i18n="login.submit">Accedi</span>
+          </button>
+        </form>
+        <div class="login-lang">
+          <label for="login-lang" data-i18n="lang.label">Lingua</label>
+          <select id="login-lang" class="lang-select" data-lang-select>
+            <option value="it">Italiano</option>
+            <option value="en">English</option>
+            <option value="bg">Български</option>
+          </select>
+        </div>
+      </div>
+    </main>
+
+    <!-- Workspace -->
+    <div id="app-view" class="app" data-view="cases" hidden>
+      <header class="topbar">
+        <div class="topbar-id">
+          <span class="brand">ChatChat</span>
+          <span class="topbar-sub" data-i18n="app.subtitle">Workspace tecnico</span>
+        </div>
+        <button id="btn-show-cases" class="btn btn-quiet only-narrow" type="button">
+          <span data-i18n="cases.title">Casi</span>
+        </button>
+        <div class="topbar-tools">
+          <span id="user-name" class="user-name"></span>
+          <label class="sr-only" for="app-lang" data-i18n="lang.label">Lingua</label>
+          <select id="app-lang" class="lang-select" data-lang-select>
+            <option value="it">IT</option>
+            <option value="en">EN</option>
+            <option value="bg">BG</option>
+          </select>
+          <button id="btn-logout" class="btn btn-quiet" type="button">
+            <span data-i18n="auth.logout">Esci</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <!-- Casi -->
+        <nav id="cases-pane" class="pane pane-cases" aria-labelledby="cases-title">
+          <div class="pane-head">
+            <h2 id="cases-title" data-i18n="cases.title">Casi</h2>
+            <button id="btn-new-case" class="btn btn-primary" type="button">
+              <span data-i18n="cases.new">Nuovo caso</span>
+            </button>
+          </div>
+          <p id="cases-state" class="muted" hidden></p>
+          <ul id="cases-list" class="cases-list"></ul>
+        </nav>
+
+        <!-- Conversazione -->
+        <main id="conversation" class="pane pane-chat" tabindex="-1">
+          <section class="ctx" id="ctx" data-open="false" aria-labelledby="ctx-title">
+            <button
+              id="ctx-toggle"
+              class="ctx-toggle"
+              type="button"
+              aria-expanded="false"
+              aria-controls="ctx-body"
+            >
+              <span id="ctx-title" class="ctx-title" data-i18n="ctx.title">Contesto tecnico</span>
+              <span id="ctx-summary" class="ctx-summary"></span>
+              <span class="ctx-chevron" aria-hidden="true"></span>
+            </button>
+            <div id="ctx-body" class="ctx-body">
+              <p id="ctx-empty" class="muted" data-i18n="ctx.empty">
+                Seleziona un caso o creane uno nuovo.
+              </p>
+              <form id="ctx-form" novalidate hidden>
+                <div class="field">
+                  <label for="ctx-model" data-i18n="ctx.model">Modello</label>
+                  <input
+                    id="ctx-model"
+                    name="productModel"
+                    list="product-options"
+                    autocomplete="off"
+                    required
+                  />
+                  <datalist id="product-options"></datalist>
+                </div>
+                <div class="field-row">
+                  <div class="field">
+                    <label for="ctx-hw" data-i18n="ctx.hw">Revisione HW</label>
+                    <input id="ctx-hw" name="hardwareRevision" autocomplete="off" />
+                  </div>
+                  <div class="field">
+                    <label for="ctx-fw" data-i18n="ctx.fw">Firmware</label>
+                    <input id="ctx-fw" name="firmware" autocomplete="off" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="ctx-serial" data-i18n="ctx.serial">Numero di serie</label>
+                  <input id="ctx-serial" name="serial" autocomplete="off" class="mono" />
+                </div>
+                <div class="field-row">
+                  <div class="field">
+                    <label for="ctx-error" data-i18n="ctx.error">Codice errore</label>
+                    <input
+                      id="ctx-error"
+                      name="errorCode"
+                      autocomplete="off"
+                      autocapitalize="characters"
+                      class="mono"
+                    />
+                  </div>
+                  <div class="field">
+                    <label for="ctx-phase" data-i18n="ctx.phase">Fase</label>
+                    <select id="ctx-phase" name="phase"></select>
+                  </div>
+                </div>
+                <p id="ctx-feedback" class="form-note" role="status" hidden></p>
+                <button class="btn btn-secondary btn-block" type="submit">
+                  <span data-i18n="ctx.save">Aggiorna contesto</span>
+                </button>
+                <p class="hint" data-i18n="ctx.saveHint">
+                  L'assistente usa il contesto aggiornato dal messaggio successivo.
+                </p>
+              </form>
+
+              <div id="actions" class="actions" hidden>
+                <h3 data-i18n="actions.title">Azioni sul caso</h3>
+                <p id="case-outcome" class="outcome-line"></p>
+                <p id="case-ticket" class="outcome-line" hidden></p>
+                <button id="btn-ticket" class="btn btn-secondary btn-block" type="button">
+                  <span data-i18n="actions.ticket">Apri ticket</span>
+                </button>
+                <div class="btn-pair">
+                  <button id="btn-resolved" class="btn btn-secondary" type="button">
+                    <span data-i18n="actions.resolved">Segna come risolto</span>
+                  </button>
+                  <button id="btn-unresolved" class="btn btn-secondary" type="button">
+                    <span data-i18n="actions.unresolved">Segna come non risolto</span>
+                  </button>
+                </div>
+                <p id="actions-feedback" class="form-note" role="status" hidden></p>
+              </div>
+            </div>
+          </section>
+
+          <div class="chat">
+            <p class="disclaimer" role="note">
+              <span class="disclaimer-mark" aria-hidden="true">i</span>
+              <span data-i18n="disclaimer.text"></span>
+            </p>
+
+            <div id="chat-empty" class="chat-empty">
+              <h2 data-i18n="chat.emptyTitle">Nessun caso aperto</h2>
+              <p data-i18n="chat.emptyText">
+                Apri un nuovo caso con modello, revisione e codice errore del quadro.
+              </p>
+              <button id="btn-new-case-empty" class="btn btn-primary" type="button">
+                <span data-i18n="cases.new">Nuovo caso</span>
+              </button>
+            </div>
+
+            <div id="chat-body" class="chat-body" hidden>
+              <div
+                id="messages"
+                class="messages"
+                role="log"
+                aria-live="off"
+                aria-label="Conversazione"
+                data-i18n-attr="aria-label:chat.log"
+              ></div>
+              <form id="composer" class="composer" novalidate>
+                <label for="composer-text" data-i18n="chat.label"
+                  >Descrivi cosa vedi sul quadro</label
+                >
+                <p class="composer-hint" data-i18n="chat.privacyHint"></p>
+                <textarea
+                  id="composer-text"
+                  name="text"
+                  rows="2"
+                  maxlength="4000"
+                  required
+                  data-i18n-attr="placeholder:chat.placeholder"
+                ></textarea>
+                <p id="composer-error" class="form-error" role="alert" hidden></p>
+                <div class="composer-row">
+                  <p id="composer-status" class="composer-status" role="status"></p>
+                  <button id="composer-send" class="btn btn-primary btn-send" type="submit">
+                    <span data-i18n="chat.send">Invia</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      <footer class="foot">
+        <small>
+          <a id="privacy-link" class="privacy-link" hidden target="_blank" rel="noopener"
+            ><span data-i18n="footer.privacy">Informativa privacy</span></a
+          >
+          Created and Designed by
+          <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a>
+        </small>
+      </footer>
+    </div>
+
+    <!-- Dialog: nuovo caso -->
+    <dialog id="dlg-new" class="dlg" aria-labelledby="dlg-new-title">
+      <form id="new-form" method="dialog" novalidate>
+        <h2 id="dlg-new-title" data-i18n="new.title">Nuovo caso</h2>
+        <div class="field">
+          <label for="new-serial" data-i18n="ctx.serial">Numero di serie</label>
+          <div class="inline">
+            <input id="new-serial" name="serial" autocomplete="off" class="mono" />
+            <button id="new-lookup" class="btn btn-secondary" type="button">
+              <span data-i18n="new.lookup">Cerca</span>
+            </button>
+          </div>
+          <p id="new-lookup-msg" class="form-note" role="status" hidden></p>
+        </div>
+        <div class="field">
+          <label for="new-model" data-i18n="ctx.model">Modello</label>
+          <input
+            id="new-model"
+            name="productModel"
+            list="product-options"
+            autocomplete="off"
+            required
+          />
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="new-hw" data-i18n="ctx.hw">Revisione HW</label>
+            <input id="new-hw" name="hardwareRevision" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="new-fw" data-i18n="ctx.fw">Firmware</label>
+            <input id="new-fw" name="firmware" autocomplete="off" />
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="new-error" data-i18n="ctx.error">Codice errore</label>
+            <input
+              id="new-error"
+              name="errorCode"
+              autocomplete="off"
+              autocapitalize="characters"
+              class="mono"
+            />
+          </div>
+          <div class="field">
+            <label for="new-phase" data-i18n="ctx.phase">Fase</label>
+            <select id="new-phase" name="phase"></select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="new-symptoms" data-i18n="new.symptoms">Sintomi (uno per riga)</label>
+          <textarea id="new-symptoms" name="symptoms" rows="3"></textarea>
+        </div>
+        <p id="new-error-msg" class="form-error" role="alert" hidden></p>
+        <div class="dlg-actions">
+          <button class="btn btn-quiet" type="button" data-close>
+            <span data-i18n="common.cancel">Annulla</span>
+          </button>
+          <button id="new-submit" class="btn btn-primary" type="submit">
+            <span data-i18n="new.submit">Crea caso</span>
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Dialog: ticket -->
+    <dialog id="dlg-ticket" class="dlg" aria-labelledby="dlg-ticket-title">
+      <form id="ticket-form" method="dialog" novalidate>
+        <h2 id="dlg-ticket-title" data-i18n="ticket.title">Apri ticket</h2>
+        <p class="hint" data-i18n="ticket.hint">
+          Il ticket passa il caso al supporto tecnico con contesto e conversazione.
+        </p>
+        <div class="field">
+          <label for="ticket-reason" data-i18n="ticket.reason">Motivo</label>
+          <textarea id="ticket-reason" name="reason" rows="5" required></textarea>
+        </div>
+        <p id="ticket-error" class="form-error" role="alert" hidden></p>
+        <div class="dlg-actions">
+          <button class="btn btn-quiet" type="button" data-close>
+            <span data-i18n="common.cancel">Annulla</span>
+          </button>
+          <button id="ticket-submit" class="btn btn-primary" type="submit">
+            <span data-i18n="ticket.submit">Apri ticket</span>
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Dialog: pagina del documento -->
+    <dialog id="dlg-doc" class="dlg dlg-doc" aria-labelledby="dlg-doc-title">
+      <div class="dlg-head">
+        <h2 id="dlg-doc-title" data-i18n="doc.title">Fonte</h2>
+        <button class="btn btn-quiet" type="button" data-close>
+          <span data-i18n="common.close">Chiudi</span>
+        </button>
+      </div>
+      <div id="doc-body" class="doc-body" aria-live="polite"></div>
+    </dialog>
+  </body>
+</html>

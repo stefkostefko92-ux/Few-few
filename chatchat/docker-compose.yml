@@ -1,0 +1,102 @@
+# ChatChat в продукция: база + приложение.
+#
+# TLS и публичният вход са на nginx-а на ХОСТА (Let's Encrypt) — конфигът е
+# `deploy/nginx/chatchat.carbonstealth.eu.conf` в това репо, не се пише на ръка на сървъра.
+#
+# Тайните НЕ са тук — идват от `.env` до този файл (mode 600 на сървъра, никога в репото).
+# Задължителни: POSTGRES_PASSWORD (openssl rand -hex 32 — влиза некодирана в DATABASE_URL) ·
+# SESSION_PEPPER (openssl rand -hex 32) · PUBLIC_BASE_URL. За AI: VERTEX_PROJECT_ID + GCP_SA_FILE.
+# В контейнера влиза само изброеното в `environment:` — нова настройка от `.env` се добавя и там.
+name: chatchat
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
+# Двата контейнера: файловата система е само за четене (пише се само в тома и в tmpfs), без Linux
+# capabilities (базата пази само нужните ѝ, за да смени собственика на данните и потребителя), без
+# придобиване на права (no-new-privileges), с таван на памет, процесор и процеси.
+x-hardening: &hardening
+  read_only: true
+  security_opt:
+    - no-new-privileges:true
+  pids_limit: 256
+
+services:
+  db:
+    # закован по digest (същият като в korpora); обновяване: `docker buildx imagetools inspect postgres:16-alpine`
+    image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+    <<: *hardening
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    tmpfs:
+      - /var/run/postgresql:size=4m
+      - /tmp:size=64m
+    mem_limit: 1g
+    cpus: 1.5
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: chatchat
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD}
+      POSTGRES_DB: chatchat
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    # Без `ports:` — базата е достъпна само от мрежата на проекта, не и от хоста или отвън.
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U chatchat -d chatchat']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging: *logging
+
+  app:
+    build: .
+    <<: *hardening
+    cap_drop: [ALL]
+    tmpfs:
+      - /tmp:size=64m,noexec,nosuid
+    mem_limit: 1g
+    cpus: 2
+    restart: unless-stopped
+    # Приложението само се спира до 10 s (src/index.ts); 15 s дават време да затвори базата, преди SIGKILL.
+    stop_grace_period: 15s
+    environment:
+      NODE_ENV: production
+      PORT: '4330'
+      HOST: 0.0.0.0
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?липсва PUBLIC_BASE_URL}
+      DATABASE_URL: postgresql://chatchat:${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD}@db:5432/chatchat
+      SESSION_PEPPER: ${SESSION_PEPPER:?липсва SESSION_PEPPER}
+      SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-12}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      PRIVACY_POLICY_URL: ${PRIVACY_POLICY_URL:-}
+      RETENTION_SESSION_DAYS: ${RETENTION_SESSION_DAYS:-30}
+      RETENTION_CASE_DAYS: ${RETENTION_CASE_DAYS:-}
+      # Един прокси отпред (nginx на хоста). Портът е публикуван през Docker: приложението вижда шлюза
+      # на мрежата като пряк събеседник, а nginx презаписва X-Forwarded-For с истинския адрес.
+      TRUST_PROXY: ${TRUST_PROXY:-1}
+      # AI — само Vertex AI в ЕС. Празен VERTEX_PROJECT_ID → AI е изключен, /chat/messages връща 503.
+      VERTEX_PROJECT_ID: ${VERTEX_PROJECT_ID:-}
+      VERTEX_REGION: ${VERTEX_REGION:-eu}
+      # Пътят В контейнера; задава се сам само ако в .env има GCP_SA_FILE (път на хоста).
+      GOOGLE_APPLICATION_CREDENTIALS: ${GCP_SA_FILE:+/run/secrets/gcp-sa.json}
+      AI_MODEL: ${AI_MODEL:-claude-opus-5}
+      AI_EFFORT: ${AI_EFFORT:-medium}
+      AI_MAX_OUTPUT_TOKENS: ${AI_MAX_OUTPUT_TOKENS:-8000}
+      AI_MAX_TOOL_ROUNDS: ${AI_MAX_TOOL_ROUNDS:-4}
+      # Под proxy_read_timeout в nginx конфига (120 s); config.ts не пуска над 115000.
+      AI_TIMEOUT_MS: ${AI_TIMEOUT_MS:-60000}
+    volumes:
+      # JSON ключът на service account-а — само за четене, извън репото и образа. Без GCP_SA_FILE се
+      # монтира /dev/null и променливата по-горе остава празна (Google ADC — на Hetzner няма такива).
+      - ${GCP_SA_FILE:-/dev/null}:/run/secrets/gcp-sa.json:ro
+    ports:
+      - '127.0.0.1:${HTTP_PORT:-4330}:4330'
+    depends_on:
+      db: { condition: service_healthy }
+    logging: *logging
+
+volumes:
+  db-data:
