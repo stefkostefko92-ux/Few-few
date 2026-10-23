@@ -17,7 +17,7 @@
   };
   const anchorOf = (key) => key === identifiersErrorKey ? '#f-indirizzo' : '#f-' + key;
   const paramsOf = (key) => { const misura = misuraOf(key); const moduloField = moduloFieldOf(key); const f = misura ? misura.column : moduloField ? moduloField.field : (fieldMap[key] || {}); return { min: f.min, max: f.max, maxLength: f.maxLength }; };
-%><%- include('../partials/top', { titleKey: isEdit ? 'schede.edit.title' : 'schede.create.title', scripts: ['valori', 'moduli', 'collegati', 'allegati', 'carica', 'stampa-foto', 'schizzo-tratti', 'schizzi', 'schizzo-editor'] }) %>
+%><%- include('../partials/top', { titleKey: isEdit ? 'schede.edit.title' : 'schede.create.title', scripts: ['valori', 'moduli', 'collegati', 'allegati', 'carica', 'stampa-foto', 'schizzo-forme', 'schizzo-tratti', 'schizzi', 'schizzo-regole', 'schizzo-aggancio', 'schizzo-vista', 'schizzo-editor', 'schizzo-puntatori', 'schizzo-strumenti', 'schizzo-testi', 'schizzo-polilinea', 'schizzo-selezione', 'schizzo-azioni', 'schizzo-valore', 'schizzo-comandi'] }) %>
 <div class="page-head">
   <div>
     <h1><%= t(isEdit ? 'schede.edit.title' : 'schede.create.title') %></h1>
@@ -94,7 +94,7 @@
   <% }) %>
   <% if (schizzi.attivo) { %>
   <%# Скицникът (функция на фирмата, src/schizzi/): листовете с прегледа им; рисуват се в редактора на цял
-     екран (schizzi.js, schizzo-editor.js) и се записват с картата — всеки лист е JSON в скрито поле. На нова
+     екран (schizzi.js, schizzo-*.js) и се записват с картата — всеки лист е JSON в скрито поле. На нова
      карта с избор на фирма блокът следва избраната (`data-schizzi-per`). %>
   <fieldset class="section schizzi" id="s-schizzi" data-schizzi<% if (schizzi.per) { %> data-schizzi-per="<%= schizzi.per %>"<% } %><% if (schizzi.nascosto) { %> hidden<% } %> data-msg-foglio="<%= t('schizzi.foglio') %>" data-msg-elimina="<%= t('schizzi.eliminaConferma') %>" aria-describedby="schizzi-hint<%= errors.schizzo ? ' err-schizzo' : '' %>">
     <legend class="section__title"><span class="secnum" aria-hidden="true"></span><%= t('schizzi.title') %></legend>

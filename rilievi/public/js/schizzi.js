@@ -9,13 +9,57 @@
   const block = document.querySelector('[data-schizzi]');
   const shared = window.rilieviSchizzo;
   if (!block || !shared) return;
-  const { view, svgOf } = shared;
+  const { view, primitivesOf } = shared;
   const list = block.querySelector('[data-schizzi-fogli]');
   const model = block.querySelector('template[data-foglio-modello]');
   const add = block.querySelector('[data-schizzi-nuovo]');
   const empty = block.querySelector('[data-schizzi-vuoto]');
   const limit = block.querySelector('[data-schizzi-massimo]');
   const mark = block.querySelector('[data-schizzi-segno]');
+  // The preview of a sheet — the same SVG as views/schede/_schizzo.ejs, from the same primitives.
+  const NS = 'http://www.w3.org/2000/svg';
+  const svgOf = (sheet, label) => {
+    const svg = document.createElementNS(NS, 'svg');
+    const child = (tag, attrs) => {
+      const node = document.createElementNS(NS, tag);
+      Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, String(value)));
+      svg.appendChild(node);
+      return node;
+    };
+    const stroke = (p) => ({
+      stroke: p.c,
+      'stroke-width': p.w,
+      fill: 'none',
+      'stroke-linecap': 'round',
+      'stroke-linejoin': 'round',
+      ...(p.k ? { 'stroke-dasharray': `${p.k[0]} ${p.k[1]}` } : {}),
+    });
+    svg.setAttribute('class', 'schizzo');
+    svg.setAttribute('viewBox', `0 0 ${view.larghezza} ${view.altezza}`);
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', label);
+    child('rect', { width: view.larghezza, height: view.altezza, fill: '#ffffff' });
+    child('path', { d: view.griglia, stroke: view.coloreGriglia, 'stroke-width': 1, fill: 'none' });
+    sheet.e.flatMap(primitivesOf).forEach((p) => {
+      if (p.p === 'l') child('path', { d: p.d, ...stroke(p) });
+      else if (p.p === 'f') child('path', { d: p.d, fill: p.c });
+      else if (p.p === 'e')
+        child('ellipse', { cx: p.x, cy: p.y, rx: p.rx, ry: p.ry, ...stroke(p) });
+      else {
+        child('text', {
+          x: p.x,
+          y: p.y,
+          fill: p.c,
+          'font-size': p.z,
+          'font-family': 'Fira Sans, sans-serif',
+          'font-weight': 500,
+          ...(p.h !== 'start' ? { 'text-anchor': p.h } : {}),
+          ...(p.a ? { transform: `rotate(${p.a} ${p.x} ${p.y})` } : {}),
+        }).textContent = p.v;
+      }
+    });
+    return svg;
+  };
   const nameOf = (n) => (block.dataset.msgFoglio || '').replace('{n}', () => String(n));
   const sheets = () => Array.from(list.querySelectorAll('[data-foglio]'));
 

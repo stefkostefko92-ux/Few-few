@@ -1,0 +1,195 @@
+/* Лентите на редактора на скицника (views/schede/_schizzo-editor.ejs): изборите като сегменти
+   (радиобутони — клавиатурата ги минава със стрелките, избраният е обърнат), менютата „Forme“, „Simboli“
+   и „Stile“ (details — отварят се над листа), превключвателите (прихващане, пунктир, „Seleziona più“).
+   С пръст всяка цел е поне 44 × 44 px; без мишка мащабът е с два пръста, бутоните ± се скриват. */
+
+.seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--field-line);
+  border-radius: var(--radius);
+}
+
+/* Инструментите — на редове, когато не се побират (никога скрити зад превъртане). */
+.seg--strumenti {
+  max-width: 100%;
+}
+
+.seg__opt {
+  position: relative;
+  display: inline-flex;
+}
+
+.seg__opt input,
+.interruttore input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.seg__face,
+.menu__faccia,
+.interruttore__faccia {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0 10px;
+  font-size: 0.9rem;
+}
+
+.seg__opt + .seg__opt .seg__face,
+.seg > .menu {
+  border-left: 1px solid var(--field-line);
+}
+
+.seg__opt input:checked + .seg__face,
+.interruttore input:checked + .interruttore__faccia,
+.menu.is-active > .menu__faccia {
+  background: var(--mark-bg);
+  color: var(--mark-fg);
+}
+
+.seg__opt input:focus-visible + .seg__face,
+.interruttore input:focus-visible + .interruttore__faccia,
+.menu__faccia:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 2px;
+}
+
+.seg__colore {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  outline: 1.5px solid currentColor;
+  outline-offset: 1.5px;
+}
+
+.seg__colore--k {
+  background: #000000;
+}
+
+.seg__colore--r {
+  background: #c62828;
+}
+
+.seg__colore--b {
+  background: #1565c0;
+}
+
+.seg__spessore {
+  width: 18px;
+  border-radius: 3px;
+  background: currentColor;
+}
+
+.seg__spessore--1 {
+  height: 2px;
+}
+
+.seg__spessore--2 {
+  height: 6px;
+}
+
+.interruttore {
+  position: relative;
+  display: inline-flex;
+  border: 1px solid var(--field-line);
+  border-radius: var(--radius);
+}
+
+/* Менюто: лицето показва избраното, панелът се отваря над листа. */
+.menu {
+  position: relative;
+}
+
+.menu__faccia {
+  list-style: none;
+  cursor: pointer;
+}
+
+.menu__faccia::-webkit-details-marker {
+  display: none;
+}
+
+.menu[open] > .menu__faccia .icon:last-child {
+  transform: rotate(180deg);
+}
+
+.menu__pannello {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 4px);
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(9.5em, 1fr));
+  gap: 2px;
+  min-width: max-content;
+  padding: 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--bg);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
+}
+
+.menu__pannello .seg__opt,
+.menu__pannello .seg__face {
+  width: 100%;
+}
+
+.menu__pannello--stile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.schizzo-mini {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 3px;
+  background: #ffffff;
+}
+
+/* С пръст: цели от 44 px; мащабът е с два пръста — бутоните ± не трябват. */
+@media (pointer: coarse) {
+  .schizzo-editor .seg__face,
+  .schizzo-editor .menu__faccia,
+  .schizzo-editor .interruttore__faccia,
+  .schizzo-editor .btn--sm {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .schizzo-editor .solo-mouse {
+    display: none;
+  }
+}
+
+/* Телефон (изправен или легнал): само иконите — името остава за екранния четец. */
+@media (max-width: 760px), (orientation: landscape) and (max-height: 560px) {
+  .schizzo-editor .seg__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .menu__pannello {
+    position: fixed;
+    top: auto;
+    right: 8px;
+    left: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(9.5em, 1fr));
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+}

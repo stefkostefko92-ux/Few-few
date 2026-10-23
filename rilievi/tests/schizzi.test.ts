@@ -137,5 +137,27 @@ describe(
       assert.ok(pages(two) - pages(plain) >= 1 && pages(two) - pages(plain) <= 2);
       assert.equal(pages(four) - pages(two), 1);
     });
+
+    it('write every Latin-1 character with the screen font (WOFF2 broke "i" and the accents)', async () => {
+      const chars = (from: number, to: number) =>
+        Array.from({ length: to - from + 1 }, (_, i) => String.fromCharCode(from + i)).join('');
+      const texts = [chars(0x21, 0x7e), chars(0xa1, 0xff), 'Più già così: = 1600 × 1400 — “Ø 600”'];
+      const foglio = foglioDa(
+        JSON.stringify({ e: texts.map((v, i) => ({ ...testo('x'), y: 100 + i * 100, v })) }),
+      )!;
+      assert.equal(foglio.e.length, texts.length);
+      const pdf = await renderSchedaPdf(
+        { ...scheda, lavoriExtra: null },
+        {
+          t: translatorFor('it'),
+          fmt: viewHelpers('it'),
+          generatedBy: 'Prova',
+          fontDir,
+          logo: null,
+          schizzi: [foglio],
+        },
+      );
+      assert.ok(pages(pdf) >= 2);
+    });
   },
 );

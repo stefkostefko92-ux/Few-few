@@ -17,6 +17,7 @@ import { writeLimiter } from './http/limits.js';
 import { applyPrefs, attachPrefs, themeUrl } from './http/prefs.js';
 import { PASSWORD_MIN_LENGTH } from './auth/password.js';
 import { MAX_FILE_PER_VOLTA } from './allegati/caricamento.js';
+import { primitiviFoglio } from './schizzi/forme.js';
 import { VISTA_SCHIZZO } from './schizzi/model.js';
 import { accountRouter } from './routes/account.js';
 import { allegatiRouter } from './routes/allegati.js';
@@ -80,6 +81,7 @@ function baseLocals(req: Request, res: Response): void {
   };
   res.locals.passwordMin = PASSWORD_MIN_LENGTH;
   res.locals.schizzoVista = VISTA_SCHIZZO;
+  res.locals.schizzoForme = primitiviFoglio;
   res.locals.path = req.path;
   // Витрината — входът води към заявката за достъп.
   res.locals.landingPath = HOME_PATH;

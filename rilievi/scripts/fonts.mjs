@@ -33,5 +33,12 @@ for (const { pkg, family, weights } of FAMILIES) {
   }
   copyFileSync(join(base, 'LICENSE'), join(out, `${pkg}-OFL.txt`));
 }
+// The sketch pad in the PDF (src/schede/pdf-schizzi.ts): the same face as WOFF — pdfkit's fontkit
+// breaks composite glyphs of WOFF2 ("i", ":", accented letters).
+const PDF_FACE = 'fira-sans-latin-500-normal.woff';
+copyFileSync(
+  join(root, 'node_modules', '@fontsource', 'fira-sans', 'files', PDF_FACE),
+  join(out, PDF_FACE),
+);
 writeFileSync(join(out, 'fonts.css'), `${rules.join('\n')}\n`);
 console.log(`fonts: ${rules.length} faces → public/fonts/`);

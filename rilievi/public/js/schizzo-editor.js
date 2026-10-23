@@ -1,283 +1,260 @@
-// The full-screen editor of one sketch sheet (views/schede/_schizzo-editor.ejs, opened by schizzi.js):
-// pen, straight line, rectangle, text and eraser; three colours and two thicknesses; undo, redo and
-// "clear all", on squared paper. A sheet is a list of elements in the units of src/schizzi/model.ts —
-// paths and texts, the same the print and the PDF draw (schizzo-tratti.js). Finger, stylus and mouse
-// (pointer events); once a stylus has touched the sheet, fingers no longer draw (the palm on a tablet).
+// The core of the full-screen sketch editor (views/schede/_schizzo-editor.ejs): the sheet being drawn and
+// its history, and the two layers of the canvas — the committed elements (only those in view, painted
+// again only when they change; during a pinch or a pan a picture of the whole sheet, the sharp drawing
+// when the gesture rests) and, on top, what a tool is drawing, the selection and the snap ring. Which
+// pointer does what — schizzo-puntatori.js; the tools — schizzo-strumenti.js, schizzo-selezione.js; the
+// toolbar, the keyboard, the value bar, opening and closing — schizzo-comandi.js.
 (() => {
   'use strict';
 
   const dialog = document.querySelector('[data-schizzo-editor]');
   const shared = window.rilieviSchizzo;
-  if (!dialog || !shared || typeof dialog.showModal !== 'function') return;
-  const { view, paint, paintMark, paintPaper, fitCanvases, simplify, strokesOf } = shared;
-  const { shapeOf, hitOf, pointOn, cleanText, fits, historyOf } = shared;
+  const textsEl = document.getElementById('schizzi-testi');
+  if (!dialog || !shared || !textsEl || typeof dialog.showModal !== 'function') return;
+  const { view, forme, paint, paintPaper, fitCanvases, fits, boundsOf } = shared;
+  const regole = window.rilieviRegole(view, forme);
+  const aggancio = window.rilieviSchizzoAggancio(view, regole);
+  const texts = JSON.parse(textsEl.textContent);
   const canvas = dialog.querySelector('[data-schizzo-tela]');
   const area = dialog.querySelector('[data-schizzo-area]');
-  const title = dialog.querySelector('#schizzo-titolo');
-  const status = dialog.querySelector('[data-schizzo-avviso]');
-  const textBox = dialog.querySelector('[data-schizzo-testo]');
-  const textInput = dialog.querySelector('#schizzo-testo');
-  const undoButton = dialog.querySelector('[data-schizzo-annulla]');
-  const redoButton = dialog.querySelector('[data-schizzo-ripeti]');
   const ctx = canvas.getContext('2d');
-  // The committed elements, painted again only when they change; what is being drawn goes on top.
   const base = document.createElement('canvas');
   const baseCtx = base.getContext('2d');
-  const ERASER = 14;
-  const SIMPLIFY = 1.2;
+  const picture = document.createElement('canvas');
+  const hintEl = dialog.querySelector('[data-schizzo-suggerimento]');
+  const statusEl = dialog.querySelector('[data-schizzo-avviso]');
+  // Tolerances in CSS pixels, by pointer: a finger is wide and shakes, a mouse is exact.
+  const TOLERANCES = {
+    touch: { slop: 10, hit: 22, snap: 24, handle: 22 },
+    pen: { slop: 4, hit: 10, snap: 14, handle: 16 },
+    mouse: { slop: 3, hit: 6, snap: 10, handle: 10 },
+  };
+  const { larghezza: W, altezza: H } = view;
+  const subGrid = new Path2D(
+    Array.from({ length: W / 50 }, (_, i) => `M${i * 50 + 25} 0V${H}`)
+      .concat(Array.from({ length: H / 50 }, (_, i) => `M0 ${i * 50 + 25}H${W}`))
+      .join(''),
+  );
 
   let elements = [];
-  let history = historyOf([]);
-  let initial = '';
-  let closed = null;
-  let current = null;
-  let points = [];
-  let start = null;
-  let anchor = null;
-  let erased = null;
-  let showing = null;
-  let active = null;
-  let penSeen = false;
-  let scale = 1;
+  let states = [[]];
+  let at = 0;
+  let mergeKey = null;
+  // What a tool draws over the sheet, moved by (dx, dy): a dragged selection is rebuilt only when let go.
+  let preview = { list: [], dx: 0, dy: 0 };
+  let hidden = null;
+  let decor = null;
+  let stale = true;
+  let pictureStale = true;
+  let quick = false;
+  let quickTimer = 0;
   let frame = 0;
-  let stale = false;
 
-  const choice = (name) => dialog.querySelector(`input[name="schizzo-${name}"]:checked`).value;
-  const tool = () => choice('strumento');
-  const colour = () => choice('colore');
-  const size = () => Number(choice('spessore'));
+  const vista = window.rilieviSchizzoVista({
+    canvas,
+    base,
+    area,
+    view,
+    fitCanvases,
+    onChange: (gesture) => {
+      stale = true;
+      if (gesture) {
+        quick = true;
+        clearTimeout(quickTimer);
+        quickTimer = setTimeout(() => {
+          quick = false;
+          stale = true;
+          render();
+        }, 120);
+      }
+      render();
+    },
+  });
 
-  const draw = () => {
-    frame = 0;
-    if (stale) paintLayer();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.drawImage(base, 0, 0);
-    ctx.setTransform(scale, 0, 0, scale, 0, 0);
-    if (current) paint(ctx, current);
-    if (anchor) paintMark(ctx, anchor, colour());
-  };
-  const schedule = () => {
-    if (!frame) frame = requestAnimationFrame(draw);
-  };
-
-  const paintLayer = () => {
-    stale = false;
-    baseCtx.setTransform(scale, 0, 0, scale, 0, 0);
-    paintPaper(baseCtx);
-    (showing || elements).forEach((el) => paint(baseCtx, el));
+  const drawn = (el) => !hidden || !hidden.has(el);
+  const paintPicture = () => {
+    pictureStale = false;
+    const k = 2048 / W;
+    picture.width = 2048;
+    picture.height = Math.round(H * k);
+    const pctx = picture.getContext('2d');
+    pctx.setTransform(k, 0, 0, k, 0, 0);
+    paintPaper(pctx);
+    elements.forEach((el) => drawn(el) && paint(pctx, el));
   };
   const paintBase = () => {
-    paintLayer();
-    draw();
+    stale = false;
+    baseCtx.setTransform(1, 0, 0, 1, 0, 0);
+    baseCtx.clearRect(0, 0, base.width, base.height);
+    vista.apply(baseCtx);
+    if (quick) {
+      if (pictureStale) paintPicture();
+      baseCtx.drawImage(picture, 0, 0, W, H);
+      return;
+    }
+    paintPaper(baseCtx);
+    if (vista.zoom >= 2) {
+      // The half squares — where the grid snaps when the view is close.
+      baseCtx.lineWidth = 0.5;
+      baseCtx.strokeStyle = view.coloreGriglia;
+      baseCtx.stroke(subGrid);
+    }
+    // Only what the view shows (the boxes are cached: the elements never change).
+    const v = vista.shown();
+    elements.forEach((el) => {
+      if (!drawn(el)) return;
+      const box = boundsOf(el);
+      if (box.x1 >= v.x0 && box.x0 <= v.x1 && box.y1 >= v.y0 && box.y0 <= v.y1) paint(baseCtx, el);
+    });
+  };
+  const draw = () => {
+    frame = 0;
+    if (stale) paintBase();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(base, 0, 0);
+    vista.apply(ctx);
+    if (preview.list.length) {
+      ctx.save();
+      ctx.translate(preview.dx, preview.dy);
+      preview.list.forEach((el) => paint(ctx, el));
+      ctx.restore();
+    }
+    if (decor) decor(ctx, vista.unitsPerPx());
+  };
+  // At most once a frame: a stylus reports far more often than the screen draws.
+  const render = () => {
+    if (!frame) frame = requestAnimationFrame(draw);
+  };
+  const changed = () => {
+    stale = true;
+    pictureStale = true;
+    render();
   };
 
-  const fit = () => {
-    scale = fitCanvases(area, [canvas, base]);
-    paintBase();
+  const choice = (name) => dialog.querySelector(`input[name="schizzo-${name}"]:checked`);
+  const say = (el, text) => {
+    el.textContent = text || '';
   };
 
-  const buttons = () => {
-    undoButton.disabled = !history.canUndo();
-    redoButton.disabled = !history.canRedo();
-  };
-  // A new state of the sheet, if it still fits what the server takes.
-  const commit = (next) => {
-    if (!fits(next)) {
-      status.textContent = dialog.dataset.msgPieno;
-      paintBase();
+  // A new state of the sheet, if every element is what the server takes and the sheet still fits;
+  // `merge` folds steps of the same kind (arrow-key nudges) into one.
+  const commit = (next, merge = null) => {
+    const weight = next.reduce((sum, el) => sum + regole.pesoDi(el), 0);
+    if (!next.every(regole.valido)) return false;
+    if (!fits(next) || weight > view.maxPeso) {
+      say(statusEl, texts.pieno);
+      render();
       return false;
     }
-    elements = history.push(next);
-    status.textContent = '';
-    paintBase();
-    buttons();
+    if (merge && merge === mergeKey && at === states.length - 1) {
+      states[at] = next;
+    } else {
+      states = states
+        .slice(0, at + 1)
+        .concat([next])
+        .slice(-200);
+      at = states.length - 1;
+    }
+    mergeKey = merge;
+    elements = next;
+    say(statusEl, '');
+    changed();
+    ed.onChange();
     return true;
   };
   const step = (delta) => {
-    const state = history.step(delta);
-    if (!state) return;
-    elements = state;
-    paintBase();
-    buttons();
+    if (at + delta < 0 || at + delta >= states.length) return false;
+    at += delta;
+    mergeKey = null;
+    elements = states[at];
+    changed();
+    ed.onChange();
+    return true;
   };
 
-  const rub = (p) => {
-    const took = elements.filter((el) => !erased.has(el) && hitOf(el, p, ERASER));
-    if (!took.length) return;
-    took.forEach((el) => erased.add(el));
-    showing = elements.filter((el) => !erased.has(el));
-    // At most once a frame: a stylus reports far more often than the screen draws.
-    stale = true;
-    schedule();
+  const ed = {
+    view,
+    shared,
+    regole,
+    forme,
+    texts,
+    dialog,
+    canvas,
+    vista,
+    TOLERANCES,
+    pointerType: 'mouse',
+    spaceHeld: false,
+    tool: null,
+    get elements() {
+      return elements;
+    },
+    canUndo: () => at > 0,
+    canRedo: () => at < states.length - 1,
+    style: () => ({
+      c: choice('colore').value,
+      s: Number(choice('spessore').value),
+      k: dialog.querySelector('#schizzo-tratteggio').checked ? 1 : undefined,
+    }),
+    // A tolerance of the current pointer, in sheet units.
+    tol: (kind) => TOLERANCES[ed.pointerType][kind] * vista.unitsPerPx(),
+    snap: (raw, { from = null, skip = null } = {}) =>
+      aggancio.snap(raw, {
+        on: dialog.querySelector('#schizzo-aggancio').checked,
+        elements,
+        skip,
+        from,
+        tolerance: ed.tol('snap'),
+        unitsPerPx: vista.unitsPerPx(),
+      }),
+    commit,
+    step,
+    reset: (list) => {
+      elements = list;
+      states = [list];
+      at = 0;
+      mergeKey = null;
+      preview = { list: [], dx: 0, dy: 0 };
+      hidden = null;
+      decor = null;
+      changed();
+    },
+    setPreview: (list, dx = 0, dy = 0) => {
+      preview = { list, dx, dy };
+      render();
+    },
+    setHidden: (set) => {
+      hidden = set;
+      changed();
+    },
+    setDecor: (fn) => {
+      decor = fn;
+      render();
+    },
+    render,
+    // A font that arrives later: the texts are measured and drawn again.
+    refresh: () => {
+      shared.resetMeasures();
+      changed();
+    },
+    hint: (key) => say(hintEl, texts.suggerimenti[key] || ''),
+    error: (text) => say(statusEl, text),
+    // The middle of the drawing (where a dimension is pulled away from); null on an empty sheet.
+    centre: () => {
+      if (!elements.length) return null;
+      const boxes = elements.map(boundsOf);
+      const x0 = Math.min(...boxes.map((b) => b.x0));
+      const x1 = Math.max(...boxes.map((b) => b.x1));
+      const y0 = Math.min(...boxes.map((b) => b.y0));
+      const y1 = Math.max(...boxes.map((b) => b.y1));
+      return { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
+    },
+    // Set by schizzo-comandi.js: the toolbar follows the sheet.
+    onChange: () => {},
   };
-
-  canvas.addEventListener('pointerdown', (event) => {
-    if (event.pointerType === 'pen') penSeen = true;
-    if (!event.isPrimary || (penSeen && event.pointerType === 'touch')) return;
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
-    event.preventDefault();
-    const p = pointOn(canvas, event);
-    const kind = tool();
-    if (kind === 'testo') {
-      anchor = p;
-      textInput.focus();
-      schedule();
-      return;
-    }
-    canvas.setPointerCapture(event.pointerId);
-    active = event.pointerId;
-    if (kind === 'penna') {
-      points = [p];
-      current = { t: 'p', c: colour(), s: size(), raw: points };
-    } else if (kind === 'gomma') {
-      erased = new Set();
-      rub(p);
-    } else {
-      start = p;
-    }
-    schedule();
-  });
-
-  canvas.addEventListener('pointermove', (event) => {
-    if (event.pointerId !== active) return;
-    const kind = tool();
-    const moves = event.getCoalescedEvents ? event.getCoalescedEvents() : [];
-    for (const move of moves.length ? moves : [event]) {
-      const p = pointOn(canvas, move);
-      if (kind === 'penna') {
-        const last = points[points.length - 1];
-        if (p.x !== last.x || p.y !== last.y) points.push(p);
-      } else if (kind === 'gomma') {
-        rub(p);
-      }
-    }
-    if (start) {
-      current = { t: 'p', c: colour(), s: size(), d: shapeOf(kind, start, pointOn(canvas, event)) };
-    }
-    schedule();
-  });
-
-  const finish = (event) => {
-    if (event.pointerId !== active) return;
-    active = null;
-    if (points.length) {
-      const { c, s } = current;
-      const strokes = strokesOf(simplify(points, SIMPLIFY)).map((d) => ({ t: 'p', c, s, d }));
-      current = null;
-      points = [];
-      commit(elements.concat(strokes));
-    } else if (start) {
-      const shape = current;
-      current = null;
-      start = null;
-      // A tap without dragging draws nothing.
-      if (shape && !/^M\d+ \d+l0 0(l0 0l0 0z)?$/.test(shape.d)) commit(elements.concat([shape]));
-      else schedule();
-    } else if (erased) {
-      const next = showing;
-      showing = null;
-      erased = null;
-      if (next) commit(next);
-    }
-  };
-  canvas.addEventListener('pointerup', finish);
-  canvas.addEventListener('pointercancel', finish);
-
-  const insertText = () => {
-    const value = cleanText(textInput.value);
-    if (!value || !anchor) {
-      textInput.focus();
-      return;
-    }
-    const text = { t: 'x', c: colour(), s: size(), x: anchor.x, y: anchor.y, v: value };
-    if (commit(elements.concat([text]))) {
-      textInput.value = '';
-      anchor = null;
-      schedule();
-    }
-  };
-
-  const syncTool = () => {
-    canvas.dataset.strumento = tool();
-    textBox.hidden = tool() !== 'testo';
-    if (textBox.hidden) anchor = null;
-    schedule();
-  };
-  dialog.addEventListener('change', (event) => {
-    if (event.target.name === 'schizzo-strumento') syncTool();
-    else schedule();
-  });
-
-  const changed = () => JSON.stringify(elements) !== initial;
-  const close = (keep) => {
-    const done = closed;
-    closed = null;
-    if (dialog.open) dialog.close();
-    if (done) done(keep && changed() ? { e: elements } : null);
-  };
-  const discard = () => {
-    if (!changed() || window.confirm(dialog.dataset.msgScarta)) close(false);
-  };
-  dialog.addEventListener('click', (event) => {
-    const button = event.target instanceof Element ? event.target.closest('button') : null;
-    if (!button) return;
-    if (button.hasAttribute('data-schizzo-fatto')) close(true);
-    else if (button.hasAttribute('data-schizzo-scarta')) discard();
-    else if (button === undoButton) step(-1);
-    else if (button === redoButton) step(1);
-    else if (button.hasAttribute('data-schizzo-inserisci')) insertText();
-    else if (button.hasAttribute('data-schizzo-pulisci')) {
-      if (elements.length && window.confirm(dialog.dataset.msgPulisci)) commit([]);
-    }
-  });
-  // Esc asks like "Discard". A dialog the browser closes anyway (a second Esc or "back" right after)
-  // keeps what was drawn: it is saved only with the sheet, and "Discard" stays the way to drop it.
-  dialog.addEventListener('cancel', (event) => {
-    event.preventDefault();
-    discard();
-  });
-  dialog.addEventListener('close', () => close(true));
-  dialog.addEventListener('keydown', (event) => {
-    if (event.target === textInput) {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        insertText();
-      }
-      return;
-    }
-    if (!(event.ctrlKey || event.metaKey)) return;
-    const key = event.key.toLowerCase();
-    if (key === 'z' || key === 'y') {
-      event.preventDefault();
-      step(key === 'y' || event.shiftKey ? 1 : -1);
-    }
-  });
+  window.rilieviSchizzoEditor = ed;
 
   new ResizeObserver(() => {
-    if (dialog.open) fit();
+    if (dialog.open) vista.fit();
   }).observe(area);
-
-  document.addEventListener('rilievi:schizzo-apri', (event) => {
-    const { foglio, n, chiuso } = event.detail;
-    elements = Array.isArray(foglio.e) ? foglio.e.slice() : [];
-    history = historyOf(elements);
-    initial = JSON.stringify(elements);
-    closed = chiuso;
-    current = null;
-    points = [];
-    start = null;
-    anchor = null;
-    erased = null;
-    showing = null;
-    penSeen = false;
-    textInput.value = '';
-    title.textContent = (dialog.dataset.msgTitolo || '').replace('{n}', () => String(n));
-    status.textContent = '';
-    buttons();
-    dialog.showModal();
-    // Start on the tool in use — never on "Discard", the first button of the dialog.
-    dialog.querySelector('input[name="schizzo-strumento"]:checked').focus();
-    syncTool();
-    fit();
-  });
 })();

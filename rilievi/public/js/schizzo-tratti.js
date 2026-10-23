@@ -1,42 +1,85 @@
-// What the sketch sheets share (schizzi.js — the previews, schizzo-editor.js — the editor): the sizes
-// and colours from the server (`schizzi-vista`, the same the print and the PDF use, src/schizzi/model.ts),
-// painting an element on a canvas, the SVG of a sheet (as views/schede/_schizzo.ejs), turning the points
-// of a stroke into the paths the server accepts, and the eraser's hit test.
+// What the sketch sheets share (schizzi.js — the previews, the editor's scripts): the sizes and colours
+// from the server (`schizzi-vista`, the same the print and the PDF use, src/schizzi/model.ts), the
+// geometry (schizzo-forme.js), painting an element on a canvas (as the SVG of a sheet,
+// views/schede/_schizzo.ejs, schizzi.js) — from the same primitives —, the hit test of the eraser and of
+// the selection, the box of an element, and what the server takes (fits).
 (() => {
   'use strict';
 
   const dataEl = document.getElementById('schizzi-vista');
-  if (!dataEl) return;
+  if (!dataEl || typeof window.rilieviForme !== 'function') return;
   const view = Object.freeze(JSON.parse(dataEl.textContent));
+  const forme = window.rilieviForme(view);
 
-  const paths = new WeakMap();
-  const pathOf = (el) => {
-    if (!paths.has(el)) paths.set(el, new Path2D(el.d));
-    return paths.get(el);
+  // Elements never change (a change is a new object): their primitives and paths are cached.
+  const cache = new WeakMap();
+  const primitivesOf = (el) => {
+    if (!cache.has(el)) cache.set(el, forme.primitivesOf(el));
+    return cache.get(el);
   };
-  const fontOf = (el) => `500 ${view.corpi[el.s]}px "Fira Sans", sans-serif`;
+  const paths = new WeakMap();
+  const pathOf = (p) => {
+    if (!paths.has(p)) paths.set(p, new Path2D(p.d));
+    return paths.get(p);
+  };
+  const ellipseOf = (p) => {
+    if (!paths.has(p)) {
+      const path = new Path2D();
+      path.ellipse(p.x, p.y, p.rx, p.ry, 0, 0, Math.PI * 2);
+      paths.set(p, path);
+    }
+    return paths.get(p);
+  };
+  const fontOf = (z) => `500 ${z}px "Fira Sans", sans-serif`;
+  const ALIGN = { start: 'left', middle: 'center', end: 'right' };
 
-  const paint = (target, el) => {
-    if (el.t === 'x') {
-      target.font = fontOf(el);
+  const paintPrimitive = (target, p) => {
+    if (p.p === 't') {
+      target.font = fontOf(p.z);
       target.textBaseline = 'alphabetic';
-      target.fillStyle = view.colori[el.c];
-      target.fillText(el.v, el.x, el.y);
+      target.textAlign = ALIGN[p.h];
+      target.fillStyle = p.c;
+      if (p.a) {
+        target.save();
+        target.translate(p.x, p.y);
+        target.rotate((p.a * Math.PI) / 180);
+        target.fillText(p.v, 0, 0);
+        target.restore();
+      } else {
+        target.fillText(p.v, p.x, p.y);
+      }
+      return;
+    }
+    if (p.p === 'f') {
+      target.fillStyle = p.c;
+      target.fill(pathOf(p));
       return;
     }
     target.lineCap = 'round';
     target.lineJoin = 'round';
-    target.lineWidth = view.spessori[el.s];
-    target.strokeStyle = view.colori[el.c];
+    target.lineWidth = p.w;
+    target.strokeStyle = p.c;
+    target.setLineDash(p.k || []);
+    target.stroke(p.p === 'l' ? pathOf(p) : ellipseOf(p));
+    target.setLineDash([]);
+  };
+
+  const paint = (target, el) => {
     if (el.raw) {
       // The pen stroke still being drawn: the raw points, simplified only when the stroke ends.
+      target.lineCap = 'round';
+      target.lineJoin = 'round';
+      target.lineWidth = view.spessori[el.s];
+      target.strokeStyle = view.colori[el.c];
+      target.setLineDash(el.k ? view.tratteggi[el.s] : []);
       target.beginPath();
       target.moveTo(el.raw[0].x, el.raw[0].y);
-      el.raw.forEach((p) => target.lineTo(p.x, p.y));
+      el.raw.forEach((q) => target.lineTo(q.x, q.y));
       target.stroke();
-    } else {
-      target.stroke(pathOf(el));
+      target.setLineDash([]);
+      return;
     }
+    primitivesOf(el).forEach((p) => paintPrimitive(target, p));
   };
 
   // White paper with the faint grid, in sheet units (the target is already scaled to them).
@@ -58,7 +101,8 @@
     const tall = free(area.clientHeight, 'paddingTop', 'paddingBottom');
     const ratio = view.altezza / view.larghezza;
     const width = Math.max(1, Math.min(room, tall / ratio));
-    const dpr = window.devicePixelRatio || 1;
+    // Two device pixels per CSS pixel are sharp enough; three would only cost memory on a phone.
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
     canvases[0].style.width = `${Math.floor(width)}px`;
     canvases[0].style.height = `${Math.floor(width * ratio)}px`;
     canvases.forEach((c) => {
@@ -68,150 +112,117 @@
     return canvases[0].width / view.larghezza;
   };
 
-  // A small cross where the next text goes.
-  const paintMark = (target, p, colour) => {
-    target.lineWidth = 3;
+  // A small cross where the next text goes — 8 CSS pixels whatever the zoom (`px`: units per pixel).
+  const paintMark = (target, p, colour, px = 1) => {
+    target.lineWidth = 2 * px;
     target.strokeStyle = view.colori[colour];
     target.beginPath();
-    target.moveTo(p.x - 14, p.y);
-    target.lineTo(p.x + 14, p.y);
-    target.moveTo(p.x, p.y - 14);
-    target.lineTo(p.x, p.y + 14);
+    target.moveTo(p.x - 8 * px, p.y);
+    target.lineTo(p.x + 8 * px, p.y);
+    target.moveTo(p.x, p.y - 8 * px);
+    target.lineTo(p.x, p.y + 8 * px);
     target.stroke();
   };
 
-  // The point of a pointer event on the canvas, in whole sheet units, inside the sheet.
-  const pointOn = (canvas, event) => {
-    const box = canvas.getBoundingClientRect();
-    const x = Math.round(((event.clientX - box.left) / box.width) * view.larghezza);
-    const y = Math.round(((event.clientY - box.top) / box.height) * view.altezza);
-    return {
-      x: Math.min(view.larghezza, Math.max(0, x)),
-      y: Math.min(view.altezza, Math.max(0, y)),
-    };
-  };
-
-  // The text as the server keeps it: no control, invisible or lone surrogate characters, single
-  // spaces, the limit.
-  const cleanText = (value) =>
-    value
-      .replace(/[\p{Cc}\p{Cf}\p{Cs}]/gu, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, view.maxTesto);
-
-  const NS = 'http://www.w3.org/2000/svg';
-  const svgOf = (sheet, label) => {
-    const svg = document.createElementNS(NS, 'svg');
-    const child = (tag, attrs) => {
-      const node = document.createElementNS(NS, tag);
-      Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, String(value)));
-      svg.appendChild(node);
-      return node;
-    };
-    svg.setAttribute('class', 'schizzo');
-    svg.setAttribute('viewBox', `0 0 ${view.larghezza} ${view.altezza}`);
-    svg.setAttribute('role', 'img');
-    svg.setAttribute('aria-label', label);
-    child('rect', { width: view.larghezza, height: view.altezza, fill: '#ffffff' });
-    child('path', { d: view.griglia, stroke: view.coloreGriglia, 'stroke-width': 1, fill: 'none' });
-    sheet.e.forEach((el) => {
-      if (el.t === 'p') {
-        child('path', {
-          d: el.d,
-          stroke: view.colori[el.c],
-          'stroke-width': view.spessori[el.s],
-          fill: 'none',
-          'stroke-linecap': 'round',
-          'stroke-linejoin': 'round',
-        });
-      } else {
-        child('text', {
-          x: el.x,
-          y: el.y,
-          fill: view.colori[el.c],
-          'font-size': view.corpi[el.s],
-          'font-family': 'Fira Sans, sans-serif',
-          'font-weight': 500,
-        }).textContent = el.v;
-      }
-    });
-    return svg;
-  };
-
-  // Ramer–Douglas–Peucker: the points that keep the shape of the stroke within `eps` sheet units.
-  const simplify = (pts, eps) => {
-    if (pts.length < 3) return pts;
-    const keep = new Uint8Array(pts.length);
-    keep[0] = keep[pts.length - 1] = 1;
-    const stack = [[0, pts.length - 1]];
-    while (stack.length) {
-      const [a, b] = stack.pop();
-      const dx = pts[b].x - pts[a].x;
-      const dy = pts[b].y - pts[a].y;
-      const length = Math.hypot(dx, dy);
-      let far = 0;
-      let index = -1;
-      for (let i = a + 1; i < b; i += 1) {
-        const px = pts[i].x - pts[a].x;
-        const py = pts[i].y - pts[a].y;
-        const d = length ? Math.abs(dx * py - dy * px) / length : Math.hypot(px, py);
-        if (d > far) {
-          far = d;
-          index = i;
-        }
-      }
-      if (far > eps) {
-        keep[index] = 1;
-        stack.push([a, index], [index, b]);
-      }
-    }
-    return pts.filter((_, i) => keep[i]);
-  };
-
-  // The paths of a stroke: "M x y" and relative "l dx dy", at most `maxSegmenti` segments each (the
-  // server's limit) — each next one starts where the last one ended. A dot is "l0 0".
-  const strokesOf = (pts) => {
-    const strokes = [];
-    for (let from = 0; from === 0 || from < pts.length - 1; from += view.maxSegmenti) {
-      const part = pts.slice(from, from + view.maxSegmenti + 1);
-      let d = `M${part[0].x} ${part[0].y}`;
-      if (part.length === 1) d += 'l0 0';
-      for (let i = 1; i < part.length; i += 1) {
-        d += `l${part[i].x - part[i - 1].x} ${part[i].y - part[i - 1].y}`;
-      }
-      strokes.push(d);
-    }
-    return strokes;
-  };
-
-  // A straight line from `a` to `b`, or the rectangle they span (closed with "z").
-  const shapeOf = (kind, a, b) => {
-    if (kind === 'linea') return `M${a.x} ${a.y}l${b.x - a.x} ${b.y - a.y}`;
-    const w = Math.abs(b.x - a.x);
-    const h = Math.abs(b.y - a.y);
-    return `M${Math.min(a.x, b.x)} ${Math.min(a.y, b.y)}l${w} 0l0 ${h}l${-w} 0z`;
-  };
-
-  // Does the eraser at `p` (radius in sheet units) touch the element? Paths by their stroke, texts by
-  // their box. The probe keeps the identity transform: everything is in sheet units.
+  // The box of a text in its own frame (before its rotation): left, right, top and bottom of the glyphs.
   const probe = document.createElement('canvas').getContext('2d');
-  const hitOf = (el, p, radius) => {
-    if (el.t === 'p') {
+  const textBox = (p) => {
+    probe.font = fontOf(p.z);
+    const width = probe.measureText(p.v).width;
+    const left = p.h === 'start' ? 0 : p.h === 'middle' ? -width / 2 : -width;
+    return { left, right: left + width, top: -p.z, bottom: p.z * 0.3 };
+  };
+  // A point in the text's own frame: moved to its anchor, turned back by its angle.
+  const inTextFrame = (p, q) => {
+    const rad = (-p.a * Math.PI) / 180;
+    const dx = q.x - p.x;
+    const dy = q.y - p.y;
+    return {
+      x: dx * Math.cos(rad) - dy * Math.sin(rad),
+      y: dx * Math.sin(rad) + dy * Math.cos(rad),
+    };
+  };
+
+  // Does a point (radius in sheet units) touch the element? Lines by their stroke, arrowheads by their
+  // area, texts by their box. The probe keeps the identity transform: everything is in sheet units.
+  const hitOf = (el, q, radius) => {
+    // The cached box first: most elements are far from the pointer.
+    const box = boundsOf(el);
+    if (
+      q.x < box.x0 - radius ||
+      q.x > box.x1 + radius ||
+      q.y < box.y0 - radius ||
+      q.y > box.y1 + radius
+    )
+      return false;
+    return primitivesOf(el).some((p) => {
+      if (p.p === 't') {
+        const box = textBox(p);
+        const r = inTextFrame(p, q);
+        return (
+          r.x >= box.left - radius &&
+          r.x <= box.right + radius &&
+          r.y >= box.top - radius &&
+          r.y <= box.bottom + radius
+        );
+      }
+      if (p.p === 'f') return probe.isPointInPath(pathOf(p), q.x, q.y);
       probe.lineCap = 'round';
       probe.lineJoin = 'round';
-      probe.lineWidth = Math.max(view.spessori[el.s], radius * 2);
-      return probe.isPointInStroke(pathOf(el), p.x, p.y);
-    }
-    probe.font = fontOf(el);
-    const width = probe.measureText(el.v).width;
-    const height = view.corpi[el.s];
-    return (
-      p.x >= el.x - radius &&
-      p.x <= el.x + width + radius &&
-      p.y >= el.y - height - radius &&
-      p.y <= el.y + height * 0.3 + radius
-    );
+      probe.lineWidth = Math.max(p.w, radius * 2);
+      return probe.isPointInStroke(p.p === 'l' ? pathOf(p) : ellipseOf(p), q.x, q.y);
+    });
+  };
+
+  // The box around everything the element draws (selection frame, box selection), in sheet units.
+  const pointsOfPath = (d) =>
+    /l/.test(d)
+      ? forme.puntiDi(d)
+      : Array.from(d.matchAll(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g), (m) => [+m[1], +m[2]]);
+  let boxes = new WeakMap();
+  const boundsOf = (el) => {
+    if (!boxes.has(el)) boxes.set(el, measure(el));
+    return boxes.get(el);
+  };
+  // A font that arrives later measures the texts again.
+  const resetMeasures = () => {
+    boxes = new WeakMap();
+  };
+  const measure = (el) => {
+    const xs = [];
+    const ys = [];
+    let pad = 0;
+    primitivesOf(el).forEach((p) => {
+      if (p.p === 'l' || p.p === 'f') {
+        pointsOfPath(p.d).forEach(([x, y]) => {
+          xs.push(x);
+          ys.push(y);
+        });
+        if (p.p === 'l') pad = Math.max(pad, p.w / 2);
+      } else if (p.p === 'e') {
+        xs.push(p.x - p.rx, p.x + p.rx);
+        ys.push(p.y - p.ry, p.y + p.ry);
+        pad = Math.max(pad, p.w / 2);
+      } else {
+        const box = textBox(p);
+        const rad = (p.a * Math.PI) / 180;
+        [
+          [box.left, box.top],
+          [box.right, box.top],
+          [box.right, box.bottom],
+          [box.left, box.bottom],
+        ].forEach(([x, y]) => {
+          xs.push(p.x + x * Math.cos(rad) - y * Math.sin(rad));
+          ys.push(p.y + x * Math.sin(rad) + y * Math.cos(rad));
+        });
+      }
+    });
+    return {
+      x0: Math.min(...xs) - pad,
+      y0: Math.min(...ys) - pad,
+      x1: Math.max(...xs) + pad,
+      y1: Math.max(...ys) + pad,
+    };
   };
 
   // Does the sheet still fit what the server takes: the elements, the JSON, and its size as the form
@@ -225,43 +236,17 @@
     );
   };
 
-  // Undo and redo over whole states of the sheet (the arrays share their elements), 200 steps back.
-  const historyOf = (first) => {
-    let states = [first];
-    let at = 0;
-    return {
-      push(next) {
-        states = states
-          .slice(0, at + 1)
-          .concat([next])
-          .slice(-200);
-        at = states.length - 1;
-        return next;
-      },
-      step(delta) {
-        if (at + delta < 0 || at + delta >= states.length) return null;
-        at += delta;
-        return states[at];
-      },
-      canUndo: () => at > 0,
-      canRedo: () => at < states.length - 1,
-    };
-  };
-
   window.rilieviSchizzo = Object.freeze({
     view,
+    forme,
+    primitivesOf,
     paint,
-    paintMark,
     paintPaper,
+    paintMark,
     fitCanvases,
-    pointOn,
-    cleanText,
-    svgOf,
-    simplify,
-    strokesOf,
-    shapeOf,
     hitOf,
+    boundsOf,
+    resetMeasures,
     fits,
-    historyOf,
   });
 })();

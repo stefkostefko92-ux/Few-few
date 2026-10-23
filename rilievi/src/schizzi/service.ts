@@ -22,16 +22,39 @@ export async function fogliDi(schedaId: string): Promise<Foglio[]> {
   });
 }
 
-/** Листовете се записват наново — точно каквото е във формата, нищо старо не остава. */
+/**
+ * Листовете се записват наново — точно каквото е във формата. Ред, който тази версия не може да прочете
+ * (записан от по-нова — след връщане на кода назад), формата не го е показала и не го е пратила: той
+ * остава, след пратените. Иначе първият запис би изтрил рисунката, която по-новата версия пак ще покаже.
+ */
 export async function salvaSchizzi(
   tx: Prisma.TransactionClient,
   schedaId: string,
   fogli: readonly Foglio[],
 ): Promise<void> {
-  await tx.schizzo.deleteMany({ where: { schedaId } });
+  const rows = await tx.schizzo.findMany({
+    where: { schedaId },
+    orderBy: { ordine: 'asc' },
+    select: { id: true, elementi: true },
+  });
+  const illeggibili = rows.filter((row) => foglioDa(row.elementi) === null).map((row) => row.id);
+  await tx.schizzo.deleteMany({ where: { schedaId, id: { notIn: illeggibili } } });
+  // Редът на листа е уникален в картата: нечетимите се отместват настрана, преди да дойдат пратените.
+  for (const [i, id] of illeggibili.entries()) {
+    await tx.schizzo.update({ where: { id }, data: { ordine: 100_000 + i } });
+  }
   if (fogli.length > 0) {
     await tx.schizzo.createMany({
       data: fogli.map((foglio, ordine) => ({ schedaId, ordine, elementi: foglio })),
     });
+  }
+  for (const [i, id] of illeggibili.entries()) {
+    await tx.schizzo.update({ where: { id }, data: { ordine: fogli.length + i } });
+  }
+  if (illeggibili.length > 0) {
+    logger.warn(
+      { scheda: schedaId, fogli: illeggibili.length },
+      'нечетими листове на скицника — запазени',
+    );
   }
 }

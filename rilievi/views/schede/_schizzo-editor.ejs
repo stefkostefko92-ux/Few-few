@@ -1,10 +1,33 @@
 <%#
-  Редакторът на един лист от скицника — на цял екран (public/js/schizzo-editor.js): инструментът, цветът и
-  дебелината, „назад“, „напред“ и „изчисти“, полето за текст; листът е платно с мрежа. Стои извън формата
-  на картата — полетата му не се пращат. Мерките и цветовете идват от сървъра (`schizzi-vista`, същите като
-  в печата и PDF-а).
-%><% const opzioni = (nome, voci) => voci.map(([valore, icona, etichetta], i) => ({ valore, icona, etichetta, id: 'schizzo-' + nome + '-' + valore, checked: i === 0 })); %>
-<dialog class="schizzo-editor" data-schizzo-editor aria-labelledby="schizzo-titolo" data-msg-titolo="<%= t('schizzi.editor.titolo') %>" data-msg-pulisci="<%= t('schizzi.editor.pulisciConferma') %>" data-msg-scarta="<%= t('schizzi.editor.scartaConferma') %>" data-msg-pieno="<%= t('schizzi.editor.pieno') %>">
+  Редакторът на един лист от скицника — на цял екран (public/js/schizzo-*.js). Горе: първият ред —
+  инструментите (шест на реда, формите и символите — в менюта), вторият — стилът, прихващането и според
+  случая изгледът, действията върху избраното или краят на начупената линия, с „назад“ и „напред“;
+  после лентата за стойност (котата, текстът), подсказката и листът. Стои извън формата на картата —
+  полетата му не се пращат. Мерките, цветовете и символите идват от сървъра (`schizzi-vista`, същите като
+  в печата и PDF-а), текстовете за JavaScript — в `schizzi-testi`.
+%><%
+  const opzione = (nome, valore, icona, etichetta, checked) => ({ nome, valore, icona, etichetta, id: 'schizzo-' + nome + '-' + valore, checked });
+  const strumenti = [['seleziona', 'cursor'], ['penna', 'pen'], ['linea', 'line'], ['quota', 'quota'], ['testo', 'text'], ['gomma', 'eraser']];
+  const forme = [['rettangolo', 'rect'], ['cerchio', 'circle'], ['ellisse', 'ellipse'], ['polilinea', 'polyline'], ['freccia', 'arrow'], ['richiamo', 'callout']];
+  const simboli = Object.keys(schizzoVista.simboli);
+  const testi = {
+    titolo: t('schizzi.editor.titolo'),
+    pulisciConferma: t('schizzi.editor.pulisciConferma'),
+    scartaConferma: t('schizzi.editor.scartaConferma'),
+    pieno: t('schizzi.editor.pieno'),
+    fuori: t('schizzi.editor.fuori'),
+    valore: { quota: t('schizzi.valore.quota'), testo: t('schizzi.valore.testo'), richiamo: t('schizzi.valore.richiamo') },
+    aggancio: { punto: t('schizzi.aggancio.punto'), angolo: t('schizzi.aggancio.angolo'), griglia: t('schizzi.aggancio.griglia') },
+    suggerimenti: Object.fromEntries(['seleziona', 'penna', 'linea', 'rettangolo', 'cerchio', 'ellisse', 'polilinea', 'polilineaFine', 'freccia', 'richiamo', 'quota', 'quotaStacco', 'quotaValore', 'testo', 'simbolo', 'gomma'].map((k) => [k, t('schizzi.suggerimenti.' + k)])),
+  };
+  // Символът в кутия 120 × 120 — с пропорциите на обичайния му размер.
+  const simboloMini = (nome) => {
+    const [mw, mh] = schizzoVista.simboli[nome].misura;
+    const k = 100 / Math.max(mw, mh);
+    return { t: 's', c: 'k', s: 1, n: nome, x: 60, y: 60, w: mw * k, h: mh * k, r: 0 };
+  };
+  const radio = (o) => `<label class="seg__opt" for="${o.id}"><input type="radio" id="${o.id}" name="schizzo-${o.nome}" value="${o.valore}"${o.checked ? ' checked' : ''}><span class="seg__face">`;
+%><dialog class="schizzo-editor" data-schizzo-editor aria-labelledby="schizzo-titolo">
   <div class="schizzo-editor__testa">
     <h2 class="schizzo-editor__titolo" id="schizzo-titolo"><%= t('schizzi.title') %></h2>
     <div class="toolbar">
@@ -13,36 +36,77 @@
     </div>
   </div>
   <div class="schizzo-editor__corpo">
-    <div class="schizzo-editor__strumenti">
-      <% for (const [nome, legenda, voci] of [
-        ['strumento', 'strumenti', [['penna', 'pen', 'penna'], ['linea', 'line', 'linea'], ['rettangolo', 'rect', 'rettangolo'], ['testo', 'text', 'testo'], ['gomma', 'eraser', 'gomma']]],
-        ['colore', 'colore', [['k', null, 'nero'], ['r', null, 'rosso'], ['b', null, 'blu']]],
-        ['spessore', 'spessore', [['1', null, 'sottile'], ['2', null, 'spesso']]],
-      ]) { %><fieldset class="seg">
-        <legend class="visually-hidden"><%= t('schizzi.editor.' + legenda) %></legend>
-        <% for (const voce of opzioni(nome, voci)) { %><label class="seg__opt" for="<%= voce.id %>"><input type="radio" id="<%= voce.id %>" name="schizzo-<%= nome %>" value="<%= voce.valore %>"<% if (voce.checked) { %> checked<% } %>><span class="seg__face"><% if (voce.icona) { %><%- include('../partials/icon', { name: voce.icona }) %><% } else if (nome === 'colore') { %><span class="seg__colore seg__colore--<%= voce.valore %>" aria-hidden="true"></span><% } else { %><span class="seg__spessore seg__spessore--<%= voce.valore %>" aria-hidden="true"></span><% } %><span class="seg__label"><%= t('schizzi.editor.' + voce.etichetta) %></span></span></label>
-        <% } %>
+    <div class="schizzo-editor__barre">
+      <fieldset class="seg seg--strumenti">
+        <legend class="visually-hidden"><%= t('schizzi.editor.strumenti') %></legend>
+        <% for (const [valore, icona] of strumenti) { const o = opzione('strumento', valore, icona, valore, valore === 'penna'); %><%- radio(o) %><%- include('../partials/icon', { name: icona }) %><span class="seg__label"><%= t('schizzi.editor.' + valore) %></span></span></label>
+        <% } %><details class="menu" data-schizzo-menu="forme">
+          <summary class="menu__faccia"><span data-schizzo-menu-faccia><%- include('../partials/icon', { name: 'shapes' }) %></span><span class="seg__label"><%= t('schizzi.editor.forme') %></span><%- include('../partials/icon', { name: 'chevron' }) %></summary>
+          <div class="menu__pannello">
+            <% for (const [valore, icona] of forme) { const o = opzione('strumento', valore, icona, valore, false); %><%- radio(o) %><%- include('../partials/icon', { name: icona }) %><span><%= t('schizzi.editor.' + valore) %></span></span></label>
+            <% } %>
+          </div>
+        </details><details class="menu" data-schizzo-menu="simboli">
+          <summary class="menu__faccia"><span data-schizzo-menu-faccia><%- include('../partials/icon', { name: 'symbols' }) %></span><span class="seg__label"><%= t('schizzi.editor.simboli') %></span><%- include('../partials/icon', { name: 'chevron' }) %></summary>
+          <div class="menu__pannello">
+            <input class="visually-hidden" type="radio" id="schizzo-strumento-simbolo" name="schizzo-strumento" value="simbolo" tabindex="-1" aria-hidden="true">
+            <% simboli.forEach((nome, i) => { const o = opzione('simbolo', nome, null, nome, i === 0); %><%- radio(o) %><%- include('_schizzo', { foglio: { e: [simboloMini(nome)] }, titolo: '', mini: true }) %><span><%= t('schizzi.simboliNomi.' + nome) %></span></span></label>
+            <% }) %>
+          </div>
+        </details>
       </fieldset>
-      <% } %>
-      <div class="schizzo-editor__azioni">
-        <button class="btn btn--sm" type="button" data-schizzo-annulla aria-keyshortcuts="Control+Z"><%- include('../partials/icon', { name: 'undo' }) %><span class="seg__label"><%= t('schizzi.editor.annulla') %></span></button>
-        <button class="btn btn--sm" type="button" data-schizzo-ripeti aria-keyshortcuts="Control+Y"><%- include('../partials/icon', { name: 'redo' }) %><span class="seg__label"><%= t('schizzi.editor.ripeti') %></span></button>
-        <button class="btn btn--sm btn--ghost" type="button" data-schizzo-pulisci><%- include('../partials/icon', { name: 'trash' }) %><span class="seg__label"><%= t('schizzi.editor.pulisci') %></span></button>
-      </div>
-      <div class="schizzo-editor__testo" data-schizzo-testo hidden>
-        <label class="field__label" for="schizzo-testo"><%= t('schizzi.editor.testoLabel') %></label>
-        <div class="schizzo-editor__riga">
-          <input class="input" id="schizzo-testo" type="text" maxlength="<%= schizzoVista.maxTesto %>" autocomplete="off" enterkeyhint="done" aria-describedby="schizzo-testo-aiuto">
-          <button class="btn btn--sm" type="button" data-schizzo-inserisci><%= t('schizzi.editor.inserisci') %></button>
+      <div class="schizzo-editor__riga">
+        <details class="menu" data-schizzo-menu="stile">
+          <summary class="menu__faccia"><%- include('../partials/icon', { name: 'palette' }) %><span class="seg__label"><%= t('schizzi.editor.stile') %></span><%- include('../partials/icon', { name: 'chevron' }) %></summary>
+          <div class="menu__pannello menu__pannello--stile">
+            <fieldset class="seg"><legend class="visually-hidden"><%= t('schizzi.editor.colore') %></legend>
+              <% for (const [valore, etichetta] of [['k', 'nero'], ['r', 'rosso'], ['b', 'blu']]) { %><%- radio(opzione('colore', valore, null, etichetta, valore === 'k')) %><span class="seg__colore seg__colore--<%= valore %>" aria-hidden="true"></span><span class="seg__label"><%= t('schizzi.editor.' + etichetta) %></span></span></label>
+              <% } %>
+            </fieldset>
+            <fieldset class="seg"><legend class="visually-hidden"><%= t('schizzi.editor.spessore') %></legend>
+              <% for (const [valore, etichetta] of [['1', 'sottile'], ['2', 'spesso']]) { %><%- radio(opzione('spessore', valore, null, etichetta, valore === '1')) %><span class="seg__spessore seg__spessore--<%= valore %>" aria-hidden="true"></span><span class="seg__label"><%= t('schizzi.editor.' + etichetta) %></span></span></label>
+              <% } %>
+            </fieldset>
+            <label class="interruttore" for="schizzo-tratteggio"><input type="checkbox" id="schizzo-tratteggio"><span class="interruttore__faccia"><%- include('../partials/icon', { name: 'dashed' }) %><%= t('schizzi.editor.tratteggio') %></span></label>
+            <button class="btn btn--sm btn--ghost" type="button" data-schizzo-pulisci><%- include('../partials/icon', { name: 'trash' }) %><%= t('schizzi.editor.pulisci') %></button>
+          </div>
+        </details>
+        <label class="interruttore" for="schizzo-aggancio"><input type="checkbox" id="schizzo-aggancio" checked><span class="interruttore__faccia"><%- include('../partials/icon', { name: 'magnet' }) %><span class="seg__label"><%= t('schizzi.editor.aggancio') %></span></span></label>
+        <div class="schizzo-editor__gruppo" data-schizzo-contesto="base">
+          <button class="btn btn--sm solo-mouse" type="button" data-schizzo-zoom="meno" aria-keyshortcuts="-"><%- include('../partials/icon', { name: 'zoom-out' }) %><span class="seg__label"><%= t('schizzi.editor.zoomMeno') %></span></button>
+          <button class="btn btn--sm solo-mouse" type="button" data-schizzo-zoom="piu" aria-keyshortcuts="+"><%- include('../partials/icon', { name: 'zoom-in' }) %><span class="seg__label"><%= t('schizzi.editor.zoomPiu') %></span></button>
+          <button class="btn btn--sm" type="button" data-schizzo-zoom="adatta" aria-keyshortcuts="0"><%- include('../partials/icon', { name: 'fit' }) %><span class="seg__label"><%= t('schizzi.editor.adatta') %></span></button>
         </div>
-        <p class="field__hint" id="schizzo-testo-aiuto"><%= t('schizzi.editor.testoAiuto') %></p>
+        <div class="schizzo-editor__gruppo" data-schizzo-contesto="selezione" role="group" aria-label="<%= t('schizzi.editor.azioni') %>" hidden>
+          <% for (const [azione, icona, etichetta] of [['duplica', 'copy', 'duplica'], ['elimina', 'trash', 'eliminaSel'], ['ruota', 'rotate', 'ruota90'], ['specchia', 'mirror', 'specchia'], ['diametro', 'diameter', 'diametro'], ['raggio', 'radius', 'raggio'], ['modifica', 'edit', 'modifica']]) { %><button class="btn btn--sm" type="button" data-schizzo-azione="<%= azione %>"><%- include('../partials/icon', { name: icona }) %><span class="seg__label"><%= t('schizzi.editor.' + etichetta) %></span></button>
+          <% } %><label class="interruttore" for="schizzo-piu"><input type="checkbox" id="schizzo-piu"><span class="interruttore__faccia"><%- include('../partials/icon', { name: 'multi' }) %><span class="seg__label"><%= t('schizzi.editor.piu') %></span></span></label>
+        </div>
+        <div class="schizzo-editor__gruppo" data-schizzo-contesto="polilinea" hidden>
+          <button class="btn btn--sm btn--primary" type="button" data-schizzo-poli="fine" aria-keyshortcuts="Enter"><%- include('../partials/icon', { name: 'check' }) %><%= t('schizzi.editor.fine') %></button>
+          <button class="btn btn--sm" type="button" data-schizzo-poli="chiudi"><%- include('../partials/icon', { name: 'polyline' }) %><%= t('schizzi.editor.chiudi') %></button>
+        </div>
+        <span class="schizzo-editor__storia">
+          <button class="btn btn--sm" type="button" data-schizzo-annulla aria-keyshortcuts="Control+Z"><%- include('../partials/icon', { name: 'undo' }) %><span class="seg__label"><%= t('schizzi.editor.annulla') %></span></button>
+          <button class="btn btn--sm" type="button" data-schizzo-ripeti aria-keyshortcuts="Control+Y"><%- include('../partials/icon', { name: 'redo' }) %><span class="seg__label"><%= t('schizzi.editor.ripeti') %></span></button>
+        </span>
       </div>
+      <div class="schizzo-editor__valore" data-schizzo-valore hidden>
+        <label class="schizzo-editor__valore-nome" for="schizzo-valore"><%= t('schizzi.valore.testo') %></label>
+        <button class="btn btn--sm" type="button" data-schizzo-prefisso="Ø">Ø</button>
+        <button class="btn btn--sm" type="button" data-schizzo-prefisso="R">R</button>
+        <input class="input" id="schizzo-valore" type="text" inputmode="text" enterkeyhint="done" autocomplete="off" maxlength="<%= schizzoVista.maxTesto %>">
+        <button class="btn btn--sm" type="button" data-schizzo-abc aria-pressed="false"><%= t('schizzi.editor.abc') %></button>
+        <button class="btn btn--sm btn--primary" type="button" data-schizzo-valore-ok><%= t('schizzi.editor.ok') %></button>
+        <button class="btn btn--sm btn--ghost" type="button" data-schizzo-valore-annulla aria-label="<%= t('schizzi.editor.annullaValore') %>"><%- include('../partials/icon', { name: 'close' }) %></button>
+      </div>
+      <p class="schizzo-editor__suggerimento" aria-live="polite"><span data-schizzo-suggerimento></span> <span class="schizzo-editor__aggancio" data-schizzo-tipo-aggancio></span></p>
       <p class="schizzo-editor__avviso" data-schizzo-avviso role="status" aria-live="polite"></p>
     </div>
     <div class="schizzo-editor__area" data-schizzo-area>
-      <canvas class="schizzo-editor__tela" data-schizzo-tela role="img" aria-label="<%= t('schizzi.editor.area') %>"></canvas>
+      <canvas class="schizzo-editor__tela" data-schizzo-tela tabindex="0" role="img" aria-label="<%= t('schizzi.editor.area') %>"></canvas>
     </div>
   </div>
   <p class="schizzo-editor__ruota"><%= t('schizzi.editor.ruota') %></p>
 </dialog>
 <script type="application/json" id="schizzi-vista" nonce="<%= cspNonce %>"><%- JSON.stringify(schizzoVista).replace(/</g, '\\u003c') %></script>
+<script type="application/json" id="schizzi-testi" nonce="<%= cspNonce %>"><%- JSON.stringify(testi).replace(/</g, '\\u003c') %></script>
