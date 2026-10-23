@@ -66,6 +66,38 @@ export default async function ResourceListPage({
   const current = Math.min(Math.max(1, Number(page) || 1), pages);
   const rows = filtered.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
 
+  // „Сгрешени номера“: PhoneReport няма релация към Service, затова имената на
+  // услугите се взимат с една заявка само за id-тата на тази страница.
+  const serviceNames =
+    resource.key === "greshni-nomera"
+      ? new Map(
+          (
+            await prisma.service.findMany({
+              where: {
+                id: { in: [...new Set(rows.map((r) => String(r.serviceId ?? "")).filter(Boolean))] },
+              },
+              select: { id: true, name: true },
+            })
+          ).map((s) => [s.id, s.name] as const),
+        )
+      : null;
+  const serviceCell = (sid: string) => {
+    const name = serviceNames?.get(sid);
+    return name ? (
+      <span>
+        <Link
+          href={`/admin/services/${encodeURIComponent(sid)}`}
+          className="font-medium text-brand-700 hover:underline"
+        >
+          {name}
+        </Link>
+        <span className="block text-xs text-slate-600">отворете услугата, за да поправите номера</span>
+      </span>
+    ) : (
+      <span className="text-slate-600">Услугата вече я няма ({sid || "—"})</span>
+    );
+  };
+
   const qs = (extra: Record<string, string | number>) => {
     const p = new URLSearchParams();
     if (filter) p.set("filter", filter);
@@ -152,7 +184,7 @@ export default async function ResourceListPage({
             <tr>
               {cols.map((c) => (
                 <th key={c.name} className="p-3 font-semibold text-slate-600">
-                  {c.label}
+                  {serviceNames && c.name === "serviceId" ? "Услуга" : c.label}
                 </th>
               ))}
               <th className="p-3 text-right font-semibold text-slate-600">Действия</th>
@@ -172,7 +204,9 @@ export default async function ResourceListPage({
                   <tr key={id} className="align-top">
                     {cols.map((c, i) => (
                       <td key={c.name} className="p-3 text-slate-700">
-                        {i === 0 ? (
+                        {serviceNames && c.name === "serviceId" ? (
+                          serviceCell(String(row.serviceId ?? ""))
+                        ) : i === 0 ? (
                           <span className="flex items-center gap-2">
                             {hasPublished && !row.published && (
                               <span

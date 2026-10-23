@@ -2,11 +2,78 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getAiConfig, PROVIDER_LABELS } from "@/lib/ai-config";
+import { sofiaDay } from "@/lib/stats-core";
+import { weekStart } from "@/lib/analytics-core";
+import { NORTH_STAR_METRICS } from "@/app/admin/statistika/labels";
+import { FreshnessBanner } from "@/components/admin/FreshnessBanner";
 
 export const dynamic = "force-dynamic";
 
 const FORBIDDEN_MSG =
   "Нямате достъп до тази част. Тя е достъпна само за администратори.";
+
+// „Тази седмица“ (понеделник–днес по София) от DailyStat — същите определения
+// като /admin/statistika. Грешка тук не чупи таблото: картата просто липсва.
+async function loadWeek(): Promise<{ from: Date; views: number; tasks: number } | null> {
+  try {
+    const from = weekStart(sofiaDay());
+    const [views, tasks] = await Promise.all([
+      prisma.dailyStat.aggregate({
+        where: { metric: "view", day: { gte: from } },
+        _sum: { count: true },
+      }),
+      prisma.dailyStat.aggregate({
+        where: { metric: { in: [...NORTH_STAR_METRICS] }, day: { gte: from } },
+        _sum: { count: true },
+      }),
+    ]);
+    return { from, views: views._sum.count ?? 0, tasks: tasks._sum.count ?? 0 };
+  } catch (err) {
+    console.error("[admin] седмичната статистика не се зареди:", err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
+function WeekCard({ from, views, tasks }: { from: Date; views: number; tasks: number }) {
+  const fmt = (x: number) => x.toLocaleString("bg-BG");
+  const since = new Intl.DateTimeFormat("bg-BG", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    timeZone: "UTC",
+  }).format(from);
+  return (
+    <section
+      aria-labelledby="week-title"
+      className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 id="week-title" className="text-lg font-semibold text-slate-900">
+            Тази седмица
+          </h2>
+          <p className="text-sm text-slate-600">от {since} до днес</p>
+        </div>
+        <Link href="/admin/statistika" className="btn-secondary min-h-11">
+          Цялата статистика <span aria-hidden>→</span>
+        </Link>
+      </div>
+      <dl className="mt-4 flex flex-wrap gap-8">
+        <div>
+          <dt className="text-sm text-slate-600">Прегледи на страници</dt>
+          <dd className="text-3xl font-bold text-slate-900">{fmt(views)}</dd>
+        </div>
+        <div>
+          <dt className="text-sm text-slate-600">
+            Изпълнени граждански задачи
+            <span className="block text-xs">(натиснат телефон, „Помогна ли ви?“ — Да, „Сподели“)</span>
+          </dt>
+          <dd className="text-3xl font-bold text-slate-900">{fmt(tasks)}</dd>
+        </div>
+      </dl>
+    </section>
+  );
+}
 
 function StatCard({
   label,
@@ -103,6 +170,8 @@ export default async function AdminDashboard({
   ]);
 
   const ai = isAdmin ? await getAiConfig() : null;
+  // Статистиката е само за администратор (както /admin/statistika).
+  const week = isAdmin ? await loadWeek() : null;
 
   // Подавания за одобрение (виждат ги и редакторите).
   const moderationPending =
@@ -123,6 +192,8 @@ export default async function AdminDashboard({
         <h1 className="text-2xl font-bold text-slate-900">Табло</h1>
         <p className="text-slate-600">Преглед на съдържанието и последна активност.</p>
       </div>
+
+      <FreshnessBanner />
 
       {/* Кратка помощ за новите редактори. */}
       <details className="rounded-xl border border-brand-200 bg-brand-50/60 p-4 text-sm text-slate-700">
@@ -262,6 +333,8 @@ export default async function AdminDashboard({
           accent={misses > 0}
         />
       </div>
+
+      {week && <WeekCard {...week} />}
 
       {isAdmin && (
       <div>
