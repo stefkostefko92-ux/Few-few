@@ -461,3 +461,16 @@ test('SSH: „without-password“ е същото като „prohibit-password�
   assert.equal(f.find((x) => x.id === 'ssh-root-key')?.ok, true);
   assert.equal(f.some((x) => x.id === 'ssh-root'), false);
 });
+
+test('posture: един сървър без restic = бекъпите са само на същия диск (и го КАЗВА)', async () => {
+  const { offsiteFindings } = await import('../src/posture.js');
+  const ids = (c, o) => offsiteFindings(c, o).map((f) => f.id);
+  // Точно състоянието след смяната на двата VPS с един: съседа го няма, restic няма.
+  assert.deepEqual(ids({ peers: [] }), ['backup-no-offsite']);
+  assert.equal(offsiteFindings({ peers: [] })[0].severity, 'high');
+  // Съсед без включено изнасяне не е копие извън машината.
+  assert.deepEqual(ids({ peers: [{ id: 'b' }], backups: { offsite: { enabled: false } } }), ['backup-no-offsite']);
+  // Всяко от двете истински копия стига.
+  assert.deepEqual(ids({ peers: [{ id: 'b' }], backups: { offsite: { enabled: true } } }), []);
+  assert.deepEqual(ids({ peers: [] }, { restic: true }), []);
+});
