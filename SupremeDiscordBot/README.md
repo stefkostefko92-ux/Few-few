@@ -21,12 +21,15 @@ These ports avoid conflicts with Stefko's VPS: `3002` (syndicate_backend), `3100
 
 ---
 
-## Quick Deploy on VPS (178.104.77.242)
+## Quick Deploy on the server (`vps.carbonstealth.eu`)
+
+> The canonical production path is `deploy/fetch-deploy.sh` → `deploy/autodeploy.sh`
+> (see the root `CLAUDE.md`). The manual steps below are for a fresh box only.
 
 ```bash
 # 1. Upload from your local machine
-scp -r discord-saas-bot/ root@178.104.77.242:/opt/supremebot
-ssh root@178.104.77.242
+scp -r discord-saas-bot/ root@vps.carbonstealth.eu:/opt/supremebot
+ssh root@vps.carbonstealth.eu
 cd /opt/supremebot
 
 # 2. Create all .env files
