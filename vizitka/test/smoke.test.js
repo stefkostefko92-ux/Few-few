@@ -331,6 +331,18 @@ await test('launch SEO: GEO схема, robots disallows, IndexNow ключ', as
   assert.equal((await key.text()).trim(), 'testindexnowkey1234567890abcdef0');
 });
 
+await test('доставчикът е назован с вписаните имена и точната правна форма', async () => {
+  const provider =
+    '<strong>Карбон Стелт ЕДПК (Carbon Stealth VCC)</strong> — еднолично дружество с променлив капитал';
+  const priv = await (await request('/privacy')).text();
+  const terms = await (await request('/terms')).text();
+  assert.ok(priv.includes(provider), 'политиката: администраторът');
+  assert.ok(terms.includes(provider), 'общите условия: импресумът');
+  assert.match(terms, /Представляващ: Стефан Костадинов/);
+  const home = await (await request('/')).text();
+  assert.match(home, /"legalName":"Carbon Stealth VCC","alternateName":"Карбон Стелт ЕДПК"/);
+});
+
 await test('launch правно: политиката разкрива mastilko и IndexNow', async () => {
   const priv = await (await request('/privacy')).text();
   assert.match(priv, /mastilko-bg\.com/);
