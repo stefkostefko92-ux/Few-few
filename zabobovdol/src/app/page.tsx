@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
-import { SITE, PRIMARY_NAV } from "@/lib/site";
+import { SITE, PRIMARY_NAV, localPhone } from "@/lib/site";
 import { SearchBar } from "@/components/SearchBar";
 import { Section, EmptyState } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
@@ -10,7 +9,25 @@ import { SERVICE_CATEGORY_LABELS } from "@/lib/categories";
 import { BannerCard, BannerEmptySlot } from "@/components/BannerCard";
 import { ScamBanner } from "@/components/ScamBanner";
 import { WeatherWidget } from "@/components/WeatherWidget";
-import { TodayCalendar } from "@/components/TodayCalendar";
+import { TodayPanel } from "@/components/TodayPanel";
+import { LatestNews } from "@/components/LatestNews";
+import { TelLink } from "@/components/TelLink";
+import { ViberButton } from "@/components/ViberButton";
+import {
+  getBanners,
+  getDutyToday,
+  getEmergencyServices,
+  getFeaturedBusinesses,
+  getLatestListings,
+  getLatestPosts,
+  getOutagesTodayTomorrow,
+  getTopFaqs,
+  getUpcomingEvents,
+} from "@/lib/cache";
+import { getViberChannelUrl } from "@/lib/settings";
+import { nextBuses, pickTodayOutages, todayCalendar } from "@/lib/today";
+import { BUS } from "@/lib/bus-schedule";
+import { newsDate } from "@/lib/ingest-news-rss";
 import {
   HelpCircle,
   Phone,
@@ -34,6 +51,7 @@ import {
   Camera,
   Zap,
   Banknote,
+  Flame,
   type LucideIcon,
 } from "@/components/icons";
 
@@ -62,6 +80,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   "/dobrovolci": Users,
   "/spomeni": Images,
   "/galeriya": Camera,
+  "/pomeni": Flame,
 };
 
 // Цветова тема за всяка категория — за по-лесно разпознаване и по-жив вид.
@@ -76,6 +95,8 @@ const NAV_COLOR: Record<string, string> = {
   "/obyavi": "orange",
   "/transport": "sky",
   "/prozrachnost": "teal", "/grada": "teal", "/dobrovolci": "teal",
+  // Некролозите — тихо, без ярък цвят (свещ в сиво).
+  "/pomeni": "slate",
 };
 const COLOR: Record<string, { chip: string; title: string }> = {
   blue: { chip: "bg-blue-100 text-blue-700 group-hover:bg-blue-600 group-hover:text-white", title: "group-hover:text-blue-700" },
@@ -86,6 +107,9 @@ const COLOR: Record<string, { chip: string; title: string }> = {
   purple: { chip: "bg-purple-100 text-purple-700 group-hover:bg-purple-600 group-hover:text-white", title: "group-hover:text-purple-700" },
   orange: { chip: "bg-orange-100 text-orange-700 group-hover:bg-orange-600 group-hover:text-white", title: "group-hover:text-orange-700" },
   teal: { chip: "bg-teal-100 text-teal-700 group-hover:bg-teal-600 group-hover:text-white", title: "group-hover:text-teal-700" },
+  // Без смяна на цвета на заглавието при посочване: group-hover:text-slate-*
+  // няма тъмен вариант и би станал тъмен текст на тъмна карта.
+  slate: { chip: "bg-slate-100 text-slate-700 group-hover:bg-slate-600 group-hover:text-white", title: "" },
 };
 
 export const dynamic = "force-dynamic";
@@ -99,45 +123,91 @@ function formatDate(d: Date): string {
   }).format(d);
 }
 
+// Данните за панела „Днес“ са допълнение — ако някоя от заявките се провали
+// (напр. таблицата още не е мигрирана), панелът просто я пропуска, вместо
+// цялата начална страница да падне.
+async function orEmpty<T>(label: string, p: Promise<T[]>): Promise<T[]> {
+  try {
+    return await p;
+  } catch (err) {
+    console.error(`[начална] ${label}:`, err instanceof Error ? err.message : err);
+    return [];
+  }
+}
+
+// „Помогнете ни да я напълним“ — вместо празна кутия „Още няма…“. С телефон
+// за хората без смартфон. Навигацията към разделите остава непокътната.
+function FillStrip({ events, listings }: { events: boolean; listings: boolean }) {
+  const sections =
+    events && listings ? "„Обяви“ и „Събития“" : listings ? "„Обяви“" : "„Събития“";
+  return (
+    <section aria-label={`Помогнете ни да напълним ${sections}`} className="border-y border-slate-200/70 bg-slate-50">
+      <div className="container-content flex flex-wrap items-center gap-x-6 gap-y-3 py-5">
+        <div className="min-w-[14rem] flex-1">
+          <p className="text-lg font-semibold text-slate-900">
+            Помогнете ни да напълним {sections}
+          </p>
+          {SITE.contact.phone && (
+            <p className="text-base text-slate-700">
+              Нямате смартфон? Обадете се на{" "}
+              <TelLink
+                phone={SITE.contact.phone}
+                className="whitespace-nowrap font-semibold text-brand-700 underline underline-offset-4"
+              >
+                {localPhone(SITE.contact.phone)}
+              </TelLink>{" "}
+              и ни кажете.
+            </p>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {listings && (
+            <Link href="/obyavi/nova" className="btn-secondary">
+              Пуснете обява
+            </Link>
+          )}
+          {events && (
+            <Link href="/kontakti" className="btn-secondary">
+              Кажете ни за събитие
+            </Link>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default async function HomePage() {
-  const [topFaqs, emergency, events, listings, businesses, banners] = await Promise.all([
-    prisma.faq.findMany({
-      where: { published: true },
-      orderBy: [{ order: "asc" }, { views: "desc" }],
-      take: 6,
-    }),
-    prisma.service.findMany({
-      where: { published: true, isEmergency: true },
-      orderBy: { order: "asc" },
-      take: 6,
-    }),
-    prisma.event.findMany({
-      where: { published: true, startAt: { gte: new Date() } },
-      orderBy: { startAt: "asc" },
-      take: 3,
-    }),
-    prisma.listing.findMany({
-      where: {
-        published: true,
-        OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }],
-      },
-      orderBy: { createdAt: "desc" },
-      take: 4,
-    }),
-    prisma.business.findMany({
-      where: { published: true, featured: true },
-      orderBy: { order: "asc" },
-      take: 4,
-    }),
-    prisma.banner.findMany({
-      where: { published: true },
-      orderBy: { order: "asc" },
-      take: 4,
-    }),
+  const now = new Date();
+  const [
+    topFaqs,
+    emergency,
+    events,
+    listings,
+    businesses,
+    banners,
+    dutyToday,
+    outageRows,
+    latestPosts,
+    viberUrl,
+  ] = await Promise.all([
+    getTopFaqs(),
+    getEmergencyServices(),
+    getUpcomingEvents(),
+    getLatestListings(),
+    getFeaturedBusinesses(),
+    getBanners(),
+    orEmpty("дежурна аптека", getDutyToday()),
+    orEmpty("прекъсвания", getOutagesTodayTomorrow()),
+    orEmpty("новини", getLatestPosts()),
+    getViberChannelUrl(),
   ]);
 
   // Винаги показваме 4 слота: запълнените с реклами, останалите — покана.
   const bannerSlots = Array.from({ length: 4 }, (_, i) => banners[i] ?? null);
+
+  const latest = latestPosts[0];
+  const todayNews = latest ? { slug: latest.slug, title: latest.title, date: newsDate(latest) } : null;
 
   return (
     <>
@@ -244,10 +314,18 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Време и календар (днешен имен ден/празник) */}
-      <div className="container-content grid gap-4 pt-6 md:grid-cols-2">
-        <WeatherWidget />
-        <TodayCalendar />
+      {/* „Днес в Бобов дол“ — дата и имен ден, дежурна аптека, спиране на ток
+          и вода, следващ автобус, последна новина. Над плочките. */}
+      <div className="container-content pt-6">
+        <TodayPanel
+          now={now}
+          calendar={todayCalendar(now)}
+          duty={dutyToday}
+          outages={pickTodayOutages(outageRows, now)}
+          buses={nextBuses(BUS.directions, now)}
+          news={todayNews}
+          aside={<WeatherWidget />}
+        />
       </div>
 
       {/* Бързи раздели. PRIMARY_NAV е подреден по важност, затова първите шест
@@ -305,6 +383,24 @@ export default async function HomePage() {
         </div>
       </Section>
 
+      {/* „Последно от общината“ — само ако има публикувани новини. */}
+      <LatestNews />
+
+      {/* Абониране — ненатрапчива лента към известията (и Viber, ако го има). */}
+      <section aria-label="Известия на телефона" className="container-content pb-10">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-2xl border border-brand-200 bg-brand-50 px-5 py-4">
+          <p className="min-w-[14rem] flex-1 text-lg text-slate-800">
+            Искате ли да ви казваме, когато спира токът или има нова измама?
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/izvestiya" className="btn-secondary min-h-[44px]">
+              Включете известията
+            </Link>
+            {viberUrl && <ViberButton url={viberUrl} />}
+          </div>
+        </div>
+      </section>
+
       {/* Рекламни банери (4 слота) */}
       <Section title="Реклама" href="/reklama" hrefLabel="Рекламирайте при нас" tone="muted">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -351,74 +447,75 @@ export default async function HomePage() {
         )}
       </Section>
 
-      {/* Събития и обяви */}
-      <div className="bg-white">
-        <div className="container-content grid gap-10 py-10 lg:grid-cols-2">
-          <div>
-            <div className="mb-5 flex items-end justify-between">
-              <h2 className="text-2xl font-bold">Предстоящи събития</h2>
-              <Link href="/sabitiya" className="text-sm font-medium text-brand-700">
-                Всички →
-              </Link>
-            </div>
-            {events.length === 0 ? (
-              <EmptyState title="Няма обявени събития в момента." />
-            ) : (
-              <ul className="space-y-3">
-                {events.map((e) => (
-                  <li key={e.id}>
-                    <Link
-                      href={`/sabitiya/${e.slug}`}
-                      className="card block"
-                    >
-                      <div className="text-sm font-medium text-brand-700">
-                        {formatDate(e.startAt)}
-                      </div>
-                      <div className="text-lg font-semibold">{e.title}</div>
-                      {e.location && (
-                        <div className="text-sm text-slate-600">{e.location}</div>
-                      )}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div>
-            <div className="mb-5 flex items-end justify-between">
-              <h2 className="text-2xl font-bold">Последни обяви</h2>
-              <Link href="/obyavi" className="text-sm font-medium text-brand-700">
-                Всички →
-              </Link>
-            </div>
-            {listings.length === 0 ? (
-              <EmptyState
-                title="Още няма обяви."
-                hint="Бъдете първите — публикувайте безплатна обява."
-              />
-            ) : (
-              <ul className="space-y-3">
-                {listings.map((l) => (
-                  <li key={l.id}>
-                    <Link href={`/obyavi/${l.slug}`} className="card block">
-                      <div className="text-lg font-semibold">{l.title}</div>
-                      <p className="text-sm text-slate-600">
-                        {plainText(l.description, 100)}
-                      </p>
-                      {l.price && (
-                        <div className="mt-1 font-semibold text-brand-700">
-                          {l.price}
+      {/* Събития и обяви — показват се само ако има какво (по брой, както
+          „Местен бизнес“). Празен раздел → лента „Помогнете ни да я напълним“. */}
+      {(events.length > 0 || listings.length > 0) && (
+        <div className="bg-white">
+          <div
+            className={
+              "container-content grid gap-10 py-10" +
+              (events.length > 0 && listings.length > 0 ? " lg:grid-cols-2" : "")
+            }
+          >
+            {events.length > 0 && (
+              <div>
+                <div className="mb-5 flex items-end justify-between">
+                  <h2 className="text-2xl font-bold">Предстоящи събития</h2>
+                  <Link href="/sabitiya" className="text-sm font-medium text-brand-700">
+                    Всички →
+                  </Link>
+                </div>
+                <ul className="space-y-3">
+                  {events.map((e) => (
+                    <li key={e.id}>
+                      <Link href={`/sabitiya/${e.slug}`} className="card block">
+                        <div className="text-sm font-medium text-brand-700">
+                          {formatDate(e.startAt)}
                         </div>
-                      )}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+                        <div className="text-lg font-semibold">{e.title}</div>
+                        {e.location && (
+                          <div className="text-sm text-slate-600">{e.location}</div>
+                        )}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {listings.length > 0 && (
+              <div>
+                <div className="mb-5 flex items-end justify-between">
+                  <h2 className="text-2xl font-bold">Последни обяви</h2>
+                  <Link href="/obyavi" className="text-sm font-medium text-brand-700">
+                    Всички →
+                  </Link>
+                </div>
+                <ul className="space-y-3">
+                  {listings.map((l) => (
+                    <li key={l.id}>
+                      <Link href={`/obyavi/${l.slug}`} className="card block">
+                        <div className="text-lg font-semibold">{l.title}</div>
+                        <p className="text-sm text-slate-600">
+                          {plainText(l.description, 100)}
+                        </p>
+                        {l.price && (
+                          <div className="mt-1 font-semibold text-brand-700">
+                            {l.price}
+                          </div>
+                        )}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
         </div>
-      </div>
+      )}
+      {(events.length === 0 || listings.length === 0) && (
+        <FillStrip events={events.length === 0} listings={listings.length === 0} />
+      )}
 
       {/* Местен бизнес */}
       {businesses.length > 0 && (
