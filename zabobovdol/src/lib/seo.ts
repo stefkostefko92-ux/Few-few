@@ -5,6 +5,21 @@ export function canonical(path = "/"): string {
   return `${SITE.url}${path === "/" ? "" : path}`;
 }
 
+// Марката винаги е сред ключовите думи (правило на репото: ≥5, едната „Carbon Stealth“).
+export const BRAND_KEYWORD = "Carbon Stealth";
+
+export function withBrandKeyword(keywords: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const k of [...keywords, BRAND_KEYWORD]) {
+    const t = k.trim();
+    if (!t || seen.has(t.toLowerCase())) continue;
+    seen.add(t.toLowerCase());
+    out.push(t);
+  }
+  return out;
+}
+
 // Базови метаданни, наследявани и допълвани от всяка страница.
 export function buildMetadata(opts: {
   title?: string;
@@ -12,7 +27,11 @@ export function buildMetadata(opts: {
   path?: string;
   type?: "website" | "article";
   noindex?: boolean;
+  /** Само с noindex: връзките от страницата пак да се следват (напр. филтри). */
+  follow?: boolean;
   images?: string[];
+  /** Ключови думи на страницата; „Carbon Stealth“ се добавя, ако липсва. */
+  keywords?: string[];
 }): Metadata {
   const title = opts.title;
   const description = opts.description ?? SITE.description;
@@ -30,9 +49,10 @@ export function buildMetadata(opts: {
   return {
     title,
     description,
+    ...(opts.keywords?.length ? { keywords: withBrandKeyword(opts.keywords) } : {}),
     alternates: { canonical: url },
     robots: opts.noindex
-      ? { index: false, follow: false }
+      ? { index: false, follow: opts.follow ?? false }
       : { index: true, follow: true, "max-image-preview": "large" },
     openGraph: {
       type: opts.type ?? "website",
@@ -58,6 +78,55 @@ export function buildMetadata(opts: {
 // страници), за да изградят търсачките/AI ясна „карта на знанието".
 export const ORG_ID = `${SITE.url}/#organization`;
 export const WEBSITE_ID = `${SITE.url}/#website`;
+export const CITY_ID = `${SITE.url}/#city`;
+export const MUNICIPALITY_ID = `${SITE.url}/#municipality`;
+
+// Идентичност на ГРАДА (не на портала) — проверено ръчно на 23.10.2026 в
+// Wikidata (Special:EntityData/Q405175: „city in Bobov dol municipality,
+// Kyustendil oblast, Bulgaria“, P17 = Q219 България, P131 = Q2401761 общината)
+// и в bg.wikipedia (REST summary „Бобов дол“ → wikibase_item Q405175).
+// sameAs означава „същият обект“, затова стои САМО на възела City. Сайтът на
+// общината НЕ е sameAs на нашата Organization — ние не сме общината.
+export const CITY_SAME_AS = [
+  "https://www.wikidata.org/wiki/Q405175",
+  "https://bg.wikipedia.org/wiki/%D0%91%D0%BE%D0%B1%D0%BE%D0%B2_%D0%B4%D0%BE%D0%BB",
+  "https://en.wikipedia.org/wiki/Bobov_Dol",
+] as const;
+// Община Бобов дол като територия (Wikidata Q2401761, „municipality in
+// Kyustendil oblast, Bulgaria“) — пак само обектът в Wikidata, не сайт.
+export const MUNICIPALITY_SAME_AS = ["https://www.wikidata.org/wiki/Q2401761"] as const;
+
+function municipalityNode() {
+  return {
+    "@type": "AdministrativeArea",
+    "@id": MUNICIPALITY_ID,
+    name: `Община ${SITE.geo.city}`,
+    sameAs: [...MUNICIPALITY_SAME_AS],
+    containedInPlace: { "@type": "AdministrativeArea", name: SITE.geo.region },
+  };
+}
+
+function cityNode() {
+  return {
+    "@type": "City",
+    "@id": CITY_ID,
+    name: SITE.geo.city,
+    sameAs: [...CITY_SAME_AS],
+    containedInPlace: { "@id": MUNICIPALITY_ID },
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: SITE.geo.city,
+      addressRegion: SITE.geo.region,
+      postalCode: SITE.geo.postalCode,
+      addressCountry: SITE.geo.countryCode,
+    },
+  };
+}
+
+/** Самостоятелен възел „град Бобов дол“ (напр. за /grada). */
+export function cityLd() {
+  return { "@context": "https://schema.org", ...cityNode() };
+}
 
 export function organizationLd(opts?: { sameAs?: string[] }) {
   const sameAs = (opts?.sameAs ?? []).filter(Boolean);
@@ -90,10 +159,9 @@ export function organizationLd(opts?: { sameAs?: string[] }) {
       `обществен транспорт в ${SITE.geo.city}`,
       "преходът към еврото в България",
     ],
-    areaServed: [
-      { "@type": "AdministrativeArea", name: `Община ${SITE.geo.city}` },
-      { "@type": "City", name: SITE.geo.city },
-    ],
+    // Пълните възли на общината и града се описват тук веднъж (layout ги
+    // слага на всяка страница); другаде се сочат само по @id.
+    areaServed: [municipalityNode(), cityNode()],
     address: {
       "@type": "PostalAddress",
       addressLocality: SITE.geo.city,
@@ -128,6 +196,7 @@ export function websiteLd() {
     description: SITE.description,
     inLanguage: "bg",
     publisher: { "@id": ORG_ID },
+    about: { "@id": CITY_ID },
     potentialAction: {
       "@type": "SearchAction",
       target: {
@@ -292,24 +361,42 @@ export function itemListLd(
   };
 }
 
-// Инструкция със стъпки — за HowTo богати резултати и AI извличане на стъпки.
+// Инструкция със стъпки — за AI извличане на стъпки (HowTo звезди Google вече
+// не показва). Дата и автор се дават САМО при реална проверка от човек
+// (`reviewedAt`), никога от updatedAt — иначе лъжем, че е проверено днес.
 export function howToLd(h: {
   name: string;
   description?: string;
   steps: string[];
   url: string;
+  /** ISO дата на последната реална проверка (Faq.reviewedAt). */
+  reviewedAt?: string;
 }) {
   return {
     "@context": "https://schema.org",
     "@type": "HowTo",
     name: h.name,
+    url: h.url,
+    inLanguage: "bg",
     ...(h.description ? { description: h.description } : {}),
+    ...(h.reviewedAt ? { dateModified: h.reviewedAt, author: { "@id": ORG_ID } } : {}),
     step: h.steps.map((s, i) => ({
       "@type": "HowToStep",
       position: i + 1,
       text: s,
     })),
   };
+}
+
+// Най-новата от реалните дати за `lastmod` в sitemap — никога „сега“.
+// Празни/невалидни стойности се прескачат; без нито една дата → `fallback`.
+export function latestDate(dates: (Date | null | undefined)[], fallback: Date): Date {
+  let best: number | null = null;
+  for (const d of dates) {
+    const t = d instanceof Date ? d.getTime() : NaN;
+    if (Number.isFinite(t) && (best === null || t > best)) best = t;
+  }
+  return best === null ? fallback : new Date(best);
 }
 
 export function eventLd(e: {
