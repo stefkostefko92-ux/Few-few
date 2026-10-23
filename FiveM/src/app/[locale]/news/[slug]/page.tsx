@@ -57,7 +57,7 @@ export default async function PostPage({ params }: Params) {
       <nav aria-label={t.common.breadcrumbLabel} className="text-sm text-silver-400">
         <Link
           href={`/${locale}/news`}
-          className="inline-flex min-h-6 items-center underline underline-offset-4 hover:text-cyan-300"
+          className="link-quiet inline-flex min-h-6 items-center"
         >
           {t.news.h1}
         </Link>
@@ -82,7 +82,7 @@ export default async function PostPage({ params }: Params) {
       {post.excerpt && <p className="mt-6 text-lg leading-relaxed text-silver-200">{post.excerpt}</p>}
 
       {/* Съдържанието е наше и се рендира като чист текст — без dangerouslySetInnerHTML. */}
-      <div className="mt-8 space-y-5 border-t border-white/10 pt-8 text-[1.0625rem] leading-[1.75] text-silver-300">
+      <div className="mt-10 space-y-5 border-t border-white/[0.08] pt-10 text-[1.0625rem] leading-[1.8] text-silver-300">
         {paragraphs.map((paragraph, index) => (
           <p key={index} className="whitespace-pre-line">
             {paragraph}

@@ -40,7 +40,7 @@ export default async function AdminLayout({
         {authed && (
           <form action={logoutAction}>
             <input type="hidden" name="locale" value={locale} />
-            <button className="rounded-lg border border-white/15 px-3 py-1.5 text-sm hover:border-cyan-500">
+            <button className="rounded-lg border border-white/[0.12] px-3 py-1.5 text-sm hover:border-cyan-500">
               Изход
             </button>
           </form>
@@ -53,7 +53,7 @@ export default async function AdminLayout({
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-2 rounded-lg border border-white/15 py-1.5 pe-3 ps-2 hover:border-cyan-500 hover:text-cyan-300"
+              className="flex items-center gap-2 rounded-lg border border-white/[0.12] py-1.5 pe-3 ps-2 hover:border-cyan-500 hover:text-cyan-300"
             >
               <Badge name={item.badge} size={24} />
               {item.label}

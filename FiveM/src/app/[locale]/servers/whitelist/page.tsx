@@ -72,7 +72,7 @@ export default async function WhitelistPage({ params, searchParams }: Props) {
       <nav aria-label={t.common.breadcrumbLabel} className="text-sm text-silver-500">
         <Link
           href={`/${locale}/servers`}
-          className="inline-flex min-h-6 items-center underline underline-offset-4 hover:text-cyan-300"
+          className="link-quiet inline-flex min-h-6 items-center"
         >
           {t.server.breadcrumb}
         </Link>{' '}
@@ -82,18 +82,18 @@ export default async function WhitelistPage({ params, searchParams }: Props) {
       <h1 className="page-title mt-3">
         {copy.title}
       </h1>
-      <p className="mt-3 max-w-2xl text-silver-400">{copy.intro}</p>
+      <p className="lead mt-4">{copy.intro}</p>
 
       {servers.length === 0 ? (
         <p className="mt-8 text-silver-400">
           {copy.empty}{' '}
-          <Link href={`/${locale}/submit`} className="text-cyan-300 underline underline-offset-2">
+          <Link href={`/${locale}/submit`} className="link">
             {copy.cta}
           </Link>
           .
         </p>
       ) : (
-        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {current.items.map((server) => (
             <ServerCard key={server.slug} server={server} locale={locale} t={t} />
           ))}

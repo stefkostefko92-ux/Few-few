@@ -28,17 +28,17 @@ export default async function ImpresumPage({ params }: Props) {
 
   const row = 'flex flex-col gap-0.5 sm:flex-row sm:gap-4';
   const key = 'min-w-[13rem] font-medium text-silver-100';
-  const link = 'text-cyan-300 underline underline-offset-2';
+  const link = 'link';
 
   return (
-    <article className="max-w-2xl">
+    <article className="max-w-3xl">
       <h1 className="page-title">
         {l.title}
       </h1>
-      <p className="mt-2 text-sm text-silver-500">{l.lead}</p>
+      <p className="lead mt-5">{l.lead}</p>
 
-      <section className="mt-8 space-y-2 text-silver-300">
-        <h2 className="text-xl font-semibold text-silver-100">{l.publisher}</h2>
+      <section className="panel mt-10 space-y-2 p-6 text-silver-300 sm:p-8">
+        <h2 className="font-display text-xl font-semibold tracking-[-0.015em] text-silver-100">{l.publisher}</h2>
         <div className={row}>
           <span className={key}>{l.legalName}</span>
           <span>{PUBLISHER.legalName}</span>
@@ -83,8 +83,8 @@ export default async function ImpresumPage({ params }: Props) {
         </div>
       </section>
 
-      <section className="mt-10 space-y-3 text-silver-300">
-        <h2 className="text-xl font-semibold text-silver-100">{l.dsaHeading}</h2>
+      <section className="panel mt-4 space-y-3 p-6 leading-relaxed text-silver-300 sm:p-8">
+        <h2 className="font-display text-xl font-semibold tracking-[-0.015em] text-silver-100">{l.dsaHeading}</h2>
         <p>
           {l.dsaBody} {CONTACT_LANGUAGES_LABEL[locale]}.{' '}
           <a className={link} href={`mailto:${PUBLISHER.email}`}>
@@ -99,8 +99,8 @@ export default async function ImpresumPage({ params }: Props) {
         </p>
       </section>
 
-      <section className="mt-10 space-y-3 text-silver-300">
-        <h2 className="text-xl font-semibold text-silver-100">{l.authorities}</h2>
+      <section className="panel mt-4 space-y-3 p-6 leading-relaxed text-silver-300 sm:p-8">
+        <h2 className="font-display text-xl font-semibold tracking-[-0.015em] text-silver-100">{l.authorities}</h2>
         <ul className="list-disc space-y-1 pl-5">
           <li>Комисия за защита на потребителите (КЗП) — kzp.bg</li>
           <li>Комисия за защита на личните данни (КЗЛД) — cpdp.bg</li>
@@ -114,8 +114,8 @@ export default async function ImpresumPage({ params }: Props) {
         </p>
       </section>
 
-      <section className="mt-10 space-y-3 text-silver-300">
-        <h2 className="text-xl font-semibold text-silver-100">{l.trademarks}</h2>
+      <section className="panel mt-4 space-y-3 p-6 leading-relaxed text-silver-300 sm:p-8">
+        <h2 className="font-display text-xl font-semibold tracking-[-0.015em] text-silver-100">{l.trademarks}</h2>
         <p>{t.footer.disclaimer}</p>
       </section>
     </article>

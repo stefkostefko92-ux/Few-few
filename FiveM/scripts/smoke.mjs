@@ -162,7 +162,7 @@ check(
 const header = (html) => html.slice(html.indexOf('<header'), html.indexOf('</header>'));
 for (const path of ['/bg/rules', '/en/rules']) {
   const h = header(await get(path));
-  check(h.includes('/brand/logo.png'), `${path}: логото е в хедъра`);
+  check(h.includes('/brand/logo-alpha.png'), `${path}: логото е в хедъра`);
   check(h.includes('aria-expanded="false"'), `${path}: хамбургерът обявява състояние (aria-expanded)`);
   check(h.includes('aria-controls'), `${path}: хамбургерът сочи панела, който отваря`);
   // Без `aria-current` екранният четец обявява седем еднакви връзки без нито

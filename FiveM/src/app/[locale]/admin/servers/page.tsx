@@ -11,7 +11,7 @@ import { isFeatured } from '@/lib/rating';
 export const dynamic = 'force-dynamic';
 
 const FRAMEWORKS: FrameworkId[] = ['ESX', 'QBCORE', 'QBOX', 'OX_CORE', 'STANDALONE', 'UNKNOWN'];
-const input = 'w-full rounded border border-white/15 bg-ink-900 px-2 py-1 text-sm text-silver-100';
+const input = 'field mt-0 rounded-lg px-2.5 py-1.5 text-sm';
 
 type Props = { params: Promise<{ locale: string }>; searchParams: Promise<{ q?: string }> };
 
@@ -36,7 +36,7 @@ export default async function AdminServers({ params, searchParams }: Props) {
     <div>
       <form className="flex max-w-sm gap-2">
         <input name="q" defaultValue={q} placeholder="Търси по име" className={input} />
-        <button className="rounded border border-white/15 px-3 text-sm hover:border-cyan-500">
+        <button className="rounded border border-white/[0.12] px-3 text-sm hover:border-cyan-500">
           Търси
         </button>
       </form>
@@ -46,7 +46,7 @@ export default async function AdminServers({ params, searchParams }: Props) {
 
       <ul className="mt-6 space-y-4">
         {servers.map((server) => (
-          <li key={server.id} className="rounded-xl border border-white/10 bg-ink-900/70 p-4">
+          <li key={server.id} className="panel p-5">
             <div className="flex flex-wrap items-center gap-3">
               <Badge name={FRAMEWORK_ICON[server.framework as FrameworkId]} size={28} />
               <Badge name={STATUS_ICON[server.lastProbe]} size={24} />
@@ -59,7 +59,7 @@ export default async function AdminServers({ params, searchParams }: Props) {
                 </span>
               )}
               {server.source === 'DISCOVERED' && (
-                <span className="rounded border border-white/15 px-2 py-0.5 text-xs text-silver-500">
+                <span className="rounded border border-white/[0.12] px-2 py-0.5 text-xs text-silver-500">
                   открит автоматично
                 </span>
               )}
@@ -83,7 +83,7 @@ export default async function AdminServers({ params, searchParams }: Props) {
                   <span className="text-silver-500">Промоция (дни)</span>
                   <input name="days" type="number" min={0} max={365} defaultValue={0} className={input} />
                 </label>
-                <button className="rounded bg-cyan-500 px-3 py-1 font-medium text-ink-950 hover:bg-cyan-400">
+                <button className="btn-primary min-h-9 rounded-lg px-3 text-sm">
                   Приложи
                 </button>
                 <span className="text-silver-500">0 спира промоцията</span>
@@ -137,7 +137,7 @@ export default async function AdminServers({ params, searchParams }: Props) {
                   whitelist
                 </label>
                 <div className="sm:col-span-2">
-                  <button className="rounded border border-white/15 px-3 py-1 text-sm hover:border-cyan-500">
+                  <button className="rounded border border-white/[0.12] px-3 py-1 text-sm hover:border-cyan-500">
                     Запази
                   </button>
                 </div>

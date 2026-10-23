@@ -93,15 +93,18 @@ src/lib/server-registry.ts  Prisma: applyIdentityPlan (пише canonicalId),
 src/lib/pagination.ts   ЧИСТО: ?page= за каталога (48 на страница).
 scripts/dedupe-servers.ts  Преглед на плана и на броя индексирани (само чете;
                         `--apply` пише). `npm run servers:dedupe`.
-src/app/[locale]/page.tsx        LANDING „ПЛАКАТ“: герой на цяла ширина (кадър + хром
-                        заглавие + трикольорът като носеща греда), живи числа в
-                        един ред с тънки черти, КЛАСАЦИЯ от 6 сървъра
-                        (`ServerRow`, не карти), „защо тук“, „как работи“,
-                        стриймъри, новини, FAQ („отговор отпред“ за AI
-                        отговарачите). Героят излиза от контейнера с
-                        `mx-[calc(50%-50vw)] w-screen` — затова ОБВИВКАТА на
-                        `main` носи `overflow-x-clip`, не самият `main` (той е
-                        1152 px и клип върху него реже героя на широк екран;
+src/app/[locale]/page.tsx        LANDING „НОЩЕН ЕФИР“: герой на цяла ширина (кадър + хром
+                        заглавие + трикольорът като носеща греда + живите числа)
+                        и до него ЖИВОТО ТАБЛО — класацията от 6 сървъра
+                        (`ServerRow`, не карти) в панел с хромов кант; после
+                        „защо тук“, „как работи“, стриймъри + Discord, новини,
+                        FAQ като родни `details` („отговор отпред“ за AI
+                        отговарачите). Слоевете на фона са `-z-10` в секция с
+                        `isolate` — без него падат ПОД атмосферата на `body`.
+                        Героят излиза от контейнера с `mx-[calc(50%-50vw)]
+                        w-screen` — затова ОБВИВКАТА на `main` носи
+                        `overflow-x-clip`, не самият `main` (той е `max-w-site`,
+                        1280 px, и клип върху него реже героя на широк екран;
                         виж коментара в `layout.tsx`).
 src/app/[locale]/servers/        ПЪЛНИЯТ каталог — филтри, търсене, подредба. Дотук беше
                         на началната; двете искат различно от посетителя.
@@ -130,7 +133,7 @@ src/components/MobileNav.tsx  Хамбургерът (под `xl`). Клиент
                         `children` и се рендира на сървъра, защото `Icon` чете
                         от диска и не може да се изпълни в браузъра.
 src/components/NavLink.tsx  Връзка с `aria-current="page"` (иска `usePathname`).
-src/components/ServerRow.tsx  Ред от класацията на НАЧАЛНАТА — редакционен, не
+src/components/ServerRow.tsx  Ред от ЖИВОТО ТАБЛО на НАЧАЛНАТА — редакционен, не
                         карта. Съществува ЕДНОВРЕМЕННО с `ServerCard` нарочно:
                         каталогът `/servers` иска решетка за сравняване, а
                         началната — четене отгоре надолу. Смениш ли единия,
@@ -145,11 +148,22 @@ src/app/[locale]/[...rest]/  Catch-all → `notFound()`: непознат адр
                         рендира НАШАТА 404 (с lang, хедър, път назад), не
                         бялата на Next. `not-found.tsx` няма `params` — езикът
                         идва от `LOCALE_HEADER`, който middleware ЗАДАВА.
-src/app/globals.css     Unbounded (SIL OFL, самохостнат, cyrillic+latin
-                        подмножества, `swap`; LCP подмножеството се `preload`-ва в
-                        layout-а). Без Google Fonts — ГДПР. `.page-title` и
-                        `.section-title` са единствената скала за заглавия;
-                        хромът (`.text-chrome`) е САМО на героя на началната.
+src/app/globals.css     ДИЗАЙН СИСТЕМАТА „Нощен ефир“. Шрифтове: Unbounded
+                        (заглавия, числа) + Onest (текст) — SIL OFL, самохостнати,
+                        cyrillic+latin, `swap`, LCP сабсетите се `preload`-ват в
+                        layout-а. Без Google Fonts — ГДПР. Атмосферата е в
+                        `body::before/::after` (фиксирани, `z-index: -1`).
+                        Компоненти: `.page-title`/`.section-title`/`.lead`
+                        (единствената скала), `.panel` и `.panel-chrome` (САМО за
+                        отличения елемент в група), `.btn-primary`/`.btn-ghost`,
+                        `.field`/`.field-label`/`.field-help`, `.chip`,
+                        `.tag-promoted`, `.link`/`.link-quiet`, `.live-dot`,
+                        `.gauge`, `.prose-doc`, `.faq-item`. Нов изглед се сглобява
+                        от тях, не от низ класове. Хромът (`.text-chrome`) е САМО
+                        на героите (началната, страницата на сървъра).
+scripts/logo-alpha.mjs  `public/brand/logo.png` е на черен фон без алфа →
+                        `logo-alpha.png` (unmultiply). Хедърът и подвалът ползват
+                        прозрачното. Пуска се ръчно при смяна на логото.
 src/components/PlayersChart.tsx  24 HTML колони (flex), НЕ разтегнат SVG — SVG с
                         фиксирана височина се мащабираше по височина и стоеше
                         като тясна ивица в средата на широк екран.

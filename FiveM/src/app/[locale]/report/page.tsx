@@ -11,7 +11,7 @@ type Props = {
   searchParams: Promise<{ ok?: string; error?: string; url?: string }>;
 };
 
-const field = 'mt-1 w-full rounded-lg border border-white/15 bg-ink-900 px-3 py-2 text-silver-100';
+const field = 'field';
 
 export async function generateMetadata({ params }: Pick<Props, 'params'>) {
   const { locale: raw } = await params;
@@ -34,28 +34,33 @@ export default async function ReportPage({ params, searchParams }: Props) {
   const message = errorMessage(error, t);
 
   return (
-    <div className="max-w-xl">
+    <div className="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
+      {/* Две колони на широк екран: обяснението остава до формата, докато
+          човек я попълва — точно тогава се чудиш „какво става после“. */}
+      <header className="lg:sticky lg:top-28 lg:self-start">
       <h1 className="page-title">
         {t.report.h1}
       </h1>
-      <p className="mt-3 text-silver-400">{t.report.intro}</p>
+      <p className="lead mt-5">{t.report.intro}</p>
+      </header>
+      <div className="min-w-0">
 
       {ok && (
-        <p role="status" className="mt-6 rounded-lg border border-cyan-600 bg-ink-900 p-3">
+        <p role="status" className="mb-6 rounded-xl border border-cyan-300/30 bg-cyan-400/[0.07] p-4 text-cyan-100">
           {t.report.ok}
         </p>
       )}
       {message && (
-        <p role="alert" className="mt-6 rounded-lg border border-red-500/60 bg-red-950/40 p-3">
+        <p role="alert" className="mb-6 rounded-xl border border-red-400/40 bg-red-950/40 p-4 text-red-100">
           {message}
         </p>
       )}
 
-      <form action={submitReportAction} className="mt-8 space-y-5">
-        <input type="hidden" name="locale" value={locale} />
+      <form action={submitReportAction} className="panel space-y-6 p-6 sm:p-8">
+        <input type="hidden" hidden name="locale" value={locale} />
 
         <div>
-          <label htmlFor="targetUrl">{t.report.urlLabel}</label>
+          <label htmlFor="targetUrl" className="field-label">{t.report.urlLabel}</label>
           <input
             id="targetUrl"
             name="targetUrl"
@@ -66,13 +71,13 @@ export default async function ReportPage({ params, searchParams }: Props) {
             className={field}
             aria-describedby="target-help"
           />
-          <p id="target-help" className="mt-1 text-sm text-silver-500">
+          <p id="target-help" className="field-help">
             {t.report.urlHelp}
           </p>
         </div>
 
         <div>
-          <label htmlFor="reason">{t.report.reasonLabel}</label>
+          <label htmlFor="reason" className="field-label">{t.report.reasonLabel}</label>
           <textarea
             id="reason"
             name="reason"
@@ -83,7 +88,7 @@ export default async function ReportPage({ params, searchParams }: Props) {
             className={field}
             aria-describedby="reason-help"
           />
-          <p id="reason-help" className="mt-1 text-sm text-silver-500">
+          <p id="reason-help" className="field-help">
             {t.report.reasonHelp}
           </p>
         </div>
@@ -93,7 +98,7 @@ export default async function ReportPage({ params, searchParams }: Props) {
             Безусловно задължителните полета бяха по-ограничителни от закона и
             възпираха точно най-тежкия сигнал — затова изключението стои ПРЕДИ
             тях, а не скрито в дребен шрифт отдолу. */}
-        <div className="flex items-start gap-3 rounded-lg border border-white/15 p-3">
+        <div className="flex items-start gap-3 rounded-xl border border-white/[0.1] bg-white/[0.02] p-4">
           <input
             id="anonymousAllowed"
             name="anonymousAllowed"
@@ -112,12 +117,12 @@ export default async function ReportPage({ params, searchParams }: Props) {
         </div>
 
         <div>
-          <label htmlFor="reporterName">{t.report.nameLabel}</label>
+          <label htmlFor="reporterName" className="field-label">{t.report.nameLabel}</label>
           <input id="reporterName" name="reporterName" maxLength={120} className={field} />
         </div>
 
         <div>
-          <label htmlFor="reporterEmail">{t.report.emailLabel}</label>
+          <label htmlFor="reporterEmail" className="field-label">{t.report.emailLabel}</label>
           <input
             id="reporterEmail"
             name="reporterEmail"
@@ -126,9 +131,9 @@ export default async function ReportPage({ params, searchParams }: Props) {
             className={field}
             aria-describedby="email-help"
           />
-          <p id="email-help" className="mt-1 text-sm text-silver-500">
+          <p id="email-help" className="field-help">
             {t.report.emailHelp}{' '}
-            <Link href={`/${locale}/privacy`} className="text-cyan-300 underline underline-offset-2">
+            <Link href={`/${locale}/privacy`} className="link">
               {t.report.emailHelpLink}
             </Link>
             .
@@ -157,7 +162,7 @@ export default async function ReportPage({ params, searchParams }: Props) {
 
         <button
           type="submit"
-          className="rounded-lg bg-cyan-500 px-4 py-2 font-medium text-ink-950 hover:bg-cyan-400"
+          className="btn-primary"
         >
           {t.report.submitButton}
         </button>
@@ -167,12 +172,13 @@ export default async function ReportPage({ params, searchParams }: Props) {
         {t.report.mailFallback}{' '}
         <a
           href={`mailto:${PUBLISHER.email}`}
-          className="text-cyan-300 underline underline-offset-2"
+          className="link"
         >
           {PUBLISHER.email}
         </a>
         . {t.report.mailTail}
       </p>
+      </div>
     </div>
   );
 }

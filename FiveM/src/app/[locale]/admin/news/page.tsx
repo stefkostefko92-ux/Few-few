@@ -7,8 +7,8 @@ import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-const input = 'w-full rounded border border-white/15 bg-ink-900 px-2 py-1 text-sm text-silver-100';
-const button = 'rounded border border-white/15 px-3 py-1 text-sm hover:border-cyan-500';
+const input = 'field mt-0 rounded-lg px-2.5 py-1.5 text-sm';
+const button = 'rounded border border-white/[0.12] px-3 py-1 text-sm hover:border-cyan-500';
 
 function formatDate(value: Date | null): string {
   return value ? value.toISOString().slice(0, 16).replace('T', ' ') : '—';
@@ -28,7 +28,7 @@ export default async function AdminNews({ params }: { params: Promise<{ locale: 
 
   return (
     <div>
-      <p className="rounded-lg border border-cyan-700/40 bg-cyan-900/10 p-4 text-sm text-silver-300">
+      <p className="rounded-2xl border border-cyan-300/20 bg-cyan-400/[0.05] p-5 text-sm leading-relaxed text-silver-300">
         Новината се създава като <strong>чернова</strong> и излиза публично чак с „Публикувай“ —
         нищо не става видимо от само себе си. Езикът има значение: текст на български, обявен като
         английски, кара sitemap-а да лъже търсачките, че има превод.
@@ -40,7 +40,7 @@ export default async function AdminNews({ params }: { params: Promise<{ locale: 
           <Badge name="news" size={28} /> Нова новина
         </h2>
 
-        <form action={savePostAction} className="mt-3 grid gap-3 rounded-xl border border-white/10 p-4 sm:grid-cols-2">
+        <form action={savePostAction} className="mt-3 grid gap-3 rounded-xl border border-white/[0.08] p-4 sm:grid-cols-2">
           <label className="text-sm">
             Заглавие
             <input name="title" required minLength={3} maxLength={160} className={input} />
@@ -87,7 +87,7 @@ export default async function AdminNews({ params }: { params: Promise<{ locale: 
         ) : (
           <ul className="mt-3 space-y-3">
             {posts.map((post) => (
-              <li key={post.id} className="rounded-xl border border-white/10 p-4">
+              <li key={post.id} className="rounded-xl border border-white/[0.08] p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="font-medium">{post.title}</p>

@@ -64,7 +64,7 @@ export function MobileNav({
         aria-expanded={open}
         aria-controls={panelId}
         aria-label={label}
-        className="flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 text-silver-300 transition-colors hover:border-cyan-500 hover:text-cyan-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
+        className="flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.03] text-silver-200 transition-colors hover:border-cyan-400/60 hover:text-cyan-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
       >
         {/* Иконата е декорация: смисълът е в `aria-label` на бутона. */}
         <span aria-hidden="true">{open ? closeIcon : openIcon}</span>
@@ -82,7 +82,7 @@ export function MobileNav({
         // при едър бял текст върху почти черен фон се вижда отчетливо —
         // менюто ставаше нечетимо на точно най-важния екран. Полупрозрачността
         // остава за хедъра, където отдолу минава ситен текст.
-        className="absolute inset-x-0 top-full z-40 max-h-[calc(100dvh-100%)] overflow-y-auto border-b border-white/10 bg-ink-950 px-4 py-4 shadow-2xl shadow-black/50"
+        className="absolute inset-x-0 top-full z-40 max-h-[calc(100dvh-100%)] overflow-y-auto border-b border-white/[0.08] bg-ink-950/95 px-4 pb-6 pt-3 shadow-2xl shadow-black/60 backdrop-blur-xl"
       >
         {children}
       </div>

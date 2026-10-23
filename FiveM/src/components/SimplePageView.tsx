@@ -7,23 +7,25 @@ import type { PageBlock, SimplePage } from '@/content/pages';
  */
 export function SimplePageView({ page, badge }: { page: SimplePage; badge: string }) {
   return (
-    <article className="max-w-2xl">
-      <div className="flex items-center gap-4">
-        <Badge name={badge} size={48} />
-        <h1 className="page-title">
-          {page.title}
-        </h1>
-      </div>
-      <p className="mt-4 text-silver-400">{page.intro}</p>
+    <article>
+      <header className="max-w-3xl">
+        <div className="flex items-center gap-5">
+          <span className="flex size-16 shrink-0 items-center justify-center rounded-2xl border border-white/[0.1] bg-ink-900 shadow-[0_0_40px_-10px_rgba(60,204,228,0.5)]">
+            <Badge name={badge} size={48} />
+          </span>
+          <h1 className="page-title">{page.title}</h1>
+        </div>
+        <p className="lead mt-6">{page.intro}</p>
+      </header>
 
-      <div className="mt-8 space-y-4 text-silver-300">
+      <div className="hairline mt-10 max-w-3xl" aria-hidden="true" />
+
+      <div className="prose-doc mt-8">
         {page.blocks.map((block: PageBlock, index) =>
           block.h ? (
-            <h2 key={index} className="pt-4 text-xl font-semibold text-silver-100">
-              {block.h}
-            </h2>
+            <h2 key={index}>{block.h}</h2>
           ) : block.ul ? (
-            <ul key={index} className="list-disc space-y-2 pl-5">
+            <ul key={index}>
               {block.ul.map((item) => (
                 <li key={item}>{item}</li>
               ))}

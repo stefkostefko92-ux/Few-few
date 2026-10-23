@@ -171,15 +171,18 @@ export default async function HomePage({ params }: Props) {
 
   return (
     <>
-      {/* ── Герой-плакат ─────────────────────────────────────────────────── */}
-      {/* `-mt-10` изяжда горния отстъп на `main`, за да няма ивица фон между
-          хедъра и кадъра — плакатът започва от самия хедър. */}
-      <section className={`relative -mt-10 overflow-hidden ${FULL_BLEED}`}>
+      {/* ── Герой: плакат + живото табло ─────────────────────────────────── */}
+      {/* Отрицателният горен отстъп изяжда отстъпа на `main`, за да няма ивица
+          фон между хедъра и кадъра — плакатът започва от самия хедър. */}
+      {/* `isolate` е задължителен: слоевете на фона са `-z-10`, а `body::before`
+          (атмосферата) е фиксиран на `z-index: -1`. Без собствен контекст на
+          подреждане снимката пада ПОД атмосферата и изчезва — точно това се
+          случи при първата проба. */}
+      <section className={`relative isolate -mt-10 overflow-hidden sm:-mt-14 ${FULL_BLEED}`}>
         {heroImage ? (
           <>
             {/* Снимката е ФОН, не съдържание → `alt=""` и `aria-hidden`.
-                `priority` е задължителен: това е LCP елементът, а без него Next
-                го зарежда мързеливо и метриката се срива. */}
+                `priority` е задължителен: това е LCP елементът. */}
             <Image
               src={heroImage}
               alt=""
@@ -187,281 +190,264 @@ export default async function HomePage({ params }: Props) {
               fill
               priority
               sizes="100vw"
-              className="pointer-events-none absolute inset-0 -z-10 object-cover"
+              className="pointer-events-none absolute inset-0 -z-10 object-cover object-bottom opacity-90"
             />
-            {/* ДВЕ затъмнения, не едно, и това не е вкус.
-                Вертикалното слива долния ръб на кадъра с фона на страницата —
-                иначе плакатът свършва с видима хоризонтална черта. Горните 72%
-                са полупрозрачни, за да НЕ изчезне снимката (първият опит с
-                равномерно затъмнение по цялата височина я изяде до невидимост).
-                Хоризонталното пази контраста ТАМ, КЪДЕТО СТОИ ТЕКСТЪТ — вляво:
-                над произволен кадър `silver-300` иначе пада под 4,5:1 (1.4.3). */}
+            {/* ДВЕ затъмнения, не едно, и това не е вкус. Вертикалното слива
+                долния ръб на кадъра с фона на страницата — иначе плакатът
+                свършва с видима хоризонтална черта. Хоризонталното пази
+                контраста ТАМ, КЪДЕТО СТОИ ТЕКСТЪТ — вляво: над произволен кадър
+                `silver-300` иначе пада под 4,5:1 (1.4.3). */}
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-ink-950/60 via-transparent to-ink-950"
+              className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-ink-950/60 via-transparent via-60% to-ink-950"
             />
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-ink-950/95 via-ink-950/10 to-transparent"
+              className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-ink-950/90 via-ink-950/35 to-transparent"
             />
           </>
-        ) : (
-          /* Без снимка плакатът пак не е гол: конични/радиални градиенти тежат
-             нула байта и не искат втора заявка. */
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_60%_at_20%_0%,rgba(34,211,238,0.14),transparent_65%),radial-gradient(45%_45%_at_85%_10%,rgba(16,185,129,0.10),transparent_60%)]"
-          />
-        )}
+        ) : null}
+        {/* Цианов ореол зад таблото — „светлината на града“. Нула байта. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(45%_55%_at_78%_45%,rgba(32,168,192,0.20),transparent_70%)]"
+        />
 
-        <div className="mx-auto flex min-h-[26rem] max-w-6xl items-end px-4 pb-14 pt-24 sm:min-h-[34rem] lg:min-h-[41rem]">
+        <div className="mx-auto grid max-w-site items-center gap-12 px-4 pb-16 pt-16 sm:px-6 sm:pb-20 sm:pt-24 lg:min-h-[44rem] lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14 lg:pb-24">
           <div className="flex gap-5 sm:gap-7">
-            {/* Трикольорът като НОСЕЩА греда, не като кант отгоре: същият
-                градиент (`.flag-rule`), само че изправен. */}
-            <div className="flag-rule w-1.5 shrink-0 rounded-full" aria-hidden="true" />
+            {/* Трикольорът като НОСЕЩА греда, не като кант отгоре. */}
+            <div className="flag-rule w-1.5 shrink-0 rounded-full shadow-[0_0_24px_rgba(255,255,255,0.12)]" aria-hidden="true" />
 
-            <div className="max-w-3xl">
+            <div className="min-w-0">
               {/* Без етикет с разредени главни над заглавието: той повтаряше
-                  водещия абзац („четени директно от самите сървъри“) и е
-                  най-честият белег на шаблонна страница. */}
-              <h1 className="font-display text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.03em] sm:text-6xl lg:text-[4.75rem]">
+                  водещия абзац и е най-честият белег на шаблонна страница. */}
+              <h1 className="font-display text-[2.75rem] font-semibold leading-[0.98] tracking-[-0.04em] sm:text-[4.25rem] lg:text-[3.75rem] xl:text-[5.25rem]">
                 <span className="text-chrome">{t.home.h1}</span>
               </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-relaxed text-silver-300 sm:text-xl">
-                {t.home.intro}
-              </p>
+              <p className="lead mt-7">{t.home.intro}</p>
 
-              <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
-                <Link
-                  href={`/${locale}/servers`}
-                  className="rounded-lg bg-cyan-500 px-8 py-3.5 text-base font-semibold text-ink-950 transition-colors hover:bg-cyan-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 sm:text-lg"
-                >
+              <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
+                <Link href={`/${locale}/servers`} className="btn-primary btn-lg">
                   {t.home.ctaBrowse}
                 </Link>
                 <p className="text-silver-400">
                   {t.home.ctaOr}{' '}
                   {/* Отделен ключ, а не `ctaSubmit.toLowerCase()`: смяната на
                       регистър по време на изпълнение е правило за ЕЗИК, не за
-                      низ, и се чупи тихо (турско „I“, немско „ß“, а утре и на
-                      език, на който изречението не започва с малка буква). */}
-                  <Link
-                    href={`/${locale}/submit`}
-                    className="text-cyan-300 underline underline-offset-4 hover:text-cyan-200"
-                  >
+                      низ, и се чупи тихо. */}
+                  <Link href={`/${locale}/submit`} className="link">
                     {t.home.ctaSubmitInline}
                   </Link>
                 </p>
               </div>
+
+              {/* ── Живите числа ─────────────────────────────────────────── */}
+              {servers.length > 0 && (
+                <dl className="mt-12 grid max-w-xl grid-cols-2 gap-y-6 sm:grid-cols-4">
+                  {/* `dt` стои ПРЕДИ `dd` в кода, защото HTML иска точно този ред
+                      вътре в `div` на `dl`; визуално етикетът е подпис ПОД
+                      числото — `flex-col-reverse`, не разместване на маркъпа. */}
+                  {stats.map((stat, index) => (
+                    <div
+                      key={stat.label}
+                      className={`flex flex-col-reverse ${index % 2 === 1 ? 'border-s border-white/[0.08] ps-5' : ''} ${index > 0 ? 'sm:border-s sm:border-white/[0.08] sm:ps-5' : ''}`}
+                    >
+                      <dt className="mt-1.5 text-sm text-silver-400">{stat.label}</dt>
+                      <dd
+                        className={`font-display text-[2rem] font-medium leading-none tabular-nums tracking-[-0.03em] sm:text-[2.25rem] ${
+                          stat.accent ? 'text-cyan-300' : 'text-silver-100'
+                        }`}
+                      >
+                        {stat.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
             </div>
           </div>
+
+          {/* ── Живото табло (класацията) ──────────────────────────────────── */}
+          {featured.length > 0 ? (
+            <section aria-labelledby="teaser-heading" className="panel-chrome overflow-hidden">
+              <div className="flex items-center justify-between gap-4 border-b border-white/[0.07] px-4 py-4 sm:px-5">
+                <h2
+                  id="teaser-heading"
+                  className="flex items-center gap-3 font-display text-[0.9375rem] font-semibold tracking-[-0.01em] text-silver-100 sm:text-lg"
+                >
+                  {online.length > 0 ? <span className="live-dot" aria-hidden="true" /> : <span className="idle-dot" aria-hidden="true" />}
+                  {t.home.teaserHeading}
+                </h2>
+                <Link href={`/${locale}/servers`} className="link-quiet inline-flex min-h-11 shrink-0 items-center whitespace-nowrap text-sm">
+                  {t.home.teaserAll} ({servers.length})
+                </Link>
+              </div>
+
+              <ol>
+                {featured.map((server, index) => (
+                  <ServerRow key={server.slug} server={server} locale={locale} t={t} rank={index + 1} />
+                ))}
+              </ol>
+
+              {/* Тук СЪЩО има класирани резултати (промотираните са първи), значи
+                  разкритието по чл. 7, ал. 4а от Дир. 2005/29/ЕО трябва да е и тук,
+                  не само на /servers — и то ДО резултатите, не някъде по-долу. */}
+              <p className="border-t border-white/[0.07] px-4 py-3.5 text-xs sm:px-5">
+                <Link href={`/${locale}/terms#kak-podrezhdame-sarvarite`} className="link-quiet">
+                  {t.home.rankingLink}
+                </Link>
+              </p>
+            </section>
+          ) : (
+            <section className="panel p-6 text-silver-300">
+              {t.home.emptyLead}{' '}
+              <Link href={`/${locale}/submit`} className="link">
+                {t.home.emptyCta}
+              </Link>{' '}
+              {t.home.emptyTail}
+            </section>
+          )}
         </div>
       </section>
 
-      {/* ── Живите числа: един ред с тънки черти, не плочки ───────────────── */}
-      {servers.length > 0 && (
-        <dl className="grid grid-cols-2 border-y border-white/10 sm:grid-cols-4 sm:divide-x sm:divide-white/10">
-          {/* `dt` стои ПРЕДИ `dd` в кода, защото HTML иска точно този ред вътре
-              в `div` на `dl`; визуално етикетът е подпис ПОД числото и това го
-              прави `flex-col-reverse`, не разместване на маркъпа. */}
-          {stats.map((stat, index) => (
-            <div
-              key={stat.label}
-              className={`flex flex-col-reverse ${index === 0 ? 'py-7' : 'py-7 sm:ps-7'}`}
-            >
-              <dt className="mt-1.5 text-sm text-silver-400">
-                {stat.label}
-              </dt>
-              <dd
-                className={`font-display text-[2.5rem] font-medium leading-none tabular-nums tracking-[-0.02em] ${
-                  stat.accent ? 'text-cyan-300' : 'text-silver-200'
-                }`}
-              >
-                {stat.value}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      )}
-
-      {/* ── Класацията ───────────────────────────────────────────────────── */}
-      {featured.length > 0 && (
-        <section className="mt-14" aria-labelledby="teaser-heading">
-          <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <h2 id="teaser-heading" className="section-title">
-              {t.home.teaserHeading}
-            </h2>
-            <Link
-              href={`/${locale}/servers`}
-              className="inline-flex min-h-11 items-center text-sm text-cyan-300 underline underline-offset-4"
-            >
-              {t.home.teaserAll} ({servers.length})
-            </Link>
-          </div>
-
-          {/* Тук СЪЩО има класирани резултати (промотираните са първи), значи
-              разкритието по чл. 7, ал. 4а от Дир. 2005/29/ЕО трябва да е и тук,
-              не само на /servers. Линк само от каталога би оставил landing-а с
-              платено класиране без обяснение — точно забранената практика. */}
-          <p className="mt-2 text-sm text-silver-500">
-            <Link
-              href={`/${locale}/terms#kak-podrezhdame-sarvarite`}
-              className="text-cyan-300 underline underline-offset-2"
-            >
-              {t.home.rankingLink}
-            </Link>
-          </p>
-
-          <ol className="mt-7">
-            {featured.map((server, index) => (
-              <ServerRow
-                key={server.slug}
-                server={server}
-                locale={locale}
-                t={t}
-                rank={index + 1}
-              />
-            ))}
-          </ol>
-        </section>
-      )}
-
-      {servers.length === 0 && (
-        <section className="mt-14">
-          <p className="rounded-xl border border-dashed border-white/15 p-6 text-silver-400">
-            {t.home.emptyLead}{' '}
-            <Link href={`/${locale}/submit`} className="text-cyan-300 underline underline-offset-2">
-              {t.home.emptyCta}
-            </Link>{' '}
-            {t.home.emptyTail}
-          </p>
-        </section>
-      )}
-
       {/* ── Защо тук ─────────────────────────────────────────────────────── */}
-      <section className="mt-16" aria-labelledby="why-heading">
+      <section className="mt-6" aria-labelledby="why-heading">
         <h2 id="why-heading" className="sr-only">
           {t.home.whyHeading}
         </h2>
-        <ul className="grid gap-10 sm:grid-cols-3">
+        <ul className="grid gap-px overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.06] sm:grid-cols-3">
           {why.map((item) => (
-            <li key={item.title}>
-              <div className="h-[3px] w-9 bg-cyan-500" aria-hidden="true" />
-              <h3 className="mt-4 text-lg font-semibold tracking-tight">{item.title}</h3>
-              <p className="mt-2 text-[15px] leading-relaxed text-silver-400">{item.body}</p>
+            <li key={item.title} className="bg-ink-950 p-6 sm:p-8">
+              <div className="h-[3px] w-10 rounded-full bg-gradient-to-r from-cyan-300 to-cyan-600" aria-hidden="true" />
+              <h3 className="mt-5 font-display text-lg font-semibold leading-snug tracking-[-0.015em] text-silver-100">
+                {item.title}
+              </h3>
+              <p className="mt-3 leading-relaxed text-silver-400">{item.body}</p>
             </li>
           ))}
         </ul>
       </section>
 
       {/* ── Как работи ───────────────────────────────────────────────────── */}
-      <section className="mt-16" aria-labelledby="how-heading">
+      <section className="mt-24" aria-labelledby="how-heading">
         <h2 id="how-heading" className="section-title">
           {t.home.howHeading}
         </h2>
-        <ol className="mt-7 grid gap-6 sm:grid-cols-3 sm:gap-8">
+        <ol className="relative mt-10 grid gap-10 sm:grid-cols-3 sm:gap-8">
+          {/* Нишката между стъпките — само на широк екран, където са в ред. */}
+          <span
+            aria-hidden="true"
+            className="absolute start-6 end-6 top-6 hidden h-px bg-gradient-to-r from-cyan-400/50 via-white/10 to-transparent sm:block"
+          />
           {steps.map((step, index) => (
-            <li key={step.title} className="border-t border-white/10 pt-5">
+            <li key={step.title} className="relative">
               {/* Номерът тук Е информация (стъпките са последователност), значи
                   се вижда — за разлика от декоративните маркери другаде. */}
-              <p className="flex items-center gap-3">
-                <span className="font-display text-3xl font-semibold leading-none tabular-nums text-cyan-300">
-                  {index + 1}
-                </span>
+              <span className="relative flex size-12 items-center justify-center rounded-full border border-cyan-300/30 bg-ink-950 font-display text-lg font-semibold tabular-nums text-cyan-300 shadow-[0_0_30px_-6px_rgba(60,204,228,0.6)]">
+                {index + 1}
+              </span>
+              <h3 className="mt-5 flex items-center gap-2 font-display text-lg font-semibold tracking-[-0.015em] text-silver-100">
                 <Icon group="ui" name={step.icon} size={18} />
-              </p>
-              <h3 className="mt-3 text-lg font-semibold">{step.title}</h3>
-              <p className="mt-1.5 text-[15px] leading-relaxed text-silver-400">{step.body}</p>
+                {step.title}
+              </h3>
+              <p className="mt-2 leading-relaxed text-silver-400">{step.body}</p>
             </li>
           ))}
         </ol>
       </section>
 
-      {/* ── Стриймъри ────────────────────────────────────────────────────── */}
-      {streamers.total > 0 && (
-        <section className="mt-16 border-y border-white/10 py-7">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+      {/* ── Стриймъри + Discord ──────────────────────────────────────────── */}
+      <section className="mt-24 grid gap-4 lg:grid-cols-2">
+        {streamers.total > 0 && (
+          <div className="panel flex flex-col justify-between gap-6 p-6 sm:p-8">
             <div>
-              <h2 className="font-display text-xl font-semibold tracking-[-0.01em]">{t.home.streamersHeading}</h2>
-              <p className="mt-1 text-sm text-silver-400">
-                {streamers.live > 0
-                  ? `${streamers.live} ${t.home.streamersLive}`
-                  : t.home.streamersNone}
+              <h2 className="flex items-center gap-3 font-display text-xl font-semibold tracking-[-0.015em] text-silver-100">
+                {streamers.live > 0 ? <span className="live-dot" aria-hidden="true" /> : <span className="idle-dot" aria-hidden="true" />}
+                {t.home.streamersHeading}
+              </h2>
+              <p className="mt-2 text-silver-400">
+                {streamers.live > 0 ? `${streamers.live} ${t.home.streamersLive}` : t.home.streamersNone}
               </p>
             </div>
-            <Link
-              href={`/${locale}/streamers`}
-              className="rounded-lg border border-white/15 px-5 py-2.5 text-sm hover:border-cyan-500 hover:text-cyan-300"
-            >
+            <Link href={`/${locale}/streamers`} className="btn-ghost self-start">
               {t.home.streamersCta}
             </Link>
           </div>
-        </section>
-      )}
+        )}
+        <div className={`panel flex flex-col justify-between gap-6 p-6 sm:p-8 ${streamers.total > 0 ? '' : 'lg:col-span-2'}`}>
+          <p className="font-display text-xl font-semibold leading-snug tracking-[-0.015em] text-silver-100">
+            {t.home.discordLead}
+          </p>
+          <a href={DISCORD_INVITE} rel="noopener nofollow" className="btn-primary self-start">
+            <Icon group="brand" name="discord" size={18} />
+            {t.home.discordCta}
+          </a>
+        </div>
+      </section>
 
       {/* ── Новини ───────────────────────────────────────────────────────── */}
       {news.length > 0 && (
-        <section className="mt-16" aria-labelledby="news-heading">
-          <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <section className="mt-24" aria-labelledby="news-heading">
+          <div className="flex flex-wrap items-end justify-between gap-3">
             <h2 id="news-heading" className="section-title">
               {t.home.newsHeading}
             </h2>
-            <Link
-              href={`/${locale}/news`}
-              className="inline-flex min-h-11 items-center text-sm text-cyan-300 underline underline-offset-4"
-            >
+            <Link href={`/${locale}/news`} className="link-quiet inline-flex min-h-11 items-center text-sm">
               {t.home.newsAll}
             </Link>
           </div>
-          <ul className="mt-7 grid gap-8 sm:grid-cols-3">
+          <ul className="mt-8 grid gap-4 sm:grid-cols-3">
             {news.map((post) => (
-              <li key={post.slug} className="border-t border-white/10 pt-5">
-                <h3 className="text-lg font-medium">
-                  <Link href={`/${locale}/news/${post.slug}`} className="hover:text-cyan-300">
-                    {post.title}
-                  </Link>
-                </h3>
-                <p className="mt-1.5 text-[15px] leading-relaxed text-silver-400">{post.excerpt}</p>
+              <li key={post.slug} className="panel group relative flex flex-col p-6 transition-colors hover:border-cyan-400/30">
                 {post.publishedAt && (
-                  <p className="mt-2 text-xs text-silver-500">
+                  <p className="text-xs text-silver-500">
                     <time dateTime={post.publishedAt.toISOString()}>
                       {post.publishedAt.toLocaleDateString(locale === 'bg' ? 'bg-BG' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </time>
                   </p>
                 )}
+                <h3 className="mt-3 font-display text-lg font-semibold leading-snug tracking-[-0.015em] text-silver-100">
+                  {/* Цялата карта е цел за клик чрез разтегнат псевдоелемент на
+                      ЕДИНСТВЕНАТА връзка — без вложени връзки и без втори таб-стоп. */}
+                  <Link
+                    href={`/${locale}/news/${post.slug}`}
+                    className="after:absolute after:inset-0 after:rounded-2xl group-hover:text-cyan-200"
+                  >
+                    {post.title}
+                  </Link>
+                </h3>
+                <p className="mt-2 leading-relaxed text-silver-400">{post.excerpt}</p>
               </li>
             ))}
           </ul>
         </section>
       )}
 
-      {/* ── Discord ──────────────────────────────────────────────────────── */}
-      <section className="mt-16 rounded-xl border border-cyan-700/40 bg-cyan-900/10 p-5">
-        <p className="text-silver-300">
-          {t.home.discordLead}{' '}
-          <a
-            href={DISCORD_INVITE}
-            rel="noopener nofollow"
-            className="font-medium text-cyan-300 underline underline-offset-2"
-          >
-            {t.home.discordCta}
-          </a>
-          .
-        </p>
-      </section>
-
       {/* ── FAQ ──────────────────────────────────────────────────────────── */}
-      <section className="mt-16" aria-labelledby="faq-heading">
-        <h2 id="faq-heading" className="section-title">
-          {t.home.faqHeading}
-        </h2>
-        <dl className="mt-7 space-y-7">
-          {faq.map((item) => (
-            <div key={item.question} className="border-t border-white/10 pt-5">
-              <dt className="text-lg font-medium">{item.question}</dt>
-              <dd className="mt-1.5 leading-relaxed text-silver-400">{item.answer}</dd>
-            </div>
+      <section className="mt-24 grid gap-10 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]" aria-labelledby="faq-heading">
+        <div>
+          <h2 id="faq-heading" className="section-title">
+            {t.home.faqHeading}
+          </h2>
+          <p className="mt-4 max-w-sm text-silver-400">
+            {t.home.discordLead}{' '}
+            <a href={DISCORD_INVITE} rel="noopener nofollow" className="link">
+              {t.home.discordCta}
+            </a>
+            .
+          </p>
+        </div>
+        {/* Родният `details`: отговорът е в HTML-а и за търсачката, и без
+            JavaScript — разгъвачът само го прибира визуално. Първият е отворен,
+            за да се вижда веднага, че вътре има отговор. */}
+        <div className="border-t border-white/[0.08]">
+          {faq.map((item, index) => (
+            <details key={item.question} className="faq-item" open={index === 0}>
+              <summary>{item.question}</summary>
+              <p className="pb-6 pe-8 leading-relaxed text-silver-400">{item.answer}</p>
+            </details>
           ))}
-        </dl>
+        </div>
       </section>
 
       <JsonLd data={faqJsonLd(faq)} />

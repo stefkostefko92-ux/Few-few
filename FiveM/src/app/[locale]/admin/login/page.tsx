@@ -53,13 +53,13 @@ export default async function LoginPage({ params, searchParams }: Props) {
             type="password"
             required
             autoComplete="current-password"
-            className="mt-1 w-full rounded-lg border border-white/15 bg-ink-900 px-3 py-2 text-silver-100"
+            className="field"
           />
         </div>
         <button
           type="submit"
           disabled={!configured}
-          className="rounded-lg bg-cyan-500 px-4 py-2 font-medium text-ink-950 hover:bg-cyan-400 disabled:opacity-50"
+          className="btn-primary disabled:opacity-50"
         >
           Влез
         </button>

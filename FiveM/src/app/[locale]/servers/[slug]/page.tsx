@@ -149,69 +149,99 @@ export default async function ServerPage({ params, searchParams }: Props) {
     { outcome: server.lastProbe, players: server.players, maxPlayers: server.maxPlayers },
     t.status,
   );
-  const field = 'mt-1.5 w-full rounded-lg border border-white/15 bg-ink-950 px-3 py-2.5 text-silver-100 transition-colors focus:border-cyan-500';
+  const field = 'field';
   const secondary =
-    'flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/15 px-4 transition-colors hover:border-cyan-500 hover:text-cyan-300';
+    'btn-ghost w-full px-3';
 
   return (
     <article>
-      <nav aria-label={t.common.breadcrumbLabel} className="text-sm text-silver-400">
-        <Link
-          href={`/${locale}/servers`}
-          className="inline-flex min-h-6 items-center underline underline-offset-4 hover:text-cyan-300"
-        >
-          {t.server.breadcrumb}
-        </Link>
-        <span aria-hidden="true" className="mx-2 text-silver-500">/</span>
-        <span aria-current="page">{head.name}</span>
-      </nav>
-
-      <header className="mt-5 flex items-start gap-4 sm:gap-5">
-        {/* Голямата част от откритите сървъри нямат икона в Cfx.re — заместител,
-            за да не зее празно място до името. */}
+      {/* ── Героична лента ───────────────────────────────────────────────────
+          Същият кадър на града като на началната, но приглушен: тук звездата е
+          името на сървъра. `isolate` пази фоновите слоеве над атмосферата на
+          `body` (виж героя на началната). */}
+      <header className="relative isolate -mt-10 mx-[calc(50%-50vw)] w-screen overflow-hidden border-b border-white/[0.06] sm:-mt-14">
         <Image
-          src={iconUrl ?? '/brand/placeholder-server.png'}
+          src="/brand/hero.webp"
           alt=""
-          width={72}
-          height={72}
-          className="size-14 shrink-0 rounded-xl border border-white/10 sm:size-[72px]"
-          unoptimized
+          aria-hidden="true"
+          fill
+          sizes="100vw"
+          className="pointer-events-none -z-10 object-cover object-bottom opacity-50"
         />
-        <div className="min-w-0">
-          <h1 className="page-title break-words">{head.name}</h1>
-          {/* Пълното име, както сървърът САМ се обявява в Cfx.re — с рекламата и
-              емоджитата. Заглавието е само марката (`serverTitle`); тук стои
-              останалото, обозначено като чуждо, за да не се губи нищо. */}
-          {fullName && fullName !== head.name && (
-            <p className="mt-2 max-w-2xl break-words text-sm text-silver-400">
-              <span className="text-silver-500">{t.server.cfxName}:</span> {fullName}
-            </p>
-          )}
-          {(featured || server.source === 'DISCOVERED') && (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {featured && (
-                <span className="flex items-center gap-1.5 rounded-md bg-cyan-700/25 px-2 py-1 text-xs text-cyan-200">
-                  <Icon group="status" name="promoted" size={13} />
-                  {t.server.promoted}
-                </span>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-ink-950/80 via-ink-950/60 to-ink-950"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(40%_80%_at_15%_60%,rgba(32,168,192,0.18),transparent_70%)]"
+        />
+
+        <div className="mx-auto max-w-site px-4 pb-10 pt-8 sm:px-6 sm:pb-14 sm:pt-10">
+          <nav aria-label={t.common.breadcrumbLabel} className="text-sm text-silver-400">
+            <Link href={`/${locale}/servers`} className="link-quiet inline-flex min-h-6 items-center">
+              {t.server.breadcrumb}
+            </Link>
+            <span aria-hidden="true" className="mx-2 text-silver-600">/</span>
+            <span aria-current="page" className="text-silver-300">{head.name}</span>
+          </nav>
+
+          <div className="mt-8 flex items-start gap-5 sm:gap-7">
+            {/* Голямата част от откритите сървъри нямат икона в Cfx.re — заместител,
+                за да не зее празно място до името. */}
+            <Image
+              src={iconUrl ?? '/brand/placeholder-server.png'}
+              alt=""
+              width={96}
+              height={96}
+              className="size-16 shrink-0 rounded-2xl border border-white/[0.12] bg-ink-900 shadow-[0_0_40px_-8px_rgba(60,204,228,0.55)] sm:size-24"
+              unoptimized
+            />
+            <div className="min-w-0">
+              <h1 className="break-words font-display text-[2.125rem] font-semibold leading-[1.02] tracking-[-0.035em] sm:text-5xl lg:text-[3.75rem]">
+                <span className="text-chrome">{head.name}</span>
+              </h1>
+              {(featured || server.source === 'DISCOVERED' || server.lastProbe === 'ONLINE') && (
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  {server.lastProbe === 'ONLINE' && (
+                    <span className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-400/[0.07] px-3 py-1 text-xs font-medium text-cyan-200">
+                      <span className="live-dot" aria-hidden="true" />
+                      {t.server.liveBadge}
+                    </span>
+                  )}
+                  {featured && (
+                    <span className="tag-promoted py-1">
+                      <Icon group="status" name="promoted" size={13} />
+                      {t.server.promoted}
+                    </span>
+                  )}
+                  {server.source === 'DISCOVERED' && (
+                    <span className="chip py-1">
+                      <Icon group="status" name="discovered" size={13} />
+                      {t.server.discovered}
+                    </span>
+                  )}
+                </div>
               )}
-              {server.source === 'DISCOVERED' && (
-                <span className="flex items-center gap-1.5 rounded-md border border-white/15 px-2 py-1 text-xs text-silver-400">
-                  <Icon group="status" name="discovered" size={13} />
-                  {t.server.discovered}
-                </span>
+              {server.tagline && <p className="lead mt-5">{server.tagline}</p>}
+              {/* Пълното име, както сървърът САМ се обявява в Cfx.re — с рекламата и
+                  емоджитата. Заглавието е само марката (`serverTitle`); тук стои
+                  останалото, обозначено като чуждо, за да не се губи нищо. */}
+              {fullName && fullName !== head.name && (
+                <p className="mt-3 max-w-2xl break-words text-sm text-silver-400">
+                  <span className="text-silver-500">{t.server.cfxName}:</span> {fullName}
+                </p>
               )}
             </div>
-          )}
-          {server.tagline && <p className="mt-3 max-w-2xl text-silver-300">{server.tagline}</p>}
+          </div>
         </div>
       </header>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_21rem] lg:gap-10">
+      <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-12">
         {/* Картата с действията е ПЪРВА в DOM: на телефон „Влез“ и статусът
             стоят веднага под името, не след графиката и описанието. На широк
             екран отива вдясно и остава видима при превъртане. */}
-        <aside className="self-start rounded-xl border border-white/10 bg-ink-900/70 p-5 lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1">
+        <aside className="panel-chrome self-start p-5 sm:p-6 lg:sticky lg:top-28 lg:col-start-2 lg:row-start-1">
           <div className="text-silver-200">
             <PlayerList
               names={server.playerNames}
@@ -231,7 +261,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
                     // Числото е главното на картата — то отговаря на „има ли
                     // хора вътре“. Текстът остава същият низ като в списъка.
                     <span className="flex items-baseline gap-1.5">
-                      <span className="font-display text-[2rem] font-medium leading-none tabular-nums tracking-[-0.02em] text-silver-100">
+                      <span className="font-display text-[2.5rem] font-medium leading-none tabular-nums tracking-[-0.03em] text-silver-100">
                         {server.players}
                       </span>
                       <span className="tabular-nums text-silver-400">
@@ -251,7 +281,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
               <a
                 href={joinUrl}
                 rel="nofollow noopener"
-                className="flex min-h-12 items-center justify-center gap-2 rounded-lg bg-cyan-500 px-4 font-semibold text-ink-950 transition-colors hover:bg-cyan-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                className="btn-primary btn-lg w-full"
               >
                 <Icon group="ui" name="join" size={18} />
                 {t.server.join}
@@ -283,7 +313,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
             )}
           </div>
 
-          <dl className="mt-6 divide-y divide-white/10 border-t border-white/10 text-sm">
+          <dl className="mt-6 divide-y divide-white/[0.07] border-t border-white/[0.07] text-sm">
             <div className="flex items-center justify-between gap-4 py-3">
               <dt className="text-silver-400">{t.server.framework}</dt>
               <dd className="flex items-center gap-2 text-right text-silver-100">
@@ -360,14 +390,11 @@ export default async function ServerPage({ params, searchParams }: Props) {
           </dl>
 
           {server.tags.length > 0 && (
-            <ul className="mt-4 flex flex-wrap gap-2 text-sm text-silver-300">
+            <ul className="mt-5 flex flex-wrap gap-1.5">
               {server.tags.map((tag) => {
                 const icon = tagIcon(tag);
                 return (
-                  <li
-                    key={tag}
-                    className="flex items-center gap-1.5 rounded-lg border border-white/10 px-2.5 py-1"
-                  >
+                  <li key={tag} className="chip text-[0.8125rem]">
                     {/* Етикетите са свободен текст — липсваща икона е нормално. */}
                     {icon && <Badge name={icon} size={20} />}
                     {tag}
@@ -390,13 +417,13 @@ export default async function ServerPage({ params, searchParams }: Props) {
             />
 
             {server.source === 'DISCOVERED' && (
-              <p className="rounded-xl border border-white/10 p-4 text-sm leading-relaxed text-silver-400">
+              <p className="panel p-5 text-sm leading-relaxed text-silver-400">
                 {t.server.discoveredNote}
               </p>
             )}
 
             {server.lastProbe === 'HIDDEN' && (
-              <p className="rounded-xl border border-white/10 p-4 text-sm leading-relaxed text-silver-400">
+              <p className="panel p-5 text-sm leading-relaxed text-silver-400">
                 {t.server.hiddenNotice}
               </p>
             )}
@@ -408,7 +435,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
                 <h2 className="section-title">{t.server.about}</h2>
                 <Link
                   href={reportHref}
-                  className="inline-flex min-h-6 items-center text-sm text-silver-400 underline underline-offset-4 hover:text-cyan-300"
+                  className="link-quiet inline-flex min-h-6 items-center text-sm"
                 >
                   {t.server.reportContent}
                 </Link>
@@ -424,12 +451,12 @@ export default async function ServerPage({ params, searchParams }: Props) {
             <h2 className="section-title">{t.server.reviews}</h2>
 
             {review === 'ok' && (
-              <p role="status" className="mt-4 rounded-lg border border-cyan-600 bg-ink-900 p-3">
+              <p role="status" className="mt-5 rounded-xl border border-cyan-300/30 bg-cyan-400/[0.07] p-4 text-cyan-100">
                 {t.server.reviewOk}
               </p>
             )}
             {message && (
-              <p role="alert" className="mt-4 rounded-lg border border-red-500/60 bg-red-950/40 p-3">
+              <p role="alert" className="mt-5 rounded-xl border border-red-400/40 bg-red-950/40 p-4 text-red-100">
                 {message}
               </p>
             )}
@@ -438,9 +465,9 @@ export default async function ServerPage({ params, searchParams }: Props) {
               <p className="mt-4 text-silver-400">{t.server.reviewsEmpty}</p>
             ) : (
               <>
-                <ul className="mt-5 divide-y divide-white/10 border-y border-white/10">
+                <ul className="mt-6 space-y-3">
                   {data.reviews.map((item) => (
-                    <li key={item.id} className="py-5">
+                    <li key={item.id} className="panel p-5 sm:p-6">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <p className="flex items-center gap-2.5 text-sm text-silver-300">
                           <Stars value={item.rating} size={14} />
@@ -450,7 +477,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
                         </p>
                         <Link
                           href={reportHref}
-                          className="inline-flex min-h-6 items-center text-xs text-silver-400 underline underline-offset-4 hover:text-cyan-300"
+                          className="link-quiet inline-flex min-h-6 items-center text-xs"
                         >
                           {t.server.reportShort}
                         </Link>
@@ -464,7 +491,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
                           обещават. Визуално подчинен на ревюто и изрично назован,
                           за да не мине за втори отзив. */}
                       {item.reply && (
-                        <div className="mt-3 border-s-2 border-cyan-700/60 ps-3">
+                        <div className="mt-4 rounded-xl border-s-2 border-cyan-400/60 bg-white/[0.02] py-2.5 pe-3 ps-4">
                           <p className="text-xs font-medium text-cyan-300">
                             {t.server.replyLabel}
                             {item.repliedAt && (
@@ -492,22 +519,22 @@ export default async function ServerPage({ params, searchParams }: Props) {
 
             <form
               action={submitReviewAction}
-              className="mt-8 max-w-xl space-y-5 rounded-xl border border-white/10 bg-ink-900/70 p-5 sm:p-6"
+              className="panel mt-10 max-w-xl space-y-6 p-6 sm:p-8"
             >
-              <h3 className="font-display text-lg font-semibold tracking-[-0.01em]">{t.server.leaveReview}</h3>
-              <input type="hidden" name="slug" value={server.slug} />
-              <input type="hidden" name="locale" value={locale} />
+              <h3 className="font-display text-xl font-semibold tracking-[-0.015em] text-silver-100">{t.server.leaveReview}</h3>
+              <input type="hidden" hidden name="slug" value={server.slug} />
+              <input type="hidden" hidden name="locale" value={locale} />
 
               {/* Радио група, не `<select>`: изборът се вижда наведнъж и се
                   прави с едно докосване. Без стойност по подразбиране — иначе
                   всяко ревю, по което човек не е пипнал, излиза „5“. */}
               <fieldset>
-                <legend className="text-silver-200">{t.server.ratingLabel}</legend>
-                <div className="mt-2 flex flex-wrap gap-2">
+                <legend className="field-label">{t.server.ratingLabel}</legend>
+                <div className="mt-3 grid max-w-sm grid-cols-5 gap-2">
                   {[1, 2, 3, 4, 5].map((value) => (
                     <label
                       key={value}
-                      className="flex min-h-11 min-w-12 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-white/15 px-3 tabular-nums text-silver-300 transition-colors hover:border-cyan-500 has-[:checked]:border-cyan-400 has-[:checked]:bg-cyan-500/15 has-[:checked]:text-cyan-200 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-cyan-300"
+                      className="flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/[0.12] bg-white/[0.02] px-3 tabular-nums text-silver-300 transition-colors hover:border-cyan-400/60 has-[:checked]:border-cyan-300 has-[:checked]:bg-cyan-400/15 has-[:checked]:text-cyan-100 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-cyan-300"
                     >
                       <input type="radio" name="rating" value={value} required className="sr-only" />
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -521,14 +548,14 @@ export default async function ServerPage({ params, searchParams }: Props) {
               </fieldset>
 
               <div>
-                <label htmlFor="authorAlias" className="text-silver-200">
+                <label htmlFor="authorAlias" className="field-label">
                   {t.server.aliasLabel}
                 </label>
                 <input id="authorAlias" name="authorAlias" maxLength={40} className={field} />
               </div>
 
               <div>
-                <label htmlFor="body" className="text-silver-200">
+                <label htmlFor="body" className="field-label">
                   {t.server.bodyLabel}
                 </label>
                 <textarea
@@ -539,9 +566,9 @@ export default async function ServerPage({ params, searchParams }: Props) {
                   className={field}
                   aria-describedby="review-help"
                 />
-                <p id="review-help" className="mt-2 text-sm leading-relaxed text-silver-400">
+                <p id="review-help" className="field-help">
                   {t.server.reviewHelp}{' '}
-                  <Link href={`/${locale}/terms`} className="text-cyan-300 underline underline-offset-4">
+                  <Link href={`/${locale}/terms`} className="link">
                     {t.server.reviewHelpTerms}
                   </Link>
                   .
@@ -556,7 +583,7 @@ export default async function ServerPage({ params, searchParams }: Props) {
 
               <button
                 type="submit"
-                className="inline-flex min-h-11 items-center rounded-lg bg-cyan-500 px-5 font-semibold text-ink-950 transition-colors hover:bg-cyan-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+                className="btn-primary"
               >
                 {t.server.reviewSubmit}
               </button>

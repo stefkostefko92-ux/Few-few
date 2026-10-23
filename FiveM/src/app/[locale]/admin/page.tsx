@@ -40,7 +40,7 @@ export default async function AdminHome({ params }: { params: Promise<{ locale: 
         {tiles.map((tile) => (
           <li
             key={tile.label}
-            className="flex items-center gap-4 rounded-xl border border-white/10 bg-ink-900/70 p-4"
+            className="flex items-center gap-4 rounded-xl border border-white/[0.08] bg-ink-900/70 p-4"
           >
             <Badge name={tile.badge} size={40} />
             <div>
@@ -54,7 +54,7 @@ export default async function AdminHome({ params }: { params: Promise<{ locale: 
       {waiting > 0 && (
         <p className="mt-6 rounded-lg border border-cyan-700/40 bg-cyan-900/10 p-4">
           {waiting} неща чакат решение.{' '}
-          <Link href={`/${locale}/admin/queue`} className="text-cyan-300 underline underline-offset-2">
+          <Link href={`/${locale}/admin/queue`} className="link">
             Към опашката
           </Link>
         </p>
@@ -70,7 +70,7 @@ export default async function AdminHome({ params }: { params: Promise<{ locale: 
         ) : (
           <ul className="mt-4 space-y-2 text-sm">
             {audit.map((entry) => (
-              <li key={entry.id} className="flex flex-wrap gap-x-3 rounded border border-white/10 p-2">
+              <li key={entry.id} className="flex flex-wrap gap-x-3 rounded border border-white/[0.08] p-2">
                 <time dateTime={entry.at.toISOString()} className="text-silver-500">
                   {entry.at.toLocaleString('bg-BG')}
                 </time>

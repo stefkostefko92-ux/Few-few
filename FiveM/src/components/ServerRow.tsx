@@ -12,18 +12,21 @@ import { serverTitle } from '@/lib/server-identity';
 import { isFeatured, type PublicServer } from '@/lib/servers';
 
 /**
- * Ред от класацията на НАЧАЛНАТА — редакционен, не карта.
+ * Ред от ЖИВОТО ТАБЛО на началната — редакционен, не карта.
  *
  * Различен е от `ServerCard` (каталогът `/servers`) нарочно и двата остават:
- * каталогът дава решетка за сравняване по признаци, началната дава четене
- * отгоре надолу. Смениш ли единия, другият НЕ се мени.
+ * каталогът дава решетка за сравняване по признаци, таблото дава четене
+ * отгоре надолу, като табло на гара. Смениш ли единия, другият НЕ се мени.
  *
- * Номерът е ВИДИМ (silver-600, 3,62:1 — минава прага 3:1 за едър текст ≥24 px),
- * но е `aria-hidden` за екранния четец. Причината не е стилова: „01“ до
- * платено промотиран сървър, прочетено на глас, звучи като редакционна оценка
+ * Номерът е ВИДИМ (silver-600, 4,1:1 върху ink-950 — едър текст), но е
+ * `aria-hidden` за екранния четец. Причината не е стилова: „01“ до платено
+ * промотиран сървър, прочетено на глас, звучи като редакционна оценка
  * „най-добрият“ — твърдение, което не можем да подкрепим (ревютата не са
- * проверени, а подредбата е обявена в условията, не заслужена). Видимо е
- * поредност, обявена точно над списъка; за екранния четец е шум.
+ * проверени, а подредбата е обявена в условията, не заслужена).
+ *
+ * Редът „пристига“ с отместване по индекс — единственото оркестрирано движение
+ * на сайта. При `prefers-reduced-motion` анимацията я няма изобщо (globals.css),
+ * не само е скъсена: иначе редовете чакат закъснението си невидими.
  */
 export function ServerRow({
   server,
@@ -44,27 +47,33 @@ export function ServerRow({
     { outcome: server.lastProbe, players: server.players, maxPlayers: server.maxPlayers },
     t.status,
   );
+  const live = server.lastProbe === 'ONLINE';
+  // Запълването е факт от двете числа, не оценка; без слотове уредът няма смисъл.
+  const fill = live && server.maxPlayers > 0 ? Math.min(100, (server.players / server.maxPlayers) * 100) : 0;
 
   return (
-    <li className="border-t border-white/10 last:border-b">
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-3 py-5 sm:flex-nowrap sm:gap-x-7">
+    <li
+      className="animate-board-in border-t border-white/[0.06] first:border-t-0"
+      style={{ animationDelay: `${120 + rank * 70}ms` }}
+    >
+      <div className="grid grid-cols-[1.75rem_minmax(0,1fr)_auto] items-center gap-x-3 px-4 py-3.5 transition-colors hover:bg-white/[0.025] sm:grid-cols-[2.25rem_minmax(0,1fr)_auto] sm:gap-x-4 sm:px-5 sm:py-4">
         <span
           aria-hidden="true"
-          className="w-11 shrink-0 font-display text-2xl font-medium tabular-nums tracking-[-0.02em] text-silver-600 sm:w-16 sm:text-[1.875rem]"
+          className="font-display text-lg font-medium tabular-nums tracking-[-0.02em] text-silver-600 sm:text-xl"
         >
           {String(rank).padStart(2, '0')}
         </span>
 
-        <div className="min-w-0 flex-1">
-          <h3 className="flex flex-wrap items-center gap-x-3 gap-y-1 text-lg font-semibold tracking-tight sm:text-xl">
+        <div className="min-w-0">
+          <h3 className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
             <Link
               href={`/${locale}/servers/${server.slug}`}
-              className="rounded transition-colors hover:text-cyan-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
+              className="truncate rounded text-[1.0625rem] font-semibold tracking-[-0.01em] text-silver-100 transition-colors hover:text-cyan-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 sm:text-lg"
             >
               {title}
             </Link>
             {featured && (
-              <span className="flex items-center gap-1 rounded bg-cyan-700/25 px-2 py-0.5 text-xs font-normal text-cyan-200">
+              <span className="tag-promoted">
                 <Icon group="status" name="promoted" size={12} />
                 {/* ПЪЛНИЯТ етикет, с думата „платено“: условията обещават точно
                     „промотиран (платено)“ и в списъка, и на страницата, а
@@ -77,15 +86,14 @@ export function ServerRow({
           </h3>
 
           {/* Рамката и достъпът са признаците, по които се избира сървър — тук
-              вървят като текст в един ред, вместо като чипове: класацията се
-              чете отгоре надолу, а решетка от чипове я накъсва. */}
-          <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-silver-400">
-            {server.tagline && <span className="me-1">{server.tagline}</span>}
+              вървят като текст в един ред, вместо като чипове: таблото се
+              чете отгоре надолу, а решетка от чипове го накъсва. */}
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[0.8125rem] text-silver-400 sm:text-sm">
             <span className="flex items-center gap-1.5">
               <Badge name={FRAMEWORK_ICON[server.framework as FrameworkId]} size={20} />
               {t.frameworks[server.framework as FrameworkId]}
             </span>
-            <span aria-hidden="true" className="text-silver-500">
+            <span aria-hidden="true" className="text-silver-600">
               ·
             </span>
             <span>{server.whitelist ? t.filters.whitelist : t.server.open}</span>
@@ -95,7 +103,7 @@ export function ServerRow({
         {/* Статусът Е бутонът към „кой играе“ — същият договор като в каталога.
             Едрото число е за онлайн сървър; при офлайн/скрит/недостъпен се
             показва думата, защото „0“ там е лъжа, а не стойност. */}
-        <div className="ms-auto shrink-0 text-end text-sm text-silver-300">
+        <div className="flex flex-col items-end gap-1.5 text-end text-sm text-silver-300">
           <PlayerList
             names={server.playerNames}
             seenAt={server.online ? server.playersSeenAt : null}
@@ -108,12 +116,12 @@ export function ServerRow({
               open: t.server.playersOpen,
             }}
             trigger={
-              server.lastProbe === 'ONLINE' ? (
-                <span className="flex items-baseline gap-2">
-                  <span className="font-display text-2xl font-medium tabular-nums tracking-[-0.02em] text-cyan-300">
+              live ? (
+                <span className="flex items-baseline gap-1.5">
+                  <span className="font-display text-xl font-medium tabular-nums tracking-[-0.02em] text-cyan-300 sm:text-2xl">
                     {server.players}
                   </span>
-                  <span className="tabular-nums text-silver-500">
+                  <span className="text-xs tabular-nums text-silver-500">
                     {t.home.outOf} {server.maxPlayers || '?'}
                   </span>
                   {/* Текстовият статус остава достъпен: числото само по себе си
@@ -121,35 +129,19 @@ export function ServerRow({
                   <span className="sr-only">{status}</span>
                 </span>
               ) : (
-                <span className="flex items-center gap-2 text-silver-400">
-                  <Badge name={STATUS_ICON[server.lastProbe]} size={22} />
+                <span className="flex items-center gap-1.5 text-silver-400">
+                  <Badge name={STATUS_ICON[server.lastProbe]} size={20} />
                   {status}
                 </span>
               )
             }
           />
+          {live && server.maxPlayers > 0 && (
+            <span className="gauge w-20 sm:w-28" aria-hidden="true">
+              <span style={{ width: `${Math.max(3, fill)}%` }} />
+            </span>
+          )}
         </div>
-
-        <Link
-          href={`/${locale}/servers/${server.slug}`}
-          aria-label={`${title} — ${t.home.rowOpen}`}
-          className="hidden shrink-0 rounded text-cyan-300 transition-colors hover:text-cyan-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 sm:block"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M5 12h14" />
-            <path d="m13 6 6 6-6 6" />
-          </svg>
-        </Link>
       </div>
     </li>
   );

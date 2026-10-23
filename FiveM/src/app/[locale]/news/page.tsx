@@ -51,19 +51,19 @@ export default async function NewsPage({ params }: Props) {
         {t.news.h1}
       </h1>
       {posts.length === 0 ? (
-        <p className="mt-6 text-silver-400">{t.news.empty}</p>
+        <p className="panel mt-10 p-8 text-silver-300">{t.news.empty}</p>
       ) : (
-        <ul className="mt-8 space-y-6">
+        <ul className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {posts.map((post) => (
-            <li key={post.slug}>
-              <h2 className="text-lg font-medium">
-                <Link href={`/${locale}/news/${post.slug}`} className="hover:text-cyan-300">
+            <li key={post.slug} className="panel group relative flex flex-col p-6 transition-colors hover:border-cyan-400/30">
+              <h2 className="order-2 mt-3 font-display text-lg font-semibold leading-snug tracking-[-0.015em] text-silver-100">
+                <Link href={`/${locale}/news/${post.slug}`} className="after:absolute after:inset-0 after:rounded-2xl group-hover:text-cyan-200">
                   {post.title}
                 </Link>
               </h2>
-              <p className="mt-1 text-silver-400">{post.excerpt}</p>
+              <p className="order-3 mt-2 leading-relaxed text-silver-400">{post.excerpt}</p>
               {post.publishedAt && (
-                <time dateTime={post.publishedAt.toISOString()} className="text-sm text-silver-500">
+                <time dateTime={post.publishedAt.toISOString()} className="order-1 text-xs text-silver-500">
                   {post.publishedAt.toLocaleDateString(locale === 'bg' ? 'bg-BG' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </time>
               )}

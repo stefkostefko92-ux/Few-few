@@ -76,60 +76,61 @@ export default async function ServersPage({ params, searchParams }: Props) {
 
   return (
     <>
-      <h1 className="page-title">{t.servers.h1}</h1>
-      <p className="mt-3 max-w-2xl text-silver-400">{t.servers.intro}</p>
-      {servers.length > 0 && (
-        <p className="mt-4 text-sm text-silver-500">
-          {online.length} {t.home.statsOnline} {servers.length} · {totalPlayers} {t.home.statsPlayers}
-        </p>
-      )}
-
-      <nav aria-label={t.home.filters} className="mt-6 flex flex-wrap gap-2 text-sm">
-        {filters.map((filter) => (
-          <Link
-            key={filter.href}
-            href={filter.href}
-            className="flex items-center gap-2 rounded-lg border border-white/15 py-1.5 pe-3 ps-2 hover:border-cyan-500 hover:text-cyan-300"
-          >
-            <Badge name={filter.badge} size={28} />
-            {filter.label}
-          </Link>
-        ))}
-      </nav>
-
-      <form className="mt-6 flex flex-wrap items-end gap-2" role="search">
-        <label className="flex flex-1 flex-col gap-1 text-sm sm:max-w-xs">
-          <span className="text-silver-500">{t.filters.search}</span>
-          <input
-            name="q"
-            defaultValue={query ?? ''}
-            maxLength={60}
-            className="min-h-11 rounded-lg border border-white/15 bg-ink-900 px-3 text-silver-100"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-silver-500">{t.filters.sortLabel}</span>
-          <select
-            name="sort"
-            defaultValue={chosen}
-            className="min-h-11 rounded-lg border border-white/15 bg-ink-900 px-3 text-silver-100"
-          >
-            <option value="default">{t.filters.sortDefault}</option>
-            <option value="players">{t.filters.sortPlayers}</option>
-            <option value="name">{t.filters.sortName}</option>
-          </select>
-        </label>
-        <button className="min-h-11 rounded-lg border border-white/15 px-4 text-sm transition-colors hover:border-cyan-500 hover:text-cyan-300">
-          {t.filters.searchButton}
-        </button>
-        {query && (
-          <span className="text-sm text-silver-500">
-            {servers.length} {t.filters.found}
-          </span>
+      <header className="max-w-3xl">
+        <h1 className="page-title">{t.servers.h1}</h1>
+        <p className="lead mt-5">{t.servers.intro}</p>
+        {servers.length > 0 && (
+          <p className="mt-5 flex items-center gap-2.5 text-sm text-silver-400">
+            {online.length > 0 ? <span className="live-dot" aria-hidden="true" /> : <span className="idle-dot" aria-hidden="true" />}
+            <span className="tabular-nums">
+              {online.length} {t.home.statsOnline} {servers.length} · {totalPlayers} {t.home.statsPlayers}
+            </span>
+          </p>
         )}
-      </form>
+      </header>
 
-      <section className="mt-10" aria-labelledby="servers-heading">
+      {/* Лентата с инструменти: филтрите (връзки към индексируемите страници по
+          рамка) и търсенето (форма, `noindex`) — едно място, два различни вида
+          навигация, затова два реда. */}
+      <div className="panel mt-10 p-4 sm:p-5">
+        <nav aria-label={t.home.filters} className="flex flex-wrap gap-2 text-sm">
+          {filters.map((filter) => (
+            <Link
+              key={filter.href}
+              href={filter.href}
+              className="flex min-h-11 items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.02] py-1 pe-4 ps-1.5 text-silver-200 transition-colors hover:border-cyan-400/60 hover:text-cyan-200"
+            >
+              <Badge name={filter.badge} size={30} />
+              {filter.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="hairline my-4" aria-hidden="true" />
+
+        <form className="flex flex-wrap items-end gap-3" role="search">
+          <label className="flex min-w-[14rem] flex-1 flex-col text-sm sm:max-w-sm">
+            <span className="field-label text-sm">{t.filters.search}</span>
+            <input name="q" defaultValue={query ?? ''} maxLength={60} className="field min-h-11" />
+          </label>
+          <label className="flex flex-col text-sm">
+            <span className="field-label text-sm">{t.filters.sortLabel}</span>
+            <select name="sort" defaultValue={chosen} className="field min-h-11 pe-9">
+              <option value="default">{t.filters.sortDefault}</option>
+              <option value="players">{t.filters.sortPlayers}</option>
+              <option value="name">{t.filters.sortName}</option>
+            </select>
+          </label>
+          <button className="btn-ghost">{t.filters.searchButton}</button>
+          {query && (
+            <span className="pb-3 text-sm text-silver-400">
+              {servers.length} {t.filters.found}
+            </span>
+          )}
+        </form>
+      </div>
+
+      <section className="mt-8" aria-labelledby="servers-heading">
         <h2 id="servers-heading" className="sr-only">
           {t.home.serverList}
         </h2>
@@ -138,28 +139,25 @@ export default async function ServersPage({ params, searchParams }: Props) {
             резултатите. Общ линк „Условия“ в подвала не изпълнява това —
             затова котвата води точно до раздела, а не до документа. Резултати
             има и на началната (тийзърът) — там линкът също стои. */}
-        <p className="mb-4 text-sm text-silver-500">
-          <Link
-            href={`/${locale}/terms#kak-podrezhdame-sarvarite`}
-            className="text-cyan-300 underline underline-offset-2"
-          >
+        <p className="mb-5 text-sm">
+          <Link href={`/${locale}/terms#kak-podrezhdame-sarvarite`} className="link-quiet">
             {t.home.rankingLink}
           </Link>
         </p>
         {servers.length === 0 && query ? (
-          <p className="rounded-xl border border-dashed border-white/15 p-6 text-silver-400">
+          <p className="panel p-8 text-center text-silver-300">
             {t.filters.noMatch}
           </p>
         ) : servers.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-white/15 p-6 text-silver-400">
+          <p className="panel p-8 text-center text-silver-300">
             {t.home.emptyLead}{' '}
-            <Link href={`/${locale}/submit`} className="text-cyan-300 underline underline-offset-2">
+            <Link href={`/${locale}/submit`} className="link">
               {t.home.emptyCta}
             </Link>{' '}
             {t.home.emptyTail}
           </p>
         ) : (
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {current.items.map((server) => (
               <ServerCard key={server.slug} server={server} locale={locale} t={t} />
             ))}

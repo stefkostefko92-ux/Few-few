@@ -13,8 +13,8 @@ import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-const yes = 'rounded bg-cyan-500 px-3 py-1 text-sm font-medium text-ink-950 hover:bg-cyan-400';
-const no = 'rounded border border-white/15 px-3 py-1 text-sm hover:border-red-500';
+const yes = 'btn-primary min-h-9 rounded-lg px-3 text-sm';
+const no = 'rounded border border-white/[0.12] px-3 py-1 text-sm hover:border-red-500';
 
 export default async function AdminQueue({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;
@@ -62,7 +62,7 @@ export default async function AdminQueue({ params }: { params: Promise<{ locale:
         ) : (
           <ul className="mt-4 space-y-3">
             {reviews.map((review) => (
-              <li key={review.id} className="rounded-lg border border-white/10 p-4">
+              <li key={review.id} className="panel p-5">
                 <p className="text-sm text-silver-500">
                   {review.rating} / 5 · {review.authorAlias ?? 'анонимен'} · {review.server.name} ·{' '}
                   {review.createdAt.toLocaleDateString('bg-BG')}
@@ -97,7 +97,7 @@ export default async function AdminQueue({ params }: { params: Promise<{ locale:
         ) : (
           <ul className="mt-4 space-y-3">
             {published.map((review) => (
-              <li key={review.id} className="rounded-lg border border-white/10 p-4">
+              <li key={review.id} className="panel p-5">
                 <p className="text-sm text-silver-500">
                   {review.rating} / 5 · {review.authorAlias ?? 'анонимен'} · {review.server.name} ·{' '}
                   {review.createdAt.toLocaleDateString('bg-BG')}
@@ -129,7 +129,7 @@ export default async function AdminQueue({ params }: { params: Promise<{ locale:
         ) : (
           <ul className="mt-4 space-y-3">
             {submissions.map((submission) => (
-              <li key={submission.id} className="rounded-lg border border-white/10 p-4">
+              <li key={submission.id} className="panel p-5">
                 <p className="font-medium text-silver-100">{submission.serverName}</p>
                 <p className="mt-1 text-sm text-silver-500">
                   {submission.cfxJoinCode ?? submission.address ?? '—'} · {submission.contactEmail} ·{' '}
@@ -153,7 +153,7 @@ export default async function AdminQueue({ params }: { params: Promise<{ locale:
                       required
                       maxLength={1000}
                       placeholder="Мотив за отказа (влиза в решението по чл. 17 DSA)"
-                      className="min-w-64 flex-1 rounded border border-white/15 bg-ink-900 px-2 py-1 text-sm text-silver-100"
+                      className="field mt-0 min-w-64 flex-1 rounded-lg px-2.5 py-1.5 text-sm"
                     />
                     <button className={no}>Откажи</button>
                   </form>
@@ -178,7 +178,7 @@ export default async function AdminQueue({ params }: { params: Promise<{ locale:
         ) : (
           <ul className="mt-4 space-y-3">
             {reports.map((report) => (
-              <li key={report.id} className="rounded-lg border border-white/10 p-4">
+              <li key={report.id} className="panel p-5">
                 <p className="break-all text-sm text-cyan-300">{report.targetUrl}</p>
                 <p className="mt-1 text-sm text-silver-500">
                   {report.reporterName} · {report.reporterEmail} ·{' '}
@@ -225,9 +225,9 @@ function ReplyForm({ id, reply }: { id: string; reply: string | null }) {
           maxLength={1000}
           defaultValue={reply ?? ''}
           placeholder="Текстът, който собственикът на сървъра иска да се покаже под ревюто"
-          className="w-full rounded border border-white/15 bg-ink-900 px-2 py-1 text-sm text-silver-100"
+          className="field mt-0 rounded-lg px-2.5 py-1.5 text-sm"
         />
-        <button className="rounded border border-white/15 px-3 py-1 text-sm hover:border-cyan-500">
+        <button className="rounded border border-white/[0.12] px-3 py-1 text-sm hover:border-cyan-500">
           Запази отговора
         </button>
         <span className="ms-2 text-xs text-silver-500">празно поле = сваля отговора</span>

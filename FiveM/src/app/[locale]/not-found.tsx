@@ -37,13 +37,13 @@ export default async function NotFound() {
       <div className="flex flex-wrap justify-center gap-3">
         <Link
           href={`/${locale}/servers`}
-          className="inline-flex min-h-11 items-center rounded-lg bg-cyan-500 px-5 font-semibold text-ink-950 transition-colors hover:bg-cyan-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300"
+          className="btn-primary"
         >
           {t.notFound.toList}
         </Link>
         <Link
           href={`/${locale}/submit`}
-          className="inline-flex min-h-11 items-center rounded-lg border border-white/15 px-5 transition-colors hover:border-cyan-500 hover:text-cyan-300"
+          className="btn-ghost"
         >
           {t.notFound.submit}
         </Link>

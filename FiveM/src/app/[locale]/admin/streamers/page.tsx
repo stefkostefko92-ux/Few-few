@@ -8,8 +8,8 @@ import { PLATFORM_BADGE, STREAM_PLATFORMS, type StreamPlatformId } from '@/lib/s
 
 export const dynamic = 'force-dynamic';
 
-const input = 'w-full rounded border border-white/15 bg-ink-900 px-2 py-1 text-sm text-silver-100';
-const button = 'rounded border border-white/15 px-3 py-1 text-sm hover:border-cyan-500';
+const input = 'field mt-0 rounded-lg px-2.5 py-1.5 text-sm';
+const button = 'rounded border border-white/[0.12] px-3 py-1 text-sm hover:border-cyan-500';
 
 const STATUS_LABEL: Record<string, string> = {
   APPROVED: 'публичен',
@@ -35,7 +35,7 @@ export default async function AdminStreamers({
 
   return (
     <div>
-      <p className="rounded-lg border border-cyan-700/40 bg-cyan-900/10 p-4 text-sm text-silver-300">
+      <p className="rounded-2xl border border-cyan-300/20 bg-cyan-400/[0.05] p-5 text-sm leading-relaxed text-silver-300">
         Тук има <strong>лични данни</strong> на реални хора. „Свален по възражение“ (чл. 21 ОРЗД) е
         записът, който спира автоматичното откриване да го върне — <strong>не изтривай</strong>
         {' '}вместо това, защото изтрит запис се появява пак при следващия пробег на cron-а.
@@ -53,7 +53,7 @@ export default async function AdminStreamers({
         . YouTube никога не влиза публично автоматично — платформата не обявява език на излъчването.
       </p>
 
-      <section className="mt-8 max-w-xl rounded-xl border border-white/10 bg-ink-900/70 p-4">
+      <section className="mt-8 max-w-xl rounded-xl border border-white/[0.08] bg-ink-900/70 p-4">
         <h2 className="text-lg font-medium text-silver-100">Добави ръчно</h2>
         <p className="mt-1 text-sm text-silver-500">
           Единственият път за TikTok: платформата няма публично откриване на живи излъчвания.
@@ -79,7 +79,7 @@ export default async function AdminStreamers({
             <input name="displayName" maxLength={80} className={input} />
           </label>
           <div className="sm:col-span-2">
-            <button className="rounded bg-cyan-500 px-3 py-1 font-medium text-ink-950 hover:bg-cyan-400">
+            <button className="btn-primary min-h-9 rounded-lg px-3 text-sm">
               Добави
             </button>
           </div>
@@ -88,7 +88,7 @@ export default async function AdminStreamers({
 
       <ul className="mt-8 space-y-3">
         {streamers.map((streamer) => (
-          <li key={streamer.id} className="rounded-xl border border-white/10 bg-ink-900/70 p-4">
+          <li key={streamer.id} className="panel p-5">
             <div className="flex flex-wrap items-center gap-3">
               <Badge name={PLATFORM_BADGE[streamer.platform as StreamPlatformId]} size={28} />
               <strong className="text-silver-100">{streamer.displayName}</strong>
@@ -99,7 +99,7 @@ export default async function AdminStreamers({
                 className={
                   streamer.status === 'APPROVED'
                     ? 'rounded bg-cyan-700/25 px-2 py-0.5 text-xs text-cyan-200'
-                    : 'rounded border border-white/15 px-2 py-0.5 text-xs text-silver-400'
+                    : 'rounded border border-white/[0.12] px-2 py-0.5 text-xs text-silver-400'
                 }
               >
                 {STATUS_LABEL[streamer.status]}
@@ -110,7 +110,7 @@ export default async function AdminStreamers({
                 </span>
               )}
               {streamer.manual && (
-                <span className="rounded border border-white/15 px-2 py-0.5 text-xs text-silver-500">
+                <span className="rounded border border-white/[0.12] px-2 py-0.5 text-xs text-silver-500">
                   ръчен
                 </span>
               )}
@@ -136,7 +136,7 @@ export default async function AdminStreamers({
               <a
                 href={streamer.profileUrl}
                 rel="noopener nofollow"
-                className="rounded border border-white/15 px-3 py-1 text-sm text-cyan-300 hover:border-cyan-500"
+                className="rounded border border-white/[0.12] px-3 py-1 text-sm text-cyan-300 hover:border-cyan-500"
               >
                 Отвори канала
               </a>

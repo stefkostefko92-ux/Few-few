@@ -54,214 +54,243 @@ export default async function LocaleLayout({ children, params }: Props) {
   // предварително, за да пристигне преди първото рисуване и замяната на
   // резервния шрифт да не мести страницата (CLS). Другият сабсет се тегли
   // само ако страницата реално има знаци от него (`unicode-range`).
-  preload(locale === 'bg' ? '/fonts/unbounded-cyrillic.woff2' : '/fonts/unbounded-latin.woff2', {
-    as: 'font',
-    type: 'font/woff2',
-    crossOrigin: 'anonymous',
-  });
+  // Двата шрифта — дисплеят носи заглавието, текстовият — абзаца под него;
+  // и двата са на първия екран.
+  for (const font of ['unbounded', 'onest']) {
+    preload(`/fonts/${font}-${locale === 'bg' ? 'cyrillic' : 'latin'}.woff2`, {
+      as: 'font',
+      type: 'font/woff2',
+      crossOrigin: 'anonymous',
+    });
+  }
 
   // Типът е явен, защото `exact` днес не се ползва от нито един раздел и без
   // анотация TS го изхвърля от извода — а той пази реален капан: върне ли се
   // връзка към `/{locale}`, без него тя свети активна на целия сайт.
   const nav: { href: string; label: string; icon: string; exact?: boolean }[] = [
-    // „Начало“ НЯМА свой раздел нарочно: логото води там, а осмият раздел
-    // чупи прага, който е измерен — седем искат 1120 px само за навигацията,
-    // осем не се събират и при 1280. Каталогът вече е /servers, защото от
-    // landing-а насам началната убеждава, а /servers е инструментът.
+    // „Начало“ НЯМА свой раздел нарочно: логото води там. „Добави сървър“ също
+    // излезе от реда — то е ДЕЙСТВИЕ, не раздел, и стои като бутон вдясно;
+    // така навигацията е шест думи и се събира от `xl` нагоре с въздух.
     { href: `/${locale}/servers`, label: t.nav.servers, icon: 'servers' },
     { href: `/${locale}/rules`, label: t.nav.rules, icon: 'rules' },
     { href: `/${locale}/tutorials`, label: t.nav.tutorials, icon: 'tutorials' },
     { href: `/${locale}/streamers`, label: t.nav.streamers, icon: 'share' },
     { href: `/${locale}/news`, label: t.nav.news, icon: 'news' },
-    { href: `/${locale}/submit`, label: t.nav.submit, icon: 'submit' },
     { href: `/${locale}/faq`, label: t.nav.faq, icon: 'info' },
   ];
 
-  const legal = [
+  const project = [
     { href: `/${locale}/team`, label: t.nav.team },
     { href: `/${locale}/contact`, label: t.nav.contact },
     { href: `/${locale}/support`, label: t.nav.support },
+    { href: `/${locale}/submit`, label: t.nav.submit },
+  ];
+  const legal = [
     { href: `/${locale}/impresum`, label: t.footer.impresum },
     { href: `/${locale}/privacy`, label: t.footer.privacy },
     { href: `/${locale}/terms`, label: t.footer.terms },
     { href: `/${locale}/report`, label: t.footer.report },
   ];
 
+  const footerLink = 'inline-flex min-h-8 items-center text-silver-400 transition-colors hover:text-cyan-300';
+
   return (
     <html lang={HTML_LANG[locale]}>
-      <body className="min-h-dvh flex flex-col">
+      <body className="flex min-h-dvh flex-col">
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:m-3 focus:rounded focus:bg-cyan-500 focus:px-3 focus:py-2 focus:text-ink-950"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:rounded-lg focus:bg-cyan-400 focus:px-3 focus:py-2 focus:text-ink-950"
         >
           {t.nav.skipToContent}
         </a>
 
-        {/* `sticky` + `backdrop-blur`: на телефон навигацията е на един палец
-            разстояние през целия списък, а не на върха на дълга страница.
-            `z-40` е под панела на менюто, който е `z-40` в СЪЩИЯ контекст. */}
-        <header className="sticky top-0 z-40 border-b border-white/10 bg-ink-950/85 backdrop-blur">
-          {/* Трикольорът от логото — тънка лента, за да не се повтаря знамето. */}
-          <div className="flag-rule h-[3px]" aria-hidden="true" />
-          <nav
-            aria-label={t.nav.main}
-            className="mx-auto flex max-w-6xl items-center gap-x-6 gap-y-3 px-4 py-3"
-          >
-            <Link
-              href={`/${locale}`}
-              className="flex shrink-0 items-center rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-400"
+        {/* `sticky`: на телефон навигацията е на един палец разстояние през целия
+            списък. Размиването е ТУК и само тук — под хедъра минава съдържание,
+            значи има какво да се размие (за разлика от панелите). */}
+        <header className="sticky top-0 z-40">
+          {/* Трикольорът — нишка над целия сайт, не лента върху текст. */}
+          <div className="flag-rule-x h-[2px]" aria-hidden="true" />
+          <div className="border-b border-white/[0.06] bg-ink-950/75 backdrop-blur-xl backdrop-saturate-150">
+            <nav
+              aria-label={t.nav.main}
+              className="mx-auto flex h-16 max-w-site items-center gap-6 px-4 sm:h-[4.5rem] sm:px-6"
             >
-              {/* Пътят е низ, а не статичен импорт: типът на `*.png` идва от
-                  `next-env.d.ts`, който се генерира от `next build` и е
-                  git-ignored — а гейтът пуска typecheck ПРЕДИ build, тоест в
-                  CI импортът няма тип. Размерът е реалният на файла. */}
-              <Image
-                src="/brand/logo.png"
-                alt={SITE_NAME}
-                width={1280}
-                height={324}
-                priority
-                // Логото расте, но не безразборно: при 1280×324 (≈3,95:1)
-                // `h-12` дава ≈190 px ширина — още се събира до хамбургера на
-                // 360 px екран. `sizes` пази Next да не сервира 1280 px файл
-                // за 190 px кутия.
-                sizes="(min-width: 640px) 190px, 158px"
-                className="h-10 w-auto sm:h-12"
-              />
-            </Link>
-
-            {/* ── Настолна навигация ─────────────────────────────────────── */}
-            {/* `flex-nowrap` + `shrink-0`: като flex-елемент `ul`-ът се свиваше
-                до 714 px при налични 1248 и се пренасяше ВЪТРЕШНО на два реда,
-                макар да има място (измерено). Прагът е `lg`, а не `md`: при
-                768 px, нито при 1024, седемте раздела не се събират: измерено,
-                нужни са 1120 px само за навигацията, тоест до 1152 виждаше
-                хоризонтален прелив. Там хамбургерът е по-добрият отговор. */}
-            <ul className="hidden shrink-0 flex-nowrap gap-x-4 text-sm text-silver-400 xl:flex">
-              {nav.map((item) => (
-                <li key={item.href}>
-                  <NavLink
-                    href={item.href}
-                    exact={item.exact}
-                    className="flex items-center gap-1.5 rounded py-1 transition-colors hover:text-cyan-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
-                    activeClassName="text-cyan-300 underline decoration-cyan-400 decoration-2 underline-offset-8"
-                  >
-                    <Icon group="ui" name={item.icon} size={15} />
-                    {item.label}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-
-            <div className="ms-auto hidden items-center gap-4 xl:flex">
-              {/* Външна покана: `noopener` е задължителен, `nofollow` — защото
-                  не предаваме тежест на чужд домейн. */}
-              <a
-                href={DISCORD_INVITE}
-                rel="noopener nofollow"
-                className="flex min-h-11 items-center gap-1.5 text-sm text-silver-400 hover:text-cyan-300"
+              <Link
+                href={`/${locale}`}
+                className="flex shrink-0 items-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-400"
               >
-                <Icon group="brand" name="discord" size={16} />
-                {t.nav.discord}
-              </a>
-              <LanguageSwitch locale={locale} label={t.nav.language} />
-            </div>
+                {/* Пътят е низ, а не статичен импорт: типът на `*.png` идва от
+                    `next-env.d.ts`, който се генерира от `next build` и е
+                    git-ignored — а гейтът пуска typecheck ПРЕДИ build.
+                    `logo-alpha.png`, не `logo.png`: оригиналът е на черен фон без
+                    алфа и стоеше като правоъгълник върху синкавия хедър.
+                    `mix-blend-screen` не помага тук — хедърът е собствен
+                    контекст (backdrop-filter) и смесването става с полупрозрачния
+                    му фон, не със страницата. Прозрачността е изчислена веднъж:
+                    `npm run brand:logo-alpha`. */}
+                <Image
+                  src="/brand/logo-alpha.png"
+                  alt={SITE_NAME}
+                  width={1280}
+                  height={324}
+                  priority
+                  sizes="(min-width: 640px) 170px, 142px"
+                  className="h-9 w-auto sm:h-[2.6rem]"
+                />
+              </Link>
 
-            {/* ── Телефон: хамбургер ─────────────────────────────────────── */}
-            <div className="ms-auto xl:hidden">
-              <MobileNav
-                label={t.nav.menu}
-                openIcon={<Icon group="ui" name="menu" size={22} />}
-                closeIcon={<Icon group="ui" name="close" size={22} />}
-              >
-                <ul className="flex flex-col gap-1 text-base text-silver-300">
-                  {nav.map((item) => (
-                    <li key={item.href}>
-                      <NavLink
-                        href={item.href}
-                        exact={item.exact}
-                        // 44 px висока цел за пръст (WCAG 2.5.8 иска ≥24, но
-                        // 44 е употребимото на телефон).
-                        className="flex min-h-11 items-center gap-2.5 rounded-lg px-2 hover:bg-white/5 hover:text-cyan-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400"
-                        activeClassName="bg-cyan-500/10 text-cyan-300"
-                      >
-                        <Icon group="ui" name={item.icon} size={18} />
-                        {item.label}
-                      </NavLink>
-                    </li>
-                  ))}
-                </ul>
+              {/* ── Настолна навигация ───────────────────────────────────── */}
+              <ul className="hidden shrink-0 flex-nowrap items-center gap-1 text-[0.9375rem] text-silver-300 xl:flex">
+                {nav.map((item) => (
+                  <li key={item.href}>
+                    <NavLink
+                      href={item.href}
+                      exact={item.exact}
+                      className="flex min-h-10 items-center rounded-full px-3.5 transition-colors hover:bg-white/[0.05] hover:text-silver-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
+                      activeClassName="bg-white/[0.07] text-silver-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                    >
+                      {item.label}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
 
-                <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3">
-                  <a
-                    href={DISCORD_INVITE}
-                    rel="noopener nofollow"
-                    className="flex min-h-11 items-center gap-2 text-sm text-silver-400 hover:text-cyan-300"
-                  >
-                    <Icon group="brand" name="discord" size={18} />
-                    {t.nav.discord}
-                  </a>
-                  <LanguageSwitch locale={locale} label={t.nav.language} />
-                </div>
-              </MobileNav>
-            </div>
-          </nav>
+              <div className="ms-auto hidden items-center gap-3 xl:flex">
+                {/* Външна покана: `noopener` е задължителен, `nofollow` — защото
+                    не предаваме тежест на чужд домейн. */}
+                <a
+                  href={DISCORD_INVITE}
+                  rel="noopener nofollow"
+                  aria-label={t.nav.discord}
+                  title={t.nav.discord}
+                  className="flex size-10 items-center justify-center rounded-full border border-white/[0.1] text-silver-300 transition-colors hover:border-cyan-400/60 hover:text-cyan-200"
+                >
+                  <Icon group="brand" name="discord" size={18} />
+                </a>
+                <LanguageSwitch locale={locale} label={t.nav.language} />
+                <Link href={`/${locale}/submit`} className="btn-primary min-h-10 rounded-full px-4 text-sm">
+                  {t.nav.submit}
+                </Link>
+              </div>
+
+              {/* ── Телефон: хамбургер ───────────────────────────────────── */}
+              <div className="ms-auto xl:hidden">
+                <MobileNav
+                  label={t.nav.menu}
+                  openIcon={<Icon group="ui" name="menu" size={22} />}
+                  closeIcon={<Icon group="ui" name="close" size={22} />}
+                >
+                  <ul className="flex flex-col gap-1 text-[1.0625rem] text-silver-200">
+                    {nav.map((item) => (
+                      <li key={item.href}>
+                        <NavLink
+                          href={item.href}
+                          exact={item.exact}
+                          // 48 px висока цел за пръст (WCAG 2.5.8 иска ≥24, но
+                          // 44+ е употребимото на телефон).
+                          className="flex min-h-12 items-center gap-3 rounded-xl px-3 hover:bg-white/[0.05] hover:text-cyan-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400"
+                          activeClassName="bg-cyan-400/[0.08] text-cyan-200"
+                        >
+                          <Icon group="ui" name={item.icon} size={19} />
+                          {item.label}
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Link href={`/${locale}/submit`} className="btn-primary mt-4 w-full">
+                    {t.nav.submit}
+                  </Link>
+
+                  <div className="mt-4 flex items-center justify-between border-t border-white/[0.08] pt-4">
+                    <a
+                      href={DISCORD_INVITE}
+                      rel="noopener nofollow"
+                      className="flex min-h-11 items-center gap-2 text-sm text-silver-300 hover:text-cyan-300"
+                    >
+                      <Icon group="brand" name="discord" size={18} />
+                      {t.nav.discord}
+                    </a>
+                    <LanguageSwitch locale={locale} label={t.nav.language} />
+                  </div>
+                </MobileNav>
+              </div>
+            </nav>
+          </div>
         </header>
 
-        {/* Обвивката с `overflow-x-clip` е предпазителят за героя на началната,
-            който излиза от контейнера до ръба на екрана
-            (`mx-[calc(50%-50vw)] w-screen`). `100vw` включва вертикалната лента
-            за скролиране там, където тя заема място (класическа лента на
-            Windows/Linux) — тоест героят е с ~15 px по-широк от видимото и се
-            появява ХОРИЗОНТАЛЕН скрол на целия сайт.
-            Клипът е на ПЪЛНОШИРОК предшественик, НЕ на `main` — и това е
-            поправка на реален дефект, не стил: `overflow: clip` реже по padding
-            box-а на елемента, а `main` е `max-w-6xl` (1152 px). Сложен там, той
-            режеше героя до 1152 px на всеки по-широк екран, тоест „до ръба“ беше
-            вярно само на тесни екрани; измерено с пиксели на 1920 px.
+        {/* Обвивката с `overflow-x-clip` е предпазителят за героите, които излизат
+            от контейнера до ръба на екрана (`mx-[calc(50%-50vw)] w-screen`).
+            `100vw` включва вертикалната лента за скролиране там, където тя заема
+            място — тоест героят е с ~15 px по-широк от видимото и се появява
+            ХОРИЗОНТАЛЕН скрол на целия сайт.
+            Клипът е на ПЪЛНОШИРОК предшественик, НЕ на `main`: `overflow: clip`
+            реже по padding box-а, а `main` е `max-w-site` — сложен там, той
+            режеше героя до тази ширина на всеки по-широк екран.
             `clip`, а не `hidden`: `hidden` прави скрол-контейнер и чупи
-            `position: sticky` вътре, а `clip` само реже. Другата ос остава
-            `visible`, затова нищо не се отрязва вертикално. */}
+            `position: sticky` вътре. */}
         <div className="flex-1 overflow-x-clip">
-          <main id="main" className="mx-auto w-full max-w-6xl px-4 py-10">
+          <main id="main" className="mx-auto w-full max-w-site px-4 py-10 sm:px-6 sm:py-14">
             {children}
           </main>
         </div>
 
-        <footer className="border-t border-white/10 px-4 py-8 text-sm text-silver-500">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4">
-            <p className="flex items-center gap-2">
-              <Mascot detail="icon" size={22} title={null} />© {new Date().getFullYear()} {SITE_NAME}{' '}
-              · {t.footer.product}{' '}
-              <a
-                href="https://carbonstealth.eu"
-                className="text-cyan-300 underline underline-offset-2"
-              >
+        <footer className="mt-16 border-t border-white/[0.06] bg-ink-950/70">
+          <div className="mx-auto grid max-w-site gap-12 px-4 py-14 sm:px-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,2fr)]">
+            <div>
+              <Image
+                src="/brand/logo-alpha.png"
+                alt={SITE_NAME}
+                width={1280}
+                height={324}
+                sizes="220px"
+                className="h-12 w-auto"
+              />
+              <p className="mt-5 max-w-xs text-sm leading-relaxed text-silver-400">{t.meta.tagline}</p>
+              <a href={DISCORD_INVITE} rel="noopener nofollow" className="btn-ghost mt-6">
+                <Icon group="brand" name="discord" size={18} />
+                {t.footer.discord}
+              </a>
+            </div>
+
+            <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">
+              {[
+                { heading: t.footer.colBrowse, items: nav },
+                { heading: t.footer.colProject, items: project },
+                { heading: t.footer.colLegal, items: legal },
+              ].map((column) => (
+                <div key={column.heading}>
+                  <h2 className="font-display text-sm font-semibold tracking-[-0.01em] text-silver-100">
+                    {column.heading}
+                  </h2>
+                  <ul className="mt-4 space-y-1.5 text-sm">
+                    {column.items.map((item) => (
+                      <li key={item.href}>
+                        <Link href={item.href} className={footerLink}>
+                          {item.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mx-auto max-w-site px-4 sm:px-6">
+            <div className="hairline" aria-hidden="true" />
+          </div>
+          <div className="mx-auto max-w-site px-4 pb-10 pt-6 text-sm text-silver-500 sm:px-6">
+            <p className="flex flex-wrap items-center gap-2">
+              <Mascot detail="icon" size={22} title={null} />© {new Date().getFullYear()} {SITE_NAME} ·{' '}
+              {t.footer.product}{' '}
+              <a href="https://carbonstealth.eu" className="link">
                 Carbon Stealth VCC
               </a>
             </p>
-            <ul className="flex flex-wrap gap-4">
-              <li>
-                <a
-                  href={DISCORD_INVITE}
-                  rel="noopener nofollow"
-                  className="flex items-center gap-1.5 underline underline-offset-2 hover:text-cyan-300"
-                >
-                  <Icon group="brand" name="discord" size={15} />
-                  {t.footer.discord}
-                </a>
-              </li>
-              {legal.map((item) => (
-                <li key={item.href}>
-                  <Link href={item.href} className="underline underline-offset-2 hover:text-cyan-300">
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {/* Контрастът е проверен: silver-500 върху ink-950 дава 6,7:1. */}
+            <p className="mt-3 max-w-4xl text-xs leading-relaxed text-silver-500">{t.footer.disclaimer}</p>
           </div>
-          {/* Контрастът е проверен: silver-500 върху ink-950 минава 4.5:1. */}
-          <p className="mx-auto mt-4 max-w-6xl text-sm text-silver-500">{t.footer.disclaimer}</p>
         </footer>
 
         <JsonLd data={siteJsonLd(locale)} />

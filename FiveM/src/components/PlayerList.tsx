@@ -79,16 +79,16 @@ export function PlayerList({
           се рендират на сървъра; решение на собственика, отбелязано в одита. */}
       <dialog
         ref={ref}
-        className="max-w-md rounded-xl border border-white/10 bg-ink-900 p-0 text-silver-200 backdrop:bg-black/70 open:flex open:flex-col"
+        className="panel w-[min(28rem,calc(100vw-2rem))] p-0 text-silver-200 backdrop:bg-ink-950/80 backdrop:backdrop-blur-sm open:flex open:flex-col"
       >
-        <div className="flex items-center justify-between gap-4 border-b border-white/10 px-4 py-3">
-          <h2 className="text-base font-semibold">
+        <div className="flex items-center justify-between gap-4 border-b border-white/[0.08] px-5 py-4">
+          <h2 className="font-display text-base font-semibold tracking-[-0.01em] text-silver-100">
             {labels.title} ({names.length})
           </h2>
           <button
             type="button"
             onClick={() => ref.current?.close()}
-            className="rounded-lg px-2 py-1 text-silver-400 hover:text-cyan-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400"
+            className="btn-ghost min-h-9 rounded-full px-3 text-sm font-medium"
           >
             {labels.close}
           </button>
@@ -97,7 +97,7 @@ export function PlayerList({
         {/* `data-nosnippet` е тук, на `div`, НЕ на `<dialog>`: Google го
             признава само върху `span`, `div` и `section` — на друг елемент е
             декорация. Пренесен след бележка на червения екип. */}
-        <div data-nosnippet="" className="max-h-[60dvh] overflow-y-auto px-4 py-3">
+        <div data-nosnippet="" className="max-h-[60dvh] overflow-y-auto px-5 py-4">
           {names.length === 0 ? (
             <p className="text-sm text-silver-400">{labels.none}</p>
           ) : (
@@ -107,14 +107,14 @@ export function PlayerList({
                 // играчи, а не дубликат, който да се слее.
                 <li
                   key={`${name}-${index}`}
-                  className="rounded border border-white/10 bg-ink-950 px-2 py-0.5 text-sm"
+                  className="chip text-sm"
                 >
                   {name}
                 </li>
               ))}
             </ul>
           )}
-          <p className="mt-3 border-t border-white/10 pt-3 text-xs text-silver-500">{labels.note}</p>
+          <p className="mt-4 border-t border-white/[0.08] pt-3 text-xs leading-relaxed text-silver-500">{labels.note}</p>
         </div>
       </dialog>
     </>

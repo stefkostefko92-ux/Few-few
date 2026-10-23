@@ -9,24 +9,28 @@ import { ADDRESS_ONE_LINE, PUBLISHER } from '@/lib/site';
  */
 export function LegalArticle({ doc, withController = false }: { doc: LegalDoc; withController?: boolean }) {
   return (
-    <article className="max-w-2xl space-y-4 text-silver-300">
-      <h1 className="page-title">
-        {doc.title}
-      </h1>
+    <article>
+      <header className="max-w-3xl">
+        <h1 className="page-title">{doc.title}</h1>
 
       {/* Дата на редакцията — чл. 12, ал. 1 ОРЗД и чл. 14, ал. 2 DSA. Без нея
           читателят не знае коя версия чете, а уведомяването за промяна е
           недоказуемо. */}
-      <p className="text-sm text-silver-500">
-        <time dateTime={doc.effective}>{doc.effective}</time> — дата, от която тази редакция е в сила
-      </p>
+        <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.02] px-3 py-1 text-sm text-silver-400">
+          <time dateTime={doc.effective}>{doc.effective}</time> — дата, от която тази редакция е в сила
+        </p>
+      </header>
+
+      <div className="hairline mt-10 max-w-3xl" aria-hidden="true" />
+
+      <div className="prose-doc mt-8">
 
       {withController && (
         <p>
           <strong>{PUBLISHER.legalName}</strong>, {ADDRESS_ONE_LINE}, {PUBLISHER.eik} ·{' '}
           <a
             href={`mailto:${PUBLISHER.emailPrivacy}`}
-            className="text-cyan-300 underline underline-offset-2"
+            className="link"
           >
             {PUBLISHER.emailPrivacy}
           </a>
@@ -49,7 +53,6 @@ export function LegalArticle({ doc, withController = false }: { doc: LegalDoc; w
               // `LegalBlock.anchor`: преведено заглавие = преведено id =
               // счупена връзка от другия език.
               id={block.anchor ?? slugify(block.h)}
-              className="scroll-mt-24 pt-4 text-xl font-semibold text-silver-100"
             >
               {block.h}
             </h2>
@@ -57,7 +60,7 @@ export function LegalArticle({ doc, withController = false }: { doc: LegalDoc; w
         }
         if (block.ul) {
           return (
-            <ul key={index} className="list-disc space-y-2 pl-5">
+            <ul key={index}>
               {block.ul.map((item) => (
                 <li key={item}>{item}</li>
               ))}
@@ -68,10 +71,11 @@ export function LegalArticle({ doc, withController = false }: { doc: LegalDoc; w
       })}
 
       <p className="pt-4 text-sm text-silver-500">
-        <a href={`mailto:${PUBLISHER.email}`} className="text-cyan-300 underline underline-offset-2">
+        <a href={`mailto:${PUBLISHER.email}`} className="link">
           {PUBLISHER.email}
         </a>
       </p>
+      </div>
     </article>
   );
 }

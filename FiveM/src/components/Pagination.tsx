@@ -24,7 +24,7 @@ export function Pagination({
 }) {
   if (pages <= 1) return null;
   const link =
-    'inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-white/15 px-3 text-sm tabular-nums transition-colors hover:border-cyan-500 hover:text-cyan-300';
+    'inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.02] px-4 text-sm tabular-nums text-silver-200 transition-colors hover:border-cyan-400/60 hover:text-cyan-200';
 
   return (
     <nav aria-label={labels.pagination} className="mt-10">
@@ -44,7 +44,7 @@ export function Pagination({
           ) : (
             <li key={n}>
               {n === page ? (
-                <span aria-current="page" className={`${link} border-cyan-500 text-cyan-300`}>
+                <span aria-current="page" className={`${link} border-cyan-300/50 bg-cyan-400/10 text-cyan-200`}>
                   <span className="sr-only">{labels.page} </span>
                   {n}
                 </span>

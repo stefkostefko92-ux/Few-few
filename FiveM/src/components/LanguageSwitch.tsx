@@ -14,7 +14,7 @@ export function LanguageSwitch({ locale, label }: { locale: Locale; label: strin
   const pathname = usePathname() ?? `/${locale}`;
 
   return (
-    <div className="flex items-center gap-1 text-sm" role="group" aria-label={label}>
+    <div className="flex items-center rounded-full border border-white/[0.1] p-1 text-xs font-semibold" role="group" aria-label={label}>
       {LOCALES.map((option) => {
         const active = option === locale;
         return (
@@ -25,8 +25,8 @@ export function LanguageSwitch({ locale, label }: { locale: Locale; label: strin
             aria-current={active ? 'true' : undefined}
             className={
               active
-                ? 'rounded px-2 py-1 font-semibold text-cyan-300'
-                : 'rounded px-2 py-1 text-silver-500 underline underline-offset-2 hover:text-cyan-300'
+                ? 'flex min-h-8 min-w-9 items-center justify-center rounded-full bg-white/[0.09] px-2 text-silver-100'
+                : 'flex min-h-8 min-w-9 items-center justify-center rounded-full px-2 text-silver-400 transition-colors hover:text-cyan-300'
             }
           >
             <span className="sr-only">{LOCALE_NAMES[option]}</span>

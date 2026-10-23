@@ -40,14 +40,14 @@ export default async function RulesPage({ params }: Props) {
       <h1 className="page-title">
         {t.rules.h1}
       </h1>
-      <p className="mt-3 text-silver-400">{t.rules.intro}</p>
+      <p className="lead mt-5">{t.rules.intro}</p>
 
-      <nav aria-label={t.rules.onThisPage} className="mt-6 flex flex-wrap gap-2 text-sm">
+      <nav aria-label={t.rules.onThisPage} className="mt-8 flex flex-wrap gap-2 text-sm">
         {rules.map((section) => (
           <a
             key={section.id}
             href={`#${section.id}`}
-            className="rounded-lg border border-white/15 px-3 py-1.5 hover:border-cyan-500 hover:text-cyan-300"
+            className="inline-flex min-h-10 items-center rounded-full border border-white/[0.1] bg-white/[0.02] px-4 text-silver-200 transition-colors hover:border-cyan-400/60 hover:text-cyan-200"
           >
             {section.title}
           </a>
@@ -55,33 +55,33 @@ export default async function RulesPage({ params }: Props) {
       </nav>
 
       {rules.map((section) => (
-        <section key={section.id} id={section.id} className="mt-12 scroll-mt-24">
-          <h2 className="flex items-center gap-3 text-2xl font-semibold tracking-tight">
+        <section key={section.id} id={section.id} className="panel mt-6 scroll-mt-28 p-6 sm:p-8">
+          <h2 className="section-title flex items-center gap-3">
             <Badge name={SECTION_BADGE[section.id] ?? 'rules'} size={40} />
             {section.title}
           </h2>
-          <p className="mt-2 text-silver-400">{section.intro}</p>
+          <p className="mt-3 leading-relaxed text-silver-400">{section.intro}</p>
 
           <ul className="mt-6 space-y-8">
             {section.items.map((item) => (
               <li key={item.id} id={item.id} className="scroll-mt-24">
-                <h3 className="font-medium text-silver-100">
+                <h3 className="font-display text-[1.0625rem] font-semibold tracking-[-0.015em] text-silver-100">
                   {item.title}
                   {item.community && (
-                    <span className="ms-2 rounded border border-white/15 px-2 py-0.5 align-middle text-xs font-normal text-silver-500">
+                    <span className="chip ms-2 align-middle font-ui font-normal">
                       {t.rules.communityPractice}
                     </span>
                   )}
                 </h3>
-                <p className="mt-1 text-silver-400">{item.body}</p>
+                <p className="mt-2 leading-relaxed text-silver-400">{item.body}</p>
 
                 {item.example && (
                   <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
-                    <div className="rounded-lg border border-cyan-700/40 bg-cyan-900/20 p-3">
+                    <div className="rounded-xl border border-cyan-300/20 bg-cyan-400/[0.05] p-4">
                       <dt className="font-medium text-cyan-200">✓</dt>
                       <dd className="mt-1 text-silver-300">{item.example.good}</dd>
                     </div>
-                    <div className="rounded-lg border border-red-500/30 bg-red-950/20 p-3">
+                    <div className="rounded-xl border border-red-400/25 bg-red-950/25 p-4">
                       <dt className="font-medium text-red-300">✕</dt>
                       <dd className="mt-1 text-silver-300">{item.example.bad}</dd>
                     </div>
@@ -99,7 +99,7 @@ export default async function RulesPage({ params }: Props) {
                 <a
                   href={source.url}
                   rel="noopener nofollow"
-                  className="text-cyan-300 underline underline-offset-2"
+                  className="link"
                 >
                   {source.label}
                 </a>
@@ -110,7 +110,7 @@ export default async function RulesPage({ params }: Props) {
       ))}
 
       <p className="mt-12 text-sm text-silver-500">
-        <Link href={`/${locale}/tutorials`} className="text-cyan-300 underline underline-offset-2">
+        <Link href={`/${locale}/tutorials`} className="link">
           {t.nav.tutorials}
         </Link>
       </p>

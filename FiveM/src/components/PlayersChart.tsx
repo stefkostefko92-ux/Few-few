@@ -28,7 +28,7 @@ export function PlayersChart({
   const empty = values.length === 0 || peak === 0;
 
   return (
-    <figure className="rounded-xl border border-white/10 bg-ink-900/70 p-5">
+    <figure className="panel p-5 sm:p-6">
       <div className="flex items-end justify-between gap-4">
         <figcaption className="text-sm text-silver-400">{label}</figcaption>
         {!empty && (
@@ -48,7 +48,7 @@ export function PlayersChart({
           <div
             role="img"
             aria-label={`${label}: ${peakLabel} ${peak} ${playersLabel}`}
-            className="mt-4 flex h-28 items-end gap-[3px] border-b border-white/10"
+            className="mt-5 flex h-36 items-end gap-[3px] border-b border-white/[0.08]"
           >
             {values.map((value, index) => (
               // Колоната е на цялата височина: мишката хваща и празното над
@@ -61,10 +61,11 @@ export function PlayersChart({
                 className="flex h-full flex-1 items-end"
               >
                 <div
-                  // cyan-600, не cyan-700. Измерено срещу реалния фон на картата
-                  // (`ink-900/70` върху `ink-950`): cyan-700 дава ≈3,1:1 — точно на
-                  // ръба на 1.4.11 за нетекстово съдържание, cyan-600 дава ≈4,8:1.
-                  className={`w-full rounded-t-[3px] ${value === peak ? 'bg-cyan-300' : 'bg-cyan-600'}`}
+                  // Градиентът започва от cyan-600, не от cyan-700: срещу фона на
+                  // панела cyan-700 дава ≈3,1:1 — точно на ръба на 1.4.11 за
+                  // нетекстово съдържание, cyan-600 дава ≈4,6:1. Най-тъмната
+                  // точка на стълба е тази, която трябва да минава.
+                  className={`w-full rounded-t-[3px] ${value === peak ? 'bg-cyan-300 shadow-[0_0_18px_rgba(96,224,240,0.7)]' : 'bg-gradient-to-t from-cyan-600 to-cyan-400'}`}
                   style={{ height: `${Math.max(2, (value / peak) * 100)}%` }}
                 />
               </div>

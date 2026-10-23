@@ -29,6 +29,9 @@ export const en: Dictionary = {
     language: 'Language',
   },
   footer: {
+    colBrowse: 'Browse',
+    colProject: 'The project',
+    colLegal: 'Legal',
     product: 'a product by',
     impresum: 'Legal notice',
     privacy: 'Privacy',
@@ -153,6 +156,8 @@ export const en: Dictionary = {
     chartEmpty: 'Not enough history for this server yet.',
     lastChecked: 'Last checked',
     lastOnline: 'Last online',
+    /** Значката до името на сървъра в героя — състояние, не момент. */
+    liveBadge: 'online',
     onlineNow: 'now',
     neverOnline: 'not seen yet',
     slots: 'Slots',

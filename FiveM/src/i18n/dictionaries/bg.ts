@@ -26,6 +26,9 @@ export const bg = {
     language: 'Език',
   },
   footer: {
+    colBrowse: 'Разгледай',
+    colProject: 'Проектът',
+    colLegal: 'Правна информация',
     product: 'продукт на',
     impresum: 'Импресум',
     privacy: 'Поверителност',
@@ -165,6 +168,8 @@ export const bg = {
     lastChecked: 'Последна проверка',
     // ── Факти, които отличават страницата (всички са полета от базата) ──
     lastOnline: 'Последно онлайн',
+    /** Значката до името на сървъра в героя — състояние, не момент. */
+    liveBadge: 'онлайн',
     onlineNow: 'сега',
     neverOnline: 'не е виждан',
     slots: 'Слотове',
