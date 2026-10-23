@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<!--
+  Фикстура за теста на вноса на новини (src/lib/__tests__/ingest-news.test.ts).
+
+  Реалният HTML на https://bobovdol.egov.bg/wps/portal/municipality-bobovdol/actual/news
+  НЕ беше достъпен при писането (23.10.2026: 503 / прекъсната връзка за целия
+  портал egov.bg; копието в web.archive.org — също). Затова:
+  - МЕНЮТО е с ИСТИНСКИТЕ адреси на страниците, които старият четец внесе
+    погрешно като „новини“ (взети от sourceUrl на публикациите на живо);
+  - СПИСЪКЪТ с новини е синтетичен — по адресната схема на портала
+    (/wps/portal/municipality-bobovdol/<раздел>/<подраздел>/<адрес>), заглавията
+    са примерни и не са истински съобщения на общината.
+  Без лични данни. Щом има реален HTML — заменете този файл с него (след като
+  махнете лични данни) и обновете очакванията в теста.
+-->
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<title>Новини - Община Бобов дол</title>
+</head>
+<body>
+<header class="wpthemeHeader">
+  <a class="logo" href="/wps/portal/municipality-bobovdol/home"><img src="/wps/contenthandler/logo.png" alt="Община Бобов дол"></a>
+  <nav class="wpthemeNav" aria-label="Главно меню">
+    <ul>
+      <li><a href="/wps/portal/municipality-bobovdol/home">Начало</a></li>
+      <li><a href="/wps/portal/municipality-bobovdol/municipality/history">История</a></li>
+      <li><a href="/wps/portal/municipality-bobovdol/municipality/municipality-characteristics">Характеристики на общината</a></li>
+      <li><a href="/wps/portal/municipality-bobovdol/municipality/symbols-honorable-citizens">Символи и почетни граждани</a></li>
+      <li><a href="/wps/portal/municipality-bobovdol/municipality/disaster.accident.protection">Защита при бедствия и аварии</a></li>
+      <li><a href="/wps/portal/municipality-bobovdol/administration/mayor/rights">Правомощия на Кмета</a></li>
+      <li><a href="/wps/portal/municipality-bobovdol/administration/mayor/managing.program">Управленска програма</a></li>
+      <li><a href="/wps/portal/municipality-bobovdol/administration/mayor/list.released.acts">Списък на издадените актове</a></li>
+      <li><a href="/wps/portal/municipality-bobovdol/administration/administration./rules.of.procedures">Устройствен правилник</a></li>
+      <li><a href="/wps/portal/municipality-bobovdol/administration/administration./structure.and.functions">Структура и функции</a></li>
+      <li><a href="/wps/portal/municipality-bobovdol/administration/administration./taking.decisions.processes">Процеси на вземане на решения</a></li>
+      <li><a href="/wps/portal/municipality-bobovdol/administration/administration./declarations.zpkonpi">Декларации по ЗПКОНПИ</a></li>
+      <li><a href="/wps/portal/municipality-bobovdol/administration/administration./declarations.zpkonpi/dekl-ZPKONPI-2022">Декларации по чл.35 от ЗПКОНПИ -2022г.</a></li>
+      <li><a href="/wps/portal/municipality-bobovdol/administration/administration./declarations.zpk/zpk-chl49">Декларации по чл.49 от ЗПК - 2024г.</a></li>
+      <li><a href="/wps/portal/municipality-bobovdol/actual/news">Новини</a></li>
+      <li><a href="/wps/portal/municipality-bobovdol/actual/auctions.and.competition">Търгове и конкурси</a></li>
+      <li><a href="/wps/portal/municipality-bobovdol/actual/military-report-office">Офис за военен отчет на общината</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main class="wpthemeMainContent">
+  <div class="breadcrumbs">
+    <a href="/wps/portal/municipality-bobovdol/home">Начало</a> /
+    <a href="/wps/portal/municipality-bobovdol/actual">Актуално</a> / Новини
+  </div>
+  <h1>Новини</h1>
+
+  <div class="news-list">
+    <!-- 1: дата ПРЕДИ заглавието, снимка и „Прочети повече“ към същия адрес -->
+    <div class="news-item">
+      <a href="/wps/portal/municipality-bobovdol/actual/news/primer-remont-na-ulichnoto-osvetlenie"><img src="/wps/wcm/connect/municipality-bobovdol/primer-1.jpg" alt=""></a>
+      <div class="news-date">21.10.2026</div>
+      <h3 class="news-title"><a href="/wps/portal/municipality-bobovdol/actual/news/primer-remont-na-ulichnoto-osvetlenie">Пример: ремонт на уличното осветление в централната част</a></h3>
+      <p class="news-summary">Примерно резюме на първата новина &mdash; текстът е само за теста.</p>
+      <a class="more" href="/wps/portal/municipality-bobovdol/actual/news/primer-remont-na-ulichnoto-osvetlenie">Прочети повече</a>
+    </div>
+
+    <!-- 2: абсолютен адрес; дата с „г.“ -->
+    <div class="news-item">
+      <span class="news-date">16.10.2026 г.</span>
+      <h3 class="news-title"><a href="https://bobovdol.egov.bg/wps/portal/municipality-bobovdol/actual/news/primer-zasedanie-na-obshtinskiya-savet">Пример: заседание на Общинския съвет &amp; дневен ред</a></h3>
+      <p class="news-summary">Второ примерно резюме.</p>
+      <a class="more" href="https://bobovdol.egov.bg/wps/portal/municipality-bobovdol/actual/news/primer-zasedanie-na-obshtinskiya-savet">Прочети повече</a>
+    </div>
+
+    <!-- 3: БЕЗ дата — не бива да се внесе (датата е задължителна) -->
+    <div class="news-item">
+      <h3 class="news-title"><a href="/wps/portal/municipality-bobovdol/actual/news/primer-novina-bez-data">Пример: съобщение без посочена дата</a></h3>
+      <p class="news-summary">Тази новина няма дата.</p>
+      <a class="more" href="/wps/portal/municipality-bobovdol/actual/news/primer-novina-bez-data">Прочети повече</a>
+    </div>
+
+    <!-- 4: дата с име на месеца -->
+    <div class="news-item">
+      <time class="news-date">9 октомври 2026</time>
+      <h3 class="news-title"><a href="/wps/portal/municipality-bobovdol/actual/news/primer-grafik-za-smetosabirane">Пример: график за сметосъбиране през ноември</a></h3>
+      <p class="news-summary">Четвърто примерно резюме.</p>
+    </div>
+  </div>
+
+  <div class="pagination">
+    <a href="/wps/portal/municipality-bobovdol/actual/news/!ut/p/z1/04_Sj9CPykssy0xPLMnMz0vMAfIjo8zi_QxNDDx8DIy8DUwDTA0cnV283J2DA40MTEz0w8EKDHAARwP9KEL6o8BK8Jjg5W-sH6UflZVYlqhfkBthkOmoqAgAN_eqBw!!/dz/d5/L2dBISEvZ0FBIS9nQSEh/">Следваща страница с новини</a>
+    <a href="/wps/portal/municipality-bobovdol/actual/news">Всички новини на общината</a>
+  </div>
+</main>
+
+<aside class="sidebar">
+  <a href="https://www.egov.bg/wps/portal/egov/home">Портал за електронни услуги на държавата</a>
+  <a href="/wps/portal/municipality-bobovdol/actual/auctions.and.competition">Обявени търгове и конкурси на общината</a>
+</aside>
+
+<footer class="wpthemeFooter">
+  <a href="/wps/portal/municipality-bobovdol/contacts">Контакти с общинската администрация</a>
+  <a href="/wps/portal/municipality-bobovdol/cookies">Политика за бисквитките на сайта</a>
+  <a href="/wps/portal/municipality-bobovdol/accessibility">Декларация за достъпност на сайта</a>
+  <span>© 2026 Община Бобов дол. Последна актуализация: 01.06.2026</span>
+</footer>
+</body>
+</html>
