@@ -3,6 +3,7 @@ import Image from "next/image";
 import LabelStudio from "@/components/studios/LabelStudio";
 import ToolFaq, { type Faq } from "@/components/ToolFaq";
 import RelatedTools from "@/components/RelatedTools";
+import ToolGuide from "@/components/ToolGuide";
 import { pageMeta, toolJsonLd } from "@/lib/seo";
 
 const TITLE = "Безплатни етикети за печат и стикери за буркани";
@@ -73,6 +74,7 @@ export default function EtiketiPage() {
         </p>
       </header>
       <LabelStudio />
+      <ToolGuide current="/etiketi" howTo={HOWTO} />
       <ToolFaq items={FAQ} />
       <RelatedTools current="/etiketi" />
       <script
