@@ -1,6 +1,6 @@
 # Privacy Policy, Supreme AdBlock
 
-_Last updated: 16 October 2026 · applies to the Supreme AdBlock browser extension and to adblock.carbonstealth.eu_
+_Last updated: 23 October 2026 · applies to the Supreme AdBlock browser extension and to adblock.carbonstealth.eu_
 
 <!-- Keep in sync with server/privacy.html (the Privacy Policy URL in the Chrome Web Store). -->
 
@@ -77,7 +77,30 @@ Google under its own terms. You can switch these reminders off in Settings.
 
 **Global Privacy Control (on by default).** Unless you switch it off in Settings, your browser adds the header `Sec-GPC: 1` to its requests to the sites you visit, and pages can read `navigator.globalPrivacyControl`. It asks those sites not to sell or share your personal data. The signal is the same for everyone and carries no identifier, so it says nothing about you; it is not sent on sites you allowed or while protection is paused.
 
+**The page after removal.** When you remove the extension, your browser opens adblock.carbonstealth.eu/bye in a new tab: a static page with fixes for common problems, a link to install it again and our email address. The address is the same for everyone and carries no identifier, no version and no reason; like the rest of this website, the visit is not logged and the page sets no cookies.
+
 There are no other requests: no analytics, no crash reports, no "phone home".
+
+## Check it yourself
+
+You do not have to take our word for any of this. In Chrome, Edge or Brave:
+
+1. Open `chrome://extensions` (in Edge, `edge://extensions`) and switch on **Developer mode**.
+2. Under Supreme AdBlock, next to **Inspect views**, click **service worker**. The
+   browser's developer tools open for the extension itself.
+3. Choose the **Network** tab and keep it open. In the extension's Settings, click
+   **Update now**: you will see exactly two requests to us, `filters.json` and
+   `filters.json.sig`, with no cookie and nothing about you in the address. Browse as
+   usual: nothing else appears, unless you added a filter list or turned one on from
+   its author, which then comes from that list's own address.
+4. Open https://adblock.carbonstealth.eu/filters.json in a tab to read what was
+   downloaded: plain JSON with domain names, CSS selectors and YouTube field names.
+   Its Ed25519 signature is `filters.json.sig`, next to it; the public keys that check it are in
+   `background.js` (`SIG_PUBKEYS_B64`).
+
+The code itself is in the package, not minified, and readable from the same
+developer tools (**Sources**). The source is also public, with the tests that check
+these promises: https://github.com/stefkostefko92-ux/Few-few/tree/main/adblock
 
 ## Reporting a broken site
 

@@ -48,6 +48,10 @@ ok(`popup.js FALLBACK == en for every key (drift: ${drift.join(",") || "none"})`
   ok(`at least 54 languages (${langs.size} languages, ${locales.length + 1} locale folders)`, langs.size >= 54);
   const bullets = (t) => (t.match(/•/g) || []).length;
   const enListing = existsSync(join(ROOT, "docs", "listing", "en.txt")) ? read("docs", "listing", "en.txt") : "";
+  // Името в магазина (= extName): марката никога не се превежда; само en/bg/de/it носят родова дума след
+  // тире (5.5.1). Към още езици — само ако Impressions в тези четири покажат ръст (docs/METRICS.md).
+  const NAMED = { bg: "Supreme AdBlock – блокер на реклами", de: "Supreme AdBlock – Werbeblocker", it: "Supreme AdBlock – Blocco annunci" };
+  ok(`en name: “${en.extName.message}”`, en.extName.message === "Supreme AdBlock – Ad Blocker");
   const bad = [];
   for (const L of locales) {
     let d;
@@ -63,7 +67,7 @@ ok(`popup.js FALLBACK == en for every key (drift: ${drift.join(",") || "none"})`
       }
       if (en[k].placeholders && JSON.stringify(d[k].placeholders) !== JSON.stringify(en[k].placeholders)) bad.push(`${L}: ${k} placeholders object`);
     }
-    if (d.extName && d.extName.message !== "Supreme AdBlock") bad.push(`${L}: extName translated`);
+    if (d.extName && d.extName.message !== (NAMED[L] || "Supreme AdBlock")) bad.push(`${L}: extName is “${d.extName.message}”`);
     if (d.extDescription && d.extDescription.message.length > 132) bad.push(`${L}: extDescription ${d.extDescription.message.length} > 132`);
     const lp = join(ROOT, "docs", "listing", L + ".txt");
     if (!existsSync(lp)) bad.push(`${L}: no docs/listing/${L}.txt`);

@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokkeert overal advertenties: YouTube-videoadvertenties, banners, pop-ups, trackers, cookiebanners en anti-adblockmuren."
+    "message": "Advertentieblokker voor YouTube en het web: videoadvertenties, banners, pop-ups, trackers, cookies (Weigeren) en anti-adblockmuren."
   },
   "byCarbon": {
     "message": "door Carbon Stealth"
@@ -646,6 +646,12 @@
   "welPinText": {
     "message": "Klik op het puzzelstukje naast de adresbalk en zet Supreme AdBlock vast. Met één klik ziet u daarna wat er op de pagina is geblokkeerd.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welPinnedTitle": {
+    "message": "Vastgezet op de werkbalk"
+  },
+  "welPinnedText": {
+    "message": "Eén klik op het pictogram laat zien wat er op de pagina is geblokkeerd."
   },
   "welBrokenTitle": {
     "message": "Als een website er kapot uitziet",

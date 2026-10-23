@@ -1543,7 +1543,7 @@ deploy_adblock() {
   # затова не ползваме --delete: други файлове в root-а (ако има) остават непокътнати.
   mkdir -p "$ADBLOCK_WWW"
   # filters.json НЕ е тук: той се публикува ЗАЕДНО с подписа си (стъпка 1а).
-  for f in index.html privacy.html support.html youtube-ad-blocker.html cookie-banner-blocker.html \
+  for f in index.html privacy.html support.html youtube-ad-blocker.html cookie-banner-blocker.html bye.html \
            robots.txt sitemap.xml llms.txt \
            og.png favicon-48.png apple-touch-icon.png icon-512.png shield-380.webp shield-96.webp popup-shot.webp; do
     [ -f "$d/$f" ] && rsync -a "$d/$f" "$ADBLOCK_WWW"/

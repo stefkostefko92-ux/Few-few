@@ -1,14 +1,14 @@
 A Supreme AdBlock mindenhol blokkolja a hirdetéseket – YouTube-videóreklámokat, bannereket, felugró ablakokat és nyomkövetőket –, anélkül hogy figyelné, mit csinál.
 
+• Aláírt szűrőfrissítések naponta kétszer: az új hirdetési hálózatokat órákon belül kezeli, távoli kód nélkül.
 • A YouTube-reklámokat már a forrásnál megállítja, így a videók egyszerűen lejátszódnak.
+• Cookie-sávok: megnyomja Ön helyett az Elutasítás gombot, eltünteti a visszamaradt elmosást és görgetészárat, és soha nem nyom meg bejelentkezési, OAuth- vagy fizetési gombot.
+• Nincs fiók, nincs telemetria, nincs adatgyűjtés, és pénzért egyetlen hirdetést sem enged át. A Global Privacy Control minden webhelyet megkér, hogy ne adja el és ne ossza meg az adatait.
 • Beépített EasyList, EasyPrivacy és más nyílt szűrőlisták, valamint az Ön nyelvének listája (31 regionális lista).
 • A szponzorált bejegyzések a Facebookon, az Instagramon és a Threadsen rejtve maradnak.
-• Cookie-sávok: megnyomja Ön helyett az Elutasítás gombot, eltünteti a visszamaradt elmosást és görgetészárat, és soha nem nyom meg bejelentkezési, OAuth- vagy fizetési gombot.
 • Fókusz mód: elrejti a csevegőbuborékokat, hírlevél-felugrókat, értesítési kéréseket, közösségi widgeteket, MI-felugrókat és a YouTube Shortsot.
 • Az anti-adblock falakat és a pop-under ablakokat semlegesíti.
 • Veszélyes webhelyek: egy ismert kártevő webhely helyett figyelmeztető oldal nyílik meg, és Ön dönti el, hogy továbblép-e.
 • Hibás a webhely? Egy kattintás megjavítja, vagy szóljon nekünk – semmi sem megy el anélkül, hogy előbb látná.
 • Az uBlock Originről, az AdGuardról vagy az Adblock Plusról vált át? Hozza át az engedélyezett webhelyeit és szűrőit egyetlen fájllal.
 • Lássa, mely más webhelyekhez kapcsolódik egy oldal, és egy kattintással blokkoljon közülük egyet csak ott.
-• Aláírt szűrőfrissítések naponta kétszer: az új hirdetési hálózatokat órákon belül kezeli, távoli kód nélkül.
-• Nincs fiók, nincs telemetria, nincs adatgyűjtés, a Global Privacy Control pedig minden webhelyet megkér, hogy ne adja el és ne ossza meg az adatait.

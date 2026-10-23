@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Reklamani hamma joyda bloklaydi: YouTube reklamalari, bannerlar, qalqib chiquvchi oynalar, trekerlar, cookie soʻrovlari."
+    "message": "Reklama blokeri (YouTube va veb): video reklama, banner, qalqib chiquvchi oyna, treker, cookie (“Rad etish”), anti-adblock devori."
   },
   "byCarbon": {
     "message": "Carbon Stealth tomonidan"
@@ -646,6 +646,12 @@
   "welPinText": {
     "message": "Manzil satri yonidagi boshqotirma boʻlagi belgisini bosing va Supreme AdBlock kengaytmasini qadab qoʻying. Shunda bir bosishda sahifada nima bloklanganini koʻrasiz.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welPinnedTitle": {
+    "message": "Asboblar paneliga qadab qoʻyildi"
+  },
+  "welPinnedText": {
+    "message": "Belgisini bir bosish sahifada nima bloklanganini koʻrsatadi."
   },
   "welBrokenTitle": {
     "message": "Agar sayt notoʻgʻri koʻrinsa",

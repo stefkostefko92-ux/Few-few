@@ -1,6 +1,8 @@
 // Service worker: вратата на доверието (Ed25519 + anti-rollback + ротация на ключ),
 // регистрация на scriptlet engine-а (excludeMatches, retry), applyState таблица, health.
-import { ok, done, loadBackground } from "./_harness.mjs";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { ROOT, ok, done, loadBackground } from "./_harness.mjs";
 import { makeChrome, sendMessage } from "./_chrome.mjs";
 
 const b64 = (buf) => Buffer.from(buf).toString("base64");
@@ -168,5 +170,16 @@ ok("getTabLog: per-list counts, allow rules excluded",
   log && log.ok && log.total === 4 && log.items[0].list === "easyprivacy" && log.items[0].n === 2 &&
   log.items.some((x) => x.list === "live") && log.items.some((x) => x.list === "user") && !log.items.some((x) => !x.list));
 ok("getTabLog is not available to content scripts (other tabs' activity)", (await sendMessage(mock.listeners, { type: "getTabLog", tabId: 5 }, page)) === undefined);
+
+
+// ---------- the shipped key list (not the test keys above) ----------
+// Ключът, с който сървърът подписва днес (/etc/caddy/adblock-signing.key), трябва да остане в списъка,
+// докато сървърът не мине на следващия — иначе Chrome 137+ отхвърля всеки ъпдейт. При ротация (server/README.md)
+// тази константа се сменя съзнателно, в релийза след като новият ключ вече подписва.
+const SERVER_KEY_NOW = "dHNcuMuLraQ8w1sse7rk6Dnzzh5wzbLc4/KofD5QWMQ=";
+const shipped = JSON.parse((readFileSync(join(ROOT, "background.js"), "utf8").match(/const SIG_PUBKEYS_B64 = (\[[^\]]*\]);/) || [])[1] || "[]");
+const imports = await Promise.all(shipped.map((k) => crypto.subtle.importKey("raw", Buffer.from(k, "base64"), { name: "Ed25519" }, false, ["verify"]).then(() => Buffer.from(k, "base64").length === 32, () => false)));
+ok(`shipped SIG_PUBKEYS_B64: 1–3 distinct raw 32-byte Ed25519 keys (${shipped.length})`, shipped.length >= 1 && shipped.length <= 3 && new Set(shipped).size === shipped.length && imports.every(Boolean));
+ok("…and the key the server signs with today is one of them", shipped.includes(SERVER_KEY_NOW));
 
 done();
