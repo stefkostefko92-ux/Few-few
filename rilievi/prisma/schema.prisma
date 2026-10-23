@@ -1,0 +1,620 @@
+// Rilievi Impianti — схема на данните. PostgreSQL, миграции само през `prisma migrate deploy`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Седем нива както в ERP Ascensori: по-малкият номер включва правата на по-големия
+/// (MASTER 1 … CLIENTE 7). Правата се проверяват по СПОСОБНОСТ в src/auth/roles.ts.
+enum Role {
+  MASTER
+  ADMIN
+  DIREZIONE
+  RESPONSABILE
+  TECNICO
+  OPERATORE
+  CLIENTE
+}
+
+enum Theme {
+  AUTO
+  LIGHT
+  DARK
+}
+
+enum UbicazioneMacchina {
+  ALTO
+  BASSO
+}
+
+enum TipoImpianto {
+  ELETTRICO
+  IDRAULICO
+  /// На екрана и на листа — „MRL“ (собственикът смени надписа, октомври 2026). Стойността в базата
+  /// остава: така откатът само на кода (autodeploy при паднала сонда) чете всяка карта.
+  GEARLESS
+}
+
+enum TipoPorte {
+  AUTOMATICHE
+  SEMIAUTOMATICHE
+  MANUALI
+}
+
+/// Наличната аварийна връзка (telesoccorso): пълна или без периферно устройство.
+enum TelesoccorsoStato {
+  COMPLETO
+  MANCA_PERIFERICA
+}
+
+/// Марката на таблото за поръчка; при Pelazza — техният модул за поръчка.
+enum QuadroMarca {
+  PELAZZA
+  MOVILIFT
+  DMG
+  MASTECH
+  ALTRO
+}
+
+/// Марката на аргано (машината). От октомври 2026 не се пита (листът с данни е за всеки вид аргано);
+/// колоната остава със старите отговори.
+enum ArganoMarca {
+  MONTANARI
+  ALTRO
+}
+
+/// Колко души ще ползват портала — по избор в заявката за достъп.
+enum TeamSize {
+  S1_5
+  S6_20
+  S21_50
+  S50_PLUS
+}
+
+/// Заявката за достъп: нова, приета (фирмата е създадена и администраторът е поканен) или отказана.
+enum AccessRequestStatus {
+  NEW
+  ACCEPTED
+  REJECTED
+}
+
+/// Фирма — клиент на портала: свои хора, свои карти, свое лого на листа. Създава я само MASTER
+/// (собственикът на портала); всяка фирма вижда само своето (src/auth/scope.ts).
+model Azienda {
+  id            String    @id @default(cuid())
+  name          String    @unique @db.VarChar(120)
+  /// Логото за листа и PDF-а — вече прекодирано от src/aziende/logo.ts (PNG или JPEG, без метаданни).
+  logo          Bytes?
+  logoType      String?   @db.VarChar(20)
+  logoWidth     Int?
+  logoHeight    Int?
+  logoUpdatedAt DateTime?
+  /// Деактивирана фирма: хората ѝ не влизат и сесиите им падат; картите ѝ остават.
+  deactivatedAt DateTime?
+  /// Редът на разделите на картата във фирмата (ключовете от src/schede/fields.ts); празно — редът по
+  /// подразбиране. Подрежда го администраторът ѝ (src/aziende/sezioni.ts).
+  ordineSezioni String[]  @default([])
+  /// Скицникът в края на картата (листове за рисуване на ръка, src/schizzi/) — включва го само MASTER.
+  /// Изключен: полето изчезва от формата, а нарисуваното остава и се печата.
+  schizzi       Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  memberships    Membership[]
+  invites        Invite[]
+  schede         Scheda[]
+  audit          AuditLog[]
+  accessRequests AccessRequest[]
+}
+
+/// Акаунт. Създава се САМО от приета покана (или от `owner:create` за първия MASTER) — регистрация няма.
+/// MASTER е без фирма (вижда всички); всеки друг е в точно една фирма — проверява го и CHECK в базата.
+model User {
+  id                 String    @id @default(cuid())
+  /// Винаги с малки букви (src/auth/email.ts).
+  email              String    @unique
+  name               String
+  passwordHash       String
+  /// Собственикът на портала (Carbon Stealth): вижда и управлява всичко, без фирма и без членства.
+  master             Boolean   @default(false)
+  /// Не се ползва — порталът е само на италиански. Колоната остава („it“), за да не се трие с миграция.
+  locale             String    @default("it")
+  theme              Theme     @default(AUTO)
+  /// Деактивиран акаунт не влиза; сесиите му падат при деактивирането.
+  deactivatedAt      DateTime?
+  /// Първият MASTER от скрипта сменя паролата при първия вход.
+  mustChangePassword Boolean   @default(false)
+  failedLogins       Int       @default(0)
+  lockedUntil        DateTime?
+  lastLoginAt        DateTime?
+  passwordChangedAt  DateTime  @default(now())
+  invitedById        String?
+  invitedBy          User?     @relation("InvitedUsers", fields: [invitedById], references: [id], onDelete: SetNull)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  invitedUsers     User[]          @relation("InvitedUsers")
+  memberships      Membership[]
+  sessions         Session[]
+  invitesSent      Invite[]        @relation("InvitesSent")
+  resets           PasswordReset[] @relation("ResetsFor")
+  resetsCreated    PasswordReset[] @relation("ResetsCreated")
+  schedeCreated    Scheda[]        @relation("SchedeCreated")
+  schedeUpdated    Scheda[]        @relation("SchedeUpdated")
+  schedeDeleted    Scheda[]        @relation("SchedeDeleted")
+  allegatiCaricati Allegato[]      @relation("AllegatiCaricati")
+  auditEntries     AuditLog[]
+  requestsDecided  AccessRequest[] @relation("AccessRequestsDecided")
+
+  @@index([invitedById])
+  @@index([master])
+}
+
+/// Членство: човекът е във фирмата с роля (ADMIN…CLIENTE) — различна за всяка фирма. Само MASTER слага
+/// и маха членства; MASTER самият няма членства (вижда всички фирми). Извън MASTER — поне едно членство.
+model Membership {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  aziendaId String
+  azienda   Azienda  @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
+  role      Role
+  createdAt DateTime @default(now())
+
+  @@id([userId, aziendaId])
+  @@index([aziendaId])
+}
+
+/// Сесия зад бисквитката: JWT-то носи само `sid`, а редът тук решава дали сесията е жива —
+/// изход, деактивиране и смяна на ролята я прекратяват веднага.
+model Session {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  csrfToken  String
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+  /// Плъзгащ се край (бездействие); абсолютният таван се смята от createdAt.
+  expiresAt  DateTime
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// Покана: връзка с еднократен токен (в базата е само SHA-256 хешът), валидна INVITE_DAYS дни.
+model Invite {
+  id             String         @id @default(cuid())
+  email          String
+  name           String?
+  role           Role
+  /// Не се ползва — порталът е само на италиански. Колоната остава („it“), за да не се трие с миграция.
+  locale         String         @default("it")
+  /// Фирмата, в която влиза поканеният — избрана от MASTER или фирмата на администратора, който кани.
+  aziendaId      String
+  azienda        Azienda        @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
+  tokenHash      String         @unique
+  invitedById    String
+  invitedBy      User           @relation("InvitesSent", fields: [invitedById], references: [id], onDelete: Cascade)
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  acceptedUserId String?
+  revokedAt      DateTime?
+  createdAt      DateTime       @default(now())
+  /// Заявката за достъп, от която е поканата (ако е от заявка).
+  accessRequest  AccessRequest?
+
+  @@index([email])
+  @@index([invitedById])
+  @@index([expiresAt])
+  @@index([aziendaId])
+}
+
+/// Заявка за достъп от публичната страница: фирма иска да влезе в портала. Регистрация няма — MASTER
+/// разглежда заявката и при „да“ създава фирмата (или избира съществуваща) и кани администратора ѝ
+/// (src/requests/). Изтрива се 180 дни след последната промяна (maintenance.ts) или ръчно от MASTER.
+model AccessRequest {
+  id          String              @id @default(cuid())
+  name        String              @db.VarChar(120)
+  company     String              @db.VarChar(120)
+  /// Винаги с малки букви (src/auth/email.ts).
+  email       String              @db.VarChar(254)
+  phone       String?             @db.VarChar(40)
+  city        String?             @db.VarChar(120)
+  teamSize    TeamSize?
+  message     String?             @db.VarChar(2000)
+  /// Не се ползва — порталът е само на италиански. Колоната остава („it“), за да не се трие с миграция.
+  locale      String              @default("it") @db.VarChar(5)
+  status      AccessRequestStatus @default(NEW)
+  /// При приемане: фирмата, в която е поканен администраторът, и самата покана.
+  aziendaId   String?
+  azienda     Azienda?            @relation(fields: [aziendaId], references: [id], onDelete: SetNull)
+  inviteId    String?             @unique
+  invite      Invite?             @relation(fields: [inviteId], references: [id], onDelete: SetNull)
+  decidedById String?
+  decidedBy   User?               @relation("AccessRequestsDecided", fields: [decidedById], references: [id], onDelete: SetNull)
+  decidedAt   DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([status, createdAt])
+  @@index([email])
+  @@index([aziendaId])
+  @@index([decidedById])
+  @@index([updatedAt])
+}
+
+/// Връзка за нова парола: от самия човек („забравена парола“, ако има SMTP) или от по-висок ранг.
+model PasswordReset {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation("ResetsFor", fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash   String    @unique
+  createdById String?
+  createdBy   User?     @relation("ResetsCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([createdById])
+  @@index([expiresAt])
+}
+
+/// Схемата на уредбата — полетата и редът им са дословно от заданието (src/schede/fields.ts).
+/// Идентификаторите (matricola, numeroImpianto) са низове само от цифри: водещата нула се пази.
+model Scheda {
+  id                           String                   @id @default(cuid())
+  data                         DateTime                 @db.Date
+  indirizzo                    String?                  @db.VarChar(200)
+  marca                        String?                  @db.VarChar(120)
+  matricola                    String?                  @db.VarChar(20)
+  numeroImpianto               String?                  @db.VarChar(20)
+  /// Работната поръчка, по която е огледът (по желание).
+  buonoLavoro                  String?                  @db.VarChar(60)
+  portataKg                    Int?
+  capienzaPersone              Int?
+  fermate                      Int?
+  ubicazioneMacchina           UbicazioneMacchina[]
+  /// Къде е кутийката — свободен текст (до октомври 2026 беше цяло число: етажът).
+  ubicazioneCassettina         String?                  @db.VarChar(120)
+  parcheggio                   String?                  @db.VarChar(300)
+  tipoImpianto                 TipoImpianto[]
+  tipoPorte                    TipoPorte[]
+  /// Марката, светлият отвор и напрежението на оператора на вратите не се питат от октомври 2026
+  /// (собственикът ги махна); колоните остават със старите отговори.
+  operatoreMarca               String?                  @db.VarChar(120)
+  lucePorte                    String?                  @db.VarChar(60)
+  operatoreTensione            String?                  @db.VarChar(60)
+  /// „Accessi: 1 / 2“ на листа — true е 2 достъпа (двоен достъп), false — един.
+  doppioAccesso                Boolean?
+  /// Блокировката на вратичките, донивелирането и броят шейни не се питат от октомври 2026 (собственикът
+  /// ги махна от листа); колоните остават със старите отговори.
+  bloccaPortine                Boolean?
+  autolivellamento             Boolean?
+  /// „Pattino retrattile da cambiare“ — при ръчни и полуавтоматични врати; при true — видът на шейната
+  /// (от октомври 2026 в „Serrature o sospensioni“, след бравите).
+  pattinoRetrattile            Boolean?
+  pattinoRetrattileNumero      Int?
+  pattinoRetrattileTipo        String?                  @db.VarChar(120)
+  /// „Serrature da cambiare“ (до октомври 2026 — „Serrature/sospensioni“) — при ръчни и полуавтоматични
+  /// врати. numero/tipo — само при true.
+  serrature                    Boolean?
+  serratureNumero              Int?
+  serratureTipo                String?                  @db.VarChar(120)
+  /// „Sospensioni da cambiare“ — само при автоматични врати; при true броят и листът 2SG (окачванията и
+  /// операторът на кабината).
+  sospensioni                  Boolean?
+  sospensioniNumero            Int?
+  /// „Operatore da cambiare“ — само при полуавтоматични врати: на етажите са бравите, кабината е с
+  /// оператор (собственикът, 22 октомври 2026); при true — листът 2SG, в същата колона.
+  operatore                    Boolean?
+  /// Листът 2SG: {modulo, valori}. Има свой PDF.
+  ordineSospensioni            Json?
+  /// Бележките на раздела „Serrature o sospensioni“.
+  serratureNote                String?
+  /// Осветлението на шахтата е за смяна; при true — бележка на ръка.
+  luceVanoSostituire           Boolean?
+  luceVanoNote                 String?
+  funiDiametroMm               Decimal?                 @db.Decimal(6, 2)
+  funiTrefoli                  Int?
+  funiNumero                   Int?
+  funiLunghezzaM               Decimal?                 @db.Decimal(8, 2)
+  /// Тирантите на въжетата („Funi e tiranti“) — брой и вид за кабината и за противотежестта; при
+  /// хидравлична уредба противотежест няма — вторите са тирантите в ямата (`tirantiFossa*`).
+  tirantiCabinaNumero          Int?
+  tirantiCabinaTipo            String?                  @db.VarChar(120)
+  tirantiContrappesoNumero     Int?
+  tirantiContrappesoTipo       String?                  @db.VarChar(120)
+  tirantiFossaNumero           Int?
+  tirantiFossaTipo             String?                  @db.VarChar(120)
+  limitatoreTipo               String?                  @db.VarChar(120)
+  funicellaDiametroMm          Decimal?                 @db.Decimal(6, 2)
+  funicellaLunghezzaM          Decimal?                 @db.Decimal(8, 2)
+  tenditore                    String?                  @db.VarChar(120)
+  caviNumero                   Int?
+  caviConduttori               Int?
+  caviLunghezzaM               Decimal?                 @db.Decimal(8, 2)
+  /// Аварийната връзка и състоянието ѝ не се питат от октомври 2026 (заменени от трите „da installare“);
+  /// колоните остават със старите отговори.
+  telesoccorso                 Boolean?
+  telesoccorsoStato            TelesoccorsoStato?
+  allarmePortineria            Boolean?
+  displayPortineria            Boolean?
+  /// Аварийната връзка — какво има да се монтира (раздел „Allarme e telesoccorso“ от октомври 2026).
+  telesoccorsoInstallare       Boolean?
+  perifericaInstallare         Boolean?
+  cornettaInstallare           Boolean?
+  noteQuadretto                String?
+  noteImpianto                 String?
+  noteBottoniere               String?
+  /// „Мерки на старите бутониери?“ — при true редовете са в MisuraBottoniera.
+  bottoniereMisure             Boolean?
+  misureBottoniere             MisuraBottoniera[]
+  allegati                     Allegato[]
+  schizzi                      Schizzo[]
+  lavoriExtra                  String?
+  quadroMarca                  QuadroMarca?
+  quadroMarcaAltro             String?                  @db.VarChar(120)
+  /// Mastech: NG120 или QI Touch — всеки със свой модул за поръчка (в `ordineQuadro`).
+  quadroModello                QuadroModello?
+  fossaRidotta                 Boolean?
+  testataRidotta               Boolean?
+  /// „Да попълня ли модула за поръчка на таблото?“ — само при Pelazza.
+  quadroOrdine                 Boolean?
+  /// Модулът за поръчка на Pelazza: {modulo, valori} — ключовете са в assets/moduli/*.json. Има свой PDF.
+  ordineQuadro                 Json?
+  /// Бележките на раздела „Quadro“.
+  quadroNote                   String?
+  arganoMarca                  ArganoMarca?
+  arganoMarcaAltro             String?                  @db.VarChar(120)
+  /// „Argano da sostituire?“ (до октомври 2026 — запитването към Montanari).
+  arganoPreventivo             Boolean?
+  /// Листът с данните на аргано (за всеки вид): {modulo, valori}. Има свой PDF. Записите с модула на
+  /// Montanari не се четат повече (друг `modulo`).
+  preventivoArgano             Json?
+  /// Аргано, което остава („Argano da sostituire?“ — No): видът му, сменят ли се челюстите на спирачката;
+  /// комплект за контрол на челюстите и контрол в таблото на управление — при true видът им на ръка.
+  /// Контактите на спирачката не се питат от 17 октомври 2026 — колоната пази старите отговори.
+  arganoTipo                   String?                  @db.VarChar(120)
+  ganasceFreno                 Boolean?
+  contattiFreno                Boolean?
+  kitControlloGanasce          Boolean?
+  kitControlloGanasceTipo      String?                  @db.VarChar(120)
+  controlloQuadro              Boolean?
+  controlloQuadroTipo          String?                  @db.VarChar(120)
+  /// Бележките на раздела „Argano“.
+  arganoNote                   String?
+  /// Централата на хидравличния асансьор (src/schede/fields-centralina.ts) — вместо аргано.
+  /// `centralinaDaFare` е „Centralina da sostituire?“ (21 октомври 2026); от тогава се питат само марката
+  /// и моделът (`centralinaMarca`), „Emendamento A3 da installare“ с гъвкавата тръба и бележките
+  /// (`centralinaNote`) — другите колони пазят старите отговори.
+  centralinaDaFare             Boolean?
+  centralinaAzionamento        CentralinaAzionamento?
+  centralinaParacadute         Boolean?
+  centralinaPistoni            Int?
+  centralinaDiametroPistoneMm  Decimal?                 @db.Decimal(8, 2)
+  centralinaCorsaM             Decimal?                 @db.Decimal(8, 2)
+  centralinaVelocita           Decimal?                 @db.Decimal(8, 2)
+  centralinaPressioneBar       Decimal?                 @db.Decimal(8, 2)
+  centralinaPortataPompa       Decimal?                 @db.Decimal(8, 2)
+  centralinaPotenzaKw          Decimal?                 @db.Decimal(8, 2)
+  centralinaAlimentazione      CentralinaAlimentazione?
+  centralinaAlimentazioneAltro String?                  @db.VarChar(60)
+  centralinaAvviamento         CentralinaAvviamento?
+  centralinaTubazione          Tubazione?
+  centralinaTubazioneM         Decimal?                 @db.Decimal(8, 2)
+  centralinaAttacco            String?                  @db.VarChar(60)
+  centralinaDistanzaM          Decimal?                 @db.Decimal(8, 2)
+  centralinaAccesso            String?                  @db.VarChar(200)
+  centralinaCorseOra           Int?
+  centralinaNote               String?
+  centralinaMarca              String?                  @db.VarChar(120)
+  centralinaMotore             CentralinaMotore?
+  centralinaBloccoValvole      String?                  @db.VarChar(120)
+  emendamentoA3                Boolean?
+  /// При „Emendamento A3 da installare“: гъвкава тръба за монтиране — диаметър, дължина, бележки.
+  tuboFlessibile               Boolean?
+  tuboFlessibileDiametroMm     Decimal?                 @db.Decimal(8, 2)
+  tuboFlessibileLunghezzaM     Decimal?                 @db.Decimal(8, 2)
+  tuboFlessibileNote           String?
+  centralinaDiscesaEmergenza   Boolean?
+  centralinaOlioLivello        OlioLivello?
+  centralinaOlioStato          OlioStato?
+  /// Печатът и PDF-ът на картата включват попълненото в поне един модул (старият общ избор — четат го
+  /// и предишните версии на кода; новата го пише като „поне един“).
+  riepilogoOrdini              Boolean                  @default(false)
+  /// Кои модули влизат в печата и PDF-а — колоните им (`ordineQuadro`, `preventivoArgano`,
+  /// `ordineSospensioni`). Празно при „riepilogoOrdini“ — карта отпреди отделния избор: и трите.
+  moduliStampati               String[]                 @default([])
+  /// Разделите, които НЕ влизат в печата и PDF-а (изборът в края на формата) — пазят се изключените, за
+  /// да е новият раздел включен и в старите карти.
+  sezioniEscluse               String[]                 @default([])
+  /// Поне една снимка влиза в печата и PDF-а — за предишния код (той печаташе всички при `true`). От 21
+  /// октомври изборът е на всяка снимка (`Allegato.inStampa`); тази колона само го следва.
+  fotoStampate                 Boolean                  @default(false)
+  /// Листовете на скицника влизат в печата и PDF-а (отметката „Schizzi“ в края на формата).
+  schizziStampati              Boolean                  @default(true)
+  /// Отпечатъкът на разминаванията карта ↔ модули, потвърдени при последния запис (src/ordini/collegati.ts):
+  /// същите разлики не се питат пак, нови или променени — да. null — няма потвърдени.
+  discrepanzeConfermate        String?                  @db.VarChar(32)
+  /// Нормализиран текст за търсачката (малки букви, без ударения) — пише го САМО src/schede/service.ts.
+  searchText                   String                   @default("")
+  /// Фирмата на картата — тази на създателя (или избраната от MASTER). Вижда я само тази фирма и MASTER.
+  aziendaId                    String
+  azienda                      Azienda                  @relation(fields: [aziendaId], references: [id], onDelete: Restrict)
+  createdById                  String?
+  createdBy                    User?                    @relation("SchedeCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById                  String?
+  updatedBy                    User?                    @relation("SchedeUpdated", fields: [updatedById], references: [id], onDelete: SetNull)
+  /// Кошче: изтритата схема се пази, докато ADMIN не я възстанови или изтрие окончателно.
+  deletedAt                    DateTime?
+  deletedById                  String?
+  deletedBy                    User?                    @relation("SchedeDeleted", fields: [deletedById], references: [id], onDelete: SetNull)
+  createdAt                    DateTime                 @default(now())
+  updatedAt                    DateTime                 @updatedAt
+
+  @@index([aziendaId, deletedAt])
+  @@index([data])
+  @@index([matricola])
+  @@index([numeroImpianto])
+  @@index([deletedAt])
+  @@index([createdById])
+  @@index([updatedById])
+  @@index([deletedById])
+  @@index([searchText(ops: raw("gin_trgm_ops"))], type: Gin)
+}
+
+/// Одит: кой, какво, кога — без съдържание на схемите и без IP. Само добавяне, маршрут за промяна няма.
+model AuditLog {
+  id         String   @id @default(cuid())
+  at         DateTime @default(now())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action     String
+  /// Фирмата, за която е събитието — администраторът ѝ вижда само тях; null — събитие на портала.
+  aziendaId  String?
+  azienda    Azienda? @relation(fields: [aziendaId], references: [id], onDelete: SetNull)
+  targetType String?
+  targetId   String?
+  /// Малки неличностни подробности (напр. стара/нова роля). Никога пароли, токени или текст от схема.
+  meta       Json?
+
+  @@index([at])
+  @@index([actorId])
+  @@index([targetType, targetId])
+  @@index([aziendaId, at])
+}
+
+/// Мерките на една стара бутониера — ред за спирка (1 = най-ниската), до броя „Fermate“ на картата.
+/// Пише ги само src/schede/service.ts (заедно с картата, в една транзакция); изтриват се с нея.
+model MisuraBottoniera {
+  id                 String   @id @default(cuid())
+  schedaId           String
+  scheda             Scheda   @relation(fields: [schedaId], references: [id], onDelete: Cascade)
+  fermata            Int
+  /// Името на етажа („T“, „S1“); null — номерът на спирката.
+  piano              String?  @db.VarChar(20)
+  lunghezzaMm        Decimal? @db.Decimal(7, 2)
+  larghezzaMm        Decimal? @db.Decimal(7, 2)
+  interasseSuperiore String?  @db.VarChar(60)
+  interasseInferiore String?  @db.VarChar(60)
+  display            Boolean?
+
+  @@unique([schedaId, fermata])
+}
+
+/// Снимка или клип към раздел на картата (src/allegati/). Файловете са на диска (`MEDIA_DIR`, пътят е
+/// само от id-тата), тук — описанието и докъде е обработката (фоновият процес, src/worker.ts). Изтриват
+/// се с картата; окончателното ѝ изтриване маха и папката ѝ.
+model Allegato {
+  id            String        @id @default(cuid())
+  schedaId      String
+  scheda        Scheda        @relation(fields: [schedaId], references: [id], onDelete: Cascade)
+  /// Разделът на картата (ключът му от src/schede/fields.ts).
+  sezione       String        @db.VarChar(20)
+  tipo          TipoAllegato
+  stato         StatoAllegato @default(IN_CODA)
+  /// Надписът по избор („quadro, lato sinistro“).
+  didascalia    String?       @db.VarChar(200)
+  /// Името на качения файл — само за показ и за името при сваляне, никога за път на диска.
+  nomeOriginale String        @db.VarChar(200)
+  /// Байтовете преди и след компресията.
+  byteOriginali Int
+  byte          Int?
+  larghezza     Int?
+  altezza       Int?
+  durataMs      Int?
+  /// Защо обработката не успя — ключ от речника (`allegati.errore.<…>`), никога текст на грешка.
+  errore        String?       @db.VarChar(40)
+  /// Снимката влиза в края на печата и PDF-а — иконките в края на формата (по подразбиране не;
+  /// клиповете — никога).
+  inStampa      Boolean       @default(false)
+  tentativi     Int           @default(0)
+  caricatoDaId  String?
+  caricatoDa    User?         @relation("AllegatiCaricati", fields: [caricatoDaId], references: [id], onDelete: SetNull)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([schedaId, sezione, createdAt])
+  @@index([stato, createdAt])
+  @@index([caricatoDaId])
+}
+
+/// Лист от скицника на картата: нарисуваното (линии и надписи) в JSON, проверено при запис
+/// (src/schizzi/model.ts). Записва се с картата, в същата транзакция; пада с нея.
+model Schizzo {
+  id        String   @id @default(cuid())
+  schedaId  String
+  scheda    Scheda   @relation(fields: [schedaId], references: [id], onDelete: Cascade)
+  /// Мястото на листа в картата (0, 1, 2…).
+  ordine    Int
+  elementi  Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([schedaId, ordine])
+}
+
+enum TipoAllegato {
+  FOTO
+  VIDEO
+}
+
+/// В опашката → обработва се → готов (компресиран) или грешка (файлът не се чете, клипът е твърде дълъг).
+enum StatoAllegato {
+  IN_CODA
+  IN_LAVORAZIONE
+  PRONTO
+  ERRORE
+}
+
+/// Mastech: моделът на таблото — всеки със свой модул за поръчка.
+enum QuadroModello {
+  NG120
+  QI_TOUCH
+}
+
+/// Централата на хидравличния асансьор (src/schede/field-options.ts).
+enum CentralinaAzionamento {
+  DIRETTO_LATERALE
+  DIRETTO_CENTRALE
+  INDIRETTO_2_1
+}
+
+enum CentralinaAlimentazione {
+  TRIFASE_400
+  MONOFASE_230
+  ALTRO
+}
+
+enum CentralinaAvviamento {
+  DIRETTO
+  STELLA_TRIANGOLO
+  SOFT_STARTER
+  INVERTER
+}
+
+enum Tubazione {
+  RIGIDA
+  FLESSIBILE
+}
+
+enum CentralinaMotore {
+  IMMERSO
+  ESTERNO
+}
+
+enum OlioLivello {
+  REGOLARE
+  BASSO
+}
+
+enum OlioStato {
+  BUONO
+  DA_SOSTITUIRE
+  PERDITE
+}

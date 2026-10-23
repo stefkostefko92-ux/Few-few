@@ -1,0 +1,104 @@
+{
+  "app": {
+    "product": "Rilievi impianti"
+  },
+  "meta": {
+    "description": "Portale riservato Carbon Stealth VCC per le schede di rilievo degli impianti: compilazione, ricerca, stampa e PDF.",
+    "keywords": "Carbon Stealth, rilievi impianti, scheda rilievo ascensore, matricola impianto, manutenzione ascensori, portale ascensori"
+  },
+  "nav": {
+    "label": "Navigazione principale",
+    "skip": "Vai al contenuto",
+    "schede": "Schede",
+    "utenti": "Utenti",
+    "cestino": "Cestino",
+    "registro": "Registro",
+    "account": "Il tuo account",
+    "aziende": "Aziende",
+    "aziendeCount": {
+      "one": "{n} azienda",
+      "other": "{n} aziende"
+    },
+    "impostazioni": "Impostazioni"
+  },
+  "common": {
+    "yes": "Sì",
+    "no": "No",
+    "cancel": "Annulla",
+    "actions": "Azioni"
+  },
+  "switch": {
+    "theme": "Tema"
+  },
+  "theme": {
+    "auto": "Automatico",
+    "light": "Chiaro",
+    "dark": "Scuro"
+  },
+  "pager": {
+    "label": "Pagine",
+    "prev": "Precedente",
+    "next": "Successiva",
+    "status": "Pagina {page} di {pages}"
+  },
+  "role": {
+    "MASTER": "Master",
+    "ADMIN": "Amministratore",
+    "DIREZIONE": "Direzione",
+    "RESPONSABILE": "Responsabile",
+    "TECNICO": "Tecnico",
+    "OPERATORE": "Operatore",
+    "CLIENTE": "Cliente (sola lettura)"
+  },
+  "error": {
+    "code": "Errore {status}",
+    "title": "Richiesta non valida",
+    "badInput": "I dati inviati non sono leggibili. Ricarica la pagina e riprova.",
+    "tooLarge": "Il testo inviato è troppo lungo. Accorcia le note e riprova.",
+    "forbiddenTitle": "Accesso negato",
+    "forbidden": "Il tuo ruolo non permette questa operazione. Se ti serve, chiedi a chi ti ha invitato.",
+    "csrf": "La pagina era scaduta. Ricaricala e ripeti l'operazione.",
+    "notFoundTitle": "Pagina non trovata",
+    "notFound": "Questa pagina non esiste o la scheda è stata eliminata.",
+    "internalTitle": "Qualcosa non ha funzionato",
+    "internal": "Errore del server: l'operazione non è stata salvata. Riprova tra un momento.",
+    "tooManyTitle": "Troppe richieste",
+    "tooMany": "Troppe richieste in poco tempo. Attendi un minuto e riprova.",
+    "loginNeeded": "Sessione scaduta: accedi di nuovo.",
+    "toSchede": "Torna alle schede"
+  },
+  "flash": {
+    "loggedOut": "Uscita effettuata.",
+    "welcome": "Account attivato: ti diamo il benvenuto.",
+    "mustChangePassword": "Prima di continuare, scegli una nuova password.",
+    "passwordChanged": "Password aggiornata. Le altre sessioni sono state chiuse.",
+    "passwordReset": "Password aggiornata. Accedi con la nuova password.",
+    "profileSaved": "Nome aggiornato.",
+    "roleChanged": "Ruolo aggiornato.",
+    "userDeactivated": "Account disattivato: le sue sessioni sono state chiuse.",
+    "userReactivated": "Account riattivato.",
+    "inviteRevoked": "Invito revocato: il link non funziona più.",
+    "notAllowed": "Operazione non consentita per il tuo ruolo.",
+    "schedaCreated": "Scheda salvata.",
+    "schedaSaved": "Modifiche salvate.",
+    "schedaTrashed": "Scheda spostata nel cestino.",
+    "schedaRestored": "Scheda ripristinata.",
+    "schedaPurged": "Scheda eliminata definitivamente.",
+    "aziendaCreated": "Azienda creata.",
+    "aziendaSaved": "Nome dell'azienda aggiornato.",
+    "logoSaved": "Logo aggiornato.",
+    "logoRemoved": "Logo rimosso.",
+    "aziendaDeactivated": "Azienda disattivata: chi lavorava solo per questa azienda non può più accedere, gli altri continuano nelle loro aziende.",
+    "aziendaReactivated": "Azienda riattivata.",
+    "schizziOn": "Schizzi a mano libera attivati: il campo è alla fine di ogni scheda dell'azienda.",
+    "schizziOff": "Schizzi a mano libera disattivati: quelli già fatti restano nelle schede.",
+    "accountSaved": "Nome ed email salvati.",
+    "membershipAdded": "Account aggiunto all'azienda.",
+    "membershipExists": "L'account è già in questa azienda.",
+    "membershipAzienda": "Scegli un'azienda attiva.",
+    "membershipRemoved": "Account tolto dall'azienda.",
+    "membershipLast": "È l'unica azienda dell'account e non si può togliere: per togliere l'accesso, disattivalo.",
+    "sezioniSaved": "Ordine delle sezioni salvato.",
+    "sezioniReset": "Ripristinato l'ordine predefinito delle sezioni."
+  }
+}

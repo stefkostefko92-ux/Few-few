@@ -1,0 +1,271 @@
+/* Данните: търсачката, таблиците (на телефон редът става карта), значките, филтърът по фирма.
+   Стойностите на картата са в sheet.css. */
+
+.search {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.search .icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.search__input {
+  width: 100%;
+  min-height: 60px;
+  padding: 0 16px 0 50px;
+  border: 2px solid var(--line-strong);
+  border-radius: var(--radius-plate);
+  background: var(--field);
+  color: var(--fg);
+  font: inherit;
+  font-size: 1.125rem;
+}
+
+.search__input:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 3px;
+}
+
+.search__input::placeholder {
+  color: var(--muted);
+}
+
+/* Хромовото „×“ за изчистване е синьо — тук е в цвета на текста. */
+.search__input::-webkit-search-cancel-button {
+  filter: grayscale(1) brightness(0.35);
+  cursor: pointer;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .search__input::-webkit-search-cancel-button {
+    filter: grayscale(1) invert(1);
+  }
+}
+
+:root[data-theme='dark'] .search__input::-webkit-search-cancel-button {
+  filter: grayscale(1) invert(1);
+}
+
+.search__status {
+  min-height: 1.5em;
+  margin: 10px 2px 16px;
+  color: var(--muted);
+}
+
+.table {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-plate);
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table th {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--wash);
+  text-align: left;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.table thead th:first-child {
+  border-top-left-radius: calc(var(--radius-plate) - 1px);
+}
+
+.table thead th:last-child {
+  border-top-right-radius: calc(var(--radius-plate) - 1px);
+}
+
+.table td {
+  padding: 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.table tbody tr:hover {
+  background: var(--wash);
+}
+
+/* Редът под курсора — с черна черта отляво, като отметка в полето на хартиената карта. */
+.table tbody tr:hover > :first-child {
+  box-shadow: inset 3px 0 0 var(--fg);
+}
+
+/* Номерата (на асансьора, матрикулата) — в тесния шрифт, като на табелата. */
+.table .num {
+  font-family: var(--font-cond);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.table .date {
+  white-space: nowrap;
+}
+
+.table .row-link {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.table .row-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.table tr {
+  position: relative;
+}
+
+.table .actions-cell {
+  position: relative;
+  z-index: 1;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Телефон: всеки ред е карта с рамка, заглавието на колоната стои пред стойността (data-label). */
+@media (max-width: 759px) {
+  .table--stack {
+    display: block;
+    border: 0;
+  }
+
+  .table--stack thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .table--stack tbody {
+    display: grid;
+    gap: 10px;
+  }
+
+  .table--stack tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-plate);
+  }
+
+  .table--stack tbody tr:hover > :first-child {
+    box-shadow: none;
+  }
+
+  /* block, не grid: в grid всеки текстов възел и всеки <mark> стават отделен ред. */
+  .table--stack td {
+    display: block;
+    padding: 0;
+    border: 0;
+  }
+
+  .table--stack td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 2px;
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+
+  .table--stack td.wide {
+    grid-column: 1 / -1;
+  }
+
+  .table--stack .actions-cell {
+    text-align: left;
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge--off {
+  border-style: dashed;
+  color: var(--muted);
+}
+
+.badge--on {
+  border-color: var(--fg);
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 2px dashed var(--line-strong);
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+
+.stack-gap {
+  display: grid;
+  gap: 32px;
+}
+
+.inline-form {
+  display: inline;
+}
+
+.row-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.row-form .field {
+  flex: 1 1 220px;
+}
+
+/* Филтърът по фирма (само за Master) над списъците. */
+.filter {
+  display: grid;
+  gap: 6px;
+  max-width: 520px;
+  margin-bottom: 20px;
+}
+
+.filter__row {
+  display: flex;
+  gap: 8px;
+}
+
+.filter__row .select {
+  flex: 1;
+  min-width: 0;
+}

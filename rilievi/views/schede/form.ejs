@@ -1,0 +1,176 @@
+<%
+  const isEdit = scheda !== null;
+  const action = isEdit ? '/schede/' + scheda.id : '/schede';
+  const errorKeys = Object.keys(errors);
+  const fieldMap = Object.fromEntries(sections.flatMap((s) => s.fields).map((f) => [f.key, f]));
+  // Грешка в ред от мерките (`mb-<спирка>-<колона>`) — с името на колоната и номера на спирката.
+  const labelOf = (key) => {
+    if (key === identifiersErrorKey) return t('scheda.identifiers');
+    if (key === 'riepilogoOrdini') return t('riepilogo.moduli');
+    if (key === 'stampa') return t('riepilogo.sezioni');
+    if (key === 'schizzo') return t('schizzi.title');
+    const moduloField = moduloFieldOf(key);
+    if (moduloField) return t('ordini.errorLabel', { label: moduloField.field.label, fornitore: moduloField.slot.modulo.fornitore || moduloField.slot.modulo.titolo });
+    const misura = misuraOf(key);
+    if (misura) return t('scheda.misure.errorLabel', { col: t('scheda.misure.col.' + misura.column.key), n: misura.n });
+    return t('scheda.field.' + key);
+  };
+  const anchorOf = (key) => key === identifiersErrorKey ? '#f-indirizzo' : '#f-' + key;
+  const paramsOf = (key) => { const misura = misuraOf(key); const moduloField = moduloFieldOf(key); const f = misura ? misura.column : moduloField ? moduloField.field : (fieldMap[key] || {}); return { min: f.min, max: f.max, maxLength: f.maxLength }; };
+%><%- include('../partials/top', { titleKey: isEdit ? 'schede.edit.title' : 'schede.create.title', scripts: ['valori', 'moduli', 'collegati', 'allegati', 'carica', 'stampa-foto', 'schizzo-forme', 'schizzo-tratti', 'schizzi', 'schizzo-regole', 'schizzo-aggancio', 'schizzo-vista', 'schizzo-editor', 'schizzo-puntatori', 'schizzo-strumenti', 'schizzo-testi', 'schizzo-polilinea', 'schizzo-maniglie', 'schizzo-selezione', 'schizzo-azioni', 'schizzo-valore', 'schizzo-menu', 'schizzo-comandi'] }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t(isEdit ? 'schede.edit.title' : 'schede.create.title') %></h1>
+    <p class="page-head__sub"><%= isEdit ? t('scheda.meta.updated', { name: scheda.updatedBy ? scheda.updatedBy.name : '—', at: fmt.dateTime(scheda.updatedAt) }) : t('schede.create.sub') %></p>
+  </div>
+</div>
+<div class="stack-gap">
+<% if (conflict) { %>
+  <div class="notice" role="alert">
+    <p><strong><%= t('schede.conflict.title') %></strong></p>
+    <p><%= t('schede.conflict.text') %></p>
+    <div class="toolbar"><a class="btn btn--sm" href="/schede/<%= scheda.id %>" target="_blank" rel="noopener"><%= t('schede.conflict.open') %></a></div>
+  </div>
+<% } %>
+<% if (errorKeys.length) { %>
+  <div class="errors" role="alert" id="error-summary" tabindex="-1">
+    <h2><%= t('scheda.errorSummary', { n: errorKeys.length }) %></h2>
+    <ul>
+      <% for (const key of errorKeys) { %><li><a href="<%= anchorOf(key) %>"><%= labelOf(key) %>: <%= t('scheda.error.' + errors[key], paramsOf(key)) %></a></li>
+      <% } %>
+    </ul>
+  </div>
+<% } %>
+<% if (conferma && conferma.discrepanze.length) { %>
+  <div class="notice notice--diff" role="alert" id="confirm-summary" tabindex="-1">
+    <h2><%= t('collegati.conferma.title', { n: conferma.discrepanze.length }) %></h2>
+    <p><%= t('collegati.conferma.text') %></p>
+    <ul><% for (const d of conferma.discrepanze) { %><li><%- include('_discrepanza', { d }) %></li><% } %></ul>
+  </div>
+<% } %>
+<% if (!isEdit && can('aziende:manage') && aziende.length === 0) { %>
+<div class="empty">
+  <p><strong><%= t('schede.noAziende') %></strong></p>
+  <a class="btn btn--primary" href="/aziende/nuova"><%- include('../partials/icon', { name: 'plus' }) %><%= t('aziende.new') %></a>
+</div>
+<% } else { %>
+<div class="with-index">
+<%- include('_index', { titles: sections.map((s) => ({ key: s.key, title: t('scheda.section.' + s.key), when: s.when, off: !activeSections.has(s.key) })).concat(schizzi.attivo ? [{ key: 'schizzi', title: t('schizzi.title'), per: schizzi.per, nascosto: schizzi.nascosto }] : []) }) %>
+<form class="form" method="post" action="<%= action %>" novalidate data-scheda-form>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <% if (!isEdit && aziende.length > 0) { %>
+  <div class="field field--azienda">
+    <label class="field__label" for="f-azienda"><%= t('scheda.field.azienda') %></label>
+    <select class="select" id="f-azienda" name="azienda" required<% if (errors[aziendaErrorKey]) { %> aria-invalid="true" aria-describedby="err-azienda"<% } %>>
+      <option value=""<% if (!azienda) { %> selected<% } %>>—</option>
+      <% for (const item of aziende) { %><option value="<%= item.id %>"<% if (azienda === item.id) { %> selected<% } %>><%= item.name %></option>
+      <% } %>
+    </select>
+    <% if (errors[aziendaErrorKey]) { %><p class="field__error" id="err-azienda"><%= t('scheda.error.azienda') %></p><% } %>
+  </div>
+  <% } else if (isEdit && showAzienda) { %>
+  <p class="muted"><%= t('scheda.field.azienda') %>: <strong><%= scheda.azienda.name %></strong></p>
+  <% } %>
+  <% if (isEdit) { %><input type="hidden" name="base" value="<%= conflict ? scheda.updatedAt.toISOString() : base %>"><% } %>
+  <% sections.forEach((section) => { %>
+  <%# Раздел с условие („Argano“ — не при хидравлична уредба): app.js го скрива като полетата; номерата
+     на видимите раздели ги брои CSS-ът (sheet.css), затова скритият не оставя дупка. %>
+  <fieldset class="section" id="s-<%= section.key %>"<%- include('_when', { when: section.when, off: !activeSections.has(section.key) }) %>>
+    <legend class="section__title"><span class="secnum" aria-hidden="true"></span><%= t('scheda.section.' + section.key) %></legend>
+    <% if (section.key === 'impianto') { %><p class="field__hint<%= errors[identifiersErrorKey] ? ' field__error' : '' %>" id="identifiers-hint"><%= t('scheda.identifiersHint') %></p><% } %>
+    <%# Разделът „Impianto“ е подреден като главата и табелата на листа (sheet.css, .grid--testa). %>
+    <%# Модулите на доставчиците — след въпроса си и зависимите от него полета (брой окачвания), преди
+       бележките на раздела (moduliDopo, src/ordini/form.ts). %>
+    <% const dopo = moduliDopo(section.fields); %>
+    <div class="grid<%= section.key === 'impianto' ? ' grid--testa' : '' %>">
+      <% for (const field of section.fields) { %><%- include('_field', { field, value: values[field.key], error: errors[field.key] }) %>
+      <% if (field.misure) { %><%- include('_misure') %><% } %>
+      <% for (const slot of moduli.filter((s) => (dopo.get(field.key) || []).includes(s.question))) { %><%- include('_modulo', { slot }) %><% } %>
+      <% } %>
+    </div>
+    <%# Снимките и клиповете на раздела — на свои форми извън тази (_allegati-forms.ejs). %>
+    <%- include('_allegati', { section, ritorno: 'modifica' }) %>
+  </fieldset>
+  <% }) %>
+  <% if (schizzi.attivo) { %>
+  <%# Скицникът (функция на фирмата, src/schizzi/): листовете с прегледа им; рисуват се в редактора на цял
+     екран (schizzi.js, schizzo-*.js) и се записват с картата — всеки лист е JSON в скрито поле. На нова
+     карта с избор на фирма блокът следва избраната (`data-schizzi-per`). %>
+  <fieldset class="section schizzi" id="s-schizzi" data-schizzi<% if (schizzi.per) { %> data-schizzi-per="<%= schizzi.per %>"<% } %><% if (schizzi.nascosto) { %> hidden<% } %> data-msg-foglio="<%= t('schizzi.foglio') %>" data-msg-elimina="<%= t('schizzi.eliminaConferma') %>" aria-describedby="schizzi-hint<%= errors.schizzo ? ' err-schizzo' : '' %>">
+    <legend class="section__title"><span class="secnum" aria-hidden="true"></span><%= t('schizzi.title') %></legend>
+    <ol class="schizzi__fogli" id="f-schizzo" data-schizzi-fogli>
+      <% schizzi.fogli.forEach((f, i) => { %><%- include('_schizzo-foglio', { foglio: f.foglio, json: f.json, n: i + 1 }) %>
+      <% }) %>
+    </ol>
+    <p class="muted" data-schizzi-vuoto<% if (schizzi.fogli.length) { %> hidden<% } %>><%= t('schizzi.vuoto') %></p>
+    <div class="toolbar" data-schizzi-azioni hidden>
+      <button class="btn" type="button" data-schizzi-nuovo><%- include('../partials/icon', { name: 'plus' }) %><%= t('schizzi.nuovo') %></button>
+      <span class="muted" data-schizzi-massimo hidden><%= t('schizzi.massimo', { n: schizzoVista.maxFogli }) %></span>
+    </div>
+    <p class="field__hint" id="schizzi-hint"><%= t('schizzi.hint') %> <span data-schizzi-nojs><%= t('schizzi.nojs') %></span></p>
+    <% if (errors.schizzo) { %><p class="field__error" id="err-schizzo"><%= t('scheda.error.' + errors.schizzo) %></p><% } %>
+    <%# Знакът на блока — не веднага след легендата: там CSS-ът изчиства плаващата лента (forms.css). %>
+    <input type="hidden" name="schizzi-_" value="1" data-schizzi-segno>
+    <template data-foglio-modello><%- include('_schizzo-foglio', { foglio: { e: [] }, json: '{"e":[]}', n: 0 }) %></template>
+  </fieldset>
+  <% } %>
+  <fieldset class="section" id="s-riepilogo">
+    <legend class="section__title"><%= t('riepilogo.title') %></legend>
+    <div class="grid">
+      <%# Разделите на листа: отметнатите влизат в печата и PDF-а; разделът с условие се крие и тук. %>
+      <fieldset class="choice field field--wide" id="f-stampa" aria-describedby="stampa-hint<%= errors.stampa ? ' err-stampa' : '' %>">
+        <legend><%= t('riepilogo.sezioni') %></legend>
+        <input type="hidden" name="stampa-_" value="1">
+        <div class="choice__opts">
+          <% for (const section of sections.filter((s) => !fisse.includes(s.key))) { %><label class="tick"<%- include('_when', { when: section.when, off: !activeSections.has(section.key) }) %>><input type="checkbox" name="stampa" value="<%= section.key %>"<% if ((values.stampa || []).includes(section.key)) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('scheda.section.' + section.key) %></span></label>
+          <% } %>
+        </div>
+        <p class="field__hint" id="stampa-hint"><%= t('riepilogo.sezioniHint') %></p>
+        <% if (errors.stampa) { %><p class="field__error" id="err-stampa"><%= t('scheda.error.' + errors.stampa) %></p><% } %>
+      </fieldset>
+      <%# Модулите на листа — всеки поотделно (таблото, аргано, 2SG); влиза само попълненото в тях. %>
+      <% const moduliScelti = Array.isArray(values.riepilogoOrdini) ? values.riepilogoOrdini : []; %>
+      <fieldset class="choice field field--wide" id="f-riepilogoOrdini" aria-describedby="riepilogo-hint<%= errors.riepilogoOrdini ? ' err-riepilogoOrdini' : '' %>">
+        <legend><%= t('riepilogo.moduli') %></legend>
+        <div class="choice__opts">
+          <% for (const colonna of moduliStampa) { %><label class="tick"><input type="checkbox" name="riepilogoOrdini" value="<%= colonna %>"<% if (moduliScelti.includes(colonna)) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('riepilogo.modulo.' + colonna) %></span></label>
+          <% } %>
+        </div>
+        <p class="field__hint" id="riepilogo-hint"><%= t('riepilogo.hint') %></p>
+        <% if (errors.riepilogoOrdini) { %><p class="field__error" id="err-riepilogoOrdini"><%= t('scheda.error.' + errors.riepilogoOrdini) %></p><% } %>
+      </fieldset>
+      <% if (schizzi.attivo || schizzi.fogli.length) { %>
+      <%# Скиците в печата и PDF-а — накрая, преди снимките; една отметка за всички листове. Вижда се и при
+         изключен скицник, ако картата има листове (нарисуваното остава и се печата). %>
+      <fieldset class="choice field field--wide" id="f-schizziStampati"<% if (schizzi.per) { %> data-schizzi-per="<%= schizzi.per %>"<% } %><% if (schizzi.nascosto) { %> hidden<% } %> aria-describedby="schizzi-stampa-hint">
+        <legend><%= t('schizzi.stampa.legenda') %></legend>
+        <input type="hidden" name="schizziStampati-_" value="1">
+        <div class="choice__opts"><label class="tick"><input type="checkbox" name="schizziStampati" value="1"<% if (schizzi.stampati) { %> checked<% } %>><span class="tick__box" aria-hidden="true"></span><span><%= t('schizzi.stampa.opzione') %></span></label></div>
+        <p class="field__hint" id="schizzi-stampa-hint"><%= t('schizzi.stampa.hint') %></p>
+      </fieldset>
+      <% } %>
+      <%# Снимките в края на печата и PDF-а — малки иконки по раздели с отметка (_foto-stampa.ejs);
+         клиповете остават в портала. Нова карта — още няма снимки. %>
+      <fieldset class="choice field field--wide" id="f-fotoStampa" aria-describedby="foto-hint<%= errors.fotoStampa ? ' err-fotoStampa' : '' %>">
+        <legend><%= t('allegati.stampa.legenda') %></legend>
+        <% if (scheda) { %><%- include('_foto-stampa') %><% } %>
+        <p class="field__hint" id="foto-hint"><%= t(scheda ? 'allegati.stampa.hint' : 'allegati.dopoSalvataggio') %></p>
+        <% if (errors.fotoStampa) { %><p class="field__error" id="err-fotoStampa"><%= t('scheda.error.' + errors.fotoStampa) %></p><% } %>
+      </fieldset>
+    </div>
+  </fieldset>
+  <div class="actions">
+    <button class="btn btn--inverse" type="submit"><%= t(isEdit ? 'schede.edit.submit' : 'schede.create.submit') %></button>
+    <%# След „Salva“: Enter в поле натиска първия бутон на формата — никога потвърждението. %>
+    <% if (conferma && conferma.discrepanze.length) { %><button class="btn btn--bar" type="submit" name="conferma" value="<%= conferma.impronta %>"><%= t('collegati.conferma.submit') %></button><% } %>
+    <a class="btn btn--bar" href="<%= isEdit ? '/schede/' + scheda.id : '/schede' %>"><%= t('common.cancel') %></a>
+    <span class="actions__hint" data-dirty-hint hidden><%= t('schede.unsaved') %></span>
+  </div>
+</form>
+<script type="application/json" id="collegati-dati" nonce="<%= cspNonce %>"><%- collegati.json %></script>
+<% if (schizzi.attivo) { %><%- include('_schizzo-editor') %><% } %>
+<% if (isEdit) { %><%- include('_allegati-forms', { ritorno: 'modifica' }) %><% } %>
+</div>
+<% } %>
+</div>
+<%- include('../partials/bottom') %>

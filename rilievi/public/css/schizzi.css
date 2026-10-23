@@ -1,0 +1,64 @@
+/* Скицникът (src/schizzi/): листовете във формата и в картата (редакторът — schizzo-editor.css). Листът е
+   бял като хартия и в тъмната тема — така ще излезе и в печата. */
+
+/* `hidden` печели и над елементите със собствен `display` (лентите с бутоните). */
+.schizzi [hidden] {
+  display: none;
+}
+
+.schizzi__fogli {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.schizzi__fogli:not(:empty) {
+  margin-bottom: 16px;
+}
+
+/* На страницата на картата — с отстъпа на полетата на разделите (sheet.css, `.kv`). */
+.sheet__section > .schizzi__fogli {
+  margin: 0;
+  padding: 18px;
+}
+
+.schizzi > .toolbar + .field__hint {
+  margin-top: 10px;
+}
+
+.schizzi__foglio {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.schizzi__figura {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.schizzo {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 7 / 5;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #ffffff;
+}
+
+.schizzi__piede {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.schizzi__nome {
+  font-weight: 600;
+}

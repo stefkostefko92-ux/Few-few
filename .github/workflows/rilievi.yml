@@ -1,0 +1,83 @@
+name: rilievi
+
+on:
+  push:
+    paths:
+      - 'rilievi/**'
+      - '.github/workflows/rilievi.yml'
+  pull_request:
+    paths:
+      - 'rilievi/**'
+      - '.github/workflows/rilievi.yml'
+
+concurrency:
+  group: rilievi-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: продуктовият гейт само чете кода.
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: rilievi
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: rilievi/package-lock.json
+      # DejaVu Sans — шрифтът на PDF-а (в образа е fonts-dejavu-core); без него PDF тестът не се пропуска тихо.
+      # ffmpeg — компресията на клиповете (в образа на `worker`); в CI тестът на клипа е задължителен.
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends fonts-dejavu-core ffmpeg
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      # Целият гейт на продукта: prisma generate, prettier, типове, unit тестове (вкл. PDF с DejaVu
+      # от ubuntu-latest), билд.
+      - run: npm run check
+
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: rilievi
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: rilievi
+          POSTGRES_PASSWORD: rilievi
+          POSTGRES_DB: rilievi_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rilievi"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      # Името съдържа _test: тестовете трият таблиците и отказват всяка друга база.
+      TEST_DATABASE_URL: postgresql://rilievi:rilievi@127.0.0.1:5432/rilievi_test
+      PDF_FONT_DIR: /usr/share/fonts/truetype/dejavu
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: rilievi/package-lock.json
+      # DejaVu Sans — шрифтът на PDF-а (в образа е fonts-dejavu-core); без него PDF тестът не се пропуска тихо.
+      # ffmpeg — компресията на клиповете (в образа на `worker`); в CI тестът на клипа е задължителен.
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends fonts-dejavu-core ffmpeg
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      - run: npx prisma generate
+      - run: npm run test:integration

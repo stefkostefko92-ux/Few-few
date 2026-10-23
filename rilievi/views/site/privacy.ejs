@@ -1,0 +1,69 @@
+<%
+  // Политиката за поверителност (чл. 13 от GDPR). Сроковете идват от кода (заявки, одит, сесии,
+  // бисквитки, заключване) — текстът не може да се разминава с това, което порталът прави.
+  const cookies = [
+    { name: '__Host-rilievi', purpose: t('privacy.cookies.session'), kept: t('privacy.cookies.sessionKept', { days: sessionDays, adminDays: adminSessionDays }) },
+    { name: '__Host-rilievi_pre', purpose: t('privacy.cookies.pre'), kept: t('privacy.cookies.preKept', { hours: preCsrfHours }) },
+    { name: 'rilievi_theme', purpose: t('privacy.cookies.theme'), kept: t('privacy.cookies.prefKept') },
+    { name: 'rilievi_flash', purpose: t('privacy.cookies.flash'), kept: t('privacy.cookies.flashKept') },
+  ];
+  const rows = ['request', 'account', 'media', 'audit', 'ip'];
+  const headers = ['data', 'why', 'basis', 'kept'];
+  const params = { days: retentionDays, auditDays };
+%><%- include('top', { pageTitle: t('privacy.title') + ' — Rilievi Impianti', description: t('privacy.metaDescription') }) %>
+<article class="prose">
+  <h1><%= t('privacy.title') %></h1>
+  <p class="prose__updated"><%= t('privacy.updated', { date: fmt.day(new Date(updated)) }) %></p>
+  <p><%= t('privacy.intro') %></p>
+
+  <h2><%= t('privacy.who.title') %></h2>
+  <p><%= t('company.legalName') %>, <%= t('company.legalForm') %>, <%= t('company.eikLabel') %> <%= company.eik %>, <%= t('company.vatLabel') %> <%= company.vat %>, <%= t('company.street') %>, <%= company.postalCode %> <%= t('company.city') %>, <%= t('company.region') %>, <%= t('company.country') %>, <%= t('company.phoneLabel') %> <a href="<%= company.phoneHref %>"><%= company.phone %></a>. <%= t('privacy.who.contact') %> <a href="mailto:<%= privacyEmail %>"><%= privacyEmail %></a>.</p>
+
+  <h2><%= t('privacy.roles.title') %></h2>
+  <p><%= t('privacy.roles.text') %></p>
+
+  <h2><%= t('privacy.table.title') %></h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><% for (const h of headers) { %><th scope="col"><%= t('privacy.table.' + h) %></th><% } %></tr></thead>
+      <tbody>
+        <% for (const row of rows) { %><tr><% for (const h of headers) { %><td data-label="<%= t('privacy.table.' + h) %>"><%= t('privacy.table.' + row + '.' + h, params) %></td><% } %></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+  <p><%= t('privacy.required') %></p>
+
+  <h2><%= t('privacy.cookies.title') %></h2>
+  <p><%= t('privacy.cookies.text') %></p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th scope="col"><%= t('privacy.cookies.name') %></th><th scope="col"><%= t('privacy.cookies.purpose') %></th><th scope="col"><%= t('privacy.cookies.duration') %></th></tr></thead>
+      <tbody>
+        <% for (const cookie of cookies) { %><tr><td data-label="<%= t('privacy.cookies.name') %>"><code><%= cookie.name %></code></td><td data-label="<%= t('privacy.cookies.purpose') %>"><%= cookie.purpose %></td><td data-label="<%= t('privacy.cookies.duration') %>"><%= cookie.kept %></td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <h2><%= t('privacy.recipients.title') %></h2>
+  <ul>
+    <li><%= t('privacy.recipients.hosting') %></li>
+    <li><%= t('privacy.recipients.mail') %></li>
+  </ul>
+  <p><%= t('privacy.recipients.text') %></p>
+
+  <h2><%= t('privacy.security.title') %></h2>
+  <p><%= t('privacy.security.text') %></p>
+
+  <h2><%= t('privacy.decisions.title') %></h2>
+  <p><%= t('privacy.decisions.text', { attempts, minutes }) %></p>
+
+  <h2><%= t('privacy.rights.title') %></h2>
+  <p><%= t('privacy.rights.text') %> <a href="mailto:<%= privacyEmail %>"><%= privacyEmail %></a>. <%= t('privacy.rights.reply') %></p>
+  <p><%= t('privacy.rights.complaint') %></p>
+
+  <h2><%= t('privacy.changes.title') %></h2>
+  <p><%= t('privacy.changes.text') %></p>
+</article>
+<%- include('bottom') %>

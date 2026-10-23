@@ -1,0 +1,110 @@
+/* Листът за печат — горната част: заглавната лента и табелата (print.css — останалото). Шрифтовете са
+   с 1,5 pt (2 px) над първите, като в PDF-а. */
+
+.paper__head {
+  margin-bottom: 12px;
+}
+
+/* Горният ред: логото (или името на фирмата) вляво, датата и кой е попълнил — вдясно. */
+.paper__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.paper__brand {
+  min-width: 0;
+}
+
+/* Логото на фирмата — най-горе вляво на всеки лист (до 60 × 18 мм, без да се разтегля). */
+.paper__logo {
+  display: block;
+  width: auto;
+  max-width: 60mm;
+  height: auto;
+  max-height: 18mm;
+}
+
+.paper__azienda {
+  font-size: 13.5pt;
+  font-weight: 700;
+}
+
+/* Кой е попълнил картата — с едър шрифт, вижда се на всеки отпечатан лист. */
+.paper__by {
+  display: grid;
+  margin: 4px 0 2px;
+}
+
+.paper__by strong {
+  font-size: 13.5pt;
+  color: #000000;
+}
+
+.paper__meta {
+  text-align: right;
+  font-size: 10pt;
+  color: var(--muted);
+}
+
+/* Заглавието — в средата; под него вляво адресът (удебелен, колкото заглавието), вдясно бонът. */
+.paper__title {
+  margin-top: 10px;
+  font-size: 16.5pt;
+  font-weight: 700;
+  text-align: center;
+}
+
+.paper__sub {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.paper__address {
+  min-width: 0;
+  margin: 0;
+  font-size: 16.5pt;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.paper__address--empty {
+  color: var(--muted);
+}
+
+.paper__buono {
+  display: grid;
+  flex: none;
+  max-width: 45%;
+  margin: 0;
+  text-align: right;
+  font-size: 10pt;
+  color: var(--muted);
+}
+
+.paper__buono strong {
+  font-size: 13.5pt;
+  color: #000000;
+  overflow-wrap: anywhere;
+}
+
+.paper .plate {
+  padding: 18px 26px 14px;
+  break-inside: avoid;
+}
+
+.paper .plate__label {
+  font-size: 10.5pt;
+}
+
+.paper .plate__big {
+  font-size: 21.5pt;
+}
+
+.paper .plate__specs dd {
+  font-size: 12.5pt;
+}

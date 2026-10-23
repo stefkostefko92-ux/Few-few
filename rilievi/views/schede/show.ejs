@@ -1,0 +1,71 @@
+<%
+  const byKey = Object.fromEntries(sections.flatMap((s) => s.fields).map((f) => [f.key, f]));
+%><%- include('../partials/top', { title: ident.length > 40 ? ident.slice(0, 39) + '…' : ident, scripts: ['allegati', 'carica'] }) %>
+<div class="page-head">
+  <div>
+    <a href="/schede"><%= t('schede.back') %></a>
+    <h1><%= ident %></h1>
+    <p class="page-head__sub"><%= t('scheda.dateLine', { date: fmt.day(scheda.data) }) %></p>
+  </div>
+  <div class="toolbar">
+    <% if (!scheda.deletedAt && canIn('schede:write', scheda.aziendaId)) { %><a class="btn btn--primary" href="/schede/<%= scheda.id %>/modifica"><%- include('../partials/icon', { name: 'edit' }) %><%= t('scheda.actions.edit') %></a><% } %>
+    <a class="btn" href="/schede/<%= scheda.id %>/stampa?auto=1"><%- include('../partials/icon', { name: 'print' }) %><%= t('scheda.actions.print') %></a>
+    <a class="btn" href="/schede/<%= scheda.id %>/pdf"><%- include('../partials/icon', { name: 'download' }) %><%= t('scheda.actions.pdf') %></a>
+    <% if (!scheda.deletedAt && canIn('schede:delete', scheda.aziendaId)) { %><a class="btn btn--ghost" href="/schede/<%= scheda.id %>/elimina"><%- include('../partials/icon', { name: 'trash' }) %><%= t('scheda.actions.delete') %></a><% } %>
+  </div>
+</div>
+<div class="with-index">
+<%- include('_index', { titles: sections.map((s) => ({ key: s.key, title: s.title })).concat(schizzi.length ? [{ key: 'schizzi', title: t('schizzi.title') }] : []) }) %>
+<div class="sheet">
+  <% if (scheda.deletedAt) { %>
+  <div class="banner" role="status">
+    <span><%= t('trash.banner', { at: fmt.dateTime(scheda.deletedAt), name: scheda.deletedBy ? scheda.deletedBy.name : '—' }) %></span>
+    <% if (canIn('schede:trash', scheda.aziendaId)) { %><span class="toolbar">
+      <form class="inline-form" method="post" action="/cestino/<%= scheda.id %>/ripristina"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn--sm" type="submit"><%- include('../partials/icon', { name: 'restore' }) %><%= t('trash.restore') %></button></form>
+      <a class="btn btn--sm btn--ghost" href="/cestino/<%= scheda.id %>/elimina"><%= t('trash.purge') %></a>
+    </span><% } %>
+  </div>
+  <% } %>
+  <% if (discrepanze.length) { %>
+  <div class="notice notice--diff">
+    <p><strong><%= t('collegati.banner') %></strong></p>
+    <ul><% for (const d of discrepanze) { %><li><%- include('_discrepanza', { d }) %></li><% } %></ul>
+  </div>
+  <% } %>
+  <%- include('../partials/plate', { byKey }) %>
+  <% sections.forEach((section, index) => { %>
+  <section class="sheet__section" id="s-<%= section.key %>" aria-labelledby="h-<%= section.key %>">
+    <h2 class="sheet__title" id="h-<%= section.key %>"><span class="secnum" aria-hidden="true"><%= index + 1 %></span><%= section.title %></h2>
+    <dl class="kv">
+      <% for (const field of section.fields) { %><div class="kv__item<%= field.wide ? ' kv__item--wide' : '' %>">
+        <dt><%= field.label %></dt>
+        <% if (field.value) { %><dd><%= field.value %><% if (field.table) { %><%- include('_table', { table: field.table }) %><% } %><% if (field.modulo) { %>
+          <span class="modulo-links"><span class="modulo-links__name"><%= field.modulo.nome %></span>
+            <a class="btn btn--sm" href="/schede/<%= scheda.id %>/<%= field.modulo.path %>"><%- include('../partials/icon', { name: 'download' }) %><%= t('ordini.download') %></a>
+            <a class="btn btn--sm" href="/schede/<%= scheda.id %>/<%= field.modulo.path %>?inline=1" target="_blank" rel="noopener"><%- include('../partials/icon', { name: 'print' }) %><%= t('ordini.print') %></a>
+          </span><% } %></dd><% } else { %><dd class="empty-value">—</dd><% } %>
+      </div>
+      <% } %>
+    </dl>
+    <%- include('_allegati', { section, ritorno: 'scheda' }) %>
+  </section>
+  <% }) %>
+  <%# Листовете на скицника — и когато фирмата вече го е изключила (нарисуваното остава). %>
+  <% if (schizzi.length) { %>
+  <section class="sheet__section" id="s-schizzi" aria-labelledby="h-schizzi">
+    <h2 class="sheet__title" id="h-schizzi"><span class="secnum" aria-hidden="true"><%= sections.length + 1 %></span><%= t('schizzi.title') %></h2>
+    <ol class="schizzi__fogli">
+      <% schizzi.forEach((foglio, i) => { %><li class="schizzi__foglio"><figure class="schizzi__figura"><%- include('_schizzo', { foglio, titolo: t('schizzi.foglio', { n: i + 1 }) }) %><figcaption class="schizzi__nome"><%= t('schizzi.foglio', { n: i + 1 }) %></figcaption></figure></li>
+      <% }) %>
+    </ol>
+  </section>
+  <% } %>
+  <p class="sheet__meta">
+    <% if (showAzienda) { %><span><%= t('scheda.field.azienda') %>: <%= scheda.azienda.name %></span><% } %>
+    <span><%= t('scheda.meta.created', { name: scheda.createdBy ? scheda.createdBy.name : '—', at: fmt.dateTime(scheda.createdAt) }) %></span>
+    <span><%= t('scheda.meta.updated', { name: scheda.updatedBy ? scheda.updatedBy.name : '—', at: fmt.dateTime(scheda.updatedAt) }) %></span>
+  </p>
+</div>
+<% if (modifica) { %><%- include('_allegati-forms', { ritorno: 'scheda' }) %><% } %>
+</div>
+<%- include('../partials/bottom') %>

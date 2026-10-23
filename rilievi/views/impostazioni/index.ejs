@@ -1,0 +1,69 @@
+<%
+  // Редът на разделите на картата във фирмата (src/aziende/sezioni.ts). Без JavaScript: всеки бутон
+  // праща целия ред (скритите полета „ordine“) и страницата се връща с новия ред; „Salva“ го записва.
+  // Идентификацията („Impianto“, `fisse` от src/schede/ordine.ts) стои винаги първа и не се мести.
+  const autofocusOf = (key, verso) => {
+    if (!focus || focus.key !== key) return false;
+    const i = ordine.indexOf(key);
+    // На ръба натиснатият бутон е изключен — фокусът минава на другия.
+    const edge = (focus.verso === 'su' && i === 0) || (focus.verso === 'giu' && i === ordine.length - 1);
+    return edge ? verso !== focus.verso : verso === focus.verso;
+  };
+%><%- include('../partials/top', { titleKey: 'impostazioni.title', narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <h1><%= t('impostazioni.title') %></h1>
+    <p class="page-head__sub"><%= azienda.name %></p>
+  </div>
+</div>
+<div class="stack-gap">
+  <% if (error) { %><div class="errors" role="alert"><h2><%= t(error) %></h2></div><% } %>
+  <% if (aziende.length > 1) { %>
+  <form class="filter" method="get" action="/impostazioni">
+    <label class="field__label" for="azienda-scelta"><%= t('scheda.field.azienda') %></label>
+    <div class="filter__row">
+      <select class="select" id="azienda-scelta" name="azienda">
+        <% for (const item of aziende) { %><option value="<%= item.id %>"<% if (item.id === azienda.id) { %> selected<% } %>><%= item.name %></option>
+        <% } %>
+      </select>
+      <button class="btn" type="submit"><%= t('impostazioni.choose') %></button>
+    </div>
+  </form>
+  <% } %>
+  <section aria-labelledby="h-sezioni">
+    <h2 class="section__title" id="h-sezioni"><%= t('impostazioni.sezioni.title') %></h2>
+    <p class="muted"><%= t('impostazioni.sezioni.text') %></p>
+    <form class="order-form" method="post" action="/impostazioni/sezioni">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="azienda" value="<%= azienda.id %>">
+      <ol class="order" aria-describedby="order-hint">
+        <% fisse.forEach((key, i) => { %><li class="order__item order__item--fixed">
+          <span class="secnum" aria-hidden="true"><%= i + 1 %></span>
+          <span class="order__name"><%= t('scheda.section.' + key) %></span>
+          <span class="order__fixed"><%= t('impostazioni.sezioni.fixed') %></span>
+        </li>
+        <% }) %><% ordine.forEach((key, i) => { const name = t('scheda.section.' + key); %><li class="order__item">
+          <input type="hidden" name="ordine" value="<%= key %>">
+          <span class="secnum" aria-hidden="true"><%= i + fisse.length + 1 %></span>
+          <span class="order__name"><%= name %></span>
+          <span class="order__moves">
+            <button class="btn btn--sm order__move" type="submit" name="sposta" value="<%= key %>:su" aria-label="<%= t('impostazioni.sezioni.up', { name }) %>"<% if (i === 0) { %> disabled<% } %><% if (autofocusOf(key, 'su')) { %> autofocus<% } %>><%- include('../partials/icon', { name: 'up' }) %></button>
+            <button class="btn btn--sm order__move" type="submit" name="sposta" value="<%= key %>:giu" aria-label="<%= t('impostazioni.sezioni.down', { name }) %>"<% if (i === ordine.length - 1) { %> disabled<% } %><% if (autofocusOf(key, 'giu')) { %> autofocus<% } %>><%- include('../partials/icon', { name: 'down' }) %></button>
+          </span>
+        </li>
+        <% }) %>
+      </ol>
+      <p class="field__hint" id="order-hint"><%= t('impostazioni.sezioni.hint') %></p>
+      <div class="toolbar">
+        <button class="btn btn--primary" type="submit" name="salva" value="1"><%= t('impostazioni.sezioni.save') %></button>
+        <% if (modificato) { %><span class="order__dirty" role="status"><%= t('schede.unsaved') %></span><% } %>
+      </div>
+    </form>
+    <form class="order-reset" method="post" action="/impostazioni/sezioni">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="azienda" value="<%= azienda.id %>">
+      <button class="btn" type="submit" name="ripristina" value="1"><%= t('impostazioni.sezioni.reset') %></button>
+    </form>
+  </section>
+</div>
+<%- include('../partials/bottom') %>

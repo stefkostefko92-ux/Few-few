@@ -1,0 +1,112 @@
+<%
+  // Un account: le aziende e i ruoli che chi guarda può vedere, nome ed email, password, accesso.
+  // Chi può fare cosa lo decide auth/manage.ts: qui si mostrano solo le azioni permesse.
+  const invitedBy = target.invitedBy ? (target.invitedBy.portal ? t('users.portalAdmin') : target.invitedBy.name) : '—';
+  const anyMembership = memberships.some((m) => m.manageable);
+%><%- include('../partials/top', { title: target.name, narrowMain: true }) %>
+<div class="page-head">
+  <div>
+    <a href="/utenti"><%= t('users.back') %></a>
+    <h1><%= target.name %><% if (target.self) { %> <span class="badge"><%= t('users.you') %></span><% } %></h1>
+    <p class="page-head__sub"><%= target.email %></p>
+  </div>
+</div>
+<div class="stack-gap">
+  <% if (error) { %><div class="errors" role="alert" id="form-error" tabindex="-1"><h2><%= t(error) %></h2></div><% } %>
+  <dl class="kv">
+    <% if (target.master) { %><div class="kv__item"><dt><%= t('users.role') %></dt><dd><%= t('role.MASTER') %></dd></div><% } %>
+    <div class="kv__item"><dt><%= t('users.status') %></dt><dd><%= target.deactivatedAt ? t('users.deactivatedOn', { at: fmt.dateTime(target.deactivatedAt) }) : t('users.active') %></dd></div>
+    <div class="kv__item"><dt><%= t('users.lastLogin') %></dt><dd><%= target.lastLoginAt ? fmt.dateTime(target.lastLoginAt) : t('users.never') %></dd></div>
+    <div class="kv__item"><dt><%= t('users.invitedBy') %></dt><dd><%= invitedBy %></dd></div>
+  </dl>
+  <% if (target.master) { %>
+  <p class="muted"><%= t('users.masterText') %></p>
+  <% } else { %>
+  <section aria-labelledby="h-aziende">
+    <h2 class="section__title" id="h-aziende"><%= t('users.aziendeTitle') %></h2>
+    <ul class="memberships">
+      <% for (const m of memberships) { %><li class="membership">
+        <span class="membership__name"><%= m.aziendaName %></span>
+        <% if (m.manageable) { %>
+        <form class="membership__role" method="post" action="/utenti/<%= target.id %>/aziende/<%= m.aziendaId %>/ruolo">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <label class="visually-hidden" for="role-<%= m.aziendaId %>"><%= t('users.roleIn', { azienda: m.aziendaName }) %></label>
+          <select class="select" id="role-<%= m.aziendaId %>" name="role">
+            <% for (const role of m.roles) { %><option value="<%= role %>"<% if (m.role === role) { %> selected<% } %>><%= t('role.' + role) %></option>
+            <% } %>
+          </select>
+          <button class="btn" type="submit"><%= t('users.saveRole') %></button>
+        </form>
+        <% if (currentUser.master && memberships.length > 1) { %><form class="membership__remove" method="post" action="/utenti/<%= target.id %>/aziende/<%= m.aziendaId %>/rimuovi">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="btn btn--ghost btn--sm" type="submit"><%= t('users.removeAzienda') %></button>
+        </form><% } %>
+        <% } else { %><span class="membership__fixed"><%= t('role.' + m.role) %></span><% } %>
+      </li>
+      <% } %>
+    </ul>
+    <% if (currentUser.master && memberships.length === 1) { %><p class="muted"><%= t('users.lastAziendaNote') %></p><% } %>
+    <% if (freeAziende.length > 0) { %>
+    <form class="row-form membership-add" method="post" action="/utenti/<%= target.id %>/aziende">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <label class="field__label" for="new-azienda"><%= t('users.addAzienda') %></label>
+        <select class="select" id="new-azienda" name="azienda" required>
+          <% for (const azienda of freeAziende) { %><option value="<%= azienda.id %>"><%= azienda.name %></option>
+          <% } %>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field__label" for="new-role"><%= t('users.addAziendaRole') %></label>
+        <select class="select" id="new-role" name="role">
+          <% for (const role of newRoles) { %><option value="<%= role %>"<% if (role === 'TECNICO') { %> selected<% } %>><%= t('role.' + role) %></option>
+          <% } %>
+        </select>
+      </div>
+      <button class="btn" type="submit"><%- include('../partials/icon', { name: 'plus' }) %><%= t('users.addAziendaSubmit') %></button>
+    </form>
+    <% } %>
+  </section>
+  <% } %>
+  <% if (target.manageable) { %>
+  <section aria-labelledby="h-account">
+    <h2 class="section__title" id="h-account"><%= t('users.accountTitle') %></h2>
+    <form class="form form--tight" method="post" action="/utenti/<%= target.id %>/account" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <label class="field__label" for="acc-name"><%= t('users.fullName') %></label>
+        <input class="input" id="acc-name" name="name" type="text" autocomplete="off" required minlength="2" maxlength="120" value="<%= account.name %>"<% if (error === 'users.error.name') { %> aria-invalid="true" aria-describedby="form-error"<% } %>>
+      </div>
+      <div class="field">
+        <label class="field__label" for="acc-email"><%= t('auth.email') %></label>
+        <input class="input" id="acc-email" name="email" type="email" inputmode="email" autocapitalize="none" spellcheck="false" autocomplete="off" required maxlength="254" value="<%= account.email %>" aria-describedby="acc-email-hint<% if (error === 'users.error.email' || error === 'users.error.emailTaken') { %> form-error<% } %>"<% if (error === 'users.error.email' || error === 'users.error.emailTaken') { %> aria-invalid="true"<% } %>>
+        <p class="field__hint" id="acc-email-hint"><%= t('users.emailChangeHint') %></p>
+      </div>
+      <div class="toolbar"><button class="btn btn--primary" type="submit"><%= t('users.saveAccount') %></button></div>
+    </form>
+  </section>
+  <% if (!target.deactivatedAt) { %>
+  <section aria-labelledby="h-reset">
+    <h2 class="section__title" id="h-reset"><%= t('users.resetTitle') %></h2>
+    <p class="muted"><%= t('users.resetText', { hours: resetHours }) %></p>
+    <form method="post" action="/utenti/<%= target.id %>/reimposta"><input type="hidden" name="_csrf" value="<%= csrfToken %>"><div class="toolbar"><button class="btn" type="submit"><%= t('users.resetSubmit') %></button></div></form>
+  </section>
+  <% } %>
+  <section aria-labelledby="h-access">
+    <h2 class="section__title" id="h-access"><%= t('users.accessTitle') %></h2>
+    <% if (target.activable) { %>
+    <p class="muted"><%= t(target.deactivatedAt ? 'users.reactivateText' : 'users.deactivateText') %></p>
+    <form method="post" action="/utenti/<%= target.id %>/stato">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="active" value="<%= target.deactivatedAt ? '1' : '0' %>">
+      <div class="toolbar"><button class="btn<%= target.deactivatedAt ? '' : ' btn--danger' %>" type="submit"><%= t(target.deactivatedAt ? 'users.reactivate' : 'users.deactivate') %></button></div>
+    </form>
+    <% } else { %>
+    <p class="muted"><%= t('users.selfAccessNote') %></p>
+    <% } %>
+  </section>
+  <% } else { %>
+  <p class="muted"><%= t(anyMembership ? 'users.accountByPortal' : 'users.notManageable') %></p>
+  <% } %>
+</div>
+<%- include('../partials/bottom') %>

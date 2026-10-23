@@ -1,0 +1,284 @@
+/* Снимките и клиповете на раздела: галерията (плочки 4:3), състоянията (в обработка, грешка) и
+   качването, сгънато под „Aggiungi foto o video“. Само линии и тихи повърхности; червеното — само за
+   грешка. Във формата блокът е под полетата на раздела, на страницата на картата — под стойностите. */
+
+.allegati {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  min-width: 0;
+}
+
+.sheet__section > .allegati {
+  margin: 0 18px;
+  padding-bottom: 18px;
+}
+
+.allegati > * + * {
+  margin-top: 12px;
+}
+
+/* Празната галерия и празното съобщение не оставят място (съобщението остава в дървото — то е
+   aria-live). */
+.allegati > .allegati__avvisi:empty,
+.allegati > .allegati__galleria:empty + .allegati__avvisi:empty + * {
+  margin-top: 0;
+}
+
+/* Нова карта: една тиха бележка на раздел. */
+.allegati--nota {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 0;
+  border-top: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.allegati--nota .icon,
+.allegati__title .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.allegati__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 0.9375rem;
+}
+
+.galleria {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 136px), 1fr));
+  gap: 16px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.galleria__item {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.galleria__media {
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--wash);
+}
+
+.galleria__media img,
+.galleria__media video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+a.galleria__media:hover {
+  border-color: var(--fg);
+}
+
+/* Клипът се вижда цял (черни ивици), не изрязан като снимката. */
+.galleria__media--video {
+  background: #000000;
+}
+
+.galleria__media--video video {
+  object-fit: contain;
+}
+
+.galleria__stato {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  aspect-ratio: 4 / 3;
+  padding: 12px;
+  border: 1px dashed var(--field-line);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.35;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.galleria__stato--errore {
+  border: 1.5px solid var(--danger);
+  color: var(--danger);
+  font-weight: 500;
+}
+
+/* Кръгът стои и при намалено движение — тогава неподвижен; текстът до него казва какво става. */
+.spinner {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--line);
+  border-top-color: var(--fg);
+  border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .spinner {
+    animation: spinner 900ms linear infinite;
+  }
+}
+
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.galleria__info {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.galleria__didascalia-testo {
+  font-size: 0.9375rem;
+  overflow-wrap: anywhere;
+}
+
+.galleria__azioni {
+  display: grid;
+  gap: 6px;
+}
+
+.galleria__azioni .input {
+  min-height: 40px;
+  padding: 6px 10px;
+  font-size: 0.9375rem;
+}
+
+.galleria__bottoni {
+  display: flex;
+  gap: 6px;
+}
+
+.galleria__bottoni button {
+  flex: 1 1 auto;
+}
+
+.galleria__bottoni a {
+  flex: none;
+  padding: 0 10px;
+}
+
+.allegati__avvisi {
+  white-space: pre-line;
+  font-size: 0.9375rem;
+}
+
+.allegati__avvisi--errore {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+/* Качването: сгънато, за да не тежи на всеки раздел; отворено — файл, надпис, бутон и ход. */
+.allegati__aggiungi > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1.5px solid var(--fg);
+  border-radius: var(--radius);
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+}
+
+.allegati__aggiungi > summary::-webkit-details-marker {
+  display: none;
+}
+
+.allegati__aggiungi > summary:hover,
+.allegati__aggiungi[open] > summary {
+  background: var(--hover);
+}
+
+.allegati__carica {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+@media (min-width: 720px) {
+  .allegati__carica {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .allegati__invia {
+    grid-column: 1 / -1;
+  }
+}
+
+.allegati__invia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.allegati__progress {
+  flex: 1 1 160px;
+  height: 8px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--line);
+  overflow: hidden;
+  appearance: none;
+}
+
+.allegati__progress::-webkit-progress-bar {
+  border-radius: 4px;
+  background: var(--line);
+}
+
+.allegati__progress::-webkit-progress-value {
+  border-radius: 4px;
+  background: var(--fg);
+}
+
+.allegati__progress::-moz-progress-bar {
+  border-radius: 4px;
+  background: var(--fg);
+}
+
+/* Потвърждението на изтриването без JavaScript. */
+.allegato-conferma {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.allegato-conferma__mini {
+  width: 160px;
+  height: 120px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  object-fit: cover;
+}
+
+@media print {
+  .allegati__aggiungi,
+  .allegati__avvisi,
+  .galleria__azioni {
+    display: none;
+  }
+}

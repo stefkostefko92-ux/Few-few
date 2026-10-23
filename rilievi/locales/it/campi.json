@@ -1,0 +1,145 @@
+{
+  "scheda": {
+    "section": {
+      "impianto": "Impianto",
+      "ubicazione": "Ubicazione e accesso",
+      "tipologia": "Tipologia",
+      "quadro": "Quadro",
+      "argano": "Argano",
+      "centralina": "Centralina",
+      "funi": "Funi e tiranti",
+      "limitatore": "Limitatore",
+      "cavi": "Cavi",
+      "serrature": "Serrature o sospensioni",
+      "allarme": "Allarme e telesoccorso",
+      "note": "Note e lavori"
+    },
+    "field": {
+      "data": "Data",
+      "indirizzo": "Indirizzo",
+      "marca": "Marca impianto",
+      "matricola": "Matricola",
+      "numeroImpianto": "N° impianto",
+      "buonoLavoro": "Buono di lavoro",
+      "portataKg": "Portata",
+      "capienzaPersone": "Capienza",
+      "fermate": "Fermate",
+      "ubicazioneMacchina": "Ubicazione macchina",
+      "ubicazioneCassettina": "Ubicazione cassettina",
+      "parcheggio": "Parcheggio",
+      "tipoImpianto": "Tipo impianto",
+      "tipoPorte": "Tipo porte",
+      "doppioAccesso": "Accessi",
+      "serrature": "Serrature da cambiare",
+      "serratureNumero": "Numero serrature",
+      "serratureTipo": "Tipo serrature",
+      "pattinoRetrattile": "Pattino retrattile da cambiare",
+      "pattinoRetrattileTipo": "Tipo di pattino retrattile",
+      "operatore": "Operatore da cambiare",
+      "sospensioni": "Sospensioni da cambiare",
+      "sospensioniNumero": "Numero sospensioni",
+      "serratureNote": "Note serrature e sospensioni",
+      "luceVanoSostituire": "Luce vano da sostituire",
+      "luceVanoNote": "Note luce vano",
+      "funiDiametroMm": "Diametro funi",
+      "funiTrefoli": "Trefoli funi",
+      "funiNumero": "Numero funi",
+      "funiLunghezzaM": "Lunghezza funi",
+      "tirantiCabinaNumero": "Quantità tiranti cabina",
+      "tirantiCabinaTipo": "Tipo tiranti cabina",
+      "tirantiContrappesoNumero": "Quantità tiranti contrappeso",
+      "tirantiContrappesoTipo": "Tipo tiranti contrappeso",
+      "tirantiFossaNumero": "Quantità tiranti in fossa",
+      "tirantiFossaTipo": "Tipo tiranti in fossa",
+      "limitatoreTipo": "Tipo limitatore",
+      "funicellaDiametroMm": "Diametro funicella",
+      "funicellaLunghezzaM": "Lunghezza funicella",
+      "tenditore": "Tenditore",
+      "caviNumero": "Numero cavi",
+      "caviConduttori": "Conduttori cavi",
+      "caviLunghezzaM": "Lunghezza cavi",
+      "allarmePortineria": "Allarme in portineria",
+      "displayPortineria": "Display in portineria",
+      "noteQuadretto": "Note quadretto elettrico",
+      "noteImpianto": "Note impianto",
+      "noteBottoniere": "Note bottoniere in opera",
+      "bottoniereMisure": "Misure bottoniere vecchie",
+      "lavoriExtra": "Lavori extra (buono di lavoro)",
+      "azienda": "Azienda",
+      "quadroMarca": "Marca quadro",
+      "quadroMarcaAltro": "Altra marca quadro",
+      "quadroOrdine": "Scheda per l'ordine quadro",
+      "quadroNote": "Note quadro",
+      "arganoPreventivo": "Argano da sostituire",
+      "quadroModello": "Tipologia quadro",
+      "fossaRidotta": "Fossa ridotta",
+      "testataRidotta": "Testata ridotta",
+      "arganoTipo": "Tipo argano esistente",
+      "ganasceFreno": "Ganasce freno da cambiare",
+      "kitControlloGanasce": "Kit controllo ganasce",
+      "kitControlloGanasceTipo": "Tipo controllo ganasce",
+      "controlloQuadro": "Controllo su quadro manovra",
+      "controlloQuadroTipo": "Tipo controllo",
+      "arganoNote": "Note argano",
+      "centralinaDaFare": "Centralina da sostituire",
+      "centralinaMarca": "Marca e modello centralina",
+      "emendamentoA3": "Emendamento A3 da installare",
+      "tuboFlessibile": "Installare tubo flessibile",
+      "tuboFlessibileDiametroMm": "Diametro tubo flessibile",
+      "tuboFlessibileLunghezzaM": "Lunghezza tubo flessibile",
+      "tuboFlessibileNote": "Note tubo flessibile",
+      "centralinaNote": "Note centralina",
+      "telesoccorsoInstallare": "Telesoccorso da installare",
+      "perifericaInstallare": "Periferica sotto cabina da installare",
+      "cornettaInstallare": "Cornetta nel locale da installare"
+    },
+    "question": {
+      "bottoniereMisure": "Vuoi inserire le misure delle bottoniere vecchie?",
+      "quadroOrdine": "Vuoi compilare la scheda per l'ordine quadro?",
+      "arganoPreventivo": "Argano da sostituire?",
+      "operatore": "Operatore da cambiare?",
+      "sospensioni": "Sospensioni da cambiare?",
+      "centralinaDaFare": "Centralina da sostituire?"
+    },
+    "option": {
+      "ubicazioneMacchina": {
+        "ALTO": "Alto",
+        "BASSO": "Basso"
+      },
+      "tipoImpianto": {
+        "ELETTRICO": "Elettrico",
+        "IDRAULICO": "Idraulico",
+        "GEARLESS": "MRL"
+      },
+      "tipoPorte": {
+        "AUTOMATICHE": "Automatiche",
+        "SEMIAUTOMATICHE": "Semiautomatiche",
+        "MANUALI": "Manuali"
+      },
+      "doppioAccesso": {
+        "no": "1",
+        "si": "2"
+      },
+      "quadroMarca": {
+        "PELAZZA": "Pelazza",
+        "MOVILIFT": "Movilift",
+        "DMG": "DMG",
+        "MASTECH": "Mastech",
+        "ALTRO": "Altro"
+      },
+      "quadroModello": {
+        "NG120": "NG120",
+        "QI_TOUCH": "QI Touch"
+      }
+    },
+    "unit": {
+      "kg": "kg",
+      "persone": {
+        "one": "persona",
+        "other": "persone"
+      },
+      "mm": "mm",
+      "m": "m"
+    }
+  }
+}

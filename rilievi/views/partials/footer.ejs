@@ -1,0 +1,16 @@
+<%
+  const hide = typeof hideSwitches !== 'undefined' && hideSwitches;
+  const themes = [
+    { value: 'auto', key: 'theme.auto', icon: 'auto', on: theme === 'AUTO' },
+    { value: 'chiaro', key: 'theme.light', icon: 'sun', on: theme === 'LIGHT' },
+    { value: 'scuro', key: 'theme.dark', icon: 'moon', on: theme === 'DARK' },
+  ];
+%><footer class="footer">
+  <div class="footer__inner">
+    <% if (!hide && themeUrl('auto')) { %><nav class="switch" aria-label="<%= t('switch.theme') %>">
+      <% for (const item of themes) { %><a href="<%= themeUrl(item.value) %>"<% if (item.on) { %> aria-current="true"<% } %>><%- include('icon', { name: item.icon }) %><%= t(item.key) %></a>
+      <% } %>
+    </nav><% } else { %><span></span><% } %>
+    <p class="credit">Created and Designed by <a href="https://carbonstealth.eu" target="_blank" rel="noopener">Carbon Stealth VCC</a></p>
+  </div>
+</footer>

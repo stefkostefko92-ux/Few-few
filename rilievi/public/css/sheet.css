@@ -1,0 +1,229 @@
+/* Картата на екрана: разделите като панели с лента и номер (същият като на чертежа във витрината),
+   стойностите като двойки „етикет — стойност“. */
+
+.kv {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
+  gap: 16px 24px;
+  margin: 0;
+}
+
+.kv__item {
+  min-width: 0;
+}
+
+.kv__item--wide {
+  grid-column: 1 / -1;
+}
+
+.kv dt {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.kv dd {
+  margin: 2px 0 0;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.kv dd.empty-value {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.sheet {
+  display: grid;
+  gap: 32px;
+}
+
+.sheet__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.sheet__section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-plate);
+  scroll-margin-top: 88px;
+}
+
+.sheet__title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--line);
+  border-radius: calc(var(--radius-plate) - 1px) calc(var(--radius-plate) - 1px) 0 0;
+  background: var(--wash);
+  font-size: 1.0625rem;
+}
+
+.sheet__section .kv {
+  padding: 18px;
+}
+
+/* Индексът на дългите страници (картата): разделите с номерата им, залепен отляво на широк екран. */
+.with-index {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 32px;
+}
+
+.secindex {
+  display: none;
+}
+
+@media (min-width: 1100px) {
+  .with-index {
+    grid-template-columns: 210px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .secindex {
+    position: sticky;
+    top: 88px;
+    display: block;
+    max-height: calc(100vh - 110px);
+    overflow-y: auto;
+  }
+}
+
+.secindex ol {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.secindex a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9375rem;
+}
+
+.secindex a:hover {
+  color: var(--fg);
+  background: var(--hover);
+}
+
+.secindex a[aria-current='true'] {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.secindex a[aria-current='true'] .secnum {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.secindex__title {
+  margin: 0 0 8px 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* Номерата на разделите във формата и в индекса броят само видимите: раздел с условие, скрит от
+   app.js („Argano“ при хидравлична уредба), не оставя дупка. На страницата на картата и във витрината
+   номерът е в самия HTML. */
+.form {
+  counter-reset: sezione;
+}
+
+.form > .section {
+  counter-increment: sezione;
+}
+
+.section__title > .secnum:empty::before {
+  content: counter(sezione);
+}
+
+.secindex ol {
+  counter-reset: sezione-indice;
+}
+
+.secindex li {
+  counter-increment: sezione-indice;
+}
+
+.secindex .secnum:empty::before {
+  content: counter(sezione-indice);
+}
+
+/* Номерът на раздела — същият като на чертежа във витрината. */
+.secnum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: 1.5px solid var(--fg);
+  border-radius: 50%;
+  font-family: var(--font-cond);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Раздел 1 на формата — подреден като главата и табелата на листа: датата; адресът вляво и бонът
+   вдясно; матрикулата вляво, № на асансьора вдясно; товарът, капацитетът, спирките и марката. */
+.grid--testa {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid--testa > [data-campo='indirizzo'],
+.grid--testa > [data-campo='buonoLavoro'] {
+  grid-column: 1 / -1;
+}
+
+.grid--testa > [data-campo='indirizzo'] .input {
+  font-weight: 600;
+}
+
+@media (min-width: 720px) {
+  .grid--testa {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .grid--testa > [data-campo='indirizzo'] {
+    grid-column: 1 / 4;
+  }
+
+  .grid--testa > [data-campo='buonoLavoro'] {
+    grid-column: 4 / 5;
+  }
+
+  .grid--testa > [data-campo='matricola'] {
+    grid-column: 1 / 3;
+  }
+
+  .grid--testa > [data-campo='numeroImpianto'] {
+    grid-column: 3 / 5;
+  }
+}
+
+/* Въпрос „Sì/No“ с полето за вида до него — всеки на свой ред (собственикът, октомври 2026):
+   комплектът за контрол на челюстите, контролът в таблото, шейната; тирантите на кабината и на
+   противотежестта (при хидравлична — в ямата) — брой и вид. На телефона полетата са едно под друго и
+   това не променя нищо. */
+.grid > [data-campo='kitControlloGanasce'],
+.grid > [data-campo='controlloQuadro'],
+.grid > [data-campo='pattinoRetrattile'],
+.grid > [data-campo='tirantiCabinaNumero'],
+.grid > [data-campo='tirantiContrappesoNumero'],
+.grid > [data-campo='tirantiFossaNumero'] {
+  grid-column-start: 1;
+}
