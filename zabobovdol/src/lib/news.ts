@@ -36,7 +36,7 @@ export async function getLatestNews(
   try {
     const rows = await prisma.post.findMany({
       where: { published: true, ...(opts.source ? { source: opts.source } : {}) },
-      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+      orderBy: [{ publishedAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
       take,
       select: SELECT,
     });

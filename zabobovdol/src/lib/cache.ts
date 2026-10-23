@@ -175,7 +175,7 @@ export const getLatestPosts = cached(
   () =>
     prisma.post.findMany({
       where: { published: true },
-      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+      orderBy: [{ publishedAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
       take: 3,
     }),
   [CACHE_TAGS.post],

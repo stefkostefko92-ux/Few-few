@@ -31,7 +31,7 @@ export async function GET() {
 function load() {
   return prisma.post.findMany({
     where: { published: true },
-    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+    orderBy: [{ publishedAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
     take: RSS_LIMIT,
     select: {
       slug: true,

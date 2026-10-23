@@ -45,7 +45,7 @@ function fmt(d: Date | null): string {
 export default async function NewsPage() {
   const posts = await prisma.post.findMany({
     where: { published: true },
-    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+    orderBy: [{ publishedAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
   });
 
   return (
