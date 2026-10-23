@@ -2,7 +2,7 @@ Supreme AdBlock blokira oglase posvuda — videooglase na YouTubeu, bannere, sko
 
 • Potpisana ažuriranja filtara dvaput dnevno: nove oglasne mreže obrađuju se u roku od nekoliko sati, bez udaljenog koda.
 • Oglasi na YouTubeu zaustavljaju se već na izvoru, pa se videozapisi jednostavno reproduciraju.
-• Obavijesti o kolačićima: umjesto vas pritisne „Odbij“, ukloni preostalo zamućenje i zaključano pomicanje i nikad ne pritisne gumb za prijavu, OAuth ili plaćanje.
+• Obavijesti o kolačićima: umjesto vas pritisne „Odbij“ kad obavijest nudi taj gumb, a „Prihvati“ samo kad se obavijest ne može zatvoriti na drugi način; ukloni preostalo zamućenje i zaključano pomicanje i nikad ne pritisne gumb za prijavu, OAuth ili plaćanje.
 • Bez računa, bez telemetrije, bez prikupljanja podataka i nijedan se oglas ne propušta uz naknadu. Global Privacy Control traži od svake web-lokacije da ne prodaje i ne dijeli vaše podatke.
 • Ugrađeni su EasyList, EasyPrivacy i drugi otvoreni popisi filtara, uz popis za vaš jezik (31 regionalni popis).
 • Sponzorirane objave na Facebooku, Instagramu i Threads su skrivene.

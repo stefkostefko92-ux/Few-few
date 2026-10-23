@@ -77,7 +77,7 @@ Google under its own terms. You can switch these reminders off in Settings.
 
 **Global Privacy Control (on by default).** Unless you switch it off in Settings, your browser adds the header `Sec-GPC: 1` to its requests to the sites you visit, and pages can read `navigator.globalPrivacyControl`. It asks those sites not to sell or share your personal data. The signal is the same for everyone and carries no identifier, so it says nothing about you; it is not sent on sites you allowed or while protection is paused.
 
-**The page after removal.** When you remove the extension, your browser opens adblock.carbonstealth.eu/bye in a new tab: a static page with fixes for common problems, a link to install it again and our email address. The address is the same for everyone and carries no identifier, no version and no reason; like the rest of this website, the visit is not logged and the page sets no cookies.
+**The page after removal.** When you remove the extension installed from the Chrome Web Store, your browser opens adblock.carbonstealth.eu/bye in a new tab: a static page with fixes for common problems, a link to install it again and our email address. The address is the same for everyone and carries no identifier, no version and no reason; like the rest of this website, the visit is not logged and the page sets no cookies. Installed from another store, the extension opens no page when it is removed.
 
 There are no other requests: no analytics, no crash reports, no "phone home".
 
@@ -89,8 +89,9 @@ You do not have to take our word for any of this. In Chrome, Edge or Brave:
 2. Under Supreme AdBlock, next to **Inspect views**, click **service worker**. The
    browser's developer tools open for the extension itself.
 3. Choose the **Network** tab and keep it open. In the extension's Settings, click
-   **Update now**: you will see exactly two requests to us, `filters.json` and
-   `filters.json.sig`, with no cookie and nothing about you in the address. Browse as
+   **Update now**: you will see two requests to us, `filters.json` and
+   `filters.json.sig` (only the first in browsers older than Chrome 137, which
+   cannot check the signature), with no cookie and nothing about you in the address. Browse as
    usual: nothing else appears, unless you added a filter list or turned one on from
    its author, which then comes from that list's own address.
 4. Open https://adblock.carbonstealth.eu/filters.json in a tab to read what was
@@ -112,6 +113,13 @@ version, and which lists and features are on. What you send reaches
 info@carbonstealth.eu with your email address; we use it only to fix the site
 and answer you, and delete it within 12 months. Legal basis: our legitimate
 interest in keeping the extension working, Art. 6(1)(f) GDPR.
+
+**Writing to us.** Whatever you send to info@carbonstealth.eu — a report from
+the "Site broken?" page, a message from the support page or from the page after
+removal — is used only to answer you and to fix or improve the extension. It is
+read by Carbon Stealth, never published, never shared with anyone else, and
+deleted within 12 months. Legal basis: our legitimate interest in answering you
+and keeping the extension working, Art. 6(1)(f) GDPR.
 
 ## This website
 

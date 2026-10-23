@@ -61,7 +61,7 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
 
 - **Name:** `Supreme AdBlock – Ad Blocker` (= `extName` in `_locales/en`; bg/de/it carry one generic word after the dash, every other language stays `Supreme AdBlock`; the store takes it from the package)
 - **Summary (132 max):**
-  `Ad blocker for YouTube and the web: video ads, banners, pop-ups, trackers, cookie banners (Reject) and anti-adblock walls.` (= `extDescription` in `_locales/en`; the store takes it from the package)
+  `Ad blocker for YouTube and the web: video ads, banners, pop-ups, trackers, cookie banners and anti-adblock walls.` (= `extDescription` in `_locales/en`; the store takes it from the package)
 - **Category:** Privacy & Security (the store's category for ad and tracker blockers; the live
   listing still says *Tools* — change it in the dashboard, see §6)
 - **Language:** English
@@ -197,9 +197,10 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
 > file on the device and keeps only allowed sites and plain domain / `##` filter
 > lines; nothing is sent anywhere.
 >
-> **Uninstall page and the pin tip (5.5.1).** `runtime.setUninstallURL` points to a fixed,
-> static page, `https://adblock.carbonstealth.eu/bye` (help for a broken site, a reinstall
-> link, an email address), with no parameters: no version, id or reason. The welcome page
+> **Uninstall page and the pin tip (5.5.1).** For an install from the Chrome Web Store,
+> `runtime.setUninstallURL` points to a fixed, static page,
+> `https://adblock.carbonstealth.eu/bye` (help for a broken site, a reinstall link, an email
+> address), with no parameters: no version, id or reason. Other stores get no uninstall page. The welcome page
 > reads `action.getUserSettings().isOnToolbar` only to show whether its "pin it" tip is done.
 >
 > **Review request (5.1.8).** The popup has a small ★ “Rate” link in its footer

@@ -2,7 +2,7 @@ Supreme AdBlock blokuoja reklamas visur — YouTube vaizdo reklamas, reklamjuost
 
 • Pasirašyti filtrų naujinimai du kartus per dieną: į naujus reklamos tinklus sureaguojama per kelias valandas, be nuotolinio kodo.
 • YouTube reklamos sustabdomos pačiame šaltinyje, todėl vaizdo įrašai tiesiog groja.
-• Slapukų pranešimai: už jus paspaudžia „Atmesti“, pašalina likusį suliejimą ir slinkimo užraktą ir niekada nespaudžia prisijungimo, OAuth ar mokėjimo mygtuko.
+• Slapukų pranešimai: už jus paspaudžia „Atmesti“, kai pranešime toks mygtukas yra, o „Priimti“ – tik tada, kai pranešimo kitaip uždaryti neįmanoma; pašalina likusį suliejimą ir slinkimo užraktą ir niekada nespaudžia prisijungimo, OAuth ar mokėjimo mygtuko.
 • Jokios paskyros, jokios telemetrijos, jokio duomenų rinkimo, ir jokia reklama nepraleidžiama už mokestį. Global Privacy Control prašo kiekvienos svetainės neparduoti ir nebendrinti jūsų duomenų.
 • Įtraukti EasyList, EasyPrivacy ir kiti atviri filtrų sąrašai, taip pat jūsų kalbos sąrašas (31 regioninis sąrašas).
 • Remiami įrašai Facebook, Instagram ir Threads paslepiami.

@@ -19,7 +19,7 @@
     ["Les pubs YouTube à la source", "Les pubs vidéo, du fil et de la recherche sont retirées des données du lecteur avant qu’il ne les lise : les vidéos se lancent, tout simplement."],
     ["Des listes de filtres pour votre langue", "EasyList, EasyPrivacy et les filtres d’uBlock Origin sont intégrés, plus 31 listes régionales ; celle de votre langue s’active toute seule."],
     ["Publications sponsorisées", "Masquées dans les fils de Facebook, Instagram et Threads ; les publications de vos amis restent."],
-    ["Bandeaux cookies", "Il clique sur « Refuser » à votre place, supprime le flou et le blocage du défilement restants, et ne clique jamais sur un bouton de connexion, OAuth ou paiement."],
+    ["Bandeaux cookies", "Il clique sur « Refuser » quand le bandeau le propose, et sur « Accepter » seulement s’il n’y a pas d’autre moyen de le fermer ; il supprime le flou et le blocage du défilement restants, et ne clique jamais sur un bouton de connexion, OAuth ou paiement."],
     ["Traqueurs et pop-unders", "Les traqueurs, les paramètres de suivi dans les liens et les fenêtres publicitaires sont bloqués ; les murs anti-adblock sont neutralisés."],
     ["Mode Focus", "Masque les bulles de chat, pop-ups de newsletter, demandes de notifications, pop-ups d’IA et YouTube Shorts, seulement si vous le voulez."],
     ["Global Privacy Control", "Chaque site que vous visitez reçoit la demande de ne pas vendre ni partager vos données."],

@@ -41,6 +41,8 @@ const LIVE_RULE_BASE = 100000;   // block domains from the live filter update
 const CONFIG_URL = "https://adblock.carbonstealth.eu/filters.json";
 // След деинсталиране браузърът отваря тази статична страница: помощ, повторна инсталация, имейл.
 // Адресът е фиксиран — без параметри (нито версия, нито причина, нито id), сайтът няма access логове.
+// Само за инсталация от Chrome Web Store (fromChromeStore): страницата води към неговия листинг, а
+// Edge Add-ons / AMO не допускат препратка към друг магазин — там няма страница („“ я маха).
 const UNINSTALL_URL = "https://adblock.carbonstealth.eu/bye";
 // 20k live domains fit comfortably: block rules with requestDomains are "safe"
 // dynamic rules (30k cap) and are chunked 1000 per rule (see domainBlockRules),
@@ -198,10 +200,12 @@ const DAY_MS = 86400000;
 // Само магазинът, от който сме инсталирани, има нашата страница: инсталацията от Chrome Web Store
 // носи неговия update_url; разархивираният (dev) пакет няма такъв и също получава линка (за тестове);
 // Edge Add-ons, Firefox (AMO) и всичко друго — без линк, вместо грешен.
+function fromChromeStore(m) {
+  if (!m || m.browser_specific_settings) return false;
+  return !m.update_url || /^https:\/\/clients2\.google\.com\//.test(m.update_url);
+}
 function reviewUrl(m) {
-  if (!m || m.browser_specific_settings) return null;
-  if (m.update_url && !/^https:\/\/clients2\.google\.com\//.test(m.update_url)) return null;
-  return REVIEW_URL;
+  return fromChromeStore(m) ? REVIEW_URL : null;
 }
 
 function reviewDue(st, now) {
@@ -239,7 +243,10 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     try { chrome.tabs.create({ url: chrome.runtime.getURL("welcome/welcome.html") }); } catch {}
   }
   // при всяка инсталация и ъпдейт (браузърът го пази, но по-стара версия може да е без него)
-  try { Promise.resolve(chrome.runtime.setUninstallURL(UNINSTALL_URL)).catch(() => {}); } catch {}
+  try {
+    const url = fromChromeStore(chrome.runtime.getManifest()) ? UNINSTALL_URL : "";
+    Promise.resolve(chrome.runtime.setUninstallURL(url)).catch(() => {});
+  } catch {}
   const stored = await chrome.storage.local.get([...Object.keys(DEFAULTS), "installedAt"]);
   const patch = {};
   for (const [k, v] of Object.entries(DEFAULTS)) {
