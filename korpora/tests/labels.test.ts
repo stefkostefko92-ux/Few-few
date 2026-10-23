@@ -10,7 +10,7 @@ test('history labels are stored as tokens and shown in the language of the page'
   assert.equal(displayLabel(customerLabel('c123'), translatorFor('it')), 'cliente c123');
   assert.equal(
     displayLabel(LABEL.cancelledByCustomer, translatorFor('it')),
-    'ritirato dal cliente',
+    'annullato dal cliente',
   );
   assert.equal(displayLabel(LABEL.withdrawal, translatorFor('bg')), 'отказ от договора');
   assert.equal(displayLabel(LABEL.createdByStaff, translatorFor('en')), 'created by the team');

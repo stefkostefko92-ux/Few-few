@@ -232,7 +232,7 @@
     "message": "הסרת utm_*, fbclid, gclid ומזהי קליקים נוספים מהקישורים שאתם פותחים"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "חסימת דומיינים זדוניים ידועים (רשימת URLhaus של abuse.ch)"
+    "message": "אזהרה לפני שנפתח אתר זדוני ידוע, וחסימה של מה שדפים טוענים מאתרים כאלה (רשימת URLhaus של abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "השבתת ממשקי הפרסום Google Topics, FLoC ו-Protected Audience בכל אתר"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "אופציונלי: הכול כבר עובד. אפשר לשנות כל אחד מאלה מאוחר יותר בהגדרות."
+  },
+  "blk_page_title": {
+    "message": "האתר נחסם — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "האתר הזה עלול להזיק למכשיר שלכם"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock עצר את הדף הזה כי האתר מופיע ב-URLhaus, רשימה ציבורית של כתובות שמפיצות תוכנות זדוניות."
+  },
+  "blk_back": {
+    "message": "חזרה"
+  },
+  "blk_continue": {
+    "message": "להמשיך בכל זאת"
+  },
+  "blk_note": {
+    "message": "המשך יאפשר מעבר רק לדפים של האתר הזה, עד שתסגרו את הדפדפן."
+  },
+  "blk_why": {
+    "message": "למה הוא ברשימה? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "חיבורים בדף הזה"
+  },
+  "conn_empty": {
+    "message": "הדף הזה לא טען דבר מאתרים אחרים."
+  },
+  "conn_block": {
+    "message": "חסימה כאן"
+  },
+  "conn_blocked": {
+    "message": "נחסם כאן"
+  },
+  "conn_hint": {
+    "message": "חסימת מה שהאתר הזה טוען מ-$1"
+  },
+  "opt_conn_title": {
+    "message": "חיבורים שחסמתם"
+  },
+  "opt_conn_sub": {
+    "message": "נחסמו דרך \"חיבורים בדף הזה\" בחלון של התוסף, כל אחד רק באתר שלו."
+  },
+  "opt_empty_conn": {
+    "message": "עדיין לא נחסם דבר."
+  },
+  "opt_conn_remove": {
+    "message": "ביטול החסימה של $1 ב-$2"
+  },
+  "opt_h_danger": {
+    "message": "דף אזהרה מפני תוכנות זדוניות"
+  },
+  "opt_h_capacity": {
+    "message": "קיבולת כללים"
   }
 }

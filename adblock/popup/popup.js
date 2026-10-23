@@ -9,6 +9,7 @@ const FALLBACK = {
   logUnavailable: "Log unavailable right now (browser quota) — try again in a minute.",
   reviewBlocked: "$1 requests blocked so far",
   allowedFor: "Allowed · $1 min left", hiddenHere: "Elements you hid here: $1 · Undo the last",
+  conn_block: "Block here", conn_blocked: "Blocked here", conn_hint: "Block what this site loads from $1",
 };
 
 const toggle = $("toggle");
@@ -27,6 +28,7 @@ const listDot = $("listDot");
 
 let currentHost = null;
 let currentTabId = null;
+let siteBlocked = []; // hosts blocked on this site from "Connections on this page"
 // What the 3D shield shows: protected / paused (timed) / off / allowed (this site is on the allowlist).
 const S = { enabled: true, paused: false, allowed: false };
 
@@ -91,6 +93,7 @@ function load() {
 
       // what the picker hid on this site: one click brings the last one back
       renderUndo(currentHost ? res.hiddenHere || 0 : 0);
+      siteBlocked = Array.isArray(res.siteBlocked) ? res.siteBlocked : [];
       // ★ преди мерене (заема място в долната лента), картата след него (покрива каквото покрива)
       renderRate(res.review);
       fitPopup();
@@ -239,6 +242,55 @@ $("pickBtn").addEventListener("click", () => {
 });
 
 $("settingsBtn").addEventListener("click", () => chrome.runtime.openOptionsPage());
+
+// "Connections on this page": asked from the page only when the box is opened (no cost
+// otherwise). A blocked host loads nothing any more, so it is added from the stored list.
+function loadConnections() {
+  if (currentTabId == null || !currentHost) { $("conns").hidden = true; return; }
+  chrome.tabs.sendMessage(currentTabId, { type: "getConnections" }, { frameId: 0 }, (res) => {
+    void chrome.runtime.lastError; // no content script there (store pages, chrome://): just the stored ones
+    const rows = new Map();
+    for (const it of res && res.ok && Array.isArray(res.hosts) ? res.hosts : []) rows.set(it.host, it.n);
+    for (const h of siteBlocked) if (!rows.has(h)) rows.set(h, 0);
+    renderConnections([...rows]);
+  });
+}
+function renderConnections(rows) {
+  const ul = $("connList");
+  ul.textContent = "";
+  $("conns").hidden = false;
+  $("connEmpty").hidden = rows.length > 0;
+  for (const [host, n] of rows) {
+    const li = document.createElement("li");
+    const name = document.createElement("span");
+    name.className = "host";
+    name.textContent = host;
+    name.title = host;
+    const cnt = document.createElement("span");
+    cnt.className = "type";
+    cnt.textContent = n ? "×" + n.toLocaleString(UI_LANG) : "";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "conn-block";
+    const show = (blocked) => {
+      btn.setAttribute("aria-pressed", String(blocked));
+      btn.textContent = blocked ? t("conn_blocked") : t("conn_block");
+      btn.title = t("conn_hint", [host]);
+    };
+    show(siteBlocked.includes(host));
+    btn.addEventListener("click", () => {
+      const block = btn.getAttribute("aria-pressed") !== "true";
+      btn.disabled = true;
+      chrome.runtime.sendMessage({ type: "siteBlock", site: currentHost, host, block }, (r) => {
+        btn.disabled = false;
+        if (r && r.ok) { siteBlocked = r.hosts; show(block); }
+      });
+    });
+    if (n) li.append(name, cnt, btn); else li.append(name, btn);
+    ul.appendChild(li);
+  }
+}
+$("logBox").addEventListener("toggle", () => { if ($("logBox").open) loadConnections(); });
 
 function renderUndo(n) {
   const b = $("undoBtn");

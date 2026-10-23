@@ -71,8 +71,9 @@ function load() {
     renderAllowlist(res.allowlist || []);
   });
 
-  chrome.storage.local.get(["customHidden", "userFilters", "smartLog"], (data) => {
+  chrome.storage.local.get(["customHidden", "userFilters", "smartLog", "siteBlocks"], (data) => {
     renderCustom(data.customHidden || {});
+    renderSiteBlocks(data.siteBlocks || {});
     $("userFilters").value = data.userFilters || "";
     renderSmartLog(data.smartLog || []);
   });
@@ -152,7 +153,15 @@ function renderHealth() {
       [L("opt_h_user", "My filters / allowlist rules"), h.dynamic.user + " / " + h.dynamic.allow, true],
       [L("opt_h_popup", "Popup-ad hosts baked"), String(h.popupHosts), h.popupHosts > 0],
       [L("opt_h_yt", "YouTube bypass"), h.dynamic.ytBypass ? "ACTIVE (ads allowed on YouTube until it expires)" : "inactive", !h.dynamic.ytBypass],
+      [L("opt_h_danger", "Malware warning page"), !h.malwareOn ? "off (Malware protection is switched off)" : h.dynamic.danger ? "armed for " + h.dynamic.danger.toLocaleString(UI_LANG) + " sites" : "NOT armed", !h.malwareOn || h.dynamic.danger > 0],
     ];
+    const c = h.capacity;
+    if (c) {
+      const n = (v) => Number(v || 0).toLocaleString(UI_LANG);
+      rows.push([L("opt_h_capacity", "Rule capacity"),
+        n(c.dynamic) + " / " + n(c.dynamicMax) + " dynamic · " + n(c.regex) + " / " + n(c.regexMax) + " regex" + (c.staticLeft != null ? " · " + n(c.staticLeft) + " static to spare" : ""),
+        c.dynamic < c.dynamicMax * 0.9 && c.regex < c.regexMax * 0.9]);
+    }
     for (const [k, v, good] of rows) {
       const li = document.createElement("li");
       const left = document.createElement("div");
@@ -372,6 +381,37 @@ function renderCustom(map) {
   });
 }
 
+// "Connections you blocked": site → host, each removable (the SW rebuilds the rule)
+function renderSiteBlocks(map) {
+  const ul = $("connBlocks");
+  ul.innerHTML = "";
+  const rows = [];
+  for (const site of Object.keys(map || {})) for (const host of Array.isArray(map[site]) ? map[site] : []) rows.push([site, host]);
+  if (!rows.length) {
+    emptyRow(ul, L("opt_empty_conn", "Nothing blocked yet."));
+    return;
+  }
+  for (const [site, host] of rows) {
+    const li = document.createElement("li");
+    const wrap = document.createElement("div");
+    const d = document.createElement("div");
+    d.className = "domain";
+    d.textContent = host;
+    const s = document.createElement("div");
+    s.className = "sel";
+    s.textContent = site;
+    wrap.append(d, s);
+    const btn = document.createElement("button");
+    btn.className = "remove";
+    btn.textContent = "×";
+    btn.setAttribute("aria-label", L("opt_conn_remove", "Unblock $1 on $2", [host, site]));
+    btn.onclick = () => chrome.runtime.sendMessage({ type: "siteBlock", site, host, block: false }, () =>
+      chrome.storage.local.get("siteBlocks", (data) => renderSiteBlocks(data.siteBlocks || {})));
+    li.append(wrap, btn);
+    ul.appendChild(li);
+  }
+}
+
 function removeCustom(domain, idx) {
   chrome.storage.local.get("customHidden", (data) => {
     const map = data.customHidden || {};
@@ -516,7 +556,7 @@ $("resetStats").addEventListener("click", () => {
 });
 
 // ---- Backup ----
-const EXPORT_KEYS = ["enabled", "allowlist", "features", "customHidden", "theme", "subscriptions", "noCosmetics", "userFilters", "reviewAsk"];
+const EXPORT_KEYS = ["enabled", "allowlist", "features", "customHidden", "theme", "subscriptions", "noCosmetics", "userFilters", "reviewAsk", "siteBlocks"];
 
 $("exportBtn").addEventListener("click", () => {
   chrome.storage.local.get(EXPORT_KEYS, (data) => {

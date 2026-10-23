@@ -6,7 +6,9 @@ Supreme AdBlock blokuje reklamy všude — videoreklamy na YouTube, bannery, vys
 • Cookie lišty: stiskne za vás „Odmítnout“, odstraní zbylé rozmazání a zámek posouvání a nikdy nestiskne tlačítko pro přihlášení, OAuth ani platbu.
 • Režim soustředění: skryje bubliny chatu, vyskakovací okna newsletterů, výzvy k oznámením, sociální widgety, vyskakovací AI asistenty a YouTube Shorts.
 • Anti-adblock zdi a pop-under okna jsou zneškodněny.
+• Nebezpečné weby: místo známého škodlivého webu se otevře varovná stránka a vy rozhodnete, zda pokračovat.
 • Nefunguje web? Jedno kliknutí ho opraví — nebo nám dejte vědět; nic se neodešle, dokud to sami neuvidíte.
 • Přecházíte z uBlock Origin, AdGuard nebo Adblock Plus? Přeneste povolené weby a filtry jedním souborem.
+• Podívejte se, k jakým dalším webům se stránka připojuje, a jedním kliknutím kterýkoli z nich zablokujte jen tam.
 • Podepsané aktualizace filtrů dvakrát denně: nové reklamní sítě jsou vyřešeny během několika hodin, bez vzdáleného kódu.
 • Žádný účet, žádná telemetrie, žádný sběr dat a Global Privacy Control žádá každý web, aby vaše údaje neprodával ani nesdílel.

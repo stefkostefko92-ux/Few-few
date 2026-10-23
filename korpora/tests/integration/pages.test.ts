@@ -61,6 +61,22 @@ test('the privacy policy states the audit retention the maintenance deletes by',
   }
 });
 
+test('llms.txt is English throughout, the notes on the language versions too', async () => {
+  const llms = await (await get('/llms.txt')).text();
+  const notes = [...llms.matchAll(/^- \[Korpora \([^)]+\)\]\([^)]+\): (.+)$/gm)].map((m) => m[1]);
+  assert.equal(notes.length, 3, 'one line per language version');
+  assert.deepEqual([...new Set(notes)], ['product, prices, questions']);
+});
+
+test('the Bulgarian label „наш избор“ is marked as Bulgarian on the English and Italian landing', async () => {
+  for (const path of ['/en/', '/it/']) {
+    const page = await (await get(path)).text();
+    assert.equal(page.split('наш избор').length - 1, 1, `${path}: the label once`);
+    assert.match(page, /<span lang="bg">наш избор<\/span>/, path);
+  }
+  assert.match(await (await get('/')).text(), /„<span lang="bg">наш избор<\/span>“/);
+});
+
 test('one-time pages (QR, recovery codes, a used confirmation link) have no language switcher', async () => {
   const b = await customer('langs@example.test');
   assert.ok((await b.get('/account/security')).body.includes(LANGS), 'a normal page has one');
@@ -71,7 +87,7 @@ test('one-time pages (QR, recovery codes, a used confirmation link) have no lang
   assert.equal(start.status, 200);
   assert.ok(!start.body.includes(LANGS), 'the QR page');
   const secret =
-    /<p class="secret">([A-Z2-7 ]+)<\/p>/.exec(start.body)?.[1]?.replace(/\s+/g, '') ?? '';
+    /<p class="secret"[^>]*>([A-Z2-7 ]+)<\/p>/.exec(start.body)?.[1]?.replace(/\s+/g, '') ?? '';
   const codes = await b.post('/account/security/2fa/confirm', {
     _csrf: Browser.csrf(start.body),
     code: totpCode(secret, Math.floor(Date.now() / 1000)),
@@ -113,8 +129,14 @@ test('the read-out beside the story carries the example’s numbers from the eng
   const yieldPct = Math.round(
     (nesting.sheets.reduce((sum, sh) => sum + sh.yield, 0) / nesting.sheets.length) * 100,
   );
+  const modules = api.kitchenModules(model.spec);
   const expected = [
-    [EXAMPLE.modules, EXAMPLE.moduleWidth],
+    [
+      modules.filter((m) => !m.drawers).length,
+      EXAMPLE.moduleWidth,
+      modules.filter((m) => m.drawers).length,
+      EXAMPLE.drawerModuleWidth,
+    ],
     [size.W, size.H, size.D],
     [model.parts.length],
     [new Set(boards.map((b) => `${b.stock}|${b.decor}`)).size],
@@ -138,4 +160,42 @@ test('the read-out beside the story carries the example’s numbers from the eng
     // the program's first move: the line the live scene starts from
     assert.match(cells[8]!, /^G[0-3]\b/, path);
   }
+});
+
+test('every landing image has a src, the page is cached only privately (it carries the CSP nonce) and the section menu opens without script', async () => {
+  for (const path of ['/', '/en/', '/it/']) {
+    const res = await get(path);
+    assert.match(res.headers.get('cache-control') ?? '', /^private,/, path);
+    // the body carries this response's nonce: an ETag of it would never match again
+    assert.equal(res.headers.get('etag'), null, path);
+    const page = await res.text();
+    const imgs = page.match(/<img\b[^>]*>/g) ?? [];
+    assert.ok(imgs.length > 0, path);
+    for (const tag of imgs) assert.match(tag, /\ssrc="[^"]+"/, `${path}: ${tag.slice(0, 80)}`);
+    assert.match(page, /<details class="site-menu">\s*<summary>[^<]+<\/summary>\s*<nav /, path);
+  }
+});
+
+test('the generated files without a nonce keep their ETag and answer a conditional request with 304', async () => {
+  for (const path of [
+    '/sitemap.xml',
+    '/robots.txt',
+    '/llms.txt',
+    '/site.webmanifest',
+    '/media/door-elevation.svg',
+  ]) {
+    const first = await get(path);
+    assert.equal(first.status, 200, path);
+    const etag = first.headers.get('etag');
+    assert.match(etag ?? '', /^W\/"/, path);
+    // a browser revalidating an expired copy; without its own Cache-Control, fetch would add `no-cache` to a
+    // conditional request (the Fetch standard), and a server must not answer that with 304
+    const again = await get(path, { 'if-none-match': etag!, 'cache-control': 'max-age=0' });
+    assert.equal(again.status, 304, path);
+    assert.equal(await again.text(), '', path);
+  }
+  // a page with a nonce has none: a conditional request for it is a full page again
+  const page = await get('/', { 'if-none-match': 'W/"0-x"', 'cache-control': 'max-age=0' });
+  assert.equal(page.status, 200);
+  assert.equal(page.headers.get('etag'), null);
 });

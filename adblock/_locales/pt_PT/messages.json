@@ -232,7 +232,7 @@
     "message": "Remove utm_*, fbclid, gclid e outros identificadores de clique das ligações que abre"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Bloqueia domínios de malware conhecidos (lista URLhaus da abuse.ch)"
+    "message": "Avisa antes de se abrir um site de malware conhecido e bloqueia o que as páginas carregam a partir desses sites (lista URLhaus da abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Desativa as API de publicidade Google Topics, FLoC e Protected Audience em todos os sites"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Opcional: já funciona. Pode alterar qualquer uma destas opções mais tarde nas Definições."
+  },
+  "blk_page_title": {
+    "message": "Site bloqueado — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Este site pode prejudicar o seu dispositivo"
+  },
+  "blk_text": {
+    "message": "O Supreme AdBlock travou esta página porque o site consta do URLhaus, uma lista pública de endereços que distribuem malware."
+  },
+  "blk_back": {
+    "message": "Voltar"
+  },
+  "blk_continue": {
+    "message": "Continuar mesmo assim"
+  },
+  "blk_note": {
+    "message": "Ao continuar, apenas as páginas deste site são deixadas passar, até fechar o navegador."
+  },
+  "blk_why": {
+    "message": "Porque está na lista? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Conexões nesta página"
+  },
+  "conn_empty": {
+    "message": "Esta página não carregou nada de outros sites."
+  },
+  "conn_block": {
+    "message": "Bloquear aqui"
+  },
+  "conn_blocked": {
+    "message": "Bloqueado aqui"
+  },
+  "conn_hint": {
+    "message": "Bloquear o que este site carrega de $1"
+  },
+  "opt_conn_title": {
+    "message": "Conexões que bloqueou"
+  },
+  "opt_conn_sub": {
+    "message": "Bloqueadas em «Conexões nesta página», na janela do Supreme AdBlock, cada uma apenas no respetivo site."
+  },
+  "opt_empty_conn": {
+    "message": "Ainda não bloqueou nada."
+  },
+  "opt_conn_remove": {
+    "message": "Desbloquear $1 em $2"
+  },
+  "opt_h_danger": {
+    "message": "Página de aviso de malware"
+  },
+  "opt_h_capacity": {
+    "message": "Capacidade de regras"
   }
 }

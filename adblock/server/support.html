@@ -191,6 +191,7 @@
             <li><a href="#youtube"><b>A YouTube video won't play</b><span>A black player, a spinner, or the “not allowed” message.</span></a></li>
             <li><a href="#ads"><b>I still see an ad</b><span>On one site, or everywhere.</span></a></li>
             <li><a href="#cookies"><b>A cookie banner stayed</b><span>The banner did not go away by itself.</span></a></li>
+            <li><a href="#warning"><b>A warning page opened</b><span>“This site may harm your device” instead of a site.</span></a></li>
             <li><a href="#settings"><b>Settings, sync and backup</b><span>Lists, Focus mode, sync, export, removal.</span></a></li>
             <li><a class="mail" href="#contact"><b>Write to us</b><span>A person at Carbon Stealth reads it.</span></a></li>
           </ul>
@@ -203,7 +204,7 @@
         <h2>A site looks broken</h2>
         <ol class="steps">
           <li>Click the Supreme AdBlock icon in the toolbar and choose <b>Site broken? Fix it or tell us</b>.</li>
-          <li>Try the fixes on the repair page, one at a time. <b>Turn off element hiding here</b> and <b>Allow ads on this site</b> apply to that site only; <b>Pause everywhere for 30 minutes</b> covers every site. The tab reloads after each one.</li>
+          <li>Try the fixes on the repair page, one at a time. <b>Turn off element hiding here</b>, <b>Allow ads here for 1 hour</b> and <b>Allow ads on this site</b> apply to that site only; <b>Pause everywhere for 30 minutes</b> covers every site. The tab reloads after each one.</li>
           <li>Still broken? Choose <b>Tell us</b>. The report opens in your own email app, and you see every word before you send it.</li>
         </ol>
         <p>The popup has the same two switches for the site you are on: <b>Block ads on this site</b> and <b>Hide ad boxes here</b>.</p>
@@ -229,7 +230,8 @@
         <ul class="dots">
           <li>Check the switch at the top of the popup: protection must be on, and not paused.</li>
           <li>Check <b>Block ads on this site</b> in the popup. A site you allowed shows its ads on purpose.</li>
-          <li>Remove it right away with <b>Hide element</b> in the popup: click the ad, and it stays hidden on that site.</li>
+          <li>Remove it right away with <b>Hide element</b> in the popup: click the ad, and it stays hidden on that site. Hid the wrong thing? The <b>↶</b> button next to it brings it back.</li>
+          <li>Ads or trackers coming from another site? Open <b>Blocked on this page</b> in the popup: under <b>Connections on this page</b>, choose <b>Block here</b> next to that site. It is blocked on this site only; Settings lists it under <b>Connections you blocked</b>.</li>
           <li>Tell us with <b>Site broken? Fix it or tell us</b>, then <b>Tell us</b>. New ad networks are added through the signed filter update, which reaches every installation about twice a day. Settings shows when the last one arrived.</li>
         </ul>
       </div>
@@ -247,13 +249,27 @@
       </div>
     </section>
 
+    <section class="blk" id="warning">
+      <div class="wrap prose">
+        <h2>A warning page opened instead of a site</h2>
+        <p>“This site may harm your device” means the address is on <a href="https://urlhaus.abuse.ch/" target="_blank" rel="noopener">URLhaus</a>, abuse.ch's public list of sites that spread malware, which is built into the extension. The site was not contacted.</p>
+        <ul class="dots">
+          <li><b>Go back</b> returns to the page you came from.</li>
+          <li><b>Continue anyway</b> opens that site, and only that site, until you close the browser. What its pages load from other known malware sites stays blocked.</li>
+          <li>Think it is a mistake? <b>Why is it listed?</b> opens the site's URLhaus entry, where abuse.ch explains it. Lists change: a site that is cleaned up is removed there, and then from the extension with the next filter update.</li>
+          <li>You can switch the warning off in Settings: <b>Malware protection</b>.</li>
+        </ul>
+      </div>
+    </section>
+
     <section class="blk" id="settings">
       <div class="wrap prose">
         <h2>Settings, sync and backup</h2>
         <ul class="dots">
           <li>Open <b>Settings</b> from the popup to choose filter lists, including 31 regional ones, the Focus mode switches, your own filters and the light or dark theme.</li>
           <li><b>Sync across devices</b> is off until you turn it on. Then your settings travel with your own browser account, never through us.</li>
-          <li>Export your settings to a file, and import it on another computer.</li>
+          <li>Export your settings to a file, and import it on another computer. Coming from uBlock Origin, AdGuard or Adblock Plus? <b>Import from another ad blocker</b> brings over the sites you allowed and your own filters.</li>
+          <li>Keyboard shortcuts: <b>Alt+Shift+U</b> turns blocking on this site on or off, <b>Alt+Shift+Q</b> pauses or resumes (Ctrl+Shift on a Mac). Settings shows them and where to change them.</li>
           <li>The interface follows your browser's language. 70 languages are included.</li>
         </ul>
         <h3>Removing the extension</h3>
@@ -280,7 +296,7 @@
       <div class="wrap prose">
         <h2>About this version</h2>
         <dl class="facts">
-          <dt>Version</dt><dd>5.2.0, released 16 October 2026</dd>
+          <dt>Version</dt><dd>5.5.0, released 16 October 2026</dd>
           <dt>Browsers</dt><dd>Chrome, Edge, Brave and other Chromium browsers, version 121 or newer</dd>
           <dt>Price</dt><dd>Free, with no account and no paid tier</dd>
           <dt>Privacy</dt><dd>No analytics, no telemetry. <a href="/privacy">Privacy policy</a></dd>

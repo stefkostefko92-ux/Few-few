@@ -115,7 +115,7 @@
       <label class="row">
         <div>
           <div class="row-title" data-i18n="opt_malware_protection">Malware protection</div>
-          <div class="row-sub" data-i18n="opt_block_known_malware_domains_urlhaus_list">Block known malware domains (URLhaus list by abuse.ch)</div>
+          <div class="row-sub" data-i18n="opt_block_known_malware_domains_urlhaus_list">Warn before a known malware site opens, and block what pages load from such sites (URLhaus list by abuse.ch).</div>
         </div>
         <label class="switch"><input type="checkbox" id="featMalware" /><span class="slider"></span></label>
       </label>
@@ -196,6 +196,12 @@
       <p class="row-sub" data-i18n="opt_subscribed_lists_are_fetched_as_text_nev">Subscribed lists are fetched as text (never code), kept up to date daily, and live in the managed blocks above. Remove a list to drop its rules.</p>
       <ul id="subList" class="list"></ul>
       <button id="subsRefresh" class="btn ghost" data-i18n="opt_refresh_subscriptions_now">Refresh subscriptions now</button>
+    </section>
+
+    <section class="card" id="connCard">
+      <h2 data-i18n="opt_conn_title">Connections you blocked</h2>
+      <p class="row-sub" data-i18n="opt_conn_sub">Blocked from the popup's “Connections on this page”, each only on its own site.</p>
+      <ul id="connBlocks" class="list"></ul>
     </section>
 
     <section class="card">

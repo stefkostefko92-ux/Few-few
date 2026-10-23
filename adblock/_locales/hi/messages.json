@@ -232,7 +232,7 @@
     "message": "आपके खोले गए लिंक से utm_*, fbclid, gclid और अन्य क्लिक पहचानकर्ता हटाएँ"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "जाने-माने मैलवेयर डोमेन ब्लॉक करें (abuse.ch की URLhaus सूची)"
+    "message": "किसी जानी-मानी मैलवेयर साइट के खुलने से पहले चेतावनी दें, और पेज ऐसी साइटों से जो कुछ लोड करते हैं, उसे ब्लॉक करें (abuse.ch की URLhaus सूची)।"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "हर साइट पर Google Topics, FLoC और Protected Audience विज्ञापन API बंद करें"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "वैकल्पिक: यह पहले से काम कर रहा है। इनमें से कोई भी चीज़ बाद में सेटिंग में बदली जा सकती है।"
+  },
+  "blk_page_title": {
+    "message": "साइट ब्लॉक की गई — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "यह साइट आपके डिवाइस को नुकसान पहुँचा सकती है"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock ने यह पेज रोक दिया, क्योंकि यह साइट URLhaus पर दर्ज है, जो मैलवेयर फैलाने वाले पतों की एक सार्वजनिक सूची है।"
+  },
+  "blk_back": {
+    "message": "वापस जाएँ"
+  },
+  "blk_continue": {
+    "message": "फिर भी जारी रखें"
+  },
+  "blk_note": {
+    "message": "जारी रखने पर ब्राउज़र बंद करने तक सिर्फ़ इसी साइट के पेज खुलने दिए जाएँगे।"
+  },
+  "blk_why": {
+    "message": "यह सूची में क्यों है? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "इस पेज के कनेक्शन"
+  },
+  "conn_empty": {
+    "message": "इस पेज ने दूसरी साइटों से कुछ भी लोड नहीं किया।"
+  },
+  "conn_block": {
+    "message": "यहाँ ब्लॉक करें"
+  },
+  "conn_blocked": {
+    "message": "यहाँ ब्लॉक है"
+  },
+  "conn_hint": {
+    "message": "यह साइट $1 से जो लोड करती है, उसे ब्लॉक करें"
+  },
+  "opt_conn_title": {
+    "message": "आपके ब्लॉक किए गए कनेक्शन"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock विंडो के “इस पेज के कनेक्शन” से ब्लॉक किए गए, हर एक सिर्फ़ अपनी ही साइट पर।"
+  },
+  "opt_empty_conn": {
+    "message": "अभी तक कुछ भी ब्लॉक नहीं किया गया।"
+  },
+  "opt_conn_remove": {
+    "message": "$2 पर $1 का ब्लॉक हटाएँ"
+  },
+  "opt_h_danger": {
+    "message": "मैलवेयर चेतावनी पेज"
+  },
+  "opt_h_capacity": {
+    "message": "नियमों की क्षमता"
   }
 }

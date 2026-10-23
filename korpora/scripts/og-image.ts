@@ -2,11 +2,13 @@
 // (public/img/brand/logo-1200.webp, from scripts/brand.mjs) and the first still of the landing page's story
 // (public/img/story/step-1-1120.webp, from scripts/landing-stills.ts) — the example kitchen as the editor draws it,
 // in the same light studio panel as on the page.
+// Written with a palette (scripts/png-palette.mjs): 250 KB of the browser's own PNG become about 120 KB, the same to the eye.
 // Run after changing the logo or the stills: `npm run og:image` (needs the Playwright dev dependency).
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
 import { ROOT } from '../src/paths.js';
+import { encodePalettePng } from './png-palette.mjs';
 
 const dataUri = (path: string, type: string) =>
   `data:${type};base64,${readFileSync(join(ROOT, path)).toString('base64')}`;
@@ -30,7 +32,27 @@ try {
     reducedMotion: 'reduce',
   });
   await page.setContent(html, { waitUntil: 'load' });
-  await page.screenshot({ path: join(ROOT, 'public', 'img', 'og.png') });
+  const shot = await page.screenshot();
+  // the screenshot's pixels, as the page decodes them (no image library on the server side); the page code is a string,
+  // as in landing-stills.ts: the scripts are typed for Node, without the DOM
+  const rgba = await page.evaluate(`(async () => {
+    const img = new Image();
+    img.src = 'data:image/png;base64,${shot.toString('base64')}';
+    await img.decode();
+    const c = document.createElement('canvas');
+    c.width = img.width;
+    c.height = img.height;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const { data } = ctx.getImageData(0, 0, c.width, c.height);
+    let text = '';
+    for (let i = 0; i < data.length; i += 0x8000) text += String.fromCharCode(...data.subarray(i, i + 0x8000));
+    return btoa(text);
+  })()`);
+  writeFileSync(
+    join(ROOT, 'public', 'img', 'og.png'),
+    encodePalettePng(1200, 630, Buffer.from(String(rgba), 'base64')),
+  );
 } finally {
   await browser.close();
 }

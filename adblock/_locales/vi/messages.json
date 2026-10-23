@@ -232,7 +232,7 @@
     "message": "Loại bỏ utm_*, fbclid, gclid và các mã nhận dạng lượt nhấp khác khỏi các đường liên kết bạn mở"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Chặn các tên miền phần mềm độc hại đã biết (danh sách URLhaus của abuse.ch)"
+    "message": "Cảnh báo trước khi mở một trang web phần mềm độc hại đã biết và chặn những gì các trang tải từ các trang web đó (danh sách URLhaus của abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Tắt các API quảng cáo Google Topics, FLoC và Protected Audience trên mọi trang web"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Không bắt buộc: tiện ích đã hoạt động sẵn. Bạn có thể thay đổi bất kỳ mục nào trong số này sau trong Cài đặt."
+  },
+  "blk_page_title": {
+    "message": "Đã chặn trang web — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Trang web này có thể gây hại cho thiết bị của bạn"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock đã dừng trang này vì trang web có trong URLhaus, một danh sách công khai các địa chỉ phát tán phần mềm độc hại."
+  },
+  "blk_back": {
+    "message": "Quay lại"
+  },
+  "blk_continue": {
+    "message": "Vẫn tiếp tục"
+  },
+  "blk_note": {
+    "message": "Nếu tiếp tục, chỉ các trang của trang web này được cho phép, cho đến khi bạn đóng trình duyệt."
+  },
+  "blk_why": {
+    "message": "Vì sao trang web bị liệt kê? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Kết nối trên trang này"
+  },
+  "conn_empty": {
+    "message": "Trang này không tải gì từ các trang web khác."
+  },
+  "conn_block": {
+    "message": "Chặn tại đây"
+  },
+  "conn_blocked": {
+    "message": "Đã chặn tại đây"
+  },
+  "conn_hint": {
+    "message": "Chặn những gì trang web này tải từ $1"
+  },
+  "opt_conn_title": {
+    "message": "Kết nối bạn đã chặn"
+  },
+  "opt_conn_sub": {
+    "message": "Được chặn từ mục “Kết nối trên trang này” trong cửa sổ bật lên, mỗi mục chỉ trên trang web của nó."
+  },
+  "opt_empty_conn": {
+    "message": "Chưa chặn gì."
+  },
+  "opt_conn_remove": {
+    "message": "Bỏ chặn $1 trên $2"
+  },
+  "opt_h_danger": {
+    "message": "Trang cảnh báo phần mềm độc hại"
+  },
+  "opt_h_capacity": {
+    "message": "Dung lượng quy tắc"
   }
 }

@@ -232,7 +232,7 @@
     "message": "Eltávolítja az utm_*, fbclid, gclid és más kattintásazonosítókat a megnyitott linkekből"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokkolja az ismert kártevő domaineket (az abuse.ch URLhaus listája)"
+    "message": "Figyelmeztet, mielőtt egy ismert kártevő webhely megnyílna, és blokkolja, amit az oldalak ilyen webhelyekről töltenek be (az abuse.ch URLhaus listája)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Letiltja a Google Topics, FLoC és Protected Audience hirdetési API-kat minden webhelyen"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Nem kötelező: már most is működik. Bármelyiket később módosíthatja a Beállításokban."
+  },
+  "blk_page_title": {
+    "message": "Webhely blokkolva – Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Ez a webhely kárt tehet az eszközében"
+  },
+  "blk_text": {
+    "message": "A Supreme AdBlock megállította ezt az oldalt, mert a webhely szerepel az URLhaus listán, amely a kártevőket terjesztő címek nyilvános listája."
+  },
+  "blk_back": {
+    "message": "Vissza"
+  },
+  "blk_continue": {
+    "message": "Folytatás mindenképp"
+  },
+  "blk_note": {
+    "message": "Ha folytatja, csak ennek a webhelynek az oldalai jutnak át, amíg be nem zárja a böngészőt."
+  },
+  "blk_why": {
+    "message": "Miért szerepel a listán? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Kapcsolatok ezen az oldalon"
+  },
+  "conn_empty": {
+    "message": "Ez az oldal semmit sem töltött be más webhelyekről."
+  },
+  "conn_block": {
+    "message": "Blokkolás itt"
+  },
+  "conn_blocked": {
+    "message": "Itt blokkolva"
+  },
+  "conn_hint": {
+    "message": "Blokkolja, amit ez a webhely innen tölt be: $1"
+  },
+  "opt_conn_title": {
+    "message": "Ön által blokkolt kapcsolatok"
+  },
+  "opt_conn_sub": {
+    "message": "A bővítmény ablakának „Kapcsolatok ezen az oldalon” részéből blokkolva, mindegyik csak a saját webhelyén."
+  },
+  "opt_empty_conn": {
+    "message": "Még semmi sincs blokkolva."
+  },
+  "opt_conn_remove": {
+    "message": "$1 blokkolásának feloldása itt: $2"
+  },
+  "opt_h_danger": {
+    "message": "Kártevő-figyelmeztető oldal"
+  },
+  "opt_h_capacity": {
+    "message": "Szabálykapacitás"
   }
 }

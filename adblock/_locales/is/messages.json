@@ -232,7 +232,7 @@
     "message": "Fjarlægja utm_*, fbclid, gclid og önnur smellaauðkenni úr tenglum sem þú opnar"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Loka á þekkt spilliforritalén (URLhaus-listi frá abuse.ch)"
+    "message": "Vara við áður en þekkt vefsvæði með spilliforritum opnast og loka á það sem síður sækja frá slíkum vefsvæðum (URLhaus-listi frá abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Slökkva á auglýsinga-API-viðmótunum Google Topics, FLoC og Protected Audience á öllum vefsvæðum"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Valfrjálst: hún virkar nú þegar. Þú getur breytt öllu þessu síðar í Stillingum."
+  },
+  "blk_page_title": {
+    "message": "Lokað á vefsvæði — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Þetta vefsvæði gæti skaðað tækið þitt"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock stöðvaði þessa síðu vegna þess að vefsvæðið er á URLhaus, opinberum lista yfir vistföng sem dreifa spilliforritum."
+  },
+  "blk_back": {
+    "message": "Fara til baka"
+  },
+  "blk_continue": {
+    "message": "Halda samt áfram"
+  },
+  "blk_note": {
+    "message": "Ef þú heldur áfram er aðeins síðum þessa vefsvæðis hleypt í gegn, þar til þú lokar vafranum."
+  },
+  "blk_why": {
+    "message": "Hvers vegna er það á listanum? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Tengingar á þessari síðu"
+  },
+  "conn_empty": {
+    "message": "Þessi síða sótti ekkert frá öðrum vefsvæðum."
+  },
+  "conn_block": {
+    "message": "Loka á hér"
+  },
+  "conn_blocked": {
+    "message": "Lokað á hér"
+  },
+  "conn_hint": {
+    "message": "Loka á það sem þetta vefsvæði sækir frá $1"
+  },
+  "opt_conn_title": {
+    "message": "Tengingar sem þú lokaðir á"
+  },
+  "opt_conn_sub": {
+    "message": "Lokað var á þær í „Tengingar á þessari síðu“ í glugga Supreme AdBlock; hver lokun gildir aðeins á sínu vefsvæði."
+  },
+  "opt_empty_conn": {
+    "message": "Ekki enn lokað á neitt."
+  },
+  "opt_conn_remove": {
+    "message": "Hætta að loka á $1 á $2"
+  },
+  "opt_h_danger": {
+    "message": "Viðvörunarsíða um spilliforrit"
+  },
+  "opt_h_capacity": {
+    "message": "Rými fyrir reglur"
   }
 }

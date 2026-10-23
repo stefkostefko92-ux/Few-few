@@ -815,4 +815,29 @@
       collapseEmpty();
     }, 1000);
   }
+
+  // The popup's "Connections on this page": the other sites this page loaded something
+  // from, read from the browser's own Resource Timing list (what loaded, not what we
+  // blocked), counted per host. Only for our popup (extension messages) and only the top
+  // frame; nothing is stored or sent.
+  const baseOf = (h) => h.split(".").slice(MULTI_TLD.test(h) ? -3 : -2).join(".");
+  if (window === window.top) {
+    chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+      if (!msg || msg.type !== "getConnections") return;
+      const counts = new Map();
+      let entries = [];
+      try { entries = performance.getEntriesByType("resource"); } catch {}
+      for (const e of entries) {
+        let h = "";
+        try {
+          const u = new URL(e.name);
+          if (u.protocol !== "https:" && u.protocol !== "http:") continue;
+          h = u.hostname.toLowerCase();
+        } catch { continue; }
+        if (!h || baseOf(h) === baseHost) continue; // the site's own hosts are not "other sites"
+        counts.set(h, (counts.get(h) || 0) + 1);
+      }
+      sendResponse({ ok: true, hosts: [...counts].sort((a, b) => b[1] - a[1]).slice(0, 60).map(([h, n]) => ({ host: h, n })) });
+    });
+  }
 })();

@@ -6,6 +6,8 @@ import { esc } from './util.js';
 
 // The first ISO 5455 scale between 1:min and 1:max at which `span` mm takes at most `room` mm of paper, else 1:max.
 const detailScale = (span, room, min, max) => SCALES.find((s) => s >= min && s <= max && span / s <= room) ?? max;
+// A hardware hole: orange outline, filled only when it goes through — as in the part's main view and its legend.
+const keyClass = (h) => `d-key${h.through ? ' d-thru' : ''}`;
 const box = (b, title, scale) => `<rect class="d-box" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"/><text class="d-tag" x="${b.x + 1.5}" y="${b.y + 3.6}">${esc(title)} · М ${scale === 1 ? '1:1' : `1:${scale}`}</text>`;
 
 // Hinge cup: hinge edge, cup, fixings; dimensions from the hinge edge.
@@ -20,7 +22,7 @@ export function hingeDetail(p, cup, fixings, b) {
   const r = cup.d / 2;
   let s = box(b, 'Чашка на панта', 1);
   s += `<line class="d-out" x1="${b.x + 3}" y1="${ey}" x2="${b.x + b.w - 3}" y2="${ey}"/><text class="d-small" x="${b.x + 3}" y="${ey + 3.2}">ръб с пантите</text>`;
-  s += `<circle class="d-key" cx="${x}" cy="${y}" r="${r}"/><line class="d-cl" x1="${x - r - 3}" y1="${y}" x2="${x + r + 3}" y2="${y}"/><line class="d-cl" x1="${x}" y1="${y - r - 3}" x2="${x}" y2="${ey + 1}"/>`;
+  s += `<circle class="${keyClass(cup)}" cx="${x}" cy="${y}" r="${r}"/><line class="d-cl" x1="${x - r - 3}" y1="${y}" x2="${x + r + 3}" y2="${y}"/><line class="d-cl" x1="${x}" y1="${y - r - 3}" x2="${x}" y2="${ey + 1}"/>`;
   s += `<text class="d-dt" x="${x}" y="${y + r / 2}" text-anchor="middle">Ø${fmt(cup.d)} × ${fmt(cup.depth)}</text>`;
   const toCentre = Math.abs(cup.v - edgeV);
   s += dimV(ey, y, x - r - 4, fmt(toCentre), { ext: [[x, y]] });
@@ -31,7 +33,7 @@ export function hingeDetail(p, cup, fixings, b) {
     const [ax, ay] = P(a.u, a.v);
     const [bx, by] = P(c.u, c.v);
     for (const [fx, fy, f] of [[ax, ay, a], [bx, by, c]]) {
-      s += f.mark ? `<path class="d-mark" d="M${fx - 1.5} ${fy}h3M${fx} ${fy - 1.5}v3"/>` : `<circle class="d-key" cx="${fx}" cy="${fy}" r="${f.d / 2}"/>`;
+      s += f.mark ? `<path class="d-mark" d="M${fx - 1.5} ${fy}h3M${fx} ${fy - 1.5}v3"/>` : `<circle class="${keyClass(f)}" cx="${fx}" cy="${fy}" r="${f.d / 2}"/>`;
     }
     s += dimH(ax, bx, y - r - 6, fmt(c.u - a.u), { ext: [[ax, ay], [bx, by]] });
     s += dimV(y, by, bx + 6, fmt(Math.abs(a.v - cup.v)), { ext: [[bx, by], [x + r, y]] });
@@ -52,7 +54,7 @@ export function plateDetail(holes, frontV, b) {
   const [bx, by] = P(c.u, c.v);
   let s = box(b, 'Планка на панта', 1);
   s += `<line class="d-out" x1="${b.x + 4}" y1="${ey}" x2="${b.x + b.w - 4}" y2="${ey}"/><text class="d-small" x="${b.x + 4}" y="${ey + 3.4}">ръб отпред</text>`;
-  for (const [x, y, h] of [[ax, ay, a], [bx, by, c]]) s += `<circle class="${h.through ? 'd-thru' : 'd-key'}" cx="${x}" cy="${y}" r="${h.d / 2}"/>`;
+  for (const [x, y, h] of [[ax, ay, a], [bx, by, c]]) s += `<circle class="${keyClass(h)}" cx="${x}" cy="${y}" r="${h.d / 2}"/>`;
   s += `<rect class="d-hid" x="${ax - 6}" y="${ay - 9}" width="${bx - ax + 12}" height="18" rx="2"/>`;
   s += dimH(ax, bx, ay - 12, fmt(c.u - a.u), { ext: [[ax, ay], [bx, by]] });
   s += dimV(ey, ay, ax - 9, fmt(Math.abs(a.v - frontV)), { ext: [[ax, ay]] });
@@ -80,7 +82,9 @@ export function handleDetail(p, holes, edges, b) {
   if (exU > b.x + 2 && exU < b.x + b.w - 2) s += `<line class="d-out" x1="${exU}" y1="${b.y + 6}" x2="${exU}" y2="${b.y + b.h - 12}"/>`;
   if (eyV > b.y + 6 && eyV < b.y + b.h - 12) s += `<line class="d-out" x1="${b.x + 2}" y1="${eyV}" x2="${b.x + b.w - 2}" y2="${eyV}"/>`;
   const pts = hs.map((h) => P(h.u, h.v));
-  for (const [x, y] of pts) s += `<circle class="d-thru" cx="${x}" cy="${y}" r="${Math.max(0.6, (hs[0].d / 2) * k)}"/>`;
+  pts.forEach(([x, y], i) => {
+    s += `<circle class="${keyClass(hs[i])}" cx="${x}" cy="${y}" r="${Math.max(0.6, (hs[0].d / 2) * k)}"/>`;
+  });
   if (hs.length === 2) {
     const [[ax, ay], [bx, by]] = pts;
     if (Math.abs(ay - by) < 0.01) s += dimH(ax, bx, ay - 6, fmt(span), { ext: [[ax, ay], [bx, by]] });
@@ -106,7 +110,7 @@ export function slideDetail(holes, frontV, b) {
   let prevX = x0;
   hs.forEach((h, i) => {
     const x = x0 + Math.abs(h.v - frontV) * k;
-    s += `<circle class="d-key" cx="${x}" cy="${yRow}" r="${Math.max(0.7, (h.d / 2) * k)}"/>`;
+    s += `<circle class="${keyClass(h)}" cx="${x}" cy="${yRow}" r="${Math.max(0.7, (h.d / 2) * k)}"/>`;
     s += dimH(i === 0 ? x0 : prevX, x, yRow - 6 - (i % 2) * 5, fmt(i === 0 ? Math.abs(h.v - frontV) : Math.abs(h.v - hs[i - 1].v)), { ext: [[x, yRow]] });
     prevX = x;
   });

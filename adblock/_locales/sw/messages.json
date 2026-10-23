@@ -232,7 +232,7 @@
     "message": "Ondoa utm_*, fbclid, gclid na vitambulisho vingine vya kubofya kwenye viungo unavyofungua"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Zuia vikoa hasidi vinavyojulikana (orodha ya URLhaus ya abuse.ch)"
+    "message": "Onya kabla tovuti hasidi inayojulikana haijafunguka, na zuia kile ambacho kurasa hupakia kutoka kwa tovuti kama hizo (orodha ya URLhaus ya abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Zima API za matangazo za Google Topics, FLoC na Protected Audience kwenye kila tovuti"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Si lazima: tayari inafanya kazi. Unaweza kubadilisha chochote kati ya hivi baadaye kwenye Mipangilio."
+  },
+  "blk_page_title": {
+    "message": "Tovuti imezuiwa — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Tovuti hii inaweza kudhuru kifaa chako"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock imesimamisha ukurasa huu kwa sababu tovuti hii iko kwenye URLhaus, orodha ya umma ya anwani zinazosambaza programu hasidi."
+  },
+  "blk_back": {
+    "message": "Rudi nyuma"
+  },
+  "blk_continue": {
+    "message": "Endelea hata hivyo"
+  },
+  "blk_note": {
+    "message": "Ukiendelea, kurasa za tovuti hii pekee ndizo zitaruhusiwa kupita, hadi utakapofunga kivinjari."
+  },
+  "blk_why": {
+    "message": "Kwa nini imeorodheshwa? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Miunganisho kwenye ukurasa huu"
+  },
+  "conn_empty": {
+    "message": "Ukurasa huu haujapakia chochote kutoka tovuti nyingine."
+  },
+  "conn_block": {
+    "message": "Zuia hapa"
+  },
+  "conn_blocked": {
+    "message": "Imezuiwa hapa"
+  },
+  "conn_hint": {
+    "message": "Zuia kile ambacho tovuti hii hupakia kutoka $1"
+  },
+  "opt_conn_title": {
+    "message": "Miunganisho uliyozuia"
+  },
+  "opt_conn_sub": {
+    "message": "Imezuiwa kupitia “Miunganisho kwenye ukurasa huu” kwenye dirisha la Supreme AdBlock, kila mmoja kwenye tovuti yake pekee."
+  },
+  "opt_empty_conn": {
+    "message": "Bado hakuna kilichozuiwa."
+  },
+  "opt_conn_remove": {
+    "message": "Ondoa uzuiaji wa $1 kwenye $2"
+  },
+  "opt_h_danger": {
+    "message": "Ukurasa wa onyo la programu hasidi"
+  },
+  "opt_h_capacity": {
+    "message": "Uwezo wa kanuni"
   }
 }

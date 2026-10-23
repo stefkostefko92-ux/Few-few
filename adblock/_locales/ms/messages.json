@@ -232,7 +232,7 @@
     "message": "Buang utm_*, fbclid, gclid dan pengecam klik lain daripada pautan yang anda buka"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Sekat domain perisian hasad yang diketahui (senarai URLhaus oleh abuse.ch)"
+    "message": "Beri amaran sebelum tapak perisian hasad yang diketahui dibuka, dan sekat apa yang dimuatkan oleh halaman daripada tapak sedemikian (senarai URLhaus oleh abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Lumpuhkan API iklan Google Topics, FLoC dan Protected Audience pada setiap tapak"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Pilihan: ia sudah pun berfungsi. Semua ini boleh ditukar kemudian dalam Tetapan."
+  },
+  "blk_page_title": {
+    "message": "Tapak disekat — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Tapak ini mungkin membahayakan peranti anda"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock menghentikan halaman ini kerana tapak ini tersenarai dalam URLhaus, senarai awam alamat yang menyebarkan perisian hasad."
+  },
+  "blk_back": {
+    "message": "Kembali"
+  },
+  "blk_continue": {
+    "message": "Teruskan juga"
+  },
+  "blk_note": {
+    "message": "Jika diteruskan, hanya halaman tapak ini yang dibenarkan, sehingga anda menutup pelayar."
+  },
+  "blk_why": {
+    "message": "Mengapa ia disenaraikan? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Sambungan pada halaman ini"
+  },
+  "conn_empty": {
+    "message": "Halaman ini tidak memuatkan apa-apa daripada tapak lain."
+  },
+  "conn_block": {
+    "message": "Sekat di sini"
+  },
+  "conn_blocked": {
+    "message": "Disekat di sini"
+  },
+  "conn_hint": {
+    "message": "Sekat apa yang dimuatkan tapak ini daripada $1"
+  },
+  "opt_conn_title": {
+    "message": "Sambungan yang anda sekat"
+  },
+  "opt_conn_sub": {
+    "message": "Disekat daripada “Sambungan pada halaman ini” dalam tetingkap timbul, setiap satu hanya pada tapaknya sendiri."
+  },
+  "opt_empty_conn": {
+    "message": "Belum ada apa-apa yang disekat."
+  },
+  "opt_conn_remove": {
+    "message": "Nyahsekat $1 pada $2"
+  },
+  "opt_h_danger": {
+    "message": "Halaman amaran perisian hasad"
+  },
+  "opt_h_capacity": {
+    "message": "Kapasiti peraturan"
   }
 }

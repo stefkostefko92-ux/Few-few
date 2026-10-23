@@ -24,13 +24,14 @@ WHAT IT BLOCKS
 FILTER LISTS THAT KEEP UP
 - EasyList, EasyPrivacy and the uBlock Origin filters built in, plus 31 regional lists; the one for your browser's language turns on by itself
 - Signed, data-only filter updates about twice a day, so a new ad network can be handled within hours
-- Optional malware-domain protection (URLhaus) and subscriptions to any filter list by URL
+- Malware protection (URLhaus), on by default: a known malware site opens a warning page instead, and what pages load from such sites is blocked; plus subscriptions to any filter list by URL
 
 YOU STAY IN CONTROL
 - From the popup, allow a site you want to support, or turn off element hiding on one site if its layout breaks; undo what you hid with one click
 - Site broken? A repair page fixes it in one click (or allows ads there for just an hour), or prepares a report you read and send yourself
 - Switching from uBlock Origin, AdGuard or Adblock Plus? Import your allowed sites and your own filters from its backup file
 - Keyboard shortcuts for blocking on this site, pause and the element picker
+- “Connections on this page” in the popup: the other sites a page loaded something from, each one blockable on that site with one click
 - Element picker and your own filters, including procedural selectors
 - Focus mode: hide chat bubbles, newsletter pop-ups, notification prompts, AI pop-ups and YouTube Shorts
 - "Blocked on this page" shows how much each filter list stopped, with live counters for data and time saved and a chart of the last 30 days
@@ -62,13 +63,14 @@ Supreme AdBlock е блокер на реклами за Chrome: маха рек
 ФИЛТЪР-ЛИСТИ, КОИТО НЕ ОСТАРЯВАТ
 - Вградени EasyList, EasyPrivacy и филтрите на uBlock Origin, плюс 31 регионални листа — този за езика на браузъра се включва сам
 - Подписани ъпдейти на филтрите, само с данни, около два пъти на ден — нова рекламна мрежа може да се добави за часове
-- Защита от зловредни домейни (URLhaus) по избор и абонамент за всеки филтър-лист по URL
+- Защита от зловредни домейни (URLhaus), включена по подразбиране: известен зловреден сайт отваря страница-предупреждение вместо себе си, а това, което страниците зареждат от такива сайтове, се блокира; плюс абонамент за всеки филтър-лист по URL
 
 ВИЕ РЕШАВАТЕ
 - От popup-а разрешавате сайт, който искате да подкрепите, или спирате скриването на елементи само на един сайт, ако оформлението се счупи; връщате скритото с едно кликване
 - Сайтът е счупен? Страница за поправка го оправя с едно кликване (или разрешава рекламите там само за час) или подготвя доклад, който четете и изпращате сами
 - Минавате от uBlock Origin, AdGuard или Adblock Plus? Внесете разрешените сайтове и собствените си филтри от резервното му копие
 - Клавишни комбинации за блокирането на този сайт, паузата и избора на елемент
+- „Връзки на страницата“ в popup-а: другите сайтове, от които страницата е заредила нещо, всеки блокируем на този сайт с едно кликване
 - Избор на елемент и собствени филтри, включително процедурни селектори
 - Режим „Фокус“: скрива чат балончета, прозорци за бюлетини, покани за известия, AI прозорци и YouTube Shorts
 - „Блокирано на тази страница“ показва колко е спрял всеки филтър-лист, с броячи на спестените данни и време и графика за последните 30 дни
@@ -95,13 +97,14 @@ COSA BLOCCA
 LISTE DI FILTRI SEMPRE AGGIORNATE
 - EasyList, EasyPrivacy e i filtri di uBlock Origin integrati, più 31 liste regionali: quella per la lingua del browser si attiva da sola
 - Aggiornamenti dei filtri firmati, composti solo da dati, circa due volte al giorno: una nuova rete pubblicitaria può essere aggiunta in poche ore
-- Protezione facoltativa dai domini malevoli (URLhaus) e iscrizione a qualsiasi lista di filtri tramite URL
+- Protezione dai domini malevoli (URLhaus), attiva di serie: un sito noto per il malware apre al suo posto una pagina di avviso, e ciò che le pagine caricano da questi siti viene bloccato; più l'iscrizione a qualsiasi lista di filtri tramite URL
 
 DECIDI TU
 - Dal popup consenti un sito che vuoi sostenere, oppure disattivi l'occultamento degli elementi su un solo sito se il layout si rompe; annulli ciò che hai nascosto con un clic
 - Sito rotto? Una pagina di riparazione lo sistema con un clic (o consente gli annunci lì solo per un'ora), oppure prepara una segnalazione che leggi e invii tu
 - Arrivi da uBlock Origin, AdGuard o Adblock Plus? Importa i siti consentiti e i tuoi filtri dal suo file di backup
 - Scorciatoie da tastiera per il blocco su questo sito, la pausa e il selettore di elementi
+- «Connessioni di questa pagina» nel popup: gli altri siti da cui la pagina ha caricato qualcosa, ognuno bloccabile su quel sito con un clic
 - Selettore di elementi e filtri personali, anche con selettori procedurali
 - Modalità Focus: nasconde bolle di chat, pop-up delle newsletter, richieste di notifiche, pop-up IA e YouTube Shorts
 - «Bloccato in questa pagina» mostra quanto ha fermato ogni lista di filtri, con i contatori di dati e tempo risparmiati e un grafico degli ultimi 30 giorni
@@ -128,13 +131,14 @@ WAS ER BLOCKIERT
 FILTERLISTEN, DIE AKTUELL BLEIBEN
 - EasyList, EasyPrivacy und die uBlock-Origin-Filter integriert, dazu 31 regionale Listen – die für die Sprache Ihres Browsers schaltet sich selbst ein
 - Signierte Filter-Updates, die nur Daten enthalten, etwa zweimal täglich: Ein neues Werbenetzwerk kann in Stunden ergänzt werden
-- Optionaler Schutz vor Malware-Domains (URLhaus) und Abonnement beliebiger Filterlisten per URL
+- Schutz vor Malware-Domains (URLhaus), standardmäßig an: Eine bekannte Malware-Website öffnet stattdessen eine Warnseite, und was Seiten von solchen Websites laden, wird blockiert; dazu das Abonnement beliebiger Filterlisten per URL
 
 SIE BEHALTEN DIE KONTROLLE
 - Im Popup erlauben Sie eine Seite, die Sie unterstützen möchten, oder schalten das Ausblenden von Elementen auf einer einzelnen Seite ab, falls das Layout bricht; Ausgeblendetes holen Sie mit einem Klick zurück
 - Seite kaputt? Eine Reparaturseite behebt es mit einem Klick (oder erlaubt Werbung dort nur für eine Stunde) oder bereitet eine Meldung vor, die Sie lesen und selbst senden
 - Sie wechseln von uBlock Origin, AdGuard oder Adblock Plus? Übernehmen Sie erlaubte Websites und eigene Filter aus dessen Sicherungsdatei
 - Tastenkombinationen für die Blockierung auf dieser Website, die Pause und den Element-Picker
+- „Verbindungen dieser Seite“ im Popup: die anderen Websites, von denen die Seite etwas geladen hat, jede mit einem Klick auf dieser Website blockierbar
 - Element-Picker und eigene Filter, auch mit prozeduralen Selektoren
 - Fokusmodus: blendet Chat-Blasen, Newsletter-Pop-ups, Benachrichtigungs-Aufforderungen, KI-Pop-ups und YouTube Shorts aus
 - „Auf dieser Seite blockiert“ zeigt, wie viel jede Filterliste gestoppt hat, mit Zählern für gesparte Daten und Zeit und einer Grafik der letzten 30 Tage

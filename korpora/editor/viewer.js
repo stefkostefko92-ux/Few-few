@@ -9,6 +9,7 @@ import { Stage, TONE_MAPPING, studioEnvironment } from './viewer-studio.js';
 import { Pipeline } from './viewer-render.js';
 import { PhotoMode } from './viewer-photo-mode.js';
 import { addSlides } from './viewer-slides.js';
+import { frameCamera, explodeCamera, bindCameraKeys } from './viewer-camera.js';
 import { pixelRatio } from './viewer-device.js';
 import { reduceMotion } from './dom.js';
 import {
@@ -19,9 +20,6 @@ import {
   boardMeshes,
   faceMaterials,
 } from './viewer-parts.js';
-
-// How much farther the camera stands for an exploded assembly (e: 0 assembled … 1 fully exploded).
-const explodeZoom = (e) => 1 + 0.55 * e;
 
 export class Viewer {
   constructor(host) {
@@ -38,7 +36,7 @@ export class Viewer {
     this.renderer.domElement.setAttribute('role', 'img');
     this.renderer.domElement.setAttribute(
       'aria-label',
-      '3D изглед на мебелта: влачи за въртене, колелце за мащаб',
+      '3D изглед на мебелта: влачене или стрелки — въртене, колелце или + и − — мащаб, 0 — цялата мебел',
     );
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(32, 1, 0.01, 60);
@@ -50,6 +48,10 @@ export class Viewer {
     this.controls.addEventListener('start', () => {
       this.userMoved = true;
     });
+    bindCameraKeys(this.renderer.domElement, this.camera, this.controls, {
+      reframe: () => this.frame(),
+      moved: () => (this.userMoved = true),
+    });
     this.mats = new MaterialCache(this.renderer);
     this.stage = new Stage(this);
     this.root = new THREE.Group();
@@ -60,6 +62,7 @@ export class Viewer {
     this.explode = 0;
     this.showOps = true;
     this.dirty = true;
+    this.inSight = true; // false while the page has the view scrolled out of sight (the editor watches it)
     // a lost and restored WebGL context loses all that was drawn on the GPU: the studio environment, the baked
     // decors, the path tracer's buffers. Rebuild them with the model on screen.
     this.renderer.domElement.addEventListener('webglcontextrestored', () => {
@@ -77,8 +80,9 @@ export class Viewer {
     this.light = (k) => this.stage.jitter(k);
     const loop = () => {
       this.raf = requestAnimationFrame(loop);
-      // a hidden panel (another tab of the editor) draws nothing; it goes on where it stopped when shown again
-      if (!this.visible) return;
+      // a hidden panel (another tab of the editor) or a view scrolled out of sight draws nothing; it goes on where it
+      // stopped when shown again
+      if (!this.visible || !this.inSight) return;
       const moved = this.controls.update();
       if (this.dirty || moved) {
         this.pipeline.reset();
@@ -224,23 +228,7 @@ export class Viewer {
   }
 
   frame() {
-    const e = this.ext;
-    const W = (e.x1 - e.x0) * S;
-    const D = (e.z1 - e.z0) * S;
-    const H = e.y1 * S;
-    const radius = Math.hypot(W, H, D) * 0.5;
-    const vHalf = THREE.MathUtils.degToRad(this.camera.fov / 2);
-    const hHalf = Math.atan(Math.tan(vHalf) * Math.max(this.camera.aspect, 0.2));
-    const dist = (radius / Math.sin(Math.min(vHalf, hHalf))) * 1.06 * explodeZoom(this.explode);
-    const dir = new THREE.Vector3(0.62, 0.42, 1).normalize();
-    this.controls.target.set(0, H / 2, 0);
-    this.camera.position.copy(this.controls.target).addScaledVector(dir, dist);
-    this.camera.near = dist / 60;
-    this.camera.far = dist * 20;
-    this.camera.updateProjectionMatrix();
-    this.controls.minDistance = radius * 0.5;
-    this.controls.maxDistance = dist * 3;
-    this.controls.update();
+    frameCamera(this.camera, this.controls, this.ext, this.explode);
   }
 
   setOpen(f) {
@@ -249,15 +237,8 @@ export class Viewer {
   }
 
   setExplode(e) {
-    const prev = explodeZoom(this.explode);
+    explodeCamera(this.camera, this.controls, this.explode, e);
     this.explode = e;
-    const next = explodeZoom(e);
-    const offset = this.camera.position.clone().sub(this.controls.target);
-    this.camera.position.copy(this.controls.target).addScaledVector(offset, next / prev);
-    this.controls.maxDistance = Math.max(
-      this.controls.maxDistance,
-      offset.length() * (next / prev) * 1.2,
-    );
     this.applyPose();
   }
 

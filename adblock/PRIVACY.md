@@ -28,6 +28,7 @@ servers, under your account, not ours. Turn sync off and they stay local only.
 - Which filter lists and Focus-mode items you turned on or off *(sync)*
 - Your own filter rules, including filter lists you subscribed to by URL, and the list of those URLs *(sync)*
 - Sites where you switched off element hiding *(sync)*
+- Hosts you blocked on a site from the popup's “Connections on this page” *(sync)*
 - Whether protection is on, off or paused — per device, never synced
 - Elements you hid with the picker
 - Counters of how many requests were blocked (and the estimated data and time saved), and how many cookie banners were rejected for you — numbers only, no list of sites
@@ -37,7 +38,7 @@ servers, under your account, not ours. Turn sync off and they stay local only.
 - The latest downloaded filter data, and the regional lists you downloaded from their authors (see below)
 - Whether review reminders are on *(sync)*; and, on this device only, when the extension was installed and whether the popup already asked you for a Chrome Web Store review (how many times, when, and whether you chose “Don't ask again”) — so it asks at most twice
 
-The popup's "Blocked on this page" view is built on the spot from which of our
+The popup's “Connections on this page” list (the other sites a page loaded something from) is read from that page when you open it, from the browser's own record of what the page loaded; it is not stored and never sent anywhere. The popup's "Blocked on this page" view is built on the spot from which of our
 filter lists matched in that tab; it is not stored and never sent anywhere. You
 can clear everything from the extension's Settings, or by removing the
 extension.
@@ -71,6 +72,8 @@ extension.
 in the popup open the extension's Chrome Web Store page in a new tab, like any
 link. The extension itself sends nothing; what you write there is handled by
 Google under its own terms. You can switch these reminders off in Settings.
+
+**Dangerous sites (on by default).** When you open an address on URLhaus (abuse.ch's public list of malware sites, built into the extension), a warning page of the extension opens instead; the address is checked on your device and nothing is sent. Only if you click *Why is it listed?* does your browser open that site's URLhaus entry on urlhaus.abuse.ch. You can switch this off in Settings (Malware protection).
 
 **Global Privacy Control (on by default).** Unless you switch it off in Settings, your browser adds the header `Sec-GPC: 1` to its requests to the sites you visit, and pages can read `navigator.globalPrivacyControl`. It asks those sites not to sell or share your personal data. The signal is the same for everyone and carries no identifier, so it says nothing about you; it is not sent on sites you allowed or while protection is paused.
 

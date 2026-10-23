@@ -232,7 +232,7 @@
     "message": "Siz ochadigan havolalardan utm_*, fbclid, gclid va boshqa bosish identifikatorlarini olib tashlaydi"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Maʼlum zararli domenlarni bloklaydi (abuse.ch tomonidan URLhaus roʻyxati)"
+    "message": "Maʼlum zararli sayt ochilishidan oldin ogohlantiradi va sahifalar bunday saytlardan yuklaydigan narsalarni bloklaydi (abuse.ch tomonidan URLhaus roʻyxati)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Har bir saytda Google Topics, FLoC va Protected Audience reklama API interfeyslarini oʻchiradi"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Ixtiyoriy: hammasi allaqachon ishlayapti. Bularning istalganini keyinroq Sozlamalarda oʻzgartirish mumkin."
+  },
+  "blk_page_title": {
+    "message": "Sayt bloklandi — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Bu sayt qurilmangizga zarar yetkazishi mumkin"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock bu sahifani toʻxtatdi, chunki sayt URLhaus roʻyxatida bor — bu zararli dasturlarni tarqatuvchi manzillarning ochiq roʻyxati."
+  },
+  "blk_back": {
+    "message": "Orqaga qaytish"
+  },
+  "blk_continue": {
+    "message": "Baribir davom etish"
+  },
+  "blk_note": {
+    "message": "Davom etsangiz, brauzerni yopguningizcha faqat shu saytning sahifalariga ruxsat beriladi."
+  },
+  "blk_why": {
+    "message": "Nega roʻyxatda? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Bu sahifaning ulanishlari"
+  },
+  "conn_empty": {
+    "message": "Bu sahifa boshqa saytlardan hech narsa yuklamadi."
+  },
+  "conn_block": {
+    "message": "Saytda bloklash"
+  },
+  "conn_blocked": {
+    "message": "Saytda bloklandi"
+  },
+  "conn_hint": {
+    "message": "Bu sayt $1 manzilidan yuklaydigan narsalarni bloklash"
+  },
+  "opt_conn_title": {
+    "message": "Siz bloklagan ulanishlar"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock oynasidagi “Bu sahifaning ulanishlari” boʻlimidan bloklangan, har biri faqat oʻz saytida."
+  },
+  "opt_empty_conn": {
+    "message": "Hali hech narsa bloklanmagan."
+  },
+  "opt_conn_remove": {
+    "message": "$2 saytida $1 uchun bloklashni bekor qilish"
+  },
+  "opt_h_danger": {
+    "message": "Zararli sayt haqida ogohlantirish"
+  },
+  "opt_h_capacity": {
+    "message": "Qoidalar sigʻimi"
   }
 }

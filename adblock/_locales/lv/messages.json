@@ -232,7 +232,7 @@
     "message": "Noņem utm_*, fbclid, gclid un citus klikšķu identifikatorus no saitēm, kuras atverat"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Bloķē zināmus ļaunprātīgus domēnus (abuse.ch URLhaus saraksts)"
+    "message": "Brīdina, pirms tiek atvērta zināma ļaunprātīga vietne, un bloķē to, ko lapas ielādē no šādām vietnēm (abuse.ch URLhaus saraksts)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Atspējo Google Topics, FLoC un Protected Audience reklāmu API katrā vietnē"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Neobligāti: viss jau darbojas. Jebko no šī vēlāk varat mainīt iestatījumos."
+  },
+  "blk_page_title": {
+    "message": "Vietne bloķēta — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Šī vietne var kaitēt jūsu ierīcei"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock apturēja šo lapu, jo vietne ir iekļauta URLhaus — publiskā sarakstā ar adresēm, kas izplata ļaunprogrammatūru."
+  },
+  "blk_back": {
+    "message": "Atgriezties"
+  },
+  "blk_continue": {
+    "message": "Tomēr turpināt"
+  },
+  "blk_note": {
+    "message": "Ja turpināsiet, tiks atļautas tikai šīs vietnes lapas, līdz aizvērsiet pārlūku."
+  },
+  "blk_why": {
+    "message": "Kāpēc tā ir sarakstā? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Savienojumi šajā lapā"
+  },
+  "conn_empty": {
+    "message": "Šī lapa neko neielādēja no citām vietnēm."
+  },
+  "conn_block": {
+    "message": "Bloķēt šeit"
+  },
+  "conn_blocked": {
+    "message": "Bloķēts šeit"
+  },
+  "conn_hint": {
+    "message": "Bloķēt to, ko šī vietne ielādē no $1"
+  },
+  "opt_conn_title": {
+    "message": "Jūsu bloķētie savienojumi"
+  },
+  "opt_conn_sub": {
+    "message": "Bloķēti paplašinājuma logā, sadaļā „Savienojumi šajā lapā“, katrs tikai savā vietnē."
+  },
+  "opt_empty_conn": {
+    "message": "Vēl nekas nav bloķēts."
+  },
+  "opt_conn_remove": {
+    "message": "Atbloķēt $1 vietnē $2"
+  },
+  "opt_h_danger": {
+    "message": "Ļaunprogrammatūras brīdinājums"
+  },
+  "opt_h_capacity": {
+    "message": "Noteikumu ietilpība"
   }
 }

@@ -232,7 +232,7 @@
     "message": "從您開啟的連結中移除 utm_*、fbclid、gclid 等點擊識別碼"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "封鎖已知的惡意軟體網域（abuse.ch 的 URLhaus 清單）"
+    "message": "在已知的惡意軟體網站開啟前發出警告，並封鎖網頁從這類網站載入的內容（abuse.ch 的 URLhaus 清單）。"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "在所有網站上停用 Google 的 Topics、FLoC 和 Protected Audience 廣告 API"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "可選：擴充功能已經開始運作。之後隨時可以在設定中變更這些選項。"
+  },
+  "blk_page_title": {
+    "message": "已封鎖網站 — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "這個網站可能會危害您的裝置"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock 已攔下這個網頁，因為該網站列在 URLhaus（一份散布惡意軟體的網址公開清單）上。"
+  },
+  "blk_back": {
+    "message": "返回"
+  },
+  "blk_continue": {
+    "message": "仍要繼續"
+  },
+  "blk_note": {
+    "message": "繼續後，在您關閉瀏覽器之前，只會放行這個網站的網頁。"
+  },
+  "blk_why": {
+    "message": "為什麼會列入？（URLhaus）"
+  },
+  "conn_title": {
+    "message": "這個網頁的連線"
+  },
+  "conn_empty": {
+    "message": "這個網頁沒有從其他網站載入任何內容。"
+  },
+  "conn_block": {
+    "message": "在這裡封鎖"
+  },
+  "conn_blocked": {
+    "message": "已在這裡封鎖"
+  },
+  "conn_hint": {
+    "message": "封鎖這個網站從 $1 載入的內容"
+  },
+  "opt_conn_title": {
+    "message": "您封鎖的連線"
+  },
+  "opt_conn_sub": {
+    "message": "從 Supreme AdBlock 視窗的「這個網頁的連線」封鎖，每一項只在各自的網站上生效。"
+  },
+  "opt_empty_conn": {
+    "message": "還沒有封鎖任何項目。"
+  },
+  "opt_conn_remove": {
+    "message": "在 $2 上解除封鎖 $1"
+  },
+  "opt_h_danger": {
+    "message": "惡意軟體警告頁面"
+  },
+  "opt_h_capacity": {
+    "message": "規則容量"
   }
 }

@@ -232,7 +232,7 @@
     "message": "Elimina utm_*, fbclid, gclid i altres identificadors de clic dels enllaços que obriu"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Bloqueja dominis maliciosos coneguts (llista URLhaus d’abuse.ch)"
+    "message": "Avisa abans que s’obri un lloc maliciós conegut i bloqueja el que les pàgines carreguen d’aquests llocs (llista URLhaus d’abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Desactiva les API publicitàries Google Topics, FLoC i Protected Audience a tots els llocs"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Opcional: ja funciona. Podeu canviar qualsevol d’aquestes opcions més endavant a la Configuració."
+  },
+  "blk_page_title": {
+    "message": "Lloc bloquejat — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Aquest lloc pot danyar el vostre dispositiu"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock ha aturat aquesta pàgina perquè el lloc és a URLhaus, una llista pública d’adreces que difonen programari maliciós."
+  },
+  "blk_back": {
+    "message": "Torna enrere"
+  },
+  "blk_continue": {
+    "message": "Continua igualment"
+  },
+  "blk_note": {
+    "message": "Si continueu, només es deixen passar les pàgines d’aquest lloc, fins que tanqueu el navegador."
+  },
+  "blk_why": {
+    "message": "Per què és a la llista? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Connexions d’aquesta pàgina"
+  },
+  "conn_empty": {
+    "message": "Aquesta pàgina no ha carregat res d’altres llocs."
+  },
+  "conn_block": {
+    "message": "Bloqueja aquí"
+  },
+  "conn_blocked": {
+    "message": "Bloquejat aquí"
+  },
+  "conn_hint": {
+    "message": "Bloqueja el que aquest lloc carrega de $1"
+  },
+  "opt_conn_title": {
+    "message": "Connexions que heu bloquejat"
+  },
+  "opt_conn_sub": {
+    "message": "Bloquejades des de «Connexions d’aquesta pàgina» a la finestra de Supreme AdBlock, cadascuna només al seu propi lloc."
+  },
+  "opt_empty_conn": {
+    "message": "Encara no heu bloquejat res."
+  },
+  "opt_conn_remove": {
+    "message": "Desbloqueja $1 a $2"
+  },
+  "opt_h_danger": {
+    "message": "Pàgina d’avís de llocs maliciosos"
+  },
+  "opt_h_capacity": {
+    "message": "Capacitat de regles"
   }
 }

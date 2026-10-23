@@ -232,7 +232,7 @@
     "message": "Elimină utm_*, fbclid, gclid și alți identificatori de clic din linkurile pe care le deschideți"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blochează domeniile malware cunoscute (lista URLhaus de la abuse.ch)"
+    "message": "Avertizează înainte de deschiderea unui site malware cunoscut și blochează ce încarcă paginile de pe astfel de site-uri (lista URLhaus de la abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Dezactivează API-urile publicitare Google Topics, FLoC și Protected Audience pe toate site-urile"
@@ -739,5 +739,59 @@
   },
   "welQuickSub": {
     "message": "Opțional: funcționează deja. Puteți modifica oricare dintre acestea mai târziu din Setări."
+  },
+  "blk_page_title": {
+    "message": "Site blocat — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Acest site poate dăuna dispozitivului dvs."
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock a oprit această pagină deoarece site-ul figurează în URLhaus, o listă publică de adrese care răspândesc malware."
+  },
+  "blk_back": {
+    "message": "Înapoi"
+  },
+  "blk_continue": {
+    "message": "Continuați oricum"
+  },
+  "blk_note": {
+    "message": "Dacă continuați, sunt permise doar paginile acestui site, până când închideți browserul."
+  },
+  "blk_why": {
+    "message": "De ce este pe listă? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Conexiuni pe această pagină"
+  },
+  "conn_empty": {
+    "message": "Această pagină nu a încărcat nimic de pe alte site-uri."
+  },
+  "conn_block": {
+    "message": "Blocați aici"
+  },
+  "conn_blocked": {
+    "message": "Blocat aici"
+  },
+  "conn_hint": {
+    "message": "Blocați ce încarcă acest site de pe $1"
+  },
+  "opt_conn_title": {
+    "message": "Conexiuni pe care le-ați blocat"
+  },
+  "opt_conn_sub": {
+    "message": "Blocate din „Conexiuni pe această pagină” din fereastra Supreme AdBlock, fiecare doar pe site-ul său."
+  },
+  "opt_empty_conn": {
+    "message": "Încă nu ați blocat nimic."
+  },
+  "opt_conn_remove": {
+    "message": "Deblocați $1 pe $2"
+  },
+  "opt_h_danger": {
+    "message": "Pagina de avertizare malware"
+  },
+  "opt_h_capacity": {
+    "message": "Capacitatea regulilor"
   }
 }
