@@ -6,6 +6,8 @@ import { buildMetadata, newsArticleLd, canonical } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { JsonLd } from "@/components/JsonLd";
 import { PrintButton } from "@/components/PrintButton";
+import { ShareButton } from "@/components/ShareButton";
+import { newsDate } from "@/lib/news";
 
 export const dynamic = "force-dynamic";
 
@@ -59,17 +61,17 @@ export default async function PostPage({
       />
       <article className="container-content max-w-3xl py-10">
         <div className="text-sm text-slate-600">
-          Редакция „За Бобов дол“
-          {p.publishedAt && (
-            <>
-              {" · "}
-              {new Intl.DateTimeFormat("bg-BG", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              }).format(p.publishedAt)}
-            </>
-          )}
+          {/* Внесена новина → източникът ѝ; иначе — нашата редакция. */}
+          {p.source ? `Източник: ${p.source}` : "Редакция „За Бобов дол“"}
+          {" · "}
+          <time dateTime={newsDate(p).toISOString()}>
+            {new Intl.DateTimeFormat("bg-BG", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+              timeZone: "Europe/Sofia",
+            }).format(newsDate(p))}
+          </time>
         </div>
         <div className="mt-4">
           <Prose html={renderMarkdown(p.content)} />
@@ -92,7 +94,12 @@ export default async function PostPage({
             )}
           </div>
         )}
-        <div className="mt-8 border-t border-slate-200 pt-5">
+        <div className="mt-8 flex flex-wrap items-start gap-3 border-t border-slate-200 pt-5">
+          <ShareButton
+            title={p.title}
+            text={`${p.title} — „За Бобов дол“`}
+            path={`/novini/${p.slug}`}
+          />
           <PrintButton variant="secondary" label="Принтирай новината" />
         </div>
       </article>
