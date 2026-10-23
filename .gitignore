@@ -2,3 +2,6 @@
 # Deploy artifact built by deploy-all.sh / packaging — never commit (contains dist/)
 cs-revolution-vps.tar.gz
 *.tar.gz
+
+# Runtime state of the Claude Code hooks — never commit (same rule as main)
+.claude/hooks/_state/
