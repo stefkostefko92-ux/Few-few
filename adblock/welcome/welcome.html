@@ -17,11 +17,12 @@
     </section>
 
     <ol class="steps">
-      <li>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3h-4v3H7a1 1 0 0 0-1 1v3h3a2 2 0 1 1 0 4H6v4a1 1 0 0 0 1 1h4v-3a2 2 0 1 1 4 0v3h2a1 1 0 0 0 1-1v-4h-1a2 2 0 1 1 0-4h1V7a1 1 0 0 0-1-1h-3V3Z"/></svg>
+      <li id="pinStep">
+        <svg class="ic-todo" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3h-4v3H7a1 1 0 0 0-1 1v3h3a2 2 0 1 1 0 4H6v4a1 1 0 0 0 1 1h4v-3a2 2 0 1 1 4 0v3h2a1 1 0 0 0 1-1v-4h-1a2 2 0 1 1 0-4h1V7a1 1 0 0 0-1-1h-3V3Z"/></svg>
+        <svg class="ic-done" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
         <div>
-          <b data-i18n="welPinTitle">Pin it to the toolbar</b>
-          <span data-i18n="welPinText">Click the puzzle-piece icon next to the address bar and pin Supreme AdBlock. One click then shows what was blocked on the page.</span>
+          <b id="pinTitle" data-i18n="welPinTitle">Pin it to the toolbar</b>
+          <span id="pinText" data-i18n="welPinText">Click the puzzle-piece icon next to the address bar and pin Supreme AdBlock. One click then shows what was blocked on the page.</span>
         </div>
       </li>
       <li>
@@ -39,6 +40,7 @@
         </div>
       </li>
     </ol>
+    <p id="pinLive" class="sr-only" role="status"></p>
 
     <section class="card quick" aria-labelledby="quickTitle">
       <h2 id="quickTitle" data-i18n="welQuickTitle">Make it yours</h2>

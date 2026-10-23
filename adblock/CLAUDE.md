@@ -103,6 +103,13 @@ server/                 сайтът adblock.carbonstealth.eu: index, privacy, s
                         на youtube-ad-blocker.html — не ги пипай на ръка (`--check` е в site.test). hreflang групата
                         (английската + 6 + x-default) е взаимна; нов език = JSON + LANGS в генератора + `for l in`
                         в autodeploy.sh + nginx/Caddy `/<език>` → `/<език>/` + IndexNow + sitemap + llms.txt.
+                        **/bye** (5.5.1) — страницата след деинсталиране (`setUninstallURL`, фиксиран адрес БЕЗ
+                        параметри): `noindex` → сервира се (nginx/Caddy/deploy), но НЕ е в sitemap, IndexNow и
+                        llms.txt; site.test пази и двете посоки. Без скрипт, без форма, без брояч на причините.
+                        **UTM:** всеки `<a>` към CWS носи затворения речник от `docs/METRICS.md`
+                        (`utm_source=site&utm_medium=<страница>`, езиковите — `home_<език>`); JSON-LD — чистия адрес.
+                        Нова стойност = ред в METRICS.md първо (site.test). Без брояч/GA4 на сайта, без UTM изключение
+                        в removeparam.
 ```
 
 ## Качествен гейт (преди „готово")
@@ -192,3 +199,8 @@ bash tools/package.sh                         # билд + самопровер�
   zu не са в листинга му — Chrome пак ги ползва), всеки с пълни ключове и същите `$1` плейсхолдъри
   (`tests/i18n.test.mjs`). Нов ключ → във ВСИЧКИ `_locales`. CSS — логически свойства
   (`margin-inline-start`, `inset-inline-*`), за да работи RTL.
+- **Името (`extName` = заглавието в магазина):** марката „Supreme AdBlock“ не се превежда; от 5.5.1 само
+  en/bg/de/it носят родова дума след „ – “ (`NAMED` в `tests/i18n.test.mjs`), другите езици — само марката.
+  Към още езици — само ако Impressions в тези четири покажат ръст (`docs/METRICS.md`). Резюмето
+  (`extDescription`) започва с родово съществително, ≤ 132 знака, без превъзходни степени (`tests/store.test.mjs`).
+  `docs/listing/*.txt` отиват и в Edge — никога „Chrome“ в тях (store.test).

@@ -1,10 +1,10 @@
 {
   "extName": {
-    "message": "Supreme AdBlock",
+    "message": "Supreme AdBlock – Werbeblocker",
     "description": "Extension name."
   },
   "extDescription": {
-    "message": "Blockiert Werbung überall: YouTube-Videoanzeigen, Banner, Pop-ups, Tracker, Cookie-Banner und Anti-Adblock-Sperren.",
+    "message": "Werbeblocker für YouTube und das Web: Videoanzeigen, Banner, Pop-ups, Tracker, Cookie-Banner („Ablehnen“) und Anti-Adblock-Sperren.",
     "description": "Extension description."
   },
   "byCarbon": {
@@ -648,6 +648,12 @@
   "welPinText": {
     "message": "Klicken Sie neben der Adressleiste auf das Puzzleteil-Symbol und heften Sie Supreme AdBlock an. Dann zeigt Ihnen ein Klick, was auf der Seite blockiert wurde.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welPinnedTitle": {
+    "message": "An die Symbolleiste angeheftet"
+  },
+  "welPinnedText": {
+    "message": "Ein Klick auf das Symbol zeigt Ihnen, was auf der Seite blockiert wurde."
   },
   "welBrokenTitle": {
     "message": "Wenn eine Website fehlerhaft aussieht",

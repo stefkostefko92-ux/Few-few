@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Bloker annoncer overalt: YouTube-videoannoncer, bannere, pop op-vinduer, trackere, cookiebannere og anti-adblock-mure."
+    "message": "Annonceblokker til YouTube og nettet: videoannoncer, bannere, pop op-vinduer, trackere, cookiebannere (Afvis) og anti-adblock-mure."
   },
   "byCarbon": {
     "message": "af Carbon Stealth"
@@ -646,6 +646,12 @@
   "welPinText": {
     "message": "Klik på puslespilsikonet ved siden af adresselinjen, og fastgør Supreme AdBlock. Så viser ét klik, hvad der blev blokeret på siden.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welPinnedTitle": {
+    "message": "Fastgjort til værktøjslinjen"
+  },
+  "welPinnedText": {
+    "message": "Ét klik på ikonet viser, hvad der blev blokeret på siden."
   },
   "welBrokenTitle": {
     "message": "Hvis et websted ser forkert ud",

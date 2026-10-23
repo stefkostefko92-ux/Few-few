@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "ბლოკავს რეკლამას: YouTube-ის ვიდეორეკლამებს, ბანერებს, ამომხტარ ფანჯრებს, ტრეკერებს, ქუქი-მოთხოვნებს და ანტი-ადბლოკ კედლებს."
+    "message": "რეკლამის ბლოკერი (YouTube და ვები): ვიდეორეკლამები, ბანერები, ამომხტარი ფანჯრები, ტრეკერები, ქუქი („უარყოფა“), ანტი-ადბლოკ კედლები."
   },
   "byCarbon": {
     "message": "Carbon Stealth-ისგან"
@@ -646,6 +646,12 @@
   "welPinText": {
     "message": "დააწკაპუნეთ მისამართის ზოლის გვერდით თავსატეხის ნაწილის ხატულაზე და მიამაგრეთ Supreme AdBlock. შემდეგ ერთი დაწკაპუნებით ნახავთ, რა დაიბლოკა გვერდზე.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welPinnedTitle": {
+    "message": "მიმაგრებულია ხელსაწყოთა ზოლზე"
+  },
+  "welPinnedText": {
+    "message": "მის ხატულაზე ერთი დაწკაპუნება აჩვენებს, რა დაიბლოკა გვერდზე."
   },
   "welBrokenTitle": {
     "message": "თუ საიტი გაფუჭებულად გამოიყურება",
