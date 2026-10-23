@@ -143,7 +143,11 @@ export const metadata: Metadata = {
     "Carbon Stealth",
     "Carbon Stealth VCC",
   ],
-  alternates: { canonical: "/" },
+  // БЕЗ `alternates.canonical` тук: Next го наследява във ВСЯКА страница без
+  // собствен canonical — 404, /import, /admin/vhod сочеха началната като
+  // каноничен адрес (noindex + canonical към друг URL = противоречив сигнал
+  // за Google). Всяка индексируема страница си задава canonical сама
+  // (началната — в page.tsx); пази го тестът seo.test.ts.
   openGraph: {
     type: "website",
     locale: "bg_BG",

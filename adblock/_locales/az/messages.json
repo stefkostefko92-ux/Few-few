@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Reklamları hər yerdə bloklayır: YouTube reklamları, bannerlər, popaplar, izləyicilər, kuki sorğuları və anti-adblock divarları."
+    "message": "Reklam bloklayıcı (YouTube və veb): video reklamlar, bannerlər, popaplar, izləyicilər, kukilər («Rədd et»), anti-adblock divarları."
   },
   "byCarbon": {
     "message": "Carbon Stealth tərəfindən"
@@ -646,6 +646,12 @@
   "welPinText": {
     "message": "Ünvan sətrinin yanındakı tapmaca parçası ikonuna klikləyin və Supreme AdBlock-u bərkidin. Sonra bir kliklə səhifədə nəyin bloklandığını görəcəksiniz.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welPinnedTitle": {
+    "message": "Alətlər panelinə bərkidilib"
+  },
+  "welPinnedText": {
+    "message": "İkonuna bir klik səhifədə nəyin bloklandığını göstərir."
   },
   "welBrokenTitle": {
     "message": "Sayt düzgün görünmürsə",

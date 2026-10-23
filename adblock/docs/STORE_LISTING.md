@@ -1,10 +1,12 @@
 # Chrome Web Store listing
 
 ## Name
-Supreme AdBlock
+Supreme AdBlock – Ad Blocker
+
+The title is the manifest's `extName`, not a dashboard field: en „Supreme AdBlock – Ad Blocker“, bg „Supreme AdBlock – блокер на реклами“, de „Supreme AdBlock – Werbeblocker“, it „Supreme AdBlock – Blocco annunci“; every other language keeps „Supreme AdBlock“ (5.5.1 — wider only if Impressions in these four grow, `docs/METRICS.md`).
 
 ## Summary (132 chars max)
-Blocks ads everywhere: YouTube video ads, banners, pop-ups, trackers, cookie prompts and anti-adblock walls.
+Ad blocker for YouTube and the web: video ads, banners, pop-ups, trackers, cookie banners (Reject) and anti-adblock walls.
 
 ## Category
 Privacy & Security
@@ -12,6 +14,11 @@ Privacy & Security
 ## Detailed description
 
 Supreme AdBlock is an ad blocker for Chrome: it removes ads and trackers from the pages you visit, without watching what you do. It works as soon as it is installed, with no account and nothing to set up.
+
+- Signed filter updates about twice a day: a new ad network is handled within hours, without waiting for a new version
+- YouTube video ads are taken out at the source, before they load
+- Cookie banners: it presses Reject when the banner offers it
+- No account, no telemetry, and no ad is let through for a fee
 
 WHAT IT BLOCKS
 - YouTube ad blocker: video ads (pre-roll & mid-roll) are taken out of the player's data before they load, plus feed and search ads
@@ -52,6 +59,11 @@ The long versions for bg / it / de are below. For every other language packaged 
 
 Supreme AdBlock е блокер на реклами за Chrome: маха рекламите и тракерите от страниците, които отваряте, без да следи какво правите. Работи веднага след инсталиране, без акаунт и без настройване.
 
+- Подписани ъпдейти на филтрите около два пъти на ден: нова рекламна мрежа се покрива за часове, без да се чака нова версия
+- Видеорекламите в YouTube се махат при източника, преди да заредят
+- Банери за бисквитки: натиска „Отхвърли“, когато банерът го предлага
+- Без акаунт, без телеметрия и без реклами, пуснати срещу заплащане
+
 КАКВО БЛОКИРА
 - Рекламите в YouTube: видеорекламите (pre-roll и mid-roll) се махат от данните на плейъра, преди да заредят, както и рекламите във feed-а и търсенето
 - Банери, изскачащи прозорци, pop-under-и и джаджи със спонсорирано съдържание, както и спонсорираните публикации във Facebook, Instagram и Threads
@@ -86,6 +98,11 @@ Supreme AdBlock е блокер на реклами за Chrome: маха рек
 
 Supreme AdBlock è un ad blocker per Chrome: toglie annunci e tracker dalle pagine che visiti, senza osservare cosa fai. Funziona appena installato, senza account e senza nulla da configurare.
 
+- Aggiornamenti dei filtri firmati circa due volte al giorno: una nuova rete pubblicitaria è coperta in poche ore, senza aspettare una nuova versione
+- Gli annunci video di YouTube vengono tolti alla fonte, prima che si carichino
+- Banner dei cookie: preme «Rifiuta» quando il banner lo offre
+- Nessun account, nessuna telemetria e nessun annuncio lasciato passare a pagamento
+
 COSA BLOCCA
 - Gli annunci di YouTube: gli annunci video (pre-roll e mid-roll) vengono tolti dai dati del player prima che si carichino, oltre agli annunci nel feed e nella ricerca
 - Banner, pop-up, pop-under e widget di contenuti sponsorizzati, e i post sponsorizzati su Facebook, Instagram e Threads
@@ -119,6 +136,11 @@ Costruito su Manifest V3, l'attuale piattaforma delle estensioni di Chrome. Le r
 **de**
 
 Supreme AdBlock ist ein Werbeblocker für Chrome: Er entfernt Werbung und Tracker von den Seiten, die Sie besuchen, ohne zu beobachten, was Sie tun. Er arbeitet direkt nach der Installation, ohne Konto und ohne Einrichtung.
+
+- Signierte Filter-Updates etwa zweimal täglich: Ein neues Werbenetzwerk ist in Stunden abgedeckt, ohne auf eine neue Version zu warten
+- YouTube-Videoanzeigen werden an der Quelle entfernt, bevor sie laden
+- Cookie-Banner: drückt „Ablehnen“, wenn das Banner es anbietet
+- Kein Konto, keine Telemetrie und keine Werbung, die gegen Bezahlung durchgelassen wird
 
 WAS ER BLOCKIERT
 - YouTube-Werbung: Videoanzeigen (Pre-Roll und Mid-Roll) werden aus den Daten des Players entfernt, bevor sie laden, dazu Anzeigen im Feed und in der Suche

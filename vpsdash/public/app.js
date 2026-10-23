@@ -5150,20 +5150,54 @@ async function renderAccess() {
   // да го пипне (сървърът го отказва), затова картата я няма при избран съсед.
   if (state.node !== 'local') return;
   const p = await api('/settings/peer');
-  const scopeSel = el('select', { 'aria-label': 'Достъп на съседа' }, [
-    el('option', { value: 'read', text: 'само четене' }),
-    el('option', { value: 'full', text: 'пълен контрол' }),
+  const solo = !p.tokenSet && !p.peers.length;
+  const head = el('div', { class: 'card-head' }, [
+    el('h3', { text: 'Достъп на съседа' }),
+    solo ? pill('ok', 'един сървър') : p.scope === 'full' ? pill('warn', 'пълен контрол') : pill('ok', 'само четене'),
   ]);
-  scopeSel.value = p.scope;
-  view.appendChild(
-    el('div', { class: 'card' }, [
-      el('div', { class: 'card-head' }, [
-        el('h3', { text: 'Достъп на съседа' }),
-        p.scope === 'full' ? pill('warn', 'пълен контрол') : pill('ok', 'само четене'),
-      ]),
-      el('div', { class: 'metric-sub', text: p.tokenSet
-        ? 'Колко може другият VPS, когато го управляваш ОТТАМ. „Само четене": вижда състоянието и не пипа нищо опасно. „Пълен контрол": терминал, деплой, файлове, firewall, одобрения — всичко като тук. Паролата и 2FA за опасните действия се искат от ДРУГИЯ панел, а в одита тук стои кой човек оттам е действал.'
-        : 'Няма зададен peerToken — никой съсед не може да вика този панел.' }),
+  const card = el('div', { class: 'card' }, [head]);
+  view.appendChild(card);
+  if (solo) {
+    card.appendChild(el('div', { class: 'metric-sub', text: 'Един сървър — федерацията е изключена: няма съседи и няма входящ жетон, тоест никой не вика този панел с Bearer.' }));
+    return;
+  }
+
+  // Съседите, които ТОЗИ панел вика (превключвателя горе, бекъп и одит извън
+  // машината). Сървър, който вече го няма, се маха оттук — иначе стар DNS запис
+  // може да сочи към чужд или към нас самите.
+  if (p.peers.length) {
+    card.appendChild(el('h3', { class: 'muted', text: 'Съседи, които този панел вика', style: 'margin-top:8px' }));
+    card.appendChild(tableEl(['Възел', 'Адрес', ''], p.peers.map((x) => el('tr', {}, [
+      el('td', { raw: `${x.name || x.id} (${x.id})` }),
+      el('td', { class: 'mono', raw: x.host || '—' }),
+      el('td', {}, [el('button', {
+        class: 'btn btn-sm btn-danger', text: 'Махни',
+        onclick: async () => {
+          const ok = await confirmDanger({
+            title: 'Махни съседа',
+            what: ['Панелът спира да го вика: изчезва от превключвателя, бекъпът и одитът спират да се пращат натам.', 'Връща се само с ръчно добавяне в конфига.'],
+            expect: x.id,
+          });
+          if (!ok) return;
+          try {
+            await api('/settings/peer', { method: 'POST', body: { removePeer: x.id } });
+            toast('Съседът е махнат', 'ok');
+            go('access');
+          } catch (err) { toast(err.message, 'bad'); }
+        },
+      })]),
+    ]))));
+  }
+
+  // Входящият жетон: с него ДРУГ панел вика този.
+  if (p.tokenSet) {
+    const scopeSel = el('select', { 'aria-label': 'Достъп на съседа' }, [
+      el('option', { value: 'read', text: 'само четене' }),
+      el('option', { value: 'full', text: 'пълен контрол' }),
+    ]);
+    scopeSel.value = p.scope;
+    card.append(
+      el('div', { class: 'metric-sub', style: 'margin-top:10px', text: 'Колко може другият VPS, когато го управляваш ОТТАМ. „Само четене": вижда състоянието и не пипа нищо опасно. „Пълен контрол": терминал, деплой, файлове, firewall, одобрения — всичко като тук. Паролата и 2FA за опасните действия се искат от ДРУГИЯ панел, а в одита тук стои кой човек оттам е действал.' }),
       el('div', { class: 'metric-sub', style: 'color:var(--warn)', text: 'Цената на „пълен контрол": който вземе другия панел, взема и този сървър. Включвай го само ако 2FA е включено и на двата възела.' }),
       el('div', { class: 'toolbar', style: 'margin-top:12px' }, [
         scopeSel,
@@ -5188,9 +5222,27 @@ async function renderAccess() {
             e.target.disabled = false;
           },
         }),
-      ]),
-    ])
-  );
+        el('button', {
+          class: 'btn btn-sm btn-danger', text: 'Изключи входящия жетон',
+          onclick: async () => {
+            const ok = await confirmDanger({
+              title: 'Изключи входящия жетон',
+              what: ['Никой друг панел няма да може да вика този — нито за четене, нито за управление.', 'Обхватът се връща на „само четене".'],
+              expect: 'изключи',
+            });
+            if (!ok) return;
+            try {
+              await api('/settings/peer', { method: 'POST', body: { inbound: 'off' } });
+              toast('Входящият жетон е изключен', 'ok');
+              go('access');
+            } catch (err) { toast(err.message, 'bad'); }
+          },
+        }),
+      ])
+    );
+  } else {
+    card.appendChild(el('div', { class: 'metric-sub', style: 'margin-top:10px', text: 'Няма зададен peerToken — никой съсед не може да вика този панел.' }));
+  }
 }
 
 // ── Променливи на средата (.env) ──────────────────────────────────────────────────

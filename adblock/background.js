@@ -39,6 +39,9 @@ const LIVE_RULE_BASE = 100000;   // block domains from the live filter update
 // Update this JSON on the server and every install refreshes itself, no
 // Web Store re-review needed. MV3 forbids remote CODE, not remote data.
 const CONFIG_URL = "https://adblock.carbonstealth.eu/filters.json";
+// След деинсталиране браузърът отваря тази статична страница: помощ, повторна инсталация, имейл.
+// Адресът е фиксиран — без параметри (нито версия, нито причина, нито id), сайтът няма access логове.
+const UNINSTALL_URL = "https://adblock.carbonstealth.eu/bye";
 // 20k live domains fit comfortably: block rules with requestDomains are "safe"
 // dynamic rules (30k cap) and are chunked 1000 per rule (see domainBlockRules),
 // so the store holds 20 rules, not 20 000.
@@ -235,6 +238,8 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   if (details && details.reason === "install") {
     try { chrome.tabs.create({ url: chrome.runtime.getURL("welcome/welcome.html") }); } catch {}
   }
+  // при всяка инсталация и ъпдейт (браузърът го пази, но по-стара версия може да е без него)
+  try { Promise.resolve(chrome.runtime.setUninstallURL(UNINSTALL_URL)).catch(() => {}); } catch {}
   const stored = await chrome.storage.local.get([...Object.keys(DEFAULTS), "installedAt"]);
   const patch = {};
   for (const [k, v] of Object.entries(DEFAULTS)) {

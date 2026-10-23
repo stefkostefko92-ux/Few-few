@@ -1,10 +1,10 @@
 {
   "extName": {
-    "message": "Supreme AdBlock",
+    "message": "Supreme AdBlock – блокер на реклами",
     "description": "Extension name."
   },
   "extDescription": {
-    "message": "Блокира реклами навсякъде (и в YouTube), банери, изскачащи прозорци, тракери, подкани за бисквитки и анти-адблок стени.",
+    "message": "Блокер на реклами за YouTube и уеба: видеореклами, банери, изскачащи прозорци, тракери, бисквитки („Отхвърли“) и анти-адблок стени.",
     "description": "Extension description."
   },
   "byCarbon": {
@@ -648,6 +648,12 @@
   "welPinText": {
     "message": "Кликнете иконата с пъзел до адресната лента и закачете Supreme AdBlock. После с едно кликване виждате какво е блокирано на страницата.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welPinnedTitle": {
+    "message": "Закачен е в лентата с инструменти"
+  },
+  "welPinnedText": {
+    "message": "С едно кликване върху иконата му виждате какво е блокирано на страницата."
   },
   "welBrokenTitle": {
     "message": "Ако сайт изглежда счупен",

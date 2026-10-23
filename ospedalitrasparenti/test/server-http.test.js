@@ -136,3 +136,14 @@ test('скрита (но съществуваща) страница → 404; в�
   assert.equal(visibile.status, 200);
   assert.match(visibile.body, /ok/);
 });
+
+test('ETag: 200 носи etag; If-None-Match със същия → 304 без тяло (условно обхождане)', async () => {
+  const a = await req('GET', '/index.html');
+  assert.equal(a.status, 200);
+  assert.match(String(a.headers.etag), /^W\/"[\w-]+"$/);
+  const b = await req('GET', '/index.html', { headers: { 'if-none-match': a.headers.etag } });
+  assert.equal(b.status, 304);
+  assert.equal(b.body, '');
+  const c = await req('GET', '/index.html', { headers: { 'if-none-match': 'W/"altro"' } });
+  assert.equal(c.status, 200);
+});

@@ -1,4 +1,5 @@
-// 5.5.0 — Global Privacy Control и дневните броячи (само числа, последните 30 дни).
+// 5.5.0 — Global Privacy Control и дневните броячи (само числа, последните 30 дни); 5.5.1 — страницата
+// след деинсталиране (фиксиран адрес, без параметри).
 // GPC: Sec-GPC: 1 (статичният рулсет rules/gpc.json) + navigator.globalPrivacyControl (gpc.js,
 // MAIN world) — включено по подразбиране, изключва се с превключвателя, не на разрешен сайт.
 import { readFileSync } from "node:fs";
@@ -61,5 +62,19 @@ await sendMessage(mock.listeners, { type: "resetStats" });
 ok("resetStats clears the daily totals too", JSON.stringify(mock.store.get("daily")) === "{}");
 const st = await sendMessage(mock.listeners, { type: "getStats" });
 ok("getStats returns the daily totals (for the Settings chart)", st && typeof st.daily === "object");
+
+// ---- the page the browser opens after an uninstall: one fixed address, nothing about the user ----
+globalThis.fetch = async () => ({ ok: false, status: 404, json: async () => ({}), text: async () => "" }); // no network in tests
+await mock.listeners.installed[0]({ reason: "install" });
+await mock.listeners.installed[0]({ reason: "update" });
+const un = mock.calls.uninstallUrl;
+ok(`install and update set the uninstall page to exactly https://adblock.carbonstealth.eu/bye (${un.join(" | ")})`, un.length === 2 && un.every((u) => u === "https://adblock.carbonstealth.eu/bye"));
+const bgSrc = readFileSync(join(ROOT, "background.js"), "utf8");
+ok("…set from a constant only: no version, id, reason or anything else appended", (bgSrc.match(/setUninstallURL\(/g) || []).length === 1 && /setUninstallURL\(UNINSTALL_URL\)/.test(bgSrc) &&
+  /const UNINSTALL_URL = "https:\/\/adblock\.carbonstealth\.eu\/bye";/.test(bgSrc));
+const bye = readFileSync(join(ROOT, "server", "bye.html"), "utf8");
+ok("server/bye.html: help first, then the reinstall link, then the feedback address — and no script at all", bye.indexOf('class="fixes"') < bye.indexOf('id="reinstall"') && bye.indexOf('id="reinstall"') < bye.indexOf('id="feedback"') &&
+  !/<script(?! type="application\/ld\+json")/.test(bye) && !/<form/.test(bye));
+ok("privacy.html explains the uninstall page (#uninstall)", readFileSync(join(ROOT, "server", "privacy.html"), "utf8").includes('id="uninstall"'));
 
 done();

@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "সব জায়গায় বিজ্ঞাপন ব্লক: YouTube ভিডিও বিজ্ঞাপন, ব্যানার, পপ-আপ, ট্র্যাকার ও অ্যান্টি-অ্যাডব্লক দেয়াল।"
+    "message": "বিজ্ঞাপন ব্লকার — YouTube ও ওয়েব: ভিডিও বিজ্ঞাপন, ব্যানার, পপ-আপ, ট্র্যাকার, কুকি (“প্রত্যাখ্যান”) ও অ্যান্টি-অ্যাডব্লক দেয়াল।"
   },
   "byCarbon": {
     "message": "Carbon Stealth দ্বারা"
@@ -646,6 +646,12 @@
   "welPinText": {
     "message": "ঠিকানা বারের পাশের ধাঁধার টুকরোর আইকনে ক্লিক করুন এবং Supreme AdBlock পিন করুন। তারপর এক ক্লিকেই দেখবেন পেজে কী ব্লক হয়েছে।",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welPinnedTitle": {
+    "message": "এক্সটেনশনটি টুলবারে পিন করা আছে"
+  },
+  "welPinnedText": {
+    "message": "এর আইকনে এক ক্লিকেই দেখবেন পেজে কী ব্লক হয়েছে।"
   },
   "welBrokenTitle": {
     "message": "কোনো সাইট ঠিকমতো না দেখালে",

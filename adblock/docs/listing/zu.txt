@@ -1,14 +1,14 @@
 I-Supreme AdBlock ivimba izikhangiso yonke indawo — izikhangiso zevidiyo ze-YouTube, amabhena, ama-pop-up nabalandeleli — ngaphandle kokubheka lokho okwenzayo.
 
+• Izibuyekezo zezihlungi ezisayiniwe kabili ngosuku: amanethiwekhi amasha ezikhangiso asingathwa phakathi namahora, ngaphandle kwekhodi evela kude.
 • Izikhangiso ze-YouTube zimiswa emthonjeni, ngakho amavidiyo avele adlale.
+• Amabhena amakhukhi: icindezela u-“Nqaba” esikhundleni sakho, isuse ukufiphala nokukhiywa kokuskrola okusele, futhi ayilokothi icindezele inkinobho yokungena, ye-OAuth noma yokukhokha.
+• Ayikho i-akhawunti, ayikho i-telemetry, akuqoqwa datha, futhi asikho isikhangiso esivunyelwa ukudlula ngokukhokhelwa. I-Global Privacy Control icela yonke isayithi ukuthi ingadayisi noma yabelane ngedatha yakho.
 • I-EasyList, i-EasyPrivacy nezinye izinhlu zezihlungi ezivulekile kwakhelwe ngaphakathi, kanye nohlu lolimi lwakho (izinhlu zesifunda ezingu-31).
 • Okuthunyelwe okuxhasiwe ku-Facebook, ku-Instagram naku-Threads kuyafihlwa.
-• Amabhena amakhukhi: icindezela u-“Nqaba” esikhundleni sakho, isuse ukufiphala nokukhiywa kokuskrola okusele, futhi ayilokothi icindezele inkinobho yokungena, ye-OAuth noma yokukhokha.
 • Imodi yokugxila: fihla amabhamuza engxoxo, ama-pop-up ezincwadi zezindaba, izicelo zezaziso, amawijethi ezinkundla zokuxhumana, ama-pop-up e-AI ne-YouTube Shorts.
 • Izindonga ze-anti-adblock nama-pop-under ayakhutshazwa.
 • Amasayithi ayingozi: esikhundleni sesayithi ye-malware eyaziwayo kuvuleka ikhasi lesixwayiso, bese wena unquma ukuthi uqhubeke yini.
 • Isayithi yonakele? Ukuchofoza okukodwa kuyayilungisa, noma usitshele — akukho okuthunyelwayo ungakakuboni kuqala.
 • Ushintsha usuka ku-uBlock Origin, ku-AdGuard noma ku-Adblock Plus? Letha amasayithi akho avunyelwe nezihlungi ngefayela elilodwa.
 • Bona ukuthi ikhasi lixhumana namaphi amanye amasayithi, bese uvimba elilodwa khona lapho kuphela ngokuchofoza okukodwa.
-• Izibuyekezo zezihlungi ezisayiniwe kabili ngosuku: amanethiwekhi amasha ezikhangiso asingathwa phakathi namahora, ngaphandle kwekhodi evela kude.
-• Ayikho i-akhawunti, ayikho i-telemetry, akuqoqwa datha, futhi i-Global Privacy Control icela yonke isayithi ukuthi ingadayisi noma yabelane ngedatha yakho.
