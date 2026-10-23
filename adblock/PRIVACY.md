@@ -1,6 +1,6 @@
 # Privacy Policy, Supreme AdBlock
 
-_Last updated: 25 September 2026 · applies to the Supreme AdBlock browser extension and to adblock.carbonstealth.eu_
+_Last updated: 23 October 2026 · applies to the Supreme AdBlock browser extension and to adblock.carbonstealth.eu_
 
 <!-- Keep in sync with server/privacy.html (the Privacy Policy URL in the Chrome Web Store). -->
 
@@ -23,18 +23,22 @@ Kept in your browser's local extension storage; never sent to us. If you turn on
 *(sync)* to your own browser account via `storage.sync` — the browser vendor's
 servers, under your account, not ours. Turn sync off and they stay local only.
 
-- Your allowlisted sites *(sync)*
+- Your allowlisted sites *(sync)*, and for a site you allowed only for a while (the repair page's "for 1 hour"), when it goes back to blocking — on this device
 - Feature toggles and theme (cookie banners, anti-adblock, Meta posts, YouTube, …) *(sync)*
 - Which filter lists and Focus-mode items you turned on or off *(sync)*
 - Your own filter rules, including filter lists you subscribed to by URL, and the list of those URLs *(sync)*
 - Sites where you switched off element hiding *(sync)*
+- Hosts you blocked on a site from the popup's “Connections on this page” *(sync)*
 - Whether protection is on, off or paused — per device, never synced
 - Elements you hid with the picker
 - Counters of how many requests were blocked (and the estimated data and time saved), and how many cookie banners were rejected for you — numbers only, no list of sites
+- The daily totals of the last 30 days for the chart in Settings: two numbers per day (requests blocked, cookie banners rejected), no sites and no addresses; older days are deleted
+- When you import a backup of another ad blocker, the file is read on your device and only the sites and filter lines taken from it are kept, with your own; the file itself is not stored or sent
 - A short log (last 50 entries) of sites where Smart Detection hid an ad-sized frame, shown in Settings so you can see why
 - The latest downloaded filter data, and the regional lists you downloaded from their authors (see below)
+- Whether review reminders are on *(sync)*; and, on this device only, when the extension was installed and whether the popup already asked you for a Chrome Web Store review (how many times, when, and whether you chose “Don't ask again”) — so it asks at most twice
 
-The popup's "Blocked on this page" view is built on the spot from which of our
+The popup's “Connections on this page” list (the other sites a page loaded something from) is read from that page when you open it, from the browser's own record of what the page loaded; it is not stored and never sent anywhere. The popup's "Blocked on this page" view is built on the spot from which of our
 filter lists matched in that tab; it is not stored and never sent anywhere. You
 can clear everything from the extension's Settings, or by removing the
 extension.
@@ -64,7 +68,39 @@ extension.
    request (IP address and user agent), as if you opened the list yourself. We
    are not involved in that request. Settings marks these lists "from its author".
 
+**Leaving a review (only if you click).** The small ★ link and the review request
+in the popup open the extension's Chrome Web Store page in a new tab, like any
+link. The extension itself sends nothing; what you write there is handled by
+Google under its own terms. You can switch these reminders off in Settings.
+
+**Dangerous sites (on by default).** When you open an address on URLhaus (abuse.ch's public list of malware sites, built into the extension), a warning page of the extension opens instead; the address is checked on your device and nothing is sent. Only if you click *Why is it listed?* does your browser open that site's URLhaus entry on urlhaus.abuse.ch. You can switch this off in Settings (Malware protection).
+
+**Global Privacy Control (on by default).** Unless you switch it off in Settings, your browser adds the header `Sec-GPC: 1` to its requests to the sites you visit, and pages can read `navigator.globalPrivacyControl`. It asks those sites not to sell or share your personal data. The signal is the same for everyone and carries no identifier, so it says nothing about you; it is not sent on sites you allowed or while protection is paused.
+
+**The page after removal.** When you remove the extension, your browser opens adblock.carbonstealth.eu/bye in a new tab: a static page with fixes for common problems, a link to install it again and our email address. The address is the same for everyone and carries no identifier, no version and no reason; like the rest of this website, the visit is not logged and the page sets no cookies.
+
 There are no other requests: no analytics, no crash reports, no "phone home".
+
+## Check it yourself
+
+You do not have to take our word for any of this. In Chrome, Edge or Brave:
+
+1. Open `chrome://extensions` (in Edge, `edge://extensions`) and switch on **Developer mode**.
+2. Under Supreme AdBlock, next to **Inspect views**, click **service worker**. The
+   browser's developer tools open for the extension itself.
+3. Choose the **Network** tab and keep it open. In the extension's Settings, click
+   **Update now**: you will see exactly two requests to us, `filters.json` and
+   `filters.json.sig`, with no cookie and nothing about you in the address. Browse as
+   usual: nothing else appears, unless you added a filter list or turned one on from
+   its author, which then comes from that list's own address.
+4. Open https://adblock.carbonstealth.eu/filters.json in a tab to read what was
+   downloaded: plain JSON with domain names, CSS selectors and YouTube field names.
+   Its Ed25519 signature is `filters.json.sig`, next to it; the public keys that check it are in
+   `background.js` (`SIG_PUBKEYS_B64`).
+
+The code itself is in the package, not minified, and readable from the same
+developer tools (**Sources**). The source is also public, with the tests that check
+these promises: https://github.com/stefkostefko92-ux/Few-few/tree/main/adblock
 
 ## Reporting a broken site
 
@@ -117,9 +153,18 @@ into a specific request we would need your IP address and the approximate time
 You can also complain to the Bulgarian Commission for Personal Data Protection
 (КЗЛД, www.cpdp.bg) or to the data protection authority where you live.
 
+## Chrome Web Store User Data Policy (Limited Use)
+
+The use of information received from Google APIs will adhere to the Chrome Web Store User Data Policy, including the Limited Use requirements. In practice: Supreme AdBlock does not collect, sell or transfer user
+data. What it processes to do its job — which requests to block, which elements to
+hide — stays on your device and is used only for its single purpose: blocking ads,
+trackers and page annoyances. Nothing is used for advertising, nothing is used to
+determine credit-worthiness or for lending, and no person reads it.
+
 ## Extension permissions
 
-- `declarativeNetRequest` — block ad and tracker requests using filter rules.
+- `declarativeNetRequest` — block ad and tracker requests using filter rules, and
+  add the Global Privacy Control header (`Sec-GPC: 1`) unless you switch it off.
 - `declarativeNetRequestFeedback` — read which of our own rules matched in the
   active tab (`getMatchedRules`) to show the blocked count and which lists
   matched; no URL is read, stored or sent.

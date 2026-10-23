@@ -20,6 +20,7 @@ import { norm, addLessons, lessonIndex, lessonText, summarize, applyUpdate, coun
 import { publishLessons, pendingLessons, isGitRepo } from "../../tools/lib/memory-branch.mjs";
 import { evalMode } from "../../tools/lib/eval-mode.mjs";
 import { CREDENTIAL } from "../../tools/lib/secret-patterns.mjs";
+import { contentProblems, operationInProgress } from "../../tools/lib/conflict-guard.mjs";
 
 const HOOK_DIR = dirname(fileURLToPath(import.meta.url));
 const PROJECT_DIR = process.env.CLAUDE_PROJECT_DIR || join(HOOK_DIR, "..", "..");
@@ -269,11 +270,17 @@ function writeWorkingTree(agentId, file, txt, s) {
       try {
         // String-aware локаторът живее в tools/lib/dashboard-fallback.mjs (един парсер, не два).
         const h = readFileSync(DASH_HTML, "utf8");
+        if (contentProblems(DASH_HTML, h).length) return; // маркери в таблото → не ги пренасяй
         const fb = parseFallback(h);
         if (fb && applyUpdate(fb, agentId, s.activity, s.evoDetail, s.verifiedCount, lessons)) atomicWrite(DASH_HTML, replaceFallback(h, fb));
       } catch { /* ignore */ }
     }
   });
+}
+
+// Видим отказ (stderr; exit остава 0 — куката никога не чупи сесията).
+function refuse(msg) {
+  try { process.stderr.write(`✗ memory-capture: ${msg}. Поуката НЕ е записана. Поправи маркерите (git grep -nE '^(<<<<<<<|>>>>>>>) ') и пусни агента пак.\n`); } catch { /* ignore */ }
 }
 
 // Фонова синхронизация на agents/memory (fetch → обединяване → сгъване на main → push). Detached:
@@ -351,9 +358,21 @@ function main() {
     bgSync();
     process.exit(0);
   }
+  // Fail-closed (инцидент 2026-09-25): замърсена основа (конфликтни маркери / невалиден agents.json) →
+  // НИКЪДЕ не пишем. Резервният път би сложил поуката до маркерите в работното дърво, а следващото
+  // `git add` на човека би ги индексирало. Поуката се губи — по-добре от счупен main.
+  if (published?.reason === "conflict") {
+    refuse(`публикуването в agents/memory е отказано — ${published.message}`);
+    process.exit(0);
+  }
+  // Спряна операция в работното дърво (rebase/merge…) → не пишем там; чуждата операция НЕ се прекратява.
+  const op = isGitRepo(PROJECT_DIR) ? operationInProgress(PROJECT_DIR) : null;
+  if (op) { refuse(`работното дърво е в незавършена git операция (${op}) — резервният запис е пропуснат`); process.exit(0); }
   // Резервен път: няма git, агентът е нов (основата не го познава) или публикуването се провали.
   const r = addLessons(working, { verified: newV, quarantine: newQ });
   if (!r.added.verified.length && !r.added.quarantine.length) process.exit(0);
+  const dirty = contentProblems(file, r.txt);
+  if (dirty.length) { refuse(`паметта съдържа конфликтни маркери: ${dirty.join("; ")}`); process.exit(0); }
   writeWorkingTree(parsed.agent, file, r.txt, summarize(r.added.verified.map(lessonText), r.added.quarantine.map(lessonText), date));
   process.exit(0);
 }

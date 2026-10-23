@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "あらゆる広告をブロック。YouTube の動画広告、バナー、ポップアップ、トラッカー、Cookie の同意画面、広告ブロック検出の壁も。"
+    "message": "広告ブロッカー（YouTube とウェブ対応）：動画広告、バナー、ポップアップ、トラッカー、Cookie バナー（「拒否」）、広告ブロック検出の壁。"
   },
   "byCarbon": {
     "message": "by Carbon Stealth"
@@ -118,6 +118,27 @@
   "support": {
     "message": "支援する"
   },
+  "rate": {
+    "message": "評価する"
+  },
+  "rateTitle": {
+    "message": "Chrome ウェブストアで Supreme AdBlock を評価する"
+  },
+  "reviewBlocked": {
+    "message": "これまでに $1 件のリクエストをブロックしました"
+  },
+  "reviewAsk": {
+    "message": "Supreme AdBlock がお役に立っているなら、Chrome ウェブストアに短いレビューを書いていただくと、ほかの方が見つけやすくなります。"
+  },
+  "reviewLeave": {
+    "message": "レビューを書く"
+  },
+  "reviewLater": {
+    "message": "今はしない"
+  },
+  "reviewNever": {
+    "message": "今後表示しない"
+  },
   "filtersCount": {
     "message": "$1+ 件のフィルタ",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "「広告ブロッカーを無効にしてください」の壁を隠し、ページを元に戻します"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook と Instagram の「スポンサー」投稿を非表示にします"
+    "message": "Facebook、Instagram、Threads の「スポンサー」投稿を非表示にします"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "開くリンクから utm_*、fbclid、gclid などのクリック識別子を取り除きます"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "既知のマルウェア ドメインをブロックします（abuse.ch の URLhaus リスト）"
+    "message": "既知のマルウェア サイトが開く前に警告し、ページがそのようなサイトから読み込むものをブロックします（abuse.ch の URLhaus リスト）。"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "すべてのサイトで Google の Topics、FLoC、Protected Audience 広告 API を無効にします"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut で寄付する"
+  },
+  "opt_review": {
+    "message": "レビューのお願い"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock のウィンドウ下部に小さな ★ リンクを表示し、最大 2 回までそこで Chrome ウェブストアでの評価を短くお願いします。ウェブサイト上や通知として表示されることはありません。"
   },
   "opt_made_by": {
     "message": "made by Carbon Stealth"
@@ -620,6 +647,12 @@
     "message": "アドレスバーの横にあるパズルのピースのアイコンをクリックし、Supreme AdBlock を固定してください。ワンクリックで、ページでブロックされた内容を確認できるようになります。",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "拡張機能はツールバーに固定されています"
+  },
+  "welPinnedText": {
+    "message": "アイコンをワンクリックすると、ページでブロックされた内容を確認できます。"
+  },
   "welBrokenTitle": {
     "message": "サイトの表示が崩れる場合",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -643,5 +676,128 @@
   "welDone": {
     "message": "わかりました",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "許可中 · 残り $1 分"
+  },
+  "hiddenHere": {
+    "message": "ここで非表示にした要素: $1 · 最後の 1 つを元に戻す"
+  },
+  "cmd_toggle_site": {
+    "message": "このサイトでのブロックのオン/オフ"
+  },
+  "cmd_pause": {
+    "message": "保護を一時停止または再開（30 分間）"
+  },
+  "cmd_picker": {
+    "message": "このページの要素を非表示"
+  },
+  "rep_fix_hour": {
+    "message": "このサイトで 1 時間だけ広告を許可する"
+  },
+  "rep_done_hour": {
+    "message": "このサイトで 1 時間広告を許可し、再読み込みしました。直りましたか？"
+  },
+  "opt_last30": {
+    "message": "過去 30 日間"
+  },
+  "opt_last30_sum": {
+    "message": "ブロック: $1 · Cookie バナー: $2"
+  },
+  "opt_last30_empty": {
+    "message": "閲覧するにつれて、1 日ごとの合計がここに表示されます。"
+  },
+  "opt_last30_sub": {
+    "message": "記録するのは 1 日ごとの合計のみで、このデバイスに 30 日間保存されます。サイトやアドレスは記録しません。"
+  },
+  "opt_gpc_sub": {
+    "message": "アクセスするすべてのサイトに、あなたのデータを販売・共有しないよう求めます（Sec-GPC シグナル。一部のプライバシー法では、サイトはこれに従う必要があります）。許可したサイトには送信されません。"
+  },
+  "opt_shortcuts": {
+    "message": "キーボード ショートカット"
+  },
+  "opt_shortcuts_change": {
+    "message": "ショートカットを変更"
+  },
+  "opt_shortcut_none": {
+    "message": "未設定"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox の場合: アドオンとテーマ → ⚙ → 拡張機能のショートカットを管理"
+  },
+  "opt_import_foreign": {
+    "message": "他の広告ブロッカーからインポート"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin、AdGuard、Adblock Plus から移行しますか？ そのバックアップ ファイルを選択すると、許可したサイトと自分で追加したフィルタがここに追加されます。置き換えられるものはありません。"
+  },
+  "opt_import_foreign_done": {
+    "message": "許可したサイト: $1 · 追加したフィルタ: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "除外（ここでは適用できません）: $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "このファイルは読み込めるバックアップではありません。"
+  },
+  "welQuickTitle": {
+    "message": "自分好みにカスタマイズ"
+  },
+  "welQuickSub": {
+    "message": "任意です。このままでも機能します。どの項目も後から設定で変更できます。"
+  },
+  "blk_page_title": {
+    "message": "サイトをブロックしました — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "このサイトはお使いのデバイスに害を及ぼすおそれがあります"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock がこのページを停止しました。このサイトは、マルウェアを拡散するアドレスの公開リスト URLhaus に掲載されています。"
+  },
+  "blk_back": {
+    "message": "戻る"
+  },
+  "blk_continue": {
+    "message": "このまま続行"
+  },
+  "blk_note": {
+    "message": "続行すると、ブラウザを閉じるまでの間、このサイトのページに限り表示を許可します。"
+  },
+  "blk_why": {
+    "message": "なぜ掲載されているのですか？（URLhaus）"
+  },
+  "conn_title": {
+    "message": "このページの接続先"
+  },
+  "conn_empty": {
+    "message": "このページはほかのサイトから何も読み込んでいません。"
+  },
+  "conn_block": {
+    "message": "ここでブロック"
+  },
+  "conn_blocked": {
+    "message": "ここでブロック済み"
+  },
+  "conn_hint": {
+    "message": "このサイトが $1 から読み込むものをブロック"
+  },
+  "opt_conn_title": {
+    "message": "ブロックした接続先"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock のウィンドウの「このページの接続先」でブロックしたもので、それぞれのサイトでのみ適用されます。"
+  },
+  "opt_empty_conn": {
+    "message": "まだ何もブロックしていません。"
+  },
+  "opt_conn_remove": {
+    "message": "$2 での $1 のブロックを解除"
+  },
+  "opt_h_danger": {
+    "message": "マルウェア警告ページ"
+  },
+  "opt_h_capacity": {
+    "message": "ルールの容量"
   }
 }

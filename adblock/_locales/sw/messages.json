@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Huzuia matangazo popote: matangazo ya video ya YouTube, mabango, madirisha ibukizi, vifuatiliaji na kuta za anti-adblock."
+    "message": "Kizuia matangazo kwa YouTube na wavuti: mabango, madirisha ibukizi, vifuatiliaji, vidakuzi (“Kataa”) na kuta za anti-adblock."
   },
   "byCarbon": {
     "message": "na Carbon Stealth"
@@ -118,6 +118,27 @@
   "support": {
     "message": "Changia"
   },
+  "rate": {
+    "message": "Kadiria"
+  },
+  "rateTitle": {
+    "message": "Kadiria Supreme AdBlock kwenye Duka la Chrome kwenye Wavuti"
+  },
+  "reviewBlocked": {
+    "message": "Maombi $1 yamezuiwa hadi sasa"
+  },
+  "reviewAsk": {
+    "message": "Ikiwa Supreme AdBlock inakusaidia, maoni mafupi kwenye Duka la Chrome kwenye Wavuti huwasaidia wengine kuipata."
+  },
+  "reviewLeave": {
+    "message": "Andika maoni"
+  },
+  "reviewLater": {
+    "message": "Si sasa"
+  },
+  "reviewNever": {
+    "message": "Usiulize tena"
+  },
   "filtersCount": {
     "message": "Vichujio $1+",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "Ficha kuta za “zima kizuia matangazo chako” na urejeshe ukurasa"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Ficha machapisho ya “Yaliyofadhiliwa” kwenye Facebook na Instagram"
+    "message": "Ficha machapisho ya “Yaliyofadhiliwa” kwenye Facebook, Instagram na Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Ondoa utm_*, fbclid, gclid na vitambulisho vingine vya kubofya kwenye viungo unavyofungua"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Zuia vikoa hasidi vinavyojulikana (orodha ya URLhaus ya abuse.ch)"
+    "message": "Onya kabla tovuti hasidi inayojulikana haijafunguka, na zuia kile ambacho kurasa hupakia kutoka kwa tovuti kama hizo (orodha ya URLhaus ya abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Zima API za matangazo za Google Topics, FLoC na Protected Audience kwenye kila tovuti"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Changia kupitia Revolut"
+  },
+  "opt_review": {
+    "message": "Vikumbusho vya maoni"
+  },
+  "opt_review_sub": {
+    "message": "Kiungo kidogo cha ★ chini ya dirisha la Supreme AdBlock na, si zaidi ya mara mbili, ombi fupi hapo la kuikadiria kwenye Duka la Chrome kwenye Wavuti. Kamwe kwenye tovuti, kamwe kama arifa."
   },
   "opt_made_by": {
     "message": "imetengenezwa na Carbon Stealth"
@@ -620,6 +647,12 @@
     "message": "Bofya aikoni ya kipande cha fumbo karibu na upau wa anwani kisha ubandike Supreme AdBlock. Baada ya hapo, mbofyo mmoja unaonyesha kilichozuiwa kwenye ukurasa.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Kiendelezi kimebandikwa kwenye upau wa zana"
+  },
+  "welPinnedText": {
+    "message": "Mbofyo mmoja kwenye aikoni yake unaonyesha kilichozuiwa kwenye ukurasa."
+  },
   "welBrokenTitle": {
     "message": "Ikiwa tovuti inaonekana kuwa na hitilafu",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -643,5 +676,128 @@
   "welDone": {
     "message": "Nimeelewa",
     "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Imeruhusiwa · bado dak. $1"
+  },
+  "hiddenHere": {
+    "message": "Ulivyoficha hapa: $1 · Rudisha cha mwisho"
+  },
+  "cmd_toggle_site": {
+    "message": "Washa au zima uzuiaji kwenye tovuti hii"
+  },
+  "cmd_pause": {
+    "message": "Sitisha au rejesha ulinzi (dakika 30)"
+  },
+  "cmd_picker": {
+    "message": "Ficha kipengele kwenye ukurasa huu"
+  },
+  "rep_fix_hour": {
+    "message": "Ruhusu matangazo hapa kwa saa 1"
+  },
+  "rep_done_hour": {
+    "message": "Matangazo yameruhusiwa kwenye tovuti hii kwa saa 1. Imepakiwa upya — je, tatizo limetatuliwa?"
+  },
+  "opt_last30": {
+    "message": "Siku 30 zilizopita"
+  },
+  "opt_last30_sum": {
+    "message": "Yamezuiwa: $1 · Mabango ya vidakuzi: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Jumla zako za kila siku zitaonekana hapa unapovinjari."
+  },
+  "opt_last30_sub": {
+    "message": "Jumla za kila siku pekee, zinazohifadhiwa kwenye kifaa hiki kwa siku 30. Hakuna tovuti, hakuna anwani."
+  },
+  "opt_gpc_sub": {
+    "message": "Inaomba kila tovuti unayotembelea isiuze wala kushiriki data yako (ishara ya Sec-GPC, ambayo baadhi ya sheria za faragha hulazimisha tovuti kuiheshimu). Haitumwi kwenye tovuti unazoruhusu."
+  },
+  "opt_shortcuts": {
+    "message": "Njia za mkato za kibodi"
+  },
+  "opt_shortcuts_change": {
+    "message": "Badilisha njia za mkato"
+  },
+  "opt_shortcut_none": {
+    "message": "Haijawekwa"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Kwenye Firefox: Programu jalizi na mandhari → ⚙ → Dhibiti njia za mkato za viendelezi."
+  },
+  "opt_import_foreign": {
+    "message": "Leta kutoka kizuia matangazo kingine"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Unahamia kutoka uBlock Origin, AdGuard au Adblock Plus? Chagua faili yake ya nakala rudufu: tovuti ulizoruhusu na vichujio vyako mwenyewe vitaongezwa hapa. Hakuna kinachobadilishwa."
+  },
+  "opt_import_foreign_done": {
+    "message": "Tovuti zilizoruhusiwa: $1 · Vichujio vilivyoongezwa: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Zilizoachwa (haziwezi kutumika hapa): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Faili hii si nakala rudufu tunayoweza kusoma."
+  },
+  "welQuickTitle": {
+    "message": "Ifanye iwe yako"
+  },
+  "welQuickSub": {
+    "message": "Si lazima: tayari inafanya kazi. Unaweza kubadilisha chochote kati ya hivi baadaye kwenye Mipangilio."
+  },
+  "blk_page_title": {
+    "message": "Tovuti imezuiwa — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Tovuti hii inaweza kudhuru kifaa chako"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock imesimamisha ukurasa huu kwa sababu tovuti hii iko kwenye URLhaus, orodha ya umma ya anwani zinazosambaza programu hasidi."
+  },
+  "blk_back": {
+    "message": "Rudi nyuma"
+  },
+  "blk_continue": {
+    "message": "Endelea hata hivyo"
+  },
+  "blk_note": {
+    "message": "Ukiendelea, kurasa za tovuti hii pekee ndizo zitaruhusiwa kupita, hadi utakapofunga kivinjari."
+  },
+  "blk_why": {
+    "message": "Kwa nini imeorodheshwa? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Miunganisho kwenye ukurasa huu"
+  },
+  "conn_empty": {
+    "message": "Ukurasa huu haujapakia chochote kutoka tovuti nyingine."
+  },
+  "conn_block": {
+    "message": "Zuia hapa"
+  },
+  "conn_blocked": {
+    "message": "Imezuiwa hapa"
+  },
+  "conn_hint": {
+    "message": "Zuia kile ambacho tovuti hii hupakia kutoka $1"
+  },
+  "opt_conn_title": {
+    "message": "Miunganisho uliyozuia"
+  },
+  "opt_conn_sub": {
+    "message": "Imezuiwa kupitia “Miunganisho kwenye ukurasa huu” kwenye dirisha la Supreme AdBlock, kila mmoja kwenye tovuti yake pekee."
+  },
+  "opt_empty_conn": {
+    "message": "Bado hakuna kilichozuiwa."
+  },
+  "opt_conn_remove": {
+    "message": "Ondoa uzuiaji wa $1 kwenye $2"
+  },
+  "opt_h_danger": {
+    "message": "Ukurasa wa onyo la programu hasidi"
+  },
+  "opt_h_capacity": {
+    "message": "Uwezo wa kanuni"
   }
 }

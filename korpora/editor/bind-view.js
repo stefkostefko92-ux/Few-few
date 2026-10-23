@@ -1,7 +1,7 @@
 // The 3D view and its controls: open the fronts, explode the assembly (animated unless reduced motion is on),
 // show the drilled holes, put the furniture in a room, the photorealistic view and its PNG. Without WebGL the other
 // tabs still work.
-import { $, esc, localDate, reduceMotion } from './dom.js';
+import { $, esc, localDate, pct, reduceMotion } from './dom.js';
 import { Viewer } from './viewer.js';
 
 export function createViewer(text) {
@@ -9,20 +9,33 @@ export function createViewer(text) {
   try {
     const probe = document.createElement('canvas');
     if (!(probe.getContext('webgl2') || probe.getContext('webgl'))) throw new Error('no webgl');
-    viewer = new Viewer($('#stage'));
+    const view = new Viewer($('#stage'));
+    // on a phone the form is under the view: while the view is scrolled out of sight it draws nothing, so the GPU
+    // and the page are free for typing; it draws the changes once it is back
+    new IntersectionObserver(([entry]) => {
+      view.inSight = entry.isIntersecting;
+    }).observe($('#stage'));
+    viewer = view;
   } catch {
-    $('#stage').innerHTML = `<p class="nogl">${esc(text.noWebgl)}</p>`;
+    // the stage keeps its size (nothing under it moves) and says what to do; the 3D controls, which would do
+    // nothing, go
+    $('#stage').innerHTML =
+      `<div class="nogl"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>` +
+      `<p><strong>${esc(text.noWebgl)}</strong> ${esc(text.noWebglHint)}</p>` +
+      `<button type="button" class="btn btn-small" data-tab-go="bom">${esc(text.toBom)}</button></div>`;
+    $('.viewbar').hidden = true;
+    $('#panel-view > .hint').hidden = true;
   }
   $('#open').addEventListener('input', (ev) => {
     viewer?.setOpen(Number(ev.target.value) / 100);
-    $('#open-out').textContent = `${ev.target.value}%`;
+    $('#open-out').textContent = pct(Number(ev.target.value));
   });
   // the explode animation running now (its number); a new click or a hand on the slider takes over from it
   let playing = 0;
   $('#explode').addEventListener('input', (ev) => {
     if (ev.isTrusted) playing += 1;
     viewer?.setExplode(Number(ev.target.value) / 100);
-    $('#explode-out').textContent = `${ev.target.value}%`;
+    $('#explode-out').textContent = pct(Number(ev.target.value));
   });
   $('#ops').addEventListener('change', (ev) => viewer?.setShowOps(ev.target.checked));
   $('#room').addEventListener('change', (ev) => viewer?.setRoom(ev.target.checked));

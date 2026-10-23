@@ -1,10 +1,14 @@
 Supreme AdBlock bloqueja els anuncis a tot arreu —anuncis de vídeo de YouTube, bàners, finestres emergents i rastrejadors— sense vigilar què feu.
 
+• Actualitzacions de filtres signades dues vegades al dia: les noves xarxes publicitàries es cobreixen en poques hores, sense codi remot.
 • Els anuncis de YouTube s’aturen a l’origen, de manera que els vídeos simplement es reprodueixen.
-• Inclou EasyList, EasyPrivacy i altres llistes de filtres obertes, a més de la llista de la vostra llengua (31 llistes regionals).
 • Avisos de galetes: prem «Rebutja» per vós, elimina el desenfocament i el bloqueig del desplaçament que queden, i mai no prem cap botó d’inici de sessió, OAuth o pagament.
+• Sense compte, sense telemetria, sense recollida de dades, i no es deixa passar cap anunci a canvi d’un pagament. Global Privacy Control demana a cada lloc que no vengui ni comparteixi les vostres dades.
+• Inclou EasyList, EasyPrivacy i altres llistes de filtres obertes, a més de la llista de la vostra llengua (31 llistes regionals).
+• Les publicacions patrocinades a Facebook, Instagram i Threads queden amagades.
 • Mode Focus: amagueu bombolles de xat, finestres de butlletins, sol·licituds de notificacions, ginys socials, finestres d’IA i YouTube Shorts.
 • Els murs anti-adblock i els pop-unders queden neutralitzats.
+• Llocs perillosos: quan obriu un lloc maliciós conegut apareix una pàgina d’avís, i decidiu si voleu continuar.
 • El lloc no funciona? Un clic ho arregla, o feu-nos-ho saber: no s’envia res sense que ho vegeu abans.
-• Actualitzacions de filtres signades dues vegades al dia: les noves xarxes publicitàries es cobreixen en poques hores, sense codi remot.
-• Sense compte, sense telemetria, sense recollida de dades.
+• Veniu d’uBlock Origin, AdGuard o Adblock Plus? Porteu els vostres llocs permesos i filtres amb un sol fitxer.
+• Vegeu amb quins altres llocs es connecta una pàgina i bloquegeu-ne qualsevol només en aquell lloc amb un clic.

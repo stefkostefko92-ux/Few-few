@@ -8,6 +8,7 @@ import { planView } from '../../plans/plan.js';
 import {
   dashboardCounts,
   listAccounts,
+  NEW_ACCOUNT_DAYS,
   PLAN_FILTERS,
   recentSecurityEvents,
   SORTS,
@@ -67,8 +68,21 @@ adminRouter.get('/admin', async (req, res) => {
     recent,
     catalogMode: catalogInfo().mode,
     geoip: geoIpReady(),
+    newDays: NEW_ACCOUNT_DAYS,
   });
 });
+
+/** Адресът на списъка със същите условия — за страниците и за подредбата по колона. */
+function accountsQuery(query: AccountQuery): string {
+  return new URLSearchParams({
+    q: query.q,
+    plan: query.plan,
+    status: query.status,
+    sort: query.sort,
+    dir: query.dir,
+    page: String(query.page),
+  }).toString();
+}
 
 function pick<T extends string>(value: unknown, allowed: readonly T[], fallback: T): T {
   return typeof value === 'string' && (allowed as readonly string[]).includes(value)
@@ -87,6 +101,11 @@ adminRouter.get('/admin/accounts', async (req, res) => {
   };
   const now = new Date();
   const result = await listAccounts(query, can(principalOf(req).user.role, 'logins:view'), now);
+  // страница след последната (стара връзка, изтрити акаунти) води към последната, не към празна таблица
+  if (query.page > result.pages) {
+    res.redirect(`/admin/accounts?${accountsQuery({ ...query, page: result.pages })}`);
+    return;
+  }
   res.render('admin/accounts', {
     query,
     ...result,

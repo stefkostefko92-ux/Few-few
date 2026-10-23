@@ -5,9 +5,11 @@
 </div>
 <p><%= t('auth.bannedText') %></p>
 <% if (reason) { %>
+<%# Причината е свободен текст на екипа, обикновено на български: на EN/IT екран етикетът го казва, а lang чете текста правилно. %>
+<% const bgReason = locale !== 'bg' && /[\u0400-\u04FF]/.test(reason); %>
 <figure class="ban-reason">
-  <figcaption><%= t('auth.bannedReason') %></figcaption>
-  <blockquote><%= reason %></blockquote>
+  <figcaption><%= t(bgReason ? 'auth.bannedReasonBg' : 'auth.bannedReason') %></figcaption>
+  <blockquote<% if (bgReason) { %> lang="bg"<% } %>><%= reason %></blockquote>
 </figure>
 <% } %>
 <p class="hint"><%= t('auth.bannedContact', { email: contact }) %></p>

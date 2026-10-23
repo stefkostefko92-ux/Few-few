@@ -56,6 +56,11 @@ $("fixAllow").addEventListener("click", () => {
   if (!host) return;
   chrome.runtime.sendMessage({ type: "setAllow", host, allow: true }, () => { reloadTab(); done(L("rep_done_allow", "Ads are allowed on this site. Reloaded — is it fixed?")); });
 });
+// for a while only: the SW takes the site off the allowlist again after an hour (alarm "allow-expire")
+$("fixHour").addEventListener("click", () => {
+  if (!host) return;
+  chrome.runtime.sendMessage({ type: "setAllow", host, allow: true, minutes: 60 }, () => { reloadTab(); done(L("rep_done_hour", "Ads are allowed on this site for 1 hour. Reloaded — is it fixed?")); });
+});
 $("fixPause").addEventListener("click", () => {
   chrome.runtime.sendMessage({ type: "pause", minutes: 30 }, () => { reloadTab(); done(L("rep_done_pause", "Paused for 30 minutes. If the site works now, please tell us below.")); });
 });
@@ -72,7 +77,7 @@ $("fullUrl").addEventListener("change", renderPreview);
   }
   host = hostOf(pageUrl);
   $("host").textContent = host || "—";
-  for (const b of [$("fixCosm"), $("fixAllow")]) b.disabled = !host;
+  for (const b of [$("fixCosm"), $("fixHour"), $("fixAllow")]) b.disabled = !host;
   const d = await chrome.storage.local.get(["features"]);
   features = d.features || {};
   await new Promise((res) => chrome.runtime.sendMessage({ type: "getLists" }, (r) => { lists = r ? r.lists.filter((e) => e.on).map((e) => e.id) : []; res(); }));

@@ -240,6 +240,18 @@ export function panelFindings(cfg = {}) {
     });
   }
 
+  // Пълният обхват е съзнателен избор (управление на двата VPS от един панел),
+  // но трябва да стои пред очите: той свързва съдбата на двете машини.
+  if (cfg.peerScope === 'full' && cfg.peerToken) {
+    add({
+      id: 'panel-peer-full',
+      severity: 'medium',
+      title: 'Съседът има пълен контрол над тази машина',
+      why: 'Който държи другия панел (сесия + парола там), има терминал, деплой и файлове и тук. Компрометиран съсед = root и на този възел.',
+      fix: 'Дръж 2FA и sudo включени и на ДВАТА възела; ако не управляваш оттам — „Достъп“ → „Достъп на съседа“ → „само четене“.',
+    });
+  }
+
   if ((cfg.peers || []).length && !cfg.auditShip?.enabled) {
     add({
       id: 'panel-no-auditship',
@@ -255,12 +267,30 @@ export function panelFindings(cfg = {}) {
   return findings;
 }
 
+// Копие ИЗВЪН машината. Дълго то идваше даром от втория VPS (изнасяне към съседа)
+// — и при смяната на двата сървъра с един изчезна БЕЗ нито една аларма: нощният
+// дъмп продължава да минава, възрастта е наред, всичко е зелено, а умре ли дискът
+// (или вземе ли някой root), бекъпът си отива заедно с данните. Чиста функция:
+// `restic` е отделен вход, за да се тества без файловата система.
+export function offsiteFindings(cfg = {}, { restic = false } = {}) {
+  const viaPeer = (cfg.peers || []).length > 0 && Boolean(cfg.backups?.offsite?.enabled);
+  if (viaPeer || restic) return [];
+  return [{
+    id: 'backup-no-offsite',
+    severity: 'high',
+    title: 'Бекъпите живеят само на тази машина',
+    why: 'Няма нито съсед, към който да се изнася копие, нито restic хранилище. Умре ли дискът — или вземе ли някой root — бекъпът си отива заедно с данните. 3-2-1 иска поне едно копие ИЗВЪН машината.',
+    fix: 'Хранилище в ЕС (напр. Hetzner Storage Box) + restic: `RESTIC_REPOSITORY` и `RESTIC_PASSWORD` в /etc/vps-dashboard/restic.env (mode 600), после „Бекъпи“ → restic бекъп и проверка. Или втори сървър като съсед с включено изнасяне.',
+  }];
+}
+
 export async function posture(cfg = {}) {
   const findings = [];
   const add = (f) => findings.push(f);
 
   // Самият панел ПЪРВИ: най-правата услуга на машината.
   for (const f of panelFindings(cfg)) add(f);
+  for (const f of offsiteFindings(cfg, { restic: fs.existsSync('/etc/vps-dashboard/restic.env') })) add(f);
 
   const [sshd, ufw, unattended, listen, f2b, sudoers, passwd] = await Promise.all([
     run('sshd', ['-T'], { timeout: 10000 }),

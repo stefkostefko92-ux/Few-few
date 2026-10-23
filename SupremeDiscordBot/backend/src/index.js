@@ -13,6 +13,7 @@ import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import rateLimit from "express-rate-limit";
 import { redisStore } from "./lib/rateLimitStore.js";
+import { redactSecretParams } from "./lib/redactUrl.js";
 
 // ─── Startup validation ───────────────────────────────────────────────────────
 const REQUIRED_ENV = ["DATABASE_URL", "SESSION_SECRET", "ENCRYPTION_KEY", "DISCORD_CLIENT_ID", "DISCORD_CLIENT_SECRET", "DISCORD_REDIRECT_URI", "MAIN_OWNER_ID", "API_SECRET", "FRONTEND_URL"];
@@ -133,7 +134,6 @@ import "./services/scheduler.js"; // Start background jobs
 import { prisma } from "./lib/prisma.js";
 import { csrfOriginGuard } from "./middleware/csrfOrigin.js";
 import { ipKeyGenerator } from "./lib/ipKey.js";
-import { safeLogUrl } from "./lib/safeLogUrl.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -171,13 +171,10 @@ app.use(
     } : false,
   })
 );
-// Адресът в лога БЕЗ query за архивите: `?t=` е токенът, който сам по себе си
-// отваря транскрипта — в access лога той беше достъп за всеки с лога
-// (Кодаджията, 10.10.2026). Форматът е „combined“, само :url е заменен.
-morgan.token("safe-url", (req) => safeLogUrl(req.originalUrl || req.url));
-app.use(morgan(process.env.NODE_ENV === "production"
-  ? ':remote-addr - :remote-user [:date[clf]] ":method :safe-url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"'
-  : "dev"));
+// :url в двата формата е адресът с query частта — без маскиране всеки вход
+// през Discord оставя `code`/`state` в лога, а всеки транскрипт — токена си.
+morgan.token("url", (req) => redactSecretParams(req.originalUrl || req.url));
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 // Stripe webhooks need raw body — mount BEFORE express.json()
 app.use(
@@ -418,7 +415,7 @@ app.use((err, req, res, _next) => {
   // остават четими — те са предвидени съобщения, не изтекли вътрешности.
   const status = err.status || 500;
   const id = Math.random().toString(36).slice(2, 10);
-  console.error(`[err ${id}] ${req.method} ${req.originalUrl}`, err);
+  console.error(`[err ${id}] ${req.method} ${redactSecretParams(req.originalUrl || req.url)}`, err);
   if (status < 500 && err.expose !== false && err.message) {
     return res.status(status).json({ error: err.message, errorId: id });
   }

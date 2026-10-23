@@ -1,10 +1,14 @@
 Supreme AdBlock lokar á auglýsingar alls staðar — YouTube-myndskeiðsauglýsingar, borða, sprettiglugga og rekjara — án þess að fylgjast með því sem þú gerir.
 
+• Undirritaðar síuuppfærslur tvisvar á dag: ný auglýsinganet eru meðhöndluð innan nokkurra klukkustunda, án fjarkóða.
 • YouTube-auglýsingar eru stöðvaðar við upptökin, svo myndskeið spilast einfaldlega.
-• EasyList, EasyPrivacy og aðrir opnir síulistar eru innbyggðir, auk listans fyrir þitt tungumál (31 svæðisbundinn listi).
 • Vafrakökuborðar: viðbótin ýtir á Hafna fyrir þig, fjarlægir móðuna og skrunlásinn sem sitja eftir og ýtir aldrei á innskráningar-, OAuth- eða greiðsluhnapp.
+• Enginn aðgangur, engin fjarmæling, engin gagnasöfnun, og engri auglýsingu er hleypt framhjá gegn greiðslu. Global Privacy Control biður öll vefsvæði um að selja hvorki né deila gögnunum þínum.
+• EasyList, EasyPrivacy og aðrir opnir síulistar eru innbyggðir, auk listans fyrir þitt tungumál (31 svæðisbundinn listi).
+• Kostaðar færslur á Facebook, Instagram og Threads eru faldar.
 • Fókushamur: feldu spjallbólur, sprettiglugga fyrir fréttabréf, beiðnir um tilkynningar, græjur samfélagsmiðla, sprettiglugga gervigreindar og YouTube Shorts.
 • Anti-adblock-veggir og pop-under-gluggar eru gerðir óvirkir.
+• Hættuleg vefsvæði: þekkt vefsvæði með spilliforritum opnar viðvörunarsíðu í staðinn og þú ákveður hvort þú heldur áfram.
 • Virkar vefsvæðið ekki? Einn smellur lagar það, eða láttu okkur vita — ekkert er sent án þess að þú sjáir það fyrst.
-• Undirritaðar síuuppfærslur tvisvar á dag: ný auglýsinganet eru meðhöndluð innan nokkurra klukkustunda, án fjarkóða.
-• Enginn aðgangur, engin fjarmæling, engin gagnasöfnun.
+• Ertu að skipta úr uBlock Origin, AdGuard eða Adblock Plus? Taktu leyfðu vefsvæðin og síurnar með þér í einni skrá.
+• Sjáðu við hvaða önnur vefsvæði síða tengist og lokaðu á eitt þeirra bara þar með einum smelli.

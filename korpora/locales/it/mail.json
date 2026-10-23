@@ -66,7 +66,14 @@
     },
     "accountDeleted": {
       "subject": "Il vostro account Korpora è stato eliminato",
-      "body": "il vostro account e tutti i suoi progetti sono stati eliminati definitivamente.\n\nSe non l'avete chiesto voi, scriveteci all'indirizzo qui sotto."
+      "body": "il vostro account e tutti i suoi progetti sono stati eliminati definitivamente. Restano nelle copie di backup del database solo finché le copie non scadono: i termini sono nell'informativa sulla privacy.{orders}\n\nSe non l'avete chiesto voi, scriveteci all'indirizzo qui sotto.",
+      "orders": "Conserviamo i vostri ordini solo con i dati del contratto (nome, email, importo, date, condizioni accettate, inizio anticipato e recesso) e li eliminiamo {kept} dopo l'eliminazione dell'account."
+    },
+    "banned": {
+      "subject": "Il vostro accesso a Korpora è stato bloccato",
+      "body": "abbiamo bloccato l'accesso al vostro account Korpora: non potete accedere e tutte le sessioni sono state chiuse.\n\nMotivo: {reason}\n\nBase: le condizioni generali, sezioni «Account», «Periodo di prova», «Che cosa non è consentito» e «Blocco»: {terms}\nLa decisione è stata presa da una persona del team, non automaticamente.\n\n{paid} Il diritto di recesso entro il relativo periodo e la garanzia legale restano invariati.\n\nSe ritenete che il blocco sia un errore, scriveteci a {contact}: vi rispondiamo con una decisione motivata entro {reply}. Se risulta un errore, ripristiniamo subito l'accesso e prolunghiamo il periodo di prova o a pagamento del tempo in cui l'account è rimasto bloccato. Se siete consumatori, potete rivolgervi anche alla Commissione bulgara per la tutela dei consumatori e alle sue commissioni di conciliazione per la risoluzione extragiudiziale della controversia (www.kzp.bg), oppure al giudice. Potete chiedere i vostri progetti e i vostri dati allo stesso indirizzo anche mentre l'account è bloccato.",
+      "paid": "Se avete un piano a pagamento, il blocco per violazione pone fine al relativo contratto e quanto pagato per Premium o Lifetime non viene rimborsato (sezione «Blocco»).",
+      "paidOld": "Il blocco per violazione pone fine al contratto del vostro piano a pagamento. Il vostro ordine è stato effettuato secondo le condizioni generali in vigore prima del giorno {since} e per questi ordini la regola per cui in caso di blocco quanto pagato non viene rimborsato si applica a decorrere dal giorno {from} (sezione «Blocco»). Il blocco è anteriore a quella data, quindi vi rimborsiamo la parte di prezzo non utilizzata (per Lifetime, secondo la quota mensile della sezione «Piani e prezzi»)."
     },
     "order": {
       "subject": "Conferma del vostro ordine Korpora",
@@ -76,7 +83,7 @@
       "paymentEarly": "Pagamento: con bonifico, secondo la fattura con i dati per il pagamento che vi invieremo. Avete chiesto che il piano inizi subito dopo il pagamento, prima della fine dei {days} giorni per il recesso. Se recedete, pagherete la parte del prezzo per il periodo in cui il piano è stato attivo.",
       "paymentWait": "Pagamento: con bonifico, secondo la fattura con i dati per il pagamento che vi invieremo. Non avete chiesto l'inizio anticipato, quindi il periodo a pagamento inizierà dopo la fine del periodo di recesso (ultimo giorno: {date}).",
       "paymentBusiness": "Pagamento: con bonifico, secondo la fattura con i dati per il pagamento che vi invieremo. Il piano viene attivato all'arrivo del pagamento.",
-      "withdrawalConsumer": "Diritto di recesso: potete recedere dal contratto senza indicarne il motivo (ultimo giorno: {date}) con il pulsante «Recedi dal contratto qui» in «Piano» del vostro account oppure con una dichiarazione esplicita a {contact}, ad esempio con il modulo tipo qui sotto. Se recedete, vi rimborseremo tutti i pagamenti ricevuti entro {refundDays} giorni, con lo stesso mezzo di pagamento e senza costi per voi. Se avete chiesto l'inizio anticipato, tratteniamo la parte del prezzo per il periodo in cui il piano è stato attivo.\n\n{form}",
+      "withdrawalConsumer": "Diritto di recesso: potete recedere dal contratto senza indicarne il motivo (ultimo giorno: {date}) con il pulsante «Recedi dal contratto qui» in «Piano» del vostro account oppure con una dichiarazione esplicita a {contact}, ad esempio con il modulo tipo qui sotto. Se recedete, entro {refundDays} giorni dal ricevimento del recesso vi rimborseremo tutti i pagamenti ricevuti da voi, con lo stesso mezzo di pagamento e senza costi per voi. Se avete chiesto l'inizio anticipato, tratteniamo la parte del prezzo per il periodo in cui il piano è stato attivo.\n\n{form}",
       "withdrawalBusiness": "Acquistate come azienda o professionista per scopi professionali, quindi il diritto di recesso dei consumatori non si applica.",
       "durationTerm": "Durata: {term}; Premium non si rinnova da solo: scade alla fine della durata.",
       "durationLifetime": "Durata: Lifetime vale finché Korpora è offerto.",
@@ -99,6 +106,10 @@
       "refund": "Se avete già pagato, vi rimborseremo tutti i pagamenti ricevuti con lo stesso mezzo di pagamento e senza costi per voi (termine: {date}).",
       "refundEarly": "Se avete già pagato, vi rimborseremo i pagamenti ricevuti con lo stesso mezzo di pagamento e senza costi per voi (termine: {date}). Poiché avete chiesto l'inizio anticipato, tratteniamo la parte del prezzo per il periodo in cui il piano è stato attivo."
     },
+    "orderRejected": {
+      "subject": "Il vostro ordine Korpora è stato rifiutato",
+      "body": "l'ordine n. {id} ({plan}) del {date} è stato rifiutato e non verrà eseguito: non è necessario pagarlo. Se avete già pagato o ritenete che sia un errore, scriveteci a {contact}.\n\nI vostri ordini: {orders}"
+    },
     "staffOrder": {
       "subject": "Nuovo ordine Korpora: {plan}",
       "body": "nuovo ordine n. {id} da {email} ({buyer}).\nPiano: {plan}\nPrezzo: {price}\nInizio anticipato: {early}\n{activation}{replaces}\n\nInviate la fattura con i dati per il pagamento. Pannello: {admin}",
@@ -118,6 +129,28 @@
       },
       "early": "Il cliente ha chiesto l'inizio anticipato: trattenete la parte per il periodo in cui il piano è stato attivo.",
       "full": "Senza inizio anticipato: rimborsate l'intero importo."
+    },
+    "staffAccountDeleted": {
+      "subject": "Account eliminato con un ordine in attesa di pagamento: {email}",
+      "body": "l'account di {email} è stato eliminato. L'ordine n. {ids} era in attesa di pagamento ed è stato annullato.\n\nSe per l'ordine è arrivato un pagamento, rimborsatelo con lo stesso mezzo di pagamento. Nel pannello l'ordine resta solo con i dati del contratto.\n\nPannello: {admin}"
+    },
+    "planEnding": {
+      "subject": "Il vostro piano Korpora Premium scade il {date}",
+      "body": "il {date} il vostro piano Premium scade: non si rinnova da solo. Dopo, i progetti restano e si possono scaricare, ma nuovi progetti e modifiche richiedono un piano attivo.\n\nPer continuare, ordinate un nuovo periodo: {plan}"
+    },
+    "buttonFallback": "Se il pulsante non funziona, aprite questo indirizzo:",
+    "action": {
+      "confirmEmail": "Conferma l'email",
+      "confirmNewEmail": "Conferma la nuova email",
+      "signIn": "Accedi a Korpora",
+      "newPassword": "Imposta una nuova password",
+      "setPassword": "Imposta la password",
+      "security": "Apri «Sicurezza»",
+      "plans": "Piani e prezzi",
+      "renew": "Ordina un nuovo periodo",
+      "account": "Vai all'account",
+      "orders": "I vostri ordini",
+      "panel": "Apri il pannello"
     }
   }
 }

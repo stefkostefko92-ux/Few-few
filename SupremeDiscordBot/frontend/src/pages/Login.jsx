@@ -11,6 +11,7 @@ import { useAuth } from "../contexts/AuthContext";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";
 import Seo from "../components/Seo";
 import { LandingFooter } from "../components/LandingParts";
+import AuthErrorNotice from "../components/AuthErrorNotice";
 import GameShowcase from "../components/GameShowcase";
 import LandingNav from "../components/LandingNav";
 import DeferredSections from "../components/DeferredSections";
@@ -63,7 +64,7 @@ const EN_FAQ = [
   { q: "How do I pay for Premium?", a: "Through Discord only. Open the Discord store for Supreme Bot, pick Premium or White-label for your server and complete Discord's checkout. Discord is the seller of record: it shows the final price with VAT, charges you and sends the receipt — we never see your card. Subscriptions are monthly; cancel anytime from Discord's User Settings → Subscriptions and keep access until the end of the paid period." },
   { q: "How is pricing calculated?", a: "Premium is billed per server — €4.99/server/month — not per seat, per agent or per ticket. Every server also has the Free tier forever at €0. Put a server on Premium when it needs it, drop it back to Free when it doesn't; you only ever pay for the servers you actively upgrade." },
   { q: "Where is my data stored?", a: "All data is stored in the EU (Germany, Hetzner); Carbon Stealth VCC operates from Bulgaria. Some sub-processors — Discord, Google (optional, for AI replies) and Sentry — are located in the US; those transfers are governed by Standard Contractual Clauses (see Privacy Policy §5-6). Custom bot tokens and Discord OAuth tokens are encrypted at rest with AES-256-GCM. We never sell or share your data." },
-  { q: "Can I use my own Discord bot?", a: "Yes — on the White-label tier (€9.99 per server per month, bought in the Discord store) you upload your own bot token and it runs under your brand: your bot's name, avatar and server presence. The token is encrypted at rest with AES-256-GCM." },
+  { q: "Can I use my own Discord bot?", a: "Yes — on the White-label tier (€9.99 per server per month, bought in the Discord store) you connect your own Discord bot application (its bot token from the Discord Developer Portal) and it runs under your brand: your bot's name, avatar and server presence. The token is encrypted at rest with AES-256-GCM." },
   { q: "What happens if I cancel — can I take my data?", a: "No lock-in. Cancel anytime in Discord (User Settings → Subscriptions) — access continues until the end of the period you paid for, then the server reverts to the Free tier. Panels, forms, applications and settings are kept; transcripts of tickets closed more than 30 days ago are deleted on the Free tier. Export what you need to CSV or PDF before the period ends." },
   { q: "Do you support multiple servers?", a: "Yes — connect unlimited Discord servers from one Supreme Bot account. Each server has independent settings, panels, forms, and billing." },
   { q: "Is there an API?", a: "Yes — a public REST API is available on Premium at /public/v1 with bearer token authentication and scoped permissions. Rate limit is 300 req/min per key." },
@@ -88,17 +89,6 @@ export default function Login() {
     window.location.href = `${import.meta.env.VITE_API_URL || "/api"}/auth/login`;
   };
 
-  const authError = error && (
-    <div role="alert" className="mb-6 max-w-md mx-auto lg:mx-0 rounded-lg border border-danger/40 bg-danger/5 px-4 py-3 text-left">
-      <div className="text-xs font-semibold text-danger mb-1">Sign-in failed</div>
-      <div className="text-sm text-cs-text">
-        {error === "blacklisted"   ? "You have been blacklisted from this platform."
-        : error === "oauth_failed" ? "Discord authentication failed. Please try again."
-        : error === "no_code"      ? "OAuth flow incomplete. Please try again."
-        : "An error occurred. Please try again."}
-      </div>
-    </div>
-  );
 
   return (
     <div ref={rootRef} className="relative min-h-screen bg-transparent overflow-x-clip">
@@ -144,7 +134,7 @@ export default function Login() {
           />
         </header>
 
-        <ConceptHero c={C} inviteUrl={BOT_INVITE_URL} onDashboard={handleLogin} notice={authError} />
+        <ConceptHero c={C} inviteUrl={BOT_INVITE_URL} onDashboard={handleLogin} notice={<AuthErrorNotice code={error} />} />
 
         {/* Всичко под героя се рисува след първото рисуване, на порции
             (startTransition) — без дълги задачи при старта (TBT, 08.10.2026). */}
@@ -257,7 +247,7 @@ export default function Login() {
             cta="Get White-label"
             bullets={[
               "Everything in Premium",
-              "White-label custom bot (your token)",
+              "White-label custom bot (your own bot application)",
               "Runs under your name & avatar",
             ]}
           />

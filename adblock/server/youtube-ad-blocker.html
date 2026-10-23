@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>YouTube Ad Blocker for Chrome — Supreme AdBlock</title>
+<meta name="description" content="Block YouTube ads in Chrome. Supreme AdBlock removes video, feed and search ads from the player data before the player reads it. Free, no account." />
+<meta name="keywords" content="YouTube ad blocker, block YouTube ads in Chrome, YouTube adblock extension, ad blocker for Chrome, Manifest V3 ad blocker, Supreme AdBlock, Carbon Stealth" />
+<meta name="author" content="Carbon Stealth" />
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+<meta name="theme-color" content="#030303" />
+<link rel="canonical" href="https://adblock.carbonstealth.eu/youtube-ad-blocker" />
+<link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png" />
+<link rel="icon" href="/icon-512.png" sizes="512x512" type="image/png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Supreme AdBlock — Carbon Stealth" />
+<meta property="og:title" content="YouTube Ad Blocker for Chrome — Supreme AdBlock" />
+<meta property="og:description" content="Video, feed and search ads removed before the player reads them. YouTube's video servers are never blocked, so videos keep playing." />
+<meta property="og:url" content="https://adblock.carbonstealth.eu/youtube-ad-blocker" />
+<meta property="og:image" content="https://adblock.carbonstealth.eu/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Supreme AdBlock shield by Carbon Stealth — YouTube ads killed at the source, EasyList built in" />
+<meta property="og:locale" content="en_US" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="YouTube Ad Blocker for Chrome — Supreme AdBlock" />
+<meta name="twitter:description" content="Video, feed and search ads removed before the player reads them. YouTube's video servers are never blocked, so videos keep playing." />
+<meta name="twitter:image" content="https://adblock.carbonstealth.eu/og.png" />
+<meta name="twitter:image:alt" content="Supreme AdBlock shield by Carbon Stealth — YouTube ads killed at the source, EasyList built in" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://adblock.carbonstealth.eu/youtube-ad-blocker#webpage",
+      "url": "https://adblock.carbonstealth.eu/youtube-ad-blocker",
+      "name": "YouTube Ad Blocker for Chrome — Supreme AdBlock",
+      "description": "How Supreme AdBlock blocks YouTube video, feed and search ads in Chrome without blocking YouTube's video servers.",
+      "inLanguage": "en",
+      "isPartOf": { "@id": "https://adblock.carbonstealth.eu/#site" },
+      "about": { "@id": "https://adblock.carbonstealth.eu/#app" },
+      "publisher": { "@id": "https://carbonstealth.eu/#organization" },
+      "breadcrumb": { "@id": "https://adblock.carbonstealth.eu/youtube-ad-blocker#breadcrumb" },
+      "primaryImageOfPage": "https://adblock.carbonstealth.eu/og.png",
+      "datePublished": "2026-10-16",
+      "dateModified": "2026-10-16"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://adblock.carbonstealth.eu/youtube-ad-blocker#breadcrumb",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Supreme AdBlock", "item": "https://adblock.carbonstealth.eu/" },
+        { "@type": "ListItem", "position": 2, "name": "YouTube ad blocker", "item": "https://adblock.carbonstealth.eu/youtube-ad-blocker" }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://adblock.carbonstealth.eu/youtube-ad-blocker#faq",
+      "mainEntity": [
+        { "@type": "Question", "name": "Is the YouTube ad blocker free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. It is part of Supreme AdBlock, which is free, with no account and no paid tier." } },
+        { "@type": "Question", "name": "Does it work with Manifest V3?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Supreme AdBlock was built for Manifest V3, Chrome's current extension platform, so the end of the old platform does not affect it." } },
+        { "@type": "Question", "name": "Can YouTube stop me from watching?", "acceptedAnswer": { "@type": "Answer", "text": "YouTube says ad blockers go against its Terms of Service. What it does about them is show a warning and, on some accounts, stop playing videos. Supreme AdBlock avoids the signals YouTube looks for, and if playback is refused anyway it steps aside on YouTube for six hours so your videos play." } },
+        { "@type": "Question", "name": "Does it work in the YouTube app or on a TV?", "acceptedAnswer": { "@type": "Answer", "text": "No. It works on youtube.com in your desktop browser and in YouTube players embedded on other sites. A browser extension cannot reach the YouTube apps on phones, tablets or TVs." } },
+        { "@type": "Question", "name": "Does it see what I watch?", "acceptedAnswer": { "@type": "Answer", "text": "No. The change happens inside the page, on your device. Nothing about the videos you watch is stored or sent anywhere." } },
+        { "@type": "Question", "name": "A video won't play. What should I do?", "acceptedAnswer": { "@type": "Answer", "text": "Reload the page first. If two ad blockers are switched on, turn one off: two blockers working on YouTube at once can stall the player. The support page has the other steps." } }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{color-scheme:dark;
+    --bg:#030303; --bg2:#08090b; --panel:#0b0c0f; --line:#16181d; --line2:#22252c;
+    --cyan:#00e5ff; --cyan-deep:#00b8d4; --cream:#f5f5f0; --body:#d9d9d2; --muted:#a3a39c; --muted2:#8f8f87; --amber:#e6bd4a;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Inter",Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular","JetBrains Mono",Menlo,Consolas,"Liberation Mono",monospace}
+  body{font-family:var(--font);background:var(--bg);color:var(--cream);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .field{position:fixed;inset:0;z-index:0;pointer-events:none;background:
+    radial-gradient(1100px 620px at 82% -12%,rgba(0,229,255,.12),transparent 60%),
+    radial-gradient(800px 520px at 6% 112%,rgba(0,255,136,.05),transparent 60%),var(--bg)}
+  a{color:var(--cyan);text-underline-offset:3px}
+  :focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:6px}
+  .skip{position:absolute;left:12px;top:-60px;z-index:100;background:var(--cyan);color:#001014;font-weight:800;padding:10px 16px;border-radius:10px;text-decoration:none}
+  .skip:focus{top:12px}
+  nav.top,.crumbs,main,footer{position:relative;z-index:1}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+  nav.top{display:flex;align-items:center;gap:14px;max-width:1120px;margin:0 auto;padding:22px 24px 0}
+  nav.top .brand{display:flex;align-items:center;gap:12px;color:var(--cream);text-decoration:none}
+  nav.top .mark{width:34px;height:34px;filter:drop-shadow(0 0 12px rgba(0,229,255,.45))}
+  nav.top b{display:block;font-weight:800;letter-spacing:.4px;font-size:16px;line-height:1.1}
+  nav.top .tag{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--cyan);font-family:var(--mono)}
+  nav.top .sp{flex:1}
+  nav.top .links{display:flex;gap:22px}
+  nav.top .links a{font-size:13.5px;color:var(--muted);letter-spacing:.3px;text-decoration:none;padding:4px 0}
+  nav.top .links a:hover{color:var(--cream)}
+  nav.top .links a[aria-current="page"]{color:var(--cream);box-shadow:0 2px 0 var(--cyan)}
+  @media(max-width:860px){nav.top .links{display:none}}
+
+  .crumbs{max-width:1120px;margin:0 auto;padding:30px 24px 0;font-size:13.5px;color:var(--muted)}
+  .crumbs ol{list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+  .crumbs li+li::before{content:"/";color:var(--muted2);margin-right:8px}
+  .crumbs a{color:var(--muted);text-decoration:none}
+  .crumbs a:hover{color:var(--cream);text-decoration:underline}
+
+  .hero{padding:22px 0 8px}
+  .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center}
+  @media(max-width:940px){.hero .wrap{grid-template-columns:1fr;gap:36px}}
+  h1{font-size:clamp(38px,5.4vw,64px);line-height:1.03;font-weight:900;letter-spacing:-1.4px}
+  .lead{margin-top:20px;font-size:clamp(17px,2vw,19px);color:var(--muted);max-width:58ch}
+  .lead b{color:var(--cream);font-weight:600}
+  .where{margin-top:14px;font-size:14.5px;color:var(--muted2);max-width:58ch}
+  .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+  .btn{display:inline-flex;align-items:center;gap:9px;padding:14px 24px;border-radius:12px;font-size:15px;font-weight:700;letter-spacing:.2px;text-decoration:none;border:1px solid transparent;transition:border-color .2s,box-shadow .2s,color .2s}
+  .btn.primary{background:linear-gradient(135deg,var(--cyan),var(--cyan-deep));color:#001014;box-shadow:0 10px 36px rgba(0,229,255,.25)}
+  .btn.primary:hover{box-shadow:0 14px 48px rgba(0,229,255,.42)}
+  .btn.ghost{background:rgba(255,255,255,.02);border-color:var(--line2);color:var(--cream)}
+  .btn.ghost:hover{border-color:var(--cyan);color:var(--cyan)}
+  .btn svg{width:18px;height:18px;flex:none;fill:currentColor}
+  .verified{display:inline-flex;align-items:center;gap:12px;margin-top:18px;padding:10px 16px 10px 11px;border-radius:14px;
+    border:1px solid rgba(0,229,255,.38);background:linear-gradient(135deg,rgba(0,229,255,.11),rgba(0,229,255,.025));color:var(--cream);text-decoration:none;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 10px 34px rgba(0,229,255,.13);transition:border-color .2s}
+  .verified:hover{border-color:var(--cyan)}
+  .verified .seal{width:32px;height:32px;flex:none;filter:drop-shadow(0 0 10px rgba(0,229,255,.55))}
+  .verified .seal polygon{fill:var(--cyan);stroke:var(--cyan);stroke-width:1.2;stroke-linejoin:round}
+  .verified .seal path{fill:none;stroke:#001014;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+  .verified .vt{display:flex;flex-direction:column;line-height:1.25;text-align:left}
+  .verified .vt b{font-size:14.5px;font-weight:750;letter-spacing:.2px}
+  .verified .vt small{font-size:12px;color:var(--muted);margin-top:2px}
+  .verified .ext{width:14px;height:14px;flex:none;fill:none;stroke:var(--muted2);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+  section.blk{padding:64px 0 0}
+  .prose>*{max-width:760px}
+  h2{font-size:clamp(26px,3.3vw,36px);line-height:1.12;font-weight:850;letter-spacing:-.6px}
+  h3{font-size:18.5px;line-height:1.3;font-weight:750;letter-spacing:-.1px;margin-top:28px;color:var(--cream)}
+  p{color:var(--body);margin-top:12px}
+  h2+p{margin-top:14px}
+  h3+p{margin-top:6px}
+  p b,li b{color:var(--cream);font-weight:650}
+  .dots{list-style:none;margin-top:14px}
+  .dots li{position:relative;padding-left:24px;margin-top:10px;color:var(--body)}
+  .dots li::before{content:"";position:absolute;left:4px;top:.66em;width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px rgba(0,229,255,.55)}
+  .steps{list-style:none;counter-reset:st;margin-top:18px}
+  .steps li{counter-increment:st;position:relative;padding-left:48px;margin-top:16px;color:var(--body);min-height:32px}
+  .steps li::before{content:counter(st);position:absolute;left:0;top:-2px;width:32px;height:32px;border-radius:50%;border:1px solid rgba(0,229,255,.55);color:var(--cyan);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .limit{margin-top:18px;border:1px solid var(--line2);border-left:3px solid var(--amber);border-radius:12px;background:var(--panel);padding:16px 20px}
+  .limit p:first-child{margin-top:0}
+  code{font-family:var(--mono);font-size:.88em;color:var(--cream);background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:5px;padding:1px 5px}
+
+  /* the rename: what the player's data looks like after the extension has read it */
+  .rename{justify-self:center;width:min(500px,100%)}
+  .rename pre{background:linear-gradient(180deg,#0a0c0f,#060708);border:1px solid var(--line2);border-radius:16px;padding:24px 26px;
+    box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(0,229,255,.06);font:14.5px/1.85 var(--mono);color:var(--body);overflow-x:auto;tab-size:2}
+  .rename code{all:unset}
+  .rename .cm{color:var(--muted2)}
+  .rename del{color:#ff8f8f;text-decoration:line-through;text-decoration-thickness:2px}
+  .rename ins{color:var(--cyan);text-decoration:none;background:rgba(0,229,255,.1);border-radius:4px;padding:0 3px;margin-left:6px}
+  .rename figcaption{margin-top:14px;font-size:14px;color:var(--muted);max-width:52ch}
+
+  .final{text-align:center;padding:84px 24px 10px}
+  .final h2{max-width:22ch;margin:0 auto}
+  .final p{max-width:56ch;margin:14px auto 0;color:var(--muted)}
+  .final .cta{justify-content:center}
+  .final .verified{display:flex;width:max-content;max-width:100%;margin:22px auto 0}
+
+  footer{border-top:1px solid var(--line);margin-top:72px}
+  footer .row{max-width:1120px;margin:0 auto;padding:30px 24px;display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap;color:var(--muted2);font-size:13px}
+  footer .who{display:flex;gap:12px;align-items:flex-start;max-width:560px}
+  footer .who img{width:26px;height:26px;flex:none;margin-top:2px}
+  footer .who p{color:var(--muted2);margin:0}
+  footer .who p+p{margin-top:4px}
+  footer nav{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto}
+  footer a{color:var(--muted)}
+  footer nav a{text-decoration:none}
+  footer nav a:hover{text-decoration:underline}
+  footer a:hover{color:var(--cyan)}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="field" aria-hidden="true"></div>
+
+  <nav class="top" aria-label="Main">
+    <a class="brand" href="/">
+      <img class="mark" src="/shield-96.webp?v=4c70aee9f0" alt="" width="34" height="34" />
+      <span><b>Supreme AdBlock</b><span class="tag">Carbon Stealth</span></span>
+    </a>
+    <span class="sp"></span>
+    <div class="links">
+      <a href="/youtube-ad-blocker" aria-current="page">YouTube</a>
+      <a href="/cookie-banner-blocker">Cookie banners</a>
+      <a href="/#features">Features</a>
+      <a href="/support">Support</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+  </nav>
+
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/">Supreme AdBlock</a></li>
+      <li><span aria-current="page">YouTube ad blocker</span></li>
+    </ol>
+  </nav>
+
+  <main id="main">
+    <header class="hero">
+      <div class="wrap">
+        <div>
+          <h1>YouTube ad blocker for Chrome</h1>
+          <p class="lead">Supreme AdBlock removes YouTube's ads <b>before the player reads them</b>. Video ads never start, the feed and search results lose their sponsored slots, and the video you chose loads as usual.</p>
+          <p class="where">Works on youtube.com and in YouTube players embedded on other sites, in Chrome, Edge and Brave.</p>
+          <div class="cta">
+            <a class="btn primary" href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=youtube" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4 13.2h6.1L9 22l10.5-11.6h-6.4z"/></svg>Add to Chrome — free</a>
+            <a class="btn ghost" href="#how">How it works</a>
+          </div>
+          <a class="verified" href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=youtube" target="_blank" rel="noopener">
+            <svg class="seal" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12.00,0.80 14.43,2.92 17.60,2.30 18.65,5.35 21.70,6.40 21.08,9.57 23.20,12.00 21.08,14.43 21.70,17.60 18.65,18.65 17.60,21.70 14.43,21.08 12.00,23.20 9.57,21.08 6.40,21.70 5.35,18.65 2.30,17.60 2.92,14.43 0.80,12.00 2.92,9.57 2.30,6.40 5.35,5.35 6.40,2.30 9.57,2.92"/><path d="M7.7 12.3l2.8 2.8 5.8-6"/></svg>
+            <span class="vt"><b>Established Publisher</b> <small>Verified on the Chrome Web Store, no history of violations</small></span>
+            <svg class="ext" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3h7v7M13 3 4 12"/></svg>
+          </a>
+        </div>
+        <figure class="rename">
+<pre><code><span class="cm">// the player's data, as it arrives</span>
+{
+  "videoDetails":  { … },
+  "streamingData": { … },
+  "<del>adPlacements</del><ins>no_ads</ins>": [ … ],
+  "<del>playerAds</del><ins>no_ads</ins>":    [ … ]
+}
+<span class="cm">// no ads to play: the video starts</span></code></pre>
+          <figcaption>The ad entries keep their place under a name the player ignores. Everything else arrives exactly as YouTube sent it.</figcaption>
+        </figure>
+      </div>
+    </header>
+
+    <section class="blk" id="removes">
+      <div class="wrap prose">
+        <h2>What it removes on YouTube</h2>
+        <ul class="dots">
+          <li><b>Video ads</b> before and during a video, skippable or not.</li>
+          <li><b>Sponsored slots</b> in the home feed, in search results and in the column of suggested videos.</li>
+          <li><b>Promoted banners and shelves</b> on the home page, and the ad panels beside the player.</li>
+          <li><b>The same ads in embedded players</b>, when another site shows a YouTube video.</li>
+          <li>If you want, in Focus mode: <b>YouTube Shorts</b> — the shelves, the tab and the suggestions.</li>
+        </ul>
+        <p>YouTube ad blocking is on from the moment the extension is installed. There is nothing to set up.</p>
+      </div>
+    </section>
+
+    <section class="blk" id="how">
+      <div class="wrap prose">
+        <h2>Why videos keep playing</h2>
+        <p>Many ways of blocking YouTube ads stop requests, or skip an ad once it has started, and YouTube watches for exactly that. Supreme AdBlock avoids the signals it looks for:</p>
+        <ul class="dots">
+          <li><b>The video servers are never blocked</b>, and neither are the reports a normal player sends while you watch. A player that goes silent is one of the things YouTube counts against you.</li>
+          <li><b>The ads are renamed, not cut out.</b> The change is made to the player's data as text, before the player reads it, so everything else arrives exactly as YouTube sent it.</li>
+          <li><b>Nothing in the page gives it away.</b> The browser functions it works through still describe themselves as the browser's own.</li>
+          <li><b>No tricks that YouTube counts.</b> If an ad still slips through, the extension mutes it and presses YouTube's own Skip button. It never plays an ad at 16× speed.</li>
+          <li><b>No waiting penalty.</b> When YouTube adds its 17-second pause before a video, the wait is cut to a blink.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="blk" id="refused">
+      <div class="wrap prose">
+        <h2>If YouTube still says no</h2>
+        <p>On some accounts YouTube shows an “ad blockers are not allowed” message and stops playing videos. When that happens, Supreme AdBlock steps aside on YouTube for six hours and reloads the page, so the video plays, with ads, instead of leaving you with a dead player. Settings shows <b>YouTube bypass: ACTIVE</b> until the six hours are over; then blocking resumes by itself.</p>
+        <p>You can also switch <b>YouTube ad blocking</b> off in Settings at any time. The rest of the protection keeps working.</p>
+      </div>
+    </section>
+
+    <section class="blk" id="limits">
+      <div class="wrap prose">
+        <h2>What no extension can block</h2>
+        <div class="limit">
+          <p>Some YouTube ads are stitched into the video stream itself, on YouTube's servers. Once an ad is part of the video, no browser extension can take it out. Sponsor messages that creators record in their own videos are part of the video too.</p>
+          <p>If you want YouTube without ads and want creators paid for your views, YouTube Premium is YouTube's own way to do that.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="blk" id="updates">
+      <div class="wrap prose">
+        <h2>Kept up to date between store releases</h2>
+        <p>YouTube renames its ad fields and page elements often, and a store review takes days. Supreme AdBlock downloads signed filter data about twice a day, with the names of new ad fields, ad panels and Skip buttons, so a change on YouTube can be answered within hours. It is data only: the code that uses it ships inside the extension and never changes from the network.</p>
+      </div>
+    </section>
+
+    <section class="blk" id="install">
+      <div class="wrap prose">
+        <h2>Block YouTube ads in Chrome in three steps</h2>
+        <ol class="steps">
+          <li>Open Supreme AdBlock on the <a href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=youtube" target="_blank" rel="noopener">Chrome Web Store</a> and choose <b>Add to Chrome</b>. It works the same way in Edge and Brave.</li>
+          <li>Reload any YouTube tab that was already open, so the extension can start in it.</li>
+          <li>Play a video. The popup shows how many requests were blocked on the page.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="blk" id="faq">
+      <div class="wrap prose">
+        <h2>Questions about YouTube</h2>
+        <h3>Is the YouTube ad blocker free?</h3>
+        <p>Yes. It is part of Supreme AdBlock, which is free, with no account and no paid tier.</p>
+        <h3>Does it work with Manifest V3?</h3>
+        <p>Yes. Supreme AdBlock was built for Manifest V3, Chrome's current extension platform, so the end of the old platform does not affect it.</p>
+        <h3>Can YouTube stop me from watching?</h3>
+        <p>YouTube says ad blockers go against its Terms of Service. What it does about them is show a warning and, on some accounts, stop playing videos. Supreme AdBlock avoids the signals YouTube looks for, and if playback is refused anyway it steps aside on YouTube for six hours so your videos play.</p>
+        <h3>Does it work in the YouTube app or on a TV?</h3>
+        <p>No. It works on youtube.com in your desktop browser and in YouTube players embedded on other sites. A browser extension cannot reach the YouTube apps on phones, tablets or TVs.</p>
+        <h3>Does it see what I watch?</h3>
+        <p>No. The change happens inside the page, on your device. Nothing about the videos you watch is stored or sent anywhere.</p>
+        <h3>A video won't play. What should I do?</h3>
+        <p>Reload the page first. If two ad blockers are switched on, turn one off: two blockers working on YouTube at once can stall the player. The <a href="/support#youtube">support page</a> has the other steps.</p>
+      </div>
+    </section>
+
+    <div class="final">
+      <h2>Watch what you came for</h2>
+      <p>Supreme AdBlock also blocks trackers and pop-unders and <a href="/cookie-banner-blocker">answers cookie banners for you</a>. Free on the Chrome Web Store, for Chrome, Edge and Brave.</p>
+      <div class="cta">
+        <a class="btn primary" href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=youtube" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4 13.2h6.1L9 22l10.5-11.6h-6.4z"/></svg>Add to Chrome — free</a>
+        <a class="btn ghost" href="/#features">See every feature</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="row">
+      <div class="who">
+        <img src="/shield-96.webp?v=4c70aee9f0" alt="" width="26" height="26" />
+        <div>
+          <p><b style="color:var(--cream)">Supreme AdBlock</b> is made by Carbon Stealth VCC, UIC (ЕИК) 208725180</p>
+          <p>3 Samuil St., 2670 Bobov Dol, Bulgaria, <a href="mailto:info@carbonstealth.eu">info@carbonstealth.eu</a></p>
+        </div>
+      </div>
+      <nav aria-label="Footer">
+        <a href="/">Home</a>
+        <a href="/youtube-ad-blocker">YouTube ad blocker</a>
+        <a href="/cookie-banner-blocker">Cookie banner blocker</a>
+        <a href="/support">Support</a>
+        <a href="/privacy">Privacy</a>
+        <a href="https://chromewebstore.google.com/detail/chbjbiabkgocfbbfhednpbhfeipjcclk?utm_source=site&amp;utm_medium=youtube" target="_blank" rel="noopener">Chrome Web Store</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

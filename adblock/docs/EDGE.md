@@ -9,21 +9,25 @@ Store (single purpose, без remote code, privacy декларации), важ
 1. Partner Center → <https://partner.microsoft.com/dashboard/microsoftedge/> →
    регистрация като разработчик (безплатно).
 2. **Create new extension** → качи zip-а от `dist/`.
-3. Листинг: ползвай текстовете от `docs/STORE_LISTING.md` (име, кратко/пълно
-   описание, категория *Productivity*), скрийншотите `store/screenshots/*.png`
-   (1280×800, макс. 6), иконата `store/store_icon_128.png` (минимумът; 300×300 е
-   препоръчано), promo `store/promo_small_440x280.png`.
-   **Description е задължително за ВСЕКИ език в `_locales/` на пакета** (en, bg,
-   it, de — мин. 250, макс. 10 000 знака): четирите текста са в
-   `docs/STORE_LISTING.md` (секция „Detailed description, localised“); логото —
-   „Duplicate this logo for all languages“. Manifest-ското `extDescription` е
-   само *short description*, не покрива това поле.
-   **Search terms**: макс. 7 термина / 21 думи / 30 знака и само релевантни —
-   НЕ пренасяй ключовите думи от landing page-а (там има чужди марки като
-   „uBlock Origin alternative“; в стора това е нарушение).
-4. **Privacy**: Privacy Policy URL `https://adblock.carbonstealth.eu/privacy`
-   (текстът е браузър-неутрален — Edge 1.5.2 не допуска политика, която говори
-   за друг браузър; `PRIVACY.md`). Декларацията „не събира данни" е същата.
+3. Листинг. **Ползвай само `docs/listing/<код>.txt`** (по един файл за всеки от 73-те локала в
+   `_locales/`, минимум 250 знака — Edge иска Description за ВСЕКИ език на пакета; логото —
+   „Duplicate this logo for all languages“). Дългите описания в `docs/STORE_LISTING.md` са за Chrome
+   Web Store и говорят за Chrome: Edge 1.1.2 не допуска листинг, който говори за друг браузър
+   (`tests/store.test.mjs` пази `docs/listing/*.txt` без „Chrome“). Името и краткото описание идват
+   от manifest-а (`extName`, `extDescription`). Категория *Productivity*; скрийншотите
+   `store/screenshots/*.png` (1280×800, макс. 6), иконата `store/store_icon_128.png` (минимумът;
+   300×300 е препоръчано), promo `store/promo_small_440x280.png`.
+   **Search terms** (макс. 7 термина / 21 думи / 30 знака на термин, само релевантни, без чужди
+   марки — „uBlock Origin alternative“ от сайта тук е нарушение):
+   `ad blocker` · `block ads` · `youtube ad blocker` · `tracker blocker` · `cookie banner blocker` ·
+   `popup blocker` · `Carbon Stealth`.
+4. **Privacy**: Privacy Policy URL `https://adblock.carbonstealth.eu/privacy` (текстът е
+   браузър-неутрален — „your browser“, не „Chrome“; `PRIVACY.md`). Edge 1.5.2 иска политиката да
+   се отнася до разширението, което подаваш: ако ревюто възрази, че страницата говори „primarily“
+   за друг браузър, сверете текущия текст на
+   <https://learn.microsoft.com/en-us/microsoft-edge/extensions-chromium/store-policies/developer-policies>
+   и добавете ред „This policy applies to the extension in every browser it is published for,
+   including Microsoft Edge“ — не отделна политика. Декларацията „не събира данни" е същата.
    Обосновка на permission-ите — §5 в `docs/SUBMISSION.md`.
    **„Are you using remote code?“ → No.** Notes for certification — виж по-долу.
 5. **Availability**: Public; Markets: всички.
@@ -34,16 +38,18 @@ Store (single purpose, без remote code, privacy декларации), важ
 Paste as-is:
 
 > The bundled rulesets in `rules/` are static and fully reviewable. In addition,
-> `background.js` may add **dynamic block rules** derived from a twice-daily,
-> Ed25519-signed **data** file (`filters.json`): a list of ad/tracker **domain
-> strings** only. Each entry is regex-validated, capped, and turned into a DNR
-> rule by code that ships in the package. This is necessary because ad networks
-> rotate domains daily; without it the extension goes stale between releases.
-> No rule JSON, no code and no selector logic is executed from the network. Users
-> can disable it (Settings → auto-update off). The single MAIN-world content
-> script `scriptlets/main.js` ships in the package, unminified; the same data
-> file may only add rows (hostname, routine name, arguments) to its fixed table
-> of 19 named routines — see the reviewer note in `docs/SUBMISSION.md` §5.
+> `background.js` fetches a twice-daily, Ed25519-signed **data** file
+> (`https://adblock.carbonstealth.eu/filters.json` + `.sig`): ad/tracker **domain names**, CSS
+> selectors for ad boxes, and the names of YouTube response fields that carry ads. Every entry is
+> validated against a strict schema and capped; domains become DNR block rules, selectors are
+> applied as CSS, and nothing in the file is executed. This is necessary because ad networks rotate
+> domains daily; without it the extension goes stale between releases. Users can switch it off
+> (Settings → auto-update). All JavaScript ships in the package, unminified. The MAIN-world script
+> `scriptlets/main.js` and its per-site directives are compiled into the package at build time
+> (`node tools/build_scriptlets.mjs` reproduces them); since version 5.1.4 nothing from the network
+> configures or adds to them, and a `scriptlets` key in the data file is ignored. When the extension
+> is removed, the browser opens a static page, `https://adblock.carbonstealth.eu/bye`, with no
+> parameters.
 
 ## Ъпдейти
 

@@ -10,7 +10,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ipKey } from "../lib/ipKey.js";
-import { safeLogUrl } from "../lib/safeLogUrl.js";
+import { redactSecretParams } from "../lib/redactUrl.js";
 import { scrubEvent } from "../instrument.js";
 
 const SRC = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -83,22 +83,19 @@ describe("Sentry не изнася архивния токен и IP адрес�
   });
 });
 
-describe("access логът — без архивния токен", () => {
-  it("архивните адреси губят query, другите остават цели", () => {
-    expect(safeLogUrl("/archive/ticket/42?t=SECRET_TOKEN")).toBe("/archive/ticket/42");
-    expect(safeLogUrl("/archive?t=SECRET_TOKEN")).toBe("/archive");
-    expect(safeLogUrl("/api/tickets/archives/42?t=SECRET_TOKEN")).toBe("/api/tickets/archives/42");
-    expect(safeLogUrl("/api/servers/1/tickets?page=2")).toBe("/api/servers/1/tickets?page=2");
-    expect(safeLogUrl("/archived-news?x=1")).toBe("/archived-news?x=1");
+describe("access логът — без архивния токен и без кода от Discord", () => {
+  // Едно решение за двата клона (10.10 + #303): redactSecretParams маскира
+  // `t` (архивите), `code` и `state` (входът през Discord) във всеки адрес.
+  it("тайните в query частта се маскират, другите параметри остават", () => {
+    for (const u of ["/archive/ticket/42?t=SECRET_TOKEN", "/api/tickets/archives/42?t=SECRET_TOKEN", "/api/auth/callback?code=SECRET_TOKEN&state=SECRET_TOKEN"]) {
+      expect(redactSecretParams(u)).not.toContain("SECRET_TOKEN");
+    }
+    expect(redactSecretParams("/api/servers/1/tickets?page=2")).toBe("/api/servers/1/tickets?page=2");
   });
 
-  it("продукционният формат ползва :safe-url, не :url и не „combined“", () => {
+  it("morgan пише маскирания адрес в двата формата (:url е подменен)", () => {
     const src = code(join(SRC, "index.js"));
-    expect(src).toMatch(/morgan\.token\("safe-url",[^\n]*safeLogUrl\(/);
-    const fmt = src.match(/app\.use\(morgan\(process\.env\.NODE_ENV === "production"\s*\?\s*'([^']+)'/)?.[1];
-    expect(fmt, "продукционният формат не е намерен").toBeTruthy();
-    expect(fmt).toContain(":safe-url");
-    expect(fmt).not.toMatch(/:url\b/);
+    expect(src).toMatch(/morgan\.token\("url",[^\n]*redactSecretParams\(/);
   });
 });
 

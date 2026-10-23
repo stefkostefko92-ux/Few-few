@@ -1,10 +1,14 @@
 Supreme AdBlock estää mainokset kaikkialla – YouTuben videomainokset, bannerit, ponnahdusikkunat ja seurannan – tarkkailematta, mitä teet.
 
+• Allekirjoitetut suodatinpäivitykset kahdesti päivässä: uudet mainosverkostot käsitellään tunneissa, ilman etäkoodia.
 • YouTube-mainokset pysäytetään jo lähteellä, joten videot yksinkertaisesti toistuvat.
-• EasyList, EasyPrivacy ja muut avoimet suodatinluettelot ovat sisäänrakennettuja, samoin kielesi luettelo (31 alueellista luetteloa).
 • Evästebannerit: se painaa puolestasi ”Hylkää”, poistaa jäljelle jääneen sumennuksen ja vierityksen eston eikä koskaan paina kirjautumis-, OAuth- tai maksupainiketta.
+• Ei tiliä, ei telemetriaa, ei tiedonkeruuta, eikä yhtäkään mainosta päästetä läpi maksua vastaan. Global Privacy Control pyytää jokaista sivustoa olemaan myymättä tai jakamatta tietojasi.
+• EasyList, EasyPrivacy ja muut avoimet suodatinluettelot ovat sisäänrakennettuja, samoin kielesi luettelo (31 alueellista luetteloa).
+• Sponsoroidut julkaisut piilotetaan Facebookissa, Instagramissa ja Threadsissa.
 • Keskittymistila: piilota chat-kuplat, uutiskirjeikkunat, ilmoituskehotteet, sosiaalisen median widgetit, tekoälyikkunat ja YouTube Shorts.
 • Anti-adblock-muurit ja pop-under-ikkunat neutraloidaan.
+• Vaaralliset sivustot: tunnettu haittaohjelmasivusto avaa sen sijaan varoitussivun, ja sinä päätät, jatkatko.
 • Sivusto rikki? Yksi klikkaus korjaa sen, tai kerro meille – mitään ei lähetetä ilman, että näet sen ensin.
-• Allekirjoitetut suodatinpäivitykset kahdesti päivässä: uudet mainosverkostot käsitellään tunneissa, ilman etäkoodia.
-• Ei tiliä, ei telemetriaa, ei tiedonkeruuta.
+• Vaihdatko uBlock Originista, AdGuardista tai Adblock Plusista? Tuo sallitut sivustosi ja suodattimesi yhdellä tiedostolla.
+• Näe, mihin muihin sivustoihin sivu muodostaa yhteyden, ja estä niistä yksi yhdellä klikkauksella vain siellä.
