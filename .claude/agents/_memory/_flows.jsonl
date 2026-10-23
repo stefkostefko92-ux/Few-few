@@ -229,3 +229,5 @@
 {"t":"handoff","ts":"2026-10-23T19:36:26.309Z","id":"r1bbec096","from":"prevodach","to":"човек","status":"има бележки","run":"413ea6b6"}
 {"t":"handoff","ts":"2026-10-23T19:39:11.703Z","id":"r1bbec096","from":"prevodach","to":"ai-djiyata","status":"има бележки","run":"6fa52e72"}
 {"t":"handoff","ts":"2026-10-23T19:43:01.828Z","id":"r1bbec096","from":"pravniyat-razbirach","to":"човек","status":"има бележки","run":"d951bf3e"}
+{"t":"start","ts":"2026-10-23T23:18:44.563Z","id":"r57685ef2","flow":"авто","lead":"pravniyat-razbirach","auto":true}
+{"t":"handoff","ts":"2026-10-23T23:18:44.563Z","id":"r57685ef2","from":"pravniyat-razbirach","to":"човек","status":"има бележки","run":"62130431"}
