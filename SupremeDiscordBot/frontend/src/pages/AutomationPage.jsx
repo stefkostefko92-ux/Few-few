@@ -186,8 +186,9 @@ function PollsTab() {
               {p.multiChoice && <span className="cs-badge text-cs-cyan">{t("auto.polls.multi")}</span>}
             </div>
             <p className="text-xs text-cs-muted mt-1">
-              {p.options.length} options · {p.totalVotes} vote{p.totalVotes === 1 ? "" : "s"} · Created {new Date(p.createdAt).toLocaleDateString()}
-              {p.closesAt && ` · Closes ${new Date(p.closesAt).toLocaleString()}`}
+              {/* Етикет отпред — без множествено число, което не се превежда с „s“. */}
+              {t("auto.polls.meta", { options: p.options.length, votes: p.totalVotes, date: new Date(p.createdAt).toLocaleDateString() })}
+              {p.closesAt && ` · ${t("auto.polls.closes", { date: new Date(p.closesAt).toLocaleString() })}`}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -331,8 +332,8 @@ function GiveawaysTab() {
                   : <span className="cs-badge text-cs-gold">{t("common.active")}</span>}
               </div>
               <p className="text-xs text-cs-muted mt-1">
-                {g.winnerCount} winner{g.winnerCount > 1 ? "s" : ""} · {g.entryCount} entr{g.entryCount === 1 ? "y" : "ies"} ·
-                {g.endedAt ? ` Ended ${new Date(g.endedAt).toLocaleString()}` : ` Ends ${new Date(g.endsAt).toLocaleString()}`}
+                {t("auto.give.meta", { winners: g.winnerCount, entries: g.entryCount })} ·{" "}
+                {g.endedAt ? t("auto.give.endedAt", { date: new Date(g.endedAt).toLocaleString() }) : t("auto.give.endsAt", { date: new Date(g.endsAt).toLocaleString() })}
               </p>
               {g.endedAt && g.winnerIds?.length > 0 && (
                 <p className="text-xs text-success mt-1">
@@ -370,7 +371,7 @@ function GiveawaysTab() {
         open={!!confirmState}
         title={confirmState?.title}
         message={confirmState?.message}
-        confirmLabel={confirmState?.confirmLabel || "Delete"}
+        confirmLabel={confirmState?.confirmLabel || t("common.delete")}
         destructive={confirmState?.destructive ?? true}
         loading={endM.isPending || deleteM.isPending}
         onConfirm={() => { confirmState?.onConfirm?.(); setConfirmState(null); }}
@@ -632,12 +633,12 @@ function WebhooksTab() {
                 {h.enabled
                   ? <span className="cs-badge text-success">{t("common.enabled")}</span>
                   : <span className="cs-badge text-cs-dim">{t("common.disabled")}</span>}
-                {h.failCount > 0 && <span className="cs-badge text-warning">{h.failCount} fails</span>}
+                {h.failCount > 0 && <span className="cs-badge text-warning">{t("auto.wh.fails", { n: h.failCount })}</span>}
               </div>
               <p className="text-xs font-mono text-cs-dim mt-1 truncate">{h.url}</p>
               <p className="text-xs text-cs-muted mt-1">
-                Events: {h.events.join(", ")}
-                {h.lastDeliveryAt && ` · Last: ${new Date(h.lastDeliveryAt).toLocaleString()} (${h.lastStatus})`}
+                {t("auto.wh.eventsList", { list: h.events.join(", ") })}
+                {h.lastDeliveryAt && ` · ${t("auto.wh.last", { date: new Date(h.lastDeliveryAt).toLocaleString(), status: h.lastStatus })}`}
               </p>
             </div>
             <div className="flex items-center gap-2 ml-4">
@@ -839,7 +840,7 @@ function ReactionRolesTab() {
                     : <span className="cs-badge text-cs-dim">{t("auto.rr.notPosted")}</span>}
                 </div>
                 <p className="text-xs text-cs-muted mt-1">
-                  {m.pairs.length} role{m.pairs.length === 1 ? "" : "s"}
+                  {t("auto.rr.rolesCount", { n: m.pairs.length })}
                   {m.channelId && <> · <ChannelName id={m.channelId} /></>}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1">

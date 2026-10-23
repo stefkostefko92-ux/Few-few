@@ -360,4 +360,21 @@ export default {
   "bait.none": "—",
   "bait.yes": "ja",
   "bait.no": "nee",
+
+  // ─── /help на езика на човека (23.10.2026) ───
+  "help.title": "📖 Commando-overzicht",
+  "help.intro": "Kies hieronder een categorie om de commando's te zien, of gebruik `/help category:<name>`.\n\nBij elk commando staat waar je hetzelfde in het dashboard vindt, als dat er is.",
+  "help.countCommands": "Commando's: {{n}}",
+  "help.countDashboard": "Alleen in dashboard: {{n}}",
+  "help.dashboardOnlyCat": "Alleen in dashboard",
+  "help.tip": "Tip: gebruik het menu hieronder of /help category:<name>",
+  "help.usage": "Gebruik",
+  "help.permission": "Recht",
+  "help.dashboard": "Dashboard",
+  "help.noCommands": "Nog geen commando's in deze categorie.",
+  "help.browse": "Bladeren per categorie…",
+  "help.current": "Huidig: {{name}}",
+  "help.btnDashboard": "Dashboard",
+  "help.btnSupport": "Support",
+  "help.btnStatus": "Status",
 };

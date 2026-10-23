@@ -371,4 +371,21 @@ export default {
   "bait.none": "—",
   "bait.yes": "yes",
   "bait.no": "no",
+
+  // ─── /help на езика на човека (23.10.2026) ───
+  "help.title": "📖 Command Reference",
+  "help.intro": "Pick a category below to see its commands, or use `/help category:<name>`.\n\nEach command shows where the same thing lives in the dashboard, if anywhere.",
+  "help.countCommands": "Commands: {{n}}",
+  "help.countDashboard": "Dashboard-only features: {{n}}",
+  "help.dashboardOnlyCat": "Dashboard only",
+  "help.tip": "Tip: use the dropdown below or /help category:<name>",
+  "help.usage": "Usage",
+  "help.permission": "Permission",
+  "help.dashboard": "Dashboard",
+  "help.noCommands": "No commands in this category yet.",
+  "help.browse": "Browse by category…",
+  "help.current": "Current: {{name}}",
+  "help.btnDashboard": "Dashboard",
+  "help.btnSupport": "Support",
+  "help.btnStatus": "Status",
 };

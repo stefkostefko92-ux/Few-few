@@ -59,11 +59,11 @@ export default function CookiesPage() {
                   identifier — no personal data is stored in the cookie itself. Without this
                   cookie, you cannot remain logged in between page loads.
                 </Td>
-                <Td>7 days from last login (sliding)</Td>
+                <Td>7 days after it was last issued (normally at login)</Td>
                 <Td>
                   Art. 6(1)(b) GDPR — necessary for contract performance (providing the
-                  authenticated service). No consent required under ePrivacy Directive
-                  Recital 25 (strictly necessary exemption).
+                  authenticated service). No consent required under Art. 5(3) ePrivacy
+                  Directive (strictly necessary exemption; see also Recital 25).
                 </Td>
               </Tr>
             </tbody>
@@ -84,7 +84,7 @@ export default function CookiesPage() {
 
       <S title="3. Cookie Consent Banner">
         <p>
-          Under the EU ePrivacy Directive (Recital 25), cookies that are <em>strictly necessary</em>{" "}
+          Under Art. 5(3) of the EU ePrivacy Directive (see also Recital 25), cookies that are <em>strictly necessary</em>{" "}
           for a service explicitly requested by the user are exempt from the consent requirement.
           Our session cookie falls within this exemption because you explicitly request to log in,
           the cookie is essential for login to work, it contains no personal data in itself, and it

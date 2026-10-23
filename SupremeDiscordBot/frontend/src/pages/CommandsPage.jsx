@@ -1,40 +1,55 @@
 // frontend/src/pages/CommandsPage.jsx
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useT } from "../contexts/I18nContext";
 import PageHeader from "../components/PageHeader";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Terminal, LayoutDashboard } from "lucide-react";
 import { getCommandsCatalog } from "../api";
+import { COMMANDS_L10N, localizeCatalog } from "../i18n/commandsCatalog";
 
 export default function CommandsPage() {
-  const { t } = useT();
+  const { t, lang } = useT();
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState(null);
 
-  const { data: catalog = [], isLoading, isError, refetch } = useQuery({
+  const { data: rawCatalog = [], isLoading, isError, refetch } = useQuery({
     queryKey: ["commands-catalog"],
     queryFn: getCommandsCatalog,
     staleTime: 1000 * 60 * 60, // 1 hour — catalog rarely changes
   });
+
+  // Каталогът идва на английски; речникът за езика на акаунта се тегли при нужда.
+  const [dict, setDict] = useState(null);
+  useEffect(() => {
+    if (!COMMANDS_L10N[lang]) { setDict(null); return undefined; }
+    let alive = true;
+    COMMANDS_L10N[lang]().then((m) => { if (alive) setDict(m.default); }).catch(() => { if (alive) setDict(null); });
+    return () => { alive = false; };
+  }, [lang]);
+  const catalog = useMemo(() => localizeCatalog(rawCatalog, dict), [rawCatalog, dict]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q && !activeCategory) return catalog;
 
     return catalog
-      .filter((cat) => !activeCategory || cat.category === activeCategory)
+      .filter((cat) => !activeCategory || cat.key === activeCategory)
       .map((cat) => {
         if (!q) return cat;
         const commands = (cat.commands || []).filter((c) =>
           c.name.toLowerCase().includes(q) ||
           c.description?.toLowerCase().includes(q) ||
-          c.signature?.toLowerCase().includes(q)
+          c.signature?.toLowerCase().includes(q) ||
+          c.dashboard?.toLowerCase().includes(q)
         );
         const dashboardOnly = (cat.dashboardOnly || []).filter((f) =>
           f.feature.toLowerCase().includes(q) ||
-          f.description.toLowerCase().includes(q)
+          f.description.toLowerCase().includes(q) ||
+          f.dashboard?.toLowerCase().includes(q)
         );
-        if (!commands.length && !dashboardOnly.length && !cat.category.toLowerCase().includes(q)) return null;
+        // Съвпадение по името на категорията показва цялата категория.
+        if (cat.category.toLowerCase().includes(q)) return cat;
+        if (!commands.length && !dashboardOnly.length) return null;
         return { ...cat, commands, dashboardOnly };
       })
       .filter(Boolean);
@@ -71,13 +86,14 @@ export default function CommandsPage() {
           onClick={() => setActiveCategory(null)}
           className={`cs-badge text-xs ${!activeCategory ? "bg-cs-cyan text-black" : "text-cs-muted hover:text-white"}`}
         >
-          All
+          {t("tickets.tab.all")}
         </button>
         {catalog.map((cat) => (
           <button
-            key={cat.category}
-            onClick={() => setActiveCategory(cat.category === activeCategory ? null : cat.category)}
-            className={`cs-badge text-xs ${activeCategory === cat.category ? "bg-cs-cyan text-black" : "text-cs-muted hover:text-white"}`}
+            key={cat.key}
+            onClick={() => setActiveCategory(cat.key === activeCategory ? null : cat.key)}
+            aria-pressed={activeCategory === cat.key}
+            className={`cs-badge text-xs ${activeCategory === cat.key ? "bg-cs-cyan text-black" : "text-cs-muted hover:text-white"}`}
           >
             {cat.icon} {cat.category}
           </button>
@@ -108,7 +124,7 @@ export default function CommandsPage() {
       {/* Categories */}
       <div className="space-y-6">
         {filtered.map((cat) => (
-          <div key={cat.category} className="cs-card">
+          <div key={cat.key} className="cs-card">
             <div className="mb-4">
               <h2 className="font-semibold text-cs-text">
                 {cat.icon} {cat.category}

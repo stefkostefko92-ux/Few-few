@@ -305,7 +305,7 @@ export default function SettingsPage() {
                 className="cs-input text-sm"
                 rows={4}
                 maxLength={1000}
-                placeholder={`Leave blank to use the default prompt.\n\nExample: "You are a support agent for Acme Corp. Always ask for the user's order number first."`}
+                placeholder={t("settings.ai.promptPh")}
                 value={form.aiRepliesPrompt}
                 onChange={(e) => set("aiRepliesPrompt", e.target.value)}
                 disabled={!isPremium}

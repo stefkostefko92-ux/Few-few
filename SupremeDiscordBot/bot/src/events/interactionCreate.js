@@ -174,39 +174,16 @@ export default {
 
       // ── /help category dropdown ────────────────────────────────────────────
       if (interaction.isStringSelectMenu() && interaction.customId === "help:category") {
-        const { COMMAND_CATALOG } = await import("../utils/commandsCatalog.js");
-        const selected = interaction.values[0];
-        const cat = COMMAND_CATALOG.find((c) => c.category === selected);
+        // Същият embed като /help category:… — на езика на човека (един builder в help.js).
+        const lang = await resolveLang(interaction);
+        const { catalogFor } = await import("../utils/commandsCatalogL10n/index.js");
+        const { buildCategoryEmbed, buildSelect, buildLinkRow } = await import("../commands/help.js");
+        const catalog = catalogFor(lang);
+        const cat = catalog.find((c) => c.key === interaction.values[0]);
         if (!cat) {
-          const lang = await resolveLang(interaction);
           return interaction.reply({ content: t("error.categoryNotFound", lang), flags: MessageFlags.Ephemeral });
         }
-        const { default: helpCmd } = await import("../commands/help.js");
-        // Re-render the same embed the /help command would produce for this category
-        const embed = {
-          title: `${cat.icon} ${cat.category}`,
-          description: cat.description,
-          color: BRAND,
-          fields: [],
-        };
-        (cat.commands || []).forEach((cmd) => {
-          const body = [
-            `**Usage**: \`${cmd.signature}\``,
-            cmd.description,
-            cmd.permission ? `_Permission: ${cmd.permission}_` : null,
-            cmd.dashboard ? `🖥️ **Dashboard**: ${cmd.dashboard}` : null,
-          ].filter(Boolean).join("\n");
-          embed.fields.push({ name: cmd.name, value: body.slice(0, 1024), inline: false });
-        });
-        (cat.dashboardOnly || []).forEach((item) => {
-          embed.fields.push({
-            name: `🖥️ ${item.feature} (dashboard)`,
-            value: `${item.description}\n_${item.dashboard}_`.slice(0, 1024),
-            inline: false,
-          });
-        });
-        // Keep the original select menu so user can pick another category
-        await interaction.update({ embeds: [embed], components: interaction.message.components });
+        await interaction.update({ embeds: [buildCategoryEmbed(cat, lang)], components: [buildSelect(catalog, lang, cat.key), buildLinkRow(lang)] });
         return;
       }
 

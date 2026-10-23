@@ -620,7 +620,7 @@ export default function FormsPage() {
         title={confirmState?.title}
         message={confirmState?.message}
         destructive
-        confirmLabel={confirmState?.confirmLabel || "Delete"}
+        confirmLabel={confirmState?.confirmLabel || t("common.delete")}
         loading={deleteMut.isPending}
         onConfirm={() => { confirmState?.onConfirm(); }}
         onCancel={() => setConfirmState(null)}

@@ -360,4 +360,21 @@ export default {
   "bait.none": "—",
   "bait.yes": "ja",
   "bait.no": "nein",
+
+  // ─── /help на езика на човека (23.10.2026) ───
+  "help.title": "📖 Befehlsübersicht",
+  "help.intro": "Wählen Sie unten eine Kategorie, um ihre Befehle zu sehen, oder nutzen Sie `/help category:<name>`.\n\nBei jedem Befehl steht, wo es dasselbe im Dashboard gibt, falls überhaupt.",
+  "help.countCommands": "Befehle: {{n}}",
+  "help.countDashboard": "Nur im Dashboard: {{n}}",
+  "help.dashboardOnlyCat": "Nur im Dashboard",
+  "help.tip": "Tipp: Nutzen Sie das Menü unten oder /help category:<name>",
+  "help.usage": "Verwendung",
+  "help.permission": "Berechtigung",
+  "help.dashboard": "Dashboard",
+  "help.noCommands": "Noch keine Befehle in dieser Kategorie.",
+  "help.browse": "Nach Kategorie durchsuchen…",
+  "help.current": "Aktuell: {{name}}",
+  "help.btnDashboard": "Dashboard",
+  "help.btnSupport": "Support",
+  "help.btnStatus": "Status",
 };

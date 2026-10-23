@@ -360,4 +360,21 @@ export default {
   "bait.none": "—",
   "bait.yes": "tak",
   "bait.no": "nie",
+
+  // ─── /help на езика на човека (23.10.2026) ───
+  "help.title": "📖 Spis komend",
+  "help.intro": "Wybierz kategorię poniżej, aby zobaczyć jej komendy, albo użyj `/help category:<name>`.\n\nPrzy każdej komendzie jest napisane, gdzie to samo znajdziesz w panelu, jeśli w ogóle.",
+  "help.countCommands": "Komendy: {{n}}",
+  "help.countDashboard": "Tylko w panelu: {{n}}",
+  "help.dashboardOnlyCat": "Tylko w panelu",
+  "help.tip": "Wskazówka: użyj menu poniżej lub /help category:<name>",
+  "help.usage": "Użycie",
+  "help.permission": "Uprawnienie",
+  "help.dashboard": "Panel",
+  "help.noCommands": "Brak komend w tej kategorii.",
+  "help.browse": "Przeglądaj według kategorii…",
+  "help.current": "Bieżąca: {{name}}",
+  "help.btnDashboard": "Panel",
+  "help.btnSupport": "Pomoc",
+  "help.btnStatus": "Status",
 };

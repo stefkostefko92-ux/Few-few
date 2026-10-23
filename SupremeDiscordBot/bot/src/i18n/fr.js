@@ -360,4 +360,21 @@ export default {
   "bait.none": "—",
   "bait.yes": "oui",
   "bait.no": "non",
+
+  // ─── /help на езика на човека (23.10.2026) ───
+  "help.title": "📖 Référence des commandes",
+  "help.intro": "Choisissez une catégorie ci-dessous pour voir ses commandes, ou utilisez `/help category:<name>`.\n\nChaque commande indique où se trouve la même chose dans le tableau de bord, le cas échéant.",
+  "help.countCommands": "Commandes : {{n}}",
+  "help.countDashboard": "Uniquement dans le tableau de bord : {{n}}",
+  "help.dashboardOnlyCat": "Tableau de bord uniquement",
+  "help.tip": "Astuce : utilisez le menu ci-dessous ou /help category:<name>",
+  "help.usage": "Utilisation",
+  "help.permission": "Permission",
+  "help.dashboard": "Tableau de bord",
+  "help.noCommands": "Aucune commande dans cette catégorie pour l’instant.",
+  "help.browse": "Parcourir par catégorie…",
+  "help.current": "Actuelle : {{name}}",
+  "help.btnDashboard": "Tableau de bord",
+  "help.btnSupport": "Support",
+  "help.btnStatus": "Statut",
 };

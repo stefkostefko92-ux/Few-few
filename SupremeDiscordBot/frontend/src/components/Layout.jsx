@@ -61,7 +61,7 @@ export default function Layout() {
     queryFn: () => getServer(serverId),
     enabled: foreignServer,
   });
-  const serverName = currentServer?.name || foreignInfo?.name || "Server";
+  const serverName = currentServer?.name || foreignInfo?.name || t("common.server");
 
   const handleLogout = async () => {
     await logout();

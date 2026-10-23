@@ -358,4 +358,21 @@ export default {
   "bait.none": "—",
   "bait.yes": "да",
   "bait.no": "не",
+
+  // ─── /help на езика на човека (23.10.2026) ───
+  "help.title": "📖 Справочник с команди",
+  "help.intro": "Изберете категория по-долу, за да видите командите ѝ, или ползвайте `/help category:<name>`.\n\nПри всяка команда пише къде е същото в таблото, ако го има.",
+  "help.countCommands": "Команди: {{n}}",
+  "help.countDashboard": "Функции само в таблото: {{n}}",
+  "help.dashboardOnlyCat": "Само в таблото",
+  "help.tip": "Съвет: ползвайте менюто по-долу или /help category:<name>",
+  "help.usage": "Употреба",
+  "help.permission": "Права",
+  "help.dashboard": "Табло",
+  "help.noCommands": "Още няма команди в тази категория.",
+  "help.browse": "Разгледайте по категория…",
+  "help.current": "Текуща: {{name}}",
+  "help.btnDashboard": "Табло",
+  "help.btnSupport": "Поддръжка",
+  "help.btnStatus": "Статус",
 };

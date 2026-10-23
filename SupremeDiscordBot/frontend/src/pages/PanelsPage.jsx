@@ -718,7 +718,7 @@ export default function PanelsPage() {
               </details>
 
               <details className="cs-card !p-4 !bg-cs-panel">
-                <summary className="cursor-pointer text-xs text-cs-cyan">→ Verification Gate (v1.7)</summary>
+                <summary className="cursor-pointer text-xs text-cs-cyan">{t("panels.sec.verifyGate")}</summary>
                 <div className="pt-4 space-y-3">
                   <p className="text-xs text-cs-dim">{t("ui.hint.requireRoles")}</p>
                   <label className="block">

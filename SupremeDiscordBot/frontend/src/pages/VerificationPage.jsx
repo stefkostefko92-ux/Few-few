@@ -22,13 +22,14 @@ const TYPES = ["BUTTON", "MATH", "REACTION"];
 const DIFFICULTIES = ["EASY", "MEDIUM", "HARD"];
 const BUTTON_STYLES = ["PRIMARY", "SECONDARY", "SUCCESS", "DANGER"];
 
-const defaultForm = () => ({
+// Заглавието, текстът и бутонът отиват направо в Discord — на езика на таблото.
+const defaultForm = (t) => ({
   name: "",
-  title: "✅ Verify to access the server",
-  description: "Click the button below to verify you're not a bot.",
+  title: t("verify.default.title"),
+  description: t("verify.default.description"),
   color: "#8fe600",
   type: "BUTTON",
-  buttonLabel: "Verify",
+  buttonLabel: t("verify.default.button"),
   buttonEmoji: "",
   buttonStyle: "SUCCESS",
   successMessage: "",
@@ -44,9 +45,9 @@ const defaultForm = () => ({
   cooldownMinutes: 10,
 });
 
-function panelToForm(p) {
+function panelToForm(p, t) {
   return {
-    ...defaultForm(),
+    ...defaultForm(t),
     ...p,
     grantRoleIds: (p.grantRoleIds || []).join(","),
     removeRoleIds: (p.removeRoleIds || []).join(","),
@@ -69,7 +70,7 @@ export default function VerificationPage() {
   // (напр. „Math captcha requires Premium") се губи в „Action failed".
   const errText = (err) => err?.response?.data?.error || t("auto.actionFailed");
   const [editing, setEditing] = useState(null); // null | "new" | panelId
-  const [form, setForm] = useState(defaultForm());
+  const [form, setForm] = useState(() => defaultForm(t));
   const [spawnInputs, setSpawnInputs] = useState({});
   const [confirmState, setConfirmState] = useState(null);
 
@@ -108,8 +109,8 @@ export default function VerificationPage() {
   });
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
-  const openNew = () => { setForm(defaultForm()); setEditing("new"); };
-  const openEdit = (p) => { setForm(panelToForm(p)); setEditing(p.id); };
+  const openNew = () => { setForm(defaultForm(t)); setEditing("new"); };
+  const openEdit = (p) => { setForm(panelToForm(p, t)); setEditing(p.id); };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -171,7 +172,7 @@ export default function VerificationPage() {
                 )}
               </div>
               <div className="text-xs text-cs-dim mt-1">
-                ✓ {p.successCount} verified · ✗ {p.failCount} failed · Grants {p.grantRoleIds?.length || 0} role(s)
+                {t("verify.stats", { ok: p.successCount, failed: p.failCount, roles: p.grantRoleIds?.length || 0 })}
               </div>
             </div>
             <div className="flex items-center gap-2">

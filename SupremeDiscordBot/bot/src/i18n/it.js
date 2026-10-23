@@ -358,4 +358,21 @@ export default {
   "bait.none": "—",
   "bait.yes": "sì",
   "bait.no": "no",
+
+  // ─── /help на езика на човека (23.10.2026) ───
+  "help.title": "📖 Riepilogo dei comandi",
+  "help.intro": "Scegli una categoria qui sotto per vederne i comandi, oppure usa `/help category:<name>`.\n\nOgni comando indica dove si trova la stessa cosa nella dashboard, se c’è.",
+  "help.countCommands": "Comandi: {{n}}",
+  "help.countDashboard": "Solo nella dashboard: {{n}}",
+  "help.dashboardOnlyCat": "Solo nella dashboard",
+  "help.tip": "Suggerimento: usa il menu qui sotto o /help category:<name>",
+  "help.usage": "Uso",
+  "help.permission": "Permesso",
+  "help.dashboard": "Dashboard",
+  "help.noCommands": "Ancora nessun comando in questa categoria.",
+  "help.browse": "Sfoglia per categoria…",
+  "help.current": "Attuale: {{name}}",
+  "help.btnDashboard": "Dashboard",
+  "help.btnSupport": "Supporto",
+  "help.btnStatus": "Stato",
 };

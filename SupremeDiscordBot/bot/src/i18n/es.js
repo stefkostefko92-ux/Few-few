@@ -360,4 +360,21 @@ export default {
   "bait.none": "—",
   "bait.yes": "sí",
   "bait.no": "no",
+
+  // ─── /help на езика на човека (23.10.2026) ───
+  "help.title": "📖 Referencia de comandos",
+  "help.intro": "Elige una categoría abajo para ver sus comandos o usa `/help category:<name>`.\n\nCada comando indica dónde está lo mismo en el panel de control, si existe.",
+  "help.countCommands": "Comandos: {{n}}",
+  "help.countDashboard": "Solo en el panel: {{n}}",
+  "help.dashboardOnlyCat": "Solo en el panel",
+  "help.tip": "Consejo: usa el menú de abajo o /help category:<name>",
+  "help.usage": "Uso",
+  "help.permission": "Permiso",
+  "help.dashboard": "Panel",
+  "help.noCommands": "Todavía no hay comandos en esta categoría.",
+  "help.browse": "Explorar por categoría…",
+  "help.current": "Actual: {{name}}",
+  "help.btnDashboard": "Panel",
+  "help.btnSupport": "Soporte",
+  "help.btnStatus": "Estado",
 };

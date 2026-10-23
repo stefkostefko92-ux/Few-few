@@ -59,3 +59,32 @@ describe("каталог ↔ реалните команди", () => {
     expect(panel.signature).toContain("spawn");
   });
 });
+
+// ─── „Dashboard: …“ казва истината (23.10.2026) ──────────────────────────────
+// Проверено срещу таблото: нямаше бутон „New“ за тикет, нито „Add/Remove Member“,
+// „unclaim“, „rename“, „Escalate“, раздел „diagnostics“ или „Test“ за webhook;
+// плащането отдавна не е през Stripe, а White-label е отделен план.
+describe("COMMAND_CATALOG — твърденията за таблото", () => {
+  const claims = COMMAND_CATALOG.flatMap((cat) => [
+    ...(cat.commands || []).map((c) => ({ who: c.name, text: c.dashboard })),
+    ...(cat.dashboardOnly || []).map((f) => ({ who: f.feature, text: `${f.description} ${f.dashboard}` })),
+  ]);
+  it("не обещава действия, които таблото няма", () => {
+    const FALSE = [/click 'New'/, /Add Member/, /Remove Member/, /\bunclaim\b/i, /rename action/, /\bEscalate\b/, /diagnostics/i, /\/ Test\b/, /Stripe/, /shield icon/];
+    const bad = claims.flatMap(({ who, text }) => FALSE.filter((re) => re.test(text)).map((re) => `${who}: ${re}`));
+    expect(bad).toEqual([]);
+  });
+  it("White-label е свой план, не част от Premium", () => {
+    const wl = COMMAND_CATALOG.flatMap((c) => c.dashboardOnly || []).find((f) => /White-label bot/.test(f.feature));
+    expect(wl.feature).toMatch(/White-label plan/);
+    expect(wl.description).not.toMatch(/Requires Premium/);
+  });
+});
+
+describe("COMMAND_CATALOG — готовите отговори имат страница в таблото", () => {
+  it("/tag add, remove и list сочат страницата, не „само Discord“", () => {
+    const tags = getAllCommands().filter((c) => ["/tag add", "/tag remove", "/tag list"].includes(c.name));
+    expect(tags).toHaveLength(3);
+    for (const c of tags) expect(c.dashboard, c.name).toMatch(/^Canned replies page/);
+  });
+});

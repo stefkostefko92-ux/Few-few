@@ -76,8 +76,8 @@ export default function ApplicationsPage() {
       setDiscussMessage({
         type: "status",
         text: data.alreadyExists
-          ? `💬 Discussion channel already open (#${data.channelId}). Check your Discord server.`
-          : `✅ Discussion channel opened (#${data.channelId}). Check your Discord server.`,
+          ? t("apps.discussExists", { channel: data.channelId })
+          : t("apps.discussOpened", { channel: data.channelId }),
       });
     },
     onError: (err) => {
@@ -198,7 +198,7 @@ export default function ApplicationsPage() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-cs-text">{app.user?.username ?? "Unknown"}</span>
+                      <span className="font-semibold text-cs-text">{app.user?.username ?? t("common.unknownUser")}</span>
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-xl ${STATUS_COLORS[app.status]}`}>
                         {app.status}
                       </span>
@@ -377,7 +377,7 @@ export default function ApplicationsPage() {
       <Modal
         open={!!reviewingId}
         onClose={() => setReviewingId(null)}
-        title={reviewAction === "approve" ? "✅ Approve Application" : reviewAction === "deny" ? "❌ Deny Application" : t("apps.review")}
+        title={reviewAction === "approve" ? t("apps.approveTitle") : reviewAction === "deny" ? t("apps.denyTitle") : t("apps.review")}
         maxWidth="max-w-md"
       >
         <p className="text-sm text-cs-muted mb-4">
@@ -415,7 +415,7 @@ export default function ApplicationsPage() {
                 : "cs-btn-primary"
             }
           >
-            {reviewMut.isPending ? t("common.processing") : reviewAction ? `Confirm ${reviewAction.charAt(0).toUpperCase() + reviewAction.slice(1)}` : "Confirm"}
+            {reviewMut.isPending ? t("common.processing") : reviewAction === "approve" ? t("apps.confirmApprove") : reviewAction === "deny" ? t("apps.confirmDeny") : t("common.confirm")}
           </button>
         </div>
       </Modal>

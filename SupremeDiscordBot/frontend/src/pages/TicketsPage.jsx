@@ -298,7 +298,7 @@ export default function TicketsPage() {
                             {String(ticket.creator?.username || "?").charAt(0).toUpperCase()}
                           </span>
                         )}
-                        <span className="text-cs-text">{ticket.creator?.username ?? "Unknown"}</span>
+                        <span className="text-cs-text">{ticket.creator?.username ?? t("common.unknownUser")}</span>
                       </div>
                     </td>
                     <td className="text-cs-muted">{ticket.panel?.name ?? "—"}</td>
