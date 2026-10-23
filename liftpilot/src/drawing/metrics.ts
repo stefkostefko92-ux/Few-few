@@ -1,0 +1,85 @@
+// Text measure with the metrics of DejaVu Sans, the font the PDF is drawn with: the kernel wraps, fits and centres
+// lettering itself, so the renderers only paint and the SVG preview and the PDF agree.
+import { BOLD, REGULAR } from './metrics-data';
+import type { Box, Pt, TextShape } from './types';
+
+/** Horizontal scale of condensed lettering (dimensions and labels of the drawings). */
+export const COND = 0.84;
+
+const FALLBACK = 620;
+
+export interface Font {
+  size: number;
+  bold?: boolean;
+  cond?: boolean;
+}
+
+/** Width of a line of text on paper [mm]. */
+export function textWidth(text: string, f: Font): number {
+  const table = f.bold ? BOLD : REGULAR;
+  let units = 0;
+  for (const ch of text) units += table[ch.codePointAt(0) ?? 32] ?? FALLBACK;
+  return (units / 1000) * f.size * (f.cond ? COND : 1);
+}
+
+/** Lines of a paragraph wrapped at `width`; words longer than the width are cut. Explicit newlines are kept. */
+export function wrap(text: string, width: number, f: Font): string[] {
+  const out: string[] = [];
+  for (const para of text.split('\n')) {
+    let line = '';
+    for (const word of para.split(/\s+/).filter(Boolean)) {
+      const next = line ? `${line} ${word}` : word;
+      if (textWidth(next, f) <= width) { line = next; continue; }
+      if (line) out.push(line);
+      if (textWidth(word, f) <= width) { line = word; continue; }
+      // a word wider than the line: cut it where it overflows
+      let part = '';
+      for (const ch of word) {
+        if (textWidth(part + ch, f) > width && part) { out.push(part); part = ''; }
+        part += ch;
+      }
+      line = part;
+    }
+    out.push(line);
+  }
+  return out;
+}
+
+/** Paper box of a lettering: its measured width, from a little under the baseline to its size over it; turned, the box
+ *  round it. */
+export function textBox(s: TextShape): Box {
+  const w = textWidth(s.text, { size: s.size, bold: s.bold, cond: s.cond }), h = s.size;
+  const lo = s.align === 'r' ? -w : s.align === 'c' ? -w / 2 : 0;
+  const [x, y] = s.at, angle = s.angle ?? 0;
+  if (angle === 0) return { x0: x + lo, y0: y - 0.3 * h, x1: x + lo + w, y1: y + h };
+  if (angle === 90) return { x0: x - h, y0: y + lo, x1: x + 0.3 * h, y1: y + lo + w };
+  const pts = textQuad(s), xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+  return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
+}
+
+/** The corners of a lettering's box turned with it (along its baseline, then its top), on paper. */
+export function textQuad(s: TextShape): Pt[] {
+  const w = textWidth(s.text, { size: s.size, bold: s.bold, cond: s.cond }), h = s.size;
+  const lo = s.align === 'r' ? -w : s.align === 'c' ? -w / 2 : 0;
+  const [x, y] = s.at, r = ((s.angle ?? 0) * Math.PI) / 180, [c, sn] = [Math.cos(r), Math.sin(r)];
+  return [[lo, -0.3 * h], [lo + w, -0.3 * h], [lo + w, h], [lo, h]].map(([u, v]): Pt => [x + u * c - v * sn, y + u * sn + v * c]);
+}
+
+/** The boxes a lettering takes on paper, for what other lettering keeps off: its box when level or upright; turned
+ *  askew, a box for each stretch of it about as long as it is high (one box round the whole would take a square of paper
+ *  beside a slanted text: round 37, a drop's value askew was pushed past its chain's end over a name nearby). */
+export function textBoxes(s: TextShape): Box[] {
+  if (Math.abs(Math.sin(((s.angle ?? 0) * Math.PI) / 90)) < 1e-9) return [textBox(s)];
+  const [q0, q1, q2, q3] = textQuad(s), n = Math.max(1, Math.ceil(Math.hypot(q1[0] - q0[0], q1[1] - q0[1]) / (1.3 * s.size)));
+  const lerp = (a: Pt, b: Pt, t: number): Pt => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+  return Array.from({ length: n }, (_, i) => {
+    const ps = [lerp(q0, q1, i / n), lerp(q0, q1, (i + 1) / n), lerp(q3, q2, i / n), lerp(q3, q2, (i + 1) / n)], xs = ps.map((p) => p[0]), ys = ps.map((p) => p[1]);
+    return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
+  });
+}
+
+/** The largest size, not above `size`, at which the text fits in `width`. */
+export function fitSize(text: string, width: number, f: Font): number {
+  const w = textWidth(text, f);
+  return w <= width || w === 0 ? f.size : f.size * (width / w);
+}

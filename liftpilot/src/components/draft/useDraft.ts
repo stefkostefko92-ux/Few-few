@@ -1,0 +1,87 @@
+'use client';
+
+// The draft of a form kept as it is filled in (src/server/draft-actions.ts): a second and a half after the last change,
+// when the values read as the server keeps them (a value being typed out of range waits until it is back in range).
+// Saving the form's record or discarding the draft stops the pending keep first, so the draft never comes back after
+// the record (the record's save deletes it). Leaving for a page that reads the draft (round 45, «Porta nel calcolo»)
+// keeps it at once first (flush). A tab hidden or closed within the second and a half keeps what is pending at once too
+// (round 46: the last edits were lost), as a POST the browser finishes after the page is gone (/api/drafts, keepalive).
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { saveDraftAction, type DraftResult } from '@/server/draft-actions';
+import type { DraftScope } from '@/lib/draft-input';
+
+export interface DraftTarget {
+  projectId: string;
+  scope: DraftScope;
+  /** when the draft the form opened with was kept, as the server writes dates; null: the form opened without one */
+  resumed: string | null;
+}
+
+export type DraftState = { kind: 'none' } | { kind: 'resumed'; at: string } | { kind: 'saved'; at: Date } | { kind: 'failed' };
+
+export interface DraftHandle {
+  state: DraftState;
+  /** what the form holds now is not kept as a draft: it is being saved as a record, or the draft discarded */
+  stop(): void;
+  /** what the form holds now kept at once (the pending keep in its place, and kept even when unchanged since the form
+   *  opened: the page that follows reads the draft as what is on the screen), when it reads as the server keeps it */
+  flush(): Promise<void>;
+}
+
+const DELAY = 1500;
+
+export function useDraft(target: DraftTarget | null, data: unknown, valid: boolean): DraftHandle {
+  const [state, setState] = useState<DraftState>(target?.resumed ? { kind: 'resumed', at: target.resumed } : { kind: 'none' });
+  const json = JSON.stringify(data), kept = useRef(json), timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // what the page-hide handler sends: the latest values, read when the tab goes, not when the handler was set
+  const latest = useRef({ json, target, valid });
+  useEffect(() => { latest.current = { json, target, valid }; }, [json, target, valid]);
+  useEffect(() => {
+    const keepNow = (): void => {
+      const { json: now, target: to, valid: ok } = latest.current;
+      if (!to || !ok || now === kept.current) return;
+      if (timer.current) clearTimeout(timer.current);
+      kept.current = now;
+      const body = JSON.stringify({ projectId: to.projectId, scope: to.scope, data: JSON.parse(now) as unknown });
+      // a keepalive request carries at most 64 KB: a larger draft goes as the pending keep would have
+      const sent: Promise<DraftResult> = body.length < 60_000
+        ? fetch('/api/drafts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).then((r) => r.json() as Promise<DraftResult>)
+        : saveDraftAction({ projectId: to.projectId, scope: to.scope, data: JSON.parse(now) as unknown });
+      // a tab only hidden comes back to the bar saying so
+      sent.then((r) => setState(r.ok ? { kind: 'saved', at: new Date(r.at) } : { kind: 'failed' }), () => undefined);
+    };
+    const hidden = (): void => { if (document.visibilityState === 'hidden') keepNow(); };
+    window.addEventListener('pagehide', keepNow);
+    document.addEventListener('visibilitychange', hidden);
+    return () => { window.removeEventListener('pagehide', keepNow); document.removeEventListener('visibilitychange', hidden); };
+  }, []);
+  useEffect(() => {
+    // nothing kept before the form changes, nor while a value is out of range
+    if (!target || !valid || json === kept.current) return;
+    const id = setTimeout(() => {
+      kept.current = json;
+      saveDraftAction({ projectId: target.projectId, scope: target.scope, data: JSON.parse(json) as unknown }).then(
+        (r) => setState(r.ok ? { kind: 'saved', at: new Date(r.at) } : { kind: 'failed' }),
+        () => setState({ kind: 'failed' }),
+      );
+    }, DELAY);
+    timer.current = id;
+    return () => clearTimeout(id);
+  }, [json, target, valid]);
+  const stop = useCallback((): void => {
+    if (timer.current) clearTimeout(timer.current);
+    kept.current = json;
+  }, [json]);
+  const flush = useCallback(async (): Promise<void> => {
+    if (timer.current) clearTimeout(timer.current);
+    if (!target || !valid) return;
+    kept.current = json;
+    try {
+      const r = await saveDraftAction({ projectId: target.projectId, scope: target.scope, data: JSON.parse(json) as unknown });
+      setState(r.ok ? { kind: 'saved', at: new Date(r.at) } : { kind: 'failed' });
+    } catch {
+      setState({ kind: 'failed' });
+    }
+  }, [json, target, valid]);
+  return { state, stop, flush };
+}

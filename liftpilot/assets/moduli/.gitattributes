@@ -1,0 +1,3 @@
+# The suppliers' blank order forms of Rilievi are pinned by SHA-256 (src/server/rilievi/moduli-pdf.ts): never a line-ending
+# conversion or a text diff, or the pin fails and the module PDFs answer 500.
+*.pdf binary

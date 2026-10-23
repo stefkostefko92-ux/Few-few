@@ -21,7 +21,10 @@ set -euo pipefail
 
 # ╔═ КОНФИГУРАЦИЯ ═══════════════════════════════════════════════════════════════
 # Кои проекти да се разгръщат на ТОЗИ сървър (махни който не върви тук).
-PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma korpora}"
+# PROJECTS_GIVEN: списъкът, даден изрично при пускането (празно — подразбиращият се). Продукт, поискан по име, който
+# липсва в архива, е провал, не пропуск: иначе грешен REF (напр. main без liftpilot/) завършваше с „Деплой готов“.
+PROJECTS_GIVEN="${PROJECTS:-}"
+PROJECTS="${PROJECTS:-zabobovdol medqr nexus SupremeDiscordBot vizitka mastilko eternaltouch adblock ospedali vpsdash panev piuma liftpilot korpora}"
 ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш архива ръчно
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
@@ -148,6 +151,17 @@ PIUMA_HEALTH_URL="${PIUMA_HEALTH_URL:-http://127.0.0.1:4310/health}"
 # сочи към release без piuma/, тоест „пренеси от текущия" няма откъде; без този път
 # инструкцията „сложи го в current/piuma/.env" сочеше папка, която още не съществува.
 PIUMA_ENV="${PIUMA_ENV:-/opt/few-few/shared/piuma/.env}"
+
+# liftpilot (Docker Compose: app + db, host nginx + Let's Encrypt). Тайните са в стабилния път извън releases/ (600);
+# при пръв деплой liftpilot/deploy/deploy.sh ги генерира (паролата на администратора — от LIFTPILOT_ADMIN_PASSWORD
+# или случайна, отпечатана веднъж); LIFTPILOT_SMTP_USER/LIFTPILOT_SMTP_PASS — данните на Brevo за писмата.
+LIFTPILOT_ENV="${LIFTPILOT_ENV:-/opt/few-few/shared/liftpilot/.env}"
+# Паметта за последния здрав деплой на LiftPilot (истинският път на неговата liftpilot/ папка; предишният — в .prev) и
+# стабилната връзка към нея: `docker compose exec`, pdf:keep, legal:notice и връщането стават от LIFTPILOT_LINK, не от
+# `current` — деплой на друг продукт мести `current` към release, в който liftpilot/ може да няма. Двата release-а
+# (последният здрав и предишният — целта на връщането) са защитени от чистенето в т. 4, както този на Korpora.
+LIFTPILOT_LAST_GOOD="${LIFTPILOT_LAST_GOOD:-/opt/few-few/shared/liftpilot/last-good}"
+LIFTPILOT_LINK="${LIFTPILOT_LINK:-/opt/few-few/liftpilot-current}"
 
 # korpora (Korpora — Docker Compose: db + app на 127.0.0.1:4320 зад nginx на хоста). Стъпките са
 # в korpora/deploy/deploy.sh — същият скрипт и за ръчния деплой, затова двата пътя не се разминават:
@@ -1351,7 +1365,71 @@ deploy_piuma() {
   fi
 }
 
-# ── 3й) korpora — Docker Compose (db + app); стъпките са в korpora/deploy/deploy.sh ──
+# ── 3й) liftpilot — Docker Compose (app + db) зад nginx на хоста ──────────────
+# Цялата логика е в liftpilot/deploy/deploy.sh (идемпотентен): тайни при пръв деплой, pg_dump ПРЕДИ миграцията
+# (без бекъп няма миграция), build + up, health с маркер, nginx vhost + certbot. Тук само го викаме и проверяваме.
+deploy_liftpilot() {
+  local d="$SRC/liftpilot"
+  if [ ! -d "$d" ]; then
+    # Поискан по име (PROJECTS="liftpilot") — провал: свален е ref без liftpilot/ (main, докато продуктът е само в клона).
+    if project_given liftpilot; then
+      warn "liftpilot: поискан е изрично (PROJECTS), а в архива няма liftpilot/ — провери REF (клонът или комитът с liftpilot/)."
+      deploy_failed=1
+    else
+      warn "Няма liftpilot/ в архива — пропускам."
+    fi
+    return
+  fi
+  log "Разгръщам liftpilot (Docker Compose)…"
+  command -v docker >/dev/null || { warn "liftpilot: липсва docker — пропускам."; deploy_failed=1; return; }
+  # `( … ) || { … }`: при `set -e` провал тук не бива да спира следващите проекти. Провал след `docker compose up`
+  # вече е сменил контейнерите (и entrypoint-ът е пуснал миграциите) — затова не обещаваме „старите остават“.
+  ( cd "$d" && LIFTPILOT_ENV="$LIFTPILOT_ENV" bash deploy/deploy.sh ) \
+    || { warn "liftpilot: deploy.sh се провали — виж изхода: преди build/up работи предишният код, след up — новите контейнери (връщане: liftpilot/DEPLOY.md, раздел Връщане назад)."; deploy_failed=1; return; }
+  local p; p="$(grep -E '^APP_PORT=' "$LIFTPILOT_ENV" 2>/dev/null | head -1 | cut -d= -f2 | tr -dc '0-9' || true)"
+  health "http://127.0.0.1:${p:-4330}/api/health" "liftpilot" '"app":"liftpilot"' || { deploy_failed=1; return; }
+  liftpilot_mark_good "$d"
+}
+
+# Дадено ли е името изрично в PROJECTS при пускането (не в подразбиращия се списък).
+project_given() {
+  local w
+  for w in $PROJECTS_GIVEN; do [ "$w" = "$1" ] && return 0; done
+  return 1
+}
+
+# След здрав деплой: истинският път (без symlink-ове — по него чистенето в т. 4 разпознава release-а) става последният
+# здрав, досегашният отива в .prev (целта на връщането), а LIFTPILOT_LINK сочи новия. Връзката се сменя атомарно
+# (mv -T на нова връзка), за да не остане миг без нея. Неуспех тук не проваля деплоя — приложението вече отговаря.
+# Връщане назад (RELEASE_DIR): досегашният last-good е лошият код, от който се връщаме — той НЕ става .prev (иначе
+# второ пускане на същата команда за връщане го разгръща наново), а отива в .rolled-back-from; .prev остава. Обикновен
+# деплой изтрива .rolled-back-from (вече не е за какво да напомня).
+liftpilot_mark_good() {
+  local real old
+  real="$(readlink -f "$1" 2>/dev/null || true)"
+  [ -n "$real" ] || return 0
+  install -d -m 700 "$(dirname "$LIFTPILOT_LAST_GOOD")"
+  old="$(head -n 1 "$LIFTPILOT_LAST_GOOD" 2>/dev/null || true)"
+  if [ -n "${RELEASE_DIR:-}" ]; then
+    if [ -n "$old" ] && [ "$old" != "$real" ]; then
+      printf '%s\n' "$old" > "$LIFTPILOT_LAST_GOOD.rolled-back-from.tmp" \
+        && mv -f "$LIFTPILOT_LAST_GOOD.rolled-back-from.tmp" "$LIFTPILOT_LAST_GOOD.rolled-back-from" || true
+    fi
+  else
+    rm -f "$LIFTPILOT_LAST_GOOD.rolled-back-from" || true
+    if [ -n "$old" ] && [ "$old" != "$real" ]; then
+      printf '%s\n' "$old" > "$LIFTPILOT_LAST_GOOD.prev.tmp" && mv -f "$LIFTPILOT_LAST_GOOD.prev.tmp" "$LIFTPILOT_LAST_GOOD.prev" || true
+    fi
+  fi
+  printf '%s\n' "$real" > "$LIFTPILOT_LAST_GOOD.tmp" && mv -f "$LIFTPILOT_LAST_GOOD.tmp" "$LIFTPILOT_LAST_GOOD" || true
+  if ln -sfn "$real" "$LIFTPILOT_LINK.tmp" && mv -Tf "$LIFTPILOT_LINK.tmp" "$LIFTPILOT_LINK"; then
+    ok "liftpilot: $LIFTPILOT_LINK → $real"
+  else
+    warn "liftpilot: не успях да обновя $LIFTPILOT_LINK (пътят на здравия release е в $LIFTPILOT_LAST_GOOD)."
+  fi
+}
+
+# ── 3к) korpora — Docker Compose (db + app); стъпките са в korpora/deploy/deploy.sh ──
 # Кодовете на deploy.sh: 0 — жив; 3 — няма .env (машината още не е настроена: пропуск, не провал,
 # както при piuma); 4 — контейнерите са сменени, но Korpora не отговаря → откат; друго — спрян
 # преди смяната на контейнерите (работещите не са пипани).
@@ -1758,6 +1836,7 @@ for p in $PROJECTS; do
     SupremeDiscordBot)    deploy_supreme ;;
     eternaltouch)         deploy_eternaltouch ;;
     piuma)      deploy_piuma ;;
+    liftpilot)  deploy_liftpilot ;;
     korpora)   deploy_korpora ;;
     adblock)    deploy_adblock ;;
     vpsdash|vps-dashboard|vpsdashboard) deploy_vpsdashboard ;;
@@ -1789,17 +1868,26 @@ fi
 # Третото: release-ът, към който сочи паметта на Korpora за последния работещ (KORPORA_LAST_GOOD).
 # Без него няколко деплоя без korpora (PROJECTS="piuma") изтриваха целта на отката и той падаше към
 # код, който никога не е разгръщан за Korpora.
+# Същото за LiftPilot: release-ът, от който върви (LIFTPILOT_LAST_GOOD и връзката LIFTPILOT_LINK), и предишният здрав
+# (.prev — целта на връщането). Иначе пет деплоя на други продукти от main трият папката с compose файла, от която
+# се пускат pdf:keep, legal:notice и възстановяването — контейнерите вървят, но няма откъде да се управляват.
 prune_releases() {
-  local keep_rel live_rel lg_rel old old_real keep protected
+  local keep_rel live_rel lg_rel lp_rel="" lp_prev="" lp_link="" old old_real keep protected
   keep_rel="$(cd "$SRC" && pwd -P)"
   live_rel="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
   lg_rel="$(readlink -f "$(cat "$KORPORA_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
+  # `:-`: функцията се реже и пуска и самостоятелно (tools/vps/autodeploy-*.test.mjs), без настройките на LiftPilot
+  if [ -n "${LIFTPILOT_LAST_GOOD:-}" ]; then
+    lp_rel="$(readlink -f "$(head -n 1 "$LIFTPILOT_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
+    lp_prev="$(readlink -f "$(head -n 1 "$LIFTPILOT_LAST_GOOD.prev" 2>/dev/null || true)" 2>/dev/null || true)"
+  fi
+  [ -z "${LIFTPILOT_LINK:-}" ] || lp_link="$(readlink -f "$LIFTPILOT_LINK" 2>/dev/null || true)"
   while read -r old; do
     [ -n "$old" ] || continue
     old_real="$(cd "$old" 2>/dev/null && pwd -P || true)"
     [ -n "$old_real" ] || continue
     keep=0
-    for protected in "$keep_rel" "$live_rel" "$lg_rel"; do
+    for protected in "$keep_rel" "$live_rel" "$lg_rel" "$lp_rel" "$lp_prev" "$lp_link"; do
       [ -n "$protected" ] || continue
       case "$protected" in
         "$old_real"|"$old_real"/*) keep=1 ;;

@@ -1,0 +1,121 @@
+import type { ReactNode } from 'react';
+import { getTranslations } from 'next-intl/server';
+import { Link } from '@/i18n/routing';
+import { getSessionUser, type SessionUser } from '@/lib/auth';
+import { dateFormat } from '@/lib/dates';
+import { liftInputsReadSchema } from '@/lib/lift-input';
+import type { TipoIntervento } from '@/lib/lift/intervento';
+import { pitchesOf } from '@/lib/plant';
+import { can, remakerOf } from '@/lib/rbac';
+import LiftView from '@/components/lift/LiftView';
+import StaleNotice from '@/components/StaleNotice';
+import { outdated } from '@/server/records';
+import { visiblePrices } from '@/server/prices';
+import { listProjectRts } from '@/server/rt/queries';
+import RelazioniEmesse from '@/components/rt/RelazioniEmesse';
+import RecordTable, { type RecordRow } from './RecordTable';
+import SectionTitle from './SectionTitle';
+import TipoTag from './TipoTag';
+
+// The sections of an installation's page in the order of its work (round 45): «Calcolo argano» (its step-2
+// calculations, their type), the Progetto (the latest lift design in 3D with its versions, and the machine rooms
+// surveyed), the drawing sets with the installation's data and the relazioni tecniche di modifica (round 49), and the
+// archive of the records made before the one form (shaft designs and their calculations without a lift design). Server
+// components; the page reads the records (the relazioni: the section, with the session's company).
+
+type Calc = RecordRow & { tipo: TipoIntervento; reviews: number };
+
+/** «Calcolo argano»: the step-2 calculations, newest first, with their type; the way to a new one. */
+export async function CalcoloSection({ rows, locale, nuovo, vuoto }: { rows: Calc[]; locale: string; nuovo: string | null; vuoto: ReactNode }) {
+  const [t, tc, ti] = await Promise.all([getTranslations('projects'), getTranslations('calculations'), getTranslations('calculations.intervento')]);
+  return (
+    <section className="flex flex-col gap-3" aria-labelledby="sec-calcolo">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <SectionTitle id="sec-calcolo" icon="calculator">{t('sec_calcolo')}</SectionTitle>
+        {nuovo && rows.length ? <Link className="btn" href={nuovo}>{tc('new')}</Link> : null}
+      </div>
+      {rows.length === 0 ? <div className="panel items-start">{vuoto}</div> : (
+        <RecordTable rows={rows} kind="calc" href={(x) => `/app/calculations/${x}`} what={tc('col_machine')} locale={locale}
+          extra={{ label: t('col_tipo'), cell: (r) => { const tp = rows.find((c) => c.id === r.id)?.tipo ?? null; return <TipoTag tipo={tp} label={ti(tp ?? 'daDefinire')} small />; } }}
+          under={(r) => { const n = rows.find((c) => c.id === r.id)?.reviews ?? 0; return n ? <span className="note">{tc('reviewed', { n })}</span> : null; }} />
+      )}
+    </section>
+  );
+}
+
+interface Latest { id: string; inputs: unknown; createdAt: Date; engineVersion: string; calculation: { engineVersion: string }; shaftDesign: { engineVersion: string } }
+
+/** The Progetto: the latest lift design in 3D (and its saved versions), the machine rooms surveyed; nothing yet — what
+ *  the Progetto of this intervention is and the way to it (or whose it is). */
+export async function ProgettoSection({ user, plant, latest, lifts, rooms, locale, live, vuoto }: {
+  user: SessionUser; plant: unknown; latest: Latest | null; lifts: RecordRow[]; rooms: RecordRow[]; locale: string; live: boolean; vuoto: ReactNode;
+}) {
+  const [t, tl, tm] = await Promise.all([getTranslations('projects'), getTranslations('lift'), getTranslations('room')]);
+  const fd = dateFormat(locale), inputs = latest ? liftInputsReadSchema.safeParse(latest.inputs) : null;
+  return (
+    <section className="flex flex-col gap-3 lift-home" aria-labelledby="sec-progetto">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <SectionTitle id="sec-progetto" icon="cube" eyebrow={latest ? fd.dateTime(latest.createdAt) : undefined}>{t('sec_progetto')}</SectionTitle>
+        {latest ? <Link className="btn" href={`/app/lift-designs/${latest.id}`}>{tl('open')}</Link> : null}
+      </div>
+      {latest && outdated.lift(latest) ? <StaleNotice text="design" by={remakerOf(user, 'lift', live)} refresh={{ kind: 'lift', id: latest.id }} /> : null}
+      {inputs?.success ? <LiftView inputs={inputs.data} checks={false} prices={await visiblePrices(user)} pitches={pitchesOf(plant)} /> : null}
+      {lifts.length > 1 ? <SectionTitle level={3} icon="history">{tl('history')}</SectionTitle> : null}
+      {lifts.length > 1 ? <RecordTable rows={lifts} kind="lift" href={(x) => `/app/lift-designs/${x}`} what={tl('col_design')} locale={locale} /> : null}
+      {rooms.length ? <SectionTitle level={3} icon="building-gear">{tm('projectTitle')}</SectionTitle> : null}
+      {rooms.length ? <RecordTable rows={rooms} kind="room" href={(x) => `/app/room-designs/${x}`} what={tm('col_room')} locale={locale} /> : null}
+      {!latest && rooms.length === 0 ? <div className="panel items-start">{vuoto}</div> : null}
+    </section>
+  );
+}
+
+/** The drawing sets issued, with the installation's data (sheet 1 reads them); then the relazioni tecniche di modifica
+ *  issued (number, revision, day, outcome, PDF) and the way to the installation's one. */
+export async function TavoleSection({ projectId, sets, locale }: {
+  projectId: string; sets: { id: string; number: string; revision: number; createdAt: Date; authorInitials: string; user: { name: string } | null }[]; locale: string;
+}) {
+  const [tt, tr, user] = await Promise.all([getTranslations('tavole'), getTranslations('rt'), getSessionUser()]), fd = dateFormat(locale);
+  const rts = user ? await listProjectRts(user, projectId) : [];
+  return (
+    <section className="flex flex-col gap-3" aria-labelledby="sec-tavole">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <SectionTitle id="sec-tavole" icon="file-stack">{tt('list')}</SectionTitle>
+        <Link className="btn" href={`/app/projects/${projectId}/impianto`}>{tt('plantTitle')}</Link>
+      </div>
+      {sets.length ? (
+        <ul className="rec-list" aria-label={tt('list')}>
+          {sets.map((x) => (
+            <li key={x.id}>
+              <Link href={`/app/drawing-sets/${x.id}`} className="num">{tt('number')} {x.number}{x.revision ? ` R${x.revision}` : ''}</Link>
+              <span className="note">{fd.dateTime(x.createdAt)} · {x.user?.name ?? x.authorInitials}</span>
+            </li>
+          ))}
+        </ul>
+      ) : <p className="note">{tt('none')} {tt('needDesign')}</p>}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <SectionTitle id="sec-rt" level={3} icon="file-text">{tr('emesse.titolo')}</SectionTitle>
+        <Link className="btn" href={`/app/projects/${projectId}/relazione-tecnica`} data-rt-link="">{tr('apri')}</Link>
+      </div>
+      <RelazioniEmesse rows={rts} locale={locale} download={!!user && can(user, 'report:download')} />
+    </section>
+  );
+}
+
+/** The records made before the one form (shaft designs and the calculations made from them without a lift design). */
+export async function ArchivioSection({ shafts, calcs, sources, locale }: { shafts: RecordRow[]; calcs: RecordRow[]; sources: ReadonlySet<string>; locale: string }) {
+  const [t, ts, tc] = await Promise.all([getTranslations('projects'), getTranslations('shaft'), getTranslations('calculations')]);
+  if (!shafts.length && !calcs.length) return null;
+  return (
+    <details className="panel archive">
+      <summary>{t('archiveTitle')}</summary>
+      <p className="note">{t('archiveLead')}</p>
+      {shafts.length ? <h3>{ts('sectionTitle')}</h3> : null}
+      {shafts.length ? (
+        <RecordTable rows={shafts} kind="shaft" href={(x) => `/app/shaft-designs/${x}`} what={ts('col_design')} locale={locale}
+          extra={{ label: ts('source'), cell: (r) => (sources.has(r.id) ? 'DXF/DWG' : ts('sourceHand')) }} />
+      ) : null}
+      {calcs.length ? <h3>{tc('title')}</h3> : null}
+      {calcs.length ? <RecordTable rows={calcs} kind="calc" href={(x) => `/app/calculations/${x}`} what={tc('col_machine')} locale={locale} /> : null}
+    </details>
+  );
+}

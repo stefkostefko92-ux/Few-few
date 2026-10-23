@@ -1,0 +1,81 @@
+import { notFound } from 'next/navigation';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { Link } from '@/i18n/routing';
+import { requireCapability } from '@/lib/auth';
+import { can } from '@/lib/rbac';
+import { plantData } from '@/lib/plant';
+import { anagraficaData } from '@/lib/rt/anagrafica';
+import { idSchema } from '@/lib/schemas';
+import { getProject } from '@/server/queries';
+import { outdated } from '@/server/records';
+import { rilievoHints } from '@/server/rt/queries';
+import { workspaceOf } from '@/server/rt/workspace';
+import { giornoIt } from '@/server/rt/issue';
+import { allegatiOptions, labelOf } from '@/components/allegati/options';
+import AllegatiPanel from '@/components/allegati/AllegatiPanel';
+import Crumbs from '@/components/Crumbs';
+import BaseStato from '@/components/rt/BaseStato';
+import CardAnagrafica from '@/components/rt/CardAnagrafica';
+import RelazioniEmesse from '@/components/rt/RelazioniEmesse';
+import RtWorkspace from '@/components/rt/RtWorkspace';
+import SectionTitle from '@/components/project/SectionTitle';
+import '@/components/rt/rt.css';
+
+export async function generateMetadata() {
+  const t = await getTranslations('rt');
+  return { title: t('titolo') };
+}
+
+// The relazione tecnica di modifica of an installation (RT plan §7): its base — the latest «Calcolo argano» and its
+// Progetto, or what is missing —, card 1 the registry (whoever edits the installation's data), cards 2–5 the RT being
+// prepared (whoever draws the project: its draft is kept as it is typed), the files, the signatures and the issue
+// (whoever issues), the RTs issued. Everyone who sees the installation reads it; an archived one is read only.
+export default async function RelazioneTecnicaPage({ params, searchParams }: { params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ revisione?: string }> }) {
+  const { locale, id } = await params;
+  setRequestLocale(locale);
+  const user = await requireCapability(locale, 'projects:view');
+  const p = await getProject(user, id);
+  if (!p) notFound();
+  const rev = idSchema.safeParse((await searchParams).revisione);
+  const live = !p.archivedAt, canEdit = live && can(user, 'progetto:edit'), canIssue = live && can(user, 'drawings:issue'), canUpload = live && can(user, 'projects:edit');
+  const [t, tp, w, hints, options] = await Promise.all([getTranslations('rt'), getTranslations('projects'), workspaceOf(user, p.id, rev.success ? rev.data : undefined, canEdit),
+    rilievoHints(user, p.id), allegatiOptions()]);
+  const base = w.state.result.ok ? w.state.result.base : null, latest = w.rts[0] ?? null;
+  const stato = latest ? (outdated.rt(latest) ? t('stato.daAggiornare') : t('stato.emessa', { n: latest.number, r: latest.revision })) : w.draftAt ? t('stato.bozza') : t('stato.nessuna');
+  const panel = <AllegatiPanel user={user} projectId={p.id} live={live} locale={locale} headingId="rt-documenti-caricati" />;
+  return (
+    <main className="page page-wide rt-page">
+      <Crumbs items={[{ href: '/app/impianti', label: tp('title') }, { href: `/app/projects/${p.id}`, label: p.name }, { label: t('titolo') }]} />
+      <div className="page-head">
+        <div className="titles">
+          <span className="chip" data-rt-stato="">{stato}</span>
+          <h1>{t('titolo')}</h1>
+          <p className="lead">{p.name}{base ? ` · ${t(`norma.${base.norma}`)} · ${t(`tipo.${base.tipo}`)}` : ''}</p>
+        </div>
+        <div className="actions">
+          <Link className="btn" href={`/app/projects/${p.id}`}>{t('tornaImpianto')}</Link>
+        </div>
+      </div>
+      <BaseStato state={w.state} projectId={p.id} locale={locale} archived={!live} />
+      {w.revisione ? (
+        <p className="alert alert-info" role="status">{t('revisione.inCorso', { n: w.revisione.number, r: w.revisione.revision + 1 })}{' '}
+          <Link href={`/app/relazioni/${w.revisione.id}`}>{t('revisione.apri')}</Link></p>
+      ) : null}
+      {w.dropped ? <p className="alert alert-warn" role="status">{t('bozza.fileTolti', { n: w.dropped })}</p> : null}
+      <CardAnagrafica projectId={p.id} anagrafica={anagraficaData(p.anagrafica)} client={p.client} plant={plantData(p.plant)} collaudo={base?.collaudo ?? null}
+        calcId={w.state.calc?.id ?? null} readOnly={!canUpload} hints={hints} />
+      {base && w.live ? (
+        <RtWorkspace projectId={p.id} initial={w.inputs} draftAt={w.draftAt}
+          revisione={w.revisione ? { id: w.revisione.id, label: `${t('numero', { n: w.revisione.number })} R${w.revisione.revision}` } : null}
+          summary={w.live.summary} conferma={w.live.conferma} canEdit={canEdit} canIssue={canIssue} oggi={giornoIt(new Date())}
+          files={w.files.map((f) => ({ id: f.id, title: f.title, kindLabel: labelOf(options.kinds, f.kind), pages: f.pages, size: f.size }))}
+          upload={canUpload ? options : null} panel={panel} />
+      ) : panel}
+      {!canEdit && base ? <p className="note">{t(live ? 'soloLettura' : 'archiviata')}</p> : null}
+      <section className="panel flex flex-col gap-3" aria-labelledby="rt-emesse-h">
+        <SectionTitle id="rt-emesse-h" icon="file-stack">{t('emesse.titolo')}</SectionTitle>
+        <RelazioniEmesse rows={w.rts} locale={locale} download={can(user, 'report:download')} />
+      </section>
+    </main>
+  );
+}

@@ -1,0 +1,142 @@
+/* Round 44 — a survey and its installation: the link panel on a survey's page, the four steps, the surveys and the
+   comparison on an installation's page, the Rilievi home, the mark «dal rilievo» in the forms. The one memorable piece
+   is the steps, drawn as the push buttons of a car's panel: a floor reached lights its ring, one to update or with
+   differences glows amber or red, one still to do stays dark with a dashed ring; the rope between them runs across on
+   wide screens and down on a phone. Everything else is the workspace's panels, tables and pills. Colours only from the
+   tokens of globals.css, but the steel of the survey's plate (rilievi.css) for its own mark. */
+
+/* ---- the mark of a value measured in the survey: a small steel plate, like the lift's plate on the sheet ---------- */
+.badge.rilievo { margin-left: 6px; color: #dbe7ec; background: linear-gradient(180deg, #24414e, #132833); border-color: #5f8190;
+  text-transform: none; letter-spacing: .02em; box-shadow: inset 0 1px 0 rgb(255 255 255 / .08); }
+.lk-avviso { display: flex; flex-direction: column; gap: 8px; padding: 12px 15px; font-size: 14px; line-height: 1.55; color: var(--ink-2);
+  background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid #5f8190; border-radius: var(--radius); }
+.lk-avviso p { margin: 0; }
+.lk-avviso .alert { margin: 0; }
+
+/* ---- the steps: 1 Rilievo → 2 Calcolo argano → 3 Progetto → 4 Documenti e ordini --------------------------------- */
+.lk-steps-wrap { container: lksteps / inline-size; padding: 18px 20px; background: var(--panel-grad); border: 1px solid var(--rule);
+  border-radius: var(--radius); box-shadow: var(--panel-hi), var(--shadow); }
+.lk-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px 0; }
+.lk-step { position: relative; display: flex; flex-direction: column; gap: 10px; min-width: 0; padding-right: 12px; }
+/* the rope from this button to the next */
+.lk-step:not(:last-child)::after { content: ""; position: absolute; z-index: 0; top: 25px; left: 60px; right: 4px; height: 2px; border-radius: 1px;
+  background: var(--rule-strong); }
+.lk-step.ok:not(:last-child)::after { background: linear-gradient(90deg, var(--ok-line), var(--rule-strong)); }
+.lk-step-link { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; width: fit-content; max-width: 100%;
+  color: var(--ink); text-decoration: none; border-radius: 10px; }
+.lk-step-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.lk-btn { flex: none; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; font: 800 20px/1 var(--font-body);
+  color: var(--dim); background: radial-gradient(circle at 36% 30%, #18323f 0%, #0a1923 62%, #050e15 100%); border: 2px dashed var(--rule-strong);
+  box-shadow: inset 0 2px 2px rgb(255 255 255 / .06), inset 0 -4px 7px rgb(0 0 0 / .55), 0 0 0 5px var(--bg-2); transition: border-color .15s, box-shadow .2s; }
+.lk-btn.ok { color: var(--ok); border: 2px solid var(--ok); box-shadow: inset 0 2px 2px rgb(255 255 255 / .06), inset 0 -4px 7px rgb(0 0 0 / .55), 0 0 0 5px var(--bg-2), 0 0 18px rgb(102 227 180 / .32); }
+.lk-btn.warn { color: var(--warn); border: 2px solid var(--warn); box-shadow: inset 0 2px 2px rgb(255 255 255 / .06), inset 0 -4px 7px rgb(0 0 0 / .55), 0 0 0 5px var(--bg-2), 0 0 18px rgb(231 189 117 / .3); }
+.lk-btn.fail { color: var(--fail); border: 2px solid var(--fail); box-shadow: inset 0 2px 2px rgb(255 255 255 / .06), inset 0 -4px 7px rgb(0 0 0 / .55), 0 0 0 5px var(--bg-2), 0 0 18px rgb(255 138 128 / .32); }
+a.lk-step-link:hover .lk-btn { border-color: var(--accent); }
+/* the next step to take: the cyan ring of the panel's «next floor» */
+.lk-step[aria-current="step"] .lk-btn { outline: 2px solid var(--accent); outline-offset: 3px; }
+.lk-step-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+@container lksteps (max-width: 760px) { .lk-step-text { padding-top: 3px; } }
+.lk-step-text strong { font: 700 15px/1.3 var(--font-body); letter-spacing: -.01em; }
+.lk-step-text .note { font-size: 12.5px; }
+.lk-step-state { font: 600 12.5px/1.35 var(--font-body); color: var(--muted); }
+.lk-step-state.ok { color: var(--ok); } .lk-step-state.warn { color: var(--warn); } .lk-step-state.fail { color: var(--fail); }
+.lk-moduli { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 13px; line-height: 1.4; }
+.lk-moduli a { display: inline-flex; align-items: flex-start; gap: 6px; color: var(--ink-2); }
+.lk-moduli a:hover { color: var(--ink); }
+@container lksteps (max-width: 760px) {
+  .lk-steps { grid-template-columns: minmax(0, 1fr); }
+  .lk-step { padding-right: 0; }
+  .lk-step-link { flex-direction: row; gap: 12px; border-radius: 30px 10px 10px 30px; }
+  .lk-moduli { margin-left: 64px; }
+  .lk-step:not(:last-child)::after { top: 60px; bottom: -14px; left: 25px; right: auto; width: 2px; height: auto; }
+  .lk-step.ok:not(:last-child)::after { background: linear-gradient(180deg, var(--ok-line), var(--rule-strong)); }
+}
+@media (prefers-reduced-motion: reduce) { .lk-btn { transition: none; } }
+
+/* ---- the link panel on a survey's page --------------------------------------------------------------------------- */
+.lk-panel-head { display: flex; align-items: center; gap: 10px; }
+.lk-panel-head h2 { font: var(--panel-title); letter-spacing: var(--panel-title-track); }
+.lk-state { display: flex; flex-direction: column; gap: 8px; }
+.lk-state p { margin: 0; }
+.lk-impianto-link { font-weight: 700; }
+.lk-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.lk-actions form, .lk-docs form, .lk-offer form { display: inline-flex; margin: 0; }
+.lk-offers { display: flex; flex-direction: column; gap: 10px; padding-top: 12px; border-top: 1px solid var(--rule-soft); }
+.lk-offers h3 { font: 700 15px/1.3 var(--font-body); }
+.lk-offer-list { list-style: none; margin: 0; padding: 0; }
+.lk-offer { display: flex; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 10px 0; border-bottom: 1px solid var(--rule-soft); }
+.lk-offer-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.lk-offer-name { font-weight: 700; color: var(--ink); overflow-wrap: anywhere; }
+.lk-reasons { display: flex; flex-wrap: wrap; gap: 6px; }
+.lk-search { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; }
+.lk-search .field { flex: 1 1 16rem; margin: 0; }
+@media (max-width: 560px) { .lk-offer { flex-direction: column; align-items: flex-start; } }
+
+/* ---- an installation's surveys ------------------------------------------------------------------------------------ */
+.lk-rilievi-list { list-style: none; margin: 0; padding: 0; }
+.lk-rilievi-list > li { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr) auto; align-items: center; gap: 6px 14px; padding: 10px 0;
+  border-bottom: 1px solid var(--rule-soft); }
+.lk-rilievi-list > li:last-child { border-bottom: 0; }
+.lk-day { color: var(--muted); }
+.lk-ref .lk-day { color: var(--ink); }
+.lk-rilievo-main { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; min-width: 0; }
+.lk-rilievo-main > a { font-weight: 700; }
+.lk-rilievo-main .badge { margin-left: 0; }
+.lk-docs { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; min-width: 0; }
+/* a module's long name («Modulo ordine operatori e sospensioni · 2SG S.r.l.») wraps inside the panel on a phone */
+.lk-docs .btn { max-width: 100%; white-space: normal; text-align: left; justify-content: flex-start; }
+@media (max-width: 760px) {
+  .lk-rilievi-list > li { grid-template-columns: minmax(0, 1fr); }
+  .lk-docs { justify-content: flex-start; }
+}
+
+/* ---- the comparison ---------------------------------------------------------------------------------------------- */
+/* the summary wraps under the title on a phone instead of pushing the page wider */
+.lk-confronto .panel-head .status-pill { max-width: 100%; white-space: normal; }
+.lk-confronto .panel-head .status-pill::before { align-self: flex-start; margin-top: .4em; }
+/* the parameters the survey has no value for, folded under the table */
+.lk-more { margin-top: 4px; }
+.lk-more > summary { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; cursor: pointer; font: 600 13.5px/1.3 var(--font-body);
+  color: var(--ink-2); }
+.lk-more > summary:hover { color: var(--ink); }
+.lk-more > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.lk-more[open] > summary { margin-bottom: 8px; }
+.lk-table .lk-group-head th { padding-top: 16px; background: var(--surface2); color: var(--ink); font: 600 13.5px/1.4 var(--font-body);
+  letter-spacing: 0; text-transform: none; }
+.lk-table .lk-group-head .note { font-weight: 400; }
+.lk-table .lk-v { font-variant-numeric: tabular-nums; }
+.lk-table .lk-diff > * { background: color-mix(in srgb, var(--fail-bg) 70%, transparent); }
+.lk-table .lk-diff > th { box-shadow: inset 3px 0 0 var(--fail); }
+.lk-table .lk-mod > th { box-shadow: inset 3px 0 0 var(--warn); }
+.lk-table .lk-fuori > * { background: color-mix(in srgb, var(--fail-bg) 70%, transparent); }
+.lk-stato { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+.lk-note { display: block; margin-top: 6px; max-width: 46ch; }
+.lk-usa { margin-top: 8px; }
+/* on a phone (tables.css `stack`): the parameter is the record's title, the group's head wraps, the row's tone is a bar
+   down the whole record */
+@media (max-width: 719px) {
+  .lk-table.stack th { display: block; width: 100%; white-space: normal; }
+  .lk-table.stack .lk-group-head { padding: 0; }
+  .lk-table.stack .lk-group-head th { padding: 14px 16px; }
+  .lk-table.stack th.row-title { padding: 0 0 8px; border: 0; background: none; box-shadow: none; color: var(--ink);
+    font: 600 16px/1.3 var(--font-body); letter-spacing: 0; text-transform: none; }
+  .lk-table.stack .lk-diff > *, .lk-table.stack .lk-fuori > * { background: none; }
+  .lk-table.stack .lk-diff, .lk-table.stack .lk-fuori { background: color-mix(in srgb, var(--fail-bg) 70%, transparent); box-shadow: inset 3px 0 0 var(--fail); }
+  .lk-table.stack .lk-mod { box-shadow: inset 3px 0 0 var(--warn); }
+}
+
+/* ---- the Rilievi home --------------------------------------------------------------------------------------------- */
+.lk-home-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+/* three figures: three in a row (dashboard.css sets four for the installations' figures — this rule must win it) */
+@container dash (min-width: 860px) { .dash-kpis.lk-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+/* a figure that opens its installations */
+a.lk-kpi-link { color: inherit; text-decoration: none; transition: border-color .15s; }
+a.lk-kpi-link:hover { border-color: var(--accent-line); }
+a.lk-kpi-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+a.lk-kpi-link .kpi-label { text-decoration: underline; text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { a.lk-kpi-link { transition: none; } }
+.lk-kpis-note { grid-column: 1 / -1; margin: 0; }
+.lk-recent .panel-head .note { margin: 0; }
+.lk-recent-table .lk-when { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lk-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.lk-empty p { margin: 0; }

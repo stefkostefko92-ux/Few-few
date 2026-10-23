@@ -1,0 +1,211 @@
+// Rilievi — the basics (rilievi's tests/basics.test.ts and i18n.test.ts, commit 988f3cf37, Italian only): the day of a
+// `@db.Date`, today in Rome, the numbers; every label the field list asks for is in messages/it.json; the plurals; the
+// form read as rilievi's server read it; the helpers the form shows its errors with; the browser's prefill rules.
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+import it_ from '../../../messages/it.json';
+import { FIELDS, SECTIONS } from '@/lib/rilievi/fields';
+import { fmt } from '@/lib/rilievi/fmt';
+import { errorAnchorOf, errorLabelOf, errorParamsOf, errorTextOf, flashOf, inputMaxLengthOf, moduloFileName, pdfFileName, specLookup, unitTextOf } from '@/lib/rilievi/form-help';
+import { moduloLookup, moduloSpecs } from '@/lib/rilievi/ordini/form';
+import { rilieviTranslator } from '@/lib/rilievi/i18n';
+import { bodyOf, listParamsSchema, MAX_FORM_FIELDS, schedaIdSchema } from '@/lib/rilievi/inputs';
+import { browserSendable } from '@/lib/rilievi/leave';
+import { MISURA_COLUMNS } from '@/lib/rilievi/misure';
+import { COLLEGAMENTI } from '@/lib/rilievi/ordini/collegamenti';
+import { prefillFill, misureRowsFor, surveyText, surveyTicked, type PrefillHost } from '@/lib/rilievi/prefill-client';
+import type { Ctl } from '@/lib/rilievi/collegati-client';
+import { businessDay, dateFromDay, dayFromDate } from '@/lib/rilievi/time';
+import { parseScheda } from '@/lib/rilievi/validation';
+
+const t = rilieviTranslator();
+const R = it_.rilievi as unknown as Record<string, unknown>;
+const has = (key: string): boolean => key.split('.').reduce<unknown>((o, k) => (o && typeof o === 'object' ? (o as Record<string, unknown>)[k] : undefined), R) !== undefined;
+
+describe('dates and numbers', () => {
+  it('keeps @db.Date values on their day', () => {
+    const day = dateFromDay('2026-10-12');
+    assert.equal(dayFromDate(day), '2026-10-12');
+    assert.equal(fmt.day(day), '12/10/2026');
+  });
+
+  it('gives today in Rome, not in UTC', () => {
+    // 23:30 UTC on 11 October is already 12 October in Rome (UTC+2 in summer time)
+    assert.equal(businessDay(new Date('2026-10-11T23:30:00Z')), '2026-10-12');
+    assert.equal(fmt.dateTime(new Date('2026-10-12T09:05:00Z')), '12/10/2026, 11:05');
+  });
+
+  it('formats decimals with the comma, groups from 5 digits, and form values without grouping (as Node it-IT did)', () => {
+    assert.equal(fmt.num(10.5), '10,5');
+    assert.equal(fmt.num(1250.5), '1250,5');
+    assert.equal(fmt.num(12500), '12.500');
+    assert.equal(fmt.num(-1), '-1');
+    assert.equal(fmt.num(null), '');
+    assert.equal(fmt.inputNum({ toString: () => '1250.50' }), '1250,5');
+    assert.equal(fmt.inputNum(123456.7), '123456,7');
+  });
+});
+
+describe('the messages', () => {
+  it('name every field, question, section, option and column', () => {
+    for (const field of FIELDS) {
+      assert.ok(has(`scheda.field.${field.key}`), `field ${field.key}`);
+      if (field.question) assert.ok(has(`scheda.question.${field.key}`), `${field.key}?`);
+      if (field.kind === 'checks' || field.kind === 'choice') for (const option of field.options) assert.ok(has(`scheda.option.${field.key}.${option}`), option);
+      if (field.kind === 'yesno' && field.risposte) for (const answer of field.risposte) assert.ok(has(`scheda.option.${field.key}.${answer}`), `${field.key} ${answer}`);
+    }
+    // every linked datum and every place by name, the confirmation, the print of the modules, the company setting
+    for (const link of COLLEGAMENTI) assert.ok(has(`collegati.${link.key}`), link.key);
+    for (const luogo of ['scheda', 'oq', 'om', 'mn', 'mq', 'pa', 'sg']) assert.ok(has(`collegati.luogo.${luogo}`), luogo);
+    for (const column of ['ordineQuadro', 'preventivoArgano', 'ordineSospensioni']) assert.ok(has(`riepilogo.modulo.${column}`), column);
+    for (const key of ['collegati.diversi', 'collegati.banner', 'collegati.conferma.text', 'collegati.conferma.submit', 'riepilogo.title', 'riepilogo.moduli', 'riepilogo.hint',
+      'riepilogo.sezioni', 'riepilogo.sezioniHint', 'scheda.error.modelloNeeded',
+      'impostazioni.error', 'impostazioni.sezioni.title', 'impostazioni.sezioni.save', 'impostazioni.sezioni.reset', 'flash.sezioniSaved', 'flash.sezioniReset', 'scheda.buonoRiferimento']) assert.ok(has(key), key);
+    assert.ok('COMPANY_SECTIONS_UPDATED' in it_.audit.actions);
+    for (const section of SECTIONS) assert.ok(has(`scheda.section.${section.key}`), section.key);
+    for (const column of MISURA_COLUMNS) assert.ok(has(`scheda.misure.col.${column.key}`), column.key);
+    for (const a of ['SCHEDA_CREATED', 'SCHEDA_UPDATED', 'SCHEDA_TRASHED', 'SCHEDA_RESTORED', 'SCHEDA_PURGED']) assert.ok(a in it_.audit.actions, a);
+    assert.equal(it_.nav.rilievi, 'Rilievi');
+  });
+
+  it('pick the plural form by count, with rilievi’s words', () => {
+    assert.equal(t('schede.count', { n: 1 }), '1 scheda');
+    assert.equal(t('schede.count', { n: 3 }), '3 schede');
+    assert.equal(t('scheda.unit.persone', { n: 1 }), 'persona');
+    assert.equal(t('scheda.unit.persone', { n: 8 }), 'persone');
+    assert.equal(t('scheda.errorSummary', { n: 2 }), 'Correggi 2 campi');
+    assert.equal(t('schede.search.found', { n: 1, q: '987' }), '1 scheda per «987»');
+    assert.equal(t('scheda.question.quadroOrdine'), 'Vuoi compilare la scheda per l’ordine quadro?', 'the typographic apostrophe (round 48, review ux10)');
+    assert.equal(t('collegati.conferma.title', { n: 1 }), 'Un dato non coincide tra scheda e ordini');
+    assert.equal(t('collegati.conferma.title', { n: 2 }), '2 dati non coincidono tra scheda e ordini');
+    assert.equal(t('scheda.option.tipoImpianto.GEARLESS'), 'MRL', 'a label only: the value stays GEARLESS');
+    assert.equal(t('impostazioni.sezioni.up', { name: 'Funi' }), 'Sposta su «Funi»');
+  });
+});
+
+describe('the form as rilievi read it', () => {
+  it('a repeated name is a list, a file is a forged value, too many fields is no form', () => {
+    const fd = new FormData();
+    fd.append('tipoPorte', 'MANUALI');
+    fd.append('tipoPorte', 'AUTOMATICHE');
+    fd.append('indirizzo', new Blob(['x']));
+    fd.append('matricola', '33871');
+    const body = bodyOf(fd);
+    assert.ok(body);
+    assert.deepEqual(body.tipoPorte, ['MANUALI', 'AUTOMATICHE']);
+    assert.equal(Object.getPrototypeOf(body), null, 'no prototype: «__proto__» is a plain key');
+    const parsed = parseScheda({ ...body, data: '2026-10-12' });
+    assert.equal(!parsed.ok && parsed.errors.indirizzo, 'invalid');
+    const many = new FormData();
+    for (let i = 0; i <= MAX_FORM_FIELDS; i++) many.append(`k${i}`, '');
+    assert.equal(bodyOf(many), null);
+  });
+
+  it('takes a sheet’s id, the list’s search and page as rilievi did', () => {
+    assert.ok(schedaIdSchema.safeParse('cm0000000000000000000001').success);
+    for (const bad of ['../etc', 'abc', 'CM0000000000000000000001', '']) assert.ok(!schedaIdSchema.safeParse(bad).success, bad);
+    assert.deepEqual(listParamsSchema.parse({ q: 'x'.repeat(150), p: '3' }), { q: 'x'.repeat(100), p: 3 });
+    assert.deepEqual(listParamsSchema.parse({ q: ['a'], p: '0' }), { q: '', p: 1 });
+    assert.deepEqual(listParamsSchema.parse({}), { q: '', p: 1 });
+  });
+});
+
+describe('the form’s helpers', () => {
+  it('label, link and explain every kind of error key', () => {
+    assert.equal(errorLabelOf('identifiers', t), 'Identificazione');
+    assert.equal(errorAnchorOf('identifiers'), '#f-indirizzo');
+    assert.equal(errorLabelOf('mb-2-lunghezzaMm', t), 'Lunghezza, fermata 2');
+    assert.equal(errorLabelOf('oq-quantita', t, moduloLookup), 'Quantità: (Pelazza Peppino)');
+    assert.equal(errorLabelOf('oq-quantita', t, specLookup(moduloSpecs())), 'Quantità: (Pelazza Peppino)', 'the form’s specs say the same as the maps');
+    assert.equal(errorLabelOf('portataKg', t), 'Portata');
+    // the print choices (rilievi form.ejs, 988f3cf37): the modules one by one, the sections; Mastech without its model
+    assert.equal(errorLabelOf('riepilogoOrdini', t), 'Dati dei moduli nella stampa e nel PDF');
+    assert.equal(errorLabelOf('stampa', t), 'Sezioni nella stampa e nel PDF');
+    assert.equal(errorTextOf('stampa', 'option', t), 'Scelta non valida.');
+    assert.equal(errorLabelOf('quadroModello', t), 'Tipologia quadro');
+    assert.equal(errorAnchorOf('quadroModello'), '#f-quadroModello');
+    assert.equal(errorTextOf('quadroModello', 'modelloNeeded', t), 'Scegli la tipologia del quadro (NG120 o QI Touch) per compilare il suo modulo d’ordine.');
+    assert.equal(errorLabelOf('pa-pesoCabina', t, moduloLookup), 'Peso cabina (KG) (Modulo rilievi dati argani)', 'a sheet without a supplier is named by its title');
+    assert.equal(errorLabelOf('pa-pesoCabina', t, specLookup(moduloSpecs())), 'Peso cabina (KG) (Modulo rilievi dati argani)');
+    assert.equal(errorAnchorOf('mb-2-lunghezzaMm'), '#f-mb-2-lunghezzaMm');
+    assert.deepEqual(errorParamsOf('portataKg'), { min: '0', max: '100000' });
+    assert.equal(errorTextOf('portataKg', 'range', t), 'Inserisci un valore tra 0 e 100000.');
+    assert.equal(errorTextOf('marca', 'tooLong', t), 'Massimo 120 caratteri.');
+    assert.equal(errorTextOf('mb-3-interasseSuperiore', 'tooLong', t), 'Massimo 60 caratteri.');
+    assert.equal(errorTextOf('oq-quantita', 'tooLong', t, moduloLookup), 'Massimo 5 caratteri.');
+    assert.equal(errorTextOf('oq-quantita', 'tooLong', t, specLookup(moduloSpecs())), 'Massimo 5 caratteri.');
+    assert.deepEqual(errorParamsOf('oq-ordine', moduloLookup), {}, 'a box has no length');
+    assert.equal(unitTextOf('capienzaPersone', t), 'persone');
+    assert.equal(unitTextOf('fermate', t), null);
+    assert.deepEqual(['matricola', 'portataKg', 'ubicazioneCassettina', 'funiDiametroMm', 'data'].map(inputMaxLengthOf), [20, 9, 120, 10, null]);
+    assert.equal(flashOf('schedaSaved'), 'schedaSaved');
+    assert.equal(flashOf('altro'), null);
+  });
+
+  it('name the PDFs by the lift number (or the matricola) and the date, safe characters only', () => {
+    const s = { id: 'cm0000000000000000000001', numeroImpianto: '104552', matricola: '0033871', data: dateFromDay('2026-10-12') };
+    assert.equal(pdfFileName(s), 'scheda-104552-2026-10-12.pdf');
+    assert.equal(pdfFileName({ ...s, numeroImpianto: null }), 'scheda-0033871-2026-10-12.pdf');
+    assert.equal(pdfFileName({ ...s, numeroImpianto: null, matricola: null }), 'scheda-00000001-2026-10-12.pdf');
+    assert.equal(moduloFileName('ordine-quadro', { ...s, numeroImpianto: '880011' }), 'ordine-quadro-880011-2026-10-12.pdf');
+  });
+});
+
+describe('the browser’s rules for the modules’ survey fields', () => {
+  const values = { data: '2026-10-12', numeroImpianto: '104552', matricola: '', indirizzo: 'Via Verdi 14', doppioAccesso: 'no', tipoPorte: ['MANUALI'], fermate: ' 6 ', operatoreMarca: 'Selcom', pattinoRetrattile: 'si' };
+  const ctx = { contesto: { azienda: 'Ascensori Rossi Srl', utente: 'Mario Bianchi', ruolo: 'Tecnico', email: 'mario@example.it' }, etichetta: (campo: string, valore: string) => t(`scheda.option.${campo}.${valore}`) };
+
+  it('say what the survey on the screen says, a hidden field nothing', () => {
+    assert.equal(surveyText('data', values, ctx), '12/10/2026');
+    assert.equal(surveyText('rif', values, ctx), 'N° 104552 — Via Verdi 14');
+    assert.equal(surveyText('azienda', values, ctx), 'Ascensori Rossi Srl');
+    assert.equal(surveyText('email', values, ctx), 'mario@example.it');
+    assert.equal(surveyText('tipoPorte', { ...values, tipoPorte: ['AUTOMATICHE', 'MANUALI'] }, ctx), 'Automatiche, Manuali');
+    assert.equal(surveyText('operatoreMarca', values, ctx), '', 'no door operator with manual doors');
+    assert.equal(surveyTicked('pattinoRetrattile=si', values), true);
+    assert.equal(surveyTicked('pattinoRetrattile=si', { ...values, tipoPorte: ['AUTOMATICHE'] }), false, 'hidden with automatic doors');
+  });
+
+  it('keep following the sheet until the person types; a kind follows the first one typed when the sheet says nothing', () => {
+    const el = (name: string, prefill: string, value = '', type = 'text', auto?: string): Ctl & { prefill: string } => ({ name, type, value, checked: false, maxLength: -1, dataset: auto === undefined ? {} : { auto }, prefill });
+    const data1 = el('oq-data', 'data', '01/01/2026', 'text', '01/01/2026');
+    const data2 = el('sg-data', 'data');
+    const typed = el('pa-rif', 'rif', 'Mio riferimento');
+    typed.dataset.touched = '1';
+    const rif = el('oq-rifImpianto', 'rif');
+    const pattino = el('om-elettrPattino', 'pattinoRetrattile=si', '', 'checkbox');
+    const all = [data1, data2, typed, rif, pattino];
+    const host: PrefillHost<Ctl & { prefill: string }> = { controls: () => all, tokenOf: (c) => c.prefill, shown: () => true, optionsOf: () => null };
+    const changed = prefillFill(host, values, ctx);
+    assert.equal(data1.value, '12/10/2026', 'still the value put there for it: it follows');
+    assert.equal(data2.value, '12/10/2026');
+    assert.equal(typed.value, 'Mio riferimento', 'typed by the person: never refilled');
+    assert.equal(rif.value, 'N° 104552 — Via Verdi 14', 'the sheet speaks first');
+    assert.equal(pattino.checked, true);
+    assert.equal(pattino.dataset.auto, 'si');
+    assert.deepEqual(changed.map((c) => c.name).sort(), ['oq-data', 'oq-rifImpianto', 'om-elettrPattino', 'sg-data'].sort());
+    // the sheet says nothing about the reference: the empty followers take the one typed
+    rif.value = '';
+    rif.dataset.auto = '';
+    prefillFill(host, { ...values, numeroImpianto: '', indirizzo: '' }, ctx);
+    assert.equal(rif.value, 'Mio riferimento');
+  });
+
+  it('show a row of measurements per stop typed, 1..300', () => {
+    assert.deepEqual(['6', ' 8 ', '0', '301', 'tre', '', '-1'].map((v) => misureRowsFor(v)), [6, 8, 0, 0, 0, 0, 0]);
+  });
+});
+
+describe('leaving the form with unsaved changes: another form the browser sends itself', () => {
+  it('sends a form whose action is an address (the top bar\'s search, «Esci»)', () => {
+    assert.equal(browserSendable('/it/app', ['q']), true);
+    assert.equal(browserSendable('/api/logout', ['']), true);
+    assert.equal(browserSendable(null, ['q']), true);
+  });
+  it('leaves to the app a form whose action is its function (drawn in the browser or on the server)', () => {
+    assert.equal(browserSendable("javascript:throw new Error('A React form was unexpectedly submitted.')", ['id']), false);
+    assert.equal(browserSendable(' JavaScript:void 0', []), false);
+    assert.equal(browserSendable(null, ['$ACTION_REF_1', '$ACTION_1:0', 'id']), false);
+    assert.equal(browserSendable(null, ['$ACTION_ID_7f3a']), false);
+  });
+});

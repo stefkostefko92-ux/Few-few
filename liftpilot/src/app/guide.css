@@ -1,0 +1,41 @@
+/* The guide (/guida), the first steps on the Rilievi home and the report page: the steps numbered like the sheet's
+   sections (rilievi's .rv-secnum), the panels and the type of the public pages. Only tokens of globals.css. */
+
+/* ---- the guide: an index of the steps, then each step as a question with its answer ---------------------------- */
+.guide-toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+@media (min-width: 768px) { .guide-toc ol { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 24px; } }
+.guide-toc a { display: flex; align-items: baseline; gap: 10px; color: var(--ink-2); text-decoration: none; font-weight: 600; }
+.guide-toc a:hover { color: var(--accent); }
+.guide-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 20px; counter-reset: none; }
+.guide-step { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 16px; align-items: start; scroll-margin-top: 96px; }
+.guide-step > .guide-num { grid-row: span 2; }
+.guide-step h2 { margin: 2px 0 0; }
+.guide-step .guide-body { display: flex; flex-direction: column; gap: 12px; color: var(--ink-2); max-width: 78ch; }
+.guide-step .guide-body p { margin: 0; line-height: 1.6; }
+.guide-num { display: inline-grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--accent-line); border-radius: 50%;
+  font: 700 15px/1 var(--font-mono); color: var(--accent); background: var(--bg-2); box-shadow: var(--glow); }
+.guide-toc .guide-num { width: 26px; height: 26px; font-size: 12.5px; flex: none; }
+@media (max-width: 560px) {
+  .guide-step { grid-template-columns: minmax(0, 1fr); }
+  .guide-step > .guide-num { grid-row: auto; }
+}
+.guide-terms { margin: 0; display: grid; gap: 10px; }
+.guide-terms > div { display: grid; gap: 2px; padding: 12px 14px; background: var(--bg-2); border: 1px solid var(--rule-soft); border-radius: var(--radius-sm); }
+.guide-terms dt { font-weight: 700; color: var(--ink); }
+.guide-terms dd { margin: 0; color: var(--ink-2); line-height: 1.55; }
+.guide-cta { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* ---- first steps on the Rilievi home: the three steps and the buttons the role may use -------------------------- */
+.first-steps { display: flex; flex-direction: column; gap: 14px; border-color: var(--accent-line); }
+.first-steps ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+@media (min-width: 900px) { .first-steps ol { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.first-steps li { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; padding: 14px; background: var(--bg-2);
+  border: 1px solid var(--rule-soft); border-radius: var(--radius-sm); }
+.first-steps li p { margin: 0; color: var(--ink-2); line-height: 1.5; }
+
+/* ---- the report: where it comes from, shown not edited ---------------------------------------------------------- */
+.feedback-meta { margin: 0; display: flex; flex-wrap: wrap; gap: 8px 28px; }
+.feedback-meta > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.feedback-meta dt { font-size: 12.5px; color: var(--muted); }
+.feedback-meta dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
+.feedback-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink); max-width: 72ch; }

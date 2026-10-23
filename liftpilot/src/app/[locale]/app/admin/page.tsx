@@ -1,0 +1,83 @@
+import { getLocale, getTranslations, setRequestLocale } from 'next-intl/server';
+import { requireCapability } from '@/lib/auth';
+import { dateFormat } from '@/lib/dates';
+import { listCompanies } from '@/server/queries';
+import { Link } from '@/i18n/routing';
+import { setCompanyActiveAction, setCompanyExemptAction } from '@/server/user-actions';
+import CreateCompanyForm from '@/components/CreateCompanyForm';
+import BetaInvites from '@/components/admin/BetaInvites';
+import AccountHead from '@/components/AccountHead';
+import Icon from '@/components/Icon';
+import { openFeedbackCount } from '@/server/feedback';
+
+export async function generateMetadata() {
+  const t = await getTranslations('admin');
+  return { title: t('title') };
+}
+
+export default async function AdminPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ revoca?: string | string[] }> }) {
+  const [{ locale }, { revoca }] = await Promise.all([params, searchParams]);
+  setRequestLocale(locale);
+  const me = await requireCapability(locale, 'platform:admin');
+  const [t, tb, tf, companies, lang, openReports] = await Promise.all([getTranslations('admin'), getTranslations('billing'), getTranslations('feedback.admin'),
+    listCompanies(), getLocale(), openFeedbackCount()]);
+  const fd = dateFormat(locale);
+  return (
+    <main className="page">
+      {/* the reports of «Segnala un problema», with how many wait to be handled, and the way to the beta invitations */}
+      <AccountHead area="platform" title={t('title')} lead={t('lead')}
+        actions={<>
+          <Link className="btn" href="/app/admin/segnalazioni"><Icon name="message-circle" size={18} />{tf('link')} · {tf('linkCount', { n: openReports })}</Link>
+          <a className="btn" href="#inviti"><Icon name="mail" size={18} />{t('betaTitle')}</a>
+        </>} />
+      {/* the beta by invitation, first: the testers' addresses, their links and what became of them */}
+      <BetaInvites locale={locale} revoked={revoca === 'ok' || revoca === 'no' ? revoca : null} />
+      <div className="table-panel">
+        <table className="data-table stack">
+          <thead><tr><th>{t('company')}</th><th>{t('created')}</th><th className="text-right">{t('users')}</th><th className="text-right">{t('projects')}</th><th className="text-right">{t('calculations')}</th><th>{t('billing')}</th><th>{t('status')}</th></tr></thead>
+          <tbody>
+            {companies.map((c) => (
+              <tr key={c.id}>
+                <td className="row-title">
+                  <b>{c.name}</b><div className="note">{[c.vatNumber, c.city].filter(Boolean).join(' · ') || '—'}</div>
+                  {/* the company's rights matrix, set by the platform (attributed to it in the company's activity log); its
+                      own company's on /app/permessi, without the owner's request another company's needs */}
+                  <Link className="btn btn-sm admin-perm" href={c.id === me.companyId ? '/app/permessi' : `/app/admin/permessi/${c.id}`} aria-label={`${t('permissions')} · ${c.name}`}>{t('permissions')}</Link>
+                </td>
+                <td data-label={t('created')}>{fd.date(c.createdAt)}</td>
+                <td data-label={t('users')} className="num text-right">{c._count.users}</td>
+                <td data-label={t('projects')} className="num text-right">{c._count.projects}</td>
+                <td data-label={t('calculations')} className="num text-right">{c._count.calculations}</td>
+                <td data-label={t('billing')}>
+                  <div className="cell-stack">
+                    <span className="note">{tb(`access.${c.access}`)}{c.seatPack !== 'NONE' ? ` · ${tb(`pack.${c.seatPack}`)}` : ''}</span>
+                    {c.id === me.companyId ? null : (
+                      <form action={setCompanyExemptAction}>
+                        <input type="hidden" name="locale" value={lang} />
+                        <input type="hidden" name="id" value={c.id} />
+                        <input type="hidden" name="exempt" value={c.billingExempt ? '0' : '1'} />
+                        <button type="submit" className="btn btn-sm">{c.billingExempt ? t('bill') : t('exempt')}</button>
+                      </form>
+                    )}
+                  </div>
+                </td>
+                <td data-label={t('status')}>
+                  {c.id === me.companyId ? <span className="status-pill ok">{t('active')}</span> : (
+                    <form action={setCompanyActiveAction} className="flex items-center gap-2">
+                      <input type="hidden" name="locale" value={lang} />
+                      <input type="hidden" name="id" value={c.id} />
+                      <input type="hidden" name="active" value={c.active ? '0' : '1'} />
+                      <span className={`status-pill ${c.active ? 'ok' : 'fail'}`}>{c.active ? t('active') : t('inactive')}</span>
+                      <button type="submit" className="btn btn-sm">{c.active ? t('deactivate') : t('activate')}</button>
+                    </form>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <CreateCompanyForm />
+    </main>
+  );
+}

@@ -1,0 +1,103 @@
+[
+ {
+  "norma": "10411-1",
+  "parti": [
+   "machine"
+  ],
+  "aggiuntive": [
+   "en81"
+  ]
+ },
+ {
+  "norma": "10411-1",
+  "parti": [
+   "controller"
+  ]
+ },
+ {
+  "norma": "10411-1",
+  "parti": [
+   "machine",
+   "controller"
+  ]
+ },
+ {
+  "norma": "10411-1",
+  "parti": [
+   "machine",
+   "ropes",
+   "car",
+   "cw",
+   "rails",
+   "landingDoors",
+   "carDoors",
+   "buffers",
+   "governor",
+   "controller"
+  ],
+  "rifacimento": true
+ },
+ {
+  "norma": "10411-1",
+  "parti": [
+   "machine",
+   "ropes",
+   "controller"
+  ]
+ },
+ {
+  "norma": "10411-1",
+  "parti": [
+   "machine",
+   "ropes"
+  ]
+ },
+ {
+  "norma": "10411-1",
+  "parti": [
+   "machine"
+  ]
+ },
+ {
+  "norma": "10411-11",
+  "parti": [
+   "machine",
+   "ropes",
+   "car",
+   "cw",
+   "rails",
+   "landingDoors",
+   "carDoors",
+   "buffers",
+   "governor",
+   "controller"
+  ],
+  "rifacimento": true
+ },
+ {
+  "norma": "10411-11",
+  "parti": [
+   "machine",
+   "ropes"
+  ]
+ },
+ {
+  "norma": "en81",
+  "parti": [
+   "machine",
+   "ropes",
+   "car",
+   "sling",
+   "cw",
+   "rails",
+   "landingDoors",
+   "carDoors",
+   "buffers",
+   "governor",
+   "controller",
+   "speed",
+   "load",
+   "travel"
+  ]
+ }
+]
