@@ -3,9 +3,9 @@
 Linketto е глобален конкурент на Linktree: една публична страница
 `/u/<slug>` с всичките линкове на създателя, която **говори езика на всеки
 посетител**. Диференциатори (валидирани от проучването в
-`research/link-in-bio/`): многоезичност навсякъде (лидерът е English-only),
+`research/link-in-bio/`): многоезичност навсякъде (профил с версии на всички езици),
 EU хостинг/GDPR, аналитика без бисквитки, намалени комисиони (8% Free, 4% Pro,
-0% само Business/Founder — срещу 12/9% при Linktree), прозрачна модерация без публични
+0% само Business/Founder), прозрачна модерация без публични
 „banned“ банери.
 
 _Stack: Next.js 15 (App Router) · React 19 · TypeScript strict · Prisma ·
@@ -184,6 +184,41 @@ stripeTransferId). fee е capped на нето-1 (Stripe инвариант).
 Доставка: /u/[slug]/delivery проверява сесията НА ЖИВО срещу Stripe
 (payment_status === 'paid') преди redirect към deliveryUrl. Purchase се
 записва идемпотентно само през подписания webhook.
+
+Жизнен цикъл на данните (одит 2026-10-09): покупките и платеният достъп НЕ
+се трият — `Purchase`/`Entitlement` са `onDelete: Restrict`; `deleteProductAction`
+архивира (active=false), а `lib/account-erasure.ts` анонимизира акаунт с
+покупки/достъп вместо да го изтрие (иначе — каскадно изтриване). Сроковете от
+политиката са в `lib/retention-days.ts` (единен източник; cron SQL в DEPLOY §9).
+Сваляне на план (`customer.subscription.deleted`, админ смяна) → `lib/plan-limits.ts`
+спира платените функции (домейн/бадж/излишни профили; чиста логика в
+`plan-limits-core.ts`; флаговете са в `PlanDef`). Публичните форми (контакт/
+резервация/бюлетин/анкета) и входът минават през `lib/rate-limit.ts` (в паметта на
+процеса, чиста логика в `limiter.ts`; доверен IP = `X-Real-IP`/последен XFF).
+Действията в дашборда връщат към активния профил през `dash()` (`lib/dashboard-url.ts`,
+чете `?p` от Referer). Магазинът продава само ако `shopSalesAllowed()` (Stripe Tax
+или test mode — `lib/stripe-tax.ts`).
+
+Растеж (2026-10-23): **вирусен бадж** на безплатните профили → `/<език>/register?ref=<реферал на собственика>`
+(абсолютен URL — работи и на собствен/кратък домейн). **Кратък домейн** `PROFILE_HOST` →
+`lib/profile-url.ts` (`profileUrl()` за споделяне/QR/vCard/табло; canonical/sitemap/Stripe/имейли
+остават на `PUBLIC_BASE_URL`); middleware пренаписва `/<slug>` → `/u/<slug>`; затова `RESERVED_SLUGS`
+съдържа и езиковите кодове. **OG карта** на всеки профил: `/u/[slug]/og` (next/og, Inter woff от
+`src/assets/og/` — кирилица/гръцки; само наш `/media` аватар през sharp, без външни заявки;
+`lib/og-text.ts` маха знаците извън шрифта, иначе next/og тегли от CDN). **„Запази си името“** в hero-то
+(`ClaimHandle` + `GET /api/handle`, лимит по IP) → регистрацията създава профила веднага (`handle`).
+**Шаблони по ниша** `lib/templates.ts` (само визуален пресет; съдържанието и платените настройки се пазят).
+**Импорт от Linktree** `actions/import.ts` + чист парсер `lib/linktree-import.ts` (`__NEXT_DATA__`) +
+`lib/safe-fetch.ts` (хостът е фиксиран, без redirect, таймаут, таван на размера; аватар само от
+`ugc.production.linktr.ee` → sharp). **Безплатни инструменти** `/[locale]/tools` (QR — изцяло в браузъра;
+AI био — `actions/tools.ts`, лимит по IP + дневен таван, нищо не се пази). **Сравнения** `/[locale]/vs/<id>`
+— фактите САМО в `lib/comparisons.ts` с дата и първоизточник (Дир. 2006/114 чл. 4); твърдения без
+източник не влизат („Linktree е само на английски“ и „12/9%“ вече НЕ са верни — да не се връщат).
+**Седмичен отчет** „езикова дупка“: `lib/digest.ts` (чисти функции) + `POST /api/cron/digest`
+(Bearer `CRON_SECRET`, дневен cron, ≤1 на ~седмица по `User.lastDigestAt`) + отписване с 1 клик
+`/api/digest/unsubscribe` (HMAC подпис, GET без странични ефекти, POST = RFC 8058) и от таблото
+(`User.digestOptOut`). **PWA**: `src/app/manifest.ts` + `public/icons/app-*.png` + `src/app/apple-icon.png`
+(без service worker — данните са живи).
 
 ## Правила на продукта
 

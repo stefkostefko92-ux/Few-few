@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { clientIp, rateLimit } from '@/lib/rate-limit';
 import { z } from 'zod';
 import {
   createSession,
@@ -11,7 +12,9 @@ import {
 import { isLocale } from '@/i18n/locales';
 import { requestIp } from '@/lib/admin';
 import { prisma } from '@/lib/db';
+import { RETENTION_DAYS, daysAgo } from '@/lib/retention-days';
 import { generateReferralCode } from '@/lib/referral';
+import { isValidSlug, normalizeSlug } from '@/lib/slug';
 
 // Сигурност на входа (декларирано в политиката): IP при успешен вход,
 // пази се 90 дни. Чисти се при всяко ново записване — без отделен cron.
@@ -23,7 +26,7 @@ async function logLoginIp(userId: string): Promise<void> {
     .catch(() => undefined);
   await prisma.loginEvent
     .deleteMany({
-      where: { createdAt: { lt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) } },
+      where: { createdAt: { lt: daysAgo(RETENTION_DAYS.loginEvent) } },
     })
     .catch(() => undefined);
 }
@@ -40,12 +43,21 @@ function localeFrom(formData: FormData): string {
 
 export async function registerAction(formData: FormData): Promise<void> {
   const locale = localeFrom(formData);
+  // При грешка пазим реферала и запазеното име — иначе се губят с формата.
+  const keep = new URLSearchParams();
+  for (const key of ['ref', 'handle'] as const) {
+    const value = String(formData.get(key) ?? '').trim().slice(0, 64);
+    if (value) keep.set(key, value);
+  }
+  const kept = keep.toString();
+  const back = (error: string) =>
+    `/${locale}/register?error=${error}${kept ? `&${kept}` : ''}`;
   const parsed = credentialsSchema.safeParse({
     email: formData.get('email'),
     password: formData.get('password'),
   });
   if (!parsed.success) {
-    redirect(`/${locale}/register?error=generic`);
+    redirect(back('generic'));
   }
   const name = String(formData.get('name') ?? '').trim().slice(0, 100) || null;
   const user = await registerUser(
@@ -55,7 +67,7 @@ export async function registerAction(formData: FormData): Promise<void> {
     locale,
   );
   if (!user) {
-    redirect(`/${locale}/register?error=exists`);
+    redirect(back('exists'));
   }
 
   // Реферал: ако идва през нечий линк (?ref=CODE), запомняме поканилия.
@@ -76,6 +88,25 @@ export async function registerAction(formData: FormData): Promise<void> {
     },
   });
 
+  // „Запази си името“: профилът с избрания адрес се създава веднага, за да
+  // не го вземе някой друг между регистрацията и първото влизане в таблото.
+  // Зает/невалиден адрес → без профил (таблото предлага създаване).
+  const handle = normalizeSlug(String(formData.get('handle') ?? '').slice(0, 64));
+  if (handle && isValidSlug(handle)) {
+    await prisma.profile
+      .create({
+        data: {
+          userId: user.id,
+          slug: handle,
+          defaultLocale: locale,
+          translations: {
+            create: { locale, displayName: name ?? handle },
+          },
+        },
+      })
+      .catch(() => undefined); // уникалността на slug е в базата (P2002)
+  }
+
   await logLoginIp(user.id);
   await createSession(user.id);
   redirect(`/${locale}/dashboard`);
@@ -88,6 +119,16 @@ export async function loginAction(formData: FormData): Promise<void> {
     password: formData.get('password'),
   });
   if (!parsed.success) {
+    redirect(`/${locale}/login?error=invalid`);
+  }
+  // Лимит на опитите: 10 за 10 мин по IP и 5 за 10 мин по имейл (bcrypt е
+  // скъп и няма друг праг срещу налучкване на пароли).
+  const ip = await clientIp();
+  const email = parsed.data.email.toLowerCase();
+  if (
+    !rateLimit(`login-ip:${ip}`, 10, 10 * 60_000) ||
+    !rateLimit(`login-email:${email}`, 5, 10 * 60_000)
+  ) {
     redirect(`/${locale}/login?error=invalid`);
   }
   const user = await verifyLogin(parsed.data.email, parsed.data.password);

@@ -5,6 +5,8 @@ import { getTranslations } from 'next-intl/server';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { safeJsonLd } from '@/lib/jsonld';
+import { profileUrl } from '@/lib/profile-url';
+import { SITE_URL } from '@/lib/seo';
 import {
   DIALECT_LOCALES,
   dirFor,
@@ -18,8 +20,10 @@ import {
   type BlockMeta,
 } from '@/lib/blocks';
 import { brandFor, isSensitiveUrl } from '@/lib/brands';
+import { countryOf } from '@/lib/analytics';
 import { BrandIcon, BRAND_COLORS } from '@/components/brand-icons';
 import { ShareButton } from '@/components/ShareButton';
+import { VideoFacade } from '@/components/VideoFacade';
 import {
   backgroundCss,
   buttonCss,
@@ -98,6 +102,8 @@ export async function loadProfileBy(where: Prisma.ProfileWhereUniqueInput) {
           stripeAccountId: true,
           stripeChargesEnabled: true,
           isTrader: true,
+          // Баджът „Създай своя“ носи реферала на собственика (вирусна верига).
+          referralCode: true,
         },
       },
     },
@@ -133,7 +139,13 @@ export function profileMetadata(
   }
   languages['x-default'] = path;
   const title = `${main?.displayName ?? profile.slug} · Linketto`;
-  const style = parseStyle(profile.style);
+  // Генерирана social карта 1200×630 на гледания език (/u/<slug>/og).
+  const ogImage = {
+    url: `${path}/og${activeLocale ? `?hl=${activeLocale}` : ''}`,
+    width: 1200,
+    height: 630,
+    alt: main?.displayName ?? profile.slug,
+  };
   // Профили с 18+ линкове не се индексират (защита на непълнолетни).
   const hasSensitive = profile.links.some((link) => isSensitiveUrl(link.url));
   return {
@@ -147,9 +159,9 @@ export function profileMetadata(
       title: main?.displayName ?? profile.slug,
       description: main?.bio ?? undefined,
       url: canonical,
-      ...(style.avatarUrl ? { images: [{ url: style.avatarUrl }] } : {}),
+      images: [ogImage],
     },
-    twitter: { card: 'summary' },
+    twitter: { card: 'summary_large_image', images: [ogImage.url] },
   };
 }
 
@@ -216,7 +228,7 @@ export async function ProfileScreen({
         profileId: profile.id,
         locale: viewLocale,
         referrerHost: hostOf(requestHeaders.get('referer')),
-        country: requestHeaders.get('cf-ipcountry') ?? undefined,
+        country: countryOf(requestHeaders.get('cf-ipcountry')),
       },
     })
     .catch(() => undefined);
@@ -307,7 +319,14 @@ export async function ProfileScreen({
   }
 
   const greeting = GREETING_BY_LOCALE[viewLocale] ?? GREETING_BY_LOCALE.en;
-  const shareUrl = `${process.env.PUBLIC_BASE_URL ?? ''}/u/${slug}`;
+  const initials = Array.from(translation.displayName.trim().split(/\s+/))
+    .slice(0, 2)
+    .map((word) => Array.from(word)[0] ?? '')
+    .join('')
+    .toUpperCase();
+  // Споделянето ползва краткия линк (PROFILE_HOST); JSON-LD — canonical.
+  const shareUrl = profileUrl(slug);
+  const canonicalUrl = `${SITE_URL}/u/${slug}`;
 
   // GEO: създателят като субект — Person/ProfilePage JSON-LD, sameAs от
   // публичните линкове (само истински http(s) цели, без tel:/vcard).
@@ -321,10 +340,10 @@ export async function ProfileScreen({
     inLanguage: viewLocale,
     mainEntity: {
       '@type': 'Person',
-      '@id': `${shareUrl}#person`,
+      '@id': `${canonicalUrl}#person`,
       name: translation.displayName,
       description: translation.bio ?? undefined,
-      url: shareUrl,
+      url: canonicalUrl,
       ...(styleCfg.avatarUrl ? { image: styleCfg.avatarUrl } : {}),
       ...(sameAs.length > 0 ? { sameAs } : {}),
     },
@@ -376,7 +395,7 @@ export async function ProfileScreen({
     <main
       lang={viewLocale}
       dir={dirFor(viewLocale)}
-      className={`relative flex min-h-screen flex-col items-center overflow-x-clip px-6 py-16 ${themeClass}`}
+      className={`relative flex min-h-screen flex-col items-center overflow-x-clip px-3 py-8 sm:px-6 sm:py-16 ${themeClass}`}
       style={{
         ...backgroundCss(styleCfg),
         color: baseTextColor,
@@ -444,7 +463,7 @@ export async function ProfileScreen({
         </div>
       )}
       <div
-        className={`pf-card-aura relative w-full max-w-lg border shadow-2xl backdrop-blur-xl ${glassClass} ${
+        className={`pf-card-aura ${isLightBg ? '' : 'pf-dark'} relative w-full max-w-lg border shadow-2xl backdrop-blur-xl ${glassClass} ${
           styleCfg.buttonShape === 'square' ? 'rounded-none' : 'rounded-3xl'
         } px-5 py-10 sm:px-10 ${
           styleCfg.align === 'start' ? 'text-start' : 'text-center'
@@ -474,9 +493,29 @@ export async function ProfileScreen({
             style={{ '--ring': accent } as React.CSSProperties}
           />
         )}
+        {!styleCfg.avatarUrl && initials && (
+          // Без качена снимка: монограм в акцента — профилът не зее празен отгоре.
+          <div
+            aria-hidden
+            className={`pf-pop pf-ring mb-5 flex h-24 w-24 select-none items-center justify-center text-3xl font-bold tracking-tight shadow-xl ${avatarShapeClass} ${
+              styleCfg.align === 'start' ? '' : 'mx-auto'
+            }`}
+            style={
+              {
+                '--ring': accent,
+                background: `linear-gradient(140deg, ${accent}, color-mix(in srgb, ${accent} 45%, #6d28d9))`,
+                color: /^#[0-9a-f]{6}$/i.test(accent)
+                  ? readableOn(accent)
+                  : '#ffffff',
+              } as React.CSSProperties
+            }
+          >
+            {initials}
+          </div>
+        )}
         <p
-          className="pf-greet text-sm font-semibold uppercase tracking-[0.25em] opacity-60"
-          style={{ color: accent }}
+          className="pf-greet text-sm font-semibold uppercase tracking-[0.25em]"
+          style={{ color: `color-mix(in srgb, ${accent} 55%, currentColor)` }}
         >
           {greeting}
         </p>
@@ -487,7 +526,7 @@ export async function ProfileScreen({
         {unsub && (
           <p
             role="status"
-            className="mx-auto mt-3 max-w-sm rounded-lg border border-current/20 bg-current/5 px-3 py-2 text-xs opacity-80"
+            className="pf-note mx-auto mt-3 max-w-sm rounded-lg px-3 py-2 text-xs opacity-90"
           >
             {t('unsubDone')}
           </p>
@@ -542,7 +581,7 @@ export async function ProfileScreen({
                 className={`rounded-full border px-3.5 py-1.5 text-xs transition-all duration-300 ${
                   loc === viewLocale
                     ? 'font-semibold'
-                    : 'border-transparent opacity-60 hover:-translate-y-0.5 hover:opacity-100'
+                    : 'border-transparent opacity-75 hover:-translate-y-0.5 hover:opacity-100'
                 }`}
                 style={
                   loc === viewLocale
@@ -611,12 +650,11 @@ export async function ProfileScreen({
                       className={`overflow-hidden border ${boxShape}`}
                       style={{ borderColor: accentFor(meta) }}
                     >
-                      <iframe
+                      <VideoFacade
                         src={src}
                         title={title}
-                        loading="lazy"
-                        allowFullScreen
-                        className="aspect-video w-full"
+                        playLabel={t('videoPlay')}
+                        accent={accentFor(meta)}
                       />
                     </div>
                   </li>
@@ -684,29 +722,34 @@ export async function ProfileScreen({
                           <input
                             type="text"
                             name="name"
+                            autoComplete="name"
+                            aria-label={t('formName')}
                             placeholder={t('formName')}
-                            className="w-full rounded-lg border border-white/30 bg-transparent px-3 py-2 placeholder:opacity-60"
+                            className="pf-field"
                           />
                           <input
                             type="email"
                             name="email"
+                            autoComplete="email"
+                            aria-label={t('formEmail')}
                             placeholder={t('formEmail')}
-                            className="w-full rounded-lg border border-white/30 bg-transparent px-3 py-2 placeholder:opacity-60"
+                            className="pf-field"
                           />
                           <textarea
                             name="message"
                             required
                             rows={3}
+                            aria-label={t('formMessage')}
                             placeholder={t('formMessage')}
-                            className="w-full rounded-lg border border-white/30 bg-transparent px-3 py-2 placeholder:opacity-60"
+                            className="pf-field"
                           />
                           {formError && (
-                            <p className="text-xs text-red-300">
+                            <p className={`text-xs ${isLightBg ? 'text-red-700' : 'text-red-300'}`}>
                               {t('formError')}
                             </p>
                           )}
                           {/* чл. 13 ОРЗД: информация в момента на събиране */}
-                          <p className="text-[11px] leading-snug opacity-60">
+                          <p className="text-[11px] leading-snug opacity-80">
                             {t('formConsent')}{' '}
                             <a
                               href={`/${viewLocale}/privacy`}
@@ -760,15 +803,17 @@ export async function ProfileScreen({
                             type="email"
                             name="email"
                             required
+                            autoComplete="email"
+                            aria-label={t('formEmail')}
                             placeholder={t('formEmail')}
-                            className="w-full rounded-lg border border-white/30 bg-transparent px-3 py-2 placeholder:opacity-60"
+                            className="pf-field"
                           />
                           {subError && (
-                            <p className="text-xs text-red-300">
+                            <p className={`text-xs ${isLightBg ? 'text-red-700' : 'text-red-300'}`}>
                               {t('subError')}
                             </p>
                           )}
-                          <label className="flex items-start gap-2 text-[11px] leading-snug opacity-70">
+                          <label className="flex items-start gap-2 text-[11px] leading-snug opacity-85">
                             <input
                               type="checkbox"
                               name="consent"
@@ -842,11 +887,11 @@ export async function ProfileScreen({
                             />
                             <button
                               type="submit"
-                              className="relative w-full overflow-hidden rounded-lg border border-current/30 px-3 py-2 text-left text-sm transition hover:border-current"
+                              className="pf-poll-opt relative w-full overflow-hidden rounded-lg px-3 py-2 text-start text-sm"
                             >
                               {showResults && (
                                 <span
-                                  className="absolute inset-y-0 left-0 bg-current/15"
+                                  className="pf-poll-bar absolute inset-y-0 start-0"
                                   style={{ width: `${pct[i]}%` }}
                                   aria-hidden="true"
                                 />
@@ -864,7 +909,7 @@ export async function ProfileScreen({
                         ))}
                       </div>
                       {showResults && (
-                        <p className="mt-2 text-center text-[11px] opacity-60">
+                        <p className="mt-2 text-center text-[11px] opacity-75">
                           {t('pollVotes', { count: total })}
                         </p>
                       )}
@@ -902,33 +947,39 @@ export async function ProfileScreen({
                           <input
                             type="text"
                             name="name"
+                            autoComplete="name"
+                            aria-label={t('formName')}
                             placeholder={t('formName')}
-                            className="w-full rounded-lg border border-white/30 bg-transparent px-3 py-2 placeholder:opacity-60"
+                            className="pf-field"
                           />
                           <input
                             type="email"
                             name="email"
                             required
+                            autoComplete="email"
+                            aria-label={t('formEmail')}
                             placeholder={t('formEmail')}
-                            className="w-full rounded-lg border border-white/30 bg-transparent px-3 py-2 placeholder:opacity-60"
+                            className="pf-field"
                           />
                           <input
                             type="datetime-local"
                             name="preferredAt"
-                            className="w-full rounded-lg border border-white/30 bg-transparent px-3 py-2"
+                            aria-label={t('bookingWhen')}
+                            className="pf-field"
                           />
                           <textarea
                             name="message"
                             rows={2}
+                            aria-label={t('bookingMessage')}
                             placeholder={t('bookingMessage')}
-                            className="w-full rounded-lg border border-white/30 bg-transparent px-3 py-2 placeholder:opacity-60"
+                            className="pf-field"
                           />
                           {bookError && (
-                            <p className="text-xs text-red-300">
+                            <p className={`text-xs ${isLightBg ? 'text-red-700' : 'text-red-300'}`}>
                               {t('subError')}
                             </p>
                           )}
-                          <p className="text-[11px] leading-snug opacity-60">
+                          <p className="text-[11px] leading-snug opacity-80">
                             {t('formConsent')}{' '}
                             <a
                               href={`/${viewLocale}/privacy`}
@@ -1033,25 +1084,25 @@ export async function ProfileScreen({
                 {t('shopTitle')}
               </h2>
               {shopError && (
-                <p className="mt-2 text-center text-sm text-red-300">
+                <p className={`mt-2 text-center text-sm ${isLightBg ? 'text-red-700' : 'text-red-300'}`}>
                   {t('shopError')}
                 </p>
               )}
               {couponError && (
-                <p className="mt-2 text-center text-sm text-red-300">
+                <p className={`mt-2 text-center text-sm ${isLightBg ? 'text-red-700' : 'text-red-300'}`}>
                   {t('shopCouponError')}
                 </p>
               )}
               {/* Дир. 2011/83 чл. 6а: роля на платформата + статут на продавача.
                   ЗЗП/Omnibus: цените са крайни (с вкл. ДДС — Stripe Tax, TAX.md). */}
-              <p className="mt-2 text-center text-[11px] leading-snug opacity-55">
+              <p className="mt-2 text-center text-[11px] leading-snug opacity-80">
                 {t('shopSellerNote')}{' '}
                 {profile.user.isTrader
                   ? t('sellerTrader')
                   : t('sellerPrivate')}
                 . {t('shopVatIncluded')}
               </p>
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-4 space-y-5">
                 {profile.products.map((product) => {
                   const productTr =
                     product.translations.find((tr) => tr.locale === viewLocale) ??
@@ -1062,7 +1113,7 @@ export async function ProfileScreen({
                   const productTitle = productTr?.title;
                   if (!productTitle) return null;
                   return (
-                    <li key={product.id}>
+                    <li key={product.id} className="pf-product">
                       <form action={startProductPurchaseAction}>
                         <input type="hidden" name="slug" value={slug} />
                         <input type="hidden" name="hl" value={viewLocale} />
@@ -1096,7 +1147,7 @@ export async function ProfileScreen({
                           </span>
                         </button>
                         {product.type !== 'DIGITAL' && (
-                          <span className="mt-1 block text-center text-[10px] font-semibold uppercase tracking-wide opacity-60">
+                          <span className="mt-1 block text-center text-[10px] font-semibold uppercase tracking-wide opacity-75">
                             {product.type === 'MEMBERSHIP'
                               ? t('shopMembership')
                               : t('shopCourse')}
@@ -1108,8 +1159,9 @@ export async function ProfileScreen({
                             type="text"
                             name="coupon"
                             autoComplete="off"
+                            aria-label={t('shopCouponPlaceholder')}
                             placeholder={t('shopCouponPlaceholder')}
-                            className="mt-1.5 w-full rounded-lg border border-current/20 bg-current/5 px-3 py-1.5 text-xs uppercase tracking-wide placeholder:normal-case placeholder:opacity-50"
+                            className="pf-field mt-1.5 !py-1.5 text-xs uppercase tracking-wide placeholder:normal-case"
                           />
                         )}
                         {/* ЗЗП чл. 57, т. 13 / Дир. 2011/83 чл. 16(м):
@@ -1140,14 +1192,32 @@ export async function ProfileScreen({
             </section>
           )}
 
+        {/* Вирусната верига: посетител → своя безплатна страница, с реферала
+            на собственика (бонус при платен план). Абсолютен URL — работи и
+            на собствен/кратък домейн. Скрива се само на платени планове. */}
         {!styleCfg.hideBadge && (
           <p className="mt-12 text-center">
-            <Link
-              href="/"
-              className="inline-block rounded-full border border-current px-3 py-1 text-[11px] uppercase tracking-widest opacity-50 transition hover:opacity-90"
+            <a
+              href={`${SITE_URL}/${viewLocale}/register${
+                profile.user.referralCode
+                  ? `?ref=${encodeURIComponent(profile.user.referralCode)}`
+                  : ''
+              }`}
+              className="group inline-flex max-w-full flex-col items-center rounded-2xl border border-current px-5 py-2 opacity-75 transition hover:opacity-100"
             >
-              Linketto
-            </Link>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.25em] opacity-80">
+                Linketto
+              </span>
+              <span className="mt-0.5 text-sm font-semibold">
+                {t('badgeCta')}{' '}
+                <span
+                  aria-hidden="true"
+                  className="inline-block transition-transform group-hover:translate-x-0.5"
+                >
+                  →
+                </span>
+              </span>
+            </a>
           </p>
         )}
         {/* DSA чл. 16: път за сигнали — дискретен, но винаги наличен */}
@@ -1155,7 +1225,7 @@ export async function ProfileScreen({
           <a
             href={`/u/${slug}/report?hl=${viewLocale}`}
             rel="nofollow"
-            className="text-[11px] opacity-40 transition hover:underline hover:opacity-80"
+            className="text-[11px] opacity-70 transition hover:underline hover:opacity-100"
           >
             {t('report')}
           </a>

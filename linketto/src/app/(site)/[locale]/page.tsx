@@ -5,6 +5,8 @@ import { getTranslations } from 'next-intl/server';
 import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
 import { safeJsonLd } from '@/lib/jsonld';
 import { CursorGlow } from '@/components/CursorGlow';
+import { ClaimHandle } from '@/components/ClaimHandle';
+import { profileUrl } from '@/lib/profile-url';
 import { faqJsonLd, pageMetadata, siteJsonLd } from '@/lib/seo';
 import {
   CheckIcon,
@@ -19,7 +21,8 @@ import {
   ShieldCheckIcon,
   ShoppingBagIcon,
 } from '@/components/icons';
-import type { Locale } from '@/i18n/locales';
+import { LOCALES, type Locale } from '@/i18n/locales';
+import { BLOCK_KINDS } from '@/lib/blocks';
 import { BILLING_INTERVALS, PLANS } from '@/lib/plans';
 
 // Максималната отстъпка (годишен план) — за маркетинговия ред в цените.
@@ -148,9 +151,9 @@ export default async function HomePage({
 
   // [цел на брояча, суфикс, етикет] — скролът навива цифрата от 0 до целта
   const STATS = [
-    ['6', '+', t('statsLangsLabel')],
+    [String(LOCALES.length), '', t('statsLangsLabel')],
     ['29', '', t('statsBrandsLabel')],
-    ['10', '', t('statsBlocksLabel')],
+    [String(BLOCK_KINDS.length), '', t('statsBlocksLabel')],
     ['0', '%', t('statsFeeLabel')],
   ] as const;
 
@@ -210,19 +213,36 @@ export default async function HomePage({
                 <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-slate-300 lg:mx-0">
                   {t('heroSubtitle')}
                 </p>
-                <div className="mt-9 flex flex-wrap justify-center gap-4 lg:justify-start">
-                  <Link
-                    href={`/${locale}/register`}
-                    className="btn-shine rounded-full bg-white px-7 py-3.5 font-semibold text-slate-900 shadow-lg shadow-sky-500/20 transition hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-sky-400/30"
-                  >
-                    {t('ctaPrimary')}
-                  </Link>
-                  <a
-                    href="#pricing"
-                    className="rounded-full border border-white/30 px-7 py-3.5 font-semibold text-white backdrop-blur transition hover:border-white/60 hover:bg-white/5"
-                  >
-                    {t('ctaSecondary')}
-                  </a>
+                {/* „Запази си името“ — от първия екран право към своя адрес */}
+                <div className="mt-9">
+                  <ClaimHandle
+                    locale={locale}
+                    prefix={profileUrl('').replace(/^https?:\/\//, '')}
+                    labels={{
+                      label: t('claimLabel'),
+                      placeholder: t('claimPlaceholder'),
+                      cta: t('claimCta'),
+                      checking: t('claimChecking'),
+                      available: t.raw('claimAvailable') as string,
+                      taken: t.raw('claimTaken') as string,
+                      invalid: t('claimInvalid'),
+                      reserved: t.raw('claimTaken') as string,
+                    }}
+                  />
+                  <div className="mt-1 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm lg:justify-start">
+                    <a
+                      href="#pricing"
+                      className="font-semibold text-sky-200 underline-offset-4 transition hover:text-white hover:underline"
+                    >
+                      {t('ctaSecondary')}
+                    </a>
+                    <Link
+                      href={`/${locale}/tools`}
+                      className="font-semibold text-sky-200 underline-offset-4 transition hover:text-white hover:underline"
+                    >
+                      {t('claimTools')}
+                    </Link>
+                  </div>
                 </div>
               </div>
 
@@ -306,7 +326,19 @@ export default async function HomePage({
         {/* ── MARQUEE: поздравите на света текат — под ъгъл ──────────── */}
         {/* Обвивката клипва наклонената лента — без нея ротацията
             разширява страницата и се появява хоризонтален скрол */}
-        <div className="overflow-x-clip">
+        <div className="marquee-wrap relative overflow-x-clip">
+          <input
+            type="checkbox"
+            id="marquee-pause"
+            className="peer sr-only"
+            aria-label={t('pauseMotion')}
+          />
+          <label
+            htmlFor="marquee-pause"
+            className="absolute right-3 top-1 z-10 cursor-pointer rounded-full border border-slate-300 bg-white/90 px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur transition hover:bg-white peer-checked:bg-linketto-600 peer-checked:text-white peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-linketto-600"
+          >
+            {t('pauseMotion')}
+          </label>
           <div
             className="marquee-band -mx-4 -rotate-1 scale-[1.02] overflow-hidden border-y border-slate-200 bg-gradient-to-r from-sky-50 via-violet-50 to-sky-50 py-3.5 shadow-sm"
             aria-hidden
@@ -475,7 +507,7 @@ export default async function HomePage({
                     {tPricing(`${planKey}.fee`)} {tPricing('commission')}
                   </p>
                   {!def.oneTime && def.priceCents > 0 && (
-                    <p className="mt-1 text-xs font-medium text-green-600">
+                    <p className="mt-1 text-xs font-semibold text-emerald-700">
                       {tPricing('annualOffer', { percent: ANNUAL_DISCOUNT })}
                     </p>
                   )}
@@ -518,13 +550,14 @@ export default async function HomePage({
             {faqItems.map((item, index) => (
               <details
                 key={item.q}
-                className="reveal group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-linketto-500/40 hover:shadow-md"
+                className="faq-item reveal group rounded-2xl border border-slate-200 bg-white px-6 py-5 shadow-sm transition hover:border-linketto-500/40 hover:shadow-md open:border-linketto-500/30 open:shadow-md"
                 open={index === 0}
               >
                 <summary className="cursor-pointer list-none font-semibold text-slate-900 marker:content-none">
-                  {item.q}
+                  <span>{item.q}</span>
+                  <span aria-hidden className="faq-plus" />
                 </summary>
-                <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                <p className="mt-3 max-w-[62ch] text-[15px] leading-relaxed text-slate-600">
                   {item.a}
                 </p>
               </details>

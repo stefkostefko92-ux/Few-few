@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { prisma } from '@/lib/db';
 import { isLocale } from '@/i18n/locales';
 import { videoEmbedSrc } from '@/lib/blocks';
+import { VideoFacade } from '@/components/VideoFacade';
 import { getBuyerEmail, hasActiveEntitlement } from '@/lib/buyer-auth';
 import { requestAccessAction, buyerLogoutAction } from '@/app/actions/buyer';
 
@@ -104,7 +106,6 @@ export default async function LearnPage({
   const product = await prisma.product.findFirst({
     where: {
       id: productId,
-      active: true,
       type: { in: ['COURSE', 'MEMBERSHIP'] },
       profile: { slug, published: true, bannedAt: null },
     },
@@ -123,15 +124,19 @@ export default async function LearnPage({
     product.translations.find((t) => t.locale === product.profile.defaultLocale) ??
     product.translations[0];
   const title = tr?.title ?? 'Linketto';
+  const tp = await getTranslations({ locale, namespace: 'profile' });
 
   const email = await getBuyerEmail();
   const access = email ? await hasActiveEntitlement(email, productId) : false;
+  // Архивиран/скрит продукт е недостъпен за случайни посетители, но
+  // платилите купувачи пазят достъпа си (продуктът не се трие при продажби).
+  if (!product.active && !access) notFound();
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-12">
-      <div className="rounded-2xl border border-slate-200 bg-white p-8">
-        <p className="text-xs uppercase tracking-widest text-slate-400">
-          {product.type === 'MEMBERSHIP' ? 'Membership' : 'Course'} ·{' '}
+    <main className="min-h-screen bg-slate-50 px-4 py-10 font-ui text-slate-900 sm:px-6 sm:py-14">
+      <div className="mx-auto max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.2)] sm:p-9">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+          {product.type === 'MEMBERSHIP' ? tp('shopMembership') : tp('shopCourse')} ·{' '}
           <Link href={`/u/${slug}`} className="hover:underline">
             @{slug}
           </Link>
@@ -145,7 +150,7 @@ export default async function LearnPage({
           <>
             <div className="mt-6 space-y-6">
               {product.lessons.length === 0 && (
-                <p className="text-sm text-slate-400">—</p>
+                <p className="text-sm text-slate-500">—</p>
               )}
               {product.lessons.map((lesson, i) => {
                 const embed = lesson.videoUrl
@@ -160,12 +165,12 @@ export default async function LearnPage({
                       {i + 1}. {lesson.title}
                     </h2>
                     {embed && (
-                      <div className="mt-3 aspect-video overflow-hidden rounded-lg">
-                        <iframe
+                      <div className="mt-3 overflow-hidden rounded-lg">
+                        <VideoFacade
                           src={embed}
                           title={lesson.title}
-                          allowFullScreen
-                          className="h-full w-full"
+                          playLabel={tp('videoPlay')}
+                          accent={product.profile.accent ?? '#3b82c4'}
                         />
                       </div>
                     )}
@@ -212,17 +217,19 @@ export default async function LearnPage({
                 name="email"
                 required
                 placeholder={s.email}
-                className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                aria-label={s.email}
+                autoComplete="email"
+                className="auth-field !mt-0 min-w-0 flex-1"
               />
               <button
                 type="submit"
-                className="rounded-full bg-linketto-600 px-5 py-2 text-sm font-semibold text-white hover:bg-linketto-700"
+                className="rounded-full bg-linketto-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-linketto-700"
               >
                 {s.request}
               </button>
             </form>
             {accessError && (
-              <p className="mt-2 text-xs text-red-600">{s.error}</p>
+              <p role="alert" className="mt-2 text-sm font-medium text-red-700">{s.error}</p>
             )}
             <p className="mt-4 text-sm">
               <Link

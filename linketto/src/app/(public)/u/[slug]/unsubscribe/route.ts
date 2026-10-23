@@ -17,10 +17,9 @@ export async function GET(
       include: { profile: { select: { slug: true } } },
     });
     if (subscriber && subscriber.profile.slug === slug) {
-      await prisma.subscriber.update({
-        where: { id: subscriber.id },
-        data: { unsubscribedAt: new Date() },
-      });
+      // Целта отпада → имейлът се изтрива (чл. 17 ОРЗД; обработващ по чл.
+      // 28 не пази данни след отписване). Ново записване е възможно.
+      await prisma.subscriber.delete({ where: { id: subscriber.id } });
       back.searchParams.set('unsub', '1');
     }
   }

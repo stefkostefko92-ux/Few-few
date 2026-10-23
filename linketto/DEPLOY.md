@@ -26,6 +26,28 @@ CSV износът неутрализира формула-инжекция; mag
 бисквитка `NEXT_LOCALE` (езикова, до 12 мес.); аналитиката не брои върнати
 продажби.
 
+**Трети одит (2026-10-09 — Кодаджията/Правния Разбирач/Дизайнера/Качествения) —
+затворено в кода:** покупките и платеният достъп не се трият (архив/
+анонимизиране); лимитите на плана спират при сваляне; ограничител на публичните
+форми и входа; износът на абонати само потвърдени; отписването изтрива имейла;
+13-месечна аналитика с реално чистене; `/s` уважава бана и 18+; качване до 8 MB;
+`next@15.5.27`/`sharp@0.35.5`; ДДС гейт (магазинът не продава на live без
+Stripe Tax); AI без „thinking“ токени и на партиди; видео с click-to-load;
+пълен паритет на преводите (487 ключа × 27 локала).
+
+**Остава отворено (нужно решение/юрист/продукт):**
+- Договор за обработване по чл. 28 в Общите условия (Linketto е обработващ за
+  бюлетина) — юрист; потвърждение на траен носител за покупка на **курс**
+  (имейл се праща само за DIGITAL) — юрист + имейл шаблон на 6 езика.
+- Причина/уведомяване при бан (DSA чл. 17) — поле `bannedReason` + имейл.
+- Насрочване на блокове: `datetime-local` се тълкува в часовата зона на сървъра.
+- Собствен домейн без TXT проверка на собствеността; няма CSP; външни URL за
+  аватар/фон (IP на посетителя към трети страни) — или само качени снимки.
+- `next-intl` 3.x (open redirect важи само за `localePrefix:'as-needed'` — тук е
+  `'always'`) и вложен `postcss` в `next` (само build-time): мажорен ъпгрейд
+  (next-intl 4 / next 16) е отделна задача. `npm audit` остава с 6 бележки.
+- Граматика на „{n} + етикет“ (`shortLinkClicks`, `membersLabel`) без ICU plural.
+
 **БЛОКЕРИ за собственика/юриста преди „live":**
 0. **ДАНЪЦИ (2026-07-10 — виж [`TAX.md`](TAX.md)):** по чл. 9а Регл.
    282/2011 **платформата е ДДС длъжник за продажбите в магазина** (deemed
@@ -53,8 +75,9 @@ CSV износът неутрализира формула-инжекция; mag
 **За членствата (когато `MEMBERSHIPS_ENABLED=true`):** добави преддоговорна
 информация за авто-подновяване/период/отказ (Дир. 2011/83 чл. 6), buyer път
 за отмяна (Stripe Billing Portal), разделен waiver по тип продукт — всичко с
-правен преглед. Дребни (след старт): idempotency ключове на checkout/refunds,
-rate-limit на публичните форми, хеширане на magic-токена.
+правен преглед. Дребни (след старт): idempotency ключове на checkout/refunds;
+лимитът на публичните форми и входа е в паметта на процеса
+(`src/lib/limiter.ts`) — при повече от един инстанс се заменя с Redis.
 
 ## 1. База данни (PostgreSQL, ЕС регион)
 
@@ -78,9 +101,13 @@ DATABASE_URL="postgresql://…" npx prisma migrate deploy
 | `STRIPE_WEBHOOK_SECRET` | Stripe → Webhooks (виж §3) | `whsec_…` |
 | `STRIPE_PRICE_PRO_*` / `STRIPE_PRICE_BUSINESS_*` | Stripe → Products → Prices | по един Price ID за всеки период: `_MONTHLY/_QUARTERLY/_SEMIANNUAL/_ANNUAL` (отстъпка 0/10/15/20%) |
 | `STRIPE_PRICE_FOUNDER` | Stripe → Products → Prices | еднократно плащане |
+| `DATA_DIR` | абсолютна папка извън release-а, напр. `/var/lib/linketto` | **ЗАДЪЛЖИТЕЛНА на сървъра** — качените аватари/фонове (`DATA_DIR/uploads`); по подразбиране `./data` се губи при всеки нов release |
 | `RESEND_API_KEY` + `EMAIL_FROM` | resend.com | **ЗАДЪЛЖИТЕЛНИ** — без тях курсовете (достъп през magic-link имейл) са НЕДОСТАВИМИ и разписките/доставките не тръгват; **подпиши DPA + EU регион** |
-| `GEMINI_API_KEY` | aistudio.google.com | „Преведи с AI"; за ЕС ползвай **платен tier + DPA** (иначе входът се ползва за обучение) |
+| `GEMINI_API_KEY` | aistudio.google.com | „Преведи с AI", „Генерирай био“ и публичният `/tools/bio`; за ЕС условията на Gemini API позволяват **само платен tier + DPA** (иначе входът се ползва за обучение) |
+| `GEMINI_PAID_TIER` | ти | `1` = потвърждаваш, че ключът е на **платен** акаунт с DPA. Без него всички AI функции са изключени (fail-closed) — бутоните връщат „не е наличен“ |
 | `ADMIN_EMAILS` | ти | запетая-разделени имейли с достъп до `/admin` |
+| `PROFILE_HOST` | кратък домейн, напр. `lnkt.to` | по избор — линковете за споделяне, QR и vCard стават `https://<хост>/<slug>` (middleware пренаписва към `/u/<slug>`; всичко друго на хоста отива на основния сайт). Нужни: DNS A/AAAA към сървъра, TLS сертификат и Nginx `server_name` за хоста. Canonical/sitemap остават на `PUBLIC_BASE_URL` |
+| `CRON_SECRET` | `openssl rand -hex 32` | седмичният отчет „езикова дупка“ (§9) и подписът на линка за отписване; ≥24 знака; без него маршрутът е изключен (503); смяната обезсилва старите линкове за отписване |
 
 ## 3. Stripe webhook
 
@@ -151,8 +178,9 @@ cookie `NEXT_LOCALE` и винаги печели пред IP. Без CDN хед
 ## 7. Build & run
 
 ```bash
-npm ci --omit=dev
+npm ci                   # с devDependencies — prisma/typescript/tailwind трябват за билда
 npm run build            # prisma generate + next build
+npm prune --omit=dev     # после махаме dev зависимостите от сървъра
 npm start                # или зад reverse proxy (Nginx) + systemd
 ```
 
@@ -174,6 +202,37 @@ Health probe: `GET /api/health` → `{"status":"ok","db":"up"}` (503 при па
 Чак след зелен приемен тест — превключи на live ключове.
 
 ## 9. Преди публичен старт (не блокират деплоя, но задължителни)
+
+- **Cron за сроковете на съхранение (дневно, `psql`):** политиката за
+  поверителност обещава срокове (`src/lib/retention-days.ts` е единният
+  източник). Приложението чисти лениво, но реалният гарант е cron:
+  ```sql
+  DELETE FROM "ClickEvent"     WHERE "createdAt" < now() - interval '396 days';
+  DELETE FROM "ContactMessage" WHERE "createdAt" < now() - interval '365 days';
+  DELETE FROM "Booking"        WHERE "createdAt" < now() - interval '365 days';
+  DELETE FROM "LoginEvent"     WHERE "createdAt" < now() - interval '90 days';
+  DELETE FROM "Subscriber"     WHERE "confirmedAt" IS NULL AND "createdAt" < now() - interval '30 days';
+  DELETE FROM "BuyerToken"     WHERE "expiresAt" < now() - interval '1 day';
+  DELETE FROM "BuyerSession"   WHERE "expiresAt" < now();
+  DELETE FROM "Session"        WHERE "expiresAt" < now();
+  ```
+
+- **Cron за седмичния отчет (дневно, напр. 08:10):** `POST /api/cron/digest`
+  с хедър `Authorization: Bearer <CRON_SECRET>` (стойността — от `.env` на
+  сървъра, mode 600; никога в crontab в чист текст на споделена машина —
+  чети я от файла). Дневното пускане е нарочно: всеки получава най-много 1
+  отчет на ~седмица (`User.lastDigestAt`), партида до 300 на пускане; пращат
+  се само при реални посещения. Отказ — с 1 клик от имейла (RFC 8058
+  `List-Unsubscribe-Post`) или от таблото (секция „Езикова дупка“).
+- **Кратък домейн (`PROFILE_HOST`, по избор):** след DNS + TLS провери, че
+  `https://<хост>/<съществуващ slug>` показва профила, а `https://<хост>/`
+  пренасочва към основния сайт.
+- **IndexNow след деплой** (нови страници `/tools`, `/tools/qr`, `/tools/bio`,
+  `/vs/linktree`, `/vs/beacons` + sitemap):
+  `node tools/seo/indexnow.mjs https://linketto.carbonstealth.eu`.
+- **Сравнителните страници (`/vs/*`):** фактите за конкурентите са в
+  `src/lib/comparisons.ts` с дата на проверка — преглеждай ги поне веднъж на
+  тримесечие (цените им се менят; остарял факт = подвеждаща сравнителна реклама).
 
 - **Правен преглед:** текстовете в `messages/*.json` (`legal.*`) са изрядни, но
   минават през жив юрист/DPO преди масов трафик.

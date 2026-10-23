@@ -7,6 +7,8 @@ import { prisma } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin';
 import { getStripe } from '@/lib/stripe';
 import { payoutSeller } from '@/lib/payout';
+import { eraseUser } from '@/lib/account-erasure';
+import { applyPlanLimits } from '@/lib/plan-limits';
 import { isLocale } from '@/i18n/locales';
 import type { Plan } from '@prisma/client';
 
@@ -60,6 +62,8 @@ export async function adminUpdateUserAction(
       where: { id: userId },
       data: { email, name: name || null, plan: plan as Plan },
     });
+    // Ръчно свален план → платените функции спират (виж lib/plan-limits.ts).
+    await applyPlanLimits(userId);
   } catch (error) {
     // P2002 = зает имейл
     if (
@@ -86,8 +90,9 @@ export async function adminForceLogoutAction(
   redirect(`/${uiLocale}/admin?ok=1`);
 }
 
-/** Пълно изтриване на акаунт (каскадно: профили, линкове, продукти,
-    покупки, съобщения, сесии, IP логове). Не можеш да изтриеш себе си. */
+/** Изтриване на акаунт: без покупки — каскадно (профили, линкове, продукти,
+    съобщения, сесии, IP логове); с покупки — анонимизиране, за да се пазят
+    фискалните записи 10 г. Не можеш да изтриеш себе си. */
 export async function adminDeleteUserAction(
   formData: FormData,
 ): Promise<void> {
@@ -97,7 +102,12 @@ export async function adminDeleteUserAction(
   if (formData.get('confirm') !== 'on' || userId === admin.id) {
     redirect(`/${uiLocale}/admin?error=input`);
   }
-  await prisma.user.delete({ where: { id: userId } }).catch(() => undefined);
+  // Има ли покупки → анонимизиране (фискалните записи се пазят 10 г.),
+  // иначе пълно каскадно изтриване (виж lib/account-erasure.ts).
+  await eraseUser(userId).catch((error: unknown) => {
+    console.error('[admin] eraseUser failed', userId, error);
+    redirect(`/${uiLocale}/admin?error=input`);
+  });
   redirect(`/${uiLocale}/admin?ok=1`);
 }
 

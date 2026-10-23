@@ -237,7 +237,9 @@ export function videoEmbedSrc(url: string): string | null {
   }
   if (host === 'vimeo.com') {
     const id = parsed.pathname.slice(1).split('/')[0];
-    return /^\d+$/.test(id) ? `https://player.vimeo.com/video/${id}` : null;
+    return /^\d+$/.test(id)
+      ? `https://player.vimeo.com/video/${id}?dnt=1`
+      : null;
   }
   return null;
 }

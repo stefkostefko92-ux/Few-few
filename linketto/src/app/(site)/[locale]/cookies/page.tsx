@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
+import { LegalDoc } from '@/components/LegalDoc';
 import type { Locale } from '@/i18n/locales';
 import { pageMetadata } from '@/lib/seo';
 
@@ -28,12 +29,7 @@ export default async function CookiesPage({
   return (
     <>
       <SiteHeader locale={locale as Locale} />
-      <main className="mx-auto max-w-2xl px-6 py-16">
-        <h1 className="text-2xl font-bold">{t('cookiesTitle')}</h1>
-        <p className="mt-6 whitespace-pre-line leading-relaxed text-slate-700">
-          {t('cookiesBody')}
-        </p>
-      </main>
+      <LegalDoc title={t('cookiesTitle')} body={t('cookiesBody')} />
       <SiteFooter locale={locale as Locale} currentPath="/cookies" />
     </>
   );

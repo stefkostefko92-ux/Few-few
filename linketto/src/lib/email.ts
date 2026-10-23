@@ -12,6 +12,8 @@ export async function sendEmail(input: {
   to: string;
   subject: string;
   html: string;
+  /** Доп. хедъри — напр. List-Unsubscribe (RFC 8058) за отчетите. */
+  headers?: Record<string, string>;
 }): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
@@ -23,7 +25,13 @@ export async function sendEmail(input: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ from, to: input.to, subject: input.subject, html: input.html }),
+      body: JSON.stringify({
+        from,
+        to: input.to,
+        subject: input.subject,
+        html: input.html,
+        ...(input.headers ? { headers: input.headers } : {}),
+      }),
       signal: AbortSignal.timeout(15_000),
     });
     return res.ok;

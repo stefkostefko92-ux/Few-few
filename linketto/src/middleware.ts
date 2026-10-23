@@ -2,14 +2,29 @@ import createMiddleware from 'next-intl/middleware';
 import { NextResponse, type NextRequest } from 'next/server';
 import { routing } from './i18n/routing';
 import { DEFAULT_LOCALE, isLocale, localeFromGeo } from './i18n/locales';
+import { profileHost, shortPathSlug } from './lib/profile-url';
+import { SITE_URL } from './lib/seo';
 
 const intl = createMiddleware(routing);
 
-// Заявка към чужд хост (собствен домейн на профил) се пренаписва към
-// /d/<host>; всичко останало минава през локализирания рутинг с
-// автоматичен избор на език по геолокация (IP → държава/регион).
+// Краткият хост (PROFILE_HOST) обслужва само /<slug> → /u/<slug>; всичко
+// друго там отива на основния сайт. Заявка към чужд хост (собствен домейн
+// на профил) се пренаписва към /d/<host>; всичко останало минава през
+// локализирания рутинг с автоматичен избор на език по геолокация.
 export default function middleware(request: NextRequest): NextResponse {
   const host = request.headers.get('host')?.split(':')[0].toLowerCase();
+  const short = profileHost();
+  if (host && short && (host === short || host === `www.${short}`)) {
+    const slug = shortPathSlug(request.nextUrl.pathname);
+    if (slug) {
+      const url = request.nextUrl.clone();
+      url.pathname = `/u/${slug}`;
+      return NextResponse.rewrite(url);
+    }
+    return NextResponse.redirect(
+      new URL(`${request.nextUrl.pathname}${request.nextUrl.search}`, SITE_URL),
+    );
+  }
   const primary = primaryHost();
   if (
     host &&
@@ -65,5 +80,7 @@ function primaryHost(): string | null {
 export const config = {
   // Публичните профили (/u, /d), съкратените линкове (/s), buyer verify,
   // API и статичните файлове са извън локализирания рутинг.
-  matcher: ['/((?!api|u/|d/|s/|buyer/|_next|_vercel|.*\\..*).*)'],
+  // „api/“ и „api“ точно — не префиксът „api“: иначе slug като „apicoltura“
+  // на краткия хост (PROFILE_HOST) не стига до пренаписването → 404.
+  matcher: ['/((?!api/|api$|u/|d/|s/|buyer/|_next|_vercel|.*\\..*).*)'],
 };
