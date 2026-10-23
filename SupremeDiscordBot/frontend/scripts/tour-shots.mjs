@@ -124,7 +124,7 @@ for (const [key, path] of SHOTS) {
   await page.goto(base + path, { waitUntil: "domcontentloaded" });
   await page.waitForLoadState("load", { timeout: 10_000 }).catch(() => {});
   await page.waitForTimeout(1500);
-  const crashed = await page.evaluate(() => /Something went wrong/i.test(document.body.innerText));
+  const crashed = await page.evaluate(() => !!document.querySelector("[data-error-boundary]") || /Something went wrong/i.test(document.body.innerText));
   if (crashed) { console.error(`✗ ${key}: екранът на ErrorBoundary`); failed++; continue; }
   const png = await page.screenshot({ type: "png" });
   const webp = await page.evaluate(async (b64) => {

@@ -118,7 +118,7 @@ export default function TicketsPage() {
   const replyMut = useMutation({
     mutationFn: ({ ticketId, content }) => replyToTicket(serverId, ticketId, content),
     onSuccess: () => {
-      toast.success("Reply sent to the ticket channel");
+      toast.success(t("tickets.replySent"));
       setReplyingId(null);
       setReplyText("");
     },
@@ -228,7 +228,7 @@ export default function TicketsPage() {
         </div>
       ) : isError ? (
         <div role="alert" className="cs-card text-center py-16 text-danger flex flex-col items-center gap-3">
-          <span>Couldn't load tickets — please retry.</span>
+          <span>{t("tickets.loadError")}</span>
           <button
             type="button"
             onClick={() => refetch()}
@@ -236,7 +236,7 @@ export default function TicketsPage() {
             className="cs-btn-secondary text-xs flex items-center gap-2 disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefetching ? "animate-spin" : ""}`} aria-hidden="true" />
-            {isRefetching ? "Retrying…" : "Retry"}
+            {isRefetching ? t("common.retrying") : t("common.retry")}
           </button>
         </div>
       ) : tickets.length === 0 ? (
@@ -244,7 +244,7 @@ export default function TicketsPage() {
           <EmptyState
             icon={Ticket}
             title={t("tickets.filtered.title")}
-            description="Try adjusting the search, date range, or status filter."
+            description={t("tickets.filtered.body")}
             ctaLabel={t("tickets.filtered.cta")}
             onCtaClick={clearFilters}
           />
@@ -252,7 +252,7 @@ export default function TicketsPage() {
           <EmptyState
             icon={Ticket}
             title={t("tickets.empty.title")}
-            description="Tickets will show up here once members start using a ticket panel."
+            description={t("tickets.empty.body")}
             ctaLabel={t("tickets.empty.cta")}
             ctaTo={`/dashboard/${serverId}/panels`}
           />
@@ -321,7 +321,7 @@ export default function TicketsPage() {
                         ? <span
                             className="inline-flex items-center gap-0.5"
                             title={ticket.feedbackComment || ""}
-                            aria-label={`Rating: ${ticket.feedbackRating} of 5`}
+                            aria-label={t("tickets.ratingAria", { n: ticket.feedbackRating })}
                           >
                             {Array.from({ length: ticket.feedbackRating }).map((_, i) => (
                               <Star key={i} className="w-3.5 h-3.5 text-cs-cyan fill-cs-cyan" aria-hidden="true" />
@@ -402,21 +402,21 @@ export default function TicketsPage() {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-4 text-sm text-cs-muted">
-              <span>Page {page} of {totalPages}</span>
+              <span>{t("common.pageOf", { page, total: totalPages })}</span>
               <div className="flex gap-2">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
                   className="cs-btn-ghost py-1 px-3 disabled:opacity-40 flex items-center gap-1"
                 >
-                  <ChevronLeft className="w-4 h-4" /> Prev
+                  <ChevronLeft className="w-4 h-4" aria-hidden="true" /> {t("common.prev")}
                 </button>
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
                   className="cs-btn-ghost py-1 px-3 disabled:opacity-40 flex items-center gap-1"
                 >
-                  Next <ChevronRight className="w-4 h-4" />
+                  {t("common.next")} <ChevronRight className="w-4 h-4" aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -467,7 +467,7 @@ export default function TicketsPage() {
       </Modal>
 
       {/* Close Ticket Modal */}
-      <Modal open={!!closingId} onClose={() => setClosingId(null)} title="Close ticket" maxWidth="max-w-md">
+      <Modal open={!!closingId} onClose={() => setClosingId(null)} title={t("tickets.close")} maxWidth="max-w-md">
         <label className="block mb-4">
           <span className="cs-label">{t("ui.closeReasonOpt")}</span>
           <input
@@ -479,13 +479,13 @@ export default function TicketsPage() {
           />
         </label>
         <div className="flex gap-3 justify-end">
-          <button className="cs-btn-ghost" onClick={() => setClosingId(null)}>Cancel</button>
+          <button className="cs-btn-ghost" onClick={() => setClosingId(null)}>{t("common.cancel")}</button>
           <button
             className="cs-btn-danger"
             disabled={closeMut.isPending}
             onClick={() => closeMut.mutate({ ticketId: closingId, reason: closeReason })}
           >
-            {closeMut.isPending ? "Closing…" : "Close ticket"}
+            {closeMut.isPending ? t("tickets.closing") : t("tickets.close")}
           </button>
         </div>
       </Modal>

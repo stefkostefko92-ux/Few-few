@@ -12,6 +12,7 @@ import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
 import EmojiPicker from "../components/EmojiPicker";
 import { useT } from "../contexts/I18nContext";
+import PageHeader from "../components/PageHeader";
 import { useToast } from "../contexts/ToastContext";
 
 // Discord таван: 25 опции в падащо меню, 25 бутона (5 реда × 5). Ботът вече
@@ -52,7 +53,8 @@ const STYLE_COLORS = {
   DANGER: "bg-red-600",
 };
 
-const defaultForm = () => ({
+// Етикетът на първия бутон е на езика на таблото — отива направо в Discord.
+const defaultForm = (t) => ({
   name: "", title: "", description: "", color: "#5865F2",
   // Legacy
   namingTemplate: "ticket-{username}",
@@ -85,7 +87,7 @@ const defaultForm = () => ({
   // v1.7 verification gate
   requireVerifiedRoleIds: "",
   verificationDeniedMessage: "",
-  buttons: [{ label: "Open Ticket", emoji: "🎫", style: "PRIMARY", formId: "" }],
+  buttons: [{ label: t("panels.defaultButton"), emoji: "🎫", style: "PRIMARY", formId: "" }],
 });
 
 function panelToForm(panel) {
@@ -140,7 +142,7 @@ export default function PanelsPage() {
 
   // editing: null = closed, "new" = create modal, string = panelId being edited
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState(defaultForm());
+  const [form, setForm] = useState(() => defaultForm(t));
   const [spawnInputs, setSpawnInputs] = useState({});
   // Групово публикуване (няколко панела → едно съобщение)
   const [groupMode, setGroupMode] = useState(false);
@@ -181,7 +183,7 @@ export default function PanelsPage() {
       // botWarning = записът мина, но живото Discord съобщение НЕ се обнови —
       // казваме го честно, вместо да рапортуваме пълен успех (лъжещ успех).
       if (data?.botWarning) toast.error(data.botWarning);
-      else toast.success("Panel updated.");
+      else toast.success(t("panels.updated"));
     },
     onError: (err) => toast.error(mutErrorMsg(err, t("panels.updateFailed"))),
   });
@@ -230,7 +232,7 @@ export default function PanelsPage() {
     onError: (err) => toast.error(mutErrorMsg(err, t("panels.duplicateFailed"))),
   });
 
-  const openNew = () => { setForm(defaultForm()); setEditing("new"); };
+  const openNew = () => { setForm(defaultForm(t)); setEditing("new"); };
   const openEdit = (panel) => { setForm(panelToForm(panel)); setEditing(panel.id); };
 
   const handleSubmit = (e) => {
@@ -283,22 +285,24 @@ export default function PanelsPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-cs-text">{t("panels.title")}</h1>
-          <p className="text-cs-muted text-sm mt-1">
+      <PageHeader
+        title={t("panels.title")}
+        subtitle={(
+          <>
             {t("panels.subtitle")}{" "}
             {/* Контекстна връзка към публичната docs страница за настройка. */}
             <a href="/guides/ticket-panel-setup" target="_blank" rel="noopener"
                className="text-cs-cyan hover:underline whitespace-nowrap">
-              {t("panels.setupGuide")} →
+              {t("panels.setupGuide")}
             </a>
-          </p>
-        </div>
-        <button onClick={openNew} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> {t("panels.new")}
-        </button>
-      </div>
+          </>
+        )}
+        actions={(
+          <button onClick={openNew} className="cs-btn-primary cs-btn-sm flex items-center gap-2">
+            <Plus className="w-4 h-4" aria-hidden="true" /> {t("panels.new")}
+          </button>
+        )}
+      />
 
       {/* Panel list */}
       {isLoading ? (
@@ -420,7 +424,7 @@ export default function PanelsPage() {
                       disabled={!spawnInputs[panel.id] || spawnMut.isPending}
                       onClick={() => spawnMut.mutate({ panelId: panel.id, channelId: spawnInputs[panel.id] })}
                     >
-                      <Send className="w-3 h-3" /> Post to channel
+                      <Send className="w-3 h-3" aria-hidden="true" /> {t("common.postToChannel")}
                     </button>
                   </div>
 
@@ -434,9 +438,9 @@ export default function PanelsPage() {
                   </button>
 
                   <button
-                    aria-label={isPremium ? "Duplicate panel" : "Duplicate panel (Premium)"}
-                    title={isPremium ? "Duplicate panel" : "Duplicate panel (Premium)"}
-                    onClick={() => isPremium ? duplicateMut.mutate(panel.id) : window.dispatchEvent(new CustomEvent("premium-required", { detail: { error: "Panel duplication requires Premium.", featureLabel: "Panel Duplicate" } }))}
+                    aria-label={isPremium ? t("panels.duplicate") : t("panels.duplicatePremium")}
+                    title={isPremium ? t("panels.duplicate") : t("panels.duplicatePremium")}
+                    onClick={() => isPremium ? duplicateMut.mutate(panel.id) : window.dispatchEvent(new CustomEvent("premium-required", { detail: { error: t("panels.duplicateNeedsPremium"), featureLabel: t("panels.duplicateFeature") } }))}
                     disabled={duplicateMut.isPending}
                     className={`transition-colors p-1 disabled:opacity-40 ${isPremium ? "text-cs-cyan hover:opacity-80" : "text-cs-gold hover:text-cs-goldDim"}`}
                   >
@@ -449,7 +453,7 @@ export default function PanelsPage() {
                     className="text-danger hover:text-red-300 transition-colors p-1"
                     onClick={() => setConfirmState({
                       title: t("panels.delete"),
-                      message: `Delete panel "${panel.name}"?`,
+                      message: t("panels.deleteConfirm", { name: panel.name }),
                       onConfirm: () => { deleteMut.mutate(panel.id); setConfirmState(null); },
                     })}
                   >
@@ -459,7 +463,7 @@ export default function PanelsPage() {
               </div>
 
               {panel.channelId && (
-                <p className="text-xs text-success mt-2">✅ Active in <ChannelName id={panel.channelId} /></p>
+                <p className="text-xs text-success mt-2"><span aria-hidden="true">✅</span> {t("panels.activeIn")} <ChannelName id={panel.channelId} /></p>
               )}
             </div>
           ))}
@@ -468,7 +472,7 @@ export default function PanelsPage() {
 
       {deleteMut.isError && (
         <div className="fixed bottom-4 right-4 bg-red-500/20 border border-red-500/30 text-danger text-sm px-4 py-3 rounded-lg z-50">
-          ❌ {deleteMut.error?.response?.data?.error || "Failed to delete panel"}
+          ❌ {deleteMut.error?.response?.data?.error || t("panels.deleteFailed")}
         </div>
       )}
 
@@ -476,7 +480,7 @@ export default function PanelsPage() {
       <Modal
         open={isModalOpen}
         onClose={() => setEditing(null)}
-        title={editing === "new" ? "New panel" : "Edit panel"}
+        title={editing === "new" ? t("panels.new") : t("panels.edit")}
         maxWidth="max-w-2xl"
       >
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -539,7 +543,7 @@ export default function PanelsPage() {
               {/* ═══════ v1.5 — TicketTool Parity ═══════ */}
 
               <details className="cs-card !p-4 !bg-cs-panel">
-                <summary className="cursor-pointer text-xs text-cs-cyan">→ Categories & Channels</summary>
+                <summary className="cursor-pointer text-xs text-cs-cyan">{t("panels.sec.channels")}</summary>
                 <div className="pt-4 space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <label className="block">
@@ -585,7 +589,7 @@ export default function PanelsPage() {
               </details>
 
               <details className="cs-card !p-4 !bg-cs-panel">
-                <summary className="cursor-pointer text-xs text-cs-cyan">→ Welcome Message & Roles</summary>
+                <summary className="cursor-pointer text-xs text-cs-cyan">{t("panels.sec.welcome")}</summary>
                 <div className="pt-4 space-y-3">
                   <label className="block">
                     <span className="cs-label">{t("ui.welcomeMsgMd")}</span>
@@ -622,13 +626,13 @@ export default function PanelsPage() {
               </details>
 
               <details className="cs-card !p-4 !bg-cs-panel">
-                <summary className="cursor-pointer text-xs text-cs-cyan">→ Close Behavior {!isPremium && <PremiumBadge small />}</summary>
+                <summary className="cursor-pointer text-xs text-cs-cyan">{t("panels.sec.close")} {!isPremium && <PremiumBadge small />}</summary>
                 <div className="pt-4 space-y-3">
                   <label className="flex items-center gap-2">
                     <input type="checkbox" checked={form.closeAskEnabled}
                       onChange={(e) => setForm((f) => ({ ...f, closeAskEnabled: e.target.checked }))}
                       className="accent-cs-cyan" />
-                    <span className="text-sm text-cs-text">Two-step close (show confirmation before closing)</span>
+                    <span className="text-sm text-cs-text">{t("panels.twoStepClose")}</span>
                   </label>
                   {form.closeAskEnabled && (
                     <label className="block">
@@ -642,7 +646,7 @@ export default function PanelsPage() {
               </details>
 
               <details className="cs-card !p-4 !bg-cs-panel">
-                <summary className="cursor-pointer text-xs text-cs-cyan">→ DM Notifications {!isPremium && <PremiumBadge small />}</summary>
+                <summary className="cursor-pointer text-xs text-cs-cyan">{t("panels.sec.dm")} {!isPremium && <PremiumBadge small />}</summary>
                 <div className="pt-4 space-y-3">
                   <label className="flex items-center gap-2">
                     <input type="checkbox" checked={form.dmOnOpen}
@@ -676,7 +680,7 @@ export default function PanelsPage() {
               </details>
 
               <details className="cs-card !p-4 !bg-cs-panel">
-                <summary className="cursor-pointer text-xs text-cs-cyan">→ Automation {!isPremium && <PremiumBadge small />}</summary>
+                <summary className="cursor-pointer text-xs text-cs-cyan">{t("nav.automation")} {!isPremium && <PremiumBadge small />}</summary>
                 <div className="pt-4 space-y-3">
                   <label className="block">
                     <span className="cs-label">{t("ui.inactivityAutoClose")}</span>
@@ -702,13 +706,13 @@ export default function PanelsPage() {
                     <input type="checkbox" checked={form.autoCloseOnLeave}
                       onChange={(e) => setForm((f) => ({ ...f, autoCloseOnLeave: e.target.checked }))}
                       className="accent-cs-cyan" />
-                    <span className="text-sm text-cs-text">Auto-close ticket when creator leaves the server</span>
+                    <span className="text-sm text-cs-text">{t("panels.autoCloseOnLeave")}</span>
                   </label>
                   <label className="flex items-center gap-2">
                     <input type="checkbox" checked={form.feedbackEnabled}
                       onChange={(e) => setForm((f) => ({ ...f, feedbackEnabled: e.target.checked }))}
                       className="accent-cs-cyan" />
-                    <span className="text-sm text-cs-text">DM feedback rating prompt after close (1-5 stars)</span>
+                    <span className="text-sm text-cs-text">{t("panels.feedbackDm")}</span>
                   </label>
                 </div>
               </details>
@@ -767,7 +771,7 @@ export default function PanelsPage() {
                       <div className="flex gap-2 flex-wrap items-center">
                         <input className={`cs-input w-16 py-1 text-sm ${emojiLooksValid(btn.emoji) ? "" : "border-warning"}`}
                           value={btn.emoji}
-                          aria-label={`Button ${i + 1} emoji`}
+                          aria-label={t("panels.btnEmoji", { n: i + 1 })}
                           aria-invalid={!emojiLooksValid(btn.emoji)}
                           onChange={(e) => updateButton(i, "emoji", e.target.value)}
                           placeholder={t("panels.ph.emoji")} />
@@ -776,17 +780,17 @@ export default function PanelsPage() {
                           onSelect={(e) => updateButton(i, "emoji", e)}
                         />
                         <input className="cs-input flex-1 min-w-[100px] py-1 text-sm" value={btn.label}
-                          aria-label={`Button ${i + 1} label`}
+                          aria-label={t("panels.btnLabel", { n: i + 1 })}
                           onChange={(e) => updateButton(i, "label", e.target.value)}
                           placeholder={t("panels.ph.buttonLabel")} required />
                         <select className="cs-input py-1 text-sm w-28" value={btn.style}
-                          aria-label={`Button ${i + 1} style`}
+                          aria-label={t("panels.btnStyle", { n: i + 1 })}
                           onChange={(e) => updateButton(i, "style", e.target.value)}>
-                          {BUTTON_STYLES.map((s) => <option key={s} value={s}>{s}</option>)}
+                          {BUTTON_STYLES.map((s) => <option key={s} value={s}>{t(`ui.style.${s}`)}</option>)}
                         </select>
                         {form.buttons.length > 1 && (
                           <button type="button" onClick={() => removeButton(i)}
-                            aria-label={`Remove button ${i + 1}`}
+                            aria-label={t("panels.btnRemove", { n: i + 1 })}
                             title={t("panels.removeButton")}
                             className="text-danger hover:text-red-300 transition-colors">
                             <Trash2 className="w-4 h-4" />
@@ -799,14 +803,14 @@ export default function PanelsPage() {
                         </p>
                       )}
                       <div className="flex gap-2 items-center">
-                        <label className="text-xs text-cs-muted whitespace-nowrap" htmlFor={`button-action-${i}`}>Action:</label>
+                        <label className="text-xs text-cs-muted whitespace-nowrap" htmlFor={`button-action-${i}`}>{t("panels.action")}</label>
                         <select
                           id={`button-action-${i}`}
                           className="cs-input py-1 text-sm flex-1"
                           value={btn.formId || ""}
                           onChange={(e) => updateButton(i, "formId", e.target.value)}
                         >
-                          <option value="">🎫 Create ticket directly</option>
+                          <option value="">{t("panels.createDirect")}</option>
                           {forms.filter((f) => !f.isApplication).length > 0 && (
                             <optgroup label={t("panels.askFirst")}>
                               {forms.filter((f) => !f.isApplication).map((f) => (

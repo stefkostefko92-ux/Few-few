@@ -7,6 +7,7 @@ import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Gamepad2, Trophy, ShoppingBag, Layers, Save, Plus, Trash2, Pencil, Sparkles, Target } from "lucide-react";
 import { useT } from "../contexts/I18nContext";
+import PageHeader from "../components/PageHeader";
 import { useToast } from "../contexts/ToastContext";
 import { PremiumBadge } from "../components/PremiumBadge";
 import DiscordChannelSelect, { DiscordRoleSelect, ChannelName } from "../components/DiscordPicker";
@@ -42,10 +43,7 @@ export default function GamePage() {
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
-      <div>
-        <h1 className="cs-heading flex items-center gap-2"><Gamepad2 className="w-6 h-6 text-cs-cyan" aria-hidden="true" /> {t("game.title")}</h1>
-        <p className="text-sm text-cs-muted mt-1">{t("game.subtitle")}</p>
-      </div>
+      <PageHeader title={t("game.title")} subtitle={t("game.subtitle")} />
       <div className="flex flex-wrap gap-2" role="tablist" aria-label={t("game.title")}>
         {TABS.map((x) => (
           <button key={x.id} role="tab" aria-selected={tab === x.id} onClick={() => setTab(x.id)}

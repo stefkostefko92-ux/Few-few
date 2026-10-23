@@ -155,10 +155,7 @@ export default function FormsPage() {
   const askCascadeDelete = (form, count) => {
     setConfirmState({
       title: t("forms.hasSubmissions"),
-      message:
-        `This form has ${count} application submission${count === 1 ? "" : "s"}.\n\n` +
-        `Deleting will remove the form AND all ${count} submissions.\n` +
-        `Cancel to keep everything.`,
+      message: t("forms.cascadeBody", { n: count }),
       confirmLabel: t("common.deleteEverything"),
       onConfirm: async () => {
         setActionError(null);
@@ -167,7 +164,7 @@ export default function FormsPage() {
           setConfirmState(null);
         } catch (e) {
           setConfirmState(null);
-          setActionError(`Delete failed: ${e?.response?.data?.error || e.message}`);
+          setActionError(t("forms.deleteFailedWith", { error: e?.response?.data?.error || e.message }));
         }
       },
     });
@@ -178,7 +175,7 @@ export default function FormsPage() {
     setActionError(null);
     setConfirmState({
       title: t("forms.delete"),
-      message: `Delete form "${form.name}"?`,
+      message: t("forms.deleteConfirm", { name: form.name }),
       confirmLabel: t("common.delete"),
       onConfirm: async () => {
         try {
@@ -190,7 +187,7 @@ export default function FormsPage() {
             askCascadeDelete(form, data.applicationCount);
           } else {
             setConfirmState(null);
-            setActionError(`Delete failed: ${data?.error || err.message}`);
+            setActionError(t("forms.deleteFailedWith", { error: data?.error || err.message }));
           }
         }
       },
@@ -250,11 +247,11 @@ export default function FormsPage() {
       {/* Заглавието и бутонът — както в концепцията (10.10.2026). */}
       <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
         <div>
-          <h1 className="!text-[1.75rem] sm:!text-3xl !font-bold !tracking-tight text-cs-text leading-tight">Forms</h1>
-          <p className="text-cs-muted text-sm mt-1">Build logic-branching questionnaires for tickets and applications</p>
+          <h1 className="!text-[1.75rem] sm:!text-3xl !font-bold !tracking-tight text-cs-text leading-tight">{t("nav.forms")}</h1>
+          <p className="text-cs-muted text-sm mt-1">{t("forms.subtitle")}</p>
         </div>
         <button onClick={() => { setForm(defaultForm()); setEditing(true); }} className="cs-btn-primary cs-btn-sm flex items-center gap-2">
-          <Plus className="w-4 h-4" aria-hidden="true" /> New form
+          <Plus className="w-4 h-4" aria-hidden="true" /> {t("forms.new")}
         </button>
       </div>
 
@@ -294,7 +291,7 @@ export default function FormsPage() {
           <div className="cs-card !p-0 overflow-hidden">
             <div className="hidden md:grid grid-cols-[minmax(0,1fr)_7rem_auto] gap-4 px-5 py-3 border-b border-cs-line text-xs font-semibold text-cs-dim">
               <span>{t("common.name")}</span>
-              <span>Questions</span>
+              <span>{t("forms.questions")}</span>
               <span className="text-right">{t("tickets.col.actions")}</span>
             </div>
             <ul className="divide-y divide-cs-line/70">
@@ -327,7 +324,7 @@ export default function FormsPage() {
                       </div>
                     </div>
                     <div className="text-sm text-cs-text tabular-nums">
-                      {f.questions.length}<span className="md:hidden text-cs-dim"> questions</span>
+                      <span className="md:hidden text-cs-dim">{t("forms.questions")}: </span>{f.questions.length}
                     </div>
                     <div className="flex flex-wrap items-center gap-2 md:justify-end">
                       {/* Spawn input — постът отива в канала с това ID (като при панелите) */}
@@ -340,7 +337,7 @@ export default function FormsPage() {
                         disabled={!spawnInputs[f.id] || spawnMut.isPending}
                         onClick={() => spawnMut.mutate({ formId: f.id, channelId: spawnInputs[f.id].trim() })}
                       >
-                        <Send className="w-3.5 h-3.5" aria-hidden="true" /> Post to channel
+                        <Send className="w-3.5 h-3.5" aria-hidden="true" /> {t("common.postToChannel")}
                       </button>
                       <button
                         aria-label={t("forms.edit")}
@@ -369,7 +366,7 @@ export default function FormsPage() {
 
       {deleteMut.isError && (
         <div className="fixed bottom-4 right-4 bg-red-500/20 border border-red-500/30 text-danger text-sm px-4 py-3 rounded-lg z-50">
-          ❌ {deleteMut.error?.response?.data?.error || "Failed to delete form"}
+          ❌ {deleteMut.error?.response?.data?.error || t("forms.deleteFailed")}
         </div>
       )}
 
@@ -377,7 +374,7 @@ export default function FormsPage() {
       <Modal
         open={editing}
         onClose={() => { setEditing(false); setEditingId(null); }}
-        title={editingId ? "Edit form" : "New form"}
+        title={editingId ? t("forms.edit") : t("forms.new")}
         maxWidth="max-w-3xl"
       >
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -441,13 +438,13 @@ export default function FormsPage() {
                 {form.isApplication && (
                   <details className="cs-card !p-4 !bg-cs-panel">
                     <summary className="cursor-pointer text-xs text-cs-cyan select-none flex items-center gap-2">
-                      → Advanced: Roles, Messages, Cooldowns
+                      {t("forms.advanced")}
                       {!isPremium && <PremiumBadge small />}
                     </summary>
                     <div className="pt-4 space-y-3">
                       {!isPremium && (
                         <div className="cs-card !p-3 !bg-cs-gold/5 border-cs-gold/30 text-xs text-cs-gold">
-                          <strong>Premium required</strong> — these advanced features (auto-role on accept/deny, custom DM messages, cooldowns) need a Premium subscription.
+                          <strong>{t("forms.premiumRequired")}</strong> — {t("forms.premiumRequiredBody")}
                         </div>
                       )}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -473,7 +470,7 @@ export default function FormsPage() {
                         <DiscordRoleSelect multi value={form.pingRoleIds} onChange={(v) => setForm((f) => ({ ...f, pingRoleIds: v }))} requireAssignable={false} />
                       </label>
                       <label className="block">
-                        <span className="cs-label">Accept DM message (markdown; {"{user}"}, {"{note}"})</span>
+                        <span className="cs-label">{t("forms.acceptDm", { user: "{user}", note: "{note}" })}</span>
                         <textarea className="cs-textarea" rows={3} value={form.acceptMessage} onChange={(e) => setForm((f) => ({ ...f, acceptMessage: e.target.value }))} placeholder={t("ui.ph.acceptDm")} />
                       </label>
                       <label className="block">
@@ -491,7 +488,7 @@ export default function FormsPage() {
                         </label>
                         <label className="flex items-center gap-2 mt-6">
                           <input type="checkbox" checked={form.closed} onChange={(e) => setForm((f) => ({ ...f, closed: e.target.checked }))} className="accent-cs-cyan" />
-                          <span className="text-sm text-cs-muted">Applications closed</span>
+                          <span className="text-sm text-cs-muted">{t("forms.appsClosed")}</span>
                         </label>
                       </div>
                     </div>
@@ -502,9 +499,9 @@ export default function FormsPage() {
               {/* Questions */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-cs-text">Questions ({form.questions.length})</h3>
+                  <h3 className="font-semibold text-cs-text">{t("forms.questionsCount", { n: form.questions.length })}</h3>
                   <button type="button" onClick={addQuestion} className="text-cs-cyan hover:text-cs-cyan text-sm transition-colors flex items-center gap-1">
-                    <Plus className="w-3 h-3" /> Add question
+                    <Plus className="w-3 h-3" aria-hidden="true" /> {t("forms.addQuestion")}
                   </button>
                 </div>
 
@@ -520,15 +517,15 @@ export default function FormsPage() {
                           className="flex items-center gap-3 flex-1 min-w-0 text-left"
                         >
                           <span className="w-6 h-6 rounded bg-cs-cyan/20 text-cs-cyan text-xs flex items-center justify-center font-bold">{i + 1}</span>
-                          <span className="text-sm text-cs-text">{q.label || "Untitled Question"}</span>
-                          <span className="text-xs text-cs-muted">{q.type}</span>
+                          <span className="text-sm text-cs-text">{q.label || t("forms.untitledQuestion")}</span>
+                          <span className="text-xs text-cs-muted">{t(QUESTION_TYPES.find((qt) => qt.value === q.type)?.key || "forms.qType.short")}</span>
                           {Object.keys(q.branches || {}).length > 0 && (
                             <GitBranch className="w-3 h-3 text-cs-cyan" />
                           )}
                         </button>
                         <div className="flex items-center gap-2">
                           {form.questions.length > 1 && (
-                            <button type="button" aria-label={`Remove question ${i + 1}`} title={t("forms.removeQuestion")} onClick={(e) => { e.stopPropagation(); removeQuestion(i); }} className="text-danger hover:text-red-300 transition-colors">
+                            <button type="button" aria-label={t("forms.removeQuestionN", { n: i + 1 })} title={t("forms.removeQuestion")} onClick={(e) => { e.stopPropagation(); removeQuestion(i); }} className="text-danger hover:text-red-300 transition-colors">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           )}
@@ -540,11 +537,11 @@ export default function FormsPage() {
                         <div className="px-3 pb-3 border-t border-white/5 pt-3 space-y-3">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <label className="block">
-                              <span className="cs-label text-xs">Question Label *</span>
+                              <span className="cs-label text-xs">{t("forms.questionLabel")}</span>
                               <input className="cs-input py-1.5 text-sm" required value={q.label} onChange={(e) => updateQuestion(i, "label", e.target.value)} placeholder={t("forms.ph.question")} />
                             </label>
                             <label className="block">
-                              <span className="cs-label text-xs">Type</span>
+                              <span className="cs-label text-xs">{t("ui.type")}</span>
                               <select className="cs-input py-1.5 text-sm" value={q.type} onChange={(e) => updateQuestion(i, "type", e.target.value)}>
                                 {QUESTION_TYPES.map((qt) => <option key={qt.value} value={qt.value}>{t(qt.key)}</option>)}
                               </select>
@@ -552,14 +549,14 @@ export default function FormsPage() {
                           </div>
 
                           <label className="block">
-                            <span className="cs-label text-xs">Placeholder</span>
+                            <span className="cs-label text-xs">{t("forms.placeholder")}</span>
                             <input className="cs-input py-1.5 text-sm" value={q.placeholder} onChange={(e) => updateQuestion(i, "placeholder", e.target.value)} placeholder={t("forms.ph.hint")} />
                           </label>
 
                           <div className="flex items-center gap-3">
                             <label className="flex items-center gap-2 text-sm text-cs-text cursor-pointer">
                               <input type="checkbox" className="rounded" checked={q.required} onChange={(e) => updateQuestion(i, "required", e.target.checked)} />
-                              Required
+                              {t("forms.required")}
                             </label>
                             <label className="block flex-1">
                               <span className="cs-label text-xs">{t("forms.minLength")}</span>
@@ -574,10 +571,10 @@ export default function FormsPage() {
                           {(q.type === "SELECT" || q.type === "MULTI_SELECT") && (
                             <label className="block">
                               <span className="cs-label text-xs flex items-center gap-1">
-                                <GitBranch className="w-3 h-3 text-cs-cyan" /> Choices (one per line — supports logic branching)
+                                <GitBranch className="w-3 h-3 text-cs-cyan" aria-hidden="true" /> {t("forms.choices")}
                               </span>
-                              <textarea className="cs-input text-sm" rows={4} value={q._choicesText} onChange={(e) => updateQuestion(i, "_choicesText", e.target.value)} placeholder={"Yes\nNo\nMaybe"} />
-                              <p className="text-xs text-cs-muted mt-1">Add choices above. Logic branching (jump to a different question based on choice) can be configured after form creation.</p>
+                              <textarea className="cs-input text-sm" rows={4} value={q._choicesText} onChange={(e) => updateQuestion(i, "_choicesText", e.target.value)} placeholder={t("forms.choicesPh")} />
+                              <p className="text-xs text-cs-muted mt-1">{t("forms.choicesHint")}</p>
                             </label>
                           )}
                         </div>
@@ -588,14 +585,14 @@ export default function FormsPage() {
               </div>
 
               <div className="flex justify-end gap-3">
-                <button type="button" onClick={() => { setEditing(false); setEditingId(null); }} className="cs-btn-ghost">Cancel</button>
+                <button type="button" onClick={() => { setEditing(false); setEditingId(null); }} className="cs-btn-ghost">{t("common.cancel")}</button>
                 <button type="submit" className="cs-btn-primary" disabled={createMut.isPending || updateMut.isPending}>
-                  {(createMut.isPending || updateMut.isPending) ? "Saving…" : editingId ? "Save changes" : "Create form"}
+                  {(createMut.isPending || updateMut.isPending) ? t("common.saving") : editingId ? t("common.saveChanges") : t("forms.create")}
                 </button>
               </div>
 
               {(createMut.isError || updateMut.isError) && (
-                <p className="text-danger text-sm" role="alert">{(createMut.error || updateMut.error)?.response?.data?.error || "Operation failed"}</p>
+                <p className="text-danger text-sm" role="alert">{(createMut.error || updateMut.error)?.response?.data?.error || t("common.operationFailed")}</p>
               )}
             </form>
       </Modal>
@@ -609,7 +606,7 @@ export default function FormsPage() {
           <button
             type="button"
             aria-label={t("forms.dismissError")}
-            title="Dismiss"
+            title={t("common.dismiss")}
             onClick={() => setActionError(null)}
             className="text-red-300 hover:text-red-200"
           >

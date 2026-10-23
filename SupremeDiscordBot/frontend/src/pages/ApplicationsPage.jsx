@@ -9,6 +9,7 @@ import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
 import { useT } from "../contexts/I18nContext";
+import PageHeader from "../components/PageHeader";
 import { useToast } from "../contexts/ToastContext";
 
 const STATUS_COLORS = {
@@ -82,7 +83,7 @@ export default function ApplicationsPage() {
     onError: (err) => {
       setDiscussMessage({
         type: "alert",
-        text: `Failed to open discussion: ${err?.response?.data?.error || err.message}`,
+        text: t("apps.discussFailed", { error: err?.response?.data?.error || err.message }),
       });
     },
   });
@@ -99,23 +100,23 @@ export default function ApplicationsPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-cs-text">{t("apps.title")}</h1>
-          <p className="text-cs-muted text-sm mt-1">{t("apps.totalCount", { n: data?.total ?? 0 })}</p>
-        </div>
-        <select
-          className="cs-input w-40"
-          value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          aria-label={t("apps.filterByStatus")}
-        >
-          <option value="">All</option>
-          <option value="PENDING">{t("appStatus.pending")}</option>
-          <option value="APPROVED">{t("appStatus.approved")}</option>
-          <option value="DENIED">{t("appStatus.denied")}</option>
-        </select>
-      </div>
+      <PageHeader
+        title={t("apps.title")}
+        subtitle={t("apps.totalCount", { n: data?.total ?? 0 })}
+        actions={(
+          <select
+            className="cs-input w-40"
+            value={statusFilter}
+            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+            aria-label={t("apps.filterByStatus")}
+          >
+            <option value="">{t("tickets.tab.all")}</option>
+            <option value="PENDING">{t("appStatus.pending")}</option>
+            <option value="APPROVED">{t("appStatus.approved")}</option>
+            <option value="DENIED">{t("appStatus.denied")}</option>
+          </select>
+        )}
+      />
 
       {discussMessage && (
         <div
@@ -147,7 +148,7 @@ export default function ApplicationsPage() {
         </div>
       ) : isError ? (
         <div role="alert" className="cs-card text-center py-16 text-danger">
-          Couldn't load applications — please retry.
+          {t("apps.loadError")}
         </div>
       ) : applications.length === 0 ? (
         statusFilter ? (
@@ -352,21 +353,21 @@ export default function ApplicationsPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-6 text-sm text-cs-muted">
-          <span>Page {page} of {totalPages}</span>
+          <span>{t("common.pageOf", { page, total: totalPages })}</span>
           <div className="flex gap-2">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
               className="cs-btn-ghost py-1 px-3 disabled:opacity-40 flex items-center gap-1"
             >
-              <ChevronLeft className="w-4 h-4" /> Prev
+              <ChevronLeft className="w-4 h-4" aria-hidden="true" /> {t("common.prev")}
             </button>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               className="cs-btn-ghost py-1 px-3 disabled:opacity-40 flex items-center gap-1"
             >
-              Next <ChevronRight className="w-4 h-4" />
+              {t("common.next")} <ChevronRight className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         </div>

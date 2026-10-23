@@ -26,6 +26,7 @@ import { join, dirname, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const ADD_ROLE = (await import(`../src/i18n/dashboard/${process.env.MP_LANG || "en"}.js`)).default["picker.addRole"];
 const DIST = join(ROOT, "dist");
 const SHOTS = join(ROOT, "scripts", "mobile-proof-shots");
 
@@ -81,7 +82,9 @@ const roles = Array.from({ length: 28 }, (_, i) => ({
   reason: i % 7 === 3 ? "above_bot" : null,
 }));
 const FIX = {
-  "GET /api/auth/me": { id: "u1", username: "stefan", globalRole: "MAIN_OWNER", role: "MAIN_OWNER", language: "en", mfa: { enabled: true, required: true, enrollmentRequired: false, verifiedInSession: true } },
+  // MP_LANG=bg (или друг локал) — същите екрани на езика на акаунта; дългите
+  // преводи са първото, което чупи ред. Табовете с английски имена тогава се пропускат.
+  "GET /api/auth/me": { id: "u1", username: "stefan", globalRole: "MAIN_OWNER", role: "MAIN_OWNER", language: process.env.MP_LANG || "en", mfa: { enabled: true, required: true, enrollmentRequired: false, verifiedInSession: true } },
   "GET /api/admin/system": { now: new Date().toISOString(), backend: { version: "3.4.0", node: "v22", uptimeSec: 100, env: "test" }, db: { ok: true, latencyMs: 1 }, redis: { ok: true, configured: true, latencyMs: 1 }, bot: { ok: true, gateway: "connected", brandBots: { total: 1, ready: 1, down: 0 } }, migration: { latest: "20260823000000_v49_user_mfa", finishedAt: new Date().toISOString(), pending: 0 }, jobs: { dunning: { lastOk: new Date().toISOString(), lastFail: null } }, billing: { provider: "discord", discordConfigured: true, stripeLegacy: false }, webhooks: { failing: 1, items: [{ id: "w1", serverId: SID, name: "Zapier", failCount: 3, lastStatus: 500, lastDeliveryAt: new Date().toISOString(), enabled: true }] }, config: { mfaEnforced: true, adminIpAllowlist: { enabled: false, entries: 0 }, securityAlertsDm: true, transcriptEncryption: true, sentry: true, gemini: true, aiTrainingAttested: false, redisUrl: true, frontendUrl: "https://x", trustProxy: ["loopback"] } },
   "GET /api/admin/security": { mfaEnforced: true, staff: [{ id: "u1", username: "stefan", globalRole: "MAIN_OWNER", mfaEnabled: true, mfaEnabledAt: new Date().toISOString(), backupCodesLeft: 9, sessions: 1, createdAt: new Date().toISOString() }, { id: "u2", username: "ana", globalRole: "SUPPORT_STAFF", mfaEnabled: false, mfaEnabledAt: null, backupCodesLeft: 0, sessions: 0, createdAt: new Date().toISOString() }], sessions: { total: 3 }, bruteForce: { blocked: [{ scope: "auth", key: "203.0.113.7", label: "203.0.113.x", failures: 9, blockedUntil: new Date(Date.now() + 60000).toISOString(), retryAfterSec: 60 }], trackedEntries: 4, redis: true, windowSec: 900, steps: [{ failures: 5, blockMs: 60000 }] }, apiKeys: { active: 1, revoked: 0, items: [{ id: "k1", serverId: SID, userId: "u1", name: "ci", keyPrefix: "sb_ab", scopes: ["tickets:read"], lastUsedAt: null, expiresAt: null, revokedAt: null, requestCount: 3, createdAt: new Date().toISOString() }] }, blacklisted: 0, events: [{ id: "e1", createdAt: new Date().toISOString(), action: "MFA_ENABLED", actor: { id: "u1", username: "stefan" }, targetId: "u1" }] },
   "GET /api/admin/billing": { config: { provider: "discord", discord: { enabled: true, configured: true, storeUrl: "https://discord.com/application-directory/1/store" }, stripe: { purchasesEnabled: false, legacyManagement: false } }, discord: [{ id: SID, name: "T19C", plan: "premium", discordEntitlementId: "e1", discordSkuId: "s1", discordSubscriptionId: "x", discordSubscriptionStatus: 0, statusLabel: "active", discordCurrentPeriodEnd: new Date().toISOString(), premiumSince: new Date().toISOString() }], stripe: [], agencies: [], graceServers: 0, lastReconcileGrantAt: null },
@@ -330,7 +333,8 @@ for (const view of [
       if (found) { await b.first().click(); await page.waitForTimeout(900); }
     }
     // Резервният екран на ErrorBoundary = страницата НЕ работи, каквото и да казва прелива.
-    const crashed = await page.evaluate(() => /Something went wrong/i.test(document.body?.innerText || ""));
+    // По маркер, не по текст: екранът вече е на езика на страницата (23.10.2026).
+    const crashed = await page.evaluate(() => !!document.querySelector("[data-error-boundary]") || /Something went wrong/i.test(document.body?.innerText || ""));
     note(!crashed, `${name}: страницата рендерира (не екрана на ErrorBoundary)`);
     const over = await page.evaluate(() => {
       const el = document.documentElement;
@@ -429,7 +433,8 @@ for (const view of [
   // ─── Порталът на ролите: отвори и премери ────────────────────────────────
   await page.goto(`${base}/dashboard/${SID}/settings`, { waitUntil: "load" }).catch(() => {});
   await page.waitForTimeout(900);
-  const addRole = page.locator('button:has-text("Add role…")').first();
+  // Надписът идва от речника на езика на акаунта (MP_LANG) — не е зашит.
+  const addRole = page.locator(`button:has-text("${ADD_ROLE}")`).first();
   if (await addRole.count()) {
     // Скрол + клик в ЕДНО evaluate. Поотделно Playwright-кликът (actionability
     // проверките му) ВРЪЩАШЕ скрола на мобилния контекст между двете стъпки —

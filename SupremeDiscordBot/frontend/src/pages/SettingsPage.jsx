@@ -7,6 +7,7 @@ import { Save, Bot, Zap, RefreshCw, Star, Activity, Globe } from "lucide-react";
 import { getServer, updateServer } from "../api";
 import { useToast } from "../contexts/ToastContext";
 import { useT } from "../contexts/I18nContext";
+import PageHeader from "../components/PageHeader";
 import { LANGUAGE_OPTIONS } from "../i18n/dashboard";
 
 export default function SettingsPage() {
@@ -157,10 +158,7 @@ export default function SettingsPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-2xl">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-cs-text">Server settings</h1>
-        <p className="text-cs-muted text-sm mt-1">{t("settings.subtitle")}</p>
-      </div>
+      <PageHeader title={t("settings.title")} subtitle={t("settings.subtitle")} />
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
@@ -204,13 +202,10 @@ export default function SettingsPage() {
         <div className="cs-card space-y-4">
           <div className="flex items-center gap-2">
             <Activity className="w-5 h-5 text-cs-cyan" />
-            <h2 className="font-semibold text-cs-text">Server activity logging</h2>
+            <h2 className="font-semibold text-cs-text">{t("settings.logging.title")}</h2>
           </div>
           <p className="text-sm text-cs-muted">
-            Log member actions in this server (voice mute/deaf/join, role &amp; nickname changes,
-            timeouts, bans/kicks) to a Discord channel. Events are posted only to the channel you
-            choose — they are not stored by us or shown in the dashboard. You are the data
-            controller for this activity — enable it only with a lawful basis and tell your members.
+            {t("settings.logging.desc")} {t("settings.logging.controllerLegal")}
           </p>
 
           <label className="flex items-center gap-3 cursor-pointer">
@@ -284,9 +279,9 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Zap className="w-5 h-5 text-cs-gold" />
-              <h2 className="font-semibold text-cs-text">AI auto-replies</h2>
+              <h2 className="font-semibold text-cs-text">{t("settings.ai.title")}</h2>
             </div>
-            {!isPremium && <span className="cs-badge-muted text-xs"><Star className="w-3 h-3 text-premium" aria-hidden="true" /> Premium only</span>}
+            {!isPremium && <span className="cs-badge-muted text-xs"><Star className="w-3 h-3 text-premium" aria-hidden="true" /> {t("verify.premiumOnly")}</span>}
           </div>
 
           <label className="flex items-center gap-3 cursor-pointer">
@@ -299,7 +294,7 @@ export default function SettingsPage() {
               tabIndex={isPremium ? undefined : -1}
             />
             <span className="text-sm text-cs-text">
-              Send an AI-generated initial response when a ticket is opened
+              {t("settings.ai.toggle")}
             </span>
           </label>
 
@@ -331,9 +326,9 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <RefreshCw className="w-5 h-5 text-blue-400" />
-              <h2 className="font-semibold text-cs-text">Round-robin assignment</h2>
+              <h2 className="font-semibold text-cs-text">{t("settings.rr.title")}</h2>
             </div>
-            {!isPremium && <span className="cs-badge-muted text-xs"><Star className="w-3 h-3 text-premium" aria-hidden="true" /> Premium only</span>}
+            {!isPremium && <span className="cs-badge-muted text-xs"><Star className="w-3 h-3 text-premium" aria-hidden="true" /> {t("verify.premiumOnly")}</span>}
           </div>
 
           <label className="flex items-center gap-3 cursor-pointer">
@@ -346,7 +341,7 @@ export default function SettingsPage() {
               tabIndex={isPremium ? undefined : -1}
             />
             <span className="text-sm text-cs-text">
-              Automatically assign new tickets to staff members in rotation
+              {t("settings.rr.toggle")}
             </span>
           </label>
 
@@ -355,7 +350,7 @@ export default function SettingsPage() {
               <span className="cs-label">{t("ui.supportRole")}</span>
               <DiscordRoleSelect value={form.roundRobinRoleId} onChange={(v) => set("roundRobinRoleId", v)} requireAssignable={false} />
               <p className="text-xs text-cs-muted mt-1">
-                The bot must have permission to view members of this role.
+                {t("settings.rr.hint")}
               </p>
             </label>
           )}
@@ -372,9 +367,9 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bot className="w-5 h-5 text-purple-400" />
-              <h2 className="font-semibold text-cs-text">White-label Bot</h2>
+              <h2 className="font-semibold text-cs-text">{t("settings.wl.title")}</h2>
             </div>
-            {!hasWL && <span className="cs-badge-muted text-xs"><Star className="w-3 h-3 text-premium" aria-hidden="true" /> White-label plan</span>}
+            {!hasWL && <span className="cs-badge-muted text-xs"><Star className="w-3 h-3 text-premium" aria-hidden="true" /> {t("settings.wl.plan")}</span>}
           </div>
 
           <label className="block">
@@ -414,19 +409,18 @@ export default function SettingsPage() {
               tabIndex={hasWL ? undefined : -1}
             />
             <p className="text-xs text-cs-muted mt-1">
-              The token is encrypted and never shown again. On save your own bot starts with it;
-              a new avatar is applied on the next restart (Discord allows about two changes per hour).
+              {t("settings.wl.tokenHint")}
             </p>
           </label>
         </div>
 
         {/* ─── v1.6 Welcomer + Autorole (appy.bot parity) ─── */}
         <div className="cs-card space-y-4">
-          <h2 className="cs-heading font-display font-bold text-cs-text text-xl flex items-center gap-2">
-            👋 Welcomer &amp; Autorole
+          <h2 className="font-semibold text-cs-text flex items-center gap-2">
+            <span aria-hidden="true">👋</span> {t("settings.welcome.title")}
           </h2>
           <p className="text-sm text-cs-muted">
-            Greet new members and automatically assign them roles when they join.
+            {t("settings.welcome.desc")}
           </p>
 
           <label className="flex items-center gap-2">
@@ -518,7 +512,7 @@ export default function SettingsPage() {
         )}
 
         {mutation.isSuccess && (
-          <p role="status" className="text-success text-sm">Settings saved successfully</p>
+          <p role="status" className="text-success text-sm">{t("settings.saved")}</p>
         )}
 
         <div className="flex justify-end">

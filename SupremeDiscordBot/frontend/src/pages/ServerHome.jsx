@@ -87,7 +87,7 @@ export default function ServerHome() {
         </div>
 
         {/* Един филтър-ред над всичко, което скоупва — сегментиран превключвател. */}
-        <div className="inline-flex items-center gap-1 rounded-xl border border-cs-line bg-cs-surface/70 p-1" role="group" aria-label="Time range">
+        <div className="inline-flex items-center gap-1 rounded-xl border border-cs-line bg-cs-surface/70 p-1" role="group" aria-label={t("overview.timeRange")}>
           {PERIODS.map((p) => (
             <button
               key={p}
@@ -228,12 +228,12 @@ function Row({ icon: Icon, label, value, hint }) {
 /* ─── Здраве на платформата ──────────────────────────────────────────── */
 function SystemStatusPanel({ status }) {
   const { t } = useT();
-  // Имената на услугите остават непреведени (собствени имена: API, Database…).
+  // „API“ е общоприето име и не се превежда; останалите са обикновени думи.
   const services = [
     ["API", status?.services?.api?.status],
-    ["Database", status?.services?.database?.status],
-    ["Discord bot", status?.services?.bot?.status],
-    ["Cache", status?.services?.cache?.status],
+    [t("overview.svc.database"), status?.services?.database?.status],
+    [t("overview.svc.bot"), status?.services?.bot?.status],
+    [t("overview.svc.cache"), status?.services?.cache?.status],
   ];
   return (
     <section className="cs-card" aria-labelledby="sys-h">
@@ -301,7 +301,7 @@ function RecentTickets({ tickets, serverId }) {
               <span className="w-14 text-[13px] text-cs-dim tabular-nums flex-shrink-0">
                 #{tk.number != null ? String(tk.number).padStart(4, "0") : tk.id.slice(-4)}
               </span>
-              <span className="text-sm text-cs-text truncate flex-1">{tk.panel?.name || "Direct ticket"}</span>
+              <span className="text-sm text-cs-text truncate flex-1">{tk.panel?.name || t("overview.directTicket")}</span>
               {tk.priority !== "NORMAL" && (
                 <span className={`text-xs font-medium flex-shrink-0 ${PRIORITY_CLS[tk.priority] || ""}`}>{t(`priority.${String(tk.priority).toLowerCase()}`)}</span>
               )}
@@ -334,11 +334,12 @@ function QuickAction({ to, icon: Icon, label }) {
 
 /* ─── Първи стъпки (както преди — свито, щом всичко е готово) ────────── */
 function GettingStarted({ serverId, panels, forms }) {
+  const { t } = useT();
   const steps = [
-    { label: "Invite the bot to your server", done: true, to: null },
-    { label: "Create a ticket panel", done: (panels?.length ?? 0) > 0, to: `/dashboard/${serverId}/panels`, cta: "Create panel" },
-    { label: "Spawn a panel in a channel", done: (panels || []).some((p) => p.channelId), to: `/dashboard/${serverId}/panels`, cta: "Spawn panel" },
-    { label: "Build an application form", done: (forms?.length ?? 0) > 0, to: `/dashboard/${serverId}/forms`, cta: "Create form" },
+    { id: "invite", label: t("overview.steps.invite"), done: true, to: null },
+    { id: "panel", label: t("overview.steps.panel"), done: (panels?.length ?? 0) > 0, to: `/dashboard/${serverId}/panels`, cta: t("common.createPanel") },
+    { id: "spawn", label: t("overview.steps.spawn"), done: (panels || []).some((p) => p.channelId), to: `/dashboard/${serverId}/panels`, cta: t("overview.steps.spawnCta") },
+    { id: "form", label: t("overview.steps.form"), done: (forms?.length ?? 0) > 0, to: `/dashboard/${serverId}/forms`, cta: t("forms.create") },
   ];
   const allDone = steps.every((s) => s.done);
   const remaining = steps.filter((s) => !s.done).length;
@@ -348,20 +349,20 @@ function GettingStarted({ serverId, panels, forms }) {
       <details className="cs-card mb-8 group">
         <summary className="cursor-pointer select-none list-none flex items-center gap-2 text-sm text-success font-semibold">
           <CheckCircle2 className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-          Setup complete — all first steps done
+          {t("overview.steps.complete")}
           <ArrowRight className="w-3.5 h-3.5 ml-auto transition-transform group-open:rotate-90" aria-hidden="true" />
         </summary>
-        <ol className="mt-4 space-y-2">{steps.map((s) => <ChecklistRow key={s.label} step={s} />)}</ol>
+        <ol className="mt-4 space-y-2">{steps.map((s) => <ChecklistRow key={s.id} step={s} />)}</ol>
       </details>
     );
   }
   return (
     <div className="cs-card mb-8">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="!text-base !font-semibold text-cs-text">First steps</h2>
-        <span className="text-[13px] text-cs-muted tabular-nums">{steps.length - remaining}/{steps.length} done</span>
+        <h2 className="!text-base !font-semibold text-cs-text">{t("overview.steps.title")}</h2>
+        <span className="text-[13px] text-cs-muted tabular-nums">{t("overview.steps.progress", { done: steps.length - remaining, total: steps.length })}</span>
       </div>
-      <ol className="space-y-2">{steps.map((s) => <ChecklistRow key={s.label} step={s} />)}</ol>
+      <ol className="space-y-2">{steps.map((s) => <ChecklistRow key={s.id} step={s} />)}</ol>
     </div>
   );
 }

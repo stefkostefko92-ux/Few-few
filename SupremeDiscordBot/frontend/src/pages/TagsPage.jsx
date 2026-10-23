@@ -14,6 +14,7 @@ import Modal from "../components/Modal";
 import EmptyState from "../components/EmptyState";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { useT } from "../contexts/I18nContext";
+import PageHeader from "../components/PageHeader";
 import { useToast } from "../contexts/ToastContext";
 
 export default function TagsPage() {
@@ -53,17 +54,15 @@ export default function TagsPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-4xl">
-      <div className="flex flex-wrap justify-between items-start gap-3 mb-8">
-        <div>
-          <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
-            <MessageSquareText className="w-7 h-7 text-cs-cyan" aria-hidden="true" /> {t("tags.title")}
-          </h1>
-          <p className="text-cs-muted mt-2 max-w-2xl">{t("tags.subtitle")}</p>
-        </div>
-        <button onClick={() => open("new")} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" aria-hidden="true" /> {t("tags.new")}
-        </button>
-      </div>
+      <PageHeader
+        title={t("tags.title")}
+        subtitle={t("tags.subtitle")}
+        actions={(
+          <button onClick={() => open("new")} className="cs-btn-primary cs-btn-sm flex items-center gap-2">
+            <Plus className="w-4 h-4" aria-hidden="true" /> {t("tags.new")}
+          </button>
+        )}
+      />
 
       {isLoading ? (
         <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => (

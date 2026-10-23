@@ -2,12 +2,13 @@
 import { Fragment } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, Users, TrendingUp, Ticket, FileText, Award, RefreshCw } from "lucide-react";
+import { Users, TrendingUp, Ticket, FileText, Award, RefreshCw } from "lucide-react";
 import {
   getAnalyticsOverview, getAnalyticsHeatmap,
   getAnalyticsLeaderboard, getAnalyticsFunnel,
 } from "../api";
 import { useT } from "../contexts/I18nContext";
+import PageHeader from "../components/PageHeader";
 import MemberName, { useMemberNames } from "../components/MemberName";
 
 export default function AnalyticsPage() {
@@ -28,14 +29,7 @@ export default function AnalyticsPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
-      <div className="mb-8">
-        <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
-          <BarChart3 className="w-7 h-7 text-cs-cyan" /> {t("analytics.title")}
-        </h1>
-        <p className="text-cs-muted mt-2 max-w-2xl">
-          {t("analytics.subtitle")}
-        </p>
-      </div>
+      <PageHeader title={t("analytics.title")} subtitle={t("analytics.subtitle")} />
 
       {/* ═══ KPI cards ═══ */}
       {overviewQ.isError ? (

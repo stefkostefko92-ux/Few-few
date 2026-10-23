@@ -5,43 +5,45 @@
 // текстовото поле — picker-ът покрива стандартните Unicode emoji.
 import { useEffect, useRef, useState } from "react";
 import { SmilePlus } from "lucide-react";
+import { useT } from "../contexts/I18nContext";
 
 const CATEGORIES = [
   {
-    name: "Smileys",
+    id: "smileys",
     emojis: ["😀","😃","😄","😁","😆","😅","😂","🤣","🙂","😉","😊","😇","🥰","😍","🤩","😘","😋","😜","🤪","🤔","🤫","🤐","😐","😏","🙄","😬","😴","🤒","🤕","🤢","🥳","😎","🤓","🧐","😕","😟","😢","😭","😱","😤","😡","🤬","💀","👻","🤖","👽","💩","🤡"],
   },
   {
-    name: "Gestures",
+    id: "gestures",
     emojis: ["👍","👎","👌","🤌","✌️","🤞","🤟","🤘","🤙","👈","👉","👆","👇","☝️","✋","🤚","🖐️","🖖","👋","🤝","🙏","💪","👏","🙌","👐","🤲","✍️","💅","🫡","🫶"],
   },
   {
-    name: "Hearts",
+    id: "hearts",
     emojis: ["❤️","🧡","💛","💚","💙","💜","🖤","🤍","🤎","💔","❣️","💕","💞","💓","💗","💖","💘","💝","💟","♥️"],
   },
   {
-    name: "Symbols",
+    id: "symbols",
     emojis: ["✅","❌","❎","✔️","☑️","⭐","🌟","✨","💫","🔥","💥","⚡","💯","🎯","🏆","🥇","🥈","🥉","🎖️","🏅","🔔","🔕","📢","📣","⚠️","🚫","🔞","♻️","🔴","🟠","🟡","🟢","🔵","🟣","⚫","⚪","🟤","🔶","🔷","▶️","⏸️","⏹️","🔺","🔻","➕","➖","➗","❓","❗","💬","💭"],
   },
   {
-    name: "Gaming & Fun",
+    id: "gaming",
     emojis: ["🎮","🕹️","🎲","🎰","🧩","♟️","🎳","🎪","🎨","🎭","🎬","🎤","🎧","🎼","🎹","🥁","🎷","🎺","🎸","🎻","🃏","🀄","🎴"],
   },
   {
-    name: "Objects & Activities",
+    id: "objects",
     emojis: ["📋","📌","📍","📎","🔗","🔒","🔓","🔑","🗝️","🛠️","🔧","🔨","⚙️","🧰","📦","📫","📮","🗳️","📅","📆","🗓️","⏰","⏳","💰","💎","🪙","💵","💳","🧾","📊","📈","📉","🛒","🎁","🎈","🎉","🎊","🪅","🏁","🚀","✈️","🚗","🏠","🌍","🌈","☀️","🌙","❄️","💧","🍕","🍔","🍟","🌮","🍿","🍩","🍪","☕","🍺","🏀","⚽","🏈","⚾","🎾","🏐","🏓","🥊"],
   },
   {
-    name: "Animals & Nature",
+    id: "animals",
     emojis: ["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵","🐔","🐧","🐦","🦅","🦉","🐺","🐗","🐴","🦄","🐝","🦋","🐌","🐞","🐢","🐍","🦖","🦕","🐙","🦀","🐬","🐳","🦈","🐊","🦓","🦍","🐘","🦒","🌵","🎄","🌲","🍀","🌸","🌹","🌻","🌴"],
   },
   {
-    name: "Flags",
+    id: "flags",
     emojis: ["🇧🇬","🇩🇪","🇫🇷","🇮🇹","🇪🇸","🇳🇱","🇵🇱","🇬🇧","🇺🇸","🇺🇦","🇹🇷","🇬🇷","🇷🇴","🇷🇸","🇲🇰","🏳️","🏴","🏁","🚩","🏳️‍🌈"],
   },
 ];
 
 export default function EmojiPicker({ onSelect, buttonLabel }) {
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const rootRef = useRef(null);
@@ -81,9 +83,9 @@ export default function EmojiPicker({ onSelect, buttonLabel }) {
     <>
       <button
         type="button"
-        aria-label={buttonLabel || "Open emoji picker"}
+        aria-label={buttonLabel || t("emoji.open")}
         aria-expanded={open}
-        title="Pick emoji"
+        title={t("emoji.pickForButton")}
         onClick={() => setOpen((o) => !o)}
         className="cs-btn-ghost p-1.5 border border-cs-border rounded"
       >
@@ -103,21 +105,22 @@ export default function EmojiPicker({ onSelect, buttonLabel }) {
             ref={rootRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Emoji picker"
+            aria-label={t("emoji.dialog")}
             className="w-full max-w-md max-h-[80vh] overflow-y-auto cs-card !p-4 shadow-cs-lift border border-cs-border bg-cs-panel"
           >
             <input
               autoFocus
               className="cs-input text-sm mb-3 w-full"
-              placeholder="Search category…"
-              aria-label="Filter emoji categories"
+              placeholder={t("emoji.searchCategory")}
+              aria-label={t("emoji.filterLabel")}
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             />
             {CATEGORIES
-              .filter((c) => !filter || c.name.toLowerCase().includes(filter.toLowerCase()))
+              .map((c) => ({ ...c, name: t(`emoji.cat.${c.id}`) }))
+              .filter((c) => !filter || c.name.toLocaleLowerCase().includes(filter.toLocaleLowerCase()))
               .map((cat) => (
-                <div key={cat.name} className="mb-3">
+                <div key={cat.id} className="mb-3">
                   <div className="text-xs text-cs-dim mb-1.5">{cat.name}</div>
                   <div className="grid grid-cols-10 gap-0.5">
                     {cat.emojis.map((e) => (
@@ -126,7 +129,7 @@ export default function EmojiPicker({ onSelect, buttonLabel }) {
                         type="button"
                         onClick={() => pick(e)}
                         className="text-xl leading-none p-1.5 rounded hover:bg-cs-bg focus:bg-cs-bg"
-                        aria-label={`Select ${e}`}
+                        aria-label={t("emoji.select", { e })}
                       >
                         {e}
                       </button>
@@ -135,7 +138,7 @@ export default function EmojiPicker({ onSelect, buttonLabel }) {
                 </div>
               ))}
             <p className="text-[10px] text-cs-dim mt-1">
-              Custom server emoji? Type it in the field as <code>name:id</code>.
+              {t("emoji.customHint")} <code>name:id</code>.
             </p>
           </div>
         </div>

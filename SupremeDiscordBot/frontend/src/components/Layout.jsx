@@ -35,8 +35,15 @@ const DEFAULT_AVATAR = "https://cdn.discordapp.com/embed/avatars/0.png";
 export default function Layout() {
   const { serverId } = useParams();
   const { user, setUser } = useAuth();
-  const { t } = useT();
+  const { t, lang } = useT();
   const navigate = useNavigate();
+
+  // WCAG 3.1.1: таблото е на езика на акаунта — <html lang> трябва да го казва,
+  // иначе екранният четец чете българския с английски глас. Публичните
+  // страници си слагат своя през <Seo>; страниците в таблото не ползват Seo.
+  useEffect(() => {
+    document.documentElement.setAttribute("lang", lang);
+  }, [lang]);
 
   const { data: servers = [], isSuccess: serversLoaded } = useQuery({
     queryKey: ["servers"],
@@ -69,7 +76,7 @@ export default function Layout() {
       key: "root",
       items: [
         { to: "/dashboard", icon: LayoutDashboard, label: t("nav.allServers"), end: true },
-        ...(isSuperUser ? [{ to: "/dashboard/admin", icon: Shield, label: "Super Admin" }] : []),
+        ...(isSuperUser ? [{ to: "/dashboard/admin", icon: Shield, label: t("nav.superAdmin") }] : []),
       ],
     },
   ]), [serverId, t, isSuperUser]);
@@ -125,7 +132,7 @@ export default function Layout() {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-cs-cyan focus:text-black focus:font-semibold"
       >
-        Skip to main content
+        {t("nav.skipToContent")}
       </a>
       {/* Mobile top bar — brand + hamburger, visible only on small screens */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-cs-bg border-b border-cs-line h-14 flex items-center justify-between px-4">
@@ -133,7 +140,7 @@ export default function Layout() {
           ref={toggleBtnRef}
           onClick={() => setMobileOpen((v) => !v)}
           className="p-2 rounded-lg text-cs-text hover:text-cs-cyan"
-          aria-label="Open menu"
+          aria-label={t("nav.openMenu")}
           aria-expanded={mobileOpen}
           aria-controls="dashboard-sidebar"
         >
@@ -175,7 +182,7 @@ export default function Layout() {
         <button
           onClick={() => setMobileOpen(false)}
           className="md:hidden absolute top-3 right-3 p-2 text-cs-muted hover:text-white z-10"
-          aria-label="Close menu"
+          aria-label={t("nav.closeMenu")}
         >
           <CloseIcon className="w-5 h-5" />
         </button>
@@ -199,7 +206,7 @@ export default function Layout() {
         </div>
 
         {/* Nav — групите на концепцията (dashboardNav.js) */}
-        <nav className="flex-1 overflow-y-auto pb-4" aria-label="Dashboard navigation">
+        <nav className="flex-1 overflow-y-auto pb-4" aria-label={t("nav.dashboardNav")}>
           {navGroups.map((g) => (
             <div key={g.key} className="mt-1">
               {g.label && <SectionLabel>{g.label}</SectionLabel>}
@@ -216,7 +223,7 @@ export default function Layout() {
                       <NavItem to={it.to} icon={it.icon} end={it.end}>
                         {it.label}
                         {it.premium && currentServer?.isPremium && (
-                          <span className="ml-auto cs-badge-premium !text-[11px] !px-2 !py-0">Active</span>
+                          <span className="ml-auto cs-badge-premium !text-[11px] !px-2 !py-0">{t("common.active")}</span>
                         )}
                       </NavItem>
                     )}

@@ -22,6 +22,7 @@ import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
 import { useT } from "../contexts/I18nContext";
+import PageHeader from "../components/PageHeader";
 import { useToast } from "../contexts/ToastContext";
 import EmojiPicker from "../components/EmojiPicker";
 
@@ -47,10 +48,7 @@ export default function AutomationPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
-      <div className="mb-6">
-        <h1 className="cs-heading font-display font-bold text-cs-text text-3xl">{t("auto.title")}</h1>
-        <p className="text-cs-muted mt-2 max-w-2xl">{t("auto.subtitle")}</p>
-      </div>
+      <PageHeader title={t("auto.title")} subtitle={t("auto.subtitle")} />
 
       <div className="flex gap-1 mb-6 border-b border-cs-border overflow-x-auto">
         {TABS.map((tb) => {
@@ -119,7 +117,7 @@ function PollsTab() {
   };
 
   const newPollModal = (
-    <Modal open={creating} onClose={() => setCreating(false)} title="New poll" maxWidth="max-w-lg">
+    <Modal open={creating} onClose={() => setCreating(false)} title={t("auto.polls.new")} maxWidth="max-w-lg">
       <form onSubmit={submitPoll} className="space-y-3">
         <label className="block">
           <span className="cs-label">{t("ui.channelReq")}</span>
@@ -142,7 +140,7 @@ function PollsTab() {
           <label className="flex items-center gap-2">
             <input type="checkbox" className="accent-cs-cyan" checked={form.multiChoice}
               onChange={(e) => setForm((f) => ({ ...f, multiChoice: e.target.checked }))} />
-            <span className="text-sm text-cs-text">Multi-choice</span>
+            <span className="text-sm text-cs-text">{t("auto.polls.multi")}</span>
           </label>
           <label className="block flex-1">
             <span className="cs-label">{t("ui.autoCloseAfterH")}</span>
@@ -157,9 +155,9 @@ function PollsTab() {
           </p>
         )}
         <div className="flex justify-end gap-3">
-          <button type="button" onClick={() => setCreating(false)} className="cs-btn-ghost">Cancel</button>
+          <button type="button" onClick={() => setCreating(false)} className="cs-btn-ghost">{t("common.cancel")}</button>
           <button type="submit" className="cs-btn-primary" disabled={createM.isPending}>
-            {createM.isPending ? "Posting…" : "Post poll"}
+            {createM.isPending ? t("common.posting") : t("auto.polls.post")}
           </button>
         </div>
       </form>
@@ -173,7 +171,7 @@ function PollsTab() {
     <div className="space-y-3">
       <div className="flex justify-end">
         <button onClick={() => { setForm(defaultPollForm()); setCreating(true); }} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> New poll
+          <Plus className="w-4 h-4" /> {t("auto.polls.new")}
         </button>
       </div>
       {!polls.length && <Empty icon={BarChart3} msg={t("auto.polls.empty")} />}
@@ -183,9 +181,9 @@ function PollsTab() {
             <div className="flex items-center gap-2">
               <span className="text-cs-text font-bold">{p.question}</span>
               {p.closedAt
-                ? <span className="cs-badge text-cs-dim">Closed</span>
-                : <span className="cs-badge text-success">Active</span>}
-              {p.multiChoice && <span className="cs-badge text-cs-cyan">Multi-choice</span>}
+                ? <span className="cs-badge text-cs-dim">{t("auto.polls.closed")}</span>
+                : <span className="cs-badge text-success">{t("common.active")}</span>}
+              {p.multiChoice && <span className="cs-badge text-cs-cyan">{t("auto.polls.multi")}</span>}
             </div>
             <p className="text-xs text-cs-muted mt-1">
               {p.options.length} options · {p.totalVotes} vote{p.totalVotes === 1 ? "" : "s"} · Created {new Date(p.createdAt).toLocaleDateString()}
@@ -194,12 +192,12 @@ function PollsTab() {
           </div>
           <div className="flex items-center gap-2">
             {!p.closedAt && (
-              <button onClick={() => closeM.mutate(p.id)} className="cs-btn-secondary text-xs">Close</button>
+              <button onClick={() => closeM.mutate(p.id)} className="cs-btn-secondary text-xs">{t("common.close")}</button>
             )}
             <button
               onClick={() => setConfirmState({ title: t("auto.polls.delete"), message: t("auto.polls.deleteConfirm"), onConfirm: () => deleteM.mutate(p.id) })}
               aria-label={t("auto.polls.delete")}
-              title="Delete poll"
+              title={t("auto.polls.delete")}
               className="text-danger hover:text-red-300 p-2"
             >
               <Trash2 className="w-4 h-4" />
@@ -261,7 +259,7 @@ function GiveawaysTab() {
   };
 
   const newGiveawayModal = (
-    <Modal open={creating} onClose={() => setCreating(false)} title="New giveaway" maxWidth="max-w-lg">
+    <Modal open={creating} onClose={() => setCreating(false)} title={t("auto.give.new")} maxWidth="max-w-lg">
       <form onSubmit={submitGiveaway} className="space-y-3">
         <label className="block">
           <span className="cs-label">{t("ui.channelReq")}</span>
@@ -302,9 +300,9 @@ function GiveawaysTab() {
           </p>
         )}
         <div className="flex justify-end gap-3">
-          <button type="button" onClick={() => setCreating(false)} className="cs-btn-ghost">Cancel</button>
+          <button type="button" onClick={() => setCreating(false)} className="cs-btn-ghost">{t("common.cancel")}</button>
           <button type="submit" className="cs-btn-primary" disabled={createM.isPending}>
-            {createM.isPending ? "Posting…" : "Start giveaway"}
+            {createM.isPending ? t("common.posting") : t("auto.give.start")}
           </button>
         </div>
       </form>
@@ -318,7 +316,7 @@ function GiveawaysTab() {
     <div className="space-y-3">
       <div className="flex justify-end">
         <button onClick={() => { setForm(defaultGiveawayForm()); setCreating(true); }} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> New giveaway
+          <Plus className="w-4 h-4" /> {t("auto.give.new")}
         </button>
       </div>
       {!giveaways.length && <Empty icon={Gift} msg={t("auto.give.empty")} />}
@@ -329,8 +327,8 @@ function GiveawaysTab() {
               <div className="flex items-center gap-2">
                 <span className="text-cs-text font-bold">🎉 {g.prize}</span>
                 {g.endedAt
-                  ? <span className="cs-badge text-cs-dim">Ended</span>
-                  : <span className="cs-badge text-cs-gold">Active</span>}
+                  ? <span className="cs-badge text-cs-dim">{t("auto.give.ended")}</span>
+                  : <span className="cs-badge text-cs-gold">{t("common.active")}</span>}
               </div>
               <p className="text-xs text-cs-muted mt-1">
                 {g.winnerCount} winner{g.winnerCount > 1 ? "s" : ""} · {g.entryCount} entr{g.entryCount === 1 ? "y" : "ies"} ·
@@ -345,21 +343,21 @@ function GiveawaysTab() {
             <div className="flex items-center gap-2">
               {!g.endedAt && (
                 <button
-                  onClick={() => setConfirmState({ title: t("auto.give.end"), message: t("auto.give.endConfirm"), confirmLabel: "End Now", destructive: false, onConfirm: () => endM.mutate(g.id) })}
+                  onClick={() => setConfirmState({ title: t("auto.give.end"), message: t("auto.give.endConfirm"), confirmLabel: t("auto.give.endNow"), destructive: false, onConfirm: () => endM.mutate(g.id) })}
                   className="cs-btn-secondary text-xs"
                 >
-                  End now
+                  {t("auto.give.endNow")}
                 </button>
               )}
               {g.endedAt && (
                 <button onClick={() => rerollM.mutate(g.id)} className="cs-btn-secondary text-xs flex items-center gap-1">
-                  <RefreshCw className="w-3 h-3" /> Reroll
+                  <RefreshCw className="w-3 h-3" /> {t("auto.give.reroll")}
                 </button>
               )}
               <button
                 onClick={() => setConfirmState({ title: t("auto.give.delete"), message: t("auto.give.deleteConfirm"), destructive: true, onConfirm: () => deleteM.mutate(g.id) })}
                 aria-label={t("auto.give.delete")}
-                title="Delete giveaway"
+                title={t("auto.give.delete")}
                 className="text-danger hover:text-red-300 p-2"
               >
                 <Trash2 className="w-4 h-4" />
@@ -404,7 +402,7 @@ function StickyTab() {
   return (
     <div className="space-y-6">
       <form onSubmit={(e) => { e.preventDefault(); saveM.mutate(form); }} className="cs-card space-y-3">
-        <h3 className="text-cs-text font-bold">Set sticky message</h3>
+        <h3 className="text-cs-text font-bold">{t("auto.sticky.set")}</h3>
         <label className="block">
           <span className="cs-label">{t("ui.channel")}</span>
           <DiscordChannelSelect kind="text" value={form.channelId} onChange={(v) => setForm({ ...form, channelId: v })} />
@@ -424,26 +422,26 @@ function StickyTab() {
           <textarea required rows={3} className="cs-textarea" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} />
         </label>
         <button type="submit" className="cs-btn-primary flex items-center gap-2" disabled={saveM.isPending}>
-          <Plus className="w-4 h-4" /> Save sticky
+          <Plus className="w-4 h-4" /> {t("auto.sticky.save")}
         </button>
       </form>
 
       {isLoading && <div className="cs-card h-20 animate-pulse" />}
       {!isLoading && isError && <ErrorCard msg={t("auto.sticky.loadError")} />}
-      {!isLoading && !isError && !stickies.length && <Empty icon={Pin} msg="No sticky messages yet — create one above." />}
+      {!isLoading && !isError && !stickies.length && <Empty icon={Pin} msg={t("auto.sticky.empty")} />}
 
       <div className="space-y-3">
         {stickies.map((s) => (
           <div key={s.id} className="cs-card flex items-start justify-between">
             <div className="flex-1">
-              <p className="text-xs text-cs-dim">Channel: <ChannelName id={s.channelId} /></p>
+              <p className="text-xs text-cs-dim">{t("common.channelLabel")} <ChannelName id={s.channelId} /></p>
               {s.embedTitle && <p className="text-cs-text font-bold mt-1">{s.embedTitle}</p>}
               <p className="text-sm text-cs-text mt-1 line-clamp-2">{s.content}</p>
             </div>
             <button
               onClick={() => setConfirmState({ title: t("auto.sticky.delete"), message: t("auto.sticky.deleteConfirm"), onConfirm: () => deleteM.mutate(s.channelId) })}
               aria-label={t("auto.sticky.delete")}
-              title="Delete sticky message"
+              title={t("auto.sticky.deleteTitle")}
               className="text-danger p-2"
             >
               <Trash2 className="w-4 h-4" />
@@ -456,7 +454,7 @@ function StickyTab() {
         open={!!confirmState}
         title={confirmState?.title}
         message={confirmState?.message}
-        confirmLabel="Delete"
+        confirmLabel={t("common.delete")}
         destructive
         loading={deleteM.isPending}
         onConfirm={() => { confirmState?.onConfirm?.(); setConfirmState(null); }}
@@ -490,7 +488,7 @@ function ScheduledTab() {
         e.preventDefault();
         createM.mutate({ ...form, recurrence: form.recurrence || null, sendAt: new Date(form.sendAt).toISOString() });
       }} className="cs-card space-y-3">
-        <h3 className="text-cs-text font-bold">Schedule new message</h3>
+        <h3 className="text-cs-text font-bold">{t("auto.sched.new")}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block">
             <span className="cs-label">{t("ui.channel")}</span>
@@ -509,10 +507,10 @@ function ScheduledTab() {
           <label className="block">
             <span className="cs-label">{t("ui.recurrence")}</span>
             <select className="cs-select" value={form.recurrence} onChange={(e) => setForm({ ...form, recurrence: e.target.value })}>
-              <option value="">One-shot</option>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
+              <option value="">{t("auto.sched.oneShot")}</option>
+              <option value="daily">{t("auto.sched.daily")}</option>
+              <option value="weekly">{t("auto.sched.weekly")}</option>
+              <option value="monthly">{t("auto.sched.monthly")}</option>
             </select>
           </label>
         </div>
@@ -521,7 +519,7 @@ function ScheduledTab() {
           <textarea required rows={3} className="cs-textarea" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} />
         </label>
         <button type="submit" className="cs-btn-primary flex items-center gap-2" disabled={createM.isPending}>
-          <Plus className="w-4 h-4" /> Schedule
+          <Plus className="w-4 h-4" /> {t("auto.sched.schedule")}
         </button>
       </form>
 
@@ -536,8 +534,8 @@ function ScheduledTab() {
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs text-cs-dim">#{m.channelId.slice(-6)}</span>
                 {m.sentAt
-                  ? <span className="cs-badge text-cs-dim">Sent</span>
-                  : <span className="cs-badge text-success">Pending</span>}
+                  ? <span className="cs-badge text-cs-dim">{t("auto.sched.sent")}</span>
+                  : <span className="cs-badge text-success">{t("auto.sched.pending")}</span>}
                 {m.recurrence && <span className="cs-badge text-cs-cyan">{m.recurrence}</span>}
               </div>
               {m.embedTitle && <p className="text-cs-text font-bold mt-1">{m.embedTitle}</p>}
@@ -547,7 +545,7 @@ function ScheduledTab() {
             <button
               onClick={() => setConfirmState({ title: t("auto.sched.delete"), message: t("auto.sched.deleteConfirm"), onConfirm: () => deleteM.mutate(m.id) })}
               aria-label={t("auto.sched.delete")}
-              title="Delete scheduled message"
+              title={t("auto.sched.delete")}
               className="text-danger p-2"
             >
               <Trash2 className="w-4 h-4" />
@@ -560,7 +558,7 @@ function ScheduledTab() {
         open={!!confirmState}
         title={confirmState?.title}
         message={confirmState?.message}
-        confirmLabel="Delete"
+        confirmLabel={t("common.delete")}
         destructive
         loading={deleteM.isPending}
         onConfirm={() => { confirmState?.onConfirm?.(); setConfirmState(null); }}
@@ -612,17 +610,18 @@ function WebhooksTab() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <p className="text-sm text-cs-muted max-w-2xl">
-          Webhooks POST a JSON payload to your URL whenever subscribed events fire.
-          Payloads are HMAC-signed with <code className="text-cs-cyan">X-Supreme Bot-Signature: sha256=...</code> if a secret is set.
+          {/* Истинското заглавие е X-SupremeBot-Signature (services/webhooks.js) —
+              тук стоеше „X-Supreme Bot-Signature“ с интервал, каквото не съществува. */}
+          {t("auto.wh.intro")} <code className="text-cs-cyan">X-SupremeBot-Signature: sha256=…</code>.
         </p>
         <button onClick={openNew} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> New webhook
+          <Plus className="w-4 h-4" /> {t("webhooks.new")}
         </button>
       </div>
 
       {isLoading && <div className="cs-card h-32 animate-pulse" />}
       {!isLoading && isError && <ErrorCard msg={t("auto.wh.loadError")} />}
-      {!isLoading && !isError && !hooks.length && <Empty icon={Webhook} msg="No webhooks configured yet — create one above." />}
+      {!isLoading && !isError && !hooks.length && <Empty icon={Webhook} msg={t("auto.wh.empty")} />}
 
       <div className="space-y-3">
         {hooks.map((h) => (
@@ -631,8 +630,8 @@ function WebhooksTab() {
               <div className="flex items-center gap-2">
                 <span className="text-cs-text font-bold">{h.name}</span>
                 {h.enabled
-                  ? <span className="cs-badge text-success">Enabled</span>
-                  : <span className="cs-badge text-cs-dim">Disabled</span>}
+                  ? <span className="cs-badge text-success">{t("common.enabled")}</span>
+                  : <span className="cs-badge text-cs-dim">{t("common.disabled")}</span>}
                 {h.failCount > 0 && <span className="cs-badge text-warning">{h.failCount} fails</span>}
               </div>
               <p className="text-xs font-mono text-cs-dim mt-1 truncate">{h.url}</p>
@@ -642,11 +641,11 @@ function WebhooksTab() {
               </p>
             </div>
             <div className="flex items-center gap-2 ml-4">
-              <button onClick={() => openEdit(h)} className="cs-btn-secondary text-xs">Edit</button>
+              <button onClick={() => openEdit(h)} className="cs-btn-secondary text-xs">{t("common.edit")}</button>
               <button
-                onClick={() => setConfirmState({ title: t("auto.wh.delete"), message: `Delete "${h.name}"? This cannot be undone.`, onConfirm: () => deleteM.mutate(h.id) })}
-                aria-label={`Delete webhook ${h.name}`}
-                title="Delete webhook"
+                onClick={() => setConfirmState({ title: t("auto.wh.delete"), message: t("common.deleteNamed", { name: h.name }), onConfirm: () => deleteM.mutate(h.id) })}
+                aria-label={t("auto.wh.deleteAria", { name: h.name })}
+                title={t("auto.wh.delete")}
                 className="text-danger p-2"
               >
                 <Trash2 className="w-4 h-4" />
@@ -659,7 +658,7 @@ function WebhooksTab() {
       <Modal
         open={!!editing}
         onClose={() => setEditing(null)}
-        title={editing === "new" ? "New webhook" : "Edit webhook"}
+        title={editing === "new" ? t("webhooks.newTitle") : t("webhooks.editTitle")}
         maxWidth="max-w-2xl"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -692,7 +691,7 @@ function WebhooksTab() {
 
           <label className="flex items-center gap-2">
             <input type="checkbox" checked={form.enabled} onChange={(e) => setForm({ ...form, enabled: e.target.checked })} className="accent-cs-cyan" />
-            <span className="text-sm text-cs-text">Enabled</span>
+            <span className="text-sm text-cs-text">{t("common.enabled")}</span>
           </label>
 
           {formError && (
@@ -700,9 +699,9 @@ function WebhooksTab() {
           )}
 
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={() => setEditing(null)} className="cs-btn-secondary">Cancel</button>
+            <button type="button" onClick={() => setEditing(null)} className="cs-btn-secondary">{t("common.cancel")}</button>
             <button type="submit" className="cs-btn-primary flex items-center gap-2" disabled={createM.isPending || updateM.isPending}>
-              <CheckCircle2 className="w-4 h-4" /> Save
+              <CheckCircle2 className="w-4 h-4" /> {t("common.save")}
             </button>
           </div>
         </form>
@@ -712,7 +711,7 @@ function WebhooksTab() {
         open={!!confirmState}
         title={confirmState?.title}
         message={confirmState?.message}
-        confirmLabel="Delete"
+        confirmLabel={t("common.delete")}
         destructive
         loading={deleteM.isPending}
         onConfirm={() => { confirmState?.onConfirm?.(); setConfirmState(null); }}
@@ -814,14 +813,13 @@ function ReactionRolesTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-cs-muted max-w-xl">
-          Members react to a message to get a role — remove the reaction to remove it.
-          Exclusive mode allows one role per message (self-service pick-one).
+          {t("auto.rr.intro")}
         </p>
         <button
           onClick={() => { setForm(defaultRrmForm()); setEditing("new"); setActionError(null); }}
           className="cs-btn-primary flex items-center gap-2 flex-shrink-0"
         >
-          <Plus className="w-4 h-4" /> New message
+          <Plus className="w-4 h-4" /> {t("auto.rr.new")}
         </button>
       </div>
 
@@ -835,10 +833,10 @@ function ReactionRolesTab() {
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-sm flex-shrink-0" style={{ background: m.color }} />
                   <h3 className="font-semibold text-cs-text truncate">{m.title}</h3>
-                  {m.exclusive && <span className="cs-badge text-cs-cyan">Exclusive</span>}
+                  {m.exclusive && <span className="cs-badge text-cs-cyan">{t("auto.rr.exclusive")}</span>}
                   {m.messageId
-                    ? <span className="cs-badge text-success">Live</span>
-                    : <span className="cs-badge text-cs-dim">Not posted</span>}
+                    ? <span className="cs-badge text-success">{t("auto.rr.live")}</span>
+                    : <span className="cs-badge text-cs-dim">{t("auto.rr.notPosted")}</span>}
                 </div>
                 <p className="text-xs text-cs-muted mt-1">
                   {m.pairs.length} role{m.pairs.length === 1 ? "" : "s"}
@@ -867,12 +865,12 @@ function ReactionRolesTab() {
                     disabled={!spawnInputs[m.id] || spawnM.isPending}
                     onClick={() => spawnM.mutate({ id: m.id, channelId: spawnInputs[m.id].trim() })}
                   >
-                    <Send className="w-3 h-3" /> {m.messageId ? "Re-post" : "Post to channel"}
+                    <Send className="w-3 h-3" /> {m.messageId ? t("common.repost") : t("common.postToChannel")}
                   </button>
                 </div>
                 <button
                   aria-label={t("auto.rr.edit")}
-                  title="Edit"
+                  title={t("common.edit")}
                   className="text-cs-muted hover:text-white transition-colors p-1"
                   onClick={() => openEdit(m)}
                 >
@@ -880,11 +878,11 @@ function ReactionRolesTab() {
                 </button>
                 <button
                   aria-label={t("auto.rr.delete")}
-                  title="Delete"
+                  title={t("common.delete")}
                   className="text-danger hover:text-red-300 transition-colors p-1"
                   onClick={() => setConfirmState({
                     title: t("auto.rr.delete"),
-                    message: `Delete "${m.title}"? The Discord message will be removed too.`,
+                    message: t("auto.rr.deleteConfirm", { name: m.title }),
                     onConfirm: () => { deleteM.mutate(m.id); setConfirmState(null); },
                   })}
                 >
@@ -900,7 +898,7 @@ function ReactionRolesTab() {
       <Modal
         open={editing !== null}
         onClose={() => setEditing(null)}
-        title={editing === "new" ? "New reaction role message" : "Edit reaction role message"}
+        title={editing === "new" ? t("auto.rr.newTitle") : t("auto.rr.edit")}
         maxWidth="max-w-2xl"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -926,28 +924,28 @@ function ReactionRolesTab() {
           <label className="flex items-center gap-2">
             <input type="checkbox" className="accent-cs-cyan" checked={form.exclusive}
               onChange={(e) => setForm((f) => ({ ...f, exclusive: e.target.checked }))} />
-            <span className="text-sm text-cs-text">Exclusive — one role per member (new reaction replaces the old one)</span>
+            <span className="text-sm text-cs-text">{t("auto.rr.exclusiveHint")}</span>
           </label>
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold text-cs-text">Emoji → Role pairs ({form.pairs.length}/20)</h3>
+              <h3 className="font-semibold text-cs-text">{t("auto.rr.pairs", { n: form.pairs.length })}</h3>
               <button type="button" disabled={form.pairs.length >= 20}
                 onClick={() => setForm((f) => ({ ...f, pairs: [...f.pairs, defaultRrmPair()] }))}
                 className="text-cs-cyan text-sm flex items-center gap-1 disabled:opacity-40">
-                <Plus className="w-3 h-3" /> Add pair
+                <Plus className="w-3 h-3" /> {t("auto.rr.addPair")}
               </button>
             </div>
             <div className="space-y-2">
               {form.pairs.map((p, i) => (
                 <div key={i} className="grid grid-cols-[70px_34px_1fr_1fr_28px] gap-2 items-center">
-                  <input className="cs-input text-center" placeholder="🎮" aria-label={`Emoji for pair ${i + 1}`}
+                  <input className="cs-input text-center" placeholder="🎮" aria-label={t("auto.rr.emojiFor", { n: i + 1 })}
                     value={p.emoji} onChange={(e) => updatePair(i, "emoji", e.target.value)} />
                   <EmojiPicker buttonLabel={t("emoji.pickForPair", { n: i + 1 })} onSelect={(e) => updatePair(i, "emoji", e)} />
                   <DiscordRoleSelect value={p.roleId} onChange={(v) => updatePair(i, "roleId", v)} />
-                  <input className="cs-input text-xs" placeholder={t("ui.labelOpt")} aria-label={`Label for pair ${i + 1}`}
+                  <input className="cs-input text-xs" placeholder={t("ui.labelOpt")} aria-label={t("auto.rr.labelFor", { n: i + 1 })}
                     value={p.label} onChange={(e) => updatePair(i, "label", e.target.value)} />
-                  <button type="button" aria-label={`Remove pair ${i + 1}`}
+                  <button type="button" aria-label={t("auto.rr.removePair", { n: i + 1 })}
                     disabled={form.pairs.length <= 1}
                     onClick={() => setForm((f) => ({ ...f, pairs: f.pairs.filter((_, idx) => idx !== i) }))}
                     className="text-danger hover:text-red-300 disabled:opacity-30 p-1">
@@ -956,15 +954,15 @@ function ReactionRolesTab() {
                 </div>
               ))}
             </div>
-            <p className="text-xs text-cs-dim mt-2">{t("ui.hint.emojiCustom")}<code>name:id</code>.
-              Role ID: right-click the role in Discord → Copy Role ID (the bot's role must be above it).
+            <p className="text-xs text-cs-dim mt-2">{t("ui.hint.emojiCustom")}<code>name:id</code>.{" "}
+              {t("auto.rr.roleIdHint")}
             </p>
           </div>
 
           <div className="flex justify-end gap-3">
-            <button type="button" onClick={() => setEditing(null)} className="cs-btn-ghost">Cancel</button>
+            <button type="button" onClick={() => setEditing(null)} className="cs-btn-ghost">{t("common.cancel")}</button>
             <button type="submit" className="cs-btn-primary" disabled={createM.isPending || updateM.isPending}>
-              {(createM.isPending || updateM.isPending) ? "Saving…" : editing === "new" ? "Create" : "Save changes"}
+              {(createM.isPending || updateM.isPending) ? t("common.saving") : editing === "new" ? t("common.create") : t("common.saveChanges")}
             </button>
           </div>
         </form>
@@ -982,7 +980,7 @@ function ReactionRolesTab() {
         title={confirmState?.title}
         message={confirmState?.message}
         destructive
-        confirmLabel="Delete"
+        confirmLabel={t("common.delete")}
         loading={deleteM.isPending}
         onConfirm={() => confirmState?.onConfirm()}
         onCancel={() => setConfirmState(null)}

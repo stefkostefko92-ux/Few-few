@@ -11,6 +11,7 @@ import {
 } from "../api";
 import { useToast } from "../contexts/ToastContext";
 import { useT } from "../contexts/I18nContext";
+import PageHeader from "../components/PageHeader";
 import Modal from "../components/Modal";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EmptyState from "../components/EmptyState";
@@ -42,12 +43,12 @@ export default function KnowledgeBasePage() {
 
   const createMut = useMutation({
     mutationFn: (data) => createKbArticle(serverId, data),
-    onSuccess: () => { invalidate(); setEditing(null); toast.success("Article created."); },
+    onSuccess: () => { invalidate(); setEditing(null); toast.success(t("kb.created")); },
     onError: (err) => setFormError(err?.response?.data?.error || t("kb.createFailed")),
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data }) => updateKbArticle(serverId, id, data),
-    onSuccess: () => { invalidate(); setEditing(null); toast.success("Article updated."); },
+    onSuccess: () => { invalidate(); setEditing(null); toast.success(t("kb.updated")); },
     onError: (err) => setFormError(err?.response?.data?.error || t("kb.updateFailed")),
   });
   const toggleMut = useMutation({
@@ -57,7 +58,7 @@ export default function KnowledgeBasePage() {
   });
   const deleteMut = useMutation({
     mutationFn: (id) => deleteKbArticle(serverId, id),
-    onSuccess: () => { invalidate(); toast.success("Article deleted."); },
+    onSuccess: () => { invalidate(); toast.success(t("kb.deleted")); },
     onError: (err) => toast.error(err?.response?.data?.error || t("kb.deleteFailed")),
   });
 
@@ -106,27 +107,21 @@ export default function KnowledgeBasePage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-5xl">
-      <div className="flex justify-between items-start mb-8">
-        <div>
-          <h1 className="cs-heading font-display font-bold text-cs-text text-3xl flex items-center gap-2">
-            <Lightbulb className="w-7 h-7 text-cs-cyan" /> Knowledge base
-          </h1>
-          <p className="text-cs-muted mt-2 max-w-2xl">
-            Write short articles with keywords. When a member opens a ticket, Supreme Bot
-            automatically suggests the best-matching article in the ticket channel — often
-            resolving the question before staff even join.
-          </p>
-        </div>
-        <button onClick={openNew} className="cs-btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> New article
-        </button>
-      </div>
+      <PageHeader
+        title={t("nav.knowledgeBase")}
+        subtitle={t("kb.intro")}
+        actions={(
+          <button onClick={openNew} className="cs-btn-primary cs-btn-sm flex items-center gap-2">
+            <Plus className="w-4 h-4" aria-hidden="true" /> {t("kb.new")}
+          </button>
+        )}
+      />
 
       {isLoading && <div className="cs-card h-32 animate-pulse" />}
 
       {!isLoading && isError && (
         <div role="alert" className="cs-card text-center py-12 text-danger">
-          Couldn't load articles — please retry.
+          {t("kb.loadError")}
         </div>
       )}
 
@@ -147,35 +142,35 @@ export default function KnowledgeBasePage() {
               <div className="flex items-center gap-3 mb-1">
                 <span className="text-cs-text font-bold truncate">{a.title}</span>
                 {a.enabled
-                  ? <span className="cs-badge text-success flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Enabled</span>
-                  : <span className="cs-badge text-danger flex items-center gap-1"><XCircle className="w-3 h-3" /> Disabled</span>}
+                  ? <span className="cs-badge text-success flex items-center gap-1"><CheckCircle2 className="w-3 h-3" aria-hidden="true" /> {t("common.enabled")}</span>
+                  : <span className="cs-badge text-danger flex items-center gap-1"><XCircle className="w-3 h-3" aria-hidden="true" /> {t("common.disabled")}</span>}
               </div>
               <div className="text-xs text-cs-dim font-mono truncate">
-                {(a.keywords || []).map((k) => `#${k}`).join(" ") || "(no keywords)"}
+                {(a.keywords || []).map((k) => `#${k}`).join(" ") || t("kb.noKeywords")}
               </div>
               <div className="text-xs text-cs-dim mt-1">
-                Suggested {a.usageCount}× · 👍 {a.helpfulCount} · 👎 {a.notHelpfulCount}
+                {t("kb.suggested", { n: a.usageCount })} · 👍 {a.helpfulCount} · 👎 {a.notHelpfulCount}
               </div>
             </div>
             <div className="flex items-center gap-2 ml-4">
               <button
                 onClick={() => toggleMut.mutate(a.id)}
-                aria-label={a.enabled ? `Disable article ${a.title}` : `Enable article ${a.title}`}
-                title={a.enabled ? "Disable" : "Enable"}
+                aria-label={a.enabled ? t("kb.disableAria", { title: a.title }) : t("kb.enableAria", { title: a.title })}
+                title={a.enabled ? t("common.disable") : t("common.enable")}
                 className="text-cs-dim hover:text-cs-cyan p-2"
               >
                 {a.enabled ? <XCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
               </button>
-              <button onClick={() => openEdit(a)} aria-label={`Edit article ${a.title}`} title={t("kb.edit")} className="text-cs-cyan hover:opacity-80 p-2">
+              <button onClick={() => openEdit(a)} aria-label={t("kb.editAria", { title: a.title })} title={t("kb.edit")} className="text-cs-cyan hover:opacity-80 p-2">
                 <Pencil className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setConfirmState({
-                  title: "Delete Article",
-                  message: `Delete "${a.title}"? This cannot be undone.`,
+                  title: t("kb.delete"),
+                  message: t("kb.deleteConfirm", { title: a.title }),
                   onConfirm: () => deleteMut.mutate(a.id),
                 })}
-                aria-label={`Delete article ${a.title}`}
+                aria-label={t("kb.deleteAria", { title: a.title })}
                 title={t("kb.delete")}
                 className="text-danger hover:text-red-300 p-2"
               >
@@ -209,12 +204,12 @@ export default function KnowledgeBasePage() {
           </label>
 
           <div className="block">
-            <span className="cs-label">Keywords (up to {KEYWORDS_MAX})</span>
+            <span className="cs-label" id="kb-keywords-label">{t("kb.keywords", { n: KEYWORDS_MAX })}</span>
             <div className="flex flex-wrap gap-2 mt-2 mb-2">
               {form.keywords.map((kw) => (
                 <span key={kw} className="cs-badge flex items-center gap-1">
                   {kw}
-                  <button type="button" onClick={() => removeKeyword(kw)} aria-label={`Remove keyword ${kw}`} className="hover:text-danger">
+                  <button type="button" onClick={() => removeKeyword(kw)} aria-label={t("kb.removeKeyword", { kw })} className="hover:text-danger">
                     <XIcon className="w-3 h-3" />
                   </button>
                 </span>
@@ -227,6 +222,7 @@ export default function KnowledgeBasePage() {
               onChange={(e) => setKeywordDraft(e.target.value)}
               onKeyDown={onKeywordKeyDown}
               onBlur={addKeyword}
+              aria-labelledby="kb-keywords-label"
               placeholder={t("kb.ph.keyword")}
             />
             <p className="text-xs text-cs-dim mt-1">{t("ui.hint.kbMatch")}</p>
@@ -236,7 +232,7 @@ export default function KnowledgeBasePage() {
             <input type="checkbox" checked={form.enabled}
               onChange={(e) => setForm((f) => ({ ...f, enabled: e.target.checked }))}
               className="accent-cs-cyan" />
-            <span className="text-sm text-cs-text">Enabled</span>
+            <span className="text-sm text-cs-text">{t("common.enabled")}</span>
           </label>
 
           {formError && (
@@ -244,9 +240,9 @@ export default function KnowledgeBasePage() {
           )}
 
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={() => setEditing(null)} className="cs-btn-secondary">Cancel</button>
+            <button type="button" onClick={() => setEditing(null)} className="cs-btn-secondary">{t("common.cancel")}</button>
             <button type="submit" className="cs-btn-primary" disabled={createMut.isPending || updateMut.isPending}>
-              {editing === "new" ? "Create article" : "Save changes"}
+              {editing === "new" ? t("kb.create") : t("common.saveChanges")}
             </button>
           </div>
         </form>
@@ -256,7 +252,7 @@ export default function KnowledgeBasePage() {
         open={!!confirmState}
         title={confirmState?.title}
         message={confirmState?.message}
-        confirmLabel="Delete"
+        confirmLabel={t("common.delete")}
         destructive
         loading={deleteMut.isPending}
         onConfirm={() => { confirmState?.onConfirm?.(); setConfirmState(null); }}

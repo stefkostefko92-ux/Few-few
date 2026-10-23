@@ -67,6 +67,12 @@
      старите класове по страниците, без да се пипат двайсет файла. */
   #main-content h1 { font-size: 1.75rem; line-height: 1.15; font-weight: 700; letter-spacing: -0.02em; }
   @media (min-width: 640px) { #main-content h1 { font-size: 1.875rem; } }
+  /* Заглавията на картите — по подразбиране 18 px, получерни (23.10.2026). Без
+     това h2 без собствен размер наследяваше 30-те px на лендинга („Общи“,
+     „Бърз старт“ крещяха колкото заглавието на страницата). :where() държи
+     правилото слабо: изричен клас (text-sm, !text-base) на страницата печели. */
+  :where(#main-content) h2 { font-size: 1.125rem; line-height: 1.5rem; font-weight: 600; letter-spacing: -0.01em; }
+  :where(#main-content) h3 { font-size: 1rem; line-height: 1.5rem; font-weight: 600; }
 
   a { color: inherit; }
 
@@ -389,7 +395,7 @@
 
   /* Typography — scale down headings */
   main h1 { font-size: 1.5rem !important; line-height: 2rem !important; }
-  main h2 { font-size: 1.25rem !important; line-height: 1.75rem !important; }
+  main h2 { font-size: 1.125rem !important; line-height: 1.5rem !important; }
   main h3 { font-size: 1rem !important; line-height: 1.5rem !important; }
 
   /* Бутоните се СТЕСНЯВАТ, но не се смаляват.

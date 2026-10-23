@@ -21,6 +21,7 @@ import {
   getServers, getMyAgency, attachAgencyServer, detachAgencyServer, openAgencyPortal,
 } from "../api";
 import { useT } from "../contexts/I18nContext";
+import PageHeader from "../components/PageHeader";
 import { useToast } from "../contexts/ToastContext";
 import ConfirmDialog from "../components/ConfirmDialog";
 
@@ -135,7 +136,7 @@ export default function PremiumPage() {
   if (isError) {
     return (
       <div className="p-4 sm:p-6 lg:p-8">
-        <h1 className="text-2xl font-bold text-cs-text mb-4">{t("premium.badge")}</h1>
+        <PageHeader title={t("premium.badge")} />
         <div role="alert" className="cs-card bg-warning/10 border-warning/20 text-center py-10">
           <p className="text-warning font-semibold mb-2">{t("premium.statusLoadFailed")}</p>
           <p className="text-cs-muted text-sm">
@@ -171,10 +172,7 @@ export default function PremiumPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-cs-text">{t("premium.badge")}</h1>
-        <p className="text-cs-muted text-sm mt-1">{t("premium.subtitle")}</p>
-      </div>
+      <PageHeader title={t("premium.badge")} subtitle={t("premium.subtitle")} />
 
       {/* Current Status Banner */}
       {isPremium && (
@@ -252,7 +250,7 @@ export default function PremiumPage() {
             </div>
 
             {!isPremium && (
-              <div role="radiogroup" aria-label="Plan" className="grid grid-cols-2 gap-2 mb-3">
+              <div role="radiogroup" aria-label={t("premium.planPicker")} className="grid grid-cols-2 gap-2 mb-3">
                 {[["premium", Star], ["whitelabel", Crown]].map(([value, Icon]) => {
                   const active = plan === value;
                   return (

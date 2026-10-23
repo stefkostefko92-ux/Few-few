@@ -4,8 +4,10 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Star, X, AlertTriangle } from "lucide-react";
+import { useT } from "../contexts/I18nContext";
 
 export default function PremiumToast() {
+  const { t } = useT();
   const [toast, setToast] = useState(null);
   const { serverId } = useParams();
 
@@ -13,8 +15,7 @@ export default function PremiumToast() {
     const onPremium = (e) => {
       setToast({
         type: "premium",
-        title: "Premium required",
-        message: e.detail?.error || "This feature is available with a Premium subscription.",
+        message: e.detail?.error || null,
         feature: e.detail?.featureLabel,
         category: e.detail?.category,
       });
@@ -22,8 +23,7 @@ export default function PremiumToast() {
     const onLimit = (e) => {
       setToast({
         type: "limit",
-        title: "Limit reached",
-        message: e.detail?.error || "You've reached the limit for your current tier.",
+        message: e.detail?.error || null,
       });
     };
 
@@ -38,8 +38,8 @@ export default function PremiumToast() {
   // Auto-dismiss after 8 seconds
   useEffect(() => {
     if (!toast) return;
-    const t = setTimeout(() => setToast(null), 8000);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setToast(null), 8000);
+    return () => clearTimeout(timer);
   }, [toast]);
 
   if (!toast) return null;
@@ -57,8 +57,8 @@ export default function PremiumToast() {
               : <AlertTriangle className="w-5 h-5 text-danger" />}
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="text-cs-text font-bold text-sm">{toast.title}</h4>
-            <p className="text-cs-muted text-xs mt-1">{toast.message}</p>
+            <h4 className="text-cs-text font-bold text-sm">{isPremium ? t("premium.required") : t("premium.limitReached")}</h4>
+            <p className="text-cs-muted text-xs mt-1">{toast.message || (isPremium ? t("premium.needsSubscription") : t("premium.tierLimit"))}</p>
             {toast.feature && (
               <p className="text-xs text-cs-gold mt-1">
                 <strong>{toast.feature}</strong>
@@ -71,15 +71,15 @@ export default function PremiumToast() {
                 onClick={() => setToast(null)}
                 className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full bg-cs-gold hover:bg-cs-goldDim text-black text-xs font-bold transition-colors"
               >
-                <Star className="w-3 h-3 fill-current" />
-                Upgrade now
+                <Star className="w-3 h-3 fill-current" aria-hidden="true" />
+                {t("premium.upgradeToPremium")}
               </Link>
             )}
           </div>
           <button
             onClick={() => setToast(null)}
             className="text-cs-dim hover:text-white p-1 -m-1 flex-shrink-0"
-            aria-label="Dismiss"
+            aria-label={t("common.dismiss")}
           >
             <X className="w-4 h-4" />
           </button>
