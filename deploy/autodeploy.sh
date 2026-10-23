@@ -1557,6 +1557,15 @@ deploy_adblock() {
   done
   # favicon.svg беше старото лого (заменено с бранд щита) — да не остане да виси.
   rm -f "$ADBLOCK_WWW/favicon.svg"
+  # Точните текстове на вградените филтър-листи (по SHA-256 — THIRD_PARTY_NOTICES.txt ги сочи):
+  # GPL/AGPL/MPL искат изходният вид да е достъпен, докато версията се разпространява. БЕЗ --delete:
+  # текстовете на по-стари версии остават, имената са хешове и никога не се презаписват.
+  if [ -d "$d/sources" ]; then
+    mkdir -p "$ADBLOCK_WWW/sources"
+    rsync -a "$d/sources/" "$ADBLOCK_WWW/sources/"
+    chmod 755 "$ADBLOCK_WWW/sources"
+    find "$ADBLOCK_WWW/sources" -maxdepth 1 -type f -exec chmod 644 {} +
+  fi
   # .well-known/ (security.txt и др.)
   if [ -d "$d/.well-known" ]; then
     mkdir -p "$ADBLOCK_WWW/.well-known"

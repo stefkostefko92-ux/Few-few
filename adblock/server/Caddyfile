@@ -32,13 +32,19 @@ adblock.carbonstealth.eu {
 	@filtersjson path /filters.json
 	header @filtersjson Content-Type application/json
 
+	# The exact texts of the bundled filter lists (THIRD_PARTY_NOTICES.txt): named by their SHA-256,
+	# so a file never changes — long cache; served as a gzip download, never decompressed.
+	@sources path /sources/*
+	header @sources Content-Type application/gzip
+	header @sources Cache-Control "public, max-age=31536000, immutable"
+
 	# Images change only with a release; index.html asks for them with ?v=<content hash>
 	# (tools/landing_assets.mjs), so a new image is a new URL.
 	@assets path *.webp *.png
 	header @assets Cache-Control "public, max-age=604800"
 
 	# Pages: the browser always revalidates (a 304 by ETag is cheap), never shows a stale release.
-	@pages not path *.webp *.png /filters.json /filters.json.sig
+	@pages not path *.webp *.png /filters.json /filters.json.sig /sources/*
 	header @pages Cache-Control "no-cache"
 
 	# Pretty URLs for the pages (Web Store Privacy Policy URL is /privacy, Support URL is /support).
