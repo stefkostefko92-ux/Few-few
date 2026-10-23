@@ -6,7 +6,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -95,21 +95,32 @@ test("dod-check: неразчетен блок връща агента със с
   assert.equal(checkLearnViolation([asst(CANON)].join("\n")), null);
 });
 
-test("dod-check като кука: exit 2 при неразчетен блок, exit 0 при каноничния", () => {
+// Куката записва всяко валидно ПРЕДАВАНЕ в дневника на веригите. Първата версия на този тест я пускаше
+// срещу ИСТИНСКОТО репо и при всяко пускане дописваше по две фалшиви предавания в проследения
+// `_flows.jsonl` (28 реда на 2026-10-09, вкарани в репото, и още 2 на 2026-10-23, преди да бъде хванато). Сега тя върви във
+// временен проект с два агента-заглушки, а истинският дневник се сверява байт по байт.
+test("dod-check като кука: exit 2 при неразчетен блок, exit 0 при каноничния — без да пипа истинския дневник", () => {
   const dir = mkdtempSync(join(tmpdir(), "learn-schema-"));
+  const realLedger = join(ROOT, ".claude", "agents", "_memory", "_flows.jsonl");
+  const before = existsSync(realLedger) ? readFileSync(realLedger, "utf8") : null;
   try {
+    const proj = join(dir, "proj");
+    mkdirSync(join(proj, ".claude", "agents", "_memory"), { recursive: true });
+    for (const id of ["kodadjiyata", "izpitatelya"]) writeFileSync(join(proj, ".claude", "agents", `${id}.md`), `---\nname: ${id}\n---\n`);
     const handoff = "## ПРЕДАВАНЕ\nОт: kodadjiyata → Към: izpitatelya\nСтатус: наред\nИзход/артефакт: ревю\nСледваща стъпка: тест";
     const run = (text) => {
       const t = join(dir, "t.jsonl");
       writeFileSync(t, asst(text) + "\n");
       return spawnSync(process.execPath, [join(ROOT, ".claude", "hooks", "dod-check.mjs")], {
-        input: JSON.stringify({ agent_transcript_path: t }), encoding: "utf8", env: { ...process.env, CLAUDE_PROJECT_DIR: ROOT },
+        input: JSON.stringify({ agent_transcript_path: t }), encoding: "utf8", env: { ...process.env, CLAUDE_PROJECT_DIR: proj },
       });
     };
     const bad = run(ID_RULE + "\n\n" + handoff);
     assert.equal(bad.status, 2, bad.stderr);
     assert.match(bad.stderr, /confidence: verified\|probable\|unverified/);
     assert.equal(run(CANON + "\n\n" + handoff).status, 0);
+    const after = existsSync(realLedger) ? readFileSync(realLedger, "utf8") : null;
+    assert.equal(after, before, "тестът не пише в проследения _flows.jsonl");
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
