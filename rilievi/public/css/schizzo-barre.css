@@ -182,14 +182,28 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
+}
 
+/* До таблет: панелът е по ширината на екрана, под лентата — никога извън екрана вдясно. */
+@media (max-width: 1200px), (orientation: landscape) and (max-height: 560px) {
   .menu__pannello {
     position: fixed;
     top: auto;
     right: 8px;
     left: 8px;
+    min-width: 0;
     grid-template-columns: repeat(auto-fill, minmax(9.5em, 1fr));
     max-height: 60vh;
     overflow-y: auto;
+  }
+}
+
+/* Телефон легнал: лентите са колона вляво — панелът е до нея, на цялата видима височина (и с
+   отворена клавиатура), лицето на менюто остава видимо. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .menu__pannello {
+    top: 8px;
+    left: calc(min(40vw, 260px) + 8px);
+    max-height: calc(var(--vvh, 100vh) - 16px);
   }
 }

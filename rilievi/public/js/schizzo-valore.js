@@ -42,9 +42,12 @@
       chip.hidden = !quota;
     });
     abc.hidden = !quota;
-    keypad(quota && !/[a-z]/i.test(value || ''));
+    // Letters after "Ø" or "R" — the keyboard with letters; the prefix itself is not one.
+    keypad(quota && !/[a-z]/i.test((value || '').replace(/^(Ø|R)\s*/, '')));
     bar.hidden = false;
     ed.barChanged();
+    // In a scrolled column of bars (phone on its side) the bar comes into view.
+    bar.scrollIntoView({ block: 'nearest' });
     input.focus({ preventScroll: true });
     input.setSelectionRange(input.value.length, input.value.length);
   };
@@ -85,6 +88,7 @@
 
   ed.valueBar = {
     open,
+    ok,
     close,
     get isOpen() {
       return current !== null;

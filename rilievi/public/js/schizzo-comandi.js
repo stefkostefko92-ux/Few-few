@@ -1,20 +1,21 @@
 // The controls of the sketch editor: the tools (six in the row, the shapes and the symbols in their
 // menus), the bar under them — the style, snapping, undo, redo and the view while nothing is selected;
 // the actions on the selection; "Fine" and "Chiudi" of a polyline —, the hint line, the keyboard, and
-// opening and closing the editor (schizzi.js hands the sheet over and takes it back). Annulla, Esc and
-// "back" first undo what is half done — the value bar, the last point of a polyline, the selection —
-// and only then the sheet; a dialog the browser closes anyway keeps what was drawn.
+// opening and closing the editor (schizzi.js hands the sheet over and takes it back); the menus —
+// schizzo-menu.js. Annulla, Esc and "back" first undo what is half done — an open menu (Esc), the value
+// bar, the last point of a polyline, the selection — and only then the sheet; a dialog the browser
+// closes anyway keeps what was drawn, and "Fatto" takes the value being typed.
 (() => {
   'use strict';
 
   const ed = window.rilieviSchizzoEditor;
-  if (!ed || !ed.tools || !ed.actions) return;
+  if (!ed || !ed.tools || !ed.actions || !ed.menus) return;
   const { dialog, texts, vista } = ed;
   const q = (selector) => dialog.querySelector(selector);
   const undoButton = q('[data-schizzo-annulla]');
   const redoButton = q('[data-schizzo-ripeti]');
   const groups = Array.from(dialog.querySelectorAll('[data-schizzo-contesto]'));
-  const menus = Array.from(dialog.querySelectorAll('details[data-schizzo-menu]'));
+  const menus = ed.menus.list;
   const snapLabel = q('[data-schizzo-tipo-aggancio]');
   const title = q('#schizzo-titolo');
   let initial = '';
@@ -65,22 +66,6 @@
     buttons();
   };
 
-  // The face of a menu shows what is in use from it (the shape, the symbol); choosing closes it.
-  const syncMenus = () => {
-    const name = toolName();
-    menus.forEach((menu) => {
-      const own = menu.querySelector(`input[name="schizzo-strumento"][value="${name}"]`);
-      menu.classList.toggle('is-active', Boolean(own));
-      if (!own) return;
-      const symbol =
-        name === 'simbolo' && menu.querySelector('input[name="schizzo-simbolo"]:checked');
-      const label = (symbol || own).closest('label');
-      const icon = label && label.querySelector('svg');
-      const face = menu.querySelector('[data-schizzo-menu-faccia]');
-      if (face && icon) face.replaceChildren(icon.cloneNode(true));
-      menu.open = false;
-    });
-  };
   const switchTool = () => {
     const name = toolName();
     if (ed.tool && ed.tool.flush) ed.tool.flush();
@@ -93,15 +78,9 @@
     ed.snapKind(null);
     ed.canvas.dataset.strumento = name;
     ed.hint(ed.tool.hint);
-    syncMenus();
+    ed.menus.sync();
     showGroup();
   };
-  // A tap on the sheet closes an open menu.
-  ed.canvas.addEventListener('pointerdown', () => {
-    menus.forEach((m) => {
-      m.open = false;
-    });
-  });
   ed.selectNew = (list) => {
     q('#schizzo-strumento-seleziona').checked = true;
     switchTool();
@@ -110,14 +89,12 @@
 
   // A symbol chosen takes the symbol tool; the one already checked fires no "change", only "click".
   const chooseSymbol = () => {
-    if (toolName() === 'simbolo') return syncMenus();
+    if (toolName() === 'simbolo') return ed.menus.sync();
     q('#schizzo-strumento-simbolo').checked = true;
     return switchTool();
   };
   dialog.addEventListener('click', (event) => {
-    const { name } = event.target;
-    if (name === 'schizzo-simbolo') chooseSymbol();
-    else if (name === 'schizzo-strumento') syncMenus();
+    if (event.target.name === 'schizzo-simbolo') chooseSymbol();
   });
   dialog.addEventListener('change', (event) => {
     const { name } = event.target;
@@ -161,8 +138,13 @@
 
   const changed = () => JSON.stringify(ed.elements) !== initial;
   const close = (keep) => {
-    // A complete operation is not lost: a polyline of two points, a text or a number being typed.
-    if (keep && ed.tool && ed.tool.flush) ed.tool.flush();
+    // A complete operation is not lost: a polyline of two points, a text or a number being typed (taken
+    // as OK takes it); what is half done goes.
+    if (ed.valueBar.isOpen) {
+      if (keep) ed.valueBar.ok();
+      else ed.valueBar.close();
+    }
+    if (ed.tool && ed.tool.flush) ed.tool.flush(keep);
     const done = closed;
     closed = null;
     if (dialog.open) dialog.close();
@@ -174,6 +156,11 @@
   // Esc or "back": the value bar, a half-done tool, the selection — then the question about the sheet.
   dialog.addEventListener('cancel', (event) => {
     event.preventDefault();
+    const menu = menus.find((m) => m.open);
+    if (menu) {
+      menu.open = false;
+      return ed.menus.summaryOf(menu).focus();
+    }
     if (ed.valueBar.isOpen) return ed.valueBar.close();
     if (polylineOpen && ed.tool.undo) return ed.tool.undo();
     if (ed.selection.get().length) return ed.selection.clear();
@@ -182,6 +169,7 @@
   dialog.addEventListener('close', () => close(true));
 
   dialog.addEventListener('keydown', (event) => {
+    if (event.defaultPrevented) return;
     if (event.target instanceof HTMLInputElement && event.target.type === 'text') return;
     const key = event.key.toLowerCase();
     const mod = event.ctrlKey || event.metaKey;
@@ -236,6 +224,8 @@
     const { foglio, n, chiuso } = event.detail;
     const list = Array.isArray(foglio.e) ? foglio.e.filter((el) => ed.regole.valido(el)) : [];
     ed.reset(list);
+    // Nothing of the sheet before: the selection, a tool half way (switchTool below).
+    ed.selection.clear();
     ed.resetPointers();
     initial = JSON.stringify(list);
     closed = chiuso;
@@ -243,9 +233,12 @@
     title.textContent = (texts.titolo || '').replace('{n}', () => String(n));
     ed.error('');
     dialog.showModal();
-    // Start on the tool in use — never on "Discard", the first button of the dialog.
-    q('input[name="schizzo-strumento"]:checked').focus();
     switchTool();
+    // Start on the tool in use (on its menu when it is a shape or a symbol) — never on "Discard", the
+    // first button of the dialog.
+    const tool = q('input[name="schizzo-strumento"]:checked');
+    const menu = tool.closest('details');
+    (menu ? menu.querySelector('summary') : tool).focus();
     vista.reset();
     vista.fit();
     buttons();

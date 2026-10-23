@@ -167,8 +167,28 @@ export function pesoDi(el: { t: string; n?: string; v?: string }): number {
   return Object.hasOwn(PESI, el.t) ? PESI[el.t as keyof typeof PESI] : 1;
 }
 
+/**
+ * Елементите на листа — до тавана на броя, после един по един до първия грешен: zod иначе описва всеки
+ * грешен елемент поотделно, а подправен лист с хиляди такива държи сървъра секунди на заявка.
+ */
+const elementi = z
+  .array(z.unknown())
+  .max(MAX_ELEMENTI)
+  .transform((voci, ctx) => {
+    const e: z.output<typeof elementoSchema>[] = [];
+    for (const [i, voce] of voci.entries()) {
+      const parsed = elementoSchema.safeParse(voce);
+      if (!parsed.success) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: [i], fatal: true });
+        return z.NEVER;
+      }
+      e.push(parsed.data);
+    }
+    return e;
+  });
+
 export const foglioSchema = z
-  .object({ e: z.array(elementoSchema).max(MAX_ELEMENTI) })
+  .object({ e: elementi })
   .strict()
   .refine((foglio) => foglio.e.reduce((somma, el) => somma + pesoDi(el), 0) <= MAX_PESO);
 

@@ -185,27 +185,36 @@
       return hasOwn(view.pesi, el.t) ? view.pesi[el.t] : 1;
     };
 
-    // The points that must stay on the sheet when the element moves (what the server checks).
+    // The points that must stay on the sheet when the element moves (what the server checks), each with
+    // how far past the edge it may go: the line of a dimension, 2 units (lineaNelFoglio).
     const anchorsOf = (el) => {
-      if (el.t === 'p') return [forme.puntiDi(el.d)[0]];
+      if (el.t === 'p') return [[...forme.puntiDi(el.d)[0], 0]];
       if (el.t === 'a' || el.t === 'q') {
-        return [
-          [el.x1, el.y1],
-          [el.x2, el.y2],
+        const ends = [
+          [el.x1, el.y1, 0],
+          [el.x2, el.y2, 0],
         ];
+        if (el.t !== 'q' || !el.o) return ends;
+        const lungo = Math.hypot(el.x2 - el.x1, el.y2 - el.y1);
+        const nx = -(el.y2 - el.y1) / lungo;
+        const ny = (el.x2 - el.x1) / lungo;
+        return ends.concat([
+          [el.x1 + nx * el.o, el.y1 + ny * el.o, 2],
+          [el.x2 + nx * el.o, el.y2 + ny * el.o, 2],
+        ]);
       }
-      return [[el.x, el.y]];
+      return [[el.x, el.y, 0]];
     };
 
-    // The move (dx, dy) cut so that every anchor of every element stays on the sheet.
+    // The move (dx, dy) in whole units cut so that every anchor of every element stays on the sheet.
     const limitMove = (elements, dx, dy) => {
       let [lx, hx, ly, hy] = [-Infinity, Infinity, -Infinity, Infinity];
       elements.forEach((el) =>
-        anchorsOf(el).forEach(([x, y]) => {
-          lx = Math.max(lx, -x);
-          hx = Math.min(hx, W - x);
-          ly = Math.max(ly, -y);
-          hy = Math.min(hy, H - y);
+        anchorsOf(el).forEach(([x, y, slack]) => {
+          lx = Math.max(lx, Math.ceil(-slack - x));
+          hx = Math.min(hx, Math.floor(W + slack - x));
+          ly = Math.max(ly, Math.ceil(-slack - y));
+          hy = Math.min(hy, Math.floor(H + slack - y));
         }),
       );
       return [

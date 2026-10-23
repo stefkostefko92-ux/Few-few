@@ -51,13 +51,14 @@
         const existing = pick(p, ['x']);
         if (existing) return editText(existing);
         const at = round(p);
-        ed.setDecor((ctx, px) => ed.shared.paintMark(ctx, at, ed.style().c, px));
+        // The bar first: closing a previous one clears its mark, not this one.
         ed.valueBar.open({
           mode: 'testo',
           value: '',
           onOk: (v) => ed.add({ t: 'x', c: ed.style().c, s: ed.style().s, x: at.x, y: at.y, v }),
           onClose: () => ed.setDecor(null),
         });
+        ed.setDecor((ctx, px) => ed.shared.paintMark(ctx, at, ed.style().c, px));
       },
       cancel() {
         downAt = null;
@@ -98,21 +99,24 @@
       },
       up(p) {
         if (!start) return;
-        const el = moved ? shape() : null;
+        // Two ends that snapped into one point are no arrow.
+        const el = moved && (end.x !== start.x || end.y !== start.y) ? shape() : null;
         start = null;
         ed.ring(null);
         if (!el) {
-          const existing = pick(p, ['a']);
+          ed.setPreview([]);
+          const existing = !moved && pick(p, ['a']);
           if (existing) editText(existing);
           return;
         }
-        ed.setPreview([el]);
+        // The bar first: closing a previous one clears its preview, not this one.
         ed.valueBar.open({
           mode: 'richiamo',
           value: '',
           onOk: (v) => ed.add({ ...el, v }),
           onClose: () => ed.setPreview([]),
         });
+        ed.setPreview([el]);
       },
       cancel() {
         start = null;
@@ -202,9 +206,12 @@
       up(p) {
         if (phase === 1) {
           ed.ring(null);
-          if (!moved) {
+          // A tap (an existing dimension is edited) or two points snapped into one: nothing to measure.
+          if (!moved || (a.x === b.x && a.y === b.y)) {
             phase = 0;
-            const existing = pick(p, ['q']);
+            a = b = null;
+            ed.setPreview([]);
+            const existing = !moved && pick(p, ['q']);
             if (existing) editText(existing);
             return;
           }
@@ -230,6 +237,15 @@
           a = b = null;
           ed.setPreview([]);
         }
+      },
+      // Another tool or the editor closed: a dimension without its number is dropped (its number
+      // being typed is taken or dropped by the value bar).
+      flush() {
+        if (phase !== 1 && phase !== 2) return;
+        phase = 0;
+        a = b = null;
+        ed.setPreview([]);
+        ed.hint('quota');
       },
       undo() {
         if (phase === 0) return false;

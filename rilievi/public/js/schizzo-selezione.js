@@ -1,16 +1,16 @@
 // The select tool of the sketch editor. A tap selects what is under it — texts, dimensions and callouts
 // before arrows, symbols, ellipses and lines, the topmost first; a second tap on the same spot takes the
-// next one below. "Seleziona più" (or Shift) adds to the selection. A drag on the empty sheet selects
+// next one below. "Seleziona più" (or Shift) adds to the selection, a tap on a selected one takes it
+// out; a tap on one of several selected keeps only it. A drag on the empty sheet selects
 // what its box touches; a drag on the selection moves it, the grabbed point snapping. One element has
-// handles: the ends of a dimension, an arrow or a straight line; the corner of a symbol or an ellipse
-// (its size); the line of a dimension (its offset). A tap on a selected text, dimension or callout
-// edits it. The actions on the selection — schizzo-azioni.js.
+// handles (schizzo-maniglie.js) and a dimension its line (the offset). A tap on a selected text,
+// dimension or callout edits it. The actions on the selection — schizzo-azioni.js.
 (() => {
   'use strict';
 
   const ed = window.rilieviSchizzoEditor;
   if (!ed) return;
-  const { regole, shared, view } = ed;
+  const { regole, shared } = ed;
   const ORDER = ['x', 'q', 'a', 's', 'e', 'p'];
   let selection = [];
   let action = null;
@@ -47,55 +47,7 @@
     return { x, y };
   };
 
-  // The handles of a single element: where they are and what dragging them changes.
-  const isLine = (el) => el.t === 'p' && /^M\d+ \d+l-?\d+ -?\d+$/.test(el.d);
-  const handlesOf = (el) => {
-    if (el.t === 'q' || el.t === 'a') {
-      return [
-        { key: 'a', x: el.x1, y: el.y1 },
-        { key: 'b', x: el.x2, y: el.y2 },
-      ];
-    }
-    if (isLine(el)) {
-      const [[x1, y1], [x2, y2]] = ed.forme.puntiDi(el.d);
-      return [
-        { key: 'a', x: x1, y: y1 },
-        { key: 'b', x: x2, y: y2 },
-      ];
-    }
-    if (el.t === 's' || el.t === 'e') {
-      // Outside the corner when the element is small on the screen — the finger does not hide it.
-      const box = shared.boundsOf(el);
-      const gap = 16 * ed.vista.unitsPerPx();
-      return [{ key: 'size', x: box.x1 + gap, y: box.y1 + gap }];
-    }
-    return [];
-  };
-  // The element with handle `key` dragged to `p`.
-  const reshaped = (el, key, p) => {
-    if (key === 'size') {
-      const dx = Math.abs(p.x - el.x);
-      const dy = Math.abs(p.y - el.y);
-      if (el.t === 'e') {
-        return el.rx === el.ry
-          ? { ...el, rx: Math.max(dx, dy), ry: Math.max(dx, dy) }
-          : { ...el, rx: dx, ry: dy };
-      }
-      const [sx, sy] = el.r % 2 ? [dy, dx] : [dx, dy];
-      const def = view.simboli[el.n];
-      if (def && def.proporzionale) {
-        const k = Math.max((2 * sx) / def.misura[0], (2 * sy) / def.misura[1]);
-        return { ...el, w: def.misura[0] * k, h: def.misura[1] * k };
-      }
-      return { ...el, w: 2 * sx, h: 2 * sy };
-    }
-    if (el.t === 'q' || el.t === 'a') {
-      return key === 'a' ? { ...el, x1: p.x, y1: p.y } : { ...el, x2: p.x, y2: p.y };
-    }
-    const [[x1, y1], [x2, y2]] = ed.forme.puntiDi(el.d);
-    const [a, b] = key === 'a' ? [p, { x: x2, y: y2 }] : [{ x: x1, y: y1 }, p];
-    return { ...el, d: `M${a.x} ${a.y}l${b.x - a.x} ${b.y - a.y}` };
-  };
+  const { handlesOf, reshaped, sizePointOf } = ed.maniglie;
 
   const decorate = (box) => {
     ed.setDecor((ctx, px) => {
@@ -142,7 +94,9 @@
         selection.length === 1 &&
         handlesOf(selection[0]).find((h) => Math.hypot(h.x - p.x, h.y - p.y) <= ed.tol('handle'));
       if (handle) {
-        action = { kind: 'handle', key: handle.key, el: selection[0], from: p, moved: false };
+        const el = selection[0];
+        const base = handle.key === 'size' ? sizePointOf(el) : null;
+        action = { kind: 'handle', key: handle.key, el, from: p, base, moved: false };
         return;
       }
       const single = selection.length === 1 ? selection[0] : null;
@@ -152,17 +106,17 @@
       }
       const under = candidates(p);
       const onSelection = under.find((el) => selection.includes(el));
+      const add = multi() || (event && event.shiftKey);
       if (onSelection) {
-        action = { kind: 'move', from: p, key: keyOf(onSelection, p), moved: false, dx: 0, dy: 0 };
+        // What a tap without a move does is decided on lifting (up).
+        const again = lastTap && Math.hypot(lastTap.x - p.x, lastTap.y - p.y) <= ed.tol('slop');
+        const key = keyOf(onSelection, p);
+        action = { kind: 'move', from: p, key, moved: false, dx: 0, dy: 0 };
+        Object.assign(action, { hit: onSelection, under, again, add });
         return;
       }
-      const add = multi() || (event && event.shiftKey);
       if (under.length) {
-        const again = lastTap && Math.hypot(lastTap.x - p.x, lastTap.y - p.y) <= ed.tol('slop');
-        const index = again
-          ? (under.indexOf(selection[selection.length - 1]) + 1) % under.length
-          : 0;
-        const el = under[index];
+        const el = under[0];
         lastTap = p;
         select(
           add
@@ -208,7 +162,14 @@
         ed.setPreview(selection, action.dx, action.dy);
       } else if (action.kind === 'handle') {
         const snapped =
-          action.key === 'size' ? { p: ed.round(p) } : ed.snap(p, { skip: new Set([action.el]) });
+          action.key === 'size'
+            ? {
+                p: ed.round({
+                  x: action.base.x + p.x - action.from.x,
+                  y: action.base.y + p.y - action.from.y,
+                }),
+              }
+            : ed.snap(p, { skip: new Set([action.el]) });
         action.next = regole.normalizza(reshaped(action.el, action.key, snapped.p));
         ed.setHidden(new Set([action.el]));
         ed.setPreview(action.next ? [action.next] : []);
@@ -251,9 +212,17 @@
         replace(selection.map((el) => [el, regole.moved(el, done.dx, done.dy)]));
         return;
       }
-      if (done.kind === 'move' && !done.moved && selection.length === 1) {
-        const el = selection[0];
-        if (el.t === 'x' || el.t === 'q' || (el.t === 'a' && el.v)) ed.editText(el);
+      // A tap on the selection: with "Seleziona più" it leaves it; one of several — only it stays; a
+      // text, a dimension or a callout — edited; again on the same spot — the next one below.
+      if (done.kind === 'move' && !done.moved) {
+        const el = done.hit;
+        if (done.add) select(selection.filter((s) => s !== el));
+        else if (selection.length > 1) select([el]);
+        else if (el.t === 'x' || el.t === 'q' || (el.t === 'a' && el.v)) ed.editText(el);
+        else if (done.again && done.under.length > 1) {
+          lastTap = done.from;
+          select([done.under[(done.under.indexOf(el) + 1) % done.under.length]]);
+        } else lastTap = done.from;
         return;
       }
       if ((done.kind === 'handle' || done.kind === 'offset') && done.moved && done.next) {

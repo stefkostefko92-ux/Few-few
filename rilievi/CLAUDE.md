@@ -110,9 +110,11 @@ public/              css/ (портал: base, buttons, shell, layout, plate, fo
                      elementi.ts, нормализиране, местене) · schizzo-aggancio.js · schizzo-vista.js (мащаб,
                      местене на листа) · schizzo-editor.js (ядрото, историята, слоевете) ·
                      schizzo-puntatori.js (пръст/писалка/мишка) · schizzo-strumenti.js · schizzo-testi.js
-                     (текст, надпис със стрелка, кота) · schizzo-polilinea.js · schizzo-selezione.js ·
-                     schizzo-azioni.js · schizzo-valore.js (лентата за стойност) · schizzo-comandi.js
-                     (лентите, клавиатурата, отваряне/затваряне); css/schizzo-barre.css — лентите и менютата;
+                     (текст, надпис със стрелка, кота) · schizzo-polilinea.js · schizzo-maniglie.js
+                     (дръжките) · schizzo-selezione.js ·
+                     schizzo-azioni.js · schizzo-valore.js (лентата за стойност) · schizzo-menu.js
+                     (менютата — и от клавиатурата) · schizzo-comandi.js (лентите, клавиатурата,
+                     отваряне/затваряне); css/schizzo-barre.css — лентите и менютата;
                      img/ (og.png и apple-touch-icon.png — `npm run brand:images`), indexnow-key.txt
 tests/               unit · integration/ (реален Postgres) · e2e/run.mjs (Playwright + axe)
 deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh · nginx/ · systemd/
@@ -396,8 +398,13 @@ deploy/              deploy.sh · setup-env.sh · create-master.sh · backup.sh 
   един пръст след писалка, интервал или средният бутон), избор (докосване, рамка, „Seleziona più“/Shift) с местене, дръжки,
   копие, изтриване, завъртане, огледало, диаметър/радиус на кръг, редакция на текст; Ctrl+Z/Y/D/C/V,
   Delete, стрелките, +/−/0. Пръст, писалка и мишка: втори пръст отменя започнатото и мащабира, след
-  писалка пръстите не рисуват, допуските са в px на екрана по вид указател. Подправен елемент отказва
-  записа (422), а върнатата форма пази валидните елементи на листа (`foglioSalvato`). Ред, който тази
+  писалка пръстите не рисуват, допуските са в px на екрана по вид указател. Менютата и от клавиатурата
+  (фокусът влиза в отвореното, стрелките минават през него, Enter/Esc го затварят към лицето му; Esc
+  първо затваря менюто, после всичко друго); „Fatto“ взима и написаното в лентата за стойност. Подправен
+  елемент отказва записа (422), а върнатата форма пази валидните елементи на листа (`foglioSalvato` —
+  един проход, до 20 отпаднали, до тавана на тежестта). Проверката на листа е с таван на броя ПРЕДИ zod и
+  елемент по елемент до първия грешен — иначе zod описва всеки грешен поотделно и подправена форма държи
+  сървъра секунди. Ред, който тази
   версия не чете (записан от по-нова — след връщане назад), не се показва и остава след пратените
   (`salvaSchizzi`). Надписите в PDF-а — Fira Sans 500 като **WOFF** (`public/fonts`, `scripts/fonts.mjs`):
   fontkit-ът на pdfkit чупи съставните глифове на WOFF2 („i“, ударенията) → 500; знак извън латиницата

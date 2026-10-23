@@ -1,7 +1,8 @@
 // The tools of the sketch editor in a real browser, with the mouse (public/js/schizzo-*.js): every kind of
 // element drawn once and checked in the editor's sheet — pen, line, dashed line, rectangle, dimension
 // (pulled out below, its number typed), circle and its diameter, callout, symbol (turned and mirrored),
-// polygon, text; then selecting, moving, duplicating and deleting, the eraser with undo and redo, zooming.
+// polygon; selecting, moving, duplicating and deleting, the eraser with undo and redo, zooming; last a
+// text left typed in the value bar, unconfirmed.
 import { fail } from './helpers.mjs';
 
 export async function drawEverything(page, dialog) {
@@ -114,10 +115,6 @@ export async function drawEverything(page, dialog) {
   }
   if (!(await last()).d?.endsWith('z')) fail('sketch tools: the polygon is not closed');
 
-  await tool('testo');
-  await tap(0.05, 0.3);
-  await type('Vano 1600 × 1400');
-
   // The eraser on the pen stroke, undo and redo.
   const before = (await elements()).length;
   await tool('gomma');
@@ -136,7 +133,14 @@ export async function drawEverything(page, dialog) {
   const kinds = (await elements()).map((el) =>
     el.t === 'p' ? (el.d.endsWith('z') ? 'z' : 'p') : el.t,
   );
-  for (const kind of ['p', 'z', 'q', 'e', 'a', 's', 'x']) {
+  for (const kind of ['p', 'z', 'q', 'e', 'a', 's']) {
     if (!kinds.includes(kind)) fail(`sketch tools: no element of kind ${kind} (${kinds.join()})`);
   }
+
+  // Last, a text typed and not confirmed: "Fatto" takes it (schizzi.mjs).
+  await tool('testo');
+  await tap(0.05, 0.3);
+  const input = dialog.locator('#schizzo-valore');
+  await input.waitFor({ state: 'visible' });
+  await input.fill('Vano 1600 × 1400');
 }

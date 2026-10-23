@@ -1,35 +1,9 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
-import { runInNewContext } from 'node:vm';
 import { elementoSchema, pesoDi } from '../src/schizzi/elementi.js';
-import { primitiviDi, type ElementoDisegno, type Primitivo } from '../src/schizzi/forme.js';
-import { VISTA_SCHIZZO } from '../src/schizzi/model.js';
+import { primitiviDi, type ElementoDisegno } from '../src/schizzi/forme.js';
 import { NOMI_SIMBOLI } from '../src/schizzi/simboli.js';
-
-interface Browser {
-  primitivesOf: (el: ElementoDisegno) => Primitivo[];
-  valido: (el: unknown) => boolean;
-  normalizza: (el: unknown) => Record<string, unknown> | null;
-  pesoDi: (el: unknown) => number;
-  moved: (el: unknown, dx: number, dy: number) => Record<string, unknown>;
-  limitMove: (els: unknown[], dx: number, dy: number) => [number, number];
-}
-
-/** The browser's geometry and rules (public/js/schizzo-forme.js, schizzo-regole.js), run as the page runs them. */
-function browser(): Browser {
-  const window: Record<string, unknown> = {};
-  const context = { window };
-  runInNewContext(readFileSync('public/js/schizzo-forme.js', 'utf8'), context);
-  runInNewContext(readFileSync('public/js/schizzo-regole.js', 'utf8'), context);
-  // Through JSON, as the page gets the sizes (`schizzi-vista`).
-  const view: unknown = JSON.parse(JSON.stringify(VISTA_SCHIZZO));
-  const forme = (window.rilieviForme as (v: unknown) => Browser)(view);
-  const regole = (window.rilieviRegole as (v: unknown, f: unknown) => Browser)(view, forme);
-  return { ...forme, ...regole };
-}
-/** Values that cross a JSON boundary, compared as plain data. */
-const plain = (value: unknown): unknown => JSON.parse(JSON.stringify(value));
+import { browser, plain } from './schizzi-browser.js';
 
 /** Every number of a value is finite — JSON would hide a NaN as null on both sides. */
 function assertFinite(value: unknown, where: string): void {
@@ -185,27 +159,6 @@ describe('the sketch geometry', () => {
         );
       }
     }
-  });
-
-  it('moves a selection only as far as the sheet goes, and the server takes the result', () => {
-    const b = browser();
-    const els = [
-      { t: 'p', c: 'k', s: 1, d: 'M10 20l500 300' },
-      { t: 'q', c: 'k', s: 1, x1: 1300, y1: 900, x2: 1390, y2: 990, o: 0, v: '1' },
-      { t: 's', c: 'k', s: 1, n: 'cabina', x: 700, y: 500, w: 400, h: 300, r: 1 },
-    ];
-    for (const [dx, dy] of [
-      [-500, -500],
-      [500, 500],
-      [3, -7],
-      [0, 2000],
-    ] as const) {
-      const [mx, my] = b.limitMove(els, dx, dy);
-      for (const el of els)
-        assert.ok(elementoSchema.safeParse(b.moved(el, mx, my)).success, `${dx},${dy}`);
-    }
-    assert.deepEqual(plain(b.limitMove(els, -500, -500)), [-10, -20]);
-    assert.deepEqual(plain(b.limitMove(els, 500, 500)), [10, 10]);
   });
 
   it('puts the dimension text above the line and never upside down', () => {

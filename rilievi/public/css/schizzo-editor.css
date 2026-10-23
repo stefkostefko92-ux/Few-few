@@ -196,4 +196,11 @@
   .schizzo-editor__storia {
     margin-left: 0;
   }
+
+  /* Лентата за стойност (и подсказката ѝ) — първа в колоната: никога под края на екрана. */
+  .schizzo-editor__valore,
+  .schizzo-editor__barre:has(> .schizzo-editor__valore:not([hidden]))
+    > .schizzo-editor__suggerimento {
+    order: -1;
+  }
 }

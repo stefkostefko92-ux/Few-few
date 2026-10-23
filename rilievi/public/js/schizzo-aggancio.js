@@ -42,7 +42,8 @@
           }
         }
       }
-      if (best) return { p: best, kind: 'punto' };
+      // Whole units like every other point (a symbol's corner can fall on a half).
+      if (best) return { p: inside(best), kind: 'punto' };
       if (from) {
         const dx = raw.x - from.x;
         const dy = raw.y - from.y;

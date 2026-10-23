@@ -110,6 +110,46 @@ describe('the sketch sheets from the form', () => {
     assert.equal(schizziFromBody({ schizzo: a }), undefined);
     assert.deepEqual(schizziFromBody({ 'schizzi-_': '1', schizzo: [a, 'bad', empty] }), [a, empty]);
   });
+
+  it('come back without the bad elements, up to 20 of them, and only up to the weight', () => {
+    const back = (...e: unknown[]) =>
+      schizziFromBody({ 'schizzi-_': '1', schizzo: JSON.stringify({ e }) });
+    const good = testo('Vano');
+    const bad = { t: 'x' };
+    assert.deepEqual(back(good, bad, good), [JSON.stringify({ e: [good, good] })]);
+    assert.deepEqual(back(good, ...Array.from({ length: 20 }, () => bad)), [
+      JSON.stringify({ e: [good] }),
+    ]);
+    assert.deepEqual(back(good, ...Array.from({ length: 21 }, () => bad)), []);
+    // A dimension draws six: 1000 fill the sheet, the one after them stays out.
+    const quota = { t: 'q', c: 'k', s: 1, x1: 10, y1: 10, x2: 20, y2: 10, o: 0, v: '?' };
+    const full = back(...Array.from({ length: 1001 }, () => quota));
+    assert.equal((JSON.parse(full![0]!) as { e: unknown[] }).e.length, 1000);
+  });
+
+  it('are refused over the count before any element is checked (no seconds on a tampered form)', () => {
+    const many = JSON.stringify({
+      e: Array.from({ length: MAX_ELEMENTI + 1 }, () => ({ t: 'x' })),
+    });
+    const start = performance.now();
+    assert.equal(foglioDa(many), null);
+    assert.equal(
+      schizziDi({ 'schizzi-_': '1', schizzo: Array(MAX_FOGLI).fill(many) }).success,
+      false,
+    );
+    assert.deepEqual(
+      schizziFromBody({ 'schizzi-_': '1', schizzo: Array(MAX_FOGLI).fill(many) }),
+      [],
+    );
+    // Bad elements stop the check at the first one.
+    const bad = JSON.stringify({ e: Array.from({ length: MAX_ELEMENTI }, () => ({ t: 'x' })) });
+    assert.equal(foglioDa(bad), null);
+    assert.deepEqual(
+      schizziFromBody({ 'schizzi-_': '1', schizzo: Array(MAX_FOGLI).fill(bad) }),
+      [],
+    );
+    assert.ok(performance.now() - start < 500, `${Math.round(performance.now() - start)} ms`);
+  });
 });
 
 describe(

@@ -18,7 +18,14 @@ import {
   SPESSORI,
   TRATTEGGI,
 } from './costanti.js';
-import { elementoSchema, foglioSchema, PESI, type Foglio } from './elementi.js';
+import {
+  elementoSchema,
+  foglioSchema,
+  PESI,
+  pesoDi,
+  type Elemento,
+  type Foglio,
+} from './elementi.js';
 import { SIMBOLI } from './simboli.js';
 
 /**
@@ -57,17 +64,31 @@ export const VISTA_SCHIZZO = {
   pesi: PESI,
 } as const;
 
-/** Един лист от JSON (формата или базата); null — не е лист (подправен или твърде голям). */
-export function foglioDa(value: unknown): Foglio | null {
-  let json = value;
-  if (typeof value === 'string') {
-    if (value.length > MAX_JSON_FOGLIO) return null;
-    try {
-      json = JSON.parse(value);
-    } catch {
-      return null;
-    }
+/** Елементите на JSON лист без проверка; null — няма масив `e` или е над тавана на броя. */
+function vociDi(json: unknown): unknown[] | null {
+  const voci = typeof json === 'object' && json !== null ? (json as { e?: unknown }).e : null;
+  return Array.isArray(voci) && voci.length <= MAX_ELEMENTI ? voci : null;
+}
+
+/** JSON от формата (до тавана на листа) или вече прочетеното от базата; undefined — не е JSON. */
+function jsonDi(value: unknown): unknown {
+  if (typeof value !== 'string') return value;
+  if (value.length > MAX_JSON_FOGLIO) return undefined;
+  try {
+    return JSON.parse(value) as unknown;
+  } catch {
+    return undefined;
   }
+}
+
+/**
+ * Един лист от JSON (формата или базата); null — не е лист (подправен или твърде голям). Броят се
+ * проверява преди zod: масивът над тавана иначе минава целия през проверката на всеки елемент — секунди
+ * синхронна работа на заявка с подправени листове.
+ */
+export function foglioDa(value: unknown): Foglio | null {
+  const json = jsonDi(value);
+  if (!vociDi(json)) return null;
   const parsed = foglioSchema.safeParse(json);
   return parsed.success ? parsed.data : null;
 }
@@ -97,12 +118,13 @@ export function schizziDi(
   if (raw[SCHIZZI_MARK] !== '1') return { success: true, data: undefined };
   const list = lista(raw[SCHIZZO_KEY]);
   if (!list || list.length > MAX_FOGLI) return { success: false };
-  const fogli = list.map(foglioDa);
-  if (fogli.some((foglio) => foglio === null)) return { success: false };
-  return {
-    success: true,
-    data: fogli.filter((foglio): foglio is Foglio => foglio !== null && foglio.e.length > 0),
-  };
+  const fogli: Foglio[] = [];
+  for (const item of list) {
+    const foglio = foglioDa(item);
+    if (!foglio) return { success: false };
+    if (foglio.e.length > 0) fogli.push(foglio);
+  }
+  return { success: true, data: fogli };
 }
 
 /** Отметката „Schizzi“ за печата: undefined — не е на страницата (не се пипа). */
@@ -110,25 +132,32 @@ export function schizziStampatiDi(raw: Record<string, unknown>): boolean | undef
   return raw[SCHIZZI_STAMPA_MARK] === '1' ? raw[SCHIZZI_STAMPA_KEY] === '1' : undefined;
 }
 
+/** Колко елемента може да отпадне от спасявания лист — повече е подправяне, не грешка. */
+const MAX_SCARTATI = 20;
+
 /**
- * Лист, в който нещо не е във вида си: само елементите, които са (в реда им, до тавана) — за върнатата
- * форма, за да не се загуби цялата рисунка заради един елемент; null — нищо за спасяване.
+ * Листът за върнатата форма (и за сравнението при запис): валидните елементи в реда им, до тавана на
+ * тежестта — за да не се загуби цялата рисунка заради един елемент. Един проход: при успешен запис
+ * листът вече е проверен веднъж. null — не е лист или е подправен.
  */
 function foglioSalvato(item: unknown): Foglio | null {
-  if (typeof item !== 'string' || item.length > MAX_JSON_FOGLIO) return null;
-  let json: unknown;
-  try {
-    json = JSON.parse(item);
-  } catch {
-    return null;
-  }
-  const voci = typeof json === 'object' && json !== null ? (json as { e?: unknown }).e : null;
-  if (!Array.isArray(voci)) return null;
-  const e = voci.flatMap((el: unknown) => {
+  if (typeof item !== 'string') return null;
+  const voci = vociDi(jsonDi(item));
+  if (!voci) return null;
+  const e: Elemento[] = [];
+  let peso = 0;
+  let scartati = 0;
+  for (const el of voci) {
     const parsed = elementoSchema.safeParse(el);
-    return parsed.success ? [parsed.data] : [];
-  });
-  return foglioDa({ e: e.slice(0, MAX_ELEMENTI) });
+    if (!parsed.success) {
+      if (++scartati > MAX_SCARTATI) return null;
+      continue;
+    }
+    peso += pesoDi(parsed.data);
+    if (peso > MAX_PESO) break;
+    e.push(parsed.data);
+  }
+  return { e };
 }
 
 /**
@@ -138,7 +167,7 @@ function foglioSalvato(item: unknown): Foglio | null {
 export function schizziFromBody(source: Record<string, unknown>): string[] | undefined {
   if (source[SCHIZZI_MARK] !== '1') return undefined;
   return (lista(source[SCHIZZO_KEY]) ?? []).slice(0, MAX_FOGLI).flatMap((item) => {
-    const foglio = foglioDa(item) ?? foglioSalvato(item);
+    const foglio = foglioSalvato(item);
     return foglio ? [JSON.stringify(foglio)] : [];
   });
 }

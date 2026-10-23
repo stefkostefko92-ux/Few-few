@@ -225,14 +225,14 @@
     };
   };
 
-  // Does the sheet still fit what the server takes: the elements, the JSON, and its size as the form
-  // sends it (encodeURIComponent counts a space as 3 bytes, the form as 1 — on the safe side).
+  // Does the sheet still fit what the server takes: the elements, the JSON, and its size exactly as the
+  // form sends it (application/x-www-form-urlencoded — ! ' ( ) ~ are 3 bytes there, not 1).
   const fits = (sheet) => {
     const json = JSON.stringify({ e: sheet });
     return (
       sheet.length <= view.maxElementi &&
       json.length <= view.maxJson &&
-      encodeURIComponent(json).length <= view.maxCodificato
+      new URLSearchParams({ schizzo: json }).toString().length <= view.maxCodificato
     );
   };
 

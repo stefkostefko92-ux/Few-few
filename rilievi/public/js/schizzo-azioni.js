@@ -105,10 +105,12 @@
     const pairs = selected().map((el) => [el, regole.moved(el, mx, my)]);
     const map = new Map(pairs);
     const next = pairs.map(([, moved]) => moved);
+    // One step while the same elements go on moving (their places in the sheet do not change).
+    const key = `nudge:${selected().map((el) => ed.elements.indexOf(el))}`;
     if (
       ed.commit(
         ed.elements.map((el) => (map.has(el) ? map.get(el) : el)),
-        'nudge',
+        key,
       )
     ) {
       ed.selection.set(next);
