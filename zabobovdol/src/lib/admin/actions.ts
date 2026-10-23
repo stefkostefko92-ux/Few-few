@@ -1,7 +1,8 @@
 "use server";
 
 import { notifyOnPublish } from "@/lib/push";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { tagsForModel } from "@/lib/cache-core";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser, requireAdmin, type SessionUser } from "@/lib/auth";
@@ -183,6 +184,7 @@ export async function saveRecord(
   // Известие до абонатите при публикувано прекъсване/измама/новина (веднъж).
   if (savedId && data.published === true) await notifyOnPublish(resource.model, savedId);
 
+  for (const tag of tagsForModel(resource.model)) revalidateTag(tag);
   revalidatePath("/", "layout");
   redirect(`/admin/${resource.key}?saved=1`);
 }
@@ -206,6 +208,7 @@ export async function deleteRecord(
     summary: `Изтриване: ${resource.labelSingular} „${title}“`,
   });
 
+  for (const tag of tagsForModel(resource.model)) revalidateTag(tag);
   revalidatePath("/", "layout");
   redirect(`/admin/${resource.key}?deleted=1`);
 }
@@ -237,6 +240,7 @@ export async function togglePublish(
   });
   if (next) await notifyOnPublish(resource.model, id);
 
+  for (const tag of tagsForModel(resource.model)) revalidateTag(tag);
   revalidatePath("/", "layout");
   redirect(`/admin/${resource.key}`);
 }
