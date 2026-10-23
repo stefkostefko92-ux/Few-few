@@ -15,6 +15,7 @@ export const EVENT_NAMES = [
   "phone_report", // „Този номер е сгрешен“
   "viber_click", // отворен Viber каналът
   "rss_click", // отворен RSS абонаментът
+  "banner_click", // клик по рекламен банер (за отчета към рекламодателя)
 ] as const;
 
 export type EventName = (typeof EVENT_NAMES)[number];
