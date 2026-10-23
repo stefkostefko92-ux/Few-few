@@ -21,7 +21,13 @@
 - [YouTube ad blocker](https://adblock.carbonstealth.eu/youtube-ad-blocker): what is removed on YouTube, why videos keep playing, what happens if YouTube refuses playback, and what no extension can block
 - [Cookie banner blocker](https://adblock.carbonstealth.eu/cookie-banner-blocker): how banners are answered (Reject first, Accept only as a last resort), the consent tools it knows, and the buttons it never presses
 - [Support](https://adblock.carbonstealth.eu/support): fixes for a broken site, a YouTube video that won't play, a missed ad or cookie banner; settings, sync, removal and contact
-- [Privacy policy](https://adblock.carbonstealth.eu/privacy): what stays on the device, the only network requests, GDPR rights
+- [Privacy policy](https://adblock.carbonstealth.eu/privacy): what stays on the device, the only network requests, GDPR rights, and how to check them yourself
+- [Status](https://adblock.carbonstealth.eu/status): the current version, the filter data version and date, and when YouTube was last checked by hand
+- [uBlock Origin alternative](https://adblock.carbonstealth.eu/ublock-origin-alternative): what changed for uBlock Origin in Chrome, uBO Lite, a dated fact table, and how to import a uBO backup
+- [For IT admins](https://adblock.carbonstealth.eu/for-it-admins): force-installing it with Chrome policies, the Admin console, Group Policy, Intune or macOS profiles, and the exact network requests to allow
+- [How we measure](https://adblock.carbonstealth.eu/how-we-measure): the method behind the comparison numbers, the rerun command, and their limits
+- [Accessibility statement](https://adblock.carbonstealth.eu/accessibility): partial conformance with WCAG 2.2 AA, how it is tested, and the known gaps
+- [Press fact sheet](https://adblock.carbonstealth.eu/press): facts, images and the press contact
 - The same overview in other languages: [Български](https://adblock.carbonstealth.eu/bg/), [Deutsch](https://adblock.carbonstealth.eu/de/), [Italiano](https://adblock.carbonstealth.eu/it/), [Español](https://adblock.carbonstealth.eu/es/), [Français](https://adblock.carbonstealth.eu/fr/), [Português (Brasil)](https://adblock.carbonstealth.eu/pt-br/)
 
 ## What it does
