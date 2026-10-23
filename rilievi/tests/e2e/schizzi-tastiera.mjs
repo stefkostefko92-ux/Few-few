@@ -1,6 +1,7 @@
 // The sketch editor beyond the mouse (public/js/schizzo-menu.js, schizzo-comandi.js, schizzo-barre.css):
 // reopened on a sheet it starts clean (no selection of before, the focus on the tool, never on
-// "Scarta"); the menus work from the keyboard and Esc closes the menu, not the editor; on a tablet the
+// "Scarta"); the menus work from the keyboard and Esc closes the menu, not the editor; after a menu the
+// keys still reach the editor; on a tablet the
 // panels stay on the screen, and on a phone on its side the "Stile" panel and the value bar too.
 import { fail } from './helpers.mjs';
 
@@ -22,13 +23,47 @@ export async function selectCircle(page, dialog) {
   const circle = await page.evaluate(() =>
     window.rilieviSchizzoEditor.elements.find((el) => el.t === 'e'),
   );
+  // Its lowest point — the sides are where the lines of its diameter start (a dimension goes first).
   const box = await dialog.locator('canvas').boundingBox();
   await page.mouse.click(
-    box.x + (box.width * (circle.x + circle.rx)) / 1400,
-    box.y + (box.height * circle.y) / 1000,
+    box.x + (box.width * circle.x) / 1400,
+    box.y + (box.height * (circle.y + circle.ry)) / 1000,
   );
-  if ((await page.evaluate(() => window.rilieviSchizzoEditor.selection.get().length)) !== 1)
-    fail('sketch editor: the circle was not selected');
+  const selected = await page.evaluate(() =>
+    window.rilieviSchizzoEditor.selection.get().map((el) => el.t),
+  );
+  if (selected.join() !== 'e') fail(`sketch editor: the circle was not selected (${selected})`);
+}
+
+/** A menu opened with the mouse and closed by a click on the sheet: the keys still reach the editor. */
+export async function checkFocusAfterMenu(page, dialog) {
+  const count = () => page.evaluate(() => window.rilieviSchizzoEditor.elements.length);
+  const circle = await page.evaluate(() => window.rilieviSchizzoEditor.selection.get()[0]);
+  await dialog.locator('details[data-schizzo-menu="forme"] summary').click();
+  const box = await dialog.locator('canvas').boundingBox();
+  await page.mouse.click(
+    box.x + (box.width * circle.x) / 1400,
+    box.y + (box.height * (circle.y + circle.ry)) / 1000,
+  );
+  // The browser moves a focus left in a closed menu at the next frame.
+  const inside = await page.evaluate(
+    () =>
+      new Promise((resolve) =>
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() =>
+            resolve(
+              document.querySelector('[data-schizzo-editor]').contains(document.activeElement),
+            ),
+          ),
+        ),
+      ),
+  );
+  if (!inside) fail('sketch menus: a click on the sheet left the focus outside the editor');
+  const before = await count();
+  await page.keyboard.press('Delete');
+  if ((await count()) !== before - 1) fail('sketch menus: Delete does nothing after a menu');
+  await page.keyboard.press('Control+z');
+  if ((await count()) !== before) fail('sketch editor: Ctrl+Z did not bring the circle back');
 }
 
 export async function checkKeyboard(page, dialog, reopen) {
@@ -109,6 +144,15 @@ export async function checkLayouts(page, editUrl) {
       await tab.mouse.click(...at(0.35, 0.7));
       await onScreen(tab, dialog.locator('#schizzo-valore'), `sketch ${name}: value`);
       await onScreen(tab, dialog.locator('[data-schizzo-valore-ok]'), `sketch ${name}: OK`);
+      const hint = await dialog.locator('.schizzo-editor__suggerimento').boundingBox();
+      const tools = await dialog.locator('.seg--strumenti').boundingBox();
+      if (hint.y + hint.height > tools.y + 1) fail(`sketch ${name}: the hint covers the tools`);
+      // The soft keyboard leaves the top of the screen: the field and OK stay in it.
+      await dialog.evaluate((d) => d.style.setProperty('--vvh', '170px'));
+      for (const what of ['#schizzo-valore', '[data-schizzo-valore-ok]']) {
+        const box = await dialog.locator(what).boundingBox();
+        if (box.y + box.height > 170) fail(`sketch ${name}: ${what} under the keyboard`);
+      }
     }
     await context.close();
   }

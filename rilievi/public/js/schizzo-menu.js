@@ -13,9 +13,14 @@
   const summaryOf = (menu) => menu.querySelector('summary');
   const panelOf = (el) => (el instanceof Element ? el.closest('.menu__pannello') : null);
 
+  // A menu that held the focus gives it back to its face — never to the page outside the dialog (a tap
+  // on the sheet does not take the focus).
   const closeAll = (except = null) => {
     menus.forEach((m) => {
-      if (m !== except) m.open = false;
+      if (m === except || !m.open) return;
+      const had = m.contains(document.activeElement);
+      m.open = false;
+      if (had) summaryOf(m).focus({ preventScroll: true });
     });
   };
 

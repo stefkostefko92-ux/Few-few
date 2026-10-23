@@ -6,7 +6,13 @@
 import { join } from 'node:path';
 import { audit, fail } from './helpers.mjs';
 import { drawEverything } from './schizzi-strumenti.mjs';
-import { checkKeyboard, checkLayouts, checkReopened, selectCircle } from './schizzi-tastiera.mjs';
+import {
+  checkFocusAfterMenu,
+  checkKeyboard,
+  checkLayouts,
+  checkReopened,
+  selectCircle,
+} from './schizzi-tastiera.mjs';
 
 export async function checkSketches(page, { base, aziendaPath, sheetUrl, shots, scheme }) {
   await page.goto(base + aziendaPath);
@@ -51,6 +57,7 @@ export async function checkSketches(page, { base, aziendaPath, sheetUrl, shots, 
   await reopen();
   await checkReopened(page, dialog);
   await selectCircle(page, dialog);
+  await checkFocusAfterMenu(page, dialog);
   await done();
   await reopen();
   await checkReopened(page, dialog);

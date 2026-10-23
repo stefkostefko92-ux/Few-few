@@ -184,8 +184,10 @@
     flex-direction: row;
   }
 
+  /* Редовете — колкото съдържанието: в колона с превъртане „auto“ пада до min-height (подсказката). */
   .schizzo-editor__barre {
     align-content: start;
+    grid-auto-rows: max-content;
     width: 40%;
     max-width: 260px;
     overflow-y: auto;
@@ -197,7 +199,26 @@
     margin-left: 0;
   }
 
-  /* Лентата за стойност (и подсказката ѝ) — първа в колоната: никога под края на екрана. */
+  /* Лентата за стойност (и подсказката ѝ) — първа в колоната: никога под края на екрана. Над отворената
+     клавиатура остава горният ред: в него — полето и OK; името — само за екранния четец. */
+  .schizzo-editor__valore .input {
+    order: -2;
+  }
+
+  .schizzo-editor__valore [data-schizzo-valore-ok] {
+    order: -1;
+  }
+
+  .schizzo-editor__valore-nome {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Първа в колоната. */
   .schizzo-editor__valore,
   .schizzo-editor__barre:has(> .schizzo-editor__valore:not([hidden]))
     > .schizzo-editor__suggerimento {

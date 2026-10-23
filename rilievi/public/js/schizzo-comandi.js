@@ -162,7 +162,8 @@
       return ed.menus.summaryOf(menu).focus();
     }
     if (ed.valueBar.isOpen) return ed.valueBar.close();
-    if (polylineOpen && ed.tool.undo) return ed.tool.undo();
+    // A tool half way: the last point of a polyline, the points of a dimension.
+    if (ed.tool && ed.tool.undo && ed.tool.undo()) return undefined;
     if (ed.selection.get().length) return ed.selection.clear();
     return discard();
   });
