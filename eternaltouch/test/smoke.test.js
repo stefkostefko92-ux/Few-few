@@ -90,6 +90,21 @@ async function bootSmoke() {
     assert.ok(/rel="canonical" href="http:\/\/localhost:4788\/it"/.test(html), 'canonical must reflect served language');
     pass('self-hosted fonts + correct hreflang/canonical on /it');
 
+    const pages = {
+      bg: (await (await fetch(`${B}/legal`)).text()) + (await (await fetch(`${B}/terms`)).text()),
+      it: (await (await fetch(`${B}/it/legal`)).text()) + (await (await fetch(`${B}/it/terms`)).text()),
+      en: (await (await fetch(`${B}/en/legal`)).text()) + (await (await fetch(`${B}/en/terms`)).text()),
+    };
+    assert.ok(pages.bg.includes('Карбон Стелт ЕДПК (Carbon Stealth VCC)') && pages.bg.includes('еднолично дружество с променлив капитал'), 'bg: registered names + legal form');
+    assert.ok(pages.it.includes('<span lang="bg">Карбон Стелт ЕДПК</span>') && pages.it.includes('società a capitale variabile (VCC)'), 'it: registered names + legal form');
+    assert.ok(pages.en.includes('<span lang="bg">Карбон Стелт ЕДПК</span>') && pages.en.includes('variable capital company (VCC) under Bulgarian law'), 'en: registered names + legal form');
+    for (const [l, html] of Object.entries(pages)) {
+      assert.ok(!html.includes('ВЦД'), `${l}: no ВЦД`);
+      // ЕИК е 208725180; BG208725180 е ДДС номерът — етикетът „ЕИК/EIK“ не стои пред него
+      assert.ok(!/(EIK|ЕИК)(?:[^\d<]|<\/?strong>){0,60}BG208725180/.test(html), `${l}: EIK is not the VAT number`);
+    }
+    pass('provider: registered names, legal form, EIK ≠ VAT on bg/it/en');
+
     const csp = (await fetch(`${B}/`)).headers.get('content-security-policy') || '';
     assert.ok(csp.includes("default-src 'self'") && !csp.includes('googleapis'), 'CSP present, no google hosts');
     pass('Content-Security-Policy header present without Google hosts');
