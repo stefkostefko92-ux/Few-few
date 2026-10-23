@@ -1,5 +1,12 @@
+"use client";
+
+// Клиентски компонент, за да преброим клика (banner_click) за отчета към
+// рекламодателя. Праща се само името на събитието и пътят на страницата —
+// без бисквитка и без идентификатор (виж @/lib/events).
+import type { MouseEvent } from "react";
 import Link from "next/link";
 import { Store } from "@/components/icons";
+import { track } from "@/lib/events";
 
 export type BannerData = {
   id: string;
@@ -14,6 +21,15 @@ export type BannerData = {
 
 function isExternal(url: string): boolean {
   return /^https?:\/\//i.test(url);
+}
+
+function countClick() {
+  track("banner_click");
+}
+
+// Средният бутон на мишката отваря в нов раздел — и това е клик по банера.
+function countMiddleClick(e: MouseEvent) {
+  if (e.button === 1) track("banner_click");
 }
 
 // Един рекламен слот. Ако банерът има изображение — показва него; иначе
@@ -73,11 +89,18 @@ export function BannerCard({ banner }: { banner: BannerData }) {
         Реклама
       </span>
       {external ? (
-        <a href={href} target="_blank" rel="noopener noreferrer sponsored" className="block">
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer sponsored"
+          className="block"
+          onClick={countClick}
+          onAuxClick={countMiddleClick}
+        >
           {inner}
         </a>
       ) : (
-        <Link href={href} className="block">
+        <Link href={href} className="block" onClick={countClick} onAuxClick={countMiddleClick}>
           {inner}
         </Link>
       )}

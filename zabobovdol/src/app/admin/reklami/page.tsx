@@ -2,6 +2,7 @@ import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { setAdRequestStatus, deleteAdRequest } from "@/lib/admin/adrequest-actions";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { AdReport } from "./AdReport";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +37,10 @@ export default async function AdminAdRequestsPage() {
           раздел „Реклами (банери)“.
         </p>
       </div>
+
+      <AdReport />
+
+      <h2 className="text-xl font-bold text-slate-900">Заявки</h2>
 
       {items.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-600">
