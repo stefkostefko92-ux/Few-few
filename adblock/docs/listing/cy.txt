@@ -2,7 +2,7 @@ Mae Supreme AdBlock yn rhwystro hysbysebion ym mhobman — hysbysebion fideo You
 
 • Diweddariadau hidlo wedi’u llofnodi ddwywaith y dydd: mae rhwydweithiau hysbysebu newydd yn cael eu trin o fewn oriau, heb god o bell.
 • Mae hysbysebion YouTube yn cael eu hatal wrth y ffynhonnell, felly mae fideos yn chwarae heb drafferth.
-• Baneri cwcis: mae’n pwyso Gwrthod ar eich rhan, yn clirio’r niwlio a’r cloi sgrolio sy’n weddill, a byth yn pwyso botwm mewngofnodi, OAuth na thalu.
+• Baneri cwcis: mae’n pwyso Gwrthod ar eich rhan pan fydd y faner yn cynnig hynny, a Derbyn dim ond pan nad oes ffordd arall o’i chau; mae’n clirio’r niwlio a’r cloi sgrolio sy’n weddill, a byth yn pwyso botwm mewngofnodi, OAuth na thalu.
 • Dim cyfrif, dim telemetreg, dim casglu data, a does dim hysbyseb yn cael ei gadael drwodd am dâl. Mae Global Privacy Control yn gofyn i bob gwefan beidio â gwerthu na rhannu eich data.
 • Mae EasyList, EasyPrivacy a rhestrau hidlo agored eraill wedi’u cynnwys, ynghyd â’r rhestr ar gyfer eich iaith (31 rhestr ranbarthol).
 • Mae postiadau noddedig ar Facebook, Instagram a Threads yn cael eu cuddio.

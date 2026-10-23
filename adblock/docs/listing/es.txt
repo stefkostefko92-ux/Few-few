@@ -2,7 +2,7 @@ Supreme AdBlock bloquea los anuncios en todas partes —anuncios de vídeo de Yo
 
 • Actualizaciones de filtros firmadas dos veces al día: las nuevas redes publicitarias se cubren en cuestión de horas, sin código remoto.
 • Los anuncios de YouTube se detienen en origen, así que los vídeos simplemente se reproducen.
-• Avisos de cookies: pulsa «Rechazar» por usted, elimina el desenfoque y el bloqueo de desplazamiento que quedan, y nunca pulsa un botón de inicio de sesión, OAuth o pago.
+• Avisos de cookies: pulsa «Rechazar» por usted cuando el aviso lo ofrece, y «Aceptar» solo cuando no hay otra forma de cerrarlo; elimina el desenfoque y el bloqueo de desplazamiento que quedan, y nunca pulsa un botón de inicio de sesión, OAuth o pago.
 • Sin cuenta, sin telemetría, sin recopilación de datos, y no se deja pasar ningún anuncio a cambio de dinero. Global Privacy Control pide a cada sitio que no venda ni comparta sus datos.
 • Incluye EasyList, EasyPrivacy y otras listas de filtros abiertas, además de la lista de su idioma (31 listas regionales).
 • Las publicaciones patrocinadas de Facebook, Instagram y Threads se ocultan.

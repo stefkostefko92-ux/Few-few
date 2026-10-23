@@ -2,7 +2,7 @@ Supreme AdBlock blokira oglase povsod — videooglase na YouTubu, pasice, pojavn
 
 • Podpisane posodobitve filtrov dvakrat na dan: nova oglaševalska omrežja so obravnavana v nekaj urah, brez oddaljene kode.
 • Oglasi na YouTubu so ustavljeni že pri viru, zato se videoposnetki preprosto predvajajo.
-• Obvestila o piškotkih: namesto vas pritisne „Zavrni“, odstrani preostalo zameglitev in zaklep drsenja ter nikoli ne pritisne gumba za prijavo, OAuth ali plačilo.
+• Obvestila o piškotkih: namesto vas pritisne „Zavrni“, če obvestilo ponuja ta gumb, in „Sprejmi“ le, kadar obvestila drugače ni mogoče zapreti; odstrani preostalo zameglitev in zaklep drsenja ter nikoli ne pritisne gumba za prijavo, OAuth ali plačilo.
 • Brez računa, brez telemetrije, brez zbiranja podatkov in noben oglas ni prepuščen za plačilo. Global Privacy Control vsako spletno mesto prosi, naj vaših podatkov ne prodaja in ne deli.
 • Vgrajeni so EasyList, EasyPrivacy in drugi odprti seznami filtrov ter seznam za vaš jezik (31 regionalnih seznamov).
 • Sponzorirane objave na Facebooku, Instagramu in Threads so skrite.

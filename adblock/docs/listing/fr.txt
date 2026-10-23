@@ -2,7 +2,7 @@ Supreme AdBlock bloque les publicités partout — pubs vidéo YouTube, bannièr
 
 • Mises à jour des filtres signées deux fois par jour : les nouvelles régies publicitaires sont prises en charge en quelques heures, sans code distant.
 • Les pubs YouTube sont stoppées à la source : les vidéos se lancent tout simplement.
-• Bandeaux cookies : il clique sur « Refuser » à votre place, supprime le flou et le blocage du défilement restants, et ne clique jamais sur un bouton de connexion, OAuth ou paiement.
+• Bandeaux cookies : il clique sur « Refuser » à votre place quand le bandeau le propose, et sur « Accepter » seulement s’il n’y a pas d’autre moyen de le fermer ; il supprime le flou et le blocage du défilement restants, et ne clique jamais sur un bouton de connexion, OAuth ou paiement.
 • Pas de compte, pas de télémétrie, aucune collecte de données, et aucune publicité ne passe moyennant paiement. Global Privacy Control demande à chaque site de ne pas vendre ni partager vos données.
 • EasyList, EasyPrivacy et d’autres listes de filtres ouvertes sont intégrées, ainsi que la liste de votre langue (31 listes régionales).
 • Les publications sponsorisées sur Facebook, Instagram et Threads sont masquées.

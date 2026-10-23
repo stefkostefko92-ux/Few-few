@@ -2,7 +2,7 @@ Supreme AdBlock, ne yaptığınızı izlemeden reklamları her yerde engeller �
 
 • Günde iki kez imzalı filtre güncellemeleri: yeni reklam ağları saatler içinde ele alınır, uzaktan kod olmadan.
 • YouTube reklamları kaynağında durdurulur, böylece videolar doğrudan oynar.
-• Çerez banner'ları: sizin yerinize “Reddet”e basar, kalan bulanıklığı ve kaydırma kilidini temizler; oturum açma, OAuth veya ödeme düğmelerine asla basmaz.
+• Çerez banner'ları: banner'da varsa sizin yerinize “Reddet”e basar, “Kabul et”e ise yalnızca banner'ı kapatmanın başka yolu olmadığında basar. Kalan bulanıklığı ve kaydırma kilidini temizler; oturum açma, OAuth veya ödeme düğmelerine asla basmaz.
 • Hesap yok, telemetri yok, veri toplama yok ve hiçbir reklama ücret karşılığında izin verilmez. Global Privacy Control her siteden verilerinizi satmamasını veya paylaşmamasını ister.
 • EasyList, EasyPrivacy ve diğer açık filtre listeleri yerleşiktir; ayrıca dilinize uygun liste de vardır (31 bölgesel liste).
 • Facebook, Instagram ve Threads'teki sponsorlu gönderiler gizlenir.
