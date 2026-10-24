@@ -1,3 +1,4 @@
+import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { applyUpdate, canInstall, isUpdateReady, promptInstall, subscribePwa } from "../pwa/pwa";
@@ -13,11 +14,13 @@ export function PwaManager() {
   const { t } = useTranslation();
   const [state, setState] = useState({ update: isUpdateReady(), install: canInstall() });
 
+  // The install prompt waits for the lobby — at a table it sat over the cards.
+  const onTable = useLocation().pathname.startsWith("/play/");
   useEffect(() => subscribePwa(() => setState({ update: isUpdateReady(), install: canInstall() })), []);
 
   return (
     <>
-      {state.install ? (
+      {state.install && !onTable ? (
         <button
           type="button"
           onClick={() => void promptInstall()}
@@ -30,11 +33,13 @@ export function PwaManager() {
 
       {state.update ? (
         <div
-          className="fixed inset-x-0 bottom-6 z-[70] flex flex-col items-center"
+          className="pointer-events-none fixed inset-x-0 bottom-6 z-[70] flex flex-col items-center"
           role="status"
           aria-live="polite"
         >
-          <div className="flex items-center gap-3 rounded-card border border-brass-300/40 bg-felt-900/95 px-4 py-2 text-sm text-ink-100 shadow-lift backdrop-blur">
+          {/* Only the pill takes clicks — the full-width strip used to swallow
+              taps on the hand/controls underneath it at a game table. */}
+          <div className="pointer-events-auto flex items-center gap-3 rounded-card border border-brass-300/40 bg-felt-900/95 px-4 py-2 text-sm text-ink-100 shadow-lift backdrop-blur">
             <span>{t("pwa.updateReady", { defaultValue: "Налична е нова версия." })}</span>
             <button
               type="button"

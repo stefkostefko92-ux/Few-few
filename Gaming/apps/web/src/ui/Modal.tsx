@@ -12,6 +12,10 @@ interface ModalProps {
   footer?: ReactNode;
 }
 
+/** Open dialogs, oldest first: only the top-most one handles Escape and Tab,
+ *  so Escape closes the dialog the player is looking at — not every dialog. */
+const openStack: string[] = [];
+
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
 
@@ -40,6 +44,7 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
 
   useEffect(() => {
     if (!open) return;
+    openStack.push(titleId);
     restoreRef.current = document.activeElement as HTMLElement | null;
     // Move focus into the dialog (first focusable, else the panel).
     const panel = panelRef.current;
@@ -47,6 +52,7 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
     (first ?? panel)?.focus();
 
     const onKey = (e: KeyboardEvent) => {
+      if (openStack[openStack.length - 1] !== titleId) return;
       if (e.key === "Escape") {
         onCloseRef.current();
         return;
@@ -74,9 +80,11 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
     document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("keydown", onKey);
+      const at = openStack.lastIndexOf(titleId);
+      if (at !== -1) openStack.splice(at, 1);
       restoreRef.current?.focus?.();
     };
-  }, [open]);
+  }, [open, titleId]);
 
   if (!open) return null;
 
