@@ -79,9 +79,16 @@ export function registerServiceWorker(): void {
       })
       .catch(() => undefined);
 
+    // Reload only when a NEW worker replaces one that already controlled the
+    // page (an update). On the first visit there is no controller yet, and the
+    // worker's clients.claim() fires controllerchange as well: that reload hit
+    // every new player 1–2 s after the page appeared — typing lost, the match
+    // queue left and re-joined, the first-visit rules dialog marked "seen"
+    // and then gone.
+    const hadController = navigator.serviceWorker.controller !== null;
     let reloaded = false;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (reloaded) return;
+      if (!hadController || reloaded) return;
       reloaded = true;
       window.location.reload();
     });

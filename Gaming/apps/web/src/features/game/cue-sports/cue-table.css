@@ -24,6 +24,20 @@
     inset 0 -3px 8px rgba(0, 0, 0, 0.6);
 }
 
+/* Short screens (1366×768 laptops): the felt AND its controls fit on one
+   screen, so aiming, „Сила“ and „Удар“ are never on opposite sides of a
+   scroll. ~268px of frame + controls sit around the felt (2:1 for the SVG
+   felt, ~0.54 of the width for the 3D canvas); 32px stay as breathing room.
+   Below 560px tall the cap would only shrink a table that scrolls anyway. */
+@media (min-height: 560px) {
+  .aso-cue {
+    width: min(94vw, 1120px, calc(200vh - 552px));
+  }
+  .aso-cue--gl {
+    width: min(94vw, 1120px, calc(185vh - 510px));
+  }
+}
+
 /* Milled brass inner rim around the cloth. */
 .aso-cue__rim {
   position: relative;
