@@ -9,7 +9,6 @@ import { CinematicStage } from "./cinematic/CinematicStage";
 import { ChatDock } from "./chat/ChatDock";
 import { MatchStatus } from "./MatchStatus";
 import { GameHelp } from "./GameHelp";
-import { ReclaimBanner } from "./ReclaimBanner";
 import { OutOfChips } from "./OutOfChips";
 
 // Game views pull in heavy WebGL/3D scene code (three.js). Lazy-load them so the
@@ -154,7 +153,6 @@ export function GameView() {
       </Suspense>
       <MatchStatus />
       <GameHelp game={key} />
-      <ReclaimBanner />
       <ChatDock />
     </CinematicStage>
   );

@@ -477,10 +477,7 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   return (
     <Scene title={title} phase={displayPhase} ready={!!state} seat={seat} result={displayResult}>
       {state ? (
-        // pt-10: the live turn clock (MatchStatus) floats 56–90px below the
-        // stage top — right where the opponent's pill (name, snooker score)
-        // landed and stayed hidden all match long.
-        <div className="flex flex-col items-center gap-3 pt-10">
+        <div className="flex flex-col items-center gap-3">
           <div data-testid="cue-opponent">
             <ScorePill label={oppName} value={scoreLine(seat === 0 ? 1 : 0)} />
           </div>

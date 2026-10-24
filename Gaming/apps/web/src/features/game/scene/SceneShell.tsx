@@ -10,6 +10,7 @@ import { WinConfetti } from "./WinConfetti";
 import { fitOverlap } from "./handLayout";
 import { PlayingCard } from "../cards/PlayingCard";
 import { RulesButton } from "../GameHelp";
+import { MatchPills } from "../MatchStatus";
 import { SOCKET_EVENTS, type GameOverMsg, type MatchFoundMsg } from "@aso/shared";
 import "../cards/cards.css";
 
@@ -26,10 +27,16 @@ export function SceneHeader({ title }: { title: string }) {
     const id = setTimeout(() => setArmed(false), 3000);
     return () => clearTimeout(id);
   }, [armed]);
-  const live = useMatchStore.getState().phase === "playing";
+  const live = useMatchStore((s) => s.phase) === "playing";
   return (
-    <div className="mb-4 flex items-center justify-between gap-3">
+    // The live status (turn clock, timeout warning, „take your seat back“) sits
+    // in this row — between the title and the buttons on wide screens, on its
+    // own line under them on phones — instead of floating over the table.
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
       <h1 className="text-3xl text-brass-300">{title}</h1>
+      <div className={`order-last flex w-full justify-center sm:order-none sm:w-auto sm:flex-1 ${live ? "min-h-8" : ""}`}>
+        <MatchPills />
+      </div>
       <div className="flex items-center gap-2">
       <RulesButton />
       <Button
@@ -126,7 +133,11 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
                 {reward.chips.toLocaleString("bg-BG")} {t("wallet.chips")}
               </span>
             ) : null}
-            {reward.xp > 0 ? <span className="text-cyan-300"> · +{reward.xp} XP</span> : null}
+            {reward.xp > 0 ? (
+              <span className="text-cyan-300">
+                {reward.chips !== 0 ? " · " : ""}+{reward.xp} XP
+              </span>
+            ) : null}
           </p>
         ) : null}
         {lobbyWaiting ? (
