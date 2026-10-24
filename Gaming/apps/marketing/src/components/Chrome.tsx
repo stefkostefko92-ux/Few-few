@@ -85,6 +85,7 @@ export function Footer() {
           <Link href="/privacy/">{t.footer.privacy}</Link>
           <Link href="/cookies/">{t.footer.cookies}</Link>
           <Link href="/responsible/">{t.footer.responsible}</Link>
+          <Link href="/accessibility/">{t.footer.accessibility}</Link>
         </nav>
         <p>{t.footer.disclaimer}</p>
         <address

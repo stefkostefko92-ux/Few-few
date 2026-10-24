@@ -26,6 +26,7 @@ export interface Dict {
     privacy: string;
     cookies: string;
     responsible: string;
+    accessibility: string;
     disclaimer: string;
     credit: string;
   };
@@ -113,6 +114,7 @@ export interface Dict {
     privacy: string;
     cookies: string;
     responsible: string;
+    accessibility: string;
   };
 }
 
@@ -126,6 +128,7 @@ const bg: Dict = {
     privacy: "Поверителност",
     cookies: "Бисквитки",
     responsible: "Отговорна игра",
+    accessibility: "Достъпност",
     disclaimer: "Социална игра за забавление. Само за 18+.",
     credit: "Created and Designed by Carbon Stealth VCC",
   },
@@ -233,6 +236,7 @@ const bg: Dict = {
     privacy: "Политика за поверителност",
     cookies: "Бисквитки",
     responsible: "Отговорна игра",
+    accessibility: "Достъпност",
   },
 };
 
@@ -246,6 +250,7 @@ const en: Dict = {
     privacy: "Privacy",
     cookies: "Cookies",
     responsible: "Responsible play",
+    accessibility: "Accessibility",
     disclaimer: "A social game for fun. 18+ only.",
     credit: "Created and Designed by Carbon Stealth VCC",
   },
@@ -353,6 +358,7 @@ const en: Dict = {
     privacy: "Privacy Policy",
     cookies: "Cookies",
     responsible: "Responsible play",
+    accessibility: "Accessibility",
   },
 };
 
@@ -366,6 +372,7 @@ const it: Dict = {
     privacy: "Privacy",
     cookies: "Cookie",
     responsible: "Gioco responsabile",
+    accessibility: "Accessibilità",
     disclaimer: "Gioco sociale per divertimento. Solo 18+.",
     credit: "Created and Designed by Carbon Stealth VCC",
   },
@@ -473,6 +480,7 @@ const it: Dict = {
     privacy: "Informativa sulla privacy",
     cookies: "Cookie",
     responsible: "Gioco responsabile",
+    accessibility: "Accessibilità",
   },
 };
 
