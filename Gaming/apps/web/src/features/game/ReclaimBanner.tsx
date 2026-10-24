@@ -20,7 +20,7 @@ export function ReclaimBanner() {
   const reclaim = () => getSocket().emit(SOCKET_EVENTS.GAME_RECLAIM, { matchId });
 
   return (
-    <div className="fixed inset-x-0 top-16 z-[55] flex justify-center px-4">
+    <div className="absolute inset-x-0 top-16 z-[55] flex justify-center px-4">
       <div className="flex items-center gap-3 rounded-panel border border-brass-400/40 bg-felt-900/95 px-4 py-2.5 shadow-lift backdrop-blur">
         <span className="text-sm text-ink-100">{t("game.botPlaying")}</span>
         <button

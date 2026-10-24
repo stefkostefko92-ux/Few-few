@@ -596,7 +596,8 @@
   },
   "common": {
     "loading": "Caricamento…",
-    "dismiss": "Chiudi"
+    "dismiss": "Chiudi",
+    "close": "Chiudi"
   },
   "a11y": {
     "skipToContent": "Vai al contenuto",
@@ -1245,7 +1246,8 @@
     "clock": "Hai {{s}} secondi per turno.",
     "timeout": "Se il tempo scade, il bot gioca solo quella mossa per te — il posto resta tuo.",
     "timeoutWords": "Se il tempo scade, vale come passo — perdi una vita (il bot non dice mai una parola al posto tuo).",
-    "takeover": "Dopo due turni saltati di fila (o una connessione persa) il bot prende il tuo posto finché non premi «Torna in gioco»."
+    "takeover": "Dopo due turni saltati di fila (o una connessione persa) il bot prende il tuo posto finché non premi «Torna in gioco».",
+    "gotIt": "Ho capito — al tavolo"
   },
   "difficulty": {
     "label": "Difficoltà dei bot",

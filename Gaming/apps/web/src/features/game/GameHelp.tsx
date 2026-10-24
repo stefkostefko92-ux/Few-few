@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { rulesForGame, turnSecondsFor, type GameKey } from "@aso/shared";
-import { Modal } from "../../ui";
+import { Button, Modal } from "../../ui";
 
 /** Fired by the "?" button in the scene header (SceneHeader) to open the rules. */
 export const OPEN_RULES_EVENT = "aso:open-rules";
@@ -41,7 +41,16 @@ export function GameHelp({ game }: { game: GameKey }) {
 
   return (
     <>
-      <Modal open={open} onClose={() => setOpen(false)} title={t("rules.title", { defaultValue: "Как се играе" })}>
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title={t("rules.title", { defaultValue: "Как се играе" })}
+        footer={
+          <Button className="w-full" onClick={() => setOpen(false)}>
+            {t("rules.gotIt")}
+          </Button>
+        }
+      >
         <div className="space-y-4 text-ink-100">
           <p className="text-base">{rules.objective}</p>
 
@@ -80,6 +89,7 @@ export function GameHelp({ game }: { game: GameKey }) {
               <li>{t("rules.takeover")}</li>
             </ul>
           </div>
+
         </div>
       </Modal>
     </>

@@ -596,7 +596,8 @@
   },
   "common": {
     "loading": "Loading…",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "close": "Close"
   },
   "a11y": {
     "skipToContent": "Skip to content",
@@ -1245,7 +1246,8 @@
     "clock": "You have {{s}} seconds per turn.",
     "timeout": "If your time runs out, the bot plays just that move for you — the seat stays yours.",
     "timeoutWords": "If your time runs out, it counts as a pass — you lose a life (the bot never says a word for you).",
-    "takeover": "After two missed turns in a row (or a dropped connection) the bot takes your seat until you press “Return to the game”."
+    "takeover": "After two missed turns in a row (or a dropped connection) the bot takes your seat until you press “Return to the game”.",
+    "gotIt": "Got it — to the table"
   },
   "difficulty": {
     "label": "Bot difficulty",

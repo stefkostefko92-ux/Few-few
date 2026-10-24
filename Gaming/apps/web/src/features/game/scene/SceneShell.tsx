@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../../ui";
@@ -91,7 +92,10 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
   useEffect(() => {
     playCue(won ? "win" : mine === "loss" ? "loss" : "deal");
   }, [won, mine]);
-  return (
+  // Portal: the overlay is `position: fixed` and must cover the VIEWPORT — inside
+  // the game stage it was laid out against the stage box and the verdict card
+  // (with „Играй пак“ / „Към лобито“) could sit below the fold.
+  return createPortal(
     <div className="cine-over" role="dialog" aria-modal="true">
       {won ? <WinConfetti /> : null}
       <div className={`cine-over__card cine-over__card--${mine ?? "draw"}`}>
@@ -137,7 +141,8 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
           {t("game.backToLobby")}
         </Button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

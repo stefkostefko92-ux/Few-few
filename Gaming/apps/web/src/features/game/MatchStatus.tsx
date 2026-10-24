@@ -19,6 +19,8 @@ export function MatchStatus() {
   const substituted = useMatchStore((s) => s.substituted);
   const players = useMatchStore((s) => s.players);
   const disconnected = useMatchStore((s) => s.disconnected);
+  const legalCount = useMatchStore((s) => s.legalCount);
+  const stateVersion = useMatchStore((s) => s.stateVersion);
 
   const [now, setNow] = useState(() => Date.now());
   const myTurn = phase === "playing" && turn === mySeat && turnEndsAt > 0;
@@ -33,7 +35,24 @@ export function MatchStatus() {
     return () => clearInterval(id);
   }, [clockRunning]);
 
-  if (phase !== "playing") return null;
+  // Machine-readable match status (hidden): end-to-end tests and tooling read
+  // whose turn it is and whether the server accepted a move from here instead
+  // of scraping translated text.
+  const probe = (
+    <output
+      hidden
+      data-testid="match-probe"
+      data-phase={phase}
+      data-seat={mySeat}
+      data-turn={turn ?? ""}
+      data-my-turn={phase === "playing" && turn === mySeat ? "true" : "false"}
+      data-legal={legalCount}
+      data-version={stateVersion}
+      data-substituted={substituted.includes(mySeat) ? "true" : "false"}
+    />
+  );
+
+  if (phase !== "playing") return probe;
 
   const secsLeft = Math.max(0, Math.ceil((turnEndsAt - now) / 1000));
   const share = turnMs > 0 ? Math.min(1, Math.max(0, (turnEndsAt - now) / turnMs)) : 0;
@@ -41,7 +60,8 @@ export function MatchStatus() {
   const droppedOpponents = disconnected.filter((seat) => seat !== mySeat);
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-14 z-40 flex flex-col items-center gap-2">
+    <div className="pointer-events-none absolute inset-x-0 top-14 z-40 flex flex-col items-center gap-2">
+      {probe}
       {droppedOpponents.map((seat) => {
         const name = players.find((p) => p.seat === seat)?.displayName ?? t("game.opponent");
         return (

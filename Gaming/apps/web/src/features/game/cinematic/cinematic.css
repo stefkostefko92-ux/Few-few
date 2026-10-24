@@ -88,6 +88,12 @@
 .cine__stage {
   position: relative;
   z-index: 2;
+  /* Always the containing block for in-scene `fixed` layers (banners, the
+     turn clock): the entrance animation leaves a transform on the stage, so
+     without this the same layer sat against the stage in one mode and against
+     the viewport under reduced motion. True overlays (dialogs, game over,
+     chat) are portaled to <body> instead. */
+  transform: translateZ(0);
   display: flex;
   flex-direction: column;
   align-items: center;

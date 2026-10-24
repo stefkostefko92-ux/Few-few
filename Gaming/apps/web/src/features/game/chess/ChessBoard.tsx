@@ -74,6 +74,11 @@ export function ChessBoard({ fen, legalActions, myTurn, orientation, lastMove, o
               type="button"
               onClick={() => onCellClick(cell.square)}
               aria-label={cell.square}
+              aria-pressed={isSelected}
+              data-square={cell.square}
+              data-piece={cell.piece ?? undefined}
+              data-movable={myTurn && movableFrom.has(cell.square) ? "true" : undefined}
+              data-target={isTarget ? "true" : undefined}
               className={cn(
                 "aso-cell",
                 dark ? "aso-cell--dark" : "aso-cell--light",

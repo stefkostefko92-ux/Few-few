@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { CHAT_MAX_LEN } from "@aso/shared";
 import { useMatchStore } from "../../../lib/store";
@@ -77,7 +78,9 @@ export function ChatDock() {
     setText("");
   }
 
-  return (
+  // Portal: inside the game stage a `fixed` dock is laid out against the stage
+  // box (it scrolled away with long tables); on <body> it stays in the corner.
+  return createPortal(
     <div className="fixed bottom-4 right-4 z-40 flex flex-col items-end gap-2">
       {open ? (
         <div
@@ -201,6 +204,7 @@ export function ChatDock() {
           </span>
         ) : null}
       </button>
-    </div>
+    </div>,
+    document.body,
   );
 }
