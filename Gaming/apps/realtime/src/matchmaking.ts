@@ -35,6 +35,10 @@ function configFor(q: QueueDesc): unknown {
   return undefined;
 }
 
+/** Fresh match seed: cryptographically random — except the e2e stack's fixed
+ *  per-game seed (E2E_SEEDS, never honoured in production). */
+const matchSeed = (game: GameKey): string => env.e2eSeeds.get(game) ?? generateSeed();
+
 const queueKey = (q: QueueDesc): string => `mm:${q.game}:${q.mode}`;
 const joinedField = (q: QueueDesc, userId: string): string => `${q.game}:${q.mode}:${userId}`;
 const JOINED_HASH = "mm:joined";
@@ -142,7 +146,7 @@ export class Matchmaker {
     if (!(await this.allAffordBuyIn(members, lobby.game, [lobby.hostUserId]))) {
       throw new Error("buy-in not covered");
     }
-    const seed = generateSeed();
+    const seed = matchSeed(lobby.game);
     const match = await prisma.match.create({
       data: { game: lobby.game, mode: lobby.mode, seed },
     });
@@ -402,7 +406,7 @@ export class Matchmaker {
     // Belt-and-suspenders against double-seating: end any live match a player is
     // still in before seating them into a new one (mirrors startFromLobby).
     for (const id of userIds) this.activeRoomForUser(id)?.resign(id);
-    const seed = generateSeed();
+    const seed = matchSeed(q.game);
     const [match, names] = await Promise.all([
       prisma.match.create({ data: { game: q.game, mode: q.mode, seed } }),
       this.namesFor(userIds),

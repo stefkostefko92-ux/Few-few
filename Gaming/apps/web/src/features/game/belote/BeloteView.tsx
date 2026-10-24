@@ -2,11 +2,15 @@ import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../../ui";
 import { useAuthStore } from "../../../lib/store";
+import { useSettings } from "../../../lib/settings";
 import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
 import { type SuitChar } from "../cards/suits";
 import { TrumpIndicator } from "../cards/TrumpIndicator";
-import { FeltTable, Seat, TableCenter, type SeatPos } from "../table/FeltTable";
+import { FeltTable, Seat } from "../table/FeltTable";
+import { beloteSeatPos as relativePos } from "./seats";
+import { useNarrowTable } from "../table/useNarrowTable";
+import { SeatCount } from "../trick/SeatCount";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useTableFx, Announcements } from "../anim/useTableFx";
 import { useTrickDisplay, TrickCardSlot } from "../anim/useTrickDisplay";
@@ -62,14 +66,18 @@ type BeloteAction =
 const SUIT_GLYPH: Record<string, string> = { S: "♠", H: "♥", D: "♦", C: "♣" };
 /** Bid ladder for the auction panel (♣ < ♦ < ♥ < ♠ < БК < ВК). */
 const BID_LADDER: Contract[] = ["C", "D", "H", "S", "NT", "AT"];
+/** Ink on the ivory bid tile, per suit (four-colour deck aware). It was
+ *  --ink-100 for ♣/♠/БК/ВК — near-white on ivory, so those bids were blank. */
+const BID_INK: Record<Contract, string> = {
+  C: "var(--suit-club)",
+  D: "var(--suit-diamond)",
+  H: "var(--suit-heart)",
+  S: "var(--suit-spade)",
+  NT: "var(--suit-black)",
+  AT: "var(--suit-black)",
+};
 const contractGlyph = (c: Contract | null, t: (k: string) => string): string =>
   c === null ? "A" : c === "NT" ? t("belote.noTrump") : c === "AT" ? t("belote.allTrump") : SUIT_GLYPH[c]!;
-
-/** Map an absolute seat to a table position relative to my seat. */
-function relativePos(seat: number, mySeat: number): SeatPos {
-  const d = (seat - mySeat + 4) % 4;
-  return d === 0 ? "bottom" : d === 1 ? "left" : d === 2 ? "top" : "right";
-}
 
 export function BeloteView({ title }: { title: string }) {
   const { t } = useTranslation();
@@ -79,6 +87,7 @@ export function BeloteView({ title }: { title: string }) {
 
   const tableRef = useRef<HTMLDivElement>(null);
   const { dealIn } = useCardAnimations(tableRef);
+  const narrow = useNarrowTable();
   const nameFor = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
 
   // Event-buffered trick centre: played cards fly in from their seats, the
@@ -151,6 +160,17 @@ export function BeloteView({ title }: { title: string }) {
     }
   }, [state, seat, dealIn]);
 
+  // Phones: the auction panel renders under the table, below the fold — bring
+  // it into view when it is my call ("nearest" keeps my hand above it). On
+  // wider screens it is sticky instead.
+  const reduced = useSettings((s) => s.reducedMotion);
+  const biddingRef = useRef<HTMLDivElement>(null);
+  const bidding = !!state && state.phase === "BID" && myTurn;
+  useEffect(() => {
+    if (!bidding || !narrow) return;
+    biddingRef.current?.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
+  }, [bidding, narrow, reduced]);
+
   if (!state) {
     return <SearchingOrOver title={title} phase={phase} seat={seat} result={result} />;
   }
@@ -174,7 +194,7 @@ export function BeloteView({ title }: { title: string }) {
 
       <div ref={tableRef} style={{ position: "relative" }}>
         <Announcements banners={banners} />
-        <FeltTable crest={contractGlyph(state.contract, t)}>
+        <FeltTable crest={contractGlyph(state.contract, t)} className="aso-table--compact">
           {seats
             .filter((s) => s !== seat)
             .map((s) => {
@@ -188,26 +208,37 @@ export function BeloteView({ title }: { title: string }) {
                   active={state.turn === s}
                   badge={<TeamDot team={s % 2} myTeam={myTeam} />}
                 >
-                  <div style={{ display: "flex" }}>
-                    {Array.from({ length: count }).map((_, i) => (
-                      <PlayingCard key={i} card="?" size="sm" style={{ marginLeft: i ? -24 : 0 }} />
-                    ))}
-                  </div>
+                  {/* Phones: side seats show a count, the top fan tightens. */}
+                  {narrow && pos !== "top" ? (
+                    <SeatCount count={count} />
+                  ) : (
+                    <div style={{ display: "flex" }}>
+                      {Array.from({ length: count }).map((_, i) => (
+                        <PlayingCard key={i} card="?" size="sm" style={{ marginLeft: i ? (narrow ? -44 : -24) : 0 }} />
+                      ))}
+                    </div>
+                  )}
                 </Seat>
               );
             })}
 
-          <TableCenter>
+          <div className="aso-table__center" data-zone="trick">
             {displayTrick.length === 0 ? (
               <span className="text-sm text-ink-muted">
                 {state.phase === "BID" ? t("belote.auction") : t("belote.emptyTrick")}
               </span>
             ) : (
               displayTrick.map((p) => (
-                <TrickCardSlot key={`${p.seat}-${p.card}`} play={p} originFor={originFor} flight={flight} />
+                <TrickCardSlot
+                  key={`${p.seat}-${p.card}`}
+                  play={p}
+                  originFor={originFor}
+                  flight={flight}
+                  size={narrow ? "sm" : "md"}
+                />
               ))
             )}
-          </TableCenter>
+          </div>
 
           <Seat
             pos="bottom"
@@ -215,7 +246,7 @@ export function BeloteView({ title }: { title: string }) {
             active={myTurn}
             badge={<TeamDot team={myTeam} myTeam={myTeam} />}
           >
-            <div className="aso-myhand" style={{ display: "flex" }}>
+            <div className="aso-myhand" data-zone="hand" style={{ display: "flex" }}>
               {(state.hands[seat] ?? []).map((card, i) => {
                 const playable = myTurn && state.phase === "PLAY" && playMap.has(card);
                 return (
@@ -239,7 +270,15 @@ export function BeloteView({ title }: { title: string }) {
       </div>
 
       {/* Match scoreboard: игра до 151 + текущо раздаване. */}
-      <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+      <div
+        className="mt-4 flex flex-wrap items-center justify-center gap-3"
+        data-zone="score"
+        data-match={`${state.matchPoints[myTeam] ?? 0}:${state.matchPoints[myTeam === 0 ? 1 : 0] ?? 0}`}
+        data-deal={state.dealNo}
+        data-phase={state.phase}
+        data-contract={state.contract ?? ""}
+        data-doubling={state.doubling}
+      >
         <ScorePill
           label={`${t("belote.match")} · ${t("belote.yourTeam")}`}
           value={state.matchPoints[myTeam] ?? 0}
@@ -283,20 +322,30 @@ export function BeloteView({ title }: { title: string }) {
         </div>
       ) : null}
 
-      {state.phase === "BID" && myTurn ? (
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+      {/* The auction. Sticky so it is on screen the moment it is my call (on a
+          768px-tall laptop it rendered below the fold, under the table). */}
+      {bidding ? (
+        <div
+          ref={biddingRef}
+          data-zone="bidding"
+          className="z-30 mx-auto mt-4 flex w-fit max-w-full scroll-mb-16 flex-wrap items-center justify-center gap-2 rounded-panel bg-felt-900/70 p-1.5 backdrop-blur sm:sticky sm:bottom-1"
+        >
           {BID_LADDER.map((c) => {
             const bid = bidFor(c);
-            const red = c === "H" || c === "D";
             return (
               <button
                 key={c}
                 type="button"
                 disabled={!bid}
                 onClick={() => bid && m.send(bid)}
+                data-action="bid"
+                data-contract={c}
                 className="aso-bid"
                 style={{
-                  color: red ? "var(--suit-red)" : "var(--ink-100)",
+                  color: BID_INK[c],
+                  // compact tiles: the bar sticks under the hand on a 768px screen
+                  width: 44,
+                  height: 44,
                   opacity: bid ? 1 : 0.3,
                   fontSize: c === "NT" || c === "AT" ? "0.7rem" : undefined,
                 }}
@@ -307,17 +356,32 @@ export function BeloteView({ title }: { title: string }) {
             );
           })}
           {contraAction ? (
-            <Button variant="ghost" onClick={() => m.send(contraAction)}>
+            <Button
+              variant="ghost"
+              className="!py-2"
+              data-action="contra"
+              onClick={() => m.send(contraAction)}
+            >
               {t("belote.contra")}
             </Button>
           ) : null}
           {recontraAction ? (
-            <Button variant="ghost" onClick={() => m.send(recontraAction)}>
+            <Button
+              variant="ghost"
+              className="!py-2"
+              data-action="recontra"
+              onClick={() => m.send(recontraAction)}
+            >
               {t("belote.recontra")}
             </Button>
           ) : null}
           {passAction ? (
-            <Button variant="ghost" onClick={() => m.send(passAction)}>
+            <Button
+              variant="ghost"
+              className="!py-2"
+              data-action="pass"
+              onClick={() => m.send(passAction)}
+            >
               {t("belote.pass")}
             </Button>
           ) : null}
@@ -360,6 +424,7 @@ function CardSlot({
         card={card}
         size="md"
         dimmed={!playable}
+        interactive
         onClick={playable ? () => onPlay(card, ref.current) : undefined}
       />
     </div>

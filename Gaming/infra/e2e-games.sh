@@ -72,6 +72,9 @@ common_env() {
   # Ботът влиза бързо, за да не чака всеки тест опонент.
   export BOT_FALLBACK_SECONDS="${BOT_FALLBACK_SECONDS:-2}"
   export DISCONNECT_GRACE_SECONDS="${DISCONNECT_GRACE_SECONDS:-45}"
+  # Фиксирани раздавания (apps/realtime/src/e2eSeeds.ts) за игрите, чиито тестове
+  # трябва да стигнат до всяко действие — сценарият на всеки seed е описан в spec-а.
+  export E2E_SEEDS="${E2E_SEEDS:-SANTASE=e2e-santase-5159,BELOTE=e2e-belote-36,BRIDGE=e2e-bridge-110,KENT=e2e-kent-411}"
 }
 
 up() {

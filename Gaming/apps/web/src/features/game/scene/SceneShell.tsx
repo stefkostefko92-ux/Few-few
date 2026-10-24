@@ -7,6 +7,7 @@ import { playCue } from "../../../lib/sound";
 import { getSocket } from "../../../lib/socket";
 import { useLobbyStore, useMatchStore } from "../../../lib/store";
 import { WinConfetti } from "./WinConfetti";
+import { fitOverlap } from "./handLayout";
 import { PlayingCard } from "../cards/PlayingCard";
 import { RulesButton } from "../GameHelp";
 import { SOCKET_EVENTS, type GameOverMsg, type MatchFoundMsg } from "@aso/shared";
@@ -167,24 +168,8 @@ export function ScorePill({ label, value, highlight }: { label: string; value: R
   );
 }
 
-const CARD_W = { sm: 60, md: 88, lg: 120 } as const;
-
-/** Target hand width — scales with the monitor (compact on phones, spread on
- *  big screens) so the larger cards make full use of the adaptive table. */
-function handTarget(): number {
-  const w = typeof window === "undefined" ? 1024 : window.innerWidth;
-  return Math.round(Math.min(Math.max(w * 0.82, 320), 600));
-}
-
-/** Overlap (px) so a hand of `count` cards fits ~`target`px wide — more overlap
- *  for bigger hands (e.g. Bridge/Kent's 13) so they never clip on mobile. */
-export function fitOverlap(count: number, size: "sm" | "md" | "lg" = "md", target = handTarget()): number {
-  if (count <= 1) return 0;
-  const W = CARD_W[size];
-  const step = (target - W) / (count - 1);
-  const min = size === "sm" ? 16 : 22;
-  return Math.min(W - 16, Math.max(min, W - step));
-}
+/** Hand fan geometry lives in handLayout.ts (pure, unit-tested). */
+export { fitOverlap };
 
 /** A hand card that captures its DOM node so the scene can animate the play.
  *  Pass `count` (hand size) for an auto-fit overlap, or a fixed `overlap`. */
@@ -213,6 +198,7 @@ export function HandCard({
         card={card}
         size={size}
         dimmed={!playable}
+        interactive
         onClick={playable ? () => onPlay(card, ref.current) : undefined}
       />
     </div>

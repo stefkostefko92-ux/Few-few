@@ -7,6 +7,8 @@ type Listener = () => void;
 
 let updateReady = false;
 let waitingWorker: ServiceWorker | null = null;
+/** Set by applyUpdate(): the only service-worker takeover that reloads. */
+let reloadOnTakeover = false;
 // The captured beforeinstallprompt event (Chromium); typed loosely as it's non-standard.
 let deferredPrompt: (Event & { prompt: () => void; userChoice: Promise<unknown> }) | null = null;
 const listeners = new Set<Listener>();
@@ -23,9 +25,33 @@ export function subscribePwa(l: Listener): () => void {
 export const isUpdateReady = (): boolean => updateReady;
 export const canInstall = (): boolean => deferredPrompt !== null;
 
-/** Activate the waiting SW; controllerchange then reloads to the new version. */
+/** The player asked for the new version („Обнови“): activate the waiting SW
+ *  (controllerchange then reloads), or — when it already took over, as it
+ *  skips waiting on install — reload right away. */
 export function applyUpdate(): void {
-  if (waitingWorker) waitingWorker.postMessage("SKIP_WAITING");
+  reloadOnTakeover = true;
+  const w = waitingWorker;
+  if (w && w.state === "installed") {
+    w.postMessage("SKIP_WAITING");
+    return;
+  }
+  window.location.reload();
+}
+
+/**
+ * controllerchange handler: reload ONLY for an update the player asked for.
+ * The worker also takes control on its very first install (skipWaiting +
+ * clients.claim) and whenever it updates itself; reloading then yanked the
+ * page from under a first-time visitor a second after it loaded — the game's
+ * rules dialog vanished and the match queue was joined twice.
+ */
+export function takeoverReloader(shouldReload: () => boolean, reload: () => void): () => void {
+  let reloaded = false;
+  return () => {
+    if (reloaded || !shouldReload()) return;
+    reloaded = true;
+    reload();
+  };
 }
 
 /** Show the native install prompt (once captured). */
@@ -79,11 +105,12 @@ export function registerServiceWorker(): void {
       })
       .catch(() => undefined);
 
-    let reloaded = false;
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (reloaded) return;
-      reloaded = true;
-      window.location.reload();
-    });
+    navigator.serviceWorker.addEventListener(
+      "controllerchange",
+      takeoverReloader(
+        () => reloadOnTakeover,
+        () => window.location.reload(),
+      ),
+    );
   });
 }

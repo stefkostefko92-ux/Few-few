@@ -6,7 +6,8 @@ import { playCue } from "../../../lib/sound";
 import { PlayingCard } from "../cards/PlayingCard";
 import { TrumpIndicator } from "../cards/TrumpIndicator";
 import { type SuitChar } from "../cards/suits";
-import { FeltTable, Seat, TableCenter } from "../table/FeltTable";
+import { FeltTable, Seat } from "../table/FeltTable";
+import { useNarrowTable } from "../table/useNarrowTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useTableFx, Announcements } from "../anim/useTableFx";
 import { useTrickDisplay, TrickCardSlot } from "../anim/useTrickDisplay";
@@ -37,11 +38,21 @@ type SantaseAction =
 
 const SUIT_GLYPH: Record<string, string> = { S: "♠", H: "♥", D: "♦", C: "♣" };
 
+/** Talon geometry: the face-down stock with the face-up trump card tucked
+ *  under it sideways. The box spans BOTH cards, so the stock counter below it
+ *  is never covered (it used to sit under the 124px stock card). */
+const TALON = {
+  md: { box: { width: 136, height: 124 }, trump: { left: 30, top: 18 } },
+  sm: { box: { width: 92, height: 84 }, trump: { left: 20, top: 12 } },
+} as const;
+
 export function SantaseView({ title }: { title: string }) {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const m = useMatch<SantaseState, SantaseAction>("SANTASE");
   const { state, legal, seat, phase, result, players } = m;
+  const narrow = useNarrowTable();
+  const talonSize = narrow ? "sm" : "md";
 
   const tableRef = useRef<HTMLDivElement>(null);
   const { dealIn } = useCardAnimations(tableRef);
@@ -139,53 +150,69 @@ export function SantaseView({ title }: { title: string }) {
             <Announcements banners={banners} />
             {/* Candlelit two-player duel (§4.2). */}
             <FeltTable crest={SUIT_GLYPH[state.trump]} feltColor="#15392c" feltDark="#0a1d15">
-              {/* Closed-talon marker: the whole hand plays under затваряне rules. */}
-              {state.closed ? (
-                <span
-                  className="aso-announce"
-                  data-tone="loss"
-                  style={{ position: "absolute", left: 24, top: 16, zIndex: 3 }}
-                >
-                  {t("santase.closedTag")}
-                </span>
-              ) : null}
               <Seat
                 pos="top"
                 name={oppName}
                 active={state.turn === opp}
                 badge={<span className="tnum">{state.points[opp] ?? 0}</span>}
               >
-                <div style={{ display: "flex" }}>
+                <div style={{ display: "flex" }} data-zone="opponent">
+                  {/* a tighter fan on phones keeps it clear of the trump card */}
                   {Array.from({ length: state.hands[opp]?.length ?? 0 }).map((_, i) => (
-                    <PlayingCard key={i} card="?" size="sm" style={{ marginLeft: i ? -22 : 0 }} />
+                    <PlayingCard key={i} card="?" size="sm" style={{ marginLeft: i ? (narrow ? -40 : -22) : 0 }} />
                   ))}
                 </div>
               </Seat>
 
               {/* Talon (stock) + face-up trump on the left rail. */}
               <div
+                data-zone="talon"
                 style={{
                   position: "absolute",
-                  left: 24,
+                  left: narrow ? 10 : 24,
                   top: "50%",
                   transform: "translateY(-50%)",
                   zIndex: 3,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
                 }}
               >
-                <div style={{ position: "relative", height: 102, width: 130 }}>
+                <div style={{ position: "relative", ...TALON[talonSize].box }}>
                   {state.trumpCard ? (
-                    <div style={{ position: "absolute", left: 30, top: 18, transform: "rotate(90deg)" }}>
-                      <PlayingCard card={state.trumpCard} size="md" />
+                    <div style={{ position: "absolute", ...TALON[talonSize].trump, transform: "rotate(90deg)" }}>
+                      <PlayingCard card={state.trumpCard} size={talonSize} />
                     </div>
                   ) : null}
-                  {state.stock.length > 0 ? <PlayingCard card="?" size="md" /> : null}
+                  {state.stock.length > 0 ? (
+                    <PlayingCard card="?" size={talonSize} style={{ position: "absolute", left: 0, top: 0 }} />
+                  ) : null}
                 </div>
-                <p className="tnum mt-1 text-center text-xs text-ink-muted">
+                <p className="tnum mt-1 text-center text-xs text-ink-muted" data-stock={state.stock.length}>
                   {t("santase.stock", { count: state.stock.length })}
                 </p>
+                {/* Closed-talon marker under the talon it describes: the rest of
+                    the hand plays under затваряне rules. (As an announce ribbon
+                    pinned top-left it covered the trump indicator and its own
+                    first letters were clipped off the felt.) */}
+                {state.closed ? (
+                  <span
+                    data-testid="santase-closed"
+                    className="mt-1 rounded-full border border-loss/60 bg-loss/80 px-2.5 py-0.5 text-center text-[11px] font-semibold leading-tight text-white shadow-lift"
+                    style={{ maxWidth: TALON[talonSize].box.width + 16 }}
+                  >
+                    {t("santase.closedTag")}
+                  </span>
+                ) : null}
               </div>
 
-              <TableCenter>
+              {/* The trick. On a phone it sits right of centre so the talon on
+                  the left rail never covers the cards. */}
+              <div
+                className="aso-table__center"
+                data-zone="trick"
+                style={narrow ? { left: `calc(50% + ${TALON.sm.box.width / 2}px)` } : undefined}
+              >
                 {displayTrick.length === 0 ? (
                   <span className="text-sm text-ink-muted">{t("belote.emptyTrick")}</span>
                 ) : (
@@ -193,7 +220,7 @@ export function SantaseView({ title }: { title: string }) {
                     <TrickCardSlot key={`${p.seat}-${p.card}`} play={p} originFor={originFor} flight={flight} />
                   ))
                 )}
-              </TableCenter>
+              </div>
 
               <Seat
                 pos="bottom"
@@ -201,10 +228,12 @@ export function SantaseView({ title }: { title: string }) {
                 active={myTurn}
                 badge={<span className="tnum">{state.points[seat] ?? 0}</span>}
               >
-                <div className="aso-myhand" style={{ display: "flex" }}>
+                <div className="aso-myhand" data-zone="hand" style={{ display: "flex" }}>
                   {(state.hands[seat] ?? []).map((card, i) => (
+                    // keyed by the card (unique in a hand): an index key remounted
+                    // every card right of a played one and replayed its deal-in
                     <HandCard
-                      key={`${card}-${i}`}
+                      key={card}
                       card={card}
                       index={i}
                       count={(state.hands[seat] ?? []).length}
@@ -219,47 +248,84 @@ export function SantaseView({ title }: { title: string }) {
             </FeltTable>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+          <div
+            className="mt-4 flex flex-wrap items-center justify-center gap-3"
+            data-zone="score"
+            data-points={state.points[seat] ?? 0}
+            data-opp-points={state.points[opp] ?? 0}
+            data-match={`${state.matchPoints?.[seat] ?? 0}:${state.matchPoints?.[opp] ?? 0}`}
+            data-deal={state.dealNo ?? 1}
+            data-trump={state.trump}
+          >
             <ScorePill label={t("game.you")} value={state.points[seat] ?? 0} highlight />
             <ScorePill label={oppName} value={state.points[opp] ?? 0} />
             <span className="text-xs text-ink-muted">
               {t("santase.match")}: {state.matchPoints?.[seat] ?? 0}:{state.matchPoints?.[opp] ?? 0} ·{" "}
               {t("santase.dealNo")} {state.dealNo ?? 1} · {t("santase.toEleven")}
             </span>
-            {closeAction ? (
-              <Button variant="felt" onClick={() => m.send(closeAction)}>
-                {t("santase.close")}
-              </Button>
-            ) : null}
-            {hasMarriageChoice ? (
-              <Button variant={noAnnounce ? "brass" : "ghost"} onClick={() => setNoAnnounce((v) => !v)}>
-                {noAnnounce ? t("santase.quietOn") : t("santase.quiet")}
-              </Button>
-            ) : null}
-            {declareActions.map((a) => (
-              <Button
-                key={a.marriage ?? "plain"}
-                variant="brass"
-                title={t("santase.declareHint")}
-                onClick={() => {
-                  playCue("flip");
-                  m.send(a);
-                }}
-              >
-                {a.marriage
-                  ? t("santase.declareWith", {
-                      n: a.marriage[1] === state.trump ? 40 : 20,
-                      suit: SUIT_GLYPH[a.marriage[1] ?? ""] ?? "",
-                    })
-                  : t("santase.declare")}
-              </Button>
-            ))}
-            {exchangeAction ? (
-              <Button variant="felt" onClick={() => m.send(exchangeAction)}>
-                {t("santase.exchange")}
-              </Button>
-            ) : null}
           </div>
+          {/* The calls on my lead. Sticky: on a 768px-tall laptop this row
+              sat below the fold, so „Затвори“/„Имам 66“ were easy to miss
+              while the turn clock ran. */}
+          {closeAction || hasMarriageChoice || declareActions.length > 0 || exchangeAction ? (
+            <div
+              data-zone="actions"
+              className="z-30 mx-auto sm:sticky sm:bottom-1 mt-3 flex w-fit max-w-full flex-wrap items-center justify-center gap-3 rounded-panel bg-felt-900/70 p-1.5 backdrop-blur"
+            >
+              {closeAction ? (
+                <Button
+                  variant="felt"
+                  className="!py-2"
+                  data-action="close"
+                  onClick={() => m.send(closeAction)}
+                >
+                  {t("santase.close")}
+                </Button>
+              ) : null}
+              {hasMarriageChoice ? (
+                <Button
+                  variant={noAnnounce ? "brass" : "ghost"}
+                  className="!py-2"
+                  data-action="quiet"
+                  aria-pressed={noAnnounce}
+                  onClick={() => setNoAnnounce((v) => !v)}
+                >
+                  {noAnnounce ? t("santase.quietOn") : t("santase.quiet")}
+                </Button>
+              ) : null}
+              {declareActions.map((a) => (
+                <Button
+                  key={a.marriage ?? "plain"}
+                  variant="brass"
+                  className="!py-2"
+                  data-action={a.marriage ? "declare-marriage" : "declare"}
+                  data-marriage={a.marriage}
+                  title={t("santase.declareHint")}
+                  onClick={() => {
+                    playCue("flip");
+                    m.send(a);
+                  }}
+                >
+                  {a.marriage
+                    ? t("santase.declareWith", {
+                        n: a.marriage[1] === state.trump ? 40 : 20,
+                        suit: SUIT_GLYPH[a.marriage[1] ?? ""] ?? "",
+                      })
+                    : t("santase.declare")}
+                </Button>
+              ))}
+              {exchangeAction ? (
+                <Button
+                  variant="felt"
+                  className="!py-2"
+                  data-action="exchange"
+                  onClick={() => m.send(exchangeAction)}
+                >
+                  {t("santase.exchange")}
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
         </>
       ) : null}
     </Scene>
