@@ -1,0 +1,8 @@
+<%# Странициране: href(n) строи адреса с текущите филтри. %>
+<% if (pages > 1) { %>
+<nav class="a-pager" aria-label="<%= t('admin.common.pager') %>">
+  <% if (page > 1) { %><a class="a-btn is-quiet is-small" href="<%= href(page - 1) %>" rel="prev"><%= t('admin.common.prev') %></a><% } %>
+  <span><%= t('admin.common.page', { page, pages }) %></span>
+  <% if (page < pages) { %><a class="a-btn is-quiet is-small" href="<%= href(page + 1) %>" rel="next"><%= t('admin.common.next') %></a><% } %>
+</nav>
+<% } %>

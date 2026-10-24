@@ -1,0 +1,45 @@
+<%# Горната част на всяка страница на панела. Панелът е noindex (и в X-Robots-Tag), no-store. %>
+<!doctype html>
+<html lang="<%= locale %>">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= title %> · <%= t('admin.brand') %></title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="<%= t('admin.meta.description') %>">
+<meta name="keywords" content="<%= t('admin.meta.keywords') %>">
+<meta name="theme-color" content="#120e0a">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="<%= asset('admin.css') %>">
+<link rel="stylesheet" href="<%= asset('admin-ui.css') %>">
+<script src="<%= asset('admin.js') %>" defer></script>
+</head>
+<body>
+<a class="skip" href="#main"><%= t('admin.skip') %></a>
+<header class="a-top">
+  <a class="a-brand" href="/admin">CarbonStealth.eu <span>Dust2 DM</span><span class="a-tag"><%= t('admin.brandTag') %></span></a>
+  <% if (me) { %>
+  <div class="a-me">
+    <span><%= t('admin.me.signedAs') %> <strong><%= me.name %></strong> · <%= t('admin.roles.' + me.role) %></span>
+    <form class="a-langs" method="post" action="/admin/lang" aria-label="<%= t('admin.me.lang') %>">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <input type="hidden" name="to" value="<%= path %>">
+      <% ['bg', 'en', 'it'].forEach((code) => { %><button class="a-btn is-quiet is-small" type="submit" name="lang" value="<%= code %>" lang="<%= code %>"<% if (code === locale) { %> aria-current="true"<% } %>><%= code.toUpperCase() %></button><% }) %>
+    </form>
+    <% if (me.mfaPassed && me.totpEnabled) { %><a href="/admin/account"><%= t('admin.nav.account') %></a><% } %>
+    <form class="a-inline" method="post" action="/admin/logout">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <button class="a-btn is-quiet is-small" type="submit"><%= t('admin.me.logout') %></button>
+    </form>
+  </div>
+  <% } %>
+</header>
+<% if (nav.length > 0) { %>
+<nav class="a-nav" aria-label="<%= t('admin.navLabel') %>">
+  <% nav.forEach((item) => { %><a href="<%= item.href %>"<% if (current === item.id) { %> aria-current="page"<% } %>><%= t('admin.nav.' + item.id) %></a>
+  <% }) %>
+</nav>
+<% } %>
+<main id="main" class="a-main">
+<% if (result) { %><p class="a-result is-<%= result.kind %>" role="status"><%= t('admin.result.' + result.code) %></p><% } %>

@@ -1,0 +1,113 @@
+<%- include('partials/head') %>
+<%
+  const duration = (seconds) => fmt.duration(seconds, (h, m) => t('player.duration', { h, m }));
+  const statRows = (line) => [
+    { id: 'kills', value: fmt.int(line.kills) },
+    { id: 'deaths', value: fmt.int(line.deaths) },
+    { id: 'kd', value: fmt.kd(line.kills, line.deaths) },
+    { id: 'hs', value: fmt.percent(line.headshots, line.kills) },
+    { id: 'accuracy', value: fmt.percent(line.shotsHit, line.shotsFired) },
+    { id: 'assists', value: fmt.int(line.assists) },
+    { id: 'damage', value: fmt.int(line.damage) },
+    { id: 'bestStreak', value: fmt.int(line.bestStreak) },
+    { id: 'bounties', value: fmt.int(line.bountiesClaimed) },
+    { id: 'revenges', value: fmt.int(line.revenges) },
+    { id: 'xp', value: fmt.int(line.xp) },
+    { id: 'playtime', value: duration(line.playtimeSec) },
+  ];
+%>
+<div class="wrap page">
+  <%- include('partials/crumbs', { trail: [{ name: t('nav.leaderboard'), href: nav.leaderboard }], here: player.name }) %>
+
+  <header class="profile">
+    <% if (player.avatarUrl) { %><img class="avatar" src="<%= player.avatarUrl %>" alt="<%= t('player.avatarAlt', { name: player.name }) %>" width="96" height="96" loading="lazy" decoding="async" referrerpolicy="no-referrer"><% } %>
+    <div class="profile-main">
+      <h1 class="profile-name"><%= player.name %></h1>
+      <dl class="profile-facts">
+        <div><dt><%= t('player.steamId') %></dt><dd><code><%= player.steamId %></code></dd></div>
+        <div><dt><%= t('player.firstSeen') %></dt><dd><time datetime="<%= fmt.iso(player.firstSeenAt) %>"><%= fmt.date(player.firstSeenAt) %></time></dd></div>
+        <div><dt><%= t('player.lastSeen') %></dt><dd><time datetime="<%= fmt.iso(player.lastSeenAt) %>"><%= fmt.dateTime(player.lastSeenAt) %></time></dd></div>
+      </dl>
+      <p><a class="ext" href="https://steamcommunity.com/profiles/<%= player.steamId %>" target="_blank" rel="noopener nofollow"><%= t('player.steamProfile') %></a></p>
+    </div>
+    <div class="level-card">
+      <p class="level-big"><%= t('player.level', { level: progress.level }) %></p>
+      <label class="level-label" for="level-progress"><%= t('player.levelLabel', { next: progress.nextLevel }) %></label>
+      <progress id="level-progress" max="100" value="<%= progress.percent %>"><%= progress.percent %>%</progress>
+      <p class="level-text"><%= t('player.progress', { current: fmt.int(progress.current), span: fmt.int(progress.span), next: progress.nextLevel }) %></p>
+      <p class="level-text"><%= t('player.xpTotal', { xp: fmt.int(allTime ? allTime.xp : 0) }) %></p>
+    </div>
+  </header>
+
+  <%
+    const cards = [];
+    if (season.id !== 0) cards.push({ title: t('player.cards.season', { season: seasonLabel(season) }), line: seasonal });
+    cards.push({ title: t('player.cards.allTime'), line: allTime });
+  %>
+  <div class="stat-cards">
+    <% cards.forEach((card) => { %>
+    <section class="stat-card" aria-label="<%= card.title %>">
+      <h2><%= card.title %></h2>
+      <% if (card.line) { %>
+      <dl class="stats">
+        <% statRows(card.line).forEach((stat) => { %><div><dt><%= t('player.stats.' + stat.id) %></dt><dd><%= stat.value %></dd></div>
+        <% }) %>
+      </dl>
+      <% } else { %>
+      <p class="empty"><%= t('player.noStats') %></p>
+      <% } %>
+    </section>
+    <% }) %>
+  </div>
+
+  <section class="mastery" aria-labelledby="mastery-title">
+    <h2 id="mastery-title"><%= t('player.mastery.title') %></h2>
+    <p class="section-lead"><%= t('player.mastery.lead') %></p>
+    <% if (mastery.length === 0) { %>
+    <p class="empty"><%= t('player.mastery.empty') %></p>
+    <% } else { %>
+    <div class="table-wrap">
+      <table class="mastery-table">
+        <thead>
+          <tr>
+            <th scope="col"><%= t('player.mastery.weapon') %></th>
+            <th scope="col" class="c-num"><%= t('player.mastery.kills') %></th>
+            <th scope="col" class="c-num opt"><%= t('player.mastery.hs') %></th>
+            <th scope="col"><%= t('player.mastery.badge') %></th>
+            <th scope="col" class="opt"><%= t('player.mastery.progress') %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% mastery.forEach((line, index) => { %><tr>
+            <th scope="row"><%= line.label %></th>
+            <td class="c-num"><%= fmt.int(line.kills) %></td>
+            <td class="c-num opt"><%= fmt.percent(line.headshots, line.kills) %></td>
+            <td><% if (line.mastery.tier) { %><span class="badge badge-<%= line.mastery.tier %>"><span class="badge-mark" aria-hidden="true"></span><%= t('player.mastery.tiers.' + line.mastery.tier) %></span><% } else { %><span class="muted"><%= t('player.mastery.none') %></span><% } %></td>
+            <td class="opt"><% if (line.mastery.next) { %><progress max="100" value="<%= line.mastery.percent %>" aria-label="<%= t('player.mastery.progressLabel', { tier: t('player.mastery.tiers.' + line.mastery.next.id) }) %>"><%= line.mastery.percent %>%</progress> <span class="muted"><%= t('player.mastery.next', { remaining: fmt.int(line.mastery.next.remaining), tier: t('player.mastery.tiers.' + line.mastery.next.id) }) %></span><% } else { %><span class="muted"><%= t('player.mastery.max') %></span><% } %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </section>
+
+  <section class="heat" aria-labelledby="heat-title">
+    <h2 id="heat-title"><%= t('player.heatmap.title') %></h2>
+    <p class="section-lead"><%= t('player.heatmap.lead', { days: heatmapInfo.days, units: heatmapInfo.cellUnits }) %></p>
+    <div class="heat-grid">
+      <figure class="heat-fig">
+        <figcaption><span class="heat-key heat-key-kills" aria-hidden="true"></span><%= t('player.heatmap.killsTitle') %></figcaption>
+        <%- heatmaps.killsSvg %>
+        <p class="heat-sum"><%= heatmaps.killsTotal > 0 ? t.plural('player.heatmap.killsDesc', heatmaps.killsTotal, { days: heatmapInfo.days, sector: heatmaps.killsSector }) : t('player.heatmap.empty', { days: heatmapInfo.days }) %></p>
+      </figure>
+      <figure class="heat-fig">
+        <figcaption><span class="heat-key heat-key-deaths" aria-hidden="true"></span><%= t('player.heatmap.deathsTitle') %></figcaption>
+        <%- heatmaps.deathsSvg %>
+        <p class="heat-sum"><%= heatmaps.deathsTotal > 0 ? t.plural('player.heatmap.deathsDesc', heatmaps.deathsTotal, { days: heatmapInfo.days, sector: heatmaps.deathsSector }) : t('player.heatmap.empty', { days: heatmapInfo.days }) %></p>
+      </figure>
+    </div>
+    <p class="heat-legend"><%= t('player.heatmap.legend') %></p>
+  </section>
+</div>
+<%- include('partials/foot') %>

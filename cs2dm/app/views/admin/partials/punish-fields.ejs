@@ -1,0 +1,24 @@
+<%# Срок, категория и причина — общи за наказание от таблото и от списъка. `prefix` прави id-тата уникални. %>
+<div class="a-field">
+  <label for="<%= prefix %>-amount"><%= t('admin.punish.amount') %></label>
+  <input id="<%= prefix %>-amount" name="amount" type="number" min="1" max="100000" inputmode="numeric" aria-describedby="<%= prefix %>-amount-hint">
+</div>
+<div class="a-field">
+  <label for="<%= prefix %>-unit"><%= t('admin.punish.unit') %></label>
+  <select id="<%= prefix %>-unit" name="unit">
+    <% units.forEach((unit) => { %><option value="<%= unit %>"<% if (unit === 'd') { %> selected<% } %>><%= t('admin.units.' + unit) %></option>
+    <% }) %>
+  </select>
+</div>
+<div class="a-field">
+  <label for="<%= prefix %>-category"><%= t('admin.punish.category') %></label>
+  <select id="<%= prefix %>-category" name="category">
+    <% categories.forEach((category) => { %><option value="<%= category %>"<% if (category === 'OTHER') { %> selected<% } %>><%= t('bans.categories.' + category) %></option>
+    <% }) %>
+  </select>
+</div>
+<div class="a-field is-wide">
+  <label for="<%= prefix %>-reason"><%= t('admin.punish.reason') %></label>
+  <input id="<%= prefix %>-reason" name="reason" type="text" maxlength="255" autocomplete="off">
+</div>
+<p class="a-note" id="<%= prefix %>-amount-hint"><%= t('admin.punish.hint') %></p>

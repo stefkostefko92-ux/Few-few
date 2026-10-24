@@ -1,0 +1,24 @@
+</main>
+<% if (current !== 'home') { %><div class="dock"><a class="btn btn-play" href="<%= server.connectUrl %>"><%= t('home.hero.play') %></a></div>
+<% } %><footer class="foot">
+  <div class="wrap foot-in">
+    <div class="foot-server">
+      <span class="foot-logo" aria-hidden="true"></span>
+      <div>
+        <p class="foot-name"><%= siteName %></p>
+        <p class="foot-join"><span><%= t('site.footer.join') %></span> <code><%= server.command %></code></p>
+      </div>
+    </div>
+    <nav class="foot-nav" aria-label="<%= t('site.footer.legalLabel') %>">
+      <ul>
+        <% ['rules', 'privacy', 'vipTerms', 'imprint', 'contact'].forEach((id) => { %><li><a href="<%= nav[id] %>"<% if (current === id) { %> aria-current="page"<% } %>><%= t('nav.' + id) %></a></li>
+        <% }) %>
+      </ul>
+    </nav>
+    <p class="foot-valve"><%= t('site.footer.valve') %></p>
+    <p class="foot-made"><a href="https://carbonstealth.eu" target="_blank" rel="noopener"><%= t('site.footer.madeBy') %></a></p>
+    <button type="button" class="motion-toggle" data-motion-toggle data-pause="<%= t('site.motion.pause') %>" data-play="<%= t('site.motion.play') %>" aria-pressed="false" hidden><%= t('site.motion.pause') %></button>
+  </div>
+</footer>
+</body>
+</html>

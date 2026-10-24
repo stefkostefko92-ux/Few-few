@@ -1,0 +1,281 @@
+/*
+ * CarbonStealth.eu | Dust2 DM — админ панелът. Самостоятелен файл (не зависи от site.css):
+ * същата палитра „Dust2 по здрач“, но плътен работен инструмент — компактни таблици, ясни
+ * състояния, моноширинни SteamID-та. Без inline стилове (CSP `style-src 'self'`).
+ */
+
+@font-face {
+  font-family: 'Sofia Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/static/fonts/sofia-sans-cyrillic-400-normal.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/static/fonts/sofia-sans-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2212;
+}
+@font-face {
+  font-family: 'Sofia Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/static/fonts/sofia-sans-cyrillic-700-normal.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/static/fonts/sofia-sans-latin-700-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2212;
+}
+@font-face {
+  font-family: 'Sofia Sans Extra Condensed';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/static/fonts/sofia-sans-extra-condensed-cyrillic-800-normal.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Extra Condensed';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/static/fonts/sofia-sans-extra-condensed-latin-800-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2212;
+}
+
+:root {
+  --night: #1b1610;
+  --deep: #120e0a;
+  --wall: #241d15;
+  --wall-2: #2f271d;
+  --seam: #4a3c2b;
+  --sand: #dcb779;
+  --ochre: #b8863e;
+  --sky: #8fc6e0;
+  --rust: #d4664b;
+  --rust-text: #ec917a;
+  --moss: #9cc58a;
+  --chalk: #f0e8d9;
+  --dust: #b6a68e;
+  --font-text: 'Sofia Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Sofia Sans Extra Condensed', 'Sofia Sans', 'Arial Narrow', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'SFMono-Regular', Consolas, monospace;
+  --gutter: max(16px, 3vw);
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--night);
+  color: var(--chalk);
+  font-family: var(--font-text);
+  font-size: 0.975rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+a {
+  color: var(--sand);
+  text-underline-offset: 0.2em;
+}
+a:hover {
+  color: var(--chalk);
+}
+:focus-visible {
+  outline: 3px solid var(--sky);
+  outline-offset: 2px;
+}
+code,
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+  margin: 0 0 0.6rem;
+}
+h1 {
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  color: var(--sand);
+}
+h2 {
+  font-size: 1.45rem;
+}
+h3 {
+  font-size: 1.15rem;
+  color: var(--dust);
+}
+p {
+  margin: 0 0 0.75rem;
+}
+
+.skip {
+  position: absolute;
+  left: -999px;
+}
+.skip:focus {
+  left: var(--gutter);
+  top: 0.5rem;
+  z-index: 10;
+  background: var(--sand);
+  color: var(--night);
+  padding: 0.4rem 0.8rem;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ── Горна лента и меню ─────────────────────────────────────────────────── */
+.a-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  padding: 0.75rem var(--gutter);
+  background: var(--deep);
+  border-bottom: 1px solid var(--seam);
+}
+.a-brand {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.35rem;
+  color: var(--chalk);
+  text-decoration: none;
+}
+.a-brand span {
+  color: var(--sand);
+}
+.a-brand .a-tag {
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.45rem;
+  border: 1px solid var(--seam);
+  border-radius: 3px;
+  color: var(--dust);
+  font-family: var(--font-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+.a-me {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  color: var(--dust);
+  font-size: 0.9rem;
+}
+.a-me strong {
+  color: var(--chalk);
+}
+.a-langs {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+.a-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.4rem var(--gutter);
+  background: var(--wall);
+  border-bottom: 1px solid var(--seam);
+}
+.a-nav a {
+  padding: 0.35rem 0.7rem;
+  border-radius: 3px;
+  color: var(--chalk);
+  text-decoration: none;
+  font-weight: 700;
+}
+.a-nav a:hover {
+  background: var(--wall-2);
+}
+.a-nav a[aria-current='page'] {
+  background: var(--sand);
+  color: var(--night);
+}
+
+.a-main {
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: 84rem;
+  margin: 0 auto;
+  padding: 1.5rem var(--gutter) 3rem;
+}
+.a-foot {
+  padding: 1rem var(--gutter);
+  border-top: 1px solid var(--seam);
+  background: var(--deep);
+  color: var(--dust);
+  font-size: 0.85rem;
+}
+.a-lead {
+  max-width: 52rem;
+  color: var(--dust);
+}
+
+/* ── Карти, решетки, факти ──────────────────────────────────────────────── */
+.a-card {
+  margin: 0 0 1.25rem;
+  padding: 1rem 1.15rem;
+  background: var(--wall);
+  border: 1px solid var(--seam);
+  border-radius: 4px;
+}
+.a-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+}
+.a-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.6rem 1.25rem;
+  margin: 0;
+}
+.a-facts dt {
+  color: var(--dust);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.a-facts dd {
+  margin: 0;
+  font-weight: 700;
+}
+.a-big {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--sand);
+}

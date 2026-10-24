@@ -1,0 +1,117 @@
+<%- include('partials/head', { title: player.name }) %>
+<% const base = '/admin/players/' + player.steamId; %>
+<h1><%= player.name %></h1>
+<p><code><%= player.steamId %></code> · <%= t('admin.roles.' + player.role) %>
+  <% if (player.hiddenFromLeaderboards) { %> <span class="a-chip is-muted"><%= t('admin.player.hidden') %></span><% } %>
+  · <a href="/<%= locale %>/player/<%= player.steamId %>"><%= t('admin.player.public') %></a>
+  · <a href="<%= withQuery('/admin/punishments', { q: player.steamId, status: 'all' }) %>"><%= t('admin.player.allPunishments') %></a>
+</p>
+<% if (!above) { %><p class="a-note"><%= t('admin.player.immune') %></p><% } %>
+
+<div class="a-grid">
+  <section class="a-card" aria-labelledby="facts-title">
+    <h2 id="facts-title"><%= t('admin.player.facts') %></h2>
+    <dl class="a-facts">
+      <div><dt><%= t('admin.player.firstSeen') %></dt><dd><%= fmt.date(player.firstSeenAt) %></dd></div>
+      <div><dt><%= t('admin.col.lastSeen') %></dt><dd><%= fmt.dateTime(player.lastSeenAt) %></dd></div>
+      <div><dt><%= t('admin.player.playtime') %></dt><dd><%= t('admin.player.hours', { h: fmt.int(Math.round(player.playtimeSec / 3600)) }) %></dd></div>
+      <div><dt><%= t('admin.player.webLogin') %></dt><dd><%= player.webLoginAt ? fmt.dateTime(player.webLoginAt) : '—' %></dd></div>
+      <div><dt><%= t('admin.player.totp') %></dt><dd><%= player.totpEnabledAt ? t('admin.player.totpOn') : t('admin.player.totpOff') %></dd></div>
+      <% if (stats) { %>
+      <div><dt><%= t('admin.col.kills') %></dt><dd><%= fmt.int(stats.kills) %></dd></div>
+      <div><dt><%= t('admin.col.deaths') %></dt><dd><%= fmt.int(stats.deaths) %></dd></div>
+      <div><dt>XP</dt><dd><%= fmt.int(stats.xp) %></dd></div>
+      <% } %>
+    </dl>
+  </section>
+
+  <section class="a-card" aria-labelledby="act-title">
+    <h2 id="act-title"><%= t('admin.player.actions') %></h2>
+    <p><a class="a-btn is-quiet" href="<%= withQuery('/admin/punishments', { steamId: player.steamId }) %>"><%= t('admin.player.punish') %></a></p>
+    <% if (above && assignable.length > 0) { %>
+    <form class="a-form" method="post" action="<%= base %>/role" data-confirm="<%= t('admin.player.roleConfirm') %>">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <div class="a-field">
+        <label for="pl-role"><%= t('admin.col.role') %></label>
+        <select id="pl-role" name="role">
+          <% assignable.forEach((role) => { %><option value="<%= role %>"<% if (role === player.role) { %> selected<% } %>><%= t('admin.roles.' + role) %></option>
+          <% }) %>
+        </select>
+      </div>
+      <button class="a-btn" type="submit"><%= t('admin.player.roleSubmit') %></button>
+    </form>
+    <% } %>
+    <% if (above && can('privacy')) { %>
+    <form class="a-form" method="post" action="<%= base %>/hide">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <label class="a-check"><input type="checkbox" name="hidden"<% if (player.hiddenFromLeaderboards) { %> checked<% } %>> <%= t('admin.player.hideLabel') %></label>
+      <button class="a-btn is-quiet" type="submit"><%= t('admin.common.save') %></button>
+    </form>
+    <% } %>
+    <% if (above && can('roles') && roleLevel[player.role] >= roleLevel.HELPER) { %>
+    <form class="a-form" method="post" action="<%= base %>/totp-reset" data-confirm="<%= t('admin.player.totpResetConfirm') %>">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <button class="a-btn is-danger" type="submit"><%= t('admin.player.totpReset') %></button>
+    </form>
+    <form class="a-form" method="post" action="<%= base %>/logout">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <button class="a-btn is-quiet" type="submit"><%= t('admin.player.logout') %></button>
+    </form>
+    <% } %>
+  </section>
+</div>
+
+<section aria-labelledby="vip-title">
+  <h2 id="vip-title"><%= t('admin.player.vip') %></h2>
+  <% if (above && can('vip') && tiers.length > 0) { %>
+  <form class="a-form a-card" method="post" action="<%= base %>/vip">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <div class="a-field">
+      <label for="vg-tier"><%= t('admin.player.vipTier') %></label>
+      <select id="vg-tier" name="tierId">
+        <% tiers.forEach((tier) => { %><option value="<%= tier.id %>"><%= tier.name %> (<%= tier.code %>)</option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="a-field">
+      <label for="vg-days"><%= t('admin.player.vipDays') %></label>
+      <input id="vg-days" name="days" type="number" min="1" max="3650" value="30" required>
+    </div>
+    <div class="a-field is-wide">
+      <label for="vg-note"><%= t('admin.player.vipNote') %></label>
+      <input id="vg-note" name="note" type="text" maxlength="255" autocomplete="off">
+    </div>
+    <button class="a-btn" type="submit"><%= t('admin.player.vipGrant') %></button>
+    <p class="a-note"><%= t('admin.player.vipHint') %></p>
+  </form>
+  <% } %>
+  <% if (grants.length === 0) { %><p class="a-empty"><%= t('admin.player.vipNone') %></p><% } else { %>
+  <div class="a-scroll"><table class="a-table">
+    <caption class="sr-only"><%= t('admin.player.vip') %></caption>
+    <thead><tr><th scope="col"><%= t('admin.player.vipTier') %></th><th scope="col"><%= t('admin.col.from') %></th><th scope="col"><%= t('admin.col.to') %></th><th scope="col"><%= t('admin.col.actor') %></th><th scope="col"><%= t('admin.col.state') %></th></tr></thead>
+    <tbody>
+      <% grants.forEach((grant) => { %><tr>
+        <th scope="row"><%= grant.tier.name %><% if (grant.note) { %><br><span class="a-note"><%= grant.note %></span><% } %></th>
+        <td><%= fmt.date(grant.startsAt) %></td>
+        <td><%= fmt.date(grant.endsAt) %></td>
+        <td><code><%= grant.grantedBy %></code></td>
+        <td><% if (grant.revokedAt) { %><span class="a-chip is-muted"><%= t('admin.punishments.statuses.revoked') %></span><% } else if (grant.active) { %><span class="a-chip is-ok"><%= t('admin.player.vipActive') %></span><% } else { %><span class="a-chip is-muted"><%= t('admin.player.vipInactive') %></span><% } %>
+          <% if (!grant.revokedAt && above && can('vip')) { %>
+          <form class="a-inline" method="post" action="<%= base %>/vip/<%= grant.id %>/revoke" data-confirm="<%= t('admin.player.vipRevokeConfirm') %>">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <button class="a-btn is-small is-quiet" type="submit"><%= t('admin.player.vipRevoke') %></button>
+          </form>
+          <% } %>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table></div>
+  <% } %>
+</section>
+
+<% if (editor) { %><%- include('partials/player-stats') %><% } else if (can('playerData')) { %>
+<p><a href="/admin/players/<%= player.steamId %>/data"><%= t('admin.stats.dataLink') %></a></p>
+<% } %>
+<%- include('partials/player-history') %>
+<%- include('partials/foot') %>

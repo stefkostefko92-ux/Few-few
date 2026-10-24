@@ -1,0 +1,232 @@
+<%- include('partials/head') %>
+<%- include('partials/sprite') %>
+<%
+  const ico = (id, cls = 'ico') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#i-${id}"/></svg>`;
+  const seasonName = season ? seasonLabel(season) : t('season.allTime');
+  const showTop = top !== null;
+  const showBans = Array.isArray(bans) && bans.length > 0;
+%>
+<section class="hero" aria-labelledby="hero-title">
+  <div class="sky" aria-hidden="true">
+    <span class="sun"></span>
+    <svg class="reticle" viewBox="0 0 200 200" focusable="false"><circle cx="100" cy="100" r="70"/><circle cx="100" cy="100" r="46" class="r2"/><path d="M100 4v38M100 158v38M4 100h38M158 100h38"/><circle cx="100" cy="100" r="3" class="dot"/></svg>
+    <span class="horizon"></span>
+    <% for (let i = 0; i < 14; i += 1) { %><span class="mote"></span><% } %>
+  </div>
+  <div class="wrap hero-in">
+    <h1 id="hero-title" class="hero-title"><span class="hero-host"><%= t('home.titleHost') %></span><span class="hero-sep sr-only"> | </span><span class="hero-name"><%= t('home.titleName') %></span></h1>
+    <p class="hero-lead"><%= t('home.lead') %></p>
+
+    <div class="hero-actions">
+      <a class="btn btn-play btn-lg" href="<%= server.connectUrl %>"><%- ico('play', 'ico ico-fill') %><%= t('home.hero.play') %></a>
+      <% if (discordUrl) { %><a class="btn btn-ghost btn-lg" href="<%= discordUrl %>" target="_blank" rel="noopener"><%- ico('discord') %><%= t('home.hero.discord') %></a><% } %>
+    </div>
+
+    <div class="cmd">
+      <p class="cmd-label" id="console-label"><%= t('home.hero.consoleHint') %></p>
+      <p class="cmd-line"><code id="connect-cmd" aria-describedby="console-label"><%= server.command %></code><button type="button" class="copy" data-copy-target="connect-cmd" data-copied="<%= t('home.join.copied') %>" data-failed="<%= t('home.join.copyFailed') %>" hidden><%- ico('copy') %><span><%= t('home.join.copy') %></span></button></p>
+      <p class="sr-only" role="status" aria-live="polite" data-copy-status></p>
+    </div>
+
+    <section class="status <%= live.known && live.online ? 'is-live' : 'is-unknown' %>" aria-label="<%= t('home.status.label') %>">
+      <p class="status-head"><span class="pulse" aria-hidden="true"></span><%= !live.known ? t('home.status.unknown') : live.online ? t('home.status.live') : t('home.status.offline') %></p>
+      <% if (live.known && live.online) { %>
+      <p class="status-players"><span class="status-count"><%= live.humans %></span><span class="status-max">/<%= live.maxPlayers %></span> <span class="status-unit"><%= t('home.status.players') %></span></p>
+      <% if (live.maxPlayers > 0) { %><progress class="slots" max="<%= live.maxPlayers %>" value="<%= live.humans %>" aria-hidden="true"><%= live.humans %>/<%= live.maxPlayers %></progress><% } %>
+      <% if (live.humans === 0) { %><p class="status-hint"><%= t('home.status.empty') %></p><% } %>
+      <dl class="status-grid">
+        <div><dt><%= t('home.status.map') %></dt><dd><%= live.map %></dd></div>
+        <div><dt><%= t('home.status.mode') %></dt><dd><%= live.mode || '—' %></dd></div>
+      </dl>
+      <% if (live.bots > 0) { %><p class="status-bots"><%= t.plural('home.status.bots', live.bots) %></p><% } %>
+      <p class="status-time"><%= t('home.status.updated', { time: fmt.dateTime(live.updatedAt) }) %></p>
+      <% } else if (live.known) { %>
+      <p class="status-hint"><%= t('home.status.offlineHint') %></p>
+      <p class="status-time"><%= t('home.status.updated', { time: fmt.dateTime(live.updatedAt) }) %></p>
+      <% } else { %>
+      <p class="status-hint"><%= t('home.status.unknownHint') %></p>
+      <% } %>
+    </section>
+
+    <ul class="quick" aria-label="<%= t('home.facts.label') %>">
+      <li><%- ico('respawn') %><%= t('home.facts.respawn') %></li>
+      <li><%- ico('protect') %><%= t('home.facts.protect') %></li>
+      <li><%- ico('ammo') %><%= t('home.facts.ammo') %></li>
+    </ul>
+  </div>
+</section>
+
+<%- include('partials/events', { events }) %>
+
+<section class="band why" aria-labelledby="why-title">
+  <div class="wrap">
+    <h2 id="why-title"><%= t('home.why.title') %></h2>
+    <div class="feats">
+      <article class="feat feat-2">
+        <%- ico('map') %>
+        <h3><%= t('home.why.map.t') %></h3>
+        <p><%= t('home.why.map.d') %></p>
+      </article>
+      <article class="feat">
+        <%- ico('respawn') %>
+        <h3><%= t('home.why.respawn.t') %></h3>
+        <p><%= t('home.why.respawn.d') %></p>
+      </article>
+      <article class="feat feat-hot">
+        <%- ico('ammo') %>
+        <h3><%= t('home.why.ammo.t') %></h3>
+        <p><%= t('home.why.ammo.d') %></p>
+      </article>
+      <article class="feat">
+        <%- ico('protect') %>
+        <h3><%= t('home.why.protect.t') %></h3>
+        <p><%= t('home.why.protect.d') %></p>
+      </article>
+      <article class="feat">
+        <%- ico('awp') %>
+        <h3><%= t('home.why.awp.t') %></h3>
+        <p><%= t('home.why.awp.d') %></p>
+      </article>
+      <article class="feat feat-2">
+        <%- ico('modes') %>
+        <h3><%= t('home.why.modes.t') %></h3>
+        <p><%= t('home.why.modes.d') %></p>
+        <ul class="chips"><% modes.forEach((mode) => { %><li><%= mode %></li><% }) %></ul>
+      </article>
+      <article class="feat feat-2">
+        <%- ico('xp') %>
+        <h3><%= t('home.why.xp.t') %></h3>
+        <p><%= t('home.why.xp.d') %></p>
+        <ul class="chips chips-xp"><% xpRewards.filter((reward) => reward.id !== 'kill').forEach((reward) => { %><li><b>+<%= reward.xp %></b> <%= t('home.why.xp.chip.' + reward.id) %></li><% }) %></ul>
+      </article>
+      <article class="feat feat-2">
+        <%- ico('mastery') %>
+        <h3><%= t('home.why.mastery.t') %></h3>
+        <p><%= t('home.why.mastery.d') %></p>
+        <ol class="tiers"><% masteryTiers.forEach((tier) => { %><li class="tier tier-<%= tier.id %>"><span class="tier-gem" aria-hidden="true"></span><span class="tier-name"><%= t('player.mastery.tiers.' + tier.id) %></span><span class="tier-kills"><%= fmt.int(tier.kills) %></span></li><% }) %></ol>
+      </article>
+      <article class="feat">
+        <%- ico('bounty') %>
+        <h3><%= t('home.why.bounty.t') %></h3>
+        <p><%= t('home.why.bounty.d', { min: bounty.minStreak, cap: bounty.cap }) %></p>
+      </article>
+      <article class="feat">
+        <%- ico('fair') %>
+        <h3><%= t('home.why.fair.t') %></h3>
+        <p><%= t('home.why.fair.d') %></p>
+      </article>
+      <article class="feat">
+        <%- ico('bans') %>
+        <h3><%= t('home.why.bans.t') %></h3>
+        <p><%= t('home.why.bans.d') %></p>
+      </article>
+      <article class="feat">
+        <%- ico('commands') %>
+        <h3><%= t('home.why.commands.t') %></h3>
+        <p><%= t('home.why.commands.d') %></p>
+        <ul class="cmds"><% ['gun', 'rank', 'report', 'lang'].forEach((id) => { %><li><code>!<%= id %></code> <span><%= t('home.why.commands.' + id) %></span></li><% }) %></ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<% if (showTop) { %>
+<section class="band board" aria-labelledby="top-title">
+  <div class="wrap">
+    <div class="band-head">
+      <h2 id="top-title"><%= t('home.top.title', { season: seasonName }) %></h2>
+      <a class="band-link" href="<%= nav.leaderboard %>"><%= t('home.top.all') %></a>
+    </div>
+    <% if (top.length === 0) { %>
+    <div class="invite">
+      <span class="invite-medal" aria-hidden="true"><%- ico('xp') %></span>
+      <div>
+        <h3><%= t('home.top.inviteTitle') %></h3>
+        <p><%= t('home.top.inviteText') %></p>
+        <p class="invite-actions"><a class="btn btn-play" href="<%= server.connectUrl %>"><%= t('home.hero.play') %></a> <a href="<%= nav.leaderboard %>#how-title"><%= t('home.top.inviteLink') %></a></p>
+      </div>
+    </div>
+    <% } else { %>
+    <ol class="podium">
+      <% top.slice(0, 3).forEach((row, index) => { %><li class="pod pod-<%= index + 1 %>">
+        <span class="pod-rank" aria-label="<%= t('table.rank') %> <%= index + 1 %>"><%= index + 1 %></span>
+        <%- include('partials/level', { level: row.level }) %>
+        <a class="pod-name" href="<%= playerHref(row.steamId) %>"><%= row.name %></a>
+        <span class="pod-xp"><b><%= fmt.int(row.xp) %></b> <%= t('table.xp') %></span>
+        <span class="pod-sub"><%= fmt.int(row.kills) %> <%= t('table.kills') %> · <%= fmt.kd(row.kills, row.deaths) %> <%= t('table.kd') %></span>
+      </li>
+      <% }) %>
+    </ol>
+    <% if (top.length > 3) { %>
+    <ol class="ranks" start="4">
+      <% top.slice(3).forEach((row, index) => { %><li>
+        <span class="rk-n" aria-label="<%= t('table.rank') %> <%= index + 4 %>"><%= index + 4 %></span>
+        <%- include('partials/level', { level: row.level }) %>
+        <a class="rk-name" href="<%= playerHref(row.steamId) %>"><%= row.name %></a>
+        <span class="rk-xp"><b><%= fmt.int(row.xp) %></b> <%= t('table.xp') %></span>
+        <span class="rk-kd"><%= fmt.kd(row.kills, row.deaths) %> <%= t('table.kd') %></span>
+      </li>
+      <% }) %>
+    </ol>
+    <% } %>
+    <% } %>
+  </div>
+</section>
+<% } %>
+
+<% if (matches.length > 0) { %>
+<section class="band band-matches" aria-labelledby="matches-title">
+  <div class="wrap">
+    <div class="band-head">
+      <h2 id="matches-title"><%= t('home.matches.title') %></h2>
+      <a class="band-link" href="<%= nav.matches %>"><%= t('home.matches.all') %></a>
+    </div>
+    <%- include('partials/match-list', { rows: matches }) %>
+  </div>
+</section>
+<% } %>
+
+<% if (showBans) { %>
+<section class="band band-bans" aria-labelledby="bans-title">
+  <div class="wrap">
+    <div class="band-head">
+      <h2 id="bans-title"><%= t('home.bans.title') %></h2>
+      <a class="band-link" href="<%= nav.bans %>"><%= t('home.bans.all') %></a>
+    </div>
+    <ul class="ban-strip">
+      <% bans.forEach((ban) => { %><li>
+        <span class="ban-name"><%= ban.targetName %></span>
+        <span class="cat cat-<%= ban.category.toLowerCase() %>"><%= t('bans.categories.' + ban.category) %></span>
+        <time class="ban-when" datetime="<%= fmt.iso(ban.createdAt) %>"><%= fmt.date(ban.createdAt) %></time>
+        <span class="ban-until<%= ban.expiresAt ? '' : ' is-permanent' %>"><%= ban.expiresAt ? t('home.bans.until', { date: fmt.date(ban.expiresAt) }) : t('common.permanent') %></span>
+      </li>
+      <% }) %>
+    </ul>
+  </div>
+</section>
+<% } %>
+
+<section class="band band-faq" aria-labelledby="faq-title">
+  <div class="wrap faq-in">
+    <h2 id="faq-title"><%= t('home.faq.title') %></h2>
+    <div class="faq">
+      <% faq.forEach((id, index) => { %><details class="faq-item" name="faq"<% if (index === 0) { %> open<% } %>>
+        <summary><h3><%= t('home.faq.' + id + '.q', faqParams) %></h3></summary>
+        <p><%= t('home.faq.' + id + '.a', faqParams) %></p>
+      </details>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<section class="finale" aria-labelledby="cta-title">
+  <div class="wrap finale-in">
+    <h2 id="cta-title"><%= t('home.cta.title') %></h2>
+    <p><%= t('home.cta.text') %></p>
+    <div class="hero-actions">
+      <a class="btn btn-play btn-lg" href="<%= server.connectUrl %>"><%- ico('play', 'ico ico-fill') %><%= t('home.hero.play') %></a>
+      <% if (discordUrl) { %><a class="btn btn-ghost btn-lg" href="<%= discordUrl %>" target="_blank" rel="noopener"><%- ico('discord') %><%= t('home.hero.discord') %></a><% } %>
+    </div>
+  </div>
+</section>
+<%- include('partials/foot') %>

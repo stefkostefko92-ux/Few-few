@@ -1,0 +1,29 @@
+<%- include('partials/head', { title: t('admin.data.title', { name: player.name }) }) %>
+<%# Всичко пазено за играча — сурово (имената на колоните са от базата), само четене. Тайни никога. %>
+<% const cell = (v) => v === null || v === undefined ? '—' : v instanceof Date ? fmt.dateTime(v) : typeof v === 'boolean' ? (v ? t('admin.common.yes') : t('admin.common.no')) : typeof v === 'object' ? JSON.stringify(v) : String(v); %>
+<h1><%= t('admin.data.title', { name: player.name }) %></h1>
+<p><code><%= player.steamId %></code> · <a href="/admin/players/<%= player.steamId %>"><%= t('admin.data.back') %></a></p>
+<p class="a-lead"><%= t('admin.data.lead') %></p>
+<dl class="a-facts">
+  <div><dt><%= t('admin.data.counts.killsAsAttacker') %></dt><dd><%= fmt.int(counts.killsAsAttacker) %></dd></div>
+  <div><dt><%= t('admin.data.counts.killsAsVictim') %></dt><dd><%= fmt.int(counts.killsAsVictim) %></dd></div>
+  <div><dt><%= t('admin.data.counts.issued') %></dt><dd><%= fmt.int(counts.issued) %></dd></div>
+  <div><dt><%= t('admin.data.counts.auditBy') %></dt><dd><%= fmt.int(counts.auditBy) %></dd></div>
+</dl>
+<% sections.forEach((s) => { %>
+<section aria-labelledby="pd-<%= s.id %>">
+  <h2 id="pd-<%= s.id %>"><%= t('admin.data.sections.' + s.id) %> <span class="a-chip is-muted"><%= t('admin.data.shown', { shown: fmt.int(s.rows.length), total: fmt.int(s.total) }) %></span></h2>
+  <% if (s.rows.length === 0) { %><p class="a-empty"><%= t('admin.data.empty') %></p><% } else { %>
+  <div class="a-scroll"><table class="a-table">
+    <caption class="sr-only"><%= t('admin.data.sections.' + s.id) %></caption>
+    <thead><tr><% s.columns.forEach((c) => { %><th scope="col"><code><%= c %></code></th><% }) %></tr></thead>
+    <tbody>
+      <% s.rows.forEach((row) => { %><tr><% row.forEach((v) => { %><td class="wrap"><%= cell(v) %></td><% }) %></tr>
+      <% }) %>
+    </tbody>
+  </table></div>
+  <% } %>
+</section>
+<% }) %>
+<p class="a-note"><%= t('admin.data.note', { limit: limit }) %></p>
+<%- include('partials/foot') %>

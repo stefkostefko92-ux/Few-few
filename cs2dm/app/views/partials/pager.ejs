@@ -1,0 +1,7 @@
+<% if (pages > 1) { %>
+<nav class="pager" aria-label="<%= t('leaderboard.pager.label') %>">
+  <% if (page > 1) { %><a class="pager-step" href="<%= href(page - 1) %>" rel="prev"><%= t('leaderboard.pager.prev') %></a><% } else { %><span class="pager-step is-off" aria-hidden="true"><%= t('leaderboard.pager.prev') %></span><% } %>
+  <span class="pager-where"><%= t('leaderboard.pager.page', { page, pages }) %></span>
+  <% if (page < pages) { %><a class="pager-step" href="<%= href(page + 1) %>" rel="next"><%= t('leaderboard.pager.next') %></a><% } else { %><span class="pager-step is-off" aria-hidden="true"><%= t('leaderboard.pager.next') %></span><% } %>
+</nav>
+<% } %>

@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Плъгинът на CounterStrikeSharp. CSS API и Microsoft.Extensions.* са само за компилиране —
+    при изпълнение ги дава CSS (иначе две версии в един процес). Npgsql и StackExchange.Redis
+    се копират в папката на плъгина (deps.json ги описва).
+  -->
+  <PropertyGroup>
+    <AssemblyName>CarbonStealth</AssemblyName>
+    <RootNamespace>CarbonStealth</RootNamespace>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.378">
+      <PrivateAssets>none</PrivateAssets>
+      <ExcludeAssets>runtime</ExcludeAssets>
+      <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="10.0.0">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <!-- Идва транзитивно от CSS API; при изпълнение е в counterstrikesharp/api/ (същата 10.0.0). -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql" Version="10.0.3" />
+    <PackageReference Include="StackExchange.Redis" Version="2.13.17" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../CarbonStealth.Logic/CarbonStealth.Logic.csproj" />
+  </ItemGroup>
+
+  <!--
+    API на DM плъгина (capability „deathmatch“). Само за компилиране: при изпълнение CSS го зарежда
+    от shared/DeathmatchAPI/. Копие в нашата папка = втори тип IDeathmatchAPI → capability-то не се намира.
+    Файлът идва от scripts/build.sh (архивът от mods.lock, проверен по sha256).
+  -->
+  <ItemGroup>
+    <Reference Include="DeathmatchAPI">
+      <HintPath>../../lib/DeathmatchAPI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="lang/**/*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

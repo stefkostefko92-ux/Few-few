@@ -1,0 +1,16 @@
+<%# Логовете на сървъра през агента (§9) — четене, без промяна (GET). %>
+<form class="a-form" method="get" action="/admin/server/logs">
+  <div class="a-field">
+    <label for="lg-source"><%= t('admin.server.source') %></label>
+    <select id="lg-source" name="source">
+      <% logSources.forEach((source) => { %><option value="<%= source %>"<% if (query.source === source) { %> selected<% } %>><%= t('admin.server.sources.' + source) %></option>
+      <% }) %>
+    </select>
+  </div>
+  <div class="a-field">
+    <label for="lg-lines"><%= t('admin.server.lines') %></label>
+    <input id="lg-lines" name="lines" type="number" min="10" max="<%= maxLines %>" value="<%= query.lines %>">
+  </div>
+  <button class="a-btn" type="submit"><%= t('admin.server.showLogs') %></button>
+</form>
+<p class="a-note"><%= t('admin.server.logsNote') %></p>

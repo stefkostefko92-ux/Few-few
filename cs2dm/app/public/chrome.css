@@ -1,0 +1,232 @@
+/* Горна лента, долен колонтитул и закрепения бутон „Играй“. */
+
+/* ── Горна лента ─────────────────────────────────────────────────────────── */
+
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(7, 10, 14, 0.9);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(12px);
+}
+.top-in {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: 'brand menu end';
+  align-items: center;
+  gap: 0.25rem 1.5rem;
+  padding-block: 0.6rem;
+}
+.brand {
+  grid-area: brand;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--text);
+  text-decoration: none;
+}
+.brand-mark {
+  flex: none;
+  background: url('/static/cs-logo-80.webp') center / cover no-repeat;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.45);
+}
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+.brand-host {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--cyan);
+}
+.brand-name {
+  margin-top: 0.15rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.65rem;
+  text-transform: uppercase;
+}
+.menu {
+  grid-area: menu;
+  display: flex;
+  gap: 0.15rem;
+  justify-content: center;
+}
+.menu a,
+.langs a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0 0.85rem;
+  border-radius: 8px;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.98rem;
+  text-decoration: none;
+}
+.menu a:hover,
+.langs a:hover {
+  color: #fff;
+  background: var(--panel-2);
+}
+.menu a[aria-current='page'] {
+  color: var(--text);
+  background: var(--panel-2);
+  box-shadow: inset 0 -2px 0 var(--amber);
+}
+.top-end {
+  grid-area: end;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.langs {
+  display: flex;
+}
+.langs a {
+  padding: 0 0.55rem;
+  font-size: 0.85rem;
+}
+.langs a[aria-current='true'] {
+  color: var(--bg);
+  background: var(--text);
+}
+@media (max-width: 860px) {
+  .top-in {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'brand end'
+      'menu menu';
+  }
+  .top .top-play {
+    display: none;
+  }
+  .menu {
+    justify-content: space-between;
+    margin-inline: calc(var(--gutter) * -0.5);
+  }
+  .menu a {
+    flex: 1 1 0;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding-inline: 0.25rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* ── Долен колонтитул ────────────────────────────────────────────────────── */
+
+.foot {
+  margin-top: auto;
+  border-top: 1px solid var(--line);
+  background: #05080b;
+  font-size: 0.95rem;
+}
+.foot-in {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 1.25rem 3rem;
+  padding-block: 2.5rem;
+}
+.foot-server {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.foot-logo {
+  flex: none;
+  background: url('/static/cs-logo-192.webp') center / cover no-repeat;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.35);
+}
+.foot-name {
+  margin: 0 0 0.25rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.foot-join {
+  margin: 0;
+  color: var(--muted);
+}
+.foot-join code {
+  color: var(--text);
+}
+.foot-nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.foot-nav a {
+  color: var(--text);
+}
+.foot-valve,
+.foot-made {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.foot-made a {
+  color: var(--muted);
+}
+.motion-toggle {
+  grid-column: 1 / -1;
+  justify-self: start;
+  min-height: 2.5rem;
+  padding: 0 0.9rem;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-ctl);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.motion-toggle:hover {
+  color: #fff;
+  border-color: var(--cyan-dim);
+}
+@media (max-width: 760px) {
+  .foot-in {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Закрепеният бутон „Играй“ — само на телефон и само извън началната (там е в героя). */
+.dock {
+  display: none;
+}
+@media (max-width: 720px) {
+  .dock {
+    display: block;
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 25;
+    padding: 0.6rem var(--gutter) calc(0.6rem + env(safe-area-inset-bottom));
+    background: rgba(7, 10, 14, 0.94);
+    border-top: 1px solid var(--line);
+    backdrop-filter: blur(10px);
+  }
+  .dock .btn {
+    width: 100%;
+  }
+  .foot {
+    padding-bottom: 4.5rem;
+  }
+  .page-home .foot {
+    padding-bottom: 0;
+  }
+}

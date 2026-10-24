@@ -1,0 +1,55 @@
+{
+  "enabled": true,
+  "debug": false,
+  "modules": {
+    "bombmodel": {
+      "enabled": false,
+      "delay_size_change": 2,
+      "change_size_on_planted_c4": true,
+      "change_size_on_equip_c4": true,
+      "min_size": 3,
+      "max_size": 7
+    },
+    "bombhighlight": {
+      "enabled": false,
+      "highlight_planted_c4": true,
+      "highlight_lost_c4": true,
+      "delay_highlight": 2,
+      "highlight_on_defuse": false,
+      "highlight_color_c4": "237 163 56"
+    },
+    "coloredsmokegrenades": {
+      "enabled": false,
+      "color_t": "255 0 0",
+      "color_ct": "0 0 255",
+      "color_other": "0 255 0"
+    },
+    "deathbeam": {
+      "enabled": true,
+      "timeout": 1.5,
+      "width": 0.5,
+      "color_t": "237 163 56",
+      "color_ct": "104 163 229",
+      "color_other": "0 255 0"
+    },
+    "deathtombstone": {
+      "enabled": false,
+      "timeout": 0,
+      "model": "models/cs2/kandru/tombstone.vmdl",
+      "hitbox_enabled": false,
+      "size": 1,
+      "health": 100
+    },
+    "spectatormodel": {
+      "enabled": false,
+      "message_chat": false,
+      "message_center": false,
+      "message_alert": false,
+      "model": "models/vehicles/airplane_medium_01/airplane_medium_01_landed.vmdl",
+      "size": 0.01,
+      "offset_z": -2,
+      "offset_angle": 0
+    }
+  },
+  "ConfigVersion": 1
+}

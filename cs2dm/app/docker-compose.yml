@@ -1,0 +1,171 @@
+# cs2dm в продукция: база, Redis, сайт, работник — на същия VPS като CS2 сървъра.
+#
+# TLS и публичният вход са на nginx-а на ХОСТА (Let's Encrypt) — конфигът е
+# `deploy/nginx/cs2.carbonstealth.eu.conf` в това репо, не се пише на ръка на сървъра.
+#
+# C# плъгинът (CounterStrikeSharp) тича на ХОСТА, извън Compose, и се връзва към базата и Redis
+# през портовете по-долу — затова те са публикувани, но САМО на 127.0.0.1 (никога на всички
+# интерфейси: Docker заобикаля ufw).
+#
+# Тайните НЕ са тук — идват от `.env` до този файл (mode 600 на сървъра, никога в репото).
+# Задължителни: POSTGRES_PASSWORD · REDIS_PASSWORD (и двете `openssl rand -hex 32`).
+# По избор: PUBLIC_BASE_URL, SERVER_ADDRESS, CONTACT_EMAIL, DISCORD_URL, COMPANY_*, HTTP_PORT (4350),
+# PG_PORT (5442), REDIS_PORT (6392). Панелът: APP_ENC_KEY, CS2DM_BRIDGE_KEY, CS2DM_AGENT_KEY.
+# В контейнера влиза само изброеното в `environment:`.
+name: cs2dm
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
+# Файловата система е само за четене (пише се само в томовете и в tmpfs), без придобиване на права,
+# с таван на процесите. Capabilities се свалят поотделно по-долу.
+x-hardening: &hardening
+  read_only: true
+  security_opt:
+    - no-new-privileges:true
+  pids_limit: 256
+
+x-app-env: &app-env
+  NODE_ENV: production
+  TZ: UTC
+  DATABASE_URL: postgresql://cs2dm:${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD}@db:5432/cs2dm
+  REDIS_URL: redis://:${REDIS_PASSWORD:?липсва REDIS_PASSWORD}@redis:6379/0
+  PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://cs2.carbonstealth.eu}
+  SERVER_ADDRESS: ${SERVER_ADDRESS:-dm.carbonstealth.eu:27015}
+  DISPLAY_TZ: ${DISPLAY_TZ:-Europe/Sofia}
+  CONTACT_EMAIL: ${CONTACT_EMAIL:-}
+  DISCORD_URL: ${DISCORD_URL:-}
+  COMPANY_LEGAL_NAME: ${COMPANY_LEGAL_NAME:-}
+  COMPANY_ADDRESS: ${COMPANY_ADDRESS:-}
+  COMPANY_EIK: ${COMPANY_EIK:-}
+  COMPANY_VAT: ${COMPANY_VAT:-}
+  COMPANY_REPRESENTATIVE: ${COMPANY_REPRESENTATIVE:-}
+  COMPANY_PHONE: ${COMPANY_PHONE:-}
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  # Портът е публикуван през Docker NAT: приложението вижда шлюза на мрежата, не 127.0.0.1.
+  # `uniquelocal` (10/8, 172.16/12, 192.168/16) вярва само на nginx-а на хоста през тази мрежа —
+  # портът е вързан за 127.0.0.1, значи никой друг не стига дотук.
+  TRUST_PROXY: ${TRUST_PROXY:-uniquelocal}
+
+services:
+  db:
+    # закован по digest (същият като на korpora); обновяване: `docker buildx imagetools inspect postgres:16-alpine`
+    image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+    <<: *hardening
+    # entrypoint-ът на образа сменя собственика на данните и потребителя — само тези права.
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    tmpfs:
+      - /var/run/postgresql:size=4m
+      - /tmp:size=64m
+    mem_limit: 768m
+    cpus: 1.0
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cs2dm
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?липсва POSTGRES_PASSWORD}
+      POSTGRES_DB: cs2dm
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      # За C# плъгина на хоста. САМО loopback.
+      - '127.0.0.1:${PG_PORT:-5442}:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U cs2dm -d cs2dm']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging: *logging
+
+  redis:
+    image: redis:7-alpine
+    <<: *hardening
+    # Като потребителя `redis` от образа (uid 999): entrypoint-ът няма какво да сменя → без capabilities.
+    user: '999:999'
+    cap_drop: [ALL]
+    mem_limit: 192m
+    cpus: 0.5
+    restart: unless-stopped
+    # requirepass — портът е за плъгина на хоста, а на споделен VPS всеки локален процес го стига.
+    # noeviction — изискване на BullMQ (опашката не бива да губи ключове); appendonly пази
+    # планировчика на чистенето при рестарт. Redis пренаписва заглавието на процеса → паролата
+    # не стои в `ps`.
+    command:
+      - redis-server
+      - --appendonly
+      - 'yes'
+      - --maxmemory
+      - 128mb
+      - --maxmemory-policy
+      - noeviction
+      - --requirepass
+      - ${REDIS_PASSWORD:?липсва REDIS_PASSWORD}
+    environment:
+      # За healthcheck-а: redis-cli чете паролата от средата, не от командния ред.
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?липсва REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    ports:
+      # За C# плъгина на хоста (cs2dm:live, cs2dm:cmd). САМО loopback.
+      - '127.0.0.1:${REDIS_PORT:-6392}:6379'
+    healthcheck:
+      # Healthcheck-ът се автентикира — иначе „здрав“ минава и през NOAUTH грешка.
+      test: ['CMD-SHELL', 'redis-cli ping | grep -q PONG']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging: *logging
+
+  web:
+    build: .
+    <<: *hardening
+    cap_drop: [ALL]
+    tmpfs:
+      - /tmp:size=64m,noexec,nosuid
+    mem_limit: 384m
+    cpus: 1.0
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+      PORT: '4330'
+      HOST: 0.0.0.0
+      # Ключовете на панела /admin — САМО в уеб контейнера (работникът не ги ползва). Празен ключ
+      # затваря своята част на панела (503), сайтът работи. На VPS-а ги пише install-agent.sh.
+      APP_ENC_KEY: ${APP_ENC_KEY:-}
+      CS2DM_BRIDGE_KEY: ${CS2DM_BRIDGE_KEY:-}
+      CS2DM_AGENT_KEY: ${CS2DM_AGENT_KEY:-}
+    ports:
+      # Само на loopback — навън се стига единствено през nginx-а на хоста.
+      - '127.0.0.1:${HTTP_PORT:-4350}:4330'
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    logging: *logging
+
+  worker:
+    build: .
+    <<: *hardening
+    cap_drop: [ALL]
+    tmpfs:
+      - /tmp:size=32m,noexec,nosuid
+    mem_limit: 256m
+    cpus: 0.5
+    restart: unless-stopped
+    environment: *app-env
+    # Чистене по сроковете (CONTRACT.md §7): sessions 30 дни · kills 90 дни · обжалвания/доклади 1 г.
+    command: ['node', 'dist/worker.js']
+    # Без HTTP — healthcheck-ът на образа (fetch /health) тук няма кого да пита.
+    healthcheck:
+      disable: true
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      web: { condition: service_started }
+    logging: *logging
+
+volumes:
+  db-data:
+  redis-data:

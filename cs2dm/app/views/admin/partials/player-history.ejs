@@ -1,0 +1,62 @@
+<%# Профилът на играча: наказания, сесии (IP само за ADMIN+) и доклади срещу него. %>
+<section aria-labelledby="ph-title">
+  <h2 id="ph-title"><%= t('admin.player.punishments') %></h2>
+  <% if (punishments.length === 0) { %><p class="a-empty"><%= t('admin.punishments.empty') %></p><% } else { %>
+  <div class="a-scroll"><table class="a-table">
+    <caption class="sr-only"><%= t('admin.player.punishments') %></caption>
+    <thead><tr><th scope="col"><%= t('admin.punish.type') %></th><th scope="col"><%= t('admin.punish.category') %></th><th scope="col" class="wrap"><%= t('admin.punish.reason') %></th><th scope="col"><%= t('admin.col.actor') %></th><th scope="col"><%= t('admin.col.created') %></th><th scope="col"><%= t('admin.col.expires') %></th><th scope="col"><%= t('admin.col.state') %></th></tr></thead>
+    <tbody>
+      <% punishments.forEach((row) => { %><tr>
+        <th scope="row"><%= t('admin.types.' + row.type) %> <span class="a-chip is-muted"><%= t('admin.sources.' + row.source) %></span></th>
+        <td><%= t('bans.categories.' + row.category) %></td>
+        <td class="wrap"><%= row.reason %></td>
+        <td><% if (row.actorSteamId) { %><code><%= row.actorSteamId %></code><% } else { %>—<% } %></td>
+        <td><%= fmt.dateTime(row.createdAt) %></td>
+        <td><%= row.expiresAt ? fmt.dateTime(row.expiresAt) : t('admin.common.permanent') %></td>
+        <td>
+          <% if (row.revokedAt) { %><span class="a-chip is-muted"><%= t('admin.punishments.statuses.revoked') %></span><% } else if (row.active) { %><span class="a-chip is-err"><%= t('admin.punishments.statuses.active') %></span><% } else { %><span class="a-chip is-muted"><%= t('admin.punishments.statuses.expired') %></span><% } %>
+          <% if (row.active && row.canRevoke) { %>
+          <form class="a-form" method="post" action="/admin/punishments/<%= row.id %>/revoke" data-confirm="<%= t('admin.punishments.revokeConfirm') %>">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <label class="sr-only" for="prv-<%= row.id %>"><%= t('admin.punishments.revokeReason') %></label>
+            <input id="prv-<%= row.id %>" name="reason" type="text" maxlength="255" required placeholder="<%= t('admin.punishments.revokeReason') %>">
+            <button class="a-btn is-small is-quiet" type="submit"><%= t('admin.punishments.revoke') %></button>
+          </form>
+          <% } %>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table></div>
+  <% } %>
+</section>
+
+<div class="a-grid">
+  <section aria-labelledby="ss-title">
+    <h2 id="ss-title"><%= t('admin.player.sessions') %></h2>
+    <% if (sessions.length === 0) { %><p class="a-empty"><%= t('admin.player.sessionsNone') %></p><% } else { %>
+    <div class="a-scroll"><table class="a-table">
+      <caption class="sr-only"><%= t('admin.player.sessions') %></caption>
+      <thead><tr><th scope="col"><%= t('admin.col.from') %></th><th scope="col"><%= t('admin.col.to') %></th><% if (seeIps) { %><th scope="col">IP</th><% } %></tr></thead>
+      <tbody>
+        <% sessions.forEach((session) => { %><tr>
+          <td><%= fmt.dateTime(session.connectedAt) %></td>
+          <td><%= session.disconnectedAt ? fmt.dateTime(session.disconnectedAt) : '—' %></td>
+          <% if (seeIps) { %><td><code><%= session.ip || '—' %></code></td><% } %>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table></div>
+    <p class="a-note"><%= t('admin.player.sessionsNote') %></p>
+    <% } %>
+  </section>
+  <section aria-labelledby="rp-title">
+    <h2 id="rp-title"><%= t('admin.player.reports') %></h2>
+    <% if (reports.length === 0) { %><p class="a-empty"><%= t('admin.reports.empty') %></p><% } else { %>
+    <ul>
+      <% reports.forEach((report) => { %><li><%= fmt.date(report.createdAt) %> · <span class="a-chip is-muted"><%= t('admin.caseStatus.' + report.status) %></span> <%= report.reason %></li>
+      <% }) %>
+    </ul>
+    <% } %>
+  </section>
+</div>

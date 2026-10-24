@@ -1,0 +1,28 @@
+<%- include('partials/head', { title: t('admin.nav.vip') }) %>
+<h1><%= t('admin.vip.title') %></h1>
+<p class="a-lead"><%= t('admin.vip.lead') %></p>
+
+<details class="a-card a-more">
+  <summary><%= t('admin.vip.newTitle') %></summary>
+  <%- include('partials/vip-tier-form', { action: '/admin/vip/tiers', tier: null, prefix: 'nt', submit: t('admin.vip.create') }) %>
+</details>
+
+<% if (tiers.length === 0) { %>
+<p class="a-empty"><%= t('admin.vip.empty') %></p>
+<% } else { tiers.forEach((tier) => { %>
+<section class="a-card" aria-labelledby="tier-<%= tier.id %>">
+  <h2 id="tier-<%= tier.id %>"><%= tier.name %> <code><%= tier.code %></code> <span class="a-chip <%= tier.active ? 'is-ok' : 'is-muted' %>"><%= tier.active ? t('admin.vip.active') : t('admin.vip.inactive') %></span></h2>
+  <p><%= fmt.euro(tier.priceCents) %> · <%= t.plural('admin.vip.days', tier.periodDays) %> · <%= t('admin.vip.used', { grants: tier._count.grants, requests: tier._count.requests }) %></p>
+  <details class="a-more">
+    <summary><%= t('admin.vip.edit') %></summary>
+    <%- include('partials/vip-tier-form', { action: '/admin/vip/tiers/' + tier.id, tier, prefix: 't' + tier.id, submit: t('admin.common.save') }) %>
+    <% if (tier._count.grants === 0 && tier._count.requests === 0) { %>
+    <form method="post" action="/admin/vip/tiers/<%= tier.id %>/delete" data-confirm="<%= t('admin.vip.deleteConfirm') %>">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <button class="a-btn is-danger is-small" type="submit"><%= t('admin.vip.delete') %></button>
+    </form>
+    <% } else { %><p class="a-note"><%= t('admin.vip.inUse') %></p><% } %>
+  </details>
+</section>
+<% }) } %>
+<%- include('partials/foot') %>

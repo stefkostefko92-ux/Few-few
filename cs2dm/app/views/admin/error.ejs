@@ -1,0 +1,7 @@
+<%- include('partials/head', { title: t('admin.error.' + kind + '.title') }) %>
+<section class="a-card a-login" aria-labelledby="error-title">
+  <h1 id="error-title"><%= t('admin.error.' + kind + '.title') %></h1>
+  <p class="a-lead"><%= t('admin.error.' + kind + '.text') %></p>
+  <p><a class="a-btn is-quiet" href="/admin"><%= t('admin.error.back') %></a></p>
+</section>
+<%- include('partials/foot') %>

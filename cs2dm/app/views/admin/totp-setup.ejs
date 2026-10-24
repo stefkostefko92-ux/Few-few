@@ -1,0 +1,22 @@
+<%- include('partials/head', { title: t('admin.setup.title') }) %>
+<section class="a-card a-login" aria-labelledby="setup-title">
+  <h1 id="setup-title"><%= t('admin.setup.title') %></h1>
+  <% if (error) { %><p class="a-result is-error" role="alert"><%= t('admin.result.' + error) %></p><% } %>
+  <p class="a-lead"><%= t('admin.setup.lead') %></p>
+  <ol>
+    <% t.list('admin.setup.steps').forEach((step) => { %><li><%= step %></li>
+    <% }) %>
+  </ol>
+  <img class="a-qr" src="<%= setup.qrDataUrl %>" width="232" height="232" alt="<%= t('admin.setup.qrAlt') %>">
+  <p class="a-note"><%= t('admin.setup.manual') %></p>
+  <p class="a-secret"><code><%= setup.grouped %></code></p>
+  <form class="a-form is-stack" method="post" action="/admin/2fa/setup">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <div class="a-field">
+      <label for="setup-code"><%= t('admin.setup.label') %></label>
+      <input id="setup-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="32" required>
+    </div>
+    <button class="a-btn" type="submit"><%= t('admin.setup.submit') %></button>
+  </form>
+</section>
+<%- include('partials/foot') %>

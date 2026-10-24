@@ -1,0 +1,12 @@
+<%- include('partials/head', { title: t('admin.recovery.title') }) %>
+<section class="a-card a-login" aria-labelledby="codes-title">
+  <h1 id="codes-title"><%= t('admin.recovery.title') %></h1>
+  <p class="a-lead"><%= t('admin.recovery.lead') %></p>
+  <p class="a-warn"><%= t('admin.recovery.warn') %></p>
+  <ul class="a-codes" aria-label="<%= t('admin.recovery.title') %>">
+    <% codes.forEach((code) => { %><li><code><%= code %></code></li>
+    <% }) %>
+  </ul>
+  <p><a class="a-btn" href="/admin"><%= t('admin.recovery.done') %></a></p>
+</section>
+<%- include('partials/foot') %>

@@ -1,0 +1,1433 @@
+{
+  "site": {
+    "skip": "Vai al contenuto",
+    "navLabel": "Navigazione principale",
+    "langLabel": "Lingua",
+    "crumbsLabel": "Percorso della pagina",
+    "brandLabel": "CarbonStealth.eu | Dust2 DM — pagina iniziale",
+    "footer": {
+      "legalLabel": "Informazioni legali",
+      "join": "Entrare dalla console",
+      "madeBy": "Created and Designed by Carbon Stealth VCC",
+      "valve": "Counter-Strike 2 e Steam sono marchi di Valve Corporation. Il server non è affiliato a Valve né da essa approvato.",
+      "explore": "Il sito",
+      "legal": "Note legali"
+    },
+    "motion": {
+      "pause": "Ferma le animazioni",
+      "play": "Riattiva le animazioni"
+    }
+  },
+  "nav": {
+    "home": "Inizio",
+    "leaderboard": "Classifica",
+    "bans": "Lista dei ban",
+    "vip": "VIP",
+    "rules": "Regole",
+    "privacy": "Privacy",
+    "vipTerms": "Condizioni VIP",
+    "imprint": "Note legali",
+    "contact": "Contatti",
+    "matches": "Partite"
+  },
+  "meta": {
+    "ogAlt": "CarbonStealth.eu | Dust2 DM — server CS2 Deathmatch solo su de_dust2",
+    "home": {
+      "title": "Server CS2 Dust2 Deathmatch | CarbonStealth.eu",
+      "description": "Server CS2 gratuito solo su de_dust2: Deathmatch tutti contro tutti, stato in tempo reale, classifica con XP e livelli, profili dei giocatori e lista dei ban.",
+      "keywords": "server CS2, Dust2 Deathmatch, server CS2 DM, de_dust2, server della community di Counter-Strike 2, Carbon Stealth"
+    },
+    "leaderboard": {
+      "title": "Classifica Dust2 DM — XP, K/D, HS% | CarbonStealth.eu",
+      "description": "I migliori giocatori del server CS2 CarbonStealth.eu | Dust2 DM, per stagione e di sempre: XP, livello, uccisioni, K/D e percentuale di colpi alla testa.",
+      "keywords": "classifica CS2, statistiche Dust2 DM, classifica K/D, XP e livelli CS2, migliori giocatori CS2, Carbon Stealth"
+    },
+    "player": {
+      "title": "{name} — statistiche CS2 Dust2 DM",
+      "description": "{name}: livello {level}, {kills} uccisioni, K/D {kd}, HS {hs} sul server CS2 Dust2 DM. Maestria con le armi e mappa delle uccisioni.",
+      "keywords": "statistiche giocatore CS2, K/D, percentuale di colpi alla testa, maestria con le armi, heatmap Dust2, Carbon Stealth"
+    },
+    "bans": {
+      "title": "Lista dei ban del server Dust2 DM | CarbonStealth.eu",
+      "description": "I ban attivi sul server CS2 CarbonStealth.eu | Dust2 DM: giocatore, categoria della violazione, data e scadenza. I ban scaduti e revocati non compaiono.",
+      "keywords": "lista ban CS2, ban Dust2 DM, gioco leale, regole anti-cheat, ricorso contro un ban, Carbon Stealth"
+    },
+    "vip": {
+      "title": "VIP Dust2 DM — solo estetica | CarbonStealth.eu",
+      "description": "Il VIP del server CS2 CarbonStealth.eu | Dust2 DM è solo estetico: tag, colore del nome e posto riservato, senza vantaggi in gioco. Prezzi IVA inclusa.",
+      "keywords": "VIP CS2, VIP senza vantaggi, VIP estetico, VIP Dust2 DM, sostenere un server CS2, Carbon Stealth"
+    },
+    "rules": {
+      "title": "Regole del server CS2 Dust2 DM | CarbonStealth.eu",
+      "description": "Le regole di CarbonStealth.eu | Dust2 DM: niente cheat, insulti, pubblicità o abuso di bug. Quali sono le sanzioni e come fare ricorso contro un ban.",
+      "keywords": "regole server CS2, niente cheat, sanzioni CS2, ricorso contro un ban, regole Dust2 DM, Carbon Stealth"
+    },
+    "privacy": {
+      "title": "Privacy e dati personali | CarbonStealth.eu Dust2 DM",
+      "description": "Quali dati raccolgono il server CS2 CarbonStealth.eu | Dust2 DM e il suo sito, perché, per quanto li conserviamo e i Suoi diritti GDPR. Nessun cookie.",
+      "keywords": "privacy, GDPR, dati personali, SteamID64, dati di Steam, Carbon Stealth"
+    },
+    "vipTerms": {
+      "title": "Condizioni generali VIP | CarbonStealth.eu Dust2 DM",
+      "description": "Condizioni VIP del server CS2 Dust2 DM: servizio digitale, prezzi IVA inclusa, bonifico con fattura, 14 giorni per il recesso, nessun rinnovo automatico.",
+      "keywords": "condizioni VIP, diritto di recesso, servizio digitale, prezzi IVA inclusa, condizioni VIP CS2, Carbon Stealth"
+    },
+    "imprint": {
+      "title": "Note legali — Carbon Stealth VCC | CarbonStealth.eu",
+      "description": "L'editore del server CS2 e del sito CarbonStealth.eu | Dust2 DM: Carbon Stealth VCC — dati societari, indirizzo e come contattarci.",
+      "keywords": "note legali, editore, Carbon Stealth VCC, dati societari, server CS2 Dust2 DM, Carbon Stealth"
+    },
+    "contact": {
+      "title": "Contatti e punto di contatto DSA | CarbonStealth.eu",
+      "description": "Come contattare il team di CarbonStealth.eu | Dust2 DM: domande, ricorsi contro i ban, richieste GDPR e segnalazioni di contenuti illegali ai sensi del DSA.",
+      "keywords": "contatti, punto di contatto DSA, ricorso contro un ban, segnalazione di contenuti illegali, richiesta GDPR, Carbon Stealth"
+    },
+    "notFound": {
+      "title": "Pagina non trovata | CarbonStealth.eu Dust2 DM",
+      "description": "Questa pagina non esiste oppure il giocatore ha nascosto il proprio profilo. Torni all'inizio, alla classifica o alla lista dei ban di CarbonStealth.eu."
+    },
+    "serverError": {
+      "title": "Errore del sito | CarbonStealth.eu Dust2 DM",
+      "description": "Qualcosa è andato storto nel caricare la pagina. Il server di gioco non è coinvolto: riprovi tra poco oppure entri direttamente con connect."
+    },
+    "tooMany": {
+      "title": "Troppe richieste | CarbonStealth.eu Dust2 DM",
+      "description": "Ha inviato troppe richieste in poco tempo. Attenda circa un minuto e riprovi: il limite protegge il sito e il database del server."
+    },
+    "error": {
+      "keywords": "server CS2, Dust2 DM, CarbonStealth.eu, Deathmatch, Counter-Strike 2, Carbon Stealth"
+    },
+    "matches": {
+      "title": "Ultime partite su Dust2 DM | CarbonStealth.eu",
+      "description": "Le schede delle ultime partite sul server CS2 CarbonStealth.eu | Dust2 DM: chi è primo, quante uccisioni, serie migliori e armi. Conservate 90 giorni.",
+      "keywords": "partite CS2, risultati delle partite, Dust2 Deathmatch, statistiche CS2, ultime partite, Carbon Stealth"
+    },
+    "match": {
+      "title": "Partita n. {id} su {map} — vince {name}",
+      "description": "La partita del {date} sul server CS2 Dust2 DM: {kills} uccisioni, {players} giocatori. Primo è {name} con {topKills} uccisioni.",
+      "keywords": "partita CS2, risultati della partita, Dust2 Deathmatch, statistiche CS2, migliori giocatori, Carbon Stealth"
+    }
+  },
+  "season": {
+    "allTime": "Di sempre",
+    "numbered": "Stagione {n}",
+    "current": "in corso"
+  },
+  "common": {
+    "unavailable": "I dati non sono disponibili in questo momento. Riprovi tra poco.",
+    "permanent": "permanente",
+    "updated": "Ultimo aggiornamento: {date}"
+  },
+  "table": {
+    "rank": "#",
+    "player": "Giocatore",
+    "level": "Livello",
+    "xp": "XP",
+    "kills": "Uccisioni",
+    "deaths": "Morti",
+    "kd": "K/D",
+    "hs": "HS%",
+    "caption": "{season}, ordinati per {sort}"
+  },
+  "home": {
+    "titleHost": "CarbonStealth.eu",
+    "titleName": "Dust2 DM",
+    "lead": "Solo de_dust2. Deathmatch tutti contro tutti: niente squadre, niente attese, si rientra in gioco subito dopo la morte.",
+    "status": {
+      "label": "Stato del server",
+      "live": "In tempo reale",
+      "unknown": "Stato sconosciuto",
+      "unknownHint": "Il sito non riceve dati dal server in questo momento. Non significa che sia spento: provi a entrare.",
+      "offline": "Spento",
+      "offlineHint": "Il server non risponde alle richieste di stato. Probabilmente si sta riavviando o aggiornando — riprovi tra qualche minuto.",
+      "players": "Giocatori",
+      "mode": "Modalità",
+      "map": "Mappa",
+      "updated": "Aggiornato alle {time}",
+      "bots": {
+        "one": "e {count} bot",
+        "other": "e {count} bot"
+      },
+      "empty": "Al momento non gioca nessuno: entri per primo. I bot completano il server fino a 10 partecipanti.",
+      "slots": "slot"
+    },
+    "join": {
+      "button": "Entra nel server",
+      "note": "Il pulsante apre Steam e La collega direttamente. Serve solo Counter-Strike 2.",
+      "consoleTitle": "Console",
+      "consoleLabel": "Oppure apra la console di CS2 (tasto ~) e scriva:",
+      "copy": "Copia",
+      "copied": "Copiato",
+      "copyFailed": "La copia non è riuscita: selezioni il comando a mano."
+    },
+    "top": {
+      "title": "Top 10 — {season}",
+      "all": "Classifica completa",
+      "empty": "In questa stagione non ci sono ancora giocatori in classifica. Entri e faccia la prima uccisione.",
+      "inviteTitle": "Sia il primo in classifica",
+      "inviteText": "Nessuno ha ancora XP in questa stagione. La Sua prima uccisione La porta in cima.",
+      "inviteLink": "Come si guadagna XP"
+    },
+    "bans": {
+      "title": "Ultimi ban",
+      "all": "Lista completa dei ban",
+      "empty": "Nessun ban attivo.",
+      "until": "fino al {date}"
+    },
+    "faq": {
+      "title": "Come iniziare",
+      "join": {
+        "q": "Come entro nel server?",
+        "a": "Prema «Entra nel server» oppure apra la console di CS2 (tasto ~) e scriva connect {address}. Se la console non si apre, la attivi nelle impostazioni del gioco (Game → Enable Developer Console)."
+      },
+      "install": {
+        "q": "Devo installare qualcosa?",
+        "a": "No: serve solo Counter-Strike 2 su Steam. La mappa de_dust2 è inclusa nel gioco e il server non richiede mod da parte Sua."
+      },
+      "mode": {
+        "q": "Qual è la modalità di gioco?",
+        "a": "Deathmatch tutti contro tutti, solo su de_dust2: dopo la morte si rientra subito, senza squadre e senza round. Le modalità delle armi cambiano periodicamente; quella attuale è indicata nello stato qui sopra."
+      },
+      "xp": {
+        "q": "Come si guadagnano XP e livelli?",
+        "a": "Con le uccisioni: 10 XP ciascuna più bonus per colpo alla testa, coltello, noscope, attraverso i muri, attraverso il fumo, vendetta e taglie riscosse. Il livello n richiede in totale 100 · n · (n − 1) / 2 XP."
+      },
+      "bots": {
+        "q": "Le uccisioni dei bot contano?",
+        "a": "No: un'uccisione che coinvolge un bot non dà XP e non viene registrata, così nessuno può «farmare» un server vuoto."
+      },
+      "vip": {
+        "q": "Il VIP dà vantaggi in gioco?",
+        "a": "No: il VIP è solo estetico, con tag, colore del nome e posto riservato. Nulla che influisca sul gioco."
+      },
+      "stats": {
+        "q": "Dove vedo le mie statistiche?",
+        "a": "Nella classifica: trovi il Suo nome e apra il profilo. Lì ci sono K/D, precisione, maestria con le armi e la mappa delle uccisioni degli ultimi 30 giorni."
+      },
+      "skins": {
+        "q": "Ci sono skin, coltelli o gradi?",
+        "a": "No: il server rispetta le linee guida di Valve per i server della community, che vietano i plugin per skin, coltelli, guanti, agenti e gradi falsi."
+      },
+      "banned": {
+        "q": "Ho ricevuto un ban ingiusto: cosa faccio?",
+        "a": "Ci scriva dalla pagina dei contatti indicando il Suo SteamID64 e la data del ban. Il ricorso con accesso tramite Steam arriverà presto."
+      }
+    },
+    "hero": {
+      "play": "Gioca ora",
+      "discord": "Entra su Discord",
+      "consoleHint": "Oppure nella console di CS2 (~):"
+    },
+    "facts": {
+      "label": "In breve",
+      "respawn": "Rientro in 1,5 s",
+      "protect": "5 s di protezione",
+      "ammo": "Riserva infinita"
+    },
+    "why": {
+      "title": "Perché giocare qui",
+      "map": {
+        "t": "Solo de_dust2, a ogni ora",
+        "d": "Una mappa che conosce in ogni angolo. Niente votazioni né cambi di mappa: entra e spara."
+      },
+      "respawn": {
+        "t": "Rientri in 1,5 secondi",
+        "d": "Tutti contro tutti, senza squadre né round. Se muore, è di nuovo in gioco quasi subito."
+      },
+      "ammo": {
+        "t": "Riserva di munizioni infinita",
+        "d": "La riserva si rifornisce a ogni reload. Spari senza contare."
+      },
+      "protect": {
+        "t": "5 secondi di protezione",
+        "d": "Dopo ogni rientro è protetto per cinque secondi: nessuno La può uccidere mentre si orienta."
+      },
+      "awp": {
+        "t": "AWP consentito",
+        "d": "Il fucile di precisione c’è, ma al massimo 3 contemporaneamente sul server: resta spazio anche per le altre armi."
+      },
+      "modes": {
+        "t": "Modalità che si alternano",
+        "d": "Le modalità cambiano da sole, così la partita non annoia mai:"
+      },
+      "xp": {
+        "t": "XP e livelli",
+        "d": "10 XP per ogni uccisione, più bonus per:",
+        "chip": {
+          "headshot": "testa",
+          "knife": "coltello",
+          "noscope": "noscope",
+          "wallbang": "attraverso i muri",
+          "smoke": "attraverso il fumo",
+          "revenge": "vendetta"
+        }
+      },
+      "mastery": {
+        "t": "Maestria con le armi",
+        "d": "Continui a uccidere con la Sua arma preferita per ottenere un badge, in base alle uccisioni:"
+      },
+      "bounty": {
+        "t": "Taglie sulle serie",
+        "d": "Una serie di {min} uccisioni senza morire mette una taglia sulla Sua testa: fino a {cap} XP per chi La abbatte."
+      },
+      "fair": {
+        "t": "Niente pay-to-win",
+        "d": "Il VIP è solo estetico: tag, colore del nome e slot riservato. Un vantaggio nel gioco non si compra."
+      },
+      "bans": {
+        "t": "Moderazione trasparente",
+        "d": "Lista dei ban pubblica e amministratori attivi. Veda le regole e chi è stato sanzionato, senza supposizioni."
+      },
+      "commands": {
+        "t": "Comandi in chat",
+        "d": "Per armi, livello, segnalazioni di cheater e lingua:",
+        "gun": "arma",
+        "rank": "livello",
+        "report": "cheater",
+        "lang": "lingua"
+      }
+    },
+    "cta": {
+      "title": "Pronto per Dust2?",
+      "text": "Apre Steam e La collega direttamente. Serve solo Counter-Strike 2: niente da installare, nessuna registrazione."
+    },
+    "events": {
+      "title": "Eventi",
+      "live": "In corso",
+      "upcoming": "In arrivo",
+      "to": "a",
+      "tags": "Dettagli dell'evento",
+      "kinds": {
+        "XP_BOOST": "Weekend XP",
+        "MODE": "Modalità speciale",
+        "COMMUNITY": "Community"
+      },
+      "note": "Gli orari sono nel fuso orario del server ({tz}). Il moltiplicatore XP vale allo stesso modo per ogni giocatore.",
+      "ld": {
+        "XP_BOOST": "Weekend XP sul server CS2 Dust2 DM: ogni uccisione dà XP {multiplier}.",
+        "MODE": "Modalità speciale {mode} sul server CS2 Dust2 DM.",
+        "COMMUNITY": "Evento della community sul server CS2 Dust2 DM: entri e giochi con tutti."
+      }
+    },
+    "matches": {
+      "title": "Ultime partite",
+      "all": "Tutte le partite"
+    }
+  },
+  "leaderboard": {
+    "h1": "Classifica",
+    "lead": "Scelga una stagione e un ordinamento. Contano solo le uccisioni contro persone: i bot non danno XP.",
+    "form": {
+      "season": "Stagione",
+      "sort": "Ordina per",
+      "show": "Mostra"
+    },
+    "sort": {
+      "xp": "XP",
+      "kills": "uccisioni",
+      "kd": "K/D",
+      "hs": "HS%"
+    },
+    "sortBy": "Ordina per {sort}",
+    "ratioNote": "Con l'ordinamento per K/D e HS% entrano in classifica solo i giocatori con almeno {min} uccisioni nella stagione scelta.",
+    "empty": "Nessun giocatore in classifica per questa scelta.",
+    "total": {
+      "one": "{count} giocatore in classifica",
+      "other": "{count} giocatori in classifica"
+    },
+    "how": {
+      "title": "Come funzionano XP e livelli",
+      "lead": "Ogni uccisione dà XP e i bonus si sommano. Le uccisioni che coinvolgono un bot non contano.",
+      "event": "Evento",
+      "xp": "XP",
+      "rewards": {
+        "kill": "Uccisione",
+        "headshot": "Colpo alla testa (bonus)",
+        "knife": "Con il coltello (bonus)",
+        "noscope": "Noscope con il fucile di precisione (bonus)",
+        "wallbang": "Attraverso un muro (bonus)",
+        "smoke": "Attraverso il fumo (bonus)",
+        "revenge": "Vendetta sulla propria nemesi (bonus)"
+      },
+      "bountyRow": "Taglia riscossa (bonus)",
+      "bountyValue": "il valore della taglia",
+      "level": "Il livello deriva dagli XP totali: il livello n richiede 100 · n · (n − 1) / 2 XP — 100 per il livello 2, 300 per il livello 3, 4500 per il livello 10.",
+      "bounty": "Una serie di {min} uccisioni senza morire mette una taglia sulla Sua testa: 25 XP per ogni uccisione dopo la quarta, fino a {cap} XP. Chi La abbatte la riscuote.",
+      "revenge": "Se qualcuno L'ha uccisa almeno 3 volte di fila e Lei lo abbatte, è una vendetta: +5 XP."
+    },
+    "pager": {
+      "label": "Pagine",
+      "prev": "Precedente",
+      "next": "Successiva",
+      "page": "Pagina {page} di {pages}"
+    },
+    "inviteTitle": "La classifica Le aspetta",
+    "matchesLink": "Le schede delle ultime partite"
+  },
+  "player": {
+    "steamId": "SteamID64",
+    "firstSeen": "Prima volta sul server",
+    "lastSeen": "Ultima volta sul server",
+    "steamProfile": "Profilo Steam",
+    "avatarAlt": "Avatar di {name}",
+    "level": "Livello {level}",
+    "levelLabel": "Avanzamento verso il livello {next}",
+    "progress": "{current} di {span} XP per il livello {next}",
+    "xpTotal": "{xp} XP in totale",
+    "cards": {
+      "season": "Questa stagione — {season}",
+      "allTime": "Di sempre"
+    },
+    "stats": {
+      "kills": "Uccisioni",
+      "deaths": "Morti",
+      "assists": "Assist",
+      "kd": "K/D",
+      "hs": "Colpi alla testa",
+      "accuracy": "Precisione",
+      "bestStreak": "Serie migliore",
+      "bounties": "Taglie riscosse",
+      "revenges": "Vendette",
+      "xp": "XP",
+      "playtime": "Tempo di gioco",
+      "damage": "Danni inflitti"
+    },
+    "noStats": "Nessuna statistica registrata per questo periodo.",
+    "duration": "{h} h {m} min",
+    "mastery": {
+      "title": "Maestria con le armi",
+      "lead": "Di sempre. Il distintivo dipende dalle uccisioni con l'arma: Bronze 100, Silver 500, Gold 1500, Platinum 4000, Diamond 10.000.",
+      "weapon": "Arma",
+      "kills": "Uccisioni",
+      "hs": "HS%",
+      "badge": "Distintivo",
+      "progress": "Prossimo distintivo",
+      "next": "ancora {remaining} per {tier}",
+      "max": "distintivo massimo",
+      "none": "nessun distintivo",
+      "empty": "Ancora nessuna uccisione con le armi.",
+      "progressLabel": "Avanzamento verso {tier}",
+      "tiers": {
+        "bronze": "Bronze",
+        "silver": "Silver",
+        "gold": "Gold",
+        "platinum": "Platinum",
+        "diamond": "Diamond"
+      }
+    },
+    "heatmap": {
+      "title": "Dove uccide e dove muore",
+      "lead": "Gli ultimi {days} giorni, esclusa l'ultima ora: solo celle aggregate di circa {units} unità di mappa, mai posizioni in tempo reale.",
+      "killsTitle": "Uccisioni",
+      "deathsTitle": "Morti",
+      "killsDesc": {
+        "one": "{count} uccisione negli ultimi {days} giorni; la maggior parte nel settore {sector}.",
+        "other": "{count} uccisioni negli ultimi {days} giorni; la maggior parte nel settore {sector}."
+      },
+      "deathsDesc": {
+        "one": "{count} morte negli ultimi {days} giorni; la maggior parte nel settore {sector}.",
+        "other": "{count} morti negli ultimi {days} giorni; la maggior parte nel settore {sector}."
+      },
+      "empty": "Nessun dato negli ultimi {days} giorni.",
+      "legend": "Un colore più intenso indica più eventi nella cella. La griglia A–H × 1–8 è nostra, non il radar del gioco."
+    }
+  },
+  "bans": {
+    "h1": "Lista dei ban",
+    "lead": "Qui compaiono solo i ban attivi: quelli scaduti e revocati non vengono mostrati. Il motivo e i dati dell'amministratore non sono pubblici.",
+    "col": {
+      "player": "Giocatore",
+      "steamId": "SteamID64",
+      "category": "Categoria",
+      "created": "Data",
+      "expires": "Scadenza"
+    },
+    "caption": "Ban attivi",
+    "empty": "Nessun ban attivo.",
+    "total": {
+      "one": "{count} ban attivo",
+      "other": "{count} ban attivi"
+    },
+    "appeal": {
+      "title": "Ritiene che il ban sia un errore?",
+      "text": "Il ricorso avverrà con l'accesso tramite Steam. Fino ad allora ci scriva dalla pagina dei contatti indicando il Suo SteamID64 e la data del ban.",
+      "link": "Vai ai contatti"
+    },
+    "categories": {
+      "CHEATING": "Cheat",
+      "TOXICITY": "Insulti e tossicità",
+      "EXPLOIT": "Abuso di bug",
+      "SPAM": "Spam",
+      "IMPERSONATION": "Sostituzione di persona",
+      "OTHER": "Altro"
+    }
+  },
+  "vip": {
+    "h1": "VIP",
+    "lead": "Il VIP è solo estetico: non dà alcun vantaggio in gioco. Sostiene il server e riceve un segno di appartenenza.",
+    "perks": {
+      "title": "Cosa riceve",
+      "items": [
+        "Il tag VIP davanti al nome nella chat e nel tabellone.",
+        "Un colore del nome nella chat.",
+        "Un posto riservato: non viene espulso per liberare spazio quando il server è pieno."
+      ]
+    },
+    "fair": {
+      "title": "Nessun vantaggio in gioco",
+      "text": "Il VIP non ha più vita, rientro più rapido, armi migliori o limitazioni più leggere: le regole sono le stesse per tutti. Skin, coltelli e gradi non esistono per nessuno, perché le linee guida di Valve per i server della community li vietano."
+    },
+    "tiers": {
+      "title": "Prezzi",
+      "name": "Livello",
+      "period": "Periodo",
+      "price": "Prezzo IVA inclusa",
+      "caption": "Livelli VIP e prezzi IVA inclusa",
+      "empty": "Non sono ancora stati annunciati livelli VIP. I prezzi compariranno qui non appena saranno definiti.",
+      "days": {
+        "one": "{count} giorno",
+        "other": "{count} giorni"
+      }
+    },
+    "pay": {
+      "title": "Pagamento",
+      "items": [
+        "Il pagamento è manuale: tramite bonifico bancario, dietro fattura.",
+        "Nessun rinnovo automatico: il VIP scade alla fine del periodo e un nuovo periodo inizia solo su Sua richiesta.",
+        "La richiesta tramite il sito arriverà presto. Fino ad allora ci scriva dalla pagina dei contatti."
+      ]
+    },
+    "terms": "Condizioni generali VIP",
+    "contact": "Vai ai contatti"
+  },
+  "rules": {
+    "h1": "Regole del server",
+    "lead": "Il server è fatto per il gioco leale e il buon umore. Le regole valgono per tutti, anche per i VIP e gli amministratori.",
+    "items": {
+      "cheats": {
+        "title": "Niente cheat",
+        "text": "Sono vietati programmi e script che danno un vantaggio: aimbot, wallhack, triggerbot, macro e simili. La sanzione è il ban permanente."
+      },
+      "toxicity": {
+        "title": "Niente insulti",
+        "text": "Niente insulti, minacce, razzismo o molestie: in chat, in voce e nel nome."
+      },
+      "ads": {
+        "title": "Niente pubblicità",
+        "text": "Niente pubblicità di altri server, siti, servizi o vendite: in chat, in voce e nel nome."
+      },
+      "exploits": {
+        "title": "Niente abuso di bug",
+        "text": "Se trova un bug nella mappa o nel gioco che dà un vantaggio (per esempio un punto in cui non si può essere colpiti), ce lo segnali e non lo usi."
+      },
+      "impersonation": {
+        "title": "Niente sostituzione di persona",
+        "text": "Non si spacci per un amministratore, per un altro giocatore o per il team del server."
+      },
+      "spam": {
+        "title": "Niente spam",
+        "text": "Niente inondazioni di chat e voce e nessun abuso dei comandi."
+      }
+    },
+    "penalties": {
+      "title": "Sanzioni",
+      "lead": "La sanzione dipende dalla violazione e dal fatto che si ripeta:",
+      "items": [
+        "Un avvertimento.",
+        "Silenziamento della voce (mute), della chat (gag) o di entrambe.",
+        "Espulsione dal server (kick).",
+        "Ban temporaneo: un moderatore può dare fino a 7 giorni, un amministratore anche di più.",
+        "Ban permanente: per i cheat e per le violazioni gravi o ripetute."
+      ],
+      "public": "I ban attivi sono visibili nella lista dei ban: solo nome, SteamID64, categoria, data e scadenza. Il motivo non è pubblico."
+    },
+    "appeal": {
+      "title": "Ricorso",
+      "items": [
+        "Il ricorso avverrà con l'accesso tramite Steam su questo sito.",
+        "Fino ad allora ci scriva dalla pagina dei contatti indicando il Suo SteamID64, la data e perché ritiene che la sanzione sia un errore.",
+        "Ogni ricorso viene esaminato da una persona del team e riceve una risposta motivata."
+      ]
+    },
+    "toBans": "Vai alla lista dei ban",
+    "toContact": "Vai ai contatti"
+  },
+  "privacy": {
+    "h1": "Privacy",
+    "lead": "Come il server CarbonStealth.eu | Dust2 DM e questo sito trattano i dati personali, in breve e senza clausole nascoste.",
+    "sections": {
+      "controller": {
+        "title": "Chi è responsabile dei dati",
+        "body": [
+          "Il titolare del trattamento è {company}, editore del server e del sito. I dati societari sono nelle note legali; per qualsiasi domanda sui Suoi dati ci scriva dalla pagina dei contatti."
+        ]
+      },
+      "game": {
+        "title": "Cosa registriamo quando gioca",
+        "items": [
+          "SteamID64: il numero del Suo account Steam, a cui sono collegate statistiche e sanzioni.",
+          "Il Suo nome in gioco (nickname di Steam) al momento della partita.",
+          "L'indirizzo IP all'ingresso nel server, per la protezione dagli abusi e il rispetto dei ban; lo conserviamo per {sessionsDays} giorni.",
+          "Statistiche: uccisioni, morti, assist, colpi sparati e a segno, serie, XP, tempo di gioco e uccisioni per arma.",
+          "Ogni uccisione con l'arma, l'ora e le coordinate sulla mappa, per le mappe delle uccisioni; le conserviamo per {killsDays} giorni.",
+          "Registrazioni SourceTV (demo) delle partite mentre ci sono persone sul server: nickname, SteamID64, movimenti, colpi e messaggi in chat, per verificare le segnalazioni di cheat e di violazioni; la chat vocale non viene registrata. Le conserviamo fino a {demosDays} giorni.",
+          "Se disattiva i suoni delle serie di uccisioni (!qs) o cambia lingua (!lang), il server ricorda il Suo SteamID64 con questa scelta fino al prossimo aggiornamento delle mod del server.",
+          "Sanzioni: tipo, categoria, scadenza e un motivo interno visibile solo agli amministratori.",
+          "Gli ultimi 2000 eventi circa del server (ingressi, uccisioni, chat) restano brevemente nella memoria operativa per la moderazione e vengono sovrascritti di continuo; la chat non viene salvata nel database."
+        ]
+      },
+      "website": {
+        "title": "Cosa registriamo quando visita il sito",
+        "items": [
+          "Il sito non usa cookie, strumenti di analisi, pubblicità o tracker: per questo non c'è nemmeno un banner per il consenso.",
+          "Il Suo indirizzo IP serve solo a limitare il numero di richieste (protezione dal sovraccarico), resta in memoria fino a 1 minuto e non viene scritto in alcun registro.",
+          "Se un giocatore ha effettuato l'accesso al sito con Steam, il suo avatar viene caricato dai server di Steam (Valve): in quel caso il Suo browser si collega a essi."
+        ]
+      },
+      "purposes": {
+        "title": "Perché e su quale base giuridica",
+        "items": [
+          "Gestione del gioco, statistiche e classifica pubblica: legittimo interesse (art. 6, par. 1, lett. f) GDPR), perché i giocatori vogliono vedere i propri risultati. Può opporsi: in tal caso La nascondiamo dalle classifiche e dal profilo.",
+          "Sicurezza, protezione dai cheater (comprese le registrazioni demo) e applicazione dei ban (compreso l'indirizzo IP): legittimo interesse.",
+          "Lista pubblica dei ban con dati minimi (nome, SteamID64, categoria, data e scadenza): legittimo interesse, per trasparenza e tutela della community. Il motivo non è pubblico.",
+          "VIP: esecuzione di un contratto (art. 6, par. 1, lett. b) e obbligo di legge per i documenti contabili (lett. c).",
+          "Ricorsi e segnalazioni: legittimo interesse, per decidere su ogni caso."
+        ]
+      },
+      "retention": {
+        "title": "Per quanto tempo conserviamo i dati",
+        "items": [
+          "Indirizzi IP all'ingresso (sessioni): {sessionsDays} giorni, poi vengono cancellati automaticamente.",
+          "Uccisioni con coordinate: {killsDays} giorni, poi vengono cancellate automaticamente.",
+          "Demo (registrazioni SourceTV): fino a {demosDays} giorni, poi vengono cancellate automaticamente (prima, se occupano troppo spazio).",
+          "Ricorsi e segnalazioni: 1 anno dopo la decisione, poi vengono cancellati automaticamente.",
+          "Statistiche: finché il server è attivo o finché non ne chiede la cancellazione.",
+          "Sanzioni: finché sono necessarie per la sicurezza del server.",
+          "Dati di fatturazione per il VIP: per il tempo richiesto dalla legge bulgara sulla contabilità.",
+          "Schede delle partite (nickname e risultato in ogni partita) — {matchesDays} giorni, poi cancellate automaticamente."
+        ]
+      },
+      "recipients": {
+        "title": "Chi altro vede i dati",
+        "items": [
+          "Ogni visitatore vede la classifica, i profili dei giocatori (tranne quelli nascosti) e la lista dei ban, con i dati descritti sopra.",
+          "Il fornitore del server su cui funzionano il gioco e il database tratta i dati per nostro conto. Il server si trova nell'UE.",
+          "Valve (Steam) tratta i dati del Suo account secondo la propria informativa: noi non le trasmettiamo nulla.",
+          "Non vendiamo i dati, non li usiamo per la pubblicità e non li trasferiamo fuori dall'UE."
+        ]
+      },
+      "steam": {
+        "title": "Dati provenienti da Steam",
+        "items": [
+          "Al momento il sito non legge nulla dalla Steam Web API: usa solo lo SteamID64 e il nickname che il server di gioco vede all'ingresso.",
+          "Quando introdurremo l'accesso con Steam (per ricorsi e VIP), leggeremo dalla Steam Web API solo il Suo nome pubblico e l'avatar, e solo dopo che avrà effettuato l'accesso.",
+          "Questi dati sono conservati sul nostro server nell'UE, non vengono comunicati a terzi e sono usati secondo le condizioni d'uso della Steam Web API."
+        ]
+      },
+      "rights": {
+        "title": "I Suoi diritti",
+        "items": [
+          "Accesso: sapere quali dati abbiamo su di Lei e riceverne una copia.",
+          "Rettifica e cancellazione, quando i dati sono inesatti o non più necessari.",
+          "Limitazione del trattamento.",
+          "Portabilità: le Sue statistiche in un formato leggibile da una macchina.",
+          "Opposizione, compreso l'essere nascosto dalle classifiche e dal profilo.",
+          "Reclamo alla Commissione bulgara per la protezione dei dati personali (www.cpdp.bg) o all'autorità di controllo del Paese in cui vive (in Italia, il Garante per la protezione dei dati personali)."
+        ],
+        "body": [
+          "Per qualsiasi richiesta ci scriva dalla pagina dei contatti indicando il Suo SteamID64. Potremmo chiederLe di confermare che l'account è Suo. Rispondiamo entro un mese."
+        ]
+      },
+      "changes": {
+        "title": "Modifiche",
+        "body": [
+          "Se modifichiamo questo testo, la data in alto cambia; le modifiche rilevanti saranno annunciate sul sito."
+        ]
+      }
+    }
+  },
+  "vipTerms": {
+    "h1": "Condizioni generali VIP",
+    "lead": "In breve e con chiarezza: cosa acquista, come paga e come può recedere.",
+    "version": "Versione {version}",
+    "sections": {
+      "provider": {
+        "title": "Fornitore",
+        "body": [
+          "Il servizio VIP è fornito da {company}. I dati societari sono nelle note legali; per contattarci usi la pagina dei contatti."
+        ]
+      },
+      "subject": {
+        "title": "Cosa acquista",
+        "body": [
+          "Il VIP è un servizio digitale: funzioni estetiche sul server CarbonStealth.eu | Dust2 DM per un periodo determinato, legate al Suo SteamID64. Il VIP non dà vantaggi in gioco e non può essere ceduto né venduto."
+        ]
+      },
+      "prices": {
+        "title": "Prezzi",
+        "body": [
+          "I prezzi sono in euro IVA inclusa e sono quelli pubblicati nella pagina VIP al momento della richiesta. Non ci sono costi nascosti."
+        ]
+      },
+      "order": {
+        "title": "Richiesta, pagamento e inizio",
+        "items": [
+          "La richiesta si farà tramite il sito (in arrivo) con SteamID64, dati di fatturazione ed e-mail.",
+          "Riceverà una conferma e i dati per il bonifico bancario. La fattura è emessa da {company}.",
+          "Il VIP viene attivato a mano dopo l'arrivo del pagamento. Se chiede espressamente che il VIP inizi prima della fine dei 14 giorni per il recesso, inizia subito dopo l'attivazione."
+        ]
+      },
+      "period": {
+        "title": "Durata e rinnovo",
+        "body": [
+          "Il VIP vale per il periodo del livello scelto a partire dall'attivazione. Non ci sono rinnovi né pagamenti automatici: un nuovo periodo arriva solo con una nuova richiesta."
+        ]
+      },
+      "withdrawal": {
+        "title": "Diritto di recesso (14 giorni)",
+        "items": [
+          "In quanto consumatore, può recedere dal contratto entro 14 giorni dalla sua conclusione senza indicarne il motivo.",
+          "Se ha chiesto espressamente che il VIP iniziasse prima della fine del periodo, in caso di recesso paga la parte proporzionale al periodo utilizzato fino al recesso e Le rimborsiamo il resto.",
+          "Per recedere ci invii una dichiarazione esplicita dalla pagina dei contatti, con il Suo SteamID64 e il numero della fattura. Rimborsiamo l'importo entro 14 giorni sul conto da cui è stato pagato."
+        ]
+      },
+      "rules": {
+        "title": "Regole e sanzioni",
+        "body": [
+          "Il VIP non dà immunità: valgono le regole del server e le stesse sanzioni previste per tutti i giocatori."
+        ]
+      },
+      "availability": {
+        "title": "Disponibilità del server",
+        "body": [
+          "Ci impegniamo a mantenere il server sempre attivo, ma gli aggiornamenti di Counter-Strike 2 da parte di Valve e la manutenzione possono fermarlo temporaneamente."
+        ]
+      },
+      "complaints": {
+        "title": "Domande e controversie",
+        "items": [
+          "Per domande e reclami ci scriva dalla pagina dei contatti.",
+          "Se non troviamo un accordo, può rivolgersi alla Commissione bulgara per la tutela dei consumatori (www.kzp.bg) e alle sue commissioni di conciliazione per la risoluzione extragiudiziale della controversia.",
+          "Si applica il diritto bulgaro, senza privarLa della tutela che Le offre il diritto del Paese in cui vive."
+        ]
+      }
+    }
+  },
+  "imprint": {
+    "h1": "Note legali",
+    "lead": "Editore del server CarbonStealth.eu | Dust2 DM e di questo sito.",
+    "fields": {
+      "legalName": "Società",
+      "address": "Sede legale e indirizzo",
+      "eik": "Codice di identificazione (EIK)",
+      "vat": "Partita IVA",
+      "representative": "Rappresentante legale",
+      "email": "E-mail",
+      "phone": "Telefono",
+      "web": "Sito web"
+    },
+    "notSet": "non inserito ({env})",
+    "responsible": "Responsabile dei contenuti è l'editore indicato sopra.",
+    "trademark": "Counter-Strike 2, CS2 e Steam sono marchi di Valve Corporation. Il server non è affiliato a Valve."
+  },
+  "contact": {
+    "h1": "Contatti",
+    "lead": "Ci scriva per domande, ricorsi contro i ban, richieste sui Suoi dati personali e segnalazioni di violazioni.",
+    "email": {
+      "title": "E-mail",
+      "missing": "L'e-mail di contatto non è ancora stata inserita ({env})."
+    },
+    "discord": {
+      "title": "Discord",
+      "link": "Il nostro server Discord"
+    },
+    "topics": {
+      "title": "In cosa possiamo aiutarLa",
+      "items": [
+        "Ricorsi contro i ban: presto con l'accesso tramite Steam; fino ad allora via e-mail con il Suo SteamID64.",
+        "Richieste sui Suoi dati personali (accesso, cancellazione, esclusione dalle classifiche) con il Suo SteamID64.",
+        "Domande sul VIP, richieste e recesso dal contratto.",
+        "Bug del server o del sito."
+      ]
+    },
+    "dsa": {
+      "title": "Punto di contatto DSA",
+      "items": [
+        "L'e-mail qui sopra è il punto di contatto unico ai sensi degli articoli 11 e 12 del Regolamento sui servizi digitali (Regolamento (UE) 2022/2065) per le autorità, la Commissione europea e gli utenti.",
+        "Può scriverci in bulgaro, inglese o italiano."
+      ]
+    },
+    "notice": {
+      "title": "Segnalazione di contenuti illegali",
+      "lead": "Se un nickname, un messaggio o un altro contenuto sul server o sul sito è illegale, invii una segnalazione con:",
+      "items": [
+        "Il motivo per cui ritiene il contenuto illegale.",
+        "Dove si trova: lo SteamID64 o l'indirizzo della pagina, la data e l'ora.",
+        "Il Suo nome e la Sua e-mail (possono mancare solo nelle segnalazioni di abusi sessuali su minori).",
+        "Una dichiarazione che la segnalazione è fatta in buona fede ed è esatta per quanto Le risulta."
+      ],
+      "after": "Confermiamo la ricezione, decidiamo senza ritardi ingiustificati e Le comunichiamo la decisione e come può contestarla."
+    }
+  },
+  "error": {
+    "notFound": {
+      "heading": "Qui non c'è niente",
+      "text": "Questa pagina non esiste oppure il giocatore ha nascosto il proprio profilo."
+    },
+    "serverError": {
+      "heading": "Qualcosa è andato storto",
+      "text": "L'errore riguarda il sito, non il server di gioco. Riprovi tra poco."
+    },
+    "tooMany": {
+      "heading": "Troppe richieste",
+      "text": "Attenda circa un minuto e riprovi."
+    },
+    "home": "Vai all'inizio",
+    "leaderboard": "Vai alla classifica"
+  },
+  "admin": {
+    "brand": "Pannello di amministrazione",
+    "brandTag": "staff",
+    "skip": "Vai al contenuto",
+    "navLabel": "Sezioni del pannello",
+    "footer": "Il pannello è riservato allo staff del server. Ogni azione viene registrata nella catena di audit.",
+    "toSite": "Al sito",
+    "meta": {
+      "description": "Il pannello di amministrazione del server CS2 CarbonStealth.eu | Dust2 DM — riservato allo staff del server.",
+      "keywords": "Carbon Stealth, pannello admin CS2, Dust2 DM, gestione server CS2, moderazione, sanzioni"
+    },
+    "nav": {
+      "dashboard": "Cruscotto",
+      "punishments": "Sanzioni",
+      "players": "Giocatori",
+      "reports": "Segnalazioni",
+      "appeals": "Ricorsi",
+      "vip": "Livelli VIP",
+      "server": "Server",
+      "banners": "Banner",
+      "audit": "Audit",
+      "account": "Account",
+      "settings": "Impostazioni",
+      "events": "Eventi"
+    },
+    "me": {
+      "signedAs": "Accesso:",
+      "lang": "Lingua del pannello",
+      "logout": "Esci"
+    },
+    "roles": {
+      "PLAYER": "Giocatore",
+      "VIP": "VIP",
+      "HELPER": "Aiutante",
+      "MODERATOR": "Moderatore",
+      "ADMIN": "Admin",
+      "HEADADMIN": "Admin capo",
+      "OWNER": "Proprietario"
+    },
+    "types": {
+      "BAN": "Ban",
+      "MUTE": "Muto (voce)",
+      "GAG": "Muto (chat)",
+      "SILENCE": "Muto (voce e chat)",
+      "WARN": "Avvertimento",
+      "KICK": "Espulsione",
+      "SLAY": "Uccidi (slay)"
+    },
+    "sources": {
+      "GAME": "gioco",
+      "WEB": "pannello",
+      "DISCORD": "Discord",
+      "SYSTEM": "sistema"
+    },
+    "caseStatus": {
+      "OPEN": "Aperti",
+      "ACCEPTED": "Accolti",
+      "REJECTED": "Respinti"
+    },
+    "units": {
+      "m": "minuti",
+      "h": "ore",
+      "d": "giorni"
+    },
+    "col": {
+      "player": "Giocatore",
+      "steamId": "SteamID64",
+      "role": "Ruolo",
+      "kills": "Uccisioni",
+      "deaths": "Morti",
+      "ping": "Ping",
+      "actions": "Azioni",
+      "actor": "Admin",
+      "created": "Inflitta",
+      "expires": "Scade",
+      "state": "Stato",
+      "source": "Origine",
+      "lastSeen": "Ultima volta sul server",
+      "from": "Dal",
+      "to": "Al"
+    },
+    "common": {
+      "any": "tutti",
+      "filter": "Filtra",
+      "filters": "Filtri",
+      "reset": "Azzera",
+      "search": "Cerca",
+      "save": "Salva",
+      "yes": "sì",
+      "no": "no",
+      "permanent": "permanente",
+      "pager": "Pagine",
+      "prev": "Indietro",
+      "next": "Avanti",
+      "page": "Pagina {page} di {pages}",
+      "total": {
+        "one": "{count} voce",
+        "other": "{count} voci"
+      }
+    },
+    "result": {
+      "saved": "Salvato.",
+      "sent": "Salvato e confermato dal server.",
+      "recordedNoAck": "Salvato nel database, ma il server non ha confermato. Il gioco lo applicherà entro un minuto o al prossimo ingresso.",
+      "invalid": "Dati del modulo non validi. Controlli i campi.",
+      "denied": "Il Suo ruolo non consente questa azione.",
+      "immune": "Negato: il livello del bersaglio è pari o superiore al Suo (immunità).",
+      "notFound": "Voce inesistente.",
+      "notActive": "La voce non è più attiva oppure è già stata decisa da altri.",
+      "inUse": "Il livello è usato da concessioni o richieste — lo disattivi invece di eliminarlo.",
+      "duplicate": "Esiste già un livello con questo codice.",
+      "cmdTimeout": "Il server non ha risposto entro 5 secondi.",
+      "cmdNoListener": "Il server non è in ascolto (il plugin o l’agente non è in esecuzione).",
+      "cmdRedis": "Nessuna connessione a Redis — il comando non è stato inviato.",
+      "cmdUnavailable": "Questa parte del pannello non è configurata: manca una chiave sul server.",
+      "cmdBusy": "Il server sta già eseguendo un riavvio o un aggiornamento.",
+      "cmdNotOnline": "Il giocatore non è sul server.",
+      "cmdNotActive": "La sanzione non è più attiva.",
+      "cmdUnknownMode": "La modalità non è disponibile nel plugin DM.",
+      "cmdFailed": "Il server ha rifiutato il comando.",
+      "badCode": "Il codice è errato o è già stato usato.",
+      "cmdPending": "L’agente non ha confermato entro 25 secondi — il riavvio potrebbe essere ancora in corso. Controlli lo stato tra un minuto.",
+      "overlap": "L'evento si sovrappone a un altro evento (non annullato). Cambi gli orari."
+    },
+    "cmd": {
+      "timeout": "L’agente del server non ha risposto entro 5 secondi.",
+      "noListener": "L’agente del server non è in ascolto.",
+      "redis": "Nessuna connessione a Redis.",
+      "unavailable": "I comandi al server non sono configurati: manca la chiave (CS2DM_AGENT_KEY).",
+      "busy": "Il server sta già eseguendo un riavvio o un aggiornamento.",
+      "notOnline": "Il giocatore non è sul server.",
+      "notActive": "La sanzione non è più attiva.",
+      "unknownMode": "La modalità non è disponibile.",
+      "failed": "L’agente ha restituito un errore o una risposta inattesa."
+    },
+    "error": {
+      "back": "Al pannello",
+      "forbidden": {
+        "title": "Non consentito",
+        "text": "Il Suo ruolo non apre questa sezione o questa azione."
+      },
+      "notFound": {
+        "title": "Pagina inesistente",
+        "text": "Questo indirizzo non esiste nel pannello."
+      },
+      "unavailable": {
+        "title": "Il pannello non è configurato",
+        "text": "Sul server manca la chiave di cifratura (APP_ENC_KEY). Senza di essa il secondo fattore non può essere conservato e il pannello resta chiuso. Il sito pubblico funziona."
+      },
+      "csrf": {
+        "title": "Il modulo è scaduto",
+        "text": "La richiesta non ha un token valido o non proviene dal pannello. Ricarichi la pagina e riprovi."
+      },
+      "tooMany": {
+        "title": "Troppi tentativi",
+        "text": "Attenda qualche minuto e riprovi."
+      },
+      "serverError": {
+        "title": "Qualcosa si è rotto",
+        "text": "L’errore è stato registrato. Riprovi tra poco."
+      },
+      "badRequest": {
+        "title": "Richiesta non valida",
+        "text": "Il modulo è troppo grande o danneggiato."
+      },
+      "denied": {
+        "title": "Nessun accesso",
+        "text": "Il pannello è riservato allo staff del server."
+      }
+    },
+    "login": {
+      "title": "Accesso al pannello",
+      "lead": "Accede con il Suo account Steam. Solo aiutanti, moderatori e admin del server hanno accesso.",
+      "button": "Accedi tramite Steam",
+      "note": "Steam ci comunica solo il Suo SteamID64 — la password resta su Steam. Dopo l’accesso il pannello chiede un codice da un’app di autenticazione (TOTP).",
+      "error": {
+        "denied": "Questo account Steam non ha accesso al pannello.",
+        "failed": "Steam non ha confermato l’accesso. Riprovi.",
+        "expired": "L’accesso è scaduto o è stato avviato in un altro browser. Ricominci.",
+        "locked": "Troppi codici errati. Acceda di nuovo tramite Steam."
+      }
+    },
+    "totp": {
+      "title": "Codice di conferma",
+      "lead": "Inserisca il codice a 6 cifre dell’app di autenticazione.",
+      "label": "Codice",
+      "hint": "Se non ha il telefono, inserisca uno dei codici di recupero (xxxxx-xxxxx). Ognuno vale una volta sola.",
+      "submit": "Conferma"
+    },
+    "setup": {
+      "title": "Attivi il secondo fattore",
+      "lead": "Il pannello richiede il TOTP a ogni membro dello staff. Finché non lo attiva, vede solo questa pagina.",
+      "steps": [
+        "Apra un’app di autenticazione (Aegis, 2FAS, Google Authenticator, Microsoft Authenticator e altre).",
+        "Scansioni il codice QR o inserisca la chiave a mano.",
+        "Inserisca il codice a 6 cifre mostrato dall’app."
+      ],
+      "qrAlt": "Codice QR per l’app di autenticazione",
+      "manual": "Chiave per l’inserimento manuale:",
+      "label": "Codice dell’app",
+      "submit": "Attiva"
+    },
+    "recovery": {
+      "title": "Codici di recupero",
+      "lead": "Ognuno di questi codici permette un accesso se non ha il telefono.",
+      "warn": "Li annoti ora e li conservi al sicuro — vengono mostrati una sola volta e non si possono rivedere.",
+      "done": "Li ho salvati — al cruscotto"
+    },
+    "account": {
+      "title": "Account",
+      "recoveryTitle": "Codici di recupero",
+      "remaining": {
+        "one": "Resta {count} codice di recupero non usato.",
+        "other": "Restano {count} codici di recupero non usati."
+      },
+      "recoveryLead": "Un nuovo set rende non validi i codici precedenti. Serve un codice attuale dell’app.",
+      "codeLabel": "Codice dell’app",
+      "recoverySubmit": "Nuovo set di codici",
+      "logoutTitle": "Esci da tutti i dispositivi",
+      "logoutLead": "Termina tutte le Sue sessioni nel pannello, compresa questa.",
+      "logoutConfirm": "Uscire da tutti i dispositivi?",
+      "logoutSubmit": "Esci ovunque"
+    },
+    "status": {
+      "title": "Stato del server",
+      "online": "Attivo",
+      "offline": "Spento",
+      "offlineHint": "Il server non risponde ad A2S. Ultimo controllo:",
+      "unknown": "Sconosciuto",
+      "unknownHint": "Né il plugin né l’agente hanno inviato dati recenti.",
+      "players": "Giocatori",
+      "bots": "Bot",
+      "mode": "Modalità",
+      "map": "Mappa",
+      "updated": "Aggiornato",
+      "source": {
+        "plugin": "dal plugin",
+        "a2s": "da A2S (l’agente)"
+      }
+    },
+    "dashboard": {
+      "title": "Cruscotto",
+      "queue": "Coda e messaggi",
+      "openReports": {
+        "one": "{count} segnalazione aperta",
+        "other": "{count} segnalazioni aperte"
+      },
+      "openAppeals": {
+        "one": "{count} ricorso aperto",
+        "other": "{count} ricorsi aperti"
+      },
+      "sayLabel": "Messaggio a tutti sul server",
+      "saySubmit": "Invia",
+      "modeLabel": "Modalità DM",
+      "modeSubmit": "Cambia modalità",
+      "modeConfirm": "Cambiare la modalità per tutti i giocatori?",
+      "players": "Giocatori in diretta",
+      "noLive": "Nessun dato recente dal plugin — l’elenco dei giocatori non è disponibile.",
+      "empty": "Sul server non c’è nessuno.",
+      "bot": "bot",
+      "dead": "morto",
+      "act": "Azione",
+      "banConfirm": "Bannare {name}?"
+    },
+    "punish": {
+      "type": "Tipo",
+      "amount": "Durata",
+      "unit": "Unità",
+      "category": "Categoria",
+      "reason": "Motivo (interno)",
+      "hint": "Durata vuota = permanente. Il moderatore banna fino a 7 giorni; ban più lunghi e permanenti richiedono un admin. Il motivo è visibile solo nel pannello, mai nella lista pubblica dei ban."
+    },
+    "punishments": {
+      "title": "Sanzioni",
+      "lead": "L’elenco interno — con il motivo e l’admin. La lista pubblica dei ban mostra solo il giocatore, la categoria e le date.",
+      "newTitle": "Nuova sanzione per SteamID64",
+      "newLead": "Vale anche per un giocatore che non è sul server. Se è online, il server la applica subito.",
+      "nameLabel": "Nome (se il giocatore è sconosciuto)",
+      "newSubmit": "Infliggi",
+      "newConfirm": "Infliggere la sanzione?",
+      "q": "SteamID64 o nome",
+      "status": "Stato",
+      "statuses": {
+        "active": "attive",
+        "expired": "scadute",
+        "revoked": "revocate",
+        "all": "tutte"
+      },
+      "actor": "Admin (SteamID64)",
+      "reasonSearch": "Il motivo contiene",
+      "empty": "Nessuna sanzione con questi filtri.",
+      "revoke": "Revoca",
+      "revokeReason": "Motivo della revoca",
+      "revokeConfirm": "Revocare la sanzione?"
+    },
+    "players": {
+      "title": "Giocatori",
+      "q": "SteamID64 o nome",
+      "staff": "solo lo staff",
+      "empty": "Nessun giocatore per questa ricerca."
+    },
+    "player": {
+      "public": "profilo pubblico",
+      "allPunishments": "tutte le sanzioni",
+      "immune": "Il ruolo di questo giocatore è pari o superiore al Suo — le azioni su di lui sono bloccate.",
+      "facts": "Dati",
+      "firstSeen": "Primo ingresso",
+      "playtime": "Tempo di gioco",
+      "hours": "{h} h",
+      "webLogin": "Ultimo accesso al sito",
+      "totp": "Secondo fattore",
+      "totpOn": "TOTP attivo",
+      "totpOff": "senza TOTP",
+      "hidden": "nascosto dalle classifiche",
+      "actions": "Azioni",
+      "punish": "Infliggi una sanzione",
+      "roleSubmit": "Cambia ruolo",
+      "roleConfirm": "Cambiare il ruolo? Tutte le sessioni del giocatore nel pannello verranno terminate.",
+      "hideLabel": "Nascondi dalle classifiche e dal profilo pubblico (art. 21 GDPR)",
+      "totpReset": "Azzera il secondo fattore",
+      "totpResetConfirm": "Azzerare il TOTP? Il giocatore dovrà configurarlo di nuovo al prossimo accesso.",
+      "logout": "Termina le sue sessioni nel pannello",
+      "vip": "VIP",
+      "vipTier": "Livello",
+      "vipDays": "Giorni",
+      "vipNote": "Nota",
+      "vipGrant": "Concedi VIP",
+      "vipHint": "Concessione manuale, senza pagamento. Se il giocatore ha già un VIP attivo, il nuovo periodo inizia alla sua scadenza.",
+      "vipNone": "Nessun VIP.",
+      "vipActive": "attivo",
+      "vipInactive": "scaduto o futuro",
+      "vipRevoke": "Revoca",
+      "vipRevokeConfirm": "Revocare questo VIP?",
+      "punishments": "Sanzioni",
+      "sessions": "Ultimi ingressi sul server",
+      "sessionsNone": "Nessun ingresso registrato.",
+      "sessionsNote": "Gli ingressi sono conservati per 30 giorni. Solo gli admin vedono gli indirizzi IP.",
+      "reports": "Segnalazioni contro il giocatore"
+    },
+    "reports": {
+      "title": "Segnalazioni",
+      "lead": "Le segnalazioni dal gioco (!report). La decisione è definitiva; la sanzione si infligge a parte.",
+      "readOnly": "sola lettura per il Suo ruolo",
+      "target": "Contro",
+      "reporter": "Da",
+      "note": "Nota",
+      "accept": "Accogli",
+      "reject": "Respingi",
+      "empty": "Nessuna segnalazione."
+    },
+    "appeals": {
+      "title": "Ricorsi",
+      "lead": "I ricorsi contro le sanzioni. La decisione è motivata e definitiva.",
+      "item": "Ricorso n. {id}",
+      "notActive": "non più attiva",
+      "message": "Il messaggio del giocatore",
+      "contact": "Contatto",
+      "submitted": "Presentato il {date}",
+      "note": "Motivazione della decisione",
+      "acceptRevokes": "Un ricorso accolto revoca la sanzione — servono i permessi per revocarla.",
+      "accept": "Accogli",
+      "acceptConfirm": "Accogliere il ricorso e revocare la sanzione?",
+      "reject": "Respingi",
+      "empty": "Nessun ricorso."
+    },
+    "vip": {
+      "title": "Livelli VIP",
+      "lead": "I livelli e i prezzi mostrati dal sito. Il VIP è solo estetico — nessun vantaggio in gioco.",
+      "newTitle": "Nuovo livello",
+      "create": "Crea",
+      "code": "Codice",
+      "name": "Nome",
+      "price": "Prezzo in euro IVA inclusa",
+      "priceHint": "Per esempio 4,99 — conservato in centesimi di euro interi.",
+      "period": "Periodo in giorni",
+      "order": "Ordine",
+      "active": "attivo",
+      "inactive": "disattivato",
+      "days": {
+        "one": "{count} giorno",
+        "other": "{count} giorni"
+      },
+      "used": "concessioni: {grants} · richieste: {requests}",
+      "edit": "Modifica",
+      "delete": "Elimina",
+      "deleteConfirm": "Eliminare il livello?",
+      "inUse": "Il livello è in uso — si può solo disattivare.",
+      "empty": "Nessun livello VIP."
+    },
+    "banners": {
+      "title": "Banner nella mappa",
+      "lead": "Si posizionano in gioco con !banner add. Un banner eliminato scompare al prossimo cambio di mappa.",
+      "map": "Mappa",
+      "key": "Chiave",
+      "position": "Posizione x, y, z",
+      "angles": "Angoli",
+      "delete": "Elimina",
+      "deleteConfirm": "Eliminare il banner?",
+      "note": "L’eliminazione viene registrata nell’audit come banner.remove.",
+      "empty": "Nessun banner posizionato."
+    },
+    "audit": {
+      "title": "Audit",
+      "lead": "Ogni azione amministrativa dal gioco, dal pannello e dal bot. La catena di hash mostra se una riga è stata alterata o eliminata.",
+      "chain": "La catena",
+      "verify": "Verifica la catena",
+      "ok": "integra",
+      "checked": {
+        "one": "{count} riga verificata.",
+        "other": "{count} righe verificate."
+      },
+      "broken": "interrotta",
+      "brokenAt": "La prima discrepanza è alla riga n. {id}.",
+      "action": "Azione",
+      "target": "Bersaglio",
+      "at": "Quando",
+      "details": "Dettagli",
+      "empty": "Nessuna voce con questi filtri."
+    },
+    "server": {
+      "title": "Server",
+      "agent": "L’agente sull’host",
+      "service": "cs2.service",
+      "active": "attivo",
+      "inactive": "fermo",
+      "since": "Dal",
+      "version": "Versione del gioco",
+      "mods": "Mod caricate",
+      "broken": "Mod non funzionanti dalla versione",
+      "restart": "Riavvia",
+      "restartConfirm": "Riavviare il server? Tutti i giocatori verranno espulsi.",
+      "start": "Avvia",
+      "startConfirm": "Avviare il server?",
+      "stop": "Ferma",
+      "stopConfirm": "Fermare il server? Tutti i giocatori verranno espulsi e il server resta spento finché Lei non lo avvia di nuovo — gli aggiornamenti non lo avviano.",
+      "update": "Aggiorna",
+      "updateConfirm": "Avviare il controllo degli aggiornamenti? Con una nuova versione il server si riavvia.",
+      "controlNote": "Avvio, arresto, riavvio e aggiornamento non possono essere eseguiti insieme.",
+      "logs": "Log",
+      "source": "Origine",
+      "sources": {
+        "css": "CounterStrikeSharp",
+        "journal": "journald"
+      },
+      "lines": "Righe",
+      "showLogs": "Mostra",
+      "logsNote": "Indirizzi IP e chiavi vengono oscurati prima della visualizzazione.",
+      "logsEmpty": "Nessuna riga.",
+      "back": "Torna al server",
+      "busy": "In corso",
+      "busyKinds": {
+        "start": "avvio",
+        "stop": "arresto",
+        "restart": "riavvio",
+        "update": "aggiornamento"
+      },
+      "detail": "Dettagli dall’agente:"
+    },
+    "settings": {
+      "title": "Impostazioni del server",
+      "lead": "Si applicano subito in gioco: dopo il salvataggio il pannello invia un comando al plugin, che comunque le controlla ogni 60 secondi. Un gruppo non impostato segue la configurazione del plugin.",
+      "pluginLive": "Il plugin è online: dopo il salvataggio vedrà se ha confermato.",
+      "pluginOffline": "Nessun dato recente dal plugin. Il valore resta nel database e si applica quando il plugin si avvia.",
+      "stored": "Salvato da {name} il {date}.",
+      "default": "Non impostato: vale la configurazione del plugin. I campi mostrano i valori predefiniti.",
+      "invalid": "Il valore salvato è danneggiato: il plugin lo ignora e usa la sua configurazione. Lo salvi di nuovo.",
+      "reset": "Ripristina predefinito",
+      "resetConfirm": "Eliminare questo valore? Varrà la configurazione del plugin.",
+      "adverts": {
+        "title": "Annunci in chat",
+        "interval": "Intervallo in secondi",
+        "intervalHint": "0 = disattivati; altrimenti da {min} a {max} secondi. Ogni annuncio appare nella lingua del giocatore.",
+        "builtin": "Annunci integrati",
+        "builtinItems": {
+          "carbonstealth": "Carbon Stealth — siti web, app, ERP",
+          "adblock": "Supreme AdBlock",
+          "site": "Il sito del server — classifica, statistiche, VIP"
+        },
+        "custom": "Testi personalizzati — {lang}",
+        "customHint": "Fino a {count} testi per lingua, fino a {max} caratteri. I codici colore e le parentesi graffe vengono rimossi, come in chat. I giocatori con un'altra lingua vedono quelli inglesi.",
+        "langs": {
+          "bg": "bulgaro",
+          "en": "inglese"
+        },
+        "textLabel": "Testo {n}"
+      },
+      "ammo": {
+        "title": "Munizioni",
+        "label": "Riserva infinita (ricaricata a ogni ricarica)",
+        "hint": "Uguale a «Munizioni infinite» nel menu !admin: una modifica in un punto si vede nell'altro."
+      },
+      "bots": {
+        "title": "Bot",
+        "label": "Numero di bot (bot_quota)",
+        "hint": "Da 0 a {max}. I bot riempiono il server ed escono quando entrano persone. Uguale a «Bot» nel menu !admin."
+      },
+      "xp": {
+        "title": "Moltiplicatore XP",
+        "label": "Moltiplicatore",
+        "hint": "Da {min} a {max} con passo 0,1. Vale allo stesso modo per tutti. Durante un evento attivo vale il maggiore dei due."
+      },
+      "join": {
+        "title": "Benvenuto all'ingresso",
+        "label": "Mostra il messaggio di benvenuto in chat quando qualcuno entra",
+        "hint": "Con il benvenuto disattivato è disattivato anche il messaggio sull'evento in corso all'ingresso."
+      }
+    },
+    "stats": {
+      "title": "Statistiche — modifica",
+      "lead": "Ogni modifica finisce nel registro con «prima → dopo» e alza l'epoca delle statistiche (ora {epoch}): il plugin prende i valori dal database e scarta quanto non ha ancora salvato per il giocatore; si perdono fino a 10 secondi del suo ultimo gioco.",
+      "dataLink": "Tutto ciò che conserviamo sul giocatore",
+      "none": "Il giocatore non ha ancora statistiche.",
+      "saveConfirm": "Salvare i nuovi valori?",
+      "rules": "Solo numeri interi ≥ 0. Headshot, taglie e vendette non possono superare le uccisioni.",
+      "weapons": "Per arma",
+      "weaponsNone": "Nessuna uccisione per arma in questa stagione.",
+      "playtimeLabel": "Tempo di gioco totale (secondi)",
+      "playtimeHint": "Ora: circa {h} h. Il tempo stagionale è nel campo di ogni stagione.",
+      "fields": {
+        "kills": "Uccisioni",
+        "deaths": "Morti",
+        "headshots": "Headshot",
+        "assists": "Assist",
+        "damage": "Danni",
+        "shotsFired": "Colpi sparati",
+        "shotsHit": "Colpi a segno",
+        "bestStreak": "Serie migliore",
+        "bountiesClaimed": "Taglie riscosse",
+        "revenges": "Vendette",
+        "playtimeSec": "Tempo di gioco (secondi)",
+        "xp": "XP"
+      },
+      "reset": {
+        "title": "Azzeramento",
+        "note": "Porta i numeri a zero (le righe restano per conservare l'epoca). Il registro conserva i valori precedenti.",
+        "confirmLabel": "Confermo l'azzeramento",
+        "season": "Azzera la stagione {n}",
+        "all": "Azzera tutto",
+        "seasonConfirm": "Azzerare le statistiche del giocatore per la stagione corrente?",
+        "allConfirm": "Azzerare TUTTE le statistiche del giocatore (ogni stagione, armi e tempo di gioco)?"
+      }
+    },
+    "data": {
+      "title": "Dati di {name}",
+      "back": "torna al profilo",
+      "lead": "Tutto ciò che il database conserva su questo giocatore: le righe grezze, con i nomi delle colonne del database. I segreti non vengono mai mostrati: del secondo fattore solo se è impostato; i token delle sessioni e gli hash dei codici non vengono letti.",
+      "shown": "{shown} di {total}",
+      "empty": "Nessun record.",
+      "note": "Si mostrano al massimo {limit} righe per sezione (le più recenti). Le uccisioni si conservano 90 giorni, le sessioni 30.",
+      "counts": {
+        "killsAsAttacker": "Uccisioni (come autore, grezze)",
+        "killsAsVictim": "Morti (come vittima, grezze)",
+        "issued": "Sanzioni inflitte da lui",
+        "auditBy": "Voci del registro con lui come amministratore"
+      },
+      "sections": {
+        "player": "Giocatore",
+        "seasonStats": "Statistiche per stagione",
+        "weaponStats": "Statistiche per arma",
+        "sessions": "Sessioni sul server",
+        "webSessions": "Sessioni nel pannello",
+        "recoveryCodes": "Codici di recupero (solo date)",
+        "punishments": "Sanzioni",
+        "appeals": "Ricorsi",
+        "reportsAgainst": "Segnalazioni contro di lui",
+        "reportsBy": "Segnalazioni fatte da lui",
+        "vipGrants": "Periodi VIP",
+        "vipRequests": "Richieste VIP (dati di fatturazione)",
+        "kills": "Ultime uccisioni e morti",
+        "auditAbout": "Registro su di lui",
+        "banners": "Banner posizionati da lui",
+        "matches": "Partite (schede — 90 giorni)"
+      }
+    },
+    "events": {
+      "title": "Eventi programmati",
+      "lead": "Il plugin controlla il programma ogni 30 secondi: all'inizio annuncia l'evento nella lingua di ogni giocatore, avvia la modalità (se c'è) e alza il moltiplicatore XP; alla fine annuncia e ripristina. Gli orari sono nel fuso {tz}.",
+      "newTitle": "Nuovo evento",
+      "create": "Crea",
+      "rules": "Nessuna sovrapposizione; fino a 14 giorni; la fine deve essere nel futuro. «Modalità» richiede una modalità DM, «Weekend XP» un moltiplicatore sopra 1. I titoli vanno nella chat di gioco: i codici colore vengono rimossi.",
+      "empty": "Nessun evento negli ultimi 30 giorni.",
+      "kind": "Tipo",
+      "kinds": {
+        "XP_BOOST": "Weekend XP",
+        "MODE": "Modalità speciale",
+        "COMMUNITY": "Evento della community"
+      },
+      "titleBg": "Titolo (bulgaro)",
+      "titleEn": "Titolo (inglese)",
+      "titleIt": "Titolo (italiano)",
+      "startsAt": "Inizio",
+      "endsAt": "Fine",
+      "multiplier": "Moltiplicatore XP (1–3)",
+      "mode": "Modalità DM",
+      "noMode": "nessun cambio di modalità",
+      "states": {
+        "active": "in corso",
+        "upcoming": "in arrivo",
+        "ended": "concluso",
+        "cancelled": "annullato"
+      },
+      "createdBy": "Creato da {name}.",
+      "edit": "Modifica",
+      "cancel": "Annulla l'evento",
+      "cancelConfirm": "Annullare l'evento? Se è in corso, il plugin lo ferma entro 30 secondi."
+    }
+  },
+  "matches": {
+    "h1": "Ultime partite",
+    "lead": "Ogni partita è una mappa fino al cambio (30 minuti). Contano solo le uccisioni tra persone. Le schede si conservano 90 giorni.",
+    "empty": "Nessuna partita conclusa per ora. Entri e giochi la prima.",
+    "summary": "{kills} uccisioni · {players} giocatori · {minutes} min",
+    "first": "primo:",
+    "kills": {
+      "one": "{count} uccisione",
+      "other": "{count} uccisioni"
+    },
+    "toLeaderboard": "Alla classifica"
+  },
+  "match": {
+    "h1": "Partita n. {id}",
+    "lead": "{map} · {mode}",
+    "hiddenPlayer": "Giocatore nascosto",
+    "top": "Top 3",
+    "all": "Tutti i giocatori",
+    "caption": "Risultati della partita n. {id}, per posizione",
+    "line": "{kills} uccisioni · {deaths} morti · {hs} headshot · serie {streak}",
+    "weapon": "Arma migliore: {weapon} ({kills})",
+    "note": "La posizione è per uccisioni, poi meno morti e più headshot.",
+    "back": "Tutte le partite",
+    "facts": {
+      "kills": "Uccisioni",
+      "players": "Giocatori",
+      "minutes": "Minuti",
+      "multiplier": "Moltiplicatore XP",
+      "event": "Evento"
+    },
+    "col": {
+      "place": "Posizione",
+      "hs": "Headshot",
+      "streak": "Serie",
+      "bounties": "Taglie",
+      "weapon": "Arma"
+    }
+  }
+}
