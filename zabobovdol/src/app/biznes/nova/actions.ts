@@ -2,13 +2,13 @@
 
 import { Prisma, type BusinessCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { slugify, uniqueSlug } from "@/lib/slug";
+import { businessSlug } from "@/lib/business-form";
 import { logAudit } from "@/lib/audit";
 import { sendMail } from "@/lib/mail";
 import { SITE } from "@/lib/site";
 import { BUSINESS_CATEGORY_LABELS, labelFor } from "@/lib/categories";
 import { rateLimit, clientKey, RATE_LIMIT_MESSAGE } from "@/lib/ratelimit";
-import { businessSchema, PUBLIC_FIELDS, toBusinessData, type BusinessInput } from "./schema";
+import { PUBLIC_FIELDS, screenBusinessSubmission, toBusinessData, type BusinessInput } from "./schema";
 
 export type BusinessFormValues = Record<string, string>;
 
@@ -79,7 +79,8 @@ async function createNew(d: BusinessInput): Promise<string> {
   // получава следващия свободен адрес.
   for (let attempt = 0; attempt < 2; attempt++) {
     const taken = await prisma.business.findMany({ select: { slug: true } });
-    const slug = uniqueSlug(slugify(d.name), new Set(taken.map((t) => t.slug)));
+    // „nova“ и другите статични пътища под /biznes/ са запазени.
+    const slug = businessSlug(d.name, taken.map((t) => t.slug));
     try {
       return await prisma.$transaction(async (tx) => {
         const created = await tx.business.create({
@@ -204,17 +205,16 @@ export async function submitBusiness(
   const mode = values.za ? "fix" : "new";
   const fail = (error: string): BusinessFormState => ({ ok: false, mode, error, values, attempt });
 
-  if (!rateLimit(await clientKey("biznes"))) return fail(RATE_LIMIT_MESSAGE);
-
-  const parsed = businessSchema.safeParse({
-    ...values,
-    consent: values.consent || undefined,
-    homepage: str(formData.get("homepage")),
-  });
-  if (!parsed.success) {
-    return fail(parsed.error.issues[0]?.message ?? "Невалидни данни.");
-  }
-  const d = parsed.data;
+  // Ред: honeypot → проверка на данните → лимит (броят се само подаванията,
+  // които ще се запишат — виж screenBusinessSubmission).
+  const screen = await screenBusinessSubmission(
+    { values, homepage: str(formData.get("homepage")) },
+    async () => rateLimit(await clientKey("biznes")),
+  );
+  if (screen.status === "honeypot") return fail("Невалидни данни.");
+  if (screen.status === "invalid") return fail(screen.error);
+  if (screen.status === "limited") return fail(RATE_LIMIT_MESSAGE);
+  const d = screen.data;
 
   try {
     if (d.za) {

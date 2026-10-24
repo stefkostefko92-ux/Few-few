@@ -371,6 +371,17 @@ html.dark .border-slate-200\/80 {
   border-color: #334155;
 }
 
+/* Значките със светъл фон: „Затворено сега“ (OpenNowBadge), „Отхвърлен“
+   (bg-slate-200) и етикетът „Реклама“ върху банерите (bg-white/85). Текстът
+   им става светъл от общите правила, а фонът оставаше светъл — почти
+   нечетимо. Сега: ~7:1 (#cbd5e1 върху #334155 и върху тъмния етикет). */
+html.dark .bg-slate-200 {
+  background-color: #334155;
+}
+html.dark .bg-white\/85 {
+  background-color: rgba(15, 23, 42, 0.85);
+}
+
 /* Лента за достъпност — свита/разгъната без примигване. Класът `a11y-min` на
    <html> се слага ПРЕДИ първото рисуване от вградения скрипт в layout.tsx
    (на телефон — по подразбиране), затова лентата никога не се рисува
@@ -498,6 +509,8 @@ html.bt li {
   }
   html.dark .bg-slate-50 { background-color: #f8fafc !important; }
   html.dark .bg-slate-100 { background-color: #f1f5f9 !important; }
+  html.dark .bg-slate-200 { background-color: #e2e8f0 !important; }
+  html.dark .bg-white\/85 { background-color: rgba(255, 255, 255, 0.85) !important; }
   html.dark .bg-brand-50,
   html.dark .bg-brand-50\/50 { background-color: #eef1fb !important; }
   html.dark .bg-gold-50 { background-color: #fff8e6 !important; }

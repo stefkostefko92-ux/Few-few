@@ -1,4 +1,6 @@
+import type { Prisma } from "@prisma/client";
 import { sofiaDay } from "@/lib/stats-core";
+import { sofiaWallNow } from "@/lib/ingest-outages-core";
 
 // Чистата логика на листа „Седмицата в Бобов дол“ (без база) — за тестовете.
 
@@ -49,10 +51,30 @@ export function fmtWeekRange(start: Date, endExclusive: Date): string {
     : `${dayMonth(start)} – ${dayMonth(last)} ${year} г.`;
 }
 
-// Час и дата на събитие (прекъсване, новина) — по българско време.
+// Обявените (планови) спирания, които започват до края на седмицата и още не
+// са приключили. Без крайна дата — само ако започват от днес нататък (иначе
+// забравен стар запис би висял на таблото с месеци).
+//
+// startAt/endAt са „стенно“ време на София в UTC полетата (виж
+// ingest-outages-core.ts) — затова „сега“ е sofiaWallNow(now), а не истинският
+// момент (иначе приключило спиране висеше на листа още 2–3 ч.). start/end от
+// weekWindow са полунощ UTC на софийската дата — същата конвенция.
+export function outageWhere(now: Date, start: Date, end: Date) {
+  return {
+    published: true,
+    planned: true,
+    startAt: { not: null, lt: end },
+    OR: [{ endAt: { gte: sofiaWallNow(now) } }, { endAt: null, startAt: { gte: start } }],
+  } satisfies Prisma.OutageWhereInput;
+}
+
+// Час и дата на прекъсване — часът, който е обявен в София. Времената се пазят
+// като „стенно“ време на София в UTC полетата (виж ingest-outages-core.ts),
+// затова се форматират в UTC: друг превод през Europe/Sofia би добавил още
+// +2/+3 ч. („09:00“ ставаше „11:00“).
 export function fmtWhen(d: Date): string {
   return new Intl.DateTimeFormat("bg-BG", {
-    timeZone: "Europe/Sofia",
+    timeZone: "UTC",
     weekday: "long",
     day: "numeric",
     month: "long",

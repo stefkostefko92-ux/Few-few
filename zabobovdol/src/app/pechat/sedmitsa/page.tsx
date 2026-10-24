@@ -13,6 +13,7 @@ import {
   fmtWeekRange,
   fmtWhen,
   groupByDay,
+  outageWhere,
   shorten,
   weekWindow,
 } from "./week";
@@ -61,17 +62,10 @@ export default async function WeekSheetPage() {
       }),
       [],
     ),
-    // Обявените (планови) спирания, които започват до края на седмицата и още
-    // не са приключили. Без крайна дата — само ако започват от днес нататък
-    // (иначе забравен стар запис би висял на таблото с месеци).
+    // Обявените (планови) спирания за седмицата — виж outageWhere (стенно време).
     safe(
       prisma.outage.findMany({
-        where: {
-          published: true,
-          planned: true,
-          startAt: { not: null, lt: end },
-          OR: [{ endAt: { gte: now } }, { endAt: null, startAt: { gte: start } }],
-        },
+        where: outageWhere(now, start, end),
         orderBy: [{ startAt: "asc" }],
         take: 6,
       }),

@@ -1,7 +1,6 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { uniqueSlug } from "@/lib/slug";
 import { logAudit } from "@/lib/audit";
 import { sendMail } from "@/lib/mail";
 import { SITE } from "@/lib/site";
@@ -11,8 +10,10 @@ import {
   friendlyPhone,
   kindInfo,
   moderationMail,
+  obituaryCreateData,
+  obituarySlug,
   obituarySlugBase,
-  obituarySubmissionSchema,
+  screenObituarySubmission,
   type FormField,
 } from "@/lib/obituary";
 import { purgeExpiredObituaryContacts, takenObituarySlugs } from "@/lib/obituary-store";
@@ -40,52 +41,31 @@ export async function submitObituary(
   const values: Partial<Record<FormField, string>> = {};
   for (const f of FORM_FIELDS) values[f] = str(formData.get(f)).slice(0, 2100);
 
-  // Близките подават по една-две обяви; по-строг лимит от останалите форми
-  // (прозорецът е най-дългият позволен — MAX_WINDOW_MS, 15 мин.).
-  if (!rateLimit(await clientKey("pomen"), 3, 15 * 60 * 1000)) {
+  // Ред: honeypot → проверка на данните → лимит (броят се САМО подаванията,
+  // които ще се запишат — виж screenObituarySubmission). Близките подават по
+  // една-две обяви; по-строг лимит от останалите форми (прозорецът е
+  // най-дългият позволен — MAX_WINDOW_MS, 15 мин.).
+  const screen = await screenObituarySubmission(
+    { values, website: str(formData.get("website")) },
+    async () => rateLimit(await clientKey("pomen"), 3, 15 * 60 * 1000),
+  );
+  if (screen.status === "honeypot") {
+    return { ok: false, error: "Невалидни данни.", values, attempt };
+  }
+  if (screen.status === "invalid") {
+    return { ok: false, error: screen.error, field: screen.field, values, attempt };
+  }
+  if (screen.status === "limited") {
     return { ok: false, error: RATE_LIMIT_MESSAGE, values, attempt };
   }
-
-  const parsed = obituarySubmissionSchema().safeParse({
-    ...values,
-    website: str(formData.get("website")),
-  });
-  if (!parsed.success) {
-    const issue = parsed.error.issues[0];
-    const path = issue?.path[0];
-    const field = FORM_FIELDS.find((f) => f === path);
-    return {
-      ok: false,
-      error: issue?.message ?? "Невалидни данни.",
-      field,
-      values,
-      attempt,
-    };
-  }
-  const d = parsed.data;
+  const d = screen.data;
 
   try {
     const base = obituarySlugBase(d.fullName, d.deathDate);
-    const slug = uniqueSlug(base, await takenObituarySlugs(base));
+    const slug = obituarySlug(base, await takenObituarySlugs(base));
 
     const created = await prisma.obituary.create({
-      data: {
-        slug,
-        kind: d.kind,
-        fullName: d.fullName,
-        birthYear: d.birthYear,
-        deathDate: d.deathDate,
-        ceremonyAt: d.ceremonyAt,
-        ceremonyPlace: d.ceremonyPlace,
-        text: d.text,
-        fromFamily: d.fromFamily,
-        // Снимка не се приема от формата — добавя я редакторът след проверка.
-        photoUrl: "",
-        contactName: d.contactName,
-        contactPhone: d.contactPhone,
-        consent: true,
-        published: false,
-      },
+      data: obituaryCreateData(d, slug),
       select: { id: true },
     });
 

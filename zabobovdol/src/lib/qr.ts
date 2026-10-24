@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { isPrefetch } from "@/lib/analytics-core";
+import { isBot } from "@/lib/stats-core";
 
 // Кратките адреси за QR кодовете по места: /p/<код> → вътрешна страница с
 // маркер ?s=qr-<код>. Тук е само чистата логика (без база и без server-only),
@@ -20,11 +22,45 @@ export function parseShortCode(raw: unknown): string | null {
 // Въображаем произход само за разбора на пътя — никога не излиза навън.
 const BASE = "https://vatreshen.invalid";
 
+// Пътят, както ще го види браузърът/сървърът: декодиран (до 3 пъти — срещу
+// „%252e“) и с премахнати „.“/„..“ сегменти. null = нещо подозрително
+// (развалено кодиране, „\“ или контролен знак, скрити в кодирането).
+function normalizedPath(pathname: string): string | null {
+  let p = pathname;
+  for (let i = 0; i < 3; i++) {
+    let next: string;
+    try {
+      next = decodeURIComponent(p);
+    } catch {
+      return null;
+    }
+    if (next === p) break;
+    p = next;
+  }
+  if (/[\\\u0000-\u001f\u007f]/.test(p)) return null;
+  if (!p.startsWith("/") || p.startsWith("//")) return null;
+  try {
+    return new URL(p, BASE).pathname;
+  } catch {
+    return null;
+  }
+}
+
+function isLoopOrApi(path: string): boolean {
+  const p = path.toLowerCase();
+  return p === "/p" || p.startsWith("/p/") || p === "/api" || p.startsWith("/api/");
+}
+
 // Целта е САМО вътрешен път. Иначе „/“ — за да не стане краткият адрес
 // отворено пренасочване към чужд сайт (измамите обичат точно това).
 // Отказваме: всичко, което не започва с една „/“; „//…“ (без схема = чужд
 // домейн); обратна наклонена черта (браузърите четат „/\…“ като „//…“);
 // интервали и контролни знаци; цел към самия /p/ (безкраен кръг) и /api/.
+//
+// Проверяваме НОРМАЛИЗИРАНИЯ път, а не суровия низ: „/.//evil.com“,
+// „/a/..//evil.com“ и „/%2e//evil.com“ минаваха проверката на суровия низ, а
+// URL ги свежда до „//evil.com“ (protocol-relative → чужд сайт). Връщаме
+// нормализирания вид — точно това, което после отива в Location.
 export function safeInternalTarget(raw: string | null | undefined): string {
   const t = String(raw ?? "").trim();
   if (!t.startsWith("/") || t.startsWith("//")) return "/";
@@ -37,9 +73,11 @@ export function safeInternalTarget(raw: string | null | undefined): string {
     return "/";
   }
   if (u.origin !== BASE) return "/";
-  const p = u.pathname.toLowerCase();
-  if (p === "/p" || p.startsWith("/p/") || p === "/api" || p.startsWith("/api/")) return "/";
-  return t;
+  if (u.pathname.startsWith("//")) return "/";
+  const decoded = normalizedPath(u.pathname);
+  if (decoded === null || decoded.startsWith("//")) return "/";
+  if (isLoopOrApi(u.pathname) || isLoopOrApi(decoded)) return "/";
+  return u.pathname + u.search + u.hash;
 }
 
 // Относителният адрес за пренасочването: целта + ?s=qr-<код> (останалите
@@ -58,6 +96,51 @@ export function targetPath(target: string): string {
 
 export function shortLinkPath(code: string): string {
   return `/p/${code}`;
+}
+
+// --- Пренасочването /p/<код> (route.ts ползва тези, за да се тестват) ---
+
+/** Условието за търсене на кода — САМО публикуваните кратки адреси. */
+export function shortLinkWhere(code: string) {
+  return { code: { equals: code, mode: "insensitive" as const }, published: true };
+}
+
+export type ShortLinkFinder = (code: string) => Promise<{ target: string } | null>;
+
+/**
+ * Кодът от адреса → { код, безопасна цел } или null (невалиден код, няма
+ * такъв/непубликуван, грешка в базата). `find` е заявката към базата.
+ */
+export async function resolveShortLink(
+  raw: unknown,
+  find: ShortLinkFinder,
+): Promise<{ code: string; target: string } | null> {
+  const code = parseShortCode(raw);
+  if (!code) return null;
+  try {
+    const link = await find(code);
+    return link ? { code, target: safeInternalTarget(link.target) } : null;
+  } catch {
+    // Без база — пак водим човека към сайта, не към грешка.
+    return null;
+  }
+}
+
+/** Заглавките на пренасочването: относителен Location, без кеш, без индекс. */
+export function shortLinkRedirectHeaders(location: string): Record<string, string> {
+  return {
+    // Относителен адрес — не може да изведе човека извън сайта.
+    Location: location,
+    // Всяко сканиране да стига до сървъра (кешът би „изял“ броенето).
+    "Cache-Control": "no-store",
+    "X-Robots-Tag": "noindex, nofollow",
+  };
+}
+
+/** Броим само хора: без ботове и визуализатори на връзки (Viber/Facebook
+ *  правят преглед на адреса) и без предварително зареждане. */
+export function isHumanScan(header: (name: string) => string | null): boolean {
+  return !isPrefetch(header) && !isBot(header("user-agent"));
 }
 
 // Конкретното обещание на плаката според това накъде води кодът. Хората

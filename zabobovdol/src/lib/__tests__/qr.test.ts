@@ -3,11 +3,15 @@ import assert from "node:assert/strict";
 import { create } from "qrcode";
 import {
   GENERAL_PROMISE,
+  isHumanScan,
   parseShortCode,
   posterPromise,
   qrRedirectLocation,
+  resolveShortLink,
   safeInternalTarget,
   shortLinkPath,
+  shortLinkRedirectHeaders,
+  shortLinkWhere,
   targetPath,
 } from "@/lib/qr";
 import { qrPath } from "@/lib/qr-svg";
@@ -66,6 +70,59 @@ test("safeInternalTarget спира отвореното пренасочван�
   }
 });
 
+test("safeInternalTarget нормализира целта ПРЕДИ проверката (dot-сегменти, кодиране)", () => {
+  for (const bad of [
+    // Dot-сегменти, които URL свежда до „//evil.com“ (protocol-relative).
+    "/.//evil.com",
+    "/..//evil.com",
+    "/a/..//evil.com",
+    "/././/evil.com",
+    // Кодирани точки (URL ги смята за „.“/„..“).
+    "/%2e//evil.com",
+    "/%2E%2E//evil.com",
+    "/%252e//evil.com",
+    // Обратни наклонени черти — сурови и кодирани.
+    "/\\evil",
+    "/\\\\evil.com",
+    "/%5Cevil.com",
+    "/%5C%5Cevil.com",
+    "/%255C%255Cevil.com",
+    // Кодирани наклонени черти.
+    "%2F%2Fevil",
+    "/%2F%2Fevil.com",
+    "/%2f/evil.com",
+    // Кръг към /p/ или /api/ през dot-сегменти или кодиране.
+    "/%2e%2e/p/x",
+    "/x/%2E%2E/api/e",
+    "/%70/drug",
+    "/%2570/drug",
+    // Развалено кодиране и скрити контролни знаци.
+    "/%E0%A4%A",
+    "/ok%00",
+    "/ok%0d%0aLocation:%20//evil",
+  ]) {
+    assert.equal(safeInternalTarget(bad), "/", bad);
+  }
+  // Безобидните се свеждат до нормалния път.
+  assert.equal(safeInternalTarget("/./"), "/");
+  assert.equal(safeInternalTarget("/../"), "/");
+  assert.equal(safeInternalTarget("/.."), "/");
+  assert.equal(safeInternalTarget("/a/./b/../c"), "/a/c");
+  assert.equal(safeInternalTarget("/kak-da/./pensiya?x=1#gore"), "/kak-da/pensiya?x=1#gore");
+  // Каквото върне, вече е нормализирано (повторното минаване не го мени).
+  for (const t of ["/dezhurna-apteka", "/a/./b/../c", "/новини", "/kak-da?x=1#gore"]) {
+    const once = safeInternalTarget(t);
+    assert.equal(safeInternalTarget(once), once, t);
+    assert.ok(once.startsWith("/") && !once.startsWith("//"), once);
+  }
+});
+
+test("qrRedirectLocation не извежда навън и при dot-сегменти", () => {
+  for (const t of ["/.//evil.com", "/..//evil.com", "/a/..//evil.com", "/%2e//evil.com"]) {
+    assert.equal(qrRedirectLocation(t, "x"), "/?s=qr-x", t);
+  }
+});
+
 test("qrRedirectLocation добавя ?s=qr-<код> и остава относителен", () => {
   assert.equal(qrRedirectLocation("/dezhurna-apteka", "apteka"), "/dezhurna-apteka?s=qr-apteka");
   assert.equal(qrRedirectLocation("/kak-da?x=1#gore", "a"), "/kak-da?x=1&s=qr-a#gore");
@@ -79,6 +136,86 @@ test("qrRedirectLocation добавя ?s=qr-<код> и остава относ�
     const loc = qrRedirectLocation(t, "k");
     assert.ok(loc.startsWith("/") && !loc.startsWith("//"), loc);
   }
+});
+
+// --- /p/<код>: route.ts е само връзка с базата; логиката е тук ---
+
+function finder(rows: Record<string, string | undefined>) {
+  const calls: string[] = [];
+  return {
+    calls,
+    find: async (code: string) => {
+      calls.push(code);
+      const target = rows[code];
+      return target === undefined ? null : { target };
+    },
+  };
+}
+
+test("resolveShortLink: невалиден код → null, без заявка към базата", async () => {
+  const f = finder({});
+  for (const raw of ["a/b", "аптека", "", "a".repeat(41), "../admin"]) {
+    assert.equal(await resolveShortLink(raw, f.find), null, raw);
+  }
+  assert.deepEqual(f.calls, []);
+});
+
+test("resolveShortLink: непознат/непубликуван код или грешка в базата → null", async () => {
+  // Непубликуваните не се връщат от заявката (shortLinkWhere) → finder дава null.
+  assert.equal(await resolveShortLink("nyama", finder({}).find), null);
+  const broken = async () => {
+    throw new Error("няма база");
+  };
+  assert.equal(await resolveShortLink("apteka", broken), null);
+});
+
+test("resolveShortLink: целта от базата минава през safeInternalTarget", async () => {
+  const f = finder({
+    zlo: "//evil.com",
+    js: "javascript:alert(1)",
+    bs: "/\\evil.com",
+    dot: "/.//evil.com",
+    pom: "/pomoshti",
+  });
+  assert.deepEqual(await resolveShortLink("zlo", f.find), { code: "zlo", target: "/" });
+  assert.deepEqual(await resolveShortLink("js", f.find), { code: "js", target: "/" });
+  assert.deepEqual(await resolveShortLink("bs", f.find), { code: "bs", target: "/" });
+  assert.deepEqual(await resolveShortLink("dot", f.find), { code: "dot", target: "/" });
+  const ok = await resolveShortLink(" POM ", f.find);
+  assert.deepEqual(ok, { code: "pom", target: "/pomoshti" });
+  assert.equal(f.calls.at(-1), "pom", "кодът се търси нормализиран");
+  assert.equal(qrRedirectLocation(ok!.target, ok!.code), "/pomoshti?s=qr-pom");
+  for (const code of ["zlo", "js", "bs", "dot"]) {
+    const l = await resolveShortLink(code, f.find);
+    const loc = qrRedirectLocation(l!.target, l!.code);
+    assert.equal(loc, `/?s=qr-${code}`);
+    assert.ok(!loc.includes("evil"), loc);
+  }
+});
+
+test("shortLinkWhere търси само публикуваните, без значение от главни букви", () => {
+  assert.deepEqual(shortLinkWhere("apteka"), {
+    code: { equals: "apteka", mode: "insensitive" },
+    published: true,
+  });
+});
+
+test("пренасочването: относителен Location, no-store, noindex", () => {
+  const h = shortLinkRedirectHeaders("/pomoshti?s=qr-pom");
+  assert.equal(h.Location, "/pomoshti?s=qr-pom");
+  assert.equal(h["Cache-Control"], "no-store");
+  assert.match(h["X-Robots-Tag"], /noindex/);
+});
+
+test("isHumanScan: ботове, визуализатори и предварително зареждане не се броят", () => {
+  const hdr = (h: Record<string, string>) => (n: string) => h[n.toLowerCase()] ?? null;
+  const UA = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/129.0 Mobile Safari/537.36";
+  assert.equal(isHumanScan(hdr({ "user-agent": UA })), true);
+  assert.equal(isHumanScan(hdr({})), false, "без User-Agent");
+  assert.equal(isHumanScan(hdr({ "user-agent": "facebookexternalhit/1.1" })), false);
+  assert.equal(isHumanScan(hdr({ "user-agent": "Mozilla/5.0 (compatible; Googlebot/2.1)" })), false);
+  assert.equal(isHumanScan(hdr({ "user-agent": UA, purpose: "prefetch" })), false);
+  assert.equal(isHumanScan(hdr({ "user-agent": UA, "sec-purpose": "prefetch;prerender" })), false);
 });
 
 test("targetPath и shortLinkPath", () => {
