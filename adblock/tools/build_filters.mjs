@@ -105,6 +105,30 @@ async function fetchText(url, depth = 0) {
   return text;
 }
 
+// Global uBO XHR redirects to ad networks (||doubleclick.net^$xhr,redirect=noop.txt,
+// ||pagead2.googlesyndication.com^$xhr,redirect=noop.js) exist to fool anti-adblock
+// detectors — and a detector's bait is always a REAL ad resource (adsbygoogle.js, gpt.js,
+// /pagead/id, /gampad/…). The redirect keeps working for exactly those paths; every other
+// request to the ad network stays BLOCKED (EasyList/our rules), as an ad blocker's should.
+// Site-specific redirects (with initiatorDomains) are left alone.
+const BAIT_NETS = new Set(["doubleclick.net", "googlesyndication.com", "pagead2.googlesyndication.com"]);
+const BAIT_PATHS = "^https?://[^/]+/(pagead/|tag/js/|gampad/|gpt/|ddm/|instream/|adsid/)";
+export function narrowBaitRedirects(rules) {
+  let next = rules.reduce((m, r) => Math.max(m, r.id), 0) + 1;
+  const out = [];
+  for (const r of rules) {
+    const c = r.condition || {};
+    if (r.action.type === "redirect" && !c.initiatorDomains && !c.urlFilter && !c.regexFilter && (c.requestDomains || []).some((d) => BAIT_NETS.has(d))) {
+      const bait = c.requestDomains.filter((d) => BAIT_NETS.has(d)), rest = c.requestDomains.filter((d) => !BAIT_NETS.has(d));
+      if (rest.length) out.push({ ...r, condition: { ...c, requestDomains: rest } });
+      out.push({ ...r, id: rest.length ? next++ : r.id, condition: { ...c, requestDomains: bait, regexFilter: BAIT_PATHS } });
+      continue;
+    }
+    out.push(r);
+  }
+  return out;
+}
+
 const RAW_TEXT = new Map(); // id → text exactly as downloaded (for the notices' SHA-256)
 async function listText(entry) {
   // Built-in Focus items: a few selectors of our own (MIT), no download.
@@ -224,7 +248,8 @@ for (const entry of CATALOG) {
   for (const b of ownBad) BADFILTER.add(b);
   if (entry.format === "hosts") text = hostsToAbp(text);
   PATTERN_CAP["list_" + entry.id] = LIST_PATTERN_CAP;
-  const { rules, skipped } = convertList(text, "list_" + entry.id, entry.group === "core");
+  const conv = convertList(text, "list_" + entry.id, entry.group === "core");
+  const rules = narrowBaitRedirects(conv.rules), skipped = conv.skipped;
   for (const b of ownBad) BADFILTER.delete(b);
   // A list with no network rules (built-in selectors) gets no ruleset at all.
   meta.ruleset = rules.length > 0;

@@ -81,7 +81,9 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Търсете услуга, телефон, обява…"
+          // Кратко, за да се чете цяло и на телефон (дългото се режеше по
+          // средата на дума); примери има в текста около полето.
+          placeholder="Какво търсите?"
           // Отдясно стои бутонът за глас — оставяме му място, за да не минава
           // текстът под него на тесен екран.
           className={"input w-full" + (voiceSupported ? " pr-11" : "")}

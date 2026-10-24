@@ -19,7 +19,7 @@ import { join } from "path";
 
 const I18N = join(__dirname, "..", "i18n", "dashboard");
 // index.js е регистърът на локалите, не локал — иначе гейтът иска ключове от него.
-const locales = readdirSync(I18N).filter((f) => f.endsWith(".js") && f !== "index.js");
+const locales = readdirSync(I18N).filter((f) => /^[a-z]{2}\.js$/.test(f)); // само езиците (не index.js/all.js)
 const page = readFileSync(join(__dirname, "..", "pages", "PremiumPage.jsx"), "utf8");
 const api = readFileSync(join(__dirname, "..", "api", "index.js"), "utf8");
 // Режем коментарите — обяснението горе съдържа същите думи.

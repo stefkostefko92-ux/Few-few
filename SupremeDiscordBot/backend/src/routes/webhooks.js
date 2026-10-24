@@ -1,6 +1,8 @@
 // backend/src/routes/webhooks.js
 // Admin CRUD for webhooks + panel duplicate endpoint.
 import { Router } from "express";
+import { createWithinLimit } from "../lib/withinLimit.js";
+import { PREMIUM_PANEL_LIMIT } from "./panels.js";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, loadUser, requireServerAdmin } from "../middleware/auth.js";
@@ -128,22 +130,33 @@ router.post("/:serverId/panels/:panelId/duplicate", requireServerAdmin, requireP
       buttons, ...rest
     } = original;
 
-    const duplicate = await prisma.panel.create({
-      data: {
-        ...rest,
-        name: `${original.name} (copy)`,
-        ticketCounter: 0,
-        buttons: {
-          create: buttons.map((b) => ({
-            label: b.label,
-            emoji: b.emoji,
-            style: b.style,
-            formId: b.formId,
-          })),
+    // Същият атомарен лимит като при създаване (routes/panels.js) — дублирането
+    // минаваше покрай него и Premium сървър стигаше над 50 панела (одит 26.09.2026).
+    const created = await createWithinLimit({
+      model: "panel",
+      where: { serverId: req.params.serverId },
+      limit: PREMIUM_PANEL_LIMIT,
+      create: (tx) => tx.panel.create({
+        data: {
+          ...rest,
+          name: `${original.name} (copy)`,
+          ticketCounter: 0,
+          buttons: {
+            create: buttons.map((b) => ({
+              label: b.label,
+              emoji: b.emoji,
+              style: b.style,
+              formId: b.formId,
+            })),
+          },
         },
-      },
-      include: { buttons: true },
+        include: { buttons: true },
+      }),
     });
+    if (!created.ok) {
+      return res.status(403).json({ error: `Panel limit reached (${PREMIUM_PANEL_LIMIT}).`, code: "LIMIT_REACHED" });
+    }
+    const duplicate = created.row;
 
     await prisma.auditLog.create({
       data: {

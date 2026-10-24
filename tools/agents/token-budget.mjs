@@ -46,6 +46,13 @@ const MEM_INJECT_BUDGET = 3200;
 // WARN ≈ +10% над днешното, HARD ≈ +27%: гейтваме РАЗБЯГВАНЕТО, не текущото състояние.
 export const PREFIX_TOKEN_WARN = 5200;
 export const PREFIX_TOKEN_HARD = 6000;
+// Таван на КОРЕННИЯ CLAUDE.md. Той се зарежда във всяка сесия и при всеки старт на агент (проба на
+// живо 2026-09-23: субагентите го зареждат). До 2026-09-23 носеше цялата доктрина на агентския слой
+// (~9.4k т), платена и от продуктова задача, която не пипа агенти; сега тя е в tools/agents/CLAUDE.md
+// (зарежда се при нужда) и коренът е ~3.8k т. HARD ≈ +25% — място за нови продукти в таблицата,
+// не за нова доктрина: тя отива в CLAUDE.md на продукта или на слоя. Пътят е override-ваем за тест.
+export const ROOT_DOC_TOKEN_HARD = 4800;
+const ROOT_DOC = process.env.TOKEN_BUDGET_ROOT_DOC || join(ROOT, "CLAUDE.md");
 
 // --- Cyrillic-aware евристичен токенизатор ---------------------------------
 // Claude токенизаторът дели кирилицата по-ситно от латиницата. Емпирично blended съотношение:
@@ -159,16 +166,23 @@ export function computeBudget() {
     + bulletsUnder(join(MEM_DIR, "_shared.md"), /^##\s*Споделени поуки/).length;
   totals.prefixBullets = prefixBullets;
   totals.costPerPrefixBullet = prefixBullets ? Math.round((STATIC_PREFIX_TOKENS / prefixBullets) * rows.length) : 0;
+  // Главната сесия на всеки ход: коренният CLAUDE.md + списъкът с описания на агентите.
+  const rootDocTokens = existsSync(ROOT_DOC) ? estTokens(readFileSync(ROOT_DOC, "utf8")) : 0;
+  const descTokens = agentIds().reduce((s, id) => {
+    const fm = readFileSync(join(AGENTS_DIR, id + ".md"), "utf8").split(/^---\s*$/m)[1] || "";
+    return s + estTokens((fm.match(/^description:[ \t]*(.*)$/m) || [])[1] || "");
+  }, 0);
   return {
     rows, totals, prefixParts, STATIC_PREFIX_TOKENS, CACHE_SAVED,
     DEF_TOKEN_WARN, DEF_TOKEN_HARD, PREFIX_TOKEN_WARN, PREFIX_TOKEN_HARD,
     prefixBloated: STATIC_PREFIX_TOKENS > PREFIX_TOKEN_WARN,
     prefixOverHard: STATIC_PREFIX_TOKENS > PREFIX_TOKEN_HARD,
+    rootDocTokens, descTokens, rootDocOverHard: rootDocTokens > ROOT_DOC_TOKEN_HARD,
   };
 }
 
 async function runCli() {
-const { rows, totals, prefixParts, STATIC_PREFIX_TOKENS, CACHE_SAVED, prefixBloated, prefixOverHard } = computeBudget();
+const { rows, totals, prefixParts, STATIC_PREFIX_TOKENS, CACHE_SAVED, prefixBloated, prefixOverHard, rootDocTokens, descTokens, rootDocOverHard } = computeBudget();
 const bloated = rows.filter((r) => r.bloated);
 const overHard = rows.filter((r) => r.overHard);
 
@@ -176,16 +190,19 @@ if (JSON_OUT) {
   // Изходният код МИНАВА през --json пътя: конвенцията на всички наши --check инструменти е
   // машинният изход да носи същата присъда като текстовия. Заковаването на 0 тук правеше
   // `--check --json` тихо зелено при превишен твърд таван — потвърдено с in-place мутация.
-  const jsonFailed = CHECK && (overHard.length || prefixOverHard) ? 1 : 0;
+  const jsonFailed = CHECK && (overHard.length || prefixOverHard || rootDocOverHard) ? 1 : 0;
   await emitJsonNow({
     generatedNote: "оценка (евристичен Cyrillic-aware токенизатор); точни числа: count_tokens endpoint",
     defTokenWarn: DEF_TOKEN_WARN,
     prefixTokenWarn: PREFIX_TOKEN_WARN, prefixTokenHard: PREFIX_TOKEN_HARD,
+    rootDocTokens, rootDocTokenHard: ROOT_DOC_TOKEN_HARD, descTokens,
     totals, prefixParts, rows,
   }, jsonFailed);
 }
 
 console.log(`\n🪙  Токен-бюджет на екипа (${rows.length} агента) — ОЦЕНКА, не измерен ран\n`);
+console.log(`  Главна сесия, всеки ход: коренен CLAUDE.md ~${rootDocTokens} т (таван ${ROOT_DOC_TOKEN_HARD}) · описания на агентите ~${descTokens} т`);
+console.log(`  \x1b[90mКоренният CLAUDE.md се зарежда и при всеки старт на агент. Реалната цена: usage-report.mjs.\x1b[0m\n`);
 console.log(`  Статичен префикс (доктрина+процедура+споделено): ~${STATIC_PREFIX_TOKENS} т · еднакъв по СЪДЪРЖАНИЕ`);
 console.log(`  Кеш спестява ~${CACHE_SAVED} т на повторно извикване на СЪЩИЯ агент (0.9× от префикса).`);
 console.log(`  \x1b[90mНЕ се дели между различни агенти: префиксът влиза в messages (SubagentStart), а системният`);
@@ -229,6 +246,12 @@ if (CHECK && prefixOverHard) {
     `${PREFIX_TOKEN_HARD} т. Той се инжектира на ВСЕКИ агент → ~${totals.prefixCostPerWave} т на вълна. ` +
     `Разбивка: ${prefixParts.map((p) => `${p.src}~${p.tokens}`).join(" · ")}. ` +
     `Слим доктрината/процедурата/споделеното или обедини булети — не вдигай тавана.`);
+  failed = 1;
+}
+if (CHECK && rootDocOverHard) {
+  console.error(`token-budget --check: коренният CLAUDE.md е ~${rootDocTokens} т над твърдия таван ${ROOT_DOC_TOKEN_HARD} т. ` +
+    `Зарежда се във всяка сесия и при всеки старт на агент. Премести подробностите в CLAUDE.md на продукта ` +
+    `или в tools/agents/CLAUDE.md (зареждат се при нужда) — не вдигай тавана.`);
   failed = 1;
 }
 process.exit(failed);

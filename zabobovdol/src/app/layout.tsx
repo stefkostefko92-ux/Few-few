@@ -8,9 +8,10 @@ import { getFacebookUrl, getSeoVerification } from "@/lib/settings";
 import { SiteHeader } from "@/components/SiteHeader";
 import { AccessibilityBar } from "@/components/AccessibilityBar";
 import { SiteFooter } from "@/components/SiteFooter";
-import { ChatWidget } from "@/components/ChatWidget";
+import { ChatWidgetLazy } from "@/components/ChatWidgetLazy";
 import { IntroSplash } from "@/components/IntroSplash";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { InstallBanner } from "@/components/InstallBanner";
 
 const sans = Inter({
   subsets: ["latin", "cyrillic"],
@@ -33,7 +34,14 @@ export const metadata: Metadata = {
   description: SITE.description,
   applicationName: SITE.name,
   manifest: "/manifest.webmanifest",
-  alternates: { canonical: SITE.url },
+  // RSS се вижда на страниците без собствени alternates (напр. началната);
+  // /novini го задава сам.
+  alternates: {
+    canonical: SITE.url,
+    types: {
+      "application/rss+xml": [{ url: "/novini/rss.xml", title: `Новини — ${SITE.name}` }],
+    },
+  },
   keywords: [
     "Бобов дол",
     "услуги Бобов дол",
@@ -145,11 +153,14 @@ export default async function RootLayout({
         </a>
         <AccessibilityBar />
         <SiteHeader />
+        {/* „Сложи на телефона“ — в потока под хедъра, не покрива съдържание;
+            сама се скрива на компютър, в приложението, в /admin и /pechat. */}
+        <InstallBanner />
         <main id="main" className="min-h-[60vh]">
           {children}
         </main>
         <SiteFooter />
-        <ChatWidget />
+        <ChatWidgetLazy />
         <IntroSplash />
         <ServiceWorkerRegister />
       </body>

@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "YouTube વીડિયો જાહેરાતો, બૅનર, પૉપ-અપ, ટ્રૅકર, કુકી સંદેશા અને ઍન્ટિ-ઍડબ્લૉક દીવાલો દરેક જગ્યાએ બ્લૉક કરો. મફત, ઝડપી અને ખાનગી."
+    "message": "YouTube વીડિયો જાહેરાતો, બૅનર, પૉપ-અપ, ટ્રૅકર, કુકી સંદેશા અને ઍન્ટિ-ઍડબ્લૉક દીવાલો દરેક જગ્યાએ બ્લૉક કરો."
   },
   "byCarbon": {
     "message": "Carbon Stealth દ્વારા"
@@ -118,6 +118,27 @@
   "support": {
     "message": "સહયોગ આપો"
   },
+  "rate": {
+    "message": "રેટિંગ આપો"
+  },
+  "rateTitle": {
+    "message": "Chrome વેબ સ્ટોર પર Supreme AdBlockને રેટિંગ આપો"
+  },
+  "reviewBlocked": {
+    "message": "અત્યાર સુધીમાં $1 વિનંતીઓ બ્લૉક થઈ"
+  },
+  "reviewAsk": {
+    "message": "જો Supreme AdBlock તમને ઉપયોગી હોય, તો Chrome વેબ સ્ટોર પર ટૂંકો રિવ્યૂ બીજાને તે શોધવામાં મદદ કરે છે."
+  },
+  "reviewLeave": {
+    "message": "રિવ્યૂ લખો"
+  },
+  "reviewLater": {
+    "message": "હમણાં નહીં"
+  },
+  "reviewNever": {
+    "message": "ફરી પૂછશો નહીં"
+  },
   "filtersCount": {
     "message": "$1+ ફિલ્ટર",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "“તમારું ઍડબ્લૉકર બંધ કરો” દીવાલો છુપાવો અને પેજ પાછું સામાન્ય કરો"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook અને Instagram પર “પ્રાયોજિત” પોસ્ટ છુપાવો"
+    "message": "Facebook, Instagram અને Threads પર “પ્રાયોજિત” પોસ્ટ છુપાવો"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "તમે ખોલો છો તે લિંકમાંથી utm_*, fbclid, gclid અને અન્ય ક્લિક ઓળખકર્તા કાઢી નાખો"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "જાણીતા માલવેર ડોમેન બ્લૉક કરો (abuse.chની URLhaus સૂચિ)"
+    "message": "જાણીતી માલવેર સાઇટ ખૂલે તે પહેલાં ચેતવણી આપો, અને પેજ આવી સાઇટ પરથી જે લોડ કરે તે બ્લૉક કરો (abuse.chની URLhaus સૂચિ)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "દરેક સાઇટ પર Google Topics, FLoC અને Protected Audience જાહેરાત API બંધ કરો"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut દ્વારા દાન કરો"
+  },
+  "opt_review": {
+    "message": "રિવ્યૂ રિમાઇન્ડર"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock વિન્ડોની નીચે નાની ★ લિંક અને વધુમાં વધુ બે વાર ત્યાં Chrome વેબ સ્ટોર પર તેને રેટિંગ આપવાની ટૂંકી વિનંતી. ક્યારેય વેબસાઇટ પર નહીં, ક્યારેય સૂચના તરીકે નહીં."
   },
   "opt_made_by": {
     "message": "Carbon Stealth દ્વારા બનાવેલ"
@@ -599,5 +626,172 @@
   },
   "opt_notices": {
     "message": "ફિલ્ટર સૂચિઓના લાઇસન્સ"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock માં તમારું સ્વાગત છે",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "તમે સુરક્ષિત છો",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock હવે તમે મુલાકાત લો છો તે દરેક સાઇટ પર જાહેરાતો અને ટ્રૅકર બ્લૉક કરી રહ્યું છે. કંઈ પણ સેટ કરવાની જરૂર નથી.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "એક્સટેન્શનને ટૂલબાર પર પિન કરો",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "ઍડ્રેસ બારની બાજુમાં કોયડાના ટુકડાના આઇકન પર ક્લિક કરો અને Supreme AdBlock પિન કરો. પછી એક ક્લિકમાં દેખાશે કે પેજ પર શું બ્લૉક થયું.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "જો કોઈ સાઇટ બરાબર ન દેખાય",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "એક્સટેન્શન ખોલો અને તે સાઇટ માટે બ્લૉકિંગ બંધ કરો, અથવા ઝડપી ઉકેલ માટે “સાઇટ બરાબર નથી ચાલતી?” પસંદ કરો.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "તમારું બ્રાઉઝિંગ તમારા ડિવાઇસ પર જ રહે છે",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "ફિલ્ટરિંગ સ્થાનિક રીતે થાય છે. એક્સટેન્શન કોઈ વ્યક્તિગત ડેટા એકત્ર કરતું નથી અને તમે મુલાકાત લો છો તે પેજ વિશે કંઈ મોકલતું નથી.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "સેટિંગ ખોલો",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "સમજાઈ ગયું",
+    "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "મંજૂર · $1 મિનિટ બાકી"
+  },
+  "hiddenHere": {
+    "message": "અહીં છુપાવેલા ઘટકો: $1 · છેલ્લું પાછું લાવો"
+  },
+  "cmd_toggle_site": {
+    "message": "આ સાઇટ પર બ્લૉકિંગ ચાલુ કે બંધ કરો"
+  },
+  "cmd_pause": {
+    "message": "સુરક્ષા થોભાવો અથવા ફરી શરૂ કરો (30 મિનિટ)"
+  },
+  "cmd_picker": {
+    "message": "આ પેજ પર કોઈ ઘટક છુપાવો"
+  },
+  "rep_fix_hour": {
+    "message": "1 કલાક માટે અહીં જાહેરાતોને મંજૂરી આપો"
+  },
+  "rep_done_hour": {
+    "message": "આ સાઇટ પર 1 કલાક માટે જાહેરાતોને મંજૂરી છે. ફરી લોડ થયું — શું હવે ઠીક છે?"
+  },
+  "opt_last30": {
+    "message": "છેલ્લા 30 દિવસ"
+  },
+  "opt_last30_sum": {
+    "message": "બ્લૉક થયેલ: $1 · કુકી બૅનર: $2"
+  },
+  "opt_last30_empty": {
+    "message": "તમે બ્રાઉઝ કરશો તેમ તમારા દૈનિક કુલ આંકડા અહીં દેખાશે."
+  },
+  "opt_last30_sub": {
+    "message": "ફક્ત દૈનિક કુલ આંકડા, આ ડિવાઇસ પર 30 દિવસ સુધી રખાય છે. કોઈ સાઇટ નહીં, કોઈ સરનામાં નહીં."
+  },
+  "opt_gpc_sub": {
+    "message": "તમે મુલાકાત લો છો તે દરેક સાઇટને તમારો ડેટા ન વેચવા કે શેર ન કરવા કહે છે (Sec-GPC સિગ્નલ, જેનું પાલન કેટલાક ગોપનીયતા કાયદા હેઠળ સાઇટોએ કરવું પડે છે). તમે મંજૂર કરેલી સાઇટ પર તે મોકલાતું નથી."
+  },
+  "opt_shortcuts": {
+    "message": "કીબોર્ડ શૉર્ટકટ"
+  },
+  "opt_shortcuts_change": {
+    "message": "શૉર્ટકટ બદલો"
+  },
+  "opt_shortcut_none": {
+    "message": "સેટ નથી"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefoxમાં: ઍડ-ઑન અને થીમ → ⚙ → એક્સટેન્શન શૉર્ટકટ મેનેજ કરો."
+  },
+  "opt_import_foreign": {
+    "message": "બીજા ઍડબ્લૉકરમાંથી ઇમ્પોર્ટ કરો"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin, AdGuard કે Adblock Plus પરથી આવો છો? તેની બૅકઅપ ફાઇલ પસંદ કરો: તમે મંજૂર કરેલી સાઇટ અને તમારા પોતાના ફિલ્ટર અહીં ઉમેરાય છે. હાલનું કંઈ બદલાતું નથી."
+  },
+  "opt_import_foreign_done": {
+    "message": "મંજૂર કરેલી સાઇટ: $1 · ઉમેરેલા ફિલ્ટર: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "છોડી દીધેલી (અહીં લાગુ થઈ શકતી નથી): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "આ ફાઇલ એવો બૅકઅપ નથી જે અમે વાંચી શકીએ."
+  },
+  "welQuickTitle": {
+    "message": "તેને તમારી રીતે ગોઠવો"
+  },
+  "welQuickSub": {
+    "message": "વૈકલ્પિક: તે પહેલેથી કામ કરે છે. આમાંનું કંઈ પણ પછીથી સેટિંગમાં બદલી શકાય છે."
+  },
+  "blk_page_title": {
+    "message": "સાઇટ બ્લૉક કરાઈ — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "આ સાઇટ તમારા ડિવાઇસને નુકસાન પહોંચાડી શકે છે"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock દ્વારા આ પેજ અટકાવાયું છે, કારણ કે આ સાઇટ URLhaus પર છે — માલવેર ફેલાવતાં સરનામાંની એક જાહેર સૂચિ."
+  },
+  "blk_back": {
+    "message": "પાછા જાઓ"
+  },
+  "blk_continue": {
+    "message": "તેમ છતાં આગળ વધો"
+  },
+  "blk_note": {
+    "message": "આગળ વધવાથી, તમે બ્રાઉઝર બંધ કરો ત્યાં સુધી ફક્ત આ સાઇટનાં પેજ ખૂલવા દેવાશે."
+  },
+  "blk_why": {
+    "message": "તે સૂચિમાં કેમ છે? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "આ પેજનાં કનેક્શન"
+  },
+  "conn_empty": {
+    "message": "આ પેજે બીજી સાઇટ પરથી કંઈ લોડ કર્યું નથી."
+  },
+  "conn_block": {
+    "message": "અહીં બ્લૉક કરો"
+  },
+  "conn_blocked": {
+    "message": "અહીં બ્લૉક થયેલ"
+  },
+  "conn_hint": {
+    "message": "આ સાઇટ $1 પરથી જે લોડ કરે તે બ્લૉક કરો"
+  },
+  "opt_conn_title": {
+    "message": "તમે બ્લૉક કરેલાં કનેક્શન"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock વિન્ડોના “આ પેજનાં કનેક્શન”માંથી બ્લૉક કરેલાં, દરેક ફક્ત પોતાની સાઇટ પર."
+  },
+  "opt_empty_conn": {
+    "message": "હજી સુધી કંઈ બ્લૉક કર્યું નથી."
+  },
+  "opt_conn_remove": {
+    "message": "$2 પર $1 અનબ્લૉક કરો"
+  },
+  "opt_h_danger": {
+    "message": "માલવેર ચેતવણી પેજ"
+  },
+  "opt_h_capacity": {
+    "message": "નિયમોની ક્ષમતા"
   }
 }

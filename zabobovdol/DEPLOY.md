@@ -157,14 +157,156 @@ docker compose up -d --build
 Сайтът може да внася новини от общината като **чернови** за ръчно одобрение.
 
 - Ръчно: в админ панела → „Новини от общината“ → бутон „Внеси новини“.
-- Автоматично (cron): задайте `INGEST_TOKEN` в `.env` и насрочете на VPS-а:
-
-```bash
-# всеки ден в 7:00 — внася чернови (публикуването остава ръчно)
-0 7 * * * curl -s -H "Authorization: Bearer ТАЙНА" https://zabobovdol.carbonstealth.eu/api/ingest-news >/dev/null
-```
+- Автоматично (cron): задайте `INGEST_TOKEN` в `.env` и настройте задачите по
+  график от точка 9.2 (с лог — **никога** `>/dev/null`).
 
 Адресът на източника се задава с `MUNICIPALITY_NEWS_URL` (RSS канал или HTML
 списък). Внасят се заглавие, кратко резюме и линк към оригинала — не пълният
-текст. Ако източникът е HTML (без RSS), четецът работи на принципа „най-добро
-усилие“ и при промяна на сайта на общината може да се наложи дребна донастройка.
+текст и не снимките. Внесеното остава **непубликувано**, докато човек не го
+одобри; отговорът на вноса казва колко чакат (`pending`).
+
+### 9.1. Кое се брои за новина (строг четец)
+
+Старият четец взимаше всяка връзка от сайта на общината и внесе 15 страници от
+**менюто** („Характеристики на общината“, „Правомощия на Кмета“…) като новини.
+Сега от HTML списък се приемат **само**:
+
+- връзки, чийто адрес отговаря на `MUNICIPALITY_NEWS_LINK_PATTERN` (регулярен
+  израз; по подразбиране `/actual/news/[^/?#!][^?#]*` — отделна новина под
+  `…/actual/news/`, без самия списък и без страниране `…/!ut/p/…`);
+- и **с дата** до тях (`21.10.2026` или `21 октомври 2026`).
+
+Нито една връзка не отговаря → **нищо не се внася** (fail closed): отговорът е
+`{"found":0, "error":"Не са намерени новини по зададения шаблон…"}`, а в
+админ панела излиза червено съобщение. Тогава проверете от сървъра какви са
+истинските адреси на новините и при нужда сменете шаблона в `.env`:
+
+```bash
+curl -s https://bobovdol.egov.bg/wps/portal/municipality-bobovdol/actual/news \
+  | grep -o 'href="[^"]*"' | grep -i 'actual/news/' | sort -u | head -20
+# напр. MUNICIPALITY_NEWS_LINK_PATTERN="/actual/news/[^/?#!][^?#]*"
+```
+
+След смяна на `.env`: `docker compose up -d app`. Невалиден израз спира вноса със
+съобщение (не внася „каквото падне“). RSS/Atom канал не минава през шаблона, но
+записите без дата пак отпадат.
+
+### 9.2. Задачи по график — с лог и ротация
+
+Изходът на всяка задача отива в `/var/log/zabobovdol/cron.log` (ред с дата,
+задачата и JSON отговора — само броеве и съобщения, без лични данни). Проблем →
+ред `ВНИМАНИЕ` в лога, запис в syslog (`journalctl -t zabobovdol-cron`) и имейл,
+ако има как. Токенът се чете от `.env` на сървъра при всяко пускане и минава
+през файлов дескриптор — не е в командния ред, в `ps` и в лога.
+
+```bash
+# 1) Помощният скрипт
+sudo tee /usr/local/bin/zabobovdol-cron >/dev/null <<'EOF'
+#!/usr/bin/env bash
+# Задачите по график на „За Бобов дол“ — резултатът винаги отива в лог.
+#   zabobovdol-cron ingest-news | ingest-transparency | freshness | retention
+set -u
+SITE="${ZBD_SITE:-https://zabobovdol.carbonstealth.eu}"
+ENV_FILE="${ZBD_ENV:-/opt/few-few/shared/zabobovdol/.env}"
+LOG=/var/log/zabobovdol/cron.log
+job="${1:-}"
+method=GET
+case "$job" in
+  ingest-news|ingest-transparency) url="$SITE/api/$job" ;;
+  freshness) url="$SITE/api/health/freshness?notify=1" ;;
+  retention) url="$SITE/api/retention"; method=POST ;;
+  *) echo "Непозната задача: $job" >&2; exit 2 ;;
+esac
+token=$(sed -n 's/^INGEST_TOKEN="\{0,1\}\([^"#[:space:]]*\)"\{0,1\}.*$/\1/p' "$ENV_FILE" | tail -n 1)
+if [ -z "$token" ]; then
+  echo "$(date -Is) $job ВНИМАНИЕ: няма INGEST_TOKEN в $ENV_FILE" >> "$LOG"
+  echo "$job: няма INGEST_TOKEN"; exit 1
+fi
+out=$(curl -sS -m 120 -X "$method" -H @<(printf 'Authorization: Bearer %s\n' "$token") \
+  -w '\nHTTP %{http_code}' "$url" 2>&1); rc=$?
+line=$(printf '%s' "$out" | tr '\n' ' ')
+echo "$(date -Is) $job $line" >> "$LOG"
+bad=""
+[ "$rc" -ne 0 ] && bad="curl $rc"
+case "$out" in *"HTTP 200") ;; *) bad="${bad:-не е HTTP 200}" ;; esac
+if [ "$job" = freshness ]; then
+  case "$out" in *'"ok":true'*) ;; *) bad="${bad:-остарели данни}" ;; esac
+else
+  case "$out" in *'"error"'*) bad="${bad:-грешка във вноса}" ;; esac
+fi
+if [ -n "$bad" ]; then
+  echo "$(date -Is) $job ВНИМАНИЕ: $bad" >> "$LOG"
+  logger -t zabobovdol-cron "$job: $bad (виж $LOG)"
+  echo "$job: $bad — $line"   # cron го праща по имейл, ако има MAILTO и пощенски агент
+  exit 1
+fi
+EOF
+sudo chmod 755 /usr/local/bin/zabobovdol-cron
+sudo install -d -m 750 /var/log/zabobovdol
+
+# 2) Графикът (часовете са по часовата зона на сървъра)
+sudo tee /etc/cron.d/zabobovdol >/dev/null <<'EOF'
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# Имейл при проблем: сложете адрес, ако сървърът може да праща поща.
+MAILTO=""
+# 7:00 — внася чернови на новините (публикуването остава ръчно)
+0 7 * * * root /usr/local/bin/zabobovdol-cron ingest-news
+# 7:30 — проверка за свежест (точка 9.3); при проблем: лог + syslog + имейл
+30 7 * * * root /usr/local/bin/zabobovdol-cron freshness
+# 3:15 — триене по срок: търсения без резултат (90 дни), сигнали за сгрешени
+# номера (поправени — 90 дни след промяната, непоправени — 1 година) и
+# контактите от формата за бизнес (6 месеца). Сроковете: src/lib/retention-core.ts
+15 3 * * * root /usr/local/bin/zabobovdol-cron retention
+EOF
+sudo chmod 644 /etc/cron.d/zabobovdol
+
+# 3) Ротация на лога — седмично, пазят се 12 седмици, компресирани
+sudo tee /etc/logrotate.d/zabobovdol-cron >/dev/null <<'EOF'
+/var/log/zabobovdol/cron.log {
+    weekly
+    rotate 12
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 root adm
+}
+EOF
+sudo logrotate -d /etc/logrotate.d/zabobovdol-cron   # сух ход — само проверка
+
+# 4) Проба веднага
+sudo /usr/local/bin/zabobovdol-cron ingest-news; sudo /usr/local/bin/zabobovdol-cron freshness
+tail -n 5 /var/log/zabobovdol/cron.log
+```
+
+Ако вече имате стария ред `… /api/ingest-news >/dev/null` в `sudo crontab -e` —
+**изтрийте го** (иначе вносът тича два пъти и пак не оставя следа).
+Данните за прозрачност се пускат по същия начин:
+`zabobovdol-cron ingest-transparency`.
+
+### 9.3. Проверка за свежест — `GET /api/health/freshness`
+
+Защитена със същия `INGEST_TOKEN` (заглавие `Authorization: Bearer …`). Връща
+**200** и JSON `{ ok, checkedAt, problems[], stats }` — при проблем `ok:false`
+(не грешка 5xx, за да го чете мониторингът); **503** само ако базата не отговаря.
+С `?notify=1` при проблем праща имейл до `FRESHNESS_ALERT_EMAIL` (или
+`ADMIN_EMAIL`), ако SMTP е настроен — само обобщение.
+
+| Проблем (`code`) | Кога | Тежест |
+|---|---|---|
+| `news_not_imported` | 0 внесени новини от общината за 7 дни | внимание |
+| `news_not_published` | 0 публикувани новини за 7 дни | внимание |
+| `news_waiting_approval` | внесена новина чака одобрение над 3 дни | внимание |
+| `pharmacy_today_missing` | няма въведена дежурна аптека за днес | **спешно** |
+| `scams_stale` | предупрежденията за измами не са пипани 90 дни | внимание |
+| `outages_stale` | прекъсванията на ток/вода не са пипани 30 дни | внимание |
+| `services_unverified` | номер в „Услуги“ без проверка или по-стара от 6 месеца | внимание |
+
+Праговете са в `src/lib/freshness-core.ts` (`FRESHNESS_THRESHOLDS`).
+
+### 9.4. RSS
+
+Публикуваните новини (последните 30) са на `/novini/rss.xml` (RSS 2.0); на
+`/novini` има видима връзка „Абонирай се (RSS)“. Връзките в канала носят
+`?s=rss` — статистиката брои идванията от RSS без да знае кой е.

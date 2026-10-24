@@ -1,0 +1,275 @@
+// bot/src/utils/game.js
+// v50 — Server Season от страната на бота: кеш на настройките по сървър,
+// охлаждане за XP от съобщения (в паметта — един процес обслужва и главния, и
+// white-label клиентите), партиди към backend-а на всеки FLUSH_MS, и раздаване
+// на ролите за ниво. Съдържанието на съобщенията НЕ се чете тук: броим
+// събитието (message.author + channel), нищо друго (Privileged Intents:
+// употребата на Message Content остава само за тикети/лог/counting).
+import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import { BRAND, MUTED } from "./colors.js";
+import api from "./api.js";
+import { roleAssignabilityReason } from "./reactionRoles.js";
+
+const SETTINGS_TTL_MS = 60 * 1000;
+const FLUSH_MS = 30 * 1000;
+
+const settingsCache = new Map();  // serverId → { settings, expiresAt }
+const cooldown = new Map();       // `${serverId}:${userId}` → last XP timestamp
+const pending = new Map();        // serverId → Map(userId → { messageXpEvents, voiceMinutes })
+const voiceJoined = new Map();    // `${serverId}:${userId}` → { guildId, userId } — кой е в глас (проба всяка минута)
+const spawnState = new Map();     // serverId → { events, lastAttemptAt }
+
+// ─── Спътници (етап 2): поява при активност ─────────────────────────────────
+// Правилата (праг събития, шанс, интервал) са в backend/src/lib/game/companions.js;
+// тук е само евтиният гейт в паметта, за да не бием backend-а на всяко съобщение.
+export const SPAWN_MIN_EVENTS = 6;
+export const SPAWN_CHANCE = 1 / 25;
+export const SPAWN_LOCAL_INTERVAL_MS = 12 * 60 * 1000;
+
+// Заявка в полет по сървър: при изтекъл кеш всяко съобщение пускаше СВОЯ
+// заявка и отговорите пристигаха в произволен ред — опашката на Counting се
+// нареждаше грешно и верен ход („5“ преди „6“) се обявяваше за грешка
+// (одит 26.09.2026). Всички чакат едно обещание → редът се запазва.
+const settingsInflight = new Map();
+
+export async function getGameSettings(serverId) {
+  const hit = settingsCache.get(serverId);
+  if (hit && hit.expiresAt > Date.now()) return hit.settings;
+  const inflight = settingsInflight.get(serverId);
+  if (inflight) return inflight;
+  const p = (async () => {
+    let settings = null;
+    try {
+      ({ data: settings } = await api.get(`/bot/game/settings/${serverId}`));
+    } catch {
+      settings = hit?.settings || null; // при провал пазим последното известно
+    }
+    settingsCache.set(serverId, { settings, expiresAt: Date.now() + SETTINGS_TTL_MS });
+    return settings;
+  })().finally(() => settingsInflight.delete(serverId));
+  settingsInflight.set(serverId, p);
+  return p;
+}
+
+export function invalidateGameSettings(serverId) {
+  settingsCache.delete(serverId);
+  settingsInflight.delete(serverId);
+}
+
+function bucket(serverId, userId) {
+  let m = pending.get(serverId);
+  if (!m) { m = new Map(); pending.set(serverId, m); }
+  let e = m.get(userId);
+  if (!e) { e = { messageXpEvents: 0, voiceMinutes: 0 }; m.set(userId, e); }
+  return e;
+}
+
+/** Събитие „съобщение" — брои се най-много веднъж на messageCooldownSec. */
+export async function onMessageForXp(message) {
+  if (message.author?.bot || !message.guildId) return;
+  const settings = await getGameSettings(message.guildId);
+  if (!settings?.enabled) return;
+  const key = `${message.guildId}:${message.author.id}`;
+  const last = cooldown.get(key) || 0;
+  const cd = Math.max(10, Number(settings.messageCooldownSec) || 60) * 1000;
+  if (Date.now() - last < cd) return;
+  cooldown.set(key, Date.now());
+  bucket(message.guildId, message.author.id).messageXpEvents += 1;
+  // Спътниците се появяват при активност — само от XP събития (с охлаждане),
+  // тоест спам от един човек не ускорява появата.
+  maybeSpawn(message, settings, rand).catch(() => {});
+}
+
+let rand = Math.random;
+/** Само за тестове: детерминистичен жребий. */
+export function __setRandom(fn) { rand = fn || Math.random; }
+
+export async function maybeSpawn(message, settings, r = rand) {
+  if (!settings?.spawnEnabled) return false;
+  if (settings.spawnChannelIds?.length && !settings.spawnChannelIds.includes(message.channelId)) return false;
+  const st = spawnState.get(message.guildId) || { events: 0, lastAttemptAt: 0 };
+  st.events += 1;
+  spawnState.set(message.guildId, st);
+  if (st.events < SPAWN_MIN_EVENTS) return false;
+  if (Date.now() - st.lastAttemptAt < SPAWN_LOCAL_INTERVAL_MS) return false;
+  if (r() > SPAWN_CHANCE) return false;
+  st.lastAttemptAt = Date.now(); st.events = 0;
+  let data;
+  try {
+    ({ data } = await api.post("/bot/game/spawn", { serverId: message.guildId, channelId: message.channelId }));
+  } catch (err) {
+    return false; // SPAWN_ACTIVE / TOO_SOON / CHANNEL_NOT_ALLOWED — backend-ът е съдията
+  }
+  await postSpawn(message.channel, data, message.client).catch(() => {});
+  return true;
+}
+
+export function spawnMessage(data, lang = "en", tFn = (k) => k) {
+  const c = data.companion;
+  const embed = new EmbedBuilder()
+    .setColor(BRAND)
+    .setTitle(tFn("game.spawn.title", lang, { name: c.name }))
+    .setDescription(tFn("game.spawn.body", lang, { rarity: `${c.rarityEmoji} ${c.rarityLabel}` }))
+    .setThumbnail(c.imageUrl);
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(`game:catch:${data.spawn.id}`).setStyle(ButtonStyle.Success).setLabel(tFn("game.spawn.catch", lang)),
+  );
+  return { embeds: [embed], components: [row] };
+}
+
+export async function postSpawn(channel, data, client) {
+  const { t, resolveLangForGuild } = await import("../i18n/index.js");
+  const lang = await resolveLangForGuild(channel.guildId).catch(() => "en");
+  const msg = await channel.send(spawnMessage(data, lang, t));
+  await api.patch(`/bot/game/spawn/${data.spawn.id}/message`, { messageId: msg.id }).catch(() => {});
+  // След изтичане — „избяга" (ако не е уловен). Backend-ът пази истината; тук е само визуалното.
+  const ttl = Math.max(1000, new Date(data.spawn.expiresAt).getTime() - Date.now());
+  const timer = setTimeout(async () => {
+    try {
+      const { data: fresh } = await api.get(`/bot/game/companion/${data.companion.id}`).catch(() => ({ data: null }));
+      const current = await channel.messages.fetch(msg.id).catch(() => null);
+      if (!current || !current.components?.length) return; // вече редактирано (уловен)
+      const embed = EmbedBuilder.from(current.embeds[0]).setColor(MUTED).setDescription(t("game.spawn.escaped", lang, { name: (fresh || data.companion).name }));
+      await current.edit({ embeds: [embed], components: [] });
+    } catch { /* нищо */ }
+  }, ttl);
+  timer.unref?.();
+  return msg;
+}
+
+
+/**
+ * Гласови минути — само АКТИВНО участие (одит на Разбивача 25.09.2026: минутите
+ * се броят от влизане до излизане → заглушен/без звук/сам в канала трупаше до
+ * 1440 мин на ден). Сега събитието само отбелязва кой е в глас, а всяка минута
+ * `tickVoiceXp` проверява ТЕКУЩОТО състояние: не в AFK канала, без заглушен
+ * микрофон/звук (сам или от модератор) и поне още един такъв човек в канала.
+ */
+export async function onVoiceForXp(oldState, newState) {
+  const guild = newState.guild || oldState.guild;
+  const member = newState.member || oldState.member;
+  if (!guild?.id || !member || member.user?.bot) return;
+  const key = `${guild.id}:${member.id}`;
+  const inVoice = newState.channelId && newState.channelId !== guild.afkChannelId;
+  // Клиентът, който е ВИДЯЛ събитието — white-label ботовете имат собствен кеш.
+  if (inVoice) voiceJoined.set(key, { guildId: guild.id, userId: member.id, client: newState.client || oldState.client || null });
+  else voiceJoined.delete(key);
+}
+
+const muted = (v) => !!(v?.selfDeaf || v?.serverDeaf || v?.selfMute || v?.serverMute);
+
+/** Една проба: +1 минута за всеки активен участник. Връща броя кредитирани. */
+export async function tickVoiceXp(client) {
+  let credited = 0;
+  for (const [key, { guildId, userId, client: seenBy }] of [...voiceJoined]) {
+    const guild = (seenBy || client)?.guilds?.cache?.get(guildId);
+    const vs = guild?.voiceStates?.cache?.get(userId);
+    if (!vs?.channelId || vs.channelId === guild.afkChannelId) { voiceJoined.delete(key); continue; }
+    if (muted(vs)) continue;
+    const others = (vs.channel?.members || new Map());
+    let active = 0;
+    for (const m of others.values()) if (!m.user?.bot && !muted(m.voice)) active++;
+    if (active < 2) continue; // сам (или само с ботове/заглушени) — не се брои
+    const settings = await getGameSettings(guildId);
+    if (!settings?.enabled) continue;
+    bucket(guildId, userId).voiceMinutes += 1;
+    credited++;
+  }
+  return credited;
+}
+
+/** Горната граница на backend-а (routes/bot_game.js → xp-batch `entries.max`). */
+export const XP_BATCH_MAX = 500;
+
+/** Изпраща натрупаното към backend-а и раздава ролите за ниво. */
+export async function flushXp(client) {
+  if (pending.size === 0) return;
+  const batches = [...pending.entries()];
+  pending.clear();
+  for (const [serverId, users] of batches) {
+    const entries = [...users.entries()].map(([userId, e]) => ({ userId, ...e })).filter((e) => e.messageXpEvents || e.voiceMinutes);
+    if (!entries.length) continue;
+    // Backend-ът приема до XP_BATCH_MAX записа на заявка; над това цялата партида
+    // пропадаше с 400 и големите сървъри губеха XP (одит 26.09.2026) → на парчета.
+    for (let i = 0; i < entries.length; i += XP_BATCH_MAX) {
+      const chunk = entries.slice(i, i + XP_BATCH_MAX);
+      try {
+        const { data } = await api.post("/bot/game/xp-batch", { serverId, entries: chunk });
+        for (const up of data?.levelUps || []) {
+          await applyLevelUp(client, serverId, up, data.announceChannelId, data.levelUpMessage).catch(() => {});
+        }
+      } catch (err) {
+        // Загубена партида = загубени ~30 s XP; не трупаме назад, за да не удвоим при повторен провал.
+        console.warn(`[game] xp-batch за ${serverId} пропадна: ${err?.response?.status || err.message}`);
+      }
+    }
+  }
+}
+
+let flushTimer = null;
+let voiceTimer = null;
+export function startXpFlusher(client) {
+  if (flushTimer) return;
+  flushTimer = setInterval(() => flushXp(client).catch(() => {}), FLUSH_MS);
+  flushTimer.unref?.();
+  voiceTimer = setInterval(() => tickVoiceXp(client).catch(() => {}), 60_000);
+  voiceTimer.unref?.();
+}
+
+/** Дава натрупаните роли за ниво (само безопасни) и обявява, ако е включено. */
+export async function applyLevelUp(client, serverId, up, announceChannelId, levelUpMessage) {
+  const guild = client.guilds.cache.get(serverId) || await client.guilds.fetch(serverId).catch(() => null);
+  if (!guild) return;
+  const member = await guild.members.fetch(up.userId).catch(() => null);
+  if (!member) return;
+  const granted = [];
+  for (const roleId of up.roleIds || []) {
+    if (member.roles.cache.has(roleId)) continue;
+    const role = guild.roles.cache.get(roleId) || await guild.roles.fetch(roleId).catch(() => null);
+    if (!role) continue;
+    if (roleAssignabilityReason(role, guild.members.me)) continue; // управлявана / опасна / над бота
+    await member.roles.add(role, `Server Season: level ${up.level}`).then(() => granted.push(role.name)).catch(() => {});
+  }
+  if (levelUpMessage === false || !announceChannelId) return;
+  const channel = guild.channels.cache.get(announceChannelId) || await guild.channels.fetch(announceChannelId).catch(() => null);
+  if (!channel?.isTextBased?.()) return;
+  // Локализирано като всяка друга обява (одит 19.09.2026 — беше единственият EN-only текст).
+  const { t, resolveLangForGuild } = await import("../i18n/index.js");
+  const lang = await resolveLangForGuild(serverId).catch(() => "en");
+  const roles = granted.length ? t("game.levelUp.roles", lang, { roles: granted.map((n) => `**${n}**`).join(", ") }) : "";
+  const sparks = up.sparksAwarded ? ` · +${up.sparksAwarded} ✨` : "";
+  const embed = new EmbedBuilder()
+    .setColor(BRAND)
+    .setDescription(t("game.levelUp.announce", lang, { user: `<@${up.userId}>`, level: up.level, roles, sparks }));
+  await channel.send({ embeds: [embed], allowedMentions: { users: [up.userId] } }).catch(() => {});
+}
+
+/** Маха изтекла роля от магазина (backend → /internal/game-role-revoke). */
+// Грешки, които НИКОГА няма да минат при повторен опит: неизвестна роля/член,
+// липсващ достъп/права. „false“ за тях държеше покупката завинаги начело на
+// опашката (asc, take 200) и при достатъчно такива нито една по-нова роля не
+// изтичаше (одит 26.09.2026). Няма какво да се маха → свършено.
+const PERMANENT_ROLE_ERRORS = new Set([10011, 10007, 50001, 50013]);
+
+export async function revokeShopRole(client, { serverId, userId, roleId }) {
+  const guild = client.guilds.cache.get(serverId) || await client.guilds.fetch(serverId).catch(() => null);
+  if (!guild) return true; // ботът вече не е в сървъра — ролята не може и не трябва да се пипа
+  const member = await guild.members.fetch(userId).catch(() => null);
+  if (!member || !member.roles.cache.has(roleId)) return true;
+  return member.roles.remove(roleId, "Server Season: shop role expired")
+    .then(() => true)
+    .catch((err) => PERMANENT_ROLE_ERRORS.has(err?.code));
+}
+
+/** Дава купена роля; връща причината, ако не може. */
+export async function grantShopRole(guild, member, roleId) {
+  const role = guild.roles.cache.get(roleId) || await guild.roles.fetch(roleId).catch(() => null);
+  if (!role) return "missing";
+  const reason = roleAssignabilityReason(role, guild.members.me);
+  if (reason) return reason;
+  if (member.roles.cache.has(roleId)) return null;
+  return member.roles.add(role, "Server Season: shop purchase").then(() => null).catch(() => "failed");
+}
+
+/** Само за тестове. */
+export const __test = { cooldown, pending, voiceJoined, settingsCache, settingsInflight, spawnState };

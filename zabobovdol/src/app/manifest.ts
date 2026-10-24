@@ -7,7 +7,10 @@ export default function manifest(): MetadataRoute.Manifest {
     name: `${SITE.name} — ${SITE.slogan}`,
     short_name: SITE.shortName,
     description: SITE.description,
-    start_url: "/",
+    // ?s=app — за да се брои (само като брой на ден) колко пъти сайтът е
+    // отворен от иконата на началния екран. id остава „/“, затова вече
+    // инсталираните икони не се смятат за друго приложение.
+    start_url: "/?s=app",
     scope: "/",
     display: "standalone",
     orientation: "portrait",

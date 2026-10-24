@@ -64,6 +64,9 @@ const CSP_OK = (v) => /^[A-Za-z0-9 '":;\/*.\-_]{6,300}$/.test(v)
 const SKIP_REASONS = {}; // read by the build's --report
 const skip = (r) => { SKIP_REASONS[r] = (SKIP_REASONS[r] || 0) + 1; return null; };
 const validDomain = (d) => /^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(d);
+// uBO "entity": example.* = example on any public suffix. Kept for cosmetic rules
+// (the service worker looks them up by the real hostname); never a DNR domain.
+const validEntity = (d) => /^[a-z0-9-]+(\.[a-z0-9-]+)*\.\*$/.test(d);
 
 // --- ABP мрежов ред -> междинно представяне -------------------------------
 // Charset of an options string (everything after the last "$"). It MUST include
@@ -408,7 +411,7 @@ function convertCosmetic(text) {
     for (const d of domains) {
       const neg = d.startsWith("~");
       const dn = neg ? d.slice(1) : d;
-      if (!validDomain(dn)) continue;
+      if (!validDomain(dn) && !validEntity(dn)) continue;
       if (neg) continue; // ~domain изключения при козметика — пропускаме реда за този домейн
       addTo(target === "unhide" ? unhide : specific, dn, sel);
     }

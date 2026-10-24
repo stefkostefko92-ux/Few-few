@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "ہر جگہ اشتہارات بلاک کرتا ہے: YouTube ویڈیو اشتہارات، بینرز، پاپ اپس، ٹریکرز اور اینٹی ایڈبلاک دیواریں۔ مفت اور تیز۔"
+    "message": "ہر جگہ اشتہارات بلاک کرتا ہے: YouTube ویڈیو اشتہارات، بینرز، پاپ اپس، ٹریکرز اور اینٹی ایڈبلاک دیواریں۔"
   },
   "byCarbon": {
     "message": "منجانب Carbon Stealth"
@@ -118,6 +118,27 @@
   "support": {
     "message": "تعاون"
   },
+  "rate": {
+    "message": "ریٹ کریں"
+  },
+  "rateTitle": {
+    "message": "Chrome ویب اسٹور پر Supreme AdBlock کو ریٹ کریں"
+  },
+  "reviewBlocked": {
+    "message": "اب تک $1 درخواستیں بلاک کی گئیں"
+  },
+  "reviewAsk": {
+    "message": "اگر Supreme AdBlock آپ کے کام آتا ہے تو Chrome ویب اسٹور پر ایک مختصر جائزہ دوسروں کو اسے ڈھونڈنے میں مدد دیتا ہے۔"
+  },
+  "reviewLeave": {
+    "message": "جائزہ لکھیں"
+  },
+  "reviewLater": {
+    "message": "ابھی نہیں"
+  },
+  "reviewNever": {
+    "message": "دوبارہ نہ پوچھیں"
+  },
   "filtersCount": {
     "message": "$1+ فلٹرز",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "“اپنا ایڈ بلاکر بند کریں” والی دیواریں چھپائیں اور صفحہ بحال کریں"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Facebook اور Instagram پر “سپانسر شدہ” پوسٹس چھپائیں"
+    "message": "Facebook، Instagram اور Threads پر “سپانسر شدہ” پوسٹس چھپائیں"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "آپ کے کھولے گئے لنکس سے utm_*، fbclid، gclid اور دیگر کلک شناخت کنندگان ہٹائیں"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "معروف میلویئر ڈومینز بلاک کریں (abuse.ch کی URLhaus فہرست)"
+    "message": "کسی معروف میلویئر سائٹ کے کھلنے سے پہلے خبردار کریں، اور صفحات ایسی سائٹس سے جو کچھ لوڈ کرتے ہیں اسے بلاک کریں (abuse.ch کی URLhaus فہرست)۔"
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "ہر سائٹ پر Google Topics، FLoC اور Protected Audience اشتہاری APIs غیر فعال کریں"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Revolut کے ذریعے عطیہ دیں"
+  },
+  "opt_review": {
+    "message": "جائزے کی یاد دہانیاں"
+  },
+  "opt_review_sub": {
+    "message": "Supreme AdBlock ونڈو کے نیچے ایک چھوٹا ★ لنک، اور زیادہ سے زیادہ دو بار وہیں Chrome ویب اسٹور پر اسے ریٹ کرنے کی مختصر درخواست۔ کبھی ویب سائٹس پر نہیں، کبھی اطلاع کے طور پر نہیں۔"
   },
   "opt_made_by": {
     "message": "Carbon Stealth کی تیار کردہ"
@@ -599,5 +626,172 @@
   },
   "opt_notices": {
     "message": "فلٹر فہرستوں کے لائسنس"
+  },
+  "welPageTitle": {
+    "message": "Supreme AdBlock میں خوش آمدید",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "آپ محفوظ ہیں",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock اب آپ کی ہر دیکھی جانے والی سائٹ پر اشتہارات اور ٹریکرز بلاک کر رہا ہے۔ کچھ بھی سیٹ اپ کرنے کی ضرورت نہیں۔",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "ایکسٹینشن کو ٹول بار پر پن کریں",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "ایڈریس بار کے ساتھ والے پزل کے ٹکڑے کے آئیکن پر کلک کریں اور Supreme AdBlock کو پن کریں۔ پھر ایک کلک سے پتا چلتا ہے کہ صفحے پر کیا بلاک ہوا۔",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "اگر کوئی سائٹ خراب لگے",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "ایکسٹینشن کھولیں اور اس سائٹ کے لیے بلاکنگ بند کریں، یا فوری حل کے لیے “سائٹ خراب ہے؟” منتخب کریں۔",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "آپ کی براؤزنگ آپ کے آلے پر ہی رہتی ہے",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "فلٹرنگ مقامی طور پر ہوتی ہے۔ ایکسٹینشن کوئی ذاتی ڈیٹا جمع نہیں کرتی اور آپ کے دیکھے گئے صفحات کے بارے میں کچھ نہیں بھیجتی۔",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "ترتیبات کھولیں",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "ٹھیک ہے",
+    "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "اجازت ہے · $1 منٹ باقی"
+  },
+  "hiddenHere": {
+    "message": "یہاں چھپائے گئے عناصر: $1 · آخری واپس لائیں"
+  },
+  "cmd_toggle_site": {
+    "message": "اس سائٹ پر بلاکنگ آن/آف کریں"
+  },
+  "cmd_pause": {
+    "message": "تحفظ روکیں یا دوبارہ شروع کریں (30 منٹ)"
+  },
+  "cmd_picker": {
+    "message": "اس صفحے پر ایک عنصر چھپائیں"
+  },
+  "rep_fix_hour": {
+    "message": "یہاں 1 گھنٹے تک اشتہارات کی اجازت دیں"
+  },
+  "rep_done_hour": {
+    "message": "اس سائٹ پر 1 گھنٹے تک اشتہارات کی اجازت ہے۔ دوبارہ لوڈ ہو گیا — کیا مسئلہ حل ہو گیا؟"
+  },
+  "opt_last30": {
+    "message": "پچھلے 30 دن"
+  },
+  "opt_last30_sum": {
+    "message": "بلاک شدہ: $1 · کوکی بینرز: $2"
+  },
+  "opt_last30_empty": {
+    "message": "براؤز کرتے ہوئے آپ کے روزانہ کے مجموعے یہاں نظر آئیں گے۔"
+  },
+  "opt_last30_sub": {
+    "message": "صرف روزانہ کے مجموعے، جو اسی ڈیوائس پر 30 دن تک رکھے جاتے ہیں۔ نہ سائٹس، نہ پتے۔"
+  },
+  "opt_gpc_sub": {
+    "message": "آپ جس سائٹ پر بھی جائیں، اس سے درخواست کرتا ہے کہ آپ کا ڈیٹا نہ بیچے اور نہ شیئر کرے (Sec-GPC سگنل، جس کا احترام کچھ رازداری قوانین کے تحت سائٹس پر لازم ہے)۔ جن سائٹس کی آپ اجازت دیتے ہیں ان پر نہیں بھیجا جاتا۔"
+  },
+  "opt_shortcuts": {
+    "message": "کی بورڈ شارٹ کٹس"
+  },
+  "opt_shortcuts_change": {
+    "message": "شارٹ کٹس تبدیل کریں"
+  },
+  "opt_shortcut_none": {
+    "message": "سیٹ نہیں"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Firefox میں: ایڈ آنز اور تھیمز → ⚙ → ایکسٹینشن شارٹ کٹس کا نظم کریں۔"
+  },
+  "opt_import_foreign": {
+    "message": "کسی اور ایڈ بلاکر سے درآمد کریں"
+  },
+  "opt_import_foreign_sub": {
+    "message": "uBlock Origin، AdGuard یا Adblock Plus سے آ رہے ہیں؟ اس کی بیک اپ فائل منتخب کریں: آپ کی اجازت یافتہ سائٹس اور آپ کے اپنے فلٹرز یہاں شامل کر دیے جاتے ہیں۔ کچھ بھی تبدیل نہیں کیا جاتا۔"
+  },
+  "opt_import_foreign_done": {
+    "message": "اجازت یافتہ سائٹس: $1 · شامل کیے گئے فلٹرز: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "چھوڑ دیے گئے (یہاں لاگو نہیں ہو سکتے): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "یہ فائل ایسا بیک اپ نہیں جسے ہم پڑھ سکیں۔"
+  },
+  "welQuickTitle": {
+    "message": "اسے اپنے انداز میں ڈھالیں"
+  },
+  "welQuickSub": {
+    "message": "اختیاری: یہ پہلے ہی کام کر رہا ہے۔ ان میں سے کوئی بھی چیز بعد میں ترتیبات میں بدلی جا سکتی ہے۔"
+  },
+  "blk_page_title": {
+    "message": "سائٹ بلاک کر دی گئی — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "یہ سائٹ آپ کے آلے کو نقصان پہنچا سکتی ہے"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock نے یہ صفحہ روک دیا کیونکہ یہ سائٹ URLhaus پر درج ہے، جو میلویئر پھیلانے والے پتوں کی ایک عوامی فہرست ہے۔"
+  },
+  "blk_back": {
+    "message": "واپس جائیں"
+  },
+  "blk_continue": {
+    "message": "پھر بھی جاری رکھیں"
+  },
+  "blk_note": {
+    "message": "جاری رکھنے پر، براؤزر بند کرنے تک صرف اسی سائٹ کے صفحات کو کھلنے دیا جاتا ہے۔"
+  },
+  "blk_why": {
+    "message": "یہ فہرست میں کیوں ہے؟ (URLhaus)"
+  },
+  "conn_title": {
+    "message": "اس صفحے کے کنکشنز"
+  },
+  "conn_empty": {
+    "message": "اس صفحے نے دوسری سائٹس سے کچھ لوڈ نہیں کیا۔"
+  },
+  "conn_block": {
+    "message": "یہاں بلاک کریں"
+  },
+  "conn_blocked": {
+    "message": "یہاں بلاک شدہ"
+  },
+  "conn_hint": {
+    "message": "یہ سائٹ $1 سے جو کچھ لوڈ کرتی ہے اسے بلاک کریں"
+  },
+  "opt_conn_title": {
+    "message": "آپ کے بلاک کردہ کنکشنز"
+  },
+  "opt_conn_sub": {
+    "message": "Supreme AdBlock ونڈو کے “اس صفحے کے کنکشنز” سے بلاک کیے گئے، ہر ایک صرف اپنی سائٹ پر۔"
+  },
+  "opt_empty_conn": {
+    "message": "ابھی تک کچھ بلاک نہیں کیا گیا۔"
+  },
+  "opt_conn_remove": {
+    "message": "$2 پر $1 کو ان بلاک کریں"
+  },
+  "opt_h_danger": {
+    "message": "میلویئر انتباہی صفحہ"
+  },
+  "opt_h_capacity": {
+    "message": "اصولوں کی گنجائش"
   }
 }

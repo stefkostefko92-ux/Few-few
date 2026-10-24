@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Блокира реклами насекаде: видеореклами на YouTube, банери, скокачки прозорци, тракери и анти-адблок ѕидови. Бесплатно и приватно."
+    "message": "Блокира реклами насекаде: видеореклами на YouTube, банери, скокачки прозорци, тракери и анти-адблок ѕидови."
   },
   "byCarbon": {
     "message": "од Carbon Stealth"
@@ -118,6 +118,27 @@
   "support": {
     "message": "Поддржете"
   },
+  "rate": {
+    "message": "Оценете"
+  },
+  "rateTitle": {
+    "message": "Оценете го Supreme AdBlock во Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "Досега блокирани барања: $1"
+  },
+  "reviewAsk": {
+    "message": "Ако Supreme AdBlock ви е корисен, кратка рецензија во Chrome Web Store им помага на другите да го најдат."
+  },
+  "reviewLeave": {
+    "message": "Напишете рецензија"
+  },
+  "reviewLater": {
+    "message": "Не сега"
+  },
+  "reviewNever": {
+    "message": "Не прашувај повторно"
+  },
   "filtersCount": {
     "message": "$1+ филтри",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "Ги крие ѕидовите „исклучете го блокаторот на реклами“ и ја враќа страницата"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Ги крие објавите „Спонзорирано“ на Facebook и Instagram"
+    "message": "Ги крие објавите „Спонзорирано“ на Facebook, Instagram и Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Ги отстранува utm_*, fbclid, gclid и другите идентификатори на кликови од врските што ги отворате"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Блокира познати злонамерни домени (листата URLhaus од abuse.ch)"
+    "message": "Предупредува пред да се отвори познат злонамерен сајт и го блокира она што страниците го вчитуваат од такви сајтови (листата URLhaus од abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Ги исклучува рекламните API Google Topics, FLoC и Protected Audience на секој сајт"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Донирајте преку Revolut"
+  },
+  "opt_review": {
+    "message": "Потсетници за рецензија"
+  },
+  "opt_review_sub": {
+    "message": "Мала ★ врска на дното од прозорецот на Supreme AdBlock и, најмногу двапати, кратко барање таму да го оцените во Chrome Web Store. Никогаш на веб-локации, никогаш како известување."
   },
   "opt_made_by": {
     "message": "изработено од Carbon Stealth"
@@ -599,5 +626,172 @@
   },
   "opt_notices": {
     "message": "Лиценци на листите со филтри"
+  },
+  "welPageTitle": {
+    "message": "Добредојдовте во Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Заштитата е вклучена",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock сега блокира реклами и тракери на секој сајт што го посетувате. Нема ништо за поставување.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Закачете го додатокот на лентата со алатки",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Кликнете на иконата со парче сложувалка до лентата за адреси и закачете го Supreme AdBlock. Потоа со еден клик гледате што е блокирано на страницата.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Ако некој сајт изгледа расипано",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Отворете го додатокот и исклучете го блокирањето за тој сајт или изберете „Сајтот не работи?“ за брзи поправки.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Вашето прелистување останува на вашиот уред",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Филтрирањето се врши локално. Додатокот не собира лични податоци и не испраќа ништо за страниците што ги посетувате.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Отвори ги поставките",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Разбрав",
+    "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Дозволено · уште $1 мин"
+  },
+  "hiddenHere": {
+    "message": "Скриени елементи тука: $1 · Врати го последниот"
+  },
+  "cmd_toggle_site": {
+    "message": "Вклучи или исклучи блокирање на овој сајт"
+  },
+  "cmd_pause": {
+    "message": "Паузирај или продолжи заштита (30 минути)"
+  },
+  "cmd_picker": {
+    "message": "Скриј елемент на оваа страница"
+  },
+  "rep_fix_hour": {
+    "message": "Дозволи реклами тука за 1 час"
+  },
+  "rep_done_hour": {
+    "message": "Рекламите се дозволени на овој сајт 1 час. Повторно вчитано — дали е поправено?"
+  },
+  "opt_last30": {
+    "message": "Последните 30 дена"
+  },
+  "opt_last30_sum": {
+    "message": "Блокирани: $1 · Банери за колачиња: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Вашите дневни збирови се појавуваат тука додека прелистувате."
+  },
+  "opt_last30_sub": {
+    "message": "Само дневни збирови, се чуваат на овој уред 30 дена. Без сајтови, без адреси."
+  },
+  "opt_gpc_sub": {
+    "message": "Бара од секој сајт што го посетувате да не ги продава и да не ги споделува вашите податоци (сигналот Sec-GPC, кој според некои закони за приватност сајтовите мора да го почитуваат). Не се испраќа на сајтовите што ги дозволувате."
+  },
+  "opt_shortcuts": {
+    "message": "Кратенки на тастатурата"
+  },
+  "opt_shortcuts_change": {
+    "message": "Промени кратенки"
+  },
+  "opt_shortcut_none": {
+    "message": "Не е поставено"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Во Firefox: Додатоци и теми → ⚙ → Управување со кратенки за проширувања."
+  },
+  "opt_import_foreign": {
+    "message": "Увези од друг блокатор на реклами"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Преминувате од uBlock Origin, AdGuard или Adblock Plus? Изберете ја неговата датотека со резервна копија: сајтовите што сте ги дозволиле и вашите сопствени филтри се додаваат тука. Ништо не се заменува."
+  },
+  "opt_import_foreign_done": {
+    "message": "Дозволени сајтови: $1 · Додадени филтри: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Изоставено (не може да се примени тука): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Оваа датотека не е резервна копија што можеме да ја прочитаме."
+  },
+  "welQuickTitle": {
+    "message": "Прилагодете го по своја мерка"
+  },
+  "welQuickSub": {
+    "message": "Изборно: веќе работи. Секое од овие подоцна можете да го промените во поставките."
+  },
+  "blk_page_title": {
+    "message": "Сајтот е блокиран — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Овој сајт може да му наштети на вашиот уред"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock ја запре оваа страница бидејќи сајтот е на URLhaus, јавна листа на адреси што шират злонамерен софтвер."
+  },
+  "blk_back": {
+    "message": "Врати се назад"
+  },
+  "blk_continue": {
+    "message": "Сепак продолжи"
+  },
+  "blk_note": {
+    "message": "Ако продолжите, се пропуштаат само страниците на овој сајт, додека не го затворите прелистувачот."
+  },
+  "blk_why": {
+    "message": "Зошто е на листата? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Врски на оваа страница"
+  },
+  "conn_empty": {
+    "message": "Оваа страница не вчита ништо од други сајтови."
+  },
+  "conn_block": {
+    "message": "Блокирај тука"
+  },
+  "conn_blocked": {
+    "message": "Блокирано тука"
+  },
+  "conn_hint": {
+    "message": "Блокирај го она што овој сајт го вчитува од $1"
+  },
+  "opt_conn_title": {
+    "message": "Врски што ги блокиравте"
+  },
+  "opt_conn_sub": {
+    "message": "Блокирани од „Врски на оваа страница“ во прозорецот на додатокот, секоја само на својот сајт."
+  },
+  "opt_empty_conn": {
+    "message": "Сè уште ништо не е блокирано."
+  },
+  "opt_conn_remove": {
+    "message": "Одблокирај го $1 на $2"
+  },
+  "opt_h_danger": {
+    "message": "Предупредување за злонамерен сајт"
+  },
+  "opt_h_capacity": {
+    "message": "Капацитет на правила"
   }
 }

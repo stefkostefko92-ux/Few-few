@@ -111,7 +111,7 @@ else
     node -e '
       const net = require("net");
       const all = [
-        ["zabobovdol", 80, "/"], ["medqr", 3000, "/"], ["vizitka", 3100, "/"],
+        ["zabobovdol", 80, "/"], ["medqr", 3000, "/healthz"], ["vizitka", 3100, "/"],
         ["mastilko", 3200, "/"], ["nexus", 4000, "/api/health"], ["supreme", 8080, "/"],
         ["eternaltouch", 4300, "/healthz"], ["ospedali", 8788, "/healthz"],
       ];

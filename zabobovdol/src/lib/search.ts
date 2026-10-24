@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { plainText } from "@/lib/markdown";
 import { SERVICE_CATEGORY_LABELS, BUSINESS_CATEGORY_LABELS } from "@/lib/categories";
+import { maskPii, hasContentAfterMask } from "@/lib/pii";
 
 export type SearchResult = {
   type: "faq" | "service" | "business" | "event";
@@ -8,6 +9,10 @@ export type SearchResult = {
   snippet: string;
   url: string;
   score: number;
+  // „Силно“ съвпадение: поне половината от търсените понятия са в заглавието,
+  // етикетите или категорията (не само някъде в текста). Ако няма нито едно
+  // силно съвпадение, търсенето се отчита като неуспешно (виж recordMiss).
+  strong?: boolean;
 };
 
 // Често срещани думи, които не помагат за търсене.
@@ -29,10 +34,17 @@ function tokenize(q: string): string[] {
 
 // Леко „стемване" за български — за да намира и при членуване и множествено
 // число (напр. „аптеки" → намира „аптека"; „зъболекари" → „зъболекар").
-function variants(term: string): string[] {
+//
+// Стемът никога не е по-къс от 5 знака, освен при членуване (-та/-то/-те/-ът/-ят)
+// на 6-буквена дума („колата“ → „кола“). Иначе 4-буквените стемове хващат чужди
+// думи: „спирка“ → „спир“ намираше „спиране на тока“.
+const ARTICLE_RX = /(та|то|те|ът|ят)$/;
+export function variants(term: string): string[] {
   const v = new Set([term]);
   if (term.length >= 5) v.add(term.slice(0, -1));
-  if (term.length >= 6) v.add(term.slice(0, -2));
+  if (term.length >= 7 || (term.length === 6 && ARTICLE_RX.test(term))) {
+    v.add(term.slice(0, -2));
+  }
   return [...v];
 }
 
@@ -169,15 +181,51 @@ export function buildTermGroups(query: string): string[][] {
 // Оценка на съвпаденията. Сравнението е изцяло в кода (toLowerCase в JS сгъва
 // правилно кирилицата — независимо от базата). По-дългите думи носят повече
 // тежест (по-специфични са), за да не доминират къси общи думи.
+//
+// Съвпадението е САМО в началото на дума (не по средата): „работ“ не бива да
+// намира „обработя“, а „спирк“ — „преспиркам“.
+const WORD_CHAR = /[\p{L}\p{N}]/u;
+export function hasWordPrefix(lc: string, v: string): boolean {
+  if (!v) return false;
+  let i = lc.indexOf(v);
+  while (i !== -1) {
+    if (i === 0 || !WORD_CHAR.test(lc[i - 1])) return true;
+    i = lc.indexOf(v, i + 1);
+  }
+  return false;
+}
+
+function groupHit(lc: string, vs: string[]): boolean {
+  return vs.some((v) => hasWordPrefix(lc, v));
+}
+
 function matchedCount(haystack: string, termVariants: string[][]): number {
   const lc = haystack.toLowerCase();
   let s = 0;
   for (const vs of termVariants) {
-    if (vs.some((v) => lc.includes(v))) {
+    if (groupHit(lc, vs)) {
       s += 1 + Math.max(0, vs[0].length - 3) * 0.4;
     }
   }
   return s;
+}
+
+// Колко от групите са в „главата“ (заглавие/етикети/категория) — за силата.
+function headGroups(head: string, termVariants: string[][]): number {
+  const lc = head.toLowerCase();
+  let n = 0;
+  for (const vs of termVariants) if (groupHit(lc, vs)) n += 1;
+  return n;
+}
+
+// Силно е, ако поне половината от понятията са в главата.
+function isStrong(head: string, termVariants: string[][]): boolean {
+  return headGroups(head, termVariants) * 2 >= termVariants.length;
+}
+
+/** Слаб ли е целият резултат от търсенето (няма нито едно силно съвпадение)? */
+export function isWeakResult(results: SearchResult[]): boolean {
+  return !results.some((r) => r.strong);
 }
 
 // Тежест според типа спрямо намерението. При въпрос за телефон/контакт
@@ -263,6 +311,7 @@ export function rankIndex(
         snippet: plainText(f.answer, 140),
         url: `/kak-da/${f.slug}`,
         score: base * typeMultiplier("faq", intent),
+        strong: isStrong(head, T),
       });
     }
   }
@@ -278,6 +327,7 @@ export function rankIndex(
         snippet: plainText(s.description || s.address, 140),
         url: `/uslugi/${s.slug}`,
         score: base * typeMultiplier("service", intent),
+        strong: isStrong(head, T),
       });
     }
   }
@@ -293,6 +343,7 @@ export function rankIndex(
         snippet: plainText(b.description, 140),
         url: `/biznes/${b.slug}`,
         score: base * typeMultiplier("business", intent),
+        strong: isStrong(head, T),
       });
     }
   }
@@ -307,6 +358,7 @@ export function rankIndex(
         snippet: plainText(e.description, 140),
         url: `/sabitiya/${e.slug}`,
         score: base * typeMultiplier("event", intent),
+        strong: isStrong(head, T),
       });
     }
   }
@@ -318,29 +370,84 @@ export function rankIndex(
   return results.slice(0, limit);
 }
 
-// Обединено търсене по думи в основните типове съдържание.
-export async function search(query: string, limit = 12): Promise<SearchResult[]> {
-  if (buildTermGroups(query).length === 0) return [];
-  const idx = await loadIndex();
-  return rankIndex(idx, query, limit);
+// Броячите на търсенето (агрегат, без текста на заявката) — за дела на
+// неуспешните търсения: search_miss ÷ search. stats.ts е server-only, затова се
+// зарежда едва при истинско търсене (тестовете ползват само rankIndex).
+async function count(metric: "search" | "search_miss", source: string): Promise<void> {
+  try {
+    const { bump } = await import("@/lib/stats");
+    await bump(metric, "", source);
+  } catch {
+    /* броенето е второстепенно */
+  }
 }
 
-// Записва запитване без резултат, за да виждаме какво търсят хората.
-export async function recordMiss(query: string): Promise<void> {
-  // Режем дължината — иначе бот с многокилобайтови заявки пълни базата.
-  const q = query.trim().toLowerCase().slice(0, 200);
-  if (q.length < 2) return;
+export type SearchOptions = {
+  // Откъде е търсенето: tarsene | api | chat | site (по подразбиране).
+  source?: string;
+  // false = без броене и без запис на слаби резултати (вътрешни извиквания).
+  record?: boolean;
+};
+
+const SOURCE_RX = /^[a-z][a-z0-9-]{0,19}$/;
+function searchSource(s: string | undefined): string {
+  return s && SOURCE_RX.test(s) ? s : "site";
+}
+
+// Обединено търсене по думи в основните типове съдържание.
+//
+// Всяко търсене се брои (search). Ако има резултати, но нито един не е силен,
+// търсенето се записва като неуспешно още тук — слабите съвпадения иначе
+// скриват реалната нужда. Нулевите резултати си ги записва извикващият
+// (recordMiss), както досега — така няма двоен запис.
+export async function search(
+  query: string,
+  limit = 12,
+  opts: SearchOptions = {},
+): Promise<SearchResult[]> {
+  const record = opts.record !== false;
+  const source = searchSource(opts.source);
+  // Броим и търсенията само от „празни“ думи — извикващият може да ги запише
+  // като неуспешни, а знаменателят трябва да ги съдържа.
+  if (record && query.trim().length >= 2) await count("search", source);
+  if (buildTermGroups(query).length === 0) return [];
+  const idx = await loadIndex();
+  const all = rankIndex(idx, query, Math.max(limit, 1));
+  if (record && all.length > 0 && isWeakResult(all)) await recordMiss(query, source);
+  return all.slice(0, limit);
+}
+
+/** Подготвя текста за запис: маскира личните данни, реже и сваля регистъра. */
+export function prepareMissQuery(query: string): string | null {
+  // Режем дължината ПРЕДИ маскирането (бот с многокилобайтови заявки), сваляме
+  // регистъра, маскираме (етикетите остават „[ЕГН]“, „[IBAN]“), пак режем до 200.
+  const q = maskPii(String(query ?? "").slice(0, 400).toLowerCase()).slice(0, 200).trim();
+  if (q.length < 2 || !hasContentAfterMask(q)) return null;
+  return q;
+}
+
+// Записва запитване без (силен) резултат, за да виждаме какво търсят хората.
+// Личните данни се маскират ПРЕДИ запис; записът се трие след 90 дни.
+export async function recordMiss(query: string, source = "site"): Promise<void> {
+  const q = prepareMissQuery(query);
+  if (!q) return;
+  await count("search_miss", searchSource(source));
   try {
-    const existing = await prisma.searchMiss.findFirst({ where: { query: q } });
-    if (existing) {
-      await prisma.searchMiss.update({
-        where: { id: existing.id },
-        data: { count: { increment: 1 }, resolved: false },
-      });
-    } else {
+    // Без @unique на query: първо увеличаваме, ако няма такъв ред — създаваме.
+    const updated = await prisma.searchMiss.updateMany({
+      where: { query: q },
+      data: { count: { increment: 1 }, resolved: false },
+    });
+    if (updated.count === 0) {
       await prisma.searchMiss.create({ data: { query: q } });
     }
   } catch (err) {
     console.error("Грешка при запис на търсене без резултат:", err);
+  }
+  try {
+    const { purgeIfDue } = await import("@/lib/retention");
+    await purgeIfDue();
+  } catch {
+    /* чистенето има и отделен cron (/api/retention) */
   }
 }

@@ -52,9 +52,10 @@ function BotText({ text }: { text: string }) {
   );
 }
 
-export function ChatWidget() {
+// initialOpen: обвивката ChatWidgetLazy зарежда чата след клик и го отваря веднага.
+export function ChatWidget({ initialOpen = false }: { initialOpen?: boolean } = {}) {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(initialOpen);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([GREETING]);

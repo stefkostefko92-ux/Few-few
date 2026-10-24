@@ -52,7 +52,25 @@ function flavor(action: string, attacker: string, defender: string, dmg: number,
   }
 }
 
-export function simulateCombat(hero: CombatActor, foe: CombatActor): CombatResult {
+/**
+ * Бойни константи, които админът може да настройва (game/settings.ts →
+ * liveCombatTuning()). Енджинът е чиста функция: маршрутите подават живите
+ * стойности, харнесът/тестовете ползват подразбиращите се.
+ */
+export interface CombatTuning {
+  /** База на множителя при крит (героите добавят до +0.6 от CHA). */
+  critBase: number;
+  missChance: number;
+  blockChance: number;
+  /** Каква част от щетата минава през блок. */
+  blockDamagePct: number;
+}
+export const DEFAULT_CRIT_BASE = 1.8;
+export const DEFAULT_COMBAT_TUNING: CombatTuning = {
+  critBase: DEFAULT_CRIT_BASE, missChance: 0.05, blockChance: 0.1, blockDamagePct: 0.4,
+};
+
+export function simulateCombat(hero: CombatActor, foe: CombatActor, tuning: CombatTuning = DEFAULT_COMBAT_TUNING): CombatResult {
   const rounds: CombatRound[] = [];
   // Clone to avoid mutating input
   const H: CombatActor = { ...hero };
@@ -102,7 +120,7 @@ export function simulateCombat(hero: CombatActor, foe: CombatActor): CombatResul
     }
 
     // Miss chance (small base)
-    if (rng() < 0.05) {
+    if (rng() < tuning.missChance) {
       rounds.push({
         index,
         attacker: attackerSide,
@@ -122,8 +140,11 @@ export function simulateCombat(hero: CombatActor, foe: CombatActor): CombatResul
 
     if (rng() < attacker.crit_chance) {
       // Сила на крита (crit damage) е CHA-driven за героите (база 1.8, до
-      // 2.4×); чудовищата нямат crit_mult → 1.8 по подразбиране.
-      damage = Math.round(damage * (attacker.crit_mult ?? 1.8));
+      // 2.4×); чудовищата нямат crit_mult → базата. crit_mult на актьора е
+      // изведен спрямо DEFAULT_CRIT_BASE; настройката мести само базата,
+      // CHA бонусът над нея се пази.
+      const critMult = (attacker.crit_mult ?? DEFAULT_CRIT_BASE) - DEFAULT_CRIT_BASE + tuning.critBase;
+      damage = Math.round(damage * Math.max(1, critMult));
       action = 'crit';
     }
 
@@ -139,8 +160,8 @@ export function simulateCombat(hero: CombatActor, foe: CombatActor): CombatResul
     damage = Math.max(1, Math.round(damage * (1 - dr)));
 
     // Block (10% if the defender has shield-like defense > 5)
-    if (defender.defense > 5 && rng() < 0.1) {
-      damage = Math.max(1, Math.floor(damage * 0.4));
+    if (defender.defense > 5 && rng() < tuning.blockChance) {
+      damage = Math.max(1, Math.floor(damage * tuning.blockDamagePct));
       action = 'block';
     }
 

@@ -25,8 +25,8 @@ const activities = [...ropa.matchAll(/^## Processing Activity (\d+) — (.+)$/gm
   .map((m) => ({ n: Number(m[1]), title: m[2].trim() }));
 
 describe("ROPA (чл. 30) отразява живите обработки", () => {
-  it("има поне 16 дейности и са номерирани без дупки", () => {
-    expect(activities.length).toBeGreaterThanOrEqual(16);
+  it("има поне 18 дейности и са номерирани без дупки", () => {
+    expect(activities.length).toBeGreaterThanOrEqual(18);
     const nums = activities.map((a) => a.n);
     expect(nums).toEqual(nums.map((_, i) => i + 1));
   });
@@ -36,6 +36,8 @@ describe("ROPA (чл. 30) отразява живите обработки", () 
     ["дневник на активността", /Server Activity Logging/i, /Not stored by Supreme Bot/],
     ["публични API ключове", /Public API Keys/i, /SHA-256 hash/],
     ["изходящи webhook-и", /Outbound Webhooks/i, /SSRF guard/],
+    // v50 — играта (одит 19.09.2026): нова категория данни, беше жива без ред.
+    ["играта Server Season", /Server Season game/i, /No message content is stored or read for XP/],
   ])("описва %s — заглавие + ключов факт, не само име", (_, heading, fact) => {
     const a = activities.find((x) => heading.test(x.title));
     expect(a, `няма дейност за ${heading}`).toBeTruthy();
@@ -59,5 +61,6 @@ describe("ROPA (чл. 30) отразява живите обработки", () 
 
   it("версията казва, че 13–16 са добавени (историята не се пренаписва)", () => {
     expect(ropa).toMatch(/\*\*Version:\*\* 1\.2[^\n]*13.?16/);
+    expect(ropa).toMatch(/\*\*Version:\*\* 1\.6[^\n]*Activity 18/);
   });
 });

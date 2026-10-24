@@ -3,7 +3,9 @@ FROM node:20-bookworm-slim AS deps
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json* ./
-RUN npm ci || npm install
+# postinstall runs `prisma generate`, which needs the schema already in place
+COPY prisma ./prisma
+RUN npm ci
 
 # ---------- builder ----------
 FROM node:20-bookworm-slim AS builder
@@ -31,6 +33,8 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
+# One-off maintenance scripts (e.g. the alphabet pronunciation generator)
+COPY --from=builder /app/scripts ./scripts
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh && mkdir -p /app/data/uploads
 

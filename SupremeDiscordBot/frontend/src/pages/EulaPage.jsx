@@ -258,8 +258,10 @@ export default function EulaPage() {
         </p>
         <p>
           <strong className="text-cs-text">7.6 Refunds.</strong>{" "}
-          Refunds are governed by the Refund Policy in the Terms of Service. Premium subscriptions
-          carry a 7-day money-back guarantee for first-time purchases only.
+          Refunds are governed by the Refund Policy in the Terms of Service (section 6).
+          Subscriptions bought through Discord are refunded by Discord, the seller of record,
+          under its own Refund Policy. The 7-day money-back guarantee applies only to the first
+          payment of a legacy card (Stripe) subscription.
         </p>
         <p>
           <strong className="text-cs-text">7.7 Payment Failure.</strong>{" "}

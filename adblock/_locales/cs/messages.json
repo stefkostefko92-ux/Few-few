@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blokuje reklamy všude: videoreklamy na YouTube, bannery, vyskakovací okna, trackery, cookie lišty a anti-adblock zdi. Zdarma."
+    "message": "Blokuje reklamy všude: videoreklamy na YouTube, bannery, vyskakovací okna, trackery, cookie lišty a anti-adblock zdi."
   },
   "byCarbon": {
     "message": "od Carbon Stealth"
@@ -118,6 +118,27 @@
   "support": {
     "message": "Podpořit"
   },
+  "rate": {
+    "message": "Ohodnotit"
+  },
+  "rateTitle": {
+    "message": "Ohodnoťte Supreme AdBlock v Internetovém obchodě Chrome"
+  },
+  "reviewBlocked": {
+    "message": "Dosud zablokováno požadavků: $1"
+  },
+  "reviewAsk": {
+    "message": "Pokud je pro vás Supreme AdBlock užitečný, krátká recenze v Internetovém obchodě Chrome pomůže ostatním ho najít."
+  },
+  "reviewLeave": {
+    "message": "Napsat recenzi"
+  },
+  "reviewLater": {
+    "message": "Teď ne"
+  },
+  "reviewNever": {
+    "message": "Už se neptat"
+  },
   "filtersCount": {
     "message": "$1+ filtrů",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "Skrývá zdi „Vypněte blokování reklam“ a obnovuje stránku"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Skrývá příspěvky „Sponzorováno“ na Facebooku a Instagramu"
+    "message": "Skrývá příspěvky „Sponzorováno“ na Facebooku, Instagramu a Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Odstraňuje utm_*, fbclid, gclid a další identifikátory kliknutí z odkazů, které otevíráte"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blokuje známé škodlivé domény (seznam URLhaus od abuse.ch)"
+    "message": "Varuje před otevřením známého škodlivého webu a blokuje to, co stránky načítají z takových webů (seznam URLhaus od abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Vypíná reklamní API Google Topics, FLoC a Protected Audience na všech webech"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Přispět přes Revolut"
+  },
+  "opt_review": {
+    "message": "Připomenutí recenze"
+  },
+  "opt_review_sub": {
+    "message": "Malý odkaz ★ dole v okně Supreme AdBlock a nejvýše dvakrát krátká prosba o ohodnocení v Internetovém obchodě Chrome. Nikdy na webech, nikdy jako oznámení."
   },
   "opt_made_by": {
     "message": "vytvořila společnost Carbon Stealth"
@@ -599,5 +626,172 @@
   },
   "opt_notices": {
     "message": "Licence seznamů filtrů"
+  },
+  "welPageTitle": {
+    "message": "Vítá vás Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Ochrana je zapnutá",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock nyní blokuje reklamy a trackery na každém webu, který navštívíte. Není třeba nic nastavovat.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Připněte si rozšíření na panel nástrojů",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Klikněte na ikonu dílku skládačky vedle adresního řádku a připněte Supreme AdBlock. Jedním kliknutím pak uvidíte, co bylo na stránce zablokováno.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Pokud web vypadá rozbitě",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Otevřete rozšíření a vypněte blokování pro daný web, nebo zvolte „Nefunguje web?“ pro rychlé opravy.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Vaše prohlížení zůstává ve vašem zařízení",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Filtrování probíhá místně. Rozšíření neshromažďuje žádné osobní údaje a neodesílá nic o stránkách, které navštívíte.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Otevřít nastavení",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Rozumím",
+    "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Povoleno · zbývá $1 min"
+  },
+  "hiddenHere": {
+    "message": "Prvky skryté zde: $1 · Vrátit poslední"
+  },
+  "cmd_toggle_site": {
+    "message": "Zapnout nebo vypnout blokování na tomto webu"
+  },
+  "cmd_pause": {
+    "message": "Pozastavit nebo obnovit ochranu (30 minut)"
+  },
+  "cmd_picker": {
+    "message": "Skrýt prvek na této stránce"
+  },
+  "rep_fix_hour": {
+    "message": "Povolit reklamy zde na 1 hodinu"
+  },
+  "rep_done_hour": {
+    "message": "Reklamy jsou na tomto webu povoleny na 1 hodinu. Znovu načteno — je to opravené?"
+  },
+  "opt_last30": {
+    "message": "Posledních 30 dní"
+  },
+  "opt_last30_sum": {
+    "message": "Blokováno: $1 · Cookie lišty: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Vaše denní součty se zde objeví během prohlížení."
+  },
+  "opt_last30_sub": {
+    "message": "Pouze denní součty, uložené v tomto zařízení po dobu 30 dní. Žádné weby, žádné adresy."
+  },
+  "opt_gpc_sub": {
+    "message": "Žádá každý navštívený web, aby vaše údaje neprodával ani nesdílel (signál Sec-GPC, který podle některých zákonů o ochraně soukromí musí weby respektovat). Neodesílá se na webech, které jste povolili."
+  },
+  "opt_shortcuts": {
+    "message": "Klávesové zkratky"
+  },
+  "opt_shortcuts_change": {
+    "message": "Změnit zkratky"
+  },
+  "opt_shortcut_none": {
+    "message": "Nenastaveno"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Ve Firefoxu: Rozšíření a vzhledy → ⚙ → Správa klávesových zkratek pro rozšíření."
+  },
+  "opt_import_foreign": {
+    "message": "Importovat z jiného blokátoru reklam"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Přecházíte z uBlock Origin, AdGuard nebo Adblock Plus? Vyberte jeho záložní soubor: weby, které jste povolili, a vaše vlastní filtry se přidají sem. Nic se nenahradí."
+  },
+  "opt_import_foreign_done": {
+    "message": "Povolené weby: $1 · Přidané filtry: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Vynecháno (zde nelze použít): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Tento soubor není záloha, kterou umíme přečíst."
+  },
+  "welQuickTitle": {
+    "message": "Přizpůsobte si ho"
+  },
+  "welQuickSub": {
+    "message": "Volitelné: vše už funguje. Cokoli z toho můžete později změnit v nastavení."
+  },
+  "blk_page_title": {
+    "message": "Web zablokován — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Tento web může poškodit vaše zařízení"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock zastavil tuto stránku, protože web je na seznamu URLhaus — veřejném seznamu adres, které šíří malware."
+  },
+  "blk_back": {
+    "message": "Zpět"
+  },
+  "blk_continue": {
+    "message": "Přesto pokračovat"
+  },
+  "blk_note": {
+    "message": "Pokud budete pokračovat, propustí se jen stránky tohoto webu, a to do zavření prohlížeče."
+  },
+  "blk_why": {
+    "message": "Proč je na seznamu? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Připojení na této stránce"
+  },
+  "conn_empty": {
+    "message": "Tato stránka nic nenačetla z jiných webů."
+  },
+  "conn_block": {
+    "message": "Blokovat zde"
+  },
+  "conn_blocked": {
+    "message": "Blokováno zde"
+  },
+  "conn_hint": {
+    "message": "Blokovat, co tento web načítá z $1"
+  },
+  "opt_conn_title": {
+    "message": "Vámi blokovaná připojení"
+  },
+  "opt_conn_sub": {
+    "message": "Blokováno v okně Supreme AdBlock v části „Připojení na této stránce“, každé jen na svém webu."
+  },
+  "opt_empty_conn": {
+    "message": "Zatím nic není blokováno."
+  },
+  "opt_conn_remove": {
+    "message": "Odblokovat $1 na webu $2"
+  },
+  "opt_h_danger": {
+    "message": "Varovná stránka před malwarem"
+  },
+  "opt_h_capacity": {
+    "message": "Kapacita pravidel"
   }
 }

@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { Phone, Mail } from "@/components/icons";
-import { SITE, PRIMARY_NAV, FOOTER_NAV } from "@/lib/site";
-import { getFacebookUrl, getPlayStoreUrl } from "@/lib/settings";
+import { SITE, PRIMARY_NAV, FOOTER_NAV, isFeedHref } from "@/lib/site";
+import { getFacebookUrl, getPlayStoreUrl, getViberChannelUrl } from "@/lib/settings";
+import { TrustCard } from "@/components/TrustCard";
+import { TelLink } from "@/components/TelLink";
+import { ViberButton } from "@/components/ViberButton";
+import { VisitCounter } from "@/components/VisitCounter";
 
 // Вградена иконка на Google Play.
 function GooglePlayIcon({ className }: { className?: string }) {
@@ -24,37 +28,113 @@ function FacebookIcon({ className }: { className?: string }) {
   );
 }
 
+// Във футъра „Информация“ показва само страниците, които ги няма в „Раздели“ —
+// иначе половината връзки се повтаряха и футърът ставаше по-дълъг от екран.
+const FOOTER_ONLY = FOOTER_NAV.filter((i) => !PRIMARY_NAV.some((p) => p.href === i.href));
+
 export async function SiteFooter() {
   const year = new Date().getFullYear();
-  const [facebookUrl, playStoreUrl] = await Promise.all([
+  const [facebookUrl, playStoreUrl, viberUrl] = await Promise.all([
     getFacebookUrl(),
     getPlayStoreUrl(),
+    getViberChannelUrl(),
   ]);
   return (
     <footer className="mt-16 border-t border-slate-200 bg-slate-50">
       <div className="container-content py-10">
-        <div className="grid gap-8 md:grid-cols-4">
-          <div>
-            <div className="flex items-center gap-2.5">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/brand/bobov-dol-grb.png"
-                alt="Герб на Бобов дол"
-                width={28}
-                height={40}
-                className="h-10 w-auto"
-              />
-              <span className="text-lg font-bold">{SITE.name}</span>
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-12">
+          {/* Гербът и спешните телефони са в една колона: на компютър колоните
+              излизат с близка височина, а на телефон спешните са преди
+              дългите списъци с връзки. */}
+          <div className="grid content-start gap-8 sm:col-span-2 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-1">
+            <div>
+              <div className="flex items-center gap-2.5">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/brand/bobov-dol-grb.png"
+                  alt="Герб на Бобов дол"
+                  width={28}
+                  height={40}
+                  className="h-10 w-auto"
+                />
+                <span className="text-lg font-bold">{SITE.name}</span>
+              </div>
+              <p className="mt-2 text-sm text-slate-600">{SITE.description}</p>
             </div>
-            <p className="mt-2 text-sm text-slate-600">{SITE.description}</p>
+            <div>
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
+                Спешни телефони
+              </h2>
+              <ul className="mt-4 space-y-2.5 text-base">
+                {SITE.emergency.map((e) => (
+                  <li key={e.phone} className="text-slate-700">
+                    {e.label}:{" "}
+                    <TelLink phone={e.phone} className="font-bold text-brand-700">
+                      {e.phone}
+                    </TelLink>
+                  </li>
+                ))}
+              </ul>
+              {SITE.contact.phone && (
+                <p className="mt-3 flex items-center gap-2 text-sm text-slate-700">
+                  <Phone className="h-4 w-4 shrink-0 text-brand-700" aria-hidden />
+                  <TelLink
+                    phone={SITE.contact.phone}
+                    className="font-semibold text-brand-700 hover:underline"
+                  >
+                    {SITE.contact.phone}
+                  </TelLink>
+                </p>
+              )}
+              {SITE.contact.email && (
+                <p className="mt-1.5 flex items-center gap-2 text-sm text-slate-700">
+                  <Mail className="h-4 w-4 shrink-0 text-brand-700" aria-hidden />
+                  <a
+                    href={`mailto:${SITE.contact.email}`}
+                    className="break-all text-brand-700 hover:underline"
+                  >
+                    {SITE.contact.email}
+                  </a>
+                </p>
+              )}
+              {facebookUrl && (
+                <a
+                  href={facebookUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[#1877F2] px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
+                >
+                  <FacebookIcon className="h-4 w-4" />
+                  Последвайте ни във Facebook
+                </a>
+              )}
+              {/* Viber каналът — само ако е зададен в /admin/nastroyki. */}
+              {viberUrl && (
+                <div className="mt-3">
+                  <ViberButton url={viberUrl} />
+                </div>
+              )}
+              {playStoreUrl && (
+                <a
+                  href={playStoreUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
+                >
+                  <GooglePlayIcon className="h-5 w-5" />
+                  Изтегли приложението от Google Play
+                </a>
+              )}
+            </div>
           </div>
-          <div>
+          <div className="lg:col-span-5">
             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
               Раздели
             </h2>
-            <ul className="mt-4 space-y-2.5 text-base">
+            {/* На две колони (освен на съвсем тесен таблет) — половин височина. */}
+            <ul className="mt-4 columns-2 gap-x-6 text-base sm:columns-1 md:columns-2">
               {PRIMARY_NAV.map((i) => (
-                <li key={i.href}>
+                <li key={i.href} className="mb-2.5 break-inside-avoid">
                   <Link href={i.href} className="text-slate-700 underline-offset-4 hover:text-brand-700 hover:underline">
                     {i.label}
                   </Link>
@@ -62,80 +142,35 @@ export async function SiteFooter() {
               ))}
             </ul>
           </div>
-          <div>
+          <div className="lg:col-span-4">
             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
               Информация
             </h2>
-            <ul className="mt-4 space-y-2.5 text-base">
-              {FOOTER_NAV.map((i) => (
-                <li key={i.href}>
-                  <Link href={i.href} className="text-slate-700 underline-offset-4 hover:text-brand-700 hover:underline">
-                    {i.label}
-                  </Link>
+            <ul className="mt-4 columns-2 gap-x-6 text-base sm:columns-1 md:columns-2">
+              {FOOTER_ONLY.map((i) => (
+                <li key={i.href} className="mb-2.5 break-inside-avoid">
+                  {/* RSS е канал, не страница — обикновена връзка, без
+                      предварително зареждане от Next. */}
+                  {isFeedHref(i.href) ? (
+                    <a
+                      href={i.href}
+                      type="application/rss+xml"
+                      className="text-slate-700 underline-offset-4 hover:text-brand-700 hover:underline"
+                    >
+                      {i.label}
+                    </a>
+                  ) : (
+                    <Link href={i.href} className="text-slate-700 underline-offset-4 hover:text-brand-700 hover:underline">
+                      {i.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
-          </div>
-          <div>
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
-              Спешни телефони
-            </h2>
-            <ul className="mt-4 space-y-2.5 text-base">
-              {SITE.emergency.map((e) => (
-                <li key={e.phone} className="text-slate-700">
-                  {e.label}:{" "}
-                  <a href={`tel:${e.phone}`} className="font-bold text-brand-700">
-                    {e.phone}
-                  </a>
-                </li>
-              ))}
-            </ul>
-            {SITE.contact.phone && (
-              <p className="mt-3 flex items-center gap-2 text-sm text-slate-700">
-                <Phone className="h-4 w-4 shrink-0 text-brand-700" aria-hidden />
-                <a
-                  href={`tel:${SITE.contact.phone.replace(/\s/g, "")}`}
-                  className="font-semibold text-brand-700 hover:underline"
-                >
-                  {SITE.contact.phone}
-                </a>
-              </p>
-            )}
-            {SITE.contact.email && (
-              <p className="mt-1.5 flex items-center gap-2 text-sm text-slate-700">
-                <Mail className="h-4 w-4 shrink-0 text-brand-700" aria-hidden />
-                <a
-                  href={`mailto:${SITE.contact.email}`}
-                  className="break-all text-brand-700 hover:underline"
-                >
-                  {SITE.contact.email}
-                </a>
-              </p>
-            )}
-            {facebookUrl && (
-              <a
-                href={facebookUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[#1877F2] px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
-              >
-                <FacebookIcon className="h-4 w-4" />
-                Последвайте ни във Facebook
-              </a>
-            )}
-            {playStoreUrl && (
-              <a
-                href={playStoreUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
-              >
-                <GooglePlayIcon className="h-5 w-5" />
-                Изтегли приложението от Google Play
-              </a>
-            )}
           </div>
         </div>
+        {/* Кратката „истински адрес / никога не искаме“ — на всяка страница. */}
+        <TrustCard variant="compact" className="mt-8" />
         <div className="mt-8 flex flex-col items-start justify-between gap-3 border-t border-slate-200 pt-6 text-sm text-slate-600 sm:flex-row sm:items-center">
           <div className="space-y-1">
             <p>
@@ -146,6 +181,7 @@ export async function SiteFooter() {
               Независим проект, който не е официален сайт на община{" "}
               {SITE.geo.city}.
             </p>
+            <VisitCounter />
           </div>
           <p className="text-slate-600">
             Изработка и поддръжка на сайта:{" "}

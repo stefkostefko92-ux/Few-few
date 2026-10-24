@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Blochează reclamele (inclusiv pe YouTube), bannere, pop-up-uri, trackere, notificări cookie și ziduri anti-adblock. Gratuit."
+    "message": "Blochează reclamele (inclusiv pe YouTube), bannere, pop-up-uri, trackere, notificări cookie și ziduri anti-adblock."
   },
   "byCarbon": {
     "message": "de Carbon Stealth"
@@ -118,6 +118,27 @@
   "support": {
     "message": "Susțineți"
   },
+  "rate": {
+    "message": "Evaluați"
+  },
+  "rateTitle": {
+    "message": "Evaluați Supreme AdBlock în Magazinul Chrome Web"
+  },
+  "reviewBlocked": {
+    "message": "Solicitări blocate până acum: $1"
+  },
+  "reviewAsk": {
+    "message": "Dacă Supreme AdBlock vă este util, o scurtă recenzie în Magazinul Chrome Web îi ajută pe alții să-l găsească."
+  },
+  "reviewLeave": {
+    "message": "Scrieți o recenzie"
+  },
+  "reviewLater": {
+    "message": "Nu acum"
+  },
+  "reviewNever": {
+    "message": "Nu mai întreba"
+  },
   "filtersCount": {
     "message": "$1+ filtre",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "Ascunde zidurile „dezactivați blocantul de reclame” și restabilește pagina"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Ascunde postările „Sponsorizat” de pe Facebook și Instagram"
+    "message": "Ascunde postările „Sponsorizat” de pe Facebook, Instagram și Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Elimină utm_*, fbclid, gclid și alți identificatori de clic din linkurile pe care le deschideți"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Blochează domeniile malware cunoscute (lista URLhaus de la abuse.ch)"
+    "message": "Avertizează înainte de deschiderea unui site malware cunoscut și blochează ce încarcă paginile de pe astfel de site-uri (lista URLhaus de la abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Dezactivează API-urile publicitare Google Topics, FLoC și Protected Audience pe toate site-urile"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Donați prin Revolut"
+  },
+  "opt_review": {
+    "message": "Mementouri pentru recenzie"
+  },
+  "opt_review_sub": {
+    "message": "Un mic link ★ în partea de jos a ferestrei Supreme AdBlock și, de cel mult două ori, o scurtă rugăminte acolo să-l evaluați în Magazinul Chrome Web. Niciodată pe site-uri, niciodată ca notificare."
   },
   "opt_made_by": {
     "message": "creat de Carbon Stealth"
@@ -599,5 +626,172 @@
   },
   "opt_notices": {
     "message": "Licențele listelor de filtre"
+  },
+  "welPageTitle": {
+    "message": "Bun venit la Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Protecția este activă",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock blochează acum reclamele și trackerele pe fiecare site pe care îl vizitați. Nu trebuie să configurați nimic.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Fixați extensia în bara de instrumente",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Faceți clic pe pictograma în formă de piesă de puzzle de lângă bara de adrese și fixați Supreme AdBlock. Apoi, un singur clic vă arată ce a fost blocat pe pagină.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Dacă un site nu se afișează corect",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Deschideți extensia și dezactivați blocarea pentru site-ul respectiv sau alegeți „Site-ul nu funcționează?” pentru remedieri rapide.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Navigarea dvs. rămâne pe dispozitivul dvs.",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Filtrarea are loc local. Extensia nu colectează date personale și nu trimite nimic despre paginile pe care le vizitați.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Deschideți setările",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "Am înțeles",
+    "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Permis · mai sunt $1 min"
+  },
+  "hiddenHere": {
+    "message": "Elemente ascunse aici: $1 · Anulați ultimul"
+  },
+  "cmd_toggle_site": {
+    "message": "Activați sau dezactivați blocarea pe acest site"
+  },
+  "cmd_pause": {
+    "message": "Puneți în pauză sau reluați protecția (30 de minute)"
+  },
+  "cmd_picker": {
+    "message": "Ascundeți un element de pe această pagină"
+  },
+  "rep_fix_hour": {
+    "message": "Permiteți reclamele aici timp de 1 oră"
+  },
+  "rep_done_hour": {
+    "message": "Reclamele sunt permise pe acest site timp de 1 oră. Pagina a fost reîncărcată — s-a rezolvat?"
+  },
+  "opt_last30": {
+    "message": "Ultimele 30 de zile"
+  },
+  "opt_last30_sum": {
+    "message": "Blocate: $1 · Bannere de cookie-uri: $2"
+  },
+  "opt_last30_empty": {
+    "message": "Totalurile zilnice vor apărea aici pe măsură ce navigați."
+  },
+  "opt_last30_sub": {
+    "message": "Doar totaluri zilnice, păstrate pe acest dispozitiv timp de 30 de zile. Fără site-uri, fără adrese."
+  },
+  "opt_gpc_sub": {
+    "message": "Cere fiecărui site pe care îl vizitați să nu vă vândă și să nu vă partajeze datele (semnalul Sec-GPC, pe care unele legi privind confidențialitatea obligă site-urile să-l respecte). Nu este trimis pe site-urile pe care le permiteți."
+  },
+  "opt_shortcuts": {
+    "message": "Comenzi rapide de la tastatură"
+  },
+  "opt_shortcuts_change": {
+    "message": "Modificați comenzile rapide"
+  },
+  "opt_shortcut_none": {
+    "message": "Neatribuită"
+  },
+  "opt_shortcuts_ff": {
+    "message": "În Firefox: Extensii și teme → ⚙ → Gestionează comenzile rapide ale extensiilor."
+  },
+  "opt_import_foreign": {
+    "message": "Importați din alt blocant de reclame"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Treceți de la uBlock Origin, AdGuard sau Adblock Plus? Alegeți fișierul de backup al acestuia: site-urile pe care le-ați permis și filtrele dvs. proprii sunt adăugate aici. Nu se înlocuiește nimic."
+  },
+  "opt_import_foreign_done": {
+    "message": "Site-uri permise: $1 · Filtre adăugate: $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Linii omise (nu pot fi aplicate aici): $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Acest fișier nu este un backup pe care îl putem citi."
+  },
+  "welQuickTitle": {
+    "message": "Personalizați-l"
+  },
+  "welQuickSub": {
+    "message": "Opțional: funcționează deja. Puteți modifica oricare dintre acestea mai târziu din Setări."
+  },
+  "blk_page_title": {
+    "message": "Site blocat — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Acest site poate dăuna dispozitivului dvs."
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock a oprit această pagină deoarece site-ul figurează în URLhaus, o listă publică de adrese care răspândesc malware."
+  },
+  "blk_back": {
+    "message": "Înapoi"
+  },
+  "blk_continue": {
+    "message": "Continuați oricum"
+  },
+  "blk_note": {
+    "message": "Dacă continuați, sunt permise doar paginile acestui site, până când închideți browserul."
+  },
+  "blk_why": {
+    "message": "De ce este pe listă? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Conexiuni pe această pagină"
+  },
+  "conn_empty": {
+    "message": "Această pagină nu a încărcat nimic de pe alte site-uri."
+  },
+  "conn_block": {
+    "message": "Blocați aici"
+  },
+  "conn_blocked": {
+    "message": "Blocat aici"
+  },
+  "conn_hint": {
+    "message": "Blocați ce încarcă acest site de pe $1"
+  },
+  "opt_conn_title": {
+    "message": "Conexiuni pe care le-ați blocat"
+  },
+  "opt_conn_sub": {
+    "message": "Blocate din „Conexiuni pe această pagină” din fereastra Supreme AdBlock, fiecare doar pe site-ul său."
+  },
+  "opt_empty_conn": {
+    "message": "Încă nu ați blocat nimic."
+  },
+  "opt_conn_remove": {
+    "message": "Deblocați $1 pe $2"
+  },
+  "opt_h_danger": {
+    "message": "Pagina de avertizare malware"
+  },
+  "opt_h_capacity": {
+    "message": "Capacitatea regulilor"
   }
 }

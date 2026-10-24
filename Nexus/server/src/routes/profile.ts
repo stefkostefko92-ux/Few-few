@@ -6,12 +6,14 @@ import { AVATARS, FRAMES, findAvatar, findFrame } from '../seed/cosmetics';
 import { logFromRequest } from '../lib/logger';
 import { checkText } from '../lib/textFilter';
 import type { Character } from '../types/domain';
+import { getSetting } from '../game/settings';
 
 const router = Router();
 router.use(authRequired);
 
-const RENAME_COST = 250;
-const RENAME_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+// Цена/cooldown на преименуването — админ настройки (game/settings.ts).
+const renameCost = () => getSetting<number>('rename_cost_gold');
+const renameCooldownMs = () => getSetting<number>('rename_cooldown_hours') * 3_600_000;
 
 router.get('/me', (req, res) => {
   const db = getDb();
@@ -42,8 +44,8 @@ router.get('/me', (req, res) => {
     bio: (char as any).bio || '',
     current_title: (char as any).current_title || '',
     last_rename_at: (char as any).last_rename_at || 0,
-    rename_cost: RENAME_COST,
-    rename_cooldown_ms: RENAME_COOLDOWN_MS,
+    rename_cost: renameCost(),
+    rename_cooldown_ms: renameCooldownMs(),
     available_avatars: avail_avatars,
     available_frames: avail_frames,
   });
@@ -71,6 +73,8 @@ router.post('/rename', (req, res) => {
     res.status(404).json({ error: 'No character' });
     return;
   }
+  const RENAME_COST = renameCost();
+  const RENAME_COOLDOWN_MS = renameCooldownMs();
   if (char.gold < RENAME_COST) {
     res.status(400).json({ error: `Renaming costs ${RENAME_COST} gold.` });
     return;
@@ -86,9 +90,12 @@ router.post('/rename', (req, res) => {
     res.status(409).json({ error: 'That name is already taken.' });
     return;
   }
-  db.prepare('UPDATE characters SET name = ?, gold = gold - ?, last_rename_at = ? WHERE id = ?').run(
-    parse.data.name, RENAME_COST, Date.now(), char.id,
+  // CAS: злато и cooldown се проверяват атомарно (паралелни заявки не
+  // могат да свалят златото под 0 или да заобиколят cooldown-а).
+  const upd = db.prepare('UPDATE characters SET name = ?, gold = gold - ?, last_rename_at = ? WHERE id = ? AND gold >= ? AND last_rename_at = ?').run(
+    parse.data.name, RENAME_COST, Date.now(), char.id, RENAME_COST, (char as any).last_rename_at || 0,
   );
+  if (upd.changes !== 1) { res.status(409).json({ error: 'Rename failed — try again.' }); return; }
   logFromRequest(req, {
     category: 'character', action: 'rename', character_id: char.id,
     message: `${char.name} renamed to ${parse.data.name}`,

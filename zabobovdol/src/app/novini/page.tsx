@@ -2,16 +2,35 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, canonical } from "@/lib/seo";
 import { plainText } from "@/lib/markdown";
+import { newsDate } from "@/lib/news";
+import { RssLink } from "./RssLink";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = buildMetadata({
+const base = buildMetadata({
   title: "Новини и съобщения за Бобов дол",
   description: "Актуални съобщения, новини и обявления, важни за жителите на Бобов дол.",
   path: "/novini",
 });
+
+export const metadata: Metadata = {
+  ...base,
+  keywords: [
+    "новини Бобов дол",
+    "Община Бобов дол съобщения",
+    "Бобов дол днес",
+    "обявления Бобов дол",
+    "RSS новини Бобов дол",
+    "Carbon Stealth",
+  ],
+  // Четците на RSS намират канала сами от тази връзка.
+  alternates: {
+    ...base.alternates,
+    types: { "application/rss+xml": canonical("/novini/rss.xml") },
+  },
+};
 
 function fmt(d: Date | null): string {
   if (!d) return "";
@@ -19,13 +38,14 @@ function fmt(d: Date | null): string {
     day: "numeric",
     month: "long",
     year: "numeric",
+    timeZone: "Europe/Sofia",
   }).format(d);
 }
 
 export default async function NewsPage() {
   const posts = await prisma.post.findMany({
     where: { published: true },
-    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+    orderBy: [{ publishedAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
   });
 
   return (
@@ -36,6 +56,12 @@ export default async function NewsPage() {
         crumbs={[{ name: "Новини", path: "/novini" }]}
       />
       <div className="container-content py-10">
+        <div className="mb-6 flex flex-wrap items-center gap-3">
+          <RssLink />
+          <p className="text-sm text-slate-600">
+            Новите съобщения идват сами в приложение за новини (RSS четец).
+          </p>
+        </div>
         {posts.length === 0 ? (
           <EmptyState title="Все още няма публикувани новини." />
         ) : (
@@ -43,7 +69,7 @@ export default async function NewsPage() {
             {posts.map((p) => (
               <Link key={p.id} href={`/novini/${p.slug}`} className="card">
                 <div className="text-sm text-slate-600">
-                  {fmt(p.publishedAt ?? p.createdAt)}
+                  <time dateTime={newsDate(p).toISOString()}>{fmt(newsDate(p))}</time>
                 </div>
                 <h2 className="mt-1 text-lg font-semibold text-slate-900">
                   {p.title}

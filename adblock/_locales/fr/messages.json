@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Bloque les publicités (YouTube compris), les bannières, pop-ups, traqueurs, bandeaux cookies et murs anti-adblock. Gratuit."
+    "message": "Bloque les publicités (YouTube compris), les bannières, pop-ups, traqueurs, bandeaux cookies et murs anti-adblock."
   },
   "byCarbon": {
     "message": "par Carbon Stealth"
@@ -118,6 +118,27 @@
   "support": {
     "message": "Soutenir"
   },
+  "rate": {
+    "message": "Noter"
+  },
+  "rateTitle": {
+    "message": "Noter Supreme AdBlock sur le Chrome Web Store"
+  },
+  "reviewBlocked": {
+    "message": "$1 requêtes bloquées jusqu’ici"
+  },
+  "reviewAsk": {
+    "message": "Si Supreme AdBlock vous est utile, un court avis sur le Chrome Web Store aide d’autres personnes à le trouver."
+  },
+  "reviewLeave": {
+    "message": "Laisser un avis"
+  },
+  "reviewLater": {
+    "message": "Pas maintenant"
+  },
+  "reviewNever": {
+    "message": "Ne plus demander"
+  },
   "filtersCount": {
     "message": "$1+ filtres",
     "placeholders": {
@@ -205,13 +226,13 @@
     "message": "Masque les murs « désactivez votre bloqueur de pubs » et rétablit la page"
   },
   "opt_hide_sponsored_posts_on_facebook_and_ins": {
-    "message": "Masque les publications « Sponsorisé » sur Facebook et Instagram"
+    "message": "Masque les publications « Sponsorisé » sur Facebook, Instagram et Threads"
   },
   "opt_strip_utm_fbclid_gclid_and_other_click_i": {
     "message": "Retire utm_*, fbclid, gclid et autres identifiants de clic des liens que vous ouvrez"
   },
   "opt_block_known_malware_domains_urlhaus_list": {
-    "message": "Bloque les domaines malveillants connus (liste URLhaus d’abuse.ch)"
+    "message": "Avertit avant l’ouverture d’un site malveillant connu et bloque ce que les pages chargent depuis ces sites (liste URLhaus d’abuse.ch)."
   },
   "opt_disable_google_topics_floc_and_protected": {
     "message": "Désactive les API publicitaires Google Topics, FLoC et Protected Audience sur tous les sites"
@@ -314,6 +335,12 @@
   },
   "opt_donate": {
     "message": "Faire un don via Revolut"
+  },
+  "opt_review": {
+    "message": "Rappels d’avis"
+  },
+  "opt_review_sub": {
+    "message": "Un petit lien ★ en bas de la fenêtre de Supreme AdBlock et, au plus deux fois, une courte demande pour le noter sur le Chrome Web Store. Jamais sur les sites web, jamais sous forme de notification."
   },
   "opt_made_by": {
     "message": "conçu par Carbon Stealth"
@@ -599,5 +626,172 @@
   },
   "opt_notices": {
     "message": "Licences des listes de filtres"
+  },
+  "welPageTitle": {
+    "message": "Bienvenue dans Supreme AdBlock",
+    "description": "Welcome page: browser tab title."
+  },
+  "welTitle": {
+    "message": "Protection activée",
+    "description": "Welcome page: main heading shown after install."
+  },
+  "welLead": {
+    "message": "Supreme AdBlock bloque désormais les pubs et les traqueurs sur tous les sites que vous visitez. Il n’y a rien à configurer.",
+    "description": "Welcome page: sentence under the main heading."
+  },
+  "welPinTitle": {
+    "message": "Épinglez l’extension à la barre d’outils",
+    "description": "Welcome page: heading of the tip about pinning the extension to the toolbar."
+  },
+  "welPinText": {
+    "message": "Cliquez sur l’icône en forme de pièce de puzzle à côté de la barre d’adresse et épinglez Supreme AdBlock. Un clic suffit ensuite pour voir ce qui a été bloqué sur la page.",
+    "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
+  },
+  "welBrokenTitle": {
+    "message": "Si un site semble cassé",
+    "description": "Welcome page: heading of the tip for sites that look broken."
+  },
+  "welBrokenText": {
+    "message": "Ouvrez l’extension et désactivez le blocage pour ce site, ou choisissez « Site cassé ? » pour des corrections rapides.",
+    "description": "Welcome page: tip for broken sites. The quoted text must match the first part of reportBroken."
+  },
+  "welPrivacyTitle": {
+    "message": "Votre navigation reste sur votre appareil",
+    "description": "Welcome page: heading of the privacy note."
+  },
+  "welPrivacyText": {
+    "message": "Le filtrage se fait localement. L’extension ne collecte aucune donnée personnelle et n’envoie rien sur les pages que vous visitez.",
+    "description": "Welcome page: privacy note."
+  },
+  "welSettings": {
+    "message": "Ouvrir les paramètres",
+    "description": "Welcome page: button that opens the settings page; same term as settings."
+  },
+  "welDone": {
+    "message": "J’ai compris",
+    "description": "Welcome page: button that closes the welcome page."
+  },
+  "allowedFor": {
+    "message": "Autorisé · encore $1 min"
+  },
+  "hiddenHere": {
+    "message": "Éléments masqués ici : $1 · Annuler le dernier"
+  },
+  "cmd_toggle_site": {
+    "message": "Activer ou désactiver le blocage sur ce site"
+  },
+  "cmd_pause": {
+    "message": "Mettre en pause ou reprendre la protection (30 minutes)"
+  },
+  "cmd_picker": {
+    "message": "Masquer un élément sur cette page"
+  },
+  "rep_fix_hour": {
+    "message": "Autoriser les pubs ici pendant 1 heure"
+  },
+  "rep_done_hour": {
+    "message": "Les pubs sont autorisées sur ce site pendant 1 heure. Page rechargée — est-ce réglé ?"
+  },
+  "opt_last30": {
+    "message": "30 derniers jours"
+  },
+  "opt_last30_sum": {
+    "message": "Bloqués : $1 · Bandeaux cookies : $2"
+  },
+  "opt_last30_empty": {
+    "message": "Vos totaux quotidiens s’affichent ici au fil de votre navigation."
+  },
+  "opt_last30_sub": {
+    "message": "Uniquement des totaux quotidiens, conservés sur cet appareil pendant 30 jours. Ni sites ni adresses."
+  },
+  "opt_gpc_sub": {
+    "message": "Demande à chaque site que vous visitez de ne pas vendre ni partager vos données (le signal Sec-GPC, que certaines lois sur la vie privée obligent les sites à respecter). Non envoyé sur les sites que vous autorisez."
+  },
+  "opt_shortcuts": {
+    "message": "Raccourcis clavier"
+  },
+  "opt_shortcuts_change": {
+    "message": "Modifier les raccourcis"
+  },
+  "opt_shortcut_none": {
+    "message": "Non défini"
+  },
+  "opt_shortcuts_ff": {
+    "message": "Dans Firefox : Extensions et thèmes → ⚙ → Gérer les raccourcis d’extensions."
+  },
+  "opt_import_foreign": {
+    "message": "Importer d’un autre bloqueur de pubs"
+  },
+  "opt_import_foreign_sub": {
+    "message": "Vous venez d’uBlock Origin, d’AdGuard ou d’Adblock Plus ? Choisissez le fichier de sauvegarde de ce bloqueur : les sites que vous avez autorisés et vos propres filtres sont ajoutés ici. Rien n’est remplacé."
+  },
+  "opt_import_foreign_done": {
+    "message": "Sites autorisés : $1 · Filtres ajoutés : $2"
+  },
+  "opt_import_foreign_skipped": {
+    "message": "Lignes ignorées (inapplicables ici) : $1"
+  },
+  "opt_import_foreign_bad": {
+    "message": "Ce fichier n’est pas une sauvegarde que nous pouvons lire."
+  },
+  "welQuickTitle": {
+    "message": "Personnalisez-le"
+  },
+  "welQuickSub": {
+    "message": "Facultatif : tout fonctionne déjà. Vous pourrez modifier ces options plus tard dans les Paramètres."
+  },
+  "blk_page_title": {
+    "message": "Site bloqué — Supreme AdBlock"
+  },
+  "blk_title": {
+    "message": "Ce site peut nuire à votre appareil"
+  },
+  "blk_text": {
+    "message": "Supreme AdBlock a bloqué cette page, car le site figure sur URLhaus, une liste publique d’adresses qui propagent des logiciels malveillants."
+  },
+  "blk_back": {
+    "message": "Revenir en arrière"
+  },
+  "blk_continue": {
+    "message": "Continuer quand même"
+  },
+  "blk_note": {
+    "message": "Si vous continuez, seules les pages de ce site seront autorisées, jusqu’à la fermeture du navigateur."
+  },
+  "blk_why": {
+    "message": "Pourquoi figure-t-il sur la liste ? (URLhaus)"
+  },
+  "conn_title": {
+    "message": "Connexions de cette page"
+  },
+  "conn_empty": {
+    "message": "Cette page n’a rien chargé depuis d’autres sites."
+  },
+  "conn_block": {
+    "message": "Bloquer ici"
+  },
+  "conn_blocked": {
+    "message": "Bloqué ici"
+  },
+  "conn_hint": {
+    "message": "Bloquer ce que ce site charge depuis $1"
+  },
+  "opt_conn_title": {
+    "message": "Connexions que vous avez bloquées"
+  },
+  "opt_conn_sub": {
+    "message": "Bloquées depuis « Connexions de cette page » dans la fenêtre de Supreme AdBlock, chacune uniquement sur son propre site."
+  },
+  "opt_empty_conn": {
+    "message": "Rien n’a encore été bloqué."
+  },
+  "opt_conn_remove": {
+    "message": "Débloquer $1 sur $2"
+  },
+  "opt_h_danger": {
+    "message": "Page d’alerte anti-malware"
+  },
+  "opt_h_capacity": {
+    "message": "Capacité des règles"
   }
 }

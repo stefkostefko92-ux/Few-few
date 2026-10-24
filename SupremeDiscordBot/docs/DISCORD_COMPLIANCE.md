@@ -44,7 +44,7 @@ Discord = препродавач в ЕС. Terms §5–6, EULA §7.
 
 ## D. Какво остава на собственика (не може да се автоматизира)
 
-1. **Developer Portal**: Privacy Policy URL + Terms of Service URL попълнени (App → General Information); верификация на приложението; Team-owned; 2FA на Team.
+1. **Developer Portal**: Privacy Policy URL + Terms of Service URL попълнени (App → General Information); верификация на приложението; Team-owned; 2FA на Team. Готовите отговори за App Verification, Privileged Intent review (10 000+ потребители, годишно) и Premium onboarding → `docs/DISCORD_VERIFICATION.md` (гейтван срещу intents/правата в кода).
 2. **Диск при покой**: потвърди шифриран том за Postgres на VPS-а (Terms §5(c)(i)).
 3. **Gemini tier**: платен tier без обучение → `AI_REPLY_TRAINING_ATTESTED=true`; иначе AI отговорите остават изключени (правилно).
 4. **Заявки по имейл** (`privacy@carbonstealth.eu`): обработвай от Admin → Compliance с бележка за референция; срок „promptly" — целта е ≤72 ч.

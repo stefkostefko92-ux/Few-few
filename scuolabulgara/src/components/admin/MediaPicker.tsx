@@ -1,63 +1,88 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BUNDLED_MEDIA } from "@/lib/cms";
 
-type Media = { id: string; url: string; filename: string; alt: string };
+type Media = { id: string; url: string; filename: string; mime?: string; alt: string };
 
+// Picture chooser: the school's own uploads first, then the photos that ship
+// with the site — so a section can always be switched back to a bundled one.
 export default function MediaPicker({ onPick, onClose }: { onPick: (url: string) => void; onClose: () => void }) {
   const [media, setMedia] = useState<Media[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
 
   const refresh = async () => {
-    const res = await fetch("/api/admin/media");
-    const json = await res.json();
-    setMedia(json.media || []);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/admin/media");
+      const json = await res.json();
+      setMedia(((json.media || []) as Media[]).filter((m) => !m.mime?.startsWith("audio/") && m.mime !== "application/pdf"));
+    } finally {
+      setLoading(false);
+    }
   };
   useEffect(() => { refresh(); }, []);
 
+  // Close on Escape, like any dialog.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   async function upload(file: File) {
     setUploading(true);
+    setError("");
     const fd = new FormData();
     fd.append("file", file);
-    const res = await fetch("/api/admin/media", { method: "POST", body: fd });
-    const json = await res.json();
-    setUploading(false);
-    if (json.ok) { await refresh(); onPick(json.media.url); }
+    try {
+      const res = await fetch("/api/admin/media", { method: "POST", body: fd });
+      const json = await res.json();
+      if (json.ok) { await refresh(); onPick(json.media.url); }
+      else setError(res.status === 415 ? "Този формат не се поддържа. Ползвайте JPG, PNG, WebP или GIF." : res.status === 413 ? "Файлът е твърде голям (макс. 12 MB)." : "Качването не успя.");
+    } catch {
+      setError("Качването не успя.");
+    } finally {
+      setUploading(false);
+    }
   }
 
+  const tile = (url: string, label: string, key: string) => (
+    <button key={key} type="button" className="qba-media qba-media--pick" onClick={() => onPick(url)}>
+      <div className="qba-media__img"><img src={url} alt="" loading="lazy" /></div>
+      <div className="qba-media__body"><div className="qba-media__name">{label}</div></div>
+    </button>
+  );
+
   return (
-    <div role="dialog" aria-modal="true" style={overlay} onClick={onClose}>
-      <div style={modal} onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+    <div role="dialog" aria-modal="true" aria-label="Изберете снимка" className="qba-modal" onClick={onClose}>
+      <div className="qba-modal__box" onClick={(e) => e.stopPropagation()}>
+        <div className="qba-modal__head">
           <b>Изберете снимка</b>
-          <label className="ad-btn ad-btn--primary" style={{ cursor: "pointer" }}>
-            {uploading ? "Качване…" : "Качи нова"}
-            <input type="file" accept="image/*" hidden onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
+          <label className="qba-btn qba-btn--primary" style={{ cursor: "pointer" }}>
+            {uploading ? "Качване…" : "Качи нова снимка"}
+            <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
           </label>
         </div>
+        {error && <p className="qba-modal__error" role="alert">{error}</p>}
+
+        <h4 className="qba-modal__group">Вашите снимки</h4>
         {loading ? (
-          <p style={{ color: "var(--ad-muted)" }}>Зареждане…</p>
+          <p className="qba-muted">Зареждане…</p>
         ) : media.length === 0 ? (
-          <p style={{ color: "var(--ad-muted)" }}>Няма снимки. Качете първата по-горе.</p>
+          <p className="qba-muted">Още няма качени. Натиснете „Качи нова снимка“ — снимката се оптимизира автоматично.</p>
         ) : (
-          <div className="ad-media-grid">
-            {media.map((m) => (
-              <button key={m.id} className="ad-media" style={{ cursor: "pointer", textAlign: "left", border: "1px solid var(--ad-line)" }} onClick={() => onPick(m.url)} type="button">
-                <div className="ad-media__img"><img src={m.url} alt={m.alt} /></div>
-                <div className="ad-media__body"><div className="ad-media__name">{m.filename}</div></div>
-              </button>
-            ))}
-          </div>
+          <div className="qba-media-grid">{media.map((m) => tile(m.url, m.filename, m.id))}</div>
         )}
-        <div style={{ marginTop: "1rem", textAlign: "right" }}>
-          <button className="ad-btn ad-btn--ghost" onClick={onClose} type="button">Затвори</button>
+
+        <h4 className="qba-modal__group">Снимки на сайта</h4>
+        <div className="qba-media-grid">{BUNDLED_MEDIA.map((m) => tile(m.url, m.label, m.url))}</div>
+
+        <div className="qba-modal__foot">
+          <button className="qba-btn qba-btn--ghost" onClick={onClose} type="button">Затвори</button>
         </div>
       </div>
     </div>
   );
 }
-
-const overlay: React.CSSProperties = { position: "fixed", inset: 0, background: "rgba(17,19,26,.55)", display: "grid", placeItems: "center", padding: "1.5rem", zIndex: 200 };
-const modal: React.CSSProperties = { background: "#fff", borderRadius: 16, padding: "1.4rem", width: "min(760px, 100%)", maxHeight: "85vh", overflow: "auto", boxShadow: "0 30px 60px -20px rgba(0,0,0,.5)" };

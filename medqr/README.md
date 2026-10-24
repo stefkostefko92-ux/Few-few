@@ -106,7 +106,7 @@ npm start            # http://localhost:3000
 ## Тестове и качество
 
 ```bash
-npm test              # 24 end-to-end проверки (smoke)
+npm test              # 30 end-to-end проверки (smoke)
 npm run lint          # ESLint (flat config)
 npm run format        # Prettier
 ```

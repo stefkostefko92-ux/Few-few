@@ -11,6 +11,8 @@ export const SETTING_KEYS = {
   revolutUrl: "revolut_url",
   dutyInfo: "duty_info",
   facebookUrl: "facebook_url",
+  // Viber канал „За Бобов дол“ — само за известия (прекъсвания, измами, аптека).
+  viberChannelUrl: "viber_channel_url",
   churchServices: "church_services",
   wasteSchedule: "waste_schedule",
   googleVerification: "google_site_verification",
@@ -121,6 +123,19 @@ export async function getFacebookUrl(): Promise<string> {
     return row?.value || SITE.social.facebook || "";
   } catch {
     return SITE.social.facebook || "";
+  }
+}
+
+// Адрес на Viber канала (празно = каналът още не е създаден и не се показва).
+export async function getViberChannelUrl(): Promise<string> {
+  try {
+    const row = await prisma.siteSetting.findUnique({
+      where: { key: SETTING_KEYS.viberChannelUrl },
+    });
+    const v = (row?.value || "").trim();
+    return /^https:\/\/(invite\.viber\.com|vb\.me|viber\.com|www\.viber\.com)\//i.test(v) ? v : "";
+  } catch {
+    return "";
   }
 }
 

@@ -32,6 +32,12 @@
         <div class="stat-lbl" data-i18n="timeSaved">Time saved</div>
       </div>
     </section>
+    <section class="card" id="daysCard">
+      <h2 data-i18n="opt_last30">Last 30 days</h2>
+      <div id="daysChart" class="days" role="img" aria-labelledby="daysSum"></div>
+      <p class="row-sub days-sum" id="daysSum"></p>
+      <p class="row-sub" data-i18n="opt_last30_sub">Only daily totals, kept on this device for 30 days. No sites, no addresses.</p>
+    </section>
     <button id="resetStats" class="btn ghost wide" data-i18n="opt_reset_statistics">Reset statistics</button>
 
     <section class="card">
@@ -53,6 +59,13 @@
         </div>
         <label class="switch"><input type="checkbox" id="syncToggle" /><span class="slider"></span></label>
       </label>
+    </section>
+
+    <section class="card" id="keysCard">
+      <h2 data-i18n="opt_shortcuts">Keyboard shortcuts</h2>
+      <ul id="keysList" class="list keys"></ul>
+      <button id="keysChange" class="btn ghost" type="button" data-i18n="opt_shortcuts_change">Change shortcuts</button>
+      <p class="row-sub" id="keysHint" hidden data-i18n="opt_shortcuts_ff">In Firefox: Extensions and themes → ⚙ → Manage Extension Shortcuts.</p>
     </section>
 
     <section class="card">
@@ -88,7 +101,7 @@
       <label class="row">
         <div>
           <div class="row-title" data-i18n="opt_meta_sponsored_posts">Meta sponsored posts</div>
-          <div class="row-sub" data-i18n="opt_hide_sponsored_posts_on_facebook_and_ins">Hide "Sponsored" posts on Facebook &amp; Instagram</div>
+          <div class="row-sub" data-i18n="opt_hide_sponsored_posts_on_facebook_and_ins">Hide "Sponsored" posts on Facebook, Instagram &amp; Threads</div>
         </div>
         <label class="switch"><input type="checkbox" id="featMeta" /><span class="slider"></span></label>
       </label>
@@ -102,7 +115,7 @@
       <label class="row">
         <div>
           <div class="row-title" data-i18n="opt_malware_protection">Malware protection</div>
-          <div class="row-sub" data-i18n="opt_block_known_malware_domains_urlhaus_list">Block known malware domains (URLhaus list by abuse.ch)</div>
+          <div class="row-sub" data-i18n="opt_block_known_malware_domains_urlhaus_list">Warn before a known malware site opens, and block what pages load from such sites (URLhaus list by abuse.ch).</div>
         </div>
         <label class="switch"><input type="checkbox" id="featMalware" /><span class="slider"></span></label>
       </label>
@@ -112,6 +125,13 @@
           <div class="row-sub" data-i18n="opt_disable_google_topics_floc_and_protected">Disable Google Topics, FLoC and Protected Audience ad APIs on every site</div>
         </div>
         <label class="switch"><input type="checkbox" id="featTopics" /><span class="slider"></span></label>
+      </label>
+      <label class="row">
+        <div>
+          <div class="row-title">Global Privacy Control</div>
+          <div class="row-sub" data-i18n="opt_gpc_sub">Asks every site you visit not to sell or share your data (the Sec-GPC signal, which some privacy laws make sites honour). Not sent on sites you allow.</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="featGpc" /><span class="slider"></span></label>
       </label>
       <label class="row">
         <div>
@@ -178,6 +198,12 @@
       <button id="subsRefresh" class="btn ghost" data-i18n="opt_refresh_subscriptions_now">Refresh subscriptions now</button>
     </section>
 
+    <section class="card" id="connCard">
+      <h2 data-i18n="opt_conn_title">Connections you blocked</h2>
+      <p class="row-sub" data-i18n="opt_conn_sub">Blocked from the popup's “Connections on this page”, each only on its own site.</p>
+      <ul id="connBlocks" class="list"></ul>
+    </section>
+
     <section class="card">
       <h2 data-i18n="opt_hidden_elements">Hidden elements</h2>
       <p class="row-sub" data-i18n="opt_elements_you_hid_manually_with_the_picke">Elements you hid manually with the picker, grouped by site.</p>
@@ -211,25 +237,31 @@
         <button id="importBtn" class="btn ghost" data-i18n="opt_import_settings">Import settings</button>
         <input type="file" id="importFile" accept="application/json" hidden />
       </div>
-    </section>
-
-    <a class="promo" href="https://carbonstealth.eu" target="_blank" rel="noopener">
-      <div class="promo-text">
-        <strong>Carbon Stealth</strong>
-        <span data-i18n="promoSub">Gear &amp; tools, carbonstealth.eu</span>
+      <p class="row-sub foreign-sub" data-i18n="opt_import_foreign_sub">Moving from uBlock Origin, AdGuard or Adblock Plus? Choose its backup file: the sites you allowed and your own filters are added here. Nothing is replaced.</p>
+      <div class="add-row">
+        <button id="foreignBtn" class="btn ghost" type="button" data-i18n="opt_import_foreign">Import from another ad blocker</button>
+        <input type="file" id="foreignFile" accept=".txt,.json,text/plain,application/json" hidden />
       </div>
-      <span class="promo-go">→</span>
-    </a>
+      <p class="row-sub" id="foreignHint" role="status"></p>
+    </section>
 
     <section class="card donate">
       <h2 data-i18n="opt_support_development">Support development</h2>
       <p class="row-sub" data-i18n="opt_supreme_adblock_is_free_for_everyone_if_">Supreme AdBlock is free for everyone. If you'd like to help keep it maintained, donations are welcome, never required.</p>
       <a class="donate-btn" href="https://revolut.me/vycanismajoris" target="_blank" rel="noopener">💜 <span data-i18n="opt_donate">Donate via Revolut</span></a>
+      <label class="row" id="reviewRow" hidden>
+        <div>
+          <div class="row-title" data-i18n="opt_review">Review reminders</div>
+          <div class="row-sub" data-i18n="opt_review_sub">A small ★ link at the bottom of the popup and, at most twice, a short request in the popup to rate Supreme AdBlock on the Chrome Web Store. Never on websites, never as a notification.</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="reviewAsk" /><span class="slider"></span></label>
+      </label>
     </section>
   </main>
 
   <footer>Supreme AdBlock v<span id="extVersion"></span> · <span data-i18n="opt_made_by">made by Carbon Stealth</span></footer>
 
+  <script src="../lib/foreign.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

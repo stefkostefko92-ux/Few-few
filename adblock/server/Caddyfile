@@ -32,13 +32,24 @@ adblock.carbonstealth.eu {
 	@filtersjson path /filters.json
 	header @filtersjson Content-Type application/json
 
-	# Images change only with a release.
+	# Images change only with a release; index.html asks for them with ?v=<content hash>
+	# (tools/landing_assets.mjs), so a new image is a new URL.
 	@assets path *.webp *.png
 	header @assets Cache-Control "public, max-age=604800"
 
-	# Pretty URL for the privacy policy (Web Store Privacy Policy URL).
-	@privacy path /privacy
-	rewrite @privacy /privacy.html
+	# Pages: the browser always revalidates (a 304 by ETag is cheap), never shows a stale release.
+	@pages not path *.webp *.png /filters.json /filters.json.sig
+	header @pages Cache-Control "no-cache"
+
+	# Pretty URLs for the pages (Web Store Privacy Policy URL is /privacy, Support URL is /support).
+	# A new page = a path here + in nginx.conf + in deploy/autodeploy.sh (gated by tests/site.test.mjs).
+	@pretty path /privacy /support /youtube-ad-blocker /cookie-banner-blocker
+	rewrite @pretty {path}.html
+
+	# Language pages (tools/site_lang.mjs → /<lang>/index.html): file_server serves the folder's
+	# index.html and redirects /bg to /bg/ (the canonical address) by itself.
+	@langs path /bg /de /it /es /fr /pt-br
+	redir @langs {path}/ 301
 
 	file_server
 }

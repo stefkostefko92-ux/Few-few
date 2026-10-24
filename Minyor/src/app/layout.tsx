@@ -41,6 +41,7 @@ export const metadata: Metadata = {
     "програма Миньор",
     "класиране Миньор",
     "стадион Николай Кръстев Шулц",
+    "Carbon Stealth",
   ],
   authors: [{ name: SITE.name }],
   openGraph: {

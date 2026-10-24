@@ -97,6 +97,59 @@ export function setCooldown(characterId: number, kind: ActionKind): number {
   return final;
 }
 
+/**
+ * Atomically check-and-claim a cooldown slot, THEN let the caller do the
+ * gated work. Replaces the `assertReady(...)` (check, at the TOP of the
+ * handler) + `setCooldown(...)` (set, at the very END, AFTER combat/reward
+ * logic) pattern that hunt/quest/arena/tower used to use.
+ *
+ * Audit (backend round): with check-then-act split across the whole
+ * handler, two concurrent requests (double-click, a client retry racing
+ * the original, or a replayed request) both read the cooldown row before
+ * either had written it, both ran the full combat simulation, and both
+ * granted XP/gold/drops/bounty/faction/season rewards in full — an
+ * unbounded reward-duplication window limited only by network latency,
+ * not by the intended 3–10 min cooldown. `claimCooldown` collapses
+ * check+set into a single CAS UPDATE (gated on `next_available_at <= now`,
+ * same shape as the wheel/camp/market fixes) so only ONE of two racing
+ * requests can claim the slot; the loser gets the same 429/COOLDOWN error
+ * `assertReady` used to throw — before any reward logic runs.
+ */
+export function claimCooldown(characterId: number, kind: ActionKind): number {
+  const db = getDb();
+  const now = Date.now();
+  const reductionPct = mountReductionPct(characterId);
+  const [minMs, maxMs] = COOLDOWN_RANGES_MS[kind];
+  const base = minMs + Math.floor(Math.random() * (maxMs - minMs + 1));
+  const reduced = Math.round(base * (1 - reductionPct / 100));
+  const final = Math.max(60_000, reduced); // никога под 1 мин
+  const next = now + final;
+  const claimed = db.transaction(() => {
+    db.prepare(
+      `INSERT INTO character_cooldowns (character_id, action_kind, next_available_at)
+       VALUES (?, ?, 0) ON CONFLICT(character_id, action_kind) DO NOTHING`,
+    ).run(characterId, kind);
+    const upd = db
+      .prepare(
+        `UPDATE character_cooldowns SET next_available_at = ?
+         WHERE character_id = ? AND action_kind = ? AND next_available_at <= ?`,
+      )
+      .run(next, characterId, kind, now);
+    return upd.changes === 1;
+  }).immediate();
+  if (!claimed) {
+    const row = db
+      .prepare('SELECT next_available_at FROM character_cooldowns WHERE character_id = ? AND action_kind = ?')
+      .get(characterId, kind) as { next_available_at: number } | undefined;
+    const remaining = Math.max(0, (row?.next_available_at || now) - now);
+    const err: any = new Error(`Still ${formatRemaining(remaining)} on the ${kind} cooldown.`);
+    err.cooldownMs = remaining;
+    err.code = 'COOLDOWN';
+    throw err;
+  }
+  return final;
+}
+
 /** Convenience snapshot of all cooldowns for the client status panel. */
 export function loadCooldowns(characterId: number): Record<ActionKind, number> {
   const rows = getDb()

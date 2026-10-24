@@ -16,13 +16,13 @@ export function PageHero({
 }) {
   return (
     <div className="page-hero relative overflow-hidden border-b border-slate-200 bg-gradient-to-br from-brand-50 via-white to-white">
-      {/* Герб като дискретен воден знак */}
+      {/* Герб като дискретен воден знак (с прозрачен фон — без кутия). */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/brand/bobov-dol-grb.png"
+        src="/brand/bobov-dol-grb-mark.png"
         alt=""
         aria-hidden
-        className="pointer-events-none absolute -right-4 -top-6 hidden h-44 w-auto opacity-[0.06] sm:block"
+        className="pointer-events-none absolute -right-8 top-1/2 hidden h-48 w-auto -translate-y-1/2 opacity-[0.07] sm:block"
         width={140}
         height={200}
       />

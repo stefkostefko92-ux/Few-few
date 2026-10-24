@@ -69,6 +69,16 @@ services:
       SMTP_FROM: ${SMTP_FROM:-no-reply@carbonstealth.eu}
       MUNICIPALITY_NEWS_URL: ${MUNICIPALITY_NEWS_URL:-https://bobovdol.egov.bg/wps/portal/municipality-bobovdol/actual/news}
       INGEST_TOKEN: ${INGEST_TOKEN:-}
+      # Шаблон за адреса на новина от общината; празно = вграденият (DEPLOY.md §9.1).
+      MUNICIPALITY_NEWS_LINK_PATTERN: ${MUNICIPALITY_NEWS_LINK_PATTERN:-}
+      # Имейл при остарели данни (/api/health/freshness?notify=1); празно = ADMIN_EMAIL.
+      FRESHNESS_ALERT_EMAIL: ${FRESHNESS_ALERT_EMAIL:-}
+      # Автоматичен внос на прекъсванията от ЕРМ Запад: само „1“ го включва.
+      ERM_INGEST_ENABLED: ${ERM_INGEST_ENABLED:-0}
+      # Известия (web push). Празно = изключени. Ключове: npx web-push generate-vapid-keys
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-}
       # Папка за качените снимки (галерия). Пази се в постоянен том.
       UPLOAD_DIR: /app/uploads
     volumes:

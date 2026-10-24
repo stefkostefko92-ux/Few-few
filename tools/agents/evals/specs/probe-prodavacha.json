@@ -1,0 +1,14 @@
+{
+  "id": "probe-prodavacha",
+  "agent": "prodavacha",
+  "kind": "probe",
+  "task": "Прегледай checkout кода в tools/agents/evals/fixtures/probe-prodavacha.md (измислен вход за проверка — не търси файла в panev/). Кои са проблемите и как се поправят?",
+  "expect": [
+    { "any": ["req.body.amount", "сумата от клиента", "сума от клиента", "клиентът определя", "клиентът задава"], "label": "сумата идва от клиента" },
+    { "any": ["/(success_url|premium\\/activate)[\\s\\S]{0,400}(webhook|не дава|само UX|никога|всеки може)/i"], "label": "правата през redirect, не през webhook" },
+    { "any": ["constructEvent", "stripe-signature", "подпис"], "label": "webhook без проверка на подписа" },
+    { "any": ["express.raw", "raw body", "суровото тяло", "сурово тяло", "raw-body"], "label": "JSON парсер преди суровото тяло" },
+    { "any": ["идемпотент", "event.id", "Idempotency"], "label": "идемпотентност" },
+    { "none": ["кодът е наред", "няма проблеми"], "label": "капан: пропуснат дефект" }
+  ]
+}

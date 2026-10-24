@@ -7,15 +7,27 @@ import { PageHero, EmptyState } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, itemListLd } from "@/lib/seo";
 import { SERVICE_CATEGORY_LABELS, labelFor } from "@/lib/categories";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { PhoneReportButton, TelLink } from "@/components/PhoneReportButton";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = buildMetadata({
-  title: "Услуги и важни телефони в Бобов дол",
-  description:
-    "Указател с важни местни телефони и услуги в Бобов дол: здраве, администрация, комунални услуги, транспорт, социални и спешни телефони.",
-  path: "/uslugi",
-});
+export const metadata: Metadata = {
+  ...buildMetadata({
+    title: "Услуги и важни телефони в Бобов дол",
+    description:
+      "Указател с важни местни телефони и услуги в Бобов дол: здраве, администрация, комунални услуги, транспорт, социални и спешни телефони.",
+    path: "/uslugi",
+  }),
+  keywords: [
+    "телефони Бобов дол",
+    "услуги Бобов дол",
+    "важни телефони",
+    "аптека Бобов дол",
+    "община Бобов дол телефон",
+    "Carbon Stealth",
+  ],
+};
 
 export default async function UslugiPage({
   searchParams,
@@ -109,12 +121,13 @@ export default async function UslugiPage({
                 )}
                 <OpenNowBadge hours={s.hours} className="mt-1.5" />
                 {s.phone && (
-                  <a
-                    href={`tel:${s.phone}`}
-                    className="btn-secondary mt-3 w-full"
-                  >
-                    <Phone className="h-4 w-4" aria-hidden /> {s.phone}
-                  </a>
+                  <>
+                    <TelLink phone={s.phone} className="btn-secondary mt-3 w-full">
+                      <Phone className="h-4 w-4" aria-hidden /> {s.phone}
+                    </TelLink>
+                    <VerifiedBadge at={s.verifiedAt} source={s.verifiedSource} className="mt-2" />
+                    <PhoneReportButton serviceId={s.id} serviceName={s.name} className="mt-1" />
+                  </>
                 )}
               </div>
             ))}

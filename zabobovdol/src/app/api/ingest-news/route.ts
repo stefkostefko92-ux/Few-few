@@ -17,11 +17,15 @@ function safeEqual(a: string, b: string): boolean {
 // Предпочитан начин (токенът НЕ влиза в логовете на сървъра):
 //   curl -H "Authorization: Bearer ТАЙНА" https://.../api/ingest-news
 // Поддържа се и ?token= за съвместимост, но header-ът е по-сигурен.
-// Новините се внасят като ЧЕРНОВИ — публикуването остава ръчно.
+// Новините се внасят като ЧЕРНОВИ — публикуването остава ръчно. Отговорът
+// (found/created/skipped/pending/withoutDate/error) се пише в лога на cron-а —
+// `pending` е колко внесени новини чакат одобрение в админ панела.
+const NO_STORE = { "cache-control": "no-store" };
+
 async function handle(req: Request) {
   const token = process.env.INGEST_TOKEN;
   if (!token) {
-    return NextResponse.json({ error: "Неоторизиран достъп" }, { status: 401 });
+    return NextResponse.json({ error: "Неоторизиран достъп" }, { status: 401, headers: NO_STORE });
   }
   const auth = req.headers.get("authorization") ?? "";
   const bearer = auth.toLowerCase().startsWith("bearer ")
@@ -29,10 +33,10 @@ async function handle(req: Request) {
     : "";
   const provided = bearer || new URL(req.url).searchParams.get("token") || "";
   if (!provided || !safeEqual(provided, token)) {
-    return NextResponse.json({ error: "Неоторизиран достъп" }, { status: 401 });
+    return NextResponse.json({ error: "Неоторизиран достъп" }, { status: 401, headers: NO_STORE });
   }
   const result = await ingestMunicipalityNews(15);
-  return NextResponse.json(result);
+  return NextResponse.json(result, { headers: NO_STORE });
 }
 
 export async function GET(req: Request) {
