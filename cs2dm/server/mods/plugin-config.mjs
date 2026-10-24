@@ -48,6 +48,8 @@ export function buildConfig(env) {
     PublicSlots: intIn(env.CS2DM_PUBLIC_SLOTS, 'CS2DM_PUBLIC_SLOTS', 0, 1, 64),
     FlushSeconds: 10,
     AdvertSeconds: intIn(env.CS2DM_ADVERT_SECONDS, 'CS2DM_ADVERT_SECONDS', 240, 60, 3600),
+    // Безкраен резерв на патроните; изключва се само изрично с CS2DM_INFINITE_AMMO=0.
+    InfiniteReserveAmmo: env.CS2DM_INFINITE_AMMO !== '0',
     BannerModels: parseBannerModels(env.CS2DM_BANNER_MODELS),
     ConfigVersion: 1,
   };

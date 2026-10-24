@@ -67,7 +67,7 @@
     "VIP Flag": "@css/vip",
     "Non VIP Players": {
       "Respawn Time": 1.5,
-      "Spawn Protection Time": 1.1,
+      "Spawn Protection Time": 5,
       "Refill Ammo Kill": false,
       "Refill Ammo Headshot": false,
       "Refill Ammo in All Weapons": false,
@@ -76,7 +76,7 @@
     },
     "VIP Players": {
       "Respawn Time": 1.5,
-      "Spawn Protection Time": 1.1,
+      "Spawn Protection Time": 5,
       "Refill Ammo Kill": false,
       "Refill Ammo Headshot": false,
       "Refill Ammo in All Weapons": false,

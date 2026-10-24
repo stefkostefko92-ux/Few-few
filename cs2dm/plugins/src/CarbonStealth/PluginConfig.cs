@@ -28,6 +28,9 @@ public sealed class PluginConfig : BasePluginConfig
     /// <summary>Реклама в чата на всеки N секунди (0 = изключено, иначе 60–3600).</summary>
     [JsonPropertyName("AdvertSeconds")] public int AdvertSeconds { get; set; } = 240;
 
+    /// <summary>Безкраен резерв на патроните (допълва се при всяко презареждане).</summary>
+    [JsonPropertyName("InfiniteReserveAmmo")] public bool InfiniteReserveAmmo { get; set; } = true;
+
     /// <summary>
     /// Банери-картинки от Workshop addon-а: ключ → модел („models/carbonstealth/….vmdl“).
     /// Празно = само текстовите банери. Addon-ът се зарежда от MultiAddonManager (CS2_WORKSHOP_ADDONS).

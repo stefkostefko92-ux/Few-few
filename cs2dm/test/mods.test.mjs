@@ -150,3 +150,10 @@ test("зареждането на плъгин се доказва от лога
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("Deathmatch: 5 секунди защита при респаун за всички (и във ваниловия cfg)", () => {
+  const players = dm["Players Gameplay Settings"];
+  assert.equal(players["Non VIP Players"]["Spawn Protection Time"], 5);
+  assert.equal(players["VIP Players"]["Spawn Protection Time"], 5);
+  assert.match(read("server/cfg/gamemode_deathmatch_server.cfg"), /^mp_respawn_immunitytime 5$/m);
+});

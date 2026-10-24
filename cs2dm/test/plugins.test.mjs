@@ -18,6 +18,8 @@ test("plugin-config: полетата съвпадат с PluginConfig.cs", () =
   for (const key of Object.keys(cfg)) assert.ok(declared.includes(key) || key === "ConfigVersion", `излишно ${key}`);
   assert.equal(cfg.SiteUrl, "cs2.carbonstealth.eu");
   assert.equal(cfg.AdvertSeconds, 240);
+  assert.equal(cfg.InfiniteReserveAmmo, true);
+  assert.equal(buildConfig({ ...env, CS2DM_INFINITE_AMMO: "0" }).InfiniteReserveAmmo, false);
   assert.equal(cfg.PublicSlots, 0);
 });
 
