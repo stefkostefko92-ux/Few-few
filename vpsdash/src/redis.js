@@ -9,11 +9,44 @@
 //
 // Втората причина: `dump.rdb`/AOF живее в Docker volume, който досега не влизаше
 // в нито един бекъп.
+import fs from 'node:fs';
 import { run } from './exec.js';
 import { assertDockerName } from './docker.js';
 
 export function assertName(name) {
   return assertDockerName(name, 'контейнер');
+}
+
+// Redis като системна услуга (apt redis-server), не в Docker. Табът виждаше само
+// контейнерите — на машина с Redis от пакет секцията мълчеше, а алармите за
+// изхвърлени ключове и провалена снимка не стигаха до него. Името е `host:<порт>`.
+const HOST_RX = /^host:(\d{2,5})$/;
+export const hostPort = (name) => {
+  const m = HOST_RX.exec(String(name || ''));
+  return m && Number(m[1]) > 0 && Number(m[1]) < 65536 ? Number(m[1]) : null;
+};
+
+// `ss -tlnpH` → портовете, на които слуша процес redis-server/valkey-server.
+export function parseHostRedis(ssOut) {
+  const ports = new Set();
+  for (const line of String(ssOut || '').split('\n')) {
+    if (!/"(redis|valkey)-server"/.test(line)) continue;
+    const m = /\s(\S+):(\d+)\s/.exec(line);
+    if (m) ports.add(Number(m[2]));
+  }
+  return [...ports].sort((a, b) => a - b);
+}
+
+// Паролата (requirepass) се чете от конфига и минава през REDISCLI_AUTH в средата —
+// НИКОГА като `-a` аргумент: той се вижда в `ps` от всеки потребител на машината.
+function hostAuthEnv() {
+  try {
+    const conf = fs.readFileSync('/etc/redis/redis.conf', 'utf8');
+    const m = /^\s*requirepass\s+("?)(.+?)\1\s*$/m.exec(conf);
+    return m ? { REDISCLI_AUTH: m[2] } : {};
+  } catch {
+    return {};
+  }
 }
 
 // `redis-cli INFO` връща секции с „ключ:стойност" и коментари с „#".
@@ -82,14 +115,26 @@ export function summarize(info) {
 
 // Открива Redis контейнерите (по образ) + volume-а, в който пази данните си.
 export async function discover() {
-  const ps = await run('docker', ['ps', '--format', '{{.Names}}\t{{.Image}}\t{{.Status}}'], { timeout: 10000 });
-  if (!ps.ok) return { available: false, error: (ps.stderr || 'docker недостъпен').trim().slice(0, 200), instances: [] };
   const found = [];
-  for (const line of ps.stdout.split('\n')) {
-    const [name, image, status] = line.split('\t');
-    if (!name || !/redis|valkey/i.test(image || '')) continue;
-    found.push({ name, image, status });
+  const [ps, ss] = await Promise.all([
+    run('docker', ['ps', '--format', '{{.Names}}\t{{.Image}}\t{{.Status}}'], { timeout: 10000 }),
+    run('ss', ['-tlnpH'], { timeout: 8000 }),
+  ]);
+  if (ss.ok) {
+    for (const port of parseHostRedis(ss.stdout)) {
+      found.push({ name: `host:${port}`, image: 'redis-server (системна услуга)', status: `слуша на ${port}`, host: true });
+    }
   }
+  if (ps.ok) {
+    for (const line of ps.stdout.split('\n')) {
+      const [name, image, status] = line.split('\t');
+      if (!name || !/redis|valkey/i.test(image || '')) continue;
+      found.push({ name, image, status });
+    }
+  }
+  // Без docker пак има какво да се покаже, ако Redis е от пакет — „docker
+  // недостъпен" не бива да скрива системния Redis.
+  if (!ps.ok && !found.length) return { available: false, error: (ps.stderr || 'docker недостъпен').trim().slice(0, 200), instances: [] };
   return { available: true, instances: found };
 }
 
@@ -105,6 +150,15 @@ export async function dataVolume(container) {
 }
 
 export async function inspect(container) {
+  const port = hostPort(container);
+  if (port) {
+    const r = await run('redis-cli', ['-h', '127.0.0.1', '-p', String(port), 'INFO'], { timeout: 10000, env: hostAuthEnv() });
+    const err = (r.stderr || r.stdout || '').trim();
+    if (!r.ok || /NOAUTH|WRONGPASS/.test(err)) {
+      return { name: container, ok: false, error: /NOAUTH|WRONGPASS/.test(err) ? 'иска парола, а requirepass в /etc/redis/redis.conf не съвпада' : (err || 'redis-cli се провали').slice(0, 200) };
+    }
+    return { name: container, ok: true, ...summarize(parseInfo(r.stdout)), volume: null };
+  }
   const c = assertName(container);
   const r = await run('docker', ['exec', c, 'redis-cli', 'INFO'], { timeout: 10000 });
   if (!r.ok) return { name: c, ok: false, error: (r.stderr || 'redis-cli се провали').trim().slice(0, 200) };
@@ -198,6 +252,17 @@ export function evictionChecks(prev, now, { memPct = 90 } = {}) {
 // диска), после архивиране на volume-а. Tar върху жив AOF без BGSAVE обикновено
 // се възстановява, но „обикновено" не е дума за бекъп.
 export function saveSpec(container) {
+  const port = hostPort(container);
+  if (port) {
+    return {
+      title: `Redis BGSAVE: ${container}`,
+      cmd: 'redis-cli',
+      args: ['-h', '127.0.0.1', '-p', String(port), 'BGSAVE'],
+      env: hostAuthEnv(),
+      exclusive: 'backup',
+      timeoutMs: 60000,
+    };
+  }
   const c = assertName(container);
   return {
     title: `Redis BGSAVE: ${c}`,

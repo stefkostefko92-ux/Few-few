@@ -174,16 +174,45 @@ const audited = (r) =>
 // включително сметнато и подминато `ok` — не се брои за потвърждение.
 const GATE_RX = /\)\)+\s*return|\bif\s*\(\s*!?\s*ok\b|\bok\s*&&|\)\s*&&\s*(runJob|api|streamJob)/;
 const confirmed = new Set();
-for (const m of app.matchAll(/confirmDanger\(/g)) {
+const ROUTE_RX = /(?:api|runJob|streamJob)\(\s*`?'?\/([\w/:${}.-]+)'?`?/g;
+// Помощни функции от най-горно ниво → маршрутите, които викат. Диалогът често
+// стои в обработчика, а заявката — в помощник (`if (ok) power('poweroff')`).
+// Без проследяването одитът или пропуска такова потвърждение, или (по-лошо) го
+// „намира" по случайна близост в съседния код.
+const helperRoutes = new Map();
+for (const f of app.matchAll(/\n(?:async )?function (\w+)\(/g)) {
+  const rest = app.slice(f.index + 1);
+  const end = rest.slice(1).search(/\n(?:async )?function /);
+  const body = end < 0 ? rest : rest.slice(0, end + 1);
+  const routes = [...body.matchAll(ROUTE_RX)].map((c) => c[1]);
+  if (routes.length) helperRoutes.set(f[1], routes);
+}
+// Обвивки над диалога (`confirmStop`) се броят като самия диалог.
+const DIALOG_RX = /\b(?:confirmDanger|confirmStop)\(/g;
+for (const m of app.matchAll(DIALOG_RX)) {
+  // Тялото на самата обвивка също съдържа confirmDanger(, но прозорецът му спира
+  // в края на функцията — маршрут вътре няма, значи нищо не се отчита погрешно.
   // Прозорецът започва МАЛКО ПРЕДИ диалога: при формата
   // `if (!(await confirmDanger({…}))) return;` решаващата конструкция стои от
   // ЛЯВАТА страна и иначе не се вижда.
   const before = app.slice(Math.max(0, m.index - 40), m.index);
-  const win = app.slice(m.index, m.index + 2600);
-  for (const c of win.matchAll(/(?:api|runJob|streamJob)\(\s*`?'?\/([\w/:${}.-]+)'?`?/g)) {
+  // Прозорецът СПИРА на следващата функция от най-горно ниво: иначе диалогът на
+  // един таб „покриваше" маршрут в СЪСЕДНИЯ. Точно така разблокирането във
+  // fail2ban минаваше одита без нито едно потвърждение — пред него стоеше
+  // диалогът на „Целост на /etc"; излезе наяве, когато целостта порасна.
+  const fnEnd = app.slice(m.index).search(/\n(?:async )?function /);
+  const win = app.slice(m.index, m.index + Math.min(2600, fnEnd < 0 ? 2600 : fnEnd));
+  for (const c of win.matchAll(ROUTE_RX)) {
     const between = before + win.slice(0, c.index);
     if (!GATE_RX.test(between)) continue; // диалогът се показва, но нищо не спира
     confirmed.add('/api/' + c[1].replace(/\$\{[^}]+\}/g, ':id'));
+  }
+  for (const h of win.matchAll(/\b(\w+)\(/g)) {
+    const routes = helperRoutes.get(h[1]);
+    if (!routes) continue;
+    const between = before + win.slice(0, h.index);
+    if (!/\bif\s*\(\s*ok\s*\)|\bok\s*&&|\)\)+\s*return|if\s*\(\s*!\s*ok\s*\)\s*return/.test(between)) continue;
+    for (const r of routes) confirmed.add('/api/' + r.replace(/\$\{[^}]+\}/g, ':id'));
   }
 }
 // `confirm(...)` на браузъра също е потвърждение — по-слабо, но е. Двете форми:
@@ -193,7 +222,8 @@ for (const m of app.matchAll(/confirmDanger\(/g)) {
 // точно толкова, колкото пропуснатата истинска.
 for (const m of app.matchAll(/confirm\(/g)) {
   if (app.slice(Math.max(0, m.index - 8), m.index).includes('Danger')) continue; // confirmDanger се брои другаде
-  const win = app.slice(m.index, m.index + 900);
+  const fnEnd = app.slice(m.index).search(/\n(?:async )?function /);
+  const win = app.slice(m.index, m.index + Math.min(900, fnEnd < 0 ? 900 : fnEnd));
   for (const c of win.matchAll(/(?:api|runJob|streamJob)\(\s*`?'?\/([\w/:${}.-]+)'?`?/g)) {
     confirmed.add('/api/' + c[1].replace(/\$\{[^}]+\}/g, ':id'));
   }

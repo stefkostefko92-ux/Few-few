@@ -4,6 +4,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Button, Field } from "../../ui";
 import { ApiError, api } from "../../lib/api";
 import { AuthShell } from "./AuthShell";
+import { fieldErrorsFrom } from "./authErrors";
 
 /** Landing target for the reset email link (/reset-password?token=…). */
 export function ResetPassword() {
@@ -14,18 +15,31 @@ export function ResetPassword() {
   const [password, setPassword] = useState("");
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | undefined>(undefined);
   const [busy, setBusy] = useState(false);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setPasswordError(undefined);
     setBusy(true);
     try {
       await api.resetPassword({ token, password });
       setDone(true);
     } catch (err) {
       const code = err instanceof ApiError ? err.code : "unknown";
-      setError(code === "invalid_token" ? t("reset.invalid") : t("auth.errorGeneric"));
+      if (err instanceof ApiError && code === "validation_error") {
+        const fields = fieldErrorsFrom(err, t);
+        // Грешка по полето „парола“ → под полето; иначе (напр. повреден токен) → линкът е невалиден.
+        if (fields.password) setPasswordError(fields.password);
+        else setError(t("reset.invalid"));
+      } else if (code === "invalid_token") {
+        setError(t("reset.invalid"));
+      } else if (code === "rate_limited") {
+        setError(t("errors.rate_limited"));
+      } else {
+        setError(t("auth.errorGeneric"));
+      }
     } finally {
       setBusy(false);
     }
@@ -68,6 +82,8 @@ export function ResetPassword() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="new-password"
+            hint={t("auth.rulesPassword")}
+            error={passwordError}
             required
           />
           {error ? (

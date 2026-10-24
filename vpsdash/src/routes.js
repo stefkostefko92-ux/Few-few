@@ -83,7 +83,7 @@ const cookieName = (c) => (c?.trustProxy ? COOKIE_HOST : COOKIE_BASE);
 // Версията се показва в подножието на панела и се праща на съседа при `/api/ping`.
 // 1.0.0: всичките 37 секции работят, гейтът е 14 проверки, а шестте кръга одит
 // (числа · необратими действия · известия · съсед · обеми · документи) са затворени.
-export const VERSION = '1.14.0';
+export const VERSION = '1.16.1';
 
 // Маршрути, които peer НИКОГА не пипа при обхват „read" (дори с GET) — това са
 // входовете, които биха дали контрол над машината на компрометиран съсед.
@@ -479,7 +479,7 @@ export function buildRouter(ctx) {
   r.get('/api/ping', (req, res) => {
     const who = auth(req);
     if (!who) return sendError(res, 401, 'unauthorized');
-    sendJson(res, 200, { ok: true, nodeId: cfg.nodeId, nodeName: cfg.nodeName, version: VERSION });
+    sendJson(res, 200, { ok: true, nodeId: cfg.nodeId, nodeName: cfg.nodeName, version: VERSION, instance: nodes.INSTANCE });
   });
 
   r.post('/api/login', async (req, res) => {
@@ -2443,15 +2443,44 @@ export function buildRouter(ctx) {
   // (`PEER_NEVER`).
   r.get('/api/settings/peer', guard(J(() => ({
     scope: cfg.peerScope === 'full' ? 'full' : 'read',
-    peers: (cfg.peers || []).map((p) => ({ id: p.id, name: p.name })),
+    peers: (cfg.peers || []).map((p) => {
+      let host = null;
+      try {
+        host = new URL(p.url).host;
+      } catch {
+        /* невалиден адрес — показва се като липсващ */
+      }
+      return { id: p.id, name: p.name, host };
+    }),
     tokenSet: Boolean(cfg.peerToken),
   }))));
+  // Три отделни действия, по ЕДНО на заявка — одитът казва точно кое:
+  //   {scope}       колко се доверява този възел на съседа;
+  //   {removePeer}  махане на съсед от НАШИЯ списък (ние спираме да го викаме,
+  //                 да му пращаме бекъп и одит). Нужно, когато машината я няма —
+  //                 иначе стар DNS запис може да сочи към чужд или към нас самите;
+  //   {inbound:'off'} изтрива входящия жетон: никой не вика този панел с Bearer.
+  //                 Връща и обхвата на „read" — пълен контрол без жетон е празно
+  //                 обещание, което после се включва тихо с нов жетон.
   r.post(
     '/api/settings/peer',
     guard(
       J(async (req) => {
         humanOnly(req);
         const b = await readJson(req);
+        if (typeof b.removePeer === 'string') {
+          const list = cfg.peers || [];
+          if (!list.some((p) => p.id === b.removePeer)) throw Object.assign(new Error('Няма такъв съсед.'), { status: 404 });
+          const rest = list.filter((p) => p.id !== b.removePeer);
+          saveConfig(cfg, { peers: rest });
+          audit.log({ action: 'settings.peerRemove', peer: b.removePeer, left: rest.length, user: req.user });
+          return { ok: true, peers: rest.length };
+        }
+        if (b.inbound === 'off') {
+          saveConfig(cfg, { peerToken: '', peerScope: 'read' });
+          audit.log({ action: 'settings.peerInboundOff', user: req.user });
+          return { ok: true, tokenSet: false, scope: 'read' };
+        }
         if (b.scope !== 'read' && b.scope !== 'full') {
           throw Object.assign(new Error('Обхватът е „read" или „full".'), { status: 400 });
         }

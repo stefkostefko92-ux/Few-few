@@ -1,10 +1,10 @@
 {
   "extName": {
-    "message": "Supreme AdBlock",
+    "message": "Supreme AdBlock – Werbeblocker",
     "description": "Extension name."
   },
   "extDescription": {
-    "message": "Blockiert Werbung überall: YouTube-Videoanzeigen, Banner, Pop-ups, Tracker, Cookie-Banner und Anti-Adblock-Sperren.",
+    "message": "Werbeblocker für YouTube und das Web: Videoanzeigen, Banner, Pop-ups, Tracker, Cookie-Banner und Anti-Adblock-Sperren.",
     "description": "Extension description."
   },
   "byCarbon": {
@@ -649,6 +649,12 @@
     "message": "Klicken Sie neben der Adressleiste auf das Puzzleteil-Symbol und heften Sie Supreme AdBlock an. Dann zeigt Ihnen ein Klick, was auf der Seite blockiert wurde.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "An die Symbolleiste angeheftet"
+  },
+  "welPinnedText": {
+    "message": "Ein Klick auf das Symbol zeigt Ihnen, was auf der Seite blockiert wurde."
+  },
   "welBrokenTitle": {
     "message": "Wenn eine Website fehlerhaft aussieht",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -795,5 +801,62 @@
   },
   "opt_h_capacity": {
     "message": "Regelkapazität"
+  },
+  "helpTitle": {
+    "message": "Websites gehen kaputt?"
+  },
+  "helpText": {
+    "message": "Eine Website nach der anderen genügt: Werbung dort für eine Stunde erlauben oder die Element-Ausblendung nur dort ausschalten. Wenn Sie es uns melden, beheben wir es für alle."
+  },
+  "helpFix": {
+    "message": "Diese Website beheben"
+  },
+  "cardNever": {
+    "message": "Nicht mehr anzeigen"
+  },
+  "cardClose": {
+    "message": "Schließen"
+  },
+  "receiptTitle": {
+    "message": "Ihre letzten 30 Tage"
+  },
+  "receiptText": {
+    "message": "$1 Anfragen blockiert · $2 Cookie-Banner beantwortet · etwa $3 Daten gespart (geschätzt)"
+  },
+  "share": {
+    "message": "Teilen"
+  },
+  "shareTitle": {
+    "message": "Link zu Supreme AdBlock im Chrome Web Store kopieren"
+  },
+  "shareCopied": {
+    "message": "Link kopiert"
+  },
+  "rep_fixed_q": {
+    "message": "Funktioniert die Website jetzt?"
+  },
+  "rep_fixed_yes": {
+    "message": "Ja, es geht"
+  },
+  "rep_fixed_no": {
+    "message": "Nein, noch kaputt"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Schön. Wenn Sie es uns unten melden, steht im Bericht, welche Lösung geholfen hat – so beheben wir die Website für alle."
+  },
+  "rep_fixed_next": {
+    "message": "Versuchen Sie die nächste: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Dann melden Sie es uns bitte unten – wir sehen uns die Website an."
+  },
+  "rep_webmail": {
+    "message": "Kein E-Mail-Programm? Kopieren Sie den Bericht und senden Sie ihn über Ihr Webmail an $1."
+  },
+  "blk_mistake": {
+    "message": "Halten Sie das für einen Fehler? Melden Sie es uns"
+  },
+  "welTest": {
+    "message": "Auf einer Testseite sehen, wie es funktioniert"
   }
 }

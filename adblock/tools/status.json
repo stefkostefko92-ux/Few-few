@@ -1,0 +1,4 @@
+{
+  "_comment": "Ръчният ред на /status (tools/status_page.mjs). youtubeCheckedAt = кога човек е пуснал YouTube с последната версия и рекламите не са тръгнали (ISO UTC, напр. 2026-10-23T18:00:00Z); null = няма запис. След 48 ч страницата сама го показва като непроверено.",
+  "youtubeCheckedAt": null
+}

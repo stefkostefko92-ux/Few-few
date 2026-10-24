@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Sekat semua iklan: video YouTube, sepanduk, pop-up, penjejak, gesaan kuki, dinding anti-adblock."
+    "message": "Penyekat iklan untuk YouTube dan web: iklan video, sepanduk, tetingkap timbul, penjejak, sepanduk kuki dan dinding anti-adblock."
   },
   "byCarbon": {
     "message": "by Carbon Stealth"
@@ -647,6 +647,12 @@
     "message": "Klik ikon kepingan teka-teki di sebelah bar alamat dan semat Supreme AdBlock. Selepas itu, satu klik menunjukkan apa yang disekat pada halaman.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Sambungan telah disemat pada bar alat"
+  },
+  "welPinnedText": {
+    "message": "Satu klik pada ikonnya menunjukkan apa yang disekat pada halaman."
+  },
   "welBrokenTitle": {
     "message": "Jika tapak kelihatan rosak",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -793,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Kapasiti peraturan"
+  },
+  "helpTitle": {
+    "message": "Tapak rosak?"
+  },
+  "helpText": {
+    "message": "Satu tapak pada satu masa sudah memadai: benarkan iklannya selama 1 jam, atau matikan penyembunyian elemen di situ sahaja. Jika anda beritahu kami, kami akan membaikinya untuk semua orang."
+  },
+  "helpFix": {
+    "message": "Baiki tapak ini"
+  },
+  "cardNever": {
+    "message": "Jangan tunjukkan lagi"
+  },
+  "cardClose": {
+    "message": "Tutup"
+  },
+  "receiptTitle": {
+    "message": "30 hari lepas anda"
+  },
+  "receiptText": {
+    "message": "$1 permintaan disekat · $2 sepanduk kuki dijawab · kira-kira $3 data dijimatkan (anggaran)"
+  },
+  "share": {
+    "message": "Kongsi"
+  },
+  "shareTitle": {
+    "message": "Salin pautan ke Supreme AdBlock di Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Pautan disalin"
+  },
+  "rep_fixed_q": {
+    "message": "Adakah tapak sudah dibaiki?"
+  },
+  "rep_fixed_yes": {
+    "message": "Ya, ia berfungsi"
+  },
+  "rep_fixed_no": {
+    "message": "Tidak, masih rosak"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Baguslah ia berfungsi. Jika anda beritahu kami di bawah, laporan akan menyatakan pembaikan mana yang berkesan, supaya kami dapat membaiki tapak itu untuk semua orang."
+  },
+  "rep_fixed_next": {
+    "message": "Cuba yang seterusnya: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Jika begitu, sila beritahu kami di bawah: kami akan meneliti tapak itu."
+  },
+  "rep_webmail": {
+    "message": "Tiada aplikasi e-mel? Salin laporan dan hantarkannya ke $1 daripada e-mel web anda."
+  },
+  "blk_mistake": {
+    "message": "Fikir ini satu kesilapan? Beritahu kami"
+  },
+  "welTest": {
+    "message": "Lihat ia berfungsi pada halaman ujian"
   }
 }

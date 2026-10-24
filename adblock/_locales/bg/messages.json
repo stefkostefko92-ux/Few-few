@@ -1,10 +1,10 @@
 {
   "extName": {
-    "message": "Supreme AdBlock",
+    "message": "Supreme AdBlock – блокер на реклами",
     "description": "Extension name."
   },
   "extDescription": {
-    "message": "Блокира реклами навсякъде (и в YouTube), банери, изскачащи прозорци, тракери, подкани за бисквитки и анти-адблок стени.",
+    "message": "Блокер на реклами за YouTube и уеба: видеореклами, банери, изскачащи прозорци, тракери, банери за бисквитки и анти-адблок стени.",
     "description": "Extension description."
   },
   "byCarbon": {
@@ -649,6 +649,12 @@
     "message": "Кликнете иконата с пъзел до адресната лента и закачете Supreme AdBlock. После с едно кликване виждате какво е блокирано на страницата.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Закачен е в лентата с инструменти"
+  },
+  "welPinnedText": {
+    "message": "С едно кликване върху иконата му виждате какво е блокирано на страницата."
+  },
   "welBrokenTitle": {
     "message": "Ако сайт изглежда счупен",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -795,5 +801,62 @@
   },
   "opt_h_capacity": {
     "message": "Капацитет на правилата"
+  },
+  "helpTitle": {
+    "message": "Сайтовете се чупят?"
+  },
+  "helpText": {
+    "message": "Достатъчно е за един сайт: разрешете рекламите му за час или изключете скриването на елементи само там. Като ни кажете, го поправяме за всички."
+  },
+  "helpFix": {
+    "message": "Поправи този сайт"
+  },
+  "cardNever": {
+    "message": "Не показвай повече"
+  },
+  "cardClose": {
+    "message": "Затвори"
+  },
+  "receiptTitle": {
+    "message": "Последните ви 30 дни"
+  },
+  "receiptText": {
+    "message": "$1 блокирани заявки · $2 отговорени банера за бисквитки · около $3 спестени данни (приблизително)"
+  },
+  "share": {
+    "message": "Сподели"
+  },
+  "shareTitle": {
+    "message": "Копирай линка към Supreme AdBlock в Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Линкът е копиран"
+  },
+  "rep_fixed_q": {
+    "message": "Поправи ли се сайтът?"
+  },
+  "rep_fixed_yes": {
+    "message": "Да, работи"
+  },
+  "rep_fixed_no": {
+    "message": "Не, още е счупен"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Чудесно. Ако ни кажете отдолу, докладът ще покаже коя поправка е помогнала, за да оправим сайта за всички."
+  },
+  "rep_fixed_next": {
+    "message": "Опитайте следващата: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Тогава, моля, кажете ни отдолу: ще погледнем сайта."
+  },
+  "rep_webmail": {
+    "message": "Нямате пощенска програма? Копирайте доклада и го изпратете на $1 от уеб пощата си."
+  },
+  "blk_mistake": {
+    "message": "Мислите, че е грешка? Кажете ни"
+  },
+  "welTest": {
+    "message": "Вижте как работи на тестова страница"
   }
 }

@@ -70,10 +70,25 @@ export function NotificationsBell() {
     }
   }
 
+  const str = (v: unknown): string | null => (typeof v === "string" && v.trim() ? v : null);
+
   function label(n: NotificationItem): string {
     if (n.type === "friend_request") return t("notif.friendRequest");
     if (n.type === "friend_accepted") return t("notif.friendAccepted");
+    if (n.type === "achievement") return t("notif.achievement");
+    if (n.data.kind === "admin_message") return str(n.data.title) ?? t("notif.system");
+    if (n.data.kind === "payment_failed") return t("notif.paymentFailed");
     return t("notif.system");
+  }
+
+  /** Втори ред: кое е постижението / текстът на съобщението от екипа. */
+  function detail(n: NotificationItem): string | null {
+    if (n.type === "achievement") {
+      const key = str(n.data.key);
+      return key ? t(`achv.${key}.title`, { defaultValue: str(n.data.title) ?? key }) : str(n.data.title);
+    }
+    if (n.data.kind === "admin_message") return str(n.data.body);
+    return null;
   }
 
   return (
@@ -107,8 +122,11 @@ export function NotificationsBell() {
                   }`}
                 >
                   {!n.readAt ? <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-brass-300" /> : <span className="mt-1.5 size-1.5 shrink-0" />}
-                  <div>
+                  <div className="min-w-0">
                     <div>{label(n)}</div>
+                    {detail(n) ? (
+                      <div className="line-clamp-3 whitespace-pre-line break-words text-xs text-ink-300">{detail(n)}</div>
+                    ) : null}
                     <div className="text-[11px] text-ink-muted">
                       {new Date(n.createdAt).toLocaleString(i18n.language)}
                     </div>

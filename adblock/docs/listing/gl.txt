@@ -1,14 +1,14 @@
 Supreme AdBlock bloquea os anuncios en todas partes —anuncios de vídeo de YouTube, báners, xanelas emerxentes e rastrexadores— sen vixiar o que fai.
 
+• Actualizacións de filtros asinadas dúas veces ao día: as novas redes publicitarias trátanse en poucas horas, sen código remoto.
 • Os anuncios de YouTube detéñense na orixe, así que os vídeos simplemente se reproducen.
+• Avisos de cookies: preme «Rexeitar» por vostede cando o aviso o ofrece, e «Aceptar» só cando non hai outra forma de pechalo; elimina o desenfoque e o bloqueo do desprazamento que quedan, e nunca preme un botón de inicio de sesión, OAuth ou pagamento.
+• Sen conta, sen telemetría, sen recollida de datos, e non se deixa pasar ningún anuncio a cambio de diñeiro. Global Privacy Control pide a cada sitio que non venda nin comparta os seus datos.
 • Inclúe EasyList, EasyPrivacy e outras listas de filtros abertas, ademais da lista do seu idioma (31 listas rexionais).
 • As publicacións patrocinadas en Facebook, Instagram e Threads ocúltanse.
-• Avisos de cookies: preme «Rexeitar» por vostede, elimina o desenfoque e o bloqueo do desprazamento que quedan, e nunca preme un botón de inicio de sesión, OAuth ou pagamento.
 • Modo Foco: oculte burbullas de chat, xanelas de boletíns, solicitudes de notificacións, widgets sociais, xanelas de IA e YouTube Shorts.
 • Os muros anti-adblock e os pop-unders quedan neutralizados.
 • Sitios perigosos: no canto dun sitio malicioso coñecido ábrese unha páxina de aviso, e vostede decide se continúa.
 • O sitio non funciona? Un clic arránxao, ou avísenos: non se envía nada sen que vostede o vexa antes.
 • Vén de uBlock Origin, AdGuard ou Adblock Plus? Traia os seus sitios permitidos e filtros cun só ficheiro.
 • Vexa con que outros sitios se conecta unha páxina e bloquee calquera deles só nese sitio cun clic.
-• Actualizacións de filtros asinadas dúas veces ao día: as novas redes publicitarias trátanse en poucas horas, sen código remoto.
-• Sen conta, sen telemetría, sen recollida de datos, e Global Privacy Control pide a cada sitio que non venda nin comparta os seus datos.

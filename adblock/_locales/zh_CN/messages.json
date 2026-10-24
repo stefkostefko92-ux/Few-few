@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "随处拦截广告：YouTube 视频广告、横幅、弹出式窗口、跟踪器、Cookie 提示和反广告拦截墙。"
+    "message": "广告拦截器，适用于 YouTube 和网页：视频广告、横幅、弹出式窗口、跟踪器、Cookie 横幅和反广告拦截墙。"
   },
   "byCarbon": {
     "message": "by Carbon Stealth"
@@ -647,6 +647,12 @@
     "message": "点击地址栏旁边的拼图图标，然后固定 Supreme AdBlock。之后只需点击一下，即可查看页面上拦截了哪些内容。",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "扩展程序已固定到工具栏"
+  },
+  "welPinnedText": {
+    "message": "只需点击一下它的图标，即可查看页面上拦截了哪些内容。"
+  },
   "welBrokenTitle": {
     "message": "如果网站显示异常",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -793,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "规则容量"
+  },
+  "helpTitle": {
+    "message": "网站显示异常？"
+  },
+  "helpText": {
+    "message": "一次处理一个网站即可：允许该网站显示广告 1 小时，或仅在该网站关闭元素隐藏。告诉我们后，我们会为所有用户修复。"
+  },
+  "helpFix": {
+    "message": "修复此网站"
+  },
+  "cardNever": {
+    "message": "不再显示"
+  },
+  "cardClose": {
+    "message": "关闭"
+  },
+  "receiptTitle": {
+    "message": "您最近 30 天的数据"
+  },
+  "receiptText": {
+    "message": "已拦截 $1 个请求 · 已处理 $2 个 Cookie 横幅 · 节省约 $3 流量（估算）"
+  },
+  "share": {
+    "message": "分享"
+  },
+  "shareTitle": {
+    "message": "复制 Supreme AdBlock 在 Chrome Web Store 的链接"
+  },
+  "shareCopied": {
+    "message": "链接已复制"
+  },
+  "rep_fixed_q": {
+    "message": "网站修复了吗？"
+  },
+  "rep_fixed_yes": {
+    "message": "是的，正常了"
+  },
+  "rep_fixed_no": {
+    "message": "没有，仍有问题"
+  },
+  "rep_fixed_yes_note": {
+    "message": "很高兴问题已解决。如果您在下方告诉我们，报告会说明哪种修复方法有效，我们就能为所有用户修复该网站。"
+  },
+  "rep_fixed_next": {
+    "message": "请试试下一个：$1"
+  },
+  "rep_fixed_none": {
+    "message": "那么请在下方告诉我们：我们会检查该网站。"
+  },
+  "rep_webmail": {
+    "message": "没有邮件应用？请复制报告，然后通过网页邮箱发送至 $1。"
+  },
+  "blk_mistake": {
+    "message": "认为这是误报？告诉我们"
+  },
+  "welTest": {
+    "message": "在测试页面查看实际效果"
   }
 }

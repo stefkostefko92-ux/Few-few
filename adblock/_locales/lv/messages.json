@@ -3,7 +3,7 @@
     "message": "Supreme AdBlock"
   },
   "extDescription": {
-    "message": "Bloķē reklāmas visur: YouTube video reklāmas, banerus, uznirstošos logus, izsekotājus un anti-adblock sienas."
+    "message": "Reklāmu bloķētājs YouTube un tīmeklim: videoreklāmas, baneri, pop-up logi, izsekotāji, sīkdatņu paziņojumi un anti-adblock sienas."
   },
   "byCarbon": {
     "message": "no Carbon Stealth"
@@ -647,6 +647,12 @@
     "message": "Noklikšķiniet uz puzles gabaliņa ikonas blakus adreses joslai un piespraudiet Supreme AdBlock. Pēc tam ar vienu klikšķi redzēsiet, kas lapā tika bloķēts.",
     "description": "Welcome page: how to pin the extension with the puzzle-piece (Extensions) icon next to the address bar."
   },
+  "welPinnedTitle": {
+    "message": "Piesprausts rīkjoslai"
+  },
+  "welPinnedText": {
+    "message": "Viens klikšķis uz tā ikonas parāda, kas lapā tika bloķēts."
+  },
   "welBrokenTitle": {
     "message": "Ja vietne izskatās bojāta",
     "description": "Welcome page: heading of the tip for sites that look broken."
@@ -793,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Noteikumu ietilpība"
+  },
+  "helpTitle": {
+    "message": "Vietnes nedarbojas?"
+  },
+  "helpText": {
+    "message": "Pietiek ar vienu vietni reizē: atļaujiet tās reklāmas uz stundu vai izslēdziet elementu slēpšanu tikai tur. Ja pastāstīsiet mums, mēs to salabosim visiem."
+  },
+  "helpFix": {
+    "message": "Salabot šo vietni"
+  },
+  "cardNever": {
+    "message": "Vairs nerādīt"
+  },
+  "cardClose": {
+    "message": "Aizvērt"
+  },
+  "receiptTitle": {
+    "message": "Jūsu pēdējās 30 dienas"
+  },
+  "receiptText": {
+    "message": "Bloķēti pieprasījumi: $1 · atbildēti sīkdatņu paziņojumi: $2 · ietaupīti dati: aptuveni $3 (aplēse)"
+  },
+  "share": {
+    "message": "Kopīgot"
+  },
+  "shareTitle": {
+    "message": "Kopēt Supreme AdBlock saiti Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Saite nokopēta"
+  },
+  "rep_fixed_q": {
+    "message": "Vai vietne ir salabota?"
+  },
+  "rep_fixed_yes": {
+    "message": "Jā, darbojas"
+  },
+  "rep_fixed_no": {
+    "message": "Nē, joprojām nedarbojas"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Priecājamies, ka darbojas. Ja pastāstīsiet mums zemāk, ziņojumā būs redzams, kurš labojums palīdzēja, lai mēs varētu salabot vietni visiem."
+  },
+  "rep_fixed_next": {
+    "message": "Izmēģiniet nākamo: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Tad, lūdzu, pastāstiet mums zemāk: mēs apskatīsim vietni."
+  },
+  "rep_webmail": {
+    "message": "Nav e-pasta lietotnes? Nokopējiet ziņojumu un nosūtiet to uz $1 no sava tīmekļa pasta."
+  },
+  "blk_mistake": {
+    "message": "Domājat, ka tā ir kļūda? Pastāstiet mums"
+  },
+  "welTest": {
+    "message": "Skatiet, kā tas darbojas, testa lapā"
   }
 }
