@@ -96,7 +96,7 @@ export function useMatch<S, A>(gameKey: GameKey | null): MatchHandle<S, A> {
       setLegal((s.legalActions as A[]) ?? []);
       setTurn(s.turn);
       setTerminal(s.terminal);
-      useMatchStore.getState().setLive(s.turn, s.turnEndsAt ?? 0);
+      useMatchStore.getState().setLive(s.turn, s.turnEndsAt ?? 0, s.turnMs ?? 0, s.timeoutStrikes ?? 0);
       useMatchStore.getState().setSubstituted(s.substituted ?? []);
     };
     const onOver = (o: GameOverMsg) => {

@@ -38,13 +38,39 @@ interface Budget {
 }
 const spent = (b: Budget): boolean => b.left <= 0 || now() >= b.until;
 
+/**
+ * Meta actions a bot never picks at random: giving up (RESIGN) or proposing /
+ * accepting a draw. A random-blunder EASY bot used to resign a winning chess
+ * game out of nowhere. They stay legal for humans; bots only ever choose them
+ * through an engine heuristic that does so deliberately (none currently does).
+ */
+const BOT_EXCLUDED_TYPES: ReadonlySet<string> = new Set(["RESIGN", "DRAW_OFFER", "DRAW_ACCEPT"]);
+
+const isExcluded = (a: unknown): boolean =>
+  typeof a === "object" &&
+  a !== null &&
+  typeof (a as { type?: unknown }).type === "string" &&
+  BOT_EXCLUDED_TYPES.has((a as { type: string }).type);
+
+/** Legal actions a bot may choose among — never empty when any action is legal
+ *  (if ONLY meta actions remain, they are returned so the table cannot stall). */
+export function botCandidates<S, A, E extends GameEvent>(
+  engine: GameEngine<S, A, E>,
+  state: S,
+  seat: Seat,
+): A[] {
+  const all = engine.legalActions(state, seat);
+  const kept = all.filter((a) => !isExcluded(a));
+  return kept.length > 0 ? kept : all;
+}
+
 function randomAction<S, A, E extends GameEvent>(
   engine: GameEngine<S, A, E>,
   state: S,
   seat: Seat,
   rng: SeededRng,
 ): A | null {
-  const actions = engine.legalActions(state, seat);
+  const actions = botCandidates(engine, state, seat);
   if (actions.length === 0) return null;
   return actions[rng.int(actions.length)] ?? null;
 }
@@ -79,7 +105,9 @@ function rollout<S, A, E extends GameEvent>(
     for (let s = 0; s < seats; s++) {
       let acts: A[];
       try {
-        acts = engine.legalActions(cur, s);
+        // Playouts skip resign/draw too — a random resignation in a rollout
+        // would make every candidate look like a coin flip.
+        acts = botCandidates(engine, cur, s);
       } catch {
         return 0.5; // an engine that cannot answer for this seat — bail neutral
       }
@@ -108,7 +136,7 @@ function chooseHard<S, A, E extends GameEvent>(
   // Continuous action spaces (cue physics) → playouts too costly; defer.
   if (engine.validate) return engine.bot?.(state, seat, rng) ?? randomAction(engine, state, seat, rng);
 
-  let candidates = engine.legalActions(state, seat);
+  let candidates = botCandidates(engine, state, seat);
   if (candidates.length === 0) return null;
   if (candidates.length === 1) return candidates[0]!;
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { rulesForGame, type GameKey } from "@aso/shared";
+import { rulesForGame, turnSecondsFor, type GameKey } from "@aso/shared";
 import { Modal } from "../../ui";
 
 /** Fired by the "?" button in the scene header (SceneHeader) to open the rules. */
@@ -68,6 +68,18 @@ export function GameHelp({ game }: { game: GameKey }) {
               </ul>
             </div>
           ) : null}
+
+          {/* The server's per-game turn clock and what a timeout does (§8.3). */}
+          <div>
+            <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-brass-300">
+              {t("rules.clockTitle")}
+            </h3>
+            <ul className="list-disc space-y-1 pl-5 text-sm text-ink-300">
+              <li>{t("rules.clock", { s: turnSecondsFor(game) })}</li>
+              <li>{game === "WORDS" ? t("rules.timeoutWords") : t("rules.timeout")}</li>
+              <li>{t("rules.takeover")}</li>
+            </ul>
+          </div>
         </div>
       </Modal>
     </>

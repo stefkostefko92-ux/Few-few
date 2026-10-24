@@ -336,7 +336,8 @@
   "live": {
     "opponentDropped": "{{name}} si è disconnesso — il bot subentra",
     "yourTurnTimer": "Il tuo turno: {{s}}s",
-    "opponentTurnTimer": "{{name}} sta pensando · {{s}}s"
+    "opponentTurnTimer": "{{name}} sta pensando · {{s}}s",
+    "timeoutWarning": "Tempo scaduto — il bot ha giocato questa mossa per te. Salta un altro turno e il bot prende il tuo posto."
   },
   "verify": {
     "title": "Verifica email",
@@ -387,7 +388,8 @@
     "playAgain": "Gioca ancora",
     "botsSoon": "Se non arrivano giocatori, i bot entreranno a breve.",
     "leaveConfirm": "Sicuro? (abbandono)",
-    "backToRoom": "Torna alla stanza"
+    "backToRoom": "Torna alla stanza",
+    "finalPlace": "Posizione: {{n}} su {{total}}"
   },
   "santase": {
     "trump": "Briscola",
@@ -820,7 +822,8 @@
     "passBanner": "{{name}} passa (−1 vita)",
     "wrongBanner": "{{name}} ha sbagliato parola (−1 vita)",
     "reseed": "Nuova parola: {{word}}",
-    "out": "eliminato"
+    "out": "eliminato",
+    "skipHint": "(«{{tail}}» si salta)"
   },
   "ludo": {
     "base": "base",
@@ -830,7 +833,9 @@
     "noMoveRetry": "Nessuna mossa — tira di nuovo",
     "noMoveOther": "{{name}} non ha mosse",
     "safeSquare": "Casella sicura",
-    "blockade": "Blocco"
+    "blockade": "Blocco",
+    "place": "{{n}}° posto",
+    "finishedBanner": "{{name}} è arrivato — {{n}}° posto"
   },
   "domino": {
     "empty": "Posiziona il primo domino",
@@ -1235,7 +1240,12 @@
     "open": "Regole",
     "title": "Come si gioca",
     "steps": "Passaggi",
-    "tips": "Consigli"
+    "tips": "Consigli",
+    "clockTitle": "Tempo per turno",
+    "clock": "Hai {{s}} secondi per turno.",
+    "timeout": "Se il tempo scade, il bot gioca solo quella mossa per te — il posto resta tuo.",
+    "timeoutWords": "Se il tempo scade, vale come passo — perdi una vita (il bot non dice mai una parola al posto tuo).",
+    "takeover": "Dopo due turni saltati di fila (o una connessione persa) il bot prende il tuo posto finché non premi «Torna in gioco»."
   },
   "difficulty": {
     "label": "Difficoltà dei bot",

@@ -4,6 +4,8 @@ import {
   GAME_ENGINE,
   isBettingGame,
   SOCKET_EVENTS,
+  TIMEOUT_STRIKES_FOR_TAKEOVER,
+  turnSecondsFor,
   type GameKey,
   type MatchFoundMsg,
   type MatchPlayerInfo,
@@ -17,9 +19,14 @@ import { env } from "./env.js";
 import { logger } from "./logger.js";
 import { actionShapeOk } from "./actionGuard.js";
 
-const TURN_MS = env.TURN_SECONDS * 1000;
 const DISCONNECT_GRACE_MS = env.DISCONNECT_GRACE_SECONDS * 1000;
 const DISCONNECTED_TURN_MS = 3000; // snappy bot takeover for a dropped seat
+/** Pause before the server itself applies an engine's `autoAdvance` action
+ *  (e.g. Свара's open-cards SHOWDOWN) — long enough to read the cards. */
+export const AUTO_ADVANCE_MS = 4000;
+
+/** Per-turn clock for a game: ops override (env) → per-game default. */
+const turnMsFor = (game: GameKey): number => (env.TURN_SECONDS ?? turnSecondsFor(game)) * 1000;
 
 export interface RoomSeat {
   seat: number;
@@ -89,6 +96,14 @@ export class GameRoom {
   private turnEndsAt = 0;
   /** Timer for an engine's server-driven action (e.g. Бинго's timed draw). */
   private serverTimer?: NodeJS.Timeout;
+  private turnMs = 0;
+  /** Server-driven pause timer (engine `autoAdvance`, e.g. Свара SHOWDOWN). */
+  private autoTimer?: NodeJS.Timeout;
+  /** Consecutive turn timeouts per human seat; any own move resets it. */
+  private readonly strikes = new Map<number, number>();
+  /** A seat the bot covers for THIS turn only (first timeout) — cleared as soon
+   *  as the turn moves on, so the player keeps the seat. */
+  private turnCover: number | null = null;
   private readonly disconnected = new Set<number>(); // human seats currently offline
   private readonly substituted = new Set<number>(); // human seats a bot is covering
   private readonly graceTimers = new Map<string, NodeJS.Timeout>(); // by userId
@@ -111,6 +126,17 @@ export class GameRoom {
     return this.seats.find((s) => s.userId === userId);
   }
 
+  /** Non-null while the engine wants a server-driven pause (no seat on clock). */
+  private autoAction(): unknown | null {
+    if (!this.engine.autoAdvance || this.engine.isTerminal(this.state)) return null;
+    try {
+      return this.engine.autoAdvance(this.state) ?? null;
+    } catch (err) {
+      logger.warn({ err, matchId: this.matchId }, "engine.autoAdvance threw; ignoring");
+      return null;
+    }
+  }
+
   /** The seat whose turn it is (the only one with legal actions), or null. */
   private currentSeat(): RoomSeat | null {
     if (this.engine.isTerminal(this.state)) return null;
@@ -122,7 +148,11 @@ export class GameRoom {
 
   /** A seat is driven by AI if it's a real bot or a human currently substituted. */
   private isBotDriven(seat: RoomSeat): boolean {
-    return seat.isBot || this.substituted.has(seat.seat);
+    if (seat.isBot) return true;
+    // Engines with a `timeoutAction` (Думи) never let a bot play a human seat:
+    // that seat stays on the clock and each expiry applies the timeout move.
+    if (this.engine.timeoutAction) return false;
+    return this.substituted.has(seat.seat) || this.turnCover === seat.seat;
   }
 
   /** Begin: announce the match to each human, push initial state, run any bot opener. */
@@ -180,7 +210,9 @@ export class GameRoom {
     if (!seat.userId) return;
     const redacted = this.engine.redact(this.state, seat.seat);
     const legalActions = this.engine.legalActions(this.state, seat.seat);
-    const current = this.currentSeat();
+    // During a server-driven pause nobody is "on turn" (no clock, no AFK).
+    const current = this.autoAction() !== null ? null : this.currentSeat();
+    const strikes = this.strikes.get(seat.seat) ?? 0;
     this.io.to(userRoom(seat.userId)).emit(SOCKET_EVENTS.GAME_STATE, {
       matchId: this.matchId,
       state: redacted,
@@ -188,7 +220,9 @@ export class GameRoom {
       turn: current ? current.seat : null,
       terminal: this.engine.isTerminal(this.state),
       turnEndsAt: this.turnEndsAt || undefined,
+      turnMs: this.turnEndsAt ? this.turnMs : undefined,
       substituted: this.substituted.size ? [...this.substituted] : undefined,
+      timeoutStrikes: strikes > 0 ? strikes : undefined,
     });
   }
 
@@ -217,6 +251,7 @@ export class GameRoom {
       this.substituted.delete(seat.seat);
       this.emitPresence(seat.seat, true);
     }
+    if (this.turnCover === seat.seat) this.turnCover = null;
     // Free-form engines (e.g. cue sports) validate continuous actions directly;
     // everyone else matches against the enumerated legal set. The action is
     // untrusted client input: bound its shape first, and never let a throwing
@@ -245,6 +280,8 @@ export class GameRoom {
     // visibly reset the clock that the other seats see.
     const prevEndsAt = this.turnEndsAt;
     this.clearTurnTimer();
+    // A move the player made themselves clears their timeout streak.
+    this.strikes.delete(seat.seat);
     this.applyReduce(action, prevEndsAt);
     void this.runBots();
   }
@@ -255,35 +292,102 @@ export class GameRoom {
     if (this.turnTimer) clearTimeout(this.turnTimer);
     this.turnTimer = undefined;
     this.turnEndsAt = 0;
+    this.turnMs = 0;
+    if (this.autoTimer) clearTimeout(this.autoTimer);
+    this.autoTimer = undefined;
   }
 
   /** Arm a clock for the current human seat (shorter if they've dropped). */
   private armTurnTimer(): void {
     this.clearTurnTimer();
     if (this.done) return;
+    // Server-driven pause (Свара SHOWDOWN): no seat is clocked or marked AFK;
+    // the host applies the engine's action itself after a short beat.
+    if (this.autoAction() !== null) {
+      this.turnCover = null;
+      this.autoTimer = setTimeout(() => this.onAutoAdvance(), AUTO_ADVANCE_MS);
+      return;
+    }
     const seat = this.currentSeat();
+    // The one-turn bot cover ends the moment the turn moves to another seat.
+    if (this.turnCover !== null && seat?.seat !== this.turnCover) this.turnCover = null;
     if (!seat || this.isBotDriven(seat)) return; // bots/substitutes are driven by runBots()
-    // A session may set its own per-turn time (e.g. Магнат house rules); else env default.
+    // A session may set its own per-turn time (e.g. Магнат house rules); else the per-game clock.
     const cfgSec = (this.state as { config?: { turnSeconds?: number } }).config?.turnSeconds;
-    const baseMs = typeof cfgSec === "number" && cfgSec > 0 ? cfgSec * 1000 : TURN_MS;
+    const baseMs = typeof cfgSec === "number" && cfgSec > 0 ? cfgSec * 1000 : turnMsFor(this.game);
     // Cue games: the previous shot's animation locks the client UI — extend the
     // clock by its real-time length so the striker keeps their full aiming time.
     const animMs =
       GAME_ENGINE[this.game] === "cue-sport" ? ((this.state as { lastShotMs?: number }).lastShotMs ?? 0) : 0;
-    const delay = (this.disconnected.has(seat.seat) ? DISCONNECTED_TURN_MS : baseMs) + animMs;
+    // A dropped seat gets a snappy clock for the bot substitute — except where
+    // a timeout COSTS the player (timeoutAction): a short drop must not drain lives.
+    const snappy = this.disconnected.has(seat.seat) && !this.engine.timeoutAction;
+    const delay = (snappy ? DISCONNECTED_TURN_MS : baseMs) + animMs;
+    this.turnMs = delay;
     this.turnEndsAt = Date.now() + delay;
     this.turnTimer = setTimeout(() => this.onTurnTimeout(seat.seat), delay);
   }
 
-  /** Clock expired: hand the seat to a bot substitute until the player reclaims
-   *  it (by acting or an explicit reclaim). Keeps the table moving with no waits. */
+  /** The server applies the engine's auto-advance action (no seat blamed). */
+  private onAutoAdvance(): void {
+    this.autoTimer = undefined;
+    if (this.done) return;
+    const action = this.autoAction();
+    if (action === null) return;
+    this.applyReduce(action);
+    void this.runBots();
+  }
+
+  /**
+   * Clock expired. First timeout: the seat KEEPS its player — the engine's
+   * `timeoutAction` is applied (Думи: a PASS that costs a life) or a bot plays
+   * just this turn. Only TIMEOUT_STRIKES_FOR_TAKEOVER consecutive timeouts hand
+   * the seat to a bot substitute until the player reclaims it (acting or the
+   * explicit reclaim). A move the player makes resets the streak.
+   */
   private onTurnTimeout(seat: number): void {
     if (this.done) return;
     const cur = this.currentSeat();
     if (!cur || cur.seat !== seat) return; // they already moved
-    this.substituted.add(seat);
-    this.emitPresence(seat, false); // surfaces "под контрол на бот" to the table
+    this.turnTimer = undefined;
+    const strikes = (this.strikes.get(seat) ?? 0) + 1;
+    this.strikes.set(seat, strikes);
+    const takeover = strikes >= TIMEOUT_STRIKES_FOR_TAKEOVER;
+    if (takeover && !this.substituted.has(seat)) {
+      this.substituted.add(seat);
+      this.emitPresence(seat, false); // surfaces "под контрол на бот" to the table
+    }
+    const forced = this.timeoutActionFor(seat);
+    this.clearTurnTimer();
+    if (forced !== null || this.engine.timeoutAction) {
+      // No legal timeout move this time (defensive): play one safe move so the
+      // seat — which bots never drive in such engines — cannot stall the table.
+      const move = forced ?? this.botMove(cur);
+      if (move !== null) this.applyReduce(move);
+      else this.armTurnTimer();
+      void this.runBots();
+      return;
+    }
+    // First timeout: a bot plays out just this turn; the seat stays the player's.
+    this.turnCover = takeover ? null : seat;
+    this.broadcastState(); // carries the strike warning + clears the clock
     void this.runBots();
+  }
+
+  /** The engine's own timeout move for `seat`, validated as legal, or null. */
+  private timeoutActionFor(seat: number): unknown | null {
+    if (!this.engine.timeoutAction) return null;
+    try {
+      const a = this.engine.timeoutAction(this.state, seat);
+      if (a === null || a === undefined) return null;
+      const ok = this.engine.validate
+        ? this.engine.validate(this.state, seat, a)
+        : this.engine.legalActions(this.state, seat).some((l) => stable(l) === stable(a));
+      return ok ? a : null;
+    } catch (err) {
+      logger.warn({ err, matchId: this.matchId }, "engine.timeoutAction threw; falling back to bot");
+      return null;
+    }
   }
 
   /** A player takes their seat back from the bot substitute. */
@@ -292,6 +396,7 @@ export class GameRoom {
     if (!seat || seat.isBot || this.done) return;
     if (!this.substituted.has(seat.seat)) return;
     this.substituted.delete(seat.seat);
+    this.strikes.delete(seat.seat);
     this.emitPresence(seat.seat, true);
     if (this.currentSeat()?.seat === seat.seat) this.armTurnTimer();
     this.broadcastState();
@@ -314,6 +419,7 @@ export class GameRoom {
       if (!this.disconnected.has(seat.seat)) return;
       this.disconnected.delete(seat.seat);
       this.substituted.delete(seat.seat); // player is back; stop the bot covering
+      this.strikes.delete(seat.seat);
       const g = this.graceTimers.get(userId);
       if (g) {
         clearTimeout(g);
@@ -340,8 +446,9 @@ export class GameRoom {
         setTimeout(() => this.onGrace(seat.seat), DISCONNECT_GRACE_MS),
       );
     }
-    // If it's their turn, let the substitute pick up right away.
-    if (this.currentSeat()?.seat === seat.seat) {
+    // If it's their turn, let the substitute pick up right away (never during a
+    // server-driven pause — that timer must keep running).
+    if (this.autoAction() === null && !this.engine.timeoutAction && this.currentSeat()?.seat === seat.seat) {
       this.clearTurnTimer();
       void this.runBots();
     }
@@ -466,8 +573,10 @@ export class GameRoom {
   private rearmUntil(endsAt: number): void {
     this.clearTurnTimer();
     if (this.done) return;
+    if (this.autoAction() !== null) return this.armTurnTimer();
     const seat = this.currentSeat();
     if (!seat || this.isBotDriven(seat)) return;
+    this.turnMs = Math.max(this.turnMs, endsAt - Date.now());
     this.turnEndsAt = endsAt;
     this.turnTimer = setTimeout(() => this.onTurnTimeout(seat.seat), Math.max(0, endsAt - Date.now()));
   }
@@ -483,6 +592,8 @@ export class GameRoom {
     let skipDelay = false;
     try {
       while (!this.done && !this.engine.isTerminal(this.state)) {
+        // A server-driven pause belongs to the host's auto-advance timer.
+        if (this.autoAction() !== null) break;
         const seat = this.currentSeat();
         if (!seat || !this.isBotDriven(seat)) break;
         // Cue sports: a 2–3s "aiming" pause before the AI shoots so it feels
@@ -499,15 +610,59 @@ export class GameRoom {
         if (this.done || this.engine.isTerminal(this.state)) break;
         // Recompute against the CURRENT state after the await (it may have moved
         // on, e.g. the player reclaimed), and only act if still AI-driven.
+        if (this.autoAction() !== null) break;
         const now = this.currentSeat();
         if (!now || !this.isBotDriven(now) || now.seat !== seat.seat) continue;
-        const action = (now.bot ?? this.fallbackBot).pick(this.engine, this.state, now.seat);
-        if (action === null) break;
-        skipDelay = this.applyReduce(action);
+        const before = this.state;
+        const move = this.botMove(now);
+        if (move === null) break; // no legal action at all — nothing to play
+        skipDelay = this.applyReduce(move);
+        if (this.state === before) {
+          // The engine rejected the bot's move: fall back to the first legal
+          // action once; if even that fails, stop rather than spin.
+          const first = this.firstLegal(now.seat);
+          if (first === null) break;
+          skipDelay = this.applyReduce(first);
+          if (this.state === before) {
+            logger.error({ matchId: this.matchId, seat: now.seat }, "bot fallback rejected; bot loop halted");
+            break;
+          }
+        }
       }
     } finally {
       this.botLoopRunning = false;
     }
+  }
+
+  /** First enumerated legal action for `seat` (the safe fallback), or null. */
+  private firstLegal(seat: number): unknown | null {
+    try {
+      return this.engine.legalActions(this.state, seat)[0] ?? null;
+    } catch (err) {
+      logger.warn({ err, matchId: this.matchId }, "legalActions threw for bot fallback");
+      return null;
+    }
+  }
+
+  /**
+   * The move an AI-driven seat makes now. A HUMAN seat under substitution uses
+   * the engine's `timeoutAction` when it has one (Думи: no free bot words for a
+   * player who walked away). A throwing / empty bot never freezes the table:
+   * the error is logged and the first legal action is played instead.
+   */
+  private botMove(seat: RoomSeat): unknown | null {
+    if (!seat.isBot) {
+      const forced = this.timeoutActionFor(seat.seat);
+      if (forced !== null) return forced;
+    }
+    try {
+      const action = (seat.bot ?? this.fallbackBot).pick(this.engine, this.state, seat.seat);
+      if (action !== null && action !== undefined) return action;
+      logger.warn({ matchId: this.matchId, seat: seat.seat }, "bot returned no move; playing first legal action");
+    } catch (err) {
+      logger.error({ err, matchId: this.matchId, seat: seat.seat }, "bot.pick threw; playing first legal action");
+    }
+    return this.firstLegal(seat.seat);
   }
 
   private async finish(scoreOverride?: SeatScore[]): Promise<void> {
@@ -516,6 +671,8 @@ export class GameRoom {
     this.clearTurnTimer();
     if (this.serverTimer) clearTimeout(this.serverTimer);
     this.serverTimer = undefined;
+    if (this.autoTimer) clearTimeout(this.autoTimer);
+    this.autoTimer = undefined;
     for (const g of this.graceTimers.values()) clearTimeout(g);
     this.graceTimers.clear();
     const score = scoreOverride ?? (this.engine.score(this.state) as SeatScore[]);
