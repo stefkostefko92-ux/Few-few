@@ -69,8 +69,8 @@ app/                                 публичният сайт cs2.carbonste
   views/                             EJS: partials/head.ejs (целият SEO head) · страниците · error.ejs
   public/                            site.css · app.js (само „Копирай“) · шрифтове Sofia Sans (OFL) · og.png
   scripts/og.py                      прави og.png и apple-touch-icon.png (Pillow) при смяна на визията
-  Dockerfile · docker-compose.yml    db + redis + web + worker; портове САМО на 127.0.0.1 (4340/5442/6392)
-  deploy/nginx/cs2.carbonstealth.eu.conf   TLS + HSTS + прокси към 127.0.0.1:4340
+  Dockerfile · docker-compose.yml    db + redis + web + worker; портове САМО на 127.0.0.1 (4350/5442/6392)
+  deploy/nginx/cs2.carbonstealth.eu.conf   TLS + HSTS + прокси към 127.0.0.1:4350
 ```
 
 На машината: играта `/opt/cs2/server` (потребител `cs2`), SteamCMD `/opt/cs2/steamcmd`, скриптовете,
@@ -152,7 +152,7 @@ zod); код между продуктите не се споделя — сам
   (`centsToDecimal` → Intl с точен десетичен низ).
 - **Правните текстове са чернова** (обща информация, не правен съвет). Държавата на хостинга и срокът по
   ЗСч са маркирани с `<!-- ПОТВЪРДИ: … -->` в `views/privacy.ejs`. При промяна → дата в `content.ts`.
-- **Портовете:** сайт `127.0.0.1:4340` (в контейнера 4330; 4330 на VPS-а е зает), Postgres `127.0.0.1:5442`, Redis `127.0.0.1:6392` (за плъгина на
+- **Портовете:** сайт `127.0.0.1:4350` (в контейнера 4330; 4330 и 4340 на VPS-а са заети, `HTTP_PORT` в `/etc/cs2/app.env`), Postgres `127.0.0.1:5442`, Redis `127.0.0.1:6392` (за плъгина на
   хоста) — никога на всички интерфейси (Docker заобикаля ufw). Тестът `infra.test.ts` го пази.
 - SEO промяна след деплой → `node tools/seo/indexnow.mjs https://cs2.carbonstealth.eu` (ключът е в
   `public/indexnow-key.txt`; не е тайна).

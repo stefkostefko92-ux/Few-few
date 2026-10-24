@@ -12,7 +12,7 @@ test('Compose публикува портове САМО на 127.0.0.1 (Docker 
   assert.deepEqual(published, [
     '127.0.0.1:${PG_PORT:-5442}:5432',
     '127.0.0.1:${REDIS_PORT:-6392}:6379',
-    '127.0.0.1:${HTTP_PORT:-4340}:4330',
+    '127.0.0.1:${HTTP_PORT:-4350}:4330',
   ]);
   assert.doesNotMatch(COMPOSE, /0\.0\.0\.0:/);
 });
@@ -35,7 +35,7 @@ test('Dockerfile: многослоен, непривилегирован, с HEA
   assert.match(DOCKERFILE, /npm prune --omit=dev/);
 });
 
-test('nginx: TLS от Let’s Encrypt, HSTS, прокси към 127.0.0.1:4340, без дневник с IP', () => {
+test('nginx: TLS от Let’s Encrypt, HSTS, прокси към 127.0.0.1:4350, без дневник с IP', () => {
   assert.match(
     NGINX,
     /ssl_certificate\s+\/etc\/letsencrypt\/live\/cs2\.carbonstealth\.eu\/fullchain\.pem;/,
@@ -45,7 +45,7 @@ test('nginx: TLS от Let’s Encrypt, HSTS, прокси към 127.0.0.1:4340,
     /add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;/,
   );
   assert.match(NGINX, /return 308 https:\/\/\$host\$request_uri;/);
-  assert.equal((NGINX.match(/proxy_pass http:\/\/127\.0\.0\.1:4340;/g) ?? []).length, 2);
+  assert.equal((NGINX.match(/proxy_pass http:\/\/127\.0\.0\.1:4350;/g) ?? []).length, 2);
   assert.equal((NGINX.match(/access_log off;/g) ?? []).length, 2);
   assert.match(NGINX, /proxy_set_header X-Forwarded-For\s+\$remote_addr;/);
 });
