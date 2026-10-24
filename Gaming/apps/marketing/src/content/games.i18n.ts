@@ -472,27 +472,42 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
     },
     RUMMY: {
       title: "Rummy",
-      players: "2",
-      summary: "Play Rummy (Gin Rummy) online — the classic card game of building runs and sets.",
+      players: "2–4",
+      summary: "Play Bulgarian Rummy online — two decks with jokers, a 51-point opening, runs and sets, for 2 to 4 players.",
       intro:
-        "Rummy on АСО is played by Gin Rummy rules — a card game for two. You arrange your 10 cards into runs of one suit and sets of the same rank and aim to be left with as little deadwood as possible. The match is played to 100.",
+        "Rummy on АСО follows the most common Bulgarian rules: two decks + 4 jokers (108 cards), 14 cards each (the first player gets 15), and a first meld worth at least 51 points. Build runs and sets, lay off on the table and try to go out first. The match ends when someone reaches 501 penalty points — the lowest score wins.",
       howTo: [
-        { name: "Drawing", text: "Each player has 10 cards; on your turn you draw from the stock or take the top discard." },
         {
-          name: "Melding",
-          text: "A run = 3+ consecutive cards of one suit (ace is low); a set = 3–4 cards of one rank. Cards outside them are deadwood: ace 1, face cards 10, others face value.",
+          name: "Your turn",
+          text: "Draw from the stock or take the top discard (only if you use it straight away), meld what you can and discard one card. The first player starts with 15 cards and simply discards.",
         },
-        { name: "Discarding", text: "You finish your turn by discarding one card." },
         {
-          name: "Knocking",
-          text: "Once your deadwood is 10 or less, you can knock; \"gin\" is knocking with no deadwood at all. Your opponent lays off their deadwood on your melds (except after gin).",
+          name: "Melds",
+          text: "A run = 3+ consecutive cards of one suit (ace low A-2-3 or high Q-K-A, no wrapping); a set = 3–4 cards of one rank in different suits. A joker stands in for any card.",
+        },
+        {
+          name: "Opening",
+          text: "Your first meld must be worth at least 51 points: 2–10 face value, J/Q/K 10, ace 11 (1 in A-2-3), a joker counts as the card it replaces.",
+        },
+        {
+          name: "After opening",
+          text: "Lay down new melds, add cards to your own and other players' melds, and take a joker from the table by replacing it with the real card.",
+        },
+        {
+          name: "Scoring",
+          text: "You go out by discarding your last card and score 0. The others score the value of the cards in hand (joker 50); a player who hasn't opened scores 100. Going out in one go without opening earlier (\"ръка\") doubles the penalties.",
         },
       ],
       faq: [
         {
           question: "How do you play Rummy?",
           answer:
-            "Rummy on АСО is Gin Rummy for two: you draw and discard a card each turn, build runs and sets, and knock when your deadwood is 10 or less. The knocker scores the difference (+25 for gin); if the opponent has less or equal deadwood, it's an undercut and they score the difference +25.",
+            "Rummy on АСО is Bulgarian rummy with two decks and 4 jokers for 2 to 4 players: you draw, build runs and sets, open with at least 51 points and go out by discarding your last card. The others collect penalty points for the cards left in hand, and the match ends when someone reaches 501 — the lowest score wins.",
+        },
+        {
+          question: "Can I take a card from the discard pile?",
+          answer:
+            "Yes, but only the top card and only if you use it in a meld straight away; if you haven't opened yet, only if it lets you open with 51 points.",
         },
       ],
     },
@@ -1135,30 +1150,42 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
     },
     RUMMY: {
       title: "Ramino",
-      players: "2",
-      summary: "Gioca a Ramino (Gin Rummy) online — il classico gioco di carte in cui componi scale e combinazioni.",
+      players: "2–4",
+      summary: "Gioca al Ramino bulgaro online — due mazzi con jolly, apertura da 51 punti, scale e combinazioni, da 2 a 4 giocatori.",
       intro:
-        "Il ramino su АСО si gioca con le regole del Gin Rummy — un gioco di carte per due. Disponi le tue 10 carte in scale dello stesso seme e combinazioni dello stesso valore e cerchi di restare con meno punti morti possibile. La partita si gioca a 100.",
+        "Il ramino su АСО segue le regole bulgare più diffuse: due mazzi + 4 jolly (108 carte), 14 carte a testa (il primo giocatore ne riceve 15) e un'apertura da almeno 51 punti. Componi scale e combinazioni, attacca carte sul tavolo e cerca di chiudere per primo. La partita finisce quando qualcuno arriva a 501 punti di penalità — vince il punteggio più basso.",
       howTo: [
         {
-          name: "Pesca",
-          text: "Ognuno ha 10 carte; al tuo turno peschi dal mazzo o prendi la carta in cima agli scarti.",
+          name: "Il turno",
+          text: "Peschi dal mazzo o prendi la carta in cima agli scarti (solo se la usi subito), cali ciò che puoi e scarti una carta. Il primo giocatore parte con 15 carte e scarta subito.",
         },
         {
           name: "Combinazioni",
-          text: "Scala = 3+ carte consecutive dello stesso seme (l'asso è basso); combinazione = 3–4 carte dello stesso valore. Le carte fuori sono punti morti: asso 1, figure 10, le altre il loro valore.",
+          text: "Scala = 3+ carte consecutive dello stesso seme (asso basso A-2-3 o alto Q-K-A, senza giro); tris/poker = 3–4 carte dello stesso valore di semi diversi. Il jolly sostituisce qualsiasi carta.",
         },
-        { name: "Scarto", text: "Concludi il turno scartando una carta." },
         {
-          name: "Bussare",
-          text: "Quando i tuoi punti morti sono 10 o meno puoi «bussare»; «gin» è bussare senza carte morte. L'avversario attacca le sue carte morte alle tue combinazioni (tranne dopo il gin).",
+          name: "Apertura",
+          text: "La prima calata deve valere almeno 51 punti: 2–10 il loro valore, J/Q/K 10, asso 11 (1 in A-2-3), il jolly vale la carta che sostituisce.",
+        },
+        {
+          name: "Dopo l'apertura",
+          text: "Cali nuove combinazioni, attacchi carte alle tue e a quelle degli altri e puoi prendere un jolly dal tavolo sostituendolo con la carta vera.",
+        },
+        {
+          name: "Punteggio",
+          text: "Chiudi scartando l'ultima carta e prendi 0. Gli altri prendono la somma delle carte in mano (jolly 50); chi non ha aperto prende 100. Chiudere in un colpo solo senza aver aperto prima («ръка») raddoppia le penalità.",
         },
       ],
       faq: [
         {
           question: "Come si gioca a Ramino?",
           answer:
-            "Il ramino su АСО è Gin Rummy per due: peschi e scarti una carta per turno, componi scale e combinazioni e bussi quando i tuoi punti morti sono 10 o meno. Chi bussa guadagna la differenza (+25 per il gin); se l'avversario ha punti morti minori o uguali, è un «undercut» e guadagna lui la differenza +25.",
+            "Il ramino su АСО è il ramino bulgaro con due mazzi e 4 jolly per 2–4 giocatori: peschi, componi scale e combinazioni, apri con almeno 51 punti e chiudi scartando l'ultima carta. Gli altri accumulano punti di penalità per le carte rimaste in mano e la partita finisce quando qualcuno arriva a 501 — vince il punteggio più basso.",
+        },
+        {
+          question: "Posso prendere una carta dagli scarti?",
+          answer:
+            "Sì, ma solo la carta in cima e solo se la usi subito in una combinazione; se non hai ancora aperto, solo se ti permette di aprire con 51 punti.",
         },
       ],
     },

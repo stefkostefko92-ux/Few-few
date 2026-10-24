@@ -7,7 +7,7 @@ import { SeededRng } from "../kernel/rng.js";
  *   EASY   → the engine's heuristic with deliberate blunders: 35 % of moves are
  *            a random legal action. (Pure random was degenerate: in Думи the
  *            only enumerable move is PASS, so the bot lost every life; in Реми
- *            it almost never knocked, so matches ran ~14 600 moves.)
+ *            (former Gin variant) it almost never knocked, so matches ran ~14 600 moves.)
  *   NORMAL → the engine's own heuristic `bot()` if present, else random (this
  *            is exactly the historical bot behaviour).
  *   HARD   → flat Monte-Carlo: score each candidate by random playouts to a
