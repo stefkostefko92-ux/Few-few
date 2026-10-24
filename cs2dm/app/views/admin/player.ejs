@@ -63,7 +63,7 @@
 
 <section aria-labelledby="vip-title">
   <h2 id="vip-title"><%= t('admin.player.vip') %></h2>
-  <% if (above && can('vip') && tiers.length > 0) { %>
+  <% if (vipAllowed && can('vip') && tiers.length > 0) { %>
   <form class="a-form a-card" method="post" action="<%= base %>/vip">
     <input type="hidden" name="_csrf" value="<%= csrf %>">
     <div class="a-field">
@@ -84,7 +84,7 @@
     <button class="a-btn" type="submit"><%= t('admin.player.vipGrant') %></button>
     <p class="a-note"><%= t('admin.player.vipHint') %></p>
   </form>
-  <% } else if (above && can('vip')) { %>
+  <% } else if (vipAllowed && can('vip')) { %>
   <p class="a-note"><%= t('admin.player.vipNoTiers') %> <a href="/admin/vip"><%= t('admin.nav.vip') %></a></p>
   <% } %>
   <% if (grants.length === 0) { %><p class="a-empty"><%= t('admin.player.vipNone') %></p><% } else { %>
@@ -98,7 +98,7 @@
         <td><%= fmt.date(grant.endsAt) %></td>
         <td><code><%= grant.grantedBy %></code></td>
         <td><% if (grant.revokedAt) { %><span class="a-chip is-muted"><%= t('admin.punishments.statuses.revoked') %></span><% } else if (grant.active) { %><span class="a-chip is-ok"><%= t('admin.player.vipActive') %></span><% } else { %><span class="a-chip is-muted"><%= t('admin.player.vipInactive') %></span><% } %>
-          <% if (!grant.revokedAt && above && can('vip')) { %>
+          <% if (!grant.revokedAt && vipAllowed && can('vip')) { %>
           <form class="a-inline" method="post" action="<%= base %>/vip/<%= grant.id %>/revoke" data-confirm="<%= t('admin.player.vipRevokeConfirm') %>">
             <input type="hidden" name="_csrf" value="<%= csrf %>">
             <button class="a-btn is-small is-quiet" type="submit"><%= t('admin.player.vipRevoke') %></button>

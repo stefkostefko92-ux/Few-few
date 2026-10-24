@@ -10,14 +10,21 @@ export type TargetResult =
 
 /**
  * Целта от адреса (`:steamId`) + immunity (§1): само играч с по-ниско ниво от вписания. Проверката е
- * ПРЕДИ всеки запис и подпис — общо за действията върху играч от профила му.
+ * ПРЕДИ всеки запис и подпис — общо за действията върху играч от профила му. `self` (SteamID-ът на
+ * вписания) пуска и действие върху самия него — само за VIP, което е козметика, не власт (§1).
  */
-export async function findTarget(ctx: AdminCtx, req: Request, actor: Role): Promise<TargetResult> {
+export async function findTarget(
+  ctx: AdminCtx,
+  req: Request,
+  actor: Role,
+  self?: string,
+): Promise<TargetResult> {
   const steamId = parseSteamId(req.params.steamId);
   if (!steamId) return { ok: false, steamId: null, code: 'notFound' };
   const player = await ctx.db.player.findUnique({ where: { steamId }, select: { role: true } });
   if (!player) return { ok: false, steamId, code: 'notFound' };
-  if (!outranks(actor, player.role)) return { ok: false, steamId, code: 'immune' };
+  if (steamId !== self && !outranks(actor, player.role))
+    return { ok: false, steamId, code: 'immune' };
   return { ok: true, steamId, role: player.role };
 }
 

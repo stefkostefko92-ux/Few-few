@@ -28,6 +28,9 @@ const profile = (steamId: string) => `/admin/players/${steamId}`;
 export function playerActionRoutes(ctx: AdminCtx): AdminRoute[] {
   /** Целта от адреса + immunity (общото правило в `target.ts`). */
   const target = (req: Request, role: Role) => findTarget(ctx, req, role);
+  /** VIP е козметика (§1): освен по-ниските, вписаният може да даде/отнеме VIP и на себе си. */
+  const vipTarget = (req: Request, principal: { role: Role; steamId: string }) =>
+    findTarget(ctx, req, principal.role, principal.steamId);
 
   /** Ролите, VIP и наказанията идват заедно при плъгина — едно `reload` ги опреснява (§5). */
   async function reload(actor: string, what: 'roles' | 'vip'): Promise<void> {
@@ -71,7 +74,7 @@ export function playerActionRoutes(ctx: AdminCtx): AdminRoute[] {
       cap: 'vip',
       handle: async (req, res) => {
         const principal = me(res);
-        const found = await target(req, principal.role);
+        const found = await vipTarget(req, principal);
         if (!found.ok)
           return done(res, found.steamId ? profile(found.steamId) : '/admin/players', found.code);
         const body = vipBody.safeParse(req.body);
@@ -121,7 +124,7 @@ export function playerActionRoutes(ctx: AdminCtx): AdminRoute[] {
       cap: 'vip',
       handle: async (req, res) => {
         const principal = me(res);
-        const found = await target(req, principal.role);
+        const found = await vipTarget(req, principal);
         if (!found.ok)
           return done(res, found.steamId ? profile(found.steamId) : '/admin/players', found.code);
         const grantId = grantParam.safeParse(req.params.grantId);

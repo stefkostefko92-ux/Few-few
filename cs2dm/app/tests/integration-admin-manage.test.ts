@@ -196,6 +196,55 @@ describe('панел: роли, VIP, чл. 21', { skip: enabled ? false : 'ня�
     );
     assert.equal(result(revoke), 'saved');
     assert.ok((await db.vipGrant.findUniqueOrThrow({ where: { id: grants[0]!.id } })).revokedAt);
+
+    // VIP е козметика: на себе си — да (и формата се вижда в собствения профил); на по-висок — не.
+    const own = decode(await (await as.OWNER!.get(`/admin/players/${OWNER}`)).text());
+    assert.ok(own.includes(`action="/admin/players/${OWNER}/vip"`), 'формата в собствения профил');
+    const self = await as.OWNER!.send(
+      `/admin/players/${OWNER}/vip`,
+      { tierId: String(saved.id), days: '7' },
+      `/admin/players/${OWNER}`,
+    );
+    assert.equal(result(self), 'saved');
+    const selfGrant = await db.vipGrant.findFirstOrThrow({ where: { steamId: OWNER } });
+    assert.equal(selfGrant.grantedBy, OWNER);
+    const up = await as.ADMIN!.send(
+      `/admin/players/${OWNER}/vip`,
+      { tierId: String(saved.id), days: '7' },
+      `/admin/players/${OWNER}`,
+    );
+    assert.equal(result(up), 'immune');
+    assert.equal(
+      result(
+        await as.ADMIN!.send(
+          `/admin/players/${OWNER}/vip/${selfGrant.id}/revoke`,
+          {},
+          `/admin/players/${OWNER}`,
+        ),
+      ),
+      'immune',
+    );
+    assert.equal(
+      result(
+        await as.OWNER!.send(
+          `/admin/players/${OWNER}/vip/${selfGrant.id}/revoke`,
+          {},
+          `/admin/players/${OWNER}`,
+        ),
+      ),
+      'saved',
+    );
+    // Ролите остават с immunity — на себе си не.
+    assert.equal(
+      result(
+        await as.OWNER!.send(
+          `/admin/players/${OWNER}/role`,
+          { role: 'HELPER' },
+          `/admin/players/${OWNER}`,
+        ),
+      ),
+      'immune',
+    );
     assert.equal(
       result(await as.ADMIN!.send(`/admin/vip/tiers/${saved.id}/delete`, {}, '/admin/vip')),
       'inUse',

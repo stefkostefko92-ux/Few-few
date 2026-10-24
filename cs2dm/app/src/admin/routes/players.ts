@@ -140,6 +140,8 @@ export function playerRoutes(ctx: AdminCtx): AdminRoute[] {
           (start === null || start.getTime() <= now.getTime()) &&
           (end === null || end.getTime() > now.getTime());
         const above = outranks(principal.role, player.role);
+        // VIP — над целта или на себе си (козметика, §1); всичко друго иска `above`.
+        const vipAllowed = above || player.steamId === principal.steamId;
         // Редакторът на статистиките — HEADADMIN+ и само над целта (immunity, §1).
         const editor =
           above && can(principal.role, 'playerData') ? await statsEditorData(ctx, steamId) : null;
@@ -161,6 +163,7 @@ export function playerRoutes(ctx: AdminCtx): AdminRoute[] {
           stats,
           tiers,
           above,
+          vipAllowed,
           editor,
           assignable: above ? assignableRoles(principal.role) : [],
         });
