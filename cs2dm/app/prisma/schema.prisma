@@ -1,0 +1,334 @@
+// cs2dm — единственият източник на истина за схемата на PostgreSQL.
+// Миграциите се правят САМО оттук (`prisma migrate`); C# плъгинът пише в същите таблици с
+// изричен SQL по имената от @map/@@map — промяна на име тук = промяна и в
+// plugins/CarbonStealth/Data/*.cs (договорът е в cs2dm/CONTRACT.md).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// 7 нива (стандартът на Carbon Stealth). Числото на нивото е в CONTRACT.md.
+enum Role {
+  PLAYER
+  VIP
+  HELPER
+  MODERATOR
+  ADMIN
+  HEADADMIN
+  OWNER
+}
+
+enum PunishmentType {
+  BAN
+  MUTE
+  GAG
+  SILENCE
+  WARN
+  KICK
+}
+
+/// Публичната категория в банлиста — свободният текст на причината НЕ е публичен.
+enum PunishmentCategory {
+  CHEATING
+  TOXICITY
+  EXPLOIT
+  SPAM
+  IMPERSONATION
+  OTHER
+}
+
+enum Source {
+  GAME
+  WEB
+  DISCORD
+  SYSTEM
+}
+
+enum CaseStatus {
+  OPEN
+  ACCEPTED
+  REJECTED
+}
+
+enum VipRequestStatus {
+  PENDING
+  AWAITING_PAYMENT
+  PAID
+  REJECTED
+  CANCELLED
+}
+
+model Player {
+  steamId       String    @id @map("steam_id") @db.VarChar(17)
+  name          String    @db.VarChar(64)
+  role          Role      @default(PLAYER)
+  lang          String    @default("en") @db.VarChar(5)
+  firstSeenAt   DateTime  @default(now()) @map("first_seen_at") @db.Timestamptz(3)
+  lastSeenAt    DateTime  @default(now()) @map("last_seen_at") @db.Timestamptz(3)
+  playtimeSec   Int       @default(0) @map("playtime_sec")
+  /// Steam профилът (аватар) се тегли САМО след вход в сайта — Steam Web API ToU.
+  avatarUrl     String?   @map("avatar_url") @db.VarChar(255)
+  webLoginAt    DateTime? @map("web_login_at") @db.Timestamptz(3)
+  discordId     String?   @unique @map("discord_id") @db.VarChar(20)
+  linkedAt      DateTime? @map("linked_at") @db.Timestamptz(3)
+  /// TOTP за панела (роля ≥ HELPER): шифрован с ключа на приложението, никога в чист вид.
+  totpSecretEnc String?   @map("totp_secret_enc")
+  totpEnabledAt DateTime? @map("totp_enabled_at") @db.Timestamptz(3)
+  /// Право на възражение (чл. 21 GDPR): скрит от публичните класации.
+  hiddenFromLeaderboards Boolean @default(false) @map("hidden_from_leaderboards")
+
+  sessions    Session[]
+  stats       PlayerSeasonStats[]
+  weaponStats WeaponSeasonStats[]
+  punishments Punishment[]        @relation("target")
+  vipGrants   VipGrant[]
+  vipRequests VipRequest[]
+
+  @@index([lastSeenAt])
+  @@index([role])
+  @@map("players")
+}
+
+/// Влизания в сървъра. IP е за сигурност/банове — пази се 30 дни (задача за чистене), никога публично.
+model Session {
+  id             BigInt    @id @default(autoincrement())
+  steamId        String    @map("steam_id") @db.VarChar(17)
+  ip             String?   @db.Inet
+  connectedAt    DateTime  @default(now()) @map("connected_at") @db.Timestamptz(3)
+  disconnectedAt DateTime? @map("disconnected_at") @db.Timestamptz(3)
+  player         Player    @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+
+  @@index([steamId, connectedAt])
+  @@index([connectedAt])
+  @@map("sessions")
+}
+
+/// Сезон 0 = „за всички времена“ (сее се от миграцията). Активният сезон е с endsAt = null и id > 0.
+model Season {
+  id       Int       @id
+  name     String    @db.VarChar(64)
+  startsAt DateTime  @map("starts_at") @db.Timestamptz(3)
+  endsAt   DateTime? @map("ends_at") @db.Timestamptz(3)
+
+  stats       PlayerSeasonStats[]
+  weaponStats WeaponSeasonStats[]
+
+  @@map("seasons")
+}
+
+/// Агрегати, които плъгинът увеличава на партиди (UPSERT +=). Два реда на играч: сезон 0 и текущият.
+model PlayerSeasonStats {
+  steamId          String   @map("steam_id") @db.VarChar(17)
+  seasonId         Int      @map("season_id")
+  kills            Int      @default(0)
+  deaths           Int      @default(0)
+  headshots        Int      @default(0)
+  assists          Int      @default(0)
+  damage           Int      @default(0)
+  shotsFired       Int      @default(0) @map("shots_fired")
+  shotsHit         Int      @default(0) @map("shots_hit")
+  bestStreak       Int      @default(0) @map("best_streak")
+  bountiesClaimed  Int      @default(0) @map("bounties_claimed")
+  revenges         Int      @default(0)
+  xp               BigInt   @default(0)
+  playtimeSec      Int      @default(0) @map("playtime_sec")
+  updatedAt        DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
+  player           Player   @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+  season           Season   @relation(fields: [seasonId], references: [id])
+
+  @@id([steamId, seasonId])
+  @@index([seasonId, xp(sort: Desc)])
+  @@index([seasonId, kills(sort: Desc)])
+  @@map("player_season_stats")
+}
+
+/// По оръжие — за weapon mastery (сезон 0) и сезонни класации по оръжие.
+model WeaponSeasonStats {
+  steamId   String @map("steam_id") @db.VarChar(17)
+  seasonId  Int    @map("season_id")
+  weapon    String @db.VarChar(32)
+  kills     Int    @default(0)
+  headshots Int    @default(0)
+  player    Player @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+  season    Season @relation(fields: [seasonId], references: [id])
+
+  @@id([steamId, seasonId, weapon])
+  @@index([seasonId, weapon, kills(sort: Desc)])
+  @@map("weapon_season_stats")
+}
+
+/// Сурови убийства (heatmap-и, „убийство на деня“). Пазят се 90 дни (задача за чистене).
+/// Координатите са световни (Source units); превръщането в пиксели е в CONTRACT.md.
+model Kill {
+  id            BigInt   @id @default(autoincrement())
+  at            DateTime @default(now()) @db.Timestamptz(3)
+  seasonId      Int      @map("season_id")
+  mode          String   @db.VarChar(32)
+  attackerId    String?  @map("attacker_id") @db.VarChar(17)
+  victimId      String   @map("victim_id") @db.VarChar(17)
+  weapon        String   @db.VarChar(32)
+  headshot      Boolean  @default(false)
+  wallbang      Boolean  @default(false)
+  noscope       Boolean  @default(false)
+  throughSmoke  Boolean  @default(false) @map("through_smoke")
+  attackerBlind Boolean  @default(false) @map("attacker_blind")
+  distance      Float    @db.Real
+  ax            Float    @db.Real
+  ay            Float    @db.Real
+  az            Float    @db.Real
+  vx            Float    @db.Real
+  vy            Float    @db.Real
+  vz            Float    @db.Real
+
+  @@index([at])
+  @@index([attackerId, at])
+  @@index([victimId, at])
+  @@map("kills")
+}
+
+/// Наказания. Активен бан: type = BAN, revokedAt = null, expiresAt = null или в бъдещето.
+/// Публичният банлист показва САМО: steamId, targetName, category, createdAt, expiresAt.
+model Punishment {
+  id           Int                @id @default(autoincrement())
+  type         PunishmentType
+  steamId      String             @map("steam_id") @db.VarChar(17)
+  targetName   String             @map("target_name") @db.VarChar(64)
+  category     PunishmentCategory @default(OTHER)
+  /// Вътрешна причина — само за админи, никога публично.
+  reason       String             @db.VarChar(255)
+  createdAt    DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  expiresAt    DateTime?          @map("expires_at") @db.Timestamptz(3)
+  actorSteamId String?            @map("actor_steam_id") @db.VarChar(17)
+  source       Source
+  revokedAt    DateTime?          @map("revoked_at") @db.Timestamptz(3)
+  revokedBy    String?            @map("revoked_by") @db.VarChar(17)
+  revokeReason String?            @map("revoke_reason") @db.VarChar(255)
+  target       Player             @relation("target", fields: [steamId], references: [steamId], onDelete: Cascade)
+  appeals      Appeal[]
+
+  @@index([steamId, type, revokedAt])
+  @@index([type, createdAt(sort: Desc)])
+  @@map("punishments")
+}
+
+/// Обжалване (DSA чл. 17/20 по дух): формуляр на сайта, решение с обосновка.
+model Appeal {
+  id           Int        @id @default(autoincrement())
+  punishmentId Int        @map("punishment_id")
+  steamId      String     @map("steam_id") @db.VarChar(17)
+  message      String     @db.VarChar(2000)
+  contact      String?    @db.VarChar(255)
+  status       CaseStatus @default(OPEN)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  handledAt    DateTime?  @map("handled_at") @db.Timestamptz(3)
+  handledBy    String?    @map("handled_by") @db.VarChar(17)
+  decisionNote String?    @map("decision_note") @db.VarChar(1000)
+  punishment   Punishment @relation(fields: [punishmentId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@map("appeals")
+}
+
+model Report {
+  id              Int        @id @default(autoincrement())
+  reporterSteamId String?    @map("reporter_steam_id") @db.VarChar(17)
+  targetSteamId   String     @map("target_steam_id") @db.VarChar(17)
+  targetName      String     @map("target_name") @db.VarChar(64)
+  reason          String     @db.VarChar(500)
+  source          Source
+  status          CaseStatus @default(OPEN)
+  createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  handledAt       DateTime?  @map("handled_at") @db.Timestamptz(3)
+  handledBy       String?    @map("handled_by") @db.VarChar(17)
+  note            String?    @db.VarChar(500)
+
+  @@index([status, createdAt])
+  @@index([targetSteamId])
+  @@map("reports")
+}
+
+/// Нивата на VIP се управляват от панела — нула цени в кода. Перковете са само козметика.
+model VipTier {
+  id          Int          @id @default(autoincrement())
+  code        String       @unique @db.VarChar(32)
+  name        String       @db.VarChar(64)
+  /// Цена с ДДС в евроцентове (цели числа, никога float).
+  priceCents  Int          @map("price_cents")
+  periodDays  Int          @map("period_days")
+  active      Boolean      @default(true)
+  sortOrder   Int          @default(0) @map("sort_order")
+  grants      VipGrant[]
+  requests    VipRequest[]
+
+  @@map("vip_tiers")
+}
+
+/// Активен VIP: revokedAt = null и startsAt <= сега < endsAt. Без автоматично подновяване.
+model VipGrant {
+  id            Int       @id @default(autoincrement())
+  steamId       String    @map("steam_id") @db.VarChar(17)
+  tierId        Int       @map("tier_id")
+  startsAt      DateTime  @map("starts_at") @db.Timestamptz(3)
+  endsAt        DateTime  @map("ends_at") @db.Timestamptz(3)
+  amountCents   Int?      @map("amount_cents")
+  paymentMethod String?   @map("payment_method") @db.VarChar(32)
+  invoiceNo     String?   @map("invoice_no") @db.VarChar(32)
+  requestId     Int?      @unique @map("request_id")
+  grantedBy     String    @map("granted_by") @db.VarChar(17)
+  note          String?   @db.VarChar(255)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  revokedAt     DateTime? @map("revoked_at") @db.Timestamptz(3)
+  player        Player    @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+  tier          VipTier   @relation(fields: [tierId], references: [id])
+  request       VipRequest? @relation(fields: [requestId], references: [id])
+
+  @@index([steamId, endsAt])
+  @@map("vip_grants")
+}
+
+/// Заявка от сайта. Данните за фактура са лични данни — срок по ЗСч, никога публично/в логове.
+model VipRequest {
+  id                    Int              @id @default(autoincrement())
+  steamId               String           @map("steam_id") @db.VarChar(17)
+  tierId                Int              @map("tier_id")
+  periods               Int              @default(1)
+  billingName           String           @map("billing_name") @db.VarChar(128)
+  billingAddress        String           @map("billing_address") @db.VarChar(255)
+  billingTaxId          String?          @map("billing_tax_id") @db.VarChar(32)
+  email                 String           @db.VarChar(255)
+  immediateStartConsent Boolean          @map("immediate_start_consent")
+  termsVersion          String           @map("terms_version") @db.VarChar(16)
+  status                VipRequestStatus @default(PENDING)
+  createdAt             DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  handledAt             DateTime?        @map("handled_at") @db.Timestamptz(3)
+  handledBy             String?          @map("handled_by") @db.VarChar(17)
+  player                Player           @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+  tier                  VipTier          @relation(fields: [tierId], references: [id])
+  grant                 VipGrant?
+
+  @@index([status, createdAt])
+  @@map("vip_requests")
+}
+
+/// Одит-верига: hash = sha256(prev_hash || съдържание) се смята от тригер в базата (миграцията),
+/// за да е верига и при няколко писача (плъгин, сайт, бот).
+model AuditLog {
+  id            BigInt   @id @default(autoincrement())
+  at            DateTime @default(now()) @db.Timestamptz(3)
+  actorSteamId  String?  @map("actor_steam_id") @db.VarChar(17)
+  action        String   @db.VarChar(64)
+  targetSteamId String?  @map("target_steam_id") @db.VarChar(17)
+  details       Json     @default("{}")
+  source        Source
+  prevHash      String?  @map("prev_hash") @db.Char(64)
+  hash          String?  @db.Char(64)
+
+  @@index([at])
+  @@index([targetSteamId])
+  @@map("audit_log")
+}
