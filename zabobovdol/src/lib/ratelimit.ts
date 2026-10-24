@@ -4,8 +4,11 @@ import { createRateLimiter } from "./ratelimit-core";
 
 // Прост лимит на заявки в паметта (за единичен сървър/контейнер).
 // Пази публичните форми от наводняване с ботове/спам. Логиката (чистене по
-// време, прозорец на запис) е в ./ratelimit-core.ts, за да може да се тества.
-const limiter = createRateLimiter();
+// време с таймер, прозорец на запис) е в ./ratelimit-core.ts, за да може да се
+// тества. Един общ ограничител (globalThis) — при презареждане в разработка не
+// се трупат таймери и отделни таблици с IP адреси.
+const g = globalThis as unknown as { __zbdRateLimiter?: ReturnType<typeof createRateLimiter> };
+const limiter = (g.__zbdRateLimiter ??= createRateLimiter());
 
 /** true = разрешено, false = блокирано. */
 export function rateLimit(

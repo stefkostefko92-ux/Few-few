@@ -17,6 +17,43 @@ test("телефони: 08x, +359, 00359, стационарен, с разде�
   assert.equal(maskPii("кметство 0702 12345"), "кметство [телефон]");
 });
 
+test("телефони с разделители от няколко знака, тирета и скоби", () => {
+  assert.equal(maskPii("088 - 123 - 4567"), "[телефон]");
+  assert.equal(maskPii("обадете се на 0888 - 12 - 34 - 56"), "обадете се на [телефон]");
+  assert.equal(maskPii("0 88 123 45 67"), "[телефон]");
+  assert.equal(maskPii("088 – 123 4567"), "[телефон]");
+  assert.equal(maskPii("0888 / 12 34 56"), "[телефон]");
+  assert.equal(maskPii("+359 (88) 123-45-67"), "[телефон]");
+  assert.equal(maskPii("+359 (88) 123 4567 иван"), "[телефон] иван");
+  assert.equal(maskPii("00359 - 88 - 812 - 3456"), "[телефон]");
+  assert.equal(maskPii("(0702) 12 345"), "([телефон]");
+});
+
+test("голи интернет адреси (без http/www)", () => {
+  assert.equal(maskPii("facebook.com/ivan.petrov"), "[адрес]");
+  assert.equal(maskPii("виж example.bg/път тук"), "виж [адрес] тук");
+  assert.equal(maskPii("профил m.facebook.com/profile.php?id=1"), "профил [адрес]");
+  assert.equal(maskPii("сайт ivan-petrov.eu"), "сайт [адрес]");
+  assert.equal(maskPii("община.бг/новини"), "[адрес]");
+  // Имейлът остава имейл, не „ivan@[адрес]“.
+  assert.equal(maskPii("ivan@abv.bg"), "[имейл]");
+});
+
+test("съкращения с точка НЕ са адреси", () => {
+  for (const q of [
+    "ул.васил левски 12",
+    "гр.бобов дол",
+    "бул.българия",
+    "св.иван рилски",
+    "т.е. нещо",
+    "и т.н.",
+    "с.голема фуча",
+    "др.медицина",
+  ]) {
+    assert.equal(maskPii(q), q, q);
+  }
+});
+
 test("имейли, URL и IBAN", () => {
   assert.equal(maskPii("пиши на ivan.petrov@abv.bg моля"), "пиши на [имейл] моля");
   assert.equal(maskPii("иван@поща.бг"), "[имейл]");
@@ -60,6 +97,7 @@ test("самопроверка: след маскиране няма нищо з
   const samples = [
     "пенсия 4505051234 0888123456 ivan@abv.bg BG80BNBG96611020345678 https://x.bg",
     "+359 2 123 4567 и 12.05.1950",
+    "иван петров 088 - 123 - 4567 facebook.com/ivan.petrov",
   ];
   for (const s of samples) {
     assert.equal(looksLikePii(s), true);

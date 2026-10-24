@@ -28,6 +28,42 @@ test("изтеклите IP записи се чистят по време, до
   assert.equal(rl.has("contact:1.2.3.4"), false);
 });
 
+test("таймерът чисти IP записите и без нито една нова заявка (нощем)", (t) => {
+  t.mock.timers.enable({ apis: ["setInterval"] });
+  let now = 1_000_000;
+  const rl = createRateLimiter(SWEEP_EVERY_MS, { clock: () => now });
+  const tick = (ms: number) => {
+    for (let left = ms; left > 0; left -= SWEEP_EVERY_MS) {
+      now += SWEEP_EVERY_MS;
+      t.mock.timers.tick(SWEEP_EVERY_MS);
+    }
+  };
+  rl.hit("contact:1.2.3.4", 6, 10 * MIN, now);
+  rl.hit("login:5.6.7.8", 8, MAX_WINDOW_MS, now);
+  // Прозорецът още тече → записите стоят (защитата не отслабва).
+  tick(9 * MIN);
+  assert.equal(rl.has("contact:1.2.3.4"), true);
+  // Само времето минава — нула заявки — и записът с 10-минутен прозорец изчезва.
+  tick(2 * MIN);
+  assert.equal(rl.has("contact:1.2.3.4"), false);
+  assert.equal(rl.has("login:5.6.7.8"), true);
+  // Най-дългият прозорец + един интервал — пак под обещаните 20 минути.
+  tick(MAX_WINDOW_MS + SWEEP_EVERY_MS - 11 * MIN);
+  assert.equal(rl.has("login:5.6.7.8"), false);
+  assert.equal(rl.size(), 0);
+  rl.stop();
+});
+
+test("без таймер (timer:false) чистенето е само при заявка", (t) => {
+  t.mock.timers.enable({ apis: ["setInterval"] });
+  const rl = createRateLimiter(SWEEP_EVERY_MS, { timer: false });
+  rl.hit("a:1.2.3.4", 6, MIN, 1_000_000);
+  t.mock.timers.tick(30 * MIN);
+  assert.equal(rl.has("a:1.2.3.4"), true);
+  rl.hit("b", 6, MIN, 1_000_000 + 30 * MIN);
+  assert.equal(rl.has("a:1.2.3.4"), false);
+});
+
 test("кратък прозорец (търсене) НЕ трие записите на дълъг (вход)", () => {
   const rl = createRateLimiter();
   const t0 = 1_000_000;
