@@ -6,7 +6,8 @@ CS2 общностен сървър: **само de_dust2, Deathmatch (FFA)**, п
 `research/cs2-dust2-dm/README.md` (в отделния PR на проучването).
 
 _Сега: **фаза 1** (ванилов сървър под systemd на сегашния VPS) + **фаза 2** (Metamod 2.0 +
-CounterStrikeSharp + DM плъгин на NockyCZ, заковани по sha256) + **фаза 3** (нашият C# плъгин
+CounterStrikeSharp + DM плъгин на NockyCZ + проверени модове — ServerListPlayersFix, Quake Sounds, лъч при
+смърт, SourceTV демота, Cheater Troll, MetaBlock — всички заковани по sha256) + **фаза 3** (нашият C# плъгин
 CarbonStealth на PostgreSQL: банове, админ меню, статистики/XP, банери, реклами, мост към сайта) +
 **сайтът, етап 1** (`app/` — публичната част: статус, класация, профили, банлист, VIP, правни страници;
 Express + EJS + Prisma + Redis + BullMQ) + **агентът на хоста** (`server/agent/`, CONTRACT §9 — ръцете на
@@ -44,10 +45,13 @@ server/update.sh                     UpToDateCheck по PatchVersion → steamcm
 server/a2s.mjs, server/health.mjs    A2S_INFO клиент + CLI за здраве (аналогът на /health)
 server/cfg/gamemode_deathmatch_server.cfg   ВСИЧКИ наши настройки (името, ботове, DM)
 server/cs2dm-lib.sh                  общи функции: патч на gameinfo.gi, проверка на зареждането, ванилов резерв
-server/mods/mods.lock                заковани модове: име · версия · URL · sha256 · метод
+server/mods/mods.lock                заковани модове: име · версия · URL · sha256 · метод (tar · zip · cssplugin)
 server/mods/install-mods.sh          фаза 2: сваля, проверява sha256, инсталира, рестартира (--status · --disable)
-server/mods/config/                  core.json (CSS) · Deathmatch.json (генериран от типовете на плъгина)
-server/systemd/                      cs2.service · cs2-update.service · cs2-update.timer
+server/mods/mods-lib.sh              чистите решения: addon-и (+ звуците), CS2DM_SKIP_MODS, пътища и конфиги на мод
+server/mods/demos-clean.sh           SourceTV демотата: по-стари от 14 дни + таван в GB (вика го таймерът)
+server/mods/config/                  core.json (CSS) · Deathmatch.json (генериран от типовете на плъгина) ·
+                                     QuakeSounds · Cosmetics · DemoRecorder · MetaBlock (.json — наши, презаписват се)
+server/systemd/                      cs2.service · cs2-update.service/.timer · cs2-demos-clean.service/.timer
 server/cs2.env.example               шаблон за /etc/cs2/cs2.env (GSLT, IP, порт, слотове)
 server/mods/install-plugins.sh       фаза 3: билд на CarbonStealth (dotnet или SDK контейнер по digest) → инсталиране → конфиг 0600
 server/mods/plugin-config.mjs        конфигът на плъгина от /etc/cs2/cs2.env (валидира, нищо тайно в изхода)
@@ -56,13 +60,15 @@ server/agent/cs2-agent.mjs           агентът за панела (CONTRACT 
 server/agent/cs2-agent.service       unit: cs2agent, без root и без запис (ProtectSystem=strict, ProtectProc=invisible…)
 server/agent/50-cs2dm-agent.rules    polkit: cs2agent САМО restart cs2.service · start cs2-update.service, иначе NO
 server/agent/install-agent.sh        потребител · файлове · ключове (agent.env + app.env) · unit · polkit · самопроверка
-plugins/src/CarbonStealth.Logic/     чиста логика без CSS (XP, роли, срокове, мост/HMAC, банери) — xunit тестове
+plugins/src/CarbonStealth.Logic/     чиста логика без CSS (XP, роли, срокове, мост/HMAC, банери, CSS права,
+                                     AFK/пинг) — xunit тестове (един файл с тестове на тема)
 plugins/src/CarbonStealth/           плъгинът: един partial клас по тема (Admin, AdminMenu, Banners, Adverts,
-                                     BridgeCommands, Chat, Connection, Stats) + Data/ (Npgsql) + lang/ (en, bg)
+                                     BridgeCommands, Chat, Connection, Stats, CssFlags, FairPlay) + Data/ (Npgsql) + lang/ (en, bg)
 plugins/scripts/build.sh             тестове + publish в plugins/out/; DeathmatchAPI.dll от архива в mods.lock
 addon/                               банери-картинки: build_textures.py → PNG, OBJ плоскости, Workshop стъпки
 CONTRACT.md                          роли, наказания, XP, heatmap, мост, одит, срокове, банери
-test/                                node --test: A2S протокол + конфиг/unit/скриптове + плъгин (конфиг, lang) + агентът
+test/                                node --test: A2S протокол + конфиг/unit/скриптове + плъгин (конфиг, lang) + агентът +
+                                     модовете (modpack: mods-lib, конфигите, демотата, GSLT)
 
 app/                                 сайтът cs2.carbonstealth.eu (етап 1) + панелът /admin (етап 2) — Node 22 · TS strict ESM
   prisma/schema.prisma + migrations/ ЕДИНСТВЕНИЯТ източник на схемата (C# плъгинът пише по @map имената)
@@ -115,7 +121,21 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   се буферира и на VPS-а редът не стигна навреме. Не тръгнат ли — **ванилов старт** (DM е
   вграден), версията в `/var/lib/cs2dm/mods-broken`, нов опит на 6 часа при празен сървър.
 - **Нов мод/версия → ред в `mods.lock` с sha256, сметнат от теб върху свален файл**, никога от
-  страница. Тестът изисква HTTPS и 64-hex хеш.
+  страница. Тестът изисква HTTPS и 64-hex хеш. Преди това: **целият код на мода прочетен** (не README-то),
+  лиценз, разположение на архива (`tar`/`zip` = с `addons/`; `cssplugin` = папката на плъгина в корена) и
+  метаданните на DLL-а — референцията към `CounterStrikeSharp.API` ≤ нашата версия и всеки член съществува в
+  нея (четене на метаданни, без изпълнение). После в същия PR: `cs2dm_mod_paths` (какво маха изключването),
+  `cs2dm_mod_config` + `config/<Име>.json` (ако го настройваме), ред в таблицата на `README.md`, тест в
+  `test/modpack.test.mjs`. Изключване на сървъра: `CS2DM_SKIP_MODS`; звуците: `CS2DM_QUAKE_SOUNDS`.
+- **Конфиг на чужд плъгин, който пази данни, не се презаписва** (CheaterTroll — списъкът с читъри е в
+  неговия JSON). Нашите конфиги (`QuakeSounds`, `Cosmetics`, `DemoRecorder`, `MetaBlock`) се презаписват при
+  всяко `install-mods.sh` — това нулира и `data` на QuakeSounds (SteamID → език/заглушаване), така е обещано.
+- **Workshop addon-ите са един списък:** `cs2dm_addon_list` = `CS2_WORKSHOP_ADDONS` на собственика + звуците
+  на quakesounds накрая, без повторения → `mm_extra_addons`. Нов addon от мод → там, не в env на собственика.
+- **Демотата са лични данни:** папка 0750 само за `cs2`, срок **14 дни** = `RETENTION.demosDays`
+  (`app/src/content.ts`) = аргументът в `cs2-demos-clean.service` (тест), таван `CS2DM_DEMO_MAX_GB`.
+  `tv_relayvoice 0` (без глас), `tv_maxclients 0` (без зрители); `tv_enable` го пуска само DemoRecorder.
+  Unit-ът за чистене е без `EnvironmentFile` (не му трябват тайните) и без мрежа.
 - **`Deathmatch.json` без pay-to-win**: VIP = обикновен играч (респаун, HP, ограничения, „Only for
   VIP“); тестът го пази. Генерира се от типовете на плъгина (`DeathmatchConfig` + STJ опциите на
   CSS), не на ръка — при нова версия на плъгина се генерира наново.
@@ -142,6 +162,14 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   `DropHud`. Админът се държи на място на всеки тик: `VelocityModifier = 0` (клиентът го предсказва) +
   `MOVETYPE_OBSOLETE` (заради noclip) — хваща и тялото след респаун; при затваряне се връщат стойностите отпреди.
   Ново действие = право в `Roles` + метод с одит + ред в менюто + чат команда, ако има смисъл.
+- **Права на CSS за чужди плъгини само през `CssFlagMap`** (`CarbonStealth.Logic/CssFlags.cs`, CONTRACT §1):
+  `SyncCssFlags` след всяко зареждане на ролята (`ApplySnapshot`), `CssFlagLedger` помни кои права са наши →
+  махаме само тях (понижение, излизане, `Unload`); admins.json на собственика не се пипа. **Никога `@css/vip`**
+  (DM плъгинът го чете за VIP → pay-to-win) **и `@css/root`** — тест в C# и в node.
+- **Честна игра (`FairPlay.cs`) никога не изритва** — само наблюдател. AFK брои секунди без вход (клавиши
+  или поглед) само докато е жив; смърт = пауза, не нулиране; след респаун погледът се засича наново. Пинг —
+  средно за 30 засичания, предупреждение, още 15 → наблюдател. Изключения: HELPER+ и отворено WASD меню
+  (`_huds`); ролята още не е заредена → не пипаме. Праговете: `CS2DM_AFK_SECONDS` / `CS2DM_MAX_PING`.
 - Нова колона/таблица → миграция в `app/prisma` (Prisma е собственикът на схемата), после SQL-а в `Data/`.
 - Пакетите са заключени (`packages.lock.json`, `RestoreLockedMode`); нов пакет/версия → `dotnet restore
   --force-evaluate` и lock файлът в същия PR.

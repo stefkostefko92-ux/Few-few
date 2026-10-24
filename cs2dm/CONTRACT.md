@@ -25,6 +25,12 @@
 право: активният `VipGrant` дава VIP козметика; `Player.role = VIP` не се ползва за това.
 Роля ≥ `HELPER` изисква TOTP в панела.
 
+Роли → права на CounterStrikeSharp, за да ни познават чуждите плъгини (`CssFlagMap` в
+`CarbonStealth.Logic`, само в паметта на сървъра, махат се при излизане/понижение):
+`HELPER`+ `@css/generic` · `MODERATOR`+ `@css/chat` `@css/kick` · `ADMIN`+ `@css/ban` `@css/slay` ·
+`HEADADMIN`+ `@cheatertroll/admin`. Никога `@css/vip` (DM плъгинът го чете за VIP → pay-to-win) и
+`@css/root` (само собственикът от `admins.json`).
+
 ## 2. Наказания
 
 - Активен бан: `type = BAN`, `revoked_at IS NULL`, `expires_at IS NULL OR expires_at > now()`.
@@ -117,7 +123,8 @@ Redis слуша само на `127.0.0.1` с парола (ACL). Ключове
 
 `sessions` (с IP) — 30 дни · `kills` — 90 дни · обжалвания и доклади — 1 година след решение ·
 заявки за VIP с данни за фактура — по ЗСч ⚠️ (да се потвърди от счетоводител). Чистенето е BullMQ
-задача в приложението.
+задача в приложението. SourceTV демотата (файлове на хоста, не в базата) — 14 дни + таван на размера,
+чисти ги `cs2-demos-clean.timer` (`RETENTION.demosDays` в `app/src/content.ts` е същото число — тест).
 
 ## 8. Банери в картата (`map_banners`)
 
