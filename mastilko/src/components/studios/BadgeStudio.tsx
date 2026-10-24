@@ -1,6 +1,6 @@
 "use client";
 
-import { z } from "zod";
+import { z } from "zod/v3";
 import { sheetGrid } from "@/lib/print";
 import { resolveTheme, fontVars, elementFont, sheetBg, readableAccent, textOnSolid, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { type WarmTheme } from "@/lib/themes";

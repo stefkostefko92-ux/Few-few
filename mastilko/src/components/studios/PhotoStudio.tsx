@@ -1,6 +1,6 @@
 "use client";
 
-import { z } from "zod";
+import { z } from "zod/v3";
 import { sheetGrid } from "@/lib/print";
 import { useLocalState } from "@/lib/use-local-state";
 import ImageUpload from "@/components/ImageUpload";

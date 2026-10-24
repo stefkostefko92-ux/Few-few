@@ -4,7 +4,7 @@
 // мрежа. Стойностите минават през Zod (StyleSchemaShape), затова чуждите/
 // невалидните полета се отрязват, преди да влязат в текущото студио.
 
-import { z } from "zod";
+import { z } from "zod/v3";
 import { StyleSchemaShape, type StyleState } from "@/lib/style";
 
 const StyleOnly = z.object(StyleSchemaShape).partial();

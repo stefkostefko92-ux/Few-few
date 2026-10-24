@@ -1,6 +1,6 @@
 "use client";
 
-import { z } from "zod";
+import { z } from "zod/v3";
 import { LABEL_PRESETS, sheetGrid } from "@/lib/print";
 import { resolveTheme, fontVars, resolveDecor, sheetBg, qrSafeColor, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
