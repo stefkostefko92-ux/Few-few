@@ -9,6 +9,10 @@ export const SECTION = {
   money: "Пари и документи",
   city: "Градът",
   site: "За сайта",
+  // Инструментите — същите имена като групите на менюто в site.ts.
+  daily: "Всеки ден",
+  signals: "Пари и сигнали",
+  health: "Здраве",
 } as const;
 
 export type SectionKey = keyof typeof SECTION;
