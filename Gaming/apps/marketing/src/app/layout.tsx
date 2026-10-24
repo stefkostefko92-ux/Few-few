@@ -4,7 +4,7 @@ import { SITE } from "../lib/site";
 import { JsonLd } from "../components/JsonLd";
 import { Footer, Header } from "../components/Chrome";
 import { organizationLd, webAppLd, websiteLd } from "../lib/jsonld";
-import { alternatesFor } from "../lib/seo";
+import { KEYWORDS, alternatesFor } from "../lib/seo";
 import { I18nProvider } from "../i18n/I18nProvider";
 import { Analytics } from "../components/Analytics";
 
@@ -20,18 +20,7 @@ export const metadata: Metadata = {
   },
   description: SITE.description,
   applicationName: SITE.name,
-  keywords: [
-    "игри на карти",
-    "белот онлайн",
-    "сантасе",
-    "шах онлайн",
-    "табла",
-    "билярд онлайн",
-    "снукър онлайн",
-    "тексас холдем",
-    "браузърни игри",
-    "безплатни игри",
-  ],
+  keywords: KEYWORDS.bg,
   authors: [{ name: SITE.org.legalName, url: SITE.org.url }],
   creator: SITE.org.legalName,
   publisher: SITE.org.legalName,
