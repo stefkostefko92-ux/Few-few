@@ -1,33 +1,43 @@
-// The drawing tools of the sketch editor that work with one drag: pen, line, rectangle, circle (centre,
-// then radius), ellipse (its box), arrow (tail, then tip), symbol (its box — a tap places it at its
-// usual size) and eraser. Points snap (schizzo-aggancio.js) except the pen's; a drag shorter than the
-// pointer's slop is a tap and draws nothing (a finger never leaves slivers). Every element goes through
-// the rules of the server (schizzo-regole.js) before it is committed. The tools with a value to type and
-// the polyline — schizzo-testi.js.
+// The shapes of the sketch editor, each one drag: line, rectangle, circle (centre, then radius), ellipse
+// (its box), arrow (tail, then tip), symbol (its box — a tap places it at its usual size). Points snap
+// (schizzo-aggancio.js); a drag shorter than the pointer's slop is a tap, never a sliver — for a shape it
+// is the first of two clicks (the start; the next tap ends the shape: a mouse on a computer clicks, it
+// does not drag). Every element goes through the rules of the server (schizzo-regole.js) before it is
+// committed. The pen and the eraser — schizzo-penna.js; the tools with a value to type —
+// schizzo-testi.js, schizzo-quota.js; the polyline — schizzo-polilinea.js.
 (() => {
   'use strict';
 
   const ed = window.rilieviSchizzoEditor;
   if (!ed) return;
   const { view, regole } = ed;
-  const SIMPLIFY = 1.2;
   const round = (p) => ({ x: Math.round(p.x), y: Math.round(p.y) });
   const far = (a, b) => Math.hypot(a.x - b.x, a.y - b.y) > ed.tol('slop');
 
-  // The snap ring (CSS pixels, whatever the zoom) and what it caught, in the hint line.
-  const ring = (snapped) => {
+  // The snap ring (CSS pixels, whatever the zoom) and what it caught, in the hint line; `from` — a start
+  // set by a first click, marked with a small cross while the second one is awaited.
+  const ring = (snapped, from = null) => {
     ed.snapKind(snapped && snapped.kind);
+    const caught = snapped && snapped.kind ? snapped.p : null;
     ed.setDecor(
-      snapped && snapped.kind
+      caught || from
         ? (ctx, px) => {
+            if (from) ed.shared.paintMark(ctx, from, ed.style().c, px);
+            if (!caught) return;
             ctx.lineWidth = 2 * px;
             ctx.strokeStyle = '#1565c0';
             ctx.beginPath();
-            ctx.arc(snapped.p.x, snapped.p.y, 10 * px, 0, Math.PI * 2);
+            ctx.arc(caught.x, caught.y, 10 * px, 0, Math.PI * 2);
             ctx.stroke();
           }
         : null,
     );
+  };
+
+  // A start waiting for its second click: the hint says so and Annulla can drop it (schizzo-comandi.js).
+  const waitFor = (on, hint) => {
+    if (ed.waiting) ed.waiting(on);
+    ed.hint(on ? 'secondoPunto' : hint);
   };
 
   // A new element at the end of the sheet, in the shape the server takes.
@@ -36,144 +46,105 @@
     return ready && ed.commit(ed.elements.concat([ready])) ? ready : null;
   };
 
-  // Ramer–Douglas–Peucker: the points that keep the shape of the stroke within `eps` sheet units.
-  const simplify = (pts, eps) => {
-    if (pts.length < 3) return pts;
-    const keep = new Uint8Array(pts.length);
-    keep[0] = keep[pts.length - 1] = 1;
-    const stack = [[0, pts.length - 1]];
-    while (stack.length) {
-      const [a, b] = stack.pop();
-      const dx = pts[b].x - pts[a].x;
-      const dy = pts[b].y - pts[a].y;
-      const length = Math.hypot(dx, dy);
-      let farthest = 0;
-      let index = -1;
-      for (let i = a + 1; i < b; i += 1) {
-        const px = pts[i].x - pts[a].x;
-        const py = pts[i].y - pts[a].y;
-        const d = length ? Math.abs(dx * py - dy * px) / length : Math.hypot(px, py);
-        if (d > farthest) {
-          farthest = d;
-          index = i;
-        }
-      }
-      if (farthest > eps) {
-        keep[index] = 1;
-        stack.push([a, index], [index, b]);
-      }
-    }
-    return pts.filter((_, i) => keep[i]);
-  };
-
-  // The paths of points: "M x y" and relative "l dx dy", at most `maxSegmenti` segments each (the
-  // server's limit) — each next one starts where the last one ended. A dot is "l0 0".
-  const pathsOf = (pts, closed = false) => {
-    const paths = [];
-    for (let from = 0; from === 0 || from < pts.length - 1; from += view.maxSegmenti) {
-      const part = pts.slice(from, from + view.maxSegmenti + 1);
-      let d = `M${part[0].x} ${part[0].y}`;
-      if (part.length === 1) d += 'l0 0';
-      for (let i = 1; i < part.length; i += 1) {
-        d += `l${part[i].x - part[i - 1].x} ${part[i].y - part[i - 1].y}`;
-      }
-      paths.push(d);
-    }
-    if (closed && paths.length === 1) paths[0] += 'z';
-    return paths;
-  };
-
-  const pen = () => {
-    let points = null;
-    let current = null;
-    return {
-      hint: 'penna',
-      down(p) {
-        const style = ed.style();
-        points = [round(p)];
-        current = { t: 'p', ...style, raw: points };
-        ed.setPreview([current]);
-      },
-      move(p) {
-        if (!points) return;
-        const q = round(p);
-        const last = points[points.length - 1];
-        if (q.x !== last.x || q.y !== last.y) points.push(q);
-        ed.setPreview([current]);
-      },
-      up() {
-        if (!points) return;
-        const { c, s, k } = current;
-        const inside = simplify(points, SIMPLIFY).map((q) => ({
-          x: Math.min(view.larghezza, Math.max(0, q.x)),
-          y: Math.min(view.altezza, Math.max(0, q.y)),
-        }));
-        points = null;
-        current = null;
-        ed.setPreview([]);
-        const strokes = pathsOf(inside).map((d) => regole.normalizza({ t: 'p', c, s, k, d }));
-        if (strokes.every(Boolean)) ed.commit(ed.elements.concat(strokes));
-      },
-      cancel() {
-        points = null;
-        current = null;
-        ed.setPreview([]);
-      },
-    };
-  };
-
   // A tool of one drag: `make(start, end)` gives the element (or null); `angle` — the end snaps to
-  // 0/45/90° from the start; `tap(point)` — what a tap does (nothing by default).
+  // 0/45/90° from the start; `tap(point)` — what a tap does. Without one, a tap sets the start and the
+  // shape follows the pointer until the next tap ends it (two clicks instead of a drag — the owner on a
+  // computer, 24 October 2026: „non vedo le linee“); Annulla, Esc or another tool drop the start.
   const drag = ({ hint, make, angle = false, snapEnd = true, tap = null, after = null }) => {
     let start = null;
     let end = null;
     let downAt = null;
     let moved = false;
+    let waiting = false;
+    const endOf = (p) =>
+      snapEnd ? ed.snap(p, { from: angle ? start : null }) : { p: round(p), kind: null };
     const reset = () => {
+      if (waiting) waitFor(false, hint);
       start = null;
       end = null;
       moved = false;
+      waiting = false;
       ed.setPreview([]);
       ring(null);
+    };
+    // The end of a shape whose start a first click set follows the pointer.
+    const follow = (p) => {
+      const snapped = endOf(p);
+      end = snapped.p;
+      ring(snapped, start);
+      const el = make(start, end, ed.style());
+      ed.setPreview(el ? [el] : []);
+    };
+    // A second click on the start itself is no shape: the start goes with it.
+    const finish = () => {
+      const el = make(start, end, ed.style());
+      reset();
+      const added = el && add(el);
+      if (added && after) after(added);
     };
     return {
       hint,
       hover(p) {
-        ring(ed.snap(p));
+        if (waiting) follow(p);
+        else ring(ed.snap(p));
       },
       leave() {
-        ring(null);
+        if (!waiting) ring(null);
       },
       down(p) {
+        downAt = p;
+        moved = false;
+        if (waiting) {
+          follow(p);
+          return;
+        }
         const snapped = ed.snap(p);
         start = snapped.p;
         end = start;
-        downAt = p;
-        moved = false;
         ring(snapped);
       },
       move(p) {
         if (!start) return;
         if (far(p, downAt)) moved = true;
-        const snapped = snapEnd ? ed.snap(p, { from: angle ? start : null }) : { p: round(p) };
+        if (waiting) {
+          follow(p);
+          return;
+        }
+        const snapped = endOf(p);
         end = snapped.p;
         ring(snapped);
         const el = moved ? make(start, end, ed.style()) : null;
         ed.setPreview(el ? [el] : []);
       },
-      up() {
+      up(p) {
         if (!start) return;
-        const [a, b, wasMoved] = [start, end, moved];
-        reset();
-        if (!wasMoved) {
-          if (tap) tap(a);
+        if (waiting) {
+          follow(p);
+          finish();
           return;
         }
-        const el = make(a, b, ed.style());
-        const added = el && add(el);
-        if (added && after) after(added);
+        if (moved) {
+          finish();
+          return;
+        }
+        if (tap) {
+          const a = start;
+          reset();
+          tap(a);
+          return;
+        }
+        waiting = true;
+        waitFor(true, hint);
+        ed.setPreview([]);
+        ring(null, start);
       },
       cancel: reset,
+      // Annulla and Esc: a start waiting for its second click goes first.
+      undo() {
+        if (!waiting) return false;
+        reset();
+        return true;
+      },
     };
   };
 
@@ -237,40 +208,7 @@
     if (added) ed.selectNew([added]);
   };
 
-  const eraser = () => {
-    let erased = null;
-    const rub = (p) => {
-      const radius = ed.tol('hit');
-      const took = ed.elements.filter((el) => !erased.has(el) && ed.shared.hitOf(el, p, radius));
-      if (!took.length) return;
-      took.forEach((el) => erased.add(el));
-      ed.setHidden(new Set(erased));
-    };
-    return {
-      hint: 'gomma',
-      down(p) {
-        erased = new Set();
-        rub(p);
-      },
-      move(p) {
-        if (erased) rub(p);
-      },
-      up() {
-        if (!erased) return;
-        const gone = erased;
-        erased = null;
-        ed.setHidden(null);
-        if (gone.size) ed.commit(ed.elements.filter((el) => !gone.has(el)));
-      },
-      cancel() {
-        erased = null;
-        ed.setHidden(null);
-      },
-    };
-  };
-
   ed.tools = Object.assign(ed.tools || {}, {
-    penna: pen(),
     linea: drag({ hint: 'linea', make: line, angle: true }),
     rettangolo: drag({ hint: 'rettangolo', make: rect }),
     cerchio: drag({ hint: 'cerchio', make: circle }),
@@ -282,9 +220,8 @@
       tap: placeSymbol,
       after: (added) => ed.selectNew([added]),
     }),
-    gomma: eraser(),
   });
-  ed.pathsOf = pathsOf;
   ed.add = add;
   ed.ring = ring;
+  ed.waitFor = waitFor;
 })();

@@ -1,11 +1,12 @@
 // The sketch pad in a real browser (public/js/schizzi.js, schizzo-*.js): the MASTER turns it on for the
-// company, a new sheet opens the full-screen editor, every tool draws (schizzi-strumenti.mjs); "Done"
-// gives the sheet back to the form (preview, unsaved changes) with the text still being typed, the sheet
-// is drawn again from a tap on its preview (schizzi-tastiera.mjs), saved, shown (a tap — on the whole
-// screen), printed; the editor (with a menu open) and the
+// company, a new sheet opens the full-screen editor, every tool draws (schizzi-strumenti.mjs) — with two
+// clicks too (schizzi-clic.mjs); "Done" gives the sheet back to the form (preview, unsaved changes) with
+// the text still being typed, the sheet is drawn again from a tap on its preview (schizzi-tastiera.mjs),
+// saved, shown (a tap — on the whole screen), printed; the editor (with a menu open) and the
 // block pass the accessibility audit; the layouts of a tablet and of a phone on its side.
 import { join } from 'node:path';
 import { audit, fail } from './helpers.mjs';
+import { checkTwoClicks } from './schizzi-clic.mjs';
 import { drawEverything } from './schizzi-strumenti.mjs';
 import {
   checkFocusAfterMenu,
@@ -55,6 +56,9 @@ export async function checkSketches(page, { base, aziendaPath, sheetUrl, shots, 
   };
   await reopen();
   await checkKeyboard(page, dialog, reopen);
+  await done();
+  await reopen();
+  await checkTwoClicks(page, dialog);
   await done();
   await reopen();
   await checkReopened(page, dialog);

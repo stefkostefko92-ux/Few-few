@@ -29,6 +29,8 @@
 
   // The bar under the tools: one group at a time.
   let polylineOpen = false;
+  // A start set by a first click, its second click awaited (schizzo-strumenti.js): Annulla drops it.
+  let startWaiting = false;
   const showGroup = () => {
     const name =
       ed.valueBar && ed.valueBar.isOpen
@@ -43,7 +45,7 @@
     });
   };
   const buttons = () => {
-    undoButton.disabled = !(ed.canUndo() || polylineOpen);
+    undoButton.disabled = !(ed.canUndo() || polylineOpen || startWaiting);
     redoButton.disabled = !ed.canRedo();
     const can = ed.actions.available();
     dialog.querySelectorAll('[data-schizzo-azione]').forEach((b) => {
@@ -59,6 +61,10 @@
     buttons();
   };
   ed.barChanged = showGroup;
+  ed.waiting = (active) => {
+    startWaiting = active;
+    buttons();
+  };
   ed.polyline = (active, canClose) => {
     polylineOpen = active;
     q('[data-schizzo-poli="chiudi"]').disabled = !canClose;
@@ -231,6 +237,7 @@
     initial = JSON.stringify(list);
     closed = chiuso;
     polylineOpen = false;
+    startWaiting = false;
     title.textContent = (texts.titolo || '').replace('{n}', () => String(n));
     ed.error('');
     dialog.showModal();
