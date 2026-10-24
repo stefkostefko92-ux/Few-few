@@ -72,10 +72,11 @@ preflight() {
     os_id="$(sed -n 's/^ID=//p' /etc/os-release | tr -d '"')"
     os_ver="$(sed -n 's/^VERSION_ID=//p' /etc/os-release | tr -d '"')"
   fi
-  if [[ "$os_id" == ubuntu && ( "$os_ver" == 24.04 || "$os_ver" == 22.04 ) ]]; then
+  # 26.04 (resolute): пакетите по-долу са в main под същите имена (проверено в архива).
+  if [[ "$os_id" == ubuntu && ( "$os_ver" == 22.04 || "$os_ver" == 24.04 || "$os_ver" == 26.04 ) ]]; then
     ok "ОС: $pretty"
   else
-    warn "ОС: $pretty — скриптът е писан за Ubuntu 22.04/24.04"
+    warn "ОС: $pretty — скриптът е писан за Ubuntu 22.04/24.04/26.04"
   fi
 
   if [[ "$(uname -m)" == x86_64 ]]; then ok "архитектура x86_64"; else fail "нужна е x86_64 (сега: $(uname -m))"; fi
