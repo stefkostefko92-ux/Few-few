@@ -3,7 +3,7 @@
 // bot when a user clicks/submits a verification challenge.
 
 import { Router } from "express";
-import { z } from "zod";
+import { z } from "zod/v3";
 import { prisma } from "../lib/prisma.js";
 import { grantXpOnce, XP_REWARDS } from "../lib/game/xp.js";
 import { requireAuth, loadUser, requireServerAdmin, requireBotSecret } from "../middleware/auth.js";
