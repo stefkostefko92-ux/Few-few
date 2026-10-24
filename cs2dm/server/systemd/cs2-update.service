@@ -1,0 +1,8 @@
+[Unit]
+Description=cs2dm: проверка на версията на CS2 и ъпдейт при нужда
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/cs2dm/update.sh

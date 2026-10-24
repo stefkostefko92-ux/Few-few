@@ -1,0 +1,24 @@
+{
+  "name": "cs2dm",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CarbonStealth.eu | Dust2 DM — CS2 Deathmatch сървър само на Dust2: конфигурация, systemd, ъпдейти и проверка на здравето.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "Carbon Stealth",
+    "CS2",
+    "Counter-Strike 2",
+    "Dust2",
+    "Deathmatch",
+    "CS2 сървър"
+  ],
+  "scripts": {
+    "lint": "bash -n server/install.sh && bash -n server/update.sh && node --check server/a2s.mjs && node --check server/health.mjs",
+    "test": "node --test test/*.test.mjs",
+    "gate": "npm run lint && npm test && node ../tools/vps/deploy-check.mjs server"
+  }
+}

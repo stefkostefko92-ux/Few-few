@@ -1,0 +1,36 @@
+name: cs2dm
+
+on:
+  push:
+    paths:
+      - 'cs2dm/**'
+      - '.github/workflows/cs2dm.yml'
+  pull_request:
+    paths:
+      - 'cs2dm/**'
+      - '.github/workflows/cs2dm.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cs2dm-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        node: [20, 22]
+    defaults:
+      run:
+        working-directory: cs2dm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      # Нула зависимости → без npm ci. Съставът на гейта живее в package.json („gate“), не тук.
+      - run: npm run gate
