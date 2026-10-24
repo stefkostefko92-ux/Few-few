@@ -7,6 +7,11 @@ import { buildMetadata, webPageLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { SECTION } from "@/lib/section-names";
 import { SITE } from "@/lib/site";
+import { UI_LABEL, quoted } from "@/lib/ui-labels";
+
+// Динамична: редът „отпечатано на …“ на хартия (PrintSourceLine) е денят на
+// зареждане, не денят на билда.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({
   title: "Общи условия за ползване",
@@ -101,7 +106,7 @@ export default function TermsPage() {
           <p>
             До телефоните в „Услуги“ пишем <strong>„Проверено на …“</strong> и
             източника, когато сме сверили номера. Ако видите грешен или стар номер,
-            натиснете бутона <strong>„Този номер е сгрешен“</strong> до него (виж{" "}
+            натиснете бутона <strong>{quoted(UI_LABEL.phoneWrong)}</strong> до него (вж.{" "}
             <SecRef n={6} />).
           </p>
           <p>
@@ -157,7 +162,7 @@ export default function TermsPage() {
             смятате, че публикувана обява, снимка, спомен или друго потребителско
             съдържание е незаконно или нарушава тези условия, можете да ни
             уведомите по електронен път — чрез бутона{" "}
-            <strong>„Сигнализирай за това съдържание“</strong> под всяка такава
+            <strong>{quoted(UI_LABEL.report)}</strong> под всяка такава
             публикация или на{" "}
             {SITE.contact.email ? (
               <a href={`mailto:${SITE.contact.email}`}>{SITE.contact.email}</a>
@@ -184,7 +189,7 @@ export default function TermsPage() {
               съгласувал публикуването със семейството. Подателят отговаря за
               верността на данните и за това, че публикуването е съгласувано.
               Отметката във формата е негово потвърждение за това — тя не е
-              съгласие от името на други хора за личните им данни (виж{" "}
+              съгласие от името на други хора за личните им данни (вж.{" "}
               <Link href="/poveritelnost">Политиката за поверителност</Link>,{" "}
               <SecRef n={5} doc="/poveritelnost" />).
             </li>
@@ -248,7 +253,7 @@ export default function TermsPage() {
             <li>
               Описанието е кратка информация за бизнеса — какво предлага, къде е и
               кога работи. <strong>Не е място за реклама</strong>: без промоции,
-              рекламни призиви и обещания. Платената реклама е отделна услуга (виж
+              рекламни призиви и обещания. Платената реклама е отделна услуга (вж.
               страница <Link href="/reklama">„Реклама“</Link>).
             </li>
             <li>

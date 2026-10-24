@@ -21,6 +21,11 @@ import { TelLink } from "@/components/TelLink";
 import { buildMetadata, faqPageLd } from "@/lib/seo";
 import { SECTION } from "@/lib/section-names";
 import { SITE } from "@/lib/site";
+import { UI_LABEL, quoted } from "@/lib/ui-labels";
+
+// Динамична: редът „отпечатано на …“ на хартия (PrintSourceLine) е денят на
+// зареждане, не денят на билда.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({
   title: "Достъпност — помощ за хора с увреждания на зрението, слуха и моториката",
@@ -50,15 +55,15 @@ const TOC = {
 } as const satisfies Toc;
 
 // Надписите съвпадат с лентата най-горе („Аа Настройки за четене“: Текст А А А,
-// Контраст, Тъмен режим, По-лесно докосване).
-const BAR = "„Аа Настройки за четене“";
+// Контраст, Тъмен режим, По-лесно докосване) — виж UI_LABEL.
+const BAR = quoted(UI_LABEL.readingBar);
+const BAR_SHORT = quoted(UI_LABEL.readingBarShort);
 
 // Въпроси и отговори — за AEO (Answer Engine Optimization) и гласови търсачки.
 const FAQ: { question: string; answerText: string }[] = [
   {
     question: "Как да уголемя текста на сайта?",
-    answerText:
-      "Най-горе на всяка страница натиснете „Аа Настройки за четене“ (на телефон — „Настройки“) и после едно от трите „А“ до „Текст“ — нормален, голям или много голям. Изборът се запомня за следващите посещения.",
+    answerText: `Най-горе на всяка страница натиснете ${BAR} (на телефон — ${BAR_SHORT}) и после едно от трите „А“ до „Текст“ — нормален, голям или много голям. Изборът се запомня за следващите посещения.`,
   },
   {
     question: "Не чувам добре по телефона. Как да се свържа с институция?",
@@ -72,8 +77,7 @@ const FAQ: { question: string; answerText: string }[] = [
   },
   {
     question: "Бутоните са ми малки за натискане. Какво да направя?",
-    answerText:
-      "Най-горе на всяка страница натиснете „Аа Настройки за четене“ и после „По-лесно докосване“ — бутоните, връзките и полетата стават по-големи и по-лесни за натискане, удобно при треперене на ръцете.",
+    answerText: `Най-горе на всяка страница натиснете ${BAR} и после „По-лесно докосване“ — бутоните, връзките и полетата стават по-големи и по-лесни за натискане, удобно при треперене на ръцете.`,
   },
 ];
 
@@ -135,7 +139,7 @@ export default function AccessibilityPage() {
             <p className="mt-4 text-lg text-slate-700">
               Всички тези бутони са в лентата най-горе на всяка страница, над менюто.
               Натиснете <strong className="font-semibold">{BAR}</strong> (на телефон —{" "}
-              <strong className="font-semibold">„Настройки“</strong>), за да се покажат.
+              <strong className="font-semibold">{BAR_SHORT}</strong>), за да се покажат.
               Изборът ви се запомня за следващите посещения.
             </p>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">

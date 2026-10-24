@@ -4,7 +4,7 @@
 // телефон — сгънато над текста) и заглавен ред на таблиците.
 // Стилът е от globals.css (.panel, .chip, .label-caps, .table-stack…).
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import { ChevronDown } from "@/components/icons";
 import { PrintButton } from "@/components/PrintButton";
 import { PrintSourceLine } from "@/components/PrintSourceLine";
@@ -69,6 +69,11 @@ export function LegalMeta({ updated, current }: { updated: string; current: Lega
   );
 }
 
+/**
+ * Точките на съдържанието. Еднакъв отстъп над и под текста (py-2.5, текстът
+ * отгоре, не центриран): между едноредова и двуредова точка разстоянието е
+ * едно и също, а целта пак е ≥44px.
+ */
 function TocLinks({ items }: { items: [string, string][] }) {
   return (
     <ul role="list" className="mt-1">
@@ -76,7 +81,7 @@ function TocLinks({ items }: { items: [string, string][] }) {
         <li key={id}>
           <a
             href={`#${id}`}
-            className="link-quiet flex min-h-tap items-center py-1 text-base leading-snug text-brand-700"
+            className="link-quiet flex min-h-tap items-start py-2.5 text-base leading-snug text-brand-700"
           >
             {label}
           </a>
@@ -90,7 +95,8 @@ function TocLinks({ items }: { items: [string, string][] }) {
  * Тялото на правния документ: колона за четене (подравнена с H1, не
  * центрирана) + съдържание. На lg съдържанието е лепкаво вдясно; на телефон
  * е сгънато над текста. На хартия съдържанието не излиза, а най-долу има
- * ред „отпечатано на …“ с адреса на страницата.
+ * ред „отпечатано на …“ с адреса на страницата — затова страниците на
+ * документите са `force-dynamic` (иначе датата е денят на билда).
  */
 export function LegalLayout({
   toc,
@@ -163,8 +169,46 @@ export function LegalTableHead({ cols }: { cols: readonly string[] }) {
   );
 }
 
-/** Класът на таблица в правен текст (виж LegalTableHead). */
-export const LEGAL_TABLE = "table-stack [&_td]:text-base";
+/**
+ * Класът на таблица в правен текст (виж LegalTableHead). <code> в таблицата
+ * НЕ се къса където и да е (в .prose-content е `overflow-wrap: anywhere`):
+ * авто-ширината на колоните иначе троши имената по средата
+ * („zbd_splash_see/n“). Дългите имена се пренасят след „_“ — виж CodeName.
+ */
+export const LEGAL_TABLE = "table-stack [&_td]:text-base [&_code]:[overflow-wrap:normal]";
+
+/**
+ * Таблица с 4 колони и <code> (бисквитките): стек като .table-stack, но под xl
+ * (1280px), не само под 640px. Най-тясната ѝ ширина е ~566px при шрифт 125% —
+ * на 640–767px и на 1024–1279px (до колоната е съдържанието) не се събира и
+ * имената се трошат по средата („zbd_sessi/on“) или излиза от колоната.
+ */
+export const LEGAL_TABLE_WIDE =
+  "table-stack [&_td]:text-base [&_code]:[overflow-wrap:normal] max-xl:block [&_thead]:max-xl:sr-only [&_tbody]:max-xl:block [&_tr]:max-xl:block [&_tr]:max-xl:border-b [&_tr]:max-xl:border-slate-200 [&_tr]:max-xl:py-3 [&_td]:max-xl:block [&_td]:max-xl:w-full [&_td]:max-xl:border-0 [&_td]:max-xl:px-0 [&_td]:max-xl:py-1 [&_td]:max-xl:text-left [&_td]:max-xl:before:block [&_td]:max-xl:before:text-sm [&_td]:max-xl:before:font-semibold [&_td]:max-xl:before:text-slate-600 [&_td]:max-xl:before:content-[attr(data-label)]";
+
+/**
+ * Техническо име (бисквитка, запис в браузъра) като <code>. Дългото (над 16
+ * знака) може да се пренесе само след „_“: „zbd_install_banner_/hidden_until“,
+ * не по средата на дума; краткото („zbd_session“) остава цяло.
+ */
+export function CodeName({ children }: { children: string }) {
+  if (children.length <= 16) return <code>{children}</code>;
+  const parts = children.split("_");
+  return (
+    <code>
+      {parts.map((p, i) => (
+        <Fragment key={i}>
+          {p}
+          {i < parts.length - 1 && (
+            <>
+              _<wbr />
+            </>
+          )}
+        </Fragment>
+      ))}
+    </code>
+  );
+}
 
 /**
  * „т. 3“ като връзка към раздела (в същия документ или в друг). В

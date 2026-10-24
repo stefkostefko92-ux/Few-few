@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/ui";
 import {
+  CodeName,
   LEGAL_TABLE,
+  LEGAL_TABLE_WIDE,
   LegalLayout,
   LegalMeta,
   LegalTableHead,
@@ -13,6 +15,11 @@ import { buildMetadata, webPageLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { SECTION } from "@/lib/section-names";
 import { SITE } from "@/lib/site";
+import { UI_LABEL, quoted } from "@/lib/ui-labels";
+
+// Динамична: редът „отпечатано на …“ на хартия (PrintSourceLine) е денят на
+// зареждане, не денят на билда.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({
   title: "Политика за бисквитки",
@@ -100,11 +107,11 @@ export default function CookiesPage() {
             броят на нашия сървър: записват се само денят, страницата, източникът
             (напр. „от споделяне“, „от google“ или „от друг сайт“ — без името на
             чуждия сайт) и броят — без идентификатор и без нищо записано във
-            вашето устройство. Натисканията на някои бутони („Сподели“,
-            телефонен номер, „Помогна ли ви?“ и др.) се броят по същия начин:
+            вашето устройство. Натисканията на някои бутони ({quoted(UI_LABEL.share)},
+            телефонен номер, {quoted(UI_LABEL.helpful)} и др.) се броят по същия начин:
             браузърът изпраща само името на бутона, страницата и маркера на
             източника. Ако браузърът ви изпраща сигнал за отказ (GPC или „Do Not
-            Track“), не се изпраща нищо (виж по-долу{" "}
+            Track“), не се изпраща нищо (вж. по-долу{" "}
             <a href="#otkaz">„Как да откажете броенето на бутоните“</a>). Подробности — в{" "}
             <Link href="/poveritelnost">Политиката за поверителност</Link>,{" "}
             <SecRef n={3} doc="/poveritelnost" />.
@@ -116,18 +123,20 @@ export default function CookiesPage() {
             и то само за хора, които влизат в административната част (редактори и
             администратори).
           </p>
-          <table className={LEGAL_TABLE}>
+          <table className={LEGAL_TABLE_WIDE}>
             <LegalTableHead cols={["Бисквитка", "Цел", "Свойства", "Срок"]} />
             <tbody>
               <tr>
                 <td>
-                  <code>zbd_session</code>
+                  <CodeName>zbd_session</CodeName>
                 </td>
                 <td data-label="Цел">
                   Поддържа входа в административната част (само за редактори и
                   администратори).
                 </td>
-                <td data-label="Свойства">httpOnly, SameSite=strict</td>
+                <td data-label="Свойства">
+                  <code>httpOnly</code>, <code>SameSite=strict</code>
+                </td>
                 <td data-label="Срок">До 8 часа</td>
               </tr>
             </tbody>
@@ -137,7 +146,7 @@ export default function CookiesPage() {
           <p>
             За удобство сайтът използва т.нар. „локално съхранение“ в браузъра ви.
             Това <strong>не са бисквитки</strong>, стоят на вашето устройство, не
-            се изпращат към нас (с едно изключение — разговорът с помощника, виж
+            се изпращат към нас (с едно изключение — разговорът с помощника, вж.
             по-долу) и не ви проследяват в други сайтове. Нито един от тези записи
             не съдържа идентификатор. Описваме ги тук за пълна прозрачност:
           </p>
@@ -146,7 +155,7 @@ export default function CookiesPage() {
             <tbody>
               <tr>
                 <td>
-                  <code>zbd_chat_v2</code>
+                  <CodeName>zbd_chat_v2</CodeName>
                 </td>
                 <td data-label="Цел">
                   Пази разговора с дигиталния помощник, докато браузърът е
@@ -162,7 +171,7 @@ export default function CookiesPage() {
               </tr>
               <tr>
                 <td>
-                  <code>zbd_splash_seen</code>
+                  <CodeName>zbd_splash_seen</CodeName>
                 </td>
                 <td data-label="Цел">
                   Запомня, че началният екран е показан веднъж за сесията, за да
@@ -183,11 +192,11 @@ export default function CookiesPage() {
               </tr>
               <tr>
                 <td>
-                  <code>zbd_install_banner_hidden_until</code>
+                  <CodeName>zbd_install_banner_hidden_until</CodeName>
                 </td>
                 <td data-label="Цел">
-                  Запомня, че сте натиснали „Не сега“ на лентата „Сложи на
-                  телефона“. Пази само дата — до кога лентата да не се показва (30
+                  Запомня, че сте натиснали {quoted(UI_LABEL.installDismiss)} на лентата{" "}
+                  {quoted(UI_LABEL.install)}. Пази само дата — до кога лентата да не се показва (30
                   дни). Записва се само ако натиснете бутона.
                 </td>
               </tr>
@@ -231,7 +240,7 @@ export default function CookiesPage() {
             създава.
           </p>
           <p>
-            Спирате известията с бутона „Спри известията“ на същата страница —
+            Спирате известията с бутона {quoted(UI_LABEL.pushOff)} на същата страница —
             абонаментът се изтрива и от нашата база. Може и да ги забраните от
             настройките на браузъра или телефона. Подробности — в{" "}
             <Link href="/poveritelnost">Политиката за поверителност</Link>,{" "}
@@ -245,7 +254,7 @@ export default function CookiesPage() {
             тях и за това какви данни (напр. IP адрес) се предават четете в{" "}
             <Link href="/poveritelnost#t8">Политиката за поверителност</Link> (Open-Meteo за
             времето, OpenStreetMap за картата, услугата за известия на браузъра ви
-            и др.). Бутоните „Сподели“ (менюто на телефона или връзки към Viber,
+            и др.). Бутоните {quoted(UI_LABEL.share)} (менюто на телефона или връзки към Viber,
             WhatsApp и Facebook) и връзките към нашия Viber канал и Google Play са
             обикновени връзки — не зареждаме чужди скриптове и нищо не се
             изпраща към тези услуги, докато не ги натиснете.
