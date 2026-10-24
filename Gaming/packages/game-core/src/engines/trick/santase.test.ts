@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { SeededRng } from "../../kernel/rng.js";
 import { playRandom } from "../../bots/playout.js";
-import { santaseEngine, type SantaseState } from "./santase.js";
+import { FALSE_DECLARE_GP, santaseEngine, type SantaseState } from "./santase.js";
 import type { Card } from "./cards.js";
 
 const init = (seed = "s66"): SantaseState =>
@@ -149,5 +149,147 @@ describe("santase engine", () => {
     const winner = score.find((x) => x.result === "win")!;
     // If seat 0 failed the close, opponent (seat 1) wins with a 2-3 penalty.
     if (winner.seat === 1) expect(winner.points).toBeGreaterThanOrEqual(2);
+  });
+
+  it("шварц (3) е само при нула взятки: губещ с една взятка за 0 точки (9+9) → 2, не 3", () => {
+    // Фаза 2 (празно тесте, няма коз отгоре). Място 0 е на 60 и печели с AH.
+    const base: SantaseState = {
+      ...init(),
+      hands: [["AH", "9S"], ["JH", "9C"]],
+      stock: [],
+      trumpCard: null,
+      trump: "S",
+      trick: [],
+      turn: 0,
+      leader: 0,
+      closed: false,
+      closedBy: null,
+      pendingMarriage: [0, 0],
+    };
+    const play = (st: SantaseState) => {
+      const rng = new SeededRng("schwarz");
+      const a = santaseEngine.reduce(st, { type: "PLAY", card: "AH" }, rng).state;
+      const b = santaseEngine.reduce(a, { type: "PLAY", card: "JH" }, rng).state;
+      // 66 не се отчита само — печелившият обявява „Имам 66“.
+      expect(b.dealNo).toBe(st.dealNo);
+      return santaseEngine.reduce(b, { type: "DECLARE" }, rng).state;
+    };
+    // Губещият (място 1) е взел взятка 9+9 = 0 точки → не е шварц.
+    const tookZero = play({ ...base, points: [60, 0], wonTrick: [true, true] });
+    expect(tookZero.lastDealWinner).toBe(0);
+    expect(tookZero.gamePoints).toBe(2);
+    // Контрола: без нито една взятка → шварц, 3.
+    const noTrick = play({ ...base, points: [60, 0], wonTrick: [true, false] });
+    expect(noTrick.lastDealWinner).toBe(0);
+    expect(noTrick.gamePoints).toBe(3);
+  });
+
+  it("провалено затваряне: наказанието никога не е шварц само заради 0 точки на затворилия с взятка", () => {
+    // Затворилият (0) е с 0 точки, но с взятка (9+9); противникът е имал взятка при затварянето.
+    const base: SantaseState = {
+      ...init(),
+      hands: [["9H"], ["AH"]],
+      stock: [],
+      trumpCard: null,
+      trump: "S",
+      trick: [],
+      turn: 0,
+      leader: 0,
+      closed: true,
+      closedBy: 0,
+      oppHadTrickAtClose: true,
+      points: [0, 40],
+      wonTrick: [true, true],
+      pendingMarriage: [0, 0],
+    };
+    const rng = new SeededRng("closed");
+    const a = santaseEngine.reduce(base, { type: "PLAY", card: "9H" }, rng).state;
+    const b = santaseEngine.reduce(a, { type: "PLAY", card: "AH" }, rng).state;
+    expect(b.lastDealWinner).toBe(1);
+    expect(b.gamePoints).toBe(2);
+  });
+
+  describe("обявяване „Имам 66“", () => {
+    const lead = (over: Partial<SantaseState>): SantaseState => ({
+      ...init(),
+      hands: [["AH", "KC", "QC"], ["9D", "JD", "9S"]] as Card[][],
+      trump: "S",
+      trick: [],
+      turn: 0,
+      leader: 0,
+      closed: false,
+      closedBy: null,
+      pendingMarriage: [0, 0],
+      wonTrick: [true, true],
+      points: [0, 0],
+      ...over,
+    });
+
+    it("reaching 66 by a trick does NOT end the deal by itself", () => {
+      const s = lead({ points: [60, 10], hands: [["AH", "9C"], ["JH", "9D"]] as Card[][], stock: [], trumpCard: null });
+      const rng = new SeededRng("d");
+      const a = santaseEngine.reduce(s, { type: "PLAY", card: "AH" }, rng).state;
+      const b = santaseEngine.reduce(a, { type: "PLAY", card: "JH" }, rng).state;
+      expect(b.points[0]).toBe(73);
+      expect(b.dealNo).toBe(s.dealNo);
+      expect(b.turn).toBe(0);
+      expect(santaseEngine.legalActions(b, 0)).toContainEqual({ type: "DECLARE" });
+    });
+
+    it("a correct declaration wins the deal by the normal 1/2/3 rule", () => {
+      const s = lead({ points: [70, 40] });
+      const { state, events } = santaseEngine.reduce(s, { type: "DECLARE" }, new SeededRng("d"));
+      expect(events).toContainEqual({ type: "DECLARE", seat: 0, points: 70, valid: true });
+      expect(state.lastDealWinner).toBe(0);
+      expect(state.gamePoints).toBe(1);
+      expect(state.matchPoints).toEqual([1, 0]);
+    });
+
+    it("a false declaration gives the opponent 3 game points", () => {
+      const s = lead({ points: [60, 50] });
+      const { state, events } = santaseEngine.reduce(s, { type: "DECLARE" }, new SeededRng("d"));
+      expect(events).toContainEqual({ type: "DECLARE", seat: 0, points: 60, valid: false });
+      expect(state.lastDealWinner).toBe(1);
+      expect(state.gamePoints).toBe(FALSE_DECLARE_GP);
+      expect(state.matchPoints).toEqual([0, 3]);
+    });
+
+    it("a marriage counts toward the declaration (20/40) once the player has a trick", () => {
+      const s = lead({ points: [50, 20] });
+      expect(santaseEngine.legalActions(s, 0)).toContainEqual({ type: "DECLARE", marriage: "KC" });
+      const { state, events } = santaseEngine.reduce(s, { type: "DECLARE", marriage: "KC" }, new SeededRng("d"));
+      expect(events).toContainEqual({ type: "MARRIAGE", seat: 0, suit: "C", value: 20 });
+      expect(events).toContainEqual({ type: "DECLARE", seat: 0, points: 70, valid: true });
+      expect(state.lastDealWinner).toBe(0);
+      // без взятка женитбата не се предлага за обявяване
+      expect(santaseEngine.legalActions(lead({ wonTrick: [false, true] }), 0)).not.toContainEqual({
+        type: "DECLARE",
+        marriage: "KC",
+      });
+    });
+
+    it("only the player on lead may declare", () => {
+      const s = lead({ points: [70, 0], turn: 1, leader: 1 });
+      expect(santaseEngine.legalActions(s, 0)).toEqual([]);
+      const mid = lead({ points: [70, 0], turn: 1, leader: 0, trick: [{ seat: 0, card: "AH" }] });
+      expect(santaseEngine.legalActions(mid, 1).some((a) => a.type === "DECLARE")).toBe(false);
+    });
+
+    it("closed talon: the non-closer declaring 66 wins with the closing penalty", () => {
+      const s = lead({ points: [70, 40], closed: true, closedBy: 1, oppHadTrickAtClose: true, stock: [], trumpCard: null });
+      const { state } = santaseEngine.reduce(s, { type: "DECLARE" }, new SeededRng("d"));
+      expect(state.lastDealWinner).toBe(0);
+      expect(state.gamePoints).toBe(2);
+    });
+
+    it("the bot declares exactly — only with a real 66", () => {
+      expect(santaseEngine.bot!(lead({ points: [66, 0] }), 0, new SeededRng("b"))).toEqual({ type: "DECLARE" });
+      expect(santaseEngine.bot!(lead({ points: [50, 0] }), 0, new SeededRng("b"))).toEqual({
+        type: "DECLARE",
+        marriage: "KC",
+      });
+      const no = santaseEngine.bot!(lead({ points: [40, 0] }), 0, new SeededRng("b"));
+      expect(no?.type).not.toBe("DECLARE");
+    });
   });
 });

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
-import { formatDualPrice, type ProductView, type VipPerks, type VipTier } from "@aso/shared";
+import { extraQuestSlots, formatDualPrice, type ProductView, type VipPerks, type VipTier } from "@aso/shared";
 import { Badge, Button, Panel } from "../../ui";
-import { ApiError, api } from "../../lib/api";
+import { api } from "../../lib/api";
 import { useAuthStore } from "../../lib/store";
+import { SubscriptionPanel, useVipStatus } from "./SubscriptionPanel";
+import { checkoutErrorKey } from "./shopErrors";
 
 type VipPerksMap = Record<VipTier, VipPerks>;
 
@@ -22,7 +24,12 @@ function perkLines(p: VipPerks, t: (k: string, o?: Record<string, unknown>) => s
     lines.push(t("shop.perk.daily", { p: Math.round((p.dailyChipMultiplier - 1) * 100) }));
   if (p.monthlyGems > 0) lines.push(t("shop.perk.gems", { n: p.monthlyGems }));
   if (p.exclusiveCosmetics) lines.push(t("shop.perk.cosmetics"));
-  lines.push(t("shop.perk.quests", { n: p.questSlots }));
+  // Слотовете са допълнителни ротиращи дневни задачи спрямо безплатния профил
+  // (прилагат се сървърно в `ensureQuests`), затова показваме само надбавката.
+  const extraQuests = extraQuestSlots(p);
+  if (extraQuests > 0) lines.push(t("shop.perk.quests", { n: extraQuests }));
+  // Значката се показва в профила/хедъра, класациите и списъка с приятели —
+  // не и на масата, затова текстът не обещава повече от това.
   if (p.nameBadge) lines.push(t("shop.perk.badge"));
   return lines;
 }
@@ -40,6 +47,10 @@ export function Shop() {
   // the 14-day withdrawal right; VIP → 14-day right with proportional deduction.
   const [consented, setConsented] = useState<Record<string, boolean>>({});
   const [params] = useSearchParams();
+  // Абонатът не вижда бутони за покупка на VIP (сървърът би върнал
+  // already_subscribed) — вместо тях: видимо „Управление или отказ“.
+  const vip = useVipStatus();
+  const subscribed = Boolean(vip?.subscription);
 
   useEffect(() => {
     api
@@ -71,11 +82,7 @@ export function Shop() {
       const { url } = await api.checkout(sku);
       if (url) window.location.href = url;
     } catch (err) {
-      setNotice(
-        err instanceof ApiError && err.code === "stripe_unavailable"
-          ? t("shop.unavailable")
-          : t("shop.error"),
-      );
+      setNotice(t(checkoutErrorKey(err)));
     } finally {
       setBusy(null);
     }
@@ -100,6 +107,8 @@ export function Shop() {
       {notice ? (
         <Panel className="mb-6 border-brass-400/40 py-3 text-center text-ink-100">{notice}</Panel>
       ) : null}
+
+      <SubscriptionPanel vip={vip} className="mb-6" />
 
       {grouped.map((group) => (
         <section key={group.kind} className="mb-8">
@@ -129,36 +138,46 @@ export function Shop() {
                       </ul>
                     ) : null}
                   </div>
-                  <div>
-                    <label className="mb-3 flex items-start gap-2 text-xs text-ink-300">
-                      <input
-                        type="checkbox"
-                        checked={consented[p.sku] ?? false}
-                        onChange={(e) =>
-                          setConsented((c) => ({ ...c, [p.sku]: e.target.checked }))
-                        }
-                        className="mt-0.5 size-4 shrink-0 accent-brass-300"
-                      />
-                      <span>
-                        {p.kind === "VIP_SUB"
-                          ? t("shop.consentSubscription")
-                          : t("shop.consentImmediate")}
-                      </span>
-                    </label>
-                    <Button
-                      loading={busy === p.sku}
-                      disabled={!billingEnabled || !(consented[p.sku] ?? false)}
-                      onClick={() => void buy(p.sku)}
-                      className="w-full"
-                    >
-                      {billingEnabled ? eur(p.priceCents) : `${eur(p.priceCents)} · ${t("shop.soon")}`}
-                    </Button>
-                    {!(consented[p.sku] ?? false) ? (
-                      <p className="mt-1.5 text-center text-[0.7rem] text-ink-muted">
-                        {t("shop.consentRequired")}
-                      </p>
-                    ) : null}
-                  </div>
+                  {p.kind === "VIP_SUB" && subscribed ? (
+                    <p className="text-center text-xs text-ink-300">
+                      {vip?.subscription?.tier === p.vipTier ? `${t("shop.sub.current")} · ` : null}
+                      {t("shop.sub.manageFromPanel")}
+                    </p>
+                  ) : (
+                    <div>
+                      <label className="mb-3 flex items-start gap-2 text-xs text-ink-300">
+                        <input
+                          type="checkbox"
+                          checked={consented[p.sku] ?? false}
+                          onChange={(e) =>
+                            setConsented((c) => ({ ...c, [p.sku]: e.target.checked }))
+                          }
+                          className="mt-0.5 size-4 shrink-0 accent-brass-300"
+                        />
+                        <span>
+                          {p.kind === "VIP_SUB"
+                            ? t("shop.consentSubscription")
+                            : t("shop.consentImmediate")}
+                        </span>
+                      </label>
+                      <Button
+                        loading={busy === p.sku}
+                        disabled={!billingEnabled || !(consented[p.sku] ?? false)}
+                        onClick={() => void buy(p.sku)}
+                        className="w-full"
+                      >
+                        {/* Чл. 8(2) Дир. 2011/83: бутонът казва недвусмислено, че поръчката е с плащане. */}
+                        {billingEnabled
+                          ? t("shop.payButton", { price: eur(p.priceCents) })
+                          : `${eur(p.priceCents)} · ${t("shop.soon")}`}
+                      </Button>
+                      {!(consented[p.sku] ?? false) ? (
+                        <p className="mt-1.5 text-center text-[0.7rem] text-ink-muted">
+                          {t("shop.consentRequired")}
+                        </p>
+                      ) : null}
+                    </div>
+                  )}
                 </Panel>
               </li>
             ))}

@@ -6,6 +6,7 @@ import {
   type LobbySnapshot,
   type MagnatConfig,
 } from "@aso/shared";
+import { BACKGAMMON_MATCH_TARGETS, resolveBackgammonMatchTo } from "@aso/game-core";
 import { Badge, Button, Panel } from "../../ui";
 import { api, type FriendEntry } from "../../lib/api";
 import { useAuthStore } from "../../lib/store";
@@ -147,6 +148,7 @@ export function RoomView({ lobby }: { lobby: LobbySnapshot }) {
       </Panel>
 
       {lobby.game === "MAGNAT" && isHost ? <MagnatConfigPanel lobby={lobby} /> : null}
+      {lobby.game === "BACKGAMMON" ? <BackgammonConfigPanel lobby={lobby} isHost={isHost} /> : null}
 
       <InviteFriends lobbyId={lobby.id} seated={lobby.seats.map((s) => s.userId).filter(Boolean) as string[]} />
     </div>
@@ -207,6 +209,32 @@ function MagnatConfigPanel({ lobby }: { lobby: LobbySnapshot }) {
       >
         {t("magnat.resetRules")}
       </button>
+    </Panel>
+  );
+}
+
+/** Табла: до колко точки е мачът (3/5/7). Домакинът избира, останалите виждат. */
+function BackgammonConfigPanel({ lobby, isHost }: { lobby: LobbySnapshot; isHost: boolean }) {
+  const { t } = useTranslation();
+  const matchTo = resolveBackgammonMatchTo(lobby.config);
+  return (
+    <Panel className="mb-4">
+      <h2 className="mb-3 text-lg text-ink-300">{t("backgammon.matchLength")}</h2>
+      <div className="flex flex-wrap items-center gap-2" role="radiogroup" aria-label={t("backgammon.matchLength")}>
+        {BACKGAMMON_MATCH_TARGETS.map((n) => (
+          <Button
+            key={n}
+            role="radio"
+            aria-checked={matchTo === n}
+            variant={matchTo === n ? "brass" : "felt"}
+            disabled={!isHost}
+            onClick={() => lobbyActions.setConfig(lobby.id, { matchTo: n })}
+          >
+            {t("backgammon.matchToShort", { target: n })}
+          </Button>
+        ))}
+      </div>
+      <p className="mt-2 text-xs text-ink-muted">{t("backgammon.matchHint")}</p>
     </Panel>
   );
 }

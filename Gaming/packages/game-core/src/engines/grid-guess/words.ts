@@ -18,6 +18,10 @@ import { WORDS_BG } from "./wordlist-bg.js";
  *   costs a life (WRONG event); the player keeps the turn while alive.
  * - PASS costs a life and RESEEDS the chain with a fresh unused word, so a
  *   dead-end letter never forces a pass spiral.
+ * - Chain letter: a word ending in „й“, „ь“ or „ъ“ (чай, брой, герой) hands on
+ *   the letter BEFORE it (чай → „а“) — almost no nouns start with those.
+ * - A turn timeout is a PASS (life lost, `timeoutAction`) — the server never
+ *   lets a bot type a word for a player who just waits out the clock.
  * - Answers are never served: `legalActions` exposes only PASS; free-form PLAY
  *   input is checked by `validate` + `reduce` (server-authoritative).
  *
@@ -52,7 +56,18 @@ export type WordsEvent =
   | { type: "WIN"; seat: Seat };
 
 const firstLetter = (w: string): string => w[0] ?? "";
-const lastLetter = (w: string): string => w[w.length - 1] ?? "";
+/** Letters that never start the next word: the chain skips back over them. */
+const SKIP_LAST = new Set(["й", "ь", "ъ"]);
+/** The letter the NEXT word must start with: the last letter, skipping a
+ *  trailing „й/ь/ъ“ (чай → „а“, брой → „о“). */
+export function chainLetter(w: string): string {
+  for (let i = w.length - 1; i >= 0; i--) {
+    const ch = w[i]!;
+    if (!SKIP_LAST.has(ch)) return ch;
+  }
+  return w[w.length - 1] ?? "";
+}
+const lastLetter = chainLetter;
 
 /** Words available now: in the set, unused, and starting with the required letter. */
 export function availableWords(state: WordsState): string[] {
@@ -158,6 +173,11 @@ export const wordsEngine: GameEngine<WordsState, WordsAction, WordsEvent> = {
     events.push({ type: "PLAY", seat, word });
     next.turn = nextAlive(next, seat);
     return { state: next, events };
+  },
+
+  // A clock timeout costs a life exactly like PASS (and reseeds the chain).
+  timeoutAction(state, seat) {
+    return !state.done && seat === state.turn ? { type: "PASS" } : null;
   },
 
   // Bot: pick a uniformly random valid word; pass only when truly stuck.
