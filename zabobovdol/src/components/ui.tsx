@@ -100,14 +100,19 @@ export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
       aria-label="Навигация по трохи"
       className="text-base text-slate-600 sm:text-sm print:hidden"
     >
+      {/* sm:hidden е на обвивката, не на самата връзка: правилото за
+          „по-лесно докосване“ (html.bt … a { display:inline-flex }) е
+          по-специфично от .sm:hidden и показваше и двата вида трохи. */}
       {parent && (
-        <Link
-          href={parent.path}
-          className="-ml-1 inline-flex min-h-tap items-center gap-1 rounded-lg px-1 font-medium text-slate-700 underline decoration-slate-300 underline-offset-4 hover:text-brand-700 hover:decoration-brand-700 sm:hidden"
-        >
-          <ChevronDown className="h-5 w-5 shrink-0 rotate-90" aria-hidden />
-          {parent.name}
-        </Link>
+        <div className="sm:hidden">
+          <Link
+            href={parent.path}
+            className="-ml-1 inline-flex min-h-tap items-center gap-1 rounded-lg px-1 font-medium text-slate-700 underline decoration-slate-300 underline-offset-4 hover:text-brand-700 hover:decoration-brand-700"
+          >
+            <ChevronDown className="h-5 w-5 shrink-0 rotate-90" aria-hidden />
+            {parent.name}
+          </Link>
+        </div>
       )}
       <ol className="hidden flex-wrap items-center gap-x-1 gap-y-0.5 sm:flex">
         {crumbs.map((c, i) => {
@@ -141,26 +146,35 @@ export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
  * „Проверено на 24 октомври 2026 г. · Източници: НОИ, АСП“. Без `reviewed`
  * показва „Последна редакция: …“ от `updated`. Датата е РЕАЛНА (от базата или
  * константа до текста) — същата като dateModified в JSON-LD.
+ *
+ * `wall` — `reviewed` е стенно време, въведено от админа в поле datetime-local
+ * (`Faq.reviewedAt`, `verifiedAt` и др. от resources.ts): показва се както е
+ * въведено, без превод през Europe/Sofia (иначе 23:30 става следващия ден).
+ * Важи само за `reviewed`: `updated` (updatedAt) е истински момент и винаги
+ * се показва по часа на София — и когато е резервът при празно `reviewed`.
  */
 export function PageMeta({
   reviewed,
   updated,
   sources,
+  wall = false,
   className = "",
 }: {
   reviewed?: DateInput | null;
   updated?: DateInput | null;
   sources?: string | readonly string[];
+  wall?: boolean;
   className?: string;
 }) {
   const parts: ReactNode[] = [];
   const when = reviewed ?? updated ?? null;
-  const text = when != null ? formatDate(when) : "";
+  const dateOpts = { wall: wall && reviewed != null };
+  const text = when != null ? formatDate(when, dateOpts) : "";
   if (when != null && text) {
     parts.push(
       <span key="d">
         {reviewed != null ? "Проверено на " : "Последна редакция: "}
-        <time dateTime={isoDate(when)}>{text}</time>
+        <time dateTime={isoDate(when, dateOpts)}>{text}</time>
       </span>,
     );
   }
