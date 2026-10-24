@@ -74,7 +74,21 @@ public sealed partial class CarbonStealthPlugin
 
     private readonly Dictionary<int, HudState> _huds = new();
 
-    private void RegisterHud() => RegisterListener<Listeners.OnTick>(OnHudTick);
+    private void RegisterHud()
+    {
+        RegisterListener<Listeners.OnTick>(OnHudTick);
+        RegisterListener<Listeners.OnTick>(SteadyCenterHtml);
+    }
+
+    /// <summary>
+    /// CS2 сама кара центъра (PrintToCenterHtml) да мига заради флага m_bGameRestart. Известното заобикаляне
+    /// (Poggu; ползва го и FlashingHtmlHudFix): на всеки тик флагът е „рестартът е минал“. Важи и за
+    /// обявленията и предупрежденията, не само за менюто.
+    /// </summary>
+    private void SteadyCenterHtml()
+    {
+        if (GameRulesNow() is { } rules) rules.GameRestart = rules.RestartRoundTime < Server.CurrentTime;
+    }
 
     private void OpenHud(CCSPlayerController player, Func<HudPage> root)
     {
