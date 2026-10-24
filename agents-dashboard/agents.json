@@ -1184,7 +1184,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 525
+        "lessons": 527
       },
       "evolution": [
         {
@@ -2008,9 +2008,20 @@
           "date": "2026-10-24",
           "event": "v40.7 — учене",
           "detail": "Научи: panev/server.js сервира целия корен през express.static(__dirname) (:305) с ръчен block… (+1 още)"
+        },
+        {
+          "version": "40.9.0",
+          "date": "2026-10-24",
+          "event": "v40.9 — учене",
+          "detail": "Научи: React 19 (react-dom 19.2.x) обезврежда javascript: URL в href/src и в dev, и в prod. sa… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-24",
+          "type": "learning",
+          "summary": "Научи: „React 19 (react-dom 19.2.x) обезврежда javascript: URL в href/src и в dev, и в prod. sa…\" (+1 още) · 1 в карантина"
+        },
         {
           "date": "2026-10-24",
           "type": "learning",
