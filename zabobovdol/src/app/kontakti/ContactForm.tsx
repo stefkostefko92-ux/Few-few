@@ -38,6 +38,10 @@ export function ContactForm() {
       <FormError state={state} innerRef={errorRef} />
       <RequiredNote />
 
+      <Field name="subject" label="Тема" optional error={f.error("subject")} hint="Напр. „нова услуга“.">
+        <input {...f.props("subject", { hint: true })} maxLength={160} className={INPUT} />
+      </Field>
+
       <Field
         name="message"
         label="Съобщение"
@@ -52,10 +56,6 @@ export function ContactForm() {
           maxLength={5000}
           className={INPUT}
         />
-      </Field>
-
-      <Field name="subject" label="Тема" optional error={f.error("subject")} hint="Напр. „нова услуга“.">
-        <input {...f.props("subject", { hint: true })} maxLength={160} className={INPUT} />
       </Field>
 
       <fieldset className="fieldset">

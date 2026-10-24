@@ -36,7 +36,7 @@ export default function NewObituaryPage() {
         ]}
       />
       <div className="container-content py-10">
-        <FormLayout aside={<PublishInfo />}>
+        <FormLayout aside={<PublishInfo />} asideFirst>
           <ObituaryForm
             phone={friendlyPhone(SITE.contact.phone)}
             consentText={CONSENT_TEXT}
@@ -48,7 +48,8 @@ export default function NewObituaryPage() {
   );
 }
 
-// Какво се публикува, снимката и свалянето — до формата, не в нея.
+// Какво се публикува, снимката и свалянето — до формата, не в нея. На телефон
+// е над формата: на тези бележки се основава съгласието преди „Изпратете“.
 function PublishInfo() {
   const [user, domain] = SITE.contact.email.split("@");
   const tel = (

@@ -25,15 +25,26 @@ export const metadata: Metadata = buildMetadata({
   ],
 });
 
-// Имейлът се пренася само след „@“ (никога насред домейна).
+// Имейлът се пренася само след „@“ и след точките в домейна — така при
+// уголемен текст редът никога не започва с „.eu“ и не цепи дума наполовина.
 function EmailText({ email }: { email: string }) {
   const at = email.indexOf("@");
   if (at < 0) return <>{email}</>;
+  const domain = email.slice(at + 1).split(".");
   return (
     <>
       {email.slice(0, at + 1)}
       <wbr />
-      {email.slice(at + 1)}
+      {domain.map((part, i) => (
+        <span key={i}>
+          {part}
+          {i < domain.length - 1 && (
+            <>
+              .<wbr />
+            </>
+          )}
+        </span>
+      ))}
     </>
   );
 }
@@ -67,13 +78,17 @@ export default function ContactsPage() {
               <PhoneButton phone={SITE.contact.phone} label="Обадете се:" full className="justify-start" />
             )}
             {SITE.contact.email && (
+              // Адресът е на собствен ред под иконата и „Пишете ни:“ — така
+              // има цялата ширина на бутона и при 320px и шрифт 125% се
+              // пренася само след „@“ (не „carbonstealth / .eu“).
               <a
                 href={`mailto:${SITE.contact.email}`}
-                className="btn-secondary w-full justify-start text-left [overflow-wrap:anywhere]"
+                className="btn-secondary w-full flex-wrap justify-start gap-x-2 gap-y-0 text-left [overflow-wrap:anywhere]"
               >
                 <Mail className="h-5 w-5 shrink-0" aria-hidden />
-                <span className="min-w-0">
-                  Пишете ни: <EmailText email={SITE.contact.email} />
+                <span>Пишете ни:</span>
+                <span className="min-w-0 basis-full">
+                  <EmailText email={SITE.contact.email} />
                 </span>
               </a>
             )}

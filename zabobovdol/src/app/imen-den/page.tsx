@@ -96,23 +96,27 @@ export default async function NameDayPage({
             <label htmlFor="ime" className="label">
               Име
             </label>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <input
-                id="ime"
-                name="ime"
-                type="search"
-                defaultValue={query}
-                className="input min-w-0 flex-1"
-                autoComplete="off"
-                aria-describedby="ime-hint"
-              />
+            {/* Подсказката е точно под полето (като във FormKit), бутонът —
+                под тях на телефон и вдясно от полето от sm нагоре. */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+              <div className="min-w-0 flex-1">
+                <input
+                  id="ime"
+                  name="ime"
+                  type="search"
+                  defaultValue={query}
+                  className="input"
+                  autoComplete="off"
+                  aria-describedby="ime-hint"
+                />
+                <p id="ime-hint" className="mt-1.5 text-base text-slate-600">
+                  Напр. Иван, Мария, Георги.
+                </p>
+              </div>
               <button type="submit" className="btn-primary w-full sm:w-auto">
                 Намерете
               </button>
             </div>
-            <p id="ime-hint" className="mt-1.5 text-base text-slate-600">
-              Напр. Иван, Мария, Георги.
-            </p>
           </form>
           {found && (
             <div className="mt-4 text-lg" role="status">

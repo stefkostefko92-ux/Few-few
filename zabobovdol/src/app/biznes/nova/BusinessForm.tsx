@@ -60,10 +60,12 @@ export function BusinessForm({
 
   return (
     <form key={state.attempt ?? 0} action={action} className={FORM} noValidate>
+      {/* Скритите полета — само в началото, при скритите на React: FORM нулира
+          отстъпа на първия видим ред след тях, а скрито поле по средата би
+          изяло отстъпа на следващия fieldset. */}
+      {target && <input type="hidden" name="za" value={target.slug} />}
       <FormError state={state} innerRef={errorRef} />
       <RequiredNote />
-
-      {target && <input type="hidden" name="za" value={target.slug} />}
 
       <fieldset className="fieldset">
         <legend className="legend">{target ? "Данни в каталога" : "За бизнеса"}</legend>

@@ -18,15 +18,8 @@ import {
 } from "@/lib/form-state";
 
 const schema = z.object({
-  name: z.string().trim().max(120).optional().default(""),
-  email: z
-    .string()
-    .trim()
-    .max(160)
-    .optional()
-    .default("")
-    .refine((v) => v === "" || EMAIL_RE.test(v), MSG.email),
-  phone: z.string().trim().max(40).optional().default(""),
+  // Редът е като във формата (тема → съобщение → данни за отговор), за да е
+  // същият и в обобщението на грешките.
   subject: z
     .string()
     .trim()
@@ -38,9 +31,18 @@ const schema = z.object({
     .trim()
     .min(10, "Съобщението е твърде кратко — поне 10 знака.")
     .max(5000, "Съобщението е твърде дълго — до 5000 знака."),
+  name: z.string().trim().max(120).optional().default(""),
+  phone: z.string().trim().max(40).optional().default(""),
+  email: z
+    .string()
+    .trim()
+    .max(160)
+    .optional()
+    .default("")
+    .refine((v) => v === "" || EMAIL_RE.test(v), MSG.email),
 });
 
-const FIELDS = ["name", "phone", "email", "subject", "message"] as const;
+const FIELDS = ["subject", "message", "name", "phone", "email"] as const;
 
 export type ContactState = FormState;
 
