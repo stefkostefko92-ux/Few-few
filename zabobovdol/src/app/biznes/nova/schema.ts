@@ -3,6 +3,7 @@
 // безопасни адреси (http/https), за да не влезе „javascript:“ или друга схема.
 import { z } from "zod";
 import { BUSINESS_CATEGORY_LABELS } from "@/lib/categories";
+import { fieldErrorsOf, type FieldErrors } from "@/lib/form-state";
 
 const CATEGORY_KEYS = Object.keys(BUSINESS_CATEGORY_LABELS);
 
@@ -100,7 +101,7 @@ export type BusinessInput = z.infer<typeof businessSchema>;
 
 export type BusinessScreen =
   | { status: "honeypot" }
-  | { status: "invalid"; error: string }
+  | { status: "invalid"; error: string; fieldErrors: FieldErrors }
   | { status: "limited" }
   | { status: "ok"; data: BusinessInput };
 
@@ -122,7 +123,11 @@ export async function screenBusinessSubmission(
     homepage: "",
   });
   if (!parsed.success) {
-    return { status: "invalid", error: parsed.error.issues[0]?.message ?? "Невалидни данни." };
+    return {
+      status: "invalid",
+      error: parsed.error.issues[0]?.message ?? "Невалидни данни.",
+      fieldErrors: fieldErrorsOf(parsed.error.issues),
+    };
   }
 
   if (!(await allow())) return { status: "limited" };

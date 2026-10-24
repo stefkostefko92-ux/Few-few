@@ -8,18 +8,13 @@ import { sendMail } from "@/lib/mail";
 import { SITE } from "@/lib/site";
 import { BUSINESS_CATEGORY_LABELS, labelFor } from "@/lib/categories";
 import { rateLimit, clientKey, RATE_LIMIT_MESSAGE } from "@/lib/ratelimit";
+import type { FormState } from "@/lib/form-state";
 import { PUBLIC_FIELDS, screenBusinessSubmission, toBusinessData, type BusinessInput } from "./schema";
 
 export type BusinessFormValues = Record<string, string>;
 
-export type BusinessFormState = {
-  ok: boolean;
+export type BusinessFormState = FormState & {
   mode?: "new" | "fix";
-  error?: string;
-  /** Въведеното до момента — за да не се губи при грешка. */
-  values?: BusinessFormValues;
-  /** Брояч на опитите — сменя ключа на формата, за да покаже `values`. */
-  attempt?: number;
 };
 
 const TEXT_FIELDS = [
@@ -212,7 +207,10 @@ export async function submitBusiness(
     async () => rateLimit(await clientKey("biznes")),
   );
   if (screen.status === "honeypot") return fail("Невалидни данни.");
-  if (screen.status === "invalid") return fail(screen.error);
+  // Грешките по поле — под всяко поле и в обобщението най-горе.
+  if (screen.status === "invalid") {
+    return { ok: false, mode, values, attempt, fieldErrors: screen.fieldErrors };
+  }
   if (screen.status === "limited") return fail(RATE_LIMIT_MESSAGE);
   const d = screen.data;
 
