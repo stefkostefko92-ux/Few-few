@@ -13,7 +13,7 @@ export const SITES = [
   { product: "korpora", url: "https://korpora.carbonstealth.eu", key: "korpora/public/indexnow-key.txt" },
   { product: "linketto", url: "https://linketto.carbonstealth.eu" },
   { product: "Nexus", url: "https://nexus.carbonstealth.eu", key: "Nexus/client/public/indexnow-key.txt" },
-  { product: "Gaming", url: "https://gaming.carbonstealth.eu", key: "Gaming/apps/marketing/public/indexnow-key.txt", note: "кодът се синхронизира от отделното репо на портала" },
+  { product: "Gaming", url: "https://gaming.carbonstealth.eu", key: "Gaming/apps/marketing/public/indexnow-key.txt" },
   { product: "Minyor", url: "https://minyor.carbonstealth.eu" },
   { product: "piuma", url: "https://piuma.carbonstealth.eu", key: "piuma/public/indexnow-key.txt" },
   { product: "mastilko", url: "https://mastilko-bg.com", key: "mastilko/public/a7165a3a38349feabee2f8ce359f4002.txt" },
