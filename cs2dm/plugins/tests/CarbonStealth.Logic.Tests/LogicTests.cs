@@ -38,6 +38,21 @@ public class ProgressionTests
         Assert.Equal(10, Progression.XpForKill(new KillFacts(false, false, false, false, false, false, -50)));
     }
 
+    // Същите стойности като botKillXp в levels.ts (tests/levels.test.ts).
+    [Theory]
+    [InlineData(10, 5)]
+    [InlineData(15, 7)]
+    [InlineData(45, 22)]
+    [InlineData(1, 0)]
+    [InlineData(0, 0)]
+    [InlineData(-8, 0)]
+    public void Убийство_на_бот_дава_половината_XP_надолу(int xp, int expected) =>
+        Assert.Equal(expected, Progression.BotKillXp(xp));
+
+    [Fact]
+    public void Бот_с_двоен_XP_след_множителя() =>
+        Assert.Equal(15, Progression.BotKillXp(Progression.ApplyMultiplier(15, 20)));
+
     [Theory]
     [InlineData(0, null)]
     [InlineData(99, null)]

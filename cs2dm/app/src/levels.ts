@@ -28,6 +28,17 @@ export function applyXpMultiplier(xp: number, tenths: number): number {
   return Math.floor((Math.max(0, Math.trunc(xp)) * m10) / 10);
 }
 
+/** Убийство на бот дава XP-то (след множителя), делено на това и закръглено надолу (CONTRACT §3). */
+export const BOT_XP_DIVISOR = 2;
+
+/**
+ * XP за убийство на бот — същото като `Progression.BotKillXp` в C#. Без отмъщение и баунти (те са
+ * само между хора); убийството не влиза в K/D, серии и оръжия. Тестови стойности: 10→5 · 15→7 · 1→0.
+ */
+export function botKillXp(xp: number): number {
+  return Math.floor(Math.max(0, Math.trunc(xp)) / BOT_XP_DIVISOR);
+}
+
 /** Баунти: серия ≥ 5 → `min(25 · (серия − 4), 250)` XP. */
 export const BOUNTY = { minStreak: 5, perKill: 25, cap: 250 } as const;
 

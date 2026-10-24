@@ -43,18 +43,16 @@ public sealed partial class CarbonStealthPlugin
             v.SessionDeaths++;
             Delta(v).Deaths++;
         }
+        if (a is not null && !suicide && victim.IsBot)
+        {
+            RewardBotKill(attacker!, a, e);
+            return HookResult.Continue;
+        }
         if (v is null || a is null || suicide) return HookResult.Continue;
 
         var outcome = _streaks.RecordKill(a.SteamId, v.SteamId);
         var weapon = Progression.NormalizeWeapon(e.Weapon);
-        var facts = new KillFacts(
-            Headshot: e.Headshot,
-            Knife: Progression.IsKnife(e.Weapon),
-            Noscope: e.Noscope && Progression.IsSniper(e.Weapon),
-            Wallbang: e.Penetrated > 0,
-            ThroughSmoke: e.Thrusmoke,
-            Revenge: outcome.Revenge,
-            BountyClaimed: outcome.BountyClaimed);
+        var facts = FactsOf(e, outcome.Revenge, outcome.BountyClaimed);
         var xp = Progression.ApplyMultiplier(Progression.XpForKill(facts), XpTenths());
         var levelBefore = a.Level;
         a.Xp += xp;
@@ -88,13 +86,41 @@ public sealed partial class CarbonStealthPlugin
             Broadcast("bounty.on", a.Name, outcome.AttackerStreak, outcome.NewBountyOnAttacker);
             _bridge?.Event("bounty", new { steamId = a.SteamId64, name = a.Name, streak = outcome.AttackerStreak, bounty = outcome.NewBountyOnAttacker });
         }
-        if (a.Level > levelBefore)
-        {
-            Broadcast("levelup", a.Name, a.Level);
-            ApplyTag(attacker, a, DateTimeOffset.UtcNow);
-        }
+        AnnounceLevelUp(attacker, a, levelBefore);
         _bridge?.Event("kill", new { attacker = a.SteamId64, victim = v.SteamId64, weapon, hs = e.Headshot, revenge = outcome.Revenge });
         return HookResult.Continue;
+    }
+
+    private static KillFacts FactsOf(EventPlayerDeath e, bool revenge, int bountyClaimed) => new(
+        Headshot: e.Headshot,
+        Knife: Progression.IsKnife(e.Weapon),
+        Noscope: e.Noscope && Progression.IsSniper(e.Weapon),
+        Wallbang: e.Penetrated > 0,
+        ThroughSmoke: e.Thrusmoke,
+        Revenge: revenge,
+        BountyClaimed: bountyClaimed);
+
+    /// <summary>
+    /// Убит бот: половината XP (CONTRACT.md §3) и нищо друго — убийство, K/D, серия, баунти, оръжия и
+    /// heatmap остават само между хора, за да не се „ферми“ класацията на празен сървър.
+    /// </summary>
+    private void RewardBotKill(CCSPlayerController attacker, PlayerState a, EventPlayerDeath e)
+    {
+        var xp = Progression.BotKillXp(
+            Progression.ApplyMultiplier(Progression.XpForKill(FactsOf(e, revenge: false, bountyClaimed: 0)), XpTenths()));
+        if (xp <= 0) return;
+        var levelBefore = a.Level;
+        a.Xp += xp;
+        Delta(a).Xp += xp;
+        _match.BotKill(a.SteamId64, a.Name, xp);
+        AnnounceLevelUp(attacker, a, levelBefore);
+    }
+
+    private void AnnounceLevelUp(CCSPlayerController attacker, PlayerState a, int levelBefore)
+    {
+        if (a.Level <= levelBefore) return;
+        Broadcast("levelup", a.Name, a.Level);
+        ApplyTag(attacker, a, DateTimeOffset.UtcNow);
     }
 
     private HookResult OnPlayerHurt(EventPlayerHurt e, GameEventInfo info)

@@ -52,6 +52,35 @@ public class MatchTests
     }
 
     [Fact]
+    public void Ботовете_дават_само_XP_без_убийство_и_серия()
+    {
+        var m = Started();
+        m.Kill(A, "a", B, "b", "ak47", false, false, 10);
+        m.BotKill(A, "a", 7);
+        m.BotKill(A, "a", -3);
+        m.BotKill(C, "c", 5);
+        m.Kill(A, "a", B, "b", "ak47", false, false, 10);
+        var s = m.Finish(T0.AddMinutes(30))!;
+        Assert.Equal(2, s.Kills);
+        var a = s.Players.Single(p => p.SteamId == A);
+        Assert.Equal((2, 2, 27), (a.Kills, a.BestStreak, a.Xp));
+        // Само ботове: в картата с XP, без убийство; мястото е по общото правило (0 смърти пред 2).
+        var c = s.Players.Single(p => p.SteamId == C);
+        Assert.Equal((0, 0, 5, 2), (c.Kills, c.Deaths, c.Xp, c.Place));
+    }
+
+    [Fact]
+    public void Само_ботове_не_правят_мач()
+    {
+        var m = Started();
+        m.BotKill(A, "a", 5);
+        Assert.Null(m.Finish(T0.AddMinutes(30)));
+        var none = new MatchTracker();
+        none.BotKill(A, "a", 5);
+        Assert.Null(none.Finish(T0.AddMinutes(30)));
+    }
+
+    [Fact]
     public void Не_се_записва_без_убийство_твърде_къс_или_без_начало()
     {
         var empty = Started();

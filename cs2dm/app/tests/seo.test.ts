@@ -259,6 +259,7 @@ test('robots.txt, sitemap.xml с lastmod и hreflang, llms.txt', async () => {
     assert.match(llms, /^# CarbonStealth\.eu \| Dust2 DM/);
     assert.match(llms, /connect dm\.carbonstealth\.eu:27015/);
     assert.match(llms, /https:\/\/carbonstealth\.eu/);
+    assert.match(llms, /^- Bot kill: ½ of the total$/m);
 
     const key = readFileSync('public/indexnow-key.txt', 'utf8').trim();
     assert.match(key, /^[0-9a-f]{32}$/);

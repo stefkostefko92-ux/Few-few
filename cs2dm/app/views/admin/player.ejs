@@ -84,6 +84,8 @@
     <button class="a-btn" type="submit"><%= t('admin.player.vipGrant') %></button>
     <p class="a-note"><%= t('admin.player.vipHint') %></p>
   </form>
+  <% } else if (above && can('vip')) { %>
+  <p class="a-note"><%= t('admin.player.vipNoTiers') %> <a href="/admin/vip"><%= t('admin.nav.vip') %></a></p>
   <% } %>
   <% if (grants.length === 0) { %><p class="a-empty"><%= t('admin.player.vipNone') %></p><% } else { %>
   <div class="a-scroll"><table class="a-table">

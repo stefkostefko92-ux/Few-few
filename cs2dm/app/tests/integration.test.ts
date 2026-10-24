@@ -177,6 +177,8 @@ describe('срещу истинската база', { skip: enabled ? false : '
     assert.ok(!html.includes('IT Hidden'));
     // 90 000 000 XP → ниво 1342 (100 · n · (n − 1) / 2 ≤ XP).
     assert.match(html, /<td class="c-num c-level">1342<\/td>/);
+    // Ботовете носят половин XP (CONTRACT §3) — редът е в таблицата „Как се смятат XP“.
+    assert.match(html, /Убийство на бот<\/th><td class="c-num">½ от сбора<\/td>/);
     const kd = await (await get('/en/leaderboard?sort=kd')).text();
     assert.ok(kd.includes('IT Sandstorm'), 'K/D сортирането минава през суровия SQL');
   });

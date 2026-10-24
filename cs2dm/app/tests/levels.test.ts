@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { bountyFor, levelForXp, levelProgress, xpForLevel } from '../src/levels.js';
+import {
+  applyXpMultiplier,
+  botKillXp,
+  bountyFor,
+  levelForXp,
+  levelProgress,
+  xpForLevel,
+} from '../src/levels.js';
 
 test('нивото по формулата отговаря на тестовите стойности от CONTRACT.md §3', () => {
   // 0→1 · 99→1 · 100→2 · 299→2 · 300→3 · 599→3 · 600→4 · 4500→10
@@ -64,4 +71,18 @@ test('баунтито: от серия 5, по 25 XP, таван 250', () => {
   assert.equal(bountyFor(8), 100);
   assert.equal(bountyFor(14), 250);
   assert.equal(bountyFor(40), 250);
+});
+
+test('убийство на бот дава половината XP надолу — същите стойности като C# (LogicTests)', () => {
+  const cases: Array<[number, number]> = [
+    [10, 5],
+    [15, 7],
+    [45, 22],
+    [1, 0],
+    [0, 0],
+    [-8, 0],
+  ];
+  for (const [xp, expected] of cases) assert.equal(botKillXp(xp), expected, `${xp} XP`);
+  // Множителят е преди делението: 15 × 2,0 = 30 → 15.
+  assert.equal(botKillXp(applyXpMultiplier(15, 20)), 15);
 });

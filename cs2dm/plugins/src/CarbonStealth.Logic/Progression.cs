@@ -40,6 +40,15 @@ public static class Progression
     public static int ApplyMultiplier(int xp, int tenths) =>
         (int)(Math.Max(0, xp) * (long)Math.Clamp(tenths, 10, 30) / 10);
 
+    /// <summary>Делителят на XP за убийство на бот (CONTRACT.md §3) — същият като BOT_XP_DIVISOR в levels.ts.</summary>
+    public const int BotXpDivisor = 2;
+
+    /// <summary>
+    /// Убийство на бот: XP-то след множителя, делено на 2 и закръглено надолу — 15 → 7, 10 → 5.
+    /// Без отмъщение и баунти: те са само между хора. Същото като botKillXp в levels.ts.
+    /// </summary>
+    public static int BotKillXp(int xp) => Math.Max(0, xp) / BotXpDivisor;
+
     /// <summary>Ниво n иска общо 100·n·(n−1)/2 XP → level = floor((1 + √(1 + 8·xp/100)) / 2).</summary>
     public static int LevelFromXp(long xp)
     {

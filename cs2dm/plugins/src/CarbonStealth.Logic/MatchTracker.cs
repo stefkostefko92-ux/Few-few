@@ -9,8 +9,9 @@ public sealed record MatchPlayerResult(
 public sealed record MatchSummary(DateTimeOffset StartedAt, DateTimeOffset EndedAt, int Kills, IReadOnlyList<MatchPlayerResult> Players);
 
 /// <summary>
-/// Статистиките на един мач (една карта до смяната ѝ) — само хора срещу хора, както в §3. Чиста
-/// логика: плъгинът вика Begin при нов мач (GameStartTime), Kill/Death от player_death и Finish при края.
+/// Статистиките на един мач (една карта до смяната ѝ) — убийствата са само хора срещу хора, както в §3;
+/// XP-то от ботове (половината) влиза само в колоната XP. Чиста логика: плъгинът вика Begin при нов мач
+/// (GameStartTime), Kill/Death/BotKill от player_death и Finish при края.
 /// Не е нишково безопасен — само от игровата нишка.
 /// </summary>
 public sealed class MatchTracker
@@ -84,6 +85,13 @@ public sealed class MatchTracker
         v.Streak = 0;
     }
 
+    /// <summary>Убил бот: само XP — убийството не се брои и не продължава серията (CONTRACT.md §3).</summary>
+    public void BotKill(string attacker, string name, int xp)
+    {
+        if (!Running) return;
+        For(attacker, name).Xp += Math.Max(0, xp);
+    }
+
     /// <summary>Убит от бот: серията изгаря, но смъртта не се брои (ботовете не влизат в статистиките).</summary>
     public void StreakBroken(string victim)
     {
@@ -97,7 +105,7 @@ public sealed class MatchTracker
         StartedAt = null;
         if (_kills == 0 || at - started < MinDuration) return null;
         var ordered = _lines
-            .Where(kv => kv.Value.Kills > 0 || kv.Value.Deaths > 0)
+            .Where(kv => kv.Value.Kills > 0 || kv.Value.Deaths > 0 || kv.Value.Xp > 0)
             .OrderByDescending(kv => kv.Value.Kills)
             .ThenBy(kv => kv.Value.Deaths)
             .ThenByDescending(kv => kv.Value.Headshots)

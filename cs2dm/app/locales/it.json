@@ -194,7 +194,7 @@
       },
       "bots": {
         "q": "Le uccisioni dei bot contano?",
-        "a": "No: un'uccisione che coinvolge un bot non dà XP e non viene registrata, così nessuno può «farmare» un server vuoto."
+        "a": "A metà: un'uccisione di un bot dà metà degli XP (arrotondati per difetto), senza vendetta né taglia. In classifica però non conta come uccisione: K/D, serie e armi valgono solo contro persone, così nessuno può «farmare» un server vuoto."
       },
       "vip": {
         "q": "Il VIP dà vantaggi in gioco?",
@@ -316,7 +316,7 @@
   },
   "leaderboard": {
     "h1": "Classifica",
-    "lead": "Scelga una stagione e un ordinamento. Contano solo le uccisioni contro persone: i bot non danno XP.",
+    "lead": "Scelga una stagione e un ordinamento. Uccisioni e K/D contano solo contro persone: i bot danno metà degli XP.",
     "form": {
       "season": "Stagione",
       "sort": "Ordina per",
@@ -337,7 +337,7 @@
     },
     "how": {
       "title": "Come funzionano XP e livelli",
-      "lead": "Ogni uccisione dà XP e i bonus si sommano. Le uccisioni che coinvolgono un bot non contano.",
+      "lead": "Ogni uccisione dà XP e i bonus si sommano. Un'uccisione di un bot dà metà degli XP e non conta come uccisione.",
       "event": "Evento",
       "xp": "XP",
       "rewards": {
@@ -351,6 +351,8 @@
       },
       "bountyRow": "Taglia riscossa (bonus)",
       "bountyValue": "il valore della taglia",
+      "botRow": "Uccisione di un bot",
+      "botValue": "½ del totale",
       "level": "Il livello deriva dagli XP totali: il livello n richiede 100 · n · (n − 1) / 2 XP — 100 per il livello 2, 300 per il livello 3, 4500 per il livello 10.",
       "bounty": "Una serie di {min} uccisioni senza morire mette una taglia sulla Sua testa: 25 XP per ogni uccisione dopo la quarta, fino a {cap} XP. Chi La abbatte la riscuote.",
       "revenge": "Se qualcuno L'ha uccisa almeno 3 volte di fila e Lei lo abbatte, è una vendetta: +5 XP."
@@ -1114,6 +1116,7 @@
       "vipGrant": "Concedi VIP",
       "vipHint": "Concessione manuale, senza pagamento. Se il giocatore ha già un VIP attivo, il nuovo periodo inizia alla sua scadenza.",
       "vipNone": "Nessun VIP.",
+      "vipNoTiers": "Per concedere il VIP, crei prima almeno un livello (ad es. «VIP», 30 giorni) in",
       "vipActive": "attivo",
       "vipInactive": "scaduto o futuro",
       "vipRevoke": "Revoca",

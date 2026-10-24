@@ -194,7 +194,7 @@
       },
       "bots": {
         "q": "Do bot kills count?",
-        "a": "No — a kill involving a bot gives no XP and is not recorded, so nobody can farm an empty server."
+        "a": "For half — a bot kill gives half the XP (rounded down), with no revenge or bounty. It does not count as a kill on the leaderboard, though: K/D, streaks and weapons are against humans only, so nobody can farm an empty server."
       },
       "vip": {
         "q": "Does VIP give an in-game advantage?",
@@ -316,7 +316,7 @@
   },
   "leaderboard": {
     "h1": "Leaderboard",
-    "lead": "Pick a season and a sort order. Only kills against humans count — bots give no XP.",
+    "lead": "Pick a season and a sort order. Kills and K/D count only against humans — bots give half XP.",
     "form": {
       "season": "Season",
       "sort": "Sort by",
@@ -337,7 +337,7 @@
     },
     "how": {
       "title": "How XP and levels work",
-      "lead": "Every kill earns XP and the bonuses add up. Kills involving a bot do not count.",
+      "lead": "Every kill earns XP and the bonuses add up. A bot kill gives half the XP and does not count as a kill.",
       "event": "Event",
       "xp": "XP",
       "rewards": {
@@ -351,6 +351,8 @@
       },
       "bountyRow": "Claimed bounty (bonus)",
       "bountyValue": "the bounty's value",
+      "botRow": "Bot kill",
+      "botValue": "½ of the total",
       "level": "Your level comes from your total XP: level n needs 100 · n · (n − 1) / 2 XP — 100 for level 2, 300 for level 3, 4500 for level 10.",
       "bounty": "A streak of {min} kills without dying puts a bounty on your head: 25 XP for every kill after the fourth, up to {cap} XP. Whoever takes you down claims it.",
       "revenge": "If someone has killed you at least 3 times in a row and you take them down, that is revenge — +5 XP."
@@ -1114,6 +1116,7 @@
       "vipGrant": "Grant VIP",
       "vipHint": "Manual grant, no payment. If the player already has active VIP, the new period starts when it ends.",
       "vipNone": "No VIP.",
+      "vipNoTiers": "To grant VIP, first create at least one tier (e.g. “VIP”, 30 days) in",
       "vipActive": "active",
       "vipInactive": "expired or upcoming",
       "vipRevoke": "Revoke",
