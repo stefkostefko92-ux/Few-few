@@ -118,7 +118,8 @@ export default function PokanaStudio() {
   const px = (v: number) => `${v * perMm}px`;
   // Поканите са 2 на лист → таванът е в ЛИСТОВЕ (виж MAX_SHEETS в print.ts),
   // за да не рендира дълъг поставен списък стотици листове наведнъж.
-  const allNames = s.series.split("\n").map((l) => l.trim()).filter(Boolean);
+  // Таб (колони от Excel) → интервал: „Иван⇥Петров“ става „Иван Петров“.
+  const allNames = s.series.split("\n").map((l) => l.replace(/\t+/g, " ").trim()).filter(Boolean);
   const names = allNames.slice(0, MAX_SHEETS * 2);
   const trimmed = allNames.length - names.length;
 

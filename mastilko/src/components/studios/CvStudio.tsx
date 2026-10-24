@@ -9,6 +9,7 @@ import BrandKitButton from "@/components/BrandKitButton";
 import ImageUpload from "@/components/ImageUpload";
 import TextTools from "@/components/TextTools";
 import PrintBar from "@/components/PrintBar";
+import JobMatch from "@/components/JobMatch";
 import ProjectFile from "@/components/ProjectFile";
 import SheetPreview from "@/components/SheetPreview";
 import StyleControls from "@/components/StyleControls";
@@ -572,6 +573,12 @@ export default function CvStudio() {
           ))}
         </div>
         )}
+
+        <JobMatch cvText={[
+          s.title, s.summary, s.skills, s.languages, s.digitalSkills, s.driving,
+          ...s.jobs.flatMap((j) => [j.role, j.company, j.desc]),
+          ...s.schools.flatMap((sc) => [sc.degree, sc.school]),
+        ].join("\n")} />
 
         <ProjectFile
           state={s}

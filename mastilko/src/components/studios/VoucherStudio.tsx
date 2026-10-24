@@ -2,7 +2,8 @@
 
 import { z } from "zod";
 import { sheetGrid } from "@/lib/print";
-import { resolveTheme, fontVars, elementFont, sheetBg, readableAccent, textOnSolid, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, elementFont, sheetBg, readableAccent, textOnSolid, resolveDecor, StyleSchemaShape, type StyleState } from "@/lib/style";
+import BackgroundDecor from "@/components/BackgroundDecor";
 import { type WarmTheme } from "@/lib/themes";
 import { useLocalState } from "@/lib/use-local-state";
 import FitText from "@/components/FitText";
@@ -60,7 +61,10 @@ const V = { w: 95, h: 55 };
 
 function serialOf(s: VoucherState, i: number): string {
   const n = String(s.serialStart + i).padStart(3, "0");
-  return s.serialPrefix ? `${s.serialPrefix}-${n}` : n;
+  // Тире само ако префиксът вече не завършва с разделител — „MECHTA-“ даваше
+  // „MECHTA--007“.
+  if (!s.serialPrefix) return n;
+  return /[-_/.\s]$/.test(s.serialPrefix) ? `${s.serialPrefix}${n}` : `${s.serialPrefix}-${n}`;
 }
 
 function Voucher({ s, theme, serial, qrSrc }: { s: VoucherState; theme: WarmTheme; serial: string; qrSrc: string | null }) {
@@ -75,8 +79,10 @@ function Voucher({ s, theme, serial, qrSrc }: { s: VoucherState; theme: WarmThem
       border: `0.3mm dashed rgba(120,110,100,0.5)`, borderRadius: "2mm",
       overflow: "hidden", display: "flex",
     }}>
+      {/* „Украса на фона“ се избираше в контролите, но не се рисуваше. */}
+      <BackgroundDecor decor={s.decor} {...resolveDecor(s, theme.accent)} />
       {/* Ляв акцентен талон със стойността */}
-      <div style={{
+      <div style={{ position: "relative", zIndex: 1,
         width: "34mm", background: theme.accent, color: onAccent,
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
         textAlign: "center", padding: "2mm", flexShrink: 0,
@@ -86,7 +92,7 @@ function Voucher({ s, theme, serial, qrSrc }: { s: VoucherState; theme: WarmThem
         <div style={{ fontSize: fs(2.6), marginTop: "1.5mm" }}>ВАУЧЕР</div>
       </div>
       {/* Дясна част */}
-      <div style={{ flex: 1, padding: "3mm 4mm", display: "flex", flexDirection: "column", position: "relative" }}>
+      <div style={{ flex: 1, padding: "3mm 4mm", display: "flex", flexDirection: "column", position: "relative", zIndex: 1 }}>
         {s.logo && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={s.logo} alt="" style={{ position: "absolute", right: "3mm", top: "3mm", height: "9mm", maxWidth: "22mm", objectFit: "contain" }} />
