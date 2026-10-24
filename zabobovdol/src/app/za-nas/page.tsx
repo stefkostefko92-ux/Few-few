@@ -5,6 +5,7 @@ import { buildMetadata, webPageLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 import { TrustCard } from "@/components/TrustCard";
 import { SITE } from "@/lib/site";
+import { SECTION } from "@/lib/section-names";
 
 /** Кога за последно е редактиран текстът на страницата. */
 const UPDATED = "2026-10-24";
@@ -38,7 +39,7 @@ export default function AboutPage() {
         })}
       />
       <PageHero
-        eyebrow="За сайта"
+        eyebrow={SECTION.site}
         title="За проекта"
         intro={`Независима гражданска инициатива за хората от ${SITE.geo.city}: кой стои зад сайта, как поддържаме информацията и как да ни пишете.`}
         crumbs={[{ name: "За проекта", path: "/za-nas" }]}

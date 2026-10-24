@@ -19,6 +19,7 @@ import { SITE } from "@/lib/site";
 import { getChurchServices } from "@/lib/settings";
 import { renderMarkdown } from "@/lib/markdown";
 import { POPULATION } from "@/lib/town-facts";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -125,7 +126,7 @@ export default async function CityPage() {
       {/* BreadcrumbList идва от PageHero (crumbs) — тук само мястото. */}
       <JsonLd data={placeLd} />
       <PageHero
-        eyebrow="За града"
+        eyebrow={SECTION.city}
         title="Опознай Бобов дол"
         intro="Накратко за нашия град — къде се намира, с какво е известен, какво има да се види и как изглежда на картата. За подробната история вижте отделната страница."
         crumbs={[{ name: "Опознай Бобов дол", path: "/grada" }]}

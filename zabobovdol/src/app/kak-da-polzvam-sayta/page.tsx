@@ -13,6 +13,7 @@ import {
 import { PageHero } from "@/components/ui";
 import { PhoneButton } from "@/components/PhoneButton";
 import { buildMetadata } from "@/lib/seo";
+import { SECTION } from "@/lib/section-names";
 
 export const metadata: Metadata = buildMetadata({
   title: "Как да ползвам този сайт",
@@ -112,7 +113,7 @@ export default function HowToUsePage() {
   return (
     <>
       <PageHero
-        eyebrow="Помощ със сайта"
+        eyebrow={SECTION.site}
         title="Как да ползвам този сайт"
         intro="Сайтът е направен да е лесен — особено за по-възрастните. Ето най-важното в няколко прости стъпки. Не бързайте; нищо не може да се развали."
         crumbs={[{ name: "Как да ползвам сайта", path: "/kak-da-polzvam-sayta" }]}

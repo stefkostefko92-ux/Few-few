@@ -13,6 +13,7 @@ import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { getGuideIndex } from "@/lib/howto-index";
 import { categoryPath, categorySlug, guidesLabel } from "@/lib/howto";
 import { GuideCard } from "@/app/kak-da/_components/GuideList";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -134,7 +135,7 @@ export default async function AidPage() {
       )}
 
       <PageHero
-        eyebrow="Социална подкрепа"
+        eyebrow={SECTION.social}
         title="Пенсии и социални помощи"
         intro="Накратко и на разбираем език: пенсии, помощ за отопление, ТЕЛК и към кого да се обърнете. Тук обясняваме къде да питате — без сложни думи."
         crumbs={[{ name: "Пенсии и помощи", path: "/pomoshti" }]}

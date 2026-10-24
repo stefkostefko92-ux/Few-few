@@ -28,6 +28,7 @@ import { OpenDetailsOnPrint } from "@/components/OpenDetailsOnPrint";
 import { getIllustrations } from "@/lib/howto-illustrations";
 import { EURO_TOPIC, euroTodayNote } from "@/lib/howto-euro";
 import { EuroTodayNotice, EuroWrittenBeforeNotice } from "@/components/EuroNotice";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -224,7 +225,7 @@ export default async function EuroPage() {
       )}
 
       <PageHero
-        eyebrow="Пари и документи"
+        eyebrow={SECTION.money}
         title="Всичко за еврото — въпроси и отговори"
         intro="Просто и спокойно за еврото: какво стана с парите, пенсиите и цените, къде да обмените левове сега и как да се пазите от измами. Информацията е по официални източници."
         crumbs={[{ name: "Еврото", path: "/evroto" }]}

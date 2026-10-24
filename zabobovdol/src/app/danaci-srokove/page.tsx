@@ -7,6 +7,7 @@ import { TaxEstimator } from "@/components/TaxEstimator";
 import { PrintSourceLine } from "@/components/PrintSourceLine";
 import { formatDate, isoDate } from "@/lib/format-date";
 import { daysLeftLabel, deadlineStatuses } from "@/lib/tax-deadlines";
+import { SECTION } from "@/lib/section-names";
 
 // „Следващ срок · след N дни“ зависи от днешния ден по софийско време — при
 // кеш за час около полунощ пишеше „утре“ за днешния срок. Затова при всяка
@@ -51,7 +52,7 @@ export default function TaxDeadlinesPage() {
   return (
     <>
       <PageHero
-        eyebrow="Пари и документи"
+        eyebrow={SECTION.money}
         title="Данъци и срокове"
         intro="Кога се плащат местните данъци и такси, как да спестите с ранно плащане и къде да платите."
         crumbs={[{ name: "Данъци и срокове", path: "/danaci-srokove" }]}

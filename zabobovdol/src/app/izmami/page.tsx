@@ -16,6 +16,7 @@ import { formatDate, isoDate } from "@/lib/format-date";
 import { getGuideIndex } from "@/lib/howto-index";
 import { SCAM_TOPIC, categoryPath, categorySlug, guidesLabel } from "@/lib/howto";
 import { GuideCard } from "@/app/kak-da/_components/GuideList";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -145,7 +146,7 @@ export default async function ScamProtectionPage() {
       )}
 
       <PageHero
-        eyebrow="Безопасност"
+        eyebrow={SECTION.safety}
         title="Пази се от измами"
         intro="Измамниците често търсят точно възрастните хора. Тук са простите правила, които ви пазят — и какво да направите, ако вече сте били измамени."
         crumbs={[{ name: "Пази се от измами", path: "/izmami" }]}

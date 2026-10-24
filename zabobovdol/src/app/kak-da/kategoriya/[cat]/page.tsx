@@ -17,6 +17,7 @@ import {
 } from "@/lib/howto";
 import { GuideList } from "../../_components/GuideList";
 import { Pagination } from "../../_components/Pagination";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -120,7 +121,7 @@ export default async function CategoryPage({
         ]}
       />
       <PageHero
-        eyebrow={section?.title ?? "Ръководства"}
+        eyebrow={section?.title ?? SECTION.guides}
         title={category.name}
         intro={`${guidesLabel(category.count)} стъпка по стъпка.${
           total > 1 ? ` Страница ${page} от ${total}.` : ""

@@ -21,6 +21,7 @@ import {
 } from "@/lib/howto";
 import { GuideCard, GuideList } from "./_components/GuideList";
 import { Pagination } from "./_components/Pagination";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -114,7 +115,7 @@ export default async function KakDaPage({ searchParams }: { searchParams: SP }) 
         ]}
       />
       <PageHero
-        eyebrow="Ръководства"
+        eyebrow={SECTION.guides}
         title="Как да…"
         intro="Кратки и разбираеми обяснения как да свършите ежедневни неща онлайн — без сложни думи. Изберете тема или потърсете с дума."
         crumbs={[{ name: "Как да…", path: "/kak-da" }]}
@@ -261,7 +262,7 @@ async function TagView({
   return (
     <>
       <PageHero
-        eyebrow="Ръководства"
+        eyebrow={SECTION.guides}
         title={`Етикет „${tag}“`}
         intro={
           matches.length > 0

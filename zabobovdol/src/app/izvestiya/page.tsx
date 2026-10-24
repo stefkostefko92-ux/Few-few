@@ -6,6 +6,7 @@ import { getViberChannelUrl } from "@/lib/settings";
 import { PUSH_TOPICS } from "@/lib/push";
 import { PushSubscribe } from "@/components/PushSubscribe";
 import { ViberButton } from "@/components/ViberButton";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +43,7 @@ export default async function IzvestiyaPage() {
   return (
     <>
       <PageHero
-        eyebrow="Помощ със сайта"
+        eyebrow={SECTION.site}
         title="Известия на телефона"
         intro="Кратко съобщение на екрана, когато има нещо важно. Само за темите, които изберете."
         crumbs={[{ name: "Известия", path: "/izvestiya" }]}

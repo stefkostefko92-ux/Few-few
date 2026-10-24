@@ -8,6 +8,7 @@ import { InstallButton } from "@/components/InstallBanner";
 import { buildMetadata } from "@/lib/seo";
 import { getFacebookUrl, getViberChannelUrl } from "@/lib/settings";
 import { SITE } from "@/lib/site";
+import { SECTION } from "@/lib/section-names";
 
 // Чете адресите на Viber канала и Facebook от базата → не се генерира при билда.
 export const dynamic = "force-dynamic";
@@ -47,7 +48,7 @@ export default async function ForFamilyPage() {
   return (
     <>
       <PageHero
-        eyebrow="Помощ със сайта"
+        eyebrow={SECTION.site}
         title={TITLE}
         intro="Живеете в София, Дупница или в чужбина, а родителите ви са в Бобов дол? Следващия път, когато сте при тях — или по видеоразговор — отделете пет минути. Те ще имат една икона за дежурната аптека, важните телефони, спирането на тока и измамите."
         crumbs={[{ name: "За близките", path: "/za-blizkite" }]}

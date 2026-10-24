@@ -18,6 +18,7 @@ import {
   Step,
 } from "./pictures";
 import { ANDROID_STEPS, IPHONE_STEPS } from "./steps";
+import { SECTION } from "@/lib/section-names";
 
 // Чете адреса на Google Play от базата → не се генерира при билда.
 export const dynamic = "force-dynamic";
@@ -51,7 +52,7 @@ export default async function InstallPage() {
   return (
     <>
       <PageHero
-        eyebrow="Помощ със сайта"
+        eyebrow={SECTION.site}
         title={TITLE}
         intro="Една икона на началния екран — и сайтът се отваря като приложение, без търсене и без да пишете адреса. Безплатно е и не иска регистрация."
         crumbs={[{ name: "Сложете на телефона", path: "/instaliraj" }]}

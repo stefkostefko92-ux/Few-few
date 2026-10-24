@@ -27,6 +27,7 @@ import {
 import { prevNext, relatedGuides } from "@/lib/related";
 import { GuideCard } from "../_components/GuideList";
 import { Linkified, LocalNote } from "../_components/LocalNote";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
@@ -155,7 +156,7 @@ export default async function FaqPage({
         ]}
       />
       <PageHero
-        eyebrow={section?.title ?? "Ръководства"}
+        eyebrow={section?.title ?? SECTION.guides}
         title={faq.question}
         crumbs={[
           { name: "Как да…", path: "/kak-da" },

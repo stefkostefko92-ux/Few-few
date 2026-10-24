@@ -9,6 +9,7 @@ import { OpenDetailsOnPrint } from "@/components/OpenDetailsOnPrint";
 import { buildMetadata } from "@/lib/seo";
 import { SITE } from "@/lib/site";
 import { POPULATION } from "@/lib/town-facts";
+import { SECTION } from "@/lib/section-names";
 
 export const metadata: Metadata = buildMetadata({
   title: "История на Бобов дол — от долината с форма на боб до миньорската столица",
@@ -109,7 +110,7 @@ export default function HistoryPage() {
       {/* BreadcrumbList идва от PageHero (crumbs) — тук само статията. */}
       <JsonLd data={articleLd} />
       <PageHero
-        eyebrow="За града"
+        eyebrow={SECTION.city}
         title="История на Бобов дол"
         intro="От долината с форма на бобено зърно до миньорската столица на Кюстендилско — историята на града по етапи, личности и институции."
         crumbs={[{ name: "История на града", path: "/istoriya" }]}
