@@ -10,7 +10,7 @@ const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
 // CS2 тихо игнорира и настройката просто не действа.
 const KNOWN_CVARS = new Set([
   "hostname", "sv_tags", "sv_lan", "sv_cheats", "sv_hibernate_when_empty",
-  "mp_timelimit", "mp_respawn_immunitytime",
+  "mp_timelimit", "mp_respawn_immunitytime", "mp_match_end_changelevel", "mp_match_restart_delay", "mp_endmatch_votenextmap",
   "bot_quota", "bot_quota_mode", "bot_difficulty", "bot_join_after_player",
   "sv_max_queries_sec", "sv_max_queries_sec_global", "sv_max_queries_window",
 ]);

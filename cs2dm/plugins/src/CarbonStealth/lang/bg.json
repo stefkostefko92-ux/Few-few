@@ -118,6 +118,8 @@
   "fun.goto": "{Gold}[CarbonStealth]{Default} {0} се телепортира при {1}",
   "fun.noclip.on": "{Gold}[CarbonStealth]{Default} {Lime}Noclip е включен{Default}",
   "fun.noclip.off": "{Gold}[CarbonStealth]{Default} Noclip е изключен",
+  "reload.warn": "{Gold}[CarbonStealth]{Default} Картата се презарежда след {Lime}{0} s{Default} — оставаш в сървъра, нивото и статистиките се пазят.",
+  "hud.reload": "Картата се презарежда след {0} s",
   "server.mode": "{Gold}[CarbonStealth]{Default} {0} пусна режима {Gold}{1}{Default}",
   "server.bots": "{Gold}[CarbonStealth]{Default} {0} зададе ботове: {Gold}{1}{Default}",
   "server.ammo": "{Gold}[CarbonStealth]{Default} {0}: безкрайни патрони {Gold}{1}{Default}",

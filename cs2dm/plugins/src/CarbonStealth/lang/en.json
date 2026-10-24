@@ -118,6 +118,8 @@
   "fun.goto": "{Gold}[CarbonStealth]{Default} {0} teleported to {1}",
   "fun.noclip.on": "{Gold}[CarbonStealth]{Default} {Lime}Noclip on{Default}",
   "fun.noclip.off": "{Gold}[CarbonStealth]{Default} Noclip off",
+  "reload.warn": "{Gold}[CarbonStealth]{Default} Map reloads in {Lime}{0} s{Default} — you stay connected, your level and stats are kept.",
+  "hud.reload": "Map reloads in {0} s",
   "server.mode": "{Gold}[CarbonStealth]{Default} {0} started the mode {Gold}{1}{Default}",
   "server.bots": "{Gold}[CarbonStealth]{Default} {0} set the bots to {Gold}{1}{Default}",
   "server.ammo": "{Gold}[CarbonStealth]{Default} {0}: infinite ammo {Gold}{1}{Default}",
