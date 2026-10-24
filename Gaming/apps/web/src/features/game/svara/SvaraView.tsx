@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import gsap from "gsap";
+import { svaraRaisePresets, type SvaraState as CoreSvaraState } from "@aso/game-core";
 import { useAuthStore } from "../../../lib/store";
 import { useSettings } from "../../../lib/settings";
 import { Button } from "../../../ui";
@@ -24,6 +25,8 @@ interface SvaraState {
   folded: boolean[];
   pot: number;
   current: number;
+  minRaise: number;
+  pots: { amount: number; eligible: number[] }[];
   turn: number;
   seats: number;
   dealer: number;
@@ -36,7 +39,8 @@ interface SvaraState {
 }
 type SvaraAction =
   | { type: "CALL" }
-  | { type: "RAISE" }
+  | { type: "RAISE"; to: number }
+  | { type: "ALLIN" }
   | { type: "FOLD" }
   | { type: "CONTINUE" }
   | { type: "JOIN" }
@@ -116,6 +120,14 @@ export function SvaraView({ title }: { title: string }) {
     toBanner: (ev) => {
       if (ev.type === "WIN") {
         const pot = typeof ev.pot === "number" ? ev.pot : 0;
+        if (typeof ev.potIndex === "number" && ev.potIndex > 0)
+          return {
+            text: t(ev.split ? "svara.splitsPot" : "svara.winsSidePot", {
+              name: ev.seat === seat ? t("game.you") : nameFor(ev.seat as number),
+              pot,
+            }),
+            tone: ev.seat === seat ? "win" : "brass",
+          };
         return ev.seat === seat
           ? { text: `${t("fx.youWinPot")} (+${pot})`, tone: "win" }
           : {
@@ -135,6 +147,11 @@ export function SvaraView({ title }: { title: string }) {
       if (ev.type === "HAND")
         return { text: t("svara.newHand", { n: ev.handNo, defaultValue: "Ръка {{n}}" }), tone: "brass" };
       if (ev.seat === seat) return null;
+      if (ev.type === "ALLIN")
+        return {
+          text: t("svara.allInBanner", { name: nameFor(ev.seat as number), to: ev.to }),
+          tone: "loss",
+        };
       if (ev.type === "FOLD")
         return { text: `${nameFor(ev.seat as number)}: ${t("svara.fold")}`, tone: "brass" };
       if (ev.type === "RAISE")
@@ -207,12 +224,30 @@ export function SvaraView({ title }: { title: string }) {
 
   const myTurn = !!state && state.phase === "BETTING" && state.turn === seat && legal.length > 0;
   const call = legal.find((a) => a.type === "CALL");
-  const raise = legal.find((a) => a.type === "RAISE");
+  const allIn = legal.find((a) => a.type === "ALLIN");
   const fold = legal.find((a) => a.type === "FOLD");
   const cont = legal.find((a) => a.type === "CONTINUE");
   const join = legal.find((a) => a.type === "JOIN");
   const skip = legal.find((a) => a.type === "SKIP");
   const toCall = state ? state.current - (state.bet[seat] ?? 0) : 0;
+  const myChips = state?.chips[seat] ?? 0;
+
+  // Вдигане с избор на размер: мин (последното вдигане) … целият стек.
+  const presets =
+    state && myTurn ? svaraRaisePresets(state as unknown as CoreSvaraState, seat) : null;
+  const [raiseTo, setRaiseTo] = useState(0);
+  useEffect(() => {
+    // Нов ход / ново ниво → плъзгачът се връща на минимума.
+    setRaiseTo(presets?.min ?? 0);
+  }, [presets?.min, presets?.allIn, state?.handNo]);
+  const raiseValue = presets ? Math.min(presets.allIn, Math.max(presets.min, raiseTo)) : 0;
+  const sendRaise = () => {
+    if (!presets) return;
+    // Целият стек = all-in (същото действие, ясно събитие за масата).
+    if (raiseValue >= presets.allIn && allIn) m.send(allIn);
+    else m.send({ type: "RAISE", to: raiseValue });
+  };
+  const canBet = myTurn && !frozen;
 
   /** Ръката на едно място: реални карти при showdown, гърбове иначе. */
   const seatCards = (s: number, size: "sm" | "md", overlap: number) => {
@@ -233,12 +268,18 @@ export function SvaraView({ title }: { title: string }) {
     );
   };
 
-  const chipsBadge = (s: number) => (
-    <span className="svara-chips tnum">
-      <ChipStack amount={view?.chips[s] ?? 0} size="sm" />
-      {view?.chips[s] ?? 0}
-    </span>
-  );
+  const chipsBadge = (s: number) => {
+    const isAllIn =
+      view?.phase === "BETTING" && !view.folded[s] && (view.chips[s] ?? 0) === 0;
+    return (
+      <span className="svara-chips tnum">
+        <ChipStack amount={view?.chips[s] ?? 0} size="sm" />
+        {view?.chips[s] ?? 0}
+        {isAllIn ? <span className="svara-allin">{t("svara.allIn")}</span> : null}
+      </span>
+    );
+  };
+  const sidePots = (view?.pots ?? []).filter((p) => p.amount > 0);
 
   // При showdown "активен" е победителят; иначе — този на ход.
   const seatActive = (s: number) =>
@@ -276,6 +317,15 @@ export function SvaraView({ title }: { title: string }) {
               <TableCenter>
                 <div className="svara-center">
                   <Pot amount={view.pot} label={t("svara.pot")} />
+                  {sidePots.length > 1 ? (
+                    <ul className="svara-pots tnum" aria-label={t("svara.pot")}>
+                      {sidePots.map((p, i) => (
+                        <li key={i}>
+                          {i === 0 ? t("svara.mainPot") : t("svara.sidePot", { n: i })}: {p.amount}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                   <span className="svara-hand-no tnum">
                     {t("svara.handNo", { n: view.handNo, max: MAX_HANDS, defaultValue: "Ръка {{n}}/{{max}}" })}
                   </span>
@@ -335,25 +385,69 @@ export function SvaraView({ title }: { title: string }) {
                 {/* Бутоните са винаги видими; извън твоя ход са само disabled.
                     Докато масата показва замразения showdown, не позволяваме
                     залог на сляпо в новата (още невидима) ръка. */}
-                <Button
-                  variant="ghost"
-                  disabled={!myTurn || !!frozen || !fold}
-                  onClick={() => fold && m.send(fold)}
-                >
+                <Button variant="ghost" disabled={!canBet || !fold} onClick={() => fold && m.send(fold)}>
                   {t("svara.fold")}
                 </Button>
-                <Button
-                  variant="felt"
-                  disabled={!myTurn || !!frozen || !call}
-                  onClick={() => call && m.send(call)}
-                >
-                  {toCall > 0
-                    ? `${t("svara.call")} (${toCall})`
-                    : t("svara.check", { defaultValue: "Чек" })}
-                </Button>
-                <Button disabled={!myTurn || !!frozen || !raise} onClick={() => raise && m.send(raise)}>
-                  {t("svara.raise")} (+10)
-                </Button>
+                {/* Без достатъчно чипове за изравняване: all-in „за по-малко“. */}
+                {allIn && myChips <= toCall ? (
+                  <Button variant="felt" disabled={!canBet} onClick={() => m.send(allIn)}>
+                    {t("svara.allInAmount", { n: myChips })}
+                  </Button>
+                ) : (
+                  <Button variant="felt" disabled={!canBet || !call} onClick={() => call && m.send(call)}>
+                    {toCall > 0
+                      ? `${t("svara.call")} (${toCall})`
+                      : t("svara.check", { defaultValue: "Чек" })}
+                  </Button>
+                )}
+                {presets ? (
+                  <div className="svara-raise" role="group" aria-label={t("svara.raiseSize")}>
+                    <div className="svara-raise__presets">
+                      {(
+                        [
+                          ["raiseMin", presets.min],
+                          ["raiseHalfPot", presets.halfPot],
+                          ["raisePot", presets.pot],
+                          ["allIn", presets.allIn],
+                        ] as const
+                      ).map(([key, v]) => (
+                        <button
+                          key={key}
+                          type="button"
+                          className="svara-raise__preset"
+                          aria-pressed={raiseValue === v}
+                          disabled={!canBet}
+                          onClick={() => setRaiseTo(v)}
+                        >
+                          {t(`svara.${key}`)}
+                        </button>
+                      ))}
+                    </div>
+                    <input
+                      type="range"
+                      className="svara-raise__slider"
+                      min={presets.min}
+                      max={presets.allIn}
+                      step={1}
+                      value={raiseValue}
+                      disabled={!canBet}
+                      aria-label={t("svara.raiseSize")}
+                      onChange={(e) => setRaiseTo(Number(e.target.value))}
+                    />
+                    <Button disabled={!canBet} onClick={sendRaise}>
+                      {raiseValue >= presets.allIn
+                        ? t("svara.allInAmount", { n: myChips })
+                        : t("svara.raiseTo", { to: raiseValue })}
+                    </Button>
+                  </div>
+                ) : allIn && myChips > toCall ? (
+                  // Къс стек: не стига за минимално вдигане — остава само all-in.
+                  <Button disabled={!canBet} onClick={() => m.send(allIn)}>
+                    {t("svara.allInAmount", { n: myChips })}
+                  </Button>
+                ) : (
+                  <Button disabled>{t("svara.raise")}</Button>
+                )}
               </>
             )}
           </div>

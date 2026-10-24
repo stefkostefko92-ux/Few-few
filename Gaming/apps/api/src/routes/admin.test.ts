@@ -18,6 +18,7 @@ interface FakeUser {
   banned: boolean;
   banReason: string | null;
   banUntil: Date | null;
+  selfExcludedUntil: Date | null;
   deletedAt: Date | null;
   chips: bigint;
   gems: number;
@@ -118,6 +119,7 @@ function addUser(overrides: Partial<FakeUser> = {}): FakeUser {
     banned: false,
     banReason: null,
     banUntil: null,
+    selfExcludedUntil: null,
     deletedAt: null,
     chips: 1000n,
     gems: 0,
@@ -184,6 +186,10 @@ vi.mock("@aso/db", () => {
       if (where.role && typeof where.role === "string") list = list.filter((u) => u.role === where.role);
       if (where.vipTier) list = list.filter((u) => u.vipTier === where.vipTier);
       if (typeof where.banned === "boolean") list = list.filter((u) => u.banned === where.banned);
+      if (where.selfExcludedUntil?.gt) {
+        const gt = (where.selfExcludedUntil.gt as Date).getTime();
+        list = list.filter((u) => u.selfExcludedUntil !== null && u.selfExcludedUntil.getTime() > gt);
+      }
       if (where.OR) {
         list = list.filter((u) =>
           (where.OR as Where[]).some(
@@ -713,6 +719,30 @@ describe("GET /api/admin/users", () => {
       .set("Cookie", asRole("user_x", "ADMIN"));
     expect(mods.body.users).toHaveLength(1);
     expect(mods.body.users[0].role).toBe("MODERATOR");
+  });
+
+  it("отговорна игра: филтър selfExcluded=1 и статус в списъка и детайла", async () => {
+    const active = addUser({ selfExcludedUntil: new Date(Date.now() + 7 * 86_400_000) });
+    addUser({ selfExcludedUntil: new Date(Date.now() - 1000) }); // изтекло
+    addUser();
+
+    const res = await request(app)
+      .get("/api/admin/users?selfExcluded=1")
+      .set("Cookie", asRole("user_x", "ADMIN"));
+    expect(res.status).toBe(200);
+    expect(res.body.users.map((u: { id: string }) => u.id)).toEqual([active.id]);
+    expect(res.body.users[0].selfExcluded).toBe(true);
+    expect(res.body.users[0].selfExcludedUntil).toBe(active.selfExcludedUntil!.toISOString());
+
+    const all = await request(app).get("/api/admin/users").set("Cookie", asRole("user_x", "ADMIN"));
+    const flags = (all.body.users as Array<{ selfExcluded: boolean }>).map((u) => u.selfExcluded);
+    expect(flags.filter(Boolean)).toHaveLength(1); // изтеклото не се брои
+
+    const detail = await request(app)
+      .get(`/api/admin/users/${active.id}`)
+      .set("Cookie", asRole("user_x", "ADMIN"));
+    expect(detail.status).toBe(200);
+    expect(detail.body.user.selfExcluded).toBe(true);
   });
 
   it("paginates with a cursor", async () => {

@@ -168,3 +168,57 @@
   color: var(--ink-muted);
   font-size: 0.9rem;
 }
+
+/* All-in значка, странични потове и панел за вдигане (Свара). */
+.svara-allin {
+  margin-left: 4px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--brass-glow);
+  color: var(--brass-100);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.svara-pots {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  text-align: center;
+}
+.svara-raise {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 100%;
+}
+.svara-raise__presets {
+  display: flex;
+  gap: 4px;
+}
+.svara-raise__preset {
+  min-height: 36px;
+  padding: 4px 10px;
+  border: 1px solid var(--brass-glow);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--brass-100);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.svara-raise__preset[aria-pressed="true"] {
+  background: var(--brass-glow);
+}
+.svara-raise__preset:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.svara-raise__slider {
+  width: min(220px, 70vw);
+  accent-color: var(--brass-100);
+}
