@@ -95,9 +95,13 @@ store/ · docs/          store графики + листинг/submission тек
                         надписи в store/screenshots/i18n.json, нужни са Noto шрифтовете) — минимум текст, истинският
                         popup на съответния език. store/cws-unlisted.json = 10-те езика, които магазинът не показва.
 server/                 сайтът adblock.carbonstealth.eu: index, privacy, support, youtube-ad-blocker,
-                        cookie-banner-blocker (+ sitemap, llms.txt, robots, filters.json). **Нова страница =**
+                        cookie-banner-blocker, ublock-origin-alternative, for-it-admins, how-we-measure, accessibility,
+                        press, status, bye (+ sitemap, llms.txt, robots, filters.json, sources/). **Нова страница =**
                         кратък адрес в nginx.conf И Caddyfile + файлът в списъка на deploy/autodeploy.sh + IndexNow
-                        `urlList` там + sitemap + llms.txt — `tests/site.test.mjs` гейтва всичко това.
+                        `urlList` там + llms.txt + `node tools/sitemap.mjs` (sitemap.xml се ГЕНЕРИРА от страниците: без
+                        noindex, lastmod = dateModified, hreflang на езиковата група) — `tests/site.test.mjs` гейтва
+                        всичко това. **/status** се генерира: `node tools/status_page.mjs` (версия, листите, filters.json,
+                        ръчният ред за YouTube от tools/status.json — сменѝ го след ръчна проверка и пусни генератора).
                         **Езиковите страници** server/<bg|de|it|es|fr|pt-br>/index.html се ГЕНЕРИРАТ:
                         `node tools/site_lang.mjs` от tools/site-lang/<език>.json (en.json е източникът) със стиловете
                         на youtube-ad-blocker.html — не ги пипай на ръка (`--check` е в site.test). hreflang групата

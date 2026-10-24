@@ -38,6 +38,14 @@
   цели, вече не CC0). Решение на собственика: Auth-Key. Билдът го чете само от средата (`ABUSECH_AUTH_KEY`), не го
   печата, без него пази записаното копие; бележките казват условията (`licenses/abuse.ch-URLhaus-terms.txt`) и че
   данните не се преиздават. Обновено: 460 домейна (23.10.2026). Скенерът за тайни хваща адрес на експорта с ключ.
+- **Сайтът (23.10.2026):** нови страници /ublock-origin-alternative (таблица от факти с източник и дата,
+  включително къде uBO Lite е по-добър), /for-it-admins (политиките на Chrome, Admin console, GPO, Intune,
+  macOS), /how-we-measure (методът зад числата на началната страница), /accessibility (частично съответствие
+  с WCAG 2.2 AA и известните пропуски), /press и /status (генерира се от filters.json); /youtube-ad-blocker и
+  /cookie-banner-blocker — датирани секции, списък на познатите consent инструменти, честното изречение за
+  Consent-O-Matic и Never-Consent. На началната страница: измерването е на 5.1.2 (не 5.1.3), а рундовете
+  се различават при AdGuard и Adblock Plus. sitemap.xml се генерира от страниците (hreflang, честен
+  lastmod, без changefreq/priority); `CONTRIBUTING.md` за преводи — тестът спира markup и нови линкове.
 - Документи: `docs/RISKS.md` (профил, ключ, отказ в магазина, марка, сървър), `docs/AMO.md`, поправен `docs/EDGE.md`
   (само `docs/listing/*.txt` — без „Chrome“; бележката за ревюъра вече не описва скриптлети по мрежата),
   `docs/LAUNCH.md` (Show HN, AlternativeTo, Slant).

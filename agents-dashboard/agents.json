@@ -4,7 +4,7 @@
     "subtitle": "Тук живеят персонализираните Claude Code агенти. Всеки има анимационно лице, времева линия (v0.1 нагоре без таван), памет и поток на дейността.",
     "note": "",
     "repo": "stefkostefko92-ux/Few-few",
-    "updated": "2026-10-23",
+    "updated": "2026-10-24",
     "definitionsDir": ".claude/agents/"
   },
   "agents": [
@@ -2809,7 +2809,7 @@
           "Sandi Metz „The Wrong Abstraction“ + Page-Jones connascence",
           "Google eng-practices (code review/readability); граница спрямо .claude/agents/kodadjiyata.md"
         ],
-        "lessons": 119
+        "lessons": 121
       },
       "evolution": [
         {
@@ -2859,9 +2859,20 @@
           "date": "2026-10-06",
           "event": "v20.4 — учене",
           "detail": "Научи: В liftpilot правилото „файл над 300 реда се разделя“ се спазва (1 файл над 300 от 539),… (+35 още)"
+        },
+        {
+          "version": "20.6.0",
+          "date": "2026-10-24",
+          "event": "v20.6 — учене",
+          "detail": "Научи: tools/code/scan.sh mutation без stryker.conf.json само предупреждава и излиза с 0, а в … (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-24",
+          "type": "learning",
+          "summary": "Научи: „tools/code/scan.sh mutation без stryker.conf.json само предупреждава и излиза с 0, а в …\" (+1 още)"
+        },
         {
           "date": "2026-10-06",
           "type": "learning",

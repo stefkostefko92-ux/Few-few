@@ -1544,6 +1544,7 @@ deploy_adblock() {
   mkdir -p "$ADBLOCK_WWW"
   # filters.json НЕ е тук: той се публикува ЗАЕДНО с подписа си (стъпка 1а).
   for f in index.html privacy.html support.html youtube-ad-blocker.html cookie-banner-blocker.html bye.html \
+           status.html accessibility.html for-it-admins.html ublock-origin-alternative.html press.html how-we-measure.html \
            robots.txt sitemap.xml llms.txt \
            og.png favicon-48.png apple-touch-icon.png icon-512.png shield-380.webp shield-96.webp popup-shot.webp; do
     [ -f "$d/$f" ] && rsync -a "$d/$f" "$ADBLOCK_WWW"/
@@ -1741,7 +1742,7 @@ health() {
 indexnow_ping() {
   local key="$1"; [ -n "$key" ] || return 0
   local base="https://$ADBLOCK_DOMAIN"
-  local body='{"host":"'"$ADBLOCK_DOMAIN"'","key":"'"$key"'","keyLocation":"'"$base/$key.txt"'","urlList":["'"$base/"'","'"$base/youtube-ad-blocker"'","'"$base/cookie-banner-blocker"'","'"$base/support"'","'"$base/privacy"'","'"$base/bg/"'","'"$base/de/"'","'"$base/it/"'","'"$base/es/"'","'"$base/fr/"'","'"$base/pt-br/"'"]}'
+  local body='{"host":"'"$ADBLOCK_DOMAIN"'","key":"'"$key"'","keyLocation":"'"$base/$key.txt"'","urlList":["'"$base/"'","'"$base/youtube-ad-blocker"'","'"$base/cookie-banner-blocker"'","'"$base/support"'","'"$base/privacy"'","'"$base/status"'","'"$base/accessibility"'","'"$base/for-it-admins"'","'"$base/ublock-origin-alternative"'","'"$base/press"'","'"$base/how-we-measure"'","'"$base/bg/"'","'"$base/de/"'","'"$base/it/"'","'"$base/es/"'","'"$base/fr/"'","'"$base/pt-br/"'"]}'
   if curl -fsS -m 10 -H "Content-Type: application/json" -d "$body" https://api.indexnow.org/indexnow >/dev/null 2>&1; then
     ok "adblock: IndexNow уведоми Bing/Yandex/Seznam (submit)."
   else

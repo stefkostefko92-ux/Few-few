@@ -49,7 +49,7 @@ adblock.carbonstealth.eu {
 
 	# Pretty URLs for the pages (Web Store Privacy Policy URL is /privacy, Support URL is /support).
 	# A new page = a path here + in nginx.conf + in deploy/autodeploy.sh (gated by tests/site.test.mjs).
-	@pretty path /privacy /support /youtube-ad-blocker /cookie-banner-blocker /bye
+	@pretty path /privacy /support /youtube-ad-blocker /cookie-banner-blocker /bye /status /accessibility /for-it-admins /ublock-origin-alternative /press /how-we-measure
 	rewrite @pretty {path}.html
 
 	# Language pages (tools/site_lang.mjs → /<lang>/index.html): file_server serves the folder's
