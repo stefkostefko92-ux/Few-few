@@ -997,12 +997,81 @@ html.bt .a11y-btn {
   padding: 0.55rem 0.95rem;
   font-size: 1rem;
 }
-/* Бутонът „Търси“ на тесен екран: с широките отстъпи полето ставаше ~130px и
-   подсказката се режеше („Каквс“). */
-@media (max-width: 479.98px) {
-  html.bt .search-submit {
+/* Некомпактната търсачка (SearchBar: герой, мобилно меню, 404, /tarsene) е
+   контейнер и решава според собствената си ширина в em — тоест расте и с
+   размера на текста (B10). Подсказката „Какво търсите?“ трябва да се събира
+   цяла:
+   • широка — поле + бутон „Търсете“ с надпис;
+   • по-тясна — бутонът е квадрат само с лупата (надписът е за четеца);
+   • най-тясна — бутонът „Търсете“ е под полето, на цяла ширина.
+   В „по-лесно докосване“ полето и бутонът са по-едри → по-високи прагове. */
+.search-form {
+  container-type: inline-size;
+}
+@container (max-width: 18.5em) {
+  .search-form .search-submit {
+    min-width: 3em;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  .search-submit-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}
+@container (max-width: 20.5em) {
+  html.bt .search-form .search-submit {
+    min-width: 3em;
     padding-left: 0.85rem;
     padding-right: 0.85rem;
+  }
+  html.bt .search-submit-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}
+@container (max-width: 13.75em) {
+  .search-form .search-field,
+  .search-form .search-submit {
+    flex-basis: 100%;
+  }
+  .search-submit-label {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+}
+@container (max-width: 15em) {
+  html.bt .search-form .search-field,
+  html.bt .search-form .search-submit {
+    flex-basis: 100%;
+  }
+  html.bt .search-submit-label {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
   }
 }
 /* Само едноредовите връзки стават inline-flex (основното меню, футърът,

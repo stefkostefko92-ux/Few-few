@@ -80,12 +80,15 @@ export function SearchBar({
         e.preventDefault();
         go(q);
       }}
-      className="flex w-full items-center gap-2"
+      // Некомпактната търсачка (герой, меню, 404, /tarsene) е контейнер:
+      // според ширината си в em сама решава дали бутонът е с надпис, само с
+      // лупата или под полето (globals.css, .search-form).
+      className={"flex w-full items-center gap-2" + (compact ? "" : " search-form flex-wrap")}
     >
       <label htmlFor={id} className="sr-only">
         Търсене в сайта
       </label>
-      <div className="relative min-w-0 flex-1">
+      <div className="search-field relative min-w-0 flex-1">
         <input
           id={id}
           type="search"
@@ -122,12 +125,13 @@ export function SearchBar({
           </button>
         )}
       </div>
-      {/* Под 380px надписът „Търси“ остава само за екранния четец — иначе
-          полето се свива и подсказката се реже („Каквс“). */}
+      {/* Когато полето стане твърде тясно, надписът „Търсете“ остава само за
+          екранния четец (иначе подсказката се реже: „Каквс“), а още по-тясно
+          бутонът минава под полето на цяла ширина — globals.css. */}
       <button
         type="submit"
-        className={compact ? "search-submit btn-secondary px-3" : "search-submit btn-primary max-[379px]:px-3"}
-        aria-label="Търси"
+        className={compact ? "search-submit btn-secondary px-3" : "search-submit btn-primary"}
+        aria-label="Търсете"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
           <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
@@ -138,7 +142,7 @@ export function SearchBar({
             strokeLinecap="round"
           />
         </svg>
-        {!compact && <span className="max-[379px]:sr-only">Търси</span>}
+        {!compact && <span className="search-submit-label">Търсете</span>}
       </button>
     </form>
   );
