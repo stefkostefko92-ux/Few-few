@@ -5,12 +5,16 @@
 //
 // Правило: празно поле не се показва (никакви празни рамки), а където нямаме
 // проверени данни — само връзка към раздела, без измислени стойности.
+//
+// Вид: статичен .panel; всички иконни квадратчета в един тон (.icon-chip-sm);
+// на компютър редовете са в две колони, за да не остава празна дясна половина.
 
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Bus, CalendarDays, Cross, Newspaper, Zap, type LucideIcon } from "@/components/icons";
-import { TelLink } from "@/components/TelLink";
+import { PhoneButton } from "@/components/PhoneButton";
 import { outageTitle } from "@/lib/ingest-outages-rss";
+import { formatDate, formatDateLong, isoDate } from "@/lib/format-date";
 import {
   outageDayLabel,
   outageHours,
@@ -42,41 +46,44 @@ export type TodayNews = { slug: string; title: string; date: Date };
 
 const MAX_OUTAGES = 3;
 
-const NEWS_DATE = new Intl.DateTimeFormat("bg-BG", {
-  timeZone: "Europe/Sofia",
-  day: "numeric",
-  month: "long",
-  year: "numeric",
-});
+// Връзка-съдържание (име на аптека, новина, имен ден): винаги подчертана —
+// възрастният човек иначе не разбира, че удебеленият текст се натиска.
+const LINK = "link-quiet font-semibold text-slate-900";
 
-// text-green-700 има тъмен вариант (светлозелен) и иконата избледнява върху
-// светлата значка; green-800 остава тъмен и в двата режима.
-const DUTY_CHIP = "bg-green-100 text-green-800";
-const LINK = "font-semibold text-slate-900 underline-offset-4 hover:underline";
-const MORE = "inline-flex min-h-[44px] items-center text-base font-semibold text-brand-700 underline underline-offset-4";
+function More({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link href={href} className="link-more">
+      {children}
+      <span aria-hidden="true">→</span>
+    </Link>
+  );
+}
 
 function Row({
   icon: Icon,
-  chip,
   label,
   children,
 }: {
   icon: LucideIcon;
-  chip: string;
-  label: string;
+  label: ReactNode;
   children: ReactNode;
 }) {
   return (
-    <li className="flex items-start gap-3 py-3">
-      <span className={"mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-lg " + chip}>
-        <Icon className="h-6 w-6" aria-hidden />
+    <li className="flex items-start gap-3 border-t border-slate-200 py-3">
+      <span className="icon-chip-sm mt-0.5">
+        <Icon aria-hidden />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-slate-600">{label}</p>
+        <p className="text-base text-slate-600">{label}</p>
         {children}
       </div>
     </li>
   );
+}
+
+/** „събота, 24 октомври 2026 г.“ → „Събота, 24 октомври 2026 г.“ */
+function capitalize(s: string): string {
+  return s ? s.charAt(0).toLocaleUpperCase("bg-BG") + s.slice(1) : s;
 }
 
 export function TodayPanel({
@@ -94,7 +101,7 @@ export function TodayPanel({
   outages: TodayOutage[];
   buses: { title: string; time: string }[];
   news: TodayNews | null;
-  /** По избор — до заглавието (напр. времето); изчезва сам, ако е празен. */
+  /** По избор — до заглавието (напр. времето). */
   aside?: ReactNode;
 }) {
   const w = sofiaWallWindow(now);
@@ -103,26 +110,24 @@ export function TodayPanel({
   const hasCalendar = calendar.feasts.length > 0 || calendar.names.length > 0;
 
   return (
-    <section
-      aria-labelledby="dnes-title"
-      className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6"
-    >
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <section aria-labelledby="dnes-title" className="panel sm:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
         <div>
           <h2 id="dnes-title" className="section-title">
-            Днес в Бобов дол
+            Днес в Бобов&nbsp;дол
           </h2>
-          <p className="mt-3 text-lg text-slate-700">
-            Днес е <strong className="text-slate-900">{calendar.dateText}</strong>
+          {/* Датата е подзаглавие — без второ „Днес“. */}
+          <p className="mt-3 text-lg font-semibold text-slate-800">
+            <time dateTime={isoDate(now)}>{capitalize(formatDateLong(now))}</time>
           </p>
         </div>
         {aside}
       </div>
 
-      <ul className="mt-3 divide-y divide-slate-200">
+      <ul className="mt-4 grid lg:grid-cols-2 lg:gap-x-10">
         {hasCalendar && (
-          <Row icon={CalendarDays} chip="bg-purple-100 text-purple-700" label="Имен ден и празник">
-            <Link href="/imen-den" className={"inline-flex min-h-[44px] flex-col justify-center " + LINK}>
+          <Row icon={CalendarDays} label="Имен ден и празник">
+            <Link href="/imen-den" className={"inline-flex min-h-tap flex-col justify-center " + LINK}>
               {calendar.feasts.length > 0 && (
                 <span className="block text-crimson-700">{calendar.feasts.join(" · ")}</span>
               )}
@@ -134,11 +139,11 @@ export function TodayPanel({
         )}
 
         {duty.length > 0 ? (
-          <Row icon={Cross} chip={DUTY_CHIP} label="Дежурна аптека днес">
-            <ul className="space-y-2">
+          <Row icon={Cross} label="Дежурна аптека днес">
+            <ul className="space-y-3">
               {duty.map((d) => (
                 <li key={d.id}>
-                  <Link href="/dezhurna-apteka" className={"inline-flex min-h-[44px] items-center text-lg " + LINK}>
+                  <Link href="/dezhurna-apteka" className={"inline-flex min-h-tap items-center text-lg " + LINK}>
                     {d.pharmacy}
                   </Link>
                   {(d.address || d.hours) && (
@@ -147,28 +152,21 @@ export function TodayPanel({
                     </p>
                   )}
                   {d.phone && (
-                    <TelLink
-                      phone={d.phone}
-                      className="a11y-btn mt-1 inline-flex items-center rounded-lg px-1 text-base font-semibold text-brand-700 underline underline-offset-4"
-                      aria-label={`Обадете се на ${d.pharmacy}: ${d.phone}`}
-                    >
-                      {d.phone}
-                    </TelLink>
+                    <PhoneButton phone={d.phone} label="Обадете се:" className="mt-2" />
                   )}
                 </li>
               ))}
             </ul>
           </Row>
         ) : (
-          <Row icon={Cross} chip={DUTY_CHIP} label="Аптеки">
-            <Link href="/dezhurna-apteka" className={MORE}>
-              Дежурна аптека →
-            </Link>
+          <Row icon={Cross} label="Дежурна аптека днес">
+            <p className="text-lg text-slate-900">Графикът за днес още не е въведен.</p>
+            <More href="/dezhurna-apteka">Телефоните на аптеките</More>
           </Row>
         )}
 
         {shownOutages.length > 0 && (
-          <Row icon={Zap} chip="bg-amber-100 text-amber-700" label="Спиране на ток и вода — днес и утре">
+          <Row icon={Zap} label="Спиране на ток и вода — днес и утре">
             <ul className="space-y-1">
               {shownOutages.map((o) => {
                 const hours = outageHours(o, w);
@@ -176,7 +174,7 @@ export function TodayPanel({
                   <li key={o.id}>
                     <Link
                       href={`/prekysvaniya#${o.slug}`}
-                      className={"inline-flex min-h-[44px] flex-col justify-center " + LINK}
+                      className={"inline-flex min-h-tap flex-col justify-center " + LINK}
                     >
                       <span className="line-clamp-3 break-words">
                         <span className="text-amber-900">{outageDayLabel(o.day)}:</span> {outageTitle(o)}
@@ -187,45 +185,43 @@ export function TodayPanel({
                 );
               })}
             </ul>
-            {moreOutages > 0 && (
-              <Link href="/prekysvaniya" className={MORE}>
-                Още {moreOutages} →
-              </Link>
-            )}
+            {moreOutages > 0 && <More href="/prekysvaniya">Още {moreOutages}</More>}
           </Row>
         )}
 
         {buses.length > 0 ? (
-          <Row icon={Bus} chip="bg-sky-100 text-sky-700" label="Следващ автобус днес">
+          <Row icon={Bus} label="Следващ автобус днес">
             <ul>
               {buses.map((b) => (
                 <li key={b.title} className="text-lg text-slate-900">
-                  {b.title}: <strong>{b.time}</strong>
+                  {b.title}: <strong className="tabular-nums">{b.time}</strong>
                 </li>
               ))}
             </ul>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-base text-slate-600">
               Разписанието може да се променя — при съмнение проверете на спирката.
             </p>
-            <Link href="/transport" className={MORE}>
-              Цялото разписание →
-            </Link>
+            <More href="/transport">Цялото разписание</More>
           </Row>
         ) : (
-          <Row icon={Bus} chip="bg-sky-100 text-sky-700" label="Пътуване">
-            <Link href="/transport" className={MORE}>
-              Транспорт →
-            </Link>
+          <Row icon={Bus} label="Пътуване">
+            <More href="/transport">Транспорт</More>
           </Row>
         )}
 
         {news && (
           <Row
             icon={Newspaper}
-            chip="bg-blue-100 text-blue-700"
-            label={`Последна новина · ${NEWS_DATE.format(news.date)}`}
+            label={
+              <>
+                Последна новина ·{" "}
+                <time dateTime={isoDate(news.date)} className="whitespace-nowrap">
+                  {formatDate(news.date)}
+                </time>
+              </>
+            }
           >
-            <Link href={`/novini/${news.slug}`} className={"inline-flex min-h-[44px] items-center " + LINK}>
+            <Link href={`/novini/${news.slug}`} className={"inline-flex min-h-tap items-center " + LINK}>
               {news.title}
             </Link>
           </Row>
