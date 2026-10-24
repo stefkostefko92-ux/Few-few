@@ -73,7 +73,9 @@ export function Icon({ group, name, size = 16, title = null, className }: Props)
       role={title ? 'img' : undefined}
       aria-hidden={title ? undefined : true}
       aria-label={title ?? undefined}
-      className={className}
+      // `shrink-0` по същата причина като в `Badge`: до дълъг текст във flex
+      // иконата иначе се свива под размера, който ѝ е подаден.
+      className={`shrink-0${className ? ` ${className}` : ''}`}
       dangerouslySetInnerHTML={{ __html: markup }}
     />
   );

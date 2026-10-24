@@ -56,8 +56,10 @@ export default async function RulesPage({ params }: Props) {
 
       {rules.map((section) => (
         <section key={section.id} id={section.id} className="panel mt-6 scroll-mt-28 p-6 sm:p-8">
-          <h2 className="section-title flex items-center gap-3">
-            <Badge name={SECTION_BADGE[section.id] ?? 'rules'} size={40} />
+          {/* Заглавието често е на два реда: значката стои до ПЪРВИЯ ред, не по
+              средата на блока (`1lh` = височината на реда на заглавието). */}
+          <h2 className="section-title flex items-start gap-3">
+            <Badge name={SECTION_BADGE[section.id] ?? 'rules'} size={40} className="mt-[calc((1lh_-_40px)/2)]" />
             {section.title}
           </h2>
           <p className="mt-3 leading-relaxed text-silver-400">{section.intro}</p>

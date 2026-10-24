@@ -82,7 +82,7 @@ export function MobileNav({
         // при едър бял текст върху почти черен фон се вижда отчетливо —
         // менюто ставаше нечетимо на точно най-важния екран. Полупрозрачността
         // остава за хедъра, където отдолу минава ситен текст.
-        className="absolute inset-x-0 top-full z-40 max-h-[calc(100dvh-100%)] overflow-y-auto border-b border-white/[0.08] bg-ink-950/95 px-4 pb-6 pt-3 shadow-2xl shadow-black/60 backdrop-blur-xl"
+        className="absolute inset-x-0 top-full z-40 max-h-[calc(100dvh-100%)] overflow-y-auto border-b border-white/[0.08] bg-ink-950 px-4 pb-6 pt-3 shadow-2xl shadow-black/60"
       >
         {children}
       </div>

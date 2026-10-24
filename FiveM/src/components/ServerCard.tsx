@@ -45,7 +45,9 @@ export function ServerCard({
         featured ? 'panel-chrome' : 'panel hover:border-cyan-400/30'
       }`}
     >
-      <div className="flex items-start gap-3.5">
+      {/* `items-center`: значката стои по средата на името + подзаглавието, а не
+          увиснала под името (при `items-start` центърът ѝ беше 8,5 px под реда). */}
+      <div className="flex items-center gap-3.5">
         {/* Рамката е първото, което търси играчът — затова е обемната значка. */}
         <Badge name={FRAMEWORK_ICON[server.framework as FrameworkId]} size={40} />
         <div className="min-w-0 flex-1">

@@ -40,7 +40,9 @@
     "servers:dedupe": "tsx scripts/dedupe-servers.ts",
     "streamers:discover": "tsx scripts/discover-streamers.ts",
     "admin:hash": "tsx scripts/admin-hash.ts",
-    "brand:logo-alpha": "node scripts/logo-alpha.mjs"
+    "brand:logo-alpha": "node scripts/logo-alpha.mjs",
+    "brand:badges": "node scripts/rebuild-badges.mjs",
+    "brand:icons": "node scripts/fit-icons.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1",
