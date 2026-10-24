@@ -95,6 +95,7 @@ maxTurns: 80
 - посл. проверено: 2026-10-24 (hreflang: само ISO 639-1 + ISO 3166-1 alpha-2, https://developers.google.com/search/docs/specialty/international/localized-versions; останалото е непроверено от 2026-06-25).
 
 ## v2.0 — измерване + проследяване на AI цитирания
+- **Първо на живо:** `node tools/seo/live-check.mjs [домейн] --json` — DNS, http/www, robots, sitemap, извадка, IndexNow ключ. Одитът на кода не вижда липсващ DNS запис или TLS отказ на www (2026-10-24: четири продукта без DNS). Нямаш Bash — поискай изхода от оркестратора, преди да одитираш кода.
 - **CWV:** `node tools/seo/cwv.mjs <url> mobile` (поле CrUX + лаб). **JSON-LD:** `node tools/seo/check-jsonld.mjs <url>`. **AI обхождане:** `node tools/seo/ai-bots.mjs <access.log>`.
 - Докладвай before/after делти, не мнение; ключове/логове остават на VPS-а (mode 600). AI-citation = тренд, не абсолют.
 - **Планирано (M):** Search Console API ingest (clicks/impressions/CTR по bg/en/it); Lighthouse CI budget гейт в path-filtered workflow.
