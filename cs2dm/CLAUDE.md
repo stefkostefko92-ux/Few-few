@@ -12,7 +12,10 @@ CarbonStealth на PostgreSQL: банове, админ меню, статист
 **сайтът, етап 1** (`app/` — публичната част: статус, класация, профили, банлист, VIP, правни страници;
 Express + EJS + Prisma + Redis + BullMQ) + **агентът на хоста** (`server/agent/`, CONTRACT §9 — ръцете на
 панела върху systemd, без root) + **уеб панелът, етап 2** (`app/src/admin`, `/admin`: вход със Steam,
-задължителен TOTP, права по §1, мостът към плъгина и агентът). Следва: Discord бот, формите за играчите.
+задължителен TOTP, права по §1, мостът към плъгина и агентът) + **живи настройки** (`server_settings`,
+CONTRACT §11 — реклами, патрони, ботове, XP множител, поздрав; панел ↔ игра) + **събития по график**
+(`events`, §12 — XP уикенд/режим/общностно; панел → плъгин на 30 s → начална страница + JSON-LD) + **картата на
+мача** (`matches`, §13 — топ 3 в чата, `/{език}/match/:id`, последните мачове; 90 дни). Следва: Discord бот, формите за играчите.
 Банове и класация — **публични на сайта** (решение на
 собственика), затова админ системата е наша на Postgres, не CS2-SimpleAdmin (MySQL + три
 неподдържани меню зависимости). Договорът между плъгин и сайт: `CONTRACT.md`._
@@ -34,7 +37,8 @@ npm run dev                            # локално на :4330 (DATABASE_URL
 (само проверки); агентът — `sudo bash server/agent/install-agent.sh` (идемпотентен, накрая самопроверка).
 `test/agent.test.mjs` ползва фалшив RESP сървър (CI е без Redis); ако има Redis на `127.0.0.1:6379`
 (`CS2DM_TEST_REDIS_PORT`), тича и срещу него — база 14, канали `cs2dm-test:<uuid>:…`, чисти след себе си. Без `DATABASE_URL` интеграционните тестове се пропускат чисто; със — създават само
-SteamID-та `76561190000990xxx` (панелът — `991xxx`…`995xxx`) и ги трият преди и след себе си; одитът
+SteamID-та `76561190000990xxx` (панелът — `991xxx`…`995xxx`, настройките — `996xxx`, статистиките и SQL-ът на плъгина — `997xxx`,
+събитията — `998xxx`; те трият и своите събития) и ги трият преди и след себе си; одитът
 остава (веригата не се реже). Локално: `REDIS_TEST_URL=redis://127.0.0.1:6379/<база>`.
 
 ## Структура
@@ -61,9 +65,10 @@ server/agent/cs2-agent.service       unit: cs2agent, без root и без за�
 server/agent/50-cs2dm-agent.rules    polkit: cs2agent САМО restart cs2.service · start cs2-update.service, иначе NO
 server/agent/install-agent.sh        потребител · файлове · ключове (agent.env + app.env) · unit · polkit · самопроверка
 plugins/src/CarbonStealth.Logic/     чиста логика без CSS (XP, роли, срокове, мост/HMAC, банери, CSS права,
-                                     AFK/пинг) — xunit тестове (един файл с тестове на тема)
-plugins/src/CarbonStealth/           плъгинът: един partial клас по тема (Admin, AdminMenu, Banners, Adverts,
-                                     BridgeCommands, Chat, Connection, Stats, CssFlags, FairPlay) + Data/ (Npgsql) + lang/ (en, bg)
+                                     AFK/пинг, настройки, събития, карта на мача) — xunit тестове (един файл с тестове на тема)
+plugins/src/CarbonStealth/           плъгинът: един partial клас по тема (Admin, AdminMenu, Banners, Adverts = живите
+                                     настройки + рекламите, BridgeCommands, Chat, Connection, Stats, CssFlags, FairPlay,
+                                     Events, Match, MatchEnd) + Data/ (Npgsql) + lang/ (en, bg)
 plugins/scripts/build.sh             тестове + publish в plugins/out/; DeathmatchAPI.dll от архива в mods.lock
 addon/                               банери-картинки: build_textures.py → PNG, OBJ плоскости, Workshop стъпки
 CONTRACT.md                          роли, наказания, XP, heatmap, мост, одит, срокове, банери
@@ -75,10 +80,14 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   src/index.ts · src/worker.ts       уеб процесът · BullMQ работникът (чистене по CONTRACT §7, на 6 ч)
   src/server.ts                      Express 5: helmet (строг CSP с nonce), rate limit, pino без IP, 404/500
   src/routes/pages.ts                /{bg|en|it}/: начало, leaderboard, player/:steamId64, bans, vip, правни
+  src/routes/matches.ts              /{bg|en|it}/matches и /match/:id (§13) · match-view.ts · event-seo.ts (§12 JSON-LD)
   src/routes/root.ts                 / → език · robots.txt · sitemap.xml · llms.txt · IndexNow · /bans без език
   src/routes/health.ts               /health — база + Redis, JSON, 200/503
   src/data/repo.ts                   интерфейсът (само публичните полета) · prisma-repo.ts · cached-repo.ts
   src/levels.ts · mastery.ts · heatmap.ts   формулите от CONTRACT §3–4 (тестови стойности в tests/)
+  src/settings.ts                    живите настройки (§11): ключове, строги zod схеми, стойности по подразбиране
+  src/events.ts                      събитията (§12): видове, тавани, местно време ↔ UTC (DISPLAY_TZ, без библиотека)
+  src/data/public-extra.ts           публичното четене след етап 1 (събития, мачове) — PrismaRepo само препраща
   src/live.ts                        `cs2dm:live` (< 60 s) → `cs2dm:a2s` (< 30 s, агентът) → НЕИЗВЕСТЕН; списъкът за панела
   src/admin/                         панелът /admin (етап 2): index.ts сглобява · routes/ (един файл на раздел) ·
                                      sessions · totp(-service) · steam-openid · rbac (§1) · guards (CSRF, лимити) ·
@@ -171,6 +180,17 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   средно за 30 засичания, предупреждение, още 15 → наблюдател. Изключения: HELPER+ и отворено WASD меню
   (`_huds`); ролята още не е заредена → не пипаме. Праговете: `CS2DM_AFK_SECONDS` / `CS2DM_MAX_PING`.
 - Нова колона/таблица → миграция в `app/prisma` (Prisma е собственикът на схемата), после SQL-а в `Data/`.
+- **Статистиките са `+=` с епоха (§3).** Нов агрегат → колона + `PlayerDelta` + `StatsWriter` (с
+  `WHERE ред.stats_epoch <= EXCLUDED.stats_epoch`) + полето в редактора на панела (`stats-edit.ts`). Партидата
+  (`CarbonStealth.Logic/StatsBatch.cs`) се пълни през `Delta(state)` — с епохата на играча, никога без нея.
+  `tests/integration-plugin-sql.test.ts` пуска ИСТИНСКИЯ SQL от `StatsWriter.cs` срещу базата (`csharp-sql.ts`
+  чете константите в тройни кавички) — нов SQL на плъгина в константа = може да се тества така.
+- **Мачът (§13)** се следи в `CarbonStealth.Logic/MatchTracker.cs` (xunit); SQL-ът е в константи в
+  `Data/MatchStore.cs` (тестван от `tests/integration-matches.test.ts`). Нищо, което прилича на MVP музика/кит.
+- **Живите настройки (§11):** нова група = ключ в `SETTING_KEYS` + строга схема (`app/src/settings.ts`) +
+  `ServerSettings.Parse` (C#, с xunit) + форма в `/admin/settings` + CONTRACT §11 — заедно. Невалиден ред в
+  базата никога не чупи плъгина: групата пада към конфига. Превключвател в WASD менюто, който съвпада с
+  настройка, пише СЪЩИЯ ред (`SaveSetting` → одит `settings.change`), иначе опресняването на 60 s го връща.
 - Пакетите са заключени (`packages.lock.json`, `RestoreLockedMode`); нов пакет/версия → `dotnet restore
   --force-evaluate` и lock файлът в същия PR.
 
@@ -251,6 +271,15 @@ zod); код между продуктите не се споделя — сам
   плъгина/агента — след записа; провалена команда не връща записа назад (`recordedNoAck`).
 - **Наказание за онлайн играч** → `punish {punishmentId}` (KICK → `kick`, WARN — без команда); офлайн → само
   запис (плъгинът опреснява на 60 s и при влизане). Отмяна → `revoke`. Роли/VIP → `reload`.
+- **Статистиките на играч** (`playerData`, HEADADMIN+ и immunity): редакция по сезон/оръжие/време, нулиране
+  само с отметнато потвърждение; транзакцията връща всичко назад (вкл. епохата) при „без промяна“ или отказ
+  (`Rollback`) — излишна епоха би изхвърлила натрупаното в плъгина. После `player.reload`. „Всичко, което
+  пазим“ (`/players/:id/data`) е сурово (имената на колоните), без TOTP тайната, токени и хешове.
+- **Събитията** (`/admin/events`, ADMIN+): транзакция с `lockEvents` (advisory lock) → `overlapping` → запис →
+  одит; базата пази и сама (EXCLUDE). Завършило/отменено не се редактира (`notActive`). Без команда по моста —
+  плъгинът проверява на 30 s.
+- **Настройките** (`/admin/settings`, HEADADMIN+): запис → `settings.reload`; без отговор → `recordedNoAck`
+  (плъгинът ги взима сам до 60 s). Сравнението before/after е канонично (`canonicalJson` — jsonb пренарежда ключовете).
 - **Агентът:** `status`/`logs` (ADMIN+), `restart`/`update` (HEADADMIN+). Рестартът чака systemd до 120 s, а
   nginx реже на 30 s → панелът чака 25 s и мълчанието е „още тече“ (`cmdPending`), не грешка.
 - **Резултат след POST = PRG** с `?r=<код>` от затворен списък (`forms.ts` `RESULTS`) — никакъв свободен

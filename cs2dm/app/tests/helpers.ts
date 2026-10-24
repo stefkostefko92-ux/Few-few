@@ -1,6 +1,14 @@
 import type { AddressInfo } from 'node:net';
-import type { Repo, LeaderRow, PublicBan, PublicPlayer, StatLine } from '../src/data/repo.js';
+import type {
+  Repo,
+  LeaderRow,
+  MatchDetail,
+  PublicBan,
+  PublicPlayer,
+  StatLine,
+} from '../src/data/repo.js';
 import { pagesFor } from '../src/data/repo.js';
+import type { PublicEvent } from '../src/events.js';
 import type { LiveSource, LiveStatus } from '../src/live.js';
 import { createServer, type ServerDeps } from '../src/server.js';
 
@@ -11,6 +19,8 @@ export interface FakeData {
   stats: StatLine[];
   bans: PublicBan[];
   tiers: Awaited<ReturnType<Repo['vipTiers']>>;
+  events?: PublicEvent[];
+  matches?: MatchDetail[];
 }
 
 export const PLAYER_ID = '76561198000000001';
@@ -55,6 +65,41 @@ export function sampleData(): FakeData {
     })),
     bans: [],
     tiers: [],
+    matches: [sampleMatch()],
+  };
+}
+
+/** Мач за тестовете: първият е публичен играч, вторият — скрит (чл. 21 GDPR → без име и SteamID). */
+export function sampleMatch(): MatchDetail {
+  const row = (place: number, steamId: string | null, name: string | null, kills: number) => ({
+    place,
+    steamId,
+    name,
+    kills,
+    deaths: 10 - place,
+    headshots: Math.floor(kills / 2),
+    bestStreak: kills > 10 ? 7 : 2,
+    bountiesClaimed: place === 1 ? 1 : 0,
+    xp: kills * 15,
+    topWeapon: place === 1 ? 'ak47' : null,
+    topWeaponKills: place === 1 ? 12 : 0,
+  });
+  return {
+    id: 41,
+    map: 'de_dust2',
+    mode: 'All Weapons',
+    startedAt: new Date('2026-10-20T11:30:00Z'),
+    endedAt: new Date('2026-10-20T12:00:00Z'),
+    kills: 31,
+    players: 3,
+    seasonId: 1,
+    xpTenths: 15,
+    event: { bg: 'XP уикенд', en: 'XP weekend', it: 'Weekend XP' },
+    rows: [
+      row(1, PLAYER_ID, 'Sandstorm', 20),
+      row(2, null, null, 8),
+      row(3, '76561198000000002', 'Rival', 3),
+    ],
   };
 }
 
@@ -106,6 +151,21 @@ export function fakeRepo(data: FakeData, calls: string[] = []): Repo {
       { steamId: PLAYER_ID, updatedAt: new Date('2026-10-20T12:00:00Z') },
     ],
     lastStatsUpdate: async () => new Date('2026-10-20T12:00:00Z'),
+    events: async () => data.events ?? [],
+    recentMatches: async (limit) =>
+      (data.matches ?? []).slice(0, limit).map(({ rows, ...match }) => ({
+        id: match.id,
+        map: match.map,
+        mode: match.mode,
+        startedAt: match.startedAt,
+        endedAt: match.endedAt,
+        kills: match.kills,
+        players: match.players,
+        top: rows[0]
+          ? { steamId: rows[0].steamId, name: rows[0].name, kills: rows[0].kills }
+          : null,
+      })),
+    match: async (id) => (data.matches ?? []).find((match) => match.id === id) ?? null,
   };
 }
 

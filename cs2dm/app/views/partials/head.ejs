@@ -31,7 +31,7 @@
 <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
 <link rel="preload" href="/static/fonts/sofia-sans-extra-condensed-<%= locale === 'bg' ? 'cyrillic' : 'latin' %>-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/static/fonts/sofia-sans-<%= locale === 'bg' ? 'cyrillic' : 'latin' %>-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<% ['site.css', 'chrome.css', 'components.css'].concat(current === 'home' ? ['home.css', 'sky.css', 'features.css', 'sections.css'] : current === 'player' ? ['pages.css', 'tables.css', 'profile.css'] : ['pages.css', 'tables.css']).forEach((sheet) => { %><link rel="stylesheet" href="<%= asset(sheet) %>">
+<% ['site.css', 'chrome.css', 'components.css'].concat(current === 'home' ? ['home.css', 'sky.css', 'features.css', 'sections.css', 'events.css'] : current === 'player' ? ['pages.css', 'tables.css', 'profile.css'] : current === 'matches' || current === 'match' ? ['pages.css', 'tables.css', 'events.css'] : ['pages.css', 'tables.css']).forEach((sheet) => { %><link rel="stylesheet" href="<%= asset(sheet) %>">
 <% }) %><script src="<%= asset('app.js') %>" defer></script>
 <script type="application/ld+json" nonce="<%= cspNonce %>"><%- head.structuredData %></script>
 </head>

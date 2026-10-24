@@ -80,6 +80,13 @@ public sealed partial class CarbonStealthPlugin
             case "mode":
                 BridgeMode(cmd, done);
                 break;
+            case "player.reload":
+                BridgePlayerReload(cmd, done);
+                break;
+            case "settings.reload":
+                // Отговорът е след прилагането — панелът показва „потвърдено“ само ако е в сила.
+                LoadSettings(ok => done(ok, ok ? null : "database error"));
+                break;
             default:
                 done(false, "unknown action");
                 break;
@@ -162,6 +169,33 @@ public sealed partial class CarbonStealthPlugin
             Logger.LogWarning(e, "CarbonStealth: mode {Mode} failed", modeId);
             done(false, "unknown mode");
         }
+    }
+
+    /// <summary>
+    /// Панелът е редактирал статистиките (§3): натрупаното за играча се изхвърля (и да е излязъл) и, ако е
+    /// онлайн, базата става меродавна — XP и епохата се четат наново.
+    /// </summary>
+    private void BridgePlayerReload(BridgeCommand cmd, Action<bool, string?> done)
+    {
+        var steamId = cmd.Arg("steamId");
+        if (steamId is null || !Text.IsSteamId64(steamId))
+        {
+            done(false, "bad args");
+            return;
+        }
+        _batch.Discard(steamId);
+        if (_db is not { } db || _players.All.FirstOrDefault(s => s.SteamId64 == steamId) is not { Loaded: true } state)
+        {
+            done(true, null);
+            return;
+        }
+        var slot = state.Slot;
+        var id = state.SteamId;
+        RunDb(() => db.ReloadAsync(steamId), snap =>
+        {
+            ApplySnapshot(slot, id, snap, isConnect: false);
+            done(true, null);
+        }, "player reload", () => done(false, "database error"));
     }
 
     private static bool TryId(string? s, out int id) =>

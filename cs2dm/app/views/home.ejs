@@ -56,6 +56,8 @@
   </div>
 </section>
 
+<%- include('partials/events', { events }) %>
+
 <section class="band why" aria-labelledby="why-title">
   <div class="wrap">
     <h2 id="why-title"><%= t('home.why.title') %></h2>
@@ -168,6 +170,18 @@
     </ol>
     <% } %>
     <% } %>
+  </div>
+</section>
+<% } %>
+
+<% if (matches.length > 0) { %>
+<section class="band band-matches" aria-labelledby="matches-title">
+  <div class="wrap">
+    <div class="band-head">
+      <h2 id="matches-title"><%= t('home.matches.title') %></h2>
+      <a class="band-link" href="<%= nav.matches %>"><%= t('home.matches.all') %></a>
+    </div>
+    <%- include('partials/match-list', { rows: matches }) %>
   </div>
 </section>
 <% } %>

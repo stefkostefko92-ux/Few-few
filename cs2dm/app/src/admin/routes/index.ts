@@ -1,11 +1,15 @@
 import type { AdminCtx, AdminRoute } from '../context.js';
 import { caseRoutes } from './cases.js';
 import { dashboardRoutes } from './dashboard.js';
+import { eventRoutes } from './events.js';
 import { playerActionRoutes } from './player-actions.js';
+import { playerDataRoutes } from './player-data.js';
 import { playerRoutes } from './players.js';
 import { punishmentRoutes } from './punishments.js';
 import { recordRoutes } from './records.js';
 import { serverRoutes } from './server.js';
+import { settingsRoutes } from './settings.js';
+import { statsRoutes } from './stats.js';
 import { accountRoutes } from './totp.js';
 import { vipRoutes } from './vip.js';
 
@@ -16,10 +20,14 @@ export function protectedRoutes(ctx: AdminCtx): AdminRoute[] {
     ...punishmentRoutes(ctx),
     ...playerRoutes(ctx),
     ...playerActionRoutes(ctx),
+    ...statsRoutes(ctx),
+    ...playerDataRoutes(ctx),
     ...caseRoutes(ctx),
     ...vipRoutes(ctx),
+    ...eventRoutes(ctx),
     ...recordRoutes(ctx),
     ...serverRoutes(ctx),
+    ...settingsRoutes(ctx),
     ...accountRoutes(ctx),
   ];
 }

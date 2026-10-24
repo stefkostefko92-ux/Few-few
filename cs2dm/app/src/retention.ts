@@ -2,7 +2,8 @@ import { RETENTION } from './content.js';
 
 /**
  * Сроковете по CONTRACT.md §7 — изпълнява ги работникът (BullMQ, worker.ts):
- * `sessions` (с IP) — 30 дни · `kills` — 90 дни · обжалвания и доклади — 1 година след решение.
+ * `sessions` (с IP) — 30 дни · `kills` — 90 дни · обжалвания и доклади — 1 година след решение ·
+ * картите на мачовете (`matches`, редовете им — каскадно) — 90 дни.
  *
  * Трие се на партиди по първичен ключ: една огромна DELETE заявка държи заключване дълго, а
  * плъгинът пише в същите таблици всеки 10 s. Повторното пускане е безвредно (идемпотентно) —
@@ -15,7 +16,7 @@ export const MAX_BATCHES = 2000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export interface PurgeTarget {
-  id: 'sessions' | 'kills' | 'appeals' | 'reports';
+  id: 'sessions' | 'kills' | 'appeals' | 'reports' | 'matches';
   days: number;
 }
 
@@ -24,6 +25,7 @@ export const PURGE_TARGETS: readonly PurgeTarget[] = [
   { id: 'kills', days: RETENTION.killsDays },
   { id: 'appeals', days: RETENTION.casesDays },
   { id: 'reports', days: RETENTION.casesDays },
+  { id: 'matches', days: RETENTION.matchesDays },
 ];
 
 export function cutoffFor(days: number, now: Date): Date {

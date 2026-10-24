@@ -27,7 +27,8 @@
     "privacy": "Privacy",
     "vipTerms": "Condizioni VIP",
     "imprint": "Note legali",
-    "contact": "Contatti"
+    "contact": "Contatti",
+    "matches": "Partite"
   },
   "meta": {
     "ogAlt": "CarbonStealth.eu | Dust2 DM — server CS2 Deathmatch solo su de_dust2",
@@ -95,6 +96,16 @@
     },
     "error": {
       "keywords": "server CS2, Dust2 DM, CarbonStealth.eu, Deathmatch, Counter-Strike 2, Carbon Stealth"
+    },
+    "matches": {
+      "title": "Ultime partite su Dust2 DM | CarbonStealth.eu",
+      "description": "Le schede delle ultime partite sul server CS2 CarbonStealth.eu | Dust2 DM: chi è primo, quante uccisioni, serie migliori e armi. Conservate 90 giorni.",
+      "keywords": "partite CS2, risultati delle partite, Dust2 Deathmatch, statistiche CS2, ultime partite, Carbon Stealth"
+    },
+    "match": {
+      "title": "Partita n. {id} su {map} — vince {name}",
+      "description": "La partita del {date} sul server CS2 Dust2 DM: {kills} uccisioni, {players} giocatori. Primo è {name} con {topKills} uccisioni.",
+      "keywords": "partita CS2, risultati della partita, Dust2 Deathmatch, statistiche CS2, migliori giocatori, Carbon Stealth"
     }
   },
   "season": {
@@ -279,6 +290,28 @@
     "cta": {
       "title": "Pronto per Dust2?",
       "text": "Apre Steam e La collega direttamente. Serve solo Counter-Strike 2: niente da installare, nessuna registrazione."
+    },
+    "events": {
+      "title": "Eventi",
+      "live": "In corso",
+      "upcoming": "In arrivo",
+      "to": "a",
+      "tags": "Dettagli dell'evento",
+      "kinds": {
+        "XP_BOOST": "Weekend XP",
+        "MODE": "Modalità speciale",
+        "COMMUNITY": "Community"
+      },
+      "note": "Gli orari sono nel fuso orario del server ({tz}). Il moltiplicatore XP vale allo stesso modo per ogni giocatore.",
+      "ld": {
+        "XP_BOOST": "Weekend XP sul server CS2 Dust2 DM: ogni uccisione dà XP {multiplier}.",
+        "MODE": "Modalità speciale {mode} sul server CS2 Dust2 DM.",
+        "COMMUNITY": "Evento della community sul server CS2 Dust2 DM: entri e giochi con tutti."
+      }
+    },
+    "matches": {
+      "title": "Ultime partite",
+      "all": "Tutte le partite"
     }
   },
   "leaderboard": {
@@ -328,7 +361,8 @@
       "next": "Successiva",
       "page": "Pagina {page} di {pages}"
     },
-    "inviteTitle": "La classifica Le aspetta"
+    "inviteTitle": "La classifica Le aspetta",
+    "matchesLink": "Le schede delle ultime partite"
   },
   "player": {
     "steamId": "SteamID64",
@@ -569,7 +603,8 @@
           "Ricorsi e segnalazioni: 1 anno dopo la decisione, poi vengono cancellati automaticamente.",
           "Statistiche: finché il server è attivo o finché non ne chiede la cancellazione.",
           "Sanzioni: finché sono necessarie per la sicurezza del server.",
-          "Dati di fatturazione per il VIP: per il tempo richiesto dalla legge bulgara sulla contabilità."
+          "Dati di fatturazione per il VIP: per il tempo richiesto dalla legge bulgara sulla contabilità.",
+          "Schede delle partite (nickname e risultato in ogni partita) — {matchesDays} giorni, poi cancellate automaticamente."
         ]
       },
       "recipients": {
@@ -771,7 +806,9 @@
       "server": "Server",
       "banners": "Banner",
       "audit": "Audit",
-      "account": "Account"
+      "account": "Account",
+      "settings": "Impostazioni",
+      "events": "Eventi"
     },
     "me": {
       "signedAs": "Accesso:",
@@ -869,7 +906,8 @@
       "cmdUnknownMode": "La modalità non è disponibile nel plugin DM.",
       "cmdFailed": "Il server ha rifiutato il comando.",
       "badCode": "Il codice è errato o è già stato usato.",
-      "cmdPending": "L’agente non ha confermato entro 25 secondi — il riavvio potrebbe essere ancora in corso. Controlli lo stato tra un minuto."
+      "cmdPending": "L’agente non ha confermato entro 25 secondi — il riavvio potrebbe essere ancora in corso. Controlli lo stato tra un minuto.",
+      "overlap": "L'evento si sovrappone a un altro evento (non annullato). Cambi gli orari."
     },
     "cmd": {
       "timeout": "L’agente del server non ha risposto entro 5 secondi.",
@@ -1198,6 +1236,192 @@
         "update": "aggiornamento"
       },
       "detail": "Dettagli dall’agente:"
+    },
+    "settings": {
+      "title": "Impostazioni del server",
+      "lead": "Si applicano subito in gioco: dopo il salvataggio il pannello invia un comando al plugin, che comunque le controlla ogni 60 secondi. Un gruppo non impostato segue la configurazione del plugin.",
+      "pluginLive": "Il plugin è online: dopo il salvataggio vedrà se ha confermato.",
+      "pluginOffline": "Nessun dato recente dal plugin. Il valore resta nel database e si applica quando il plugin si avvia.",
+      "stored": "Salvato da {name} il {date}.",
+      "default": "Non impostato: vale la configurazione del plugin. I campi mostrano i valori predefiniti.",
+      "invalid": "Il valore salvato è danneggiato: il plugin lo ignora e usa la sua configurazione. Lo salvi di nuovo.",
+      "reset": "Ripristina predefinito",
+      "resetConfirm": "Eliminare questo valore? Varrà la configurazione del plugin.",
+      "adverts": {
+        "title": "Annunci in chat",
+        "interval": "Intervallo in secondi",
+        "intervalHint": "0 = disattivati; altrimenti da {min} a {max} secondi. Ogni annuncio appare nella lingua del giocatore.",
+        "builtin": "Annunci integrati",
+        "builtinItems": {
+          "carbonstealth": "Carbon Stealth — siti web, app, ERP",
+          "adblock": "Supreme AdBlock",
+          "site": "Il sito del server — classifica, statistiche, VIP"
+        },
+        "custom": "Testi personalizzati — {lang}",
+        "customHint": "Fino a {count} testi per lingua, fino a {max} caratteri. I codici colore e le parentesi graffe vengono rimossi, come in chat. I giocatori con un'altra lingua vedono quelli inglesi.",
+        "langs": {
+          "bg": "bulgaro",
+          "en": "inglese"
+        },
+        "textLabel": "Testo {n}"
+      },
+      "ammo": {
+        "title": "Munizioni",
+        "label": "Riserva infinita (ricaricata a ogni ricarica)",
+        "hint": "Uguale a «Munizioni infinite» nel menu !admin: una modifica in un punto si vede nell'altro."
+      },
+      "bots": {
+        "title": "Bot",
+        "label": "Numero di bot (bot_quota)",
+        "hint": "Da 0 a {max}. I bot riempiono il server ed escono quando entrano persone. Uguale a «Bot» nel menu !admin."
+      },
+      "xp": {
+        "title": "Moltiplicatore XP",
+        "label": "Moltiplicatore",
+        "hint": "Da {min} a {max} con passo 0,1. Vale allo stesso modo per tutti. Durante un evento attivo vale il maggiore dei due."
+      },
+      "join": {
+        "title": "Benvenuto all'ingresso",
+        "label": "Mostra il messaggio di benvenuto in chat quando qualcuno entra",
+        "hint": "Con il benvenuto disattivato è disattivato anche il messaggio sull'evento in corso all'ingresso."
+      }
+    },
+    "stats": {
+      "title": "Statistiche — modifica",
+      "lead": "Ogni modifica finisce nel registro con «prima → dopo» e alza l'epoca delle statistiche (ora {epoch}): il plugin prende i valori dal database e scarta quanto non ha ancora salvato per il giocatore; si perdono fino a 10 secondi del suo ultimo gioco.",
+      "dataLink": "Tutto ciò che conserviamo sul giocatore",
+      "none": "Il giocatore non ha ancora statistiche.",
+      "saveConfirm": "Salvare i nuovi valori?",
+      "rules": "Solo numeri interi ≥ 0. Headshot, taglie e vendette non possono superare le uccisioni.",
+      "weapons": "Per arma",
+      "weaponsNone": "Nessuna uccisione per arma in questa stagione.",
+      "playtimeLabel": "Tempo di gioco totale (secondi)",
+      "playtimeHint": "Ora: circa {h} h. Il tempo stagionale è nel campo di ogni stagione.",
+      "fields": {
+        "kills": "Uccisioni",
+        "deaths": "Morti",
+        "headshots": "Headshot",
+        "assists": "Assist",
+        "damage": "Danni",
+        "shotsFired": "Colpi sparati",
+        "shotsHit": "Colpi a segno",
+        "bestStreak": "Serie migliore",
+        "bountiesClaimed": "Taglie riscosse",
+        "revenges": "Vendette",
+        "playtimeSec": "Tempo di gioco (secondi)",
+        "xp": "XP"
+      },
+      "reset": {
+        "title": "Azzeramento",
+        "note": "Porta i numeri a zero (le righe restano per conservare l'epoca). Il registro conserva i valori precedenti.",
+        "confirmLabel": "Confermo l'azzeramento",
+        "season": "Azzera la stagione {n}",
+        "all": "Azzera tutto",
+        "seasonConfirm": "Azzerare le statistiche del giocatore per la stagione corrente?",
+        "allConfirm": "Azzerare TUTTE le statistiche del giocatore (ogni stagione, armi e tempo di gioco)?"
+      }
+    },
+    "data": {
+      "title": "Dati di {name}",
+      "back": "torna al profilo",
+      "lead": "Tutto ciò che il database conserva su questo giocatore: le righe grezze, con i nomi delle colonne del database. I segreti non vengono mai mostrati: del secondo fattore solo se è impostato; i token delle sessioni e gli hash dei codici non vengono letti.",
+      "shown": "{shown} di {total}",
+      "empty": "Nessun record.",
+      "note": "Si mostrano al massimo {limit} righe per sezione (le più recenti). Le uccisioni si conservano 90 giorni, le sessioni 30.",
+      "counts": {
+        "killsAsAttacker": "Uccisioni (come autore, grezze)",
+        "killsAsVictim": "Morti (come vittima, grezze)",
+        "issued": "Sanzioni inflitte da lui",
+        "auditBy": "Voci del registro con lui come amministratore"
+      },
+      "sections": {
+        "player": "Giocatore",
+        "seasonStats": "Statistiche per stagione",
+        "weaponStats": "Statistiche per arma",
+        "sessions": "Sessioni sul server",
+        "webSessions": "Sessioni nel pannello",
+        "recoveryCodes": "Codici di recupero (solo date)",
+        "punishments": "Sanzioni",
+        "appeals": "Ricorsi",
+        "reportsAgainst": "Segnalazioni contro di lui",
+        "reportsBy": "Segnalazioni fatte da lui",
+        "vipGrants": "Periodi VIP",
+        "vipRequests": "Richieste VIP (dati di fatturazione)",
+        "kills": "Ultime uccisioni e morti",
+        "auditAbout": "Registro su di lui",
+        "banners": "Banner posizionati da lui",
+        "matches": "Partite (schede — 90 giorni)"
+      }
+    },
+    "events": {
+      "title": "Eventi programmati",
+      "lead": "Il plugin controlla il programma ogni 30 secondi: all'inizio annuncia l'evento nella lingua di ogni giocatore, avvia la modalità (se c'è) e alza il moltiplicatore XP; alla fine annuncia e ripristina. Gli orari sono nel fuso {tz}.",
+      "newTitle": "Nuovo evento",
+      "create": "Crea",
+      "rules": "Nessuna sovrapposizione; fino a 14 giorni; la fine deve essere nel futuro. «Modalità» richiede una modalità DM, «Weekend XP» un moltiplicatore sopra 1. I titoli vanno nella chat di gioco: i codici colore vengono rimossi.",
+      "empty": "Nessun evento negli ultimi 30 giorni.",
+      "kind": "Tipo",
+      "kinds": {
+        "XP_BOOST": "Weekend XP",
+        "MODE": "Modalità speciale",
+        "COMMUNITY": "Evento della community"
+      },
+      "titleBg": "Titolo (bulgaro)",
+      "titleEn": "Titolo (inglese)",
+      "titleIt": "Titolo (italiano)",
+      "startsAt": "Inizio",
+      "endsAt": "Fine",
+      "multiplier": "Moltiplicatore XP (1–3)",
+      "mode": "Modalità DM",
+      "noMode": "nessun cambio di modalità",
+      "states": {
+        "active": "in corso",
+        "upcoming": "in arrivo",
+        "ended": "concluso",
+        "cancelled": "annullato"
+      },
+      "createdBy": "Creato da {name}.",
+      "edit": "Modifica",
+      "cancel": "Annulla l'evento",
+      "cancelConfirm": "Annullare l'evento? Se è in corso, il plugin lo ferma entro 30 secondi."
+    }
+  },
+  "matches": {
+    "h1": "Ultime partite",
+    "lead": "Ogni partita è una mappa fino al cambio (30 minuti). Contano solo le uccisioni tra persone. Le schede si conservano 90 giorni.",
+    "empty": "Nessuna partita conclusa per ora. Entri e giochi la prima.",
+    "summary": "{kills} uccisioni · {players} giocatori · {minutes} min",
+    "first": "primo:",
+    "kills": {
+      "one": "{count} uccisione",
+      "other": "{count} uccisioni"
+    },
+    "toLeaderboard": "Alla classifica"
+  },
+  "match": {
+    "h1": "Partita n. {id}",
+    "lead": "{map} · {mode}",
+    "hiddenPlayer": "Giocatore nascosto",
+    "top": "Top 3",
+    "all": "Tutti i giocatori",
+    "caption": "Risultati della partita n. {id}, per posizione",
+    "line": "{kills} uccisioni · {deaths} morti · {hs} headshot · serie {streak}",
+    "weapon": "Arma migliore: {weapon} ({kills})",
+    "note": "La posizione è per uccisioni, poi meno morti e più headshot.",
+    "back": "Tutte le partite",
+    "facts": {
+      "kills": "Uccisioni",
+      "players": "Giocatori",
+      "minutes": "Minuti",
+      "multiplier": "Moltiplicatore XP",
+      "event": "Evento"
+    },
+    "col": {
+      "place": "Posizione",
+      "hs": "Headshot",
+      "streak": "Serie",
+      "bounties": "Taglie",
+      "weapon": "Arma"
     }
   }
 }

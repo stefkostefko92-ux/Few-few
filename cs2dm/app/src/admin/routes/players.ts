@@ -14,6 +14,7 @@ import {
   outranks,
 } from '../rbac.js';
 import { renderAdmin, renderAdminError } from '../render.js';
+import { statsEditorData } from './stats.js';
 
 /** Търсене на играчи и профилът им за админите (наказания, сесии, VIP, доклади). */
 const PAGE_SIZE = 50;
@@ -139,6 +140,9 @@ export function playerRoutes(ctx: AdminCtx): AdminRoute[] {
           (start === null || start.getTime() <= now.getTime()) &&
           (end === null || end.getTime() > now.getTime());
         const above = outranks(principal.role, player.role);
+        // Редакторът на статистиките — HEADADMIN+ и само над целта (immunity, §1).
+        const editor =
+          above && can(principal.role, 'playerData') ? await statsEditorData(ctx, steamId) : null;
         renderAdmin(req, res, 'player', {
           current: 'players',
           player: { ...player, name: displayName(player.name, player.steamId) },
@@ -157,6 +161,7 @@ export function playerRoutes(ctx: AdminCtx): AdminRoute[] {
           stats,
           tiers,
           above,
+          editor,
           assignable: above ? assignableRoles(principal.role) : [],
         });
       },

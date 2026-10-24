@@ -1,3 +1,4 @@
+import type { PublicEvent } from '../events.js';
 import type { HeatCell } from '../heatmap.js';
 
 /**
@@ -95,6 +96,44 @@ export interface PublicVipTier {
   periodDays: number;
 }
 
+/**
+ * Мач в списъка (CONTRACT §13). Първият (`top`) е null-ван, ако е скрит (чл. 21 GDPR) — никога
+ * името на скрит играч.
+ */
+export interface MatchListRow {
+  id: number;
+  map: string;
+  mode: string;
+  startedAt: Date;
+  endedAt: Date;
+  kills: number;
+  players: number;
+  top: { steamId: string | null; name: string | null; kills: number } | null;
+}
+
+/** Ред в картата на мача; скрит играч → `steamId` и `name` са null (показва се „скрит играч“). */
+export interface MatchRow {
+  place: number;
+  steamId: string | null;
+  name: string | null;
+  kills: number;
+  deaths: number;
+  headshots: number;
+  bestStreak: number;
+  bountiesClaimed: number;
+  xp: number;
+  topWeapon: string | null;
+  topWeaponKills: number;
+}
+
+export interface MatchDetail extends Omit<MatchListRow, 'top'> {
+  seasonId: number;
+  /** Множителят в десети (10…30) в края на мача. */
+  xpTenths: number;
+  event: { bg: string; en: string; it: string } | null;
+  rows: MatchRow[];
+}
+
 export interface SitemapPlayer {
   steamId: string;
   updatedAt: Date;
@@ -123,6 +162,12 @@ export interface Repo {
   sitemapPlayers(limit: number): Promise<SitemapPlayer[]>;
   /** Последното обновяване на статистиките (lastmod на класацията) или null. */
   lastStatsUpdate(): Promise<Date | null>;
+  /** Активните и предстоящите събития (CONTRACT §12), без отменените. */
+  events(now: Date): Promise<PublicEvent[]>;
+  /** Последните мачове (CONTRACT §13), най-новият първи. */
+  recentMatches(limit: number): Promise<MatchListRow[]>;
+  /** Един мач с всички редове по място; няма → null. */
+  match(id: number): Promise<MatchDetail | null>;
 }
 
 export function pagesFor(total: number, pageSize: number): number {

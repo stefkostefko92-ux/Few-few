@@ -16,6 +16,9 @@ public sealed partial class CarbonStealthPlugin
         RegisterEventHandler<EventWeaponFire>(OnWeaponFire);
     }
 
+    /// <summary>Делтата на играча в партидата — с епохата, която плъгинът знае за него (CONTRACT §3).</summary>
+    private PlayerDelta Delta(PlayerState s) => _batch.For(s.SteamId64, s.Name, s.StatsEpoch);
+
     private PlayerState? Human(CCSPlayerController? p) =>
         p is { IsValid: true, IsBot: false } ? _players.BySlot(p.Slot) is { Loaded: true } s ? s : null : null;
 
@@ -27,16 +30,18 @@ public sealed partial class CarbonStealthPlugin
         var v = Human(victim);
         var a = Human(attacker);
 
-        if (Human(e.Assister) is { } assist && e.Assister!.Slot != victim.Slot) _batch.For(assist.SteamId64, assist.Name).Assists++;
+        if (Human(e.Assister) is { } assist && e.Assister!.Slot != victim.Slot) Delta(assist).Assists++;
 
         // Сравнение по слот: обвивките на контролерите са нови обекти при всяко събитие.
         var suicide = attacker is null || !attacker.IsValid || attacker.Slot == victim.Slot;
         if (v is not null && (suicide || attacker!.IsBot)) _streaks.RecordDeath(v.SteamId);
+        if (v is not null && suicide) _match.Death(v.SteamId64, v.Name);
+        else if (v is not null && attacker!.IsBot) _match.StreakBroken(v.SteamId64);
         if (v is not null && suicide)
         {
             // Самоубийство/падане — смърт се брои; от бот — не (ботовете не влизат в статистиките).
             v.SessionDeaths++;
-            _batch.For(v.SteamId64, v.Name).Deaths++;
+            Delta(v).Deaths++;
         }
         if (v is null || a is null || suicide) return HookResult.Continue;
 
@@ -50,21 +55,22 @@ public sealed partial class CarbonStealthPlugin
             ThroughSmoke: e.Thrusmoke,
             Revenge: outcome.Revenge,
             BountyClaimed: outcome.BountyClaimed);
-        var xp = Progression.XpForKill(facts);
+        var xp = Progression.ApplyMultiplier(Progression.XpForKill(facts), XpTenths());
         var levelBefore = a.Level;
         a.Xp += xp;
         a.SessionKills++;
         v.SessionDeaths++;
 
-        var ad = _batch.For(a.SteamId64, a.Name);
+        var ad = Delta(a);
         ad.Kills++;
         ad.Xp += xp;
         if (e.Headshot) ad.Headshots++;
         ad.BestStreak = Math.Max(ad.BestStreak, outcome.AttackerStreak);
         if (outcome.BountyClaimed > 0) ad.BountiesClaimed++;
         if (outcome.Revenge) ad.Revenges++;
-        _batch.AddWeapon(a.SteamId64, weapon, e.Headshot);
-        _batch.For(v.SteamId64, v.Name).Deaths++;
+        _batch.AddWeapon(a.SteamId64, a.StatsEpoch, weapon, e.Headshot);
+        _match.Kill(a.SteamId64, a.Name, v.SteamId64, v.Name, weapon, e.Headshot, outcome.BountyClaimed > 0, xp);
+        Delta(v).Deaths++;
 
         var ap = attacker!.PlayerPawn.Value?.AbsOrigin;
         var vp = victim.PlayerPawn.Value?.AbsOrigin;
@@ -95,7 +101,7 @@ public sealed partial class CarbonStealthPlugin
     {
         if (e.Attacker is null || e.Userid is null || e.Attacker.Slot == e.Userid.Slot) return HookResult.Continue;
         if (Human(e.Attacker) is not { } a || Human(e.Userid) is null) return HookResult.Continue;
-        var d = _batch.For(a.SteamId64, a.Name);
+        var d = Delta(a);
         d.Damage += Math.Max(0, e.DmgHealth);
         if (Progression.IsGun(e.Weapon)) d.ShotsHit++;
         return HookResult.Continue;
@@ -103,7 +109,7 @@ public sealed partial class CarbonStealthPlugin
 
     private HookResult OnWeaponFire(EventWeaponFire e, GameEventInfo info)
     {
-        if (Human(e.Userid) is { } s && Progression.IsGun(e.Weapon)) _batch.For(s.SteamId64, s.Name).ShotsFired++;
+        if (Human(e.Userid) is { } s && Progression.IsGun(e.Weapon)) Delta(s).ShotsFired++;
         return HookResult.Continue;
     }
 

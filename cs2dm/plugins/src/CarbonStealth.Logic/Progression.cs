@@ -33,6 +33,13 @@ public static class Progression
         return xp + Math.Max(0, k.BountyClaimed);
     }
 
+    /// <summary>
+    /// Множител на XP в десети (10…30): floor(xp · m10 / 10) — цели числа, същото като
+    /// applyXpMultiplier в levels.ts (CONTRACT.md §3). 15×1,5 → 22; извън 10…30 се приклещва.
+    /// </summary>
+    public static int ApplyMultiplier(int xp, int tenths) =>
+        (int)(Math.Max(0, xp) * (long)Math.Clamp(tenths, 10, 30) / 10);
+
     /// <summary>Ниво n иска общо 100·n·(n−1)/2 XP → level = floor((1 + √(1 + 8·xp/100)) / 2).</summary>
     public static int LevelFromXp(long xp)
     {

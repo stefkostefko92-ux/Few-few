@@ -52,6 +52,8 @@ export const CAPABILITIES = {
   say: 'MODERATOR',
   /** Смяна на DM режима (`mode`). */
   mode: 'ADMIN',
+  /** Събития по график (CONTRACT §12) — като смяната на режим: ADMIN+. */
+  events: 'ADMIN',
   /** VIP: ръчно даване/отнемане и нивата (цени). */
   vip: 'ADMIN',
   /** Лични данни: IP адресите на сесиите и скриването от класациите (чл. 21 GDPR). */
@@ -66,6 +68,10 @@ export const CAPABILITIES = {
   banners: 'HEADADMIN',
   /** Одит-веригата. */
   audit: 'HEADADMIN',
+  /** Живите настройки на сървъра (CONTRACT §11): реклами, патрони, ботове, XP множител, поздрав. */
+  settings: 'HEADADMIN',
+  /** Всичко пазено за играч (четене) и ръчна редакция/нулиране на статистиките му (§3, епоха). */
+  playerData: 'HEADADMIN',
 } as const satisfies Record<string, Role>;
 
 export type Capability = keyof typeof CAPABILITIES;

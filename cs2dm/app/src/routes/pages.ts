@@ -52,6 +52,8 @@ import {
   type JsonLdNode,
 } from '../seo.js';
 import { displayName, parseSteamId, truncate } from '../steamid.js';
+import { eventNodes, eventViews } from './event-seo.js';
+import { matchListView } from './match-view.js';
 import { renderPage, type NavId } from '../view.js';
 
 export interface PageDeps {
@@ -238,13 +240,25 @@ export function pagesRouter(locale: Locale, deps: PageDeps): Router {
         : Promise.resolve(null),
       settle('последни банове', () => deps.repo.activeBans({ page: 1, pageSize: 5, now: now() })),
     ]);
+    const matches = ((await settle('мачове', () => deps.repo.recentMatches(5))) ?? []).map((row) =>
+      matchListView(row, t),
+    );
+    const events = eventViews(
+      (await settle('събития', () => deps.repo.events(now()))) ?? [],
+      locale,
+      now(),
+    );
     const head = buildHead({
       locale,
       ...meta(t, 'home'),
       path: pagePath(locale, 'home'),
       pathFor: (code) => pagePath(code, 'home'),
       crumbs: [homeCrumb(t, locale)],
-      extraNodes: [gameServerNode(locale, live), faqNode(locale, t)],
+      extraNodes: [
+        gameServerNode(locale, live),
+        faqNode(locale, t),
+        ...eventNodes(events, locale, t),
+      ],
       ogImageAlt: t('meta.ogAlt'),
     });
     renderPage(res, 'home', locale, 'home', head, {
@@ -260,6 +274,9 @@ export function pagesRouter(locale: Locale, deps: PageDeps): Router {
       bans: bans
         ? bans.rows.map((ban) => ({ ...ban, targetName: displayName(ban.targetName, ban.steamId) }))
         : null,
+      events,
+      matches,
+      timeZone: config().DISPLAY_TZ,
       faq: HOME_FAQ,
       faqParams: faqParams(),
       modes: HOME_MODES,
@@ -554,6 +571,7 @@ export function legalParams(): Record<string, string | number> {
   return {
     sessionsDays: RETENTION.sessionsDays,
     killsDays: RETENTION.killsDays,
+    matchesDays: RETENTION.matchesDays,
     casesDays: RETENTION.casesDays,
     demosDays: RETENTION.demosDays,
     heatmapDays: HEATMAP_WINDOW_DAYS,

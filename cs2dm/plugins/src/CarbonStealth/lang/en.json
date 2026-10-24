@@ -55,6 +55,7 @@
   "advert.carbonstealth": "{Gold}[CarbonStealth]{Default} This server is made by {Gold}Carbon Stealth{Default} — websites, e-commerce, apps and ERP: {Lime}carbonstealth.eu{Default}",
   "advert.adblock": "{Gold}[CarbonStealth]{Default} Tired of ads? {Gold}Supreme AdBlock{Default} — free ad & tracker blocker for Chrome, Edge and Brave: {Lime}adblock.carbonstealth.eu{Default}",
   "advert.site": "{Gold}[CarbonStealth]{Default} Leaderboard, your stats, bans and VIP: {Lime}{0}{Default}",
+  "advert.custom": "{Gold}[CarbonStealth]{Default} {0}",
   "hud.keys": "W/S ↕ · D/E ✔ · A ← · R ✖",
   "hud.root": "ADMIN",
   "hud.players": "Players",
@@ -131,5 +132,13 @@
   "afk.moved": "{Gold}[CarbonStealth]{Default} You were moved to spectators for being inactive. Press {Lime}M{Default} (team select) to come back.",
   "hud.afk": "Away — spectator in {0} s",
   "ping.warn": "{Gold}[CarbonStealth]{Default} {Red}Your ping is high{Default} (average {0} ms, limit {1} ms) — if it stays high, you will be moved to spectators.",
-  "ping.moved": "{Gold}[CarbonStealth]{Default} You were moved to spectators because of high ping (average {0} ms, limit {1} ms). Press {Lime}M{Default} to come back once your connection is better."
+  "ping.moved": "{Gold}[CarbonStealth]{Default} You were moved to spectators because of high ping (average {0} ms, limit {1} ms). Press {Lime}M{Default} to come back once your connection is better.",
+  "event.start": "{Gold}[CarbonStealth]{Default} {Lime}Event started:{Default} {Gold}{0}{Default} · XP ×{1} · until {2}",
+  "event.end": "{Gold}[CarbonStealth]{Default} The event {Gold}{0}{Default} is over — thanks for playing!",
+  "event.active": "{Gold}[CarbonStealth]{Default} Event on now: {Gold}{0}{Default} · XP ×{1} · until {2}",
+  "hud.event.start": "EVENT: {0} · XP ×{1}",
+  "hud.event.end": "The event {0} is over",
+  "match.summary": "{Gold}[CarbonStealth]{Default} {Lime}Match over{Default} · {0} kills · {1} players · top 3:",
+  "match.line": "{Gold}#{0}{Default} {1} — {Green}{2}{Default} kills / {3} deaths · HS {4} · best streak {5}",
+  "match.link": "{Gold}[CarbonStealth]{Default} Match card: {Lime}{0}{Default}"
 }

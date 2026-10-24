@@ -63,6 +63,13 @@ enum VipRequestStatus {
   CANCELLED
 }
 
+/// Вид на събитие по график (CONTRACT §12): XP уикенд, специален DM режим или общностно събитие.
+enum EventKind {
+  XP_BOOST
+  MODE
+  COMMUNITY
+}
+
 model Player {
   steamId                String    @id @map("steam_id") @db.VarChar(17)
   name                   String    @db.VarChar(64)
@@ -83,6 +90,9 @@ model Player {
   totpLastStep           Int?      @map("totp_last_step")
   /// Право на възражение (чл. 21 GDPR): скрит от публичните класации.
   hiddenFromLeaderboards Boolean   @default(false) @map("hidden_from_leaderboards")
+  /// Епохата на статистиките (CONTRACT §3): панелът я вдига при всяка ръчна редакция; плъгинът я
+  /// чете и праща с всяка партида — партида със стара епоха не пипа редактираните стойности.
+  statsEpoch             Int       @default(0) @map("stats_epoch")
 
   sessions      Session[]
   stats         PlayerSeasonStats[]
@@ -92,6 +102,7 @@ model Player {
   vipRequests   VipRequest[]
   webSessions   WebSession[]
   recoveryCodes WebRecoveryCode[]
+  matches       MatchPlayer[]
 
   @@index([lastSeenAt])
   @@index([role])
@@ -141,6 +152,8 @@ model PlayerSeasonStats {
   revenges        Int      @default(0)
   xp              BigInt   @default(0)
   playtimeSec     Int      @default(0) @map("playtime_sec")
+  /// Епохата, с която е писан редът (CONTRACT §3) — партида с по-стара не го пипа.
+  statsEpoch      Int      @default(0) @map("stats_epoch")
   updatedAt       DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
   player          Player   @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
   season          Season   @relation(fields: [seasonId], references: [id])
@@ -153,13 +166,15 @@ model PlayerSeasonStats {
 
 /// По оръжие — за weapon mastery (сезон 0) и сезонни класации по оръжие.
 model WeaponSeasonStats {
-  steamId   String @map("steam_id") @db.VarChar(17)
-  seasonId  Int    @map("season_id")
-  weapon    String @db.VarChar(32)
-  kills     Int    @default(0)
-  headshots Int    @default(0)
-  player    Player @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
-  season    Season @relation(fields: [seasonId], references: [id])
+  steamId    String @map("steam_id") @db.VarChar(17)
+  seasonId   Int    @map("season_id")
+  weapon     String @db.VarChar(32)
+  kills      Int    @default(0)
+  headshots  Int    @default(0)
+  /// Епохата, с която е писан редът (CONTRACT §3).
+  statsEpoch Int    @default(0) @map("stats_epoch")
+  player     Player @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+  season     Season @relation(fields: [seasonId], references: [id])
 
   @@id([steamId, seasonId, weapon])
   @@index([seasonId, weapon, kills(sort: Desc)])
@@ -389,4 +404,90 @@ model WebRecoveryCode {
 
   @@unique([steamId, codeHash])
   @@map("web_recovery_codes")
+}
+
+/// Живите настройки на сървъра (CONTRACT.md §11): ключ от затворен списък → JSON стойност.
+/// Пишат ги панелът (`/admin/settings`) и WASD менюто в играта (патрони, ботове); C# плъгинът ги чете
+/// при старт, на 60 s и при `settings.reload`. Липсващ или невалиден ред → важи конфигът на плъгина.
+model ServerSetting {
+  key       String   @id @db.VarChar(32)
+  value     Json
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
+  /// SteamID64 на последния писач (панел или игра); null = системата.
+  updatedBy String?  @map("updated_by") @db.VarChar(17)
+
+  @@map("server_settings")
+}
+
+/// Събитие по график (CONTRACT §12). Пише го панелът (ADMIN+, /admin/events); плъгинът го проверява на
+/// 30 s: при старт — обява на езика на играча, DM режим (ако има) и множител на XP = max(настройка, събитие);
+/// при край — обява и връщане. Без застъпване (EXCLUDE в миграцията + проверка в панела). Отменено = cancelled_at.
+model ScheduledEvent {
+  id           Int       @id @default(autoincrement())
+  kind         EventKind
+  titleBg      String    @map("title_bg") @db.VarChar(80)
+  titleEn      String    @map("title_en") @db.VarChar(80)
+  titleIt      String    @map("title_it") @db.VarChar(80)
+  startsAt     DateTime  @map("starts_at") @db.Timestamptz(3)
+  endsAt       DateTime  @map("ends_at") @db.Timestamptz(3)
+  /// 1.0…3.0 със стъпка 0.1 (CHECK в миграцията); плъгинът го ползва в десети (§3).
+  xpMultiplier Decimal   @default(1.0) @map("xp_multiplier") @db.Decimal(2, 1)
+  /// Custom режим на DM плъгина (Deathmatch.json, „Custom Modes“) или null = без смяна.
+  dmModeId     Int?      @map("dm_mode_id")
+  createdBy    String    @map("created_by") @db.VarChar(17)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime  @default(now()) @map("updated_at") @db.Timestamptz(3)
+  cancelledAt  DateTime? @map("cancelled_at") @db.Timestamptz(3)
+  cancelledBy  String?   @map("cancelled_by") @db.VarChar(17)
+  matches      Match[]
+
+  @@index([startsAt])
+  @@index([endsAt])
+  @@map("events")
+}
+
+/// Мач = една карта до смяната ѝ (mp_timelimit 30 + mp_match_end_changelevel). Пише го C# плъгинът в края на
+/// мача (CONTRACT §13) — само хора срещу хора, както статистиките. Пази се 90 дни (§7), после работникът го трие.
+model Match {
+  id           Int             @id @default(autoincrement())
+  map          String          @db.VarChar(64)
+  mode         String          @db.VarChar(32)
+  seasonId     Int             @map("season_id")
+  /// Събитието, което течеше в края на мача (§12), ако има.
+  eventId      Int?            @map("event_id")
+  /// Ефективният множител на XP в края на мача (§3) — 1.0…3.0.
+  xpMultiplier Decimal         @default(1.0) @map("xp_multiplier") @db.Decimal(2, 1)
+  startedAt    DateTime        @map("started_at") @db.Timestamptz(3)
+  endedAt      DateTime        @map("ended_at") @db.Timestamptz(3)
+  /// Убийствата между хора в мача и броят играчи с поне едно убийство или смърт.
+  kills        Int             @default(0)
+  players      Int             @default(0)
+  event        ScheduledEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  rows         MatchPlayer[]
+
+  @@index([endedAt])
+  @@map("matches")
+}
+
+/// Ред на играч в мач: място (убийства ↓, смърти ↑, в главата ↓), числата и най-силното оръжие.
+model MatchPlayer {
+  matchId         Int     @map("match_id")
+  steamId         String  @map("steam_id") @db.VarChar(17)
+  name            String  @db.VarChar(64)
+  place           Int
+  kills           Int     @default(0)
+  deaths          Int     @default(0)
+  headshots       Int     @default(0)
+  bestStreak      Int     @default(0) @map("best_streak")
+  bountiesClaimed Int     @default(0) @map("bounties_claimed")
+  /// XP, спечелено в мача (с множителя).
+  xp              Int     @default(0)
+  topWeapon       String? @map("top_weapon") @db.VarChar(32)
+  topWeaponKills  Int     @default(0) @map("top_weapon_kills")
+  match           Match   @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player          Player  @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+
+  @@id([matchId, steamId])
+  @@index([steamId])
+  @@map("match_players")
 }

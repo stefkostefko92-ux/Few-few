@@ -18,6 +18,16 @@ export const XP_REWARDS = [
   { id: 'revenge', xp: 5 },
 ] as const;
 
+/**
+ * Множител на XP (живата настройка `xp` или активно събитие — по-големият от двата, CONTRACT §3):
+ * `floor(xp · m10 / 10)`, където m10 е множителят в десети (10…30). Цели числа — без float,
+ * за да съвпада с `Progression.ApplyMultiplier` в C#. Тестови стойности: 15×15→22 · 10×30→30 · 7×10→7.
+ */
+export function applyXpMultiplier(xp: number, tenths: number): number {
+  const m10 = Math.min(30, Math.max(10, Math.trunc(tenths)));
+  return Math.floor((Math.max(0, Math.trunc(xp)) * m10) / 10);
+}
+
 /** Баунти: серия ≥ 5 → `min(25 · (серия − 4), 250)` XP. */
 export const BOUNTY = { minStreak: 5, perKill: 25, cap: 250 } as const;
 

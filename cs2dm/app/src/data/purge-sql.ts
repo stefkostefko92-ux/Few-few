@@ -22,6 +22,11 @@ export function prismaDeleteBatch(db: PrismaClient): DeleteBatch {
             SELECT id FROM appeals
             WHERE status <> 'OPEN' AND handled_at IS NOT NULL AND handled_at < ${cutoff}
             LIMIT ${limit})`;
+      case 'matches':
+        // match_players се трият каскадно (FK ON DELETE CASCADE).
+        return db.$executeRaw`
+          DELETE FROM matches WHERE id IN (
+            SELECT id FROM matches WHERE ended_at < ${cutoff} LIMIT ${limit})`;
       case 'reports':
         return db.$executeRaw`
           DELETE FROM reports WHERE id IN (

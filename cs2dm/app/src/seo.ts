@@ -26,6 +26,10 @@ export function playerPath(locale: Locale, steamId: string): string {
   return `/${locale}/player/${steamId}`;
 }
 
+export function matchPath(locale: Locale, id: number): string {
+  return `/${locale}/match/${id}`;
+}
+
 /** Път + нормализиран query (само подадените, в даден ред) — за canonical и пагинацията. */
 export function withQuery(path: string, query: Record<string, string | number | undefined>) {
   const params = new URLSearchParams();

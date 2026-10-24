@@ -76,13 +76,15 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
         RegisterChat();
         RegisterAdminCommands();
         RegisterBanners();
-        RegisterAdverts();
         RegisterAmmo();
+        RegisterSettings();
         RegisterHud();
         RegisterFunCommands();
         RegisterMatchEnd();
         RegisterCssFlags();
         RegisterFairPlay();
+        RegisterEvents();
+        RegisterMatch();
 
         AddTimer(Config.FlushSeconds, FlushStats, TimerFlags.REPEAT);
         AddTimer(5f, PublishLive, TimerFlags.REPEAT);

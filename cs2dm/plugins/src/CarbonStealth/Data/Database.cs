@@ -7,7 +7,7 @@ using NpgsqlTypes;
 namespace CarbonStealth.Data;
 
 /// <summary>Какво знае базата за играч при влизане/презареждане.</summary>
-public sealed record PlayerSnapshot(Role Role, DateTimeOffset? VipUntil, long Xp, List<ActivePunishment> Punishments, long? SessionId);
+public sealed record PlayerSnapshot(Role Role, DateTimeOffset? VipUntil, long Xp, List<ActivePunishment> Punishments, long? SessionId, int StatsEpoch);
 
 /// <summary>
 /// Целият достъп до PostgreSQL. Имената на таблици/колони са от schema.prisma (@map) — виж CONTRACT.md.
@@ -68,10 +68,16 @@ public sealed class Database(NpgsqlDataSource source) : IAsyncDisposable
     private static async Task<PlayerSnapshot> ReadSnapshotAsync(NpgsqlConnection conn, NpgsqlTransaction? tx, string steamId)
     {
         var role = Role.Player;
-        await using (var r = new NpgsqlCommand("SELECT role::text FROM players WHERE steam_id = @s", conn, tx))
+        var epoch = 0;
+        await using (var r = new NpgsqlCommand("SELECT role::text, stats_epoch FROM players WHERE steam_id = @s", conn, tx))
         {
             r.Parameters.AddWithValue("s", steamId);
-            role = Roles.Parse(await r.ExecuteScalarAsync() as string);
+            await using var rd = await r.ExecuteReaderAsync();
+            if (await rd.ReadAsync())
+            {
+                role = Roles.Parse(rd.GetString(0));
+                epoch = rd.GetInt32(1);
+            }
         }
 
         DateTimeOffset? vipUntil = null;
@@ -105,7 +111,7 @@ public sealed class Database(NpgsqlDataSource source) : IAsyncDisposable
             }
         }
 
-        return new PlayerSnapshot(role, vipUntil, xp, punishments, null);
+        return new PlayerSnapshot(role, vipUntil, xp, punishments, null, epoch);
     }
 
     public async Task CloseSessionAsync(long sessionId, string steamId, int playtimeSec)

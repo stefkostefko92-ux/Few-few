@@ -110,5 +110,8 @@
   <% } %>
 </section>
 
+<% if (editor) { %><%- include('partials/player-stats') %><% } else if (can('playerData')) { %>
+<p><a href="/admin/players/<%= player.steamId %>/data"><%= t('admin.stats.dataLink') %></a></p>
+<% } %>
 <%- include('partials/player-history') %>
 <%- include('partials/foot') %>

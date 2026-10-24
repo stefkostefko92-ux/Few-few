@@ -68,7 +68,20 @@ public sealed partial class CarbonStealthPlugin
         var now = DateTimeOffset.UtcNow;
         state.Role = snapshot.Role;
         state.VipUntil = snapshot.VipUntil;
-        state.Xp = Math.Max(state.Xp, snapshot.Xp);
+        switch (StatsEpochs.Compare(state.StatsEpoch, snapshot.StatsEpoch))
+        {
+            case EpochChange.Newer:
+                // Панелът е редактирал статистиките (§3): базата е меродавна, натрупаното — изхвърлено.
+                _batch.Discard(state.SteamId64);
+                state.StatsEpoch = snapshot.StatsEpoch;
+                state.Xp = snapshot.Xp;
+                break;
+            case EpochChange.Same:
+                state.Xp = Math.Max(state.Xp, snapshot.Xp);
+                break;
+            case EpochChange.Stale:
+                break;
+        }
         state.Punishments = snapshot.Punishments;
         if (snapshot.SessionId is { } sid) state.SessionId = sid;
         state.Loaded = true;
@@ -93,7 +106,11 @@ public sealed partial class CarbonStealthPlugin
 
         if (isConnect)
         {
-            if (!carried) player.PrintToChat(Localizer.ForPlayer(player, "welcome", state.Name, Config.SiteUrl));
+            if (!carried && _settings.Welcome)
+            {
+                player.PrintToChat(Localizer.ForPlayer(player, "welcome", state.Name, Config.SiteUrl));
+                TellActiveEvent(player);
+            }
             _bridge?.Event("join", new { steamId = state.SteamId64, name = state.Name });
         }
     }
@@ -139,7 +156,7 @@ public sealed partial class CarbonStealthPlugin
         var seconds = (int)(now - state.AccruedUntil).TotalSeconds;
         if (seconds <= 0) return;
         state.AccruedUntil = now;
-        _batch.For(state.SteamId64, state.Name).PlaytimeSec += seconds;
+        Delta(state).PlaytimeSec += seconds;
     }
 
     private void AccruePlaytime()

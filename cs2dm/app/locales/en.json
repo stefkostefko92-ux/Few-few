@@ -27,7 +27,8 @@
     "privacy": "Privacy",
     "vipTerms": "VIP terms",
     "imprint": "Imprint",
-    "contact": "Contact"
+    "contact": "Contact",
+    "matches": "Matches"
   },
   "meta": {
     "ogAlt": "CarbonStealth.eu | Dust2 DM — a CS2 Deathmatch server on de_dust2 only",
@@ -95,6 +96,16 @@
     },
     "error": {
       "keywords": "CS2 server, Dust2 DM, CarbonStealth.eu, Deathmatch, Counter-Strike 2, Carbon Stealth"
+    },
+    "matches": {
+      "title": "Latest matches on Dust2 DM | CarbonStealth.eu",
+      "description": "Cards of the latest matches on the CS2 server CarbonStealth.eu | Dust2 DM: who came first, how many kills, best streaks and weapons. Kept 90 days.",
+      "keywords": "CS2 matches, match results, Dust2 Deathmatch, CS2 statistics, latest matches, Carbon Stealth"
+    },
+    "match": {
+      "title": "Match #{id} on {map} — won by {name}",
+      "description": "The match of {date} on the CS2 server Dust2 DM: {kills} kills, {players} players. {name} came first with {topKills} kills.",
+      "keywords": "CS2 match, match results, Dust2 Deathmatch, CS2 statistics, top players, Carbon Stealth"
     }
   },
   "season": {
@@ -279,6 +290,28 @@
     "cta": {
       "title": "Ready for Dust2?",
       "text": "Opens Steam and connects you directly. All you need is Counter-Strike 2 — nothing to install, no sign-up."
+    },
+    "events": {
+      "title": "Events",
+      "live": "Running now",
+      "upcoming": "Upcoming",
+      "to": "to",
+      "tags": "Event details",
+      "kinds": {
+        "XP_BOOST": "XP weekend",
+        "MODE": "Special mode",
+        "COMMUNITY": "Community"
+      },
+      "note": "Times are in the server time zone ({tz}). The XP multiplier applies equally to every player.",
+      "ld": {
+        "XP_BOOST": "XP weekend on the CS2 server Dust2 DM: every kill gives XP {multiplier}.",
+        "MODE": "Special mode {mode} on the CS2 server Dust2 DM.",
+        "COMMUNITY": "Community event on the CS2 server Dust2 DM — join and play with everyone."
+      }
+    },
+    "matches": {
+      "title": "Latest matches",
+      "all": "All matches"
     }
   },
   "leaderboard": {
@@ -328,7 +361,8 @@
       "next": "Next",
       "page": "Page {page} of {pages}"
     },
-    "inviteTitle": "The leaderboard is waiting"
+    "inviteTitle": "The leaderboard is waiting",
+    "matchesLink": "Cards of the latest matches"
   },
   "player": {
     "steamId": "SteamID64",
@@ -569,7 +603,8 @@
           "Appeals and notices — 1 year after the decision, then they are deleted automatically.",
           "Stats — for as long as the server runs or until you ask for them to be deleted.",
           "Penalties — for as long as they are needed for the security of the server.",
-          "Invoice details for VIP — as long as the Bulgarian Accountancy Act requires."
+          "Invoice details for VIP — as long as the Bulgarian Accountancy Act requires.",
+          "Match cards (nickname and result in each match) — {matchesDays} days, then deleted automatically."
         ]
       },
       "recipients": {
@@ -771,7 +806,9 @@
       "server": "Server",
       "banners": "Banners",
       "audit": "Audit",
-      "account": "Account"
+      "account": "Account",
+      "settings": "Settings",
+      "events": "Events"
     },
     "me": {
       "signedAs": "Signed in:",
@@ -869,7 +906,8 @@
       "cmdUnknownMode": "The mode is not available in the DM plugin.",
       "cmdFailed": "The server rejected the command.",
       "badCode": "The code is wrong or has already been used.",
-      "cmdPending": "The agent did not confirm within 25 seconds — the restart may still be running. Check the status in a minute."
+      "cmdPending": "The agent did not confirm within 25 seconds — the restart may still be running. Check the status in a minute.",
+      "overlap": "The event overlaps another (not cancelled) event. Change the times."
     },
     "cmd": {
       "timeout": "The server agent did not answer within 5 seconds.",
@@ -1198,6 +1236,192 @@
         "update": "update"
       },
       "detail": "Details from the agent:"
+    },
+    "settings": {
+      "title": "Server settings",
+      "lead": "They apply in game right away: after saving, the panel sends a command to the plugin, and the plugin also checks them every 60 seconds. A group that is not set follows the plugin config.",
+      "pluginLive": "The plugin is online — after saving you will see whether it confirmed.",
+      "pluginOffline": "No fresh data from the plugin. The value stays in the database and applies when the plugin starts.",
+      "stored": "Saved by {name} on {date}.",
+      "default": "Not set — the plugin config applies. The fields show the default values.",
+      "invalid": "The stored value is corrupted — the plugin ignores it and uses its config. Save it again.",
+      "reset": "Back to default",
+      "resetConfirm": "Delete this value? The plugin config will apply.",
+      "adverts": {
+        "title": "Chat adverts",
+        "interval": "Interval in seconds",
+        "intervalHint": "0 = off; otherwise {min} to {max} seconds. Every advert is shown in the player's language.",
+        "builtin": "Built-in adverts",
+        "builtinItems": {
+          "carbonstealth": "Carbon Stealth — websites, apps, ERP",
+          "adblock": "Supreme AdBlock",
+          "site": "The server website — leaderboard, stats, VIP"
+        },
+        "custom": "Custom texts — {lang}",
+        "customHint": "Up to {count} texts per language, up to {max} characters. Colour codes and curly braces are removed, as in chat. Players with another language see the English ones.",
+        "langs": {
+          "bg": "Bulgarian",
+          "en": "English"
+        },
+        "textLabel": "Text {n}"
+      },
+      "ammo": {
+        "title": "Ammo",
+        "label": "Infinite reserve (topped up on every reload)",
+        "hint": "The same as “Infinite ammo” in the !admin menu — a change in one place shows in the other."
+      },
+      "bots": {
+        "title": "Bots",
+        "label": "Number of bots (bot_quota)",
+        "hint": "0 to {max}. Bots fill the server and leave as people join. The same as “Bots” in the !admin menu."
+      },
+      "xp": {
+        "title": "XP multiplier",
+        "label": "Multiplier",
+        "hint": "{min} to {max} in steps of 0.1. It applies equally to everyone. During an active event the higher of the two applies."
+      },
+      "join": {
+        "title": "Welcome on join",
+        "label": "Show the welcome message in chat when someone joins",
+        "hint": "With the welcome off, the message about the current event on join is off as well."
+      }
+    },
+    "stats": {
+      "title": "Statistics — edit",
+      "lead": "Every change goes into the audit with “before → after” and raises the stats epoch (now {epoch}): the plugin takes the values from the database and drops what it has not saved for the player yet — up to 10 seconds of their latest play are lost.",
+      "dataLink": "Everything we store about the player",
+      "none": "The player has no statistics yet.",
+      "saveConfirm": "Save the new values?",
+      "rules": "Whole numbers ≥ 0 only. Headshots, bounties and revenges cannot exceed kills.",
+      "weapons": "Per weapon",
+      "weaponsNone": "No weapon kills in this season.",
+      "playtimeLabel": "Total playtime (seconds)",
+      "playtimeHint": "Now: about {h} h. Season playtime is the field of each season.",
+      "fields": {
+        "kills": "Kills",
+        "deaths": "Deaths",
+        "headshots": "Headshots",
+        "assists": "Assists",
+        "damage": "Damage",
+        "shotsFired": "Shots fired",
+        "shotsHit": "Hits",
+        "bestStreak": "Best streak",
+        "bountiesClaimed": "Bounties claimed",
+        "revenges": "Revenges",
+        "playtimeSec": "Playtime (seconds)",
+        "xp": "XP"
+      },
+      "reset": {
+        "title": "Reset",
+        "note": "Sets the numbers to zero (the rows stay to keep the epoch). The audit keeps the old values.",
+        "confirmLabel": "I confirm the reset",
+        "season": "Reset season {n}",
+        "all": "Reset everything",
+        "seasonConfirm": "Reset the player's statistics for the current season?",
+        "allConfirm": "Reset ALL of the player's statistics (every season, weapons and playtime)?"
+      }
+    },
+    "data": {
+      "title": "Data of {name}",
+      "back": "back to the profile",
+      "lead": "Everything the database stores about this player — the raw rows, column names as in the database. Secrets are never shown: for the second factor only whether it is set; session tokens and code hashes are not read.",
+      "shown": "{shown} of {total}",
+      "empty": "No records.",
+      "note": "At most {limit} rows per section are shown (the latest). Kills are kept for 90 days, sessions for 30.",
+      "counts": {
+        "killsAsAttacker": "Kills (as killer, raw)",
+        "killsAsVictim": "Deaths (as victim, raw)",
+        "issued": "Punishments issued by them",
+        "auditBy": "Audit entries with them as admin"
+      },
+      "sections": {
+        "player": "Player",
+        "seasonStats": "Statistics per season",
+        "weaponStats": "Statistics per weapon",
+        "sessions": "Server sessions",
+        "webSessions": "Panel sessions",
+        "recoveryCodes": "Recovery codes (dates only)",
+        "punishments": "Punishments",
+        "appeals": "Appeals",
+        "reportsAgainst": "Reports against them",
+        "reportsBy": "Reports by them",
+        "vipGrants": "VIP periods",
+        "vipRequests": "VIP requests (invoice data)",
+        "kills": "Latest kills and deaths",
+        "auditAbout": "Audit about them",
+        "banners": "Banners placed by them",
+        "matches": "Matches (cards — 90 days)"
+      }
+    },
+    "events": {
+      "title": "Scheduled events",
+      "lead": "The plugin checks the schedule every 30 seconds: on start it announces the event in each player's language, starts the mode (if any) and raises the XP multiplier; on end it announces and restores. Times are in the {tz} zone.",
+      "newTitle": "New event",
+      "create": "Create",
+      "rules": "No overlaps; up to 14 days; the end must be in the future. “Mode” needs a DM mode, “XP weekend” a multiplier above 1. Titles go to the game chat — colour codes are removed.",
+      "empty": "No events in the last 30 days.",
+      "kind": "Kind",
+      "kinds": {
+        "XP_BOOST": "XP weekend",
+        "MODE": "Special mode",
+        "COMMUNITY": "Community event"
+      },
+      "titleBg": "Title (Bulgarian)",
+      "titleEn": "Title (English)",
+      "titleIt": "Title (Italian)",
+      "startsAt": "Start",
+      "endsAt": "End",
+      "multiplier": "XP multiplier (1–3)",
+      "mode": "DM mode",
+      "noMode": "no mode change",
+      "states": {
+        "active": "running now",
+        "upcoming": "upcoming",
+        "ended": "ended",
+        "cancelled": "cancelled"
+      },
+      "createdBy": "Created by {name}.",
+      "edit": "Edit",
+      "cancel": "Cancel the event",
+      "cancelConfirm": "Cancel the event? If it is running, the plugin stops it within 30 seconds."
+    }
+  },
+  "matches": {
+    "h1": "Latest matches",
+    "lead": "Every match is one map until it changes (30 minutes). Only kills between people count. Cards are kept for 90 days.",
+    "empty": "No finished matches yet. Join and play the first one.",
+    "summary": "{kills} kills · {players} players · {minutes} min",
+    "first": "first:",
+    "kills": {
+      "one": "{count} kill",
+      "other": "{count} kills"
+    },
+    "toLeaderboard": "To the leaderboard"
+  },
+  "match": {
+    "h1": "Match #{id}",
+    "lead": "{map} · {mode}",
+    "hiddenPlayer": "Hidden player",
+    "top": "Top 3",
+    "all": "All players",
+    "caption": "Results of match #{id}, by place",
+    "line": "{kills} kills · {deaths} deaths · {hs} headshots · streak {streak}",
+    "weapon": "Best weapon: {weapon} ({kills})",
+    "note": "Place is by kills, then fewer deaths and more headshots.",
+    "back": "All matches",
+    "facts": {
+      "kills": "Kills",
+      "players": "Players",
+      "minutes": "Minutes",
+      "multiplier": "XP multiplier",
+      "event": "Event"
+    },
+    "col": {
+      "place": "Place",
+      "hs": "Headshots",
+      "streak": "Streak",
+      "bounties": "Bounties",
+      "weapon": "Weapon"
     }
   }
 }

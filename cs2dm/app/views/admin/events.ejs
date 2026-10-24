@@ -1,0 +1,43 @@
+<%- include('partials/head', { title: t('admin.nav.events') }) %>
+<%# Събития по график (CONTRACT §12): плъгинът ги проверява на 30 s; без застъпване; завършилите не се пипат. %>
+<h1><%= t('admin.events.title') %></h1>
+<p class="a-lead"><%= t('admin.events.lead', { tz: timeZone }) %></p>
+
+<details class="a-card a-more">
+  <summary><%= t('admin.events.newTitle') %></summary>
+  <form class="a-form" method="post" action="/admin/events">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <%- include('partials/event-fields', { prefix: 'ne', values: { kind: 'XP_BOOST', multiplier: '1.5', startsInput: defaults.startsInput, endsInput: defaults.endsInput, dmModeId: null } }) %>
+    <button class="a-btn" type="submit"><%= t('admin.events.create') %></button>
+    <p class="a-note"><%= t('admin.events.rules') %></p>
+  </form>
+</details>
+
+<% if (rows.length === 0) { %>
+<p class="a-empty"><%= t('admin.events.empty') %></p>
+<% } else { rows.forEach((row) => { const chip = { active: 'is-live', upcoming: 'is-ok', ended: 'is-muted', cancelled: 'is-err' }[row.state]; %>
+<section class="a-card" aria-labelledby="ev-<%= row.id %>">
+  <h2 id="ev-<%= row.id %>"><%= locale === 'bg' ? row.titleBg : locale === 'it' ? row.titleIt : row.titleEn %> <span class="a-chip <%= chip %>"><%= t('admin.events.states.' + row.state) %></span></h2>
+  <p>
+    <%= t('admin.events.kinds.' + row.kind) %> ·
+    <time datetime="<%= fmt.iso(row.startsAt) %>"><%= fmt.dateTime(row.startsAt) %></time> → <time datetime="<%= fmt.iso(row.endsAt) %>"><%= fmt.dateTime(row.endsAt) %></time> ·
+    XP ×<%= row.multiplier %><% if (row.dmModeId !== null) { %> · <%= (modes.find((mode) => mode.id === row.dmModeId) || { name: '#' + row.dmModeId }).name %><% } %>
+  </p>
+  <p class="a-note"><%= t('admin.events.createdBy', { name: row.createdByName }) %></p>
+  <% if (row.state === 'active' || row.state === 'upcoming') { %>
+  <details class="a-more">
+    <summary><%= t('admin.events.edit') %></summary>
+    <form class="a-form" method="post" action="/admin/events/<%= row.id %>">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <%- include('partials/event-fields', { prefix: 'e' + row.id, values: row }) %>
+      <button class="a-btn" type="submit"><%= t('admin.common.save') %></button>
+    </form>
+  </details>
+  <form method="post" action="/admin/events/<%= row.id %>/cancel" data-confirm="<%= t('admin.events.cancelConfirm') %>">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <button class="a-btn is-danger is-small" type="submit"><%= t('admin.events.cancel') %></button>
+  </form>
+  <% } %>
+</section>
+<% }) } %>
+<%- include('partials/foot') %>

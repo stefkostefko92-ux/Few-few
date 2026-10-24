@@ -1,0 +1,12 @@
+<%# Последните мачове (CONTRACT §13) — карта на ред: кога, колко, кой е първи. Скрит играч — без име. %>
+<ol class="matches">
+  <% rows.forEach((row) => { %><li class="mc">
+    <a class="mc-link" href="<%= matchHref(row.id) %>"><%= t('match.h1', { id: row.id }) %> · <%= row.map %></a>
+    <time class="mc-when" datetime="<%= fmt.iso(row.endedAt) %>"><%= fmt.dateTime(row.endedAt) %></time>
+    <p class="mc-top">
+      <%= t('matches.summary', { kills: fmt.int(row.kills), players: fmt.int(row.players), minutes: row.minutes }) %>
+      <% if (row.topName) { %> · <%= t('matches.first') %> <b><%= row.topName %></b> (<%= t.plural('matches.kills', row.top.kills) %>)<% } %>
+    </p>
+  </li>
+  <% }) %>
+</ol>
