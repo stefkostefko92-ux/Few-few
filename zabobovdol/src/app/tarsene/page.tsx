@@ -86,9 +86,11 @@ export default async function SearchPage({
         crumbs={[{ name: "Търсене", path: "/tarsene" }]}
       />
       <div className="container-content py-10">
-        {/* Полето показва търсената дума — уточнявате, без да я пишете наново. */}
+        {/* Полето показва търсената дума — уточнявате, без да я пишете наново.
+            key={query}: при нова заявка (Назад, търсене от хедъра) полето се монтира
+            наново със стойността от адреса — useState взима initialQuery само веднъж. */}
         <div className="mb-8 max-w-xl">
-          <SearchBar initialQuery={query} />
+          <SearchBar key={query} initialQuery={query} />
         </div>
 
         {query.length < 2 ? (
