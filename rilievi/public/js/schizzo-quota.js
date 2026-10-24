@@ -1,8 +1,8 @@
 // The dimension tool of the sketch editor: drag between the two points — or click one and then the other —;
 // then drag to pull the line out (a tap — 50 units away from the drawing, or in line with the previous
 // dimension of a chain; a mouse or a stylus keeps what it hovered); then the number in the value bar
-// (empty — "?", measured later). A tap on a dimension edits its number. Text and callout —
-// schizzo-testi.js.
+// (empty — "?", measured later). A tap on a dimension edits its number — not on a point of the drawing
+// (the end of the previous dimension starts the next one of a chain). Text and callout — schizzo-testi.js.
 (() => {
   'use strict';
 
@@ -23,11 +23,17 @@
     let last = null;
     // Phase 1 with the first point set by a click: the second one is clicked next.
     let waiting = false;
+    // The first point caught on a point of the drawing: a tap there is no edit.
+    let onPoint = false;
     const shape = () => ({ t: 'q', ...ed.style(), x1: a.x, y1: a.y, x2: b.x, y2: b.y, o, v: '?' });
     const show = () => ed.setPreview(a && b && (a.x !== b.x || a.y !== b.y) ? [shape()] : []);
     const wait = (on) => {
       if (on !== waiting) ed.waitFor(on, 'quota');
       waiting = on;
+    };
+    // Annulla takes back a dimension half made — the second point awaited, or the offset (schizzo-comandi.js).
+    const busy = (on) => {
+      if (ed.waiting) ed.waiting(on);
     };
     const follow = (p) => {
       const snapped = ed.snap(p, { from: a });
@@ -37,6 +43,7 @@
     };
     const drop = () => {
       wait(false);
+      busy(false);
       phase = 0;
       a = b = null;
       ed.setPreview([]);
@@ -61,6 +68,7 @@
     };
     const ask = () => {
       phase = 3;
+      busy(false);
       ed.hint('quotaValore');
       const el = shape();
       ed.valueBar.open({
@@ -95,8 +103,10 @@
         downAt = p;
         moved = false;
         if (phase === 0) {
-          a = ed.snap(p).p;
+          const snapped = ed.snap(p);
+          a = snapped.p;
           b = a;
+          onPoint = snapped.kind === 'punto';
           phase = 1;
         } else if (waiting) follow(p);
       },
@@ -116,8 +126,9 @@
         if (phase === 1) {
           if (waiting) follow(p);
           else if (!moved) {
-            // A tap: on a dimension its number is edited, elsewhere it is the first of two clicks.
-            const existing = pick(p, ['q']);
+            // A tap: on a dimension its number is edited, elsewhere (or on a point of the drawing) it is
+            // the first of two clicks.
+            const existing = !onPoint && pick(p, ['q']);
             if (existing) {
               drop();
               editText(existing);
@@ -135,6 +146,7 @@
             return;
           }
           phase = 2;
+          busy(true);
           o = regole.offsetInside({ x1: a.x, y1: a.y, x2: b.x, y2: b.y }, 0);
           ed.hint('quotaStacco');
           show();
@@ -150,8 +162,12 @@
         }
       },
       cancel() {
-        // A second finger: the points already set stay.
-        if (phase === 1) drop();
+        // A second finger: the points already set stay — the first one awaiting the second too.
+        if (waiting) {
+          b = a;
+          ed.setPreview([]);
+          ed.ring(null, a);
+        } else if (phase === 1) drop();
       },
       // Another tool or the editor closed: a dimension without its number is dropped (its number
       // being typed is taken or dropped by the value bar).

@@ -49,7 +49,8 @@
   // A tool of one drag: `make(start, end)` gives the element (or null); `angle` — the end snaps to
   // 0/45/90° from the start; `tap(point)` — what a tap does. Without one, a tap sets the start and the
   // shape follows the pointer until the next tap ends it (two clicks instead of a drag — the owner on a
-  // computer, 24 October 2026: „non vedo le linee“); Annulla, Esc or another tool drop the start.
+  // computer, 24 October 2026: „non vedo le linee“); Annulla, Esc, another tool or closing the editor drop
+  // the start (`undo`, `flush`), two fingers zooming between the taps do not (`cancel` keeps it).
   const drag = ({ hint, make, angle = false, snapEnd = true, tap = null, after = null }) => {
     let start = null;
     let end = null;
@@ -138,7 +139,17 @@
         ed.setPreview([]);
         ring(null, start);
       },
-      cancel: reset,
+      // A second finger or a cancelled pointer: what this press started goes, a start set before stays.
+      cancel() {
+        if (!waiting) {
+          reset();
+          return;
+        }
+        end = start;
+        ed.setPreview([]);
+        ring(null, start);
+      },
+      flush: reset,
       // Annulla and Esc: a start waiting for its second click goes first.
       undo() {
         if (!waiting) return false;

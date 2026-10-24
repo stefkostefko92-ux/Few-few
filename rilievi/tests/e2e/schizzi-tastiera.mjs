@@ -2,8 +2,10 @@
 // reopened on a sheet it starts clean (no selection of before, the focus on the tool, never on
 // "Scarta"); the menus work from the keyboard and Esc closes the menu, not the editor; after a menu the
 // keys still reach the editor; on a tablet the
-// panels stay on the screen, and on a phone on its side the "Stile" panel and the value bar too.
+// panels stay on the screen and two taps with a pinch between them still draw the line
+// (schizzi-clic.mjs), and on a phone on its side the "Stile" panel and the value bar stay on it too.
 import { fail } from './helpers.mjs';
+import { checkTapPinchTap } from './schizzi-clic.mjs';
 
 export async function checkReopened(page, dialog) {
   const state = await page.evaluate(() => ({
@@ -147,6 +149,7 @@ export async function checkLayouts(page, editUrl) {
       await onScreen(tab, details.locator('.menu__pannello'), `sketch ${name}: menu ${menu}`);
       await details.locator('summary').click();
     }
+    if (name === 'tablet') await checkTapPinchTap(tab, dialog, name);
     if (name === 'phone landscape') {
       // A dimension up to its number: the value bar and OK on the screen.
       await dialog.locator('label[for="schizzo-strumento-quota"]').click();

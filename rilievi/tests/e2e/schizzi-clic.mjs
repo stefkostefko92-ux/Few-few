@@ -1,8 +1,10 @@
 // Two clicks instead of a drag, with the mouse (the owner on a computer, 24 October 2026: "non vedo le
 // linee" — a click did nothing): the first click sets the start and the shape follows the mouse before the
-// second click ends it — line, rectangle, circle, arrow, callout and dimension; Esc drops a start waiting
-// for its second click, Annulla too (enabled for it). A drag still draws as before. What it draws is
-// undone at the end: the rest of the flow sees the sheet as it was.
+// second click ends it — line, rectangle, circle, arrow, callout and dimension (a chain too: a click on
+// the end of the last one starts the next, it does not edit it); Esc drops a start waiting for its second
+// click, Annulla too (enabled for it, and for a dimension being pulled out). A drag still draws as
+// before. What it draws is undone at the end: the rest of the flow sees the sheet as it was. Two taps
+// with a pinch between them — checkTapPinchTap (a touch screen).
 import sharp from 'sharp';
 import { fail } from './helpers.mjs';
 
@@ -34,6 +36,19 @@ export async function checkTwoClicks(page, dialog) {
     await input.press('Enter');
   };
   const start = (await elements()).length;
+
+  // Nothing drawn yet in this opening (Annulla has nothing else to take back): a dimension clicked up to
+  // its offset — Annulla still takes it back.
+  await tool('quota');
+  const quota = await hint();
+  await click(0.4, 0.97);
+  await click(0.6, 0.97);
+  if (await undoButton.isDisabled()) {
+    fail('two clicks: Annulla disabled while a dimension is pulled out');
+    await page.keyboard.press('Escape');
+  } else await undoButton.click();
+  if ((await elements()).length !== start || (await hint()) !== quota)
+    fail('two clicks: Annulla did not take back the dimension being pulled out');
 
   // The line: a click, the mouse away — the line follows it (dark between the two points); a click.
   await tool('linea');
@@ -89,6 +104,18 @@ export async function checkTwoClicks(page, dialog) {
   await type('350');
   const dimension = (await elements()).at(-1);
   if (dimension.t !== 'q' || dimension.v !== '350') fail('two clicks: no dimension');
+  // The next one of a chain: a click on its end starts it (the value bar does not open on its number).
+  await click(0.65, 0.84);
+  if (await dialog.locator('#schizzo-valore').isVisible())
+    fail('two clicks: a click on the end of a dimension edits it instead of starting the next');
+  await click(0.85, 0.84);
+  await click(0.75, 0.8);
+  await type('300');
+  const next = (await elements()).at(-1);
+  if (next.t !== 'q' || next.x1 !== dimension.x2 || next.y1 !== dimension.y2)
+    fail(
+      `two clicks: the chain does not start at the end of the dimension (${JSON.stringify(next)})`,
+    );
 
   // A drag still draws in one go.
   await tool('linea');
@@ -96,8 +123,42 @@ export async function checkTwoClicks(page, dialog) {
   await page.mouse.down();
   await page.mouse.move(...at(0.7, 0.97), { steps: 8 });
   await page.mouse.up();
-  if ((await elements()).length !== start + 7) fail('two clicks: a drag no longer draws');
+  if ((await elements()).length !== start + 8) fail('two clicks: a drag no longer draws');
 
   for (let n = (await elements()).length; n > start; n -= 1) await undoButton.click();
   if ((await elements()).length !== start) fail('two clicks: Annulla did not take back the shapes');
+}
+
+// Two taps with a finger and two fingers zooming between them (the second point is placed closer): the
+// start stays, the second tap ends the line.
+export async function checkTapPinchTap(tab, dialog, name) {
+  await dialog.locator('label[for="schizzo-strumento-linea"]').click();
+  const cdp = await tab.context().newCDPSession(tab);
+  const box = await dialog.locator('canvas').boundingBox();
+  const point = (fx, fy, id) => ({
+    x: box.x + box.width * fx,
+    y: box.y + box.height * fy,
+    id,
+    radiusX: 4,
+    radiusY: 4,
+    force: 1,
+  });
+  const touch = (type, touchPoints) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints });
+  const tap = async (fx, fy) => {
+    await touch('touchStart', [point(fx, fy, 1)]);
+    await touch('touchEnd', []);
+  };
+  const count = () => tab.evaluate(() => window.rilieviSchizzoEditor.elements.length);
+  const before = await count();
+  await tap(0.3, 0.4);
+  await touch('touchStart', [point(0.45, 0.5, 2)]);
+  await touch('touchStart', [point(0.45, 0.5, 2), point(0.55, 0.6, 3)]);
+  for (let i = 1; i <= 5; i += 1)
+    await touch('touchMove', [point(0.45 - i * 0.02, 0.5, 2), point(0.55 + i * 0.02, 0.6, 3)]);
+  await touch('touchEnd', []);
+  await tap(0.7, 0.3);
+  const last = await tab.evaluate(() => window.rilieviSchizzoEditor.elements.at(-1));
+  if ((await count()) !== before + 1 || last.t !== 'p')
+    fail(`sketch ${name}: a pinch between two taps dropped the start of the line`);
+  await cdp.detach();
 }

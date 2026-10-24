@@ -77,6 +77,8 @@
     let moved = false;
     // The detail set by a first click, the place of the text awaited (as the shapes, schizzo-strumenti.js).
     let waiting = false;
+    // The detail caught on a point of the drawing: a tap there starts a callout, it edits nothing.
+    let onPoint = false;
     const shape = () => ({ t: 'a', ...ed.style(), x1: start.x, y1: start.y, x2: end.x, y2: end.y });
     const apart = () => end.x !== start.x || end.y !== start.y;
     const follow = (p) => {
@@ -105,8 +107,10 @@
           follow(p);
           return;
         }
-        start = ed.snap(p).p;
+        const snapped = ed.snap(p);
+        start = snapped.p;
         end = start;
+        onPoint = snapped.kind === 'punto';
       },
       move(p) {
         if (!start) return;
@@ -124,8 +128,9 @@
         if (!start) return;
         if (waiting) follow(p);
         else if (!moved) {
-          // A tap: on a callout its text is edited, elsewhere it is the detail of two clicks.
-          const existing = pick(p, ['a']);
+          // A tap: on a callout its text is edited, elsewhere (or on a point of the drawing) it is the
+          // detail of two clicks.
+          const existing = !onPoint && pick(p, ['a']);
           if (existing) {
             stop();
             editText(existing);
@@ -150,7 +155,17 @@
         });
         ed.setPreview([el]);
       },
-      cancel: stop,
+      // A second finger or a cancelled pointer: what this press started goes, a detail set before stays.
+      cancel() {
+        if (!waiting) {
+          stop();
+          return;
+        }
+        end = start;
+        ed.setPreview([]);
+        ed.ring(null, start);
+      },
+      flush: stop,
       // Annulla and Esc: a detail waiting for its second click goes first.
       undo() {
         if (!waiting) return false;
