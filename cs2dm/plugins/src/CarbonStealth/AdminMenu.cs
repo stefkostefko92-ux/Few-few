@@ -46,7 +46,12 @@ public sealed partial class CarbonStealthPlugin
         {
             var noclip = me?.PlayerPawn.Value is { IsValid: true } pw && _huds.TryGetValue(slot, out var h)
                 && (h.Frozen?.Was ?? pw.MoveType) == MoveType_t.MOVETYPE_NOCLIP;
-            items.Add(new(L(slot, "hud.noclip"), () => ToggleNoclip(Utilities.GetPlayerFromSlot(slot)), Detail: L(slot, noclip ? "hud.on" : "hud.off")));
+            // Затваря менюто: в noclip летиш с WASD веднага (докато менюто е отворено, стоиш на място).
+            items.Add(new(L(slot, "hud.noclip"), () =>
+            {
+                CloseHud(slot);
+                ToggleNoclip(Utilities.GetPlayerFromSlot(slot));
+            }, Detail: L(slot, noclip ? "hud.on" : "hud.off")));
         }
         items.Add(new(L(slot, "hud.close"), () => CloseHud(slot)));
         var name = _players.BySlot(slot)?.Name ?? "";

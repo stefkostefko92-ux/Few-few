@@ -25,7 +25,7 @@ public sealed partial class CarbonStealthPlugin
 
     private void OnClientDisconnect(int slot)
     {
-        _huds.Remove(slot);
+        DropHud(slot);
         var state = _players.Remove(slot);
         if (state is null) return;
         AccruePlaytime(state);
