@@ -126,5 +126,10 @@
   "server.restart": "{Gold}[CarbonStealth]{Default} {Red}{0} restarted the game{Default} — scores reset in 3 s",
   "usage.fun": "{Gold}[CarbonStealth]{Default} Usage: !{0} <name|#userid|steamid>",
   "usage.csay": "{Gold}[CarbonStealth]{Default} Usage: !csay <text>",
-  "usage.asay": "{Gold}[CarbonStealth]{Default} Usage: !asay <text> (staff only)"
+  "usage.asay": "{Gold}[CarbonStealth]{Default} Usage: !asay <text> (staff only)",
+  "afk.warn": "{Gold}[CarbonStealth]{Default} {Red}You seem to be away{Default} — moving you to spectators in {Lime}{0} s{Default}. Move!",
+  "afk.moved": "{Gold}[CarbonStealth]{Default} You were moved to spectators for being inactive. Press {Lime}M{Default} (team select) to come back.",
+  "hud.afk": "Away — spectator in {0} s",
+  "ping.warn": "{Gold}[CarbonStealth]{Default} {Red}Your ping is high{Default} (average {0} ms, limit {1} ms) — if it stays high, you will be moved to spectators.",
+  "ping.moved": "{Gold}[CarbonStealth]{Default} You were moved to spectators because of high ping (average {0} ms, limit {1} ms). Press {Lime}M{Default} to come back once your connection is better."
 }

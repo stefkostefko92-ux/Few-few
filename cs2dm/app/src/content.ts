@@ -18,11 +18,16 @@ export const LEGAL_UPDATED = {
 /** Версията на общите условия за VIP — заявката (етап 2) я записва в `vip_requests.terms_version`. */
 export const TERMS_VERSION = LEGAL_UPDATED.vipTerms;
 
-/** Сроковете по CONTRACT.md §7 — една стойност за правните текстове и за задачите за чистене. */
+/**
+ * Сроковете по CONTRACT.md §7 — една стойност за правните текстове и за задачите за чистене.
+ * `demosDays` чисти не работникът, а `cs2-demos-clean.timer` на хоста (SourceTV демотата са файлове на
+ * сървъра на играта, не в базата); `test/modpack.test.mjs` пази двете стойности равни.
+ */
 export const RETENTION = {
   sessionsDays: 30,
   killsDays: 90,
   casesDays: 365,
+  demosDays: 14,
 } as const;
 
 /** Въпросите на началната страница (видими като H3 и в FAQPage) — `home.faq.<id>.q/a`. */

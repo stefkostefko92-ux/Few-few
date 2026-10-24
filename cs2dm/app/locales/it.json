@@ -536,6 +536,8 @@
           "L'indirizzo IP all'ingresso nel server, per la protezione dagli abusi e il rispetto dei ban; lo conserviamo per {sessionsDays} giorni.",
           "Statistiche: uccisioni, morti, assist, colpi sparati e a segno, serie, XP, tempo di gioco e uccisioni per arma.",
           "Ogni uccisione con l'arma, l'ora e le coordinate sulla mappa, per le mappe delle uccisioni; le conserviamo per {killsDays} giorni.",
+          "Registrazioni SourceTV (demo) delle partite mentre ci sono persone sul server: nickname, SteamID64, movimenti, colpi e messaggi in chat, per verificare le segnalazioni di cheat e di violazioni; la chat vocale non viene registrata. Le conserviamo fino a {demosDays} giorni.",
+          "Se disattiva i suoni delle serie di uccisioni (!qs) o cambia lingua (!lang), il server ricorda il Suo SteamID64 con questa scelta fino al prossimo aggiornamento delle mod del server.",
           "Sanzioni: tipo, categoria, scadenza e un motivo interno visibile solo agli amministratori.",
           "Gli ultimi 2000 eventi circa del server (ingressi, uccisioni, chat) restano brevemente nella memoria operativa per la moderazione e vengono sovrascritti di continuo; la chat non viene salvata nel database."
         ]
@@ -552,7 +554,7 @@
         "title": "Perché e su quale base giuridica",
         "items": [
           "Gestione del gioco, statistiche e classifica pubblica: legittimo interesse (art. 6, par. 1, lett. f) GDPR), perché i giocatori vogliono vedere i propri risultati. Può opporsi: in tal caso La nascondiamo dalle classifiche e dal profilo.",
-          "Sicurezza, protezione dai cheater e applicazione dei ban (compreso l'indirizzo IP): legittimo interesse.",
+          "Sicurezza, protezione dai cheater (comprese le registrazioni demo) e applicazione dei ban (compreso l'indirizzo IP): legittimo interesse.",
           "Lista pubblica dei ban con dati minimi (nome, SteamID64, categoria, data e scadenza): legittimo interesse, per trasparenza e tutela della community. Il motivo non è pubblico.",
           "VIP: esecuzione di un contratto (art. 6, par. 1, lett. b) e obbligo di legge per i documenti contabili (lett. c).",
           "Ricorsi e segnalazioni: legittimo interesse, per decidere su ogni caso."
@@ -563,6 +565,7 @@
         "items": [
           "Indirizzi IP all'ingresso (sessioni): {sessionsDays} giorni, poi vengono cancellati automaticamente.",
           "Uccisioni con coordinate: {killsDays} giorni, poi vengono cancellate automaticamente.",
+          "Demo (registrazioni SourceTV): fino a {demosDays} giorni, poi vengono cancellate automaticamente (prima, se occupano troppo spazio).",
           "Ricorsi e segnalazioni: 1 anno dopo la decisione, poi vengono cancellati automaticamente.",
           "Statistiche: finché il server è attivo o finché non ne chiede la cancellazione.",
           "Sanzioni: finché sono necessarie per la sicurezza del server.",

@@ -1,0 +1,67 @@
+{
+  "enabled": true,
+  "debug": false,
+  "global": {
+    "enabled_during_warmup": true,
+    "play_on_entity": "player",
+    "sound_hearable_by": "attacker",
+    "ignore_bots": false,
+    "ignore_world_damage": true,
+    "count_self_kills": false,
+    "count_team_kills": true,
+    "reset_kills_on_death": true,
+    "reset_kills_on_round_start": true
+  },
+  "precache": {
+    "soundevent_file": "soundevents/soundevents_quakesounds.vsndevts",
+    "additional_files": []
+  },
+  "commands": {
+    "settings": "qs",
+    "settings_menu": false
+  },
+  "messages": {
+    "enable_center_message": false,
+    "center_message_type": "default",
+    "enable_chat_message": false
+  },
+  "sound_priorities": {
+    "special_events": 1,
+    "weapons": 2,
+    "kill_streak": 3
+  },
+  "sounds": {
+    "3": {
+      "_sound": "QuakeSoundsD.Triplekill"
+    },
+    "5": {
+      "_sound": "QuakeSoundsD.Killingspree",
+      "_filter": "all"
+    },
+    "7": {
+      "_sound": "QuakeSoundsD.Rampage",
+      "_filter": "all"
+    },
+    "10": {
+      "_sound": "QuakeSoundsD.Dominating",
+      "_filter": "all"
+    },
+    "15": {
+      "_sound": "QuakeSoundsD.Unstoppable",
+      "_filter": "all"
+    },
+    "20": {
+      "_sound": "QuakeSoundsD.Godlike",
+      "_filter": "all"
+    },
+    "firstblood": {
+      "_sound": "QuakeSoundsD.Firstblood",
+      "_filter": "all"
+    }
+  },
+  "data": {
+    "player_muted": [],
+    "player_languages": {}
+  },
+  "ConfigVersion": 1
+}

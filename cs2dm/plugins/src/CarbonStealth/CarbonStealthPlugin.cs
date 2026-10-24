@@ -42,6 +42,8 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
     {
         if (config.FlushSeconds is < 2 or > 300) config.FlushSeconds = 10;
         if (config.AdvertSeconds is not 0 and (< 60 or > 3600)) config.AdvertSeconds = 240;
+        if (config.AfkSeconds is not 0 and (< 30 or > 3600)) config.AfkSeconds = 90;
+        if (config.MaxPing is not 0 and (< 50 or > 1000)) config.MaxPing = 150;
         // Пътищата отиват в манифеста за precache — само наши модели, без „..“.
         foreach (var (key, model) in config.BannerModels.ToList())
         {
@@ -79,6 +81,8 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
         RegisterHud();
         RegisterFunCommands();
         RegisterMatchEnd();
+        RegisterCssFlags();
+        RegisterFairPlay();
 
         AddTimer(Config.FlushSeconds, FlushStats, TimerFlags.REPEAT);
         AddTimer(5f, PublishLive, TimerFlags.REPEAT);
@@ -111,6 +115,7 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
     {
         RemoveBannerEntities();
         foreach (var slot in _huds.Keys.ToList()) CloseHud(slot);
+        ClearCssFlags();
         AccruePlaytime();
         var last = _batch;
         _batch = new StatsBatch();

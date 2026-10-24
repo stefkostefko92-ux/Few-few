@@ -1,0 +1,11 @@
+{
+  "BlockedCommands": [
+    "meta",
+    "css_plugins",
+    "css"
+  ],
+  "AllowAdmins": true,
+  "AdminFlag": "@css/root",
+  "BlockMessage": "This command is disabled on this server.",
+  "ConfigVersion": 1
+}

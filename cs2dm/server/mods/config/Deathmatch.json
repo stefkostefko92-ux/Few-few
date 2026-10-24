@@ -88,28 +88,28 @@
     "Kill Sound": {
       "Enabled": true,
       "Sound path": "sounds/ui/armsrace_kill_01.vsnd_c",
-      "Default value": false,
+      "Default value": true,
       "Only for VIP": false,
       "Command Shortcuts": []
     },
     "Headshot Kill Sound": {
       "Enabled": true,
       "Sound path": "sounds/buttons/bell1.vsnd_c",
-      "Default value": false,
+      "Default value": true,
       "Only for VIP": false,
       "Command Shortcuts": []
     },
     "Knife Kill Sound": {
       "Enabled": true,
       "Sound path": "sounds/ui/armsrace_final_kill_knife.vsnd_c",
-      "Default value": false,
+      "Default value": true,
       "Only for VIP": false,
       "Command Shortcuts": []
     },
     "Hit Sound": {
       "Enabled": true,
       "Sound path": "sounds/ui/csgo_ui_contract_type2.vsnd_c",
-      "Default value": false,
+      "Default value": true,
       "Only for VIP": false,
       "Command Shortcuts": []
     },

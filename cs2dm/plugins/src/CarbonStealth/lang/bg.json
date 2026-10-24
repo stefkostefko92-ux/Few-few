@@ -126,5 +126,10 @@
   "server.restart": "{Gold}[CarbonStealth]{Default} {Red}{0} рестартира играта{Default} — точките се нулират след 3 s",
   "usage.fun": "{Gold}[CarbonStealth]{Default} Употреба: !{0} <име|#userid|steamid>",
   "usage.csay": "{Gold}[CarbonStealth]{Default} Употреба: !csay <текст>",
-  "usage.asay": "{Gold}[CarbonStealth]{Default} Употреба: !asay <текст> (само за екипа)"
+  "usage.asay": "{Gold}[CarbonStealth]{Default} Употреба: !asay <текст> (само за екипа)",
+  "afk.warn": "{Gold}[CarbonStealth]{Default} {Red}Не си активен{Default} — след {Lime}{0} s{Default} отиваш при наблюдателите. Помръдни!",
+  "afk.moved": "{Gold}[CarbonStealth]{Default} Отиде при наблюдателите, защото не беше активен. Връщаш се с {Lime}M{Default} (избор на отбор).",
+  "hud.afk": "Не си активен — наблюдател след {0} s",
+  "ping.warn": "{Gold}[CarbonStealth]{Default} {Red}Пингът ти е висок{Default} (средно {0} ms, лимит {1} ms) — ако не падне, отиваш при наблюдателите.",
+  "ping.moved": "{Gold}[CarbonStealth]{Default} Отиде при наблюдателите заради висок пинг (средно {0} ms, лимит {1} ms). Връщаш се с {Lime}M{Default}, когато връзката се оправи."
 }

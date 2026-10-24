@@ -1,0 +1,9 @@
+{
+  "enabled": true,
+  "debug": false,
+  "demo_folder": "/opt/cs2/server/game/csgo/addons/counterstrikesharp/data/demos/",
+  "changelevel_delay": 3,
+  "minimum_players_for_recording": 1,
+  "disable_recording_during_warmup": false,
+  "ConfigVersion": 1
+}

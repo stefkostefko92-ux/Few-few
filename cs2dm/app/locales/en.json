@@ -536,6 +536,8 @@
           "Your IP address when you join the server — to protect against abuse and to enforce bans; we keep it for {sessionsDays} days.",
           "Stats: kills, deaths, assists, shots fired and hits, streaks, XP, time played and kills per weapon.",
           "Every kill with the weapon, the time and the map coordinates — for the kill maps; we keep them for {killsDays} days.",
+          "SourceTV recordings (demos) of matches while people are on the server: nickname, SteamID64, movement, shots and chat messages — to review reports of cheating and rule breaking; voice chat is not recorded. We keep them for up to {demosDays} days.",
+          "If you mute the kill-streak sounds (!qs) or change the language (!lang), the server remembers your SteamID64 with that choice until the next update of the server mods.",
           "Penalties: type, category, expiry and an internal reason that only admins can see.",
           "Roughly the last 2000 server events (joins, kills, chat) are held briefly in working memory for moderation and are overwritten continuously; chat is not stored in the database."
         ]
@@ -552,7 +554,7 @@
         "title": "Why, and on what legal basis",
         "items": [
           "Running the game, stats and the public leaderboard — legitimate interest (Art. 6(1)(f) GDPR): players want to see their results. You can object — we then hide you from the leaderboards and your profile.",
-          "Security, protection against cheaters and enforcing bans (including the IP address) — legitimate interest.",
+          "Security, protection against cheaters (including the demo recordings) and enforcing bans (including the IP address) — legitimate interest.",
           "A public ban list with minimal data (name, SteamID64, category, date and expiry) — legitimate interest: transparency and protecting the community. The reason is not public.",
           "VIP — performance of a contract (Art. 6(1)(b)) and the legal obligation to keep accounting records (Art. 6(1)(c)).",
           "Appeals and notices — legitimate interest: a decision on every case."
@@ -563,6 +565,7 @@
         "items": [
           "IP addresses when joining (sessions) — {sessionsDays} days, then they are deleted automatically.",
           "Kills with coordinates — {killsDays} days, then they are deleted automatically.",
+          "Demos (SourceTV recordings) — up to {demosDays} days, then they are deleted automatically (sooner if they take up too much space).",
           "Appeals and notices — 1 year after the decision, then they are deleted automatically.",
           "Stats — for as long as the server runs or until you ask for them to be deleted.",
           "Penalties — for as long as they are needed for the security of the server.",
