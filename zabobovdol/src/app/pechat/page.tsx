@@ -77,21 +77,21 @@ export default async function PrintPage() {
       <SheetLayout current="/pechat" note="Листът е за хартия A4.">
         <SheetHead title="Важни телефони — Бобов дол" subtitle={SITE.domain} />
 
-        <Sheet112 compact className="mt-5 print:mt-4" />
+        <Sheet112 compact className="mt-5 print:mt-3 print:py-2" />
 
         {/* На хартия — две колони (групите, двете кутии и долният блок в един
             поток), за да се събере на един лист. */}
-        <div className="mt-5 space-y-5 print:columns-2 print:gap-8 print:space-y-0">
+        <div className="mt-5 space-y-5 print:mt-3 print:columns-2 print:gap-6 print:space-y-0">
           {groups.map((g) => (
-            <section key={g.title} className="print:mb-3">
-              <h3 className="break-after-avoid border-b-2 border-slate-300 pb-1 font-display text-lg font-bold text-slate-900">
+            <section key={g.title}>
+              <h3 className="break-after-avoid border-b-2 border-slate-300 pb-1 font-display text-lg font-bold text-slate-900 print:pb-0">
                 {g.title}
               </h3>
               <ul role="list">
                 {g.items.map((s) => (
                   <li
                     key={s.id}
-                    className="flex break-inside-avoid items-baseline justify-between gap-3 border-b border-slate-200 py-1.5 text-base leading-snug print:py-0.5 print:leading-tight"
+                    className="flex break-inside-avoid items-baseline justify-between gap-3 print:gap-2 border-b border-slate-200 py-1.5 text-base leading-snug print:py-0.5 print:leading-tight"
                   >
                     <span className="min-w-0 text-slate-800 [overflow-wrap:anywhere]">{s.name}</span>
                     <span className="shrink-0 whitespace-nowrap text-lg font-bold tabular-nums text-slate-900 print:text-base">
@@ -103,7 +103,7 @@ export default async function PrintPage() {
             </section>
           ))}
 
-          <div className="break-inside-avoid rounded-xl border border-slate-300 p-3 text-base leading-snug print:mb-4">
+          <div className="break-inside-avoid rounded-xl border border-slate-300 p-3 text-base leading-snug print:!mb-2">
             <p className="font-semibold text-slate-900">
               При изгубена банкова карта (денонощно):
             </p>
@@ -113,7 +113,7 @@ export default async function PrintPage() {
               Пощенска банка: <strong className="whitespace-nowrap">0700 18 555</strong>
             </p>
           </div>
-          <div className="callout-danger break-inside-avoid p-3 leading-snug sm:p-3">
+          <div className="callout-danger break-inside-avoid p-3 leading-snug sm:p-3 print:!mb-2">
             <p className="font-semibold text-crimson-700">Пазете се от измами!</p>
             <p className="mt-1 text-slate-800">
               Банка и полиция НИКОГА не искат ПИН, кодове или да дадете пари на

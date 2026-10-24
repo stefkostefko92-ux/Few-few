@@ -153,7 +153,7 @@ export function SheetHead({
   size?: "md" | "lg";
 }) {
   return (
-    <header className="flex items-center gap-4 border-b-2 border-slate-300 pb-4">
+    <header className="flex items-center gap-4 border-b-2 border-slate-300 pb-4 print:pb-3">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/brand/bobov-dol-grb.png"
