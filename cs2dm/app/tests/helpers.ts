@@ -113,8 +113,10 @@ export function fixedLive(status: LiveStatus): LiveSource {
   return { get: async () => status };
 }
 
-export const LIVE_KNOWN: Extract<LiveStatus, { known: true }> = {
+export const LIVE_KNOWN: Extract<LiveStatus, { online: true }> = {
   known: true,
+  online: true,
+  source: 'plugin',
   map: 'de_dust2',
   mode: 'All Weapons',
   humans: 7,

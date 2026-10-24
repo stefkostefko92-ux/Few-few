@@ -121,6 +121,8 @@
       "live": "In tempo reale",
       "unknown": "Stato sconosciuto",
       "unknownHint": "Il sito non riceve dati dal server in questo momento. Non significa che sia spento: provi a entrare.",
+      "offline": "Spento",
+      "offlineHint": "Il server non risponde alle richieste di stato. Probabilmente si sta riavviando o aggiornando — riprovi tra qualche minuto.",
       "players": "Giocatori",
       "mode": "Modalità",
       "map": "Mappa",
@@ -654,5 +656,450 @@
     },
     "home": "Vai all'inizio",
     "leaderboard": "Vai alla classifica"
+  },
+  "admin": {
+    "brand": "Pannello di amministrazione",
+    "brandTag": "staff",
+    "skip": "Vai al contenuto",
+    "navLabel": "Sezioni del pannello",
+    "footer": "Il pannello è riservato allo staff del server. Ogni azione viene registrata nella catena di audit.",
+    "toSite": "Al sito",
+    "meta": {
+      "description": "Il pannello di amministrazione del server CS2 CarbonStealth.eu | Dust2 DM — riservato allo staff del server.",
+      "keywords": "Carbon Stealth, pannello admin CS2, Dust2 DM, gestione server CS2, moderazione, sanzioni"
+    },
+    "nav": {
+      "dashboard": "Cruscotto",
+      "punishments": "Sanzioni",
+      "players": "Giocatori",
+      "reports": "Segnalazioni",
+      "appeals": "Ricorsi",
+      "vip": "Livelli VIP",
+      "server": "Server",
+      "banners": "Banner",
+      "audit": "Audit",
+      "account": "Account"
+    },
+    "me": {
+      "signedAs": "Accesso:",
+      "lang": "Lingua del pannello",
+      "logout": "Esci"
+    },
+    "roles": {
+      "PLAYER": "Giocatore",
+      "VIP": "VIP",
+      "HELPER": "Aiutante",
+      "MODERATOR": "Moderatore",
+      "ADMIN": "Admin",
+      "HEADADMIN": "Admin capo",
+      "OWNER": "Proprietario"
+    },
+    "types": {
+      "BAN": "Ban",
+      "MUTE": "Muto (voce)",
+      "GAG": "Muto (chat)",
+      "SILENCE": "Muto (voce e chat)",
+      "WARN": "Avvertimento",
+      "KICK": "Espulsione",
+      "SLAY": "Uccidi (slay)"
+    },
+    "sources": {
+      "GAME": "gioco",
+      "WEB": "pannello",
+      "DISCORD": "Discord",
+      "SYSTEM": "sistema"
+    },
+    "caseStatus": {
+      "OPEN": "Aperti",
+      "ACCEPTED": "Accolti",
+      "REJECTED": "Respinti"
+    },
+    "units": {
+      "m": "minuti",
+      "h": "ore",
+      "d": "giorni"
+    },
+    "col": {
+      "player": "Giocatore",
+      "steamId": "SteamID64",
+      "role": "Ruolo",
+      "kills": "Uccisioni",
+      "deaths": "Morti",
+      "ping": "Ping",
+      "actions": "Azioni",
+      "actor": "Admin",
+      "created": "Inflitta",
+      "expires": "Scade",
+      "state": "Stato",
+      "source": "Origine",
+      "lastSeen": "Ultima volta sul server",
+      "from": "Dal",
+      "to": "Al"
+    },
+    "common": {
+      "any": "tutti",
+      "filter": "Filtra",
+      "filters": "Filtri",
+      "reset": "Azzera",
+      "search": "Cerca",
+      "save": "Salva",
+      "yes": "sì",
+      "no": "no",
+      "permanent": "permanente",
+      "pager": "Pagine",
+      "prev": "Indietro",
+      "next": "Avanti",
+      "page": "Pagina {page} di {pages}",
+      "total": {
+        "one": "{count} voce",
+        "other": "{count} voci"
+      }
+    },
+    "result": {
+      "ok": "Fatto.",
+      "saved": "Salvato.",
+      "sent": "Salvato e confermato dal server.",
+      "recordedOnly": "Salvato nel database. Il server non è stato avvisato.",
+      "recordedNoAck": "Salvato nel database, ma il server non ha confermato. Il gioco lo applicherà entro un minuto o al prossimo ingresso.",
+      "invalid": "Dati del modulo non validi. Controlli i campi.",
+      "denied": "Il Suo ruolo non consente questa azione.",
+      "immune": "Negato: il livello del bersaglio è pari o superiore al Suo (immunità).",
+      "notFound": "Voce inesistente.",
+      "notActive": "La voce non è più attiva oppure è già stata decisa da altri.",
+      "inUse": "Il livello è usato da concessioni o richieste — lo disattivi invece di eliminarlo.",
+      "duplicate": "Esiste già un livello con questo codice.",
+      "cmdTimeout": "Il server non ha risposto entro 5 secondi.",
+      "cmdNoListener": "Il server non è in ascolto (il plugin o l’agente non è in esecuzione).",
+      "cmdRedis": "Nessuna connessione a Redis — il comando non è stato inviato.",
+      "cmdUnavailable": "Questa parte del pannello non è configurata: manca una chiave sul server.",
+      "cmdBusy": "Il server sta già eseguendo un riavvio o un aggiornamento.",
+      "cmdNotOnline": "Il giocatore non è sul server.",
+      "cmdNotActive": "La sanzione non è più attiva.",
+      "cmdUnknownMode": "La modalità non è disponibile nel plugin DM.",
+      "cmdFailed": "Il server ha rifiutato il comando.",
+      "badCode": "Il codice è errato o è già stato usato."
+    },
+    "cmd": {
+      "timeout": "L’agente del server non ha risposto entro 5 secondi.",
+      "noListener": "L’agente del server non è in ascolto.",
+      "redis": "Nessuna connessione a Redis.",
+      "unavailable": "I comandi al server non sono configurati: manca la chiave (CS2DM_AGENT_KEY).",
+      "busy": "Il server sta già eseguendo un riavvio o un aggiornamento.",
+      "notOnline": "Il giocatore non è sul server.",
+      "notActive": "La sanzione non è più attiva.",
+      "unknownMode": "La modalità non è disponibile.",
+      "failed": "L’agente ha restituito un errore o una risposta inattesa."
+    },
+    "error": {
+      "back": "Al pannello",
+      "forbidden": {
+        "title": "Non consentito",
+        "text": "Il Suo ruolo non apre questa sezione o questa azione."
+      },
+      "notFound": {
+        "title": "Pagina inesistente",
+        "text": "Questo indirizzo non esiste nel pannello."
+      },
+      "unavailable": {
+        "title": "Il pannello non è configurato",
+        "text": "Sul server manca la chiave di cifratura (APP_ENC_KEY). Senza di essa il secondo fattore non può essere conservato e il pannello resta chiuso. Il sito pubblico funziona."
+      },
+      "csrf": {
+        "title": "Il modulo è scaduto",
+        "text": "La richiesta non ha un token valido o non proviene dal pannello. Ricarichi la pagina e riprovi."
+      },
+      "tooMany": {
+        "title": "Troppi tentativi",
+        "text": "Attenda qualche minuto e riprovi."
+      },
+      "serverError": {
+        "title": "Qualcosa si è rotto",
+        "text": "L’errore è stato registrato. Riprovi tra poco."
+      },
+      "badRequest": {
+        "title": "Richiesta non valida",
+        "text": "Il modulo è troppo grande o danneggiato."
+      },
+      "denied": {
+        "title": "Nessun accesso",
+        "text": "Il pannello è riservato allo staff del server."
+      }
+    },
+    "login": {
+      "title": "Accesso al pannello",
+      "lead": "Accede con il Suo account Steam. Solo aiutanti, moderatori e admin del server hanno accesso.",
+      "button": "Accedi tramite Steam",
+      "note": "Steam ci comunica solo il Suo SteamID64 — la password resta su Steam. Dopo l’accesso il pannello chiede un codice da un’app di autenticazione (TOTP).",
+      "error": {
+        "denied": "Questo account Steam non ha accesso al pannello.",
+        "failed": "Steam non ha confermato l’accesso. Riprovi.",
+        "expired": "L’accesso è scaduto o è stato avviato in un altro browser. Ricominci.",
+        "locked": "Troppi codici errati. Acceda di nuovo tramite Steam."
+      }
+    },
+    "totp": {
+      "title": "Codice di conferma",
+      "lead": "Inserisca il codice a 6 cifre dell’app di autenticazione.",
+      "label": "Codice",
+      "hint": "Se non ha il telefono, inserisca uno dei codici di recupero (xxxxx-xxxxx). Ognuno vale una volta sola.",
+      "submit": "Conferma"
+    },
+    "setup": {
+      "title": "Attivi il secondo fattore",
+      "lead": "Il pannello richiede il TOTP a ogni membro dello staff. Finché non lo attiva, vede solo questa pagina.",
+      "steps": [
+        "Apra un’app di autenticazione (Aegis, 2FAS, Google Authenticator, Microsoft Authenticator e altre).",
+        "Scansioni il codice QR o inserisca la chiave a mano.",
+        "Inserisca il codice a 6 cifre mostrato dall’app."
+      ],
+      "qrAlt": "Codice QR per l’app di autenticazione",
+      "manual": "Chiave per l’inserimento manuale:",
+      "label": "Codice dell’app",
+      "submit": "Attiva"
+    },
+    "recovery": {
+      "title": "Codici di recupero",
+      "lead": "Ognuno di questi codici permette un accesso se non ha il telefono.",
+      "warn": "Li annoti ora e li conservi al sicuro — vengono mostrati una sola volta e non si possono rivedere.",
+      "done": "Li ho salvati — al cruscotto"
+    },
+    "account": {
+      "title": "Account",
+      "recoveryTitle": "Codici di recupero",
+      "remaining": {
+        "one": "Resta {count} codice di recupero non usato.",
+        "other": "Restano {count} codici di recupero non usati."
+      },
+      "recoveryLead": "Un nuovo set rende non validi i codici precedenti. Serve un codice attuale dell’app.",
+      "codeLabel": "Codice dell’app",
+      "recoverySubmit": "Nuovo set di codici",
+      "logoutTitle": "Esci da tutti i dispositivi",
+      "logoutLead": "Termina tutte le Sue sessioni nel pannello, compresa questa.",
+      "logoutConfirm": "Uscire da tutti i dispositivi?",
+      "logoutSubmit": "Esci ovunque"
+    },
+    "status": {
+      "title": "Stato del server",
+      "online": "Attivo",
+      "offline": "Spento",
+      "offlineHint": "Il server non risponde ad A2S. Ultimo controllo:",
+      "unknown": "Sconosciuto",
+      "unknownHint": "Né il plugin né l’agente hanno inviato dati recenti.",
+      "players": "Giocatori",
+      "bots": "Bot",
+      "mode": "Modalità",
+      "map": "Mappa",
+      "updated": "Aggiornato",
+      "source": {
+        "plugin": "dal plugin",
+        "a2s": "da A2S (l’agente)"
+      }
+    },
+    "dashboard": {
+      "title": "Cruscotto",
+      "queue": "Coda e messaggi",
+      "openReports": {
+        "one": "{count} segnalazione aperta",
+        "other": "{count} segnalazioni aperte"
+      },
+      "openAppeals": {
+        "one": "{count} ricorso aperto",
+        "other": "{count} ricorsi aperti"
+      },
+      "sayLabel": "Messaggio a tutti sul server",
+      "saySubmit": "Invia",
+      "modeLabel": "Modalità DM",
+      "modeSubmit": "Cambia modalità",
+      "modeConfirm": "Cambiare la modalità per tutti i giocatori?",
+      "players": "Giocatori in diretta",
+      "noLive": "Nessun dato recente dal plugin — l’elenco dei giocatori non è disponibile.",
+      "empty": "Sul server non c’è nessuno.",
+      "bot": "bot",
+      "dead": "morto",
+      "act": "Azione",
+      "banConfirm": "Bannare {name}?"
+    },
+    "punish": {
+      "type": "Tipo",
+      "amount": "Durata",
+      "unit": "Unità",
+      "category": "Categoria",
+      "reason": "Motivo (interno)",
+      "hint": "Durata vuota = permanente. Il moderatore banna fino a 7 giorni; ban più lunghi e permanenti richiedono un admin. Il motivo è visibile solo nel pannello, mai nella lista pubblica dei ban."
+    },
+    "punishments": {
+      "title": "Sanzioni",
+      "lead": "L’elenco interno — con il motivo e l’admin. La lista pubblica dei ban mostra solo il giocatore, la categoria e le date.",
+      "newTitle": "Nuova sanzione per SteamID64",
+      "newLead": "Vale anche per un giocatore che non è sul server. Se è online, il server la applica subito.",
+      "nameLabel": "Nome (se il giocatore è sconosciuto)",
+      "newSubmit": "Infliggi",
+      "newConfirm": "Infliggere la sanzione?",
+      "q": "SteamID64 o nome",
+      "status": "Stato",
+      "statuses": {
+        "active": "attive",
+        "expired": "scadute",
+        "revoked": "revocate",
+        "all": "tutte"
+      },
+      "actor": "Admin (SteamID64)",
+      "reasonSearch": "Il motivo contiene",
+      "empty": "Nessuna sanzione con questi filtri.",
+      "revoke": "Revoca",
+      "revokeReason": "Motivo della revoca",
+      "revokeConfirm": "Revocare la sanzione?"
+    },
+    "players": {
+      "title": "Giocatori",
+      "q": "SteamID64 o nome",
+      "staff": "solo lo staff",
+      "empty": "Nessun giocatore per questa ricerca."
+    },
+    "player": {
+      "public": "profilo pubblico",
+      "allPunishments": "tutte le sanzioni",
+      "immune": "Il ruolo di questo giocatore è pari o superiore al Suo — le azioni su di lui sono bloccate.",
+      "facts": "Dati",
+      "firstSeen": "Primo ingresso",
+      "playtime": "Tempo di gioco",
+      "hours": "{h} h",
+      "webLogin": "Ultimo accesso al sito",
+      "totp": "Secondo fattore",
+      "totpOn": "TOTP attivo",
+      "totpOff": "senza TOTP",
+      "hidden": "nascosto dalle classifiche",
+      "actions": "Azioni",
+      "punish": "Infliggi una sanzione",
+      "roleSubmit": "Cambia ruolo",
+      "roleConfirm": "Cambiare il ruolo? Tutte le sessioni del giocatore nel pannello verranno terminate.",
+      "hideLabel": "Nascondi dalle classifiche e dal profilo pubblico (art. 21 GDPR)",
+      "totpReset": "Azzera il secondo fattore",
+      "totpResetConfirm": "Azzerare il TOTP? Il giocatore dovrà configurarlo di nuovo al prossimo accesso.",
+      "logout": "Termina le sue sessioni nel pannello",
+      "vip": "VIP",
+      "vipTier": "Livello",
+      "vipDays": "Giorni",
+      "vipNote": "Nota",
+      "vipGrant": "Concedi VIP",
+      "vipHint": "Concessione manuale, senza pagamento. Se il giocatore ha già un VIP attivo, il nuovo periodo inizia alla sua scadenza.",
+      "vipNone": "Nessun VIP.",
+      "vipActive": "attivo",
+      "vipInactive": "scaduto o futuro",
+      "vipRevoke": "Revoca",
+      "vipRevokeConfirm": "Revocare questo VIP?",
+      "punishments": "Sanzioni",
+      "sessions": "Ultimi ingressi sul server",
+      "sessionsNone": "Nessun ingresso registrato.",
+      "sessionsNote": "Gli ingressi sono conservati per 30 giorni. Solo gli admin vedono gli indirizzi IP.",
+      "reports": "Segnalazioni contro il giocatore"
+    },
+    "reports": {
+      "title": "Segnalazioni",
+      "lead": "Le segnalazioni dal gioco (!report). La decisione è definitiva; la sanzione si infligge a parte.",
+      "readOnly": "sola lettura per il Suo ruolo",
+      "target": "Contro",
+      "reporter": "Da",
+      "note": "Nota",
+      "accept": "Accogli",
+      "reject": "Respingi",
+      "empty": "Nessuna segnalazione."
+    },
+    "appeals": {
+      "title": "Ricorsi",
+      "lead": "I ricorsi contro le sanzioni. La decisione è motivata e definitiva.",
+      "item": "Ricorso n. {id}",
+      "notActive": "non più attiva",
+      "message": "Il messaggio del giocatore",
+      "contact": "Contatto",
+      "submitted": "Presentato il {date}",
+      "note": "Motivazione della decisione",
+      "acceptRevokes": "Un ricorso accolto revoca la sanzione — servono i permessi per revocarla.",
+      "accept": "Accogli",
+      "acceptConfirm": "Accogliere il ricorso e revocare la sanzione?",
+      "reject": "Respingi",
+      "empty": "Nessun ricorso."
+    },
+    "vip": {
+      "title": "Livelli VIP",
+      "lead": "I livelli e i prezzi mostrati dal sito. Il VIP è solo estetico — nessun vantaggio in gioco.",
+      "newTitle": "Nuovo livello",
+      "create": "Crea",
+      "code": "Codice",
+      "name": "Nome",
+      "price": "Prezzo in euro IVA inclusa",
+      "priceHint": "Per esempio 4,99 — conservato in centesimi di euro interi.",
+      "period": "Periodo in giorni",
+      "order": "Ordine",
+      "active": "attivo",
+      "inactive": "disattivato",
+      "days": {
+        "one": "{count} giorno",
+        "other": "{count} giorni"
+      },
+      "used": "concessioni: {grants} · richieste: {requests}",
+      "edit": "Modifica",
+      "delete": "Elimina",
+      "deleteConfirm": "Eliminare il livello?",
+      "inUse": "Il livello è in uso — si può solo disattivare.",
+      "empty": "Nessun livello VIP."
+    },
+    "banners": {
+      "title": "Banner nella mappa",
+      "lead": "Si posizionano in gioco con !banner add. Un banner eliminato scompare al prossimo cambio di mappa.",
+      "map": "Mappa",
+      "key": "Chiave",
+      "position": "Posizione x, y, z",
+      "angles": "Angoli",
+      "delete": "Elimina",
+      "deleteConfirm": "Eliminare il banner?",
+      "note": "L’eliminazione viene registrata nell’audit come banner.remove.",
+      "empty": "Nessun banner posizionato."
+    },
+    "audit": {
+      "title": "Audit",
+      "lead": "Ogni azione amministrativa dal gioco, dal pannello e dal bot. La catena di hash mostra se una riga è stata alterata o eliminata.",
+      "chain": "La catena",
+      "verify": "Verifica la catena",
+      "ok": "integra",
+      "checked": {
+        "one": "{count} riga verificata.",
+        "other": "{count} righe verificate."
+      },
+      "broken": "interrotta",
+      "brokenAt": "La prima discrepanza è alla riga n. {id}.",
+      "action": "Azione",
+      "target": "Bersaglio",
+      "at": "Quando",
+      "details": "Dettagli",
+      "empty": "Nessuna voce con questi filtri."
+    },
+    "server": {
+      "title": "Server",
+      "agent": "L’agente sull’host",
+      "service": "cs2.service",
+      "active": "attivo",
+      "inactive": "fermo",
+      "since": "Dal",
+      "version": "Versione del gioco",
+      "mods": "Mod caricate",
+      "broken": "Mod non funzionanti dalla versione",
+      "restart": "Riavvia",
+      "restartConfirm": "Riavviare il server? Tutti i giocatori verranno espulsi.",
+      "update": "Aggiorna",
+      "updateConfirm": "Avviare il controllo degli aggiornamenti? Con una nuova versione il server si riavvia.",
+      "controlNote": "Riavvio e aggiornamento non possono essere eseguiti insieme.",
+      "logs": "Log",
+      "source": "Origine",
+      "sources": {
+        "css": "CounterStrikeSharp",
+        "journal": "journald"
+      },
+      "lines": "Righe",
+      "showLogs": "Mostra",
+      "logsNote": "Indirizzi IP e chiavi vengono oscurati prima della visualizzazione.",
+      "logsEmpty": "Nessuna riga.",
+      "back": "Torna al server"
+    }
   }
 }

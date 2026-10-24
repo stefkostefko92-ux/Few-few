@@ -1,0 +1,40 @@
+<%- include('partials/head', { title: t('admin.nav.banners') }) %>
+<h1><%= t('admin.banners.title') %></h1>
+<p class="a-lead"><%= t('admin.banners.lead') %></p>
+<% if (rows.length === 0) { %>
+<p class="a-empty"><%= t('admin.banners.empty') %></p>
+<% } else { %>
+<div class="a-scroll">
+  <table class="a-table">
+    <caption class="sr-only"><%= t('admin.banners.title') %></caption>
+    <thead><tr>
+      <th scope="col"><%= t('admin.banners.map') %></th>
+      <th scope="col"><%= t('admin.banners.key') %></th>
+      <th scope="col"><%= t('admin.banners.position') %></th>
+      <th scope="col"><%= t('admin.banners.angles') %></th>
+      <th scope="col"><%= t('admin.col.actor') %></th>
+      <th scope="col"><%= t('admin.col.created') %></th>
+      <th scope="col"><%= t('admin.col.actions') %></th>
+    </tr></thead>
+    <tbody>
+      <% rows.forEach((row) => { %><tr>
+        <th scope="row"><%= row.map %></th>
+        <td><code><%= row.bannerKey %></code></td>
+        <td class="mono"><%= row.x.toFixed(1) %>, <%= row.y.toFixed(1) %>, <%= row.z.toFixed(1) %></td>
+        <td class="mono"><%= row.pitch.toFixed(1) %>, <%= row.yaw.toFixed(1) %>, <%= row.roll.toFixed(1) %></td>
+        <td><% if (row.createdBy) { %><code><%= row.createdBy %></code><% } else { %>—<% } %></td>
+        <td><%= fmt.dateTime(row.createdAt) %></td>
+        <td>
+          <form method="post" action="/admin/banners/<%= row.id %>/delete" data-confirm="<%= t('admin.banners.deleteConfirm') %>">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <button class="a-btn is-danger is-small" type="submit"><%= t('admin.banners.delete') %></button>
+          </form>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<p class="a-note"><%= t('admin.banners.note') %></p>
+<% } %>
+<%- include('partials/foot') %>

@@ -1,0 +1,40 @@
+<%- include('partials/head', { title: t('admin.nav.players') }) %>
+<h1><%= t('admin.players.title') %></h1>
+<form class="a-form a-card" method="get" action="/admin/players" role="search" aria-label="<%= t('admin.common.filters') %>">
+  <div class="a-field is-wide">
+    <label for="p-q"><%= t('admin.players.q') %></label>
+    <input id="p-q" name="q" type="search" maxlength="64" value="<%= query.q || '' %>">
+  </div>
+  <label class="a-check"><input type="checkbox" name="staff" value="1"<% if (query.staff) { %> checked<% } %>> <%= t('admin.players.staff') %></label>
+  <button class="a-btn" type="submit"><%= t('admin.common.search') %></button>
+</form>
+<p class="a-note"><%= t.plural('admin.common.total', total) %></p>
+<% if (rows.length === 0) { %>
+<p class="a-empty"><%= t('admin.players.empty') %></p>
+<% } else { %>
+<div class="a-scroll">
+  <table class="a-table">
+    <caption class="sr-only"><%= t('admin.players.title') %></caption>
+    <thead><tr>
+      <th scope="col"><%= t('admin.col.player') %></th>
+      <th scope="col"><%= t('admin.col.role') %></th>
+      <th scope="col"><%= t('admin.col.lastSeen') %></th>
+      <th scope="col"><%= t('admin.col.state') %></th>
+    </tr></thead>
+    <tbody>
+      <% rows.forEach((row) => { %><tr>
+        <th scope="row"><a href="/admin/players/<%= row.steamId %>"><%= row.name %></a><br><code><%= row.steamId %></code></th>
+        <td><%= t('admin.roles.' + row.role) %></td>
+        <td><time datetime="<%= fmt.iso(row.lastSeenAt) %>"><%= fmt.dateTime(row.lastSeenAt) %></time></td>
+        <td>
+          <% if (row.hiddenFromLeaderboards) { %><span class="a-chip is-muted"><%= t('admin.player.hidden') %></span><% } %>
+          <% if (roleLevel[row.role] >= roleLevel.HELPER) { %><span class="a-chip <%= row.totpEnabledAt ? 'is-ok' : 'is-warn' %>"><%= row.totpEnabledAt ? t('admin.player.totpOn') : t('admin.player.totpOff') %></span><% } %>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('partials/pager', { page, pages, href: (n) => withQuery('/admin/players', { q: query.q, staff: query.staff ? 1 : undefined, page: n > 1 ? n : undefined }) }) %>
+<% } %>
+<%- include('partials/foot') %>

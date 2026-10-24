@@ -7,6 +7,12 @@ const optionalText = (max: number) =>
     z.string().trim().max(max).optional(),
   );
 
+/** Ключ без таван на дължината тук: грешната форма не бива да спре сайта, а само частта на ключа. */
+const optionalSecret = z.preprocess(
+  (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+  z.string().trim().optional(),
+);
+
 const validTimeZone = (zone: string): boolean => {
   try {
     new Intl.DateTimeFormat('en', { timeZone: zone });
@@ -67,6 +73,16 @@ const schema = z.object({
   COMPANY_PHONE: optionalText(40),
 
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
+
+  /**
+   * Ключовете на панела (етап 2). Тук само се четат като низ: невалиден или липсващ ключ изключва
+   * СВОЯТА част на панела (503), не целия сайт. Проверката на формата е в `admin/keys.ts`.
+   * APP_ENC_KEY — 32 байта hex (AES-256-GCM за TOTP тайните); без него панелът е затворен.
+   * CS2DM_BRIDGE_KEY — HMAC към C# плъгина (§5); CS2DM_AGENT_KEY — HMAC към cs2-agent (§9); ≥ 32 знака.
+   */
+  APP_ENC_KEY: optionalSecret,
+  CS2DM_BRIDGE_KEY: optionalSecret,
+  CS2DM_AGENT_KEY: optionalSecret,
 });
 
 export type AppConfig = z.infer<typeof schema>;

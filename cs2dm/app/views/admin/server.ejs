@@ -1,0 +1,40 @@
+<%- include('partials/head', { title: t('admin.nav.server') }) %>
+<h1><%= t('admin.server.title') %></h1>
+<div class="a-grid">
+  <section class="a-card" aria-labelledby="ss-title">
+    <h2 id="ss-title"><%= t('admin.status.title') %></h2>
+    <%- include('partials/status', { status }) %>
+  </section>
+  <section class="a-card" aria-labelledby="ag-title">
+    <h2 id="ag-title"><%= t('admin.server.agent') %></h2>
+    <% if (agent) { %>
+    <dl class="a-facts">
+      <div><dt><%= t('admin.server.service') %></dt><dd><span class="a-chip <%= agent.active ? 'is-ok' : 'is-err' %>"><%= agent.active ? t('admin.server.active') : t('admin.server.inactive') %></span></dd></div>
+      <div><dt><%= t('admin.server.since') %></dt><dd><%= agent.since ? fmt.dateTime(agent.since) : '—' %></dd></div>
+      <div><dt><%= t('admin.server.version') %></dt><dd><%= agent.gameVersion || '—' %></dd></div>
+      <div><dt><%= t('admin.server.mods') %></dt><dd><%= agent.modsLoaded === null ? '—' : agent.modsLoaded ? t('admin.common.yes') : t('admin.common.no') %></dd></div>
+      <div><dt><%= t('admin.server.broken') %></dt><dd><%= agent.broken || '—' %></dd></div>
+    </dl>
+    <% } else { %>
+    <p class="a-warn"><%= t('admin.cmd.' + agentError) %></p>
+    <% } %>
+    <% if (can('serverControl')) { %>
+    <div class="a-actions">
+      <form method="post" action="/admin/server/restart" data-confirm="<%= t('admin.server.restartConfirm') %>">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button class="a-btn is-danger" type="submit"><%= t('admin.server.restart') %></button>
+      </form>
+      <form method="post" action="/admin/server/update" data-confirm="<%= t('admin.server.updateConfirm') %>">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button class="a-btn is-quiet" type="submit"><%= t('admin.server.update') %></button>
+      </form>
+    </div>
+    <p class="a-note"><%= t('admin.server.controlNote') %></p>
+    <% } %>
+  </section>
+</div>
+<section class="a-card" aria-labelledby="lg-title">
+  <h2 id="lg-title"><%= t('admin.server.logs') %></h2>
+  <%- include('partials/logs-form', { query: { source: 'css', lines: 100 } }) %>
+</section>
+<%- include('partials/foot') %>

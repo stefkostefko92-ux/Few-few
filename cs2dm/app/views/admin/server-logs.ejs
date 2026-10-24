@@ -1,0 +1,16 @@
+<%- include('partials/head', { title: t('admin.server.logs') }) %>
+<h1><%= t('admin.server.logs') %></h1>
+<p><a href="/admin/server"><%= t('admin.server.back') %></a></p>
+<section class="a-card" aria-labelledby="lg-title">
+  <h2 id="lg-title" class="sr-only"><%= t('admin.server.logs') %></h2>
+  <%- include('partials/logs-form', { query }) %>
+</section>
+<% if (error) { %>
+<p class="a-warn" role="alert"><%= t('admin.cmd.' + error) %></p>
+<% } else if (lines.length === 0) { %>
+<p class="a-empty"><%= t('admin.server.logsEmpty') %></p>
+<% } else { %>
+<pre class="a-logs" tabindex="0" aria-label="<%= t('admin.server.logs') %>"><% lines.forEach((line) => { %><%= line %>
+<% }) %></pre>
+<% } %>
+<%- include('partials/foot') %>

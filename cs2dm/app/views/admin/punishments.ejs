@@ -1,0 +1,133 @@
+<%- include('partials/head', { title: t('admin.nav.punishments') }) %>
+<%
+  const filterParams = (overrides) => ({
+    q: query.q, type: query.type, status: query.status === 'active' ? undefined : query.status,
+    category: query.category, source: query.source, actor: query.actor, reason: query.reason,
+    ...overrides,
+  });
+%>
+<h1><%= t('admin.punishments.title') %></h1>
+<p class="a-lead"><%= t('admin.punishments.lead') %></p>
+
+<% if (newTypes.length > 0) { %>
+<details class="a-card a-more"<% if (prefill) { %> open<% } %>>
+  <summary><%= t('admin.punishments.newTitle') %></summary>
+  <p class="a-note"><%= t('admin.punishments.newLead') %></p>
+  <form class="a-form" method="post" action="/admin/punishments" data-confirm="<%= t('admin.punishments.newConfirm') %>">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <div class="a-field">
+      <label for="np-steam"><%= t('admin.col.steamId') %></label>
+      <input id="np-steam" name="steamId" type="text" inputmode="numeric" pattern="7656119[0-9]{10}" maxlength="17" required value="<%= prefill %>">
+    </div>
+    <div class="a-field">
+      <label for="np-name"><%= t('admin.punishments.nameLabel') %></label>
+      <input id="np-name" name="name" type="text" maxlength="64" autocomplete="off">
+    </div>
+    <div class="a-field">
+      <label for="np-type"><%= t('admin.punish.type') %></label>
+      <select id="np-type" name="type">
+        <% newTypes.forEach((type) => { %><option value="<%= type %>"><%= t('admin.types.' + type) %></option>
+        <% }) %>
+      </select>
+    </div>
+    <%- include('partials/punish-fields', { prefix: 'np', units, categories }) %>
+    <button class="a-btn" type="submit"><%= t('admin.punishments.newSubmit') %></button>
+  </form>
+</details>
+<% } %>
+
+<form class="a-form a-card" method="get" action="/admin/punishments" role="search" aria-label="<%= t('admin.common.filters') %>">
+  <div class="a-field is-wide">
+    <label for="f-q"><%= t('admin.punishments.q') %></label>
+    <input id="f-q" name="q" type="search" maxlength="64" value="<%= query.q || '' %>">
+  </div>
+  <div class="a-field">
+    <label for="f-status"><%= t('admin.punishments.status') %></label>
+    <select id="f-status" name="status">
+      <% filters.statuses.forEach((value) => { %><option value="<%= value %>"<% if (query.status === value) { %> selected<% } %>><%= t('admin.punishments.statuses.' + value) %></option>
+      <% }) %>
+    </select>
+  </div>
+  <div class="a-field">
+    <label for="f-type"><%= t('admin.punish.type') %></label>
+    <select id="f-type" name="type">
+      <option value=""><%= t('admin.common.any') %></option>
+      <% filters.types.forEach((value) => { %><option value="<%= value %>"<% if (query.type === value) { %> selected<% } %>><%= t('admin.types.' + value) %></option>
+      <% }) %>
+    </select>
+  </div>
+  <div class="a-field">
+    <label for="f-cat"><%= t('admin.punish.category') %></label>
+    <select id="f-cat" name="category">
+      <option value=""><%= t('admin.common.any') %></option>
+      <% categories.forEach((value) => { %><option value="<%= value %>"<% if (query.category === value) { %> selected<% } %>><%= t('bans.categories.' + value) %></option>
+      <% }) %>
+    </select>
+  </div>
+  <div class="a-field">
+    <label for="f-src"><%= t('admin.col.source') %></label>
+    <select id="f-src" name="source">
+      <option value=""><%= t('admin.common.any') %></option>
+      <% filters.sources.forEach((value) => { %><option value="<%= value %>"<% if (query.source === value) { %> selected<% } %>><%= t('admin.sources.' + value) %></option>
+      <% }) %>
+    </select>
+  </div>
+  <div class="a-field">
+    <label for="f-actor"><%= t('admin.punishments.actor') %></label>
+    <input id="f-actor" name="actor" type="text" inputmode="numeric" maxlength="17" value="<%= query.actor || '' %>">
+  </div>
+  <div class="a-field">
+    <label for="f-reason"><%= t('admin.punishments.reasonSearch') %></label>
+    <input id="f-reason" name="reason" type="search" maxlength="100" value="<%= query.reason || '' %>">
+  </div>
+  <button class="a-btn" type="submit"><%= t('admin.common.filter') %></button>
+  <a class="a-btn is-quiet" href="/admin/punishments"><%= t('admin.common.reset') %></a>
+</form>
+
+<p class="a-note"><%= t.plural('admin.common.total', total) %></p>
+<% if (rows.length === 0) { %>
+<p class="a-empty"><%= t('admin.punishments.empty') %></p>
+<% } else { %>
+<div class="a-scroll">
+  <table class="a-table">
+    <caption class="sr-only"><%= t('admin.punishments.title') %></caption>
+    <thead><tr>
+      <th scope="col"><%= t('admin.col.player') %></th>
+      <th scope="col"><%= t('admin.punish.type') %></th>
+      <th scope="col"><%= t('admin.punish.category') %></th>
+      <th scope="col" class="wrap"><%= t('admin.punish.reason') %></th>
+      <th scope="col"><%= t('admin.col.actor') %></th>
+      <th scope="col"><%= t('admin.col.created') %></th>
+      <th scope="col"><%= t('admin.col.expires') %></th>
+      <th scope="col"><%= t('admin.col.state') %></th>
+    </tr></thead>
+    <tbody>
+      <% rows.forEach((row) => { %><tr>
+        <th scope="row"><a href="/admin/players/<%= row.steamId %>"><%= row.targetName %></a><br><code><%= row.steamId %></code></th>
+        <td><%= t('admin.types.' + row.type) %> <span class="a-chip is-muted"><%= t('admin.sources.' + row.source) %></span></td>
+        <td><%= t('bans.categories.' + row.category) %></td>
+        <td class="wrap"><%= row.reason %></td>
+        <td><% if (row.actorSteamId) { %><a href="/admin/players/<%= row.actorSteamId %>"><code><%= row.actorSteamId %></code></a><% } else { %>—<% } %></td>
+        <td><time datetime="<%= fmt.iso(row.createdAt) %>"><%= fmt.dateTime(row.createdAt) %></time></td>
+        <td><% if (row.expiresAt) { %><time datetime="<%= fmt.iso(row.expiresAt) %>"><%= fmt.dateTime(row.expiresAt) %></time><% } else { %><%= t('admin.common.permanent') %><% } %></td>
+        <td>
+          <% if (row.revokedAt) { %><span class="a-chip is-muted"><%= t('admin.punishments.statuses.revoked') %></span><br><span class="a-note"><%= row.revokeReason || '' %></span>
+          <% } else if (row.active) { %><span class="a-chip is-err"><%= t('admin.punishments.statuses.active') %></span>
+          <% } else { %><span class="a-chip is-muted"><%= t('admin.punishments.statuses.expired') %></span><% } %>
+          <% if (row.active && row.canRevoke) { %>
+          <form class="a-form" method="post" action="/admin/punishments/<%= row.id %>/revoke" data-confirm="<%= t('admin.punishments.revokeConfirm') %>">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <label class="sr-only" for="rv-<%= row.id %>"><%= t('admin.punishments.revokeReason') %></label>
+            <input id="rv-<%= row.id %>" name="reason" type="text" maxlength="255" required placeholder="<%= t('admin.punishments.revokeReason') %>">
+            <button class="a-btn is-small is-quiet" type="submit"><%= t('admin.punishments.revoke') %></button>
+          </form>
+          <% } %>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('partials/pager', { page, pages, href: (n) => withQuery('/admin/punishments', filterParams({ page: n > 1 ? n : undefined })) }) %>
+<% } %>
+<%- include('partials/foot') %>

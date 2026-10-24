@@ -1,0 +1,16 @@
+<%- include('partials/head', { title: t('admin.totp.title') }) %>
+<section class="a-card a-login" aria-labelledby="totp-title">
+  <h1 id="totp-title"><%= t('admin.totp.title') %></h1>
+  <% if (error) { %><p class="a-result is-error" role="alert"><%= t('admin.result.' + error) %></p><% } %>
+  <p class="a-lead"><%= t('admin.totp.lead') %></p>
+  <form class="a-form is-stack" method="post" action="/admin/2fa">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <div class="a-field">
+      <label for="totp-code"><%= t('admin.totp.label') %></label>
+      <input id="totp-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="32" required autofocus aria-describedby="totp-hint">
+    </div>
+    <p class="a-note" id="totp-hint"><%= t('admin.totp.hint') %></p>
+    <button class="a-btn" type="submit"><%= t('admin.totp.submit') %></button>
+  </form>
+</section>
+<%- include('partials/foot') %>

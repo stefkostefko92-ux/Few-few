@@ -5,6 +5,8 @@ import express, { type Express, type NextFunction, type Request, type Response }
 import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
+import { adminRouter } from './admin/index.js';
+import type { AdminDeps } from './admin/types.js';
 import { config, isProduction } from './config.js';
 import type { Repo } from './data/repo.js';
 import { LOCALES, isLocale, localeFromHeader, translatorFor, type Locale } from './i18n.js';
@@ -25,6 +27,8 @@ export interface ServerDeps {
   now?: () => Date;
   /** Таван на заявките на минута от един адрес (тестовете го вдигат). */
   rateLimitPerMinute?: number;
+  /** Уеб панелът (етап 2). Без него `/admin` отговаря с 503 — публичната част работи. */
+  admin?: AdminDeps;
 }
 
 /** Езикът на страница за грешка: от пътя (`/en/…`), иначе от браузъра. */
@@ -131,9 +135,13 @@ export function createServer(deps: ServerDeps): Express {
     }),
   );
 
-  // Само GET/HEAD — сайтът на етап 1 няма форми, които пишат.
+  // Публичната част е само GET/HEAD; POST се приема единствено от формите на панела (`/admin`),
+  // където всяка минава през сесия, права и CSRF.
   app.use((req, res, next) => {
     if (req.method === 'GET' || req.method === 'HEAD') return next();
+    if (req.method === 'POST' && (req.path === '/admin' || req.path.startsWith('/admin/'))) {
+      return next();
+    }
     res.set('Allow', 'GET, HEAD').status(405).type('text/plain').send('Method Not Allowed');
   });
 
@@ -151,6 +159,7 @@ export function createServer(deps: ServerDeps): Express {
     next();
   });
 
+  app.use('/admin', adminRouter(deps.admin));
   app.use(rootRouter(deps.repo));
   for (const locale of LOCALES) {
     app.use(`/${locale}`, pagesRouter(locale, { repo: deps.repo, live: deps.live, now: deps.now }));

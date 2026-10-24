@@ -165,8 +165,9 @@ function gameServerNode(locale: Locale, live: LiveStatus): JsonLdNode {
     name: SITE_NAME,
     url: absolute(pagePath(locale, 'home')),
     game: { '@type': 'VideoGame', name: 'Counter-Strike 2' },
-    // Статус се казва само когато е прочетен току-що от плъгина — иначе свойствата липсват.
-    ...(live.known
+    // Статус се казва само когато е прочетен току-що (плъгинът или A2S от агента) — иначе
+    // свойствата липсват.
+    ...(live.known && live.online
       ? {
           serverStatus:
             live.maxPlayers > 0 && live.humans >= live.maxPlayers
@@ -174,7 +175,9 @@ function gameServerNode(locale: Locale, live: LiveStatus): JsonLdNode {
               : 'https://schema.org/Online',
           playersOnline: live.humans,
         }
-      : {}),
+      : live.known
+        ? { serverStatus: 'https://schema.org/OfflineTemporarily' }
+        : {}),
   };
 }
 

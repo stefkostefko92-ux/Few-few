@@ -100,18 +100,28 @@ test('маркерът „ПОТВЪРДИ: държава на хостинга
   assert.match(view, /<!-- ПОТВЪРДИ: държава на хостинга -->/);
 });
 
-test('нито едно съобщение към посетителя не е зашито в маршрут', () => {
+test('нито едно съобщение към посетителя не е зашито в маршрут (и в панела)', () => {
   const offenders: string[] = [];
-  for (const file of [...files('src/routes', '.ts'), 'src/server.ts', 'src/view.ts']) {
-    readFileSync(file, 'utf8')
-      .split('\n')
-      .forEach((line, index) => {
-        const isComment = /^\s*(\/\/|\*|\/\*)/.test(line);
-        // Логовете и етикетите им (`settle('…')`) са за нас, не за екрана — остават на български.
-        const isLog = /logger\.|settle\(|'четене'|err:/.test(line);
-        if (isComment || isLog) return;
-        if (/['`][^'`]*[а-яА-Я][^'`]*['`]/.test(line)) offenders.push(`${file}:${index + 1}`);
-      });
+  const sources = [
+    ...files('src/routes', '.ts'),
+    ...files('src/admin', '.ts'),
+    'src/server.ts',
+    'src/view.ts',
+  ];
+  for (const file of sources) {
+    // Многоредовите извиквания на logger (pino) са за нас — съобщението им е на отделен ред.
+    const text = readFileSync(file, 'utf8').replace(/logger\.\w+\([\s\S]*?\);/g, (call) =>
+      call.replace(/[^\n]/g, ''),
+    );
+    text.split('\n').forEach((line, index) => {
+      const isComment = /^\s*(\/\/|\*|\/\*)/.test(line);
+      // Логовете и етикетите им (`settle('…')`) са за нас, не за екрана — остават на български.
+      const isLog = /logger\.|settle\(|'четене'|err:/.test(line);
+      // Вътрешните грешки отиват в лога; посетителят вижда страница от речника.
+      const isInternalError = /new Error\(|super\(/.test(line);
+      if (isComment || isLog || isInternalError) return;
+      if (/['`][^'`]*[а-яА-Я][^'`]*['`]/.test(line)) offenders.push(`${file}:${index + 1}`);
+    });
   }
   assert.deepEqual(offenders, [], `текст извън речниците: ${offenders.join(', ')}`);
 });

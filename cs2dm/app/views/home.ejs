@@ -5,14 +5,17 @@
       <h1 id="hero-title" class="hero-title"><span class="hero-host"><%= t('home.titleHost') %></span> <span class="hero-sep">|</span> <span class="hero-name"><%= t('home.titleName') %></span></h1>
       <p class="hero-lead"><%= t('home.lead') %></p>
 
-      <section class="status <%= live.known ? 'is-live' : 'is-unknown' %>" aria-label="<%= t('home.status.label') %>">
-        <p class="status-head"><span class="status-dot" aria-hidden="true"></span><%= live.known ? t('home.status.live') : t('home.status.unknown') %></p>
-        <% if (live.known) { %>
+      <section class="status <%= live.known && live.online ? 'is-live' : 'is-unknown' %>" aria-label="<%= t('home.status.label') %>">
+        <p class="status-head"><span class="status-dot" aria-hidden="true"></span><%= !live.known ? t('home.status.unknown') : live.online ? t('home.status.live') : t('home.status.offline') %></p>
+        <% if (live.known && live.online) { %>
         <dl class="status-grid">
           <div><dt><%= t('home.status.players') %></dt><dd><span class="status-count"><%= live.humans %>/<%= live.maxPlayers %></span><% if (live.bots > 0) { %> <span class="status-bots"><%= t.plural('home.status.bots', live.bots) %></span><% } %></dd></div>
           <div><dt><%= t('home.status.mode') %></dt><dd><%= live.mode || '—' %></dd></div>
           <div><dt><%= t('home.status.map') %></dt><dd><%= live.map %></dd></div>
         </dl>
+        <p class="status-time"><%= t('home.status.updated', { time: fmt.dateTime(live.updatedAt) }) %></p>
+        <% } else if (live.known) { %>
+        <p class="status-hint"><%= t('home.status.offlineHint') %></p>
         <p class="status-time"><%= t('home.status.updated', { time: fmt.dateTime(live.updatedAt) }) %></p>
         <% } else { %>
         <p class="status-hint"><%= t('home.status.unknownHint') %></p>

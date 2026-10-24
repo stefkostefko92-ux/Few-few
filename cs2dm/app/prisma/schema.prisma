@@ -64,30 +64,34 @@ enum VipRequestStatus {
 }
 
 model Player {
-  steamId       String    @id @map("steam_id") @db.VarChar(17)
-  name          String    @db.VarChar(64)
-  role          Role      @default(PLAYER)
-  lang          String    @default("en") @db.VarChar(5)
-  firstSeenAt   DateTime  @default(now()) @map("first_seen_at") @db.Timestamptz(3)
-  lastSeenAt    DateTime  @default(now()) @map("last_seen_at") @db.Timestamptz(3)
-  playtimeSec   Int       @default(0) @map("playtime_sec")
+  steamId                String    @id @map("steam_id") @db.VarChar(17)
+  name                   String    @db.VarChar(64)
+  role                   Role      @default(PLAYER)
+  lang                   String    @default("en") @db.VarChar(5)
+  firstSeenAt            DateTime  @default(now()) @map("first_seen_at") @db.Timestamptz(3)
+  lastSeenAt             DateTime  @default(now()) @map("last_seen_at") @db.Timestamptz(3)
+  playtimeSec            Int       @default(0) @map("playtime_sec")
   /// Steam профилът (аватар) се тегли САМО след вход в сайта — Steam Web API ToU.
-  avatarUrl     String?   @map("avatar_url") @db.VarChar(255)
-  webLoginAt    DateTime? @map("web_login_at") @db.Timestamptz(3)
-  discordId     String?   @unique @map("discord_id") @db.VarChar(20)
-  linkedAt      DateTime? @map("linked_at") @db.Timestamptz(3)
+  avatarUrl              String?   @map("avatar_url") @db.VarChar(255)
+  webLoginAt             DateTime? @map("web_login_at") @db.Timestamptz(3)
+  discordId              String?   @unique @map("discord_id") @db.VarChar(20)
+  linkedAt               DateTime? @map("linked_at") @db.Timestamptz(3)
   /// TOTP за панела (роля ≥ HELPER): шифрован с ключа на приложението, никога в чист вид.
-  totpSecretEnc String?   @map("totp_secret_enc")
-  totpEnabledAt DateTime? @map("totp_enabled_at") @db.Timestamptz(3)
+  totpSecretEnc          String?   @map("totp_secret_enc")
+  totpEnabledAt          DateTime? @map("totp_enabled_at") @db.Timestamptz(3)
+  /// Последно приетата TOTP стъпка (RFC 6238) — прихванат код не минава втори път. Само за панела.
+  totpLastStep           Int?      @map("totp_last_step")
   /// Право на възражение (чл. 21 GDPR): скрит от публичните класации.
-  hiddenFromLeaderboards Boolean @default(false) @map("hidden_from_leaderboards")
+  hiddenFromLeaderboards Boolean   @default(false) @map("hidden_from_leaderboards")
 
-  sessions    Session[]
-  stats       PlayerSeasonStats[]
-  weaponStats WeaponSeasonStats[]
-  punishments Punishment[]        @relation("target")
-  vipGrants   VipGrant[]
-  vipRequests VipRequest[]
+  sessions      Session[]
+  stats         PlayerSeasonStats[]
+  weaponStats   WeaponSeasonStats[]
+  punishments   Punishment[]        @relation("target")
+  vipGrants     VipGrant[]
+  vipRequests   VipRequest[]
+  webSessions   WebSession[]
+  recoveryCodes WebRecoveryCode[]
 
   @@index([lastSeenAt])
   @@index([role])
@@ -123,23 +127,23 @@ model Season {
 
 /// Агрегати, които плъгинът увеличава на партиди (UPSERT +=). Два реда на играч: сезон 0 и текущият.
 model PlayerSeasonStats {
-  steamId          String   @map("steam_id") @db.VarChar(17)
-  seasonId         Int      @map("season_id")
-  kills            Int      @default(0)
-  deaths           Int      @default(0)
-  headshots        Int      @default(0)
-  assists          Int      @default(0)
-  damage           Int      @default(0)
-  shotsFired       Int      @default(0) @map("shots_fired")
-  shotsHit         Int      @default(0) @map("shots_hit")
-  bestStreak       Int      @default(0) @map("best_streak")
-  bountiesClaimed  Int      @default(0) @map("bounties_claimed")
-  revenges         Int      @default(0)
-  xp               BigInt   @default(0)
-  playtimeSec      Int      @default(0) @map("playtime_sec")
-  updatedAt        DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
-  player           Player   @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
-  season           Season   @relation(fields: [seasonId], references: [id])
+  steamId         String   @map("steam_id") @db.VarChar(17)
+  seasonId        Int      @map("season_id")
+  kills           Int      @default(0)
+  deaths          Int      @default(0)
+  headshots       Int      @default(0)
+  assists         Int      @default(0)
+  damage          Int      @default(0)
+  shotsFired      Int      @default(0) @map("shots_fired")
+  shotsHit        Int      @default(0) @map("shots_hit")
+  bestStreak      Int      @default(0) @map("best_streak")
+  bountiesClaimed Int      @default(0) @map("bounties_claimed")
+  revenges        Int      @default(0)
+  xp              BigInt   @default(0)
+  playtimeSec     Int      @default(0) @map("playtime_sec")
+  updatedAt       DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
+  player          Player   @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+  season          Season   @relation(fields: [seasonId], references: [id])
 
   @@id([steamId, seasonId])
   @@index([seasonId, xp(sort: Desc)])
@@ -254,37 +258,37 @@ model Report {
 
 /// Нивата на VIP се управляват от панела — нула цени в кода. Перковете са само козметика.
 model VipTier {
-  id          Int          @id @default(autoincrement())
-  code        String       @unique @db.VarChar(32)
-  name        String       @db.VarChar(64)
+  id         Int          @id @default(autoincrement())
+  code       String       @unique @db.VarChar(32)
+  name       String       @db.VarChar(64)
   /// Цена с ДДС в евроцентове (цели числа, никога float).
-  priceCents  Int          @map("price_cents")
-  periodDays  Int          @map("period_days")
-  active      Boolean      @default(true)
-  sortOrder   Int          @default(0) @map("sort_order")
-  grants      VipGrant[]
-  requests    VipRequest[]
+  priceCents Int          @map("price_cents")
+  periodDays Int          @map("period_days")
+  active     Boolean      @default(true)
+  sortOrder  Int          @default(0) @map("sort_order")
+  grants     VipGrant[]
+  requests   VipRequest[]
 
   @@map("vip_tiers")
 }
 
 /// Активен VIP: revokedAt = null и startsAt <= сега < endsAt. Без автоматично подновяване.
 model VipGrant {
-  id            Int       @id @default(autoincrement())
-  steamId       String    @map("steam_id") @db.VarChar(17)
-  tierId        Int       @map("tier_id")
-  startsAt      DateTime  @map("starts_at") @db.Timestamptz(3)
-  endsAt        DateTime  @map("ends_at") @db.Timestamptz(3)
-  amountCents   Int?      @map("amount_cents")
-  paymentMethod String?   @map("payment_method") @db.VarChar(32)
-  invoiceNo     String?   @map("invoice_no") @db.VarChar(32)
-  requestId     Int?      @unique @map("request_id")
-  grantedBy     String    @map("granted_by") @db.VarChar(17)
-  note          String?   @db.VarChar(255)
-  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-  revokedAt     DateTime? @map("revoked_at") @db.Timestamptz(3)
-  player        Player    @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
-  tier          VipTier   @relation(fields: [tierId], references: [id])
+  id            Int         @id @default(autoincrement())
+  steamId       String      @map("steam_id") @db.VarChar(17)
+  tierId        Int         @map("tier_id")
+  startsAt      DateTime    @map("starts_at") @db.Timestamptz(3)
+  endsAt        DateTime    @map("ends_at") @db.Timestamptz(3)
+  amountCents   Int?        @map("amount_cents")
+  paymentMethod String?     @map("payment_method") @db.VarChar(32)
+  invoiceNo     String?     @map("invoice_no") @db.VarChar(32)
+  requestId     Int?        @unique @map("request_id")
+  grantedBy     String      @map("granted_by") @db.VarChar(17)
+  note          String?     @db.VarChar(255)
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  revokedAt     DateTime?   @map("revoked_at") @db.Timestamptz(3)
+  player        Player      @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+  tier          VipTier     @relation(fields: [tierId], references: [id])
   request       VipRequest? @relation(fields: [requestId], references: [id])
 
   @@index([steamId, endsAt])
@@ -350,4 +354,39 @@ model MapBanner {
 
   @@index([map])
   @@map("map_banners")
+}
+
+/// Сесия в уеб панела (CONTRACT.md §10). Бисквитката носи токена, тук е САМО неговият sha256.
+/// `role` е ролята при входа: разминаване с players.role (смяна от панела, играта или бота) прекратява
+/// сесията. Без IP и User-Agent — не са нужни за целта (минимизация по GDPR).
+model WebSession {
+  id          String   @id @default(uuid()) @db.Uuid
+  tokenHash   String   @unique @map("token_hash") @db.Char(64)
+  steamId     String   @map("steam_id") @db.VarChar(17)
+  role        Role
+  csrfToken   String   @map("csrf_token") @db.VarChar(64)
+  /// false — входът със Steam е минал, TOTP още не (сесията живее най-много 10 минути).
+  mfaPassed   Boolean  @default(false) @map("mfa_passed")
+  mfaFailures Int      @default(0) @map("mfa_failures")
+  lang        String   @default("bg") @db.VarChar(5)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  expiresAt   DateTime @map("expires_at") @db.Timestamptz(3)
+  player      Player   @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+
+  @@index([steamId])
+  @@index([expiresAt])
+  @@map("web_sessions")
+}
+
+/// Резервни кодове за TOTP: само HMAC-SHA256 с ключ, изведен от APP_ENC_KEY — никога в чист вид.
+model WebRecoveryCode {
+  id        Int       @id @default(autoincrement())
+  steamId   String    @map("steam_id") @db.VarChar(17)
+  codeHash  String    @map("code_hash") @db.Char(64)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  player    Player    @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+
+  @@unique([steamId, codeHash])
+  @@map("web_recovery_codes")
 }

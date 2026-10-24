@@ -121,6 +121,8 @@
       "live": "Live",
       "unknown": "Status unknown",
       "unknownHint": "The website is not receiving data from the server right now. That does not mean it is down — try joining.",
+      "offline": "Offline",
+      "offlineHint": "The server does not answer status queries. It is probably restarting or updating — try again in a few minutes.",
       "players": "Players",
       "mode": "Mode",
       "map": "Map",
@@ -654,5 +656,450 @@
     },
     "home": "Go to the home page",
     "leaderboard": "Go to the leaderboard"
+  },
+  "admin": {
+    "brand": "Admin panel",
+    "brandTag": "staff",
+    "skip": "Skip to content",
+    "navLabel": "Panel sections",
+    "footer": "The panel is for the server staff only. Every action is written to the audit chain.",
+    "toSite": "To the website",
+    "meta": {
+      "description": "The admin panel of the CS2 server CarbonStealth.eu | Dust2 DM — for the server staff only.",
+      "keywords": "Carbon Stealth, CS2 admin panel, Dust2 DM, CS2 server management, moderation, punishments"
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "punishments": "Punishments",
+      "players": "Players",
+      "reports": "Reports",
+      "appeals": "Appeals",
+      "vip": "VIP tiers",
+      "server": "Server",
+      "banners": "Banners",
+      "audit": "Audit",
+      "account": "Account"
+    },
+    "me": {
+      "signedAs": "Signed in:",
+      "lang": "Panel language",
+      "logout": "Sign out"
+    },
+    "roles": {
+      "PLAYER": "Player",
+      "VIP": "VIP",
+      "HELPER": "Helper",
+      "MODERATOR": "Moderator",
+      "ADMIN": "Admin",
+      "HEADADMIN": "Head admin",
+      "OWNER": "Owner"
+    },
+    "types": {
+      "BAN": "Ban",
+      "MUTE": "Mute",
+      "GAG": "Gag",
+      "SILENCE": "Silence",
+      "WARN": "Warning",
+      "KICK": "Kick",
+      "SLAY": "Slay"
+    },
+    "sources": {
+      "GAME": "game",
+      "WEB": "panel",
+      "DISCORD": "Discord",
+      "SYSTEM": "system"
+    },
+    "caseStatus": {
+      "OPEN": "Open",
+      "ACCEPTED": "Accepted",
+      "REJECTED": "Rejected"
+    },
+    "units": {
+      "m": "minutes",
+      "h": "hours",
+      "d": "days"
+    },
+    "col": {
+      "player": "Player",
+      "steamId": "SteamID64",
+      "role": "Role",
+      "kills": "Kills",
+      "deaths": "Deaths",
+      "ping": "Ping",
+      "actions": "Actions",
+      "actor": "Admin",
+      "created": "Issued",
+      "expires": "Expires",
+      "state": "State",
+      "source": "Source",
+      "lastSeen": "Last on the server",
+      "from": "From",
+      "to": "Until"
+    },
+    "common": {
+      "any": "all",
+      "filter": "Filter",
+      "filters": "Filters",
+      "reset": "Clear",
+      "search": "Search",
+      "save": "Save",
+      "yes": "yes",
+      "no": "no",
+      "permanent": "permanent",
+      "pager": "Pages",
+      "prev": "Previous",
+      "next": "Next",
+      "page": "Page {page} of {pages}",
+      "total": {
+        "one": "{count} record",
+        "other": "{count} records"
+      }
+    },
+    "result": {
+      "ok": "Done.",
+      "saved": "Saved.",
+      "sent": "Saved and confirmed by the server.",
+      "recordedOnly": "Saved in the database. The server was not notified.",
+      "recordedNoAck": "Saved in the database, but the server did not confirm. The game will apply it within a minute or on the next join.",
+      "invalid": "Invalid form data. Check the fields.",
+      "denied": "Your role does not allow this action.",
+      "immune": "Denied: the target's level is equal to or higher than yours (immunity).",
+      "notFound": "No such record.",
+      "notActive": "The record is no longer active or someone else has decided it.",
+      "inUse": "The tier is used by grants or requests — deactivate it instead of deleting it.",
+      "duplicate": "A tier with this code already exists.",
+      "cmdTimeout": "The server did not answer within 5 seconds.",
+      "cmdNoListener": "The server is not listening right now (the plugin or the agent is not running).",
+      "cmdRedis": "No connection to Redis — the command was not sent.",
+      "cmdUnavailable": "This part of the panel is not configured: a key is missing on the server.",
+      "cmdBusy": "The server is already restarting or updating.",
+      "cmdNotOnline": "The player is not on the server.",
+      "cmdNotActive": "The punishment is no longer active.",
+      "cmdUnknownMode": "The mode is not available in the DM plugin.",
+      "cmdFailed": "The server rejected the command.",
+      "badCode": "The code is wrong or has already been used."
+    },
+    "cmd": {
+      "timeout": "The server agent did not answer within 5 seconds.",
+      "noListener": "The server agent is not listening right now.",
+      "redis": "No connection to Redis.",
+      "unavailable": "Server commands are not configured: the key is missing (CS2DM_AGENT_KEY).",
+      "busy": "The server is already restarting or updating.",
+      "notOnline": "The player is not on the server.",
+      "notActive": "The punishment is no longer active.",
+      "unknownMode": "The mode is not available.",
+      "failed": "The agent returned an error or an unexpected answer."
+    },
+    "error": {
+      "back": "To the panel",
+      "forbidden": {
+        "title": "Not allowed",
+        "text": "Your role does not open this section or this action."
+      },
+      "notFound": {
+        "title": "No such page",
+        "text": "This address does not exist in the panel."
+      },
+      "unavailable": {
+        "title": "The panel is not configured",
+        "text": "The encryption key is missing on the server (APP_ENC_KEY). Without it the second factor cannot be stored, so the panel stays closed. The public website keeps working."
+      },
+      "csrf": {
+        "title": "The form has expired",
+        "text": "The request has no valid token or does not come from the panel. Reload the page and try again."
+      },
+      "tooMany": {
+        "title": "Too many attempts",
+        "text": "Wait a few minutes and try again."
+      },
+      "serverError": {
+        "title": "Something broke",
+        "text": "The error has been logged. Try again in a moment."
+      },
+      "badRequest": {
+        "title": "Invalid request",
+        "text": "The form is too large or malformed."
+      },
+      "denied": {
+        "title": "No access",
+        "text": "The panel is for the server staff only."
+      }
+    },
+    "login": {
+      "title": "Sign in to the panel",
+      "lead": "You sign in with your Steam account. Only the server's helpers, moderators and admins have access.",
+      "button": "Sign in through Steam",
+      "note": "Steam only tells us your SteamID64 — your password stays with Steam. After signing in, the panel asks for a code from an authenticator app (TOTP).",
+      "error": {
+        "denied": "This Steam account has no access to the panel.",
+        "failed": "Steam did not confirm the sign-in. Try again.",
+        "expired": "The sign-in has expired or was started in another browser. Start again.",
+        "locked": "Too many wrong codes. Sign in through Steam again."
+      }
+    },
+    "totp": {
+      "title": "Confirmation code",
+      "lead": "Enter the 6-digit code from your authenticator app.",
+      "label": "Code",
+      "hint": "If you do not have your phone, enter one of your recovery codes (xxxxx-xxxxx). Each works once.",
+      "submit": "Confirm"
+    },
+    "setup": {
+      "title": "Turn on the second factor",
+      "lead": "The panel requires TOTP for every staff member. Until you turn it on, you only see this page.",
+      "steps": [
+        "Open an authenticator app (Aegis, 2FAS, Google Authenticator, Microsoft Authenticator and others).",
+        "Scan the QR code or enter the key manually.",
+        "Enter the 6-digit code the app shows."
+      ],
+      "qrAlt": "QR code for the authenticator app",
+      "manual": "Key for manual entry:",
+      "label": "Code from the app",
+      "submit": "Turn on"
+    },
+    "recovery": {
+      "title": "Recovery codes",
+      "lead": "Each of these codes signs you in once if you do not have your phone.",
+      "warn": "Write them down now and keep them safe — they are shown only once and cannot be displayed again.",
+      "done": "I saved them — to the dashboard"
+    },
+    "account": {
+      "title": "Account",
+      "recoveryTitle": "Recovery codes",
+      "remaining": {
+        "one": "{count} unused recovery code left.",
+        "other": "{count} unused recovery codes left."
+      },
+      "recoveryLead": "A new set makes the old codes invalid. A current code from the app is required.",
+      "codeLabel": "Code from the app",
+      "recoverySubmit": "New set of codes",
+      "logoutTitle": "Sign out of all devices",
+      "logoutLead": "Ends all your panel sessions, including this one.",
+      "logoutConfirm": "Sign out of all devices?",
+      "logoutSubmit": "Sign out everywhere"
+    },
+    "status": {
+      "title": "Server status",
+      "online": "Running",
+      "offline": "Offline",
+      "offlineHint": "The server does not answer A2S. Last check:",
+      "unknown": "Unknown",
+      "unknownHint": "Neither the plugin nor the agent has sent fresh data.",
+      "players": "Players",
+      "bots": "Bots",
+      "mode": "Mode",
+      "map": "Map",
+      "updated": "Updated",
+      "source": {
+        "plugin": "from the plugin",
+        "a2s": "from A2S (the agent)"
+      }
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "queue": "Queue and messages",
+      "openReports": {
+        "one": "{count} open report",
+        "other": "{count} open reports"
+      },
+      "openAppeals": {
+        "one": "{count} open appeal",
+        "other": "{count} open appeals"
+      },
+      "sayLabel": "Message to everyone on the server",
+      "saySubmit": "Send",
+      "modeLabel": "DM mode",
+      "modeSubmit": "Change mode",
+      "modeConfirm": "Change the mode for all players?",
+      "players": "Live players",
+      "noLive": "No fresh data from the plugin — the player list is not available.",
+      "empty": "Nobody is on the server.",
+      "bot": "bot",
+      "dead": "dead",
+      "act": "Action",
+      "banConfirm": "Ban {name}?"
+    },
+    "punish": {
+      "type": "Type",
+      "amount": "Duration",
+      "unit": "Unit",
+      "category": "Category",
+      "reason": "Reason (internal)",
+      "hint": "Empty duration = permanent. Moderators ban for up to 7 days; longer and permanent bans need an admin. The reason is visible only in the panel, never on the public ban list."
+    },
+    "punishments": {
+      "title": "Punishments",
+      "lead": "The internal list — with the reason and the admin. The public ban list shows only the player, the category and the dates.",
+      "newTitle": "New punishment by SteamID64",
+      "newLead": "Works for a player who is not on the server too. If they are online, the server applies it at once.",
+      "nameLabel": "Name (if the player is unknown)",
+      "newSubmit": "Issue",
+      "newConfirm": "Issue the punishment?",
+      "q": "SteamID64 or name",
+      "status": "State",
+      "statuses": {
+        "active": "active",
+        "expired": "expired",
+        "revoked": "revoked",
+        "all": "all"
+      },
+      "actor": "Admin (SteamID64)",
+      "reasonSearch": "Reason contains",
+      "empty": "No punishments match these filters.",
+      "revoke": "Revoke",
+      "revokeReason": "Reason for revoking",
+      "revokeConfirm": "Revoke the punishment?"
+    },
+    "players": {
+      "title": "Players",
+      "q": "SteamID64 or name",
+      "staff": "staff only",
+      "empty": "No players match this search."
+    },
+    "player": {
+      "public": "public profile",
+      "allPunishments": "all punishments",
+      "immune": "This player's role is equal to or higher than yours — actions on them are locked.",
+      "facts": "Details",
+      "firstSeen": "First join",
+      "playtime": "Played",
+      "hours": "{h} h",
+      "webLogin": "Last website sign-in",
+      "totp": "Second factor",
+      "totpOn": "TOTP on",
+      "totpOff": "no TOTP",
+      "hidden": "hidden from leaderboards",
+      "actions": "Actions",
+      "punish": "Issue a punishment",
+      "roleSubmit": "Change role",
+      "roleConfirm": "Change the role? All of the player's panel sessions will be ended.",
+      "hideLabel": "Hide from leaderboards and the public profile (GDPR Art. 21)",
+      "totpReset": "Reset the second factor",
+      "totpResetConfirm": "Reset TOTP? The player will have to enrol again on the next sign-in.",
+      "logout": "End their panel sessions",
+      "vip": "VIP",
+      "vipTier": "Tier",
+      "vipDays": "Days",
+      "vipNote": "Note",
+      "vipGrant": "Grant VIP",
+      "vipHint": "Manual grant, no payment. If the player already has active VIP, the new period starts when it ends.",
+      "vipNone": "No VIP.",
+      "vipActive": "active",
+      "vipInactive": "expired or upcoming",
+      "vipRevoke": "Revoke",
+      "vipRevokeConfirm": "Revoke this VIP?",
+      "punishments": "Punishments",
+      "sessions": "Recent server joins",
+      "sessionsNone": "No joins recorded.",
+      "sessionsNote": "Joins are kept for 30 days. Only admins see IP addresses.",
+      "reports": "Reports against the player"
+    },
+    "reports": {
+      "title": "Reports",
+      "lead": "Reports from the game (!report). The decision is final; a punishment is issued separately.",
+      "readOnly": "read-only for your role",
+      "target": "Against",
+      "reporter": "By",
+      "note": "Note",
+      "accept": "Accept",
+      "reject": "Reject",
+      "empty": "No reports."
+    },
+    "appeals": {
+      "title": "Appeals",
+      "lead": "Appeals against punishments. The decision comes with a reason and is final.",
+      "item": "Appeal #{id}",
+      "notActive": "no longer active",
+      "message": "The player's message",
+      "contact": "Contact",
+      "submitted": "Submitted on {date}",
+      "note": "Reason for the decision",
+      "acceptRevokes": "An accepted appeal revokes the punishment — you need the rights to revoke it.",
+      "accept": "Accept",
+      "acceptConfirm": "Accept the appeal and revoke the punishment?",
+      "reject": "Reject",
+      "empty": "No appeals."
+    },
+    "vip": {
+      "title": "VIP tiers",
+      "lead": "The tiers and prices the website shows. VIP is cosmetic only — no in-game advantage.",
+      "newTitle": "New tier",
+      "create": "Create",
+      "code": "Code",
+      "name": "Name",
+      "price": "Price in euro incl. VAT",
+      "priceHint": "For example 4.99 — stored in whole euro cents.",
+      "period": "Period in days",
+      "order": "Order",
+      "active": "active",
+      "inactive": "inactive",
+      "days": {
+        "one": "{count} day",
+        "other": "{count} days"
+      },
+      "used": "grants: {grants} · requests: {requests}",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirm": "Delete the tier?",
+      "inUse": "The tier is in use — it can only be deactivated.",
+      "empty": "No VIP tiers."
+    },
+    "banners": {
+      "title": "Map banners",
+      "lead": "Placed in the game with !banner add. A deleted banner disappears on the next map change.",
+      "map": "Map",
+      "key": "Key",
+      "position": "Position x, y, z",
+      "angles": "Angles",
+      "delete": "Delete",
+      "deleteConfirm": "Delete the banner?",
+      "note": "Deleting is written to the audit as banner.remove.",
+      "empty": "No banners placed."
+    },
+    "audit": {
+      "title": "Audit",
+      "lead": "Every admin action from the game, the panel and the bot. The hash chain shows whether a row was tampered with or deleted.",
+      "chain": "The chain",
+      "verify": "Verify the chain",
+      "ok": "intact",
+      "checked": {
+        "one": "{count} row checked.",
+        "other": "{count} rows checked."
+      },
+      "broken": "broken",
+      "brokenAt": "The first mismatch is at row #{id}.",
+      "action": "Action",
+      "target": "Target",
+      "at": "When",
+      "details": "Details",
+      "empty": "No entries match these filters."
+    },
+    "server": {
+      "title": "Server",
+      "agent": "The host agent",
+      "service": "cs2.service",
+      "active": "running",
+      "inactive": "stopped",
+      "since": "Since",
+      "version": "Game version",
+      "mods": "Mods loaded",
+      "broken": "Mods broken at version",
+      "restart": "Restart",
+      "restartConfirm": "Restart the server? All players will be kicked.",
+      "update": "Update",
+      "updateConfirm": "Run an update check? On a new version the server restarts.",
+      "controlNote": "A restart and an update cannot run at the same time.",
+      "logs": "Logs",
+      "source": "Source",
+      "sources": {
+        "css": "CounterStrikeSharp",
+        "journal": "journald"
+      },
+      "lines": "Lines",
+      "showLogs": "Show",
+      "logsNote": "IP addresses and keys are redacted before display.",
+      "logsEmpty": "No lines.",
+      "back": "Back to the server"
+    }
   }
 }
