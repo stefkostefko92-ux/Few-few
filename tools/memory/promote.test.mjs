@@ -156,3 +156,12 @@ test("опровергана поука е РЕШЕНА — прегледът �
   assert.ok(!rev.candidates.some((c) => /Apple EU DMA/.test(c.text)), "решената не е кандидат");
   assert.ok(rev.candidates.some((c) => /Meta Advanced Access/.test(c.text)), "нерешената остава кандидат");
 });
+
+test("пресверка на поука в стар формат (без опашка) добавя стандартна опашка; тялото е дословно", () => {
+  const OLD = '- **2026-06-26:** `tools/x.mjs` има `--creative` флаг. (Източник: собствен инструмент.)';
+  const r = applyVerdicts(mem([Q1], [OLD]), [{ lid: lessonId(OLD), verdict: "потвърдена", source: "tools/x.mjs:16,71" }], TODAY);
+  assert.ok(!r.error, r.error);
+  assert.match(r.md, /\*\*2026-06-26 \(пресверена 2026-08-04\):\*\* `tools\/x\.mjs` има `--creative` флаг\. \(Източник: собствен инструмент\.\) _\(общо; verified; tools\/x\.mjs:16,71\)_/);
+  const broken = '- **2026-06-26:** нещо _(само-една-част)_';
+  assert.match(applyVerdicts(mem([Q1], [broken]), [{ lid: lessonId(broken), verdict: "потвърдена", source: "tools/x.mjs:1" }], TODAY).error || "", /не мога да разчета/, "счупена опашка → не гадай");
+});

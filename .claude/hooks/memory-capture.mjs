@@ -71,6 +71,19 @@ export function lastLearnBlock(text) {
   return last;
 }
 
+// Ограда, чийто етикет СЪДЪРЖА „learn“, но не е точно „learn“ (```json learn, ```learn-json, ```yaml learn).
+// Реален тих път (2026-10-24): брийфът на вълната показваше ```json verdicts / ```json defs и 4 агента
+// написаха поуките си като ```json learn — масив от {fact, source, confidence}. Куката чете само
+// ```learn, а `learnProblems` връщаше [] („няма блок“), затова dod-check мълчеше и проверените поуки
+// щяха да изчезнат без следа. Връща етикета на първата такава ограда или null.
+export function misnamedLearnFence(text) {
+  for (const m of String(text || "").matchAll(/^[ \t]*```[ \t]*([^\n`]*)$/gm)) {
+    const info = m[1].trim();
+    if (info !== "learn" && /(?<![\p{L}\d_-])learn(?![\p{L}\d_])/iu.test(info)) return info;
+  }
+  return null;
+}
+
 // Нормализира етикета на увереност. ТИХ ПРОВАЛ, който това затваря: `PROCEDURE.md` (red line 3)
 // учи всеки агент да ползва „Сигурно / Вероятно / Несигурно", а тук се приемаше само английското
 // `verified` — така поука, писана точно по нашата собствена процедура, мълчаливо падаше в Карантина.
@@ -246,10 +259,18 @@ function listItems(block) {
  */
 export function learnProblems(text, { agent = "", known = null } = {}) {
   const block = lastLearnBlock(String(text || ""));
-  if (block == null) return [];
+  if (block == null) {
+    const bad = misnamedLearnFence(text);
+    return bad ? [`блокът е „\`\`\`${bad}“ — куката чете САМО „\`\`\`learn“ със схемата (agent/date/lessons/- text:); иначе поуките изчезват`] : [];
+  }
   const items = listItems(block);
   const { agent: blockAgent, lessons } = parseLearn(block);
   const out = [];
+  // Ограда ```learn с чуждо съдържание (JSON обект, проза) → 0 поуки и 0 проблема = тих отпад.
+  // Хванато на живо 2026-10-24: {"agent":"3d-maniac","fact":…} в правилна ограда изчезна без следа.
+  // Изричното „lessons: []“ („нищо не научих“) е позволено.
+  if (!lessons.length && String(block).trim() && !/^\s*lessons:\s*\[\s*\]\s*$/m.test(block))
+    out.push("в блока няма нито една поука по схемата (`lessons:` → `- text:`) — препиши я или махни блока, ако нищо не е научено");
   // Грешно изписан собствен id се пренасочва към бегача (resolveAgent); ЧУЖД познат id се отхвърля цял.
   if (agent && blockAgent && blockAgent !== agent && known?.has?.(blockAgent)) out.push(`„agent: ${blockAgent}“ е друг агент — блокът ще бъде отхвърлен цял; твоят е „agent: ${agent}“`);
   if (items && lessons.length < items) out.push(`разчетени са ${lessons.length} от ${items} поуки (началото на всяка е „- text:“)`);

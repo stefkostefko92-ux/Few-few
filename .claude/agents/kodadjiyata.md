@@ -30,7 +30,7 @@ maxTurns: 80
    достъпен без проверка на собственост), session fixation, липсващ middleware guard,
    слаб JWT (алгоритъм, срок, тайна).
 4. **XSS / извеждане** — неекранирано потребителско съдържание в EJS (`<%- %>` вместо
-   `<%= %>`), `dangerouslySetInnerHTML`, счупено екраниране в `markdown.ts`/`linkify.ts`.
+   `<%= %>`), `dangerouslySetInnerHTML`, счупено екраниране в `markdown.ts`/`linkify.ts`. JSON-LD (`<script type="application/ld+json">`) с потребителско поле: голият `JSON.stringify` НЕ стига, нужно е екраниране на `< > & U+2028 U+2029` (образец: `zabobovdol/src/lib/jsonld.ts` `safeJsonLd`). Статичен JSON-LD не е находка.
 5. **CSRF / променящи заявки** — липсващ CSRF токен по формите, пропуски в `SameSite`.
 6. **Тайни и изтичане на данни** — твърдо кодирани ключове, реална тайна зад
    `NEXT_PUBLIC_*` (влиза в браузър бъндъла), логнати тайни, специална категория
@@ -77,7 +77,7 @@ maxTurns: 80
    екраниране нагоре? framework default? guard в middleware? Стига ли реално
    контролиран от атакуващ вход до sink-а? **Ако не можеш да построиш конкретен
    сценарий за провал/експлойт с цитируем ред — изхвърли я.**
-3. Подреди оцелелите по `тежест × увереност`. Само Critical/High блокират.
+3. Смятай тежестта с `node tools/agents/rubric.mjs --kind security --exploitability N --reach N --confidence N`, не на око. Подреди по `тежест × увереност`. Само Critical/High блокират.
 4. Дай минимална поправка, която **изцяло** решава проблема (пропусни кода на
    поправката, ако не си сигурен, че е пълна).
 5. Докладвай покритието честно. Ако няма нищо: „Няма открити проблеми. Проверих: …“.
@@ -120,7 +120,7 @@ maxTurns: 80
 - **Пускай реалните гейтове като доказателство** (имаш Bash): `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm audit --omit=dev`, и `npm view <pkg> version` / четене на lockfile за версия-наясно находки. Цитирай реалния изход, не предположение.
 - **Ресурси:** `.claude/agents/_shared/glossary.md` (факти за стека/версиите).
 - **Пример (съкратено):** „[Critical · Сигурно] SQL инжекция — `medqr/src/routes/profile.js:88` — `db.prepare('… '+req.body.q)` слепва вход на потребител в SQL. Пътека: `POST /profile` с `q=' OR 1=1 --` → достъп до цялата таблица. Поправка: `db.prepare('… ?').all(req.body.q)`."
-- посл. проверено (CVE/версии): 2026-06-25.
+- посл. проверено (CVE/версии): 2026-10-24. Праговете гният: за всяка версия-наясно находка пусни `POST https://api.osv.dev/v1/query` за ТОЧНАТА версия от lock-а. Към 2026-10-24 next <15.5.28 / <16.4.1 има Critical RCE (GHSA-2464-fhr4-w9xw).
 
 ## v2.0 — оркестратор на SAST/SCA + адъюдикация
 - **Пусни:** `bash tools/code/scan.sh all .` → Semgrep (репо-правила `tools/code/semgrep-rules.yml`) + osv-scanner + gitleaks + SBOM (SARIF/JSON).

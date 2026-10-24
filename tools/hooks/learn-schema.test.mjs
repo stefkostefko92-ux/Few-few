@@ -192,3 +192,32 @@ test("capture-transcript подава кой агент е вървял (от .m
     assert.equal(agentTypeFor(join(dir, "няма.jsonl")), "");
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
+
+// Реален тих път (2026-10-24): брийфът на вълната показваше ```json verdicts/defs и 4 агента написаха
+// поуките си като ```json learn (масив от JSON). Куката чете само ```learn → „няма блок“ → нула проблеми
+// → dod-check мълчеше и проверените поуки изчезваха.
+const JSON_LEARN = '```json learn\n[{"fact":"X е Y","source":"https://example.org/x","confidence":"Сигурно"}]\n```';
+
+test("```json learn не е тих отпад: learnProblems и dod-check връщат агента към схемата", () => {
+  const p = learnProblems("Доклад…\n\n" + JSON_LEARN);
+  assert.equal(p.length, 1);
+  assert.match(p[0], /json learn/);
+  const v = checkLearnViolation([asst("Доклад…\n\n" + JSON_LEARN)].join("\n"));
+  assert.ok(v && v.kind === "learn", "dod-check трябва да блокира");
+  assert.ok(violationMessage(v).includes(LEARN_SCHEMA), "отказът носи схемата");
+});
+
+test("каноничен ```learn до чужда ограда минава; „learning“ в етикет не е learn блок", () => {
+  assert.deepEqual(learnProblems(CANON + "\n\n" + JSON_LEARN), [], "каноничният блок печели");
+  assert.deepEqual(learnProblems("```text learning-notes\nнещо\n```"), [], "learning ≠ learn");
+  assert.deepEqual(learnProblems("```bash\nnode tools/memory/promote.mjs\n```"), []);
+});
+
+test("```learn с JSON или проза вместо схемата не е тих отпад", () => {
+  const jsonInFence = '```learn\n{"agent":"3d-maniac","fact":"X е Y","source":"https://example.org/x"}\n```';
+  const p = learnProblems("Доклад…\n\n" + jsonInFence);
+  assert.equal(p.length, 1);
+  assert.match(p[0], /нито една поука/);
+  assert.ok(checkLearnViolation([asst(jsonInFence)].join("\n")), "dod-check връща агента");
+  assert.deepEqual(learnProblems(CANON), [], "каноничният блок няма проблеми");
+});

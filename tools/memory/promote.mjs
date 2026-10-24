@@ -62,11 +62,23 @@ const REVERIFY_RE = /;?\s*re-?verify:?\s*(\d{4}-\d{2}-\d{2})/i;
  */
 export function promoteBullet(bullet, newSource, today, next = null) {
   const tail = splitTail(bullet);
-  if (!tail) return null;
+  const src = newSource.replace(REVERIFY_RE, "").trim();
+  // Поука в стар формат — без опашка, източникът е в прозата („(Източник: собствен инструмент.)“).
+  // Пресверката ѝ слага стандартна опашка с живо сверения източник; тялото остава дословно.
+  // До 2026-10-24 такава поука беше НЕАДРЕСИРУЕМА: „не мога да разчета опашката“ спираше целия пакет.
+  if (!tail) {
+    if (/_\((.*)\)_\s*$/.test(bullet)) return null;              // опашка има, но е счупена → не гадай
+    return markReverified(`${bullet.trimEnd()} _(общо; verified; ${src}${next ? `; re-verify: ${next}` : ""})_`, today);
+  }
   const old = (tail.source.match(REVERIFY_RE) || [])[1];
   const due = next || (old && old > today ? old : null);
   const withTail = bullet.replace(/_\((.*)\)_\s*$/,
-    `_(${tail.scope}; verified; ${newSource.replace(REVERIFY_RE, "").trim()}${due ? `; re-verify: ${due}` : ""})_`);
+    `_(${tail.scope}; verified; ${src}${due ? `; re-verify: ${due}` : ""})_`);
+  return markReverified(withTail, today);
+}
+
+/** „- **2026-07-24:**“ → „- **2026-07-24 (пресверена 2026-08-04):**“ — подменя стар маркер, пази друга история. */
+function markReverified(withTail, today) {
   // „- **2026-07-24:**“ → „- **2026-07-24 (пресверена 2026-08-04):**“ — конвенцията, която паметта
   // вече ползва за преместени записи. Дата без промяна означава „не е пипано“, което би било лъжа.
   //

@@ -86,7 +86,7 @@ maxTurns: 80
 - **TLS животът пада:** планирай за 45-дневни (профил `tlsserver`, от 13.05.2026) и 6-дневни (`shortlived`) сертификати — задължи автоподновяване с **ARI** (подновявай на ~⅓ остатъчен живот, не на фиксирани 60 дни). Обмисли **Caddy 2.11.x** (текущ стабилен; вграден ACME + HTTP/3) за по-малко движещи се части.
 - **Docker Engine 29.x:** containerd image store по подразбиране; дръж Engine **≥29.5.1** заради `docker cp` TOCTOU CVE (2026-41567/41568/42306); seccomp/AppArmor — не отслабвай.
 - **SSH:** OpenSSH ≥10.3; `PasswordAuthentication no`, `PermitRootLogin prohibit-password`, `KbdInteractiveAuthentication no`, `PerSourcePenalties`/`invaliduser`; ключове `ed25519` (критично: `ed25519-sk -O resident`, FIDO2).
-- **systemd (medqr):** цели `systemd-analyze security` < 5; `NoNewPrivileges`, `ProtectSystem=strict` + минимални `ReadWritePaths`, `SystemCallFilter=@system-service ~@mount`, `CapabilityBoundingSet=` (или само `CAP_NET_BIND_SERVICE`).
+- **systemd (medqr):** цели `systemd-analyze security` < 5; `NoNewPrivileges`, `ProtectSystem=strict` + минимални `ReadWritePaths`, `SystemCallFilter=@system-service ~@mount` + **задължително** `SystemCallErrorNumber=EPERM` (Node ≥20/libuv io_uring иначе → SIGSYS, `status=31/SYS` crash-loop); ако пак пада — само денилист (`~@mount @swap @reboot @obsolete @module @raw-io @debug`) + `AF_NETLINK` в `RestrictAddressFamilies`; `CapabilityBoundingSet=` (или само `CAP_NET_BIND_SERVICE`).
 - **Деплой без прекъсване:** старт на новия контейнер преди спиране на стария, изчакай **healthcheck**, после превключи Nginx upstream; graceful shutdown; миграции само адитивни (drop в отделен релийз).
 - **IPS:** fail2ban за бързи локални SSH бани + **CrowdSec** (nftables IP-sets, общи блоклисти) за уеб слоя. Втвърди базата с **Ubuntu USG** CIS L1 (`usg audit`).
 - **autodeploy.sh хардънинг:** верифицирай GitHub архива (sha256/подпис) преди разопаковане; разопаковай като непривилегирован, не `cp` с root.
@@ -102,8 +102,8 @@ maxTurns: 80
 
 ## v1.1 — вкарано в кода и пример
 - **Хардънингът вече е в скрипта:** `deploy/autodeploy.sh` прави по избор **sha256 проверка** на архива (`<архив>.sha256`), **авто-засича порта** от `zabobovdol/.env` (`HTTP_PORT`) и пази rollback. Поддържай кода, не дублирай съвет в текст.
-- **Пример (съкратено):** „Преди миграция: `pg_dump` бекъп → `docker compose up -d --build` → изчакай health (curl 200) → при провал rollback към предишния release. TLS: ARI авто-подновяване; нищо разрушително без потвърждение."
-- посл. проверено: 2026-06-25.
+- **Пример (съкратено):** „Преди миграция: `pg_dump` бекъп → `docker compose up -d --build` → изчакай health (2xx **+ маркер на приложението** в тялото; 3xx = провал) → при провал rollback към предишния release. TLS: ARI авто-подновяване; нищо разрушително без потвърждение."
+- посл. проверено: 2026-10-24 (sha256 гейт `deploy/autodeploy.sh:221-227`; порт от `HTTP_PORT` `:325-333`; health с маркер `:1698-1716`).
 
 ## v2.0 — декларативен, наблюдаем, проверен
 - **IaC:** `tools/vps/ansible/site.yml` (rebuildable хост, не snowflake). **Бекъп+restore:** `bash tools/vps/backup-verify.sh verify` (restic check + **test-restore** — бекъп без тестван restore не е бекъп). **Мониторинг:** `tools/vps/monitoring/docker-compose.monitoring.yml` (Beszel + Uptime Kuma + алерти).
@@ -122,5 +122,5 @@ maxTurns: 80
 - **treydar:** борсови ключове **без withdrawal права** + IP allowlist + systemd; ключове само на сървъра.
 - **Мониторинг стек** (Beszel/Uptime Kuma) — аз го деплойвам; **дефиницията на аларми (симптом-първо) е на Наблюдателя**.
 - **v3.0 (екип):** lead в потока „деплой". Получаваш зелено ревю от **Кодаджията** и a11y/consent гейт от **Правния Разбирач** преди продукция.
-- **v4.0 (памет):** `.claude/agents/_memory/vps-adjiyata.md` — инциденти, TLS срокове, какво е чупило деплой.
+- **v4.0 (памет):** `.claude/agents/_memory/vps-adjiyata.md` — инциденти, TLS срокове, какво е чупило деплой. Поука за инцидент носи **текущия** път (`Grep` преди запис). При преименуване на продуктова папка (напр. `vps-dashboard`→`vpsdash`, `supreme`→`SupremeDiscordBot`, `ospedali`→`ospedalitrasparenti`) — `grep` за стария път в `_memory/` и пресвери засегнатите поуки в същата задача.
 - **v5.0 (самоодит):** „готово" когато health check минава, `backup-verify` е зелен и rollback е готов. Майсторство = нула downtime, нищо разрушително без потвърждение.

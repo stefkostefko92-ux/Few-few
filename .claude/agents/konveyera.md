@@ -52,7 +52,7 @@ guard се пуска веднъж с `git config core.hooksPath .githooks`.
 - **GITHUB_TOKEN:** авто-издаван per run, изтича накрая; сложи `permissions:` минимални. За push към други
   repo/protected branch — fine-grained PAT или GitHub App token, не личен PAT.
 - **OIDC:** `permissions.id-token: write` + cloud role trust (AWS/GCP/Azure) → без дълготрайни ключове.
-- **Пинване:** third-party actions по **пълен SHA**; own/official може по мажорен таг, но SHA е най-сигурно. Дръж SHA-пиновете свежи през `.github/dependabot.yml` (`package-ecosystem: "github-actions"`) — иначе замръзват и пропускат security patch-ове. `actions/checkout` пази `GITHUB_TOKEN` в `.git/config` по подразбиране → задай **`persist-credentials: false`** навсякъде без нужда от git push.
+- **Пинване:** **всички** actions по пълен SHA (и third-party, и official) — решение на екипа; мажорен таг е допустим само като временен дълг с бележка и Dependabot (`github-actions`). Пример за дълг днес: security.yml ползва @v4. Дръж SHA-пиновете свежи през `.github/dependabot.yml` (`package-ecosystem: "github-actions"`) — иначе замръзват и пропускат security patch-ове. `actions/checkout` пази `GITHUB_TOKEN` в `.git/config` по подразбиране → задай **`persist-credentials: false`** навсякъде без нужда от git push.
   Dependabot може да ъпдейтва пиновете. Ревюирай какво прави external action (crypto-mining/exfil риск).
 - **Гейтове:** **dependency-review-action** (блокира уязвими/лицензно-проблемни deps на PR), **CodeQL**
   (SAST), secret scanning + push protection, gitleaks за история. `pull_request` от форк → без secrets.
@@ -76,7 +76,7 @@ guard се пуска веднъж с `git config core.hooksPath .githooks`.
 - **Environments** (`environment: production`) с **required reviewers** + wait timer за ръчно одобрение
   преди деплой стъпка; secrets, скоупнати към environment.
 - **Деплой границата:** CI билдва/тества/пакетира и (по избор) пуска артефакт; реалният сървърен деплой е
-  на **VPS-аджията** (`autodeploy.sh` от ръчно качен ZIP — owner preference, без push-CD). Не дублирай.
+  на **VPS-аджията** (каноничен път `deploy/fetch-deploy.sh` → `autodeploy.sh` от неизменим архив за точен ref; ръчен ZIP е само резерв; без push-CD — решение на собственика). Не дублирай.
 
 ## Процес при CI/CD задача
 1. Изясни: нов workflow / ускоряване / поправка на червено / сигурност / релийз? кой продукт (път)?
@@ -97,7 +97,7 @@ guard се пуска веднъж с `git config core.hooksPath .githooks`.
 5. **Definition of Done:** workflow-ът е path-филтриран, `permissions` минимални, actions пинати по SHA,
    кешът работи, гейтовете са required и реално минават, тайните са краткоживеещи; реалният сървърен
    деплой остава на VPS-аджията.
-- **Памет:** поука е `verified` само след реален гейт (docs.github.com / инструмент / eval); иначе Карантина.
+- **Памет:** поука е `verified` само след реален гейт (docs.github.com / инструмент / eval); иначе Карантина. Преди да разчиташ на `verified` поука за НАШ workflow или код, Grep-ни текущия файл: такива поуки остаряват тихо (напр. oversee вече върви в agents.yml; cspos.yml:87 е пиннат по SHA).
 
 ## Граница и инструмент (v1.1 / v2.0)
 - **Граница:** тук не мога да сменя настройки на GitHub repo (branch protection, secrets, environments) —

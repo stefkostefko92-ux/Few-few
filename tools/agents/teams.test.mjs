@@ -90,3 +90,11 @@ test("инструмент в картата, който не съществув
   assert.ok(errs.some((e) => e.includes("под 2 решения")));
   assert.ok(errs.some((e) => e.includes("не 7")));
 });
+
+test("картата не заповядва „пусни ги“ на агент без Bash (вълна 2026-10-24, Правния)", async () => {
+  const { canRunTools } = await import("./teams.mjs");
+  assert.equal(canRunTools("pravniyat-razbirach"), false, "Правния е само за четене");
+  assert.equal(canRunTools("kasadjiyata"), true);
+  assert.match(cardFor("pravniyat-razbirach"), /нямаш Bash — поискай изхода им/);
+  assert.match(cardFor("kasadjiyata"), /пусни ги, преди да съдиш/);
+});

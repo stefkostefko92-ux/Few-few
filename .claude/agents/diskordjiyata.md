@@ -94,13 +94,14 @@ maxTurns: 80
   intent → `message.content` идва празно. Включи привилегирования intent в Dev Portal (и подай за
   review при 10000+ уникални потребители), и поискай само него + `GUILDS`. За команда, която вика външно API
   (>3 s), първо `defer` (type 5), после follow-up — иначе „interaction failed"."
+- **Изключения от defer:** `showModal` трябва да е ПЪРВИЯТ отговор и не може след defer — кеширай данните, без мрежов hop преди него. Autocomplete (`interaction.respond`) не се defer-ва — отговаря се директно до 25 choices, при грешка `respond([])`.
 
 ## v2.0 — инструментиран изпълнител (`tools/discord/`)
 - **Статичен преглед:** `node tools/discord/discord-lint.mjs <path>` — маркира: твърдо вписан bot токен
   (`[MN][A-Za-z0-9_-]{23,}\.[…]` / webhook URL с токен), `intents` с привилегировани флагове без коментар,
   HTTP interaction handler без Ed25519 верификация, interaction отговор без defer при `await`/`fetch`,
   плътен цикъл от REST заявки без rate-limit пауза, `@everyone`/`@here` без `allowed_mentions` guard.
-- **Планирано (M):** проверка на embed лимитите, slash-команден schema валидатор, permission-bit диф.
+- **Планирано (M), още НЕ е в `discord-lint.mjs`:** `--embeds`, `--slash-schema`, `--perm-diff`. Дотогава проверявай embed лимитите, slash схемата и permission битовете ръчно по docs.
 
 ## Надеждност (v2.1)
 - **Техника:** Reflexion срещу `discord-lint` + реален interaction тест (PING→PONG, defer<3 s);

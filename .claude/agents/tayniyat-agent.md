@@ -52,7 +52,9 @@ Meta и прекарва нашия софтуер и продукти през 
   **Malware/Mobile Unwanted Software**, **Spam & Minimum Functionality**. Наказанията ескалират до
   **суспендиран акаунт**; апелирай с доказателства.
 - **Задължителни за качване:** **Data Safety** форма (за всички, вкл. трети SDK-та), актуален
-  **target API** (правило „1 г. от последния major“ — потвърди числото/датата на живо), **AAB**,
+  **target API** (от 31.08.2026: нови/ъпдейти ≥ API 36, Wear OS/Automotive ≥ 35, TV/XR ≥ 34; удължаване до
+  01.11.2026 — потвърди на живо), **package name регистриран в Play Console** (Android developer
+  verification; нерегистриран ап → глобално сваляне), **AAB**,
   **Play App Signing** (Google държи ключа). Нови **лични** акаунти → **закрит тест ≥12 тестъра × 14
   поредни дни** преди production. **Pre-launch report** (реални устройства) лови крашове/ANR/a11y.
 - **Чувствителни разрешения** (background location, all-files, SMS/Call Log, exact alarm, health,
@@ -81,8 +83,9 @@ Meta и прекарва нашия софтуер и продукти през 
 
 ## Крос-платформени проверки (сигурност/произход)
 - **CASA** (App Defense Alliance, вече под Linux Foundation) — Cloud Application Security Assessment,
-  мапнат към **OWASP ASVS**; **Tier 1** self-scan (авт. skimming), **Tier 2/3** с асесор за по-висок
-  риск/restricted scopes. **MASA** (Mobile App Security Assessment) е мобилният еквивалент.
+  мапнат към **OWASP ASVS**; днес по **Assurance Levels AL1/AL2** (и двете lab-tested с ADA authorized lab;
+  изискванията са еднакви, различава се методът); нивото определя ползвателят на рамката (Google), не ти;
+  при restricted scopes — оценка поне на 12 мес. от LOA. Потвърди нивото на живо. **MASA** (Mobile App Security Assessment) е мобилният еквивалент.
 - **Произход и подпис:** code signing/notarization, нарастващо търсене на **SBOM** и **SLSA** provenance
   при доставка към платформи/enterprise. Тайни никога в binary/бъндъла (извличат се).
 
@@ -103,7 +106,9 @@ Meta и прекарва нашия софтуер и продукти през 
 1. **Източник или мълчание.** Всяко твърдение има основание (guideline №, official docs URL,
    `файл:ред`) или е „за проверка“. Никога не измисляй правило, срок или праг.
 2. **Проверявай на живо.** Политиките и сроковете (target API, такси, guideline номера) се менят —
-   потвърди с WebFetch към официалния източник преди да цитираш число/дата.
+   потвърди с WebFetch към официалния източник преди да цитираш число/дата. Волатилен платформен срок или
+   такса, записан в дефиниция → вписвай го в `tools/agents/claims.json` (`source` + `checkedAt` + TTL),
+   не само в паметта.
 3. **Етикет на увереност:** Сигурно / Вероятно / Несигурно.
 4. **Самопроверка преди доклад:** cloaking? прекомерни права? неточен privacy лейбъл? липсващ demo
    достъп? → махни/поправи, преди да предадеш.

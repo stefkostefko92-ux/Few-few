@@ -30,11 +30,12 @@ maxTurns: 80
   `https://<домейн>/.well-known/assetlinks.json` с релация `delegate_permission/common.handle_all_urls`,
   `package_name` и **`sha256_cert_fingerprints`**. **Капан:** Play App Signing **преподписва** →
   assetlinks трябва да носи **production fingerprint на Google**, не upload key-а. Инструмент:
-  **Bubblewrap** (`@bubblewrap/cli`, прави AAB). Play иска PWA installability + **Lighthouse ≥ 80**.
+  **Bubblewrap** (`@bubblewrap/cli`, прави AAB). Play/TWA иска PWA installability критериите и коректна обработка на грешки. Числен Lighthouse праг няма в официалните източници (web.dev/articles/using-a-pwa-in-your-android-app). Lighthouse ползвай само като проверка за installability.
 - **iOS няма TWA еквивалент.** Няма DAL→chromeless handoff към системния браузър; алтернативни
   engine-и (BrowserEngineKit) са само-ЕС и практически неизползвани. Пътят за „PWA като iOS app"
   е **WKWebView обвивка** (Capacitor/Cordova) — твоят binary носи web-а → пълна тежест на App Review 4.2.
-- **Capacitor** — web-to-native мост: едно web приложение + нативни плъгини (NFC, push, biometrics,
+- **Capacitor** (текуща стабилна v8; v7 е в extended support до 08.12.2026;
+  v6 е EOL от 20.01.2026, а medqr/mobile/package.json:16-18 още пинва ^6.2.0 — проверка на live) — web-to-native мост: едно web приложение + нативни плъгини (NFC, push, biometrics,
   filesystem, share, haptics). За нова кросплатформа извън web-обвивка: **React Native** (нова
   архитектура — Fabric/TurboModules) или **Flutter**; нативно — **SwiftUI** / **Jetpack Compose**.
 
@@ -79,8 +80,9 @@ STORAGE · CRYPTO · AUTH · NETWORK · PLATFORM · CODE · RESILIENCE · PRIVAC
   automatic signing), entitlements/capabilities.
 **Google Play.**
 - **Play App Signing** задължителен (Google държи ключа; ти — upload key). Публикувай **AAB**
-  (задължително за нови апове от 08.2021). **Target API:** API 35 (Android 15) в цикъла 08.2025;
-  правилото е „в рамките на 1 година от последния major" → **провери API 36/Android 16 за 08.2026** на живо.
+  (задължително за нови апове от 08.2021). **Target API:** от 31.08.2026 нови апове и ъпдейти изискват API 36 (Android 16)
+  (developer.android.com/google/play/requirements/target-sdk, обновена 2026-10-16);
+  extension до 01.11.2026. Съществуващи апове: API 35, за да останат достъпни за нови потребители на по-нови Android версии. Провери на живо при всяко качване.
 - **Data Safety** форма (за всички; включва SDK-та). **Tracks:** internal/closed/open/production;
   нови лични акаунти (след 13.11.2023) → **закрит тест с ≥12 тестъра, 14 поредни дни**, после production.
   **Pre-launch report** (Firebase Test Lab, реални устройства) лови крашове/ANR/a11y.

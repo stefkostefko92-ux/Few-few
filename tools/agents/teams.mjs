@@ -75,17 +75,29 @@ export function route(task, T = loadTeams()) {
 /** Картата на агента — рамката на системния промпт по шаблона (роля и отговорност · решения ·
  *  инструменти · изход · готово · ескалация · провал). Дефиницията носи дълбочината на домейна, картата —
  *  мястото в екипа. Празен низ, ако агентът не е в екип. */
+/** Може ли агентът сам да пуска инструменти — `Bash` в реда `tools:` на frontmatter-а му. */
+export function canRunTools(agent, dir = AGENTS_DIR) {
+  const f = join(dir, `${agent}.md`);
+  if (!existsSync(f)) return false;
+  const fm = readFileSync(f, "utf8").match(/^---\n([\s\S]*?)\n---/);
+  const tools = fm && fm[1].match(/^tools:\s*(.*)$/m);
+  return !!tools && /(?:^|[\s,])Bash(?:[\s,]|$)/.test(tools[1]);
+}
+
 export function cardFor(agent, T = loadTeams(), nm = names()) {
   const c = T.agents[agent];
   const team = T.teams.find((t) => t.members.includes(agent));
   if (!c || !team) return "";
+  // Реален дефект (вълна 2026-10-24, Правния): картата казваше на агент БЕЗ Bash „пусни ги“ —
+  // невъзможна заповед, която противоречи на дефиницията му („пуска ги VPS-аджията“).
+  const run = canRunTools(agent) ? "пусни ги, преди да съдиш" : "нямаш Bash — поискай изхода им, преди да съдиш";
   const n = (id) => nm[id] || id;
   const mates = team.members.filter((m) => m !== agent).map(n);
   return [
     `🧭 ТВОЯТА КАРТА — екип „${team.name}“ (водач: ${n(team.lead)}${mates.length ? `; с теб: ${mates.join(", ")}` : ""}). Мисия на екипа: ${team.mission}`,
     `- Отговаряш за: ${c.trigger}. Получаваш: ${c.receives}.`,
     `- Решения (не се договарят): ${(c.rules || []).join(" ")}`,
-    `- Инструменти: ${(c.tools || []).map((t) => `\`${t}\``).join(", ")} — пусни ги, преди да съдиш.`,
+    `- Инструменти: ${(c.tools || []).map((t) => `\`${t}\``).join(", ")} — ${run}.`,
     `- Изход: ${c.outputs} + блок ПРЕДАВАНЕ. Готово е, когато: ${c.done}.`,
     `- Ескалация: предаваш на ${c.handoff}; решение на човек: ${c.human}. Извън картата ти → Статус=блокер и Към=правилния екип (_teams.md), не го вършиш сам.`,
     `- При провал: ${c.onFail}.`,
