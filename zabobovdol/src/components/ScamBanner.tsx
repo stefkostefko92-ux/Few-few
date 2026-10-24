@@ -1,16 +1,11 @@
 import Link from "next/link";
 import { AlertTriangle } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
-
-// Датата е важна: без нея старо предупреждение изглежда като днешно.
-const DATE_FMT = new Intl.DateTimeFormat("bg-BG", {
-  timeZone: "Europe/Sofia",
-  day: "2-digit",
-  month: "2-digit",
-  year: "numeric",
-});
+import { formatDate, isoDate } from "@/lib/format-date";
 
 // Показва закачено предупреждение за измама като видна лента (ако има активно).
+// Датата е важна: без нея старо предупреждение изглежда като днешно. Текстът е
+// text-base — това е най-важното съобщение за възрастните.
 export async function ScamBanner() {
   let alert: { title: string; summary: string; createdAt: Date } | null = null;
   try {
@@ -27,20 +22,21 @@ export async function ScamBanner() {
   return (
     <Link
       href="/izmami"
-      className="block border-b border-crimson-700 bg-crimson-600 text-white transition hover:bg-crimson-700"
+      className="block border-b border-crimson-800 bg-crimson-700 text-white transition-colors hover:bg-crimson-800"
     >
-      <div className="container-content flex items-center gap-3 py-2.5 text-sm">
-        <AlertTriangle className="h-5 w-5 shrink-0" aria-hidden />
+      <div className="container-content flex min-h-tap items-center gap-3 py-3 text-base">
+        <AlertTriangle className="h-6 w-6 shrink-0" aria-hidden />
         <span className="min-w-0">
           <strong className="font-bold">Внимание, измама: </strong>
           {alert.title}
           {alert.summary ? ` — ${alert.summary}` : ""}
-          <span className="whitespace-nowrap">
+          <span className="text-sm">
             {" "}
-            · публикувано на {DATE_FMT.format(alert.createdAt)}
-          </span>
-          <span className="ml-1 whitespace-nowrap font-semibold underline">
-            Виж как да се пазите →
+            · публикувано на{" "}
+            <time dateTime={isoDate(alert.createdAt)}>{formatDate(alert.createdAt)}</time>
+          </span>{" "}
+          <span className="font-semibold underline underline-offset-2">
+            Вижте как да се пазите<span aria-hidden="true">&nbsp;→</span>
           </span>
         </span>
       </div>

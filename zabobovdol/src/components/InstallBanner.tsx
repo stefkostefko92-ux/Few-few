@@ -92,7 +92,7 @@ async function promptInstall(): Promise<"accepted" | "dismissed" | "unavailable"
   }
 }
 
-export function InstallButton({ label = "Сложи на телефона" }: { label?: string }) {
+export function InstallButton({ label = "Сложете сайта на телефона" }: { label?: string }) {
   const state = useInstallState();
   const [done, setDone] = useState(false);
 
@@ -156,39 +156,52 @@ export function InstallBanner() {
     setEligible(false);
   };
 
+  // Едноредово известие (~60px) под хедъра: иконата на сайта, кратък текст,
+  // „Как?“ / „Сложете“ и X „Не сега“ (30 дни). Без голям син бутон — не се
+  // бори със заглавието и главното действие на страницата.
   return (
     <aside
-      aria-label="Сложете „За Бобов дол“ на телефона"
-      className="no-print border-b border-brand-200 bg-brand-50"
+      aria-label="Сложете сайта на телефона"
+      className="no-print border-b border-slate-200 bg-white"
     >
-      <div className="container-content flex flex-wrap items-center gap-3 py-3">
+      <div className="container-content flex items-center gap-3 py-2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/icon-192.png" alt="" width={44} height={44} className="h-11 w-11 rounded-xl" />
-        <p className="min-w-[12rem] flex-1 text-lg text-slate-800">
-          <strong>Сложете „За Бобов дол“ на телефона</strong> — една икона, отваря се като
-          приложение.
+        <img src="/icon-192.png" alt="" width={32} height={32} className="h-8 w-8 shrink-0 rounded-lg" />
+        <p className="min-w-0 flex-1 text-base font-semibold leading-snug text-slate-900">
+          Сложете сайта на телефона
         </p>
-        <div className="flex flex-wrap gap-2">
-          {state === "promptable" ? (
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={async () => {
-                track("install_click");
-                await promptInstall();
-              }}
-            >
-              Сложи на телефона
-            </button>
-          ) : (
-            <Link href="/instaliraj" className="btn-primary" onClick={() => track("install_click")}>
-              Как се прави
-            </Link>
-          )}
-          <button type="button" className="btn-secondary" onClick={hide}>
-            Не сега
+        {state === "promptable" ? (
+          <button
+            type="button"
+            className="btn-secondary shrink-0 px-4 py-2"
+            onClick={async () => {
+              track("install_click");
+              await promptInstall();
+            }}
+          >
+            Сложете
           </button>
-        </div>
+        ) : (
+          <Link
+            href="/instaliraj"
+            className="btn-secondary shrink-0 px-4 py-2"
+            onClick={() => track("install_click")}
+          >
+            Как?
+            <span className="sr-only"> — стъпките за вашия телефон</span>
+          </Link>
+        )}
+        <button
+          type="button"
+          onClick={hide}
+          aria-label="Не сега"
+          title="Не сега"
+          className="-mr-2 grid h-11 w-11 shrink-0 place-items-center rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path d="M6 6l12 12M6 18L18 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </button>
       </div>
     </aside>
   );

@@ -149,7 +149,7 @@ export default async function RootLayout({
       </head>
       <body>
         <a href="#main" className="skip-link">
-          Прескочи към съдържанието
+          Към основното съдържание
         </a>
         <AccessibilityBar />
         <SiteHeader />
