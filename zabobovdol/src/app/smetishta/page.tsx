@@ -3,6 +3,7 @@ import { Trash2, MapPin } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
+import { formatDate as formatDateBg } from "@/lib/format-date";
 import { DumpReportForm } from "./DumpReportForm";
 
 export const dynamic = "force-dynamic";
@@ -22,12 +23,9 @@ const STATUS: Record<string, { label: string; cls: string }> = {
   REJECTED: { label: "Отхвърлен", cls: "bg-slate-200 text-slate-600" },
 };
 
+// createdAt е истински момент → по софийско време.
 function formatDate(d: Date): string {
-  return new Intl.DateTimeFormat("bg-BG", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(d);
+  return formatDateBg(d);
 }
 
 export default async function DumpReportsPage() {

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { PageHero, EmptyState } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
 import { plainText } from "@/lib/markdown";
+import { formatTime, formatWeekdayDayMonth } from "@/lib/format-date";
 
 export const dynamic = "force-dynamic";
 
@@ -15,14 +16,9 @@ export const metadata: Metadata = buildMetadata({
   path: "/sabitiya",
 });
 
+// Стенно софийско време от админ полето (виж lib/format-date.ts).
 function fmt(d: Date): string {
-  return new Intl.DateTimeFormat("bg-BG", {
-    weekday: "short",
-    day: "numeric",
-    month: "long",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(d);
+  return `${formatWeekdayDayMonth(d, { wall: true })}, ${formatTime(d, { wall: true })}`;
 }
 
 export default async function EventsPage() {

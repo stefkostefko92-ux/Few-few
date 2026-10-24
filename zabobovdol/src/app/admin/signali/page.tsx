@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { Mail, MapPin } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
+import { formatDateTimeNumeric } from "@/lib/format-date";
 import { MUNICIPALITY_EMAIL } from "@/lib/mail";
 import { setComplaintStatus, deleteComplaint } from "@/lib/admin/complaint-actions";
 import { DeleteButton } from "@/components/admin/DeleteButton";
@@ -93,13 +94,7 @@ export default async function AdminSignaliPage({
                     <span className="badge">{c.category}</span>
                   </div>
                   <span className="text-xs text-slate-600">
-                    {new Intl.DateTimeFormat("bg-BG", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }).format(c.createdAt)}
+                    {formatDateTimeNumeric(c.createdAt)}
                   </span>
                 </div>
 

@@ -6,6 +6,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, eventLd } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { PrintButton } from "@/components/PrintButton";
+import { formatDateTime } from "@/lib/format-date";
 
 export const dynamic = "force-dynamic";
 
@@ -13,15 +14,9 @@ async function getEvent(slug: string) {
   return prisma.event.findFirst({ where: { slug, published: true } });
 }
 
+// Стенно софийско време от админ полето (виж lib/format-date.ts).
 function fmt(d: Date): string {
-  return new Intl.DateTimeFormat("bg-BG", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(d);
+  return formatDateTime(d, { wall: true });
 }
 
 export async function generateMetadata({

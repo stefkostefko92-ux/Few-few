@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SITE } from "@/lib/site";
+import { isoDateTime } from "@/lib/format-date";
 
 export function canonical(path = "/"): string {
   return `${SITE.url}${path === "/" ? "" : path}`;
@@ -413,8 +414,10 @@ export function eventLd(e: {
     "@type": "Event",
     name: e.name,
     ...(e.description ? { description: e.description } : {}),
-    startDate: e.startAt.toISOString(),
-    ...(e.endAt ? { endDate: e.endAt.toISOString() } : {}),
+    // startAt/endAt са стенно софийско време от админ полето — „09:33Z“ би
+    // казало на търсачките 11:33/12:33. Пишем момента с отместването на София.
+    startDate: isoDateTime(e.startAt, { wall: true }),
+    ...(e.endAt ? { endDate: isoDateTime(e.endAt, { wall: true }) } : {}),
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     eventStatus: "https://schema.org/EventScheduled",
     location: {

@@ -28,6 +28,7 @@ import { getViberChannelUrl } from "@/lib/settings";
 import { nextBuses, pickTodayOutages, todayCalendar } from "@/lib/today";
 import { BUS } from "@/lib/bus-schedule";
 import { newsDate } from "@/lib/ingest-news-rss";
+import { formatTime, formatWeekdayDayMonth } from "@/lib/format-date";
 import {
   HelpCircle,
   Phone,
@@ -114,13 +115,10 @@ const COLOR: Record<string, { chip: string; title: string }> = {
 
 export const dynamic = "force-dynamic";
 
+// Часът на събитие е „стенно“ софийско време от админ полето (виж
+// lib/format-date.ts) — не зависи от часовата зона на сървъра.
 function formatDate(d: Date): string {
-  return new Intl.DateTimeFormat("bg-BG", {
-    day: "numeric",
-    month: "long",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(d);
+  return `${formatWeekdayDayMonth(d, { wall: true })}, ${formatTime(d, { wall: true })}`;
 }
 
 // Данните за панела „Днес“ са допълнение — ако някоя от заявките се провали

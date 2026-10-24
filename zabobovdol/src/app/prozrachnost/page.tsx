@@ -12,6 +12,7 @@ import { PageHero, EmptyState } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, webPageLd, breadcrumbLd, canonical } from "@/lib/seo";
 import { PrintButton } from "@/components/PrintButton";
+import { formatMonthYear } from "@/lib/format-date";
 import { SITE } from "@/lib/site";
 import { getTransparency, SIGMA_AUTHORITY_URL } from "@/lib/transparency";
 
@@ -24,14 +25,9 @@ export const metadata: Metadata = buildMetadata({
   path: "/prozrachnost",
 });
 
+// Моментът на снимката → месец по софийско време („октомври 2026 г.“).
 function monthYear(iso: string): string {
-  try {
-    return new Intl.DateTimeFormat("bg-BG", { month: "long", year: "numeric" }).format(
-      new Date(iso),
-    );
-  } catch {
-    return "";
-  }
+  return formatMonthYear(iso);
 }
 
 export default async function TransparencyPage() {
