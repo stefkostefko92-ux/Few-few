@@ -411,3 +411,103 @@ public class BannerTests
         Assert.Null(new AdvertRotation([]).Next());
     }
 }
+
+public class HudMenuTests
+{
+    private static HudPage Page(int n, Action? onSelect = null) =>
+        new("T", "sub", Enumerable.Range(0, n).Select(i => new HudItem($"item {i}", onSelect, Disabled: i == 2)).ToList());
+
+    [Fact]
+    public void NavigationWrapsAround()
+    {
+        var s = new HudMenuSession(() => Page(4));
+        s.Move(-1);
+        s.Current(out var sel);
+        Assert.Equal(3, sel);
+        s.Move(1);
+        s.Current(out sel);
+        Assert.Equal(0, sel);
+    }
+
+    [Fact]
+    public void SelectionIsClampedWhenTheListShrinks()
+    {
+        var count = 6;
+        var s = new HudMenuSession(() => Page(count));
+        s.Move(5);
+        count = 3; // напр. играч излезе
+        s.Current(out var sel);
+        Assert.Equal(2, sel);
+    }
+
+    [Fact]
+    public void DisabledAndInfoItemsDoNothing()
+    {
+        var hits = 0;
+        var s = new HudMenuSession(() => Page(4, () => hits++));
+        s.Move(2);
+        Assert.Null(s.Selected());
+        s.Move(1);
+        s.Selected()!();
+        Assert.Equal(1, hits);
+        Assert.Null(new HudMenuSession(() => Page(1)).Selected());
+    }
+
+    [Fact]
+    public void BackClosesOnlyAtTheRoot()
+    {
+        var s = new HudMenuSession(() => Page(1));
+        s.Push(() => Page(2));
+        s.Push(() => Page(3));
+        Assert.True(s.Back());
+        s.Home();
+        Assert.Equal(1, s.Depth);
+        Assert.False(s.Back());
+    }
+
+    [Theory]
+    [InlineData(3, 0, 0, 3)]
+    [InlineData(10, 0, 0, 5)]
+    [InlineData(10, 4, 2, 7)]
+    [InlineData(10, 9, 5, 10)]
+    public void WindowFollowsTheSelection(int count, int selected, int start, int end) =>
+        Assert.Equal((start, end), HudMenuSession.Window(count, selected));
+
+    [Fact]
+    public void PlayerTextIsEscaped()
+    {
+        var s = new HudMenuSession(() => new HudPage("<b>x</b>", "a'b", [new HudItem("<font color='red'>pwn</font>", null)]));
+        var html = HudMenuRenderer.Render(s, "CS", "keys");
+        Assert.DoesNotContain("<font color='red'>pwn", html);
+        Assert.Contains("&lt;font color=&#39;red&#39;&gt;pwn", html);
+        Assert.Contains("&lt;b&gt;x&lt;/b&gt;", html);
+        Assert.Contains("a&#39;b", html);
+    }
+
+    [Fact]
+    public void KeysFireOnPressThenRepeatWhileHeld()
+    {
+        const ulong w = 1 << 3, e = 1 << 5;
+        var keys = new KeyRepeater(firstDelay: 0.3, interval: 0.1);
+        var watched = new[] { w, e };
+        var repeat = new HashSet<ulong> { w };
+        Assert.Equal([w], keys.Pressed(w, 0.0, watched, repeat));
+        Assert.Empty(keys.Pressed(w, 0.2, watched, repeat));          // още не
+        Assert.Equal([w], keys.Pressed(w, 0.31, watched, repeat));    // повторение
+        Assert.Empty(keys.Pressed(w, 0.35, watched, repeat));
+        Assert.Equal([w], keys.Pressed(w, 0.42, watched, repeat));
+        Assert.Equal([e], keys.Pressed(e, 0.5, watched, repeat));     // W пуснат, E натиснат
+        Assert.Empty(keys.Pressed(e, 2.0, watched, repeat));          // E не се повтаря
+    }
+
+    [Fact]
+    public void NewAdminActionsFollowTheRoleLadder()
+    {
+        Assert.True(Roles.Can(Role.Moderator, AdminAction.Announce));
+        Assert.False(Roles.Can(Role.Moderator, AdminAction.Fun));
+        Assert.True(Roles.Can(Role.Admin, AdminAction.Fun));
+        Assert.True(Roles.Can(Role.Admin, AdminAction.Server));
+        Assert.False(Roles.Can(Role.Admin, AdminAction.Noclip));
+        Assert.True(Roles.Can(Role.HeadAdmin, AdminAction.Noclip));
+    }
+}
