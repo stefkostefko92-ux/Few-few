@@ -11,6 +11,7 @@ import { fitOverlap } from "./handLayout";
 import { PlayingCard } from "../cards/PlayingCard";
 import { RulesButton } from "../GameHelp";
 import { MatchPills } from "../MatchStatus";
+import { ChatHeaderButton } from "../chat/ChatDock";
 import { SOCKET_EVENTS, type GameOverMsg, type MatchFoundMsg } from "@aso/shared";
 import "../cards/cards.css";
 
@@ -38,6 +39,7 @@ export function SceneHeader({ title }: { title: string }) {
         <MatchPills />
       </div>
       <div className="flex items-center gap-2">
+      <ChatHeaderButton />
       <RulesButton />
       <Button
         variant="ghost"

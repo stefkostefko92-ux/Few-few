@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { CHAT_MAX_LEN } from "@aso/shared";
 import { useMatchStore } from "../../../lib/store";
 import { useChat } from "./useChat";
+import { useChatUi } from "./chatUi";
 
 /**
  * In-match chat, mounted once in GameView so it appears in every game. Reads the
@@ -18,16 +19,21 @@ export function ChatDock() {
   const phase = useMatchStore((s) => s.phase);
 
   const { messages, send, report, muted, toggleMute } = useChat(matchId);
-  const [open, setOpen] = useState(false);
+  const open = useChatUi((s) => s.open);
+  const toggleOpen = useChatUi((s) => s.toggle);
+  const unread = useChatUi((s) => s.unread);
+  const setUnread = useChatUi((s) => s.setUnread);
   const [text, setText] = useState("");
-  const [unread, setUnread] = useState(0);
   // Seats already reported this match (one report per opponent; visual feedback).
   const [reported, setReported] = useState<Set<number>>(new Set());
   const seenRef = useRef(0);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Fresh match → forget prior reports.
-  useEffect(() => setReported(new Set()), [matchId]);
+  // Fresh match → forget prior reports; the dock starts closed.
+  useEffect(() => {
+    setReported(new Set());
+    useChatUi.getState().setOpen(false);
+  }, [matchId]);
 
   function doReport(seat: number) {
     if (reported.has(seat)) return;
@@ -43,7 +49,7 @@ export function ChatDock() {
     } else {
       setUnread(messages.length - seenRef.current);
     }
-  }, [messages.length, open]);
+  }, [messages.length, open, setUnread]);
 
   // Auto-scroll to newest when open.
   useEffect(() => {
@@ -122,7 +128,7 @@ export function ChatDock() {
               ))}
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={() => useChatUi.getState().setOpen(false)}
                 aria-label={t("common.dismiss")}
                 className="text-ink-muted hover:text-ink-100"
               >
@@ -192,10 +198,11 @@ export function ChatDock() {
         </div>
       ) : null}
 
+      {/* On phones the toggle lives in the scene header (ChatHeaderButton). */}
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="relative flex items-center gap-2 rounded-full border border-brass-400/30 bg-felt-800/90 px-4 py-2 text-sm font-semibold text-brass-300 shadow-lift backdrop-blur hover:border-brass-300"
+        onClick={toggleOpen}
+        className="relative hidden items-center gap-2 rounded-full sm:flex border border-brass-400/30 bg-felt-800/90 px-4 py-2 text-sm font-semibold text-brass-300 shadow-lift backdrop-blur hover:border-brass-300"
       >
         💬 {t("chat.title")}
         {!open && unread > 0 ? (
@@ -206,5 +213,34 @@ export function ChatDock() {
       </button>
     </div>,
     document.body,
+  );
+}
+
+/** Phones: the chat toggle as a round icon in the scene header — the floating
+ *  dock button covered the right end of the controls under the table. */
+export function ChatHeaderButton() {
+  const { t } = useTranslation();
+  const matchId = useMatchStore((s) => s.matchId);
+  const phase = useMatchStore((s) => s.phase);
+  const open = useChatUi((s) => s.open);
+  const unread = useChatUi((s) => s.unread);
+  const toggle = useChatUi((s) => s.toggle);
+  if (!matchId || phase === "searching") return null;
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={t("chat.title")}
+      aria-expanded={open}
+      title={t("chat.title")}
+      className="relative grid size-9 shrink-0 place-items-center rounded-full border border-brass-300/50 bg-felt-900/80 text-base shadow-lift sm:hidden"
+    >
+      <span aria-hidden>💬</span>
+      {!open && unread > 0 ? (
+        <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-loss px-1 text-xs font-bold text-white">
+          {unread > 9 ? "9+" : unread}
+        </span>
+      ) : null}
+    </button>
   );
 }
