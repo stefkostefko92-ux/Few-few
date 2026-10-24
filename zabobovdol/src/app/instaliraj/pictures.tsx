@@ -99,11 +99,13 @@ export function AndroidConfirmPicture() {
       <rect x="16" y="78" width="108" height="86" rx="10" fill="#ffffff" stroke="#94a3b8" />
       <rect x="28" y="90" width="22" height="22" rx="5" fill={BRAND} />
       <rect x="58" y="96" width="54" height="6" rx="3" fill="#cbd5e1" />
-      <rect x="66" y="134" width="50" height="20" rx="10" fill={BRAND} />
-      <text x="70" y="147" fontSize="8" fontWeight="700" fill="#ffffff">
+      {/* Бутонът е по-широк от надписа, а надписът е центриран; червената
+          рамка е около целия бутон и не застъпва буквите (B27). */}
+      <rect x="52" y="134" width="72" height="20" rx="10" fill={BRAND} />
+      <text x="88" y="147" fontSize="8" fontWeight="700" fill="#ffffff" textAnchor="middle">
         Инсталиране
       </text>
-      <Ring cx={91} cy={144} r={17} />
+      <rect x="47" y="129" width="82" height="30" rx="15" fill="none" stroke={MARK} strokeWidth="3.5" />
     </Phone>
   );
 }
@@ -187,7 +189,8 @@ export function HomeScreenPicture() {
   );
 }
 
-// Една стъпка: номер, картинка (по желание) и текст на прост български.
+// Една стъпка: номерът и текстът са винаги вляво (в една колона за всички
+// стъпки), а картинката — вдясно; на телефон картинката е под текста.
 export function Step({
   n,
   picture,
@@ -198,20 +201,17 @@ export function Step({
   children: ReactNode;
 }) {
   return (
-    <li className="card flex flex-col items-center gap-4 sm:flex-row sm:items-center">
-      {picture}
-      <div className="flex items-start gap-3">
-        <span
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-700 text-xl font-bold text-white"
-          aria-hidden="true"
-        >
+    <li className="panel flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex min-w-0 items-start gap-4">
+        <span className="step-num" aria-hidden="true">
           {n}
         </span>
-        <div className="text-lg leading-relaxed text-slate-800">
+        <div className="min-w-0 pt-1 text-lg leading-relaxed text-slate-800">
           <span className="sr-only">Стъпка {n}. </span>
           {children}
         </div>
       </div>
+      {picture && <div className="flex justify-center sm:shrink-0">{picture}</div>}
     </li>
   );
 }

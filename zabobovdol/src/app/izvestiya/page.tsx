@@ -6,25 +6,24 @@ import { getViberChannelUrl } from "@/lib/settings";
 import { PUSH_TOPICS } from "@/lib/push";
 import { PushSubscribe } from "@/components/PushSubscribe";
 import { ViberButton } from "@/components/ViberButton";
+import { SECTION } from "@/lib/section-names";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  ...buildMetadata({
-    title: "Известия на телефона — спиране на ток и вода, измами, дежурна аптека",
-    description:
-      "Получавайте на телефона кратко съобщение за спиране на тока и водата, нови измами, новини и дежурната аптека в Бобов дол. Сами избирате за какво.",
-    path: "/izvestiya",
-  }),
+export const metadata: Metadata = buildMetadata({
+  title: "Известия на телефона — спиране на ток и вода, измами, дежурна аптека",
+  description:
+    "Получавайте на телефона кратко съобщение за спиране на тока и водата, нови измами, новини и дежурната аптека в Бобов дол. Сами избирате за какво.",
+  path: "/izvestiya",
   keywords: [
-    "Carbon Stealth",
     "известия Бобов дол",
     "спиране на тока и водата",
     "дежурна аптека известие",
     "измами предупреждения",
     "новини Бобов дол",
+    "Carbon Stealth",
   ],
-};
+});
 
 const HINTS: Record<keyof typeof PUSH_TOPICS, string> = {
   outages: "Кога и къде спират токът или водата.",
@@ -44,44 +43,55 @@ export default async function IzvestiyaPage() {
   return (
     <>
       <PageHero
-        eyebrow="Известия"
+        eyebrow={SECTION.site}
         title="Известия на телефона"
         intro="Кратко съобщение на екрана, когато има нещо важно. Само за темите, които изберете."
         crumbs={[{ name: "Известия", path: "/izvestiya" }]}
       />
-      <div className="container-content max-w-2xl space-y-8 py-10">
-        <section className="space-y-3 text-lg">
-          <h2 className="section-title">Как работи</h2>
-          <p>
-            Избирате теми и натискате бутона. Телефонът ще ви попита дали разрешавате известията — отговорете „Разреши“.
-            Не пазим вашето име, номер или местоположение. Можете да се отпишете по всяко време от тази страница.
-          </p>
-        </section>
+      {/* Колоната за четене е вътре в контейнера — левият ѝ ръб съвпада със
+          заглавието и трохите (B24). */}
+      <div className="container-content py-10">
+        <div className="max-w-3xl space-y-8">
+          <section aria-labelledby="kak-raboti">
+            <h2 id="kak-raboti" className="section-title">
+              Как работи
+            </h2>
+            <p className="mt-4">
+              Избирате теми и натискате бутона. Телефонът ще ви попита дали разрешавате известията —
+              отговорете „Разреши“. Не пазим вашето име, номер или местоположение. Можете да се
+              отпишете по всяко време от тази страница.
+            </p>
+          </section>
 
-        <PushSubscribe topics={topics} />
+          <PushSubscribe topics={topics} />
 
-        <section className="card space-y-2">
-          <h2 className="section-title">Имате iPhone?</h2>
-          <p>
-            На iPhone известията работят само след като добавите сайта към началния екран (нужна е версия iOS 16.4 или
-            по-нова). Стъпките са{" "}
-            <Link href="/instaliraj" className="underline">
-              тук
-            </Link>
-            .
-          </p>
-        </section>
+          <section aria-labelledby="iphone" className="panel">
+            <h2 id="iphone" className="font-sans text-xl font-semibold text-slate-900">
+              Имате iPhone?
+            </h2>
+            <p className="mt-2">
+              На iPhone известията работят само след като добавите сайта към началния екран (нужна е
+              версия iOS 16.4 или по-нова).{" "}
+              <Link href="/instaliraj#iphone" className="link">
+                Вижте как да сложите сайта на началния екран
+              </Link>
+              .
+            </p>
+          </section>
 
-        <section className="card space-y-3">
-          <h2 className="section-title">Други начини да следите</h2>
-          {viber && <ViberButton url={viber} />}
-          <p>
-            <a href="/novini/rss.xml" className="underline">
-              RSS абонамент за новините
-            </a>{" "}
-            — за четци на новини.
-          </p>
-        </section>
+          <section aria-labelledby="drugi-nachini" className="panel space-y-3">
+            <h2 id="drugi-nachini" className="font-sans text-xl font-semibold text-slate-900">
+              Други начини да следите
+            </h2>
+            {viber && <ViberButton url={viber} />}
+            <p>
+              <a href="/novini/rss.xml" className="link">
+                RSS абонамент за новините
+              </a>{" "}
+              — за четци на новини.
+            </p>
+          </section>
+        </div>
       </div>
     </>
   );

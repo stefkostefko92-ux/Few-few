@@ -1,8 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Cross, Phone, MapPin, Clock, Stethoscope } from "@/components/icons";
+import type { ReactNode } from "react";
+import { Cross, MapPin, Clock, type LucideIcon } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
-import { PageHero, EmptyState, Prose } from "@/components/ui";
+import { PageHero, EmptyState, Prose, SectionHeader } from "@/components/ui";
+import { PhoneButton } from "@/components/PhoneButton";
+import { SECTION } from "@/lib/section-names";
 import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, itemListLd, localBusinessLd, canonical } from "@/lib/seo";
 import { renderMarkdown } from "@/lib/markdown";
@@ -36,6 +39,73 @@ export const metadata: Metadata = {
 
 const isPharmacy = (name: string) => /аптек/i.test(name);
 
+// Ред с икона и текст: иконата стои на първия ред, текстът се пренася под
+// себе си (не под иконата) — B21.
+function InfoRow({ icon: Icon, children }: { icon: LucideIcon; children: ReactNode }) {
+  return (
+    <div className="flex items-start gap-2">
+      <Icon className="mt-1 h-5 w-5 shrink-0 text-brand-700" aria-hidden />
+      <div className="min-w-0">{children}</div>
+    </div>
+  );
+}
+
+type Place = {
+  id: string;
+  name: string;
+  description: string;
+  address: string;
+  hours: string;
+  phone: string;
+  phone2?: string;
+  href?: string;
+};
+
+// Аптека / лекар: име, описание, адрес, работно време („Отворено сега“) и
+// телефонът като бутон — най-ясното действие на тази страница.
+function PlaceCard({ p, children }: { p: Place; children?: ReactNode }) {
+  return (
+    <li className="panel flex flex-col gap-3">
+      <div>
+        <h3 className="h-card">
+          {p.href ? (
+            <Link href={p.href} className="link-quiet">
+              {p.name}
+            </Link>
+          ) : (
+            p.name
+          )}
+        </h3>
+        {p.description && <p className="mt-1 text-base text-slate-600">{p.description}</p>}
+      </div>
+      {(p.address || p.hours) && (
+        <div className="space-y-1.5 text-base text-slate-700">
+          {p.address && (
+            <InfoRow icon={MapPin}>
+              <span>{p.address}</span>
+            </InfoRow>
+          )}
+          {p.hours && (
+            <InfoRow icon={Clock}>
+              <span>{p.hours}</span>
+              <div className="mt-1 empty:hidden">
+                <OpenNowBadge hours={p.hours} />
+              </div>
+            </InfoRow>
+          )}
+        </div>
+      )}
+      {(p.phone || p.phone2) && (
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          {p.phone && <PhoneButton phone={p.phone} label="Обадете се:" />}
+          {p.phone2 && <PhoneButton phone={p.phone2} />}
+        </div>
+      )}
+      {children}
+    </li>
+  );
+}
+
 export default async function DutyPharmacyPage() {
   const [duty, dutyInfo, health, healthBusinesses] = await Promise.all([
     getDutySchedule(),
@@ -59,107 +129,71 @@ export default async function DutyPharmacyPage() {
     (b) => isPharmacy(b.name) && !serviceNames.has(b.name.trim().toLowerCase()),
   );
 
-  const card = (s: (typeof health)[number]) => (
-    <div key={s.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h3 className="font-display text-lg font-bold text-slate-900">{s.name}</h3>
-      {s.description && <p className="mt-1 text-sm text-slate-600">{s.description}</p>}
-      <div className="mt-3 space-y-1.5 text-sm text-slate-700">
-        {s.address && (
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
-            <span>{s.address}</span>
-          </div>
-        )}
-        {s.hours && (
-          <div className="flex flex-wrap items-center gap-2">
-            <Clock className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
-            <span>{s.hours}</span>
-            <OpenNowBadge hours={s.hours} />
-          </div>
-        )}
-        {s.phone && (
-          <div className="flex items-center gap-2">
-            <Phone className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
-            <TelLink phone={s.phone} className="font-semibold text-brand-700 hover:underline">
-              {s.phone}
-            </TelLink>
-            {s.phone2 && (
-              <TelLink phone={s.phone2} className="text-brand-700 hover:underline">
-                · {s.phone2}
-              </TelLink>
-            )}
-          </div>
-        )}
-      </div>
+  const serviceCard = (s: (typeof health)[number]) => (
+    <PlaceCard
+      key={s.id}
+      p={{
+        id: s.id,
+        name: s.name,
+        description: s.description,
+        address: s.address,
+        hours: s.hours,
+        phone: s.phone,
+        phone2: s.phone2,
+      }}
+    >
       {(s.phone || s.phone2) && (
-        <>
-          <VerifiedBadge at={s.verifiedAt} source={s.verifiedSource} className="mt-2" />
+        <div>
+          <VerifiedBadge at={s.verifiedAt} source={s.verifiedSource} />
           <PhoneReportButton serviceId={s.id} serviceName={s.name} className="mt-1" />
-        </>
+        </div>
       )}
-    </div>
+    </PlaceCard>
   );
 
   const businessCard = (b: (typeof healthBusinesses)[number]) => (
-    <div key={b.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h3 className="font-display text-lg font-bold text-slate-900">
-        <Link href={`/biznes/${b.slug}`} className="hover:text-brand-700 hover:underline">
-          {b.name}
-        </Link>
-      </h3>
-      {b.description && <p className="mt-1 text-sm text-slate-600">{b.description}</p>}
-      <div className="mt-3 space-y-1.5 text-sm text-slate-700">
-        {b.address && (
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
-            <span>{b.address}</span>
-          </div>
-        )}
-        {b.hours && (
-          <div className="flex flex-wrap items-center gap-2">
-            <Clock className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
-            <span>{b.hours}</span>
-            <OpenNowBadge hours={b.hours} />
-          </div>
-        )}
-        {b.phone && (
-          <div className="flex items-center gap-2">
-            <Phone className="h-4 w-4 shrink-0 text-brand-600" aria-hidden />
-            <TelLink phone={b.phone} className="font-semibold text-brand-700 hover:underline">
-              {b.phone}
-            </TelLink>
-          </div>
-        )}
-      </div>
-    </div>
+    <PlaceCard
+      key={b.id}
+      p={{
+        id: b.id,
+        name: b.name,
+        description: b.description,
+        address: b.address,
+        hours: b.hours,
+        phone: b.phone,
+        href: `/biznes/${b.slug}`,
+      }}
+    />
   );
 
   // Днешното дежурство — едро, с голям бутон за обаждане.
   const dutyCard = (e: DutyEntry) => (
-    <div key={e.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h3 className="font-display text-xl font-bold text-slate-900">{e.pharmacy}</h3>
+    <li key={e.id} className="panel">
+      <h3 className="font-sans text-xl font-bold text-slate-900">{e.pharmacy}</h3>
       <div className="mt-2 space-y-1.5 text-base text-slate-700">
         {e.address && (
-          <div className="flex items-center gap-2">
-            <MapPin className="h-5 w-5 shrink-0 text-brand-600" aria-hidden />
+          <InfoRow icon={MapPin}>
             <span>{e.address}</span>
-          </div>
+          </InfoRow>
         )}
         {e.hours && (
-          <div className="flex items-center gap-2">
-            <Clock className="h-5 w-5 shrink-0 text-brand-600" aria-hidden />
+          <InfoRow icon={Clock}>
             <span>{e.hours}</span>
-          </div>
+          </InfoRow>
         )}
         {e.note && <p className="text-slate-700">{e.note}</p>}
       </div>
       {e.phone && (
-        <TelLink phone={e.phone} className="btn-primary mt-4">
-          <Phone className="h-5 w-5" aria-hidden /> Обади се: {e.phone}
-        </TelLink>
+        <PhoneButton phone={e.phone} label="Обадете се:" variant="primary" full className="mt-4" />
       )}
-    </div>
+    </li>
   );
+
+  // Телефоните на аптеките — веднага под „няма обявена дежурна аптека“.
+  const pharmacyPhones = [
+    ...pharmacies.map((s) => ({ id: s.id, name: s.name, phone: s.phone })),
+    ...businessPharmacies.map((b) => ({ id: b.id, name: b.name, phone: b.phone })),
+  ].filter((x) => /\d/.test(x.phone));
 
   const allPharmacies = pharmacies.length + businessPharmacies.length;
   const shareText =
@@ -212,143 +246,160 @@ export default async function DutyPharmacyPage() {
         />
       )}
       <PageHero
-        eyebrow="Здраве"
+        eyebrow={SECTION.health}
         title="Дежурна аптека и лекар"
         intro="Коя аптека е дежурна днес и в следващите дни, плюс телефоните на аптеките и лекарите в Бобов дол."
         crumbs={[{ name: "Дежурна аптека", path: "/dezhurna-apteka" }]}
       />
 
-      <div className="container-content space-y-10 py-10">
+      <div className="container-content space-y-12 py-10">
         {/* Дежурството днес — от графика (админ → „Дежурни аптеки (график)“). */}
         <section
           aria-labelledby="duty-today-title"
-          className="rounded-2xl border-2 border-brand-200 bg-brand-50 p-6"
+          className="rounded-2xl border-2 border-brand-200 bg-brand-50 p-5 sm:p-6"
         >
-          <div className="flex items-center gap-2">
-            <Cross className="h-6 w-6 text-crimson-600" aria-hidden />
-            <h2 id="duty-today-title" className="text-2xl font-bold text-slate-900">
-              Дежурна аптека днес
-            </h2>
+          <div className="flex items-center gap-3">
+            <span className="icon-chip bg-white">
+              <Cross aria-hidden />
+            </span>
+            <div className="min-w-0">
+              <h2 id="duty-today-title" className="text-2xl font-bold text-slate-900">
+                Дежурна аптека днес
+              </h2>
+              <p className="text-base text-slate-700">{dutyDayLabel(duty.day, duty.day)}</p>
+            </div>
           </div>
-          <p className="mt-1 text-base text-slate-700">{dutyDayLabel(duty.day, duty.day)}</p>
 
           {duty.today.length > 0 ? (
             <>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">{duty.today.map(dutyCard)}</div>
+              <ul role="list" className="mt-5 grid gap-4 sm:grid-cols-2">
+                {duty.today.map(dutyCard)}
+              </ul>
               {duty.upcoming.length === 0 && (
-                <p className="mt-3 text-sm text-slate-600">
+                <p className="mt-3 text-base text-slate-600">
                   Графикът за следващите дни още не е въведен.
                 </p>
               )}
             </>
           ) : (
-            <div className="mt-3">
-              <p className="text-lg font-semibold text-slate-900">
-                Графикът на дежурствата за днес не е въведен.
-              </p>
+            <div className="mt-5">
+              {/* Без график за днес „няма обявена“ е вярно само ако няма и
+                  свободния текст от админа („Текущо дежурство“) — иначе двете
+                  съобщения си противоречат на здравна страница. */}
               {dutyInfo ? (
                 <>
-                  <p className="mt-2 text-slate-700">Последната обявена информация:</p>
-                  <div className="mt-1 text-lg">
+                  <p className="text-lg font-semibold text-slate-900">
+                    Графикът за днес не е въведен — последната обявена информация:
+                  </p>
+                  <div className="mt-2 text-lg">
                     <Prose html={renderMarkdown(dutyInfo)} />
                   </div>
                 </>
               ) : (
-                <p className="mt-2 text-slate-700">
-                  Вижте телефоните на аптеките по-долу и се обадете предварително.
+                <p className="text-lg font-semibold text-slate-900">
+                  Няма обявена дежурна аптека за днес.
+                </p>
+              )}
+              {pharmacyPhones.length > 0 ? (
+                <>
+                  <p className="mt-3 text-base text-slate-700">
+                    Обадете се на аптеката, за да проверите дали работи:
+                  </p>
+                  <ul role="list" className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                    {pharmacyPhones.map((x) => (
+                      <li key={x.id}>
+                        <PhoneButton phone={x.phone} label={`${x.name}:`} />
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <p className="mt-2 text-base text-slate-700">
+                  Вижте аптеките по-долу и се обадете предварително.
                 </p>
               )}
             </div>
           )}
 
-          <p className="mt-4 text-sm text-slate-600">
-            Съвет: при спешен здравословен проблем се обадете на{" "}
-            <TelLink phone="112" className="font-semibold text-crimson-700 hover:underline">
-              112
-            </TelLink>
-            .
-          </p>
-          <ShareButton
-            className="mt-4"
-            title="Дежурна аптека — За Бобов дол"
-            text={shareText}
-            path="/dezhurna-apteka"
-          />
+          <div className="mt-5 flex flex-col gap-3 border-t border-brand-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-base text-slate-700">
+              При спешен здравословен проблем се обадете на{" "}
+              <TelLink phone="112" className="font-bold text-crimson-700 underline underline-offset-2">
+                112
+              </TelLink>
+              .
+            </p>
+            <ShareButton
+              title="Дежурна аптека — За Бобов дол"
+              text={shareText}
+              path="/dezhurna-apteka"
+            />
+          </div>
         </section>
 
-        {/* Следващите дни от графика */}
+        {/* Следващите дни от графика: ден | аптека и адрес | телефон */}
         {duty.upcoming.length > 0 && (
           <section aria-labelledby="duty-next-title">
-            <h2 id="duty-next-title" className="section-title mb-5">
-              Дежурни аптеки в следващите дни
-            </h2>
-            <ul className="divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white">
-              {duty.upcoming.map((day) => (
-                <li key={day.key} className="p-4">
-                  <div className="text-base font-bold text-slate-900">
-                    {dutyDayLabel(day.date, duty.day)}
-                  </div>
-                  {day.entries.map((e) => (
-                    <div
-                      key={e.id}
-                      className="mt-1 flex flex-wrap items-center gap-x-2 text-base text-slate-700"
-                    >
-                      <span className="font-semibold text-slate-800">{e.pharmacy}</span>
-                      {e.hours && <span>· {e.hours}</span>}
-                      {e.address && <span>· {e.address}</span>}
-                      {e.phone && (
-                        <TelLink
-                          phone={e.phone}
-                          className="a11y-btn inline-flex items-center gap-1.5 font-semibold text-brand-700 underline underline-offset-2"
-                        >
-                          <Phone className="h-4 w-4 shrink-0" aria-hidden /> {e.phone}
-                        </TelLink>
+            <SectionHeader id="duty-next-title" title="Дежурни аптеки в следващите дни" />
+            <ul role="list" className="divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white">
+              {duty.upcoming.map((day) =>
+                day.entries.map((e, i) => (
+                  <li
+                    key={e.id}
+                    className="grid gap-2 p-4 sm:grid-cols-[11rem_minmax(0,1fr)_auto] sm:items-center sm:gap-4"
+                  >
+                    <p className="text-base font-bold text-slate-900">
+                      {i === 0 ? dutyDayLabel(day.date, duty.day) : <span className="sr-only">{dutyDayLabel(day.date, duty.day)}</span>}
+                    </p>
+                    <div className="min-w-0 text-base text-slate-700">
+                      <p className="font-semibold text-slate-900">{e.pharmacy}</p>
+                      {(e.address || e.hours) && (
+                        <p className="text-slate-600">
+                          {[e.address, e.hours].filter(Boolean).join(" · ")}
+                        </p>
                       )}
                     </div>
-                  ))}
-                </li>
-              ))}
+                    {e.phone && <PhoneButton phone={e.phone} />}
+                  </li>
+                )),
+              )}
             </ul>
           </section>
         )}
 
         {/* Аптеки */}
-        <section>
-          <h2 className="section-title mb-5">Аптеки</h2>
+        <section aria-labelledby="apteki-title">
+          <SectionHeader id="apteki-title" title="Аптеки" />
           {allPharmacies === 0 ? (
             <EmptyState
+              icon={Cross}
               title="Още не са добавени аптеки."
               hint="Скоро тук ще видите аптеките с телефони и работно време."
             />
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {pharmacies.map(card)}
+            <ul role="list" className="grid gap-4 sm:grid-cols-2">
+              {pharmacies.map(serviceCard)}
               {businessPharmacies.map(businessCard)}
-            </div>
+            </ul>
           )}
         </section>
 
         {/* Лекари и здравни услуги */}
         {others.length > 0 && (
-          <section>
-            <h2 className="section-title mb-5 flex items-center gap-2">
-              <Stethoscope className="h-6 w-6 text-brand-700" aria-hidden />
-              Лекари и здравни услуги
-            </h2>
-            <div className="grid gap-4 sm:grid-cols-2">{others.map(card)}</div>
+          <section aria-labelledby="lekari-title">
+            <SectionHeader id="lekari-title" title="Лекари и здравни услуги" />
+            <ul role="list" className="grid gap-4 sm:grid-cols-2">
+              {others.map(serviceCard)}
+            </ul>
           </section>
         )}
 
-        <div className="no-print">
-          <PrintButton variant="secondary" label="Принтирай тази страница" />
-        </div>
-
-        <p className="text-sm text-slate-600">
-          Виж и всички{" "}
-          <Link href="/uslugi?cat=HEALTH" className="font-medium text-brand-700 hover:underline">
-            здравни услуги и телефони →
+        <div className="no-print flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <PrintButton variant="secondary" label="Отпечатайте страницата" />
+          <Link href="/uslugi?cat=HEALTH" className="link-more">
+            Всички здравни услуги и телефони <span aria-hidden="true">→</span>
           </Link>
-        </p>
+        </div>
       </div>
     </>
   );

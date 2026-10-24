@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { SITE } from "@/lib/site";
 import { buildMetadata } from "@/lib/seo";
-import { PrintButton } from "@/components/PrintButton";
+import { formatPhoneBg } from "@/lib/phone";
+import { SECTION } from "@/lib/section-names";
+import { PageHero } from "@/components/ui";
 import { QrCode } from "@/components/QrCode";
 import { GENERAL_PROMISE, parseShortCode, posterPromise, shortLinkPath } from "@/lib/qr";
+import { INDEPENDENT, Sheet112, SheetLayout, SHEET_TITLE, sheetCrumbs } from "../_components/PrintKit";
 
 export const dynamic = "force-dynamic";
 
@@ -56,131 +58,122 @@ export default async function PosterPage({
   const { poster, asked, code } = await findPoster(Array.isArray(kod) ? kod[0] : kod);
   const promise = poster ? posterPromise(poster.target) : GENERAL_PROMISE;
 
+  // Бележката над листа: за плакат с код — накъде води; за невалиден код —
+  // че излиза общият плакат. Без код — нищо (служебната подсказка за
+  // „?kod=“ е в админ панела, не за гражданите).
+  const note = poster ? (
+    <p>
+      Плакат с код <strong>{poster.code}</strong>
+      {poster.label ? <> · {poster.label}</> : null}. QR кодът води към{" "}
+      <strong className="[overflow-wrap:anywhere]">
+        {SITE.domain}
+        {shortLinkPath(poster.code)}
+      </strong>{" "}
+      — така виждаме колко хора са го сканирали точно на това място (само брой, без имена).
+    </p>
+  ) : asked ? (
+    <p className="callout-warning" role="status">
+      {code ? <>Кодът „{code}“ не е намерен или не е активен.</> : <>Кодът не е валиден.</>}{" "}
+      Плакатът по-долу е с общия QR код. Кодовете се създават в админ панела →
+      „QR кодове“ (само малки латински букви, цифри и тире).
+    </p>
+  ) : (
+    "Листът е за хартия A4."
+  );
+
   return (
-    <div className="container-content py-8">
-      <div className="no-print mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">
-            Плакат за разпечатване
-          </h1>
-          <p className="max-w-xl text-slate-600">
-            Разпечатайте този плакат (A4) и го закачете на видно място — в
-            аптеката, кметството, на автобусната спирка, в магазина или в
-            читалището. Така и хората, които още не познават сайта, ще го открият.
-          </p>
-          {poster ? (
-            <p className="mt-2 max-w-xl text-slate-700">
-              Плакат с код <strong>{poster.code}</strong>
-              {poster.label ? <> · {poster.label}</> : null}. QR кодът води към{" "}
-              <strong>
-                {SITE.domain}
-                {shortLinkPath(poster.code)}
-              </strong>{" "}
-              — така виждаме колко хора са го сканирали точно на това място (само брой, без
-              имена).
-            </p>
-          ) : asked ? (
-            <p className="mt-2 max-w-xl rounded-lg bg-amber-50 p-3 text-amber-900" role="status">
-              {code ? <>Кодът „{code}“ не е намерен или не е активен.</> : <>Кодът не е валиден.</>}{" "}
-              Плакатът по-долу е с общия QR код. Кодовете се създават в админ панела →
-              „QR кодове“ (само малки латински букви, цифри и тире).
-            </p>
-          ) : (
-            <p className="mt-2 max-w-xl text-slate-600">
-              За плакат за определено място добавете към адреса{" "}
-              <strong>?kod=</strong> и кода от админ панела (раздел „QR кодове“).
-            </p>
-          )}
-        </div>
-        <PrintButton label="Принтирай плаката" />
-      </div>
+    <>
+      <PageHero
+        className="no-print"
+        eyebrow={SECTION.print}
+        title={SHEET_TITLE["/pechat/plakat"]}
+        intro="Разпечатайте този плакат (A4) и го закачете на видно място — в аптеката, кметството, на автобусната спирка, в магазина или в читалището. Така и хората, които още не познават сайта, ще го открият."
+        crumbs={sheetCrumbs("/pechat/plakat")}
+      />
 
       {/* Лист за печат (A4, портрет) */}
-      <div className="print-sheet mx-auto flex max-w-2xl flex-col items-center rounded-2xl border border-slate-300 bg-white p-10 text-center shadow-sm">
+      <SheetLayout
+        current="/pechat/plakat"
+        note={note}
+        printLabel="Отпечатайте плаката"
+        sheetClassName="flex flex-col items-center text-center sm:p-10"
+      >
+        {/* Гербът с прозрачен фон — без бяла кутия върху тъмния лист. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/brand/bobov-dol-grb.png"
+          src="/brand/bobov-dol-grb-mark.png"
           alt="Герб на Бобов дол"
           width={120}
           height={173}
-          className="h-32 w-auto"
+          className="h-28 w-auto sm:h-32 print:h-24"
         />
 
-        <h2 className="mt-5 font-display text-5xl font-extrabold tracking-tight text-brand-800">
+        <h2 className="mt-5 font-display text-4xl font-extrabold tracking-tight text-brand-800 sm:text-5xl print:mt-3">
           За Бобов дол
         </h2>
         <p
           className={
             poster
-              ? "mt-3 font-display text-3xl font-extrabold leading-tight text-slate-900"
+              ? "mt-3 font-display text-2xl font-extrabold leading-tight text-slate-900 sm:text-3xl"
               : "mt-2 text-xl font-semibold text-slate-700"
           }
         >
           {promise}
         </p>
+        {/* Независимостта — веднага под заглавието, а не дребно най-долу:
+            закачен в кметството, плакатът не бива да изглежда общински. */}
+        <p className="mt-3 max-w-md text-base font-semibold text-slate-800">{INDEPENDENT}</p>
 
-        <p className="mt-5 max-w-md text-lg text-slate-700">
+        <p className="mt-5 max-w-md text-lg text-slate-700 print:mt-3">
           Важни телефони, аптека, пенсии и помощи, обяви, събития, транспорт и
           обяснения „как да…“ стъпка по стъпка — лесно и разбираемо, за всички
           възрасти.
         </p>
 
         {/* Голям QR код */}
-        <div className="mt-7 rounded-2xl border-2 border-slate-200 p-4">
+        <div className="mt-7 rounded-2xl border-2 border-slate-300 p-4 print:mt-4 print:p-3">
           {poster ? (
             <QrCode
               value={`${SITE.url}${shortLinkPath(poster.code)}`}
               label={`QR код: ${promise}`}
               size={224}
-              className="h-56 w-56"
+              className="h-48 w-48 sm:h-56 sm:w-56 print:h-44 print:w-44"
             />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src="/qr-zabobovdol.png"
-              alt="QR код към сайта"
+              alt={`QR код към ${SITE.domain}`}
               width={220}
               height={220}
-              className="h-56 w-56"
+              className="h-48 w-48 sm:h-56 sm:w-56 print:h-44 print:w-44"
             />
           )}
         </div>
         <p className="mt-3 text-lg font-semibold text-slate-800">
           Сканирайте с камерата на телефона
         </p>
-        <p className="mt-1 font-display text-2xl font-extrabold text-brand-700">
+        <p className="mt-1 max-w-full font-display text-xl font-extrabold text-brand-700 [overflow-wrap:anywhere] sm:text-2xl">
           {SITE.domain}
         </p>
 
-        {/* Най-важните телефони */}
-        <div className="mt-7 grid w-full max-w-md grid-cols-1 gap-3 text-left">
-          <div className="rounded-xl bg-red-50 p-4 text-center">
-            <div className="text-sm font-medium text-red-800">Спешен телефон</div>
-            <div className="font-display text-4xl font-extrabold text-red-700">112</div>
-            <div className="text-xs text-red-700">полиция · спешна помощ · пожарна</div>
-          </div>
+        {/* Спешният номер и връзката с екипа */}
+        <div className="mt-7 grid w-full max-w-md gap-3 print:mt-4">
+          <Sheet112 />
           {SITE.contact.phone && (
-            <div className="rounded-xl border border-slate-200 p-3 text-center text-slate-700">
+            <p className="rounded-xl border border-slate-300 p-3 text-base text-slate-700">
               За въпроси и предложения:{" "}
-              <strong className="text-slate-900">{SITE.contact.phone}</strong>
-            </div>
+              <strong className="whitespace-nowrap text-slate-900">
+                {formatPhoneBg(SITE.contact.phone)}
+              </strong>
+            </p>
           )}
+          <p className="callout-note text-left font-semibold text-slate-900">
+            Истинският ни адрес: <span className="[overflow-wrap:anywhere]">{SITE.domain}</span>{" "}
+            — никога не искаме пари, ЕГН, ПИН или кодове от SMS.
+          </p>
         </div>
-
-        <p className="mt-6 max-w-md rounded-xl bg-amber-50 p-3 text-base font-semibold text-amber-900">
-          Истинският ни адрес: {SITE.domain} — никога не искаме пари, ЕГН, ПИН или
-          кодове от SMS.
-        </p>
-
-        <p className="mt-4 text-xs text-slate-600">
-          Независим граждански проект в полза на жителите на {SITE.geo.city}.
-        </p>
-      </div>
-
-      <p className="no-print mx-auto mt-6 max-w-2xl text-slate-600">
-        Още за печат: <Link href="/pechat/sedmitsa" className="font-semibold text-brand-700 underline">седмицата в Бобов дол</Link>{" "}
-        (за хората без смартфон) и <Link href="/pechat" className="font-semibold text-brand-700 underline">важните телефони</Link>.
-      </p>
-    </div>
+      </SheetLayout>
+    </>
   );
 }

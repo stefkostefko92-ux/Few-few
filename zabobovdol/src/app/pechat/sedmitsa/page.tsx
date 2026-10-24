@@ -1,10 +1,19 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { SITE } from "@/lib/site";
 import { buildMetadata } from "@/lib/seo";
-import { PrintButton } from "@/components/PrintButton";
+import { formatPhoneBg } from "@/lib/phone";
+import { SECTION } from "@/lib/section-names";
+import { PageHero } from "@/components/ui";
 import { QrCode } from "@/components/QrCode";
+import {
+  Sheet112,
+  SheetFooter,
+  SheetHead,
+  SheetLayout,
+  SHEET_TITLE,
+  sheetCrumbs,
+} from "../_components/PrintKit";
 import {
   capFirst,
   fmtDate,
@@ -105,75 +114,86 @@ export default async function WeekSheetPage() {
     dutyDays.length === 0 && outages.length === 0 && posts.length === 0 && !scam && otherPhones.length === 0;
 
   return (
-    <div className="container-content py-8">
-      <div className="no-print mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="max-w-2xl">
-          <h1 className="font-display text-2xl font-bold text-slate-900">
-            Седмицата в Бобов дол — лист за печат
-          </h1>
-          <p className="mt-1 text-lg text-slate-700">
-            За хората без смартфон. Листът се попълва сам от сайта: дежурни аптеки,
-            спиране на ток и вода, новини, измами и важни телефони — с едър шрифт.
-          </p>
-          <p className="mt-2 text-slate-600">
-            Разпечатайте го в понеделник и го закачете на таблото в аптеката, пощата,
-            кметството или клуба. Можете да го дадете и на възрастен съсед.
-          </p>
-          {nothing && (
-            <p className="mt-3 rounded-lg bg-amber-50 p-3 text-amber-900" role="status">
-              За тази седмица още няма въведени дежурства, прекъсвания или новини — на листа
-              ще има само спешния телефон.
-            </p>
-          )}
-        </div>
-        <PrintButton label="Печат" />
-      </div>
+    <>
+      <PageHero
+        className="no-print"
+        eyebrow={SECTION.print}
+        title={SHEET_TITLE["/pechat/sedmitsa"]}
+        intro="За хората без смартфон. Листът се попълва сам от сайта: дежурни аптеки, спиране на ток и вода, новини, измами и важни телефони — с едър шрифт."
+        crumbs={sheetCrumbs("/pechat/sedmitsa")}
+      >
+        <p className="max-w-3xl text-base text-slate-700">
+          Разпечатайте го в понеделник и го закачете на таблото в аптеката, пощата,
+          кметството или клуба. Можете да го дадете и на възрастен съсед.
+        </p>
+      </PageHero>
 
       {/* Лист за печат (A4, портрет) — едър шрифт */}
-      <article className="print-sheet mx-auto max-w-3xl rounded-xl border border-slate-300 bg-white p-8 text-lg text-slate-900 shadow-sm">
-        <header className="flex items-center gap-4 border-b-2 border-slate-200 pb-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/brand/bobov-dol-grb.png"
-            alt="Герб на Бобов дол"
-            width={48}
-            height={69}
-            className="h-16 w-auto"
-          />
-          <div>
-            <h2 className="font-display text-4xl font-extrabold leading-tight text-slate-900">
-              Седмицата в Бобов дол
-            </h2>
-            <p className="text-xl font-semibold text-slate-700">{fmtWeekRange(start, end)}</p>
-          </div>
-        </header>
+      <SheetLayout
+        current="/pechat/sedmitsa"
+        width="max-w-3xl"
+        sheetClassName="text-lg"
+        note={
+          nothing ? (
+            <p className="callout-warning" role="status">
+              За тази седмица още няма въведени дежурства, прекъсвания или новини — на
+              листа ще има само спешния телефон.
+            </p>
+          ) : (
+            "Листът е за хартия A4."
+          )
+        }
+      >
+        <SheetHead
+          title="Седмицата в Бобов дол"
+          subtitle={fmtWeekRange(start, end)}
+          size="lg"
+          independent
+        />
 
-        <div className="mt-5 rounded-lg bg-red-50 p-3 text-center">
-          <div className="text-base font-medium text-red-800">Спешен телефон</div>
-          <div className="font-display text-5xl font-extrabold text-red-700">112</div>
-          <div className="text-base text-red-700">полиция · спешна помощ · пожарна</div>
-        </div>
+        <Sheet112 className="mt-5" />
 
         {dutyDays.length > 0 && (
           <section className="mt-6 break-inside-avoid" aria-labelledby="sedmitsa-apteki">
             <h3 id="sedmitsa-apteki" className="font-display text-2xl font-bold text-slate-900">
               Дежурни аптеки
             </h3>
-            <table className="mt-2 w-full text-left">
-              <tbody>
+            {/* На телефон (под sm) редът е стек: денят като подзаглавие, под
+                него аптеката и телефонът — трите колони не се събират в листа
+                (min-content ≈390px). От sm и на хартия (A4 ≈ 718px) — таблица. */}
+            <table className="mt-2 w-full text-left max-sm:block">
+              <tbody className="max-sm:block">
                 {dutyDays.map((day) =>
                   day.items.map((d, i) => (
-                    <tr key={d.id} className="border-b border-slate-200 align-top">
-                      <th scope="row" className="py-2 pr-3 font-semibold text-slate-800">
-                        {i === 0 ? fmtDutyDay(day.date) : ""}
+                    <tr
+                      key={d.id}
+                      className="border-b border-slate-200 align-top max-sm:block max-sm:py-2"
+                    >
+                      {/* Денят се вижда на първия ред от деня; на следващите
+                          е само за екранния четец (всеки ред има заглавие). */}
+                      <th
+                        scope="row"
+                        className={
+                          i === 0
+                            ? "py-2 pr-3 font-semibold text-slate-800 max-sm:block max-sm:p-0"
+                            : "py-2 pr-3 max-sm:sr-only"
+                        }
+                      >
+                        {i === 0 ? (
+                          fmtDutyDay(day.date)
+                        ) : (
+                          <span className="sr-only">{fmtDutyDay(day.date)}</span>
+                        )}
                       </th>
-                      <td className="py-2 pr-3">
+                      <td className="min-w-0 py-2 pr-3 max-sm:block max-sm:p-0 max-sm:pt-1">
                         <div className="font-bold">{d.pharmacy}</div>
                         {d.address && <div className="text-base text-slate-700">{d.address}</div>}
                         {d.hours && <div className="text-base text-slate-700">{d.hours}</div>}
                         {d.note && <div className="text-base text-slate-700">{d.note}</div>}
                       </td>
-                      <td className="whitespace-nowrap py-2 text-right text-xl font-bold">{d.phone}</td>
+                      <td className="whitespace-nowrap py-2 text-right text-xl font-bold tabular-nums max-sm:block max-sm:p-0 max-sm:pt-1 max-sm:text-left">
+                        {formatPhoneBg(d.phone)}
+                      </td>
                     </tr>
                   )),
                 )}
@@ -190,7 +210,7 @@ export default async function WeekSheetPage() {
             <h3 id="sedmitsa-spirane" className="font-display text-2xl font-bold text-slate-900">
               Спиране на ток и вода
             </h3>
-            <ul className="mt-2 space-y-3">
+            <ul role="list" className="mt-2 space-y-3">
               {outages.map((o) => (
                 <li key={o.id} className="border-b border-slate-200 pb-2">
                   <div className="font-bold">
@@ -208,15 +228,17 @@ export default async function WeekSheetPage() {
 
         {scam && (
           <section
-            className="mt-6 break-inside-avoid rounded-lg bg-amber-50 p-4 text-amber-900"
+            className="callout-danger mt-6 break-inside-avoid text-lg"
             aria-labelledby="sedmitsa-izmama"
           >
-            <h3 id="sedmitsa-izmama" className="font-display text-2xl font-bold">
+            <h3 id="sedmitsa-izmama" className="font-display text-2xl font-bold text-crimson-700">
               Внимание — измама
             </h3>
-            <p className="mt-1 font-bold">{scam.title}</p>
-            {scam.summary && <p className="mt-1">{shorten(scam.summary, 260)}</p>}
-            {scam.source && <p className="mt-1 text-base">Източник: {scam.source}</p>}
+            <p className="mt-1 font-bold text-slate-900">{scam.title}</p>
+            {scam.summary && (
+              <p className="mt-1 text-slate-800">{shorten(scam.summary, 260)}</p>
+            )}
+            {scam.source && <p className="mt-1 text-base text-slate-700">Източник: {scam.source}</p>}
           </section>
         )}
 
@@ -225,7 +247,7 @@ export default async function WeekSheetPage() {
             <h3 id="sedmitsa-novini" className="font-display text-2xl font-bold text-slate-900">
               Новини
             </h3>
-            <ul className="mt-2 space-y-3">
+            <ul role="list" className="mt-2 space-y-3">
               {posts.map((p) => (
                 <li key={p.id} className="border-b border-slate-200 pb-2">
                   <div className="font-bold">
@@ -244,50 +266,44 @@ export default async function WeekSheetPage() {
             <h3 id="sedmitsa-telefoni" className="font-display text-2xl font-bold text-slate-900">
               Важни телефони
             </h3>
-            <table className="mt-2 w-full text-left">
-              <tbody>
-                {otherPhones.map((s) => (
-                  <tr key={s.id} className="border-b border-slate-200">
-                    <td className="py-2 pr-3 font-medium text-slate-800">{s.name}</td>
-                    <td className="whitespace-nowrap py-2 text-right text-xl font-bold">{s.phone}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <ul role="list" className="mt-2">
+              {otherPhones.map((s) => (
+                <li
+                  key={s.id}
+                  className="flex items-baseline justify-between gap-3 border-b border-slate-200 py-2"
+                >
+                  <span className="min-w-0 font-medium text-slate-800 [overflow-wrap:anywhere]">{s.name}</span>
+                  <span className="shrink-0 whitespace-nowrap text-xl font-bold tabular-nums">
+                    {formatPhoneBg(s.phone)}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </section>
         )}
 
-        <p className="mt-6 rounded-lg bg-amber-50 p-3 text-base font-semibold text-amber-900">
-          Истинският ни адрес: {SITE.domain} — никога не искаме пари, ЕГН, ПИН или
-          кодове от SMS. При съмнение затворете и звъннете на близък или на 112.
+        <p className="callout-note mt-6 font-semibold text-slate-900">
+          Истинският ни адрес: <span className="[overflow-wrap:anywhere]">{SITE.domain}</span>{" "}
+          — никога не искаме пари, ЕГН, ПИН или кодове от SMS. При съмнение затворете и
+          звъннете на близък или на 112.
         </p>
 
-        <footer className="mt-6 flex items-center gap-4 border-t-2 border-slate-200 pt-4">
-          <QrCode
-            value={`${SITE.url}/?s=print`}
-            label="QR код към сайта „За Бобов дол“"
-            size={96}
-            className="h-24 w-24 shrink-0"
-          />
-          <div className="text-base text-slate-700">
-            <div className="font-display text-xl font-bold text-slate-900">
-              Повече на {SITE.domain}
-            </div>
-            Листът е генериран на {fmtGenerated(now)} от данните в сайта „За Бобов дол“.
-            Нещата се променят — при съмнение проверете по телефона.
-            {SITE.contact.phone && (
-              <div className="mt-1">
-                Въпроси и поправки: <strong>{SITE.contact.phone}</strong>
-              </div>
-            )}
-          </div>
-        </footer>
-      </article>
-
-      <p className="no-print mx-auto mt-6 max-w-3xl text-slate-600">
-        Още за печат: <Link href="/pechat" className="font-semibold text-brand-700 underline">важните телефони</Link>{" "}
-        и <Link href="/pechat/plakat" className="font-semibold text-brand-700 underline">плакат с QR код</Link>.
-      </p>
-    </div>
+        <SheetFooter
+          qr={
+            <QrCode
+              value={`${SITE.url}/?s=print`}
+              label="QR код към сайта „За Бобов дол“"
+              size={96}
+              className="h-24 w-24"
+            />
+          }
+          lead={<>Повече на {SITE.domain}</>}
+          independent={false}
+        >
+          Листът е генериран на {fmtGenerated(now)} от данните в сайта „За Бобов дол“.
+          Нещата се променят — при съмнение проверете по телефона.
+        </SheetFooter>
+      </SheetLayout>
+    </>
   );
 }

@@ -3,7 +3,19 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { SITE } from "@/lib/site";
 import { buildMetadata } from "@/lib/seo";
-import { PrintButton } from "@/components/PrintButton";
+import { formatPhoneBg } from "@/lib/phone";
+import { SECTION } from "@/lib/section-names";
+import { fitPhoneSheet } from "@/lib/print-phones";
+import { PageHero } from "@/components/ui";
+import {
+  Sheet112,
+  SheetFooter,
+  SheetHead,
+  SheetLayout,
+  SiteQr,
+  SHEET_TITLE,
+  sheetCrumbs,
+} from "./_components/PrintKit";
 
 export const dynamic = "force-dynamic";
 
@@ -24,124 +36,129 @@ export const metadata: Metadata = {
   ],
 };
 
-// Другите листове за печат — за хората без смартфон и за таблата в града.
-const MORE_PRINT = [
-  {
-    href: "/pechat/sedmitsa",
-    title: "Седмицата в Бобов дол",
-    text: "Дежурни аптеки, спиране на ток и вода, новини и измами — едър шрифт, за таблото.",
-  },
-  {
-    href: "/pechat/plakat",
-    title: "Плакат с QR код",
-    text: "За аптеката, пощата, кметството или спирката.",
-  },
-  {
-    href: "/pechat/avtobus",
-    title: "Разписание на автобусите",
-    text: "За спирката или у дома.",
-  },
+// Групите на листа — по категорията на услугата. Редът на групите и на
+// категориите в тях е редът на листа (спешните най-горе).
+const GROUPS: { title: string; cats: string[] }[] = [
+  { title: "Спешни и здраве", cats: ["EMERGENCY", "HEALTH"] },
+  { title: "Община и институции", cats: ["ADMIN", "SOCIAL"] },
+  { title: "Ток и вода", cats: ["UTILITY"] },
+  { title: "Транспорт и такси", cats: ["TRANSPORT"] },
+  { title: "Училища и читалища", cats: ["EDUCATION"] },
+  { title: "Други", cats: ["OTHER"] },
 ];
+
+type Row = { id: string; name: string; phone: string; category: string };
+
+function groupRows(rows: Row[]) {
+  return GROUPS.map((g) => ({
+    title: g.title,
+    // В групата — по реда на категориите, а вътре по реда от базата.
+    items: g.cats.flatMap((c) => rows.filter((r) => r.category === c)),
+  })).filter((g) => g.items.length > 0);
+}
+
+// Редът на листа: обикновен и сбит (когато номерата са много или с дълги
+// имена — виж fitPhoneSheet). Пълни низове, за да ги види Tailwind.
+const LI =
+  "flex break-inside-avoid items-baseline justify-between gap-3 print:gap-2 border-b border-slate-200 py-1.5 text-base leading-snug print:py-0.5 print:leading-tight";
+const LI_DENSE =
+  "flex break-inside-avoid items-baseline justify-between gap-3 print:gap-2 border-b border-slate-200 py-1.5 text-base leading-snug print:py-0 print:text-[11pt] print:leading-tight";
+const NUM = "shrink-0 whitespace-nowrap text-lg font-bold tabular-nums text-slate-900 print:text-base";
+const NUM_DENSE =
+  "shrink-0 whitespace-nowrap text-lg font-bold tabular-nums text-slate-900 print:text-[11pt]";
 
 export default async function PrintPage() {
   const services = await prisma.service.findMany({
     where: { published: true, phone: { not: "" } },
     orderBy: [{ isEmergency: "desc" }, { category: "asc" }, { order: "asc" }],
-    take: 30,
+    // С резерв: кои номера отпадат решава редът на групите, не базата.
+    take: 80,
+    select: { id: true, name: true, phone: true, category: true },
   });
+  const { groups, shown, cut, dense } = fitPhoneSheet(
+    groupRows(services.filter((s) => s.phone.trim() !== "112")),
+  );
 
   return (
-    <div className="container-content py-8">
-      <div className="no-print mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">
-            Важни телефони за печат
-          </h1>
-          <p className="text-slate-600">
-            Принтирайте този лист и го закачете на видно място у дома или го
-            подарете на възрастен близък.
-          </p>
-        </div>
-        <PrintButton />
-      </div>
-
-      <nav aria-label="Още листове за печат" className="no-print mb-6">
-        <h2 className="text-lg font-semibold text-slate-800">Още за печат</h2>
-        <ul className="mt-2 grid gap-3 sm:grid-cols-3">
-          {MORE_PRINT.map((m) => (
-            <li key={m.href}>
-              <Link
-                href={m.href}
-                className="card block h-full"
-              >
-                <span className="block font-semibold text-brand-700">{m.title}</span>
-                <span className="mt-1 block text-slate-600">{m.text}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
+    <>
+      <PageHero
+        className="no-print"
+        eyebrow={SECTION.print}
+        title={SHEET_TITLE["/pechat"]}
+        intro="Отпечатайте този лист и го закачете на видно място у дома или го подарете на възрастен близък."
+        crumbs={sheetCrumbs("/pechat")}
+      />
 
       {/* Лист за печат (A4) */}
-      <div className="print-sheet mx-auto max-w-2xl rounded-xl border border-slate-300 bg-white p-8 shadow-sm">
-        <div className="flex items-center gap-3 border-b-2 border-slate-200 pb-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/bobov-dol-grb.png" alt="Герб на Бобов дол" width={40} height={58} className="h-14 w-auto" />
-          <div>
-            <div className="font-display text-2xl font-bold text-slate-900">
-              Важни телефони — Бобов дол
-            </div>
-            <div className="text-sm text-slate-600">{SITE.domain}</div>
+      <SheetLayout
+        current="/pechat"
+        note={
+          cut > 0 ? (
+            <>
+              Листът е за хартия A4. На него са {shown} номера — още {cut} има в{" "}
+              <Link href="/uslugi" className="link">
+                „Услуги и телефони“
+              </Link>
+              .
+            </>
+          ) : (
+            "Листът е за хартия A4."
+          )
+        }
+      >
+        <SheetHead title="Важни телефони — Бобов дол" subtitle={SITE.domain} />
+
+        <Sheet112 compact className="mt-5 print:mt-3 print:py-2" />
+
+        {/* На хартия — две колони (групите, двете кутии и долният блок в един
+            поток), за да се събере на един лист. */}
+        <div className="mt-5 space-y-5 print:mt-3 print:columns-2 print:gap-6 print:space-y-0">
+          {groups.map((g) => (
+            <section key={g.title}>
+              <h3 className="break-after-avoid border-b-2 border-slate-300 pb-1 font-display text-lg font-bold text-slate-900 print:pb-0">
+                {g.title}
+              </h3>
+              <ul role="list">
+                {g.items.map((s) => (
+                  <li key={s.id} className={dense ? LI_DENSE : LI}>
+                    <span className="min-w-0 text-slate-800 [overflow-wrap:anywhere]">{s.name}</span>
+                    <span className={dense ? NUM_DENSE : NUM}>
+                      {formatPhoneBg(s.phone)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+
+          <div className="break-inside-avoid rounded-xl border border-slate-300 p-3 text-base leading-snug print:!mb-2">
+            <p className="font-semibold text-slate-900">
+              При изгубена банкова карта (денонощно):
+            </p>
+            <p className="mt-1 text-slate-800">
+              Банка ДСК: <strong className="whitespace-nowrap">0700 10 375</strong>
+              <br />
+              Пощенска банка: <strong className="whitespace-nowrap">0700 18 555</strong>
+            </p>
           </div>
-        </div>
+          <div className="callout-danger break-inside-avoid p-3 leading-snug sm:p-3 print:!mb-2">
+            <p className="font-semibold text-crimson-700">Пазете се от измами!</p>
+            <p className="mt-1 text-slate-800">
+              Банка и полиция НИКОГА не искат ПИН, кодове или да дадете пари на
+              „куриер“. При съмнение — затворете и звъннете на близък или на 112.
+            </p>
+          </div>
 
-        <div className="mt-5 rounded-lg bg-red-50 p-3 text-center">
-          <div className="text-sm font-medium text-red-800">Спешен телефон</div>
-          <div className="font-display text-4xl font-extrabold text-red-700">112</div>
-          <div className="text-xs text-red-700">полиция · спешна помощ · пожарна</div>
-        </div>
-
-        <table className="mt-5 w-full text-left text-sm">
-          <tbody>
-            {services
-              .filter((s) => s.phone !== "112")
-              .map((s) => (
-                <tr key={s.id} className="border-b border-slate-100">
-                  <td className="py-2 pr-3 font-medium text-slate-800">{s.name}</td>
-                  <td className="py-2 text-right font-bold text-slate-900">{s.phone}</td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-
-        <div className="mt-5 rounded-lg border border-slate-200 p-3 text-sm">
-          <div className="font-semibold text-slate-800">При изгубена банкова карта (денонощно):</div>
-          <div className="mt-1 text-slate-700">Банка ДСК: <strong>0700 10 375</strong> · Пощенска банка: <strong>0700 18 555</strong></div>
-        </div>
-
-        <div className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
-          <strong>Пазете се от измами!</strong> Банка и полиция НИКОГА не искат
-          ПИН, кодове или да дадете пари на „куриер“. При съмнение — затворете и
-          звъннете на близък или на 112.
-        </div>
-
-        <div className="mt-6 flex items-center gap-4 border-t-2 border-slate-200 pt-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/qr-zabobovdol.png" alt="QR код към сайта" width={90} height={90} className="h-24 w-24" />
-          <div className="text-sm text-slate-700">
-            <div className="font-display text-lg font-bold text-slate-900">
-              Сканирайте за повече
-            </div>
+          <SheetFooter
+            qr={<SiteQr />}
+            lead="Сканирайте за повече"
+            className="break-inside-avoid print:mt-4"
+          >
             Услуги, обяви, събития и обяснения „Как да…“ на{" "}
-            <strong>{SITE.domain}</strong>
-            {SITE.contact.phone && (
-              <div className="mt-1">
-                Контакт: <strong>{SITE.contact.phone}</strong>
-              </div>
-            )}
-          </div>
+            <strong className="text-slate-900 [overflow-wrap:anywhere]">{SITE.domain}</strong>
+          </SheetFooter>
         </div>
-      </div>
-    </div>
+      </SheetLayout>
+    </>
   );
 }
