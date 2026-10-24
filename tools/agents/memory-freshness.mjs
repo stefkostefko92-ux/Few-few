@@ -22,6 +22,7 @@
 //
 //   node tools/agents/memory-freshness.mjs            # отчет
 //   node tools/agents/memory-freshness.mjs --top 20   # опашка за пресверяване (най-спешното първо)
+//   node tools/agents/memory-freshness.mjs --agent <id> [--json]   # опашката на един агент с `lid`
 //   node tools/agents/memory-freshness.mjs --record   # месечна снимка (тренд на опашката)
 //   node tools/agents/memory-freshness.mjs --check    # гейт: измерването е живо и трайно
 
@@ -33,7 +34,8 @@ import { emitJsonNow } from "../lib/emit.mjs";
 // целия блок (continuation редовете). Поука, чийто източник е на втория ред, получаваше различен клас
 // → oversee=63 срещу memory-freshness=61 просрочени в един и същ ден (2 поуки на treydara). Гейтът
 // чете блока, както всички останали консуматори.
-import { sectionBullets } from "./oversee-lib.mjs";
+import { sectionBullets, lessonDate, reverifiedDate } from "./oversee-lib.mjs";
+import { lessonId } from "../memory/quarantine-review.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..");
@@ -47,6 +49,7 @@ const JSON_OUT = argv.includes("--json");
 const CHECK = argv.includes("--check");
 const RECORD = argv.includes("--record");
 const TOP = argv.includes("--top") ? Number(argv[argv.indexOf("--top") + 1]) || 20 : 0;
+const ONLY = argv.includes("--agent") ? argv[argv.indexOf("--agent") + 1] : null;
 const TODAY = process.env.OVERSEE_TODAY || new Date().toISOString().slice(0, 10);
 
 // ── Класове волатилност ─────────────────────────────────────────────────────
@@ -97,6 +100,26 @@ const addDays = (iso, n) => {
   return d.toISOString().slice(0, 10);
 };
 
+/**
+ * Срокът на ЕДНА поука — единствената дефиниция (oversee я вика, не я преписва).
+ *
+ * Часовникът тръгва от последната пресверка, не от научаването: иначе пресверената поука е
+ * просрочена завинаги. Изричен `re-verify: ДАТА` побеждава класа, ДОКАТО не е изпълнен — пресверка
+ * на или след тази дата го изпълнява и следващият срок идва от класа (изричен срок без клас значи
+ * волатилно твърдение без домейн → `външно`, а не „не изтича“).
+ */
+export function dueOf(l) {
+  const date = lessonDate(l);
+  if (!date) return null;                                  // без дата → не може да се съди срок
+  const rv = reverifiedDate(l);
+  const base = rv && rv > date ? rv : date;
+  const explicit = (l.match(/re-?verify:?\s*(\d{4}-\d{2}-\d{2})/i) || [])[1]; // = REVERIFY_RE в oversee
+  const cls = classify(l);
+  if (explicit && !(rv && rv >= explicit)) return { date, reverified: rv, cls: "изричен", due: explicit };
+  const days = cls.days ?? (explicit ? DEFAULT_CLASS.days : null);
+  return { date, reverified: rv, cls: cls.id, due: days == null ? null : addDays(base, days) };
+}
+
 /** Всички проверени поуки с дата, клас и краен срок. */
 export function collect({ dir = MEM } = {}) {
   const out = [];
@@ -104,15 +127,11 @@ export function collect({ dir = MEM } = {}) {
   for (const f of files) {
     const agent = f.replace(/\.md$/, "");
     for (const l of sectionBullets(readFileSync(join(dir, f), "utf8"), "Проверени поуки")) {
-      const dm = l.match(/\*\*(\d{4}-\d{2}-\d{2})/);
-      if (!dm) continue;                                   // без дата → не може да се съди срок
-      const explicit = (l.match(/re-?verify:?\s*(\d{4}-\d{2}-\d{2})/i) || [])[1]; // = REVERIFY_RE в oversee
-      const cls = classify(l);
-      out.push({
-        agent, date: dm[1], cls: explicit ? "изричен" : cls.id,
-        due: explicit || (cls.days == null ? null : addDays(dm[1], cls.days)),
-        text: l.slice(2, 120).replace(/\s+/g, " "),
-      });
+      const d = dueOf(l);
+      if (!d) continue;
+      // `lid` е същият като в promote/quarantine-review — по него агентът адресира поуката, без да
+      // преписва текста ѝ; `full` е за опашката на агента, `text` — за човешкия отчет.
+      out.push({ agent, ...d, lid: lessonId(l), full: l, text: l.slice(2, 120).replace(/\s+/g, " ") });
     }
   }
   return out;
@@ -166,6 +185,18 @@ export function measurementHealth({ file = SNAP, today = TODAY, gitignorePath = 
 async function main() {
   const items = collect();
   const sum = summarize(items);
+  // Опашката на ЕДИН агент — с `lid`, за да върне вердикти към `promote.mjs` без да преписва текст.
+  // И тук `--check` носи присъдата за измерването (конвенцията на всички --json пътища).
+  if (ONLY) {
+    const mine = sum.overdue.filter((i) => i.agent === ONLY);
+    const verdict = CHECK && measurementHealth().problems.length ? 1 : 0;
+    if (JSON_OUT) await emitJsonNow({ agent: ONLY, date: TODAY, overdue: mine.map(({ lid, due, cls, date, reverified, full }) => ({ lid, due, cls, date, reverified, text: full })) }, verdict);
+    const rows = mine.map((i) => `  ${i.lid}  ${i.due}  ${i.cls.padEnd(10)} ${i.full.slice(2, 150)}${i.full.length > 150 ? "…" : ""}`);
+    const out = [`\n⏳  Просрочени поуки на ${ONLY}: ${mine.length}\n`, ...rows,
+      `\n  Вердикти → node tools/memory/promote.mjs --agent ${ONLY} --verdicts <файл.json>\n`].join("\n");
+    await new Promise((r) => process.stdout.write(out + "\n", r));   // тръба: без рязане на 64 KB
+    process.exit(verdict);
+  }
   if (RECORD) {
     const p = recordSnapshot({ sum });
     console.log(`✎ снимка за ${p.month}: ${p.total} поуки · ${p.overdue} просрочени`);

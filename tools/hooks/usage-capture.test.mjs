@@ -54,6 +54,11 @@ test("цени: най-дългото съвпадение (opus-5-5 ≠ opus-5)
   assert.equal(priceOf("opus-5-5", p).id, "opus-5-5");
   assert.equal(priceOf("claude-opus-5", p).id, "opus-5");
   assert.equal(priceOf("haiku-4-5-20251001", p).id, "haiku-4-5");
+  assert.equal(priceOf("claude-sonnet-5-5", p).id, "sonnet-5-5", "своят ред, не префиксът sonnet-5");
+  assert.equal(priceOf("claude-opus-5-5[1m]", p).id, "opus-5-5", "суфиксът на контекста не пречи");
+  const noRow = { ...p, models: p.models.filter((r) => r.id !== "sonnet-5-5") };
+  assert.equal(priceOf("claude-sonnet-5-5", noRow), null, "нова версия без ред → без цена, не тихо по старата");
+  assert.equal(costOf({ model: "sonnet-5-5", input: 0, cacheRead: 1e6, cacheWrite: 0, output: 0 }, p), 0.1, "Sonnet 5.5: кеш-четене 0.05×");
   const rec = { model: "opus-5", input: 1e6, cacheRead: 1e6, cacheWrite: 1e6, output: 1e6 };
   assert.equal(costOf(rec, p), 5 + 0.5 + 6.25 + 25);
   assert.equal(costOf({ ...rec, model: "fable-5-1" }, p), 10 + 0.25 + 12.5 + 50, "Fable 5.1: кеш-четене $0.25, не 0.1×");

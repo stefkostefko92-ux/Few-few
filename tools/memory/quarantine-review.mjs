@@ -19,7 +19,7 @@
 import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { sectionBullets, isRealSource, lessonDate } from "../agents/oversee-lib.mjs";
+import { sectionBullets, isRealSource, lessonDate, isRefuted } from "../agents/oversee-lib.mjs";
 import { emitJson, finish } from "../lib/emit.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -63,14 +63,19 @@ export function reviewAgent(id, md) {
       date,
       sourceOk: isRealSource(src),
       preFix: !!date && date < CONFIDENCE_FIX_DATE,
+      refuted: isRefuted(b),
     };
   });
   return {
     id,
     total: items.length,
-    candidates: items.filter((i) => i.sourceOk),
+    // Опроверганата поука е РЕШЕНА — вердиктът е даден. До 2026-10-24 тя се връщаше като „кандидат“
+    // при всеки пуск (118 от 478, от тях 85 „силни“): опашка, която не може да се изпразни, и вечно
+    // повторно сверяване на вече отхвърлено знание.
+    refuted: items.filter((i) => i.refuted).length,
+    candidates: items.filter((i) => i.sourceOk && !i.refuted),
     // Най-силните кандидати: реален източник И карантинирани преди поправката на етикета.
-    strong: items.filter((i) => i.sourceOk && i.preFix),
+    strong: items.filter((i) => i.sourceOk && i.preFix && !i.refuted),
     items,
   };
 }
@@ -100,7 +105,7 @@ function main() {
     if (!r) { console.log(`няма карантина за „${only}"`); process.exit(0); }
     console.log(`\n🔎  Карантина на ${c(only)} — ${r.total} записа · ${r.candidates.length} кандидата за повторна проверка\n`);
     for (const i of r.candidates) {
-      console.log(`  ${y("•")} ${i.text.slice(0, 150)}${i.text.length > 150 ? "…" : ""}`);
+      console.log(`  ${y("•")} ${c(i.lid)} ${i.text.slice(0, 150)}${i.text.length > 150 ? "…" : ""}`);
       console.log(d(`      източник: ${i.source.slice(0, 120)}`));
       console.log(d(`      ${i.date || "без дата"}${i.preFix ? " · ПРЕДИ поправката на етикета" : ""}\n`));
     }
@@ -110,7 +115,8 @@ function main() {
 
   console.log(`\n🔎  Преглед на карантината — ${tot} записа във флота\n`);
   console.log(`  ${cand} (${Math.round(cand / tot * 100)}%) носят източник, който ДНЕС минава проверката`);
-  console.log(`  ${strong} от тях са отпреди ${CONFIDENCE_FIX_DATE} — заподозрени жертви на двата поправени дефекта\n`);
+  console.log(`  ${strong} от тях са отпреди ${CONFIDENCE_FIX_DATE} — заподозрени жертви на двата поправени дефекта`);
+  console.log(`  ${all.reduce((s, r) => s + r.refuted, 0)} вече са опровергани — решени, не се предлагат отново\n`);
   console.log("  агент                  карантина   кандидати   силни");
   for (const r of all) {
     if (!r.candidates.length) continue;
