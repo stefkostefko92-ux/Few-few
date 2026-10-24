@@ -1,4 +1,5 @@
 import {
+  type MagnatDebt,
   BOARD,
   BOARD_SIZE,
   CHANCE,
@@ -42,6 +43,14 @@ import type { SeededRng } from "../../kernel/rng.js";
  *
  * Turn FSM: ROLL → (resolve landing) → [BUY] → MANAGE → END. Doubles grant an
  * extra roll; three doubles or the "go to jail" tile send you to jail.
+ *
+ * Дълг („DEBT“): когато парите в брой не стигат за плащане, но имуществото
+ * (сгради на половин цена + ипотечна стойност) стига, задължението се записва и
+ * след хода играта влиза във фаза „DEBT“ — длъжникът САМ избира какво да продаде
+ * (къщите първо, равномерно — ипотека е позволена само в комплект без сгради) и
+ * какво да ипотекира, после `PAY_DEBT`. Изтече ли времето, бот-заместителят
+ * ликвидира в стария автоматичен ред (най-високите сгради, после първия
+ * свободен имот). Фалит има само ако и цялото имущество не стига.
  */
 
 const GO_SALARY = 200;
@@ -167,7 +176,43 @@ function canUnmortgage(s: MagnatState, seat: Seat, i: number): boolean {
   return isOwnable(i) && s.owner[i] === seat && s.mortgaged[i] === true && s.cash[seat]! >= unmortgageCost(i);
 }
 
-/* ── money: charge with auto-liquidation, then bankruptcy ───────────────── */
+/* ── money: charge → debt (player's choice) or bankruptcy ───────────────── */
+/** Колко пари в брой може да събере `seat` с продажба на всички сгради (половин
+ *  цена) и ипотека на всички свободни имоти. */
+function liquidationValue(s: MagnatState, seat: Seat): number {
+  let v = 0;
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    if (s.owner[i] !== seat) continue;
+    v += s.houses[i]! * Math.floor(houseCost(i) / 2);
+    if (isOwnable(i) && !s.mortgaged[i]) v += mortgageValue(i);
+  }
+  return v;
+}
+const debtsOf = (s: MagnatState): MagnatDebt[] => s.debts ?? [];
+const pendingOf = (s: MagnatState, seat: Seat): number =>
+  debtsOf(s).reduce((n, d) => n + (d.debtor === seat ? d.amount : 0), 0);
+
+/** Плаща едно задължение (кредитор фалирал междувременно → към банката). */
+function payDebt(s: MagnatState, d: MagnatDebt, events: MagnatEvent[]): void {
+  const to = d.to !== null && !s.bankrupt[d.to] ? d.to : null;
+  s.cash[d.debtor]! -= d.amount;
+  if (to !== null) s.cash[to]! += d.amount;
+  else if (d.pot && s.config.freeParkingPot) s.pot += d.amount;
+  events.push({ type: "DEBT_PAID", seat: d.debtor, amount: d.amount, to });
+}
+
+/** Автоматично уреждане на чакащите задължения на `seat` (старото поведение):
+ *  ликвидация в автоматичния ред и плащане по реда на задълженията. */
+function settleDebtsAuto(s: MagnatState, seat: Seat, events: MagnatEvent[]): void {
+  const mine = debtsOf(s).filter((d) => d.debtor === seat);
+  if (mine.length === 0) return;
+  s.debts = debtsOf(s).filter((d) => d.debtor !== seat);
+  for (const d of mine) {
+    if (s.cash[seat]! < d.amount) autoLiquidate(s, seat, d.amount);
+    if (s.cash[seat]! >= d.amount) payDebt(s, d, events);
+  }
+}
+
 function autoLiquidate(s: MagnatState, debtor: Seat, target: number): void {
   // sell houses (highest first), then mortgage unmortgaged ownables.
   let guard = 0;
@@ -194,16 +239,42 @@ function autoLiquidate(s: MagnatState, debtor: Seat, target: number): void {
   }
 }
 
-/** Move `amount` from debtor to creditor (-1 = bank). Liquidates/bankrupts as needed. */
-function charge(s: MagnatState, debtor: Seat, amount: number, creditor: Seat | null, events: MagnatEvent[]): void {
+/**
+ * Move `amount` from debtor to creditor (null = bank). Плаща веднага, ако парите
+ * в брой стигат; иначе — ако имуществото стига — записва задължение (длъжникът
+ * избира какво да ликвидира във фаза „DEBT“); иначе фалит. Returns the outcome.
+ */
+function charge(
+  s: MagnatState,
+  debtor: Seat,
+  amount: number,
+  creditor: Seat | null,
+  events: MagnatEvent[],
+  pot = false,
+): "paid" | "debt" | "bankrupt" {
   // A bankrupt debtor can't be charged again within the same reduce (would emit
   // a duplicate BANKRUPT and misdirect the already-transferred estate).
-  if (amount <= 0 || s.bankrupt[debtor]) return;
+  if (s.bankrupt[debtor]) return "bankrupt";
+  if (amount <= 0) return "paid";
+  const pending = pendingOf(s, debtor);
+  if (pending === 0 && s.cash[debtor]! >= amount) {
+    s.cash[debtor]! -= amount;
+    if (creditor !== null) s.cash[creditor]! += amount;
+    return "paid";
+  }
+  if (s.cash[debtor]! + liquidationValue(s, debtor) >= pending + amount) {
+    s.debts = [...debtsOf(s), { debtor, amount, to: creditor, ...(pot ? { pot: true } : {}) }];
+    events.push({ type: "DEBT", seat: debtor, amount, to: creditor });
+    return "debt";
+  }
+  // Несъстоятелен: първо се уреждат по-ранните задължения (както при старата
+  // автоматична ликвидация), после остатъкът минава към този кредитор.
+  settleDebtsAuto(s, debtor, events);
   if (s.cash[debtor]! < amount) autoLiquidate(s, debtor, amount);
   if (s.cash[debtor]! >= amount) {
     s.cash[debtor]! -= amount;
     if (creditor !== null) s.cash[creditor]! += amount;
-    return;
+    return "paid";
   }
   // insolvent → bankrupt, transfer remaining estate to creditor (or bank).
   const to = creditor;
@@ -233,6 +304,23 @@ function charge(s: MagnatState, debtor: Seat, amount: number, creditor: Seat | n
   events.push({ type: "BANKRUPT", seat: debtor, to });
   pushLog(s, `${BOARD[s.pos[debtor]!]!.name}: играч ${debtor + 1} банкрутира`);
   if (to !== null) chargeTransferInterest(s, to, mortgagedIn, events);
+  return "bankrupt";
+}
+
+/** След всеки ход: чакащи задължения → фаза „DEBT“ за първия длъжник. */
+function openDebtPhase(s: MagnatState, events: MagnatEvent[]): void {
+  // Задължения на фалирали (вече уредени при фалита) не остават в опашката.
+  s.debts = debtsOf(s).filter((d) => !s.bankrupt[d.debtor]);
+  if (s.debts.length === 0 || s.phase === "DEBT") return;
+  if (s.done) {
+    // Играта свърши (лимит ходове) — уреди автоматично, за честна нетна стойност.
+    for (const d of s.debts.slice()) settleDebtsAuto(s, d.debtor, events);
+    return;
+  }
+  s.debtResume = { phase: s.phase, turn: s.turn };
+  s.phase = "DEBT";
+  s.turn = s.debts[0]!.debtor;
+  pushLog(s, `Играч ${s.turn + 1} дължи ${s.debts[0]!.amount} — продава или ипотекира`);
 }
 
 /**
@@ -286,9 +374,9 @@ function sendToJail(s: MagnatState, seat: Seat, events: MagnatEvent[]): void {
 /** A fee paid to the bank; under the free-parking-pot rule it feeds the pot. */
 function feeToBank(s: MagnatState, debtor: Seat, amount: number, events: MagnatEvent[]): void {
   if (amount <= 0) return;
-  const wasBankrupt = s.bankrupt[debtor];
-  charge(s, debtor, amount, null, events);
-  if (s.config.freeParkingPot && !wasBankrupt && !s.bankrupt[debtor]) s.pot += amount;
+  const r = charge(s, debtor, amount, null, events, s.config.freeParkingPot);
+  // Записаното задължение влиза в пота при плащането (`payDebt`).
+  if (s.config.freeParkingPot && r === "paid") s.pot += amount;
 }
 
 /* ── auctions ───────────────────────────────────────────────────────────── */
@@ -423,6 +511,8 @@ function clone(s: MagnatState): MagnatState {
     chance: s.chance.slice(),
     chest: s.chest.slice(),
     log: s.log.slice(),
+    debts: debtsOf(s).map((d) => ({ ...d })),
+    debtResume: s.debtResume ? { ...s.debtResume } : null,
     auction: s.auction ? { ...s.auction, live: s.auction.live.slice() } : null,
     trade: s.trade
       ? {
@@ -577,6 +667,19 @@ function afterResolve(s: MagnatState, jailed: boolean): void {
   s.phase = s.pendingBuy !== null ? "BUY" : "MANAGE";
 }
 
+/** Фаза „DEBT“: продажба на сгради, ипотека и плащане. */
+function debtActions(s: MagnatState, seat: Seat): MagnatAction[] {
+  const d = debtsOf(s)[0];
+  if (!d || d.debtor !== seat) return [];
+  const acts: MagnatAction[] = [];
+  if (s.cash[seat]! >= d.amount) acts.push({ type: "PAY_DEBT" });
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    if (canSell(s, seat, i)) acts.push({ type: "SELL", tile: i });
+    if (canMortgage(s, seat, i)) acts.push({ type: "MORTGAGE", tile: i });
+  }
+  return acts;
+}
+
 /** Фазите на собствения ход, в които играчът управлява имотите си. */
 const ownTurnPhase = (s: MagnatState): boolean => s.phase === "ROLL" || s.phase === "BUY" || s.phase === "MANAGE";
 
@@ -637,6 +740,7 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
   legalActions(state, seat) {
     if (state.done || seat !== state.turn || state.bankrupt[seat]) return [];
     const s = state;
+    if (s.phase === "DEBT") return debtActions(s, seat);
     if (s.phase === "ROLL") {
       const acts: MagnatAction[] = [{ type: "ROLL" }];
       if (s.inJail[seat]) {
@@ -708,6 +812,7 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
     const events: MagnatEvent[] = [];
 
     const finish = (): { state: MagnatState; events: MagnatEvent[] } => {
+      openDebtPhase(s, events);
       if (s.done) {
         const w = winner(s);
         if (!events.some((e) => e.type === "WIN")) events.push({ type: "WIN", seat: w });
@@ -893,13 +998,37 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
         s.houses[action.tile]!++;
         return finish();
       }
+      case "PAY_DEBT": {
+        const d = debtsOf(s)[0];
+        if (s.phase !== "DEBT" || !d || d.debtor !== seat) throw new IllegalActionError("No debt");
+        if (s.cash[seat]! < d.amount) throw new IllegalActionError("Not enough cash");
+        s.debts = debtsOf(s).slice(1);
+        payDebt(s, d, events);
+        pushLog(s, `Играч ${seat + 1} плаща дълг ${d.amount}`);
+        const nextDebt = s.debts[0];
+        if (nextDebt) {
+          s.turn = nextDebt.debtor;
+        } else {
+          const resume = s.debtResume ?? { phase: "MANAGE" as const, turn: seat };
+          s.phase = resume.phase;
+          s.turn = resume.turn;
+          s.debtResume = null;
+        }
+        return finish();
+      }
       case "SELL": {
-        if (!ownTurnPhase(s) || !canSell(s, seat, action.tile)) throw new IllegalActionError("Cannot sell");
+        const debtSell = s.phase === "DEBT" && debtsOf(s)[0]?.debtor === seat;
+        if (!(ownTurnPhase(s) || debtSell) || !canSell(s, seat, action.tile)) {
+          throw new IllegalActionError("Cannot sell");
+        }
         s.cash[seat]! += sellLevel(s, action.tile);
         return finish();
       }
       case "MORTGAGE": {
-        if (!ownTurnPhase(s) || !canMortgage(s, seat, action.tile)) throw new IllegalActionError("Cannot mortgage");
+        const debtMortgage = s.phase === "DEBT" && debtsOf(s)[0]?.debtor === seat;
+        if (!(ownTurnPhase(s) || debtMortgage) || !canMortgage(s, seat, action.tile)) {
+          throw new IllegalActionError("Cannot mortgage");
+        }
         s.mortgaged[action.tile] = true;
         s.cash[seat]! += mortgageValue(action.tile);
         return finish();
@@ -949,7 +1078,7 @@ export const magnatEngine: GameEngine<MagnatState, MagnatAction, MagnatEvent> = 
 /**
  * Heuristic bot: buys aggressively while keeping a cash cushion, completes and
  * develops colour groups, unmortgages when flush, and never voluntarily sells
- * (auto-liquidation handles debt). It always returns one legal action and, in
+ * (в дълг ликвидира в стария автоматичен ред). It always returns one legal action and, in
  * MANAGE, eventually returns END (each build/unmortgage spends cash, so the
  * cushion check terminates the development loop).
  */
@@ -957,6 +1086,18 @@ export function magnatBot(s: MagnatState, seat: Seat, rng: SeededRng): MagnatAct
   const acts = magnatEngine.legalActions(s, seat);
   if (acts.length === 0) return null;
   const cash = s.cash[seat]!;
+
+  if (s.phase === "DEBT") {
+    // Старият автоматичен ред: най-високите сгради, после първия свободен имот.
+    if (acts.some((a) => a.type === "PAY_DEBT")) return { type: "PAY_DEBT" };
+    let best = -1;
+    for (let i = 0; i < BOARD_SIZE; i++) {
+      if (s.owner[i] === seat && s.houses[i]! > 0 && (best < 0 || s.houses[i]! > s.houses[best]!)) best = i;
+    }
+    if (best >= 0 && canSell(s, seat, best)) return { type: "SELL", tile: best };
+    const m = acts.find((a) => a.type === "MORTGAGE");
+    return m ?? acts[0]!;
+  }
 
   if (s.phase === "ROLL") {
     if (s.inJail[seat] && acts.some((a) => a.type === "JAIL_CARD")) return { type: "JAIL_CARD" };

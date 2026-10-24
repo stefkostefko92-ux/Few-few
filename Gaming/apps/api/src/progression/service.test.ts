@@ -186,8 +186,12 @@ describe("опит от мисии: VIP множител + записано ни
   it("активен VIP получава умножен опит от мисия", async () => {
     seed({ vipTier: "PLATINUM", vipUntil: new Date(Date.now() + DAY) });
     const free = seed({ id: "u2" });
-    await finishWin("m1");
-    await recordMatchResult({ matchId: "m1", userId: "u2", game: "CHESS", won: true, rating: 1200, displayName: "Мария" });
+    // Игра без ротираща дневна задача: допълнителният VIP слот за деня (зависи
+    // от датата) иначе може да е „win_chess“ и да добави опит само на VIP.
+    const win = (userId: string, displayName: string) =>
+      recordMatchResult({ matchId: "m1", userId, game: "WORDS", won: true, rating: 1200, displayName });
+    await win("u1", "Иван");
+    await win("u2", "Мария");
     const vip = users.get("u1")!;
     expect(vip.xp).toBeGreaterThan(0);
     expect(vip.xp).toBe(Math.round(free.xp * VIP_PERKS.PLATINUM.xpMultiplier));
@@ -197,8 +201,12 @@ describe("опит от мисии: VIP множител + записано ни
   it("изтекъл VIP не получава множител от мисия", async () => {
     seed({ vipTier: "PLATINUM", vipUntil: new Date(Date.now() - DAY) });
     const free = seed({ id: "u2" });
-    await finishWin("m1");
-    await recordMatchResult({ matchId: "m1", userId: "u2", game: "CHESS", won: true, rating: 1200, displayName: "Мария" });
+    // Игра без ротираща дневна задача: допълнителният VIP слот за деня (зависи
+    // от датата) иначе може да е „win_chess“ и да добави опит само на VIP.
+    const win = (userId: string, displayName: string) =>
+      recordMatchResult({ matchId: "m1", userId, game: "WORDS", won: true, rating: 1200, displayName });
+    await win("u1", "Иван");
+    await win("u2", "Мария");
     expect(users.get("u1")!.xp).toBe(free.xp);
   });
 });

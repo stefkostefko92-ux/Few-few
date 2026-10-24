@@ -24,6 +24,15 @@ import { buildDeck, hiddenLike, rankOf, suitOf, type Card, type Suit } from "./c
  * Phase 2 (stock closed or exhausted): must follow suit and head the trick when
  * able; if void of the led suit, must play a trump.
  *
+ * Обявяване „Имам 66“ / „Излизам“ (`DECLARE`): 66 НЕ се отчита автоматично —
+ * играчът, който е на ход с празна взятка (т.е. води — вкл. веднага след като
+ * е взел взятка), обявява сам; по желание заедно с женитба (`marriage`), чиито
+ * 20/40 се зачитат, ако вече има взятка. Сървърът брои: ≥ 66 → печели
+ * раздаването по обичайните правила (1/2/3, при затворен талон — правилата за
+ * затварянето); < 66 → невярно обявяване: противникът печели 3 игрови точки
+ * (българското правило за „излизане без 66“). Без обявяване до края на ръката
+ * решава последната взятка (+10), а затворилият без обявени 66 губи.
+ *
  * Closed-stock penalty enforced (§4.2): if the closer fails to reach 66, the
  * opponent wins 2 game points (3 if the OPPONENT had taken no trick at the moment
  * of closing — `oppHadTrickAtClose`), and never less than a normal win would give.
@@ -74,7 +83,9 @@ export interface SantaseState {
 export type SantaseAction =
   | { type: "PLAY"; card: Card; marriage?: boolean }
   | { type: "CLOSE" }
-  | { type: "EXCHANGE" };
+  | { type: "EXCHANGE" }
+  /** „Имам 66“ / „Излизам“ — по желание с обява на женитба (поп или дама). */
+  | { type: "DECLARE"; marriage?: Card };
 
 export type SantaseEvent =
   | { type: "PLAY"; seat: Seat; card: Card }
@@ -82,6 +93,7 @@ export type SantaseEvent =
   | { type: "EXCHANGE"; seat: Seat }
   | { type: "CLOSE"; seat: Seat }
   | { type: "TRICK"; seat: Seat; points: number }
+  | { type: "DECLARE"; seat: Seat; points: number; valid: boolean }
   | { type: "WIN"; seat: Seat }
   | { type: "DEAL_END"; seat: Seat; gamePoints: number; matchPoints: [number, number] }
   | { type: "MATCH"; seat: Seat };
@@ -117,6 +129,17 @@ function normalGamePoints(loserPoints: number, loserTookTrick: boolean): number 
 
 /** Мачът се играе до 11 точки (раздаванията носят 1/2/3). */
 export const MATCH_TARGET_GP = 11;
+/** Невярно „Имам 66“ → противникът получава толкова игрови точки. */
+export const FALSE_DECLARE_GP = 3;
+
+/** Точките, които `seat` би имал при обявяване (с женитбата, ако е зачетена). */
+export function santaseDeclarePoints(state: SantaseState, seat: Seat, marriage?: Card): number {
+  let pts = state.points[seat] ?? 0;
+  if (marriage && state.wonTrick[seat] && hasMarriagePartner(state.hands[seat]!, marriage)) {
+    pts += suitOf(marriage) === state.trump ? 40 : 20;
+  }
+  return pts;
+}
 
 /** Reset all per-deal fields and deal the next hand. */
 function freshDeal(state: SantaseState, rng: SeededRng): void {
@@ -235,6 +258,15 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
     const actions: SantaseAction[] = [];
 
     if (onLead) {
+      // „Имам 66“ — винаги може да се опита (невярното се наказва в reduce).
+      actions.push({ type: "DECLARE" });
+      if (state.wonTrick[seat]) {
+        for (const card of hand) {
+          if (rankOf(card) === "K" && hasMarriagePartner(hand, card)) {
+            actions.push({ type: "DECLARE", marriage: card });
+          }
+        }
+      }
       const canDraw = state.stock.length >= 1 && state.trumpCard !== null && !state.closed;
       if (canDraw) actions.push({ type: "CLOSE" });
       // Размяна на трупната 9 — само след поне една спечелена взятка (Pagat 66).
@@ -280,6 +312,7 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
       if (a.type === "PLAY" && b.type === "PLAY") {
         return a.card === b.card && Boolean(a.marriage) === Boolean(b.marriage);
       }
+      if (a.type === "DECLARE" && b.type === "DECLARE") return (a.marriage ?? null) === (b.marriage ?? null);
       return true;
     };
     if (!legal.some((l) => matches(l, action))) {
@@ -309,6 +342,25 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
       return { state: next, events };
     }
 
+    if (action.type === "DECLARE") {
+      if (action.marriage && next.wonTrick[seat]) {
+        const suit = suitOf(action.marriage);
+        const value = suit === next.trump ? 40 : 20;
+        next.points[seat] = (next.points[seat] ?? 0) + value;
+        events.push({ type: "MARRIAGE", seat, suit, value });
+      }
+      const pts = next.points[seat] ?? 0;
+      const valid = pts >= 66;
+      events.push({ type: "DECLARE", seat, points: pts, valid });
+      if (!valid) return settle(next, other(seat), FALSE_DECLARE_GP, events, rng);
+      if (!next.closed || next.closedBy === seat) return finish(next, seat, events, rng);
+      // Затворил е противникът, а обявилият има 66 → затворилият е провалил.
+      const closer = next.closedBy!;
+      const penalty = next.oppHadTrickAtClose ? 2 : 3;
+      const normal = normalGamePoints(next.points[closer] ?? 0, next.wonTrick[closer] ?? false);
+      return settle(next, seat, Math.max(penalty, normal), events, rng);
+    }
+
     if (action.type === "CLOSE") {
       next.closed = true;
       next.closedBy = seat;
@@ -323,13 +375,8 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
       events.push({ type: "MARRIAGE", seat, suit, value });
       if (next.wonTrick[seat]) {
         // Обявяващият вече има взятка → 20/40 се зачитат веднага.
+        // 66 не приключва раздаването само — играчът трябва да обяви (DECLARE).
         next.points[seat] = (next.points[seat] ?? 0) + value;
-        // Reaching 66 via a marriage in a CLOSED game must apply the closing
-        // rules (closer-failed penalty) too — mirror the trick path below.
-        if ((next.points[seat] ?? 0) >= 66) {
-          if (next.closed) return finishClosed(next, events, rng);
-          return finish(next, seat, events, rng);
-        }
       } else {
         // Встъпителна женитба: точките са УСЛОВНИ — реализират се едва щом
         // обявяващият спечели взятка; анулират се ако не спечели никоя.
@@ -363,11 +410,8 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
     next.turn = winner;
     events.push({ type: "TRICK", seat: winner, points: pts });
 
-    // Reaching 66: in a closed game the closer must be the one to reach it.
-    if ((next.points[winner] ?? 0) >= 66) {
-      if (next.closed) return finishClosed(next, events, rng);
-      return finish(next, winner, events, rng);
-    }
+    // 66 НЕ се отчита автоматично: печелившият води следващата взятка и може
+    // да обяви „Имам 66“ (DECLARE).
 
     if (!isPhase2(next)) {
       if (next.stock.length >= 2) {
@@ -399,6 +443,12 @@ export const santaseEngine: GameEngine<SantaseState, SantaseAction, SantaseEvent
     if (state.done || seat !== state.turn) return null;
     const acts = santaseEngine.legalActions(state, seat);
     if (acts.length === 0) return null;
+    // Ботът обявява точно: само когато наистина има 66 (с женитба, ако помага).
+    if (state.trick.length === 0) {
+      const declares = acts.filter((a): a is Extract<SantaseAction, { type: "DECLARE" }> => a.type === "DECLARE");
+      const ok = declares.find((a) => santaseDeclarePoints(state, seat, a.marriage) >= 66);
+      if (ok) return ok;
+    }
     const exchange = acts.find((a) => a.type === "EXCHANGE");
     if (exchange) return exchange;
     const close = acts.find((a) => a.type === "CLOSE");

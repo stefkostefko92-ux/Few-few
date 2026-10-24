@@ -87,6 +87,8 @@ export class GameRoom {
   private readonly fallbackBot: RandomBot;
   private turnTimer?: NodeJS.Timeout;
   private turnEndsAt = 0;
+  /** Timer for an engine's server-driven action (e.g. Бинго's timed draw). */
+  private serverTimer?: NodeJS.Timeout;
   private readonly disconnected = new Set<number>(); // human seats currently offline
   private readonly substituted = new Set<number>(); // human seats a bot is covering
   private readonly graceTimers = new Map<string, NodeJS.Timeout>(); // by userId
@@ -137,7 +139,41 @@ export class GameRoom {
     }
     this.armTurnTimer();
     this.broadcastState();
+    this.armServerTimer();
     void this.runBots();
+  }
+
+  /** Schedule the engine's next server-driven action (no-op for most games). */
+  private armServerTimer(): void {
+    if (this.serverTimer) clearTimeout(this.serverTimer);
+    this.serverTimer = undefined;
+    if (this.done || !this.engine.serverAction) return;
+    const next = this.engine.serverAction(this.state);
+    if (!next) return;
+    this.serverTimer = setTimeout(() => this.onServerTick(), Math.max(0, next.delayMs));
+  }
+
+  /** Server tick: AI seats act first (their natural "reaction delay"), then the
+   *  engine's server action (re-read from the current state) is applied. */
+  private onServerTick(): void {
+    this.serverTimer = undefined;
+    if (this.done) return;
+    for (const s of this.seats) {
+      if (!this.isBotDriven(s)) continue;
+      for (let i = 0; i < 40 && !this.done && !this.engine.isTerminal(this.state); i++) {
+        const action = (s.bot ?? this.fallbackBot).pick(this.engine, this.state, s.seat);
+        if (action === null) break;
+        const ok = this.engine.validate
+          ? this.engine.validate(this.state, s.seat, action)
+          : this.engine.legalActions(this.state, s.seat).some((l) => stable(l) === stable(action));
+        if (!ok) break;
+        this.applyReduce(action);
+      }
+    }
+    if (this.done || this.engine.isTerminal(this.state)) return;
+    const next = this.engine.serverAction?.(this.state);
+    if (next) this.applyReduce(next.action);
+    this.armServerTimer();
   }
 
   private sendStateTo(seat: RoomSeat): void {
@@ -478,6 +514,8 @@ export class GameRoom {
     if (this.done) return;
     this.done = true;
     this.clearTurnTimer();
+    if (this.serverTimer) clearTimeout(this.serverTimer);
+    this.serverTimer = undefined;
     for (const g of this.graceTimers.values()) clearTimeout(g);
     this.graceTimers.clear();
     const score = scoreOverride ?? (this.engine.score(this.state) as SeatScore[]);

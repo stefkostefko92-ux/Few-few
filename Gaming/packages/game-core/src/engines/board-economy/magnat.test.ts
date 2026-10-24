@@ -695,12 +695,18 @@ describe("МАГНАТ — развалянето на хотел спазва �
     expect(state.cash[0]).toBe(25);
   });
 
-  it("автоматичната ликвидация при дълг също не надхвърля лимита", () => {
+  it("ликвидацията при дълг (по таймаут — ботът) също не надхвърля лимита", () => {
     for (let k = 0; k < 100; k++) {
       const s: MagnatState = { ...hotels(32), phase: "ROLL", inJail: [true, false], jailTurns: [2, 0] };
-      const { state, events } = magnatEngine.reduce(s, { type: "ROLL" }, new SeededRng(`al-${k}`));
-      const [d1, d2] = diceOf(events);
+      const out = magnatEngine.reduce(s, { type: "ROLL" }, new SeededRng(`al-${k}`));
+      const [d1, d2] = diceOf(out.events);
       if (d1 === d2) continue;
+      let state = out.state;
+      expect(state.phase).toBe("DEBT"); // играчът избира — не автоматично
+      for (let i = 0; i < 20 && state.phase === "DEBT"; i++) {
+        const a = magnatBot(state, state.turn, new SeededRng("al"));
+        state = magnatEngine.reduce(state, a!, new SeededRng("al")).state;
+      }
       expect(built(state)).toBeLessThanOrEqual(32);
       expect(state.houses[1]).toBe(0); // хотелът продаден изцяло: 125 ≥ 50
       return;
@@ -801,5 +807,120 @@ describe("МАГНАТ — симулация с бота: инварианти"
       expect(magnatEngine.isTerminal(s)).toBe(true);
       expect(magnatEngine.score(s).filter((x) => x.result === "win")).toHaveLength(1);
     }
+  });
+});
+
+describe("МАГНАТ — дълг: играчът избира какво да продаде/ипотекира", () => {
+  const moveOf = (events: MagnatEvent[]) =>
+    events.find((e): e is Extract<MagnatEvent, { type: "MOVE" }> => e.type === "MOVE");
+
+  it("недостиг при наем → фаза DEBT; къщите първо; плащане връща хода", () => {
+    for (let k = 0; k < 300; k++) {
+      const base = init(2);
+      const owner = base.owner.map((_, i) => (ownables.includes(i) ? 1 : -1));
+      owner[37] = 0;
+      owner[39] = 0;
+      const houses = base.houses.slice();
+      houses[37] = 1;
+      houses[39] = 1;
+      const s: MagnatState = { ...base, owner, houses, turn: 0, phase: "ROLL", pos: [10, 0], cash: [0, 1000] };
+      const out = magnatEngine.reduce(s, { type: "ROLL" }, new SeededRng(`debt-${k}`));
+      const to = moveOf(out.events)?.to ?? -1;
+      if (owner[to] !== 1) continue;
+      let st = out.state;
+      const debt = out.events.find((e): e is Extract<MagnatEvent, { type: "DEBT" }> => e.type === "DEBT")!;
+      expect(debt).toMatchObject({ seat: 0, to: 1 });
+      expect(st.phase).toBe("DEBT");
+      expect(st.turn).toBe(0);
+      expect(st.bankrupt[0]).toBe(false);
+      expect(st.cash[1]).toBe(1000); // кредиторът още не е получил
+      const acts = magnatEngine.legalActions(st, 0);
+      expect(acts).toContainEqual({ type: "SELL", tile: 37 });
+      expect(acts).toContainEqual({ type: "SELL", tile: 39 });
+      expect(acts.some((a) => a.type === "MORTGAGE")).toBe(false); // комплект със сгради
+      expect(acts.some((a) => a.type === "PAY_DEBT")).toBe(false);
+      expect(acts.some((a) => a.type === "END" || a.type === "ROLL")).toBe(false);
+      expect(magnatEngine.legalActions(st, 1)).toEqual([]);
+      expect(() => magnatEngine.reduce(st, { type: "PAY_DEBT" }, new SeededRng("x"))).toThrow(IllegalActionError);
+      // Играчът сам продава къщите, после (ако трябва) ипотекира и плаща.
+      for (let i = 0; i < 10 && st.phase === "DEBT"; i++) {
+        const legal = magnatEngine.legalActions(st, 0);
+        const pick =
+          legal.find((a) => a.type === "PAY_DEBT") ??
+          legal.find((a) => a.type === "SELL") ??
+          legal.find((a) => a.type === "MORTGAGE")!;
+        st = magnatEngine.reduce(st, pick, new SeededRng("x")).state;
+      }
+      expect(st.phase).toBe(out.state.debtResume!.phase);
+      expect(st.turn).toBe(0);
+      expect(st.debts).toEqual([]);
+      expect(st.cash[1]).toBe(1000 + debt.amount);
+      return;
+    }
+    throw new Error("no landing on an owned tile");
+  });
+
+  it("задължение на играч извън хода (Рожден ден) → ходът минава при него и се връща", () => {
+    const chestTiles = new Set([2, 17, 33]);
+    for (let k = 0; k < 400; k++) {
+      const base = init(2);
+      const owner = base.owner.slice();
+      owner[1] = 1; // ипотечна стойност 30 ≥ 25
+      const chest = [6, ...base.chest.filter((c) => c !== 6)];
+      const s: MagnatState = { ...base, owner, chest, chestPtr: 0, turn: 0, phase: "ROLL", cash: [500, 0] };
+      const out = magnatEngine.reduce(s, { type: "ROLL" }, new SeededRng(`bd-${k}`));
+      if (!chestTiles.has(moveOf(out.events)?.to ?? -1)) continue;
+      let st = out.state;
+      expect(st.phase).toBe("DEBT");
+      expect(st.turn).toBe(1);
+      expect(st.debtResume?.turn).toBe(0);
+      for (let i = 0; i < 5 && st.phase === "DEBT"; i++) {
+        st = magnatEngine.reduce(st, magnatBot(st, st.turn, new SeededRng("b"))!, new SeededRng("b")).state;
+      }
+      expect(st.mortgaged[1]).toBe(true);
+      expect(st.turn).toBe(0);
+      expect(st.cash[0]).toBe(out.state.cash[0] + 25);
+      return;
+    }
+    throw new Error("no chest landing");
+  });
+
+  it("фалит само ако и цялото имущество не стига", () => {
+    for (let k = 0; k < 300; k++) {
+      const base = init(2);
+      const owner = base.owner.map((_, i) => (ownables.includes(i) ? 1 : -1));
+      owner[1] = 0; // ипотечна стойност 30 — недостатъчна за наема на гара/комуналка
+      owner[15] = 1;
+      const s: MagnatState = { ...base, owner, turn: 0, phase: "ROLL", pos: [10, 0], cash: [0, 1000] };
+      const out = magnatEngine.reduce(s, { type: "ROLL" }, new SeededRng(`bk-${k}`));
+      const to = moveOf(out.events)?.to ?? -1;
+      if (to !== 15) continue; // 4 гари → наем 200 > 30
+      expect(out.state.bankrupt[0]).toBe(true);
+      expect(out.state.phase).not.toBe("DEBT");
+      return;
+    }
+    throw new Error("no station landing");
+  });
+
+  it("таксата при „джакпот на паркинга“ влиза в пота едва при плащането", () => {
+    for (let k = 0; k < 100; k++) {
+      const base = magnatEngine.init({ seats: 2, config: { freeParkingPot: true } }, new SeededRng("pp"));
+      const owner = base.owner.slice();
+      owner[39] = 0;
+      const s: MagnatState = {
+        ...base, owner, turn: 0, phase: "ROLL", inJail: [true, false], jailTurns: [2, 0], cash: [10, 1000], pot: 0,
+      };
+      const out = magnatEngine.reduce(s, { type: "ROLL" }, new SeededRng(`pp-${k}`));
+      const [d1, d2] = diceOf(out.events);
+      if (d1 === d2) continue;
+      expect(out.state.debts?.[0]).toMatchObject({ debtor: 0, amount: 50, to: null, pot: true });
+      expect(out.state.pot).toBe(0);
+      let st = out.state;
+      st = magnatEngine.reduce(st, { type: "MORTGAGE", tile: 39 }, new SeededRng("p")).state;
+      st = magnatEngine.reduce(st, { type: "PAY_DEBT" }, new SeededRng("p")).state;
+      expect(st.pot).toBeGreaterThanOrEqual(50);
+      return;
+    }
+    throw new Error("no non-doubles roll");
   });
 });
