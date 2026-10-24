@@ -10,7 +10,8 @@ CounterStrikeSharp + DM плъгин на NockyCZ, заковани по sha256)
 CarbonStealth на PostgreSQL: банове, админ меню, статистики/XP, банери, реклами, мост към сайта) +
 **сайтът, етап 1** (`app/` — публичната част: статус, класация, профили, банлист, VIP, правни страници;
 Express + EJS + Prisma + Redis + BullMQ) + **агентът на хоста** (`server/agent/`, CONTRACT §9 — ръцете на
-панела върху systemd, без root). Следва: уеб панел и вход със Steam (етап 2), Discord бот.
+панела върху systemd, без root) + **уеб панелът, етап 2** (`app/src/admin`, `/admin`: вход със Steam,
+задължителен TOTP, права по §1, мостът към плъгина и агентът). Следва: Discord бот, формите за играчите.
 Банове и класация — **публични на сайта** (решение на
 собственика), затова админ системата е наша на Postgres, не CS2-SimpleAdmin (MySQL + три
 неподдържани меню зависимости). Договорът между плъгин и сайт: `CONTRACT.md`._
@@ -32,7 +33,8 @@ npm run dev                            # локално на :4330 (DATABASE_URL
 (само проверки); агентът — `sudo bash server/agent/install-agent.sh` (идемпотентен, накрая самопроверка).
 `test/agent.test.mjs` ползва фалшив RESP сървър (CI е без Redis); ако има Redis на `127.0.0.1:6379`
 (`CS2DM_TEST_REDIS_PORT`), тича и срещу него — база 14, канали `cs2dm-test:<uuid>:…`, чисти след себе си. Без `DATABASE_URL` интеграционните тестове се пропускат чисто; със — създават само
-SteamID-та `76561190000990xxx` и ги трият преди и след себе си.
+SteamID-та `76561190000990xxx` (панелът — `991xxx`…`995xxx`) и ги трият преди и след себе си; одитът
+остава (веригата не се реже). Локално: `REDIS_TEST_URL=redis://127.0.0.1:6379/<база>`.
 
 ## Структура
 
@@ -62,7 +64,7 @@ addon/                               банери-картинки: build_textur
 CONTRACT.md                          роли, наказания, XP, heatmap, мост, одит, срокове, банери
 test/                                node --test: A2S протокол + конфиг/unit/скриптове + плъгин (конфиг, lang) + агентът
 
-app/                                 публичният сайт cs2.carbonstealth.eu (етап 1) — Node 22 · TS strict ESM
+app/                                 сайтът cs2.carbonstealth.eu (етап 1) + панелът /admin (етап 2) — Node 22 · TS strict ESM
   prisma/schema.prisma + migrations/ ЕДИНСТВЕНИЯТ източник на схемата (C# плъгинът пише по @map имената)
   src/index.ts · src/worker.ts       уеб процесът · BullMQ работникът (чистене по CONTRACT §7, на 6 ч)
   src/server.ts                      Express 5: helmet (строг CSP с nonce), rate limit, pino без IP, 404/500
@@ -71,7 +73,11 @@ app/                                 публичният сайт cs2.carbonste
   src/routes/health.ts               /health — база + Redis, JSON, 200/503
   src/data/repo.ts                   интерфейсът (само публичните полета) · prisma-repo.ts · cached-repo.ts
   src/levels.ts · mastery.ts · heatmap.ts   формулите от CONTRACT §3–4 (тестови стойности в tests/)
-  src/live.ts                        `cs2dm:live` от Redis → статус (липсва/повреден/стар = НЕИЗВЕСТЕН)
+  src/live.ts                        `cs2dm:live` (< 60 s) → `cs2dm:a2s` (< 30 s, агентът) → НЕИЗВЕСТЕН; списъкът за панела
+  src/admin/                         панелът /admin (етап 2): index.ts сглобява · routes/ (един файл на раздел) ·
+                                     sessions · totp(-service) · steam-openid · rbac (§1) · guards (CSRF, лимити) ·
+                                     commands + signing (мостът/агентът) · punish · audit (+ проверка на веригата)
+  views/admin/ · public/admin*.css   изгледите и стиловете на панела — отделно от публичната част; admin.js = потвърждения
   src/seo.ts · content.ts            canonical/hreflang/OG/JSON-LD · дати на промяна, срокове, разделите
   locales/{bg,en,it}.json            всички текстове (bg = източник; паритетът е тест)
   views/                             EJS: partials/head.ejs (целият SEO head) · страниците · error.ejs
@@ -167,14 +173,16 @@ app/                                 публичният сайт cs2.carbonste
 zod); код между продуктите не се споделя — само шаблоните са преписани.
 
 - **Схемата е договор.** `prisma/schema.prisma` и миграциите се пипат само заедно с C# плъгина и
-  `CONTRACT.md`, в същия PR. Сайтът на етап 1 само ЧЕТЕ (работникът трие по сроковете).
+  `CONTRACT.md`, в същия PR. Публичната част само ЧЕТЕ (работникът трие по сроковете); пише само панелът.
+  Колони само за уеба (`web_sessions`, `web_recovery_codes`, `players.totp_last_step`) плъгинът не чете.
 - **Банлистът показва САМО** `steam_id`, `target_name`, `category`, `created_at`, `expires_at` — и то
   само активните (CONTRACT §2). `PUBLIC_BAN_SELECT` в `prisma-repo.ts` изброява полетата; типът
   `PublicBan` няма `reason`; тестът подава ред С причина, IP и админ и доказва, че не стигат до HTML.
   Банлистът е `noindex` (мета + `X-Robots-Tag`) и не е в sitemap. Нов публичен ред → нов тест.
 - **`hidden_from_leaderboards = true`** (чл. 21 GDPR) скрива играча от класацията, профила (404) и sitemap.
-- **Статусът на живо никога не се измисля.** Липсващ/повреден/по-стар от 60 s `cs2dm:live` →
-  „статусът е неизвестен“ и `GameServer` без `serverStatus`.
+- **Статусът на живо никога не се измисля.** Пресен `cs2dm:live` (< 60 s), иначе `cs2dm:a2s` от агента
+  (< 30 s; `online: false` → „изключен“, `OfflineTemporarily`), иначе „неизвестен“ и `GameServer` без
+  `serverStatus`. `players` в A2S включва ботовете.
 - **Heatmap:** само агрегирани клетки 32 px, прозорец 30 дни със закъснение 1 час, наша решетка A–H ×
   1–8; никакъв радар, лого, скин или друго изображение на Valve.
 - **Формулите са в един файл** (`levels.ts`, `mastery.ts`, `heatmap.ts`) с тестовите стойности от
@@ -186,7 +194,8 @@ zod); код между продуктите не се споделя — сам
   начало: + GameServer + FAQPage), ≥ 5 ключови думи с „Carbon Stealth“, подписът „Created and Designed
   by Carbon Stealth VCC“. `tests/seo.test.ts` обхожда всички страници на трите езика.
 - **Без бисквитки, без тракери, без inline стил/скрипт** (CSP `style-src 'self'`; прогрес = `<progress>`).
-  Единственият скрипт е `public/app.js` (бутонът „Копирай“). Логовете нямат IP (политиката го обещава).
+  Публичният скрипт е `public/app.js`. Бисквитки има само панелът (`__Host-cs2dm_sid`, `__Host-cs2dm_oid`
+  — строго необходими, само за екипа). Логовете нямат IP (политиката го обещава).
 - **Нула измислени данни:** празна база → празни състояния; фирмените данни и контактът идват от
   `.env` (`COMPANY_*`, `CONTACT_EMAIL`) и при липса се показват като „не е въведено (ПРОМЕНЛИВА)“.
 - **Пари:** `vip_tiers.price_cents` — цели евроцентове с ДДС; форматира се само при показ
@@ -197,3 +206,25 @@ zod); код между продуктите не се споделя — сам
   хоста) — никога на всички интерфейси (Docker заобикаля ufw). Тестът `infra.test.ts` го пази.
 - SEO промяна след деплой → `node tools/seo/indexnow.mjs https://cs2.carbonstealth.eu` (ключът е в
   `public/indexnow-key.txt`; не е тайна).
+
+### Панелът (`app/src/admin`, `/admin`)
+
+- **Всеки маршрут декларира право** (`AdminRoute.cap` — задължително в типа); `index.ts` слага пред всеки
+  `requireCap` + CSRF. Таблицата маршрут → право е в `tests/admin-rbac.test.ts` — промяна там = промяна
+  на §1 (и преглед). Действие върху цел: `checkTargetAction` (право + immunity) ПРЕДИ запис и подпис.
+- **Тълкуване на §1:** колоната „В играта“ важи и за същите действия от панела (kick/mute/бан…), „В панела“
+  добавя само панелните (доклади, обжалвания, режими, VIP, роли, рестарт). `say` — MODERATOR+ (като
+  `!csay`); IP и чл. 21 — ADMIN+; банери и одит — HEADADMIN+ (като `!banner`).
+- **Писане = транзакция с одит** (`audit()` в същия `tx`, `source = WEB`; hash-а — тригерът). Команда към
+  плъгина/агента — след записа; провалена команда не връща записа назад (`recordedNoAck`).
+- **Наказание за онлайн играч** → `punish {punishmentId}` (KICK → `kick`, WARN — без команда); офлайн → само
+  запис (плъгинът опреснява на 60 s и при влизане). Отмяна → `revoke`. Роли/VIP → `reload`.
+- **Агентът:** `status`/`logs` (ADMIN+), `restart`/`update` (HEADADMIN+). Рестартът чака systemd до 120 s, а
+  nginx реже на 30 s → панелът чака 25 s и мълчанието е „още тече“ (`cmdPending`), не грешка.
+- **Резултат след POST = PRG** с `?r=<код>` от затворен списък (`forms.ts` `RESULTS`) — никакъв свободен
+  текст в адреса. Нов код → ключ `admin.result.<код>` в трите речника.
+- **Ключовете** (`APP_ENC_KEY` 64 hex, `CS2DM_BRIDGE_KEY`/`CS2DM_AGENT_KEY` ≥ 32) се проверяват в
+  `admin/keys.ts`; невалиден/липсващ ключ изключва своята част (503/отказ), не сайта.
+- **Тестове:** unit без база (`admin-*.test.ts`, вкл. векторите на RFC 6238 и на подписа) + интеграционни
+  (`integration-admin-*.test.ts`: двойник на Steam, двойници на плъгина/агента върху истинския pub/sub).
+
