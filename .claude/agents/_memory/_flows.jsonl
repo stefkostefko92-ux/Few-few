@@ -261,3 +261,5 @@
 {"t":"handoff","ts":"2026-10-24T06:36:10.110Z","id":"r606f816d","from":"prevodach","to":"човек","status":"наред","run":"0cc8e6c0"}
 {"t":"handoff","ts":"2026-10-24T06:39:15.140Z","id":"r606f816d","from":"izpitatelya","to":"ai-djiyata","status":"има бележки","run":"e6a786bd"}
 {"t":"handoff","ts":"2026-10-24T06:42:56.908Z","id":"r606f816d","from":"prevodach","to":"човек","status":"има бележки","run":"630be6d0"}
+{"t":"start","ts":"2026-10-24T09:54:32.393Z","id":"rc6191dab","flow":"авто","lead":"kodadjiyata","auto":true}
+{"t":"handoff","ts":"2026-10-24T09:54:32.394Z","id":"rc6191dab","from":"kodadjiyata","to":"kachestveniyat","status":"има бележки","run":"b1b5eb5a"}
