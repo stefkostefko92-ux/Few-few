@@ -1290,13 +1290,12 @@ export async function checkLayout(t: CueTable, info: TestInfo, name: string): Pr
         covered: !(hit && (hit === el || el.contains(hit))),
       };
     }
-    // The clock layer is pointer-events:none (hit tests see through it):
-    // compare the boxes of its visible badges with the opponent's pill.
+    // The live status badges (turn clock, warnings) live in the scene header
+    // (`match-pills`): compare each badge's box with the opponent's pill.
     window.scrollTo(0, 0);
     const pill = document.querySelector('[data-testid="cue-opponent"]')!.getBoundingClientRect();
-    const layer = document.querySelector('[data-testid="match-probe"]')?.parentElement;
+    const layer = document.querySelector('[data-testid="match-pills"]');
     const clash = [...(layer?.children ?? [])]
-      .filter((c) => c.getAttribute("data-testid") !== "match-probe")
       .map((c) => c.getBoundingClientRect())
       .filter(
         (b) =>
