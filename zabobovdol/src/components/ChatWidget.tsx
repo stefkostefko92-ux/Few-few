@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { MessageCircle, X, Send, RefreshCw } from "@/components/icons";
+import { X, Send, RefreshCw } from "@/components/icons";
+import { ChatFab } from "@/components/ChatFab";
 import { linkifySegments } from "@/lib/linkify";
 
 type Msg = {
@@ -61,6 +62,9 @@ export function ChatWidget({ initialOpen = false }: { initialOpen?: boolean } = 
   const [messages, setMessages] = useState<Msg[]>([GREETING]);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const fabRef = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(initialOpen);
 
   // Възстановяване на разговора в рамките на сесията.
   useEffect(() => {
@@ -84,6 +88,9 @@ export function ChatWidget({ initialOpen = false }: { initialOpen?: boolean } = 
   }, [messages]);
 
   useEffect(() => {
+    // Само поздравът — без превъртане: обявяването, че това е ИИ, остава
+    // най-отгоре и се чете първо.
+    if (messages.length <= 1) return;
     // Уважаваме „по-малко движение“ — без плавен скрол при reduced-motion.
     const reduce =
       typeof window !== "undefined" &&
@@ -91,16 +98,30 @@ export function ChatWidget({ initialOpen = false }: { initialOpen?: boolean } = 
     endRef.current?.scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
   }, [messages, open, loading]);
 
-  // Достъпност: при отваряне фокусираме полето за писане и позволяваме затваряне
-  // с Escape.
+  // Достъпност: при отваряне фокусът влиза в прозореца, Escape затваря, а
+  // при затваряне фокусът се връща на плаващия бутон. На тъч екран полето НЕ
+  // се фокусира само — клавиатурата би закрила половината панел и поздрава.
+  // На телефон панелът е долен лист: страницата отдолу не се превърта.
   useEffect(() => {
-    if (!open) return;
-    inputRef.current?.focus();
+    if (!open) {
+      if (wasOpen.current) fabRef.current?.focus();
+      wasOpen.current = false;
+      return;
+    }
+    wasOpen.current = true;
+    const fine = window.matchMedia?.("(pointer: fine)").matches;
+    if (fine) inputRef.current?.focus();
+    else dialogRef.current?.focus();
+    const html = document.documentElement;
+    html.classList.add("chat-open");
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      html.classList.remove("chat-open");
+      window.removeEventListener("keydown", onKey);
+    };
   }, [open]);
 
   const ask = useCallback(
@@ -227,37 +248,53 @@ export function ChatWidget({ initialOpen = false }: { initialOpen?: boolean } = 
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="no-print fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand-700 text-white shadow-lg hover:bg-brand-800"
-        aria-label={open ? "Затвори помощника" : "Отвори дигиталния помощник"}
-      >
-        {open ? <X className="h-6 w-6" aria-hidden /> : <MessageCircle className="h-6 w-6" aria-hidden />}
-      </button>
+      <ChatFab ref={fabRef} open={open} onClick={() => setOpen((v) => !v)} />
+
+      {/* На телефон — затъмнена страница зад долния лист; докосване затваря. */}
+      {open && (
+        <div
+          aria-hidden
+          className="no-print fixed inset-0 z-50 bg-slate-900/40 sm:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
 
       {open && (
         <div
-          className="no-print fixed bottom-20 right-4 z-50 flex h-[32rem] max-h-[calc(100vh-6rem)] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+          ref={dialogRef}
+          tabIndex={-1}
+          className="chat-panel no-print fixed inset-x-0 bottom-0 z-50 flex h-[85dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white shadow-2xl focus:outline-none sm:inset-x-auto sm:bottom-20 sm:right-4 sm:h-[32rem] sm:max-h-[calc(100dvh-6rem)] sm:w-[24rem] sm:rounded-2xl"
           role="dialog"
           aria-modal="true"
-          aria-label="Дигитален помощник"
+          aria-labelledby="chat-title"
         >
-          <div className="flex items-center justify-between gap-2 bg-brand-700 px-4 py-3 text-white">
-            <div>
-              <div className="font-semibold">Дигитален помощник</div>
-              <div className="text-xs text-brand-100">
+          <div className="flex items-center gap-2 bg-brand-700 py-2 pl-4 pr-2 text-white">
+            <div className="min-w-0 flex-1">
+              <h2 id="chat-title" className="font-sans text-lg font-semibold leading-tight">
+                Дигитален помощник
+              </h2>
+              <p className="text-sm leading-snug text-brand-100">
                 Автоматизиран · с изкуствен интелект
-              </div>
+              </p>
             </div>
             <button
               type="button"
               onClick={reset}
-              className="rounded-lg p-1.5 text-brand-100 hover:bg-brand-800 hover:text-white"
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-lg text-brand-100 hover:bg-brand-800 hover:text-white"
               aria-label="Нов разговор"
               title="Нов разговор"
             >
               <RefreshCw className="h-5 w-5" aria-hidden />
+            </button>
+            {/* На телефон — с надпис (плаващият бутон е скрит под листа); от sm
+                плаващият бутон отдолу също затваря, тук остава иконка 44px. */}
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="inline-flex h-11 min-w-11 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-white/50 px-3 text-base font-semibold text-white hover:bg-brand-800 sm:px-0"
+            >
+              <X className="h-5 w-5" aria-hidden />
+              <span className="sm:sr-only">Затворете</span>
             </button>
           </div>
 
@@ -273,7 +310,7 @@ export function ChatWidget({ initialOpen = false }: { initialOpen?: boolean } = 
               <div key={i} className={m.role === "user" ? "text-right" : "text-left"}>
                 <div
                   className={
-                    "inline-block max-w-[88%] whitespace-pre-line rounded-2xl px-3.5 py-2 text-[15px] leading-relaxed " +
+                    "inline-block max-w-[88%] whitespace-pre-line rounded-2xl px-3.5 py-2 text-base leading-relaxed " +
                     (m.role === "user"
                       ? "bg-brand-700 text-white"
                       : "bg-slate-100 text-slate-800")
@@ -293,7 +330,8 @@ export function ChatWidget({ initialOpen = false }: { initialOpen?: boolean } = 
                         className="block font-medium text-brand-700 hover:underline"
                         onClick={() => setOpen(false)}
                       >
-                        → {s.title}
+                        <span aria-hidden="true">→ </span>
+                        {s.title}
                       </Link>
                     ))}
                   </div>
@@ -337,7 +375,7 @@ export function ChatWidget({ initialOpen = false }: { initialOpen?: boolean } = 
               <Send className="h-5 w-5" aria-hidden />
             </button>
           </form>
-          <p className="px-2 pb-2 text-xs leading-snug text-slate-600">
+          <p className="px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] text-sm leading-snug text-slate-600">
             Това е <strong>автоматизиран отговор от изкуствен интелект</strong>,
             не от човек, и може да греши. Не пишете пароли или лични данни.{" "}
             <Link href="/poveritelnost" className="underline hover:text-brand-700">

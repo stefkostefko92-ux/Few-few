@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { MessageCircle } from "@/components/icons";
+import { ChatFab } from "@/components/ChatFab";
 
 // Целият чат (разговор, поток, списъци) е отделен чънк и не влиза в JS на
 // страницата. Бутонът е видим веднага; чатът се зарежда след натискане или
@@ -45,14 +45,5 @@ export function ChatWidgetLazy() {
   if (loaded) return <ChatWidget initialOpen={openOnLoad} />;
 
   // Същият бутон като в ChatWidget — без скок в оформлението при смяната.
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="no-print fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand-700 text-white shadow-lg hover:bg-brand-800"
-      aria-label="Отвори дигиталния помощник"
-    >
-      <MessageCircle className="h-6 w-6" aria-hidden />
-    </button>
-  );
+  return <ChatFab onClick={onClick} />;
 }
