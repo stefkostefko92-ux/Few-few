@@ -202,6 +202,17 @@ export const QUICK_NAV: NavItem[] = [
   { href: "/kontakti", label: "Контакти" },
 ];
 
+// Бързите връзки в началния герой (от sm нагоре) — ежедневните неща, които ги
+// няма в 6-те големи карти точно отдолу (иначе „Как да…“ се повтаряше 5 пъти
+// на първите два екрана).
+export const QUICK_DAILY: NavItem[] = pick(
+  "/prekysvaniya",
+  "/transport",
+  "/grafik-smetosabirane",
+  "/imen-den",
+  "/novini",
+);
+
 /** Адрес, който е файл/канал (RSS), а не страница — за него е обикновен <a>. */
 export function isFeedHref(href: string): boolean {
   return /\.xml$/i.test(href);
