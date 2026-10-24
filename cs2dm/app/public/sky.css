@@ -1,0 +1,203 @@
+/* Небето на героя: слънце, мерник, хоризонт-решетка, прах. Декор (aria-hidden); спира с превключвателя. */
+
+.sky {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 70% 55% at 85% 0%, rgba(255, 181, 71, 0.16), transparent 70%),
+    linear-gradient(180deg, #070a0e 0%, #0a1219 70%, #07101a 100%);
+}
+.sun {
+  position: absolute;
+  top: -22vmax;
+  right: -14vmax;
+  width: 62vmax;
+  height: 62vmax;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 181, 71, 0.34) 0%,
+    rgba(255, 150, 60, 0.12) 36%,
+    transparent 66%
+  );
+  animation: breathe 11s ease-in-out infinite alternate;
+}
+@keyframes breathe {
+  to {
+    transform: scale(1.07);
+  }
+}
+.reticle {
+  position: absolute;
+  top: 8%;
+  right: 3%;
+  width: min(38vw, 30rem);
+  fill: none;
+  stroke: var(--cyan);
+  stroke-width: 0.8;
+  opacity: 0.2;
+  animation: spin 120s linear infinite;
+}
+.reticle .r2 {
+  stroke-dasharray: 3 7;
+}
+.reticle .dot {
+  fill: var(--amber);
+  stroke: none;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.horizon {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 38%;
+  overflow: hidden;
+  border-top: 1px solid rgba(0, 229, 255, 0.55);
+  box-shadow: 0 -1px 24px rgba(0, 229, 255, 0.25);
+  perspective: 340px;
+  perspective-origin: 50% -30%;
+  mask-image: linear-gradient(180deg, #000 0%, transparent 92%);
+}
+.horizon::before {
+  content: '';
+  position: absolute;
+  inset: -40px -50% 0;
+  background-image:
+    linear-gradient(rgba(0, 229, 255, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.2) 1px, transparent 1px);
+  background-size:
+    100% 40px,
+    64px 100%;
+  transform-origin: 50% 0;
+  transform: rotateX(62deg);
+  animation: floor 4s linear infinite;
+}
+@keyframes floor {
+  from {
+    transform: rotateX(62deg) translateY(0);
+  }
+  to {
+    transform: rotateX(62deg) translateY(40px);
+  }
+}
+.mote {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--amber);
+  opacity: 0;
+  animation: drift 20s linear infinite;
+}
+.mote:nth-child(odd) {
+  background: #ffd9a0;
+}
+.mote:nth-child(3n) {
+  width: 2px;
+  height: 2px;
+  background: var(--cyan);
+}
+.mote:nth-child(5n) {
+  width: 4px;
+  height: 4px;
+  filter: blur(1px);
+}
+.mote:nth-child(1) {
+  left: 6%;
+  top: 82%;
+  animation-delay: -2s;
+}
+.mote:nth-child(2) {
+  left: 14%;
+  top: 64%;
+  animation-delay: -11s;
+  animation-duration: 26s;
+}
+.mote:nth-child(3) {
+  left: 23%;
+  top: 90%;
+  animation-delay: -6s;
+}
+.mote:nth-child(4) {
+  left: 31%;
+  top: 72%;
+  animation-delay: -15s;
+  animation-duration: 17s;
+}
+.mote:nth-child(5) {
+  left: 40%;
+  top: 86%;
+  animation-delay: -9s;
+}
+.mote:nth-child(6) {
+  left: 48%;
+  top: 60%;
+  animation-delay: -4s;
+  animation-duration: 24s;
+}
+.mote:nth-child(7) {
+  left: 55%;
+  top: 92%;
+  animation-delay: -13s;
+}
+.mote:nth-child(8) {
+  left: 63%;
+  top: 70%;
+  animation-delay: -7s;
+  animation-duration: 19s;
+}
+.mote:nth-child(9) {
+  left: 71%;
+  top: 84%;
+  animation-delay: -17s;
+}
+.mote:nth-child(10) {
+  left: 78%;
+  top: 66%;
+  animation-delay: -1s;
+  animation-duration: 28s;
+}
+.mote:nth-child(11) {
+  left: 85%;
+  top: 88%;
+  animation-delay: -10s;
+}
+.mote:nth-child(12) {
+  left: 91%;
+  top: 74%;
+  animation-delay: -5s;
+  animation-duration: 22s;
+}
+.mote:nth-child(13) {
+  left: 36%;
+  top: 50%;
+  animation-delay: -14s;
+}
+.mote:nth-child(14) {
+  left: 67%;
+  top: 46%;
+  animation-delay: -8s;
+  animation-duration: 25s;
+}
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.8;
+  }
+  85% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate3d(70px, -300px, 0);
+    opacity: 0;
+  }
+}

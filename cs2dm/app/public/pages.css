@@ -1,0 +1,286 @@
+/* Вътрешните страници: класация, банлист, VIP, правила, правни текстове, грешки. */
+
+.page {
+  padding-block: 1.25rem clamp(3rem, 7vw, 5rem);
+}
+.crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.crumbs li + li::before {
+  content: '/';
+  margin-inline-end: 0.5rem;
+  color: var(--line-2);
+}
+.crumbs a {
+  color: var(--muted);
+}
+.crumbs a:hover {
+  color: #fff;
+}
+.page-head {
+  position: relative;
+  margin-bottom: 2rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1.25rem, 4vw, 2.5rem);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background:
+    radial-gradient(70% 140% at 100% 0%, rgba(255, 181, 71, 0.12), transparent 65%),
+    radial-gradient(60% 120% at 0% 100%, rgba(0, 229, 255, 0.07), transparent 65%), var(--panel);
+}
+.page-head h1,
+.error-page h1,
+.profile-name {
+  margin: 0 0 0.3em;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.8rem, 8vw, 5rem);
+  line-height: 0.92;
+}
+.page-head > :last-child {
+  margin-bottom: 0;
+}
+.page-lead {
+  max-width: var(--measure);
+  font-size: 1.15rem;
+  color: #c4d2db;
+}
+.updated {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.section-lead {
+  max-width: var(--measure);
+  color: var(--muted);
+}
+.links-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+  font-weight: 700;
+}
+.board-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.board-note {
+  color: var(--amber);
+}
+
+.how {
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+.how > p {
+  max-width: var(--measure);
+  color: var(--muted);
+}
+.how-grid,
+.two-col {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.5rem clamp(2rem, 5vw, 4rem);
+}
+.how-grid {
+  align-items: start;
+}
+.two-col {
+  margin-bottom: 2.5rem;
+}
+.xp-table td {
+  color: var(--amber);
+  font-weight: 700;
+}
+.how-notes p {
+  color: #c4d2db;
+}
+@media (max-width: 860px) {
+  .how-grid,
+  .two-col {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.note {
+  padding: 1.25rem 1.4rem;
+  border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--amber);
+  border-radius: var(--r-card);
+  background: var(--panel);
+}
+.note h2 {
+  font-size: 1.8rem;
+}
+.note p:last-child {
+  margin-bottom: 0;
+}
+.page section + section,
+.page .note {
+  margin-top: 2.5rem;
+}
+/* Сестрите в мрежа стоят на една линия — по-силен селектор от `.page section + section`. */
+.page .two-col > section,
+.page .two-col > .note,
+.page .stat-cards > section {
+  margin-top: 0;
+}
+.page-head + .filters {
+  margin-top: 0;
+}
+
+.ticks {
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  max-width: var(--measure);
+}
+.ticks li {
+  position: relative;
+  padding-inline-start: 1.5rem;
+  margin-bottom: 0.6rem;
+}
+.ticks li::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0.1rem;
+  top: 0.55em;
+  width: 0.55rem;
+  height: 0.55rem;
+  background: var(--cyan);
+  transform: rotate(45deg);
+}
+.steps {
+  max-width: var(--measure);
+  padding-inline-start: 1.4rem;
+}
+.steps li {
+  margin-bottom: 0.5rem;
+}
+.steps li::marker {
+  color: var(--cyan);
+  font-weight: 700;
+}
+.prose-page p,
+.legal-section p {
+  max-width: var(--measure);
+}
+.legal-section h2 {
+  font-size: clamp(1.7rem, 3.4vw, 2.2rem);
+}
+
+.rules {
+  list-style: none;
+  counter-reset: rule;
+  margin: 0 0 2.5rem;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.rule {
+  counter-increment: rule;
+  position: relative;
+  padding: 1.1rem 1.25rem 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background: var(--panel);
+}
+.rule::before {
+  content: counter(rule);
+  position: absolute;
+  top: 0.8rem;
+  inset-inline-end: 1rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2.4rem;
+  line-height: 1;
+  color: var(--line-2);
+}
+.rule h2 {
+  margin-bottom: 0.35rem;
+  padding-inline-end: 2.5rem;
+  font-size: 1.7rem;
+}
+.rule p {
+  margin: 0;
+  color: var(--muted);
+}
+@media (max-width: 640px) {
+  .rules {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: minmax(10rem, max-content) minmax(0, 1fr);
+  margin: 0 0 1.5rem;
+  max-width: var(--measure);
+  border-top: 1px solid var(--line);
+}
+.facts > div {
+  display: contents;
+}
+.facts dt,
+.facts dd {
+  margin: 0;
+  padding: 0.65rem 0.75rem 0.65rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.facts dt {
+  color: var(--muted);
+  font-weight: 700;
+}
+@media (max-width: 560px) {
+  .facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .facts dt {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+}
+.unset {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border: 1px dashed var(--ember);
+  border-radius: 6px;
+  color: var(--ember-text);
+  font-size: 0.9rem;
+}
+.contact-email {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.price {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.6rem;
+  color: var(--amber);
+}
+
+.error-page {
+  padding-block: clamp(3rem, 10vw, 7rem);
+}
+.error-code {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(6rem, 26vw, 14rem);
+  line-height: 0.8;
+  background: linear-gradient(180deg, var(--amber), rgba(255, 181, 71, 0.05));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

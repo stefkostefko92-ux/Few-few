@@ -9,7 +9,13 @@
       "legalLabel": "Informazioni legali",
       "join": "Entrare dalla console",
       "madeBy": "Created and Designed by Carbon Stealth VCC",
-      "valve": "Counter-Strike 2 e Steam sono marchi di Valve Corporation. Il server non è affiliato a Valve né da essa approvato."
+      "valve": "Counter-Strike 2 e Steam sono marchi di Valve Corporation. Il server non è affiliato a Valve né da essa approvato.",
+      "explore": "Il sito",
+      "legal": "Note legali"
+    },
+    "motion": {
+      "pause": "Ferma le animazioni",
+      "play": "Riattiva le animazioni"
     }
   },
   "nav": {
@@ -128,7 +134,9 @@
       "bots": {
         "one": "e {count} bot",
         "other": "e {count} bot"
-      }
+      },
+      "empty": "Al momento non gioca nessuno: entri per primo. I bot completano il server fino a 10 partecipanti.",
+      "slots": "slot"
     },
     "join": {
       "button": "Entra nel server",
@@ -142,7 +150,10 @@
     "top": {
       "title": "Top 10 — {season}",
       "all": "Classifica completa",
-      "empty": "In questa stagione non ci sono ancora giocatori in classifica. Entri e faccia la prima uccisione."
+      "empty": "In questa stagione non ci sono ancora giocatori in classifica. Entri e faccia la prima uccisione.",
+      "inviteTitle": "Sia il primo in classifica",
+      "inviteText": "Nessuno ha ancora XP in questa stagione. La Sua prima uccisione La porta in cima.",
+      "inviteLink": "Come si guadagna XP"
     },
     "bans": {
       "title": "Ultimi ban",
@@ -188,6 +199,84 @@
         "q": "Ho ricevuto un ban ingiusto: cosa faccio?",
         "a": "Ci scriva dalla pagina dei contatti indicando il Suo SteamID64 e la data del ban. Il ricorso con accesso tramite Steam arriverà presto."
       }
+    },
+    "hero": {
+      "play": "Gioca ora",
+      "discord": "Entra su Discord",
+      "consoleHint": "Oppure nella console di CS2 (~):"
+    },
+    "facts": {
+      "label": "In breve",
+      "respawn": "Rientro in 1,5 s",
+      "protect": "5 s di protezione",
+      "ammo": "Riserva infinita"
+    },
+    "why": {
+      "title": "Perché giocare qui",
+      "map": {
+        "t": "Solo de_dust2, a ogni ora",
+        "d": "Una mappa che conosce in ogni angolo. Niente votazioni né cambi di mappa: entra e spara."
+      },
+      "respawn": {
+        "t": "Rientri in 1,5 secondi",
+        "d": "Tutti contro tutti, senza squadre né round. Se muore, è di nuovo in gioco quasi subito."
+      },
+      "ammo": {
+        "t": "Riserva di munizioni infinita",
+        "d": "La riserva si rifornisce a ogni reload. Spari senza contare."
+      },
+      "protect": {
+        "t": "5 secondi di protezione",
+        "d": "Dopo ogni rientro è protetto per cinque secondi: nessuno La può uccidere mentre si orienta."
+      },
+      "awp": {
+        "t": "AWP consentito",
+        "d": "Il fucile di precisione c’è, ma al massimo 3 contemporaneamente sul server: resta spazio anche per le altre armi."
+      },
+      "modes": {
+        "t": "Modalità che si alternano",
+        "d": "Le modalità cambiano da sole, così la partita non annoia mai:"
+      },
+      "xp": {
+        "t": "XP e livelli",
+        "d": "10 XP per ogni uccisione, più bonus per:",
+        "chip": {
+          "headshot": "testa",
+          "knife": "coltello",
+          "noscope": "noscope",
+          "wallbang": "attraverso i muri",
+          "smoke": "attraverso il fumo",
+          "revenge": "vendetta"
+        }
+      },
+      "mastery": {
+        "t": "Maestria con le armi",
+        "d": "Continui a uccidere con la Sua arma preferita per ottenere un badge, in base alle uccisioni:"
+      },
+      "bounty": {
+        "t": "Taglie sulle serie",
+        "d": "Una serie di {min} uccisioni senza morire mette una taglia sulla Sua testa: fino a {cap} XP per chi La abbatte."
+      },
+      "fair": {
+        "t": "Niente pay-to-win",
+        "d": "Il VIP è solo estetico: tag, colore del nome e slot riservato. Un vantaggio nel gioco non si compra."
+      },
+      "bans": {
+        "t": "Moderazione trasparente",
+        "d": "Lista dei ban pubblica e amministratori attivi. Veda le regole e chi è stato sanzionato, senza supposizioni."
+      },
+      "commands": {
+        "t": "Comandi in chat",
+        "d": "Per armi, livello, segnalazioni di cheater e lingua:",
+        "gun": "arma",
+        "rank": "livello",
+        "report": "cheater",
+        "lang": "lingua"
+      }
+    },
+    "cta": {
+      "title": "Pronto per Dust2?",
+      "text": "Apre Steam e La collega direttamente. Serve solo Counter-Strike 2: niente da installare, nessuna registrazione."
     }
   },
   "leaderboard": {
@@ -236,7 +325,8 @@
       "prev": "Precedente",
       "next": "Successiva",
       "page": "Pagina {page} di {pages}"
-    }
+    },
+    "inviteTitle": "La classifica Le aspetta"
   },
   "player": {
     "steamId": "SteamID64",

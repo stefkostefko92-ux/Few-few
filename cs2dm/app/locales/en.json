@@ -9,7 +9,13 @@
       "legalLabel": "Legal information",
       "join": "Join from the console",
       "madeBy": "Created and Designed by Carbon Stealth VCC",
-      "valve": "Counter-Strike 2 and Steam are trademarks of Valve Corporation. This server is not affiliated with or endorsed by Valve."
+      "valve": "Counter-Strike 2 and Steam are trademarks of Valve Corporation. This server is not affiliated with or endorsed by Valve.",
+      "explore": "The site",
+      "legal": "Legal"
+    },
+    "motion": {
+      "pause": "Pause animations",
+      "play": "Play animations"
     }
   },
   "nav": {
@@ -128,7 +134,9 @@
       "bots": {
         "one": "and {count} bot",
         "other": "and {count} bots"
-      }
+      },
+      "empty": "Nobody is playing right now — be the first in. Bots fill the server up to 10 players.",
+      "slots": "slots"
     },
     "join": {
       "button": "Join the server",
@@ -142,7 +150,10 @@
     "top": {
       "title": "Top 10 — {season}",
       "all": "Full leaderboard",
-      "empty": "No ranked players in this season yet. Join and get the first kill."
+      "empty": "No ranked players in this season yet. Join and get the first kill.",
+      "inviteTitle": "Be the first on the leaderboard",
+      "inviteText": "Nobody has XP this season yet. Your first kill puts you at the top.",
+      "inviteLink": "How XP works"
     },
     "bans": {
       "title": "Latest bans",
@@ -188,6 +199,84 @@
         "q": "I was banned unfairly — what can I do?",
         "a": "Write to us through the contact page with your SteamID64 and the date of the ban. Appeals with Steam sign-in are coming soon."
       }
+    },
+    "hero": {
+      "play": "Play now",
+      "discord": "Join Discord",
+      "consoleHint": "Or in the CS2 console (~):"
+    },
+    "facts": {
+      "label": "At a glance",
+      "respawn": "Respawn 1.5 s",
+      "protect": "5 s spawn protection",
+      "ammo": "Endless reserve ammo"
+    },
+    "why": {
+      "title": "Why play here",
+      "map": {
+        "t": "de_dust2 only, around the clock",
+        "d": "One map you know corner by corner. No map votes, no rotation — you join and shoot."
+      },
+      "respawn": {
+        "t": "Respawn in 1.5 seconds",
+        "d": "Free-for-all, no teams, no rounds. Die, and you are back in almost at once."
+      },
+      "ammo": {
+        "t": "Endless reserve ammo",
+        "d": "The reserve refills on every reload. Shoot without counting."
+      },
+      "protect": {
+        "t": "5 seconds of protection",
+        "d": "After every respawn you are protected for five seconds — nobody can kill you while you get your bearings."
+      },
+      "awp": {
+        "t": "AWP is allowed",
+        "d": "The sniper is in, capped at 3 at the same time on the server — the other weapons still get their share."
+      },
+      "modes": {
+        "t": "Modes that rotate",
+        "d": "Modes switch on their own, so a session never gets stale:"
+      },
+      "xp": {
+        "t": "XP and levels",
+        "d": "10 XP for every kill, plus bonuses for:",
+        "chip": {
+          "headshot": "headshot",
+          "knife": "knife",
+          "noscope": "noscope",
+          "wallbang": "through walls",
+          "smoke": "through smoke",
+          "revenge": "revenge"
+        }
+      },
+      "mastery": {
+        "t": "Weapon mastery",
+        "d": "Keep killing with your favourite weapon to earn a badge — by kill count:"
+      },
+      "bounty": {
+        "t": "Bounties on streaks",
+        "d": "A streak of {min} kills without dying puts a price on your head — up to {cap} XP for whoever takes you down."
+      },
+      "fair": {
+        "t": "No pay-to-win",
+        "d": "VIP is cosmetic only: a tag, a name colour and a reserved slot. An edge in the game is not for sale."
+      },
+      "bans": {
+        "t": "Open moderation",
+        "d": "A public ban list and active admins. See the rules and who got punished — no guessing."
+      },
+      "commands": {
+        "t": "Chat commands",
+        "d": "For weapons, your level, reporting cheaters and language:",
+        "gun": "weapon",
+        "rank": "level",
+        "report": "cheater",
+        "lang": "language"
+      }
+    },
+    "cta": {
+      "title": "Ready for Dust2?",
+      "text": "Opens Steam and connects you directly. All you need is Counter-Strike 2 — nothing to install, no sign-up."
     }
   },
   "leaderboard": {
@@ -236,7 +325,8 @@
       "prev": "Previous",
       "next": "Next",
       "page": "Page {page} of {pages}"
-    }
+    },
+    "inviteTitle": "The leaderboard is waiting"
   },
   "player": {
     "steamId": "SteamID64",

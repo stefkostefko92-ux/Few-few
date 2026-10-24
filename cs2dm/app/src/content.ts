@@ -63,6 +63,15 @@ export const VIP_TERMS_SECTIONS = [
   'complaints',
 ] as const;
 
+/** Режимите на оръжията в играта (`Deathmatch.json`) — собствени имена, показват се както в играта. */
+export const HOME_MODES = [
+  'All Weapons',
+  'Only Headshot',
+  'Only Deagle',
+  'Only Pistols',
+  'Only SMG',
+] as const;
+
 export const RULES = ['cheats', 'toxicity', 'ads', 'exploits', 'impersonation', 'spam'] as const;
 
 /** Публичните страници (без профила на играч) — навигацията, sitemap и llms.txt. */
