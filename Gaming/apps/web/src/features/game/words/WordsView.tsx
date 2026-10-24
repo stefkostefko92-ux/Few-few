@@ -30,6 +30,9 @@ export function WordsView({ title }: { title: string }) {
 
   const myTurn = !!state && state.turn === seat && legal.length > 0;
   const letter = (state?.lastLetter ?? "").toUpperCase();
+  // „чай“ → „А“: a trailing „й/ь/ъ“ is skipped by the server's chain rule.
+  const lastWord = state?.used[state.used.length - 1] ?? "";
+  const skipped = /[йьъ]$/.test(lastWord) ? lastWord[lastWord.length - 1]! : null;
 
   // The player TYPES the word — answers are never served (§4.18). The server
   // is the only validator; a wrong word costs a life (WRONG event → shake).
@@ -131,6 +134,9 @@ export function WordsView({ title }: { title: string }) {
           <div className="words-prompt">
             {t("words.nextLetter")}:{" "}
             <span className="words-letter">{letter || "—"}</span>
+            {skipped ? (
+              <span className="words-pass-hint"> {t("words.skipHint", { tail: skipped })}</span>
+            ) : null}
           </div>
 
           {/* My move: type the word yourself. */}

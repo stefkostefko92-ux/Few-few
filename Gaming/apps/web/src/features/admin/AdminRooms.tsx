@@ -1,8 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { Badge, Button, Panel } from "../../ui";
-import { GAME_CATALOG } from "../lobby/games";
 import { adminApi } from "./adminApi";
 import { ErrorPanel, useLoad } from "./load";
+import i18next from "i18next";
+import type { GameKey } from "@aso/shared";
+import { gameTitle as sharedGameTitle } from "../lobby/games";
 
 /** Compact "3m 12s" age from a millisecond duration. */
 function fmtAge(ms: number): string {
@@ -11,7 +13,8 @@ function fmtAge(ms: number): string {
   return m > 0 ? `${m}m ${s % 60}s` : `${s}s`;
 }
 
-const gameTitle = (key: string): string => GAME_CATALOG.find((g) => g.key === key)?.title ?? key;
+// Преводимото име на играта (EN/IT интерфейсът не показва българските заглавия).
+const gameTitle = (key: string): string => sharedGameTitle(i18next.t, key as GameKey);
 
 /**
  * Live tables view (§14): the in-progress matches the realtime node holds in

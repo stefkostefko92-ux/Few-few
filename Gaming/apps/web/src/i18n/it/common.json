@@ -9,10 +9,12 @@
     "friends": "Amici",
     "admin": "Admin",
     "profile": "Profilo",
-    "logout": "Esci"
+    "logout": "Esci",
+    "menu": "Menu"
   },
   "friends": {
     "title": "Amici",
+    "noResults": "Nessun giocatore trovato con questo nome.",
     "search": "Cerca un giocatore per nome",
     "searchBtn": "Cerca",
     "add": "Aggiungi",
@@ -34,7 +36,8 @@
     "friendRequest": "Nuova richiesta di amicizia",
     "friendAccepted": "Richiesta di amicizia accettata",
     "system": "Avviso di sistema",
-    "achievement": "Obiettivo sbloccato 🏆"
+    "achievement": "Obiettivo sbloccato 🏆",
+    "paymentFailed": "Un pagamento non è andato a buon fine — controlla il metodo di pagamento nel negozio"
   },
   "invite": {
     "received": "{{name}} ti ha invitato a {{game}}",
@@ -195,7 +198,80 @@
     "annActive": "Attivo",
     "annInactive": "Inattivo",
     "annActivate": "Attiva",
-    "annDeactivate": "Disattiva"
+    "annDeactivate": "Disattiva",
+    "seasons": "Stagioni",
+    "seasonNew": "Nuova stagione",
+    "seasonIndex": "Numero",
+    "seasonStarts": "Inizio",
+    "seasonEnds": "Fine",
+    "seasonHint": "La nuova stagione resta inattiva finché non la attivi. Può esserci una sola stagione attiva.",
+    "seasonCreate": "Crea stagione",
+    "seasonsEmpty": "Nessuna stagione.",
+    "seasonLabel": "Stagione",
+    "seasonActive": "Attiva",
+    "seasonCurrent": "Periodo in corso",
+    "seasonEnded": "Conclusa",
+    "seasonActivate": "Attiva",
+    "delete": "Elimina",
+    "deleted": "Eliminato.",
+    "confirmQuestion": "Sei sicuro?",
+    "confirmYes": "Sì",
+    "annDeleteQ": "Eliminare definitivamente l'annuncio?",
+    "productDeleteQ": "Eliminare definitivamente il prodotto?",
+    "matchesTab": "Partite",
+    "matchGame": "Gioco",
+    "allGames": "Tutti i giochi",
+    "matchUserId": "ID giocatore",
+    "matchMode": "Modalità",
+    "matchPlayers": "Giocatori",
+    "matchStarted": "Inizio",
+    "matchStatus": "Stato",
+    "matchEnded": "Conclusa",
+    "matchLive": "In corso",
+    "details": "Dettagli",
+    "matchEndedAt": "Fine",
+    "matchSeedHidden": "nascosto finché la partita è in corso",
+    "matchResult": "Risultato",
+    "secInventory": "Inventario",
+    "secAchievements": "Obiettivi",
+    "secQuests": "Missioni",
+    "secNotification": "Notifica",
+    "secSubscription": "Abbonamento",
+    "invEmpty": "Nessun cosmetico.",
+    "invEquipped": "Equipaggiato",
+    "invCosmetic": "Cosmetico",
+    "invPick": "Scegli un cosmetico…",
+    "revoke": "Revoca",
+    "grant": "Assegna",
+    "achEmpty": "Nessun obiettivo sbloccato.",
+    "achPick": "Scegli un obiettivo…",
+    "achUnlock": "Sblocca",
+    "achHint": "Lo sblocco manuale non assegna la ricompensa in gemme. Un obiettivo revocato la cui condizione è ancora soddisfatta viene sbloccato di nuovo alla partita successiva.",
+    "questsEmpty": "Nessuna missione.",
+    "questReset": "Azzera",
+    "questHint": "La missione azzerata viene ricreata con progresso 0; una missione completata può essere completata e ricompensata di nuovo.",
+    "ratingsEmpty": "Nessun punteggio.",
+    "ratingReset": "Azzera",
+    "ratingResetQ": "MMR 1200, 0 partite, 0 vittorie?",
+    "ratingSet": "Imposta MMR",
+    "notifTitle": "Titolo",
+    "notifBody": "Testo",
+    "notifSent": "La notifica è stata inviata.",
+    "notifRecent": "Notifiche recenti",
+    "notifEmpty": "Nessuna notifica.",
+    "notifRead": "letta",
+    "subNone": "Nessun abbonamento.",
+    "subTier": "Livello",
+    "subPeriodEnd": "Periodo in corso fino al",
+    "eraseOpen": "Elimina account",
+    "eraseTitle": "Eliminazione irreversibile dell'account",
+    "eraseWarning": "L'account verrà anonimizzato ai sensi del GDPR: email, nome, password, accessi tramite Google/Facebook, amicizie e notifiche vengono eliminati, l'abbonamento VIP viene annullato e tutte le sessioni vengono chiuse. Gli acquisti restano solo in forma anonima. L'azione non può essere annullata.",
+    "eraseConfirmLabel": "Inserisci l'email del giocatore per confermare",
+    "eraseConfirm": "Elimina definitivamente",
+    "eraseDone": "L'account è stato eliminato (anonimizzato).",
+    "selfExcludedShort": "AUTOESCL.",
+    "selfExcludedUntil": "Autoescluso fino al",
+    "selfExcludedNote": "Scelta del giocatore — non può essere revocata prima della scadenza."
   },
   "auth": {
     "loginTitle": "Accedi",
@@ -227,7 +303,15 @@
     "oauthConsent": "Continuando con Google o Facebook, dichiari di avere 18+ e accetti i",
     "errorBanned": "Questo account è bloccato.",
     "banReason": "Motivo: {{reason}}.",
-    "banAppeal": "Per opporti scrivi a legal@carbonstealth.eu."
+    "banAppeal": "Per opporti scrivi a legal@carbonstealth.eu.",
+    "banUntil": "Il blocco resta attivo fino al {{until}}.",
+    "errorValidation": "Controlla i campi evidenziati.",
+    "rulesDisplayName": "Da 2 a 32 caratteri.",
+    "rulesEmail": "Un indirizzo email valido, ad es. nome@esempio.it.",
+    "rulesPassword": "Almeno 8 caratteri.",
+    "errDisplayName": "Il nome deve avere da 2 a 32 caratteri.",
+    "errEmail": "Inserisci un indirizzo email valido.",
+    "errPassword": "La password deve avere almeno 8 caratteri."
   },
   "account": {
     "title": "Account",
@@ -252,7 +336,8 @@
   "live": {
     "opponentDropped": "{{name}} si è disconnesso — il bot subentra",
     "yourTurnTimer": "Il tuo turno: {{s}}s",
-    "opponentTurnTimer": "{{name}} sta pensando · {{s}}s"
+    "opponentTurnTimer": "{{name}} sta pensando · {{s}}s",
+    "timeoutWarning": "Tempo scaduto — il bot ha giocato questa mossa per te. Salta un altro turno e il bot prende il tuo posto."
   },
   "verify": {
     "title": "Verifica email",
@@ -303,7 +388,8 @@
     "playAgain": "Gioca ancora",
     "botsSoon": "Se non arrivano giocatori, i bot entreranno a breve.",
     "leaveConfirm": "Sicuro? (abbandono)",
-    "backToRoom": "Torna alla stanza"
+    "backToRoom": "Torna alla stanza",
+    "finalPlace": "Posizione: {{n}} su {{total}}"
   },
   "santase": {
     "trump": "Briscola",
@@ -322,7 +408,12 @@
     "closedBy": "{{name}} chiude il tallone",
     "exchangedBy": "{{name}} scambia il nove di briscola",
     "dealEnd": "{{name}} vince la mano (+{{n}})",
-    "closedTag": "Tallone chiuso"
+    "closedTag": "Tallone chiuso",
+    "declare": "Ho 66 — chiudo",
+    "declareWith": "66 con {{n}} {{suit}}",
+    "declareHint": "Dichiara solo se hai davvero 66 — una dichiarazione falsa dà 3 punti all'avversario.",
+    "declaredOk": "{{name}} chiude con {{n}}!",
+    "declaredFalse": "{{name}} ha dichiarato 66 con solo {{n}} — 3 punti all'avversario"
   },
   "belote": {
     "yourTeam": "La tua squadra",
@@ -355,6 +446,7 @@
     "redeal": "Nuova smazzata"
   },
   "shop": {
+    "payButton": "Acquista e paga · {{price}}",
     "disclaimer": "Il denaro acquista solo cosmetici, comfort e fiche d'ingresso. Le fiche non vengono mai riconvertite in denaro.",
     "purchaseSuccess": "Grazie! Acquisto completato.",
     "purchaseCancel": "Acquisto annullato.",
@@ -368,13 +460,32 @@
     "consentImmediate": "Acconsento che il contenuto sia fornito immediatamente e confermo di perdere il diritto di recesso di 14 giorni.",
     "consentSubscription": "Accetto l'abbonamento e il rinnovo automatico mensile fino alla disdetta; mantengo il diritto di recesso di 14 giorni con detrazione proporzionale.",
     "consentRequired": "Spunta il consenso per continuare.",
+    "productUnavailable": "Questo prodotto non è più disponibile.",
+    "sub": {
+      "title": "Il tuo abbonamento VIP",
+      "status": "Stato: {{status}}",
+      "periodEnd": "periodo corrente fino al {{date}}",
+      "manage": "Gestisci o disdici l'abbonamento",
+      "manageHint": "Cambia carta, consulta le fatture o disdici l'abbonamento — nel portale sicuro di Stripe.",
+      "manageFromPanel": "Sei già abbonato — modifica o disdici da «Gestisci o disdici l'abbonamento» qui sopra.",
+      "current": "Piano attuale",
+      "alreadySubscribed": "Hai già un abbonamento VIP attivo. Modificalo o disdicilo da «Gestisci o disdici l'abbonamento» nel negozio o nel tuo account.",
+      "portalError": "Il portale dell'abbonamento non si è aperto. Riprova.",
+      "state": {
+        "active": "attivo",
+        "trialing": "periodo di prova",
+        "past_due": "pagamento non riuscito — aggiorna la carta",
+        "unpaid": "non pagato",
+        "paused": "in pausa"
+      }
+    },
     "perk": {
       "xp": "+{{p}}% XP",
       "daily": "+{{p}}% bonus giornaliero",
       "gems": "{{n}} 💎 al mese",
       "cosmetics": "Cosmetici esclusivi",
-      "quests": "{{n}} slot missioni",
-      "badge": "Distintivo VIP e nome colorato"
+      "quests": "+{{n}} missioni giornaliere",
+      "badge": "Distintivo VIP nel profilo, nelle classifiche e tra gli amici"
     },
     "kind": {
       "VIP_SUB": "Abbonamento VIP",
@@ -389,6 +500,29 @@
     "already": "Bonus di oggi riscattato.",
     "claimed": "+{{chips}} fiche, +{{gems}} gemme!",
     "claim": "Riscatta"
+  },
+  "quests": {
+    "title": "Missioni",
+    "daily": "Giornaliere",
+    "weekly": "Settimanali",
+    "resets": {
+      "daily": "nuove ogni giorno (UTC)",
+      "weekly": "nuove ogni lunedì (UTC)"
+    },
+    "play_one": "Gioca {{count}} partita",
+    "play_other": "Gioca {{count}} partite",
+    "playGame_one": "Gioca {{count}} partita a {{game}}",
+    "playGame_other": "Gioca {{count}} partite a {{game}}",
+    "win_one": "Vinci {{count}} partita",
+    "win_other": "Vinci {{count}} partite",
+    "winGame_one": "Vinci {{count}} partita a {{game}}",
+    "winGame_other": "Vinci {{count}} partite a {{game}}",
+    "progress": "{{progress}} / {{target}}",
+    "reward": "Premio: +{{chips}} fiche · +{{xp}} XP",
+    "done": "Completata",
+    "empty": "Nessuna missione attiva.",
+    "error": "Impossibile caricare le missioni.",
+    "retry": "Riprova"
   },
   "leaderboard": {
     "empty": "Ancora nessun giocatore in classifica."
@@ -496,7 +630,19 @@
     "winsPot": "{{name}} vince il piatto ({{pot}})",
     "raisesTo": "{{name}} rilancia a {{to}}",
     "joins": "{{name}} entra nella svara ({{fee}})",
-    "newHand": "Mano {{n}}"
+    "newHand": "Mano {{n}}",
+    "allIn": "All-in",
+    "allInAmount": "All-in ({{n}})",
+    "allInBanner": "{{name}} va all-in ({{to}})",
+    "raiseTo": "Rilancia a {{to}}",
+    "raiseSize": "Importo del rilancio",
+    "raiseMin": "Min",
+    "raiseHalfPot": "½ piatto",
+    "raisePot": "Piatto",
+    "mainPot": "Piatto principale",
+    "sidePot": "Piatto laterale {{n}}",
+    "winsSidePot": "{{name}} vince un piatto laterale ({{pot}})",
+    "splitsPot": "{{name}} divide il piatto laterale ({{pot}})"
   },
   "bridge": {
     "dummyHand": "Mano del morto",
@@ -514,7 +660,11 @@
     "vulnerable": "In zona!",
     "lastDeal": "Ultima",
     "made": "fatto",
-    "defeated": "sotto"
+    "defeated": "sotto",
+    "honors": "onori {{n}} ({{side}})",
+    "honorsBanner": "Onori: {{name}} +{{n}}",
+    "us": "noi",
+    "them": "loro"
   },
   "war": {
     "flip": "Gira",
@@ -535,23 +685,39 @@
     "discard": "Scarti",
     "phase": "Fase",
     "drawPhase": "Pesca",
-    "discardPhase": "Scarta",
-    "knock": "Bussa",
-    "discardHint": "Scegli una carta da scartare",
-    "drawHint": "Pesca dal mazzo o dagli scarti",
-    "cancelKnock": "Annulla la bussata",
-    "knockHint": "Scegli la carta con cui bussare",
-    "match": "Partita",
-    "dealNo": "Mano",
-    "toHundred": "a 100 punti",
-    "knockBanner": "{{name}} bussa con {{pts}}",
-    "ginBanner": "Gin! {{name}} chiude senza punti morti",
-    "undercutBanner": "Undercut! {{name}} batte chi ha bussato",
-    "dealWonBanner": "{{name}} vince la mano: +{{pts}}",
-    "deadHandBanner": "Mano morta — nessuno segna",
+    "playPhase": "Cala e scarta",
+    "drawHint": "Pesca dal mazzo o prendi la carta in cima agli scarti (solo se la usi subito)",
+    "playHint": "Seleziona le carte: cala una combinazione, attacca al tavolo (clicca una combinazione) o scarta una carta",
+    "mustUseHint": "La carta presa va usata prima di scartare",
+    "mustOpenHint": "Non hai aperto — la carta presa deve far parte dell'apertura (51+ punti)",
+    "selected": "Selezionate: {{count}} · {{pts}} punti",
+    "notMeld": "Non è una combinazione",
+    "addToOpening": "Aggiungi all'apertura",
+    "openingTotal": "Apertura: {{pts}} / {{min}} punti",
+    "open": "Apri ({{pts}} punti)",
+    "clearOpening": "Annulla",
+    "meld": "Cala combinazione",
+    "discardBtn": "Scarta",
+    "sort": "Ordina",
+    "opened": "Ha aperto",
+    "notOpened": "Non ha aperto",
+    "score": "Punti di penalità",
+    "limit": "fino a {{limit}} punti",
+    "round": "Mano",
+    "table": "Tavolo",
+    "emptyTable": "Nessuno ha ancora aperto",
+    "layoffHere": "Attacca qui",
+    "swapHere": "Prendi il jolly",
+    "joker": "Jolly",
+    "keepOne": "Devi tenere almeno una carta da scartare",
+    "openBanner": "{{name}} apre con {{pts}} punti",
+    "outBanner": "{{name}} chiude!",
+    "handBanner": "«Ръка»! {{name}} chiude in un colpo solo — penalità raddoppiate",
+    "exhaustedBanner": "Il mazzo è finito — la mano termina",
     "matchBanner": "{{name}} vince la partita",
-    "deadwood": "Punti morti",
-    "layoffs": "Carte attaccate",
+    "roundReport": "Fine della mano {{n}}",
+    "penalty": "Penalità",
+    "total": "Totale",
     "continue": "Continua"
   },
   "gofish": {
@@ -566,23 +732,39 @@
     "off": "Fuori",
     "bearOff": "Porta fuori",
     "noMoves": "Nessuna mossa possibile — passo",
-    "gammon": "Gammon!",
-    "backgammon": "Backgammon!",
+    "gammon": "Mars!",
     "openingRoll": "Tiro d'apertura",
     "white": "Bianco",
     "black": "Nero",
-    "cube": "Cubo",
-    "double": "Raddoppia",
-    "take": "Accetto",
-    "drop": "Rifiuto",
-    "waitingDouble": "In attesa della risposta al raddoppio",
-    "doubleOffered": "Raddoppio a ×{{value}}",
-    "doubleTaken": "Il raddoppio è stato accettato",
-    "doubleDropped": "Il raddoppio è stato rifiutato"
+    "matchLength": "Durata della partita",
+    "matchTo": "Partita ai {{target}}",
+    "matchToShort": "ai {{target}}",
+    "matchHint": "Vittoria semplice = 1 punto, mars (gammon) = 2 punti. Niente cubo del raddoppio.",
+    "game": "Gioco",
+    "newGame": "Gioco {{game}} — tira per primo il vincitore",
+    "gameWon": "Hai vinto il gioco! +1 punto",
+    "gameLost": "L'avversario ha vinto il gioco (+1)",
+    "marsWon": "Mars! +2 punti",
+    "marsLost": "Mars — l'avversario prende 2 punti",
+    "matchWon": "Hai vinto la partita {{score}}",
+    "matchLost": "Hai perso la partita {{score}}"
+  },
+  "draughts": {
+    "variant": "Dama russa"
   },
   "battleship": {
     "enemy": "Avversario: {{name}}",
-    "yourFleet": "La tua flotta"
+    "yourFleet": "La tua flotta",
+    "placeTitle": "Schiera la tua flotta",
+    "placeHint": "Trascina le navi (o selezionane una e clicca una casella); «Ruota» o il tasto R le gira. Le navi non possono toccarsi, nemmeno in diagonale.",
+    "waitingOpp": "La tua flotta è pronta — in attesa dell'avversario…",
+    "oppReady": "L'avversario è pronto.",
+    "oppPlacing": "L'avversario sta schierando la flotta.",
+    "rotate": "Ruota",
+    "random": "Casuale",
+    "ready": "Pronto",
+    "invalid": "Le navi rosse si sovrappongono o si toccano — spostale.",
+    "start": "Entrambe le flotte sono in posizione — fuoco!"
   },
   "dice": {
     "roll": "Lancia",
@@ -616,7 +798,17 @@
     "yourCard": "La tua cartella",
     "bingo": "BINGO!",
     "winner": "{{name}} ha fatto bingo!",
-    "bestLine": "linea {{n}}/5"
+    "bestLine": "linea {{n}}/5",
+    "call": "BINGO!",
+    "autoMark": "Segna automaticamente",
+    "penalty": "«Bingo!» falso — salti ancora {{n}} estrazioni.",
+    "markHint": "Clicca un numero estratto sulla tua cartella per segnarlo; con una linea completa grida «Bingo!».",
+    "falseYou": "«Bingo!» falso — salti {{n}} estrazioni",
+    "falseOther": "{{name}} ha gridato un «Bingo!» falso",
+    "noWinner": "L'urna è vuota — nessun vincitore",
+    "closing": "Bingo! Ultima occasione per altre chiamate…",
+    "serverDraws": "I numeri vengono estratti automaticamente ogni 4 secondi.",
+    "free": "Casella libera"
   },
   "words": {
     "nextLetter": "Prossima lettera",
@@ -630,7 +822,8 @@
     "passBanner": "{{name}} passa (−1 vita)",
     "wrongBanner": "{{name}} ha sbagliato parola (−1 vita)",
     "reseed": "Nuova parola: {{word}}",
-    "out": "eliminato"
+    "out": "eliminato",
+    "skipHint": "(«{{tail}}» si salta)"
   },
   "ludo": {
     "base": "base",
@@ -640,7 +833,9 @@
     "noMoveRetry": "Nessuna mossa — tira di nuovo",
     "noMoveOther": "{{name}} non ha mosse",
     "safeSquare": "Casella sicura",
-    "blockade": "Blocco"
+    "blockade": "Blocco",
+    "place": "{{n}}° posto",
+    "finishedBanner": "{{name}} è arrivato — {{n}}° posto"
   },
   "domino": {
     "empty": "Posiziona il primo domino",
@@ -688,7 +883,11 @@
       "wrongPot": "Fallo: palla sbagliata in buca.",
       "cleared": "Tavolo ripulito!",
       "respotBlack": "Parità — la nera torna sul punto.",
-      "threeFoul": "Tre falli consecutivi — perdi il frame."
+      "threeFoul": "Tre falli consecutivi — perdi il frame.",
+      "illegalBreak": "Fallo: spaccata irregolare — nessuna palla in buca e meno di quattro palle a sponda.",
+      "playAgain": "Chi ha commesso fallo gioca di nuovo.",
+      "missReplay": "Fallo e mancato — palle riposizionate, chi ha commesso fallo ripete.",
+      "eightWrongPocket": "La 8 è finita in una buca non dichiarata — sconfitta."
     },
     "pushOut": "Push-out",
     "pushPass": "Restituisci il tiro",
@@ -696,7 +895,33 @@
     "expectFreeColour": "obiettivo: colorata a scelta",
     "expectBall": "obiettivo: palla",
     "placeHintD": "solo nel semicerchio \"D\"",
-    "placeHintBreak": "dietro la linea"
+    "placeHintBreak": "dietro la linea",
+    "twoFouls": "Attenzione: due falli consecutivi — il terzo fa perdere il frame.",
+    "twoFoulsOpp": "L'avversario è a due falli consecutivi.",
+    "miss": "fallo e mancato",
+    "foulChoice": "Fallo dell'avversario — gioca o fallo rigiocare.",
+    "playAgain": "Fallo rigiocare",
+    "replay": "Riposiziona le palle",
+    "spin": "Effetto",
+    "spinRole": "punto di impatto sulla bianca",
+    "spinTop": "alto",
+    "spinBottom": "basso",
+    "spinLeft": "sinistra",
+    "spinRight": "destra",
+    "spinCenter": "al centro",
+    "spinReset": "Senza effetto",
+    "spinHelp": "Scegli dove la stecca colpisce la bianca: in alto — prosegue dopo l'impatto (a seguire), in basso — torna indietro (a rientrare), di lato — cambia il rimbalzo sulla sponda. Frecce per spostare, Maiusc per passi più fini, Home per il centro.",
+    "callPocket": "Buca per la 8",
+    "callPocketHint": "Sei sulla 8 — dichiara la buca (clic vicino alla buca o sui pulsanti)",
+    "calledPocket": "buca dichiarata",
+    "pockets": {
+      "0": "in alto a sinistra",
+      "1": "in alto al centro",
+      "2": "in alto a destra",
+      "3": "in basso a sinistra",
+      "4": "in basso al centro",
+      "5": "in basso a destra"
+    }
   },
   "net": {
     "reconnecting": "Connessione persa — riconnessione…"
@@ -893,15 +1118,25 @@
     "auctionLeader": "in testa {{name}} {{amount}}",
     "potPill": "Jackpot parcheggio: {{amount}}",
     "gojfCard": "Carta \"Esci di prigione\"",
-    "tradeWaiting": "In attesa della risposta di {{name}}…"
+    "tradeWaiting": "In attesa della risposta di {{name}}…",
+    "bank": "la banca",
+    "debtBanner": "{{name}} deve {{amount}} — sceglie cosa vendere",
+    "debtBannerYou": "Devi {{amount}} — vendi o ipoteca",
+    "debtWaiting": "{{name}} deve {{amount}} a {{to}} e sceglie cosa vendere o ipotecare…",
+    "debtTitle": "Devi {{amount}} a {{to}}",
+    "debtCash": "Contanti: {{cash}}",
+    "debtHint": "Vendi edifici (prima le case, in modo uniforme) o ipoteca proprietà dalla lista qui sotto, poi paga. Allo scadere del tempo la banca liquida automaticamente.",
+    "payDebt": "Paga {{amount}}"
   },
   "errors": {
     "generic": "Qualcosa è andato storto",
+    "insufficient_chips": "Qualcuno al tavolo non ha abbastanza fiches per entrare",
     "lobby_full": "La stanza è piena o non disponibile",
     "no_engine": "Questo gioco al momento non è disponibile",
     "illegal_action": "Mossa non valida",
     "chat_rate": "Troppo veloce. Attendi un momento.",
-    "rate_limited": "Troppi tentativi — attendi."
+    "rate_limited": "Troppi tentativi — attendi.",
+    "self_excluded": "L'autoesclusione è attiva — tavoli e acquisti non sono disponibili fino alla scadenza"
   },
   "games": {
     "CHESS": "Scacchi",
@@ -1005,12 +1240,51 @@
     "open": "Regole",
     "title": "Come si gioca",
     "steps": "Passaggi",
-    "tips": "Consigli"
+    "tips": "Consigli",
+    "clockTitle": "Tempo per turno",
+    "clock": "Hai {{s}} secondi per turno.",
+    "timeout": "Se il tempo scade, il bot gioca solo quella mossa per te — il posto resta tuo.",
+    "timeoutWords": "Se il tempo scade, vale come passo — perdi una vita (il bot non dice mai una parola al posto tuo).",
+    "takeover": "Dopo due turni saltati di fila (o una connessione persa) il bot prende il tuo posto finché non premi «Torna in gioco»."
   },
   "difficulty": {
     "label": "Difficoltà dei bot",
     "easy": "Facile",
     "normal": "Normale",
     "hard": "Difficile"
+  },
+  "responsible": {
+    "title": "Gioco responsabile",
+    "hint": "Strumenti che ti aiutano a tenere d'occhio il tempo su АСО. Il gioco è per divertimento — con fiches virtuali.",
+    "realityLabel": "Promemoria del tempo di gioco",
+    "realityHint": "Mostriamo «Stai giocando da X min» all'intervallo scelto.",
+    "off": "Disattivato",
+    "everyMin": "Ogni {{n}} min",
+    "limitLabel": "Limite giornaliero di sessione",
+    "limitHint": "Oggi hai giocato {{n}} min. Al raggiungimento del limite ti ricorderemo di fare una pausa.",
+    "noLimit": "Nessun limite",
+    "minutes": "{{n}} min",
+    "excludeLabel": "Autoesclusione",
+    "excludeHint": "Una pausa temporanea: tavoli, code e acquisti nel negozio vengono bloccati. Non si può annullare prima della scadenza.",
+    "excludeCta": "Autoescludimi",
+    "excludedBadge": "Autoescluso",
+    "excludedUntil": "Sei autoescluso fino al {{date}}. Tavoli, code e acquisti non sono disponibili fino ad allora.",
+    "period": {
+      "24h": "24 ore",
+      "7d": "7 giorni",
+      "30d": "30 giorni",
+      "6m": "6 mesi"
+    },
+    "confirmTitle": "Conferma l'autoesclusione",
+    "confirmBody": "Per {{period}} non potrai sederti a un tavolo, entrare in coda né acquistare nel negozio. L'autoesclusione NON può essere annullata prima della scadenza. Continuare?",
+    "confirmCta": "Sì, autoescludimi",
+    "learnMore": "Scopri di più sul gioco responsabile",
+    "realityTitle": "È ora di una pausa?",
+    "realityBody": "Stai giocando da {{n}} min. Vuoi fare una pausa?",
+    "takeBreak": "Pausa",
+    "keepPlaying": "Continua",
+    "limitTitle": "Limite giornaliero raggiunto",
+    "limitBody": "Oggi hai giocato il limite di {{n}} min che hai scelto. Un buon momento per una pausa.",
+    "understood": "Ho capito"
   }
 }
