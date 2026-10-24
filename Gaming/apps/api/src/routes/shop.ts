@@ -7,6 +7,7 @@ import { listActiveProducts, toProductView, vipTierForSku } from "../economy/cat
 import { getStripe, stripeEnabled } from "../economy/stripe.js";
 import { env } from "../env.js";
 import { webUrl } from "../webUrl.js";
+import { assertNotSelfExcluded } from "../account/responsible.js";
 
 export const shopRouter: Router = Router();
 
@@ -89,6 +90,8 @@ shopRouter.post(
     const userId = req.user!.sub;
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw unauthorized();
+    // Отговорна игра: по време на самоизключване магазинът не приема покупки.
+    assertNotSelfExcluded(user);
 
     // Block a second active VIP subscription up front (one per user; the DB has a
     // unique userId on Subscription, so a 2nd would later 500 the webhook).

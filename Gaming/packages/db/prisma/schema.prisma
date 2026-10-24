@@ -35,6 +35,14 @@ model User {
   // Версия на сесиите: влиза в refresh JWT; +1 при нулиране на парола/изтриване
   // → всички стари refresh токени (други устройства) стават невалидни.
   tokenVersion  Int       @default(0)
+  // Отговорна игра: напомняне „Играете от X мин“ (0 = изключено; 30/60/120),
+  // дневен лимит на сесията в минути (null = без) и самоизключване — до
+  // `selfExcludedUntil` realtime отказва маси/опашки, магазинът — покупки.
+  // Не може да се съкрати/отмени преди изтичане (само удължаване).
+  realityCheckMinutes Int       @default(0)
+  dailyLimitMinutes   Int?
+  selfExcludedUntil   DateTime?
+  selfExcludedAt      DateTime?
   createdAt     DateTime  @default(now())
   lastSeenAt    DateTime  @default(now())
 
@@ -53,6 +61,7 @@ model User {
 
   @@index([level])
   @@index([vipTier])
+  @@index([selfExcludedUntil])
 }
 
 // Social graph (§ retention). A row is created by the requester; on accept it

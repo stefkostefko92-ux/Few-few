@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "@aso/db";
-import { PRODUCT_KINDS, ROLES, VIP_TIERS, levelFromXp, type Role, type VipTier } from "@aso/shared";
+import { PRODUCT_KINDS, ROLES, VIP_TIERS, levelFromXp, selfExclusionActive, type Role, type VipTier } from "@aso/shared";
 import { asyncHandler, badRequest, forbidden, HttpError } from "../http.js";
 import { requireAuth, requireRole } from "../middleware/requireAuth.js";
 import { revokeUser, unrevokeUser } from "../auth/revocation.js";
@@ -184,8 +184,8 @@ adminRouter.get(
   }),
 );
 
-/** GET /api/admin/users?q=&role=&banned=&vip=&take=&cursor= — search players
- *  with role/ban/VIP filters and cursor pagination. */
+/** GET /api/admin/users?q=&role=&banned=&vip=&selfExcluded=&take=&cursor= — search
+ *  players with role/ban/VIP/самоизключване filters and cursor pagination. */
 adminRouter.get(
   "/users",
   asyncHandler(async (req, res) => {
@@ -199,6 +199,9 @@ adminRouter.get(
     const vip = (VIP_TIERS as readonly string[]).includes(vipQ) ? (vipQ as VipTier) : undefined;
     const bannedQ = String(req.query.banned ?? "");
     const banned = bannedQ === "1" || bannedQ === "true" ? true : bannedQ === "0" || bannedQ === "false" ? false : undefined;
+    // Отговорна игра: само активно самоизключените (персоналът вижда, не отменя).
+    const selfExQ = String(req.query.selfExcluded ?? "");
+    const selfExcludedOnly = selfExQ === "1" || selfExQ === "true";
 
     const where = {
       ...(q
@@ -212,6 +215,7 @@ adminRouter.get(
       ...(role ? { role } : {}),
       ...(vip ? { vipTier: vip } : {}),
       ...(banned !== undefined ? { banned } : {}),
+      ...(selfExcludedOnly ? { selfExcludedUntil: { gt: new Date() } } : {}),
     };
     const rows = await prisma.user.findMany({
       where,
@@ -221,13 +225,14 @@ adminRouter.get(
       select: {
         id: true, email: true, displayName: true, role: true, vipTier: true,
         banned: true, banReason: true, banUntil: true, chips: true, gems: true,
-        xp: true, createdAt: true, lastSeenAt: true,
+        xp: true, createdAt: true, lastSeenAt: true, selfExcludedUntil: true,
       },
     });
     const hasMore = rows.length > take;
     // Нивото се смята от xp (колоната `level` на старите акаунти е останала 1).
     const users = (hasMore ? rows.slice(0, take) : rows).map((u) => ({
       ...u, chips: u.chips.toString(), level: levelFromXp(u.xp).level,
+      selfExcluded: selfExclusionActive(u.selfExcludedUntil),
     }));
     res.json({ users, nextCursor: hasMore ? (users[users.length - 1]?.id ?? null) : null });
   }),
@@ -252,7 +257,16 @@ adminRouter.get(
       where: { targetId: id }, orderBy: { createdAt: "desc" }, take: 20,
     });
     const { passwordHash: _pw, ...safe } = user;
-    res.json({ user: { ...safe, chips: user.chips.toString(), level: levelFromXp(user.xp).level }, audits });
+    res.json({
+      user: {
+        ...safe,
+        chips: user.chips.toString(),
+        level: levelFromXp(user.xp).level,
+        // Самоизключването се вижда от персонала, но не се отменя оттук.
+        selfExcluded: selfExclusionActive(user.selfExcludedUntil),
+      },
+      audits,
+    });
   }),
 );
 

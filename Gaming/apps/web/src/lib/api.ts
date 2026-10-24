@@ -11,6 +11,9 @@ import type {
   ResetPasswordInput,
   VipPerks,
   VipTier,
+  ResponsibleSettingsInput,
+  ResponsibleSettingsView,
+  SelfExclusionPeriod,
 } from "@aso/shared";
 
 /** Which OAuth providers the server has credentials for. */
@@ -117,6 +120,19 @@ export const api = {
 
   // Account (GDPR)
   deleteAccount: () => request<{ ok: true }>("/account/delete", { method: "POST" }),
+
+  // Отговорна игра: напомняне за време, дневен лимит, самоизключване
+  responsible: () => request<ResponsibleSettingsView>("/account/responsible"),
+  updateResponsible: (input: ResponsibleSettingsInput) =>
+    request<ResponsibleSettingsView>("/account/responsible", {
+      method: "PUT",
+      body: JSON.stringify(input),
+    }),
+  selfExclude: (period: SelfExclusionPeriod) =>
+    request<ResponsibleSettingsView>("/account/self-exclude", {
+      method: "POST",
+      body: JSON.stringify({ period, confirm: true }),
+    }),
 
   // Email verification & password reset
   verifyEmail: (token: string) =>

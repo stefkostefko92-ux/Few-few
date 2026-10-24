@@ -22,6 +22,7 @@ import { LobbyManager } from "./lobby.js";
 import { metricsText, registerRealtimeGauges } from "./prometheus.js";
 import type { GameRoom } from "./room.js";
 import { sanitizeChat, chatRateOk, socketRateOk } from "./chat.js";
+import { selfExcludedAmong } from "./responsible.js";
 
 const queueJoinSchema = z.object({
   game: z.string(),
@@ -216,7 +217,7 @@ async function main(): Promise<void> {
     const u = await prisma.user.findUnique({ where: { id: uid }, select: { displayName: true } });
     return u?.displayName ?? "Играч";
   };
-  const lobbies = new LobbyManager(io, matchmaker, displayNameOf);
+  const lobbies = new LobbyManager(io, matchmaker, displayNameOf, selfExcludedAmong);
   // A lobby-started match that just ended → recreate the room so the party
   // can play again with one click.
   matchmaker.onLobbyMatchEnded = (info) => void lobbies.regroup(info).catch((err) => logger.warn({ err }, "regroup failed"));
@@ -332,9 +333,11 @@ async function main(): Promise<void> {
             });
             return;
           }
-          return matchmaker.joinQueue(userId, game, mode, difficulty).then((joined) => {
-            if (joined) socket.emit(SOCKET_EVENTS.QUEUE_WAITING, { game });
-            else socket.emit(SOCKET_EVENTS.ERROR, { code: "no_engine", message: "Game unavailable" });
+          return matchmaker.joinQueue(userId, game, mode, difficulty).then((result) => {
+            if (result === "joined") socket.emit(SOCKET_EVENTS.QUEUE_WAITING, { game });
+            else if (result === "no_engine")
+              socket.emit(SOCKET_EVENTS.ERROR, { code: "no_engine", message: "Game unavailable" });
+            // self_excluded: matchmaker вече е уведомил играча.
           });
         })
         .catch((err) => logger.error({ err }, "joinQueue failed"));
@@ -421,7 +424,7 @@ async function main(): Promise<void> {
       const parsed = lobbyIdSchema.safeParse(payload);
       if (!parsed.success) return;
       void lobbies.join(userId, parsed.data.lobbyId).then((l) => {
-        if (!l) socket.emit(SOCKET_EVENTS.ERROR, { code: "lobby_full", message: "Стаята е недостъпна" });
+        if (l === null) socket.emit(SOCKET_EVENTS.ERROR, { code: "lobby_full", message: "Стаята е недостъпна" });
       });
     });
 

@@ -268,7 +268,10 @@
     "eraseWarning": "L'account verrà anonimizzato ai sensi del GDPR: email, nome, password, accessi tramite Google/Facebook, amicizie e notifiche vengono eliminati, l'abbonamento VIP viene annullato e tutte le sessioni vengono chiuse. Gli acquisti restano solo in forma anonima. L'azione non può essere annullata.",
     "eraseConfirmLabel": "Inserisci l'email del giocatore per confermare",
     "eraseConfirm": "Elimina definitivamente",
-    "eraseDone": "L'account è stato eliminato (anonimizzato)."
+    "eraseDone": "L'account è stato eliminato (anonimizzato).",
+    "selfExcludedShort": "AUTOESCL.",
+    "selfExcludedUntil": "Autoescluso fino al",
+    "selfExcludedNote": "Scelta del giocatore — non può essere revocata prima della scadenza."
   },
   "auth": {
     "loginTitle": "Accedi",
@@ -620,7 +623,19 @@
     "winsPot": "{{name}} vince il piatto ({{pot}})",
     "raisesTo": "{{name}} rilancia a {{to}}",
     "joins": "{{name}} entra nella svara ({{fee}})",
-    "newHand": "Mano {{n}}"
+    "newHand": "Mano {{n}}",
+    "allIn": "All-in",
+    "allInAmount": "All-in ({{n}})",
+    "allInBanner": "{{name}} va all-in ({{to}})",
+    "raiseTo": "Rilancia a {{to}}",
+    "raiseSize": "Importo del rilancio",
+    "raiseMin": "Min",
+    "raiseHalfPot": "½ piatto",
+    "raisePot": "Piatto",
+    "mainPot": "Piatto principale",
+    "sidePot": "Piatto laterale {{n}}",
+    "winsSidePot": "{{name}} vince un piatto laterale ({{pot}})",
+    "splitsPot": "{{name}} divide il piatto laterale ({{pot}})"
   },
   "bridge": {
     "dummyHand": "Mano del morto",
@@ -1078,7 +1093,8 @@
     "no_engine": "Questo gioco al momento non è disponibile",
     "illegal_action": "Mossa non valida",
     "chat_rate": "Troppo veloce. Attendi un momento.",
-    "rate_limited": "Troppi tentativi — attendi."
+    "rate_limited": "Troppi tentativi — attendi.",
+    "self_excluded": "L'autoesclusione è attiva — tavoli e acquisti non sono disponibili fino alla scadenza"
   },
   "games": {
     "CHESS": "Scacchi",
@@ -1189,5 +1205,39 @@
     "easy": "Facile",
     "normal": "Normale",
     "hard": "Difficile"
+  },
+  "responsible": {
+    "title": "Gioco responsabile",
+    "hint": "Strumenti che ti aiutano a tenere d'occhio il tempo su АСО. Il gioco è per divertimento — con fiches virtuali.",
+    "realityLabel": "Promemoria del tempo di gioco",
+    "realityHint": "Mostriamo «Stai giocando da X min» all'intervallo scelto.",
+    "off": "Disattivato",
+    "everyMin": "Ogni {{n}} min",
+    "limitLabel": "Limite giornaliero di sessione",
+    "limitHint": "Oggi hai giocato {{n}} min. Al raggiungimento del limite ti ricorderemo di fare una pausa.",
+    "noLimit": "Nessun limite",
+    "minutes": "{{n}} min",
+    "excludeLabel": "Autoesclusione",
+    "excludeHint": "Una pausa temporanea: tavoli, code e acquisti nel negozio vengono bloccati. Non si può annullare prima della scadenza.",
+    "excludeCta": "Autoescludimi",
+    "excludedBadge": "Autoescluso",
+    "excludedUntil": "Sei autoescluso fino al {{date}}. Tavoli, code e acquisti non sono disponibili fino ad allora.",
+    "period": {
+      "24h": "24 ore",
+      "7d": "7 giorni",
+      "30d": "30 giorni",
+      "6m": "6 mesi"
+    },
+    "confirmTitle": "Conferma l'autoesclusione",
+    "confirmBody": "Per {{period}} non potrai sederti a un tavolo, entrare in coda né acquistare nel negozio. L'autoesclusione NON può essere annullata prima della scadenza. Continuare?",
+    "confirmCta": "Sì, autoescludimi",
+    "learnMore": "Scopri di più sul gioco responsabile",
+    "realityTitle": "È ora di una pausa?",
+    "realityBody": "Stai giocando da {{n}} min. Vuoi fare una pausa?",
+    "takeBreak": "Pausa",
+    "keepPlaying": "Continua",
+    "limitTitle": "Limite giornaliero raggiunto",
+    "limitBody": "Oggi hai giocato il limite di {{n}} min che hai scelto. Un buon momento per una pausa.",
+    "understood": "Ho capito"
   }
 }

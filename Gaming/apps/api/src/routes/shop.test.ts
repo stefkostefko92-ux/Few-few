@@ -25,6 +25,7 @@ interface FakeUser {
   vipTier: string;
   vipUntil: Date | null;
   stripeCustomerId: string | null;
+  selfExcludedUntil?: Date | null;
 }
 interface FakeSub {
   userId: string;
@@ -174,6 +175,19 @@ describe("POST /api/shop/checkout", () => {
     expect(p.success_url).toBe("https://gaming.example.eu/app/shop?status=success");
     expect(p.cancel_url).toBe("https://gaming.example.eu/app/shop?status=cancel");
     expect(opts.idempotencyKey).toMatch(/^checkout:user_1:gems_small:250:\d+$/);
+  });
+
+  it("отговорна игра: самоизключен играч → 403 self_excluded, без Stripe сесия", async () => {
+    addProduct({ sku: "gems_small", kind: "GEMS", priceCents: 250, gems: 120 });
+    users.get("user_1")!.selfExcludedUntil = new Date(Date.now() + 86_400_000);
+    const res = await checkout("gems_small");
+    expect(res.status).toBe(403);
+    expect(res.body.error.code).toBe("self_excluded");
+    expect(sessionsCreate).not.toHaveBeenCalled();
+
+    // Изтеклото самоизключване вече не пречи.
+    users.get("user_1")!.selfExcludedUntil = new Date(Date.now() - 1000);
+    expect((await checkout("gems_small")).status).toBe(200);
   });
 
   it("непознат SKU → 404", async () => {

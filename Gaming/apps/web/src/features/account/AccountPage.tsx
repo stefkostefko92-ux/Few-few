@@ -8,6 +8,7 @@ import { afterLogout } from "../../lib/session";
 import { getFourColor, setFourColor } from "../../lib/a11y";
 import { Achievements } from "../progression/Achievements";
 import { SubscriptionPanel, useVipStatus } from "../shop/SubscriptionPanel";
+import { ResponsiblePanel } from "./ResponsiblePanel";
 
 /** Player account & privacy controls (GDPR: data export + erasure). */
 export function AccountPage() {
@@ -60,6 +61,8 @@ export function AccountPage() {
       <SubscriptionPanel vip={vip} className="mb-6" />
 
       <Achievements />
+
+      {user.role !== "GUEST" ? <ResponsiblePanel /> : null}
 
       <Panel className="mb-6">
         <h2 className="text-xl text-ink-100">{t("a11y.title", { defaultValue: "Достъпност" })}</h2>

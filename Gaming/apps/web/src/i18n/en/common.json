@@ -268,7 +268,10 @@
     "eraseWarning": "The account will be anonymised under the GDPR: email, name, password, Google/Facebook sign-ins, friendships and notifications are deleted, the VIP subscription is cancelled and all sessions are ended. Purchases are kept only in anonymised form. This action cannot be undone.",
     "eraseConfirmLabel": "Enter the player's email to confirm",
     "eraseConfirm": "Delete permanently",
-    "eraseDone": "The account has been deleted (anonymised)."
+    "eraseDone": "The account has been deleted (anonymised).",
+    "selfExcludedShort": "SELF-EXCL.",
+    "selfExcludedUntil": "Self-excluded until",
+    "selfExcludedNote": "The player's choice — it can't be lifted before it ends."
   },
   "auth": {
     "loginTitle": "Sign in",
@@ -620,7 +623,19 @@
     "winsPot": "{{name}} wins the pot ({{pot}})",
     "raisesTo": "{{name}} raises to {{to}}",
     "joins": "{{name}} joins the svara ({{fee}})",
-    "newHand": "Hand {{n}}"
+    "newHand": "Hand {{n}}",
+    "allIn": "All-in",
+    "allInAmount": "All-in ({{n}})",
+    "allInBanner": "{{name}} is all-in ({{to}})",
+    "raiseTo": "Raise to {{to}}",
+    "raiseSize": "Raise size",
+    "raiseMin": "Min",
+    "raiseHalfPot": "½ pot",
+    "raisePot": "Pot",
+    "mainPot": "Main pot",
+    "sidePot": "Side pot {{n}}",
+    "winsSidePot": "{{name}} wins a side pot ({{pot}})",
+    "splitsPot": "{{name}} splits the side pot ({{pot}})"
   },
   "bridge": {
     "dummyHand": "Dummy's hand",
@@ -1078,7 +1093,8 @@
     "no_engine": "This game is currently unavailable",
     "illegal_action": "Illegal move",
     "chat_rate": "Too fast. Wait a moment.",
-    "rate_limited": "Too many attempts — wait."
+    "rate_limited": "Too many attempts — wait.",
+    "self_excluded": "Self-exclusion is active — tables and purchases are unavailable until it ends"
   },
   "games": {
     "CHESS": "Chess",
@@ -1189,5 +1205,39 @@
     "easy": "Easy",
     "normal": "Normal",
     "hard": "Hard"
+  },
+  "responsible": {
+    "title": "Responsible play",
+    "hint": "Tools that help you keep track of your time on АСО. The game is for fun — with virtual chips.",
+    "realityLabel": "Play-time reminder",
+    "realityHint": "We show “You've been playing for X min” at the chosen interval.",
+    "off": "Off",
+    "everyMin": "Every {{n}} min",
+    "limitLabel": "Daily session limit",
+    "limitHint": "You've played {{n}} min today. When you reach the limit we'll remind you to take a break.",
+    "noLimit": "No limit",
+    "minutes": "{{n}} min",
+    "excludeLabel": "Self-exclusion",
+    "excludeHint": "A temporary pause: tables, queues and shop purchases are locked. It can't be undone before it ends.",
+    "excludeCta": "Exclude me",
+    "excludedBadge": "Self-excluded",
+    "excludedUntil": "You're self-excluded until {{date}}. Tables, queues and purchases are unavailable until then.",
+    "period": {
+      "24h": "24 hours",
+      "7d": "7 days",
+      "30d": "30 days",
+      "6m": "6 months"
+    },
+    "confirmTitle": "Confirm self-exclusion",
+    "confirmBody": "For {{period}} you won't be able to sit at a table, join a queue or buy in the shop. Self-exclusion CANNOT be undone before it ends. Continue?",
+    "confirmCta": "Yes, exclude me",
+    "learnMore": "Learn more about responsible play",
+    "realityTitle": "Time for a break?",
+    "realityBody": "You've been playing for {{n}} min. Would you like to take a break?",
+    "takeBreak": "Take a break",
+    "keepPlaying": "Continue",
+    "limitTitle": "Daily limit reached",
+    "limitBody": "You've played the {{n}} min limit you set for today. A good moment for a break.",
+    "understood": "Got it"
   }
 }

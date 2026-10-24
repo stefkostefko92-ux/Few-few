@@ -143,6 +143,11 @@ export function AdminUsers() {
                             BAN
                           </Badge>
                         ) : null}
+                        {u.selfExcluded ? (
+                          <Badge tone="felt" title={u.selfExcludedUntil ?? undefined}>
+                            {t("admin.selfExcludedShort", "САМОИЗКЛ.")}
+                          </Badge>
+                        ) : null}
                       </div>
                       <div className="text-xs text-ink-muted">{u.email}</div>
                     </td>
@@ -315,6 +320,16 @@ export function UserDetailModal({
                   : t("admin.banPermanent", "Постоянен")}
               </div>
               {u.banReason ? <div className="text-xs">{u.banReason}</div> : null}
+            </div>
+          ) : null}
+
+          {u.selfExcluded && u.selfExcludedUntil ? (
+            <div className="rounded-card border border-brass-400/30 bg-felt-800/60 px-3 py-2 text-sm text-ink-100">
+              {t("admin.selfExcludedUntil", "Самоизключен до")}:{" "}
+              {new Date(u.selfExcludedUntil).toLocaleString(i18n.language)}
+              <div className="text-xs text-ink-muted">
+                {t("admin.selfExcludedNote", "Избор на играча — не може да се отмени преди изтичане.")}
+              </div>
             </div>
           ) : null}
 

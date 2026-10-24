@@ -64,6 +64,9 @@ export interface AdminUserRow {
   banned: boolean;
   banReason: string | null;
   banUntil: string | null;
+  /** Отговорна игра: активно самоизключване (вижда се, не се отменя от персонала). */
+  selfExcluded?: boolean;
+  selfExcludedUntil?: string | null;
   chips: string;
   gems: number;
   level: number;

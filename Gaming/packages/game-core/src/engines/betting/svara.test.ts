@@ -3,6 +3,9 @@ import {
   svaraEngine,
   svaraPoints,
   MAX_HANDS_SVARA,
+  svaraPots,
+  svaraRaiseBounds,
+  svaraRaisePresets,
   type SvaraState,
   type SvaraEvent,
 } from "./svara.js";
@@ -21,6 +24,8 @@ function mk(partial: Partial<SvaraState> & { hands: Card[][] }): SvaraState {
     acted: new Array<boolean>(seats).fill(false),
     pot: 10 * seats,
     current: 10,
+    minRaise: 10,
+    pots: [],
     turn: 0,
     seats,
     dealer: 0,
@@ -365,7 +370,7 @@ describe("СВАРА — механиката 'свара' при равенст
 describe("СВАРА — евристичен бот", () => {
   it("вдига със силна ръка", () => {
     const s = mk({ hands: [["7C", "AC", "KC"], ["7H", "8S", "9D"]] }); // 32 точки
-    expect(svaraEngine.bot!(s, 0, rng())).toEqual({ type: "RAISE" });
+    expect(svaraEngine.bot!(s, 0, rng())?.type).toBe("RAISE");
   });
 
   it("бяга със слаба ръка срещу залог", () => {
@@ -402,5 +407,283 @@ describe("СВАРА — евристичен бот", () => {
       steps++;
     }
     expect(s.done).toBe(true);
+  });
+});
+
+const wins = (events: SvaraEvent[]) =>
+  events.filter((e): e is Extract<SvaraEvent, { type: "WIN" }> => e.type === "WIN");
+const total = (st: SvaraState) => st.chips.reduce((a, b) => a + b, 0) + st.pot;
+
+describe("СВАРА — вдигане с избор на размер", () => {
+  const base = () =>
+    mk({ hands: [["AH", "KH", "QH"], ["7H", "8S", "9D"], ["8H", "9S", "TD"]], pot: 30 });
+
+  it("legalActions дава мин / ½ пот / пот и ALLIN; минимумът е базовият залог", () => {
+    const s = base(); // current 10, minRaise 10, pot 30, toCall 0
+    expect(svaraRaiseBounds(s, 0)).toEqual({ min: 20, max: 500 });
+    expect(svaraEngine.legalActions(s, 0)).toEqual([
+      { type: "FOLD" },
+      { type: "CALL" },
+      { type: "RAISE", to: 20 },
+      { type: "RAISE", to: 25 },
+      { type: "RAISE", to: 40 },
+      { type: "ALLIN" },
+    ]);
+    expect(svaraRaisePresets(s, 0)).toEqual({ min: 20, halfPot: 25, pot: 40, allIn: 500 });
+  });
+
+  it("validate приема произволен размер в границите и отхвърля извън тях", () => {
+    const s = base();
+    const v = (a: unknown) => svaraEngine.validate!(s, 0, a as never);
+    expect(v({ type: "RAISE", to: 137 })).toBe(true);
+    expect(v({ type: "RAISE", to: 500 })).toBe(true); // целият стек = all-in
+    expect(v({ type: "RAISE", to: 19 })).toBe(false); // под минимума
+    expect(v({ type: "RAISE", to: 501 })).toBe(false); // над стека
+    expect(v({ type: "RAISE", to: 30.5 })).toBe(false);
+    expect(v({ type: "RAISE", to: "40" })).toBe(false);
+    expect(v({ type: "RAISE", to: 40, x: 1 })).toBe(false);
+    expect(v({ type: "RAISE" })).toBe(false);
+    expect(v({ type: "CALL" })).toBe(true);
+    expect(v({ type: "CALL", to: 3 })).toBe(false);
+    expect(svaraEngine.validate!(s, 1, { type: "CALL" })).toBe(false); // не е на ход
+  });
+
+  it("вдигането мести минимума: след вдигане с 50 следващото е поне +50", () => {
+    const { state, events } = svaraEngine.reduce(base(), { type: "RAISE", to: 60 }, rng());
+    expect(events).toContainEqual({ type: "RAISE", seat: 0, to: 60 });
+    expect(state.current).toBe(60);
+    expect(state.minRaise).toBe(50);
+    expect(state.chips[0]).toBe(440);
+    expect(svaraRaiseBounds(state, 1)).toEqual({ min: 110, max: 500 });
+    expect(() => svaraEngine.reduce(state, { type: "RAISE", to: 100 }, rng())).toThrow();
+  });
+
+  it("къс стек: стига за изравняване, но не и за минимално вдигане → само ALLIN", () => {
+    const s = mk({
+      hands: [["AH", "KH", "QH"], ["7H", "8S", "9D"]],
+      chips: [45, 400],
+      bet: [10, 50],
+      current: 50,
+      minRaise: 40,
+      pot: 60,
+      acted: [true, true],
+    });
+    expect(svaraRaiseBounds(s, 0)).toBeNull();
+    expect(svaraEngine.legalActions(s, 0)).toEqual([{ type: "FOLD" }, { type: "CALL" }, { type: "ALLIN" }]);
+    const { state, events } = svaraEngine.reduce(s, { type: "ALLIN" }, rng());
+    expect(events).toContainEqual({ type: "ALLIN", seat: 0, amount: 45, to: 55 });
+    expect(state.current).toBe(55);
+    expect(state.minRaise).toBe(40); // непълно вдигане не мести минимума
+    expect(state.turn).toBe(1); // противникът трябва да отговори
+  });
+});
+
+describe("СВАРА — all-in и странични потове", () => {
+  it("all-in с по-малко: без CALL, само ALLIN/FOLD; излишъкът се връща", () => {
+    const s = mk({
+      hands: [["7H", "8S", "9D"], ["AH", "KH", "QH"]], // seat 1 е по-силен
+      chips: [400, 30],
+      bet: [100, 10],
+      current: 100,
+      pot: 110,
+      turn: 1,
+      acted: [true, false],
+    });
+    expect(svaraEngine.legalActions(s, 1)).toEqual([{ type: "FOLD" }, { type: "ALLIN" }]);
+    const { state, events } = svaraEngine.reduce(s, { type: "ALLIN" }, rng());
+    expect(events).toContainEqual({ type: "ALLIN", seat: 1, amount: 30, to: 40 });
+    expect(state.phase).toBe("SHOWDOWN"); // никой друг не може да залага
+    const w = wins(events);
+    expect(w).toContainEqual({ type: "WIN", seat: 0, pot: 60, potIndex: 1, split: false });
+    expect(w).toContainEqual({ type: "WIN", seat: 1, pot: 80 });
+    expect(state.chips).toEqual([460, 80]);
+    expect(state.pot).toBe(0);
+    expect(total(state)).toBe(total(s) + 0);
+  });
+
+  it("два странични пота: всеки се печели от най-силния сред правоимащите", () => {
+    const s = mk({
+      hands: [
+        ["AH", "AS", "AD"], // 33 — all-in 30
+        ["AC", "KC", "QC"], // 31 — all-in 60
+        ["7H", "8S", "9D"], // 9
+        ["JH", "QH", "8D"], // 20
+      ],
+      chips: [0, 0, 200, 300],
+      bet: [30, 60, 100, 10],
+      current: 100,
+      minRaise: 40,
+      pot: 200,
+      turn: 3,
+      acted: [true, true, true, false],
+    });
+    expect(svaraPots({ ...s, bet: [30, 60, 100, 100], pot: 290 })).toEqual([
+      { amount: 120, eligible: [0, 1, 2, 3] },
+      { amount: 90, eligible: [1, 2, 3] },
+      { amount: 80, eligible: [2, 3] },
+    ]);
+    const { state, events } = svaraEngine.reduce(s, { type: "CALL" }, rng());
+    expect(state.phase).toBe("SHOWDOWN");
+    const w = wins(events);
+    expect(w).toContainEqual({ type: "WIN", seat: 0, pot: 120 });
+    expect(w).toContainEqual({ type: "WIN", seat: 1, pot: 90, potIndex: 1, split: false });
+    expect(w).toContainEqual({ type: "WIN", seat: 3, pot: 80, potIndex: 2, split: false });
+    expect(state.chips).toEqual([120, 90, 200, 290]);
+    expect(state.winner).toBe(0);
+    expect(total(state)).toBe(total(s));
+  });
+
+  it("равенство в страничен пот: дели се поравно, нечетният чип по реда на хода", () => {
+    const s = mk({
+      hands: [
+        ["AH", "AS", "AD"], // 33 — all-in 30
+        ["KH", "QH", "8D"], // 20
+        ["KS", "QS", "8C"], // 20
+      ],
+      chips: [0, 300, 300],
+      bet: [30, 81, 30],
+      current: 81,
+      minRaise: 51,
+      pot: 141,
+      dealer: 1,
+      turn: 2,
+      acted: [true, true, true],
+    });
+    const { state, events } = svaraEngine.reduce(s, { type: "CALL" }, rng());
+    const w = wins(events);
+    // Странично: (81−30)×2 = 102 → 51/51; основно 90 → seat 0.
+    expect(w).toContainEqual({ type: "WIN", seat: 1, pot: 51, potIndex: 1, split: true });
+    expect(w).toContainEqual({ type: "WIN", seat: 2, pot: 51, potIndex: 1, split: true });
+    expect(w).toContainEqual({ type: "WIN", seat: 0, pot: 90 });
+    expect(total(state)).toBe(total(s));
+
+    // Нечетен страничен пот (101 за двама, с мъртви пари от паснал): допълнителният
+    // чип отива на първия по реда на хода след раздаващия.
+    const odd = mk({
+      hands: [["AH", "AS", "AD"], ["KH", "QH", "8D"], ["KS", "QS", "8C"], ["7H", "8S", "9D"]],
+      chips: [0, 300, 300, 300],
+      bet: [30, 80, 29, 31],
+      folded: [false, false, false, true],
+      current: 80,
+      minRaise: 50,
+      pot: 170,
+      dealer: 1,
+      turn: 2,
+      acted: [true, true, false, true],
+    });
+    const r2 = svaraEngine.reduce(odd, { type: "CALL" }, rng());
+    expect(r2.state.phase).toBe("SHOWDOWN");
+    expect(wins(r2.events).filter((e) => e.potIndex === 1)).toEqual([
+      { type: "WIN", seat: 2, pot: 51, potIndex: 1, split: true },
+      { type: "WIN", seat: 1, pot: 50, potIndex: 1, split: true },
+    ]);
+    expect(wins(r2.events)).toContainEqual({ type: "WIN", seat: 0, pot: 120 });
+    expect(total(r2.state)).toBe(total(odd));
+  });
+
+  it("свара след all-in: равенство за основния пот → под-игра, all-in играчът е вътре", () => {
+    const s = mk({
+      hands: [
+        ["AH", "KH", "QH"], // 31 — all-in 40
+        ["AS", "KS", "QS"], // 31
+        ["7H", "8S", "9D"], // 9
+      ],
+      chips: [0, 300, 50],
+      bet: [40, 100, 40],
+      current: 100,
+      minRaise: 60,
+      pot: 180,
+      turn: 2,
+      acted: [true, true, true],
+    });
+    expect(svaraEngine.legalActions(s, 2)).toEqual([{ type: "FOLD" }, { type: "ALLIN" }]);
+    const { state: paused, events } = svaraEngine.reduce(s, { type: "ALLIN" }, rng());
+    // Странични: 90..100 → seat 1 (10, сам); 40..90 → seat 1 (100, 31 срещу 9).
+    expect(wins(events)).toContainEqual({ type: "WIN", seat: 1, pot: 10, potIndex: 2, split: false });
+    expect(wins(events)).toContainEqual({ type: "WIN", seat: 1, pot: 100, potIndex: 1, split: false });
+    expect(events).toContainEqual({ type: "SVARA", seats: [0, 1], pot: 120 });
+    expect(paused.phase).toBe("SHOWDOWN");
+    expect(paused.svaraSeats).toEqual([0, 1]);
+    expect(paused.svaraFee).toBe(120);
+    expect(paused.pot).toBe(120);
+    expect(paused.pots).toEqual([{ amount: 120, eligible: [0, 1] }]);
+    expect(paused.chips).toEqual([0, 410, 0]);
+    expect(total(paused)).toBe(total(s));
+
+    // Под-играта: all-in играчът (0 чипа) участва безплатно; никой друг не може
+    // да залага срещу него → направо showdown за пренесения пот.
+    const sub = svaraEngine.reduce(paused, { type: "CONTINUE" }, rng());
+    expect(sub.state.folded).toEqual([false, false, true]);
+    expect(sub.state.hands[0]).toHaveLength(3);
+    expect(sub.events.some((e) => e.type === "SHOWDOWN" && e.seat === 0)).toBe(true);
+    expect(sub.state.phase).toBe("SHOWDOWN");
+    expect(total(sub.state)).toBe(total(s));
+    const potWins = wins(sub.events);
+    if (potWins.length > 0) expect(potWins.reduce((a, e) => a + e.pot, 0)).toBe(120);
+    else expect(sub.state.svaraSeats).toEqual([0, 1]); // нова свара
+  });
+
+  it("all-in вдигане не е позволено, ако всички останали вече са all-in", () => {
+    const s = mk({
+      hands: [["AH", "KH", "QH"], ["7H", "8S", "9D"], ["8H", "9S", "TD"]],
+      chips: [0, 300, 200],
+      bet: [60, 10, 60],
+      current: 60,
+      folded: [false, false, true],
+      pot: 130,
+      turn: 1,
+      acted: [true, false, true],
+    });
+    expect(svaraEngine.legalActions(s, 1)).toEqual([{ type: "FOLD" }, { type: "CALL" }]);
+    expect(() => svaraEngine.reduce(s, { type: "ALLIN" }, rng())).toThrow();
+  });
+
+  it("all-in играч не получава ход; validate приема всеки легален ход (произволни мачове)", () => {
+    for (const seed of ["a", "b", "c"]) {
+      const m = new SeededRng(`svara-allin-${seed}`);
+      const pick = new SeededRng(`svara-allin-pick-${seed}`);
+      let st = svaraEngine.init({ seats: 4 }, m);
+      const t0 = total(st);
+      for (let i = 0; i < 600 && !st.done; i++) {
+        const seat = [0, 1, 2, 3].find((x) => svaraEngine.legalActions(st, x).length > 0);
+        if (seat === undefined) break;
+        const acts = svaraEngine.legalActions(st, seat);
+        for (const a of acts) expect(svaraEngine.validate!(st, seat, a)).toBe(true);
+        if (st.phase === "BETTING") expect(st.chips[seat]).toBeGreaterThan(0);
+        // Предпочитай ALLIN по-често, за да има много странични потове.
+        const allin = acts.find((a) => a.type === "ALLIN");
+        const a = allin && pick.next() < 0.3 ? allin : acts[pick.int(acts.length)]!;
+        st = svaraEngine.reduce(st, a, m).state;
+        expect(total(st)).toBe(t0);
+        expect(st.chips.every((c) => c >= 0)).toBe(true);
+        if (st.phase === "BETTING") expect(st.pots.reduce((x, p) => x + p.amount, 0)).toBe(st.pot);
+      }
+    }
+  });
+});
+
+describe("СВАРА — ботът и all-in", () => {
+  const facing = (hand: string[]) =>
+    mk({
+      hands: [hand, ["AH", "AS", "AD"]],
+      chips: [30, 300],
+      bet: [10, 100],
+      current: 100,
+      pot: 110,
+      acted: [false, true],
+    });
+
+  it("със силна ръка срещу по-голям залог влиза all-in", () => {
+    expect(svaraEngine.bot!(facing(["AC", "KC", "QC"]), 0, rng())).toEqual({ type: "ALLIN" });
+  });
+
+  it("със слаба ръка срещу по-голям залог бяга", () => {
+    expect(svaraEngine.bot!(facing(["7H", "8S", "QD"]), 0, rng())).toEqual({ type: "FOLD" });
+  });
+
+  it("с чудовище вдига най-големия наличен размер", () => {
+    const s = mk({ hands: [["AH", "AS", "AD"], ["7H", "8S", "9D"]] });
+    const legal = svaraEngine.legalActions(s, 0).filter((a) => a.type === "RAISE");
+    expect(svaraEngine.bot!(s, 0, rng())).toEqual(legal[legal.length - 1]);
   });
 });
