@@ -43,12 +43,12 @@ export function ReportContent({
     : "/kontakti";
 
   return (
-    <p className={`no-print text-sm text-slate-600 ${className}`}>
+    <p className={`no-print text-base text-slate-600 ${className}`}>
       <a
         href={href}
         className="link-quiet inline-flex min-h-tap items-center gap-1.5 font-medium text-slate-700"
       >
-        <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden />
+        <AlertTriangle className="h-5 w-5 shrink-0" aria-hidden />
         Сигнализирайте за това съдържание
       </a>
     </p>

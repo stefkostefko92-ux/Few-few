@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   DetailActions,
   EmailLink,
+  FACT_LINK,
   FactList,
   Notice,
   PageHero,
@@ -38,6 +39,12 @@ const SERVICE_SCHEMA_TYPE: Record<string, string> = {
   OTHER: "LocalBusiness",
 };
 
+
+/** „а“, „а или б“, „а, б или в“. */
+function joinOr(parts: string[]): string {
+  if (parts.length < 2) return parts.join("");
+  return `${parts.slice(0, -1).join(", ")} или ${parts[parts.length - 1]}`;
+}
 
 async function getService(slug: string) {
   return prisma.service.findFirst({ where: { slug, published: true } });
@@ -80,6 +87,12 @@ export default async function ServicePage({
   if (!s) notFound();
   const website = safeHttpUrl(s.website) ? s.website : "";
   const hasFacts = Boolean(s.address || s.hours || s.email || website || (s.lat && s.lng));
+  // Другите начини за връзка за хора, които не чуват добре по телефона.
+  const otherWays = [
+    s.email && "пишете на имейла",
+    website && "използвате сайта",
+    s.address && "отидете на място",
+  ].filter((w): w is string => Boolean(w));
 
   return (
     <>
@@ -173,12 +186,12 @@ export default async function ServicePage({
                   {
                     label: "Имейл",
                     icon: Mail,
-                    value: s.email ? <EmailLink email={s.email} /> : null,
+                    value: s.email ? <EmailLink email={s.email} className={FACT_LINK} /> : null,
                   },
                   {
                     label: "Уебсайт",
                     icon: ExternalLink,
-                    value: website ? <WebsiteLink url={s.website} /> : null,
+                    value: website ? <WebsiteLink url={s.website} className={FACT_LINK} /> : null,
                   },
                 ]}
               />
@@ -196,15 +209,10 @@ export default async function ServicePage({
               )}
             </section>
           )}
-          {(s.email || s.address || website) && (
+          {otherWays.length > 0 && (
             <Notice title="Не чувате добре по телефона?" className="no-print">
               <p>
-                Може да
-                {s.email && <> пишете на имейла</>}
-                {s.email && (s.address || website) && ","}
-                {website && <> използвате сайта</>}
-                {website && s.address && " или"}
-                {s.address && <> отидете на място</>}.{" "}
+                Може да {joinOr(otherWays)}.{" "}
                 <Link href="/dostapnost" className="link">
                   Вижте още начини за връзка
                 </Link>

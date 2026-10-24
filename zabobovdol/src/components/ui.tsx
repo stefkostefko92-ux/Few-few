@@ -358,6 +358,12 @@ export function ListToolbar({
 export type Fact = { label: string; value: ReactNode; icon?: LucideIcon };
 
 /**
+ * Връзка като самостоятелна стойност във FactList (имейл, сайт): цел ≥44px
+ * по височина, а не 20px текст — за <EmailLink className={FACT_LINK}/>.
+ */
+export const FACT_LINK = "link inline-flex min-h-tap items-center";
+
+/**
  * Фактите в детайл (Адрес, Телефон, Работно време…) като <dl>: етикетът е
  * малък и сив, стойността — основен текст. Празните стойности се пропускат.
  */
@@ -476,8 +482,8 @@ export function Notice({
           </div>
         )}
         {tone === "scam" && scamLink && (
-          <p className="mt-2 text-base">
-            <Link href="/izmami" className="link">
+          <p className="mt-1 text-base">
+            <Link href="/izmami" className="link inline-flex min-h-tap items-center">
               Как да разпознаете измама
             </Link>
           </p>

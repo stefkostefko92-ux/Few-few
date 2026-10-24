@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import {
   DetailActions,
   EmailLink,
+  FACT_LINK,
   FactList,
   PageHero,
   Prose,
@@ -127,18 +128,18 @@ export default async function BusinessPage({
                   {
                     label: "Имейл",
                     icon: Mail,
-                    value: b.email ? <EmailLink email={b.email} /> : null,
+                    value: b.email ? <EmailLink email={b.email} className={FACT_LINK} /> : null,
                   },
                   {
                     label: "Уебсайт",
                     icon: ExternalLink,
-                    value: website ? <WebsiteLink url={b.website} /> : null,
+                    value: website ? <WebsiteLink url={b.website} className={FACT_LINK} /> : null,
                   },
                   {
                     label: "Facebook",
                     icon: ExternalLink,
                     value: facebook ? (
-                      <WebsiteLink url={b.facebook}>Страница във Facebook</WebsiteLink>
+                      <WebsiteLink url={b.facebook} className={FACT_LINK}>Страница във Facebook</WebsiteLink>
                     ) : null,
                   },
                 ]}

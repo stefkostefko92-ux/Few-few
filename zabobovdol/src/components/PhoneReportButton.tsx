@@ -63,9 +63,9 @@ export function PhoneReportButton({
             setStatus("open");
           }}
           aria-expanded={false}
-          className="a11y-btn link-quiet inline-flex items-center gap-1.5 text-sm font-medium text-slate-700"
+          className="a11y-btn link-quiet inline-flex items-center gap-1.5 text-base font-medium text-slate-700"
         >
-          <PhoneOff className="h-4 w-4 shrink-0" aria-hidden />
+          <PhoneOff className="h-5 w-5 shrink-0" aria-hidden />
           Този номер е сгрешен
         </button>
       </div>
@@ -110,7 +110,7 @@ export function PhoneReportButton({
       </p>
       <div>
         <label htmlFor={`${formId}-note`} className="label">
-          Какво не е наред? (по желание)
+          Какво не е наред? (по избор)
         </label>
         <textarea
           ref={noteRef}
@@ -135,12 +135,12 @@ export function PhoneReportButton({
         aria-hidden
       />
 
-      <p className="text-sm text-slate-600">
+      <p className="text-base text-slate-600">
         Не пазим кой изпраща сигнала. Моля, не пишете име или личен телефон.
       </p>
 
       {error && (
-        <p className="text-sm font-medium text-crimson-700" role="alert">
+        <p className="text-base font-medium text-crimson-700" role="alert">
           {error}
         </p>
       )}

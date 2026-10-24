@@ -207,8 +207,11 @@ export default async function UslugiPage({
             </p>
             <ul role="list" className="mt-4 grid gap-4 sm:grid-cols-2">
               {urgent.map((s) => (
-                <li key={s.id} className="flex flex-col gap-2">
-                  <Link href={`/uslugi/${s.slug}`} className="link-quiet w-fit font-semibold text-slate-900">
+                <li key={s.id} className="flex flex-col gap-1">
+                  <Link
+                    href={`/uslugi/${s.slug}`}
+                    className="link-quiet inline-flex min-h-tap w-fit items-center font-semibold text-slate-900"
+                  >
                     {s.name}
                   </Link>
                   {s.phone && (
