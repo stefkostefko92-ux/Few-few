@@ -1,15 +1,27 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { PageHero, Prose } from "@/components/ui";
+import Link from "next/link";
+import {
+  DetailActions,
+  EmailLink,
+  FactList,
+  Notice,
+  PageHero,
+  Prose,
+  WebsiteLink,
+  safeHttpUrl,
+} from "@/components/ui";
+import { Clock, ExternalLink, Mail, MapPin } from "@/components/icons";
 import { JsonLd } from "@/components/JsonLd";
 import { buildMetadata, localBusinessLd } from "@/lib/seo";
 import { renderMarkdown } from "@/lib/markdown";
 import { SERVICE_CATEGORY_LABELS, labelFor } from "@/lib/categories";
-import { PrintButton } from "@/components/PrintButton";
-import { ShareButton } from "@/components/ShareButton";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
-import { PhoneReportButton, TelLink } from "@/components/PhoneReportButton";
+import { PhoneReportButton } from "@/components/PhoneReportButton";
+import { PhoneButton } from "@/components/PhoneButton";
+import { OpenNowBadge, hoursText } from "@/components/OpenNowBadge";
+import { formatPhoneBg } from "@/lib/phone";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +37,7 @@ const SERVICE_SCHEMA_TYPE: Record<string, string> = {
   TRANSPORT: "Organization",
   OTHER: "LocalBusiness",
 };
+
 
 async function getService(slug: string) {
   return prisma.service.findFirst({ where: { slug, published: true } });
@@ -43,7 +56,7 @@ export async function generateMetadata({
       title: s.seoTitle || `${s.name} — телефон и информация`,
       description:
         s.seoDescription ||
-        `${s.name} в Бобов дол. ${s.address ? "Адрес: " + s.address + ". " : ""}${s.phone ? "Телефон: " + s.phone + "." : ""}`,
+        `${s.name} в Бобов дол. ${s.address ? "Адрес: " + s.address + ". " : ""}${s.phone ? "Телефон: " + formatPhoneBg(s.phone) + "." : ""}`,
       path: `/uslugi/${s.slug}`,
     }),
     keywords: [
@@ -65,6 +78,8 @@ export default async function ServicePage({
   const { slug } = await params;
   const s = await getService(slug);
   if (!s) notFound();
+  const website = safeHttpUrl(s.website) ? s.website : "";
+  const hasFacts = Boolean(s.address || s.hours || s.email || website || (s.lat && s.lng));
 
   return (
     <>
@@ -88,106 +103,114 @@ export default async function ServicePage({
           { name: s.name, path: `/uslugi/${s.slug}` },
         ]}
       />
-      <div className="container-content grid gap-8 py-10 lg:grid-cols-[1fr,18rem]">
-        <div>
-          <div className="badge">
-            {labelFor(SERVICE_CATEGORY_LABELS, s.category)}
+      <div className="container-content grid gap-8 py-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="min-w-0">
+          <div className="flex flex-wrap gap-2">
+            <span className="badge">{labelFor(SERVICE_CATEGORY_LABELS, s.category)}</span>
+            {s.isEmergency && <span className="badge-danger">Спешен номер</span>}
           </div>
+          {/* Главното действие — обаждането: голям бутон веднага под заглавието
+              (на телефон — в първия екран), над описанието и печата. */}
+          {(s.phone || s.phone2) && (
+            <div className="mt-5 max-w-md">
+              {s.phone && (
+                <PhoneButton
+                  phone={s.phone}
+                  label="Обадете се:"
+                  variant={s.isEmergency ? "danger" : "primary"}
+                  full
+                  className="text-lg"
+                />
+              )}
+              {s.phone2 && (
+                <PhoneButton
+                  phone={s.phone2}
+                  label="Втори телефон:"
+                  full
+                  className={s.phone ? "mt-3" : ""}
+                />
+              )}
+              <VerifiedBadge at={s.verifiedAt} source={s.verifiedSource} className="mt-3" />
+              {/* 112 е единният европейски номер — „сгрешен“ не може да бъде. */}
+              {!s.isEmergency && (
+                <PhoneReportButton serviceId={s.id} serviceName={s.name} className="mt-1" />
+              )}
+            </div>
+          )}
           {s.description && (
-            <div className="mt-4">
+            <div className="mt-6">
               <Prose html={renderMarkdown(s.description)} />
             </div>
           )}
-          <div className="mt-6 no-print flex flex-wrap items-start gap-3">
-            <PrintButton variant="secondary" />
-            <ShareButton
-              title={`${s.name} — За Бобов дол`}
-              text={`${s.name}${s.phone ? ` — телефон ${s.phone}` : ""}`}
-              path={`/uslugi/${s.slug}`}
-            />
-          </div>
+          <DetailActions
+            shareTitle={`${s.name} — За Бобов дол`}
+            shareText={`${s.name}${s.phone ? ` — телефон ${formatPhoneBg(s.phone)}` : ""}`}
+            sharePath={`/uslugi/${s.slug}`}
+          />
         </div>
-        <aside className="space-y-3">
-          <div className="card space-y-3">
-            {s.phone && (
-              <div>
-                <div className="text-xs uppercase text-slate-600">Телефон</div>
-                <TelLink phone={s.phone} className="text-lg font-semibold text-brand-700">
-                  {s.phone}
-                </TelLink>
-              </div>
-            )}
-            {s.phone2 && (
-              <div>
-                <div className="text-xs uppercase text-slate-600">Втори телефон</div>
-                <TelLink phone={s.phone2} className="font-semibold text-brand-700">
-                  {s.phone2}
-                </TelLink>
-              </div>
-            )}
-            {(s.phone || s.phone2) && (
-              <>
-                <VerifiedBadge at={s.verifiedAt} source={s.verifiedSource} />
-                <PhoneReportButton serviceId={s.id} serviceName={s.name} />
-              </>
-            )}
-            {s.address && (
-              <div>
-                <div className="text-xs uppercase text-slate-600">Адрес</div>
-                <div className="text-slate-700">{s.address}</div>
-              </div>
-            )}
-            {s.hours && (
-              <div>
-                <div className="text-xs uppercase text-slate-600">Работно време</div>
-                <div className="text-slate-700">{s.hours}</div>
-              </div>
-            )}
-            {s.email && (
-              <div>
-                <div className="text-xs uppercase text-slate-600">Имейл</div>
-                <a href={`mailto:${s.email}`} className="text-brand-700 hover:underline">
-                  {s.email}
-                </a>
-              </div>
-            )}
-            {s.website && (
-              <div>
-                <div className="text-xs uppercase text-slate-600">Уебсайт</div>
+        <aside className="space-y-4">
+          {hasFacts && (
+            <section aria-labelledby="info-zaglavie" className="panel">
+              <h2 id="info-zaglavie" className="h-card">
+                Информация
+              </h2>
+              <FactList
+                className="mt-3"
+                items={[
+                  { label: "Адрес", icon: MapPin, value: s.address },
+                  {
+                    label: "Работно време",
+                    icon: Clock,
+                    value: s.hours ? (
+                      <>
+                        {hoursText(s.hours)}
+                        <span className="mt-1.5 flex">
+                          <OpenNowBadge hours={s.hours} />
+                        </span>
+                      </>
+                    ) : null,
+                  },
+                  {
+                    label: "Имейл",
+                    icon: Mail,
+                    value: s.email ? <EmailLink email={s.email} /> : null,
+                  },
+                  {
+                    label: "Уебсайт",
+                    icon: ExternalLink,
+                    value: website ? <WebsiteLink url={s.website} /> : null,
+                  },
+                ]}
+              />
+              {s.lat && s.lng && (
                 <a
-                  href={s.website}
+                  href={`https://www.openstreetmap.org/?mlat=${s.lat}&mlon=${s.lng}#map=17/${s.lat}/${s.lng}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="break-all text-brand-700 hover:underline"
+                  className="btn-secondary no-print mt-4 w-full"
                 >
-                  {s.website}
+                  <MapPin className="h-5 w-5" aria-hidden />
+                  Вижте на картата
+                  <span className="sr-only"> (отваря се в нов раздел)</span>
                 </a>
-              </div>
-            )}
-            {(s.email || s.address || s.website) && (
-              <div className="rounded-lg bg-brand-50 p-3 text-sm text-slate-700">
-                <strong>Не чувате добре по телефона?</strong> Може да{" "}
-                {s.email && <>пишете на имейла</>}
-                {s.email && (s.address || s.website) && ", "}
-                {s.website && <>използвате сайта</>}
-                {s.website && s.address && " или "}
-                {s.address && <>отидете на място (адрес и работно време по-горе)</>}.{" "}
-                <a href="/dostapnost" className="font-medium text-brand-700 underline">
+              )}
+            </section>
+          )}
+          {(s.email || s.address || website) && (
+            <Notice title="Не чувате добре по телефона?" className="no-print">
+              <p>
+                Може да
+                {s.email && <> пишете на имейла</>}
+                {s.email && (s.address || website) && ","}
+                {website && <> използвате сайта</>}
+                {website && s.address && " или"}
+                {s.address && <> отидете на място</>}.{" "}
+                <Link href="/dostapnost" className="link">
                   Вижте още начини за връзка
-                </a>
+                </Link>
                 .
-              </div>
-            )}
-          </div>
-          {s.lat && s.lng && (
-            <a
-              href={`https://www.openstreetmap.org/?mlat=${s.lat}&mlon=${s.lng}#map=17/${s.lat}/${s.lng}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-secondary w-full"
-            >
-              Виж на картата
-            </a>
+              </p>
+            </Notice>
           )}
         </aside>
       </div>
