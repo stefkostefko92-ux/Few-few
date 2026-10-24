@@ -74,8 +74,8 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
         RegisterChat();
         RegisterAdminCommands();
         RegisterBanners();
-        RegisterAdverts();
         RegisterAmmo();
+        RegisterSettings();
         RegisterHud();
         RegisterFunCommands();
         RegisterMatchEnd();

@@ -55,6 +55,7 @@
   "advert.carbonstealth": "{Gold}[CarbonStealth]{Default} Сървърът е направен от {Gold}Carbon Stealth{Default} — сайтове, онлайн магазини, приложения и ERP: {Lime}carbonstealth.eu{Default}",
   "advert.adblock": "{Gold}[CarbonStealth]{Default} Писна ли ти от реклами? {Gold}Supreme AdBlock{Default} — безплатно спиране на реклами и тракери за Chrome, Edge и Brave: {Lime}adblock.carbonstealth.eu{Default}",
   "advert.site": "{Gold}[CarbonStealth]{Default} Класация, твоите статистики, банове и VIP: {Lime}{0}{Default}",
+  "advert.custom": "{Gold}[CarbonStealth]{Default} {0}",
   "hud.keys": "W/S ↕ · D/E ✔ · A ← · R ✖",
   "hud.root": "АДМИН",
   "hud.players": "Играчи",

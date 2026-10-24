@@ -6,6 +6,7 @@ import { playerRoutes } from './players.js';
 import { punishmentRoutes } from './punishments.js';
 import { recordRoutes } from './records.js';
 import { serverRoutes } from './server.js';
+import { settingsRoutes } from './settings.js';
 import { accountRoutes } from './totp.js';
 import { vipRoutes } from './vip.js';
 
@@ -20,6 +21,7 @@ export function protectedRoutes(ctx: AdminCtx): AdminRoute[] {
     ...vipRoutes(ctx),
     ...recordRoutes(ctx),
     ...serverRoutes(ctx),
+    ...settingsRoutes(ctx),
     ...accountRoutes(ctx),
   ];
 }

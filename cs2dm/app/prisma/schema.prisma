@@ -390,3 +390,16 @@ model WebRecoveryCode {
   @@unique([steamId, codeHash])
   @@map("web_recovery_codes")
 }
+
+/// Живите настройки на сървъра (CONTRACT.md §11): ключ от затворен списък → JSON стойност.
+/// Пишат ги панелът (`/admin/settings`) и WASD менюто в играта (патрони, ботове); C# плъгинът ги чете
+/// при старт, на 60 s и при `settings.reload`. Липсващ или невалиден ред → важи конфигът на плъгина.
+model ServerSetting {
+  key       String   @id @db.VarChar(32)
+  value     Json
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
+  /// SteamID64 на последния писач (панел или игра); null = системата.
+  updatedBy String?  @map("updated_by") @db.VarChar(17)
+
+  @@map("server_settings")
+}

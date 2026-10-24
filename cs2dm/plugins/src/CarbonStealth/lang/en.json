@@ -55,6 +55,7 @@
   "advert.carbonstealth": "{Gold}[CarbonStealth]{Default} This server is made by {Gold}Carbon Stealth{Default} — websites, e-commerce, apps and ERP: {Lime}carbonstealth.eu{Default}",
   "advert.adblock": "{Gold}[CarbonStealth]{Default} Tired of ads? {Gold}Supreme AdBlock{Default} — free ad & tracker blocker for Chrome, Edge and Brave: {Lime}adblock.carbonstealth.eu{Default}",
   "advert.site": "{Gold}[CarbonStealth]{Default} Leaderboard, your stats, bans and VIP: {Lime}{0}{Default}",
+  "advert.custom": "{Gold}[CarbonStealth]{Default} {0}",
   "hud.keys": "W/S ↕ · D/E ✔ · A ← · R ✖",
   "hud.root": "ADMIN",
   "hud.players": "Players",

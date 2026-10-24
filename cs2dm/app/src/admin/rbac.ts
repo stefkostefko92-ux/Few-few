@@ -66,6 +66,8 @@ export const CAPABILITIES = {
   banners: 'HEADADMIN',
   /** Одит-веригата. */
   audit: 'HEADADMIN',
+  /** Живите настройки на сървъра (CONTRACT §11): реклами, патрони, ботове, XP множител, поздрав. */
+  settings: 'HEADADMIN',
 } as const satisfies Record<string, Role>;
 
 export type Capability = keyof typeof CAPABILITIES;

@@ -768,7 +768,8 @@
       "server": "Server",
       "banners": "Banners",
       "audit": "Audit",
-      "account": "Account"
+      "account": "Account",
+      "settings": "Settings"
     },
     "me": {
       "signedAs": "Signed in:",
@@ -1195,6 +1196,55 @@
         "update": "update"
       },
       "detail": "Details from the agent:"
+    },
+    "settings": {
+      "title": "Server settings",
+      "lead": "They apply in game right away: after saving, the panel sends a command to the plugin, and the plugin also checks them every 60 seconds. A group that is not set follows the plugin config.",
+      "pluginLive": "The plugin is online — after saving you will see whether it confirmed.",
+      "pluginOffline": "No fresh data from the plugin. The value stays in the database and applies when the plugin starts.",
+      "stored": "Saved by {name} on {date}.",
+      "default": "Not set — the plugin config applies. The fields show the default values.",
+      "invalid": "The stored value is corrupted — the plugin ignores it and uses its config. Save it again.",
+      "reset": "Back to default",
+      "resetConfirm": "Delete this value? The plugin config will apply.",
+      "adverts": {
+        "title": "Chat adverts",
+        "interval": "Interval in seconds",
+        "intervalHint": "0 = off; otherwise {min} to {max} seconds. Every advert is shown in the player's language.",
+        "builtin": "Built-in adverts",
+        "builtinItems": {
+          "carbonstealth": "Carbon Stealth — websites, apps, ERP",
+          "adblock": "Supreme AdBlock",
+          "site": "The server website — leaderboard, stats, VIP"
+        },
+        "custom": "Custom texts — {lang}",
+        "customHint": "Up to {count} texts per language, up to {max} characters. Colour codes and curly braces are removed, as in chat. Players with another language see the English ones.",
+        "langs": {
+          "bg": "Bulgarian",
+          "en": "English"
+        },
+        "textLabel": "Text {n}"
+      },
+      "ammo": {
+        "title": "Ammo",
+        "label": "Infinite reserve (topped up on every reload)",
+        "hint": "The same as “Infinite ammo” in the !admin menu — a change in one place shows in the other."
+      },
+      "bots": {
+        "title": "Bots",
+        "label": "Number of bots (bot_quota)",
+        "hint": "0 to {max}. Bots fill the server and leave as people join. The same as “Bots” in the !admin menu."
+      },
+      "xp": {
+        "title": "XP multiplier",
+        "label": "Multiplier",
+        "hint": "{min} to {max} in steps of 0.1. It applies equally to everyone. During an active event the higher of the two applies."
+      },
+      "join": {
+        "title": "Welcome on join",
+        "label": "Show the welcome message in chat when someone joins",
+        "hint": "With the welcome off, the message about the current event on join is off as well."
+      }
     }
   }
 }

@@ -80,6 +80,10 @@ public sealed partial class CarbonStealthPlugin
             case "mode":
                 BridgeMode(cmd, done);
                 break;
+            case "settings.reload":
+                // Отговорът е след прилагането — панелът показва „потвърдено“ само ако е в сила.
+                LoadSettings(ok => done(ok, ok ? null : "database error"));
+                break;
             default:
                 done(false, "unknown action");
                 break;

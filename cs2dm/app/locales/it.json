@@ -768,7 +768,8 @@
       "server": "Server",
       "banners": "Banner",
       "audit": "Audit",
-      "account": "Account"
+      "account": "Account",
+      "settings": "Impostazioni"
     },
     "me": {
       "signedAs": "Accesso:",
@@ -1195,6 +1196,55 @@
         "update": "aggiornamento"
       },
       "detail": "Dettagli dall’agente:"
+    },
+    "settings": {
+      "title": "Impostazioni del server",
+      "lead": "Si applicano subito in gioco: dopo il salvataggio il pannello invia un comando al plugin, che comunque le controlla ogni 60 secondi. Un gruppo non impostato segue la configurazione del plugin.",
+      "pluginLive": "Il plugin è online: dopo il salvataggio vedrà se ha confermato.",
+      "pluginOffline": "Nessun dato recente dal plugin. Il valore resta nel database e si applica quando il plugin si avvia.",
+      "stored": "Salvato da {name} il {date}.",
+      "default": "Non impostato: vale la configurazione del plugin. I campi mostrano i valori predefiniti.",
+      "invalid": "Il valore salvato è danneggiato: il plugin lo ignora e usa la sua configurazione. Lo salvi di nuovo.",
+      "reset": "Ripristina predefinito",
+      "resetConfirm": "Eliminare questo valore? Varrà la configurazione del plugin.",
+      "adverts": {
+        "title": "Annunci in chat",
+        "interval": "Intervallo in secondi",
+        "intervalHint": "0 = disattivati; altrimenti da {min} a {max} secondi. Ogni annuncio appare nella lingua del giocatore.",
+        "builtin": "Annunci integrati",
+        "builtinItems": {
+          "carbonstealth": "Carbon Stealth — siti web, app, ERP",
+          "adblock": "Supreme AdBlock",
+          "site": "Il sito del server — classifica, statistiche, VIP"
+        },
+        "custom": "Testi personalizzati — {lang}",
+        "customHint": "Fino a {count} testi per lingua, fino a {max} caratteri. I codici colore e le parentesi graffe vengono rimossi, come in chat. I giocatori con un'altra lingua vedono quelli inglesi.",
+        "langs": {
+          "bg": "bulgaro",
+          "en": "inglese"
+        },
+        "textLabel": "Testo {n}"
+      },
+      "ammo": {
+        "title": "Munizioni",
+        "label": "Riserva infinita (ricaricata a ogni ricarica)",
+        "hint": "Uguale a «Munizioni infinite» nel menu !admin: una modifica in un punto si vede nell'altro."
+      },
+      "bots": {
+        "title": "Bot",
+        "label": "Numero di bot (bot_quota)",
+        "hint": "Da 0 a {max}. I bot riempiono il server ed escono quando entrano persone. Uguale a «Bot» nel menu !admin."
+      },
+      "xp": {
+        "title": "Moltiplicatore XP",
+        "label": "Moltiplicatore",
+        "hint": "Da {min} a {max} con passo 0,1. Vale allo stesso modo per tutti. Durante un evento attivo vale il maggiore dei due."
+      },
+      "join": {
+        "title": "Benvenuto all'ingresso",
+        "label": "Mostra il messaggio di benvenuto in chat quando qualcuno entra",
+        "hint": "Con il benvenuto disattivato è disattivato anche il messaggio sull'evento in corso all'ingresso."
+      }
     }
   }
 }

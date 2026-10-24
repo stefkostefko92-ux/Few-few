@@ -112,7 +112,9 @@ public sealed partial class CarbonStealthPlugin
             Server.ExecuteCommand($"bot_quota {n}");
             var actor = Utilities.GetPlayerFromSlot(slot);
             Broadcast("server.bots", ActorName(actor), n);
-            Audit(actor, "server.bots", null, new { quota = n });
+            // Същият ред като в панела (§11) — иначе следващото опресняване на 60 s връща старото.
+            _settings = _settings with { BotQuota = n };
+            SaveSetting(actor, "bots", new { quota = n });
         }))).ToList();
         items.Add(BackItem(slot));
         return new HudPage(L(slot, "hud.bots"), null, items);
@@ -183,9 +185,10 @@ public sealed partial class CarbonStealthPlugin
     private void SetInfiniteAmmo(int slot, bool on)
     {
         _infiniteAmmo = on;
+        _settings = _settings with { InfiniteAmmo = on };
         var actor = Utilities.GetPlayerFromSlot(slot);
         Broadcast("server.ammo", ActorName(actor), L(slot, on ? "hud.on" : "hud.off"));
-        Audit(actor, "server.ammo", null, new { on });
+        SaveSetting(actor, "ammo", new { infiniteReserve = on });
     }
 
     /// <summary>Обявление по ключ — всеки го вижда на своя език.</summary>

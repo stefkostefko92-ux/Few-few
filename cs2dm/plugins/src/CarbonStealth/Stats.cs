@@ -50,7 +50,7 @@ public sealed partial class CarbonStealthPlugin
             ThroughSmoke: e.Thrusmoke,
             Revenge: outcome.Revenge,
             BountyClaimed: outcome.BountyClaimed);
-        var xp = Progression.XpForKill(facts);
+        var xp = Progression.ApplyMultiplier(Progression.XpForKill(facts), XpTenths());
         var levelBefore = a.Level;
         a.Xp += xp;
         a.SessionKills++;

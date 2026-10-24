@@ -116,6 +116,8 @@ const EXPECTED: Record<string, keyof typeof CAPABILITIES> = {
   'get /server/logs': 'serverRead',
   'post /server/restart': 'serverControl',
   'post /server/update': 'serverControl',
+  'get /settings': 'settings',
+  'post /settings/:group': 'settings',
   'get /account': 'panel',
   'post /account/recovery': 'panel',
   'post /account/logout-all': 'panel',
@@ -139,6 +141,7 @@ test('всеки защитен маршрут е с право — точно �
     roles: 'HEADADMIN',
     banners: 'HEADADMIN',
     audit: 'HEADADMIN',
+    settings: 'HEADADMIN',
   });
 });
 
