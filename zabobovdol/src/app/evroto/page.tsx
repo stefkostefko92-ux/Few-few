@@ -26,10 +26,12 @@ import { EuroConverter } from "@/components/EuroConverter";
 import { PrintSourceLine } from "@/components/PrintSourceLine";
 import { OpenDetailsOnPrint } from "@/components/OpenDetailsOnPrint";
 import { getIllustrations } from "@/lib/howto-illustrations";
+import { EURO_TOPIC, euroTodayNote } from "@/lib/howto-euro";
+import { EuroTodayNotice, EuroWrittenBeforeNotice } from "@/components/EuroNotice";
 
 export const dynamic = "force-dynamic";
 
-const CATEGORY = "Еврото";
+const CATEGORY = EURO_TOPIC;
 
 /**
  * Кога за последно е преглеждан текстът на страницата (фактите, увода,
@@ -90,7 +92,7 @@ const FACTS: { icon: LucideIcon; title: string; text: string }[] = [
   {
     icon: CalendarClock,
     title: "Валута",
-    text: "От 1 януари 2026 г. еврото е валутата на България.",
+    text: "От 1\u00a0януари 2026\u00a0г. еврото е валутата на България.",
   },
   {
     icon: Euro,
@@ -100,31 +102,32 @@ const FACTS: { icon: LucideIcon; title: string; text: string }[] = [
   {
     icon: Coins,
     title: "Левове в брой",
-    text: "Не се приемат за плащане от 1 февруари 2026 г.",
+    text: "Не се приемат за плащане от 1\u00a0февруари 2026\u00a0г.",
   },
   {
     icon: Landmark,
     title: "Обмяна",
-    text: "В БНБ — безплатно и без срок. Безплатната обмяна в банки и пощи приключи на 30 юни 2026 г.",
+    text: "В БНБ — безплатно и без срок. Безплатната обмяна в банки и пощи приключи на 30\u00a0юни 2026\u00a0г.",
   },
 ];
 
-// Въпросите по групи — най-отгоре това, което е актуално сега (обмяна,
-// курс, сметки и пенсии). Непознат въпрос от базата отива в „Други въпроси“.
+// Въпросите по групи — най-отгоре това, което е актуално сега (обмяна в БНБ,
+// курс, сметки и пенсии). Отговорите с изтекли срокове (EURO_TODAY) са в
+// края на групата си. Непознат въпрос от базата отива в „Други въпроси“.
 const GROUPS: { id: string; title: string; slugs: string[] }[] = [
   {
     id: "obmyana",
     title: "Обмяна на левове и курс",
     slugs: [
-      "e-obmiana-bezplatno",
       "e-bnb-bezsrochno",
       "e-kurs",
       "e-gruba-smetka",
       "e-kak-presmiatam",
-      "e-da-barzam-li",
-      "e-leva-vkashti",
-      "e-kolko-struva",
       "e-gubia-li-pari",
+      "e-leva-vkashti",
+      "e-obmiana-bezplatno",
+      "e-da-barzam-li",
+      "e-kolko-struva",
     ],
   },
   {
@@ -165,7 +168,10 @@ const GROUPS: { id: string; title: string; slugs: string[] }[] = [
   },
 ];
 
-/** Колко отговора са отворени при зареждане (останалите — с едно натискане). */
+/**
+ * Колко отговора са отворени при зареждане (останалите — с едно натискане).
+ * Отговор с изтекъл срок не се отваря сам.
+ */
 const OPEN_FIRST = 5;
 
 type FaqRow = Awaited<ReturnType<typeof loadFaq>>[number];
@@ -201,6 +207,7 @@ export default async function EuroPage() {
   // Всяка картинка — само веднъж на страницата (курсът беше показан 3 пъти).
   const shownImages = new Set(EURO_VISUALS.map((v) => v.src));
   let n = 0;
+  let opened = 0;
 
   return (
     <>
@@ -227,12 +234,12 @@ export default async function EuroPage() {
       <div className="container-content space-y-12 py-10">
         {/* AEO: прекият отговор най-отпред, като проза (query fan-out). */}
         <p className="max-w-3xl text-lg leading-relaxed text-slate-800">
-          Еврото е валутата на България от <strong>1 януари 2026&nbsp;г.</strong> Курсът е фиксиран
-          завинаги: <strong>1 евро = 1,95583 лева</strong>. От{" "}
-          <strong>1 февруари 2026&nbsp;г.</strong> с левове в брой не се плаща. Безплатната обмяна в
-          банки и пощи приключи на 30 юни 2026&nbsp;г.; в <strong>БНБ</strong> левовете се обменят{" "}
-          <strong>безплатно и без срок</strong>. До 31 декември 2026&nbsp;г. банките също обменят
-          левове, но може да искат такса.
+          Еврото е валутата на България от <strong>1&nbsp;януари 2026&nbsp;г.</strong> Курсът е
+          фиксиран завинаги: <strong>1 евро = 1,95583 лева</strong>. От{" "}
+          <strong>1&nbsp;февруари 2026&nbsp;г.</strong> с левове в брой не се плаща. Безплатната
+          обмяна в банки и пощи приключи на 30&nbsp;юни 2026&nbsp;г.; в <strong>БНБ</strong> левовете
+          се обменят <strong>безплатно и без срок</strong>. До 31&nbsp;декември 2026&nbsp;г. банките
+          също обменят левове, но може да искат такса.
         </p>
 
         {/* Какво важи днес */}
@@ -283,12 +290,7 @@ export default async function EuroPage() {
             <EmptyState title="Скоро тук ще добавим въпросите за еврото." />
           ) : (
             <div className="max-w-3xl space-y-8">
-              <Notice tone="info" title="Отговорите са събрани около смяната на валутата">
-                <p>
-                  Част от тях са писани преди 1 януари 2026&nbsp;г. и споменават срокове, които вече
-                  изтекоха. Какво важи днес — в каретата най-горе на страницата.
-                </p>
-              </Notice>
+              <EuroWrittenBeforeNotice onEuroPage />
 
               <nav aria-labelledby="sadarzhanie" className="panel">
                 <h3 id="sadarzhanie" className="label-caps">
@@ -316,6 +318,9 @@ export default async function EuroPage() {
                   <div className="mt-4 space-y-3">
                     {g.items.map((i) => {
                       n += 1;
+                      const stale = euroTodayNote(i.slug) !== null;
+                      const open = !stale && opened < OPEN_FIRST;
+                      if (open) opened += 1;
                       const pics = getIllustrations(i.slug).filter((img) => {
                         if (shownImages.has(img.src)) return false;
                         shownImages.add(img.src);
@@ -329,7 +334,7 @@ export default async function EuroPage() {
                         <details
                           key={i.id}
                           id={i.slug}
-                          open={n <= OPEN_FIRST}
+                          open={open}
                           className="panel group p-0"
                         >
                           <summary className="flex min-h-[3.5rem] cursor-pointer list-none items-center gap-3 rounded-2xl px-5 py-3 [&::-webkit-details-marker]:hidden">
@@ -350,6 +355,7 @@ export default async function EuroPage() {
                               }
                             >
                               <div className="min-w-0">
+                                <EuroTodayNotice slug={i.slug} className="mb-4 rounded-xl" />
                                 <Prose html={renderMarkdown(i.answer)} />
                                 {steps.length > 0 && <StepList steps={steps} className="mt-4" />}
                               </div>
@@ -400,7 +406,7 @@ export default async function EuroPage() {
               </li>
             ))}
           </ul>
-          <p className="text-meta mt-3">
+          <p className="mt-3 text-base text-slate-600">
             Изображенията са примерни, за онагледяване. Банкнотите са показани по цвят и номинал, не
             като точни копия.
           </p>

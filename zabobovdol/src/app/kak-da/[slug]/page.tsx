@@ -13,6 +13,8 @@ import { isoDate } from "@/lib/format-date";
 import { STEP_LINKIFY } from "@/lib/linkify";
 import { getIllustrations } from "@/lib/howto-illustrations";
 import { getGuideIndex } from "@/lib/howto-index";
+import { euroTodayNote, isEuroTopic } from "@/lib/howto-euro";
+import { EuroTodayNotice, EuroWrittenBeforeNotice } from "@/components/EuroNotice";
 import {
   canonicalCategory,
   categoryPath,
@@ -121,6 +123,10 @@ export default async function FaqPage({
   const topic = topicPageFor(faq.category);
   const section = topicSectionOf(faq.category);
   const path = `/kak-da/${faq.slug}`;
+  // Темата „Еврото“ е писана преди 1.01.2026 — бележка най-отгоре: с „какво
+  // важи днес“ при изтекъл срок, иначе общата (src/lib/howto-euro.ts).
+  const euro = isEuroTopic(faq.category);
+  const euroStale = euro && euroTodayNote(faq.slug) !== null;
 
   return (
     <>
@@ -160,6 +166,11 @@ export default async function FaqPage({
       />
       <article className="container-content grid gap-10 py-10 lg:grid-cols-[minmax(0,1fr),18rem]">
         <div className="min-w-0 max-w-3xl">
+          {euroStale ? (
+            <EuroTodayNotice slug={faq.slug} withLink className="mb-6" />
+          ) : (
+            euro && <EuroWrittenBeforeNotice className="mb-6" />
+          )}
           {split && (
             <div className="callout-note">
               <p className="label-caps">Накратко</p>
@@ -220,7 +231,7 @@ export default async function FaqPage({
                       />
                     ))}
                   </div>
-                  <p className="text-meta mt-2">
+                  <p className="mt-2 text-base text-slate-600">
                     Примерна снимка за онагледяване. Реалният екран може да изглежда
                     малко по-различно според телефона и версията на приложението.
                   </p>
