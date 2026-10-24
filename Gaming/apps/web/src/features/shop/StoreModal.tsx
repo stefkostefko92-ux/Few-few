@@ -3,8 +3,9 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { formatDualPrice, type ProductView } from "@aso/shared";
 import { Badge, Button, Modal } from "../../ui";
-import { ApiError, api } from "../../lib/api";
+import { api } from "../../lib/api";
 import { useStoreModal } from "../../lib/store";
+import { checkoutErrorKey } from "./shopErrors";
 
 /**
  * Quick-buy store surfaced anywhere in the app (incl. mid-match via the wallet
@@ -51,11 +52,7 @@ export function StoreModal() {
       const { url } = await api.checkout(sku);
       if (url) window.location.href = url;
     } catch (err) {
-      setError(
-        err instanceof ApiError && err.code === "stripe_unavailable"
-          ? t("shop.unavailable")
-          : t("shop.error"),
-      );
+      setError(t(checkoutErrorKey(err)));
     } finally {
       setBusy(null);
     }
@@ -175,7 +172,8 @@ function Section({
                 onClick={() => onBuy(p.sku)}
                 className="shrink-0"
               >
-                {enabled ? formatDualPrice(p.priceCents) : t("shop.soon")}
+                {/* Чл. 8(2) Дир. 2011/83: бутонът казва недвусмислено, че поръчката е с плащане. */}
+                {enabled ? t("shop.payButton", { price: formatDualPrice(p.priceCents) }) : t("shop.soon")}
               </Button>
             </div>
             <label className="flex items-start gap-2 text-[0.7rem] text-ink-300">

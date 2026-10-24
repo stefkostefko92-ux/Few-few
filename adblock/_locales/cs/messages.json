@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Kapacita pravidel"
+  },
+  "helpTitle": {
+    "message": "Weby nefungují?"
+  },
+  "helpText": {
+    "message": "Stačí jeden web po druhém: povolte na něm reklamy na hodinu, nebo vypněte skrývání prvků jen tam. Když nám dáte vědět, opravíme to pro všechny."
+  },
+  "helpFix": {
+    "message": "Opravit tento web"
+  },
+  "cardNever": {
+    "message": "Už nezobrazovat"
+  },
+  "cardClose": {
+    "message": "Zavřít"
+  },
+  "receiptTitle": {
+    "message": "Vašich posledních 30 dní"
+  },
+  "receiptText": {
+    "message": "Zablokované požadavky: $1 · zodpovězené cookie lišty: $2 · ušetřená data: přibližně $3 (odhad)"
+  },
+  "share": {
+    "message": "Sdílet"
+  },
+  "shareTitle": {
+    "message": "Zkopírovat odkaz na Supreme AdBlock v obchodě Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Odkaz zkopírován"
+  },
+  "rep_fixed_q": {
+    "message": "Funguje teď web?"
+  },
+  "rep_fixed_yes": {
+    "message": "Ano, funguje"
+  },
+  "rep_fixed_no": {
+    "message": "Ne, pořád nefunguje"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Výborně. Když nám dáte vědět níže, hlášení uvede, která oprava pomohla, a opravíme web pro všechny."
+  },
+  "rep_fixed_next": {
+    "message": "Zkuste další: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Pak nám prosím dejte vědět níže: na web se podíváme."
+  },
+  "rep_webmail": {
+    "message": "Nemáte poštovní aplikaci? Zkopírujte hlášení a pošlete ho na $1 ze své webové pošty."
+  },
+  "blk_mistake": {
+    "message": "Myslíte si, že jde o omyl? Dejte nám vědět"
+  },
+  "welTest": {
+    "message": "Podívejte se, jak to funguje, na testovací stránce"
   }
 }

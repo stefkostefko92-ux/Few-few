@@ -100,3 +100,22 @@
     transform: scale(0.5);
   }
 }
+
+/* Фаза на подреждане: влачене/клик, избран кораб, конфликт (застъпване/допиране). */
+.bs-grid--place .bs-cell--placeable {
+  cursor: pointer;
+}
+.bs-grid--place .bs-cell--ship.bs-cell--placeable {
+  cursor: grab;
+}
+.bs-cell--selected {
+  box-shadow: inset 0 0 0 2px var(--brass-300);
+}
+.bs-cell--bad,
+.bs-cell--ship.bs-cell--bad {
+  background: linear-gradient(180deg, #7a2420, #4a1210);
+  box-shadow: inset 0 0 0 1px var(--loss);
+}
+.bs-grid--locked {
+  opacity: 0.75;
+}

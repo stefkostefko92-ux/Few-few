@@ -83,6 +83,11 @@ export interface GameStateMsg {
   turnEndsAt?: number;
   /** Human seats currently covered by a bot substitute (timed out / dropped). */
   substituted?: number[];
+  /** Full length (ms) of the running turn clock — for the client's countdown bar. */
+  turnMs?: number;
+  /** The RECEIVING seat's consecutive turn timeouts (1 = warned: one more and a
+   *  bot takes the seat). Omitted when 0. */
+  timeoutStrikes?: number;
 }
 
 /** Server -> client: a seat's live connection status changed. */
@@ -120,6 +125,8 @@ export interface GameScoreLine {
   seat: number;
   result: "win" | "loss" | "draw";
   points?: number;
+  /** Final place (1 = first) for games that rank every seat (e.g. Не се сърди човече). */
+  rank?: number;
 }
 
 /** What a seat actually earned this match — surfaced on the game-over card so

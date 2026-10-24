@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../../lib/store";
 import { Button, cn } from "../../../ui";
@@ -14,8 +14,18 @@ interface BingoState {
   drawn: number[];
   pos: number;
   seats: number;
+  marks: number[][]; // marked cell indices per seat (own marks only)
+  auto: boolean[];
+  blockedUntil: number[];
+  voided: number[][];
+  falseCalls: number[];
+  closing: boolean;
+  winners: number[];
 }
-type BingoAction = { type: "DRAW" };
+type BingoAction =
+  | { type: "MARK"; seat: number; cell: number }
+  | { type: "BINGO"; seat: number }
+  | { type: "AUTO"; seat: number; on: boolean };
 
 const LETTERS = ["B", "I", "N", "G", "O"];
 
@@ -32,67 +42,72 @@ const LINES: number[][] = (() => {
   return lines;
 })();
 
-function progress(card: number[], drawn: Set<number>): { marked: number; best: number } {
-  const isMarked = (cell: number) => card[cell] === -1 || drawn.has(card[cell]!);
-  let marked = 0;
-  for (let i = 0; i < card.length; i++) if (isMarked(i)) marked++;
+/** Прогрес по СОБСТВЕНИТЕ маркировки на играча (те решават „Бинго!“). */
+function progress(marks: number[]): { marked: number; best: number } {
+  const set = new Set(marks);
+  set.add(12);
   let best = 0;
   for (const line of LINES) {
-    const n = line.filter(isMarked).length;
+    const n = line.filter((c) => set.has(c)).length;
     if (n > best) best = n;
   }
-  return { marked, best };
+  return { marked: set.size, best };
 }
 
 export function BingoView({ title }: { title: string }) {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const m = useMatch<BingoState, BingoAction>("BINGO");
-  const { state, legal, seat, phase, result, players, send } = m;
+  const { state, seat, phase, result, players, send } = m;
 
-  const canDraw = legal.some((a) => a.type === "DRAW");
   const drawnSet = new Set(state?.drawn ?? []);
   const last = state?.drawn[state.drawn.length - 1];
   const myCard = state?.cards[seat] ?? [];
+  const myMarks = new Set(state?.marks?.[seat] ?? []);
+  const myVoid = new Set(state?.voided?.[seat] ?? []);
+  const blockedLeft = state ? Math.max(0, (state.blockedUntil?.[seat] ?? 0) - state.drawn.length) : 0;
+  const iWon = !!state?.winners?.includes(seat);
+  const auto = !!state?.auto?.[seat];
+  const canAct = !!state && phase === "playing" && blockedLeft === 0;
 
-  // "БИНГО!" moment for everyone — a foreign win must not be a silent loss.
+  const nameOf = (s: number) =>
+    s === seat ? (user?.displayName ?? t("game.you")) : (players.find((p) => p.seat === s)?.displayName ?? `#${s}`);
+
+  // „Бинго!“, невярно викане и наказание — за всички на масата.
   const { banners } = useGameAnnouncements({
     matchId: m.matchId,
     toBanner: (ev) => {
-      if (ev.type !== "WIN" || typeof ev.seat !== "number") return null;
-      if (ev.seat === seat) return { text: t("bingo.bingo"), tone: "win" };
-      const name = players.find((p) => p.seat === ev.seat)?.displayName ?? `#${ev.seat}`;
-      return { text: t("bingo.winner", { name }), tone: "loss" };
+      if (ev.type === "WIN" && typeof ev.seat === "number") {
+        if (ev.seat === seat) return { text: t("bingo.bingo"), tone: "win" };
+        return { text: t("bingo.winner", { name: nameOf(ev.seat) }), tone: "loss" };
+      }
+      if (ev.type === "PENALTY" && typeof ev.seat === "number") {
+        return ev.seat === seat
+          ? { text: t("bingo.falseYou", { n: 3 }), tone: "loss" }
+          : { text: t("bingo.falseOther", { name: nameOf(ev.seat) }), tone: "brass" };
+      }
+      if (ev.type === "NO_WINNER") return { text: t("bingo.noWinner"), tone: "brass" };
+      return null;
     },
   });
 
-  // Guard against the button + the pending auto-timer double-sending DRAW for
-  // the same position: one request per state.pos, and the click clears the timer.
-  const drawTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const sentPos = useRef(-1);
-  const requestDraw = useCallback(() => {
-    if (drawTimer.current) {
-      clearTimeout(drawTimer.current);
-      drawTimer.current = null;
-    }
-    const pos = state?.pos ?? -1;
-    if (pos < 0 || sentPos.current === pos) return;
-    sentPos.current = pos;
-    send({ type: "DRAW" });
-  }, [state?.pos, send]);
+  // Едно изпращане на клетка до следващото състояние (без двойни кликове).
+  const [pending, setPending] = useState<Set<number>>(new Set());
+  useEffect(() => setPending(new Set()), [state]);
 
-  // Auto-draw with a rhythm — bingo has no decisions, just the reveal (§4.17).
-  useEffect(() => {
-    if (canDraw && state) {
-      drawTimer.current = setTimeout(requestDraw, 1100);
-      return () => {
-        if (drawTimer.current) {
-          clearTimeout(drawTimer.current);
-          drawTimer.current = null;
-        }
-      };
-    }
-  }, [canDraw, state, requestDraw]);
+  function mark(cell: number) {
+    if (!state || !canAct || cell === 12 || myMarks.has(cell) || pending.has(cell)) return;
+    const n = myCard[cell];
+    if (n === undefined || !drawnSet.has(n) || myVoid.has(n)) return;
+    setPending((p) => new Set(p).add(cell));
+    playCue("flip");
+    send({ type: "MARK", seat, cell });
+  }
+  const callBingo = useCallback(() => {
+    if (!canAct || iWon) return;
+    playCue("flip");
+    send({ type: "BINGO", seat });
+  }, [canAct, iWon, send, seat]);
 
   // Every client hears the ball drop, not just the seat driving the draw.
   const drawnCount = state?.drawn.length ?? 0;
@@ -117,9 +132,9 @@ export function BingoView({ title }: { title: string }) {
                 <span key={n} className="bingo-recent-ball">{n}</span>
               ))}
             </div>
-            {canDraw ? (
-              <Button className="mt-3" onClick={requestDraw}>{t("bingo.draw")}</Button>
-            ) : null}
+            <p className="mt-2 text-xs text-ink-muted">
+              {state.closing ? t("bingo.closing") : t("bingo.serverDraws")}
+            </p>
           </div>
 
           {/* My card. */}
@@ -132,22 +147,59 @@ export function BingoView({ title }: { title: string }) {
             <div className="bingo-grid">
               {myCard.map((n, i) => {
                 const free = n === -1;
-                const marked = free || drawnSet.has(n);
+                const marked = free || myMarks.has(i) || pending.has(i);
+                const voided = !free && myVoid.has(n);
+                const markable = !free && !marked && !voided && canAct && drawnSet.has(n);
                 return (
-                  <span key={i} className={cn("bingo-cell", marked && "bingo-cell--marked", free && "bingo-cell--free")}>
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => mark(i)}
+                    disabled={!markable}
+                    aria-pressed={marked}
+                    aria-label={free ? t("bingo.free") : String(n)}
+                    className={cn(
+                      "bingo-cell",
+                      marked && "bingo-cell--marked",
+                      free && "bingo-cell--free",
+                      markable && "bingo-cell--markable",
+                      voided && "bingo-cell--void",
+                    )}
+                  >
                     {free ? "★" : n}
-                  </span>
+                  </button>
                 );
               })}
             </div>
             <ScorePill label={user?.displayName ?? t("game.you")} value={t("bingo.yourCard")} highlight />
+            <div className="bingo-controls">
+              <Button onClick={callBingo} disabled={!canAct || iWon} className="bingo-call">
+                {t("bingo.call")}
+              </Button>
+              <label className="bingo-auto">
+                <input
+                  type="checkbox"
+                  checked={auto}
+                  onChange={(e) => send({ type: "AUTO", seat, on: e.target.checked })}
+                  disabled={phase !== "playing"}
+                />
+                {t("bingo.autoMark")}
+              </label>
+            </div>
+            {blockedLeft > 0 ? (
+              <p className="bingo-penalty" role="status">
+                {t("bingo.penalty", { n: blockedLeft })}
+              </p>
+            ) : (
+              <p className="text-xs text-ink-muted">{t("bingo.markHint")}</p>
+            )}
           </div>
 
           {/* Opponents' progress — cards are public, so show how close each is. */}
           <div className="bingo-rivals">
-            {state.cards.map((card, s) => {
+            {state.cards.map((_card, s) => {
               if (s === seat) return null;
-              const { marked, best } = progress(card, drawnSet);
+              const { marked, best } = progress(state.marks?.[s] ?? []);
               const name = players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
               return (
                 <div key={s} className={cn("bingo-rival", best >= 4 && "bingo-rival--hot")}>
