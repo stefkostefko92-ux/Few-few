@@ -11,8 +11,13 @@ export const SITE = {
   locale: "bg_BG",
   lang: "bg",
   description:
-    "Дигитален помощник на Бобов дол: местни услуги и телефони, как да ползваш е-услуги, събития, обяви и каталог на местния бизнес. Лесно, на едно място, за всички възрасти.",
+    "Дигитален помощник на Бобов дол: местни услуги и телефони, как да ползвате е-услуги, събития, обяви и каталог на местния бизнес. Лесно, на едно място, за всички възрасти.",
+  // slogan — за заглавието на началната и SEO (не се пипа); tagline — краткият
+  // описател до името в хедъра и футъра. Казва честно, че сайтът е независим —
+  // колкото по-институционален е видът, толкова по-ясно трябва да е, че това НЕ
+  // е сайтът на общината.
   slogan: "Всичко за Бобов дол на едно място",
+  tagline: "Независим граждански портал",
   // Гео данни за GEO/Local SEO и JSON-LD (LocalBusiness / Place).
   geo: {
     city: "Бобов дол",
@@ -67,12 +72,12 @@ export const SITE = {
 export type NavItem = { href: string; label: string; description?: string };
 
 export const PRIMARY_NAV: NavItem[] = [
-  { href: "/kak-da", label: "Как да…", description: "Стъпка по стъпка за е-услуги и документи" },
+  { href: "/kak-da", label: "Как да…", description: "Стъпка по стъпка за е\u2011услуги и документи" },
   { href: "/uslugi", label: "Услуги и телефони", description: "Важни местни телефони и услуги" },
-  { href: "/izmami", label: "Пази се от измами", description: "Как да разпознаеш телефонни и онлайн измами" },
+  { href: "/izmami", label: "Пази се от измами", description: "Как да разпознаете телефонни и онлайн измами" },
   { href: "/dezhurna-apteka", label: "Дежурна аптека", description: "Коя аптека и лекар работят сега" },
   { href: "/pomoshti", label: "Пенсии и помощи", description: "Пенсии, помощ за отопление, ТЕЛК и документи" },
-  { href: "/danaci-srokove", label: "Данъци и срокове", description: "Кога и как да платя местните данъци и такси" },
+  { href: "/danaci-srokove", label: "Данъци и срокове", description: "Кога и как да платите местните данъци и такси" },
   { href: "/evroto", label: "Еврото", description: "Всичко за еврото — въпроси и отговори" },
   { href: "/biznes", label: "Местен бизнес", description: "Каталог на търговци и занаятчии" },
   { href: "/sabitiya", label: "Събития", description: "Какво се случва в града" },
@@ -86,56 +91,113 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: "/prozrachnost", label: "Прозрачност", description: "Къде отиват парите на общината (обществени поръчки)" },
   { href: "/smetishta", label: "Нерегламентирани сметища", description: "Подайте сигнал за незаконно сметище" },
   { href: "/grafik-smetosabirane", label: "График за сметосъбиране", description: "Кога се извозва отпадъкът по квартали" },
-  { href: "/grada", label: "Опознай Бобов дол", description: "География, забележителности, природа и карта" },
-  { href: "/istoriya", label: "История на града", description: "Историята на Бобов дол по етапи" },
+  { href: "/grada", label: "Опознай Бобов\u00a0дол", description: "География, забележителности, природа и карта" },
+  { href: "/istoriya", label: "История на града", description: "Историята на Бобов\u00a0дол по етапи" },
   { href: "/zov-za-pomosht", label: "Зов за помощ", description: "Взаимопомощ и подкрепа за възрастните" },
   { href: "/dobrovolci", label: "Доброволци", description: "Помощ от хора с добро сърце" },
-  { href: "/spomeni", label: "Спомени от Бобов дол", description: "Споделете спомен или стара снимка" },
+  { href: "/spomeni", label: "Спомени от Бобов\u00a0дол", description: "Споделете спомен или стара снимка" },
   { href: "/galeriya", label: "Галерия", description: "Снимки на града от хората" },
 ];
 
-export const FOOTER_NAV: NavItem[] = [
-  { href: "/za-nas", label: "За проекта" },
-  { href: "/kak-da-polzvam-sayta", label: "Как да ползвам сайта" },
-  { href: "/instaliraj", label: "Сложи на телефона" },
-  { href: "/izvestiya", label: "Известия" },
-  { href: "/za-blizkite", label: "За близките" },
-  { href: "/novini/rss.xml", label: "RSS новини" },
-  { href: "/dostapnost", label: "Достъпност" },
-  { href: "/izmami", label: "Пази се от измами" },
-  { href: "/dezhurna-apteka", label: "Дежурна аптека" },
-  { href: "/pomoshti", label: "Пенсии и помощи" },
-  { href: "/danaci-srokove", label: "Данъци и срокове" },
-  { href: "/imen-den", label: "Именни дни" },
-  { href: "/grafik-smetosabirane", label: "График за сметосъбиране" },
-  { href: "/evroto", label: "Еврото" },
-  { href: "/transport", label: "Транспорт" },
-  { href: "/prekysvaniya", label: "Прекъсвания на ток и вода" },
-  { href: "/spodeleno-patuvane", label: "Споделено пътуване" },
-  { href: "/zov-za-pomosht", label: "Зов за помощ" },
-  { href: "/dobrovolci", label: "Доброволци" },
-  { href: "/spomeni", label: "Спомени от Бобов дол" },
-  { href: "/grada", label: "Опознай Бобов дол" },
-  { href: "/galeriya", label: "Галерия" },
-  { href: "/signali", label: "Сигнали до общината" },
-  { href: "/prozrachnost", label: "Прозрачност" },
-  { href: "/smetishta", label: "Нерегламентирани сметища" },
-  { href: "/kontakti", label: "Контакти" },
-  { href: "/pechat", label: "Телефони за печат" },
-  { href: "/pechat/plakat", label: "Плакат за разпечатване" },
-  { href: "/pechat/sedmitsa", label: "Седмицата за печат" },
-  { href: "/biznes/nova", label: "Добавете бизнес" },
-  { href: "/reklama", label: "Реклама" },
+export type NavGroup = { title: string; items: NavItem[] };
+
+/** Раздел от PRIMARY_NAV по адрес — групите отдолу не повтарят етикетите. */
+function pick(...hrefs: string[]): NavItem[] {
+  return hrefs.map((href) => {
+    const item = PRIMARY_NAV.find((i) => i.href === href);
+    if (!item) throw new Error(`Няма раздел ${href} в PRIMARY_NAV`);
+    return item;
+  });
+}
+
+// Основното меню на компютър (вторият ред на хедъра) — най-търсеното, в
+// реда на важност. Всичко останало е в „Всички раздели“.
+export const TOP_NAV: NavItem[] = pick(
+  "/kak-da",
+  "/uslugi",
+  "/dezhurna-apteka",
+  "/pomoshti",
+  "/danaci-srokove",
+  "/izmami",
+);
+
+// Всички раздели по групи — един източник за мобилното меню и за панела
+// „Всички раздели“ на компютър. Всеки раздел от PRIMARY_NAV е точно веднъж
+// (проверява го тестът directory-nav).
+export const NAV_GROUPS: NavGroup[] = [
+  { title: "Най-търсени", items: TOP_NAV },
+  {
+    title: "Всеки ден",
+    items: pick("/transport", "/prekysvaniya", "/grafik-smetosabirane", "/novini", "/sabitiya", "/imen-den"),
+  },
+  { title: "Пари и сигнали", items: pick("/evroto", "/signali", "/smetishta", "/prozrachnost") },
+  { title: "Хора и общност", items: pick("/obyavi", "/biznes", "/zov-za-pomosht", "/dobrovolci", "/pomeni") },
+  { title: "Градът", items: pick("/grada", "/istoriya", "/spomeni", "/galeriya") },
+];
+
+// Правните връзки — в долната лента на футъра, отделно от съдържанието.
+export const LEGAL_NAV: NavItem[] = [
   { href: "/pravila", label: "Общи условия" },
   { href: "/poveritelnost", label: "Поверителност" },
   { href: "/biskvitki", label: "Бисквитки" },
+  { href: "/dostapnost", label: "Достъпност" },
 ];
 
-// Кратък списък под мобилното меню — нещата, които иначе са само във футъра,
-// а са най-полезни точно на телефона.
+// Групите във футъра. Пълният списък на разделите е в хедъра („Всички
+// раздели“) — тук са само най-търсеното и страниците за самия сайт.
+export const FOOTER_GROUPS: NavGroup[] = [
+  {
+    title: "Най-търсени",
+    items: pick(
+      "/uslugi",
+      "/dezhurna-apteka",
+      "/kak-da",
+      "/pomoshti",
+      "/danaci-srokove",
+      "/izmami",
+      "/transport",
+      "/prekysvaniya",
+      "/evroto",
+    ),
+  },
+  {
+    title: "За сайта",
+    items: [
+      { href: "/za-nas", label: "За проекта" },
+      { href: "/kak-da-polzvam-sayta", label: "Как да ползвам сайта" },
+      { href: "/instaliraj", label: "Сложете сайта на телефона" },
+      { href: "/izvestiya", label: "Известия" },
+      { href: "/za-blizkite", label: "За близките" },
+      { href: "/kontakti", label: "Контакти" },
+      { href: "/novini/rss.xml", label: "RSS новини" },
+    ],
+  },
+  {
+    title: "Участвайте",
+    items: [
+      { href: "/biznes/nova", label: "Добавете бизнес" },
+      { href: "/spodeleno-patuvane", label: "Споделено пътуване" },
+      { href: "/reklama", label: "Реклама" },
+    ],
+  },
+  {
+    title: "За печат",
+    items: [
+      { href: "/pechat", label: "Телефони за печат" },
+      { href: "/pechat/plakat", label: "Плакат за разпечатване" },
+      { href: "/pechat/sedmitsa", label: "Седмицата за печат" },
+    ],
+  },
+];
+
+/** Всички връзки във футъра (групите + правните) — за тестовете и картата. */
+export const FOOTER_NAV: NavItem[] = [...FOOTER_GROUPS.flatMap((g) => g.items), ...LEGAL_NAV];
+
+// Кратък списък под мобилното меню и в „Всички раздели“ — нещата, които иначе
+// са само във футъра, а са най-полезни точно на телефона.
 export const QUICK_NAV: NavItem[] = [
   { href: "/izvestiya", label: "Известия на телефона" },
-  { href: "/instaliraj", label: "Сложи на телефона" },
+  { href: "/instaliraj", label: "Сложете сайта на телефона" },
   { href: "/za-blizkite", label: "За близките" },
   { href: "/kontakti", label: "Контакти" },
 ];

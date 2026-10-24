@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { FOOTER_NAV, PRIMARY_NAV, QUICK_NAV, isFeedHref, localPhone } from "@/lib/site";
+import { FOOTER_GROUPS, FOOTER_NAV, LEGAL_NAV, NAV_GROUPS, PRIMARY_NAV, QUICK_NAV, TOP_NAV, isFeedHref, localPhone } from "@/lib/site";
 import { KNOWN_SECTIONS, groupPath, isExcludedPath } from "@/lib/analytics-core";
 
 // Навигацията и броенето на посещенията трябва да са в синхрон със страниците:
@@ -59,6 +59,26 @@ test("новите раздели са в навигацията, а некро�
   for (const h of ["/izvestiya", "/instaliraj", "/za-blizkite", "/pechat/sedmitsa", "/biznes/nova", "/novini/rss.xml"]) {
     assert.ok(footer.includes(h), `${h} липсва във футъра`);
   }
+});
+
+test("групите на менюто съдържат всеки раздел точно веднъж", () => {
+  const grouped = NAV_GROUPS.flatMap((g) => g.items.map((i) => i.href));
+  assert.equal(new Set(grouped).size, grouped.length, "раздел в две групи");
+  assert.deepEqual([...grouped].sort(), PRIMARY_NAV.map((i) => i.href).sort(), "групите ≠ PRIMARY_NAV");
+  // Основното меню на компютър е първата група — същите раздели, същият ред.
+  assert.deepEqual(NAV_GROUPS[0].items, TOP_NAV);
+  assert.ok(TOP_NAV.length >= 4 && TOP_NAV.length <= 6, "основното меню е 4–6 раздела");
+});
+
+test("футърът: групи без повторения, правните връзки отделно", () => {
+  const hrefs = FOOTER_GROUPS.flatMap((g) => g.items.map((i) => i.href));
+  assert.equal(new Set(hrefs).size, hrefs.length);
+  for (const l of LEGAL_NAV) assert.ok(!hrefs.includes(l.href), `${l.href} е и в групите`);
+  assert.deepEqual(
+    LEGAL_NAV.map((i) => i.href),
+    ["/pravila", "/poveritelnost", "/biskvitki", "/dostapnost"],
+  );
+  assert.equal(FOOTER_NAV.length, hrefs.length + LEGAL_NAV.length);
 });
 
 test("isFeedHref и localPhone", () => {
