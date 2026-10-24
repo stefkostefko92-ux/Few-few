@@ -217,14 +217,10 @@
   font-weight: 700;
   overflow-wrap: anywhere;
 }
-.status-bots,
 .status-time {
   margin: 0;
   font-size: 0.85rem;
   color: var(--muted);
-}
-.status-bots {
-  margin-bottom: 0.25rem;
 }
 .status-hint {
   margin: 0 0 0.75rem;

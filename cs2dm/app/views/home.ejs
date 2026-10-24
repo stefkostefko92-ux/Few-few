@@ -38,7 +38,6 @@
         <div><dt><%= t('home.status.map') %></dt><dd><%= live.map %></dd></div>
         <div><dt><%= t('home.status.mode') %></dt><dd><%= live.mode || '—' %></dd></div>
       </dl>
-      <% if (live.bots > 0) { %><p class="status-bots"><%= t.plural('home.status.bots', live.bots) %></p><% } %>
       <p class="status-time"><%= t('home.status.updated', { time: fmt.dateTime(live.updatedAt) }) %></p>
       <% } else if (live.known) { %>
       <p class="status-hint"><%= t('home.status.offlineHint') %></p>

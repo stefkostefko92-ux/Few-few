@@ -59,7 +59,6 @@
           <tbody>
             <% xpRewards.forEach((reward) => { %><tr><th scope="row"><%= t('leaderboard.how.rewards.' + reward.id) %></th><td class="c-num">+<%= reward.xp %></td></tr>
             <% }) %><tr><th scope="row"><%= t('leaderboard.how.bountyRow') %></th><td class="c-num"><%= t('leaderboard.how.bountyValue') %></td></tr>
-            <tr><th scope="row"><%= t('leaderboard.how.botRow') %></th><td class="c-num"><%= t('leaderboard.how.botValue') %></td></tr>
           </tbody>
         </table>
       </div>

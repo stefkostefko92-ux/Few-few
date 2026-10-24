@@ -144,11 +144,7 @@
       "mode": "Mode",
       "map": "Map",
       "updated": "Updated at {time}",
-      "bots": {
-        "one": "and {count} bot",
-        "other": "and {count} bots"
-      },
-      "empty": "Nobody is playing right now — be the first in. Bots fill the server up to 10 players.",
+      "empty": "Nobody is playing right now — be the first in.",
       "slots": "slots"
     },
     "join": {
@@ -191,10 +187,6 @@
       "xp": {
         "q": "How do I earn XP and levels?",
         "a": "By getting kills: 10 XP each plus bonuses for headshots, knife kills, noscopes, wallbangs, kills through smoke, revenge and claimed bounties. Level n needs 100 · n · (n − 1) / 2 XP in total."
-      },
-      "bots": {
-        "q": "Do bot kills count?",
-        "a": "For half — a bot kill gives half the XP (rounded down), with no revenge or bounty. It does not count as a kill on the leaderboard, though: K/D, streaks and weapons are against humans only, so nobody can farm an empty server."
       },
       "vip": {
         "q": "Does VIP give an in-game advantage?",
@@ -316,7 +308,7 @@
   },
   "leaderboard": {
     "h1": "Leaderboard",
-    "lead": "Pick a season and a sort order. Kills and K/D count only against humans — bots give half XP.",
+    "lead": "Pick a season and a sort order.",
     "form": {
       "season": "Season",
       "sort": "Sort by",
@@ -337,7 +329,7 @@
     },
     "how": {
       "title": "How XP and levels work",
-      "lead": "Every kill earns XP and the bonuses add up. A bot kill gives half the XP and does not count as a kill.",
+      "lead": "Every kill earns XP and the bonuses add up.",
       "event": "Event",
       "xp": "XP",
       "rewards": {
@@ -351,8 +343,6 @@
       },
       "bountyRow": "Claimed bounty (bonus)",
       "bountyValue": "the bounty's value",
-      "botRow": "Bot kill",
-      "botValue": "½ of the total",
       "level": "Your level comes from your total XP: level n needs 100 · n · (n − 1) / 2 XP — 100 for level 2, 300 for level 3, 4500 for level 10.",
       "bounty": "A streak of {min} kills without dying puts a bounty on your head: 25 XP for every kill after the fourth, up to {cap} XP. Whoever takes you down claims it.",
       "revenge": "If someone has killed you at least 3 times in a row and you take them down, that is revenge — +5 XP."

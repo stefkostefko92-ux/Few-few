@@ -44,6 +44,9 @@ function jsonLd(html: string): Graph {
   return JSON.parse(found[1] ?? '') as Graph;
 }
 
+/** „бот/ботове“ и „bot/bots“ като дума — без „работи“, „robots“, „aimbot“, „triggerbots“. */
+const BOT_WORD = /(?<![а-яё])бот|\bbots?\b/iu;
+
 function types(graph: Graph): string[] {
   return graph['@graph'].map((node) => String(node['@type']));
 }
@@ -82,6 +85,8 @@ test('всяка страница на всеки език носи пълния
         assert.ok(keywords.includes('Carbon Stealth'), `${where}: без „Carbon Stealth“`);
 
         assert.equal((html.match(/<h1[\s>]/g) ?? []).length, 1, `${where}: точно един H1`);
+        // Решение на собственика: публичният сайт не споменава ботове (LIVE_KNOWN има 3 бота).
+        assert.doesNotMatch(html, BOT_WORD, `${where}: споменава ботове`);
         assert.match(html, new RegExp(`<html lang="${locale}">`));
 
         const canonical = /<link rel="canonical" href="([^"]+)">/.exec(html)?.[1];
@@ -259,7 +264,7 @@ test('robots.txt, sitemap.xml с lastmod и hreflang, llms.txt', async () => {
     assert.match(llms, /^# CarbonStealth\.eu \| Dust2 DM/);
     assert.match(llms, /connect dm\.carbonstealth\.eu:27015/);
     assert.match(llms, /https:\/\/carbonstealth\.eu/);
-    assert.match(llms, /^- Bot kill: ½ of the total$/m);
+    assert.doesNotMatch(llms, BOT_WORD, 'llms.txt споменава ботове');
 
     const key = readFileSync('public/indexnow-key.txt', 'utf8').trim();
     assert.match(key, /^[0-9a-f]{32}$/);

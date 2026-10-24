@@ -190,7 +190,6 @@ export function rootRouter(repo: Repo): Router {
       ...XP_REWARDS.map(
         (reward) => `- ${en(`leaderboard.how.rewards.${reward.id}`)}: ${reward.xp}`,
       ),
-      `- ${en('leaderboard.how.botRow')}: ${en('leaderboard.how.botValue')}`,
       `- ${en('leaderboard.how.level')}`,
       '',
       '## FAQ',

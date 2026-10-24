@@ -38,7 +38,6 @@ export const HOME_FAQ = [
   'install',
   'mode',
   'xp',
-  'bots',
   'vip',
   'stats',
   'skins',
