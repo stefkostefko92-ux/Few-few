@@ -7,9 +7,22 @@
 //    последно заредените страници (или началната като резерв).
 //  • Статични ресурси (икони, manifest): „кеш първо“.
 //  • POST/API и всичко извън GET: само мрежа (не се кешира).
+//  • Страниците с търсене (/tarsene?q=…, /imen-den?ime=…) НЕ се кешират:
+//    адресът носи въведения текст, а кешът не бива да пази данни от формите.
 
 const VERSION = "v3";
 const CACHE = `zbd-${VERSION}`;
+
+// Пътища, чийто адрес носи въведен от човека текст — само мрежа, без кеш.
+const NO_CACHE_PATHS = ["/tarsene", "/imen-den"];
+
+function isNoCachePath(pathname) {
+  return (
+    pathname === "/api" ||
+    pathname.startsWith("/api/") ||
+    NO_CACHE_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+  );
+}
 
 // Опитваме да предзаредим ключовите страници; ако някоя липсва, не проваляме
 // инсталацията.
@@ -41,6 +54,18 @@ self.addEventListener("activate", (event) => {
       await Promise.all(
         keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)),
       );
+      // …и търсенията, записани от по-стар service worker в същия кеш.
+      try {
+        const cache = await caches.open(CACHE);
+        const reqs = await cache.keys();
+        await Promise.all(
+          reqs
+            .filter((r) => isNoCachePath(new URL(r.url).pathname))
+            .map((r) => cache.delete(r)),
+        );
+      } catch {
+        /* чистенето е допълнително — не спира активирането */
+      }
       await self.clients.claim();
     })(),
   );
@@ -53,7 +78,9 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/admin")) {
+  // /api, /admin и търсенето — само мрежа, браузърът ги обработва сам (нищо не
+  // се записва в Cache Storage).
+  if (isNoCachePath(url.pathname) || url.pathname.startsWith("/admin")) {
     return;
   }
   // RSC заявките на App Router (?_rsc=…) са динамични данни при навигация в

@@ -64,7 +64,8 @@ export function normalizeSettlement(s: string): string {
     .toLocaleUpperCase("bg-BG")
     .replace(/[ \s]+/g, " ")
     .trim()
-    .replace(/^(ГР\.?|ГРАД|С\.?|СЕЛО)\s+/, "")
+    // „гр.“/„с.“ и без интервал след точката („ГР.БОБОВ ДОЛ“).
+    .replace(/^(?:(?:ГР|С)\.\s*|(?:ГР|ГРАД|С|СЕЛО)\s+)/, "")
     .replace(/[.,;:]+$/, "")
     .trim();
 }
@@ -307,6 +308,28 @@ export function buildOutageDrafts(records: readonly ErmRecord[]): DraftResult {
     (a, b) => a.startAt.getTime() - b.startAt.getTime() || a.area.localeCompare(b.area, "bg"),
   );
   return { drafts, otherArea, otherAreaNames: [...other].slice(0, 10), unknownType };
+}
+
+// Заявката към ЕРМ вече е само за общината (gm_obstina=KNL04). Затова запис
+// „извън общината“ или с непознат тип НЕ е шум в данните, а знак, че ЕРМ е
+// сменила стойностите си (напр. „Планирано прекъсване“ или друго изписване на
+// мястото). Тогава не знаем кои прекъсвания още текат: ако продължим, списъкът
+// „видени“ остава непълен и вносът би затворил като „възстановени“ прекъсвания,
+// при които токът още е спрян. Затова — като при непознат отговор: нищо не се
+// записва и нищо не се затваря, отбелязва се грешка (fail closed).
+/** Текст на грешката, ако групирането показва смяна на формата; иначе null. */
+export function draftsFormatProblem(
+  found: number,
+  r: Pick<DraftResult, "otherArea" | "otherAreaNames" | "unknownType">,
+): string | null {
+  if (found <= 0 || (r.otherArea <= 0 && r.unknownType <= 0)) return null;
+  const parts: string[] = [];
+  if (r.unknownType > 0) parts.push(`${r.unknownType} с непознат тип`);
+  if (r.otherArea > 0) {
+    const names = r.otherAreaNames.length ? ` (${r.otherAreaNames.slice(0, 3).join(", ")})` : "";
+    parts.push(`${r.otherArea} с непознато място${names}`);
+  }
+  return `Непознати стойности в отговора: ${parts.join("; ")} от ${found} записа.`;
 }
 
 // --- Флаг и достъп --------------------------------------------------------------

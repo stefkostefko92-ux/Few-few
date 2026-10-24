@@ -11,6 +11,7 @@ import {
   MIN_INTERVAL_MS,
   STATUS_SETTING_KEY,
   buildOutageDrafts,
+  draftsFormatProblem,
   formatOutageTime,
   nextStatus,
   outageNote,
@@ -29,6 +30,7 @@ import {
 //  • Тегли само от https://info.ermzapad.bg (твърдо зададен адрес, без
 //    пренасочвания, с таван на размера и времето) — никакъв SSRF.
 //  • Непознат отговор → нула записа, нищо не се трие; отбелязва се грешка.
+//    Същото, ако някой запис е с непознат тип или място (смяна на формата).
 //  • Запис по externalId (upsert): повторен внос не дублира. Скрит от админа
 //    запис НЕ се публикува отново; ръчно редактирана бележка не се презаписва.
 //  • Изчезнало от ЕРМ прекъсване, което вече е започнало = възстановено
@@ -225,24 +227,36 @@ async function run(now: Date): Promise<OutagesIngestResult> {
   else if (parsed?.kind === "rate_limited") error = "ЕРМ Запад ограничи заявките („tomuch“).";
   else if (parsed?.kind === "unrecognized") error = `Непознат формат на отговора (${parsed.reason}).`;
 
-  if (error || !parsed || (parsed.kind !== "events" && parsed.kind !== "empty")) {
-    const msg = error ?? "Непознат отговор.";
+  // Грешка → нищо не се записва, нищо не се затваря; само състояние + тревога.
+  const fail = async (
+    msg: string,
+    detail = "",
+    extra: Partial<OutagesIngestResult> = {},
+  ): Promise<OutagesIngestResult> => {
     const s = nextStatus(prev, { ok: false, error: msg }, now);
     await saveStatus(s);
+    console.error(`[ingest-outages] ${msg} Поредни грешки: ${s.failStreak}. Нищо не е променено.${detail}`);
+    if (shouldAlert(s)) await alertAdmin(s);
+    return { ...ZERO, ...extra, error: msg };
+  };
+
+  if (error || !parsed || (parsed.kind !== "events" && parsed.kind !== "empty")) {
     // Кратко начало на отговора (публична страница на ЕРМ) — да се различи
     // блокиране от защитната им стена от смяна на формата.
     const head = fetched.ok ? ` Начало на отговора: ${JSON.stringify(fetched.text.trim().slice(0, 120))}` : "";
-    console.error(`[ingest-outages] ${msg} Поредни грешки: ${s.failStreak}. Нищо не е променено.${head}`);
-    if (shouldAlert(s)) await alertAdmin(s);
-    return { ...ZERO, error: msg };
+    return fail(error ?? "Непознат отговор.", head);
   }
 
   const records = parsed.kind === "events" ? parsed.records : [];
-  const { drafts, otherArea, otherAreaNames, unknownType } = buildOutageDrafts(records);
-  if (otherArea) {
-    console.warn(`[ingest-outages] ${otherArea} записа извън общината: ${otherAreaNames.join(", ")}`);
+  const built = buildOutageDrafts(records);
+  const { drafts, otherArea, unknownType } = built;
+  // Непознат тип или място при заявка само за общината = смяна на формата при
+  // ЕРМ. Без това „видени“ остава непълно и затварянето по-долу би обявило за
+  // възстановени прекъсвания, които още текат (виж draftsFormatProblem).
+  const formatProblem = draftsFormatProblem(records.length, built);
+  if (formatProblem) {
+    return fail(formatProblem, "", { found: records.length, otherArea, unknownType });
   }
-  if (unknownType) console.warn(`[ingest-outages] ${unknownType} записа с непознат тип — пропуснати.`);
 
   const nowWall = sofiaWallNow(now);
   const seen: string[] = [];

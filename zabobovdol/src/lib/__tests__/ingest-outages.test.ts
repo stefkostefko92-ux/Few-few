@@ -5,6 +5,7 @@ import {
   ERM_MUNICIPALITY,
   bearerMatches,
   buildOutageDrafts,
+  draftsFormatProblem,
   findSettlement,
   formatOutageTime,
   formatSofiaInstant,
@@ -226,6 +227,62 @@ test("празен край → endAt null", () => {
   const [d] = buildOutageDrafts(r.records).drafts;
   assert.equal(d.endAt, null);
   assert.equal(d.area, "с. Шатрово");
+});
+
+test("„гр.“/„с.“ без интервал след точката пак се разпознава", () => {
+  assert.equal(findSettlement("ГР.БОБОВ ДОЛ")?.ekatte, "04501");
+  assert.equal(findSettlement("с.Голема Фуча")?.label, "с. Голема Фуча");
+  assert.equal(findSettlement("СЕЛО ШАТРОВО")?.label, "с. Шатрово");
+});
+
+// Смяна на формата при ЕРМ (друг етикет на типа или друго изписване на мястото)
+// НЕ бива да затваря текущите прекъсвания като „възстановени“: заявката е само
+// за общината, затова непознат тип/място = непознат формат → вносът спира.
+test("непознат тип или място при заявка за общината → грешка, нищо не се затваря", () => {
+  const changed = (o: { city?: string; type?: string }) => {
+    const r = parseErmResponse(
+      JSON.stringify({
+        "1": rec({ city: "БОБОВ ДОЛ", type: "непланирано", begin: "23.10.2026 10:00", end: "", ceo: "a" }),
+        "2": rec({
+          city: o.city ?? "ГОЛЕМА ФУЧА",
+          type: o.type ?? "планирано",
+          begin: "27.10.2026 09:00",
+          end: "27.10.2026 16:00",
+          ceo: "b",
+        }),
+      }),
+    );
+    assert.equal(r.kind, "events");
+    if (r.kind !== "events") throw new Error("очаквани събития");
+    return { found: r.records.length, built: buildOutageDrafts(r.records) };
+  };
+
+  // Нов етикет на типа: записът не става чернова → без проверката щеше да
+  // липсва от „видени“ и съществуващото прекъсване щеше да се затвори.
+  const t = changed({ type: "Планирано прекъсване" });
+  assert.equal(t.built.unknownType, 1);
+  const tp = draftsFormatProblem(t.found, t.built);
+  assert.ok(tp);
+  assert.match(tp, /непознат тип/);
+
+  // Място, което не е от общината (или ново изписване, което не познаваме).
+  const a = changed({ city: "ГР БОБОВДОЛ" });
+  assert.equal(a.built.otherArea, 1);
+  const ap = draftsFormatProblem(a.found, a.built);
+  assert.ok(ap);
+  assert.match(ap, /непознато място \(ГР БОБОВДОЛ\)/);
+
+  // Производната фикстура съдържа запис от Костинброд → също спира.
+  const d = parseErmResponse(DERIVED_KNL04);
+  if (d.kind !== "events") throw new Error("очаквани събития");
+  assert.ok(draftsFormatProblem(d.records.length, buildOutageDrafts(d.records)));
+
+  // Всичко познато → продължава нормално.
+  const ok = changed({});
+  assert.equal(ok.built.drafts.length, 2);
+  assert.equal(draftsFormatProblem(ok.found, ok.built), null);
+  // Празен отговор („няма прекъсвания“) не е проблем.
+  assert.equal(draftsFormatProblem(0, buildOutageDrafts([])), null);
 });
 
 // --- Флаг и достъп ------------------------------------------------------------

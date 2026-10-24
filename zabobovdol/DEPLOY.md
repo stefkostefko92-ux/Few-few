@@ -204,15 +204,17 @@ curl -s https://bobovdol.egov.bg/wps/portal/municipality-bobovdol/actual/news \
 sudo tee /usr/local/bin/zabobovdol-cron >/dev/null <<'EOF'
 #!/usr/bin/env bash
 # Задачите по график на „За Бобов дол“ — резултатът винаги отива в лог.
-#   zabobovdol-cron ingest-news | ingest-transparency | freshness
+#   zabobovdol-cron ingest-news | ingest-transparency | freshness | retention
 set -u
 SITE="${ZBD_SITE:-https://zabobovdol.carbonstealth.eu}"
 ENV_FILE="${ZBD_ENV:-/opt/few-few/shared/zabobovdol/.env}"
 LOG=/var/log/zabobovdol/cron.log
 job="${1:-}"
+method=GET
 case "$job" in
   ingest-news|ingest-transparency) url="$SITE/api/$job" ;;
   freshness) url="$SITE/api/health/freshness?notify=1" ;;
+  retention) url="$SITE/api/retention"; method=POST ;;
   *) echo "Непозната задача: $job" >&2; exit 2 ;;
 esac
 token=$(sed -n 's/^INGEST_TOKEN="\{0,1\}\([^"#[:space:]]*\)"\{0,1\}.*$/\1/p' "$ENV_FILE" | tail -n 1)
@@ -220,7 +222,7 @@ if [ -z "$token" ]; then
   echo "$(date -Is) $job ВНИМАНИЕ: няма INGEST_TOKEN в $ENV_FILE" >> "$LOG"
   echo "$job: няма INGEST_TOKEN"; exit 1
 fi
-out=$(curl -sS -m 120 -H @<(printf 'Authorization: Bearer %s\n' "$token") \
+out=$(curl -sS -m 120 -X "$method" -H @<(printf 'Authorization: Bearer %s\n' "$token") \
   -w '\nHTTP %{http_code}' "$url" 2>&1); rc=$?
 line=$(printf '%s' "$out" | tr '\n' ' ')
 echo "$(date -Is) $job $line" >> "$LOG"
@@ -252,6 +254,10 @@ MAILTO=""
 0 7 * * * root /usr/local/bin/zabobovdol-cron ingest-news
 # 7:30 — проверка за свежест (точка 9.3); при проблем: лог + syslog + имейл
 30 7 * * * root /usr/local/bin/zabobovdol-cron freshness
+# 3:15 — триене по срок: търсения без резултат (90 дни), сигнали за сгрешени
+# номера (поправени — 90 дни след промяната, непоправени — 1 година) и
+# контактите от формата за бизнес (6 месеца). Сроковете: src/lib/retention-core.ts
+15 3 * * * root /usr/local/bin/zabobovdol-cron retention
 EOF
 sudo chmod 644 /etc/cron.d/zabobovdol
 

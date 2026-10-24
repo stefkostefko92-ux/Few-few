@@ -21,7 +21,8 @@ const NO_STORE = { "cache-control": "no-store" };
 
 // Проверка за свежест на данните — за мониторинг и cron (виж DEPLOY.md):
 //   curl -H "Authorization: Bearer ТАЙНА" https://.../api/health/freshness
-// Защитена със същия INGEST_TOKEN като /api/ingest-*. Винаги 200, когато
+// Защитена със същия INGEST_TOKEN като /api/ingest-* — САМО в заглавката
+// (не в адреса: оттам токенът попада в логовете). Винаги 200, когато
 // проверката е минала; проблемите са в `ok:false` + `problems` (за да ги чете
 // мониторингът, без да ги бърка със срив). 503 — само ако базата не отговаря.
 // С ?notify=1 при проблем праща имейл до FRESHNESS_ALERT_EMAIL (или ADMIN_EMAIL),
@@ -30,11 +31,10 @@ export async function GET(req: Request) {
   const token = process.env.INGEST_TOKEN;
   const auth = req.headers.get("authorization") ?? "";
   const bearer = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7).trim() : "";
-  const url = new URL(req.url);
-  const provided = bearer || url.searchParams.get("token") || "";
-  if (!token || !provided || !safeEqual(provided, token)) {
+  if (!token || !bearer || !safeEqual(bearer, token)) {
     return NextResponse.json({ error: "Неоторизиран достъп" }, { status: 401, headers: NO_STORE });
   }
+  const url = new URL(req.url);
 
   const q = Query.safeParse({ notify: url.searchParams.get("notify") ?? undefined });
   if (!q.success) {
