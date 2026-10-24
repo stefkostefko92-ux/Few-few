@@ -13,6 +13,11 @@
   padding: 2.5rem 1rem 3rem;
   min-height: calc(100dvh - 64px);
   overflow: hidden;
+  /* `clip`, not just `hidden`: a hidden box is still a scroll container, and
+     the grain layer (inset −50%) gives it room to scroll — any edge-aligned
+     scrollIntoView (keyboard focus, find-in-page) shoved the whole table
+     sideways and left it there, with no scrollbar to undo it. */
+  overflow: clip;
   /* The dark room itself: charcoal with a faint warm floor. */
   background:
     radial-gradient(140% 90% at 50% -10%, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.55) 100%),

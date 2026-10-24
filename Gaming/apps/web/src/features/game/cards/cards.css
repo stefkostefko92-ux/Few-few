@@ -267,6 +267,9 @@ button.aso-card:hover {
   height: 52px;
   border-radius: 12px;
   font-size: 1.6rem;
+  /* Dark ink on the ivory face: without it the label inherited the page's
+     light ink and vanished (Риба's rank buttons rendered blank). */
+  color: var(--suit-black);
   background: linear-gradient(to bottom, #fffdf6, #ece3cf);
   border: 1px solid rgba(217, 178, 95, 0.5);
   box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.5);
@@ -302,6 +305,11 @@ button.aso-card:hover {
 .aso-fx-layer .aso-announce {
   position: static;
   transform: none;
+  /* На телефон дълъг надпис („АСО Бот 1 вдига на 30“) излизаше от екрана и
+     се режеше отляво и отдясно — пренася се на нов ред. */
+  max-width: min(92vw, 640px);
+  white-space: normal;
+  text-align: center;
 }
 .aso-announce[data-tone="win"] {
   background: linear-gradient(to bottom, #d8f5d0, #6fbf73);

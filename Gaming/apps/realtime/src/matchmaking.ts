@@ -20,6 +20,10 @@ import { redis } from "./redis.js";
 import { env } from "./env.js";
 import { logger } from "./logger.js";
 import { notifySelfExcluded, selfExcludedAmong } from "./responsible.js";
+import { parseE2eSeeds } from "./e2eSeeds.js";
+
+/** E2E stacks may pin a game's deal (never in production — env.ts refuses). */
+const E2E_SEEDS = parseE2eSeeds(env.E2E_SEEDS);
 
 /** Резултат от влизане в опашка. */
 export type JoinQueueResult = "joined" | "no_engine" | "self_excluded";
@@ -402,7 +406,7 @@ export class Matchmaker {
     // Belt-and-suspenders against double-seating: end any live match a player is
     // still in before seating them into a new one (mirrors startFromLobby).
     for (const id of userIds) this.activeRoomForUser(id)?.resign(id);
-    const seed = generateSeed();
+    const seed = E2E_SEEDS.get(q.game) ?? generateSeed();
     const [match, names] = await Promise.all([
       prisma.match.create({ data: { game: q.game, mode: q.mode, seed } }),
       this.namesFor(userIds),

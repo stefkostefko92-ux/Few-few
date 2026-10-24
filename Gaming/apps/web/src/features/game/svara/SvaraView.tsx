@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import gsap from "gsap";
 import { svaraRaisePresets, type SvaraState as CoreSvaraState } from "@aso/game-core";
@@ -11,6 +11,9 @@ import { FeltTable, Seat, TableCenter } from "../table/FeltTable";
 import { useCardAnimations } from "../anim/useCardAnimations";
 import { useMatch } from "../useMatch";
 import { useGameEvents } from "../useGameEvents";
+import { useSendOnce } from "../useSendOnce";
+import { useRevealOnTurn } from "../useRevealOnTurn";
+import { seatNames } from "../seatNames";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene } from "../scene/SceneShell";
 import { ChipStack, Pot } from "../betting/Chips";
@@ -112,7 +115,12 @@ export function SvaraView({ title }: { title: string }) {
   const m = useMatch<SvaraState, SvaraAction>("SVARA");
   const { state, legal, seat, phase, result, players } = m;
 
-  const nameFor = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
+  // Three bots share the name „АСО Бот“ — number them so the banners say who.
+  const names = useMemo(() => seatNames(players), [players]);
+  const nameFor = (s: number) => names(s) ?? `#${s}`;
+  // One move per state: a double click on „Плащам“/„Продължи“ sent a second
+  // action that the server refused („Невалиден ход“).
+  const send = useSendOnce(state, m.send);
 
   // Opponent-visible action announcements (единни термини: svara.* ключовете).
   const { banners } = useGameAnnouncements({
@@ -244,10 +252,13 @@ export function SvaraView({ title }: { title: string }) {
   const sendRaise = () => {
     if (!presets) return;
     // Целият стек = all-in (същото действие, ясно събитие за масата).
-    if (raiseValue >= presets.allIn && allIn) m.send(allIn);
-    else m.send({ type: "RAISE", to: raiseValue });
+    if (raiseValue >= presets.allIn && allIn) send(allIn);
+    else send({ type: "RAISE", to: raiseValue });
   };
   const canBet = myTurn && !frozen;
+  // The betting bar sits under the table — below the fold on a laptop.
+  const actionsRef = useRef<HTMLDivElement>(null);
+  useRevealOnTurn(actionsRef, canBet || !!join || !!skip);
 
   /** Ръката на едно място: реални карти при showdown, гърбове иначе. */
   const seatCards = (s: number, size: "sm" | "md", overlap: number) => {
@@ -290,7 +301,17 @@ export function SvaraView({ title }: { title: string }) {
       <Announcements banners={banners} fixed />
       {state && view ? (
         <>
-          <div ref={tableRef}>
+          <div
+            ref={tableRef}
+            data-testid="svara-table"
+            data-svara-phase={view.phase}
+            data-frozen={frozen ? "true" : "false"}
+            data-hand-no={view.handNo}
+            data-pot={view.pot}
+            data-my-chips={myChips}
+            data-to-call={toCall}
+            data-folded={state.folded[seat] ? "true" : "false"}
+          >
             {/* "Полунощният кръг" — dark, dramatic spotlight (§4.3). */}
             <FeltTable crest="♣" feltColor="#102a20" feltDark="#06120c">
               {opponentSlots(view.seats, seat).map(({ seat: s, x, y }) => (
@@ -351,13 +372,13 @@ export function SvaraView({ title }: { title: string }) {
             </FeltTable>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+          <div ref={actionsRef} className="mt-4 flex flex-wrap items-center justify-center gap-3" data-testid="svara-actions">
             {state.phase === "SHOWDOWN" ? (
               <Button
                 disabled={!cont}
+                data-svara-action="CONTINUE"
                 onClick={() => {
-                  if (!cont) return;
-                  m.send(cont);
+                  if (!cont || !send(cont)) return;
                   // Играчът продължи сам — не дръж масата замразена на showdown.
                   if (unfreezeTimer.current) clearTimeout(unfreezeTimer.current);
                   setFrozen(null);
@@ -368,10 +389,10 @@ export function SvaraView({ title }: { title: string }) {
             ) : state.phase === "SVARA" ? (
               join || skip ? (
                 <>
-                  <Button disabled={!join} onClick={() => join && m.send(join)}>
+                  <Button disabled={!join} data-svara-action="JOIN" onClick={() => join && send(join)}>
                     {t("svara.join", { fee: state.svaraFee, defaultValue: "Влез в сварата ({{fee}})" })}
                   </Button>
-                  <Button variant="ghost" disabled={!skip} onClick={() => skip && m.send(skip)}>
+                  <Button variant="ghost" disabled={!skip} data-svara-action="SKIP" onClick={() => skip && send(skip)}>
                     {t("svara.skip", { defaultValue: "Оставам извън" })}
                   </Button>
                 </>
@@ -385,16 +406,26 @@ export function SvaraView({ title }: { title: string }) {
                 {/* Бутоните са винаги видими; извън твоя ход са само disabled.
                     Докато масата показва замразения showdown, не позволяваме
                     залог на сляпо в новата (още невидима) ръка. */}
-                <Button variant="ghost" disabled={!canBet || !fold} onClick={() => fold && m.send(fold)}>
+                <Button
+                  variant="ghost"
+                  disabled={!canBet || !fold}
+                  data-svara-action="FOLD"
+                  onClick={() => fold && send(fold)}
+                >
                   {t("svara.fold")}
                 </Button>
                 {/* Без достатъчно чипове за изравняване: all-in „за по-малко“. */}
                 {allIn && myChips <= toCall ? (
-                  <Button variant="felt" disabled={!canBet} onClick={() => m.send(allIn)}>
+                  <Button variant="felt" disabled={!canBet} data-svara-action="ALLIN" onClick={() => send(allIn)}>
                     {t("svara.allInAmount", { n: myChips })}
                   </Button>
                 ) : (
-                  <Button variant="felt" disabled={!canBet || !call} onClick={() => call && m.send(call)}>
+                  <Button
+                    variant="felt"
+                    disabled={!canBet || !call}
+                    data-svara-action="CALL"
+                    onClick={() => call && send(call)}
+                  >
                     {toCall > 0
                       ? `${t("svara.call")} (${toCall})`
                       : t("svara.check", { defaultValue: "Чек" })}
@@ -415,6 +446,8 @@ export function SvaraView({ title }: { title: string }) {
                           key={key}
                           type="button"
                           className="svara-raise__preset"
+                          data-preset={key}
+                          data-value={v}
                           aria-pressed={raiseValue === v}
                           disabled={!canBet}
                           onClick={() => setRaiseTo(v)}
@@ -434,7 +467,12 @@ export function SvaraView({ title }: { title: string }) {
                       aria-label={t("svara.raiseSize")}
                       onChange={(e) => setRaiseTo(Number(e.target.value))}
                     />
-                    <Button disabled={!canBet} onClick={sendRaise}>
+                    <Button
+                      disabled={!canBet}
+                      data-svara-action={raiseValue >= presets.allIn ? "ALLIN" : "RAISE"}
+                      data-raise-to={raiseValue}
+                      onClick={sendRaise}
+                    >
                       {raiseValue >= presets.allIn
                         ? t("svara.allInAmount", { n: myChips })
                         : t("svara.raiseTo", { to: raiseValue })}
@@ -442,7 +480,7 @@ export function SvaraView({ title }: { title: string }) {
                   </div>
                 ) : allIn && myChips > toCall ? (
                   // Къс стек: не стига за минимално вдигане — остава само all-in.
-                  <Button disabled={!canBet} onClick={() => m.send(allIn)}>
+                  <Button disabled={!canBet} data-svara-action="ALLIN" onClick={() => send(allIn)}>
                     {t("svara.allInAmount", { n: myChips })}
                   </Button>
                 ) : (

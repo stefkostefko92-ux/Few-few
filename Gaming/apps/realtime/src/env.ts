@@ -17,6 +17,8 @@ const envSchema = z.object({
   /** Internal API base + shared secret for progression notifications (S6). */
   API_INTERNAL_URL: z.string().url().default("http://localhost:4500"),
   INTERNAL_API_SECRET: z.string().min(16).default("dev-internal-secret-change-me"),
+  /** E2E only: pinned deal seeds per game ("RUMMY=seed,…", see e2eSeeds.ts). */
+  E2E_SEEDS: z.string().optional(),
 });
 
 function load() {
@@ -31,6 +33,12 @@ function load() {
     parsed.data.INTERNAL_API_SECRET === "dev-internal-secret-change-me"
   ) {
     console.error("❌ INTERNAL_API_SECRET must be set in production (still the dev default).");
+    process.exit(1);
+  }
+  if (parsed.data.NODE_ENV === "production" && parsed.data.E2E_SEEDS) {
+    // Pinned deals are a browser-test seam: in production they would make
+    // every deal of a game predictable.
+    console.error("❌ E2E_SEEDS must not be set in production.");
     process.exit(1);
   }
   return parsed.data;

@@ -7,6 +7,8 @@ type Listener = () => void;
 
 let updateReady = false;
 let waitingWorker: ServiceWorker | null = null;
+/** Set by the update toast: only an update the player asked for reloads the page. */
+let updateRequested = false;
 // The captured beforeinstallprompt event (Chromium); typed loosely as it's non-standard.
 let deferredPrompt: (Event & { prompt: () => void; userChoice: Promise<unknown> }) | null = null;
 const listeners = new Set<Listener>();
@@ -23,9 +25,17 @@ export function subscribePwa(l: Listener): () => void {
 export const isUpdateReady = (): boolean => updateReady;
 export const canInstall = (): boolean => deferredPrompt !== null;
 
-/** Activate the waiting SW; controllerchange then reloads to the new version. */
+/** Activate the waiting SW; controllerchange then reloads to the new version.
+ *  The SW skips waiting on install, so the new worker may already control the
+ *  page — then the reload itself is all that is left. */
 export function applyUpdate(): void {
-  if (waitingWorker) waitingWorker.postMessage("SKIP_WAITING");
+  updateRequested = true;
+  const sw = typeof navigator !== "undefined" ? navigator.serviceWorker : undefined;
+  if (!waitingWorker || waitingWorker.state === "activated" || waitingWorker === sw?.controller) {
+    window.location.reload();
+    return;
+  }
+  waitingWorker.postMessage("SKIP_WAITING");
 }
 
 /** Show the native install prompt (once captured). */
@@ -79,9 +89,15 @@ export function registerServiceWorker(): void {
       })
       .catch(() => undefined);
 
+    // Reload ONLY for an update the player asked for (the toast). The very
+    // first install also fires controllerchange — the SW claims the open page —
+    // and the old unconditional reload threw a first-time visitor's page away a
+    // moment after it loaded: in a game the reload re-queued the player, which
+    // forfeits the match just started, and the auto-opened rules (already
+    // marked as seen) never came back.
     let reloaded = false;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (reloaded) return;
+      if (!updateRequested || reloaded) return;
       reloaded = true;
       window.location.reload();
     });

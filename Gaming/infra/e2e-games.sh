@@ -72,6 +72,11 @@ common_env() {
   # Ботът влиза бързо, за да не чака всеки тест опонент.
   export BOT_FALLBACK_SECONDS="${BOT_FALLBACK_SECONDS:-2}"
   export DISCONNECT_GRACE_SECONDS="${DISCONNECT_GRACE_SECONDS:-45}"
+  # Закрепени раздавания за редки ситуации (само e2e — realtime отказва
+  # E2E_SEEDS в production). Реми: първият ход позволява отваряне със смяна на
+  # жокер и рунд 1 минава през всяко действие (apps/web/e2e/games/rummy.spec.ts).
+  # `E2E_SEEDS= bash … up N` = напълно случайни раздавания.
+  export E2E_SEEDS="${E2E_SEEDS-RUMMY=e2e-rummy-69}"
 }
 
 up() {

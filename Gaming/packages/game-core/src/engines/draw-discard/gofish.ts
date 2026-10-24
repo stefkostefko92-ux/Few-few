@@ -17,6 +17,13 @@ import { buildDeck, hiddenLike, rankOf, RANKS_52, type Card } from "../cards.js"
  * when all 13 books are claimed; most books wins (ties: a WIN event per tied
  * seat). Deal: 7 cards each at 2 players, 5 at 3–4. Opponents' hands are
  * redacted.
+ *
+ * Everyone hears every ask, so the state keeps that public knowledge
+ * (`noRank`): who was asked for which rank and had none — or just handed all
+ * of it over — and has not picked up a card since. The bot never repeats such
+ * an ask: once the ocean is empty a miss changes nothing, and the memoryless
+ * bot used to repeat the same failing ask forever (≈ 1 in 5 four-bot tables
+ * never finished).
  */
 
 export interface GoFishState {
@@ -25,6 +32,10 @@ export interface GoFishState {
   books: number[]; // completed sets-of-4 per seat
   turn: Seat;
   seats: number;
+  /** Public "seat:rank" pairs: that seat surely holds none of that rank (it
+   *  was asked and had none, or gave all of it away) and has not picked up a
+   *  card since. Optional for states saved before it existed. */
+  noRank?: string[];
   winner: Seat | null;
   done: boolean;
 }
@@ -38,6 +49,16 @@ export type GoFishEvent =
   | { type: "WIN"; seat: Seat };
 
 const ranksInHand = (hand: Card[]): string[] => [...new Set(hand.map(rankOf))];
+const noRankKey = (seat: Seat, rank: string): string => `${seat}:${rank}`;
+/** `seat` picked up card(s): what we knew it lacked no longer holds. */
+const forgetSeat = (state: GoFishState, seat: Seat): void => {
+  state.noRank = (state.noRank ?? []).filter((k) => !k.startsWith(`${seat}:`));
+};
+/** Everyone now knows `seat` holds no `rank`. */
+const learnNoRank = (state: GoFishState, seat: Seat, rank: string): void => {
+  const k = noRankKey(seat, rank);
+  if (!(state.noRank ?? []).includes(k)) state.noRank = [...(state.noRank ?? []), k];
+};
 
 export const goFishEngine: GameEngine<GoFishState, GoFishAction, GoFishEvent> = {
   init(opts: InitOpts, rng: SeededRng): GoFishState {
@@ -53,6 +74,7 @@ export const goFishEngine: GameEngine<GoFishState, GoFishAction, GoFishEvent> = 
       books: new Array<number>(seats).fill(0),
       turn: 0,
       seats,
+      noRank: [],
       winner: null,
       done: false,
     };
@@ -90,6 +112,7 @@ export const goFishEngine: GameEngine<GoFishState, GoFishAction, GoFishEvent> = 
       hands: state.hands.map((h) => h.slice()),
       ocean: state.ocean.slice(),
       books: state.books.slice(),
+      noRank: (state.noRank ?? []).slice(),
     };
     const events: GoFishEvent[] = [];
     const targetHand = next.hands[action.target]!;
@@ -98,16 +121,20 @@ export const goFishEngine: GameEngine<GoFishState, GoFishAction, GoFishEvent> = 
     if (matches.length > 0) {
       next.hands[action.target] = targetHand.filter((c) => rankOf(c) !== action.rank);
       next.hands[seat]!.push(...matches);
+      forgetSeat(next, seat);
+      learnNoRank(next, action.target, action.rank); // handed over every one
       events.push({ type: "ASK", seat, target: action.target, rank: action.rank, got: matches.length });
       collectBooks(next, seat, events);
       // Same player asks again (turn unchanged) unless out of cards.
     } else {
       events.push({ type: "ASK", seat, target: action.target, rank: action.rank, got: 0 });
+      learnNoRank(next, action.target, action.rank); // "go fish!" — heard by all
       const drawn = next.ocean.shift();
       // Lucky fish: drawing the very rank you asked for keeps the turn.
       let lucky = false;
       if (drawn) {
         next.hands[seat]!.push(drawn);
+        forgetSeat(next, seat);
         lucky = rankOf(drawn) === action.rank;
         events.push({ type: "FISH", seat, lucky });
         collectBooks(next, seat, events);
@@ -141,11 +168,17 @@ export const goFishEngine: GameEngine<GoFishState, GoFishAction, GoFishEvent> = 
   },
 
   /** Heuristic bot: ask for the rank it holds the MOST of (closest to a book),
-   *  targeting the opponent with the biggest hand (likeliest to hold it). */
+   *  targeting the opponent with the biggest hand (likeliest to hold it) — but
+   *  never an ask everyone already heard fail (`noRank`). */
   bot(state, seat, rng) {
     if (state.done || seat !== state.turn) return null;
-    const actions = goFishEngine.legalActions(state, seat) as GoFishAction[];
-    if (actions.length === 0) return null;
+    const legal = goFishEngine.legalActions(state, seat) as GoFishAction[];
+    if (legal.length === 0) return null;
+    // With an empty ocean there is always a fresh ask (the other copies of a
+    // held rank sit in some hand nobody has ruled out), so this never stalls.
+    const known = new Set(state.noRank ?? []);
+    const fresh = legal.filter((a) => !known.has(noRankKey(a.target, a.rank)));
+    const actions = fresh.length > 0 ? fresh : legal;
     const held: Record<string, number> = {};
     for (const c of state.hands[seat]!) held[rankOf(c)] = (held[rankOf(c)] ?? 0) + 1;
     let best = actions[0]!;
@@ -184,6 +217,7 @@ function replenish(state: GoFishState): void {
       const drawn = state.ocean.shift();
       if (drawn) {
         state.hands[s]!.push(drawn);
+        forgetSeat(state, s);
         collectBooks(state, s);
       }
     }
