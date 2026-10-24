@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Capacidad de reglas"
+  },
+  "helpTitle": {
+    "message": "¿Los sitios no funcionan?"
+  },
+  "helpText": {
+    "message": "Basta con un sitio a la vez: permita sus anuncios durante una hora o desactive la ocultación de elementos solo ahí. Si nos avisa, lo arreglamos para todos."
+  },
+  "helpFix": {
+    "message": "Arreglar este sitio"
+  },
+  "cardNever": {
+    "message": "No volver a mostrar"
+  },
+  "cardClose": {
+    "message": "Cerrar"
+  },
+  "receiptTitle": {
+    "message": "Sus últimos 30 días"
+  },
+  "receiptText": {
+    "message": "$1 solicitudes bloqueadas · $2 avisos de cookies respondidos · unos $3 de datos ahorrados (estimación)"
+  },
+  "share": {
+    "message": "Compartir"
+  },
+  "shareTitle": {
+    "message": "Copiar el enlace de Supreme AdBlock en Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Enlace copiado"
+  },
+  "rep_fixed_q": {
+    "message": "¿Se arregló el sitio?"
+  },
+  "rep_fixed_yes": {
+    "message": "Sí, funciona"
+  },
+  "rep_fixed_no": {
+    "message": "No, sigue sin funcionar"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Qué bueno que funciona. Si nos avisa abajo, el informe indicará qué solución funcionó, para que podamos arreglar el sitio para todos."
+  },
+  "rep_fixed_next": {
+    "message": "Pruebe la siguiente: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Entonces avísenos abajo: revisaremos el sitio."
+  },
+  "rep_webmail": {
+    "message": "¿No tiene una aplicación de correo? Copie el informe y envíelo a $1 desde su correo web."
+  },
+  "blk_mistake": {
+    "message": "¿Cree que es un error? Avísenos"
+  },
+  "welTest": {
+    "message": "Véalo funcionar en una página de prueba"
   }
 }

@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Reeglite maht"
+  },
+  "helpTitle": {
+    "message": "Saidid ei tööta?"
+  },
+  "helpText": {
+    "message": "Piisab ühest saidist korraga: lubage seal reklaamid tunniks või lülitage elementide peitmine ainult seal välja. Kui annate meile teada, parandame selle kõigi jaoks."
+  },
+  "helpFix": {
+    "message": "Paranda see sait"
+  },
+  "cardNever": {
+    "message": "Ära enam näita"
+  },
+  "cardClose": {
+    "message": "Sulge"
+  },
+  "receiptTitle": {
+    "message": "Teie viimased 30 päeva"
+  },
+  "receiptText": {
+    "message": "$1 päringut blokeeritud · $2 küpsisebännerile vastatud · umbes $3 andmeid säästetud (hinnang)"
+  },
+  "share": {
+    "message": "Jaga"
+  },
+  "shareTitle": {
+    "message": "Kopeeri Supreme AdBlocki Chrome Web Store'i link"
+  },
+  "shareCopied": {
+    "message": "Link kopeeritud"
+  },
+  "rep_fixed_q": {
+    "message": "Kas see parandas saidi?"
+  },
+  "rep_fixed_yes": {
+    "message": "Jah, töötab"
+  },
+  "rep_fixed_no": {
+    "message": "Ei, ikka ei tööta"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Hea, et töötab. Kui annate meile allpool teada, näitab teade, milline parandus aitas, nii et saame saidi kõigi jaoks parandada."
+  },
+  "rep_fixed_next": {
+    "message": "Proovige järgmist: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Siis andke meile palun allpool teada: vaatame saidi üle."
+  },
+  "rep_webmail": {
+    "message": "Pole e-posti rakendust? Kopeerige teade ja saatke see oma veebimeilist aadressile $1."
+  },
+  "blk_mistake": {
+    "message": "Arvate, et see on viga? Andke meile teada"
+  },
+  "welTest": {
+    "message": "Vaadake seda testlehel töös"
   }
 }

@@ -142,5 +142,6 @@ ok(`docs/METRICS.md lists every utm_source (${SOURCES.join(", ")})`, SOURCES.eve
 // Страницата за поддръжка казва текущата версия — като llms.txt и началната страница.
 ok(`support.html: shows the current version ${manifest.version}`, read("support.html").includes(`<dd>${manifest.version}, released`));
 ok(`llms.txt: names the current version ${manifest.version}`, llms.includes(`Current version: ${manifest.version}`));
+ok(`press.html: the fact sheet names the current version ${manifest.version}`, read("press.html").includes(`<dt>Current version</dt><dd>${manifest.version} (`));
 
 done();

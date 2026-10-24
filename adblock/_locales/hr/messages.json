@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Kapacitet pravila"
+  },
+  "helpTitle": {
+    "message": "Stranice ne rade?"
+  },
+  "helpText": {
+    "message": "Dovoljno je popravljati jednu po jednu stranicu: dopustite oglase na njoj na sat vremena ili isključite skrivanje elemenata samo ondje. Ako nam javite, popravit ćemo to za sve."
+  },
+  "helpFix": {
+    "message": "Popravi ovu stranicu"
+  },
+  "cardNever": {
+    "message": "Ne prikazuj ponovno"
+  },
+  "cardClose": {
+    "message": "Zatvori"
+  },
+  "receiptTitle": {
+    "message": "Vaših zadnjih 30 dana"
+  },
+  "receiptText": {
+    "message": "Blokirani zahtjevi: $1 · odgovorene obavijesti o kolačićima: $2 · ušteđeni podaci: oko $3 (procjena)"
+  },
+  "share": {
+    "message": "Podijeli"
+  },
+  "shareTitle": {
+    "message": "Kopiraj poveznicu na Supreme AdBlock u trgovini Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Poveznica kopirana"
+  },
+  "rep_fixed_q": {
+    "message": "Radi li stranica sada?"
+  },
+  "rep_fixed_yes": {
+    "message": "Da, radi"
+  },
+  "rep_fixed_no": {
+    "message": "Ne, i dalje ne radi"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Odlično. Ako nam javite u nastavku, u prijavi će pisati koji je popravak pomogao, pa ćemo stranicu popraviti za sve."
+  },
+  "rep_fixed_next": {
+    "message": "Pokušajte sljedeći: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Onda nam, molimo, javite u nastavku: pogledat ćemo stranicu."
+  },
+  "rep_webmail": {
+    "message": "Nemate aplikaciju za e-poštu? Kopirajte prijavu i pošaljite je na $1 iz svoje web-pošte."
+  },
+  "blk_mistake": {
+    "message": "Mislite da je ovo pogreška? Javite nam"
+  },
+  "welTest": {
+    "message": "Pogledajte kako radi na testnoj stranici"
   }
 }

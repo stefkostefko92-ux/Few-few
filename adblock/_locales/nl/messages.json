@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Regelcapaciteit"
+  },
+  "helpTitle": {
+    "message": "Werken websites niet goed?"
+  },
+  "helpText": {
+    "message": "Eén website tegelijk is genoeg: sta daar een uur advertenties toe, of schakel elementen verbergen alleen daar uit. Laat u het ons weten, dan lossen we het voor iedereen op."
+  },
+  "helpFix": {
+    "message": "Deze website herstellen"
+  },
+  "cardNever": {
+    "message": "Niet meer tonen"
+  },
+  "cardClose": {
+    "message": "Sluiten"
+  },
+  "receiptTitle": {
+    "message": "Uw afgelopen 30 dagen"
+  },
+  "receiptText": {
+    "message": "$1 verzoeken geblokkeerd · $2 cookiebanners beantwoord · ongeveer $3 aan data bespaard (een schatting)"
+  },
+  "share": {
+    "message": "Delen"
+  },
+  "shareTitle": {
+    "message": "De Chrome Web Store-link naar Supreme AdBlock kopiëren"
+  },
+  "shareCopied": {
+    "message": "Link gekopieerd"
+  },
+  "rep_fixed_q": {
+    "message": "Is de website hiermee hersteld?"
+  },
+  "rep_fixed_yes": {
+    "message": "Ja, het werkt"
+  },
+  "rep_fixed_no": {
+    "message": "Nee, nog steeds kapot"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Fijn dat het werkt. Laat u het ons hieronder weten, dan staat in het rapport welke oplossing werkte, zodat we de website voor iedereen kunnen herstellen."
+  },
+  "rep_fixed_next": {
+    "message": "Probeer de volgende: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Laat het ons dan hieronder weten: we bekijken de website."
+  },
+  "rep_webmail": {
+    "message": "Geen e-mailprogramma? Kopieer het rapport en stuur het vanuit uw webmail naar $1."
+  },
+  "blk_mistake": {
+    "message": "Denkt u dat dit een vergissing is? Laat het ons weten"
+  },
+  "welTest": {
+    "message": "Bekijk hoe het werkt op een testpagina"
   }
 }

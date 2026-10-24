@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Taisyklių talpa"
+  },
+  "helpTitle": {
+    "message": "Svetainės neveikia?"
+  },
+  "helpText": {
+    "message": "Užtenka tvarkyti po vieną svetainę: leiskite jos reklamas valandai arba išjunkite elementų slėpimą tik joje. Jei mums pranešite, pataisysime visiems."
+  },
+  "helpFix": {
+    "message": "Pataisyti šią svetainę"
+  },
+  "cardNever": {
+    "message": "Daugiau nerodyti"
+  },
+  "cardClose": {
+    "message": "Uždaryti"
+  },
+  "receiptTitle": {
+    "message": "Jūsų pastarosios 30 dienų"
+  },
+  "receiptText": {
+    "message": "Užblokuota užklausų: $1 · atsakyta į slapukų pranešimus: $2 · sutaupyta duomenų: apie $3 (apytikslis įvertis)"
+  },
+  "share": {
+    "message": "Bendrinti"
+  },
+  "shareTitle": {
+    "message": "Kopijuoti Supreme AdBlock nuorodą Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Nuoroda nukopijuota"
+  },
+  "rep_fixed_q": {
+    "message": "Ar svetainė pataisyta?"
+  },
+  "rep_fixed_yes": {
+    "message": "Taip, veikia"
+  },
+  "rep_fixed_no": {
+    "message": "Ne, vis dar neveikia"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Džiaugiamės, kad veikia. Jei parašysite mums žemiau, pranešime bus matyti, kuris pataisymas padėjo, ir galėsime pataisyti svetainę visiems."
+  },
+  "rep_fixed_next": {
+    "message": "Išbandykite kitą: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Tada praneškite mums žemiau: peržiūrėsime svetainę."
+  },
+  "rep_webmail": {
+    "message": "Neturite el. pašto programos? Nukopijuokite pranešimą ir išsiųskite jį adresu $1 per savo internetinį paštą."
+  },
+  "blk_mistake": {
+    "message": "Manote, kad tai klaida? Praneškite mums"
+  },
+  "welTest": {
+    "message": "Pažiūrėkite, kaip veikia, bandomajame puslapyje"
   }
 }
