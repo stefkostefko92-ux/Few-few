@@ -71,6 +71,7 @@ export function playerDataRoutes(ctx: AdminCtx): AdminRoute[] {
           auditAbout,
           auditBy,
           banners,
+          matches,
         ] = await Promise.all([
           ctx.db.session.findMany({ where: { steamId }, ...byTime }),
           ctx.db.webSession.findMany({
@@ -105,6 +106,12 @@ export function playerDataRoutes(ctx: AdminCtx): AdminRoute[] {
           ctx.db.auditLog.findMany({ where: { targetSteamId: steamId }, ...byTime }),
           ctx.db.auditLog.count({ where: { actorSteamId: steamId } }),
           ctx.db.mapBanner.findMany({ where: { createdBy: steamId }, ...byTime }),
+          ctx.db.matchPlayer.findMany({
+            where: { steamId },
+            orderBy: { matchId: 'desc' },
+            take,
+            include: { match: { select: { endedAt: true, map: true } } },
+          }),
         ]);
         const { totpSecretEnc, ...rest } = player;
         const profile = { ...rest, totpSecretStored: totpSecretEnc !== null };
@@ -234,6 +241,28 @@ export function playerDataRoutes(ctx: AdminCtx): AdminRoute[] {
             'details',
           ]),
           section('banners', banners, ['id', 'map', 'bannerKey', 'createdAt']),
+          section(
+            'matches',
+            matches.map(({ match, ...row }) => ({
+              ...row,
+              endedAt: match.endedAt,
+              map: match.map,
+            })),
+            [
+              'matchId',
+              'endedAt',
+              'map',
+              'place',
+              'name',
+              'kills',
+              'deaths',
+              'headshots',
+              'bestStreak',
+              'bountiesClaimed',
+              'xp',
+              'topWeapon',
+            ],
+          ),
         ];
         renderAdmin(req, res, 'player-data', {
           current: 'players',

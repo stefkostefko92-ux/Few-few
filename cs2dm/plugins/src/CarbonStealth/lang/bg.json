@@ -132,5 +132,8 @@
   "event.end": "{Gold}[CarbonStealth]{Default} Събитието {Gold}{0}{Default} свърши — благодарим, че играхте!",
   "event.active": "{Gold}[CarbonStealth]{Default} Сега тече събитие: {Gold}{0}{Default} · XP ×{1} · до {2}",
   "hud.event.start": "СЪБИТИЕ: {0} · XP ×{1}",
-  "hud.event.end": "Събитието {0} свърши"
+  "hud.event.end": "Събитието {0} свърши",
+  "match.summary": "{Gold}[CarbonStealth]{Default} {Lime}Мачът свърши{Default} · {0} убийства · {1} играчи · топ 3:",
+  "match.line": "{Gold}#{0}{Default} {1} — {Green}{2}{Default} убийства / {3} смърти · в главата {4} · най-дълга серия {5}",
+  "match.link": "{Gold}[CarbonStealth]{Default} Картата на мача: {Lime}{0}{Default}"
 }

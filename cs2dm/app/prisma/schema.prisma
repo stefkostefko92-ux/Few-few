@@ -102,6 +102,7 @@ model Player {
   vipRequests   VipRequest[]
   webSessions   WebSession[]
   recoveryCodes WebRecoveryCode[]
+  matches       MatchPlayer[]
 
   @@index([lastSeenAt])
   @@index([role])
@@ -438,8 +439,55 @@ model ScheduledEvent {
   updatedAt    DateTime  @default(now()) @map("updated_at") @db.Timestamptz(3)
   cancelledAt  DateTime? @map("cancelled_at") @db.Timestamptz(3)
   cancelledBy  String?   @map("cancelled_by") @db.VarChar(17)
+  matches      Match[]
 
   @@index([startsAt])
   @@index([endsAt])
   @@map("events")
+}
+
+/// Мач = една карта до смяната ѝ (mp_timelimit 30 + mp_match_end_changelevel). Пише го C# плъгинът в края на
+/// мача (CONTRACT §13) — само хора срещу хора, както статистиките. Пази се 90 дни (§7), после работникът го трие.
+model Match {
+  id           Int             @id @default(autoincrement())
+  map          String          @db.VarChar(64)
+  mode         String          @db.VarChar(32)
+  seasonId     Int             @map("season_id")
+  /// Събитието, което течеше в края на мача (§12), ако има.
+  eventId      Int?            @map("event_id")
+  /// Ефективният множител на XP в края на мача (§3) — 1.0…3.0.
+  xpMultiplier Decimal         @default(1.0) @map("xp_multiplier") @db.Decimal(2, 1)
+  startedAt    DateTime        @map("started_at") @db.Timestamptz(3)
+  endedAt      DateTime        @map("ended_at") @db.Timestamptz(3)
+  /// Убийствата между хора в мача и броят играчи с поне едно убийство или смърт.
+  kills        Int             @default(0)
+  players      Int             @default(0)
+  event        ScheduledEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  rows         MatchPlayer[]
+
+  @@index([endedAt])
+  @@map("matches")
+}
+
+/// Ред на играч в мач: място (убийства ↓, смърти ↑, в главата ↓), числата и най-силното оръжие.
+model MatchPlayer {
+  matchId         Int     @map("match_id")
+  steamId         String  @map("steam_id") @db.VarChar(17)
+  name            String  @db.VarChar(64)
+  place           Int
+  kills           Int     @default(0)
+  deaths          Int     @default(0)
+  headshots       Int     @default(0)
+  bestStreak      Int     @default(0) @map("best_streak")
+  bountiesClaimed Int     @default(0) @map("bounties_claimed")
+  /// XP, спечелено в мача (с множителя).
+  xp              Int     @default(0)
+  topWeapon       String? @map("top_weapon") @db.VarChar(32)
+  topWeaponKills  Int     @default(0) @map("top_weapon_kills")
+  match           Match   @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player          Player  @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+
+  @@id([matchId, steamId])
+  @@index([steamId])
+  @@map("match_players")
 }

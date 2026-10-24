@@ -26,6 +26,8 @@ public sealed partial class CarbonStealthPlugin
         RegisterListener<Listeners.OnMapEnd>(() =>
         {
             _mapEndedAt = DateTimeOffset.UtcNow;
+            // Смяна на картата без край на мача (админ) — мачът се записва без обява.
+            FinishMatch(announce: false);
             FlushStats();
         });
         AddTimer(1f, CheckMatchEnd, TimerFlags.REPEAT);
@@ -38,9 +40,16 @@ public sealed partial class CarbonStealthPlugin
         {
             _matchStart = rules.GameStartTime;
             _matchWarned.Clear();
+            // Нов мач (нова карта или рестарт на играта) — картата на мача почва отначало (§13).
+            BeginMatch();
         }
         var left = (int)Math.Ceiling(limit - (Server.CurrentTime - rules.GameStartTime));
-        if (left <= 0) return;
+        if (left <= 0)
+        {
+            // Резерв, ако панелът с победителя не дойде: времето изтече → краят на мача.
+            FinishMatch(announce: true);
+            return;
+        }
         // Едно съобщение дори да са „дошли“ и двата прага (напр. плъгинът е зареден 5 s преди края).
         var due = false;
         foreach (var at in MatchEndWarnings)

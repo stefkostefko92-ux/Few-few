@@ -60,5 +60,8 @@ export function withCache(repo: Repo, cache = new TtlCache()): Repo {
     lastStatsUpdate: () => cache.get('lastmod', LONG, () => repo.lastStatsUpdate()),
     // Началото и краят на събитие се смятат при показ спрямо „сега“ — 10 s закъснение е без значение.
     events: (now) => cache.get('events', SHORT, () => repo.events(now)),
+    recentMatches: (limit) => cache.get(`mt:${limit}`, SHORT, () => repo.recentMatches(limit)),
+    // Завършил мач не се променя — дълъг кеш.
+    match: (id) => cache.get(`m:${id}`, LONG, () => repo.match(id)),
   };
 }

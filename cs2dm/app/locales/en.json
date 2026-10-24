@@ -27,7 +27,8 @@
     "privacy": "Privacy",
     "vipTerms": "VIP terms",
     "imprint": "Imprint",
-    "contact": "Contact"
+    "contact": "Contact",
+    "matches": "Matches"
   },
   "meta": {
     "ogAlt": "CarbonStealth.eu | Dust2 DM — a CS2 Deathmatch server on de_dust2 only",
@@ -95,6 +96,16 @@
     },
     "error": {
       "keywords": "CS2 server, Dust2 DM, CarbonStealth.eu, Deathmatch, Counter-Strike 2, Carbon Stealth"
+    },
+    "matches": {
+      "title": "Latest matches on Dust2 DM | CarbonStealth.eu",
+      "description": "Cards of the latest matches on the CS2 server CarbonStealth.eu | Dust2 DM: who came first, how many kills, best streaks and weapons. Kept 90 days.",
+      "keywords": "CS2 matches, match results, Dust2 Deathmatch, CS2 statistics, latest matches, Carbon Stealth"
+    },
+    "match": {
+      "title": "Match #{id} on {map} — won by {name}",
+      "description": "The match of {date} on the CS2 server Dust2 DM: {kills} kills, {players} players. {name} came first with {topKills} kills.",
+      "keywords": "CS2 match, match results, Dust2 Deathmatch, CS2 statistics, top players, Carbon Stealth"
     }
   },
   "season": {
@@ -297,6 +308,10 @@
         "MODE": "Special mode {mode} on the CS2 server Dust2 DM.",
         "COMMUNITY": "Community event on the CS2 server Dust2 DM — join and play with everyone."
       }
+    },
+    "matches": {
+      "title": "Latest matches",
+      "all": "All matches"
     }
   },
   "leaderboard": {
@@ -346,7 +361,8 @@
       "next": "Next",
       "page": "Page {page} of {pages}"
     },
-    "inviteTitle": "The leaderboard is waiting"
+    "inviteTitle": "The leaderboard is waiting",
+    "matchesLink": "Cards of the latest matches"
   },
   "player": {
     "steamId": "SteamID64",
@@ -584,7 +600,8 @@
           "Appeals and notices — 1 year after the decision, then they are deleted automatically.",
           "Stats — for as long as the server runs or until you ask for them to be deleted.",
           "Penalties — for as long as they are needed for the security of the server.",
-          "Invoice details for VIP — as long as the Bulgarian Accountancy Act requires."
+          "Invoice details for VIP — as long as the Bulgarian Accountancy Act requires.",
+          "Match cards (nickname and result in each match) — {matchesDays} days, then deleted automatically."
         ]
       },
       "recipients": {
@@ -1329,7 +1346,8 @@
         "vipRequests": "VIP requests (invoice data)",
         "kills": "Latest kills and deaths",
         "auditAbout": "Audit about them",
-        "banners": "Banners placed by them"
+        "banners": "Banners placed by them",
+        "matches": "Matches (cards — 90 days)"
       }
     },
     "events": {
@@ -1363,6 +1381,44 @@
       "edit": "Edit",
       "cancel": "Cancel the event",
       "cancelConfirm": "Cancel the event? If it is running, the plugin stops it within 30 seconds."
+    }
+  },
+  "matches": {
+    "h1": "Latest matches",
+    "lead": "Every match is one map until it changes (30 minutes). Only kills between people count. Cards are kept for 90 days.",
+    "empty": "No finished matches yet. Join and play the first one.",
+    "summary": "{kills} kills · {players} players · {minutes} min",
+    "first": "first:",
+    "kills": {
+      "one": "{count} kill",
+      "other": "{count} kills"
+    },
+    "toLeaderboard": "To the leaderboard"
+  },
+  "match": {
+    "h1": "Match #{id}",
+    "lead": "{map} · {mode}",
+    "hiddenPlayer": "Hidden player",
+    "top": "Top 3",
+    "all": "All players",
+    "caption": "Results of match #{id}, by place",
+    "line": "{kills} kills · {deaths} deaths · {hs} headshots · streak {streak}",
+    "weapon": "Best weapon: {weapon} ({kills})",
+    "note": "Place is by kills, then fewer deaths and more headshots.",
+    "back": "All matches",
+    "facts": {
+      "kills": "Kills",
+      "players": "Players",
+      "minutes": "Minutes",
+      "multiplier": "XP multiplier",
+      "event": "Event"
+    },
+    "col": {
+      "place": "Place",
+      "hs": "Headshots",
+      "streak": "Streak",
+      "bounties": "Bounties",
+      "weapon": "Weapon"
     }
   }
 }

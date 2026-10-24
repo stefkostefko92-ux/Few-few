@@ -16,7 +16,7 @@ import type { Repo } from '../data/repo.js';
 import { LOCALES, localeFromHeader, translate, type Locale } from '../i18n.js';
 import { XP_REWARDS } from '../levels.js';
 import { logger } from '../logger.js';
-import { SITE_NAME, absolute, alternatesFor, pagePath, playerPath } from '../seo.js';
+import { SITE_NAME, absolute, alternatesFor, matchPath, pagePath, playerPath } from '../seo.js';
 import { parseSteamId } from '../steamid.js';
 import { PUBLIC_DIR } from '../view.js';
 import { faqParams, legalParams } from './pages.js';
@@ -33,6 +33,7 @@ export const INDEXNOW_KEY = readFileSync(join(PUBLIC_DIR, 'indexnow-key.txt'), '
 const LASTMOD: Record<PageId, string> = {
   home: CONTENT_UPDATED,
   leaderboard: CONTENT_UPDATED,
+  matches: CONTENT_UPDATED,
   bans: CONTENT_UPDATED,
   vip: CONTENT_UPDATED,
   rules: LEGAL_UPDATED.rules,
@@ -99,6 +100,13 @@ export function rootRouter(repo: Repo): Router {
     redirectLocalized(req, res, (locale) => playerPath(locale, steamId));
   });
 
+  // Плъгинът пише в чата „cs2.carbonstealth.eu/match/<id>“ в края на мача (CONTRACT §13).
+  router.get('/match/:id', (req, res, next) => {
+    const id = req.params.id;
+    if (!/^[1-9]\d{0,9}$/.test(id)) return next();
+    redirectLocalized(req, res, (locale) => matchPath(locale, Number(id)));
+  });
+
   router.get('/favicon.ico', (_req, res) => res.redirect(301, '/static/favicon.svg'));
 
   router.get('/robots.txt', (_req, res) => {
@@ -129,9 +137,16 @@ export function rootRouter(repo: Repo): Router {
     const entries: string[] = [];
     for (const page of PAGES) {
       if (NOINDEX_PAGES.has(page)) continue;
-      const dynamic = page === 'home' || page === 'leaderboard';
+      const dynamic = page === 'home' || page === 'leaderboard' || page === 'matches';
       const lastmod = dynamic ? latest(live, LASTMOD[page]) : LASTMOD[page];
-      const priority = page === 'home' ? '1.0' : page === 'leaderboard' ? '0.9' : '0.5';
+      const priority =
+        page === 'home'
+          ? '1.0'
+          : page === 'leaderboard'
+            ? '0.9'
+            : page === 'matches'
+              ? '0.6'
+              : '0.5';
       entries.push(...urlEntry((locale) => pagePath(locale, page), lastmod, priority));
     }
     for (const player of players) {
@@ -184,7 +199,7 @@ export function rootRouter(repo: Repo): Router {
       `- ${en('privacy.sections.retention.items.0', legal)}`,
       `- ${en('privacy.sections.retention.items.1', legal)}`,
       `- ${en('privacy.sections.website.items.0', legal)}`,
-      `- Retention days: sessions ${RETENTION.sessionsDays}, kills ${RETENTION.killsDays}`,
+      `- Retention days: sessions ${RETENTION.sessionsDays}, kills ${RETENTION.killsDays}, matches ${RETENTION.matchesDays}`,
       '',
       '## Pages',
       ...PAGES.filter((page) => !NOINDEX_PAGES.has(page)).flatMap((page) =>

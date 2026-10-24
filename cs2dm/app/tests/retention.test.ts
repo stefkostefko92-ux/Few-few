@@ -6,7 +6,12 @@ import { MAINTENANCE_QUEUE, BULL_PREFIX } from '../src/queue.js';
 import { BATCH_SIZE, PURGE_TARGETS, cutoffFor, purge, type DeleteBatch } from '../src/retention.js';
 
 test('сроковете са от CONTRACT.md §7', () => {
-  assert.deepEqual(RETENTION, { sessionsDays: 30, killsDays: 90, casesDays: 365 });
+  assert.deepEqual(RETENTION, {
+    sessionsDays: 30,
+    killsDays: 90,
+    casesDays: 365,
+    matchesDays: 90,
+  });
   assert.deepEqual(
     PURGE_TARGETS.map((target) => [target.id, target.days]),
     [
@@ -14,6 +19,7 @@ test('сроковете са от CONTRACT.md §7', () => {
       ['kills', 90],
       ['appeals', 365],
       ['reports', 365],
+      ['matches', 90],
     ],
   );
 });
@@ -64,5 +70,6 @@ test('SQL-ът на чистенето трие по сроковете и не 
   const sql = readFileSync('src/data/purge-sql.ts', 'utf8');
   assert.match(sql, /FROM sessions WHERE connected_at < \$\{cutoff\} LIMIT \$\{limit\}/);
   assert.match(sql, /FROM kills WHERE at < \$\{cutoff\} LIMIT \$\{limit\}/);
+  assert.match(sql, /FROM matches WHERE ended_at < \$\{cutoff\} LIMIT \$\{limit\}/);
   assert.equal((sql.match(/status <> 'OPEN' AND handled_at IS NOT NULL/g) ?? []).length, 2);
 });

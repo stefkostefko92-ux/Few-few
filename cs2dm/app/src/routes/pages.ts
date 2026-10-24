@@ -53,6 +53,7 @@ import {
 } from '../seo.js';
 import { displayName, parseSteamId, truncate } from '../steamid.js';
 import { eventNodes, eventViews } from './event-seo.js';
+import { matchListView } from './match-view.js';
 import { renderPage, type NavId } from '../view.js';
 
 export interface PageDeps {
@@ -239,6 +240,9 @@ export function pagesRouter(locale: Locale, deps: PageDeps): Router {
         : Promise.resolve(null),
       settle('последни банове', () => deps.repo.activeBans({ page: 1, pageSize: 5, now: now() })),
     ]);
+    const matches = ((await settle('мачове', () => deps.repo.recentMatches(5))) ?? []).map((row) =>
+      matchListView(row, t),
+    );
     const events = eventViews(
       (await settle('събития', () => deps.repo.events(now()))) ?? [],
       locale,
@@ -271,6 +275,7 @@ export function pagesRouter(locale: Locale, deps: PageDeps): Router {
         ? bans.rows.map((ban) => ({ ...ban, targetName: displayName(ban.targetName, ban.steamId) }))
         : null,
       events,
+      matches,
       timeZone: config().DISPLAY_TZ,
       faq: HOME_FAQ,
       faqParams: faqParams(),
@@ -566,6 +571,7 @@ export function legalParams(): Record<string, string | number> {
   return {
     sessionsDays: RETENTION.sessionsDays,
     killsDays: RETENTION.killsDays,
+    matchesDays: RETENTION.matchesDays,
     casesDays: RETENTION.casesDays,
     heatmapDays: HEATMAP_WINDOW_DAYS,
     site: cfg.PUBLIC_BASE_URL.replace(/^https?:\/\//, ''),

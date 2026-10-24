@@ -13,6 +13,7 @@ import { LOCALES, isLocale, localeFromHeader, translatorFor, type Locale } from 
 import type { LiveSource } from './live.js';
 import { httpLogOptions, logger } from './logger.js';
 import { healthRouter, type HealthChecks } from './routes/health.js';
+import { matchesRouter } from './routes/matches.js';
 import { AVATAR_ORIGINS, pagesRouter } from './routes/pages.js';
 import { rootRouter } from './routes/root.js';
 import { buildHead, pagePath } from './seo.js';
@@ -163,6 +164,10 @@ export function createServer(deps: ServerDeps): Express {
   app.use(rootRouter(deps.repo));
   for (const locale of LOCALES) {
     app.use(`/${locale}`, pagesRouter(locale, { repo: deps.repo, live: deps.live, now: deps.now }));
+    app.use(
+      `/${locale}`,
+      matchesRouter(locale, { repo: deps.repo, live: deps.live, now: deps.now }),
+    );
   }
 
   app.use((req, res) => renderError(req, res, 'notFound', 404));

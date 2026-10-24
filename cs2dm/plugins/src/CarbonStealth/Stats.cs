@@ -35,6 +35,8 @@ public sealed partial class CarbonStealthPlugin
         // Сравнение по слот: обвивките на контролерите са нови обекти при всяко събитие.
         var suicide = attacker is null || !attacker.IsValid || attacker.Slot == victim.Slot;
         if (v is not null && (suicide || attacker!.IsBot)) _streaks.RecordDeath(v.SteamId);
+        if (v is not null && suicide) _match.Death(v.SteamId64, v.Name);
+        else if (v is not null && attacker!.IsBot) _match.StreakBroken(v.SteamId64);
         if (v is not null && suicide)
         {
             // Самоубийство/падане — смърт се брои; от бот — не (ботовете не влизат в статистиките).
@@ -67,6 +69,7 @@ public sealed partial class CarbonStealthPlugin
         if (outcome.BountyClaimed > 0) ad.BountiesClaimed++;
         if (outcome.Revenge) ad.Revenges++;
         _batch.AddWeapon(a.SteamId64, a.StatsEpoch, weapon, e.Headshot);
+        _match.Kill(a.SteamId64, a.Name, v.SteamId64, v.Name, weapon, e.Headshot, outcome.BountyClaimed > 0, xp);
         Delta(v).Deaths++;
 
         var ap = attacker!.PlayerPawn.Value?.AbsOrigin;

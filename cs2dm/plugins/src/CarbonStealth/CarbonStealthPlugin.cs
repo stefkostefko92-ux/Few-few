@@ -80,6 +80,7 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
         RegisterFunCommands();
         RegisterMatchEnd();
         RegisterEvents();
+        RegisterMatch();
 
         AddTimer(Config.FlushSeconds, FlushStats, TimerFlags.REPEAT);
         AddTimer(5f, PublishLive, TimerFlags.REPEAT);

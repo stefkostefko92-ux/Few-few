@@ -19,6 +19,8 @@ const BASE = 'https://cs2.carbonstealth.eu';
 const SLUGS = [
   '',
   'leaderboard',
+  'matches',
+  'match/41',
   `player/${PLAYER_ID}`,
   'bans',
   'vip',

@@ -23,6 +23,8 @@ export const RETENTION = {
   sessionsDays: 30,
   killsDays: 90,
   casesDays: 365,
+  /** Картите на мачовете (CONTRACT §13) — matches + match_players. */
+  matchesDays: 90,
 } as const;
 
 /** Въпросите на началната страница (видими като H3 и в FAQPage) — `home.faq.<id>.q/a`. */
@@ -78,6 +80,7 @@ export const RULES = ['cheats', 'toxicity', 'ads', 'exploits', 'impersonation', 
 export const PAGES = [
   'home',
   'leaderboard',
+  'matches',
   'bans',
   'vip',
   'rules',
@@ -92,6 +95,7 @@ export type PageId = (typeof PAGES)[number];
 export const PAGE_SLUG: Record<PageId, string> = {
   home: '',
   leaderboard: 'leaderboard',
+  matches: 'matches',
   bans: 'bans',
   vip: 'vip',
   rules: 'rules',

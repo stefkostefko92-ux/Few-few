@@ -13,7 +13,8 @@ Express + EJS + Prisma + Redis + BullMQ) + **агентът на хоста** (`
 панела върху systemd, без root) + **уеб панелът, етап 2** (`app/src/admin`, `/admin`: вход със Steam,
 задължителен TOTP, права по §1, мостът към плъгина и агентът) + **живи настройки** (`server_settings`,
 CONTRACT §11 — реклами, патрони, ботове, XP множител, поздрав; панел ↔ игра) + **събития по график**
-(`events`, §12 — XP уикенд/режим/общностно; панел → плъгин на 30 s → начална страница + JSON-LD). Следва: Discord бот, формите за играчите.
+(`events`, §12 — XP уикенд/режим/общностно; панел → плъгин на 30 s → начална страница + JSON-LD) + **картата на
+мача** (`matches`, §13 — топ 3 в чата, `/{език}/match/:id`, последните мачове; 90 дни). Следва: Discord бот, формите за играчите.
 Банове и класация — **публични на сайта** (решение на
 собственика), затова админ системата е наша на Postgres, не CS2-SimpleAdmin (MySQL + три
 неподдържани меню зависимости). Договорът между плъгин и сайт: `CONTRACT.md`._
@@ -72,6 +73,7 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   src/index.ts · src/worker.ts       уеб процесът · BullMQ работникът (чистене по CONTRACT §7, на 6 ч)
   src/server.ts                      Express 5: helmet (строг CSP с nonce), rate limit, pino без IP, 404/500
   src/routes/pages.ts                /{bg|en|it}/: начало, leaderboard, player/:steamId64, bans, vip, правни
+  src/routes/matches.ts              /{bg|en|it}/matches и /match/:id (§13) · match-view.ts · event-seo.ts (§12 JSON-LD)
   src/routes/root.ts                 / → език · robots.txt · sitemap.xml · llms.txt · IndexNow · /bans без език
   src/routes/health.ts               /health — база + Redis, JSON, 200/503
   src/data/repo.ts                   интерфейсът (само публичните полета) · prisma-repo.ts · cached-repo.ts
@@ -154,6 +156,8 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   (`CarbonStealth.Logic/StatsBatch.cs`) се пълни през `Delta(state)` — с епохата на играча, никога без нея.
   `tests/integration-plugin-sql.test.ts` пуска ИСТИНСКИЯ SQL от `StatsWriter.cs` срещу базата (`csharp-sql.ts`
   чете константите в тройни кавички) — нов SQL на плъгина в константа = може да се тества така.
+- **Мачът (§13)** се следи в `CarbonStealth.Logic/MatchTracker.cs` (xunit); SQL-ът е в константи в
+  `Data/MatchStore.cs` (тестван от `tests/integration-matches.test.ts`). Нищо, което прилича на MVP музика/кит.
 - **Живите настройки (§11):** нова група = ключ в `SETTING_KEYS` + строга схема (`app/src/settings.ts`) +
   `ServerSettings.Parse` (C#, с xunit) + форма в `/admin/settings` + CONTRACT §11 — заедно. Невалиден ред в
   базата никога не чупи плъгина: групата пада към конфига. Превключвател в WASD менюто, който съвпада с

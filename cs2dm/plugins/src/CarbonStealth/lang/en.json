@@ -132,5 +132,8 @@
   "event.end": "{Gold}[CarbonStealth]{Default} The event {Gold}{0}{Default} is over — thanks for playing!",
   "event.active": "{Gold}[CarbonStealth]{Default} Event on now: {Gold}{0}{Default} · XP ×{1} · until {2}",
   "hud.event.start": "EVENT: {0} · XP ×{1}",
-  "hud.event.end": "The event {0} is over"
+  "hud.event.end": "The event {0} is over",
+  "match.summary": "{Gold}[CarbonStealth]{Default} {Lime}Match over{Default} · {0} kills · {1} players · top 3:",
+  "match.line": "{Gold}#{0}{Default} {1} — {Green}{2}{Default} kills / {3} deaths · HS {4} · best streak {5}",
+  "match.link": "{Gold}[CarbonStealth]{Default} Match card: {Lime}{0}{Default}"
 }
