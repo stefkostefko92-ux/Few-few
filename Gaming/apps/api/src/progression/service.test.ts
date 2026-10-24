@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ROTATING_DAILY_COUNT, VIP_PERKS, activeQuests, dailyReward, levelFromXp } from "@aso/shared";
+import { ROTATING_DAILY_COUNT, VIP_PERKS, activeQuests, applyXpMultiplier, dailyReward, levelFromXp } from "@aso/shared";
 
 // ── In-memory заместители на Postgres (prisma) и Redis ──────────────────────
 interface FakeUser {
@@ -190,7 +190,17 @@ describe("опит от мисии: VIP множител + записано ни
     await recordMatchResult({ matchId: "m1", userId: "u2", game: "CHESS", won: true, rating: 1200, displayName: "Мария" });
     const vip = users.get("u1")!;
     expect(vip.xp).toBeGreaterThan(0);
-    expect(vip.xp).toBe(Math.round(free.xp * VIP_PERKS.PLATINUM.xpMultiplier));
+    // VIP има и повече мисии в деня, а кои се падат зависи от датата — затова
+    // очакването е сумата от наградите на НЕГОВИТЕ завършени мисии × множителя,
+    // а не „безплатният × множител“ (то минаваше само в дни без съвпадение).
+    const done = new Set(quests.filter((q) => q.userId === "u1" && q.completedAt).map((q) => q.key));
+    const today = new Date().toISOString().slice(0, 10);
+    const expected = activeQuests(today, VIP_PERKS.PLATINUM.questSlots)
+      .filter((d) => done.has(d.key))
+      .reduce((sum, d) => sum + applyXpMultiplier(d.rewardXp, VIP_PERKS.PLATINUM), 0);
+    expect(done.size).toBeGreaterThan(0);
+    expect(vip.xp).toBe(expected);
+    expect(vip.xp).toBeGreaterThan(free.xp);
     expect(vip.level).toBe(levelFromXp(vip.xp).level);
   });
 
