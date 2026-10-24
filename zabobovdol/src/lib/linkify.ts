@@ -29,8 +29,11 @@ const EMAIL = "[A-Za-z0-9._%+\\-]+@[A-Za-z0-9.\\-]+\\.[A-Za-z]{2,}";
 const PHONE = "(?:\\+359|00359|0)(?:[\\s\\-/]?\\d){7,11}";
 
 // Краткият номер е отделна „дума“ — не част от адрес (112.mvr.bg), диапазон
-// (130–150 г.), по-дълго число, дата или мярка (150 г, 160 °C).
-const SHORT_BEFORE = "(?<![\\p{L}\\d.,:\\-–—/+])(?<!\\d\\s?[\\-–—]\\s?)";
+// (130–150 г.), по-дълго число, дата или мярка (150 г, 160 °C). Какво има
+// СЛЕД него проверява регулярният израз (lookahead); какво има ПРЕДИ него —
+// shortStandsAlone() в кода: lookbehind (?<!…) хвърля SyntaxError в Safari
+// под 16.4, а linkify работи и в браузъра (чата) — по-старите айфони са
+// точно при хората, за които е сайтът.
 const SHORT_AFTER =
   "(?![.,:\\-–—/]?[\\p{L}\\d])(?!\\s?[\\-–—]\\s?\\d)" +
   "(?!\\s?(?:°|%|€|(?:г|гр|грама|градуса?|мл|л|кг|км|м|см|мм|лв|ст|евро|лева|ч|мин|сек)(?!\\p{L})))";
@@ -50,9 +53,17 @@ function buildRe(opts: LinkifyOptions): RegExp {
   const parts = [
     opts.email === false ? never : `(${EMAIL})`,
     `(${PHONE})`,
-    short ? `${SHORT_BEFORE}(${short})${SHORT_AFTER}` : never,
+    short ? `(${short})${SHORT_AFTER}` : never,
   ];
   return new RegExp(parts.join("|"), "gu");
+}
+
+// Непосредствено преди краткия номер: буква, цифра, точка, запетая, „:“,
+// тире, наклонена черта или „+“ — или „130 – “ (диапазон).
+const SHORT_BAD_BEFORE = /[\p{L}\d.,:\-–—/+]$|\d\s?[-–—]\s?$/u;
+
+function shortStandsAlone(input: string, index: number): boolean {
+  return !SHORT_BAD_BEFORE.test(input.slice(Math.max(0, index - 4), index));
 }
 
 export function linkifySegments(input: string, opts: LinkifyOptions = {}): LinkSegment[] {
@@ -61,6 +72,8 @@ export function linkifySegments(input: string, opts: LinkifyOptions = {}): LinkS
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = re.exec(input))) {
+    // Кратък номер, залепен за нещо отпред, остава обикновен текст.
+    if (m[3] && !shortStandsAlone(input, m.index)) continue;
     if (m.index > last) {
       out.push({ kind: "text", text: input.slice(last, m.index) });
     }

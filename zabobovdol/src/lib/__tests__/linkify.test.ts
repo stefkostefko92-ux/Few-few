@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { STEP_LINKIFY, linkifySegments } from "@/lib/linkify";
 
 test("прави дълъг телефон кликаем (tel:) без интервалите", () => {
@@ -79,4 +81,12 @@ test("текстът се запазва дословно, каквито и д�
       s,
     );
   }
+});
+
+test("без lookbehind — linkify работи и в браузъра (чата) на Safari под 16.4", () => {
+  const code = readFileSync(join(process.cwd(), "src/lib/linkify.ts"), "utf8")
+    .split("\n")
+    .filter((l) => !l.trim().startsWith("//"))
+    .join("\n");
+  assert.equal(/\(\?<[!=]/.test(code), false);
 });
