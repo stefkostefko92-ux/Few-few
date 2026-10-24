@@ -12,3 +12,5 @@ agents-dashboard/.sync.lock
 .claude/hooks/_state/
 agents-dashboard/metrics.json
 dist/
+# Кешът на turbo: при worktree-и turbo го пише в корена на общото репо.
+.turbo/
