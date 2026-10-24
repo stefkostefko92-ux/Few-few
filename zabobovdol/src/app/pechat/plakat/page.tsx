@@ -7,7 +7,7 @@ import { SECTION } from "@/lib/section-names";
 import { PageHero } from "@/components/ui";
 import { QrCode } from "@/components/QrCode";
 import { GENERAL_PROMISE, parseShortCode, posterPromise, shortLinkPath } from "@/lib/qr";
-import { INDEPENDENT, Sheet112, SheetLayout, sheetCrumbs } from "../_components/PrintKit";
+import { INDEPENDENT, Sheet112, SheetLayout, SHEET_TITLE, sheetCrumbs } from "../_components/PrintKit";
 
 export const dynamic = "force-dynamic";
 
@@ -86,9 +86,9 @@ export default async function PosterPage({
       <PageHero
         className="no-print"
         eyebrow={SECTION.print}
-        title="Плакат за разпечатване"
+        title={SHEET_TITLE["/pechat/plakat"]}
         intro="Разпечатайте този плакат (A4) и го закачете на видно място — в аптеката, кметството, на автобусната спирка, в магазина или в читалището. Така и хората, които още не познават сайта, ще го открият."
-        crumbs={sheetCrumbs("/pechat/plakat", "Плакат с QR код")}
+        crumbs={sheetCrumbs("/pechat/plakat")}
       />
 
       {/* Лист за печат (A4, портрет) */}
@@ -98,9 +98,10 @@ export default async function PosterPage({
         printLabel="Отпечатайте плаката"
         sheetClassName="flex flex-col items-center text-center sm:p-10"
       >
+        {/* Гербът с прозрачен фон — без бяла кутия върху тъмния лист. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/brand/bobov-dol-grb.png"
+          src="/brand/bobov-dol-grb-mark.png"
           alt="Герб на Бобов дол"
           width={120}
           height={173}

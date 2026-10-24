@@ -11,6 +11,7 @@ import {
   SheetFooter,
   SheetHead,
   SheetLayout,
+  SHEET_TITLE,
   sheetCrumbs,
 } from "../_components/PrintKit";
 import {
@@ -117,9 +118,9 @@ export default async function WeekSheetPage() {
       <PageHero
         className="no-print"
         eyebrow={SECTION.print}
-        title="Седмицата в Бобов дол — лист за печат"
+        title={SHEET_TITLE["/pechat/sedmitsa"]}
         intro="За хората без смартфон. Листът се попълва сам от сайта: дежурни аптеки, спиране на ток и вода, новини, измами и важни телефони — с едър шрифт."
-        crumbs={sheetCrumbs("/pechat/sedmitsa", "Седмицата в Бобов дол")}
+        crumbs={sheetCrumbs("/pechat/sedmitsa")}
       >
         <p className="max-w-3xl text-base text-slate-700">
           Разпечатайте го в понеделник и го закачете на таблото в аптеката, пощата,
@@ -143,7 +144,12 @@ export default async function WeekSheetPage() {
           )
         }
       >
-        <SheetHead title="Седмицата в Бобов дол" subtitle={fmtWeekRange(start, end)} size="lg" />
+        <SheetHead
+          title="Седмицата в Бобов дол"
+          subtitle={fmtWeekRange(start, end)}
+          size="lg"
+          independent
+        />
 
         <Sheet112 className="mt-5" />
 
@@ -152,21 +158,40 @@ export default async function WeekSheetPage() {
             <h3 id="sedmitsa-apteki" className="font-display text-2xl font-bold text-slate-900">
               Дежурни аптеки
             </h3>
-            <table className="mt-2 w-full text-left">
-              <tbody>
+            {/* На телефон (под sm) редът е стек: денят като подзаглавие, под
+                него аптеката и телефонът — трите колони не се събират в листа
+                (min-content ≈390px). От sm и на хартия (A4 ≈ 718px) — таблица. */}
+            <table className="mt-2 w-full text-left max-sm:block">
+              <tbody className="max-sm:block">
                 {dutyDays.map((day) =>
                   day.items.map((d, i) => (
-                    <tr key={d.id} className="border-b border-slate-200 align-top">
-                      <th scope="row" className="py-2 pr-3 font-semibold text-slate-800">
-                        {i === 0 ? fmtDutyDay(day.date) : ""}
+                    <tr
+                      key={d.id}
+                      className="border-b border-slate-200 align-top max-sm:block max-sm:py-2"
+                    >
+                      {/* Денят се вижда на първия ред от деня; на следващите
+                          е само за екранния четец (всеки ред има заглавие). */}
+                      <th
+                        scope="row"
+                        className={
+                          i === 0
+                            ? "py-2 pr-3 font-semibold text-slate-800 max-sm:block max-sm:p-0"
+                            : "py-2 pr-3 max-sm:sr-only"
+                        }
+                      >
+                        {i === 0 ? (
+                          fmtDutyDay(day.date)
+                        ) : (
+                          <span className="sr-only">{fmtDutyDay(day.date)}</span>
+                        )}
                       </th>
-                      <td className="min-w-0 py-2 pr-3">
+                      <td className="min-w-0 py-2 pr-3 max-sm:block max-sm:p-0 max-sm:pt-1">
                         <div className="font-bold">{d.pharmacy}</div>
                         {d.address && <div className="text-base text-slate-700">{d.address}</div>}
                         {d.hours && <div className="text-base text-slate-700">{d.hours}</div>}
                         {d.note && <div className="text-base text-slate-700">{d.note}</div>}
                       </td>
-                      <td className="whitespace-nowrap py-2 text-right text-xl font-bold tabular-nums">
+                      <td className="whitespace-nowrap py-2 text-right text-xl font-bold tabular-nums max-sm:block max-sm:p-0 max-sm:pt-1 max-sm:text-left">
                         {formatPhoneBg(d.phone)}
                       </td>
                     </tr>
@@ -273,6 +298,7 @@ export default async function WeekSheetPage() {
             />
           }
           lead={<>Повече на {SITE.domain}</>}
+          independent={false}
         >
           Листът е генериран на {fmtGenerated(now)} от данните в сайта „За Бобов дол“.
           Нещата се променят — при съмнение проверете по телефона.

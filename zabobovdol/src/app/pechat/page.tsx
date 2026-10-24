@@ -11,6 +11,7 @@ import {
   SheetHead,
   SheetLayout,
   SiteQr,
+  SHEET_TITLE,
   sheetCrumbs,
 } from "./_components/PrintKit";
 
@@ -68,9 +69,9 @@ export default async function PrintPage() {
       <PageHero
         className="no-print"
         eyebrow={SECTION.print}
-        title="Важни телефони за печат"
+        title={SHEET_TITLE["/pechat"]}
         intro="Отпечатайте този лист и го закачете на видно място у дома или го подарете на възрастен близък."
-        crumbs={sheetCrumbs("/pechat", "Важни телефони")}
+        crumbs={sheetCrumbs("/pechat")}
       />
 
       {/* Лист за печат (A4) */}

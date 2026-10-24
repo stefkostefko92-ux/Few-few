@@ -9,6 +9,7 @@ import {
   SheetHead,
   SheetLayout,
   SiteQr,
+  SHEET_TITLE,
   sheetCrumbs,
 } from "../_components/PrintKit";
 
@@ -35,9 +36,9 @@ export default function BusPrintPage() {
       <PageHero
         className="no-print"
         eyebrow={SECTION.print}
-        title="Автобусно разписание за печат"
+        title={SHEET_TITLE["/pechat/avtobus"]}
         intro="Отпечатайте този лист и го закачете на видно място у дома или го подарете на възрастен близък."
-        crumbs={sheetCrumbs("/pechat/avtobus", "Разписание на автобусите")}
+        crumbs={sheetCrumbs("/pechat/avtobus")}
       />
 
       {/* Лист за печат (A4) */}
@@ -47,15 +48,23 @@ export default function BusPrintPage() {
           subtitle={<>Превозвач: {BUS.carrier}</>}
         />
 
-        <div className="mt-6 grid gap-6 sm:grid-cols-2">
+        {/* Двете посоки: една до друга от sm; на lg листът е по-тесен (до него е
+            „Още за печат“) — една под друга, от xl пак две; на хартия — две. */}
+        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 print:grid-cols-2">
           {BUS.directions.map((d) => (
             <section key={d.title} aria-label={d.title}>
               <h3 className="font-display text-xl font-bold text-slate-900">{d.title}</h3>
-              <ul role="list" className="mt-3 grid grid-cols-4 gap-2">
+              {/* Колкото колони се съберат, всяка ≥4.75rem (в rem — расте с
+                  уголемения текст): часът никога не излиза от клетката си. На
+                  хартия — винаги 4, за да остане листът един. */}
+              <ul
+                role="list"
+                className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(4.75rem,1fr))] gap-2 print:grid-cols-4"
+              >
                 {d.times.map((t) => (
                   <li
                     key={t}
-                    className="rounded-lg border border-slate-300 px-1 py-1.5 text-center text-lg font-bold tabular-nums text-slate-900"
+                    className="rounded-xl border border-slate-300 px-1 py-1.5 text-center text-lg font-bold tabular-nums text-slate-900"
                   >
                     {t}
                   </li>

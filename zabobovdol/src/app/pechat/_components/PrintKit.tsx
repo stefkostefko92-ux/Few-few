@@ -25,40 +25,57 @@ export const INDEPENDENT =
 
 export type SheetPath = "/pechat" | "/pechat/sedmitsa" | "/pechat/plakat" | "/pechat/avtobus";
 
-const SHEETS: { href: SheetPath; title: string; text: string; icon: LucideIcon }[] = [
+/**
+ * Името на всеки лист — ЕДНО навсякъде: H1 на страницата, последната троха,
+ * „Още за печат“ (и групата „За печат“ във футъра — FOOTER_GROUPS в site.ts).
+ */
+export const SHEET_TITLE: Record<SheetPath, string> = {
+  "/pechat": "Важни телефони за печат",
+  "/pechat/sedmitsa": "Седмицата за печат",
+  "/pechat/plakat": "Плакат за разпечатване",
+  "/pechat/avtobus": "Автобусно разписание за печат",
+};
+
+const SHEETS: { href: SheetPath; text: string; icon: LucideIcon }[] = [
   {
     href: "/pechat",
-    title: "Важни телефони",
     text: "Телефоните в Бобов дол на един лист — за у дома или за възрастен близък.",
     icon: Phone,
   },
   {
     href: "/pechat/sedmitsa",
-    title: "Седмицата в Бобов дол",
     text: "Дежурни аптеки, спиране на ток и вода, новини и измами — с едър шрифт, за таблото.",
     icon: CalendarDays,
   },
   {
     href: "/pechat/plakat",
-    title: "Плакат с QR код",
-    text: "За аптеката, пощата, кметството или спирката.",
+    text: "С QR код към сайта — за аптеката, пощата, кметството или спирката.",
     icon: Megaphone,
   },
   {
     href: "/pechat/avtobus",
-    title: "Разписание на автобусите",
     text: "Бобов дол ⇄ Дупница — за спирката или у дома.",
     icon: Bus,
   },
 ];
 
-/** Трохите на листовете: „За печат“ → листът. */
-export function sheetCrumbs(current: SheetPath, name: string) {
-  const root = { name: "За печат", path: "/pechat" };
-  return current === "/pechat" ? [root] : [root, { name, path: current }];
+/**
+ * Трохите на листа. /pechat е и началото на раздела „За печат“, и листът
+ * „Важни телефони“: там последната троха е името на листа (= H1), а на
+ * другите листове пътят е „За печат“ → листът.
+ */
+export function sheetCrumbs(current: SheetPath) {
+  if (current === "/pechat") return [{ name: SHEET_TITLE["/pechat"], path: "/pechat" }];
+  return [
+    { name: "За печат", path: "/pechat" },
+    { name: SHEET_TITLE[current], path: current },
+  ];
 }
 
 type SheetWidth = "max-w-2xl" | "max-w-3xl";
+
+// !important — уголемяването е inline стил на <html> (layout.tsx).
+const PRINT_FONT_RESET = "@media print{html{font-size:100%!important}}";
 
 /**
  * Страницата на лист: вляво лентата с бутона и самият лист, вдясно (на lg)
@@ -84,6 +101,10 @@ export function SheetLayout({
 }) {
   return (
     <div className="container-content grid gap-10 py-8 sm:py-10 lg:grid-cols-[minmax(0,1fr),17rem] print:block print:max-w-none print:p-0">
+      {/* Уголеменият текст (125% от „Настройки за четене“) е за екрана. Листът
+          е изчислен за A4 и вече е с едър шрифт — на хартия с 125% излизаше на
+          2 листа (плакатът, телефоните, „Седмицата“). Затова на хартия — 100%. */}
+      <style>{PRINT_FONT_RESET}</style>
       <div className="min-w-0">
         <SheetToolbar label={printLabel} width={width}>
           {note}
@@ -141,22 +162,30 @@ function Sheet({
   );
 }
 
-/** Заглавието на листа: гербът + име + подзаглавие. */
+/**
+ * Заглавието на листа: гербът + име + подзаглавие. `independent` — редът за
+ * независимостта веднага под подзаглавието (не само най-долу): листът, който
+ * може да излезе на две страници („Седмицата“), го носи още на първата.
+ */
 export function SheetHead({
   title,
   subtitle,
   size = "md",
+  independent = false,
 }: {
   title: string;
   subtitle?: ReactNode;
   /** lg — „Седмицата“ (едър шрифт за таблото). */
   size?: "md" | "lg";
+  independent?: boolean;
 }) {
   return (
     <header className="flex items-center gap-4 border-b-2 border-slate-300 pb-4 print:pb-3">
+      {/* Гербът с прозрачен фон: в тъмен режим листът е тъмен и бялата кутия
+          около обикновения герб се виждаше (същото като B12 в хедъра). */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/brand/bobov-dol-grb.png"
+        src="/brand/bobov-dol-grb-mark.png"
         alt="Герб на Бобов дол"
         width={48}
         height={69}
@@ -183,6 +212,9 @@ export function SheetHead({
           >
             {subtitle}
           </p>
+        )}
+        {independent && (
+          <p className="mt-1 text-base font-semibold text-slate-800">{INDEPENDENT}</p>
         )}
       </div>
     </header>
@@ -224,11 +256,14 @@ export function Sheet112({ compact = false, className = "" }: { compact?: boolea
 export function SheetFooter({
   qr,
   lead,
+  independent = true,
   className = "",
   children,
 }: {
   qr: ReactNode;
   lead: ReactNode;
+  /** false — когато редът за независимостта вече е в заглавието (SheetHead). */
+  independent?: boolean;
   className?: string;
   children?: ReactNode;
 }) {
@@ -250,7 +285,7 @@ export function SheetFooter({
             </strong>
           </p>
         )}
-        <p className="mt-1 font-semibold text-slate-900">{INDEPENDENT}</p>
+        {independent && <p className="mt-1 font-semibold text-slate-900">{INDEPENDENT}</p>}
       </div>
     </footer>
   );
@@ -278,7 +313,7 @@ function MorePrint({ current }: { current: SheetPath }) {
       <h2 id="oshte-za-pechat" className="section-title">
         Още за печат
       </h2>
-      <ul role="list" className="mt-6 grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
+      <ul role="list" className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-1">
         {others.map((s) => {
           const Icon = s.icon;
           return (
@@ -287,7 +322,7 @@ function MorePrint({ current }: { current: SheetPath }) {
                 <span className="icon-chip-sm">
                   <Icon aria-hidden />
                 </span>
-                <span className="h-card text-brand-800">{s.title}</span>
+                <span className="h-card text-brand-800">{SHEET_TITLE[s.href]}</span>
                 <span className="text-base text-slate-700">{s.text}</span>
               </Link>
             </li>
