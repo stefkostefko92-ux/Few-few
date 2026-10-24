@@ -6,6 +6,9 @@
 (verified → тук; друго → Карантина); `tools/memory/curate.mjs` дедупира и пази от дрейф.
 **Закон:** само проверено става факт; източник или нищо; противоречие → стоп (човек решава).
 ## Проверени поуки (verified)
+- **2026-10-24:** CLDR 49 излезе на 2026-10-22 за Unicode 18; в него функциите :currency и :percent на MessageFormat 2 стават Stable, а опцията u:locale (дотогава Draft) е премахната от спецификацията. _(избор на целеви CLDR стандарт и MF2 функции за plural/валута/процент; verified; https://cldr.unicode.org/downloads/cldr-49)_
+- **2026-10-24:** В linketto es/fr/de.json ред 325 (audienceHint) пише GDPR, а редове 27/36/52/377 в същите файлове пишат RGPD/DSGVO — абревиатурата не е последователна в рамките на един и същ локал. _(одит или превод на правни абревиатури в linketto; verified; linketto/messages/es.json:325 (същото и в fr.json, de.json))_
+- **2026-10-24:** check-parity.mjs изисква инлайн i18n на medqr първо да се експортира в JSON; medqr днес е само bg/en (LANGS) и няма CLINICAL_IT, а IT съществува само в глосара. _(проверка на паритета и въвеждане на IT в medqr; verified; tools/i18n/check-parity.mjs:10-11; medqr/src/i18n.js:3)_
 - **2026-09-02:** Блокът за предаване трябва да е буквално „## ПРЕДАВАНЕ“ с полета От/Към/Статус/Находки/Изход/Следваща стъпка; „HANDOFF“ като заглавие проваля dod-check на SubagentStop. _(global; verified; "/home/user/Few-few/tools/agents/handoff.mjs:12-13,28-30,78-119; /home/user/Few-few/.claude/agents/_memory/PROCEDURE.md:14-15")_
 - **2026-09-02:** IT на Apple платформи: „crittografato/crittografia“, не „cifrato/cifratura“ (второто е коректен италиански, но не е терминът на платформата). _(it; verified; "https://support.apple.com/it-it/102651 (проверено 2026-09-02)")_
 - **2026-09-02:** IT на Apple платформи: „crittografato/crittografia“, не „cifrato/cifratura“ (последното е коректно, но не е термин на платформата). _(it; verified; "https://support.apple.com/it-it/102651 (проверено 2026-09-02)")_

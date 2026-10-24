@@ -38,9 +38,19 @@ export function backupAllSpec(cfg = null) {
     'TS=$(date +%Y%m%d-%H%M%S)',
     'rc=0',
     'echo "▸ SQLite бази…"',
-    'for db in /opt/medqr/data/medqr.sqlite /opt/vizitka/data/vizitka.db /opt/nexus/state/data/nexus.db; do',
+    // Същото откриване като таба „Бази" (databases.js): всяка data папка под /opt.
+    // Затвореният списък (medqr, vizitka, nexus) пропускаше panev — онлайн магазин
+    // с поръчки — и нощният бекъп минаваше „зелен", без базата му изобщо да влезе.
+    // Името носи продукта, ако файлът не го носи сам (две `app.db` не бива да се
+    // презапишат в един и същ час); познатите имена остават каквито бяха.
+    'declare -A seen=()',
+    'for db in /opt/medqr/data/medqr.sqlite /opt/*/data/*.db /opt/*/data/*.sqlite /opt/*/data/*.sqlite3 /opt/*/state/data/*.db; do',
     '  [ -f "$db" ] || continue',
-    '  name=$(basename "$db" | tr -c "A-Za-z0-9._-" "_")',
+    '  case "$db" in /opt/few-few/*) continue ;; esac',
+    '  [ -n "${seen[$db]:-}" ] && continue; seen[$db]=1',
+    '  product=$(echo "$db" | cut -d/ -f3); base=$(basename "$db")',
+    '  case "$base" in "$product"*) ;; *) base="$product-$base" ;; esac',
+    '  name=$(printf %s "$base" | tr -c "A-Za-z0-9._-" "_")',
     `  out="${DUMP_DIR}/\${name}-\${TS}.sqlite"`,
     '  if sqlite3 "$db" ".backup \'$out\'" && gzip -f "$out"; then echo "  ✔ $db"; else echo "  ✘ $db"; rc=1; fi',
     'done',
@@ -169,7 +179,10 @@ export function restorePreviewSpec(name) {
       `ls -lh "${out}"`,
       describe,
       `echo`,
-      `echo "НИЩО ЖИВО НЕ Е ПРОМЕНЕНО. Ако това е снимката, която искаш, натисни „Приложи"."`,
+      // Кавичките в текст ВЪТРЕ в shell са типографски („…“), никога ASCII ":
+      // права кавичка тук затваряше echo низа по-рано и ВСЕКИ преглед — а с него и
+      // автоматичната проба за възстановяване (drill.js) — завършваше с код 2.
+      `echo "НИЩО ЖИВО НЕ Е ПРОМЕНЕНО. Ако това е снимката, която искаш, натисни „Приложи“."`,
     ].join('\n'),
     exclusive: 'backup',
     timeoutMs: 30 * 60 * 1000,
