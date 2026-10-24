@@ -2,30 +2,20 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
+  OBITUARY_PUBLIC_SELECT,
   PAGE_SIZE,
   contactPurgeCutoff,
+  publishedObituaryWhere,
   shouldRunPurge,
   type ObituaryKind,
 } from "@/lib/obituary";
 
 // Некролози и помени — достъп до базата. Публичните заявки четат САМО
 // публикуваните записи и САМО публичните полета: contactName, contactPhone и
-// consent никога не излизат от сървъра към публична страница.
+// consent никога не излизат от сървъра към публична страница. Условието и
+// полетата са в @/lib/obituary (чисто — тестват се).
 
-const PUBLIC_SELECT = {
-  id: true,
-  slug: true,
-  kind: true,
-  fullName: true,
-  birthYear: true,
-  deathDate: true,
-  ceremonyAt: true,
-  ceremonyPlace: true,
-  text: true,
-  photoUrl: true,
-  fromFamily: true,
-  createdAt: true,
-} satisfies Prisma.ObituarySelect;
+const PUBLIC_SELECT = OBITUARY_PUBLIC_SELECT;
 
 export type PublicObituary = Prisma.ObituaryGetPayload<{ select: typeof PUBLIC_SELECT }>;
 
@@ -35,7 +25,7 @@ export async function listPublishedObituaries(opts: {
   page: number;
 }): Promise<{ items: PublicObituary[]; hasMore: boolean }> {
   const rows = await prisma.obituary.findMany({
-    where: { published: true, ...(opts.kind ? { kind: opts.kind } : {}) },
+    where: publishedObituaryWhere({ kind: opts.kind }),
     orderBy: { createdAt: "desc" },
     skip: (opts.page - 1) * PAGE_SIZE,
     take: PAGE_SIZE + 1,
@@ -45,7 +35,7 @@ export async function listPublishedObituaries(opts: {
 }
 
 export async function getPublishedObituary(slug: string): Promise<PublicObituary | null> {
-  return prisma.obituary.findFirst({ where: { slug, published: true }, select: PUBLIC_SELECT });
+  return prisma.obituary.findFirst({ where: publishedObituaryWhere({ slug }), select: PUBLIC_SELECT });
 }
 
 /** Заетите slug-ове със същото начало — само тях, не цялата таблица. */

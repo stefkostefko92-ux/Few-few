@@ -43,6 +43,12 @@ export const REVALIDATE = {
 
 // unstable_cache сериализира в JSON — датите се връщат като ISO низове.
 // Връщаме ги в Date, за да остане формата същият като от Prisma.
+//
+// ВНИМАНИЕ: само попадението в кеша минава през JSON. При пропуск (първа
+// заявка след деплой/рестарт, след revalidateTag от админа, нов ден в ключа)
+// unstable_cache връща суровия резултат от Prisma — с истински Date. Те
+// трябва да минат непокътнати: Object.entries(new Date()) е [], и без
+// проверката по-долу всяка дата ставаше {} (RangeError при форматирането).
 const ISO = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/;
 
 export function reviveDates<T>(value: T): T {
@@ -51,6 +57,7 @@ export function reviveDates<T>(value: T): T {
 
 function walk(v: unknown): unknown {
   if (typeof v === "string") return ISO.test(v) ? new Date(v) : v;
+  if (v instanceof Date) return v;
   if (Array.isArray(v)) return v.map(walk);
   if (v && typeof v === "object") {
     const out: Record<string, unknown> = {};
@@ -62,12 +69,18 @@ function walk(v: unknown): unknown {
 
 // Ключ на деня по Европа/София (YYYY-MM-DD) — част от ключа на кеша за
 // „днес/утре“, за да не се показва вчерашно след полунощ.
+//
+// plusDays мести КАЛЕНДАРНАТА дата, а не момента с 24 ч.: в деня на смяната
+// на часа денят е 25 ч. (последна неделя на октомври) или 23 ч. (последна
+// неделя на март) и „+24 ч.“ даваше пак днес или вдругиден.
 export function dayKey(d: Date = new Date(), plusDays = 0): string {
-  const t = new Date(d.getTime() + plusDays * 86_400_000);
-  return new Intl.DateTimeFormat("en-CA", {
+  const today = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Sofia",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).format(t);
+  }).format(d);
+  if (!plusDays) return today;
+  const [y, m, dd] = today.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, dd + plusDays)).toISOString().slice(0, 10);
 }

@@ -7,8 +7,9 @@
 // форматираме изрично в UTC — каквото близките напишат („11:00“), същото вижда
 // и редакторът в админа, и посетителят на страницата.
 
+import type { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { slugify } from "@/lib/slug";
+import { slugify, uniqueSlug } from "@/lib/slug";
 
 export const OBITUARY_KINDS = ["NECROLOGY", "MEMORIAL"] as const;
 export type ObituaryKind = (typeof OBITUARY_KINDS)[number];
@@ -176,6 +177,46 @@ export function friendlyPhone(p: string): string {
 /** Основа на slug-а: име + година на смъртта („ivan-petrov-2026“). */
 export function obituarySlugBase(fullName: string, deathDate: Date | null): string {
   return slugify(`${fullName} ${deathDate ? deathDate.getUTCFullYear() : ""}`);
+}
+
+/**
+ * Статичните пътища под /pomeni/ — те имат предимство пред /pomeni/[slug],
+ * затова обява с такъв slug би била недостъпна („Нов“ без дата → „nov“ →
+ * формата). Нов статичен път под src/app/pomeni/ се добавя и тук (тест пази).
+ */
+export const RESERVED_OBITUARY_SLUGS: readonly string[] = ["nov"];
+
+/** Свободен slug: заетите и запазените получават „-2“, „-3“… */
+export function obituarySlug(base: string, taken: Iterable<string>): string {
+  return uniqueSlug(base, new Set([...taken, ...RESERVED_OBITUARY_SLUGS]));
+}
+
+// --- Публичното четене ---
+
+/** Само тези полета излизат към публична страница — НИКОГА contactName,
+ *  contactPhone и consent (данните на подателя са само за модерацията). */
+export const OBITUARY_PUBLIC_SELECT = {
+  id: true,
+  slug: true,
+  kind: true,
+  fullName: true,
+  birthYear: true,
+  deathDate: true,
+  ceremonyAt: true,
+  ceremonyPlace: true,
+  text: true,
+  photoUrl: true,
+  fromFamily: true,
+  createdAt: true,
+} satisfies Prisma.ObituarySelect;
+
+/** Условието на всяко публично четене — само публикуваните (одобрени). */
+export function publishedObituaryWhere(filter: { kind?: ObituaryKind | null; slug?: string } = {}) {
+  return {
+    ...(filter.kind ? { kind: filter.kind } : {}),
+    ...(filter.slug !== undefined ? { slug: filter.slug } : {}),
+    published: true,
+  } satisfies Prisma.ObituaryWhereInput;
 }
 
 // --- Срок за данните на подателя ---
@@ -404,6 +445,67 @@ export const FORM_FIELDS = [
   "consent",
 ] as const;
 export type FormField = (typeof FORM_FIELDS)[number];
+
+// --- Подаването от формата: ред на проверките и записът ---
+
+export type ObituaryScreen =
+  | { status: "honeypot" }
+  | { status: "invalid"; error: string; field?: FormField }
+  | { status: "limited" }
+  | { status: "ok"; data: ObituarySubmission };
+
+/**
+ * Редът е важен: 1) honeypot — ботът не стига до нищо друго; 2) проверка на
+ * данните; 3) едва тогава лимитът (`allow`) — броят се САМО подаванията,
+ * които ще се запишат. Иначе близкият, който поправя грешките една по една
+ * (формата е noValidate и показва първата), оставаше блокиран 15 мин. на
+ * 4-ия, вече верен опит — а зад едно IP (CGNAT) и съседите му.
+ */
+export async function screenObituarySubmission(
+  input: { values: Partial<Record<FormField, string>>; website: string },
+  allow: () => boolean | Promise<boolean>,
+  now: Date = new Date(),
+): Promise<ObituaryScreen> {
+  if (input.website !== "") return { status: "honeypot" };
+
+  const parsed = obituarySubmissionSchema(now).safeParse({ ...input.values, website: "" });
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    const path = issue?.path[0];
+    return {
+      status: "invalid",
+      error: issue?.message ?? "Невалидни данни.",
+      field: FORM_FIELDS.find((f) => f === path),
+    };
+  }
+
+  if (!(await allow())) return { status: "limited" };
+  return { status: "ok", data: parsed.data };
+}
+
+/**
+ * Данните за prisma.obituary.create. Подаденото от формата ВИНАГИ чака
+ * одобрение (published: false) — публикува редакторът след обаждане на
+ * подателя. Снимка не се приема от формата — добавя я редакторът след проверка.
+ */
+export function obituaryCreateData(d: ObituarySubmission, slug: string) {
+  return {
+    slug,
+    kind: d.kind,
+    fullName: d.fullName,
+    birthYear: d.birthYear,
+    deathDate: d.deathDate,
+    ceremonyAt: d.ceremonyAt,
+    ceremonyPlace: d.ceremonyPlace,
+    text: d.text,
+    fromFamily: d.fromFamily,
+    photoUrl: "",
+    contactName: d.contactName,
+    contactPhone: d.contactPhone,
+    consent: true,
+    published: false,
+  } satisfies Prisma.ObituaryCreateInput;
+}
 
 /** Писмо до редакцията — БЕЗ лични данни (само че има нова обява и къде е). */
 export function moderationMail(kind: string, siteUrl: string): { subject: string; text: string } {

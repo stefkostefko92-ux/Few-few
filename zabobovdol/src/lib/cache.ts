@@ -11,7 +11,8 @@ import { CACHE_TAGS, REVALIDATE, dayKey, reviveDates } from "@/lib/cache-core";
 // /kak-da/[slug]; тук само четем реда за подредба и той може да е до
 // REVALIDATE.content секунди стар.
 //
-// unstable_cache връща JSON — всяка функция връща датите отново като Date.
+// unstable_cache връща JSON при попадение и суровия резултат от Prisma при
+// пропуск — reviveDates прави датите Date и в двата случая.
 
 function cached<A extends unknown[], R>(
   name: string,

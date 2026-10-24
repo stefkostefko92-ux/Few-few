@@ -1,29 +1,22 @@
 import { NextResponse } from "next/server";
 import type { NextFetchEvent, NextRequest } from "next/server";
-import { jwtVerify } from "jose";
 import { classifyPageRequest, hitKey, HIT_HEADER } from "@/lib/analytics-core";
+import { ADMIN_LOGIN_PATH, SESSION_COOKIE, adminGuardDecision, isAdminPath } from "@/lib/admin-guard";
 
 // Пази /admin/* (без /admin/login). Проверката тук е първа линия; всяка
-// сериозна операция допълнително проверява сесията на сървъра.
+// сериозна операция допълнително проверява сесията на сървъра. Решението е в
+// @/lib/admin-guard (чисто — тества се); тук е само пренасочването.
 async function guardAdmin(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-  if (pathname === "/admin/login") return NextResponse.next();
+  const decision = await adminGuardDecision({
+    pathname: req.nextUrl.pathname,
+    token: req.cookies.get(SESSION_COOKIE)?.value,
+    secret: process.env.AUTH_SECRET,
+  });
+  if (decision.allow) return NextResponse.next();
 
-  const token = req.cookies.get("zbd_session")?.value;
-  const secret = process.env.AUTH_SECRET;
-  if (token && secret) {
-    try {
-      await jwtVerify(token, new TextEncoder().encode(secret), {
-        algorithms: ["HS256"],
-      });
-      return NextResponse.next();
-    } catch {
-      // невалиден/изтекъл токен — към входа
-    }
-  }
   const url = req.nextUrl.clone();
-  url.pathname = "/admin/login";
-  url.searchParams.set("next", pathname);
+  url.pathname = ADMIN_LOGIN_PATH;
+  url.searchParams.set("next", decision.next);
   return NextResponse.redirect(url);
 }
 
@@ -87,7 +80,7 @@ function countView(req: NextRequest, event: NextFetchEvent): void {
 export async function middleware(req: NextRequest, event: NextFetchEvent) {
   const { pathname } = req.nextUrl;
   // Админът — точно както преди (само /admin и /admin/…).
-  if (pathname === "/admin" || pathname.startsWith("/admin/")) return guardAdmin(req);
+  if (isAdminPath(pathname)) return guardAdmin(req);
   countView(req, event);
   return NextResponse.next();
 }

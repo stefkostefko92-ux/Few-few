@@ -98,6 +98,37 @@ export const businessSchema = z
 
 export type BusinessInput = z.infer<typeof businessSchema>;
 
+export type BusinessScreen =
+  | { status: "honeypot" }
+  | { status: "invalid"; error: string }
+  | { status: "limited" }
+  | { status: "ok"; data: BusinessInput };
+
+/**
+ * Ред на проверките: 1) honeypot; 2) проверка на данните; 3) едва тогава
+ * лимитът (`allow`) — броят се САМО подаванията, които ще се запишат. Иначе
+ * човек, който поправя грешките една по една, оставаше блокиран, а зад едно
+ * IP (CGNAT) — и съседите му.
+ */
+export async function screenBusinessSubmission(
+  input: { values: Record<string, string>; homepage: string },
+  allow: () => boolean | Promise<boolean>,
+): Promise<BusinessScreen> {
+  if (input.homepage !== "") return { status: "honeypot" };
+
+  const parsed = businessSchema.safeParse({
+    ...input.values,
+    consent: input.values.consent || undefined,
+    homepage: "",
+  });
+  if (!parsed.success) {
+    return { status: "invalid", error: parsed.error.issues[0]?.message ?? "Невалидни данни." };
+  }
+
+  if (!(await allow())) return { status: "limited" };
+  return { status: "ok", data: parsed.data };
+}
+
 // Полетата, които се показват публично в каталога (и могат да се поправят).
 export const PUBLIC_FIELDS = [
   ["name", "Име"],
