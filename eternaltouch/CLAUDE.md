@@ -88,4 +88,7 @@ headers повторени на статиката/uploads, gzip). Портов�
   префикс; canonical зависи от сервирания език (BG = root без префикс). Не мести реда на
   middleware-а, за да не счупиш това.
 - Прод env `NODE_ENV=production` (иначе cookie-тата не са `secure`).
+- **IndexNow:** ключът е `src/public/indexnow-key.txt` (публичен по дизайн, пази го
+  `test/smoke.test.js`). `autodeploy.sh` не подава за този продукт — след промяна по
+  страници/sitemap пусни от корена `node tools/seo/indexnow.mjs https://eternaltouch.it`.
 ```
