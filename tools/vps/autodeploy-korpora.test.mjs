@@ -191,13 +191,43 @@ test("чистенето на releases пази целта на отката, д
   const cfg = [
     "set -euo pipefail",
     `SRC="${srcs[6]}"`, `CURRENT_LINK="${L.current}"`, `KORPORA_LAST_GOOD="${L.lastGood}"`,
-    `RELEASES_DIR="${L.releases}"`, "KEEP_RELEASES=5",
-    fn("prune_releases"), "prune_releases",
+    `RELEASES_DIR="${L.releases}"`, "KEEP_RELEASES=5", "warn(){ :; }", "docker(){ :; }",
+    fn("compose_workdirs"), fn("prune_releases"), "prune_releases",
   ].join("\n");
   execFileSync("bash", ["-c", cfg], { encoding: "utf8" });
   assert.ok(existsSync(join(L.releases, "r1")), "r1 е целта на отката — остава");
   assert.ok(!existsSync(join(L.releases, "r2")), "r2 е стар и незащитен — изтрит");
   for (const n of ["r3", "r4", "r5", "r6", "r7"]) assert.ok(existsSync(join(L.releases, n)), n);
+}));
+
+// Живо, 23.10.2026: деплои без zabobovdol изтриха release-а, от който вървяха контейнерите му.
+const pruneWith = (L, dockerFn) => {
+  const srcs = ["r1", "r2", "r3", "r4", "r5", "r6", "r7"].map((n, i) => {
+    const src = release(L, n, 0);
+    const t = new Date(Date.UTC(2026, 9, 1 + i));
+    utimesSync(join(L.releases, n), t, t);
+    return src;
+  });
+  execFileSync("ln", ["-sfn", srcs[6], L.current]);
+  const cfg = [
+    "set -euo pipefail",
+    `SRC="${srcs[6]}"`, `CURRENT_LINK="${L.current}"`, `KORPORA_LAST_GOOD="${L.lastGood}"`,
+    `RELEASES_DIR="${L.releases}"`, "KEEP_RELEASES=5", `warn(){ echo "WARN $*" >> "${L.log}"; }`, dockerFn(srcs),
+    fn("compose_workdirs"), fn("prune_releases"), "prune_releases",
+  ].join("\n");
+  execFileSync("bash", ["-c", cfg], { encoding: "utf8" });
+};
+
+test("чистенето пази release, от който върви compose проект (етикет working_dir)", () => withLayout((L) => {
+  pruneWith(L, (srcs) => `docker(){ case "$1" in ps) echo abc ;; inspect) echo "${join(srcs[1], "zabobovdol")}"; echo ;; esac; }`);
+  assert.ok(existsSync(join(L.releases, "r2")), "r2 обслужва контейнер — остава");
+  assert.ok(!existsSync(join(L.releases, "r1")), "r1 е стар и незает — изтрит");
+}));
+
+test("FAIL CLOSED: Docker не отговаря → чистенето не трие нищо", () => withLayout((L) => {
+  pruneWith(L, () => "docker(){ return 1; }");
+  for (const n of ["r1", "r2"]) assert.ok(existsSync(join(L.releases, n)), n);
+  assert.match(readFileSync(L.log, "utf8"), /не чистя стари releases/);
 }));
 
 test("korpora е в PROJECTS по подразбиране и case-ът вика deploy_korpora", () => {
