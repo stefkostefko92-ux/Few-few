@@ -8,8 +8,10 @@ import { PrintSourceLine } from "@/components/PrintSourceLine";
 import { formatDate, isoDate } from "@/lib/format-date";
 import { daysLeftLabel, deadlineStatuses } from "@/lib/tax-deadlines";
 
-// „Следващ срок“ зависи от днешния ден — страницата се преизчислява на час.
-export const revalidate = 3600;
+// „Следващ срок · след N дни“ зависи от днешния ден по софийско време — при
+// кеш за час около полунощ пишеше „утре“ за днешния срок. Затова при всяка
+// заявка, както другите страници с „днес“.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({
   title: "Данъци и срокове — кога и как да платите",
@@ -79,7 +81,16 @@ export default function TaxDeadlinesPage() {
                     d.passed ? "text-slate-600" : "text-brand-800"
                   }`}
                 >
-                  <time dateTime={d.nextIso}>{d.label}</time>
+                  {/* Изтеклият срок е тазгодишният, не следващата година. */}
+                  <time
+                    dateTime={
+                      d.passed
+                        ? `${today.slice(0, 4)}-${String(d.month).padStart(2, "0")}-${String(d.day).padStart(2, "0")}`
+                        : d.nextIso
+                    }
+                  >
+                    {d.label}
+                  </time>
                 </div>
                 <div className="min-w-0">
                   {d.next && (

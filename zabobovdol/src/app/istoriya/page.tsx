@@ -118,7 +118,7 @@ export default function HistoryPage() {
       <div className="container-content grid gap-10 py-10 lg:grid-cols-[minmax(0,1fr),17rem]">
         <article className="min-w-0 max-w-3xl">
           {/* На телефон съдържанието е над статията (а не след нея), сгънато. */}
-          <details className="panel mb-8 lg:hidden">
+          <details className="panel no-print mb-8 lg:hidden">
             <summary className="flex min-h-tap cursor-pointer list-none items-center justify-between gap-3 font-sans text-lg font-semibold text-slate-900 [&::-webkit-details-marker]:hidden">
               Съдържание
               <ChevronDown className="h-6 w-6 shrink-0 text-brand-700" aria-hidden />

@@ -159,7 +159,7 @@ export default async function AidPage() {
                 </ul>
                 {t.title === "Пенсии" && (
                   <p className="mt-3 text-base">
-                    <a href="#konvertor" className="link">
+                    <a href="#konvertor" className="link inline-flex min-h-tap items-center">
                       Колко е в евро? Конвертор левове ↔ евро
                     </a>
                   </p>

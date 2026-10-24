@@ -39,28 +39,32 @@ export const metadata: Metadata = buildMetadata({
 
 // Нивото на предупреждението → кутия, значка и цвят на иконата (цветови роли:
 // червено — опасност, кехлибар — внимание, синьо — сведение). Пълни имена на
-// класовете — иначе Tailwind не ги генерира.
+// класовете — иначе Tailwind не ги генерира. Значката е плътна (бял текст):
+// .badge-* е със същия фон като кутията и в нея се губеше. Цветовете не се
+// пренасочват в тъмен режим; на хартия фонът не се печата → рамка и черен текст.
+const BADGE_SOLID =
+  "inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-sm font-semibold text-white print:bg-white print:text-black print:ring-1 print:ring-black";
 const SEVERITY: Record<
   string,
   { box: string; badge: string; icon: LucideIcon; iconCls: string; label: string }
 > = {
   danger: {
     box: "callout-danger",
-    badge: "badge-danger",
+    badge: `${BADGE_SOLID} bg-crimson-700`,
     icon: AlertTriangle,
     iconCls: "text-crimson-700",
     label: "Опасно",
   },
   warning: {
     box: "callout-warning",
-    badge: "badge-warning",
+    badge: `${BADGE_SOLID} bg-amber-800`,
     icon: AlertTriangle,
     iconCls: "text-amber-700",
     label: "Внимание",
   },
   info: {
     box: "callout-info",
-    badge: "badge",
+    badge: `${BADGE_SOLID} bg-brand-700`,
     icon: Info,
     iconCls: "text-brand-700",
     label: "Информация",

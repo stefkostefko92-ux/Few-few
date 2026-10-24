@@ -214,14 +214,18 @@ export default async function KakDaPage({ searchParams }: { searchParams: SP }) 
                         ))}
                       </ul>
                       {c.count > c.top.length && (
-                        <Link
-                          href={categoryPath(c.slug)}
-                          className="btn-secondary mt-auto hidden w-full sm:inline-flex"
-                          aria-label={`Всички ${guidesLabel(c.count)} в темата „${c.name}“`}
-                        >
-                          Всички {c.count}
-                          <span aria-hidden="true">→</span>
-                        </Link>
+                        // mt-auto изравнява бутоните на реда, pt-3 пази отстъпа
+                        // от последната връзка в най-високата карта.
+                        <div className="mt-auto hidden pt-3 sm:block">
+                          <Link
+                            href={categoryPath(c.slug)}
+                            className="btn-secondary w-full"
+                            aria-label={`Всички ${guidesLabel(c.count)} в темата „${c.name}“`}
+                          >
+                            Всички {c.count}
+                            <span aria-hidden="true">→</span>
+                          </Link>
+                        </div>
                       )}
                     </li>
                   ))}
