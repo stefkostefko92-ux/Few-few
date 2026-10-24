@@ -43,6 +43,9 @@ h4,
 .font-display {
   font-family: var(--font-serif), Georgia, serif;
   letter-spacing: -0.01em;
+  /* Редовете на заглавията са с близка дължина — без самотна дума отдолу
+     („… на едно / място“). Браузър без поддръжка просто пренася както досега. */
+  text-wrap: balance;
 }
 
 :focus-visible {

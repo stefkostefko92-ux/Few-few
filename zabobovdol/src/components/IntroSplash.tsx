@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { SITE } from "@/lib/site";
+import { visitNumber, formatVisitNumber } from "@/lib/visit-client";
 
 // Начален екран при влизане в сайта: герб + силен надпис, стои няколко
 // секунди и изчезва плавно. Показва се при всяко зареждане на сайта (не и в
@@ -18,31 +19,22 @@ export function IntroSplash() {
   const [visitorNo, setVisitorNo] = useState<number | null>(null);
   const [reduce, setReduce] = useState(false);
   const skipRef = useRef<HTMLButtonElement>(null);
-  const countedRef = useRef(false);
 
   // При „по-малко движение“ показваме екрана съвсем кратко и без анимирана
   // лента — за хора с вестибуларна чувствителност и за да не бави достъпа.
   const seconds = reduce ? 1.5 : SITE.intro.seconds;
 
-  // Брояч на посетителите: увеличава се при ВСЯКО зареждане на сайта.
-  // Компонентът стои в общия layout, затова ефектът се изпълнява веднъж на
-  // пълно зареждане — вътрешните навигации (App Router) не го пускат пак.
+  // Брояч на посетителите: увеличава се при ВСЯКО зареждане на сайта. Самата
+  // заявка е една на пълно зареждане (виж visit-client.ts) — същият номер
+  // показва и футърът, а вътрешните навигации не броят пак.
   useEffect(() => {
     if (isAdmin) return;
-    // В разработка StrictMode вика ефекта два пъти; пазачът спира двойното
-    // броене. Флаг „отказано“ при cleanup тук НЕ бива да има: единствената
-    // заявка идва от първото изпълнение, чийто cleanup StrictMode вика веднага —
-    // отговорът щеше да се хвърли и номерът никога да не се покаже (в базата
-    // пак расте). setState след демонтиране е безвреден в React 18+.
-    if (countedRef.current) return;
-    countedRef.current = true;
-    fetch("/api/visit", { method: "POST" })
-      .then((r) => r.json())
-      .then((d) => {
-        if (!d?.ok || typeof d.n !== "number") return;
-        setVisitorNo(d.n);
-      })
-      .catch(() => {});
+    // Флаг „отказано“ при cleanup тук НЕ бива да има: в разработка StrictMode
+    // вика cleanup веднага след първото изпълнение и номерът никога не би се
+    // показал. setState след демонтиране е безвреден в React 18+.
+    visitNumber().then((n) => {
+      if (n !== null) setVisitorNo(n);
+    });
   }, [isAdmin]);
 
   useEffect(() => {
@@ -137,7 +129,7 @@ export function IntroSplash() {
         <p className="splash-text mt-6 text-lg text-brand-50">
           Посещение номер{" "}
           <span className="font-extrabold text-gold-300">
-            {new Intl.NumberFormat("bg-BG").format(visitorNo)}
+            {formatVisitNumber(visitorNo)}
           </span>
         </p>
       )}

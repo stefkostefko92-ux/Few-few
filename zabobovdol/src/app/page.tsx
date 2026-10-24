@@ -237,13 +237,14 @@ export default async function HomePage() {
           <path d="M0 200 L0 120 C 180 70 320 150 520 110 C 720 70 820 160 1040 120 C 1240 84 1320 150 1440 110 L1440 200 Z" fill="currentColor" />
           <path d="M0 200 L0 160 C 240 120 420 180 640 150 C 900 116 1060 184 1440 150 L1440 200 Z" className="text-brand-900" fill="currentColor" />
         </svg>
-        {/* Герб като воден знак */}
+        {/* Герб като воден знак — версията с прозрачен фон, иначе белият фон
+            на герба се вижда като бледа кутия върху синьото. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/brand/bobov-dol-grb.png"
+          src="/brand/bobov-dol-grb-mark.png"
           alt=""
           aria-hidden
-          className="pointer-events-none absolute -right-6 top-1/2 hidden -translate-y-1/2 opacity-[0.07] md:block"
+          className="pointer-events-none absolute -right-6 top-1/2 hidden -translate-y-1/2 opacity-[0.08] md:block"
           width={320}
           height={460}
         />
@@ -374,7 +375,7 @@ export default async function HomePage() {
                 <span className={"grid h-10 w-10 shrink-0 place-items-center rounded-lg transition " + c.chip}>
                   <Icon className="h-6 w-6" aria-hidden />
                 </span>
-                <span className={"min-w-0 font-semibold leading-snug text-slate-900 " + c.title}>
+                <span className={"min-w-0 hyphens-auto font-semibold leading-snug text-slate-900 [overflow-wrap:anywhere] " + c.title}>
                   {item.label}
                 </span>
               </Link>
