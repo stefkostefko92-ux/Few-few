@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { SeededRng } from "../../kernel/rng.js";
 import { playRandom } from "../../bots/playout.js";
-import { bridgeEngine, type BridgeState, type BridgeAction } from "./bridge.js";
+import { bridgeEngine, dealHonors, honorsInHand, type BridgeState, type BridgeAction } from "./bridge.js";
+import type { Card } from "./cards.js";
 
 const init = (seed = "br") => bridgeEngine.init({ seats: 4 }, new SeededRng(seed));
 const rng = new SeededRng("br");
@@ -91,7 +92,10 @@ describe("bridge doubling", () => {
       if (!terminal) continue;
       reachedTerminal++;
       const score = bridgeEngine.score(state);
-      expect(score.filter((x) => x.result === "win")).toHaveLength(2);
+      // Двама победители — или (при равни точки на тавана) реми за четиримата.
+      const wins = score.filter((x) => x.result === "win").length;
+      const draws = score.filter((x) => x.result === "draw").length;
+      expect(wins === 2 || draws === 4).toBe(true);
       expect(state.gamesWon[0] >= 2 || state.gamesWon[1] >= 2 || state.dealNo >= 16).toBe(true);
     }
     expect(reachedTerminal).toBeGreaterThan(0);
@@ -199,22 +203,134 @@ describe("bridge rubber scoring", () => {
           summed[ev.declTeam as 0 | 1] += ev.declScore;
           summed[(1 - ev.declTeam) as 0 | 1] += ev.defScore;
         }
+        if (ev.type === "HONORS") summed[ev.team as 0 | 1] += ev.points; // онори — над линията
       }
       if (s.gamesWon[0] + s.gamesWon[1] > 0) sawGameWin = true;
     }
     expect(bridgeEngine.isTerminal(s)).toBe(true);
+    // Law 77 при тавана: 300 за един спечелен гейм + 100 за частичен резултат.
+    const law77 = (t: 0 | 1): number =>
+      s.gamesWon[0] >= 2 || s.gamesWon[1] >= 2
+        ? 0
+        : (s.gamesWon[t] === 1 ? 300 : 0) + (s.belowLine[t] > 0 ? 100 : 0);
     const winner = s.winningTeam!;
     const loser = (1 - winner) as 0 | 1;
-    // Defenders never receive a hidden bonus — their total is exactly the sum.
-    expect(s.matchPoints[loser]).toBe(summed[loser]);
-    // The winner's ONLY extra over the per-deal sum is the rubber bonus, and only
-    // if the rubber was decided by two games (else the cap ended it: extra 0).
+    // Defenders never receive a hidden bonus — their total is the sum (+ Law 77).
+    expect(s.matchPoints[loser]).toBe(summed[loser] + law77(loser));
+    // The winner's ONLY extra over the per-deal sum is the rubber bonus when the
+    // rubber was decided by two games; at the cap it is exactly Law 77.
     const extra = s.matchPoints[winner as 0 | 1] - summed[winner as 0 | 1];
     if (s.gamesWon[winner as 0 | 1] >= 2) {
       expect([500, 700]).toContain(extra);
     } else {
-      expect(extra).toBe(0);
+      expect(extra).toBe(law77(winner as 0 | 1));
     }
     expect(sawGameWin || s.dealNo >= 16).toBe(true);
+  });
+});
+
+describe("bridge таван от 16 раздавания (недовършен робер)", () => {
+  /** Последната (13-а) взятка на 16-ото раздаване: отбор 1 играе 1♣ с 7 взети
+   *  взятки; декларатор е място 1 (dummy = място 3), място 1 води A♠. */
+  const lastTrickOfDeal16 = (): BridgeState => ({
+    ...init("law77"),
+    phase: "PLAY",
+    dealNo: 16,
+    hands: [["2D"], ["AS"], ["3D"], ["4D"]],
+    dealer: 0,
+    leader: 1,
+    turn: 1,
+    trick: [],
+    bidLevel: 1,
+    bidStrain: "C",
+    lastBidder: 1,
+    declarer: 1,
+    passes: 3,
+    trump: "C",
+    contractLevel: 1,
+    doubled: 0,
+    tricksWon: [5, 7],
+    belowLine: [0, 0],
+    gamesWon: [1, 0],
+    vulnerable: [true, false],
+    matchPoints: [100, 150],
+  });
+
+  it("Law 77: +300 за един гейм, +100 за частичен резултат — преди сравнението", () => {
+    // Отбор 1 изпълнява 1♣ +1: 20 под линията + 20 надвзятка → 150 + 40 = 190,
+    // плюс 100 за частичния резултат = 290. Отбор 0: 100 + 300 за гейма = 400.
+    const s = advance(lastTrickOfDeal16(), (x) => x.done);
+    expect(s.done).toBe(true);
+    expect(s.lastDeal).toMatchObject({ declarer: 1, made: true, tricks: 8 });
+    expect(s.belowLine).toEqual([0, 20]);
+    expect(s.matchPoints).toEqual([400, 290]);
+    expect(s.winningTeam).toBe(0);
+    expect(bridgeEngine.score(s).map((x) => x.result)).toEqual(["win", "loss", "win", "loss"]);
+  });
+
+  it("16 раздавания само пасове → равни точки → реми за четиримата", () => {
+    let s = init("all-pass");
+    for (let i = 0; i < 200 && !s.done; i++) s = bridgeEngine.reduce(s, { type: "PASS" }, rng).state;
+    expect(s.done).toBe(true);
+    expect(s.dealNo).toBe(16);
+    expect(s.matchPoints).toEqual([0, 0]);
+    expect(s.winningTeam).toBe(null);
+    expect(bridgeEngine.score(s).map((x) => x.result)).toEqual(["draw", "draw", "draw", "draw"]);
+  });
+});
+
+describe("bridge онори", () => {
+  it("honorsInHand: 4 of 5 trump honours = 100, all 5 = 150, 4 aces at NT = 150", () => {
+    const filler = ["2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C"] as Card[];
+    expect(honorsInHand(["AS", "KS", "QS", "JS", ...filler, "2D"] as Card[], "S")).toBe(100);
+    expect(honorsInHand(["AS", "KS", "QS", "JS", "TS", ...filler] as Card[], "S")).toBe(150);
+    expect(honorsInHand(["AS", "KS", "QS", "2S", ...filler, "2D"] as Card[], "S")).toBe(0);
+    expect(honorsInHand(["AS", "AH", "AD", "AC", ...filler, "2D"] as Card[], "NT")).toBe(150);
+    expect(honorsInHand(["AS", "AH", "AD", "KC", ...filler, "2D"] as Card[], "NT")).toBe(0);
+    // онори в друга боя не се броят
+    expect(honorsInHand(["AH", "KH", "QH", "JH", "TH", ...filler] as Card[], "S")).toBe(0);
+  });
+
+  it("dealHonors credits the HOLDER's team — even a defender", () => {
+    const hands = [[], ["AH", "KH", "QH", "TH"], [], []] as Card[][];
+    expect(dealHonors(hands, "H")).toEqual({ seat: 1, team: 1, points: 100 });
+    expect(dealHonors(hands, "S")).toBeNull();
+  });
+
+  it("settling a deal adds the honours above the line, whatever the contract's fate", () => {
+    // Договор 1♥ от място 0; място 1 (защита) държи 4 онора в коз.
+    const s0 = init("hon");
+    const hands = [
+      ["2H", "3H", "4H", "5H", "6H", "2S", "3S", "4S", "5S", "6S", "2D", "3D", "4D"],
+      ["AH", "KH", "QH", "JH", "7S", "8S", "9S", "TS", "5D", "6D", "7D", "8D", "9D"],
+      ["7H", "8H", "9H", "JS", "QS", "KS", "AS", "TD", "JD", "QD", "KD", "AD", "2C"],
+      ["TH", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC", "AC"],
+    ] as Card[][];
+    let s: BridgeState = { ...s0, hands, dealer: 3, turn: 0 };
+    const r = new SeededRng("hon");
+    s = bridgeEngine.reduce(s, { type: "BID", level: 1, strain: "H" }, r).state;
+    for (let i = 0; i < 3; i++) s = bridgeEngine.reduce(s, { type: "PASS" }, r).state;
+    expect(s.phase).toBe("PLAY");
+    expect(s.honors).toEqual({ seat: 1, team: 1, points: 100 });
+    // Изиграй ръката с първата законна карта.
+    let honorsEv = 0;
+    for (let i = 0; i < 60 && s.dealNo === 1; i++) {
+      const seat = actor(s);
+      const a = bridgeEngine.legalActions(s, seat)[0]!;
+      const out = bridgeEngine.reduce(s, a, r);
+      for (const ev of out.events) if (ev.type === "HONORS") honorsEv += ev.points;
+      if (out.events.some((e) => e.type === "DEAL_END")) {
+        const end = out.events.find((e) => e.type === "DEAL_END")!;
+        if (end.type !== "DEAL_END") throw new Error("unreachable");
+        // Защитата получава точките за онори отделно от наказанията.
+        expect(end.matchPoints[1]).toBe(end.defScore + 100);
+        expect(end.matchPoints[0]).toBe(end.declScore);
+      }
+      s = out.state;
+    }
+    expect(honorsEv).toBe(100);
+    expect(s.lastDeal?.honors).toEqual({ seat: 1, team: 1, points: 100 });
+    expect(s.honors).toBeNull(); // нулира се за следващото раздаване
+    expect(s.belowLine[1]).toBe(0); // онорите не влизат за гейм
   });
 });

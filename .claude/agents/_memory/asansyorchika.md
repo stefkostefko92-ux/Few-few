@@ -7,7 +7,6 @@
 публични. Без тайни/лични данни.
 
 ## Проверени поуки (verified)
-
 - **2026-10-16 (пресверена 2026-10-24):** Кодекс (DM 3/8/2015, текст в сила от 1/1/2023) V.3.3.2 т. 3: кабина в шахти SB/SC — GM2; V.3.3.4 т. 6 (SD) и V.3.3.5 (SE): негорими; V.3.3.1 т. 1 c): рамата на кабината — GM0. Табл. S.1-6: GM2 за стени и таван = B-s2,d0, за под = Cfl-s1 (таблица с обединени клетки). _(обекти под контрол на VVF по Кодекса; verified; https://www.unipr.it/sites/default/files/2023-11/DM_03_08_2015_Codice_Prevenzione_Incendi.pdf — стр. V.3-2 (V.3.3.1 т.1 c; V.3.3.2 т.3; V.3.3.3 т.1; V.3.3.4 т.6; V.3.3.5 т.1), стр. S.1-5 (Табл. S.1-6); заглавна стр.: „Edizione in vigore dal 1 gennaio 2023“)_
 - **2026-10-24:** Codice PI (текст в сила от 1/1/2023) V.3.3.4 т.4 — шахта SD: защитеното преддверие е поне като филтър (гл. S.3), брутна площ поне 5 m²; V.3.3.4 т.2 препоръчва UNI EN 81-72; V.3.3.1 т.3 препоръчва UNI EN 81-73 за всички типове (препоръка, не задължение) _(асансьори SD/SE и всички типове по Codice PI; при ново координирано издание — пресвери; verified; https://www.unipr.it/sites/default/files/2023-11/DM_03_08_2015_Codice_Prevenzione_Incendi.pdf (стр. V.3-2))_
 - **2026-10-21:** UNI EN 81-21:2022 5.8.2 b) 3)–4) — nessun tempo fissato per l'estensione a rete assente; ritrazione automatica solo con porte di piano chiuse e bloccate (i) o solo manuale (ii) _(grembiule retrattile, soccorso e alimentazione di riserva; verified; ../norme-ascensori/uni-en-81-21-2022.md:229)_
