@@ -11,7 +11,7 @@ function isInAppBrowser(): boolean {
 }
 
 export function PrintButton({
-  label = "Принтирай",
+  label = "Отпечатайте",
   variant = "primary",
 }: {
   label?: string;
