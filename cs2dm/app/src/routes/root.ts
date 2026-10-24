@@ -183,8 +183,9 @@ export function rootRouter(repo: Repo): Router {
       '## Data and privacy',
       `- ${en('privacy.sections.retention.items.0', legal)}`,
       `- ${en('privacy.sections.retention.items.1', legal)}`,
+      `- ${en('privacy.sections.retention.items.2', legal)}`,
       `- ${en('privacy.sections.website.items.0', legal)}`,
-      `- Retention days: sessions ${RETENTION.sessionsDays}, kills ${RETENTION.killsDays}`,
+      `- Retention days: sessions ${RETENTION.sessionsDays}, kills ${RETENTION.killsDays}, demos ${RETENTION.demosDays}`,
       '',
       '## Pages',
       ...PAGES.filter((page) => !NOINDEX_PAGES.has(page)).flatMap((page) =>

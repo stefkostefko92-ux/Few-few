@@ -6,7 +6,7 @@ import { MAINTENANCE_QUEUE, BULL_PREFIX } from '../src/queue.js';
 import { BATCH_SIZE, PURGE_TARGETS, cutoffFor, purge, type DeleteBatch } from '../src/retention.js';
 
 test('сроковете са от CONTRACT.md §7', () => {
-  assert.deepEqual(RETENTION, { sessionsDays: 30, killsDays: 90, casesDays: 365 });
+  assert.deepEqual(RETENTION, { sessionsDays: 30, killsDays: 90, casesDays: 365, demosDays: 14 });
   assert.deepEqual(
     PURGE_TARGETS.map((target) => [target.id, target.days]),
     [

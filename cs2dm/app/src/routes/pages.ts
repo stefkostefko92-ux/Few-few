@@ -555,6 +555,7 @@ export function legalParams(): Record<string, string | number> {
     sessionsDays: RETENTION.sessionsDays,
     killsDays: RETENTION.killsDays,
     casesDays: RETENTION.casesDays,
+    demosDays: RETENTION.demosDays,
     heatmapDays: HEATMAP_WINDOW_DAYS,
     site: cfg.PUBLIC_BASE_URL.replace(/^https?:\/\//, ''),
     company: cfg.COMPANY_LEGAL_NAME ?? 'Carbon Stealth VCC',
