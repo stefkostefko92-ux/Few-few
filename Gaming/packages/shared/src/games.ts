@@ -108,6 +108,7 @@ const SEAT_RANGES: Partial<Record<GameKey, { min: number; max: number }>> = {
   LUDO: { min: 2, max: 4 },
   DICE: { min: 2, max: 4 },
   GOFISH: { min: 2, max: 4 },
+  RUMMY: { min: 2, max: 4 },
   DOMINO: { min: 2, max: 4 },
   WORDS: { min: 2, max: 4 },
   SVARA: { min: 2, max: 6 },

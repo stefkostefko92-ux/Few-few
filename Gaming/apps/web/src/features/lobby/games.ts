@@ -25,7 +25,7 @@ export const GAME_CATALOG: GameCard[] = [
   { key: "KENT", title: "Кент Купе", players: "4", ready: true, glyph: "♤" },
   { key: "DRAUGHTS", title: "Дама", players: "2", ready: true, glyph: "⛀" },
   { key: "LUDO", title: "Не се сърди човече", players: "2–4", ready: true, glyph: "🎲" },
-  { key: "RUMMY", title: "Реми", players: "2", ready: true, glyph: "🃏" },
+  { key: "RUMMY", title: "Реми", players: "2–4", ready: true, glyph: "🃏" },
   { key: "DOMINO", title: "Домино", players: "2–4", ready: true, glyph: "🁫" },
   { key: "BRIDGE", title: "Бридж", players: "4", ready: true, glyph: "♢" },
   { key: "BATTLESHIP", title: "Морски бой", players: "2", ready: true, glyph: "⚓" },
