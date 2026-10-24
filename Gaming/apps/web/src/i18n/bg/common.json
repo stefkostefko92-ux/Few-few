@@ -691,18 +691,24 @@
     "bearOff": "Извади",
     "noMoves": "Няма възможен ход — пас",
     "gammon": "Марс!",
-    "backgammon": "Капия!",
     "openingRoll": "Начално хвърляне",
     "white": "белите",
     "black": "черните",
-    "cube": "Куб",
-    "double": "Удвои",
-    "take": "Приемам",
-    "drop": "Отказвам",
-    "waitingDouble": "Изчакване на отговор за удвояване",
-    "doubleOffered": "Удвояване до ×{{value}}",
-    "doubleTaken": "Удвояването е прието",
-    "doubleDropped": "Удвояването е отказано"
+    "matchLength": "Дължина на мача",
+    "matchTo": "Мач до {{target}}",
+    "matchToShort": "до {{target}}",
+    "matchHint": "Обикновена победа = 1 точка, марс = 2 точки. Без зар за удвояване.",
+    "game": "Игра",
+    "newGame": "Игра {{game}} — пръв хвърля победителят",
+    "gameWon": "Спечели играта! +1 точка",
+    "gameLost": "Съперникът спечели играта (+1)",
+    "marsWon": "Марс! +2 точки",
+    "marsLost": "Марс — съперникът взе 2 точки",
+    "matchWon": "Спечели мача {{score}}",
+    "matchLost": "Загуби мача {{score}}"
+  },
+  "draughts": {
+    "variant": "Руска дама"
   },
   "battleship": {
     "enemy": "Съперник: {{name}}",

@@ -121,23 +121,31 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2",
       summary: "Play Backgammon online — the classic dice-and-checkers game for two.",
       intro:
-        "Backgammon is a two-player dice race. You bring all 15 of your checkers into your home board and bear them off before your opponent to win.",
+        "Backgammon here is played as Bulgarian \"tabla\" (Portes) — the most popular variant in Bulgaria. You bring all 15 of your checkers home and bear them off before your opponent; the match is played to 5 points (3, 5 or 7 by choice).",
       howTo: [
         {
           name: "Rolling",
-          text: "You roll two dice and move your checkers according to the numbers shown; doubles are played four times.",
+          text: "You roll two dice and move your checkers according to the numbers shown; doubles are played four times. Each new game is opened by the winner of the previous one.",
         },
         {
           name: "Hitting",
           text: "A lone opponent checker can be hit — it goes to the bar and must re-enter before that player moves any other checker.",
         },
         { name: "Bearing off", text: "Once all your checkers are in your home board, you start bearing them off." },
+        {
+          name: "Points",
+          text: "A plain win scores 1 point, a \"mars\" (the opponent hasn't borne off a single checker) scores 2; there is no doubling cube.",
+        },
       ],
       faq: [
         {
           question: "How do you play Backgammon?",
           answer:
-            "Backgammon is played by two people with dice; you move 15 checkers around the board and win by being the first to bear off all of them.",
+            "Backgammon is played by two people with dice; you move 15 checkers around the board and win a game by being the first to bear off all of them. The match is played to 5 points.",
+        },
+        {
+          question: "What is a mars in backgammon?",
+          answer: "A mars is a win where the opponent hasn't borne off a single checker — it scores 2 points instead of 1.",
         },
       ],
     },
@@ -401,16 +409,16 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2",
       summary: "Play Draughts (Checkers) online against players and bots — the classic on an 8×8 board in real time.",
       intro:
-        "Draughts (Checkers) is a two-player strategy game played under international rules on an 8×8 board. You move your pieces diagonally, jump over and capture your opponent's, and a piece that reaches the last row becomes a flying king.",
+        "Draughts (Checkers) is a two-player strategy game played under Russian draughts rules — the most popular variant in Bulgaria — on an 8×8 board with 12 pieces each. You move your pieces diagonally, jump over and capture your opponent's, and a piece that reaches the last row becomes a flying king.",
       howTo: [
         { name: "Move", text: "You move one piece diagonally forward by one square; White starts." },
         {
           name: "Capturing",
-          text: "Capturing is mandatory — always with the longest possible sequence; ordinary pieces also capture backward, and captured pieces are removed at the end of the move.",
+          text: "Capturing is mandatory, but you freely choose which sequence to play; ordinary pieces also capture backward, and captured pieces are removed at the end of the move.",
         },
         {
           name: "King",
-          text: "A piece whose move ends on the last row becomes a king; it's a \"flying\" king — it moves and captures along a whole diagonal.",
+          text: "A piece that reaches the last row is crowned at once — even mid-capture — and keeps capturing as a king; it's a \"flying\" king that moves and captures along a whole diagonal.",
         },
         { name: "Winning", text: "You win when your opponent is left with no pieces or no legal move." },
       ],
@@ -418,11 +426,11 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
         {
           question: "How do you play Draughts?",
           answer:
-            "Draughts is played on an 8×8 board under international rules: you move pieces diagonally, capturing is mandatory with the longest sequence, and on the last row a piece becomes a flying king — whoever captures or blocks all of the other's pieces wins.",
+            "Draughts is played on an 8×8 board under Russian rules: you move pieces diagonally, capturing is mandatory (you choose which sequence), and on the last row a piece becomes a flying king — whoever captures or blocks all of the other's pieces wins.",
         },
         {
           question: "Is capturing mandatory in Draughts?",
-          answer: "Yes — if you can capture an enemy piece, you must, and you must take the sequence that captures the most pieces.",
+          answer: "Yes — if you can capture an enemy piece, you must, but you choose which sequence to play; a started sequence must be completed.",
         },
       ],
     },
@@ -767,23 +775,31 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2",
       summary: "Gioca a Backgammon online — il classico gioco di dadi e pedine per due.",
       intro:
-        "Il backgammon è una corsa con i dadi per due. Porti tutte le tue 15 pedine nella tua casa e le fai uscire dalla tavola prima dell'avversario per vincere.",
+        "Il backgammon qui si gioca come la «tabla» bulgara (Portes) — la variante più diffusa in Bulgaria. Porti tutte le tue 15 pedine nella tua casa e le fai uscire prima dell'avversario; la partita è ai 5 punti (3, 5 o 7 a scelta).",
       howTo: [
         {
           name: "Lancio",
-          text: "Lanci due dadi e muovi le pedine in base ai numeri usciti; un doppio si gioca quattro volte.",
+          text: "Lanci due dadi e muovi le pedine secondo i numeri usciti; i doppi si giocano quattro volte. Ogni nuovo gioco lo apre il vincitore del precedente.",
         },
         {
           name: "Colpire",
-          text: "Una pedina avversaria isolata può essere colpita — va sulla barra e deve rientrare prima che il suo giocatore muova altre pedine.",
+          text: "Una pedina avversaria isolata può essere colpita — va sulla barra e deve rientrare prima che quel giocatore muova altre pedine.",
         },
-        { name: "Uscita", text: "Quando tutte le tue pedine sono nella tua casa, inizi a farle uscire dalla tavola." },
+        { name: "Uscita", text: "Quando tutte le tue pedine sono in casa, inizi a portarle fuori." },
+        {
+          name: "Punti",
+          text: "Una vittoria semplice vale 1 punto, un «mars» (l'avversario non ha portato fuori nessuna pedina) vale 2; niente cubo del raddoppio.",
+        },
       ],
       faq: [
         {
           question: "Come si gioca a Backgammon?",
           answer:
-            "Il backgammon si gioca in due con i dadi; muovi 15 pedine sulla tavola e vinci se sei il primo a portarle tutte fuori.",
+            "Il backgammon si gioca in due con i dadi; muovi 15 pedine sulla tavola e vinci il gioco se sei il primo a portarle tutte fuori. La partita è ai 5 punti.",
+        },
+        {
+          question: "Che cos'è il mars nel backgammon?",
+          answer: "Il mars è una vittoria in cui l'avversario non ha portato fuori nessuna pedina — vale 2 punti invece di 1.",
         },
       ],
     },
@@ -1056,16 +1072,16 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2",
       summary: "Gioca a Dama online contro giocatori e bot — il classico su damiera 8×8 in tempo reale.",
       intro:
-        "La dama è un gioco di strategia per due con regole internazionali su damiera 8×8. Muovi le tue pedine in diagonale, scavalchi e catturi quelle dell'avversario, e una pedina che raggiunge l'ultima riga diventa una dama volante.",
+        "La dama è un gioco di strategia per due con le regole della dama russa — la variante più diffusa in Bulgaria — su damiera 8×8 con 12 pedine a testa. Muovi le tue pedine in diagonale, scavalchi e catturi quelle dell'avversario, e una pedina che raggiunge l'ultima riga diventa una dama volante.",
       howTo: [
         { name: "Mossa", text: "Muovi una pedina in diagonale in avanti di una casella; inizia il Bianco." },
         {
           name: "Cattura",
-          text: "La presa è obbligatoria — sempre con la sequenza più lunga possibile; le pedine semplici catturano anche all'indietro e i pezzi presi si tolgono alla fine della mossa.",
+          text: "La presa è obbligatoria, ma scegli liberamente quale sequenza giocare; le pedine semplici catturano anche all'indietro e i pezzi presi si tolgono alla fine della mossa.",
         },
         {
           name: "Dama",
-          text: "Una pedina che termina la mossa sull'ultima riga diventa dama; è una dama «volante» — si muove e cattura lungo un'intera diagonale.",
+          text: "Una pedina che raggiunge l'ultima riga diventa subito dama — anche durante una presa — e continua a catturare come dama; è una dama «volante» che si muove e cattura lungo un'intera diagonale.",
         },
         { name: "Vittoria", text: "Vinci quando l'avversario resta senza pedine o senza mosse possibili." },
       ],
@@ -1073,11 +1089,11 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
         {
           question: "Come si gioca a Dama?",
           answer:
-            "La dama si gioca su una damiera 8×8 con regole internazionali: muovi le pedine in diagonale, la presa è obbligatoria con la sequenza più lunga e all'ultima riga la pedina diventa una dama volante — vince chi cattura o blocca tutte le pedine dell'altro.",
+            "La dama si gioca su una damiera 8×8 con le regole russe: muovi le pedine in diagonale, la presa è obbligatoria (scegli tu quale sequenza) e all'ultima riga la pedina diventa una dama volante — vince chi cattura o blocca tutte le pedine dell'altro.",
         },
         {
           question: "La cattura è obbligatoria a Dama?",
-          answer: "Sì — se puoi catturare una pedina avversaria sei obbligato a farlo, e con la sequenza che cattura più pezzi.",
+          answer: "Sì — se puoi catturare una pedina avversaria sei obbligato a farlo, ma scegli tu la sequenza; una sequenza iniziata va completata.",
         },
       ],
     },
