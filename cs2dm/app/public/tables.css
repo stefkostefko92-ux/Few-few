@@ -1,0 +1,132 @@
+/* Таблици, полета за филтри и страниране. */
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+thead th {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 2px solid var(--line-2);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: start;
+  white-space: nowrap;
+}
+thead th a {
+  color: inherit;
+}
+thead th[aria-sort] {
+  color: var(--amber);
+}
+tbody th,
+tbody td {
+  padding: 0.7rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  text-align: start;
+  font-weight: 400;
+}
+tbody tr:hover {
+  background: var(--panel);
+}
+.c-num,
+.stats dd,
+.status-count,
+.board-meta {
+  font-variant-numeric: tabular-nums;
+}
+.c-num,
+thead .c-num {
+  text-align: end;
+  white-space: nowrap;
+}
+.c-rank {
+  width: 3.5rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: var(--muted);
+}
+.podium .c-rank {
+  color: var(--amber);
+  font-size: 1.7rem;
+}
+tr.podium-1 {
+  background: linear-gradient(90deg, rgba(255, 181, 71, 0.12), transparent 70%);
+}
+.c-name a {
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: none;
+}
+.c-name a:hover {
+  color: var(--cyan);
+  text-decoration: underline;
+}
+.c-level {
+  color: var(--amber);
+  font-weight: 700;
+}
+.is-sorted {
+  color: var(--text);
+  font-weight: 700;
+}
+@media (max-width: 640px) {
+  .opt {
+    display: none;
+  }
+  thead th,
+  tbody th,
+  tbody td {
+    padding-inline: 0.45rem;
+  }
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.field label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+select {
+  min-height: 2.75rem;
+  min-width: 12rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-ctl);
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+}
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+.pager-step {
+  font-weight: 700;
+  padding: 0.6rem 0.25rem;
+}
+.pager-step.is-off {
+  color: var(--line-2);
+}
+.pager-where {
+  color: var(--muted);
+}
