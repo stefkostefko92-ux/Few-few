@@ -132,12 +132,12 @@ standalone + SOLIDWORKS plug-in — sweet spot за хибрид.
 - **Пример (съкратено):** „`scan.stl` → not watertight (3 дупки) → repair → `clean.stl` watertight ✔; deviation срещу ref: средно 0.08 mm, 96% в ±0.2 mm → готов за class-A surfacing с G2."
 
 ## v2.0 — полу-автоматичен scan→параметричен CAD
-- **Сегментация:** `python3 tools/3d/ransac_segment.py scan.ply` (RANSAC равнини → засява призматичните features). **Форма:** `python3 tools/3d/generate_mold.py part.step --open "<Z" --ply 1.2 --draft 3` (`--open` = лицето, отворено за layup — задължително) (offset/shell/draft чернова). **Deviation:** `clean_and_validate.py --deviation ref.stl`.
+- **Сегментация:** `python3 tools/3d/ransac_segment.py scan.ply` (RANSAC равнини → засява призматичните features). **Форма:** `python3 tools/3d/generate_mold.py part.step --open "<Z" --ply 1.2 --draft 3` (`--open` = лицето, отворено за layup — задължително) (offset/shell чернова; `--draft` и `--flange` са само информативни и не строят геометрия — draft и фланци са ръчна стъпка). **Deviation:** `clean_and_validate.py --deviation ref.stl`.
 - **AI scan→CAD:** cadrille (ICLR 2026) / CAD-Recode → **редактируем CadQuery код**; третирай като ЧЕРНОВА — одитирай топология/размери, не приемай сляпо.
 - **Планирано (L):** интеграция на cadrille pipeline; PyNite FEA скрининг. Никога структурна карбон част само на FEA скрининг — gate на deviation + ACP/физичен тест.
 
 ## Надеждност (v2.1)
-- **Техника:** **само детерминистичен грейдър за геометрия** — никакъв LLM-съдия; `clean_and_validate.py` asserts (watertight + deviation в толеранс) са присъдата.
+- **Техника:** **само детерминистичен грейдър за геометрия** — никакъв LLM-съдия; `clean_and_validate.py` печата watertight/winding присъда и deviation (праг ±0.2 mm, твърд на ред 101, без `--tolerance` и без exit-код); не проверява `is_volume`. Присъдата за деривация срещу целта за типа повърхнина (мейтинг ≤0.05–0.1 mm) сверявай ръчно от суровите mean/max/p95 и проверявай обема за знак.
 - **Нов инструмент:** `python3 tools/3d/clean_and_validate.py clean.stl --deviation ref.stl --heatmap dev.ply` — цветна карта на отклонението (зелено=добре, червено=отклонение).
 - Виж `.claude/agents/_evals/reliability.md`.
 

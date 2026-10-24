@@ -28,10 +28,10 @@ import { fileURLToPath } from "node:url";
 import { emitJsonNow } from "../lib/emit.mjs";
 import {
   MERGE_THRESHOLD, AGENT_DESC_MAX,
-  jaccardSets, toks, lessonDate, daysSince, hasSource, sectionBullets, extractBalancedObject, plainScalarHazard, repeatsLearnProtocol,
+  jaccardSets, toks, hasSource, sectionBullets, extractBalancedObject, plainScalarHazard, repeatsLearnProtocol,
   yamlPlainCut,
 } from "./oversee-lib.mjs";
-import { classify } from "./memory-freshness.mjs"; // ЕДНА дефиниция за „просрочена поука" — тази на гейта
+import { dueOf } from "./memory-freshness.mjs"; // ЕДНА дефиниция за „просрочена поука" — тази на гейта
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const AGENTS_DIR = join(ROOT, ".claude", "agents");
@@ -55,12 +55,10 @@ const read = (p) => (existsSync(p) ? readFileSync(p, "utf8") : null);
 // #4 постнота на дефиницията: раздутото разрежда адхеренцията (както „CLAUDE.md < 200 реда").
 // Праг над реалното p75 (~144) — флагва само истинските извънредни случаи, не всекидневния ръст.
 const DEF_LINE_WARN = 200;
-// #2 явна повторна проверка: поука може да носи „re-verify: YYYY-MM-DD"; минала дата → застаряла,
-// независимо дали е време-чувствителна по регекс. Дава ръчен контрол над TTL за критични факти.
-const REVERIFY_RE = /re-?verify:?\s*(\d{4}-\d{2}-\d{2})/i;
+// #2 явна повторна проверка („re-verify: YYYY-MM-DD“) се съди в `dueOf` на memory-freshness.
 
 // „Не-агентски" файлове в директориите
-const NOT_AGENT_DEF = new Set(["README.md", "_orchestration.md"]);
+const NOT_AGENT_DEF = new Set(["README.md", "_orchestration.md", "_teams.md"]);
 const NOT_AGENT_MEM = new Set(["SECURITY.md", "PROTOCOL.md", "PROCEDURE.md", "_shared.md"]);
 
 // --- Събери източниците на истина ---
@@ -171,14 +169,12 @@ for (const id of allIds) {
     // 3409/4031 (85%) „застарели" тук срещу 0 просрочени в гейта в един и същ ден. Същият клас
     // дефект като source-parity/secret-parity: две истини за едно нещо произвеждат тих отпад.
     // Изричен „re-verify: ДАТА" в поуката побеждава класа (както и в memory-freshness).
+    // От 2026-10-24 и срокът, не само класът: тук се смяташе наново от датата на научаването и
+    // пресверена поука оставаше „просрочена“ — втора истина, точно като преди класовете.
     let stale = 0;
     for (const b of verified) {
-      const d = lessonDate(b);
-      const rv = b.match(REVERIFY_RE);
-      const explicitDue = rv && daysSince(rv[1], TODAY) > 0;
-      const cls = classify(b);
-      const implicitStale = !rv && d && cls.days != null && daysSince(d, TODAY) > cls.days;
-      if (explicitDue || implicitStale) stale++;
+      const d = dueOf(b);
+      if (d?.due && d.due < TODAY) stale++;
     }
     r.stale = stale;
     if (stale) r.warn.push(`${stale}/${verified.length} просрочени поуки (по класовете на memory-freshness или с минала re-verify дата)`);

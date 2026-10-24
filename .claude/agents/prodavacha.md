@@ -52,7 +52,7 @@ recurring fixed-amount) се прилагат от издателя/acquirer-а 
   асинхронна. Дълъг отговор = Stripe го брои за провал и ретрай.
 - **Идемпотентност** по `event.id` (или бизнес-ключ като `invoice.id`) в **същата** транзакция
   като ефекта — иначе срив между двете → fulfil без запис → следващ ретрай дублира.
-- **`checkout.session.completed` НЕ значи платено:** провери `payment_status` (`paid`/`no_payment_required` → активирай; `unpaid` → НЕ, async метод в `processing`). За отложени методи (SEPA/ACH/bank transfer) слушай и `checkout.session.async_payment_succeeded`/`_failed`. Редът на събития НЕ е гарантиран → за статус-критично чети актуалния обект през API (`retrieve`), не сляпо payload на закъсняло събитие.
+- **`checkout.session.completed` НЕ значи платено:** провери `payment_status` (`paid` → активирай, вкл. trial: $0 trial фактурата е обработена; `no_payment_required` → активирай, само setup mode или billing_cycle_anchor без proration; `unpaid` → НЕ, async метод в `processing`). За отложени методи (SEPA/ACH/bank transfer) слушай и `checkout.session.async_payment_succeeded`/`_failed`. Редът на събития НЕ е гарантиран → за статус-критично чети актуалния обект през API (`retrieve`), не сляпо payload на закъсняло събитие.
 - **Ключови събития:** `checkout.session.completed` (първоначална активация),
   `invoice.paid`/`invoice.payment_succeeded` (provision при `active`; премести expiry напред),
   `invoice.payment_failed` (известие + Smart Retries), `customer.subscription.updated`
@@ -72,7 +72,7 @@ recurring fixed-amount) се прилагат от издателя/acquirer-а 
 `pi_…`, `in_…`, last4/brand/exp — не са PCI), **никога PAN**. Чувствителни полета — криптирани в
 покой. **Restricted API keys** (`rk_…`) с минимални права от secret vault, не secret ключ в кода;
 **test vs live** строго разделени; webhook secret и API ключове в env/secret store, не в кода/архива.
-**Пин-вай Stripe API версията** (`new Stripe(key, { apiVersion: '…' })`) — иначе ъпгрейд на акаунта
+**Пин-вай Stripe API версията** (`new Stripe(key, { apiVersion: '…' })`, литералът = bundled `ApiVersion` на инсталирания SDK; текуща стабилна `2026-09-30.endive` е major: маха `payment_method_types` от Checkout Sessions/PaymentIntents/SetupIntents — при ъпгрейд сверявай changelog-а) — иначе ъпгрейд на акаунта
 мълчаливо променя формата на обектите/събитията. **Пази `cus_…` в потребителя**, за да не дублираш
 Stripe клиенти при всяко плащане. **Radar** за измами; ясна обработка на **refunds/chargebacks**;
 одит лог на финансовите действия (без PII в лога). При агентни инструменти (Stripe MCP/Agent Toolkit):
@@ -164,7 +164,7 @@ Stripe клиенти при всяко плащане. **Radar** за изма�
 ## Инструменти и доказване (`tools/commerce/`)
 - **Статичен преглед:** `node tools/commerce/stripe-lint.mjs <path>` — маркира анти-патърни (сума/цена от
   клиента, липсваща проверка на подпис, JSON преди raw body, достъп в `success_url`, липсваща
-  идемпотентност, неприхванат `invoice.payment_failed`/`subscription.deleted`, self-host на Stripe.js).
+  идемпотентност, достъп в GET маршрут, `express.json` преди webhook маршрута, ack без `await`/погълната грешка, абонамент без отнемане, неприхванат `invoice.payment_failed`/`subscription.deleted`, self-host на Stripe.js, хардкоднат ключ). Зелен lint е мрежа, не доказателство — класовете извън правилата ги провери с Grep и тест.
 - **Локален webhook тест:** `stripe listen --forward-to localhost:PORT/api/stripe/webhook` + `stripe trigger`.
 - **Симулирай, не вярвай на „изглежда правилно":** двойна webhook доставка (без дубъл ефект), 500 → ретрай
   (без двойно таксуване), грешна валута/сума (отхвърля се), изтекъл/невалиден подпис (**400**, не 401/5xx —

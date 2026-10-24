@@ -28,6 +28,15 @@ that file **and** `agents-dashboard/agents.json` in sync when you change an agen
 **model/effort sync** frontmatter↔`agents.json`, uncited lessons, near-dups, dashboard/doctrine sync;
 fail-closed) and orchestrates by Anthropic's agent canon. Run `oversee.mjs` after any change to the agent layer.
 
+**Екипи (`.claude/agents/_teams.json` → `_teams.md`, `teams.mjs`).** 29 агента в плосък ростер и 24
+потока в проза — никой не знаеше откъде да започне, а дългите вериги плащаха префикса на всеки участник.
+Сега всеки агент е в **точно един** от 9 екипа; екипът има водач, основен поток **≤3 стъпки** с гейт
+между тях и **човешка точка**, 5 тестови задачи, 3 вероятни провала и метрики, сочещи реални наши
+инструменти. Картата на агента (екип · тръгва при · получава · връща · предава на · човек) се инжектира
+при старт **след** статичния префикс — кешът остава общ. `teams.mjs --check` (в `gate.mjs`) гейтва
+целостта и че 45-те задачи рутират точно; рутингът е лексикален помощник за старт, не съдия — нищо или
+равенство → AI-джията. Нов агент или екип се доказва с верига в `flow-ledger.mjs`, спряла заради липсата.
+
 **Loop/automation слой (`tools/agents/loops/`).** Лостът е loop-ът, не единичният промпт (идея от
 loop-engineering, написана нашия начин — zero-dep, fail-closed). Декларативен манифест (`loops.json`) с
 **автономия-стълба L1 (само доклад) → L2 (помага) → L3 (безнадзорно)**; `loop-audit.mjs` гейтва готовността
@@ -130,8 +139,11 @@ p90 42; 27 пускания с ≥60 хода = 22% от цената. **Пар�
 1. **По-малко ходове, по-малки резултати** — правилото „Икономия на ходове" в `PROCEDURE.md` (Grep преди
    Read, Read с offset/limit, паралелни независими извиквания) + `maxTurns` 80 (Касаджията 120) като
    контролна точка, избрана от разпределението.
-2. **Усилие и модел по измерване, не по престиж на домейна.** Цени (USD/1M, `prices.json`): Opus 5
-   $5/$25 · Sonnet 5 $2/$10 · Fable 5.1 $10/$50 (не за флота) · Haiku изключен по решение на собственика.
+2. **Усилие и модел по измерване, не по престиж на домейна.** Цени (USD/1M, `prices.json`, сверени
+   2026-10-24): Opus 5.5 $4/$20 · Sonnet 5.5 $2/$10 (кеш-четене 0,05× — половината от старото 0,1×) ·
+   Fable 5.1 $10/$50 (не за флота) · Haiku изключен по решение на собственика. Флотът върви на 5.5
+   (`opus`/`sonnet` в frontmatter са псевдоними); нова версия без ред в `prices.json` излиза „без цена“
+   в `usage-report --check`, не се таксува тихо по старата.
    `model-policy.mjs` (TIER_A opus/high · TIER_B sonnet/medium) и `route.mjs` (надстройка по задача) дават
    началото; живите проверки (`tools/agents/evals/`) решават кое се задържа.
    **Първо измерване (2026-09-23, 7 проби със заложени дефекти, по 1 пускане):** с памет 7/7 за ~$3,91 и 95
@@ -181,9 +193,9 @@ On-demand **workflow packages** (`SKILL.md` = YAML frontmatter + imperative body
 `scripts/`/`references/`). Only metadata (~100 tokens) loads until a skill triggers — so they
 capture repeating procedures **without** bloating every session. Different from agents (a *who*
 you delegate to) and MCP/tools (*how* to connect): a skill is *what to do, in what order, with what
-guardrails*. Ours (BG, vetted; 24): **процедури** — deploy · prisma-migrate · quality-gate ·
+guardrails*. Ours (BG, vetted; 25): **процедури** — deploy · prisma-migrate · quality-gate ·
 seed-author · commit-pr · new-product · release-changelog · agent-eval · systematic-debugging ·
-razpit · skill-author;
+razpit · skill-author · sapernik;
 **предпазители/сигурност** — fiscal-bg · stripe-payment · motion-a11y · gdpr-launch · db-readonly ·
 owasp-review · wcag-audit; **SEO/производителност** — indexnow · keywords-seo · i18n-parity · web-vitals;
 plus uchitel; **дизайн** — frontend-design (официалното на Anthropic, Apache 2.0; изключение по решение

@@ -72,3 +72,10 @@ test("daysBetween смята календарно, не наивно", () => {
   assert.equal(daysBetween("2026-07-01", "2026-07-29"), 28);
   assert.equal(daysBetween("2026-01-01", "2026-07-29"), 209);
 });
+
+test("световната истина е последната СТАБИЛНА версия, не prerelease под `latest`", async () => {
+  const { stableLatest } = await import("./version-freshness.mjs");
+  assert.equal(stableLatest("8.0.0-rc.27", ["7.9.0", "7.10.1", "8.0.0-rc.27", "7.10.0", "6.19.3"]), "7.10.1", "prisma 2026-10-24");
+  assert.equal(stableLatest("16.4.3", ["16.4.3", "16.5.0-canary.1"]), "16.4.3", "стабилен latest остава");
+  assert.equal(stableLatest("1.0.0-beta.1", []), "1.0.0-beta.1", "без стабилна — каквото има");
+});

@@ -69,11 +69,11 @@ maxTurns: 80
   mode вграден, cookieless при отказ). Алтернативи без cookie/приватностни: **Plausible/Umami** (self-host,
   без лични данни, често **без cookie banner**) и **PostHog** (product analytics, self-host опция).
   ⚠ „Cookieless без banner" НЕ значи „без правно основание": ePrivacy изисква съгласие само за достъп до/
-  съхранение в устройството (cookies/подобни); cookieless аналитика може да мине без consent banner, но пак дължи
+  съхранение в устройството (cookies/подобни). По EDPB Насоки 2/2023 v2.0 (приети 7.10.2024) чл.5(3) обхваща и pixel/URL tracking, тоест „cookieless“ не значи автоматично „извън чл.5(3)“. Cookieless аналитика може да мине без consent banner само ако конкретният инструмент е извън чл.5(3) или попада в изключение. Това го решава Правния по реалната интеграция, не етикетът на доставчика. Пак дължи
   **чл.13 прозрачност** (privacy policy) + оценка на легитимен интерес. Правната преценка → сверявай с Правния Разбирач.
-- **Consent mode / server-side tagging:** съгласието се улавя (CMP) и се предава; server-side дава контрол,
+- **Consent mode / server-side tagging:** съгласието се улавя (CMP) и се предава. **По подразбиране ползваме Basic consent mode:** Google таговете са блокирани, докато няма съгласие. Advanced mode зарежда таговете ПРЕДИ диалога и при отказ праща cookieless пингове. Това противоречи на правило 1, затова Advanced се пуска само с писано решение на Правния Разбирач (цената е по-малко моделирани данни в GA4). server-side дава контрол,
   PII redaction, data residency. **DPA с доставчика** задължителен; минимизация; договорни трансфери.
-- **IP/геолокация:** анонимизирай; **никаква PII** в custom dimensions/properties. Retention изрична и къса
+- **IP/геолокация:** GA4 не записва и не пази IP („In Google Analytics 4, IP masking is not necessary since IP addresses are not logged or stored“). Затова `anonymize_ip` е флаг от времето на UA и в GA4 не прави нищо — не го искай там. Сигналът `no-ip-anon` на одита за GA4 е само `info`. Анонимизирането на IP е реално задължение там, където пазим IP сами: собствени server-side логове/тагинг, self-host PostHog/Umami, warehouse. **Никаква PII** в custom dimensions/properties. Retention изрична и къса
   колкото трябва.
 
 ## Контекст на репото

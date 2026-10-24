@@ -20,12 +20,17 @@ export const PRICES_FILE = join(HERE, "..", "agents", "prices.json");
 export function loadPrices(file = PRICES_FILE) {
   try { return JSON.parse(readFileSync(file, "utf8")); } catch { return null; }
 }
-/** Цена за модел: най-дългото съвпадение по префикс на id-то (claude-opus-5 ≠ claude-opus-5-5). */
+/**
+ * Цена за модел: най-дългото съвпадение по префикс на id-то (claude-opus-5 ≠ claude-opus-5-5).
+ * Префиксът важи само за суфикс (`[1m]`), НЕ за продължение на версията: „sonnet-5-5“ без свой ред
+ * не е „sonnet-5“. Реален дефект (2026-10-24): 137 пускания на sonnet-5-5 тихо се таксуваха като
+ * sonnet-5 с 2× по-скъпо кеш-четене. Непознатата версия сега е „без цена“ — видима, не сгрешена.
+ */
 export function priceOf(model, prices = loadPrices()) {
   const m = String(model || "").replace(/^claude-/, "").replace(/-\d{8}$/, "");
   const rows = prices?.models || [];
   let best = null;
-  for (const r of rows) if (m === r.id || m.startsWith(r.id + "-") || m.startsWith(r.id)) if (!best || r.id.length > best.id.length) best = r;
+  for (const r of rows) if (m.startsWith(r.id) && !/^-?\d/.test(m.slice(r.id.length))) if (!best || r.id.length > best.id.length) best = r;
   return best;
 }
 /** Цена на едно пускане по цените на API: вход, кеш-четене (×0.1), кеш-запис 5 мин (×1.25), изход. */

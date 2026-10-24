@@ -21,6 +21,14 @@
 //                   (закон: не пренаписвай памет мълчаливо — опровержението е знание, не боклук).
 //     остава      → нищо.
 //
+// От 2026-10-24 и ПРОВЕРЕНИ поуки (просрочените на `memory-freshness --agent <id>`): дотогава пътят
+// за пресверка съществуваше само за Карантината, а срокът се смяташе от датата на научаването —
+// пресверена поука оставаше просрочена завинаги и опашката (338) само растеше.
+//     потвърдена  → остава НА МЯСТО, маркер „(пресверена YYYY-MM-DD)“ + живо сверения източник;
+//                   по желание `next: YYYY-MM-DD` = нов изричен срок (метаданни, не съдържание).
+//     опровергана → СВАЛЯ СЕ в Карантина с маркер ОПРОВЕРГАНА (не се инжектира повече, не се трие).
+//                   Иска `note` — свалянето на проверено знание без причина е тиха подмяна.
+//
 //   node tools/memory/promote.mjs --agent <id> --verdicts <файл.json>            # dry-run
 //   node tools/memory/promote.mjs --agent <id> --verdicts <файл.json> --write
 
@@ -44,11 +52,33 @@ export function splitTail(bullet) {
   return { scope: parts[0].trim(), confidence: parts[1].trim(), source: parts.slice(2).join(";").trim() };
 }
 
-/** Пренаписва САМО опашката и датовия префикс. Тялото на поуката остава дословно. */
-export function promoteBullet(bullet, newSource, today) {
+const REVERIFY_RE = /;?\s*re-?verify:?\s*(\d{4}-\d{2}-\d{2})/i;
+
+/**
+ * Пренаписва САМО опашката и датовия префикс. Тялото на поуката остава дословно.
+ * Изричният срок в опашката (`; re-verify: ДАТА`) се пази, докато е в бъдещето — подмяната на
+ * източника иначе щеше тихо да изтрие човешкия срок; минал срок е изпълнен с тази пресверка.
+ * `next` го подменя.
+ */
+export function promoteBullet(bullet, newSource, today, next = null) {
   const tail = splitTail(bullet);
-  if (!tail) return null;
-  const withTail = bullet.replace(/_\((.*)\)_\s*$/, `_(${tail.scope}; verified; ${newSource})_`);
+  const src = newSource.replace(REVERIFY_RE, "").trim();
+  // Поука в стар формат — без опашка, източникът е в прозата („(Източник: собствен инструмент.)“).
+  // Пресверката ѝ слага стандартна опашка с живо сверения източник; тялото остава дословно.
+  // До 2026-10-24 такава поука беше НЕАДРЕСИРУЕМА: „не мога да разчета опашката“ спираше целия пакет.
+  if (!tail) {
+    if (/_\((.*)\)_\s*$/.test(bullet)) return null;              // опашка има, но е счупена → не гадай
+    return markReverified(`${bullet.trimEnd()} _(общо; verified; ${src}${next ? `; re-verify: ${next}` : ""})_`, today);
+  }
+  const old = (tail.source.match(REVERIFY_RE) || [])[1];
+  const due = next || (old && old > today ? old : null);
+  const withTail = bullet.replace(/_\((.*)\)_\s*$/,
+    `_(${tail.scope}; verified; ${src}${due ? `; re-verify: ${due}` : ""})_`);
+  return markReverified(withTail, today);
+}
+
+/** „- **2026-07-24:**“ → „- **2026-07-24 (пресверена 2026-08-04):**“ — подменя стар маркер, пази друга история. */
+function markReverified(withTail, today) {
   // „- **2026-07-24:**“ → „- **2026-07-24 (пресверена 2026-08-04):**“ — конвенцията, която паметта
   // вече ползва за преместени записи. Дата без промяна означава „не е пипано“, което би било лъжа.
   //
@@ -64,6 +94,17 @@ export function refuteBullet(bullet, note, today) {
   if (/^-\s*\*\*[^*]*\*\*:?\s*ОПРОВЕРГАНА/.test(bullet)) return bullet;   // идемпотентно
   return bullet.replace(/^(-\s*\*\*[^*]*\*\*:?\s*)/,
     `$1ОПРОВЕРГАНА ${today}${note ? ` (${note})` : ""} — `);
+}
+
+/**
+ * Сваля проверена поука: маркер ОПРОВЕРГАНА + увереност verified → unverified. Увереността се сменя,
+ * за да не остане в Карантина запис, който твърди за себе си, че е проверен.
+ */
+export function demoteBullet(bullet, note, today) {
+  const tail = splitTail(bullet);
+  const marked = refuteBullet(bullet, note, today);
+  if (!tail) return marked;
+  return marked.replace(/_\((.*)\)_\s*$/, `_(${tail.scope}; unverified; ${tail.source})_`);
 }
 
 function sectionBounds(lines, heading) {
@@ -84,7 +125,7 @@ export function applyVerdicts(md, verdicts, today) {
   const v = sectionBounds(lines, "Проверени поуки");
   if (!q || !v) return { error: "липсва секция „Карантина“ или „Проверени поуки“" };
 
-  // Индекс: lid → диапазон редове, само в Карантина. БЛОКОВО, не по суров ред.
+  // Индекс: lid → диапазон редове, по секция. БЛОКОВО, не по суров ред.
   //
   // Реален дефект (Кръг 13): индексирах по `lines[i]`, а `quarantine-review` смята lid-а върху
   // склеен БЛОК (`sectionBullets` лепи continuation редовете). Поука, чийто запис минава на втори
@@ -92,18 +133,22 @@ export function applyVerdicts(md, verdicts, today) {
   // различни lid-а и ставаше НЕАДРЕСИРУЕМА. Хванато на живо: `skorostnika/e6503e11` (id от блок)
   // срещу `2b83ba8e` (id от ред). Fail-closed го обяви като „няма такава поука" вместо да сгреши
   // тихо — затова нищо не се повреди, но поуката не можеше да се промотира.
-  const inQuar = new Map();
-  for (let i = q.start + 1; i < q.end; i++) {
-    if (!lines[i].trim().startsWith("- ")) continue;
-    let end = i;
-    while (end + 1 < q.end && lines[end + 1].trim() !== "" && !lines[end + 1].trim().startsWith("- ")) end++;
-    const block = lines.slice(i, end + 1).map((l) => l.trim()).join(" ");
-    inQuar.set(lessonId(block), { i, end });
-    i = end;
-  }
+  const index = (sec) => {
+    const m = new Map();
+    for (let i = sec.start + 1; i < sec.end; i++) {
+      if (!lines[i].trim().startsWith("- ")) continue;
+      let end = i;
+      while (end + 1 < sec.end && lines[end + 1].trim() !== "" && !lines[end + 1].trim().startsWith("- ")) end++;
+      const block = lines.slice(i, end + 1).map((l) => l.trim()).join(" ");
+      m.set(lessonId(block), { i, end });
+      i = end;
+    }
+    return m;
+  };
+  const inQuar = index(q), inVer = index(v);
 
-  const promoted = [], refuted = [], kept = [], errors = [];
-  const drop = new Set();
+  const promoted = [], reverified = [], refuted = [], demoted = [], kept = [], errors = [];
+  const drop = new Set(), replace = new Map();
 
   for (const rec of verdicts) {
     const lid = String(rec.lid || "").trim();
@@ -113,33 +158,58 @@ export function applyVerdicts(md, verdicts, today) {
     // условието е вярно почти винаги — тихо пропускане, маскирано като идемпотентност. Точно класът
     // тихи провали, който гоня цялата сесия; тестът го хвана. Промоцията сменя текста, значи сменя и
     // lid-а, тоест „вече промотирана“ ПРИНЦИПНО не е разпознаваема по lid. Затова: непознат lid е
-    // грешка. Идемпотентността се постига като вердиктите се генерират наново от `quarantine-review`.
-    if (!inQuar.has(lid)) { errors.push(`${lid}: няма такава поука в Карантина на този агент`); continue; }
-    const { i, end } = inQuar.get(lid);
+    // грешка. Идемпотентността се постига като вердиктите се генерират наново от `quarantine-review`
+    // (Карантина) или `memory-freshness --agent` (проверени).
+    const where = inQuar.has(lid) ? "q" : inVer.has(lid) ? "v" : null;
+    if (!where) { errors.push(`${lid}: няма такава поука в паметта на този агент`); continue; }
+    if (rec.next != null && !(/^\d{4}-\d{2}-\d{2}$/.test(String(rec.next)) && String(rec.next) > today)) {
+      errors.push(`${lid}: next трябва да е бъдеща дата YYYY-MM-DD (даден: „${rec.next}“)`); continue;
+    }
+    const { i, end } = (where === "q" ? inQuar : inVer).get(lid);
+    const block = lines.slice(i, end + 1).join("\n");
     if (rec.verdict === "остава") { kept.push(lid); continue; }
-    if (rec.verdict === "опровергана") { lines[i] = refuteBullet(lines[i], rec.note, today); refuted.push(lid); continue; }
-    // потвърдена — целият блок се мести, не само първият му ред
+
+    if (rec.verdict === "опровергана") {
+      if (where === "q") { lines[i] = refuteBullet(lines[i], rec.note, today); refuted.push(lid); continue; }
+      // Проверено знание се сваля само с причина — иначе каналът е тиха подмяна на памет.
+      if (!String(rec.note || "").trim()) { errors.push(`${lid}: проверена поука се сваля само с бележка (note) защо`); continue; }
+      demoted.push({ lid, line: demoteBullet(block, rec.note, today) });
+      for (let k = i; k <= end; k++) drop.add(k);
+      continue;
+    }
+
+    // потвърдена
     const src = String(rec.source || "").trim();
     if (!isRealSource(src)) { errors.push(`${lid}: „потвърдена“ без реален източник (даден: „${src || "—"}“)`); continue; }
-    const block = lines.slice(i, end + 1);
-    const nb = promoteBullet(block.join("\n"), src, today);
+    const nb = promoteBullet(block, src, today, rec.next || null);
     if (!nb) { errors.push(`${lid}: не мога да разчета опашката _(обхват; увереност; източник)_`); continue; }
+    if (where === "v") {
+      // Пресверка на място: редът не мърда (редът в секцията е хронология на научаването).
+      replace.set(i, nb);
+      for (let k = i + 1; k <= end; k++) drop.add(k);
+      reverified.push(lid);
+      continue;
+    }
     promoted.push({ lid, line: nb });
     for (let k = i; k <= end; k++) drop.add(k);
   }
 
   if (errors.length) return { error: errors.join("\n"), errors };
 
-  // Запис: махни промотираните от Карантина, добави ги НАЧЕЛО на „Проверени поуки“ (най-новото горе).
+  // Запис: промотираните НАЧЕЛО на „Проверени поуки“, свалените НАЧЕЛО на Карантина (най-новото горе).
   const out = [];
   lines.forEach((l, i) => {
     if (drop.has(i)) return;
-    out.push(l);
+    out.push(replace.has(i) ? replace.get(i) : l);
     if (i === v.start) { out.push(""); for (const p of promoted) out.push(p.line); }
+    if (i === q.start && demoted.length) { out.push(""); for (const p of demoted) out.push(p.line); }
   });
   // изчисти двойните празни редове, които вмъкването може да създаде
-  const cleaned = out.filter((l, i) => !(l.trim() === "" && out[i + 1] !== undefined && out[i + 1].trim() === ""));
-  return { md: cleaned.join("\n"), promoted: promoted.map((p) => p.lid), refuted, kept };
+  const cleaned = out.join("\n").split("\n").filter((l, i, a) => !(l.trim() === "" && a[i + 1] !== undefined && a[i + 1].trim() === ""));
+  return {
+    md: cleaned.join("\n"),
+    promoted: promoted.map((p) => p.lid), reverified, refuted, demoted: demoted.map((p) => p.lid), kept,
+  };
 }
 
 function main() {
@@ -159,7 +229,8 @@ function main() {
   const r = applyVerdicts(readFileSync(file, "utf8"), verdicts, today);
   if (r.error) { console.error(`✗ ${agent}:\n${r.error}`); process.exit(1); }
 
-  console.log(`${agent}: ${r.promoted.length} промотирани · ${r.refuted.length} опровергани · ` +
+  console.log(`${agent}: ${r.promoted.length} промотирани · ${r.reverified.length} пресверени · ` +
+    `${r.refuted.length + r.demoted.length} опровергани (${r.demoted.length} свалени от проверените) · ` +
     `${r.kept.length} остават` +
     (WRITE ? "" : "  [dry-run]"));
   if (WRITE) writeFileSync(file, r.md);

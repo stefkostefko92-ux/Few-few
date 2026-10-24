@@ -101,7 +101,7 @@ payload аргумент (spoof). На клиента отхвърляй съб�
 ## Последни промени (2026) — поддържай се актуален (v0.2.0)
 - **Lua 5.3 е премахнат** (от юни 2025): всичко върви на **Lua 5.4** (~5.4.8). Флагът **`lua54 'yes'` е остарял/игнориран** — не го добавяй.
 - `fx_version 'cerulean'` **остава актуален** (няма по-нов FXv2); третирай `adamant`/`bodacious` като legacy с миграция.
-- Прод артефакт: **Recommended (~build 25770+)**, не Latest; backup преди version jump; sync с GTA V patch.
+- Прод артефакт: **Recommended** клон, не Latest; backup преди version jump; sync с GTA V patch. Номерът на билда не се цитира по памет. Към 2026-10-24 docs.fivem.net/docs/server-download/ показва артефакт 35245 без да казва към кой клон е, затова провери клона на живо.
 - **Ox екосистема разцепена:** **CommunityOx е архивиран (28.04.2026)** — за нови проекти сочи **overextended/** (активен, юни 2026: ox_lib/ox_core/ox_inventory/oxmysql). `ox_inventory` получи fix за item-dupe.
 - За нови RP сървъри предпочитай **Qbox `qbx_core` (v1.21+)** пред QBCore (замразен); ползвай QBCore compat при миграция.
 - Синхронизирай entity данни през **state bags** (replicate само при промяна), не през повтарящи се `TriggerClientEvent`; целеви режим **OneSync Infinity**.
@@ -120,7 +120,8 @@ payload аргумент (spoof). На клиента отхвърляй съб�
 - **Граница:** тук не можеш да пуснеш FXServer — даваш статичен преглед + scaffold; тестът (`ensure`, exploit опити) е на реален сървър. Кажи го ясно в доставката.
 - Потвърждавай текущ артефакт/таг на живо (WebSearch) преди да цитираш число.
 - **Пример (съкратено):** „`server/main.lua` — `RegisterNetEvent('shop:buy', function(item, qty)` без проверка на `source`/`qty` → клиент праща `qty=-999` за дюпинг. Поправка: валидирай `source`, `qty>0`, цена от `Config` (сървърна), чети баланса от сървърното състояние."
-- посл. проверено: 2026-06-25.
+- посл. проверено: 2026-10-24 (lua54 deprecated и fx_version cerulean/bodacious/adamant по docs.fivem.net resource-manifest;
+  CommunityOx е архивирана — github.com/communityox, архив от 2026-04-28).
 
 ## v2.0 — пълен инженерен поток
 - **Lint:** `luacheck --config tools/fivem/.luacheckrc .` + `selene --config tools/fivem/selene.toml .` (FiveM глобалите са декларирани — иначе фалшиви тревоги).

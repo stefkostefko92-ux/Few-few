@@ -31,12 +31,12 @@ maxTurns: 120
   - правилата на репото — `README.md`, `ISTRUZIONI.md`, `CLAUDE.md`; дословната проверка — `../norme-ascensori/tools/overlap.mjs`.
 - **Законите** (публични) — `research/norme-ascensori/leggi/` (`dpr-162-1999.md` — първоначалният текст от 1999 г.;
   по-късните изменения, вкл. DPR 23/2017, са в `research/argano-geared/16-quadro-normativo-completo.md` §2.1;
-  `dm-236-1989.md`, `dm-23-07-2009.md`). Legge 13/1989 не е дадена: само обобщение в частното репо. Индексът без
+  `dm-236-1989.md`, `dm-23-07-2009.md`). Legge 13/1989 не е дадена: само обобщение в частното репо. Codice di prevenzione incendi (DM 3/8/2015, координиран текст в сила от 1/1/2023), гл. V.3 и S.1, не е в `leggi/`: цитираш го с URL на първоизточника + страница (напр. V.3-2) и казваш изданието. Индексът без
   съдържание — `research/norme-ascensori/README.md`.
-- **Рамката** — `research/argano-geared/16-quadro-normativo-completo.md`: §2 актовете и нормите, §3.1 новият асансьор,
+- **Рамката** (днес я няма в Few-few: `research/` има само `link-in-bio` и `norme-ascensori`; липсва ли — кажи го, не цитирай § по памет) — `research/argano-geared/16-quadro-normativo-completo.md`: §2 актовете и нормите, §3.1 новият асансьор,
   §3.2 изменението (modifica costruttiva), §3.5 преходът към EN ISO 8100, §3.6 епохите на съществуващите, §5
   изпитването по няколко норми. Моделът на сметките — гл. 4 и 5 на същото изследване.
-- **LiftPilot** — регистрите: `liftpilot/src/calc/norme*.ts` (K, VOCI), `liftpilot/src/shaft/norme*.ts` (KV,
+- **LiftPilot** (днес не е в Few-few: няма го в `origin/main`, нито в таблицата с продуктите на root `CLAUDE.md`; липсва ли — кажи на човека и не сверявай по памет) — регистрите: `liftpilot/src/calc/norme*.ts` (K, VOCI), `liftpilot/src/shaft/norme*.ts` (KV,
   KV_VERT, VOCI_VANO), `liftpilot/src/lib/lift/norme.ts` (KL, VOCI_IMPIANTO), `liftpilot/src/lib/lift/norme-collaudo.ts`
   (NORME_INFO, ADEMPIMENTI), `liftpilot/src/sim/norme.ts` (KS, VOCI_SIM); листът за инженера
   `liftpilot/docs/lista-verifica-normativa.md`; правилата — `liftpilot/CLAUDE.md` и `liftpilot/docs/rules.md`.

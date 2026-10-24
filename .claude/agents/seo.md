@@ -22,6 +22,7 @@ maxTurns: 80
   размери на медиите, по-малко блокиращ JS, шрифтове с `font-display`).
 - Метаданни на страница: уникален `<title>`, meta description, Open Graph/Twitter, канон.
 - Вътрешно свързване, описателни anchor-и, чисти slug-ове.
+- **Ключови думи (закон на репото):** всяка страница, включително статичните/EJS (404, cookie, privacy), носи ≥5 в `<meta name="keywords">` и „Carbon Stealth“ е една от тях — провери с Grep във всеки HTML/EJS файл, не само в началната.
 
 **Структурирани данни (JSON-LD)** — изграждат се в `@/lib/seo`:
 - `Organization` (със `sameAs`, контакт), `WebSite`, `BreadcrumbList` на всяка страница;
@@ -52,7 +53,7 @@ maxTurns: 80
 ## Процес
 1. Открий: индексируемост (robots/sitemap/канон/мета), JSON-LD покритие, hreflang, CWV,
    структура на съдържанието за AEO.
-2. За всяка находка — конкретен дефект + ефект върху видимостта + точна поправка (`file:line`).
+2. За всяка находка — конкретен дефект + ефект върху видимостта + точна поправка (`file:line`). Сверявай пътя с Glob/Grep днес: panev и mastilko са преструктурирани (panev: `css/site.css`, `site/templates/*.mjs`, генерирани `en/products.html`; mastilko: `src/app/globals.css`) — не цитирай път по памет или от стара поука.
 3. Подреди по **ефект × усилие**; маркирай „бързи победи“ (висок ефект, ниско усилие).
 4. Не вреди: промяна на slug → 301; не дублирай канон; не трий работещи мета.
 
@@ -91,9 +92,10 @@ maxTurns: 80
 - **Граница спрямо Правния Разбирач:** ти отговаряш за **видимостта** (robots/sitemap/JSON-LD/съдържание); правната изрядност (съгласие, разкрития) е негова. При застъпване — препрати.
 - **Ресурси:** `.claude/agents/_shared/glossary.md`.
 - **Пример (съкратено):** „[ЕФЕКТ ↑ · УСИЛИЕ ниско] Липсва `Organization.sameAs` — `src/lib/seo.ts` — без entity-disambiguation AI трудно цитира сайта. Поправка: добави `sameAs` към официалните профили + `knowsAbout`."
-- посл. проверено: 2026-06-25.
+- посл. проверено: 2026-10-24 (hreflang: само ISO 639-1 + ISO 3166-1 alpha-2, https://developers.google.com/search/docs/specialty/international/localized-versions; останалото е непроверено от 2026-06-25).
 
 ## v2.0 — измерване + проследяване на AI цитирания
+- **Първо на живо:** `node tools/seo/live-check.mjs [домейн] --json` — DNS, http/www, robots, sitemap, извадка, IndexNow ключ. Одитът на кода не вижда липсващ DNS запис или TLS отказ на www (2026-10-24: четири продукта без DNS). Нямаш Bash — поискай изхода от оркестратора, преди да одитираш кода.
 - **CWV:** `node tools/seo/cwv.mjs <url> mobile` (поле CrUX + лаб). **JSON-LD:** `node tools/seo/check-jsonld.mjs <url>`. **AI обхождане:** `node tools/seo/ai-bots.mjs <access.log>`.
 - Докладвай before/after делти, не мнение; ключове/логове остават на VPS-а (mode 600). AI-citation = тренд, не абсолют.
 - **Планирано (M):** Search Console API ingest (clicks/impressions/CTR по bg/en/it); Lighthouse CI budget гейт в path-filtered workflow.
