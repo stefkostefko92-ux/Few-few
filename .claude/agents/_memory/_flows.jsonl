@@ -237,3 +237,8 @@
 {"t":"handoff","ts":"2026-10-23T21:46:50.779Z","id":"r9f25c8e2","from":"letopisetsa","to":"ai-djiyata","status":"има бележки","run":"a04ef862"}
 {"t":"handoff","ts":"2026-10-23T21:47:36.780Z","id":"r9f25c8e2","from":"letopisetsa","to":"ai-djiyata","status":"има бележки","run":"a4c5226f"}
 {"t":"handoff","ts":"2026-10-23T21:48:11.365Z","id":"r9f25c8e2","from":"letopisetsa","to":"ai-djiyata","status":"има бележки","run":"68f8d846"}
+{"t":"start","ts":"2026-10-24T06:33:31.467Z","id":"r606f816d","flow":"авто","lead":"prevodach","auto":true}
+{"t":"handoff","ts":"2026-10-24T06:33:31.467Z","id":"r606f816d","from":"prevodach","to":"човек","status":"има бележки","run":"11ab73ce"}
+{"t":"handoff","ts":"2026-10-24T06:36:10.110Z","id":"r606f816d","from":"prevodach","to":"човек","status":"наред","run":"0cc8e6c0"}
+{"t":"handoff","ts":"2026-10-24T06:39:15.140Z","id":"r606f816d","from":"izpitatelya","to":"ai-djiyata","status":"има бележки","run":"e6a786bd"}
+{"t":"handoff","ts":"2026-10-24T06:42:56.908Z","id":"r606f816d","from":"prevodach","to":"човек","status":"има бележки","run":"630be6d0"}
