@@ -91,7 +91,7 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: "/prozrachnost", label: "Прозрачност", description: "Къде отиват парите на общината (обществени поръчки)" },
   { href: "/smetishta", label: "Нерегламентирани сметища", description: "Подайте сигнал за незаконно сметище" },
   { href: "/grafik-smetosabirane", label: "График за сметосъбиране", description: "Кога се извозва отпадъкът по квартали" },
-  { href: "/grada", label: "Опознай Бобов\u00a0дол", description: "География, забележителности, природа и карта" },
+  { href: "/grada", label: "Опознайте Бобов\u00a0дол", description: "География, забележителности, природа и карта" },
   { href: "/istoriya", label: "История на града", description: "Историята на Бобов\u00a0дол по етапи" },
   { href: "/zov-za-pomosht", label: "Зов за помощ", description: "Взаимопомощ и подкрепа за възрастните" },
   { href: "/dobrovolci", label: "Доброволци", description: "Помощ от хора с добро сърце" },
