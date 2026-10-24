@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import gsap from "gsap";
 import { svaraRaisePresets, type SvaraState as CoreSvaraState } from "@aso/game-core";
@@ -298,7 +298,7 @@ export function SvaraView({ title }: { title: string }) {
                   key={s}
                   className="svara-seat-slot"
                   data-seat={s}
-                  style={{ left: `${x}%`, top: `${y}%` }}
+                  style={{ "--slot-x": `${x}%`, top: `${y}%` } as CSSProperties}
                 >
                   <Seat
                     pos="top"

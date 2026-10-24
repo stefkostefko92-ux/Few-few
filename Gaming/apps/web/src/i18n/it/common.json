@@ -909,7 +909,7 @@
     "spinLeft": "sinistra",
     "spinRight": "destra",
     "spinCenter": "al centro",
-    "spinReset": "Centro",
+    "spinReset": "Senza effetto",
     "spinHelp": "Scegli dove la stecca colpisce la bianca: in alto — prosegue dopo l'impatto (a seguire), in basso — torna indietro (a rientrare), di lato — cambia il rimbalzo sulla sponda. Frecce per spostare, Maiusc per passi più fini, Home per il centro.",
     "callPocket": "Buca per la 8",
     "callPocketHint": "Sei sulla 8 — dichiara la buca (clic vicino alla buca o sui pulsanti)",

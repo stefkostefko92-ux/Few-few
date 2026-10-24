@@ -93,7 +93,18 @@
 .svara-seat-slot {
   position: absolute;
   z-index: 3;
+  /* Хоризонталът идва като --slot-x (процент от масата). На тесен екран
+     страничните места при 12 % / 88 % излизаха извън сукното и картите се
+     режеха — clamp държи центъра на място поне на половин седалка от ръба. */
+  left: clamp(78px, var(--slot-x, 50%), calc(100% - 78px));
   transform: translateX(-50%);
+}
+@media (max-width: 560px) {
+  .svara-seat-slot {
+    left: clamp(52px, var(--slot-x, 50%), calc(100% - 52px));
+    transform: translateX(-50%) scale(0.74);
+    transform-origin: top center;
+  }
 }
 .svara-seat-slot .aso-seat {
   position: static;

@@ -909,7 +909,7 @@
     "spinLeft": "left",
     "spinRight": "right",
     "spinCenter": "centre",
-    "spinReset": "Centre",
+    "spinReset": "No spin",
     "spinHelp": "Choose where the cue strikes the cue ball: top — it keeps rolling after contact (follow), bottom — it comes back (draw), side — it changes the rebound off the rail. Arrow keys to move, Shift for finer steps, Home to centre.",
     "callPocket": "Pocket for the 8",
     "callPocketHint": "You're on the 8 — call a pocket (click next to it or use the buttons)",

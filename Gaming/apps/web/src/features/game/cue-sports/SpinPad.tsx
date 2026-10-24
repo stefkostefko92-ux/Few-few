@@ -137,14 +137,12 @@ export function SpinPad({
         <span className="text-xs text-ink-300" aria-hidden="true">
           {valueText}
         </span>
-        <button
-          type="button"
-          className="aso-cue__spinreset"
-          onClick={() => set(0, 0)}
-          disabled={disabled || centred}
-        >
-          {t("cue.spinReset")}
-        </button>
+        {/* Само когато има ефект: в центъра бутонът дублираше „център“ до стойността. */}
+        {!centred && (
+          <button type="button" className="aso-cue__spinreset" onClick={() => set(0, 0)} disabled={disabled}>
+            {t("cue.spinReset")}
+          </button>
+        )}
         <span id="aso-cue-spin-help" className="sr-only">
           {t("cue.spinHelp")}
         </span>
