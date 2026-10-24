@@ -131,23 +131,67 @@ async function deployBackups(cfg) {
   };
 }
 
-// Стари releases. ПАЗИМ текущия и двата преди него — откатът е точно това.
+// Release-ите, които НЕ бива да се трият, каквато и възраст да имат: този, към който сочи `current`, и
+// всеки, от който контейнер (работещ или спрян) монтира файлове. Инцидент 11.10.2026: zabobovdol беше
+// вдигнат от release на 18.09, а той беше изтрит като „стар“ — при рестарт nginx (./nginx/*.conf) и
+// backup (./scripts) не намериха файловете си и сайтът върна 502. Връща null, ако Docker не отговаря:
+// тогава не можем да знаем кое е в употреба и не предлагаме нищо (fail closed). Същото пази
+// prune_releases в deploy/autodeploy.sh.
+export async function protectedReleases(relDir, currentLink, runFn = run) {
+  const names = new Set();
+  const nameOf = (p) => {
+    const rel = path.relative(relDir, p);
+    if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return null;
+    return rel.split(path.sep)[0];
+  };
+  try {
+    const live = nameOf(await fs.promises.realpath(currentLink));
+    if (live) names.add(live);
+  } catch {
+    /* няма current — нищо за пазене оттам */
+  }
+  const ps = await runFn('docker', ['ps', '-aq'], { timeout: 20000 });
+  if (!ps.ok) return null;
+  const ids = ps.stdout.split('\n').map((s) => s.trim()).filter(Boolean);
+  if (ids.length) {
+    const ins = await runFn('docker', ['inspect', '--format', '{{range .Mounts}}{{.Source}}{{"\\n"}}{{end}}', ...ids], {
+      timeout: 20000,
+    });
+    if (!ins.ok) return null;
+    for (const src of ins.stdout.split('\n')) {
+      const n = src.trim() && nameOf(src.trim());
+      if (n) names.add(n);
+    }
+  }
+  return names;
+}
+
+// Кои release-и са за триене: по-старите от последните `keep`, без защитените.
+export function pickOldReleases(entries, keep, protectedSet) {
+  const sorted = entries.filter((d) => /^\d{8}-\d{6}$/.test(d)).sort();
+  return sorted.slice(0, Math.max(0, sorted.length - keep)).filter((d) => !protectedSet.has(d));
+}
+
+// Стари releases. ПАЗИМ последните три (текущият + два за откат), `current` и всичко, което
+// контейнер монтира (виж protectedReleases).
 async function oldReleases(cfg) {
   const relDir = cfg?.paths?.releasesDir || '/opt/few-few/releases';
   let entries = [];
   try {
-    entries = (await fs.promises.readdir(relDir)).filter((d) => /^\d{8}-\d{6}$/.test(d)).sort();
+    entries = await fs.promises.readdir(relDir);
   } catch {
     return null;
   }
   const KEEP = 3;
-  const old = entries.slice(0, Math.max(0, entries.length - KEEP));
+  const guard = await protectedReleases(relDir, cfg?.paths?.currentLink || '/opt/few-few/current');
+  if (!guard) return null;
+  const old = pickOldReleases(entries, KEEP, guard);
   if (!old.length) return null;
   const bytes = (await Promise.all(old.map((d) => duBytes(path.join(relDir, d))))).reduce((a, b) => a + b, 0);
   return {
     id: 'old-releases',
     title: 'Стари releases',
-    why: `Разгърнати версии отпреди. Пазят се последните ${KEEP} (текущият + два за откат) — тези са по-стари от тях.`,
+    why: `Разгърнати версии отпреди. Пазят се последните ${KEEP} (текущият + два за откат), release-ът на current и всеки, от който контейнер монтира файлове.`,
     bytes,
     count: old.length,
     safety: 'safe',

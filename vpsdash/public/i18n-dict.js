@@ -1616,6 +1616,7 @@ export const ENTRIES = [
   ['Ротирани логове', 'Rotated logs', 'Log ruotati'],
   ['Копия от деплоя (.bak-*)', 'Deploy copies (.bak-*)', 'Copie del deploy (.bak-*)'],
   ['Стари releases', 'Old releases', 'Vecchie release'],
+  ['Разгърнати версии отпреди. Пазят се последните ⟦0⟧ (текущият + два за откат), release-ът на current и всеки, от който контейнер монтира файлове.', 'Previously deployed versions. Kept: the last ⟦0⟧ (the current one + two for rollback), the release current points to and every release a container mounts files from.', 'Versioni distribuite in precedenza. Si conservano: le ultime ⟦0⟧ (quella attuale + due per il rollback), la release a cui punta current e ogni release da cui un container monta file.'],
   ['Стари качени архиви', 'Old uploaded archives', 'Vecchi archivi caricati'],
   ['Отчети от сривове (/var/crash)', 'Crash reports (/var/crash)', 'Rapporti di crash (/var/crash)'],
   ['Висящи Docker образи', 'Dangling Docker images', 'Immagini Docker sospese'],
