@@ -83,7 +83,8 @@ up() {
     || { cat "$STATE_DIR/migrate.log" >&2; exit 1; }
   (cd apps/api && exec node dist/index.js) >"$STATE_DIR/api.log" 2>&1 & echo $! > "$STATE_DIR/pids"
   (cd apps/realtime && exec node dist/index.js) >"$STATE_DIR/realtime.log" 2>&1 & echo $! >> "$STATE_DIR/pids"
-  (cd apps/web && E2E_API_TARGET="http://127.0.0.1:${API}" E2E_RT_TARGET="http://127.0.0.1:${RT}" \
+  # NODE_ENV=production: vite.config избира base /app/ по него — билдът е под /app/.
+  (cd apps/web && NODE_ENV=production E2E_API_TARGET="http://127.0.0.1:${API}" E2E_RT_TARGET="http://127.0.0.1:${RT}" \
     exec npx vite preview --port "$WEB" --host 127.0.0.1 --strictPort) >"$STATE_DIR/web.log" 2>&1 & echo $! >> "$STATE_DIR/pids"
   for _ in $(seq 1 60); do
     a=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${API}/health" || true)
