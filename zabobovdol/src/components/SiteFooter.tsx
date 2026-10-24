@@ -40,7 +40,7 @@ export async function SiteFooter() {
     getViberChannelUrl(),
   ]);
   return (
-    <footer className="mt-16 border-t border-slate-200 bg-slate-50">
+    <footer className="site-footer mt-16 border-t border-slate-200 bg-slate-50">
       <div className="container-content py-10">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-12">
           {/* Гербът и спешните телефони са в една колона: на компютър колоните

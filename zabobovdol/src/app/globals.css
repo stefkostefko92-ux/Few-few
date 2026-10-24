@@ -4,11 +4,24 @@
 
 :root {
   color-scheme: light;
+  /* Колко място оставя залепеният хедър при скок към котва (#раздел) — едно
+     число за целия сайт. От lg хедърът е на два реда (лого + основно меню). */
+  --header-offset: 5.5rem;
+}
+@media (min-width: 1024px) {
+  :root {
+    --header-offset: 8.5rem;
+  }
 }
 
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  /* Заглавието на раздела не остава скрито под залепения хедър. */
+  scroll-padding-top: var(--header-offset);
+}
+html.bt {
+  scroll-padding-top: calc(var(--header-offset) + 1rem);
 }
 
 /* Уважаваме „по-малко движение“: спираме плавния скрол и съкращаваме всички
@@ -29,7 +42,7 @@ html {
 
 body {
   /* Леко топъл, „хартиен“ фон вместо стандартно сиво — по-човешко усещане. */
-  background-color: #faf8f3;
+  background-color: theme("colors.paper.DEFAULT");
   @apply text-slate-900 antialiased;
   font-size: 1.125rem; /* по-едър базов текст за по-добра четимост (възрастни) */
   line-height: 1.7;
@@ -48,29 +61,54 @@ h4,
   text-wrap: balance;
 }
 
+/* Фокус с клавиатура — ясна рамка 3px. Без border-radius: рамката следва
+   заоблянето на самия елемент (бутоните, картите и хапчетата не стават
+   квадратни при фокус). */
 :focus-visible {
   outline: 3px solid theme("colors.brand.500");
   outline-offset: 2px;
-  border-radius: 4px;
+}
+/* Върху тъмносиньо (героят, тъмните ленти) синята рамка не се вижда —
+   там фокусът е златист. */
+.bg-brand-700 :focus-visible,
+.bg-brand-800 :focus-visible,
+.bg-brand-900 :focus-visible,
+.on-dark :focus-visible {
+  outline-color: theme("colors.gold.300");
 }
 
 .skip-link {
   @apply sr-only;
 }
 .skip-link:focus {
-  @apply not-sr-only fixed left-3 top-3 z-50 rounded bg-brand-700 px-4 py-2 text-white;
+  @apply not-sr-only fixed left-3 top-3 z-50 rounded-xl bg-brand-700 px-4 py-2 text-white;
 }
 
+/* ─────────────────────── Компонентни класове ───────────────────────
+   Правило за радиусите (4 стъпки — други не се ползват):
+   • rounded-lg   — само дребни контроли в ленти (бутоните на лентата за
+                    четене, връзките в навигацията и менюто);
+   • rounded-xl   — бутони, полета, вложени кутии, иконни квадратчета;
+   • rounded-2xl  — повърхности от горно ниво (.panel, .card, .callout-*);
+   • rounded-full — значки, чипове за филтри, номера на стъпки.
+   rounded-md и голото rounded не се ползват.
+
+   Тъмен режим: класовете отдолу са сглобени с @apply върху цветове, които
+   вече имат html.dark правило по-долу — Tailwind копира и тези правила
+   (и печатните им нулирания), затова тъмният режим идва наготово. Където
+   цветът няма пренасочване, има изрично html.dark правило. */
 @layer components {
   .container-content {
     @apply mx-auto w-full max-w-content px-4 sm:px-6 lg:px-8;
   }
 
+  /* Бутони. Фокусът идва от общото :focus-visible (3px) — без собствена
+     2px рамка. Без сянка/подскачане при посочване — само смяна на цвета. */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-base font-semibold transition focus-visible:outline focus-visible:outline-2;
+    @apply inline-flex min-h-tap items-center justify-center gap-2 rounded-xl px-5 py-3 text-base font-semibold transition-colors;
   }
   .btn-primary {
-    @apply btn bg-brand-700 text-white shadow-sm hover:bg-brand-800 hover:shadow;
+    @apply btn bg-brand-700 text-white shadow-sm hover:bg-brand-800;
   }
   .btn-secondary {
     @apply btn border border-slate-300 bg-white text-slate-800 hover:border-brand-300 hover:bg-brand-50;
@@ -78,38 +116,282 @@ h4,
   .btn-gold {
     @apply btn bg-gold-400 text-slate-900 shadow-sm hover:bg-gold-300;
   }
+  /* Червеният бутон — САМО за 112 и спешност (цветова роля „опасност“). */
+  .btn-danger {
+    @apply btn bg-crimson-700 text-white shadow-sm hover:bg-crimson-800;
+  }
 
+  /* Повърхности.
+     .panel — статична кутия (текст, форма, странична колона): не реагира
+     на посочване. .card — същото, но САМО за цели карти-връзки (<a>/<Link>):
+     при посочване (само на устройства с мишка) рамката става синя и сянката
+     малко по-силна. Без подскачане, мащабиране и голяма сянка. */
+  .panel {
+    @apply rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm;
+  }
   .card {
-    @apply rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-lg;
+    @apply panel transition-colors;
   }
 
-  .input {
-    @apply w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-brand-500;
+  /* Известия в кутия (цветови роли): info — синьо (обяснение), note —
+     златисто с черта вляво („Накратко“, бележка), success — зелено,
+     warning — кехлибар (само предупредителни статуси), danger — червено
+     (опасност, измами, спешно, грешки). Вложени в .panel → добавете rounded-xl. */
+  .callout {
+    @apply rounded-2xl border p-4 text-base sm:p-5;
   }
-  .label {
-    @apply mb-1 block text-sm font-medium text-slate-700;
+  .callout-info {
+    @apply callout border-brand-200 bg-brand-50;
+  }
+  .callout-note {
+    @apply callout border-gold-200 border-l-4 border-l-gold-400 bg-gold-50;
+  }
+  .callout-success {
+    @apply callout border-green-200 bg-green-50;
+  }
+  .callout-warning {
+    @apply callout border-amber-300 bg-amber-50;
+  }
+  .callout-danger {
+    @apply callout border-crimson-200 bg-crimson-50;
+  }
+
+  /* Значки (хапчета) — текст 700/800 върху нюанс 50. .badge остава синя. */
+  .badge-base {
+    @apply inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium;
   }
   .badge {
-    @apply inline-flex items-center rounded-full bg-brand-50 px-2.5 py-0.5 text-sm font-medium text-brand-800;
+    @apply badge-base bg-brand-50 text-brand-800;
+  }
+  .badge-success {
+    @apply badge-base bg-green-50 text-green-800;
+  }
+  .badge-warning {
+    @apply badge-base bg-amber-50 text-amber-900;
+  }
+  .badge-danger {
+    @apply badge-base bg-crimson-50 text-crimson-700;
+  }
+  .badge-neutral {
+    @apply badge-base bg-slate-100 text-slate-700;
   }
 
-  /* Малък надпис над заглавие — „дизайнерски“ детайл. */
+  /* Иконни квадратчета — ЕДИН тон (brand) за всички плочки; червено само за
+     опасност. Размери: .icon-chip (48px), .icon-chip-sm (40px), .icon-chip-lg
+     (64px); всеки работи и самостоятелно. .icon-chip-danger се добавя към
+     размера. В .group (карта-връзка) при посочване/фокус се запълва. */
+  .icon-chip,
+  .icon-chip-sm,
+  .icon-chip-lg,
+  .icon-chip-danger {
+    @apply grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700 transition-colors;
+  }
+  .icon-chip-sm {
+    @apply h-10 w-10;
+  }
+  .icon-chip-lg {
+    @apply h-16 w-16;
+  }
+  .icon-chip-danger {
+    @apply bg-crimson-50 text-crimson-700;
+  }
+  /* Размерът на иконата вътре — с :where(), за да може класът на самата
+     икона (h-7 w-7) да го надделее. */
+  .icon-chip > :where(svg),
+  .icon-chip-danger > :where(svg) {
+    @apply h-6 w-6;
+  }
+  .icon-chip-sm > :where(svg) {
+    @apply h-5 w-5;
+  }
+  .icon-chip-lg > :where(svg) {
+    @apply h-8 w-8;
+  }
+
+  /* Чипове за филтри и бързи връзки — цел ≥44px. Активният е запълнен
+     (aria-current="page" за връзки, aria-pressed="true" за бутони). */
+  .chip {
+    @apply inline-flex min-h-tap items-center justify-center gap-1.5 rounded-full border border-slate-300 bg-white px-4 text-base font-medium text-slate-800 transition-colors;
+  }
+  .chip[aria-current="page"],
+  .chip[aria-pressed="true"] {
+    @apply border-brand-700 bg-brand-700 text-white;
+  }
+  /* Траурният вариант (/pomeni) — сив вместо син. */
+  .chip-neutral[aria-current="page"],
+  .chip-neutral[aria-pressed="true"] {
+    @apply border-slate-700 bg-slate-700 text-white;
+  }
+  /* Бройката до етикета („Здраве · 2“). */
+  .chip-count {
+    @apply font-normal tabular-nums text-slate-600;
+  }
+  .chip[aria-current="page"] .chip-count,
+  .chip[aria-pressed="true"] .chip-count {
+    color: inherit;
+  }
+  /* Чип върху тъмносиньото на героя. */
+  .chip-on-dark {
+    @apply inline-flex min-h-tap items-center justify-center gap-1.5 rounded-full bg-white/10 px-4 text-base font-medium text-white ring-1 ring-inset ring-white/30 transition-colors hover:bg-white/20;
+  }
+  .chip-on-dark[aria-current="page"] {
+    @apply bg-white text-brand-800;
+  }
+
+  /* Текстови връзки — три вида и толкова.
+     .link       — в текст: винаги подчертана (златна черта ≥3:1);
+     .link-quiet — в списъци и навигация: тънка сива черта, синя при посочване;
+     .link-more  — „Вижте всички →“ под/до заглавие; стрелката е
+                   <span aria-hidden="true">→</span> в самата връзка. */
+  .link {
+    @apply font-medium text-brand-700 underline decoration-gold-600 decoration-2 underline-offset-[3px] hover:text-brand-800 hover:decoration-brand-700;
+  }
+  .link-quiet {
+    @apply underline decoration-slate-300 decoration-1 underline-offset-4 hover:text-brand-700 hover:decoration-brand-700;
+  }
+  .link-more {
+    @apply inline-flex min-h-tap items-center gap-1 text-base font-semibold text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline;
+  }
+
+  /* Типография. Всяко изречение е ≥ text-base; text-sm — само мета (дата,
+     източник); text-xs — само значки и правния ред. */
+  .label {
+    @apply mb-1.5 block text-base font-semibold text-slate-800;
+  }
+  /* Етикет на данни / заглавие на група („ТЕЛЕФОН“, заглавията във футъра,
+     „Съдържание“) — Inter, не Bitter. */
+  .label-caps {
+    @apply font-sans text-sm font-semibold uppercase tracking-[0.06em] text-slate-600;
+  }
+  /* Мета ред: дата, източник, „Проверено на …“. */
+  .text-meta {
+    @apply text-sm text-slate-600;
+  }
+  /* Заглавие на карта / кутия — Inter (малките заглавия в Bitter се четат
+     трудно на кирилица). */
+  .h-card {
+    @apply font-sans text-lg font-semibold leading-snug text-slate-900;
+    letter-spacing: normal;
+    text-wrap: pretty;
+  }
+  /* Подзаглавие в документ или кутия. */
+  .h-sub {
+    @apply text-xl font-bold text-slate-900;
+  }
+
+  /* Малък надпис над заглавие (главни букви — част от идентичността). */
   .eyebrow {
-    @apply text-xs font-bold uppercase tracking-[0.14em] text-gold-700;
+    @apply text-sm font-bold uppercase tracking-[0.1em] text-gold-700;
     font-family: var(--font-sans);
   }
 
-  /* Заглавие на секция с декоративна златна чертичка отдолу. */
+  /* Заглавие на секция със златна чертичка отдолу. Чертата е absolute,
+     затова стои ПОД текста и когато заглавието е flex с икона. */
   .section-title {
-    @apply relative inline-block text-2xl font-bold text-slate-900;
+    @apply relative inline-block pb-3 text-2xl font-bold text-slate-900;
   }
   .section-title::after {
     content: "";
-    @apply mt-2 block h-1 w-12 rounded-full bg-gold-400;
+    @apply absolute bottom-0 left-0 h-1 w-12 rounded-full bg-gold-400;
+  }
+  /* Златната черта под H1 (PageHero). */
+  .rule-gold {
+    @apply h-1 w-14 rounded-full bg-gold-400;
+  }
+
+  /* Форми — една система (образец: BusinessForm). Рамката на полето е ≥3:1
+     спрямо фона (WCAG 1.4.11); при фокус — синя рамка + общият 3px контур. */
+  .input {
+    @apply min-h-[3.125rem] w-full rounded-xl border border-slate-500 bg-white px-4 py-3 text-base text-slate-900 placeholder:text-slate-500 focus:border-brand-700;
+  }
+  .form-panel {
+    @apply space-y-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8;
+  }
+  .fieldset {
+    @apply min-w-0 space-y-4 rounded-xl border border-slate-200 p-4 sm:p-5;
+  }
+  .legend {
+    @apply px-1 font-sans text-lg font-semibold text-slate-900;
+  }
+
+  /* Номер на стъпка (StepList): плътен кръг. */
+  .step-num {
+    @apply grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-700 font-sans text-base font-bold text-white;
+  }
+  .step-num-danger {
+    @apply bg-crimson-700;
   }
 }
 
-/* Типографско форматиране за съдържание от Markdown */
+/* Посочване на .card — само на устройства с мишка (на тъч hover „залепва“). */
+@media (hover: hover) {
+  .card:hover {
+    @apply border-brand-300 shadow-md;
+  }
+  .chip:not([aria-current="page"]):not([aria-pressed="true"]):hover {
+    @apply border-brand-300 bg-brand-50;
+  }
+  .group:hover :is(.icon-chip, .icon-chip-sm, .icon-chip-lg) {
+    @apply bg-brand-700 text-white;
+  }
+  .group:hover .icon-chip-danger {
+    @apply bg-crimson-700 text-white;
+  }
+}
+/* Фокус с клавиатура върху карта-връзка запълва квадратчето като посочване. */
+.group:focus-visible :is(.icon-chip, .icon-chip-sm, .icon-chip-lg) {
+  @apply bg-brand-700 text-white;
+}
+.group:focus-visible .icon-chip-danger {
+  @apply bg-crimson-700 text-white;
+}
+
+/* Падащ списък без системната стрелка — една и съща стрелка навсякъде. */
+select.input:not([multiple]):not([size]) {
+  appearance: none;
+  padding-right: 2.75rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  background-size: 1.25rem;
+}
+
+/* Таблица, която на телефон става списък от карти (под 640px): всеки ред е
+   блок, а заглавието на колоната идва от data-label на клетката.
+   <td data-label="Основание">…</td>. Над 640px — обикновена таблица. */
+@media (max-width: 639.98px) {
+  .table-stack thead {
+    @apply sr-only;
+  }
+  .table-stack,
+  .table-stack tbody,
+  .table-stack tr,
+  .table-stack td,
+  .table-stack tbody th {
+    display: block;
+    width: 100%;
+  }
+  .table-stack tr {
+    @apply border-b border-slate-200 py-3;
+  }
+  .table-stack td,
+  .table-stack tbody th {
+    @apply border-0 px-0 py-1 text-left;
+  }
+  .table-stack td[data-label]::before {
+    content: attr(data-label);
+    @apply block text-sm font-semibold text-slate-600;
+  }
+}
+
+/* Типографско форматиране за съдържание от Markdown и дълъг текст.
+   Колоната е ~70 знака (46rem); решетки с карти не се слагат вътре. */
+.prose-content {
+  max-width: 46rem;
+}
+.prose-content > :first-child {
+  margin-top: 0;
+}
 .prose-content :where(h2) {
   @apply mt-8 text-2xl font-bold text-slate-900;
 }
@@ -123,19 +405,25 @@ h4,
   @apply mt-3;
 }
 .prose-content :where(ul) {
-  @apply mt-3 list-disc space-y-1 pl-6;
+  @apply mt-3 list-disc space-y-2 pl-6;
 }
 .prose-content :where(ol) {
-  @apply mt-3 list-decimal space-y-1 pl-6;
+  @apply mt-3 list-decimal space-y-2 pl-6;
 }
-.prose-content :where(a) {
-  @apply font-medium text-brand-700 underline decoration-gold-400 decoration-2 underline-offset-2 hover:text-brand-800;
+/* Връзките в текста — като .link. Бутоните (.btn-*) в prose остават бутони. */
+.prose-content :where(a:not([class*="btn"])) {
+  @apply font-medium text-brand-700 underline decoration-gold-600 decoration-2 underline-offset-[3px] hover:text-brand-800 hover:decoration-brand-700;
 }
 .prose-content :where(blockquote) {
   @apply mt-4 border-l-4 border-gold-300 bg-gold-50 py-2 pl-4 italic text-slate-700;
 }
 .prose-content :where(strong) {
   @apply font-semibold;
+}
+/* Дълъг код (имена на бисквитки) се пренася, вместо да разпъва страницата. */
+.prose-content :where(code) {
+  @apply rounded-lg bg-slate-100 px-1.5 text-[0.9em];
+  overflow-wrap: anywhere;
 }
 .prose-content :where(table) {
   @apply mt-4 w-full border-collapse text-left text-sm;
@@ -145,6 +433,11 @@ h4,
 }
 .prose-content :where(td) {
   @apply border-b border-slate-100 px-3 py-2 align-top;
+}
+
+/* Ред, който се вижда само на хартия („отпечатано на …“). */
+.print-only {
+  display: none;
 }
 
 /* Начален екран (splash) */
@@ -180,6 +473,12 @@ h4,
   .animate-fade-in { animation: none; }
 }
 
+/* Плаващият бутон на чата (клас chat-fab): скрит, докато мобилното меню е
+   отворено (клас menu-open на <html>), за да не покрива връзките. */
+html.menu-open .chat-fab {
+  display: none;
+}
+
 /* Висок контраст (достъпност) — по-черен текст, по-силни граници и връзки.
    Включва се от лентата за достъпност (клас .hc на <html>). */
 html.hc body {
@@ -188,18 +487,49 @@ html.hc body {
 }
 html.hc .text-slate-500,
 html.hc .text-slate-600,
-html.hc .text-slate-700 {
+html.hc .text-slate-700,
+html.hc .text-meta,
+html.hc .label-caps,
+html.hc .chip:not([aria-current="page"]):not([aria-pressed="true"]) .chip-count {
   color: #1a1a1a !important;
 }
-html.hc a:not(.btn):not(.btn-primary):not(.btn-secondary):not(.btn-gold) {
+html.hc a:not(.btn):not(.btn-primary):not(.btn-secondary):not(.btn-gold):not(.btn-danger) {
   text-decoration: underline;
 }
 html.hc .card,
+html.hc .panel,
+html.hc .callout-info,
+html.hc .callout-note,
+html.hc .callout-success,
+html.hc .callout-warning,
+html.hc .callout-danger,
+html.hc .form-panel,
+html.hc .fieldset,
+html.hc .chip,
 html.hc .input,
 html.hc input,
 html.hc textarea,
-html.hc select {
+html.hc select,
+html.hc table th,
+html.hc table td,
+html.hc .table-stack tr {
   border-color: #000000 !important;
+}
+html.hc .badge,
+html.hc .badge-success,
+html.hc .badge-warning,
+html.hc .badge-danger,
+html.hc .badge-neutral,
+html.hc .icon-chip,
+html.hc .icon-chip-sm,
+html.hc .icon-chip-lg,
+html.hc .icon-chip-danger {
+  border: 1.5px solid #000000;
+}
+html.hc .chip[aria-current="page"],
+html.hc .chip[aria-pressed="true"] {
+  outline: 2px solid #000000;
+  outline-offset: 1px;
 }
 html.hc :focus-visible {
   outline-width: 4px;
@@ -230,6 +560,13 @@ html.dark .bg-brand-50 {
 }
 html.dark .bg-gold-50 {
   background-color: #2a2410;
+}
+/* Хартиените фонове: тялото и по-тъмната лента (между тялото и картите). */
+html.dark .bg-paper {
+  background-color: #0f172a;
+}
+html.dark .bg-paper-muted {
+  background-color: #131c30;
 }
 
 /* Текст */
@@ -270,19 +607,22 @@ html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
   border-color: #334155;
 }
 
-/* Полета за писане */
+/* Полета за писане — рамката остава ≥3:1 и на тъмно. */
 html.dark .input,
 html.dark input,
 html.dark textarea,
 html.dark select {
   background-color: #1e293b;
-  border-color: #475569;
+  border-color: #7b8aa0;
   color: #f1f5f9;
 }
 html.dark .input::placeholder,
 html.dark input::placeholder,
 html.dark textarea::placeholder {
-  color: #7e8ca0;
+  color: #94a3b8;
+}
+html.dark select.input:not([multiple]):not([size]) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
 html.dark .btn-secondary {
   background-color: #1e293b;
@@ -302,6 +642,104 @@ html.dark .text-crimson-700 { color: #fda4af; }
 html.dark .border-red-300,
 html.dark .border-crimson-200 { border-color: #7f1d2b; }
 
+/* Светли utility класове, които нямаха пренасочване (B14): пастелните
+   квадратчета, хапчетата за статус и цветните рамки светеха под светъл
+   текст (1,2–1,4:1). Фон 100/200 → тъмен тон на същия цвят; текст 600–800 →
+   светъл пастел (≥7:1 върху тези фонове); рамки 200/300 → приглушени. */
+html.dark .bg-brand-100 { background-color: #26335a; }
+html.dark .bg-brand-50\/60 { background-color: #1c2742; }
+html.dark .bg-green-100 { background-color: #14301f; }
+html.dark .bg-amber-100,
+html.dark .bg-amber-200 { background-color: #3a2e15; }
+html.dark .bg-sky-100 { background-color: #0c2d3f; }
+html.dark .bg-blue-100 { background-color: #172554; }
+html.dark .bg-purple-100 { background-color: #2e1a47; }
+html.dark .bg-teal-100 { background-color: #0f302d; }
+html.dark .bg-rose-100 { background-color: #3b1424; }
+html.dark .bg-orange-100 { background-color: #3a2010; }
+html.dark .text-green-800 { color: #86efac; }
+html.dark .text-amber-800,
+html.dark .text-amber-700 { color: #fcd34d; }
+html.dark .text-crimson-600 { color: #fda4af; }
+html.dark .text-gold-700 { color: #fbc94a; }
+html.dark .text-sky-700 { color: #7dd3fc; }
+html.dark .text-blue-700 { color: #93c5fd; }
+html.dark .text-purple-700 { color: #d8b4fe; }
+html.dark .text-teal-700 { color: #5eead4; }
+html.dark .text-rose-700 { color: #fda4af; }
+html.dark .text-orange-700 { color: #fdba74; }
+html.dark .border-gold-200,
+html.dark .border-gold-300 { border-color: #5c4a12; }
+html.dark .border-amber-200,
+html.dark .border-amber-300 { border-color: #6b4f12; }
+html.dark .border-green-200,
+html.dark .border-green-300 { border-color: #1f5c38; }
+html.dark .border-crimson-300 { border-color: #7f1d2b; }
+html.dark .ring-slate-200,
+html.dark .ring-slate-300,
+html.dark .ring-brand-200 { --tw-ring-color: #334155; }
+html.dark .decoration-slate-300 { text-decoration-color: #475569; }
+html.dark .hover\:bg-slate-50:hover,
+html.dark .hover\:bg-slate-100:hover { background-color: #243044; }
+html.dark .hover\:bg-red-50:hover { background-color: #3a1a1f; }
+
+/* Новите компонентни класове: състояния, които @apply не покрива. */
+html.dark .eyebrow:not([class*="text-gold-"]):not([class*="text-white"]) {
+  color: #fbc94a;
+}
+html.dark .link,
+html.dark .prose-content :where(a:not([class*="btn"])) {
+  text-decoration-color: #f3b01f;
+}
+html.dark .chip[aria-current="page"],
+html.dark .chip[aria-pressed="true"] {
+  background-color: #2a3da6;
+  border-color: #93c5fd;
+  color: #ffffff;
+}
+html.dark .chip-neutral[aria-current="page"],
+html.dark .chip-neutral[aria-pressed="true"] {
+  background-color: #475569;
+  border-color: #cbd5e1;
+  color: #ffffff;
+}
+html.dark .chip-on-dark {
+  color: #ffffff;
+}
+html.dark .chip-on-dark[aria-current="page"] {
+  background-color: #ffffff;
+  color: #1a2575;
+}
+html.dark .step-num:not(.step-num-danger) {
+  background-color: #2a3da6;
+  color: #ffffff;
+}
+@media (hover: hover) {
+  html.dark .card:hover {
+    border-color: #5e76d2;
+  }
+  html.dark .chip:not([aria-current="page"]):not([aria-pressed="true"]):hover {
+    background-color: #1c2742;
+    border-color: #5e76d2;
+  }
+  html.dark .group:hover :is(.icon-chip, .icon-chip-sm, .icon-chip-lg) {
+    background-color: #2a3da6;
+    color: #ffffff;
+  }
+  html.dark .group:hover .icon-chip-danger {
+    background-color: #921616;
+    color: #ffffff;
+  }
+}
+html.dark .group:focus-visible :is(.icon-chip, .icon-chip-sm, .icon-chip-lg) {
+  background-color: #2a3da6;
+  color: #ffffff;
+}
+/* Чатът в тъмен режим — видим контур около синия бутон. */
+html.dark .chat-fab {
+  box-shadow: 0 0 0 2px #93c5fd;
+}
+
 /* Markdown съдържание */
 html.dark .prose-content :where(h2),
 html.dark .prose-content :where(h3),
@@ -309,7 +747,7 @@ html.dark .prose-content :where(h4),
 html.dark .prose-content :where(strong) {
   color: #f1f5f9;
 }
-html.dark .prose-content :where(a) {
+html.dark .prose-content :where(a:not([class*="btn"])) {
   color: #93c5fd;
 }
 html.dark .prose-content :where(th) {
@@ -321,31 +759,48 @@ html.dark .prose-content :where(td) {
 
 /* Хедърът остава като в светъл режим и при тъмен режим (по изрично желание).
    Фонът му е светъл (bg-white/95), затова връщаме тъмния текст и светлите
-   поле/бутон/граници, за да е четим. По-високата специфичност (с „header")
-   надделява над общите тъмни правила по-горе. */
-html.dark header {
+   поле/бутон/граници, за да е четим. Селекторът е .site-header (коренът на
+   SiteHeader), а не всеки <header> — иначе <header> в съдържанието (листът
+   „Седмицата“) ставаше бяла лента. */
+html.dark .site-header {
   background-color: rgba(255, 255, 255, 0.95);
   border-color: #e2e8f0;
   color: #0f172a;
 }
-html.dark header .text-slate-900 { color: #0f172a; }
-html.dark header .text-slate-800 { color: #1e293b; }
-html.dark header .text-slate-700 { color: #334155; }
-html.dark header .text-slate-500 { color: #64748b; }
-html.dark header .text-slate-600 { color: #475569; }
-html.dark header .text-slate-400 { color: #94a3b8; }
-html.dark header .text-brand-700,
-html.dark header .text-brand-800,
-html.dark header .text-brand-600 { color: #212f8a; }
-html.dark header .border-slate-200,
-html.dark header .border-slate-300 { border-color: #cbd5e1; }
-html.dark header .input {
+html.dark .site-header .text-slate-900 { color: #0f172a; }
+html.dark .site-header .text-slate-800 { color: #1e293b; }
+html.dark .site-header .text-slate-700 { color: #334155; }
+html.dark .site-header .text-slate-500 { color: #64748b; }
+html.dark .site-header .text-slate-600 { color: #475569; }
+html.dark .site-header .text-slate-400 { color: #94a3b8; }
+html.dark .site-header .text-brand-700,
+html.dark .site-header .text-brand-800,
+html.dark .site-header .text-brand-600 { color: #212f8a; }
+html.dark .site-header .border-slate-200,
+html.dark .site-header .border-slate-300 { border-color: #cbd5e1; }
+html.dark .site-header .border-brand-200 { border-color: #b6c4ec; }
+html.dark .site-header .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+html.dark .site-header .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #e2e8f0;
+}
+/* Светлите фонове в хедъра (мобилното меню, панелът „Всички раздели“,
+   иконните квадратчета, чиповете) остават светли — и при посочване. */
+html.dark .site-header .bg-white { background-color: #ffffff; }
+html.dark .site-header .bg-slate-50,
+html.dark .site-header .bg-slate-100 { background-color: #f1f5f9; }
+html.dark .site-header .bg-brand-50 { background-color: #eef1fb; }
+html.dark .site-header .bg-gold-50 { background-color: #fff8e6; }
+html.dark .site-header .hover\:bg-slate-50:hover,
+html.dark .site-header .hover\:bg-slate-100:hover { background-color: #f1f5f9; }
+html.dark .site-header .hover\:bg-brand-50:hover { background-color: #eef1fb; }
+html.dark .site-header .hover\:bg-brand-100:hover { background-color: #d9e0f6; }
+html.dark .site-header .input {
   background-color: #ffffff;
-  border-color: #cbd5e1;
+  border-color: #64748b;
   color: #0f172a;
 }
-html.dark header .input::placeholder { color: #94a3b8; }
-html.dark header .btn-secondary {
+html.dark .site-header .input::placeholder { color: #64748b; }
+html.dark .site-header .btn-secondary {
   background-color: #ffffff;
   border-color: #cbd5e1;
   color: #1e293b;
@@ -415,7 +870,8 @@ html.a11y-min .a11y-chevron {
 html.bt .btn,
 html.bt .btn-primary,
 html.bt .btn-secondary,
-html.bt .btn-gold {
+html.bt .btn-gold,
+html.bt .btn-danger {
   padding: 0.85rem 1.6rem;
   font-size: 1.125rem;
 }
@@ -423,11 +879,21 @@ html.bt .a11y-btn {
   padding: 0.55rem 0.95rem;
   font-size: 1rem;
 }
-html.bt nav a,
-html.bt footer a {
+/* Само едноредовите връзки стават inline-flex (основното меню, футърът,
+   трохите). Връзка с надпис + описание (мобилното меню, картите) остава
+   блок — само получава по-висока цел. */
+html.bt .site-header nav[aria-label="Основно меню"] a,
+html.bt .site-footer a,
+html.bt nav[aria-label="Навигация по трохи"] a {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
+}
+html.bt nav a,
+html.bt .chip,
+html.bt .chip-on-dark,
+html.bt .link-more {
+  min-height: 48px;
 }
 html.bt a[href^="tel:"],
 html.bt a[href^="mailto:"] {
@@ -479,12 +945,23 @@ html.bt li {
   }
 }
 
-/* Стилове за печат — крие хедър/футър/изскачащи елементи. */
+/* Лист A4 с 10 мм поле — печатните листове се побират на един лист. */
+@page {
+  size: A4;
+  margin: 10mm;
+}
+
+/* Стилове за печат — крие хедъра/футъра на САЙТА (не всеки <header>/<footer>
+   в съдържанието — заглавието и QR кодът на „Седмицата“ трябва да излязат)
+   и изскачащите елементи. */
 @media print {
-  header,
-  footer,
+  .site-header,
+  .site-footer,
   .no-print {
     display: none !important;
+  }
+  .print-only {
+    display: block !important;
   }
   body {
     background: #fff !important;
@@ -493,6 +970,25 @@ html.bt li {
   .print-sheet {
     box-shadow: none !important;
     border: none !important;
+  }
+  /* Браузърът не печата фонове — бял текст върху синьо/червено бутон би
+     изчезнал. На хартия бутонът е обикновена рамка с черен текст. */
+  .btn-primary,
+  .btn-danger,
+  .btn-gold {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
+    box-shadow: none !important;
+  }
+  .step-num {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid #000000;
+  }
+  .card,
+  .panel {
+    box-shadow: none !important;
   }
 
   /* Тъмният режим НЕ важи на хартия: правилата html.dark по-горе правят
@@ -510,17 +1006,30 @@ html.bt li {
   html.dark .page-hero {
     background: #ffffff !important;
   }
+  html.dark .bg-paper { background-color: #faf8f3 !important; }
+  html.dark .bg-paper-muted { background-color: #f3efe6 !important; }
   html.dark .bg-slate-50 { background-color: #f8fafc !important; }
   html.dark .bg-slate-100 { background-color: #f1f5f9 !important; }
   html.dark .bg-slate-200 { background-color: #e2e8f0 !important; }
   html.dark .bg-white\/85 { background-color: rgba(255, 255, 255, 0.85) !important; }
   html.dark .bg-brand-50,
-  html.dark .bg-brand-50\/50 { background-color: #eef1fb !important; }
+  html.dark .bg-brand-50\/50,
+  html.dark .bg-brand-50\/60 { background-color: #eef1fb !important; }
+  html.dark .bg-brand-100 { background-color: #d9e0f6 !important; }
   html.dark .bg-gold-50 { background-color: #fff8e6 !important; }
   html.dark .bg-red-50 { background-color: #fef2f2 !important; }
   html.dark .bg-red-100 { background-color: #fee2e2 !important; }
   html.dark .bg-green-50 { background-color: #f0fdf4 !important; }
+  html.dark .bg-green-100 { background-color: #dcfce7 !important; }
   html.dark .bg-amber-50 { background-color: #fffbeb !important; }
+  html.dark .bg-amber-100 { background-color: #fef3c7 !important; }
+  html.dark .bg-amber-200 { background-color: #fde68a !important; }
+  html.dark .bg-sky-100 { background-color: #e0f2fe !important; }
+  html.dark .bg-blue-100 { background-color: #dbeafe !important; }
+  html.dark .bg-purple-100 { background-color: #f3e8ff !important; }
+  html.dark .bg-teal-100 { background-color: #ccfbf1 !important; }
+  html.dark .bg-rose-100 { background-color: #ffe4e6 !important; }
+  html.dark .bg-orange-100 { background-color: #ffedd5 !important; }
   html.dark .bg-crimson-50 { background-color: #fdeced !important; }
   html.dark .text-slate-900 { color: #0f172a !important; }
   html.dark .text-slate-800 { color: #1e293b !important; }
@@ -536,8 +1045,20 @@ html.bt li {
   html.dark .text-red-700 { color: #b91c1c !important; }
   html.dark .text-red-800 { color: #991b1b !important; }
   html.dark .text-green-700 { color: #15803d !important; }
+  html.dark .text-green-800 { color: #166534 !important; }
+  html.dark .text-amber-700 { color: #b45309 !important; }
+  html.dark .text-amber-800 { color: #92400e !important; }
   html.dark .text-amber-900 { color: #78350f !important; }
+  html.dark .text-crimson-600 { color: #b51818 !important; }
+  html.dark .text-gold-700 { color: #965d00 !important; }
   html.dark .text-crimson-700 { color: #921616 !important; }
+  html.dark .text-sky-700 { color: #0369a1 !important; }
+  html.dark .text-blue-700 { color: #1d4ed8 !important; }
+  html.dark .text-purple-700 { color: #7e22ce !important; }
+  html.dark .text-teal-700 { color: #0f766e !important; }
+  html.dark .text-rose-700 { color: #be123c !important; }
+  html.dark .text-orange-700 { color: #c2410c !important; }
+  html.dark .eyebrow { color: #965d00 !important; }
   html.dark .border-slate-100 { border-color: #f1f5f9 !important; }
   html.dark .border-slate-200,
   html.dark .border-slate-200\/70,
@@ -546,14 +1067,28 @@ html.bt li {
   html.dark .border-brand-200 { border-color: #b6c4ec !important; }
   html.dark .border-red-300 { border-color: #fca5a5 !important; }
   html.dark .border-crimson-200 { border-color: #f5abad !important; }
+  html.dark .border-crimson-300 { border-color: #ee7e81 !important; }
+  html.dark .border-gold-200 { border-color: #ffdd85 !important; }
+  html.dark .border-gold-300 { border-color: #fbc94a !important; }
+  html.dark .border-amber-200 { border-color: #fde68a !important; }
+  html.dark .border-amber-300 { border-color: #fcd34d !important; }
+  html.dark .border-green-200 { border-color: #bbf7d0 !important; }
+  html.dark .border-green-300 { border-color: #86efac !important; }
   html.dark .prose-content :where(h2),
   html.dark .prose-content :where(h3),
   html.dark .prose-content :where(h4),
   html.dark .prose-content :where(strong) {
     color: #0f172a !important;
   }
-  html.dark .prose-content :where(a) {
+  html.dark .prose-content :where(a:not([class*="btn"])),
+  html.dark .link {
     color: #212f8a !important;
+  }
+  html.dark .chip[aria-current="page"],
+  html.dark .chip[aria-pressed="true"] {
+    background-color: #ffffff !important;
+    border-color: #000000 !important;
+    color: #000000 !important;
   }
   html.dark .input,
   html.dark input,
