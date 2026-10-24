@@ -1,9 +1,14 @@
 "use client";
 
-// Резервна страница при грешка в основния layout (рядко).
+// Резервна страница при грешка в основния layout (рядко). Без Tailwind и без
+// шрифтовете на сайта — само вградени стилове, които винаги работят.
 export default function GlobalError({ reset }: { reset: () => void }) {
   return (
     <html lang="bg">
+      <head>
+        <title>Възникна временен проблем · За Бобов дол</title>
+        <meta name="robots" content="noindex" />
+      </head>
       <body
         style={{
           fontFamily: "system-ui, Arial, sans-serif",
@@ -12,35 +17,40 @@ export default function GlobalError({ reset }: { reset: () => void }) {
           alignItems: "center",
           justifyContent: "center",
           background: "#faf8f3",
-          color: "#1e293b",
+          color: "#0f172a",
           textAlign: "center",
           padding: "2rem",
+          margin: 0,
+          fontSize: "1.125rem",
+          lineHeight: 1.6,
         }}
       >
-        <div>
-          <h1 style={{ fontSize: "1.5rem", fontWeight: 700 }}>
+        <main>
+          <h1 style={{ fontFamily: "Georgia, serif", fontSize: "1.75rem", fontWeight: 700, margin: 0 }}>
             Възникна временен проблем
           </h1>
-          <p style={{ marginTop: "0.5rem", color: "#475569" }}>
-            Моля, опитайте отново след малко.
+          <p style={{ marginTop: "0.75rem", color: "#334155" }}>
+            Моля, опитайте отново след малко. При спешност — 112.
           </p>
           <button
             type="button"
             onClick={() => reset()}
             style={{
               marginTop: "1.25rem",
+              minHeight: "48px",
               background: "#212f8a",
               color: "#fff",
               border: 0,
-              borderRadius: "0.5rem",
-              padding: "0.625rem 1.25rem",
+              borderRadius: "0.75rem",
+              padding: "0.75rem 1.5rem",
+              fontSize: "1rem",
               fontWeight: 600,
               cursor: "pointer",
             }}
           >
-            Опитай отново
+            Опитайте отново
           </button>
-        </div>
+        </main>
       </body>
     </html>
   );
