@@ -253,6 +253,12 @@ h4,
     @apply inline-flex min-h-tap items-center gap-1 text-base font-semibold text-brand-700 underline-offset-4 hover:text-brand-800 hover:underline;
   }
 
+  /* Връзка върху тъмносиньо (футърът): бяла, винаги подчертана — на тъмен
+     фон само цветът не различава връзката от текста. */
+  .link-on-dark {
+    @apply text-white underline decoration-white/40 decoration-1 underline-offset-4 hover:decoration-white hover:decoration-2;
+  }
+
   /* Типография. Всяко изречение е ≥ text-base; text-sm — само мета (дата,
      източник); text-xs — само значки и правния ред. */
   .label {
@@ -262,6 +268,12 @@ h4,
      „Съдържание“) — Inter, не Bitter. */
   .label-caps {
     @apply font-sans text-sm font-semibold uppercase tracking-[0.06em] text-slate-600;
+  }
+  /* Заглавие на група във футъра (тъмносин фон) — като .label-caps, но
+     светло. Без slate цвят: високият контраст потъмнява slate текста, а тук
+     фонът остава тъмен. */
+  .footer-heading {
+    @apply font-sans text-sm font-semibold uppercase tracking-[0.08em] text-brand-200;
   }
   /* Мета ред: дата, източник, „Проверено на …“. */
   .text-meta {
@@ -488,6 +500,18 @@ select.input:not([multiple]):not([size]) {
 html.menu-open .chat-fab {
   display: none;
 }
+/* Отвореният чат на телефон е долен лист — страницата отдолу не се превърта. */
+@media (max-width: 639.98px) {
+  html.chat-open {
+    overflow: hidden;
+  }
+}
+
+/* Фокусът върху тъмносиньо е златист (по-горе); в светлата карта във
+   футъра (TrustCard) — пак синият, иначе златото върху бяло не се вижда. */
+.site-footer .bg-white :focus-visible {
+  outline-color: theme("colors.brand.500");
+}
 
 /* Висок контраст (достъпност) — по-черен текст, по-силни граници и връзки.
    Включва се от лентата за достъпност (клас .hc на <html>). */
@@ -543,6 +567,29 @@ html.hc .chip[aria-pressed="true"] {
 }
 html.hc :focus-visible {
   outline-width: 4px;
+}
+/* Шапката: плътна черна лента и граница; в менютата се подчертава само името
+   на раздела (не и описанието под него — второ подчертаване пречи). */
+html.hc .header-tricolor {
+  background: #000000;
+}
+html.hc .site-header,
+html.hc .a11y-bar {
+  border-bottom: 2px solid #000000;
+}
+/* !important — общото правило за връзките в html.hc (5× :not) е по-специфично. */
+html.hc .site-header a[href="/"],
+html.hc #mobile-nav a,
+html.hc #all-sections a {
+  text-decoration: none !important;
+}
+html.hc #mobile-nav .nav-label,
+html.hc #all-sections .nav-label {
+  text-decoration: underline;
+}
+html.hc .a11y-bar button[aria-pressed="false"],
+html.hc .a11y-bar button[aria-expanded] {
+  border-color: #000000;
 }
 
 /* ───────────────────────── Тъмен режим ─────────────────────────
@@ -789,7 +836,8 @@ html.dark .prose-content :where(td) {
   border-color: #243044;
 }
 
-/* Хедърът остава като в светъл режим и при тъмен режим (по изрично желание).
+/* Хедърът (и лентата за четене над него) остава като в светъл режим и при
+   тъмен режим (по изрично желание).
    Фонът му е светъл (bg-white/95), затова връщаме тъмния текст и светлите
    поле/бутон/граници, за да е четим. Селекторът е .site-header (коренът на
    SiteHeader), а не всеки <header> — иначе <header> в съдържанието (листът
@@ -799,57 +847,88 @@ html.dark .site-header {
   border-color: #e2e8f0;
   color: #0f172a;
 }
-html.dark .site-header .text-slate-900 { color: #0f172a; }
-html.dark .site-header .text-slate-800 { color: #1e293b; }
-html.dark .site-header .text-slate-700 { color: #334155; }
-html.dark .site-header .text-slate-500 { color: #64748b; }
-html.dark .site-header .text-slate-600 { color: #475569; }
-html.dark .site-header .text-slate-400 { color: #94a3b8; }
-html.dark .site-header .text-brand-700,
-html.dark .site-header .text-brand-800,
-html.dark .site-header .text-brand-600 { color: #212f8a; }
+/* Лентата за четене над хедъра — също светла: една светла шапка, а не
+   тъмно / светло / тъмно. (.bg-paper-muted иначе става тъмна.) */
+html.dark .a11y-bar,
+html.dark .a11y-bar.bg-paper-muted {
+  background-color: #f3efe6;
+  border-color: #e2e8f0;
+  color: #0f172a;
+}
+html.dark :is(.site-header, .a11y-bar) .text-slate-900 { color: #0f172a; }
+html.dark :is(.site-header, .a11y-bar) .text-slate-800 { color: #1e293b; }
+html.dark :is(.site-header, .a11y-bar) .text-slate-700 { color: #334155; }
+html.dark :is(.site-header, .a11y-bar) .text-slate-500 { color: #64748b; }
+html.dark :is(.site-header, .a11y-bar) .text-slate-600 { color: #475569; }
+html.dark :is(.site-header, .a11y-bar) .text-slate-400 { color: #94a3b8; }
+html.dark :is(.site-header, .a11y-bar) .text-brand-700,
+html.dark :is(.site-header, .a11y-bar) .text-brand-800,
+html.dark :is(.site-header, .a11y-bar) .text-brand-600 { color: #212f8a; }
 /* Цветните текстове, които тъмният режим пренасочва към светли пастели —
    в белия хедър остават светлите им стойности (иначе напр. микрофонът
    „Слушам…“ ставаше розов върху бяло, ~1,9:1). */
-html.dark .site-header .text-crimson-600 { color: #b51818; }
-html.dark .site-header .text-crimson-700 { color: #921616; }
-html.dark .site-header .text-red-600 { color: #dc2626; }
-html.dark .site-header .text-red-700 { color: #b91c1c; }
-html.dark .site-header .text-green-700 { color: #15803d; }
-html.dark .site-header .text-green-800 { color: #166534; }
-html.dark .site-header .text-amber-700 { color: #b45309; }
-html.dark .site-header .text-amber-800 { color: #92400e; }
-html.dark .site-header .text-amber-900 { color: #78350f; }
-html.dark .site-header .text-gold-700,
-html.dark .site-header .eyebrow { color: #965d00; }
-html.dark .site-header .border-slate-200,
-html.dark .site-header .border-slate-300 { border-color: #cbd5e1; }
-html.dark .site-header .border-brand-200 { border-color: #b6c4ec; }
-html.dark .site-header .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
-html.dark .site-header .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+html.dark :is(.site-header, .a11y-bar) .text-crimson-600 { color: #b51818; }
+html.dark :is(.site-header, .a11y-bar) .text-crimson-700 { color: #921616; }
+html.dark :is(.site-header, .a11y-bar) .text-red-600 { color: #dc2626; }
+html.dark :is(.site-header, .a11y-bar) .text-red-700 { color: #b91c1c; }
+html.dark :is(.site-header, .a11y-bar) .text-green-700 { color: #15803d; }
+html.dark :is(.site-header, .a11y-bar) .text-green-800 { color: #166534; }
+html.dark :is(.site-header, .a11y-bar) .text-amber-700 { color: #b45309; }
+html.dark :is(.site-header, .a11y-bar) .text-amber-800 { color: #92400e; }
+html.dark :is(.site-header, .a11y-bar) .text-amber-900 { color: #78350f; }
+html.dark :is(.site-header, .a11y-bar) .text-gold-700,
+html.dark :is(.site-header, .a11y-bar) .eyebrow { color: #965d00; }
+html.dark :is(.site-header, .a11y-bar) .border-slate-200,
+html.dark :is(.site-header, .a11y-bar) .border-slate-300 { border-color: #cbd5e1; }
+html.dark :is(.site-header, .a11y-bar) .border-brand-200 { border-color: #b6c4ec; }
+html.dark :is(.site-header, .a11y-bar) .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+html.dark :is(.site-header, .a11y-bar) .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
   border-color: #e2e8f0;
 }
-/* Светлите фонове в хедъра (мобилното меню, панелът „Всички раздели“,
-   иконните квадратчета, чиповете) остават светли — и при посочване. */
-html.dark .site-header .bg-white { background-color: #ffffff; }
-html.dark .site-header .bg-slate-50,
-html.dark .site-header .bg-slate-100 { background-color: #f1f5f9; }
-html.dark .site-header .bg-brand-50 { background-color: #eef1fb; }
-html.dark .site-header .bg-gold-50 { background-color: #fff8e6; }
-html.dark .site-header .hover\:bg-slate-50:hover,
-html.dark .site-header .hover\:bg-slate-100:hover { background-color: #f1f5f9; }
-html.dark .site-header .hover\:bg-brand-50:hover { background-color: #eef1fb; }
-html.dark .site-header .hover\:bg-brand-100:hover { background-color: #d9e0f6; }
-html.dark .site-header .input {
+/* Светлите фонове в хедъра и лентата (мобилното меню, панелът „Всички
+   раздели“, иконните квадратчета, бутоните) остават светли — и при посочване. */
+html.dark :is(.site-header, .a11y-bar) .bg-white { background-color: #ffffff; }
+html.dark :is(.site-header, .a11y-bar) .bg-slate-50,
+html.dark :is(.site-header, .a11y-bar) .bg-slate-100 { background-color: #f1f5f9; }
+html.dark :is(.site-header, .a11y-bar) .bg-brand-50 { background-color: #eef1fb; }
+html.dark :is(.site-header, .a11y-bar) .bg-gold-50 { background-color: #fff8e6; }
+html.dark :is(.site-header, .a11y-bar) .hover\:bg-slate-50:hover,
+html.dark :is(.site-header, .a11y-bar) .hover\:bg-slate-100:hover { background-color: #f1f5f9; }
+html.dark :is(.site-header, .a11y-bar) .hover\:bg-brand-50:hover { background-color: #eef1fb; }
+html.dark :is(.site-header, .a11y-bar) .hover\:bg-brand-100:hover { background-color: #d9e0f6; }
+html.dark :is(.site-header, .a11y-bar) .input {
   background-color: #ffffff;
   border-color: #64748b;
   color: #0f172a;
 }
-html.dark .site-header .input::placeholder { color: #64748b; }
-html.dark .site-header .btn-secondary {
+html.dark :is(.site-header, .a11y-bar) .input::placeholder { color: #64748b; }
+html.dark :is(.site-header, .a11y-bar) .btn-secondary {
   background-color: #ffffff;
   border-color: #cbd5e1;
   color: #1e293b;
+}
+
+/* Текущият раздел в менютата: квадратчето е запълнено (редът е brand-50 —
+   светлото квадратче иначе се слива с него). */
+.site-header a[aria-current="page"] :is(.icon-chip, .icon-chip-sm, .icon-chip-lg) {
+  background-color: #212f8a;
+  color: #ffffff;
+}
+/* Компонентните класове в шапката: @apply им копира тъмните стойности
+   (светъл текст, тъмно квадратче) — в светлата шапка се връщат светлите.
+   Посочване/фокус на карта-връзка (.group) остава запълнено в синьо. */
+html.dark :is(.site-header, .a11y-bar) .label-caps { color: #475569; }
+html.dark .site-header :is(.icon-chip, .icon-chip-sm, .icon-chip-lg) {
+  background-color: #eef1fb;
+  color: #212f8a;
+}
+html.dark .site-header .icon-chip-danger {
+  background-color: #fdeced;
+  color: #921616;
+}
+html.dark .site-header a[aria-current="page"] :is(.icon-chip, .icon-chip-sm, .icon-chip-lg) {
+  background-color: #212f8a;
+  color: #ffffff;
 }
 
 /* „Геройската" лента на вътрешните страници (заглавие + трохи + интро) има
@@ -890,13 +969,6 @@ html.dark .bg-white\/85 {
    <html> се слага ПРЕДИ първото рисуване от вградения скрипт в layout.tsx
    (на телефон — по подразбиране), затова лентата никога не се рисува
    разгърната, за да се свие след хидратацията. */
-.a11y-when-min {
-  display: none;
-}
-html.a11y-min .a11y-when-min {
-  display: inline;
-}
-html.a11y-min .a11y-when-open,
 html.a11y-min .a11y-controls {
   display: none;
 }
@@ -924,6 +996,14 @@ html.bt .btn-danger {
 html.bt .a11y-btn {
   padding: 0.55rem 0.95rem;
   font-size: 1rem;
+}
+/* Бутонът „Търси“ на тесен екран: с широките отстъпи полето ставаше ~130px и
+   подсказката се режеше („Каквс“). */
+@media (max-width: 479.98px) {
+  html.bt .search-submit {
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+  }
 }
 /* Само едноредовите връзки стават inline-flex (основното меню, футърът,
    трохите). Връзка с надпис + описание (мобилното меню, картите) остава

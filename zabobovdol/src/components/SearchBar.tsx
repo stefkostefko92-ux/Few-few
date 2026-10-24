@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 // Минимална типизация на Web Speech API (не е в стандартните DOM типове).
 type RecognitionEvent = { results: ArrayLike<ArrayLike<{ transcript: string }>> };
@@ -17,9 +17,19 @@ type Recognition = {
 };
 type RecognitionCtor = new () => Recognition;
 
-export function SearchBar({ compact = false }: { compact?: boolean }) {
+export function SearchBar({
+  compact = false,
+  initialQuery = "",
+}: {
+  compact?: boolean;
+  /** Търсеното досега — на /tarsene полето показва думата от адреса. */
+  initialQuery?: string;
+}) {
   const router = useRouter();
-  const [q, setQ] = useState("");
+  // На страницата може да има няколко търсачки (хедър, герой, менюто) —
+  // всяка със свой id, за да сочи <label> към своето поле.
+  const id = useId();
+  const [q, setQ] = useState(initialQuery);
   const [listening, setListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
   const recRef = useRef<Recognition | null>(null);
@@ -72,12 +82,12 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
       }}
       className="flex w-full items-center gap-2"
     >
-      <label htmlFor="site-search" className="sr-only">
+      <label htmlFor={id} className="sr-only">
         Търсене в сайта
       </label>
       <div className="relative min-w-0 flex-1">
         <input
-          id="site-search"
+          id={id}
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -86,7 +96,7 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
           placeholder="Какво търсите?"
           // Отдясно стои бутонът за глас — оставяме му място, за да не минава
           // текстът под него на тесен екран.
-          className={"input w-full" + (voiceSupported ? " pr-11" : "")}
+          className={"input w-full" + (voiceSupported ? " pr-12" : "")}
           autoComplete="off"
           enterKeyHint="search"
         />
@@ -94,7 +104,7 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
           <button
             type="button"
             onClick={startVoice}
-            className={`absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md p-1.5 ${
+            className={`absolute right-0.5 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-lg ${
               listening ? "animate-pulse text-crimson-600" : "text-slate-600 hover:text-brand-700"
             }`}
             aria-label={listening ? "Слушам…" : "Търсене с глас"}
@@ -112,9 +122,11 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
           </button>
         )}
       </div>
+      {/* Под 380px надписът „Търси“ остава само за екранния четец — иначе
+          полето се свива и подсказката се реже („Каквс“). */}
       <button
         type="submit"
-        className={compact ? "btn-secondary px-3" : "btn-primary"}
+        className={compact ? "search-submit btn-secondary px-3" : "search-submit btn-primary max-[379px]:px-3"}
         aria-label="Търси"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -126,7 +138,7 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
             strokeLinecap="round"
           />
         </svg>
-        {!compact && <span>Търси</span>}
+        {!compact && <span className="max-[379px]:sr-only">Търси</span>}
       </button>
     </form>
   );
