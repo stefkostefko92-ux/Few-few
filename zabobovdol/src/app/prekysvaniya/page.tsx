@@ -4,13 +4,14 @@ import {
   Zap,
   Droplets,
   CalendarClock,
-  CheckCircle2,
   AlertTriangle,
-  Info,
   ExternalLink,
 } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
-import { PageHero, Prose, EmptyState } from "@/components/ui";
+import { PageHero, Prose, Notice, SectionHeader } from "@/components/ui";
+import { TelLink } from "@/components/TelLink";
+import { formatDateTime } from "@/lib/format-date";
+import { SECTION } from "@/lib/section-names";
 import { buildMetadata } from "@/lib/seo";
 import { renderMarkdown } from "@/lib/markdown";
 import { PrintButton } from "@/components/PrintButton";
@@ -66,22 +67,12 @@ export const metadata: Metadata = {
   },
 };
 
-const UTILS: Record<
-  string,
-  { icon: typeof Zap; label: string; box: string; chip: string }
-> = {
-  ELECTRICITY: {
-    icon: Zap,
-    label: "Ток",
-    box: "border-amber-300 bg-amber-50",
-    chip: "bg-amber-500 text-white",
-  },
-  WATER: {
-    icon: Droplets,
-    label: "Вода",
-    box: "border-brand-200 bg-brand-50",
-    chip: "bg-brand-700 text-white",
-  },
+// Пълни имена на класовете (не сглобени) — иначе Tailwind не ги вижда.
+// „Ток“ беше бял текст върху amber-500 (2,15:1 — B36); сега значка по
+// системата: кехлибар за тока, синьо за водата.
+const UTILS: Record<string, { icon: typeof Zap; label: string; badge: string }> = {
+  ELECTRICITY: { icon: Zap, label: "Ток", badge: "badge-warning" },
+  WATER: { icon: Droplets, label: "Вода", badge: "badge" },
 };
 
 type Row = {
@@ -112,32 +103,23 @@ function OutageCard({ o }: { o: Row }) {
   const when = outageWhen(o);
   const href = o.sourceUrl ? safeHttpUrl(o.sourceUrl) : null;
   return (
-    <article id={o.slug} className={"scroll-mt-24 rounded-xl border p-5 " + u.box}>
-      <div className="flex items-start gap-3">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-slate-700">
-          <Icon className="h-6 w-6" aria-hidden />
+    <article id={o.slug} className="panel">
+      <div className="flex items-start gap-4">
+        <span className={o.planned ? "icon-chip" : "icon-chip icon-chip-danger"}>
+          <Icon aria-hidden />
         </span>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className={"inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold " + u.chip}>
-              {u.label}
-            </span>
-            <span
-              className={
-                "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold " +
-                (o.planned ? "bg-green-50 text-green-700" : "bg-red-100 text-red-800")
-              }
-            >
+            <span className={u.badge}>{u.label}</span>
+            <span className={o.planned ? "badge-neutral" : "badge-danger"}>
               {o.planned ? "Планово" : "Авария"}
             </span>
           </div>
-          <h3 className="mt-1.5 text-lg font-bold text-slate-900">
-            {o.area || "Засегнат район — вижте подробностите"}
-          </h3>
+          <h3 className="h-card mt-2">{o.area || "Засегнат район — вижте подробностите"}</h3>
           {when && (
-            <p className="mt-1 flex items-center gap-1.5 text-slate-700">
-              <CalendarClock className="h-4 w-4 shrink-0" aria-hidden />
-              {when}
+            <p className="mt-1 flex items-start gap-2 text-base font-medium text-slate-800">
+              <CalendarClock className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" aria-hidden />
+              <span>{when}</span>
             </p>
           )}
           {o.note && (
@@ -146,18 +128,13 @@ function OutageCard({ o }: { o: Row }) {
             </div>
           )}
           {o.source && (
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="text-meta mt-2">
               Източник:{" "}
               {href ? (
-                <a
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-[44px] items-center gap-1 font-medium text-brand-700 hover:underline"
-                >
+                <a href={href} target="_blank" rel="noopener noreferrer" className="link">
                   {o.source}
-                  <ExternalLink className="h-4 w-4" aria-hidden />
-                  <span className="sr-only">(отваря се в нов прозорец)</span>
+                  <ExternalLink className="ml-1 inline h-4 w-4 align-[-2px]" aria-hidden />
+                  <span className="sr-only"> (отваря се в нов прозорец)</span>
                 </a>
               ) : (
                 <span className="font-medium text-slate-700">{o.source}</span>
@@ -207,154 +184,140 @@ export default async function OutagesPage() {
   return (
     <>
       <PageHero
-        eyebrow="Комунални услуги"
+        eyebrow={SECTION.daily}
         title="Прекъсвания на ток и вода"
         intro="Обявени планови и аварийни прекъсвания на електрозахранването и водата в Бобов дол и селата в общината. Проверявайте тук, преди да останете без ток или вода."
         crumbs={[{ name: "Прекъсвания на ток и вода", path: "/prekysvaniya" }]}
       />
 
-      <div className="container-content space-y-8 py-10">
-        <section
-          aria-label="Откъде са данните"
-          className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-700"
-        >
-          <p className="flex items-start gap-2">
-            <Info className="mt-0.5 h-5 w-5 shrink-0 text-brand-700" aria-hidden />
-            <span>
-              {auto ? (
-                <>
-                  Спиранията на <strong>тока</strong> се взимат автоматично от картата на{" "}
-                  <strong>{ERM_SOURCE}</strong>.{" "}
-                  {lastOk ? (
-                    <>
-                      Последна проверка: <strong>{formatSofiaInstant(lastOk)}</strong>.
-                    </>
-                  ) : (
-                    <>Все още няма успешна проверка.</>
-                  )}{" "}
-                  Спиранията на <strong>водата</strong> се въвеждат ръчно от екипа на сайта.
-                </>
-              ) : (
-                <>Прекъсванията се въвеждат ръчно от екипа на сайта по обявленията на дружествата.</>
-              )}
-            </span>
-          </p>
-        </section>
-
+      <div className="container-content space-y-10 py-10">
         {stale && (
-          <div
-            role="status"
-            className="rounded-xl border border-red-300 bg-red-50 p-4 text-red-800"
-          >
-            <p className="flex items-start gap-2 font-semibold">
-              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
-              Информацията за тока може да е остаряла.
-            </p>
-            <p className="mt-1">
+          <Notice tone="danger" role="status" title="Информацията за тока може да е остаряла.">
+            <p>
               Проверете на{" "}
-              <a
-                href={ERM_MAP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-semibold text-red-800 underline"
-              >
+              <a href={ERM_MAP_URL} target="_blank" rel="noopener noreferrer" className="link">
                 картата на {ERM_SOURCE}
                 <span className="sr-only"> (отваря се в нов прозорец)</span>
               </a>{" "}
               или звъннете на аварийния телефон в раздел{" "}
-              <Link href="/uslugi?cat=UTILITY" className="font-semibold text-red-800 underline">
+              <Link href="/uslugi?cat=UTILITY" className="link">
                 Комунални услуги
               </Link>
               .
             </p>
-          </div>
+          </Notice>
         )}
 
         {outages.length === 0 ? (
-          <EmptyState
-            title="В момента няма обявени прекъсвания"
-            hint="Когато има планово или аварийно спиране на тока или водата, то ще се появи тук. При спешна авария звъннете на съответната служба."
-          />
+          <Notice
+            tone="success"
+            titleAs="h2"
+            title={`Към ${formatDateTime(now)} няма обявени прекъсвания на тока и водата.`}
+          >
+            <p>
+              Когато има планово или аварийно спиране, то ще се появи тук. При неочаквана авария
+              звъннете на съответната служба — вижте по-долу.
+            </p>
+          </Notice>
         ) : (
           <>
-            <section aria-labelledby="avarii" className="space-y-4">
-              <h2 id="avarii" className="section-title">
-                Аварии сега
-              </h2>
+            <section aria-labelledby="avarii">
+              <SectionHeader id="avarii" title="Аварии сега" />
               {unplanned.length === 0 ? (
-                <p className="text-slate-700">Няма обявени аварии.</p>
+                <p className="text-base text-slate-700">Няма обявени аварии.</p>
               ) : (
-                unplanned.map((o) => <OutageCard key={o.id} o={o} />)
+                <div className="space-y-4">
+                  {unplanned.map((o) => (
+                    <OutageCard key={o.id} o={o} />
+                  ))}
+                </div>
               )}
             </section>
 
-            <section aria-labelledby="planirani" className="space-y-4">
-              <h2 id="planirani" className="section-title">
-                Планирани спирания
-              </h2>
+            <section aria-labelledby="planirani">
+              <SectionHeader id="planirani" title="Планирани спирания" />
               {planned.length === 0 ? (
-                <p className="text-slate-700">Няма обявени планирани спирания.</p>
+                <p className="text-base text-slate-700">Няма обявени планирани спирания.</p>
               ) : (
-                planned.map((o) => <OutageCard key={o.id} o={o} />)
+                <div className="space-y-4">
+                  {planned.map((o) => (
+                    <OutageCard key={o.id} o={o} />
+                  ))}
+                </div>
               )}
             </section>
           </>
         )}
 
-        <section
-          aria-labelledby="izvestiya"
-          className="no-print rounded-2xl border border-slate-200 bg-white p-6"
-        >
-          <h2 id="izvestiya" className="text-lg font-bold text-slate-900">
-            Научавайте първи
-          </h2>
-          <p className="mt-2 text-slate-700">
-            Изпратете тази страница на близките си или се абонирайте, за да научавате кога
-            спира токът или водата.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <ShareButton
-              title="Прекъсвания на ток и вода — Бобов дол"
-              text="Кога спира токът и водата в Бобов дол и селата — вижте тук:"
-              path="/prekysvaniya"
-            />
-            <a href="/izvestiya" className="btn-primary">
-              Известия на телефона
-            </a>
-            <RssLink />
-          </div>
-        </section>
+        {/* Откъде са данните — служебна бележка под състоянието. */}
+        <p className="max-w-3xl text-base text-slate-600">
+          {auto ? (
+            <>
+              Спиранията на <strong>тока</strong> се взимат автоматично от картата на{" "}
+              <strong>{ERM_SOURCE}</strong>.{" "}
+              {lastOk ? (
+                <>
+                  Последна проверка: <strong>{formatSofiaInstant(lastOk)}</strong>.
+                </>
+              ) : (
+                <>Все още няма успешна проверка.</>
+              )}{" "}
+              Спиранията на <strong>водата</strong> се въвеждат ръчно от екипа на сайта.
+            </>
+          ) : (
+            <>Прекъсванията се въвеждат ръчно от екипа на сайта по обявленията на дружествата.</>
+          )}
+        </p>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-brand-700" aria-hidden />
-            <h2 className="text-lg font-bold text-slate-900">При авария — на кого да звънна</h2>
-          </div>
-          <p className="mt-2 text-slate-700">
-            Ако токът или водата спре неочаквано (без да е обявено тук), подайте
-            сигнал на аварийната служба. Телефоните са в раздел{" "}
-            <Link href="/uslugi?cat=UTILITY" className="font-medium text-brand-700 hover:underline">
-              Комунални услуги
-            </Link>
-            . При опасност за живота — спешен телефон{" "}
-            <a href="tel:112" className="font-bold text-crimson-700">
-              112
-            </a>
-            .
-          </p>
-        </section>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <section aria-labelledby="avariya-zaglavie" className="panel">
+            <h2 id="avariya-zaglavie" className="h-card flex items-center gap-2">
+              <AlertTriangle className="h-6 w-6 shrink-0 text-amber-700" aria-hidden />
+              При авария — на кого да звъннете
+            </h2>
+            <p className="mt-2 text-base text-slate-700">
+              Ако токът или водата спре неочаквано (без да е обявено тук), подайте сигнал на
+              аварийната служба. Телефоните са в раздел{" "}
+              <Link href="/uslugi?cat=UTILITY" className="link">
+                Комунални услуги
+              </Link>
+              . При опасност за живота — спешен телефон{" "}
+              <TelLink phone="112" className="font-bold text-crimson-700 underline underline-offset-2">
+                112
+              </TelLink>
+              .
+            </p>
+          </section>
 
-        <div className="no-print">
-          <PrintButton variant="secondary" label="Принтирай" />
+          <section aria-labelledby="izvestiya" className="no-print panel">
+            <h2 id="izvestiya" className="h-card">
+              Научавайте първи
+            </h2>
+            <p className="mt-2 text-base text-slate-700">
+              Изпратете тази страница на близките си или се абонирайте, за да научавате кога спира
+              токът или водата.
+            </p>
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Link href="/izvestiya" className="btn-primary">
+                Известия на телефона
+              </Link>
+              <ShareButton
+                title="Прекъсвания на ток и вода — Бобов дол"
+                text="Кога спира токът и водата в Бобов дол и селата — вижте тук:"
+                path="/prekysvaniya"
+              />
+              <RssLink />
+            </div>
+          </section>
         </div>
 
-        <p className="text-sm text-slate-600">
-          Знаете за обявено прекъсване, което липсва тук? Кажете ни на{" "}
-          <a href={`tel:${SITE.contact.phone}`} className="font-medium text-brand-700 hover:underline">
-            {SITE.contact.phone}
-          </a>
-          .
-        </p>
+        <div className="no-print flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <PrintButton variant="secondary" label="Отпечатайте" />
+          <p className="text-base text-slate-600">
+            Знаете за обявено прекъсване, което липсва тук? Кажете ни на{" "}
+            <TelLink phone={SITE.contact.phone} className="link whitespace-nowrap" />.
+          </p>
+        </div>
       </div>
     </>
   );
