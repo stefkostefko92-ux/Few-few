@@ -1,5 +1,6 @@
-// Единственият скрипт на сайта — прогресивно подобрение: бутонът „Копирай“ до командата за
-// конзолата. Без JavaScript бутонът остава скрит, а командата се маркира и копира на ръка.
+// Единственият скрипт на сайта — прогресивно подобрение, всичко останало работи без него:
+//  1) бутонът „Копирай“ до командата за конзолата (без JS остава скрит, командата се маркира на ръка);
+//  2) превключвателят „Спри анимациите“ (WCAG 2.2.2): слага `calm` на <html> и CSS спира целия декор.
 (() => {
   const status = document.querySelector('[data-copy-status]');
   for (const button of document.querySelectorAll('button[data-copy-target]')) {
@@ -22,4 +23,16 @@
       }, 2000);
     });
   }
+})();
+
+(() => {
+  const button = document.querySelector('[data-motion-toggle]');
+  // При `prefers-reduced-motion` CSS вече е спрял декора — превключвател не е нужен.
+  if (!button || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  button.hidden = false;
+  button.addEventListener('click', () => {
+    const calm = document.documentElement.classList.toggle('calm');
+    button.setAttribute('aria-pressed', String(calm));
+    button.textContent = (calm ? button.dataset.play : button.dataset.pause) || button.textContent;
+  });
 })();

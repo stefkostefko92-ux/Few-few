@@ -1,0 +1,23 @@
+// /etc/polkit-1/rules.d/50-cs2dm-agent.rules — cs2dm: правата на агента на сървъра (cs2-agent).
+//
+// Потребителят cs2agent може САМО:
+//   restart на cs2.service          (systemctl restart cs2.service)
+//   start   на cs2-update.service   (systemctl start --no-block cs2-update.service)
+// Всичко друго от cs2agent — изричен отказ (fail closed; никое следващо правило не може да го разреши).
+//
+// „unit“ и „verb“ са детайлите, които systemd подава на polkit за org.freedesktop.systemd1.manage-units
+// (systemd ≥ 226; в изходния код на v255: bus_verify_manage_units_async_full → "unit" = u->id,
+// "verb" = job_type_to_string → "restart" / "start"). Само ES5 — polkit ≥ 121 ползва duktape.
+polkit.addRule(function (action, subject) {
+  if (subject.user !== "cs2agent") {
+    return polkit.Result.NOT_HANDLED;
+  }
+  if (action.id === "org.freedesktop.systemd1.manage-units") {
+    var unit = action.lookup("unit");
+    var verb = action.lookup("verb");
+    if ((unit === "cs2.service" && verb === "restart") || (unit === "cs2-update.service" && verb === "start")) {
+      return polkit.Result.YES;
+    }
+  }
+  return polkit.Result.NO;
+});

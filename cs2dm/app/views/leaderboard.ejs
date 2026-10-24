@@ -27,7 +27,13 @@
   <p class="board-meta"><span><%= t.plural('leaderboard.total', result.total) %></span><% if (sort === 'kd' || sort === 'hs') { %> <span class="board-note"><%= t('leaderboard.ratioNote', { min: minKills }) %></span><% } %></p>
 
   <% if (result.rows.length === 0) { %>
-  <p class="empty"><%= t('leaderboard.empty') %></p>
+  <div class="invite">
+    <div>
+      <h3><%= t('leaderboard.inviteTitle') %></h3>
+      <p><%= t('leaderboard.empty') %></p>
+      <p class="invite-actions"><a class="btn btn-play" href="<%= server.connectUrl %>"><%= t('home.hero.play') %></a></p>
+    </div>
+  </div>
   <% } else { %>
   <%
     const columns = [

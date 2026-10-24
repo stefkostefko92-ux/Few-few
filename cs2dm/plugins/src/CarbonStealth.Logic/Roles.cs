@@ -26,6 +26,16 @@ public enum AdminAction
     Menu,
     /// <summary>Поставяне/махане на банери в картата.</summary>
     Banners,
+    /// <summary>Съобщение в центъра на екрана за всички (!csay).</summary>
+    Announce,
+    /// <summary>Slap, freeze, respawn.</summary>
+    Fun,
+    /// <summary>Bring/goto.</summary>
+    Teleport,
+    /// <summary>Режим на DM, ботове, рестарт на играта, безкрайни патрони.</summary>
+    Server,
+    /// <summary>Noclip за себе си (поставяне на банери).</summary>
+    Noclip,
 }
 
 public static class Roles
@@ -47,9 +57,10 @@ public static class Roles
     public static Role MinimumFor(AdminAction action) => action switch
     {
         AdminAction.Kick or AdminAction.Mute or AdminAction.Gag or AdminAction.Warn or AdminAction.Menu => Role.Helper,
-        AdminAction.Silence or AdminAction.BanTemporary => Role.Moderator,
-        AdminAction.BanPermanent or AdminAction.Unban or AdminAction.Slay => Role.Admin,
-        AdminAction.Banners => Role.HeadAdmin,
+        AdminAction.Silence or AdminAction.BanTemporary or AdminAction.Announce => Role.Moderator,
+        AdminAction.BanPermanent or AdminAction.Unban or AdminAction.Slay
+            or AdminAction.Fun or AdminAction.Teleport or AdminAction.Server => Role.Admin,
+        AdminAction.Banners or AdminAction.Noclip => Role.HeadAdmin,
         _ => Role.Owner,
     };
 

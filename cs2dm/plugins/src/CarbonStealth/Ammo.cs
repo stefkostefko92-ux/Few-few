@@ -13,13 +13,16 @@ public sealed partial class CarbonStealthPlugin
     /// <summary>Колкото дава DM плъгинът при „Refill Ammo“ — с запас за всяко оръжие.</summary>
     private const int ReserveAmmoTopUp = 250;
 
+    /// <summary>Включено от конфига; админ може да го превключи от менюто до рестарт на плъгина.</summary>
+    private bool _infiniteAmmo;
+
     private void RegisterAmmo()
     {
-        if (!Config.InfiniteReserveAmmo) return;
+        _infiniteAmmo = Config.InfiniteReserveAmmo;
         RegisterEventHandler<EventWeaponReload>((e, _) =>
         {
             // Играта мести патроните от резерва в края на анимацията — допълнено в началото, не свършва.
-            if (e.Userid is { IsValid: true } player
+            if (_infiniteAmmo && e.Userid is { IsValid: true } player
                 && player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value is { IsValid: true } weapon
                 && Progression.IsGun(weapon.DesignerName))
             {

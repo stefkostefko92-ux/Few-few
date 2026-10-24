@@ -1,0 +1,225 @@
+/* Профил на играч: ниво, статистика, майсторство, карта на убийствата. */
+
+.profile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem clamp(1.5rem, 4vw, 3rem);
+  align-items: flex-start;
+  margin-bottom: 2.5rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background:
+    radial-gradient(70% 140% at 100% 0%, rgba(255, 181, 71, 0.12), transparent 65%), var(--panel);
+}
+.profile-main {
+  flex: 1 1 20rem;
+  min-width: 0;
+}
+.avatar {
+  width: 96px;
+  height: 96px;
+  border: 2px solid var(--cyan);
+  border-radius: 14px;
+}
+.profile-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
+  margin: 0 0 0.75rem;
+}
+.profile-facts dt {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.profile-facts dd {
+  margin: 0;
+}
+.level-card {
+  flex: 0 1 19rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid rgba(255, 181, 71, 0.4);
+  border-radius: var(--r-card);
+  background: rgba(7, 10, 14, 0.6);
+}
+.level-big {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 3rem;
+  line-height: 1;
+  color: var(--amber);
+}
+.level-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.level-text {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 760px) {
+  .level-card {
+    flex-basis: 100%;
+  }
+}
+.mastery-table progress {
+  width: 6rem;
+  margin-inline-end: 0.5rem;
+}
+
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+.stat-card {
+  padding: 1.25rem 1.4rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background: var(--panel);
+}
+.stat-card h2 {
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 1.8rem;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem 1.25rem;
+  margin: 0;
+}
+.stats dt {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.stats dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.8rem;
+  line-height: 1.1;
+}
+@media (max-width: 480px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 700;
+}
+.badge-mark {
+  width: 0.8rem;
+  height: 0.8rem;
+  transform: rotate(45deg);
+  flex: none;
+}
+.badge-bronze .badge-mark {
+  background: #c27c45;
+}
+.badge-silver .badge-mark {
+  background: #c9cdd2;
+}
+.badge-gold .badge-mark {
+  background: #e7bf4e;
+}
+.badge-platinum .badge-mark {
+  background: #a5dcd6;
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 3px #a5dcd6;
+}
+.badge-diamond .badge-mark {
+  background: var(--cyan);
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 3px var(--cyan),
+    0 0 10px var(--cyan);
+}
+
+.heat {
+  margin-top: 3rem;
+}
+.heat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem clamp(1.5rem, 4vw, 3rem);
+}
+.heat-fig {
+  margin: 0;
+}
+.heat-fig figcaption {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+.heat-key {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+.heat-key-kills {
+  background: var(--amber);
+}
+.heat-key-deaths {
+  background: var(--ember);
+}
+.heatmap {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: var(--r-card);
+}
+.hm-bg {
+  fill: #05080b;
+}
+.hm-grid {
+  stroke: var(--line);
+  stroke-width: 2;
+}
+.hm-frame {
+  fill: none;
+  stroke: var(--cyan-dim);
+  stroke-width: 4;
+}
+.hm-label {
+  fill: var(--muted);
+  font-family: var(--font-text);
+  font-weight: 700;
+  font-size: 28px;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+.heatmap-kills .hm-cell {
+  fill: var(--amber);
+}
+.heatmap-deaths .hm-cell {
+  fill: var(--ember);
+}
+.heat-sum {
+  margin: 0.6rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+.heat-legend {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+@media (max-width: 720px) {
+  .heat-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

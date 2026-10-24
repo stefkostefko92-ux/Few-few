@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { config } from '../config.js';
 import {
   HOME_FAQ,
+  HOME_MODES,
   LEGAL_UPDATED,
   PRIVACY_SECTIONS,
   RETENTION,
@@ -261,6 +262,10 @@ export function pagesRouter(locale: Locale, deps: PageDeps): Router {
         : null,
       faq: HOME_FAQ,
       faqParams: faqParams(),
+      modes: HOME_MODES,
+      xpRewards: XP_REWARDS,
+      bounty: BOUNTY,
+      masteryTiers: MASTERY_TIERS,
     });
   });
 

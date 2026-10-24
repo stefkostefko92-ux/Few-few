@@ -76,6 +76,8 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
         RegisterBanners();
         RegisterAdverts();
         RegisterAmmo();
+        RegisterHud();
+        RegisterFunCommands();
 
         AddTimer(Config.FlushSeconds, FlushStats, TimerFlags.REPEAT);
         AddTimer(5f, PublishLive, TimerFlags.REPEAT);
@@ -107,6 +109,7 @@ public sealed partial class CarbonStealthPlugin : BasePlugin, IPluginConfig<Plug
     public override void Unload(bool hotReload)
     {
         RemoveBannerEntities();
+        foreach (var slot in _huds.Keys.ToList()) CloseHud(slot);
         AccruePlaytime();
         var last = _batch;
         _batch = new StatsBatch();

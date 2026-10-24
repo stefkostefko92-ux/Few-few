@@ -213,8 +213,12 @@ public sealed partial class CarbonStealthPlugin
     private void CmdWarn(CCSPlayerController? actor, CommandInfo info)
     {
         if (info.ArgCount < 3) { Tell(SlotOf(actor), "usage.target", "warn"); return; }
-        if (Authorize(actor, info.GetArg(1), AdminAction.Warn) is not { } t) return;
-        var reason = Rest(info, 2);
+        WarnTarget(actor, info.GetArg(1), Rest(info, 2));
+    }
+
+    private void WarnTarget(CCSPlayerController? actor, string pattern, string reason)
+    {
+        if (Authorize(actor, pattern, AdminAction.Warn) is not { } t) return;
         var actorName = ActorName(actor);
         Record("WARN", t.State, "OTHER", reason, DateTimeOffset.UtcNow, actor,
             () => Broadcast("admin.warned", t.State.Name, actorName, reason));
