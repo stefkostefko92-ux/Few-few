@@ -7,12 +7,17 @@
 // проверени данни — само връзка към раздела, без измислени стойности.
 //
 // Вид: статичен .panel; всички иконни квадратчета в един тон (.icon-chip-sm);
-// на компютър редовете са в две колони, за да не остава празна дясна половина.
+// на компютър редовете са в две вестникарски колони (CSS columns, не grid):
+// всяка колона се пълни отгоре надолу и браузърът сам ги изравнява — без
+// празен блок под по-късия ред (при grid редовете са еднакво високи).
+// „Последна новина“ е на цялата ширина отдолу, вместо да виси сама в едната
+// колона. Редът на телефон остава същият.
 
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Bus, CalendarDays, Cross, Newspaper, Zap, type LucideIcon } from "@/components/icons";
 import { PhoneButton } from "@/components/PhoneButton";
+import { formatPhoneBg } from "@/lib/phone";
 import { outageTitle } from "@/lib/ingest-outages-rss";
 import { formatDate, formatDateLong, isoDate } from "@/lib/format-date";
 import {
@@ -63,13 +68,15 @@ function Row({
   icon: Icon,
   label,
   children,
+  className = "",
 }: {
   icon: LucideIcon;
   label: ReactNode;
   children: ReactNode;
+  className?: string;
 }) {
   return (
-    <li className="flex items-start gap-3 border-t border-slate-200 py-3">
+    <li className={"flex break-inside-avoid items-start gap-3 border-t border-slate-200 py-3 " + className}>
       <span className="icon-chip-sm mt-0.5">
         <Icon aria-hidden />
       </span>
@@ -124,12 +131,12 @@ export function TodayPanel({
         {aside}
       </div>
 
-      <ul className="mt-4 grid lg:grid-cols-2 lg:gap-x-10">
+      <ul className="mt-4 lg:columns-2 lg:gap-x-10">
         {hasCalendar && (
           <Row icon={CalendarDays} label="Имен ден и празник">
             <Link href="/imen-den" className={"inline-flex min-h-tap flex-col justify-center " + LINK}>
               {calendar.feasts.length > 0 && (
-                <span className="block text-crimson-700">{calendar.feasts.join(" · ")}</span>
+                <span className="block text-brand-800">{calendar.feasts.join(" · ")}</span>
               )}
               {calendar.names.length > 0 && (
                 <span className="block">Имен ден: {calendar.names.join(", ")}</span>
@@ -152,7 +159,14 @@ export function TodayPanel({
                     </p>
                   )}
                   {d.phone && (
-                    <PhoneButton phone={d.phone} label="Обадете се:" className="mt-2" />
+                    <PhoneButton
+                      phone={d.phone}
+                      label="Обадете се:"
+                      // Видимият текст е в началото (WCAG 2.5.3), аптеката
+                      // след него — при няколко дежурни бутоните се различават.
+                      aria-label={`Обадете се: ${formatPhoneBg(d.phone)} — ${d.pharmacy}`}
+                      className="mt-2"
+                    />
                   )}
                 </li>
               ))}
@@ -212,6 +226,7 @@ export function TodayPanel({
         {news && (
           <Row
             icon={Newspaper}
+            className="lg:[column-span:all]"
             label={
               <>
                 Последна новина ·{" "}
