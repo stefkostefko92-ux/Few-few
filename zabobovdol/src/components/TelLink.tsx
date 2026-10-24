@@ -2,9 +2,11 @@
 
 // Обикновена tel: връзка, която брои обаждането (tel_click) — без да пази нищо
 // за човека, само брой на ден. Ползва се навсякъде, където показваме номер.
+// Без children показва номера в единния формат („0877 414 874“, „0702 6 23 23“).
 
 import type { ReactNode } from "react";
 import { track } from "@/lib/events";
+import { formatPhoneBg } from "@/lib/phone";
 
 export function TelLink({
   phone,
@@ -20,7 +22,8 @@ export function TelLink({
   // В tel: остават само цифрите и „+“ — интервалите и думите („централа“)
   // объркват някои телефони.
   const digits = phone.replace(/[^\d+]/g, "");
-  if (!digits) return <span className={className}>{children ?? phone}</span>;
+  const shown = children ?? formatPhoneBg(phone);
+  if (!digits) return <span className={className}>{shown}</span>;
   return (
     <a
       href={`tel:${digits}`}
@@ -28,7 +31,7 @@ export function TelLink({
       aria-label={ariaLabel}
       onClick={() => track("tel_click")}
     >
-      {children ?? phone}
+      {shown}
     </a>
   );
 }
