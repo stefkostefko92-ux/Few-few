@@ -11,6 +11,8 @@ set -euo pipefail
 
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly SRC_DIR
+# shellcheck source=cs2dm-lib.sh
+source "$SRC_DIR/cs2dm-lib.sh"
 readonly CS2_USER=cs2
 readonly CS2_HOME=/opt/cs2
 readonly STEAMCMD_DIR="$CS2_HOME/steamcmd"
@@ -43,7 +45,7 @@ fail() { printf '  \033[31m✘\033[0m %s\n' "$*" >&2; BLOCKERS=$((BLOCKERS + 1))
 die()  { printf '\n\033[31m[cs2dm] СТОП:\033[0m %s\n' "$*" >&2; exit 1; }
 as_cs2() { runuser -u "$CS2_USER" -- env HOME="$CS2_HOME" "$@"; }
 gslt_present() { [[ -f "$ENV_FILE" ]] && grep -Eq '^CS2_GSLT=[A-Za-z0-9]+$' "$ENV_FILE"; }
-env_value() { sed -n "s/^$1=//p" "$ENV_FILE" 2>/dev/null | tail -1; }
+env_value() { sed -n "s/^$1=//p" "$ENV_FILE" 2>/dev/null | tail -1 || true; }
 
 [[ $EUID -eq 0 ]] || die "пусни го със sudo"
 
@@ -117,9 +119,9 @@ preflight() {
   if command -v node >/dev/null 2>&1; then
     local node_major
     node_major="$(node -p 'process.versions.node.split(".")[0]')"
-    if (( node_major >= 18 )); then ok "Node $node_major (за проверката на здравето)"; else warn "Node $node_major е стар — проверката на здравето иска ≥18"; fi
+    if (( node_major >= 18 )); then ok "Node $node_major (проверка на здравето)"; else fail "Node $node_major е стар — нужен е ≥18"; fi
   else
-    warn "няма Node — проверката на здравето ще бъде пропусната"
+    fail "няма Node ≥18 — нужен е за проверката на здравето и за автоматичното връщане към ванилов сървър"
   fi
 
   if command -v ufw >/dev/null 2>&1 && ufw status | grep -q '^Status: active'; then
@@ -197,6 +199,7 @@ install_files() {
   # Скриптовете, които root изпълнява, са извън дома на cs2 — иначе cs2 би могъл да ги подмени.
   install -d -m 0755 "$LIB_DIR" "$LIB_DIR/cfg"
   install -m 0755 "$SRC_DIR/update.sh" "$LIB_DIR/update.sh"
+  install -m 0644 "$SRC_DIR/cs2dm-lib.sh" "$LIB_DIR/cs2dm-lib.sh"
   install -m 0644 "$SRC_DIR/a2s.mjs" "$LIB_DIR/a2s.mjs"
   install -m 0755 "$SRC_DIR/health.mjs" "$LIB_DIR/health.mjs"
   install -m 0644 "$SRC_DIR/cfg/gamemode_deathmatch_server.cfg" "$LIB_DIR/cfg/gamemode_deathmatch_server.cfg"
@@ -233,29 +236,20 @@ start_server() {
   log "Старт"
   if ! gslt_present; then
     warn "CS2_GSLT е празен — сървърът НЕ е пуснат"
-    info "попълни го: sudo nano $ENV_FILE  →  после пусни пак този скрипт"
+    info "попълни го в $ENV_FILE  →  после пусни пак този скрипт"
     return 0
   fi
   systemctl enable --quiet cs2.service
-  systemctl restart cs2.service
-  ok "cs2.service е пуснат"
-
-  if ! command -v node >/dev/null 2>&1; then
-    warn "няма Node — пропускам проверката на здравето; виж: journalctl -u cs2 -f"
+  info "рестарт и чакане на A2S отговор (до 3 минути)…"
+  if ! cs2dm_restart_with_mods_or_fallback; then
+    if cs2dm_mods_wanted; then warn "модовете не тръгнаха — сървърът върви ванилов (install-mods.sh --status)"; fi
+  fi
+  local port
+  port="$(env_value CS2_PORT)"
+  if node "$LIB_DIR/health.mjs" 127.0.0.1 "${port:-27015}" 3000; then
+    ok "сървърът отговаря"
     return 0
   fi
-  local port i
-  port="$(env_value CS2_PORT)"
-  port="${port:-27015}"
-  info "чакам A2S отговор на 127.0.0.1:$port (до 3 минути)…"
-  for i in $(seq 1 36); do
-    if node "$LIB_DIR/health.mjs" 127.0.0.1 "$port" 2000 2>/dev/null; then
-      ok "сървърът отговаря"
-      return 0
-    fi
-    if ! systemctl is-active --quiet cs2.service; then break; fi
-    sleep 5
-  done
   journalctl -u cs2.service -n 60 --no-pager || true
   die "сървърът не отговаря на A2S — логът е горе"
 }

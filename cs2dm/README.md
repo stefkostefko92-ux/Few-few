@@ -29,6 +29,23 @@ sudo nano /etc/cs2/cs2.env
 sudo bash /root/cs2dm-src/cs2dm/server/install.sh
 ```
 
+## Фаза 2 — модове (Metamod + CounterStrikeSharp + Deathmatch)
+
+```bash
+# 1) нов код (както в стъпка 1 горе), после обновената фаза 1 (слага общата библиотека)
+sudo bash /root/cs2dm-src/cs2dm/server/install.sh
+
+# 2) SteamID64 на собственика → админ в играта (17 цифри, 7656119…)
+echo 'CS2_OWNER_STEAMID64=7656119XXXXXXXXXX' | sudo tee -a /etc/cs2/cs2.env >/dev/null
+
+# 3) модовете — сваля, проверява sha256, инсталира, рестартира и доказва зареждането
+sudo bash /root/cs2dm-src/cs2dm/server/mods/install-mods.sh
+```
+
+В играта: `!gun` (оръжия), `!dm` (менюто на Deathmatch). Режимите се сменят сами: All Weapons →
+Only Headshot → Only Deagle → Only Pistols → Only SMG. Състояние: `install-mods.sh --status`;
+изключване (ванилов DM): `install-mods.sh --disable`.
+
 ## Ежедневно
 
 | Какво | Команда |

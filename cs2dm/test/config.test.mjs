@@ -47,9 +47,9 @@ test("cfg не носи тайни и не пуска читове", () => {
 });
 
 test("никъде не се изключва FollowCS2ServerGuidelines (риск от GSLT бан)", () => {
-  for (const f of ["server/cfg/gamemode_deathmatch_server.cfg", "server/install.sh", "server/update.sh", "server/systemd/cs2.service"]) {
-    assert.doesNotMatch(read(f), /FollowCS2ServerGuidelines/i, f);
-  }
+  const files = ["server/cfg/gamemode_deathmatch_server.cfg", "server/install.sh", "server/update.sh",
+    "server/cs2dm-lib.sh", "server/systemd/cs2.service", "server/mods/install-mods.sh", "server/mods/config/core.json"];
+  for (const f of files) assert.doesNotMatch(read(f), /FollowCS2ServerGuidelines"?\s*[:=]\s*false/i, f);
 });
 
 const unit = read("server/systemd/cs2.service");
@@ -81,10 +81,12 @@ test("примерният env файл е без стойност за GSLT", (
 });
 
 test("shell скриптовете са валиден bash със set -euo pipefail", () => {
-  for (const f of ["server/install.sh", "server/update.sh"]) {
+  for (const f of ["server/install.sh", "server/update.sh", "server/mods/install-mods.sh"]) {
     execFileSync("bash", ["-n", new URL(`../${f}`, import.meta.url).pathname]);
     assert.match(read(f), /^set -euo pipefail$/m, f);
   }
+  // Библиотеката се зарежда със source от скриптове, които вече са със set -euo pipefail.
+  execFileSync("bash", ["-n", new URL("../server/cs2dm-lib.sh", import.meta.url).pathname]);
 });
 
 test("root изпълнява скриптове само извън дома на cs2", () => {

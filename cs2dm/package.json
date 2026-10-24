@@ -17,7 +17,7 @@
     "CS2 сървър"
   ],
   "scripts": {
-    "lint": "bash -n server/install.sh && bash -n server/update.sh && node --check server/a2s.mjs && node --check server/health.mjs",
+    "lint": "for f in server/install.sh server/update.sh server/cs2dm-lib.sh server/mods/install-mods.sh; do bash -n \"$f\" || exit 1; done && node --check server/a2s.mjs && node --check server/health.mjs",
     "test": "node --test test/*.test.mjs",
     "gate": "npm run lint && npm test && node ../tools/vps/deploy-check.mjs server"
   }

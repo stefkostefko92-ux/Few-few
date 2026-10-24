@@ -5,8 +5,12 @@ CS2 общностен сървър: **само de_dust2, Deathmatch (FFA)**, п
 в кореновия `CLAUDE.md`. Пълното проучване и решенията на собственика:
 `research/cs2-dust2-dm/README.md` (в отделния PR на проучването).
 
-_Сега: **фаза 1 — ванилов сървър** (вграденият DM режим, без плъгини) под systemd на сегашния VPS.
-Стек на тази фаза: bash + systemd + zero-dep Node ESM (проверка на здравето през A2S)._
+_Сега: **фаза 1** (ванилов сървър под systemd на сегашния VPS) + **фаза 2** (Metamod 2.0 +
+CounterStrikeSharp + DM плъгин на NockyCZ, заковани по sha256). Стек: bash + systemd + zero-dep
+Node ESM (здраве през A2S). Следва: наши C# плъгини на PostgreSQL (админ меню, банове, статистики,
+прогресия), сайт + уеб панел, Discord бот. Банове и класация — **публични на сайта** (решение на
+собственика), затова админ системата е наша на Postgres, не CS2-SimpleAdmin (MySQL + три
+неподдържани меню зависимости)._
 
 ## Команди (quality gate)
 
@@ -24,6 +28,10 @@ server/install.sh                    идемпотентен инсталато
 server/update.sh                     UpToDateCheck по PatchVersion → steamcmd → cfg → старт
 server/a2s.mjs, server/health.mjs    A2S_INFO клиент + CLI за здраве (аналогът на /health)
 server/cfg/gamemode_deathmatch_server.cfg   ВСИЧКИ наши настройки (името, ботове, DM)
+server/cs2dm-lib.sh                  общи функции: патч на gameinfo.gi, проверка на зареждането, ванилов резерв
+server/mods/mods.lock                заковани модове: име · версия · URL · sha256 · метод
+server/mods/install-mods.sh          фаза 2: сваля, проверява sha256, инсталира, рестартира (--status · --disable)
+server/mods/config/                  core.json (CSS) · Deathmatch.json (генериран от типовете на плъгина)
 server/systemd/                      cs2.service · cs2-update.service · cs2-update.timer
 server/cs2.env.example               шаблон за /etc/cs2/cs2.env (GSLT, IP, порт, слотове)
 test/                                node --test: A2S протокол + конфиг/unit/скриптове
@@ -48,5 +56,14 @@ test/                                node --test: A2S протокол + кон�
 - **Без `MemoryDenyWriteExecute=`** в unit-а — .NET JIT на CounterStrikeSharp (фаза 2) пише
   изпълнима памет.
 - Остарял сървър изпада от листинга → `cs2-update.timer` проверява на 10 минути; ъпдейтът рестартира.
+- **Модове = един ред в `gameinfo.gi`** (`Game csgo/addons/metamod` под `Game_LowViolence csgo_lv`).
+  Всеки ъпдейт на CS2 го трие → `cs2dm_restart_with_mods_or_fallback` го връща и доказва зареждането
+  по реда `Finished loading plugin Deathmatch` в journald. Не тръгнат ли — **ванилов старт** (DM е
+  вграден), версията в `/var/lib/cs2dm/mods-broken`, нов опит на 6 часа при празен сървър.
+- **Нов мод/версия → ред в `mods.lock` с sha256, сметнат от теб върху свален файл**, никога от
+  страница. Тестът изисква HTTPS и 64-hex хеш.
+- **`Deathmatch.json` без pay-to-win**: VIP = обикновен играч (респаун, HP, ограничения, „Only for
+  VIP“); тестът го пази. Генерира се от типовете на плъгина (`DeathmatchConfig` + STJ опциите на
+  CSS), не на ръка — при нова версия на плъгина се генерира наново.
 - Споделен VPS: `CPUWeight=1000` + `Nice=-5`; закрепване към ядра (`AllowedCPUs=`) само след измерване,
   в drop-in. Изходен план: всичко е преносимо на отделна машина.
