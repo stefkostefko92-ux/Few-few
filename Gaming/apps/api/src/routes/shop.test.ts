@@ -260,3 +260,33 @@ describe("управление на абонамента", () => {
     expect(after.body.subscription).toBeNull();
   });
 });
+
+describe("Stripe Tax (ДДС по държавата на купувача)", () => {
+  it("изключен по подразбиране — сесията е без automatic_tax", async () => {
+    addProduct({ sku: "gems_small", kind: "GEMS", gems: 100 });
+    await checkout("gems_small", { consent: true }).expect(200);
+    const args = sessionsCreate.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(args.automatic_tax).toBeUndefined();
+  });
+
+  it("с STRIPE_AUTOMATIC_TAX: automatic_tax, задължителен адрес и цена с включен ДДС", async () => {
+    const { env } = await import("../env.js");
+    env.STRIPE_AUTOMATIC_TAX = true;
+    try {
+      addProduct({ sku: "gems_small", kind: "GEMS", gems: 100 });
+      await checkout("gems_small", { consent: true }).expect(200);
+      const args = sessionsCreate.mock.calls[0]?.[0] as {
+        automatic_tax?: unknown;
+        billing_address_collection?: string;
+        customer_update?: unknown;
+        line_items: { price_data: { tax_behavior?: string } }[];
+      };
+      expect(args.automatic_tax).toEqual({ enabled: true });
+      expect(args.billing_address_collection).toBe("required");
+      expect(args.customer_update).toEqual({ address: "auto", name: "auto" });
+      expect(args.line_items[0]?.price_data.tax_behavior).toBe("inclusive");
+    } finally {
+      env.STRIPE_AUTOMATIC_TAX = false;
+    }
+  });
+});

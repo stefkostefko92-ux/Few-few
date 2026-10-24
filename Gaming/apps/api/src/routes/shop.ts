@@ -152,12 +152,24 @@ shopRouter.post(
               },
             }
           : { custom_text: { submit: { message: consent } } }),
+        // ДДС по държавата на купувача (OSS) — само когато Stripe Tax е активиран.
+        // Цените в каталога са крайни за потребителя (B2C), затова ДДС е включен
+        // в тях (inclusive), а не добавян отгоре. Адресът се записва в клиента,
+        // защото Stripe Tax изисква локацията му.
+        ...(env.STRIPE_AUTOMATIC_TAX
+          ? {
+              automatic_tax: { enabled: true },
+              billing_address_collection: "required" as const,
+              customer_update: { address: "auto" as const, name: "auto" as const },
+            }
+          : {}),
         line_items: [
           {
             quantity: 1,
             price_data: {
               currency: "eur",
               unit_amount: row.priceCents,
+              ...(env.STRIPE_AUTOMATIC_TAX ? { tax_behavior: "inclusive" as const } : {}),
               product_data: { name: product.title },
               ...(isSubscription ? { recurring: { interval: "month" as const } } : {}),
             },
