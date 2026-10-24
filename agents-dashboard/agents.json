@@ -13900,7 +13900,7 @@
           "Anthropic Engineering — Effective context engineering + Writing tools for agents",
           "Claude Agent SDK docs — agent loop, subagents (gather→act→verify→repeat)"
         ],
-        "lessons": 229
+        "lessons": 232
       },
       "evolution": [
         {
@@ -13974,9 +13974,20 @@
           "date": "2026-10-23",
           "event": "v21.8 — учене",
           "detail": "Научи: Конфликтните маркери в main (2026-09-25) идваха от старата кука: `git push || (git pull… (+9 още)"
+        },
+        {
+          "version": "22.1.0",
+          "date": "2026-10-24",
+          "event": "v22.1 — учене",
+          "detail": "Научи: Gemini 2.0 Flash е „(Shut down)“ в списъка с модели; 2.5 моделите не са депрекирани, но… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-24",
+          "type": "learning",
+          "summary": "Научи: „Gemini 2.0 Flash е „(Shut down)“ в списъка с модели; 2.5 моделите не са депрекирани, но…\" (+2 още)"
+        },
         {
           "date": "2026-10-23",
           "type": "learning",
