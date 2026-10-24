@@ -12,11 +12,13 @@ import { WeatherWidget } from "@/components/WeatherWidget";
 import { TodayPanel } from "@/components/TodayPanel";
 import { LatestNews } from "@/components/LatestNews";
 import { TelLink } from "@/components/TelLink";
+import { PhoneButton } from "@/components/PhoneButton";
 import { ViberButton } from "@/components/ViberButton";
 import { isDangerNav, navIcon } from "@/components/nav-icons";
 import {
   getBanners,
   getDutyToday,
+  getEmergencyServices,
   getFeaturedBusinesses,
   getLatestListings,
   getLatestPosts,
@@ -29,6 +31,7 @@ import { nextBuses, pickTodayOutages, todayCalendar } from "@/lib/today";
 import { BUS } from "@/lib/bus-schedule";
 import { newsDate } from "@/lib/ingest-news-rss";
 import { formatTime, formatWeekdayDayMonth, isoDateTime } from "@/lib/format-date";
+import { formatPhoneBg, nationalDigits } from "@/lib/phone";
 import { ChevronDown, Inbox, MapPin, Phone, Plus } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +50,34 @@ function chipClass(href: string, size: "sm" | "lg"): string {
 // следващия (неразделящ интервал пред него). Само за показване.
 function glueDash(s: string): string {
   return s.replace(/ ([—–]) /g, "\u00a0$1 ");
+}
+
+// Меко тире (U+00AD) в най-дългата дума на плочките „Всички раздели“: ако тя
+// не се побира (само 320px при шрифт 125%), се пренася ПРАВИЛНО
+// („Нерегла-ментирани“), а не се реже на произволна буква. Само за първа дума
+// в етикета: в средата на реда браузърът предпочита тирето пред пренасяне на
+// цялата дума („График за смето-събиране“). Само за показване — етикетите в
+// site.ts остават чисти (менюта, търсене, 404).
+const SOFT_HYPHENS: Record<string, string> = {
+  Нерегламентирани: "Нерегла\u00adментирани",
+};
+function softHyphens(s: string): string {
+  return s.replace(/\p{L}{12,}/gu, (w) => SOFT_HYPHENS[w] ?? w);
+}
+
+// Редът на рекламите се измества с една позиция всяка минута (страницата е
+// force-dynamic). На телефон се виждат първите 2 слота — така всеки платен
+// банер се показва и там, на равни смени.
+function rotate<T>(list: T[], by: number): T[] {
+  if (list.length < 2) return list;
+  const k = by % list.length;
+  return [...list.slice(k), ...list.slice(0, k)];
+}
+
+// Спешните телефони от админа (отметка „Спешен телефон“) без 112 — той е
+// отделният червен бутон.
+function is112(phone: string): boolean {
+  return (nationalDigits(phone) ?? phone.trim()) === "112";
 }
 
 // Часът на събитие е „стенно“ софийско време от админ полето (виж
@@ -85,9 +116,7 @@ function FillStrip({ events, listings }: { events: boolean; listings: boolean })
           </h2>
           {SITE.contact.phone && (
             <p className="mt-1 text-base text-slate-700">
-              Нямате смартфон? Обадете се на{" "}
-              <TelLink phone={SITE.contact.phone} className="link whitespace-nowrap tabular-nums" />{" "}
-              и ни кажете.
+              Нямате смартфон? Обадете ни се и ни кажете.
             </p>
           )}
         </div>
@@ -102,6 +131,9 @@ function FillStrip({ events, listings }: { events: boolean; listings: boolean })
               Кажете ни за събитие
             </Link>
           )}
+          {/* Телефонът е бутон (≥44px), не малка връзка в изречението —
+              поканата е точно за хората, на които им е трудно с телефона. */}
+          {SITE.contact.phone && <PhoneButton phone={SITE.contact.phone} />}
         </div>
       </div>
     </section>
@@ -119,6 +151,7 @@ export default async function HomePage() {
     dutyToday,
     outageRows,
     latestPosts,
+    emergency,
     viberUrl,
   ] = await Promise.all([
     getTopFaqs(),
@@ -129,12 +162,17 @@ export default async function HomePage() {
     orEmpty("дежурна аптека", getDutyToday()),
     orEmpty("прекъсвания", getOutagesTodayTomorrow()),
     orEmpty("новини", getLatestPosts()),
+    orEmpty("спешни телефони", getEmergencyServices()),
     getViberChannelUrl(),
   ]);
 
-  // Винаги 4 слота: запълнените с реклами, останалите — покана. На телефон
-  // се виждат първите 2 (рекламата не изтиква гражданското съдържание).
-  const bannerSlots = Array.from({ length: 4 }, (_, i) => banners[i] ?? null);
+  const otherEmergency = emergency.filter((s) => s.phone && !is112(s.phone));
+
+  // Винаги 4 слота: запълнените с реклами (на смени, виж rotate), останалите
+  // — покана. На телефон се виждат първите 2 (рекламата не изтиква
+  // гражданското съдържание).
+  const rotatedBanners = rotate(banners, Math.floor(now.getTime() / 60_000));
+  const bannerSlots = Array.from({ length: 4 }, (_, i) => rotatedBanners[i] ?? null);
 
   const latest = latestPosts[0];
   const todayNews = latest ? { slug: latest.slug, title: latest.title, date: newsDate(latest) } : null;
@@ -180,20 +218,11 @@ export default async function HomePage() {
           />
         </svg>
 
-        <div className="container-content relative pb-10 pt-8 sm:pb-20 sm:pt-14 lg:pt-16">
-          {/* Гербът като воден знак — в мрежата (до десния ръб на
-              съдържанието), само на широк екран, никога зад търсачката.
-              Версията с прозрачен фон — иначе белият фон личи като кутия. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/brand/bobov-dol-grb-mark.png"
-            alt=""
-            aria-hidden
-            className="pointer-events-none absolute right-4 top-1/2 hidden h-[22rem] w-auto -translate-y-1/2 select-none opacity-[0.07] lg:right-8 lg:block"
-            width={320}
-            height={460}
-          />
-          <div className="relative">
+        {/* От xl гербът-воден знак е СОБСТВЕНА клетка на мрежата (не absolute
+            над текста) — до увода и търсачката, над реда с чиповете. Не може да
+            застъпи нищо при никоя ширина и размер на шрифта. Под xl го няма. */}
+        <div className="container-content relative pb-10 pt-8 sm:pb-20 sm:pt-14 lg:pb-16 lg:pt-12 xl:grid xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center xl:gap-x-12">
+          <div className="relative min-w-0">
             {/* Независимостта — още над прегъвката: това НЕ е сайтът на общината. */}
             <p className="eyebrow text-gold-300">
               Независима гражданска инициатива&nbsp;· {SITE.geo.region}
@@ -211,41 +240,91 @@ export default async function HomePage() {
             </div>
             <Link
               href="/kak-da-polzvam-sayta"
-              className="mt-2 inline-flex min-h-tap items-center gap-1.5 text-base font-medium text-gold-200 underline decoration-gold-200/60 underline-offset-4 hover:decoration-gold-200"
+              className="mt-2 inline-flex min-h-tap items-center text-base font-medium text-gold-200 underline decoration-gold-200/60 underline-offset-4 hover:decoration-gold-200"
             >
-              Нов тук? Вижте как да ползвате сайта
-              <span aria-hidden="true">→</span>
+              {/* Стрелката е залепена за последната дума: на телефон редът се
+                  пренася, а „→“ не остава сам вдясно. */}
+              <span>
+                Първи път сте тук? Вижте как да ползвате{" "}
+                <span className="whitespace-nowrap">
+                  сайта
+                  <span aria-hidden="true" className="ml-1.5 inline-block">
+                    →
+                  </span>
+                </span>
+              </span>
             </Link>
-            {/* Ежедневните неща, които ги няма в картите отдолу — само от sm. */}
-            <nav aria-label="Всеки ден" className="mt-4 hidden sm:block">
-              <ul className="flex flex-wrap gap-2">
-                {QUICK_DAILY.map((item) => (
-                  <li key={item.href}>
-                    <Link href={item.href} className="chip-on-dark">
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
           </div>
+          {/* Версията с прозрачен фон — иначе белият фон личи като кутия.
+              Височина в px: не расте с шрифта от „Настройки за четене“. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/bobov-dol-grb-mark.png"
+            alt=""
+            aria-hidden
+            className="pointer-events-none hidden h-[320px] w-auto select-none opacity-[0.07] xl:block"
+            width={320}
+            height={460}
+          />
+          {/* Ежедневните неща, които ги няма в картите отдолу — само от sm.
+              От xl редът е под герба, на цялата ширина (не се пренася). */}
+          <nav aria-label="Всеки ден" className="relative mt-4 hidden sm:block xl:col-span-2">
+            <ul className="flex flex-wrap gap-2">
+              {QUICK_DAILY.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="chip-on-dark">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
       </section>
 
-      {/* Спешен номер — един ред: червеното е само за спешност. Другите
-          спешни телефони са в „Услуги и телефони“. */}
-      <section aria-label="Спешен номер" className="border-b border-crimson-200 bg-crimson-50">
-        <div className="container-content flex flex-wrap items-center justify-between gap-x-3 gap-y-2 py-2.5 sm:justify-start sm:gap-x-5">
-          <p className="text-lg font-bold text-crimson-700">При спешност</p>
-          <TelLink phone="112" className="btn-danger shrink-0 px-4 tabular-nums sm:px-5">
-            <Phone className="h-5 w-5 shrink-0" aria-hidden />
-            Спешност 112
-          </TelLink>
-          <p className="hidden text-base text-slate-700 lg:block">
-            Безплатно, от всеки телефон, денонощно.
-          </p>
-          <Link href="/uslugi?cat=EMERGENCY" className="link-more hidden sm:ml-auto sm:inline-flex">
-            Други важни телефони
+      {/* Спешни телефони. Червеното е само за спешност: 112 е единственият
+          червен бутон. До него — номерата с отметка „Спешен телефон“ от
+          админа (и на телефон), после връзка към всички телефони. */}
+      <section aria-label="Спешни телефони" className="border-b border-crimson-200 bg-crimson-50">
+        <div className="container-content flex flex-wrap items-center gap-x-5 gap-y-1 py-2.5">
+          <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-start sm:gap-5">
+            <p className="text-lg font-bold text-crimson-700">При спешност</p>
+            <TelLink phone="112" className="btn-danger shrink-0 px-4 tabular-nums sm:px-5">
+              <Phone className="h-5 w-5 shrink-0" aria-hidden />
+              Спешност 112
+            </TelLink>
+          </div>
+          {otherEmergency.length === 0 && (
+            <p className="hidden text-base text-slate-700 lg:block">
+              Безплатно, от всеки телефон, денонощно.
+            </p>
+          )}
+          {otherEmergency.length > 0 && (
+            <ul
+              aria-label="Други спешни телефони"
+              className="flex w-full flex-wrap gap-x-5 sm:w-auto sm:min-w-[16rem] sm:flex-1"
+            >
+              {otherEmergency.map((s) => (
+                <li key={s.id}>
+                  <TelLink
+                    phone={s.phone}
+                    className="link-quiet inline-flex min-h-tap items-center font-semibold text-slate-900"
+                  >
+                    {s.name.includes(s.phone) ? (
+                      s.name
+                    ) : (
+                      <span>
+                        {s.name}{" "}
+                        <span className="whitespace-nowrap tabular-nums">{formatPhoneBg(s.phone)}</span>
+                      </span>
+                    )}
+                  </TelLink>
+                </li>
+              ))}
+            </ul>
+          )}
+          <Link href="/uslugi" className="link-more sm:ml-auto">
+            Всички важни телефони
             <span aria-hidden="true">→</span>
           </Link>
         </div>
@@ -294,26 +373,28 @@ export default async function HomePage() {
         </ul>
 
         <h3 className="h-sub mb-4 mt-10">Всички раздели</h3>
-        {/* Колоните са толкова, че и най-дългата дума („Нерегламентирани“,
-            „сметосъбиране“) да се събира цяла до иконата — без пренасяне по
-            средата на думата. На телефон плочките са редове на цялата ширина. */}
-        <ul className="grid gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-4">
+        {/* Ширината на колоната е в rem, не брой колони: при шрифт 112,5%/125%
+            колоните сами намаляват и най-дългата дума („Нерегламентирани“ —
+            ~11rem) се събира цяла до иконата. На телефон плочките са редове на
+            цялата ширина; стрелката „›“ се показва само ако остава място за
+            думата (container query, също в rem). Под това — меко тире. */}
+        <ul className="grid gap-2 sm:grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] sm:gap-3">
           {PRIMARY_NAV.slice(6).map((item) => {
             const Icon = navIcon(item.href);
             return (
-              <li key={item.href} className="flex">
+              <li key={item.href} className="flex [container-type:inline-size]">
                 <Link
                   href={item.href}
-                  className="card group flex min-h-[3.5rem] w-full min-w-0 items-center gap-3 rounded-xl px-3 py-2 sm:py-3"
+                  className="card group flex min-h-[3.5rem] w-full min-w-0 items-center gap-3 rounded-xl px-2.5 py-2 sm:py-3 [@container_(min-width:18rem)]:px-3"
                 >
                   <span className={chipClass(item.href, "sm")}>
                     <Icon aria-hidden />
                   </span>
-                  <span className="min-w-0 flex-1 font-semibold leading-snug text-slate-900 underline-offset-4 [overflow-wrap:anywhere] group-hover:underline">
-                    {item.label}
+                  <span className="min-w-0 flex-1 break-words font-semibold leading-snug text-slate-900 underline-offset-4 group-hover:underline">
+                    {softHyphens(item.label)}
                   </span>
                   <ChevronDown
-                    className="h-5 w-5 shrink-0 -rotate-90 text-slate-500 sm:hidden"
+                    className="hidden h-5 w-5 shrink-0 -rotate-90 text-slate-500 max-sm:[@container_(min-width:18rem)]:block"
                     aria-hidden
                   />
                 </Link>
