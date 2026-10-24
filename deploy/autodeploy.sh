@@ -26,6 +26,8 @@ ARCHIVE_DIR="${ARCHIVE_DIR:-/root}"           # където качваш арх
 RELEASES_DIR="${RELEASES_DIR:-/opt/few-few/releases}"
 CURRENT_LINK="${CURRENT_LINK:-/opt/few-few/current}"
 KEEP_RELEASES="${KEEP_RELEASES:-5}"
+# Стабилен дом на тайните (извън releases/) — виж rescue_release_env.
+SHARED_DIR="${SHARED_DIR:-/opt/few-few/shared}"
 
 # medqr (systemd модел)
 MEDQR_DIR="${MEDQR_DIR:-/opt/medqr}"
@@ -1806,11 +1808,50 @@ fi
 # Третото: release-ът, към който сочи паметта на Korpora за последния работещ (KORPORA_LAST_GOOD).
 # Без него няколко деплоя без korpora (PROJECTS="piuma") изтриваха целта на отката и той падаше към
 # код, който никога не е разгръщан за Korpora.
+# Четвъртото (инцидент 11.10.2026, zabobovdol 502): release-ите, от които контейнер МОНТИРА файлове.
+# Compose стекът помни абсолютния път на release-а, от който е вдигнат последно (./nginx/*.conf,
+# ./scripts). zabobovdol беше вдигнат от release на 18.09, следващите деплои пускаха само други
+# продукти и prune изтри папката. При рестарт на контейнерите nginx (код 127, „not a directory“)
+# и backup (код 2) не намериха файловете си → 502 за целия сайт. Затова всеки Mounts.Source под
+# $RELEASES_DIR пази своя release. Docker недостъпен → изход 1 и prune не трие НИЩО (fail closed):
+# по-добре малко повече диск, отколкото код, изтрит изпод жив контейнер.
+release_mount_sources() {
+  command -v docker >/dev/null 2>&1 || return 0
+  local ids
+  ids="$(docker ps -aq 2>/dev/null)" || return 1
+  [ -n "$ids" ] || return 0
+  # shellcheck disable=SC2086
+  docker inspect --format '{{range .Mounts}}{{.Source}}{{"\n"}}{{end}}' $ids 2>/dev/null || return 1
+}
+
+# Преди триене: .env, който живее САМО в този release (няма го в shared и в никой друг release), се
+# спасява в $SHARED_DIR/<продукт>/.env (600). На 11.10.2026 единственото копие на zabobovdol/.env
+# беше в изтрития release — спаси ни само това, че стойностите още живееха в контейнерите.
+# Никога не презаписва съществуващ shared файл. prune обхожда от най-стария към най-новия, затова
+# спасеното е най-новото копие, а не някое застаряло.
+rescue_release_env() {
+  local old="${1%/}" envf proj shared other
+  while IFS= read -r envf; do
+    proj="$(basename "$(dirname "$envf")")"
+    shared="$SHARED_DIR/$proj/.env"
+    [ -f "$shared" ] && continue
+    other="$(find "$RELEASES_DIR" -mindepth 4 -maxdepth 4 -path "*/$proj/.env" -type f ! -path "$old/*" -print -quit 2>/dev/null || true)"
+    [ -n "$other" ] && continue
+    install -D -m 600 "$envf" "$shared" && warn "Спасих $proj/.env от изтриван release → $shared"
+  done < <(find "$old" -mindepth 3 -maxdepth 3 -path '*/*/.env' -type f 2>/dev/null)
+}
+
 prune_releases() {
-  local keep_rel live_rel lg_rel old old_real keep protected
+  local keep_rel live_rel lg_rel old old_real keep protected mounts m
   keep_rel="$(cd "$SRC" && pwd -P)"
   live_rel="$(readlink -f "$CURRENT_LINK" 2>/dev/null || true)"
   lg_rel="$(readlink -f "$(cat "$KORPORA_LAST_GOOD" 2>/dev/null || true)" 2>/dev/null || true)"
+  if ! mounts="$(release_mount_sources)"; then
+    warn "Docker не отговаря — не трия стари releases (не мога да видя кои монтират контейнерите)."
+    return 0
+  fi
+  mounts="$(printf '%s\n' "$mounts" | grep -F "$RELEASES_DIR/" || true)"
+  # От най-стария към най-новия (tac) — виж rescue_release_env.
   while read -r old; do
     [ -n "$old" ] || continue
     old_real="$(cd "$old" 2>/dev/null && pwd -P || true)"
@@ -1822,9 +1863,20 @@ prune_releases() {
         "$old_real"|"$old_real"/*) keep=1 ;;
       esac
     done
-    [ "$keep" = "1" ] && continue
+    while IFS= read -r m; do
+      [ -n "$m" ] || continue
+      case "$m" in
+        "${old%/}"/*|"$old_real"/*) keep=1 ;;
+      esac
+    done <<< "$mounts"
+    if [ "$keep" = "1" ]; then
+      [ -n "$mounts" ] && printf '%s\n' "$mounts" | grep -qF "${old%/}/" \
+        && log "Пазя $(basename "${old%/}") — контейнер монтира файлове от него."
+      continue
+    fi
+    rescue_release_env "$old"
     rm -rf "$old"
-  done < <(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | tail -n +$((KEEP_RELEASES + 1)))
+  done < <(ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | tail -n +$((KEEP_RELEASES + 1)) | tac)
 }
 prune_releases
 
