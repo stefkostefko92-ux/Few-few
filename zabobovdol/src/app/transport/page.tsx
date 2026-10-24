@@ -96,7 +96,13 @@ export default async function TransportPage() {
                   {dir.title}
                 </h3>
                 <p className="mt-2 text-base text-slate-800">
-                  {board.next ? (
+                  {!board.readable ? (
+                    // Бележка по дни, която не можем да разчетем — не гадаем
+                    // „следващ“ и не казваме „няма повече“.
+                    <span className="text-slate-600">
+                      Кои дни пътува всеки курс — вижте бележките под часовете.
+                    </span>
+                  ) : board.next ? (
                     <>
                       Следващ автобус днес:{" "}
                       <strong className="tabular-nums">{board.next.time}</strong>{" "}
@@ -156,9 +162,10 @@ export default async function TransportPage() {
           </div>
         </section>
 
-        {/* Такси и автогара */}
+        {/* Телефони за пътуване */}
         <section id="taksi" aria-labelledby="taksi-zaglavie">
-          <SectionHeader id="taksi-zaglavie" title="Такси и автогара" />
+          {/* Всички услуги „Транспорт“ — такситата, автогарата и телефонът на БДЖ. */}
+          <SectionHeader id="taksi-zaglavie" title="Такси, автогара и БДЖ" />
           {services.length === 0 ? (
             <EmptyState
               icon={Car}

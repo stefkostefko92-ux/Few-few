@@ -12,6 +12,15 @@ test("amountText: един знак след запетаята и неразд�
   assert.equal(amountText("12 345 €"), `12 345${N}€`);
 });
 
+test("amountText: закръгля, не отрязва", () => {
+  assert.equal(amountText("4,19 млн. €"), `4,2${N}млн.${N}€`);
+  assert.equal(amountText("4,96 млн. €"), `5,0${N}млн.${N}€`);
+  assert.equal(amountText("4,15 млн. €"), `4,2${N}млн.${N}€`);
+  assert.equal(amountText("4,14 млн. €"), `4,1${N}млн.${N}€`);
+  assert.equal(amountText("9,95 млн. €"), `10,0${N}млн.${N}€`);
+  assert.equal(amountText("1.249 млрд. €"), `1,2${N}млрд.${N}€`);
+});
+
 test("shareNumber", () => {
   assert.equal(shareNumber("16,2%"), 16.2);
   assert.equal(shareNumber("7 %"), 7);

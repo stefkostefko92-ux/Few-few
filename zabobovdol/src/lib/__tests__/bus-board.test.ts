@@ -39,6 +39,23 @@ test("busBoard: вечерта няма следващ курс", () => {
   assert.ok(b.times.every((t) => t.past));
 });
 
+test("busBoard: вечерта разписанието е разчетено (readable)", () => {
+  assert.equal(busBoard(dir, new Date("2026-10-24T19:00:00Z")).readable, true);
+});
+
+test("busBoard: неразчетена бележка по дни — без „следващ“, но не и „няма повече“", () => {
+  const odd = { ...dir, notes: ["Курсът в 18:00 пътува само в събота."] };
+  const b = busBoard(odd, SAT_1305);
+  assert.equal(b.readable, false);
+  assert.equal(b.next, null);
+  assert.ok(b.times.every((t) => !t.next));
+  // Миналите курсове пак се отбелязват — часовникът е сигурен.
+  assert.deepEqual(
+    b.times.map((t) => t.past),
+    [true, true, false, false],
+  );
+});
+
 test("inMinutesText", () => {
   assert.equal(inMinutesText(25), "след 25\u00a0мин.");
   assert.equal(inMinutesText(60), "след 1\u00a0ч.");

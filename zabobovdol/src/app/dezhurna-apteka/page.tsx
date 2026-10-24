@@ -283,16 +283,22 @@ export default async function DutyPharmacyPage() {
             </>
           ) : (
             <div className="mt-5">
-              <p className="text-lg font-semibold text-slate-900">
-                Няма обявена дежурна аптека за днес.
-              </p>
-              {dutyInfo && (
-                <div className="mt-3">
-                  <p className="text-base text-slate-700">Последната обявена информация:</p>
-                  <div className="mt-1 text-lg">
+              {/* Без график за днес „няма обявена“ е вярно само ако няма и
+                  свободния текст от админа („Текущо дежурство“) — иначе двете
+                  съобщения си противоречат на здравна страница. */}
+              {dutyInfo ? (
+                <>
+                  <p className="text-lg font-semibold text-slate-900">
+                    Графикът за днес не е въведен — последната обявена информация:
+                  </p>
+                  <div className="mt-2 text-lg">
                     <Prose html={renderMarkdown(dutyInfo)} />
                   </div>
-                </div>
+                </>
+              ) : (
+                <p className="text-lg font-semibold text-slate-900">
+                  Няма обявена дежурна аптека за днес.
+                </p>
               )}
               {pharmacyPhones.length > 0 ? (
                 <>

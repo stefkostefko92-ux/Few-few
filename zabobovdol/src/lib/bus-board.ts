@@ -16,9 +16,15 @@ export type BusTime = {
 
 export type BusBoard = {
   times: BusTime[];
-  /** Следващият курс днес и след колко минути; null — днес няма повече. */
+  /** Следващият курс днес и след колко минути; null — днес няма повече (или `readable` е false). */
   next: { time: string; inMinutes: number } | null;
   hasWorkdayOnly: boolean;
+  /**
+   * false — бележките имат ограничение по дни, което не можем да разчетем
+   * (напр. „само в събота“). Тогава „следващ“ не се смята и страницата НЕ
+   * казва „днес няма повече курсове“ — само показва часовете и бележките.
+   */
+  readable: boolean;
 };
 
 const toMin = (hhmm: string): number | null => {
@@ -29,8 +35,9 @@ const toMin = (hhmm: string): number | null => {
 export function busBoard(dir: BusDirectionLike, now: Date = new Date()): BusBoard {
   const wall = sofiaWallNow(now);
   const nowMin = wall.getUTCHours() * 60 + wall.getUTCMinutes();
-  const workday = workdayOnlyTimes(dir.notes) ?? new Set<string>();
-  const nextTime = nextBus(dir, now);
+  const parsed = workdayOnlyTimes(dir.notes);
+  const workday = parsed ?? new Set<string>();
+  const nextTime = parsed ? nextBus(dir, now) : null;
   const times = dir.times.map((t) => {
     const min = toMin(t);
     return {
@@ -45,6 +52,7 @@ export function busBoard(dir: BusDirectionLike, now: Date = new Date()): BusBoar
     times,
     next: nextTime && nm !== null ? { time: nextTime, inMinutes: nm - nowMin } : null,
     hasWorkdayOnly: times.some((t) => t.workdayOnly),
+    readable: parsed !== null,
   };
 }
 
