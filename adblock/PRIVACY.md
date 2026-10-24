@@ -1,6 +1,6 @@
 # Privacy Policy, Supreme AdBlock
 
-_Last updated: 23 October 2026 · applies to the Supreme AdBlock browser extension and to adblock.carbonstealth.eu_
+_Last updated: 24 October 2026 · applies to the Supreme AdBlock browser extension and to adblock.carbonstealth.eu_
 
 <!-- Keep in sync with server/privacy.html (the Privacy Policy URL in the Chrome Web Store). -->
 
@@ -37,11 +37,12 @@ servers, under your account, not ours. Turn sync off and they stay local only.
 - A short log (last 50 entries) of sites where Smart Detection hid an ad-sized frame, shown in Settings so you can see why
 - The latest downloaded filter data, and the regional lists you downloaded from their authors (see below)
 - Whether review reminders are on *(sync)*; and, on this device only, when the extension was installed and whether the popup already asked you for a Chrome Web Store review (how many times, when, and whether you chose “Don't ask again”) — so it asks at most twice
+- On this device only: the times of your recent pauses (no sites, at most ten; times older than 7 days are deleted, and all of them once the “Sites breaking?” tips were shown or turned off), and whether the popup already showed you those tips or this month's summary — so each appears only when it should
 
 The popup's “Connections on this page” list (the other sites a page loaded something from) is read from that page when you open it, from the browser's own record of what the page loaded; it is not stored and never sent anywhere. The popup's "Blocked on this page" view is built on the spot from which of our
 filter lists matched in that tab; it is not stored and never sent anywhere. You
-can clear everything from the extension's Settings, or by removing the
-extension.
+can reset the counters from the extension's Settings; removing the extension
+deletes everything it keeps.
 
 ## Network requests the extension makes
 
@@ -73,7 +74,7 @@ in the popup open the extension's Chrome Web Store page in a new tab, like any
 link. The extension itself sends nothing; what you write there is handled by
 Google under its own terms. You can switch these reminders off in Settings.
 
-**Dangerous sites (on by default).** When you open an address on URLhaus (abuse.ch's public list of malware sites, built into the extension), a warning page of the extension opens instead; the address is checked on your device and nothing is sent. Only if you click *Why is it listed?* does your browser open that site's URLhaus entry on urlhaus.abuse.ch. You can switch this off in Settings (Malware protection).
+**Dangerous sites (on by default).** When you open an address on URLhaus (abuse.ch's public list of malware sites, built into the extension), a warning page of the extension opens instead; the address is checked on your device and nothing is sent. Only if you click *Why is it listed?* does your browser open that site's URLhaus entry on urlhaus.abuse.ch. You can switch this off in Settings (Malware protection). If you think a warning is a mistake, *Tell us* opens a message in your own email app with only that site's name; nothing is sent unless you send it.
 
 **Global Privacy Control (on by default).** Unless you switch it off in Settings, your browser adds the header `Sec-GPC: 1` to its requests to the sites you visit, and pages can read `navigator.globalPrivacyControl`. It asks those sites not to sell or share your personal data. The signal is the same for everyone and carries no identifier, so it says nothing about you; it is not sent on sites you allowed or while protection is paused.
 
@@ -109,13 +110,15 @@ The "Site broken?" page first offers fixes that stay on your device. If you
 choose to tell us, the extension sends nothing: it opens a message in **your own
 email app**, and you see every word before you send it — the site name (the full
 address only if you tick it), your description, the extension and browser
-version, and which lists and features are on. What you send reaches
+version, which lists and features are on, how many requests each list blocked
+on that page, and which fixes you tried there and whether they helped. What you send reaches
 info@carbonstealth.eu with your email address; we use it only to fix the site
 and answer you, and delete it within 12 months. Legal basis: our legitimate
 interest in keeping the extension working, Art. 6(1)(f) GDPR.
 
 **Writing to us.** Whatever you send to info@carbonstealth.eu — a report from
-the "Site broken?" page, a message from the support page or from the page after
+the "Site broken?" page, a message from the support page, from the warning page
+for a dangerous site (it fills in only that site's name) or from the page after
 removal — is used only to answer you and to fix or improve the extension. It is
 read by Carbon Stealth, never published, never shared with anyone else, and
 deleted within 12 months. Legal basis: our legitimate interest in answering you
@@ -124,7 +127,9 @@ and keeping the extension working, Art. 6(1)(f) GDPR.
 ## This website
 
 adblock.carbonstealth.eu sets no cookies, uses no analytics and loads nothing
-from third parties (no external fonts, scripts or trackers). The server does not
+from third parties (no external fonts, scripts or trackers). The /test page keeps
+one flag in your browser's session storage while you follow its demo link, and
+removes it as soon as it has read it. The server does not
 keep access logs for this site or for filter updates. Error logging is limited
 to critical server errors; if such an entry ever includes an IP address, it is
 kept only as long as needed to fix the problem and then deleted.

@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Qoidalar sigʻimi"
+  },
+  "helpTitle": {
+    "message": "Saytlar buzilyaptimi?"
+  },
+  "helpText": {
+    "message": "Har safar bitta sayt yetarli: u yerda reklamaga bir soatga ruxsat bering yoki elementlarni yashirishni faqat oʻsha yerda oʻchiring. Bizga xabar bersangiz, saytni hamma uchun tuzatamiz."
+  },
+  "helpFix": {
+    "message": "Bu saytni tuzatish"
+  },
+  "cardNever": {
+    "message": "Boshqa koʻrsatmaslik"
+  },
+  "cardClose": {
+    "message": "Yopish"
+  },
+  "receiptTitle": {
+    "message": "Soʻnggi 30 kuningiz"
+  },
+  "receiptText": {
+    "message": "$1 ta soʻrov bloklandi · $2 ta cookie banneriga javob berildi · taxminan $3 maʼlumot tejaldi (taxminiy hisob)"
+  },
+  "share": {
+    "message": "Ulashish"
+  },
+  "shareTitle": {
+    "message": "Supreme AdBlock uchun Chrome Web Store havolasidan nusxa olish"
+  },
+  "shareCopied": {
+    "message": "Havola nusxasi olindi"
+  },
+  "rep_fixed_q": {
+    "message": "Sayt tuzaldimi?"
+  },
+  "rep_fixed_yes": {
+    "message": "Ha, ishlayapti"
+  },
+  "rep_fixed_no": {
+    "message": "Yoʻq, hali ham buzuq"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Ishlaganidan xursandmiz. Quyida bizga xabar bersangiz, hisobotda qaysi tuzatish yordam bergani koʻrsatiladi va saytni hamma uchun tuzatamiz."
+  },
+  "rep_fixed_next": {
+    "message": "Keyingisini sinab koʻring: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Unda iltimos, quyida bizga xabar bering: saytni koʻrib chiqamiz."
+  },
+  "rep_webmail": {
+    "message": "Pochta ilovasi yoʻqmi? Hisobotdan nusxa oling va uni veb-pochtangizdan $1 manziliga yuboring."
+  },
+  "blk_mistake": {
+    "message": "Bu xato deb oʻylaysizmi? Bizga xabar bering"
+  },
+  "welTest": {
+    "message": "Sinov sahifasida qanday ishlashini koʻring"
   }
 }

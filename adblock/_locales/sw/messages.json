@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Uwezo wa kanuni"
+  },
+  "helpTitle": {
+    "message": "Tovuti zina hitilafu?"
+  },
+  "helpText": {
+    "message": "Tovuti moja kwa wakati inatosha: ruhusu matangazo yake kwa saa moja, au zima ufichaji wa vipengele hapo tu. Ukituambia, tunairekebisha kwa ajili ya kila mtu."
+  },
+  "helpFix": {
+    "message": "Rekebisha tovuti hii"
+  },
+  "cardNever": {
+    "message": "Usionyeshe hii tena"
+  },
+  "cardClose": {
+    "message": "Funga"
+  },
+  "receiptTitle": {
+    "message": "Siku zako 30 zilizopita"
+  },
+  "receiptText": {
+    "message": "Maombi $1 yamezuiwa · mabango $2 ya vidakuzi yamejibiwa · takriban $3 za data zimeokolewa (makadirio)"
+  },
+  "share": {
+    "message": "Shiriki"
+  },
+  "shareTitle": {
+    "message": "Nakili kiungo cha Chrome Web Store cha Supreme AdBlock"
+  },
+  "shareCopied": {
+    "message": "Kiungo kimenakiliwa"
+  },
+  "rep_fixed_q": {
+    "message": "Je, imerekebisha tovuti?"
+  },
+  "rep_fixed_yes": {
+    "message": "Ndiyo, inafanya kazi"
+  },
+  "rep_fixed_no": {
+    "message": "Hapana, haifanyi kazi"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Vizuri. Ukituambia hapa chini, ripoti itaonyesha suluhisho lipi lilifanya kazi, ili turekebishe tovuti kwa ajili ya kila mtu."
+  },
+  "rep_fixed_next": {
+    "message": "Jaribu inayofuata: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Basi tafadhali tuambie hapa chini: tutaiangalia tovuti."
+  },
+  "rep_webmail": {
+    "message": "Huna programu ya barua pepe? Nakili ripoti na uitume kwa $1 kutoka kwenye barua pepe yako ya mtandaoni."
+  },
+  "blk_mistake": {
+    "message": "Unadhani hili ni kosa? Tuambie"
+  },
+  "welTest": {
+    "message": "Ione ikifanya kazi kwenye ukurasa wa majaribio"
   }
 }
