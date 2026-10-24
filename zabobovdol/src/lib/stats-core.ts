@@ -1,6 +1,8 @@
 // Чистите функции на статистиката (без база и без server-only) — за да могат
 // да се тестват. Записът е в ./stats.ts.
 
+import { SITE } from "@/lib/site";
+
 // Денят по българско време — „днес“ за жителя, не за сървъра в UTC.
 export function sofiaDay(d: Date = new Date()): Date {
   const ymd = new Intl.DateTimeFormat("en-CA", {
@@ -45,8 +47,26 @@ const REFERRER_GROUPS: [RegExp, string][] = [
   [/(^|\.)egov\.bg$/, "egov"],
 ];
 
-// Източникът на посещението: първо изричният маркер, после домейнът на
-// препращащия сайт (домейнът не е лична информация), иначе „direct“.
+/** Всеки непознат препращащ сайт — без името на домейна (виж normalizeSource). */
+export const OTHER_SITE = "other-site";
+
+// Хост без порт и без водещо „www.“ — за сравнение със собствения домейн.
+function bareHost(h: string): string {
+  return h.toLowerCase().split(":")[0].replace(/^www\./, "");
+}
+
+function siteHost(): string {
+  try {
+    return new URL(SITE.url).hostname;
+  } catch {
+    return SITE.domain;
+  }
+}
+
+// Източникът на посещението: първо изричният маркер, после известна група
+// (търсачка, социална мрежа, AI помощник), иначе „direct“. Името на чужд домейн
+// НЕ се пази: Referer е чужд вход (всеки измислен хост би бил нов ред в
+// DailyStat) и може да издаде частен сайт/интранет, откъдето идва човекът.
 export function normalizeSource(
   s: string | null | undefined,
   referrer: string | null | undefined,
@@ -62,9 +82,10 @@ export function normalizeSource(
     return "direct";
   }
   if (!host) return "direct";
-  if (ownHost && host === String(ownHost).toLowerCase().split(":")[0]) return "internal";
+  const own = [ownHost, siteHost()].filter(Boolean).map((h) => bareHost(String(h)));
+  if (own.includes(bareHost(host))) return "internal";
   for (const [rx, name] of REFERRER_GROUPS) if (rx.test(host)) return name;
-  return "site:" + host.replace(/^www\./, "").slice(0, 60);
+  return OTHER_SITE;
 }
 
 // Ботове и проверки не са посетители. Грубо, но достатъчно за брой на ден.

@@ -52,6 +52,57 @@ test("buildPayload: ≤ лимита и валиден JSON", () => {
   assert.equal(JSON.parse(buildPayload({ title: "Т", body: "б", url: "http://a" })).url, "/");
 });
 
+test("isPushEndpoint: само https към известните push услуги", () => {
+  for (const ok of [
+    "https://fcm.googleapis.com/fcm/send/abc:APA91bXyz",
+    "https://updates.push.services.mozilla.com/wpush/v2/gAAAAABk",
+    "https://web.push.apple.com/QMx1abc",
+    "https://api.push.apple.com/3/device/abc",
+    "https://wns2-par02p.notify.windows.com/w/?token=BQYAAAB%3d",
+    "https://db5p.notify.windows.com/w/?token=x",
+    "https://fcm.googleapis.com:443/fcm/send/abc", // 443 е портът по подразбиране
+  ]) {
+    assert.ok(isPushEndpoint(ok), ok);
+  }
+});
+
+test("isPushEndpoint: вътрешни адреси, http, чужди хостове и трикове → отказ (SSRF)", () => {
+  for (const bad of [
+    "http://fcm.googleapis.com/fcm/send/abc", // само https
+    "http://x.com/a",
+    "javascript:alert(1)",
+    "https://attacker.example/slow/1", // чужд хост
+    "https://127.0.0.1/a",
+    "https://127.0.0.1:8443/x",
+    "https://localhost/a",
+    "https://[::1]/a",
+    "https://10.0.0.5/admin",
+    "https://10.1.2.3/a",
+    "https://192.168.0.1/a",
+    "https://172.16.0.1/a",
+    "https://169.254.169.254/latest/meta-data/",
+    "https://x.internal/a",
+    "https://fcm.googleapis.com:8443/fcm/send/abc", // чужд порт
+    "https://fcm.googleapis.com@evil.com/a", // потребител в адреса
+    "https://user:pass@fcm.googleapis.com/a",
+    "https://fcm.googleapis.com.evil.com/a", // наставка-капан
+    "https://evilfcm.googleapis.com/a",
+    "https://fcm.googleapis.com./a", // крайна точка в хоста
+    "https://evil-notify.windows.com/a", // без точка преди notify.windows.com
+    "https://notify.windows.com.evil.com/a",
+    "https://push.services.mozilla.com/a", // само поддомейн на услугата
+    "https://push.apple.com.evil.com/a",
+    "https://evil.com\\@fcm.googleapis.com/a", // „\\“ — различни парсери
+    "https://evil.com\\fcm.googleapis.com/a",
+    "https://fcm.googleapis.com/a b",
+    "https://fcm.googleapis.com/\nX",
+    "https://" + "a".repeat(1000) + ".fcm.googleapis.com/a",
+    "",
+  ]) {
+    assert.ok(!isPushEndpoint(bad), JSON.stringify(bad));
+  }
+});
+
 test("валидатори", () => {
   assert.ok(isPushEndpoint("https://fcm.googleapis.com/fcm/send/abc"));
   assert.ok(!isPushEndpoint("http://x.com/a"));

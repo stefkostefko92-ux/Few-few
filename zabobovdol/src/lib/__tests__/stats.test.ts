@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { normalizePath, normalizeSource, sofiaDay, isBot } from "@/lib/stats-core";
+import { normalizePath, normalizeSource, sofiaDay, isBot, OTHER_SITE } from "@/lib/stats-core";
 
 test("пътят: без query/hash, без опашна черта, чужд вход → /other", () => {
   assert.equal(normalizePath("/kak-da/fb-kakvo-e?s=share#x"), "/kak-da/fb-kakvo-e");
@@ -17,9 +17,25 @@ test("източникът: маркерът печели; иначе домей
   assert.equal(normalizeSource("", "https://www.google.bg/search?q=x", null), "google");
   assert.equal(normalizeSource("", "https://l.facebook.com/l.php?u=x", null), "facebook");
   assert.equal(normalizeSource("", "https://zabobovdol.carbonstealth.eu/uslugi", "zabobovdol.carbonstealth.eu"), "internal");
-  assert.equal(normalizeSource("", "https://www.example.org/a", null), "site:example.org");
+  assert.equal(normalizeSource("", "https://www.example.org/a", null), "other-site");
   assert.equal(normalizeSource("", null, null), "direct");
   assert.equal(normalizeSource("", "не-url", null), "direct");
+});
+
+test("източникът: чужд домейн НЕ се пази — всеки непознат сайт е един и същ „other-site“", () => {
+  const seen = new Set<string>();
+  for (let i = 0; i < 300; i++) seen.add(normalizeSource("", `https://x${i}.example/`, "zabobovdol.carbonstealth.eu"));
+  assert.deepEqual([...seen], [OTHER_SITE]);
+  assert.equal(normalizeSource("", "https://intranet.firma.local/tainen-proekt", null), "other-site");
+  assert.equal(normalizeSource("", "https://192.168.1.10/", null), "other-site");
+});
+
+test("източникът: собственият домейн (с/без www, с порт, и каноничният SITE) е „internal“", () => {
+  assert.equal(normalizeSource("", "https://www.zabobovdol.carbonstealth.eu/a", "zabobovdol.carbonstealth.eu"), "internal");
+  assert.equal(normalizeSource("", "https://zabobovdol.carbonstealth.eu/a", "www.zabobovdol.carbonstealth.eu:443"), "internal");
+  // Заявката е дошла на друг Host, но препращащият е каноничният домейн.
+  assert.equal(normalizeSource("", "https://zabobovdol.carbonstealth.eu/a", "localhost:3000"), "internal");
+  assert.equal(normalizeSource("", "https://zabobovdol.carbonstealth.eu/a", null), "internal");
 });
 
 test("денят е по София (23:30 UTC през лятото е вече следващият ден)", () => {
