@@ -8,6 +8,7 @@ import { BoardFrame, DiceRow } from "../board/BoardFrame";
 import { useMatch } from "../useMatch";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill } from "../scene/SceneShell";
+import { registerE2EHook } from "../board/e2eHook";
 import type { BackgammonScene, PointId } from "./backgammonScene";
 import "./backgammon.css";
 
@@ -158,6 +159,9 @@ export function BackgammonView({ title }: { title: string }) {
   pickRef.current = handlePick;
   const viewRef = useRef({ state, seat, movableFroms, targetsFor });
   viewRef.current = { state, seat, movableFroms, targetsFor };
+  // Тестовата кука (само под WebDriver) чете какво вижда играчът.
+  const e2eRef = useRef({ state, legal, fromSel, targetsFor, myTurn });
+  e2eRef.current = { state, legal, fromSel, targetsFor, myTurn };
 
   // Canvas mounts only once state arrives — re-run the GL init on that flip.
   const glReady = !!state;
@@ -165,6 +169,7 @@ export function BackgammonView({ title }: { title: string }) {
     if (!useGL || !glReady) return;
     let scene: BackgammonScene | null = null;
     let ro: ResizeObserver | null = null;
+    let unhook = () => {};
     let cancelled = false;
     const canvas = canvasRef.current;
     const wrap = wrapRef.current;
@@ -173,16 +178,32 @@ export function BackgammonView({ title }: { title: string }) {
     void import("./backgammonScene")
       .then(({ BackgammonScene }) => {
         if (cancelled) return;
-        scene = new BackgammonScene(canvas, width());
-        sceneRef.current = scene;
+        const s = new BackgammonScene(canvas, width());
+        scene = s;
+        sceneRef.current = s;
         const v = viewRef.current;
-        if (v.state) scene.setState(v.state, v.seat, { from: v.movableFroms, targets: v.targetsFor });
-        ro = new ResizeObserver(() => scene?.resize(width()));
+        if (v.state) s.setState(v.state, v.seat, { from: v.movableFroms, targets: v.targetsFor });
+        ro = new ResizeObserver(() => s.resize(width()));
         ro.observe(wrap);
+        unhook = registerE2EHook("backgammon", {
+          screenPoint: (id) =>
+            s.screenPoint(id === "BAR" || id === "OFF" ? id : Number(id), canvas.getBoundingClientRect()),
+          view: () => {
+            const e = e2eRef.current;
+            return {
+              state: e.state,
+              legal: e.legal,
+              selected: e.fromSel,
+              targets: [...e.targetsFor],
+              myTurn: e.myTurn,
+            };
+          },
+        });
       })
       .catch(() => {});
     return () => {
       cancelled = true;
+      unhook();
       ro?.disconnect();
       scene?.destroy();
       sceneRef.current = null;
@@ -221,6 +242,12 @@ export function BackgammonView({ title }: { title: string }) {
       <div
         key={idx}
         onClick={() => pickPoint(idx)}
+        data-point={idx}
+        data-color={cell?.color}
+        data-count={cell?.count ?? 0}
+        data-movable={myTurn && movableFroms.has(idx) ? "true" : undefined}
+        data-target={isTarget ? "true" : undefined}
+        data-selected={isFrom ? "true" : undefined}
         className={cn(
           "bg-point",
           side === "top" ? "bg-point--top" : "bg-point--bottom",
@@ -258,8 +285,14 @@ export function BackgammonView({ title }: { title: string }) {
         </div>
       ) : null}
       {state ? (
-        <div className="flex flex-col items-center gap-4">
-          <div className="flex items-center gap-4">
+        <div
+          className="flex flex-col items-center gap-4"
+          data-bg-game={state.match.game}
+          data-bg-score={`${myPts}:${oppPts}`}
+          data-bg-off={`${state.off[seat] ?? 0}:${state.off[oppSeat] ?? 0}`}
+        >
+          {/* На телефон хапчетата се пренасят на нов ред, вместо да се смачкат по буква. */}
+          <div className="flex flex-wrap items-center justify-center gap-2 whitespace-nowrap sm:gap-4">
             <ScorePill label={`${oppName} · ${oppColor}`} value={`${t("backgammon.off")}: ${state.off[seat === 0 ? 1 : 0] ?? 0}`} />
             {state.openingRoll ? (
               <ScorePill
@@ -278,6 +311,7 @@ export function BackgammonView({ title }: { title: string }) {
             <div ref={wrapRef} className="bg-gl">
               <canvas
                 ref={canvasRef}
+                data-board-canvas="backgammon"
                 onPointerUp={onCanvasClick}
                 style={{ width: "100%", height: "auto", display: "block", cursor: myTurn ? "pointer" : "default" }}
               />
@@ -287,8 +321,12 @@ export function BackgammonView({ title }: { title: string }) {
               <div className="bg-board">
                 <div className="bg-quad">{topPoints.slice(0, 6).map((i) => renderPoint(i, "top"))}</div>
                 <div className="bg-bar">
-                  <span className="bg-count">{state.bar[seat === 0 ? 1 : 0] ? `▼${state.bar[seat === 0 ? 1 : 0]}` : ""}</span>
-                  <span className="bg-count">{state.bar[seat] ? `▲${state.bar[seat]}` : ""}</span>
+                  <span className="bg-count" data-bar="opp" data-count={state.bar[seat === 0 ? 1 : 0] ?? 0}>
+                    {state.bar[seat === 0 ? 1 : 0] ? `▼${state.bar[seat === 0 ? 1 : 0]}` : ""}
+                  </span>
+                  <span className="bg-count" data-bar="mine" data-count={state.bar[seat] ?? 0}>
+                    {state.bar[seat] ? `▲${state.bar[seat]}` : ""}
+                  </span>
                 </div>
                 <div className="bg-quad">{topPoints.slice(6).map((i) => renderPoint(i, "top"))}</div>
                 <div className="bg-quad">{bottomPoints.slice(0, 6).map((i) => renderPoint(i, "bottom"))}</div>
@@ -298,20 +336,37 @@ export function BackgammonView({ title }: { title: string }) {
             </BoardFrame>
           )}
 
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
             <ScorePill
               label={`${user?.displayName ?? t("game.you")} · ${myColor}`}
               value={`${t("backgammon.off")}: ${state.off[seat] ?? 0}`}
               highlight={myTurn}
             />
             {state.remaining.length > 0 ? <DiceRow values={state.remaining} /> : null}
-            {rollAction ? <Button onClick={() => { playCue("flip"); send(rollAction); }}>{t("backgammon.roll")}</Button> : null}
-            {passAction ? <Button variant="ghost" onClick={() => send(passAction)}>{t("backgammon.pass")}</Button> : null}
+            {rollAction ? (
+              <Button data-action="roll" onClick={() => { playCue("flip"); send(rollAction); }}>
+                {t("backgammon.roll")}
+              </Button>
+            ) : null}
+            {passAction ? (
+              <Button data-action="pass" variant="ghost" onClick={() => send(passAction)}>
+                {t("backgammon.pass")}
+              </Button>
+            ) : null}
             {(state.bar[seat] ?? 0) > 0 ? (
-              <Button variant="felt" onClick={() => setFromSel("BAR")}>{t("backgammon.bar")}</Button>
+              <Button
+                data-action="bar"
+                data-selected={fromSel === "BAR" ? "true" : undefined}
+                variant="felt"
+                onClick={() => setFromSel("BAR")}
+              >
+                {t("backgammon.bar")}
+              </Button>
             ) : null}
             {canBearOff ? (
               <Button
+                data-action="bear-off"
+                data-target={targetsFor.has("OFF") ? "true" : undefined}
                 variant={targetsFor.has("OFF") ? "brass" : "felt"}
                 onClick={pickBearOff}
               >

@@ -6,6 +6,7 @@ import { BoardFrame, Die } from "../board/BoardFrame";
 import { useMatch } from "../useMatch";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene } from "../scene/SceneShell";
+import { registerE2EHook } from "../board/e2eHook";
 import { CENTER, HOME, N, SEAT_COLORS, TRACK, houseSeat, tokenCoord } from "./board";
 import type { LudoScene, LudoToken } from "./ludoScene";
 import "./ludo.css";
@@ -141,6 +142,9 @@ export function LudoView({ title }: { title: string }) {
   moveRef.current = moveToken;
   const viewRef = useRef({ state, seat, movable });
   viewRef.current = { state, seat, movable };
+  // Тестовата кука (само под WebDriver) чете какво вижда играчът.
+  const e2eRef = useRef({ state, legal, movable, myTurn });
+  e2eRef.current = { state, legal, movable, myTurn };
 
   // Canvas mounts only once state arrives — re-run the GL init on that flip.
   const glReady = !!state;
@@ -148,6 +152,7 @@ export function LudoView({ title }: { title: string }) {
     if (!useGL || !glReady) return;
     let scene: LudoScene | null = null;
     let ro: ResizeObserver | null = null;
+    let unhook = () => {};
     let cancelled = false;
     const canvas = canvasRef.current;
     const wrap = wrapRef.current;
@@ -156,16 +161,26 @@ export function LudoView({ title }: { title: string }) {
     void import("./ludoScene")
       .then(({ LudoScene }) => {
         if (cancelled) return;
-        scene = new LudoScene(canvas, width());
-        sceneRef.current = scene;
+        const s = new LudoScene(canvas, width());
+        scene = s;
+        sceneRef.current = s;
         const v = viewRef.current;
-        if (v.state) scene.setState(v.state.progress, v.state.seats, v.seat, v.movable, v.state.die);
-        ro = new ResizeObserver(() => scene?.resize(width()));
+        if (v.state) s.setState(v.state.progress, v.state.seats, v.seat, v.movable, v.state.die);
+        ro = new ResizeObserver(() => s.resize(width()));
         ro.observe(wrap);
+        // id на пул: "<място>:<пул>", напр. "0:2".
+        unhook = registerE2EHook("ludo", {
+          screenPoint: (id) => s.screenPoint(String(id), canvas.getBoundingClientRect()),
+          view: () => {
+            const e = e2eRef.current;
+            return { state: e.state, legal: e.legal, movable: [...e.movable], myTurn: e.myTurn };
+          },
+        });
       })
       .catch(() => {});
     return () => {
       cancelled = true;
+      unhook();
       ro?.disconnect();
       scene?.destroy();
       sceneRef.current = null;
@@ -182,7 +197,13 @@ export function LudoView({ title }: { title: string }) {
     const scene = sceneRef.current;
     const canvas = canvasRef.current;
     if (!scene || !canvas) return;
-    const hit: LudoToken | null = scene.pick(e.clientX, e.clientY, canvas.getBoundingClientRect());
+    // My movable pawn wins over another pawn standing in front of it on the ray.
+    const hit: LudoToken | null = scene.pick(
+      e.clientX,
+      e.clientY,
+      canvas.getBoundingClientRect(),
+      (tk) => tk.seat === seat && movable.has(tk.token),
+    );
     if (hit && hit.seat === seat) moveRef.current(hit.token);
   }
 
@@ -219,6 +240,7 @@ export function LudoView({ title }: { title: string }) {
             >
               <canvas
                 ref={canvasRef}
+                data-board-canvas="ludo"
                 onPointerUp={onCanvasClick}
                 style={{ width: "100%", height: "auto", display: "block", cursor: myTurn ? "pointer" : "default" }}
               />
@@ -281,11 +303,18 @@ export function LudoView({ title }: { title: string }) {
                         disabled={!p.movable}
                         onClick={() => p.seat === seat && moveToken(p.token)}
                         aria-label={t("a11y.token", { seat: p.seat, token: p.token })}
+                        data-seat={p.seat}
+                        data-token={p.token}
+                        data-progress={state.progress[p.seat]![p.token]}
+                        data-movable={p.movable ? "true" : undefined}
                         className={cn("ludo-pawn", p.movable && "ludo-pawn--movable")}
                         style={{
                           background: SEAT_COLORS[p.seat],
                           // fan-stack multiple pawns on one cell
                           transform: here.length > 1 ? `translate(${(idx % 2) * 6 - 3}px, ${Math.floor(idx / 2) * 6 - 3}px)` : undefined,
+                          // A pawn I can move sits ON TOP of the fan: on a shared (safe)
+                          // cell a later seat's disabled pawn covered mine and ate the click.
+                          zIndex: p.movable ? 2 : undefined,
                         }}
                       />
                     ))}
@@ -299,10 +328,14 @@ export function LudoView({ title }: { title: string }) {
           <div className="ludo-controls">
             {state.die && !useGL ? <Die value={state.die} rolling={dieRolling} /> : null}
             {rollAction ? (
-              <Button onClick={() => { playCue("flip"); m.send(rollAction); }}>{t("backgammon.roll")}</Button>
+              <Button data-action="roll" onClick={() => { playCue("flip"); m.send(rollAction); }}>
+                {t("backgammon.roll")}
+              </Button>
             ) : null}
             {passAction ? (
-              <Button variant="ghost" onClick={() => m.send(passAction)}>{t("backgammon.pass")}</Button>
+              <Button data-action="pass" variant="ghost" onClick={() => m.send(passAction)}>
+                {t("backgammon.pass")}
+              </Button>
             ) : null}
             {myTurn && movable.size > 0 ? <span className="text-sm text-ink-muted">{t("ludo.pickToken")}</span> : null}
           </div>

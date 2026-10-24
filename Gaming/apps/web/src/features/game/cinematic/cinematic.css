@@ -328,9 +328,18 @@
   opacity: 0.85;
 }
 
-/* Subtle static sheen band on board pieces + checkers for a glazed look. */
-.cine .aso-piece,
-.cine .bg-checker,
-.cine .ludo-pawn {
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 45%);
+/* Subtle static sheen band on board pieces + checkers for a glazed look.
+   A layer ON TOP of the piece (::before) — never `background-image` on the
+   piece itself: that replaced the white/black gradients of .aso-piece--w/b
+   and .bg-checker--w/b, so in the 2D boards every man and checker turned
+   transparent (the square showed through) and the two sides looked the same. */
+.cine .aso-piece::before,
+.cine .bg-checker::before,
+.cine .ludo-pawn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 45%);
 }

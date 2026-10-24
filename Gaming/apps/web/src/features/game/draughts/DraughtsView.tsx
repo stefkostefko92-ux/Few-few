@@ -7,6 +7,7 @@ import { BoardFrame } from "../board/BoardFrame";
 import { useMatch } from "../useMatch";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill } from "../scene/SceneShell";
+import { registerE2EHook } from "../board/e2eHook";
 import type { DraughtsScene } from "./draughtsScene";
 
 function webglSupported(): boolean {
@@ -127,6 +128,9 @@ export function DraughtsView({ title }: { title: string }) {
   clickRef.current = onCell;
   const viewRef = useRef({ board: state?.board, from, targets });
   viewRef.current = { board: state?.board, from, targets };
+  // Тестовата кука (само под WebDriver) чете какво вижда играчът.
+  const e2eRef = useRef({ board: state?.board ?? [], legal, from, targets, myTurn });
+  e2eRef.current = { board: state?.board ?? [], legal, from, targets, myTurn };
 
   // Canvas mounts only once state arrives — re-run the GL init on that flip.
   const glReady = !!state;
@@ -134,6 +138,7 @@ export function DraughtsView({ title }: { title: string }) {
     if (!useGL || !glReady) return;
     let scene: DraughtsScene | null = null;
     let ro: ResizeObserver | null = null;
+    let unhook = () => {};
     let cancelled = false;
     const canvas = canvasRef.current;
     const wrap = wrapRef.current;
@@ -142,16 +147,25 @@ export function DraughtsView({ title }: { title: string }) {
     void import("./draughtsScene")
       .then(({ DraughtsScene }) => {
         if (cancelled) return;
-        scene = new DraughtsScene(canvas, width(), seat === 1 ? "black" : "white");
-        sceneRef.current = scene;
+        const s = new DraughtsScene(canvas, width(), seat === 1 ? "black" : "white");
+        scene = s;
+        sceneRef.current = s;
         const v = viewRef.current;
-        if (v.board) scene.setState(v.board, { selected: v.from, targets: new Set(v.targets) });
-        ro = new ResizeObserver(() => scene?.resize(width()));
+        if (v.board) s.setState(v.board, { selected: v.from, targets: new Set(v.targets) });
+        ro = new ResizeObserver(() => s.resize(width()));
         ro.observe(wrap);
+        unhook = registerE2EHook("draughts", {
+          screenPoint: (id) => s.screenPoint(Number(id), canvas.getBoundingClientRect()),
+          view: () => {
+            const e = e2eRef.current;
+            return { board: e.board, legal: e.legal, selected: e.from, targets: e.targets, myTurn: e.myTurn };
+          },
+        });
       })
       .catch(() => {});
     return () => {
       cancelled = true;
+      unhook();
       ro?.disconnect();
       scene?.destroy();
       sceneRef.current = null;
@@ -193,6 +207,7 @@ export function DraughtsView({ title }: { title: string }) {
             >
               <canvas
                 ref={canvasRef}
+                data-board-canvas="draughts"
                 onPointerUp={onCanvasClick}
                 style={{ width: "100%", height: "auto", display: "block", cursor: myTurn ? "pointer" : "default" }}
               />
@@ -214,6 +229,11 @@ export function DraughtsView({ title }: { title: string }) {
                     type="button"
                     onClick={() => onCell(i)}
                     aria-label={t("a11y.cell", { i })}
+                    data-cell={i}
+                    data-piece={piece ?? undefined}
+                    data-movable={myTurn && movable.has(i) ? "true" : undefined}
+                    data-target={isTarget ? "true" : undefined}
+                    data-selected={isFrom ? "true" : undefined}
                     className={cn(
                       "aso-cell",
                       dark ? "aso-cell--dark" : "aso-cell--light",

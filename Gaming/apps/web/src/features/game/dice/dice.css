@@ -33,6 +33,9 @@
   display: flex;
 }
 .dice-gl__btn {
+  /* Containing block for its „Държа“ tag — without it every tag was laid out
+     against the whole tray and they all stacked under the MIDDLE die. */
+  position: relative;
   flex: 1;
   background: transparent;
   border: 0;

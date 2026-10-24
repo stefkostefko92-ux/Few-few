@@ -27,6 +27,7 @@ import { grainUv, upgradeMaterial } from "../gl/baked.js";
 import { contactShadow, disposeObject, easeInOut, easeOutBack, woodNormal, woodTexture } from "../gl/helpers.js";
 import { defaultGfxParams } from "../gl/gfxRegistry.js";
 import { RenderCore } from "../gl/render.js";
+import { clientToNdc, worldToClient } from "../board/projection.js";
 
 type Piece = "w" | "W" | "b" | "B" | null;
 type Orientation = "white" | "black";
@@ -268,14 +269,20 @@ export class DraughtsScene {
 
   /** Raycast a screen point to a cell index (0..63) or null. */
   pick(clientX: number, clientY: number, rect: DOMRect): number | null {
-    const ndc = new Vector2(((clientX - rect.left) / rect.width) * 2 - 1, -(((clientY - rect.top) / rect.height) * 2 - 1));
-    this.ray.setFromCamera(ndc, this.camera);
+    this.ray.setFromCamera(clientToNdc(clientX, clientY, rect), this.camera);
     const hit = new Vector3();
     if (!this.ray.ray.intersectPlane(this.boardPlane, hit)) return null;
     const col = Math.round(hit.x + 3.5);
     const row = Math.round(hit.z + 3.5);
     if (col < 0 || col > 7 || row < 0 || row > 7) return null;
     return row * 8 + col;
+  }
+
+  /** Тестова кука (board/e2eHook): client координати на центъра на поле 0..63. */
+  screenPoint(i: number, rect: DOMRect): { x: number; y: number } | null {
+    if (!Number.isInteger(i) || i < 0 || i > 63) return null;
+    const [x, z] = this.cellWorld(i);
+    return worldToClient(new Vector3(x, -this.boardPlane.constant, z), this.camera, rect);
   }
 
   resize(width: number): void {

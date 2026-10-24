@@ -41,6 +41,7 @@ import {
 } from "../gl/helpers.js";
 import { defaultGfxParams } from "../gl/gfxRegistry.js";
 import { RenderCore } from "../gl/render.js";
+import { clientToNdc, worldToClient } from "../board/projection.js";
 
 export interface BgState {
   points: number[]; // 24 signed (+seat0/white, -seat1/black)
@@ -94,6 +95,7 @@ export class BackgammonScene {
   private prevPts: number[] | null = null;
   private prevBar: [number, number] = [0, 0];
   private moveAnims: { mesh: Mesh; from: Vector3; to: Vector3; start: number }[] = [];
+  private mySeat = 0;
 
   constructor(canvas: HTMLCanvasElement, width: number) {
     this.reduceMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
@@ -347,6 +349,7 @@ export class BackgammonScene {
   }
 
   setState(state: BgState, mySeat: number, highlight?: { from: Set<PointId>; targets: Set<number | "OFF"> }): void {
+    this.mySeat = mySeat;
     // rebuild checkers each state (≤30 cylinders — cheap, and disposed cleanly)
     disposeObject(this.checkerLayer);
     this.checkerLayer.clear();
@@ -548,10 +551,22 @@ export class BackgammonScene {
 
   /** Raycast a screen point to a board point id (or null). */
   pick(clientX: number, clientY: number, rect: DOMRect): PointId | null {
-    const ndc = new Vector2(((clientX - rect.left) / rect.width) * 2 - 1, -(((clientY - rect.top) / rect.height) * 2 - 1));
-    this.ray.setFromCamera(ndc, this.camera);
+    this.ray.setFromCamera(clientToNdc(clientX, clientY, rect), this.camera);
     const hit = this.ray.intersectObjects(this.hitZones, false)[0];
     return hit ? (hit.object.userData.pid as PointId) : null;
+  }
+
+  /** Тестова кука (board/e2eHook): client координати на зоната за клик на
+   *  точка 0..23, на бара или на МОЯ поднос за изнасяне ("OFF"). */
+  screenPoint(pid: PointId, rect: DOMRect): { x: number; y: number } | null {
+    const zone =
+      pid === "OFF"
+        ? this.hitZones.find((z) => z.userData.pid === "OFF" && Math.sign(z.position.z) === (this.mySeat === 1 ? -1 : 1))
+        : this.hitZones.find((z) => z.userData.pid === pid);
+    if (!zone) return null;
+    const box = (zone.geometry as BoxGeometry).parameters;
+    // Центърът на горната стена — там лъчът от камерата влиза първо в зоната.
+    return worldToClient(new Vector3(zone.position.x, zone.position.y + box.height / 2, zone.position.z), this.camera, rect);
   }
 
   resize(width: number): void {
