@@ -8347,7 +8347,7 @@
           "ffmpeg/WhisperX/auto-editor — скриптуем clip pipeline",
           "Caveman стил — телеграфен изход с точни технически токени"
         ],
-        "lessons": 159
+        "lessons": 162
       },
       "evolution": [
         {
@@ -8727,9 +8727,20 @@
           "date": "2026-10-23",
           "event": "v20.6 — учене",
           "detail": "Научи: EBU R 95 v1.1 (юни 2017): action safe 3,5 %, graphics safe 5 % от всеки ръб; при 1920×1… (+2 още)"
+        },
+        {
+          "version": "20.9.0",
+          "date": "2026-10-24",
+          "event": "v20.9 — учене",
+          "detail": "Научи: Официалният Instagram content-publishing док си противоречи: Rate Limit раздел дава 100… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-24",
+          "type": "learning",
+          "summary": "Научи: „Официалният Instagram content-publishing док си противоречи: Rate Limit раздел дава 100…\" (+2 още)"
+        },
         {
           "date": "2026-10-23",
           "type": "learning",
