@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v3';
 
 /** Всяка външна настройка минава през zod — процесът не тръгва с полуготов конфиг. */
 const schema = z.object({

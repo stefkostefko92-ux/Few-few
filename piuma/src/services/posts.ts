@@ -1,5 +1,5 @@
 import { Prisma, type Post, type PostKind } from '@prisma/client';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { prisma } from '../db.js';
 import { hasBlockingFindings, lintPost, type LintFinding } from '../content/lint.js';
 

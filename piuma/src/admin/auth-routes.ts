@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import QRCode from 'qrcode';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import { audit } from '../audit.js';
 import { config } from '../config.js';
 import { decryptSecret, encryptSecret } from '../crypto.js';
