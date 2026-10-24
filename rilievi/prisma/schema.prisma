@@ -309,8 +309,9 @@ model Scheda {
   /// операторът на кабината).
   sospensioni                  Boolean?
   sospensioniNumero            Int?
-  /// „Operatore da cambiare“ — само при полуавтоматични врати: на етажите са бравите, кабината е с
-  /// оператор (собственикът, 22 октомври 2026); при true — листът 2SG, в същата колона.
+  /// „Operatore da cambiare“ — при полуавтоматични врати (на етажите са бравите, кабината е с оператор;
+  /// собственикът, 22 октомври 2026) и от 24 октомври и при автоматични; при true — листът 2SG, в същата
+  /// колона (при автоматични и „Sospensioni: Sì“ листът е един — на окачванията).
   operatore                    Boolean?
   /// Листът 2SG: {modulo, valori}. Има свой PDF.
   ordineSospensioni            Json?
@@ -351,6 +352,9 @@ model Scheda {
   noteQuadretto                String?
   noteImpianto                 String?
   noteBottoniere               String?
+  /// Разделът „Bottoniere“ (24 октомври 2026): „Bottoniere da sostituire?“ — при true бележка на ръка.
+  bottoniereSostituire         Boolean?
+  bottoniereNote               String?
   /// „Мерки на старите бутониери?“ — при true редовете са в MisuraBottoniera.
   bottoniereMisure             Boolean?
   misureBottoniere             MisuraBottoniera[]
@@ -361,6 +365,10 @@ model Scheda {
   quadroMarcaAltro             String?                  @db.VarChar(120)
   /// Mastech: NG120 или QI Touch — всеки със свой модул за поръчка (в `ordineQuadro`).
   quadroModello                QuadroModello?
+  /// „Quadro di manovra da sostituire?“ (24 октомври 2026) — при false се пита контролът на челюстите в
+  /// таблото („Controllo su quadro manovra da installare?“, раздел „Argano“).
+  quadroSostituire             Boolean?
+  /// Намалената яма и горното пространство — не при хидравлична уредба (от 24 октомври 2026).
   fossaRidotta                 Boolean?
   testataRidotta               Boolean?
   /// „Да попълня ли модула за поръчка на таблото?“ — само при Pelazza.
@@ -376,9 +384,11 @@ model Scheda {
   /// Листът с данните на аргано (за всеки вид): {modulo, valori}. Има свой PDF. Записите с модула на
   /// Montanari не се четат повече (друг `modulo`).
   preventivoArgano             Json?
-  /// Аргано, което остава („Argano da sostituire?“ — No): видът му, сменят ли се челюстите на спирачката;
-  /// комплект за контрол на челюстите и контрол в таблото на управление — при true видът им на ръка.
-  /// Контактите на спирачката не се питат от 17 октомври 2026 — колоната пази старите отговори.
+  /// Аргано, което остава („Argano da sostituire?“ — No): видът му и комплект за контрол на челюстите —
+  /// при true видът му на ръка. Контролът в таблото на управление — когато таблото остава
+  /// (`quadroSostituire` false), при всяко аргано; при true видът му на ръка. „Stop argano da installare?“
+  /// — винаги (24 октомври 2026). Контактите (от 17 октомври) и челюстите на спирачката (от 24 октомври
+  /// 2026) не се питат — колоните пазят старите отговори.
   arganoTipo                   String?                  @db.VarChar(120)
   ganasceFreno                 Boolean?
   contattiFreno                Boolean?
@@ -386,6 +396,7 @@ model Scheda {
   kitControlloGanasceTipo      String?                  @db.VarChar(120)
   controlloQuadro              Boolean?
   controlloQuadroTipo          String?                  @db.VarChar(120)
+  stopArgano                   Boolean?
   /// Бележките на раздела „Argano“.
   arganoNote                   String?
   /// Централата на хидравличния асансьор (src/schede/fields-centralina.ts) — вместо аргано.

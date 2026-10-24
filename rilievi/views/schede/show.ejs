@@ -1,6 +1,6 @@
 <%
   const byKey = Object.fromEntries(sections.flatMap((s) => s.fields).map((f) => [f.key, f]));
-%><%- include('../partials/top', { title: ident.length > 40 ? ident.slice(0, 39) + '…' : ident, scripts: ['allegati', 'carica'] }) %>
+%><%- include('../partials/top', { title: ident.length > 40 ? ident.slice(0, 39) + '…' : ident, scripts: ['allegati', 'carica', 'schizzo-intero'] }) %>
 <div class="page-head">
   <div>
     <a href="/schede"><%= t('schede.back') %></a>
@@ -55,9 +55,18 @@
   <section class="sheet__section" id="s-schizzi" aria-labelledby="h-schizzi">
     <h2 class="sheet__title" id="h-schizzi"><span class="secnum" aria-hidden="true"><%= sections.length + 1 %></span><%= t('schizzi.title') %></h2>
     <ol class="schizzi__fogli">
-      <% schizzi.forEach((foglio, i) => { %><li class="schizzi__foglio"><figure class="schizzi__figura"><%- include('_schizzo', { foglio, titolo: t('schizzi.foglio', { n: i + 1 }) }) %><figcaption class="schizzi__nome"><%= t('schizzi.foglio', { n: i + 1 }) %></figcaption></figure></li>
+      <% schizzi.forEach((foglio, i) => { %><li class="schizzi__foglio"><figure class="schizzi__figura"><button class="schizzi__anteprima" type="button" data-schizzo-intero aria-label="<%= t('schizzi.apri', { n: i + 1 }) %>"><%- include('_schizzo', { foglio, titolo: t('schizzi.foglio', { n: i + 1 }) }) %></button><figcaption class="schizzi__nome"><%= t('schizzi.foglio', { n: i + 1 }) %></figcaption></figure></li>
       <% }) %>
     </ol>
+    <%# Листът на цял екран (schizzo-intero.js): докосване на прегледа го показва тук, Esc или „Chiudi“ — обратно. %>
+    <dialog class="schizzo-intero" data-schizzo-intero-vista aria-labelledby="schizzo-intero-titolo">
+      <div class="schizzo-intero__testa">
+        <h2 class="schizzo-intero__titolo" id="schizzo-intero-titolo"></h2>
+        <button class="btn btn--sm" type="button" data-schizzo-intero-chiudi><%- include('../partials/icon', { name: 'close' }) %><%= t('schizzi.chiudiVista') %></button>
+      </div>
+      <div class="schizzo-intero__corpo" data-schizzo-intero-corpo></div>
+      <p class="schizzo-intero__ruota"><%= t('schizzi.editor.ruota') %></p>
+    </dialog>
   </section>
   <% } %>
   <p class="sheet__meta">

@@ -6,6 +6,8 @@
     "nuovo": "Nuovo foglio",
     "foglio": "Foglio {n}",
     "disegna": "Disegna",
+    "apri": "Apri il foglio {n} a schermo intero",
+    "chiudiVista": "Chiudi",
     "elimina": "Elimina foglio",
     "eliminaConferma": "Eliminare il foglio {n}? Il disegno sparisce quando salvi la scheda.",
     "massimo": "Al massimo {n} fogli per scheda.",

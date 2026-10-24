@@ -17,7 +17,9 @@ describe('the field list', () => {
     // Section 1 is laid out like the head and the plate of the sheet: date, address and work order,
     // matricola and lift number, then load, persons, stops and make. The power unit of a hydraulic
     // lift stands where its machine would; the emergency call is with the alarm, the porter's lodge
-    // last; every section with a supplier form ends with its notes.
+    // last; every section with a supplier form ends with its notes. 24 October 2026: is the panel to
+    // replace, the stop of the argano, the brake shoes gone, the operator after the suspensions, and
+    // the push-button panels in a section of their own.
     assert.deepEqual(
       SECTIONS.map((section) => section.key),
       [
@@ -32,6 +34,7 @@ describe('the field list', () => {
         'cavi',
         'serrature',
         'allarme',
+        'bottoniere',
         'note',
       ],
     );
@@ -53,6 +56,7 @@ describe('the field list', () => {
         'tipoImpianto',
         'tipoPorte',
         'doppioAccesso',
+        'quadroSostituire',
         'quadroMarca',
         'quadroMarcaAltro',
         'quadroModello',
@@ -62,11 +66,11 @@ describe('the field list', () => {
         'quadroNote',
         'arganoPreventivo',
         'arganoTipo',
-        'ganasceFreno',
         'kitControlloGanasce',
         'kitControlloGanasceTipo',
         'controlloQuadro',
         'controlloQuadroTipo',
+        'stopArgano',
         'arganoNote',
         ...SEZIONE_CENTRALINA.fields.map((field) => field.key),
         'funiDiametroMm',
@@ -91,15 +95,17 @@ describe('the field list', () => {
         'serratureTipo',
         'pattinoRetrattile',
         'pattinoRetrattileTipo',
-        'operatore',
         'sospensioni',
         'sospensioniNumero',
+        'operatore',
         'serratureNote',
         'telesoccorsoInstallare',
         'perifericaInstallare',
         'cornettaInstallare',
         'allarmePortineria',
         'displayPortineria',
+        'bottoniereSostituire',
+        'bottoniereNote',
         'noteQuadretto',
         'noteImpianto',
         'luceVanoSostituire',

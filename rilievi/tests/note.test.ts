@@ -1,5 +1,6 @@
 // The owner's October 2026 pass on the sheet: notes in the panel, argano and locks sections, the brake
-// checks of an argano that stays, the tie rods with the ropes, a note for the shaft lighting, the
+// checks of an argano that stays and of a panel that stays, the stop of the argano, the tie rods with the
+// ropes, a note for the shaft lighting, the
 // alarm and the emergency call in one section, and every supplier form before its section's notes.
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
@@ -28,40 +29,70 @@ const CHECKS = {
   controlloQuadroTipo: 'Scheda UCM',
 };
 
-describe('the argano that stays', () => {
-  it('asks the shoe check kit and the check on the panel, each with its kind on "Sì"', () => {
+describe('the argano that stays and the panel that stays', () => {
+  it('asks the shoe check kit of an argano that stays, with its kind on "Sì"', () => {
     const kept = parsedOrFail({ ...minimal, arganoPreventivo: 'no', ...CHECKS });
     assert.deepEqual(
-      [
-        kept.kitControlloGanasce,
-        kept.kitControlloGanasceTipo,
-        kept.controlloQuadro,
-        kept.controlloQuadroTipo,
-      ],
-      [true, 'Microinterruttori Montanari', true, 'Scheda UCM'],
+      [kept.kitControlloGanasce, kept.kitControlloGanasceTipo],
+      [true, 'Microinterruttori Montanari'],
     );
     const without = parsedOrFail({
       ...minimal,
       arganoPreventivo: 'no',
       ...CHECKS,
       kitControlloGanasce: 'no',
-      controlloQuadro: 'no',
     });
     assert.deepEqual([without.kitControlloGanasce, without.kitControlloGanasceTipo], [false, null]);
-    assert.deepEqual([without.controlloQuadro, without.controlloQuadroTipo], [false, null]);
-  });
-
-  it('drops the checks with a new argano, an unanswered question and a hydraulic lift', () => {
     for (const body of [
       { arganoPreventivo: 'si' },
       {},
       { arganoPreventivo: 'no', tipoImpianto: 'IDRAULICO' },
     ]) {
       const data = parsedOrFail({ ...minimal, ...CHECKS, ...body });
-      for (const key of Object.keys(CHECKS)) {
-        assert.equal(data[key as keyof typeof data], null, `${JSON.stringify(body)} ${key}`);
-      }
+      assert.deepEqual(
+        [data.kitControlloGanasce, data.kitControlloGanasceTipo],
+        [null, null],
+        JSON.stringify(body),
+      );
     }
+  });
+
+  it('asks the check on the panel only when the panel stays, with any argano (the owner, 24 October 2026)', () => {
+    for (const arganoPreventivo of ['si', 'no', '']) {
+      const data = parsedOrFail({
+        ...minimal,
+        quadroSostituire: 'no',
+        arganoPreventivo,
+        ...CHECKS,
+      });
+      assert.deepEqual(
+        [data.quadroSostituire, data.controlloQuadro, data.controlloQuadroTipo],
+        [false, true, 'Scheda UCM'],
+        arganoPreventivo,
+      );
+    }
+    for (const body of [
+      { quadroSostituire: 'si' },
+      {},
+      { quadroSostituire: 'no', tipoImpianto: 'IDRAULICO' },
+    ]) {
+      const data = parsedOrFail({ ...minimal, ...CHECKS, ...body });
+      assert.deepEqual(
+        [data.controlloQuadro, data.controlloQuadroTipo],
+        [null, null],
+        JSON.stringify(body),
+      );
+    }
+  });
+
+  it('asks the stop of the argano always, never for a hydraulic lift', () => {
+    for (const arganoPreventivo of ['si', 'no', '']) {
+      const data = parsedOrFail({ ...minimal, arganoPreventivo, stopArgano: 'si' });
+      assert.equal(data.stopArgano, true, arganoPreventivo);
+    }
+    assert.equal(parsedOrFail({ ...minimal, stopArgano: 'no' }).stopArgano, false);
+    const hydraulic = parsedOrFail({ ...minimal, tipoImpianto: 'IDRAULICO', stopArgano: 'si' });
+    assert.equal(hydraulic.stopArgano, null);
   });
 
   it('keeps a hidden kind out of the errors: what is not shown is not read', () => {
@@ -72,9 +103,11 @@ describe('the argano that stays', () => {
       kitControlloGanasceTipo: 'x'.repeat(500),
     });
     assert.equal(data.kitControlloGanasceTipo, null);
+    const hidden = parsedOrFail({ ...minimal, ...CHECKS, controlloQuadroTipo: 'x'.repeat(500) });
+    assert.equal(hidden.controlloQuadroTipo, null);
     const shown = parseScheda({
       ...minimal,
-      arganoPreventivo: 'no',
+      quadroSostituire: 'no',
       ...CHECKS,
       controlloQuadroTipo: 'x'.repeat(121),
     });
@@ -136,7 +169,11 @@ describe('the notes and the tie rods', () => {
     assert.equal(t('scheda.field.buonoLavoro'), 'Buono di lavoro');
     assert.equal(t('scheda.buonoRiferimento'), 'Buono di lavoro');
     assert.equal(t('scheda.field.pattinoRetrattileTipo'), 'Tipo di pattino retrattile');
-    assert.equal(t('scheda.field.controlloQuadro'), 'Controllo su quadro manovra');
+    assert.equal(t('scheda.field.controlloQuadro'), 'Controllo su quadro manovra da installare?');
+    assert.equal(t('scheda.field.kitControlloGanasce'), 'Kit controllo ganasce da installare?');
+    assert.equal(t('scheda.field.stopArgano'), 'Stop argano da installare?');
+    assert.equal(t('scheda.section.serrature'), 'Serrature, sospensioni o operatore');
+    assert.equal(t('scheda.question.quadroSostituire'), 'Quadro di manovra da sostituire?');
   });
 });
 
@@ -167,12 +204,13 @@ describe('the supplier forms in the form', () => {
     const after = (key: string) =>
       Object.fromEntries(moduliDopo(SECTIONS.find((s) => s.key === key)!.fields));
     assert.deepEqual(after('quadro'), { quadroOrdine: ['quadroOrdine'] });
-    assert.deepEqual(after('argano'), { controlloQuadroTipo: ['arganoPreventivo'] });
-    // The 2SG sheet twice, each after its own question: the operator (semi-automatic doors) and the
-    // suspensions (automatic doors).
+    // The check on the panel follows the panel, not the argano (24 October 2026).
+    assert.deepEqual(after('argano'), { kitControlloGanasceTipo: ['arganoPreventivo'] });
+    // The 2SG sheet twice, each after its own question: the suspensions (automatic doors) and the
+    // operator (automatic and semi-automatic doors) — one of them open at a time.
     assert.deepEqual(after('serrature'), {
-      operatore: ['operatore'],
       sospensioniNumero: ['sospensioni'],
+      operatore: ['operatore'],
     });
     assert.deepEqual(after('note'), {});
     for (const key of ['quadro', 'argano', 'serrature']) {

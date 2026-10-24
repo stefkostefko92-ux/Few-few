@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
-import { PDFDocument } from 'pdf-lib';
+import { decodePDFRawStream, PDFArray, PDFDocument, PDFRawStream } from 'pdf-lib';
 import { primitiviFoglio } from '../../src/schizzi/forme.js';
 import { foglioSchema } from '../../src/schizzi/model.js';
 import { Browser, makeAzienda, prisma, signedIn, startApp, stopApp } from './harness.js';
@@ -77,12 +77,27 @@ async function pronta() {
 describe('the elements of the sketch pad', () => {
   it('saves every kind and draws it the same in the page, the print and the PDF', async () => {
     const { browser, id } = await pronta();
-    const pdfPages = async () => {
+    // The sheets drawn in the PDF: each one is clipped to its frame (`W n` — the only clip there,
+    // src/schede/pdf-schizzi.ts). Not the number of pages: a sheet fits on the last one when it has room.
+    const pdfSheets = async () => {
       const reply = await browser.get(`/schede/${id}/pdf`);
       assert.equal(reply.status, 200);
-      return (await PDFDocument.load(reply.bytes)).getPageCount();
+      const pdf = await PDFDocument.load(reply.bytes);
+      let content = '';
+      for (const page of pdf.getPages()) {
+        const contents = page.node.Contents();
+        const streams =
+          contents instanceof PDFArray
+            ? contents.asArray().map((ref) => pdf.context.lookup(ref))
+            : [contents];
+        for (const stream of streams) {
+          if (stream instanceof PDFRawStream)
+            content += `${Buffer.from(decodePDFRawStream(stream).decode()).toString('latin1')}\n`;
+        }
+      }
+      return (content.match(/^W n$/gm) ?? []).length;
     };
-    const plain = await pdfPages();
+    assert.equal(await pdfSheets(), 0);
     const sent = foglio(...TUTTI);
     assert.equal((await salva(browser, id, { schizzo: sent })).status, 303);
     assert.deepEqual(await fogli(id), [JSON.parse(sent)]);
@@ -100,7 +115,7 @@ describe('the elements of the sketch pad', () => {
       }
       assert.match(body, /transform="rotate\(-90 /, `${page}: the upright dimension`);
     }
-    assert.ok((await pdfPages()) > plain, 'the PDF has the sheet');
+    assert.equal(await pdfSheets(), 1, 'the PDF has the sheet');
   });
 
   it('escapes the texts in the page, the print and the returned form', async () => {

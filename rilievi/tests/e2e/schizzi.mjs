@@ -1,7 +1,8 @@
 // The sketch pad in a real browser (public/js/schizzi.js, schizzo-*.js): the MASTER turns it on for the
 // company, a new sheet opens the full-screen editor, every tool draws (schizzi-strumenti.mjs); "Done"
 // gives the sheet back to the form (preview, unsaved changes) with the text still being typed, the sheet
-// is drawn again (schizzi-tastiera.mjs), saved, shown, printed; the editor (with a menu open) and the
+// is drawn again from a tap on its preview (schizzi-tastiera.mjs), saved, shown (a tap — on the whole
+// screen), printed; the editor (with a menu open) and the
 // block pass the accessibility audit; the layouts of a tablet and of a phone on its side.
 import { join } from 'node:path';
 import { audit, fail } from './helpers.mjs';
@@ -41,10 +42,11 @@ export async function checkSketches(page, { base, aziendaPath, sheetUrl, shots, 
   await dialog.locator('[data-schizzo-fatto]').click();
   await dialog.waitFor({ state: 'hidden' });
 
-  // Drawn again: the menus from the keyboard (a shape chosen), then something selected — each time the
-  // editor opens again clean; nothing changed — the sheet stays.
+  // Drawn again — a tap on its preview opens it whole (the owner, 24 October 2026): the menus from the
+  // keyboard (a shape chosen), then something selected — each time the editor opens again clean;
+  // nothing changed — the sheet stays.
   const reopen = async () => {
-    await block.locator('[data-foglio]').last().locator('[data-foglio-disegna]').click();
+    await block.locator('[data-foglio]').last().locator('[data-foglio-anteprima]').click();
     await dialog.waitFor({ state: 'visible' });
   };
   const done = async () => {
@@ -76,8 +78,19 @@ export async function checkSketches(page, { base, aziendaPath, sheetUrl, shots, 
 
   await page.click('.actions button[type=submit]');
   await page.waitForURL(sheetUrl);
-  if ((await page.locator('#s-schizzi svg.schizzo').count()) !== before + 1)
+  if ((await page.locator('#s-schizzi .schizzi__fogli svg.schizzo').count()) !== before + 1)
     fail('sketches: the sheet page does not show them');
+  // On the sheet page a tap shows the sheet on the whole screen; Esc goes back.
+  await page.locator('[data-schizzo-intero]').last().click();
+  const whole = page.locator('[data-schizzo-intero-vista]');
+  await whole.waitFor({ state: 'visible' });
+  const size = await whole.locator('svg.schizzo').boundingBox();
+  const screen = page.viewportSize();
+  if (!size || (size.width < screen.width * 0.8 && size.height < screen.height * 0.8))
+    fail(`sketches: the whole-screen sheet is small ${JSON.stringify(size)}`);
+  await audit(page, `${scheme} sketch on the whole screen`);
+  await page.keyboard.press('Escape');
+  await whole.waitFor({ state: 'hidden' });
   await checkLayouts(page, `${sheetUrl}/modifica`);
   await page.goto(`${sheetUrl}/stampa`);
   for (const text of ['Vano 1600 × 1400', '1600', 'Ø 600', 'Pistone']) {

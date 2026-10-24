@@ -71,10 +71,10 @@ describe('the MoviLift panel order', () => {
     );
     // The door operator's voltage is linked to the sheet (both ways), not a survey field of the form.
     assert.match(page.body, /<select class="select" id="f-om-voltA" name="om-voltA">/);
-    // The shared values first, then the survey fields, then the linked data.
+    // The shared values first, then one sheet in two places, the survey fields, the linked data.
     assert.match(
       page.body,
-      /\/static\/js\/valori\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/moduli\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/collegati\.js/,
+      /\/static\/js\/valori\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/moduli-gemelli\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/moduli\.js\?v=[^"]+" defer><\/script>\s*<script src="\/static\/js\/collegati\.js/,
     );
   });
 

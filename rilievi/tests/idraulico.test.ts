@@ -40,13 +40,15 @@ describe('the kind of lift', () => {
       arganoPreventivo: 'si',
       'pa-_': '1',
       'pa-pesoCabina': '650',
-      ganasceFreno: 'si',
+      kitControlloGanasce: 'si',
+      stopArgano: 'si',
       limitatoreTipo: 'Montanari',
       tenditore: 'a peso',
     });
     assert.equal(data.arganoPreventivo, null);
     assert.equal(data.preventivoArgano, null);
-    assert.equal(data.ganasceFreno, null);
+    assert.equal(data.kitControlloGanasce, null);
+    assert.equal(data.stopArgano, null);
     assert.equal(data.limitatoreTipo, null);
     assert.equal(data.tenditore, null);
   });
@@ -149,26 +151,25 @@ describe('the kind of lift', () => {
 });
 
 describe('the panel, the brake and the emergency call', () => {
-  it('keeps a reduced pit and headroom with every make of panel', () => {
-    const data = parsedOrFail({ ...minimal, fossaRidotta: 'si', testataRidotta: 'no' });
+  it('keeps a reduced pit and headroom with every make of panel, never for a hydraulic lift', () => {
+    const reduced = { fossaRidotta: 'si', testataRidotta: 'no' };
+    const data = parsedOrFail({ ...minimal, ...reduced });
     assert.equal(data.fossaRidotta, true);
     assert.equal(data.testataRidotta, false);
+    // The owner, 24 October 2026: not with a hydraulic lift.
+    const hydraulic = parsedOrFail({ ...minimal, tipoImpianto: 'IDRAULICO', ...reduced });
+    assert.equal(hydraulic.fossaRidotta, null);
+    assert.equal(hydraulic.testataRidotta, null);
   });
 
-  it('asks the kind of an argano that stays and its brake shoes, no longer the brake contacts', () => {
+  it('asks the kind of an argano that stays, no longer its brake shoes nor the brake contacts', () => {
     const brake = { arganoTipo: 'Montanari M83', ganasceFreno: 'si', contattiFreno: 'no' };
     const kept = parsedOrFail({ ...minimal, arganoPreventivo: 'no', ...brake });
     assert.equal(kept.arganoTipo, 'Montanari M83');
-    assert.equal(kept.ganasceFreno, true);
-    assert.ok(
-      !('contattiFreno' in kept),
-      'taken off the sheet: the old answers stay in the database',
-    );
+    for (const key of ['ganasceFreno', 'contattiFreno'])
+      assert.ok(!(key in kept), `${key} off the sheet: the old answers stay in the database`);
     const replaced = parsedOrFail({ ...minimal, arganoPreventivo: 'si', ...brake });
-    assert.equal(replaced.ganasceFreno, null, 'a new argano comes with its own brake');
     assert.equal(replaced.arganoTipo, null, 'the new one is in the argano sheet');
-    const unanswered = parsedOrFail({ ...minimal, ...brake });
-    assert.equal(unanswered.ganasceFreno, null);
   });
 
   it('asks the tie rods of the counterweight, or in the pit for a hydraulic lift', () => {
@@ -218,7 +219,7 @@ describe('the sections of the print', () => {
     assert.ok(parsed.success && !parsed.data.includes('quadro') && !parsed.data.includes('note'));
     assert.deepEqual(sezioniEscluseDi({ stampa: 'note' }), { success: true, data: [] });
     const none = sezioniEscluseDi({ 'stampa-_': '1' });
-    assert.ok(none.success && none.data.length === 11, 'nothing ticked: only the plate is printed');
+    assert.ok(none.success && none.data.length === 12, 'nothing ticked: only the plate is printed');
   });
 
   it('refuses a section the form does not have, and the fixed identification', () => {
@@ -234,7 +235,7 @@ describe('the sections of the print', () => {
     const data = parsedOrFail({ ...minimal, 'stampa-_': '1', stampa: ['quadro', 'note'] });
     assert.ok(data.sezioniEscluse.includes('allarme'));
     assert.deepEqual(stampaFromBody({ 'stampa-_': '1', stampa: 'note' }), ['note']);
-    assert.equal(stampaFromBody({}).length, 11, 'an old page without the list: all of them');
+    assert.equal(stampaFromBody({}).length, 12, 'an old page without the list: all of them');
   });
 
   it('prints neither the identification (it is in the header) nor the sections left out', () => {

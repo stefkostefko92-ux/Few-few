@@ -1,19 +1,19 @@
 import {
   PORTE_AUTOMATICHE,
+  PORTE_CON_OPERATORE,
   PORTE_CON_PATTINO,
-  PORTE_SEMIAUTOMATICHE,
   yes,
 } from './field-conditions.js';
 import type { SectionDef } from './field-types.js';
 
 /**
- * Разделът „Serrature o sospensioni“ на картата (част от списъка в fields.ts): брави и окачвания на
- * вратите за смяна — само каквото е за вида врати от „Tipologia“ (собственикът, октомври 2026):
- * бравите и шейната — при ръчни и полуавтоматични, операторът на кабината — при полуавтоматични (на
- * етажите са бравите, кабината е автоматична врата с оператор — 22 октомври 2026), окачванията — при
- * автоматични. Бравите — брой и вид; шейната — видът ѝ; операторът — листът 2SG; окачванията — брой и
- * листът 2SG, в който е и операторът (src/ordini/: двата въпроса — една колона, два слота). Бележките —
- * винаги.
+ * Разделът „Serrature, sospensioni o operatore“ на картата (част от списъка в fields.ts): брави,
+ * окачвания и оператор на вратите за смяна — само каквото е за вида врати от „Tipologia“ (собственикът,
+ * октомври 2026): бравите и шейната — при ръчни и полуавтоматични, окачванията — при автоматични,
+ * операторът на кабината — при полуавтоматични (на етажите са бравите, кабината е автоматична врата с
+ * оператор — 22 октомври 2026) и автоматични (24 октомври). Бравите — брой и вид; шейната — видът ѝ;
+ * окачванията — брой и листът 2SG; операторът — същият лист (src/ordini/: двата въпроса — една колона,
+ * два слота; при автоматични с „Sì“ и на двата листът е един — на окачванията). Бележките — винаги.
  */
 export const SEZIONE_SERRATURE = {
   key: 'serrature',
@@ -31,14 +31,6 @@ export const SEZIONE_SERRATURE = {
       when: yes('pattinoRetrattile'),
     },
     {
-      key: 'operatore',
-      kind: 'yesno',
-      wide: true,
-      question: true,
-      modulo: 'ordineSospensioni',
-      when: PORTE_SEMIAUTOMATICHE,
-    },
-    {
       key: 'sospensioni',
       kind: 'yesno',
       wide: true,
@@ -47,6 +39,14 @@ export const SEZIONE_SERRATURE = {
       when: PORTE_AUTOMATICHE,
     },
     { key: 'sospensioniNumero', kind: 'int', min: 0, max: 999, when: yes('sospensioni') },
+    {
+      key: 'operatore',
+      kind: 'yesno',
+      wide: true,
+      question: true,
+      modulo: 'ordineSospensioni',
+      when: PORTE_CON_OPERATORE,
+    },
     { key: 'serratureNote', kind: 'textarea', maxLength: 4000, wide: true },
   ],
 } as const satisfies SectionDef;

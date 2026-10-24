@@ -66,11 +66,13 @@ export const SECTIONS = [
     ],
   },
   {
-    // Таблото за поръчка: марката (Mastech — и моделът); при Pelazza, MoviLift и Mastech — модулът им
-    // за поръчка (src/ordini/). Намалената яма и горното пространство — за таблото; бележките — след
-    // модула (октомври 2026).
+    // Таблото: сменя ли се (при No — контролът на челюстите в таблото, раздел „Argano“; 24 октомври
+    // 2026); марката (Mastech — и моделът); при Pelazza, MoviLift и Mastech — модулът им за поръчка
+    // (src/ordini/). Намалената яма и горното пространство — за таблото, не при хидравлична уредба (24
+    // октомври); бележките — след модула (октомври 2026).
     key: 'quadro',
     fields: [
+      { key: 'quadroSostituire', kind: 'yesno', question: true },
       { key: 'quadroMarca', kind: 'choice', options: QUADRO_MARCA },
       { key: 'quadroMarcaAltro', kind: 'text', maxLength: 120, when: ALTRA('quadroMarca') },
       {
@@ -79,8 +81,8 @@ export const SECTIONS = [
         options: QUADRO_MODELLO,
         when: { field: 'quadroMarca', values: ['MASTECH'] },
       },
-      { key: 'fossaRidotta', kind: 'yesno' },
-      { key: 'testataRidotta', kind: 'yesno' },
+      { key: 'fossaRidotta', kind: 'yesno', when: NON_IDRAULICO },
+      { key: 'testataRidotta', kind: 'yesno', when: NON_IDRAULICO },
       {
         key: 'quadroOrdine',
         kind: 'yesno',
@@ -146,6 +148,22 @@ export const SECTIONS = [
     ],
   },
   {
+    // „Bottoniere“ — избира се при нужда: „Bottoniere da sostituire?“, при Sì — бележка на ръка
+    // (собственикът, 24 октомври 2026; засега само това). Бележката за бутониерите в работа и мерките на
+    // старите — в „Note e lavori“.
+    key: 'bottoniere',
+    fields: [
+      { key: 'bottoniereSostituire', kind: 'yesno', question: true },
+      {
+        key: 'bottoniereNote',
+        kind: 'textarea',
+        maxLength: 4000,
+        wide: true,
+        when: yes('bottoniereSostituire'),
+      },
+    ],
+  },
+  {
     key: 'note',
     fields: [
       { key: 'noteQuadretto', kind: 'textarea', maxLength: 4000, wide: true },
@@ -205,6 +223,7 @@ export const SEARCHABLE = [
   'noteImpianto',
   'luceVanoNote',
   'noteBottoniere',
+  'bottoniereNote',
   'lavoriExtra',
 ] as const satisfies readonly SchedaFieldKey[];
 

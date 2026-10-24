@@ -24,6 +24,7 @@ export type SectionKey =
   | 'cavi'
   | 'serrature'
   | 'allarme'
+  | 'bottoniere'
   | 'note'
   | 'quadro'
   | 'argano'

@@ -7,13 +7,14 @@ import { ARGANI, MASTECH_NG120, MASTECH_QI, MOVILIFT, PELAZZA, SG, type Modulo }
  * двата на Mastech (NG120 и QI Touch — по втория избор, модела); марката и моделът са по един, затова
  * отворен е най-много единият. Листът с данни за аргано (за всеки вид аргано) и листът на 2SG за
  * оператора и окачванията са без марка. Листът на 2SG има два въпроса — „Sospensioni da cambiare?“ при
- * автоматични врати и „Operatore da cambiare?“ при полуавтоматични — и затова два слота (свой префикс и
- * свой път на PDF-а) в една колона; видът на вратите е един, затова отворен е най-много единият.
+ * автоматични врати и „Operatore da cambiare?“ при автоматични и полуавтоматични — и затова два слота
+ * (свой префикс и свой път на PDF-а) в една колона. Отворен е най-много единият: при автоматични с „Sì“ и
+ * на двата листът е един — този на окачванията (слотът на оператора отстъпва, `cede`).
  */
 /**
  * Префиксът във формата: `oq` — таблото Pelazza, `om` — таблото MoviLift, `mn` и `mq` — таблото
  * Mastech NG120 и QI Touch, `pa` — листът за аргано, `sg` и `so` — листът на 2SG (окачванията при
- * автоматични врати, операторът при полуавтоматични).
+ * автоматични врати, операторът при автоматични и полуавтоматични).
  */
 export type Prefisso = 'oq' | 'om' | 'mn' | 'mq' | 'pa' | 'sg' | 'so';
 
@@ -24,6 +25,8 @@ export interface ModuloSlot {
   modello?: { field: 'quadroModello'; value: string };
   column: 'ordineQuadro' | 'preventivoArgano' | 'ordineSospensioni';
   question: 'quadroOrdine' | 'arganoPreventivo' | 'sospensioni' | 'operatore';
+  /** Въпросът на друг слот в същата колона, който има предимство: при неговото видимо „Sì“ този е затворен. */
+  cede?: ModuloSlot['question'];
   prefix: Prefisso;
   path: string;
   modulo: Modulo;
@@ -81,6 +84,7 @@ export const SLOTS: readonly ModuloSlot[] = [
   {
     column: 'ordineSospensioni',
     question: 'operatore',
+    cede: 'sospensioni',
     prefix: 'so',
     path: 'operatore-2sg',
     modulo: SG,
@@ -114,22 +118,25 @@ export function sceltoNellaScheda(slot: ModuloSlot, valueOf: (key: string) => un
   return sceltaDi(slot).every((c) => valueOf(c.field) === c.value);
 }
 
+const si = (answer: unknown): boolean => answer === 'si' || answer === true;
+
 /**
- * Модулът е отворен: въпросът му се вижда (`active`, полетата с условие), отговорът е „Sì“ и марката и
- * моделът са неговите (ако има). Моделът е поле с условие — броят се само видимият. `valueOf` чете от
- * формата (низове) или от записаната карта (true за „Sì“).
+ * Модулът е отворен: въпросът му се вижда (`active`, полетата с условие), отговорът е „Sì“, марката и
+ * моделът са неговите (ако има) и слотът с предимство в колоната му не е отворен (`cede`). Моделът е поле
+ * с условие — броят се само видимият. `valueOf` чете от формата (низове) или от записаната карта (true
+ * за „Sì“).
  */
 export function slotAperto(
   slot: ModuloSlot,
   active: ReadonlySet<string>,
   valueOf: (key: string) => unknown,
 ): boolean {
-  const answer = valueOf(slot.question);
   return (
     active.has(slot.question) &&
-    (answer === 'si' || answer === true) &&
+    si(valueOf(slot.question)) &&
     sceltoNellaScheda(slot, valueOf) &&
-    (!slot.modello || active.has(slot.modello.field))
+    (!slot.modello || active.has(slot.modello.field)) &&
+    !(slot.cede && active.has(slot.cede) && si(valueOf(slot.cede)))
   );
 }
 

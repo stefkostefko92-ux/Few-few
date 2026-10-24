@@ -24,6 +24,7 @@ const SECOND = {
   contattiFreno: 'si',
   kitControlloGanasce: 'si',
   kitControlloGanasceTipo: 'Microinterruttori',
+  quadroSostituire: 'no',
   controlloQuadro: 'no',
   arganoNote: 'Rumore sul cuscinetto',
   tirantiCabinaNumero: '4',
@@ -240,7 +241,7 @@ describe('the second brief', () => {
     const { browser } = await signedIn('TECNICO');
     const id = await create(browser, SECOND);
     const print = await browser.get(`/schede/${id}/stampa`);
-    assert.match(print.body, /<h2>Serrature o sospensioni<\/h2>/);
+    assert.match(print.body, /<h2>Serrature, sospensioni o operatore<\/h2>/);
     assert.match(print.body, /<dt>Serrature da cambiare<\/dt>/);
     assert.doesNotMatch(print.body, /Numero sospensioni/, 'manual doors: no suspensions');
     assert.match(print.body, /Pattino retrattile da cambiare/);

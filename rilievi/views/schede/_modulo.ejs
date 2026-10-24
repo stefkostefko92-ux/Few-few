@@ -7,17 +7,21 @@
   // празния модул: следва източника си, докато човекът не пише в него (moduli.js, collegati.js);
   // data-scritto — поле от огледа, изпразнено от човека в записания модул: остава празно (form.ts). Под
   // всяка група — разминаванията на нейните свързани данни; редът с надпис („Norme di riferimento“) е
-  // група за четеца на екрана.
+  // група за четеца на екрана. data-gemelli — колоната и модулът: два слота с един и същ модул в една
+  // колона (2SG на окачванията и на оператора) са един лист на две места — moduli-gemelli.js пренася
+  // писаното, когато на екрана се смени кое от тях се вижда.
   const name = (key) => slot.prefix + '-' + key;
   // Изборите на картата за модула: марката, после моделът — обвивка за всеки. Модул без марка (листът за
   // аргано, 2SG) е отворен при всяка марка — обвивката е без условие.
   const [marca, modello] = [slot.marca, slot.modello];
   const off = (c) => c && values[c.field] !== c.value;
-  // Отворен само ако и въпросът се вижда — иначе „Sì“ е остатък от друга марка.
+  // Отворен само ако и въпросът се вижда — иначе „Sì“ е остатък от друга марка; и ако слотът с
+  // предимство в колоната не е отворен (2SG при автоматични: „Sospensioni: Sì“ — листът е неговият).
+  const ceduto = slot.cede && active.has(slot.cede) && values[slot.cede] === 'si';
   const on = active.has(slot.question) && values[slot.question] === 'si';
-%><div class="field--wide"<% if (marca) { %> data-when="<%= marca.field %>" data-when-values="<%= marca.value %>"<% } %><% if (off(marca)) { %> data-off<% } %>>
+%><% if (slot.cede) { %><div class="field--wide" data-when="<%= slot.cede %>" data-when-values="si" data-when-not<% if (ceduto) { %> data-off<% } %>><% } %><div class="field--wide"<% if (marca) { %> data-when="<%= marca.field %>" data-when-values="<%= marca.value %>"<% } %><% if (off(marca)) { %> data-off<% } %>>
 <% if (modello) { %><div data-when="<%= modello.field %>" data-when-values="<%= modello.value %>"<% if (off(modello)) { %> data-off<% } %>><% } %>
-<div class="modulo" id="f-<%= slot.prefix %>" data-when="<%= slot.question %>" data-when-values="si"<% if (!on) { %> data-off<% } %> data-modulo>
+<div class="modulo" id="f-<%= slot.prefix %>" data-when="<%= slot.question %>" data-when-values="si"<% if (!on) { %> data-off<% } %> data-modulo data-gemelli="<%= slot.column %>:<%= slot.modulo.id %>">
   <input type="hidden" name="<%= slot.prefix %>-_" value="1">
   <div class="modulo__head">
     <p class="modulo__title"><strong><%= slot.modulo.titolo %></strong><% if (slot.modulo.fornitore) { %> · <%= slot.modulo.fornitore %><% } %></p>
@@ -70,3 +74,4 @@
 </div>
 <% if (modello) { %></div><% } %>
 </div>
+<% if (slot.cede) { %></div><% } %>

@@ -25,9 +25,11 @@ for (const slot of SLOTS) {
       String(req.params.id),
       scope(req, 'schede:trash'),
     );
+    // Записаната карта пази само видимото: „Sì“ значи видим въпрос; слотът с предимство го затваря.
     if (
       !scheda ||
       scheda[slot.question] !== true ||
+      (slot.cede && scheda[slot.cede] === true) ||
       !sceltoNellaScheda(slot, (key) => scheda[key as keyof typeof scheda])
     ) {
       return notFound(req, res);

@@ -154,13 +154,18 @@ describe('supplier forms', () => {
     const { browser } = await signedIn('TECNICO');
     const semi = { ...SURVEY, tipoPorte: ['SEMIAUTOMATICHE'] };
     const id = await create(browser, semi);
-    // The question after the locks and the cam, its sheet right after it, before the suspensions.
+    // The question after the locks, the cam and the suspensions (hidden here), its sheet right after it;
+    // the sheet yields to the suspensions' one when that is open (automatic doors).
     const form = await browser.get(`/schede/${id}/modifica`);
     const at = (pattern: string) => form.body.indexOf(pattern);
-    assert.ok(at('name="pattinoRetrattile"') < at('name="operatore"'));
+    assert.ok(at('name="pattinoRetrattile"') < at('name="sospensioni"'));
+    assert.ok(at('name="sospensioni"') < at('name="operatore"'));
     assert.ok(at('name="operatore"') < at('id="f-so"'));
-    assert.ok(at('id="f-so"') < at('name="sospensioni"'));
     assert.match(form.body, /id="f-so" data-when="operatore" data-when-values="si" data-off/);
+    assert.match(
+      form.body,
+      /<div class="field--wide" data-when="sospensioni" data-when-values="si" data-when-not><div class="field--wide">\s*<div class="modulo" id="f-so"/,
+    );
     assert.match(form.body, /name="so-semiautomatico" value="si" checked/);
     assert.doesNotMatch(form.body, /name="so-automatico" value="si" checked/);
     assert.match(form.body, /name="so-data"[^>]*value="12\/10\/2026"/);
@@ -202,10 +207,11 @@ describe('supplier forms', () => {
     assert.equal((print.body.match(/ORD No: <strong>78<\/strong>/g) ?? []).length, 1);
     assert.equal((print.body.match(/SEMIAUTOMATICO/g) ?? []).length, 1);
 
-    // Automatic doors again: the operator is not asked, its sheet and its PDF are gone.
+    // Manual doors: the operator is not asked, its sheet and its PDF are gone.
     const again = await browser.get(`/schede/${id}/modifica`);
     const changed = await browser.submit(`/schede/${id}/modifica`, `/schede/${id}`, {
       ...SURVEY,
+      tipoPorte: ['MANUALI'],
       base: /name="base" value="([^"]+)"/.exec(again.body)![1]!,
       operatore: 'si',
       'so-_': '1',

@@ -1,9 +1,10 @@
 <%#
-  Един лист на скицника във формата: прегледът, скритото поле с листа (JSON, src/schizzi/model.ts) и
-  бутоните — те са за JavaScript (schizzi.js), без него листът остава какъвто е.
+  Един лист на скицника във формата: прегледът (докосване — редакторът), скритото поле с листа (JSON,
+  src/schizzi/model.ts) и бутоните — те са за JavaScript (schizzi.js), без него листът остава какъвто е.
 %><li class="schizzi__foglio" data-foglio>
   <input type="hidden" name="schizzo" value="<%= json %>" data-foglio-dati>
-  <div class="schizzi__anteprima" data-foglio-anteprima><%- include('_schizzo', { foglio, titolo: t('schizzi.foglio', { n }) }) %></div>
+  <%# Прегледът е бутон: докосване отваря листа в редактора на цял екран (като „Disegna“). %>
+  <button class="schizzi__anteprima" type="button" data-foglio-anteprima data-foglio-disegna><%- include('_schizzo', { foglio, titolo: t('schizzi.foglio', { n }) }) %></button>
   <div class="schizzi__piede">
     <span class="schizzi__nome" data-foglio-nome><%= t('schizzi.foglio', { n }) %></span>
     <span class="toolbar" data-foglio-azioni hidden>
