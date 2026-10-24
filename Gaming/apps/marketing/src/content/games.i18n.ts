@@ -187,18 +187,18 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
         { name: "Groups", text: "Your group (solids or stripes) is set by the first legally pocketed ball." },
         {
           name: "Aiming",
-          text: "Aim with the guide line, set your power and shoot; first hit one of your own balls, then a ball must be pocketed or reach a rail.",
+          text: "Aim with the guide line, set your power and spin (top — the cue ball follows, bottom — it draws back, side — it changes the rebound off the rail) and shoot; first hit one of your own balls, then a ball must be pocketed or reach a rail.",
         },
         {
           name: "Winning",
-          text: "Clear your group and pocket the 8-ball last; pocketing it early or on a foul (including a scratch) loses the game.",
+          text: "Clear your group, call a pocket and pocket the 8-ball last right there; in another pocket, early or on a foul (including a scratch), it loses the game.",
         },
       ],
       faq: [
         {
           question: "How do you play 8-ball pool?",
           answer:
-            "You pocket the balls in your group (solids or stripes), then the black 8-ball at the end — no need to call the pocket; a foul gives your opponent ball in hand anywhere, and pocketing the 8-ball early loses.",
+            "You pocket the balls in your group (solids or stripes), then the black 8-ball at the end — in a pocket you call beforehand; a foul gives your opponent ball in hand anywhere, and pocketing the 8-ball early loses.",
         },
         {
           question: "Is the pool physics realistic?",
@@ -844,18 +844,18 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
         { name: "Gruppi", text: "Il tuo gruppo (piene o strisce) è deciso dalla prima palla imbucata regolarmente." },
         {
           name: "Mira",
-          text: "Mira con la linea guida, regola la potenza e tira; prima colpisci una palla del tuo gruppo, poi una palla deve andare in buca o toccare una sponda.",
+          text: "Mira con la linea guida, regola la potenza e l'effetto (in alto — la bianca segue, in basso — rientra, di lato — cambia il rimbalzo sulla sponda) e tira; prima colpisci una palla del tuo gruppo, poi una palla deve andare in buca o toccare una sponda.",
         },
         {
           name: "Vittoria",
-          text: "Libera il tuo gruppo e imbuca la palla 8 per ultima; se la imbuchi prima del tempo o con un fallo (anche con la bianca in buca), perdi.",
+          text: "Libera il tuo gruppo, dichiara la buca e imbuca la palla 8 per ultima proprio lì; in un'altra buca, prima del tempo o con un fallo (anche con la bianca in buca), perdi.",
         },
       ],
       faq: [
         {
           question: "Come si gioca a biliardo palla 8?",
           answer:
-            "Imbuchi le palle del tuo gruppo (piene o a strisce) e alla fine la palla nera numero 8 — senza dover chiamare la buca; un fallo dà all'avversario palla in mano ovunque, e la palla 8 imbucata prima del tempo fa perdere.",
+            "Imbuchi le palle del tuo gruppo (piene o a strisce) e alla fine la palla nera numero 8 — in una buca dichiarata prima del tiro; un fallo dà all'avversario palla in mano ovunque, e la palla 8 imbucata prima del tempo fa perdere.",
         },
         {
           question: "La fisica del biliardo è realistica?",

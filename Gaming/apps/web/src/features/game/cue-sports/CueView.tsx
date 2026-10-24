@@ -9,6 +9,7 @@ import { useMatch } from "../useMatch";
 import { Scene, ScorePill } from "../scene/SceneShell";
 import { CueTableGL, webglSupported, type CueTableHandle } from "./CueTableGL";
 import type { CueScene } from "./glTable";
+import { SpinPad, type Spin } from "./SpinPad";
 import "./cue-table.css";
 
 type RBall = { id: number; x: number; y: number };
@@ -39,6 +40,9 @@ const POCKETS: [number, number][] = [
   [TABLE.w / 2, TABLE.h],
   [TABLE.w, TABLE.h],
 ];
+
+/** Стрелки за бутоните за обявяване на джоб (ред като POCKETS). */
+const POCKET_GLYPHS = ["↖", "↑", "↗", "↙", "↓", "↘"];
 
 // Pool head string (break line) + snooker "D" — mirror the engine's limits.
 const HEAD_STRING_X = 0.5;
@@ -83,6 +87,9 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   const [placing, setPlacing] = useState(false);
   const [placedCue, setPlacedCue] = useState<{ x: number; y: number } | null>(null);
   const [pushArmed, setPushArmed] = useState(false);
+  const [spin, setSpin] = useState<Spin>({ x: 0, y: 0 });
+  /** 8-ball: обявеният за осмицата джоб (индекс в POCKETS) или null. */
+  const [calledPocket, setCalledPocket] = useState<number | null>(null);
 
   // Shot animation driven purely off state.shotNo (+ state.lastShot.before).
   const [frameBalls, setFrameBalls] = useState<RBall[] | null>(null);
@@ -104,6 +111,8 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
     setPlacedCue(null);
     setPlacing(false);
     setPushArmed(false);
+    setSpin({ x: 0, y: 0 });
+    setCalledPocket(null);
   }, [m.matchId]);
 
   useEffect(() => {
@@ -117,8 +126,9 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
     if (!state.lastShot || state.shotNo <= seenShot.current) return;
     seenShot.current = state.shotNo;
     const variant = state.variant;
-    const { before, angle: a, power: p } = state.lastShot;
-    const frames = runShot(before as Ball[], { angle: a, power: p }).frames;
+    // Същият вход като на сървъра (вкл. ефекта) → същата траектория.
+    const { before, angle: a, power: p, spinX, spinY } = state.lastShot;
+    const frames = runShot(before as Ball[], { angle: a, power: p, spinX, spinY }).frames;
     setPlacedCue(null);
     playCue("flip");
     let i = 0;
@@ -167,7 +177,20 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   useEffect(() => {
     setPushArmed(false);
     setPlacing(false);
+    setCalledPocket(null);
   }, [state?.shotNo, state?.turn]);
+
+  // 8-ball: на осмицата ли съм (същото правило като в двигателя — групата ми е
+  // изчистена преди удара). Тогава преди удара трябва да обявя джоб.
+  const onEight = (() => {
+    if (!state || game !== "EIGHTBALL" || state.open || state.shotNo === 0) return false;
+    const g = state.groups[state.turn] ?? null;
+    if (g === null) return false;
+    const mine = (id: number) => (g === "solids" ? id >= 1 && id <= 7 : id >= 9 && id <= 15);
+    return !state.balls.some((b) => !b.potted && mine(b.id));
+  })();
+  const mustCall = myTurn && onEight;
+  const canShoot = myTurn && !(mustCall && calledPocket === null);
 
   const liveBalls: RBall[] = animating
     ? (frameBalls ?? [])
@@ -191,6 +214,14 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
     setAngle(Math.atan2(p.y - cuePos.y, p.x - cuePos.x));
   }
   function placeAt(p: { x: number; y: number }) {
+    // 8-ball на осмицата: клик до джоб го обявява.
+    if (mustCall && !placing) {
+      const i = POCKETS.findIndex(([px, py]) => (px - p.x) ** 2 + (py - p.y) ** 2 <= (TABLE.pocketR * 2.2) ** 2);
+      if (i >= 0) {
+        setCalledPocket(i);
+        return;
+      }
+    }
     if (!myTurn || !placing) return;
     if (placementOk(p.x, p.y)) {
       setPlacedCue(p);
@@ -234,8 +265,14 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
   }
 
   function shoot() {
-    if (!myTurn) return;
+    if (!canShoot) return;
     const action: CueAction & { pushOut?: boolean } = { type: "SHOOT", angle, power };
+    // Ефектът пътува само когато не е в центъра (стар клиент = същото поведение).
+    if (spin.x !== 0 || spin.y !== 0) {
+      action.spinX = spin.x;
+      action.spinY = spin.y;
+    }
+    if (mustCall && calledPocket !== null) action.pocket = calledPocket;
     // Snooker, бяла в ръка без поставяне: ако бялата не е на валидно място в
     // „D“, ползваме автоматично първата свободна точка в „D“.
     const cur = state?.balls.find((b) => b.id === 0 && !b.potted);
@@ -278,6 +315,7 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
         balls: liveBalls,
         aim: myTurn && !placing ? { x0: cuePos.x, y0: cuePos.y, x1: gx, y1: gy } : null,
         ghost: ballInHand && placedCue ? placedCue : null,
+        called: onEight && calledPocket !== null ? { x: POCKETS[calledPocket]![0], y: POCKETS[calledPocket]![1] } : null,
       }
     : null;
 
@@ -336,6 +374,14 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
     if (game === "SNOOKER" && state.phase === "PLAY") {
       if (state.miss) hintParts.push(t("cue.miss"));
       if (foulChoice && myTurn) hintParts.push(t("cue.foulChoice"));
+    }
+    // 8-ball: на осмицата — обявяване на джоб.
+    if (mustCall) {
+      hintParts.push(
+        calledPocket === null
+          ? t("cue.callPocketHint")
+          : `${t("cue.calledPocket")}: ${t(`cue.pockets.${calledPocket}`)}`,
+      );
     }
     if (msgText) hintParts.push(msgText);
   }
@@ -402,6 +448,18 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
                 {POCKETS.map(([px, py], i) => (
                   <circle key={i} cx={px} cy={py} r={TABLE.pocketR} fill="#0a0a0a" opacity={0.92} />
                 ))}
+
+                {/* 8-ball: обявеният за осмицата джоб */}
+                {onEight && calledPocket !== null ? (
+                  <circle
+                    cx={POCKETS[calledPocket]![0]}
+                    cy={POCKETS[calledPocket]![1]}
+                    r={TABLE.pocketR * 1.45}
+                    fill="none"
+                    stroke="#f2cf7a"
+                    strokeWidth={0.012}
+                  />
+                ) : null}
 
                 {/* aim guide */}
                 {myTurn && !placing ? (
@@ -496,7 +554,7 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
                 disabled={!myTurn}
                 onChange={(e) => setPower(Number(e.target.value))}
               />
-              <Button onClick={shoot} disabled={!myTurn} title={t("cue.shootKey")}>
+              <Button onClick={shoot} disabled={!canShoot} title={t("cue.shootKey")}>
                 {t("cue.shoot")} <kbd className="aso-kbd">Space</kbd>
               </Button>
               {myTurn && pushAvail ? (
@@ -526,7 +584,34 @@ export function CueView({ title, game }: { title: string; game: CueVariant }) {
               ) : null}
             </div>
 
-            <p className="aso-cue__hint">{hintParts.join(" · ")}</p>
+            <div className="aso-cue__extras">
+              <SpinPad value={spin} onChange={setSpin} disabled={!myTurn} />
+              {mustCall ? (
+                <div className="aso-cue__pockets" role="radiogroup" aria-label={t("cue.callPocket")}>
+                  <span className="text-sm text-ink-muted" aria-hidden="true">
+                    {t("cue.callPocket")}
+                  </span>
+                  <div className="aso-cue__pocketgrid">
+                    {POCKETS.map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        role="radio"
+                        aria-checked={calledPocket === i}
+                        aria-label={t(`cue.pockets.${i}`)}
+                        title={t(`cue.pockets.${i}`)}
+                        className="aso-cue__pocketbtn"
+                        onClick={() => setCalledPocket(i)}
+                      >
+                        {POCKET_GLYPHS[i]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            <p className="aso-cue__hint" aria-live="polite">{hintParts.join(" · ")}</p>
 
             {ballInHand && !placing ? (
               <div className="mt-2 text-center">

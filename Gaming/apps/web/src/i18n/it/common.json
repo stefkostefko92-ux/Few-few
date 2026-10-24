@@ -821,7 +821,8 @@
       "threeFoul": "Tre falli consecutivi — perdi il frame.",
       "illegalBreak": "Fallo: spaccata irregolare — nessuna palla in buca e meno di quattro palle a sponda.",
       "playAgain": "Chi ha commesso fallo gioca di nuovo.",
-      "missReplay": "Fallo e mancato — palle riposizionate, chi ha commesso fallo ripete."
+      "missReplay": "Fallo e mancato — palle riposizionate, chi ha commesso fallo ripete.",
+      "eightWrongPocket": "La 8 è finita in una buca non dichiarata — sconfitta."
     },
     "pushOut": "Push-out",
     "pushPass": "Restituisci il tiro",
@@ -835,7 +836,27 @@
     "miss": "fallo e mancato",
     "foulChoice": "Fallo dell'avversario — gioca o fallo rigiocare.",
     "playAgain": "Fallo rigiocare",
-    "replay": "Riposiziona le palle"
+    "replay": "Riposiziona le palle",
+    "spin": "Effetto",
+    "spinRole": "punto di impatto sulla bianca",
+    "spinTop": "alto",
+    "spinBottom": "basso",
+    "spinLeft": "sinistra",
+    "spinRight": "destra",
+    "spinCenter": "al centro",
+    "spinReset": "Centro",
+    "spinHelp": "Scegli dove la stecca colpisce la bianca: in alto — prosegue dopo l'impatto (a seguire), in basso — torna indietro (a rientrare), di lato — cambia il rimbalzo sulla sponda. Frecce per spostare, Maiusc per passi più fini, Home per il centro.",
+    "callPocket": "Buca per la 8",
+    "callPocketHint": "Sei sulla 8 — dichiara la buca (clic vicino alla buca o sui pulsanti)",
+    "calledPocket": "buca dichiarata",
+    "pockets": {
+      "0": "in alto a sinistra",
+      "1": "in alto al centro",
+      "2": "in alto a destra",
+      "3": "in basso a sinistra",
+      "4": "in basso al centro",
+      "5": "in basso a destra"
+    }
   },
   "net": {
     "reconnecting": "Connessione persa — riconnessione…"

@@ -1,7 +1,9 @@
 import type { GameEngine, Seat } from "../../kernel/contract.js";
 import type { SeededRng } from "../../kernel/rng.js";
 import {
+  clampSpin,
   runShot,
+  spinOk,
   TABLE,
   type Ball,
   type CueAction,
@@ -227,26 +229,39 @@ interface Outcome {
   noBallInHand?: boolean;
 }
 
+const groupBalls = (g: Group): number[] =>
+  g === "solids" ? [1, 2, 3, 4, 5, 6, 7] : g === "stripes" ? [9, 10, 11, 12, 13, 14, 15] : [];
+
+/** 8-ball: играчът на ход е „на осмицата“ — групата му е изчистена (решава се
+ *  от масата ПРЕДИ удара, WPA). Тогава трябва да обяви джоб. */
+export function onEightBall(state: CueState): boolean {
+  if (state.variant !== "EIGHTBALL" || state.open || state.shotNo === 0) return false;
+  const g = state.groups[state.turn] ?? null;
+  if (g === null) return false;
+  const mine = groupBalls(g);
+  return !live(state.balls).some((b) => mine.includes(b.id));
+}
+
+const pocketOk = (p: unknown): p is number => typeof p === "number" && Number.isInteger(p) && p >= 0 && p <= 5;
+
 /** WPA: законно разбиване = вкарана топка или ≥4 обектни топки до борд. */
 const illegalBreak = (r: ShotRes): boolean => r.potted.length === 0 && r.cushionBalls < 4;
 
 // ── Per-variant rules ────────────────────────────────────────────────────────
 
-function rulesEightBall(state: CueStateX, balls: Ball[], r: ShotRes): Outcome {
+function rulesEightBall(state: CueStateX, balls: Ball[], r: ShotRes, called: number | undefined): Outcome {
   const shooter = state.turn;
   const breakShot = state.shotNo === 0;
   const pottedObj = r.potted;
   const eightPotted = pottedObj.includes(8);
-  const myGroupBalls = (g: Group) =>
-    g === "solids" ? [1, 2, 3, 4, 5, 6, 7] : g === "stripes" ? [9, 10, 11, 12, 13, 14, 15] : [];
+  const myGroupBalls = groupBalls;
   const group: Group = state.groups[shooter] ?? null;
   const open = state.open;
 
   // „На осмицата ли е“ се решава от масата ПРЕДИ удара (WPA): последната своя
   // топка + осмицата в един удар е загуба, не победа; удар първо в осмицата,
   // докато имаш своя топка на масата, е фал — дори тя да вкара последната ти.
-  const onEight =
-    !open && group !== null && myGroupBalls(group).every((id) => !live(state.balls).some((b) => b.id === id));
+  const onEight = onEightBall(state);
   const firstHitEight = r.firstContact === 8;
   const noRail = pottedObj.length === 0 && !r.cushionAfterContact && r.firstContact !== null;
 
@@ -255,10 +270,15 @@ function rulesEightBall(state: CueStateX, balls: Ball[], r: ShotRes): Outcome {
     // the rest of the shot by the normal rules (a scratch stays a plain foul).
     respot(balls, 8, FOOT_SPOT);
   } else if (eightPotted) {
-    const legalEight = onEight && firstHitEight && !r.cueScratch;
+    // WPA 1.6 (called pocket): осмицата печели само в ОБЯВЕНИЯ джоб; във
+    // всеки друг джоб — загуба (както и с фал / преди своите топки).
+    const eightPocket = r.pottedPockets[pottedObj.indexOf(8)];
+    const rightPocket = called !== undefined && eightPocket === called;
+    const legalEight = onEight && firstHitEight && !r.cueScratch && rightPocket;
+    const wrongPocketOnly = onEight && firstHitEight && !r.cueScratch && !rightPocket;
     return {
       foul: false,
-      reason: legalEight ? "eightWin" : "eightLoss",
+      reason: legalEight ? "eightWin" : wrongPocketOnly ? "eightWrongPocket" : "eightLoss",
       continueTurn: false,
       winner: legalEight ? shooter : other(shooter),
       points: 0,
@@ -752,7 +772,9 @@ function pathClear(balls: Ball[], cx: number, cy: number, gx: number, gy: number
 function candidateShots(state: CueStateX): CueAction[] {
   const cue = live(state.balls).find((b) => b.id === 0);
   const targets = legalTargets(state);
-  if (!cue || targets.length === 0) return [{ type: "SHOOT", angle: 0, power: 0.6 }];
+  if (!cue || targets.length === 0) {
+    return [{ type: "SHOOT", angle: 0, power: 0.6, ...(onEightBall(state) ? { pocket: 0 } : {}) }];
+  }
 
   // Пул, разбиване: силно в рака. Ботът проиграва детерминиран малък набор
   // разбивания (позиция зад линията × отместване от върха) и предлага
@@ -783,38 +805,85 @@ function candidateShots(state: CueStateX): CueAction[] {
   if (spots.length === 0) return [{ type: "SHOOT", angle: 0, power: 0.6 }]; // невъзможно на практика
   const at = (cx: number, cy: number): Partial<CueAction> => (inHandD ? { cueX: cx, cueY: cy } : {});
 
+  // 8-ball на осмицата: ботът обявява джоба, към който се цели.
+  const callEight = onEightBall(state);
   const ranked: { a: CueAction; score: number }[] = [];
   for (const [cx, cy] of spots) {
     for (const s of scoredShots(state.balls, cx, cy, targets)) {
-      ranked.push({ a: { type: "SHOOT", angle: s.angle, power: Math.max(0.22, s.power), ...at(cx, cy) }, score: s.score });
+      ranked.push({
+        a: {
+          type: "SHOOT",
+          angle: s.angle,
+          power: Math.max(0.22, s.power),
+          ...at(cx, cy),
+          ...(callEight ? { pocket: s.pocket } : {}),
+        },
+        score: s.score,
+      });
     }
   }
   ranked.sort((x, y) => y.score - x.score);
   // Безопасност/контакт към най-близката законна топка — винаги в резерва.
   const [sx, sy] = spots[0]!;
   const t = nearest(targets, sx, sy);
-  const safety: CueAction = { type: "SHOOT", angle: Math.atan2(t.y - sy, t.x - sx), power: 0.5, ...at(sx, sy) };
+  const safety: CueAction = {
+    type: "SHOOT",
+    angle: Math.atan2(t.y - sy, t.x - sx),
+    power: 0.5,
+    ...at(sx, sy),
+    ...(callEight ? { pocket: nearestPocket(t.x, t.y) } : {}),
+  };
   return pickSafe(state.balls, [...ranked.map((x) => x.a), safety]);
 }
 
+/** Ефекти, които ботът пробва (в този ред), ако ударът в центъра вкарва
+ *  бялата: долен (draw) я спира/връща, горен (follow) я праща напред. */
+const BOT_SPINS: ReadonlyArray<{ spinX?: number; spinY?: number }> = [{}, { spinY: -0.6 }, { spinY: 0.5 }];
+
 /** Проиграва първите няколко кандидата и предпочита тези, при които бялата
  *  не пада и удря топка — иначе детерминиран бот може да повтаря един и същ
- *  фал (напр. влизане от „D“) безкрайно. */
+ *  фал (напр. влизане от „D“) безкрайно. Ако централният удар вкарва бялата,
+ *  ботът пробва и ефект (draw/follow). */
 function pickSafe(balls: Ball[], cands: CueAction[]): CueAction[] {
   const ok: CueAction[] = [];
   for (const a of cands.slice(0, 8)) {
     const layout = a.cueX !== undefined && a.cueY !== undefined
       ? balls.map((b) => (b.id === 0 ? { ...b, x: a.cueX!, y: a.cueY!, potted: false } : b))
       : balls;
-    const res = runShot(layout, { angle: a.angle, power: a.power });
-    if (!res.cueScratch && res.firstContact !== null) ok.push(a);
+    for (const spin of BOT_SPINS) {
+      const res = runShot(layout, { angle: a.angle, power: a.power, ...spin });
+      if (res.firstContact === null) break; // ефектът не променя пътя до първия допир
+      if (!res.cueScratch) {
+        ok.push({ ...a, ...spin });
+        break;
+      }
+    }
     if (ok.length >= 3) break;
   }
   return ok.length ? ok : cands.slice(0, 3);
 }
 
+/** Най-близкият джоб до (x, y). */
+function nearestPocket(x: number, y: number): number {
+  let best = 0;
+  for (let i = 1; i < POOL_POCKETS.length; i++) {
+    const [px, py] = POOL_POCKETS[i]!;
+    const [bx, by] = POOL_POCKETS[best]!;
+    if ((px - x) ** 2 + (py - y) ** 2 < (bx - x) ** 2 + (by - y) ** 2) best = i;
+  }
+  return best;
+}
+
 const nearest = (targets: Ball[], x: number, y: number): Ball =>
   targets.reduce((n, b) => (Math.hypot(b.x - x, b.y - y) < Math.hypot(n.x - x, n.y - y) ? b : n));
+
+interface ScoredShot {
+  angle: number;
+  power: number;
+  score: number;
+  /** Джобът, към който е прицелен ударът (0..5). */
+  pocket: number;
+}
 
 /** Ghost-ball удари от точка (cx, cy), подредени по оценка (най-добрият първи). */
 function scoredShots(
@@ -822,10 +891,11 @@ function scoredShots(
   cx: number,
   cy: number,
   targets: Ball[],
-): { angle: number; power: number; score: number }[] {
-  const shots: { angle: number; power: number; score: number }[] = [];
+): ScoredShot[] {
+  const shots: ScoredShot[] = [];
   for (const tb of targets) {
-    for (const [px, py] of POOL_POCKETS) {
+    for (let pocket = 0; pocket < POOL_POCKETS.length; pocket++) {
+      const [px, py] = POOL_POCKETS[pocket]!;
       const tpx = px - tb.x;
       const tpy = py - tb.y;
       const tpDist = Math.hypot(tpx, tpy);
@@ -843,7 +913,7 @@ function scoredShots(
       if (!pathClear(balls, cx, cy, gx, gy, [tb.id])) continue;
       const power = Math.min(1, 0.42 + (cgDist + tpDist) * 0.17 + (1 - cutCos) * 0.22);
       const score = cutCos * 2 - tpDist * 0.12 - cgDist * 0.06;
-      shots.push({ angle: Math.atan2(cgy, cgx), power, score });
+      shots.push({ angle: Math.atan2(cgy, cgx), power, score, pocket });
     }
   }
   shots.sort((a, b) => b.score - a.score);
@@ -879,6 +949,12 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueStateX, CueAct
       if (action.type !== "SHOOT") return false;
       if (typeof action.angle !== "number" || !Number.isFinite(action.angle)) return false;
       if (typeof action.power !== "number" || !(action.power > 0) || action.power > 1) return false;
+      // Ефект: числа в [-1, 1], в единичния диск (сървърна граница).
+      if (!spinOk(action.spinX, action.spinY)) return false;
+      // 8-ball: обявен джоб — цяло 0..5; задължителен, когато играчът е на
+      // осмицата. В другите варианти полето не се допуска.
+      if (action.pocket !== undefined && (variant !== "EIGHTBALL" || !pocketOk(action.pocket))) return false;
+      if (variant === "EIGHTBALL" && action.pocket === undefined && onEightBall(state)) return false;
       // A push-out may only be declared on the shot right after the break.
       if (action.pushOut === true && !(variant === "NINEBALL" && state.pushAvail === true)) return false;
       if (action.cueX !== undefined || action.cueY !== undefined) {
@@ -958,7 +1034,11 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueStateX, CueAct
       }
 
       const before = cloneAll(balls);
-      const r = runShot(balls, { angle: action.angle, power: action.power });
+      // Ефектът пътува само ако е зададен — ударите без него остават побитово
+      // същите като преди (и в `lastShot`, по който клиентът анимира).
+      const hasSpin = action.spinX !== undefined || action.spinY !== undefined;
+      const spin = hasSpin ? clampSpin(action.spinX, action.spinY) : {};
+      const r = runShot(balls, { angle: action.angle, power: action.power, ...spin });
       // Adopt the resting layout from the simulation.
       const rested = r.finalBalls;
       // Replace positions/potted in `balls` from `rested` (same ids/order).
@@ -970,7 +1050,7 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueStateX, CueAct
       const shooter = state.turn;
       const pushOut = variant === "NINEBALL" && state.pushAvail === true && action.pushOut === true;
       const out =
-        variant === "EIGHTBALL" ? rulesEightBall(state, balls, r)
+        variant === "EIGHTBALL" ? rulesEightBall(state, balls, r, pocketOk(action.pocket) ? action.pocket : undefined)
         : variant === "NINEBALL" ? rulesNineBall(state, balls, r, pushOut)
         : rulesSnooker(state, balls, r, before, rng);
 
@@ -979,6 +1059,7 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueStateX, CueAct
         seat: shooter,
         angle: action.angle,
         power: action.power,
+        ...spin,
         before,
         potted: r.potted,
         cueScratch: r.cueScratch,
@@ -993,7 +1074,7 @@ export function makeCueEngine(variant: CueVariant): GameEngine<CueStateX, CueAct
         ...state,
         balls,
         shotNo: state.shotNo + 1,
-        lastShot: { angle: action.angle, power: action.power, before },
+        lastShot: { angle: action.angle, power: action.power, ...spin, before },
         // Real-time animation length (frames play back at 60 fps) — the
         // realtime host paces bots / the turn clock with it.
         lastShotMs: Math.round((r.frames.length * 1000) / 60),
