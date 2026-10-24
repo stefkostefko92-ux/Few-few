@@ -4,7 +4,6 @@ import { formattersFor } from '../format.js';
 import { localeFromHeader, translatorFor, type Locale } from '../i18n.js';
 import { logger } from '../logger.js';
 import { withQuery } from '../seo.js';
-import { displayName } from '../steamid.js';
 import { asset } from '../view.js';
 import { RESULTS, resultParam } from './forms.js';
 import { CAPABILITIES, ROLE_LEVEL, can, type Capability } from './rbac.js';
@@ -57,8 +56,6 @@ export function renderAdmin(
     result: result ? { code: result, kind: RESULTS[result] } : null,
     path: req.originalUrl.split('?')[0] ?? '/admin',
     withQuery,
-    /** Ник от базата/играта: без контролни и bidi знаци (EJS екранира останалото). */
-    clean: (name: string, steamId: string) => displayName(name, steamId),
     ...data,
   };
   res.status(status).render(`admin/${view}`, locals, (error: Error | null, html?: string) => {

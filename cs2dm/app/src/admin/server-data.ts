@@ -48,33 +48,47 @@ export function parseLogLines(data: unknown): string[] | null {
   return lines.slice(-MAX_LOG_LINES).map(redactLine);
 }
 
+/** `status` на агента (§9): `since` е в ms, `busy` — текущият рестарт/ъпдейт или null. */
 const statusSchema = z.object({
   active: z.boolean(),
-  since: z.union([z.string().max(64), z.number()]).nullish(),
+  state: z.string().max(32).nullish(),
+  since: z.union([z.number(), z.string().max(64)]).nullish(),
   gameVersion: z.union([z.string().max(64), z.number()]).nullish(),
   modsLoaded: z.boolean().nullish(),
   broken: z.union([z.string().max(128), z.boolean()]).nullish(),
+  busy: z.enum(['restart', 'update']).nullish(),
 });
 
 export interface AgentStatus {
   active: boolean;
+  /** ActiveState на cs2.service (active, activating, failed…). */
+  state: string | null;
   since: Date | null;
   gameVersion: string | null;
   modsLoaded: boolean | null;
   /** Версията, при която модовете са счупени (ванилов резерв), или null. */
   broken: string | null;
+  busy: 'restart' | 'update' | null;
 }
 
 export function parseAgentStatus(data: unknown): AgentStatus | null {
   const parsed = statusSchema.safeParse(data);
   if (!parsed.success) return null;
-  const { active, since, gameVersion, modsLoaded, broken } = parsed.data;
+  const { active, state, since, gameVersion, modsLoaded, broken, busy } = parsed.data;
   const sinceDate = since === null || since === undefined ? null : new Date(since);
   return {
     active,
+    state: state ?? null,
     since: sinceDate && Number.isFinite(sinceDate.getTime()) ? sinceDate : null,
     gameVersion: gameVersion === null || gameVersion === undefined ? null : String(gameVersion),
     modsLoaded: modsLoaded ?? null,
     broken: broken === true ? 'yes' : broken ? String(broken) : null,
+    busy: busy ?? null,
   };
+}
+
+/** `data.detail` при отказ `failed` — кратко, вече редактирано от агента; тук се реже и пак редактира. */
+export function failureDetail(data: unknown): string | null {
+  const parsed = z.object({ detail: z.string().min(1) }).safeParse(data);
+  return parsed.success ? redactLine(parsed.data.detail).slice(0, 300) : null;
 }

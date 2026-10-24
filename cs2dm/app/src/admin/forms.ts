@@ -71,10 +71,8 @@ export function centsToInput(cents: number): string {
  * влиза свободен текст. Кодът → ключ `admin.result.<код>` и вид на съобщението.
  */
 export const RESULTS = {
-  ok: 'ok',
   saved: 'ok',
   sent: 'ok',
-  recordedOnly: 'warn',
   recordedNoAck: 'warn',
   invalid: 'error',
   denied: 'error',
@@ -92,6 +90,7 @@ export const RESULTS = {
   cmdNotActive: 'error',
   cmdUnknownMode: 'error',
   cmdFailed: 'error',
+  cmdPending: 'warn',
   badCode: 'error',
 } as const;
 export type ResultCode = keyof typeof RESULTS;

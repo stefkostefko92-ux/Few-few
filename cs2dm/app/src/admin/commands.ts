@@ -25,11 +25,17 @@ const ackSchema = z.object({
 export type CommandResult =
   { ok: true; data?: unknown } | { ok: false; error: string; data?: unknown };
 
+export interface SendOptions {
+  /** Таванът на чакането за тази команда (рестартът на агента чака systemd до 120 s). */
+  timeoutMs?: number;
+}
+
 export interface CommandSender {
   send(
     action: string,
     args: Record<string, string | number>,
     actor: string,
+    options?: SendOptions,
   ): Promise<CommandResult>;
 }
 
@@ -99,10 +105,12 @@ export class RedisCommandChannel implements CommandSender {
     action: string,
     args: Record<string, string | number>,
     actor: string,
+    options: SendOptions = {},
   ): Promise<CommandResult> {
     const now = this.options.now ?? Date.now;
     const payload = newPayload(action, args, actor, now());
-    const timeoutMs = this.options.timeoutMs ?? ACK_TIMEOUT_MS;
+    // Отказана команда (подпис, срок, повторен id) остава БЕЗ отговор — таймаутът е наш.
+    const timeoutMs = options.timeoutMs ?? this.options.timeoutMs ?? ACK_TIMEOUT_MS;
     try {
       await withTimeout(this.ensureSubscribed(), timeoutMs);
     } catch (error) {
@@ -173,6 +181,8 @@ const KNOWN_ERRORS: Record<string, string> = {
   'not active': 'notActive',
   'unknown mode': 'unknownMode',
   'deathmatch api unavailable': 'unknownMode',
+  'bad args': 'failed',
+  failed: 'failed',
 };
 
 export function commandErrorKey(error: string): string {

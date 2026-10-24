@@ -846,10 +846,8 @@
       }
     },
     "result": {
-      "ok": "Done.",
       "saved": "Saved.",
       "sent": "Saved and confirmed by the server.",
-      "recordedOnly": "Saved in the database. The server was not notified.",
       "recordedNoAck": "Saved in the database, but the server did not confirm. The game will apply it within a minute or on the next join.",
       "invalid": "Invalid form data. Check the fields.",
       "denied": "Your role does not allow this action.",
@@ -867,7 +865,8 @@
       "cmdNotActive": "The punishment is no longer active.",
       "cmdUnknownMode": "The mode is not available in the DM plugin.",
       "cmdFailed": "The server rejected the command.",
-      "badCode": "The code is wrong or has already been used."
+      "badCode": "The code is wrong or has already been used.",
+      "cmdPending": "The agent did not confirm within 25 seconds — the restart may still be running. Check the status in a minute."
     },
     "cmd": {
       "timeout": "The server agent did not answer within 5 seconds.",
@@ -1189,7 +1188,13 @@
       "showLogs": "Show",
       "logsNote": "IP addresses and keys are redacted before display.",
       "logsEmpty": "No lines.",
-      "back": "Back to the server"
+      "back": "Back to the server",
+      "busy": "Running now",
+      "busyKinds": {
+        "restart": "restart",
+        "update": "update"
+      },
+      "detail": "Details from the agent:"
     }
   }
 }

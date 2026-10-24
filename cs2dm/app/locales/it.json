@@ -846,10 +846,8 @@
       }
     },
     "result": {
-      "ok": "Fatto.",
       "saved": "Salvato.",
       "sent": "Salvato e confermato dal server.",
-      "recordedOnly": "Salvato nel database. Il server non è stato avvisato.",
       "recordedNoAck": "Salvato nel database, ma il server non ha confermato. Il gioco lo applicherà entro un minuto o al prossimo ingresso.",
       "invalid": "Dati del modulo non validi. Controlli i campi.",
       "denied": "Il Suo ruolo non consente questa azione.",
@@ -867,7 +865,8 @@
       "cmdNotActive": "La sanzione non è più attiva.",
       "cmdUnknownMode": "La modalità non è disponibile nel plugin DM.",
       "cmdFailed": "Il server ha rifiutato il comando.",
-      "badCode": "Il codice è errato o è già stato usato."
+      "badCode": "Il codice è errato o è già stato usato.",
+      "cmdPending": "L’agente non ha confermato entro 25 secondi — il riavvio potrebbe essere ancora in corso. Controlli lo stato tra un minuto."
     },
     "cmd": {
       "timeout": "L’agente del server non ha risposto entro 5 secondi.",
@@ -1189,7 +1188,13 @@
       "showLogs": "Mostra",
       "logsNote": "Indirizzi IP e chiavi vengono oscurati prima della visualizzazione.",
       "logsEmpty": "Nessuna riga.",
-      "back": "Torna al server"
+      "back": "Torna al server",
+      "busy": "In corso",
+      "busyKinds": {
+        "restart": "riavvio",
+        "update": "aggiornamento"
+      },
+      "detail": "Dettagli dall’agente:"
     }
   }
 }

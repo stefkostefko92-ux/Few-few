@@ -6,7 +6,6 @@ import { me, type AdminCtx, type AdminRoute } from '../context.js';
 import { checkbox, first, optionalString, requiredInt } from '../forms.js';
 import { canChangeRole, isRole, outranks } from '../rbac.js';
 import { done } from '../render.js';
-import { destroyAllSessions } from '../sessions.js';
 import { resetTotp } from '../totp-service.js';
 
 /**
@@ -200,11 +199,13 @@ export function playerActionRoutes(ctx: AdminCtx): AdminRoute[] {
         const found = await target(req, principal.role);
         if (!found.ok)
           return done(res, found.steamId ? profile(found.steamId) : '/admin/players', found.code);
-        await destroyAllSessions(ctx.db, found.steamId);
-        await audit(ctx.db, {
-          actor: principal.steamId,
-          action: 'web.logout_forced',
-          target: found.steamId,
+        await ctx.db.$transaction(async (tx) => {
+          await tx.webSession.deleteMany({ where: { steamId: found.steamId } });
+          await audit(tx, {
+            actor: principal.steamId,
+            action: 'web.logout_forced',
+            target: found.steamId,
+          });
         });
         done(res, profile(found.steamId), 'saved');
       },

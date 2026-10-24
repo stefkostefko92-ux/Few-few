@@ -104,12 +104,3 @@ export function limiter(limit: number, windowMs: number, skipSafe = false): Requ
     handler: (req, res) => renderAdminError(req, res, 'tooMany'),
   });
 }
-
-/** Обвивка на async маршрут: грешката стига до обработчика на панела, не виси. */
-export function handler(
-  work: (req: Request, res: Response, next: NextFunction) => Promise<void>,
-): RequestHandler {
-  return (req, res, next) => {
-    work(req, res, next).catch(next);
-  };
-}

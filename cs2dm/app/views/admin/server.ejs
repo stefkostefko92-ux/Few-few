@@ -9,7 +9,8 @@
     <h2 id="ag-title"><%= t('admin.server.agent') %></h2>
     <% if (agent) { %>
     <dl class="a-facts">
-      <div><dt><%= t('admin.server.service') %></dt><dd><span class="a-chip <%= agent.active ? 'is-ok' : 'is-err' %>"><%= agent.active ? t('admin.server.active') : t('admin.server.inactive') %></span></dd></div>
+      <div><dt><%= t('admin.server.service') %></dt><dd><span class="a-chip <%= agent.active ? 'is-ok' : 'is-err' %>"><%= agent.active ? t('admin.server.active') : t('admin.server.inactive') %></span><% if (agent.state) { %> <code><%= agent.state %></code><% } %></dd></div>
+      <% if (agent.busy) { %><div><dt><%= t('admin.server.busy') %></dt><dd><span class="a-chip is-warn"><%= t('admin.server.busyKinds.' + agent.busy) %></span></dd></div><% } %>
       <div><dt><%= t('admin.server.since') %></dt><dd><%= agent.since ? fmt.dateTime(agent.since) : '—' %></dd></div>
       <div><dt><%= t('admin.server.version') %></dt><dd><%= agent.gameVersion || '—' %></dd></div>
       <div><dt><%= t('admin.server.mods') %></dt><dd><%= agent.modsLoaded === null ? '—' : agent.modsLoaded ? t('admin.common.yes') : t('admin.common.no') %></dd></div>
@@ -17,6 +18,7 @@
     </dl>
     <% } else { %>
     <p class="a-warn"><%= t('admin.cmd.' + agentError) %></p>
+    <% if (agentDetail) { %><p class="a-note"><%= t('admin.server.detail') %> <code><%= agentDetail %></code></p><% } %>
     <% } %>
     <% if (can('serverControl')) { %>
     <div class="a-actions">

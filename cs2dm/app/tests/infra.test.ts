@@ -51,7 +51,25 @@ test('nginx: TLS от Let’s Encrypt, HSTS, прокси към 127.0.0.1:4350,
 });
 
 test('.env.example: тайните са празни', () => {
-  for (const name of ['POSTGRES_PASSWORD', 'REDIS_PASSWORD', 'CONTACT_EMAIL', 'COMPANY_EIK']) {
+  for (const name of [
+    'POSTGRES_PASSWORD',
+    'REDIS_PASSWORD',
+    'CONTACT_EMAIL',
+    'COMPANY_EIK',
+    'APP_ENC_KEY',
+    'CS2DM_BRIDGE_KEY',
+    'CS2DM_AGENT_KEY',
+  ]) {
     assert.match(ENV_EXAMPLE, new RegExp(`^${name}=$`, 'm'), `${name} не е празна`);
+  }
+});
+
+test('Compose: ключовете на панела влизат само в уеб контейнера, празни по подразбиране', () => {
+  const web = COMPOSE.slice(COMPOSE.indexOf('\n  web:'), COMPOSE.indexOf('\n  worker:'));
+  const worker = COMPOSE.slice(COMPOSE.indexOf('\n  worker:'));
+  for (const name of ['APP_ENC_KEY', 'CS2DM_BRIDGE_KEY', 'CS2DM_AGENT_KEY']) {
+    assert.match(web, new RegExp(`${name}: \\$\\{${name}:-\\}`), `${name} в web`);
+    assert.doesNotMatch(worker, new RegExp(name), `${name} не е нужен на работника`);
+    assert.doesNotMatch(COMPOSE.slice(0, COMPOSE.indexOf('\nservices:')), new RegExp(name + ':'));
   }
 });
