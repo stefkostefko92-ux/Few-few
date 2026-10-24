@@ -4,6 +4,8 @@ import { useAuthStore } from "../../../lib/store";
 import { Button, cn } from "../../../ui";
 import { playCue } from "../../../lib/sound";
 import { useMatch } from "../useMatch";
+import { useSendOnce } from "../useSendOnce";
+import { seatNames } from "../seatNames";
 import { useGameEvents } from "../useGameEvents";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill } from "../scene/SceneShell";
@@ -83,7 +85,12 @@ export function DominoView({ title }: { title: string }) {
   const m = useMatch<DominoState, DominoAction>("DOMINO");
   const { state, legal, seat, phase, result, players } = m;
 
-  const nameFor = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
+  // Three bots share the name „АСО Бот“ — number them so the table reads.
+  const names = useMemo(() => seatNames(players), [players]);
+  const nameFor = (s: number) => names(s) ?? `#${s}`;
+  // One move per state: a double click on a tile/„Тегли“ sent a second action
+  // that the server refused („Невалиден ход“).
+  const send = useSendOnce(state, m.send);
 
   // Opponent-visible action announcements.
   const { banners } = useGameAnnouncements({
@@ -174,8 +181,7 @@ export function DominoView({ title }: { title: string }) {
     const sides = playsByTile.get(tile);
     if (!sides) return;
     const chosen = sides.has(side) ? side : [...sides][0]!;
-    playCue("flip");
-    m.send({ type: "PLAY", tile, side: chosen });
+    if (send({ type: "PLAY", tile, side: chosen })) playCue("flip");
   }
 
   return (
@@ -183,7 +189,13 @@ export function DominoView({ title }: { title: string }) {
       <Announcements banners={banners} fixed />
       {view ? (
         <FeltTable crest="🁫" feltColor="#1f5a3e" feltDark="#0c2c1f">
-        <div className="dom-layout">
+        <div
+          className="dom-layout"
+          data-testid="domino-table"
+          data-frozen={frozen ? "true" : "false"}
+          data-round={view.roundNo ?? 1}
+          data-boneyard={view.boneyard.length}
+        >
           {/* Opponents (tile counts). */}
           <div className="flex flex-wrap justify-center gap-3">
             {[0, 1, 2, 3]
@@ -200,7 +212,7 @@ export function DominoView({ title }: { title: string }) {
 
           {/* The played line, oriented so touching halves match (doubles sit
               crosswise, as on a real table). */}
-          <div className="dom-line">
+          <div className="dom-line" data-testid="domino-line" data-ends={view.ends ? view.ends.join(" ") : ""}>
             {view.line.length === 0 ? (
               <span className="text-sm text-ink-muted">{t("domino.empty")}</span>
             ) : (
@@ -227,6 +239,8 @@ export function DominoView({ title }: { title: string }) {
                 <button
                   type="button"
                   className={cn("dom-side-btn", side === "L" && "dom-side-btn--on")}
+                  data-side="L"
+                  aria-pressed={side === "L"}
                   onClick={() => setSide("L")}
                 >
                   ◀ {view.ends[0]}
@@ -234,6 +248,8 @@ export function DominoView({ title }: { title: string }) {
                 <button
                   type="button"
                   className={cn("dom-side-btn", side === "R" && "dom-side-btn--on")}
+                  data-side="R"
+                  aria-pressed={side === "R"}
                   onClick={() => setSide("R")}
                 >
                   {view.ends[1]} ▶
@@ -241,24 +257,32 @@ export function DominoView({ title }: { title: string }) {
               </div>
             ) : null}
             {drawAction && !frozen ? (
-              <Button variant="felt" disabled={!myTurn} onClick={() => { playCue("flip"); m.send(drawAction); }}>
+              <Button
+                variant="felt"
+                disabled={!myTurn}
+                data-domino-action="DRAW"
+                onClick={() => {
+                  if (send(drawAction)) playCue("flip");
+                }}
+              >
                 {t("domino.draw")} ({view.boneyard.length})
               </Button>
             ) : null}
             {passAction && !frozen ? (
-              <Button variant="ghost" disabled={!myTurn} onClick={() => m.send(passAction)}>
+              <Button variant="ghost" disabled={!myTurn} data-domino-action="PASS" onClick={() => send(passAction)}>
                 {t("domino.pass")}
               </Button>
             ) : null}
           </div>
 
           {/* My hand. */}
-          <div className="dom-hand">
+          <div className="dom-hand" data-testid="domino-hand">
             {(view.hands[seat] ?? []).map((tile) => (
               <DominoTile
                 key={tile}
                 tile={tile}
                 vertical
+                data-sides={myTurn ? [...(playsByTile.get(tile) ?? [])].join(" ") : ""}
                 playable={myTurn && playsByTile.has(tile)}
                 onClick={myTurn && playsByTile.has(tile) ? () => playTile(tile) : undefined}
               />

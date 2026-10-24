@@ -8,8 +8,12 @@ import { useCardAnimations } from "../anim/useCardAnimations";
 import { useCardFlight } from "../anim/useCardFlight";
 import { useGameEvents } from "../useGameEvents";
 import { useMatch } from "../useMatch";
+import { useSendOnce } from "../useSendOnce";
+import { useRevealOnTurn } from "../useRevealOnTurn";
+import { seatNames } from "../seatNames";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { Scene, ScorePill, fitOverlap } from "../scene/SceneShell";
+import "./gofish.css";
 
 interface GoFishState {
   hands: string[][];
@@ -36,7 +40,13 @@ export function GoFishView({ title }: { title: string }) {
   const m = useMatch<GoFishState, GoFishAction>("GOFISH");
   const { state, legal, seat, phase, result, players } = m;
 
-  const nameFor = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
+  // Three bots share the name „АСО Бот“ — number them, or the ask buttons
+  // can't say WHOM you are asking.
+  const names = useMemo(() => seatNames(players), [players]);
+  const nameFor = (s: number) => names(s) ?? `#${s}`;
+  // One ASK per state: a double click used to ask twice (the repeat usually
+  // went fishing and passed the turn) or was refused as out of turn.
+  const send = useSendOnce(state, m.send);
 
   // Opponent-visible action announcements: every ask, catch and fish is called
   // out by name — remembering who asked for what is the core of the game.
@@ -95,6 +105,9 @@ export function GoFishView({ title }: { title: string }) {
   const [target, setTarget] = useState<number | null>(null);
 
   const myTurn = !!state && state.turn === seat && legal.length > 0;
+  // The ask panel sits under the table — below the fold on a laptop.
+  const askRef = useRef<HTMLDivElement>(null);
+  useRevealOnTurn(askRef, myTurn);
 
   // Ranks I can ask, and which targets are valid for each.
   const asks = useMemo(() => legal.filter((a) => a.type === "ASK"), [legal]);
@@ -124,9 +137,15 @@ export function GoFishView({ title }: { title: string }) {
       <Announcements banners={banners} fixed />
       {state ? (
         <>
-          <div ref={tableRef}>
+          <div
+            ref={tableRef}
+            data-testid="gofish-table"
+            data-gofish-books={state.books[seat] ?? 0}
+            data-gofish-hand={state.hands[seat]?.length ?? 0}
+            data-gofish-ocean={state.ocean.length}
+          >
             {/* Aquarium — lighter blue-green felt (§4.5). */}
-            <FeltTable crest="🐟" feltColor="#15455a" feltDark="#0a2330">
+            <FeltTable className="gofish-table" crest="🐟" feltColor="#15455a" feltDark="#0a2330">
               {[...positionsFor(state.seats, seat).entries()].map(([s, pos]) => (
                 <Seat
                   key={s}
@@ -172,7 +191,11 @@ export function GoFishView({ title }: { title: string }) {
 
           {/* Ask controls. */}
           {myTurn ? (
-            <div className="mt-4 rounded-panel border border-brass-400/20 bg-felt-800/70 p-3">
+            <div
+              ref={askRef}
+              className="mt-4 rounded-panel border border-brass-400/20 bg-felt-800/70 p-3"
+              data-testid="gofish-ask"
+            >
               <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
                 <span className="text-sm text-ink-300">{t("gofish.askFrom")}:</span>
                 {targets.map((tg) => (
@@ -180,6 +203,8 @@ export function GoFishView({ title }: { title: string }) {
                     key={tg}
                     type="button"
                     onClick={() => setTarget(tg)}
+                    data-gofish-target={tg}
+                    aria-pressed={tg === target}
                     className="rounded-full px-3 py-1 text-sm"
                     style={{
                       background: tg === target ? "var(--brass-400)" : "var(--felt-700)",
@@ -196,8 +221,11 @@ export function GoFishView({ title }: { title: string }) {
                     key={a.rank}
                     type="button"
                     className="aso-bid"
+                    data-gofish-rank={a.rank}
                     style={{ width: 44, height: 44, fontSize: "1.1rem" }}
-                    onClick={() => { playCue("flip"); m.send(a); }}
+                    onClick={() => {
+                      if (send(a)) playCue("flip");
+                    }}
                   >
                     {RANK_LABEL[a.rank] ?? a.rank}
                   </button>

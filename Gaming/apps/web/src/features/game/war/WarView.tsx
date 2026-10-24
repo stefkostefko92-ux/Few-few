@@ -9,6 +9,8 @@ import { useMatch } from "../useMatch";
 import { useGameAnnouncements, Announcements } from "../anim/useTableFx";
 import { useCardFlight, type CardFlight } from "../anim/useCardFlight";
 import { useGameEvents } from "../useGameEvents";
+import { useSendOnce } from "../useSendOnce";
+import { useRevealOnTurn } from "../useRevealOnTurn";
 import { Scene, ScorePill } from "../scene/SceneShell";
 import "./war.css";
 
@@ -43,7 +45,10 @@ export function WarView({ title }: { title: string }) {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const m = useMatch<WarState, WarAction>("WAR");
-  const { state, legal, seat, phase, result, players, send } = m;
+  const { state, legal, seat, phase, result, players } = m;
+  // One move per state: a double click — or a click racing the auto-flip —
+  // used to send a second FLIP that the server refused („Невалиден ход“).
+  const send = useSendOnce(state, m.send);
 
   const tableRef = useRef<HTMLDivElement>(null);
   const flight = useCardFlight(tableRef);
@@ -61,6 +66,9 @@ export function WarView({ title }: { title: string }) {
   const inWar = legal.some((a) => a.type === "FIGHT");
   const canFlip = legal.some((a) => a.type === "FLIP");
   const oppName = players.find((p) => p.seat === opp)?.displayName ?? t("game.opponent");
+  // The war decision sits under the table — below the fold on a laptop.
+  const controlsRef = useRef<HTMLDivElement>(null);
+  useRevealOnTurn(controlsRef, inWar);
 
   // TAKE: fly the contested cards to the winner; RAID: celebrate the steal.
   useGameEvents(m.matchId, (events) => {
@@ -108,7 +116,15 @@ export function WarView({ title }: { title: string }) {
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
       {state ? (
         <>
-          <div ref={tableRef} style={{ position: "relative" }}>
+          <div
+            ref={tableRef}
+            style={{ position: "relative" }}
+            data-testid="war-table"
+            data-war-phase={state.phase}
+            data-war-flips={state.flips}
+            data-war-mine={state.hands[seat]?.length ?? 0}
+            data-war-opp={state.hands[opp]?.length ?? 0}
+          >
             <Announcements banners={banners} />
             <FeltTable crest="⚔" feltColor="#2a1530" feltDark="#120817">
               <Seat
@@ -164,7 +180,7 @@ export function WarView({ title }: { title: string }) {
             </FeltTable>
           </div>
 
-          <div className="mt-4 flex flex-col items-center gap-2">
+          <div ref={controlsRef} className="mt-4 flex flex-col items-center gap-2">
             <div className="flex items-center justify-center gap-3">
               <ScorePill label={t("game.you")} value={`${state.hands[seat]?.length ?? 0}`} highlight />
               <ScorePill label={oppName} value={`${state.hands[opp]?.length ?? 0}`} />
@@ -173,17 +189,21 @@ export function WarView({ title }: { title: string }) {
               <>
                 <p className="text-center text-sm text-ink-muted">{t("war.fightHint")}</p>
                 <div className="flex items-center justify-center gap-3">
-                  <Button className="war-cta" onClick={() => send({ type: "FIGHT" })}>
+                  <Button className="war-cta" data-war-action="FIGHT" onClick={() => send({ type: "FIGHT" })}>
                     ⚔ {t("war.fight")}
                   </Button>
-                  <Button variant="felt" onClick={() => send({ type: "SKIRMISH" })}>
+                  <Button variant="felt" data-war-action="SKIRMISH" onClick={() => send({ type: "SKIRMISH" })}>
                     {t("war.skirmish")}
                   </Button>
                 </div>
               </>
-            ) : canFlip ? (
-              <Button onClick={() => send({ type: "FLIP" })}>{t("war.flip")}</Button>
-            ) : null}
+            ) : (
+              // Always rendered (disabled off-turn): it used to appear and vanish
+              // every flip, shifting the page under the pointer each turn.
+              <Button data-war-action="FLIP" disabled={!canFlip} onClick={() => send({ type: "FLIP" })}>
+                {t("war.flip")}
+              </Button>
+            )}
           </div>
         </>
       ) : null}

@@ -21,7 +21,7 @@ export function parseE2eSeeds(
   for (const part of raw.split(",")) {
     const eq = part.indexOf("=");
     if (eq <= 0) continue;
-    const game = part.slice(0, eq).trim();
+    const game = part.slice(0, eq).trim().toUpperCase();
     const seed = part.slice(eq + 1).trim();
     if (seed && isGameKey(game)) seeds.set(game, seed);
   }

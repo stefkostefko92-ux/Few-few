@@ -18,6 +18,12 @@ describe("parseE2eSeeds — фиксирани раздавания за e2e с�
     expect(parseE2eSeeds("SANTASE=fixed", true).size).toBe(0);
   });
 
+  it("името на играта не зависи от регистъра", () => {
+    const seeds = parseE2eSeeds("rummy=e2e-rummy-1, war = w-7", false);
+    expect(seeds.get("RUMMY")).toBe("e2e-rummy-1");
+    expect(seeds.get("WAR")).toBe("w-7");
+  });
+
   it("без променлива — празно", () => {
     expect(parseE2eSeeds(undefined, false).size).toBe(0);
     expect(parseE2eSeeds("", false).size).toBe(0);

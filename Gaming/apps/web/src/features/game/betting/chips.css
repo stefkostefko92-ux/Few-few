@@ -100,10 +100,21 @@
   transform: translateX(-50%);
 }
 @media (max-width: 560px) {
+  /* Смалената (74 %) седалка е широка колкото табелата ѝ: най-много 150 px
+     → 111 px, т.е. ~56 px от центъра до ръба. При 52 px clamp табелите на
+     страничните места излизаха извън сукното и чиповете се режеха. */
   .svara-seat-slot {
-    left: clamp(52px, var(--slot-x, 50%), calc(100% - 52px));
+    left: clamp(60px, var(--slot-x, 50%), calc(100% - 60px));
     transform: translateX(-50%) scale(0.74);
     transform-origin: top center;
+  }
+  .svara-seat-slot .aso-seat__plate {
+    max-width: 150px;
+    gap: 6px;
+    padding: 4px 10px;
+  }
+  .svara-seat-slot .aso-seat__avatar {
+    display: none;
   }
 }
 .svara-seat-slot .aso-seat {
