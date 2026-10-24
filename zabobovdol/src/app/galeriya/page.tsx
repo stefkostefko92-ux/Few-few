@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Camera, Plus } from "@/components/icons";
 import { prisma } from "@/lib/prisma";
-import { PageHero, EmptyState } from "@/components/ui";
+import { PageHero, EmptyState, ListToolbar, safeHttpUrl } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
 import { ReportContent } from "@/components/ReportContent";
 
@@ -13,7 +13,21 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Снимки на град Бобов дол — стари и нови, споделени от жителите. Всяка снимка е с кредит към автора. Споделете и вашата снимка на града.",
   path: "/galeriya",
+  keywords: [
+    "снимки Бобов дол",
+    "галерия Бобов дол",
+    "стари снимки Бобов дол",
+    "град Бобов дол снимки",
+    "Бобов дол през годините",
+  ],
 });
+
+const addAction = (
+  <Link href="/galeriya/nova" className="btn-primary">
+    <Plus className="h-5 w-5" aria-hidden />
+    Добавете снимка
+  </Link>
+);
 
 export default async function GalleryPage() {
   const photos = await prisma.galleryPhoto.findMany({
@@ -25,77 +39,79 @@ export default async function GalleryPage() {
   return (
     <>
       <PageHero
-        eyebrow="Галерия"
         title="Снимки на Бобов дол"
         intro="Градът през очите на хората — стари и нови снимки, споделени от жителите. Всяка снимка е с кредит към автора ѝ."
         crumbs={[{ name: "Галерия", path: "/galeriya" }]}
       />
 
-      <div className="container-content space-y-8 py-10">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-slate-600">
-            Имате хубава снимка на града? Споделете я — ще я покажем с вашето име.
-          </p>
-          <Link href="/galeriya/nova" className="btn-primary">
-            <Plus className="h-5 w-5" aria-hidden /> Добави снимка
-          </Link>
-        </div>
-
+      <div className="container-content py-10">
         {photos.length === 0 ? (
           <EmptyState
+            icon={Camera}
             title="Галерията тепърва се пълни."
             hint="Бъдете първите — споделете ваша снимка на Бобов дол (стара или нова)."
+            action={addAction}
           />
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {photos.map((p) => (
-              <figure
-                key={p.id}
-                className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={p.imageUrl}
-                  alt={p.title || "Снимка на Бобов дол"}
-                  loading="lazy"
-                  className="aspect-[4/3] w-full object-cover"
-                />
-                <figcaption className="p-4">
-                  {p.title && (
-                    <div className="font-medium text-slate-900">{p.title}</div>
-                  )}
-                  <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
-                    <Camera className="h-4 w-4 shrink-0" aria-hidden />
-                    Снимка: {p.author || "неизвестен автор"}
-                    {p.source && (
-                      <>
-                        {" · "}
-                        <a
-                          href={p.source}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-brand-700 underline"
-                        >
-                          източник
-                        </a>
-                      </>
-                    )}
-                  </div>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
+          <>
+            <ListToolbar
+              count="Имате хубава снимка на града? Споделете я — ще я покажем с вашето име."
+              action={addAction}
+            />
+            <ul role="list" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {photos.map((p) => {
+                const source = safeHttpUrl(p.source);
+                return (
+                  <li key={p.id}>
+                    <figure className="panel h-full overflow-hidden p-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={p.imageUrl}
+                        alt={p.title || "Снимка на Бобов дол"}
+                        loading="lazy"
+                        className="aspect-[4/3] w-full object-cover"
+                      />
+                      <figcaption className="p-4">
+                        {p.title && <p className="h-card text-base">{p.title}</p>}
+                        <p className="mt-1 flex items-start gap-1.5 text-sm text-slate-600">
+                          <Camera className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                          <span>
+                            Снимка: {p.author || "неизвестен автор"}
+                            {source && (
+                              <>
+                                {"\u00a0· "}
+                                <a
+                                  href={source.toString()}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="link"
+                                >
+                                  източник
+                                  <span className="sr-only"> (отваря се в нов раздел)</span>
+                                </a>
+                              </>
+                            )}
+                          </span>
+                        </p>
+                      </figcaption>
+                    </figure>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
         )}
 
-        <p className="text-sm text-slate-600">
-          Снимките са собственост на своите автори и се публикуват с тяхно съгласие.
-          Ако смятате, че снимка нарушава права, пишете ни в{" "}
-          <Link href="/kontakti" className="text-brand-700 underline">
+        <p className="mt-10 max-w-3xl text-base text-slate-600">
+          Снимките са собственост на своите автори и се публикуват с тяхно съгласие. Ако
+          смятате, че снимка нарушава права, пишете ни в{" "}
+          <Link href="/kontakti" className="link">
             Контакти
           </Link>
           .
         </p>
-        <ReportContent subject="Снимка в галерията" path="/galeriya" />
+        {/* Сигнал за съдържание — само когато има какво да се сигнализира. */}
+        {photos.length > 0 && <ReportContent subject="Снимка в галерията" path="/galeriya" />}
       </div>
     </>
   );

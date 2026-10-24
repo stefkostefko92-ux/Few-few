@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { PageHero, EmptyState } from "@/components/ui";
+import { Plus } from "@/components/icons";
+import { PageHero, EmptyState, ListToolbar } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
 import { plainText } from "@/lib/markdown";
 
@@ -12,7 +13,25 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Жива памет на Бобов дол: спомени, истории и стари снимки, споделени от жителите — за мините, училището, празниците и хората на града.",
   path: "/spomeni",
+  keywords: [
+    "спомени Бобов дол",
+    "история на Бобов дол",
+    "стари снимки Бобов дол",
+    "миньорски град спомени",
+    "жива памет Бобов дол",
+  ],
 });
+
+function memoriesLabel(n: number): string {
+  return `${n.toLocaleString("bg-BG")} ${n === 1 ? "спомен" : "спомена"}`;
+}
+
+const addAction = (
+  <Link href="/spomeni/nov" className="btn-primary">
+    <Plus className="h-5 w-5" aria-hidden />
+    Споделете спомен
+  </Link>
+);
 
 export default async function MemoriesPage() {
   const memories = await prisma.memory.findMany({
@@ -28,28 +47,30 @@ export default async function MemoriesPage() {
         crumbs={[{ name: "Спомени", path: "/spomeni" }]}
       />
       <div className="container-content py-10">
-        <div className="mb-6 flex justify-end">
-          <Link href="/spomeni/nov" className="btn-primary">
-            + Споделете спомен
-          </Link>
-        </div>
-
         {memories.length === 0 ? (
           <EmptyState
             title="Все още няма споделени спомени."
             hint="Бъдете първите — разкажете спомен от стария Бобов дол."
+            action={addAction}
           />
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {memories.map((m) => (
-              <Link key={m.id} href={`/spomeni/${m.slug}`} className="card">
-                {m.period && <div className="badge">{m.period}</div>}
-                <h3 className="mt-2 text-lg font-semibold text-slate-900">{m.title}</h3>
-                <p className="mt-1 text-sm text-slate-600">{plainText(m.content, 130)}</p>
-                {m.author && <div className="mt-2 text-xs text-slate-600">— {m.author}</div>}
-              </Link>
-            ))}
-          </div>
+          <>
+            <ListToolbar count={memoriesLabel(memories.length)} action={addAction} />
+            <ul role="list" className="grid gap-4 md:grid-cols-2">
+              {memories.map((m) => (
+                <li key={m.id}>
+                  <Link href={`/spomeni/${m.slug}`} className="card group flex h-full flex-col">
+                    {m.period && <span className="badge mb-2">{m.period}</span>}
+                    <h2 className="h-card group-hover:text-brand-700 group-hover:underline">
+                      {m.title}
+                    </h2>
+                    <p className="mt-1 text-base text-slate-700">{plainText(m.content, 130)}</p>
+                    {m.author && <p className="text-meta mt-auto pt-3">Разказва: {m.author}</p>}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
         )}
       </div>
     </>

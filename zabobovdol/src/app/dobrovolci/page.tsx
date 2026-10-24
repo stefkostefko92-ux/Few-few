@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { MapPin } from "@/components/icons";
+import { MapPin, Users } from "@/components/icons";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { PageHero, EmptyState } from "@/components/ui";
+import { PageHero, EmptyState, SectionHeader } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
 import { ReportContent } from "@/components/ReportContent";
 
@@ -13,6 +13,13 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Мрежа от доброволци, които безплатно помагат на възрастните хора в Бобов дол — с телефони, документи, пазар и компания. Запишете се или потърсете помощ.",
   path: "/dobrovolci",
+  keywords: [
+    "доброволци Бобов дол",
+    "помощ за възрастни Бобов дол",
+    "доброволчество Бобов дол",
+    "грижа за възрастни хора",
+    "взаимопомощ Бобов дол",
+  ],
 });
 
 export default async function VolunteersPage() {
@@ -29,57 +36,73 @@ export default async function VolunteersPage() {
         crumbs={[{ name: "Доброволци", path: "/dobrovolci" }]}
       />
       <div className="container-content py-10">
-        <div className="mb-8 grid gap-4 sm:grid-cols-2">
-          <div className="card bg-brand-50">
-            <h2 className="font-display text-lg font-bold text-slate-900">
+        <div className="mb-12 grid gap-4 sm:grid-cols-2">
+          <section aria-labelledby="nuzhda" className="callout-info flex flex-col">
+            <h2 id="nuzhda" className="h-card">
               Нуждаете се от помощ?
             </h2>
-            <p className="mt-1 text-sm text-slate-700">
-              Свържете се с нас или подайте „Зов за помощ“ — ще ви насочим към
-              доброволец.
+            <p className="mt-1 text-base text-slate-700">
+              Свържете се с нас или подайте „Зов за помощ“ — ще ви насочим към доброволец.
             </p>
-            <div className="mt-3 flex gap-2">
-              <Link href="/zov-za-pomosht/nova" className="btn-primary">Зов за помощ</Link>
-              <Link href="/kontakti" className="btn-secondary">Контакти</Link>
+            <div className="mt-4 flex flex-col gap-3 sm:mt-auto sm:flex-row sm:flex-wrap sm:pt-4">
+              <Link href="/zov-za-pomosht/nova" className="btn-primary">
+                Подайте зов за помощ
+              </Link>
+              <Link href="/kontakti" className="btn-secondary">
+                Пишете ни
+              </Link>
             </div>
-          </div>
-          <div className="card bg-gold-50">
-            <h2 className="font-display text-lg font-bold text-slate-900">
+          </section>
+          <section aria-labelledby="pomosht" className="callout-note flex flex-col">
+            <h2 id="pomosht" className="h-card">
               Искате да помогнете?
             </h2>
-            <p className="mt-1 text-sm text-slate-700">
-              Отделете малко време за някой възрастен съсед. Запишете се за
-              доброволец — ние ще ви свържем.
+            <p className="mt-1 text-base text-slate-700">
+              Отделете малко време за някой възрастен съсед. Запишете се за доброволец — ние ще
+              ви свържем.
             </p>
-            <Link href="/dobrovolci/stani" className="btn-gold mt-3">
-              Станете доброволец
-            </Link>
-          </div>
+            <div className="mt-4 flex flex-col gap-3 sm:mt-auto sm:flex-row sm:pt-4">
+              <Link href="/dobrovolci/stani" className="btn-primary">
+                Станете доброволец
+              </Link>
+            </div>
+          </section>
         </div>
 
-        <h2 className="section-title mb-5">Нашите доброволци</h2>
+        <SectionHeader title="Нашите доброволци" />
         {volunteers.length === 0 ? (
           <EmptyState
+            icon={Users}
             title="Списъкът тепърва се изгражда."
             hint="Бъдете сред първите доброволци в Бобов дол."
+            action={
+              <Link href="/dobrovolci/stani" className="btn-primary">
+                Станете доброволец
+              </Link>
+            }
           />
         ) : (
-          <div className="grid gap-4 md:grid-cols-3">
+          <ul role="list" className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {volunteers.map((v) => (
-              <div key={v.id} className="card">
-                <div className="font-display text-lg font-bold text-slate-900">{v.name}</div>
-                {v.area && <div className="flex items-center gap-1.5 text-sm text-slate-600"><MapPin className="h-4 w-4 shrink-0" aria-hidden /> {v.area}</div>}
-                {v.skills && <p className="mt-2 text-sm text-slate-700">Помага с: {v.skills}</p>}
-                {v.about && <p className="mt-2 text-sm text-slate-600">{v.about}</p>}
-              </div>
+              <li key={v.id} className="panel">
+                <h3 className="h-card">{v.name}</h3>
+                {v.area && (
+                  <p className="mt-1 flex items-start gap-1.5 text-base text-slate-700">
+                    <MapPin className="mt-1 h-4 w-4 shrink-0 text-slate-500" aria-hidden />
+                    <span>{v.area}</span>
+                  </p>
+                )}
+                {v.skills && <p className="mt-2 text-base text-slate-700">Помага с: {v.skills}</p>}
+                {v.about && <p className="mt-2 text-base text-slate-600">{v.about}</p>}
+              </li>
             ))}
-          </div>
+          </ul>
         )}
-        <p className="mt-6 text-sm text-slate-600">
-          За връзка с доброволец пишете на нас — не публикуваме лични телефони от
-          съображения за сигурност.
+        <p className="mt-8 max-w-3xl text-base text-slate-600">
+          За връзка с доброволец пишете на нас — не публикуваме лични телефони от съображения за
+          сигурност.
         </p>
-        <ReportContent subject="Профил на доброволец" path="/dobrovolci" />
+        {volunteers.length > 0 && <ReportContent subject="Профил на доброволец" path="/dobrovolci" />}
       </div>
     </>
   );

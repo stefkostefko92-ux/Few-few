@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { PageHero, Prose } from "@/components/ui";
+import { DetailActions, PageHero, Prose } from "@/components/ui";
 import { buildMetadata } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
-import { PrintButton } from "@/components/PrintButton";
 import { ReportContent } from "@/components/ReportContent";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +25,13 @@ export async function generateMetadata({
     description: plainText(m.content, 155),
     path: `/spomeni/${m.slug}`,
     type: "article",
+    keywords: [
+      m.title,
+      "спомени Бобов дол",
+      "история на Бобов дол",
+      m.period ? `Бобов дол ${m.period}` : "стари снимки Бобов дол",
+      "жива памет Бобов дол",
+    ],
   });
 }
 
@@ -47,25 +53,31 @@ export default async function MemoryPage({
           { name: m.title, path: `/spomeni/${m.slug}` },
         ]}
       />
-      <article className="container-content max-w-3xl py-10">
-        <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
-          {m.period && <span className="badge">{m.period}</span>}
-          {m.author && <span>Разказва: {m.author}</span>}
-        </div>
-        {m.imageUrl && (
+      {/* Статията започва от лявата линия на H1 (не центрирана). */}
+      <div className="container-content py-10">
+        <article className="max-w-3xl">
+          {(m.period || m.author) && (
+            <div className="flex flex-wrap items-center gap-3">
+              {m.period && <span className="badge">{m.period}</span>}
+              {m.author && <p className="text-meta">Разказва: {m.author}</p>}
+            </div>
+          )}
+          {m.imageUrl && (
+            <div className="mt-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={m.imageUrl} alt={m.title} className="w-full rounded-2xl" loading="lazy" />
+            </div>
+          )}
           <div className="mt-4">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={m.imageUrl} alt={m.title} className="w-full rounded-xl" loading="lazy" />
+            <Prose html={renderMarkdown(m.content)} />
           </div>
-        )}
-        <div className="mt-4">
-          <Prose html={renderMarkdown(m.content)} />
-        </div>
-        <div className="mt-6 no-print">
-          <PrintButton variant="secondary" />
-        </div>
-        <ReportContent subject={m.title} path={`/spomeni/${m.slug}`} />
-      </article>
+          <DetailActions
+            shareTitle={`${m.title} — спомен от Бобов дол`}
+            sharePath={`/spomeni/${m.slug}`}
+          />
+          <ReportContent subject={m.title} path={`/spomeni/${m.slug}`} />
+        </article>
+      </div>
     </>
   );
 }
