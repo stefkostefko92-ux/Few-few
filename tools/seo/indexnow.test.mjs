@@ -89,3 +89,37 @@ test("deploy hook-ът подава ключа явно — иначе пада 
   assert.match(body, /--key-file/, "hook-ът намира ключа — длъжен е и да го подаде");
   assert.match(body, /--key-location/, "без keyLocation IndexNow сочи файл, който Supreme няма");
 });
+
+test("индекс на sitemap-и се разгръща — подават се страниците, не под-sitemap файловете", async (t) => {
+  let port = 0;
+  const srv = await serve({
+    "/indexnow-key.txt": KEY + "\n",
+    get "/sitemap.xml"() { return `<?xml version="1.0"?><sitemapindex><sitemap><loc>http://127.0.0.1:${port}/s1.xml</loc></sitemap><sitemap><loc>http://127.0.0.1:${port}/s2.xml</loc></sitemap></sitemapindex>`; },
+    "/s1.xml": '<urlset><url><loc>http://127.0.0.1/a</loc></url><url><loc>http://127.0.0.1/b</loc></url></urlset>',
+    "/s2.xml": '<urlset><url><loc>http://127.0.0.1/c</loc></url></urlset>',
+  });
+  port = srv.address().port;
+  t.after(() => srv.close());
+  const { code, out } = await run([`http://127.0.0.1:${port}`, "--dry-run"]);
+  assert.equal(code, 0);
+  assert.match(out, / 3 URL /, "три страници от двата под-sitemap-а");
+  assert.doesNotMatch(out, /s1\.xml/, "под-sitemap файлът не е страница");
+});
+
+test("адрес с заявка в sitemap-а се подава разкодиран (&amp; → &)", async (t) => {
+  const srv = await serve({
+    "/indexnow-key.txt": KEY + "\n",
+    "/sitemap.xml": '<urlset><url><loc>http://127.0.0.1/p?a=1&amp;b=2</loc></url></urlset>',
+  });
+  t.after(() => srv.close());
+  const { code, out } = await run([`http://127.0.0.1:${srv.address().port}`, "--dry-run"]);
+  assert.equal(code, 0);
+  assert.match(out, /\/p\?a=1&b=2\n/, "истинският адрес на страницата");
+  assert.doesNotMatch(out, /&amp;/, "XML ескейпът не е част от адреса");
+});
+
+test("--key-file към папка дава ясна грешка, не срив", async () => {
+  const { code, out } = await run(["http://127.0.0.1:9", "--key-file", dirname(TOOL), "--dry-run"]);
+  assert.equal(code, 2);
+  assert.match(out, /не се чете/);
+});

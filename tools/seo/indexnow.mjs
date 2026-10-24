@@ -57,7 +57,10 @@ const KEY_RE = /^[a-zA-Z0-9-]{8,128}$/;
 async function resolveKey() {
   if (getOpt("--key")) return getOpt("--key").trim();
   const kf = getOpt("--key-file");
-  if (kf) return (await readFile(kf, "utf8")).trim();
+  if (kf) {
+    try { return (await readFile(kf, "utf8")).trim(); }
+    catch (e) { console.error(`✘ --key-file „${kf}“ не се чете (${e.code || e.message}) — подай файла с ключа, не папка`); process.exit(2); }
+  }
   if (process.env.INDEXNOW_KEY) return process.env.INDEXNOW_KEY.trim();
   // последен опит: изтегли конвенционалния файл от живия сайт.
   //
@@ -81,23 +84,38 @@ async function resolveKey() {
   return "";
 }
 
+async function readSitemap(src) {
+  try {
+    if (/^https?:\/\//.test(src)) {
+      const r = await fetch(src, { cache: "no-store", signal: AbortSignal.timeout(20000) });
+      return r.ok ? await r.text() : "";
+    }
+    return await readFile(src, "utf8");
+  } catch {
+    return "";
+  }
+}
+// В XML „&“ в адреса е задължително `&amp;` — подаваме истинския адрес, не ескейпа.
+const XML_ENT = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" };
+const locs = (xml) =>
+  [...xml.matchAll(/<loc>\s*([^<\s]+)\s*<\/loc>/g)]
+    .map((m) => m[1].trim().replace(/&(amp|lt|gt|quot|apos);/g, (_, e) => XML_ENT[e]))
+    .filter(Boolean);
+
 async function collectUrls(key) {
   const explicit = getAll("--url");
   if (explicit.length) return explicit;
   const src = getOpt("--sitemap") || `${base}/sitemap.xml`;
-  let xml = "";
-  try {
-    if (/^https?:\/\//.test(src)) {
-      const r = await fetch(src, { cache: "no-store", signal: AbortSignal.timeout(20000) });
-      if (r.ok) xml = await r.text();
-    } else {
-      xml = await readFile(src, "utf8");
-    }
-  } catch {
-    /* fallback долу */
+  const xml = await readSitemap(src);
+  let urls = locs(xml);
+  // Индекс на sitemap-и (<sitemapindex>) — <loc> са ДРУГИ sitemap-и, не страници. Реален дефект
+  // (2026-10-24): ospedalitrasparenti има индекс с 2214 страници, а подадени бяха 3 адреса — самите
+  // под-sitemap файлове. Разгръщаме едно ниво (стандартът не допуска вложени индекси).
+  if (/<sitemapindex[\s>]/i.test(xml)) {
+    const children = await Promise.all(urls.slice(0, 50).map((u) => readSitemap(u)));
+    urls = children.flatMap(locs);
   }
-  const urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].trim()).filter(Boolean);
-  return urls.length ? urls.slice(0, 9000) : [`${base}/`];
+  return urls.length ? [...new Set(urls)].slice(0, 9000) : [`${base}/`];
 }
 
 const key = await resolveKey();
