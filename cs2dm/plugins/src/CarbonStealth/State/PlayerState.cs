@@ -15,6 +15,8 @@ public sealed class PlayerState(ulong steamId, int slot, string name)
     public Role Role { get; set; } = Role.Player;
     public DateTimeOffset? VipUntil { get; set; }
     public long Xp { get; set; }
+    /// <summary>Епохата на статистиките от базата (CONTRACT §3) — никога не намалява.</summary>
+    public int StatsEpoch { get; set; }
     public long? SessionId { get; set; }
     public DateTimeOffset ConnectedAt { get; } = DateTimeOffset.UtcNow;
     /// <summary>До кой момент изиграното време вече е отчетено в статистиките.</summary>

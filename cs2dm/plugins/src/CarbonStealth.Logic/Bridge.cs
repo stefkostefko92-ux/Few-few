@@ -28,7 +28,7 @@ public static class BridgeProtocol
 
     public static readonly IReadOnlySet<string> Actions = new HashSet<string>(StringComparer.Ordinal)
     {
-        "kick", "punish", "revoke", "say", "slay", "reload", "mode", "settings.reload",
+        "kick", "punish", "revoke", "say", "slay", "reload", "mode", "settings.reload", "player.reload",
     };
 
     public static string Sign(string payload, byte[] key) =>

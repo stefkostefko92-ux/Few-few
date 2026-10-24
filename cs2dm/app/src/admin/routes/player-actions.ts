@@ -1,11 +1,12 @@
+import type { Role } from '@prisma/client';
 import type { Request } from 'express';
 import { z } from 'zod';
-import { parseSteamId } from '../../steamid.js';
 import { audit } from '../audit.js';
 import { me, type AdminCtx, type AdminRoute } from '../context.js';
 import { checkbox, first, optionalString, requiredInt } from '../forms.js';
-import { canChangeRole, isRole, outranks } from '../rbac.js';
+import { canChangeRole, isRole } from '../rbac.js';
 import { done } from '../render.js';
+import { findTarget } from '../target.js';
 import { resetTotp } from '../totp-service.js';
 
 /**
@@ -25,16 +26,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const profile = (steamId: string) => `/admin/players/${steamId}`;
 
 export function playerActionRoutes(ctx: AdminCtx): AdminRoute[] {
-  /** Целта от адреса + immunity. null — няма такъв играч или не е под вписания. */
-  async function target(req: Request, actorRole: Parameters<typeof outranks>[0]) {
-    const steamId = parseSteamId(req.params.steamId);
-    if (!steamId) return { steamId: null, ok: false as const, code: 'notFound' as const };
-    const player = await ctx.db.player.findUnique({ where: { steamId }, select: { role: true } });
-    if (!player) return { steamId, ok: false as const, code: 'notFound' as const };
-    if (!outranks(actorRole, player.role))
-      return { steamId, ok: false as const, code: 'immune' as const };
-    return { steamId, ok: true as const, role: player.role };
-  }
+  /** Целта от адреса + immunity (общото правило в `target.ts`). */
+  const target = (req: Request, role: Role) => findTarget(ctx, req, role);
 
   /** Ролите, VIP и наказанията идват заедно при плъгина — едно `reload` ги опреснява (§5). */
   async function reload(actor: string, what: 'roles' | 'vip'): Promise<void> {

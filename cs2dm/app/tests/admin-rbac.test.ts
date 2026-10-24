@@ -101,6 +101,11 @@ const EXPECTED: Record<string, keyof typeof CAPABILITIES> = {
   'post /players/:steamId/hide': 'privacy',
   'post /players/:steamId/totp-reset': 'roles',
   'post /players/:steamId/logout': 'roles',
+  'post /players/:steamId/stats/:seasonId': 'playerData',
+  'post /players/:steamId/weapons/:seasonId': 'playerData',
+  'post /players/:steamId/playtime': 'playerData',
+  'post /players/:steamId/stats-reset': 'playerData',
+  'get /players/:steamId/data': 'playerData',
   'get /reports': 'panel',
   'post /reports/:id': 'reportsHandle',
   'get /appeals': 'appeals',
@@ -142,6 +147,7 @@ test('всеки защитен маршрут е с право — точно �
     banners: 'HEADADMIN',
     audit: 'HEADADMIN',
     settings: 'HEADADMIN',
+    playerData: 'HEADADMIN',
   });
 });
 

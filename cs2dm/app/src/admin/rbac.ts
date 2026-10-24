@@ -68,6 +68,8 @@ export const CAPABILITIES = {
   audit: 'HEADADMIN',
   /** Живите настройки на сървъра (CONTRACT §11): реклами, патрони, ботове, XP множител, поздрав. */
   settings: 'HEADADMIN',
+  /** Всичко пазено за играч (четене) и ръчна редакция/нулиране на статистиките му (§3, епоха). */
+  playerData: 'HEADADMIN',
 } as const satisfies Record<string, Role>;
 
 export type Capability = keyof typeof CAPABILITIES;

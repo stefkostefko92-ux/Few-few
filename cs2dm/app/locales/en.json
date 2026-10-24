@@ -1245,6 +1245,72 @@
         "label": "Show the welcome message in chat when someone joins",
         "hint": "With the welcome off, the message about the current event on join is off as well."
       }
+    },
+    "stats": {
+      "title": "Statistics — edit",
+      "lead": "Every change goes into the audit with “before → after” and raises the stats epoch (now {epoch}): the plugin takes the values from the database and drops what it has not saved for the player yet — up to 10 seconds of their latest play are lost.",
+      "dataLink": "Everything we store about the player",
+      "none": "The player has no statistics yet.",
+      "saveConfirm": "Save the new values?",
+      "rules": "Whole numbers ≥ 0 only. Headshots, bounties and revenges cannot exceed kills.",
+      "weapons": "Per weapon",
+      "weaponsNone": "No weapon kills in this season.",
+      "playtimeLabel": "Total playtime (seconds)",
+      "playtimeHint": "Now: about {h} h. Season playtime is the field of each season.",
+      "fields": {
+        "kills": "Kills",
+        "deaths": "Deaths",
+        "headshots": "Headshots",
+        "assists": "Assists",
+        "damage": "Damage",
+        "shotsFired": "Shots fired",
+        "shotsHit": "Hits",
+        "bestStreak": "Best streak",
+        "bountiesClaimed": "Bounties claimed",
+        "revenges": "Revenges",
+        "playtimeSec": "Playtime (seconds)",
+        "xp": "XP"
+      },
+      "reset": {
+        "title": "Reset",
+        "note": "Sets the numbers to zero (the rows stay to keep the epoch). The audit keeps the old values.",
+        "confirmLabel": "I confirm the reset",
+        "season": "Reset season {n}",
+        "all": "Reset everything",
+        "seasonConfirm": "Reset the player's statistics for the current season?",
+        "allConfirm": "Reset ALL of the player's statistics (every season, weapons and playtime)?"
+      }
+    },
+    "data": {
+      "title": "Data of {name}",
+      "back": "back to the profile",
+      "lead": "Everything the database stores about this player — the raw rows, column names as in the database. Secrets are never shown: for the second factor only whether it is set; session tokens and code hashes are not read.",
+      "shown": "{shown} of {total}",
+      "empty": "No records.",
+      "note": "At most {limit} rows per section are shown (the latest). Kills are kept for 90 days, sessions for 30.",
+      "counts": {
+        "killsAsAttacker": "Kills (as killer, raw)",
+        "killsAsVictim": "Deaths (as victim, raw)",
+        "issued": "Punishments issued by them",
+        "auditBy": "Audit entries with them as admin"
+      },
+      "sections": {
+        "player": "Player",
+        "seasonStats": "Statistics per season",
+        "weaponStats": "Statistics per weapon",
+        "sessions": "Server sessions",
+        "webSessions": "Panel sessions",
+        "recoveryCodes": "Recovery codes (dates only)",
+        "punishments": "Punishments",
+        "appeals": "Appeals",
+        "reportsAgainst": "Reports against them",
+        "reportsBy": "Reports by them",
+        "vipGrants": "VIP periods",
+        "vipRequests": "VIP requests (invoice data)",
+        "kills": "Latest kills and deaths",
+        "auditAbout": "Audit about them",
+        "banners": "Banners placed by them"
+      }
     }
   }
 }

@@ -83,6 +83,9 @@ model Player {
   totpLastStep           Int?      @map("totp_last_step")
   /// Право на възражение (чл. 21 GDPR): скрит от публичните класации.
   hiddenFromLeaderboards Boolean   @default(false) @map("hidden_from_leaderboards")
+  /// Епохата на статистиките (CONTRACT §3): панелът я вдига при всяка ръчна редакция; плъгинът я
+  /// чете и праща с всяка партида — партида със стара епоха не пипа редактираните стойности.
+  statsEpoch             Int       @default(0) @map("stats_epoch")
 
   sessions      Session[]
   stats         PlayerSeasonStats[]
@@ -141,6 +144,8 @@ model PlayerSeasonStats {
   revenges        Int      @default(0)
   xp              BigInt   @default(0)
   playtimeSec     Int      @default(0) @map("playtime_sec")
+  /// Епохата, с която е писан редът (CONTRACT §3) — партида с по-стара не го пипа.
+  statsEpoch      Int      @default(0) @map("stats_epoch")
   updatedAt       DateTime @default(now()) @map("updated_at") @db.Timestamptz(3)
   player          Player   @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
   season          Season   @relation(fields: [seasonId], references: [id])
@@ -153,13 +158,15 @@ model PlayerSeasonStats {
 
 /// По оръжие — за weapon mastery (сезон 0) и сезонни класации по оръжие.
 model WeaponSeasonStats {
-  steamId   String @map("steam_id") @db.VarChar(17)
-  seasonId  Int    @map("season_id")
-  weapon    String @db.VarChar(32)
-  kills     Int    @default(0)
-  headshots Int    @default(0)
-  player    Player @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
-  season    Season @relation(fields: [seasonId], references: [id])
+  steamId    String @map("steam_id") @db.VarChar(17)
+  seasonId   Int    @map("season_id")
+  weapon     String @db.VarChar(32)
+  kills      Int    @default(0)
+  headshots  Int    @default(0)
+  /// Епохата, с която е писан редът (CONTRACT §3).
+  statsEpoch Int    @default(0) @map("stats_epoch")
+  player     Player @relation(fields: [steamId], references: [steamId], onDelete: Cascade)
+  season     Season @relation(fields: [seasonId], references: [id])
 
   @@id([steamId, seasonId, weapon])
   @@index([seasonId, weapon, kills(sort: Desc)])

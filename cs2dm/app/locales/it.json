@@ -1245,6 +1245,72 @@
         "label": "Mostra il messaggio di benvenuto in chat quando qualcuno entra",
         "hint": "Con il benvenuto disattivato è disattivato anche il messaggio sull'evento in corso all'ingresso."
       }
+    },
+    "stats": {
+      "title": "Statistiche — modifica",
+      "lead": "Ogni modifica finisce nel registro con «prima → dopo» e alza l'epoca delle statistiche (ora {epoch}): il plugin prende i valori dal database e scarta quanto non ha ancora salvato per il giocatore; si perdono fino a 10 secondi del suo ultimo gioco.",
+      "dataLink": "Tutto ciò che conserviamo sul giocatore",
+      "none": "Il giocatore non ha ancora statistiche.",
+      "saveConfirm": "Salvare i nuovi valori?",
+      "rules": "Solo numeri interi ≥ 0. Headshot, taglie e vendette non possono superare le uccisioni.",
+      "weapons": "Per arma",
+      "weaponsNone": "Nessuna uccisione per arma in questa stagione.",
+      "playtimeLabel": "Tempo di gioco totale (secondi)",
+      "playtimeHint": "Ora: circa {h} h. Il tempo stagionale è nel campo di ogni stagione.",
+      "fields": {
+        "kills": "Uccisioni",
+        "deaths": "Morti",
+        "headshots": "Headshot",
+        "assists": "Assist",
+        "damage": "Danni",
+        "shotsFired": "Colpi sparati",
+        "shotsHit": "Colpi a segno",
+        "bestStreak": "Serie migliore",
+        "bountiesClaimed": "Taglie riscosse",
+        "revenges": "Vendette",
+        "playtimeSec": "Tempo di gioco (secondi)",
+        "xp": "XP"
+      },
+      "reset": {
+        "title": "Azzeramento",
+        "note": "Porta i numeri a zero (le righe restano per conservare l'epoca). Il registro conserva i valori precedenti.",
+        "confirmLabel": "Confermo l'azzeramento",
+        "season": "Azzera la stagione {n}",
+        "all": "Azzera tutto",
+        "seasonConfirm": "Azzerare le statistiche del giocatore per la stagione corrente?",
+        "allConfirm": "Azzerare TUTTE le statistiche del giocatore (ogni stagione, armi e tempo di gioco)?"
+      }
+    },
+    "data": {
+      "title": "Dati di {name}",
+      "back": "torna al profilo",
+      "lead": "Tutto ciò che il database conserva su questo giocatore: le righe grezze, con i nomi delle colonne del database. I segreti non vengono mai mostrati: del secondo fattore solo se è impostato; i token delle sessioni e gli hash dei codici non vengono letti.",
+      "shown": "{shown} di {total}",
+      "empty": "Nessun record.",
+      "note": "Si mostrano al massimo {limit} righe per sezione (le più recenti). Le uccisioni si conservano 90 giorni, le sessioni 30.",
+      "counts": {
+        "killsAsAttacker": "Uccisioni (come autore, grezze)",
+        "killsAsVictim": "Morti (come vittima, grezze)",
+        "issued": "Sanzioni inflitte da lui",
+        "auditBy": "Voci del registro con lui come amministratore"
+      },
+      "sections": {
+        "player": "Giocatore",
+        "seasonStats": "Statistiche per stagione",
+        "weaponStats": "Statistiche per arma",
+        "sessions": "Sessioni sul server",
+        "webSessions": "Sessioni nel pannello",
+        "recoveryCodes": "Codici di recupero (solo date)",
+        "punishments": "Sanzioni",
+        "appeals": "Ricorsi",
+        "reportsAgainst": "Segnalazioni contro di lui",
+        "reportsBy": "Segnalazioni fatte da lui",
+        "vipGrants": "Periodi VIP",
+        "vipRequests": "Richieste VIP (dati di fatturazione)",
+        "kills": "Ultime uccisioni e morti",
+        "auditAbout": "Registro su di lui",
+        "banners": "Banner posizionati da lui"
+      }
     }
   }
 }

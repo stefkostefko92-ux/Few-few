@@ -1,21 +1,27 @@
+using CarbonStealth.Logic;
 using Npgsql;
 using NpgsqlTypes;
 
 namespace CarbonStealth.Data;
 
-/// <summary>Записва партида статистики в една транзакция: агрегатите за сезон 0 и текущия сезон + суровите убийства.</summary>
+/// <summary>
+/// Записва партида статистики в една транзакция: агрегатите за сезон 0 и текущия сезон + суровите убийства.
+/// Епохата (CONTRACT §3): всеки ред приема делтата само ако неговата епоха ≤ тази на партидата — след
+/// редакция от панела старите делти не пипат новите стойности (и при забавена или върната партида).
+/// </summary>
 public static class StatsWriter
 {
     private const string PlayerUpsert = """
         INSERT INTO players (steam_id, name) VALUES (@s, @n)
         ON CONFLICT (steam_id) DO UPDATE SET name = EXCLUDED.name,
-          playtime_sec = players.playtime_sec + @pt, last_seen_at = now()
+          playtime_sec = players.playtime_sec + CASE WHEN players.stats_epoch <= @e THEN @pt ELSE 0 END,
+          last_seen_at = now()
         """;
 
     private const string StatsUpsert = """
         INSERT INTO player_season_stats (steam_id, season_id, kills, deaths, headshots, assists, damage,
-          shots_fired, shots_hit, best_streak, bounties_claimed, revenges, xp, playtime_sec, updated_at)
-        VALUES (@s, @season, @k, @d, @hs, @a, @dmg, @sf, @sh, @bs, @bc, @rv, @xp, @pt, now())
+          shots_fired, shots_hit, best_streak, bounties_claimed, revenges, xp, playtime_sec, stats_epoch, updated_at)
+        VALUES (@s, @season, @k, @d, @hs, @a, @dmg, @sf, @sh, @bs, @bc, @rv, @xp, @pt, @e, now())
         ON CONFLICT (steam_id, season_id) DO UPDATE SET
           kills = player_season_stats.kills + EXCLUDED.kills,
           deaths = player_season_stats.deaths + EXCLUDED.deaths,
@@ -29,15 +35,19 @@ public static class StatsWriter
           revenges = player_season_stats.revenges + EXCLUDED.revenges,
           xp = player_season_stats.xp + EXCLUDED.xp,
           playtime_sec = player_season_stats.playtime_sec + EXCLUDED.playtime_sec,
+          stats_epoch = EXCLUDED.stats_epoch,
           updated_at = now()
+        WHERE player_season_stats.stats_epoch <= EXCLUDED.stats_epoch
         """;
 
     private const string WeaponUpsert = """
-        INSERT INTO weapon_season_stats (steam_id, season_id, weapon, kills, headshots)
-        VALUES (@s, @season, @w, @k, @hs)
+        INSERT INTO weapon_season_stats (steam_id, season_id, weapon, kills, headshots, stats_epoch)
+        VALUES (@s, @season, @w, @k, @hs, @e)
         ON CONFLICT (steam_id, season_id, weapon) DO UPDATE SET
           kills = weapon_season_stats.kills + EXCLUDED.kills,
-          headshots = weapon_season_stats.headshots + EXCLUDED.headshots
+          headshots = weapon_season_stats.headshots + EXCLUDED.headshots,
+          stats_epoch = EXCLUDED.stats_epoch
+        WHERE weapon_season_stats.stats_epoch <= EXCLUDED.stats_epoch
         """;
 
     public static async Task FlushAsync(this Database db, StatsBatch batch, int seasonId)
@@ -55,6 +65,7 @@ public static class StatsWriter
             p.Parameters.AddWithValue("s", steamId);
             p.Parameters.AddWithValue("n", d.Name.Length > 0 ? d.Name : "player");
             p.Parameters.AddWithValue("pt", d.PlaytimeSec);
+            p.Parameters.AddWithValue("e", d.Epoch);
             cmds.BatchCommands.Add(p);
 
             foreach (var season in seasons)
@@ -74,6 +85,7 @@ public static class StatsWriter
                 c.Parameters.AddWithValue("rv", d.Revenges);
                 c.Parameters.AddWithValue("xp", d.Xp);
                 c.Parameters.AddWithValue("pt", d.PlaytimeSec);
+                c.Parameters.AddWithValue("e", d.Epoch);
                 cmds.BatchCommands.Add(c);
             }
         }
@@ -87,6 +99,7 @@ public static class StatsWriter
                 w.Parameters.AddWithValue("w", weapon);
                 w.Parameters.AddWithValue("k", kills);
                 w.Parameters.AddWithValue("hs", headshots);
+                w.Parameters.AddWithValue("e", batch.EpochOf(steamId));
                 cmds.BatchCommands.Add(w);
             }
         }
