@@ -1,5 +1,5 @@
 import type { LoginOutcome } from '@prisma/client';
-import { z } from 'zod';
+import { z } from 'zod/v3';
 import type { AuditActor } from '../audit.js';
 import { config } from '../config.js';
 import { prisma } from '../db.js';
