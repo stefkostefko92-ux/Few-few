@@ -62,7 +62,18 @@ export default function StyleControls({ value, onChange, hideFont, hideDecor, hi
         <input
           type="checkbox"
           checked={!!value.customColors}
-          onChange={(e) => onChange({ customColors: e.target.checked })}
+          onChange={(e) => {
+            // При включване поемаме ТЕКУЩИТЕ цветове на темата — иначе полетата
+            // показваха фиксирани стойности, които не съвпадаха с листа.
+            if (!e.target.checked) return onChange({ customColors: false });
+            const t = resolveTheme({ ...value, customColors: false });
+            onChange({
+              customColors: true,
+              cbg: value.cbg || t.bg,
+              cfg: value.cfg || t.fg,
+              cacc: value.cacc || t.accent,
+            });
+          }}
           className="h-4 w-4 accent-tera"
         />
         <Icon name="palette" className="h-4 w-4" /> Свои цветове
@@ -129,7 +140,9 @@ export default function StyleControls({ value, onChange, hideFont, hideDecor, hi
         <input
           type="checkbox"
           checked={!!value.bgGrad}
-          onChange={(e) => onChange({ bgGrad: e.target.checked })}
+          // Записваме и втория цвят, който полето показва — без него
+          // градиентът не се рисуваше, докато човек не смени цвета ръчно.
+          onChange={(e) => onChange({ bgGrad: e.target.checked, ...(e.target.checked && !value.cbg2 ? { cbg2: "#F3D9C0" } : {}) })}
           className="h-4 w-4 accent-tera"
         />
         <Icon name="palette" className="h-4 w-4" /> Градиентен фон

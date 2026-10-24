@@ -39,10 +39,14 @@ const nextConfig = {
             // Втора линия срещу XSS: нищо външно (шрифтовете са self-hosted
             // през next/font). 'unsafe-inline' за script е нужен на Next
             // hydration + inline JSON-LD; всичко останало е заключено.
+            // img-src blob: — ImageUpload чете качения файл през
+            // URL.createObjectURL, за да го смали. Без blob: ВСЯКО качване на
+            // снимка/лого падаше с „Не успях да прочета изображението“. blob: е
+            // адрес, създаден в браузъра от файла на човека — нищо външно.
             key: "Content-Security-Policy",
             value:
               "default-src 'self'; script-src 'self' 'unsafe-inline'; " +
-              `style-src 'self' 'unsafe-inline'; img-src 'self' data: ${VIZITKA_ORIGIN}; ` +
+              `style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: ${VIZITKA_ORIGIN}; ` +
               `font-src 'self'; connect-src 'self' ${VIZITKA_ORIGIN}; object-src 'none'; ` +
               "frame-ancestors 'none'; base-uri 'none'; form-action 'self'; " +
               "upgrade-insecure-requests",

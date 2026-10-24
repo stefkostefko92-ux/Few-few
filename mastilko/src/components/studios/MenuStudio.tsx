@@ -56,7 +56,8 @@ function parseMenu(body: string): Section[] {
       cur = { heading: line.replace(/^#+/, "").trim(), items: [] };
       sections.push(cur);
     } else {
-      const [name, price] = line.split("|").map((x) => x.trim());
+      // „|“ или табулация (ценоразпис, поставен от Excel: ястие ⇥ цена).
+      const [name, price] = line.split(/[|\t]/).map((x) => x.trim());
       if (!cur) {
         cur = { heading: "", items: [] };
         sections.push(cur);

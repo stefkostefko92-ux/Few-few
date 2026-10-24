@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { resolveTheme, fontVars, StyleSchemaShape, type StyleState } from "@/lib/style";
+import { resolveTheme, fontVars, sheetBg, StyleSchemaShape, type StyleState } from "@/lib/style";
 import { useLocalState } from "@/lib/use-local-state";
 import AiAssist from "@/components/AiAssist";
 import BrandKitButton from "@/components/BrandKitButton";
@@ -230,6 +230,10 @@ export default function PismoStudio() {
         <SheetPreview fixedHeight={false} style={fontVars(s)}>
           <div
             style={{
+              // Градиентът и „своя снимка за фон“ от StyleControls досега не се
+              // рисуваха изобщо (контролите не правеха нищо). Основата остава
+              // бяла — писмото е бял лист; снимката получава бял воал.
+              background: sheetBg(s, { ...theme, bg: "#FFFFFF" }),
               padding: `${s.margin}mm ${s.margin - 2}mm`,
               minHeight: "297mm",
               color: "#2E2620",

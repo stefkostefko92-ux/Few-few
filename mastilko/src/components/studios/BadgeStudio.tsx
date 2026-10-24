@@ -67,7 +67,8 @@ const SIZES: Record<BadgeState["size"], { w: number; h: number }> = {
 interface Guest { name: string; role: string; company: string }
 
 function parseGuest(line: string, fallback: BadgeState): Guest {
-  const [n, r, c] = line.split("|").map((x) => x.trim());
+  // „|“ или табулация — три колони, поставени от Excel, се четат направо.
+  const [n, r, c] = line.split(/[|\t]/).map((x) => x.trim());
   return {
     name: n || fallback.name,
     // Ролята и фирмата са ПО ИЗБОР след „|“ — ред само с име трябва да даде

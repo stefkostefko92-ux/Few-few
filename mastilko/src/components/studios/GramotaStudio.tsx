@@ -217,7 +217,8 @@ export default function GramotaStudio() {
   // Всяко име = ЦЯЛ А4 лист. Без таван 4000 знака серия даваха ~2000 листа,
   // всеки със свой ResizeObserver и украса → браузърът замръзва. Рендираме
   // най-много MAX_SHEETS и казваме колко са отрязани.
-  const allNames = s.series.split("\n").map((l) => l.trim()).filter(Boolean);
+  // Таб (колони от Excel) → интервал: „Иван⇥Петров“ става „Иван Петров“.
+  const allNames = s.series.split("\n").map((l) => l.replace(/\t+/g, " ").trim()).filter(Boolean);
   const names = allNames.slice(0, MAX_SHEETS);
   const trimmed = allNames.length - names.length;
 
