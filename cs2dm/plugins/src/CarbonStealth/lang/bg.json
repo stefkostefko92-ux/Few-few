@@ -127,5 +127,10 @@
   "server.restart": "{Gold}[CarbonStealth]{Default} {Red}{0} рестартира играта{Default} — точките се нулират след 3 s",
   "usage.fun": "{Gold}[CarbonStealth]{Default} Употреба: !{0} <име|#userid|steamid>",
   "usage.csay": "{Gold}[CarbonStealth]{Default} Употреба: !csay <текст>",
-  "usage.asay": "{Gold}[CarbonStealth]{Default} Употреба: !asay <текст> (само за екипа)"
+  "usage.asay": "{Gold}[CarbonStealth]{Default} Употреба: !asay <текст> (само за екипа)",
+  "event.start": "{Gold}[CarbonStealth]{Default} {Lime}Започна събитие:{Default} {Gold}{0}{Default} · XP ×{1} · до {2}",
+  "event.end": "{Gold}[CarbonStealth]{Default} Събитието {Gold}{0}{Default} свърши — благодарим, че играхте!",
+  "event.active": "{Gold}[CarbonStealth]{Default} Сега тече събитие: {Gold}{0}{Default} · XP ×{1} · до {2}",
+  "hud.event.start": "СЪБИТИЕ: {0} · XP ×{1}",
+  "hud.event.end": "Събитието {0} свърши"
 }

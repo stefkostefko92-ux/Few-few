@@ -100,8 +100,8 @@ public sealed partial class CarbonStealthPlugin
         }
     }
 
-    /// <summary>Множителят на XP в десети за убийство сега (CONTRACT §3).</summary>
-    private int XpTenths() => _settings.XpTenths;
+    /// <summary>Множителят на XP в десети за убийство сега: max(настройката, текущото събитие) — CONTRACT §3.</summary>
+    private int XpTenths() => EventTracker.EffectiveXpTenths(_settings.XpTenths, _events.ActiveAt(DateTimeOffset.UtcNow));
 
     private static bool IsBulgarian(CCSPlayerController player) =>
         player.GetLanguage().TwoLetterISOLanguageName == "bg";

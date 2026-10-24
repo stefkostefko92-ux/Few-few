@@ -1,6 +1,8 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import type { PublicEvent } from '../events.js';
 import { CELL_PX, DUST2_OVERVIEW, cleanCells, type HeatCell } from '../heatmap.js';
+import { loadEvents } from './public-extra.js';
 import {
   RATIO_MIN_KILLS,
   pagesFor,
@@ -244,6 +246,10 @@ export class PrismaRepo implements Repo {
       take: limit,
       select: { steamId: true, updatedAt: true },
     });
+  }
+
+  events(now: Date): Promise<PublicEvent[]> {
+    return loadEvents(this.db, now);
   }
 
   async lastStatsUpdate(): Promise<Date | null> {

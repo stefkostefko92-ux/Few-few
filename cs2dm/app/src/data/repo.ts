@@ -1,3 +1,4 @@
+import type { PublicEvent } from '../events.js';
 import type { HeatCell } from '../heatmap.js';
 
 /**
@@ -123,6 +124,8 @@ export interface Repo {
   sitemapPlayers(limit: number): Promise<SitemapPlayer[]>;
   /** Последното обновяване на статистиките (lastmod на класацията) или null. */
   lastStatsUpdate(): Promise<Date | null>;
+  /** Активните и предстоящите събития (CONTRACT §12), без отменените. */
+  events(now: Date): Promise<PublicEvent[]>;
 }
 
 export function pagesFor(total: number, pageSize: number): number {

@@ -127,5 +127,10 @@
   "server.restart": "{Gold}[CarbonStealth]{Default} {Red}{0} restarted the game{Default} — scores reset in 3 s",
   "usage.fun": "{Gold}[CarbonStealth]{Default} Usage: !{0} <name|#userid|steamid>",
   "usage.csay": "{Gold}[CarbonStealth]{Default} Usage: !csay <text>",
-  "usage.asay": "{Gold}[CarbonStealth]{Default} Usage: !asay <text> (staff only)"
+  "usage.asay": "{Gold}[CarbonStealth]{Default} Usage: !asay <text> (staff only)",
+  "event.start": "{Gold}[CarbonStealth]{Default} {Lime}Event started:{Default} {Gold}{0}{Default} · XP ×{1} · until {2}",
+  "event.end": "{Gold}[CarbonStealth]{Default} The event {Gold}{0}{Default} is over — thanks for playing!",
+  "event.active": "{Gold}[CarbonStealth]{Default} Event on now: {Gold}{0}{Default} · XP ×{1} · until {2}",
+  "hud.event.start": "EVENT: {0} · XP ×{1}",
+  "hud.event.end": "The event {0} is over"
 }

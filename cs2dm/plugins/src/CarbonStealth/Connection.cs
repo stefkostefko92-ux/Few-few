@@ -105,7 +105,11 @@ public sealed partial class CarbonStealthPlugin
 
         if (isConnect)
         {
-            if (!carried && _settings.Welcome) player.PrintToChat(Localizer.ForPlayer(player, "welcome", state.Name, Config.SiteUrl));
+            if (!carried && _settings.Welcome)
+            {
+                player.PrintToChat(Localizer.ForPlayer(player, "welcome", state.Name, Config.SiteUrl));
+                TellActiveEvent(player);
+            }
             _bridge?.Event("join", new { steamId = state.SteamId64, name = state.Name });
         }
     }

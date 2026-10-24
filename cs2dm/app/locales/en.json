@@ -279,6 +279,24 @@
     "cta": {
       "title": "Ready for Dust2?",
       "text": "Opens Steam and connects you directly. All you need is Counter-Strike 2 — nothing to install, no sign-up."
+    },
+    "events": {
+      "title": "Events",
+      "live": "Running now",
+      "upcoming": "Upcoming",
+      "to": "to",
+      "tags": "Event details",
+      "kinds": {
+        "XP_BOOST": "XP weekend",
+        "MODE": "Special mode",
+        "COMMUNITY": "Community"
+      },
+      "note": "Times are in the server time zone ({tz}). The XP multiplier applies equally to every player.",
+      "ld": {
+        "XP_BOOST": "XP weekend on the CS2 server Dust2 DM: every kill gives XP {multiplier}.",
+        "MODE": "Special mode {mode} on the CS2 server Dust2 DM.",
+        "COMMUNITY": "Community event on the CS2 server Dust2 DM — join and play with everyone."
+      }
     }
   },
   "leaderboard": {
@@ -769,7 +787,8 @@
       "banners": "Banners",
       "audit": "Audit",
       "account": "Account",
-      "settings": "Settings"
+      "settings": "Settings",
+      "events": "Events"
     },
     "me": {
       "signedAs": "Signed in:",
@@ -867,7 +886,8 @@
       "cmdUnknownMode": "The mode is not available in the DM plugin.",
       "cmdFailed": "The server rejected the command.",
       "badCode": "The code is wrong or has already been used.",
-      "cmdPending": "The agent did not confirm within 25 seconds — the restart may still be running. Check the status in a minute."
+      "cmdPending": "The agent did not confirm within 25 seconds — the restart may still be running. Check the status in a minute.",
+      "overlap": "The event overlaps another (not cancelled) event. Change the times."
     },
     "cmd": {
       "timeout": "The server agent did not answer within 5 seconds.",
@@ -1311,6 +1331,38 @@
         "auditAbout": "Audit about them",
         "banners": "Banners placed by them"
       }
+    },
+    "events": {
+      "title": "Scheduled events",
+      "lead": "The plugin checks the schedule every 30 seconds: on start it announces the event in each player's language, starts the mode (if any) and raises the XP multiplier; on end it announces and restores. Times are in the {tz} zone.",
+      "newTitle": "New event",
+      "create": "Create",
+      "rules": "No overlaps; up to 14 days; the end must be in the future. “Mode” needs a DM mode, “XP weekend” a multiplier above 1. Titles go to the game chat — colour codes are removed.",
+      "empty": "No events in the last 30 days.",
+      "kind": "Kind",
+      "kinds": {
+        "XP_BOOST": "XP weekend",
+        "MODE": "Special mode",
+        "COMMUNITY": "Community event"
+      },
+      "titleBg": "Title (Bulgarian)",
+      "titleEn": "Title (English)",
+      "titleIt": "Title (Italian)",
+      "startsAt": "Start",
+      "endsAt": "End",
+      "multiplier": "XP multiplier (1–3)",
+      "mode": "DM mode",
+      "noMode": "no mode change",
+      "states": {
+        "active": "running now",
+        "upcoming": "upcoming",
+        "ended": "ended",
+        "cancelled": "cancelled"
+      },
+      "createdBy": "Created by {name}.",
+      "edit": "Edit",
+      "cancel": "Cancel the event",
+      "cancelConfirm": "Cancel the event? If it is running, the plugin stops it within 30 seconds."
     }
   }
 }

@@ -279,6 +279,24 @@
     "cta": {
       "title": "Pronto per Dust2?",
       "text": "Apre Steam e La collega direttamente. Serve solo Counter-Strike 2: niente da installare, nessuna registrazione."
+    },
+    "events": {
+      "title": "Eventi",
+      "live": "In corso",
+      "upcoming": "In arrivo",
+      "to": "a",
+      "tags": "Dettagli dell'evento",
+      "kinds": {
+        "XP_BOOST": "Weekend XP",
+        "MODE": "Modalità speciale",
+        "COMMUNITY": "Community"
+      },
+      "note": "Gli orari sono nel fuso orario del server ({tz}). Il moltiplicatore XP vale allo stesso modo per ogni giocatore.",
+      "ld": {
+        "XP_BOOST": "Weekend XP sul server CS2 Dust2 DM: ogni uccisione dà XP {multiplier}.",
+        "MODE": "Modalità speciale {mode} sul server CS2 Dust2 DM.",
+        "COMMUNITY": "Evento della community sul server CS2 Dust2 DM: entri e giochi con tutti."
+      }
     }
   },
   "leaderboard": {
@@ -769,7 +787,8 @@
       "banners": "Banner",
       "audit": "Audit",
       "account": "Account",
-      "settings": "Impostazioni"
+      "settings": "Impostazioni",
+      "events": "Eventi"
     },
     "me": {
       "signedAs": "Accesso:",
@@ -867,7 +886,8 @@
       "cmdUnknownMode": "La modalità non è disponibile nel plugin DM.",
       "cmdFailed": "Il server ha rifiutato il comando.",
       "badCode": "Il codice è errato o è già stato usato.",
-      "cmdPending": "L’agente non ha confermato entro 25 secondi — il riavvio potrebbe essere ancora in corso. Controlli lo stato tra un minuto."
+      "cmdPending": "L’agente non ha confermato entro 25 secondi — il riavvio potrebbe essere ancora in corso. Controlli lo stato tra un minuto.",
+      "overlap": "L'evento si sovrappone a un altro evento (non annullato). Cambi gli orari."
     },
     "cmd": {
       "timeout": "L’agente del server non ha risposto entro 5 secondi.",
@@ -1311,6 +1331,38 @@
         "auditAbout": "Registro su di lui",
         "banners": "Banner posizionati da lui"
       }
+    },
+    "events": {
+      "title": "Eventi programmati",
+      "lead": "Il plugin controlla il programma ogni 30 secondi: all'inizio annuncia l'evento nella lingua di ogni giocatore, avvia la modalità (se c'è) e alza il moltiplicatore XP; alla fine annuncia e ripristina. Gli orari sono nel fuso {tz}.",
+      "newTitle": "Nuovo evento",
+      "create": "Crea",
+      "rules": "Nessuna sovrapposizione; fino a 14 giorni; la fine deve essere nel futuro. «Modalità» richiede una modalità DM, «Weekend XP» un moltiplicatore sopra 1. I titoli vanno nella chat di gioco: i codici colore vengono rimossi.",
+      "empty": "Nessun evento negli ultimi 30 giorni.",
+      "kind": "Tipo",
+      "kinds": {
+        "XP_BOOST": "Weekend XP",
+        "MODE": "Modalità speciale",
+        "COMMUNITY": "Evento della community"
+      },
+      "titleBg": "Titolo (bulgaro)",
+      "titleEn": "Titolo (inglese)",
+      "titleIt": "Titolo (italiano)",
+      "startsAt": "Inizio",
+      "endsAt": "Fine",
+      "multiplier": "Moltiplicatore XP (1–3)",
+      "mode": "Modalità DM",
+      "noMode": "nessun cambio di modalità",
+      "states": {
+        "active": "in corso",
+        "upcoming": "in arrivo",
+        "ended": "concluso",
+        "cancelled": "annullato"
+      },
+      "createdBy": "Creato da {name}.",
+      "edit": "Modifica",
+      "cancel": "Annulla l'evento",
+      "cancelConfirm": "Annullare l'evento? Se è in corso, il plugin lo ferma entro 30 secondi."
     }
   }
 }

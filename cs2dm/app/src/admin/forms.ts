@@ -81,6 +81,7 @@ export const RESULTS = {
   notActive: 'error',
   inUse: 'error',
   duplicate: 'error',
+  overlap: 'error',
   cmdTimeout: 'error',
   cmdNoListener: 'error',
   cmdRedis: 'error',

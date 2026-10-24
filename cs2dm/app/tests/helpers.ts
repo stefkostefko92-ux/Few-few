@@ -1,6 +1,7 @@
 import type { AddressInfo } from 'node:net';
 import type { Repo, LeaderRow, PublicBan, PublicPlayer, StatLine } from '../src/data/repo.js';
 import { pagesFor } from '../src/data/repo.js';
+import type { PublicEvent } from '../src/events.js';
 import type { LiveSource, LiveStatus } from '../src/live.js';
 import { createServer, type ServerDeps } from '../src/server.js';
 
@@ -11,6 +12,7 @@ export interface FakeData {
   stats: StatLine[];
   bans: PublicBan[];
   tiers: Awaited<ReturnType<Repo['vipTiers']>>;
+  events?: PublicEvent[];
 }
 
 export const PLAYER_ID = '76561198000000001';
@@ -106,6 +108,7 @@ export function fakeRepo(data: FakeData, calls: string[] = []): Repo {
       { steamId: PLAYER_ID, updatedAt: new Date('2026-10-20T12:00:00Z') },
     ],
     lastStatsUpdate: async () => new Date('2026-10-20T12:00:00Z'),
+    events: async () => data.events ?? [],
   };
 }
 

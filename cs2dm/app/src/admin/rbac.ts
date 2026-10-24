@@ -52,6 +52,8 @@ export const CAPABILITIES = {
   say: 'MODERATOR',
   /** Смяна на DM режима (`mode`). */
   mode: 'ADMIN',
+  /** Събития по график (CONTRACT §12) — като смяната на режим: ADMIN+. */
+  events: 'ADMIN',
   /** VIP: ръчно даване/отнемане и нивата (цени). */
   vip: 'ADMIN',
   /** Лични данни: IP адресите на сесиите и скриването от класациите (чл. 21 GDPR). */

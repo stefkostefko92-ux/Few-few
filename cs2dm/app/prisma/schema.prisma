@@ -63,6 +63,13 @@ enum VipRequestStatus {
   CANCELLED
 }
 
+/// Вид на събитие по график (CONTRACT §12): XP уикенд, специален DM режим или общностно събитие.
+enum EventKind {
+  XP_BOOST
+  MODE
+  COMMUNITY
+}
+
 model Player {
   steamId                String    @id @map("steam_id") @db.VarChar(17)
   name                   String    @db.VarChar(64)
@@ -409,4 +416,30 @@ model ServerSetting {
   updatedBy String?  @map("updated_by") @db.VarChar(17)
 
   @@map("server_settings")
+}
+
+/// Събитие по график (CONTRACT §12). Пише го панелът (ADMIN+, /admin/events); плъгинът го проверява на
+/// 30 s: при старт — обява на езика на играча, DM режим (ако има) и множител на XP = max(настройка, събитие);
+/// при край — обява и връщане. Без застъпване (EXCLUDE в миграцията + проверка в панела). Отменено = cancelled_at.
+model ScheduledEvent {
+  id           Int       @id @default(autoincrement())
+  kind         EventKind
+  titleBg      String    @map("title_bg") @db.VarChar(80)
+  titleEn      String    @map("title_en") @db.VarChar(80)
+  titleIt      String    @map("title_it") @db.VarChar(80)
+  startsAt     DateTime  @map("starts_at") @db.Timestamptz(3)
+  endsAt       DateTime  @map("ends_at") @db.Timestamptz(3)
+  /// 1.0…3.0 със стъпка 0.1 (CHECK в миграцията); плъгинът го ползва в десети (§3).
+  xpMultiplier Decimal   @default(1.0) @map("xp_multiplier") @db.Decimal(2, 1)
+  /// Custom режим на DM плъгина (Deathmatch.json, „Custom Modes“) или null = без смяна.
+  dmModeId     Int?      @map("dm_mode_id")
+  createdBy    String    @map("created_by") @db.VarChar(17)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime  @default(now()) @map("updated_at") @db.Timestamptz(3)
+  cancelledAt  DateTime? @map("cancelled_at") @db.Timestamptz(3)
+  cancelledBy  String?   @map("cancelled_by") @db.VarChar(17)
+
+  @@index([startsAt])
+  @@index([endsAt])
+  @@map("events")
 }

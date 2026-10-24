@@ -15,6 +15,7 @@ const ID = '76561190000997101';
 const PLAYER_UPSERT = csharpConst('Data/StatsWriter.cs', 'PlayerUpsert');
 const STATS_UPSERT = csharpConst('Data/StatsWriter.cs', 'StatsUpsert');
 const WEAPON_UPSERT = csharpConst('Data/StatsWriter.cs', 'WeaponUpsert');
+const ACTIVE_EVENT = csharpConst('Data/EventStore.cs', 'ActiveEventSql');
 
 describe('SQL на плъгина: епохата', { skip: enabled ? false : 'няма DATABASE_URL' }, () => {
   let db: PrismaClient;
@@ -60,12 +61,14 @@ describe('SQL на плъгина: епохата', { skip: enabled ? false : '�
 
   before(async () => {
     db = new PrismaClient();
+    await db.scheduledEvent.deleteMany({ where: { createdBy: ID } });
     await cleanup(db, [ID]);
     await db.player.create({ data: { steamId: ID, name: 'IT Sql' } });
   });
 
   after(async () => {
     if (db) {
+      await db.scheduledEvent.deleteMany({ where: { createdBy: ID } });
       await cleanup(db, [ID]);
       await db.$disconnect();
     }
@@ -116,5 +119,31 @@ describe('SQL на плъгина: епохата', { skip: enabled ? false : '�
     });
     assert.equal(awp.kills, 3);
     assert.equal(awp.statsEpoch, 1);
+  });
+
+  test('текущото събитие (EventStore.cs): само неотменено и в момента; множителят като numeric', async () => {
+    const now = Date.now();
+    const event = await db.scheduledEvent.create({
+      data: {
+        kind: 'MODE',
+        titleBg: 'IT събитие',
+        titleEn: 'IT event',
+        titleIt: 'IT evento',
+        startsAt: new Date(now - 10 * 60_000),
+        endsAt: new Date(now + 20 * 60_000),
+        xpMultiplier: '1.5',
+        dmModeId: 2,
+        createdBy: ID,
+      },
+    });
+    const rows = await db.$queryRawUnsafe<Array<Record<string, unknown>>>(ACTIVE_EVENT);
+    const row = rows.find((r) => r.id === event.id);
+    assert.ok(row, 'текущото събитие се вижда');
+    assert.equal(row.kind, 'MODE');
+    assert.equal(String(row.xp_multiplier), '1.5');
+    assert.equal(row.dm_mode_id, 2);
+    await db.scheduledEvent.update({ where: { id: event.id }, data: { cancelledAt: new Date() } });
+    const after = await db.$queryRawUnsafe<Array<Record<string, unknown>>>(ACTIVE_EVENT);
+    assert.ok(!after.some((r) => r.id === event.id), 'отмененото не се вижда');
   });
 });

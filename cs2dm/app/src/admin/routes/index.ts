@@ -1,6 +1,7 @@
 import type { AdminCtx, AdminRoute } from '../context.js';
 import { caseRoutes } from './cases.js';
 import { dashboardRoutes } from './dashboard.js';
+import { eventRoutes } from './events.js';
 import { playerActionRoutes } from './player-actions.js';
 import { playerDataRoutes } from './player-data.js';
 import { playerRoutes } from './players.js';
@@ -23,6 +24,7 @@ export function protectedRoutes(ctx: AdminCtx): AdminRoute[] {
     ...playerDataRoutes(ctx),
     ...caseRoutes(ctx),
     ...vipRoutes(ctx),
+    ...eventRoutes(ctx),
     ...recordRoutes(ctx),
     ...serverRoutes(ctx),
     ...settingsRoutes(ctx),
