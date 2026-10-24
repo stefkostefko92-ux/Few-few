@@ -1,10 +1,12 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { SOCKET_EVENTS, type GameKey } from "@aso/shared";
 import { Badge, Button, Field, Panel } from "../../ui";
 import { api, type FriendEntry, type FriendLite, type FriendsResponse } from "../../lib/api";
 import { getSocket } from "../../lib/socket";
 import { GAME_CATALOG } from "../lobby/games";
+import { gameTitle } from "../lobby/games";
 
 const READY_GAMES = GAME_CATALOG.filter((g) => g.ready);
 
@@ -14,6 +16,8 @@ export function FriendsPage() {
   const [q, setQ] = useState("");
   const [results, setResults] = useState<FriendLite[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
+  const [searched, setSearched] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const load = () => api.friends().then(setData).catch(() => undefined);
   useEffect(() => {
@@ -23,15 +27,26 @@ export function FriendsPage() {
   async function search(e: FormEvent) {
     e.preventDefault();
     if (q.trim().length < 2) return;
-    const r = await api.friendSearch(q.trim());
-    setResults(r.users);
+    setError(null);
+    try {
+      const r = await api.friendSearch(q.trim());
+      setResults(r.users);
+      setSearched(true);
+    } catch {
+      setError(t("errors.generic"));
+    }
   }
 
   async function act(key: string, fn: () => Promise<unknown>) {
     setBusy(key);
+    setError(null);
     try {
       await fn();
       await load();
+    } catch (e) {
+      // 409 (вече поканен/приятел) и мрежови грешки вече се показват, вместо да мълчат.
+      const code = (e as { code?: string }).code;
+      setError(code ? t(`errors.${code}`, { defaultValue: t("errors.generic") }) : t("errors.generic"));
     } finally {
       setBusy(null);
     }
@@ -74,6 +89,13 @@ export function FriendsPage() {
               </li>
             ))}
           </ul>
+        ) : searched ? (
+          <p className="mt-3 text-sm text-ink-muted">{t("friends.noResults")}</p>
+        ) : null}
+        {error ? (
+          <p role="alert" className="mt-3 text-sm text-loss">
+            {error}
+          </p>
         ) : null}
       </Panel>
 
@@ -145,7 +167,7 @@ function FriendRow({
 }: {
   f: FriendEntry;
   act: (key: string, fn: () => Promise<unknown>) => void;
-  t: (k: string) => string;
+  t: TFunction;
 }) {
   const [game, setGame] = useState<GameKey>((READY_GAMES[0]?.key ?? "CHESS") as GameKey);
 
@@ -171,7 +193,7 @@ function FriendRow({
         >
           {READY_GAMES.map((g) => (
             <option key={g.key} value={g.key}>
-              {g.title}
+              {gameTitle(t, g.key)}
             </option>
           ))}
         </select>

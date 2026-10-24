@@ -23,7 +23,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   return (
     <button
       ref={ref}
-      disabled={disabled ?? loading}
+      // Докато зарежда, бутонът е изключен ВИНАГИ — и при изрично disabled={false}
+      // (иначе двоен клик изпраща две заявки, напр. двойно начисляване в админа).
+      disabled={Boolean(disabled) || Boolean(loading)}
       className={cn(
         "inline-flex items-center justify-center gap-2 rounded-card px-5 py-2.5 font-semibold",
         "transition-all duration-fast ease-snap focus-visible:outline-none focus-visible:ring-2",

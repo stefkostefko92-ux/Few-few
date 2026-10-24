@@ -22,6 +22,7 @@ export const KNOWN_PROJECTS = [
   'eternaltouch',
   'piuma',
   'korpora',
+  'gaming',
   'adblock',
   'vpsdashboard',
 ];
