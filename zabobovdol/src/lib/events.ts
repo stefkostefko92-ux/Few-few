@@ -25,11 +25,35 @@ export function isEventName(x: unknown): x is EventName {
   return typeof x === "string" && SET.has(x);
 }
 
+type PrivacySignals = {
+  globalPrivacyControl?: unknown;
+  doNotTrack?: unknown;
+  msDoNotTrack?: unknown;
+};
+
+// Посетителят е отказал броенето чрез браузъра си: Global Privacy Control или
+// „Do Not Track“. Това е реалният начин за отказ (ЗЕТ чл. 4а) — описан е в
+// /biskvitki и /poveritelnost.
+export function trackingOptedOut(nav?: PrivacySignals | null, win?: { doNotTrack?: unknown } | null): boolean {
+  if (nav?.globalPrivacyControl === true) return true;
+  const dnt = [nav?.doNotTrack, nav?.msDoNotTrack, win?.doNotTrack];
+  return dnt.some((v) => v === "1" || v === "yes");
+}
+
 // Праща събитие без бисквитки и без идентификатор. Никога не хвърля — броенето
-// не бива да чупи действието, което човек всъщност иска да направи.
+// не бива да чупи действието, което човек всъщност иска да направи. При отказ
+// (GPC/DNT) не се праща НИЩО.
 export function track(name: EventName): void {
   if (typeof window === "undefined") return;
   try {
+    if (
+      trackingOptedOut(
+        typeof navigator === "undefined" ? null : (navigator as Navigator & PrivacySignals),
+        window as unknown as { doNotTrack?: unknown },
+      )
+    ) {
+      return;
+    }
     const body = JSON.stringify({
       e: name,
       p: window.location.pathname,

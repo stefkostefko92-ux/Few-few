@@ -169,3 +169,10 @@ UPDATE "Post" SET "published" = false WHERE "slug" IN (
   'ustroystven-pravilnik',
   'zashtita-pri-bedstviya-i-avarii'
 );
+
+-- Вече публикуваното съдържание се смята за известено: notifiedAt е ново поле и
+-- без това първата редакция на стара новина/измама/прекъсване би пратила
+-- известие до всички абонати за отдавна публикуван материал.
+UPDATE "Post"      SET "notifiedAt" = CURRENT_TIMESTAMP WHERE "published" = true AND "notifiedAt" IS NULL;
+UPDATE "ScamAlert" SET "notifiedAt" = CURRENT_TIMESTAMP WHERE "published" = true AND "notifiedAt" IS NULL;
+UPDATE "Outage"    SET "notifiedAt" = CURRENT_TIMESTAMP WHERE "published" = true AND "notifiedAt" IS NULL;

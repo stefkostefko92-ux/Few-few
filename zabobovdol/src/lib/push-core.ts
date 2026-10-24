@@ -75,12 +75,29 @@ export function isBase64Url(s: string, min = 8, max = 200): boolean {
   return s.length >= min && s.length <= max && B64URL.test(s);
 }
 
-/** Само https адрес на push услуга. */
+// Хостовете на истинските push услуги на браузърите (Chrome/Edge/Opera → FCM,
+// Firefox → Mozilla autopush, Safari → Apple, стар Edge/Windows → WNS). Сървърът
+// праща POST към адреса на абоната, затова всичко извън този списък е отказ
+// (fail-closed): иначе анонимен посетител би накарал сървъра да вика вътрешни
+// адреси (127.0.0.1, 10.x, метаданни) или бавен чужд хост, който задържа
+// публикуването в админа (SSRF + DoS).
+const PUSH_HOSTS: readonly RegExp[] = [
+  /^fcm\.googleapis\.com$/,
+  /^([a-z0-9-]+\.)+push\.services\.mozilla\.com$/, // вкл. updates.push.services.mozilla.com
+  /^([a-z0-9-]+\.)+push\.apple\.com$/, // вкл. web.push.apple.com
+  /^([a-z0-9-]+\.)+notify\.windows\.com$/, // вкл. wns2-*.notify.windows.com
+];
+
+/** Само https адрес на позната push услуга, без порт, потребител и парола. */
 export function isPushEndpoint(s: string): boolean {
-  if (s.length > 1000) return false;
+  if (typeof s !== "string" || s.length > 1000) return false;
+  // Без интервали, контролни знаци, „\“ и „@“ — различните парсери на адреси
+  // (WHATWG тук, url.parse в web-push) ги тълкуват различно.
+  if (/[\s\u0000-\u001f\u007f\\@]/.test(s)) return false;
   try {
     const u = new URL(s);
-    return u.protocol === "https:" && !u.username && !u.password;
+    if (u.protocol !== "https:" || u.username || u.password || u.port) return false;
+    return PUSH_HOSTS.some((rx) => rx.test(u.hostname));
   } catch {
     return false;
   }
