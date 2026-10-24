@@ -1070,7 +1070,7 @@
     "boardTitle": "Magnat board",
     "gameOver": "Game over.",
     "turnOf": "Turn: {{name}}.",
-    "noWebGL": "The 3D board requires WebGL, which isn't available in this browser. You can play via the panel on the right.",
+    "noWebGL": "The 3D board requires WebGL, which isn't available in this browser — showing a simplified 2D board; your moves are in the panel.",
     "jailCard": "Jail card",
     "payBail": "Pay bail (50)",
     "roll": "Roll the dice",

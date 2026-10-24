@@ -305,20 +305,21 @@ button.aso-card:not(:disabled):hover {
 .aso-fx-layer .aso-announce {
   position: static;
   transform: none;
-  /* the free-standing entrance centres itself with translateX(-50%); inside
-     the stacked layer that shoved every banner half its width to the left
-     for the whole entrance, then it snapped back */
+  /* Своя входна анимация: общата носи translateX(-50%) на абсолютния банер —
+     в слоя банерът влиташе изместен наляво и после подскачаше в центъра. */
   animation-name: announce-in-stacked;
 }
 @keyframes announce-in-stacked {
   from { opacity: 0; transform: translateY(-8px) scale(0.9); }
   to { opacity: 1; transform: none; }
 }
-/* Phones: a banner with a long player name („… взима раздаването (+2)“) was
-   wider than the screen and lost both ends — wrap it inside the table. The
-   explicit width matters: centred with left:50%, the layer could otherwise
-   only shrink-wrap into half of the table. */
-@media (max-width: 640px) {
+@media (prefers-reduced-motion: reduce) {
+  .aso-fx-layer .aso-announce { animation: none; }
+}
+/* Телефон: дълъг банер („X плаща 32 наем на Y“, „… взима раздаването (+2)“)
+   се пренася на редове, вместо да излиза от двете страни. Изричната ширина е
+   нужна: центриран с left:50%, слоят иначе се свива в половината маса. */
+@media (max-width: 639px) {
   .aso-fx-layer {
     width: max-content;
     max-width: calc(100% - 16px);

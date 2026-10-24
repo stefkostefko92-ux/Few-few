@@ -124,7 +124,7 @@ export function BingoView({ title }: { title: string }) {
         <FeltTable crest="B" feltColor="#3a2470" feltDark="#1a103a">
         <div className="bingo-layout">
           {/* The draw display. */}
-          <div className="bingo-drum">
+          <div className="bingo-drum" data-drawn={state.drawn.length} data-last={last ?? ""} data-closing={state.closing ? "true" : undefined}>
             <div key={last ?? "-"} className="bingo-ball">{last !== undefined && last !== null ? ballLabel(last) : "—"}</div>
             <p className="mt-2 text-sm text-ink-300">{t("bingo.drawn", { n: state.drawn.length })}</p>
             <div className="bingo-recent">
@@ -154,6 +154,12 @@ export function BingoView({ title }: { title: string }) {
                   <button
                     key={i}
                     type="button"
+                    data-bingo-cell={i}
+                    data-number={n}
+                    // Потвърдено от сървъра (без оптимистичното „чакащо“ маркиране).
+                    data-marked={free || myMarks.has(i) ? "true" : undefined}
+                    data-markable={markable ? "true" : undefined}
+                    data-void={voided ? "true" : undefined}
                     onClick={() => mark(i)}
                     disabled={!markable}
                     aria-pressed={marked}
@@ -173,12 +179,13 @@ export function BingoView({ title }: { title: string }) {
             </div>
             <ScorePill label={user?.displayName ?? t("game.you")} value={t("bingo.yourCard")} highlight />
             <div className="bingo-controls">
-              <Button onClick={callBingo} disabled={!canAct || iWon} className="bingo-call">
+              <Button data-action="bingo" onClick={callBingo} disabled={!canAct || iWon} className="bingo-call">
                 {t("bingo.call")}
               </Button>
               <label className="bingo-auto">
                 <input
                   type="checkbox"
+                  data-action="auto"
                   checked={auto}
                   onChange={(e) => send({ type: "AUTO", seat, on: e.target.checked })}
                   disabled={phase !== "playing"}
@@ -187,7 +194,7 @@ export function BingoView({ title }: { title: string }) {
               </label>
             </div>
             {blockedLeft > 0 ? (
-              <p className="bingo-penalty" role="status">
+              <p className="bingo-penalty" role="status" data-penalty={blockedLeft}>
                 {t("bingo.penalty", { n: blockedLeft })}
               </p>
             ) : (
@@ -202,7 +209,7 @@ export function BingoView({ title }: { title: string }) {
               const { marked, best } = progress(state.marks?.[s] ?? []);
               const name = players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
               return (
-                <div key={s} className={cn("bingo-rival", best >= 4 && "bingo-rival--hot")}>
+                <div key={s} className={cn("bingo-rival", best >= 4 && "bingo-rival--hot")} data-rival={s} data-best={best}>
                   <span className="bingo-rival-name">{name}</span>
                   <span className="bingo-rival-line">{t("bingo.bestLine", { n: best })}</span>
                   <span className="bingo-rival-marks">{marked}/25</span>

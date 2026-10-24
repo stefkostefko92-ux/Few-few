@@ -198,3 +198,44 @@ button.bingo-cell {
   font-size: 0.8rem;
   color: var(--loss);
 }
+
+/* Телефон: барабанът става компактен ред (топка вляво, брой и последни числа
+   вдясно), за да се виждат едновременно изтегленото число, картата и
+   „Бинго!“ — при теглене на 4 s нямаше време да скролваш между тях. */
+@media (max-width: 639px) {
+  .bingo-layout {
+    gap: 14px;
+    padding: 12px 8px;
+  }
+  .bingo-drum {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 12px;
+    align-items: center;
+    width: 100%;
+    max-width: 300px;
+  }
+  .bingo-drum > .bingo-ball {
+    grid-row: 1 / span 3;
+    width: 64px;
+    height: 64px;
+    font-size: 1.1rem;
+  }
+  .bingo-drum > p {
+    margin-top: 0;
+  }
+  .bingo-recent {
+    margin-top: 2px;
+    max-width: none;
+    justify-content: flex-start;
+    gap: 4px;
+  }
+  .bingo-recent-ball {
+    width: 22px;
+    height: 22px;
+    font-size: 0.65rem;
+  }
+  .bingo-card {
+    padding: 10px;
+  }
+}

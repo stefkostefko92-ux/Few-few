@@ -1070,7 +1070,7 @@
     "boardTitle": "Tabellone Magnat",
     "gameOver": "Partita finita.",
     "turnOf": "Turno: {{name}}.",
-    "noWebGL": "Il tabellone 3D richiede WebGL, non disponibile in questo browser. Puoi giocare dal pannello a destra.",
+    "noWebGL": "Il tabellone 3D richiede WebGL, non disponibile in questo browser — mostriamo un tabellone 2D semplificato; le mosse sono nel pannello.",
     "jailCard": "Carta uscita di prigione",
     "payBail": "Paga cauzione (50)",
     "roll": "Lancia i dadi",

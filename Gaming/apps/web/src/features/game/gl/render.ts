@@ -31,6 +31,7 @@ import {
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { HallEnvironment } from "../ravenhold/hallEnvironment";
 import { HALATION_TINTS, RavenGradeShader, makeGradeTime, ravenGradeNode, vignetteStrength } from "../ravenhold/grade3d";
+import { createStallDetector, shouldRender } from "../ravenhold/governor";
 
 type GradeUniforms = { uTime: { value: number }; uVignette: { value: number }; uAspect: { value: number } };
 import { useSettings } from "../../../lib/settings";
@@ -104,6 +105,13 @@ export class RenderCore implements GfxControllable {
   private disposed = false;
   private dirty = true; // force a render on the next tick (state change / resize)
   private lastRenderAt = 0;
+  /** Колко блокира последното post.render() (ms) — за тавана при бавен рендер. */
+  private lastRenderCost = 0;
+  /** Безнадеждно бавен рендер (софтуерен WebGL, претоварен GPU) → без празно
+   *  прерисуване и най-много кадър на max(1 s, 2× цената му) (shouldRender):
+   *  дъската с пълния пост-стек замразяваше страницата (кликовете чакаха
+   *  секунди, часовникът на хода изтичаше). Движение и промени пак се рисуват. */
+  private readonly stall = createStallDetector();
   private onVis = () => this.applyLoop();
 
   constructor(opts: RenderCoreOpts) {
@@ -436,23 +444,40 @@ export class RenderCore implements GfxControllable {
       return;
     }
     const idleInterval = 1000 / RenderCore.IDLE_FPS;
+    if (!this.stall.stalled) this.stall.reset(performance.now());
     this.renderer.setAnimationLoop(() => {
       const now = performance.now();
+      const onDemand = this.stall.tick(now);
       // onFrame runs every display tick (it's cheap); rendering is what we gate.
       const active = this.onFrame ? this.onFrame(now) !== false : true;
-      // Idle frames exist only for the moving film grain; under reduced motion
-      // the grain is frozen and an idle frame would be pixel-identical (loopGate).
-      const due = frameDue({
-        active,
-        dirty: this.dirty,
-        still: useSettings.getState().reducedMotion,
-        sinceLastMs: now - this.lastRenderAt,
-        idleIntervalMs: idleInterval,
-      });
+      // Two gates, one per failure mode:
+      //  - a hopelessly slow (software) GPU: on-demand only, at most ~1 frame/s
+      //    and only when something changed (stall detector, governor.ts);
+      //  - otherwise: always when animating/changed; idle frames exist only for
+      //    the moving film grain — under reduced motion the grain is frozen and
+      //    an idle frame would be pixel-identical (loopGate.ts).
+      const due = onDemand
+        ? shouldRender({
+            now,
+            lastAt: this.lastRenderAt,
+            lastCost: this.lastRenderCost,
+            force: active || this.dirty,
+            stalled: true,
+            idleMs: idleInterval,
+          })
+        : frameDue({
+            active,
+            dirty: this.dirty,
+            still: useSettings.getState().reducedMotion,
+            sinceLastMs: now - this.lastRenderAt,
+            idleIntervalMs: idleInterval,
+          });
       if (due) {
         this.lastRenderAt = now;
         this.dirty = false;
+        const t0 = performance.now();
         this.post.render();
+        this.lastRenderCost = performance.now() - t0;
       }
     });
   }

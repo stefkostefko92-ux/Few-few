@@ -96,6 +96,8 @@ export class GameRoom {
   private turnEndsAt = 0;
   /** Timer for an engine's server-driven action (e.g. Бинго's timed draw). */
   private serverTimer?: NodeJS.Timeout;
+  /** stable() of the server action the timer is armed for (null = none). */
+  private serverKey: string | null = null;
   private turnMs = 0;
   /** Server-driven pause timer (engine `autoAdvance`, e.g. Свара SHOWDOWN). */
   private autoTimer?: NodeJS.Timeout;
@@ -177,15 +179,30 @@ export class GameRoom {
   private armServerTimer(): void {
     if (this.serverTimer) clearTimeout(this.serverTimer);
     this.serverTimer = undefined;
+    this.serverKey = null;
     if (this.done || !this.engine.serverAction) return;
     const next = this.engine.serverAction(this.state);
     if (!next) return;
+    this.serverKey = stable(next.action);
     this.serverTimer = setTimeout(() => this.onServerTick(), Math.max(0, next.delayMs));
   }
 
+  /** A player's move changed WHICH server action is due (Бинго: a valid call
+   *  stops the draw → CLOSE): re-arm so it waits its own delay (the window for
+   *  further calls), instead of firing on the old timer. */
+  private syncServerTimer(): void {
+    if (this.done || !this.engine.serverAction) return;
+    const next = this.engine.serverAction(this.state);
+    if ((next ? stable(next.action) : null) !== this.serverKey) this.armServerTimer();
+  }
+
   /** Server tick: AI seats act first (their natural "reaction delay"), then the
-   *  engine's server action (re-read from the current state) is applied. */
+   *  engine's server action is applied — but only the one this tick was armed
+   *  for. If the AI moves changed it (a bot's valid „Бинго!“ turns the draw into
+   *  CLOSE), the new action is scheduled with its own delay, so the humans get
+   *  the same window for a call on that number as after a human's call. */
   private onServerTick(): void {
+    const due = this.serverKey;
     this.serverTimer = undefined;
     if (this.done) return;
     for (const s of this.seats) {
@@ -202,7 +219,7 @@ export class GameRoom {
     }
     if (this.done || this.engine.isTerminal(this.state)) return;
     const next = this.engine.serverAction?.(this.state);
-    if (next) this.applyReduce(next.action);
+    if (next && stable(next.action) === due) this.applyReduce(next.action);
     this.armServerTimer();
   }
 
@@ -283,6 +300,7 @@ export class GameRoom {
     // A move the player made themselves clears their timeout streak.
     this.strikes.delete(seat.seat);
     this.applyReduce(action, prevEndsAt);
+    this.syncServerTimer();
     void this.runBots();
   }
 

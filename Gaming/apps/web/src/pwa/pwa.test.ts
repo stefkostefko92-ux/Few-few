@@ -1,23 +1,38 @@
 import { describe, expect, it, vi } from "vitest";
-import { takeoverReloader } from "./pwa";
+import { createReloadGate, shouldReloadForStaleChunk } from "./pwa";
 
-describe("service-worker takeover never reloads a page the player did not ask to refresh", () => {
-  it("first install / silent update: controllerchange does NOT reload", () => {
+describe("createReloadGate — презареждане само по желание на играча", () => {
+  it("първо посещение: claim() на новия SW (controllerchange) НЕ презарежда страницата", () => {
     const reload = vi.fn();
-    const onChange = takeoverReloader(() => false, reload);
-    onChange();
-    onChange();
+    const gate = createReloadGate(reload);
+    gate.controllerChanged();
+    gate.controllerChanged();
     expect(reload).not.toHaveBeenCalled();
   });
 
-  it("after „Обнови“: the takeover reloads exactly once", () => {
+  it("„Обнови“ с чакащ SW: презарежда при поемането — веднъж", () => {
     const reload = vi.fn();
-    let asked = false;
-    const onChange = takeoverReloader(() => asked, reload);
-    onChange();
-    asked = true;
-    onChange();
-    onChange();
+    const gate = createReloadGate(reload);
+    gate.request(false);
+    expect(reload).not.toHaveBeenCalled();
+    gate.controllerChanged();
+    gate.controllerChanged();
     expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it("„Обнови“, когато новата версия вече е поела страницата: презарежда веднага", () => {
+    const reload = vi.fn();
+    const gate = createReloadGate(reload);
+    gate.request(true);
+    gate.controllerChanged();
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("shouldReloadForStaleChunk — липсващ стар chunk след деплой", () => {
+  it("първият път презарежда, повторно до минута — не (без цикъл)", () => {
+    expect(shouldReloadForStaleChunk(null, 1_000)).toBe(true);
+    expect(shouldReloadForStaleChunk(1_000, 30_000)).toBe(false);
+    expect(shouldReloadForStaleChunk(1_000, 62_000)).toBe(true);
   });
 });
