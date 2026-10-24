@@ -116,4 +116,6 @@ jobs:
       - run: npm ci
       - run: npx prisma generate
       - run: npx prisma migrate deploy
-      - run: npx tsx --test --test-timeout=60000 tests/integration.test.ts
+      # Публичната част (integration.test.ts) + панелът (integration-admin-*.test.ts: вход със Steam
+      # през двойник, TOTP, права, мостът и агентът през истинския pub/sub, одит-веригата).
+      - run: npx tsx --test --test-timeout=60000 tests/integration*.test.ts
