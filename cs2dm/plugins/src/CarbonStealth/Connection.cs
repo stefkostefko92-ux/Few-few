@@ -89,6 +89,7 @@ public sealed partial class CarbonStealthPlugin
 
         ApplyVoice(player, state, now);
         ApplyTag(player, state, now);
+        SyncCssFlags(state);
 
         if (isConnect)
         {

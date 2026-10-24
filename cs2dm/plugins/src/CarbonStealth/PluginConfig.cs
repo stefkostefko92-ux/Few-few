@@ -36,4 +36,10 @@ public sealed class PluginConfig : BasePluginConfig
     /// Празно = само текстовите банери. Addon-ът се зарежда от MultiAddonManager (CS2_WORKSHOP_ADDONS).
     /// </summary>
     [JsonPropertyName("BannerModels")] public Dictionary<string, string> BannerModels { get; set; } = new();
+
+    /// <summary>Жив играч без вход толкова секунди → наблюдател (0 = изключено, иначе 30–3600). CS2DM_AFK_SECONDS.</summary>
+    [JsonPropertyName("AfkSeconds")] public int AfkSeconds { get; set; } = 90;
+
+    /// <summary>Среден пинг над прага → наблюдател, никога kick (0 = изключено, иначе 50–1000 ms). CS2DM_MAX_PING.</summary>
+    [JsonPropertyName("MaxPing")] public int MaxPing { get; set; } = 150;
 }

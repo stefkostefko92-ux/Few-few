@@ -51,6 +51,9 @@ export function buildConfig(env) {
     // Безкраен резерв на патроните; изключва се само изрично с CS2DM_INFINITE_AMMO=0.
     InfiniteReserveAmmo: env.CS2DM_INFINITE_AMMO !== '0',
     BannerModels: parseBannerModels(env.CS2DM_BANNER_MODELS),
+    // Честна игра: без вход N секунди (жив) → наблюдател; среден пинг над прага → наблюдател. 0 = изключено.
+    AfkSeconds: intIn(env.CS2DM_AFK_SECONDS, 'CS2DM_AFK_SECONDS', 90, 30, 3600),
+    MaxPing: intIn(env.CS2DM_MAX_PING, 'CS2DM_MAX_PING', 150, 50, 1000),
     ConfigVersion: 1,
   };
 }
