@@ -1,0 +1,96 @@
+<%- include('partials/head') %>
+<section class="hero" aria-labelledby="hero-title">
+  <div class="wrap hero-in">
+    <div class="hero-copy">
+      <h1 id="hero-title" class="hero-title"><span class="hero-host"><%= t('home.titleHost') %></span> <span class="hero-sep">|</span> <span class="hero-name"><%= t('home.titleName') %></span></h1>
+      <p class="hero-lead"><%= t('home.lead') %></p>
+
+      <section class="status <%= live.known ? 'is-live' : 'is-unknown' %>" aria-label="<%= t('home.status.label') %>">
+        <p class="status-head"><span class="status-dot" aria-hidden="true"></span><%= live.known ? t('home.status.live') : t('home.status.unknown') %></p>
+        <% if (live.known) { %>
+        <dl class="status-grid">
+          <div><dt><%= t('home.status.players') %></dt><dd><span class="status-count"><%= live.humans %>/<%= live.maxPlayers %></span><% if (live.bots > 0) { %> <span class="status-bots"><%= t.plural('home.status.bots', live.bots) %></span><% } %></dd></div>
+          <div><dt><%= t('home.status.mode') %></dt><dd><%= live.mode || '—' %></dd></div>
+          <div><dt><%= t('home.status.map') %></dt><dd><%= live.map %></dd></div>
+        </dl>
+        <p class="status-time"><%= t('home.status.updated', { time: fmt.dateTime(live.updatedAt) }) %></p>
+        <% } else { %>
+        <p class="status-hint"><%= t('home.status.unknownHint') %></p>
+        <% } %>
+      </section>
+    </div>
+
+    <div class="join">
+      <a class="btn btn-primary" href="<%= server.connectUrl %>"><%= t('home.join.button') %></a>
+      <p class="join-note"><%= t('home.join.note') %></p>
+      <div class="console">
+        <p class="console-bar"><span><%= t('home.join.consoleTitle') %></span><button type="button" class="copy" data-copy-target="connect-cmd" data-copied="<%= t('home.join.copied') %>" data-failed="<%= t('home.join.copyFailed') %>" hidden><%= t('home.join.copy') %></button></p>
+        <p class="console-label" id="console-label"><%= t('home.join.consoleLabel') %></p>
+        <p class="console-line"><span class="console-prompt" aria-hidden="true">]</span> <code id="connect-cmd" aria-describedby="console-label"><%= server.command %></code></p>
+        <p class="sr-only" role="status" aria-live="polite" data-copy-status></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" aria-labelledby="top-title">
+  <div class="wrap">
+    <div class="band-head">
+      <h2 id="top-title"><%= t('home.top.title', { season: season ? seasonLabel(season) : t('season.allTime') }) %></h2>
+      <a class="band-link" href="<%= nav.leaderboard %>"><%= t('home.top.all') %></a>
+    </div>
+    <% if (top === null) { %>
+    <p class="empty"><%= t('common.unavailable') %></p>
+    <% } else if (top.length === 0) { %>
+    <p class="empty"><%= t('home.top.empty') %></p>
+    <% } else { %>
+    <%
+      const columns = [
+        { label: t('table.xp'), sortKey: 'xp', sorted: true, value: (row) => fmt.int(row.xp) },
+        { label: t('table.kills'), sortKey: 'kills', value: (row) => fmt.int(row.kills) },
+        { label: t('table.kd'), sortKey: 'kd', optional: true, value: (row) => fmt.kd(row.kills, row.deaths) },
+        { label: t('table.hs'), sortKey: 'hs', optional: true, value: (row) => fmt.percent(row.headshots, row.kills) },
+      ];
+    %>
+    <%- include('partials/leader-table', { rows: top, columns, caption: t('table.caption', { season: season ? seasonLabel(season) : t('season.allTime'), sort: t('leaderboard.sort.xp') }) }) %>
+    <% } %>
+  </div>
+</section>
+
+<section class="band band-bans" aria-labelledby="bans-title">
+  <div class="wrap">
+    <div class="band-head">
+      <h2 id="bans-title"><%= t('home.bans.title') %></h2>
+      <a class="band-link" href="<%= nav.bans %>"><%= t('home.bans.all') %></a>
+    </div>
+    <% if (bans === null) { %>
+    <p class="empty"><%= t('common.unavailable') %></p>
+    <% } else if (bans.length === 0) { %>
+    <p class="empty"><%= t('home.bans.empty') %></p>
+    <% } else { %>
+    <ul class="ban-strip">
+      <% bans.forEach((ban) => { %><li>
+        <span class="ban-name"><%= ban.targetName %></span>
+        <span class="ban-cat"><%= t('bans.categories.' + ban.category) %></span>
+        <time class="ban-when" datetime="<%= fmt.iso(ban.createdAt) %>"><%= fmt.date(ban.createdAt) %></time>
+        <span class="ban-until<%= ban.expiresAt ? '' : ' is-permanent' %>"><%= ban.expiresAt ? t('home.bans.until', { date: fmt.date(ban.expiresAt) }) : t('common.permanent') %></span>
+      </li>
+      <% }) %>
+    </ul>
+    <% } %>
+  </div>
+</section>
+
+<section class="band band-faq" aria-labelledby="faq-title">
+  <div class="wrap faq-in">
+    <h2 id="faq-title"><%= t('home.faq.title') %></h2>
+    <div class="faq">
+      <% faq.forEach((id) => { %><article class="faq-item">
+        <h3><%= t('home.faq.' + id + '.q', faqParams) %></h3>
+        <p><%= t('home.faq.' + id + '.a', faqParams) %></p>
+      </article>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<%- include('partials/foot') %>

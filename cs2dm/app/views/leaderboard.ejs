@@ -1,0 +1,66 @@
+<%- include('partials/head') %>
+<div class="wrap page">
+  <%- include('partials/crumbs', { here: t('nav.leaderboard') }) %>
+  <header class="page-head">
+    <h1><%= t('leaderboard.h1') %></h1>
+    <p class="page-lead"><%= t('leaderboard.lead') %></p>
+  </header>
+
+  <form class="filters" method="get" action="<%= nav.leaderboard %>">
+    <div class="field">
+      <label for="f-season"><%= t('leaderboard.form.season') %></label>
+      <select id="f-season" name="season">
+        <% seasons.forEach((s) => { %><option value="<%= s.id %>"<% if (s.id === season.id) { %> selected<% } %>><%= seasonLabel(s) %><% if (s.id === currentSeasonId && s.id !== 0) { %> (<%= t('season.current') %>)<% } %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="field">
+      <label for="f-sort"><%= t('leaderboard.form.sort') %></label>
+      <select id="f-sort" name="sort">
+        <% sorts.forEach((key) => { %><option value="<%= key %>"<% if (key === sort) { %> selected<% } %>><%= t('leaderboard.sort.' + key) %></option>
+        <% }) %>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-quiet"><%= t('leaderboard.form.show') %></button>
+  </form>
+
+  <p class="board-meta"><span><%= t.plural('leaderboard.total', result.total) %></span><% if (sort === 'kd' || sort === 'hs') { %> <span class="board-note"><%= t('leaderboard.ratioNote', { min: minKills }) %></span><% } %></p>
+
+  <% if (result.rows.length === 0) { %>
+  <p class="empty"><%= t('leaderboard.empty') %></p>
+  <% } else { %>
+  <%
+    const columns = [
+      { label: t('table.xp'), sortKey: 'xp', sorted: sort === 'xp', href: sortHref('xp'), value: (row) => fmt.int(row.xp) },
+      { label: t('table.kills'), sortKey: 'kills', sorted: sort === 'kills', href: sortHref('kills'), value: (row) => fmt.int(row.kills) },
+      { label: t('table.deaths'), sortKey: 'kills', optional: true, value: (row) => fmt.int(row.deaths) },
+      { label: t('table.kd'), sortKey: 'kd', sorted: sort === 'kd', href: sortHref('kd'), value: (row) => fmt.kd(row.kills, row.deaths) },
+      { label: t('table.hs'), sortKey: 'hs', sorted: sort === 'hs', href: sortHref('hs'), value: (row) => fmt.percent(row.headshots, row.kills) },
+    ];
+  %>
+  <%- include('partials/leader-table', { rows: result.rows, columns, caption: t('table.caption', { season: seasonLabel(season), sort: t('leaderboard.sort.' + sort) }) }) %>
+  <%- include('partials/pager', { page: result.page, pages: result.pages, href: pageHref }) %>
+  <% } %>
+
+  <section class="how" aria-labelledby="how-title">
+    <h2 id="how-title"><%= t('leaderboard.how.title') %></h2>
+    <p><%= t('leaderboard.how.lead') %></p>
+    <div class="how-grid">
+      <div class="table-wrap">
+        <table class="xp-table">
+          <thead><tr><th scope="col"><%= t('leaderboard.how.event') %></th><th scope="col" class="c-num"><%= t('leaderboard.how.xp') %></th></tr></thead>
+          <tbody>
+            <% xpRewards.forEach((reward) => { %><tr><th scope="row"><%= t('leaderboard.how.rewards.' + reward.id) %></th><td class="c-num">+<%= reward.xp %></td></tr>
+            <% }) %><tr><th scope="row"><%= t('leaderboard.how.bountyRow') %></th><td class="c-num"><%= t('leaderboard.how.bountyValue') %></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="how-notes">
+        <p><%= t('leaderboard.how.level') %></p>
+        <p><%= t('leaderboard.how.bounty', { min: bounty.minStreak, cap: bounty.cap }) %></p>
+        <p><%= t('leaderboard.how.revenge') %></p>
+      </div>
+    </div>
+  </section>
+</div>
+<%- include('partials/foot') %>

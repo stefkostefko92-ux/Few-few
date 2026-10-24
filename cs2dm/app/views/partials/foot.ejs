@@ -1,0 +1,19 @@
+</main>
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div class="foot-server">
+      <p class="foot-name"><%= siteName %></p>
+      <p class="foot-join"><span><%= t('site.footer.join') %></span> <code><%= server.command %></code></p>
+    </div>
+    <nav class="foot-nav" aria-label="<%= t('site.footer.legalLabel') %>">
+      <ul>
+        <% ['rules', 'privacy', 'vipTerms', 'imprint', 'contact'].forEach((id) => { %><li><a href="<%= nav[id] %>"<% if (current === id) { %> aria-current="page"<% } %>><%= t('nav.' + id) %></a></li>
+        <% }) %>
+      </ul>
+    </nav>
+    <p class="foot-valve"><%= t('site.footer.valve') %></p>
+    <p class="foot-made"><a href="https://carbonstealth.eu" target="_blank" rel="noopener"><%= t('site.footer.madeBy') %></a></p>
+  </div>
+</footer>
+</body>
+</html>
