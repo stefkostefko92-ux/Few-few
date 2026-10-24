@@ -55,7 +55,8 @@ _Stack: Node.js **plain JS** · Express (сервиране + `/api/contact`) ·
 - **Поръчка:** списък в `localStorage` (`js/site.js`) → mailto или
   `POST /api/contact` (съществуващият бекенд с honeypot + rate limit + nodemailer).
 - **server.js:** clean URLs (без `.html`, важи и за `en/`/`bg/`), 301 legacy
-  редиректи от стария сайт, static + admin + contact API. Stripe кодът е
+  редиректи от стария сайт (`lib/legacy.js`, тест `test/legacy.test.js` — вкл. адресите на стария
+  Wix: `/product-page/<код>` → серията ѝ в продуктите, `/en/lavora-con-noi` → `/en/contacts`), static + admin + contact API. Stripe кодът е
   спрян с kill-switch (`PAYMENTS_ENABLED`) и фронтът не го ползва.
 
 ## 3D каталог (`3d/`)
