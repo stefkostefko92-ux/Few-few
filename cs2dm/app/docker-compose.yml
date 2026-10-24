@@ -9,7 +9,7 @@
 #
 # Тайните НЕ са тук — идват от `.env` до този файл (mode 600 на сървъра, никога в репото).
 # Задължителни: POSTGRES_PASSWORD · REDIS_PASSWORD (и двете `openssl rand -hex 32`).
-# По избор: PUBLIC_BASE_URL, SERVER_ADDRESS, CONTACT_EMAIL, DISCORD_URL, COMPANY_*, HTTP_PORT (4330),
+# По избор: PUBLIC_BASE_URL, SERVER_ADDRESS, CONTACT_EMAIL, DISCORD_URL, COMPANY_*, HTTP_PORT (4340),
 # PG_PORT (5442), REDIS_PORT (6392). В контейнера влиза само изброеното в `environment:`.
 name: cs2dm
 
@@ -133,7 +133,7 @@ services:
       HOST: 0.0.0.0
     ports:
       # Само на loopback — навън се стига единствено през nginx-а на хоста.
-      - '127.0.0.1:${HTTP_PORT:-4330}:4330'
+      - '127.0.0.1:${HTTP_PORT:-4340}:4330'
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }

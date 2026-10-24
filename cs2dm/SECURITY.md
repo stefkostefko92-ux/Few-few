@@ -54,7 +54,7 @@ Express 5 зад nginx на хоста; Postgres, Redis, сайт и работ�
 | SQL инжекция | Prisma с параметри; подредбата на класацията е от затворен списък, никога от вход |
 | Претоварване/скрейпинг | express-rate-limit 120/мин на IP (в паметта, 1 мин); кратък кеш пред базата; само GET/HEAD |
 | Аватар от чужд хост | само `https://avatars.*.steamstatic.com`, `referrerpolicy="no-referrer"`, в CSP `img-src` |
-| Достъп до базата/Redis отвън | портовете са вързани САМО за `127.0.0.1` (5442/6392/4330); Redis с `requirepass`; healthcheck-ът се автентикира през `REDISCLI_AUTH` |
+| Достъп до базата/Redis отвън | портовете са вързани САМО за `127.0.0.1` (5442/6392/4340); Redis с `requirepass`; healthcheck-ът се автентикира през `REDISCLI_AUTH` |
 | Пробив в контейнер | read-only файлова система, `cap_drop: ALL` (Postgres — само нужните), `no-new-privileges`, лимити на памет/CPU/процеси, непривилегирован `node`, образи заковани по digest (node, postgres) |
 | Тайни | само в `cs2dm/app/.env` на сървъра (0600): `POSTGRES_PASSWORD`, `REDIS_PASSWORD`; `.env.example` е с празни стойности |
 | Логове с лични данни | pino без IP и без query низа, позитивен списък на заглавията; nginx без access log |
