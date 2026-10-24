@@ -1,6 +1,8 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../../ui";
+import { useSettings } from "../../../lib/settings";
+import { useNarrowTable } from "../table/useNarrowTable";
 import { useMatch } from "../useMatch";
 import { Scene, ScorePill } from "../scene/SceneShell";
 import { FourPlayerTrick } from "../trick/FourPlayerTrick";
@@ -23,6 +25,8 @@ interface BridgeState {
   contractLevel: number;
   bidLevel: number;
   bidStrain: Strain | null;
+  /** Who made the standing bid (the auction's current contract). */
+  lastBidder: number | null;
   declarer: number | null;
   doubled: number;
   tricksWon: [number, number];
@@ -82,6 +86,7 @@ export function BridgeView({ title }: { title: string }) {
 
   const myTeam = seat % 2;
   const myTurn = !!state && state.turn === seat && legal.length > 0;
+  const nameOf = (s: number) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`;
 
   // Dummy = declarer's partner. After the opening lead its hand is turned FACE-UP
   // for EVERYONE (engine redact reveals it to all seats) — a signature bridge
@@ -93,9 +98,30 @@ export function BridgeView({ title }: { title: string }) {
   const dummyTurn = !!state && state.phase === "PLAY" && dummy !== null && state.turn === dummy;
   const dummyHand = dummy !== null && state ? state.hands[dummy] ?? [] : [];
   // Revealed once the opening lead is out (redact stops hiding it → no "?").
-  const dummyRevealed = !!state && state.phase === "PLAY" && dummy !== null && (dummyHand[0] ?? "?") !== "?";
+  // When I AM the dummy my cards are already on screen as my hand — the panel
+  // would only repeat them.
+  const dummyRevealed =
+    !!state && state.phase === "PLAY" && dummy !== null && dummy !== seat && (dummyHand[0] ?? "?") !== "?";
   const canPlayDummy = isDeclarer && dummyTurn;
   const dummyName = dummy !== null ? players.find((p) => p.seat === dummy)?.displayName ?? `#${dummy}` : "";
+
+  // The bidding box and the dummy's hand live UNDER the table — below the
+  // fold on a 768px-tall laptop (and on every phone). Bring each into view
+  // the moment it needs a click; "nearest" keeps my hand on screen above it
+  // and does nothing when the box is already visible.
+  const reduced = useSettings((s) => s.reducedMotion);
+  const narrow = useNarrowTable();
+  const bidding = !!state && state.phase === "AUCTION" && myTurn;
+  const auctionRef = useRef<HTMLDivElement>(null);
+  const dummyRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!bidding) return;
+    auctionRef.current?.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
+  }, [bidding, reduced]);
+  useEffect(() => {
+    if (!canPlayDummy) return;
+    dummyRef.current?.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
+  }, [canPlayDummy, reduced]);
 
   return (
     <Scene title={title} phase={phase} ready={!!state} seat={seat} result={result}>
@@ -107,6 +133,13 @@ export function BridgeView({ title }: { title: string }) {
             playable={playable}
             matchId={m.matchId}
             toBanner={(ev) => {
+              // The whole auction is narrated, like Белот's: without it a
+              // player never saw what the others had bid.
+              const who = typeof ev.seat === "number" ? nameOf(ev.seat) : "";
+              if (ev.type === "BID" && typeof ev.level === "number") {
+                return { text: `${who}: ${ev.level}${STRAIN_GLYPH[ev.strain as Strain]}`, tone: "brass" };
+              }
+              if (ev.type === "PASS" && who) return { text: `${who}: ${t("belote.pass")}`, tone: "brass" };
               if (ev.type === "DOUBLE") return { text: t("belote.contra") + "!", tone: "loss" };
               if (ev.type === "REDOUBLE") return { text: t("belote.recontra") + "!", tone: "win" };
               if (ev.type === "CONTRACT" && typeof ev.level === "number")
@@ -123,13 +156,15 @@ export function BridgeView({ title }: { title: string }) {
                 return { text: ev.made ? t("bridge.made") + "!" : t("bridge.defeated") + "!", tone: ev.made ? "win" : "loss" };
               return null;
             }}
-            names={(s) => players.find((p) => p.seat === s)?.displayName ?? `#${s}`}
+            names={nameOf}
             emptyTrickLabel={state.phase === "AUCTION" ? t("bridge.auction") : t("belote.emptyTrick")}
             announce={
               state.phase === "PLAY" && state.bidStrain ? (
                 <TrumpIndicator
                   suit={state.bidStrain === "NT" ? null : (state.bidStrain as SuitChar)}
-                  label={`${t("bridge.contract")} ${state.bidLevel}`}
+                  // phones: just the level over the strain card („3“ over „NT“) —
+                  // „Договор 3“ was wider than the card and ran into the top fan
+                  label={narrow ? `${state.bidLevel}` : `${t("bridge.contract")} ${state.bidLevel}`}
                   noTrumpText="NT"
                 />
               ) : undefined
@@ -155,9 +190,31 @@ export function BridgeView({ title }: { title: string }) {
           />
 
           {/* Auction bidding box. */}
-          {state.phase === "AUCTION" && myTurn ? (
-            <div className="mt-4 rounded-panel border border-brass-400/20 bg-felt-800/70 p-3">
+          {bidding ? (
+            <div
+              ref={auctionRef}
+              data-zone="auction"
+              className="mt-4 scroll-mb-16 rounded-panel border border-brass-400/20 bg-felt-800/70 p-3"
+            >
               <div className="mb-2 text-center text-sm text-ink-300">{t("bridge.yourBid")}</div>
+              {/* The standing bid I am answering (who, what, doubled). */}
+              {state.bidLevel > 0 && state.bidStrain ? (
+                <div className="mb-2 text-center text-xs text-ink-muted" data-zone="standing-bid">
+                  {t("bridge.contract")}:{" "}
+                  <span className="font-semibold text-brass-100">
+                    {state.bidLevel}
+                    {STRAIN_GLYPH[state.bidStrain]}
+                  </span>
+                  {state.lastBidder !== null && state.lastBidder !== undefined
+                    ? ` · ${nameOf(state.lastBidder)}`
+                    : ""}
+                  {state.doubled === 2
+                    ? ` · ${t("bridge.redouble")}`
+                    : state.doubled === 1
+                      ? ` · ${t("bridge.double")}`
+                      : ""}
+                </div>
+              ) : null}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 4, maxWidth: 340, margin: "0 auto" }}>
                 {[1, 2, 3, 4, 5, 6, 7].map((level) =>
                   STRAINS.map((strain) => {
@@ -168,6 +225,8 @@ export function BridgeView({ title }: { title: string }) {
                         type="button"
                         disabled={!bid}
                         onClick={() => bid && m.send(bid)}
+                        data-action="bid"
+                        data-bid={`${level}${strain}`}
                         className="aso-bridge-bid"
                         // Suit colours on the ivory bid chip (per suit, so the four-colour
                         // deck applies here too). It used --ink-100 for ♣/♠/NT: near-white
@@ -183,17 +242,17 @@ export function BridgeView({ title }: { title: string }) {
               </div>
               <div className="mt-2 flex items-center justify-center gap-2">
                 {legal.some((a) => a.type === "DOUBLE") ? (
-                  <Button variant="felt" onClick={() => m.send({ type: "DOUBLE" })}>
+                  <Button variant="felt" data-action="double" onClick={() => m.send({ type: "DOUBLE" })}>
                     {t("bridge.double")}
                   </Button>
                 ) : null}
                 {legal.some((a) => a.type === "REDOUBLE") ? (
-                  <Button variant="felt" onClick={() => m.send({ type: "REDOUBLE" })}>
+                  <Button variant="felt" data-action="redouble" onClick={() => m.send({ type: "REDOUBLE" })}>
                     {t("bridge.redouble")}
                   </Button>
                 ) : null}
                 {passAction ? (
-                  <Button variant="ghost" onClick={() => m.send(passAction)}>
+                  <Button variant="ghost" data-action="pass" onClick={() => m.send(passAction)}>
                     {t("belote.pass")}
                   </Button>
                 ) : null}
@@ -206,14 +265,19 @@ export function BridgeView({ title }: { title: string }) {
               wrapper is the reveal trigger: it mounts once, cascading the cards
               in (aso-card-deal) for the face-up flourish. */}
           {dummyRevealed ? (
-            <div key={`dummy-${state.dealNo}`} className="bridge-dummy mt-4 rounded-panel border border-brass-400/20 bg-felt-800/70 p-3">
+            <div
+              key={`dummy-${state.dealNo}`}
+              ref={dummyRef}
+              data-dummy-turn={canPlayDummy ? "true" : "false"}
+              className="bridge-dummy mt-4 scroll-mb-16 rounded-panel border border-brass-400/20 bg-felt-800/70 p-3"
+            >
               <div className="mb-1 text-center text-sm text-ink-300">
                 {t("bridge.dummyHand")} · {dummyName}
               </div>
               {canPlayDummy ? (
                 <div className="mb-2 text-center text-xs text-ink-muted">{t("bridge.playFromDummy")}</div>
               ) : null}
-              <div className="aso-myhand flex flex-wrap items-center justify-center gap-1">
+              <div className="flex flex-wrap items-center justify-center gap-1" data-zone="dummy">
                 {dummyHand.map((card, i) => {
                   const a = canPlayDummy ? playable.get(card) : undefined;
                   return (
@@ -222,6 +286,7 @@ export function BridgeView({ title }: { title: string }) {
                         card={card}
                         size="sm"
                         dimmed={canPlayDummy && !a}
+                        interactive={isDeclarer}
                         onClick={a ? () => m.send(a) : undefined}
                       />
                     </div>
@@ -231,7 +296,16 @@ export function BridgeView({ title }: { title: string }) {
             </div>
           ) : null}
 
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+          <div
+            className="mt-4 flex flex-wrap items-center justify-center gap-3"
+            data-zone="score"
+            data-tricks={`${state.tricksWon[myTeam] ?? 0}:${state.tricksWon[myTeam === 0 ? 1 : 0] ?? 0}`}
+            data-deal={state.dealNo ?? 1}
+            data-phase={state.phase}
+            data-contract={state.bidLevel ? `${state.bidLevel}${state.bidStrain ?? ""}` : ""}
+            data-doubled={state.doubled ?? 0}
+            data-declarer={state.declarer ?? ""}
+          >
             <ScorePill label={t("bridge.weTricks")} value={state.tricksWon[myTeam] ?? 0} highlight />
             <ScorePill label={t("bridge.theyTricks")} value={state.tricksWon[myTeam === 0 ? 1 : 0] ?? 0} />
           </div>

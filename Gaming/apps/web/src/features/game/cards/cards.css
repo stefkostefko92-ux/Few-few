@@ -51,7 +51,10 @@
 button.aso-card {
   cursor: pointer;
 }
-button.aso-card:hover {
+button.aso-card:disabled {
+  cursor: default;
+}
+button.aso-card:not(:disabled):hover {
   /* Lift + a whisper of scale so the raised card reads as nearer the eye, with
      a warm brass ambient halo the felt light would cast under the raised edge. */
   transform: translateY(-12px) scale(1.035);
@@ -217,7 +220,7 @@ button.aso-card:hover {
 
 @media (prefers-reduced-motion: reduce) {
   .aso-card,
-  button.aso-card:hover {
+  button.aso-card:not(:disabled):hover {
     transition: none;
   }
   .aso-card {
@@ -302,6 +305,28 @@ button.aso-card:hover {
 .aso-fx-layer .aso-announce {
   position: static;
   transform: none;
+  /* the free-standing entrance centres itself with translateX(-50%); inside
+     the stacked layer that shoved every banner half its width to the left
+     for the whole entrance, then it snapped back */
+  animation-name: announce-in-stacked;
+}
+@keyframes announce-in-stacked {
+  from { opacity: 0; transform: translateY(-8px) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+/* Phones: a banner with a long player name („… взима раздаването (+2)“) was
+   wider than the screen and lost both ends — wrap it inside the table. The
+   explicit width matters: centred with left:50%, the layer could otherwise
+   only shrink-wrap into half of the table. */
+@media (max-width: 640px) {
+  .aso-fx-layer {
+    width: max-content;
+    max-width: calc(100% - 16px);
+  }
+  .aso-fx-layer .aso-announce {
+    white-space: normal;
+    text-align: center;
+  }
 }
 .aso-announce[data-tone="win"] {
   background: linear-gradient(to bottom, #d8f5d0, #6fbf73);

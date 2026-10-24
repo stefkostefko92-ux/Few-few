@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parseE2eSeeds } from "./e2eSeeds.js";
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -17,6 +18,8 @@ const envSchema = z.object({
   /** Internal API base + shared secret for progression notifications (S6). */
   API_INTERNAL_URL: z.string().url().default("http://localhost:4500"),
   INTERNAL_API_SECRET: z.string().min(16).default("dev-internal-secret-change-me"),
+  /** Само e2e стекът: фиксиран seed по игра (виж e2eSeeds.ts). В продукция се игнорира. */
+  E2E_SEEDS: z.string().optional(),
 });
 
 function load() {
@@ -33,6 +36,9 @@ function load() {
     console.error("❌ INTERNAL_API_SECRET must be set in production (still the dev default).");
     process.exit(1);
   }
+  if (parsed.data.NODE_ENV === "production" && parsed.data.E2E_SEEDS) {
+    console.warn("⚠ E2E_SEEDS is ignored in production — match seeds stay random.");
+  }
   return parsed.data;
 }
 
@@ -41,6 +47,7 @@ const raw = load();
 export const env = {
   ...raw,
   isProd: raw.NODE_ENV === "production",
+  e2eSeeds: parseE2eSeeds(raw.E2E_SEEDS, raw.NODE_ENV === "production"),
   corsOrigins: raw.CORS_ORIGINS.split(",")
     .map((s) => s.trim())
     .filter(Boolean),
