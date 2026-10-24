@@ -44,7 +44,11 @@ export function Die({ value, rolling }: { value: number; rolling?: boolean }) {
   const { t } = useTranslation();
   const on = new Set(PIP_MAP[value] ?? []);
   return (
-    <span className={cn("aso-die", rolling && "aso-die--rolling")} aria-label={t("a11y.die", { v: value })}>
+    <span
+      className={cn("aso-die", rolling && "aso-die--rolling")}
+      aria-label={t("a11y.die", { v: value })}
+      data-die={value}
+    >
       {Array.from({ length: 9 }).map((_, i) => (
         <span key={i} className={cn("aso-pip", !on.has(i) && "aso-pip--off")} />
       ))}
@@ -52,10 +56,10 @@ export function Die({ value, rolling }: { value: number; rolling?: boolean }) {
   );
 }
 
-/** A row of dice. */
+/** A row of dice. `data-dice` lists the faces for the e2e tests (no visual change). */
 export function DiceRow({ values, rolling }: { values: number[]; rolling?: boolean }) {
   return (
-    <span className="aso-dice">
+    <span className="aso-dice" data-dice={values.join(",")}>
       {values.map((v, i) => (
         <Die key={i} value={v} rolling={rolling} />
       ))}

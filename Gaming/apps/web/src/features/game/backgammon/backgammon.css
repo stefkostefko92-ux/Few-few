@@ -3,14 +3,21 @@
   position: relative;
   display: grid;
   grid-template-columns: 1fr 26px 1fr;
+  /* Two rows of exactly half the height. With auto rows each row grew to its
+     checkers' unclamped (aspect-ratio) height, so on a phone the bottom row ran
+     past the board and every bottom stack was cut off. */
+  grid-template-rows: repeat(2, minmax(0, 1fr));
   gap: 0;
-  width: min(92vw, 80vh, 920px);
+  /* 90vw + the 18px frame padding still fits a 390px phone (92vw did not). */
+  width: min(90vw, 80vh, 920px);
   height: min(58vw, 420px);
   background: radial-gradient(120% 120% at 50% 50%, #1a4030, #0c2c1f);
 }
 .bg-quad {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
+  /* Same reason: the points are exactly the quad's height, not their content's. */
+  grid-template-rows: minmax(0, 1fr);
 }
 .bg-bar {
   background: linear-gradient(180deg, #2a1c12, #1a1008);

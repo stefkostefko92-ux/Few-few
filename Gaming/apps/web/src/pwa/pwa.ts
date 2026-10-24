@@ -23,6 +23,18 @@ export function subscribePwa(l: Listener): () => void {
 export const isUpdateReady = (): boolean => updateReady;
 export const canInstall = (): boolean => deferredPrompt !== null;
 
+/**
+ * Презареждане при смяна на контролиращия service worker — САМО ако
+ * страницата вече е имала контролер (истинско обновяване на версията). При
+ * първото посещение новият SW поема страницата (skipWaiting + clients.claim) и
+ * controllerchange идва пак: тогава страницата се презареждаше сама секунда
+ * след влизане — прозорецът с правилата изчезваше (вече отбелязан като видян),
+ * а ако мачът беше почнал, новото влизане в опашката го предаваше (загуба).
+ */
+export function reloadOnControllerChange(hadController: boolean, alreadyReloaded: boolean): boolean {
+  return hadController && !alreadyReloaded;
+}
+
 /** Activate the waiting SW; controllerchange then reloads to the new version. */
 export function applyUpdate(): void {
   if (waitingWorker) waitingWorker.postMessage("SKIP_WAITING");
@@ -79,9 +91,12 @@ export function registerServiceWorker(): void {
       })
       .catch(() => undefined);
 
+    // Controlled before this load = a returning visitor; only then is a new
+    // controller an update worth a reload (see reloadOnControllerChange).
+    const hadController = navigator.serviceWorker.controller !== null;
     let reloaded = false;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (reloaded) return;
+      if (!reloadOnControllerChange(hadController, reloaded)) return;
       reloaded = true;
       window.location.reload();
     });

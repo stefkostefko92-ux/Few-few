@@ -112,6 +112,9 @@ export function DiceView({ title }: { title: string }) {
                     className={cn("dice-slot", effHeld[i] && "dice-slot--held")}
                     onClick={() => canHold && toggleHold(i)}
                     aria-pressed={effHeld[i]}
+                    data-die-index={i}
+                    data-value={d}
+                    data-held={effHeld[i] ? "true" : undefined}
                   >
                     {d > 0 ? <Die value={d} /> : <span className="dice-empty" />}
                     {effHeld[i] ? <span className="dice-held-tag">{t("dice.held")}</span> : null}
@@ -120,7 +123,7 @@ export function DiceView({ title }: { title: string }) {
               </div>
             )}
             {canRoll ? (
-              <Button onClick={roll} disabled={!myTurn} className="mt-3">
+              <Button data-action="roll" onClick={roll} disabled={!myTurn} className="mt-3">
                 {state.rolledThisTurn ? t("dice.reroll", { n: state.rerollsLeft }) : t("dice.roll")}
               </Button>
             ) : null}
@@ -158,6 +161,10 @@ export function DiceView({ title }: { title: string }) {
                           key={s}
                           className={cn("dice-score", selectable && "dice-score--pick", s === seat && "dice-me")}
                           onClick={() => selectable && m.send({ type: "SCORE", category: cat })}
+                          data-category={cat}
+                          data-seat={s}
+                          data-filled={filled ? sc[cat] : undefined}
+                          data-selectable={selectable ? "true" : undefined}
                         >
                           {filled ? (
                             sc[cat]
@@ -197,7 +204,7 @@ export function DiceView({ title }: { title: string }) {
                 <tr className="dice-total">
                   <td>{t("dice.total")}</td>
                   {state.scores.map((sc, s) => (
-                    <td key={s} className={cn(s === seat && "dice-me")}>
+                    <td key={s} className={cn(s === seat && "dice-me")} data-total-seat={s}>
                       {totalOf(sc, state.bonusYahtzee?.[s] ?? 0)}
                     </td>
                   ))}

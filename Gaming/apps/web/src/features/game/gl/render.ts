@@ -34,6 +34,7 @@ import { HALATION_TINTS, RavenGradeShader, makeGradeTime, ravenGradeNode, vignet
 
 type GradeUniforms = { uTime: { value: number }; uVignette: { value: number }; uAspect: { value: number } };
 import { useSettings } from "../../../lib/settings";
+import { frameDue } from "./loopGate.js";
 import {
   type AAMode,
   type GfxControllable,
@@ -439,8 +440,16 @@ export class RenderCore implements GfxControllable {
       const now = performance.now();
       // onFrame runs every display tick (it's cheap); rendering is what we gate.
       const active = this.onFrame ? this.onFrame(now) !== false : true;
-      const force = active || this.dirty;
-      if (force || now - this.lastRenderAt >= idleInterval) {
+      // Idle frames exist only for the moving film grain; under reduced motion
+      // the grain is frozen and an idle frame would be pixel-identical (loopGate).
+      const due = frameDue({
+        active,
+        dirty: this.dirty,
+        still: useSettings.getState().reducedMotion,
+        sinceLastMs: now - this.lastRenderAt,
+        idleIntervalMs: idleInterval,
+      });
+      if (due) {
         this.lastRenderAt = now;
         this.dirty = false;
         this.post.render();
