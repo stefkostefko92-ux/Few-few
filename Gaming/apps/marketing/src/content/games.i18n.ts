@@ -76,13 +76,18 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
         },
         {
           name: "Goal",
-          text: "The first to reach 66 points wins the hand — 1, 2 or 3 game points depending on the opponent's score; the match is played to 11.",
+          text: "Once you have 66 points you declare it yourself — “I have 66, going out” — when you lead: 1, 2 or 3 game points depending on the opponent's score; a false declaration gives the opponent 3 game points. The match is played to 11.",
         },
       ],
       faq: [
         {
           question: "Why is Santase called Sixty-Six?",
           answer: "Because the goal is to score 66 points in a hand before your opponent — that's where the game's second name comes from.",
+        },
+        {
+          question: "How do you declare 66 in Santase?",
+          answer:
+            "You declare it yourself with the “I have 66 — going out” button when it's your turn to lead (for example right after winning a trick); if you don't have 66, your opponent gets 3 game points.",
         },
         {
           question: "How many cards is Santase played with?",
@@ -282,7 +287,7 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
         },
         {
           name: "Win",
-          text: "A player who can't pay goes bankrupt; the last player standing wins, or the richest one when the turn limit is reached.",
+          text: "Short of cash, you choose what to sell (houses first) or mortgage; you go bankrupt only if even everything you own isn't enough. The last player standing wins, or the richest one at the turn limit.",
         },
       ],
       faq: [
@@ -563,6 +568,10 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
           name: "Scoring",
           text: "A made contract scores below the line (game is 100), overtricks and bonuses above the line; a failed contract gives points to the defenders.",
         },
+        {
+          name: "Honours",
+          text: "4 of the 5 trump honours in one hand score 100, all 5 score 150, and at no trumps all 4 aces in one hand score 150; the points go above the line to the holder's team.",
+        },
       ],
       faq: [
         {
@@ -581,11 +590,11 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2",
       summary: "Play Battleship online — the classic where you guess and sink your opponent's hidden fleet.",
       intro:
-        "Battleship is a guessing game for two. Your fleet is placed on a grid automatically and in secret, then you take turns firing at coordinates until one player sinks the other's entire fleet.",
+        "Battleship is a guessing game for two. Each player secretly places their own fleet on a grid, then you take turns firing at coordinates until one player sinks the other's entire fleet.",
       howTo: [
         {
           name: "Placement",
-          text: "The fleet (1 ship of 4, 2 of 3, 3 of 2 and 4 of 1 square) is placed automatically and in secret; ships never touch, not even diagonally.",
+          text: "You secretly place your fleet (1 ship of 4, 2 of 3, 3 of 2 and 4 of 1 square) — drag and rotate, or hit “Random”; ships never touch, not even diagonally. Firing starts once both players are ready.",
         },
         {
           name: "Firing",
@@ -598,7 +607,7 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
         {
           question: "How do you play Battleship?",
           answer:
-            "Your fleet is placed on a grid automatically and in secret, and you take turns with your opponent firing at coordinates — a hit earns another shot, and whoever's first to sink all the enemy ships wins.",
+            "You secretly place your own fleet on a grid, then take turns with your opponent firing at coordinates — a hit earns another shot, and whoever's first to sink all the enemy ships wins.",
         },
       ],
     },
@@ -631,9 +640,9 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
     BINGO: {
       title: "Bingo",
       players: "2–6",
-      summary: "Play Bingo online for free — numbers are drawn, your card marks itself, and a full line wins.",
+      summary: "Play Bingo online for free — numbers are drawn, you mark them yourself and call “Bingo!” with a full line.",
       intro:
-        "Bingo is a game of luck for 2 to 6 players. You have a 5×5 card with numbers from 1 to 75 and a free space in the center; drawn numbers are marked automatically, and the first to complete a full line wins.",
+        "Bingo is a game of luck and attention for 2 to 6 players. You have a 5×5 card with numbers from 1 to 75 and a free space in the center; you mark the drawn numbers yourself and call “Bingo!” once you complete a full line.",
       howTo: [
         {
           name: "Card",
@@ -641,16 +650,19 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
         },
         {
           name: "Drawing",
-          text: "Numbers are drawn at random one by one and marked on your card automatically.",
+          text: "Numbers are drawn automatically one by one; you mark them by clicking your card (or switch on “Auto-mark”).",
         },
         { name: "Line", text: "The goal is a full line — a row, a column or a diagonal." },
-        { name: "Bingo", text: "The first with a full line wins; if several players get bingo at once, they all win." },
+        {
+          name: "Bingo",
+          text: "With a full line you call “Bingo!” — everyone with a valid call on the same number wins; a false call makes you sit out the next 3 draws.",
+        },
       ],
       faq: [
         {
           question: "How do you play Bingo?",
           answer:
-            "You have a 5×5 card of numbers; numbers are drawn and marked automatically, and you win once you're the first to complete a full line — a row, a column or a diagonal.",
+            "You have a 5×5 card of numbers; numbers are drawn, you mark them and call “Bingo!” once you complete a full line — a row, a column or a diagonal; a false “Bingo!” costs you 3 draws.",
         },
       ],
     },
@@ -745,13 +757,18 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
         },
         {
           name: "Obiettivo",
-          text: "Il primo a raggiungere 66 punti vince la mano — 1, 2 o 3 punti partita in base al punteggio dell'avversario; la partita è a 11.",
+          text: "Quando hai 66 punti lo dichiari tu — «Ho 66, chiudo» — mentre sei di mano: 1, 2 o 3 punti partita in base al punteggio dell'avversario; una dichiarazione falsa dà 3 punti partita all'avversario. La partita è a 11.",
         },
       ],
       faq: [
         {
           question: "Perché Santase si chiama Sessantasei?",
           answer: "Perché l'obiettivo è raccogliere 66 punti nella mano prima dell'avversario — da qui viene il secondo nome del gioco.",
+        },
+        {
+          question: "Come si dichiara 66 a Santase?",
+          answer:
+            "Lo dichiari tu con il pulsante «Ho 66 — chiudo» quando sei di mano (ad esempio subito dopo aver vinto una presa); se non hai 66, l'avversario riceve 3 punti partita.",
         },
         {
           question: "Con quante carte si gioca a Santase?",
@@ -954,7 +971,7 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
         },
         {
           name: "Vinci",
-          text: "Chi non può pagare fallisce; vince l'ultimo giocatore rimasto in gioco, o il più ricco al raggiungimento del limite di turni.",
+          text: "Se non hai abbastanza contanti scegli tu cosa vendere (prima le case) o ipotecare; fallisci solo se nemmeno tutto il tuo patrimonio basta. Vince l'ultimo giocatore rimasto, o il più ricco al limite di turni.",
         },
       ],
       faq: [
@@ -1241,6 +1258,10 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
           name: "Punteggio",
           text: "Un contratto mantenuto segna sotto la linea (la manche è 100), prese in più e premi sopra la linea; un contratto non mantenuto dà punti alla difesa.",
         },
+        {
+          name: "Onori",
+          text: "4 dei 5 onori di atout in una sola mano valgono 100, tutti e 5 valgono 150, e a senza atout i 4 assi in una sola mano valgono 150; i punti vanno sopra la linea alla squadra di chi li tiene.",
+        },
       ],
       faq: [
         {
@@ -1259,11 +1280,11 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
       players: "2",
       summary: "Gioca a Battaglia navale online — il classico in cui indovini e affondi la flotta nascosta dell'avversario.",
       intro:
-        "La battaglia navale è un gioco di intuizione per due. La tua flotta viene disposta sulla griglia in automatico e in segreto, poi ci si alterna sparando a delle coordinate finché uno affonda l'intera flotta dell'altro.",
+        "La battaglia navale è un gioco di intuizione per due. Ognuno dispone in segreto la propria flotta sulla griglia, poi ci si alterna sparando a delle coordinate finché uno affonda l'intera flotta dell'altro.",
       howTo: [
         {
           name: "Disposizione",
-          text: "La flotta (1 nave da 4, 2 da 3, 3 da 2 e 4 da 1 casella) viene disposta in automatico e in segreto; le navi non si toccano, nemmeno in diagonale.",
+          text: "Disponi in segreto la tua flotta (1 nave da 4, 2 da 3, 3 da 2 e 4 da 1 casella) — trascinando e ruotando, o con «Casuale»; le navi non si toccano, nemmeno in diagonale. Si spara quando entrambi sono pronti.",
         },
         {
           name: "Tiro",
@@ -1276,7 +1297,7 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
         {
           question: "Come si gioca a Battaglia navale?",
           answer:
-            "La tua flotta viene disposta sulla griglia in automatico e in segreto e ti alterni con l'avversario sparando a delle coordinate — ogni colpo a segno ti dà un altro tiro, e vince chi per primo affonda tutte le navi nemiche.",
+            "Disponi in segreto la tua flotta sulla griglia e ti alterni con l'avversario sparando a delle coordinate — ogni colpo a segno ti dà un altro tiro, e vince chi per primo affonda tutte le navi nemiche.",
         },
       ],
     },
@@ -1309,9 +1330,9 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
     BINGO: {
       title: "Bingo",
       players: "2–6",
-      summary: "Gioca a Bingo online gratis — vengono estratti numeri, la cartella si segna da sola e una linea completa vince.",
+      summary: "Gioca a Bingo online gratis — vengono estratti numeri, li segni tu e gridi «Bingo!» con una linea completa.",
       intro:
-        "Il bingo è un gioco di fortuna per 2 a 6 giocatori. Hai una cartella 5×5 con numeri da 1 a 75 e una casella libera al centro; i numeri estratti si segnano in automatico, e vince il primo che completa una linea.",
+        "Il bingo è un gioco di fortuna e attenzione per 2 a 6 giocatori. Hai una cartella 5×5 con numeri da 1 a 75 e una casella libera al centro; segni tu i numeri estratti e gridi «Bingo!» quando completi una linea.",
       howTo: [
         {
           name: "Cartella",
@@ -1319,16 +1340,19 @@ export const GAME_CONTENT_I18N: Partial<Record<"en" | "it", Partial<Record<GameK
         },
         {
           name: "Estrazione",
-          text: "I numeri vengono estratti a caso uno alla volta e segnati sulla tua cartella in automatico.",
+          text: "I numeri vengono estratti automaticamente uno alla volta; li segni cliccando la tua cartella (o attivi «Segna automaticamente»).",
         },
         { name: "Linea", text: "L'obiettivo è una linea completa — una riga, una colonna o una diagonale." },
-        { name: "Bingo", text: "Vince il primo con una linea completa; se più giocatori fanno bingo insieme, vincono tutti." },
+        {
+          name: "Bingo",
+          text: "Con una linea completa gridi «Bingo!» — vincono tutti quelli con una chiamata valida sullo stesso numero; una chiamata falsa ti fa saltare le 3 estrazioni successive.",
+        },
       ],
       faq: [
         {
           question: "Come si gioca a Bingo?",
           answer:
-            "Hai una cartella 5×5 con dei numeri; i numeri estratti si segnano in automatico e vinci quando per primo completi una linea — una riga, una colonna o una diagonale.",
+            "Hai una cartella 5×5 con dei numeri; i numeri estratti li segni tu e gridi «Bingo!» quando completi una linea — una riga, una colonna o una diagonale; un «Bingo!» falso ti costa 3 estrazioni.",
         },
       ],
     },

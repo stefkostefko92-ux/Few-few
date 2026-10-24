@@ -406,7 +406,12 @@
     "closedBy": "{{name}} closes the talon",
     "exchangedBy": "{{name}} exchanges the trump nine",
     "dealEnd": "{{name}} takes the deal (+{{n}})",
-    "closedTag": "Talon closed"
+    "closedTag": "Talon closed",
+    "declare": "I have 66 — going out",
+    "declareWith": "66 with {{n}} {{suit}}",
+    "declareHint": "Declare only if you really have 66 — a false declaration gives your opponent 3 points.",
+    "declaredOk": "{{name}} goes out with {{n}}!",
+    "declaredFalse": "{{name}} declared 66 with only {{n}} — 3 points to the opponent"
   },
   "belote": {
     "yourTeam": "Your team",
@@ -653,7 +658,11 @@
     "vulnerable": "Vulnerable!",
     "lastDeal": "Last",
     "made": "made",
-    "defeated": "down"
+    "defeated": "down",
+    "honors": "honours {{n}} ({{side}})",
+    "honorsBanner": "Honours: {{name}} +{{n}}",
+    "us": "us",
+    "them": "them"
   },
   "war": {
     "flip": "Flip",
@@ -743,7 +752,17 @@
   },
   "battleship": {
     "enemy": "Opponent: {{name}}",
-    "yourFleet": "Your fleet"
+    "yourFleet": "Your fleet",
+    "placeTitle": "Place your fleet",
+    "placeHint": "Drag the ships (or select a ship and click a cell); “Rotate” or the R key turns them. Ships may not touch, not even diagonally.",
+    "waitingOpp": "Your fleet is ready — waiting for your opponent…",
+    "oppReady": "Your opponent is ready.",
+    "oppPlacing": "Your opponent is placing their fleet.",
+    "rotate": "Rotate",
+    "random": "Random",
+    "ready": "Ready",
+    "invalid": "Red ships overlap or touch — move them.",
+    "start": "Both fleets are in position — fire!"
   },
   "dice": {
     "roll": "Roll",
@@ -777,7 +796,17 @@
     "yourCard": "Your card",
     "bingo": "BINGO!",
     "winner": "{{name}} got a bingo!",
-    "bestLine": "line {{n}}/5"
+    "bestLine": "line {{n}}/5",
+    "call": "BINGO!",
+    "autoMark": "Auto-mark",
+    "penalty": "False “Bingo!” — you sit out {{n}} more draws.",
+    "markHint": "Click a drawn number on your card to mark it; with a full line, call “Bingo!”.",
+    "falseYou": "False “Bingo!” — you sit out {{n}} draws",
+    "falseOther": "{{name}} called a false “Bingo!”",
+    "noWinner": "The drum is empty — no winner",
+    "closing": "Bingo! Last chance for more calls…",
+    "serverDraws": "Numbers are drawn automatically every 4 seconds.",
+    "free": "Free space"
   },
   "words": {
     "nextLetter": "Next letter",
@@ -1084,7 +1113,15 @@
     "auctionLeader": "leading: {{name}} {{amount}}",
     "potPill": "Parking jackpot: {{amount}}",
     "gojfCard": "Get-out-of-jail card",
-    "tradeWaiting": "Waiting for {{name}} to respond…"
+    "tradeWaiting": "Waiting for {{name}} to respond…",
+    "bank": "the bank",
+    "debtBanner": "{{name}} owes {{amount}} — choosing what to sell",
+    "debtBannerYou": "You owe {{amount}} — sell or mortgage",
+    "debtWaiting": "{{name}} owes {{amount}} to {{to}} and is choosing what to sell or mortgage…",
+    "debtTitle": "You owe {{amount}} to {{to}}",
+    "debtCash": "Cash: {{cash}}",
+    "debtHint": "Sell buildings (houses first, evenly) or mortgage properties from the list below, then pay. If time runs out, the bank liquidates automatically.",
+    "payDebt": "Pay {{amount}}"
   },
   "errors": {
     "generic": "Something went wrong",

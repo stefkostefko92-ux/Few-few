@@ -56,6 +56,16 @@ export interface GameEngine<S, A, E extends GameEvent = GameEvent> {
    * `legalActions(state, seat)` (or null to defer to random).
    */
   bot?(state: S, seat: Seat, rng: SeededRng): A | null;
+  /**
+   * Optional SERVER-driven action (e.g. Бинго's timed draw): when it returns
+   * non-null, the realtime host applies `action` after `delayMs` (re-evaluated
+   * after every such action) without any seat's input. Never accepted from a
+   * client — `validate`/`legalActions` must reject it. Engines with this hook
+   * may let several seats act at once through `validate` (empty
+   * `legalActions`); the host then drives AI seats via `bot()` in the pause
+   * before each server action.
+   */
+  serverAction?(state: S): { action: A; delayMs: number } | null;
   isTerminal(state: S): boolean;
   score(state: S): SeatScore[];
   /** Hide other seats' private info before broadcasting to `seat` (§7.2). */

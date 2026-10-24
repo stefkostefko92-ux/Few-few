@@ -406,7 +406,12 @@
     "closedBy": "{{name}} chiude il tallone",
     "exchangedBy": "{{name}} scambia il nove di briscola",
     "dealEnd": "{{name}} vince la mano (+{{n}})",
-    "closedTag": "Tallone chiuso"
+    "closedTag": "Tallone chiuso",
+    "declare": "Ho 66 — chiudo",
+    "declareWith": "66 con {{n}} {{suit}}",
+    "declareHint": "Dichiara solo se hai davvero 66 — una dichiarazione falsa dà 3 punti all'avversario.",
+    "declaredOk": "{{name}} chiude con {{n}}!",
+    "declaredFalse": "{{name}} ha dichiarato 66 con solo {{n}} — 3 punti all'avversario"
   },
   "belote": {
     "yourTeam": "La tua squadra",
@@ -653,7 +658,11 @@
     "vulnerable": "In zona!",
     "lastDeal": "Ultima",
     "made": "fatto",
-    "defeated": "sotto"
+    "defeated": "sotto",
+    "honors": "onori {{n}} ({{side}})",
+    "honorsBanner": "Onori: {{name}} +{{n}}",
+    "us": "noi",
+    "them": "loro"
   },
   "war": {
     "flip": "Gira",
@@ -743,7 +752,17 @@
   },
   "battleship": {
     "enemy": "Avversario: {{name}}",
-    "yourFleet": "La tua flotta"
+    "yourFleet": "La tua flotta",
+    "placeTitle": "Schiera la tua flotta",
+    "placeHint": "Trascina le navi (o selezionane una e clicca una casella); «Ruota» o il tasto R le gira. Le navi non possono toccarsi, nemmeno in diagonale.",
+    "waitingOpp": "La tua flotta è pronta — in attesa dell'avversario…",
+    "oppReady": "L'avversario è pronto.",
+    "oppPlacing": "L'avversario sta schierando la flotta.",
+    "rotate": "Ruota",
+    "random": "Casuale",
+    "ready": "Pronto",
+    "invalid": "Le navi rosse si sovrappongono o si toccano — spostale.",
+    "start": "Entrambe le flotte sono in posizione — fuoco!"
   },
   "dice": {
     "roll": "Lancia",
@@ -777,7 +796,17 @@
     "yourCard": "La tua cartella",
     "bingo": "BINGO!",
     "winner": "{{name}} ha fatto bingo!",
-    "bestLine": "linea {{n}}/5"
+    "bestLine": "linea {{n}}/5",
+    "call": "BINGO!",
+    "autoMark": "Segna automaticamente",
+    "penalty": "«Bingo!» falso — salti ancora {{n}} estrazioni.",
+    "markHint": "Clicca un numero estratto sulla tua cartella per segnarlo; con una linea completa grida «Bingo!».",
+    "falseYou": "«Bingo!» falso — salti {{n}} estrazioni",
+    "falseOther": "{{name}} ha gridato un «Bingo!» falso",
+    "noWinner": "L'urna è vuota — nessun vincitore",
+    "closing": "Bingo! Ultima occasione per altre chiamate…",
+    "serverDraws": "I numeri vengono estratti automaticamente ogni 4 secondi.",
+    "free": "Casella libera"
   },
   "words": {
     "nextLetter": "Prossima lettera",
@@ -1084,7 +1113,15 @@
     "auctionLeader": "in testa {{name}} {{amount}}",
     "potPill": "Jackpot parcheggio: {{amount}}",
     "gojfCard": "Carta \"Esci di prigione\"",
-    "tradeWaiting": "In attesa della risposta di {{name}}…"
+    "tradeWaiting": "In attesa della risposta di {{name}}…",
+    "bank": "la banca",
+    "debtBanner": "{{name}} deve {{amount}} — sceglie cosa vendere",
+    "debtBannerYou": "Devi {{amount}} — vendi o ipoteca",
+    "debtWaiting": "{{name}} deve {{amount}} a {{to}} e sceglie cosa vendere o ipotecare…",
+    "debtTitle": "Devi {{amount}} a {{to}}",
+    "debtCash": "Contanti: {{cash}}",
+    "debtHint": "Vendi edifici (prima le case, in modo uniforme) o ipoteca proprietà dalla lista qui sotto, poi paga. Allo scadere del tempo la banca liquida automaticamente.",
+    "payDebt": "Paga {{amount}}"
   },
   "errors": {
     "generic": "Qualcosa è andato storto",

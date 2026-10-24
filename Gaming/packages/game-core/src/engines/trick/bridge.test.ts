@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { SeededRng } from "../../kernel/rng.js";
 import { playRandom } from "../../bots/playout.js";
-import { bridgeEngine, type BridgeState, type BridgeAction } from "./bridge.js";
+import { bridgeEngine, dealHonors, honorsInHand, type BridgeState, type BridgeAction } from "./bridge.js";
+import type { Card } from "./cards.js";
 
 const init = (seed = "br") => bridgeEngine.init({ seats: 4 }, new SeededRng(seed));
 const rng = new SeededRng("br");
@@ -202,6 +203,7 @@ describe("bridge rubber scoring", () => {
           summed[ev.declTeam as 0 | 1] += ev.declScore;
           summed[(1 - ev.declTeam) as 0 | 1] += ev.defScore;
         }
+        if (ev.type === "HONORS") summed[ev.team as 0 | 1] += ev.points; // онори — над линията
       }
       if (s.gamesWon[0] + s.gamesWon[1] > 0) sawGameWin = true;
     }
@@ -274,5 +276,61 @@ describe("bridge таван от 16 раздавания (недовършен �
     expect(s.matchPoints).toEqual([0, 0]);
     expect(s.winningTeam).toBe(null);
     expect(bridgeEngine.score(s).map((x) => x.result)).toEqual(["draw", "draw", "draw", "draw"]);
+  });
+});
+
+describe("bridge онори", () => {
+  it("honorsInHand: 4 of 5 trump honours = 100, all 5 = 150, 4 aces at NT = 150", () => {
+    const filler = ["2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C"] as Card[];
+    expect(honorsInHand(["AS", "KS", "QS", "JS", ...filler, "2D"] as Card[], "S")).toBe(100);
+    expect(honorsInHand(["AS", "KS", "QS", "JS", "TS", ...filler] as Card[], "S")).toBe(150);
+    expect(honorsInHand(["AS", "KS", "QS", "2S", ...filler, "2D"] as Card[], "S")).toBe(0);
+    expect(honorsInHand(["AS", "AH", "AD", "AC", ...filler, "2D"] as Card[], "NT")).toBe(150);
+    expect(honorsInHand(["AS", "AH", "AD", "KC", ...filler, "2D"] as Card[], "NT")).toBe(0);
+    // онори в друга боя не се броят
+    expect(honorsInHand(["AH", "KH", "QH", "JH", "TH", ...filler] as Card[], "S")).toBe(0);
+  });
+
+  it("dealHonors credits the HOLDER's team — even a defender", () => {
+    const hands = [[], ["AH", "KH", "QH", "TH"], [], []] as Card[][];
+    expect(dealHonors(hands, "H")).toEqual({ seat: 1, team: 1, points: 100 });
+    expect(dealHonors(hands, "S")).toBeNull();
+  });
+
+  it("settling a deal adds the honours above the line, whatever the contract's fate", () => {
+    // Договор 1♥ от място 0; място 1 (защита) държи 4 онора в коз.
+    const s0 = init("hon");
+    const hands = [
+      ["2H", "3H", "4H", "5H", "6H", "2S", "3S", "4S", "5S", "6S", "2D", "3D", "4D"],
+      ["AH", "KH", "QH", "JH", "7S", "8S", "9S", "TS", "5D", "6D", "7D", "8D", "9D"],
+      ["7H", "8H", "9H", "JS", "QS", "KS", "AS", "TD", "JD", "QD", "KD", "AD", "2C"],
+      ["TH", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC", "AC"],
+    ] as Card[][];
+    let s: BridgeState = { ...s0, hands, dealer: 3, turn: 0 };
+    const r = new SeededRng("hon");
+    s = bridgeEngine.reduce(s, { type: "BID", level: 1, strain: "H" }, r).state;
+    for (let i = 0; i < 3; i++) s = bridgeEngine.reduce(s, { type: "PASS" }, r).state;
+    expect(s.phase).toBe("PLAY");
+    expect(s.honors).toEqual({ seat: 1, team: 1, points: 100 });
+    // Изиграй ръката с първата законна карта.
+    let honorsEv = 0;
+    for (let i = 0; i < 60 && s.dealNo === 1; i++) {
+      const seat = actor(s);
+      const a = bridgeEngine.legalActions(s, seat)[0]!;
+      const out = bridgeEngine.reduce(s, a, r);
+      for (const ev of out.events) if (ev.type === "HONORS") honorsEv += ev.points;
+      if (out.events.some((e) => e.type === "DEAL_END")) {
+        const end = out.events.find((e) => e.type === "DEAL_END")!;
+        if (end.type !== "DEAL_END") throw new Error("unreachable");
+        // Защитата получава точките за онори отделно от наказанията.
+        expect(end.matchPoints[1]).toBe(end.defScore + 100);
+        expect(end.matchPoints[0]).toBe(end.declScore);
+      }
+      s = out.state;
+    }
+    expect(honorsEv).toBe(100);
+    expect(s.lastDeal?.honors).toEqual({ seat: 1, team: 1, points: 100 });
+    expect(s.honors).toBeNull(); // нулира се за следващото раздаване
+    expect(s.belowLine[1]).toBe(0); // онорите не влизат за гейм
   });
 });
