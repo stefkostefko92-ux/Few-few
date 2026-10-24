@@ -415,8 +415,9 @@ const MAP: Record<string, Illustration[]> = {
   "e-kurs": [{ src: "/kak-da/euro-rate.png", alt: "Фиксиран курс 1 евро = 1,95583 лева" }],
   "e-kak-presmiatam": [{ src: "/kak-da/euro-rate.png", alt: "Как да пресметна цена от лева в евро" }],
   "e-kolko-struva": [{ src: "/kak-da/euro-rate.png", alt: "Колко струва нещо в евро" }],
-  "e-leva-do-koga": [{ src: "/kak-da/euro-dual-period.png", alt: "До кога може да се плаща с левове в брой" }],
-  "e-leva-vkashti": [{ src: "/kak-da/euro-dual-period.png", alt: "Какво да правя с левовете вкъщи — има време за обмяна" }],
+  // „e-leva-do-koga“ и „e-leva-vkashti“ нямат картинка: euro-dual-period.png
+  // говори за двойното обращение и безплатната обмяна в банки като за
+  // предстоящи („Не бързайте — има време“), а те приключиха (1.02 и 30.06.2026).
   "e-falshivo-evro": [{ src: "/kak-da/fake-banknote.png", alt: "Как да позная фалшиво евро по защитните белези" }],
 
   // ── Още телефонни действия и приложения ──
