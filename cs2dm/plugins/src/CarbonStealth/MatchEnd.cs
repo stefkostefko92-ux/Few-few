@@ -35,14 +35,16 @@ public sealed partial class CarbonStealthPlugin
 
     private void CheckMatchEnd()
     {
-        if (GameRulesNow() is not { } rules || rules.WarmupPeriod || TimeLimitSeconds() is not { } limit) return;
+        if (GameRulesNow() is not { } rules || rules.WarmupPeriod) return;
         if (rules.GameStartTime != _matchStart)
         {
             _matchStart = rules.GameStartTime;
             _matchWarned.Clear();
             // Нов мач (нова карта или рестарт на играта) — картата на мача почва отначало (§13).
+            // И без mp_timelimit: тогава краят е само панелът с победителя или смяната на картата.
             BeginMatch();
         }
+        if (TimeLimitSeconds() is not { } limit) return;
         var left = (int)Math.Ceiling(limit - (Server.CurrentTime - rules.GameStartTime));
         if (left <= 0)
         {
