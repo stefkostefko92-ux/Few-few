@@ -22,7 +22,11 @@ import { ShareButton } from "@/components/ShareButton";
 import { breadcrumbLd } from "@/lib/seo";
 import { formatDate, isoDate, type DateInput } from "@/lib/format-date";
 
-export type Crumb = { name: string; path: string };
+/**
+ * name — текстът за JSON-LD и за връзката „‹ родител“; label — по избор,
+ * видимото съдържание в пълния път (напр. маршрут със скрита стрелка).
+ */
+export type Crumb = { name: string; path: string; label?: ReactNode };
 
 /* ───────────────────────── Заглавна лента ───────────────────────── */
 
@@ -42,7 +46,8 @@ export function PageHero({
   className = "",
   children,
 }: {
-  title: string;
+  /** Обикновено текст; ReactNode — когато част е само за окото (напр. стрелка). */
+  title: ReactNode;
   intro?: ReactNode;
   crumbs?: Crumb[];
   eyebrow?: string;
@@ -126,14 +131,14 @@ export function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
               )}
               {last ? (
                 <span aria-current="page" className="text-slate-700">
-                  {c.name}
+                  {c.label ?? c.name}
                 </span>
               ) : (
                 <Link
                   href={c.path}
                   className="inline-flex min-h-8 items-center underline decoration-slate-300 underline-offset-4 hover:text-brand-700 hover:decoration-brand-700"
                 >
-                  {c.name}
+                  {c.label ?? c.name}
                 </Link>
               )}
             </li>

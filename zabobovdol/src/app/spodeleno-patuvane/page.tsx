@@ -6,6 +6,7 @@ import { PageHero, EmptyState, FilterChips, ListToolbar, Notice } from "@/compon
 import { buildMetadata } from "@/lib/seo";
 import { RIDE_KIND_LABELS, labelFor } from "@/lib/categories";
 import { plainText } from "@/lib/markdown";
+import { Route } from "./RouteLabel";
 
 export const dynamic = "force-dynamic";
 
@@ -34,16 +35,6 @@ const addAction = (
   </Link>
 );
 
-/** „Бобов дол → Дупница“ — стрелката е за окото, четецът чува „до“. */
-function Route({ from, to }: { from: string; to: string }) {
-  return (
-    <>
-      {from} <span aria-hidden="true">→</span>
-      <span className="sr-only">до</span> {to}
-    </>
-  );
-}
-
 export default async function RidesPage({
   searchParams,
 }: {
@@ -66,6 +57,18 @@ export default async function RidesPage({
   ]);
   const countOf = new Map(counts.map((c) => [c.kind as string, c._count._all]));
   const total = counts.reduce((n, c) => n + c._count._all, 0);
+  // Празните видове не са чипове — не водят до „няма нищо“ (както в /obyavi).
+  const chips = [
+    { href: "/spodeleno-patuvane", label: "Всички", active: !validKind, count: total },
+    ...Object.entries(RIDE_KIND_LABELS)
+      .filter(([k]) => (countOf.get(k) ?? 0) > 0 || k === validKind)
+      .map(([k, label]) => ({
+        href: `/spodeleno-patuvane?kind=${k}#rezultati`,
+        label,
+        active: validKind === k,
+        count: countOf.get(k) ?? 0,
+      })),
+  ];
 
   return (
     <>
@@ -75,19 +78,7 @@ export default async function RidesPage({
         crumbs={[{ name: "Споделено пътуване", path: "/spodeleno-patuvane" }]}
       />
       <div className="container-content py-10">
-        <FilterChips
-          items={[
-            { href: "/spodeleno-patuvane", label: "Всички", active: !validKind, count: total },
-            ...Object.entries(RIDE_KIND_LABELS).map(([k, label]) => ({
-              href: `/spodeleno-patuvane?kind=${k}#rezultati`,
-              label,
-              active: validKind === k,
-              count: countOf.get(k) ?? 0,
-            })),
-          ]}
-          label="Вид обява"
-          className="mb-6"
-        />
+        {total > 0 && <FilterChips items={chips} label="Вид обява" className="mb-6" />}
 
         <div id="rezultati">
           {rides.length === 0 ? (
@@ -107,7 +98,14 @@ export default async function RidesPage({
             />
           ) : (
             <>
-              <ListToolbar count={ridesLabel(rides.length)} action={addAction} />
+              <ListToolbar
+                count={
+                  validKind
+                    ? `${ridesLabel(rides.length)} в „${kindLabel}“`
+                    : ridesLabel(rides.length)
+                }
+                action={addAction}
+              />
               <ul role="list" className="grid gap-4 md:grid-cols-2">
                 {rides.map((r) => (
                   <li key={r.id}>

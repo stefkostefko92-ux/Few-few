@@ -52,6 +52,18 @@ export default async function HelpPage({
   ]);
   const countOf = new Map(counts.map((c) => [c.kind as string, c._count._all]));
   const total = counts.reduce((n, c) => n + c._count._all, 0);
+  // Празните видове не са чипове — не водят до „няма нищо“ (както в /obyavi).
+  const chips = [
+    { href: "/zov-za-pomosht", label: "Всички", active: !validKind, count: total },
+    ...Object.entries(HELP_KIND_LABELS)
+      .filter(([k]) => (countOf.get(k) ?? 0) > 0 || k === validKind)
+      .map(([k, label]) => ({
+        href: `/zov-za-pomosht?kind=${k}#rezultati`,
+        label,
+        active: validKind === k,
+        count: countOf.get(k) ?? 0,
+      })),
+  ];
 
   return (
     <>
@@ -61,19 +73,7 @@ export default async function HelpPage({
         crumbs={[{ name: "Зов за помощ", path: "/zov-za-pomosht" }]}
       />
       <div className="container-content py-10">
-        <FilterChips
-          items={[
-            { href: "/zov-za-pomosht", label: "Всички", active: !validKind, count: total },
-            ...Object.entries(HELP_KIND_LABELS).map(([k, label]) => ({
-              href: `/zov-za-pomosht?kind=${k}#rezultati`,
-              label,
-              active: validKind === k,
-              count: countOf.get(k) ?? 0,
-            })),
-          ]}
-          label="Вид зов"
-          className="mb-6"
-        />
+        {total > 0 && <FilterChips items={chips} label="Вид зов" className="mb-6" />}
 
         <div id="rezultati">
           {causes.length === 0 ? (
@@ -93,7 +93,14 @@ export default async function HelpPage({
             />
           ) : (
             <>
-              <ListToolbar count={causesLabel(causes.length)} action={addAction} />
+              <ListToolbar
+                count={
+                  validKind
+                    ? `${causesLabel(causes.length)} в „${kindLabel}“`
+                    : causesLabel(causes.length)
+                }
+                action={addAction}
+              />
               <ul role="list" className="grid gap-4 md:grid-cols-2">
                 {causes.map((c) => (
                   <li key={c.id}>

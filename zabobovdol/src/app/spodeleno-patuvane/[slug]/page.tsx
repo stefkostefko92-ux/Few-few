@@ -7,6 +7,7 @@ import { buildMetadata } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { RIDE_KIND_LABELS, labelFor } from "@/lib/categories";
 import { ReportContent } from "@/components/ReportContent";
+import { Route, routeText } from "../RouteLabel";
 
 export const dynamic = "force-dynamic";
 
@@ -22,10 +23,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const r = await getRide(slug);
   if (!r) return buildMetadata({ title: "Не е намерено", noindex: true });
-  const route = `${r.routeFrom} → ${r.routeTo}`;
+  // Без „→“ в <title>: четецът го чете „стрелка надясно“.
+  const route = routeText(r.routeFrom, r.routeTo);
   return buildMetadata({
-    title: `Споделено пътуване: ${route}`,
-    description: plainText(r.description, 150) || route,
+    title: `Споделено пътуване ${route}`,
+    description: plainText(r.description, 150) || `Споделено пътуване ${route}.`,
     path: `/spodeleno-patuvane/${r.slug}`,
     type: "article",
     keywords: [
@@ -46,16 +48,22 @@ export default async function RidePage({
   const { slug } = await params;
   const r = await getRide(slug);
   if (!r) notFound();
-  // Маршрутът в един формат навсякъде: заглавие, трохи, метаданни.
-  const route = `${r.routeFrom} → ${r.routeTo}`;
+  // Маршрутът в един формат навсякъде: на екрана „Бобов дол → Дупница“
+  // (стрелката скрита за четеца — той чува „до“), в текста — „от … до …“.
+  const route = routeText(r.routeFrom, r.routeTo);
+  const routeLabel = <Route from={r.routeFrom} to={r.routeTo} />;
 
   return (
     <>
       <PageHero
-        title={route}
+        title={routeLabel}
         crumbs={[
           { name: "Споделено пътуване", path: "/spodeleno-patuvane" },
-          { name: route, path: `/spodeleno-patuvane/${r.slug}` },
+          {
+            name: `${r.routeFrom} – ${r.routeTo}`,
+            label: routeLabel,
+            path: `/spodeleno-patuvane/${r.slug}`,
+          },
         ]}
       />
       <div className="container-content grid gap-8 py-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
@@ -77,8 +85,8 @@ export default async function RidePage({
             </div>
           )}
           <DetailActions
-            shareTitle={`Споделено пътуване: ${route}`}
-            shareText={`Споделено пътуване: ${route}${r.schedule ? ` — ${r.schedule}` : ""}`}
+            shareTitle={`Споделено пътуване ${route}`}
+            shareText={`Споделено пътуване ${route}${r.schedule ? ` — ${r.schedule}` : ""}`}
             sharePath={`/spodeleno-patuvane/${r.slug}`}
           />
         </div>
@@ -90,7 +98,7 @@ export default async function RidePage({
               на непознати.
             </p>
           </Notice>
-          <ReportContent subject={route} path={`/spodeleno-patuvane/${r.slug}`} className="" />
+          <ReportContent subject={`Споделено пътуване ${route}`} path={`/spodeleno-patuvane/${r.slug}`} className="" />
         </aside>
       </div>
     </>
