@@ -1,18 +1,18 @@
 import { MapPin } from "@/components/icons";
 import { TelLink } from "@/components/TelLink";
-import { linkifySegments } from "@/lib/linkify";
+import { linkifySegments, type LinkifyOptions } from "@/lib/linkify";
 import { parseLocalNote } from "@/lib/howto-local-note";
 
 // Текст с телефони, които се набират с едно докосване (tel:). Номерът се
-// показва както е написан в текста — той вече е в българския формат.
-export function Linkified({ text }: { text: string }) {
+// показва в единния формат (formatPhoneBg в TelLink — „0882 912 330“), както
+// на /pomoshti и /uslugi. За стъпките на ръководствата — `options={STEP_LINKIFY}`
+// (само дълги телефони и 112; без имейли и без „150 г.“ като телефон).
+export function Linkified({ text, options }: { text: string; options?: LinkifyOptions }) {
   return (
     <>
-      {linkifySegments(text).map((s, i) =>
+      {linkifySegments(text, options).map((s, i) =>
         s.kind === "tel" ? (
-          <TelLink key={i} phone={s.text} className="link whitespace-nowrap">
-            {s.text}
-          </TelLink>
+          <TelLink key={i} phone={s.text} className="link whitespace-nowrap" />
         ) : s.kind === "mailto" ? (
           <a key={i} href={s.href} className="link [overflow-wrap:anywhere]">
             {s.text}

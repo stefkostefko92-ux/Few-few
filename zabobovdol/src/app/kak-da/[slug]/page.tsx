@@ -10,6 +10,7 @@ import { PrintSourceLine } from "@/components/PrintSourceLine";
 import { buildMetadata, faqPageLd, howToLd, webPageLd, canonical } from "@/lib/seo";
 import { renderMarkdown, plainText } from "@/lib/markdown";
 import { isoDate } from "@/lib/format-date";
+import { STEP_LINKIFY } from "@/lib/linkify";
 import { getIllustrations } from "@/lib/howto-illustrations";
 import { getGuideIndex } from "@/lib/howto-index";
 import {
@@ -192,7 +193,12 @@ export default async function FaqPage({
                   <h2 id="stapki" className="text-2xl font-bold text-slate-900">
                     Стъпки
                   </h2>
-                  <StepList steps={steps.map((t, i) => <Linkified key={i} text={t} />)} className="mt-4" />
+                  <StepList
+                    steps={steps.map((t, i) => (
+                      <Linkified key={i} text={t} options={STEP_LINKIFY} />
+                    ))}
+                    className="mt-4"
+                  />
                 </section>
               )}
               {illustrations.length > 0 && (
