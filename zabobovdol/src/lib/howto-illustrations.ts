@@ -395,7 +395,6 @@ const MAP: Record<string, Illustration[]> = {
   "s-remote-dostap-izmama": [{ src: "/kak-da/scam-remote.png", alt: "Измама с отдалечен достъп (инсталиране на приложение по чуждо нареждане)" }],
   "iz-proveri-obazhdane": [{ src: "/kak-da/scam-verify.png", alt: "Как да проверите дали обаждане или SMS е истинско" }],
   "money-falshiva-banknota": [{ src: "/kak-da/fake-banknote.png", alt: "Как да познаете истинска банкнота по защитните белези" }],
-  "m-falshiva-banknota2": [{ src: "/kak-da/fake-banknote.png", alt: "Защитни белези на истинска банкнота" }],
   "iz-falshiva-nagrada": [{ src: "/kak-da/fake-prize.png", alt: "Фалшива печалба/награда — измама" }],
   "s-falshiva-pechalba-link": [{ src: "/kak-da/fake-prize.png", alt: "Фалшива печалба с линк — измама" }],
   "x-falshiva-pechalba-mreja": [{ src: "/kak-da/fake-prize.png", alt: "Фалшива печалба онлайн — измама" }],
@@ -441,12 +440,10 @@ const MAP: Record<string, Illustration[]> = {
   "kak-da-zaredya-telefon-vaucher": [{ src: "/kak-da/recharge-voucher.png", alt: "Зареждане на предплатен телефон с ваучер" }],
 
   // ── Е-услуги и документи ──
-  "c-proverya-globi-kat": [{ src: "/kak-da/check-fines.png", alt: "Проверка на глоби от КАТ онлайн" }],
   "c-proveria-izbiratelna-sekciya2": [{ src: "/kak-da/polling-station.png", alt: "Проверка на избирателната секция по ЕГН" }],
   "c-kopiya-dokumenti": [{ src: "/kak-da/scan-document.png", alt: "Сканиране на документ с камерата" }],
   "c-udostoverenie-online": [{ src: "/kak-da/egov.png", alt: "Издаване на удостоверение онлайн през e-услуги" }],
   "c-proveria-zadalzheniya-nap": [{ src: "/kak-da/pik-nap.png", alt: "Проверка на данъчни задължения в НАП" }],
-  "c-zdravno-dosie2": [{ src: "/kak-da/health-record.png", alt: "Електронно здравно досие" }],
   "pn-proveri-pensiya": [{ src: "/kak-da/noi-pension.png", alt: "Проверка на размера на пенсията (НОИ)" }],
   "x-povtorna-recepta": [{ src: "/kak-da/health-record.png", alt: "Повторна електронна рецепта от здравното досие" }],
   "x-plati-smetka-prilozhenie": [{ src: "/kak-da/bill-barcode.png", alt: "Плащане на сметка през приложение/баркод" }],
@@ -553,7 +550,6 @@ const MAP: Record<string, Illustration[]> = {
   "z-knigi-telefon2": [{ src: "/kak-da/ebook.png", alt: "Четене на книги с едри букви" }],
   "z-recepti-video2": [{ src: "/kak-da/recipes.png", alt: "Рецепти с видео стъпки" }],
   "z-stari-filmi2": [{ src: "/kak-da/movies.png", alt: "Гледане на филми на телефона" }],
-  "z-televiziya-online2": [{ src: "/kak-da/tv-online.png", alt: "Българска телевизия онлайн" }],
   "z-igri-pamet": [{ src: "/kak-da/solitaire.png", alt: "Игри за ума (пасианс, судоку)" }],
   "z-prognoza-zanimaniya": [{ src: "/kak-da/weather.png", alt: "Проверка на времето преди разходка" }],
   "z-rakodelie-video": [{ src: "/kak-da/youtube-watch.png", alt: "Видео уроци по ръкоделие" }],

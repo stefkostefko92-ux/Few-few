@@ -437,7 +437,7 @@
     "finalBody": "Nessun installer, nessun paywall. Trenta secondi e sei ad Aedric.",
     "finalCreate": "Crea il tuo eroe",
     "finalAlready": "Gioco già",
-    "footerTagline": "Un MMORPG da browser moderno e validato dal server. Free to play. Nessuna valuta premium.",
+    "footerTagline": "Un MMORPG da browser moderno e validato dal server. Free to play.",
     "footerGame": "Gioco",
     "footerAccount": "Account",
     "footerStudio": "Studio",
@@ -467,6 +467,10 @@
     "setsShowcaseLead": "Ogni set è indossato su un vero manichino 3D, non su una griglia di icone. Scegline uno qui sotto.",
     "setsShowcaseCta": "Ruota in 3D",
     "setsShowcaseLoading": "Caricamento della vetrina…"
+  },
+  "seo": {
+    "landingTitle": "Nexus Dominion — MMORPG da browser, gratuito",
+    "landingDescription": "MMORPG con combattimenti a turni validati dal server. Quattro classi, 500 livelli di mostri, arena ELO, casa d'aste in tempo reale, gilde a cinque livelli. Gratuito, senza installazione."
   },
   "arena": {
     "title": "Arena di Nexus Dominion",

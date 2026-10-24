@@ -8,7 +8,15 @@
 //     <title>/description/<html lang>, hreflang cluster, per-locale
 //     WebPage+FAQPage JSON-LD, and a crawlable content snapshot in #root;
 //   • the English root gets a crawlable content snapshot injected into #root;
-//   • legal/status routes get correct per-route <title>/description/canonical.
+//   • legal/status routes get correct per-route <title>/description/canonical;
+//   • dist/404.html — the page nginx serves WITH status 404 for unknown paths
+//     (noindex, no canonical, no JSON-LD). Without it every typo URL answered
+//     200 + the homepage → „Soft 404“ in Search Console (SEO audit 22.10.2026).
+//
+// The build then VERIFIES its own output (see „gates“ at the bottom): every
+// sitemap URL and every public route in App.jsx has a file (nginx now returns
+// a real 404 for anything that has none), exactly one <h1> per page, and
+// JSON-LD that parses, carries at most one FAQPage and no LocalBusiness.
 //
 // The SPA still boots normally: main.jsx uses createRoot().render(), which
 // REPLACES the snapshot in #root on mount (no hydration, so no mismatch).
@@ -16,7 +24,7 @@
 //
 // Wired into `npm run build` as `vite build && node scripts/prerender.mjs`.
 
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { LANDING_TRANSLATIONS } from "../src/i18n/landing.js";
@@ -25,6 +33,7 @@ import {
   TICKET_TOOL_COMPARE, APPY_COMPARE, BEST_TICKET_BOT_GUIDE, GDPR_GUIDE, PANEL_SETUP_GUIDE, CHECKED_DATE,
 } from "../src/data/growthContent.js";
 import { FEATURES_HUB, FEATURE_PAGES, featureJsonLd, hubJsonLd } from "../src/data/featurePages.js";
+import { EN_LANDING_FAQ } from "../src/data/landingFaqEn.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST = join(__dirname, "..", "dist");
@@ -44,8 +53,14 @@ const esc = (s = "") =>
     .replace(/"/g, "&quot;");
 
 // Safe JSON-LD embedding (prevent </script> breakout).
-const jsonLd = (obj) =>
-  `<script type="application/ld+json">${JSON.stringify(obj).replace(/</g, "\\u003c")}</script>`;
+// `id` = "seo-route-jsonld" marks the ROUTE block: components/Seo.jsx looks the
+// element up by that id and REPLACES its content on mount instead of appending
+// a second copy — otherwise the rendered DOM (what Googlebot indexes) carried
+// the same FAQPage twice („Duplicate field FAQPage“ in Search Console).
+const ROUTE_JSONLD_ID = "seo-route-jsonld";
+const jsonLd = (obj, id) =>
+  `<script type="application/ld+json"${id ? ` id="${id}"` : ""}>${JSON.stringify(obj).replace(/</g, "\\u003c")}</script>`;
+const routeJsonLd = (obj) => jsonLd(obj, ROUTE_JSONLD_ID);
 
 // Replace exactly once; throw if the anchor is missing so the build fails loudly
 // instead of silently shipping wrong <head> tags.
@@ -54,11 +69,38 @@ function replaceOnce(html, regex, replacement, label) {
   return html.replace(regex, replacement);
 }
 
+// ─── site-wide JSON-LD (index.html) scoped per route ─────────────────────────
+// index.html's @graph describes the HOME page. Before (SEO audit 22.10.2026)
+// the whole block — incl. the home WebPage (url „/“), its BreadcrumbList and an
+// English FAQPage — was copied into EVERY route: /terms claimed to be the home
+// page, /bg carried English Q&A nobody sees there, /features/* had two
+// breadcrumb trails. Google's structured-data guidelines: mark up only content
+// visible on THAT page. Now each route keeps only the nodes true for it.
+const STATIC_LD_RE = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/;
+const SITE_NODES = ["https://carbonstealth.eu/#organization", `${SITE}/#website`];
+// Landings show the tiers and prices → the product + its offers are visible there.
+const LANDING_NODES = [...SITE_NODES, `${SITE}/#software`, `${SITE}/#service`];
+
+// ids = null → keep every node (the home page); [] → drop the block entirely.
+function withSiteGraph(html, ids, extra = []) {
+  const m = html.match(STATIC_LD_RE);
+  if (!m) throw new Error("prerender: static JSON-LD block not found in index.html");
+  const graph = JSON.parse(m[1]);
+  const nodes = ids ? graph["@graph"].filter((n) => ids.includes(n["@id"])) : graph["@graph"];
+  if (ids && nodes.length !== ids.length) {
+    const have = new Set(nodes.map((n) => n["@id"]));
+    throw new Error(`prerender: JSON-LD node(s) missing in index.html: ${ids.filter((i) => !have.has(i)).join(", ")}`);
+  }
+  const all = [...nodes, ...extra];
+  // Function replacement: JSON may contain „$“, which a replacement STRING would interpret.
+  return html.replace(STATIC_LD_RE, () => (all.length ? jsonLd({ "@context": graph["@context"], "@graph": all }) : ""));
+}
+
 // Apply the common <head> overrides (title, description trio, canonical, og:url,
 // og:locale, html lang) to a copy of the template.
-function withHead(template, { title, description, path, lang, keywords }) {
+function withHead(template, { title, description, path, lang, keywords, graph = SITE_NODES }) {
   const url = `${SITE}${path}`;
-  let h = template;
+  let h = withSiteGraph(template, graph);
   h = replaceOnce(h, /<title>[\s\S]*?<\/title>/, `<title>${esc(title)}</title>`, "title");
   h = replaceOnce(h, /(<meta name="description" content=")[\s\S]*?("\s*\/>)/,
     `$1${esc(description)}$2`, "meta description");
@@ -182,7 +224,8 @@ function landingSnapshot(t) {
 
 function landingJsonLd(locale, t) {
   const path = landingPath(locale);
-  return jsonLd({
+  // Same object LandingLocalized.jsx passes to <Seo jsonLd> → Seo replaces it, no copy.
+  return routeJsonLd({
     "@context": "https://schema.org",
     "@graph": [
       {
@@ -218,6 +261,7 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
   if (locale === "en") continue; // root handled below
   let html = withHead(template, {
     title: t.title, description: t.description, path: landingPath(locale), lang: locale,
+    graph: LANDING_NODES,
   });
   html = injectHead(html, `  ${hreflangCluster()}\n  ${landingJsonLd(locale, t)}`);
   html = injectRoot(html, landingSnapshot(t));
@@ -225,20 +269,24 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
   count++;
 }
 
-// 2) English root "/" — keep its rich @graph, add hreflang + crawlable snapshot.
-//    The English answer-content is derived from the FAQPage already embedded in
-//    the static @graph so the snapshot and structured data never drift.
+// 2) English root "/" — keep its full @graph, add hreflang + crawlable snapshot.
+//    FAQ: ONE list (src/data/landingFaqEn.js) feeds the visible React section
+//    (Login.jsx), this snapshot AND the FAQPage JSON-LD — so the structured
+//    data always equals what Google sees rendered. The FAQPage lives only here.
 {
-  const faqMatch = template.match(/"@type":\s*"FAQPage"[\s\S]*?"mainEntity":\s*(\[[\s\S]*?\])\s*}/);
-  let faqHtml = "";
-  if (faqMatch) {
-    try {
-      const entities = JSON.parse(faqMatch[1]);
-      faqHtml = entities.map(
-        (q) => `<div><h3>${esc(q.name)}</h3><p>${esc(q.acceptedAnswer?.text || "")}</p></div>`
-      ).join("");
-    } catch { /* leave faqHtml empty if parsing fails */ }
-  }
+  const faqHtml = EN_LANDING_FAQ.map(
+    ({ q, a }) => `<div><h3>${esc(q)}</h3><p>${esc(a)}</p></div>`
+  ).join("");
+  const rootFaq = {
+    "@type": "FAQPage",
+    "@id": `${SITE}/#faq`,
+    inLanguage: "en",
+    mainEntity: EN_LANDING_FAQ.map(({ q, a }) => ({
+      "@type": "Question",
+      name: q,
+      acceptedAnswer: { "@type": "Answer", text: a },
+    })),
+  };
   // English answer-content for the x-default root. Kept at parity with the
   // localized snapshots (features + pricing + FAQ) so the most-important page
   // is not the thinnest for AEO crawlers. Features mirror the SoftwareApplication
@@ -297,7 +345,8 @@ for (const [locale, t] of Object.entries(LANDING_TRANSLATIONS)) {
     })}
     ${featureLinks("Features")}
   </div>`;
-  let html = injectHead(template, `  ${hreflangCluster()}`);
+  let html = withSiteGraph(template, null, [rootFaq]);
+  html = injectHead(html, `  ${hreflangCluster()}`);
   html = injectRoot(html, rootSnapshot);
   writeRoute("/", html);
   count++;
@@ -460,13 +509,13 @@ function featureSnapshot(p) {
     <ul>${hubItems}</ul>
   </div>`;
   let html = withHead(template, { title: FEATURES_HUB.title, description: FEATURES_HUB.description, path: FEATURES_HUB.path, lang: "en", keywords: FEATURES_HUB.keywords });
-  html = injectHead(html, `  ${jsonLd(hubJsonLd())}`);
+  html = injectHead(html, `  ${routeJsonLd(hubJsonLd())}`);
   html = injectRoot(html, hubSnapshot);
   writeRoute(FEATURES_HUB.path, html);
   count++;
   for (const p of FEATURE_PAGES) {
     let page = withHead(template, { title: p.title, description: p.description, path: p.path, lang: "en", keywords: p.keywords });
-    page = injectHead(page, `  ${jsonLd(featureJsonLd(p))}`);
+    page = injectHead(page, `  ${routeJsonLd(featureJsonLd(p))}`);
     page = injectRoot(page, featureSnapshot(p));
     writeRoute(p.path, page);
     count++;
@@ -490,4 +539,105 @@ for (const [path, [title, description]] of Object.entries(STATIC_ROUTES)) {
   count++;
 }
 
+// 6) dist/404.html — served by nginx (`error_page 404 /404.html`) WITH status
+//    404 for every path that has no file and is not an app route. Google treats
+//    200 + the homepage on a junk URL as a „Soft 404“ and wastes crawl budget on
+//    it. The page is a helpful dead end: noindex, no canonical (it is not a copy
+//    of „/“), no structured data, links to the main sections. The SPA still
+//    boots on it and React Router renders NotFoundPage (same content).
+{
+  let html = withSiteGraph(template, []);
+  html = replaceOnce(html, /<title>[\s\S]*?<\/title>/, "<title>Page Not Found — Supreme Bot</title>", "404 title");
+  const desc = "The page you are looking for does not exist. Find Supreme Bot features, commands, guides and service status from here.";
+  for (const [re, label] of [
+    [/(<meta name="description" content=")[\s\S]*?("\s*\/>)/, "404 description"],
+    [/(<meta property="og:description" content=")[\s\S]*?("\s*\/>)/, "404 og:description"],
+    [/(<meta name="twitter:description" content=")[\s\S]*?("\s*\/>)/, "404 twitter:description"],
+  ]) html = replaceOnce(html, re, `$1${esc(desc)}$2`, label);
+  html = replaceOnce(html, /(<meta name="robots" content=")[^"]*(")/, "$1noindex, follow$2", "404 robots");
+  html = replaceOnce(html, /(<meta name="googlebot" content=")[^"]*(")/, "$1noindex, follow$2", "404 googlebot");
+  html = replaceOnce(html, /\s*<link rel="canonical" href="[^"]*" \/>/, "", "404 canonical");
+  html = replaceOnce(html, /\s*<meta property="og:url" content="[^"]*" \/>/, "", "404 og:url");
+  const links = [
+    ["/", "Home"], [FEATURES_HUB.path, "Features"], ["/commands", "Commands"],
+    ["/guides/ticket-panel-setup", "Ticket panel setup guide"], ["/status", "Service status"],
+    ["/terms", "Terms"], ["/privacy", "Privacy"],
+  ].map(([href, label]) => `<li><a href="${href}">${esc(label)}</a></li>`).join("");
+  html = injectRoot(html, `<div class="prerender-content" style="max-width:48rem;margin:0 auto;padding:2rem;color:#c9c9c9;font-family:system-ui,sans-serif"><h1>Page not found</h1><p>The page you're looking for doesn't exist or has been moved. Try one of these instead:</p><nav aria-label="Navigation"><ul>${links}</ul></nav></div>`);
+  writeFileSync(join(DIST, "404.html"), html, "utf8");
+  count++;
+}
+
 console.log(`[prerender] ✅ wrote ${count} static route(s) under dist/`);
+
+// ─── gates: the build checks its own output (fails loudly, like replaceOnce) ──
+// nginx now answers 404 for any path without a file (except the /dashboard app
+// shell), so a public page that is routed in React or listed in the sitemap but
+// NOT prerendered would silently turn into a 404 for users and for Google.
+{
+  const problems = [];
+  const fileFor = (path) => (path === "/" ? join(DIST, "index.html") : join(DIST, path.replace(/^\//, ""), "index.html"));
+  // Kept in sync with nginx.conf: the only routes served by the SPA shell
+  // without a prerendered file (auth-gated, Disallowed in robots.txt).
+  const SPA_ONLY = /^\/dashboard(?:\/|$)/;
+
+  // a) every <loc> in the sitemap → a prerendered page whose canonical is itself
+  const sitemap = readFileSync(join(DIST, "sitemap.xml"), "utf8");
+  const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  if (locs.length === 0) problems.push("sitemap.xml has no <loc>");
+  for (const loc of locs) {
+    const path = loc.slice(SITE.length) || "/";
+    const f = fileFor(path);
+    if (!loc.startsWith(SITE)) { problems.push(`sitemap: foreign URL ${loc}`); continue; }
+    if (!existsSync(f)) { problems.push(`sitemap: ${path} has no prerendered file → would be 404`); continue; }
+    const page = readFileSync(f, "utf8");
+    if (!page.includes(`<link rel="canonical" href="${loc}"`)) problems.push(`sitemap: ${path} canonical is not itself`);
+    if (/<meta name="robots" content="[^"]*noindex/.test(page)) problems.push(`sitemap: ${path} is noindex`);
+  }
+
+  // b) every absolute public route in App.jsx → a prerendered file
+  const app = readFileSync(join(__dirname, "..", "src", "App.jsx"), "utf8");
+  for (const [, path] of app.matchAll(/<Route\s+path="(\/[^"]*)"/g)) {
+    if (SPA_ONLY.test(path)) continue;
+    const paths = path === "/features/:slug" ? FEATURE_PAGES.map((p) => p.path) : [path];
+    for (const p of paths) {
+      if (p.includes(":")) { problems.push(`App.jsx: parametric route ${p} — prerender each value or add it to SPA_ONLY + nginx.conf`); continue; }
+      if (!existsSync(fileFor(p))) problems.push(`App.jsx: public route ${p} has no prerendered file → would be 404`);
+    }
+  }
+
+  // c) every page we wrote: exactly one <h1>, valid JSON-LD, ≤1 FAQPage, no LocalBusiness
+  const LOCAL_BUSINESS = new Set(["LocalBusiness", "ProfessionalService", "Store", "Restaurant"]);
+  const pages = [...new Set([...locs.map((l) => fileFor(l.slice(SITE.length) || "/")), join(DIST, "404.html")])];
+  for (const f of pages) {
+    if (!existsSync(f)) continue; // already reported above
+    const page = readFileSync(f, "utf8");
+    const rel = f.slice(DIST.length) || "/";
+    const h1 = (page.match(/<h1[\s>]/gi) || []).length;
+    if (h1 !== 1) problems.push(`${rel}: ${h1} <h1> elements (exactly 1 required)`);
+    const types = [];
+    const walk = (n) => {
+      if (Array.isArray(n)) return n.forEach(walk);
+      if (n && typeof n === "object") {
+        for (const t of [].concat(n["@type"] || [])) types.push(t);
+        Object.values(n).forEach(walk);
+      }
+    };
+    for (const [, raw] of page.matchAll(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)) {
+      try { walk(JSON.parse(raw)); } catch (e) { problems.push(`${rel}: JSON-LD does not parse (${e.message})`); }
+    }
+    const faq = types.filter((t) => t === "FAQPage").length;
+    if (faq > 1) problems.push(`${rel}: ${faq} FAQPage blocks (max 1)`);
+    const lb = types.filter((t) => LOCAL_BUSINESS.has(t));
+    if (lb.length) problems.push(`${rel}: LocalBusiness-type structured data (${lb.join(", ")}) on an online SaaS`);
+  }
+  const nf = readFileSync(join(DIST, "404.html"), "utf8");
+  if (!/<meta name="robots" content="noindex/.test(nf)) problems.push("404.html is not noindex");
+  if (/rel="canonical"/.test(nf)) problems.push("404.html declares a canonical");
+
+  if (problems.length) {
+    console.error(`[prerender] ❌ ${problems.length} problem(s):\n  • ${problems.join("\n  • ")}`);
+    process.exit(1);
+  }
+  console.log(`[prerender] ✅ gates: ${locs.length} sitemap URL(s) prerendered, 1×<h1> and clean JSON-LD on ${pages.length} page(s), 404.html noindex`);
+}

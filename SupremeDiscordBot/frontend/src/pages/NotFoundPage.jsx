@@ -1,8 +1,9 @@
 // frontend/src/pages/NotFoundPage.jsx
 // Custom 404 page with navigation links per SEO standards 6.1.
-// React Router renders this for unmatched routes. SPA returns HTTP 200 to
-// nginx (because index.html was served), but the client side correctly
-// indicates "not found" status to the user.
+// React Router renders this for unmatched routes. On a fresh load nginx has
+// already answered with a REAL HTTP 404 and dist/404.html (scripts/prerender.mjs,
+// frontend/nginx.conf) — no „Soft 404“; the SPA then boots there and shows this
+// page. Client-side navigation to an unknown path lands here directly.
 
 import { Home, AlertCircle, Compass } from "lucide-react";
 import SupremeLogo, { SupremeWordmark } from "../components/SupremeLogo";

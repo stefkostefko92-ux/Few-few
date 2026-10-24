@@ -61,7 +61,7 @@ export default function TermsPage() {
         </ul>
         <p>
           The Free Tier and Premium Tier features are described on the{" "}
-          <a href="/pricing" className="text-cs-cyan hover:underline">Pricing page</a>.
+          <a href="/#pricing" className="text-cs-cyan hover:underline">Pricing page</a>.
           Feature availability may change with reasonable prior notice.
         </p>
       </S>

@@ -33,7 +33,10 @@ export const metadata: Metadata = {
   description: SITE.description,
   applicationName: SITE.name,
   manifest: "/manifest.webmanifest",
-  alternates: { canonical: SITE.url },
+  // БЕЗ `alternates.canonical` тук: коренният layout се наследява от ВСЯКА
+  // страница, която не задава свой canonical (напр. клиентските форми), и тя
+  // погрешно сочеше към началната страница. Всяка страница си задава свой
+  // (buildMetadata / собствен layout), началната — в app/page.tsx.
   keywords: [
     "Бобов дол",
     "услуги Бобов дол",

@@ -266,13 +266,15 @@ async function main() {
   }
   console.log(`✔ Бизнеси: ${businesses.length}`);
 
-  // Скрива (не трие) примерните записи с фиктивни данни.
+  // Скрива (не трие) примерните записи с фиктивни данни — само ако още са
+  // примерни („(пример)“ в името). Запис, който админът е превърнал в реален
+  // (напр. primeren-magazin → истински магазин), остава публикуван.
   const hidS = await prisma.service.updateMany({
-    where: { slug: { in: PLACEHOLDER_SLUGS.service } },
+    where: { slug: { in: PLACEHOLDER_SLUGS.service }, name: { contains: "(пример)" } },
     data: { published: false },
   });
   const hidB = await prisma.business.updateMany({
-    where: { slug: { in: PLACEHOLDER_SLUGS.business } },
+    where: { slug: { in: PLACEHOLDER_SLUGS.business }, name: { contains: "(пример)" } },
     data: { published: false },
   });
   console.log(`✔ Скрити примерни записи: ${hidS.count + hidB.count}`);

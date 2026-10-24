@@ -1,8 +1,63 @@
 import type { Metadata } from "next";
 import { SITE } from "@/lib/site";
+import { plainText } from "@/lib/markdown";
 
 export function canonical(path = "/"): string {
   return `${SITE.url}${path === "/" ? "" : path}`;
+}
+
+// Кратко описание (meta description) от свободен/Markdown текст: цели изречения
+// до `max` знака; ако първото изречение е твърде дълго — отрязва по дума с „…“.
+// Google показва около 150–160 знака, затова по подразбиране е 155.
+export function summarize(src: string, max = 155): string {
+  const t = plainText(src, Infinity);
+  if (t.length <= max) return t;
+  let end = -1;
+  for (const m of t.slice(0, max + 1).matchAll(/[.!?](?=\s|$)/g)) {
+    const i = m.index ?? -1;
+    if (i < max) end = i;
+  }
+  if (end >= max * 0.5) return t.slice(0, end + 1);
+  const cut = t.slice(0, max - 1);
+  const space = cut.lastIndexOf(" ");
+  return (space > 0 ? cut.slice(0, space) : cut).replace(/[\s,;:—–-]+$/, "") + "…";
+}
+
+type PostForSeo = {
+  title: string;
+  content: string;
+  excerpt: string;
+  seoDescription?: string | null;
+  source?: string;
+  sourceUrl?: string;
+};
+
+// Има ли новината собствен текст за показване (тяло или резюме)? Внесените от
+// сайта на общината публикации понякога са само заглавие + връзка — такава
+// страница е празна за читателя и не трябва да се индексира / да е в sitemap-а.
+export function postHasBody(p: Pick<PostForSeo, "content" | "excerpt">): boolean {
+  return plainText(p.content, Infinity).length > 0 || p.excerpt.trim().length > 0;
+}
+
+// Meta description на новина — никога празно. Ред: ръчно SEO описание →
+// резюме → първите изречения от текста → фактическо описание по заглавие и
+// източник (без измислено съдържание).
+export function postDescription(p: PostForSeo, max = 155): string {
+  const manual = p.seoDescription?.trim();
+  if (manual) return manual;
+  const excerpt = p.excerpt.trim();
+  if (excerpt) return excerpt;
+  const fromBody = summarize(p.content, max);
+  if (fromBody) return fromBody;
+
+  const title = p.title.trim();
+  const source = p.source?.trim();
+  const fallback = source
+    ? p.sourceUrl?.trim()
+      ? `${title} — информация от ${source} с връзка към пълния текст в оригиналния източник.`
+      : `${title} — информация от ${source}.`
+    : `${title} — публикация в раздел „Новини“ на „${SITE.name}“.`;
+  return summarize(fallback, max);
 }
 
 // Базови метаданни, наследявани и допълвани от всяка страница.

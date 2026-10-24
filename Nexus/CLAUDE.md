@@ -38,4 +38,9 @@ docs/             design + deployment notes
   transactions; note better-sqlite3 constraints (e.g. bound params not allowed
   inside virtual-table module arguments).
 - Client is strict TypeScript + Zustand for state.
+- **SPA routes ↔ server:** `server/src/seo/pages.ts` serves `index.html` only for the routes in
+  `client/src/App.tsx` (everything else → real 404 + noindex) and renders title/description/
+  canonical/hreflang/JSON-LD per route and language (`/`, `/?lang=it`, `/?lang=bg`). A new
+  top-level client route must be added to `matchRoute` there, and an indexable one also to
+  `client/public/sitemap.xml` — `server/src/routes/__tests__/seo.test.ts` guards the sync.
 - Ship as one Docker image (`Dockerfile` + `docker-compose.yml`).

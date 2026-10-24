@@ -42,11 +42,12 @@ note() { printf '  \033[33m·\033[0m %s\n' "$1"; }
 # ненулево — старото `|| echo "000"` добавяше ВТОРО „000" и изходът беше „000000".
 code() { curl -s -o /dev/null -w '%{http_code}' --max-time "$TIMEOUT" "$1" 2>/dev/null; }
 body() { curl -s --max-time "$TIMEOUT" "$1" 2>/dev/null || echo ""; }
-# nginx на фронтенда има SPA fallback (`try_files … /index.html`): ЛИПСВАЩ файл
-# или страница връща 200 с index.html. Затова 200 не доказва нищо за статичен
-# файл или пререндирана страница (одит на VPS-аджията 25.09.2026) — сверяваме
+# До 22.10.2026 nginx на фронтенда имаше SPA fallback за ВСЕКИ адрес
+# (`try_files … /index.html`): липсващ файл или страница връщаше 200 с
+# index.html. Сега непознат адрес е истински 404 (SEO одит — „Soft 404“ в
+# Search Console), а index.html получава само /dashboard…. Сверяваме и
 # СЪДЪРЖАНИЕТО: пререндираната страница носи собствения си canonical, файлът —
-# своя Content-Type / подпис.
+# своя Content-Type / подпис (одит на VPS-аджията 25.09.2026).
 ctype() { curl -s -o /dev/null -w '%{content_type}' --max-time "$TIMEOUT" "$1" 2>/dev/null; }
 prerendered() { body "$BASE$1" | grep -q "<link rel=\"canonical\" href=\"[^\"]*$1\""; }
 
@@ -61,7 +62,15 @@ if [ "$c" = "200" ]; then
   # Билдът пререндира 19 маршрута; липсата им значи, че prerender стъпката е
   # пропаднала тихо и SEO-то е нула.
   if prerendered /terms; then ok "статичните маршрути са пререндирани"
-  else bad "/terms не носи собствения си canonical — prerender стъпката е пропаднала (SPA fallback)"; fi
+  else bad "/terms не носи собствения си canonical — prerender стъпката е пропаднала"; fi
+  # Непознат адрес → 404, не 200 + началната страница („Soft 404“ за Google).
+  c404=$(code "$BASE/cs-smoke-no-such-page-$$")
+  if [ "$c404" = "404" ]; then ok "непознат адрес връща 404"
+  else bad "непознат адрес върна $c404 (очаквам 404) — върнат ли е SPA fallback-ът в nginx.conf?"; fi
+  # Приложението (зад вход) още получава SPA обвивката.
+  cdash=$(code "$BASE/dashboard")
+  if [ "$cdash" = "200" ]; then ok "/dashboard отдава приложението"
+  else bad "/dashboard върна $cdash (очаквам 200)"; fi
 else
   bad "фронтендът върна $c"
 fi

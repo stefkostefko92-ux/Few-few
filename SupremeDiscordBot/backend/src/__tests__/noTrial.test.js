@@ -89,6 +89,8 @@ describe("frontend — нула trial в UI, i18n, правни текстове
   it("страници, правни текстове, prerender и llms.txt не обещават пробен период", () => {
     const files = [
       "frontend/src/pages/Login.jsx",
+      // FAQ на английската начална — изнесен от Login.jsx (един източник с FAQPage JSON-LD).
+      "frontend/src/data/landingFaqEn.js",
       "frontend/src/pages/LandingLocalized.jsx",
       "frontend/src/pages/PremiumPage.jsx",
       "frontend/src/pages/TermsPage.jsx",

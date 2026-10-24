@@ -176,10 +176,17 @@ async function main() {
       order: 2,
     },
   ];
+  // Само създаване, СКРИТИ: примерните записи не са реални (фиктивен телефон
+  // „000 000 000“ влизаше в LocalBusiness разметката). `update: {}` пази
+  // реалните данни, ако админът е превърнал записа в истински бизнес.
   for (const b of businesses) {
-    await prisma.business.upsert({ where: { slug: b.slug }, update: b, create: b });
+    await prisma.business.upsert({
+      where: { slug: b.slug },
+      update: {},
+      create: { ...b, published: false },
+    });
   }
-  console.log(`✔ Бизнес: ${businesses.length}`);
+  console.log(`✔ Бизнес (примерни, скрити): ${businesses.length}`);
 
   // --- Събитие ---
   const startAt = new Date();
@@ -194,10 +201,12 @@ async function main() {
       description: "Това е примерно събитие, за да видите как изглежда страницата." + NOTE,
       location: "Читалище, гр. Бобов дол (пример)",
       startAt,
-      published: true,
+      // Скрито: несъществуващо събитие не бива да се публикува (и да носи
+      // Event структурирани данни за Google). Админът вижда формата в панела.
+      published: false,
     },
   });
-  console.log("✔ Събитие: 1");
+  console.log("✔ Събитие (примерно, скрито): 1");
 
   // --- Новина ---
   await prisma.post.upsert({
