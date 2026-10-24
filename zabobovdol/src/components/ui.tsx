@@ -398,23 +398,29 @@ export function FactList({ items, className = "" }: { items: Fact[]; className?:
 /**
  * Празно състояние: спокоен панел с иконно квадратче, заглавие, подсказка и
  * (по избор) действие — напр. <Link className="btn-primary">Подайте обява</Link>.
+ * tone="neutral" — сивото квадратче за траур (само /pomeni, като .chip-neutral).
  */
 export function EmptyState({
   title,
   hint,
   action,
   icon: Icon = Inbox,
+  tone = "brand",
   className = "",
 }: {
   title: string;
   hint?: ReactNode;
   action?: ReactNode;
   icon?: LucideIcon;
+  tone?: "brand" | "neutral";
   className?: string;
 }) {
+  // Пълни имена на класовете — Tailwind не вижда сглобени.
+  const chip =
+    tone === "neutral" ? "icon-chip-lg icon-chip-neutral mx-auto mb-4" : "icon-chip-lg mx-auto mb-4";
   return (
     <div className={`panel px-6 py-8 text-center sm:py-10 ${className}`}>
-      <span className="icon-chip-lg mx-auto mb-4">
+      <span className={chip}>
         <Icon aria-hidden />
       </span>
       <p className="h-card">{title}</p>

@@ -109,6 +109,7 @@ export default async function ObituariesPage({ searchParams }: { searchParams: S
 
         {items.length === 0 ? (
           <EmptyState
+            tone="neutral"
             title={page > 1 ? "Няма повече обяви." : "Засега няма публикувани обяви."}
             hint={`Близките могат да подадат некролог или помен през формата или на телефон ${phone}.`}
           />
