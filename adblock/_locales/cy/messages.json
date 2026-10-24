@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Capasiti rheolau"
+  },
+  "helpTitle": {
+    "message": "Gwefannau’n torri?"
+  },
+  "helpText": {
+    "message": "Mae un wefan ar y tro yn ddigon: caniatewch ei hysbysebion am awr, neu diffoddwch guddio elfennau yno’n unig. Os dywedwch wrthym, byddwn yn ei thrwsio i bawb."
+  },
+  "helpFix": {
+    "message": "Trwsio’r wefan hon"
+  },
+  "cardNever": {
+    "message": "Peidiwch â dangos hwn eto"
+  },
+  "cardClose": {
+    "message": "Cau"
+  },
+  "receiptTitle": {
+    "message": "Eich 30 diwrnod diwethaf"
+  },
+  "receiptText": {
+    "message": "$1 o geisiadau wedi’u rhwystro · $2 o faneri cwcis wedi’u hateb · tua $3 o ddata wedi’i arbed (amcangyfrif)"
+  },
+  "share": {
+    "message": "Rhannu"
+  },
+  "shareTitle": {
+    "message": "Copïo’r ddolen i Supreme AdBlock yn Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Dolen wedi’i chopïo"
+  },
+  "rep_fixed_q": {
+    "message": "Ydy hyn wedi trwsio’r wefan?"
+  },
+  "rep_fixed_yes": {
+    "message": "Ydy, mae’n gweithio"
+  },
+  "rep_fixed_no": {
+    "message": "Na, wedi torri o hyd"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Da clywed ei bod yn gweithio. Os dywedwch wrthym isod, bydd yr adroddiad yn dangos pa ateb a weithiodd, er mwyn i ni drwsio’r wefan i bawb."
+  },
+  "rep_fixed_next": {
+    "message": "Rhowch gynnig ar yr un nesaf: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Felly dywedwch wrthym isod: byddwn yn edrych ar y wefan."
+  },
+  "rep_webmail": {
+    "message": "Dim ap e-bost? Copïwch yr adroddiad a’i anfon at $1 o’ch gwe-bost."
+  },
+  "blk_mistake": {
+    "message": "Ydych chi’n meddwl mai camgymeriad yw hyn? Dywedwch wrthym"
+  },
+  "welTest": {
+    "message": "Gweld sut mae’n gweithio ar dudalen brawf"
   }
 }
