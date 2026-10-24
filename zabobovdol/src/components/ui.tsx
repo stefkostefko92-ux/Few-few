@@ -10,11 +10,13 @@ import {
   ChevronDown,
   Inbox,
   Info,
+  Mail,
   ShieldAlert,
   type LucideIcon,
 } from "@/components/icons";
 import { JsonLd } from "@/components/JsonLd";
 import { HelpfulWidget } from "@/components/HelpfulWidget";
+import { PhoneButton } from "@/components/PhoneButton";
 import { PrintButton } from "@/components/PrintButton";
 import { ShareButton } from "@/components/ShareButton";
 import { breadcrumbLd } from "@/lib/seo";
@@ -579,6 +581,163 @@ export function ArticleActions({
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * Действията в края на детайл (услуга, бизнес, обява, събитие, новина):
+ * „Споделете“, после „Отпечатайте“ — винаги в този ред и с тези надписи,
+ * под главното действие (обаждане/контакт). Лек ред с черта отгоре, без
+ * панел. На телефон бутоните са един под друг на цяла ширина. Не се печата.
+ */
+export function DetailActions({
+  shareTitle,
+  shareText,
+  sharePath,
+  printLabel = "Отпечатайте",
+  children,
+  className = "",
+}: {
+  /** Без него бутонът „Споделете“ не се показва. */
+  shareTitle?: string;
+  shareText?: string;
+  sharePath?: string;
+  /** false → без бутон за печат. */
+  printLabel?: string | false;
+  /** Допълнителни действия — преди споделянето. */
+  children?: ReactNode;
+  className?: string;
+}) {
+  if (!children && !shareTitle && !printLabel) return null;
+  return (
+    <div
+      className={`no-print mt-8 flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:flex-wrap sm:items-start [&>*]:w-full sm:[&>*]:w-auto [&>div>button]:w-full sm:[&>div>button]:w-auto ${className}`}
+    >
+      {children}
+      {shareTitle && <ShareButton title={shareTitle} text={shareText} path={sharePath} />}
+      {printLabel && <PrintButton variant="secondary" label={printLabel} />}
+    </div>
+  );
+}
+
+/**
+ * Имейл като връзка, която се пренася САМО при „@“ (никога насред домейна,
+ * както правеше break-all: „carbonstealth.|eu“).
+ */
+export function EmailLink({ email, className = "link" }: { email: string; className?: string }) {
+  return (
+    <a href={`mailto:${email}`} className={`${className} [overflow-wrap:anywhere]`}>
+      <EmailText email={email} />
+    </a>
+  );
+}
+
+/** Адресът с възможно пренасяне само след „@“ (<wbr/>). */
+function EmailText({ email }: { email: string }) {
+  const at = email.indexOf("@");
+  if (at <= 0) return <>{email}</>;
+  return (
+    <>
+      {email.slice(0, at)}@<wbr />
+      {email.slice(at + 1)}
+    </>
+  );
+}
+
+/**
+ * „Контакт“ в детайла на обява, пътуване или зов: името, голям бутон
+ * „Обадете се: …“ и „Пишете имейл“ (адресът — под бутона, пренася се при „@“).
+ * Без телефон и имейл — изречение вместо празна кутия. children — допълнително
+ * съдържание отдолу.
+ */
+export function ContactPanel({
+  name,
+  phone,
+  email,
+  id = "kontakt-zaglavie",
+  title = "Контакт",
+  children,
+  className = "",
+}: {
+  name?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  /** id на заглавието (за aria-labelledby). */
+  id?: string;
+  title?: string;
+  children?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <section aria-labelledby={id} className={`panel ${className}`}>
+      <h2 id={id} className="h-card">
+        {title}
+      </h2>
+      {name && <p className="mt-1 text-base text-slate-700">{name}</p>}
+      {phone || email ? (
+        <div className="mt-4 flex flex-col gap-3">
+          {phone && <PhoneButton phone={phone} label="Обадете се:" variant="primary" full />}
+          {email && (
+            <div>
+              <a href={`mailto:${email}`} className="btn-secondary w-full">
+                <Mail className="h-5 w-5" aria-hidden />
+                Пишете имейл
+              </a>
+              <p className="mt-1.5 text-center text-sm text-slate-600 [overflow-wrap:anywhere]">
+                <EmailText email={email} />
+              </p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <p className="mt-2 text-base text-slate-600">Няма посочени данни за контакт.</p>
+      )}
+      {children}
+    </section>
+  );
+}
+
+/**
+ * Само http(s) адрес става връзка; иначе null (без javascript:, data: и пр.).
+ * Голо име на сайт („dsk.bg“, „www.dsk.bg/kontakti“) се допълва с https://.
+ */
+export function safeHttpUrl(raw: string | null | undefined): URL | null {
+  let s = (raw ?? "").trim();
+  if (/^(?:www\.)?[\p{L}\d-]+(?:\.[\p{L}\d-]+)*\.[\p{L}]{2,}(?:[/?#]\S*)?$/iu.test(s)) {
+    s = `https://${s}`;
+  }
+  if (!/^https?:\/\//i.test(s)) return null;
+  try {
+    const u = new URL(s);
+    return u.protocol === "http:" || u.protocol === "https:" ? u : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Уебсайт като кратко име („dsk.bg“), не суров адрес („https://www.dsk.bg/“). */
+export function WebsiteLink({
+  url,
+  children,
+  className = "link",
+}: {
+  url: string;
+  /** Друг надпис вместо името на сайта (напр. „Страница във Facebook“). */
+  children?: ReactNode;
+  className?: string;
+}) {
+  const u = safeHttpUrl(url);
+  if (!u) return null;
+  return (
+    <a
+      href={u.toString()}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`${className} [overflow-wrap:anywhere]`}
+    >
+      {children ?? u.hostname.replace(/^www\./, "")}
+      <span className="sr-only"> (отваря се в нов раздел)</span>
+    </a>
   );
 }
 

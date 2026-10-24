@@ -2,18 +2,21 @@ import { AlertTriangle } from "@/components/icons";
 import { SITE } from "@/lib/site";
 
 /**
- * Механизъм „Сигнализирай за съдържание“ (notice-and-action) по чл. 16 от
+ * Механизъм „Сигнализирайте за съдържание“ (notice-and-action) по чл. 16 от
  * Регламент (ЕС) 2022/2065 (Закон за цифровите услуги, DSA). Дава на всеки
  * лесно достъпен електронен канал да подаде уведомление за публикувано
  * потребителско съдържание, което смята за незаконно или неподходящо.
  * Подателят получава обосновка при евентуално премахване (чл. 17).
+ * Показва се само където има съдържание (не на празен списък).
  */
 export function ReportContent({
   subject,
   path,
+  className = "mt-3",
 }: {
   subject: string;
   path: string;
+  className?: string;
 }) {
   const email = SITE.contact.email;
   const ref = `${SITE.url}${path}`;
@@ -40,13 +43,13 @@ export function ReportContent({
     : "/kontakti";
 
   return (
-    <p className="mt-3 text-xs text-slate-600">
+    <p className={`no-print text-sm text-slate-600 ${className}`}>
       <a
         href={href}
-        className="inline-flex min-h-[44px] items-center gap-1.5 font-medium text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-brand-700"
+        className="link-quiet inline-flex min-h-tap items-center gap-1.5 font-medium text-slate-700"
       >
         <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden />
-        Сигнализирай за това съдържание
+        Сигнализирайте за това съдържание
       </a>
     </p>
   );
