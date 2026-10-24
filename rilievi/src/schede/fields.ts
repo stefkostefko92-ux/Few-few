@@ -148,19 +148,13 @@ export const SECTIONS = [
     ],
   },
   {
-    // „Bottoniere“ — избира се при нужда: „Bottoniere da sostituire?“, при Sì — бележка на ръка
-    // (собственикът, 24 октомври 2026; засега само това). Бележката за бутониерите в работа и мерките на
-    // старите — в „Note e lavori“.
+    // „Bottoniere“ — избира се при нужда: „Bottoniere da sostituire?“ и бележка на ръка — винаги, и при
+    // „No“ (собственикът, 24 октомври 2026; засега само това). Бележката за бутониерите в работа и мерките
+    // на старите — в „Note e lavori“.
     key: 'bottoniere',
     fields: [
       { key: 'bottoniereSostituire', kind: 'yesno', question: true },
-      {
-        key: 'bottoniereNote',
-        kind: 'textarea',
-        maxLength: 4000,
-        wide: true,
-        when: yes('bottoniereSostituire'),
-      },
+      { key: 'bottoniereNote', kind: 'textarea', maxLength: 4000, wide: true },
     ],
   },
   {

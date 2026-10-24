@@ -67,7 +67,7 @@ describe('the 24 October 2026 pass', () => {
       assert.ok(print.includes(text), `print without "${text}"`);
     }
 
-    // A new panel: no check asked, what was there not read; "No" on the panels: no note.
+    // A new panel: no check asked, what was there not read; "No" on the panels keeps the note.
     assert.equal(
       (
         await save(browser, id, {
@@ -85,7 +85,7 @@ describe('the 24 October 2026 pass', () => {
       [changed.quadroSostituire, changed.controlloQuadro, changed.controlloQuadroTipo],
       [true, null, null],
     );
-    assert.deepEqual([changed.bottoniereSostituire, changed.bottoniereNote], [false, null]);
+    assert.deepEqual([changed.bottoniereSostituire, changed.bottoniereNote], [false, note]);
   });
 
   it('leaves the old answer on the brake shoes in its column', async () => {

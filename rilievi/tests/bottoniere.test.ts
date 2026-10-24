@@ -1,6 +1,6 @@
 // The owner's 24 October 2026 pass: the push-button panels in a section of their own, chosen when needed
-// ("Bottoniere da sostituire?" — a note on "Sì"), in the print selection, in the company's order and on
-// the landing drawing like every other section.
+// ("Bottoniere da sostituire?" and a note — with "No" too), in the print selection, in the company's
+// order and on the landing drawing like every other section.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
@@ -21,13 +21,19 @@ function parsedOrFail(body: Record<string, unknown>) {
 }
 
 describe('the push-button panels', () => {
-  it('ask whether they are to replace, and take the note only on "Sì"', () => {
+  it('ask whether they are to replace, and take the note whatever the answer', () => {
     const note = 'Bottoniere di piano in acciaio, pulsanti a fungo.';
-    const yes = parsedOrFail({ ...minimal, bottoniereSostituire: 'si', bottoniereNote: note });
-    assert.deepEqual([yes.bottoniereSostituire, yes.bottoniereNote], [true, note]);
-    for (const bottoniereSostituire of ['no', '']) {
+    for (const [bottoniereSostituire, answer] of [
+      ['si', true],
+      ['no', false],
+      ['', null],
+    ] as const) {
       const data = parsedOrFail({ ...minimal, bottoniereSostituire, bottoniereNote: note });
-      assert.equal(data.bottoniereNote, null, bottoniereSostituire);
+      assert.deepEqual(
+        [data.bottoniereSostituire, data.bottoniereNote],
+        [answer, note],
+        bottoniereSostituire,
+      );
     }
     const tooLong = parseScheda({
       ...minimal,

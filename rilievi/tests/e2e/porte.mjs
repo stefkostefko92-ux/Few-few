@@ -93,8 +93,9 @@ export async function fillDoorsAndChecks(page) {
   await page.fill('#f-arganoNote', 'Rumore sul cuscinetto');
   await tick(page, 'luceVanoSostituire', 'si');
   await page.fill('#f-luceVanoNote', 'Plafoniere al 2° piano');
-  // The push-button panels: their own section, the note on "Sì" (24 October 2026).
-  if (await page.locator('#f-bottoniereNote').isVisible()) fail('panels note shown before "Sì"');
+  // The push-button panels: their own section, the note with any answer (24 October 2026).
+  await tick(page, 'bottoniereSostituire', 'no');
+  if (!(await page.locator('#f-bottoniereNote').isVisible())) fail('no panels note with "No"');
   await tick(page, 'bottoniereSostituire', 'si');
   await page.fill('#f-bottoniereNote', 'Bottoniere di piano da rifare');
 }
