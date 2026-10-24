@@ -184,6 +184,13 @@ describe("опит от мисии: VIP множител + записано ни
   });
 
   it("активен VIP получава умножен опит от мисия", async () => {
+    // Фиксиран ден: VIP има допълнителни ротиращи мисии и в някои дни
+    // „win_chess“ попада САМО в VIP-прозореца — тогава VIP печели и още една
+    // мисия и сравнението „×множител“ пада (тестът зависеше от датата). На
+    // 2026-10-22 „win_chess“ е в общия прозорец, т.е. двамата изпълняват
+    // същите мисии и проверката мери само множителя.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-22T12:00:00Z"));
     seed({ vipTier: "PLATINUM", vipUntil: new Date(Date.now() + DAY) });
     const free = seed({ id: "u2" });
     await finishWin("m1");
@@ -192,6 +199,7 @@ describe("опит от мисии: VIP множител + записано ни
     expect(vip.xp).toBeGreaterThan(0);
     expect(vip.xp).toBe(Math.round(free.xp * VIP_PERKS.PLATINUM.xpMultiplier));
     expect(vip.level).toBe(levelFromXp(vip.xp).level);
+    vi.useRealTimers();
   });
 
   it("изтекъл VIP не получава множител от мисия", async () => {

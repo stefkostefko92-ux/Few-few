@@ -78,6 +78,8 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
   const { t } = useTranslation();
   const navigate = useNavigate();
   const mine = result.score.find((s) => s.seat === seat)?.result;
+  // Games that rank every seat (Не се сърди човече) report the final place.
+  const rank = result.score.find((s) => s.seat === seat)?.rank;
   const delta = result.ratingDeltas[seat] ?? 0;
   const reward = result.rewards?.[seat];
   const won = mine === "win";
@@ -104,6 +106,9 @@ export function GameOverPanel({ seat, result }: { seat: number; result: GameOver
         <h2 className="cine-over__verdict">
           {won ? t("game.youWin") : mine === "loss" ? t("game.youLose") : t("game.draw")}
         </h2>
+        {rank ? (
+          <p className="cine-over__kicker tnum">{t("game.finalPlace", { n: rank, total: result.score.length })}</p>
+        ) : null}
         <p className="cine-over__mmr tnum">
           MMR {delta >= 0 ? "+" : ""}
           {delta}

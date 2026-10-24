@@ -14,7 +14,10 @@ import type { SeededRng } from "../../kernel/rng.js";
  * on an opponent sends it back home ("изяждане"). A player whose unfinished
  * tokens are all in the base gets up to three throws to find a 6. A roll with
  * no legal move stays visible (NO_MOVE event + die kept in state) until the
- * player rolls again or passes. First to bring all 4 tokens home wins.
+ * player rolls again or passes. First to bring all 4 tokens home wins; with
+ * 3–4 players the race goes on for 2nd and 3rd place (a finished seat is
+ * skipped) and the last one left takes the final place (`finished` keeps the
+ * order; `score` reports each seat's `rank`).
  *
  * Track model: positions are -1 (home/base), 0..39 (main loop, seat-relative
  * entry offset), 40..43 (home column), 44 = finished. We store ABSOLUTE main
@@ -45,6 +48,8 @@ export interface LudoState {
   rolledSix: boolean;
   /** Rolls taken this turn — caps the "three throws for a six" base rule. */
   attempts: number;
+  /** Seats in the order they brought all 4 tokens home (1st, 2nd, …). */
+  finished: Seat[];
   winner: Seat | null;
   done: boolean;
 }
@@ -56,6 +61,7 @@ export type LudoEvent =
   | { type: "MOVE"; seat: Seat; token: number; to: number }
   | { type: "CAPTURE"; seat: Seat; victim: Seat; token: number }
   | { type: "PASS"; seat: Seat }
+  | { type: "FINISH"; seat: Seat; place: number }
   | { type: "WIN"; seat: Seat };
 
 const entryOffset = (seat: Seat): number => seat * 10;
@@ -101,6 +107,7 @@ export const ludoEngine: GameEngine<LudoState, LudoAction, LudoEvent> = {
       die: null,
       rolledSix: false,
       attempts: 0,
+      finished: [],
       winner: null,
       done: false,
     };
@@ -119,7 +126,11 @@ export const ludoEngine: GameEngine<LudoState, LudoAction, LudoEvent> = {
   reduce(state, action, rng: SeededRng) {
     if (state.done) throw new IllegalActionError("Game over");
     const seat = state.turn;
-    const next: LudoState = { ...state, progress: state.progress.map((p) => p.slice()) };
+    const next: LudoState = {
+      ...state,
+      progress: state.progress.map((p) => p.slice()),
+      finished: (state.finished ?? []).slice(),
+    };
     const events: LudoEvent[] = [];
 
     if (action.type === "ROLL") {
@@ -178,10 +189,18 @@ export const ludoEngine: GameEngine<LudoState, LudoAction, LudoEvent> = {
       }
     }
 
-    // Win check.
+    // Finish check: this seat takes the next place. Two players → the first
+    // finisher wins outright; 3–4 → play on until only one seat is left.
     if (next.progress[seat]!.every((p) => p >= FINISH)) {
-      events.push({ type: "WIN", seat });
-      return { state: { ...next, winner: seat, done: true, die: null }, events };
+      next.finished.push(seat);
+      events.push({ type: "FINISH", seat, place: next.finished.length });
+      if (next.finished.length >= next.seats - 1) {
+        const winner = next.finished[0]!;
+        events.push({ type: "WIN", seat: winner });
+        return { state: { ...next, winner, done: true, die: null, rolledSix: false, attempts: 0 }, events };
+      }
+      endTurn(next, seat); // a finished seat never rolls again (not even on a 6)
+      return { state: next, events };
     }
 
     // Rolling a 6 grants another roll; otherwise turn passes. A consumed move
@@ -236,11 +255,13 @@ export const ludoEngine: GameEngine<LudoState, LudoAction, LudoEvent> = {
   isTerminal: (s) => s.done,
 
   score(state): SeatScore[] {
-    const winner = state.winner ?? leader(state);
+    const ranks = ranking(state);
+    const winner = state.winner ?? ranks[0]!;
     return state.progress.map((_, seat) => ({
       seat,
       result: seat === winner ? "win" : "loss",
       points: seat === winner ? 1 : 0,
+      rank: ranks.indexOf(seat) + 1,
     }));
   },
 
@@ -278,22 +299,29 @@ function canRollAgain(state: LudoState, seat: Seat): boolean {
   return allInBase(state, seat) && state.attempts < BASE_ATTEMPTS;
 }
 
+/** Hand the die to the next seat that is still racing (finished seats skip). */
 function endTurn(state: LudoState, seat: Seat): void {
   state.die = null;
   state.rolledSix = false;
   state.attempts = 0;
+  const done = new Set(state.finished ?? []);
+  for (let i = 1; i <= state.seats; i++) {
+    const cand = (seat + i) % state.seats;
+    if (!done.has(cand)) {
+      state.turn = cand;
+      return;
+    }
+  }
   state.turn = (seat + 1) % state.seats;
 }
 
-function leader(state: LudoState): Seat {
-  let best = 0;
-  let bestSum = -Infinity;
-  for (let s = 0; s < state.seats; s++) {
-    const sum = state.progress[s]!.reduce((a, p) => a + Math.max(p, 0), 0);
-    if (sum > bestSum) {
-      bestSum = sum;
-      best = s;
-    }
-  }
-  return best;
+/** Final order: finishers by finishing order, then the rest by race progress
+ *  (most steps first; ties → lower seat), so every seat gets a distinct place. */
+export function ranking(state: LudoState): Seat[] {
+  const finished = state.finished ?? [];
+  const rest: Seat[] = [];
+  for (let s = 0; s < state.seats; s++) if (!finished.includes(s)) rest.push(s);
+  const sum = (s: Seat): number => state.progress[s]!.reduce((a, p) => a + Math.max(p + 1, 0), 0);
+  rest.sort((a, b) => sum(b) - sum(a) || a - b);
+  return [...finished, ...rest];
 }

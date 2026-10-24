@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { SeededRng } from "../../kernel/rng.js";
 import { bingoEngine, type BingoState } from "./bingo.js";
 import { battleshipEngine, type BattleshipState } from "./battleship.js";
-import { wordsEngine, availableWords, type WordsState } from "./words.js";
+import { wordsEngine, availableWords, chainLetter, type WordsState } from "./words.js";
 import { WORDS_BG } from "./wordlist-bg.js";
 
 const rng = () => new SeededRng("grid-guess-test");
@@ -10,17 +10,47 @@ const rng = () => new SeededRng("grid-guess-test");
 // ── Wordlist ─────────────────────────────────────────────────────────────────
 
 describe("wordlist-bg", () => {
-  it("has at least 600 lowercase Cyrillic words with no duplicates", () => {
-    expect(WORDS_BG.length).toBeGreaterThanOrEqual(600);
+  it("has several thousand lowercase Cyrillic words with no duplicates", () => {
+    expect(WORDS_BG.length).toBeGreaterThanOrEqual(4000);
     for (const w of WORDS_BG) expect(w).toMatch(/^[а-я]+$/);
     expect(new Set(WORDS_BG).size).toBe(WORDS_BG.length);
   });
 
-  it("every ending letter has at least one starter (chain viability)", () => {
-    const starters = new Set(WORDS_BG.map((w) => w[0]!));
+  it("every chain letter has starters (chain viability, incl. the „й/ь/ъ“ rule)", () => {
+    const starters = new Map<string, number>();
+    for (const w of WORDS_BG) starters.set(w[0]!, (starters.get(w[0]!) ?? 0) + 1);
     for (const w of WORDS_BG) {
-      expect(starters.has(w[w.length - 1]!)).toBe(true);
+      const c = chainLetter(w);
+      expect(["й", "ь", "ъ"]).not.toContain(c);
+      expect(starters.get(c) ?? 0, `след „${w}“ (${c})`).toBeGreaterThanOrEqual(10);
     }
+  });
+
+  it("the frequent ending letters have deep starter pools", () => {
+    const count = (c: string) => WORDS_BG.filter((w) => w[0] === c).length;
+    for (const c of ["а", "о", "е", "и", "т", "р", "н", "к", "л", "д"]) {
+      expect(count(c), c).toBeGreaterThanOrEqual(130);
+    }
+    expect(count("я")).toBeGreaterThanOrEqual(40);
+  });
+
+  it("no obvious non-nouns: no plural/definite/adjective endings from the reject review", () => {
+    for (const w of ["брег", "деца", "уши", "мерки", "горски", "зад", "след", "пред", "сред", "дупе", "задник"]) {
+      expect(WORDS_BG).not.toContain(w);
+    }
+    // Членувани форми („-ът/-ят/-то/-ите“ на дълги думи) не се допускат.
+    const definite = WORDS_BG.filter((w) => w.length > 6 && /(ът|ят|ото|ите)$/.test(w));
+    expect(definite).toEqual([]);
+  });
+});
+
+describe("chainLetter", () => {
+  it("skips a trailing „й/ь/ъ“ to the letter before it", () => {
+    expect(chainLetter("чай")).toBe("а");
+    expect(chainLetter("брой")).toBe("о");
+    expect(chainLetter("герой")).toBe("о");
+    expect(chainLetter("котка")).toBe("а");
+    expect(chainLetter("ъгъл")).toBe("л");
   });
 });
 
@@ -306,5 +336,25 @@ describe("battleship engine", () => {
   it("state shape survives BattleshipState typing", () => {
     const s: BattleshipState = init();
     expect(Array.isArray(s.ships[0]![0])).toBe(true);
+  });
+});
+
+describe("words — „й“ правилото и таймаутът", () => {
+  const r = () => new SeededRng("words-extra");
+  it("дума на „й“ подава предходната буква (чай → „а“)", () => {
+    const s: WordsState = { ...wordsEngine.init({ seats: 2 }, r()), used: ["чадър"], lastLetter: "ч" };
+    const { state, events } = wordsEngine.reduce(s, { type: "PLAY", word: "чай" }, r());
+    expect(events).toContainEqual({ type: "PLAY", seat: 0, word: "чай" });
+    expect(state.lastLetter).toBe("а");
+    expect(availableWords(state).every((w) => w[0] === "а")).toBe(true);
+  });
+
+  it("timeoutAction = PASS (губи се живот), само за играча на ход", () => {
+    const s = wordsEngine.init({ seats: 2 }, r());
+    expect(wordsEngine.timeoutAction!(s, 0)).toEqual({ type: "PASS" });
+    expect(wordsEngine.timeoutAction!(s, 1)).toBeNull();
+    const { state } = wordsEngine.reduce(s, wordsEngine.timeoutAction!(s, 0)!, r());
+    expect(state.lives[0]).toBe(2);
+    expect(state.turn).toBe(1);
   });
 });

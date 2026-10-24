@@ -18,6 +18,8 @@ export interface SeatScore {
   result: GameResult;
   /** Optional magnitude (e.g. backgammon gammon = 2, backgammon = 3). */
   points?: number;
+  /** Optional final place (1 = first) for games that rank every seat. */
+  rank?: number;
 }
 
 /** Base game event; engines narrow this with a discriminated `type`. */
@@ -66,6 +68,20 @@ export interface GameEngine<S, A, E extends GameEvent = GameEvent> {
    * for that seat entirely; omit the hook to broadcast events verbatim.
    */
   redactEvent?(event: E, seat: Seat): E | null;
+  /**
+   * Optional server-driven pause (e.g. Свара's open-cards SHOWDOWN, where ANY
+   * seat may CONTINUE): return the action the host applies by itself after a
+   * short pause. While non-null no seat is on the clock — nobody is marked AFK
+   * and bots wait for the host instead of acting.
+   */
+  autoAdvance?(state: S): A | null;
+  /**
+   * Optional action the host applies when `seat`'s turn clock expires, INSTEAD
+   * of letting a bot play the move (e.g. Думи: a timeout is a PASS that costs a
+   * life — waiting must never be rewarded with a free bot word). Also used for a
+   * human seat under bot substitution. Must be legal for `seat` in `state`.
+   */
+  timeoutAction?(state: S, seat: Seat): A | null;
 }
 
 /** Thrown by `reduce` when an action is not legal in the given state. */

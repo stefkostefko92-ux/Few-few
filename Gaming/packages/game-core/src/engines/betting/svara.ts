@@ -203,6 +203,10 @@ export const svaraEngine: GameEngine<SvaraState, SvaraAction, SvaraEvent> = {
 
   isTerminal: (s) => s.done,
 
+  /** SHOWDOWN (открити карти) — CONTINUE може от всеки; сървърът продължава сам
+   *  след кратка пауза, без да пуска часовник на място 0 (никой не е AFK). */
+  autoAdvance: (s) => (!s.done && s.phase === "SHOWDOWN" ? { type: "CONTINUE" } : null),
+
   /** Прост евристичен бот: бяга със слаба ръка, плаща средна, вдига силна. */
   bot(state, seat, rng) {
     if (state.done) return null;

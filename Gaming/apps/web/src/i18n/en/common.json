@@ -333,7 +333,8 @@
   "live": {
     "opponentDropped": "{{name}} dropped — bot is covering",
     "yourTurnTimer": "Your turn: {{s}}s",
-    "opponentTurnTimer": "{{name}} thinking · {{s}}s"
+    "opponentTurnTimer": "{{name}} thinking · {{s}}s",
+    "timeoutWarning": "Your time ran out — the bot played this move for you. Miss one more turn and the bot takes your seat."
   },
   "verify": {
     "title": "Email verification",
@@ -384,7 +385,8 @@
     "playAgain": "Play again",
     "botsSoon": "If no players join, bots will fill in shortly.",
     "leaveConfirm": "Sure? (forfeit)",
-    "backToRoom": "Back to the room"
+    "backToRoom": "Back to the room",
+    "finalPlace": "Place: {{n}} of {{total}}"
   },
   "santase": {
     "trump": "Trump",
@@ -754,7 +756,8 @@
     "passBanner": "{{name}} passed (−1 life)",
     "wrongBanner": "{{name}} got a word wrong (−1 life)",
     "reseed": "New word: {{word}}",
-    "out": "out"
+    "out": "out",
+    "skipHint": "(“{{tail}}” is skipped)"
   },
   "ludo": {
     "base": "base",
@@ -764,7 +767,9 @@
     "noMoveRetry": "No move — roll again",
     "noMoveOther": "{{name}} has no move",
     "safeSquare": "Safe square",
-    "blockade": "Blockade"
+    "blockade": "Blockade",
+    "place": "place {{n}}",
+    "finishedBanner": "{{name}} finished — place {{n}}"
   },
   "domino": {
     "empty": "Place the first domino",
@@ -1139,7 +1144,12 @@
     "open": "Rules",
     "title": "How to play",
     "steps": "Steps",
-    "tips": "Tips"
+    "tips": "Tips",
+    "clockTitle": "Turn time",
+    "clock": "You have {{s}} seconds per turn.",
+    "timeout": "If your time runs out, the bot plays just that move for you — the seat stays yours.",
+    "timeoutWords": "If your time runs out, it counts as a pass — you lose a life (the bot never says a word for you).",
+    "takeover": "After two missed turns in a row (or a dropped connection) the bot takes your seat until you press “Return to the game”."
   },
   "difficulty": {
     "label": "Bot difficulty",

@@ -139,3 +139,39 @@ export const teamOfSeat = (game: GameKey, seat: number): number => {
 export function isGameKey(value: string): value is GameKey {
   return (GAME_KEYS as readonly string[]).includes(value);
 }
+
+/**
+ * Време за ход по игра (секунди) — часовникът на сървъра (server-authoritative)
+ * и броячът в клиента четат оттук. Мисловните игри (шах, дама, табла, бридж,
+ * билярд) имат повече време; бързите (война, бинго, зарове) — по-малко.
+ * Сесия може да зададе свое време (напр. домашните правила на Магнат/Думи).
+ */
+export const GAME_TURN_SECONDS: Record<GameKey, number> = {
+  BELOTE: 30,
+  SANTASE: 25,
+  SVARA: 25,
+  WAR: 15,
+  GOFISH: 20,
+  KENT: 25,
+  CHESS: 60,
+  BACKGAMMON: 45,
+  DRAUGHTS: 45,
+  LUDO: 20,
+  RUMMY: 35,
+  DOMINO: 25,
+  BRIDGE: 45,
+  BATTLESHIP: 25,
+  DICE: 20,
+  BINGO: 15,
+  WORDS: 30,
+  EIGHTBALL: 45,
+  NINEBALL: 45,
+  SNOOKER: 45,
+  MAGNAT: 40,
+};
+
+export const turnSecondsFor = (game: GameKey): number => GAME_TURN_SECONDS[game];
+
+/** Поредни изтекли часовника, след които бот заема мястото за постоянно
+ *  (до „Върни се в играта“). При първия ботът изиграва само този ход. */
+export const TIMEOUT_STRIKES_FOR_TAKEOVER = 2;

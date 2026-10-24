@@ -108,3 +108,42 @@ describe("chooseBotAction — regressions (2026-09-25 audit)", () => {
     expect(Date.now() - t0).toBeLessThan(600); // budget is 120 ms (+ slack for CI)
   });
 });
+
+describe("ботовете не се предават и не предлагат реми на случаен принцип", () => {
+  it("шах: EASY/NORMAL/HARD никога не избират RESIGN / DRAW_OFFER / DRAW_ACCEPT", async () => {
+    const { chessEngine } = await import("../engines/move-validation/chess.js");
+    const meta = new Set(["RESIGN", "DRAW_OFFER", "DRAW_ACCEPT"]);
+    const rng = new SeededRng("chess-meta");
+    // Стандартна позиция + позиция с висящо предложение за реми към бота.
+    const start = chessEngine.init({ seats: 2 }, rng);
+    const offered = { ...start, drawOffer: 1 };
+    for (const difficulty of ["EASY", "NORMAL", "HARD"] as const) {
+      const n = difficulty === "HARD" ? 2 : difficulty === "NORMAL" ? 5 : 120;
+      for (let i = 0; i < n; i++) {
+        const a = chooseBotAction(chessEngine, start, 0, difficulty, rng);
+        expect(meta.has(a!.type)).toBe(false);
+        const b = chooseBotAction(chessEngine, offered, 0, difficulty, rng);
+        expect(meta.has(b!.type)).toBe(false);
+      }
+    }
+  }, 30_000);
+
+  it("botCandidates пази мета-ходовете само ако няма нищо друго (масата не замръзва)", async () => {
+    const { botCandidates } = await import("./policy.js");
+    type M = { type: "RESIGN" } | { type: "MOVE" };
+    const only: GameEngine<null, M, GameEvent> = {
+      init: () => null,
+      legalActions: () => [{ type: "RESIGN" }],
+      reduce: (s) => ({ state: s, events: [] }),
+      isTerminal: () => false,
+      score: () => [],
+      redact: (s) => s,
+    };
+    expect(botCandidates(only, null, 0)).toEqual([{ type: "RESIGN" }]);
+    const mixed: GameEngine<null, M, GameEvent> = {
+      ...only,
+      legalActions: () => [{ type: "MOVE" }, { type: "RESIGN" }],
+    };
+    expect(botCandidates(mixed, null, 0)).toEqual([{ type: "MOVE" }]);
+  });
+});
