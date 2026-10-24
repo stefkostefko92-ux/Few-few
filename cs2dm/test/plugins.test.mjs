@@ -76,9 +76,11 @@ test("плъгинът: DeathmatchAPI не се копира (иначе два 
   assert.match(csproj, /CounterStrikeSharp\.API[\s\S]*?<ExcludeAssets>runtime<\/ExcludeAssets>/);
 });
 
-test("mods: MultiAddonManager само при CS2_WORKSHOP_ADDONS", () => {
+test("mods: MultiAddonManager само при Workshop addon-и (на собственика и/или звуците)", () => {
   const sh = read("server/mods/install-mods.sh");
-  assert.match(sh, /\[\[ "\$name" == multiaddonmanager && -z "\$addons" \]\] && continue/);
+  assert.match(read("server/mods/mods-lib.sh"), /\[\[ "\$1" == multiaddonmanager && -z "\$3" \]\] && return 0/);
+  assert.match(sh, /if cs2dm_mod_skipped "\$name" "\$skip" "\$addons" "\$quake"; then continue; fi/);
   assert.match(sh, /rm -f "\$CSGO_DIR\/addons\/metamod\/multiaddonmanager\.vdf"/);
+  assert.match(sh, /mm_extra_addons "\$addons"/);
   assert.match(sh, /mm_cache_clients_with_addons 1/);
 });

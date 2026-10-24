@@ -12,6 +12,7 @@ const KNOWN_CVARS = new Set([
   "hostname", "sv_tags", "sv_lan", "sv_cheats", "sv_hibernate_when_empty",
   "mp_timelimit", "mp_respawn_immunitytime", "mp_match_end_changelevel", "mp_match_restart_delay", "mp_endmatch_votenextmap",
   "bot_quota", "bot_quota_mode", "bot_difficulty", "bot_join_after_player",
+  "tv_maxclients", "tv_relayvoice",
   "sv_max_queries_sec", "sv_max_queries_sec_global", "sv_max_queries_window",
 ]);
 

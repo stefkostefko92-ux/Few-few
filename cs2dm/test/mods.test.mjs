@@ -24,7 +24,7 @@ test("mods.lock: всеки ред е заключен по HTTPS URL и sha256"
     assert.match(url, /^https:\/\//, `${name}: само HTTPS`);
     assert.ok(url.includes(version.replace(/^2\.0\.0-/, "")), `${name}: версията не е в URL-а`);
     assert.match(sha, /^[0-9a-f]{64}$/, `${name}: sha256`);
-    assert.ok(["tar", "zip"].includes(method), `${name}: метод ${method}`);
+    assert.ok(["tar", "zip", "cssplugin"].includes(method), `${name}: метод ${method}`);
   }
   for (const needed of ["metamod", "counterstrikesharp", "deathmatch"]) assert.ok(names.has(needed), needed);
 });

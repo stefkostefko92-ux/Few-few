@@ -1,8 +1,16 @@
 # cs2dm — заковани модове. Формат (разделител TAB): име  версия  URL  sha256  метод
 # Всеки архив се проверява по sha256 преди разархивиране (fail closed). Нова версия = нов ред с
-# нов хеш, проверен на ръка, и PR. Всички се разархивират в game/csgo/.
-# multiaddonmanager се слага само при CS2_WORKSHOP_ADDONS (банерите-картинки), иначе се маха.
+# нов хеш, сметнат на ръка върху свален файл, и PR. Методи: tar/zip — архивът е с addons/ и се
+# разархивира в game/csgo/; cssplugin — zip с папката на плъгина в корена → addons/counterstrikesharp/plugins/.
+# multiaddonmanager се слага само при Workshop addon-и (CS2_WORKSHOP_ADDONS и/или звуците на quakesounds).
+# Всеки мод без първите три се изключва с CS2DM_SKIP_MODS (виж cs2.env.example и README.md).
 metamod	2.0.0-git1483	https://mms.alliedmods.net/mmsdrop/2.0/mmsource-2.0.0-git1483-linux.tar.gz	0fdcccaa369937ed7f521c78462314b5266f39c1d65a84e4c2d3847324cd7776	tar
 counterstrikesharp	1.0.378	https://github.com/roflmuffin/CounterStrikeSharp/releases/download/v1.0.378/counterstrikesharp-with-runtime-linux-1.0.378.zip	b7fcbd99619ab17e32b07a6af2bd5179d83e2c7a4c045e33cbd11e5492c87b7d	zip
 deathmatch	1.3.6	https://github.com/NockyCZ/CS2-Deathmatch/releases/download/v1.3.6/Deathmatch.zip	85d0bb3b0edc1615fa5b32df112e54795cdba36da5643115fd0cb07c03bb5404	zip
 multiaddonmanager	1.7.1	https://github.com/Source2ZE/MultiAddonManager/releases/download/v1.7.1/MultiAddonManager-v1.7.1-steamrt3.tar.gz	d40dc64a78c8278a5b00ee44ab2bcbc078ffa52f61661a009d12e0d44fe182d4	tar
+serverlistplayersfix	2.1	https://github.com/Source2ZE/ServerListPlayersFix/releases/download/v2.1/ServerListPlayersFix-v2.1-steamrt3.tar.gz	7027df5f5148868f4ddc323492cd99c425f69b6cc0fa51575286cf12b8f4f33f	tar
+quakesounds	26.08.1	https://github.com/Kandru/cs2-quake-sounds/releases/download/26.08.1/cs2-quake-sounds-release-26.08.1.zip	beedaba337f589848cc4747292b6f342a7aff3e405cb37a9fdb575c65fda98ba	cssplugin
+cosmetics	26.05.1	https://github.com/Kandru/cs2-cosmetics/releases/download/26.05.1/cs2-cosmetics-release-26.05.1.zip	b47516d5a017b7382aedff1f813a1e3c5b908a51c44b4d73f8f1c69bb1f5fd2c	cssplugin
+demorecorder	26.05.1	https://github.com/Kandru/cs2-demo-recorder/releases/download/26.05.1/cs2-demo-recorder-release-26.05.1.zip	04d5a778d2296af0e2aea4389c92bb86284136ef44e8097060b165362fe00418	cssplugin
+cheatertroll	26.08.1	https://github.com/Kandru/cs2-cheater-troll/releases/download/26.08.1/cs2-cheater-troll-release-26.08.1.zip	c4c3b7d58086ee1df61812aaa91da0e1a99a23bca8d3b10d03d63d4aba340b7b	cssplugin
+metablock	1.0.0	https://github.com/Ayrton09/MetaBlock/releases/download/v1.0.0/MetaBlock-1.0.0.zip	d573e29bc503748481bf208d57ff5d71691d854ff95fc1277c9b2bcbb2ac871d	zip
