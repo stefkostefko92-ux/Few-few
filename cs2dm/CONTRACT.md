@@ -15,7 +15,7 @@
 | 3 | `HELPER` | kick, mute, gag, warn | доклади (четене) |
 | 4 | `MODERATOR` | + временен бан ≤ 7 дни, silence, обявления в центъра (`!csay`) | + банове ≤ 7 дни, доклади, обжалвания |
 | 5 | `ADMIN` | + бан без ограничение, unban, slay, slap/freeze/respawn, bring/goto, DM режим, ботове, рестарт на играта, безкрайни патрони вкл./изкл. | + режими, събития по график (§12), cvars от allowlist, VIP |
-| 6 | `HEADADMIN` | + всичко без управление на собственика (вкл. noclip, банери) | + админи до ниво 5, рестарт/ъпдейт, живи настройки (§11) |
+| 6 | `HEADADMIN` | + всичко без управление на собственика (вкл. noclip, банери) | + админи до ниво 5, рестарт/ъпдейт, живи настройки (§11), плъгините (§14) |
 | 7 | `OWNER` | всичко | всичко |
 
 Действие върху цел с ниво ≥ своето е отказано (immunity) — и в играта, и в панела. Единственото
@@ -123,10 +123,13 @@ Redis слуша само на `127.0.0.1` с парола (ACL). Ключове
   `mode {modeId}` (custom режим на DM плъгина през неговото API; непознат → `ok: false`) ·
   `settings.reload {}` (плъгинът чете `server_settings` и ги прилага; отговорът е СЛЕД прилагането — §11) ·
   `player.reload {steamId}` (статистиките са редактирани в панела — §3: натрупаното за играча се изхвърля, а
-  онлайн играч чете XP и епохата от базата; офлайн → `ok: true`).
+  онлайн играч чете XP и епохата от базата; офлайн → `ok: true`) · плъгините от панела (§14):
+  `plugins.load|unload {id}`, `plugins.config.get|set|reset {id, text?}`.
 - Правата ги проверява **сайтът** (роля + одит) преди да подпише командата; плъгинът вярва само на
   подписа. Действие от сайта в чата е „от уеб панела“.
-- Отговор: `PUBLISH cs2dm:ack {"id": "…", "ok": true}` или `{"id": "…", "ok": false, "error": "…"}`.
+- Отговор: `PUBLISH cs2dm:ack {"id": "…", "ok": true}` или `{"id": "…", "ok": false, "error": "…"}`, по избор
+  с `"data"` (конфигът на плъгин, §14). Празно поле **липсва**, не е `null` (`BridgeProtocol.Ack`); сайтът
+  приема и `null` — стар плъгин пращаше `"error": null` и всеки отговор изглеждаше като таймаут.
 
 ### Живо състояние: плъгин → приложение
 
@@ -175,7 +178,9 @@ Redis слуша само на `127.0.0.1` с парола (ACL). Ключове
   - `restart` → `systemctl restart cs2.service`;
   - `update` → `systemctl start --no-block cs2-update.service`;
   - `logs {source: "css"|"journal", lines ≤ 200}` → редове след **редакция**: IP адреси → `x.x.x.x`,
-    `sv_setsteamaccount <…>` и всякакви 32+ hex низове → `<redacted>`.
+    `sv_setsteamaccount <…>` и всякакви 32+ hex низове → `<redacted>`;
+  - `plugins` и `plugin {op, id}` — плъгините от панела (§14); `status.busy` е и `"plugin"`, докато тече
+    `cs2-plugins@…`.
 - `start`/`stop`/`restart`/`update` са еднопоточни: докато едно тече, друго → `ok: false, error: "busy"`.
 - Отговор: `PUBLISH cs2dm:agent:ack {"id", "ok", "error"?, "data"?}`.
 - Статус без плъгина (празен сървър спи — §5 „живо“ липсва): агентът пише на 10 s
@@ -252,3 +257,57 @@ null), xp_multiplier (ефективният в края), started_at, ended_at,
 последните 5 на началото, линк от класацията; `/match/:id` без език → езиковата версия. Скрит играч
 (`hidden_from_leaderboards`) е „скрит играч“ — без име, без SteamID, без линк. Срок 90 дни (§7).
 
+
+## 14. Плъгините от панела (`/admin/plugins`)
+
+Пълно управление на модовете **само от проверения каталог** (`server/mods/mods.lock`, sha256) — решение на
+собственика: нов мод в каталога = ред в `mods.lock` през PR (виж `CLAUDE.md`), никога качване/линк от сайта.
+
+**Каталог за панела** (едни и същи id навсякъде — `mods-lib.sh`, агентът, C# `PluginCatalog`, TS
+`admin/plugins-catalog.ts`; `test/plugins-catalog.test.mjs` пази паритета):
+
+| id | вид | файлове (включен) | конфиг |
+|---|---|---|---|
+| `serverlistplayersfix` | metamod | `addons/metamod/serverlistplayersfix_mm.vdf` | — |
+| `quakesounds` | css | `addons/counterstrikesharp/plugins/QuakeSounds` | `QuakeSounds` |
+| `cosmetics` | css | `…/plugins/Cosmetics` | `Cosmetics` |
+| `demorecorder` | css | `…/plugins/DemoRecorder` | `DemoRecorder` |
+| `cheatertroll` | css | `…/plugins/CheaterTroll` | `CheaterTroll` (свои данни — без „по подразбиране“) |
+| `metablock` | css | `…/plugins/MetaBlock` | `MetaBlock` |
+
+Ядрото (`metamod`, `counterstrikesharp`, `deathmatch`, нашият `carbonstealth`) и `multiaddonmanager` (решава се
+от Workshop addon-ите) се показват, но не се пипат от панела.
+
+**Състояние** — от файловете, не от база: `enabled` (пътят от таблицата съществува), `disabled` (CSS:
+`…/plugins/disabled/<Име>` — CSS прескача папката `disabled`; metamod: `<vdf>.disabled` — Metamod чете само
+`*.vdf`), `removed` (нито едното). Решението на панела се пази от root в `/var/lib/cs2dm/plugins.state`
+(`removed=a,b` и `disabled=c`, 0644). Има ли ред `removed=`, той **замества** `CS2DM_SKIP_MODS`; `install-mods.sh`
+(и при деплой) спазва и двата реда: изключеният се слага направо в `disabled`.
+
+**Конфигът** — `configs/plugins/<К>/<К>.json`. `install-mods.sh` винаги пише нашия като `<К>.default.json`, а
+`<К>.json` — само ако няма маркер `.cs2dm-panel` (редактиран от панела). CheaterTroll — както досега, никога.
+
+**Агентът (§9)** — две нови действия:
+- `plugins` → `{mods: [{id, kind: "css"|"metamod", version|null, state}], busy: bool}` (версията от копието на
+  `mods.lock` в `/usr/local/lib/cs2dm/server/mods/`; `busy` — тече `cs2-plugins@*` или `cs2-update`);
+- `plugin {op: "install"|"remove"|"enable"|"disable", id}` → `systemctl start cs2-plugins@<op>-<id>.service`;
+  `enable`/`disable` чакат (≤ 60 s, само преместване, без рестарт), `install`/`remove` са `--no-block`
+  (`install-mods.sh`: сваляне, sha256, рестарт; спрян сървър остава спрян). Еднопоточни с `start`/`stop`/….
+- polkit: `start` само на `cs2-plugins@(install|remove|enable|disable)-[a-z0-9]{1,32}.service`. Root скриптът
+  (`server/mods/plugins-apply.sh`, копие в `/usr/local/lib/cs2dm/server/`) проверява инстанцията наново и id
+  срещу `mods.lock` (fail closed).
+
+**Мостът (§5)** — пет нови действия към плъгина (жив ефект, без рестарт; само при работещ сървър):
+- `plugins.load {id}` / `plugins.unload {id}` → `css_plugins load|unload <Име>` (само CSS; metamod → грешка
+  `restart` — важи след рестарт);
+- `plugins.config.get {id}` → `data: {text, edited, hasDefault}`;
+- `plugins.config.set {id, text}` → `text` ≤ 32 768 знака, валиден JSON обект; атомичен запис + маркер, после
+  презареждане на плъгина, ако е включен;
+- `plugins.config.reset {id}` → `<К>.default.json` върху `<К>.json`, маркерът вън, презареждане (без default →
+  грешка `no default`).
+Ack-ът на моста вече може да носи `data` (както на агента).
+
+**Панелът** — право `plugins` (HEADADMIN+, като `serverControl`) за всичко: списъкът, инсталиране,
+премахване, пускане, спиране, конфиг. Ред: `disable` = `plugins.unload` (най-добро усилие) → агентът;
+`enable` = агентът → `plugins.load`. Всяко действие → одит `plugin.install|remove|enable|disable|config|
+config_reset` с `{id, ok}` (конфигът — `{id, bytes, sha256}`, никога съдържанието).

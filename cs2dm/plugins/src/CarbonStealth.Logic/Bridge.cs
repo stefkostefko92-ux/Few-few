@@ -29,7 +29,21 @@ public static class BridgeProtocol
     public static readonly IReadOnlySet<string> Actions = new HashSet<string>(StringComparer.Ordinal)
     {
         "kick", "punish", "revoke", "say", "slay", "reload", "mode", "settings.reload", "player.reload",
+        // Плъгините от панела (CONTRACT §14).
+        "plugins.load", "plugins.unload", "plugins.config.get", "plugins.config.set", "plugins.config.reset",
     };
+
+    private static readonly JsonSerializerOptions AckOptions = new()
+    {
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+    };
+
+    /// <summary>
+    /// Отговорът в cs2dm:ack: <c>{"id","ok","error"?,"data"?}</c> — празните полета ги НЯМА (не null): панелът
+    /// приема само низ за error, а null в error правеше всеки отговор невалиден за него.
+    /// </summary>
+    public static string Ack(string id, bool ok, string? error, object? data = null) =>
+        JsonSerializer.Serialize(new { id, ok, error, data }, AckOptions);
 
     public static string Sign(string payload, byte[] key) =>
         Convert.ToHexStringLower(HMACSHA256.HashData(key, Encoding.UTF8.GetBytes(payload)));

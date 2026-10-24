@@ -48,6 +48,12 @@ export function adminRouter(deps: AdminDeps | undefined): Router {
 
   const router = Router();
   router.use(panelHeaders);
+  // Конфигът на плъгин (CONTRACT §14) е до 32 768 знака JSON — кодиран във формата минава общия таван.
+  // Само този път получава по-широк; body-parser не парсва второ тяло, затова общият после го прескача.
+  router.use(
+    '/plugins/:id/config',
+    express.urlencoded({ extended: false, limit: '128kb', parameterLimit: 4 }),
+  );
   router.use(express.urlencoded({ extended: false, limit: '16kb', parameterLimit: 60 }));
   // Всяко писане в панела: таван на IP за минута (GET-овете са под общия таван на сайта).
   router.use(limiter(limits.post, 60_000, true));

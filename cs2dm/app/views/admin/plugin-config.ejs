@@ -1,0 +1,28 @@
+<% const name = t('admin.plugins.mods.' + entry.id + '.name'); %>
+<%- include('partials/head', { title: t('admin.plugins.config.title', { name }) }) %>
+<%# Конфигът на плъгин (CONTRACT §14): чете се и се пише през моста към нашия плъгин — само при работещ
+    сървър. Съдържанието не влиза в одита (само размер и sha256). %>
+<p><a href="/admin/plugins"><%= t('admin.plugins.back') %></a></p>
+<h1><%= t('admin.plugins.config.title', { name }) %></h1>
+<p class="a-lead"><%= t('admin.plugins.config.lead', { file: entry.config + '.json' }) %></p>
+<% if (!config) { %>
+<p class="a-warn"><%= error === 'noListener' ? t('admin.plugins.config.offline') : t('admin.cmd.' + error) %></p>
+<% } else { %>
+<p class="a-note"><%= config.edited ? t('admin.plugins.config.edited') : t('admin.plugins.config.pristine') %></p>
+<form class="a-form" method="post" action="/admin/plugins/<%= entry.id %>/config">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="a-field is-full">
+    <label for="pc-text"><%= t('admin.plugins.config.label') %></label>
+    <textarea id="pc-text" class="a-code" name="text" maxlength="<%= maxChars %>" spellcheck="false" autocomplete="off" required><%= config.text %></textarea>
+    <p class="a-note"><%= t('admin.plugins.config.hint', { max: maxChars }) %></p>
+  </div>
+  <div class="a-actions"><button class="a-btn" type="submit"><%= t('admin.plugins.config.save') %></button></div>
+</form>
+<% if (entry.hasDefault && config.hasDefault) { %>
+<form class="a-actions" method="post" action="/admin/plugins/<%= entry.id %>/config/reset" data-confirm="<%= t('admin.plugins.config.resetConfirm') %>">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <button class="a-btn is-quiet" type="submit"><%= t('admin.plugins.config.reset') %></button>
+</form>
+<% } %>
+<% } %>
+<%- include('partials/foot') %>

@@ -215,3 +215,89 @@ test("install-mods.sh: mods-lib, cssplugin, таймерът за демотат
   assert.match(sh, /install -d -o "\$CS2_USER" -g "\$CS2_USER" -m 0750 "\$CS2DM_DEMO_DIR"/);
   assert.match(sh, /rm -rf -- "\$\{CSGO_DIR:\?\}\/\$rel"/);
 });
+
+// ── Плъгините от панела (CONTRACT §14) ──────────────────────────────────────────────────────────
+
+test("mods-lib: инстанцията на cs2-plugins@ — затворен списък, ядрото не се пипа", () => {
+  assert.deepEqual(lib("cs2dm_panel_instance", "disable-cosmetics"), { ok: true, out: "disable cosmetics" });
+  assert.deepEqual(lib("cs2dm_panel_instance", "install-serverlistplayersfix"), { ok: true, out: "install serverlistplayersfix" });
+  for (const bad of ["", "disable", "disable-", "purge-cosmetics", "disable-metamod", "remove-counterstrikesharp",
+    "remove-deathmatch", "disable-multiaddonmanager", "disable-carbonstealth", "disable-cosmetics;id",
+    "disable-Cosmetics", "disable-cosmetics\n", "disable-../cosmetics", `disable-${"a".repeat(33)}`]) {
+    assert.equal(lib("cs2dm_panel_instance", bad).ok, false, JSON.stringify(bad));
+  }
+});
+
+test("mods-lib: пътят на спрян мод — CSS → plugins/disabled, Metamod → .vdf.disabled; всеки панелен мод има път", () => {
+  assert.equal(lib("cs2dm_disabled_path", "addons/counterstrikesharp/plugins/QuakeSounds").out, "addons/counterstrikesharp/plugins/disabled/QuakeSounds");
+  assert.equal(lib("cs2dm_disabled_path", "addons/metamod/serverlistplayersfix_mm.vdf").out, "addons/metamod/serverlistplayersfix_mm.vdf.disabled");
+  for (const bad of ["addons/counterstrikesharp/plugins/disabled/X", "addons/metamod/x.so", "cfg/x", ""]) {
+    assert.equal(lib("cs2dm_disabled_path", bad).ok, false, bad);
+  }
+  const panel = read("server/mods/mods-lib.sh").match(/^CS2DM_PANEL_MODS="([^"]+)"$/m)[1].split(" ");
+  for (const id of panel) {
+    const rel = lib("cs2dm_mod_paths", id);
+    assert.ok(rel.ok && rel.out.trim(), id);
+    assert.ok(lib("cs2dm_disabled_path", rel.out.trim()).ok, id);
+  }
+  assert.equal(lib("cs2dm_list_add", "a,b", "c").out, "a,b,c");
+  assert.equal(lib("cs2dm_list_add", "a,b", "a").out, "a,b");
+  assert.equal(lib("cs2dm_list_add", "", "a").out, "a");
+  assert.equal(lib("cs2dm_list_del", "a,b,c", "b").out, "a,c");
+  assert.equal(lib("cs2dm_list_del", "a", "a").out, "");
+});
+
+/** plugins-apply.sh в тестов режим (без root и без install-mods.sh) върху временно дърво. */
+function apply(dir, instance) {
+  return spawnSync("bash", [path("server/mods/plugins-apply.sh"), instance], {
+    encoding: "utf8",
+    env: { ...process.env, CS2DM_TEST: "1", CS2DM_CSGO_DIR: join(dir, "csgo"), CS2DM_STATE_DIR: join(dir, "state"), CS2DM_LOCK: join(dir, "lock") },
+  });
+}
+
+test("plugins-apply.sh: спиране/пускане местят файловете и пазят решението; премахнат мод не се пуска", (t) => {
+  const dir = mkdtempSync(join(tmpdir(), "cs2dm-apply-"));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const css = join(dir, "csgo/addons/counterstrikesharp/plugins");
+  execFileSync("mkdir", ["-p", join(css, "Cosmetics"), join(dir, "csgo/addons/metamod")]);
+  execFileSync("touch", [join(css, "Cosmetics/Cosmetics.dll"), join(dir, "csgo/addons/metamod/serverlistplayersfix_mm.vdf")]);
+  const state = () => readFileSync(join(dir, "state/plugins.state"), "utf8");
+
+  assert.equal(apply(dir, "disable-cosmetics").status, 0);
+  assert.ok(existsSync(join(css, "disabled/Cosmetics/Cosmetics.dll")) && !existsSync(join(css, "Cosmetics")));
+  assert.match(state(), /^disabled=cosmetics$/m);
+  assert.equal(apply(dir, "disable-cosmetics").status, 0, "повторно — без грешка");
+  assert.equal(apply(dir, "enable-cosmetics").status, 0);
+  assert.ok(existsSync(join(css, "Cosmetics/Cosmetics.dll")) && !existsSync(join(css, "disabled/Cosmetics")));
+  assert.match(state(), /^disabled=$/m);
+
+  assert.equal(apply(dir, "disable-serverlistplayersfix").status, 0);
+  assert.ok(existsSync(join(dir, "csgo/addons/metamod/serverlistplayersfix_mm.vdf.disabled")));
+
+  assert.equal(apply(dir, "remove-cosmetics").status, 0);
+  assert.match(state(), /^removed=cosmetics$/m);
+  const r = apply(dir, "enable-cosmetics");
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /не е инсталиран/);
+  assert.equal(apply(dir, "install-cosmetics").status, 0);
+  assert.match(state(), /^removed=$/m);
+  assert.equal(apply(dir, "enable-demorecorder").status, 1, "файловете липсват");
+  for (const bad of ["disable-metamod", "disable-cosmetics;id", "", "x"]) assert.equal(apply(dir, bad).status, 1, bad);
+});
+
+test("install-mods.sh: спазва решенията на панела, пази редактирания конфиг, слага копието за cs2-plugins@", () => {
+  const sh = read("server/mods/install-mods.sh");
+  assert.match(sh, /grep -q '\^removed=' "\$PLUGINS_STATE"/, "removed= замества CS2DM_SKIP_MODS");
+  assert.match(sh, /cs2dm_disabled_path "\$rel"/, "спрените — направо в disabled");
+  assert.match(sh, /\$cfg\.default\.json/);
+  assert.match(sh, /-f "\$CSS_DIR\/configs\/plugins\/\$cfg\/\.cs2dm-panel"/, "маркерът пази конфига от панела");
+  assert.match(sh, /install -m 0644 "\$SRC_DIR\/\.\.\/systemd\/cs2-plugins@\.service" \/etc\/systemd\/system\//);
+  assert.match(sh, /copy="\$LIB_DIR\/server"/);
+  assert.match(sh, /chown -R root:root "\$fresh"/, "копието, което root пуска, е на root");
+  const unit = read("server/systemd/cs2-plugins@.service");
+  assert.match(unit, /^ExecStart=\/bin\/bash \/usr\/local\/lib\/cs2dm\/server\/mods\/plugins-apply\.sh %i$/m, "%i, не %I");
+  assert.match(unit, /^Type=oneshot$/m);
+  const applySh = read("server/mods/plugins-apply.sh");
+  assert.match(applySh, /cs2dm_panel_instance "\$\{1:-\}"/);
+  assert.match(applySh, /systemctl stop cs2\.service/, "спрян сървър остава спрян");
+});

@@ -92,6 +92,10 @@ export const RESULTS = {
   cmdUnknownMode: 'error',
   cmdFailed: 'error',
   cmdPending: 'warn',
+  cmdNoDefault: 'error',
+  cmdNotInstalled: 'error',
+  pluginRestart: 'warn',
+  pluginQueued: 'ok',
   badCode: 'error',
 } as const;
 export type ResultCode = keyof typeof RESULTS;
@@ -111,6 +115,10 @@ export function commandResultCode(errorKey: string): ResultCode {
     notOnline: 'cmdNotOnline',
     notActive: 'cmdNotActive',
     unknownMode: 'cmdUnknownMode',
+    restart: 'pluginRestart',
+    noDefault: 'cmdNoDefault',
+    notInstalled: 'cmdNotInstalled',
+    invalidJson: 'invalid',
   };
   return map[errorKey] ?? 'cmdFailed';
 }

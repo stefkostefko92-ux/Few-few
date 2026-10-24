@@ -281,3 +281,17 @@ details.a-more[open] > summary {
     display: none;
   }
 }
+/* Конфигът на плъгин (CONTRACT §14): редакторът е на цяла ширина, моноширинен. */
+.a-field.is-full {
+  flex: 1 1 100%;
+}
+textarea.a-code {
+  width: 100%;
+  min-height: 24rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  tab-size: 2;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+}

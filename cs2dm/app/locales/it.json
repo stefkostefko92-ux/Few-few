@@ -800,7 +800,8 @@
       "audit": "Audit",
       "account": "Account",
       "settings": "Impostazioni",
-      "events": "Eventi"
+      "events": "Eventi",
+      "plugins": "Plugin"
     },
     "me": {
       "signedAs": "Accesso:",
@@ -899,7 +900,11 @@
       "cmdFailed": "Il server ha rifiutato il comando.",
       "badCode": "Il codice è errato o è già stato usato.",
       "cmdPending": "L’agente non ha confermato entro 25 secondi — il riavvio potrebbe essere ancora in corso. Controlli lo stato tra un minuto.",
-      "overlap": "L'evento si sovrappone a un altro evento (non annullato). Cambi gli orari."
+      "overlap": "L'evento si sovrappone a un altro evento (non annullato). Cambi gli orari.",
+      "cmdNoDefault": "Questo plugin non ha una configurazione predefinita.",
+      "cmdNotInstalled": "Il plugin non è installato sul server.",
+      "pluginRestart": "Salvato. Avrà effetto dopo il riavvio del server: ora non si può applicare dal vivo.",
+      "pluginQueued": "Avviato: il server scarica, verifica e applica la modifica, poi si riavvia (1–3 minuti). Ricarichi la pagina tra poco."
     },
     "cmd": {
       "timeout": "L’agente del server non ha risposto entro 5 secondi.",
@@ -910,7 +915,11 @@
       "notOnline": "Il giocatore non è sul server.",
       "notActive": "La sanzione non è più attiva.",
       "unknownMode": "La modalità non è disponibile.",
-      "failed": "L’agente ha restituito un errore o una risposta inattesa."
+      "failed": "L’agente ha restituito un errore o una risposta inattesa.",
+      "restart": "È un plugin Metamod: ha effetto dopo il riavvio del server.",
+      "noDefault": "Questo plugin non ha una configurazione predefinita.",
+      "notInstalled": "Il plugin non è installato sul server.",
+      "invalidJson": "La configurazione non è un oggetto JSON valido."
     },
     "error": {
       "back": "Al pannello",
@@ -1232,7 +1241,8 @@
         "start": "avvio",
         "stop": "arresto",
         "restart": "riavvio",
-        "update": "aggiornamento"
+        "update": "aggiornamento",
+        "plugin": "plugin dal pannello"
       },
       "detail": "Dettagli dall’agente:"
     },
@@ -1383,6 +1393,99 @@
       "edit": "Modifica",
       "cancel": "Annulla l'evento",
       "cancelConfirm": "Annullare l'evento? Se è in corso, il plugin lo ferma entro 30 secondi."
+    },
+    "plugins": {
+      "title": "Plugin",
+      "lead": "Le mod del server dal catalogo verificato: avvio e arresto dal vivo, installazione e rimozione (con riavvio) e la configurazione di ognuna. Il sito non carica mai codice: ogni plugin è vincolato da sha256 nel catalogo.",
+      "addNote": "Un nuovo plugin? Lo chieda allo sviluppatore: ne legge il codice, lo verifica e lo aggiunge al catalogo. Poi compare qui.",
+      "busy": "Il server sta installando un plugin o si sta aggiornando: i pulsanti tornano al termine.",
+      "metamodNote": "Plugin Metamod: avvio e arresto hanno effetto dopo il riavvio del server.",
+      "coreNote": "Nucleo: non si gestisce dal pannello.",
+      "back": "← Plugin",
+      "col": {
+        "plugin": "Plugin",
+        "version": "Versione",
+        "state": "Stato",
+        "actions": "Azioni"
+      },
+      "states": {
+        "enabled": "attivo",
+        "disabled": "fermo",
+        "removed": "non installato",
+        "core": "nucleo"
+      },
+      "ops": {
+        "install": "Installa",
+        "remove": "Rimuovi",
+        "enable": "Avvia",
+        "disable": "Ferma"
+      },
+      "confirm": {
+        "install": "L’installazione scarica il plugin, lo verifica e riavvia il server (1–3 minuti): i giocatori verranno disconnessi. Continuare?",
+        "remove": "La rimozione cancella i file del plugin e riavvia il server: i giocatori verranno disconnessi. La configurazione resta. Continuare?",
+        "disable": "Il plugin si ferma subito e resta fermo anche dopo il riavvio. Continuare?"
+      },
+      "mods": {
+        "serverlistplayersfix": {
+          "name": "ServerListPlayersFix",
+          "desc": "Mostra l’elenco reale dei giocatori nel browser dei server."
+        },
+        "quakesounds": {
+          "name": "Quake Sounds",
+          "desc": "Suoni del commentatore per le serie di uccisioni (Double Kill, Rampage…)."
+        },
+        "cosmetics": {
+          "name": "Cosmetics",
+          "desc": "Raggio alla morte: un effetto nel punto in cui è caduto il giocatore."
+        },
+        "demorecorder": {
+          "name": "Demo Recorder",
+          "desc": "Registra le demo SourceTV delle partite; conservate per 14 giorni."
+        },
+        "cheatertroll": {
+          "name": "Cheater Troll",
+          "desc": "Prende in giro i cheater accertati invece di bannarli soltanto; l’elenco è nella sua configurazione."
+        },
+        "metablock": {
+          "name": "MetaBlock",
+          "desc": "Blocca per i giocatori i comandi di console meta, css_plugins e css."
+        }
+      },
+      "core": {
+        "metamod": {
+          "name": "Metamod:Source",
+          "desc": "Carica tutte le mod."
+        },
+        "counterstrikesharp": {
+          "name": "CounterStrikeSharp",
+          "desc": "La piattaforma per i plugin in C#."
+        },
+        "deathmatch": {
+          "name": "Deathmatch",
+          "desc": "La modalità Deathmatch: si configura in «Impostazioni» e nelle modalità."
+        },
+        "carbonstealth": {
+          "name": "CarbonStealth",
+          "desc": "Il nostro plugin: ban, XP, menu e il collegamento con questo pannello."
+        },
+        "multiaddonmanager": {
+          "name": "MultiAddonManager",
+          "desc": "Gli addon del Workshop (banner, suoni): si attiva da solo quando ce ne sono."
+        }
+      },
+      "config": {
+        "open": "Configurazione",
+        "title": "Configurazione: {name}",
+        "lead": "Il file {file} sul server. Il salvataggio controlla il JSON, lo memorizza e ricarica il plugin dal vivo, se è attivo.",
+        "label": "JSON",
+        "hint": "Solo un oggetto JSON valido, fino a {max} caratteri. Resta anche dopo il deploy.",
+        "save": "Salva e ricarica",
+        "reset": "Ripristina il predefinito",
+        "resetConfirm": "La configurazione verrà sostituita con la nostra predefinita e il plugin verrà ricaricato. Continuare?",
+        "edited": "Modificata dal pannello: il deploy non la sovrascrive.",
+        "pristine": "Predefinita, come nel catalogo.",
+        "offline": "Il server non è in funzione: la configurazione si legge e si scrive solo a server avviato."
+      }
     }
   },
   "matches": {

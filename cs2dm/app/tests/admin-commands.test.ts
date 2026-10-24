@@ -108,6 +108,34 @@ test('отказ от плъгина, мълчание (отхвърлен по�
   assert.deepEqual(await make(broken).send('kick', {}, 'A'), { ok: false, error: 'redis' });
 });
 
+test('ack от C# с null полета (System.Text.Json) се приема — null значи „няма“', async () => {
+  const answers = [
+    (id: string) => ({ id, ok: true, error: null }),
+    (id: string) => ({ id, ok: false, error: 'busy', data: null }),
+    (id: string) => ({ id, ok: false, error: null }),
+  ];
+  let next = 0;
+  const fake = bus((message, ack) => ack(answers[next++]!(open(message).payload.id)));
+  const channel = new RedisCommandChannel({
+    publisher: fake.publisher,
+    subscriber: fake.subscriber,
+    channels: BRIDGE_CHANNELS,
+    key: KEY,
+    timeoutMs: 200,
+  });
+  assert.deepEqual(await channel.send('reload', {}, 'A'), { ok: true, data: undefined });
+  assert.deepEqual(await channel.send('reload', {}, 'A'), {
+    ok: false,
+    error: 'busy',
+    data: undefined,
+  });
+  assert.deepEqual(await channel.send('reload', {}, 'A'), {
+    ok: false,
+    error: 'failed',
+    data: undefined,
+  });
+});
+
 test('повреден или чужд ack се пренебрегва; изключен канал отказва без мрежа', async () => {
   const fake = bus((message, ack) => {
     ack('не е обект');

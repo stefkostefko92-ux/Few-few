@@ -193,8 +193,8 @@ install_files() {
   # Root:root, извън дома на когото и да е — cs2agent не може да подмени кода, който тича.
   install -d -o root -g root -m 0755 "$LIB_DIR" "$AGENT_DIR"
   install -o root -g root -m 0644 "$SRC_DIR/../a2s.mjs" "$LIB_DIR/a2s.mjs"
-  install -o root -g root -m 0644 "$SRC_DIR/cs2-agent.mjs" "$AGENT_DIR/cs2-agent.mjs"
-  ok "$AGENT_DIR/cs2-agent.mjs · $LIB_DIR/a2s.mjs"
+  install -o root -g root -m 0644 "$SRC_DIR/cs2-agent.mjs" "$SRC_DIR/agent-plugins.mjs" "$AGENT_DIR/"
+  ok "$AGENT_DIR/cs2-agent.mjs · agent-plugins.mjs · $LIB_DIR/a2s.mjs"
 
   install -d -m 0700 "$ENV_DIR"
   sync_keys
@@ -239,11 +239,13 @@ check_polkit() {
   [[ "$pid" =~ ^[1-9][0-9]*$ ]] || { warn "няма PID на агента — polkit не е проверен"; return 0; }
   local unit verb pair
   pk() { pkcheck --action-id org.freedesktop.systemd1.manage-units --process "$pid" --detail unit "$1" --detail verb "$2" >/dev/null 2>&1; }
-  for pair in "cs2.service start" "cs2.service stop" "cs2.service restart" "cs2-update.service start"; do
+  for pair in "cs2.service start" "cs2.service stop" "cs2.service restart" "cs2-update.service start" \
+    "cs2-plugins@disable-cosmetics.service start" "cs2-plugins@install-quakesounds.service start"; do
     read -r unit verb <<<"$pair"
     if pk "$unit" "$verb"; then ok "polkit: $verb $unit — разрешено"; else warn "polkit: $verb $unit — ОТКАЗАНО (панелът няма да може)"; fi
   done
-  for pair in "cs2.service reload" "cs2.service kill" "cs2-update.service restart" "ssh.service restart" "cs2-agent.service stop"; do
+  for pair in "cs2.service reload" "cs2.service kill" "cs2-update.service restart" "ssh.service restart" "cs2-agent.service stop" \
+    "cs2-plugins@disable-cosmetics.service stop" "cs2-plugins@purge-cosmetics.service start" "cs2-plugins@.service start"; do
     read -r unit verb <<<"$pair"
     if pk "$unit" "$verb"; then
       systemctl stop cs2-agent.service

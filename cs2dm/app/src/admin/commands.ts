@@ -14,10 +14,11 @@ export const ACK_TIMEOUT_MS = 5000;
 /** Таван на суров отговор (200 реда лог × ~1 KB са далеч под него). */
 const MAX_ACK_BYTES = 512 * 1024;
 
+/** C# (System.Text.Json) пише `"error": null` / `"data": null` — null значи „няма“, не повреден ack. */
 const ackSchema = z.object({
   id: z.string().min(1).max(64),
   ok: z.boolean(),
-  error: z.string().max(500).optional(),
+  error: z.string().max(500).nullish(),
   data: z.unknown().optional(),
 });
 
@@ -86,7 +87,8 @@ export class RedisCommandChannel implements CommandSender {
     if (!waiting) return;
     this.pending.delete(parsed.data.id);
     clearTimeout(waiting.timer);
-    const { ok, error, data } = parsed.data;
+    const { ok, error } = parsed.data;
+    const data = parsed.data.data ?? undefined;
     waiting.resolve(ok ? { ok: true, data } : { ok: false, error: error ?? 'failed', data });
   }
 
@@ -181,6 +183,11 @@ const KNOWN_ERRORS: Record<string, string> = {
   'not active': 'notActive',
   'unknown mode': 'unknownMode',
   'deathmatch api unavailable': 'unknownMode',
+  // Плъгините (CONTRACT §14).
+  restart: 'restart',
+  'no default': 'noDefault',
+  'not installed': 'notInstalled',
+  'invalid json': 'invalidJson',
   'bad args': 'failed',
   failed: 'failed',
 };

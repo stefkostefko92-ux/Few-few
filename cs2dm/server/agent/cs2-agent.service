@@ -1,7 +1,8 @@
 # cs2-agent.service — агентът на хоста за уеб панела на cs2dm (CONTRACT.md §9).
-# Подписани команди от сайта през Redis → status · restart · update · logs. БЕЗ root: потребител
-# cs2agent (системен, без shell); systemd действията ги разрешава polkit САМО за restart на
-# cs2.service и start на cs2-update.service (/etc/polkit-1/rules.d/50-cs2dm-agent.rules).
+# Подписани команди от сайта през Redis → status · start · stop · restart · update · logs · plugins · plugin.
+# БЕЗ root: потребител cs2agent (системен, без shell); systemd действията ги разрешава polkit САМО за
+# start/stop/restart на cs2.service, start на cs2-update.service и на cs2-plugins@<op>-<id>.service
+# (/etc/polkit-1/rules.d/50-cs2dm-agent.rules).
 # Инсталира се с server/agent/install-agent.sh.
 [Unit]
 Description=cs2dm: агентът на сървъра (команди от уеб панела)
@@ -45,7 +46,8 @@ PrivateDevices=yes
 ProtectSystem=strict
 ProtectHome=yes
 # Какво чете (изрично; „-“ = пропусни, ако още го няма — иначе стартът пада с 226/NAMESPACE).
-ReadOnlyPaths=-/opt/cs2/server/game/csgo/addons/counterstrikesharp/logs -/opt/cs2/server/game/csgo/steam.inf -/var/lib/cs2dm
+# addons — само дали файловете на модовете ги има (плъгините от панела, §14); server/mods/mods.lock — версиите.
+ReadOnlyPaths=-/opt/cs2/server/game/csgo/addons -/opt/cs2/server/game/csgo/steam.inf -/var/lib/cs2dm -/usr/local/lib/cs2dm/server/mods
 # Групата cs2 вижда /opt/cs2 — скриваме каквото не му трябва (конфигът на плъгина е с тайни).
 InaccessiblePaths=-/opt/cs2/steamcmd -/opt/cs2/.steam -/opt/cs2/server/game/csgo/addons/counterstrikesharp/configs
 # Процесите на другите потребители са невидими → и GSLT-ът в /proc/<pid>/cmdline на играта.

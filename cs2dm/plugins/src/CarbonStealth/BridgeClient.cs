@@ -7,6 +7,9 @@ using StackExchange.Redis;
 
 namespace CarbonStealth;
 
+/// <summary>Отговорът на команда: успех, код на грешка и (по избор) данни — напр. конфиг на плъгин (§14).</summary>
+public delegate void BridgeReply(bool ok, string? error, object? data);
+
 /// <summary>
 /// Мостът към сайта (CONTRACT.md §5): подписани команди от cs2dm:cmd, отговори в cs2dm:ack,
 /// живо състояние в cs2dm:live, събития в потока cs2dm:events. Redis се свързва сам наново.
@@ -32,7 +35,7 @@ public sealed class BridgeClient : IAsyncDisposable
 
     /// <param name="onCommand">Вика се в игровата нишка; вторият аргумент връща резултата.</param>
     public static async Task<BridgeClient> ConnectAsync(string connection, string bridgeKey, ILogger logger,
-        Action<BridgeCommand, Action<bool, string?>> onCommand)
+        Action<BridgeCommand, BridgeReply> onCommand)
     {
         var mux = await ConnectionMultiplexer.ConnectAsync(connection);
         var client = new BridgeClient(mux, Encoding.UTF8.GetBytes(bridgeKey), logger);
@@ -40,7 +43,7 @@ public sealed class BridgeClient : IAsyncDisposable
         return client;
     }
 
-    private void Receive(RedisValue message, Action<BridgeCommand, Action<bool, string?>> onCommand)
+    private void Receive(RedisValue message, Action<BridgeCommand, BridgeReply> onCommand)
     {
         if (!BridgeProtocol.TryOpen(message.ToString(), _key, DateTimeOffset.UtcNow, _guard, out var cmd, out var error))
         {
@@ -51,7 +54,7 @@ public sealed class BridgeClient : IAsyncDisposable
         {
             try
             {
-                onCommand(cmd!, (ok, err) => Ack(cmd!.Id, ok, err));
+                onCommand(cmd!, (ok, err, data) => Ack(cmd!.Id, ok, err, data));
             }
             catch (Exception e)
             {
@@ -61,8 +64,8 @@ public sealed class BridgeClient : IAsyncDisposable
         });
     }
 
-    private void Ack(string id, bool ok, string? error) =>
-        Fire(_mux.GetSubscriber().PublishAsync(AckChannel, JsonSerializer.Serialize(new { id, ok, error })), "ack");
+    private void Ack(string id, bool ok, string? error, object? data = null) =>
+        Fire(_mux.GetSubscriber().PublishAsync(AckChannel, BridgeProtocol.Ack(id, ok, error, data)), "ack");
 
     public void PublishLive(string json) =>
         Fire(_mux.GetDatabase().StringSetAsync(LiveKey, json, TimeSpan.FromSeconds(15)), "live");

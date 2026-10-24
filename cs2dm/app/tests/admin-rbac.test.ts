@@ -127,6 +127,14 @@ const EXPECTED: Record<string, keyof typeof CAPABILITIES> = {
   'post /server/stop': 'serverControl',
   'post /server/restart': 'serverControl',
   'post /server/update': 'serverControl',
+  'get /plugins': 'plugins',
+  'get /plugins/:id/config': 'plugins',
+  'post /plugins/:id/config': 'plugins',
+  'post /plugins/:id/config/reset': 'plugins',
+  'post /plugins/:id/install': 'plugins',
+  'post /plugins/:id/remove': 'plugins',
+  'post /plugins/:id/enable': 'plugins',
+  'post /plugins/:id/disable': 'plugins',
   'get /settings': 'settings',
   'post /settings/:group': 'settings',
   'get /account': 'panel',
@@ -150,6 +158,7 @@ test('всеки защитен маршрут е с право — точно �
     privacy: 'ADMIN',
     serverRead: 'ADMIN',
     serverControl: 'HEADADMIN',
+    plugins: 'HEADADMIN',
     roles: 'HEADADMIN',
     banners: 'HEADADMIN',
     audit: 'HEADADMIN',
@@ -205,6 +214,8 @@ test('статусът на агента: since в ms, busy, повреден о
   assert.equal(status?.since?.getTime(), 1_792_828_391_000);
   assert.equal(status?.busy, 'update');
   assert.equal(status?.broken, null);
+  // Плъгин от панела (CONTRACT §14) — и той е „зает“.
+  assert.equal(parseAgentStatus({ active: false, busy: 'plugin' })?.busy, 'plugin');
   assert.equal(parseAgentStatus({ active: 'yes' }), null);
 });
 

@@ -62,6 +62,8 @@ export const CAPABILITIES = {
   serverRead: 'ADMIN',
   /** Рестарт и ъпдейт на сървъра. */
   serverControl: 'HEADADMIN',
+  /** Плъгините от каталога (CONTRACT §14): списък, инсталиране/премахване, пускане/спиране, конфиг. */
+  plugins: 'HEADADMIN',
   /** Роли до ниво 5 (само под своята) и нулиране на TOTP на по-нисък админ. */
   roles: 'HEADADMIN',
   /** Банерите в картата — като `!banner` в играта. */

@@ -5,6 +5,7 @@ import { eventRoutes } from './events.js';
 import { playerActionRoutes } from './player-actions.js';
 import { playerDataRoutes } from './player-data.js';
 import { playerRoutes } from './players.js';
+import { pluginRoutes } from './plugins.js';
 import { punishmentRoutes } from './punishments.js';
 import { recordRoutes } from './records.js';
 import { serverRoutes } from './server.js';
@@ -27,6 +28,7 @@ export function protectedRoutes(ctx: AdminCtx): AdminRoute[] {
     ...eventRoutes(ctx),
     ...recordRoutes(ctx),
     ...serverRoutes(ctx),
+    ...pluginRoutes(ctx),
     ...settingsRoutes(ctx),
     ...accountRoutes(ctx),
   ];

@@ -47,8 +47,14 @@ public sealed partial class CarbonStealthPlugin
         });
     }
 
-    private void OnBridgeCommand(BridgeCommand cmd, Action<bool, string?> done)
+    private void OnBridgeCommand(BridgeCommand cmd, BridgeReply reply)
     {
+        Action<bool, string?> done = (ok, err) => reply(ok, err, null);
+        if (cmd.Action.StartsWith("plugins.", StringComparison.Ordinal))
+        {
+            BridgePlugins(cmd, reply);
+            return;
+        }
         switch (cmd.Action)
         {
             case "kick":

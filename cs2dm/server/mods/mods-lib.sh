@@ -103,3 +103,43 @@ cs2dm_mod_config() { # име
   esac
   return 0
 }
+
+# ── Плъгините от панела (CONTRACT §14) ──────────────────────────────────────────────────────────────
+# Модовете, които панелът управлява: всичко от mods.lock без ядрото и multiaddonmanager. Същите id са в
+# агента, в C# PluginCatalog и в app/src/admin/plugins-catalog.ts (test/plugins-catalog.test.mjs).
+CS2DM_PANEL_MODS="serverlistplayersfix quakesounds cosmetics demorecorder cheatertroll metablock"
+
+cs2dm_panel_mod() { # име
+  [[ " $CS2DM_PANEL_MODS " == *" $1 "* ]]
+}
+
+# Инстанцията на cs2-plugins@<op>-<id>.service → „op id“. Единственият вход на root страната — fail closed.
+cs2dm_panel_instance() { # инстанция
+  [[ "$1" =~ ^(install|remove|enable|disable)-([a-z0-9]{1,32})$ ]] || return 1
+  cs2dm_panel_mod "${BASH_REMATCH[2]}" || return 1
+  printf '%s %s' "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}"
+}
+
+# Къде отива включеният път, когато модът е спрян: CSS прескача plugins/disabled, Metamod чете само *.vdf.
+cs2dm_disabled_path() { # път от cs2dm_mod_paths
+  case "$1" in
+    addons/counterstrikesharp/plugins/*/*) return 1 ;;
+    addons/counterstrikesharp/plugins/?*) printf 'addons/counterstrikesharp/plugins/disabled/%s' "${1#addons/counterstrikesharp/plugins/}" ;;
+    addons/metamod/?*.vdf) printf '%s.disabled' "$1" ;;
+    *) return 1 ;;
+  esac
+}
+
+# Списък „a,b“ ± име, без повторения, в реда на добавяне.
+cs2dm_list_add() { # списък име
+  if [[ ",$1," == *",$2,"* ]]; then printf '%s' "$1"; else printf '%s' "${1:+$1,}$2"; fi
+}
+cs2dm_list_del() { # списък име
+  local out="" n
+  local items=()
+  IFS=, read -r -a items <<<"$1"
+  for n in "${items[@]}"; do
+    [[ -n "$n" && "$n" != "$2" ]] && out="${out:+$out,}$n"
+  done
+  printf '%s' "$out"
+}

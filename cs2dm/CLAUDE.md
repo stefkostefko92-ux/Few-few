@@ -53,22 +53,28 @@ server/mods/mods.lock                заковани модове: име · в
 server/mods/install-mods.sh          фаза 2: сваля, проверява sha256, инсталира, рестартира (--status · --disable)
 server/mods/mods-lib.sh              чистите решения: addon-и (+ звуците), CS2DM_SKIP_MODS, пътища и конфиги на мод
 server/mods/demos-clean.sh           SourceTV демотата: по-стари от 14 дни + таван в GB (вика го таймерът)
+server/mods/plugins-apply.sh         плъгините от панела (CONTRACT §14), root: <op>-<id> → местене / install-mods.sh
 server/mods/config/                  core.json (CSS) · Deathmatch.json (генериран от типовете на плъгина) ·
-                                     QuakeSounds · Cosmetics · DemoRecorder · MetaBlock (.json — наши, презаписват се)
-server/systemd/                      cs2.service · cs2-update.service/.timer · cs2-demos-clean.service/.timer
+                                     QuakeSounds · Cosmetics · DemoRecorder · MetaBlock (.json — наши, презаписват се,
+                                     освен ако панелът ги е редактирал; копие като <К>.default.json)
+server/systemd/                      cs2.service · cs2-update.service/.timer · cs2-demos-clean.service/.timer ·
+                                     cs2-plugins@.service (плъгините от панела, §14)
 server/cs2.env.example               шаблон за /etc/cs2/cs2.env (GSLT, IP, порт, слотове)
 server/mods/install-plugins.sh       фаза 3: билд на CarbonStealth (dotnet или SDK контейнер по digest) → инсталиране → конфиг 0600
 server/mods/plugin-config.mjs        конфигът на плъгина от /etc/cs2/cs2.env (валидира, нищо тайно в изхода)
 server/agent/cs2-agent.mjs           агентът за панела (CONTRACT §9): подписани команди от Redis → status · start · stop · restart ·
-                                     update · logs; A2S → cs2dm:a2s на 10 s; собствен RESP клиент (zero-dep)
+                                     update · logs · plugins · plugin; A2S → cs2dm:a2s на 10 s; собствен RESP клиент (zero-dep)
+server/agent/agent-plugins.mjs       плъгините в агента (§14): каталог, състояние от файловете (само чете), cs2-plugins@ аргументи
 server/agent/cs2-agent.service       unit: cs2agent, без root и без запис (ProtectSystem=strict, ProtectProc=invisible…)
-server/agent/50-cs2dm-agent.rules    polkit: cs2agent САМО start/stop/restart cs2.service · start cs2-update.service, иначе NO
+server/agent/50-cs2dm-agent.rules    polkit: cs2agent САМО start/stop/restart cs2.service · start cs2-update.service ·
+                                     start cs2-plugins@(install|remove|enable|disable)-<id>.service, иначе NO
 server/agent/install-agent.sh        потребител · файлове · ключове (agent.env + app.env) · unit · polkit · самопроверка
 plugins/src/CarbonStealth.Logic/     чиста логика без CSS (XP, роли, срокове, мост/HMAC, банери, CSS права,
-                                     AFK/пинг, настройки, събития, карта на мача) — xunit тестове (един файл с тестове на тема)
+                                     AFK/пинг, настройки, събития, карта на мача, каталог на плъгините) — xunit тестове (един файл
+                                     с тестове на тема)
 plugins/src/CarbonStealth/           плъгинът: един partial клас по тема (Admin, AdminMenu, Banners, Adverts = живите
                                      настройки + рекламите, BridgeCommands, Chat, Connection, Stats, CssFlags, FairPlay,
-                                     Events, Match, MatchEnd) + Data/ (Npgsql) + lang/ (en, bg)
+                                     Events, Match, MatchEnd, PluginsBridge = плъгините от панела) + Data/ (Npgsql) + lang/ (en, bg)
 plugins/scripts/build.sh             тестове + publish в plugins/out/; DeathmatchAPI.dll от архива в mods.lock
 addon/                               банери-картинки: build_textures.py → PNG, OBJ плоскости, Workshop стъпки
 CONTRACT.md                          роли, наказания, XP, heatmap, мост, одит, срокове, банери
@@ -135,10 +141,21 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   метаданните на DLL-а — референцията към `CounterStrikeSharp.API` ≤ нашата версия и всеки член съществува в
   нея (четене на метаданни, без изпълнение). После в същия PR: `cs2dm_mod_paths` (какво маха изключването),
   `cs2dm_mod_config` + `config/<Име>.json` (ако го настройваме), ред в таблицата на `README.md`, тест в
-  `test/modpack.test.mjs`. Изключване на сървъра: `CS2DM_SKIP_MODS`; звуците: `CS2DM_QUAKE_SOUNDS`.
+  `test/modpack.test.mjs`, **и каталогът на панела на петте места** (CONTRACT §14: `CS2DM_PANEL_MODS`,
+  `agent-plugins.mjs`, C# `PluginCatalog`, `app/src/admin/plugins-catalog.ts` + текстът в трите речника, таблицата в
+  §14) — `test/plugins-catalog.test.mjs` пада, ако мод от `mods.lock` липсва в панела. Изключване на сървъра:
+  `CS2DM_SKIP_MODS` (докато панелът не е решил — после `removed=` в `/var/lib/cs2dm/plugins.state` го замества);
+  звуците: `CS2DM_QUAKE_SOUNDS`.
+- **Плъгините от панела (§14) — само проверен каталог**, никога линк/качване от сайта (решение на собственика).
+  Постоянното е на root (`plugins-apply.sh` през `cs2-plugins@<op>-<id>.service`, инстанцията се проверява наново),
+  живото — на нашия плъгин (`css_plugins load|unload`, конфигът в `configs/plugins/<К>/`). Спрян CSS мод е в
+  `plugins/disabled/<Име>` (CSS прескача папката), спрян Metamod мод — `<vdf>.disabled` (важи след рестарт).
+  `install-mods.sh` пише root копие на `server/` в `/usr/local/lib/cs2dm/server` — оттам тича `cs2-plugins@`.
 - **Конфиг на чужд плъгин, който пази данни, не се презаписва** (CheaterTroll — списъкът с читъри е в
   неговия JSON). Нашите конфиги (`QuakeSounds`, `Cosmetics`, `DemoRecorder`, `MetaBlock`) се презаписват при
   всяко `install-mods.sh` — това нулира и `data` на QuakeSounds (SteamID → език/заглушаване), така е обещано.
+  **Изключение:** конфиг, редактиран от панела (маркер `.cs2dm-panel` в папката му), остава; нашият е винаги и
+  като `<К>.default.json` за „Върни по подразбиране“.
 - **Workshop addon-ите са един списък:** `cs2dm_addon_list` = `CS2_WORKSHOP_ADDONS` на собственика + звуците
   на quakesounds накрая, без повторения → `mm_extra_addons`. Нов addon от мод → там, не в env на собственика.
 - **Демотата са лични данни:** папка 0750 само за `cs2`, срок **14 дни** = `RETENTION.demosDays`
@@ -198,7 +215,8 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
 
 - **Затворен списък.** Ново действие → `ACTIONS` + диспечерът + (ако пипа systemd) polkit правилото +
   CONTRACT §9 + тест — в същия PR. Изпълнение САМО с `execAllowed` (execFile, `shell: false`, абсолютни
-  пътища от `BIN`); аргументите са константи — единственият вход е `lines` (цяло 1…200) и `source`.
+  пътища от `BIN`); аргументите са константи — единственият вход е `lines` (цяло 1…200), `source` и
+  `{op, id}` на `plugin` (затворени списъци в `agent-plugins.mjs` → името на `cs2-plugins@<op>-<id>.service`).
 - **Подписът е като моста** (`Bridge.cs`: плик `{"p","sig"}`, HMAC върху UTF-8 байтовете на `p`, ±30 s,
   1000 id), но с **отделен** ключ `CS2DM_AGENT_KEY`. Грешките са низовете на C#; отхвърлена команда **няма
   ack** (като плъгина). Тестовият вектор от `Bridge.cs` е в `agent.test.mjs`.
@@ -282,6 +300,11 @@ zod); код между продуктите не се споделя — сам
   (плъгинът ги взима сам до 60 s). Сравнението before/after е канонично (`canonicalJson` — jsonb пренарежда ключовете).
 - **Агентът:** `status`/`logs` (ADMIN+), `start`/`stop`/`restart`/`update` (HEADADMIN+). Старт/спиране/рестарт чакат systemd до 120 s, а
   nginx реже на 30 s → панелът чака 25 s и мълчанието е „още тече“ (`cmdPending`), не грешка.
+- **Плъгините** (`/admin/plugins`, право `plugins` = HEADADMIN+, CONTRACT §14): списъкът е от агента (`plugins`);
+  спиране = `plugins.unload` по моста (най-добро усилие) → агентът; пускане = агентът → `plugins.load`; без мост
+  или Metamod мод → `pluginRestart` (важи след рестарт). Конфигът — само през моста (плъгинът пише файла), JSON
+  обект ≤ 32 768 знака (отделен парсер с таван 128 kb на `/plugins/:id/config`); одитът пази размер и sha256,
+  никога текста. Ack-ът на моста може да е с `"error": null` (стар плъгин) — `ackSchema` го приема.
 - **Резултат след POST = PRG** с `?r=<код>` от затворен списък (`forms.ts` `RESULTS`) — никакъв свободен
   текст в адреса. Нов код → ключ `admin.result.<код>` в трите речника.
 - **Ключовете** (`APP_ENC_KEY` 64 hex, `CS2DM_BRIDGE_KEY`/`CS2DM_AGENT_KEY` ≥ 32) се проверяват в

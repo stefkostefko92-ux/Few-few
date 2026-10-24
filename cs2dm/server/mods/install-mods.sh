@@ -8,6 +8,8 @@
 #   sudo bash install-mods.sh --status   какво е състоянието
 # Ако модовете не тръгнат, сървърът се връща автоматично към ванилов DM (виж cs2dm-lib.sh).
 # Флагове в /etc/cs2/cs2.env: CS2_WORKSHOP_ADDONS, CS2DM_QUAKE_SOUNDS, CS2DM_SKIP_MODS, CS2DM_DEMO_MAX_GB.
+# Плъгините от панела (CONTRACT §14): /var/lib/cs2dm/plugins.state — „removed=“ замества CS2DM_SKIP_MODS,
+# „disabled=“ слага мода направо спрян; редактиран от панела конфиг (маркер .cs2dm-panel) не се презаписва.
 set -euo pipefail
 
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -24,6 +26,7 @@ readonly CACHE_DIR=/var/cache/cs2dm/mods
 readonly ENV_FILE=/etc/cs2/cs2.env
 readonly LOCK=/run/cs2dm-update.lock
 readonly LIB_DIR=/usr/local/lib/cs2dm
+readonly PLUGINS_STATE="$CS2DM_STATE_DIR/plugins.state"
 
 log()  { printf '\n\033[36m[cs2dm-mods]\033[0m %s\n' "$*"; }
 ok()   { printf '  \033[32m✓\033[0m %s\n' "$*"; }
@@ -50,6 +53,13 @@ quake="$(cs2dm_flag "$(cs2dm_env_get "$ENV_FILE" CS2DM_QUAKE_SOUNDS)" 1)" \
   || die "CS2DM_QUAKE_SOUNDS: 0 или 1"
 skip="$(cs2dm_skip_list "$(cs2dm_env_get "$ENV_FILE" CS2DM_SKIP_MODS)" "$SRC_DIR/mods.lock")" \
   || die "CS2DM_SKIP_MODS: имена от mods.lock, разделени със запетая (без metamod/counterstrikesharp/deathmatch/multiaddonmanager)"
+# Решенията на панела (CONTRACT §14) — по-нови от env файла, затова „removed=“ го замества изцяло.
+if grep -q '^removed=' "$PLUGINS_STATE" 2>/dev/null; then
+  skip="$(cs2dm_skip_list "$(cs2dm_env_get "$PLUGINS_STATE" removed)" "$SRC_DIR/mods.lock")" \
+    || die "$PLUGINS_STATE: невалиден ред removed="
+fi
+disabled="$(cs2dm_skip_list "$(cs2dm_env_get "$PLUGINS_STATE" disabled)" "$SRC_DIR/mods.lock")" \
+  || die "$PLUGINS_STATE: невалиден ред disabled="
 [[ ",$skip," == *",quakesounds,"* ]] && quake=0
 # Workshop addon-и (банерите на собственика + звуците на quakesounds) → MultiAddonManager; без тях — без него.
 addons="$(cs2dm_addon_list "$(cs2dm_env_get "$ENV_FILE" CS2_WORKSHOP_ADDONS)" "$quake")" \
@@ -67,6 +77,8 @@ status() {
     [[ -z "$name" || "$name" == \#* ]] && continue
     if cs2dm_mod_skipped "$name" "$skip" "$addons" "$quake"; then
       printf '  · %s %s (изключен)\n' "$name" "$version"
+    elif [[ ",$disabled," == *",$name,"* ]]; then
+      printf '  · %s %s (спрян от панела)\n' "$name" "$version"
     else
       printf '  · %s %s\n' "$name" "$version"
     fi
@@ -146,15 +158,38 @@ while IFS=$'\t' read -r name _; do
   ok "$name — изключен"
 done <"$SRC_DIR/mods.lock"
 
+# Спрените от панела отиват направо в disabled (CSS прескача plugins/disabled, Metamod чете само *.vdf);
+# на всички останали старото спряно копие се маха — иначе „Пусни“ би върнало стара версия.
+while IFS=$'\t' read -r name _; do
+  [[ -z "$name" || "$name" == \#* ]] && continue
+  while IFS= read -r rel; do
+    [[ -n "$rel" && "$rel" == addons/* ]] || continue
+    off="$(cs2dm_disabled_path "$rel")" || continue
+    rm -rf -- "${CSGO_DIR:?}/$off"
+    if [[ ",$disabled," == *",$name,"* ]] && ! cs2dm_mod_skipped "$name" "$skip" "$addons" "$quake" \
+      && [[ -e "$CSGO_DIR/$rel" ]]; then
+      install -d "$(dirname "$CSGO_DIR/$off")"
+      mv -- "$CSGO_DIR/$rel" "$CSGO_DIR/$off"
+      ok "$name — спрян от панела"
+    fi
+  done < <(cs2dm_mod_paths "$name" || true)
+done <"$SRC_DIR/mods.lock"
+
 install -d -m 0755 "$CSS_DIR/configs/plugins/Deathmatch"
 install -m 0644 "$SRC_DIR/config/core.json" "$CSS_DIR/configs/core.json"
 install -m 0644 "$SRC_DIR/config/Deathmatch.json" "$CSS_DIR/configs/plugins/Deathmatch/Deathmatch.json"
-# Нашите конфиги на модовете (CheaterTroll пази своя — в него е списъкът с читъри).
+# Нашите конфиги на модовете (CheaterTroll пази своя — в него е списъкът с читъри). <К>.default.json е за
+# „Върни по подразбиране“ в панела; <К>.json се пише само ако панелът не го е редактирал (маркер, §14).
 for name in "${installed[@]}"; do
   cfg="$(cs2dm_mod_config "$name")"
   [[ -n "$cfg" ]] || continue
   install -d -m 0755 "$CSS_DIR/configs/plugins/$cfg"
-  install -m 0644 "$SRC_DIR/config/$cfg.json" "$CSS_DIR/configs/plugins/$cfg/$cfg.json"
+  install -m 0644 "$SRC_DIR/config/$cfg.json" "$CSS_DIR/configs/plugins/$cfg/$cfg.default.json"
+  if [[ -f "$CSS_DIR/configs/plugins/$cfg/.cs2dm-panel" ]]; then
+    ok "$cfg.json — редактиран от панела, остава"
+  else
+    install -m 0644 "$SRC_DIR/config/$cfg.json" "$CSS_DIR/configs/plugins/$cfg/$cfg.json"
+  fi
 done
 
 owner="$(cs2dm_env_get "$ENV_FILE" CS2_OWNER_STEAMID64)"
@@ -193,9 +228,24 @@ install -m 0644 "$SRC_DIR/../systemd/cs2-demos-clean.service" "$SRC_DIR/../syste
 install -d -m 0755 /etc/systemd/system/cs2-demos-clean.service.d
 printf '[Service]\nEnvironment=CS2DM_DEMO_MAX_GB=%s\n' "$demo_max_gb" \
   >/etc/systemd/system/cs2-demos-clean.service.d/10-cs2dm.conf
+
+# Плъгините от панела (CONTRACT §14): cs2-plugins@<op>-<id>.service пуска root копието на тези скриптове —
+# извън /root и извън дома на cs2, root:root. Когато самото копие ни е пуснало, то вече е на мястото си.
+copy="$LIB_DIR/server"
+if [[ "$(realpath -m "$SRC_DIR/..")" != "$(realpath -m "$copy")" ]]; then
+  fresh="$(mktemp -d "$LIB_DIR/server.new.XXXXXX")"
+  cp -r "$SRC_DIR/../." "$fresh/"
+  chown -R root:root "$fresh"
+  chmod -R u=rwX,go=rX "$fresh"
+  rm -rf -- "$copy.old"
+  if [[ -d "$copy" ]]; then mv -- "$copy" "$copy.old"; fi
+  mv -- "$fresh" "$copy"
+  rm -rf -- "$copy.old"
+fi
+install -m 0644 "$SRC_DIR/../systemd/cs2-plugins@.service" /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable --now cs2-demos-clean.timer >/dev/null
-ok "cs2-demos-clean.timer · $CS2DM_DEMO_DIR"
+ok "cs2-demos-clean.timer · $CS2DM_DEMO_DIR · cs2-plugins@.service ($copy)"
 
 log "Рестарт с модовете"
 install -d -m 0755 "$CS2DM_STATE_DIR"

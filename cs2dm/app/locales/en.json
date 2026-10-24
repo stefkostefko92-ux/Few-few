@@ -800,7 +800,8 @@
       "audit": "Audit",
       "account": "Account",
       "settings": "Settings",
-      "events": "Events"
+      "events": "Events",
+      "plugins": "Plugins"
     },
     "me": {
       "signedAs": "Signed in:",
@@ -899,7 +900,11 @@
       "cmdFailed": "The server rejected the command.",
       "badCode": "The code is wrong or has already been used.",
       "cmdPending": "The agent did not confirm within 25 seconds — the restart may still be running. Check the status in a minute.",
-      "overlap": "The event overlaps another (not cancelled) event. Change the times."
+      "overlap": "The event overlaps another (not cancelled) event. Change the times.",
+      "cmdNoDefault": "This plugin has no default config.",
+      "cmdNotInstalled": "The plugin is not installed on the server.",
+      "pluginRestart": "Saved. It takes effect after a server restart — it cannot be applied live right now.",
+      "pluginQueued": "Started: the server downloads, verifies and applies the change, then restarts (1–3 minutes). Refresh the page in a moment."
     },
     "cmd": {
       "timeout": "The server agent did not answer within 5 seconds.",
@@ -910,7 +915,11 @@
       "notOnline": "The player is not on the server.",
       "notActive": "The punishment is no longer active.",
       "unknownMode": "The mode is not available.",
-      "failed": "The agent returned an error or an unexpected answer."
+      "failed": "The agent returned an error or an unexpected answer.",
+      "restart": "This is a Metamod plugin — it takes effect after a server restart.",
+      "noDefault": "This plugin has no default config.",
+      "notInstalled": "The plugin is not installed on the server.",
+      "invalidJson": "The config is not a valid JSON object."
     },
     "error": {
       "back": "To the panel",
@@ -1228,7 +1237,13 @@
       "logsEmpty": "No lines.",
       "back": "Back to the server",
       "busy": "Running now",
-      "busyKinds": { "start": "start", "stop": "stop", "restart": "restart", "update": "update" },
+      "busyKinds": {
+        "start": "start",
+        "stop": "stop",
+        "restart": "restart",
+        "update": "update",
+        "plugin": "plugin from the panel"
+      },
       "detail": "Details from the agent:"
     },
     "settings": {
@@ -1378,6 +1393,99 @@
       "edit": "Edit",
       "cancel": "Cancel the event",
       "cancelConfirm": "Cancel the event? If it is running, the plugin stops it within 30 seconds."
+    },
+    "plugins": {
+      "title": "Plugins",
+      "lead": "The server mods from the verified catalogue: start and stop live, install and remove (with a restart), and each one’s config. The site never uploads code — every plugin is pinned by sha256 in the catalogue.",
+      "addNote": "A new plugin? Ask the developer: they read its code, verify it and add it to the catalogue. Then it shows up here.",
+      "busy": "The server is installing a plugin or updating right now — the buttons come back when it finishes.",
+      "metamodNote": "Metamod plugin: starting and stopping take effect after a server restart.",
+      "coreNote": "Core — not managed from the panel.",
+      "back": "← Plugins",
+      "col": {
+        "plugin": "Plugin",
+        "version": "Version",
+        "state": "State",
+        "actions": "Actions"
+      },
+      "states": {
+        "enabled": "running",
+        "disabled": "stopped",
+        "removed": "not installed",
+        "core": "core"
+      },
+      "ops": {
+        "install": "Install",
+        "remove": "Remove",
+        "enable": "Start",
+        "disable": "Stop"
+      },
+      "confirm": {
+        "install": "Installing downloads the plugin, verifies it and restarts the server (1–3 minutes) — players will be disconnected. Continue?",
+        "remove": "Removing deletes the plugin’s files and restarts the server — players will be disconnected. The config stays. Continue?",
+        "disable": "The plugin stops right away and stays stopped after a restart. Continue?"
+      },
+      "mods": {
+        "serverlistplayersfix": {
+          "name": "ServerListPlayersFix",
+          "desc": "Shows the real player list in the server browser."
+        },
+        "quakesounds": {
+          "name": "Quake Sounds",
+          "desc": "Announcer sounds for kill streaks (Double Kill, Rampage…)."
+        },
+        "cosmetics": {
+          "name": "Cosmetics",
+          "desc": "Death beam — an effect where a player went down."
+        },
+        "demorecorder": {
+          "name": "Demo Recorder",
+          "desc": "Records SourceTV demos of the matches; kept for 14 days."
+        },
+        "cheatertroll": {
+          "name": "Cheater Troll",
+          "desc": "Trolls confirmed cheaters instead of only banning them; the list is in its config."
+        },
+        "metablock": {
+          "name": "MetaBlock",
+          "desc": "Blocks the meta, css_plugins and css console commands for players."
+        }
+      },
+      "core": {
+        "metamod": {
+          "name": "Metamod:Source",
+          "desc": "Loads all the mods."
+        },
+        "counterstrikesharp": {
+          "name": "CounterStrikeSharp",
+          "desc": "The platform for the C# plugins."
+        },
+        "deathmatch": {
+          "name": "Deathmatch",
+          "desc": "The Deathmatch mode — configured in “Settings” and the modes."
+        },
+        "carbonstealth": {
+          "name": "CarbonStealth",
+          "desc": "Our plugin: bans, XP, menu and the link to this panel."
+        },
+        "multiaddonmanager": {
+          "name": "MultiAddonManager",
+          "desc": "The Workshop addons (banners, sounds) — switches on by itself when there are any."
+        }
+      },
+      "config": {
+        "open": "Config",
+        "title": "Config: {name}",
+        "lead": "The file {file} on the server. Saving checks the JSON, stores it and reloads the plugin live if it is running.",
+        "label": "JSON",
+        "hint": "A valid JSON object only, up to {max} characters. It survives deploys.",
+        "save": "Save and reload",
+        "reset": "Restore the default",
+        "resetConfirm": "The config will be replaced with our default and the plugin will reload. Continue?",
+        "edited": "Edited from the panel — deploys do not overwrite it.",
+        "pristine": "Default — as in the catalogue.",
+        "offline": "The server is not running — the config can only be read and written while the server is up."
+      }
     }
   },
   "matches": {

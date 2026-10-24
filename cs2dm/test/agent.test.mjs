@@ -318,6 +318,9 @@ test("настройки: ключ ≥ 32, Redis само на loopback, пор�
 
 // ── Диспечерът с подменен execFile ──────────────────────────────────────────────────────────────
 
+/** Тече ли плъгин от панела (§14) — пита се преди всяко действие и в status. */
+const LIST_PLUGINS = [BIN.systemctl, "list-units", "--all", "--plain", "--no-legend", "--state=activating", "cs2-plugins@*.service"];
+
 const SHOW_OK = "Id=cs2.service\nActiveState=active\nActiveEnterTimestamp=@1792828391\n\nId=cs2-update.service\nActiveState=inactive\nActiveEnterTimestamp=\n";
 
 /** Фалшив execFile: записва извикванията; отговорът зависи от (файл, първия аргумент). */
@@ -353,6 +356,7 @@ test("status: активен от ActiveEnterTimestamp, версията от st
   assert.deepEqual(r.data, { active: true, state: "active", since, gameVersion: "1.41.9.2", modsLoaded: true, broken: null, busy: null });
   assert.deepEqual(calls.map((c) => [c.file, ...c.args]), [
     [BIN.systemctl, "show", "cs2.service", "cs2-update.service", "--property=Id,ActiveState,ActiveEnterTimestamp", "--timestamp=unix"],
+    LIST_PLUGINS,
   ]);
 
   writeFileSync(paths.modsBroken, "1.41.9.3\n");
@@ -373,6 +377,7 @@ test("restart: точно `systemctl --no-ask-password restart cs2.service`, н�
   assert.deepEqual(r, { ok: true });
   assert.deepEqual(calls.map((c) => [c.file, ...c.args]), [
     [BIN.systemctl, "show", "cs2.service", "cs2-update.service", "--property=Id,ActiveState,ActiveEnterTimestamp", "--timestamp=unix"],
+    LIST_PLUGINS,
     [BIN.systemctl, "--no-ask-password", "restart", "cs2.service"],
   ]);
   assert.ok(calls.every((c) => typeof c.opts.timeout === "number" && c.opts.timeout > 0));
@@ -839,7 +844,8 @@ test("unit: втвърден — без права, без запис, само 
   assert.equal(svc.PrivateNetwork, undefined, "Redis и A2S са в мрежата на хоста");
   assert.equal(svc.PrivateUsers, undefined, "polkit вижда истинския uid");
   const ro = one("ReadOnlyPaths").split(/\s+/);
-  assert.ok(ro.includes("-/opt/cs2/server/game/csgo/addons/counterstrikesharp/logs"));
+  assert.ok(ro.includes("-/opt/cs2/server/game/csgo/addons"), "логовете на CSS и файловете на модовете (§14)");
+  assert.ok(ro.includes("-/usr/local/lib/cs2dm/server/mods"), "версиите от копието на mods.lock");
   assert.ok(ro.every((p) => p.startsWith("-/")), "липсващ път не бива да проваля старта");
   const hidden = one("InaccessiblePaths").split(/\s+/);
   assert.ok(hidden.includes("-/opt/cs2/server/game/csgo/addons/counterstrikesharp/configs"), "конфигът на плъгина е с тайни");
@@ -872,6 +878,21 @@ test("polkit: cs2agent може САМО start/stop/restart на cs2.service и 
     "org.freedesktop.login1.reboot", "org.freedesktop.login1.power-off", "org.freedesktop.policykit.exec"]) {
     assert.equal(decide("cs2agent", other, { unit: "cs2.service", verb: "restart" }), Result.NO, other);
   }
+});
+
+test("polkit: cs2agent — САМО start на cs2-plugins@<install|remove|enable|disable>-<id>.service (§14)", () => {
+  for (const op of ["install", "remove", "enable", "disable"]) {
+    assert.equal(decide("cs2agent", MANAGE, { unit: `cs2-plugins@${op}-cosmetics.service`, verb: "start" }), Result.YES, op);
+  }
+  const denied = [
+    ["cs2-plugins@disable-cosmetics.service", "stop"], ["cs2-plugins@disable-cosmetics.service", "restart"],
+    ["cs2-plugins@purge-cosmetics.service", "start"], ["cs2-plugins@.service", "start"],
+    ["cs2-plugins@disable-.service", "start"], ["cs2-plugins@disable-Cosmetics.service", "start"],
+    ["cs2-plugins@disable-cos-metics.service", "start"], ["cs2-plugins@disable-cosmetics.service.d", "start"],
+    ["xcs2-plugins@disable-cosmetics.service", "start"], ["cs2-plugins@disable-cosmetics.socket", "start"],
+    [`cs2-plugins@disable-${"a".repeat(33)}.service`, "start"], ["cs2-plugins@disable-cosmetics\n.service", "start"],
+  ];
+  for (const [u, v] of denied) assert.equal(decide("cs2agent", MANAGE, { unit: u, verb: v }), Result.NO, `${v} ${u}`);
 });
 
 test("polkit: за всички други потребители правилото не решава нищо", () => {

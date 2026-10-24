@@ -56,7 +56,7 @@ const statusSchema = z.object({
   gameVersion: z.union([z.string().max(64), z.number()]).nullish(),
   modsLoaded: z.boolean().nullish(),
   broken: z.union([z.string().max(128), z.boolean()]).nullish(),
-  busy: z.enum(['start', 'stop', 'restart', 'update']).nullish(),
+  busy: z.enum(['start', 'stop', 'restart', 'update', 'plugin']).nullish(),
 });
 
 export interface AgentStatus {
@@ -68,7 +68,7 @@ export interface AgentStatus {
   modsLoaded: boolean | null;
   /** Версията, при която модовете са счупени (ванилов резерв), или null. */
   broken: string | null;
-  busy: 'start' | 'stop' | 'restart' | 'update' | null;
+  busy: 'start' | 'stop' | 'restart' | 'update' | 'plugin' | null;
 }
 
 export function parseAgentStatus(data: unknown): AgentStatus | null {

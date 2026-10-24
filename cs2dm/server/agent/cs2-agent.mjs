@@ -2,14 +2,16 @@
 // cs2-agent.mjs — агентът на хоста за уеб панела на cs2dm (CONTRACT.md §9). Нула зависимости, Node ≥ 20.
 //
 // Сайтът е в Docker и не може да пипа systemd. Агентът слуша подписани команди в Redis
-// (`cs2dm:agent:cmd`) и прави САМО шест неща: status · start · stop · restart · update · logs. Отговаря в
+// (`cs2dm:agent:cmd`) и прави САМО осем неща: status · start · stop · restart · update · logs · plugins ·
+// plugin (плъгините от панела, §14 — agent-plugins.mjs). Отговаря в
 // `cs2dm:agent:ack`. На всеки 10 s пише A2S снимка в `cs2dm:a2s` (EX 30) — статусът, когато
 // плъгинът спи (празен сървър).
 //
 // Сигурност: подпис HMAC-SHA256 с отделен ключ CS2DM_AGENT_KEY (както мостът в §5), ±30 s, пази
 // последните 1000 id; изпълнение САМО с execFile (без shell), абсолютни пътища, затворен списък;
 // start/stop/restart/update са еднопоточни; логовете минават през редакция (IP, GSLT, 32+ hex, пароли).
-// Тече като `cs2agent` без root — systemd действията ги разрешава polkit само за два unit-а.
+// Тече като `cs2agent` без root — systemd действията ги разрешава polkit само за cs2.service,
+// cs2-update.service и cs2-plugins@<op>-<id>.service.
 //
 //   node cs2-agent.mjs                         агентът (настройки от средата, виж configFromEnv)
 //   node cs2-agent.mjs --selftest [env файл]   подписан status + logs към работещия агент (за install-agent.sh)
@@ -22,11 +24,12 @@ import { createInterface } from "node:readline";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { queryInfo } from "../a2s.mjs";
+import { PLUGIN_WAIT_MS, PLUGINS_UNIT_GLOB, pluginStates, pluginUnitsBusy, validatePluginArgs } from "./agent-plugins.mjs";
 
 // ── Договорът (CONTRACT.md §9) ──────────────────────────────────────────────────────────────────
 
 export const CHANNELS = Object.freeze({ cmd: "cs2dm:agent:cmd", ack: "cs2dm:agent:ack", a2s: "cs2dm:a2s" });
-export const ACTIONS = Object.freeze(["status", "start", "stop", "restart", "update", "logs"]);
+export const ACTIONS = Object.freeze(["status", "start", "stop", "restart", "update", "logs", "plugins", "plugin"]);
 export const MAX_SKEW_MS = 30_000;
 export const REPLAY_CAPACITY = 1000;
 export const MAX_LINES = 200;
@@ -50,6 +53,9 @@ export function defaultPaths(env = process.env) {
     cssLogs: env.CS2DM_CSS_LOGS || "/opt/cs2/server/game/csgo/addons/counterstrikesharp/logs",
     steamInf: env.CS2DM_STEAM_INF || "/opt/cs2/server/game/csgo/steam.inf",
     modsBroken: join(env.CS2DM_STATE_DIR || "/var/lib/cs2dm", "mods-broken"),
+    // Плъгините от панела (§14): файловете на модовете и копието на mods.lock, което root пуска.
+    csgo: env.CS2DM_CSGO_DIR || "/opt/cs2/server/game/csgo",
+    modsLock: env.CS2DM_MODS_LOCK || "/usr/local/lib/cs2dm/server/mods/mods.lock",
   };
 }
 
@@ -621,6 +627,16 @@ export function createDispatcher({ exec = execAllowed, paths = defaultPaths() } 
     return parseShow(stdout);
   }
 
+  /** Тече ли инсталиране/премахване/местене от панела (cs2-plugins@…, §14). */
+  async function pluginsActive() {
+    const { stdout } = await exec(
+      BIN.systemctl,
+      ["list-units", "--all", "--plain", "--no-legend", "--state=activating", PLUGINS_UNIT_GLOB],
+      { timeout: 10_000 },
+    );
+    return pluginUnitsBusy(stdout);
+  }
+
   /** @param {number} since */
   async function modsLoaded(since) {
     const now = Date.now();
@@ -648,12 +664,12 @@ export function createDispatcher({ exec = execAllowed, paths = defaultPaths() } 
       gameVersion,
       modsLoaded: active && since !== null ? await modsLoaded(since) : false,
       broken,
-      busy: running ?? (update.ActiveState === "activating" ? "update" : null),
+      busy: running ?? (update.ActiveState === "activating" ? "update" : (await pluginsActive()) ? "plugin" : null),
     };
   }
 
   /**
-   * @param {"start" | "stop" | "restart" | "update"} action
+   * @param {"start" | "stop" | "restart" | "update" | "plugin"} action
    * @param {string[]} args
    * @param {number} timeout
    */
@@ -661,8 +677,10 @@ export function createDispatcher({ exec = execAllowed, paths = defaultPaths() } 
     if (running) return { ok: false, error: "busy" };
     running = action;
     try {
-      // Ъпдейтът (таймерът на 10 мин или от панела) спира и пуска играта сам — не се намесваме.
+      // Ъпдейтът (таймерът на 10 мин или от панела) спира и пуска играта сам — не се намесваме; същото и
+      // докато плъгин от панела се инсталира/маха (install-mods.sh рестартира).
       if ((await unitStates()).get(UPDATE_UNIT)?.ActiveState === "activating") return { ok: false, error: "busy" };
+      if (await pluginsActive()) return { ok: false, error: "busy" };
       await exec(BIN.systemctl, args, { timeout });
       return { ok: true };
     } catch (err) {
@@ -710,6 +728,18 @@ export function createDispatcher({ exec = execAllowed, paths = defaultPaths() } 
           return await mutate("restart", ["--no-ask-password", "restart", GAME_UNIT], 120_000);
         case "update":
           return await mutate("update", ["--no-ask-password", "start", "--no-block", UPDATE_UNIT], 30_000);
+        case "plugins": {
+          const busy = running !== null || (await pluginsActive());
+          return { ok: true, data: { mods: await pluginStates(paths), busy } };
+        }
+        // enable/disable само местят файлове — чакаме; install/remove свалят и рестартират — `--no-block`.
+        case "plugin": {
+          const v = validatePluginArgs(args);
+          if (!v.ok) return v;
+          const quick = v.op === "enable" || v.op === "disable";
+          const call = quick ? ["--no-ask-password", "start", v.unit] : ["--no-ask-password", "start", "--no-block", v.unit];
+          return await mutate("plugin", call, quick ? PLUGIN_WAIT_MS : 30_000);
+        }
         case "logs": {
           const v = validateLogsArgs(args);
           if (!v.ok) return v;
