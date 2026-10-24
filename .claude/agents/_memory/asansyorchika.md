@@ -7,6 +7,7 @@
 публични. Без тайни/лични данни.
 
 ## Проверени поуки (verified)
+- **2026-10-24:** Codice PI (текст в сила от 1/1/2023) V.3.3.4 т.4 — шахта SD: защитеното преддверие е поне като филтър (гл. S.3), брутна площ поне 5 m²; V.3.3.4 т.2 препоръчва UNI EN 81-72; V.3.3.1 т.3 препоръчва UNI EN 81-73 за всички типове (препоръка, не задължение) _(асансьори SD/SE и всички типове по Codice PI; при ново координирано издание — пресвери; verified; https://www.unipr.it/sites/default/files/2023-11/DM_03_08_2015_Codice_Prevenzione_Incendi.pdf (стр. V.3-2))_
 - **2026-10-21:** UNI EN 81-21:2022 5.8.2 b) 3)–4) — nessun tempo fissato per l'estensione a rete assente; ritrazione automatica solo con porte di piano chiuse e bloccate (i) o solo manuale (ii) _(grembiule retrattile, soccorso e alimentazione di riserva; verified; ../norme-ascensori/uni-en-81-21-2022.md:229)_
 - **2026-10-21:** UNI EN 81-21:2022 5.8.2 b) 2) impone il blocco della porta di cabina; con UNI EN 81-20:2020 5.2.5.3.1 c) la porta si apre solo in zona di sbloccaggio (≤ 0,20 m / 0,35 m, 5.3.8.1): soccorso fuori zona impossibile con grembiule 5.8.2 b) _(grembiule retrattile, soccorso al piano più basso; verified; ../norme-ascensori/uni-en-81-20-2020.md:210)_
 - **2026-10-21:** UNI EN 81-20:2020 Prospetto A.1 — 5.5.3 c) 2) rilevamento del sollevamento di cabina/contrappeso: SIL 1 (DES alternativo allo slittamento delle funi) _(contrappeso fermo su arresti mobili di testata, aderenza; verified; ../norme-ascensori/uni-en-81-20-2020.md:1289)_
