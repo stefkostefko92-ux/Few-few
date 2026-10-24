@@ -5,6 +5,7 @@ import { PageHero, EmptyState } from "@/components/ui";
 import { buildMetadata, canonical } from "@/lib/seo";
 import { plainText } from "@/lib/markdown";
 import { newsDate } from "@/lib/news";
+import { formatDate, isoDate } from "@/lib/format-date";
 import { RssLink } from "./RssLink";
 
 export const dynamic = "force-dynamic";
@@ -32,16 +33,6 @@ export const metadata: Metadata = {
   },
 };
 
-function fmt(d: Date | null): string {
-  if (!d) return "";
-  return new Intl.DateTimeFormat("bg-BG", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "Europe/Sofia",
-  }).format(d);
-}
-
 export default async function NewsPage() {
   const posts = await prisma.post.findMany({
     where: { published: true },
@@ -56,34 +47,40 @@ export default async function NewsPage() {
         crumbs={[{ name: "Новини", path: "/novini" }]}
       />
       <div className="container-content py-10">
-        <div className="mb-6 flex flex-wrap items-center gap-3">
-          <RssLink />
-          <p className="text-sm text-slate-600">
-            Новите съобщения идват сами в приложение за новини (RSS четец).
-          </p>
-        </div>
         {posts.length === 0 ? (
           <EmptyState title="Все още няма публикувани новини." />
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {posts.map((p) => (
-              <Link key={p.id} href={`/novini/${p.slug}`} className="card">
-                <div className="text-sm text-slate-600">
-                  <time dateTime={newsDate(p).toISOString()}>{fmt(newsDate(p))}</time>
-                </div>
-                <h2 className="mt-1 text-lg font-semibold text-slate-900">
-                  {p.title}
-                </h2>
-                <p className="mt-1 text-sm text-slate-600">
-                  {p.excerpt || plainText(p.content, 130)}
-                </p>
-                {p.source && (
-                  <div className="mt-2 text-xs text-slate-600">Източник: {p.source}</div>
-                )}
-              </Link>
-            ))}
-          </div>
+          // Една колона за четене (не зигзаг в две); датата — първа.
+          <ul role="list" className="grid max-w-3xl gap-4">
+            {posts.map((p) => {
+              const d = newsDate(p);
+              return (
+                <li key={p.id}>
+                  <Link href={`/novini/${p.slug}`} className="card group block">
+                    <p className="text-sm font-medium text-brand-700">
+                      <time dateTime={isoDate(d)}>{formatDate(d)}</time>
+                    </p>
+                    <h2 className="h-card mt-1 group-hover:text-brand-700 group-hover:underline">
+                      {p.title}
+                    </h2>
+                    <p className="mt-1 text-base text-slate-700">
+                      {p.excerpt || plainText(p.content, 160)}
+                    </p>
+                    {p.source && <span className="badge mt-3">Източник: {p.source}</span>}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         )}
+
+        {/* Абонаментът е за малцина — под списъка, с обяснение, а не първи. */}
+        <div className="mt-10 flex max-w-3xl flex-col gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center">
+          <RssLink />
+          <p className="text-base text-slate-600">
+            Новите съобщения идват сами в приложение за новини (RSS четец).
+          </p>
+        </div>
       </div>
     </>
   );
