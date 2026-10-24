@@ -854,7 +854,7 @@
   "cue": {
     "power": "Potenza",
     "shoot": "Tira",
-    "yourTurn": "Mira e tira",
+    "yourTurn": "Clicca o trascina sul tavolo per mirare, poi tira",
     "yourTurnBih": "Palla in mano — posiziona e tira",
     "placeCue": "Posiziona la bianca",
     "placeHint": "Clicca per posizionare la bianca",
@@ -913,7 +913,7 @@
     "spinReset": "Senza effetto",
     "spinHelp": "Scegli dove la stecca colpisce la bianca: in alto — prosegue dopo l'impatto (a seguire), in basso — torna indietro (a rientrare), di lato — cambia il rimbalzo sulla sponda. Frecce per spostare, Maiusc per passi più fini, Home per il centro.",
     "callPocket": "Buca per la 8",
-    "callPocketHint": "Sei sulla 8 — dichiara la buca (clic vicino alla buca o sui pulsanti)",
+    "callPocketHint": "Sei sulla 8 — dichiara la buca (clic sulla buca o sui pulsanti)",
     "calledPocket": "buca dichiarata",
     "pockets": {
       "0": "in alto a sinistra",
