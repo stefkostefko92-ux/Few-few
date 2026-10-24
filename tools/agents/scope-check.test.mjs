@@ -27,6 +27,14 @@ test("само инфра/root → ок", () => {
   assert.equal(r.products.length, 0);
 });
 
+// research/ е документация, не продукт — проучването и продуктът, който то обосновава, вървят
+// заедно в един PR (регресия за фалшивото нарушение от PR #163).
+test("research/ е инфра, не продукт", () => {
+  const r = checkScope(["research/fivem/README.md", "FiveM/src/lib/fivem.ts", "CLAUDE.md"]);
+  assert.equal(r.ok, true);
+  assert.deepEqual(r.products, ["FiveM"]);
+});
+
 test("./ префикс се нормализира", () => {
   const r = checkScope(["./medqr/a.js", "./panev/b.js"]);
   assert.equal(r.ok, false);

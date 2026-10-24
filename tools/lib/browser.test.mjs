@@ -4,10 +4,27 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { findChromium, launchChromium } from "./browser.mjs";
+import { findChromium, launchChromium, pickChromium } from "./browser.mjs";
 
 test("findChromium: несъществуваща база → null, не изключение", () => {
   assert.equal(findChromium("/няма/такава/папка"), null);
+});
+
+// Регресия от целия деплой пробег (02.08): `authz-probe.mjs` живее в `FiveM/`, а
+// този помощник — в `tools/lib/`. Голото име се резолвва от папката на ФАЙЛА,
+// който внася, тоест `FiveM/node_modules` не се поглежда никога и инструментът
+// излизаше с „НЕИЗМЕРЕНО" при налична зависимост. Резервният път внася по ФАЙЛОВ
+// адрес — и тогава картата `exports` се заобикаля, а именуваните износи изчезват.
+test("pickChromium: намира chromium и през `default` (внасяне по файлов адрес)", () => {
+  const marker = { launch: () => {} };
+  assert.equal(pickChromium({ chromium: marker }), marker, "именуван износ (внасяне по име)");
+  assert.equal(
+    pickChromium({ default: { chromium: marker } }),
+    marker,
+    "само `default` — точно формата при внасяне по път; без този клон поправката е нефункционална",
+  );
+  assert.equal(pickChromium({ default: {} }), null, "липсващ chromium не бива да е undefined-обект");
+  assert.equal(pickChromium(null), null, "неуспешен внос не бива да хвърля");
 });
 
 test("launchChromium: връща { browser } ИЛИ { error } — никога не хвърля, никога не мълчи", async () => {
