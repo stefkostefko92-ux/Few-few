@@ -9,6 +9,7 @@
 то е недоказуемо и не влиза в паметта като факт.
 
 ## Проверени поуки (verified)
+
 - **2026-10-24:** CCXT binance parseOrderStatus мапва TRIGGERING→open, TRIGGERED→closed, FINISHED→closed, EXPIRED_IN_MATCH→expired; guard за потвърден жив стоп приема само open, а closed при стоп значи задействан, не жив. _(проверка на статус на стоп поръчка през CCXT binance; verified; https://raw.githubusercontent.com/ccxt/ccxt/master/ts/src/binance.ts (parseOrderStatus, master 2026-10-24 ≈:6155-6172))_
 - **2026-10-24:** CCXT binance createOrderRequest маха reduceOnly от заявката само при margin, при не-contract с marginMode или при hedged деривати; при чист spot параметърът стига до POST /api/v3/order. _(поставяне на spot стоп през CCXT binance; verified; https://raw.githubusercontent.com/ccxt/ccxt/master/ts/src/binance.ts (createOrderRequest, master 2026-10-24 ≈:7303-7308,:7645))_
 - **2026-10-24:** EUR-Lex (legal-content HTML/PDF и ELI) връща HTTP 202 с празно тяло на curl и празно съдържание на WebFetch; автоматична verbatim проверка на регламент оттук не работи и се маркира остава или се проверява ръчно от човек. _(пресверка на ЕС регулация (MAR/MiFID II) от агентската среда; verified; curl -sS -L -w '%{http_code} %{size_download}' https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32014R0596 → 202 0 (2026-10-24))_
@@ -210,9 +211,9 @@
   под стрес): disposition effect (стоп+таргет преди входа), revenge trading (cooldown + дневен loss
   limit), over-trading (лимит сделки/ден), местене на стоп надолу (забранено, само trailing нагоре),
   all-in (фиксиран риск% + таван), averaging down (забранено); Livermore фалира 4 пъти точно на тези _(trading psychology; verified; https://enlightenedstocktrading.com/disposition-effect-in-trading/ + https://macro-ops.com/jesse-livermores-strategy-flaw-position-sizing/)_
-- **2026-07-01:** Внедрено в treydar: fractionalKelly() в risk.js (¼-Kelly от реализираната статистика,
+- **2026-07-01 (пресверена 2026-10-24):** Внедрено в treydar: fractionalKelly() в risk.js (¼-Kelly от реализираната статистика,
   капнат, 0 при <30 сделки/без едж); journal.js записва сделки в R; coach.js/review.js смята expectancy
-  и маркира повтарящи се грешки — реален цикъл „учи от грешките си" _(treydar learning loop; verified; treydar/src/coach.js + treydar/src/journal.js)_
+  и маркира повтарящи се грешки — реален цикъл „учи от грешките си" _(treydar learning loop; verified; treydar/src/risk.js:56-65 (fractionalKelly: 0 при trades<30 :57, 0 без едж :62, таван :64) · treydar/src/journal.js:14-25 (rMultiple :16) · treydar/src/coach.js:6-68 (expectancyR :15, ¼-Kelly :25, маркери за грешки :37-57) · treydar/src/review.js:5-8 · treydar/package.json:14 ("review"))_
 - **2026-07-01:** Внедрени проф. предпазители в treydar: (1) ADX режим-филтър (indicators.adx + strategy)
   — вход само в силен тренд; (2) честотни спирачки risk.tradingAllowedByFrequency — дневен лимит сделки
   + cooldown след загуба (психология → правила срещу over/revenge trading); (3) Monte Carlo risk-of-ruin
@@ -220,12 +221,12 @@
   portfolio.js (correlation/groupByCorrelation/canOpenPosition) + portfolio-backtest.js за Dalio Holy Grail
   (некорелирани потоци сваля риска); (5) engine.js споделен симулационен двигател; (6) CI workflow treydar.
   37/37 теста, линт чист _(treydar pro guards; verified; treydar/src/{portfolio,engine,metrics,indicators,risk}.js + .github/workflows/treydar.yml)_
-- **2026-07-02:** Мулти-символен режим в treydar (multibot.js): портфейлните лимити се проверяват на
+- **2026-07-02 (пресверена 2026-10-24):** Мулти-символен режим в treydar (multibot.js): портфейлните лимити се проверяват на
   ВСЕКИ вход (canOpenPosition: макс едновременни, общ риск, риск в корелирана група — корелация на живо
   от затворени свещи); всички символи споделят една quote валута (валидирано в config). Поука от
   прегледа: dry-run журналираше фалшиви стоп-изходи (борсовият баланс е 0 без реални поръчки) → paper
   позициите трябва да живеят в state със симулиран стоп, иначе тровят статистиката на тренера
-  _(multibot + dry-run journal fix; verified; treydar/src/multibot.js + treydar/src/bot.js)_
+  _(multibot + dry-run journal fix; verified; treydar/src/multibot.js:104-114 (canOpenPosition на всеки вход: maxConcurrent/maxPortfolioRiskPct/maxGroupRiskPct) · :178-181 (корелация от затворените свещи) · :44-46 (dry-run: симулиран стоп от state) · treydar/src/portfolio.js:45 · treydar/src/config.js:73-81 (една quote валута) · treydar/src/bot.js:53-55,69 (paper позиция в паметта))_
 - **2026-07-02:** CCXT fetchOHLCV(symbol, timeframe='1m', since=ms, limit, params): резултатът е ГАРАНТИРАНО подреден възходящо (най-стара свещ първа, най-нова последна). since е в милисекунди; без since диапазонът е борсово-специфичен (пиши since за точен диапазон). Възможни gaps при липса на сделки (нормално). Авто-паджиниране за OHLCV е 'deterministic' (paginate:true, paginationCalls default 10, experimental). _("ccxt fetchOHLCV/бектест данни"; verified (промотирано след реална проверка — жив fetch на Manual, куратор 2026-07-02); "https://github.com/ccxt/ccxt/wiki/Manual (OHLCV Candlestick Charts ред 3512,3575-3585,3681; Pagination 2472)")_
 - **2026-07-02:** CCXT setSandboxMode(true) сменя URL-а към testnet-а на борсата (сандбоксът е клон на prod API, само различен URL); ТРЯБВА да е първото извикване веднага след създаване на инстанцията, преди всяко друго; работи само ако борсата поддържа sandbox и изисква ОТДЕЛНИ sandbox API ключове. _("ccxt sandbox/testnet"; verified (промотирано след реална проверка — жив fetch на Manual, куратор 2026-07-02); "https://github.com/ccxt/ccxt/wiki/Manual (Sandbox/Test mode ред 562-605)")_
 - **2026-07-02:** CCXT Manual потвърждава идемпотентния ретрай: при createOrder + RequestTimeout потребителят НЕ знае изхода и НЕ бива да изстрелва пак сляпо — първо fetchOrders/fetchOpenOrders/fetchClosedOrders дали поръчката е 'open', и ако не — fetchBalance дали салдото се е сменило (минала и затворена). За cancelOrder — ретрай веднъж; втори опит връща успех или OrderNotFound (вече отменена/изпълнена). _("ccxt идемпотентност/createOrder"; verified (промотирано след реална проверка — жив fetch на Manual, куратор 2026-07-02); "https://github.com/ccxt/ccxt/wiki/Manual (RequestTimeout ред 8791-8803)")_
