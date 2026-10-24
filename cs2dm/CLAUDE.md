@@ -7,8 +7,10 @@ CS2 общностен сървър: **само de_dust2, Deathmatch (FFA)**, п
 
 _Сега: **фаза 1** (ванилов сървър под systemd на сегашния VPS) + **фаза 2** (Metamod 2.0 +
 CounterStrikeSharp + DM плъгин на NockyCZ, заковани по sha256). Стек: bash + systemd + zero-dep
-Node ESM (здраве през A2S). Следва: наши C# плъгини на PostgreSQL (админ меню, банове, статистики,
-прогресия), сайт + уеб панел, Discord бот. Банове и класация — **публични на сайта** (решение на
+Node ESM (здраве през A2S). Плюс **сайтът, етап 1** (`app/` — публичната част: статус, класация,
+профили, банлист, VIP, правни страници; Express + EJS + Prisma + Redis + BullMQ). Следва: наши C#
+плъгини на PostgreSQL (админ меню, банове, статистики, прогресия), уеб панел и вход със Steam (етап 2),
+Discord бот. Банове и класация — **публични на сайта** (решение на
 собственика), затова админ системата е наша на Postgres, не CS2-SimpleAdmin (MySQL + три
 неподдържани меню зависимости)._
 
@@ -16,10 +18,17 @@ Node ESM (здраве през A2S). Следва: наши C# плъгини �
 
 ```bash
 cd cs2dm
-npm run gate      # lint (bash -n, node --check) + node --test + tools/vps/deploy-check.mjs
+npm run gate      # сървърът: lint (bash -n, node --check) + node --test + tools/vps/deploy-check.mjs
+
+cd cs2dm/app      # сайтът — СВОЙ гейт и свои зависимости (CI: задачи `app` + `app-integration`)
+npm ci && npm run typecheck && npm run format:check && npm test && npm run build
+DATABASE_URL=postgresql://… npm test   # + интеграционните (истинска база + Redis на REDIS_TEST_URL, /15)
+npm run dev                            # локално на :4330 (DATABASE_URL, REDIS_URL от .env)
 ```
 
-Нула зависимости → без `npm ci`. На сървъра: `sudo bash server/install.sh --check` (само проверки).
+Сървърът е с нула зависимости → без `npm ci`. На сървъра: `sudo bash server/install.sh --check`
+(само проверки). Без `DATABASE_URL` интеграционните тестове се пропускат чисто; със — създават само
+SteamID-та `76561190000990xxx` и ги трият преди и след себе си.
 
 ## Структура
 
@@ -35,6 +44,25 @@ server/mods/config/                  core.json (CSS) · Deathmatch.json (ген�
 server/systemd/                      cs2.service · cs2-update.service · cs2-update.timer
 server/cs2.env.example               шаблон за /etc/cs2/cs2.env (GSLT, IP, порт, слотове)
 test/                                node --test: A2S протокол + конфиг/unit/скриптове
+CONTRACT.md                          договорът плъгин ↔ приложение (роли, банлист, XP, heatmap, Redis, срокове)
+
+app/                                 публичният сайт cs2.carbonstealth.eu (етап 1) — Node 22 · TS strict ESM
+  prisma/schema.prisma + migrations/ ЕДИНСТВЕНИЯТ източник на схемата (C# плъгинът пише по @map имената)
+  src/index.ts · src/worker.ts       уеб процесът · BullMQ работникът (чистене по CONTRACT §7, на 6 ч)
+  src/server.ts                      Express 5: helmet (строг CSP с nonce), rate limit, pino без IP, 404/500
+  src/routes/pages.ts                /{bg|en|it}/: начало, leaderboard, player/:steamId64, bans, vip, правни
+  src/routes/root.ts                 / → език · robots.txt · sitemap.xml · llms.txt · IndexNow · /bans без език
+  src/routes/health.ts               /health — база + Redis, JSON, 200/503
+  src/data/repo.ts                   интерфейсът (само публичните полета) · prisma-repo.ts · cached-repo.ts
+  src/levels.ts · mastery.ts · heatmap.ts   формулите от CONTRACT §3–4 (тестови стойности в tests/)
+  src/live.ts                        `cs2dm:live` от Redis → статус (липсва/повреден/стар = НЕИЗВЕСТЕН)
+  src/seo.ts · content.ts            canonical/hreflang/OG/JSON-LD · дати на промяна, срокове, разделите
+  locales/{bg,en,it}.json            всички текстове (bg = източник; паритетът е тест)
+  views/                             EJS: partials/head.ejs (целият SEO head) · страниците · error.ejs
+  public/                            site.css · app.js (само „Копирай“) · шрифтове Sofia Sans (OFL) · og.png
+  scripts/og.py                      прави og.png и apple-touch-icon.png (Pillow) при смяна на визията
+  Dockerfile · docker-compose.yml    db + redis + web + worker; портове САМО на 127.0.0.1 (4330/5442/6392)
+  deploy/nginx/cs2.carbonstealth.eu.conf   TLS + HSTS + прокси към 127.0.0.1:4330
 ```
 
 На машината: играта `/opt/cs2/server` (потребител `cs2`), SteamCMD `/opt/cs2/steamcmd`, скриптовете,
@@ -67,3 +95,40 @@ test/                                node --test: A2S протокол + кон�
   CSS), не на ръка — при нова версия на плъгина се генерира наново.
 - Споделен VPS: `CPUWeight=1000` + `Nice=-5`; закрепване към ядра (`AllowedCPUs=`) само след измерване,
   в drop-in. Изходен план: всичко е преносимо на отделна машина.
+
+## Конвенции на сайта (`app/`)
+
+Моделът е `piuma/` (Express 5 + EJS + TS strict ESM + Prisma 6.19 + ioredis + BullMQ + pino + helmet +
+zod); код между продуктите не се споделя — само шаблоните са преписани.
+
+- **Схемата е договор.** `prisma/schema.prisma` и миграциите се пипат само заедно с C# плъгина и
+  `CONTRACT.md`, в същия PR. Сайтът на етап 1 само ЧЕТЕ (работникът трие по сроковете).
+- **Банлистът показва САМО** `steam_id`, `target_name`, `category`, `created_at`, `expires_at` — и то
+  само активните (CONTRACT §2). `PUBLIC_BAN_SELECT` в `prisma-repo.ts` изброява полетата; типът
+  `PublicBan` няма `reason`; тестът подава ред С причина, IP и админ и доказва, че не стигат до HTML.
+  Банлистът е `noindex` (мета + `X-Robots-Tag`) и не е в sitemap. Нов публичен ред → нов тест.
+- **`hidden_from_leaderboards = true`** (чл. 21 GDPR) скрива играча от класацията, профила (404) и sitemap.
+- **Статусът на живо никога не се измисля.** Липсващ/повреден/по-стар от 60 s `cs2dm:live` →
+  „статусът е неизвестен“ и `GameServer` без `serverStatus`.
+- **Heatmap:** само агрегирани клетки 32 px, прозорец 30 дни със закъснение 1 час, наша решетка A–H ×
+  1–8; никакъв радар, лого, скин или друго изображение на Valve.
+- **Формулите са в един файл** (`levels.ts`, `mastery.ts`, `heatmap.ts`) с тестовите стойности от
+  CONTRACT — същите константи като в C#. Промяна → и в плъгина.
+- **Текстовете са само в `locales/`** (bg първо; en/it пълен паритет, IT на „Lei“ с «…»). Тестът
+  забранява кирилица в шаблоните и маршрутите (освен логове и коментари `<%# %>` / `<!-- ПОТВЪРДИ -->`).
+- **SEO на всяка страница:** заглавие < 60, описание < 160, един H1, canonical, hreflang bg/en/it +
+  x-default→bg, OG + `summary_large_image`, JSON-LD (Organization + WebSite + WebPage + BreadcrumbList;
+  начало: + GameServer + FAQPage), ≥ 5 ключови думи с „Carbon Stealth“, подписът „Created and Designed
+  by Carbon Stealth VCC“. `tests/seo.test.ts` обхожда всички страници на трите езика.
+- **Без бисквитки, без тракери, без inline стил/скрипт** (CSP `style-src 'self'`; прогрес = `<progress>`).
+  Единственият скрипт е `public/app.js` (бутонът „Копирай“). Логовете нямат IP (политиката го обещава).
+- **Нула измислени данни:** празна база → празни състояния; фирмените данни и контактът идват от
+  `.env` (`COMPANY_*`, `CONTACT_EMAIL`) и при липса се показват като „не е въведено (ПРОМЕНЛИВА)“.
+- **Пари:** `vip_tiers.price_cents` — цели евроцентове с ДДС; форматира се само при показ
+  (`centsToDecimal` → Intl с точен десетичен низ).
+- **Правните текстове са чернова** (обща информация, не правен съвет). Държавата на хостинга и срокът по
+  ЗСч са маркирани с `<!-- ПОТВЪРДИ: … -->` в `views/privacy.ejs`. При промяна → дата в `content.ts`.
+- **Портовете:** сайт `127.0.0.1:4330`, Postgres `127.0.0.1:5442`, Redis `127.0.0.1:6392` (за плъгина на
+  хоста) — никога на всички интерфейси (Docker заобикаля ufw). Тестът `infra.test.ts` го пази.
+- SEO промяна след деплой → `node tools/seo/indexnow.mjs https://cs2.carbonstealth.eu` (ключът е в
+  `public/indexnow-key.txt`; не е тайна).
