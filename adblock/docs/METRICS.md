@@ -55,6 +55,7 @@ UTM-ите са само в линковете **към** магазина; ст
 | `ubo_alternative` | /ublock-origin-alternative |
 | `method` | /how-we-measure |
 | `press` | /press (и fact sheet-ът) |
+| `test` | /test (демонстрацията) |
 | `readme` | README.md |
 | `llms` | llms.txt |
 | `post` · `comment` · `profile` · `listing` | външните места: пост, коментар, профил, запис в каталог (напр. `utm_source=hn&utm_medium=post`) |

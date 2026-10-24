@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Regelkapasitet"
+  },
+  "helpTitle": {
+    "message": "Slutter nettsteder å virke?"
+  },
+  "helpText": {
+    "message": "Ett nettsted om gangen er nok: tillat annonsene der i én time, eller slå av skjuling av elementer bare der. Sier du fra til oss, fikser vi det for alle."
+  },
+  "helpFix": {
+    "message": "Fiks dette nettstedet"
+  },
+  "cardNever": {
+    "message": "Ikke vis dette igjen"
+  },
+  "cardClose": {
+    "message": "Lukk"
+  },
+  "receiptTitle": {
+    "message": "Dine siste 30 dager"
+  },
+  "receiptText": {
+    "message": "$1 forespørsler blokkert · $2 cookie-bannere besvart · omtrent $3 data spart (et anslag)"
+  },
+  "share": {
+    "message": "Del"
+  },
+  "shareTitle": {
+    "message": "Kopier lenken til Supreme AdBlock i Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Lenken er kopiert"
+  },
+  "rep_fixed_q": {
+    "message": "Ble nettstedet fikset?"
+  },
+  "rep_fixed_yes": {
+    "message": "Ja, det virker"
+  },
+  "rep_fixed_no": {
+    "message": "Nei, virker ikke ennå"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Fint at det virker. Sier du fra til oss nedenfor, viser rapporten hvilken løsning som virket, så vi kan fikse nettstedet for alle."
+  },
+  "rep_fixed_next": {
+    "message": "Prøv den neste: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Si da fra til oss nedenfor: vi ser på nettstedet."
+  },
+  "rep_webmail": {
+    "message": "Ingen e-postapp? Kopier rapporten og send den til $1 fra webmailen din."
+  },
+  "blk_mistake": {
+    "message": "Tror du dette er en feil? Si fra til oss"
+  },
+  "welTest": {
+    "message": "Se at det virker på en testside"
   }
 }

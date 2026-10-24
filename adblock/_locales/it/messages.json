@@ -801,5 +801,62 @@
   },
   "opt_h_capacity": {
     "message": "Capacità delle regole"
+  },
+  "helpTitle": {
+    "message": "I siti si rompono?"
+  },
+  "helpText": {
+    "message": "Basta un sito alla volta: consenti i suoi annunci per un'ora o disattiva l'occultamento degli elementi solo lì. Se ce lo segnali, lo sistemiamo per tutti."
+  },
+  "helpFix": {
+    "message": "Sistema questo sito"
+  },
+  "cardNever": {
+    "message": "Non mostrarlo più"
+  },
+  "cardClose": {
+    "message": "Chiudi"
+  },
+  "receiptTitle": {
+    "message": "I tuoi ultimi 30 giorni"
+  },
+  "receiptText": {
+    "message": "$1 richieste bloccate · $2 banner dei cookie gestiti · circa $3 di dati risparmiati (stima)"
+  },
+  "share": {
+    "message": "Condividi"
+  },
+  "shareTitle": {
+    "message": "Copia il link a Supreme AdBlock sul Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Link copiato"
+  },
+  "rep_fixed_q": {
+    "message": "Il sito ora funziona?"
+  },
+  "rep_fixed_yes": {
+    "message": "Sì, funziona"
+  },
+  "rep_fixed_no": {
+    "message": "No, è ancora rotto"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Bene. Se ce lo segnali qui sotto, la segnalazione dirà quale soluzione ha funzionato, così sistemiamo il sito per tutti."
+  },
+  "rep_fixed_next": {
+    "message": "Prova la prossima: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Allora segnalacelo qui sotto: daremo un'occhiata al sito."
+  },
+  "rep_webmail": {
+    "message": "Non hai un programma di posta? Copia la segnalazione e inviala a $1 dalla tua webmail."
+  },
+  "blk_mistake": {
+    "message": "Pensi che sia un errore? Segnalacelo"
+  },
+  "welTest": {
+    "message": "Guarda come funziona su una pagina di prova"
   }
 }

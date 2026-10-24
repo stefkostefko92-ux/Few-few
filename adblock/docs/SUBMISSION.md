@@ -14,7 +14,7 @@ file. Follow it top to bottom; nothing else to figure out.
 ## 1. The upload package
 
 ```bash
-bash tools/package.sh      # → dist/supreme-adblock-5.5.1.zip
+bash tools/package.sh      # → dist/supreme-adblock-5.6.0.zip
 ```
 
 Runtime files only (manifest, scripts, styles, rules, icons, locales). Docs,
@@ -197,6 +197,13 @@ Chromium; see that script's header) and `python3 store/screenshots/build.py --lo
 > file on the device and keeps only allowed sites and plain domain / `##` filter
 > lines; nothing is sent anywhere.
 >
+> **Popup tips, summary and Share (5.6.0).** Two rare bottom cards, at most one per opening and never
+> instead of the review card's own rules: "Sites breaking?" (once, when the user has allowed several
+> sites, turned element hiding off on sites or paused often this week — it points to the one-site fixes)
+> and a monthly summary built from the local daily counters (the data figure is labelled an estimate).
+> Pause times are kept on the device only, without sites. "Share" copies the clean listing URL to the
+> clipboard on a click; nothing is sent. No new permission.
+>
 > **Uninstall page and the pin tip (5.5.1).** For an install from the Chrome Web Store,
 > `runtime.setUninstallURL` points to a fixed, static page,
 > `https://adblock.carbonstealth.eu/bye` (help for a broken site, a reinstall link, an email
@@ -235,7 +242,7 @@ so this is an **update of the existing item**, not a new one:
    the privacy policy with Google's Limited Use statement goes live, and `filters.json`
    (data only — no `scriptlets` key) is published with a fresh Ed25519 signature. Check
    `https://adblock.carbonstealth.eu/privacy` shows the Limited Use section before you submit.
-1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.5.1.zip`.
+1. Open the item → **Package → Upload new package** → `dist/supreme-adblock-5.6.0.zip`.
 2. Refresh the listing (§3: description + the new feature bullets) **in every
    language that has its own description** — a package update does NOT replace the
    live text, and an old localised description still saying "100% free" fails the
@@ -272,7 +279,7 @@ so this is an **update of the existing item**, not a new one:
 
 ## 7. Pre-flight checklist
 
-- [ ] `manifest.json` and `package.json` versions match (5.5.1)
+- [ ] `manifest.json` and `package.json` versions match (5.6.0)
 - [ ] `npm test` (tests/) and `node tools/build_scriptlets.mjs --check` are green
 - [ ] `PW_ROOT=$(npm root -g) npm run test:browser` is green — real Chromium, including the
       back/forward-cache check (the page is restored on Back, with the extension on)
