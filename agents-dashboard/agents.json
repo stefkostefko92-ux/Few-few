@@ -1184,7 +1184,7 @@
           "anthropics/claude-code-security-review — таксономия на уязвимости, изключва шума",
           "VoltAgent + wshobson/agents — измерения и severity нива"
         ],
-        "lessons": 530
+        "lessons": 532
       },
       "evolution": [
         {
@@ -2014,9 +2014,20 @@
           "date": "2026-10-24",
           "event": "v41.2 — учене",
           "detail": "Научи: NVD (жива заявка 2026-10-24): CVE-2025-55182 е Analyzed, CVSS 10, pre-auth RCE в React … (+2 още)"
+        },
+        {
+          "version": "41.4.0",
+          "date": "2026-10-24",
+          "event": "v41.4 — учене",
+          "detail": "Научи: Към 2026-10-24 OSV дава за next@15.5.20 14 записа и за next@16.3.5 11, вкл. Critical RC… (+1 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-24",
+          "type": "learning",
+          "summary": "Научи: „Към 2026-10-24 OSV дава за next@15.5.20 14 записа и за next@16.3.5 11, вкл. Critical RC…\" (+1 още)"
+        },
         {
           "date": "2026-10-24",
           "type": "learning",
