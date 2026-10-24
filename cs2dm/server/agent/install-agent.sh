@@ -2,7 +2,7 @@
 # install-agent.sh — cs2-agent: агентът на хоста за уеб панела на cs2dm (CONTRACT.md §9).
 #
 # Идемпотентен, само като root. Самият агент НЕ е root: потребител cs2agent (системен, без shell),
-# polkit право САМО за restart на cs2.service и start на cs2-update.service, четене на журнала
+# polkit право САМО за start/stop/restart на cs2.service и start на cs2-update.service, четене на журнала
 # (група systemd-journal) и на логовете на CSS (група cs2) — без запис никъде.
 #
 # Ключовете (никога не се печатат; файловете са 0600, umask 077):
@@ -239,11 +239,11 @@ check_polkit() {
   [[ "$pid" =~ ^[1-9][0-9]*$ ]] || { warn "няма PID на агента — polkit не е проверен"; return 0; }
   local unit verb pair
   pk() { pkcheck --action-id org.freedesktop.systemd1.manage-units --process "$pid" --detail unit "$1" --detail verb "$2" >/dev/null 2>&1; }
-  for pair in "cs2.service restart" "cs2-update.service start"; do
+  for pair in "cs2.service start" "cs2.service stop" "cs2.service restart" "cs2-update.service start"; do
     read -r unit verb <<<"$pair"
     if pk "$unit" "$verb"; then ok "polkit: $verb $unit — разрешено"; else warn "polkit: $verb $unit — ОТКАЗАНО (панелът няма да може)"; fi
   done
-  for pair in "cs2.service stop" "cs2.service start" "cs2-update.service restart" "ssh.service restart" "cs2-agent.service stop"; do
+  for pair in "cs2.service reload" "cs2.service kill" "cs2-update.service restart" "ssh.service restart" "cs2-agent.service stop"; do
     read -r unit verb <<<"$pair"
     if pk "$unit" "$verb"; then
       systemctl stop cs2-agent.service

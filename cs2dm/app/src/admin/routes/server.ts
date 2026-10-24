@@ -13,7 +13,7 @@ import {
 } from '../server-data.js';
 
 /**
- * Сървърът през cs2-agent на хоста (§9): статус и логове — ADMIN+, рестарт и ъпдейт — HEADADMIN+.
+ * Сървърът през cs2-agent на хоста (§9): статус и логове — ADMIN+, старт/спиране/рестарт/ъпдейт — HEADADMIN+.
  * Сайтът е в Docker и не пипа systemd; агентът изпълнява само затворения си списък и вярва само на
  * подписа с CS2DM_AGENT_KEY. Правото се проверява тук, ПРЕДИ подписа.
  */
@@ -23,18 +23,23 @@ const logsQuery = z.object({
 });
 
 /**
- * Рестартът: агентът чака systemd до 120 s, преди да отговори, а nginx реже заявката на 30 s —
- * затова чакаме 25 s и мълчанието не е грешка, а „още тече“ (статусът показва `busy`).
+ * Старт/спиране/рестарт: агентът чака systemd до 120 s, преди да отговори, а nginx реже заявката на
+ * 30 s — затова чакаме 25 s и мълчанието не е грешка, а „още тече“ (статусът показва `busy`).
  */
 export const RESTART_WAIT_MS = 25_000;
 
+type ControlAction = 'start' | 'stop' | 'restart' | 'update';
+/** Чакат systemd (за разлика от update, който е `--no-block`). */
+const WAITS_FOR_SYSTEMD: ReadonlySet<ControlAction> = new Set(['start', 'stop', 'restart']);
+
 export function serverRoutes(ctx: AdminCtx): AdminRoute[] {
-  async function control(action: 'restart' | 'update', actor: string): Promise<ResultCode> {
+  async function control(action: ControlAction, actor: string): Promise<ResultCode> {
+    const waits = WAITS_FOR_SYSTEMD.has(action);
     const result = await ctx.agent.send(
       action,
       {},
       actor,
-      action === 'restart' ? { timeoutMs: RESTART_WAIT_MS } : {},
+      waits ? { timeoutMs: RESTART_WAIT_MS } : {},
     );
     await audit(ctx.db, {
       actor,
@@ -42,7 +47,7 @@ export function serverRoutes(ctx: AdminCtx): AdminRoute[] {
       details: { ok: result.ok, ...(result.ok ? {} : { error: commandErrorKey(result.error) }) },
     });
     if (result.ok) return 'sent';
-    if (action === 'restart' && result.error === 'timeout') return 'cmdPending';
+    if (waits && result.error === 'timeout') return 'cmdPending';
     return commandResultCode(commandErrorKey(result.error));
   }
 
@@ -93,21 +98,13 @@ export function serverRoutes(ctx: AdminCtx): AdminRoute[] {
         });
       },
     },
-    {
+    ...(['start', 'stop', 'restart', 'update'] as const).map((action): AdminRoute => ({
       method: 'post',
-      path: '/server/restart',
+      path: `/server/${action}`,
       cap: 'serverControl',
       handle: async (_req, res) => {
-        done(res, '/admin/server', await control('restart', me(res).steamId));
+        done(res, '/admin/server', await control(action, me(res).steamId));
       },
-    },
-    {
-      method: 'post',
-      path: '/server/update',
-      cap: 'serverControl',
-      handle: async (_req, res) => {
-        done(res, '/admin/server', await control('update', me(res).steamId));
-      },
-    },
+    })),
   ];
 }

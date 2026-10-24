@@ -1216,9 +1216,13 @@
       "broken": "Mods broken at version",
       "restart": "Restart",
       "restartConfirm": "Restart the server? All players will be kicked.",
+      "start": "Start",
+      "startConfirm": "Start the server?",
+      "stop": "Stop",
+      "stopConfirm": "Stop the server? All players will be kicked and the server stays down until you start it again — updates do not start it.",
       "update": "Update",
       "updateConfirm": "Run an update check? On a new version the server restarts.",
-      "controlNote": "A restart and an update cannot run at the same time.",
+      "controlNote": "Start, stop, restart and update cannot run at the same time.",
       "logs": "Logs",
       "source": "Source",
       "sources": {
@@ -1231,10 +1235,7 @@
       "logsEmpty": "No lines.",
       "back": "Back to the server",
       "busy": "Running now",
-      "busyKinds": {
-        "restart": "restart",
-        "update": "update"
-      },
+      "busyKinds": { "start": "start", "stop": "stop", "restart": "restart", "update": "update" },
       "detail": "Details from the agent:"
     },
     "settings": {

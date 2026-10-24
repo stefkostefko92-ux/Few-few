@@ -123,6 +123,8 @@ const EXPECTED: Record<string, keyof typeof CAPABILITIES> = {
   'get /audit': 'audit',
   'get /server': 'serverRead',
   'get /server/logs': 'serverRead',
+  'post /server/start': 'serverControl',
+  'post /server/stop': 'serverControl',
   'post /server/restart': 'serverControl',
   'post /server/update': 'serverControl',
   'get /settings': 'settings',

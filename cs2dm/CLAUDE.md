@@ -59,10 +59,10 @@ server/systemd/                      cs2.service · cs2-update.service/.timer ·
 server/cs2.env.example               шаблон за /etc/cs2/cs2.env (GSLT, IP, порт, слотове)
 server/mods/install-plugins.sh       фаза 3: билд на CarbonStealth (dotnet или SDK контейнер по digest) → инсталиране → конфиг 0600
 server/mods/plugin-config.mjs        конфигът на плъгина от /etc/cs2/cs2.env (валидира, нищо тайно в изхода)
-server/agent/cs2-agent.mjs           агентът за панела (CONTRACT §9): подписани команди от Redis → status · restart ·
+server/agent/cs2-agent.mjs           агентът за панела (CONTRACT §9): подписани команди от Redis → status · start · stop · restart ·
                                      update · logs; A2S → cs2dm:a2s на 10 s; собствен RESP клиент (zero-dep)
 server/agent/cs2-agent.service       unit: cs2agent, без root и без запис (ProtectSystem=strict, ProtectProc=invisible…)
-server/agent/50-cs2dm-agent.rules    polkit: cs2agent САМО restart cs2.service · start cs2-update.service, иначе NO
+server/agent/50-cs2dm-agent.rules    polkit: cs2agent САМО start/stop/restart cs2.service · start cs2-update.service, иначе NO
 server/agent/install-agent.sh        потребител · файлове · ключове (agent.env + app.env) · unit · polkit · самопроверка
 plugins/src/CarbonStealth.Logic/     чиста логика без CSS (XP, роли, срокове, мост/HMAC, банери, CSS права,
                                      AFK/пинг, настройки, събития, карта на мача) — xunit тестове (един файл с тестове на тема)
@@ -203,7 +203,7 @@ app/                                 сайтът cs2.carbonstealth.eu (етап
   1000 id), но с **отделен** ключ `CS2DM_AGENT_KEY`. Грешките са низовете на C#; отхвърлена команда **няма
   ack** (като плъгина). Тестовият вектор от `Bridge.cs` е в `agent.test.mjs`.
 - **Отговорите** (за панела): `status` → `{active, state, since (ms|null), gameVersion, modsLoaded,
-  broken (версията, при която модовете са паднали | null), busy ("restart"|"update"|null)}`; `logs` →
+  broken (версията, при която модовете са паднали | null), busy ("start"|"stop"|"restart"|"update"|null)}`; `logs` →
   `{source, lines[]}`; провал → `error: "failed"` + `data.detail` (кратко, редактирано); `busy`; `bad args`.
   `restart` чака systemctl (до 120 s), `update` е `--no-block`; `busy` важи и докато тече `cs2-update.service`.
 - **`cs2dm:a2s`**: `players` е както в A2S (с ботовете), `bots` отделно; без отговор → `online: false` и
@@ -280,7 +280,7 @@ zod); код между продуктите не се споделя — сам
   плъгинът проверява на 30 s.
 - **Настройките** (`/admin/settings`, HEADADMIN+): запис → `settings.reload`; без отговор → `recordedNoAck`
   (плъгинът ги взима сам до 60 s). Сравнението before/after е канонично (`canonicalJson` — jsonb пренарежда ключовете).
-- **Агентът:** `status`/`logs` (ADMIN+), `restart`/`update` (HEADADMIN+). Рестартът чака systemd до 120 s, а
+- **Агентът:** `status`/`logs` (ADMIN+), `start`/`stop`/`restart`/`update` (HEADADMIN+). Старт/спиране/рестарт чакат systemd до 120 s, а
   nginx реже на 30 s → панелът чака 25 s и мълчанието е „още тече“ (`cmdPending`), не грешка.
 - **Резултат след POST = PRG** с `?r=<код>` от затворен списък (`forms.ts` `RESULTS`) — никакъв свободен
   текст в адреса. Нов код → ключ `admin.result.<код>` в трите речника.

@@ -2,13 +2,13 @@
 // cs2-agent.mjs — агентът на хоста за уеб панела на cs2dm (CONTRACT.md §9). Нула зависимости, Node ≥ 20.
 //
 // Сайтът е в Docker и не може да пипа systemd. Агентът слуша подписани команди в Redis
-// (`cs2dm:agent:cmd`) и прави САМО четири неща: status · restart · update · logs. Отговаря в
+// (`cs2dm:agent:cmd`) и прави САМО шест неща: status · start · stop · restart · update · logs. Отговаря в
 // `cs2dm:agent:ack`. На всеки 10 s пише A2S снимка в `cs2dm:a2s` (EX 30) — статусът, когато
 // плъгинът спи (празен сървър).
 //
 // Сигурност: подпис HMAC-SHA256 с отделен ключ CS2DM_AGENT_KEY (както мостът в §5), ±30 s, пази
 // последните 1000 id; изпълнение САМО с execFile (без shell), абсолютни пътища, затворен списък;
-// restart/update са еднопоточни; логовете минават през редакция (IP, GSLT, 32+ hex, пароли).
+// start/stop/restart/update са еднопоточни; логовете минават през редакция (IP, GSLT, 32+ hex, пароли).
 // Тече като `cs2agent` без root — systemd действията ги разрешава polkit само за два unit-а.
 //
 //   node cs2-agent.mjs                         агентът (настройки от средата, виж configFromEnv)
@@ -26,7 +26,7 @@ import { queryInfo } from "../a2s.mjs";
 // ── Договорът (CONTRACT.md §9) ──────────────────────────────────────────────────────────────────
 
 export const CHANNELS = Object.freeze({ cmd: "cs2dm:agent:cmd", ack: "cs2dm:agent:ack", a2s: "cs2dm:a2s" });
-export const ACTIONS = Object.freeze(["status", "restart", "update", "logs"]);
+export const ACTIONS = Object.freeze(["status", "start", "stop", "restart", "update", "logs"]);
 export const MAX_SKEW_MS = 30_000;
 export const REPLAY_CAPACITY = 1000;
 export const MAX_LINES = 200;
@@ -602,7 +602,7 @@ function failDetail(/** @type {unknown} */ err) {
 }
 
 /**
- * Диспечерът на действията. `exec` се подменя в тестовете; restart/update са еднопоточни.
+ * Диспечерът на действията. `exec` се подменя в тестовете; start/stop/restart/update са еднопоточни.
  * @param {{ exec?: ExecFn, paths?: ReturnType<typeof defaultPaths> }} [deps]
  */
 export function createDispatcher({ exec = execAllowed, paths = defaultPaths() } = {}) {
@@ -653,7 +653,7 @@ export function createDispatcher({ exec = execAllowed, paths = defaultPaths() } 
   }
 
   /**
-   * @param {"restart" | "update"} action
+   * @param {"start" | "stop" | "restart" | "update"} action
    * @param {string[]} args
    * @param {number} timeout
    */
@@ -700,6 +700,12 @@ export function createDispatcher({ exec = execAllowed, paths = defaultPaths() } 
       switch (action) {
         case "status":
           return { ok: true, data: await status() };
+        // Спиране от панела държи: update.sh пуска играта само ако е вървяла (was_active), а новият опит
+        // със счупените модове иска празен сървър, който отговаря на A2S.
+        case "start":
+          return await mutate("start", ["--no-ask-password", "start", GAME_UNIT], 120_000);
+        case "stop":
+          return await mutate("stop", ["--no-ask-password", "stop", GAME_UNIT], 120_000);
         case "restart":
           return await mutate("restart", ["--no-ask-password", "restart", GAME_UNIT], 120_000);
         case "update":

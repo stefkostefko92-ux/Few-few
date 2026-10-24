@@ -378,6 +378,30 @@ test("restart: точно `systemctl --no-ask-password restart cs2.service`, н�
   assert.ok(calls.every((c) => typeof c.opts.timeout === "number" && c.opts.timeout > 0));
 });
 
+for (const verb of ["start", "stop"]) {
+  test(`${verb}: точно \`systemctl --no-ask-password ${verb} cs2.service\`, без входни аргументи`, async (t) => {
+    const { exec, calls } = fakeExec();
+    const r = await createDispatcher({ exec, paths: machine(t).paths }).run(verb, { unit: "ssh.service", extra: "--force" });
+    assert.deepEqual(r, { ok: true });
+    assert.deepEqual(calls.at(-1).args, ["--no-ask-password", verb, "cs2.service"]);
+    assert.equal(calls.at(-1).file, BIN.systemctl);
+  });
+}
+
+test("busy: stop е еднопоточен с restart/update/start и личи в status", async (t) => {
+  let release;
+  const gate = new Promise((r) => (release = r));
+  const { exec, calls } = fakeExec({ [`${BIN.systemctl} stop`]: () => gate.then(() => ({ stdout: "", stderr: "" })) });
+  const d = createDispatcher({ exec, paths: machine(t).paths });
+  const first = d.run("stop");
+  await until(() => calls.some((c) => c.args.includes("stop")), 1000, "първия stop");
+  for (const other of ["start", "restart", "update", "stop"]) assert.deepEqual(await d.run(other), { ok: false, error: "busy" }, other);
+  assert.equal((await d.run("status")).data.busy, "stop");
+  release();
+  assert.deepEqual(await first, { ok: true });
+  assert.deepEqual(await d.run("start"), { ok: true }, "след края — пак може");
+});
+
 test("update: `systemctl --no-ask-password start --no-block cs2-update.service`", async (t) => {
   const { exec, calls } = fakeExec();
   const r = await createDispatcher({ exec, paths: machine(t).paths }).run("update", { anything: 1 });
@@ -830,12 +854,14 @@ vm.runInNewContext(rulesText, { polkit: { Result, addRule: (f) => rules.push(f) 
 const decide = (user, id, details = {}) => rules[0]({ id, lookup: (k) => details[k] }, { user, groups: [], isInGroup: () => false });
 const MANAGE = "org.freedesktop.systemd1.manage-units";
 
-test("polkit: cs2agent може САМО restart на cs2.service и start на cs2-update.service", () => {
+test("polkit: cs2agent може САМО start/stop/restart на cs2.service и start на cs2-update.service", () => {
   assert.equal(rules.length, 1);
-  assert.equal(decide("cs2agent", MANAGE, { unit: "cs2.service", verb: "restart" }), Result.YES);
+  for (const verb of ["start", "stop", "restart"]) {
+    assert.equal(decide("cs2agent", MANAGE, { unit: "cs2.service", verb }), Result.YES, verb);
+  }
   assert.equal(decide("cs2agent", MANAGE, { unit: "cs2-update.service", verb: "start" }), Result.YES);
   const denied = [
-    ["cs2.service", "stop"], ["cs2.service", "start"], ["cs2.service", "reload"], ["cs2.service", "try-restart"],
+    ["cs2.service", "reload"], ["cs2.service", "try-restart"], ["cs2.service", "Stop"], ["cs2.service", "isolate"],
     ["cs2.service", "reload-or-restart"], ["cs2.service", "kill"], ["cs2-update.service", "restart"],
     ["cs2-update.service", "stop"], ["cs2-update.timer", "start"], ["cs2-agent.service", "restart"],
     ["ssh.service", "restart"], ["medqr.service", "stop"], ["docker.service", "restart"], ["CS2.service", "restart"],

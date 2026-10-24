@@ -76,13 +76,13 @@ Redis: `status`, `restart`, `update`, `logs`. Нищо друго.
 | Риск | Мярка |
 |---|---|
 | Пробит сайт/контейнер → root на хоста | **агентът не е root**: системен потребител `cs2agent` без shell; `CapabilityBoundingSet=` (празно), `NoNewPrivileges`, `ProtectSystem=strict` без `ReadWritePaths` (не пише никъде), `ProtectHome`, `PrivateTmp`, `PrivateDevices`, `ProtectProc=invisible`, `RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6`, `SystemCallFilter=@system-service ~@privileged` |
-| Агентът кара systemd да прави друго | polkit правило `50-cs2dm-agent.rules`: `cs2agent` може **само** `restart` на `cs2.service` и `start` на `cs2-update.service` (детайлите `unit`/`verb` на systemd); всяко друго действие от `cs2agent` — изричен `NO` (никое следващо правило не може да го разреши). Инсталаторът го проверява с `pkcheck` и спира агента, ако polkit разрешава повече |
+| Агентът кара systemd да прави друго | polkit правило `50-cs2dm-agent.rules`: `cs2agent` може **само** `start`/`stop`/`restart` на `cs2.service` и `start` на `cs2-update.service` (детайлите `unit`/`verb` на systemd); всяко друго действие от `cs2agent` — изричен `NO` (никое следващо правило не може да го разреши). Инсталаторът го проверява с `pkcheck` и спира агента, ако polkit разрешава повече |
 | Подправена команда в Redis (всеки с достъп до Redis) | HMAC-SHA256 с **отделен** ключ `CS2DM_AGENT_KEY` (изтекъл ключ на моста към плъгина не дава systemd), сравнение с постоянно време, ±30 s, replay guard (1000 id); payload-ът се парсва след подписа; отхвърлената команда няма отговор |
 | Инжекция на команди | `execFile` без shell, само `/usr/bin/systemctl` и `/usr/bin/journalctl` (allowlist в кода и тест); аргументите са константи; единственият вход е `lines` (цяло 1…200) и `source` (`css`/`journal`) |
 | Тайни и лични данни в логовете към панела | всеки ред минава през редакция: IPv4/IPv6 → `x.x.x.x`, `sv_setsteamaccount <…>`, `logon token …`, всеки 32+ hex низ (ключове, пароли от `openssl rand -hex`) и `password=…` → `<redacted>`; ANSI/контролни знаци вън; таван на реда. Над-редакцията е приета |
 | GSLT от `/proc/<pid>/cmdline` на играта | `ProtectProc=invisible` — агентът не вижда чужди процеси; конфигът на плъгина (с паролите) и SteamCMD — `InaccessiblePaths` |
 | Изтичане на ключовете | `/etc/cs2/agent.env` 0600 root — чете го systemd преди смяната на потребителя; ключът не е в командния ред; агентът го маха от средата си, децата получават минимална среда; инсталаторът не печата тайни и подава стойностите на `awk` през средата (не през argv) |
-| Рестарт-цикъл от панела | `restart`/`update` са еднопоточни (`busy`), `busy` и докато тече `cs2-update.service`; правата и одитът — в сайта (§10) |
+| Рестарт-цикъл от панела | `start`/`stop`/`restart`/`update` са еднопоточни (`busy`), `busy` и докато тече `cs2-update.service`; правата и одитът — в сайта (§10) |
 | Подменен код на агента | `/usr/local/lib/cs2dm/agent` е root:root 0644 — `cs2agent` и `cs2` не могат да го пипат |
 | Агентът пада или зацикля | `Restart=always` + `StartLimit*`, `MemoryMax=256M`, `TasksMax=64`, `Nice=5` (играта е с приоритет) |
 

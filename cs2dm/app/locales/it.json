@@ -1216,9 +1216,13 @@
       "broken": "Mod non funzionanti dalla versione",
       "restart": "Riavvia",
       "restartConfirm": "Riavviare il server? Tutti i giocatori verranno espulsi.",
+      "start": "Avvia",
+      "startConfirm": "Avviare il server?",
+      "stop": "Ferma",
+      "stopConfirm": "Fermare il server? Tutti i giocatori verranno espulsi e il server resta spento finché Lei non lo avvia di nuovo — gli aggiornamenti non lo avviano.",
       "update": "Aggiorna",
       "updateConfirm": "Avviare il controllo degli aggiornamenti? Con una nuova versione il server si riavvia.",
-      "controlNote": "Riavvio e aggiornamento non possono essere eseguiti insieme.",
+      "controlNote": "Avvio, arresto, riavvio e aggiornamento non possono essere eseguiti insieme.",
       "logs": "Log",
       "source": "Origine",
       "sources": {
@@ -1232,6 +1236,8 @@
       "back": "Torna al server",
       "busy": "In corso",
       "busyKinds": {
+        "start": "avvio",
+        "stop": "arresto",
         "restart": "riavvio",
         "update": "aggiornamento"
       },

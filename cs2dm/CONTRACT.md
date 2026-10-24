@@ -166,11 +166,14 @@ Redis слуша само на `127.0.0.1` с парола (ACL). Ключове
   невалиден подпис, `|now − ts| > 30 s`, повторен `id`.
 - Действия (затворен списък):
   - `status` → `{active, since, gameVersion, modsLoaded, broken}`;
+  - `start` → `systemctl start cs2.service`; `stop` → `systemctl stop cs2.service` (спрян от панела остава
+    спрян: `update.sh` пуска играта само ако е вървяла, новият опит със счупени модове иска празен сървър,
+    който отговаря на A2S);
   - `restart` → `systemctl restart cs2.service`;
   - `update` → `systemctl start --no-block cs2-update.service`;
   - `logs {source: "css"|"journal", lines ≤ 200}` → редове след **редакция**: IP адреси → `x.x.x.x`,
     `sv_setsteamaccount <…>` и всякакви 32+ hex низове → `<redacted>`.
-- `restart`/`update` са еднопоточни: докато едното тече, второ → `ok: false, error: "busy"`.
+- `start`/`stop`/`restart`/`update` са еднопоточни: докато едно тече, друго → `ok: false, error: "busy"`.
 - Отговор: `PUBLISH cs2dm:agent:ack {"id", "ok", "error"?, "data"?}`.
 - Статус без плъгина (празен сървър спи — §5 „живо“ липсва): агентът пише на 10 s
   `SET cs2dm:a2s <json> EX 30` = `{ts, online, name, map, players, bots, maxPlayers}` от A2S.

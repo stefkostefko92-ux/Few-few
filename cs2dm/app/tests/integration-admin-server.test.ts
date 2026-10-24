@@ -155,6 +155,17 @@ describe(
         'sent',
       );
       assert.deepEqual(agentGot.at(-1), { action: 'restart', args: {}, actor: HEAD });
+      for (const action of ['start', 'stop'] as const) {
+        assert.equal(
+          (await as.ADMIN!.send(`/admin/server/${action}`, {}, '/admin/server')).status,
+          403,
+        );
+        assert.equal(
+          result(await as.HEAD!.send(`/admin/server/${action}`, {}, '/admin/server')),
+          'sent',
+        );
+        assert.deepEqual(agentGot.at(-1), { action, args: {}, actor: HEAD });
+      }
       agentAnswer = () => ({ ok: false, error: 'busy' });
       assert.equal(
         result(await as.HEAD!.send('/admin/server/update', {}, '/admin/server')),
@@ -170,7 +181,12 @@ describe(
       const audit = await db.auditLog.findMany({
         where: { actorSteamId: HEAD, action: { startsWith: 'server.' }, at: { gte: since } },
       });
-      assert.deepEqual(audit.map((row) => row.action).sort(), ['server.restart', 'server.update']);
+      assert.deepEqual(audit.map((row) => row.action).sort(), [
+        'server.restart',
+        'server.start',
+        'server.stop',
+        'server.update',
+      ]);
 
       // Рестартът: агентът чака systemd до 120 s — мълчанието е „още тече“, не грешка. Второ копие
       // на сайта със същата база (сесиите са в нея) и агент, който не отговаря навреме.
@@ -191,6 +207,10 @@ describe(
         for (const [name, value] of as.HEAD!.cookies) head.cookies.set(name, value);
         assert.equal(
           result(await head.send('/admin/server/restart', {}, '/admin/server')),
+          'cmdPending',
+        );
+        assert.equal(
+          result(await head.send('/admin/server/stop', {}, '/admin/server')),
           'cmdPending',
         );
         assert.equal(

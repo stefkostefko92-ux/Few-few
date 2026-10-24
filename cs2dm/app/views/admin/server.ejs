@@ -21,11 +21,25 @@
     <% if (agentDetail) { %><p class="a-note"><%= t('admin.server.detail') %> <code><%= agentDetail %></code></p><% } %>
     <% } %>
     <% if (can('serverControl')) { %>
+    <%# Неизвестно състояние (агентът не отговаря) → всички бутони; иначе само смислените. %>
+    <% const up = agent ? agent.active : null; %>
     <div class="a-actions">
+      <% if (up !== true) { %>
+      <form method="post" action="/admin/server/start" data-confirm="<%= t('admin.server.startConfirm') %>">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button class="a-btn" type="submit"><%= t('admin.server.start') %></button>
+      </form>
+      <% } %>
+      <% if (up !== false) { %>
       <form method="post" action="/admin/server/restart" data-confirm="<%= t('admin.server.restartConfirm') %>">
         <input type="hidden" name="_csrf" value="<%= csrf %>">
         <button class="a-btn is-danger" type="submit"><%= t('admin.server.restart') %></button>
       </form>
+      <form method="post" action="/admin/server/stop" data-confirm="<%= t('admin.server.stopConfirm') %>">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button class="a-btn is-danger" type="submit"><%= t('admin.server.stop') %></button>
+      </form>
+      <% } %>
       <form method="post" action="/admin/server/update" data-confirm="<%= t('admin.server.updateConfirm') %>">
         <input type="hidden" name="_csrf" value="<%= csrf %>">
         <button class="a-btn is-quiet" type="submit"><%= t('admin.server.update') %></button>
