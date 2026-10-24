@@ -15456,7 +15456,7 @@
           "Sample Ratio Mismatch (en.wikipedia.org/wiki/Sample_ratio_mismatch); статистика на онлайн експерименти",
           "Това репо: CLAUDE.md; границата SEO (откриваемост), Продавача (Stripe), Наблюдателят (системни метрики), Правния (закон)"
         ],
-        "lessons": 204
+        "lessons": 207
       },
       "evolution": [
         {
@@ -15500,9 +15500,20 @@
           "date": "2026-10-06",
           "event": "v20.3 — учене",
           "detail": "Научи: Капан в Next.js App Router: ако route файл изнася само GET, Next сам създава HEAD и пол… (+47 още)"
+        },
+        {
+          "version": "20.6.0",
+          "date": "2026-10-24",
+          "event": "v20.6 — учене",
+          "detail": "Научи: GA4 не записва и не пази IP; anonymize_ip е само за UA и в GA4 не прави нищо, затова не… (+2 още)"
         }
       ],
       "activity": [
+        {
+          "date": "2026-10-24",
+          "type": "learning",
+          "summary": "Научи: „GA4 не записва и не пази IP; anonymize_ip е само за UA и в GA4 не прави нищо, затова не…\" (+2 още)"
+        },
         {
           "date": "2026-10-06",
           "type": "learning",
