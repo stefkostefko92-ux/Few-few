@@ -1,0 +1,8 @@
+<%- include('partials/head') %>
+<div class="wrap page error-page">
+  <p class="error-code" aria-hidden="true"><%= status %></p>
+  <h1><%= t('error.' + kind + '.heading') %></h1>
+  <p class="page-lead"><%= t('error.' + kind + '.text') %></p>
+  <p class="links-row"><a class="btn btn-quiet" href="<%= nav.home %>"><%= t('error.home') %></a> <a href="<%= nav.leaderboard %>"><%= t('error.leaderboard') %></a></p>
+</div>
+<%- include('partials/foot') %>

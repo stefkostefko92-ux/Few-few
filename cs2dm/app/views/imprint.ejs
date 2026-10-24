@@ -1,0 +1,23 @@
+<%- include('partials/head') %>
+<%# Липсващите фирмени данни идват от .env (COMPANY_*, CONTACT_EMAIL) — не се измислят в кода. %>
+<div class="wrap page prose-page">
+  <%- include('partials/crumbs', { here: t('nav.imprint') }) %>
+  <header class="page-head">
+    <h1><%= t('imprint.h1') %></h1>
+    <p class="page-lead"><%= t('imprint.lead') %></p>
+  </header>
+  <dl class="facts">
+    <% company.forEach((field) => { %><div>
+      <dt><%= t('imprint.fields.' + field.id) %></dt>
+      <dd><% if (field.value) { %><% if (field.id === 'email') { %><a href="mailto:<%= field.value %>"><%= field.value %></a><% } else { %><%= field.value %><% } %><% } else { %><span class="unset"><%= t('imprint.notSet', { env: field.env }) %></span><% } %></dd>
+    </div>
+    <% }) %><div>
+      <dt><%= t('imprint.fields.web') %></dt>
+      <dd><a href="https://carbonstealth.eu" target="_blank" rel="noopener">carbonstealth.eu</a></dd>
+    </div>
+  </dl>
+  <p><%= t('imprint.responsible') %></p>
+  <p class="muted"><%= t('imprint.trademark') %></p>
+  <p class="links-row"><a href="<%= nav.privacy %>"><%= t('nav.privacy') %></a> <a href="<%= nav.contact %>"><%= t('nav.contact') %></a></p>
+</div>
+<%- include('partials/foot') %>
