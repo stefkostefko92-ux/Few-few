@@ -65,6 +65,26 @@ sudo bash /root/cs2dm-src/cs2dm/server/mods/install-plugins.sh --config
 Банери (HEADADMIN+): гледай към стена → `!banner add carbonstealth` / `!banner add adblock`;
 картинките (лого + снимки от Chrome Web Store) — `addon/README.md`.
 
+## Агентът на сървъра (за уеб панела)
+
+Сайтът е в Docker и не може да рестартира играта сам. `cs2-agent` тича на хоста като `cs2agent` (без root)
+и приема само подписани команди: статус, рестарт, ъпдейт, логове (редактирани). Иска Ubuntu 24.04+
+(polkit с JavaScript правила), Node ≥ 20 в `/usr/bin/node`, вече пуснат `install.sh` и сайта
+(`/etc/cs2/app.env` с `REDIS_PASSWORD`).
+
+```bash
+# 1) нов код (както в стъпка 1 горе), после агентът: потребител, файлове, ключове, unit, polkit, самопроверка
+sudo bash /root/cs2dm-src/cs2dm/server/agent/install-agent.sh
+
+# 2) ако е казал „app.env е променен“ — сайтът да види ключовете (CS2DM_AGENT_KEY, CS2DM_BRIDGE_KEY, APP_ENC_KEY);
+#    от папката, откъдето е пуснат сайтът
+cd /root/cs2dm-src/cs2dm/app && sudo docker compose --env-file /etc/cs2/app.env up -d
+```
+
+`APP_ENC_KEY` се създава веднъж и **не се сменя** — с него са шифрирани TOTP тайните на панела. Проверка
+по всяко време: `sudo node /usr/local/lib/cs2dm/agent/cs2-agent.mjs --selftest`; логове:
+`journalctl -u cs2-agent -f`.
+
 ## Ежедневно
 
 | Какво | Команда |
@@ -73,6 +93,7 @@ sudo bash /root/cs2dm-src/cs2dm/server/mods/install-plugins.sh --config
 | Здраве (A2S) | `node /usr/local/lib/cs2dm/health.mjs` |
 | Рестарт | `sudo systemctl restart cs2` |
 | Ъпдейт сега | `sudo systemctl start cs2-update.service` |
+| Агентът на панела | `systemctl status cs2-agent` · `journalctl -u cs2-agent -n 50` |
 | Последни проверки за ъпдейт | `journalctl -u cs2-update -n 20` |
 | В листинга ли е | `curl -s "https://api.steampowered.com/ISteamApps/GetServersAtAddress/v1/?addr=<IP>"` |
 | В играта | `connect dm.carbonstealth.eu:27015` (след A запис към IP-то на VPS-а) |
