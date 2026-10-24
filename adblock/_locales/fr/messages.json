@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Capacité des règles"
+  },
+  "helpTitle": {
+    "message": "Des sites cassés ?"
+  },
+  "helpText": {
+    "message": "Un site à la fois suffit : autorisez ses pubs pendant une heure, ou désactivez le masquage d’éléments uniquement sur ce site. Si vous nous prévenez, nous le corrigeons pour tout le monde."
+  },
+  "helpFix": {
+    "message": "Corriger ce site"
+  },
+  "cardNever": {
+    "message": "Ne plus afficher"
+  },
+  "cardClose": {
+    "message": "Fermer"
+  },
+  "receiptTitle": {
+    "message": "Vos 30 derniers jours"
+  },
+  "receiptText": {
+    "message": "$1 requêtes bloquées · $2 bandeaux cookies traités · environ $3 de données économisées (estimation)"
+  },
+  "share": {
+    "message": "Partager"
+  },
+  "shareTitle": {
+    "message": "Copier le lien de Supreme AdBlock sur le Chrome Web Store"
+  },
+  "shareCopied": {
+    "message": "Lien copié"
+  },
+  "rep_fixed_q": {
+    "message": "Le site est-il réparé ?"
+  },
+  "rep_fixed_yes": {
+    "message": "Oui, ça marche"
+  },
+  "rep_fixed_no": {
+    "message": "Non, toujours cassé"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Tant mieux. Si vous nous prévenez ci-dessous, le rapport indiquera quelle solution a fonctionné, pour que nous puissions corriger le site pour tout le monde."
+  },
+  "rep_fixed_next": {
+    "message": "Essayez la suivante : $1"
+  },
+  "rep_fixed_none": {
+    "message": "Alors prévenez-nous ci-dessous : nous examinerons le site."
+  },
+  "rep_webmail": {
+    "message": "Pas d’application de messagerie ? Copiez le rapport et envoyez-le à $1 depuis votre webmail."
+  },
+  "blk_mistake": {
+    "message": "Vous pensez que c’est une erreur ? Prévenez-nous"
+  },
+  "welTest": {
+    "message": "Le voir à l’œuvre sur une page de test"
   }
 }

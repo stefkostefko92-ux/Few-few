@@ -105,6 +105,10 @@ main {
 .steps li[data-pin="done"] .ic-done {
   display: block;
 }
+.test-link { text-align: center; font-size: 14px; }
+.test-link[hidden] { display: none; }
+.test-link a { color: var(--accent-2); text-underline-offset: 3px; }
+html[data-theme="light"] .test-link a { color: var(--text); } /* accent on the page background is under 4.5:1 */
 .sr-only {
   position: absolute;
   width: 1px;

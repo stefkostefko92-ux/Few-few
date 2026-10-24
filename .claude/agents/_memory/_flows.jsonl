@@ -256,3 +256,8 @@
 {"t":"handoff","ts":"2026-10-24T06:33:20.644Z","id":"r25319c89","from":"vps-adjiyata","to":"kodadjiyata","status":"блокер","run":"459b9897"}
 {"t":"start","ts":"2026-10-24T06:37:58.176Z","id":"r808306d5","flow":"авто","lead":"kodadjiyata","auto":true}
 {"t":"handoff","ts":"2026-10-24T06:37:58.176Z","id":"r808306d5","from":"kodadjiyata","to":"izpitatelya","status":"има бележки","run":"873cdf59"}
+{"t":"start","ts":"2026-10-24T06:33:31.467Z","id":"r606f816d","flow":"авто","lead":"prevodach","auto":true}
+{"t":"handoff","ts":"2026-10-24T06:33:31.467Z","id":"r606f816d","from":"prevodach","to":"човек","status":"има бележки","run":"11ab73ce"}
+{"t":"handoff","ts":"2026-10-24T06:36:10.110Z","id":"r606f816d","from":"prevodach","to":"човек","status":"наред","run":"0cc8e6c0"}
+{"t":"handoff","ts":"2026-10-24T06:39:15.140Z","id":"r606f816d","from":"izpitatelya","to":"ai-djiyata","status":"има бележки","run":"e6a786bd"}
+{"t":"handoff","ts":"2026-10-24T06:42:56.908Z","id":"r606f816d","from":"prevodach","to":"човек","status":"има бележки","run":"630be6d0"}

@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "Arauen edukiera"
+  },
+  "helpTitle": {
+    "message": "Webguneak hausten dira?"
+  },
+  "helpText": {
+    "message": "Aski da webgune bat aldi berean: baimendu haren iragarkiak ordubetez, edo desaktibatu elementuak ezkutatzea han bakarrik. Esaten badiguzu, guztientzat konponduko dugu."
+  },
+  "helpFix": {
+    "message": "Konpondu webgune hau"
+  },
+  "cardNever": {
+    "message": "Ez erakutsi berriro"
+  },
+  "cardClose": {
+    "message": "Itxi"
+  },
+  "receiptTitle": {
+    "message": "Zure azken 30 egunak"
+  },
+  "receiptText": {
+    "message": "$1 eskaera blokeatuta · $2 cookie-bannerri erantzunda · gutxi gorabehera $3 datu aurreztuta (estimazioa da)"
+  },
+  "share": {
+    "message": "Partekatu"
+  },
+  "shareTitle": {
+    "message": "Kopiatu Supreme AdBlock-en Chrome Web Store esteka"
+  },
+  "shareCopied": {
+    "message": "Esteka kopiatu da"
+  },
+  "rep_fixed_q": {
+    "message": "Konpondu da webgunea?"
+  },
+  "rep_fixed_yes": {
+    "message": "Bai, badabil"
+  },
+  "rep_fixed_no": {
+    "message": "Ez, oraindik hautsita"
+  },
+  "rep_fixed_yes_note": {
+    "message": "Pozten gara. Behean esaten badiguzu, txostenak adieraziko du zein konponbidek funtzionatu duen, eta webgunea guztientzat konpondu ahal izango dugu."
+  },
+  "rep_fixed_next": {
+    "message": "Probatu hurrengoa: $1"
+  },
+  "rep_fixed_none": {
+    "message": "Orduan, esan iezaguzu behean: webgunea aztertuko dugu."
+  },
+  "rep_webmail": {
+    "message": "Ez duzu posta-aplikaziorik? Kopiatu txostena eta bidali $1 helbidera zure web-postatik."
+  },
+  "blk_mistake": {
+    "message": "Akats bat dela uste duzu? Esan iezaguzu"
+  },
+  "welTest": {
+    "message": "Ikusi nola dabilen proba-orri batean"
   }
 }

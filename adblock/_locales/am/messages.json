@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "የደንብ አቅም"
+  },
+  "helpTitle": {
+    "message": "ጣቢያዎች እየተበላሹ ነው?"
+  },
+  "helpText": {
+    "message": "በአንድ ጊዜ አንድ ጣቢያ በቂ ነው፦ ማስታወቂያዎቹን ለአንድ ሰዓት ይፍቀዱ፣ ወይም እዚያ ብቻ አባሎችን መደበቅን ያጥፉ። ቢነግሩን ለሁሉም እናስተካክለዋለን።"
+  },
+  "helpFix": {
+    "message": "ይህን ጣቢያ ያስተካክሉ"
+  },
+  "cardNever": {
+    "message": "ይህን ዳግመኛ አታሳይ"
+  },
+  "cardClose": {
+    "message": "ዝጋ"
+  },
+  "receiptTitle": {
+    "message": "ያለፉት 30 ቀናትዎ"
+  },
+  "receiptText": {
+    "message": "$1 ጥያቄዎች ታግደዋል · ለ$2 የኩኪ ሰንደቆች ምላሽ ተሰጥቷል · በግምት $3 ውሂብ ተቆጥቧል (ግምት ነው)"
+  },
+  "share": {
+    "message": "አጋራ"
+  },
+  "shareTitle": {
+    "message": "የSupreme AdBlockን የChrome Web Store አገናኝ ይቅዱ"
+  },
+  "shareCopied": {
+    "message": "አገናኙ ተቀድቷል"
+  },
+  "rep_fixed_q": {
+    "message": "ጣቢያው ተስተካከለ?"
+  },
+  "rep_fixed_yes": {
+    "message": "አዎ፣ ይሠራል"
+  },
+  "rep_fixed_no": {
+    "message": "አይ፣ አሁንም ተበላሽቷል"
+  },
+  "rep_fixed_yes_note": {
+    "message": "ደስ ብሎናል። ከታች ቢነግሩን፣ ሪፖርቱ የትኛው መፍትሔ እንደሠራ ይገልጻል፣ ስለዚህ ጣቢያውን ለሁሉም ማስተካከል እንችላለን።"
+  },
+  "rep_fixed_next": {
+    "message": "ቀጣዩን ይሞክሩ፦ $1"
+  },
+  "rep_fixed_none": {
+    "message": "እንግዲያውስ እባክዎ ከታች ይንገሩን፦ ጣቢያውን እንመለከተዋለን።"
+  },
+  "rep_webmail": {
+    "message": "የኢሜይል መተግበሪያ የለዎትም? ሪፖርቱን ይቅዱና ከዌብሜይልዎ ወደ $1 ይላኩት።"
+  },
+  "blk_mistake": {
+    "message": "ይህ ስህተት ይመስልዎታል? ይንገሩን"
+  },
+  "welTest": {
+    "message": "በሙከራ ገጽ ላይ ሲሠራ ይመልከቱ"
   }
 }

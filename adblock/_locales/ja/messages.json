@@ -799,5 +799,62 @@
   },
   "opt_h_capacity": {
     "message": "ルールの容量"
+  },
+  "helpTitle": {
+    "message": "サイトの表示が崩れますか？"
+  },
+  "helpText": {
+    "message": "対処はサイトごとで十分です。そのサイトで 1 時間だけ広告を許可するか、そのサイトだけ要素の非表示をオフにしてください。お知らせいただければ、すべての方向けに修正します。"
+  },
+  "helpFix": {
+    "message": "このサイトを修正"
+  },
+  "cardNever": {
+    "message": "今後表示しない"
+  },
+  "cardClose": {
+    "message": "閉じる"
+  },
+  "receiptTitle": {
+    "message": "あなたの過去 30 日間"
+  },
+  "receiptText": {
+    "message": "ブロックしたリクエスト $1 件 · 対応した Cookie バナー $2 件 · 節約したデータ 約 $3（推定）"
+  },
+  "share": {
+    "message": "共有"
+  },
+  "shareTitle": {
+    "message": "Chrome Web Store の Supreme AdBlock へのリンクをコピー"
+  },
+  "shareCopied": {
+    "message": "リンクをコピーしました"
+  },
+  "rep_fixed_q": {
+    "message": "サイトは直りましたか？"
+  },
+  "rep_fixed_yes": {
+    "message": "はい、正常に動作します"
+  },
+  "rep_fixed_no": {
+    "message": "いいえ、まだ不具合があります"
+  },
+  "rep_fixed_yes_note": {
+    "message": "直ってよかったです。下からお知らせいただくと、どの修正が効いたかが報告に含まれるため、すべての方向けにサイトを修正できます。"
+  },
+  "rep_fixed_next": {
+    "message": "次の方法をお試しください: $1"
+  },
+  "rep_fixed_none": {
+    "message": "それでは、下からお知らせください。サイトを確認します。"
+  },
+  "rep_webmail": {
+    "message": "メールアプリがない場合は、報告をコピーし、ウェブメールから $1 宛てに送信してください。"
+  },
+  "blk_mistake": {
+    "message": "誤りだと思われますか？ お知らせください"
+  },
+  "welTest": {
+    "message": "テストページで動作を確認する"
   }
 }
