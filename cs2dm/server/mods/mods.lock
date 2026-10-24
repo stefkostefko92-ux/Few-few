@@ -1,6 +1,8 @@
 # cs2dm — заковани модове. Формат (разделител TAB): име  версия  URL  sha256  метод
 # Всеки архив се проверява по sha256 преди разархивиране (fail closed). Нова версия = нов ред с
 # нов хеш, проверен на ръка, и PR. Всички се разархивират в game/csgo/.
+# multiaddonmanager се слага само при CS2_WORKSHOP_ADDONS (банерите-картинки), иначе се маха.
 metamod	2.0.0-git1483	https://mms.alliedmods.net/mmsdrop/2.0/mmsource-2.0.0-git1483-linux.tar.gz	0fdcccaa369937ed7f521c78462314b5266f39c1d65a84e4c2d3847324cd7776	tar
 counterstrikesharp	1.0.378	https://github.com/roflmuffin/CounterStrikeSharp/releases/download/v1.0.378/counterstrikesharp-with-runtime-linux-1.0.378.zip	b7fcbd99619ab17e32b07a6af2bd5179d83e2c7a4c045e33cbd11e5492c87b7d	zip
 deathmatch	1.3.6	https://github.com/NockyCZ/CS2-Deathmatch/releases/download/v1.3.6/Deathmatch.zip	85d0bb3b0edc1615fa5b32df112e54795cdba36da5643115fd0cb07c03bb5404	zip
+multiaddonmanager	1.7.1	https://github.com/Source2ZE/MultiAddonManager/releases/download/v1.7.1/MultiAddonManager-v1.7.1-steamrt3.tar.gz	d40dc64a78c8278a5b00ee44ab2bcbc078ffa52f61661a009d12e0d44fe182d4	tar

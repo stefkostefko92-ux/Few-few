@@ -60,11 +60,13 @@ cs2dm_wait_healthy() {
   return 1
 }
 
-# Зареден ли е пробният плъгин след момента $1 (epoch секунди)? CSS пише в stdout → journald.
-cs2dm_mods_loaded_since() {
+# Зареден ли е плъгинът $2 след момента $1 (epoch секунди)? CSS пише в stdout → journald.
+cs2dm_plugin_loaded_since() {
   journalctl -u cs2.service --since "@$1" --no-pager -o cat 2>/dev/null \
-    | grep -q "Finished loading plugin $CS2DM_PROBE_PLUGIN"
+    | grep -q "Finished loading plugin $2"
 }
+
+cs2dm_mods_loaded_since() { cs2dm_plugin_loaded_since "$1" "$CS2DM_PROBE_PLUGIN"; }
 
 # Рестарт с модове; при провал — ванилов старт и отбелязване. 0 = модовете работят.
 cs2dm_restart_with_mods_or_fallback() {

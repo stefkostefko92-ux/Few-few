@@ -34,3 +34,17 @@ jobs:
           node-version: ${{ matrix.node }}
       # Нула зависимости → без npm ci. Съставът на гейта живее в package.json („gate“), не тук.
       - run: npm run gate
+
+  # C# плъгинът: тестове на логиката + Release билд с warnings-as-errors и заключени пакети.
+  plugins:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: cs2dm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: cs2dm/plugins/global.json
+      - run: npm run plugins

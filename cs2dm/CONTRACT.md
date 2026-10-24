@@ -76,25 +76,30 @@ Redis слуша само на `127.0.0.1` с парола (ACL). Ключове
 
 ### Команди: приложение → плъгин
 
-`PUBLISH cs2dm:cmd <json>`:
+`PUBLISH cs2dm:cmd <плик>`, където пликът е `{"p": "<payload>", "sig": "<hex>"}`, а payload е JSON низ:
 
 ```json
 { "id": "uuid", "ts": 1792828391000, "actor": "76561198000000001",
-  "action": "kick", "args": { "steamId": "7656…", "reason": "…" }, "sig": "hex" }
+  "action": "kick", "args": { "steamId": "7656…", "reason": "…" } }
 ```
 
-- `sig` = HMAC-SHA256 с `CS2DM_BRIDGE_KEY` върху **каноничния JSON без `sig`**: ключовете в този ред —
-  `id, ts, actor, action, args` — `args` с ключове по азбучен ред, без интервали.
+- `sig` = HMAC-SHA256 с `CS2DM_BRIDGE_KEY` върху **байтовете на низа `p` (UTF-8), точно както е
+  изпратен** — без канонизация, затова C# и Node не могат да се разминат. Сравнението е с постоянно
+  време. Приемникът парсва `p` чак след успешна проверка.
 - Плъгинът отхвърля: невалиден подпис, `|now − ts| > 30 s`, повторен `id` (помни последните 1000).
 - Действия: `kick {steamId, reason}` · `punish {punishmentId}` (бан/мют/гаг вече записан от сайта →
   плъгинът го зарежда и прилага) · `revoke {punishmentId}` · `say {text}` · `slay {steamId}` ·
-  `reload {what: "roles"|"bans"|"vip"}`.
+  `reload {what: "roles"|"bans"|"vip"}` (едно презареждане на всички онлайн покрива и трите) ·
+  `mode {modeId}` (custom режим на DM плъгина през неговото API; непознат → `ok: false`).
+- Правата ги проверява **сайтът** (роля + одит) преди да подпише командата; плъгинът вярва само на
+  подписа. Действие от сайта в чата е „от уеб панела“.
 - Отговор: `PUBLISH cs2dm:ack {"id": "…", "ok": true}` или `{"id": "…", "ok": false, "error": "…"}`.
 
 ### Живо състояние: плъгин → приложение
 
 - `SET cs2dm:live <json> EX 15` на всеки 5 s:
-  `{ ts, map, mode, maxPlayers, players: [{ steamId, name, kills, deaths, ping, alive, isBot, vip, role }] }`.
+  `{ ts, map, mode, maxPlayers, players: [{ steamId, name, kills, deaths, ping, alive, isBot, vip, role, level }] }`
+  (`steamId`/`level` са `null` за ботове).
 - `XADD cs2dm:events MAXLEN ~ 2000 * type <t> data <json>`: `join`, `leave`, `kill`
   `{attacker, victim, weapon, hs}`, `chat` `{steamId, name, text}`, `admin` `{actor, action, target}`,
   `bounty`, `revenge`. Потокът е кратък по дизайн (чатът не се пази в базата).
@@ -110,3 +115,11 @@ Redis слуша само на `127.0.0.1` с парола (ACL). Ключове
 `sessions` (с IP) — 30 дни · `kills` — 90 дни · обжалвания и доклади — 1 година след решение ·
 заявки за VIP с данни за фактура — по ЗСч ⚠️ (да се потвърди от счетоводител). Чистенето е BullMQ
 задача в приложението.
+
+## 8. Банери в картата (`map_banners`)
+
+Ред = един банер: `map`, `banner_key`, позиция `x/y/z` и ъгли `pitch/yaw/roll` (както ги ползва
+`Teleport`), `created_by` (SteamID64). Пише ги плъгинът от `!banner add/remove` (HEADADMIN+) с одит
+`banner.add` / `banner.remove`; сайтът може да ги показва и трие (плъгинът презарежда при смяна на
+карта). Ключовете: текстови `carbonstealth`, `adblock` (в кода на плъгина) и модели от
+`CS2DM_BANNER_MODELS` (виж `addon/README.md`). Непознат ключ се пропуска тихо — например при махнат addon.

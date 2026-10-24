@@ -73,12 +73,20 @@ if (( ${#missing[@]} > 0 )); then
 fi
 ok "unzip · libicu"
 
+# Workshop addon-и (банерите-картинки) → MultiAddonManager; без тях той не се слага изобщо.
+addons="$(sed -n 's/^CS2_WORKSHOP_ADDONS=//p' "$ENV_FILE" 2>/dev/null | tail -1 || true)"
+addons="${addons//\"/}"
+if [[ -n "$addons" && ! "$addons" =~ ^[0-9]{6,12}(,[0-9]{6,12})*$ ]]; then
+  die "CS2_WORKSHOP_ADDONS: само Workshop ID-та, разделени със запетая (напр. 3456789012)"
+fi
+
 log "Изтегляне и проверка (sha256)"
 install -d -m 0755 "$CACHE_DIR"
 staging="$(mktemp -d /var/cache/cs2dm/staging.XXXXXX)"
 trap 'rm -rf "$staging"' EXIT
 while IFS=$'\t' read -r name version url sha method; do
   [[ -z "$name" || "$name" == \#* ]] && continue
+  [[ "$name" == multiaddonmanager && -z "$addons" ]] && continue
   ext=zip
   [[ "$method" == tar ]] && ext=tar.gz
   file="$CACHE_DIR/$name-$version.$ext"
@@ -114,6 +122,22 @@ if [[ "$owner" =~ ^7656119[0-9]{10}$ ]]; then
   ok "собственик (@css/root): $owner"
 else
   warn "CS2_OWNER_STEAMID64 липсва или е невалиден в $ENV_FILE — няма админ в играта засега"
+fi
+if [[ -n "$addons" ]]; then
+  install -d -o "$CS2_USER" -g "$CS2_USER" -m 0755 "$CSGO_DIR/cfg/multiaddonmanager"
+  cat >"$CSGO_DIR/cfg/multiaddonmanager/multiaddonmanager.cfg" <<CFG
+// Генериран от install-mods.sh (CS2_WORKSHOP_ADDONS в /etc/cs2/cs2.env) — не се редактира на ръка.
+mm_extra_addons "$addons"
+mm_extra_addons_timeout 10
+mm_addon_connection_timeout 30
+mm_cache_clients_with_addons 1
+mm_cache_clients_duration 0
+mm_block_disconnect_messages 1
+CFG
+  chown "$CS2_USER:$CS2_USER" "$CSGO_DIR/cfg/multiaddonmanager/multiaddonmanager.cfg"
+  ok "MultiAddonManager · addon-и: $addons"
+else
+  rm -f "$CSGO_DIR/addons/metamod/multiaddonmanager.vdf"
 fi
 chown -R "$CS2_USER:$CS2_USER" "$CSGO_DIR/addons"
 ok "core.json (FollowCS2ServerGuidelines=true) · Deathmatch.json"

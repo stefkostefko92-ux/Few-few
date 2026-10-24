@@ -6,17 +6,18 @@ CS2 общностен сървър: **само de_dust2, Deathmatch (FFA)**, п
 `research/cs2-dust2-dm/README.md` (в отделния PR на проучването).
 
 _Сега: **фаза 1** (ванилов сървър под systemd на сегашния VPS) + **фаза 2** (Metamod 2.0 +
-CounterStrikeSharp + DM плъгин на NockyCZ, заковани по sha256). Стек: bash + systemd + zero-dep
-Node ESM (здраве през A2S). Следва: наши C# плъгини на PostgreSQL (админ меню, банове, статистики,
-прогресия), сайт + уеб панел, Discord бот. Банове и класация — **публични на сайта** (решение на
+CounterStrikeSharp + DM плъгин на NockyCZ, заковани по sha256) + **фаза 3** (нашият C# плъгин
+CarbonStealth на PostgreSQL: банове, админ меню, статистики/XP, банери, реклами, мост към сайта).
+Следва: сайт + уеб панел (`app/`), Discord бот. Банове и класация — **публични на сайта** (решение на
 собственика), затова админ системата е наша на Postgres, не CS2-SimpleAdmin (MySQL + три
-неподдържани меню зависимости)._
+неподдържани меню зависимости). Договорът между плъгин и сайт: `CONTRACT.md`._
 
 ## Команди (quality gate)
 
 ```bash
 cd cs2dm
 npm run gate      # lint (bash -n, node --check) + node --test + tools/vps/deploy-check.mjs
+npm run plugins   # C#: тестове на логиката + Release билд (warnings-as-errors, заключени пакети); нужен .NET SDK 10
 ```
 
 Нула зависимости → без `npm ci`. На сървъра: `sudo bash server/install.sh --check` (само проверки).
@@ -34,7 +35,16 @@ server/mods/install-mods.sh          фаза 2: сваля, проверява 
 server/mods/config/                  core.json (CSS) · Deathmatch.json (генериран от типовете на плъгина)
 server/systemd/                      cs2.service · cs2-update.service · cs2-update.timer
 server/cs2.env.example               шаблон за /etc/cs2/cs2.env (GSLT, IP, порт, слотове)
-test/                                node --test: A2S протокол + конфиг/unit/скриптове
+server/mods/install-plugins.sh       фаза 3: билд на CarbonStealth (dotnet или SDK контейнер по digest) → инсталиране → конфиг 0600
+server/mods/plugin-config.mjs        конфигът на плъгина от /etc/cs2/cs2.env (валидира, нищо тайно в изхода)
+plugins/src/CarbonStealth.Logic/     чиста логика без CSS (XP, роли, срокове, мост/HMAC, банери) — xunit тестове
+plugins/src/CarbonStealth/           плъгинът: един partial клас по тема (Admin, AdminMenu, Banners, Adverts,
+                                     BridgeCommands, Chat, Connection, Stats) + Data/ (Npgsql) + lang/ (en, bg)
+plugins/scripts/build.sh             тестове + publish в plugins/out/; DeathmatchAPI.dll от архива в mods.lock
+addon/                               банери-картинки: build_textures.py → PNG, OBJ плоскости, Workshop стъпки
+app/prisma/                          схемата и миграциите (общи за плъгина и сайта)
+CONTRACT.md                          роли, наказания, XP, heatmap, мост, одит, срокове, банери
+test/                                node --test: A2S протокол + конфиг/unit/скриптове + плъгин (конфиг, lang)
 ```
 
 На машината: играта `/opt/cs2/server` (потребител `cs2`), SteamCMD `/opt/cs2/steamcmd`, скриптовете,
@@ -67,3 +77,19 @@ test/                                node --test: A2S протокол + кон�
   CSS), не на ръка — при нова версия на плъгина се генерира наново.
 - Споделен VPS: `CPUWeight=1000` + `Nice=-5`; закрепване към ядра (`AllowedCPUs=`) само след измерване,
   в drop-in. Изходен план: всичко е преносимо на отделна машина.
+
+### Плъгинът CarbonStealth (C#)
+
+- **Игровите обекти — само в игровата нишка; базата и Redis — само извън нея.** `RunDb(work, onGameThread)`
+  връща резултата през `Server.NextFrame`. След асинхронна работа никога не пипай `CommandInfo` или стар
+  контролер — пази **слота** и вземи играча наново (`Tell(slot, …)`, `Utilities.GetPlayerFromSlot`).
+- **Логиката без CSS отива в `CarbonStealth.Logic`** и се тества с xunit; плъгинът само я вика.
+- **CSS API, Microsoft.Extensions.* и DeathmatchAPI — само за компилиране** (`ExcludeAssets=runtime` /
+  `Private=false`). Копие в папката на плъгина = втори тип в процеса → capability-то и DI се чупят.
+  `build.sh` го проверява.
+- Нов текст в играта → ключ в **двата** `lang/*.json` (тест за паритет и за ключовете в кода).
+  Ник/чат/причина минават през `Text.SafeName`/`SafeText` (цветови тагове `{…}`).
+- Ново действие на моста → `BridgeProtocol.Actions` + `BridgeCommands.cs` + `CONTRACT.md` §5 едновременно.
+- Нова колона/таблица → миграция в `app/prisma` (Prisma е собственикът на схемата), после SQL-а в `Data/`.
+- Пакетите са заключени (`packages.lock.json`, `RestoreLockedMode`); нов пакет/версия → `dotnet restore
+  --force-evaluate` и lock файлът в същия PR.

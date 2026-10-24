@@ -46,6 +46,25 @@ sudo bash /root/cs2dm-src/cs2dm/server/mods/install-mods.sh
 Only Headshot → Only Deagle → Only Pistols → Only SMG. Състояние: `install-mods.sh --status`;
 изключване (ванилов DM): `install-mods.sh --disable`.
 
+## Фаза 3 — нашият плъгин CarbonStealth
+
+Банове/мют/гаг с категории (публичен банлист), админ меню `!admin` (7 роли, immunity), статистики,
+XP и нива, баунти и отмъщение, тагове, реклами в чата, банери в картата и мост към сайта. Иска
+базата и Redis на приложението (`cs2dm/app`) — до тогава плъгинът стои неактивен.
+
+```bash
+# 1) в /etc/cs2/cs2.env: CS2DM_DB_CONNECTION, CS2DM_REDIS_CONNECTION, CS2DM_BRIDGE_KEY (виж cs2.env.example)
+# 2) билд (локален dotnet или .NET SDK контейнер, закован по digest) → инсталиране → рестарт
+sudo bash /root/cs2dm-src/cs2dm/server/mods/install-plugins.sh
+# след промяна само в cs2.env:
+sudo bash /root/cs2dm-src/cs2dm/server/mods/install-plugins.sh --config
+```
+
+В играта: `!rank` · `!report <име> <причина>` · екипът: `!admin`, `!kick`, `!ban <цел> <30m|2h|7d|0>
+<cheating|toxicity|exploit|spam|other>`, `!mute`/`!gag`/`!silence`, `!unban <steamid64>`, `!warn`, `!slay`.
+Банери (HEADADMIN+): гледай към стена → `!banner add carbonstealth` / `!banner add adblock`;
+картинките (лого + снимки от Chrome Web Store) — `addon/README.md`.
+
 ## Ежедневно
 
 | Какво | Команда |

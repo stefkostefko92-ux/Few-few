@@ -332,3 +332,22 @@ model AuditLog {
   @@index([targetSteamId])
   @@map("audit_log")
 }
+
+/// Текстови банери в картата (point_worldtext), поставени от админ в играта с „!banner add <ключ>“.
+/// Ключът сочи стил и текст от конфигурацията на плъгина (Banners). Ъглите са в градуси.
+model MapBanner {
+  id        Int      @id @default(autoincrement())
+  map       String   @db.VarChar(64)
+  bannerKey String   @map("banner_key") @db.VarChar(32)
+  x         Float    @db.Real
+  y         Float    @db.Real
+  z         Float    @db.Real
+  pitch     Float    @db.Real
+  yaw       Float    @db.Real
+  roll      Float    @db.Real
+  createdBy String?  @map("created_by") @db.VarChar(17)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([map])
+  @@map("map_banners")
+}
