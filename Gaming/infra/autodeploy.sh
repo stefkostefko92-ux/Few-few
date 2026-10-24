@@ -384,7 +384,7 @@ cat <<TIP
 
 Полезно:
   • Логове:        docker compose -p ${PROJECT} -f ${COMPOSE_FILE} --env-file .env logs -f api
-  • Бекъпи:        ${BACKUP_DIR} (последните ${BACKUP_KEEP}; ръчно: SKIP_BACKUP=0 bash infra/autodeploy.sh)
+  • Бекъпи:        ${BACKUP_DIR} (последните ${BACKUP_KEEP}; възстановяване: pg_restore --clean --if-exists)
   • Статус:        docker compose -p ${PROJECT} -f ${COMPOSE_FILE} --env-file .env ps
   • OWNER роля:    регистрирай се на сайта с ${OWNER_EMAIL} ВЕДНАГА след деплоя, после
                    docker compose -p ${PROJECT} -f ${COMPOSE_FILE} --env-file .env restart api
