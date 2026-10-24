@@ -8,23 +8,25 @@ import {
 import type { SeededRng } from "../../kernel/rng.js";
 
 /**
- * Дама / Draughts — 2p abstract on 8x8 dark squares (§4.9). Bulgarian /
- * international-style rules:
- *   - Men move diagonally forward 1, but CAPTURE both forward and backward.
- *   - Kings are "flying": they slide any number of empty squares along a
- *     diagonal, capture a distant piece over empty squares, and may land on any
- *     empty square behind it.
- *   - Captures are mandatory when available, and a capture must be CHAINED —
- *     if the same piece can capture again it must continue, until no further
- *     capture exists (then the turn passes).
- *   - A man that lands on the crowning row MID-CHAIN keeps capturing as a man
- *     (international rule); it is crowned only when its move ENDS there.
- *   - „Турски удар“: взетите пулове ОСТАВАТ на дъската до края на целия ход
- *     (`pending`) — не могат да се вземат повторно, дамката не минава през тях,
- *     и се махат всички наведнъж, когато веригата свърши.
- *   - Реми (международно правило): 25 последователни хода на всяка страна
- *     (50 полухода) само с дамки, без вземане и без ход на обикновен пул;
- *     както и трикратно повторение на позицията (същата дъска, същият на ход).
+ * Дама / Draughts — 2p abstract on 8x8 dark squares (§4.9). **Руска дама**
+ * (шашки) — най-играният вариант в България:
+ *   - 8×8, по 12 пула; белите започват. Обикновените пулове ходят напред по
+ *     диагонал с едно поле, но ВЗЕМАТ и напред, и назад.
+ *   - Вземането е задължително, но със **свободен избор**: играчът избира коя
+ *     поредица да изиграе (няма правило за максимум). Започнатата поредица се
+ *     довършва — пулът продължава, докато има какво да вземе.
+ *   - Пул, стигнал последния ред ПО ВРЕМЕ на вземане, става дама **веднага** и
+ *     продължава поредицата вече като дама.
+ *   - Дамата е „летяща“: плъзга се произволно далеч, взема отдалеч и каца на
+ *     всяко свободно поле след взетия пул — освен ако от някое от тях може да
+ *     продължи вземането: тогава е длъжна да кацне на такова поле.
+ *   - „Турски удар“: взетите пулове ОСТАВАТ на дъската до края на поредицата
+ *     (`pending`) — не могат да се вземат повторно (един пул не се прескача два
+ *     пъти), дамата не минава през тях, и се махат всички наведнъж накрая.
+ *   - Реми (приложено опростено от руския правилник): 15 хода на всяка страна
+ *     (30 полухода) само с дами, без вземане и без ход на обикновен пул; както и
+ *     трикратно повторение на позицията (същата дъска, същият на ход). Особените
+ *     ендшпилни броения (напр. 3 дами срещу 1) не са включени.
  *
  * Board: 64 cells indexed 0..63 (row*8+col). Seat 0 = white (moves up, toward
  * row 0), seat 1 = black (moves down). Only dark squares hold pieces.
@@ -39,8 +41,8 @@ export interface DraughtsState {
   chainFrom: number | null;
   winner: Seat | null;
   done: boolean;
-  /** Последователни полуходове само с дамки без вземане; нулира се от всяко
-   *  вземане и от всеки ход на обикновен пул. 50 (25 на страна) → реми. */
+  /** Последователни полуходове само с дами без вземане; нулира се от всяко
+   *  вземане и от всеки ход на обикновен пул. 30 (15 на страна) → реми. */
   noCaptureMoves: number;
   /** Взети в текущата верига пулове — още на дъската, махат се в края й. */
   pending?: number[];
@@ -49,8 +51,8 @@ export interface DraughtsState {
   positions?: string[];
 }
 
-/** 25 хода на всяка страна само с дамки → реми. */
-export const KING_ONLY_DRAW_PLIES = 50;
+/** 15 хода на всяка страна само с дами → реми (руски правила). */
+export const KING_ONLY_DRAW_PLIES = 30;
 
 export type DraughtsAction = { type: "MOVE"; from: number; to: number };
 export type DraughtsEvent =
@@ -94,10 +96,10 @@ interface Move {
 const positionKey = (board: Piece[], turn: Seat): string =>
   `${board.map((p) => p ?? ".").join("")}|${turn}`;
 
-/** Capture jumps available from a single square (men: both directions; kings:
- *  flying). Пуловете в `pending` още стоят на дъската: блокират пътя и не могат
- *  да бъдат взети втори път („турски удар“). */
-function capturesFrom(board: Piece[], i: number, seat: Seat, pending: readonly number[] = []): Move[] {
+/** Сурови скокове от едно поле (пул: и напред, и назад; дама: летяща, всички
+ *  приземявания). Пуловете в `pending` още стоят на дъската: блокират пътя и не
+ *  могат да бъдат взети втори път („турски удар“). */
+function rawCapturesFrom(board: Piece[], i: number, seat: Seat, pending: readonly number[]): Move[] {
   const out: Move[] = [];
   const p = board[i];
   if (owner(p) !== seat) return out;
@@ -124,7 +126,7 @@ function capturesFrom(board: Piece[], i: number, seat: Seat, pending: readonly n
           c2 += dc;
         }
       } else {
-        // Men capture adjacent enemies forward AND backward (Bulgarian rules).
+        // Обикновеният пул взема съседен противник напред И назад.
         const lr = r + 2 * dr;
         const lc = c + 2 * dc;
         if (!inBounds(lr, lc)) continue;
@@ -140,6 +142,26 @@ function capturesFrom(board: Piece[], i: number, seat: Seat, pending: readonly n
         }
       }
     }
+  }
+  return out;
+}
+
+/** Законните скокове от едно поле. Руско правило за дамата: ако след вземането
+ *  на даден пул от някое приземяване може да се продължи, само тези приземявания
+ *  са позволени (длъжна е да продължи); иначе — всяко свободно поле. */
+function capturesFrom(board: Piece[], i: number, seat: Seat, pending: readonly number[] = []): Move[] {
+  const raw = rawCapturesFrom(board, i, seat, pending);
+  if (!isKing(board[i]) || raw.length <= 1) return raw;
+  const out: Move[] = [];
+  const byVictim = new Map<number, Move[]>();
+  for (const m of raw) {
+    const list = byVictim.get(m.captured!) ?? [];
+    list.push(m);
+    byVictim.set(m.captured!, list);
+  }
+  for (const group of byVictim.values()) {
+    const continuing = group.filter((m) => !applied(board, pending, m, seat).ends);
+    out.push(...(continuing.length > 0 ? continuing : group));
   }
   return out;
 }
@@ -176,31 +198,10 @@ function stepsFrom(board: Piece[], i: number, seat: Seat): Move[] {
   return out;
 }
 
-/** Total pieces removed by the maximal chain that STARTS with capture `m`. */
-function captureChainLen(board: Piece[], pending: readonly number[], m: Move, seat: Seat): number {
-  const r = applied(board, pending, m, seat);
-  return 1 + (r.ends ? 0 : chainDepth(r.board, r.pending, m.to, seat));
-}
-
-/** Keep only the captures that begin a MAXIMUM-length chain (the majority /
- *  maximum-capture rule required by international/Bulgarian draughts). */
-function maximalCaptures(
-  board: Piece[],
-  pending: readonly number[],
-  captures: Move[],
-  seat: Seat,
-): Move[] {
-  if (captures.length <= 1) return captures;
-  const lens = captures.map((c) => captureChainLen(board, pending, c, seat));
-  const max = Math.max(...lens);
-  return captures.filter((_, i) => lens[i] === max);
-}
-
 /**
- * Legal moves for a seat. Mandatory capture: if any capture exists, only
- * captures are legal — AND the player must take a chain that removes the most
- * pieces (maximum-capture rule). Mid-chain (chainFrom set) restricts to that
- * piece's maximal continuation captures.
+ * Legal moves for a seat. Задължително вземане със СВОБОДЕН избор: ако има
+ * вземане, законни са само вземанията (която и да е поредица, не непременно
+ * най-дългата). В поредица (chainFrom) — само продълженията на този пул.
  */
 function legalMovesForSeat(
   board: Piece[],
@@ -208,9 +209,7 @@ function legalMovesForSeat(
   chainFrom: number | null,
   pending: readonly number[] = [],
 ): Move[] {
-  if (chainFrom !== null) {
-    return maximalCaptures(board, pending, capturesFrom(board, chainFrom, seat, pending), seat);
-  }
+  if (chainFrom !== null) return capturesFrom(board, chainFrom, seat, pending);
   const captures: Move[] = [];
   const all: Move[] = [];
   for (let i = 0; i < 64; i++) {
@@ -218,7 +217,7 @@ function legalMovesForSeat(
     captures.push(...capturesFrom(board, i, seat));
     all.push(...stepsFrom(board, i, seat));
   }
-  return captures.length > 0 ? maximalCaptures(board, [], captures, seat) : all;
+  return captures.length > 0 ? captures : all;
 }
 
 interface Applied {
@@ -231,23 +230,25 @@ interface Applied {
 
 /**
  * Прилага един скок/ход върху копие — ЕДИНСТВЕНОТО място с логиката, ползвано
- * от reduce, генерирането на вземания и бота. Взетият пул влиза в `pending` и
- * остава на дъската; ако веригата свършва, всички чакащи се махат наведнъж и
- * пулът се превръща в дамка само ако ходът завършва на последния ред.
+ * от reduce, генерирането на вземания и бота. Пул, стъпил на последния ред,
+ * става дама ВЕДНАГА (руско правило — и по време на вземане), а продължението
+ * се търси вече като дама. Взетият пул влиза в `pending` и остава на дъската;
+ * ако поредицата свършва, всички чакащи се махат наведнъж.
  */
 function applied(board: Piece[], pending: readonly number[], move: Move, seat: Seat): Applied {
   const b = board.slice();
   const p = b[move.from]!;
   b[move.from] = null;
   b[move.to] = p;
-  if (move.captured === null) return { board: crown(b, move.to, p), pending: [], ends: true };
+  crown(b, move.to, p);
+  if (move.captured === null) return { board: b, pending: [], ends: true };
   const next = [...pending, move.captured];
-  if (capturesFrom(b, move.to, seat, next).length > 0) return { board: b, pending: next, ends: false };
-  for (const cell of next) b[cell] = null; // край на веригата — махаме всички взети
-  return { board: crown(b, move.to, p), pending: [], ends: true };
+  if (rawCapturesFrom(b, move.to, seat, next).length > 0) return { board: b, pending: next, ends: false };
+  for (const cell of next) b[cell] = null; // край на поредицата — махаме всички взети
+  return { board: b, pending: [], ends: true };
 }
 
-/** Превръщане в дамка при край на хода на последния ред. */
+/** Превръщане в дама, щом пулът стъпи на последния ред. */
 function crown(b: Piece[], at: number, p: Piece): Piece[] {
   const [tr] = rc(at);
   if (p === "w" && tr === 0) b[at] = "W";
@@ -301,13 +302,14 @@ export const draughtsEngine: GameEngine<DraughtsState, DraughtsAction, DraughtsE
 
     const events: DraughtsEvent[] = [];
     const piece = state.board[move.from]!;
-    // Chain first: a man passing through the crowning row mid-capture keeps
-    // capturing as a man (international rule) — it crowns only when the move
-    // ENDS there. Взетите пулове стоят на дъската до края на веригата.
+    // Руско правило: пул, стъпил на последния ред, става дама веднага (и в
+    // поредица — продължава като дама). Взетите стоят до края на поредицата.
     const r = applied(state.board, pending, move, seat);
     const board = r.board;
     events.push({ type: "MOVE", seat, from: move.from, to: move.to, captured: move.captured });
 
+    const crowned = !isKing(piece) && isKing(board[move.to]);
+    if (crowned) events.push({ type: "KING", seat, at: move.to });
     if (!r.ends) {
       // Same player keeps the turn to continue capturing; no win/draw check
       // mid-chain (board not yet handed over).
@@ -316,8 +318,6 @@ export const draughtsEngine: GameEngine<DraughtsState, DraughtsAction, DraughtsE
         events,
       };
     }
-    if (!isKing(piece) && isKing(board[move.to])) events.push({ type: "KING", seat, at: move.to });
-
     // Броячът за реми: само ходове с дамка без вземане; вземане или ход на
     // обикновен пул го нулират (и правят позицията необратима за повторението).
     const irreversible = move.captured !== null || !isKing(piece);
@@ -342,7 +342,7 @@ export const draughtsEngine: GameEngine<DraughtsState, DraughtsAction, DraughtsE
       events.push({ type: "WIN", seat });
       return { state: { ...next, winner: seat, done: true }, events };
     }
-    // Реми: 25 хода на страна само с дамки, или трикратно повторение.
+    // Реми: 15 хода на страна само с дами, или трикратно повторение.
     const repeats = positions.filter((k) => k === key).length;
     if (noCaptureMoves >= KING_ONLY_DRAW_PLIES || repeats >= 3) {
       events.push({ type: "DRAW" });
@@ -368,7 +368,8 @@ export const draughtsEngine: GameEngine<DraughtsState, DraughtsAction, DraughtsE
     ];
   },
 
-  /** Greedy heuristic: longest capture chain, avoid landing under fire, crown. */
+  /** Greedy heuristic (правилата дават свободен избор — ботът сам предпочита
+   *  по-дългата поредица), avoid landing under fire, crown. */
   bot(state, seat, rng: SeededRng) {
     if (state.done || state.turn !== seat) return null;
     const pending = state.pending ?? [];

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { SeededRng } from "../../kernel/rng.js";
-import { draughtsEngine, type DraughtsState } from "./draughts.js";
+import { draughtsEngine, KING_ONLY_DRAW_PLIES, type DraughtsState } from "./draughts.js";
 
 const empty = (): DraughtsState => ({
   board: new Array(64).fill(null),
@@ -53,7 +53,7 @@ describe("draughts multi-jump chaining", () => {
   });
 });
 
-describe("draughts backward capture (Bulgarian rules)", () => {
+describe("руска дама: обикновеният пул взема и назад", () => {
   it("a man captures backward", () => {
     const s = empty();
     s.board[idx(3, 2)] = "w";
@@ -124,33 +124,94 @@ describe("draughts flying kings", () => {
   });
 });
 
-describe("draughts mid-chain crowning (international rule)", () => {
-  it("a man passing the far row mid-chain continues capturing as a man", () => {
+describe("руска дама: промоция в поредица", () => {
+  it("пул, стигнал последния ред при вземане, става дама веднага и продължава като дама", () => {
     const s = empty();
     s.board[idx(2, 1)] = "w";
-    s.board[idx(1, 2)] = "b"; // jump to (0,3) — crowning row
-    s.board[idx(1, 4)] = "b"; // backward capture continues from (0,3) to (2,5)
+    s.board[idx(1, 2)] = "b"; // скок до (0,3) — последният ред
+    s.board[idx(3, 6)] = "b"; // далече по диагонала (0,3)→(4,7): само дама може да го вземе
     const r1 = draughtsEngine.reduce(s, { type: "MOVE", from: idx(2, 1), to: idx(0, 3) }, rng());
-    expect(r1.state.board[idx(0, 3)]).toBe("w"); // NOT crowned mid-chain
+    expect(r1.state.board[idx(0, 3)]).toBe("W"); // коронясан веднага
+    expect(r1.events).toContainEqual({ type: "KING", seat: 0, at: idx(0, 3) });
     expect(r1.state.chainFrom).toBe(idx(0, 3));
     expect(r1.state.turn).toBe(0);
-    expect(r1.events.some((e) => e.type === "KING")).toBe(false);
-
-    const r2 = draughtsEngine.reduce(r1.state, { type: "MOVE", from: idx(0, 3), to: idx(2, 5) }, rng());
-    expect(r2.state.board[idx(2, 5)]).toBe("w"); // chain ended off the far row — still a man
+    // Продължава като летяща дама: взема (3,6) отдалеч и каца на (4,7).
+    expect(draughtsEngine.legalActions(r1.state, 0)).toEqual([
+      { type: "MOVE", from: idx(0, 3), to: idx(4, 7) },
+    ]);
+    const r2 = draughtsEngine.reduce(r1.state, { type: "MOVE", from: idx(0, 3), to: idx(4, 7) }, rng());
+    expect(r2.state.board[idx(4, 7)]).toBe("W");
+    expect(r2.state.board[idx(1, 2)]).toBeNull();
+    expect(r2.state.board[idx(3, 6)]).toBeNull();
     expect(r2.state.chainFrom).toBeNull();
+    expect(r2.events.some((e) => e.type === "KING")).toBe(false); // само веднъж
   });
 
-  it("a capture chain ENDING on the far row crowns", () => {
+  it("поредица, която свършва на последния ред, също коронясва", () => {
     const s = empty();
     s.board[idx(2, 1)] = "w";
     s.board[idx(1, 2)] = "b";
-    s.board[idx(0, 5)] = "b"; // not capturable from (0,3)
+    s.board[idx(0, 5)] = "b"; // не може да се вземе от (0,3)
     const r = draughtsEngine.reduce(s, { type: "MOVE", from: idx(2, 1), to: idx(0, 3) }, rng());
-    expect(r.state.board[idx(0, 3)]).toBe("W"); // crowned
+    expect(r.state.board[idx(0, 3)]).toBe("W");
     expect(r.state.chainFrom).toBeNull();
     expect(r.state.turn).toBe(1);
     expect(r.events.some((e) => e.type === "KING")).toBe(true);
+  });
+});
+
+describe("руска дама: свободен избор на вземане", () => {
+  it("и единичното вземане е законно, когато има по-дълга поредица", () => {
+    const s = empty();
+    s.board[idx(5, 4)] = "w";
+    s.board[idx(4, 5)] = "b"; // единично вземане → (3,6)
+    s.board[idx(4, 3)] = "b"; // поредица → (3,2) → (1,0)
+    s.board[idx(2, 1)] = "b";
+    const acts = draughtsEngine.legalActions(s, 0);
+    expect(acts).toContainEqual({ type: "MOVE", from: idx(5, 4), to: idx(3, 6) });
+    expect(acts).toContainEqual({ type: "MOVE", from: idx(5, 4), to: idx(3, 2) });
+    const r = draughtsEngine.reduce(s, { type: "MOVE", from: idx(5, 4), to: idx(3, 6) }, rng());
+    expect(r.state.turn).toBe(1);
+    expect(r.state.board[idx(4, 5)]).toBeNull();
+  });
+
+  it("всеки пул с вземане може да вземе — не само този с най-дългата поредица", () => {
+    const s = empty();
+    s.board[idx(5, 0)] = "w"; // поредица от два скока
+    s.board[idx(4, 1)] = "b";
+    s.board[idx(2, 3)] = "b";
+    s.board[idx(5, 6)] = "w"; // единичен скок
+    s.board[idx(4, 7)] = "b";
+    s.board[idx(4, 5)] = "b";
+    const acts = draughtsEngine.legalActions(s, 0);
+    expect(acts).toContainEqual({ type: "MOVE", from: idx(5, 6), to: idx(3, 4) });
+    expect(acts).toContainEqual({ type: "MOVE", from: idx(5, 0), to: idx(3, 2) });
+  });
+
+  it("започнатата поредица трябва да се довърши", () => {
+    const s = empty();
+    s.board[idx(5, 0)] = "w";
+    s.board[idx(4, 1)] = "b";
+    s.board[idx(2, 3)] = "b";
+    s.board[idx(6, 7)] = "w"; // има и свободен ход, но не и в поредица
+    const r1 = draughtsEngine.reduce(s, { type: "MOVE", from: idx(5, 0), to: idx(3, 2) }, rng());
+    expect(draughtsEngine.legalActions(r1.state, 0)).toEqual([
+      { type: "MOVE", from: idx(3, 2), to: idx(1, 4) },
+    ]);
+    expect(() =>
+      draughtsEngine.reduce(r1.state, { type: "MOVE", from: idx(6, 7), to: idx(5, 6) }, rng()),
+    ).toThrow();
+  });
+});
+
+describe("руска дама: летящата дама е длъжна да продължи", () => {
+  it("ако от някое приземяване има продължение, само те са позволени", () => {
+    const s = empty();
+    s.board[idx(7, 0)] = "W";
+    s.board[idx(5, 2)] = "b"; // приземявания (4,3),(3,4),(2,5),(1,6),(0,7)
+    s.board[idx(2, 3)] = "b"; // от (3,4) може да се вземе (2,3) → (1,2)
+    const acts = draughtsEngine.legalActions(s, 0);
+    expect(acts).toEqual([{ type: "MOVE", from: idx(7, 0), to: idx(3, 4) }]);
   });
 });
 
@@ -175,7 +236,17 @@ describe("draughts „турски удар“ (взетите остават д
     expect(r.state.pending).toEqual([]);
   });
 
-  it("законно вземане с пул не се изключва от надуто „максимално“ вземане", () => {
+  it("един пул не може да се прескочи два пъти в една поредица", () => {
+    const s = empty();
+    s.board[idx(4, 3)] = "W";
+    s.board[idx(3, 4)] = "b"; // взет при (4,3)→(2,5); после (2,5)→(4,3)… не е позволено
+    const r = draughtsEngine.reduce(s, { type: "MOVE", from: idx(4, 3), to: idx(2, 5) }, rng());
+    expect(r.state.chainFrom).toBeNull();
+    expect(r.state.turn).toBe(1);
+    expect(r.state.board[idx(3, 4)]).toBeNull();
+  });
+
+  it("законно вземане с пул е налично редом с вземанията на дамата", () => {
     const s = empty();
     s.board[idx(4, 3)] = "W";
     s.board[idx(2, 5)] = "b";
@@ -210,12 +281,12 @@ describe("draughts „турски удар“ (взетите остават д
 });
 
 describe("draughts реми", () => {
-  it("25 хода на страна (50 полухода) само с дамки → реми, не победа по материал", () => {
+  it("15 хода на страна (30 полухода) само с дами → реми, не победа по материал", () => {
     const s = empty();
     s.board[idx(7, 0)] = "W";
     s.board[idx(5, 4)] = "W"; // бял материал повече — без значение
     s.board[idx(0, 7)] = "B";
-    s.noCaptureMoves = 49;
+    s.noCaptureMoves = KING_ONLY_DRAW_PLIES - 1;
     const r = draughtsEngine.reduce(s, { type: "MOVE", from: idx(7, 0), to: idx(6, 1) }, rng());
     expect(r.state.done).toBe(true);
     expect(r.state.winner).toBeNull();
@@ -227,7 +298,7 @@ describe("draughts реми", () => {
     const s = empty();
     s.board[idx(5, 0)] = "w";
     s.board[idx(0, 7)] = "B";
-    s.noCaptureMoves = 49;
+    s.noCaptureMoves = KING_ONLY_DRAW_PLIES - 1;
     const r = draughtsEngine.reduce(s, { type: "MOVE", from: idx(5, 0), to: idx(4, 1) }, rng());
     expect(r.state.done).toBe(false);
     expect(r.state.noCaptureMoves).toBe(0);
@@ -238,7 +309,7 @@ describe("draughts реми", () => {
     s.board[idx(7, 0)] = "W";
     s.board[idx(5, 2)] = "b";
     s.board[idx(0, 7)] = "B";
-    s.noCaptureMoves = 49;
+    s.noCaptureMoves = KING_ONLY_DRAW_PLIES - 1;
     const r = draughtsEngine.reduce(s, { type: "MOVE", from: idx(7, 0), to: idx(4, 3) }, rng());
     expect(r.state.done).toBe(false);
     expect(r.state.noCaptureMoves).toBe(0);
@@ -274,7 +345,7 @@ describe("draughts реми", () => {
 });
 
 describe("draughts bot", () => {
-  it("returns a legal action and prefers the longer capture chain", () => {
+  it("returns a legal action and prefers the longer capture chain (by choice)", () => {
     const s = empty();
     // Two options: single capture right, double-chain left.
     s.board[idx(5, 4)] = "w";
